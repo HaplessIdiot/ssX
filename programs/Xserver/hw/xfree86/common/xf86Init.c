@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.134 1999/08/28 09:00:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.135 1999/09/04 13:04:33 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -733,6 +733,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 #endif
   }
   xf86PostScreenInit();
+
+  xf86InitOrigins();
 
   xf86Resetting = FALSE;
   xf86Initialising = FALSE;

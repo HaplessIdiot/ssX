@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.3 1999/07/06 11:38:27 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -244,6 +244,8 @@ ATIFreeScreen
 
     xfree(pATI->OldHW.frame_buffer);
     xfree(pATI->NewHW.frame_buffer);
+
+    xfree(pATI->pShadow);
 
     xfree(pATI);
     pScreenInfo->driverPrivate = NULL;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.19 1999/07/04 06:39:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.20 1999/07/06 11:38:52 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -619,4 +619,8 @@ pciConfigPtr *xf86scanpci(int flags);
 void          xf86writepci(int, int, int, int, int, CARD32, CARD32);
 #endif
 
+extern int pciNumBuses;
+
 #endif /* _XF86PCI_H */
+
+

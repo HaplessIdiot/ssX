@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/scrnintstr.h,v 1.3 1998/10/04 09:39:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/scrnintstr.h,v 1.4 1999/08/21 13:48:45 dawes Exp $ */
 
 #ifndef SCREENINTSTRUCT_H
 #define SCREENINTSTRUCT_H
@@ -448,6 +448,8 @@ typedef    void (* ResolveColorProcPtr)(
 #endif
 );
 
+#ifdef NEED_SCREEN_REGIONS
+
 typedef    RegionPtr (* RegionCreateProcPtr)(
 #if NeedNestedPrototypes
 	BoxPtr /*rect*/,
@@ -577,11 +579,15 @@ typedef    Bool (* RegionValidateProcPtr)(
 #endif
 );
 
+#endif /* NEED_SCREEN_REGIONS */
+
 typedef    RegionPtr (* BitmapToRegionProcPtr)(
 #if NeedNestedPrototypes
 	PixmapPtr /*pPix*/
 #endif
 );
+
+#ifdef NEED_SCREEN_REGIONS
 
 typedef    RegionPtr (* RectsToRegionProcPtr)(
 #if NeedNestedPrototypes
@@ -590,6 +596,8 @@ typedef    RegionPtr (* RectsToRegionProcPtr)(
 	int /*ctype*/
 #endif
 );
+
+#endif /* NEED_SCREEN_REGIONS */
 
 typedef    void (* SendGraphicsExposeProcPtr)(
 #if NeedNestedPrototypes
@@ -863,6 +871,7 @@ typedef struct _Screen {
 
     /* Region procedures */
 
+#ifdef NEED_SCREEN_REGIONS
     RegionCreateProcPtr		RegionCreate;
     RegionInitProcPtr		RegionInit;
     RegionCopyProcPtr		RegionCopy;
@@ -881,8 +890,11 @@ typedef struct _Screen {
     RegionExtentsProcPtr	RegionExtents;
     RegionAppendProcPtr		RegionAppend;
     RegionValidateProcPtr	RegionValidate;
+#endif /* NEED_SCREEN_REGIONS */
     BitmapToRegionProcPtr	BitmapToRegion;
+#ifdef NEED_SCREEN_REGIONS
     RectsToRegionProcPtr	RectsToRegion;
+#endif /* NEED_SCREEN_REGIONS */
     SendGraphicsExposeProcPtr	SendGraphicsExpose;
 
     /* os layer procedures */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.11 1998/11/15 04:30:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.12 1998/12/06 06:08:41 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -143,7 +143,9 @@ XAAValidateFillSpans(
 	if(infoRec->FillSpansStippled) {
 	     pGC->ops->FillSpans = infoRec->FillSpansStippled;
 	     pGC->ops->PolyFillRect = infoRec->PolyFillRectStippled;
-	     pGC->ops->FillPolygon = infoRec->FillPolygonStippled;
+	     if(infoRec->FillPolygonStippled)
+	         pGC->ops->FillPolygon = infoRec->FillPolygonStippled;
+	     else pGC->ops->FillPolygon = miFillPolygon;
 	     pGC->ops->PolyFillArc = miPolyFillArc;
 	}
 	break;
@@ -151,7 +153,9 @@ XAAValidateFillSpans(
 	if(infoRec->FillSpansOpaqueStippled) {
 	     pGC->ops->FillSpans = infoRec->FillSpansOpaqueStippled;
 	     pGC->ops->PolyFillRect = infoRec->PolyFillRectOpaqueStippled;
-	     pGC->ops->FillPolygon = infoRec->FillPolygonOpaqueStippled;
+	     if(infoRec->FillPolygonOpaqueStippled)
+	         pGC->ops->FillPolygon = infoRec->FillPolygonOpaqueStippled;
+	     else pGC->ops->FillPolygon = miFillPolygon;
 	     pGC->ops->PolyFillArc = miPolyFillArc;
 	}
 	break;
@@ -159,7 +163,9 @@ XAAValidateFillSpans(
 	if(infoRec->FillSpansTiled) {
 	     pGC->ops->FillSpans = infoRec->FillSpansTiled;
 	     pGC->ops->PolyFillRect = infoRec->PolyFillRectTiled;
-	     pGC->ops->FillPolygon = infoRec->FillPolygonTiled;
+	     if(infoRec->FillPolygonTiled)
+	         pGC->ops->FillPolygon = infoRec->FillPolygonTiled;
+	     else pGC->ops->FillPolygon = miFillPolygon;
 	     pGC->ops->PolyFillArc = miPolyFillArc;
 	}
 	break;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.3 1999/07/06 11:38:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.4 1999/08/01 07:57:17 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -54,6 +54,7 @@
  * James Fast Kane, jfk2@engr.uark.edu
  * Randall Hopper, rhh@ct.picker.com
  * W. Marcus Miller, marcus@llnl.gov
+ * Henrik Harmsen, ervhch@erv.ericsson.se (ShadowFB support)
  *
  * ... and, many, many others from around the world.
  *

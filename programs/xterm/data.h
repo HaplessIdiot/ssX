@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: data.h /main/13 1996/11/24 17:35:40 rws $
- *	$XFree86: xc/programs/xterm/data.h,v 3.18 1999/05/15 06:25:03 dawes Exp $
+ *	$XFree86: xc/programs/xterm/data.h,v 3.19 1999/08/21 13:49:01 dawes Exp $
  */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -104,6 +104,10 @@ extern XtermWidget term;
 #define	XkbBI_MajorError		2
 #define	XkbBI_TerminalBell		9
 #define	XkbBI_MarginBell		10
+#endif
+
+#if OPT_WIDE_CHARS
+const unsigned short dec2ucs[32];
 #endif
 
 #endif /* included_data_h */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.8 1999/05/30 14:04:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.9 1999/09/06 11:27:38 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -96,8 +96,8 @@ parseLayoutSection (void)
 				aptr->list.next = NULL;
 				aptr->adj_scrnum = -1;
 				aptr->adj_where = CONF_ADJ_OBSOLETE;
-				aptr->adj_x = -1;
-				aptr->adj_y = -1;
+				aptr->adj_x = 0;
+				aptr->adj_y = 0;
 				aptr->adj_refscreen = NULL;
 				if ((token = xf86GetToken (NULL)) == NUMBER)
 					aptr->adj_scrnum = val.num;

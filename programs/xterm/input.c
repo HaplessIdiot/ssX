@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: input.c /main/21 1996/04/17 15:54:23 kaleb $
- *	$XFree86: xc/programs/xterm/input.c,v 3.34 1999/07/11 08:49:37 dawes Exp $
+ *	$XFree86: xc/programs/xterm/input.c,v 3.35 1999/08/21 13:49:02 dawes Exp $
  */
 
 /*
@@ -251,7 +251,7 @@ convertFromUTF8(unsigned long c, Char *strbuf)
 		strbuf[nbytes++] = 0x80 | ((c >> 12) & 0x3f);
 		strbuf[nbytes++] = 0x80 | ((c >>  6) & 0x3f);
 		strbuf[nbytes++] = 0x80 | ( c        & 0x3f);
-	} else if (c < 0x80000000U) {
+	} else if (c < UCS_LIMIT) {
 		strbuf[nbytes++] = 0xfe |  (c >> 30);
 		strbuf[nbytes++] = 0x80 | ((c >> 24) & 0x3f);
 		strbuf[nbytes++] = 0x80 | ((c >> 18) & 0x3f);
@@ -259,7 +259,7 @@ convertFromUTF8(unsigned long c, Char *strbuf)
 		strbuf[nbytes++] = 0x80 | ((c >> 6)  & 0x3f);
 		strbuf[nbytes++] = 0x80 | ( c        & 0x3f);
 	} else
-		return convertFromUTF8(0xfffd, strbuf);
+		return convertFromUTF8(UCS_REPL, strbuf);
 
 	return nbytes;
 }

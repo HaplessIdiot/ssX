@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.31 1999/06/06 08:48:42 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.32 1999/08/28 09:00:49 dawes Exp $ */ 
 /*
  * PCI Probe
  *
@@ -357,6 +357,7 @@ extern struct pci_config_reg *pci_devp[];
 #define PCI_CHIP_ViRGE_MXP	0x8C03
 #define PCI_CHIP_TRIO3D_B	0x8903
 #define PCI_CHIP_TRIO3D		0x8904
+#define PCI_CHIP_TRIO3D_2X	0x8A13
 #define PCI_CHIP_SAVAGE3D	0x8A20
 #define PCI_CHIP_SAVAGE3D_M	0x8A21
 

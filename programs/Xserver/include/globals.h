@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/globals.h,v 1.1 1999/01/13 08:31:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/globals.h,v 1.2 1999/03/14 11:18:11 dawes Exp $ */
 
 #ifndef _XSERV_GLOBAL_H_
 #define _XSERV_GLOBAL_H_
@@ -22,6 +22,8 @@ extern Bool Must_have_memory;
 extern WindowPtr *WindowTable;
 extern int GrabInProgress;
 extern Bool noTestExtensions;
+
+extern DDXPointRec dixScreenOrigins[MAXSCREENS];
 
 #if DPMSExtension
 extern CARD32 defaultDPMSStandbyTime;

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.114 1999/08/28 14:32:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.115 1999/09/06 11:27:34 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -733,6 +733,9 @@ MGASoftReset(ScrnInfoPtr pScrn)
 	OUTREG(MGAREG_MACCESS, 1<<15);
 	usleep(10);
 
+#if 0
+	/* This will hang is the PLLs aren't on */
+
 	/* wait until drawing engine is ready */
 	while ( MGAISBUSY() )
 	    usleep(1000);
@@ -742,6 +745,7 @@ MGASoftReset(ScrnInfoPtr pScrn)
 	WAITFIFO(i);
 	while ( i-- )
 	    OUTREG(MGAREG_SHIFT, 0);
+#endif
 
 	MGAUnmapMem(pScrn);
 }
@@ -878,7 +882,7 @@ MGAdoDDC(ScrnInfoPtr pScrn)
   /* Initialize I2C bus - used by DDC if available */
   if (pMga->i2cInit) {
     pMga->i2cInit(pScrn);
-ErrorF("I2C initialized on %p\n",pMga->I2C);
+    ErrorF("I2C initialized on %p\n",pMga->I2C);
   }
   /* Read and output monitor info using DDC2 over I2C bus */
   if (pMga->I2C) {
@@ -1193,7 +1197,15 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86ReturnOptValBool(MGAOptions, OPTION_MGA_SDRAM, FALSE)) {
 	pMga->HasSDRAM = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Has SDRAM\n");
+    } else if (pMga->Primary && (pMga->Chipset != PCI_CHIP_MGA2064) && 
+		(pMga->Chipset != PCI_CHIP_MGA2164) &&
+		(pMga->Chipset != PCI_CHIP_MGA2164_AGP)) {	
+	if(!(pciReadLong(pMga->PciTag, PCI_OPTION_REG) & (1 << 14))) {
+	    pMga->HasSDRAM = TRUE;
+	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected SDRAM\n");
+	}
     }
+
     if (xf86GetOptValFreq(MGAOptions, OPTION_SET_MCLK, OPTUNITS_MHZ, &real)) {
 	pMga->MemClk = (int)(real * 1000.0);
     }
@@ -1464,11 +1476,9 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     /*
      * Reset card if it isn't primary one
      */
-#if 0
-    /* You can't do that. The engine isn't even powered up yet */
     if (!pMga->Primary && !pMga->FBDev)
         MGASoftReset(pScrn);
-#endif
+
     /*
      * If the user has specified the amount of memory in the XF86Config
      * file, we respect that setting.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.4 1999/07/10 12:17:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.5 1999/07/18 03:26:56 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -31,7 +31,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Author:
  *   Jens Owen <jens@precisioninsight.com>
  *
- * $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.52 1999/07/08 14:33:38 faith Exp $
+ * $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.54 1999/08/04 18:18:58 faith Exp $
  */
 
 #include "xf86.h"
@@ -55,7 +55,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "glint.h"
 #include "glint_dri.h"
 
-static char GLINTKernelDriverName[] = "generic";
+static char GLINTKernelDriverName[] = "gamma";
 static char GLINTClientDriverName[] = "gamma";
 
 #define USE_LEGACY_DMA 1
@@ -65,103 +65,8 @@ GLINTDRIControlInitSingleMX(int drmSubFD, int irq)
 {
     
     int retcode;
-    static int dma_dispatch[] = {
-#if USE_LEGACY_DMA
-	DRM_I_WRITE_R(    DMAAddress, DRM_T_ADDRESS, 0, DRM_V_NONE,   0),
-	DRM_I_WHILE_IMM_R(GCommandStatus,   4, DRM_C_NE),
-#if 0
-	DRM_I_WHILE_IMM_R(DMACount,         0, DRM_C_NE),
-#endif
-	DRM_I_WRITE_R(    DMACount,   DRM_T_LENGTH,  0, DRM_V_RSHIFT, 2)
-#else
-#define GDMAAddressTag 0x530
-#define GDMACountTag   0x531
-	DRM_I_WHILE_IMM_R(InFIFOSpace, 2, DRM_C_LT),
-	DRM_I_WRITE_IMM_R(OutputFIFO,  GDMAAddressTag),
-	DRM_I_WRITE_R(    OutputFIFO,  DRM_T_ADDRESS, 0, DRM_V_NONE,   0),
-	DRM_I_WRITE_IMM_R(OutputFIFO,  GDMACountTag),   
-	DRM_I_WRITE_R(    OutputFIFO,  DRM_T_LENGTH,  0, DRM_V_RSHIFT, 2)
-	
-#endif
-    };
-    static int dma_quiescent[] = {
-	DRM_I_WHILE_IMM_R(DMACount,         0, DRM_C_NE),             /*  0 */
-	DRM_I_WHILE_IMM_R(InFIFOSpace,      3, DRM_C_LT),             /*  1 */
-	DRM_I_WRITE_IMM_R(FilterMode,       1<<10),                   /*  2 */
-	DRM_I_WRITE_IMM_R(GLINTSync,        0),                       /*  3 */
-				/* Read from first MX */
-	DRM_I_WHILE_IMM_R(OutFIFOWords,     0, DRM_C_EQ),             /*  4 */
-	DRM_I_IF_IMM_R(   OutputFIFO,  GLINTSyncTag, DRM_C_EQ, 7),    /*  5 */
-	DRM_I_GOTO(5),		                                      /*  6 */
-	DRM_I_RETURN(0)                                               /*  7 */
-    };
-    static int dma_ready[] = {
-	DRM_I_WHILE_IMM_R(DMACount, 0, DRM_C_NE)
-    };
-    static int dma_is_ready[] = {
-				/* Return  */
-	DRM_I_IF_IMM_R(   DMACount, 0, DRM_C_NE, 2),/* DMA in progress    0 */
-	DRM_I_RETURN(1),                                              /*  1 */
-	DRM_I_RETURN(0)                                               /*  2 */
-    };
-    static int dma_service[] = {
-#if 0
-				/* 0xc350 is 0.1S */
-	DRM_I_WRITE_IMM_R(GDelayTimer, 0xc350),     /* 0.1S */        /*  0 */
-#else
-	DRM_I_WRITE_IMM_R(GDelayTimer, 0xc350/2),  /* 0.05S */        /*  0 */
-#endif
-	DRM_I_WRITE_IMM_R(GCommandIntFlags, USE_LEGACY_DMA ? 8 : 9 ), /*  1 */
-	DRM_I_WRITE_IMM_R(GIntFlags, 0x2001),                         /*  2 */
-	DRM_I_IF_IMM_R(DMACount, 0, DRM_C_NE,  7), /* DMA in progress     3 */
-	DRM_I_DO(DRM_F_CLEAR),                                        /*  4 */
-	DRM_I_DO(DRM_F_DMA),   /*    DMA */                           /*  5 */
-	DRM_I_RETURN(0),                                              /*  6 */
-#if 0
-	DRM_I_WRITE_IMM_R(GDelayTimer, 0xc350/4), /* 0.025S */        /*  7 */
-#endif
-    };
-    static int dma_pre_inst[] = {
-	DRM_I_WRITE_IMM_R(GCommandMode,      USE_LEGACY_DMA ? 0x0000 : 0x0001),
-	DRM_I_WRITE_IMM_R(GDMAControl,       0x0000)
-    };
-    static int dma_post_inst[] = {
-	DRM_I_WRITE_IMM_R(GIntEnable,        0x2001),
-	DRM_I_WRITE_IMM_R(GCommandIntEnable, USE_LEGACY_DMA ? 0x0008 : 0x0009),
-	DRM_I_WRITE_IMM_R(GDelayTimer,       0x3d090)
-    };
-    static int dma_pre_uninst[] = {
-	DRM_I_WRITE_IMM_R(GDelayTimer,       0x0000),
-	DRM_I_WRITE_IMM_R(GCommandIntEnable, 0x0000),
-	DRM_I_WRITE_IMM_R(GIntEnable,        0x0000)
-    };
 
-
-#define DRM_COUNT(x) ((sizeof(x)/sizeof(x[0]))/DRM_INST_LENGTH)
-    
-    struct {
-	int        *inst;
-	int        count;
-	drmCtlDesc desc;
-    } *pt, dma_control_routines[] = {
-	{ dma_dispatch,   DRM_COUNT(dma_dispatch),   DRM_DMA_DISPATCH  },
-	{ dma_quiescent,  DRM_COUNT(dma_quiescent),  DRM_DMA_QUIESCENT },
-	{ dma_ready,      DRM_COUNT(dma_ready),      DRM_DMA_READY     },
-	{ dma_is_ready,   DRM_COUNT(dma_is_ready),   DRM_DMA_IS_READY  },
-	{ dma_service,    DRM_COUNT(dma_service),    DRM_IH_SERVICE    },
-	{ dma_pre_inst,   DRM_COUNT(dma_pre_inst),   DRM_IH_PRE_INST   },
-	{ dma_post_inst,  DRM_COUNT(dma_post_inst),  DRM_IH_POST_INST  },
-	{ dma_pre_uninst, DRM_COUNT(dma_pre_uninst), DRM_IH_PRE_UNINST },
-	{ NULL, 0 }
-    };
-    
-    for (pt = dma_control_routines; pt->count; pt++) {
-	if ((retcode = drmCtlAddCommand(drmSubFD,
-					pt->desc, pt->count, pt->inst))) {
-	    return 1;
-	}
-    }
-
+				/* Perhaps add flag to for single mx here? */
     if ((retcode = drmCtlInstHandler(drmSubFD, irq))) return 1;
     return 0;
 }
@@ -170,107 +75,6 @@ static int
 GLINTDRIControlInitDualMX(int drmSubFD, int irq)
 {
     int retcode;
-    static int dma_dispatch[] = {
-#if USE_LEGACY_DMA
-	DRM_I_WRITE_R(    DMAAddress, DRM_T_ADDRESS, 0, DRM_V_NONE,   0),
-	DRM_I_WHILE_IMM_R(GCommandStatus,   4, DRM_C_NE),
-#if 0
-	DRM_I_WHILE_IMM_R(DMACount,         0, DRM_C_NE),
-#endif
-	DRM_I_WRITE_R(    DMACount,   DRM_T_LENGTH,  0, DRM_V_RSHIFT, 2)
-#else
-#define GDMAAddressTag 0x530
-#define GDMACountTag   0x531
-	DRM_I_WHILE_IMM_R(InFIFOSpace, 2, DRM_C_LT),
-	DRM_I_WRITE_IMM_R(OutputFIFO,  GDMAAddressTag),
-	DRM_I_WRITE_R(    OutputFIFO,  DRM_T_ADDRESS, 0, DRM_V_NONE,   0),
-	DRM_I_WRITE_IMM_R(OutputFIFO,  GDMACountTag),   
-	DRM_I_WRITE_R(    OutputFIFO,  DRM_T_LENGTH,  0, DRM_V_RSHIFT, 2)
-	
-#endif
-    };
-    static int dma_quiescent[] = {
-	DRM_I_WHILE_IMM_R(DMACount,         0, DRM_C_NE),             /*  0 */
-	DRM_I_WHILE_IMM_R(InFIFOSpace,      3, DRM_C_LT),             /*  1 */
-	DRM_I_WRITE_IMM_R(BroadcastMask,    3),                       /*  2 */
-	DRM_I_WRITE_IMM_R(FilterMode,       1<<10),                   /*  3 */
-	DRM_I_WRITE_IMM_R(GLINTSync,        0),                       /*  4 */
-				/* Read from first MX */
-	DRM_I_WHILE_IMM_R(OutFIFOWords,     0, DRM_C_EQ),             /*  5 */
-	DRM_I_IF_IMM_R(   OutputFIFO,  GLINTSyncTag, DRM_C_EQ, 8),    /*  6 */
-	DRM_I_GOTO(5),		                                      /*  7 */
-				/* Read from second MX */
-	DRM_I_WHILE_IMM_R(OutFIFOWords+0x10000,  0, DRM_C_EQ),        /*  8 */
-	DRM_I_IF_IMM_R(OutputFIFO+0x10000, GLINTSyncTag, DRM_C_EQ,11),/*  9 */
-	DRM_I_GOTO(8),		                                      /* 10 */
-	DRM_I_RETURN(0)                                               /* 11 */
-    };
-    static int dma_ready[] = {
-	DRM_I_WHILE_IMM_R(DMACount, 0, DRM_C_NE)
-    };
-    static int dma_is_ready[] = {
-				/* Return  */
-	DRM_I_IF_IMM_R(   DMACount, 0, DRM_C_NE, 2),/* DMA in progress    0 */
-	DRM_I_RETURN(1),                                              /*  1 */
-	DRM_I_RETURN(0)                                               /*  2 */
-    };
-    static int dma_service[] = {
-#if 0
-				/* 0xc350 is 0.1S */
-	DRM_I_WRITE_IMM_R(GDelayTimer, 0xc350),     /* 0.1S */        /*  0 */
-#else
-	DRM_I_WRITE_IMM_R(GDelayTimer, 0xc350/2),  /* 0.05S */        /*  0 */
-#endif
-	DRM_I_WRITE_IMM_R(GCommandIntFlags, USE_LEGACY_DMA ? 8 : 9 ), /*  1 */
-	DRM_I_WRITE_IMM_R(GIntFlags, 0x2001),                         /*  2 */
-	DRM_I_IF_IMM_R(DMACount, 0, DRM_C_NE,  7), /* DMA in progress     3 */
-	DRM_I_DO(DRM_F_CLEAR),                                        /*  4 */
-	DRM_I_DO(DRM_F_DMA),   /*    DMA */                           /*  5 */
-	DRM_I_RETURN(0),                                              /*  6 */
-#if 0
-	DRM_I_WRITE_IMM_R(GDelayTimer, 0xc350/4), /* 0.025S */        /*  7 */
-#endif
-    };
-    static int dma_pre_inst[] = {
-	DRM_I_WRITE_IMM_R(GCommandMode,      USE_LEGACY_DMA ? 0x0000 : 0x0001),
-	DRM_I_WRITE_IMM_R(GDMAControl,       0x0000)
-    };
-    static int dma_post_inst[] = {
-	DRM_I_WRITE_IMM_R(GIntEnable,        0x2001),
-	DRM_I_WRITE_IMM_R(GCommandIntEnable, USE_LEGACY_DMA ? 0x0008 : 0x0009),
-	DRM_I_WRITE_IMM_R(GDelayTimer,       0x3d090)
-    };
-    static int dma_pre_uninst[] = {
-	DRM_I_WRITE_IMM_R(GDelayTimer,       0x0000),
-	DRM_I_WRITE_IMM_R(GCommandIntEnable, 0x0000),
-	DRM_I_WRITE_IMM_R(GIntEnable,        0x0000)
-    };
-
-
-#define DRM_COUNT(x) ((sizeof(x)/sizeof(x[0]))/DRM_INST_LENGTH)
-    
-    struct {
-	int        *inst;
-	int        count;
-	drmCtlDesc desc;
-    } *pt, dma_control_routines[] = {
-	{ dma_dispatch,   DRM_COUNT(dma_dispatch),   DRM_DMA_DISPATCH  },
-	{ dma_quiescent,  DRM_COUNT(dma_quiescent),  DRM_DMA_QUIESCENT },
-	{ dma_ready,      DRM_COUNT(dma_ready),      DRM_DMA_READY     },
-	{ dma_is_ready,   DRM_COUNT(dma_is_ready),   DRM_DMA_IS_READY  },
-	{ dma_service,    DRM_COUNT(dma_service),    DRM_IH_SERVICE    },
-	{ dma_pre_inst,   DRM_COUNT(dma_pre_inst),   DRM_IH_PRE_INST   },
-	{ dma_post_inst,  DRM_COUNT(dma_post_inst),  DRM_IH_POST_INST  },
-	{ dma_pre_uninst, DRM_COUNT(dma_pre_uninst), DRM_IH_PRE_UNINST },
-	{ NULL, 0 }
-    };
-    
-    for (pt = dma_control_routines; pt->count; pt++) {
-	if ((retcode = drmCtlAddCommand(drmSubFD,
-					pt->desc, pt->count, pt->inst))) {
-	    return 1;
-	}
-    }
 
     if ((retcode = drmCtlInstHandler(drmSubFD, irq))) return 1;
     return 0;
@@ -1767,6 +1571,11 @@ dumpIndex,pWC->Gamma[dumpIndex]);
 
 	/* Restore the "real" broadcast mask last */
 	GLINT_SLOW_WRITE_REG(pWC->MX1.CBroadcastMask,           BroadcastMask);
+	}
+				/* Sync is needed here probabilistically */
+	if (pGlint->AccelInfoRec->Sync) {
+	    (*pGlint->AccelInfoRec->Sync)(pGlint->AccelInfoRec->pScrn);
+	    pGlint->AccelInfoRec->NeedToSync = FALSE;
 	}
     }
 }

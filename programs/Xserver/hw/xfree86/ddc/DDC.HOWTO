@@ -81,7 +81,7 @@
      To print out the information contained in the xf86Monitor
      structure the function 
 
-     void xf86PrintEDID(xf86MonPtr monitor)
+     xf86MonPtr xf86PrintEDID(xf86MonPtr monitor)
  
      is provided.
 
@@ -94,4 +94,4 @@
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/ddc/DDC.HOWTO,v 1.2 1998/12/06 13:30:39 dawes Exp $

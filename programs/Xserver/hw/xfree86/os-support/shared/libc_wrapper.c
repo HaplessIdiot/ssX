@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.51 1999/07/10 14:42:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.52 1999/07/18 08:14:37 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -1376,6 +1376,15 @@ int xf86mknod(const char *pathname, xf86mode_t xfmode, xf86dev_t dev)
 unsigned int xf86sleep(unsigned int seconds)
 {
     return sleep(seconds);
+}
+
+int xf86mkdir(const char *pathname, xf86mode_t xfmode)
+{
+    mode_t mode = xfToOsChmodMode(xfmode);
+    int    rc   = mkdir(pathname, mode);
+    
+    xf86errno   = xf86GetErrno();
+    return rc;
 }
 
 

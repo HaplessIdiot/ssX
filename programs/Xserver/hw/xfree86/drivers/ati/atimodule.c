@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.3 1999/07/06 11:38:32 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -25,6 +25,7 @@
 
 #include "ati.h"
 #include "atimodule.h"
+#include "atistruct.h"
 #include "ativersion.h"
 
 /* Module loader interface */
@@ -75,6 +76,7 @@ ATISetup
             "cfb16ScreenInit",
             "cfb24ScreenInit",
             "cfb32ScreenInit",
+            "ShadowFBInit",
             NULL);
 
         return (pointer)TRUE;
@@ -122,9 +124,15 @@ ATILoadModule
 Bool
 ATILoadModules
 (
-    ScrnInfoPtr pScreenInfo
+    ScrnInfoPtr pScreenInfo,
+    ATIPtr      pATI
 )
 {
+    /* Load shadow frame buffer code if needed */
+    if (pATI->OptionShadowFB &&
+        !ATILoadModule(pScreenInfo, "shadowfb", "ShadowFBInit"))
+        return FALSE;
+
     /* Load depth-specific entry points */
     switch (pScreenInfo->bitsPerPixel)
     {

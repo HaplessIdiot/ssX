@@ -57,10 +57,7 @@
  *
  */
 
-
-
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.12 1997/10/25 13:50:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.13tsi Exp $ */
 
 #if defined(__GNUC__)
 #if defined(linux) && defined(__alpha__)

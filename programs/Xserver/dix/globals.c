@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/globals.c,v 1.5 1998/07/25 09:24:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/globals.c,v 1.6 1998/10/04 09:38:09 dawes Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -139,3 +139,5 @@ char *display;
 CARD32 TimeOutValue = DEFAULT_TIMEOUT * MILLI_PER_SECOND;
 int	argcGlobal;
 char	**argvGlobal;
+
+DDXPointRec dixScreenOrigins[MAXSCREENS];

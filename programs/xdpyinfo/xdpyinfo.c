@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.15 1998/10/04 09:41:05 dawes Exp $ */
+/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.16 1999/02/28 11:20:14 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -601,8 +601,9 @@ print_dga_info(Display *dpy, char *extname)
 static int
 print_XF86VidMode_info(Display *dpy, char *extname)
 {
-    int majorrev, minorrev, modecount, i;
+    int majorrev, minorrev, modecount, dotclock, i;
     XF86VidModeMonitor monitor;
+    XF86VidModeModeLine modeline;
     XF86VidModeModeInfo **modelines;
 
     if (!XF86VidModeQueryVersion(dpy, &majorrev, &minorrev))
@@ -627,7 +628,7 @@ print_XF86VidMode_info(Display *dpy, char *extname)
       if (!XF86VidModeGetAllModeLines(dpy, DefaultScreen(dpy), &modecount,
 				      &modelines))
 	return 0;
-      printf("  Available Video Mode Settings (current first):\n");
+      printf("  Available Video Mode Settings:\n");
       printf("     Clock   Hdsp Hbeg Hend Httl   Vdsp Vbeg Vend Vttl  Flags\n");
       for (i = 0; i < modecount; i++) {
         printf("    %6.2f   %4d %4d %4d %4d   %4d %4d %4d %4d ",
@@ -647,6 +648,27 @@ print_XF86VidMode_info(Display *dpy, char *extname)
         if (modelines[i]->flags & V_DBLSCAN)   printf(" doublescan");
         printf("\n");
       }
+
+      if (!XF86VidModeGetModeLine(dpy, DefaultScreen(dpy),
+				  &dotclock, &modeline))
+	return 0;
+      printf("  Current Video Mode Setting:\n");
+      printf("    %6.2f   %4d %4d %4d %4d   %4d %4d %4d %4d ",
+	     (float)dotclock/1000.0,
+	     modeline.hdisplay, modeline.hsyncstart,
+	     modeline.hsyncend, modeline.htotal,
+	     modeline.vdisplay, modeline.vsyncstart,
+	     modeline.vsyncend, modeline.vtotal);
+      if (modeline.flags & V_PHSYNC)    printf(" +hsync");
+      if (modeline.flags & V_NHSYNC)    printf(" -hsync");
+      if (modeline.flags & V_PVSYNC)    printf(" +vsync");
+      if (modeline.flags & V_NVSYNC)    printf(" -vsync");
+      if (modeline.flags & V_INTERLACE) printf(" interlace");
+      if (modeline.flags & V_CSYNC)     printf(" composite");
+      if (modeline.flags & V_PCSYNC)    printf(" +csync");
+      if (modeline.flags & V_PCSYNC)    printf(" -csync");
+      if (modeline.flags & V_DBLSCAN)   printf(" doublescan");
+      printf("\n");
     }
 
     return 1;

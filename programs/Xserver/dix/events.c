@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.19 1999/05/30 02:28:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.20 1999/05/30 14:04:11 dawes Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -1786,9 +1786,6 @@ ProcWarpPointer(client)
     int		x, y;
     ScreenPtr	newScreen;
 #ifdef PANORAMIX
-    int 	i, softx, softy;
-    WindowPtr   sWin = NULL;
-    ScreenPtr   sftScreen;
     PanoramiXWindow  *pPanoramiXWin = PanoramiXWinRoot;
 #endif
 
@@ -1831,14 +1828,22 @@ ProcWarpPointer(client)
         if ( !noPanoramiXExtension )
             PANORAMIXFIND_ID(pPanoramiXWin, stuff->dstWid);
 #endif
-    }
-    else
+    } else {
 	newScreen = sprite.hotPhys.pScreen;
+#ifdef PANORAMIX
+	x += panoramiXdataPtr[newScreen->myNum].x;
+	y += panoramiXdataPtr[newScreen->myNum].y;
+#endif
+    }
+
     x += stuff->dstX;
     y += stuff->dstY;
 #ifdef PANORAMIX
-    if ( !noPanoramiXExtension ) {
-    if (pPanoramiXWin) {
+    if ( !noPanoramiXExtension && pPanoramiXWin) {
+	int i, softx, softy;
+	WindowPtr   sWin = NULL;
+	ScreenPtr   sftScreen = sprite.hotPhys.pScreen;
+
         for ( i = 0 ; i < PanoramiXNumScreens; i++) {
             sWin = SecurityLookupWindow(pPanoramiXWin->info[i].id, client,
 					SecurityReadAccess);
@@ -1858,30 +1863,28 @@ ProcWarpPointer(client)
                   break;
          }
          newScreen = sftScreen;
-    }
-    if (x < 0)
-        x = 0;
-    else if (x >= newScreen->width + panoramiXdataPtr[newScreen->myNum].x )
-          x = newScreen->width + panoramiXdataPtr[newScreen->myNum].x - 1;
-      if (y < 0)
-          y = 0;
-      else if (y >= newScreen->height + panoramiXdataPtr[newScreen->myNum].y )
-          y = newScreen->height + panoramiXdataPtr[newScreen->myNum].y - 1;
-    x -= panoramiXdataPtr[newScreen->myNum].x;
-    y -= panoramiXdataPtr[newScreen->myNum].y;
-    }else {
+        if (x < 0)
+	    x = 0;
+	else if (x >= newScreen->width + panoramiXdataPtr[newScreen->myNum].x )
+            x = newScreen->width + panoramiXdataPtr[newScreen->myNum].x - 1;
+	if (y < 0)
+            y = 0;
+	else if (y >= newScreen->height + panoramiXdataPtr[newScreen->myNum].y )
+            y = newScreen->height + panoramiXdataPtr[newScreen->myNum].y - 1;
+	x -= panoramiXdataPtr[newScreen->myNum].x;
+	y -= panoramiXdataPtr[newScreen->myNum].y;
+    } else
 #endif
-    if (x < 0)
-	x = 0;
-    else if (x >= newScreen->width)
-	x = newScreen->width - 1;
-    if (y < 0)
-	y = 0;
-    else if (y >= newScreen->height)
-	y = newScreen->height - 1;
-#if PANORAMIX
+    {
+	if (x < 0)
+	    x = 0;
+	else if (x >= newScreen->width)
+	    x = newScreen->width - 1;
+	if (y < 0)
+	    y = 0;
+	else if (y >= newScreen->height)
+	    y = newScreen->height - 1;
     }
-#endif
     if (newScreen == sprite.hotPhys.pScreen)
     {
 	if (x < sprite.physLimits.x1)

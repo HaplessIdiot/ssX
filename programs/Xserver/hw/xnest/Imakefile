@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/12 1997/11/03 14:13:20 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xnest/Imakefile,v 3.12 1999/05/09 10:52:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xnest/Imakefile,v 3.13 1999/06/14 07:32:10 dawes Exp $
 #include <Server.tmpl>
 
 #ifdef OS2Architecture
@@ -50,15 +50,11 @@ OBJS =	Args.o \
 	miinitext.o $(OBJS1)
 
 
-INCLUDES = -I$(BUILDINCDIR) -I$(FONTINCSRC) \
+INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
 	   -I../../mi -I../../include -I../../os \
-           -I$(EXTINCSRC) -I$(INCLUDESRC) -I.
+           -I$(EXTINCSRC) -I$(XINCLUDESRC)
 
 all:: $(OBJS)
-
-INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
-	   -I../../mi -I../../include -I../../os  \
-           -I$(EXTINCSRC) -I$(XINCLUDESRC)
 
 LinkSourceFile(stubs.c,$(SERVERSRC)/Xi)
 SpecialCObjectRule(Init,$(ICONFIGFILES),$(EXT_DEFINES))

@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/include/extensions/panoramiX.h,v 3.5 1999/01/13 12:44:08 dawes Exp $ */
+/* $XFree86: xc/include/extensions/panoramiX.h,v 3.6 1999/06/27 14:07:20 dawes Exp $ */
 
 /* THIS IS NOT AN X PROJECT TEAM SPECIFICATION */
 
@@ -34,10 +34,6 @@
 #include "gcstruct.h"
 
 typedef struct _PanoramiXData {
-    int above;
-    int below;
-    int left;
-    int right;
     int x;
     int y;
     int width;
@@ -64,10 +60,6 @@ typedef PanoramiXList PanoramiXPmap;
 typedef struct _PanoramiXRect {
     int x, y, width, height;
 } PanoramiXRect;
-
-typedef struct _PanoramiXEdges {
-    Bool no_edges;
-} PanoramiXEdge;
 
 typedef struct _PanoramixVisualMap {
   VisualID	vid[10];

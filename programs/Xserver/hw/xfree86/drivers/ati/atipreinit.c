@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.2 1999/08/01 07:57:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.3 1999/08/21 13:48:31 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -306,6 +306,34 @@ ATIReportMemory
         Message += snprintf(Message, Buffer + SizeOf(Buffer) - Message,
             " (using %d kB)", pScreenInfo->videoRam);
     xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED, "%s.\n", Buffer);
+
+    if (pATI->OptionShadowFB)
+    {
+        /* Until ShadowFB becomes a true screen wrapper... */
+        if (pATI->ApertureSize < (pATI->VideoRAM * 1024))
+        {
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "Cannot shadow a banked frame buffer.\n");
+            pATI->OptionShadowFB = FALSE;
+        }
+        else if (pScreenInfo->depth < 8)
+        {
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "Cannot shadow a planar frame buffer.\n");
+            pATI->OptionShadowFB = FALSE;
+        }
+#if 0
+        else if (pATI->OptionAccel)
+        {
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "Cannot shadow an accelerated frame buffer.\n");
+            pATI->OptionShadowFB = FALSE;
+        }
+#endif
+        else
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
+                "Using shadow frame buffer.\n");
+    }
 }
 
 static const int videoRamSizes[] =
@@ -339,6 +367,7 @@ ATIPreInit
     GDevPtr         pGDev;
     EntityInfoPtr   pEntity;
     resPtr          pResources;
+    Bool            AllowCRT = TRUE;
     CARD32          IOValue1, IOValue2;
     int             i, j, AcceleratorVideoRAM = 0, VGAVideoRAM = 0;
     int             Numerator, Denominator;
@@ -541,12 +570,7 @@ ATIPreInit
                     pATI->CPIO_LCD_GEN_CTRL = ATIIOPort(LCD_GEN_CTRL);
                     pATI->CPIO_POWER_MANAGEMENT = ATIIOPort(POWER_MANAGEMENT);
 
-                    /*
-                     * Don't bother with panel support if it's not enabled by
-                     * BIOS initialization.
-                     */
-                    if (!(inl(pATI->CPIO_LCD_GEN_CTRL) & LCD_ON))
-                        pATI->LCDPanelID = -1;
+                    IOValue2 = inl(pATI->CPIO_LCD_GEN_CTRL);
                 }
                 else if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
                          (pATI->Chip == ATI_CHIP_264XL))
@@ -558,15 +582,28 @@ ATIPreInit
                     pATI->CPIO_LCD_INDEX = ATIIOPort(LCD_INDEX);
                     pATI->CPIO_LCD_DATA = ATIIOPort(LCD_DATA);
 
-                    /*
-                     * Don't bother with panel support if it's not enabled by
-                     * BIOS initialization.
-                     */
                     IOValue1 = inl(pATI->CPIO_LCD_INDEX);
+                    IOValue2 = ATIGetLTProLCDReg(LCD_EXT_VERT_STRETCH);
+#if 0
+                    if (IOValue2 & AUTO_VERT_RATIO)
+#endif
+                        pATI->LCDVertical =
+                            GetBits(IOValue2, VERT_PANEL_SIZE) + 1;
                     IOValue2 = ATIGetLTProLCDReg(LCD_GEN_CNTL);
                     outl(pATI->CPIO_LCD_INDEX, IOValue1);
+                }
+
+                if (pATI->LCDPanelID >= 0)
+                {
+                    /*
+                     * Don't bother with panel support if it's not enabled by
+                     * BIOS initialization.  Also, remember if the BIOS knows
+                     * about the CRT.
+                     */
                     if (!(IOValue2 & LCD_ON))
                         pATI->LCDPanelID = -1;
+                    else if (!(IOValue2 & CRT_ON))
+                        AllowCRT = FALSE;
                 }
             }
             else
@@ -764,6 +801,44 @@ ATIPreInit
                     LCDPanelInfo = 0;
             }
 
+            if (!LCDPanelInfo)
+            {
+                /*
+                 * This is an older BIOS.  Scan it for the panel info table.
+                 */
+                for (i = 0;  i <= (int)(BIOSSize - 0x1DU);  i++)
+                {
+                    /* Look for panel ID ... */
+                    if (BIOSByte(i) != pATI->LCDPanelID)
+                        continue;
+
+                    /* ... followed by 24-byte panel model name ... */
+                    for (j = 0;  j < 24;  j++)
+                        if ((CARD8)(BIOSByte(i + j + 1) - 0x20U) > 0x5FU)
+                        {
+                            i += j;
+                            goto NextBIOSByte;
+                        }
+
+                    /* ... and verify panel height */
+                    if ((pATI->LCDVertical > 1) &&
+                        (pATI->LCDVertical <= (int)MaxBits(VERT_PANEL_SIZE)) &&
+                        (pATI->LCDVertical != BIOSWord(i + 0x1BU)))
+                        continue;
+
+                    if (LCDPanelInfo)
+                    {
+                        /* More than one possibility */
+                        LCDPanelInfo = 0;
+                        break;
+                    }
+
+                    LCDPanelInfo = i;
+
+            NextBIOSByte:  ;
+                }
+            }
+
             if (LCDPanelInfo > 0)
             {
                 pATI->LCDHorizontal = BIOSWord(LCDPanelInfo + 0x19U);
@@ -888,30 +963,27 @@ ATIPreInit
     {
         if (LCDPanelInfo <= 0)
         {
-            xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_WARNING, 0,
+            xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_ERROR, 0,
                 "Unable to determine dimensions of panel (ID %d).\n",
                 pATI->LCDPanelID);
-            pATI->LCDPanelID = -1;      /* Revert to unsupported status */
+            return FALSE;
         }
-        else
-        {
-            xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
-                "%dx%d panel (ID %d) detected.\n",
-                pATI->LCDHorizontal, pATI->LCDVertical, pATI->LCDPanelID);
-            for (i = 0;  i < 24;  i++)
-                Buffer[i] = BIOSByte(LCDPanelInfo + 1 + i);
-            for (i = 24;  --i >= 0;  )
-                if (Buffer[i] != ' ')
-                {
-                    Buffer[i + 1] = '\0';
-                    xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
-                        "Panel model %s.\n", Buffer);
-                    break;
-                }
-            xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
-                "Panel clock is %.3f MHz.\n",
-                (double)(pATI->LCDClock) / 1000.0);
-        }
+
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
+            "%dx%d panel (ID %d) detected.\n",
+            pATI->LCDHorizontal, pATI->LCDVertical, pATI->LCDPanelID);
+        for (i = 0;  i < 24;  i++)
+            Buffer[i] = BIOSByte(LCDPanelInfo + 1 + i);
+        for (i = 24;  --i >= 0;  )
+            if (Buffer[i] != ' ')
+            {
+                Buffer[i + 1] = '\0';
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
+                    "Panel model %s.\n", Buffer);
+                break;
+            }
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
+            "Panel clock is %.3f MHz.\n", (double)(pATI->LCDClock) / 1000.0);
     }
 
     /* Report BIOS address */
@@ -1065,6 +1137,22 @@ ATIPreInit
 
             /* Accelerator and VGA cannot share memory */
             pATI->VideoRAM = 0;
+        }
+    }
+
+    /*
+     * Decide between the CRT and the panel.
+     */
+    if (pATI->LCDPanelID >= 0)
+    {
+        if (pATI->OptionCRT && AllowCRT)
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
+                "Using CRT interface and disabling digital flat panel.\n");
+        else if (pATI->OptionCRT || AllowCRT)
+        {
+            pATI->OptionCRT = FALSE;
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
+                "Using digital flat panel and disabling CRT interface.\n");
         }
     }
 
@@ -1617,7 +1705,7 @@ ATIPreInit
 
 #ifdef XFree86LOADER
     /* Load required modules */
-    if (!ATILoadModules(pScreenInfo))
+    if (!ATILoadModules(pScreenInfo, pATI))
         return FALSE;
 #endif
 

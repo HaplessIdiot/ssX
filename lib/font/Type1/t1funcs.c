@@ -71,7 +71,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.19 1999/08/22 05:35:44 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.20 1999/09/04 09:14:10 dawes Exp $ */
 
 /*
 
@@ -119,6 +119,7 @@ from The Open Group.
 #else
 #include "Xmd.h"
 #include "Xdefs.h"
+#include "os.h"
 #include "xf86_ansic.h"
 #endif
 
@@ -132,7 +133,6 @@ from The Open Group.
 #include "range.h"
 #endif
 
-#include "os.h"
 #include "objects.h"
 #include "spaces.h"
 #include "paths.h"

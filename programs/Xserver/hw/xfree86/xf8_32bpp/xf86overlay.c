@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/xf86overlay.c,v 1.4 1999/01/23 09:56:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/xf86overlay.c,v 1.5 1999/03/21 07:35:35 dawes Exp $ */
 
 /*
    Copyright (C) 1998.  The XFree86 Project Inc.
@@ -301,23 +301,18 @@ xf86Overlay8Plus32Init (ScreenPtr pScreen)
     /* allocate the key in the default map */
     if(pScreen->defColormap) {
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-	unsigned short red =   0;
-	unsigned short green = ~0;
-	unsigned short blue =  0;
-	Pixel pixel = pScrn->colorKey;
 	ColormapPtr pmap;
 	xColorItem color;
 
+	pmap = (ColormapPtr)LookupIDByType(pScreen->defColormap, RT_COLORMAP);
+
+	pmap->red[pScrn->colorKey].refcnt = AllocPrivate;
+	pmap->red[pScrn->colorKey].fShared = FALSE;
+	
 	color.red = color.blue = color.green = 0;
 	color.pixel = pScrn->colorKey;
 	color.flags = DoRed | DoGreen | DoBlue;
 
-	pmap = (ColormapPtr)LookupIDByType(pScreen->defColormap, RT_COLORMAP);
-
-	/* allocate a color not already in the map (like green) */
-	AllocColor(pmap, &red, &green, &blue, &pixel, 0);
-
-	/* set it to something already in the map (like black) */
 	StoreColors(pmap, 1, &color);
     }
 

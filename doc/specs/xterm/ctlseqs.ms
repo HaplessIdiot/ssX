@@ -1,7 +1,7 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
 .\" $XConsortium: ctlseqs.ms,v 1.16 94/12/28 20:45:48 gildea Exp $
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.26 1999/07/11 08:49:12 dawes Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.27 1999/07/18 03:26:41 dawes Exp $
 .\"
 .\"
 .\" Copyright 1999 by Thomas E. Dickey <dickey@clark.net>
@@ -755,7 +755,7 @@ If \fIxterm\fP is compiled with the 16-color support disabled, it supports
 the following, from \fIrxvt\fP:
   \*(Ps = \*1\*0\*0 \(-> Set foreground and background color to default
 .sp
-If 256-color support is compiled, the following apply.
+If 88- or 256-color support is compiled, the following apply.
   \*(Ps = \*3\*8 ; \*5 ; \*(Ps \(-> Set background color to \*(Ps
   \*(Ps = \*4\*8 ; \*5 ; \*(Ps \(-> Set foreground color to \*(Ps
 .sp
@@ -1139,7 +1139,7 @@ PF4	\*(S3\*S	\*(S3\*S
 0	0	\*(S3\*p
 1	1	\*(S3\*q
 2	2	\*(S3\*r
-3	3	\*(S3\*s
+3	3	\*(S3\*(cs
 4	4	\*(S3\*t
 5	5	\*(S3\*u
 6	6	\*(S3\*v
@@ -1206,7 +1206,7 @@ PF4	\*(Es\*S	\*(Es\*S
 0	0	\*(Es\*?\*p
 1	1	\*(Es\*?\*q
 2	2	\*(Es\*?\*r
-3	3	\*(Es\*?\*s
+3	3	\*(Es\*?\*(cs
 4	4	\*(Es\*?\*t
 5	5	\*(Es\*?\*u
 6	6	\*(Es\*?\*v

@@ -4,7 +4,7 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbscrinit.c,v 1.4 1999/03/28 15:33:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbscrinit.c,v 1.5 1999/04/04 08:46:24 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -364,7 +364,7 @@ cfb8_16SaveRestoreImage(int index, SaveRestoreFlags what)
     pixBox.x1 = pixBox.y1 = 0;
     pixBox.x2 = pScreen->width;
     pixBox.y2 = pScreen->height;
-    (*pScreen->RegionInit)(&pixReg, &pixBox, 1);
+    REGION_INIT(pScreen, &pixReg, &pixBox, 1);
 
     Pnt.x = 0;
     Pnt.y = 0;
@@ -506,6 +506,6 @@ cfb8_16SaveRestoreImage(int index, SaveRestoreFlags what)
     default:
 	ErrorF("cfb8_16SaveRestoreImage: Invalid flag (%d)\n", what);
     }
-    (*pScreen->RegionUninit)(&pixReg);
+    REGION_UNINIT(pScreen, &pixReg);
     return ret;
 }

@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.28 1999/06/14 07:31:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.29 1999/09/04 13:04:41 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -128,6 +128,7 @@ _XFUNCPROTOBEGIN
 
 /* public functions */
 extern Bool xf86LinearVidMem(void);
+extern Bool xf86CheckMTRR(int); 
 extern pointer xf86MapVidMem(int, int, unsigned long, unsigned long);
 extern void xf86UnMapVidMem(int, pointer, unsigned long);
 extern void xf86MapReadSideEffects(int, int, pointer, unsigned long);

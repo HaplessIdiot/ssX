@@ -1,5 +1,5 @@
 /* $XConsortium: menu.c /main/66 1996/12/01 23:46:59 swick $ */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.23 1999/06/13 13:47:57 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.24 1999/08/21 13:49:03 dawes Exp $ */
 /*
 
 Copyright 1999 by Thomas E. Dickey <dickey@clark.net>
@@ -527,6 +527,12 @@ static Bool domenu (
 	    set_sensitivity (mw,
 			     fontMenuEntries[fontMenu_font_loadable].widget,
 			     FALSE);
+#endif
+#if OPT_DEC_CHRSET
+	    if (term->screen.cache_doublesize == 0)
+		set_sensitivity (mw,
+				fontMenuEntries[fontMenu_font_doublesize].widget,
+				False);
 #endif
 	}
 	FindFontSelection (NULL, True);
@@ -1140,7 +1146,8 @@ static void do_font_doublesize (
 	XtPointer closure GCC_UNUSED,
 	XtPointer data GCC_UNUSED)
 {
-    term->screen.font_doublesize = ! term->screen.font_doublesize;
+    if (term->screen.cache_doublesize != 0)
+        term->screen.font_doublesize = ! term->screen.font_doublesize;
     update_font_doublesize();
     Redraw ();
 }

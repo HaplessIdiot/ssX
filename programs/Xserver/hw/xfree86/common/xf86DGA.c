@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.23 1999/08/01 07:57:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.24 1999/08/22 05:57:31 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -305,7 +305,7 @@ DGASetDGAMode(
 
    if(pScreenPriv->current) {
 	if(pScreenPriv->current->pPix)
-	    (*pScreen->DestroyPixmap)(pPix);
+	    (*pScreen->DestroyPixmap)(pScreenPriv->current->pPix);
 	xfree(pScreenPriv->current);
 	pScreenPriv->current = NULL;
    } 

@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclArea.c,v 1.4 1996/12/31 07:05:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclArea.c,v 1.5 1998/03/20 21:04:50 hohndel Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -332,11 +332,11 @@ PclCopyArea(DrawablePtr pSrc,
     box.y1 = srcy;
     box.x2 = srcx + width;
     box.y2 = srcy + height;
-    drawRegion = miRegionCreate( &box, 0 );
-    miTranslateRegion( drawRegion, dstx, dsty );
+    drawRegion = REGION_CREATE( pGC->pScreen, &box, 0 );
+    REGION_TRANSLATE( pGC->pScreen, drawRegion, dstx, dsty );
     
-    region = miRegionCreate( NULL, 0 );
-    miIntersect( region, drawRegion, pGC->pCompositeClip );
+    region = REGION_CREATE( pGC->pScreen, NULL, 0 );
+    REGION_INTERSECT( pGC->pScreen, region, drawRegion, pGC->pCompositeClip );
 
     /*
      * Now select the operation to be performed on each box in the
@@ -379,24 +379,24 @@ PclCopyArea(DrawablePtr pSrc,
     box.y1 = 0;
     box.x2 = pixSrc->drawable.width;
     box.y2 = pixSrc->drawable.height;
-    whole = miRegionCreate( &box, 0 );
-    ret = miRegionCreate( NULL, 0 );
+    whole = REGION_CREATE( pGC->pScreen, &box, 0 );
+    ret = REGION_CREATE( pGC->pScreen, NULL, 0 );
     
-    miTranslateRegion( drawRegion, -dstx, -dsty );
-    miSubtract( ret, drawRegion, whole );
+    REGION_TRANSLATE( pGC->pScreen, drawRegion, -dstx, -dsty );
+    REGION_SUBTRACT( pGC->pScreen, ret, drawRegion, whole );
     
     /*
      * Clean up the regions
      */
-    miRegionDestroy( drawRegion );
-    miRegionDestroy( region );
-    miRegionDestroy( whole );
+    REGION_DESTROY( pGC->pScreen, drawRegion );
+    REGION_DESTROY( pGC->pScreen, region );
+    REGION_DESTROY( pGC->pScreen, whole );
     
-    if( miRegionNotEmpty( ret ) )
+    if( REGION_NOTEMPTY( pGC->pScreen, ret ) )
       return ret;
     else
       {
-	  miRegionDestroy( ret );
+	  REGION_DESTROY( pGC->pScreen, ret );
 	  return NULL;
       }
 }

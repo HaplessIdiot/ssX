@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.36 1999/08/21 13:48:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.37 1999/08/28 09:00:51 dawes Exp $ */
 #define DEBUG
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -55,6 +55,9 @@ Bool xf86ResAccessEnter = FALSE;
 
 /* resource lists */
 static resPtr Acc =  NULL;
+
+/* Resources that temporarily conflict with estimated resources */
+static resPtr AccReducers = NULL;
 
 /* allocatable ranges */
 static resPtr ResRange = NULL;
@@ -1851,7 +1854,8 @@ needCheck(resPtr pRes, long type, int entityIndex, xf86State state)
     BusType loc = BUS_NONE;
     BusType r_loc = BUS_NONE;
     
-    if (!((pRes->res_type & type) & ResPhysMask)) return FALSE;
+    if (!(pRes->res_type & type & ResPhysMask))
+	return FALSE;
 
     /*
      * Resources set by BIOS (ResBios) are allowed to conflict
@@ -1859,8 +1863,13 @@ needCheck(resPtr pRes, long type, int entityIndex, xf86State state)
      */
     if (pRes->res_type & type & ResBios)
 	return FALSE;
+
+    /* If requested, skip over estimated resources */
+    if (pRes->res_type & type & ResEstimated)
+	return FALSE;
     
-    if (type & pRes->res_type & ResUnused) return FALSE;
+    if (type & pRes->res_type & ResUnused)
+	return FALSE;
 
     if (state == OPERATING) {
 	if (type & ResDisableOpr || pRes->res_type & ResDisableOpr)
@@ -2200,73 +2209,59 @@ RemoveOverlaps(resPtr target, resPtr list, Bool pciAlignment)
     }
 }
 
-#define PSR_SYS			0x01   /* non-display devices */
-#define PSR_NONSYS		0x02   /* display devices     */
-#define PSR_ALL			(PSR_SYS | PSR_NONSYS)
-#define PSR_VIDEO		0x04
-#define PSR_NO_OVERLAP		0x08
-
 static void
-xf86GetPciSysRes(resPtr *res, int flags)
+xf86GetPciRes(resPtr *sysRes, resPtr *nonsysRes)
 {
     pciConfigPtr pcrp, *pcrpp;
     pciVideoPtr pvp, *pvpp;
     CARD32 *basep;
     memType end;
-    resPtr sysRes = NULL, nonsysRes = NULL;
     int i;
     resPtr pRes;
-    int verb;
     resRange range;
-    static Bool printed = FALSE;
 
-    if (!res || !xf86PciInfo)
+    *sysRes = NULL;
+    *nonsysRes = NULL;
+
+    if (!sysRes || !nonsysRes || !xf86PciInfo)
 	return;
 
     if (xf86PciVideoInfo)
 	for (pvpp = xf86PciVideoInfo, pvp = *pvpp; pvp; pvp = *(++pvpp)) {
-	    if (!(flags & PSR_VIDEO) &&
-		!PCINONSYSTEMCLASSES(pvp->class, pvp->subclass))
-		continue;
+	    resPtr *res;
+
+	    if (PCIINFOCLASSES(pvp->class, pvp->subclass))
+		res = nonsysRes;
+	    else
+		res = sysRes;
 	    for (i = 0; i < 6; i++) {
 		if (pvp->ioBase[i]) {
-		    RANGE(range,pvp->ioBase[i],
+		    RANGE(range, pvp->ioBase[i],
 			  pvp->ioBase[i] + (1 << pvp->size[i]) - 1,
 			  ResExcIoBlock | ResBios);
-		    nonsysRes = xf86AddResToList(nonsysRes, &range,-1);
+		    *res = xf86AddResToList(*res, &range, -1);
 		} else if (pvp->memBase[i]) {
-		    RANGE(range,pvp->memBase[i],
+		    RANGE(range, pvp->memBase[i],
 			  pvp->memBase[i] + (1 << pvp->size[i]) - 1,
 			  ResExcMemBlock | ResBios);
-		    nonsysRes = xf86AddResToList(nonsysRes, &range, -1);
+		    *res = xf86AddResToList(*res, &range, -1);
 		}
 	    }
 	    if (pvp->biosBase) {
 		RANGE(range, pvp->biosBase,
 		      pvp->biosBase + (1 << pvp->biosSize) - 1,
 		      ResExcMemBlock | ResBios);
-		nonsysRes = xf86AddResToList(nonsysRes, &range, -1);
+		*res = xf86AddResToList(*res, &range, -1);
 	    }
 	}
     
-    /* No need to resolve overlaps for NONSYS, so can return here */
-    if (!(flags & PSR_SYS)) {
-	*res = nonsysRes;
-	return;
-    }
-    
     /* XXX Needs to be updated for 64 bit mappings */
     for (pcrpp = xf86PciInfo, pcrp = *pcrpp; pcrp; pcrp = *++(pcrpp)) {
-	long resMisc;
-	if (PCINONSYSTEMCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class))
+	if (PCIINFOCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class))
 	    continue;
 	/* Only process devices with type 0 headers */
 	if ((pcrp->pci_header_type & 0x7f) != 0)
 	    continue;
-	if (PCIINFOCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class))
-	    resMisc = ResBios;
-	else
-	    resMisc = ResEstimated;
 
 	basep = &pcrp->pci_base0;
 	for (i = 0; i < 6; i++) {
@@ -2274,52 +2269,28 @@ xf86GetPciSysRes(resPtr *res, int flags)
 		if (PCI_MAP_IS_IO(basep[i])) {
 		    RANGE(range,PCIGETIO(basep[i]),
 			  range.rBegin + (1 << pcrp->basesize[i]) - 1,
-			  ResExcIoBlock | resMisc);
-		    sysRes = xf86AddResToList(sysRes, &range, -1);
+			  ResExcIoBlock | ResEstimated);
+		    *sysRes = xf86AddResToList(*sysRes, &range, -1);
 		} else {
 		    RANGE(range,PCIGETMEMORY(basep[i]),
 			  range.rBegin + (1 << pcrp->basesize[i]) - 1,
-			  ResExcMemBlock | resMisc);
-		    sysRes = xf86AddResToList(sysRes, &range, -1);
+			  ResExcMemBlock | ResEstimated);
+		    *sysRes = xf86AddResToList(*sysRes, &range, -1);
 		}
 	    }
 	}
 	if (pcrp->pci_baserom) {
 	    RANGE(range,PCIGETROM(pcrp->pci_baserom),
 		  range.rBegin	+ (1 << pcrp->basesize[6]) - 1,
-		  ResExcMemBlock | resMisc);
-	    sysRes = xf86AddResToList(sysRes, &range, -1);
+		  ResExcMemBlock | ResEstimated);
+	    *sysRes = xf86AddResToList(*sysRes, &range, -1);
 	}
     }
 
-    /* Only print the messages once unless very verbose */
-    if (!printed) {
-	printed = TRUE;
-	verb = 3;
-    } else {
-	verb = 5;
+    if (*nonsysRes) {
+	xf86MsgVerb(X_INFO, 3, "Non-system PCI resource ranges:\n");
+	xf86PrintResList(3, *nonsysRes);
     }
-    /* Check for overlaps */
-    if (flags & PSR_NO_OVERLAP) {
-	for (pRes = sysRes; pRes; pRes = pRes->next) {
-	    resRange r = pRes->val;
-	    r.type = (r.type & ResPhysMask) | ResExclusive | ResBlock;
-	    r.type &= ~(CARD32)ResBios; /* remove for overlap checking */
-	    if ((end = ChkConflict(&r, pRes->next, SETUP)))
-		xf86MsgVerb(X_INFO, verb,
-			    "PCI %s Resource overlap for 0x%08x at 0x%08x\n",
-			    (pRes->res_type & ResMem)?"Memory":"Io",
-			    pRes->block_begin, end);
-	    if ((end = ChkConflict(&r, nonsysRes, SETUP)))
-		xf86MsgVerb(X_INFO, verb,
-			    "PCI %s Resource overlap for 0x%08x at 0x%08x\n",
-			    (pRes->res_type & ResMem)?"Memory":"Io",
-			    pRes->block_begin, end);
-	}
-    }
-
-    xf86MsgVerb(X_INFO, verb, "Non-system PCI resource ranges:\n");
-    xf86PrintResList(verb, nonsysRes);
 
     /*
      * Adjust ranges based on the assumption that there are no real
@@ -2328,25 +2299,29 @@ xf86GetPciSysRes(resPtr *res, int flags)
      * approximated PCI base sizes by considering bus mapping information
      * from PCI-PCI bridges.
      */
-    xf86MsgVerb(X_INFO, verb, "System PCI resource ranges:\n");
-    xf86PrintResList(verb, sysRes);
-    if (flags & PSR_NO_OVERLAP) {
-	for (pRes = sysRes; pRes; pRes = pRes->next) {
+    if (*sysRes) {
+	xf86MsgVerb(X_INFO, 3, "System PCI resource ranges:\n");
+	xf86PrintResList(3, *sysRes);
+
+	/* Check for overlaps */
+	for (pRes = *sysRes; pRes; pRes = pRes->next) {
 	    if (ResIsEstimated(&pRes->val)) {
-		RemoveOverlaps(pRes, nonsysRes, TRUE);
-		RemoveOverlaps(pRes, sysRes, TRUE);
+		range = pRes->val;
+
+		RemoveOverlaps(pRes, *nonsysRes, TRUE);
+		RemoveOverlaps(pRes, *sysRes, TRUE);
+
+		if (range.rEnd > pRes->block_end)
+		    xf86MsgVerb(X_INFO, 3,
+			"PCI %s resource overlap reduced 0x%08x"
+			" from 0x%08x to 0x%08x\n",
+			(pRes->res_type & ResMem) ? "Memory" : "I/O",
+			range.rBegin, range.rEnd, pRes->block_end);
 	    }
 	}
-	xf86MsgVerb(X_INFO, verb,
-			"System PCI resource ranges after removing overlaps:\n");
-	xf86PrintResList(verb, sysRes);
-    }
-
-    if (flags & (PSR_NONSYS | PSR_VIDEO)) {
-	*res = xf86JoinResLists(sysRes, nonsysRes);
-    } else {
-	xf86FreeResList(nonsysRes);
-	*res = sysRes;
+	xf86MsgVerb(X_INFO, 3,
+	    "System PCI resource ranges after removing overlaps:\n");
+	xf86PrintResList(3, *sysRes);
     }
 }
 
@@ -2549,8 +2524,8 @@ GetImplicitPciResources(int entityIndex)
 void
 xf86ResourceBrokerInit(void)
 {
-    resPtr resPci = NULL;
-    resPtr pRes = NULL, tmp;
+    resPtr sysRes, nonsysRes;
+    resPtr osRes = NULL, tmp;
 
     /* Get the addressable ranges */
     ResRange = xf86AccWindowsFromOS();
@@ -2558,10 +2533,10 @@ xf86ResourceBrokerInit(void)
     xf86PrintResList(3, ResRange);
 
     /* Get the ranges used exclusively by the system */
-    pRes = xf86AccResFromOS(pRes);
+    osRes = xf86AccResFromOS(osRes);
 
     /* Get bus-specific system resources (PCI) */
-    xf86GetPciSysRes(&resPci, PSR_SYS | PSR_NO_OVERLAP);
+    xf86GetPciRes(&sysRes, &nonsysRes);
 
     /*
      * Adjust OS-reported resource ranges based on the assumption that there
@@ -2570,25 +2545,46 @@ xf86ResourceBrokerInit(void)
      * host memory.
      */
     xf86MsgVerb(X_INFO, 3, "OS-reported resource ranges:\n");
-    xf86PrintResList(3, pRes);
+    xf86PrintResList(3, osRes);
 
-    for (tmp = pRes; tmp; tmp = tmp->next)
-	RemoveOverlaps(tmp, resPci, FALSE);
+    for (tmp = osRes; tmp; tmp = tmp->next) {
+	RemoveOverlaps(tmp, sysRes, FALSE);
+	RemoveOverlaps(tmp, nonsysRes, FALSE);
+    }
 
     xf86MsgVerb(X_INFO, 3, "OS-reported resource ranges after removing"
 		" overlaps with PCI:\n");
-    xf86PrintResList(3, pRes);
+    xf86PrintResList(3, osRes);
 
-    pRes = xf86JoinResLists(pRes, resPci);
+    Acc = xf86JoinResLists(sysRes, osRes);
     xf86MsgVerb(X_INFO, 3, "All system resource ranges:\n");
-    xf86PrintResList(3, pRes);
+    xf86PrintResList(3, Acc);
 
-    resPci = NULL;
-    xf86GetPciSysRes(&resPci, PSR_NONSYS);
     /* Initialise the OS-layer PCI allocator */
-    xf86PciBus = xf86InitOSPciAllocator(xf86PciInfo, &pRes,  resPci);
-    Acc = pRes;
-    
+    xf86PciBus = xf86InitOSPciAllocator(xf86PciInfo, &Acc, nonsysRes);
+
+    xf86MsgVerb(X_INFO, 3, "Resource ranges after broker init:\n");
+    xf86PrintResList(3, Acc);
+}
+
+/*
+ * ProcessEstimatedConflicts() -- Do something about driver-registered
+ * resources that conflict with estimated resources.  For now, just register
+ * them with a logged warning.
+ */
+static void
+ProcessEstimatedConflicts(void)
+{
+    if (!AccReducers)
+	return;
+
+    /* Temporary */
+    xf86MsgVerb(X_WARNING, 3,
+		"Registering the following despite conflicts with estimated"
+		" resources:\n");
+    xf86PrintResList(3, AccReducers);
+    Acc = xf86JoinResLists(Acc, AccReducers);
+    AccReducers = NULL;
 }
 
 /*
@@ -2598,10 +2594,10 @@ xf86ResourceBrokerInit(void)
 static void
 resError(resList list)
 {
-    FatalError("The driver tried to allocate the %s %sresource at \n"
-	       "0x%x:0x%x which collided with a resource. Send the\n"
-	       "output of the server to xfree86@xfree86.org. Please \n"
-	       "specify your computer hardware as closely as possible\n",
+    FatalError("A driver tried to allocate the %s %sresource at \n"
+	       "0x%x:0x%x which conflicted with another resource.  Send the\n"
+	       "output of the server to xfree86@xfree86.org.  Please \n"
+	       "specify your computer hardware as closely as possible.\n",
 	       ResIsBlock(list)?"Block":"Sparse",
 	       ResIsMem(list)?"Mem":"Io",
 	       ResIsBlock(list)?list->rBegin:list->rBase,
@@ -2609,23 +2605,35 @@ resError(resList list)
 }
 
 /*
- * xf86ClaimFixedResources() is used to allocate static
- * (ie. fixed non-sharable reosurces).
+ * xf86ClaimFixedResources() is used to allocate non-relocatable resources.
+ * This should only be done by a driver's Probe() function.
  */
 void
 xf86ClaimFixedResources(resList list, int entityIndex)
 {
     resPtr ptr = NULL;
+    resRange range;
 	
     if (!list) return;
     
     while (list->type !=ResEnd) {
-	switch (list->type & ResAccMask) {
+	range = *list;
+	range.type &= ~ResEstimated;	/* Not allowed for drivers */
+	switch (range.type & ResAccMask) {
 	case ResExclusive:
-	    if (!xf86ChkConflict(list, entityIndex)) {
-		list->type &= ~ResBios;
-		Acc = xf86AddResToList(Acc,list,entityIndex);
-	    } else resError(list); /* no return */
+	    if (!xf86ChkConflict(&range, entityIndex)) {
+		range.type &= ~ResBios;
+		Acc = xf86AddResToList(Acc, &range, entityIndex);
+	    } else {
+		range.type |= ResEstimated;
+		if (!xf86ChkConflict(&range, entityIndex) &&
+		    !checkConflict(&range, AccReducers, entityIndex, SETUP)) {
+		    range.type &= ~(ResEstimated | ResBios);
+		    AccReducers =
+			xf86AddResToList(AccReducers, &range, entityIndex);
+		} else
+		    resError(&range);	/* No return */
+	    }
 	    break;
 	case ResShared:
 	    /* at this stage the resources are just added to the
@@ -2637,7 +2645,7 @@ xf86ClaimFixedResources(resList list, int entityIndex)
 	     * driver should either handle or fail.
 	     */
 	    if (xf86Entities[entityIndex]->active)
-		ptr = xf86AddResToList(ptr,list,entityIndex);
+		ptr = xf86AddResToList(ptr, &range, entityIndex);
 	    break;
 	}
 	list++;
@@ -2647,6 +2655,7 @@ xf86ClaimFixedResources(resList list, int entityIndex)
     xf86MsgVerb(X_INFO, 3,
 	"resource ranges after xf86ClaimFixedResources() call:\n");
     xf86PrintResList(3,Acc);
+    ProcessEstimatedConflicts();
 #ifdef DEBUG
     if (ptr) {
 	xf86MsgVerb(X_INFO, 3, "to be registered later:\n");
@@ -2665,6 +2674,7 @@ checkRoutingForScreens(xf86State state)
     int entityIndex;
     EntityPtr pEnt;
     resPtr pAcc;
+    resRange range;
 
     /*
      * find devices that need VGA routed: ie the ones that have
@@ -2672,7 +2682,9 @@ checkRoutingForScreens(xf86State state)
      * doesn't conflict with itself therefore use it here.
      */
     while (list->type != ResEnd) {
-	pResVGA = xf86AddResToList(pResVGA,list,-1);
+	range = *list;
+	range.type &= ~(ResBios | ResEstimated);
+	pResVGA = xf86AddResToList(pResVGA, &range, -1);
 	list++;
     }
 
@@ -2736,21 +2748,32 @@ xf86PostProbe(void)
 	xf86Entities[i]->resources = NULL;
 	resp_x = NULL;
 	while (resp) {
-	    if (! (val = checkConflict(&resp->val,acc,i,SETUP)))
-	    {
+	    if (!(val = checkConflict(&resp->val, acc, i, SETUP))) {
+		resp->res_type &= ~ResBios;
 		tmp = resp_x;
 		resp_x = resp;
 		resp = resp->next;
 		resp_x->next = tmp;
 	    } else {
-		xf86MsgVerb(X_INFO, 3, "Found conflict at: 0x%lx\n",val);
-		tmp = xf86Entities[i]->resources;
-		xf86Entities[i]->resources = resp;
-		resp = resp->next;
-		xf86Entities[i]->resources->next = tmp;
+		resp->res_type |= ResEstimated;
+		if (!checkConflict(&resp->val, acc, i, SETUP)) {
+		    resp->res_type &= ~(ResEstimated | ResBios);
+		    tmp = AccReducers;
+		    AccReducers = resp;
+		    resp = resp->next;
+		    AccReducers->next = tmp;
+		} else {
+		    xf86MsgVerb(X_INFO, 3, "Found conflict at: 0x%lx\n",val);
+		    resp->res_type &= ~ResEstimated;
+		    tmp = xf86Entities[i]->resources;
+		    xf86Entities[i]->resources = resp;
+		    resp = resp->next;
+		    xf86Entities[i]->resources->next = tmp;
+		}
 	    }
 	}
 	xf86JoinResLists(Acc,resp_x);
+	ProcessEstimatedConflicts();
     }
     xf86FreeResList(acc);
 
@@ -2761,15 +2784,11 @@ xf86PostProbe(void)
     checkRoutingForScreens(SETUP);
 
     for (i = 0; i < xf86NumScreens; i++) {
-	pointer *route = NULL;
 	for (j = 0; j<xf86Screens[i]->numEntities; j++) {
 	    EntityPtr pEnt = xf86Entities[xf86Screens[i]->entityList[j]];
-	    if (pEnt->entityProp & NEED_VGA_ROUTED_SETUP)
-		route = pEnt->busAcc;
-	    if (route) {
-		xf86Screens[i]->busAccess = route;
+	    if ((pEnt->entityProp & NEED_VGA_ROUTED_SETUP) &&
+		((xf86Screens[i]->busAccess = pEnt->busAcc)))
 		break;
-	    }
 	}
     }
 }
@@ -2965,7 +2984,7 @@ xf86GetBlock(long type, memType size,
 	       window_start,window_end,size);
 	return r;
     }
-    type = (type & ~ResExtMask & ~ResNoAvoid) | ResBlock;
+    type = (type & ~(ResExtMask | ResNoAvoid | ResEstimated)) | ResBlock;
     
     while (res_range) {
 	if (type & res_range->res_type & ResPhysMask) {
@@ -3062,7 +3081,7 @@ xf86GetSparse(long type,  memType fixed_bits,
     memType conflict = 0;
     
     /* for sanity */
-    type = (type & ~ResExtMask & ~ResNoAvoid) | ResSparse;
+    type = (type & ~(ResExtMask | ResNoAvoid | ResEstimated)) | ResSparse;
 
     /*
      * a sparse address consists of 3 parts:
@@ -3187,6 +3206,7 @@ xf86RegisterResources(int entityIndex, resList list, int access)
 	if ((access != ResNone) && (access & ResAccMask)) {
 	    range.type = (range.type & ~ResAccMask) | (access & ResAccMask);
 	}
+	range.type &= ~ResEstimated;	/* Not allowed for drivers */
 	if(xf86ChkConflict(&range,entityIndex)) 
 	    res = xf86AddResToList(res,&range,entityIndex);
 	else {
@@ -3996,9 +4016,7 @@ getValidBIOSBase(PCITAG tag, int num)
 		tmp = xf86DupResList(pbp1->pmem);
 		avoid = xf86JoinResLists(avoid,tmp);
 		tmp = xf86DupResList(pbp1->mem);
-		    avoid = xf86JoinResLists(avoid,tmp);
-		    tmp = xf86DupResList(pbp1->io);
-		    avoid = xf86JoinResLists(avoid,tmp);
+		avoid = xf86JoinResLists(avoid,tmp);
 	    }
 	    pbp1 = pbp1->next;
 	}	
@@ -4115,7 +4133,7 @@ findIntersect(resRange Range, resPtr list)
     }
     return new;
 }
-    
+
 static resPtr
 findIntersectOfLists(resPtr l1, resPtr l2)
 {
@@ -4126,4 +4144,20 @@ findIntersectOfLists(resPtr l1, resPtr l2)
 	l1 = l1->next;
     }
     return ret;
+}
+
+Bool
+xf86IsPciDevPresent(int bus, int dev, int func)
+{
+    int i = 0;
+    pciConfigPtr pcp;
+    
+    while ((pcp = xf86PciInfo[i]) != NULL) {
+	if ((pcp->busnum == bus)
+	    && (pcp->devnum == dev)
+	    && (pcp->funcnum == func))
+	    return TRUE;
+	i++;
+    }
+    return FALSE;
 }

@@ -18,11 +18,12 @@
  *                    for DOS, watcom 9.5:
  *                        wcc386p -zq -omaxet -7 -4s -s -w3 -d2 name.c
  *                        and link with PharLap or other dos extender for exe
+ *
  * case Intel DG/ux:  gcc -DDGUX scanpci.c -o scanpci (with gcc-DG-2.7.2.88)
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.66 1999/06/27 14:08:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.67 1999/08/01 07:57:31 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -56,6 +57,9 @@
 #endif
 #endif
 
+#if defined(DGUX)
+#define DG_NO_SYSI86 1
+#endif
 
 #ifdef __EMX__
 #define INCL_DOSFILEMGR
@@ -65,6 +69,11 @@
 #include <stdio.h>
 #include <sys/types.h>
 #if defined(SVR4) && !defined(DGUX)
+#if defined(sun)
+#ifndef __EXTENSIONS__
+#define __EXTENSIONS__
+#endif
+#endif
 #include <sys/proc.h>
 #include <sys/tss.h>
 #if defined(NCR)
@@ -84,8 +93,8 @@
 #include <sys/v86.h>					/* Nope */
 # else
 /* Do nothing what so ever */				/* Yup */
-#endif /* V86SC_IOPL */
-#else 
+# endif /* V86SC_IOPL */
+#else
 #  include <sys/v86.h>					/* Not solaris */
 #endif /* sun/i386/svr4 */
 #endif
@@ -118,7 +127,11 @@
 #include <sys/proc.h>
 #include <sys/param.h>
 #include <sys/kd.h>
+#include <sys/sysi86.h>  /* Definition of SI86IOPL for DG/ux */
+#if defined(DG_NO_SYSI86)
+#define SI86IOPL 112
 #endif
+#endif /* DGUX */
 #if defined(SCO) || defined(ISC)
 #ifndef ISC
 #include <sys/console.h>
@@ -682,7 +695,7 @@ extern void print_pcibridge(struct pci_config_reg *);
 extern void enable_os_io();
 extern void disable_os_io();
 
-#define MAX_DEV_PER_VENDOR_CFG1 32
+#define MAX_DEV_PER_VENDOR_CFG1 48
 #define MAX_DEV_PER_VENDOR_CFG2 16
 #define MAX_PCI_DEVICES         64
 #define NF ((void (*)())NULL)
@@ -758,6 +771,10 @@ struct pci_vendor_device {
                             { 0x4C47, "Mach64 LG", print_mach64 },
                             { 0x4C49, "Mach64 LI", print_mach64 },
                             { 0x4C50, "Mach64 LP", print_mach64 },
+                            { 0x5245, "Rage 128 RE", NF },
+                            { 0x5246, "Rage 128 RF", NF },
+                            { 0x524B, "Rage 128 RX", NF },
+                            { 0x524C, "Rage 128 RL", NF },
                             { 0x5654, "Mach64 VT", print_mach64 },
                             { 0x5655, "Mach64 VU", print_mach64 },
                             { 0x5656, "Mach64 VV", print_mach64 },
@@ -894,6 +911,8 @@ struct pci_vendor_device {
                             { 0x5513, "85C5513", NF },
                             { 0x5571, "5571", NF },
                             { 0x5597, "5597", NF },
+                            { 0x6306, "530", NF },
+                            { 0x6326, "6326", NF },
                             { 0x7001, "7001", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x103C, "HP", {
@@ -1095,6 +1114,11 @@ struct pci_vendor_device {
                             { 0x0008, "NV1", NF },
                             { 0x0009, "DAC64", NF },
                             { 0x0020, "Riva TNT", NF },
+                            { 0x0028, "Riva TNT2", NF },
+                            { 0x0029, "Riva TNT2 Ultra", NF },
+                            { 0x002C, "Riva TNT2 Vanta", NF },
+                            { 0x002D, "Riva TNT2 Ultra Vanta", NF },
+                            { 0x00A0, "Riva Integrated", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x10E0, "IMS", {
                             { 0x8849, "8849", NF },
@@ -1220,8 +1244,10 @@ struct pci_vendor_device {
                             { 0x8904, "Trio3D", NF },
                             { 0x8A01, "ViRGE/DX or /GX", NF },
                             { 0x8A10, "ViRGE/GX2", NF },
-                            { 0x8A20, "Savage3D (86E391)", NF },
-                            { 0x8A21, "Savage3D (86E390)", NF },
+                            { 0x8A13, "Trio3D/2X", NF },
+                            { 0x8A20, "Savage3D", NF },
+                            { 0x8A21, "Savage3D S3 (Macrovision Support)", NF },
+                            { 0x8A22, "Savage4", NF },
                             { 0x8C01, "ViRGE/MX", NF },
                             { 0x8C02, "ViRGE/MX+", NF },
                             { 0x8C03, "ViRGE/MX+MV", NF },
@@ -1308,7 +1334,7 @@ struct pci_vendor_device {
 #endif
 
 
-main(int argc, unsigned char *argv[])
+main(int argc, char *argv[])
 {
     unsigned long tmplong1, tmplong2, config_cmd;
     unsigned char tmp1, tmp2;
@@ -1387,7 +1413,7 @@ main(int argc, unsigned char *argv[])
     idx = 0;
 
     do {
-        printf("Probing for devices on PCI bus %d:\n\n", pcr._pcibusidx);
+        printf("\nProbing for devices on PCI bus %d:\n", pcr._pcibusidx);
 
         for (pcr._cardnum = 0x0; pcr._cardnum < MAX_DEV_PER_VENDOR_CFG1;
 		pcr._cardnum += 0x1) {
@@ -1852,8 +1878,8 @@ USHORT callgate[3] = {0,0,0};
 void
 enable_os_io()
 {
-#if (defined(SVR4) || defined(SCO) || defined(ISC)) && !defined(DGUX)
-#if defined(SI86IOPL)
+#if (defined(SVR4) || defined(SCO) || defined(ISC)) || defined(DGUX)
+#if defined(SI86IOPL) || defined(DGUX)
     sysi86(SI86IOPL, 3);
 #else
     sysi86(SI86V86, V86SC_IOPL, PS_IOPL);
@@ -1862,12 +1888,12 @@ enable_os_io()
 #if defined(linux) && !defined(__sparc__)
     iopl(3);
 #endif
-#if defined(__FreeBSD__)  || defined(__386BSD__) || defined(__bsdi__) || defined(DGUX)
+#if defined(__FreeBSD__)  || defined(__386BSD__) || defined(__bsdi__)
     if ((io_fd = open("/dev/console", O_RDWR, 0)) < 0) {
         perror("/dev/console");
         exit(1);
     }
-#if defined(__FreeBSD__)  || defined(__386BSD__) || defined(DGUX)
+#if defined(__FreeBSD__)  || defined(__386BSD__)
     if (ioctl(io_fd, KDENABIO, 0) < 0) {
         perror("ioctl(KDENABIO)");
         exit(1);
@@ -1937,7 +1963,7 @@ enable_os_io()
 /* Calling callgate with function 13 sets IOPL for the program */
 
 	asm volatile ("movl $13,%%ebx;.byte 0xff,0x1d;.long _callgate"
-			: /*no outputs */ 
+			: /*no outputs */
 			: /*no inputs */
 			: "eax","ebx","ecx","edx","cc");
 
@@ -1956,8 +1982,8 @@ enable_os_io()
 void
 disable_os_io()
 {
-#if (defined(SVR4) || defined(SCO) || defined(ISC)) && !defined(DGUX)
-#if defined(SI86IOPL)
+#if (defined(SVR4) || defined(SCO) || defined(ISC)) || defined(DGUX)
+#if defined(SI86IOPL) || defined(DGUX)
     sysi86(SI86IOPL, 0);
 #else
     sysi86(SI86V86, V86SC_IOPL, 0);
@@ -1966,7 +1992,7 @@ disable_os_io()
 #if defined(linux) && !defined(__sparc__)
     iopl(0);
 #endif
-#if defined(__FreeBSD__)  || defined(__386BSD__) || defined(DGUX)
+#if defined(__FreeBSD__)  || defined(__386BSD__)
     if (ioctl(io_fd, KDDISABIO, 0) < 0) {
         perror("ioctl(KDDISABIO)");
         close(io_fd);
@@ -2001,4 +2027,17 @@ disable_os_io()
     pciConfBase = NULL;
 #endif
 }
+
+#if defined(DGUX) && defined(DG_NO_SYSI86)
+      asm("sysi86:_sysi86:pushl %ebp");
+      asm("movl %esp,%ebp");
+      asm("pushl 12(%ebp)");
+      asm("pushl 8(%ebp)");
+      asm("pushl 4(%ebp)");
+      asm("movl $50,%eax");
+      asm("lcall $7,$0");
+      asm("addl $12,%esp");
+      asm("leave");
+      asm("ret");
+#endif /* DGUX && NO_SYSI86 */
 

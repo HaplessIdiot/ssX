@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Resources.h,v 1.4 1999/06/27 14:07:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Resources.h,v 1.5 1999/08/01 07:57:12 dawes Exp $ */
 
 #ifndef _XF86_RESOURCES_H
 
@@ -8,53 +8,67 @@
 
 #define _END {ResEnd,0,0}
 
-#define _VGA_EXCLUSIVE {ResExcMemBlock,0xA0000,0xAFFFF},\
-		      {ResExcMemBlock,0xB0000,0xB7FFF},\
-		      {ResExcMemBlock,0xB8000,0xBFFFF},\
-                      {ResExcIoBlock,0x3B0,0x3BB},\
-                      {ResExcIoBlock,0x3C0,0x3DF}
+#define _VGA_EXCLUSIVE \
+		{ResExcMemBlock | ResBios, 0x000A0000, 0x000AFFFF},\
+		{ResExcMemBlock | ResBios, 0x000B0000, 0x000B7FFF},\
+		{ResExcMemBlock | ResBios, 0x000B8000, 0x000BFFFF},\
+		{ResExcIoBlock  | ResBios,     0x03B0,     0x03BB},\
+		{ResExcIoBlock  | ResBios,     0x03C0,     0x03DF}
 
-#define _VGA_SHARED {ResShrMemBlock,0xA0000,0xAFFFF},\
-		      {ResShrMemBlock,0xB0000,0xB7FFF},\
-		      {ResShrMemBlock,0xB8000,0xBFFFF},\
-                      {ResShrIoBlock,0x3B0,0x3BB},\
-                      {ResShrIoBlock,0x3C0,0x3DF}
+#define _VGA_SHARED \
+		{ResShrMemBlock | ResBios, 0x000A0000, 0x000AFFFF},\
+		{ResShrMemBlock | ResBios, 0x000B0000, 0x000B7FFF},\
+		{ResShrMemBlock | ResBios, 0x000B8000, 0x000BFFFF},\
+		{ResShrIoBlock  | ResBios,     0x03B0,     0x03BB},\
+		{ResShrIoBlock  | ResBios,     0x03C0,     0x03DF}
 
-/* exclusive unused VGA: resource uneeded but cannot be disabled. */
-/* like old Millennium                                              */
-#define _VGA_EXCLUSIVE_UNUSED {ResExcUusdMemBlock,0xA0000,0xAFFFF},\
-			       {ResExcUusdMemBlock,0xB0000,0xB7FFF},\
-			       {ResExcUusdMemBlock,0xB8000,0xBFFFF},\
-                               {ResExcUusdIoBlock,0x3B0,0x3BB},\
-                               {ResExcUusdIoBlock,0x3C0,0x3DF}
+/*
+ * Exclusive unused VGA:  resources unneeded but cannot be disabled.
+ * Like old Millennium.
+ */
+#define _VGA_EXCLUSIVE_UNUSED \
+		{ResExcUusdMemBlock | ResBios, 0x000A0000, 0x000AFFFF},\
+		{ResExcUusdMemBlock | ResBios, 0x000B0000, 0x000B7FFF},\
+		{ResExcUusdMemBlock | ResBios, 0x000B8000, 0x000BFFFF},\
+		{ResExcUusdIoBlock  | ResBios,     0x03B0,     0x03BB},\
+		{ResExcUusdIoBlock  | ResBios,      0x3C0,      0x3DF}
 
-/* shared unused VGA: resources unneeded but cannot be disabled */
-/* independently. This is used to determine if a device needs rac */
-#define _VGA_SHARED_UNUSED {ResShrUusdMemBlock,0xA0000,0xAFFFF},\
-			       {ResShrUusdMemBlock,0xB0000,0xB7FFF},\
-			       {ResShrUusdMemBlock,0xB8000,0xBFFFF},\
-                               {ResShrUusdIoBlock,0x3B0,0x3BB},\
-                               {ResShrUusdIoBlock,0x3C0,0x3DF}
+/*
+ * Shared unused VGA:  resources unneeded but cannot be disabled
+ * independently.  This is used to determine if a device needs RAC.
+ */
+#define _VGA_SHARED_UNUSED \
+		{ResShrUusdMemBlock | ResBios, 0x000A0000, 0x000AFFFF},\
+		{ResShrUusdMemBlock | ResBios, 0x000B0000, 0x000B7FFF},\
+		{ResShrUusdMemBlock | ResBios, 0x000B8000, 0x000BFFFF},\
+		{ResShrUusdIoBlock  | ResBios,     0x03B0,     0x03BB},\
+		{ResShrUusdIoBlock  | ResBios,     0x03C0,     0x03DF}
 
-/* Sparse versions of the above for those adapters that respond to all ISA
- * aliases of VGA ports. */
-#define _VGA_EXCLUSIVE_SPARSE {ResExcMemBlock,0xA0000,0xAFFFF},\
-			      {ResExcMemBlock,0xB0000,0xB7FFF},\
-			      {ResExcMemBlock,0xB8000,0xBFFFF},\
-			      {ResExcIoSparse,0x3B0,0x3F8},\
-			      {ResExcIoSparse,0x3B8,0x3FC},\
-			      {ResExcIoSparse,0x3C0,0x3E0}
+/*
+ * Sparse versions of the above for those adapters that respond to all ISA
+ * aliases of VGA ports.
+ */
+#define _VGA_EXCLUSIVE_SPARSE \
+		{ResExcMemBlock | ResBios, 0x000A0000, 0x000AFFFF},\
+		{ResExcMemBlock | ResBios, 0x000B0000, 0x000B7FFF},\
+		{ResExcMemBlock | ResBios, 0x000B8000, 0x000BFFFF},\
+		{ResExcIoSparse | ResBios,     0x03B0,     0x03F8},\
+		{ResExcIoSparse | ResBios,     0x03B8,     0x03FC},\
+		{ResExcIoSparse | ResBios,     0x03C0,     0x03E0}
 
-#define _VGA_SHARED_SPARSE {ResShrMemBlock,0xA0000,0xAFFFF},\
-			   {ResShrMemBlock,0xB0000,0xB7FFF},\
-			   {ResShrMemBlock,0xB8000,0xBFFFF},\
-			   {ResShrIoSparse,0x3B0,0x3F8},\
-			   {ResShrIoSparse,0x3B8,0x3FC},\
-			   {ResShrIoSparse,0x3C0,0x3E0}
+#define _VGA_SHARED_SPARSE \
+		{ResShrMemBlock | ResBios, 0x000A0000, 0x000AFFFF},\
+		{ResShrMemBlock | ResBios, 0x000B0000, 0x000B7FFF},\
+		{ResShrMemBlock | ResBios, 0x000B8000, 0x000BFFFF},\
+		{ResShrIoSparse | ResBios,     0x03B0,     0x03F8},\
+		{ResShrIoSparse | ResBios,     0x03B8,     0x03FC},\
+		{ResShrIoSparse | ResBios,     0x03C0,     0x03E0}
 
-#define _8514_EXCLUSIVE {ResExcIoSparse,0x2E8,0x3F8}
+#define _8514_EXCLUSIVE \
+		{ResExcIoSparse | ResBios, 0x02E8, 0x03F8}
 
-#define _8514_SHARED    {ResShrIoSparse,0x2E8,0x3F8}
+#define _8514_SHARED \
+		{ResShrIoSparse | ResBios, 0x02E8, 0x03F8}
 
 /* predefined resources */
 extern resRange resVgaExclusive[];
@@ -72,8 +86,9 @@ extern resRange res8514Shared[];
 #define RES_EXCLUSIVE_8514  res8514Exclusive
 #define RES_SHARED_8514     res8514Shared
 
-#define _PCI_AVOID {ResExcIoSparse, 0x100, 0x300},\
-                  {ResExcIoSparse, 0x200, 0x200}
+#define _PCI_AVOID \
+		{ResExcIoSparse, 0x0100, 0x0300},\
+		{ResExcIoSparse, 0x0200, 0x0200}
 
 extern resRange PciAvoid[];
 

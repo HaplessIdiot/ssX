@@ -26,7 +26,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/t1malloc.c,v 1.6 1999/08/21 13:47:50 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1malloc.c,v 1.7 1999/08/22 05:35:45 dawes Exp $ */
  /* MALLOC   CWEB         V0004 LOTS                                 */
 /*
 :h1.MALLOC - Fast Memory Allocation
@@ -41,9 +41,11 @@ routines (malloc/free).
 #ifdef FONTMODULE
 #include "Xdefs.h"	/* Bool declaration */
 #include "Xmd.h"	/* INT32 declaration */
-#include "xf86_ansic.h"
-#endif
 #include "os.h"
+#include "xf86_ansic.h"
+#else
+#include "os.h"
+#endif
 #include "objects.h"	/* get #define for abort() */
 
 

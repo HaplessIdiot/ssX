@@ -1,5 +1,5 @@
 /* $XConsortium: GC.c /main/8 1996/12/02 10:21:19 lehors $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/GC.c,v 3.2 1996/01/24 22:04:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/GC.c,v 3.3 1996/12/23 07:09:13 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -280,9 +280,8 @@ void xnestChangeClip(pGC, type, pValue, nRects)
        * other parts of server can only deal with CT_NONE,
        * CT_PIXMAP and CT_REGION client clips.
        */
-      pGC->clientClip = (pointer) (*pGC->pScreen->RectsToRegion)(nRects,
-						    (xRectangle *)pValue,
-						    type);
+      pGC->clientClip = (pointer) RECTS_TO_REGION(pGC->pScreen, nRects,
+						  (xRectangle *)pValue, type);
       xfree(pValue);
       pValue = pGC->clientClip;
       type = CT_REGION;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.18 1997/03/17 11:22:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.19 1999/03/07 14:05:07 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -102,7 +102,7 @@ int munmap();
 #ifdef SVR4
 # include <sys/mman.h>
 # if defined(sun)
-#  define DEV_MEM	"/dev/fb"
+#  define DEV_MEM	"/dev/xsvc"
 # else
 #  ifdef SCO325
 #   define DEV_MEM	"/dev/mem"
@@ -145,12 +145,16 @@ int OpenVideo()
 			MyName);
 		return(-1);
 	}
+#if !defined(sun)
 	if (ioctl(0, KIOCINFO, 0) == (('k'<<8)|'d'))
 	{
 		VT_fd = 0;
 	}
 	else 
 	{
+#else 
+		VT_fd = 0;
+#endif
 
 #if !defined(sun)
 		if ((fd = open("/dev/console", O_RDWR, 0)) < 0)
@@ -167,7 +171,7 @@ int OpenVideo()
 		close(fd);
 		sprintf(fn, "/dev/vt%02d", VT_num);
 #else
-		sprintf(fn, "/dev/fb");
+		sprintf(fn, "/dev/xsvc");
 #endif
 
 		if ((VT_fd = open(fn, O_RDWR|O_NDELAY, 0)) < 0)
@@ -187,7 +191,9 @@ int OpenVideo()
 		 * Give the other VT time to release.
 		 */
 		sleep(1);
+#if !defined(sun)
 	}
+#endif
 	(void)SET_IOPL();
 	return(VT_fd);
 }

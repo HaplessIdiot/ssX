@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.10 1999/09/06 12:35:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.11 1999/09/06 12:52:28 dawes Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -69,7 +69,6 @@ Bool PanoramiXGCRootFreeable = FALSE;
 Bool PanoramiXCmapRootFreeable = FALSE;
 Bool PanoramiXPmapRootFreeable = FALSE;
 
-PanoramiXEdge   panoramiXEdgePtr[MAXSCREENS];
 RegionRec   	PanoramiXScreenRegion[MAXSCREENS];
 
 int		PanoramiXNumDepths;
@@ -89,7 +88,6 @@ static int ProcPanoramiXDispatch();
  *	Function prototypes
  */
 
-static void locate_neighbors(int);
 static void PanoramiXResetProc(ExtensionEntry*);
 
 /*
@@ -353,10 +351,9 @@ XineramaDestroyClip(GCPtr pGC)
 
 void PanoramiXExtensionInit(int argc, char *argv[])
 {
-    int 	     	i, PhyScrNum;
+    int 	     	i;
     Bool	     	success = FALSE;
     ExtensionEntry 	*extEntry, *AddExtension();
-    PanoramiXData    	*panoramiXtempPtr;
     ScreenPtr		pScreen;
     PanoramiXScreenPtr	pScreenPriv;
     
@@ -430,44 +427,14 @@ void PanoramiXExtensionInit(int argc, char *argv[])
 	ErrorF("%s Extension failed to initialize\n", PANORAMIX_PROTOCOL_NAME);
 	return;
     }
-   
-    /* Set up a default configuration base on horizontal ordering */
-    for (i = PanoramiXNumScreens -1; i >= 0 ; i--) {
-	panoramiXdataPtr[i].above = panoramiXdataPtr[i].below = -1;
-	panoramiXdataPtr[i].left = panoramiXdataPtr[i].right = -1;
-	panoramiXEdgePtr[i].no_edges = TRUE;
-    }
-    for (i = PanoramiXNumScreens - 1; i >= 0; i--) {
-	 panoramiXdataPtr[i].left = i - 1;
-	 panoramiXdataPtr[i].right = i + 1;
-    }
-    panoramiXdataPtr[PanoramiXNumScreens - 1].right = -1;
-
-    /*
-     *	Position the screens relative to each other based on
-     *  command line options. 
-     */
-
-    for (PhyScrNum = PanoramiXNumScreens - 1; PhyScrNum >= 0; PhyScrNum--) {
-	i = PhyScrNum;
-	if (i < 0)
-	    continue;
-	panoramiXdataPtr[i].width = (screenInfo.screens[i])->width;
-	panoramiXdataPtr[i].height = (screenInfo.screens[i])->height;
-    }
-    
-    /*
-     *	Find the upper-left screen and then locate all the others
-     */
-    panoramiXtempPtr = panoramiXdataPtr;
-    for (i = PanoramiXNumScreens; i; i--, panoramiXtempPtr++)
-        if (panoramiXtempPtr->above == -1 && panoramiXtempPtr->left == -1)
-            break;
-    locate_neighbors(PanoramiXNumScreens - i);
-
-
+       
     for (i = 0; i < PanoramiXNumScreens; i++) {
 	BoxRec TheBox;
+
+	panoramiXdataPtr[i].x = dixScreenOrigins[i].x;
+	panoramiXdataPtr[i].y = dixScreenOrigins[i].y;
+	panoramiXdataPtr[i].width = (screenInfo.screens[i])->width;
+	panoramiXdataPtr[i].height = (screenInfo.screens[i])->height;
 
 	TheBox.x1 = panoramiXdataPtr[i].x;
 	TheBox.x2 = TheBox.x1 + panoramiXdataPtr[i].width;
@@ -638,12 +605,21 @@ Bool PanoramiXCreateConnectionBlock(void)
     
     old_width = root->pixWidth;
     old_height = root->pixHeight;
-    for (i = PanoramiXNumScreens - 1; i >= 0; i--) {
-        if (panoramiXdataPtr[i].right == -1 )
-            root->pixWidth = panoramiXdataPtr[i].x + panoramiXdataPtr[i].width;
-        if (panoramiXdataPtr[i].below == -1)
-            root->pixHeight = panoramiXdataPtr[i].y + panoramiXdataPtr[i].height;
+
+
+    root->pixWidth = panoramiXdataPtr[0].x + panoramiXdataPtr[0].width;	
+    root->pixHeight = panoramiXdataPtr[0].y + panoramiXdataPtr[0].height;
+
+    for (i = 1; i < PanoramiXNumScreens; i++) {
+	PanoramiXPixWidth = panoramiXdataPtr[i].x + panoramiXdataPtr[i].width;
+	PanoramiXPixHeight = panoramiXdataPtr[i].y + panoramiXdataPtr[i].height;
+
+	if(PanoramiXPixWidth > root->pixWidth) 
+	    root->pixWidth = PanoramiXPixWidth;	
+	if(PanoramiXPixHeight > root->pixHeight) 
+	    root->pixHeight = PanoramiXPixHeight;	
     }
+
     PanoramiXPixWidth = root->pixWidth;
     PanoramiXPixHeight = root->pixHeight;
     width_mult = root->pixWidth / old_width;
@@ -795,66 +771,6 @@ void PanoramiXConsolidate(void)
 	PanoramiXCmapRoot->info[i].id = (screenInfo.screens[i])->defColormap;
     }
 }
-
-/* Since locate_neighbors is recursive, a quick simple example 
-   is in order.This mostly so you can see what the initial values are. 
-
-   Given 3 screens:
-   upperleft screen[0]
-	panoramiXdataPtr[0].x = 0
-	panoramiXdataPtr[0].y = 0
-	panoramiXdataPtr[0].width  = 640
-	panoramiXdataPtr[0].height = 480
-	panoramiXdataPtr[0].below = -1
-	panoramiXdataPtr[0].right = 1
-	panoramiXdataPtr[0].above = -1
-	panoramiXdataPtr[0].left = -1
-   middle screen[1]
-	panoramiXdataPtr[1].x = 0
-	panoramiXdataPtr[1].y = 0
-	panoramiXdataPtr[1].width  = 640
-	panoramiXdataPtr[1].height = 480
-	panoramiXdataPtr[1].below = -1
-	panoramiXdataPtr[1].right = 2
-	panoramiXdataPtr[1].above = -1
-	panoramiXdataPtr[1].left = 0
-   last right screen[2]
-	panoramiXdataPtr[2].x = 0
-	panoramiXdataPtr[2].y = 0
-	panoramiXdataPtr[2].width  = 640
-	panoramiXdataPtr[2].height = 480
-	panoramiXdataPtr[2].below = -1
-	panoramiXdataPtr[2].right = -1 
-	panoramiXdataPtr[2].above = -1
-	panoramiXdataPtr[2].left = 1
-	
-   Calling locate_neighbors(0) results in: 
-	panoramiXdataPtr[0].x = 0
-	panoramiXdataPtr[0].y = 0
-	panoramiXdataPtr[1].x = 640
-	panoramiXdataPtr[1].y = 0
-	panoramiXdataPtr[2].x = 1280 
-	panoramiXdataPtr[2].y = 0
-*/
-
-static void locate_neighbors(int i)
-{
-    int j;
-    
-    j = panoramiXdataPtr[i].right;
-    if ((j != -1) && !panoramiXdataPtr[j].x && !panoramiXdataPtr[j].y) {
-	panoramiXdataPtr[j].x = panoramiXdataPtr[i].x + panoramiXdataPtr[i].width;
-	panoramiXdataPtr[j].y = panoramiXdataPtr[i].y;
-	locate_neighbors(j);
-    }
-    j = panoramiXdataPtr[i].below;
-    if ((j != -1) && !panoramiXdataPtr[j].x && !panoramiXdataPtr[j].y) {
-	panoramiXdataPtr[j].y = panoramiXdataPtr[i].y + panoramiXdataPtr[i].height;
-	panoramiXdataPtr[j].x = panoramiXdataPtr[i].x;
-	locate_neighbors(j);
-    }
-}
-
 
 
 /*

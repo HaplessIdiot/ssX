@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.1 1999/07/06 11:38:33 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -22,6 +22,7 @@
  */
 
 #include "ati.h"
+#include "atibus.h"
 #include "atioption.h"
 #include "atistruct.h"
 
@@ -30,10 +31,13 @@
  */
 typedef enum
 {
+    ATI_OPTION_ACCEL,
+    ATI_OPTION_CRT,
     ATI_OPTION_CSYNC,
     ATI_OPTION_DEVEL,   /* Intentionally undocumented */
     ATI_OPTION_LINEAR,
     ATI_OPTION_PROBE_CLOCKS,
+    ATI_OPTION_SHADOW_FB,
     ATI_OPTION_MAX      /* Must be last */
 } ATIOptionType;
 
@@ -52,23 +56,31 @@ ATIProcessOptions
 {
     OptionInfoRec  Option[] =
     {
+        {ATI_OPTION_ACCEL,        "accel",          OPTV_BOOLEAN, {0, }, FALSE},
+        {ATI_OPTION_CRT,          "crt_screen",     OPTV_BOOLEAN, {0, }, FALSE},
         {ATI_OPTION_CSYNC,        "composite_sync", OPTV_BOOLEAN, {0, }, FALSE},
         {ATI_OPTION_DEVEL,        "tsi",            OPTV_BOOLEAN, {0, }, FALSE},
         {ATI_OPTION_LINEAR,       "linear",         OPTV_BOOLEAN, {0, }, FALSE},
         {ATI_OPTION_PROBE_CLOCKS, "probe_clocks",   OPTV_BOOLEAN, {0, }, FALSE},
+        {ATI_OPTION_SHADOW_FB,    "shadow_fb",      OPTV_BOOLEAN, {0, }, FALSE},
         {-1,                      NULL,             OPTV_NONE   , {0, }, FALSE}
     };
 
+#   define Accel       Option[ATI_OPTION_ACCEL].value.bool
+#   define CRTScreen   Option[ATI_OPTION_CRT].value.bool
 #   define CSync       Option[ATI_OPTION_CSYNC].value.bool
 #   define Devel       Option[ATI_OPTION_DEVEL].value.bool
 #   define Linear      Option[ATI_OPTION_LINEAR].value.bool
 #   define ProbeClocks Option[ATI_OPTION_PROBE_CLOCKS].value.bool
+#   define ShadowFB    Option[ATI_OPTION_SHADOW_FB].value.bool
 
     /* Pick up XF86Config options */
     xf86CollectOptions(pScreenInfo, NULL);
 
     /* Set non-zero defaults */
     Linear = TRUE;
+    if (pATI->BusType >= ATI_BUS_PCI)
+        ShadowFB = TRUE;
 
     xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options, Option);
 
@@ -82,8 +94,11 @@ ATIProcessOptions
     }
 
     /* Move option values into driver private structure */
+    pATI->OptionAccel = Accel;
+    pATI->OptionCRT = CRTScreen;
     pATI->OptionCSync = CSync;
     pATI->OptionDevel = Devel;
     pATI->OptionLinear = Linear;
     pATI->OptionProbeClocks = ProbeClocks;
+    pATI->OptionShadowFB = ShadowFB;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.2 1999/06/27 14:07:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.3 1999/07/04 06:38:30 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Jens Owen <jens@precisioninsight.com>
  *
- * $PI: xc/programs/Xserver/GL/dri/dri.c,v 1.51 1999/07/02 18:33:49 faith Exp $
+ * $PI: xc/programs/Xserver/GL/dri/dri.c,v 1.53 1999/08/04 18:12:55 faith Exp $
  */
 
 #if XFree86LOADER
@@ -94,7 +94,7 @@ Bool
 DRIScreenInit(
     ScreenPtr pScreen,
     DRIInfoPtr pDRIInfo,
-    int* pDRMSubFD)
+    int* pDRMFD)
 {
     DRIScreenPrivPtr 	pDRIPriv;
     drmContextPtr       reserved;
@@ -121,33 +121,25 @@ DRIScreenInit(
 
     /* setup device independent direct rendering memory maps */
 
-    if ((pDRIPriv->drmFD = drmOpenDRM()) < 0) {
+    if ((pDRIPriv->drmFD = drmOpen(pDRIPriv->pDriverInfo->drmDriverName,
+				   NULL)) < 0) {
 	pDRIPriv->directRenderingSupport = FALSE;
 	return FALSE;
     }
 
-    if (drmCreateSub(pDRIPriv->drmFD,
-		  pDRIPriv->pDriverInfo->drmDriverName,
-		  pDRIPriv->pDriverInfo->busIdString) < 0) {
+    if (drmSetBusid(pDRIPriv->drmFD, pDRIPriv->pDriverInfo->busIdString) < 0) {
 	pDRIPriv->directRenderingSupport = FALSE;
-	drmCloseDRM(pDRIPriv->drmFD);
+	drmClose(pDRIPriv->drmFD);
 	return FALSE;
     }
 
-    pDRIPriv->drmSubFD = drmOpenSub(pDRIPriv->pDriverInfo->busIdString);
-    if (pDRIPriv->drmSubFD < 0) {
-	pDRIPriv->directRenderingSupport = FALSE;
-	drmDestroySub(pDRIPriv->drmFD, pDRIPriv->pDriverInfo->busIdString);
-	drmCloseDRM(pDRIPriv->drmFD);
-	return FALSE;
-    }
-    *pDRMSubFD = pDRIPriv->drmSubFD;
+    *pDRMFD = pDRIPriv->drmFD;
     DRIDrvMsg(pScreen->myNum, X_INFO,
 	      "[drm] created \"%s\" driver at busid \"%s\"\n",
 	      pDRIPriv->pDriverInfo->drmDriverName,
 	      pDRIPriv->pDriverInfo->busIdString);
 
-    if (drmAddMap( pDRIPriv->drmSubFD,
+    if (drmAddMap( pDRIPriv->drmFD,
 		   0,
 		   pDRIPriv->pDriverInfo->SAREASize,
 		   DRM_SHM,
@@ -155,30 +147,26 @@ DRIScreenInit(
 		   &pDRIPriv->hSAREA) < 0)
     {
 	pDRIPriv->directRenderingSupport = FALSE;
-	drmCloseSub(pDRIPriv->drmSubFD);
-	drmDestroySub(pDRIPriv->drmFD, pDRIPriv->pDriverInfo->busIdString);
-	drmCloseDRM(pDRIPriv->drmFD);
+	drmClose(pDRIPriv->drmFD);
 	return FALSE;
     }
     DRIDrvMsg(pScreen->myNum, X_INFO,
 	      "[drm] added %d byte SAREA at 0x%08lx\n",
 	      pDRIPriv->pDriverInfo->SAREASize, pDRIPriv->hSAREA);
 
-    if (drmMap( pDRIPriv->drmSubFD, 
+    if (drmMap( pDRIPriv->drmFD, 
 		pDRIPriv->hSAREA,
 		pDRIPriv->pDriverInfo->SAREASize,
 		(drmAddressPtr)(&pDRIPriv->pSAREA)) < 0)
     {
 	pDRIPriv->directRenderingSupport = FALSE;
-	drmCloseSub(pDRIPriv->drmSubFD);
-	drmDestroySub(pDRIPriv->drmFD, pDRIPriv->pDriverInfo->busIdString);
-	drmCloseDRM(pDRIPriv->drmFD);
+	drmClose(pDRIPriv->drmFD);
 	return FALSE;
     }
     DRIDrvMsg(pScreen->myNum, X_INFO, "[drm] mapped SAREA 0x%08lx to %p\n",
 	      pDRIPriv->hSAREA, pDRIPriv->pSAREA);
     
-    if (drmAddMap( pDRIPriv->drmSubFD, 
+    if (drmAddMap( pDRIPriv->drmFD, 
 		   (drmHandle)pDRIPriv->pDriverInfo->frameBufferPhysicalAddress,
 		   pDRIPriv->pDriverInfo->frameBufferSize,
 		   DRM_FRAME_BUFFER, 
@@ -187,16 +175,14 @@ DRIScreenInit(
     {
 	pDRIPriv->directRenderingSupport = FALSE;
 	drmUnmap(pDRIPriv->pSAREA, pDRIPriv->pDriverInfo->SAREASize);
-	drmCloseSub(pDRIPriv->drmSubFD);
-	drmDestroySub(pDRIPriv->drmFD, pDRIPriv->pDriverInfo->busIdString);
-	drmCloseDRM(pDRIPriv->drmFD);
+	drmClose(pDRIPriv->drmFD);
 	return FALSE;
     }
     DRIDrvMsg(pScreen->myNum, X_INFO, "[drm] framebuffer handle = 0x%08lx\n",
 	      pDRIPriv->hFrameBuffer);
 
 				/* Add tags for reserved contexts */
-    if ((reserved = drmGetReservedContextList(pDRIPriv->drmSubFD,
+    if ((reserved = drmGetReservedContextList(pDRIPriv->drmFD,
 					      &reserved_count))) {
 	int  i;
 	void *tag;
@@ -205,7 +191,7 @@ DRIScreenInit(
 	    tag = DRICreateContextPrivFromHandle(pScreen,
 						 reserved[i],
 						 DRI_CONTEXT_RESERVED);
-	    drmAddContextTag(pDRIPriv->drmSubFD, reserved[i], tag);
+	    drmAddContextTag(pDRIPriv->drmFD, reserved[i], tag);
 	}
 	drmFreeReservedContextList(reserved);
 	DRIDrvMsg(pScreen->myNum, X_INFO,
@@ -303,7 +289,7 @@ DRIFinishScreenInit(ScreenPtr pScreen)
         /* For swap methods of DRI_SERVER_SWAP and DRI_HIDE_X_CONTEXT
          * setup signal handler for receiving swap requests from kernel
 	 */
-	if (drmInstallSIGIOHandler(pDRIPriv->drmSubFD, DRISwapContext)) {
+	if (drmInstallSIGIOHandler(pDRIPriv->drmFD, DRISwapContext)) {
 	    DRIDrvMsg(pScreen->myNum, X_ERROR, 
 		      "[drm] failed to setup DRM signal handler\n");
 	    if (pDRIPriv->hiddenContextStore)
@@ -356,7 +342,7 @@ DRICloseScreen(ScreenPtr pScreen)
     if (pDRIPriv && pDRIPriv->directRenderingSupport) {
 
 	if (pDRIPriv->pDriverInfo->driverSwapMethod != DRI_KERNEL_SWAP) {
-	    if (drmRemoveSIGIOHandler(pDRIPriv->drmSubFD)) {
+	    if (drmRemoveSIGIOHandler(pDRIPriv->drmFD)) {
 		DRIDrvMsg(pScreen->myNum, X_ERROR, 
 			  "[drm] failed to remove DRM signal handler\n");
 	    }
@@ -368,12 +354,12 @@ DRICloseScreen(ScreenPtr pScreen)
 	}
 
 				/* Remove tags for reserved contexts */
-	if ((reserved = drmGetReservedContextList(pDRIPriv->drmSubFD,
+	if ((reserved = drmGetReservedContextList(pDRIPriv->drmFD,
 						  &reserved_count))) {
 	    int  i;
 
 	    for (i = 0; i < reserved_count; i++) {
-		DRIDestroyContextPriv(drmGetContextTag(pDRIPriv->drmSubFD,
+		DRIDestroyContextPriv(drmGetContextTag(pDRIPriv->drmFD,
 						       reserved[i]));
 	    }
 	    drmFreeReservedContextList(reserved);
@@ -396,16 +382,7 @@ DRICloseScreen(ScreenPtr pScreen)
 		      pDRIPriv->pSAREA);
 	}
 	    
-	drmCloseSub(pDRIPriv->drmSubFD);
-	if (drmDestroySub(pDRIPriv->drmFD,
-			  pDRIPriv->pDriverInfo->busIdString)) {
-	    DRIDrvMsg(pScreen->myNum, X_ERROR,
-		      "[drm] unable to destroy \"%s\""
-		      " at busid \"%s\"\n",
-		      pDRIPriv->pDriverInfo->drmDriverName,
-		      pDRIPriv->pDriverInfo->busIdString);
-	}
-	drmCloseDRM(pDRIPriv->drmFD);
+	drmClose(pDRIPriv->drmFD);
 	xfree(pDRIPriv);
 	pScreen->devPrivates[DRIScreenPrivIndex].ptr = NULL;
     }
@@ -493,7 +470,7 @@ DRIAuthConnection(
 {
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
 
-    if (drmAuthMagic(pDRIPriv->drmSubFD, magic)) return FALSE;
+    if (drmAuthMagic(pDRIPriv->drmFD, magic)) return FALSE;
     return TRUE;
 }
 
@@ -545,7 +522,7 @@ DRICreateContextPriv(ScreenPtr pScreen,
 {
     DRIScreenPrivPtr  pDRIPriv = DRI_SCREEN_PRIV(pScreen);
 
-    if (drmCreateContext(pDRIPriv->drmSubFD, pHWContext)) {
+    if (drmCreateContext(pDRIPriv->drmFD, pHWContext)) {
 	return NULL;
     }
 
@@ -568,7 +545,7 @@ DRICreateContextPrivFromHandle(ScreenPtr pScreen,
     }
     pDRIContextPriv->pContextStore = (void **)(pDRIContextPriv + 1);
 
-    drmAddContextTag(pDRIPriv->drmSubFD, hHWContext, pDRIContextPriv);
+    drmAddContextTag(pDRIPriv->drmFD, hHWContext, pDRIContextPriv);
     
     pDRIContextPriv->hwContext = hHWContext;
     pDRIContextPriv->pScreen   = pScreen;
@@ -576,7 +553,7 @@ DRICreateContextPrivFromHandle(ScreenPtr pScreen,
     pDRIContextPriv->valid3D   = FALSE;
 
     if (flags & DRI_CONTEXT_2DONLY) {
-	if (drmSetContextFlags(pDRIPriv->drmSubFD,
+	if (drmSetContextFlags(pDRIPriv->drmFD,
 			       hHWContext,
 			       DRM_CONTEXT_2DONLY)) {
 	    DRIDrvMsg(pScreen->myNum, X_ERROR, 
@@ -586,7 +563,7 @@ DRICreateContextPrivFromHandle(ScreenPtr pScreen,
 	}
     }
     if (flags & DRI_CONTEXT_PRESERVED) {
-	if (drmSetContextFlags(pDRIPriv->drmSubFD,
+	if (drmSetContextFlags(pDRIPriv->drmFD,
 			       hHWContext,
 			       DRM_CONTEXT_PRESERVED)) {
 	    DRIDrvMsg(pScreen->myNum, X_ERROR, 
@@ -611,7 +588,7 @@ DRIDestroyContextPriv(DRIContextPrivPtr pDRIContextPriv)
 				/* Don't delete reserved contexts from
                                    kernel area -- the kernel manages its
                                    reserved contexts itself. */
-	if (drmDestroyContext(pDRIPriv->drmSubFD, pDRIContextPriv->hwContext))
+	if (drmDestroyContext(pDRIPriv->drmFD, pDRIContextPriv->hwContext))
 	    return FALSE;
     }
 				/* Remove the tag last to prevent a race
@@ -619,7 +596,7 @@ DRIDestroyContextPriv(DRIContextPrivPtr pDRIContextPriv)
                                    buffers.  The context can't be re-used
                                    while in this thread, but buffers can be
                                    dispatched asynchronously. */
-    drmDelContextTag(pDRIPriv->drmSubFD, pDRIContextPriv->hwContext);
+    drmDelContextTag(pDRIPriv->drmFD, pDRIContextPriv->hwContext);
     xfree(pDRIContextPriv);
     return TRUE;
 }
@@ -716,7 +693,7 @@ DRICreateDrawable(
 	    }
 
 	    /* Only create a drmDrawable once */
-	    if (drmCreateDrawable(pDRIPriv->drmSubFD, hHWDrawable)) {
+	    if (drmCreateDrawable(pDRIPriv->drmFD, hHWDrawable)) {
 		xfree(pDRIDrawablePriv);
 		return FALSE;
 	    }
@@ -789,7 +766,7 @@ DRIDrawablePrivDelete(
 	    pDRIPriv->DRIDrawables[pDRIDrawablePriv->drawableIndex] = NULL;
 	}
 
-	if (drmDestroyDrawable(pDRIPriv->drmSubFD, 
+	if (drmDestroyDrawable(pDRIPriv->drmFD, 
 			       pDRIDrawablePriv->hwDrawable)) {
 	    return FALSE;
 	}
@@ -962,7 +939,7 @@ DRIWakeupHandler(
     ScreenPtr pScreen = screenInfo.screens[screenNum];
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
 
-    DRM_LIGHT_LOCK(pDRIPriv->drmSubFD, pDRIPriv->pSAREA, pDRIPriv->myContext);
+    DRM_LIGHT_LOCK(pDRIPriv->drmFD, pDRIPriv->pSAREA, pDRIPriv->myContext);
 
     if (pDRIPriv->pDriverInfo->driverSwapMethod == DRI_HIDE_X_CONTEXT) {
 	/* hide X context by swapping 2D component here */
@@ -1015,12 +992,12 @@ DRIBlockHandler(
 					      pDRIPriv->partial3DContextStore);
     }
 
-    DRM_UNLOCK(pDRIPriv->drmSubFD, pDRIPriv->pSAREA, pDRIPriv->myContext);
+    DRM_UNLOCK(pDRIPriv->drmFD, pDRIPriv->pSAREA, pDRIPriv->myContext);
 }
 
 void 
 DRISwapContext(
-    int drmSubFD,
+    int drmFD,
     void *oldctx,
     void *newctx
 )
@@ -1362,7 +1339,7 @@ DRIValidateTree(
     }
 
     /* Call kernel to release lock */
-    DRM_UNLOCK(pDRIPriv->drmSubFD, pDRIPriv->pSAREA, pDRIPriv->myContext);
+    DRM_UNLOCK(pDRIPriv->drmFD, pDRIPriv->pSAREA, pDRIPriv->myContext);
 
     /* Grab drawable spin lock: a time out between 10 and 30 seconds is
        appropriate, since this should never time out except in the case of
@@ -1371,7 +1348,7 @@ DRIValidateTree(
     DRISpinLockTimeout(&pDRIPriv->pSAREA->drawable_lock, 1, 10000); /* 10 secs */
 
     /* Call kernel flush outstanding buffers and relock */
-    DRM_LOCK(pDRIPriv->drmSubFD, pDRIPriv->pSAREA, pDRIPriv->myContext,
+    DRM_LOCK(pDRIPriv->drmFD, pDRIPriv->pSAREA, pDRIPriv->myContext,
 	     DRM_LOCK_QUIESCENT|DRM_LOCK_FLUSH_ALL);
 
     /* Switch back to our 2D context if the X context is hidden */

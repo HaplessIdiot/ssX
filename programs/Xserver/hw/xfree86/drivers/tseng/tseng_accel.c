@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.28 1999/03/14 03:22:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.29 1999/06/12 07:18:57 dawes Exp $ */
 
 
 
@@ -124,7 +124,7 @@ TsengXAAInit(ScreenPtr pScreen)
     pXAAinfo->Sync = TsengSync;
 
     /* W32 and W32i must wait for ACL before changing registers */
-    pTseng->need_wait_acl = Is_W32_W32i;
+    pTseng->need_wait_acl = (Is_W32_W32i || Is_W32p);
 
     pTseng->line_width = pScrn->displayWidth * pTseng->Bytesperpixel;
 

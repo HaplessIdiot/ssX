@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.13 1999/06/27 14:07:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.14 1999/09/06 11:27:17 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -1236,13 +1236,13 @@ int PanoramiXClearToBackground(register ClientPtr client)
 
 
 /* 
-   CopyArea and CopyPlane are not correct yet.  We still need to
-   take care of the case where src and dst are windows on different
-   screens.  DEC's original code tried to do this but segfaults
-   during xtest.  I will rewrite it eventually but for now it has
-   been removed.  There are also problems with expose events.
-   At the moment, each screen sends an event for its part.  These
-   should be combined and sent as one event.
+    For Window to Pixmap copies you're screwed since each screen's
+    pixmap will look like what it sees on its screen.  Unless the
+    screens overlap and the window lies on each, the two copies
+    will be out of sync.  To remedy this we do a GetImage and PutImage
+    in place of the copy.  Doing this as a single Image isn't quite
+    correct since it will include the obscured areas but we will
+    have to fix this later. (MArk).
 */
 
 int PanoramiXCopyArea(ClientPtr client)
@@ -1285,22 +1285,54 @@ int PanoramiXCopyArea(ClientPtr client)
     PANORAMIXFIND_ID(pPanoramiXGC, GCID);
     IF_RETURN(!pPanoramiXGC, BadGC);
 
-    FOR_NSCREENS_OR_ONCE(pPanoramiXSrc, j) {
-	stuff->dstDrawable = pPanoramiXDst->info[j].id;
-	stuff->srcDrawable = pPanoramiXSrc->info[j].id;
-	stuff->gc = pPanoramiXGC->info[j].id;
- 	if (pPanoramiXSrc == pPanoramiXSrcRoot) {	
-	    stuff->srcX = srcx - panoramiXdataPtr[j].x;
-	    stuff->srcY = srcy - panoramiXdataPtr[j].y;
-	}
- 	if (pPanoramiXDst == pPanoramiXDstRoot) {	
-	    stuff->dstX = dstx - panoramiXdataPtr[j].x;
-	    stuff->dstY = dsty - panoramiXdataPtr[j].y;
+    if((pDst->type == DRAWABLE_PIXMAP) && (pSrc->type == DRAWABLE_WINDOW)) {
+	DrawablePtr drawables[MAXSCREENS];
+	GCPtr pGC;
+	unsigned char *data;
+	int pitch = PixmapBytePad(stuff->width, pDst->depth);
+	
+	if(!(data = xcalloc(stuff->height, pitch)))
+	    return BadAlloc;
+	
+	drawables[0] = pSrc;
+	for(j = 1; j < PanoramiXNumScreens; j++) 
+	    VERIFY_DRAWABLE(drawables[j], pPanoramiXSrc->info[j].id, client);
+
+	XineramaGetImageData(drawables, srcx, srcy, 
+		stuff->width, stuff->height, ZPixmap, ~0, data, pitch, 
+		(pPanoramiXSrc == PanoramiXWinRoot));
+
+	FOR_NSCREENS_OR_ONCE(pPanoramiXSrc, j) {
+	    stuff->gc = pPanoramiXGC->info[j].id;
+	    VALIDATE_DRAWABLE_AND_GC(pPanoramiXDst->info[j].id, 
+					pDst, pGC, client);
+	     
+	    (*pGC->ops->PutImage) (pDst, pGC, pDst->depth, dstx, dsty, 
+				   stuff->width, stuff->height, 
+				   0, ZPixmap, data);
 	}
 
-	result = (* SavedProcVector[X_CopyArea])(client);
+	xfree(data);
 
-	BREAK_IF(result != Success);
+	result = Success;
+    } else {
+	FOR_NSCREENS_OR_ONCE(pPanoramiXSrc, j) {
+	    stuff->dstDrawable = pPanoramiXDst->info[j].id;
+	    stuff->srcDrawable = pPanoramiXSrc->info[j].id;
+	    stuff->gc = pPanoramiXGC->info[j].id;
+ 	    if (pPanoramiXSrc == pPanoramiXSrcRoot) {	
+		stuff->srcX = srcx - panoramiXdataPtr[j].x;
+		stuff->srcY = srcy - panoramiXdataPtr[j].y;
+	    }
+ 	    if (pPanoramiXDst == pPanoramiXDstRoot) {	
+		stuff->dstX = dstx - panoramiXdataPtr[j].x;
+		stuff->dstY = dsty - panoramiXdataPtr[j].y;
+	    }
+
+	    result = (* SavedProcVector[X_CopyArea])(client);
+
+	    BREAK_IF(result != Success);
+	}
     }
     return (result);
 }
@@ -1976,6 +2008,7 @@ int PanoramiXGetImage(ClientPtr client)
 		char *linePtr = pBuf;
 		for(i = 0; i < nlines; i++, linePtr += widthBytesLine) {
 		    (void)WriteToClient(client, widthBytesLineProto, linePtr);
+		}
 	    } else
 #else
 		(void)WriteToClient(client,
@@ -2002,6 +2035,7 @@ int PanoramiXGetImage(ClientPtr client)
 		char *linePtr = pBuf;
 		for(i = 0; i < nlines; i++, linePtr += widthBytesLine) {
 		    (void)WriteToClient(client, widthBytesLineProto, linePtr);
+		}
 	    } else
 #else
 		(void)WriteToClient(client,

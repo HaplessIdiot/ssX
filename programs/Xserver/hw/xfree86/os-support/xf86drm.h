@@ -1,6 +1,6 @@
 /* xf86drm.h -- OS-independent header for DRM user-level library interface
  * Created: Tue Jan  5 08:17:23 1999 by faith@precisioninsight.com
- * Revised: Thu Jun 24 14:18:55 1999 by faith@precisioninsight.com
+ * Revised: Fri Jul 30 16:03:10 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.41 1999/06/24 18:37:13 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.2 1999/06/27 14:08:17 dawes Exp $
+ * $PI: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.44 1999/08/04 18:14:42 faith Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.3 1999/07/04 06:39:13 dawes Exp $
  * 
  */
 
@@ -57,15 +57,6 @@ typedef struct _drmVersion {
     char    *desc;                /* User-space buffer to hold desc         */
 } drmVersion, *drmVersionPtr;
 
-typedef struct _drmCapability {
-    int              dummy;	  /* Driver capabilities */
-} drmCapability, *drmCapabilityPtr;
-
-typedef struct _drmList {
-    int              count;	  /* Length of version                      */
-    drmVersionPtr    version;	  /* List of versions                       */
-    drmCapabilityPtr capability;  /* List of (possibly null) capabilities   */
-} drmList, *drmListPtr;
 
 				/* All of these enums *MUST* match with the
                                    kernel implementation -- so do *NOT*
@@ -121,23 +112,6 @@ typedef enum {
 				     never swapped. */
     DRM_CONTEXT_2DONLY    = 0x02  /* This context is for 2D rendering only. */
 } drmContextFlags, *drmContextFlagsPtr;
-
-typedef enum {
-				  /* These are present in drm.h, but there
-                                     is no performance-related reason why
-                                     they need to match -- it's all done in
-                                     a case statement in xf86drm.c */
-    DRM_IH_PRE_INST,		  /* Before IH installation                 */
-    DRM_IH_POST_INST,	          /* After IH installation                  */
-    DRM_IH_SERVICE,	          /* IH                                     */
-    DRM_IH_PRE_UNINST,        	  /* Before IH uninstallation               */
-    DRM_IH_POST_UNINST,	          /* After IH uninstallation                */
-    DRM_DMA_DISPATCH,	          /* DMA dispatch (including ready)         */
-    DRM_DMA_READY,		  /* Ready for DMA                          */
-    DRM_DMA_IS_READY,	          /* Tests if hardware ready for another DMA*/
-    DRM_DMA_QUIESCENT,	          /* HW Sync                                */
-    DRM_DESC_MAX
-} drmCtlDesc;
 
 typedef struct _drmBufDesc {
     int              count;	  /* Number of buffers of this size         */
@@ -296,122 +270,21 @@ typedef struct { unsigned int a[100]; } __drm_dummy_lock_t;
             }                                                          \
 	} while(0)
 
-				/* These constants MUST MATCH drm.h */
-#define DRM_INST_LENGTH 5
-
-#define DRM_M_WRITE     0x00
-#define DRM_M_WHILE     0x01
-#define DRM_M_IF        0x02
-#define DRM_M_GOTO      0x03
-#define DRM_M_NOOP      0x04
-#define DRM_M_RETURN    0x05
-#define DRM_M_DO        0x06
-#define DRM_M_READ      0x07
-#define DRM_M_TEST      0x08
-	
-#define DRM_T_IMM       0x00	/* MUST BE 0 */
-#define DRM_T_LENGTH    0x01
-#define DRM_T_ADDRESS   0x02
-#define DRM_T_ACC       0x03
-	
-#define DRM_V_NONE      0x00	/* MUST BE 0 */
-#define DRM_V_RSHIFT    0x01
-#define DRM_V_LSHIFT    0x02
-	
-#define DRM_C_EQ        0x01
-#define DRM_C_LT        0x02
-#define DRM_C_GT        0x03
-#define DRM_C_LE        0x04
-#define DRM_C_GE        0x05
-#define DRM_C_NE        0x06
-#define DRM_C_BIT       0x07
-	
-#define DRM_F_NOOP      0x00
-#define DRM_F_DMA       0x01
-#define DRM_F_SYNC      0x02
-#define DRM_F_EXTEN     0x03
-#define DRM_F_ERROR     0x04
-#define DRM_F_VERT      0x05
-#define DRM_F_CLEAR     0x06
-
-#define DRM_I_CMD(x)    ((x)  & 0xfff)
-#define DRM_I_TYPE(x)   (((x) & 0x00f) <<12)
-#define DRM_I_MOD(x)    (((x) & 0x00f) <<16)
-#define DRM_I_MODVAL(x) (((x) & 0x0ff) <<24)
-#define DRM_I_COND(x)   (((x) & 0x00f) <<28)
-	
-#define DRM_E_CMD(x)    ((x) &0x00000fff)
-#define DRM_E_TYPE(x)   (((x)&0x0000f000)>>12)
-#define DRM_E_MOD(x)    (((x)&0x000f0000)>>16)
-#define DRM_E_MODVAL(x) (((x)&0x0ff00000)>>24)
-#define DRM_E_COND(x)   (((x)&0xf0000000)>>28)
-
-
-#define DRM_I_WRITE(group,offset,type,value,mod,modval)              \
-     DRM_I_CMD(DRM_M_WRITE) | DRM_I_TYPE(type)                       \
-                            | DRM_I_MOD(mod)                         \
-                            | DRM_I_MODVAL(modval)                   \
-     ,(group), (offset), (value), 0
-
-#define DRM_I_WRITE_IMM(group,offset,value)                          \
-     DRM_I_CMD(DRM_M_WRITE),(group), (offset), (value), 0
-
-#define DRM_I_WHILE(group,offset,type,value,mod,modval,cond)         \
-     DRM_I_CMD(DRM_M_WHILE) | DRM_I_TYPE(type)                       \
-                            | DRM_I_MOD(mod)                         \
-                            | DRM_I_MODVAL(modval)                   \
-                            | DRM_I_COND(cond)                       \
-     ,(group), (offset), (value), 0
-
-#define DRM_I_WHILE_IMM(group,offset,value,cond)                     \
-     DRM_I_CMD(DRM_M_WHILE) | DRM_I_COND(cond)                       \
-     ,(group), (offset), (value), 0
-
-#define DRM_I_IF(group,offset,type,value,mod,modval,cond,inst)       \
-     DRM_I_CMD(DRM_M_IF)    | DRM_I_TYPE(type)                       \
-                            | DRM_I_MOD(mod)                         \
-                            | DRM_I_MODVAL(modval)                   \
-                            | DRM_I_COND(cond)                       \
-     ,(group), (offset), (value), (inst)
-
-#define DRM_I_IF_IMM(group,offset,value,cond,inst)                   \
-     DRM_I_CMD(DRM_M_IF)    | DRM_I_COND(cond)                       \
-     ,(group), (offset), (value), (inst)
-
-#define DRM_I_TEST(type,value,mod,modval,cond,inst)                  \
-     DRM_I_CMD(DRM_M_TEST)  | DRM_I_TYPE(type)                       \
-                            | DRM_I_MOD(mod)                         \
-                            | DRM_I_MODVAL(modval)                   \
-                            | DRM_I_COND(cond)                       \
-     ,0, 0, (value), (inst)
-
-#define DRM_I_TEST_IMM(value,cond,inst)                              \
-     DRM_I_CMD(DRM_M_TEST)  | DRM_I_COND(cond)                       \
-     ,0, 0, (value), (inst)
-
-#define DRM_I_GOTO(inst)    DRM_I_CMD(DRM_M_GOTO),0, 0, 0, (inst)
-#define DRM_I_NOOP          DRM_I_CMD(DRM_M_NOOP),   0, 0, 0, 0
-#define DRM_I_RETURN(value) DRM_I_CMD(DRM_M_RETURN), 0, 0, (value), 0
-#define DRM_I_DO(inst)      DRM_I_CMD(DRM_M_DO),     0, 0, 0, (inst)
-#define DRM_I_READ(group,offset) DRM_I_CMD(DRM_M_READ), (group), (offset), 0, 0
-
-
-
 /* General user-level programmer's API: unprivileged */
 extern int           drmAvailable(void);
-extern int           drmOpenDRM(void);
-extern int           drmCloseDRM(int fd);
+extern int           drmOpen(const char *name, const char *busid);
+extern int           drmClose(int fd);
 extern drmVersionPtr drmGetVersion(int fd);
 extern void          drmFreeVersion(drmVersionPtr);
-extern drmListPtr    drmGetVersionList(int fd);
-extern void          drmFreeVersionList(drmListPtr);
+extern int           drmGetMagic(int fd, drmMagicPtr magic);
+extern char          *drmGetBusid(int fd);
 extern int           drmGetInterruptFromBusID(int fd, int busnum, int devnum,
 					      int funcnum);
 
 
 /* General user-level programmer's API: X server (root) only  */
-extern int           drmCreateSub(int fd, const char *name, const char *busid);
-extern int           drmDestroySub(int fd, const char *busid);
+extern void          drmFreeBusid(const char *busid);
+extern int           drmSetBusid(int fd, const char *busid);
 extern int           drmAuthMagic(int fd, drmMagic magic);
 extern int           drmAddMap(int fd,
 			       drmHandle offset,
@@ -435,9 +308,6 @@ extern int           drmSwitchToContext(int fd, drmContext context);
 extern int           drmDestroyContext(int fd, drmContext handle);
 extern int           drmCreateDrawable(int fd, drmDrawablePtr handle);
 extern int           drmDestroyDrawable(int fd, drmDrawable handle);
-extern int           drmCtlAddCommand(int fd, drmCtlDesc desc,
-				      int count, int *inst);
-extern int           drmCtlRemoveCommands(int fd);
 extern int           drmCtlInstHandler(int fd, int irq);
 extern int           drmCtlUninstHandler(int fd);
 extern int           drmInstallSIGIOHandler(int fd,
@@ -447,9 +317,6 @@ extern int           drmInstallSIGIOHandler(int fd,
 extern int           drmRemoveSIGIOHandler(int fd);
 
 /* General user-level programmer's API: authenticated client and/or X */
-extern int           drmOpenSub(const char *busid);
-extern int           drmCloseSub(int fd);
-extern int           drmGetMagic(int fd, drmMagicPtr magic);
 extern int           drmMap(int fd,
 			    drmHandle handle,
 			    drmSize size,

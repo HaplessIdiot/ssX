@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativalid.c,v 1.3 1999/07/06 11:38:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativalid.c,v 1.4 1999/08/01 07:57:23 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -46,7 +46,7 @@ ATIValidMode
     ATIPtr pATI = ATIPTR(xf86Screens[iScreen]);
     int    VDisplay, VTotal, HBlankWidth;
 
-    if (pATI->LCDPanelID >= 0)
+    if (!pATI->OptionCRT && (pATI->LCDPanelID >= 0))
     {
         if ((pMode->HDisplay > pATI->LCDHorizontal) ||
             (pMode->VDisplay > pATI->LCDVertical))

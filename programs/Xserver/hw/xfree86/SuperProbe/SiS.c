@@ -23,9 +23,10 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from Alan Hourihane.
  *
+ * added SiS 6326/530/620 Dirk Hohndel <hohndel@XFree86.Org>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/SiS.c,v 3.4 1999/03/21 07:34:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/SiS.c,v 3.5tsi Exp $ */
 
 #include "Probe.h"
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.67 1999/07/10 12:17:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.68 1999/07/18 08:14:34 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -110,9 +110,9 @@ extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 #include <ctype.h>
 
 /**************************************************************************/
-/* SYSV386 (SVR3, SVR4)                                                   */
+/* SYSV386 (SVR3, SVR4) - But not Solaris8                                */
 /**************************************************************************/
-#if (defined(SYSV) || defined(SVR4)) && !defined(DGUX)
+#if (defined(SYSV) || defined(SVR4)) && !defined(DGUX) && !defined(SOL8)
 # ifdef SCO325
 #  ifndef _SVID3
 #   define _SVID3
@@ -261,6 +261,29 @@ extern int xf86_solx86usleep(unsigned long);
 #endif
 
 #endif /* (SYSV || SVR4) && !DGUX */
+
+/**********
+ * Good ol' Solaris8, and its lack of VT support 
+ ***********/
+
+#ifdef SOL8
+#include <sys/mman.h>
+#include <errno.h>
+#include <sys/sysi86.h>
+#include <sys/psw.h>
+
+#include <termio.h>
+#include <sys/kbd.h>
+#include <sys/kbio.h>
+
+#define LED_CAP LED_CAPS_LOCK
+#define LED_NUM LED_NUM_LOCK
+#define LED_SCR LED_SCROLL_LOCK
+
+#include <signal.h>
+
+#endif /* SOL8 */
+
 
 
 /**************************************************************************/

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.17 1998/09/26 08:34:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.18 1999/07/19 13:36:14 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -159,9 +159,10 @@ int *Chipset;
 		case 0x30:
 			if (rdinx(0x3D6, 0x03) == 0xC)
 				*Chipset = CHIP_CTF69030;
-			else
+			else {
 				Chip_data = vers;
 				*Chipset = CHIP_CT_UNKNOWN;
+			}
 			break;
 		default:
 			Chip_data = vers;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.8 1999/08/01 07:57:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.9 1999/08/21 13:48:41 dawes Exp $ */
 
 /* Standard resource information code */
 
@@ -42,7 +42,7 @@ xf86StdAccResFromOS(resPtr ret)
      *
      * 0x00000000 - 0x0009ffff	low 640k host memory
      * 0x000f0000 - 0x000fffff	system BIOS
-     * 0x00100000 - 0x3fffffff	low 1G - 1MB host memory
+     * 0x00100000 - 0x7fffffff	low 2G - 1MB host memory
      * 0xfec00000 - 0xfecfffff	default I/O APIC config space
      * 0xfee00000 - 0xfeefffff	default Local APIC config space
      * 0xffe00000 - 0xffffffff	high BIOS area (should this be included?)
@@ -55,7 +55,7 @@ xf86StdAccResFromOS(resPtr ret)
     ret = xf86AddResToList(ret, &range, -1);
     RANGE(range,0xf0000,0xfffff,ResExcMemBlock);
     ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x100000,0x3fffffff,ResExcMemBlock | ResBios);
+    RANGE(range,0x100000,0x7fffffff,ResExcMemBlock | ResBios | ResEstimated);
     ret = xf86AddResToList(ret, &range, -1);
     RANGE(range,0xfec00000,0xfecfffff,ResExcMemBlock | ResBios);
     ret = xf86AddResToList(ret, &range, -1);
@@ -67,7 +67,7 @@ xf86StdAccResFromOS(resPtr ret)
     /* Fallback is to claim well known ports in the 0x0 - 0x3ff range */
     /* Possibly should claim some of them as sparse ranges */
 
-    RANGE(range,0,0x1ff,ResExcIoBlock);
+    RANGE(range,0,0x1ff,ResExcIoBlock | ResEstimated);
     ret = xf86AddResToList(ret, &range, -1);
     /* XXX add others */
     return ret;
@@ -167,8 +167,6 @@ PciBusPtr
 xf86StdInitOSPciAllocator(const pciConfigPtr *pciInfo, resPtr *sysRes,
 			  const resPtr pciRes)
 {
-    resPtr res, tmp_res;
-    
     /* Initialise the pointers to the system exclusive lists */
     pSysRes = sysRes;
 
@@ -179,10 +177,7 @@ xf86StdInitOSPciAllocator(const pciConfigPtr *pciInfo, resPtr *sysRes,
     PciRes = xf86DupResList(pciRes);
 
     /* resources assigned by bios should be avoided */
-    res = xf86DupResList(pciRes);
-    (*sysRes) = xf86JoinResLists(res,(*sysRes));
+    *sysRes = xf86JoinResLists(pciRes, *sysRes);
 
     return xf86FindPciBridgeInfo(pciInfo);
 }
-
-

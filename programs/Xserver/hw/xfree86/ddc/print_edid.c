@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.3 1999/01/31 14:07:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.4 1999/06/27 14:08:00 dawes Exp $ */
 
 /* print_edid.c: print out all information retrieved from display device 
  * 
@@ -22,16 +22,17 @@ static void print_input_features(struct disp_features *);
 static void print_dpms_features(struct disp_features *);
 static void print_whitepoint(struct disp_features *);
 
-void
+xf86MonPtr
 xf86PrintEDID(xf86MonPtr m)
 {
-    if (!(m)) return;
+    if (!(m)) return NULL;
     print_vendor(&m->vendor);
     print_version(&m->ver);
     print_display(&m->features);
     print_established_timings(&m->timings1);
     print_std_timings(m->timings2);
     print_detailed_monitor_section(m->det_mon);
+    return m;
 }
 
 static void

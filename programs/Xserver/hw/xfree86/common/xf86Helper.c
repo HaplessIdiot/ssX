@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.55 1999/07/11 10:27:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.56 1999/08/28 09:00:52 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -960,7 +960,7 @@ xf86SaveRestoreImage(int scrnIndex, SaveRestoreFlags what)
     pixBox.x1 = pixBox.y1 = 0;
     pixBox.x2 = pScreen->width;
     pixBox.y2 = pScreen->height;
-    (*pScreen->RegionInit)(&pixReg, &pixBox, 1);
+    REGION_INIT(pScreen, &pixReg, &pixBox, 1);
 
     pScreenPix = (*pScreen->GetScreenPixmap)(pScreen);
 
@@ -1043,7 +1043,7 @@ xf86SaveRestoreImage(int scrnIndex, SaveRestoreFlags what)
     default:
 	ErrorF("xf86SaveRestoreImage: Invalid flag (%d)\n", what);
     }
-    (*pScreen->RegionUninit)(&pixReg);
+    REGION_UNINIT(pScreen, &pixReg);
     return ret;
 }
 

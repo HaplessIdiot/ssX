@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.1 1999/07/06 11:38:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.2 1999/08/01 07:57:22 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -26,6 +26,7 @@
 #include "atidac.h"
 #include "atiscreen.h"
 
+#include "shadowfb.h"
 #include "xf86cmap.h"
 
 #include "xf1bpp.h"
@@ -43,6 +44,44 @@
 #include "mipointer.h"
 
 /*
+ * ATIRefreshArea --
+ *
+ * This function is called by the shadow frame buffer code to refresh the
+ * hardware frame buffer.
+ */
+static void
+ATIRefreshArea
+(
+    ScrnInfoPtr pScreenInfo,
+    int         nBox,
+    BoxPtr      pBox
+)
+{
+    ATIPtr  pATI = ATIPTR(pScreenInfo);
+    pointer pSrc, pDst;
+    int     offset, w, h;
+
+    while (nBox-- > 0)
+    {
+        w = (pBox->x2 - pBox->x1) * pATI->FBBytesPerPixel;
+        h = pBox->y2 - pBox->y1;
+        offset =
+            (pBox->y1 * pATI->FBPitch) + (pBox->x1 * pATI->FBBytesPerPixel);
+        pSrc = (char *)pATI->pShadow + offset;
+        pDst = (char *)pATI->pMemory + offset;
+
+        while (h-- > 0)
+        {
+            memcpy(pDst, pSrc, w);
+            pSrc = (char *)pSrc + pATI->FBPitch;
+            pDst = (char *)pDst + pATI->FBPitch;
+        }
+
+        pBox++;
+    }
+}
+
+/*
  * ATIScreenInit --
  *
  * This function is called by DIX to initialize the screen.
@@ -58,6 +97,7 @@ ATIScreenInit
 {
     ScrnInfoPtr  pScreenInfo = xf86Screens[iScreen];
     ATIPtr       pATI        = ATIPTR(pScreenInfo);
+    pointer      pFB;
     int          VisualMask;
 
     /* Set video hardware state */
@@ -76,46 +116,62 @@ ATIScreenInit
                           pScreenInfo->rgbBits, pScreenInfo->defaultVisual))
         return FALSE;
 
+    pFB = pATI->pMemory;
+    if (pATI->OptionShadowFB)
+    {
+        pATI->FBBytesPerPixel = pScreenInfo->bitsPerPixel >> 3;
+        pATI->FBPitch =
+            PixmapBytePad(pScreenInfo->displayWidth, pScreenInfo->depth);
+        if ((pATI->pShadow = xalloc(pATI->FBPitch * pScreenInfo->virtualY)))
+            pFB = pATI->pShadow;
+        else
+        {
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "Insufficient virtual memory for shadow frame buffer.\n");
+            pATI->OptionShadowFB = FALSE;
+        }
+    }
+
     /* Initialize framebuffer layer */
     switch (pScreenInfo->bitsPerPixel)
     {
         case 1:
-            pATI->Closeable = xf1bppScreenInit(pScreen, pATI->pMemory,
+            pATI->Closeable = xf1bppScreenInit(pScreen, pFB,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
                 pScreenInfo->xDpi, pScreenInfo->yDpi,
                 pScreenInfo->displayWidth);
             break;
 
         case 4:
-            pATI->Closeable = xf4bppScreenInit(pScreen, pATI->pMemory,
+            pATI->Closeable = xf4bppScreenInit(pScreen, pFB,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
                 pScreenInfo->xDpi, pScreenInfo->yDpi,
                 pScreenInfo->displayWidth);
             break;
 
         case 8:
-            pATI->Closeable = cfbScreenInit(pScreen, pATI->pMemory,
+            pATI->Closeable = cfbScreenInit(pScreen, pFB,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
                 pScreenInfo->xDpi, pScreenInfo->yDpi,
                 pScreenInfo->displayWidth);
             break;
 
         case 16:
-            pATI->Closeable = cfb16ScreenInit(pScreen, pATI->pMemory,
+            pATI->Closeable = cfb16ScreenInit(pScreen, pFB,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
                 pScreenInfo->xDpi, pScreenInfo->yDpi,
                 pScreenInfo->displayWidth);
             break;
 
         case 24:
-            pATI->Closeable = cfb24ScreenInit(pScreen, pATI->pMemory,
+            pATI->Closeable = cfb24ScreenInit(pScreen, pFB,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
                 pScreenInfo->xDpi, pScreenInfo->yDpi,
                 pScreenInfo->displayWidth);
             break;
 
         case 32:
-            pATI->Closeable = cfb32ScreenInit(pScreen, pATI->pMemory,
+            pATI->Closeable = cfb32ScreenInit(pScreen, pFB,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
                 pScreenInfo->xDpi, pScreenInfo->yDpi,
                 pScreenInfo->displayWidth);
@@ -175,6 +231,11 @@ ATIScreenInit
                                  CMAP_LOAD_EVEN_IF_OFFSCREEN))
             return FALSE;
 
+    /* Initialize shadow framebuffer */
+    if (pATI->OptionShadowFB &&
+        !ShadowFBInit(pScreen, ATIRefreshArea))
+        return FALSE;
+
     /* Set pScreen->SaveScreen and wrap CloseScreen vector */
     pScreen->SaveScreen = ATISaveScreen;
     pATI->CloseScreen = pScreen->CloseScreen;
@@ -200,7 +261,7 @@ ATICloseScreen
 {
     ScrnInfoPtr pScreenInfo = xf86Screens[iScreen];
     ATIPtr      pATI        = ATIPTR(pScreenInfo);
-    Bool        Closed = TRUE;
+    Bool        Closed      = TRUE;
 
     if ((pScreen->CloseScreen = pATI->CloseScreen))
     {
@@ -211,6 +272,9 @@ ATICloseScreen
     pATI->Closeable = FALSE;
 
     ATILeaveGraphics(pScreenInfo, pATI);
+
+    xfree(pATI->pShadow);
+    pATI->pShadow = NULL;
 
     return Closed;
 }

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.105 1999/08/14 10:49:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.106 1999/09/04 13:04:30 dawes Exp $
 
 
 
@@ -23,7 +23,11 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.105 1999/08/
 #  ifdef LinuxArchitecture
         KBD = xf86KbdLnx
 #  else
+#  if defined(SunArchitecture) && defined(SVR4Architecture) && OSMinorVersion >= 8
+        KBD = xf86KbdSol8
+#else
         KBD = xf86Kbd
+#  endif
 #  endif
 # endif
 #endif
@@ -122,6 +126,7 @@ OBJS = \
 	$(BETAOBJ) \
 	$(KBD).o
 
+
 OFILES = \
 	xf86Init.o \
 	xf86IniExt.o
@@ -144,7 +149,11 @@ EXP_DEFINES = -DEXPIRY_TIME=XF86ServerExpiry $(EXP_FORCE_DEFINES)
 PROJECTROOT = ProjectRoot
 XCONFIGDEFINES = -DPROJECTROOT='"$(PROJECTROOT)"'
 
-    DEFINES =	$(CONSDEFINES) $(KBDDEFINES) $(EXT_DEFINES)
+#if defined(SunArchitecture) && defined(SVR4Architecture) && OSMinorVersion >= 8
+  OSDEFINES = -DSOL8
+#endif
+
+    DEFINES = $(CONSDEFINES) $(KBDDEFINES) $(EXT_DEFINES) $(OSDEFINES)
 
 AllTarget($(OFILES))
 

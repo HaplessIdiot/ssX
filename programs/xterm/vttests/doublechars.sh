@@ -1,5 +1,5 @@
 #!/bin/sh
-# $XFree86$
+# $XFree86: xc/programs/xterm/vttests/doublechars.sh,v 1.1 1999/07/11 08:49:54 dawes Exp $
 #
 # -- Thomas Dickey (1999/7/7)
 # Illustrate the use of double-size characters by drawing successive lines in
@@ -65,7 +65,7 @@ else
 	$CMD $OPT "${ESC}[?3h" >/dev/tty
 fi
 
-for SGR in 0 1 4 7
+for SGR in 0 1 4 5 7
 do
 	$CMD $OPT "${ESC}[0;${SGR}m" >/dev/tty
 	for DBL in 5 3 4 6 5

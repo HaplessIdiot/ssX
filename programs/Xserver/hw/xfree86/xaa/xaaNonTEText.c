@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.9 1999/07/11 08:49:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.10 1999/09/06 11:27:40 dawes Exp $ */
 
 /********************************************************************
 
@@ -479,7 +479,7 @@ PolyGlyphBltNonTEColorExpansion(
     if(!nbox)
 	return width;
 
-    if((rop == GXcopy) && (nglyph > 1) &&
+    if((infoRec->WriteBitmap) && (rop == GXcopy) && (nglyph > 1) &&
 	((FONTMAXBOUNDS(font, rightSideBearing) - 
           FONTMINBOUNDS(font, leftSideBearing)) <= 32)) {
 

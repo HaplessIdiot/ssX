@@ -66,7 +66,7 @@ terms and conditions:
 	Larry Hare -- AGE Logic, Inc. June, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/import/midraw.c,v 3.2 1998/10/04 09:36:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/import/midraw.c,v 3.3 1998/10/05 13:22:35 dawes Exp $ */
 
 #define _XIEC_IDRAW
 #define _XIEC_MIDRAW
@@ -230,7 +230,7 @@ static int InitializeIDraw(flo,ped)
 
   if(notify && dix->pDraw->type != DRAWABLE_PIXMAP) {
     ddx->pExposed = &ddx->Exposed;
-    (*dix->pDraw->pScreen->RegionInit) (ddx->pExposed, NullBox, 0);
+    REGION_INIT(dix->pDraw->pScreen, ddx->pExposed, NullBox, 0);
   }
   /* note: ImportResource elements don't use their receptors */
   return InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE);
@@ -384,7 +384,7 @@ static void FlushExposeEvents(flo,ped)
 					rects->y2 - rects->y1);
 	    }
 	}
-    	(*pDraw->pScreen->RegionUninit) (rp);
+    	REGION_UNINIT(pDraw->pScreen, rp);
     } /* else Memory Leak */
     pvt->pExposed = NullRegion;
   }
@@ -499,7 +499,7 @@ XIEGetImage (pDrawable, sx, sy, w, h, format, pmask, pdst, fill, Exposed)
 	bounds.y1 = sy + pDrawable->y;
 	bounds.x2 = bounds.x1 + w;
 	bounds.y2 = bounds.y1 + h;
-	(*pScreen->RegionInit) (&Remaining, &bounds, 0);
+	REGION_INIT(pScreen, &Remaining, &bounds, 0);
 	if (!(pPixmap = (*pScreen->CreatePixmap) (pScreen, w, h, depth)))
 	    goto punt;
 	if(!(pGC = GetScratchGC (depth, pScreen))) {
@@ -507,8 +507,8 @@ XIEGetImage (pDrawable, sx, sy, w, h, format, pmask, pdst, fill, Exposed)
 	    goto punt;
 	}
 	if (pWin->viewable && 
-	    (*pScreen->RectIn) (&Remaining, (*pScreen->RegionExtents)
-					(&pWin->borderSize)) != rgnOUT) {
+	    RECT_IN_REGION(pScreen, &Remaining,
+		   REGION_EXTENTS(pScreen, &pWin->borderSize)) != rgnOUT) {
 	    XID	subWindowMode = IncludeInferiors;
 	    ChangeGC (pGC, GCSubwindowMode, &subWindowMode);
 	    ValidateGC ((DrawablePtr)pPixmap, pGC);
@@ -524,12 +524,12 @@ XIEGetImage (pDrawable, sx, sy, w, h, format, pmask, pdst, fill, Exposed)
 				   (DrawablePtr)pPixmap, pGC,
 				   x, y, w, h,
 				   0, 0);
-	    (*pScreen->Subtract) (&Remaining, &Remaining,
+	    REGION_SUBTRACT(pScreen, &Remaining, &Remaining,
 				  &((WindowPtr) pDrawable)->borderClip);
 	    if (REGION_NUM_RECTS(&Remaining) == 0) goto done;
 	}
-        (*pScreen->TranslateRegion) (&Remaining, -pWin->drawable.x,
-						     -pWin->drawable.y);
+        REGION_TRANSLATE(pScreen, &Remaining,
+	    -pWin->drawable.x, -pWin->drawable.y);
 
 	/* Copy in Backstore now */
 	if (pWin->backStorage) {
@@ -564,12 +564,12 @@ XIEGetImage (pDrawable, sx, sy, w, h, format, pmask, pdst, fill, Exposed)
 	/* Accumulate Exposures if requested */
 	if (REGION_NUM_RECTS(&Remaining) > 0) {
 	    if (Exposed) {
-		(*pScreen->Union) (Exposed, Exposed, &Remaining);
+		REGION_UNION(pScreen, Exposed, Exposed, &Remaining);
 	    }
 	}
 
 done:
-	(*pScreen->RegionUninit) (&Remaining);
+	REGION_UNINIT(pScreen, &Remaining);
 	(*pScreen->GetImage) ((DrawablePtr) pPixmap, 0, 0, w, h,
 			      format, pmask, pdst);
 	(*pScreen->DestroyPixmap) (pPixmap);

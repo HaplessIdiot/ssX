@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcWindow.c,v 1.2 1998/07/25 16:59:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcWindow.c,v 1.3 1999/06/06 08:49:06 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -101,10 +101,11 @@ xf4bppCopyWindow(pWin, ptOldOrg, prgnSrc)
 
     dx = ptOldOrg.x - pWin->drawable.x ;
     dy = ptOldOrg.y - pWin->drawable.y ;
-    (* pWin->drawable.pScreen->TranslateRegion)(prgnSrc, -dx, -dy) ;
+    REGION_TRANSLATE(pWin->drawable.pScreen, prgnSrc, -dx, -dy);
 
-    prgnDst = (* pWin->drawable.pScreen->RegionCreate)(NULL, 1);
-    (* pWin->drawable.pScreen->Intersect)(prgnDst, &pWin->borderClip, prgnSrc) ;
+    prgnDst = REGION_CREATE(pWin->drawable.pScreen, NULL, 1);
+    REGION_INTERSECT(pWin->drawable.pScreen, prgnDst,
+		     &pWin->borderClip, prgnSrc);
 
     if ( !( nbox = REGION_NUM_RECTS(prgnDst) ) )
 	return;
@@ -187,8 +188,7 @@ xf4bppCopyWindow(pWin, ptOldOrg, prgnSrc)
     if ( pboxNew )
 	DEALLOCATE_LOCAL( pboxNew ) ;
 
-    (* pWin->drawable.pScreen->RegionDestroy)(prgnDst) ;
-    return ;
+    REGION_DESTROY(pWin->drawable.pScreen, prgnDst);
 }
 
 Bool xf4bppPositionWindow(pWin, x, y)

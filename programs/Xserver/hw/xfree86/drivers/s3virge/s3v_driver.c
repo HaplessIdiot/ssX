@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.33 1999/08/21 13:48:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.34 1999/08/22 05:35:54 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -29,6 +29,7 @@ in this Software without prior written authorization from the XFree86 Project.
 #include "xf86RAC.h"
 
 #include "xf86DDC.h"
+#include "xf86int10.h"
 /*
  * s3v_driver.c
  * Port to 4.0 design level
@@ -100,7 +101,7 @@ static void S3VDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					 int PowerManagementMode,
 					 int flags);
 #endif
-static void S3Vddc1(int scrnIndex);
+static Bool S3Vddc1(int scrnIndex);
 static unsigned int S3Vddc1Read(ScrnInfoPtr pScrn);
 
 /*
@@ -718,6 +719,16 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	S3VFreeRec(pScrn);
 	return FALSE;
     }
+#if 1
+    if (xf86LoadSubModule(pScrn, "int10")) {
+ 	xf86Int10InfoPtr pInt;
+#if 1
+	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
+	pInt = xf86InitInt10(pEnt->index);
+	xf86FreeInt10(pInt);
+#endif
+    }
+#endif
     ps3v->PciInfo = xf86GetPciInfoForEntity(pEnt->index);
     xf86RegisterResources(pEnt->index,NULL,ResNone);
     xf86SetOperatingState(RES_SHARED_VGA, pEnt->index, ResUnusedOpr);
@@ -805,19 +816,17 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 
    if (xf86LoadSubModule(pScrn, "ddc")) {
        xf86LoaderReqSymLists(ddcSymbols, NULL);
-#if 1
-       S3Vddc1(pScrn->scrnIndex);
-#else
-       if ( xf86LoadSubModule(pScrn, "i2c") ) {
-	   xf86LoaderReqSymLists(i2cSymbols,NULL);
-	   if (S3V_I2CInit(pScrn)) {
-	       CARD32 tmp = (INREG(DDC_REG));
-	       OUTREG(DDC_REG,(tmp | 0x13));
-	       xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,ps3v->I2C));
-	       OUTREG(DDC_REG,tmp);
+       if (!S3Vddc1(pScrn->scrnIndex)) {
+	   if ( xf86LoadSubModule(pScrn, "i2c") ) {
+	       xf86LoaderReqSymLists(i2cSymbols,NULL);
+	       if (S3V_I2CInit(pScrn)) {
+		   CARD32 tmp = (INREG(DDC_REG));
+		   OUTREG(DDC_REG,(tmp | 0x13));
+		   xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,ps3v->I2C));
+		   OUTREG(DDC_REG,tmp);
+	       }
 	   }
        }
-#endif
    }
 
    /*
@@ -1946,7 +1955,6 @@ S3VMapMem(ScrnInfoPtr pScrn)
 #else
   mmioFlags = VIDMEM_MMIO;
 #endif
-  ErrorF("1\n");
   
   ps3v->MapBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, ps3v->PciTag,
 			ps3v->PciInfo->memBase[0] + S3_NEWMMIO_REGBASE,
@@ -3188,20 +3196,24 @@ S3Vddc1Read(ScrnInfoPtr pScrn)
     return ((unsigned int) (tmp & 0x08));
 }
 
-static void
+static Bool
 S3Vddc1(int scrnIndex)
 {
     S3VPtr ps3v = S3VPTR(xf86Screens[scrnIndex]);
     CARD32 tmp;
+    Bool success = FALSE;
     
     /* initialize chipset */
     tmp = INREG(DDC_REG);
     OUTREG(DDC_REG,(tmp | 0x12));
     
-    xf86PrintEDID(xf86DoEDID_DDC1(scrnIndex,vgaHWddc1SetSpeed,S3Vddc1Read));
+    if (xf86PrintEDID(
+	xf86DoEDID_DDC1(scrnIndex,vgaHWddc1SetSpeed,S3Vddc1Read)))
+	success = TRUE;
 
     /* undo initialization */
     OUTREG(DDC_REG,(tmp));
+    return success;
 }
 /*EOF*/
 

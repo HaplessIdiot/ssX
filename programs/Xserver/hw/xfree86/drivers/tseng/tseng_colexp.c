@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_colexp.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_colexp.c,v 1.9 1999/03/14 03:22:07 dawes Exp $ */
 
 
 
@@ -364,7 +364,7 @@ void TsengSubsequentColorExpandScanline_16bpp(ScrnInfoPtr pScrn, int bufno)
 
     i = colexp_width_dwords * 2;
     bufptr = (CARD8 *) (pTseng->XAAScanlineColorExpandBuffers[bufno]);
-
+    
     wait_acl_queue(pTseng);
     START_ACL(pTseng, ColorExpandDst);
 

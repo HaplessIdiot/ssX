@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.16 1999/06/20 08:41:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.17 1999/09/06 11:27:18 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -503,7 +503,7 @@ ProcPanoramiXShmGetImage(ClientPtr client)
     DrawablePtr 	pDraw;
     xShmGetImageReply	xgi;
     ShmDescPtr		shmdesc;
-    int         	x, y, w, h, format;
+    int         	i, x, y, w, h, format;
     Mask		plane, planemask;
     long		lenPer, length, widthBytesLine;
     Bool		isRoot;
@@ -559,6 +559,10 @@ ProcPanoramiXShmGetImage(ClientPtr client)
 
 	PANORAMIXFIND_ID(pPanoramiXWin, stuff->drawable);
     }
+
+    drawables[0] = pDraw;
+    for(i = 1; i < PanoramiXNumScreens; i++)
+	VERIFY_DRAWABLE(drawables[i], pPanoramiXWin->info[i].id, client);
 
     xgi.visual = wVisual(((WindowPtr)pDraw));
     xgi.type = X_Reply;
@@ -650,7 +654,7 @@ ProcPanoramiXShmGetImage(ClientPtr client)
 		{
 		    /* get image for each plane. */
 
-		    XineramaGetImageData(drawables, x, y, w, h 
+		    XineramaGetImageData(drawables, x, y, w, h,
 					format, plane, tmpImage,
 					widthBytesLine, isRoot);
 

@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclLine.c,v 1.3 1996/12/31 07:05:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclLine.c,v 1.4 1998/03/20 21:04:51 hohndel Exp $ */
 
 #include "Pcl.h"
 #include "gcstruct.h"
@@ -111,7 +111,7 @@ PclPolyLine( pDrawable, pGC, mode, nPoints, pPoints )
      * Allocate the storage required to deal with the clipping
      * regions.
      */
-    region = miRegionCreate( NULL, 0 );
+    region = REGION_CREATE( pGC->pScreen, NULL, 0 );
     drawRects = (xRectangle *)
       xalloc( ( nPoints - 1 ) * sizeof( xRectangle ) );
 
@@ -172,10 +172,11 @@ PclPolyLine( pDrawable, pGC, mode, nPoints, pPoints )
      * Convert the collection of rectangles into a proper region, then
      * intersect it with the clip region.
      */
-    drawRegion = miRectsToRegion( nPoints - 1, drawRects, CT_UNSORTED );
+    drawRegion = RECTS_TO_REGION( pGC->pScreen, nPoints - 1,
+				  drawRects, CT_UNSORTED );
     if( mode == CoordModePrevious )
-      miTranslateRegion( drawRegion, pPoints[0].x, pPoints[0].y );
-    miIntersect( region, drawRegion, pGC->pCompositeClip );
+      REGION_TRANSLATE( pGC->pScreen, drawRegion, pPoints[0].x, pPoints[0].y );
+    REGION_INTERSECT( pGC->pScreen, region, drawRegion, pGC->pCompositeClip );
     
     /*
      * For each rectangle in the clip region, set the HP-GL/2 "input
@@ -189,8 +190,8 @@ PclPolyLine( pDrawable, pGC, mode, nPoints, pPoints )
     /*
      * Clean up the temporary regions
      */
-    miRegionDestroy( drawRegion );
-    miRegionDestroy( region );
+    REGION_DESTROY( pGC->pScreen, drawRegion );
+    REGION_DESTROY( pGC->pScreen, region );
     xfree( drawRects );
 }
 
@@ -225,7 +226,7 @@ PclPolySegment( pDrawable, pGC, nSegments, pSegments )
     /*
      * Allocate the storage for the temporary regions.
      */
-    region = miRegionCreate( NULL, 0 );
+    region = REGION_CREATE( pGC->pScreen, NULL, 0 );
     drawRects = (xRectangle *)
       xalloc( nSegments * sizeof( xRectangle ) );
 
@@ -278,8 +279,9 @@ PclPolySegment( pDrawable, pGC, nSegments, pSegments )
      * Convert the collection of rectangles into a proper region, then
      * intersect it with the clip region.
      */
-    drawRegion = miRectsToRegion( nSegments, drawRects, CT_UNSORTED );
-    miIntersect( region, drawRegion, pGC->pCompositeClip );
+    drawRegion = RECTS_TO_REGION( pGC->pScreen, nSegments,
+				  drawRects, CT_UNSORTED );
+    REGION_INTERSECT( pGC->pScreen, region, drawRegion, pGC->pCompositeClip );
     
     /*
      * For each rectangle in the clip region, set the HP-GL/2 "input
@@ -304,8 +306,8 @@ PclPolySegment( pDrawable, pGC, nSegments, pSegments )
     /*
      * Clean up 
      */
-    miRegionDestroy( drawRegion );
-    miRegionDestroy( region );
+    REGION_DESTROY( pGC->pScreen, drawRegion );
+    REGION_DESTROY( pGC->pScreen, region );
     xfree( drawRects );
 }
 

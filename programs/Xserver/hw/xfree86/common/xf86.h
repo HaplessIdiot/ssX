@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.115 1999/08/01 07:57:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.116 1999/08/21 13:48:23 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -92,17 +92,19 @@ resRange xf86GetSparse(long type,  memType fixed_bits,
 		       memType decode_mask, memType address_mask,
 		       resPtr avoid);
 memType xf86ChkConflict(resRange *rgp, int entityIndex);
- 
+Bool xf86IsPciDevPresent(int bus, int dev, int func);
+ScrnInfoPtr xf86FindScreenForEntity(int entityIndex);
+
  
 /* xf86Cursor.c */
 
 void xf86LockZoom(ScreenPtr pScreen, int lock);
 void xf86InitViewport(ScrnInfoPtr pScr);
-void xf86SetScreenLayout(int scrnIndex, int left, int right, int up, int down);
 void xf86SetViewport(ScreenPtr pScreen, int x, int y);
 Bool xf86ZoomLocked(ScreenPtr pScreen);
 void xf86ZoomViewport(ScreenPtr pScreen, int zoom);
 void *xf86GetPointerScreenFuncs(void);
+void xf86InitOrigins(void);
  
 /* xf86DPMS.c */
 

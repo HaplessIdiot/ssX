@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.65 1999/07/19 13:36:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.66 1999/08/28 09:00:50 dawes Exp $ */
 
 /*
  * Includes
@@ -44,9 +44,11 @@
 #include <stdlib.h>
 #endif	/* MACH386 */
 #include <ctype.h>
-#if defined(SYSV) || defined(SVR4) || defined(linux)
+#if defined(SYSV) || defined(SVR4) || defined(linux) || defined(__QNX__) || defined(__QNXNTO__)
 # include <string.h>
+#if !(defined(__QNX__) && !defined(__QNXNTO__))
 # include <memory.h>
+#endif
 #else
 #ifdef _MINIX
 # include <string.h>
@@ -425,7 +427,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define V_EPSON		29
 
 #define NUM_VENDORS	29
-#define CHPS_PER_VENDOR	40
+#define CHPS_PER_VENDOR	64
 
 #define CHIP_AHEAD_UNK	SVGA_TYPE(V_AHEAD,0)	/* Ahead unknown	*/
 #define CHIP_AHEAD_A	SVGA_TYPE(V_AHEAD,1)	/* Ahead V5000 Version A*/
@@ -494,7 +496,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_CTF65555	SVGA_TYPE(V_CT,17)	/* C&T F65555		*/
 #define CHIP_CTF68554	SVGA_TYPE(V_CT,18)	/* C&T F68554		*/
 #define CHIP_CTF69000	SVGA_TYPE(V_CT,19)	/* C&T F69000           */
-#define CHIP_CTF69030	SVGA_TYPE(V_CT,20)	/* C&T F69030           */
+#define CHIP_CTF69030	SVGA_TYPE(V_CT,20)	/* C&T F69030		*/
 #define CHIP_CTF64200	SVGA_TYPE(V_CT,21)	/* C&T F64200 WinGine   */
 #define CHIP_CTF64300	SVGA_TYPE(V_CT,22)	/* C&T F64300 WinGine   */
 #define CHIP_CL_UNKNOWN	SVGA_TYPE(V_CIRRUS,0)	/* Cirrus unknown	*/
@@ -605,6 +607,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_S3_Trio3D	SVGA_TYPE(V_S3,37)	/* S3 Trio3D		*/
 #define CHIP_S3_Savage3D SVGA_TYPE(V_S3,38)	/* S3 Savage3D		*/
 #define CHIP_S3_Savage3D_M SVGA_TYPE(V_S3,39)	/* S3 Savage3D Macro	*/
+#define CHIP_S3_Trio3D_2X	SVGA_TYPE(V_S3,40)	/* S3 Trio3D		*/
 #define CHIP_TVGA_UNK	SVGA_TYPE(V_TRIDENT,0)	/* Trident unknown	*/
 #define CHIP_TVGA8200	SVGA_TYPE(V_TRIDENT,1)	/* Trident LX8200	*/
 #define CHIP_TVGA8800BR	SVGA_TYPE(V_TRIDENT,2)	/* Trident 8800BR	*/

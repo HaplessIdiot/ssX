@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.54 1999/06/20 05:23:43 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.55 1999/06/27 09:20:23 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1930,7 +1930,7 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Map the Tseng memory areas */
     if (!TsengMapMem(pScrn))
 	return FALSE;
-
+    
     /* Save the current state */
     TsengSave(pScrn);
 
@@ -2008,12 +2008,14 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    pScrn->displayWidth);
 	break;
     case 24:
+	if (pix24bpp == 24)
 	    ret = cfb24ScreenInit(pScreen, pTseng->FbBase, pScrn->virtualX,
-		pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-		pScrn->displayWidth);
+				  pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+				  pScrn->displayWidth);
+	else
 	    ret = cfb24_32ScreenInit(pScreen, pTseng->FbBase, pScrn->virtualX,
-		pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-		pScrn->displayWidth);
+				     pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+				     pScrn->displayWidth);
 	break;
     case 32:
 	ret = cfb32ScreenInit(pScreen, pTseng->FbBase, pScrn->virtualX,

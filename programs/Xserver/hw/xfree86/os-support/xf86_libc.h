@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.38 1999/06/27 14:08:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.39 1999/07/06 11:38:51 dawes Exp $ */
 
 
 
@@ -305,6 +305,7 @@ struct xf86stat {
 #define geteuid                 xf86geteuid
 #define mknod(a,b,c)            xf86mknod(a,b,c)
 #define sleep(a)                xf86sleep(a)
+#define mkdir(a,b)              xf86mkdir(a,b)
 #define S_ISUID XF86_S_ISUID
 #define S_ISGID XF86_S_ISGID
 #define S_ISVTX XF86_S_ISVTX

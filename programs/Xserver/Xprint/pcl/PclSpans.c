@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclSpans.c,v 1.2 1996/12/30 13:59:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclSpans.c,v 1.3 1996/12/31 07:06:03 dawes Exp $ */
 
 
 #include "Pcl.h"
@@ -86,14 +86,14 @@ PclFillSpans( pDrawable, pGC, nSpans, pPoints, pWidths, fSorted )
 	  r->width = pWidths[i];
 	  r->height = 1;
       }
-    fillRegion = miRectsToRegion( nSpans, rects, ( fSorted ) ?
+    fillRegion = RECTS_TO_REGION( pGC->pScreen, nSpans, rects, ( fSorted ) ?
 				 CT_YSORTED : CT_UNSORTED );
     
     /*
      * Intersect this region with the clip region.  Whatever's left,
      * should be filled.
      */
-    miIntersect( region, fillRegion, pGC->clientClip );
+    REGION_INTERSECT( pGC->pScreen, region, fillRegion, pGC->clientClip );
     
     pbox = REGION_RECTS( region );
     nbox = REGION_NUM_RECTS( region );
@@ -117,8 +117,8 @@ PclFillSpans( pDrawable, pGC, nSpans, pPoints, pWidths, fSorted )
     /*
      * Clean up the temporary regions
      */
-    miRegionDestroy( fillRegion );
-    miRegionDestroy( region );
+    REGION_DESTROY( pGC->pScreen, fillRegion );
+    REGION_DESTROY( pGC->pScreen, region );
     xfree( rects );
 }
 

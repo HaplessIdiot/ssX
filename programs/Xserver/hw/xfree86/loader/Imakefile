@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.16 1999/04/17 09:08:41 dawes Exp $ */
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.17 1999/07/04 06:39:09 dawes Exp $ */
 
 
 
@@ -22,7 +22,11 @@ DLSRC=dlloader.c
 DLOBJ=dlloader.o
 #endif
 
-DEFINES = $(DBMALLOCDEFINE) $(DLOPENDEFINES)
+#if defined(SunArchitecture) && defined(SVR4Architecture) && OSMinorVersion >= 8
+OSDEFINES = -DSOL8
+#endif
+
+DEFINES = $(DBMALLOCDEFINE) $(DLOPENDEFINES) $(OSDEFINES)
 
 MODULEDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.2 1999/08/01 07:57:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.3 1999/08/21 13:48:32 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -174,9 +174,9 @@ typedef struct _ATIRec
     /*
      * Definitions related to video memory apertures.
      */
-    pointer pBank, pMemory;
+    pointer pBank, pMemory, pShadow;
     unsigned long LinearBase, ApertureBase;
-    int LinearSize, ApertureSize;
+    int LinearSize, ApertureSize, FBPitch, FBBytesPerPixel;
     CARD8 UseSmallApertures;
 
     /*
@@ -243,7 +243,13 @@ typedef struct _ATIRec
     /*
      * Driver options.
      */
-    CARD8 OptionCSync, OptionDevel, OptionLinear, OptionProbeClocks;
+    CARD8 OptionAccel;          /* Use hardware draw engine */
+    CARD8 OptionCRT;            /* Prefer CRT over digital panel */
+    CARD8 OptionCSync;          /* Use composite sync */
+    CARD8 OptionDevel;          /* Intentionally undocumented */
+    CARD8 OptionLinear;         /* Use linear fb aperture when available */
+    CARD8 OptionProbeClocks;    /* Force probe for fixed clocks */
+    CARD8 OptionShadowFB;       /* Use shadow frame buffer */
 
     /*
      * State flags.

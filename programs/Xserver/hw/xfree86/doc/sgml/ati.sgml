@@ -8,10 +8,10 @@
 
 <title>ATI Adapters README file
 <author>Marc Aurele La France
-<date>1999 July 8
+<date>1999 September 8
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.24 1999/08/01 07:57:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.25tsi Exp $
 </ident>
 
 <abstract>
@@ -337,11 +337,34 @@ clocks, the second of which will be assumed to be 28.322MHz.
 You can include up to four clock frequencies in your XF86Config to specify the
 actual values used by the adapter.
 Any more will be ignored.<p>
+<sect1>Option <it>``crt_screen''</it><p>
+This specification is only effective when the driver detects that the adapter's
+BIOS has initialized both the digital flat panel and CRT interfaces.
+In such a situation, the driver will normally drive the panel and disable the
+CRT.
+This specification causes the driver to disable the digital flat panel and
+display the screen image on the CRT instead.<p>
 <sect1>Option <it>``nolinear''</it><p>
 By default, the driver will enable a linear video memory aperture for
 256-colour and higher depth modes if it is also using a Mach64 accelerator CRTC
 or an integrated Mach64 graphics chip.
 This option disables this linear aperture.<p>
+<sect1>Option <it>``shadowfb''</it><p>
+If this option is enabled, the driver will cause the CPU to do each drawing
+operation first into a shadow frame buffer in system virtual memory and then
+copy the result into video memory.
+If this option is not active, the CPU will draw directly into video memory.
+Enabling this option is beneficial for those systems where reading from video
+memory is, on average, slower than the corresponding read/modify/write
+operation in system virtual memory.
+This is normally the case for PCI or AGP adapters, and, so, is enabled by
+default.
+For other bus types, the default behaviour is to disable this option.<p>
+Note that, due to various limitations, this option is forcibly disabled when a
+linear video memory aperture is not enabled, or when the frame buffer depth is
+less than 8.
+The use of video acceleration, when implemented in a future driver release,
+will also disable frame buffer shadowing.<p>
 <sect1>MemBase <it>address</it><p>
 This specification is only effective for non-PCI Mach64 adapters, and is used
 to override the CPU address at which the adapter will map its video memory.

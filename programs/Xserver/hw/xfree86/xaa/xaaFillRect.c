@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.10 1998/12/20 11:57:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.11 1999/05/30 03:03:31 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -596,6 +596,7 @@ XAAFillCacheBltRects(
 	height = pBox->y2 - y;
 	width = pBox->x2 - pBox->x1;
 	
+#if 0
 	if (rop == GXcopy) {
 	    while(1) {
 		w = width; skipleft = phaseX; x = pBox->x1;
@@ -652,7 +653,9 @@ XAAFillCacheBltRects(
 		    blit_h <<= 1;
 		}
 	    }
-	} else {
+	} else 
+#endif
+	{
 	    while(1) {
 		w = width; skipleft = phaseX; x = pBox->x1;
 		blit_h = pCache->h - phaseY;
