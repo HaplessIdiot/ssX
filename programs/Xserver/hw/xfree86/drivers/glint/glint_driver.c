@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.88 2000/06/21 17:28:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.89 2000/06/22 10:40:48 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -2937,22 +2937,27 @@ GLINTSaveScreen(ScreenPtr pScreen, int mode)
 
     unblank = xf86IsUnblank(mode);
 
-    switch (pGlint->Chipset) {
-    case PCI_VENDOR_TI_CHIP_PERMEDIA2:
-    case PCI_VENDOR_TI_CHIP_PERMEDIA:
-    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
-    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
-    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
-    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
-	temp = GLINT_READ_REG(PMVideoControl);
-	if (unblank) temp |= 1;
-	else	     temp &= 0xFFFFFFFE;
-	GLINT_SLOW_WRITE_REG(temp, PMVideoControl);
-	break;
-    case PCI_VENDOR_3DLABS_CHIP_500TX:
-    case PCI_VENDOR_3DLABS_CHIP_300SX:
-    case PCI_VENDOR_3DLABS_CHIP_MX:
-	break;
+    if (unblank)
+	SetTimeSinceLastInputEvent();
+
+    if ((pScrn != NULL ) && pScrn->vtSema) {
+	switch (pGlint->Chipset) {
+	case PCI_VENDOR_TI_CHIP_PERMEDIA2:
+	case PCI_VENDOR_TI_CHIP_PERMEDIA:
+	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
+	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
+	    temp = GLINT_READ_REG(PMVideoControl);
+	    if (unblank) temp |= 1;
+	    else	     temp &= 0xFFFFFFFE;
+	    GLINT_SLOW_WRITE_REG(temp, PMVideoControl);
+	    break;
+	case PCI_VENDOR_3DLABS_CHIP_500TX:
+	case PCI_VENDOR_3DLABS_CHIP_300SX:
+	case PCI_VENDOR_3DLABS_CHIP_MX:
+	    break;
+	}
     }
 
     TRACE_EXIT("GLINTSaveScreen");
