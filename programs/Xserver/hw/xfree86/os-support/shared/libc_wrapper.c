@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.88tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.89tsi Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -1966,6 +1966,12 @@ xf86getjmptype()
 int
 xf86setjmp(xf86jmp_buf env)
 {
+    return xf86setjmp1(env, xf86setjmp1_arg2());
+}
+
+int
+xf86setjmp0(xf86jmp_buf env)
+{
     FatalError("setjmp: type 0 called instead of type %d\n", xf86getjmptype());
 }
 
@@ -1974,7 +1980,8 @@ xf86setjmp(xf86jmp_buf env)
 int
 xf86setjmp1(xf86jmp_buf env, int arg2)
 {
-    return sigsetjmp((void *)env, arg2);
+    __sigjmp_save((void *)env, arg2);
+    return __setjmp((void *)env);
 }
 
 #endif

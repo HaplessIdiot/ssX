@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.14tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.15tsi Exp $
  */
 
 #ifdef USE_MODULES
@@ -276,6 +276,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86shmctl)
 #ifdef HAS_GLIBC_SIGSETJMP
    SYMFUNC(xf86setjmp)
+   SYMFUNC(xf86setjmp0)
 #if defined(__GLIBC__) && (__GLIBC__ >= 2)
    SYMFUNCALIAS("xf86setjmp1",__sigsetjmp)
 #else
@@ -283,6 +284,7 @@ LOOKUP xfree86LookupTab[] = {
 #endif
 #else
    SYMFUNCALIAS("xf86setjmp",setjmp)
+   SYMFUNCALIAS("xf86setjmp0",setjmp)
    SYMFUNC(xf86setjmp1)
 #endif
    SYMFUNCALIAS("xf86longjmp",longjmp)
