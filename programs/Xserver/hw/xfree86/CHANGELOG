@@ -1,3 +1,7 @@
+XFree86 3.9.17c (27 January 2000)
+3590. Fix a build problem with the static server related to the -configure
+      option code (#3596, Takaaki Nomura).
+
 XFree86 3.9.17b (24 January 2000)
 3589. Add a rule to lnxdoc.rules for maintainers to use to update the
       formatted docs (David Dawes).
@@ -9353,4 +9357,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.957 2000/01/25 00:23:13 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.958 2000/01/25 01:06:39 dawes Exp $
