@@ -1,4 +1,6 @@
 XFree86 4.3.99.4 (xx April 2003)
+ 161. Change the /dev/ file used on some *BSD's to mmap the framebuffer in DGA
+      clients to match the /dev/ file used by the srever (Marc La France).
  160. SiS driver fixes:
       - Added MergedFB mode (including HWCursor and Xv)
       - Xv enhancements and fixes for all chipsets
@@ -16934,7 +16936,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2682 2003/05/05 16:12:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2683 2003/05/05 17:14:36 twini Exp $
 
 
 

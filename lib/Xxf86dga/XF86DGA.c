@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.22 2002/12/14 04:41:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.23tsi Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -377,6 +377,8 @@ Bool XF86DGAViewPortChanged(
 #define DEV_MEM "/dev/pmem"
 #elif defined(SVR4) && defined(sun)
 #define DEV_MEM "/dev/xsvc"
+#elif defined(HAS_APERTURE_DRV)
+#define DEV_MEM "/dev/xf86"
 #else
 #define DEV_MEM "/dev/mem"
 #endif
