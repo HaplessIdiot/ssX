@@ -2555,10 +2555,13 @@ SiS_SetCRT1ModeRegs(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
 {
   USHORT data,data2;
   USHORT infoflag=0,modeflag;
-  USHORT resindex,xres,resinfo = 0;
+  USHORT resindex,xres;
 #ifdef SIS315H
   USHORT data3;
   ULONG  longdata;
+#if 0
+  resinfo = 0;
+#endif
 #endif
 
   if(SiS_Pr->UseCustomMode) {
@@ -2568,7 +2571,11 @@ SiS_SetCRT1ModeRegs(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
      if(ModeNo > 0x13) {
     	modeflag = SiS_Pr->SiS_EModeIDTable[ModeIdIndex].Ext_ModeFlag;
     	infoflag = SiS_Pr->SiS_RefIndex[RefreshRateTableIndex].Ext_InfoFlag;
+#ifdef SIS315H
+#if 0
 	resinfo = SiS_Pr->SiS_EModeIDTable[ModeIdIndex].Ext_RESINFO;
+#endif
+#endif
      } else {
     	modeflag = SiS_Pr->SiS_SModeIDTable[ModeIdIndex].St_ModeFlag;
      }
@@ -4862,7 +4869,7 @@ sisfb_mode_rate_to_ddata(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
     else
        *sync |= FB_SYNC_HOR_HIGH_ACT;
 		
-    *vmode = FB_VMODE_NONINTERLACED;       
+    *vmode = FB_VMODE_NONINTERLACED;
     if(SiS_Pr->SiS_RefIndex[RefreshRateTableIndex].Ext_InfoFlag & 0x0080)
        *vmode = FB_VMODE_INTERLACED;
     else {
