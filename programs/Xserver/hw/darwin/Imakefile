@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.1 2000/11/15 01:36:13 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -14,7 +14,7 @@ OBJS =	darwin.o \
         darwinKeyboard.o
 
 INCLUDES = -I. -I$(SERVERSRC)/mi -I$(SERVERSRC)/mfb -I$(SERVERSRC)/cfb \
-           -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(SERVERSRC)/os
+           -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(SERVERSRC)/os \
            -I$(INCLUDESRC) -I$(FONTINCSRC)
 
 NormalLibraryObjectRule()
@@ -23,3 +23,6 @@ NormalLibraryTarget(darwin,$(OBJS))
 InstallManPage(Xdarwin,$(MANDIR))
 
 DependTarget()
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))

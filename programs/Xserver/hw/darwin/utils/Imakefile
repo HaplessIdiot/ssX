@@ -1,8 +1,11 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/utils/Imakefile,v 1.1 2000/11/15 01:36:14 dawes Exp $
 
-    SRCS = dumpkeymap.c
-    OBJS = dumpkeymap.o
+            SRCS = dumpkeymap.c
+            OBJS = dumpkeymap.o
+EXTRA_LOAD_FLAGS = -framework IOKit
+
+AllTarget(ProgramTargetName(dumpkeymap))
 
 SingleProgramTarget(dumpkeymap,$(OBJS),NullParameter,NullParameter)
-InstallProgram(dumpkeymap,$(BINDIR)
+InstallProgram(dumpkeymap,$(BINDIR))
 
