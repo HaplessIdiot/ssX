@@ -1,5 +1,6 @@
 XFree86 4.0.1d (8 September 2000)
- 592. Fix RegisterResources for multiple heads in glint driver (Berend Ozceri).
+ 592. Fix RegisterResources for multiple heads in glint driver 
+      (#4143, Berend Ozceri).
  591. Update Permedia3's hw cursor to match the Permedia2v's they are
       the same (Alan Hourihane).
  590. Fix glint driver to use colorKey rather than fixed value (Alan Hourihane).
@@ -11123,4 +11124,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1305 2000/09/11 16:58:54 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1306 2000/09/13 07:57:52 alanh Exp $
