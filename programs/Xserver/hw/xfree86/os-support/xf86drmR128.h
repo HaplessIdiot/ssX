@@ -25,7 +25,7 @@
  *
  * Author: Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmR128.h,v 3.3 2000/12/04 21:04:47 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmR128.h,v 3.4 2000/12/07 15:43:45 tsi Exp $
  *
  */
 
@@ -79,8 +79,8 @@ extern int drmR128EngineReset( int fd );
 extern int drmR128SwapBuffers( int fd );
 extern int drmR128Clear( int fd, unsigned int flags,
 			 int x, int y, int w, int h,
-			 unsigned int clear_color, unsigned int clear_depth,
-			 unsigned int color_mask, unsigned int depth_mask );
+			 unsigned int clear_color,
+			 unsigned int clear_depth );
 
 extern int drmR128FlushVertexBuffer( int fd, int prim, int indx,
 				     int count, int discard );

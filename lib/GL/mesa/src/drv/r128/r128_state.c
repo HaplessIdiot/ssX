@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_state.c,v 1.4 2000/08/25 13:42:30 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_state.c,v 1.5 2000/12/04 19:21:47 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -484,7 +484,7 @@ static void r128UpdateMasks( GLcontext *ctx )
 {
    r128ContextPtr r128ctx = R128_CONTEXT( ctx );
 
-   GLuint mask = r128PackColor( r128ctx->BufferSize,
+   GLuint mask = r128PackColor( r128ctx->r128Screen->bpp,
 				ctx->Color.ColorMask[RCOMP],
 				ctx->Color.ColorMask[GCOMP],
 				ctx->Color.ColorMask[BCOMP],
@@ -609,7 +609,7 @@ static void r128DDClearColor( GLcontext *ctx,
 {
    r128ContextPtr r128ctx = R128_CONTEXT( ctx );
 
-   r128ctx->ClearColor = r128PackColor( r128ctx->r128Screen->depth,
+   r128ctx->ClearColor = r128PackColor( r128ctx->r128Screen->bpp,
 					r, g, b, a );
 }
 
@@ -618,7 +618,7 @@ static void r128DDColor( GLcontext *ctx,
 {
    r128ContextPtr r128ctx = R128_CONTEXT( ctx );
 
-   r128ctx->Color = r128PackColor( r128ctx->r128Screen->depth,
+   r128ctx->Color = r128PackColor( r128ctx->r128Screen->bpp,
 				   r, g, b, a );
 }
 
@@ -1052,15 +1052,12 @@ void r128DDInitState( r128ContextPtr r128ctx )
    int dst_bpp, depth_bpp;
    CARD32 bias;
 
-   switch ( r128ctx->BufferSize ) {
-   case  8: dst_bpp = R128_GMC_DST_8BPP_CI; break;
-   case 15: dst_bpp = R128_GMC_DST_15BPP;   break;
+   switch ( r128ctx->r128Screen->bpp ) {
    case 16: dst_bpp = R128_GMC_DST_16BPP;   break;
-   case 24: dst_bpp = R128_GMC_DST_24BPP;   break;
    case 32: dst_bpp = R128_GMC_DST_32BPP;   break;
    default:
       fprintf( stderr, "Error: Unsupported pixel depth %d... exiting\n",
-	       r128ctx->BufferSize );
+	       r128ctx->r128Screen->bpp );
       exit( -1 );
    }
 
@@ -1171,7 +1168,7 @@ void r128DDInitState( r128ContextPtr r128ctx )
 				      R128_BACKFACE_SOLID |
 				      R128_FRONTFACE_SOLID |
 				      R128_FPU_COLOR_GOURAUD |
-				      R128_FPU_SUB_PIX_2BITS |
+				      R128_FPU_SUB_PIX_4BITS |
 				      R128_FPU_MODE_3D |
 				      R128_TRAP_BITS_DISABLE |
 				      R128_XFACTOR_2 |
@@ -1186,7 +1183,7 @@ void r128DDInitState( r128ContextPtr r128ctx )
 				R128_STARTING_VERTEX_1 |
 				R128_ENDING_VERTEX_3 |
 				R128_SU_POLY_LINE_NOT_LAST |
-				R128_SUB_PIX_2BITS);
+				R128_SUB_PIX_4BITS);
 
    r128ctx->setup.tex_size_pitch_c = 0x00000000;
    r128ctx->setup.constant_color_c = 0x00ffffff;

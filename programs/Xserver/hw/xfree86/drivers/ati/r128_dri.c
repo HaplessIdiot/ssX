@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.5 2000/11/21 23:10:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.6 2000/12/04 19:21:52 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -153,6 +153,7 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 	    }
 	}
 	break;
+
     case 32:
 	numConfigs = 1;
 	if (R128_USE_ACCUM)   numConfigs *= 2;
@@ -211,7 +212,7 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 		    pConfigs[i].depthSize      = 24;
 		    pConfigs[i].stencilSize    = 8;
 		} else {
-		    pConfigs[i].depthSize      = 32;
+		    pConfigs[i].depthSize      = 24;
 		    pConfigs[i].stencilSize    = 0;
 		}
 		pConfigs[i].auxBuffers         = 0;
@@ -361,6 +362,7 @@ static void R128DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
     pbox = pboxSave;
     nbox = nboxSave;
 
+    /* FIXME: this needs to consider depth tiling. */
     (*info->accel->SetupForSolidFill)(pScrn, depth, GXcopy, (CARD32)(-1));
     for (; nbox; nbox--, pbox++)
 	(*info->accel->SubsequentSolidFillRect)(pScrn,

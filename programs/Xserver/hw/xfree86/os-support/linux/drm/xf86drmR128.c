@@ -26,7 +26,7 @@
  * Author: Kevin E. Martin <martin@valinux.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmR128.c,v 1.4 2000/12/02 15:31:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmR128.c,v 1.5 2000/12/04 19:21:54 dawes Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
@@ -219,8 +219,8 @@ int drmR128SwapBuffers( int fd )
 
 int drmR128Clear( int fd, unsigned int flags,
 		  int x, int y, int w, int h,
-		  unsigned int clear_color, unsigned int clear_depth,
-		  unsigned int color_mask, unsigned int depth_mask )
+		  unsigned int clear_color,
+		  unsigned int clear_depth )
 {
    drm_r128_clear_t clear;
 
@@ -231,8 +231,6 @@ int drmR128Clear( int fd, unsigned int flags,
    clear.h = h;
    clear.clear_color = clear_color;
    clear.clear_depth = clear_depth;
-   clear.color_mask = color_mask;
-   clear.depth_mask = depth_mask;
 
    if ( ioctl( fd, DRM_IOCTL_R128_CLEAR, &clear ) < 0 ) {
       return -errno;

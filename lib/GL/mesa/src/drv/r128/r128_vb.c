@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.8 2000/12/04 19:21:48 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.9 2000/12/07 15:43:37 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -109,8 +109,8 @@ do {									\
 #define COORD								\
 do {									\
    GLfloat *win = VB->Win.data[i];					\
-   v->v.x =               win[0];					\
-   v->v.y =  r128height - win[1];					\
+   v->v.x =               win[0] + SUBPIXEL_X;				\
+   v->v.y =  r128height - win[1] + SUBPIXEL_Y;				\
    v->v.z =       scale * win[2];					\
    v->v.rhw = v->v.rhw2 = win[3];					\
 } while (0)
@@ -121,12 +121,12 @@ do {									\
 
 #define COORD								\
 do {									\
-    GLfloat *win = VB->Win.data[i];					\
-    v->v.x =              win[0];					\
-    v->v.y = r128height - win[1];					\
-    v->v.z =      scale * win[2];					\
-    v->v.rhw =            win[3];					\
-} while (0)								\
+   GLfloat *win = VB->Win.data[i];					\
+   v->v.x =              win[0] + SUBPIXEL_X;				\
+   v->v.y = r128height - win[1] + SUBPIXEL_Y;				\
+   v->v.z =      scale * win[2];					\
+   v->v.rhw =            win[3];					\
+} while (0)
 
 #endif /* USE_RHW2 */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_cce.c,v 1.3 2000/08/25 13:42:27 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_ioctl.c,v 1.1 2000/12/04 19:21:46 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -454,6 +454,10 @@ static GLbitfield r128DDClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
    }
 #endif
 
+   if ( !flags ) {
+      return mask;
+   }
+
    /* Flip top to bottom */
    cx += dPriv->x;
    cy  = dPriv->y + dPriv->h - cy - ch;
@@ -511,8 +515,7 @@ static GLbitfield r128DDClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 
       ret = drmR128Clear( r128ctx->driFd, flags,
 			  cx, cy, cw, ch,
-			  r128ctx->ClearColor, r128ctx->ClearDepth,
-			  0xffffffff, 0xffffffff );
+			  r128ctx->ClearColor, r128ctx->ClearDepth );
 
       if ( ret ) {
 	 fprintf( stderr, "drmR128Clear: return = %d\n", ret );

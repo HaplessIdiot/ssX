@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.h,v 1.1 2000/06/17 00:03:08 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.h,v 1.2 2000/12/04 19:21:47 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -70,15 +70,12 @@ extern void r128DDInitTextureFuncs( GLcontext *ctx );
 #define R128PACKCOLOR4444(r, g, b, a)                                         \
     ((((a) & 0xf0) << 8) | (((r) & 0xf0) << 4) | ((g) & 0xf0) | ((b) >> 4))
 
-static __inline__ CARD32 r128PackColor( GLuint depth,
+static __inline__ CARD32 r128PackColor( GLuint bpp,
 					GLubyte r, GLubyte g,
 					GLubyte b, GLubyte a )
 {
-    switch ( depth ) {
-    case  8: return R128PACKCOLOR332( r, g, b );
-    case 15: return R128PACKCOLOR1555( r, g, b, a );
+    switch ( bpp ) {
     case 16: return R128PACKCOLOR565( r, g, b );
-    case 24: return R128PACKCOLOR888( r, g, b );
     case 32: return R128PACKCOLOR8888( r, g, b, a );
     default: return 0;
     }

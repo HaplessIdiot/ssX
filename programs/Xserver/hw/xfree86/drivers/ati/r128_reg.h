@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.4 2000/12/04 19:21:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.5 2000/12/08 19:15:33 martin Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1094,8 +1094,8 @@
 #       define R128_SET_UP_CONTINUE       (1 << 31)
 
 #define R128_WINDOW_XY_OFFSET             0x1bcc
-#       define R128_WINDOW_Y_SHIFT        2
-#       define R128_WINDOW_X_SHIFT        18
+#       define R128_WINDOW_Y_SHIFT        4
+#       define R128_WINDOW_X_SHIFT        20
 
 #define R128_Z_OFFSET_C                   0x1c90
 #define R128_Z_PITCH_C                    0x1c94
