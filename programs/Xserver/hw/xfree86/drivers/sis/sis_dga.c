@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dga.c,v 1.2 2001/04/19 12:40:33 alanh Exp $ */
+/* $XFree86$ */
 /*
  * SiS DGA handling
  *

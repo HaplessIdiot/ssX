@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vga.c,v 1.8 2001/11/30 12:12:01 eich Exp $ */
+/* $XFree86$ */
 /*
  * Mode setup and basic video bridge detection
  *
@@ -910,15 +910,10 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
                           ((pSiS->CurrentLayout.bitsPerPixel + 7) / 8);
 
     pSiS->scrnPitch = pSiS->scrnPitch2 = pSiS->scrnOffset;
-
-    if(realmode->Flags & V_INTERLACE)  pSiS->scrnPitch <<= 1;
-
-#ifdef SISMERGED
-    if(pSiS->MergedFB) {
-       if(realmode2->Flags & V_INTERLACE) pSiS->scrnPitch2 <<= 1;
-    } else
-#endif
-       pSiS->scrnPitch2 = pSiS->scrnPitch;
+    if(!(pSiS->VBFlags & CRT1_LCDA)) {
+       if(realmode->Flags & V_INTERLACE) pSiS->scrnPitch <<= 1;
+    }
+    /* CRT2 mode can never be interlaced */
 
 #ifdef UNLOCK_ALWAYS
     outSISIDXREG(SISSR, 0x05, 0x86);

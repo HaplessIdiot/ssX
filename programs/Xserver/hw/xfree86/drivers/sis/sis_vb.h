@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vb.h,v 1.4 2001/04/19 12:40:33 alanh Exp $ */
+/* $XFree86$ */
 /*
  * Video bridge detection and configuration for 300, 315 and 330 series
  * Data and prototypes

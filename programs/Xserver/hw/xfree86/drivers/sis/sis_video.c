@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.4 2001/06/15 21:23:00 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Xv driver for SiS 300, 315 and 330 series.
  *
@@ -319,7 +319,6 @@ static XF86AttributeRec SISAttributes_315[NUM_ATTRIBUTES_315] =
    {XvSettable | XvGettable, 0, 1,             sisxvdisablecolorkey},
    {XvSettable | XvGettable, 0, 1,             sisxvusechromakey},
    {XvSettable | XvGettable, 0, 1,             sisxvinsidechromakey},
-/* {XvSettable | XvGettable, 0, 1,             sisxvyuvchromakey},   - NO, Chromakey format = Source format */
    {XvSettable | XvGettable, 0, (1 << 24) - 1, sisxvchromamin},
    {XvSettable | XvGettable, 0, (1 << 24) - 1, sisxvchromamax},
    {             XvGettable, 0, 0xffffffff,    sisxvqueryvbflags},
@@ -2923,12 +2922,16 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
       overlay.dstBox.x2 = pPriv->drw_x + pPriv->drw_w - pScrn->frameX0;
       overlay.dstBox.y1 = pPriv->drw_y - pScrn->frameY0;
       overlay.dstBox.y2 = pPriv->drw_y + pPriv->drw_h - pScrn->frameY0;
+      /* xf86DrvMsg(0, X_INFO, "DV(1): %d %d %d %d\n",
+         overlay.dstBox.x1,overlay.dstBox.x2,overlay.dstBox.y1,overlay.dstBox.y2); */
 #ifdef SISMERGED
    }
 #endif
 
-   if((overlay.dstBox.x1 > overlay.dstBox.x2) ||
-      (overlay.dstBox.y1 > overlay.dstBox.y2)) {
+   /* Note: x2/y2 is actually real coordinate + 1 */
+
+   if((overlay.dstBox.x1 >= overlay.dstBox.x2) ||
+      (overlay.dstBox.y1 >= overlay.dstBox.y2)) {
 #ifdef SISMERGED
       if(pSiS->MergedFB) overlay.DoFirst = FALSE;
       else
@@ -2936,7 +2939,7 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
            return;
    }
 
-   if((overlay.dstBox.x2 < 0) || (overlay.dstBox.y2 < 0)) {
+   if((overlay.dstBox.x2 <= 0) || (overlay.dstBox.y2 <= 0)) {
 #ifdef SISMERGED
       if(pSiS->MergedFB) overlay.DoFirst = FALSE;
       else
@@ -2974,11 +2977,11 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 
 #ifdef SISMERGED
    if(pSiS->MergedFB) {
-      if((overlay.dstBox2.x1 > overlay.dstBox2.x2) ||
-         (overlay.dstBox2.y1 > overlay.dstBox2.y2))
+      if((overlay.dstBox2.x1 >= overlay.dstBox2.x2) ||
+         (overlay.dstBox2.y1 >= overlay.dstBox2.y2))
 	 overlay.DoSecond = FALSE;
 
-      if((overlay.dstBox2.x2 < 0) || (overlay.dstBox2.y2 < 0))
+      if((overlay.dstBox2.x2 <= 0) || (overlay.dstBox2.y2 <= 0))
          overlay.DoSecond = FALSE;
 
       if((overlay.dstBox2.x1 >= screen2width) || (overlay.dstBox2.y1 >= overlay.SCREENheight2))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.h,v 1.24 2003/10/26 13:49:49 twini Exp $ */
+/* $XFree86$ */
 /*
  * Global data and definitions
  *
@@ -140,12 +140,17 @@ static const pdctable mypdctable[] = {
 	{ 0,      0,       0, ""     , ""      }
 };
 
+/*     These machines require setting/clearing a GPIO bit for enabling/
+ *     disabling communication with the Chrontel TV encoder
+ */
 static const chswtable mychswtable[] = {
         { 0x1631, 0x1002, "Mitachi", "0x1002" },
 	{ 0x1071, 0x7521, "Mitac"  , "7521P"  },
 	{ 0,      0,      ""       , ""       }
 };
 
+/*     These machines require special timing/handling
+ */
 const customttable mycustomttable[] = {
         { SIS_630, "2.00.07", "09/27/2002-13:38:25",
 	  0x3240A8,
@@ -188,6 +193,13 @@ const customttable mycustomttable[] = {
 	  { 0, 0, 0, 0, 0 },
 	  0x1558, 0x0400,  /* possibly 401 and 402 as well; not panelsize specific (?) */
 	  "Clevo", "D400S/D410S/D400H/D410H", CUT_CLEVO1400, "CLEVO_D4X0"
+	},
+	{ SIS_650, "", "",
+	  0,	/* Shift LCD in LCD-via-CRT1 mode */
+	  { 0, 0, 0, 0, 0 },
+	  { 0, 0, 0, 0, 0 },
+	  0x1558, 0x2263,
+	  "Clevo", "D22ES/D27ES", CUT_UNIWILL1024, "CLEVO_D2X0ES"
 	},
 	{ SIS_650, "", "",
 	  0,	/* Shift LCD in LCD-via-CRT1 mode */
@@ -628,6 +640,8 @@ static DisplayModeRec SiS6326SIS1600x1200_60Mode = {
 	0.0		/* VRefresh */
 };
 
+/*     TV filters for SiS video bridges
+ */
 static const struct _SiSTVFilter301 {
 	unsigned char filter[7][4];
 } SiSTVFilter301[] = {
@@ -750,6 +764,8 @@ static const struct _SiSTVFilter301B {
 	   {0x01,0xff,0xfb,0xfb,0x0c,0x25,0x32} }}
 };
 
+/*     TV scaling data for SiS video bridges
+ */
 typedef struct _SiSTVVScale {
         unsigned short ScaleVDE;
 	int sindex;
@@ -876,13 +892,6 @@ static const MySiSTVVScale SiSTVVScale[] = {
 	  0x0429, 0x036E, 0x00F2, 0x0291, 0x0275, 0x0279,
 	  0x0001, 0x0082, 0x008F, 0x0429, 0x0291, 0x024E }
       },
-#if 0
-      { 0x01B8,	0, 768,					/* NTSC 1024 - v-scaling not supported */
-        { 0x044B, 0x041A, 0x002D, 0x0329, 0x030A, 0x030D,
-	  0x0000, 0x0001, 0x0001, 0x044B, 0x032A, 0x02D2 }
-      },
-#endif
-
       { 0x0230, 3, 480,					/* PAL 640 */
         { 0x0371, 0x02AE, 0x00EA, 0x01FF, 0x01E8, 0x01EB,
 	  0x0000, 0x0007, 0x0010, 0x0371, 0x0200, 0x0032,
@@ -1008,12 +1017,6 @@ static const MySiSTVVScale SiSTVVScale[] = {
 	  0x0437, 0x0372, 0x00FE, 0x0296, 0x0277, 0x027B,
 	  0x0000, 0x0003, 0x0004, 0x0437, 0x0296, 0x01BA }
       },
-#if 0
-      { 0x0208, 0, 768,					/* PAL 1024 - v-scaling not supported */
-        { 0x0491, 0x0422, 0x0046, 0x0333, 0x030D, 0x0311,
-	  0x0000, 0x0001, 0x0001, 0x0491, 0x0334, 0x02AE }
-      }
-#endif
 };
 
 unsigned const char SiSScalingP1Regs[] = {
@@ -1039,9 +1042,9 @@ static Bool SISSaveScreenDH(ScreenPtr pScreen, int mode);
 #endif
 
 /* Optional functions */
-static void SISFreeScreen(int scrnIndex, int flags);
+static void       SISFreeScreen(int scrnIndex, int flags);
 static ModeStatus SISValidMode(int scrnIndex, DisplayModePtr mode,
-			       Bool verbose, int flags);
+                               Bool verbose, int flags);
 
 /* Internally used functions */
 static Bool    SISMapMem(ScrnInfoPtr pScrn);
@@ -1067,8 +1070,10 @@ void           SISWaitRetraceCRT2(ScrnInfoPtr pScrn);
 Bool           InRegion(int x, int y, region r);
 static void    SISMergePointerMoved(int scrnIndex, int x, int y);
 BOOLEAN        SiSBridgeIsInSlaveMode(ScrnInfoPtr pScrn);
-USHORT 	       SiS_CalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBFlags, BOOLEAN hcm);
-USHORT         SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBFlags, BOOLEAN hcm);
+USHORT 	       SiS_CalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode,
+				 unsigned long VBFlags, BOOLEAN hcm);
+USHORT         SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode,
+				 unsigned long VBFlags, BOOLEAN hcm);
 unsigned char  SiS_GetSetBIOSScratch(ScrnInfoPtr pScrn, USHORT offset, unsigned char value);
 #ifdef DEBUG
 static void    SiSDumpModeInfo(ScrnInfoPtr pScrn, DisplayModePtr mode);
@@ -1082,7 +1087,8 @@ extern BOOLEAN  SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension,
 extern void	SiSRegInit(SiS_Private *SiS_Pr, USHORT BaseAddr);
 extern void     SiSSetLVDSetc(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension,USHORT ModeNo);
 extern void     SiS_GetVBType(SiS_Private *SiS_Pr, PSIS_HW_INFO);
-extern DisplayModePtr  SiSBuildBuiltInModeList(ScrnInfoPtr pScrn, BOOLEAN includelcdmodes, BOOLEAN isfordvi);
+extern DisplayModePtr  SiSBuildBuiltInModeList(ScrnInfoPtr pScrn, BOOLEAN includelcdmodes,
+					       BOOLEAN isfordvi);
 #ifdef SISDUALHEAD
 extern BOOLEAN 	SiSBIOSSetModeCRT1(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension,
 				   ScrnInfoPtr pScrn, DisplayModePtr mode, BOOLEAN IsCustom);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/oem300.h.c,v 1.0 2001/11/30 12:12:01 eich Exp $ */
+/* $XFree86$ */
 /*
  * OEM Data for 300 series
  *

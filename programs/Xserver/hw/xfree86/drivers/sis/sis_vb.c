@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vb.c,v 1.4 2001/11/30 12:12:01 eich Exp $ */
+/* $XFree86$ */
 /*
  * Video bridge detection and configuration for 300, 315 and 330 series
  *
@@ -339,13 +339,14 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
 	        if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
 	     }
 	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-			"Detected LCD/Plasma panel (%dx%d, type %d, %sexpanding, RGB%d)\n",
+			"Detected LCD/Plasma panel (%dx%d, %d, %sexp., RGB%d [%02x%02x])\n",
 			pSiS->LCDwidth, pSiS->LCDheight,
 			((pSiS->VGAEngine == SIS_315_VGA) &&
 			 (pSiS->Chipset != PCI_CHIP_SIS660)) ?
 			 	((CR36 & 0x0f) - 1) : ((CR36 & 0xf0) >> 4),
 			(CR37 & 0x10) ? "" : "non-",
-			(CR37 & 0x01) ? 18 : 24);
+			(CR37 & 0x01) ? 18 : 24,
+			CR36, CR37);
 	  }
        }
     }

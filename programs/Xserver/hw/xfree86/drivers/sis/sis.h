@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.23 2001/11/30 12:12:00 eich Exp $ */
+/* $XFree86$ */
 /*
  * Main global data and definitions
  *
@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   10
-#define SISDRIVERVERSIONDAY     26
+#define SISDRIVERVERSIONDAY     30
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -274,7 +274,7 @@ typedef unsigned char UChar;
 #define SIS_530_VGA 1
 #define SIS_OLD_VGA 2
 #define SIS_300_VGA 3
-#define SIS_315_VGA 4   /* Includes 330/660/661/741/760 */
+#define SIS_315_VGA 4   /* Includes 330/660/661/741/760 and M versions thereof */
 
 /* oldChipset */
 #define OC_UNKNOWN   0
@@ -304,14 +304,15 @@ typedef unsigned char UChar;
 #define SiSCF_IsM653        0x00000010
 #define SiSCF_Is652         0x00000020
 #define SiSCF_Is65x         (SiSCF_Is651|SiSCF_IsM650|SiSCF_IsM652|SiSCF_IsM653|SiSCF_Is652)
-#define SiSCF_IsM661        0x00000100
+#define SiSCF_IsM661        0x00000100  /* M661FX */
 #define SiSCF_IsM741        0x00000200
 #define SiSCF_IsM760        0x00000400
-#define SiSCF_IsM66x        (SiSCF_IsM661 | SiSCF_IsM741 | SiSCF_IsM760)
+#define SiSCF_IsM661M       0x00000800  /* M661MX */
+#define SiSCF_IsM66x        (SiSCF_IsM661 | SiSCF_IsM741 | SiSCF_IsM760 | SiSCF_IsM661M)
 #define SiSCF_315Core       0x00010000  /* 3D: Real 315 */
-#define SiSCF_Real256ECore  0x00020000  /* 3D: Similar to 315 core, no T&L (65x, 661, 740, 741) */
+#define SiSCF_Real256ECore  0x00020000  /* 3D: Similar to 315 core, no T&L? (65x, 661, 740, 741) */
 #define SiSCF_XabreCore     0x00040000  /* 3D: Real Xabre */
-#define SiSCF_Ultra256Core  0x00080000  /* 3D: Similar to Xabre, no T&L, no P:Shader (660, 760) */
+#define SiSCF_Ultra256Core  0x00080000  /* 3D: Similar to Xabre, no T&L?, no P:Shader? (660, 760) */
 #define SiSCF_UseLCDA       0x01000000  
 #define SiSCF_760UMA        0x10000000  /* 760: UMA active */
 #define SiSCF_CRT2HWCKaputt 0x20000000  /* CRT2 Mono HWCursor engine buggy (SiS 330) */
@@ -348,7 +349,7 @@ typedef unsigned char UChar;
 #define SiS_CF2_TV         0x02
 #define SiS_CF2_VGA2       0x04
 #define SiS_CF2_TVPAL      0x08
-#define SiS_CF2_TVNTSC     0x10
+#define SiS_CF2_TVNTSC     0x10  /* + NTSC-J */
 #define SiS_CF2_TVPALM     0x20
 #define SiS_CF2_TVPALN     0x40
 #define SiS_CF2_CRT1LCDA   0x80
@@ -399,14 +400,14 @@ typedef struct {
     unsigned char *     BIOS;
     SiS_Private   *     SiS_Pr;
     unsigned long 	agpHandle;
-    CARD32 		agpAddr;
+    unsigned long	agpAddr;
     unsigned char 	*agpBase;
     unsigned int 	agpSize;
-    CARD32 		agpCmdBufAddr;  /* 300 series */
+    unsigned long	agpCmdBufAddr;  /* 300 series */
     unsigned char 	*agpCmdBufBase;
     unsigned int 	agpCmdBufSize;
     unsigned int 	agpCmdBufFree;
-    CARD32              agpVtxBufAddr;	/* 315 series */
+    unsigned long	agpVtxBufAddr;	/* 315 series */
     unsigned char       *agpVtxBufBase;
     unsigned int        agpVtxBufSize;
     unsigned int        agpVtxBufFree;
@@ -420,7 +421,7 @@ typedef struct {
     int 		CRT2ModeNo;		/* Current display mode for CRT2 */
     DisplayModePtr	CRT2DMode;		/* Current display mode for CRT2 */
     Bool		CRT2IsCustom;
-    unsigned char	CRT2CR30, CRT2CR31, CRT2CR38;
+    unsigned char	CRT2CR30, CRT2CR31, CRT2CR35, CRT2CR38;
     int			refCount;
     int 		lastInstance;		/* number of entities */
     Bool		DisableDual;		/* Emergency flag */
@@ -630,14 +631,14 @@ typedef struct {
     unsigned int        cmdQueueSize_div4;
     unsigned int        cmdQueueSize_4_3;
     unsigned long 	agpHandle;
-    CARD32 		agpAddr;
+    unsigned long	agpAddr;
     unsigned char 	*agpBase;
     unsigned int 	agpSize;
-    CARD32 		agpCmdBufAddr;  /* 300 series */
+    unsigned long	agpCmdBufAddr;  /* 300 series */
     unsigned char 	*agpCmdBufBase;
     unsigned int 	agpCmdBufSize;
     unsigned int 	agpCmdBufFree;
-    CARD32              agpVtxBufAddr;	/* 315 series */
+    unsigned long	agpVtxBufAddr;	/* 315 series */
     unsigned char       *agpVtxBufBase;
     unsigned int        agpVtxBufSize;
     unsigned int        agpVtxBufFree;
@@ -1025,7 +1026,8 @@ extern void  SiS_SetTVyposoffset(ScrnInfoPtr pScrn, int val);
 extern void  SiS_SetTVxscale(ScrnInfoPtr pScrn, int val);
 extern void  SiS_SetTVyscale(ScrnInfoPtr pScrn, int val);
 extern Bool  SISSwitchCRT2Type(ScrnInfoPtr pScrn, unsigned long newvbflags);
-extern Bool  SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned short index, Bool quiet);
+extern Bool  SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond,
+					  unsigned short index, Bool quiet);
 extern Bool  SISSwitchCRT1Status(ScrnInfoPtr pScrn, int onoff);
 extern int   SiS_GetCHTVlumabandwidthcvbs(ScrnInfoPtr pScrn);
 extern int   SiS_GetCHTVlumabandwidthsvideo(ScrnInfoPtr pScrn);

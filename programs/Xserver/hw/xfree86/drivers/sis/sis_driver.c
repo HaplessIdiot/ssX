@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.144 2003/10/26 13:49:49 twini Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
@@ -167,7 +167,7 @@ static SymTabRec SISChipsets[] = {
     { PCI_CHIP_SIS550,	    "SIS550" },
     { PCI_CHIP_SIS650,      "SIS650/M650/651/740" },
     { PCI_CHIP_SIS330,      "SIS330(Xabre)" },
-    { PCI_CHIP_SIS660,      "SIS660/661FX/M661FX/741/760" },
+    { PCI_CHIP_SIS660,      "SIS660/661FX/M661FX/M661MX/741/760" },
     { -1,                   NULL }
 };
 
@@ -2266,8 +2266,6 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     vbeInfoPtr pVbe;
     VbeInfoBlock *vbe;
 
-    static const char *exceedlcdstr = "Not using mode \"%s\" (exceeds LCD panel dimension)\n";
-    static const char *nointerlacestr = "Not using mode \"%s\" (interlace not supported on CRT2)\n";
     static const char *ddcsstr = "CRT%d DDC monitor info: ************************************\n";
     static const char *ddcestr = "End of CRT%d DDC monitor info ******************************\n";
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,14,0)
@@ -4664,7 +4662,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * with vb support, we replace the given default mode list with our
      * own. In case the video bridge is to be used, we only allow other
      * modes if
-     *   -) vbtype is 301, 301B or 302B, and
+     *   -) vbtype is 301, 301B, 301C or 302B, and
      *   -) crt2 device is not TV, and
      *   -) crt1 is not LCDA
      */
@@ -4680,7 +4678,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 #ifdef SISDUALHEAD
           if(pSiS->DualHeadMode) {
 	     if(!pSiS->SecondHead) {
-	        if(pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B)) {
+	        if((pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B)) && (!(pSiS->VBFlags & VB_30xBDH))) {
 		   if(!(pSiS->VBFlags & (CRT2_LCD|CRT2_VGA))) includelcdmodes   = FALSE;
 		   if(pSiS->VBFlags & CRT2_LCD)               isfordvi          = TRUE;
 		   if(pSiS->VBFlags & CRT2_TV)                acceptcustommodes = FALSE;
@@ -4688,10 +4686,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		   acceptcustommodes = FALSE;
 		   includelcdmodes   = FALSE;
 		}
+		clockRanges->interlaceAllowed = FALSE;
 	     } else {
 	        includelcdmodes = FALSE;
 		if(pSiS->VBFlags & CRT1_LCDA) {
 		   acceptcustommodes = FALSE;
+		   /* Ignore interlace, mode switching code will handle this */
 		}
 	     }
 	  } else
@@ -4701,10 +4701,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     includelcdmodes = FALSE;
 	     if(pSiS->VBFlags & CRT1_LCDA) {
 		acceptcustommodes = FALSE;
+		/* Ignore interlace, mode switching code will handle this */
 	     }
           } else
 #endif
-          if(pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B)) {
+          if((pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B))  && (!(pSiS->VBFlags & VB_30xBDH))) {
 	     if(!(pSiS->VBFlags & (CRT2_LCD|CRT2_VGA))) includelcdmodes   = FALSE;
 	     if(pSiS->VBFlags & CRT2_LCD)               isfordvi          = TRUE;
 	     if(pSiS->VBFlags & (CRT2_TV|CRT1_LCDA))    acceptcustommodes = FALSE;
@@ -4714,6 +4715,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	  } else {
 	     includelcdmodes   = FALSE;
 	  }
+	  /* Ignore interlace, mode switching code will handle this */
 
 	  pSiS->HaveCustomModes = FALSE;
           if(SiSMakeOwnModeList(pScrn, acceptcustommodes, includelcdmodes, isfordvi, &pSiS->HaveCustomModes)) {
@@ -4856,83 +4858,49 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        }
     }
 
-    /* Go through mode list and mark all those modes as bad,
-     * - which are unsuitable for dual head mode (if running dhm),
-     * - which exceed the LCD panels specs (if running on LCD)
-     * - TODO: which exceed TV capabilities (if running on TV)
-     * Also, find the highest used pixelclock on the master head.
+    /* Dual Head:
+     * -) Go through mode list and mark all those modes as bad,
+     *    which are unsuitable for dual head mode.
+     * -) Find the highest used pixelclock on the master head.
      */
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode) {
-       if(!pSiS->SecondHead) pSiSEnt->maxUsedClock = 0;
+
+       if(!pSiS->SecondHead) {
+
+          pSiSEnt->maxUsedClock = 0;
+
+          if((p = first = pScrn->modes)) {
+             do {
+	        n = p->next;
+
+	        /* Modes that require the bridge to operate in SlaveMode
+                 * are not suitable for Dual Head mode.
+                 */
+	        if( (pSiS->VGAEngine == SIS_300_VGA) &&
+		    ( (strcmp(p->name, "320x200") == 0) ||
+		      (strcmp(p->name, "320x240") == 0) ||
+		      (strcmp(p->name, "400x300") == 0) ||
+		      (strcmp(p->name, "512x384") == 0) ||
+		      (strcmp(p->name, "640x400") == 0) ) )  {
+	    	   p->status = MODE_BAD;
+		   xf86DrvMsg(pScrn->scrnIndex, X_INFO, notsuitablestr, p->name, "dual head");
+		}
+
+		/* Search for the highest clock on first head in order to calculate
+	         * max clock for second head (CRT1)
+	         */
+		if((p->status == MODE_OK) && (p->Clock > pSiSEnt->maxUsedClock)) {
+		   pSiSEnt->maxUsedClock = p->Clock;
+		}
+
+	        p = n;
+
+             } while (p != NULL && p != first);
+	  }
+       }
     }
 #endif
-    if((p = first = pScrn->modes)) {
-         do {
-	       n = p->next;
-
-#ifdef SISDUALHEAD
-	       /* Modes that require the bridge to operate in SlaveMode
-                * are not suitable for Dual Head mode. Also check for
-		* modes that exceed panel dimension.
-                */
-               if(pSiS->DualHeadMode) {
-	          if(pSiS->SecondHead == FALSE) {
-	             if( pSiS->VGAEngine == SIS_300_VGA &&
-		         ( (strcmp(p->name, "320x200") == 0) ||
-		           (strcmp(p->name, "320x240") == 0) ||
-		           (strcmp(p->name, "400x300") == 0) ||
-		           (strcmp(p->name, "512x384") == 0) ||
-		           (strcmp(p->name, "640x400") == 0) ) )  {
-	    	        p->status = MODE_BAD;
-		        xf86DrvMsg(pScrn->scrnIndex, X_INFO, notsuitablestr, p->name, "dual head");
-		     }
-		     if(p->Flags & V_INTERLACE) {
-		        p->status = MODE_BAD;
-			xf86DrvMsg(pScrn->scrnIndex, X_INFO, nointerlacestr, p->name);
-		     }
-	             if((pSiS->VBFlags & CRT2_LCD) && (pSiS->SiS_Pr->SiS_CustomT != CUT_PANEL848)) {
-		        if((p->HDisplay > pSiS->LCDwidth) || (p->VDisplay > pSiS->LCDheight)) {
-		            p->status = MODE_PANEL;
-		            xf86DrvMsg(pScrn->scrnIndex, X_INFO, exceedlcdstr, p->name);
-	                }
-		     }
-	          }
-
-		  /* Search for the highest clock on first head in order to calculate
-		   * max clock for second head (CRT1)
-		   */
-		  if(!pSiS->SecondHead) {
-		     if((p->status == MODE_OK) && (p->Clock > pSiSEnt->maxUsedClock)) {
-		  		pSiSEnt->maxUsedClock = p->Clock;
-		     }
-		  }
-	       } else {
-#endif
-	          if(pSiS->VBFlags & DISPTYPE_DISP2) {
-#ifdef SISMERGED
-		     if(!pSiS->MergedFB) {
-#endif
-	                if((pSiS->VBFlags & CRT2_LCD) && (pSiS->SiS_Pr->SiS_CustomT != CUT_PANEL848)) {
-		           if((p->HDisplay > pSiS->LCDwidth) || (p->VDisplay > pSiS->LCDheight)) {
-		              p->status = MODE_PANEL;
-		              xf86DrvMsg(pScrn->scrnIndex, X_INFO, exceedlcdstr, p->name);
-	                   }
-			}
-			if(p->Flags & V_INTERLACE) {
-			   p->status = MODE_BAD;
-			   xf86DrvMsg(pScrn->scrnIndex, X_INFO, nointerlacestr, p->name);
-		        }
-#ifdef SISMERGED
-	             }
-#endif
-	          }
-#ifdef SISDUALHEAD
-               }
-#endif
-	       p = n;
-         } while (p != NULL && p != first);
-    }
 
     /* Prune the modes marked as invalid */
     xf86PruneDriverModes(pScrn);
@@ -4989,7 +4957,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Max pixel clock for CRT2 is %d MHz\n",
                 clockRanges->maxClock / 1000);
 
-       if(pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B)) {
+       if((pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B)) && (!(pSiS->VBFlags & VB_30xBDH))) {
           if(!(pSiS->VBFlags & (CRT2_LCD|CRT2_VGA))) includelcdmodes   = FALSE;
 	  if(pSiS->VBFlags & CRT2_LCD)               isfordvi          = TRUE;
 	  if(pSiS->VBFlags & CRT2_TV)                acceptcustommodes = FALSE;
@@ -5040,7 +5008,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        if((p = first = pSiS->CRT2pScrn->modes)) {
           do {
 	     n = p->next;
-	     if( pSiS->VGAEngine == SIS_300_VGA &&
+	     if( (pSiS->VGAEngine == SIS_300_VGA) &&
 		 ( (strcmp(p->name, "320x200") == 0) ||
 		   (strcmp(p->name, "320x240") == 0) ||
 		   (strcmp(p->name, "400x300") == 0) ||
@@ -5049,12 +5017,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	    	p->status = MODE_BAD;
 		xf86DrvMsg(pScrn->scrnIndex, X_INFO, notsuitablestr, p->name, "MergedFB");
 	     }
-	     if((pSiS->VBFlags & CRT2_LCD) && (pSiS->SiS_Pr->SiS_CustomT != CUT_PANEL848)) {
-		if((p->HDisplay > pSiS->LCDwidth) || (p->VDisplay > pSiS->LCDheight)) {
-		   p->status = MODE_PANEL;
-		   xf86DrvMsg(pScrn->scrnIndex, X_INFO, exceedlcdstr, p->name);
-	        }
-	     }
+	     p = n;
 	  } while (p != NULL && p != first);
        }
 
@@ -9553,7 +9516,7 @@ void SiS_SetSISTVyfilter(ScrnInfoPtr pScrn, int val)
    case 6:
    case 7:
    case 8:
-      if(!(pSiS->VBFlags & (TV_PALM | TV_PALN))) {
+      if(!(pSiS->VBFlags & (TV_PALM | TV_PALN | TV_NTSCJ))) {
          int yindex301 = -1, yindex301B = -1;
 	 unsigned char p3d4_34;
 
@@ -11167,7 +11130,9 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
       if((pSiS->AddedPlasmaModes) && (mode->type & M_T_BUILTIN))
          return 0xfe;
 
-      if((havecustommodes) && (!(mode->type & M_T_DEFAULT)))
+      if((havecustommodes) &&
+         (!(mode->type & M_T_DEFAULT)) &&
+	 (!(mode->Flags & V_INTERLACE)))
          return 0xfe;
 
       if( ((mode->HDisplay <= pSiS->LCDwidth) &&
@@ -11489,7 +11454,9 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
         if((pSiS->AddedPlasmaModes) && (mode->type & M_T_BUILTIN))
 	   return 0xfe;
 
-	if((havecustommodes) && (!(mode->type & M_T_DEFAULT)))
+	if((havecustommodes) &&
+	   (!(mode->type & M_T_DEFAULT)) &&
+	   (!(mode->Flags & V_INTERLACE)))
            return 0xfe;
 
 	switch(mode->HDisplay)
