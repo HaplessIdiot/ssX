@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.73 2004/03/21 11:27:05 herrb Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.74 2004/04/03 22:26:20 dawes Exp $ */
 
 
 /* 
@@ -834,8 +834,11 @@ char *cpp_argv[ARGUMENTS] = {
 				buf[0] = '6';				\
 			else						\
 				buf[0] = '8'; /* guess */		\
-		} else {						\
+		} else if (__osrel < 500000) {				\
+			/* This may need further tuning for 4.10.x */	\
 			buf[0] = ((__osrel / 1000) % 10) + '0';		\
+		} else {						\
+			buf[0] = ((__osrel / 10) % 10) + '0';		\
 		}							\
 		buf[1] = 0;						\
 	}								\
