@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.116 1997/02/17 09:45:51 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.117 1997/02/18 03:34:10 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2459,7 +2459,7 @@ configDynamicModuleSection()
 	    if (xf86GetToken(NULL) != STRING)
 		xf86ConfigError("Dynamic module expected");
 	    else {
-#ifdef DYNAMIC_MODULE
+#if defined(DYNAMIC_MODULE) || defined(XFree86LOADER)
 		if (!modulePath) {
 		    static Bool firstTime = TRUE;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.2 1997/02/17 09:46:06 hohndel Exp $ */
 
 
 
@@ -124,6 +124,10 @@ if( buf[0] == 0x4c && buf[1] == 0x01 ) {
 	}
 if( buf[0] == 0x01 && buf[1] == 0xdf ) {
 	/* XCOFFMAGIC */
+	return LD_COFFOBJECT;
+	}
+if( buf[0] == 0x0d && buf[1] == 0x01 ) {
+	/* ZCOFFMAGIC (LynxOS) */
 	return LD_COFFOBJECT;
 	}
 if( buf[0] == 0x00 && buf[1] == 0x86 && buf[2] == 0x01 && buf[3] == 0x07) {

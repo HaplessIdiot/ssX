@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.11 1996/12/17 20:58:33 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.12 1997/01/18 06:45:50 dawes Exp $
 
 #ifdef i386Architecture
 # define OSName			LynxOS AT
@@ -168,6 +168,10 @@ XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.11 1996/12/17 20:58:33 dawes
 #endif
 #if OSMajorVersion == 2 && OSMinorVersion <= 2
 # define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
+#endif
+
+#if OSMajorVersion > 2 || OSMinorVersion > 2
+# define DoLoadableServer	YES
 #endif
 
 /* define HasMotif to YES for LynxOS with Motif
