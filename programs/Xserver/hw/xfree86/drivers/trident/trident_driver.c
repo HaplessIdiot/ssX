@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.119 2000/12/08 09:05:16 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.120 2000/12/28 15:03:46 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1641,9 +1641,9 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	case CYBERBLADEI7:
     	    pTrident->ddc1Read = Tridentddc1Read;
 	    ramtype = "SDRAM";
-	    pTrident->IsCyber = TRUE;
+	    /* pTrident->IsCyber = TRUE; VIA MVP4 integrated Desktop version */
 	    Support24bpp = TRUE;
-	    chipset = "CyberBlade/i7";
+	    chipset = "CyberBlade/i7/VIA MVP4";
 	    pTrident->NewClockCode = TRUE;
 	    pTrident->frequency = NTSC;
 	    break;
