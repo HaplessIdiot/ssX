@@ -1,7 +1,7 @@
 
 // based on a keyboard map from an 'xkb/symbols/de' file
 //
-// $XFree86: xc/programs/xkbcomp/symbols/pc/de,v 1.2 2002/11/22 04:03:28 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/pc/de,v 1.3 2002/12/19 01:07:56 dawes Exp $
 
 xkb_symbols "basic" {
 
@@ -26,9 +26,6 @@ xkb_symbols "basic" {
 
     key <BKSL>	{ [numbersign, apostrophe,   dead_grave,   dead_breve ]	};
     key <AB01>	{ [         y,          Y, guillemotleft,        less ]	};
-
-    key <LSGT>	{ type[Group1] = "FOUR_LEVEL",
-                  [      less,    greater,          bar,    brokenbar ]	};
 
     key <KPDL>	{ [ KP_Delete, KP_Separator                           ]	};
 
