@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/panel/gx2_9211.h,v 1.1 2002/12/10 15:12:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/panel/gx2_9211.h,v 1.2 2002/12/11 22:51:02 dawes Exp $ */
 /*
  * $Workfile: gx2_9211.h $
  *
@@ -192,8 +192,16 @@
 /* This define is used by the hardware CRC mechanism */
 #define GX2_FP_CRC_PASS_THRU_MASK	0x00000070
 
+#define GX2_READ 0
+#define GX2_WRITE 1
+
 void SetFPBaseAddr(unsigned long);
 void Redcloud_9211init(Pnl_PanelStat *);
+void protected_mode_access(unsigned long mode,
+              unsigned long width,
+              unsigned long addr, char *pdata);
+void write_video_reg64_low(unsigned long offset, unsigned long value);
+unsigned long read_video_reg64_low(unsigned long offset);
 void Redcloud_fp_reg(int mode, unsigned long address, unsigned long *data);
 void set_Redcloud_92xx_mode_params(int mode);
 unsigned char set_Redcloud_92xx_mode(Pnl_PanelStat * pstat);

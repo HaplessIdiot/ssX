@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/panel/gx2_9211.c,v 1.1 2002/12/10 15:12:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/panel/gx2_9211.c,v 1.2 2002/12/11 22:51:02 dawes Exp $ */
 /*
  * $Workfile: gx2_9211.c $
  *
@@ -133,10 +133,14 @@
 #include "gx2_9211.h"
 #include "pnl_defs.h"
 
-#undef READ
-#define READ 0
-#undef WRITE
-#define WRITE 1
+#if defined(_WIN32)			/*windows */
+#include "gfx_defs.h"
+
+extern DEV_STATUS gfx_msr_read(unsigned int device, unsigned int msrRegister,
+			       Q_WORD * msrValue);
+extern DEV_STATUS gfx_msr_write(unsigned int device, unsigned int msrRegister,
+				Q_WORD * msrValue);
+#endif
 
 static unsigned long FPBaseAddr;
 
@@ -152,8 +156,8 @@ SetFPBaseAddr(unsigned long addr)
  * unsigned long addr, unsigned char* pdata )
  * This function provides access to physical memory at the requested address.  
  * mode is: 
- *        READ or WRITE (accesses a single byte, word or double word de-
- *             pending on the value of "width".  Only 1, 2 or 4 supported).
+ *        GX2_READ or GX2_WRITE (accesses a single byte, word or double
+ *        word depending on the value of "width".  Only 1, 2 or 4 supported).
  *        READ_BYTES, WRITE_BYTES accesses "width" number of bytes (8 bits)
  *        READ_WORDS, WRITE_WORDS accesses "width" number of words (16 bits)
  *        READ_DWORDS, WRITE_DWORDS accesses "width" number of dwords (32 bits)
@@ -164,10 +168,9 @@ SetFPBaseAddr(unsigned long addr)
  * pdata is: A pointer to the data to be read or written into.
  * NOTE! WORD or DWORD accesses can only be made on WORD or DWORD boundaries!
  ****************************************************************************/
-static void
+void
 protected_mode_access(unsigned long mode,
-		      unsigned long width,
-		      unsigned long addr, char *pdata)
+		      unsigned long width, unsigned long addr, char *pdata)
 {
    void *ptr = (void *)(FPBaseAddr + addr);
 
@@ -176,7 +179,7 @@ protected_mode_access(unsigned long mode,
    unsigned long *word_data = (unsigned long *)pdata;
    unsigned long *dword_data = (unsigned long *)pdata;
 
-   if (mode == READ) {
+   if (mode == GX2_READ) {
       switch (width) {
       case FOUR_BYTES:
 	 *(dword_data) = (unsigned long)(*(unsigned long *)ptr);
@@ -188,8 +191,8 @@ protected_mode_access(unsigned long mode,
 	 *(byte_data) = (char)(*(char *)ptr);
 	 break;
       }
-   } /* end  READ */
-   else if (mode == WRITE) {
+   } /* end  GX2_READ */
+   else if (mode == GX2_WRITE) {
       switch (width) {
       case FOUR_BYTES:
 	 *(unsigned long *)ptr = *dword_data;
@@ -202,7 +205,7 @@ protected_mode_access(unsigned long mode,
 	 break;
       }					/* end switch(mode) */
    }
-   /* end case WRITE */
+   /* end case GX2_WRITE */
    return;
 
 }					/* End of protected_mode_access. */
@@ -214,10 +217,10 @@ protected_mode_access(unsigned long mode,
  * This function uses Sys_info.video_reg_base as the base address, so
  * the value of offset should be with respect to this base.
  *************************************************************************/
-static void
+void
 write_video_reg64_low(unsigned long offset, unsigned long value)
 {
-   protected_mode_access(WRITE, FOUR_BYTES,
+   protected_mode_access(GX2_WRITE, FOUR_BYTES,
 			 FPBaseAddr + offset, (char *)&value);
 }					/*end write_video_reg64_low() */
 
@@ -228,12 +231,12 @@ write_video_reg64_low(unsigned long offset, unsigned long value)
  * This function uses Sys_info.video_reg_base as the base address, so
  * the value of offset should be with respect to this base.
  *************************************************************************/
-static unsigned long
+unsigned long
 read_video_reg64_low(unsigned long offset)
 {
    unsigned long data;
 
-   protected_mode_access(READ, FOUR_BYTES,
+   protected_mode_access(GX2_READ, FOUR_BYTES,
 			 FPBaseAddr + offset, (char *)&data);
    return (data);
 }					/*end read_video_reg64_low() */
@@ -246,8 +249,8 @@ read_video_reg64_low(unsigned long offset)
  * This routine expects the actual GX2 macro definitions for the address.
  *
  * Parameters:
- *			mode:		An integer value for a READ or WRITE operation
- *						0 = Read and 1 = Write
+ *			mode:		An integer value for a GX2_READ or GX2_WRITE operation
+ *						0 = GX2_Read and 1 = GX2_Write
  *			address:	A dword value representing the offset of the register.
  *			data:		A pointer to a dword value that is to be written in to
  *						the required register.  In case of a Read operation this
@@ -257,7 +260,7 @@ read_video_reg64_low(unsigned long offset)
 void
 Redcloud_fp_reg(int mode, unsigned long address, unsigned long *data)
 {
-   if (mode == READ) {
+   if (mode == GX2_READ) {
       *data = read_video_reg64_low(address);
    } else {
       write_video_reg64_low(address, *data);
@@ -293,16 +296,17 @@ set_Redcloud_92xx_mode_params(int mode)
 
    /* Turn the 92xx power off before setting any new parameters. */
    temp_data = pMode->power_management & ~GX2_FP_PM_PWR_ON;
-   Redcloud_fp_reg(WRITE, GX2_FP_PWR_MAN, (unsigned long *)&temp_data);
+   Redcloud_fp_reg(GX2_WRITE, GX2_FP_PWR_MAN, (unsigned long *)&temp_data);
 
    /* Set 9211 registers using the desired panel settings */
 
-   Redcloud_fp_reg(WRITE, GX2_FP_PAN_TIMING1,
+   Redcloud_fp_reg(GX2_WRITE, GX2_FP_PAN_TIMING1,
 		   (unsigned long *)&pMode->panel_timing1);
 
    /* On Redcloud, bit 31 is now reserved. */
    temp_data = pMode->panel_timing2 & 0x7FFFFFFF;
-   Redcloud_fp_reg(WRITE, GX2_FP_PAN_TIMING2, (unsigned long *)&temp_data);
+   Redcloud_fp_reg(GX2_WRITE, GX2_FP_PAN_TIMING2,
+		   (unsigned long *)&temp_data);
 
    /* On Redcloud TFT parts, set this to 0x70 so all 8 bits per color run 
     * thru fp crc but only non-TFT parts.  Otherwise, set it to be 0x50. 
@@ -313,23 +317,24 @@ set_Redcloud_92xx_mode_params(int mode)
    } else {
       temp_data = pMode->rev_C_dither_frc;
    }
-   Redcloud_fp_reg(WRITE, GX2_FP_DITH_FR_CNTRL, (unsigned long *)&temp_data);
-   Redcloud_fp_reg(WRITE, GX2_FP_BLFSR,
+   Redcloud_fp_reg(GX2_WRITE, GX2_FP_DITH_FR_CNTRL,
+		   (unsigned long *)&temp_data);
+   Redcloud_fp_reg(GX2_WRITE, GX2_FP_BLFSR,
 		   (unsigned long *)&pMode->blue_lsfr_seed);
-   Redcloud_fp_reg(WRITE, GX2_FP_RLFSR,
+   Redcloud_fp_reg(GX2_WRITE, GX2_FP_RLFSR,
 		   (unsigned long *)&pMode->red_green_lsfr_seed);
 
    /* Set the memory information, then the power register last. 
     * This will turn the panel on at the 9211.
     */
 
-   Redcloud_fp_reg(READ, GX2_FP_FBB, (unsigned long *)&base_data);
+   Redcloud_fp_reg(GX2_READ, GX2_FP_FBB, (unsigned long *)&base_data);
    if (base_data != 0x41780000) {
       base_data = 0x41780000;
-      Redcloud_fp_reg(WRITE, GX2_FP_FBB, (unsigned long *)&base_data);
+      Redcloud_fp_reg(GX2_WRITE, GX2_FP_FBB, (unsigned long *)&base_data);
    }
 
-   Redcloud_fp_reg(WRITE, GX2_FP_PWR_MAN,
+   Redcloud_fp_reg(GX2_WRITE, GX2_FP_PWR_MAN,
 		   (unsigned long *)&pMode->power_management);
 
 }					/*end set_92xx_mode_params() */
@@ -375,6 +380,3 @@ Redcloud_9211init(Pnl_PanelStat * pstat)
    set_Redcloud_92xx_mode(pstat);
 
 }
-
-#undef READ
-#undef WRITE

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_video.c,v 1.1 2002/12/10 15:12:25 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_video.c,v 1.2 2002/12/12 21:27:34 dawes Exp $ */
 /*
  * $Workfile: nsc_gx2_video.c $
  * $Revision$
@@ -949,6 +949,7 @@ GX2PutImage(ScrnInfoPtr pScrn,
    GeodePortPrivPtr pPriv = (GeodePortPrivPtr) data;
    GeodePtr pGeode = GEODEPTR(pScrn);
    int new_h;
+
 #if XV_PROFILE
    long oldtime, newtime;
    BOOL ReInitVideo = FALSE;

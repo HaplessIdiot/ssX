@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/panel/drac9210.c,v 1.1 2002/12/10 15:12:28 alanh Exp $ */
 /*
  * $Workfile: drac9210.c $
  * $Revision$
@@ -505,7 +505,7 @@ Draco9210Init(Pnl_PanelStat * pstat)
 #if defined(_WIN32)			/* For Windows */
    for (i = 0; i < 10; i++) {
       _asm {
-      out 0ED h, al}
+      out 0EDh, al}
    }
 
 #elif defined(linux)			/* Linux */
@@ -588,7 +588,7 @@ Draco9210SetCS()
       mov eax, CX55x0_ID + 090h
       out dx, eax
       ;Point to PCI data register (CFCh)
-      mov dx, 0 CFCh
+      mov dx, 0CFCh
 
       in ax, dx
       and ah, 30h
@@ -627,8 +627,8 @@ Draco9210SetDataOut()
 {
    _asm {
       pushf
-      mov dx, 0CF8h;
-      Point to PCI address register
+      ;Point to PCI address register
+      mov dx, 0CF8h
       ;55 XX GPIO data register 
       mov eax, CX55x0_ID + 090h
       out dx, eax
@@ -679,7 +679,7 @@ Draco9210ReadDataIn()
       mov eax, CX55x0_ID + 090h
       out dx, eax 
       ;Point to PCI data register (CFCh)
-      mov dx, 0 FCh
+      mov dx, 0FCh
 
       in ax, dx
       ;Preserve just Data IN bit
@@ -688,8 +688,9 @@ Draco9210ReadDataIn()
       cmp al, 0
       ;Is it LOW ? 
       je readDataLow 
-      ;must be HIGH readDataLow
+      ;must be HIGH
       mov al, 1
+   readDataLow:
       mov readdata, al
       popf
    }
@@ -714,9 +715,9 @@ Draco9210ToggleClock()
       or ah, CLOCK9210 
       mov c92DataReg, ah 
       out dx, ax 
-      out 0ED h, al	/*      IOPAUSE */
+      out 0EDh, al	/*      IOPAUSE */
       ;Point to PCI address register 
-      mov dx, 0 CF8h
+      mov dx, 0CF8h
       ;55 XX GPIO data register
       mov eax, CX55x0_ID + 090h
       out dx, eax

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/panel/panel.c,v 1.1 2002/12/10 15:12:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/panel/panel.c,v 1.2 2002/12/11 22:51:02 dawes Exp $ */
 /*
  * $Workfile: panel.c $
  * $Revision$

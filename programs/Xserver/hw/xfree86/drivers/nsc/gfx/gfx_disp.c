@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/gfx_disp.c,v 1.1 2002/12/10 15:12:25 alanh Exp $ */
 /*
  * $Workfile: gfx_disp.c $
  *
@@ -597,8 +597,6 @@ FIXEDTIMINGS FixedParams[] = {
 #include "disp_gu2.c"
 #endif
 
-int gfx_set_video_size(unsigned short width, unsigned short height);
-int gfx_set_video_offset(unsigned long offset);
 void gfx_set_display_video_format(unsigned long format);
 void gfx_set_display_video_enable(int enable);
 void gfx_set_display_video_yuv_offsets(unsigned long yoffset,
@@ -612,8 +610,6 @@ void gfx_set_display_video_vertical_downscale_enable(int enable);
 void gfx_get_display_video_yuv_offsets(unsigned long *yoffset,
 				       unsigned long *uoffset,
 				       unsigned long *voffset);
-unsigned long gu2_get_display_video_downscale_delta(void);
-unsigned long gfx_get_video_offset(void);
 void gfx_get_display_video_yuv_pitch(unsigned long *ypitch,
 				     unsigned long *uvpitch);
 unsigned long gfx_get_display_video_downscale_delta(void);
@@ -622,11 +618,6 @@ unsigned long gfx_get_display_video_size(void);
 void gfx_set_display_video_size(unsigned short width, unsigned short height);
 void gfx_set_display_video_offset(unsigned long offset);
 unsigned long gfx_get_display_video_offset(void);
-void gfx_get_display_video_yuv_pitch(unsigned long *ypitch,
-				     unsigned long *uvpitch);
-unsigned long gfx_get_display_video_downscale_delta(void);
-int gfx_get_display_video_downscale_enable(void);
-unsigned long gfx_get_display_video_size(void);
 
 /*---------------------------------------------------------------------------
  * gfx_reset_timing_lock

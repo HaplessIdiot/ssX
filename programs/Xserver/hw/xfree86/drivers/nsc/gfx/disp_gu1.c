@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/disp_gu1.c,v 1.1 2002/12/10 15:12:25 alanh Exp $ */
 /*
  * $Workfile: disp_gu1.c $
  *
@@ -245,8 +245,6 @@ void gu1_set_display_video_enable(int enable);
 int gu1_set_specified_mode(DISPLAYMODE * pMode, int bpp);
 void gu1_set_display_video_size(unsigned short width, unsigned short height);
 void gu1_set_display_video_offset(unsigned long offset);
-int gu1_set_fixed_timings(int panelResX, int panelResY, unsigned short width,
-			  unsigned short height, unsigned short bpp);
 unsigned long gu1_get_display_video_offset(void);
 unsigned long gu1_get_display_video_size(void);
 

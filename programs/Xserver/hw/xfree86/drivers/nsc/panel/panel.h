@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/panel/panel.h,v 1.1 2002/12/10 15:12:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/panel/panel.h,v 1.2 2002/12/11 22:51:02 dawes Exp $ */
 /*
  * $Workfile: panel.h $
  * $Revision$
@@ -173,7 +173,7 @@ extern "C"
    void Pnl_GetPanelInfoFromBIOS(int *xres, int *yres, int *bpp, int *hz);
 /* from durango */
 
-#if 0
+#if defined(_WIN32)			/* windows */
    extern void gfx_delay_milliseconds(unsigned long milliseconds);
    extern unsigned long gfx_ind(unsigned short port);
    extern void gfx_outd(unsigned short port, unsigned long data);
