@@ -1,4 +1,9 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 597. Fix two problems with Xvfb:
+        - Too much memory was allocated because of a confusion between
+          bytes and pixels.
+        - The XWD header was corrupted at server reset.
+      (David Dawes).
  596. Fix several problems xwud has displaying TrueColor dumps (extreme
       slowness displaying on TrueColor visuals, and incorrectness displaying
       on DirectColor visuals) (David Dawes).
@@ -18197,7 +18202,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2966 2003/11/15 00:39:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2967 2003/11/15 02:40:29 dawes Exp $
 
 
 
