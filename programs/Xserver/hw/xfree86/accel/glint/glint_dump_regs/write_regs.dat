@@ -1,0 +1,349 @@
+# $XFree86: $
+#
+# Syntax
+#
+#echo string (without linefeed)
+#
+#echon string (with linefeed)
+#
+#reg <register_address> <register_value>
+#
+#dacreg <register_address> <register_value>
+
+echon ---------------------------------------------------------------
+echon GLINT_500TX_Region_0_Registers: 
+echon -------------------------------
+echon Control_Status_Registers: 
+echon -------------------------
+#echo ResetStatus   	(Reset Value: 0x0000) 	
+#reg 0x0000    		0x0000
+
+#echo IntEnable    	(Reset Value: 0x0000) 		
+#reg 0x0008        	0x0000 
+
+#echo IntFlags     	(Reset Value: 0x0000) 		
+#reg 0x0010        	0x0000
+
+#echo InFIFOSpace	(Reset Value: 0x0010) 		
+#reg 0x0018        	0x0010
+
+#echo OutFIFOWords     	(Reset Value: 0x0000) 		
+#reg 0x0020        	0x0000
+
+#echo DMAAddress       	(Reset Value: 0x0000) 		
+#reg 0x0028        	0x0000
+
+#echo DMACount         	(Reset Value: 0x0000) 		
+#reg 0x0030        	0x0000
+
+#echo ErrorFlags       	(Reset Value: 0x0000) 		
+#reg 0x0038        	0x0000
+
+#echo VClkCtl          	(Reset Value: 0x0000) 			
+#reg 0x0040        	0x0000
+
+#echo TestRegister     	(Reset Value: 0x0000) 		
+#reg 0x0048        	0x0000
+
+#echo Aperture0        	(Reset Value: 0x0000) 		
+#reg 0x0050        	0x0000
+
+#echo Aperture1        	(Reset Value: 0x0000) 		
+#reg 0x0058        	0x0000
+
+#echo DMAControl       	(Reset Value: 0x0000) 		
+#reg 0x0060 	   	0x0000
+
+#echo FIFODis          	(Reset Value: 0x0000) 			
+#reg 0x0068 	   	0x0000
+
+echon ---------------------------------------------------------------
+echon LocalBuffer_Registers:
+echon ---------------------- 
+#echo LBMemoryCtl      	(Reset Value: Determined by Localbuffer data pins) 		
+#reg 0x1000        	0x0000
+
+#echo LBMemoryEDO      	(Reset Value: 0x0000) 		
+#reg 0x1008        	0x0000
+
+echon ---------------------------------------------------------------
+echon Framebuffer_Registers:
+echon ----------------------
+#echo FBMemoryCtl      	(Reset Value: Determined by Framebuffer data pins) 		
+#reg 0x1800       	0x0000
+
+#echo FBModeSel        	(Reset Value: Determined by Framebuffer data bits) 		
+#reg 0x1808        	0x0000
+
+#echo FBGCWrMask       	(Reset Value: 0xFFFFFFFF) 		
+#reg 0x1810        	0xFFFFFFFF
+
+#echo FBGCColorLower   	(Reset Value: 0xXXXXXXXX) 		
+#reg 0x1818        	0x0000
+
+#echo FBTXMemCtl       	(Reset Value: Determined by TX Control Pin) 		
+#reg 0x1820        	0x0000
+
+#echo FBWrMaskk        	(Reset Value: 0xFFFFFFFF) 		
+#reg 0x1830        	0xFFFFFFFF
+
+#echo FBGCColorUpper   	(Reset Value: 0xXXXXXXXX) 		
+#reg 0x1838        	0x0000
+
+
+echon ---------------------------------------------------------------
+echon Core_FIFO:
+echon ----------  
+#echo OutputFIFO       	(Reset Value: ) 		
+#reg 0x2000        	0x0000
+
+echon ---------------------------------------------------------------
+echon Internal_Video_Registers:
+echon -------------------------
+#echo VTGHLimit        	(Reset Value: 0x001) 		
+#reg 0x3000       	0x001
+
+#echo VTGHSyncStart    	(Reset Value: 0xXXX) 		
+#reg 0x3008        	0x000
+
+#echo VTGHSyncEnd      	(Reset Value: 0xXXX) 		
+#reg 0x3010        	0x000
+
+#echo VTGHBlankEnd     	(Reset Value: 0xXXX0) 		
+#reg 0x3018        	0x000
+
+#echo VTGVLimit        	(Reset Value: 0x001) 		
+#reg 0x3020        	0x001
+
+#echo VTGVSyncStart	(Reset Value: 0xXXX) 	
+#reg 0x3028        	0x000
+
+#echo VTGVSyncEnd      	(Reset Value: 0xXXX) 		
+#reg 0x3030        	0x000
+
+#echo VTGVBlankEnd     	(Reset Value: 0xXXX) 	     
+#reg 0x3038        	0x000
+
+#echo VTGHGateStart    	(Reset Value: 0xXXX) 	   
+#reg 0x3040        	0x000
+
+#echo VTGHGateEnd      	(Reset Value: 0xXXX) 		
+#reg 0x3048        	0x000
+
+#echo VTGVGateStart    	(Reset Value: 0xXXX) 		
+#reg 0x3050        	0x000
+
+#echo VTGVGateEnd      	(Reset Value: 0xXXX) 		
+#reg 0x3058        	0x000
+
+#echo VTGPolarity      	(Reset Value: 0xD5) 		
+#reg 0x3060        	0xD5
+
+#echo VTGFrameRowAddr 	(Reset Value: 0x00) 	 
+#reg 0x3068        	0x00
+
+#echo VTGVLineNumber   	(Reset Value: 0x001) 		
+#reg 0x3070        	0x001
+
+#echo VTGSerialClk     	(Reset Value: 0xXX) 		
+#reg 0x3078        	0x00
+
+#echo VTGModeCtl       	(Reset Value: 0x0000) 		
+#reg 0x3080        	0x0000
+
+echon ---------------------------------------------------------------
+echon GLINT_Delta_Region_0_Registers:
+echon --------------------------------
+echon Control_Status_Registers:
+echon ------------------------- 
+#echo DResetStatus     	(Reset Value: 0x0000) 		
+#reg 0x0800        	0x0000
+
+#echo DIntEnable       	(Reset Value: 0x0000) 		
+#reg 0x0808        	0x0000
+
+#echo DIntFlags        	(Reset Value: 0x0000) 		
+#reg 0x0810        	0x0000
+
+#echo DErrorFlags      	(Reset Value: 0x0000) 		
+#reg 0x0838        	0x0000
+
+#echo DTestRegister    	(Reset Value: 0x0000) 		
+#reg 0x0848        	0x0000
+
+#echo DFIFODis         	(Reset Value: 0x0000) 		
+#reg 0x0868        	0x0000
+
+echon ---------------------------------------------------------------
+echon RAMDAC_Registers
+echon ----------------
+#echo IBMRGB_rev		
+#dacreg 0x00 value
+
+#echo IBMRGB_id		
+#dacreg 0x01
+
+#echo IBMRGB_misc_clock	
+#dacreg 0x02
+
+#echo IBMRGB_sync		
+#dacreg 0x03
+
+#echo IBMRGB_hsync_pos	
+#dacreg 0x04
+
+#echo IBMRGB_pwr_mgmt		
+#dacreg 0x05
+
+#echo IBMRGB_dac_op		
+#dacreg 0x06
+
+#echo IBMRGB_pal_ctrl		
+#dacreg 0x07
+
+#echo IBMRGB_sysclk		
+#dacreg 0x08  
+
+#echo IBMRGB_pix_fmt		
+#dacreg 0x0a
+
+#echo IBMRGB_8bpp		
+#dacreg 0x0b
+
+#echo IBMRGB_16bpp		
+#dacreg 0x0c
+
+#echo IBMRGB_24bpp		
+#dacreg 0x0d
+
+#echo IBMRGB_32bpp		
+#dacreg 0x0e
+
+#echo IBMRGB_pll_ctrl1	
+#dacreg 0x10
+
+#echo IBMRGB_pll_ctrl2	
+#dacreg 0x11
+
+#echo IBMRGB_pll_ref_div_fix	
+#dacreg 0x14
+
+#echo IBMRGB_sysclk_ref_div	
+#dacreg 0x15  
+
+#echo IBMRGB_sysclk_vco_div	
+#dacreg 0x16 
+
+#echo IBMRGB_f0		
+#dacreg 0x20
+
+#echo IBMRGB_m0		
+#dacreg 0x20
+
+#echo IBMRGB_n0		
+#dacreg 0x21
+
+#echo IBMRGB_curs		
+#dacreg 0x30
+
+#echo IBMRGB_curs_xl		
+#dacreg 0x31
+
+#echo IBMRGB_curs_xh		
+#dacreg 0x32
+
+#echo IBMRGB_curs_yl		
+#dacreg 0x33
+
+#echo IBMRGB_curs_yh		
+#dacreg 0x34
+
+#echo IBMRGB_curs_hot_x	
+#dacreg 0x35
+
+#echo IBMRGB_curs_hot_y	
+#dacreg 0x36
+
+#echo IBMRGB_curs_col1_r	
+#dacreg 0x40
+
+#echo IBMRGB_curs_col1_g	
+#dacreg 0x41
+
+#echo IBMRGB_curs_col1_b	
+#dacreg 0x42
+
+#echo IBMRGB_curs_col2_r	
+#dacreg 0x43
+
+#echo IBMRGB_curs_col2_g	
+#dacreg 0x44
+
+#echo IBMRGB_curs_col2_b	
+#dacreg 0x45
+
+#echo IBMRGB_curs_col3_r	
+#dacreg 0x46
+
+#echo IBMRGB_curs_col3_g	
+#dacreg 0x47
+
+#echo IBMRGB_curs_col3_b	
+#dacreg 0x48
+
+#echo IBMRGB_border_col_r	
+#dacreg 0x60
+
+#echo IBMRGB_border_col_g	
+#dacreg 0x61
+
+#echo IBMRGB_botder_col_b	
+#dacreg 0x62
+
+#echo IBMRGB_misc1		
+#dacreg 0x70
+
+#echo IBMRGB_misc2		
+#dacreg 0x71
+
+#echo IBMRGB_misc3		
+#dacreg 0x72	
+
+#echo IBMRGB_misc4		
+#dacreg 0x73  
+
+#echo IBMRGB_dac_sense	
+#dacreg 0x82
+
+#echo IBMRGB_misr_r		
+#dacreg 0x84
+
+#echo IBMRGB_misr_g		
+#dacreg 0x86
+
+#echo IBMRGB_misr_b		
+#dacreg 0x88
+
+#echo IBMRGB_pll_vco_div_in	
+#dacreg 0x8e
+
+#echo IBMRGB_pll_ref_div_in	
+#dacreg 0x8f
+
+#echo IBMRGB_vram_mask_0	
+#dacreg 0x90
+
+#echo IBMRGB_vram_mask_1	
+#dacreg 0x91
+
+#echo IBMRGB_vram_mask_2	
+#dacreg 0x92
+
+#echo IBMRGB_vram_mask_3	
+#dacreg 0x93
+
+#echo IBMRGB_curs_array	
+#dacreg 0x100
+
+echon -----------------------------------------------------------------
+
