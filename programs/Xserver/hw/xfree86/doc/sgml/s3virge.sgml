@@ -8,14 +8,14 @@
 <date>10 Jul 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/s3virge.sgml,v 1.1 1999/05/30 14:27:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/s3virge.sgml,v 1.2 1999/07/10 12:17:25 dawes Exp $
 </ident>
 
 <toc>
 
 <sect> Supported hardware
 <p>
-The s3virge driver in XFree86 &relvers; supports the S3 ViRGE, ViRGE DX, GX, MX, MX+, and VX chipsets.  A majority of testing is done on ViRGE DX chips, making them the most stable to date.  This release has improved support for 24 bit color depths and resolves all the known issues with Netscape and other applications supporting 24 bit color.
+The s3virge driver in XFree86 &relvers; supports the S3 ViRGE, ViRGE DX, GX, MX, MX+, and VX chipsets.  A majority of testing is done on ViRGE DX chips, making them the most stable to date.  This release has improved support for ViRGE GX2 stability, XVideo support for ViRGE DX (tested) and ViRGE (untested) in depth 16 and 24, conversion to fb framebuffer rendering, and support for the new Render extension (untested).
 
 This driver is moderately stable, however please use caution with any new install.  Please report any problems to
 <email>XFree86@Xfree86.org</email>

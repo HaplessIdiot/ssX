@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.24 2000/11/02 16:29:12 anderson Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.25 2000/11/14 16:54:52 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -75,6 +75,7 @@ in this Software without prior written authorization from the XFree86 Project.
 
 /* Drivers using the XAA interface ... */
 #include "xaa.h"
+#include "xaalocal.h"
 #include "xf86cmap.h"
 #include "xf86i2c.h"
 
@@ -250,6 +251,8 @@ typedef struct tagS3VRec {
   int			GEResetCnt;
   /* Accel WaitFifo function */
   void (*pWaitFifo)(struct tagS3VRec *, int);
+  /* Accel WaitCmd function */
+  void (*pWaitCmd)(struct tagS3VRec *);
 
   /*************************/
   /* ViRGE options -start- */
@@ -395,6 +398,8 @@ extern Bool S3VAccelInit32(ScreenPtr pScreen);
 void S3VAccelSync(ScrnInfoPtr);
 void S3VWaitFifoGX2(S3VPtr ps3v, int slots );
 void S3VWaitFifoMain(S3VPtr ps3v, int slots );
+void S3VWaitCmdGX2(S3VPtr ps3v);
+void S3VWaitDummy(S3VPtr ps3v);
 
 /* s3v_hwcurs.c */
 extern Bool S3VHWCursorInit(ScreenPtr pScreen);

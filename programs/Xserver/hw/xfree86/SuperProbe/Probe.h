@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.74 2000/08/23 22:10:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.75 2000/11/14 18:20:36 dawes Exp $ */
 
 /*
  * Includes
@@ -199,6 +199,7 @@ Bool Probe_ARK __STDCARGS((int *));
 Bool Probe_SigmaDesigns __STDCARGS((int *));
 Bool Probe_Intergraphics __STDCARGS((int *));
 Bool Probe_Epson __STDCARGS((int *));
+Bool Probe_SiliconMotion __STDCARGS((int *));
 /* CoProc */
 Bool Probe_8514 __STDCARGS((int *));
 Bool Probe_ATIMach __STDCARGS((int *));
@@ -259,6 +260,7 @@ extern Chip_Descriptor Yamaha_Descriptor;
 extern Chip_Descriptor ARK_Descriptor;
 extern Chip_Descriptor SigmaDesigns_Descriptor;
 extern Chip_Descriptor Intergraphics_Descriptor;
+extern Chip_Descriptor SiliconMotion_Descriptor;
 
 extern Chip_Descriptor IBM8514_Descriptor;
 extern Chip_Descriptor ATIMach_Descriptor;
@@ -358,8 +360,9 @@ extern Chip_Descriptor GLINT_Descriptor;
 #define DAC_MGAG100	55	/* Matrox G100 integrated DAC */
 #define DAC_MGAG200	56	/* Matrox G200 integrated DAC */
 #define DAC_SIS		57	/* SiS integrated DAC */
+#define DAC_SMI		58	/* Silicon Motion integrated DAC */
 
-#define DAC_MAX		DAC_SIS	/* UPDATE THIS! */
+#define DAC_MAX		DAC_SMI	/* UPDATE THIS! */
 
 #define DAC_6_8_PROGRAM	0x40	/* RAMDAC programmable for 6/8-bit tables */
 #define DAC_8BIT	0x80	/* RAMDAC with 8-bit wide lookup tables */
@@ -429,8 +432,9 @@ extern struct RamDac_Name RamDac_Names[];
 #define V_SD		27
 #define V_IG		28
 #define V_EPSON		29
+#define V_SMI		30
 
-#define NUM_VENDORS	29
+#define NUM_VENDORS	30
 #define CHPS_PER_VENDOR	64
 
 #define CHIP_AHEAD_UNK	SVGA_TYPE(V_AHEAD,0)	/* Ahead unknown	*/
@@ -718,6 +722,13 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_IG_1680	SVGA_TYPE(V_IG,1)	/* Intergraphics IGA-1680	*/
 #define CHIP_IG_1682	SVGA_TYPE(V_IG,2)	/* Intergraphics IGA-1682	*/
 #define CHIP_EPSON_8110	SVGA_TYPE(V_EPSON,0)	/* Epson SPC8110	*/
+#define CHIP_SMI_UNK	SVGA_TYPE(V_SMI,0)	/* SMI unknwon */
+#define CHIP_SMI_910	SVGA_TYPE(V_SMI,1)	/* SMI 910 */
+#define CHIP_SMI_810	SVGA_TYPE(V_SMI,2)	/* SMI 810 */
+#define CHIP_SMI_820	SVGA_TYPE(V_SMI,3)	/* SMI 820 */
+#define CHIP_SMI_710	SVGA_TYPE(V_SMI,4)	/* SMI 710 */
+#define CHIP_SMI_712	SVGA_TYPE(V_SMI,5)	/* SMI 712 */
+#define CHIP_SMI_720	SVGA_TYPE(V_SMI,6)	/* SMI 720 */
 
 /*
  * Graphics Coprocessors

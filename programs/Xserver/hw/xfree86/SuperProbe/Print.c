@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.69 1999/11/19 13:54:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.70 2000/02/12 20:45:14 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -237,6 +237,13 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Intergraphics IGA-1680",
 		  "Intergraphics IGA-1682" },
 /* Epson */	{ "Epson SPC8110" },
+/* Silicon Motion */	{ "Silicon Motion (chipset unknown)"
+		  "Silicon Motion SM910 Lynx",
+		  "Silicon Motion SM810 LynxE",
+		  "Silicon Motion SM820 Lynx3D",
+		  "Silicon Motion SM710 LynxEM",
+		  "Silicon Motion SM712 LynxEM+",
+		  "Silicon Motion SM720 Lynx3DM" },
 };
 
 static CONST char *Herc_Names[] = 
@@ -325,6 +332,8 @@ struct RamDac_Name RamDac_Names[] =
 	  "Matrox G200 built-in DAC w/clock" },
 	{ "SiS",
 	  "SiS built-in DAC w/clock" },
+	{ "SMI",
+	  "Silicon Motion built-in DAC w/clock" },
 };
 
 static CONST char *CoProc_Names[NUM_CP_TYPES][CHPS_PER_CPTYPE] = 

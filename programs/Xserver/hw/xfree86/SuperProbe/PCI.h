@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.34 1999/11/19 13:54:14 hohndel Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.35 2000/02/12 20:45:13 dawes Exp $ */ 
 /*
  * PCI Probe
  *
@@ -224,6 +224,7 @@ extern struct pci_config_reg *pci_devp[];
 #define PCI_VENDOR_ARK		0xEDD8
 #define PCI_VENDOR_3DLABS	0x3D3D
 #define PCI_VENDOR_INTERGRAPHICS	0x10EA
+#define PCI_VENDOR_SMI		0x126F
 
 /* Matrox */
 #define PCI_CHIP_MGA2085PX	0x0518
@@ -384,6 +385,14 @@ extern struct pci_config_reg *pci_devp[];
 /* Intergraphics */
 #define PCI_CHIP_INTERG_1680	0x1680
 #define PCI_CHIP_INTERG_1682	0x1682
+
+/* Silicon Motion */
+#define PCI_CHIP_SMI_910	0x0910
+#define PCI_CHIP_SMI_810	0x0810
+#define PCI_CHIP_SMI_820	0x0820
+#define PCI_CHIP_SMI_710	0x0710
+#define PCI_CHIP_SMI_712	0x0712
+#define PCI_CHIP_SMI_720	0x0720
 
 /* Increase this as required */
 #define MAX_DEV_PER_VENDOR 18

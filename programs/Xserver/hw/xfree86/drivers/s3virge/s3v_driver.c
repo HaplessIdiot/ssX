@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.66 2000/11/15 22:30:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.67 2000/11/21 23:10:36 tsi Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -116,9 +116,9 @@ static int pix24bpp = 0;
  
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-#define S3VIRGE_VERSION_NAME "1.4.0"
+#define S3VIRGE_VERSION_NAME "1.5.0"
 #define S3VIRGE_VERSION_MAJOR   1
-#define S3VIRGE_VERSION_MINOR   4
+#define S3VIRGE_VERSION_MINOR   5
 #define S3VIRGE_PATCHLEVEL      0
 #define S3VIRGE_DRIVER_VERSION ((S3VIRGE_VERSION_MAJOR << 24) | \
 				(S3VIRGE_VERSION_MINOR << 16) | \
@@ -1525,11 +1525,14 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
       case S3_ViRGE_GX2:
       case S3_TRIO_3D_2X:
 	ps3v->pWaitFifo = S3VWaitFifoGX2;
+	ps3v->pWaitCmd = S3VWaitCmdGX2;
 	break;
       case S3_ViRGE:
       case S3_ViRGE_VX:
       default:
 	ps3v->pWaitFifo = S3VWaitFifoMain;
+	/* Do nothing... */
+	ps3v->pWaitCmd = S3VWaitDummy;
 	break;
       }
 
@@ -2754,7 +2757,7 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
        /* MXTESTME */ || S3_ViRGE_MX_SERIES(ps3v->Chipset) )
      {
      if(ps3v->pci_burst)
-        new->CR3A = (tmp & 0x78) | 0x10; /* ENH 256, PCI burst */
+        new->CR3A = (tmp & 0x38) | 0x10; /* ENH 256, PCI burst */
      else 
         new->CR3A = tmp | 0x90;      /* ENH 256, no PCI burst! */
      }
@@ -2784,7 +2787,7 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
       new->CR63 = 0x09;
       }
    else {
-     new->CR66 = 0x89; 
+     new->CR66 = 0x89;
      /* Set display fifo */
      if( S3_ViRGE_GX2_SERIES(ps3v->Chipset) ||
 	 S3_ViRGE_MX_SERIES(ps3v->Chipset) )

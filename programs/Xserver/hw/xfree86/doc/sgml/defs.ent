@@ -1,17 +1,17 @@
-<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.12 2000/06/17 00:27:32 dawes Exp $ -->
+<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.13 2000/06/30 16:54:28 dawes Exp $ -->
 
 <!-- shared entity definitions for the XFree86 documentation -->
 
 <!-- XFree86 version string -->
-<!ENTITY relvers CDATA "4.0.1">
-<!ENTITY prevrelvers CDATA "4.0">
-<!ENTITY srcvers CDATA "401">
-<!ENTITY prevsrcvers CDATA "400">
+<!ENTITY relvers CDATA "4.0.2">
+<!ENTITY prevrelvers CDATA "4.0.1">
+<!ENTITY srcvers CDATA "402">
+<!ENTITY prevsrcvers CDATA "401">
 <!-- Version of the most recent 3.3.x release -->
 <!ENTITY legacyvers CDATA "3.3.6">
 
 <!-- SuperProbe version strings -->
-<!ENTITY spvers CDATA "2.22">
+<!ENTITY spvers CDATA "2.23">
 <!ENTITY legacyspvers CDATA "2.21">
 
 <!-- These should be set according to which snapshot/release this is -->

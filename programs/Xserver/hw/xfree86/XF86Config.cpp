@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.10 2000/06/20 05:08:42 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.11 2000/10/24 18:07:49 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ "Version 4.0.1"  "XFree86"
@@ -1558,20 +1558,31 @@ cyrix(__drivermansuffix__),
 fbdev(__drivermansuffix__),
 glide(__drivermansuffix__),
 glint(__drivermansuffix__),
+i128(__drivermansuffix__),
 i740(__drivermansuffix__),
 i810(__drivermansuffix__),
+imstt(__drivermansuffix__),
 mga(__drivermansuffix__),
 neomagic(__drivermansuffix__),
 nv(__drivermansuffix__),
 r128(__drivermansuffix__),
 rendition(__drivermansuffix__),
 s3virge(__drivermansuffix__),
+siliconmotion(__drivermansuffix__),
 sis(__drivermansuffix__),
+sunbw2(__drivermansuffix__),
+suncg14(__drivermansuffix__),
+suncg3(__drivermansuffix__),
+suncg6(__drivermansuffix__),
+sunffb(__drivermansuffix__),
+sunleo(__drivermansuffix__),
+suntcx(__drivermansuffix__),
 tdfx(__drivermansuffix__),
 tga(__drivermansuffix__),
 trident(__drivermansuffix__),
 tseng(__drivermansuffix__),
 v4l(__drivermansuffix__),
+vesa(__drivermansuffix__),
 vga(__drivermansuffix__),
 .br
 README

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_xv.c,v 1.1 2000/10/23 14:54:45 alanh Exp $ */
 /*
 Copyright (C) 2000 The XFree86 Project, Inc.  All Rights Reserved.
 
@@ -107,6 +107,7 @@ void S3VInitVideo(ScreenPtr pScreen)
 	) 
        &&
        ((ps3v->Chipset == S3_ViRGE_DXGX) ||
+	/* S3_ViRGE_GX2_SERIES(ps3v->Chipset) || */
 	(ps3v->Chipset == S3_ViRGE)
 	)
        && !ps3v->NoAccel
@@ -301,7 +302,15 @@ S3VQueryBestSize(
   pointer data
 ){
   *p_w = drw_w;
-  *p_h = drw_h; 
+  *p_h = drw_h;
+
+#if 0
+  /* Only support scaling up, no down scaling. */
+  /* This doesn't seem to work (at least for XMovie) */
+  /* and the DESIGN doc says this is illegal anyway... */
+  if( drw_w < vid_w ) *p_w = vid_w;
+  if( drw_h < vid_h ) *p_h = vid_h;
+#endif
 }
 
 
@@ -361,11 +370,11 @@ S3VCopyMungedData(
 static void 
 S3VResetVideoOverlay(ScrnInfoPtr pScrn) 
 {
+  /* empty for ViRGE at the moment... */
+#if 0
   S3VPtr ps3v = S3VPTR(pScrn);
   S3VPortPrivPtr pPriv = ps3v->portPrivate;
 
-  /* empty for ViRGE at the moment... */
-#if 0
     MGAPtr pMga = MGAPTR(pScrn);
     MGAPortPrivPtr pPriv = pMga->portPrivate;
 
@@ -421,19 +430,10 @@ S3VAllocAdaptor(ScrnInfoPtr pScrn)
     xvColorKey   = MAKE_ATOM("XV_COLORKEY");
 #endif
 
-    pPriv->colorKey = /*pMga->videoKey;*/
-      /*cep*/
+    pPriv->colorKey = 
       (1 << pScrn->offset.red) | 
       (1 << pScrn->offset.green) |
       (((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue); 
-
-#if 0
-    pScrn->mask.red | pScrn->mask.green | pScrn->mask.blue;
-      (1 << (pScrn->offset.red+4)) | 
-      (1 << (pScrn->offset.green+5)) |
-      (((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue); 
-#endif
-
 
 #if 0
     pPriv->brightness = 0;
@@ -630,6 +630,13 @@ S3VStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
   S3VPtr ps3v = S3VPTR(pScrn);
   S3VPortPrivPtr pPriv = ps3v->portPrivate;
 
+  vgaHWPtr hwp = VGAHWPTR(pScrn);
+  /*  S3VPtr ps3v = S3VPTR(pScrn);*/
+  int vgaCRIndex, vgaCRReg, vgaIOBase;
+  vgaIOBase = hwp->IOBase;
+  vgaCRIndex = vgaIOBase + 4;
+  vgaCRReg = vgaIOBase + 5;
+
 #if 0
   MGAPtr pMga = MGAPTR(pScrn);
   MGAPortPrivPtr pPriv = pMga->portPrivate;
@@ -642,10 +649,31 @@ S3VStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
   if(exit) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON)
        {
+#if 0
 	 /*OUTREG(MGAREG_BESCTL, 0);*/
 	 /*OUTREG(SSTREAM_CONTROL_REG, 0x02000000);*/
-	 /* Primary over secondary */
-	 OUTREG(BLEND_CONTROL_REG, 0x01000000);
+
+	 OUTREG(SSTREAM_CONTROL_REG, 0);
+	 /*OUTREG(SSTREAM_STRIDE_REG, 0 );*/
+	 
+	 /*OUTREG(K1_VSCALE_REG, 0 );
+	 OUTREG(K2_VSCALE_REG, 0 );
+	 */
+	 OUTREG(DDA_VERT_REG, 0 );
+
+	 /*OUTREG(SSTREAM_START_REG, ((dstBox->x1 +1) << 16) | (dstBox->y1 +1));
+	 OUTREG(SSTREAM_WINDOW_SIZE_REG, 0);
+	  */
+#endif	 
+	 if ( S3_ViRGE_GX2_SERIES(ps3v->Chipset) )
+	   {
+	     OUTREG(SSTREAM_CONTROL_REG, 0);
+	   }
+	 else
+	   {
+	     /* Primary over secondary */
+	     OUTREG(BLEND_CONTROL_REG, 0x01000000);
+	   }
        }
 
      if(pPriv->area) {
@@ -724,17 +752,20 @@ S3VDisplayVideoOverlay(
     /* dst width and height */
     short drw_w, short drw_h
 ){
-#if 0
-    MGAPtr pMga = MGAPTR(pScrn);
-#endif
     int tmp;
-    int flag;
 
 #if 0
     CHECK_DMA_QUIESCENT(pMga, pScrn);
 #endif
     S3VPtr ps3v = S3VPTR(pScrn);
     S3VPortPrivPtr pPriv = ps3v->portPrivate;
+
+  vgaHWPtr hwp = VGAHWPTR(pScrn);
+  /*  S3VPtr ps3v = S3VPTR(pScrn);*/
+  int vgaCRIndex, vgaCRReg, vgaIOBase;
+  vgaIOBase = hwp->IOBase;
+  vgaCRIndex = vgaIOBase + 4;
+  vgaCRReg = vgaIOBase + 5;
 
 #if 0
     /* got 64 scanlines to do it in */
@@ -746,7 +777,11 @@ S3VDisplayVideoOverlay(
     /* Reference at http://www.webartz.com/fourcc/ */
       /* Looks like ViRGE only supports YUY2 and Y211?, */
       /* listed as YUV-16 (4.2.2) and YUV (2.1.1) in manual. */
-      
+
+#if 0 
+      /* Only supporting modes we listed for the time being, */   
+      /* No, switching required... #if 0'd this out */  
+
     switch(id) {
     case FOURCC_UYVY:
       /*
@@ -781,108 +816,131 @@ S3VDisplayVideoOverlay(
       /*OUTREG(SSTREAM_CONTROL_REG, 0x02000000); / YUV-16 */
       /* works for xvtest and suzi */
       /* OUTREG(SSTREAM_CONTROL_REG, 0x01000000);  * YCbCr-16 * no scaling */
+
       /* calc horizontal scale factor */
-      /*tmp = drw_w / src_w;*/
+      tmp = drw_w / src_w;
       if (drw_w == src_w) tmp = 0; 
-      else tmp =2;
-      /*tmp &= 3;*/
+      else if (tmp>=4) tmp =3;
+      else if (tmp>=2) tmp =2;
+      else tmp =1;
+
       /* YCbCr-16 */
-      if( drw_w == src_w ) flag = 1; else flag = 0;
       OUTREG(SSTREAM_CONTROL_REG, 
 	     tmp << 28 | 0x01000000 | 
 	     ((((src_w-1)<<1)-(drw_w-1)) & 0xfff)
 	     );
       break;
     }
+#endif
+
+      /* calc horizontal scale factor */
+      if (drw_w == src_w) 
+	tmp = 0; 
+      else 
+	tmp =2;
+      /* YCbCr-16 */
+    if ( S3_ViRGE_GX2_SERIES(ps3v->Chipset) )
+      {
+	OUTREG(SSTREAM_CONTROL_REG, 
+	       tmp << 28 | 0x05000000 | 0x800000 |
+	       ((((src_w-1)<<1)-(drw_w-1)) & 0xfff)
+	       );
+      }
+    else
+      {
+	OUTREG(SSTREAM_CONTROL_REG, 
+	       tmp << 28 | 0x01000000 |
+	       ((((src_w-1)<<1)-(drw_w-1)) & 0xfff)
+	       );
+      }
 
     OUTREG(SSTREAM_STRETCH_REG, 
 	   ((src_w - 1) & 0x7ff) | (((src_w-drw_w) & 0x7ff) << 16)
 	   );
-#if 0
-    /* Opaque overlay secondary stream */
-    OUTREG(BLEND_CONTROL_REG, 0x00000000);
-#else
+
     /* Color key on primary */
-    OUTREG(BLEND_CONTROL_REG, 0x05000000);
-#endif
+    if ( S3_ViRGE_GX2_SERIES(ps3v->Chipset) )
+      {
+	/*OUTREG(BLEND_CONTROL_REG, 0x00000000)*/
+	;
+      }
+    else
+      {
+	OUTREG(BLEND_CONTROL_REG, 0x05000000);
+      }
 
     OUTREG(SSTREAM_FBADDR0_REG, offset & 0x3fffff );
-    OUTREG(SSTREAM_STRIDE_REG, (pitch /*>> 1*/) & 0xfff );
+    OUTREG(SSTREAM_STRIDE_REG, pitch & 0xfff );
 
     OUTREG(K1_VSCALE_REG, src_h-1 );
     OUTREG(K2_VSCALE_REG, (src_h - drw_h) & 0x7ff );
-    OUTREG(DDA_VERT_REG, (((~drw_h)-1)) & 0xfff );
+
+    if ( S3_ViRGE_GX2_SERIES(ps3v->Chipset) )
+      {
+	/* enable vert interp. & bandwidth saving - gx2 */
+	OUTREG(DDA_VERT_REG, (((~drw_h)-1) & 0xfff ) |
+	       /* bw & vert interp */ 
+	       0xc000 
+	       /* no bw save 0x8000*/
+	       );
+      }
+    else
+      {
+	OUTREG(DDA_VERT_REG, (((~drw_h)-1)) & 0xfff );
+      }
 
     OUTREG(SSTREAM_START_REG, ((dstBox->x1 +1) << 16) | (dstBox->y1 +1));
     OUTREG(SSTREAM_WINDOW_SIZE_REG, 
 	   ( ((drw_w-1) << 16) | (drw_h ) ) & 0x7ff07ff
 	   );
 
-#if 0
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO,  "Weights r:%X g:%X b:%X  "
-	       "ck:%X mb:%X or:%X ob:%X ckc:%X\n" ,
-	       pScrn->weight.red,
-	       pScrn->weight.green,
-	       pScrn->weight.blue,
-	       pPriv->colorKey,
-	       pScrn->mask.blue,
-	       pScrn->offset.red,
-	       pScrn->offset.blue,
-	   /*0x17000000*/ 0x10000000 | ((pScrn->weight.red-1) << 24) |
-	   ((pPriv->colorKey & pScrn->mask.red) >> pScrn->offset.red)<<16<<3 |
-	   ((pPriv->colorKey & pScrn->mask.green) >> pScrn->offset.green)<<8<<2 |
-	   ((pPriv->colorKey & pScrn->mask.blue) >> pScrn->offset.blue)<<3
-
-	       );
-#endif
-
     /*cep*/
-    OUTREG(COL_CHROMA_KEY_CONTROL_REG, 
-	   /* color key ON */
-	   0x10000000 |
-	   /* # bits to compare */
-	   ((pScrn->weight.red-1) << 24) |
+    if ( S3_ViRGE_GX2_SERIES(ps3v->Chipset) )
+      {
+	OUTREG(COL_CHROMA_KEY_CONTROL_REG, 
+	       /* color key ON */
+	       /*0xc0000000 | */
+	       /*0x40000000  | */
+	       0x40000000  |
+	       /* # bits to compare */
+	       ((pScrn->weight.red-1) << 24) |
 
-	   ((pPriv->colorKey & pScrn->mask.red) >> pScrn->offset.red) << 
-	   (16 + 8-pScrn->weight.red) |
+	       ((pPriv->colorKey & pScrn->mask.red) >> pScrn->offset.red) << 
+	       (16 + 8-pScrn->weight.red) |
 	   
-	   ((pPriv->colorKey & pScrn->mask.green) >> pScrn->offset.green) <<
-	   (8 + 8-pScrn->weight.green) |
+	       ((pPriv->colorKey & pScrn->mask.green) >> pScrn->offset.green) <<
+	       (8 + 8-pScrn->weight.green) |
 	   
-	   ((pPriv->colorKey & pScrn->mask.blue) >> pScrn->offset.blue) <<
-	   (8-pScrn->weight.blue)
-	   );
-
-#if 0
-    OUTREG(MGAREG_BESA1ORG, offset);
-
-    if(y1 & 0x00010000)
-	OUTREG(MGAREG_BESCTL, 0x00050c41);
+	       ((pPriv->colorKey & pScrn->mask.blue) >> pScrn->offset.blue) <<
+	       (8-pScrn->weight.blue)
+	       );
+      } 
     else 
-	OUTREG(MGAREG_BESCTL, 0x00050c01);
- 
-    OUTREG(MGAREG_BESHCOORD, (dstBox->x1 << 16) | (dstBox->x2 - 1));
-    OUTREG(MGAREG_BESVCOORD, (dstBox->y1 << 16) | (dstBox->y2 - 1));
+      {
+	OUTREG(COL_CHROMA_KEY_CONTROL_REG, 
+	       /* color key ON */
+	       0x10000000 |
+	       /* # bits to compare */
+	       ((pScrn->weight.red-1) << 24) |
 
-    OUTREG(MGAREG_BESHSRCST, x1 & 0x03fffffc);
-    OUTREG(MGAREG_BESHSRCEND, (x2 - 0x00010000) & 0x03fffffc);
-    OUTREG(MGAREG_BESHSRCLST, (width - 1) << 16);
-   
-    OUTREG(MGAREG_BESPITCH, pitch >> 1);
+	       ((pPriv->colorKey & pScrn->mask.red) >> pScrn->offset.red) << 
+	       (16 + 8-pScrn->weight.red) |
+	   
+	       ((pPriv->colorKey & pScrn->mask.green) >> pScrn->offset.green) <<
+	       (8 + 8-pScrn->weight.green) |
+	   
+	       ((pPriv->colorKey & pScrn->mask.blue) >> pScrn->offset.blue) <<
+	       (8-pScrn->weight.blue)
+	       );
+      }
 
-    OUTREG(MGAREG_BESV1WGHT, y1 & 0x0000fffc);
-    OUTREG(MGAREG_BESV1SRCLST, height - 1 - (y1 >> 16));
-
-    tmp = ((src_h - 1) << 16)/drw_h;
-    if(tmp >= (32 << 16))
-	tmp = (32 << 16) - 1;
-    OUTREG(MGAREG_BESVISCAL, tmp & 0x001ffffc);
-
-    tmp = (((src_w - 1) << 16)/drw_w) << 1;
-    if(tmp >= (32 << 16))
-	tmp = (32 << 16) - 1;
-    OUTREG(MGAREG_BESHISCAL, tmp & 0x001ffffc);
-#endif /*0*/
+    if ( S3_ViRGE_GX2_SERIES(ps3v->Chipset) )
+      {
+	VGAOUT8(vgaCRIndex, 0x92);
+	VGAOUT8(vgaCRReg, (((pitch + 7) / 8) >> 8) | 0x80);
+	VGAOUT8(vgaCRIndex, 0x93);
+	VGAOUT8(vgaCRReg, (pitch + 7) / 8);
+      }
 
 }
 
@@ -903,8 +961,8 @@ S3VPutImage(
    S3VPortPrivPtr pPriv = ps3v->portPrivate;
    INT32 x1, x2, y1, y2;
    unsigned char *dst_start;
-   int pitch, new_h, offset, offset2, offset3;
-   int srcPitch, srcPitch2, dstPitch;
+   int pitch, new_h, offset, offset2=0, offset3=0;
+   int srcPitch, srcPitch2=0, dstPitch;
    int top, left, npixels, nlines;
    BoxRec dstBox;
    CARD32 tmp;
@@ -1022,7 +1080,7 @@ S3VPutImage(
 					REGION_RECTS(clipBoxes));
 	}
 
-	offset += top * dstPitch;
+	offset += left + (top * dstPitch);
 	S3VDisplayVideoOverlay(pScrn, id, offset, width, height, dstPitch,
 	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
 
