@@ -9,6 +9,9 @@ lib/libGLU.dylib
 lib/libICE.6.3.dylib
 lib/libICE.6.dylib
 lib/libICE.dylib
+lib/libOSMesa.4.0.dylib
+lib/libOSMesa.4.dylib
+lib/libOSMesa.dylib
 lib/libSM.6.0.dylib
 lib/libSM.6.dylib
 lib/libSM.dylib
