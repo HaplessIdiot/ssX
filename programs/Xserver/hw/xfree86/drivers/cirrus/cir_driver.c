@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.34 1999/04/18 04:08:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.35 1999/04/25 15:30:20 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -971,6 +971,9 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
     (void) xf86GetOptValULong(CIROptions, OPTION_MEMCFG1, &pCir->SR0F);
     (void) xf86GetOptValULong(CIROptions, OPTION_MEMCFG2, &pCir->SR17);
 
+    xf86AddControlledResource(pScrn, MEM_IO);
+    xf86EnableAccess(&pScrn->Access);
+
     /*
      * If the user has specified the amount of memory in the XF86Config
      * file, we respect that setting.
@@ -1180,18 +1183,20 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
 
-   if (!xf86LoadSubModule(pScrn, "i2c")) {
-       CIRFreeRec(pScrn);
-       return FALSE;
-   }
-   xf86LoaderReqSymLists(i2cSymbols,NULL);
+    if (!xf86LoadSubModule(pScrn, "i2c")) {
+	CIRFreeRec(pScrn);
+	return FALSE;
+    }
+    xf86LoaderReqSymLists(i2cSymbols,NULL);
 
-   if (!xf86LoadSubModule(pScrn, "ddc")) {
-       CIRFreeRec(pScrn);
-       return FALSE;
-   }
-   xf86LoaderReqSymLists(ddcSymbols, NULL);
+    if (!xf86LoadSubModule(pScrn, "ddc")) {
+	CIRFreeRec(pScrn);
+	return FALSE;
+    }
+    xf86LoaderReqSymLists(ddcSymbols, NULL);
 
+    xf86DelControlledResource(&pScrn->Access, FALSE);
+   
     return TRUE;
 }
 
@@ -1678,6 +1683,9 @@ CIRScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
     pScrn = xf86Screens[pScreen->myNum];
 
+    xf86AddControlledResource(pScrn, MEM_IO);
+    xf86EnableAccess(&pScrn->Access);
+
     hwp = VGAHWPTR(pScrn);
     pCir = CIRPTR(pScrn);
 
@@ -1978,6 +1986,8 @@ CIREnterVT(int scrnIndex, int flags)
 #ifdef CIR_DEBUG
     ErrorF("CIREnterVT\n");
 #endif
+
+    xf86EnableAccess(&pScrn->Access);
 
     /* Should we re-save the text mode on each VT enter? */
     return CIRModeInit(pScrn, pScrn->currentMode);

@@ -1,4 +1,7 @@
-XFree86 3.9Pl (29 April 1999)
+XFree86 3.9Pl (3 May 1999)
+2799. Quick fix for cirrus driver problem introduced in 3.9Pk.
+2798. Fix a problem with pcitweak that was preventing it from working with
+      buses other than bus 0 (David Dawes).
 2797. Update xfontsel to display appropriate glyphs for ISO10646 fonts
       (Mark Leisher).
 2796. Add support for building XF86Setup with ncurses on NetBSD and OpenBSD
@@ -7912,4 +7915,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.738 1999/04/29 05:12:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.739 1999/04/29 09:13:38 dawes Exp $
