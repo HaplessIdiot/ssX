@@ -1,4 +1,5 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 293. Rework the building of libGL and the DRI drivers (David Dawes).
  292. Update greek keyboard layout and compose map.
       (#4513, Katsaloulis Panagiotis)
  291. Fix problems in Xnest when MouseKeys is enabled and patched it to
@@ -12751,4 +12752,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1642 2001/03/23 01:27:09 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1643 2001/03/23 18:25:13 paulo Exp $
