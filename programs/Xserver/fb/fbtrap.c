@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/programs/Xserver/fb/fbtrap.c,v 1.1 2002/05/13 05:25:59 keithp Exp $
  *
  * Copyright © 2000 University of Southern California
  *
@@ -33,7 +33,6 @@
 #include "picturestr.h"
 #include "mipict.h"
 #include "fbpict.h"
-#include "fbtrap.h"
 
 #ifdef DEBUG
 #include <stdio.h>
