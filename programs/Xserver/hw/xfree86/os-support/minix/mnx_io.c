@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_io.c,v 3.5 1996/02/04 09:10:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_io.c,v 3.6 1996/03/04 05:16:38 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -167,7 +167,8 @@ void xf86KbdEvents()
 	}
 }
 
-void xf86MouseInit()
+void xf86MouseInit(mouse)
+MouseDevPtr mouse;
 {
 	static int mseFd= -1;
 	int r, flags;
@@ -178,8 +179,8 @@ void xf86MouseInit()
 		real_uid= getuid();
 
 		setuid(0);
-		if ((mseFd = xf86Info.mseFd =
-			open(xf86Info.mseDevice, O_RDWR)) < 0)
+		if ((mseFd = mouse->mseFd =
+			open(mouse->mseDevice, O_RDWR)) < 0)
 		{
 			if (xf86AllowMouseOpenFail) {
 				ErrorF("Cannot open mouse (%s) - Continuing...\n",
@@ -191,26 +192,27 @@ void xf86MouseInit()
 		}
 		setuid(real_uid);
 
-		xf86SetupMouse();
+		xf86SetupMouse(mouse);
 
 		/* Mark the mouse as asynchronous */
-		flags = fcntl(xf86Info.mseFd, F_GETFD);
+		flags = fcntl(mouse->mseFd, F_GETFD);
 		if (flags == -1)
 		{
 			FatalError("Unable to get mouse flags (%s)\n",
 				strerror(errno));
 		}
-		r = fcntl(xf86Info.mseFd, F_SETFD, flags | FD_ASYNCHIO);
+		r = fcntl(mouse->mseFd, F_SETFD, flags | FD_ASYNCHIO);
 		if (r == -1)
 		{
 			FatalError("Unable to set mouse flags (%s)\n",
 				strerror(errno));
 		}
-		nbio_register(xf86Info.mseFd);
+		nbio_register(mouse->mseFd);
 	}
 }
 
-int xf86MouseOn()
+int xf86MouseOn(mouse)
+MouseDevPtr mouse;
 {
 	char waste[16];
 	int r;
@@ -218,7 +220,7 @@ int xf86MouseOn()
 	/* Get rid of old data */
 	for (;;)
 	{
-		r = nbio_read(xf86Info.mseFd, waste, sizeof(waste));
+		r = nbio_read(mouse->mseFd, waste, sizeof(waste));
 		if (r > 0)
 			continue;
 		if ((r == -1 && errno == EAGAIN) || xf86AllowMouseOpenFail)
@@ -228,18 +230,19 @@ int xf86MouseOn()
 		FatalError("unable to read from mouse (%s)\n",
 			   strerror(errno));
 	}
-	return(xf86Info.mseFd);
+	return(mouse->mseFd);
 }
 
-void xf86MouseEvents()
+void xf86MouseEvents(device)
+DeviceIntPtr	device;
 {
 	unsigned char rBuf[64];
 	int nBytes;
 
-	while ((nBytes = nbio_read(xf86Info.mseFd, (char *)rBuf,
+	while ((nBytes = nbio_read(mouse->mseFd, (char *)rBuf,
 		sizeof(rBuf))) > 0)
 	{
-		xf86MouseProtocol(rBuf, nBytes);
+		xf86MouseProtocol(device, rBuf, nBytes);
 	}
 	if (nBytes == 0)
 		ErrorF("xf86MouseEvents: nbio_read returns EOF");
@@ -250,8 +253,9 @@ void xf86MouseEvents()
 	}
 }
 
-int xf86MouseOff(doclose)
+int xf86MouseOff(mouse, doclose)
+MouseDevPtr mouse;
 Bool doclose;
 {
-	return(xf86Info.mseFd);
+	return(mouse->mseFd);
 }

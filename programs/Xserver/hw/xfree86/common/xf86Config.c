@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.81 1996/02/22 05:11:42 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.82 1996/03/04 05:14:16 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -31,9 +31,9 @@
 
 #include "compiler.h"
 
-#include "xf86_OSlib.h"
-
 #include "xf86Procs.h"
+
+#include "xf86_OSlib.h"
 
 #define INIT_CONFIG
 #include "xf86_Config.h"
@@ -98,9 +98,11 @@ static void configDeviceSection(
     void
 #endif
 );
-static void configPointerSection(
+void configPointerSection(
 #if NeedFunctionPrototypes
-    void
+    MouseDevPtr /*mouse_dev*/,
+    int /*end_tag*/,
+    char** /*devicename*/
 #endif
 );
 static void configScreenSection(
@@ -875,7 +877,7 @@ xf86Config (vtopen)
 #endif /* SYSV || linux */
   xf86Info.sharedMonitor = FALSE;
   xf86Info.kbdProc = NULL;
-  xf86Info.mseProc = NULL;
+  xf86Info.mouseDev.mseProc = NULL;
   xf86Info.notrapSignals = FALSE;
   xf86Info.caughtSignal = FALSE;
 
@@ -892,7 +894,7 @@ xf86Config (vtopen)
 	  } else if ( StrCaseCmp(val.str, "keyboard") == 0 ) {
 	      configKeyboardSection();
 	  } else if ( StrCaseCmp(val.str, "pointer") == 0 ) {
-	      configPointerSection();
+	      configPointerSection(&xf86Info.mouseDev, ENDSECTION, NULL);
 	  } else if ( StrCaseCmp(val.str, "device") == 0 ) {
 	      configDeviceSection();
 	  } else if ( StrCaseCmp(val.str, "monitor") == 0 ) {
@@ -979,7 +981,7 @@ xf86Config (vtopen)
 
   if (!xf86Info.kbdProc)
     FatalError("You must specify a keyboard in XF86Config");
-  if (!xf86Info.mseProc)
+  if (!xf86Info.mouseDev.mseProc)
     FatalError("You must specify a mouse in XF86Config");
 
   if (!graphFound)
@@ -1369,8 +1371,10 @@ configKeyboardSection()
   }
 }
       
-static void
-configPointerSection()
+void
+configPointerSection(MouseDevPtr	mouse_dev,
+		     int		end_tag,
+		     char		**devicename) /* used by extended device */
 {
   int            token;
   int		 mtoken;
@@ -1378,18 +1382,18 @@ configPointerSection()
   char *mouseType = "unknown";
 
   /* Set defaults */
-  xf86Info.baudRate        = 1200;
-  xf86Info.oldBaudRate     = -1;
-  xf86Info.sampleRate      = 0;
-  xf86Info.emulate3Buttons = FALSE;
-  xf86Info.emulate3Timeout = 50;
-  xf86Info.chordMiddle     = FALSE;
-  xf86Info.mouseFlags      = 0;
-  xf86Info.mseProc         = (int (*)())NULL;
-  xf86Info.mseDevice       = NULL;
-  xf86Info.mseType         = -1;
+  mouse_dev->baudRate        = 1200;
+  mouse_dev->oldBaudRate     = -1;
+  mouse_dev->sampleRate      = 0;
+  mouse_dev->emulate3Buttons = FALSE;
+  mouse_dev->emulate3Timeout = 50;
+  mouse_dev->chordMiddle     = FALSE;
+  mouse_dev->mouseFlags      = 0;
+  mouse_dev->mseProc         = (int (*)())NULL;
+  mouse_dev->mseDevice       = NULL;
+  mouse_dev->mseType         = -1;
       
-  while ((token = xf86GetToken(PointerTab)) != ENDSECTION) {
+  while ((token = xf86GetToken(PointerTab)) != end_tag) {
     switch (token) {
 
     case PROTOCOL:
@@ -1405,16 +1409,16 @@ configPointerSection()
     	  xf86OsMouseOption(i, (pointer) &val);
         else
   	  pushToken = i;
-        xf86Info.mseProc   = xf86OsMouseProc;
-        xf86Info.mseEvents = xf86OsMouseEvents;
+        mouse_dev->mseProc   = xf86OsMouseProc;
+        mouse_dev->mseEvents = xf86OsMouseEvents;
 	break;
       }
 #endif
 #ifdef XQUEUE
       if ( StrCaseCmp(val.str,"xqueue") == 0 ) {
-        xf86Info.mseProc   = xf86XqueMseProc;
-        xf86Info.mseEvents = xf86XqueEvents;
-        xf86Info.xqueSema  = 0;
+        mouse_dev->mseProc   = xf86XqueMseProc;
+        mouse_dev->mseEvents = xf86XqueEvents;
+        mouse_dev->xqueSema  = 0;
         if (xf86Verbose)
           ErrorF("%s Xqueue selected for mouse input\n",
 	         XCONFIG_GIVEN);
@@ -1431,14 +1435,14 @@ configPointerSection()
 #endif
       mtoken = getStringToken(MouseTab); /* Which mouse? */
 #ifdef AMOEBA
-      xf86Info.mseProc    = xf86MseProc;
-      xf86Info.mseEvents  = NULL;
+      mouse_dev->mseProc    = xf86MseProc;
+      mouse_dev->mseEvents  = NULL;
 #else
-      xf86Info.mseProc    = xf86MseProc;
-      xf86Info.mseEvents  = xf86MseEvents;
+      mouse_dev->mseProc    = xf86MseProc;
+      mouse_dev->mseEvents  = xf86MseEvents;
 #endif
-      xf86Info.mseType    = mtoken - MICROSOFT;
-      if (!xf86MouseSupported(xf86Info.mseType))
+      mouse_dev->mseType    = mtoken - MICROSOFT;
+      if (!xf86MouseSupported(mouse_dev->mseType))
       {
         xf86ConfigError("Mouse type not supported by this OS");
       }
@@ -1448,17 +1452,17 @@ configPointerSection()
 
 #ifdef MACH386
       /* Don't need to specify the device for MACH -- should always be this */
-      xf86Info.mseDevice  = "/dev/mouse";
+      mouse_dev->mseDevice  = "/dev/mouse";
 #endif
       break;
 #ifndef OSMOUSE_ONLY
     case PDEVICE:
       if (xf86GetToken(NULL) != STRING) xf86ConfigError("Mouse device expected");
-      xf86Info.mseDevice  = val.str;
+      mouse_dev->mseDevice  = val.str;
       break;
     case BAUDRATE:
       if (xf86GetToken(NULL) != NUMBER) xf86ConfigError("Baudrate expected");
-      if (xf86Info.mseType + MICROSOFT == LOGIMAN)
+      if (mouse_dev->mseType + MICROSOFT == LOGIMAN)
 	{
 	  /*
 	   * XXXX This should be extended to other mouse types -- most
@@ -1470,40 +1474,40 @@ configPointerSection()
 	}
       else if (val.num%1200 != 0 || val.num < 1200 || val.num > 9600)
 	    xf86ConfigError("Baud rate must be one of 1200, 2400, 4800, or 9600");
-      xf86Info.baudRate = val.num;
+      mouse_dev->baudRate = val.num;
       break;
 
     case SAMPLERATE:
       if (xf86GetToken(NULL) != NUMBER) xf86ConfigError("Sample rate expected");
-      if (xf86Info.mseType + MICROSOFT == LOGIMAN)
+      if (mouse_dev->mseType + MICROSOFT == LOGIMAN)
 	{
 	  /* XXXX Most mice don't allow this */
 	  /* Moan about illegal sample rate!  [CHRIS-211092] */
 	  xf86ConfigError("Selection of sample rate is not supported by MouseMan");
 	}
-      xf86Info.sampleRate = val.num;
+      mouse_dev->sampleRate = val.num;
       break;
 #endif /* OSMOUSE_ONLY */
     case EMULATE3:
-      if (xf86Info.chordMiddle)
+      if (mouse_dev->chordMiddle)
         xf86ConfigError("Can't use Emulate3Buttons with ChordMiddle");
-      xf86Info.emulate3Buttons = TRUE;
+      mouse_dev->emulate3Buttons = TRUE;
       break;
 
     case EM3TIMEOUT:
       if (xf86GetToken(NULL) != NUMBER)
         xf86ConfigError("3 button emulation timeout expected");
-      xf86Info.emulate3Timeout = val.num;
+      mouse_dev->emulate3Timeout = val.num;
       break;
 
 #ifndef OSMOUSE_ONLY
     case CHORDMIDDLE:
-      if (xf86Info.mseType + MICROSOFT == MICROSOFT ||
-          xf86Info.mseType + MICROSOFT == LOGIMAN)
+      if (mouse_dev->mseType + MICROSOFT == MICROSOFT ||
+          mouse_dev->mseType + MICROSOFT == LOGIMAN)
       {
-        if (xf86Info.emulate3Buttons)
+        if (mouse_dev->emulate3Buttons)
           xf86ConfigError("Can't use ChordMiddle with Emulate3Buttons");
-        xf86Info.chordMiddle = TRUE;
+        mouse_dev->chordMiddle = TRUE;
       }
       else
         xf86ConfigError("ChordMiddle is only supported for Microsoft and Logiman");
@@ -1511,8 +1515,8 @@ configPointerSection()
 
     case CLEARDTR:
 #ifdef CLEARDTR_SUPPORT
-      if (xf86Info.mseType + MICROSOFT == MOUSESYS)
-        xf86Info.mouseFlags |= MF_CLEAR_DTR;
+      if (mouse_dev->mseType + MICROSOFT == MOUSESYS)
+        mouse_dev->mouseFlags |= MF_CLEAR_DTR;
       else
         xf86ConfigError("ClearDTR only supported for MouseSystems mouse");
 #else
@@ -1521,8 +1525,8 @@ configPointerSection()
       break;
     case CLEARRTS:
 #ifdef CLEARDTR_SUPPORT
-      if (xf86Info.mseType + MICROSOFT == MOUSESYS)
-        xf86Info.mouseFlags |= MF_CLEAR_RTS;
+      if (mouse_dev->mseType + MICROSOFT == MOUSESYS)
+        mouse_dev->mouseFlags |= MF_CLEAR_RTS;
       else
         xf86ConfigError("ClearRTS only supported for MouseSystems mouse");
 #else
@@ -1530,6 +1534,16 @@ configPointerSection()
 #endif
       break;
 #endif /* OSMOUSE_ONLY */
+
+    case DEVICE_NAME:
+	if (!devicename)		/* not called for an extended device */
+	    xf86ConfigError("Pointer section keyword expected");
+
+	if (xf86GetToken(NULL) != STRING)
+	    xf86ConfigError("Option string expected");
+	*devicename = strdup(val.str);
+	break;
+
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
       break; /* :-) */
@@ -1542,7 +1556,7 @@ configPointerSection()
   }
   /* Print log and make sanity checks */
 
-  if (xf86Info.mseProc == (int (*)())NULL)
+  if (mouse_dev->mseProc == (int (*)())NULL)
   {
     xf86ConfigError("No mouse protocol given");
   }
@@ -1551,31 +1565,31 @@ configPointerSection()
    * if mseProc is set and mseType isn't, then using Xqueue or OSmouse.
    * Otherwise, a mouse device is required.
    */
-  if (xf86Info.mseType >= 0 && !xf86Info.mseDevice)
+  if (mouse_dev->mseType >= 0 && !mouse_dev->mseDevice)
   {
     xf86ConfigError("No mouse device given");
   }
 
-  if (xf86Verbose && xf86Info.mseType >= 0)
+  if (xf86Verbose && mouse_dev->mseType >= 0)
   {
     Bool formatFlag = FALSE;
     ErrorF("%s Mouse: type: %s, device: %s", 
-       XCONFIG_GIVEN, mouseType, xf86Info.mseDevice);
+       XCONFIG_GIVEN, mouseType, mouse_dev->mseDevice);
     if (token != BUSMOUSE && token != PS_2)
     {
       formatFlag = TRUE;
-      ErrorF(", baudrate: %d", xf86Info.baudRate);
+      ErrorF(", baudrate: %d", mouse_dev->baudRate);
     }
-    if (xf86Info.sampleRate)
+    if (mouse_dev->sampleRate)
     {
       ErrorF("%ssamplerate: %d", formatFlag ? ",\n       " : ", ",
-             xf86Info.sampleRate);
+             mouse_dev->sampleRate);
       formatFlag = !formatFlag;
     }
-    if (xf86Info.emulate3Buttons)
+    if (mouse_dev->emulate3Buttons)
       ErrorF("%s3 button emulation (timeout: %dms)",
-             formatFlag ? ",\n       " : ", ", xf86Info.emulate3Timeout);
-    if (xf86Info.chordMiddle)
+             formatFlag ? ",\n       " : ", ", mouse_dev->emulate3Timeout);
+    if (mouse_dev->chordMiddle)
       ErrorF("%sChorded middle button", formatFlag ? ",\n       " : ", ");
     ErrorF("\n");
   }

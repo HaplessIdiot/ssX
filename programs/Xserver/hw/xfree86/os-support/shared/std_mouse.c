@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/std_mouse.c,v 3.3 1995/01/28 17:05:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/std_mouse.c,v 3.4 1996/02/04 09:10:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -31,29 +31,31 @@
 #include "inputstr.h"
 #include "scrnintstr.h"
 
-#include "xf86_OSlib.h"
 #include "xf86Procs.h"
+#include "xf86_OSlib.h"
 #include "xf86_Config.h"
 
-int xf86MouseOff(doclose)
+int xf86MouseOff(mouse, doclose)
+MouseDevPtr mouse;
 Bool doclose;
 {
 	int oldfd;
 
-	if ((oldfd = xf86Info.mseFd) >= 0)
+	if ((oldfd = mouse->mseFd) >= 0)
 	{
-		if (xf86Info.mseType == P_LOGI)
+		if (mouse->mseType == P_LOGI)
 		{
-			write(xf86Info.mseFd, "U", 1);
+			write(mouse->mseFd, "U", 1);
 		}
-		if (xf86Info.oldBaudRate > 0) {
-			xf86SetMouseSpeed(xf86Info.baudRate,
-					  xf86Info.oldBaudRate,
-				  	  xf86MouseCflags[xf86Info.mseType]);
+		if (mouse->oldBaudRate > 0) {
+		    xf86SetMouseSpeed(mouse,
+				      mouse->baudRate,
+				      mouse->oldBaudRate,
+				      xf86MouseCflags[mouse->mseType]);
 		}
-		close(xf86Info.mseFd);
-		oldfd = xf86Info.mseFd;
-		xf86Info.mseFd = -1;
+		close(mouse->mseFd);
+		oldfd = mouse->mseFd;
+		mouse->mseFd = -1;
 	}
 	return(oldfd);
 }

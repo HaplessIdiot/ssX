@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.11 1995/05/27 03:04:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.12 1996/02/04 09:04:22 dawes Exp $ */
 /*
  * Copyright 1994 Erik Nygren (nygren@mit.edu)
  *
@@ -21,8 +21,8 @@
 #include "X.h"
 #include "input.h"
 
-#include "xf86_OSlib.h"
 #include "xf86.h"
+#include "xf86_OSlib.h"
 
 #include "p9000.h"
 #include "p9000reg.h"

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: scrollbar.c /main/45 1996/01/14 16:53:05 kaleb $
- *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.3 1996/01/16 15:09:45 dawes Exp $
+ *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.4 1996/01/30 15:28:33 dawes Exp $
  */
 
 /*
@@ -51,7 +51,7 @@ extern Char *calloc();
 #include "xterm.h"
 
 static Widget CreateScrollBar PROTO((XtermWidget xw, int x, int y, int height));
-static int params_to_pixels PROTO((TScreen *screen, String *params, int n));
+static int params_to_pixels PROTO((TScreen *screen, String *params, Cardinal n));
 static int specialcmplowerwiths PROTO((char *a, char *b));
 static void RealizeScrollBar PROTO((Widget sbw, TScreen *screen));
 static void ResizeScreen PROTO((XtermWidget xw, int min_width, int min_height));
@@ -477,9 +477,9 @@ static int specialcmplowerwiths (a, b)
 static int params_to_pixels (screen, params, n)
     TScreen *screen;
     String *params;
-    int n;
+    Cardinal n;
 {
-    register mult = 1;
+    register int mult = 1;
     register char *s;
 
     switch (n > 2 ? 2 : n) {
@@ -517,7 +517,7 @@ void HandleScrollForward (gw, event, params, nparams)
     register TScreen *screen = &w->screen;
 
     ScrollTextUpDownBy (gw, (XtPointer) NULL,
-			(XtPointer)params_to_pixels (screen, params, (int) *nparams));
+			(XtPointer)(params_to_pixels (screen, params, *nparams)));
     return;
 }
 
@@ -533,6 +533,6 @@ void HandleScrollBack (gw, event, params, nparams)
     register TScreen *screen = &w->screen;
 
     ScrollTextUpDownBy (gw, (XtPointer) NULL,
-			(XtPointer)-params_to_pixels (screen, params, (int) *nparams));
+			(XtPointer)(-params_to_pixels (screen, params, *nparams)));
     return;
 }

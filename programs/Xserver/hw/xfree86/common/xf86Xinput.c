@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.5 1996/02/12 11:12:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.6 1996/02/18 03:42:54 dawes Exp $ */
 
 #include "XI.h"
 #include "XIproto.h"
@@ -51,6 +51,8 @@ extern DeviceAssocRec   wacom_eraser_assoc;
 extern DeviceAssocRec	elographics_assoc;
 #endif
 #endif
+
+extern DeviceAssocRec	mouse_assoc;
 
 static int              num_devices;
 static LocalDevicePtr	*localDevices;
@@ -142,6 +144,8 @@ configExtendedInputSection(LexPtr       val)
 # endif
 #endif
 
+  AddDeviceAssoc(&mouse_assoc);
+  
   num_devices = 0;
   max_devices = 3;
   localDevices = (LocalDevicePtr*) xalloc(sizeof(LocalDevicePtr)*max_devices);
@@ -199,7 +203,7 @@ void
 AddDeviceAssoc(DeviceAssocPtr	assoc)
 {
     if (!deviceAssoc) {
-	maxAssoc = 5;
+	maxAssoc = 10;
 	deviceAssoc = (DeviceAssocPtr*) xalloc(sizeof(DeviceAssocPtr)*maxAssoc);
     } else {
 	if (maxAssoc == numAssoc) {
@@ -242,6 +246,7 @@ InitExtInput()
       dev->public.devicePrivate = (pointer) localDevices[i];
       localDevices[i]->dev = dev;
       RegisterOtherDevice(dev);
+      ErrorF("adding extended device '%s' (%x)\n", localDevices[i]->name, dev);
     }
   }
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.6 1996/02/18 03:43:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.7 1996/02/22 05:11:50 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -30,6 +30,7 @@
 #include "os.h"
 #include "compiler.h"
 #include "input.h"
+#include "xf86Procs.h"
 #include "xf86_OSlib.h"
 #include "xf86_PCI.h"
 

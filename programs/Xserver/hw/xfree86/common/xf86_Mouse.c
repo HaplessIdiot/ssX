@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.8 1996/02/04 09:06:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.9 1996/02/12 11:12:50 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -42,6 +42,9 @@
 #include "xf86_OSlib.h"
 #include "xf86_Config.h"
 
+#ifdef XINPUT
+#include "xf86Xinput.h"
+#endif
 
 #ifndef MOUSE_PROTOCOL_IN_KERNEL
 /*
@@ -113,7 +116,8 @@ xf86MouseSupported(mousetype)
  */
 
 void
-xf86SetupMouse()
+xf86SetupMouse(mouse)
+MouseDevPtr mouse;
 {
 #if !defined(MOUSE_PROTOCOL_IN_KERNEL) || defined(MACH386)
       /*
@@ -157,91 +161,91 @@ xf86SetupMouse()
       */
 
   
-      if (xf86Info.mseType == P_LOGIMAN)
+      if (mouse->mseType == P_LOGIMAN)
         {
-          xf86SetMouseSpeed(1200, 1200, xf86MouseCflags[P_LOGIMAN]);
-          write(xf86Info.mseFd, "*X", 2);
-          xf86SetMouseSpeed(1200, xf86Info.baudRate,
+          xf86SetMouseSpeed(mouse, 1200, 1200, xf86MouseCflags[P_LOGIMAN]);
+          write(mouse->mseFd, "*X", 2);
+          xf86SetMouseSpeed(mouse, 1200, mouse->baudRate,
 			    xf86MouseCflags[P_LOGIMAN]);
         }
-      else if (xf86Info.mseType != P_BM && xf86Info.mseType != P_PS2) 
+      else if (mouse->mseType != P_BM && mouse->mseType != P_PS2) 
 	{
-	  xf86SetMouseSpeed(9600, xf86Info.baudRate,
-			    xf86MouseCflags[xf86Info.mseType]);
-	  xf86SetMouseSpeed(4800, xf86Info.baudRate, 
-			    xf86MouseCflags[xf86Info.mseType]);
-	  xf86SetMouseSpeed(2400, xf86Info.baudRate,
-			    xf86MouseCflags[xf86Info.mseType]);
-	  xf86SetMouseSpeed(1200, xf86Info.baudRate,
-			    xf86MouseCflags[xf86Info.mseType]);
+	  xf86SetMouseSpeed(mouse, 9600, mouse->baudRate,
+			    xf86MouseCflags[mouse->mseType]);
+	  xf86SetMouseSpeed(mouse, 4800, mouse->baudRate, 
+			    xf86MouseCflags[mouse->mseType]);
+	  xf86SetMouseSpeed(mouse, 2400, mouse->baudRate,
+			    xf86MouseCflags[mouse->mseType]);
+	  xf86SetMouseSpeed(mouse, 1200, mouse->baudRate,
+			    xf86MouseCflags[mouse->mseType]);
 
-	  if (xf86Info.mseType == P_LOGI)
+	  if (mouse->mseType == P_LOGI)
 	    {
-	      write(xf86Info.mseFd, "S", 1);
-	      xf86SetMouseSpeed(xf86Info.baudRate, xf86Info.baudRate,
+	      write(mouse->mseFd, "S", 1);
+	      xf86SetMouseSpeed(mouse, mouse->baudRate, mouse->baudRate,
                                 xf86MouseCflags[P_MM]);
 	    }
 
-	  if (xf86Info.mseType == P_MMHIT)
+	  if (mouse->mseType == P_MMHIT)
 	  {
 	    char speedcmd;
 
 	    /*
 	     * Initialize Hitachi PUMA Plus - Model 1212E to desired settings.
 	     * The tablet must be configured to be in MM mode, NO parity,
-	     * Binary Format.  xf86Info.sampleRate controls the sensativity
+	     * Binary Format.  mouse->sampleRate controls the sensativity
 	     * of the tablet.  We only use this tablet for it's 4-button puck
 	     * so we don't run in "Absolute Mode"
 	     */
-	    write(xf86Info.mseFd, "z8", 2);	/* Set Parity = "NONE" */
+	    write(mouse->mseFd, "z8", 2);	/* Set Parity = "NONE" */
 	    usleep(50000);
-	    write(xf86Info.mseFd, "zb", 2);	/* Set Format = "Binary" */
+	    write(mouse->mseFd, "zb", 2);	/* Set Format = "Binary" */
 	    usleep(50000);
-	    write(xf86Info.mseFd, "@", 1);	/* Set Report Mode = "Stream" */
+	    write(mouse->mseFd, "@", 1);	/* Set Report Mode = "Stream" */
 	    usleep(50000);
-	    write(xf86Info.mseFd, "R", 1);	/* Set Output Rate = "45 rps" */
+	    write(mouse->mseFd, "R", 1);	/* Set Output Rate = "45 rps" */
 	    usleep(50000);
-	    write(xf86Info.mseFd, "I\x20", 2);	/* Set Incrememtal Mode "20" */
+	    write(mouse->mseFd, "I\x20", 2);	/* Set Incrememtal Mode "20" */
 	    usleep(50000);
-	    write(xf86Info.mseFd, "E", 1);	/* Set Data Type = "Relative */
+	    write(mouse->mseFd, "E", 1);	/* Set Data Type = "Relative */
 	    usleep(50000);
 
 	    /* These sample rates translate to 'lines per inch' on the Hitachi
 	       tablet */
-	    if      (xf86Info.sampleRate <=   40) speedcmd = 'g';
-	    else if (xf86Info.sampleRate <=  100) speedcmd = 'd';
-	    else if (xf86Info.sampleRate <=  200) speedcmd = 'e';
-	    else if (xf86Info.sampleRate <=  500) speedcmd = 'h';
-	    else if (xf86Info.sampleRate <= 1000) speedcmd = 'j';
+	    if      (mouse->sampleRate <=   40) speedcmd = 'g';
+	    else if (mouse->sampleRate <=  100) speedcmd = 'd';
+	    else if (mouse->sampleRate <=  200) speedcmd = 'e';
+	    else if (mouse->sampleRate <=  500) speedcmd = 'h';
+	    else if (mouse->sampleRate <= 1000) speedcmd = 'j';
 	    else                                  speedcmd = 'd';
-	    write(xf86Info.mseFd, &speedcmd, 1);
+	    write(mouse->mseFd, &speedcmd, 1);
 	    usleep(50000);
 
-	    write(xf86Info.mseFd, "\021", 1);	/* Resume DATA output */
+	    write(mouse->mseFd, "\021", 1);	/* Resume DATA output */
 	  }
 	  else
 	  {
-	    if      (xf86Info.sampleRate <=   0)  write(xf86Info.mseFd, "O", 1);
-	    else if (xf86Info.sampleRate <=  15)  write(xf86Info.mseFd, "J", 1);
-	    else if (xf86Info.sampleRate <=  27)  write(xf86Info.mseFd, "K", 1);
-	    else if (xf86Info.sampleRate <=  42)  write(xf86Info.mseFd, "L", 1);
-	    else if (xf86Info.sampleRate <=  60)  write(xf86Info.mseFd, "R", 1);
-	    else if (xf86Info.sampleRate <=  85)  write(xf86Info.mseFd, "M", 1);
-	    else if (xf86Info.sampleRate <= 125)  write(xf86Info.mseFd, "Q", 1);
-	    else                                  write(xf86Info.mseFd, "N", 1);
+	    if      (mouse->sampleRate <=   0)  write(mouse->mseFd, "O", 1);
+	    else if (mouse->sampleRate <=  15)  write(mouse->mseFd, "J", 1);
+	    else if (mouse->sampleRate <=  27)  write(mouse->mseFd, "K", 1);
+	    else if (mouse->sampleRate <=  42)  write(mouse->mseFd, "L", 1);
+	    else if (mouse->sampleRate <=  60)  write(mouse->mseFd, "R", 1);
+	    else if (mouse->sampleRate <=  85)  write(mouse->mseFd, "M", 1);
+	    else if (mouse->sampleRate <= 125)  write(mouse->mseFd, "Q", 1);
+	    else                                  write(mouse->mseFd, "N", 1);
 	  }
         }
 
 #ifdef CLEARDTR_SUPPORT
-      if (xf86Info.mseType == P_MSC && (xf86Info.mouseFlags & MF_CLEAR_DTR))
+      if (mouse->mseType == P_MSC && (mouse->mouseFlags & MF_CLEAR_DTR))
         {
           int val = TIOCM_DTR;
-          ioctl(xf86Info.mseFd, TIOCMBIC, &val);
+          ioctl(mouse->mseFd, TIOCMBIC, &val);
         }
-      if (xf86Info.mseType == P_MSC && (xf86Info.mouseFlags & MF_CLEAR_RTS))
+      if (mouse->mseType == P_MSC && (mouse->mouseFlags & MF_CLEAR_RTS))
         {
           int val = TIOCM_RTS;
-          ioctl(xf86Info.mseFd, TIOCMBIC, &val);
+          ioctl(mouse->mseFd, TIOCMBIC, &val);
         }
 #endif
 #endif /* !MOUSE_PROTOCOL_IN_KERNEL || MACH386 */
@@ -249,14 +253,16 @@ xf86SetupMouse()
  
 #ifndef MOUSE_PROTOCOL_IN_KERNEL
 void
-xf86MouseProtocol(rBuf, nBytes)
-     unsigned char *rBuf;
-     int nBytes;
+xf86MouseProtocol(device, rBuf, nBytes)
+    DeviceIntPtr device;
+    unsigned char *rBuf;
+    int nBytes;
 {
   int                  i, buttons, dx, dy;
   static int           pBufP = 0;
   static unsigned char pBuf[8];
-
+  MouseDevPtr          mouse = (MouseDevPtr) device->public.devicePrivate;
+  
   static unsigned char proto[9][5] = {
     /*  hd_mask hd_id   dp_mask dp_id   nobytes */
     { 	0x40,	0x40,	0x40,	0x00,	3 	},  /* MicroSoft */
@@ -295,16 +301,16 @@ xf86MouseProtocol(rBuf, nBytes)
      */
     if (pBufP != 0 &&
 #ifndef __NetBSD__
-	xf86Info.mseType != P_PS2 &&
+	mouse->mseType != P_PS2 &&
 #endif
-	((rBuf[i] & proto[xf86Info.mseType][2]) != proto[xf86Info.mseType][3]
+	((rBuf[i] & proto[mouse->mseType][2]) != proto[mouse->mseType][3]
 	 || rBuf[i] == 0x80))
       {
 	pBufP = 0;          /* skip package */
       }
 
     if (pBufP == 0 &&
-	(rBuf[i] & proto[xf86Info.mseType][0]) != proto[xf86Info.mseType][1])
+	(rBuf[i] & proto[mouse->mseType][0]) != proto[mouse->mseType][1])
       {
 	/*
 	 * Hack for Logitech MouseMan Mouse - Middle button
@@ -339,37 +345,37 @@ xf86MouseProtocol(rBuf, nBytes)
 
 	if (   (   (char)(rBuf[i] & ~0x23) != 0
 		&& (   (char) (rBuf[i] & ~0x33) != 0
-		    || xf86Info.mseType != P_GLIDEPOINT))
-	    || (   xf86Info.mseType != P_MS
-		&& xf86Info.mseType != P_LOGIMAN
-		&& xf86Info.mseType != P_GLIDEPOINT)) continue;
+		    || mouse->mseType != P_GLIDEPOINT))
+	    || (   mouse->mseType != P_MS
+		&& mouse->mseType != P_LOGIMAN
+		&& mouse->mseType != P_GLIDEPOINT)) continue;
 
 	buttons =  ((int)(rBuf[i] & 0x20) >> 4)
-		  | (xf86Info.lastButtons & 0x05);
-	if (xf86Info.mseType == P_GLIDEPOINT)
+		  | (mouse->lastButtons & 0x05);
+	if (mouse->mseType == P_GLIDEPOINT)
 	    buttons |= ((int)(rBuf[i] & 0x10) >> 1);
-	xf86PostMseEvent(buttons, 0, 0);
+	xf86PostMseEvent(device, buttons, 0, 0);
 
 	continue;            /* skip package */
       }
 
 
     pBuf[pBufP++] = rBuf[i];
-    if (pBufP != proto[xf86Info.mseType][4]) continue;
+    if (pBufP != proto[mouse->mseType][4]) continue;
 
     /*
      * assembly full package
      */
-    switch(xf86Info.mseType) {
+    switch(mouse->mseType) {
       
     case P_LOGIMAN:	    /* MouseMan / TrackMan   [CHRIS-211092] */
     case P_MS:              /* Microsoft */
-      if (xf86Info.chordMiddle)
+      if (mouse->chordMiddle)
 	buttons = (((int) pBuf[0] & 0x30) == 0x30) ? 2 :
 		  ((int)(pBuf[0] & 0x20) >> 3)
 		  | ((int)(pBuf[0] & 0x10) >> 4);
       else {
-        buttons = (xf86Info.lastButtons & 2)
+        buttons = (mouse->lastButtons & 2)
 		  | ((int)(pBuf[0] & 0x20) >> 3)
 		  | ((int)(pBuf[0] & 0x10) >> 4);
       }
@@ -378,7 +384,7 @@ xf86MouseProtocol(rBuf, nBytes)
       break;
 
     case P_GLIDEPOINT:      /* ALPS GlidePoint */
-       buttons =  (xf86Info.lastButtons & (8 + 2))
+       buttons =  (mouse->lastButtons & (8 + 2))
 		| ((int)(pBuf[0] & 0x20) >> 3)
 		| ((int)(pBuf[0] & 0x10) >> 4);
       dx = (char)(((pBuf[0] & 0x03) << 6) | (pBuf[1] & 0x3F));
@@ -426,8 +432,164 @@ xf86MouseProtocol(rBuf, nBytes)
 #endif
     }
 
-    xf86PostMseEvent(buttons, dx, dy);
+    xf86PostMseEvent(device, buttons, dx, dy);
     pBufP = 0;
   }
 }
 #endif /* MOUSE_PROTOCOL_IN_KERNEL */
+
+#ifdef XINPUT
+
+/*
+ * xf86MouseCtrl --
+ *      Alter the control parameters for the mouse. Note that all special
+ *      protocol values are handled by dix.
+ */
+
+void
+xf86MouseCtrl(device, ctrl)
+     DevicePtr device;
+     PtrCtrl   *ctrl;
+{
+    LocalDevicePtr	local = (LocalDevicePtr)((DeviceIntPtr)device)->public.devicePrivate;
+    MouseDevPtr		mouse = (MouseDevPtr) local->private;    
+
+    ErrorF("xf86MouseCtrl mouse=0x%x\n", mouse);
+    
+    mouse->num       = ctrl->num;
+    mouse->den       = ctrl->den;
+    mouse->threshold = ctrl->threshold;
+}
+
+/*
+ ***************************************************************************
+ *
+ * xf86MouseConfig --
+ *
+ ***************************************************************************
+ */
+static Bool
+xf86MouseConfig(array, index, max, val)
+    LocalDevicePtr    *array;    
+    int               index;
+    int               max;
+    LexPtr            val;
+{
+    LocalDevicePtr	dev = array[index];
+    MouseDevPtr		mouse = (MouseDevPtr)dev->private;
+   
+    ErrorF("xf86MouseConfig mouse=0x%x\n", mouse);
+    
+    configPointerSection(mouse, ENDSUBSECTION, &dev->name);
+
+    return Success;
+}
+
+/*
+ ***************************************************************************
+ *
+ * xf86MouseProc --
+ *
+ ***************************************************************************
+ */
+static int
+xf86MouseProc(device, what)
+    DeviceIntPtr	device;
+    int			what;
+{
+    LocalDevicePtr	local = (LocalDevicePtr)device->public.devicePrivate;
+    MouseDevPtr		mouse = (MouseDevPtr) local->private;    
+    int			fd;
+    int			ret;
+
+    ErrorF("xf86MouseProc mouse=0x%x\n", mouse);
+    
+    mouse->device = device;
+    
+    ret = xf86MseProcAux(device, what, mouse, &fd, xf86MouseCtrl);
+    
+    if (what == DEVICE_ON) {
+	local->fd = fd;
+    } else {
+	if ((what == DEVICE_INIT) &&
+	    (ret == Success)) {
+	    AssignTypeAndName(device, local->atom, local->name);
+	    ErrorF("assignig 0x%x atom=%d name=%s\n", device,
+		   local->atom, local->name);
+	}
+    }
+    
+    return ret;
+}
+
+/*
+ ***************************************************************************
+ *
+ * xf86MouseReadInput --
+ *
+ ***************************************************************************
+ */
+static void
+xf86MouseReadInput(local)
+    LocalDevicePtr         local;
+{
+    MouseDevPtr		mouse = (MouseDevPtr) local->private;    
+
+    ErrorF("xf86MouseReadInput mouse=0x%x\n", mouse);
+    
+    mouse->mseEvents(mouse);
+}
+
+/*
+ ***************************************************************************
+ *
+ * xf86MouseAllocate --
+ *
+ ***************************************************************************
+ */
+static LocalDevicePtr
+xf86MouseAllocate()
+{
+    LocalDevicePtr	local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
+    MouseDevPtr		mouse = (MouseDevPtr) xalloc(sizeof(MouseDevRec));
+    
+    local->name = "MOUSE";
+    local->flags = XI86_NO_OPEN_ON_INIT;
+    local->device_config = xf86MouseConfig;
+    local->device_control = xf86MouseProc;
+    local->read_input = xf86MouseReadInput;
+    local->control_proc = 0;
+    local->close_proc = 0;
+    local->switch_mode = 0;
+    local->fd = -1;
+    local->atom = 0;
+    local->dev = NULL;
+    local->private = mouse;
+
+    mouse->device = NULL;
+    mouse->mseFd = -1;
+    mouse->mseDevice = "";
+    mouse->mseType = -1;
+    mouse->baudRate = -1;
+    mouse->oldBaudRate = -1;
+    mouse->sampleRate = -1;
+    
+    ErrorF("xf86MouseAllocate mouse=0x%x\n", local->private);
+    
+    return local;
+}
+
+/*
+ ***************************************************************************
+ *
+ * Mouse device association --
+ *
+ ***************************************************************************
+ */
+DeviceAssocRec mouse_assoc =
+{
+  "mouse",				/* config_section_name */
+  xf86MouseAllocate			/* device_allocate */
+};
+
+#endif

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.22 1996/02/18 03:45:49 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.23 1996/02/24 10:22:25 dawes Exp $
  */
 
 /*
@@ -123,7 +123,6 @@ static int in_put PROTO((void));
 static int set_character_class PROTO((char *s));
 static void DoSetSelectedFont PROTO_XT_SEL_CB_ARGS;
 static void FromAlternate PROTO((TScreen *screen));
-static void SGR_Save PROTO((void));
 static void SwitchBufs PROTO((TScreen *screen));
 static void ToAlternate PROTO((TScreen *screen));
 static void VTGraphicsOrNoExpose PROTO((XEvent *event));
@@ -580,58 +579,58 @@ static XtResource resources[] = {
 	XtRImmediate, (XtPointer)TRUE},
 #endif
 {XtNcolor0, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_0]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_0]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolor1, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_1]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_1]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolor2, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_2]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_2]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolor3, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_3]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_3]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolor4, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_4]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_4]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolor5, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_5]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_5]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolor6, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_6]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_6]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolor7, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_7]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_7]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolor8, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_8]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_8]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolor9, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_9]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_9]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolor10, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_10]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_10]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolor11, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_11]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_11]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolor12, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_12]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_12]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolor13, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_13]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_13]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolor14, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_14]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_14]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolor15, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_15]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_15]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolorBD, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_BD]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_BD]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolorUL, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_UL]),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_UL]),
 	XtRString, "XtDefaultForeground"},
 {XtNcolorMode, XtCColorMode, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.colorMode),
@@ -702,19 +701,6 @@ static WidgetClassRec xtermClassRec = {
 
 WidgetClass xtermWidgetClass = (WidgetClass)&xtermClassRec;
 
-static	Pixel	original_fg;
-static	Pixel	original_bg;
-
-static void SGR_Save()
-{
-	static	int	initialized;
-	if (!initialized) {
-   		original_fg = term->screen.foreground;
-   		original_bg = term->core.background_pixel;
-		initialized = TRUE;
-	}
-}
-
 /*
  * The terminal's foreground and background colors are set via two mechanisms:
  *	text (cur_foreground, cur_background values that are passed down to
@@ -727,15 +713,12 @@ void SGR_Foreground(color)
 	register TScreen *screen = &term->screen;
 	Pixel	fg;
 
-	SGR_Save();
-	
 	if (color >= 0) {
-		fg = COLOR_VALUE(screen,color);
 		term->flags |= FG_COLOR;
 	} else {
-		fg = original_fg;
 		term->flags &= ~FG_COLOR;
 	}
+	fg = getXtermForeground(term->flags, color);
 	term->cur_foreground = color;
 
 	XSetForeground(screen->display, screen->normalGC, fg);
@@ -750,15 +733,12 @@ void SGR_Background(color)
 	register TScreen *screen = &term->screen;
 	Pixel	bg;
 
-	SGR_Save();
-	
 	if (color >= 0) {
-		bg = COLOR_VALUE(screen,color);
 		term->flags |= BG_COLOR;
 	} else {
-		bg = original_bg;
 		term->flags &= ~BG_COLOR;
 	}
+	bg = getXtermBackground(term->flags, color);
 	term->cur_background = color;
 
 	XSetBackground(screen->display, screen->normalGC, bg);
@@ -960,17 +940,17 @@ static void VTparse()
 
 		 case CASE_CUF:
 			/* CUF */
-			if((row = param[0]) < 1)
-				row = 1;
-			CursorForward(screen, row);
+			if((col = param[0]) < 1)
+				col = 1;
+			CursorForward(screen, col);
 			parsestate = groundtable;
 			break;
 
 		 case CASE_CUB:
 			/* CUB */
-			if((row = param[0]) < 1)
-				row = 1;
-			CursorBack(screen, row);
+			if((col = param[0]) < 1)
+				col = 1;
+			CursorBack(screen, col);
 			parsestate = groundtable;
 			break;
 
@@ -2629,7 +2609,14 @@ static void VTInitialize (wrequest, wnew, args, num_args)
    new->screen.colorBDMode = request->screen.colorBDMode;
    new->screen.underline = request->screen.underline;
    for (i = 0; i < MAXCOLORS; i++) {
-       new->screen.colors[i] = request->screen.colors[i];
+       new->screen.Acolors[i] = request->screen.Acolors[i];
+   }
+   if (request->misc.re_verse) {
+       new->screen.original_bg = request->screen.foreground;
+       new->screen.original_fg = request->core.background_pixel;
+   } else {
+       new->screen.original_fg = request->screen.foreground;
+       new->screen.original_bg = request->core.background_pixel;
    }
 
    new->cur_foreground = 0;
@@ -3601,8 +3588,8 @@ LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
     mask = (GCFont | GCForeground | GCBackground | GCGraphicsExposures |
 	    GCFunction);
 
-    new_normal = GET_FG(term->flags, term->cur_foreground);
-    new_revers = GET_BG(term->flags, term->cur_background);
+    new_normal = getXtermForeground(term->flags, term->cur_foreground);
+    new_revers = getXtermBackground(term->flags, term->cur_background);
 
     xgcv.font = nfs->fid;
     xgcv.foreground = new_normal;
@@ -3735,10 +3722,10 @@ set_cursor_gcs (screen)
     TScreen *screen;
 {
     XGCValues xgcv;
-    unsigned long mask;
-    unsigned long cc = screen->cursorcolor;
-    unsigned long fg = screen->foreground;
-    unsigned long bg = term->core.background_pixel;
+    XtGCMask mask;
+    Pixel cc = screen->cursorcolor;
+    Pixel fg = screen->foreground;
+    Pixel bg = term->core.background_pixel;
     GC new_cursorGC = NULL, new_reversecursorGC = NULL;
     GC new_cursoroutlineGC = NULL;
 

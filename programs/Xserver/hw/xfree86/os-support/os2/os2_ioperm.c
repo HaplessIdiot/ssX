@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_ioperm.c,v 3.0 1996/01/30 15:26:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_ioperm.c,v 3.1 1996/02/19 09:50:58 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
@@ -66,7 +66,6 @@ int ScreenNum;
 HFILE hfd;
 	ULONG dlen;
 
-ErrorF("Calling Enable IO Ports\n");
 	/* no need to call multiple times */
 	if (ioEnabled) return;
 	
@@ -107,8 +106,6 @@ int ScreenNum;
 {
 HFILE hfd;
 	ULONG dlen;
-
-ErrorF("Calling Disable IO Ports\n");
 
 	/* no need to call multiple times */
 	if (!ioEnabled) return;

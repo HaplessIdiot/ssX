@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.2 1996/02/19 09:50:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.3 1996/02/22 05:12:16 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
@@ -43,6 +43,7 @@
 #include "atKeynames.h"
 
 BOOL SwitchedToWPS=FALSE;
+BOOL WaitingForAccess=FALSE;
 void os2PostKbdEvent();
 HEV hevServerHasFocus;
 HEV hevSwitchRequested;
@@ -54,12 +55,6 @@ BOOL os2PopupErrorPending=FALSE;
  * Added OS/2 code to handle switching back to WPS
  */
 
-typedef struct {
-    USHORT state;
-    UCHAR makeCode;
-    UCHAR breakCode;
-    USHORT keyID;
-} HOTKEYPARAM;
 
 Bool xf86VTSwitchPending()
 {
@@ -102,12 +97,12 @@ void * arg;
    APIRET rc;
    ULONG postCount;
    Bool FirstTime=TRUE;
+   int timeout_count;
+   static BOOL ErrRedir=FALSE;
 
 	rc=DosCreateEventSem(NULL,&hevServerHasFocus,0L,FALSE);
-	ErrorF("xf86-OS/2: Screen access semaphore created. RC=%d\n",rc);
 	rc=DosPostEventSem(hevServerHasFocus);
 	rc=DosCreateEventSem(NULL,&hevSwitchRequested,0L,FALSE);
-	ErrorF("xf86-OS/2: Focus switching semaphore created. RC=%d\n",rc);
 	rc=DosPostEventSem(hevSwitchRequested);
 
 
@@ -117,7 +112,6 @@ void * arg;
 
 /* Here we handle the semaphore used to indicate wether we have screen access */
 	  if(NotifyType==0) rc=DosResetEventSem(hevServerHasFocus,&postCount);
-	  if(NotifyType==1) rc=DosPostEventSem(hevServerHasFocus);
           if(FirstTime){
                    FirstTime=FALSE;
                    if(NotifyType==1) NotifyType=65535; /* In case a redraw is requested on first call */
@@ -132,22 +126,32 @@ void * arg;
 
 /* Here we set the semaphore used to indicate switching request */
 
-        if(NotifyType!=65535) {
+        if((NotifyType!=65535)&&(!WaitingForAccess)) {
                 rc=DosResetEventSem(hevSwitchRequested,&postCount);
                 xf86Info.vtRequestsPending=TRUE;
-                /* freopen("xf86log","w",stderr); */
+                if (!ErrRedir) { freopen("xf86log.os2","w",stderr); ErrRedir=TRUE; }
  /* Then wait for semaphore to be posted once switch is complete. Wait 20 secs, then kill server */
-                rc=DosSetPriority(2,3,0,1);
-                rc=DosWaitEventSem(hevSwitchRequested,5000L);
-                               if(rc==ERROR_TIMEOUT){
-                        ErrorF("xf86-OS/2: Server timeout on VTswitch request. Server was killed\n");
-                        AutoResetServer(0);
-                        }
-                rc=DosSetPriority(2,2,0,1);
-                }
-
-          if((NotifyType==0)&&(!SwitchedToWPS))
-                ErrorF("xf86-OS/2: abnormal switching away from server!\n");
+               timeout_count=0;
+               rc=DosSetPriority(2,3,0,1);
+                     do {
+                            rc=DosWaitEventSem(hevSwitchRequested,1000L);
+                            if(rc==ERROR_TIMEOUT){
+                               timeout_count++;
+                               if(timeout_count>25){
+                                  ErrorF("xf86-OS/2: Server timeout on VT switch request. Server was killed\n");
+                                  GiveUp(0);
+                                  }
+                               if(WaitingForAccess) {  /* The server is resetting */
+                                  DosPostEventSem(hevSwitchRequested);
+                                  xf86Info.vtRequestsPending=FALSE;
+                                  }
+                               }
+                          } while (rc==ERROR_TIMEOUT);
+          rc=DosSetPriority(2,2,0,1);
+          }
+         if(NotifyType==1) rc=DosPostEventSem(hevServerHasFocus);
+         if((NotifyType==0)&&(!SwitchedToWPS))
+               ErrorF("xf86-OS/2: abnormal switching away from server!\n");
 	} /* endwhile */
 
 /* End of thread */
@@ -163,7 +167,6 @@ void * arg;
    ULONG postCount;
 
 	rc=DosCreateEventSem(NULL,&hevErrorPopupDetected,0L,FALSE);
-	ErrorF("xf86-OS/2: Error popup semaphore created. RC=%d\n",rc);
 	rc=DosPostEventSem(hevErrorPopupDetected);
         os2PopupErrorPending=FALSE;
 
@@ -173,7 +176,7 @@ void * arg;
 	   if(NotifyType==0){
                 os2PopupErrorPending=TRUE;
                 rc=DosResetEventSem(hevErrorPopupDetected,&postCount);
-                rc=DosWaitEventSem(hevErrorPopupDetected,5000L);
+                rc=DosWaitEventSem(hevErrorPopupDetected,20000L);
                 if(rc==ERROR_TIMEOUT) GiveUp(0);  /* Shutdown on timeout of semaphore */
 	   }
 	} /* endwhile */
@@ -198,12 +201,13 @@ void os2ServerVideoAccess()
                 rc=DosQuerySysInfo(24,24,&fgSession,length);
                 while((0xff & fgSession)!=sw.idSession){
                         rc=DosQuerySysInfo(24,24,&fgSession,length);
-                        ErrorF("Session ID %d fg Session id %d\n",sw.idSession,fgSession);
                         DosSleep(1000);
                         }
                 return;
                 }
+        WaitingForAccess=TRUE;
         rc=DosWaitEventSem(hevServerHasFocus,SEM_INDEFINITE_WAIT);
+        WaitingForAccess=FALSE;
         SwitchedToWPS=FALSE;  /* In case server has reset while we were switched to WPS */
 }
 

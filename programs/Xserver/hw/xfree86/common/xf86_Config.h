@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.46 1996/02/22 05:11:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.47 1996/03/04 05:14:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -487,12 +487,14 @@ static SymTabRec KeyboardTab[] = {
 #define EM3TIMEOUT	58
 /* This should be removed soon */
 #define REPEATEDMIDDLE	59
+#define DEVICE_NAME	60
 
 #ifdef INIT_CONFIG
 static SymTabRec PointerTab[] = {
   { PROTOCOL,	"protocol" },
   { EMULATE3,	"emulate3buttons" },
   { EM3TIMEOUT,	"emulate3timeout" },
+  { ENDSUBSECTION, "endsubsection"},
   { ENDSECTION,	"endsection"},
 #ifndef OSMOUSE_ONLY
   { PDEVICE,	"device"},
@@ -503,6 +505,7 @@ static SymTabRec PointerTab[] = {
   { CHORDMIDDLE,"chordmiddle" },
   { REPEATEDMIDDLE,"repeatedmiddle" },
 #endif
+  { DEVICE_NAME,"devicename" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */

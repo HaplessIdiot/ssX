@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.3 1996/02/04 09:06:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.4 1996/02/18 03:42:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -128,6 +128,7 @@ extern void xf86PostKbdEvent(
 
 extern void xf86PostMseEvent(
 #if NeedFunctionPrototypes
+        DeviceIntPtr,		/* device */
 	int,			/* buttons */
 	int,			/* dx */
 	int			/* dy */
@@ -221,9 +222,20 @@ extern int  xf86MseProc(
 #endif
 );
 
+extern int  
+xf86MseProcAux(
+#if NeedFunctionPrototypes
+       DeviceIntPtr,		/* pPointer */
+       int,			/* what */
+       MouseDevPtr,		/* mouse */
+       int*,                    /* fd */
+       PtrCtrlProcPtr		/* ctrl */
+#endif
+	       );
+
 extern void xf86MseEvents(
 #if NeedFunctionPrototypes
-	void
+        MouseDevPtr		/* mouse */
 #endif
 );
 
@@ -237,12 +249,13 @@ extern Bool xf86MouseSupported(
 
 extern void xf86SetupMouse(
 #if NeedFunctionPrototypes
-	void
+	MouseDevPtr
 #endif
 );
 
 extern void xf86MouseProtocol(
 #if NeedFunctionPrototypes
+        DeviceIntPtr,		/* device */
 	unsigned char *,	/* rBuf */
 	int			/* nBytes */
 #endif

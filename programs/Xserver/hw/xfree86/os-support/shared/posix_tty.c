@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.4 1995/01/28 17:05:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.5 1996/02/04 09:10:22 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -36,7 +36,8 @@
 
 static Bool not_a_tty = FALSE;
 
-void xf86SetMouseSpeed(old, new, cflag)
+void xf86SetMouseSpeed(mouse, old, new, cflag)
+MouseDevPtr mouse;
 int old;
 int new;
 unsigned cflag;
@@ -47,30 +48,30 @@ unsigned cflag;
 	if (not_a_tty)
 		return;
 
-	if (tcgetattr(xf86Info.mseFd, &tty) < 0)
+	if (tcgetattr(mouse->mseFd, &tty) < 0)
 	{
 		not_a_tty = TRUE;
-		ErrorF("Warning: unable to get status of mouse fd (%s)\n",
-		       strerror(errno));
+		ErrorF("Warning: %s unable to get status of mouse fd (%s)\n",
+		       mouse->mseDevice, strerror(errno));
 		return;
 	}
 
 	/* this will query the initial baudrate only once */
-	if (xf86Info.oldBaudRate < 0) { 
+	if (mouse->oldBaudRate < 0) { 
 	   switch (cfgetispeed(&tty)) 
 	      {
 	      case B9600: 
-		 xf86Info.oldBaudRate = 9600;
+		 mouse->oldBaudRate = 9600;
 		 break;
 	      case B4800: 
-		 xf86Info.oldBaudRate = 4800;
+		 mouse->oldBaudRate = 4800;
 		 break;
 	      case B2400: 
-		 xf86Info.oldBaudRate = 2400;
+		 mouse->oldBaudRate = 2400;
 		 break;
 	      case B1200: 
 	      default:
-		 xf86Info.oldBaudRate = 1200;
+		 mouse->oldBaudRate = 1200;
 		 break;
 	      }
 	}
@@ -102,7 +103,7 @@ unsigned cflag;
 		cfsetospeed(&tty, B1200);
 	}
 
-	if (tcsetattr(xf86Info.mseFd, TCSADRAIN, &tty) < 0)
+	if (tcsetattr(mouse->mseFd, TCSADRAIN, &tty) < 0)
 	{
 		xf86FatalError("Unable to set status of mouse fd (%s)\n",
 			       strerror(errno));
@@ -132,9 +133,9 @@ unsigned cflag;
 		cfsetospeed(&tty, B1200);
 	}
 
-	if (xf86Info.mseType == P_LOGIMAN || xf86Info.mseType == P_LOGI)
+	if (mouse->mseType == P_LOGIMAN || mouse->mseType == P_LOGI)
 	{
-		if (write(xf86Info.mseFd, c, 2) != 2)
+		if (write(mouse->mseFd, c, 2) != 2)
 		{
 			xf86FatalError("Unable to write to mouse fd (%s)\n",
 				       strerror(errno));
@@ -142,7 +143,7 @@ unsigned cflag;
 	}
 	usleep(100000);
 
-	if (tcsetattr(xf86Info.mseFd, TCSADRAIN, &tty) < 0)
+	if (tcsetattr(mouse->mseFd, TCSADRAIN, &tty) < 0)
 	{
 		xf86FatalError("Unable to set status of mouse fd (%s)\n",
 			       strerror(errno));

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.44 1996/02/22 05:11:44 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.45 1996/03/04 05:14:19 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -363,19 +363,21 @@ InitInput(argc, argv)
 #endif /* XTESTEXT1 */
 
   xf86Info.pKeyboard = AddInputDevice(xf86Info.kbdProc, TRUE); 
-  xf86Info.pPointer =  AddInputDevice(xf86Info.mseProc, TRUE);
+  xf86Info.pMouse =  AddInputDevice(xf86Info.mouseDev.mseProc, TRUE);
   RegisterKeyboardDevice(xf86Info.pKeyboard); 
-  RegisterPointerDevice(xf86Info.pPointer); 
+  RegisterPointerDevice(xf86Info.pMouse); 
 
+  ((DeviceIntPtr) xf86Info.pMouse)->public.devicePrivate = (pointer) &xf86Info.mouseDev;
+  
 #ifdef XINPUT
   InitExtInput();
 #endif
 
-  miRegisterPointerDevice(screenInfo.screens[0], xf86Info.pPointer);
+  miRegisterPointerDevice(screenInfo.screens[0], xf86Info.pMouse);
 #ifdef XINPUT
-  xf86eqInit (xf86Info.pKeyboard, xf86Info.pPointer);
+  xf86eqInit (xf86Info.pKeyboard, xf86Info.pMouse);
 #else
-  mieqInit (xf86Info.pKeyboard, xf86Info.pPointer);
+  mieqInit (xf86Info.pKeyboard, xf86Info.pMouse);
 #endif
 }
 
@@ -446,7 +448,7 @@ AbortDDX()
   /*
    * try to deinitialize all input devices
    */
-  if (xf86Info.pPointer) (xf86Info.mseProc)(xf86Info.pPointer, DEVICE_CLOSE);
+  if (xf86Info.pMouse) (xf86Info.mouseDev.mseProc)(xf86Info.pMouse, DEVICE_CLOSE);
   if (xf86Info.pKeyboard) (xf86Info.kbdProc)(xf86Info.pKeyboard, DEVICE_CLOSE);
 
   /*
@@ -791,7 +793,7 @@ xf86CheckBeta()
         showmessage = TRUE;
       else {
 	fgets(oldvers, 16, f);
-	if (strcmp(oldvers, XF86_VERSION)) {
+	if (strncmp(oldvers, XF86_VERSION, 15)) {
 	  showmessage = TRUE;
 	}
 	fclose(f);

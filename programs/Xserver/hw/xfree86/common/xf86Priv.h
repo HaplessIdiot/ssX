@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.16 1996/02/18 03:42:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.17 1996/03/04 05:14:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -69,33 +69,9 @@ typedef struct {
   Bool          composeLock;
   Bool          vtSysreq;
 
-  /* pointer part */
-  DeviceIntPtr  pPointer;
-  DeviceProc    mseProc;              /* procedure for initializing */
-  void          (* mseEvents)(        /* proc for processing events */
-#if NeedNestedPrototypes && !defined(__OSF__)
-                void
-#endif
-                );
-  int           mseFd;
-  char          *mseDevice;
-  int           mseType;
-  int           baudRate;
-  int           oldBaudRate;
-  int           sampleRate;
-  int           lastButtons;
-  int           threshold, num, den;  /* acceleration */
-  int           emulateState;         /* automata state for 2 button mode */
-  Bool          emulate3Buttons;
-  int           emulate3Timeout;      /* Timeout for 3 button emulation */
-  Bool          chordMiddle;
-  int           mouseFlags;        /* Flags to Clear after opening mouse dev */
-
-#ifndef CSRG_BASED
-  /* xque part */
-  int           xqueFd;
-  int           xqueSema;
-#endif
+  /* mouse part */
+  DeviceIntPtr  pMouse;
+  MouseDevRec	mouseDev;
 
   /* event handler part */
   int           lastEventTime;

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.4 1996/02/12 11:12:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.5 1996/02/18 03:42:55 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -31,6 +31,8 @@
 #include "X.h"
 #include "Xproto.h"
 #include "inputstr.h"
+#include "XI.h"
+#include "XIproto.h"
 
 #define XI86_NO_OPEN_ON_INIT    1 /* open the device only when needed */
 #define XI86_CONFIGURED         2 /* the device has been configured */
@@ -92,12 +94,7 @@ typedef struct _DeviceAssocRec
   char                  *config_section_name;
   LocalDevicePtr        (*device_allocate)(
 #if NeedNestedPrototypes
-#if FIXME
-    char *  /* name */,
-    int     /* flag */
-#else
     void
-#endif
 #endif
 );
 } DeviceAssocRec, *DeviceAssocPtr;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000orchid.c,v 3.5 1995/12/26 06:07:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000orchid.c,v 3.6 1996/02/04 09:04:24 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -25,8 +25,8 @@
 #include "X.h"
 #include "input.h"
 
-#include "xf86_OSlib.h"
 #include "xf86.h"
+#include "xf86_OSlib.h"
 #include "xf86_Config.h"
 
 #include "p9000.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/mach/mach_io.c,v 1.1.1.3 1996/01/03 07:20:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/mach/mach_io.c,v 3.0 1996/03/04 05:16:29 dawes Exp $ */
 /*
  * Copyright 1992 by Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -165,7 +165,8 @@ void xf86KbdEvents()
 	}
 }
 
-void xf86SetMouseSpeed(old, new, cflag)
+void xf86SetMouseSpeed(mouse, old, new, cflag)
+MouseDevPtr mouse;
 int old;
 int new;
 unsigned cflag;
@@ -173,14 +174,16 @@ unsigned cflag;
 	return;
 }
 
-void xf86MouseInit()
+void xf86MouseInit(mouse)
+MouseDevPtr mouse;
 {
 	return;
 }
 
-int xf86MouseOn()
+int xf86MouseOn(mouse)
+MouseDevPtr mouse;
 {
-	if ((xf86Info.mseFd = open(xf86Info.mseDevice, O_RDONLY, 0)) < 0)
+	if ((mouse->mseFd = open(mouse->mseDevice, O_RDONLY, 0)) < 0)
 	{
 		if (xf86AllowMouseOpenFail) {
 			ErrorF("Cannot open mouse (%s) - Continuing...\n",
@@ -189,42 +192,44 @@ int xf86MouseOn()
 		}
 		FatalError("Cannot open mouse (%s)\n", strerror(errno));
 	}
-	if (fcntl(xf86Info.mseFd, F_SETFL, FNDELAY | FASYNC) < 0)
+	if (fcntl(mouse->mseFd, F_SETFL, FNDELAY | FASYNC) < 0)
 	{
 		FatalError("Cannot set up mouse (%s)\n", strerror(errno));
 	}
 
-	xf86SetupMouse();
+	xf86SetupMouse(mouse);
 
 	{
 		int data = 1;
 
-		if (ioctl (xf86Info.mseFd, FIONBIO, &data) < 0)
+		if (ioctl (mouse->mseFd, FIONBIO, &data) < 0)
 		{
 			FatalError(
 				"Cannot set mouse non-blocking (%s)\n",
 				strerror(errno));
 		}
 	}
-	return(xf86Info.mseFd);
+	return(mouse->mseFd);
 }
 
-int xf86MouseOff(doclose)
+int xf86MouseOff(mouse, doclose)
+MouseDevPtr mouse;
 Bool doclose;
 {
-	close(xf86Info.mseFd);
-	return(xf86Info.mseFd);
+	close(mouse->mseFd);
+	return(mouse->mseFd);
 }
 
 #define EVENT_LIST_SIZE 32
 
-void xf86MouseEvents()
+void xf86MouseEvents(device)
+DeviceIntPtr	device;
 {
 	int total, buttons, dx, dy;
 	static kd_event eventList[EVENT_LIST_SIZE];
 	kd_event *event;
 
-	total = read(xf86Info.mseFd, eventList, sizeof(eventList));
+	total = read(mouse->mseFd, eventList, sizeof(eventList));
 	if (total < 0)
 	{
 		if (errno != EWOULDBLOCK)
@@ -239,21 +244,21 @@ void xf86MouseEvents()
 	event = eventList;
 	while (total--)
 	{
-		buttons = xf86Info.lastButtons;
+		buttons = mouse->lastButtons;
 		dx = dy = 0;
 
 		switch (event->type)
 		{
 		case MOUSE_RIGHT:
-			buttons = xf86Info.lastButtons & 6 |
+			buttons = mouse->lastButtons & 6 |
 				  (event->value.up ? 0 : 1);
 			break;
 		case MOUSE_MIDDLE:
-			buttons = xf86Info.lastButtons & 5 |
+			buttons = mouse->lastButtons & 5 |
 				  (event->value.up ? 0 : 2);
 			break;
 		case MOUSE_LEFT:
-			buttons = xf86Info.lastButtons & 3 |
+			buttons = mouse->lastButtons & 3 |
 				  (event->value.up ? 0 : 4);
 			break;
 		case MOUSE_MOTION:
@@ -264,7 +269,7 @@ void xf86MouseEvents()
 			ErrorF("Bad mouse event\n");
 			break;
 		}
-		xf86PostMseEvent(buttons, dx, dy);
+		xf86PostMseEvent(device, buttons, dx, dy);
 		++event;
 	}
 }

@@ -1,3 +1,17 @@
+XFree86 3.1.2Dc (10 March 1996)
+435. PANIX-PC98 support, and fix 'make clean' problems for PC98
+     (Takefumi Tsukada).
+434. OS/2 updates (Holger Veit).
+433. Remove DEVINTPTR ifdefs by renaming the entrypoints of the affected
+     functions (Thomas E. Dickey).
+432. Fix for handling of long version strings in beta servers (Harald Koenig).
+431. Some XFree86-Misc cleanups (Joe Moss).
+430. Add an extended input device supporting mouse protocols.  This shares
+     code with the core mouse (Frederic Lepied).
+429. Fix the behaviour of ANSI colours in xterm when reverse video is used,
+     and some other xterm updates (Thomas E. Dickey).
+428. Fix SEGV with ark driver when no Ramdac is given in the XF86Config.
+
 XFree86 3.1.2Db (5 March 1996)
 427. Fix a problem where hw cursors get recoloured incorrectly.
 426. Fix another possible Trio32 font cache problem (Harald Koenig).

@@ -1,5 +1,5 @@
 /* $XConsortium: osglue.c,v 1.12 95/04/07 19:42:57 kaleb Exp $ */
-/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.4 1995/04/09 13:55:46 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.5 1995/07/08 10:32:37 dawes Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -303,6 +303,11 @@ CloneMyself()
 
     if (!CloneSelf)
 	return -1;
+
+#ifdef __EMX__
+    NoticeF("Cloning of font server not supported under OS/2!\n");
+    return(-1);
+#endif
 
     old_listen_arg[0] = '\0';
 

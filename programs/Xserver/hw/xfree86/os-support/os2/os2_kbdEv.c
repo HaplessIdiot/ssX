@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.5 1996/02/20 14:35:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.6 1996/02/22 05:12:21 dawes Exp $ */
 /*
  * (c) Copyright 1994,1996 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -106,9 +106,6 @@ extern void  XTestStealMotionData();
 #endif
 /* end of include */
 
-HMONITOR hKbdMonitor;
-MONIN in;
-MONOUT out;
 HQUEUE hKbdQueue;
 int last_status;
 int lastStatus;
@@ -123,7 +120,6 @@ int os2KbdQueueQuery()
     ULONG numElements;
     
 	rc=DosQueryQueue(hKbdQueue,&numElements);
-	/* ErrorF("xf86-OS/2: query kbd queue rc=%d, num elements=%d\n",rc,numElements);  */
 	if((numElements!=0)) return(0); /* We have something in queue */
 	   
 return (1);
@@ -149,8 +145,8 @@ void xf86KbdEvents()
     for(i=0;i<numElements;i++){
         rc=DosReadQueue(hKbdQueue,&requestData,&dataLength,&junkPointer,
                 0L,0L,&elemPriority,0);
-        ErrorF("Got queue element. rc=%d, data=%d, scancode =%d,up=%d, ddflag %d\n",rc,requestData.ulData,
-                (requestData.ulData&0x7F00)>>8,requestData.ulData&0x8000,requestData.ulData>>16);
+        /*ErrorF("Got queue element. rc=%d, data=%d, scancode =%d,up=%d, ddflag %d\n",rc,requestData.ulData,
+                (requestData.ulData&0x7F00)>>8,requestData.ulData&0x8000,requestData.ulData>>16);*/
         scan=(requestData.ulData&0x7F00)>>8;
 
 	/* the separate cursor keys return 0xe0/scan */
@@ -415,13 +411,14 @@ void os2PostKbdEvent(scanCode, down)
 }
 
 
-
+#pragma pack(1)
 struct KeyPacket
   {
     unsigned short mnflags;
     KBDKEYINFO cp;
     unsigned short ddflags;
   };
+#pragma pack()
 
 /* The next function runs as a thread. It registers a monitor on the kbd
  * driver, and uses that to get keystrokes. This is because the standart
@@ -437,32 +434,51 @@ void *arg;
         APIRET rc;
         USHORT length;
         ULONG queueParam;
+        HMONITOR hKbdMonitor;
+        MONIN monInbuf;
+        MONOUT monOutbuf;
 
-        in.cb=sizeof(in);
-        out.cb=sizeof(out);
+
+        /* monInbuf=(MONIN *)_tmalloc(2*sizeof(MONIN));
+        if(monInbuf==NULL){
+            ErrorF("xf86-OS/2: Could not allocate memory in kbd monitor thread!\n");
+            exit(1);
+            }
+        monOutbuf=(MONOUT *) &monInbuf[1]; */
+
+        monInbuf.cb=sizeof(MONIN);
+        monOutbuf.cb=sizeof(MONOUT);
 
         hSwitch=WinQuerySwitchHandle(0,getpid());
         rc=WinQuerySwitchEntry(hSwitch,&sw);
 	rc=DosMonOpen("KBD$",&hKbdMonitor);
         ErrorF("xf86-OS/2: Opened kbd monitor, rc=%d\n",rc);
- 	rc=DosMonReg(hKbdMonitor,(PBYTE)&in,(PBYTE)&out,(USHORT)2,(USHORT)sw.idSession);
+ 	rc=DosMonReg(hKbdMonitor,(PBYTE)&monInbuf,(PBYTE)&monOutbuf,(USHORT)2,(USHORT)sw.idSession);
         ErrorF("xf86-OS/2: Kbd monitor registered, rc=%d\n",rc);
-
+	if(rc){
+		DosMonClose(hKbdMonitor); exit(1);
+		}
         rc=DosCreateQueue(&hKbdQueue,0L,"\\QUEUES\\XF86KBD");
         ErrorF("xf86-OS/2: Kbd Queue created, rc=%d\n",rc);
         rc=DosPurgeQueue(hKbdQueue);
 
         while(1){
            length=sizeof(packet);
-		rc=DosMonRead((PBYTE)&in,0,(PBYTE)&packet,&length);
-                if(rc) ErrorF("DosMonRead returned bad RC! rc=%d\n",rc);
+              rc=DosMonRead((PBYTE)&monInbuf,0,(PBYTE)&packet,&length);
+                if(rc){
+                        ErrorF("DosMonRead returned bad RC! rc=%d\n",rc);
+                        DosMonClose(hKbdMonitor); exit(1);
+                        }
                 queueParam=packet.mnflags+(packet.ddflags<<16);
                 if(packet.mnflags&0x7F00) rc=DosWriteQueue(hKbdQueue,queueParam,0L,NULL,0L);
-                ErrorF("xf86-OS/2: wrote a char to queue, rc=%d\n",rc);
+                /*ErrorF("xf86-OS/2: wrote a char to queue, rc=%d\n",rc);
                 ErrorF("Kbd Monitor: Key press %d, scan code %d, ddflags %d\n",
-                        packet.mnflags&0x8000,(packet.mnflags&0x7F00)>>8,packet.ddflags);
-                rc=DosMonWrite((PBYTE)&out,(PBYTE)&packet,length);
-                if(rc) ErrorF("DosMonWrite returned bad RC! rc=%d\n",rc);
+                        packet.mnflags&0x8000,(packet.mnflags&0x7F00)>>8,packet.ddflags); */
+                rc=DosMonWrite((PBYTE)&monOutbuf,(PBYTE)&packet,length);
+                if(rc) {
+                        ErrorF("DosMonWrite returned bad RC! rc=%d\n",rc);
+                        DosMonClose(hKbdMonitor); exit(1);
+                        }
                 }
         rc=DosCloseQueue(hKbdQueue);
         rc=DosMonClose(hKbdMonitor);

@@ -1,10 +1,13 @@
 XCOMM $XConsortium: Imakefile /main/25 1996/01/15 12:19:07 gildea $
-XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.2 1996/01/21 01:57:02 dawes Exp $
+XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.3 1996/02/09 08:22:51 dawes Exp $
 #if HasVFork
   VFORK_DEFINES = -DHAS_VFORK
 #endif
 #ifdef XFree86Version
         OS_DEFS = -DXFREE86
+#endif
+#ifdef OS2Architecture
+        DEFFILE = xinit.def
 #endif
         DEFINES = ConnectionFlags $(VFORK_DEFINES) $(SIGNAL_DEFINES) \
 			-DBINDIR=\"$(BINDIR)\" $(OS_DEFS)
@@ -16,7 +19,7 @@ LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
        PROGRAMS = ProgramTargetName(xinit) startx $(SAMPLECONFIG)
 
 
-ComplexProgramTarget_1(xinit,$(LOCAL_LIBRARIES),NullParameter)
+ComplexProgramTarget_1(xinit,$(LOCAL_LIBRARIES),$(DEFFILE))
 
 #ifndef OS2Architecture
 MakeScriptFromCpp(xinitrc, -DXINITDIR=$(XINITDIR))

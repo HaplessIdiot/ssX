@@ -1,5 +1,5 @@
 /* $XConsortium: config.c,v 1.15 94/04/17 19:56:03 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/os/config.c,v 3.1 1996/02/09 08:38:17 dawes Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -296,7 +296,7 @@ char *__XFSRedirRoot(char *fname)
     root = (char*)getenv("X11ROOT");
     if (root==0 ||
 	(fname[1]==':' && isalpha(fname[0])) ||
-	(strlen(fname)+strlen(root)+2) > 300))
+	(strlen(fname)+strlen(root)+2) > 300)
 	return fname;
     sprintf(redirname,"%s%s",root,fname);
     return redirname;

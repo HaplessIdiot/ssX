@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.5 1996/02/19 09:50:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.6 1996/02/22 05:12:20 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -138,12 +138,14 @@ int xf86KbdOff()
 	return -1;
 }
 
-void xf86MouseInit()
+void xf86MouseInit(mouse)
+MouseDevPtr mouse;
 {
 	return;
 }
 
-int xf86MouseOn()
+int xf86MouseOn(mouse)
+MouseDevPtr mouse;
 {
 	HMOU fd;
 	APIRET rc;
@@ -154,7 +156,7 @@ ErrorF ("\nxf86-OS/2: Calling MouseOn, a bad thing.... Must be some bug in the c
 		rc = MouOpen((PSZ)NULL,(PHMOU)&fd);
 		if (rc != 0)
 			FatalError("Cannot open mouse, rc=%d\n", rc);
-		xf86Info.mseFd = fd;
+		mouse->mseFd = fd;
 	}
 	
 	/* flush mouse queue */
@@ -165,7 +167,7 @@ ErrorF ("\nxf86-OS/2: Calling MouseOn, a bad thing.... Must be some bug in the c
 	if (rc == 0)
 		ErrorF("OsMouse has %d button(s).\n",nbut);
 
-	return (xf86Info.mseFd);
+	return (mouse->mseFd);
 }
 
 /* This table is a bit irritating, because these mouse types are infact
@@ -188,18 +190,6 @@ Bool xf86SupportedMouseTypes[] =
 int xf86NumMouseTypes = sizeof(xf86SupportedMouseTypes) /
 			sizeof(xf86SupportedMouseTypes[0]);
 
-/*
- * This declares a missing function in the __EMX__ library, used in
- * various places
- */
-#ifdef __EMX__
-void usleep(delay)
-	unsigned long delay;
-{
-	DosSleep(delay ? (delay/1000) : 1l);
-}
-#endif
-
                      /* Necessary to check input events in OS/2     */
 		     /* This function performs select() on sockets  */
 		     /* but uses OS/2 internal fncts to check mouse */
@@ -217,7 +207,11 @@ struct timeval dummy_timeout;
 fd_set read_copy,write_copy,except_copy;
 
 start_time=GetTimeInMillis();
-max_time=timeout->tv_sec*1000+timeout->tv_usec/1000;
+if(timeout!=NULL) {
+	max_time=timeout->tv_sec*1000+timeout->tv_usec/1000;
+	}
+else { max_time=10000000; }  /* This should be large enough... */
+
 dummy_timeout.tv_sec=0;
 dummy_timeout.tv_usec=0;
 
@@ -240,9 +234,11 @@ dummy_timeout.tv_usec=0;
 	     if(i>0) {           /* One of the descriptors is awake */
 		      /* We set the timeval to the remaining time */
 		  time_remaining=max_time-elapsed;
-		  timeout->tv_sec=time_remaining/1000;
-		  timeout->tv_usec=(time_remaining % 1000) *1000;
-		      /* Put the masks from select() into the original pointers */
+		  if(timeout!=NULL){
+			timeout->tv_sec=time_remaining/1000;
+			timeout->tv_usec=(time_remaining % 1000) *1000;
+		  }
+	/* Put the masks from select() into the original pointers */
 	          if(readfds!=NULL) {XFD_COPYSET(&read_copy,readfds);}
 	          if(writefds!=NULL) {XFD_COPYSET(&write_copy,writefds);}
 	          if(exceptfds!=NULL) {XFD_COPYSET(&except_copy,exceptfds);}
@@ -255,9 +251,11 @@ dummy_timeout.tv_usec=0;
                         xf86Info.vtRequestsPending || os2PopupErrorPending){
 		  if(os2PopupErrorPending) os2RecoverFromPopup();
 		  time_remaining=max_time-elapsed;
-		  timeout->tv_sec=time_remaining/1000;
-		  timeout->tv_usec=(time_remaining % 1000) *1000;
-		      /* Put the masks from select() into the original pointers */
+                  if(timeout!=NULL){
+                        timeout->tv_sec=time_remaining/1000;
+                        timeout->tv_usec=(time_remaining % 1000) *1000;
+                        }
+		  /* Put the masks from select() into the original pointers */
 	          if(readfds!=NULL) {XFD_COPYSET(&read_copy,readfds);}
 	          if(writefds!=NULL) {XFD_COPYSET(&write_copy,writefds);}
 	          if(exceptfds!=NULL) {XFD_COPYSET(&except_copy,exceptfds);}
@@ -268,8 +266,10 @@ dummy_timeout.tv_usec=0;
 	} while((elapsed=(GetTimeInMillis()-start_time))<max_time);
 		/* Well, we have time'd out */
 
-timeout->tv_sec=0;
-timeout->tv_usec=0;
+if(timeout!=NULL){
+        timeout->tv_sec=0;
+        timeout->tv_usec=0;
+        }
 		      /* Put the masks from select() into the original pointers */
 if(readfds!=NULL) {XFD_COPYSET(&read_copy,readfds);}
 if(writefds!=NULL) {XFD_COPYSET(&write_copy,writefds);}

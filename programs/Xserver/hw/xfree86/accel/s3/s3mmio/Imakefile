@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3mmio/Imakefile,v 3.6 1995/01/28 17:03:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3mmio/Imakefile,v 3.7 1996/02/04 09:05:43 dawes Exp $
 
 
 
@@ -63,5 +63,6 @@ LinkSourceFile(s3win.c,..)
 
 InstallLinkKitLibrary(s3mmio,$(LINKKITDIR)/drivers)
 
+#ifndef OS2Architecture
 DependTarget()
-
+#endif

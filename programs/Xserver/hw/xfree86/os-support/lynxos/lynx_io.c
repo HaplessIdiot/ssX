@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_io.c,v 3.0 1995/06/02 10:18:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_io.c,v 3.1 1996/03/04 05:16:27 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -144,14 +144,16 @@ int xf86KbdOff()
 	return(xf86Info.consoleFd);
 }
 
-void xf86MouseInit()
+void xf86MouseInit(mouse)
+MouseDevPtr mouse;
 {
 	return;
 }
 
-int xf86MouseOn()
+int xf86MouseOn(mouse)
+MouseDevPtr mouse;
 {
-	if ((xf86Info.mseFd = open(xf86Info.mseDevice, O_RDWR | O_NDELAY)) < 0)
+	if ((mouse->mseFd = open(mouse->mseDevice, O_RDWR | O_NDELAY)) < 0)
 	{
 		if (xf86AllowMouseOpenFail) {
 			ErrorF("Cannot open mouse (%s) - Continuing...\n",
@@ -162,9 +164,9 @@ int xf86MouseOn()
 	}
 
 	/* assert DTR */
-	ioctl(xf86Info.mseFd, TIOCSDTR, NULL);
+	ioctl(mouse->mseFd, TIOCSDTR, NULL);
 
-	xf86SetupMouse();
+	xf86SetupMouse(mouse);
 
-	return(xf86Info.mseFd);
+	return(mouse->mseFd);
 }

@@ -189,16 +189,16 @@ from the ``contrib'' area will be made available in the future.
     <descrip>
     <tag/312D8514/	the X server for IBM 8514/A and compatible boards
     <tag/312DAGX/	the X server for AGX boards
-    <tag/X312I128/	the X server for &num;9 Imagination 128 boards
-    <tag/X312Ma32/	the X server for ATI Mach32 graphics boards
-    <tag/X312Ma64/	the X server for ATI Mach64 graphics boards
+    <tag/312DI128/	the X server for &num;9 Imagination 128 boards
+    <tag/312DMa32/	the X server for ATI Mach32 graphics boards
+    <tag/312DMa64/	the X server for ATI Mach64 graphics boards
     <tag/312DMa8/	the X server for ATI Mach8 graphics boards
     <tag/312DMono/	the Monochrome X Server
     <tag/312DP9K/	the X server for P9000 based boards
     <tag/312DS3/ 	the X server for S3 based boards
     <tag/312DSvga/	the 8-bit pseudo-color X server for Super VGA cards
     <tag/312Dvg16/	the 4-bit pseudo-color X server for VGA &amp; SVGA cards.
-    <tag/X312w32/	the X server for et4000w32 based boards
+    <tag/312Dw32/	the X server for et4000w32 based boards
     </descrip>
 
 <tag/OPTIONAL:/
@@ -210,7 +210,7 @@ from the ``contrib'' area will be made available in the future.
     <tag/312Dfnon/ 	Japanese, Chinese and other fonts
     <tag/312Dfcyr/	Cyrillic fonts
     <tag/312Dfsrv/	the font server with man pages.
-    <tag/312prog/	the X11 header files and programmer's utilities
+    <tag/312Dprog/	the X11 header files and programmer's utilities
 			for compiling other X applications
     <tag/312Dpex/	PEX fonts and libraries required for PEX applications
     <tag/312Dnest/	the Xnest X server
@@ -547,7 +547,7 @@ port heavily relies on
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.2 1996/02/24 05:59:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.3 1996/02/24 10:19:18 dawes Exp $
 
 
 

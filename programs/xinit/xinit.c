@@ -1,5 +1,5 @@
 /* $XConsortium: xinit.c,v 11.61 95/01/09 21:20:29 kaleb Exp $ */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.9 1996/02/20 14:37:08 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.10 1996/02/22 05:15:02 dawes Exp $ */
 
 /*
 
@@ -139,7 +139,11 @@ char xserverrcbuf[256];
 
 char *default_server = "X";
 char *default_display = ":0";		/* choose most efficient */
+#ifndef __EMX__
 char *default_client[] = {"xterm", "-geometry", "+1+1", "-n", "login", NULL};
+#else
+char *default_client[] = {"/XFree86/bin/xterm.exe", "-geometry", "+1+1", "-n", "login", NULL};
+#endif
 char *serverargv[100];
 char *clientargv[100];
 char **server = serverargv + 2;		/* make sure room for sh .xserverrc args */
@@ -239,7 +243,12 @@ main(int argc, char **argv, char **envp)
 	 * copy the client args.
 	 */
 	if (argc == 0 ||
+#ifndef __EMX__
 	    (**argv != '/' && **argv != '.')) {
+#else
+	    (**argv != '/' && **argv != '\\' && **argv != '.' &&
+	     !(isalpha(**argv) && (*argv)[1]==':'))) {
+#endif
 		for (ptr = default_client; *ptr; )
 			*cptr++ = *ptr++;
 #ifdef sun
@@ -270,10 +279,12 @@ main(int argc, char **argv, char **envp)
 	 * Copy the server args.
 	 */
 	if (argc == 0 ||
-	    (**argv != '/' && **argv != '.')) {
 #ifndef __EMX__
+	    (**argv != '/' && **argv != '.')) {
 		*sptr++ = default_server;
 #else
+	    (**argv != '/' && **argv != '\\' && **argv != '.' &&
+	     !(isalpha(**argv) && (*argv)[1]==':'))) {
 		*sptr = getenv("XSERVER");
 		if (!*sptr) {
 			Error("No XSERVER environment variable set");
@@ -549,6 +560,11 @@ startClient(client)
 		setuid(getuid());
 		setpgrp(0, getpid());
 		environ = newenviron;
+#ifdef __EMX__
+#undef environ
+		environ = newenviron;
+		client[0] = (char*)__XOS2RedirRoot(client[0]);
+#endif
 		Execute (client,newenviron);
 		Error ("no program named \"%s\" in PATH\r\n", client[0]);
 		fprintf (stderr,

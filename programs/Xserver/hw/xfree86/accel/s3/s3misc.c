@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.40 1996/02/04 09:05:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.41 1996/02/20 14:34:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1079,15 +1079,16 @@ s3AdjustFrame(int x, int y)
    outw(vgaCRIndex, (Base & 0x00FF00) | 0x0C);
    outw(vgaCRIndex, ((Base & 0x00FF) << 8) | 0x0D);
 
-   s3AdjustCursorXPos = (origBase - (Base << 2)) / s3Bpp;
+   if (!(s3InfoRec.directMode & XF86DGADirectMouse)) {
+      s3AdjustCursorXPos = (origBase - (Base << 2)) / s3Bpp;
 
-   if (s3ModeSwitched) {
-      s3ModeSwitched = FALSE;
-      s3RestoreCursor(s3savepScreen);
-   } else {
-      s3RepositionCursor(s3savepScreen);
+      if (s3ModeSwitched) {
+         s3ModeSwitched = FALSE;
+         s3RestoreCursor(s3savepScreen);
+      } else {
+         s3RepositionCursor(s3savepScreen);
+      }
    }
-
 }
 
 /*

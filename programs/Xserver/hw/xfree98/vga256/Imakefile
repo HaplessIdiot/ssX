@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/3 1996/01/13 13:09:36 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile,v 3.3 1996/02/09 08:21:59 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile,v 3.4 1996/02/18 03:44:38 dawes Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -51,8 +51,8 @@ WSNAOBJS    = wsna/?*.o vgainit/?*.o
 WSNADONES   = wsna/DONE
 #endif
 
-SUBDIRS = vgainit drivers $(GANBWAPSUBDIRS) $(NEC480SUBDIRS) \
-	  $(NKVNECSUBDIRS) $(WABSSUBDIRS) $(WABEPSUBDIRS) $(WSNASUBDIRS)
+SUBDIRS = $(GANBWAPSUBDIRS) $(NEC480SUBDIRS) $(NKVNECSUBDIRS) \
+	  $(WABSSUBDIRS) $(WABEPSUBDIRS) $(WSNASUBDIRS) vgainit drivers
 SRCS    = $(GANBWAPSRCS) $(NEC480SRCS) $(NKVNECSRCS) \
 	  $(WABSSRCS) $(WABEPSRCS) $(WSNASRCS)
 OBJS    = $(GANBWAPOBJS) $(NEC480OBJS) $(NKVNECOBJS) \

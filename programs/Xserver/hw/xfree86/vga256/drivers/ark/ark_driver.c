@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.7 1996/02/04 09:12:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.8 1996/02/22 05:12:41 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -627,7 +627,11 @@ ArkProbe()
 	 * supported pixel clock limits. Unsupported depths will
 	 * be ruled out out by a max dot clock of 0.
 	 */
-	arkRamdac = xf86StringToToken(ramdacs, vga256InfoRec.ramdac);
+	if (vga256InfoRec.ramdac)
+		arkRamdac = xf86StringToToken(ramdacs, vga256InfoRec.ramdac);
+	else
+		arkRamdac = -1;
+
 	maxclock8bpp = 0;
 	maxclock16bpp = 0;
 	maxclock32bpp = 0;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.26 1996/02/22 05:13:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.27 1996/03/04 05:17:03 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -1334,8 +1334,7 @@ static int exists_dir(char *name) {
 	struct stat sbuf;
 
 #ifdef __EMX__
-
-
+	name = __XOS2RedirRoot(name);
 #endif
 	/* is it there ? */
 	if (stat(name,&sbuf) == -1)

@@ -7,8 +7,7 @@ programs direct access to the video frame buffer.
 This is a brief description of the programming interface for the
 XFree86-DGA extension.  This describes version 0.0, which is a beta
 version.  The interface may change in future versions.  The functions
-described here are found in the library libXExExt.a, and any client which
-uses an Imakefile will be linked against this library.
+described here are found in the library libxf86dga.a.
 
 Prototypes for these functions can be found in <X11/extensions/xf86dga.h>
 
@@ -60,4 +59,4 @@ Prototypes for these functions can be found in <X11/extensions/xf86dga.h>
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.DGA,v 3.0 1995/12/26 11:43:03 dawes Exp $

@@ -1,5 +1,5 @@
 /* $XConsortium: input.h /main/21 1996/01/14 16:45:24 kaleb $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/include/input.h,v 3.1 1996/02/18 12:02:24 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1987  X Consortium
@@ -153,11 +153,18 @@ typedef struct {
 extern KeybdCtrl	defaultKeyboardControl;
 extern PtrCtrl		defaultPointerControl;
 
-#ifdef DEVINTPTR
-extern DeviceIntPtr AddInputDevice(
-#else
+#undef  AddInputDevice
 extern DevicePtr AddInputDevice(
+#if NeedFunctionPrototypes
+    DeviceProc /*deviceProc*/,
+    Bool /*autoStart*/
 #endif
+);
+
+#define AddInputDevice(deviceProc, autoStart) \
+       _AddInputDevice(deviceProc, autoStart)
+
+extern DeviceIntPtr _AddInputDevice(
 #if NeedFunctionPrototypes
     DeviceProc /*deviceProc*/,
     Bool /*autoStart*/
@@ -194,23 +201,35 @@ extern int NumMotionEvents(
 #endif
 );
 
+#undef  RegisterPointerDevice
 extern void RegisterPointerDevice(
 #if NeedFunctionPrototypes
-#ifdef DEVINTPTR
-    DeviceIntPtr /*device*/
-#else
     DevicePtr /*device*/
-#endif
 #endif
 );
 
+#define RegisterPointerDevice(device) \
+       _RegisterPointerDevice(device)
+
+extern void _RegisterPointerDevice(
+#if NeedFunctionPrototypes
+    DeviceIntPtr /*device*/
+#endif
+);
+
+#undef  RegisterKeyboardDevice
 extern void RegisterKeyboardDevice(
 #if NeedFunctionPrototypes
-#ifdef DEVINTPTR
-    DeviceIntPtr /*device*/
-#else
     DevicePtr /*device*/
 #endif
+);
+
+#define RegisterKeyboardDevice(device) \
+       _RegisterKeyboardDevice(device)
+
+extern void _RegisterKeyboardDevice(
+#if NeedFunctionPrototypes
+    DeviceIntPtr /*device*/
 #endif
 );
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.27 1996/02/18 03:42:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.28 1996/03/04 05:14:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -361,12 +361,12 @@ ProcessInputEvents ()
           switch (e->type) {
           case EV_PointerDelta:
 	      if (e->x != 0 || e->y != 0) {
-                  xf86PostMseEvent(0, e->x, e->y);
+                  xf86PostMseEvent(&xf86Info.pMouse, 0, e->x, e->y);
 	      }
               break;
           case EV_ButtonPress:
           case EV_ButtonRelease:
-              xf86PostMseEvent(MAP_BUTTON(e->type, e->keyorbut), 0, 0);
+              xf86PostMseEvent(&xf86Info.pMouse, MAP_BUTTON(e->type, e->keyorbut), 0, 0);
               break;
           case EV_KeyPressEvent:
           case EV_KeyReleaseEvent:
@@ -937,8 +937,10 @@ buttonTimer(timer, now, arg)
      CARD32 now;
      pointer arg;
 {
-  xf86PostMseEvent((int)arg, 0, 0);
-  return(0);
+    MouseDevPtr	priv = (MouseDevPtr) ((DeviceIntPtr) arg)->public.devicePrivate;
+    
+    xf86PostMseEvent(((DeviceIntPtr) arg), priv->truebuttons, 0, 0);
+    return(0);
 }
 
 
@@ -949,15 +951,16 @@ buttonTimer(timer, now, arg)
  */
 
 void
-xf86PostMseEvent(buttons, dx, dy)
-     int buttons, dx, dy;
+xf86PostMseEvent(device, buttons, dx, dy)
+    DeviceIntPtr device;
+    int buttons, dx, dy;
 {
   static OsTimerPtr timer = NULL;
+  MouseDevPtr private = (MouseDevPtr)device->public.devicePrivate;
   int         id, change;
   int         truebuttons;
   xEvent      mevent[2];
 #ifdef XINPUT
-  DeviceIntPtr			device;   	/* Mouse from which the event came */
   deviceKeyButtonPointer	*xev = (deviceKeyButtonPointer *) mevent;
   deviceValuator		*xv = (deviceValuator *) (xev+1);
   int				is_pointer; /* the mouse is the pointer ? */
@@ -971,10 +974,9 @@ xf86PostMseEvent(buttons, dx, dy)
 #endif
 
 #ifdef XINPUT
-  is_pointer = IsCorePointer((DeviceIntPtr)xf86Info.pPointer);
+  is_pointer = IsCorePointer(device);
 
   if (!is_pointer) {
-    device = (DeviceIntPtr) xf86Info.pPointer;
     xev->time = xf86Info.lastEventTime = GetTimeInMillis();
   }
   else
@@ -982,7 +984,7 @@ xf86PostMseEvent(buttons, dx, dy)
   xf86Info.lastEventTime = mevent->u.keyButtonPointer.time = GetTimeInMillis();
 
   truebuttons = buttons;
-  if (xf86Info.mseType == P_MMHIT)
+  if (private->mseType == P_MMHIT)
     buttons = hitachMap[buttons];
   else
     buttons = reverseMap[buttons];
@@ -993,9 +995,9 @@ xf86PostMseEvent(buttons, dx, dy)
      * accelerate the baby now if sqrt(dx*dx + dy*dy) > threshold !
      * but do some simpler arithmetic here...
      */
-    if ((abs(dx) + abs(dy)) >= xf86Info.threshold) {
-      dx = (dx * xf86Info.num) / xf86Info.den;
-      dy = (dy * xf86Info.num)/ xf86Info.den;
+    if ((abs(dx) + abs(dy)) >= private->threshold) {
+      dx = (dx * private->num) / private->den;
+      dy = (dy * private->num)/ private->den;
     }
 
 #ifdef XINPUT
@@ -1026,7 +1028,7 @@ xf86PostMseEvent(buttons, dx, dy)
 #endif
   }
 
-  if (xf86Info.emulate3Buttons)
+  if (private->emulate3Buttons)
     {
 
       /*
@@ -1034,10 +1036,10 @@ xf86PostMseEvent(buttons, dx, dy)
        * Modifying the state table to keep track of the middle button state
        * would nearly double its size, so I'll stick with this fix.  - TJW
        */
-      if (xf86Info.mseType == P_MMHIT)
-        change = buttons ^ hitachMap[xf86Info.lastButtons];
+      if (private->mseType == P_MMHIT)
+        change = buttons ^ hitachMap[private->lastButtons];
       else
-        change = buttons ^ reverseMap[xf86Info.lastButtons];
+        change = buttons ^ reverseMap[private->lastButtons];
       if (change & 02)
 	{
 	  ENQUEUE(mevent,
@@ -1048,7 +1050,7 @@ xf86PostMseEvent(buttons, dx, dy)
       /*
        * emulate the third button by the other two
        */
-      if (id = stateTab[buttons + xf86Info.emulateState][0])
+      if (id = stateTab[buttons + private->emulateState][0])
 	{
 #ifdef XINPUT
           if (is_pointer) {
@@ -1070,7 +1072,7 @@ xf86PostMseEvent(buttons, dx, dy)
 #endif 
 	}
 
-      if (id = stateTab[buttons + xf86Info.emulateState][1])
+      if (id = stateTab[buttons + private->emulateState][1])
 	{
 #ifdef XINPUT
 	  if (is_pointer) {
@@ -1092,12 +1094,13 @@ xf86PostMseEvent(buttons, dx, dy)
 #endif
 	}
 
-      xf86Info.emulateState = stateTab[buttons + xf86Info.emulateState][2];
-      if (stateTab[buttons + xf86Info.emulateState][0] ||
-          stateTab[buttons + xf86Info.emulateState][1])
+      private->emulateState = stateTab[buttons + private->emulateState][2];
+      if (stateTab[buttons + private->emulateState][0] ||
+          stateTab[buttons + private->emulateState][1])
         {
-          timer = TimerSet(timer, 0, xf86Info.emulate3Timeout, buttonTimer,
-			   (pointer)truebuttons);
+	    private->truebuttons = truebuttons;
+	    timer = TimerSet(timer, 0, private->emulate3Timeout, buttonTimer,
+			     (pointer)private);
         }
       else
         {
@@ -1137,10 +1140,10 @@ xf86PostMseEvent(buttons, dx, dy)
        * Note that xf86Info.lastButtons has the hardware button mapping which
        * is the reverse of the button mapping reported to the server.
        */
-      if (xf86Info.mseType == P_MMHIT)
-        change = buttons ^ hitachMap[xf86Info.lastButtons];
+      if (private->mseType == P_MMHIT)
+        change = buttons ^ hitachMap[private->lastButtons];
       else
-        change = buttons ^ reverseMap[xf86Info.lastButtons];
+        change = buttons ^ reverseMap[private->lastButtons];
 
       while (change)
 	{
@@ -1167,7 +1170,7 @@ xf86PostMseEvent(buttons, dx, dy)
 	}
 #endif
     }
-    xf86Info.lastButtons = truebuttons;
+    private->lastButtons = truebuttons;
 }
 
 
@@ -1222,27 +1225,27 @@ xf86Wakeup(blockData, err, pReadmask)
     MASKANDSETBITS(kbdDevices, kbdDevices, devicesWithInput);
 
     CLEARBITS(mseDevices);
-    BITSET(mseDevices, xf86Info.mseFd);
+    BITSET(mseDevices, xf86Info.mouseDev.mseFd);
     MASKANDSETBITS(mseDevices, mseDevices, devicesWithInput);
 
     if (ANYSET(kbdDevices) || xf86Info.kbdRate)
         (xf86Info.kbdEvents)(ANYSET(kbdDevices));
     if (ANYSET(mseDevices))
-        (xf86Info.mseEvents)(1);
+        (xf86Info.mouseDev.mseEvents)(1);
 
 #else
     MASKANDSETBITS(devicesWithInput, ((FdMask *)pReadmask), EnabledDevices);
     if (ANYSET(devicesWithInput))
       {
 	(xf86Info.kbdEvents)();
-	(xf86Info.mseEvents)();
+	(xf86Info.mouseDev.mseEvents)(&xf86Info.mouseDev);
       }
 #endif	/* __OSF__ */
   }
 #else   /* __EMX__ */
 
 	(xf86Info.kbdEvents)();  /* Under OS/2, always call */
-	(xf86Info.mseEvents)();
+	(xf86Info.mouseDev.mseEvents)(&xf86Info.mouseDev);
 
 #endif  /* __EMX__ */
 
@@ -1292,7 +1295,7 @@ xf86VTSwitch()
 
 #ifndef __EMX__
     DisableDevice((DeviceIntPtr)xf86Info.pKeyboard);
-    DisableDevice((DeviceIntPtr)xf86Info.pPointer);
+    DisableDevice((DeviceIntPtr)xf86Info.pMouse);
 #endif
 
     if (!xf86VTSwitchAway()) {
@@ -1306,7 +1309,7 @@ xf86VTSwitch()
 
 #ifndef __EMX__
       EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
-      EnableDevice((DeviceIntPtr)xf86Info.pPointer);
+      EnableDevice((DeviceIntPtr)xf86Info.pMouse);
 #endif
 
     } else {
@@ -1324,7 +1327,7 @@ xf86VTSwitch()
 
 #ifndef __EMX__
     EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
-    EnableDevice((DeviceIntPtr)xf86Info.pPointer);
+    EnableDevice((DeviceIntPtr)xf86Info.pMouse);
 #endif
 
   }
@@ -1409,11 +1412,11 @@ XF86DirectVideoMoveMouse(x, y, mtime)
   xE.u.keyButtonPointer.rootX = x;
   xE.u.keyButtonPointer.rootY = y;
 
-  if (((DeviceIntPtr)(xf86Info.pPointer))->grab)
-     DeliverGrabbedEvent(&xE, (xf86Info.pPointer), FALSE, 1);
+  if (((DeviceIntPtr)(xf86Info.pMouse))->grab)
+     DeliverGrabbedEvent(&xE, (xf86Info.pMouse), FALSE, 1);
   else
      DeliverDeviceEvents(GetSpriteWindow(), &xE, NullGrab, NullWindow,
-			   (xf86Info.pPointer), 1);
+			   (xf86Info.pMouse), 1);
 
 
 }

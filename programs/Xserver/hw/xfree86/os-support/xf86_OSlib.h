@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.23 1996/02/09 08:20:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.24 1996/02/19 09:50:49 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -698,6 +698,7 @@ extern void xf86KbdEvents(
 );
 extern void xf86SetMouseSpeed(
 #if NeedFunctionPrototypes
+        MouseDevPtr,
 	int,
 	int,
 	unsigned
@@ -705,22 +706,23 @@ extern void xf86SetMouseSpeed(
 );
 extern void xf86MouseInit(
 #if NeedFunctionPrototypes
-	void
+        MouseDevPtr
 #endif
 );
 extern int xf86MouseOn(
 #if NeedFunctionPrototypes
-	void
+        MouseDevPtr
 #endif
 );
 extern int xf86MouseOff(
 #if NeedFunctionPrototypes
+        MouseDevPtr,
 	Bool
 #endif
 );
 extern void xf86MouseEvents(
 #if NeedFunctionPrototypes
-	void
+        MouseDevPtr
 #endif
 );
 extern int  xf86XqueKbdProc(

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.4 1996/02/19 09:51:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.5 1996/02/22 05:12:22 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -46,8 +46,8 @@
 #include "xf86_OSlib.h"
 
 
-#include "xf86_OSlib.h"
 #include "xf86Procs.h"
+#include "xf86_OSlib.h"
 #include "xf86_Config.h"
 
 HMOU hMouse=65535;
@@ -55,13 +55,15 @@ BOOL HandleValid=FALSE;
 extern BOOL SwitchedToWPS;
 extern CARD32 LastSwitchTime;
 
-int xf86MouseOff(doclose)
+int xf86MouseOff(mouse, doclose)
+MousedevPtr mouse;
 Bool doclose;
 {
 	return -1;
 }
 
-void xf86SetMouseSpeed(old, new, cflag)
+void xf86SetMouseSpeed(mouse, old, new, cflag)
+MousedevPtr mouse;
 int old;
 int new;
 unsigned cflag;
@@ -69,7 +71,8 @@ unsigned cflag;
 	/* not required */
 }
 
-void xf86OsMouseOption(token, lex_ptr)
+void xf86OsMouseOption(mouse, token, lex_ptr)
+MousedevPtr mouse;
 int token;
 pointer lex_ptr;
 {
@@ -85,6 +88,7 @@ int what;
 	USHORT nbutton,state;
 	unsigned char *map;
 	int i;
+	MousedevPtr mouse = ((DeviceIntPtr) pPointer)->public.devicePrivate;
 
 	switch (what) {
 	case DEVICE_INIT: 
@@ -100,7 +104,7 @@ int what;
 		/* check buttons */
 		rc = MouGetNumButtons(&nbutton,hMouse);
 		if (rc == 0)
-			ErrorF("OsMouse has %d button(s).\n",nbutton);
+			ErrorF("xf86-OS/2: OsMouse has %d button(s).\n",nbutton);
 		if(nbutton==2) nbutton++;
 		map = (unsigned char *) xalloc(nbutton + 1);
 		if (map == (unsigned char *) NULL)
@@ -117,7 +121,6 @@ int what;
 		break;
       
 	case DEVICE_ON:
-		ErrorF("xf86-OS/2: mouse DEVICE_ON being called, hMouse=%d\n",hMouse);
 		/*AddEnabledDevice(xf86Info.mseFd);*/
 		if(!HandleValid) return(-1);
 		xf86Info.lastButtons = 0;
@@ -132,7 +135,6 @@ int what;
       
 	case DEVICE_CLOSE:
 	case DEVICE_OFF:
-		ErrorF("xf86-OS/2: mouse DEVICE_OFF/DEVICE_CLOSE being called, hMouse=%d\n",hMouse);
 		if(!HandleValid) return(-1);
 		pPointer->public.on = FALSE;
 		state = 0x300;
@@ -151,7 +153,7 @@ int what;
 	return Success;
 }
 
-void xf86OsMouseEvents()
+void xf86OsMouseEvents(DeviceIntPtr device)
 {
 	MOUEVENTINFO mev;
 	MOUQUEINFO mqif;
@@ -186,7 +188,7 @@ void xf86OsMouseEvents()
 			buttons = ((state & 0x06) ? 4 : 0) |
 				  ((state & 0x18) ? 1 : 0) |
 				  ((state & 0x60) ? 2 : 0);
-			xf86PostMseEvent(buttons, mev.col, mev.row);
+			xf86PostMseEvent(device, buttons, mev.col, mev.row);
 	}
 	xf86Info.inputPending = TRUE;
 }

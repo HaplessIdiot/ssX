@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/I2061Aset.c,v 3.2 1995/01/28 15:54:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/I2061Aset.c,v 3.3 1996/02/04 09:04:01 dawes Exp $ */
 /* Id: ICD2061Aset.c,v 4.0 1994/05/28 01:24:17 nygren Exp */
 /* Based on the number 9 Inc code */
 /* Copyright (c) 1992, Number Nine Computer Corp.  All Rights Reserved. 
@@ -41,8 +41,8 @@
 
 #include        "X.h"
 #include        "input.h"
-#include        "xf86_OSlib.h"
 #include        "xf86.h"
+#include        "xf86_OSlib.h"
 #include	"ICD2061A.h"
 #include        "p9000reg.h"
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.30 1996/02/18 03:42:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.31 1996/02/22 05:11:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -284,6 +284,38 @@ typedef struct {
 
 extern Bool        xf86VTSema;
 
+/* Mouse device private record */
+
+typedef struct _MouseDevRec {
+    int           (* mseProc)();        /* procedure for initializing */
+    void          (* mseEvents)(
+#if NeedNestedFunctionPrototypes
+				MouseDevPtr
+#endif
+				);      /* proc for processing events */
+    DeviceIntPtr  device;
+    int           mseFd;
+    char          *mseDevice;
+    int           mseType;
+    int           baudRate;
+    int           oldBaudRate;
+    int           sampleRate;
+    int           lastButtons;
+    int           threshold, num, den;  /* acceleration */
+    int           emulateState;         /* automata state for 2 button mode */
+    Bool          emulate3Buttons;
+    int           emulate3Timeout;      /* Timeout for 3 button emulation */
+    Bool          chordMiddle;
+    int           mouseFlags;		/* Flags to Clear after opening mouse dev */
+    int		  truebuttons;		/* Arg to maintain before emulate3buttons timer callback */
+    
+#ifndef CSRG_BASED
+    /* xque part */
+    int           xqueFd;
+    int           xqueSema;
+#endif
+} MouseDevRec, *MouseDevPtr;
+
 /* Function Prototypes */
 #ifndef _NO_XF86_PROTOTYPES
 
@@ -428,6 +460,7 @@ void xf86PostKbdEvent(
 
 void xf86PostMseEvent(
 #if NeedFunctionPrototypes
+    DeviceIntPtr device,
     int buttons,
     int dx,
     int dy
@@ -518,7 +551,7 @@ int xf86MseProc(
 
 void xf86MseEvents(
 #if NeedFunctionPrototypes
-    void
+        MouseDevPtr mouse
 #endif
 );
 
@@ -543,12 +576,13 @@ Bool xf86MouseSupported(
 
 void xf86SetupMouse(
 #if NeedFunctionPrototypes
-    void
+    MouseDevPtr mouse
 #endif
 );
 
 void xf86MouseProtocol(
 #if NeedFunctionPrototypes
+    DeviceIntPtr device,
     unsigned char *rBuf,
     int nBytes
 #endif

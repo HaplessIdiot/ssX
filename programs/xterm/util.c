@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c,v 1.31 91/06/20 18:34:47 gildea Exp $
- *	$XFree86: xc/programs/xterm/util.c,v 3.2 1996/01/10 05:44:27 dawes Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.3 1996/02/18 03:45:52 dawes Exp $
  */
 
 /*
@@ -1051,6 +1051,8 @@ ChangeColors(tw,pNew)
 
 /***====================================================================***/
 
+#define EXCHANGE(a,b,tmp) tmp = a; a = b; b = tmp;
+
 void
 ReverseVideo (termw)
 	XtermWidget termw;
@@ -1058,7 +1060,19 @@ ReverseVideo (termw)
 	register TScreen *screen = &termw->screen;
 	GC tmpGC;
 	Window tek = TWindow(screen);
-	unsigned long tmp;
+	Pixel tmp;
+
+	/*
+	 * Swap SGR foreground and background colors.  By convention, these are
+	 * the colors assigned to "black" (SGR #0) and "white" (SGR #7).  Also,
+	 * SGR #8 and SGR #15 are the bold (or bright) versions of SGR #0 and
+	 * #7, respectively.
+	 *
+	 * We don't swap colors that happen to match the screen's foreground
+	 * and background because that tends to produce bizarre effects.
+	 */
+	EXCHANGE( screen->Acolors[0], screen->Acolors[7],  tmp )
+	EXCHANGE( screen->Acolors[8], screen->Acolors[15], tmp )
 
 	tmp = termw->core.background_pixel;
 	if(screen->cursorcolor == screen->foreground)
@@ -1066,17 +1080,9 @@ ReverseVideo (termw)
 	termw->core.background_pixel = screen->foreground;
 	screen->foreground = tmp;
 
-	tmp = screen->mousecolorback;
-	screen->mousecolorback = screen->mousecolor;
-	screen->mousecolor = tmp;
-
-	tmpGC = screen->normalGC;
-	screen->normalGC = screen->reverseGC;
-	screen->reverseGC = tmpGC;
-
-	tmpGC = screen->normalboldGC;
-	screen->normalboldGC = screen->reverseboldGC;
-	screen->reverseboldGC = tmpGC;
+	EXCHANGE( screen->mousecolor,    screen->mousecolorback, tmp )
+	EXCHANGE( screen->normalGC,      screen->reverseGC,      tmpGC )
+	EXCHANGE( screen->normalboldGC,  screen->reverseboldGC,  tmpGC )
 
 	recolor_cursor (screen->pointer_cursor, 
 			screen->mousecolor, screen->mousecolorback);
@@ -1089,7 +1095,6 @@ ReverseVideo (termw)
 	if(tek)
 		XDefineCursor(screen->display, tek, screen->arrow);
 
-	
 	if(screen->scrollWidget)
 		ScrollBarReverseVideo(screen->scrollWidget);
 
@@ -1138,8 +1143,8 @@ updatedXtermGC(screen, flags, fg, bg, hilite)
 	int bg;
 	Bool hilite;
 {
-	Pixel fg_pix = GET_FG(flags,fg);
-	Pixel bg_pix = GET_BG(flags,bg);
+	Pixel fg_pix = getXtermForeground(flags,fg);
+	Pixel bg_pix = getXtermBackground(flags,bg);
 	GC gc;
 
 	if ( (!hilite && (flags & INVERSE) != 0)
@@ -1175,8 +1180,8 @@ resetXtermGC(screen, flags, hilite)
 	int flags;
 	Bool hilite;
 {
-	Pixel fg_pix = GET_FG(flags,term->cur_foreground);
-	Pixel bg_pix = GET_BG(flags,term->cur_background);
+	Pixel fg_pix = getXtermForeground(flags,term->cur_foreground);
+	Pixel bg_pix = getXtermBackground(flags,term->cur_background);
 	GC gc;
 
 	if ( (!hilite && (flags & INVERSE) != 0)
@@ -1198,4 +1203,36 @@ resetXtermGC(screen, flags, hilite)
 		XSetForeground(screen->display, gc, fg_pix);
 		XSetBackground(screen->display, gc, bg_pix);
 	}
+}
+
+/* GET_FG */
+Pixel
+getXtermForeground(flags, color)
+	int flags;
+	int color;
+{
+	Pixel fg = (flags & FG_COLOR)
+			? term->screen.Acolors[color]
+			: term->screen.foreground;
+
+	if (term->misc.re_verse && (fg == term->screen.original_fg))
+		fg = term->screen.original_bg;
+
+	return fg;
+}
+
+/* GET_BG */
+Pixel
+getXtermBackground(flags, color)
+	int flags;
+	int color;
+{
+	Pixel bg = (flags & BG_COLOR)
+			? term->screen.Acolors[color]
+			: term->core.background_pixel;
+
+	if (term->misc.re_verse && (bg == term->screen.original_bg))
+		bg = term->screen.original_fg;
+
+	return bg;
 }

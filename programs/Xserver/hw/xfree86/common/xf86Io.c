@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.17 1996/02/20 14:34:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.18 1996/03/04 05:14:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -395,9 +395,13 @@ xf86MseCtrl(pPointer, ctrl)
      DevicePtr pPointer;
      PtrCtrl   *ctrl;
 {
-  xf86Info.num       = ctrl->num;
-  xf86Info.den       = ctrl->den;
-  xf86Info.threshold = ctrl->threshold;
+    MouseDevPtr	mouse = (MouseDevPtr) ((DeviceIntPtr) pPointer)->public.devicePrivate;
+
+    ErrorF("xf86MseCtrl mouse=0x%x\n", mouse);
+    
+    mouse->num       = ctrl->num;
+    mouse->den       = ctrl->den;
+    mouse->threshold = ctrl->threshold;
 }
 
 /*
@@ -426,9 +430,27 @@ xf86MseProc(pPointer, what)
      DeviceIntPtr pPointer;
      int        what;
 {
+  MouseDevPtr                  mouse = (MouseDevPtr) pPointer->public.devicePrivate;
+
+  mouse->device = pPointer;
+  
+  return xf86MseProcAux(pPointer, what, mouse, NULL,
+			(PtrCtrlProcPtr)xf86MseCtrl);
+}
+
+int  
+xf86MseProcAux(pPointer, what, mouse, fd, ctrl)
+     DeviceIntPtr	pPointer;
+     int		what;
+     MouseDevPtr	mouse;
+     int		*fd;
+     PtrCtrlProcPtr	ctrl;
+{
   unsigned char                map[5];
   int                          nbuttons;
   int                          mousefd;
+
+  ErrorF("xf86MseProcAux mouse=0x%x\n", mouse);
 
   switch (what)
     {
@@ -444,7 +466,7 @@ xf86MseProc(pPointer, what)
        * [JCH-96/01/21] The ALPS GlidePoint pad, extends the MS protocol
        * with a fourth button activated by tapping the pad.
        */
-      if (xf86Info.mseType == P_MMHIT || xf86Info.mseType == P_GLIDEPOINT)
+      if (mouse->mseType == P_MMHIT || mouse->mseType == P_GLIDEPOINT)
         nbuttons = 4;
       else
         nbuttons = 3;
@@ -453,35 +475,38 @@ xf86MseProc(pPointer, what)
 			      map, 
 			      nbuttons, 
 			      GetMotionEvents, 
-			      (PtrCtrlProcPtr)xf86MseCtrl, 
+			      ctrl, 
 			      0);
 
-      xf86MouseInit();
+      xf86MouseInit(mouse);
 
       break;
       
     case DEVICE_ON:
 
-      mousefd = xf86MouseOn();
+      mousefd = xf86MouseOn(mouse);
 
-      if (mousefd != -1)
-      {
-        if (xf86Info.mseType == P_PS2)
-          write(mousefd, "\364", 1);
+      if (fd)
+ 	  *fd = mousefd;
 
-        AddEnabledDevice(mousefd);
+      if (mousefd != -1) {
+	  if (mouse->mseType == P_PS2)
+	      write(mousefd, "\364", 1);
+	  
+	  AddEnabledDevice(mousefd);
+	  mouse->lastButtons = 0;
+	  mouse->emulateState = 0;
+	  pPointer->public.on = TRUE;
+      } else {
+	  return !Success;
       }
-
-      xf86Info.lastButtons = 0;
-      xf86Info.emulateState = 0;
-      pPointer->public.on = TRUE;
 
       break;
       
     case DEVICE_OFF:
     case DEVICE_CLOSE:
 
-      mousefd = xf86MouseOff(what == DEVICE_CLOSE);
+      mousefd = xf86MouseOff(mouse, what == DEVICE_CLOSE);
 
       if (mousefd != -1)
         RemoveEnabledDevice(mousefd);
@@ -500,9 +525,10 @@ xf86MseProc(pPointer, what)
  */
 #ifndef OSMOUSE_ONLY
 void
-xf86MseEvents()
+xf86MseEvents(mouse)
+    MouseDevPtr	mouse;
 {
-  xf86MouseEvents();
+  xf86MouseEvents(mouse);
 }
 #endif
 
