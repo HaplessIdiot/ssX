@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.h,v 1.4 2001/01/08 01:07:24 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.h,v 1.5 2001/04/10 16:07:53 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -39,7 +39,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#include "X11/Xarch.h"
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
 typedef struct {
    GLubyte	blue;
    GLubyte	green;
