@@ -1,7 +1,6 @@
-/*
- * pswversion.h
+/* twraps.psw
  *
- * (c) Copyright 1988-1994 Adobe Systems Incorporated.
+ * (c) Copyright 1990-1994 Adobe Systems Incorporated.
  * All rights reserved.
  * 
  * Permission to use, copy, modify, distribute, and sublicense this software
@@ -35,7 +34,51 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
-#define PSW_VERSION "V1.009 XFree86"
+defineps Clear(float w, h; boolean rv)
+    rv {0 setgray} {1 setgray} ifelse
+    0 0 w h rectfill
+endps
 
-#define PSW_OS "unix"
+defineps CreateFont(int size; char *name)
+  /name findfont size scalefont setfont
+endps
+
+defineps GetAllSizes(char *text; int n |
+	float llx[n], lly[n], urx[n], ury[n], wid[n])
+    (text) {
+	newpath
+	0 0 moveto
+	(a) dup 0 4 -1 roll put		% make character into string
+	dup true charpath flattenpath pathbbox ury urx lly llx
+	stringwidth pop wid	
+    } forall
+endps
+
+defineps GetSize(char *text | float *llx, *lly, *urx, *ury, *wid)
+   newpath
+   0 0 moveto
+   (text) true charpath flattenpath pathbbox ury urx lly llx
+   (text) stringwidth pop wid
+endps
+
+defineps RenderString(float x, y, dx, dy, angle; char *string;
+		      float red, green, blue)
+   gsave
+   red green blue setrgbcolor
+   x y translate angle rotate
+   dx dy moveto
+   (string) show
+   grestore
+endps
+
+defineps SetXDrawable(int drawable, height)
+    currentXgcdrawable pop height
+    3 -1 roll pop drawable 3 1 roll
+    setXgcdrawable
+endps
+
+defineps GetInvCTM(| float invctm[6])
+    matrix currentmatrix matrix invertmatrix invctm
+endps

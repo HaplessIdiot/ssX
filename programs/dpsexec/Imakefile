@@ -1,0 +1,11 @@
+XCOMM $XFree86$
+XCOMM XTOOLLIB is currently needed by our version of DPSLIB
+
+LOCAL_LIBRARIES = $(DPSLIB) $(XTOOLLIB) $(XLIB)
+  SYS_LIBRARIES = MathLibrary
+
+SRCS = dpsexec.c
+
+OBJS = dpsexec.o
+
+ComplexProgramTarget(dpsexec)

@@ -1,0 +1,25 @@
+XCOMM $XFree86$
+XCOMM XTOOLLIB is currently needed by our version of DPSLIB
+
+LOCAL_LIBRARIES = $(DPSLIB) $(XTOOLLIB) $(XLIB)
+  SYS_LIBRARIES = MathLibrary
+         PSWRAP = PsWrap
+
+SRCS = iwraps.psw dpsinfo.c
+
+OBJS = iwraps.o dpsinfo.o
+
+DERIVED_FILES = iwraps.h iwraps.c
+
+.SUFFIXES: .psw .h
+
+.psw.c : ProgramTargetName($(PSWRAP))
+	RunProgram(PSWRAP,-a -o $*.c -h $*.h $<)
+
+.psw.h : ProgramTargetName($(PSWRAP))
+	RunProgram(PSWRAP,-a -h $*.h $< > /dev/null)
+
+ComplexProgramTarget(dpsinfo)
+
+clean ::
+	$(RM) $(DERIVED_FILES)

@@ -69,6 +69,29 @@ xkb_symbols "logicordless" {
     key <I66>   {   [ XF86Start     ]   };
 };
 
+partial alphanumeric_keys
+xkb_symbols "geniuscomfy" {
+ 
+    // Describes the extra keys on a Genius Comfy KB-16M
+ 
+    name[Group1]= "GeniusComfy16M";
+    key <I23>	{   [ XF86AudioPrev	]   };
+    key <I22>   {   [ XF86AudioPlay, XF86AudioPause     ]   };
+    key <I24>   {   [ XF86AudioStop     ]   };
+    key <I21>   {   [ XF86AudioNext     ]   };
+    key <I30>   {   [ XF86Eject		]   };
+    key <I19>   {   [ XF86AudioLowerVolume        ]   };
+    key <I12>   {   [ XF86AudioRaiseVolume        ]   };
+    key <I20>   {   [ XF86AudioMute     ]   };
+    key <I26>   {   [ XF86ScreenSaver   ]   };
+    key <I17>   {   [ XF86Calculator    ]   };
+    key <I2E>   {   [ XF86Mail          ]   };
+    key <I25>   {   [ XF86Back          ]   };
+    key <I32>   {   [ XF86WWW           ]   };
+    key <I1E>   {   [ XF86Forward       ]   };
+    key <I5F>   {   [ XF86Sleep         ]   };
+    key <I63>   {   [ XF86WakeUp        ]   };
+};
 
 partial alphanumeric_keys 
 xkb_symbols "microsoftpro" {

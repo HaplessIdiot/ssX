@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.346 2001/02/11 21:39:36 herrb Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.347 2001/02/26 18:27:56 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -888,11 +888,11 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #ifndef BuildXvLibrary
 # define BuildXvLibrary		YES
 #endif
-#ifndef BuildGLULibrary
-# define BuildGLULibrary	HasCplusplus
-#endif
 #ifndef BuildGLXLibrary
 # define BuildGLXLibrary	YES
+#endif
+#ifndef BuildGLULibrary
+# define BuildGLULibrary	(HasCplusplus && BuildGLXLibrary)
 #endif
 
 /*

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.98 2001/02/08 01:00:44 keithp Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.99 2001/02/09 00:35:02 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -333,6 +333,9 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildPSResLibrary
 #define BuildPSResLibrary	BuildDPSLibraries
+#endif
+#ifndef BuildDPSClients
+#define BuildDPSClients         BuildDPSLibraries
 #endif
 #ifndef BuildRender
 #define BuildRender		NO

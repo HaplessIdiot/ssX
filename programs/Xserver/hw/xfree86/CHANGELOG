@@ -1,4 +1,16 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 223. Add support for the "Internet" keys of the Genius Comfy KB-16M keyboard
+      (#4491, Kamil Toman).
+ 222. Include three DPS sample clients:
+       - dpsinfo: random info about the DPS extension;
+       - dpsexec: interactive DPS ``executive'' (command-line);
+       - texteroids: a demo of font support.
+      (#4489, 4497, Juliusz Chroboczek).
+ 221. Don't build the GLU library when not building GLX.  This fixes
+      a build failure when GLX is disabled (#4488, Juliusz Chroboczek).
+ 220. Make the stub files that pswrap generates contain the same set of
+      includes as the Adobe version, which fixes problems building
+      standalone DPS clients (#4487, Juliusz Chroboczek).
  219. Fix setxkbmap bugs, including:
        - Continue working if the appropriate root window property where the
          current xkb settings are saved can't be read or interpreted.
@@ -12615,4 +12627,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1597 2001/03/01 00:37:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1598 2001/03/01 00:56:53 dawes Exp $

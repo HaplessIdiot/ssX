@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.22 2001/01/31 19:13:44 paulo Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.23 2001/02/12 18:26:00 paulo Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -25,6 +25,7 @@
   logicordless	Logitech Cordless Desktop Pro
   compaq	Compaq Internet
   microsoftpro	Microsoft Natural Pro
+  geniuscomfy	Genius Comfy KB-16M
 
 ! layout
   us		U.S. English
