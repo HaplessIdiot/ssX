@@ -1,5 +1,5 @@
 /* $XConsortium: agxBlt.c,v 1.4 95/01/05 20:29:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.13 1995/06/24 10:27:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.14 1995/07/01 10:47:55 dawes Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -87,7 +87,7 @@ agxCopyArea(pSrcDrawable, pDstDrawable,
 
     if ( !xf86VTSema 
          || (pSrcDrawable->type != DRAWABLE_WINDOW 
-             && pDstDrawable->type != DRAWABLE_WINDOW) ) 
+             && pDstDrawable->type != DRAWABLE_WINDOW) ) {
         switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
            case 8:
                return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
@@ -100,10 +100,8 @@ agxCopyArea(pSrcDrawable, pDstDrawable,
                return cfb32CopyArea(pSrcDrawable, pDstDrawable, pGC,
                                     srcx, srcy, width, height, dstx, dsty);
 #endif
-           default:
-               return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
-                                  srcx, srcy, width, height, dstx, dsty);
         }
+    }
 
     origSource.x = srcx;
     origSource.y = srcy;
@@ -461,6 +459,7 @@ agxCopyArea(pSrcDrawable, pDstDrawable,
         else if ( pSrcDrawable->type != DRAWABLE_WINDOW 
                   && pDstDrawable->type == DRAWABLE_WINDOW ) {
 	    /* Pixmap --> Window */
+#if 1
 	    int pixWidth = PixmapBytePad(pSrcDrawable->width,
 					 pSrcDrawable->depth);
 	    char *psrc = ((PixmapPtr)pSrcDrawable)->devPrivate.ptr;
@@ -471,6 +470,13 @@ agxCopyArea(pSrcDrawable, pDstDrawable,
 				     psrc, pixWidth, 
                                      pbox->x1 + dx, pbox->y1 + dy,
 				     pGC->alu, pGC->planemask );
+#else
+            agxFillBoxTile( pDstDrawable, numRects, pbox,
+                            (PixmapPtr) pSrcDrawable,
+                            -dx, -dy,
+                            pGC->alu,
+                            pGC->planemask );
+#endif
 	} 
         else {
 	    /* Pixmap --> Pixmap */
@@ -631,11 +637,8 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
         }
     }
 
-#if 1
-    if ((pSrcDrawable->type != DRAWABLE_WINDOW) &&
-	(pDstDrawable->type == DRAWABLE_WINDOW) &&
-	(pSrcDrawable->bitsPerPixel != 1)) {
-#if 1
+    if( (pSrcDrawable->type != DRAWABLE_WINDOW) 
+	&& (pSrcDrawable->bitsPerPixel == 8)    ) {
 	 /*
 	  * Shortcut - we can do Pixmap->Window when the source depth is
 	  * 8 by using the handy-dandy cfbCopyPlane8to1 to create a bitmap
@@ -658,69 +661,56 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
                          width, height, srcx, srcy, cfbCopyPlane8to1, bitPlane);
         FreeScratchGC(pGC1);
         pSrcDrawable = (DrawablePtr)pBitmap;
-#else
-        return xxxCopyPlane(pSrcDrawable, pDstDrawable,
-               pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
-#endif
-    } else if ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
- 	       (pDstDrawable->type != DRAWABLE_WINDOW)) {
-	/*
- 	 * Shortcut - we can do Window->Pixmap by copying the window to
- 	 * a pixmap, then we have a Pixmap->Pixmap operation
- 	 */
- 	GCPtr pGC1;
- 	RegionPtr retval;
- 	PixmapPtr pPixmap;
+    }
+    else if (pSrcDrawable->type == DRAWABLE_WINDOW) {
+        /*
+         * The AGX doesn't support a planemask the source. In the
+         * future might do a two step blt thru the scratchpad. For
+         * now we'll just create a pixmap to use for the stipple
+         * (this also includes the non-drawable window case which
+         * simplifies the common case below).
+         *
+         * Shortcut - we can do Window->Pixmap by copying the window to
+         * a pixmap, then we have a Pixmap->Pixmap operation that can be
+         * handled by the above Pixmap->Bitmap case for 8bpp or micopyplane
+         * for others.
+         */
+        GCPtr pGC1;
+        RegionPtr retval;
+        PixmapPtr pPixmap;
 
- 	pPixmap=(*pSrcDrawable->pScreen->CreatePixmap)(pSrcDrawable->pScreen, 
- 						       width, height, 8);
- 	if (!pPixmap)
- 	    return(NULL);
- 	pGC1 = GetScratchGC(8, pSrcDrawable->pScreen);
- 	if (!pGC1) {
- 	    (*pSrcDrawable->pScreen->DestroyPixmap)(pPixmap);
- 	    return(NULL);
- 	}
- 	ValidateGC((DrawablePtr)pPixmap, pGC1);
- 	agxCopyArea( pSrcDrawable, (DrawablePtr)pPixmap, pGC1, 
+        pPixmap=(*pSrcDrawable->pScreen->CreatePixmap)(
+                    pSrcDrawable->pScreen,
+                    width, height,
+                    pSrcDrawable->bitsPerPixel
+                );
+        if (!pPixmap)
+            return(NULL);
+        pGC1 = GetScratchGC( pSrcDrawable->bitsPerPixel,
+                             pSrcDrawable->pScreen       );
+        if (!pGC1) {
+            (*pSrcDrawable->pScreen->DestroyPixmap)(pPixmap);
+            return(NULL);
+        }
+        ValidateGC((DrawablePtr)pPixmap, pGC1);
+        agxCopyArea( pSrcDrawable, (DrawablePtr)pPixmap, pGC1,
                      srcx, srcy, width, height, 0, 0);
- 	retval = cfbCopyPlane((DrawablePtr)pPixmap, pDstDrawable, pGC,
+        retval = agxCopyPlane((DrawablePtr)pPixmap, pDstDrawable, pGC,
                               0, 0, width, height, dstx, dsty, bitPlane);
         FreeScratchGC(pGC1);
- 	(*pSrcDrawable->pScreen->DestroyPixmap)(pPixmap);
- 	return(retval);
-    } else if ( ( (pSrcDrawable->type == DRAWABLE_WINDOW) 
-                  && (pDstDrawable->type != DRAWABLE_WINDOW) )
-                || ( (pSrcDrawable->type != DRAWABLE_WINDOW)
-                     && (pDstDrawable->type == DRAWABLE_WINDOW)
-                     && (pSrcDrawable->bitsPerPixel != 1) )
-                || pSrcDrawable->bitsPerPixel != 1               ) {
-	/*
-	 * Cases we can't handle, and must do another way:
-	 *        - copy Window->Pixmap
-	 *        - copy Pixmap->Window, Pixmap depth != 1
-         *        - copy Window->Window, Src Window depth != 1
-         *             (at least initally, need scratchpad and
-         *              extra bltbit passes to color expand plane)
-	 *
-	 * Simplest thing to do is to let miCopyPlane deal with it for us.
-	 */
+        (*pSrcDrawable->pScreen->DestroyPixmap)(pPixmap);
+        return(retval);
+    } 
+    else if ( pSrcDrawable->bitsPerPixel != 1 ) {
+       /*
+        * Have to punt to micopyplane -
+        *  In future need to look into creating a usable bitmap.
+        */
 	return (RegionPtr)miCopyPlane( pSrcDrawable, pDstDrawable, 
                                        pGC, srcx, srcy, 
                                        width, height, 
                                        dstx, dsty, bitPlane);
     }
-#else
-    if ( (pSrcDrawable->type != DRAWABLE_WINDOW) 
-	 || (pDstDrawable->type != DRAWABLE_WINDOW)
-	 || (pSrcDrawable->bitsPerPixel != 8)) {
-
-
-       return cfbCopyPlane(pSrcDrawable, pDstDrawable,
-               pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
-
-    }
-#endif
 
    /* 
     * At this point the source pixmap is know to have a depth of 1.
@@ -877,8 +867,39 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
    if (numRects && width && height) {
       pbox = REGION_RECTS(&rgnDst);
 
-      if ( pSrcDrawable->type == DRAWABLE_WINDOW
-           && pDstDrawable->type == DRAWABLE_WINDOW ) {
+      if ( pSrcDrawable->type != DRAWABLE_WINDOW
+                && pDstDrawable->type == DRAWABLE_WINDOW ) {
+#if 0
+         /* Pixmap --> Window */
+         PixmapPtr pix = (PixmapPtr) pSrcDrawable;
+         int   pixWidth;
+         unsigned char *psrc;
+
+         pixWidth = PixmapBytePad(pSrcDrawable->width, pSrcDrawable->depth);
+         psrc = pix->devPrivate.ptr;
+
+         for (i = numRects; --i >= 0; pbox++) {
+            agxImageStipple( pbox->x1, pbox->y1,
+                             pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
+                             psrc, pixWidth,
+                             pix->drawable.width, pix->drawable.height,
+                             -dx, -dy,
+                             pGC->fgPixel, pGC->bgPixel,
+                             pGC->alu, pGC->alu,
+                             pGC->planemask );
+         }
+#else
+         agxFillBoxStipple( pDstDrawable, numRects, pbox,
+                            (PixmapPtr) pSrcDrawable,
+                            -dx, -dy,
+                             pGC->fgPixel, pGC->bgPixel,
+                             pGC->alu, pGC->alu,
+                             pGC->planemask );
+#endif
+      }
+#if 0     /* not supported */
+      else if ( pSrcDrawable->type == DRAWABLE_WINDOW
+                && pDstDrawable->type == DRAWABLE_WINDOW ) {
 
          /* Window --> Window , src Window depth of 1 */
 
@@ -1003,50 +1024,11 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
          DEALLOCATE_LOCAL(ordering);
 	 GE_WAIT_IDLE_EXIT();
       } 
-#if 1 
-      else if ( pSrcDrawable->type == DRAWABLE_WINDOW 
-                && pDstDrawable->type != DRAWABLE_WINDOW ) {
-         /* Window --> Pixmap */
-         /* THIS IS NOT IMPLEMENTED - IT GETS PASSED TO miCopyPlane ABOVE */
-      } 
-      else if ( pSrcDrawable->type != DRAWABLE_WINDOW  
-                && pDstDrawable->type == DRAWABLE_WINDOW ) {
-#if 0
-         /* Pixmap --> Window */
-         PixmapPtr pix = (PixmapPtr) pSrcDrawable;
-         int   pixWidth;
-         unsigned char *psrc;
-
-         pixWidth = PixmapBytePad(pSrcDrawable->width, pSrcDrawable->depth);
-         psrc = pix->devPrivate.ptr;
-
-         for (i = numRects; --i >= 0; pbox++) {
-            agxImageStipple( pbox->x1, pbox->y1,
-                             pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
-                             psrc, pixWidth,
-                             pix->drawable.width, pix->drawable.height,
-                             -dx, -dy,
-                             pGC->fgPixel, pGC->bgPixel,
-                             pGC->alu, pGC->alu,
-                             pGC->planemask );
-         }
 #endif
-         agxFillBoxStipple( pDstDrawable, numRects, pbox,
-                            (PixmapPtr) pSrcDrawable,
-                            -dx, -dy,
-                             pGC->fgPixel, pGC->bgPixel,
-                             pGC->alu, pGC->alu,
-                             pGC->planemask );
-      } else {
+      else {
          /* Pixmap --> Pixmap */
          ErrorF("agxCopyPlane:  Tried to do a Pixmap to Pixmap copy\n");
       }
-#else
-      else {
-       cfbCopyPlane(pSrcDrawable, pDstDrawable,
-               pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
-      }
-#endif
    }
    prgnExposed = NULL;
    if (((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose) {

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.50 1995/06/14 10:36:24 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.51 1995/06/29 13:31:42 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -62,10 +62,11 @@ extern char *getenv();
 extern char *defaultFontPath;
 extern char *rgbPath;
 
-extern Bool xf86fpFlag, xf86coFlag;
+extern Bool xf86fpFlag, xf86coFlag, xf86sFlag;
 extern Bool xf86ScreensOpen;
 
 extern int defaultColorVisualClass;
+extern CARD32 defaultScreenSaverTime, ScreenSaverTime;
 
 char *xf86VisualNames[] = {
     "StaticGray",
@@ -2076,6 +2077,8 @@ configScreenSection()
     screen->whiteColour.red = 0x3F;
     screen->whiteColour.green = 0x3F;
     screen->whiteColour.blue = 0x3F;
+    screen->suspendTime = DEFAULT_SUSPEND_TIME * MILLI_PER_SECOND;
+    screen->offTime = DEFAULT_OFF_TIME * MILLI_PER_SECOND;
   }
   screen->clocks = 0;
 
@@ -2197,6 +2200,25 @@ configScreenSection()
       had_monitor = 1;
       break;
       
+    case BLANKTIME:
+      if (getToken(NULL) != NUMBER)
+	configError("Screensaver blank time expected");
+      if (!xf86sFlag)
+	defaultScreenSaverTime = ScreenSaverTime = val.num * MILLI_PER_MIN;
+      break;
+
+    case SUSPENDTIME:
+      if (getToken(NULL) != NUMBER)
+	configError("Screensaver suspend time expected");
+      screen->suspendTime = val.num * MILLI_PER_MIN;
+      break;
+
+    case OFFTIME:
+      if (getToken(NULL) != NUMBER)
+	configError("Screensaver off time expected");
+      screen->offTime = val.num * MILLI_PER_MIN;
+      break;
+
     default:
       if (!dummy && !validateGraphicsToken(screen->validTokens, token))
       {

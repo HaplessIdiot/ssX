@@ -1,5 +1,5 @@
 /* $XConsortium: p9000.c,v 1.6 95/01/16 13:16:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.27 1995/06/14 09:44:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.28 1995/06/29 13:30:26 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -128,6 +128,8 @@ ScrnInfoRec p9000InfoRec = {
     0,			/* int s3MClk */
     0,			/* unsigned long VGAbase */
     0,			/* int s3RefClk */
+    0,			/* int suspendTime */
+    0,			/* int offTime */
 };
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.5 95/01/16 13:17:02 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.27 1995/06/14 10:48:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.28 1995/06/29 13:31:45 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -42,6 +42,9 @@
 #ifdef MONO
 #undef MONO
 #endif
+
+#define DEFAULT_SUSPEND_TIME	(15*60)		/* 15 minutes */
+#define DEFAULT_OFF_TIME	(30*60)		/* 30 minutes */
 
 typedef struct {
   int           num;                  /* returned number */
@@ -254,6 +257,9 @@ static SymTabRec ModeTab[] = {
 #define MDEVICE		1081
 #define MONITOR		1082
 #define SCREENNO	1083
+#define BLANKTIME	1084
+#define SUSPENDTIME	1085
+#define OFFTIME		1086
 
 #ifdef INIT_CONFIG
 static SymTabRec ScreenTab[] = {
@@ -262,6 +268,9 @@ static SymTabRec ScreenTab[] = {
   { MDEVICE,	"device" },
   { MONITOR,	"monitor" },
   { SCREENNO,	"screenno" },
+  { BLANKTIME,	"blanktime" },
+  { SUSPENDTIME,"suspendtime" },
+  { OFFTIME,	"offtime" },
   { SUBSECTION,	"subsection" },
   { -1,		"" },
 };

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.5 95/01/16 13:16:56 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.18 1995/06/14 09:44:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.19 1995/06/29 13:31:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -164,11 +164,13 @@ typedef struct {
   unsigned long  COPbase;         /* AGX - coprocessor memory base        */
   unsigned int   POSbase;         /* AGX - I/O address of POS regs        */
   int            instance;        /* AGX - XGA video card instance number */
-  int s3Madjust;
-  int s3Nadjust;
-  int s3MClk;
+  int            s3Madjust;
+  int            s3Nadjust;
+  int            s3MClk;
   unsigned long  VGAbase;         /* AGX - 64K aperture memory addreee    */
-  int s3RefClk;
+  int            s3RefClk;
+  int            suspendTime;
+  int            offTime;
 } ScrnInfoRec, *ScrnInfoPtr;
 
 typedef struct {

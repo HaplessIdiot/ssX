@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.5 1995/06/08 12:54:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.6 1995/06/14 09:40:53 dawes Exp $ */
 
 /*
 
@@ -490,6 +490,31 @@ ProcXF86VidModeLockModeSwitch(client)
 }
 
 static int
+ProcXF86VidModeSetSaver(client)
+    register ClientPtr client;
+{
+    REQUEST(xXF86VidModeSetSaverReq);
+    ScrnInfoPtr vptr;
+
+    if (stuff->screen > screenInfo.numScreens)
+	return BadValue;
+
+    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
+
+    REQUEST_SIZE_MATCH(xXF86VidModeSetSaverReq);
+
+    if (stuff->suspendTime < 0)
+	return BadValue;
+    if (stuff->offTime < 0)
+	return BadValue;
+
+    vptr->suspendTime = stuff->suspendTime;
+    vptr->offTime = stuff->offTime;
+
+    return (client->noClientException);
+}
+
+static int
 ProcVGAHelpGetMonitor(client)
     register ClientPtr client;
 {
@@ -555,6 +580,37 @@ ProcVGAHelpGetMonitor(client)
 }
 
 static int
+ProcXF86VidModeGetSaver(client)
+    register ClientPtr client;
+{
+    REQUEST(xXF86VidModeGetSaverReq);
+    xXF86VidModeGetSaverReply rep;
+    register int n;
+    ScrnInfoPtr vptr;
+
+    if (stuff->screen > screenInfo.numScreens)
+	return BadValue;
+
+    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
+
+    REQUEST_SIZE_MATCH(xXF86VidModeGetSaverReq);
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.suspendTime = vptr->suspendTime;
+    rep.offTime = vptr->offTime;
+    
+    if (client->swapped) {
+    	swaps(&rep.sequenceNumber, n);
+    	swapl(&rep.length, n);
+    	swapl(&rep.suspendTime, n);
+    	swapl(&rep.offTime, n);
+    }
+    WriteToClient(client, SIZEOF(xXF86VidModeGetSaverReply), (char *)&rep);
+    return (client->noClientException);
+}
+
+static int
 ProcVGAHelpDispatch (client)
     register ClientPtr	client;
 {
@@ -573,6 +629,10 @@ ProcVGAHelpDispatch (client)
 	return ProcVGAHelpGetMonitor(client);
     case X_XF86VidModeLockModeSwitch:
 	return ProcXF86VidModeLockModeSwitch(client);
+    case X_XF86VidModeGetSaver:
+	return ProcXF86VidModeGetSaver(client);
+    case X_XF86VidModeSetSaver:
+	return ProcXF86VidModeSetSaver(client);
     default:
 	return BadRequest;
     }
@@ -598,6 +658,32 @@ SProcVGAHelpGetModeLine(client)
     REQUEST_SIZE_MATCH(xVGAHelpGetModeLineReq);
     swapl(&stuff->screen, n);
     return ProcVGAHelpGetModeLine(client);
+}
+
+static int
+SProcXF86VidModeGetSaver(client)
+    ClientPtr client;
+{
+    register int n;
+    REQUEST(xXF86VidModeGetSaverReq);
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xXF86VidModeGetSaverReq);
+    swapl(&stuff->screen, n);
+    return ProcXF86VidModeGetSaver(client);
+}
+
+static int
+SProcXF86VidModeSetSaver(client)
+    ClientPtr client;
+{
+    register int n;
+    REQUEST(xXF86VidModeSetSaverReq);
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xXF86VidModeSetSaverReq);
+    swapl(&stuff->screen, n);
+    swapl(&stuff->suspendTime, n);
+    swapl(&stuff->offTime, n);
+    return ProcXF86VidModeSetSaver(client);
 }
 
 static int
@@ -678,6 +764,10 @@ SProcVGAHelpDispatch (client)
 	return SProcVGAHelpGetMonitor(client);
     case X_XF86VidModeLockModeSwitch:
 	return SProcXF86VidModeLockModeSwitch(client);
+    case X_XF86VidModeGetSaver:
+	return SProcXF86VidModeGetSaver(client);
+    case X_XF86VidModeSetSaver:
+	return SProcXF86VidModeSetSaver(client);
     default:
 	return BadRequest;
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.2 1995/06/08 06:19:48 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.3 1995/06/14 09:39:26 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -38,7 +38,7 @@ from the Kaleb S. KEITHLEY
 #define XF86VIDMODENAME "XFree86-VidModeExtension"
 
 #define XF86VIDMODE_MAJOR_VERSION	0	/* current version numbers */
-#define XF86VIDMODE_MINOR_VERSION	2
+#define XF86VIDMODE_MINOR_VERSION	3
 
 typedef struct _VGAHelpQueryVersion {
     CARD8	reqType;		/* always VgaHelpReqCode */
@@ -68,9 +68,10 @@ typedef struct _VGAHelpGetModeLine {
     CARD16	length B16;
     CARD16	screen B16;
     CARD16	pad B16;
-} xVGAHelpGetModeLineReq, xVGAHelpGetMonitorReq;
+} xVGAHelpGetModeLineReq, xVGAHelpGetMonitorReq, xXF86VidModeGetSaverReq;
 #define sz_xVGAHelpGetModeLineReq	8
 #define sz_xVGAHelpGetMonitorReq	8
+#define sz_xXF86VidModeGetSaverReq	8
 
 typedef struct {
     BYTE	type;			/* X_Reply */
@@ -126,6 +127,17 @@ typedef struct _XF86VidModeLockModeSwitch {
 } xXF86VidModeLockModeSwitchReq;
 #define sz_xXF86VidModeLockModeSwitchReq	8
 
+typedef struct _XF86VidModeSetSaver {
+    CARD8	reqType;		/* always VgaHelpReqCode */
+    CARD8	vgahelpReqType;		/* always X_XF86VidModeSetSaver */
+    CARD16	length B16;
+    CARD16	screen B16;
+    CARD16	pad B16;
+    CARD32	suspendTime B32;
+    CARD32	offTime B32;
+} xXF86VidModeSetSaverReq;
+#define sz_xXF86VidModeSetSaverReq	16
+
 typedef struct {
     BYTE	type;			/* X_Reply */
     BOOL	pad1;
@@ -142,5 +154,19 @@ typedef struct {
     CARD32	pad5 B32;
 } xVGAHelpGetMonitorReply;
 #define sz_xVGAHelpGetMonitorReply	32
+
+typedef struct {
+    BYTE	type;
+    BOOL	pad1;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	suspendTime;
+    CARD32	offTime;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+} xXF86VidModeGetSaverReply;
+#define sz_xXF86VidModeGetSaverReply	32
 
 #endif /* _XF86VIDMODESTR_H_ */

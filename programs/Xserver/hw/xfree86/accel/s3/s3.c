@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.83 1995/06/29 13:30:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.84 1995/06/29 15:15:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -122,6 +122,8 @@ ScrnInfoRec s3InfoRec =
    0,				/* int s3MClk */
    0,				/* unsigned long VGAbase */
    0,				/* int s3RefClk */
+   0,				/* int suspendTime */
+   0,				/* int offTime */
 };
 
 short s3alu[16] =

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.8 95/01/16 13:17:00 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.17 1995/04/09 13:47:04 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.18 1995/06/08 06:27:11 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -50,6 +50,7 @@ Bool xf86ScreensOpen = FALSE;
 Bool xf86Verbose = TRUE;
 Bool xf86fpFlag = FALSE;
 Bool xf86coFlag = FALSE;
+Bool xf86sFlag = FALSE;
 Bool xf86ProbeOnly = FALSE;
 char xf86ConfigFile[PATH_MAX] = "";
 int  xf86bpp = -1;
@@ -475,6 +476,12 @@ ddxProcessArgument (argc, argv, i)
   if (!strcmp(argv[i], "-co"))
   {
     xf86coFlag = TRUE;
+    return 0;
+  }
+  /* Notice the -s flag, but allow it to pass to the dix layer */
+  if (!strcmp(argv[i], "-co"))
+  {
+    xf86sFlag = TRUE;
     return 0;
   }
 #ifndef XF86MONOVGA

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.10 1995/06/14 09:48:44 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.11 1995/06/17 12:21:59 dawes Exp $ */
 
 /*
 
@@ -1049,6 +1049,9 @@ int main (argc, argv)
     Widget top;
     XtAppContext app;
     Display* dpy;
+    Bool query = False;
+    int suspendTime, offTime;
+
     static XtActionsRec actions[] = { { "xvidtune-quit", QuitAction } };
 
     Top = top = XtVaOpenApplication (&app, "Xvidtune", NULL, 0, &argc, argv,
@@ -1091,6 +1094,43 @@ int main (argc, argv)
 	    CleanUp(XtDisplay (top));
 	    XSync(XtDisplay (top), True);
 	    return 0;
+	} else if (!strcmp(argv[1], "-query")) {
+	    if (MinorVersion > 2) {
+		XF86VidModeGetSaver(XtDisplay (top),
+				    DefaultScreen (XtDisplay (top)),
+				    &suspendTime, &offTime);
+	    }
+	    query = TRUE;
+	} else if (!strcmp(argv[1], "-saver")) {
+	    if (MinorVersion < 3) {
+		fprintf(stderr,
+		    "Xserver is running old XFree86-VidModeExtension (%d.%d)\n",
+		    MajorVersion, MinorVersion);
+		fprintf(stderr,
+		    "Minimum required version for -saver is %d.%d\n",
+		    MINMAJOR, 3);
+		exit(1);
+	    }
+	    if (argc == 2) {
+		fprintf(stderr, "Usage: -saver suspendtime [offtime]\n");
+		return 1;
+	    }
+	    XF86VidModeGetSaver(XtDisplay (top),
+				DefaultScreen (XtDisplay (top)),
+				&suspendTime, &offTime);
+	    switch (argc) {
+	    case 4:
+		offTime = atoi(argv[3]) * 1000;
+		/* fall through */
+	    case 3:
+		suspendTime = atoi(argv[2]) * 1000;
+		break;
+	    }
+	    XF86VidModeSetSaver(XtDisplay (top),
+				DefaultScreen (XtDisplay (top)),
+				suspendTime, offTime);
+	    XSync(XtDisplay (top), True);
+	    return 0;
 	}
 	if (i != 0) {
 	    XF86VidModeSwitchMode(XtDisplay (top),
@@ -1101,6 +1141,13 @@ int main (argc, argv)
     }
     if (!GetMonitor(XtDisplay (top), DefaultScreen (XtDisplay (top))))
 	return 0;
+
+    if (query) {
+	if (MinorVersion > 2)
+	    printf("Suspend time: %d seconds, Off time: %d seconds\n",
+		    suspendTime / 1000, offTime / 1000);
+	return 0;
+    }
 
     if (!XF86VidModeLockModeSwitch(XtDisplay (top),
 				   DefaultScreen (XtDisplay (top)), TRUE))
