@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.16 2001/09/26 06:46:53 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.18 2001/11/30 12:12:02 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1357,8 +1357,12 @@ tridentFixFrame(ScrnInfoPtr pScrn, int *fixFrame)
   pTrident->hsync = (HTotal - HSyncStart) + 23 + h_off;
   pTrident->vsync = (VTotal - VSyncStart) - 2 + v_off;
   
-  /* HACK !!! - maybe worth doing them as options ! */
-  /* As awful as this is, it appears to be the only way....Sigh! */
+  /* 
+   * HACK !! As awful as this is, it appears to be the only way....Sigh!
+   * We have XvHsync and XvVsync as options now, which adjust 
+   * at the very end of this function. It'll be helpful for now
+   * and we can get more data on some of these skew values.
+   */
   switch (pTrident->Chipset) {
   case TGUI9680:
     /* Furthur tweaking needed */
@@ -1399,5 +1403,7 @@ tridentFixFrame(ScrnInfoPtr pScrn, int *fixFrame)
     pTrident->hsync -= 8;
     break;
   }
+  pTrident->hsync+=pTrident->OverrideHsync;
+  pTrident->vsync+=pTrident->OverrideVsync;
 }
     
