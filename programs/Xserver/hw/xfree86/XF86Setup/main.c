@@ -1,9 +1,4 @@
-/* $XConsortium: main.c /main/2 1996/10/23 13:12:09 kaleb $ */
-
-
-
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.13 1997/11/22 00:00:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.14 1998/04/26 16:04:34 robin Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -25,6 +20,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XConsortium: main.c /main/2 1996/10/23 13:12:09 kaleb $ */
 
 
 /*
@@ -57,16 +53,18 @@ static char *statefile = NULL;		/* file containing state vars */
 static char *LibDir;			/* where the tcl src files are */
 static int  rest = 0;			/* arg after options */
 static int  synchronize = 0;		/* sync X connection */
-static int  nodialog = 0;		/* Don't use Dialog */
+static int  nocurses = 0;		/* Don't use curses */
 static int  notk = 0;			/* Don't add Tk to interp */
 static int  usescriptdir = 0;		/* Use script dir, not PATH */
 static Boolean pc98 = FALSE;		/* machine architecure */
 static int pc98_EGC = 0;                /* default server */
-#define PHASE1	"phase1.tcl"
-#define PHASE2	"phase2.tcl"
-#define PHASE3	"phase3.tcl"
-#define PHASE4	"phase4.tcl"
-#define PHASE5	"phase5.tcl"
+#define PHASE1		"phase1.tcl"
+#define PHASE2		"phase2.tcl"
+#define PHASE3		"phase3.tcl"
+#define PHASE4		"phase4.tcl"
+#define PHASE5		"phase5.tcl"
+
+#define PHASE2NOTK	"ph2notk.tcl"
 
 /*
   Initialization code - sets the Xwinhome, XF86Setup_library,
@@ -124,6 +122,7 @@ static char usage_msg[] =
 	"Options always available:\n"
 	"   -sync		Use synchronous mode for display server\n"
 	"   -name <name>		Name to use for application\n"
+	"   -notk		Don't open a connection to the X server\n"
 #ifdef PC98
         "   -egc			Use EGC server\n"
         "   -pegc		Use PEGC server\n"
@@ -132,11 +131,10 @@ static char usage_msg[] =
 	"Options available only when a filename is specified:\n"
 	"   -display <disp>	Display to use\n"
 	"   -geometry <geom>	Initial geometry for window\n"
-	"   -notk		Don't open a connection to the X server\n"
 	"   -script		Look for filename in script directory\n"
 	"\n"
 	"Options available only when a filename is not specified:\n"
-	"   -nodialog      	Don't use Dialog for user interaction\n"
+	"   -nocurses      	Don't use curses for user interaction\n"
 	"Any args after the double dashes (--) are passed to the script\n"
 	;
 
@@ -149,8 +147,8 @@ static Tk_ArgvInfo argTable[] = {
         "Name to use for application"},
     {"-sync", TK_ARGV_CONSTANT, (char *) 1, (char *) &synchronize,
         "Use synchronous mode for display server"},
-    {"-nodialog", TK_ARGV_CONSTANT, (char *) 1, (char *) &nodialog,
-        "Don't use the Dialog program for interaction with user"},
+    {"-nocurses", TK_ARGV_CONSTANT, (char *) 1, (char *) &nocurses,
+        "Don't use curses for interaction with user"},
     {"-notk", TK_ARGV_CONSTANT, (char *) 1, (char *) &notk,
         "Don't open a connection to the X server or load Tk widgets"},
     {"-script", TK_ARGV_CONSTANT, (char *) 1, (char *) &usescriptdir,
@@ -166,6 +164,12 @@ static Tk_ArgvInfo argTable[] = {
     {(char *) NULL, TK_ARGV_END, (char *) NULL, (char *) NULL,
         (char *) NULL}
 };
+
+extern int	Curses_Init(
+#if NeedFunctionProtoTypes
+	Tcl_Interp *interp
+#endif
+);
 
 extern int	XF86Other_Init(
 #if NeedFunctionProtoTypes
@@ -396,6 +400,9 @@ main(argc, argv)
     if (XF86Config_Init(interp) == TCL_ERROR)
 	print_result_and_exit;
 
+    if (Curses_Init(interp) == TCL_ERROR)
+	print_result_and_exit;
+
     /****  Find where things are installed ****/
     if (Tcl_Eval(interp, Set_InitVars) != TCL_OK)
 	print_result_and_exit;
@@ -420,7 +427,7 @@ main(argc, argv)
     Tcl_SetVar(interp, "argc", tmpbuf, TCL_GLOBAL_ONLY);
     Tcl_SetVar(interp, "argv0", argv0, TCL_GLOBAL_ONLY);
 #ifdef PC98
-    nodialog = 1;
+    nocurses = 1;
     Tcl_SetVar(interp, "pc98", "1", TCL_GLOBAL_ONLY);
     if (pc98_EGC) {
 #if defined(linux) || defined(SVR4)
@@ -441,12 +448,13 @@ main(argc, argv)
     Tcl_SetVar(interp, "pc98_EGC", "0", TCL_GLOBAL_ONLY);
 #endif
 
+    Tcl_LinkVar(interp, "NoCurses", (char *) &nocurses, TCL_LINK_BOOLEAN);
+    Tcl_LinkVar(interp, "NoTk",     (char *) &notk,     TCL_LINK_BOOLEAN);
+
     if (filename == NULL) {
 	Tcl_LinkVar(interp, "Phase2FallBack",
 		(char *)&Phase2FallBack, TCL_LINK_BOOLEAN);
 	if (statefile == NULL) {
-		Tcl_LinkVar(interp, "NoDialog",
-			(char *)&nodialog, TCL_LINK_BOOLEAN);
 		/****  Execute the Phase I Tcl code  ****/
 		XF86Setup_TclEvalFile(interp, PHASE1);
 	} else {
@@ -487,54 +495,56 @@ main(argc, argv)
     if (filename == NULL)
 	display = NULL;
 
-    /**** Here is the first routine that needs to have an X
+    if (!notk) {
+        /**** Here is the first routine that needs to have an X
 	  server running.  It tries to create a window and will,
 	  of course, fail if the server isn't running ****/
 
-    XF86Setup_TkInit(interp, display, name);
+	XF86Setup_TkInit(interp, display, name);
 
-    if (filename != NULL) {
-        /*
-         * Set the geometry of the main window, if requested.  Put the
-         * requested geometry into the "geometry" variable.
-         */
+	if (filename != NULL) {
+	    /*
+	     * Set the geometry of the main window, if requested.  Put the
+	     * requested geometry into the "geometry" variable.
+	     */
 
-        if (geometry != NULL) {
-            Tcl_SetVar(interp, "geometry", geometry, TCL_GLOBAL_ONLY);
-            if (Tcl_VarEval(interp, "wm geometry . ", geometry, (char *) NULL)
-		    != TCL_OK) {
-                fprintf(stderr, "%s\n", interp->result);
-            }
-        }
+	    if (geometry != NULL) {
+		Tcl_SetVar(interp, "geometry", geometry, TCL_GLOBAL_ONLY);
+		if (Tcl_VarEval(interp, "wm geometry . ", geometry, (char *) NULL)
+			!= TCL_OK) {
+		    fprintf(stderr, "%s\n", interp->result);
+		}
+	    }
 
-	/****  set the DISPLAY environment variable  ****/
-        if (display != NULL)
-            Tcl_SetVar2(interp, "env", "DISPLAY", display, TCL_GLOBAL_ONLY);
-    }
+	    /****  set the DISPLAY environment variable  ****/
+	    if (display != NULL)
+		Tcl_SetVar2(interp, "env", "DISPLAY", display, TCL_GLOBAL_ONLY);
+	}
 
-    /****  Add the commands to the Tcl interpreter that interface
-           with the XFree86-VidModeExtension ****/
+	/****  Add the commands to the Tcl interpreter that interface
+	       with the XFree86-VidModeExtension ****/
 
-    if (XF86vid_Init(interp) == TCL_ERROR)
-	print_result_and_exit;
+	if (XF86vid_Init(interp) == TCL_ERROR)
+	    print_result_and_exit;
 
-    /****  Add the commands to the Tcl interpreter that interface
-           with the XFree86-Misc extension ****/
+	/****  Add the commands to the Tcl interpreter that interface
+	       with the XFree86-Misc extension ****/
 
-    if (XF86Misc_Init(interp) == TCL_ERROR)
-	print_result_and_exit;
+	if (XF86Misc_Init(interp) == TCL_ERROR)
+	    print_result_and_exit;
 
-    /****  Add the commands to the Tcl interpreter that interface
-           with the XKEYBOARD extension and library ****/
+	/****  Add the commands to the Tcl interpreter that interface
+	       with the XKEYBOARD extension and library ****/
 
-    if (XF86Kbd_Init(interp) == TCL_ERROR)
-	print_result_and_exit;
+	if (XF86Kbd_Init(interp) == TCL_ERROR)
+	    print_result_and_exit;
 
-    /****  Add the commands to the Tcl interpreter for the
-           Tk convenience functions ****/
+	/****  Add the commands to the Tcl interpreter for the
+	       Tk convenience functions ****/
 
-    if (XF86TkOther_Init(interp) == TCL_ERROR)
-	print_result_and_exit;
+	if (XF86TkOther_Init(interp) == TCL_ERROR)
+	    print_result_and_exit;
+    } /* !notk */
 
     if (filename != NULL) {
         /****  Load the default bindings ****/
@@ -549,7 +559,7 @@ main(argc, argv)
     } else {
 	if (statefile == NULL || Phase2FallBack) {
             /****  Now execute the Phase II commands ****/
-            XF86Setup_TclEvalFile(interp, PHASE2);
+            XF86Setup_TclEvalFile(interp, (notk? PHASE2NOTK: PHASE2));
 	} else {
             /****  Now execute the Phase IV commands ****/
             XF86Setup_TclEvalFile(interp, PHASE4);
@@ -557,9 +567,11 @@ main(argc, argv)
         /**** Enter the event loop until Phase II/IV is completed (last
 	        window destroyed) ****/
 
-        Tk_MainLoop();
+	if (!notk) {
+	    Tk_MainLoop();
 
-	kill_server(interp);
+	    kill_server(interp);
+	}
 
 	tmpptr = Tcl_GetVar(interp, "ExitStatus", TCL_GLOBAL_ONLY);
 	if (tmpptr) {

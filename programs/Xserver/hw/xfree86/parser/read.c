@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.4 1999/03/07 11:40:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.5 1999/03/21 07:35:27 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -106,15 +106,11 @@ xf86ReadConfigFile (void)
 				HANDLE_LIST (conf_screen_lst, parseScreenSection,
 							 XF86ConfScreenPtr);
 			}
-/* 
- * This section is not yet implemented. It may be replaced by a more generic
- * extension section.
-#ifdef XINPUT
-			else if ( NameCompare(val.str, "xinput") == 0 ) {
-				HANDLE_RETURN(xf86ConfigExtendedInputSection(&val));
+			else if (NameCompare(val.str, "inputdevice") == 0)
+			{
+				HANDLE_LIST (conf_input_lst, parseInputSection,
+							 XF86ConfInputPtr);
 			}
-#endif
-*/
 			else if (NameCompare (val.str, "module") == 0)
 			{
 				HANDLE_RETURN (conf_modules, parseModuleSection ());
@@ -160,6 +156,8 @@ validateConfig (XF86ConfigPtr p)
 	if (!validateDevice (p))
 		return FALSE;
 	if (!validateScreen (p))
+		return FALSE;
+	if (!validateInput (p))
 		return FALSE;
 	if (!validateLayout (p))
 		return FALSE;

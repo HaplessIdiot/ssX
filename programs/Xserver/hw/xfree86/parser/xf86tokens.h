@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.6 1999/03/07 11:40:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.7 1999/03/21 07:35:28 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -214,6 +214,7 @@ typedef enum {
     /* Layout Tokens */
     SCREEN,
     INACTIVE,
+    INPUTDEVICE,
 
     /* Vendor Tokens */
     VENDORNAME

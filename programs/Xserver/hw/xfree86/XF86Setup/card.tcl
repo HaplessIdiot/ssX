@@ -1,15 +1,11 @@
-# $XConsortium: card.tcl /main/5 1996/10/28 04:55:06 kaleb $
-#
-#
-#
-#
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.15 1997/07/29 12:07:22 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.16 1998/04/05 16:15:49 robin Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
 # See the file "LICENSE" for information regarding redistribution terms,
 # and for a DISCLAIMER OF ALL WARRANTIES.
 #
+# $XConsortium: card.tcl /main/5 1996/10/28 04:55:06 kaleb $
 
 #
 # Card configuration routines
@@ -356,7 +352,7 @@ proc Card_selected { win lbox } {
 	    Card_cbox_setentry $w.card.chipset.cbox   generic
 	    Card_cbox_setentry $w.card.ramdac.cbox    ""
 	    Card_cbox_setentry $w.card.clockchip.cbox ""
-	    $w.card.bot.message configure -tex $messages(card.34)
+	    $w.card.bot.message configure -text $messages(card.34)
 	}
 	Card_set_cboxlists $win cardselected
 	if $pc98 {

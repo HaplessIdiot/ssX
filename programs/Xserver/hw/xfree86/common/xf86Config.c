@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.166 1999/03/28 15:32:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.167 1999/03/29 09:41:27 dawes Exp $ */
 
 
 /*
@@ -43,6 +43,7 @@ static Bool configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen,
 static Bool configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor);
 static Bool configDevice(GDevPtr devicep, XF86ConfDevicePtr conf_device,
 			 Bool active);
+static Bool configInput(IDevPtr inputp, XF86ConfInputPtr conf_input);
 static Bool configDisplay(DispPtr displayp, XF86ConfDisplayPtr conf_display);
 static Bool addDefaultModes(MonPtr monitorp);
 
@@ -1088,12 +1089,14 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
 {
     XF86ConfAdjacencyPtr adjp;
     XF86ConfInactivePtr idp;
+    XF86ConfInputrefPtr irp;
     int count = 0;
     int scrnum;
     XF86ConfLayoutPtr l;
     MessageType from;
     screenLayoutPtr slp;
     GDevPtr gdp;
+    IDevPtr indp;
 
     if (!servlayoutp)
 	return FALSE;
@@ -1155,6 +1158,7 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
     /*
      * Count the number of inactive devices.
      */
+    count = 0;
     idp = conf_layout->lay_inactive_lst;
     while (idp) {
         count++;
@@ -1174,9 +1178,34 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
         count++;
         idp = (XF86ConfInactivePtr)idp->list.next;
     }
+    /*
+     * Count the number of input devices.
+     */
+    count = 0;
+    irp = conf_layout->lay_input_lst;
+    while (irp) {
+        count++;
+        irp = (XF86ConfInputrefPtr)irp->list.next;
+    }
+#ifdef DEBUG
+    ErrorF("Found %d input devices in the layout section %s",
+           count, conf_layout->lay_identifier);
+#endif
+    indp = xnfalloc((count + 1) * sizeof(IDevRec));
+    indp[count].identifier = NULL;
+    irp = conf_layout->lay_input_lst;
+    count = 0;
+    while (irp) {
+	if (!configInput(&indp[count], irp->iref_inputdev))
+	    return FALSE;
+	indp[count].extraOptions = irp->iref_option_lst;
+        count++;
+        irp = (XF86ConfInputrefPtr)irp->list.next;
+    }
     servlayoutp->id = conf_layout->lay_identifier;
     servlayoutp->screens = slp;
     servlayoutp->inactives = gdp;
+    servlayoutp->inputs = indp;
     servlayoutp->options = conf_layout->lay_option_lst;
     return TRUE;
 }
@@ -1584,6 +1613,18 @@ configDevice(GDevPtr devicep, XF86ConfDevicePtr conf_device, Bool active)
 }
 
 static Bool
+configInput(IDevPtr inputp, XF86ConfInputPtr conf_input)
+{
+    xf86Msg(X_CONFIG, "|-->Input Device \"%s\"\n",
+		conf_input->inp_identifier);
+    inputp->identifier = conf_input->inp_identifier;
+    inputp->driver = conf_input->inp_driver;
+    inputp->commonOptions = conf_input->inp_option_lst;
+
+    return TRUE;
+}
+	
+static Bool
 modeIsPresent(char * modename,MonPtr monitorp)
 {
     DisplayModePtr knownmodes = monitorp->Modes;
@@ -1603,7 +1644,6 @@ addDefaultModes(MonPtr monitorp)
 {
     DisplayModePtr mode;
     DisplayModePtr last = monitorp->Last;
-    DisplayModePtr vesamodep;
     int i = 0;
 
     while (xf86DefaultModes[i].name != NULL)

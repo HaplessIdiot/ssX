@@ -1,15 +1,11 @@
-# $XConsortium: monitor.tcl /main/2 1996/10/25 10:21:20 kaleb $
-#
-#
-#
-#
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.11 1997/07/29 12:07:24 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.12 1998/04/05 16:15:50 robin Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
 # See the file "LICENSE" for information regarding redistribution terms,
 # and for a DISCLAIMER OF ALL WARRANTIES.
 #
+# $XConsortium: monitor.tcl /main/2 1996/10/25 10:21:20 kaleb $
 
 #
 # Monitor configuration routines
@@ -266,7 +262,7 @@ proc Monitor_setstandard { win c } {
 }
 
 proc Monitor_sync_ent { win c dir } {
-	global tk_version pc98_EGC
+	global pc98_EGC
 
 	set w [winpathprefix $win]
 	if { [string compare $dir horz] == 0 } {
@@ -293,15 +289,6 @@ proc Monitor_sync_ent { win c dir } {
 	set rnglist [split $rng ,]
 	set count 0
 	catch {$c delete ${dir}rng}
-	if { $tk_version == 4.0 } {
-		# workaround a bug in Tk4.0 canvases
-		set beg $min
-		set end $max
-		catch {$c delete blank}
-		$c create rectangle \
-			[expr $x1] [expr $y1] [expr $x2] [expr $y2] \
-			-fill white -tag blank
-	}
 	foreach elem $rnglist {
 		set beg [set end 0]
 		set elem [zap_white $elem]

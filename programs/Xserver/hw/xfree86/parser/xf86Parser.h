@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.7 1999/03/21 07:35:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.8 1999/03/29 09:41:35 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -35,6 +35,8 @@
 #define _xf86Parser_h_
 
 #include "xf86Optrec.h"
+
+#define HAVE_PARSER_DECLS
 
 typedef struct
 {
@@ -320,6 +322,24 @@ XF86ConfScreenRec, *XF86ConfScreenPtr;
 typedef struct
 {
 	GenericListRec list;
+	char *inp_identifier;
+	char *inp_driver;
+	XF86OptionPtr inp_option_lst;
+}
+XF86ConfInputRec, *XF86ConfInputPtr;
+
+typedef struct
+{
+	GenericListRec list;
+	XF86ConfInputPtr iref_inputdev;
+	char *iref_inputdev_str;
+	XF86OptionPtr iref_option_lst;
+}
+XF86ConfInputrefRec, *XF86ConfInputrefPtr;
+
+typedef struct
+{
+	GenericListRec list;
 	int adj_scrnum;
 	XF86ConfScreenPtr adj_screen;
 	char *adj_screen_str;
@@ -348,6 +368,7 @@ typedef struct
 	char *lay_identifier;
 	XF86ConfAdjacencyPtr lay_adjacency_lst;
 	XF86ConfInactivePtr lay_inactive_lst;
+	XF86ConfInputrefPtr lay_input_lst;
 	XF86OptionPtr lay_option_lst;
 }
 XF86ConfLayoutRec, *XF86ConfLayoutPtr;
@@ -372,6 +393,7 @@ typedef struct
 	XF86ConfMonitorPtr conf_monitor_lst;
 	XF86ConfDevicePtr conf_device_lst;
 	XF86ConfScreenPtr conf_screen_lst;
+	XF86ConfInputPtr conf_input_lst;
 	XF86ConfLayoutPtr conf_layout_lst;
 	XF86ConfVendorPtr conf_vendor_lst;
 }
@@ -399,7 +421,11 @@ XF86ConfModesPtr xf86FindModes(const char *ident, XF86ConfModesPtr p);
 XF86ConfModeLinePtr xf86FindModeLine(const char *ident, XF86ConfModeLinePtr p);
 XF86ConfScreenPtr xf86FindScreen(const char *ident, XF86ConfScreenPtr p);
 XF86ConfDisplayPtr xf86FindDisplay(int depth, XF86ConfDisplayPtr p);
+XF86ConfInputPtr xf86FindInput(const char *ident, XF86ConfInputPtr p);
 XF86ConfVendorPtr xf86FindVendor(const char *name, XF86ConfVendorPtr list);
+XF86ConfVideoAdaptorPtr xf86FindVideoAdaptor(const char *ident,
+						XF86ConfVideoAdaptorPtr p);
+
 GenericListPtr addListItem(GenericListPtr head, GenericListPtr new);
 
 #endif /* _xf86Parser_h_ */

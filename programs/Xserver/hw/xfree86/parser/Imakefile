@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Imakefile,v 1.2 1998/07/25 16:57:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Imakefile,v 1.3 1999/03/07 11:40:42 dawes Exp $ */
 
 
 
@@ -23,9 +23,9 @@ INCLUDES = -I. -I$(XF86OSSRC)
 
 HEADERS = xf86Parser.h xf86Optrec.h
 
-SRCS = Device.c Files.c Flags.c Keyboard.c Layout.c Module.c \
+SRCS = Device.c Files.c Flags.c Input.c Keyboard.c Layout.c Module.c \
 	Video.c Monitor.c Pointer.c Screen.c Vendor.c read.c scan.c write.c
-OBJS = Device.o Files.o Flags.o Keyboard.o Layout.o Module.o \
+OBJS = Device.o Files.o Flags.o Input.o Keyboard.o Layout.o Module.o \
 	Video.o Monitor.o Pointer.o Screen.o Vendor.o read.o scan.o write.o
 
 CONFIG_DEFINES = -DXCONFIGDIR=\"$(XCONFIGDIR)\" -DXCONFIGFILE=\"$(XCONFIGFILE)\"

@@ -1,22 +1,18 @@
-# $XConsortium: keyboard.tcl /main/2 1996/10/25 10:21:16 kaleb $
-#
-#
-#
-#
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/keyboard.tcl,v 3.10 1997/07/29 12:07:23 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/keyboard.tcl,v 3.11 1998/04/05 16:15:49 robin Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
 # See the file "LICENSE" for information regarding redistribution terms,
 # and for a DISCLAIMER OF ALL WARRANTIES.
 #
+# $XConsortium: keyboard.tcl /main/2 1996/10/25 10:21:16 kaleb $
 
 #
 # Keyboard configuration routines
 #
 
 proc Keyboard_create_widgets { win } {
-	global XKBComponents XKBinserver XKBhandle
+	global XKBComponents XKBavailable XKBhandle
 	global pc98 messages
 
 	set w [winpathprefix $win]
@@ -53,7 +49,7 @@ proc Keyboard_create_widgets { win } {
 	pack $w.keyboard.xkb.geom -side top -expand yes -fill both -padx 6m
 	pack $w.keyboard.xkb.lang -side top -expand yes -fill both -padx 6m
 	pack $w.keyboard.xkb.vari -side top -expand yes -fill both -padx 6m
-	if { $XKBinserver } {
+	if { $XKBavailable } {
 	    bind $w.keyboard.xkb.geom.cbox.popup.list <ButtonRelease-1> \
 		"+Keyboard_loadsettings $win noload"
 	    bind $w.keyboard.xkb.geom.cbox.popup <Return> \
@@ -68,7 +64,7 @@ proc Keyboard_create_widgets { win } {
 	    frame $w.keyboard.xkb.graphic
 	}
 	pack $w.keyboard.xkb.graphic  -side top -expand yes -fill x
-	if { $XKBinserver } {
+	if { $XKBavailable } {
 	    button $w.keyboard.xkb.apply -text $messages(keyboard.3) \
 		-command "Keyboard_loadsettings $win load"
 	    pack $w.keyboard.xkb.apply -side top -expand yes -fill both

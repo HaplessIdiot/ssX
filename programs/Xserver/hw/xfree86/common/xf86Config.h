@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.h,v 1.1.2.11 1998/07/04 13:32:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.h,v 1.2 1998/07/25 16:54:59 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc
  */
@@ -6,13 +6,12 @@
 #ifndef _xf86_config_h
 #define _xf86_config_h
 
-/* Pick up XF86ConfigPtr */
-#include "xf86Parser.h"
-
+#ifdef HAVE_PARSER_DECLS
 /*
  * global structure that holds the result of parsing the config file
  */
 extern XF86ConfigPtr xf86configptr;
+#endif
 
 /*
  * prototypes

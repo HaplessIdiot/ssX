@@ -1,15 +1,11 @@
-# $XConsortium: phase2.tcl /main/2 1996/10/25 10:21:29 kaleb $
-#
-#
-#
-#
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.14 1998/03/27 23:23:05 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.15 1998/04/05 16:15:51 robin Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
 # See the file "LICENSE" for information regarding redistribution terms,
 # and for a DISCLAIMER OF ALL WARRANTIES.
 #
+# $XConsortium: phase2.tcl /main/2 1996/10/25 10:21:29 kaleb $
 
 #
 # Phase II - Commands run after connection is made to VGA16 server
@@ -30,31 +26,19 @@ if $StartServer {
 	mesg $messages(phase2.14) info
 }
 
-set XKBrules $Xwinhome/lib/X11/xkb/rules/xfree86
-
 if { [catch {set XKBhandle [xkb_read from_server]} res] } {
 	$w.waitmsg configure -text $messages(phase2.2)
 	update idletasks
 	after 10000
-	set XKBinserver 0
+	set XKBavailable 0
+	set retval ""
 } else {
-	set XKBinserver 1
+	set XKBavailable 1
+	set retval [xkb_listrules $XKBrules]
 }
 
-set retval [xkb_listrules $XKBrules]
-
 if { [llength $retval] < 4 } {
-	set XKBComponents(models,names)		 "pc101 pc102 microsoft"
-	set XKBComponents(models,descriptions)	 [list \
-		"Generic 101key PC" "Generic 102key PC" \
-		"Microsoft Natural"]
-	set XKBComponents(layouts,names)	 "us de it gb"
-	set XKBComponents(layouts,descriptions)	 [list \
-		"U.S. English" "German" "Italian" "U.K."]
-	set XKBComponents(variants,names)	 ""
-	set XKBComponents(variants,descriptions) ""
-	set XKBComponents(options,names)	 ""
-	set XKBComponents(options,descriptions)	 ""
+	Kbd_setxkbcomponents
 } else {
 	set XKBComponents(models,names)		 [lindex $retval 0]
 	set XKBComponents(models,descriptions)	 [lindex $retval 1]

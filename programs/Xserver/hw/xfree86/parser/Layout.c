@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.4 1999/01/14 13:05:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.5 1999/03/29 09:41:34 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -40,6 +40,7 @@ static xf86ConfigSymTabRec LayoutTab[] =
 	{SCREEN, "screen"},
 	{IDENTIFIER, "identifier"},
 	{INACTIVE, "inactive"},
+	{INPUTDEVICE, "inputdevice"},
 	{OPTION, "option"},
 	{-1, ""},
 };
@@ -129,6 +130,26 @@ parseLayoutSection (void)
 					addListItem ((glp) ptr->lay_adjacency_lst, (glp) aptr);
 			}
 			break;
+		case INPUTDEVICE:
+			{
+				XF86ConfInputrefPtr iptr;
+
+				iptr = xf86confmalloc (sizeof (XF86ConfInputrefRec));
+				iptr->list.next = NULL;
+				iptr->iref_option_lst = NULL;
+				if (xf86GetToken (NULL) != STRING)
+					Error (INPUTDEV_MSG, NULL);
+				iptr->iref_inputdev_str = val.str;
+				while ((token = xf86GetToken (NULL)) == STRING)
+				{
+					iptr->iref_option_lst =
+						addNewOption (iptr->iref_option_lst, val.str, NULL);
+				}
+				xf86UnGetToken (token);
+				ptr->lay_input_lst = (XF86ConfInputrefPtr)
+					addListItem ((glp) ptr->lay_input_lst, (glp) iptr);
+			}
+			break;
 		case OPTION:
 			{
 				char *name;
@@ -176,6 +197,7 @@ printLayoutSection (FILE * cf, XF86ConfLayoutPtr ptr)
 {
 	XF86ConfAdjacencyPtr aptr;
 	XF86ConfInactivePtr iptr;
+    XF86ConfInputrefPtr inptr;
 	XF86OptionPtr optr;
 
 	while (ptr)
@@ -194,6 +216,15 @@ printLayoutSection (FILE * cf, XF86ConfLayoutPtr ptr)
 		}
 		for (iptr = ptr->lay_inactive_lst; iptr; iptr = iptr->list.next)
 			fprintf (cf, "\tInactive       \"%s\"\n", iptr->inactive_device_str);
+		for (inptr = ptr->lay_input_lst; inptr; inptr = inptr->list.next)
+		{
+			fprintf (cf, "\tInputDevice    \"%s\"", inptr->iref_inputdev_str);
+			for (optr = inptr->iref_option_lst; optr; optr = optr->list.next)
+			{
+				fprintf(cf, " \"%s\"", optr->opt_name);
+			}
+			fprintf(cf, "\n");
+		}
 		for (optr = ptr->lay_option_lst; optr; optr = optr->list.next)
 		{
 			fprintf (cf, "\tOption      \"%s\"", optr->opt_name);
@@ -215,6 +246,7 @@ freeLayoutList (XF86ConfLayoutPtr ptr)
 	{
 		TestFree (ptr->lay_identifier);
 		freeAdjacencyList (ptr->lay_adjacency_lst);
+		freeInputrefList (ptr->lay_input_lst);
 		prev = ptr;
 		ptr = ptr->list.next;
 		xf86conffree (prev);
@@ -234,6 +266,22 @@ freeAdjacencyList (XF86ConfAdjacencyPtr ptr)
 		TestFree (ptr->adj_left_str);
 		TestFree (ptr->adj_right_str);
 
+		prev = ptr;
+		ptr = ptr->list.next;
+		xf86conffree (prev);
+	}
+
+}
+
+void
+freeInputrefList (XF86ConfInputrefPtr ptr)
+{
+	XF86ConfInputrefPtr prev;
+
+	while (ptr)
+	{
+		TestFree (ptr->iref_inputdev_str);
+		OptionListFree (ptr->iref_option_lst);
 		prev = ptr;
 		ptr = ptr->list.next;
 		xf86conffree (prev);
@@ -261,8 +309,10 @@ validateLayout (XF86ConfigPtr p)
 	XF86ConfLayoutPtr layout = p->conf_layout_lst;
 	XF86ConfAdjacencyPtr adj;
 	XF86ConfInactivePtr iptr;
+	XF86ConfInputrefPtr inptr;
 	XF86ConfScreenPtr screen;
-    XF86ConfDevicePtr device;
+	XF86ConfDevicePtr device;
+	XF86ConfInputPtr input;
 
 	while (layout)
 	{
@@ -301,6 +351,21 @@ validateLayout (XF86ConfigPtr p)
 			else
 				iptr->inactive_device = device;
 			iptr = iptr->list.next;
+		}
+		inptr = layout->lay_input_lst;
+		while (inptr)
+		{
+			input = xf86FindInput (inptr->iref_inputdev_str,
+									p->conf_input_lst);
+			if (!input)
+			{
+				xf86ValidationError (UNDEFINED_INPUT_MSG,
+						inptr->iref_inputdev_str, layout->lay_identifier);
+				return (FALSE);
+			}
+			else
+				inptr->iref_inputdev = input;
+			inptr = inptr->list.next;
 		}
 		layout = layout->list.next;
 	}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.3 1999/03/28 15:32:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.4 1999/04/04 08:46:15 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -26,7 +26,7 @@
 #include "xf86xv.h"
 #endif
 
-#define DEBUG 1
+#define DEBUG 0
 
 #if DEBUG
 # define TRACE_ENTER(str)       ErrorF("fbdev: " str " %d\n",pScrn->scrnIndex)
@@ -171,6 +171,7 @@ FBDevSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 typedef struct {
 	unsigned char*			fbstart;
 	unsigned char*			fbmem;
+	int				fboff;
 	unsigned char*			shadowmem;
 	int				shadowPitch;
 	Bool				shadowFB;
@@ -213,6 +214,7 @@ FBDevProbe(DriverPtr drv, int flags)
 	ScrnInfoPtr pScrn, pScrn0;
        	GDevPtr *devSections;
 	int numDevSections;
+	int bus,device,func;
 	char *dev;
 	Bool foundScreen = FALSE;
 
@@ -231,14 +233,17 @@ FBDevProbe(DriverPtr drv, int flags)
 
 	for (i = 0; i < numDevSections; i++) {
 		dev = xf86FindOptionValue(devSections[i]->options,"fbdev");
+		if (devSections[i]->busID) {
+			xf86ParsePciBusString(devSections[i]->busID,&bus,&device,&func);
+			if (!xf86CheckPciSlot(bus,device,func,RES_SHARED_VGA))
+				continue;
+		}
 		if (fbdevHWProbe(NULL,dev)) {
 			foundScreen = TRUE;
 			pScrn = xf86AllocateScreen(drv, 0);
 			xf86LoadSubModule(pScrn, "fbdevhw");
 			xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
-#if DEBUG
-			ErrorF("fbdev screen: %s\n", dev ? dev : "-");
-#endif
+
 			pScrn->driverVersion = VERSION;
 	                pScrn->driverName    = FBDEV_DRIVER_NAME;
 			pScrn->name          = FBDEV_NAME;
@@ -251,6 +256,15 @@ FBDevProbe(DriverPtr drv, int flags)
 			pScrn->LeaveVT       = fbdevHWLeaveVT;
 			pScrn->ValidMode     = fbdevHWValidMode;
 			pScrn->device        = devSections[i];
+
+			xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+				   "using %s\n", dev ? dev : "default device");
+			if (devSections[i]->busID) {
+				xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+					   "claimed PCI slot %d:%d:%d\n",bus,device,func);
+				xf86ClaimPciSlot(bus,device,func,RES_SHARED_VGA,
+						 &FBDEV,&devSections[i],pScrn->scrnIndex);
+			}
 		}
 	}
 	xfree(devSections);
@@ -387,7 +401,7 @@ FBDevRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 		height = pbox->y2 - pbox->y1;
 		src = fPtr->shadowmem + (pbox->y1 * fPtr->shadowPitch) +
 			(pbox->x1 * Bpp);
-		dst = fPtr->fbmem + (pbox->y1 * FBPitch) + (pbox->x1 * Bpp);
+		dst = fPtr->fbmem + fPtr->fboff + (pbox->y1 * FBPitch) + (pbox->x1 * Bpp);
 
 		while(height--) {
 			memcpy(dst, src, width);
@@ -403,7 +417,7 @@ FBDevSaveScreen(ScreenPtr pScreen, Bool unblank)
 {
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 
-#ifdef DEBUG
+#if DEBUG
 	ErrorF("FBDevSaveScreen unblank=%s vtSema=%d\n",
 		unblank ? "true" : "false",
 		pScrn->vtSema);
@@ -421,7 +435,7 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	int ret,flags;
 
 	TRACE_ENTER("FBDevScreenInit");
-#ifdef DEBUG
+#if DEBUG
 	ErrorF("\tbitsPerPixel=%d, depth=%d, defaultVisual=%s\n"
 	       "\tmask: %x,%x,%x, offset: %d,%d,%d\n",
 	       pScrn->bitsPerPixel,
@@ -433,8 +447,11 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 	if (NULL == (fPtr->fbmem = fbdevHWMapVidmem(pScrn)))
 		return FALSE;
+	fPtr->fboff = fbdevHWLinearOffset(pScrn);
 
 	fbdevHWSave(pScrn);
+	xf86AddControlledResource(pScrn, MEM);
+	xf86EnableAccess(&pScrn->Access);
 
 	if (!fbdevHWModeInit(pScrn, pScrn->currentMode))
 		return FALSE;
@@ -460,7 +477,7 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		fPtr->fbstart   = fPtr->shadowmem;
 	} else {
 		fPtr->shadowmem = NULL;
-		fPtr->fbstart   = fPtr->fbmem;
+		fPtr->fbstart   = fPtr->fbmem + fPtr->fboff;
 	}
 
 	switch (pScrn->bitsPerPixel) {
@@ -543,7 +560,7 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
 #endif
 
-#ifdef DEBUG
+#if DEBUG
 	ErrorF("FBDevScreenInit done\n",pScrn->scrnIndex);
 #endif
 	return TRUE;
@@ -555,6 +572,7 @@ FBDevCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 	FBDevPtr fPtr = FBDEVPTR(pScrn);
 	
+	xf86DelControlledResource(&pScrn->Access, FALSE);
 	fbdevHWRestore(pScrn);
 	fbdevHWUnmapVidmem(pScrn);
 	if (fPtr->shadowmem)

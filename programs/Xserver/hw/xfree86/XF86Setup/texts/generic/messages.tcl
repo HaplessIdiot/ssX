@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/texts/generic/messages.tcl,v 1.3 1998/04/05 16:15:55 robin Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/texts/generic/messages.tcl,v 1.4 1999/03/21 07:34:58 dawes Exp $
 #
 # messages in done.tcl :
 set messages(done.1)	"\n\n\
@@ -56,9 +56,8 @@ set messages(phase1.10) \
 	"You need to be root to set the initial\
 	configuration with this program"
 set messages(phase1.11) \
-	"The XFree86 loader (XF86_LOADER) or the SVGA\n\
-	server is required when using\n\
-	this program to set the initial configuration"
+	"Can't find the XFree86 loader - falling back\n\
+	 to text interface for configuration"
 set messages(phase1.12) \
 	"The XFree86 loader (XF98_LOADER) or the EGC\n\
 	or the PEGC server is required when using\n\
@@ -68,8 +67,8 @@ set messages(phase1.13) \
 	existing XF86Config file for defaults?"
 set messages(phase1.14) "You need to be root to run this program"
 set messages(phase1.15) \
-	"Either the XFree86 loader (XF86_LOADER) or the\n\
-	SVGA server is required to run this program"
+	"Can't find the XFree86 loader - falling back\n\
+	 to text interface for configuration"
 set messages(phase1.16) \
 	"Either the XFree86 loader (XF98_LOADER) or the\n\
 	EGC server or the PEGC server is required to run\n\
@@ -84,9 +83,15 @@ set messages(phase1.19) "Unable to make directory "
 set messages(phase1.20) "\nfor storing temporary files"
 set messages(phase1.23) "Ready to switch to graphics mode.\n\
 	\nIt may take a while"
-set messages(phase1.24) "Unable to start X server!" 
-set messages(phase1.25) "Unable to communicate with X server!"
+set messages(phase1.24) "Unable to start X server!\n\
+	Falling back to text or curses interface...."
+set messages(phase1.25) "Unable to communicate with X server!\n\
+	Falling back to text or curses interface...."
 set messages(phase1.26) "Please wait\n\nThis may take a while..."
+set messages(phase1.27) "Unable to startup curses - maybe your terminal\n\
+	type (%s) is unknown?  Falling back to plain text interface...."
+set messages(phase1.28) "\$TERM no set.\n\
+	Falling back to plain text interface...."
 
 # messages in phase2 :
 set messages(phase2.1) "Loading  -  Please wait...\n\n\n"

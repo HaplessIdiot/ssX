@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.12 1999/01/26 10:40:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.13 1999/03/21 16:20:56 hohndel Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1176,6 +1176,7 @@ xf86SetCrtcForModes(ScrnInfoPtr scrp, int adjustFlags)
 		p->CrtcHBlankStart = p->CrtcHBlankEnd - 63 * 8;
 	    }
 	}
+#ifdef DEBUG
 	ErrorF("%s %s: %d (%d) %d %d (%d) %d %d (%d) %d %d (%d) %d\n",
 	       (p->type & M_T_DEFAULT) ? "(VESA)Mode" : "Mode",
 	       p->name, p->CrtcHDisplay, p->CrtcHBlankStart,
@@ -1183,6 +1184,7 @@ xf86SetCrtcForModes(ScrnInfoPtr scrp, int adjustFlags)
 	       p->CrtcHTotal, p->CrtcVDisplay, p->CrtcVBlankStart,
 	       p->CrtcVSyncStart, p->CrtcVSyncEnd, p->CrtcVBlankEnd,
 	       p->CrtcVTotal);
+#endif
 	p = p->next;
     } while (p != NULL && p != scrp->modes);
 }
@@ -1193,7 +1195,7 @@ xf86PrintModes(ScrnInfoPtr scrp)
 {
     DisplayModePtr p;
     float hsync, refresh;
-    char *desc, *desc2;
+    char *desc, *desc2, *prefix;
 
     if (scrp == NULL)
 	return;
@@ -1222,29 +1224,23 @@ xf86PrintModes(ScrnInfoPtr scrp)
 	    refresh /= p->VScan;
 	    desc2 = " (VScan)";
 	}
+	if (p->type & M_T_BUILTIN)
+	    prefix = "Built-in mode";
+	else if (p->type & M_T_DEFAULT)
+	    prefix = "VESA mode";
+	else
+	    prefix = "Mode";
 	if (p->Clock == p->SynthClock) {
-	    if (p->type & M_T_BUILTIN)
-		xf86DrvMsg(scrp->scrnIndex, X_CONFIG, "Built-in mode \"%s\": "
-			   "%.1f MHz, %.1f kHz, %.1f Hz%s%s\n",
-			   p->name, p->Clock / 1000.0, hsync,
-			   refresh, desc, desc2);
-	    else
-		xf86DrvMsg(scrp->scrnIndex, X_CONFIG, "Mode \"%s\": %.1f MHz, "
-			   "%.1f kHz, %.1f Hz%s%s\n",
-			   p->name, p->Clock / 1000.0,
-			   hsync, refresh, desc, desc2);
+	    xf86DrvMsg(scrp->scrnIndex, X_CONFIG,
+			"%s \"%s\": %.1f MHz, %.1f kHz, %.1f Hz%s%s\n",
+			prefix, p->name, p->Clock / 1000.0, hsync, refresh,
+			desc, desc2);
 	} else {
-	    if (p->type & M_T_BUILTIN)
-		xf86DrvMsg(scrp->scrnIndex, X_CONFIG, "Built-in Mode \"%s\": "
-			   "%.1f MHz (scaled from %.1f MHz), %.1f kHz, "
-			   "%.1f Hz%s%s\n", p->name, p->Clock / 1000.0,
-			   p->SynthClock / 1000.0, hsync, refresh, desc,
-			   desc2);
-	    else
-		xf86DrvMsg(scrp->scrnIndex, X_CONFIG, "Mode \"%s\": %.1f MHz "
-			   "(scaled from %.1f MHz), %.1f kHz, %.1f Hz%s%s\n",
-			   p->name, p->Clock / 1000.0, p->SynthClock / 1000.0,
-			   hsync, refresh, desc, desc2);
+	    xf86DrvMsg(scrp->scrnIndex, X_CONFIG,
+			"%s \"%s\": %.1f MHz (scaled from %.1f MHz), "
+			"%.1f kHz, %.1f Hz%s%s\n",
+			prefix, p->name, p->Clock / 1000.0,
+			p->SynthClock / 1000.0, hsync, refresh, desc, desc2);
 	}
 	p = p->next;
     } while (p != NULL && p != scrp->modes);

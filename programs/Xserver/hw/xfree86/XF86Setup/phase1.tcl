@@ -1,15 +1,11 @@
-# $XConsortium: phase1.tcl /main/3 1996/10/28 05:42:26 kaleb $
-#
-#
-#
-#
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.18 1998/04/26 16:04:35 robin Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.19 1999/03/21 07:34:57 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
 # See the file "LICENSE" for information regarding redistribution terms,
 # and for a DISCLAIMER OF ALL WARRANTIES.
 #
+# $XConsortium: phase1.tcl /main/3 1996/10/28 05:42:26 kaleb $
 
 #
 # Phase I - Initial text mode interaction w/user and starting of SVGA server
@@ -24,24 +20,8 @@ source $XF86Setup_library/texts/local_text.tcl
 source $XF86Setup_library/setuplib.tcl
 source $XF86Setup_library/filelist.tcl
 source $XF86Setup_library/carddata.tcl
+source $XF86Setup_library/kbddata.tcl
 source $XF86Setup_library/mondata.tcl
-
-proc find_dialog {} {
-	global env
-
-	foreach dir [split $env(PATH) :] {
-		if { [file executable $dir/dialog] } {
-			# aha! found one, now let's test to make sure
-			set retval [catch {
-				exec strings $dir/dialog \
-				| grep infobox >& /dev/null }]
-			if {$retval == 0} {
-				return $dir/dialog
-			}
-		}
-	}
-	return ""
-}
 
 proc check_for_files { xwinhome } {
 	global FilePermsDescriptions FilePermsReadMe messages
@@ -65,8 +45,7 @@ proc check_for_files { xwinhome } {
 	    set pattern [lindex $readme 0]
 	    set perms   [lindex $readme 1] ;# ignored (for now at least)
 	    if ![llength [glob -nocomplain -- $xwinhome/$pattern]] {
-		mesg [parafmt 65 $messages(phase1.4)] \
-			okay
+		mesg [parafmt 65 $messages(phase1.4)] okay
 		break
 	    }
 	}
@@ -197,13 +176,23 @@ proc parray {a {pattern *}} {
 
 set vlist [xf86config_readfile /home/X11R6/lib/X11/XF86Config /home/X11R6 Cfg]
 foreach arr [lsort [info vars Cfg*]] {
-	parray $arr
+	#parray $arr
 }
+#xf86config_writefile test.cfg Cfg
 exit 0
-if $NoDialog {
-	set Dialog ""
-} else {
-	set Dialog [find_dialog]
+
+if { !$NoCurses } {
+	if [info exists env(TERM)] {
+		if {[catch {curses init} retval]} {
+			puts [format $messages(phase1.27) $env(TERM)]
+			sleep 2
+			set NoCurses 1
+		}
+	} else {
+		puts $messages(phase1.28)
+		sleep 2
+		set NoCurses 1
+	}
 }
 
 check_for_files $Xwinhome
@@ -234,8 +223,7 @@ if { [string length $ConfigFile] > 0 } {
 		set UseConfigFile 1
 		set StartServer 0
 		if { [getuid] != 0 } {
-		    set proceed [mesg $messages(phase1.9) yesno]
-		    if !$proceed {
+		    if { [mesg $messages(phase1.9) yesno] == 0 } {
 		        exit 1
 		    }
 		}
@@ -246,8 +234,10 @@ if { [string length $ConfigFile] > 0 } {
 		}
 		if !$pc98 {
 		    if { !$UseLoader && ![file exists $Xwinhome/bin/XF86_SVGA] } {
-		        mesg $messages(phase1.11) okay
-		        exit 1
+			if !$NoTk {
+				mesg $messages(phase1.11) okay
+				set NoTk 1
+			}
 		    }
 		} else {
 		    if { !$UseLoader && ![file exists $Xwinhome/bin/XF98_EGC] \
@@ -274,8 +264,10 @@ if { [string length $ConfigFile] > 0 } {
 	if !$pc98 {
 	    if { !$ReConfig && !$UseLoader
 		    && ![file exists $Xwinhome/bin/XF86_SVGA] } {
-	        mesg $messages(phase1.15) okay
-	        exit 1
+		if !$NoTk {
+			mesg $messages(phase1.15) okay
+			set NoTk 1
+		}
 	    }
 	} else {
 	    if { !$ReConfig && !$UseLoader
@@ -361,6 +353,8 @@ if { ![getuid] } {
 
 set Confname $TmpDir/Config
 
+if $NoTk { set StartServer 0 }
+
 if $StartServer {
 	# write out a temp XF86Config file
 	if !$pc98 {
@@ -388,13 +382,15 @@ if $StartServer {
 
 	if { $ServerPID == 0 } {
 		mesg $messages(phase1.24) info
-		exit 1
+		set NoTk 1
 	}
 	if { $ServerPID == -1 } {
 		mesg $messages(phase1.25) info
 		exit 1
 	}
 } else {
-	mesg $messages(phase1.26) info
+	if !$NoTk {
+		mesg $messages(phase1.26) info
+	}
 }
 

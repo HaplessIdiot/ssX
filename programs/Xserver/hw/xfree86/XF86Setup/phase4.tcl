@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase4.tcl,v 3.9 1998/04/05 16:15:52 robin Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase4.tcl,v 3.10 1998/04/26 16:04:36 robin Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -16,6 +16,7 @@
 #
 
 source $XF86Setup_library/texts/local_text.tcl
+source $XF86Setup_library/vidmode.tcl
 
 if $StartServer {
 	set_resource_defaults
@@ -39,10 +40,10 @@ if $StartServer {
 	set msg ""
 }
 
-proc Phase4_run_xvidtune { win } {
+proc Phase4_adj_modes { win } {
 	global Xwinhome
 
-	exec $Xwinhome/bin/xvidtune
+	VidMode_activate $win
 }
 
 proc Phase4_nextphase { win } {
@@ -96,7 +97,7 @@ if [getuid] {
 label  $w.mesg -text ""
 frame  $w.buttons
 button $w.buttons.xvidtune -text $messages(phase4.9) \
-	-command [list Phase4_run_xvidtune $w]
+	-command [list Phase4_adj_modes $w]
 button $w.buttons.save -text $messages(phase4.10) \
 	-command [list Phase4_nextphase $w]
 button $w.buttons.abort -text $messages(phase4.11) \

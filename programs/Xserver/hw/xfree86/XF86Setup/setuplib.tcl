@@ -1,15 +1,11 @@
-# $XConsortium: setuplib.tcl /main/3 1996/10/25 10:21:33 kaleb $
-#
-#
-#
-#
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.21 1998/04/05 16:15:52 robin Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.22 1998/04/26 16:04:36 robin Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
 # See the file "LICENSE" for information regarding redistribution terms,
 # and for a DISCLAIMER OF ALL WARRANTIES.
 #
+# $XConsortium: setuplib.tcl /main/3 1996/10/25 10:21:33 kaleb $
 
 #
 # Library of routines used by XF86Setup
@@ -467,7 +463,7 @@ proc writeXF86Config {filename args} {
 		     ![string compare $drvr "SVGA"] } {
 			puts $fd "   DefaultColorDepth $DefaultColorDepth"
 		}
-		foreach key {ScreenNo BlankTime StandbyTime SuspendTime 
+		foreach key {ScreenNo BlankTime StandbyTime SuspendTime
 			     OffTime } {
 			if { [string length [set Scrn_${drvr}($key)]] } {
 				puts $fd [format "   %-15s %s" \
@@ -625,21 +621,21 @@ proc start_server { server configfile outfile } {
 }
 
 proc clear_scrn {} {
-	global Dialog
+	global NoCurses
 
-	if { ![string length $Dialog] } {
+	if { $NoCurses } {
 		set blank \n\n\n\n\n
 		puts $blank$blank$blank$blank$blank
 		flush stdout
 	} else {
-		catch {exec $Dialog --clear >&@stdout} ret
+		#catch {exec $Dialog --clear >&@stdout} ret
 	}
 }
 
-proc mesg { text {buttontype okay} } {
-	global Dialog messages
+proc mesg { text {buttontype okay} {title ""} } {
+	global NoCurses message  messages
 
-	if { ![string length $Dialog] } {
+	if { $NoCurses } {
 		puts -nonewline $text
 		flush stdout
 		if { [string compare $buttontype yesno] == 0 } {
@@ -668,23 +664,70 @@ proc mesg { text {buttontype okay} } {
 		}
 	}
 	incr width 6
-	set minwidth 12
-	if { [string compare $buttontype yesno] == 0 } {
-		set boxtype --yesno
-		incr width 2
-		set minwidth 25
-	} elseif { [string compare $buttontype okay] == 0 } {
-		set boxtype --msgbox
-	} else {
-		set boxtype --infobox
+	set minwidth	12
+	set scrninfo	[stdscr info]
+	set scrnht	[lindex $scrninfo 1]
+	set scrnwid	[lindex $scrninfo 0]
+	switch -- $buttontype {
+		yesno		{
+				  set buttons "Yes No"
+				  if [info exists message] {
+					append buttons " Help"
+				  }
+				  incr width 2
+				  set minwidth 25
+				}
+		okay		{
+				  set buttons "Okay Cancel"
+				  if [info exists message] {
+					append buttons " help"
+				  }
+				}
+		okayonly	{ set buttons "Okay" }
+		default		{ set buttons "" }
 	}
 	if { $width < $minwidth } {
 		set width $minwidth
 	}
-	set retval [catch {
-		exec $Dialog $boxtype $text $height $width >&@stdout
-	}]
-	return [expr $retval==0]
+	if { $width > [expr $scrnwid - 2] } {
+		set width [expr $scrnwid - 2]
+	}
+	if { $height > [expr $scrnht] } {
+		set height $scrnht
+	}
+	set begx [expr ($scrnwid - $width)/2]
+	set begy [expr ($scrnht - $height)/2]
+	set mesgwin mesgwin[info level]
+	curses newwin $mesgwin $height $width $begy $begx
+	stdscr update
+	$mesgwin configure -border line
+	if [string length $title] {
+		$mesgwin configure -title $title
+	}
+
+	if [string length $buttons] {
+		$mesgwin text $text
+		eval $mesgwin buttons $buttons
+		do {
+			$mesgwin update
+			set sel [$mesgwin activate]
+			if ![string compare $sel Help] {
+				mesg $message okayonly
+			}
+		} while { ![string compare $sel Help] }
+		if ![string compare $buttontype okayonly] {
+			return 1
+		}
+		if { [string compare $sel [lindex $buttons 0]] == 0 } {
+			return 1
+		} else {
+			return 0
+		}
+	} else {
+		$mesgwin text $text
+		$mesgwin update
+	}
+	return 1
 }
 
 proc save_state {} {
@@ -693,10 +736,10 @@ proc save_state {} {
 	check_tmpdirs
 	set fd [open $StateFileName w]
 
-	global Dialog Confname ConfigFile UseConfigFile UseLoader StartServer
+	global NoCurses Confname ConfigFile UseConfigFile UseLoader StartServer
 	global pc98
 
-	puts $fd [list set Dialog $Dialog]
+	puts $fd [list set NoCurses $NoCurses]
 	puts $fd [list set Confname $Confname]
 	puts $fd [list set ConfigFile $ConfigFile]
 	puts $fd [list set UseConfigFile $UseConfigFile]

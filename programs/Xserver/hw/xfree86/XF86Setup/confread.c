@@ -1,0 +1,882 @@
+/* $XFree86$ */
+/*
+ * Copyright 1999 by Joseph V. Moss <joe@XFree86.Org>
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Joseph Moss not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Joseph Moss makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as is" without express or implied warranty.
+ *
+ * JOSEPH MOSS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL JOSEPH MOSS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
+
+
+/*
+
+  Functions for converting a XF86ConfigRec to Tcl variables
+
+ */
+
+#include "X.h"
+#include "os.h"
+#include "xf86.h"
+#include "xf86Priv.h"
+#include "xf86Parser.h"
+#include "xf86tokens.h"
+
+#include "tcl.h"
+#include "xfsconf.h"
+
+#if NeedVarargsPrototypes
+#include <stdarg.h>
+#endif
+#include <sys/types.h>
+#include <sys/stat.h>
+
+static char *keymap_type(XF86ConfKeyboardPtr kbd, int keyval, char *defval);
+
+static int  getsection_files   (Tcl_Interp *interp, char *varpfx);
+static int  getsection_module  (Tcl_Interp *interp, char *varpfx);
+static int  getsection_flags   (Tcl_Interp *interp, char *varpfx);
+static int  getsection_keyboard(Tcl_Interp *interp, char *varpfx);
+static int  getsection_pointer (Tcl_Interp *interp, char *varpfx);
+static int  getsection_vidadptr(Tcl_Interp *interp, char *varpfx);
+static int  getsection_modes   (Tcl_Interp *interp, char *varpfx);
+static int  getsection_monitor (Tcl_Interp *interp, char *varpfx);
+static int  getsection_device  (Tcl_Interp *interp, char *varpfx);
+static int  getsection_screen  (Tcl_Interp *interp, char *varpfx);
+static int  getsection_layout  (Tcl_Interp *interp, char *varpfx);
+static int  getsection_vendor  (Tcl_Interp *interp, char *varpfx);
+
+static void read_options(
+  Tcl_Interp *interp,
+  char *arrname,
+  char *idxname,
+  XF86OptionPtr opts
+);
+
+static void read_modes(
+  Tcl_Interp *interp,
+  char *arrname,
+  char *idxname,
+  XF86ConfModeLinePtr modes
+);
+
+/*
+   Implements the xf86config_readfile command which locates and reads
+   in the XF86Config file and set the values from it
+*/
+
+int
+TCL_XF86ReadXF86Config(clientData, interp, argc, argv)
+    ClientData	clientData;
+    Tcl_Interp	*interp;
+    int		argc;
+    char	*argv[];
+{
+	int	pfxarg = 2;
+	char	filename[128];
+
+	if (argc > 4) {
+		Tcl_SetResult(interp,
+		    "Usage: xf86config_readfile [filename] <xwinhome> <prefix>",
+		    TCL_STATIC);
+		return TCL_ERROR;
+	}
+
+	if (argc == 4) {
+		strncpy(xf86ConfigFile, argv[1], 127);
+		xf86ConfigFile[127] = '\0';
+		pfxarg = 3;
+	}
+
+	if (xf86OpenConfigFile(filename) == 0) {
+		Tcl_SetResult(interp,
+			"Unable to open file" , TCL_STATIC);
+		return TCL_ERROR;
+	}
+	Tcl_SetResult(interp, filename, TCL_VOLATILE);
+	if ((config_list = xf86ReadConfigFile()) == NULL) {
+		Tcl_SetResult(interp,
+			"Error parsing config file" , TCL_STATIC);
+		return TCL_ERROR;
+	}
+	xf86CloseConfigFile();
+	getsection_files   (interp, argv[pfxarg]);
+	getsection_module  (interp, argv[pfxarg]);
+	getsection_flags   (interp, argv[pfxarg]);
+	getsection_keyboard(interp, argv[pfxarg]);
+	getsection_pointer (interp, argv[pfxarg]);
+	getsection_vidadptr(interp, argv[pfxarg]);
+	getsection_modes   (interp, argv[pfxarg]);
+	getsection_monitor (interp, argv[pfxarg]);
+	getsection_device  (interp, argv[pfxarg]);
+	getsection_screen  (interp, argv[pfxarg]);
+	getsection_layout  (interp, argv[pfxarg]);
+	getsection_vendor  (interp, argv[pfxarg]);
+	return TCL_OK;
+}
+
+/*
+  Set the Tcl variables for the config from the Files section
+*/
+
+static int
+getsection_files(interp, varpfx)
+  Tcl_Interp *interp;
+  char *varpfx;
+{
+	char *f, section[128];
+
+	SECTION_NAME("Files");
+	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+
+	Tcl_SetVar2(interp, section, "LogFile",
+		StrOrNull(config_list->conf_files->file_logfile), 0);
+	if (config_list->conf_files->file_fontpath) {
+		f = validate_font_path(config_list->conf_files->file_fontpath);
+		Tcl_SetVar2(interp, section, "FontPath", StrOrNull(f), 0);
+	} else {
+		Tcl_SetVar2(interp, section, "FontPath", defaultFontPath, 0);
+	}
+	if (config_list->conf_files->file_rgbpath)
+		Tcl_SetVar2(interp, section, "RGBPath",
+			config_list->conf_files->file_rgbpath, 0);
+	else
+		Tcl_SetVar2(interp, section, "RGBPath", rgbPath, 0);
+	Tcl_SetVar2(interp, section, "ModulePath",
+		StrOrNull(config_list->conf_files->file_modulepath), 0);
+	return TCL_OK;
+}
+
+/*
+  Set the Tcl variables for the config from the ServerFlags section
+*/
+
+static int
+getsection_flags(interp, varpfx)
+  Tcl_Interp *interp;
+  char *varpfx;
+{
+	char section[128];
+
+	SECTION_NAME("Server");
+	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+
+	if (!config_list->conf_flags)
+		return TRUE;
+
+	read_options(interp, section, NULL,
+		config_list->conf_flags->flg_option_lst);
+	return TCL_OK;
+}
+
+/*
+  Set the Tcl variables for the config from the Keyboard section
+*/
+
+static int
+getsection_keyboard(interp, varpfx)
+  Tcl_Interp *interp;
+  char *varpfx;
+{
+	char section[128];
+	XF86ConfKeyboardPtr keyboard;
+	char	tmpbuf[128], tmpbuf2[16];
+	int	i;
+
+	SECTION_NAME("Keyboard");
+	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+
+	keyboard = config_list->conf_keyboard;
+#ifdef XQUEUE
+	if (!NameCompare(keyboard->keyb_protocol, "Xqueue"))
+		Tcl_SetVar2(interp, section, "Protocol", "Xqueue", 0);
+#endif
+	if (!NameCompare(keyboard->keyb_protocol, "Standard"))
+		Tcl_SetVar2(interp, section, "Protocol", "Standard", 0);
+
+	Tcl_SetVar2(interp, section, "ServerNumLock",
+		keyboard->keyb_serverNumLock ? "ServerNumLock": "", 0);
+	sprintf(tmpbuf, "%d %d", 
+		(keyboard->keyb_kbdDelay) ? keyboard->keyb_kbdDelay : 500,
+		(keyboard->keyb_kbdRate) ? keyboard->keyb_kbdRate : 30);
+	Tcl_SetVar2(interp, section, "AutoRepeat", tmpbuf, 0);
+
+	tmpbuf[0] = '\0';
+	for (i = 1; i < 8; i++) {
+		if (keyboard->keyb_xleds & (1L << (i-1))) {
+			sprintf(tmpbuf2, "%d ", i);
+			strcat(tmpbuf, tmpbuf2);
+		}
+	}
+	Tcl_SetVar2(interp, section, "XLeds", tmpbuf, 0);
+
+	Tcl_SetVar2(interp, section, "VTInit",
+		StrOrNull(keyboard->keyb_vtinit), 0);
+#ifdef USE_VT_SYSREQ
+	Tcl_SetVar2(interp, section, "VTSysReq", 
+		keyboard->keyb_vtSysreq ? "VTSysReq" : "", 0);
+#endif
+
+	Tcl_SetVar2(interp, section, "LeftAlt", 
+		keymap_type(keyboard, CONF_K_INDEX_LEFTALT, "Meta"), 0);
+	Tcl_SetVar2(interp, section, "RightAlt", 
+		keymap_type(keyboard, CONF_K_INDEX_RIGHTALT, "Meta"), 0);
+	Tcl_SetVar2(interp, section, "ScrollLock", 
+		keymap_type(keyboard, CONF_K_INDEX_SCROLLLOCK, "Compose"), 0);
+	Tcl_SetVar2(interp, section, "RightCtl", 
+		keymap_type(keyboard, CONF_K_INDEX_RIGHTCTL, "Control"), 0);
+
+#ifdef XKB
+	Tcl_SetVar2(interp, section, "XkbDisable",
+		keyboard->keyb_xkbDisable ? "XkbDisable": "", 0);
+	Tcl_SetVar2(interp, section, "XkbKeycodes",
+		StrOrNull(keyboard->keyb_xkbkeycodes), 0);
+	Tcl_SetVar2(interp, section, "XkbTypes",
+		StrOrNull(keyboard->keyb_xkbtypes), 0);
+	Tcl_SetVar2(interp, section, "XkbCompat",
+		StrOrNull(keyboard->keyb_xkbcompat), 0);
+	Tcl_SetVar2(interp, section, "XkbSymbols",
+		StrOrNull(keyboard->keyb_xkbsymbols), 0);
+	Tcl_SetVar2(interp, section, "XkbGeometry",
+		StrOrNull(keyboard->keyb_xkbgeometry), 0);
+	Tcl_SetVar2(interp, section, "XkbKeymap",
+		StrOrNull(keyboard->keyb_xkbkeymap), 0);
+	Tcl_SetVar2(interp, section, "XkbRules",
+		StrOrNull(keyboard->keyb_xkbrules), 0);
+	Tcl_SetVar2(interp, section, "XkbModel",
+		StrOrNull(keyboard->keyb_xkbmodel), 0);
+	Tcl_SetVar2(interp, section, "XkbLayout",
+		StrOrNull(keyboard->keyb_xkblayout), 0);
+	Tcl_SetVar2(interp, section, "XkbVariant",
+		StrOrNull(keyboard->keyb_xkbvariant), 0);
+	Tcl_SetVar2(interp, section, "XkbOptions",
+		StrOrNull(keyboard->keyb_xkboptions), 0);
+#endif /* XKB */
+
+#if defined(SVR4) && defined(i386) && defined(PC98)
+	Tcl_SetVar2(interp, section, "Panix106",
+		keyboard->keyb_panix106 ? "Panix106": "", 0);
+#endif
+
+	return TCL_OK;
+}
+
+/*
+  Set the Tcl variables for the config from the Pointer section
+*/
+
+static int
+getsection_pointer(interp, varpfx)
+  Tcl_Interp *interp;
+  char *varpfx;
+{
+	char section[128];
+	char tmpbuf[16];
+	char *name;
+	XF86ConfPointerPtr pntr;
+	int mtoken = -1;
+	int i;
+
+	SECTION_NAME("Pointer");
+	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+	pntr = config_list->conf_pointer;
+	name = NULL;
+	if (pntr->pntr_protocol) {
+		if (!NameCompare(pntr->pntr_protocol, "Xqueue"))
+#ifdef XQUEUE
+			name = "Xqueue";
+#else
+			name = NULL;
+#endif
+		if (!NameCompare(pntr->pntr_protocol, "OSMouse"))
+#if defined(USE_OSMOUSE) || defined(OSMOUSE_ONLY)
+			name = "OSMouse";
+#else
+			name = NULL;
+#endif
+#ifndef OSMOUSE_ONLY
+		if (name == NULL) {
+			mtoken = string_to_token(xfsMouseTab, 
+				pntr->pntr_protocol);
+			if (mtoken >= 0)
+				name = pntr->pntr_protocol;
+		}
+#endif
+	}
+	Tcl_SetVar2(interp, section, "Protocol", StrOrNull(name), 0);
+
+#ifndef OSMOUSE_ONLY
+	Tcl_SetVar2(interp, section, "Device",
+		StrOrNull(pntr->pntr_device), 0);
+	i = pntr->pntr_baudrate;
+	if (i) {
+		if (mtoken == PROT_LOGIMAN && i != 1200 && i != 9600)
+			i = 0;
+		else if (i % 1200 != 0 || i < 1200 || i > 9600)
+			i = 0;
+	}
+	sprintf(tmpbuf, "%d", i);
+	Tcl_SetVar2(interp, section, "BaudRate", tmpbuf, 0);
+	sprintf(tmpbuf, "%d", pntr->pntr_samplerate);
+	Tcl_SetVar2(interp, section, "SampleRate", tmpbuf, 0);
+	sprintf(tmpbuf, "%d", pntr->pntr_resolution);
+	Tcl_SetVar2(interp, section, "Resolution", tmpbuf, 0);
+	Tcl_SetVar2(interp, section, "ChordMiddle",
+		pntr->pntr_chordMiddle ? "ChordMiddle": "", 0);
+
+#ifdef XINPUT
+	Tcl_SetVar2(interp, section, "AlwaysCore",
+		pntr->pntr_alwaysCore ? "AlwaysCore": "", 0);
+#endif
+
+#ifdef CLEARDTR_SUPPORT
+	Tcl_SetVar2(interp, section, "ClearDTR",
+		pntr->pntr_clearDtr ? "ClearDTR": "", 0);
+	Tcl_SetVar2(interp, section, "ClearRTS",
+		pntr->pntr_clearRts ? "ClearRTS": "", 0);
+#endif
+#endif /* OSMOUSE_ONLY */
+
+	sprintf(tmpbuf, "%d", pntr->pntr_buttons);
+	Tcl_SetVar2(interp, section, "Buttons", tmpbuf, 0);
+	Tcl_SetVar2(interp, section, "Emulate3Buttons",
+		pntr->pntr_emulate3Buttons ? "Emulate3Buttons": "", 0);
+	sprintf(tmpbuf, "%d", 
+		pntr->pntr_emulate3Timeout ? pntr->pntr_emulate3Timeout : 50);
+	Tcl_SetVar2(interp, section, "Emulate3Timeout", tmpbuf, 0);
+
+	switch (pntr->pntr_positiveZ) {
+	case 0:
+		Tcl_SetVar2(interp, section, "ZAxisPosMapping", "", 0);
+		Tcl_SetVar2(interp, section, "ZAxisNegMapping", "", 0);
+		break;
+	case CONF_ZAXIS_MAPTOX:
+		Tcl_SetVar2(interp, section, "ZAxisPosMapping", "X", 0);
+		Tcl_SetVar2(interp, section, "ZAxisNegMapping", "X", 0);
+		break;
+	case CONF_ZAXIS_MAPTOY:
+		Tcl_SetVar2(interp, section, "ZAxisPosMapping", "Y", 0);
+		Tcl_SetVar2(interp, section, "ZAxisNegMapping", "Y", 0);
+		break;
+	default:
+		sprintf(tmpbuf, "%d", pntr->pntr_negativeZ);
+		Tcl_SetVar2(interp, section, "ZAxisNegMapping", tmpbuf, 0);
+		sprintf(tmpbuf, "%d", pntr->pntr_positiveZ);
+		Tcl_SetVar2(interp, section, "ZAxisPosMapping", tmpbuf, 0);
+	}
+
+	return TCL_OK;
+}
+
+/*
+  Set the Tcl variables for the config from the Monitor sections
+*/
+
+static int
+getsection_monitor(interp, varpfx)
+  Tcl_Interp *interp;
+  char *varpfx;
+{
+	char		section[128];
+	int		i;
+	char		*namebuf, *tmpptr, tmpbuf[32];
+	XF86ConfMonitorPtr 	mptr;
+	XF86ConfModeLinePtr	dptr;
+
+	SECTION_NAME("Monitor");
+	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+	Tcl_SetVar2(interp, section, "Identifiers", "", 0);
+	for (mptr = config_list->conf_monitor_lst; mptr; mptr = mptr->list.next) {
+		namebuf = (char *)XtMalloc(strlen(section)
+					   + strlen(mptr->mon_identifier) + 2);
+		sprintf(namebuf, "%s_%s", section, mptr->mon_identifier);
+
+		Tcl_SetVar2(interp, section, "Identifiers", mptr->mon_identifier,
+			TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		Tcl_SetVar2(interp, namebuf, "VendorName",
+			StrOrNull(mptr->mon_vendor), 0);
+		Tcl_SetVar2(interp, namebuf, "ModelName",
+			StrOrNull(mptr->mon_modelname), 0);
+		sprintf(tmpbuf, "%d", mptr->mon_width);
+		Tcl_SetVar2(interp, namebuf, "Width", tmpbuf, 0);
+		sprintf(tmpbuf, "%d", mptr->mon_height);
+		Tcl_SetVar2(interp, namebuf, "Height", tmpbuf, 0);
+
+		Tcl_SetVar2(interp, namebuf, "HorizSync", "", 0);
+		tmpbuf[0] = '\0';
+		for (i = 0; i < mptr->mon_n_hsync; i++) {
+		    sprintf(tmpbuf, "%.5g-%.5g", 
+			mptr->mon_hsync[i].lo, mptr->mon_hsync[i].hi);
+		    Tcl_SetVar2(interp, namebuf, "HorizSync", tmpbuf,
+			TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		}
+
+		Tcl_SetVar2(interp, namebuf, "VertRefresh", "", 0);
+		tmpbuf[0] = '\0';
+		for (i = 0; i < mptr->mon_n_vrefresh; i++) {
+		    sprintf(tmpbuf, "%.5g-%.5g", 
+			mptr->mon_vrefresh[i].lo, mptr->mon_vrefresh[i].hi);
+		    Tcl_SetVar2(interp, namebuf, "VertRefresh", tmpbuf,
+			TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		}
+
+		sprintf(tmpbuf, "%.3g %.3g %.3g",
+		    mptr->mon_gamma_red, 
+		    mptr->mon_gamma_green, 
+		    mptr->mon_gamma_blue);
+		Tcl_SetVar2(interp, namebuf, "Gamma", tmpbuf, 0);
+
+		read_modes  (interp, namebuf, NULL, mptr->mon_modeline_lst);
+		read_options(interp, namebuf, NULL, mptr->mon_option_lst);
+		/* XXX mon_modes_sect_lst */
+
+		XtFree(namebuf);
+	}
+	return TCL_OK;
+}
+
+/*
+  Set the Tcl variables for the config from the Device sections
+*/
+
+static int
+getsection_device(interp, varpfx)
+  Tcl_Interp *interp;
+  char *varpfx;
+{
+	char	section[128];
+	int	i;
+	char	*namebuf, tmpbuf[128];
+	XF86ConfDevicePtr	dptr;
+
+	SECTION_NAME("Device");
+	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+	Tcl_SetVar2(interp, section, "Identifiers", "", 0);
+	for (dptr = config_list->conf_device_lst; dptr; dptr = dptr->list.next) {
+		namebuf = XtMalloc(strlen(section)
+				   + strlen(dptr->dev_identifier) + 10);
+		sprintf(namebuf, "%s_%s", section, dptr->dev_identifier);
+		Tcl_SetVar2(interp, section, "Identifiers", dptr->dev_identifier,
+			TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		Tcl_SetVar2(interp, namebuf, "VendorName",
+			StrOrNull(dptr->dev_vendor), 0);
+		Tcl_SetVar2(interp, namebuf, "BoardName",
+			StrOrNull(dptr->dev_board), 0);
+		Tcl_SetVar2(interp, namebuf, "Chipset",
+			StrOrNull(dptr->dev_chipset), 0);
+		Tcl_SetVar2(interp, namebuf, "BusID",
+			StrOrNull(dptr->dev_busid), 0);
+		Tcl_SetVar2(interp, namebuf, "Card",
+			StrOrNull(dptr->dev_card), 0);
+		Tcl_SetVar2(interp, namebuf, "Driver",
+			StrOrNull(dptr->dev_driver), 0);
+		Tcl_SetVar2(interp, namebuf, "Ramdac",
+			StrOrNull(dptr->dev_ramdac), 0);
+		Tcl_SetVar2(interp, namebuf, "DacSpeed",
+			NonZeroStr(dptr->dev_dacSpeeds[0]/1000,10), 0);
+		if (dptr->dev_dacSpeeds[0]/1000 > 0)
+		   for (i = 1; i < MAXDACSPEEDS; i++) {
+		      if (dptr->dev_dacSpeeds[i]/1000 <= 0)
+			 break;
+		      sprintf(tmpbuf, " %d", dptr->dev_dacSpeeds[i]/1000);
+		      Tcl_SetVar2(interp, namebuf, "DacSpeed",
+				  tmpbuf, TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		   }
+		Tcl_SetVar2(interp, namebuf, "VideoRam",
+			NonZeroStr(dptr->dev_videoram,10), 0);
+		sprintf(tmpbuf, "%.5g", dptr->dev_textclockfreq/1000.0);
+		Tcl_SetVar2(interp, namebuf, "TextClockFreq", tmpbuf, 0);
+		sprintf(tmpbuf, "%.5g", dptr->dev_memclk/1000.0);
+		Tcl_SetVar2(interp, namebuf, "MemClock", tmpbuf, 0);
+		Tcl_SetVar2(interp, namebuf, "BIOSBase",
+			NonZeroStr(dptr->dev_bios_base,16), 0);
+		Tcl_SetVar2(interp, namebuf, "MemBase",
+			NonZeroStr(dptr->dev_mem_base,16), 0);
+		Tcl_SetVar2(interp, namebuf, "IOBase",
+			NonZeroStr(dptr->dev_io_base,16), 0);
+		Tcl_SetVar2(interp, namebuf, "ClockChip",
+			StrOrNull(dptr->dev_clockchip), 0);
+		Tcl_SetVar2(interp, namebuf, "Clocks", "", 0);
+		for (i = 0; i < dptr->dev_clocks; i++) {
+			sprintf(tmpbuf, "%.5g ", dptr->dev_clock[i]/1000.0);
+			Tcl_SetVar2(interp, namebuf, "Clocks",
+				tmpbuf, TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		}
+		Tcl_SetVar2(interp, namebuf, "ChipID",
+			NonZeroStr(dptr->dev_chipid,16), 0);
+		Tcl_SetVar2(interp, namebuf, "ChipRev",
+			NonZeroStr(dptr->dev_chiprev,16), 0);
+
+		read_options(interp, namebuf, NULL, dptr->dev_option_lst);
+		XtFree(namebuf);
+	}
+	return TCL_OK;
+}
+
+/*
+  Set the Tcl variables for the config from the Screen sections
+*/
+
+static int
+getsection_screen(interp, varpfx)
+  Tcl_Interp *interp;
+  char *varpfx;
+{
+    char		section[128];
+    XF86ConfScreenPtr	screen;
+    XF86ConfDisplayPtr	disp;
+    XF86ModePtr		mode;
+    char		*namebuf, tmpbuf[128], tmpbuf2[32];
+    int			depth;
+
+    SECTION_NAME("Screen");
+	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+    Tcl_SetVar2(interp, section, "Identifiers", "", 0);
+    for (screen = config_list->conf_screen_lst; screen; screen = screen->list.next) {
+	namebuf = (char *) XtMalloc(strlen(section) 
+		+ strlen(screen->scrn_identifier) + 2);
+	sprintf(namebuf, "%s_%s", section, screen->scrn_identifier);
+	Tcl_SetVar2(interp, section, "Identifiers", screen->scrn_identifier,
+		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+	Tcl_SetVar2(interp, namebuf, "Monitor",
+		StrOrNull(screen->scrn_monitor->mon_identifier), 0);
+	Tcl_SetVar2(interp, namebuf, "Device",
+		StrOrNull(screen->scrn_device->dev_identifier), 0);
+
+	for (disp = screen->scrn_display_lst; disp; disp = disp->list.next) {
+	    depth = disp->disp_depth;
+	    sprintf(tmpbuf, "%d", depth);
+	    sprintf(tmpbuf2, "Depth,%d", depth);
+	    Tcl_SetVar2(interp, namebuf, tmpbuf2, tmpbuf, 0);
+
+	    if (disp->disp_frameX0 > 0 || disp->disp_frameX0 > 0) {
+		sprintf(tmpbuf, "%d %d",
+                        disp->disp_frameX0, disp->disp_frameY0);
+		sprintf(tmpbuf2, "ViewPort,%d", depth);
+		Tcl_SetVar2(interp, namebuf, tmpbuf2, tmpbuf, 0);
+	    }
+
+	    if (disp->disp_virtualX > 0 || disp->disp_virtualY > 0) {
+		sprintf(tmpbuf, "%d %d",
+			disp->disp_virtualX, disp->disp_virtualY);
+		sprintf(tmpbuf2, "Virtual,%d", depth);
+		Tcl_SetVar2(interp, namebuf, tmpbuf2, tmpbuf, 0);
+	    }
+
+	    if (disp->disp_depth == 16 && disp->disp_weight.red > 0) {
+		sprintf(tmpbuf, "%d%d%d",
+			disp->disp_weight.red,
+			disp->disp_weight.green,
+			disp->disp_weight.blue);
+		sprintf(tmpbuf2, "Weight,%d", depth);
+		Tcl_SetVar2(interp, namebuf, tmpbuf2, tmpbuf, 0);
+	    }
+
+	    if (disp->disp_visual) {
+		if (!NameCompare(disp->disp_visual, "StaticGray") ||
+		    !NameCompare(disp->disp_visual, "GrayScale") ||
+		    !NameCompare(disp->disp_visual, "StaticColor") ||
+		    !NameCompare(disp->disp_visual, "PseudoColor") ||
+		    !NameCompare(disp->disp_visual, "TrueColor") ||
+		    !NameCompare(disp->disp_visual, "DirectColor")) {
+		    sprintf(tmpbuf2, "Visual,%d", depth);
+		    Tcl_SetVar2(interp, namebuf, tmpbuf2, disp->disp_visual, 0);
+		}
+	    }
+
+	    sprintf(tmpbuf2, "Modes,%d", depth);
+	    Tcl_SetVar2(interp, namebuf, tmpbuf2, "", 0);
+	    for (mode = disp->disp_mode_lst; mode; mode = mode->list.next) {
+		Tcl_SetVar2(interp, namebuf, tmpbuf2, mode->mode_name,
+			TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+	    }
+	    read_options(interp, namebuf, tmpbuf2, disp->disp_option_lst);
+
+	}
+
+	read_options(interp, namebuf, NULL, screen->scrn_option_lst);
+
+	/* XXX screen no */
+	XtFree(namebuf);
+    }
+
+    return TCL_OK;
+}
+
+/*
+  Set the Tcl variables for the config from the Module section
+*/
+
+static int
+getsection_module(interp, varpfx)
+  Tcl_Interp *interp;
+  char *varpfx;
+{
+    char	section[128];
+    XF86LoadPtr lptr;
+
+    SECTION_NAME("Module");
+	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+    for (lptr = config_list->conf_modules->mod_load_lst; lptr; lptr = lptr->list.next) {
+	    Tcl_SetVar2(interp, section, lptr->load_name,
+			lptr->load_type? "driver": "module", 0);
+	    read_options(interp, section, lptr->load_name, lptr->load_opt);
+    }
+    return TCL_OK;
+}
+
+/*
+  Set the Tcl variables for the config from the Layout section
+*/
+
+static int
+getsection_layout(interp, varpfx)
+  Tcl_Interp *interp;
+  char *varpfx;
+{
+    char			section[128];
+    char			*namebuf;
+    XF86ConfLayoutPtr		lptr;
+    XF86ConfAdjacencyPtr	aptr;
+    XF86ConfInactivePtr		iptr;
+
+    SECTION_NAME("Layout");
+	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+    Tcl_SetVar2(interp, section, "Identifiers", "", 0);
+    for (lptr = config_list->conf_layout_lst; lptr; lptr = lptr->list.next) {
+	namebuf = (char *)XtMalloc(strlen(section)
+				   + strlen(lptr->lay_identifier) + 2);
+	sprintf(namebuf, "%s_%s", section, lptr->lay_identifier);
+	Tcl_SetVar2(interp, section, "Identifiers", lptr->lay_identifier,
+		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+
+	for (aptr = lptr->lay_adjacency_lst; aptr; aptr = aptr->list.next) {
+	    Tcl_SetVar2(interp, namebuf, aptr->adj_screen_str,
+		StrOrNull(aptr->adj_top_str), TCL_LIST_ELEMENT);
+	    Tcl_SetVar2(interp, namebuf, aptr->adj_screen_str,
+		StrOrNull(aptr->adj_bottom_str),
+		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+	    Tcl_SetVar2(interp, namebuf, aptr->adj_screen_str,
+		StrOrNull(aptr->adj_left_str),
+		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+	    Tcl_SetVar2(interp, namebuf, aptr->adj_screen_str,
+		StrOrNull(aptr->adj_right_str),
+		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+	}
+	
+	Tcl_SetVar2(interp, namebuf, "InactiveDevices", "", 0);
+	for (iptr = lptr->lay_inactive_lst; iptr; iptr = iptr->list.next) {
+	    Tcl_SetVar2(interp, namebuf, "InactiveDevices",
+		StrOrNull(iptr->inactive_device_str),
+		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+	}
+	read_options(interp, namebuf, NULL, lptr->lay_option_lst);
+	XtFree(namebuf);
+    }
+    return TCL_OK;
+}
+
+/*
+  Set the Tcl variables for the config from the VideoAdaptor section
+*/
+
+static int
+getsection_vidadptr(interp, varpfx)
+  Tcl_Interp *interp;
+  char *varpfx;
+{
+    char			section[128];
+    char			*namebuf;
+    XF86ConfVideoAdaptorPtr	aptr;
+    XF86ConfVideoPortPtr	pptr;
+
+    SECTION_NAME("VidAdaptr");
+	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+    Tcl_SetVar2(interp, section, "Identifiers", "", 0);
+    for (aptr= config_list->conf_videoadaptor_lst; aptr; aptr= aptr->list.next) {
+	namebuf = (char *)XtMalloc(strlen(section)
+				   + strlen(aptr->va_identifier) + 2);
+	sprintf(namebuf, "%s_%s", section, aptr->va_identifier);
+	Tcl_SetVar2(interp, section, "Identifiers", aptr->va_identifier,
+		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+
+	Tcl_SetVar2(interp, namebuf, "VendorName",
+	    StrOrNull(aptr->va_vendor), 0);
+	Tcl_SetVar2(interp, namebuf, "BoardName",
+	    StrOrNull(aptr->va_board), 0);
+	Tcl_SetVar2(interp, namebuf, "BusID",
+	    StrOrNull(aptr->va_busid), 0);
+	Tcl_SetVar2(interp, namebuf, "Driver",
+	    StrOrNull(aptr->va_driver), 0);
+	Tcl_SetVar2(interp, namebuf, "VideoPorts", "", 0);
+	for (pptr = aptr->va_port_lst; pptr; pptr = pptr->list.next) {
+	    Tcl_SetVar2(interp, namebuf, "VideoPorts",
+		StrOrNull(pptr->vp_identifier), TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+	    read_options(interp, namebuf, pptr->vp_identifier, pptr->vp_option_lst);
+	}
+	read_options(interp, namebuf, NULL, aptr->va_option_lst);
+	/* XXX what about pptr->va_fwdref??? */
+    }
+    return TCL_OK;
+}
+
+/*
+  Set the Tcl variables for the config from the Modes section
+*/
+
+static int
+getsection_modes(interp, varpfx)
+  Tcl_Interp *interp;
+  char *varpfx;
+{
+    char		section[128];
+    char		*namebuf;
+    XF86ConfModesPtr	mptr;
+
+    SECTION_NAME("Modes");
+	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+    Tcl_SetVar2(interp, section, "Identifiers", "", 0);
+    for (mptr = config_list->conf_modes_lst; mptr; mptr = mptr->list.next) {
+	namebuf = (char *)XtMalloc(strlen(section)
+				   + strlen(mptr->modes_identifier) + 2);
+	sprintf(namebuf, "%s_%s", section, mptr->modes_identifier);
+	Tcl_SetVar2(interp, section, "Identifiers", mptr->modes_identifier,
+		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+	read_modes(interp, namebuf, NULL, mptr->mon_modeline_lst);
+    }
+    return TCL_OK;
+}
+
+static int
+getsection_vendor(interp, varpfx)
+  Tcl_Interp *interp;
+  char *varpfx;
+{
+    char		section[128];
+    char		*namebuf;
+    XF86ConfVendorPtr	vptr;
+
+    SECTION_NAME("Vendor");
+	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+    Tcl_SetVar2(interp, section, "Identifiers", "", 0);
+    for (vptr = config_list->conf_vendor_lst; vptr; vptr = vptr->list.next) {
+	namebuf = (char *)XtMalloc(strlen(section)
+				   + strlen(vptr->vnd_identifier) + 2);
+	sprintf(namebuf, "%s_%s", section, vptr->vnd_identifier);
+	Tcl_SetVar2(interp, section, "Identifiers", vptr->vnd_identifier,
+		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+	read_options(interp, namebuf, NULL, vptr->vnd_option_lst);
+    }
+    return TCL_OK;
+}
+
+static void
+read_options(interp, arrname, idxname, opts)
+  Tcl_Interp *interp;
+  char *arrname, *idxname;
+  XF86OptionPtr opts;
+{
+    char	idxbuf[128];
+    char	optbuf[128];
+
+    if (idxname) {
+	snprintf(idxbuf, 128, "%s:Options", idxname);
+    } else {
+	strcpy(idxbuf, "Options");
+    }
+    Tcl_SetVar2(interp, arrname, idxbuf, "", 0);
+    for ( ; opts; opts = opts->list.next) {
+	snprintf(optbuf, 128, "%s%sOpt:%s", StrOrNull(idxname),
+		(idxname? "_": ""), opts->opt_name);
+	Tcl_SetVar2(interp, arrname, optbuf, opts->opt_val, 0);
+	Tcl_SetVar2(interp, arrname, idxbuf, opts->opt_name,
+			TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+    }
+}
+
+static void
+read_modes(interp, arrname, idxname, modes)
+  Tcl_Interp *interp;
+  char *arrname, *idxname;
+  XF86ConfModeLinePtr modes;
+{
+    char	idxbuf[128];
+    char	modebuf[128];
+    char	tmpbuf[128];
+
+    if (idxname) {
+	snprintf(idxbuf, 128, "%s:Modes", idxname);
+    } else {
+	strcpy(idxbuf, "Modes");
+    }
+    Tcl_SetVar2(interp, arrname, idxbuf, "", 0);
+    for ( ; modes; modes = modes->list.next) {
+	snprintf(modebuf, 128, "%s%sMode:%s", StrOrNull(idxname),
+		(idxname? "_": ""), modes->ml_identifier);
+	Tcl_SetVar2(interp, arrname, idxbuf, modes->ml_identifier,
+		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+
+	sprintf(tmpbuf, "%.4g %d %d %d %d %d %d %d %d",
+		modes->ml_clock/1000.0,
+		modes->ml_hdisplay, modes->ml_hsyncstart,
+		modes->ml_hsyncend, modes->ml_htotal,
+		modes->ml_vdisplay, modes->ml_vsyncstart,
+		modes->ml_vsyncend, modes->ml_vtotal);
+	if (modes->ml_flags & XF86CONF_INTERLACE)
+		strcat(tmpbuf, " Interlace");
+	if (modes->ml_flags & XF86CONF_PHSYNC)
+		strcat(tmpbuf, " +HSync");
+	if (modes->ml_flags & XF86CONF_NHSYNC)
+		strcat(tmpbuf, " -HSync");
+	if (modes->ml_flags & XF86CONF_PVSYNC)
+		strcat(tmpbuf, " +VSync");
+	if (modes->ml_flags & XF86CONF_NVSYNC)
+		strcat(tmpbuf, " -VSync");
+	if (modes->ml_flags & XF86CONF_CSYNC)
+		strcat(tmpbuf, " Composite");
+	if (modes->ml_flags & XF86CONF_PCSYNC)
+		strcat(tmpbuf, " +CSync");
+	if (modes->ml_flags & XF86CONF_NCSYNC)
+		strcat(tmpbuf, " -CSync");
+	if (modes->ml_flags & XF86CONF_DBLSCAN)
+		strcat(tmpbuf, " DoubleScan");
+	if (modes->ml_flags & XF86CONF_HSKEW) {
+		char buf[10];
+		sprintf(buf, " HSkew %d", modes->ml_hskew);
+		strcat(tmpbuf, buf);
+	    }
+	/* XXX ml_vscan */
+	Tcl_SetVar2(interp, arrname, modebuf, tmpbuf, 0);
+    }
+}
+
+static char *
+keymap_type(kptr, keyidx, defstr)
+  XF86ConfKeyboardPtr kptr;
+  int keyidx;
+  char *defstr;
+{
+	switch(kptr->keyb_specialKeyMap[keyidx]) {
+		case CONF_KM_META:		return "Meta";
+		case CONF_KM_COMPOSE:		return "Compose";
+		case CONF_KM_MODESHIFT:		return "ModeShift";
+		case CONF_KM_MODELOCK:		return "ModeLock";
+		case CONF_KM_SCROLLLOCK:	return "ScrollLock";
+		case CONF_KM_CONTROL:		return "Control";
+	}
+	return defstr;
+}
+

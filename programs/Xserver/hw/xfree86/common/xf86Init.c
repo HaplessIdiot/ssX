@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.106 1999/03/29 09:41:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.107 1999/04/04 00:20:51 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -949,8 +949,9 @@ ddxProcessArgument(int argc, char **argv, int i)
   {
     if (++i >= argc)
       return 0;
-    ErrorF("The -bpp option is no longer supported."
-	   "  Use -depth and/or -fbbpp\n");
+    ErrorF("The -bpp option is no longer supported.\n"
+	"\tUse -depth to set the color depth, and use -fbbpp if you really\n"
+	"\tneed to force a non-default framebuffer (hardware) pixel format.\n");
     return 2;
   }
   if (!strcmp(argv[i], "-pixmap24"))

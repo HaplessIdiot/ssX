@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.86 1999/03/21 07:35:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.87 1999/03/28 15:32:41 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2024,6 +2024,8 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     if (pMga->FBDev) {
 	fbdevHWSave(pScrn);
+	/* Disable VGA core, and leave memory access on */
+	pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, 0x100, 0x000);
 	if (!fbdevHWModeInit(pScrn, pScrn->currentMode))
 	    return FALSE;
 	MGAStormSync(pScrn);

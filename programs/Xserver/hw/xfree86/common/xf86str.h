@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.25 1999/03/29 09:41:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.26 1999/04/04 00:20:52 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -230,6 +230,13 @@ typedef struct {
 } GDevRec, *GDevPtr;
 
 typedef struct {
+   char *			identifier;
+   char *			driver;
+   pointer		 	commonOptions;
+   pointer			extraOptions;
+} IDevRec, *IDevPtr;
+
+typedef struct {
     int			vendor;
     int			chipType;
     int			chipRev;
@@ -302,6 +309,7 @@ typedef struct _serverlayoutrec {
     char *		id;
     screenLayoutPtr	screens;
     GDevPtr		inactives;
+    IDevPtr		inputs;
     pointer		options;
 } serverLayoutRec, *serverLayoutPtr;
     

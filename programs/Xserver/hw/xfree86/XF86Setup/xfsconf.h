@@ -4,30 +4,83 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/xfsconf.h,v 3.2 1996/12/27 06:54:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/xfsconf.h,v 3.3 1998/04/05 16:15:53 robin Exp $ */
 
 extern char *XtMalloc(
-#if NeedFunctionPrototypes
     unsigned int	/* size */
-#endif
 );
 
 extern char *XtCalloc(
-#if NeedFunctionPrototypes
     unsigned int	/* num */,
     unsigned int	/* size */
-#endif
 );
 
 extern char *XtRealloc(
-#if NeedFunctionPrototypes
     char*		/* ptr */,
     unsigned int	/* num */
-#endif
 );
 
 extern void XtFree(
-#if NeedFunctionPrototypes
     char*		/* ptr */
-#endif
 );
+
+int XF86Config_Init(
+    Tcl_Interp	*interp
+);
+
+int TCL_XF86ReadXF86Config(
+    ClientData	clientData,
+    Tcl_Interp	*interp,
+    int		argc,
+    char	**argv
+);
+
+int TCL_XF86WriteXF86Config(
+    ClientData	clientData,
+    Tcl_Interp	*interp,
+    int		argc,
+    char	**argv
+);
+
+char *NonZeroStr(
+    unsigned long val,
+    int base
+);
+
+char *get_path_elem(
+     char **pnt
+);
+
+char *validate_font_path(
+     char *path
+);
+
+char *token_to_string(
+     SymTabPtr table,
+     int token
+);
+
+int string_to_token(
+     SymTabPtr table,
+     char *string
+);
+
+extern char *rgbPath, *defaultFontPath;
+
+extern XF86ConfigPtr config_list;
+
+extern Tcl_Interp *errinterp;
+
+extern Bool Must_have_memory;
+
+extern SymTabRec xfsMouseTab[];
+
+#define StrOrNull(xx)	((xx)==NULL? "": (xx))
+
+#define SECTION_NAME(name) { int len = sizeof(section)-sizeof(name)-1; \
+			strncpy(section, varpfx, len); \
+			varpfx[len] = '\0'; strcat(section, name); \
+			Tcl_AppendElement(interp, name); }
+
+#define DIR_FILE	"/fonts.dir"
+

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Keyboard.c,v 1.2 1998/07/25 16:57:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Keyboard.c,v 1.3 1999/03/28 15:33:01 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -30,6 +30,7 @@
 #include "xf86Parser.h"
 #include "xf86tokens.h"
 #include "Configint.h"
+#include "ctype.h"
 
 extern LexRec val;
 
@@ -265,7 +266,7 @@ printKeyboardSection (FILE * cf, XF86ConfKeyboardPtr ptr)
 		fprintf (cf, "\t%10s   ", nam); \
 		for (i = 0; KeyMapTab[i].token >= 0; i++) { \
 		    if (KeyMapTab[i].token == ptr->keyb_specialKeyMap[idx]) { \
-			fprintf(cf, "%c%s\n", toupper(KeyMapTab[i].name), \
+			fprintf(cf, "%c%s\n", toupper(*KeyMapTab[i].name), \
 				KeyMapTab[i].name+1); \
 			break; \
 		    } \
