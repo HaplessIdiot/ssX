@@ -89,7 +89,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.155 2002/08/17 19:52:26 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.156tsi Exp $ */
 
 /* main.c */
 
@@ -2722,7 +2722,11 @@ spawn(void)
     struct utmp utmp;
 #endif
 #ifdef USE_SYSV_UTMP
+#if defined(UTMPX_FOR_UTMP)
+    struct utmpx *utret;
+#else
     struct utmp *utret;
+#endif
 #endif
 #ifdef USE_LASTLOG
     struct lastlog lastlog;
