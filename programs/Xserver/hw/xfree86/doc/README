@@ -1,8 +1,8 @@
-                      README for XFree86[tm] 4.3.99.901
+                      README for XFree86[tm] 4.3.99.902
 
                           The XFree86 Project, Inc
 
-                              11 December 2003
+                              18 December 2003
 
                                   Abstract
 
@@ -11,33 +11,30 @@
      FreeBSD, NetBSD, OpenBSD and Solaris x86) on Intel and other plat-
      forms.  This version is compatible with X11R6.6.
 
-1.  What is XFree86 4.3.99.901?
+1.  What is XFree86 4.3.99.902?
 
-XFree86 4.3.99.901 is a pre-release snapshot of XFree86 4.4.0.  This snapshot
-is release candidate 1 for version 4.4.0.  Pre-release snapshots are provided
+XFree86 4.3.99.902 is a pre-release snapshot of XFree86 4.4.0.  This snapshot
+is release candidate 2 for version 4.4.0.  Pre-release snapshots are provided
 for beta testing.  You should only install snapshots if you're comfortable
 dealing with possibly unstable beta-level software.  If you find problems
 with this snapshot, you are encouraged to report your findings to the public
 XFree86 mailing list: <devel@XFree86.org>.
 
-XFree86 4.3.99.901 is a feature-complete snapshot of XFree86 4.4.0.
+XFree86 4.3.99.902 is a feature-complete snapshot of XFree86 4.4.0.
 
 XFree86 4.x is the current XFree86 release series.  The first release in this
 series was in early 2000.  The core of XFree86 4.x is a modular X server.
 Specific release enhancements can be viewed in the Release Notes.
 
-Most modern PC video hardware is supported in XFree86 4.3.99.901, and most PC
+Most modern PC video hardware is supported in XFree86 4.3.99.902, and most PC
 video hardware that isn't supported explicitly can be used with the "vesa"
-driver.  The Driver Status document has a summary of what hardware is sup-
-ported in 4.3.99.901 compared with the old 3.3.x (3.3.6) series.  It is a
-good idea to check there before upgrading if you are currently running 3.3.6
-with older hardware.
+driver.  The Releaes Notes has a table showing the drivers provided with
+XFree86 4.3.99.902, and links to related documentation.
 
 XFree86 is produced by The XFree86 Project, Inc, which is a group of mostly
 volunteer independent developers.  XFree86 is a non-commercial organisation,
 and would not be viable without the invaluable development contributions of
-volunteers.  This release is dedicated to all who have supported and con-
-tributed to XFree86 over the last eleven years.
+volunteers.  This release is dedicated to the greater XFree86 community.
 
 2.  Redistribution of Snapshots
 
@@ -62,7 +59,7 @@ the License Document.
 4.  Pointers to additional information
 
 The documentation for this release can be found online at the XFree86 web
-site <URL:http://www.xfree86.org/4.3.99.901/>.  Documentation for the latest
+site <URL:http://www.xfree86.org/4.3.99.902/>.  Documentation for the latest
 release version can always be found here <URL:http://www.xfree86.org/cur-
 rent/>, and documentation for the latest pre-release snapshot can be found
 here <URL:http://www.xfree86.org/snapshot/>.  Checking those last two links
@@ -79,6 +76,9 @@ Additional information may be available at the XFree86 web site
 able at the XFree86 support page <URL:http://www.xfree86.org/support.html>.
 
 5.  The Public Mailing Lists
+
+Current information about the XFree86 public mailing lists can be found at
+our web site <URL:http://www.xfree86.org/lists.html>.
 
 5.1  CVS Commit
 
@@ -99,17 +99,26 @@ This list is available for any discussions and questions related to XFree86.
 Support related questions should be sent here.  Many experienced XFree86
 developers monitor this list.
 
+5.4  Forum
+
+This list is available for high level discussions about XFree86 and related
+technologies, their future, and for inter-project communication.
+
 6.  Contributing to XFree86
 
 If you have any new work or enhancements/bug fixes for existing work, please
-submit them to <fixes@XFree86.org>.  This will ensure that they are included
-in future releases.  For new work, it's usually a good idea to discuss it
-first on the <devel@XFree86.org> list.
+submit them to <patch@XFree86.org> or to our bug tracking system
+<URL:http://bugs.xfree86.org/>.  This will ensure that they are included in
+future releases.  New works should be discussed on our <devel@XFree86.org>
+list prior to submission.
 
-7.  How to get XFree86 4.3.99.901
+Current information about the XFree86 development process can be found at our
+web site <URL:http://www.xfree86.org/developer.html>.
 
-XFree86 4.3.99.901 can be found at the XFree86 ftp server
-<URL:ftp://ftp.xfree86.org/pub/XFree86/snapshots/4.3.99.901/>, and at mirrors
+7.  How to get XFree86 4.3.99.902
+
+XFree86 4.3.99.902 can be found at the XFree86 ftp server
+<URL:ftp://ftp.xfree86.org/pub/XFree86/snapshots/4.3.99.902/>, and at mirrors
 of this server.  This snapshot is available primarily in binary form for sev-
 eral popular platforms.
 
@@ -119,7 +128,7 @@ mation about accessing this can be found at the CVS page
 <URL:http://www.xfree86.org/cvs/> on our web site.  It's also possible to
 browse the XFree86 CVS repository at our CVSWeb server
 <URL:http://cvsweb.xfree86.org/>.  The CVS tag for this version is
-"xf-4_3_99_901".  To check out the latest development version, don't specify
+"xf-4_3_99_902".  To check out the latest development version, don't specify
 any tag.
 
 8.  Reporting Bugs
@@ -131,7 +140,7 @@ yourself, send the entire log file with your bug report but not the operating
 system core dump.  Do not edit  the log file as our developers use it to
 reproduce and debug your problem.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.137 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.138 dawes Exp $
 
 
 $XFree86: $
