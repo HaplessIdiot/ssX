@@ -2,7 +2,7 @@ XCOMM platform:  $Xorg: FreeBSD.cf,v 1.3 2000/08/17 19:41:45 cpqbld Exp $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.128 2003/01/15 02:52:12 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.129 2003/03/06 15:15:10 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -326,117 +326,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #if (OSMajorVersion > 3) || (OSMajorVersion == 3 && OSMinorVersion >=1 )
 #ifndef HasPam
 #define HasPam		YES
-#endif
-#endif
-
-/*
- * For FreeBSD 2.2.5 and later don't make any assumptions about the version
- * of Tcl in the base OS.
- *
- * Note the static libs in some versions of the FreeBSD packages are
- * broken.  The symptom of this is unresolved symbols when linking
- * XF86Setup.  If you run into this problem, either build your own
- * static libs from the standard Tcl and Tk source, or change the
- * definitions of XF86SetupUsesStatic{Tcl,Tk}.  The latter is not
- * recommended for binaries that are going to be redistributed.
- */
-
-#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion > 2) || \
-    (OSMajorVersion == 2 && OSMinorVersion == 2 && OSTeenyVersion > 5)
-/*
- * For 2.2.6, 3.0 and later the defaults assume that the tcl-8.0 and tk-8.0
- * packages have been installed.  XF86Setup is much faster with 8.x than
- * with earlier versions.
- *
- */
-
-#ifndef TkLibName
-#define TkLibName		tk80
-#endif
-#ifndef TkIncDir
-#define TkIncDir		/usr/local/include/tk8.0
-#endif
-#ifndef TclLibName
-#define TclLibName		tcl80
-#endif
-#ifndef TclIncDir
-#define TclIncDir		/usr/local/include/tcl8.0
-#endif
-
-#elif OSMajorVersion == 2 && OSMinorVersion == 2 && OSTeenyVersion > 2
-/*
- * For 2.2.5, the defaults assume that the tcl-7.6 and tk-4.2
- * packages have been installed.
- */
-
-#ifndef TkLibName
-#define TkLibName		tk42
-#endif
-#ifndef TkIncDir
-#define TkIncDir		/usr/local/include/tk4.2
-#endif
-#ifndef TclLibName
-#define TclLibName		tcl76
-#endif
-#ifndef TclIncDir
-#define TclIncDir		/usr/local/include/tcl7.6
-#endif
-
-#elif OSMajorVersion == 2 && OSMinorVersion == 2
-/*
- * FreeBSD 2.2 prior to 2.2.5
- *
- * tcl is part of the base OS.
- *
- * Note: the tk-4.1 package for FreeBSD doesn't have the static lib, so
- * you'll have to build it yourself, or change the definition of
- * XF86SetupUsesStaticTk.
- */
-#ifndef TkLibName
-#define TkLibName		tk41
-#endif
-#ifndef TclLibName
-#define TclLibName		tcl
-#endif
-#ifndef TclLibDir
-#define TclLibDir		/usr/lib
-#endif
-#ifndef TclIncDir
-#define TclIncDir		/usr/include
-#endif
-/* FreeBSD 2.2 has libtcl in the base system */
-#ifndef XF86SetupUsesStaticTcl
-#define XF86SetupUsesStaticTcl	NO
-#endif
-
-#else /* ! 2.2 or later */
-
-#if OSMajorVersion == 2 && OSMinorVersion == 1 && OSTeenyVersion >= 6
-
-/*
- * 2.1.x with x >=6 has tk 4.1 and tcl 7.5 in the packages collection.
- * Neither packages include the static libs, so you either need to build
- * them yourself or set XF86SetupUsesStaticTcl and XF86SetupUsesStaticTk
- * to NO.  This isn't the default because we don't want the XFree86
- * binaries to have these packages as a dependency.
- */
-
-#ifndef TkLibName
-#define TkLibName		tk41
-#endif
-#ifndef TclLibName
-#define TclLibName		tcl75
-#endif
-
-#else /* ! 2.1.6 or later */
-
-#ifndef TkLibName
-#define TkLibName		tk40
-#endif
-#ifndef TclLibName
-#define TclLibName		tcl74
-#endif
-
 #endif
 #endif
 
