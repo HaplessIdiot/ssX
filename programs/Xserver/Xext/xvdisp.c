@@ -74,6 +74,7 @@ SOFTWARE.
 
 XvAdaptorPtr XineramaAdaptors[MAXSCREENS];
 static int XineramaXvShmPutImage(ClientPtr);
+static int XineramaXvPutImage(ClientPtr);
 static int XineramaXvSetPortAttribute(ClientPtr);
 
 #endif
@@ -236,7 +237,13 @@ ProcXvDispatch(ClientPtr client)
     case xv_GetPortAttribute: return(ProcXvGetPortAttribute(client));
     case xv_QueryBestSize: return(ProcXvQueryBestSize(client));
     case xv_QueryPortAttributes: return(ProcXvQueryPortAttributes(client));
-    case xv_PutImage: return(ProcXvPutImage(client));
+    case xv_PutImage:
+#ifdef PANORAMIX
+        if(!noPanoramiXExtension)
+	    return(XineramaXvPutImage(client));
+	else
+#endif
+	    return(ProcXvPutImage(client));
     case xv_ShmPutImage: 
 #ifdef PANORAMIX
         if(!noPanoramiXExtension)
@@ -1865,6 +1872,50 @@ XineramaXvShmPutImage(ClientPtr client)
     }
     return result;
 }
+
+static int 
+XineramaXvPutImage(ClientPtr client)
+{
+    REQUEST(xvPutImageReq);
+    PanoramiXRes *draw, *gc;
+    Bool isRoot;
+    int result, i, x, y;
+
+    REQUEST_AT_LEAST_SIZE(xvPutImageReq);
+
+    if(!(draw = (PanoramiXRes *)SecurityLookupIDByClass(
+                client, stuff->drawable, XRC_DRAWABLE, SecurityWriteAccess)))
+        return BadDrawable;
+
+    if(!(gc = (PanoramiXRes *)SecurityLookupIDByType(
+                client, stuff->gc, XRT_GC, SecurityReadAccess)))
+        return BadGC;    
+ 
+    isRoot = (draw->type == XRT_WINDOW) &&
+                (stuff->drawable == WindowTable[0]->drawable.id);
+
+    x = stuff->drw_x;
+    y = stuff->drw_y;
+
+    FOR_NSCREENS_BACKWARD(i) {
+	if(XineramaAdaptors[i]) {
+	   stuff->drawable = draw->info[i].id;
+	   stuff->port = XineramaAdaptors[i]->base_id;
+	   stuff->gc = gc->info[i].id;
+	   stuff->drw_x = x;
+	   stuff->drw_y = y;
+	   if(isRoot) {
+		stuff->drw_x -= panoramiXdataPtr[i].x;
+		stuff->drw_y -= panoramiXdataPtr[i].y;
+	   }
+
+	   result = ProcXvPutImage(client);
+	   if(result != Success) break;
+	}
+    }
+    return result;
+}
+
 
 void XineramifyXv(void)
 {
