@@ -1,12 +1,22 @@
 XCOMM $XConsortium: Imakefile,v 1.3 94/01/22 14:03:10 rws Exp $
+XCOMM $XFree86$
 #define IHaveSubdirs
 #define PassCDebugFlags
 
         SUBDIRS = XLC_LOCALE Compose
 
+#if !UseKoi8RForCyrillic
+DEFAULT_RUSSIAN = ISO8859-5
+#else
+DEFAULT_RUSSIAN = KOI8-R
+#endif
+
+AllTarget(locale.alias)
+
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 
+CppFileTarget(locale.alias, locale.cpp, -DDEFAULT_RUSSIAN=$(DEFAULT_RUSSIAN),NullParameter)
 InstallNonExecFile(locale.alias,$(XLOCALEDIR))
 InstallNonExecFile(locale.dir,$(XLOCALEDIR))
 InstallNonExecFile(compose.dir,$(XLOCALEDIR))
