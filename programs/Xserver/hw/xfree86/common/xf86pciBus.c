@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.35 2001/03/21 16:55:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.36 2001/03/21 19:46:25 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -2995,10 +2995,10 @@ xf86EnablePciBusMaster(pciVideoPtr pPci, Bool enable)
     if (!pPci) return;
 
     tag = pciTag(pPci->bus, pPci->device, pPci->func);
-    temp = pciReadLong(pcitag, PCI_CMD_STAT_REG);
+    temp = pciReadLong(tag, PCI_CMD_STAT_REG);
     if (enable)
-	pciWriteLong(pcitag, PCI_CMD_STAT_REG, temp | PCI_CMD_MASTER_ENABLE);
+	pciWriteLong(tag, PCI_CMD_STAT_REG, temp | PCI_CMD_MASTER_ENABLE);
     else
-	pciWriteLong(pcitag, PCI_CMD_STAT_REG, temp & ~PCI_CMD_MASTER_ENABLE);
+	pciWriteLong(tag, PCI_CMD_STAT_REG, temp & ~PCI_CMD_MASTER_ENABLE);
 }
 
