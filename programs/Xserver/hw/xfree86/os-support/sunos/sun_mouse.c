@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.7 2005/01/31 03:24:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.8 2005/01/31 22:12:25 dawes Exp $ */
 /*
  * Copyright 1999-2005 The XFree86 Project, Inc.
  * All rights reserved.
@@ -93,6 +93,7 @@ vuidPreInit(InputInfoPtr pInfo, const char *protocol, int flags)
     if (pVuidMse == NULL) {
 	xf86Msg(X_ERROR, "%s: cannot allocate VuidMouseRec\n", pInfo->name);
 	xfree(pMse);
+	pInfo->private = NULL;
 	return FALSE;
     }
 
@@ -112,6 +113,7 @@ vuidPreInit(InputInfoPtr pInfo, const char *protocol, int flags)
 	    xf86Msg(X_ERROR, "%s: cannot open input device\n", pInfo->name);
 	    xfree(pVuidMse);
 	    xfree(pMse);
+	    pInfo->private = NULL;
 	    return FALSE;
 	}
     }
@@ -246,6 +248,7 @@ vuidMouseProc(DeviceIntPtr pPointer, int what)
 			      NUMEVENTS * sizeof(Firm_event));
 	    if (!pMse->buffer) {
 		xfree(pMse);
+		pInfo->private = NULL;
 		xf86CloseSerial(pInfo->fd);
 		pInfo->fd = -1;
 	    } else {

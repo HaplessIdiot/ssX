@@ -1,4 +1,5 @@
 XFree86 4.4.99.23 (xx January 2005)
+ 310. Fix duplicate free error resulting from mouse os-support (David Dawes).
  309. Add Xasprintf() to the server, providing a cleaner mechanism for
       printing into (X-)allocated memory (David Dawes).
  308. Update the bindist/installer to handle platforms that don't use /etc/X11
@@ -19353,7 +19354,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3418 2005/02/02 21:56:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3419 2005/02/03 02:01:13 dawes Exp $
 
 
 
