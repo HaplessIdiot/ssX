@@ -1,5 +1,5 @@
 /* $XConsortium: s3Ti3020.h,v 1.1 94/03/28 21:14:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3020.h,v 3.6 1994/10/20 06:08:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3020.h,v 3.7 1994/10/30 02:57:35 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@paros.com>
  *
@@ -105,28 +105,27 @@
 #define   TI_ICLK_PLL		0x05     /* 3025 only */
 #define TI_OUTPUT_CLOCK_SELECT	0x1B
 #define   TI_OCLK_VGA		0x3E
-#define   TI_OCLK_S_V1		0x40
-#define   TI_OCLK_S_V2		0x48
-#define   TI_OCLK_S_V4		0x50
-#define   TI_OCLK_S_V8		0x58
-#define   TI_OCLK_S_R1		0x00
-#define   TI_OCLK_S_R2		0x01
-#define   TI_OCLK_S_R4		0x02
-#define   TI_OCLK_S_R8		0x03
-#define   TI_OCLK_S_V1_R8	(TI_OCLK_S_V1 | TI_OCLK_S_R8)
-#define   TI_OCLK_S_V2_R8	(TI_OCLK_S_V2 | TI_OCLK_S_R8)
-#define   TI_OCLK_S_V4_R8	(TI_OCLK_S_V4 | TI_OCLK_S_R8)
-#define   TI_OCLK_S_V8_R8	(TI_OCLK_S_V8 | TI_OCLK_S_R8)
-#define   TI_OCLK_S_V2_R4	(TI_OCLK_S_V2 | TI_OCLK_S_R4)
-#define   TI_OCLK_S_V4_R4	(TI_OCLK_S_V4 | TI_OCLK_S_R4)
-#define   TI_OCLK_S_V1_R2	(TI_OCLK_S_V1 | TI_OCLK_S_R2)
-#define   TI_OCLK_S_V2_R2	(TI_OCLK_S_V2 | TI_OCLK_S_R2)
-#define   TI_OCLK_NS_V1		0x80
-#define   TI_OCLK_NS_V2		0x88
-#define   TI_OCLK_NS_V4		0x90
-#define   TI_OCLK_NS_V1_R1	(TI_OCLK_NS_V1 | TI_OCLK_S_R1)  /* 3025 only */
-#define   TI_OCLK_NS_V2_R2	(TI_OCLK_NS_V2 | TI_OCLK_S_R2)  /* 3025 only */
-#define   TI_OCLK_NS_V4_R4	(TI_OCLK_NS_V4 | TI_OCLK_S_R4)  /* 3025 only */
+#define   TI_OCLK_S		0x40
+#define   TI_OCLK_NS		0x80     /* 3025 only */
+#define   TI_OCLK_V1		0x00
+#define   TI_OCLK_V2		0x08
+#define   TI_OCLK_V4		0x10
+#define   TI_OCLK_V8		0x18
+#define   TI_OCLK_R1		0x00
+#define   TI_OCLK_R2		0x01
+#define   TI_OCLK_R4		0x02
+#define   TI_OCLK_R8		0x03
+#define   TI_OCLK_S_V1_R8	(TI_OCLK_S | TI_OCLK_V1 | TI_OCLK_R8)
+#define   TI_OCLK_S_V2_R8	(TI_OCLK_S | TI_OCLK_V2 | TI_OCLK_R8)
+#define   TI_OCLK_S_V4_R8	(TI_OCLK_S | TI_OCLK_V4 | TI_OCLK_R8)
+#define   TI_OCLK_S_V8_R8	(TI_OCLK_S | TI_OCLK_V8 | TI_OCLK_R8)
+#define   TI_OCLK_S_V2_R4	(TI_OCLK_S | TI_OCLK_V2 | TI_OCLK_R4)
+#define   TI_OCLK_S_V4_R4	(TI_OCLK_S | TI_OCLK_V4 | TI_OCLK_R4)
+#define   TI_OCLK_S_V1_R2	(TI_OCLK_S | TI_OCLK_V1 | TI_OCLK_R2)
+#define   TI_OCLK_S_V2_R2	(TI_OCLK_S | TI_OCLK_V2 | TI_OCLK_R2)
+#define   TI_OCLK_NS_V1_R1	(TI_OCLK_NS | TI_OCLK_V1 | TI_OCLK_R1)
+#define   TI_OCLK_NS_V2_R2	(TI_OCLK_NS | TI_OCLK_V2 | TI_OCLK_R2)
+#define   TI_OCLK_NS_V4_R4	(TI_OCLK_NS | TI_OCLK_V4 | TI_OCLK_R4)
 #define TI_PALETTE_PAGE		0x1C
 #define TI_GENERAL_CONTROL	0x1D
 #define TI_MISC_CONTROL		0x1E     /* 3025 only */

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.33 1994/10/23 12:58:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.34 1994/10/30 02:57:38 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1329,21 +1329,22 @@ s3Init(mode)
 	     * (964 uses always 8:1 in 256 color modes)
 	     */
 	    if (s3InfoRec.clock[mode->Clock] > 120000) {
-	       vclock = TI_OCLK_S_V4;
+	       vclock = TI_OCLK_V4;
 	    } else if (s3InfoRec.clock[mode->Clock] > 60000){
-	       vclock = TI_OCLK_S_V2;
+	       vclock = TI_OCLK_V2;
             } else {
-	       vclock = TI_OCLK_S_V1;
+	       vclock = TI_OCLK_V1;
             }
 	    if (s3InfoRec.bitsPerPixel == 32) {           /* 24bpp */
-               rclock = TI_OCLK_S_R2;
+               rclock = TI_OCLK_R2;
             } else if ((s3InfoRec.bitsPerPixel == 16) ||
                        (s3InfoRec.bitsPerPixel == 15)) {  /* 15/16bpp */
-               rclock = TI_OCLK_S_R4;
+               rclock = TI_OCLK_R4;
             } else {
-               rclock = TI_OCLK_S_R8;
+               rclock = TI_OCLK_R8;
             }
-            s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, 0x40 | vclock | rclock);
+            s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00,
+			  TI_OCLK_S | vclock | rclock);
             outb(vgaCRIndex, 0x66);
             tmp = inb(vgaCRReg);
             outb(vgaCRReg, (tmp & 0xf8) | ((rclock - (vclock >> 3)) & 7));
