@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.28 2003/07/09 15:27:38 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.29 2003/07/18 15:53:28 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -714,6 +714,52 @@ DefineLocal (FILE *file, Xauth *auth)
 #endif
 }
 
+#ifdef HAS_GETIFADDRS
+#include <ifaddrs.h>
+
+static void
+DefineSelf(int fd, FILE *file, Xauth *auth)
+{
+    struct ifaddrs *ifap, *ifr;
+    char *addr;
+    int family, len;
+    
+    Debug("DefineSelf\n");
+    if (getifaddrs(&ifap) < 0) 
+	return;
+    for (ifr = ifap; ifr != NULL; ifr = ifr->ifa_next) {
+	len = sizeof(*(ifr->ifa_addr));
+	family = ConvertAddr((XdmcpNetaddr)(ifr->ifa_addr), &len, &addr);
+	if (family == -1 || family == FamilyLocal) 
+	    continue;
+	/*
+	 * don't write out 'localhost' entries, as
+	 * they may conflict with other local entries.
+	 * DefineLocal will always be called to add
+	 * the local entry anyway, so this one can
+	 * be tossed.
+	 */
+	if (family == FamilyInternet && len == 4 &&
+	    addr[0] == 127 && addr[1] == 0 &&
+	    addr[2] == 0 && addr[3] == 1)
+	{
+	    Debug ("Skipping localhost address\n");
+	    continue;
+	}
+#if defined(IPv6) && defined(AF_INET6)
+	if(family == FamilyInternet6) {
+	    if (IN6_IS_ADDR_LOOPBACK(((struct in6_addr *)addr))) {
+		Debug ("Skipping IPv6 localhost address\n");
+		continue;
+	    }
+	}
+#endif
+	writeAddr(family, len, addr, file, auth);
+    } 
+    Debug("DefineSelf done\n");
+}
+#else  /* GETIFADDRS */
+
 #ifdef SYSV_SIOCGIFCONF
 
 /* Deal with different SIOCGIFCONF ioctl semantics on SYSV, SVR4 */
@@ -1051,10 +1097,11 @@ DefineSelf (int fd, int file, int auth)
     }
 }
 
+		 
 #endif /* SIOCGIFCONF else */
 #endif /* WINTCP else */
 #endif /* STREAMSCONN && !SYSV_SIOCGIFCONF else */
-
+#endif /* HAS_GETIFADDRS */
 
 static void
 setAuthNumber (Xauth *auth, char *name)
