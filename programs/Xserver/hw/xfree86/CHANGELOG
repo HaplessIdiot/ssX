@@ -1,4 +1,6 @@
 XFree86 4.0.1a (XX XXXX 2000)
+ 452. A few corrections to PIO and MMIO definitions affecting mips, arm32,
+      powerpc architectures and QNX4 (Marc La France).
  451. Minor int10 and VBE fixups (Marc La France).
  450. For frequency options, don't clobber the old value before verifying the
       new one is valid (Marc La France).
@@ -10870,4 +10872,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1245 2000/07/21 21:04:02 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1246 2000/07/26 01:52:14 tsi Exp $
