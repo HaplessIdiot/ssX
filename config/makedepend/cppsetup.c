@@ -1,4 +1,4 @@
-/* $TOG: cppsetup.c /main/18 1998/02/06 11:09:35 kaleb $ */
+/* $Xorg: cppsetup.c,v 1.3 2000/08/17 19:41:50 cpqbld Exp $ */
 /*
 
 Copyright (c) 1993, 1994, 1998  The Open Group
@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/cppsetup.c,v 3.4 1998/10/05 13:21:48 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/cppsetup.c,v 3.5 2000/04/04 19:24:45 dawes Exp $ */
 
 #include "def.h"
 
