@@ -21,8 +21,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: lbxio.c,v 1.2 94/12/02 17:33:49 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/os/lbxio.c,v 3.2 1995/03/11 14:50:49 dawes Exp $ */
+/* $XConsortium: lbxio.c,v 1.4 95/05/30 18:29:59 mor Exp $ */
+/* $XFree86: xc/programs/Xserver/os/lbxio.c,v 3.3 1995/03/11 15:09:22 dawes Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -477,7 +477,7 @@ AppendFakeRequest (client, data, count)
 	oco->buffer = ibuf;
 	oco->bufptr = ibuf;
     }
-    bcopy(data, oco->bufptr + gotnow, count);
+    memmove(oco->bufptr + gotnow, data, count);
     oco->bufcnt += count;
     gotnow += count;
     if (gotnow >= RequestLength (oco->bufptr, client, gotnow, &part) && !part)
@@ -564,7 +564,7 @@ LbxFlushClient(who, oc, extraBuf, extraCount)
 	    MarkClientException(who);
 	    return(-1);
 	}
-	bcopy(extraBuf, (char *)oco->buf + oco->count, extraCount);
+	memmove((char *)oco->buf + oco->count, extraBuf, extraCount);
 	oco->count = newlen;
     }
 
@@ -612,7 +612,7 @@ UncompressWriteToClient (who, count, buf)
 	    return -1;
 	}
     }
-    bcopy(buf, (char *)oco->buf + oco->count, count);
+    memmove((char *)oco->buf + oco->count, buf, count);
     oco->count += paddedLen;
 
     if (oc->ofirst) {

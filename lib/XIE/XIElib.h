@@ -1,4 +1,4 @@
-/* $XConsortium: XIElib.h,v 1.9 94/04/17 20:18:16 mor Exp $ */
+/* $XConsortium: XIElib.h,v 1.12 95/04/28 18:01:11 mor Exp $ */
 
 /*
 
@@ -392,7 +392,7 @@ typedef struct {
 	struct {
 	    XiePhototag		src;
 	    XieProcessDomain	domain;
-	    XieLut		lut;
+	    XiePhototag		lut;
 	    unsigned int	band_mask;
 	} Point;
 	
@@ -802,6 +802,7 @@ typedef struct {
     unsigned long		name_space;
     Time			time;
     unsigned long		flo_id;
+    XiePhotofloOutcome		outcome;
 } XiePhotofloDoneEvent;
 
 
@@ -883,6 +884,7 @@ typedef struct {
     unsigned int	elem_type;
     unsigned int	technique_number;
     unsigned int	num_tech_params;
+    XieTechniqueGroup	tech_group;
 } XieFloTechniqueError;
 
 typedef struct {
@@ -1456,7 +1458,7 @@ extern void XieFloPoint (
     XiePhotoElement *	/* element */,
     XiePhototag		/* src */,
     XieProcessDomain *	/* domain */,
-    XieLut		/* lut */,
+    XiePhototag		/* lut */,
     unsigned int	/* band_mask */
 #endif
 );

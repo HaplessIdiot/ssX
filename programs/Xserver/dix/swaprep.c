@@ -46,7 +46,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swaprep.c,v 1.42 94/04/17 20:26:44 dpw Exp $ */
+/* $XConsortium: swaprep.c,v 1.43 95/05/02 19:41:30 mor Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -420,7 +420,10 @@ SQueryKeymapReply(pClient, size, pRep)
     (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
-static void
+#ifndef LBX
+static
+#endif
+void
 SwapCharInfo(pInfo)
     xCharInfo	*pInfo;
 {

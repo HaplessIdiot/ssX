@@ -1,4 +1,4 @@
-/* $XConsortium: imTransR.c,v 1.6 94/03/26 20:07:12 rws Exp $ */
+/* $XConsortium: imTransR.c,v 1.8 95/02/10 17:52:50 mor Exp $ */
 /******************************************************************
 
               Copyright 1992 by Sun Microsystems, Inc.
@@ -44,7 +44,7 @@ Public TransportSW _XimTransportRec[] = {
     "local",      _XimTransConf, /* use X transport lib */
 #endif /* UNIXCONN */
 #ifdef DNETCONN
-    "decnet",     _XimTransConf, /* use X transport lib */
+    "dnet",     _XimTransConf, /* use X transport lib */
 #endif /* DNETCONN */
 #ifdef STREAMSCONN
     "streams",    _XimTransConf, /* use X transport lib */
@@ -86,7 +86,7 @@ _CheckProtocolData(im, recv_buf)
 {
     int		 data_len;
 
-    data_len = (int)(*((CARD16 *)recv_buf + 1) + XIM_HEADER_SIZE);
+    data_len = (int)(((*((CARD16 *)recv_buf + 1)) * 4) + XIM_HEADER_SIZE);
     return data_len;
 }
 

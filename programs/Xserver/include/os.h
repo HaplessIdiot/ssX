@@ -46,8 +46,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.66 95/04/07 20:33:29 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.6 1995/04/09 13:54:09 dawes Exp $ */
+/* $XConsortium: os.h,v 1.67 95/04/25 20:32:58 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.7 1995/06/14 07:51:40 dawes Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -657,6 +657,18 @@ extern void ResetAuthorization(
     void
 #endif
 );
+
+#ifdef LBX
+extern ClientPtr AllocPiggybackConnection(
+#if NeedFunctionPrototypes
+    ClientPtr /* client */,
+    int (* /* read */ )(),
+    int (* /* write*/)(),
+    void (* /* close */)()
+#endif
+);
+
+#endif /* LBX */
 
 extern int AddAuthorization(
 #if NeedFunctionPrototypes

@@ -1,5 +1,5 @@
-/* $XConsortium: Xtransutil.c,v 1.18 94/10/18 15:57:42 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.2 1994/06/09 10:46:01 dawes Exp $ */
+/* $XConsortium: Xtransutil.c,v 1.19 95/02/10 17:54:09 mor Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.3 1995/01/12 05:54:23 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -273,7 +273,7 @@ XtransConnInfo  ciptr;
 
 	networkId = (char *) malloc (
 	    13 + strlen (hostnamebuf) + saddr->sdn_objnamel);
-	sprintf (networkId, "decnet/%s::%s",
+	sprintf (networkId, "dnet/%s::%s",
 	    hostnamebuf, saddr->sdn_objname);
 	break;
     }

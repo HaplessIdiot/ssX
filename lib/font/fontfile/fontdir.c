@@ -1,4 +1,4 @@
-/* $XConsortium: fontdir.c,v 1.22 94/04/17 20:17:05 gildea Exp $ */
+/* $XConsortium: fontdir.c,v 1.23 95/02/21 14:25:17 mor Exp $ */
 
 /*
 
@@ -79,8 +79,10 @@ FontFileFreeEntry (entry)
     case FONT_ENTRY_ALIAS:
 	xfree (entry->u.alias.resolved);
 	break;
+#ifdef NOTYET
     case FONT_ENTRY_BC:
 	break;
+#endif
     }
 }
 

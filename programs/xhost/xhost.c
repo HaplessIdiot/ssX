@@ -1,5 +1,5 @@
-/* $XConsortium: xhost.c,v 11.62 94/04/17 20:23:18 rws Exp $ */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.0 1994/04/28 12:45:28 dawes Exp $ */
+/* $XConsortium: xhost.c,v 11.63 95/04/03 20:56:49 mor Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.1 1995/03/11 14:21:17 dawes Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -317,13 +317,14 @@ int change_host (dpy, name, add)
     static char *remove_msg = "being removed from access control list";
 
     namelen = strlen(name);
-    if ((lname = (char *)malloc(namelen)) == NULL) {
+    if ((lname = (char *)malloc(namelen+1)) == NULL) {
 	fprintf (stderr, "%s: malloc bombed in change_host\n", ProgramName);
 	exit (1);
     }
     for (i = 0; i < namelen; i++) {
 	lname[i] = tolower(name[i]);
     }
+    lname[namelen] = '\0';
     if (!strncmp("inet:", lname, 5)) {
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
 	family = FamilyInternet;

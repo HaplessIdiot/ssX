@@ -1,5 +1,5 @@
-/* $XConsortium: Xtranslcl.c,v 1.21 95/01/19 18:06:04 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.9 1995/03/18 10:51:11 dawes Exp $ */
+/* $XConsortium: Xtranslcl.c,v 1.23 95/04/28 15:23:33 mor Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.10 1995/05/07 11:40:02 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -1820,6 +1820,46 @@ TRANS(LocalGetNextTransport)()
 
 #ifdef TRANS_CLIENT
 
+#ifdef NEED_UTSNAME
+#include <sys/utsname.h>
+#endif
+
+/*
+ * Make sure 'host' is really local.
+ */
+
+static int
+HostReallyLocal (host)
+
+char *host;
+
+{
+    /*
+     * The 'host' passed to this function may have been generated
+     * by either uname() or gethostname().  We try both if possible.
+     */
+
+#ifdef NEED_UTSNAME
+    struct utsname name;
+#endif
+    char buf[256];
+
+#ifdef NEED_UTSNAME
+    if (uname (&name) >= 0 && strcmp (host, name.nodename) == 0)
+	return (1);
+#endif
+
+    buf[0] = '\0';
+    (void) gethostname (buf, 256);
+    buf[255] = '\0';
+
+    if (strcmp (host, buf) == 0)
+	return (1);
+
+    return (0);
+}
+
+
 static XtransConnInfo
 TRANS(LocalOpenClient)(type, protocol, host, port)
 
@@ -1833,9 +1873,26 @@ char *port;
     LOCALtrans2dev *transptr;
     XtransConnInfo ciptr;
     int index;
-    
+
     PRMSG(3,"TRANS(LocalOpenClient)()\n", 0,0,0 );
     
+    /*
+     * Make sure 'host' is really local.  If not, we return failure.
+     * The reason we make this check is because a process may advertise
+     * a "local" address for which it can accept connections, but if a
+     * process on a remote machine tries to connect to this address,
+     * we know for sure it will fail.
+     */
+
+    if (strcmp (host, "unix") != 0 && !HostReallyLocal (host))
+    {
+	PRMSG (1,
+	   "TRANS(LocalOpenClient): Cannot connect to non-local host %s\n",
+	       host, 0, 0);
+	return NULL;
+    }
+
+
 #if defined(X11_t)
     /*
      * X has a well known port, that is transport dependant. It is easier

@@ -1,5 +1,5 @@
-/* $XConsortium: Xtrans.c,v 1.28 94/12/01 16:30:09 kaleb Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.7 1995/03/11 14:10:18 dawes Exp $ */
+/* $XConsortium: Xtrans.c,v 1.31 95/03/28 19:49:02 mor Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.8 1995/03/18 10:51:06 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -206,9 +206,17 @@ char	**port;
 
 {
     /*
-     * Address is a string formatted as "protocol/host:port". If the protocol
-     * part is missing, then assume INET. If the protocol part and host part
-     * are missing, then assume local. If a "::" is found then assume DNET.
+     * For the font library, the address is a string formatted
+     * as "protocol/host:port[/catalogue]".  Note that the catologue
+     * is optional.  At this time, the catologue info is ignored, but
+     * we have to parse it anyways.
+     *
+     * Other than fontlib, the address is a string formatted
+     * as "protocol/host:port".
+     *
+     * If the protocol part is missing, then assume INET.
+     * If the protocol part and host part are missing, then assume local.
+     * If a "::" is found then assume DNET.
      */
 
     char	*mybuf, *tmpptr;
@@ -292,27 +300,38 @@ char	**port;
 
     if (strlen(_host) == 0)
     {
-#if defined(UNIXCONN) || defined(LOCALCONN)
-	_host = "local";
-#else
 	TRANS(GetHostname) (hostnamebuf, sizeof (hostnamebuf));
 	_host = hostnamebuf;
-#endif
     }
 
     /* Check for DECnet */
 
     if (*mybuf == ':')
     {
-	_protocol = "decnet";
+	_protocol = "dnet";
 	mybuf++;
     }
 
-    /* The rest is the port */
+    /* Get the port */
 
 get_port:
 
     _port = mybuf;
+
+#if defined(FONT_t) || defined(FS_t)
+    /*
+     * Is there an optional catalogue list?
+     */
+
+    if ((mybuf = strchr (mybuf,'/')) != NULL)
+	*mybuf ++= '\0';
+
+    /*
+     * The rest, if any, is the (currently unused) catalogue list.
+     *
+     * _catalogue = mybuf;
+     */
+#endif
 
     /*
      * Now that we have all of the components, allocate new
