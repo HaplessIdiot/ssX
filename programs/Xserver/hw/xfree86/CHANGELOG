@@ -1,4 +1,4 @@
-
+ 213. Fix a window class initialization problem in Xinerama (Mark Vojkovich).
  212. Fix some multithreading related problems in the Xv client library 
       (Mark Vojkovich).
 
@@ -10406,4 +10406,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1162 2000/05/23 23:48:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1163 2000/05/25 20:49:21 mvojkovi Exp $
