@@ -1,5 +1,6 @@
 /*
  *	$XConsortium: data.h /main/12 1996/01/14 16:52:48 kaleb $
+ *	$XFree86$
  */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
