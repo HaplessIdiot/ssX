@@ -1,4 +1,8 @@
 XFree86 4.0f (23 June 2000)
+ 374. s3virge driver fixes for noise and console corruptionn on the GX2 and
+      MX (but they're commented out for the MX because it hasn't been tested
+      yet) (Kevin Brosius).
+ 373. Fixes for lib/GL Imakefiles (Marc La France).
  372. Update DRI drivers sunffb,mga,i810,glint,r128,tdfx to check for 
       DRIQueryVersion, overcomes an older libdri issue (Alan Hourihane).
  371. Change tdfx driver to use fb instead of cfb (Alan Hourihane).
@@ -10720,4 +10724,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1207 2000/06/23 22:42:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1208 2000/06/23 23:43:42 alanh Exp $

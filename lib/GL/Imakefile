@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.22 2000/06/20 23:32:57 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.23 2000/06/21 20:57:14 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -30,8 +30,6 @@ REQUIREDLIBS = SharedGLReqs
 	GLAPI_OBJ = glx/glapi_x86.o
 #endif
 
-   GLXSUBDIR = glx
-
      GLXOBJS = glx/?*.o
     GLXUOBJS = glx/unshared/?*.o $(GLAPI_OBJ)
     GLXDOBJS = glx/debugger/?*.o $(GLAPI_OBJ)
@@ -39,8 +37,6 @@ REQUIREDLIBS = SharedGLReqs
     GLXDONES = glx/DONE
 
 #if BuildXF86DRI
-   DRISUBDIR = dri
-
      DRIOBJS = dri/XF86dri.o dri/dri_glx.o
     DRIUOBJS = dri/unshared/XF86dri.o dri/unshared/dri_glx.o
     DRIDOBJS = dri/debugger/XF86dri.o dri/debugger/dri_glx.o
@@ -91,13 +87,10 @@ DRIMESADONES = mesa/dri/DONE
  COMMONPOBJS = mesa/src/drv/common/profiled/?*.o
  COMMONDONES = mesa/src/drv/common/DONE
 
-OTHERSUBDIRS = mesa/dri mesa/include/GL mesa/src
-
 
 #if GlxUseSGISI
 
-DRISUBDIR = /* nothing */
-GLXSUBDIR = /* nothing */
+XCOMM nothing
 
 #elif GlxBuiltInGamma
 
@@ -112,6 +105,8 @@ GLXSUBDIR = /* nothing */
     DRVDOBJS = $(GAMMADOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
     DRVPOBJS = $(GAMMAPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
     DRVDONES = $(GAMMADONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
+
+  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src mesa/src/drv/gamma
 
 #elif GlxBuiltInTdfx
 
@@ -129,6 +124,8 @@ GLXSUBDIR = /* nothing */
 
 REQUIREDLIBS += -lglide3x -ldl
 
+  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src mesa/src/drv/tdfx
+
 #elif GlxBuiltInI810
 
     I810OBJS = mesa/src/drv/i810/?*.o
@@ -142,6 +139,8 @@ REQUIREDLIBS += -lglide3x -ldl
     DRVDOBJS = $(I810DOBJS) $(COMMONDOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
     DRVPOBJS = $(I810POBJS) $(COMMONPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
     DRVDONES = $(I810DONES) $(COMMONDONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
+
+  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src mesa/src/drv/i810
 
 #elif GlxBuiltInMga
 
@@ -157,6 +156,8 @@ REQUIREDLIBS += -lglide3x -ldl
     DRVPOBJS = $(MGAPOBJS) $(COMMONPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
     DRVDONES = $(MGADONES) $(COMMONDONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
 
+  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src mesa/src/drv/mga
+
 #elif GlxBuiltInR128
 
     R128OBJS = mesa/src/drv/r128/?*.o
@@ -171,24 +172,38 @@ REQUIREDLIBS += -lglide3x -ldl
     DRVPOBJS = $(R128POBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
     DRVDONES = $(R128DONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
 
+  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src mesa/src/drv/r128
+
 #elif GlxBuiltInMesa
 
+#ifndef GlxDriverUsesMesa
      DRVOBJS = mesa/src/?*.o
     DRVUOBJS = mesa/src/unshared/?*.o
     DRVDOBJS = mesa/src/debugger/?*.o
     DRVPOBJS = mesa/src/profiled/?*.o
     DRVDONES = mesa/src/DONE
 
+  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src
 #endif
 
+#else
+
+XCOMM No built-in drivers. This is the usual case.
+GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src
+
+#endif
+
+#else
+
+XCOMM BuildXF86DRI was not defined.  Just build an indirect-only libGL.
+GLXSUBDIRS = glx
+
 #endif
 
 
-SUBDIRS = $(GLXSUBDIR) $(DRISUBDIR) $(OTHERSUBDIRS)
-
-
-MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
+#if !GlxUseSGISI && (!GlxBuiltInMesa || !defined(GlxDriverUsesMesa))
+MakeSubdirs($(GLXSUBDIRS))
+#endif
 
 
 #ifdef OS2Architecture
@@ -220,17 +235,26 @@ NormalLintTarget(highpc.c lowpc.c)
   THREADOBJS = $(THREADS_LIBS)
 #endif
 
+#if HasParallelMake
+MakeMutex($(GLXSUBDIRS) $(DONES))
+#endif
+
+#if HasGnuMake || HasBsdMake
+$(DONES): $(GLXSUBDIRS)
+#endif
+
 #include <Library.tmpl>
 
 #undef _LinkBuildLibrary
 #define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)
 
+
 #if NormalLibGlx
-NormalDepLibraryTarget($(LIBNAME),$(SUBDIRS) $(DONES),$(UOBJS))
+NormalDepLibraryTarget($(LIBNAME),$(GLXSUBDIRS) $(DONES),$(UOBJS))
 InstallLibrary($(LIBNAME),$(USRLIBDIR))
 #endif
 #if SharedLibGlx
-SharedDepLibraryTarget($(LIBNAME),$(SOREV),$(SUBDIRS) $(DONES),$(OBJS) $(THREADOBJS),.,.)
+SharedDepLibraryTarget($(LIBNAME),$(SOREV),$(GLXSUBDIRS) $(DONES),$(OBJS) $(THREADOBJS),.,.)
 InstallSharedLibrary($(LIBNAME),$(SOREV),$(SHLIBDIR))
 #if LinkGLToUsrLib && AlternateUsrLibDir
 install::
@@ -241,10 +265,33 @@ install::
 #endif
 #endif
 #if DebugLibGlx
-DebuggedDepLibraryTarget($(LIBNAME),$(SUBDIRS) $(DONES),$(DOBJS))
+DebuggedDepLibraryTarget($(LIBNAME),$(GLXSUBDIRS) $(DONES),$(DOBJS))
 InstallLibrary($(LIBNAME)_d,$(USRLIBDIR))
 #endif
 #if ProfileLibGlx
-ProfiledDepLibraryTarget($(LIBNAME),$(SUBDIRS) $(DONES),$(POBJS))
+ProfiledDepLibraryTarget($(LIBNAME),$(GLXSUBDIRS) $(DONES),$(POBJS))
 InstallLibrary($(LIBNAME)_p,$(USRLIBDIR))
 #endif
+
+
+
+XCOMM libGL has now been made, continue with building the drivers.
+
+#if BuildXF86DRI && \
+    !GlxUseSGISI && \
+    !GlxBuiltInGamma && \
+    !GlxBuiltInTdfx && \
+    !GlxBuiltInI810 && \
+    !GlxBuiltInMga && \
+    !GlxBuiltInR128 && \
+    !GlxBuiltInMesa
+
+DRIVERSUBDIRS = mesa/src/drv
+
+MakeSubdirs($(DRIVERSUBDIRS))
+
+#endif
+
+SUBDIRS = $(GLXSUBDIRS) $(DRIVERSUBDIRS)
+
+DependSubdirs($(SUBDIRS))
