@@ -179,6 +179,9 @@
         X329GA9
            GA-968V4/PCI(S3 968)
 
+        X329TGU
+           TGUI
+
      OPTIONAL:
 
         X32fsrv
@@ -191,10 +194,10 @@
         X32man
            man pages
 
+
+
         X32f100
            100dpi fonts
-
-
 
         X32fcyr
            Cyrillic fonts
@@ -257,11 +260,12 @@
 
 
 
+
+
      2. You must be logged in as root to unpack the archives and use a
         ``umask'' value of 022.  Typing ``umask 022'' sets it.  Caution:
         If you do not extract the files as user ``root'' with the
         correct umask you may not be able to run XFree86.  The X server
-
         needs special permissions that are only granted to the root
         user.
 
@@ -322,10 +326,13 @@
      Also, don't forget to include these lines in your .login or .pro-
      file for permanent use.
 
+
+
      2. Create a symbolic link in ${XWINHOME}/bin named ``X'' that
         points to the server that matches your video card: See the
         XF86_* man pages for hardware details. For example, if you have
         an ET4000 based SVGA card:
+
 
 
            cd $XWINHOME/bin
@@ -387,11 +394,11 @@
   You can start xdm automatically on bootup by disabling the console
   getty adding the following code to /etc/rc.local:
 
-
-
          if [ -x /usr/X11R6/bin/xdm ]; then
            echo -n ' xdm'; /usr/X11R6/bin/xdm
          fi
+
+
 
 
   To disable the console getty, change ``on'' to ``off'' in the console
@@ -452,6 +459,7 @@
 
   If your serial mouse does not work try using kermit or tip to connect
   to the mouse serial port and verify that it does indeed generate
+
   characters.
 
   The NetBSD pms mouse driver handles PS/2 style mice as Busmouse.
@@ -459,7 +467,6 @@
   file if you're using a PS/2 mouse.
 
   The OpenBSD pms driver  provides both "raw" and "cooked" (translated)
-
   modes.  "raw" mode does not do protocol translation, so XFree86 would
   use the PS/2 protocol for talking to the device in that mode.
   "cooked" mode is the old BusMouse translation.  By default, the driver
@@ -517,6 +524,7 @@
   like gcc that expect a few meg free.  X will work with 4Mb of memory,
   but in practice compilation while running X can take 5 or 10 times as
   long due to constant paging.
+
 
   The easiest way for new users to start X windows is to type: ``startx
   >& startx.log''.  Error messages are lost unless you redirect them
@@ -583,6 +591,7 @@
 
 
 
+
   then delete /dev/ttyv0. I don't know why ``MAKEDEV'' move /dev/ttyqf
   to /dev/ttyv0. (from Hung-Chi Chu hcchu@r350.ee.ntu.edu.tw)
 
@@ -591,7 +600,6 @@
   By default NetBSD 0.9C and higher include the BSD 4.4 kernel security
   feature that disable access to the /dev/mem device when in multi-users
   mode. But XFree86 servers can take advantage (or require) linear
-
   access to the display memory.
 
   The P9000, Mach64 and AGX servers require linear memory access, other
@@ -649,19 +657,16 @@
   detects this support in your kernel, it will support the MIT-SHM
   extension.
 
+
   To add support for system V shared memory to your kernel add the
   lines:
 
 
 
-
-
-
-
-   # System V-like IPC
-   options         SYSVMSG
-   options         SYSVSEM
-   options         SYSVSHM
+        # System V-like IPC
+        options         SYSVMSG
+        options         SYSVSEM
+        options         SYSVSHM
 
 
 
@@ -717,10 +722,13 @@
 
 
 
+
+
      o  if you're using pcvt put:
 
 
            #define XFree86ConsoleDefines -DPCVT_SUPPORT
+
 
 
 
@@ -781,6 +789,7 @@
   taken from your installed version of the driver.
 
   The console.h file for syscons isn't distributed with XFree86 anymore.
+
   You should get it from the syscons distribution.
 
   8.4.  Support for shared libs under NetBSD 1.0 and later
@@ -788,6 +797,7 @@
   By default XFree86 3.2 builds for NetBSD with shared libraries
   support. If you're building on 0.9 or don't want shared libraries add
   the following line to xf86site.def:
+
 
 
        #define BuildBsdSharedLibs      NO
@@ -845,6 +855,7 @@
   defined for *BSD systems in XFree86 3.1.1 and later.  This should be
   used to protect the inclusion of <sys/param.h>.
 
+
   For code that really is specific to a particular i386 BSD port, use
   __FreeBSD__ for FreeBSD, __NetBSD__ for NetBSD, __OpenBSD__ for
   OpenBSD, __386BSD__ for 386BSD, and __bsdi__ for BSD/386.
@@ -880,24 +891,13 @@
         machines in preparing the FreeBSD binary release.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.36 1996/10/16 14:41:13 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.37 1996/10/18 15:03:28 dawes Exp $
 
 
 
 
 
   $XConsortium: NetBSD.sgml /main/9 1996/01/28 08:05:37 kaleb $
-
-
-
-
-
-
-
-
-
-
-
 
 
 

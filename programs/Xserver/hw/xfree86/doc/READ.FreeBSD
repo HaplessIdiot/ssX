@@ -1,6 +1,6 @@
-  README for XFree86 3.1.2 on FreeBSD 2.0.5
+  README for XFree86 3.2 on FreeBSD 2.1.5
   Rich Murphey, David Dawes
-  24 July 1995
+  18 Oct 1996
 
   1.  What and Where is XFree86?
 
@@ -20,11 +20,11 @@
 
   Binaries for XFree86 on FreeBSD are available from:
 
-  ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD-2.0.5
-  <ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-2.0.5>
+  ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD-2.1.5
+  <ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-2.1.5>
 
-  XFree86.cdrom.com:/pub/XFree86/current/binaries/FreeBSD-2.0.5
-  <ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-2.0.5>
+  XFree86.cdrom.com:/pub/XFree86/current/binaries/FreeBSD-2.1.5
+  <ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-2.1.5>
 
   Send email to Rich-Murphey@Rice.edu or XFree86@XFree86.org if you have
   comments or suggestions about this file and we'll revise it.
@@ -35,108 +35,145 @@
   unpack.  If you can't decide what to pick and you have 52Mb of disk
   space, it's safe to unpack everything.
 
-  At a minimum you need to unpack the 'required' X312*.tgz archives plus
+  At a minimum you need to unpack the 'required' X32*.tgz archives plus
   at least one server that matches your vga card.  You'll need 9Mb for
   the minimum required run-time binaries only.
 
 
      Required (6.7Mb):
 
-        X312bin.tgz
+        X32bin.tgz
            all the executable X client applications and shared libs
 
-        X312fnts.tgz
+        X32fnts.tgz
            the misc and 75 dpi fonts
 
-        X312lib.tgz
+        X32lib.tgz
            data files needed at runtime
 
      Required unless you have already customized your configuration
         files:
 
-        X312xicf.tgz
+        X32xicf.tgz
            customizable xinit runtime configuration file
 
-        X312xdcf.tgz
+        X32xdcf.tgz
            customizable xdm runtime configuration file
 
      Choose at least one server ( 2.3Mb):
 
 
 
-        X3128514.tgz
+        X328514.tgz
            8-bit color for IBM 8514 and true compatibles.
 
-        X312AGX.tgz
+        X32AGX.tgz
            8 and 16-bit color for AGX and XGA boards.
 
-        X312Ma32.tgz
+        X32Ma32.tgz
            8 and 16-bit color for ATI Mach32 boards.
 
-        X312Ma64.tgz
+        X32Ma64.tgz
            8, 16 and 24-bit color for ATI Mach64 boards.
 
-        X312Ma8.tgz
+        X32Ma8.tgz
            8-bit color for ATI Mach8 boards.
 
-        X312Mono.tgz
+        X32Mono.tgz
            1-bit monochrome for VGA, Super-VGA, Hercules, and others.
 
-        X312P9K.tgz
+        X32P9K.tgz
            8, 16, and 24-bit color for Weitek P9000 boards (Diamond
            Viper).
 
-        X312S3.tgz
+        X32S3.tgz
            8, 16 and 24-bit color for S3 boards (#9 GXE, Actix GE32,
            SPEA Mercury, STB Pegasus)
 
-        X312SVGA.tgz
+        X32SVGA.tgz
            8-bit color for Super-VGA cards.
 
-        X312VG16.tgz
+        X32VG16.tgz
            4-bit color for VGA and Super-VGA cards
 
-        X312W32.tgz
+        X32W32.tgz
            8-bit Color for ET4000/W32, /W32i, /W32p and ET6000 cards.
 
-        X312nest.tgz
+        X329GAN.tgz
+           8-bit color for PC98 GA-98NB/WAP boards
+
+        X329480.tgz
+           8-bit color for PC98 PEGC
+
+        X329NKV.tgz
+           8-bit color for PC98 NEC-CIRRUS/EPSON NKV/NKV2 boards
+
+        X329WBS.tgz
+           8-bit color for PC98 WAB-S boards
+
+        X329WEP.tgz
+           8-bit color for PC98 WAB-EP boards
+
+        X329WSN.tgz
+           8-bit color for PC98 WSN-A2F boards
+
+        X329EGC.tgz
+           4-bit color for PC98 EGC
+
+        X329TGU.tgz
+           8 and 16-bit color for PC98 Trident Cyber9320/9680 boards
+
+        X329NS3.tgz
+           8 and 16-bit color for PC98 NEC S3 boards
+
+        X329SPW.tgz
+           8 and 16-bit color for PC98 S3 PW/PCSKB boards
+
+
+        X329LPW.tgz
+           8 and 16-bit color for PC98 S3 PW/LB boards
+
+        X329GA9.tgz
+           8 and 16-bit color for PC98 S3 GA-968 boards
+
+        X32nest.tgz
            A nested server running as a client window on another
            display.
 
      Optional:
 
-        X312doc.tgz
+        X32doc.tgz
            (.5Mb) READMEs
 
-        X312man.tgz
+        X32man.tgz
            (1.7Mb) man pages
 
-        X312f100.tgz
+        X32f100.tgz
            (1.8Mb) 100dpi fonts
 
-        X312fscl.tgz
+        X32fscl.tgz
            (1.6Mb) Speedo and Type1 fonts
 
-        X312fnon.tgz
+        X32fnon.tgz
            (3.3Mb) Japanese, Chinese and other non-english fonts
 
-        X312fcyr.tgz
+        X32fcyr.tgz
            (.4Mb) Cyrillic fonts
 
-        X312fsrv.tgz
+        X32fsrv.tgz
            (.3Mb) the font server and its man page
 
-        X312prog.tgz
+        X32prog.tgz
            (3.9Mb) config, lib*.a and *.h files needed only for
            compiling
 
-        X312link.tgz
+        X32link.tgz
            (7.8Mb) X server reconfiguration kit
 
-        X312pex.tgz
+        X32pex.tgz
            (.5Mb) PEX fonts and shared libs needed by PEX applications.
 
-        X312lbx.tgz
+        X32lbx.tgz
            (.2Mb) low bandwidth X proxy server and libraries.
 
   Note that there is no longer a separate xdm archive.  FreeBSD 2.0 and
@@ -156,8 +193,6 @@
 
            % su
            # umask 022
-
-
 
 
 
@@ -181,7 +216,7 @@
 
 
 
-           # for i in X312*.tgz; do
+           # for i in X32*.tgz; do
            #   tar -xzf $i
            # done
 
@@ -192,13 +227,9 @@
      Else, if you are using csh:
 
 
-
-
-
-
-      % foreach i (X312*.tgz)
-      %   tar -xzf $i
-      % end
+           % foreach i (X32*.tgz)
+           %   tar -xzf $i
+           % end
 
 
 
@@ -223,20 +254,21 @@
 
 
         # for i in bin fnts lib xicf; do
-        #   tar -xzf  X312$i.tgz
+        #   tar -xzf  X32$i.tgz
         # done
 
 
 
 
   Then unpack a server archive corresponding to your vga card.  The
+
   server man pages, X11R6/man/man1/XF86_*, list the vga chip sets
   supported by each server.  For example, if you have an ET4000 based
   card you will use the XF86_SVGA server:
 
 
 
-        # tar -xzf X312SVGA.tgz
+        # tar -xzf X32SVGA.tgz
         # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 
 
@@ -260,6 +292,7 @@
 
   Next either reboot or invoke ldconfig as root to put the shared
   libraries in ld.so's cache:
+
 
 
         # ldconfig /usr/lib /usr/local/lib /usr/X11R6/lib
@@ -293,9 +326,11 @@
 
 
 
-        % dmesg|grep sc
-        sc0 at 0x60-0x6f irq 1 on motherboard
-        sc0: VGA color <8 virtual consoles>
+
+
+   % dmesg|grep sc
+   sc0 at 0x60-0x6f irq 1 on motherboard
+   sc0: VGA color <8 virtual consoles>
 
 
 
@@ -328,6 +363,8 @@
   to add a line in /etc/ttys to start it on one of the unoccupied
   virtual terminals:
 
+
+
         ttyv4  "/usr/X11R6/bin/xdm -nodaemon" xterm    on secure
 
 
@@ -356,6 +393,7 @@
   generate an XF86Config file.
 
   If you have a Xconfig file for XFree86 2.x, you can use reconfig to
+
   translate part of it into the new format:
 
 
@@ -420,6 +458,8 @@
   If you plan to fine tune the screen size or position on your monitor
   you'll need the specs for sync frequencies from your monitor's manual.
 
+
+
   5.  Running X
 
   8mb of memory is a recommended minimum for running X.  The server,
@@ -440,9 +480,9 @@
 
   6.  Rebuilding Kernels for X
 
-  The GENERIC FreeBSD 2.0 and 2.0.5 kernels support XFree86 without any
-  modifications required.  You do not need to make any changes to the
-  GENERIC kernel or any kernel configuration which is a superset.
+  The GENERIC FreeBSD 2.1.0 and 2.1.5 kernels support XFree86 without
+  any modifications required.  You do not need to make any changes to
+  the GENERIC kernel or any kernel configuration which is a superset.
 
   For a general description of BSD kernel configuration get
   smm.02.config.ps.Z
@@ -460,7 +500,9 @@
         options                UCONSOLE                #X Console support
 
 
-  The generic FreeBSD 2.0 and 2.0.5 kernels are configured by default
+
+
+  The generic FreeBSD 2.1.0 and 2.1.5 kernels are configured by default
   with the syscons driver.  To configure your kernel similarly it should
   have a line like this in /usr/src/sys/i386/conf/GENERIC:
 
@@ -525,7 +567,6 @@
 
   The server link kit allows you to build an X server using a minimum
   amount of disk space.  Just unpack it, make the appropriate changes to
-
   xf86site.def, type ``./mkmf' and ``make'' to link the server.  See
   README.LinkKit <LinkKit.html> for more info.
 
@@ -549,7 +590,9 @@
 
 
 
-        #define HasShm                         NO
+
+
+   #define HasShm                         NO
 
 
 
@@ -591,7 +634,6 @@
   Note: Starting with XFree86 2.1 and FreeBSD 1.1, the symbol __386BSD__
   no longer gets defined either by the compiler or via the X config
   files for FreeBSD systems.  When porting clients to BSD systems, make
-
   use of the symbol BSD for code which is truly BSD-specific.  The value
   of the symbol can be used to distinguish different BSD releases.  For
   example, code specific to the Net-2 and later releases can use:
@@ -615,6 +657,7 @@
 
      o  Pace Willison  for providing initial *BSD support.
 
+
      o  Amancio Hasty for 386BSD kernel and S3 chipset support.
 
      o  David Greenman, Nate Williams, Jordan Hubbard for FreeBSD kernel
@@ -627,13 +670,36 @@
         the Linux distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.16 1996/10/16 14:41:11 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.17 1996/10/18 15:03:25 dawes Exp $
 
 
 
 
 
   $XConsortium: FreeBSD.sgml /main/5 1995/11/12 19:59:27 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

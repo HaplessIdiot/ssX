@@ -152,16 +152,16 @@
         RAMDAC values above have no effect except to block higher bit
         modes.
 
+     o  Sixteen bit character support (e.g., Chinese and Japanese
+        character sets) has been known to lose parts of characters.
+        While this should be fixed, if it occurs try running the server
+        with Option "no_linear".
+
   Bug reports should be sent to XFree86@XFree86.org or posted to the
   comp.windows.x.i386unix newsgroup.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach32.sgml,v 3.0 1996/09/25 14:17:32 dawes Exp $
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach32.sgml,v 3.1 1996/10/18 15:03:26 dawes Exp $
 
 
 
