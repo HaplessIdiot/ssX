@@ -1,4 +1,6 @@
-XFree86 4.4.99.17 (xx October 2004)
+XFree86 4.4.99.18 (xx November 2004)
+
+XFree86 4.4.99.17 (12 November 2004)
  215. Cleanup handling of mmap and SHM existence (David Dawes).
  214. Disable direct I/O writes to kbd controller on Linux by default
       (David Dawes).
@@ -19161,7 +19163,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3339 2004/11/07 04:20:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3340 2004/11/10 04:28:37 dawes Exp $
 
 
 
