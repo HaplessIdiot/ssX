@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.141 2002/01/15 22:55:26 herrb Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.143 2002/02/15 07:36:18 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -536,10 +536,16 @@ VENDORMANVERSION = XVendorManVersionString
 #define UseFreetype2		(BuildXftLibrary || BuildXft1Library || UseFontconfig)
 #endif
 #ifndef UseLibxml2
-#define UseLibxml2		(UseFontconfig)
+#define UseLibxml2		NO
 #endif
 #ifndef BuildLibxml2Library
 #define BuildLibxml2Library	(UseLibxml2 && !HasLibxml2)
+#endif
+#ifndef UseExpat
+#define UseExpat		(UseFontconfig)
+#endif
+#ifndef BuildExpatLibrary
+#define BuildExpatLibrary	(UseExpat && !HasExpat)
 #endif
 #ifndef BuildFreetype2Library
 #define BuildFreetype2Library	(UseFreetype2 && !HasFreetype2)
@@ -2726,6 +2732,70 @@ LIBXML2DEFINES = -DLIBXML2
 
 #endif /* UseLibxml2 */
 
+#ifndef SharedLibExpat
+#define SharedLibExpat HasSharedLibraries
+#endif
+#ifndef NormalLibExpat
+#define NormalLibExpat (!SharedLibExpat | ForceNormalLib)
+#endif
+#ifndef DebugLibExpat
+#define DebugLibExpat		NO
+#endif
+#ifndef ProfileLibExpat
+#define ProfileLibExpat		NO
+#endif
+          EXPATLIBSRC = $(LIBSRC)/expat
+
+/* Expat 1.95.2 */
+#ifndef ExpatVersion
+#define ExpatVersion 1.95.2
+#endif
+
+#if SharedLibExpat
+#ifndef SharedExpatRev
+#define SharedExpatRev 1.0
+#endif
+SharedLibReferences(EXPAT,expat,$(EXPATLIBSRC),SOEXPATREV,SharedExpatRev)
+#else
+ProjectUnsharedLibReferences(EXPAT,expat,$(EXPATLIBSRC),XBuildLibDir)
+#endif
+
+#if UseExpat
+
+#if BuildExpatLibrary
+EXPATINCLUDES=$(TOP_X_INCLUDES)
+EXPATDEFINES=-DEXPAT
+#else	/* BuildExpatLibrary */
+
+#if HasExpat
+
+#ifndef ExpatDir
+#define ExpatDir /usr
+#endif
+
+#ifndef ExpatLibDir
+#define ExpatLibDir ExpatDir/lib
+#endif
+
+#ifndef ExpatIncDir
+#define ExpatIncDir ExpatDir/include
+#endif
+
+EXPATDIR = ExpatDir
+EXPATLIBDIR = ExpatLibDir
+EXPATINCDIR = ExpatIncDir
+EXPATINCLUDES = -I$(EXPATINCDIR)
+EXPATLIB = -L$(EXPATLIBDIR) -lexpat
+EXPATDEFINES = -DEXPAT
+#endif /* HasExpat */
+
+#endif /* else BuildExpatLibrary */
+
+#define ExpatClientLibs $(EXPATLIB)
+#define ExpatClientDepLibs $(DEPEXPATLIB)
+
+#endif /* UseExpat */
+
 #ifndef SharedLibXft1
 #define SharedLibXft1 HasSharedLibraries
 #endif
@@ -2792,7 +2862,7 @@ ProjectUnsharedLibReferences(XFT,Xft,$(XFTLIBSRC),XBuildLibDir)
 #define XftClientLibs $(XFTLIB) FontconfigClientLibs $(XRENDERLIB)
 #endif
 
-XFTINCLUDES=$(FONTCONFIGINCLUDES)
+XFTINCLUDES=$(FONTCONFIGINCLUDES) $(FREETYPE2INCLUDES)
 
 #ifndef SharedLibFontconfig
 #define SharedLibFontconfig HasSharedLibraries
@@ -2817,17 +2887,17 @@ ProjectUnsharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGLIBSRC),XBuildLib
 #endif
 
 #ifndef FontconfigClientDepLibs
-#define FontconfigClientDepLibs $(DEPFONTCONFIGLIB) $(DEPFREETYPE2LIB) Libxml2ClientDepLibs
+#define FontconfigClientDepLibs $(DEPFONTCONFIGLIB) $(DEPFREETYPE2LIB) ExpatClientDepLibs
 #endif
 #ifndef FontconfigClientLibs
-#define FontconfigClientLibs $(FONTCONFIGLIB) $(FREETYPE2LIB) Libxml2ClientLibs
+#define FontconfigClientLibs $(FONTCONFIGLIB) $(FREETYPE2LIB) ExpatClientLibs
 #endif
 
 #if UseFontconfig
 
 #if BuildFontconfigLibrary
 
-FONTCONFIGINCLUDES=$(TOP_X_INCLUDES) $(FREETYPE2INCLUDES) $(LIBXML2INCLUDES)
+FONTCONFIGINCLUDES=$(TOP_X_INCLUDES)
 #else /* BuildFontconfigLibrary */
 
 #if HasFontconfig

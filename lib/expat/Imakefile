@@ -1,0 +1,49 @@
+#define DoNormalLib NormalLibExpat
+#define DoSharedLib SharedLibExpat
+#define DoExtraLib SharedLibExpat
+#define DoDebugLib DebugLibExpat
+#define DoProfileLib ProfileLibExpat
+#define HasSharedData YES
+#define LibName expat
+#define SoRev SOEXPATREV
+#define LibHeaders YES
+
+#include <Threads.tmpl>
+
+MAJOR_VERSION = 1
+MINOR_VERSION = 95
+MICRO_VERSION = 2
+
+EXPATTOP = $(TOP)/extras/expat
+EXPATSRC = $(EXPATTOP)/lib
+EXPATINC = $(EXPATTOP)/lib
+
+INCLUDES = -I$(EXPATINC) -I$(EXPATTOP) -I.
+
+DEFINES = -DVERSION=\"ExpatVersion\"
+REQUIREDLIBS=$(LDPRELIBS)
+
+SRCS = xmlparse.c xmltok.c xmlrole.c
+OBJS = xmlparse.o xmltok.o xmlrole.o
+
+#include <Library.tmpl>
+
+#if DoSharedLib && SharedDataSeparation
+SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
+#endif
+
+depend:: expat.h
+
+DependTarget()
+
+expat.h: expat.h.in
+	sed -e 's/@EXPAT_MAJOR_VERSION@/$(MAJOR_VERSION)/' \
+	    -e 's/@EXPAT_MINOR_VERSION@/$(MINOR_VERSION)/' \
+	    -e 's/@EXPAT_EDIT@/$(MICRO_VERSION)/' expat.h.in > $@
+
+LinkSourceFile(xmlparse.c,$(EXPATSRC))
+LinkSourceFile(xmltok.c,$(EXPATSRC))
+LinkSourceFile(xmlrole.c,$(EXPATSRC))
+LinkSourceFile(expat.h.in,$(EXPATINC))
+
+	    
