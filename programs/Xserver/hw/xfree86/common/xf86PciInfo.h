@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.132 2002/07/25 05:06:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.133 2002/07/25 13:58:08 tsi Exp $ */
 /*
  * Copyright 1995-2002 by The XFree86 Project, Inc.
  *
@@ -479,7 +479,11 @@
 #define PCI_CHIP_I810_E			0x7125
 #define PCI_CHIP_440BX_BRIDGE		0x7190
 #define PCI_CHIP_I740_AGP		0x7800
+#define PCI_CHIP_460GX_PXB		0x84CB
 #define PCI_CHIP_460GX_SAC		0x84E0
+#define PCI_CHIP_460GX_GXB_2		0x84E2	/* PCI function 2 */
+#define PCI_CHIP_460GX_WXB		0x84E6
+#define PCI_CHIP_460GX_GXB_1		0x84EA	/* PCI function 1 */
 
 /* Silicon Motion Inc. */
 #define PCI_CHIP_SMI910			0x0910
