@@ -48,14 +48,14 @@ in this Software without prior written authorization from The Open Group.
 
 /***********************************************************************
  *
- * $Xorg: twm.c,v 1.3 2000/08/17 19:54:08 cpqbld Exp $
+ * $Xorg: twm.c,v 1.4 2000/10/27 09:14:03 pookie Exp $
  *
  * twm - "Tom's Window Manager"
  *
  * 27-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.c,v 3.7 2001/01/17 23:45:08 dawes Exp $ */
+/* $XFree86: xc/programs/twm/twm.c,v 3.8 2001/07/23 13:15:51 dawes Exp $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -240,6 +240,19 @@ main(int argc, char *argv[])
 #undef newhandler
 
     Home = getenv("HOME");
+    if (Home != NULL) {
+    	char *temp_p;
+
+	/*
+	 * Make a copy of Home because the string returned by getenv() can be
+	 * overwritten by some POSIX.1 and ANSI-C implementations of getenv()
+	 * when further calls to getenv() are made
+	 */
+
+	temp_p = strdup(Home);
+	Home = temp_p;
+    }
+
     if (Home == NULL)
 	Home = "./";
 
