@@ -982,8 +982,8 @@
         +  XFree86.cdrom.com:/pub/XFree86
            <ftp://XFree86.cdrom.com/pub/XFree86> (source and binaries)
 
-        +  ftp.rge.com:/pub/XFree86/XFree86/3.1.2
-           <ftp://ftp.rge.com/pub/XFree86/XFree86/3.1.2> (source and
+        +  ftp.rge.com:/pub/X/XFree86/XFree86/3.1.2
+           <ftp://ftp.rge.com/pub/X/XFree86/XFree86/3.1.2> (source and
            binaries)
 
 
@@ -1083,7 +1083,7 @@
 
 
   $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.41 1996/01/06 05:23:21 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.42 1996/01/16 15:04:26 dawes Exp $
 
 
 
