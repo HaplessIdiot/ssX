@@ -1,6 +1,4 @@
 /*
- * $Xorg: mieq.c,v 1.4 2001/02/09 02:05:20 xorgcvs Exp $
- *
 Copyright 1990, 1998  The Open Group
 
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -25,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/mi/mieq.c,v 1.2 2001/05/25 18:41:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mieq.c,v 1.3 2001/12/14 20:00:22 dawes Exp $ */
 
 /*
  * mieq.c
@@ -65,8 +63,7 @@ typedef struct _EventQueue {
 static EventQueueRec miEventQueue;
 
 Bool
-mieqInit (pKbd, pPtr)
-    DevicePtr	pKbd, pPtr;
+mieqInit(DevicePtr pKbd, DevicePtr pPtr)
 {
     miEventQueue.head = miEventQueue.tail = 0;
     miEventQueue.lastEventTime = GetTimeInMillis ();
@@ -87,8 +84,7 @@ mieqInit (pKbd, pPtr)
  */
 
 void
-mieqEnqueue (e)
-    xEvent	*e;
+mieqEnqueue(xEvent *e)
 {
     HWEventQueueType	oldtail, newtail;
     Bool    isMotion;
@@ -127,9 +123,7 @@ mieqEnqueue (e)
 }
 
 void
-mieqSwitchScreen (pScreen, fromDIX)
-    ScreenPtr	pScreen;
-    Bool	fromDIX;
+mieqSwitchScreen(ScreenPtr pScreen, Bool fromDIX)
 {
     miEventQueue.pEnqueueScreen = pScreen;
     if (fromDIX)
@@ -140,7 +134,7 @@ mieqSwitchScreen (pScreen, fromDIX)
  * Call this from ProcessInputEvents()
  */
 
-void mieqProcessInputEvents ()
+void mieqProcessInputEvents()
 {
     EventRec	*e;
     int		x, y;

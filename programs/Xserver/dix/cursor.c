@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/cursor.c,v 3.8 2003/01/12 02:44:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/cursor.c,v 3.9 2003/11/17 22:20:33 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,9 +46,6 @@ SOFTWARE.
 
 ******************************************************************/
 
-
-/* $Xorg: cursor.c,v 1.4 2001/02/09 02:04:39 xorgcvs Exp $ */
-
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -80,7 +77,7 @@ FreeCursorBits(CursorBitsPtr bits)
 #endif
     if (bits->refcnt == 0)
     {
-	register GlyphSharePtr *prev, this;
+	GlyphSharePtr *prev, this;
 
 	for (prev = &sharedGlyphs;
 	     (this = *prev) && (this->bits != bits);
@@ -101,9 +98,7 @@ FreeCursorBits(CursorBitsPtr bits)
  */
 /*ARGSUSED*/
 int
-FreeCursor(value, cid)
-    pointer	value; /* must conform to DeleteType */
-    XID 	cid;	
+FreeCursor(pointer value, XID cid)
 {
     int		nscr;
     CursorPtr 	pCurs = (CursorPtr)value;
@@ -130,7 +125,7 @@ FreeCursor(value, cid)
 static void
 CheckForEmptyMask(CursorBitsPtr bits)
 {
-    register unsigned char *msk = bits->mask;
+    unsigned char *msk = bits->mask;
     int n = BitmapBytePad(bits->width) * bits->height;
 
     bits->emptyMask = FALSE;
@@ -153,14 +148,10 @@ CheckForEmptyMask(CursorBitsPtr bits)
  * does not copy the src and mask bits
  */
 CursorPtr 
-AllocCursorARGB(psrcbits, pmaskbits, argb, cm,
-	    foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue)
-    unsigned char *	psrcbits;		/* server-defined padding */
-    unsigned char *	pmaskbits;		/* server-defined padding */
-    CARD32 *		argb;			/* no padding */
-    CursorMetricPtr	cm;
-    unsigned		foreRed, foreGreen, foreBlue;
-    unsigned		backRed, backGreen, backBlue;
+AllocCursorARGB(unsigned char *psrcbits, unsigned char *pmaskbits,
+		CARD32 *argb, CursorMetricPtr cm,
+		unsigned foreRed, unsigned foreGreen, unsigned foreBlue,
+		unsigned backRed, unsigned backGreen, unsigned backBlue)
 {
     CursorBitsPtr  bits;
     CursorPtr 	pCurs;
@@ -220,13 +211,10 @@ AllocCursorARGB(psrcbits, pmaskbits, argb, cm,
 }
 
 CursorPtr 
-AllocCursor(psrcbits, pmaskbits, cm,
-	    foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue)
-    unsigned char *	psrcbits;		/* server-defined padding */
-    unsigned char *	pmaskbits;		/* server-defined padding */
-    CursorMetricPtr	cm;
-    unsigned		foreRed, foreGreen, foreBlue;
-    unsigned		backRed, backGreen, backBlue;
+AllocCursor(unsigned char *psrcbits, unsigned char *pmaskbits,
+	    CursorMetricPtr cm,
+	    unsigned foreRed, unsigned foreGreen, unsigned foreBlue,
+	    unsigned backRed, unsigned backGreen, unsigned backBlue)
 {
     return AllocCursorARGB (psrcbits, pmaskbits, (CARD32 *) 0, cm,
 			    foreRed, foreGreen, foreBlue,
@@ -234,15 +222,11 @@ AllocCursor(psrcbits, pmaskbits, cm,
 }
 
 int
-AllocGlyphCursor(source, sourceChar, mask, maskChar,
-		 foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue,
-		 ppCurs, client)
-    Font source, mask;
-    unsigned int sourceChar, maskChar;
-    unsigned foreRed, foreGreen, foreBlue;
-    unsigned backRed, backGreen, backBlue;
-    CursorPtr *ppCurs;
-    ClientPtr client;
+AllocGlyphCursor(Font source, unsigned int sourceChar,
+		 Font mask, unsigned int maskChar,
+		 unsigned foreRed, unsigned foreGreen, unsigned foreBlue,
+		 unsigned backRed, unsigned backGreen, unsigned backBlue,
+		 CursorPtr *ppCurs, ClientPtr client)
 {
     FontPtr  sourcefont, maskfont;
     unsigned char   *srcbits;
@@ -299,8 +283,8 @@ AllocGlyphCursor(source, sourceChar, mask, maskChar,
 	}
 	if (!maskfont)
 	{
-	    register long n;
-	    register unsigned char *mskptr;
+	    long n;
+	    unsigned char *mskptr;
 
 	    n = BitmapBytePad(cm.width)*(long)cm.height;
 	    mskptr = mskbits = (unsigned char *)xalloc(n);
@@ -421,9 +405,7 @@ AllocGlyphCursor(source, sourceChar, mask, maskChar,
  *************************************************************/
 
 CursorPtr 
-CreateRootCursor(pfilename, glyph)
-    char *		pfilename;
-    unsigned int	glyph;
+CreateRootCursor(char *pfilename, unsigned int glyph)
 {
     CursorPtr 	curs;
     FontPtr 	cursorfont;

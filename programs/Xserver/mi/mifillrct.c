@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mifillrct.c,v 1.2 2001/05/29 22:24:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mifillrct.c,v 1.3 2001/12/14 20:00:22 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mifillrct.c,v 1.4 2001/02/09 02:05:20 xorgcvs Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -65,23 +64,20 @@ SOFTWARE.
  * clipping to the destination
  */
 void
-miPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		nrectFill; 	/* number of rectangles to fill */
-    xRectangle	*prectInit;  	/* Pointer to first rectangle to fill */
+miPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
+	       xRectangle *prectInit)
 {
     int i;
-    register int	height;
-    register int	width;
-    register xRectangle *prect; 
+    int	height;
+    int	width;
+    xRectangle *prect; 
     int			xorg;
-    register int	yorg;
+    int	yorg;
     int			maxheight;
     DDXPointPtr		pptFirst;
-    register DDXPointPtr ppt;
+    DDXPointPtr ppt;
     int			*pwFirst;
-    register int 	*pw;
+    int 	*pw;
 
     if (pGC->miTranslate)
     {

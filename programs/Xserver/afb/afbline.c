@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbline.c,v 3.1 1998/03/20 21:04:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbline.c,v 3.2 2001/10/28 03:32:58 tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,7 +46,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: afbline.c,v 5.18 94/04/17 20:28:26 dpw Exp $ */
 
 #include "X.h"
 
@@ -92,55 +91,47 @@ actual clipping.
 
 void
 #ifdef POLYSEGMENT
-afbSegmentSS(pDrawable, pGC, nseg, pSeg)
-	DrawablePtr		pDrawable;
-	GCPtr		pGC;
-	int				nseg;
-	register xSegment		*pSeg;
+afbSegmentSS(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSeg)
 #else
-afbLineSS(pDrawable, pGC, mode, npt, pptInit)
-	DrawablePtr pDrawable;
-	GCPtr		pGC;
-	int				mode;				/* Origin or Previous */
-	int				npt;				/* number of points */
-	DDXPointPtr pptInit;
+afbLineSS(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+	  DDXPointPtr pptInit)
 #endif
 {
 	int nboxInit;
-	register int nbox;
+	int nbox;
 	BoxPtr pboxInit;
-	register BoxPtr pbox;
+	BoxPtr pbox;
 #ifndef POLYSEGMENT
-	register DDXPointPtr ppt;		/* pointer to list of translated points */
+	DDXPointPtr ppt;	/* pointer to list of translated points */
 #endif
 
-	unsigned int oc1;				/* outcode of point 1 */
-	unsigned int oc2;				/* outcode of point 2 */
+	unsigned int oc1;	/* outcode of point 1 */
+	unsigned int oc2;	/* outcode of point 2 */
 
-	PixelType *addrlBase;		/* pointer to start of drawable */
-	int nlwidth;				/* width in longwords of destination pixmap */
-	int xorg, yorg;				/* origin of window */
+	PixelType *addrlBase;	/* pointer to start of drawable */
+	int nlwidth;		/* width in longwords of destination pixmap */
+	int xorg, yorg;		/* origin of window */
 
-	int adx;				/* abs values of dx and dy */
+	int adx;		/* abs values of dx and dy */
 	int ady;
-	int signdx;				/* sign of dx and dy */
+	int signdx;		/* sign of dx and dy */
 	int signdy;
-	int e, e1, e2;				/* bresenham error and increments */
-	int len;						/* length of segment */
-	int axis;						/* major axis */
+	int e, e1, e2;		/* bresenham error and increments */
+	int len;		/* length of segment */
+	int axis;		/* major axis */
 	int octant;
 	unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
 	int depthDst;
 #ifndef POLYSEGMENT
-	PixelType *addrl;				/* address of destination pixmap */
+	PixelType *addrl;	/* address of destination pixmap */
 	int d;
 #endif
 	int sizeDst;
 	unsigned char *rrops;
 
-								/* a bunch of temporaries */
-	register int y1, y2;
-	register int x1, x2;
+	/* a bunch of temporaries */
+	int y1, y2;
+	int x1, x2;
 	RegionPtr cclip;
 
 	cclip = pGC->pCompositeClip;
@@ -189,7 +180,7 @@ afbLineSS(pDrawable, pGC, mode, npt, pptInit)
 			   endpoint semantics
 			*/
 			if (y1 > y2) {
-				register int tmp;
+				int tmp;
 
 				tmp = y2;
 				y2 = y1 + 1;
@@ -233,7 +224,7 @@ afbLineSS(pDrawable, pGC, mode, npt, pptInit)
 			   endpoint semantics
 			*/
 			if (x1 > x2) {
-				register int tmp;
+				int tmp;
 
 				tmp = x2;
 				x2 = x1 + 1;
@@ -427,44 +418,36 @@ afbLineSS(pDrawable, pGC, mode, npt, pptInit)
 
 void
 #ifdef POLYSEGMENT
-afbSegmentSD(pDrawable, pGC, nseg, pSeg)
-	DrawablePtr		pDrawable;
-	register GCPtr		pGC;
-	int				nseg;
-	register xSegment		*pSeg;
+afbSegmentSD(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSeg)
 #else
-afbLineSD(pDrawable, pGC, mode, npt, pptInit)
-	DrawablePtr pDrawable;
-	register GCPtr pGC;
-	int mode;				/* Origin or Previous */
-	int npt;				/* number of points */
-	DDXPointPtr pptInit;
+afbLineSD(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+	  DDXPointPtr pptInit)
 #endif
 {
 	int nboxInit;
-	register int nbox;
+	int nbox;
 	BoxPtr pboxInit;
-	register BoxPtr pbox;
+	BoxPtr pbox;
 #ifndef POLYSEGMENT
-	register DDXPointPtr ppt;		/* pointer to list of translated points */
+	DDXPointPtr ppt;	/* pointer to list of translated points */
 #endif
 
-	register unsigned int oc1;		/* outcode of point 1 */
-	register unsigned int oc2;		/* outcode of point 2 */
+	unsigned int oc1;	/* outcode of point 1 */
+	unsigned int oc2;	/* outcode of point 2 */
 
-	PixelType *addrlBase;		/* address of destination pixmap */
-	int nlwidth;				/* width in longwords of destination pixmap */
+	PixelType *addrlBase;	/* address of destination pixmap */
+	int nlwidth;		/* width in longwords of destination pixmap */
 	int sizeDst;
 	int depthDst;
-	int xorg, yorg;				/* origin of window */
+	int xorg, yorg;		/* origin of window */
 
-	int adx;				/* abs values of dx and dy */
+	int adx;		/* abs values of dx and dy */
 	int ady;
-	int signdx;				/* sign of dx and dy */
+	int signdx;		/* sign of dx and dy */
 	int signdy;
-	int e, e1, e2;				/* bresenham error and increments */
-	int len;						/* length of segment */
-	int axis;						/* major axis */
+	int e, e1, e2;		/* bresenham error and increments */
+	int len;		/* length of segment */
+	int axis;		/* major axis */
 	int octant;
 	unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
 	int x1, x2, y1, y2;
@@ -472,15 +455,15 @@ afbLineSD(pDrawable, pGC, mode, npt, pptInit)
 	unsigned char *rrops;
 	unsigned char bgrrops[AFB_MAX_DEPTH];
 	unsigned char   *pDash;
-	int					dashOffset;
-	int					numInDashList;
-	int					dashIndex;
-	int					isDoubleDash;
-	int					dashIndexTmp, dashOffsetTmp;
-	int					unclippedlen;
+	int dashOffset;
+	int numInDashList;
+	int dashIndex;
+	int isDoubleDash;
+	int dashIndexTmp, dashOffsetTmp;
+	int unclippedlen;
 #ifndef POLYSEGMENT
 	PixelType *addrl;
-	int					d;
+	int d;
 #endif
 
 	cclip = pGC->pCompositeClip;

@@ -1,7 +1,7 @@
 /*
  * Fill rectangles.
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillrct.c,v 3.7 2001/01/17 22:36:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillrct.c,v 3.8 2001/12/14 19:59:22 dawes Exp $ */
 
 /*
 
@@ -28,8 +28,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
 
-/* $Xorg: cfbfillrct.c,v 1.4 2001/02/09 02:04:37 xorgcvs Exp $ */
-
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -45,12 +43,8 @@ in this Software without prior written authorization from The Open Group.
 
 
 void
-cfbFillBoxTileOdd (pDrawable, n, rects, tile, xrot, yrot)
-    DrawablePtr	pDrawable;
-    int		n;
-    BoxPtr	rects;
-    PixmapPtr	tile;
-    int		xrot, yrot;
+cfbFillBoxTileOdd(DrawablePtr pDrawable, int n, BoxPtr rects, PixmapPtr tile,
+		  int xrot, int yrot)
 {
 #if PSZ == 24
     if (tile->drawable.width & 3)
@@ -63,11 +57,7 @@ cfbFillBoxTileOdd (pDrawable, n, rects, tile, xrot, yrot)
 }
 
 void
-cfbFillRectTileOdd (pDrawable, pGC, nBox, pBox)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		nBox;
-    BoxPtr	pBox;
+cfbFillRectTileOdd(DrawablePtr pDrawable, GCPtr pGC, int nBox, BoxPtr pBox)
 {
     int	xrot, yrot;
     void    (*fill)(DrawablePtr, int, BoxPtr, PixmapPtr, int, int, int, unsigned long);
@@ -102,16 +92,13 @@ cfbFillRectTileOdd (pDrawable, pGC, nBox, pBox)
 #define NUM_STACK_RECTS	1024
 
 void
-cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
-    DrawablePtr pDrawable;
-    register GCPtr pGC;
-    int		nrectFill; 	/* number of rectangles to fill */
-    xRectangle	*prectInit;  	/* Pointer to first rectangle to fill */
+cfbPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
+		xRectangle *prectInit)
 {
     xRectangle	    *prect;
     RegionPtr	    prgnClip;
-    register BoxPtr pbox;
-    register BoxPtr pboxClipped;
+    BoxPtr	    pbox;
+    BoxPtr	    pboxClipped;
     BoxPtr	    pboxClippedBase;
     BoxPtr	    pextent;
     BoxRec	    stackRects[NUM_STACK_RECTS];

@@ -1,4 +1,4 @@
-/* $Xorg: cfbtegblt.c,v 1.4 2001/02/09 02:04:39 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbtegblt.c,v 3.7 2003/10/29 22:44:53 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbtegblt.c,v 3.6tsi Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -83,13 +82,8 @@ and the paints the characters.
 */
 
 void
-cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
-    DrawablePtr pDrawable;
-    GC 		*pGC;
-    int 	x, y;
-    unsigned int nglyph;
-    CharInfoPtr *ppci;		/* array of character info */
-    pointer	pglyphBase;	/* start of array of glyphs */
+cfbTEGlyphBlt(DrawablePtr pDrawable, GC *pGC, int x, int y,
+	      unsigned int nglyph, CharInfoPtr *ppci, pointer pglyphBase)
 {
     FontPtr	pfont = pGC->font;
     int widthDst;
@@ -98,16 +92,16 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
     int w;			/* width of glyph and char */
     int h;			/* height of glyph and char */
-    register int xpos=x;	/* current x%32  */
+    int xpos=x;	/* current x%32  */
     int ypos=y;			/* current y%32 */
-    register unsigned char *pglyph;
+    unsigned char *pglyph;
     int widthGlyph;
 
-    register CfbBits *pdst;/* pointer to current longword in dst */
+    CfbBits *pdst;/* pointer to current longword in dst */
     int hTmp;			/* counter for height */
     BoxRec bbox;		/* for clipping */
 
-    register int wtmp,xtemp,width;
+    int wtmp,xtemp,width;
     CfbBits bgfill,fgfill,*ptemp,tmpDst1,tmpDst2,*pdtmp;
 #if PSZ != 24
     int tmpx;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbimggblt.c,v 3.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbimggblt.c,v 3.6 2003/11/03 05:11:59 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mfbimggblt.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
+
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -97,13 +97,8 @@ xoff, pdst, pglyph, and tmpSrc seem like the right things, though.
 */
 
 void
-MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
-    DrawablePtr pDrawable;
-    GC 		*pGC;
-    int 	x, y;
-    unsigned int nglyph;
-    CharInfoPtr *ppci;		/* array of character info */
-    pointer	pglyphBase;	/* start of array of glyphs */
+MFBIMAGEGLYPHBLT(DrawablePtr pDrawable, GC *pGC, int x, int y,
+		 unsigned int nglyph, CharInfoPtr *ppci, pointer pglyphBase)
 {
     ExtentInfoRec info;	/* used by QueryGlyphExtents() */
     BoxRec bbox;	/* string's bounding box */
@@ -122,23 +117,23 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int xchar;		/* xorigin of char (mod 32) */
 
 			/* these are used for placing the glyph */
-    register int xoff;	/* x offset of left edge of glyph (mod 32) */
-    register PixelType *pdst;
+    int xoff;	/* x offset of left edge of glyph (mod 32) */
+    PixelType *pdst;
 			/* pointer to current longword in dst */
 
     int w;		/* width of glyph in bits */
     int h;		/* height of glyph */
     int widthGlyph;	/* width of glyph, in bytes */
-    register unsigned char *pglyph;
+    unsigned char *pglyph;
 			/* pointer to current row of glyph */
 
 			/* used for putting down glyph */    
-    register PixelType tmpSrc;
+    PixelType tmpSrc;
 			/* for getting bits from glyph */
-    register PixelType startmask;
-    register PixelType endmask;
+    PixelType startmask;
+    PixelType endmask;
 
-    register int nFirst;/* bits of glyph in current longword */
+    int nFirst;/* bits of glyph in current longword */
     mfbPrivGC *pPrivGC;
     mfbFillAreaProcPtr oldFillArea;
 			/* we might temporarily usurp this

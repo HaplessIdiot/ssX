@@ -2,7 +2,7 @@
  * cfb copy area
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.21 2004/04/11 20:33:48 tsi Exp $ */
 
 /*
 
@@ -31,7 +31,6 @@ in this Software without prior written authorization from The Open Group.
 Author: Keith Packard
 
 */
-/* $Xorg: cfbbitblt.c,v 1.4 2001/02/09 02:04:37 xorgcvs Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -72,21 +71,9 @@ static unsigned int FgPixel, BgPixel;
 
 /* cfbBitBltcfb == cfbCopyPlaneExpand */
 RegionPtr
-cfbBitBlt (
-    register DrawablePtr pSrcDrawable,
-    register DrawablePtr pDstDrawable,
-    GC *pGC,
-    int srcx, int srcy,
-    int width, int height,
-    int dstx, int dsty,
-    void (*doBitBlt)(
-        DrawablePtr /*pSrc*/,
-        DrawablePtr /*pDst*/,
-        int /*alu*/,
-        RegionPtr /*prgnDst*/,
-        DDXPointPtr /*pptSrc*/,
-        unsigned long /*planemask*/),
-    unsigned long bitPlane)
+cfbBitBlt(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, GC *pGC,
+	  int srcx, int srcy, int width, int height, int dstx, int dsty,
+	  cfbDoBitBltProcPtr doBitBlt, unsigned long bitPlane)
 {
     RegionPtr prgnSrcClip = NULL; /* may be a new region, or just a copy */
     Bool freeSrcClip = FALSE;
@@ -94,11 +81,11 @@ cfbBitBlt (
     RegionPtr prgnExposed;
     RegionRec rgnDst;
     DDXPointPtr pptSrc;
-    register DDXPointPtr ppt;
-    register BoxPtr pbox;
+    DDXPointPtr ppt;
+    BoxPtr pbox;
     int i;
-    register int dx;
-    register int dy;
+    int dx;
+    int dy;
     xRectangle origSource;
     DDXPointRec origDest;
     int numRects;
@@ -334,22 +321,10 @@ cfbBitBlt (
 
 
 RegionPtr
-cfbCopyPlaneReduce (
-    register DrawablePtr pSrcDrawable,
-    register DrawablePtr pDstDrawable,
-    GC *pGC,
-    int srcx, int srcy,
-    int width, int height,
-    int dstx, int dsty,
-    void (*doCopyPlane)(
-        DrawablePtr /*pSrc*/,
-        DrawablePtr /*pDst*/,
-        int /*alu*/,
-        RegionPtr /*prgnDst*/,
-        DDXPointPtr /*pptSrc*/,
-        unsigned long /*planemask*/,
-        unsigned long /*bitPlane*/),
-    unsigned long bitPlane)
+cfbCopyPlaneReduce(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, GC *pGC,
+		   int srcx, int srcy, int width, int height,
+		   int dstx, int dsty, cfbDoCopyPlaneProcPtr doCopyPlane,
+		   unsigned long bitPlane)
 {
     RegionPtr prgnSrcClip = NULL; /* may be a new region, or just a copy */
     Bool freeSrcClip = FALSE;
@@ -357,11 +332,11 @@ cfbCopyPlaneReduce (
     RegionPtr prgnExposed;
     RegionRec rgnDst;
     DDXPointPtr pptSrc;
-    register DDXPointPtr ppt;
-    register BoxPtr pbox;
+    DDXPointPtr ppt;
+    BoxPtr pbox;
     int i;
-    register int dx;
-    register int dy;
+    int dx;
+    int dy;
     xRectangle origSource;
     DDXPointRec origDest;
     int numRects;
@@ -597,21 +572,10 @@ cfbCopyPlaneReduce (
 
 
 void
-cfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc, planemask)
-    DrawablePtr	    pSrc, pDst;
-    int		    alu;
-    RegionPtr	    prgnDst;
-    DDXPointPtr	    pptSrc;
-    unsigned long   planemask;
+cfbDoBitblt(DrawablePtr pSrc, DrawablePtr  pDst, int alu, RegionPtr prgnDst,
+	    DDXPointPtr pptSrc, unsigned long planemask)
 {
-    void (*doBitBlt)(
-        DrawablePtr /*pSrc*/,
-        DrawablePtr /*pDst*/,
-        int /*alu*/,
-        RegionPtr /*prgnDst*/,
-        DDXPointPtr /*pptSrc*/,
-        unsigned long /*planemask*/)
-        = cfbDoBitbltGeneral;
+    cfbDoBitBltProcPtr doBitBlt = cfbDoBitbltGeneral;
 
     if ((planemask & PMSK) == PMSK) {
 	switch (alu) {
@@ -630,23 +594,12 @@ cfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 }
 
 RegionPtr
-cfbCopyArea(pSrcDrawable, pDstDrawable,
-            pGC, srcx, srcy, width, height, dstx, dsty)
-    register DrawablePtr pSrcDrawable;
-    register DrawablePtr pDstDrawable;
-    GC *pGC;
-    int srcx, srcy;
-    int width, height;
-    int dstx, dsty;
+cfbCopyArea(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
+            GC *pGC, int srcx, int srcy, int width, int height,
+	    int dstx, int dsty)
 {
-    void (*doBitBlt) (
-        DrawablePtr /*pSrc*/,
-        DrawablePtr /*pDst*/,
-        int /*alu*/,
-        RegionPtr /*prgnDst*/,
-        DDXPointPtr /*pptSrc*/,
-        unsigned long /*planemask*/);
-    
+    cfbDoBitBltProcPtr doBitBlt;
+
     doBitBlt = cfbDoBitbltCopy;
     if (pGC->alu != GXcopy || (pGC->planemask & PMSK) != PMSK)
     {
@@ -668,18 +621,24 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 }
 
 #if PSZ == 8
+/*
+    DrawablePtr pSrcDrawable;	must be a bitmap
+    DrawablePtr pDstDrawable;	must be depth 8 drawable
+    int	rop;			not used; caller must call
+				cfb8CheckOpaqueStipple
+			 	beforehand to get cfb8StippleRRop set correctly
+    RegionPtr prgnDst;		region in destination to draw to;
+				screen relative coords. if dest is a window;
+				drawable relative if dest is a pixmap
+    DDXPointPtr pptSrc;		drawable relative src coords to copy from;
+				must be one point for each box in prgnDst
+    unsigned long planemask;	to apply to destination writes
+*/
+
 void
-cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
-    DrawablePtr pSrcDrawable;	/* must be a bitmap */
-    DrawablePtr pDstDrawable;	/* must be depth 8 drawable */
-    int	rop;		/* not used; caller must call cfb8CheckOpaqueStipple
-			 * beforehand to get cfb8StippleRRop set correctly */
-    RegionPtr prgnDst;		/* region in destination to draw to;
-				 * screen relative coords. if dest is a window;
-				 * drawable relative if dest is a pixmap */
-    DDXPointPtr pptSrc;		/* drawable relative src coords to copy from;
-				 * must be one point for each box in prgnDst */
-    unsigned long planemask;	/* to apply to destination writes */
+cfbCopyPlane1to8(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
+		 int rop, RegionPtr prgnDst, DDXPointPtr pptSrc,
+		 unsigned long planemask)
 {
     int	srcx, srcy;	/* upper left corner of box being copied in source */
     int dstx, dsty;	/* upper left corner of box being copied in dest */
@@ -691,14 +650,14 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
     int widthDst;    /* # of groups of 4 pixels (8 bits/pixel) in dst */
     CfbBits *psrcLine, *pdstLine; /* steps a row at a time thru src/dst; 
 					 * may point into middle of row */
-    register CfbBits *psrc, *pdst; /* steps within the row */
-    register CfbBits bits, tmp;	 /* bits from source */
-    register int leftShift;
-    register int rightShift;
+    CfbBits *psrc, *pdst; /* steps within the row */
+    CfbBits bits, tmp;	 /* bits from source */
+    int leftShift;
+    int rightShift;
     CfbBits startmask;		/* left edge pixel mask */
     CfbBits endmask;		/* right edge pixel mask */
-    register int nlMiddle;   /* number of words in middle of the row to draw */
-    register int nl;
+    int nlMiddle;   /* number of words in middle of the row to draw */
+    int nl;
     int firstoff = 0;
     int secondoff = 0;
     CfbBits src;
@@ -1026,27 +985,27 @@ cfbCopyPlane1to32
     CfbBits *psrcBase, *pdstBase;
     int	widthSrc, widthDst;
     unsigned int *psrcLine;
-    register unsigned int *psrc;
+    unsigned int *psrc;
 #if PSZ == 16
     unsigned short *pdstLine;
-    register unsigned short *pdst;
+    unsigned short *pdst;
 #endif
 #if PSZ == 32
     unsigned int *pdstLine;
-    register unsigned int *pdst;
+    unsigned int *pdst;
 #endif
 #if PSZ == 24
     unsigned char *pdstLine;
-    register unsigned char *pdst;
+    unsigned char *pdst;
 #endif
-    register unsigned int  bits, tmp;
-    register unsigned int  fgpixel, bgpixel;
-    register unsigned int  src;
+    unsigned int  bits, tmp;
+    unsigned int  fgpixel, bgpixel;
+    unsigned int  src;
 #if PSZ == 24
-    register unsigned int  dst;
+    unsigned int  dst;
 #endif
-    register int  leftShift, rightShift;
-    register int  i, nl;
+    int  leftShift, rightShift;
+    int  i, nl;
     int nbox;
     BoxPtr pbox;
     int  result;
@@ -1347,15 +1306,10 @@ cfbCopyPlane1to32
 
 /* shared among all different cfb depths through linker magic */
 
-RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
-	    pGC, srcx, srcy, width, height, dstx, dsty, bitPlane)
-    DrawablePtr 	pSrcDrawable;
-    DrawablePtr		pDstDrawable;
-    GCPtr		pGC;
-    int 		srcx, srcy;
-    int 		width, height;
-    int 		dstx, dsty;
-    unsigned long	bitPlane;
+RegionPtr
+cfbCopyPlane(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, GCPtr pGC,
+	     int srcx, int srcy, int width, int height, int dstx, int dsty,
+	     unsigned long bitPlane)
 {
     RegionPtr	ret;
 

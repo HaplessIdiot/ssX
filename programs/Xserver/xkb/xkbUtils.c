@@ -1,4 +1,3 @@
-/* $Xorg: xkbUtils.c,v 1.3 2000/08/17 19:53:48 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.16 2003/11/03 05:12:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.17 2003/11/17 22:20:46 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -147,7 +146,7 @@ DeviceIntPtr dev = NULL;
 void
 XkbSetActionKeyMods(XkbDescPtr xkb,XkbAction *act,unsigned mods)
 {
-register unsigned	tmp;
+unsigned	tmp;
 
     switch (act->type) {
 	case XkbSA_SetMods: case XkbSA_LatchMods: case XkbSA_LockMods:
@@ -169,8 +168,8 @@ register unsigned	tmp;
 unsigned
 XkbMaskForVMask(XkbDescPtr xkb,unsigned vmask)
 {
-register int i,bit;
-register unsigned mask;
+int i,bit;
+unsigned mask;
     
     for (mask=i=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
 	if (vmask&bit)
@@ -193,7 +192,7 @@ Bool			check;
     xkb= xkbi->desc;
 #ifdef DEBUG
 {
-register unsigned i,bit;
+unsigned i,bit;
     for (i=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
 	if ((changed&bit)==0)
 	    continue;
@@ -289,7 +288,7 @@ XkbUpdateDescActions(	XkbDescPtr		xkb,
 			CARD8		 	num,
 			XkbChangesPtr	 	changes)
 {
-register unsigned	key;
+unsigned	key;
 
     for (key=first;key<(first+num);key++) {
 	XkbApplyCompatMapToKey(xkb,key,changes);
@@ -297,7 +296,7 @@ register unsigned	key;
 
     if (changes->map.changed&(XkbVirtualModMapMask|XkbModifierMapMask)) {
         unsigned char           newVMods[XkbNumVirtualMods];
-        register  unsigned      bit,i;
+        unsigned      bit,i;
         unsigned                present;
 
         bzero(newVMods,XkbNumVirtualMods);
@@ -376,7 +375,7 @@ CARD8 *			repeat;
 void
 XkbUpdateCoreDescription(DeviceIntPtr keybd,Bool resize)
 {
-register int		key,tmp;
+int		key,tmp;
 int			maxSymsPerKey,maxKeysPerMod;
 int			first,last,firstCommon,lastCommon;
 XkbDescPtr		xkb;
@@ -455,7 +454,7 @@ CARD8			keysPerMod[XkbNumModifiers];
 	}
 	if (_XkbCoreKeycodeInRange(keyc,key)) {
 	    if (keyc->modifierMap[key]!=0) {
-		register unsigned bit,i,mask;
+		unsigned bit,i,mask;
 		mask= keyc->modifierMap[key];
 		for (i=0,bit=1;i<XkbNumModifiers;i++,bit<<=1) {
 		    if (mask&bit) {
@@ -532,7 +531,7 @@ CARD8			keysPerMod[XkbNumModifiers];
 	    }
 	    pXKB+= XkbKeyGroupsWidth(xkb,key);
 	    for (n=XkbGroup3Index;n<nGroups;n++) {
-		register int s;
+		int s;
 		groupWidth= XkbKeyGroupWidth(xkb,key,n);
 		for (s=0;s<groupWidth;s++) {
 		    pCore[nOut++]= pXKB[s];
@@ -546,7 +545,7 @@ CARD8			keysPerMod[XkbNumModifiers];
 	    }
 	}
 	if (keyc->modifierMap[key]!=0) {
-	    register unsigned bit,i,mask;
+	    unsigned bit,i,mask;
 	    mask= keyc->modifierMap[key];
 	    for (i=0,bit=1;i<XkbNumModifiers;i++,bit<<=1) {
 		if (mask&bit) {
@@ -882,7 +881,7 @@ XkbDescPtr	xkb=	xkbi->desc;
 }
 
 void
-XkbConvertCase(register KeySym sym, KeySym *lower, KeySym *upper)
+XkbConvertCase(KeySym sym, KeySym *lower, KeySym *upper)
 {
     *lower = sym;
     *upper = sym;

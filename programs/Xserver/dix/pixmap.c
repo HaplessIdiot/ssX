@@ -1,4 +1,3 @@
-/* $Xorg: pixmap.c,v 1.4 2001/02/09 02:04:40 xorgcvs Exp $ */
 /*
 
 Copyright 1993, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/dix/pixmap.c,v 3.4 2001/01/17 22:36:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/pixmap.c,v 3.5 2001/12/14 19:59:32 dawes Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -48,15 +47,8 @@ from The Open Group.
 
 /* callable by ddx */
 PixmapPtr
-GetScratchPixmapHeader(pScreen, width, height, depth, bitsPerPixel, devKind,
-		       pPixData)
-    ScreenPtr   pScreen;
-    int		width;
-    int		height;
-    int		depth;
-    int		bitsPerPixel;
-    int		devKind;
-    pointer     pPixData;
+GetScratchPixmapHeader(ScreenPtr pScreen, int width, int height, int depth,
+		       int bitsPerPixel, int devKind, pointer pPixData)
 {
     PixmapPtr pPixmap = pScreen->pScratchPixmap;
 
@@ -78,8 +70,7 @@ GetScratchPixmapHeader(pScreen, width, height, depth, bitsPerPixel, devKind,
 
 /* callable by ddx */
 void
-FreeScratchPixmapHeader(pPixmap)
-    PixmapPtr pPixmap;
+FreeScratchPixmapHeader(PixmapPtr pPixmap)
 {
     if (pPixmap)
     {
@@ -95,8 +86,7 @@ FreeScratchPixmapHeader(pPixmap)
 
 
 Bool
-CreateScratchPixmapsForScreen(scrnum)
-    int scrnum;
+CreateScratchPixmapsForScreen(int scrnum)
 {
     /* let it be created on first use */
     screenInfo.screens[scrnum]->pScratchPixmap = NULL;
@@ -105,8 +95,7 @@ CreateScratchPixmapsForScreen(scrnum)
 
 
 void
-FreeScratchPixmapsForScreen(scrnum)
-    int scrnum;
+FreeScratchPixmapsForScreen(int scrnum)
 {
     FreeScratchPixmapHeader(screenInfo.screens[scrnum]->pScratchPixmap);
 }
@@ -114,9 +103,7 @@ FreeScratchPixmapsForScreen(scrnum)
 
 /* callable by ddx */
 PixmapPtr
-AllocatePixmap(pScreen, pixDataSize)
-    ScreenPtr pScreen;
-    int pixDataSize;
+AllocatePixmap(ScreenPtr pScreen, int pixDataSize)
 {
     PixmapPtr pPixmap;
 #ifdef PIXPRIV

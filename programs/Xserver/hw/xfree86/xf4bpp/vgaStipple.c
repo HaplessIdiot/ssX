@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaStipple.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaStipple.c,v 1.6 2003/11/03 05:11:57 tsi Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -21,7 +21,6 @@
  * SOFTWARE.
  *
 */
-/* $XConsortium: vgaStipple.c /main/5 1996/02/21 17:59:10 kaleb $ */
 
 #include "xf4bpp.h"
 #include "OScompiler.h"
@@ -33,17 +32,13 @@ extern ScrnInfoPtr *xf86Screens;
 
 #ifndef	PC98_EGC
 static unsigned char
-getbits
-(
-	register const int x,
-	register const unsigned int patternWidth,
-	register const unsigned char * const lineptr
-)
+getbits(const int x, const unsigned int patternWidth,
+	const unsigned char * const lineptr)
 {
-register unsigned char bits ;
-register const unsigned char *cptr ;
-register int shift ;
-register int wrap ;
+unsigned char bits ;
+const unsigned char *cptr ;
+int shift ;
+int wrap ;
 
 cptr = lineptr + ( x >> 3 ) ;
 bits = *cptr ;
@@ -96,28 +91,18 @@ return bits ;
  * This is taken care of above.
  */
 static void
-DoMonoSingle
-(
-	WindowPtr pWin, /* GJA */
-	int w,
-	int x,
-	int y,
-	register const unsigned char *mastersrc,
-	int h,
-	register unsigned int width,
-	register unsigned int paddedByteWidth,
-	unsigned int height,
-	int xshift,
-	int yshift
-)
+DoMonoSingle(WindowPtr pWin, int w, int x, int y,
+	     const unsigned char *mastersrc, int h, unsigned int width,
+	     unsigned int paddedByteWidth, unsigned int height,
+	     int xshift, int yshift)
 {
 IOADDRESS REGBASE =
     xf86Screens[((DrawablePtr)pWin)->pScreen->myNum]->domainIOBase + 0x300;
-register volatile unsigned char *xDst ;
-register VideoAdapterObject tmp2 ;
-register int NeedValX ;
-register int counter ;
-register int tmp1 ;
+volatile unsigned char *xDst ;
+VideoAdapterObject tmp2 ;
+int NeedValX ;
+int counter ;
+int tmp1 ;
 unsigned int rowCounter ;
 int byte_cnt ;
 #ifdef	PC98_EGC
@@ -192,7 +177,7 @@ if ((byte_cnt = ROW_OFFSET(w))) { /* Fill The Center Of The Box */
 	for ( tmp1 = yshift, rowCounter = h;
 	      rowCounter ;
 	      rowCounter-- , tmp1++ ) {
-		register const unsigned char *l_ptr ;
+		const unsigned char *l_ptr ;
 		if ( tmp1 >= (int)height )
 			tmp1 -= height ;
 		l_ptr = mastersrc + ( tmp1 * paddedByteWidth ) ;
@@ -276,10 +261,10 @@ DoMonoMany
 	int w,
 	int x,
 	int y,
-	register const unsigned char *mastersrc,
+	const unsigned char *mastersrc,
 	int h,
-	register unsigned int width,
-	register unsigned int paddedByteWidth,
+	unsigned int width,
+	unsigned int paddedByteWidth,
 	unsigned int height,
 	int xshift,
 	int yshift
@@ -287,11 +272,11 @@ DoMonoMany
 {
 IOADDRESS REGBASE =
     xf86Screens[((DrawablePtr)pWin)->pScreen->myNum]->domainIOBase + 0x300;
-register volatile unsigned char *xDst ;
-register VideoAdapterObject tmp2 ;
-register int NeedValX ;
-register int byte_cnt ;
-register int tmp1 ;
+volatile unsigned char *xDst ;
+VideoAdapterObject tmp2 ;
+int NeedValX ;
+int byte_cnt ;
+int tmp1 ;
 unsigned DestinationRow ;
 unsigned int SourceRow ;
 volatile unsigned char *dst ;
@@ -319,7 +304,7 @@ if ((tmp1 = x & 07)) {
 	for ( tmp1 = yshift, SourceRow = 0, dst = SCREENADDRESS( pWin, x, y ) ;
 	      SourceRow < height ;
 	      tmp1++, SourceRow++, dst += BYTES_PER_LINE(pWin) ) {
-		register unsigned bitPattern ;
+		unsigned bitPattern ;
 
 		if ( tmp1 >= (int)height )
 			tmp1 -= height ;
@@ -377,7 +362,7 @@ if ((byte_cnt = ROW_OFFSET(w))) { /* Fill The Center Of The Box */
 	for ( tmp1 = yshift, SourceRow = 0, dst = SCREENADDRESS( pWin, x, y ) ;
 	      SourceRow < height ;
 	      tmp1++, SourceRow++, dst += BYTES_PER_LINE(pWin) - byte_cnt ) {
-		register const unsigned char *l_ptr ;
+		const unsigned char *l_ptr ;
 		if ( tmp1 >= (int)height )
 			tmp1 -= height ;
 		l_ptr = mastersrc + ( tmp1 * paddedByteWidth ) ;
@@ -387,9 +372,9 @@ if ((byte_cnt = ROW_OFFSET(w))) { /* Fill The Center Of The Box */
 		for ( tmp2 = byte_cnt, NeedValX = SavNeedX ;
 		      tmp2-- ;
 		      dst++ ) {
-			register unsigned bitPattern ;
+			unsigned bitPattern ;
 #ifndef PC98_EGC
-			register VideoAdapterObject tmp3 ;
+			VideoAdapterObject tmp3 ;
 #endif
 			/*
 			 * For Each Time Pattern Repeats In Y
@@ -436,7 +421,7 @@ if ((tmp1 = BIT_OFFSET(w))) { /* x Now Is Byte Aligned */
 	      dst = SCREENADDRESS( pWin, ( x + w ), y ) ;
 	      SourceRow < height ;
 	      tmp1++, SourceRow++, dst += BYTES_PER_LINE(pWin) ) {
-		register unsigned bitPattern ;
+		unsigned bitPattern ;
 		if ( tmp1 >= (int)height )
 			tmp1 -= height ;
 		/*
@@ -482,12 +467,8 @@ return ;
 #define DO_RECURSE 0x10000
 
 static void
-vgaSetMonoRegisters
-(
-	DrawablePtr pDrawable,
-	register unsigned long int plane_mask,
-	register unsigned long int desiredState
-)
+vgaSetMonoRegisters(DrawablePtr pDrawable, unsigned long int plane_mask,
+		    unsigned long int desiredState)
 {
 IOADDRESS REGBASE =
     xf86Screens[pDrawable->pScreen->myNum]->domainIOBase + 0x300;
@@ -550,14 +531,10 @@ return ;
 }
 
 static unsigned long
-vgaCalcMonoMode
-(
-	int rasterOp,
-	register unsigned long int color
-)
+vgaCalcMonoMode(int rasterOp, unsigned long int color)
 {
-register unsigned int data_rotate_value = VGA_COPY_MODE << 8 ;
-register unsigned int invert_existing_data = 0 ;
+unsigned int data_rotate_value = VGA_COPY_MODE << 8 ;
+unsigned int invert_existing_data = 0 ;
 
 /* Test The Raster-Op */
 switch ( rasterOp ) {
@@ -608,18 +585,9 @@ return ( color & VGA_ALLPLANES ) | data_rotate_value | invert_existing_data ;
 }
 
 static void
-vgaDrawMonoImage
-(
-	WindowPtr pWin, /* GJA */
-	unsigned char *data,
-	int x,
-	int y,
-	int w,
-	int h,
-	unsigned long int fg,
-	int alu,
-	unsigned long int planes
-)
+vgaDrawMonoImage(WindowPtr pWin, unsigned char *data, int x, int y,
+		 int w, int h, unsigned long int fg, int alu,
+		 unsigned long int planes)
 {
 unsigned long regState ;
 
@@ -652,14 +620,9 @@ return ;
 }
 
 void
-xf4bppFillStipple( pWin, pStipple, fg, alu, planes, x, y, w, h, xSrc, ySrc )
-WindowPtr pWin; /* GJA */
-register PixmapPtr const pStipple ;
-unsigned long int fg ;
-const int alu ;
-unsigned long int planes ;
-int x, y, w, h ;
-const int xSrc, ySrc ;
+xf4bppFillStipple(WindowPtr pWin, PixmapPtr const pStipple, unsigned long fg,
+		  const int alu, unsigned long planes,
+		  int x, int y, int w, int h, const int xSrc, const int ySrc)
 {
 unsigned int width ;
 unsigned int height ;

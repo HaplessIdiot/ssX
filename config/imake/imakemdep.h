@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.79 2004/12/16 22:15:48 tsi Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.80 2005/02/01 02:25:06 dawes Exp $ */
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1296,8 +1296,11 @@ struct symtab	predefs[] = {
 #ifdef _MIPS_SZPTR
 	{"_MIPS_SZPTR", DEF_STRINGIFY(_MIPS_SZPTR)},
 #endif
+#ifdef __linux__
+	{"__linux__", "1"},
+#endif
 #ifdef __FreeBSD__
-	{"__FreeBSD__", "1"},
+	{"__FreeBSD__", DEF_STRINGIFY(__FreeBSD__)},
 #endif
 #ifdef __OpenBSD__
 	{"__OpenBSD__", "1"},

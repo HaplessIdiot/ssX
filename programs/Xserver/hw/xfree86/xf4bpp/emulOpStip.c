@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/emulOpStip.c,v 1.2 1998/07/25 16:59:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/emulOpStip.c,v 1.3 1999/06/06 08:48:54 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -21,7 +21,6 @@
  * SOFTWARE.
  *
 */
-/* $XConsortium: emulOpStip.c /main/4 1996/02/21 17:56:12 kaleb $ */
 
 /* ppc OpaqueStipple
  *
@@ -36,15 +35,10 @@
 #include "mfb.h"
 
 void 
-xf4bppOpaqueStipple( pWin, pStipple, fg, bg, alu, planes, x, y, w, h, xSrc, ySrc )
-WindowPtr pWin; /* GJA */
-register PixmapPtr pStipple ;
-unsigned long int fg ;
-unsigned long int bg ;
-int alu ;
-unsigned long int planes ;
-register int x, y, w, h ;
-int xSrc, ySrc ;
+xf4bppOpaqueStipple(WindowPtr pWin, PixmapPtr pStipple,
+		    unsigned long fg, unsigned long bg,
+		    int alu, unsigned long planes, int x, int y, int w, int h,
+		    int xSrc, int ySrc)
 {
     /* DO BACKGROUND */
     switch ( alu ) {
@@ -58,7 +52,7 @@ int xSrc, ySrc ;
 	case GXcopy:		/* 0x3 src */
 	case GXcopyInverted:	/* 0xc NOT src */
 	    { /* Special Case Code */
- 		register int vtarget, htarget ;
+ 		int vtarget, htarget ;
 
  		/* We Can Draw Just One Copy Then Blit The Rest !! */
 		/* Draw The One Copy */
@@ -80,9 +74,9 @@ int xSrc, ySrc ;
 	default:
 	/* Hard Cases -- i.e. Final Result DOES Depend On Initial Dest. */
 	    { /* Do The Background */
-		register int i, j;
-		register PixmapPtr pInvPixmap = xf4bppCopyPixmap( pStipple ) ;
-		register unsigned char *data = pInvPixmap->devPrivate.ptr ;
+		int i, j;
+		PixmapPtr pInvPixmap = xf4bppCopyPixmap( pStipple ) ;
+		unsigned char *data = pInvPixmap->devPrivate.ptr ;
 
 		/* INVERT PIXMAP  OK, jeff, this is for you */
 		for ( i = pInvPixmap->drawable.height ; i-- ; )

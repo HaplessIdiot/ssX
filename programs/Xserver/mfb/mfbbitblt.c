@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbbitblt.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbbitblt.c,v 1.8 2003/11/10 18:22:45 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mfbbitblt.c,v 1.4 2001/02/09 02:05:18 xorgcvs Exp $ */
+
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -96,11 +96,8 @@ destination.  this is a simple translation.
 #ifndef LOWMEMFTPT
 
 void
-mfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc)
-    DrawablePtr	    pSrc, pDst;
-    int		    alu;
-    RegionPtr	    prgnDst;
-    DDXPointPtr	    pptSrc;
+mfbDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
+	    DDXPointPtr pptSrc)
 {
     switch (alu)
     {
@@ -123,14 +120,9 @@ mfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc)
 }
 
 RegionPtr
-mfbCopyArea(pSrcDrawable, pDstDrawable,
-	    pGC, srcx, srcy, width, height, dstx, dsty)
-register DrawablePtr pSrcDrawable;
-register DrawablePtr pDstDrawable;
-register GC *pGC;
-int srcx, srcy;
-int width, height;
-int dstx, dsty;
+mfbCopyArea(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
+	    GC *pGC, int srcx, int srcy, int width, int height,
+	    int dstx, int dsty)
 {
     RegionPtr prgnSrcClip = NULL; /* may be a new region, or just a copy */
     Bool freeSrcClip = FALSE;
@@ -138,11 +130,11 @@ int dstx, dsty;
     RegionPtr prgnExposed;
     RegionRec rgnDst;
     DDXPointPtr pptSrc;
-    register DDXPointPtr ppt;
-    register BoxPtr pbox;
+    DDXPointPtr ppt;
+    BoxPtr pbox;
     int i;
-    register int dx;
-    register int dy;
+    int dx;
+    int dy;
     xRectangle origSource;
     DDXPointRec origDest;
     int numRects;
@@ -399,19 +391,7 @@ static unsigned long	copyPlaneGeneration;
 static int		copyPlaneScreenIndex = -1;
 
 Bool
-mfbRegisterCopyPlaneProc (pScreen, proc)
-    ScreenPtr	pScreen;
-    RegionPtr	(*proc)(
-        DrawablePtr         /* pSrcDrawable */,
-        DrawablePtr         /* pDstDrawable */,
-        GCPtr               /* pGC */,
-        int                 /* srcx */,
-        int                 /* srcy */,
-        int                 /* width */,
-        int                 /* height */,
-        int                 /* dstx */,
-        int                 /* dsty */,
-        unsigned long       /* bitPlane */);
+mfbRegisterCopyPlaneProc(ScreenPtr pScreen, mfbCopyPlaneProcPtr proc)
 {
     if (copyPlaneGeneration != serverGeneration)
     {
@@ -440,14 +420,9 @@ CopyArea().
 #ifndef LOWMEMFTPT
 
 RegionPtr
-mfbCopyPlane(pSrcDrawable, pDstDrawable,
-	    pGC, srcx, srcy, width, height, dstx, dsty, plane)
-DrawablePtr pSrcDrawable, pDstDrawable;
-register GC *pGC;
-int srcx, srcy;
-int width, height;
-int dstx, dsty;
-unsigned long plane;
+mfbCopyPlane(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
+	    GC *pGC, int srcx, int srcy, int width, int height,
+	    int dstx, int dsty, unsigned long plane)
 {
     int alu;
     RegionPtr	prgnExposed;

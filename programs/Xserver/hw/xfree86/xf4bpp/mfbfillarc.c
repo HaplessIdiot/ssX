@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbfillarc.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbfillarc.c,v 1.6 2003/11/03 05:11:56 tsi Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -28,8 +28,6 @@ in this Software without prior written authorization from the X Consortium.
 
 /* GJA -- Took mfb code and modified it. */
 
-/* $XConsortium: mfbfillarc.c /main/4 1996/02/21 17:56:37 kaleb $ */
-
 #include "xf4bpp.h"
 #include "OScompiler.h"
 #include "mfbmap.h"
@@ -43,21 +41,17 @@ in this Software without prior written authorization from the X Consortium.
 extern ScrnInfoPtr *xf86Screens;
 
 static void
-v16FillEllipseSolid
-(
-    DrawablePtr pDraw,
-    xArc *arc
-)
+v16FillEllipseSolid(DrawablePtr pDraw, xArc *arc)
 {
     int x, y, e;
     int yk, xk, ym, xm, dx, dy, xorg, yorg;
-    register int slw;
+    int slw;
     miFillArcRec info;
     int *addrlt, *addrlb;
-    register int *addrl;
-    register int n;
+    int *addrl;
+    int n;
     int nlwidth;
-    register int xpos;
+    int xpos;
     int startmask, endmask, nlmiddle;
 
     if (pDraw->type == DRAWABLE_WINDOW)
@@ -173,17 +167,12 @@ v16FillEllipseSolid
     }
 
 static void
-v16FillArcSliceSolidCopy
-(
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    xArc *arc
-)
+v16FillArcSliceSolidCopy(DrawablePtr pDraw, GCPtr pGC, xArc *arc)
 {
-    register int *addrl;
-    register int n;
+    int *addrl;
+    int n;
     int yk, xk, ym, xm, dx, dy, xorg, yorg, slw;
-    register int x, y, e;
+    int x, y, e;
     miFillArcRec info;
     miArcSliceRec slice;
     int xl, xr, xc;
@@ -236,16 +225,10 @@ v16FillArcSliceSolidCopy
 }
 
 static void
-xf4bppPolyFillArcSolid
-(
-    register DrawablePtr pDraw,
-    GCPtr	pGC,
-    int		narcs,
-    xArc	*parcs
-)
+xf4bppPolyFillArcSolid(DrawablePtr pDraw, GCPtr	pGC, int narcs, xArc *parcs)
 {
-    register xArc *arc;
-    register int i;
+    xArc *arc;
+    int i;
     BoxRec box;
     RegionPtr cclip;
 #if 0
@@ -285,11 +268,7 @@ xf4bppPolyFillArcSolid
 }
 
 void
-xf4bppPolyFillArc(pDraw, pGC, narcs, parcs)
-    register DrawablePtr pDraw;
-    GCPtr	pGC;
-    int		narcs;
-    xArc	*parcs;
+xf4bppPolyFillArc(DrawablePtr pDraw, GCPtr pGC, int narcs, xArc *parcs)
 {
     if ( !xf86Screens[pDraw->pScreen->myNum]->vtSema || (pGC->fillStyle != FillSolid) ) {
 	miPolyFillArc(pDraw, pGC, narcs, parcs);

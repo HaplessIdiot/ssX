@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mifpolycon.c,v 1.2 2001/08/06 20:51:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mifpolycon.c,v 1.3 2001/12/14 20:00:23 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mifpolycon.c,v 1.4 2001/02/09 02:05:21 xorgcvs Exp $ */
+
 #include <math.h>
 #include "X.h"
 #include "gcstruct.h"
@@ -53,7 +53,7 @@ SOFTWARE.
 #include "pixmapstr.h"
 #include "mifpoly.h"
 
-static int GetFPolyYBounds(register SppPointPtr pts, int n, double yFtrans,
+static int GetFPolyYBounds(SppPointPtr pts, int n, double yFtrans,
 			   int *by, int *ty);
 
 #ifdef ICEILTEMPDECL
@@ -73,18 +73,20 @@ ICEILTEMPDECL
  *	interpolation involved because of the subpixel postioning.
  */
 void
-miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans, xFtrans, yFtrans)
-    DrawablePtr 	dst;
-    GCPtr		pgc;
-    int			count;          /* number of points */
-    SppPointPtr 	ptsIn;          /* the points */
-    int			xTrans, yTrans;	/* Translate each point by this */
-    double		xFtrans, yFtrans;	/* translate before conversion
-    						   by this amount.  This provides
-						   a mechanism to match rounding
-						   errors with any shape that must
-						   meet the polygon exactly.
-						 */
+miFillSppPoly(
+    DrawablePtr 	dst,
+    GCPtr		pgc,
+    int			count,          /* number of points */
+    SppPointPtr 	ptsIn,          /* the points */
+    int			xTrans,
+    int			yTrans,		/* Translate each point by this */
+    double		xFtrans,
+    double		yFtrans)	/* translate before conversion
+    					   by this amount.  This provides
+					   a mechanism to match rounding
+					   errors with any shape that must
+					   meet the polygon exactly.
+					 */
 {
     double		xl = 0.0, xr = 0.0,	/* x vals of left and right edges */
           		ml = 0.0,      	/* left edge slope */
@@ -99,7 +101,7 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans, xFtrans, yFtrans)
     			*width,
     			*FirstWidth,    /* output buffer */
     	 		*Marked;	/* set if this vertex has been used */
-    register int	left, right,	/* indices to first endpoints */
+    int			left, right,	/* indices to first endpoints */
     			nextleft,
                  	nextright;	/* indices to second endpoints */
     DDXPointPtr 	ptsOut,
@@ -249,13 +251,13 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans, xFtrans, yFtrans)
 static
 int
 GetFPolyYBounds(
-    register SppPointPtr	pts,
+    SppPointPtr			pts,
     int 			n,
     double			yFtrans,
     int 			*by,
     int				*ty)
 {
-    register SppPointPtr	ptMin;
+    SppPointPtr	ptMin;
     double 			ymin, ymax;
     SppPointPtr			ptsStart = pts;
 

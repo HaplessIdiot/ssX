@@ -1,4 +1,3 @@
-/* $Xorg: access.c,v 1.5 2001/02/09 02:05:23 xorgcvs Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.57tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.58 2004/12/31 02:56:03 tsi Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -374,7 +373,7 @@ DefineSelf (int fd)
     struct in_ifaddr ifaddr;
     struct strioctl str;
     unsigned char *addr;
-    register HOST *host;
+    HOST *host;
     int	family, len;
 
     if ((fd = open ("/dev/ip", O_RDWR, 0 )) < 0)
@@ -489,14 +488,14 @@ DefineSelf (int fd)
 #if !defined(TCPCONN) && !defined(STREAMSCONN) && !defined(UNIXCONN) && !defined(MNX_TCPCONN)
     return;
 #else
-    register int n;
+    int n;
     int	len;
     caddr_t	addr;
     int		family;
-    register HOST	*host;
+    HOST	*host;
 
     struct utsname name;
-    register struct hostent  *hp;
+    struct hostent  *hp;
 
     union {
 	struct  sockaddr   sa;
@@ -665,13 +664,13 @@ DefineSelf (int fd)
     void *		bufptr = buf;   
 #ifdef USE_SIOCGLIFCONF
     struct lifconf	ifc;
-    register struct lifreq *ifr;
+    struct lifreq *ifr;
 #ifdef SIOCGLIFNUM
     struct lifnum	ifn;
 #endif
 #else
     struct ifconf	ifc;
-    register struct ifreq *ifr;
+    struct ifreq *ifr;
 #endif 
 #else 
     struct ifaddrs *	ifap, *ifr;
@@ -679,7 +678,7 @@ DefineSelf (int fd)
     int 		len;
     unsigned char *	addr;
     int 		family;
-    register HOST 	*host;
+    HOST 	*host;
     
 #ifdef DNETCONN
     struct dn_naddr *dnaddr = getnodeadd();
@@ -1027,7 +1026,7 @@ AugmentSelf(pointer from, int len)
 {
     int family;
     pointer addr;
-    register HOST *host;
+    HOST *host;
 
     family = ConvertAddr(from, &len, (pointer *)&addr);
     if (family == -1 || family == FamilyLocal)
@@ -1065,7 +1064,7 @@ AddLocalHosts (void)
 void
 ResetHosts (char *display)
 {
-    register HOST	*host;
+    HOST	*host;
     char                lhostname[120], ohostname[120];
     char 		*hostname = ohostname;
     char		fname[PATH_MAX + 1];
@@ -1243,7 +1242,7 @@ ResetHosts (char *display)
 #ifdef XTHREADS_NEEDS_BYNAMEPARAMS
 	    _Xgethostbynameparams hparams;
 #endif
-	    register struct hostent *hp;
+	    struct hostent *hp;
 
     	    /* host name */
     	    if ((family == FamilyInternet &&
@@ -1280,7 +1279,7 @@ Bool LocalClient(ClientPtr client)
     int    		alen, family, notused;
     Xtransaddr		*from = NULL;
     pointer		addr;
-    register HOST	*host;
+    HOST	*host;
 
 #ifdef XCSECURITY
     /* untrusted clients can't change host access */
@@ -1454,7 +1453,7 @@ NewHost (int		family,
 	 int		len,
 	 int		addingLocalHosts)
 {
-    register HOST *host;
+    HOST *host;
 
     for (host = validhosts; host; host = host->next)
     {
@@ -1490,7 +1489,7 @@ RemoveHost (
     pointer             pAddr)
 {
     int			len;
-    register HOST	*host, **prev;
+    HOST	*host, **prev;
 
     if (!AuthorizedClient(client))
 	return(BadAccess);
@@ -1547,9 +1546,9 @@ GetHosts (
     BOOL		*pEnabled)
 {
     int			len;
-    register int 	n = 0;
-    register unsigned char *ptr;
-    register HOST	*host;
+    int 	n = 0;
+    unsigned char *ptr;
+    HOST	*host;
     int			nHosts = 0;
 
     *pEnabled = AccessEnabled ? EnableAccess : DisableAccess;
@@ -1637,12 +1636,12 @@ CheckAddr (
 
 int
 InvalidHost (
-    register struct sockaddr	*saddr,
+    struct sockaddr	*saddr,
     int				len)
 {
     int 			family;
     pointer			addr;
-    register HOST 		*selfhost, *host;
+    HOST 		*selfhost, *host;
 
     if (!AccessEnabled)   /* just let them in */
         return(0);    
@@ -1680,7 +1679,7 @@ InvalidHost (
 
 static int
 ConvertAddr (
-    register struct sockaddr	*saddr,
+    struct sockaddr	*saddr,
     int				*len,
     pointer			*addr)
 {

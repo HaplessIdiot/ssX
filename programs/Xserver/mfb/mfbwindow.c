@@ -1,4 +1,4 @@
-/* $Xorg: mfbwindow.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbwindow.c,v 1.4 2003/11/03 05:36:35 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -46,7 +46,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -57,10 +56,9 @@ SOFTWARE.
 #include "maskbits.h"
 
 Bool
-mfbCreateWindow(pWin)
-    register WindowPtr pWin;
+mfbCreateWindow(WindowPtr pWin)
 {
-    register mfbPrivWin *pPrivWin;
+    mfbPrivWin *pPrivWin;
 
     pPrivWin = (mfbPrivWin *)(pWin->devPrivates[mfbWindowPrivateIndex].ptr);
     pPrivWin->pRotatedBorder = NullPixmap;
@@ -74,10 +72,9 @@ mfbCreateWindow(pWin)
 /* This always returns true, because Xfree can't fail.  It might be possible
  * on some devices for Destroy to fail */
 Bool 
-mfbDestroyWindow(pWin)
-    WindowPtr pWin;
+mfbDestroyWindow(WindowPtr pWin)
 {
-    register mfbPrivWin *pPrivWin;
+    mfbPrivWin *pPrivWin;
 
     pPrivWin = (mfbPrivWin *)(pWin->devPrivates[mfbWindowPrivateIndex].ptr);
 
@@ -89,8 +86,8 @@ mfbDestroyWindow(pWin)
 }
 
 /*ARGSUSED*/
-Bool mfbMapWindow(pWindow)
-    WindowPtr pWindow;
+Bool
+mfbMapWindow(WindowPtr pWindow)
 {
     return (TRUE);
 }
@@ -105,11 +102,9 @@ in pPrivWin->pRotated*
 
 /*ARGSUSED*/
 Bool 
-mfbPositionWindow(pWin, x, y)
-    register WindowPtr pWin;
-    int x, y;
+mfbPositionWindow(WindowPtr pWin, int x, int y)
 {
-    register mfbPrivWin *pPrivWin;
+    mfbPrivWin *pPrivWin;
     int	reset = 0;
 
     pPrivWin = (mfbPrivWin *)(pWin->devPrivates[mfbWindowPrivateIndex].ptr);
@@ -152,8 +147,7 @@ mfbPositionWindow(pWin, x, y)
 
 /*ARGSUSED*/
 Bool 
-mfbUnmapWindow(pWindow)
-    WindowPtr pWindow;
+mfbUnmapWindow(WindowPtr pWindow)
 {
     return (TRUE);
 }
@@ -167,17 +161,14 @@ visible in the source.
 
 
 void 
-mfbCopyWindow(pWin, ptOldOrg, prgnSrc)
-    WindowPtr pWin;
-    DDXPointRec ptOldOrg;
-    RegionPtr prgnSrc;
+mfbCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 {
     DDXPointPtr pptSrc;
-    register DDXPointPtr ppt;
+    DDXPointPtr ppt;
     RegionPtr prgnDst;
-    register BoxPtr pbox;
-    register int dx, dy;
-    register int i, nbox;
+    BoxPtr pbox;
+    int dx, dy;
+    int i, nbox;
     WindowPtr pwinRoot;
 
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
@@ -215,12 +206,10 @@ routine (i.e. the pixmap is paddable to 32 bits), also pre-rotate a copy
 of it in devPrivate.
 */
 Bool
-mfbChangeWindowAttributes(pWin, mask)
-    register WindowPtr pWin;
-    register unsigned long mask;
+mfbChangeWindowAttributes(WindowPtr pWin, unsigned long mask)
 {
-    register unsigned long index;
-    register mfbPrivWin *pPrivWin;
+    unsigned long index;
+    mfbPrivWin *pPrivWin;
     WindowPtr	pBgWin;
 
     pPrivWin = (mfbPrivWin *)(pWin->devPrivates[mfbWindowPrivateIndex].ptr);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbfillrct.c,v 3.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbfillrct.c,v 3.3 2003/10/29 22:15:19 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,7 +47,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: afbfillrct.c,v 5.10 94/04/17 20:28:21 dpw Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -61,7 +60,6 @@ SOFTWARE.
 #include "maskbits.h"
 
 #define MODEQ(a, b) ((a) %= (b))
-void afbPaintOddSize();
 
 /*
 	filled rectangles.
@@ -72,16 +70,13 @@ helper function in the GC.
 #define NUM_STACK_RECTS		1024
 
 void
-afbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
-	DrawablePtr pDrawable;
-	GCPtr pGC;
-	int nrectFill;				/* number of rectangles to fill */
-	xRectangle *prectInit;			/* Pointer to first rectangle to fill */
+afbPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
+		xRectangle *prectInit)
 {
 	xRectangle *prect;
 	RegionPtr prgnClip;
-	register BoxPtr pbox;
-	register BoxPtr pboxClipped;
+	BoxPtr pbox;
+	BoxPtr pboxClipped;
 	BoxPtr pboxClippedBase;
 	BoxPtr pextent;
 	BoxRec stackRects[NUM_STACK_RECTS];

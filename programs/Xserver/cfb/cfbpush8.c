@@ -2,7 +2,7 @@
  * Push Pixels for 8 bit displays.
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbpush8.c,v 1.5 2001/01/17 22:36:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbpush8.c,v 1.6 2001/12/14 19:59:24 dawes Exp $ */
 
 /*
 
@@ -28,7 +28,6 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $Xorg: cfbpush8.c,v 1.4 2001/02/09 02:04:38 xorgcvs Exp $ */
 
 #if PSZ == 8
 
@@ -47,15 +46,12 @@ in this Software without prior written authorization from The Open Group.
 #include	"maskbits.h"
 
 void
-cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
-    GCPtr	pGC;
-    PixmapPtr	pBitmap;
-    DrawablePtr	pDrawable;
-    int		dx, dy, xOrg, yOrg;
+cfbPushPixels8(GCPtr pGC, PixmapPtr pBitmap, DrawablePtr pDrawable,
+	       int dx, int dy, int xOrg, int yOrg)
 {
-    register CfbBits   *src, *dst;
-    register CfbBits   pixel;
-    register CfbBits   c, bits;
+    CfbBits   *src, *dst;
+    CfbBits   pixel;
+    CfbBits   c, bits;
     CfbBits   *pdstLine, *psrcLine;
     CfbBits   *pdstBase;
     int		    srcWidth;

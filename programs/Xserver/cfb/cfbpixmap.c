@@ -1,4 +1,4 @@
-/* $Xorg: cfbpixmap.c,v 1.4 2001/02/09 02:04:38 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbpixmap.c,v 1.5 2001/12/14 19:59:23 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbpixmap.c,v 1.4 2001/01/17 22:36:36 dawes Exp $ */
 /* pixmap management
    written by drewry, september 1986
 
@@ -63,11 +62,7 @@ SOFTWARE.
 extern CfbBits endtab[];
 
 PixmapPtr
-cfbCreatePixmap (pScreen, width, height, depth)
-    ScreenPtr	pScreen;
-    int		width;
-    int		height;
-    int		depth;
+cfbCreatePixmap(ScreenPtr pScreen, int width, int height, int depth)
 {
     PixmapPtr pPixmap;
     int datasize;
@@ -101,8 +96,7 @@ cfbCreatePixmap (pScreen, width, height, depth)
 }
 
 Bool
-cfbDestroyPixmap(pPixmap)
-    PixmapPtr pPixmap;
+cfbDestroyPixmap(PixmapPtr pPixmap)
 {
     if(--pPixmap->refcnt)
 	return TRUE;
@@ -111,10 +105,9 @@ cfbDestroyPixmap(pPixmap)
 }
 
 PixmapPtr
-cfbCopyPixmap(pSrc)
-    register PixmapPtr	pSrc;
+cfbCopyPixmap(PixmapPtr pSrc)
 {
-    register PixmapPtr	pDst;
+    PixmapPtr	pDst;
     int		size;
     ScreenPtr pScreen;
 
@@ -142,15 +135,14 @@ cfbCopyPixmap(pSrc)
       left shift and or in original as many times as needed
 */
 void
-cfbPadPixmap(pPixmap)
-    PixmapPtr pPixmap;
+cfbPadPixmap(PixmapPtr pPixmap)
 {
-    register int width = (pPixmap->drawable.width) * (pPixmap->drawable.bitsPerPixel);
-    register int h;
-    register CfbBits mask;
-    register CfbBits *p;
-    register CfbBits bits; /* real pattern bits */
-    register int i;
+    int width = (pPixmap->drawable.width) * (pPixmap->drawable.bitsPerPixel);
+    int h;
+    CfbBits mask;
+    CfbBits *p;
+    CfbBits bits; /* real pattern bits */
+    int i;
     int rep;                    /* repeat count for pattern */
  
     if (width >= PGSZ)
@@ -186,8 +178,8 @@ cfbPadPixmap(pPixmap)
 /*
  * cfb debugging routine -- assumes pixmap is 1 byte deep 
  */
-static cfbdumppixmap(pPix)
-    PixmapPtr	pPix;
+static void
+cfbdumppixmap(PixmapPtr pPix)
 {
     unsigned int *pw;
     char *psrc, *pdst;
@@ -227,12 +219,10 @@ static cfbdumppixmap(pPix)
  * left.
  */
 void
-cfbXRotatePixmap(pPix, rw)
-    PixmapPtr	pPix;
-    register int rw;
+cfbXRotatePixmap(PixmapPtr pPix, int rw)
 {
-    register CfbBits	*pw, *pwFinal;
-    register CfbBits	t;
+    CfbBits	*pw, *pwFinal;
+    CfbBits	t;
     int				rot;
 
     if (pPix == NullPixmap)
@@ -264,7 +254,7 @@ cfbXRotatePixmap(pPix, rw)
     {
         ErrorF("cfb internal error: trying to rotate odd-sized pixmap.\n");
 #ifdef notdef
-	register CfbBits *pwTmp;
+	CfbBits *pwTmp;
 	int size, tsize;
 
 	tsize = PixmapBytePad(pPix->drawable.width - rot, pPix->drawable.depth);
@@ -296,9 +286,7 @@ cfbXRotatePixmap(pPix, rw)
    works on any width.
  */
 void
-cfbYRotatePixmap(pPix, rh)
-    register PixmapPtr	pPix;
-    int	rh;
+cfbYRotatePixmap(PixmapPtr pPix, int rh)
 {
     int nbyDown;	/* bytes to move down to row 0; also offset of
 			   row rh */
@@ -336,11 +324,9 @@ cfbYRotatePixmap(pPix, rh)
 }
 
 void
-cfbCopyRotatePixmap(psrcPix, ppdstPix, xrot, yrot)
-    register PixmapPtr psrcPix, *ppdstPix;
-    int	xrot, yrot;
+cfbCopyRotatePixmap(PixmapPtr psrcPix, PixmapPtr *ppdstPix, int xrot, int yrot)
 {
-    register PixmapPtr pdstPix;
+    PixmapPtr pdstPix;
 
     if ((pdstPix = *ppdstPix) &&
 	(pdstPix->devKind == psrcPix->devKind) &&

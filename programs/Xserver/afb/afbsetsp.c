@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbsetsp.c,v 3.2 2001/08/01 00:44:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbsetsp.c,v 3.3 2001/10/28 03:32:58 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,7 +47,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: afbsetsp.c,v 5.8 94/04/17 20:28:34 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -72,27 +71,17 @@ SOFTWARE.
  * further on.)
  */
 void
-afbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst,
-					 sizeDst, depthDst, sizeSrc)
-	int y;
-	int xOrigin;					/* where this scanline starts */
-	int xStart;						/* first bit to use from scanline */
-	int xEnd;						/* last bit to use from scanline + 1 */
-	register PixelType *psrc;
-	register int alu;				/* raster op */
-	PixelType *pdstBase;			/* start of the drawable */
-	int widthDst;					/* width of drawable in words */
-	int sizeDst;
-	int depthDst;
-	int sizeSrc;
+afbSetScanline(int y, int xOrigin, int xStart, int xEnd, PixelType *psrc,
+	       int alu, PixelType *pdstBase, int widthDst, int sizeDst,
+	       int depthDst, int sizeSrc)
 {
-	int w;							/* width of scanline in bits */
-	register PixelType *pdst;	/* where to put the bits */
-	register PixelType tmpSrc;	/* scratch buffer to collect bits in */
-	int dstBit;						/* offset in bits from beginning of
-										 * word */
-	register int nstart; 		/* number of bits from first partial */
-	register int nend; 			/* " " last partial word */
+	int w;			/* width of scanline in bits */
+	PixelType *pdst;	/* where to put the bits */
+	PixelType tmpSrc;	/* scratch buffer to collect bits in */
+	int dstBit;		/* offset in bits from beginning of
+				 * word */
+	int nstart; 		/* number of bits from first partial */
+	int nend; 		/* " " last partial word */
 	int offSrc;
 	PixelType startmask, endmask;
 	PixelType *savePsrc = psrc + ((xStart - xOrigin) >> PWSH);
@@ -150,23 +139,17 @@ afbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst,
  * on a word boundary.
  */
 void
-afbSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
-	DrawablePtr pDrawable;
-	GCPtr pGC;
-	char *pcharsrc;
-	register DDXPointPtr ppt;
-	int *pwidth;
-	int nspans;
-	int fSorted;
+afbSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *pcharsrc, DDXPointPtr ppt,
+	    int *pwidth, int nspans, int fSorted)
 {
 	PixelType *psrc = (PixelType *)pcharsrc;
-	PixelType *pdstBase;				/* start of dst bitmap */
-	int widthDst;						/* width of bitmap in words */
+	PixelType *pdstBase;		/* start of dst bitmap */
+	int widthDst;			/* width of bitmap in words */
 	int sizeDst;
 	int depthDst;
 	int sizeSrc = 0;
-	register BoxPtr pbox, pboxLast, pboxTest;
-	register DDXPointPtr pptLast;
+	BoxPtr pbox, pboxLast, pboxTest;
+	DDXPointPtr pptLast;
 	int alu;
 	RegionPtr prgnDst;
 	int xStart, xEnd;

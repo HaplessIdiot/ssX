@@ -1,10 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/wm3.c,v 1.3 1999/06/06 08:49:08 dawes Exp $ */
-
-
-
-
-
-/* $XConsortium: wm3.c /main/5 1996/02/21 17:59:21 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/wm3.c,v 1.4 2002/01/25 21:56:23 tsi Exp $ */
 
 #include "xf4bpp.h"
 #include "OScompiler.h"
@@ -19,8 +13,7 @@
 #define XOR  (3 << 3)
 
 int
-wm3_set_regs(pGC)
-GC *pGC;
+wm3_set_regs(GC *pGC)
 {
 #ifndef	PC98_EGC
     IOADDRESS REGBASE = xf86Screens[pGC->pScreen->myNum]->domainIOBase + 0x300;

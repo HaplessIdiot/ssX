@@ -1,4 +1,4 @@
-/* $Xorg: mfbbstore.c,v 1.4 2001/02/09 02:05:18 xorgcvs Exp $ */
+/* $XFree86$ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /*
 
@@ -57,17 +57,13 @@ from The Open Group.
  *-----------------------------------------------------------------------
  */
 void
-mfbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
-    PixmapPtr	  	pPixmap;  	/* Backing pixmap */
-    RegionPtr	  	prgnSave; 	/* Region to save (pixmap-relative) */
-    int	    	  	xorg;	    	/* X origin of region */
-    int	    	  	yorg;	    	/* Y origin of region */
-    WindowPtr		pWin;
+mfbSaveAreas(PixmapPtr pPixmap, RegionPtr prgnSave, int xorg, int yorg,
+	     WindowPtr pWin)
 {
-    register DDXPointPtr pPt;
+    DDXPointPtr pPt;
     DDXPointPtr		pPtsInit;
-    register BoxPtr	pBox;
-    register int	numRects;
+    BoxPtr	pBox;
+    int	numRects;
     
     numRects = REGION_NUM_RECTS(prgnSave);
     pPtsInit = (DDXPointPtr)ALLOCATE_LOCAL(numRects * sizeof(DDXPointRec));
@@ -114,17 +110,13 @@ mfbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
  *-----------------------------------------------------------------------
  */
 void
-mfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin)
-    PixmapPtr	  	pPixmap;  	/* Backing pixmap */
-    RegionPtr	  	prgnRestore; 	/* Region to restore (screen-relative)*/
-    int	    	  	xorg;	    	/* X origin of window */
-    int	    	  	yorg;	    	/* Y origin of window */
-    WindowPtr		pWin;
+mfbRestoreAreas(PixmapPtr pPixmap, RegionPtr prgnRestore, int xorg, int yorg,
+		WindowPtr pWin)
 {
-    register DDXPointPtr pPt;
+    DDXPointPtr pPt;
     DDXPointPtr		pPtsInit;
-    register BoxPtr	pBox;
-    register int	numRects;
+    BoxPtr	pBox;
+    int	numRects;
     
     numRects = REGION_NUM_RECTS(prgnRestore);
     pPtsInit = (DDXPointPtr)ALLOCATE_LOCAL(numRects*sizeof(DDXPointRec));

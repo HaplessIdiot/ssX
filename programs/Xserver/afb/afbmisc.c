@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afbmisc.c,v 3.0 1996/08/18 01:45:44 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,7 +46,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: afbmisc.c,v 5.4 94/04/17 20:28:27 dpw Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -57,11 +56,8 @@ SOFTWARE.
 
 /*ARGSUSED*/
 void
-afbQueryBestSize(class, pwidth, pheight, pScreen)
-int class;
-unsigned short *pwidth;
-unsigned short *pheight;
-ScreenPtr pScreen;
+afbQueryBestSize(int class, unsigned short *pwidth, unsigned short *pheight,
+		 ScreenPtr pScreen)
 {
 	unsigned width, test;
 

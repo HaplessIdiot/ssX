@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbsetsp.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbsetsp.c,v 1.7 2003/02/18 21:30:01 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -46,7 +46,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mfbsetsp.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -70,24 +69,26 @@ SOFTWARE.
  * boxes, we may not want to start grabbing bits at psrc but at some offset
  * further on.) 
  */
+/*
+    int			xOrigin;	where this scanline starts
+    int			xStart;		first bit to use from scanline
+    int			xEnd;		last bit to use from scanline + 1
+    int			alu;		raster op
+    PixelType		*pdstBase;	tart of the drawable
+    int			widthDst;	width of drawable in words
+*/
+
 void
-mfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst)
-    int			y;
-    int			xOrigin;	/* where this scanline starts */
-    int			xStart;		/* first bit to use from scanline */
-    int			xEnd;		/* last bit to use from scanline + 1 */
-    register PixelType	*psrc;
-    register int	alu;		/* raster op */
-    PixelType		*pdstBase;	/* start of the drawable */
-    int			widthDst;	/* width of drawable in words */
+mfbSetScanline(int y, int xOrigin, int xStart, int xEnd, PixelType *psrc,
+	       int alu, PixelType *pdstBase, int widthDst)
 {
     int			w;		/* width of scanline in bits */
-    register PixelType	*pdst;		/* where to put the bits */
-    register PixelType	tmpSrc;		/* scratch buffer to collect bits in */
+    PixelType	*pdst;		/* where to put the bits */
+    PixelType	tmpSrc;		/* scratch buffer to collect bits in */
     int			dstBit;		/* offset in bits from beginning of 
 					 * word */
-    register int	nstart; 	/* number of bits from first partial */
-    register int	nend; 		/* " " last partial word */
+    int	nstart; 	/* number of bits from first partial */
+    int	nend; 		/* " " last partial word */
     int		offSrc;
     PixelType	startmask, endmask;
     int		nlMiddle, nl;
@@ -150,20 +151,14 @@ mfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst)
  * on a word boundary.
  */ 
 void
-mfbSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
-    DrawablePtr		pDrawable;
-    GCPtr		pGC;
-    char		*pcharsrc;
-    register DDXPointPtr ppt;
-    int			*pwidth;
-    int			nspans;
-    int			fSorted;
+mfbSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *pcharsrc, DDXPointPtr ppt,
+	    int *pwidth, int nspans, int fSorted)
 {
     PixelType		*psrc = (PixelType *)(pointer)pcharsrc;
     PixelType 		*pdstBase;	/* start of dst bitmap */
     int 		widthDst;	/* width of bitmap in words */
-    register BoxPtr 	pbox, pboxLast, pboxTest;
-    register DDXPointPtr pptLast;
+    BoxPtr 	pbox, pboxLast, pboxTest;
+    DDXPointPtr pptLast;
     int 		alu;
     RegionPtr 		prgnDst;
     int			xStart, xEnd;

@@ -1,4 +1,4 @@
-/* $Xorg: hpsocket.c,v 1.4 2001/02/09 02:05:23 xorgcvs Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -35,9 +35,7 @@ from The Open Group.
 #include <sys/socket.h>
 
 int
-set_socket_option (socket_id, option)
-int socket_id;
-char option;
+set_socket_option(int socket_id, char option)
 {
 	int optlen = 1;
 	char optval = 0x0;
@@ -51,9 +49,7 @@ char option;
 
 
 int
-unset_socket_option (socket_id, option)
-int socket_id;
-char option;
+unset_socket_option(int socket_id, char option)
 {
 	int optlen = 1;
 	char optval = 0x0;

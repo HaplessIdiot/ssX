@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbpolypnt.c,v 3.1 1998/03/20 21:04:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbpolypnt.c,v 3.2 2003/07/16 01:38:35 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,7 +47,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: afbpolypnt.c,v 5.6 94/04/17 20:28:30 dpw Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -61,19 +60,15 @@ SOFTWARE.
 #include "maskbits.h"
 
 void
-afbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
-	register DrawablePtr pDrawable;
-	GCPtr pGC;
-	int mode;				/* Origin or Previous */
-	int npt;
-	xPoint *pptInit;
+afbPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+	     xPoint *pptInit)
 {
 
-	register BoxPtr pbox;
-	register int nbox;
-	register int d;
+	BoxPtr pbox;
+	int nbox;
+	int d;
 
-	register PixelType *addrl;
+	PixelType *addrl;
 	PixelType *pBase;
 	PixelType *pBaseSave;
 	int nlwidth;
@@ -81,11 +76,11 @@ afbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	int depthDst;
 
 	int nptTmp;
-	register xPoint *ppt;
+	xPoint *ppt;
 
-	register int x;
-	register int y;
-	register unsigned char *rrops;
+	int x;
+	int y;
+	unsigned char *rrops;
 	afbPrivGC *pGCPriv;
 
 	pGCPriv = (afbPrivGC *) pGC->devPrivates[afbGCPrivateIndex].ptr;

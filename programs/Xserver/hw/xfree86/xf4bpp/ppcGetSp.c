@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcGetSp.c,v 1.2 1998/07/25 16:59:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcGetSp.c,v 1.3 1999/06/06 08:48:59 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -70,8 +70,6 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: ppcGetSp.c /main/5 1996/02/21 17:57:45 kaleb $ */
-
 #include "xf4bpp.h"
 #include "OScompiler.h"
 #include "mfbmap.h"
@@ -85,18 +83,13 @@ SOFTWARE.
  * out to an integral number of words.
  */
 void
-xf4bppGetSpans( pDrawable, wMax, ppt, pwidth, nspans, pdstStart )
-    DrawablePtr		pDrawable ;	/* drawable from which to get bits */
-    int			wMax ;		/* largest value of all *pwidths */
-    DDXPointPtr		ppt ;		/* points to start copying from */
-    int			*pwidth ;	/* list of number of bits to copy */
-    int			nspans ;	/* number of scanlines to copy */
-    char 		*pdstStart ;
+xf4bppGetSpans(DrawablePtr pDrawable, int wMax, DDXPointPtr ppt, int *pwidth,
+	       int nspans, char *pdstStart)
 {
-    register int		j ;
-    register unsigned char	*pdst ;	/* where to put the bits */
-    register unsigned char	*psrc ;	/* where to get the bits */
-    register int		pixmapStride ;
+    int		j ;
+    unsigned char	*pdst ;	/* where to put the bits */
+    unsigned char	*psrc ;	/* where to get the bits */
+    int		pixmapStride ;
 
 
     TRACE( ( "xf4bppGetSpans(pDrawable=0x%x,wMax=%d,ppt=0x%x,pwidth=0x%x,nspans=%d)\n", 
@@ -122,7 +115,7 @@ xf4bppGetSpans( pDrawable, wMax, ppt, pwidth, nspans, pdstStart )
 	}
     }
     else {  /* OK, if we are here, we had better be a DRAWABLE PIXMAP */
-	register int widthSrc =  /* width of pixmap in bytes */
+	int widthSrc =  /* width of pixmap in bytes */
 	 (int) ( (PixmapPtr) pDrawable )->devKind ;
 
 	psrc = (unsigned char *) ( (PixmapPtr) pDrawable )->devPrivate.ptr ;

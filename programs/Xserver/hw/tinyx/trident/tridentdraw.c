@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/trident/tridentdraw.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/trident/tridentdraw.c,v 1.2 2004/08/04 16:33:35 tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -141,18 +141,18 @@ tridentPrepareSolid (DrawablePtr    pDrawable,
     }
 }
 
-void
+static void
 tridentSolid (int x1, int y1, int x2, int y2)
 {
     _tridentRect (cop, x1, y1, x2 - 1, y2 - 1, cmd);
 }
 
-void
+static void
 tridentDoneSolid (void)
 {
 }
 
-Bool
+static Bool
 tridentPrepareCopy (DrawablePtr	pSrcDrawable,
 		    DrawablePtr	pDstDrawable,
 		    int		dx,
@@ -178,7 +178,7 @@ tridentPrepareCopy (DrawablePtr	pSrcDrawable,
 	return FALSE;
 }
 
-void
+static void
 tridentCopy (int srcX,
 	     int srcY,
 	     int dstX,
@@ -204,12 +204,12 @@ tridentCopy (int srcX,
     cop->command = cmd;
 }
 
-void
+static void
 tridentDoneCopy (void)
 {
 }
 
-void
+static void
 tridentComposite (CARD8      op,
 		  PicturePtr pSrc,
 		  PicturePtr pMask,

@@ -1,5 +1,5 @@
+/* $XFree86: xc/programs/Xserver/cfb/cfbsolid.c,v 3.9 2003/10/29 22:44:53 tsi Exp $ */
 /*
- * $Xorg: cfbsolid.c,v 1.4 2001/02/09 02:04:38 xorgcvs Exp $
  *
 Copyright 1990, 1998  The Open Group
 
@@ -25,7 +25,6 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbsolid.c,v 3.8tsi Exp $ */
 
 
 #include "X.h"
@@ -111,14 +110,11 @@ in this Software without prior written authorization from The Open Group.
 	
 
 void
-RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
-    DrawablePtr	    pDrawable;
-    GCPtr	    pGC;
-    int		    nBox;
-    BoxPtr	    pBox;
+RROP_NAME(cfbFillRectSolid)(DrawablePtr pDrawable, GCPtr pGC, int nBox,
+			    BoxPtr pBox)
 {
-    register int    m;
-    register CfbBits   *pdst;
+    int    m;
+    CfbBits   *pdst;
     RROP_DECLARE
     CfbBits   *pdstBase, *pdstRect;
     int		    nmiddle;
@@ -128,7 +124,7 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
 #if PSZ == 24
     int		    leftIndex, rightIndex;
 #else
-    register CfbBits   leftMask, rightMask;
+    CfbBits   leftMask, rightMask;
 #endif
 
     cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
@@ -143,7 +139,7 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
 #if PSZ == 8
 	if (w == 1)
 	{
-	    register char    *pdstb = ((char *) pdstRect) + pBox->x1;
+	    char    *pdstb = ((char *) pdstRect) + pBox->x1;
 	    int	    incr = widthDst * PGSZB;
 
 	    while (h--)
@@ -775,22 +771,17 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
 }
 
 void
-RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		nInit;			/* number of spans to fill */
-    DDXPointPtr pptInit;		/* pointer to list of start points */
-    int		*pwidthInit;		/* pointer to list of n widths */
-    int 	fSorted;
+RROP_NAME(cfbSolidSpans)(DrawablePtr pDrawable, GCPtr pGC, int nInit,
+			 DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
     CfbBits   *pdstBase;
     int		    widthDst;
 
     RROP_DECLARE
     
-    register CfbBits  *pdst;
-    register int	    nlmiddle;
-    register int	    w;
+    CfbBits  *pdst;
+    int	    nlmiddle;
+    int	    w;
     int			    x;
     
 				/* next three parameters are post-clip */
@@ -803,7 +794,7 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 #if PSZ == 24
     int		    leftIndex, rightIndex;
 #else
-    register CfbBits  startmask, endmask;
+    CfbBits  startmask, endmask;
 #endif
 
     devPriv = cfbGetGCPrivate(pGC);
@@ -1322,7 +1313,7 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 #if PSZ == 8
 	if (w <= PGSZB)
 	{
-	    register char   *addrb;
+	    char   *addrb;
 
 	    addrb = ((char *) pdst) + x;
 	    while (w--)

@@ -2,7 +2,7 @@
  * Fill 32 bit tiled rectangles.  Used by both PolyFillRect and PaintWindow.
  * no depth dependencies.
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbtile32.c,v 3.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbtile32.c,v 3.7 2003/10/29 22:44:53 tsi Exp $ */
 
 /*
 
@@ -29,8 +29,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
 
-/* $Xorg: cfbtile32.c,v 1.4 2001/02/09 02:04:39 xorgcvs Exp $ */
-
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -56,7 +54,7 @@ in this Software without prior written authorization from The Open Group.
 #if PSZ == 24
 #define STORE(p)    (*(p) = MROP_PREBUILT_SOLID(srcpix,*(p)))
 /*#define STORE24(p,index)    {\
-	    register int idx = ((index) & 3)<< 1; \
+	    int idx = ((index) & 3)<< 1; \
 	    *(p) = (((MROP_PREBUILT_SOLID(srcpix,*(p))<<cfb24Shift[idx])&cfbmask[idx])| \
 	            (*(p)&cfbrmask[idx])); \
 	    idx++; \
@@ -210,25 +208,22 @@ in this Software without prior written authorization from The Open Group.
 #endif /*PSZ == 24*/
 
 void
-MROP_NAME(cfbFillRectTile32) (pDrawable, pGC, nBox, pBox)
-    DrawablePtr	    pDrawable;
-    GCPtr	    pGC;
-    int		    nBox;	/* number of boxes to fill */
-    BoxPtr 	    pBox;	/* pointer to list of boxes to fill */
+MROP_NAME(cfbFillRectTile32)(DrawablePtr pDrawable, GCPtr pGC, int nBox,
+			     BoxPtr pBox)
 {
-    register CfbBits srcpix;	
+    CfbBits srcpix;	
     CfbBits *psrc;		/* pointer to bits in tile, if needed */
     int tileHeight;	/* height of the tile */
 
     int nlwDst;		/* width in longwords of the dest pixmap */
     int w;		/* width of current box */
-    register int h;	/* height of current box */
-    register CfbBits startmask;
-    register CfbBits endmask; /* masks for reggedy bits at either end of line */
+    int h;	/* height of current box */
+    CfbBits startmask;
+    CfbBits endmask; /* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
     int nlwExtra;	/* to get from right of box to left of next span */
-    register int nlw = 0;	/* loop version of nlwMiddle */
-    register CfbBits *p;	/* pointer to bits we're writing */
+    int nlw = 0;	/* loop version of nlwMiddle */
+    CfbBits *p;	/* pointer to bits we're writing */
     int y;		/* current scan line */
     int srcy;		/* current tile position */
 
@@ -327,13 +322,8 @@ MROP_NAME(cfbFillRectTile32) (pDrawable, pGC, nBox, pBox)
 }
 
 void
-MROP_NAME(cfbTile32FS)(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		nInit;			/* number of spans to fill */
-    DDXPointPtr pptInit;		/* pointer to list of start points */
-    int		*pwidthInit;		/* pointer to list of n widths */
-    int 	fSorted;
+MROP_NAME(cfbTile32FS)(DrawablePtr pDrawable, GCPtr pGC, int nInit,
+		       DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
 				/* next three parameters are post-clip */
     int			n;	/* number of spans to fill */
@@ -341,13 +331,13 @@ MROP_NAME(cfbTile32FS)(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int			*pwidth;/* pointer to list of n widths */
     CfbBits	*pbits;	/* pointer to start of bitmap */
     int			nlwDst;	/* width in longwords of bitmap */
-    register CfbBits *p;	/* pointer to current longword in bitmap */
-    register int	w;	/* current span width */
-    register int	nlw;
-    register int	x;
-    register CfbBits startmask;
-    register CfbBits endmask;
-    register CfbBits  srcpix;
+    CfbBits *p;	/* pointer to current longword in bitmap */
+    int	w;	/* current span width */
+    int	nlw;
+    int	x;
+    CfbBits startmask;
+    CfbBits endmask;
+    CfbBits  srcpix;
     int			y;
     int			*pwidthFree;/* copies of the pointers to free */
     DDXPointPtr		pptFree;

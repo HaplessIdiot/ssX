@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbgc.c,v 3.2 1999/06/20 15:02:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbgc.c,v 3.3 2001/10/28 03:32:58 tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,7 +46,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: afbgc.c,v 5.35 94/04/17 20:28:23 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -103,8 +102,7 @@ static GCOps afbGCOps = {
 
 
 Bool
-afbCreateGC(pGC)
-	register GCPtr pGC;
+afbCreateGC(GCPtr pGC)
 {
 	afbPrivGC 		*pPriv;
 
@@ -147,12 +145,9 @@ afbCreateGC(pGC)
 
 /*ARGSUSED*/
 void
-afbValidateGC(pGC, changes, pDrawable)
-	register GCPtr 		pGC;
-	unsigned long		changes;
-	DrawablePtr 		pDrawable;
+afbValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 {
-	register afbPrivGCPtr devPriv;
+	afbPrivGCPtr devPriv;
 	int mask;		/* stateChanges */
 	int index;		/* used for stepping through bitfields */
 	int xrot, yrot;		/* rotations for tile and stipple pattern */
@@ -434,8 +429,7 @@ afbValidateGC(pGC, changes, pDrawable)
 }
 
 void
-afbDestroyGC(pGC)
-	GCPtr pGC;
+afbDestroyGC(GCPtr pGC)
 {
 	if (pGC->pRotatedPixmap)
 		(*pGC->pScreen->DestroyPixmap)(pGC->pRotatedPixmap);
@@ -465,15 +459,11 @@ int afbInverseAlu[16] = {
 };
 
 void
-afbReduceOpaqueStipple(fg, bg, planemask, depth, rop)
-register PixelType fg;
-register PixelType bg;
-register unsigned long planemask;
-int depth;
-register unsigned char *rop;
+afbReduceOpaqueStipple(PixelType fg, PixelType bg, unsigned long planemask,
+		       int depth, unsigned char *rop)
 {
-	register int d;
-	register Pixel mask = 1;
+	int d;
+	Pixel mask = 1;
 
 	bg ^= fg;
 
@@ -497,15 +487,11 @@ register unsigned char *rop;
 }
 
 void
-afbReduceRop(alu, src, planemask, depth, rop)
-	register int alu;
-	register Pixel src;
-	register unsigned long planemask;
-	int depth;
-	register unsigned char *rop;
+afbReduceRop(int alu, Pixel src, unsigned long planemask, int depth,
+	     unsigned char *rop)
 {
-	register int d;
-	register Pixel mask = 1;
+	int d;
+	Pixel mask = 1;
 
 	for (d = 0; d < depth; d++, mask <<= 1) {
 		if (!(planemask & mask))
@@ -616,9 +602,7 @@ afbReduceRop(alu, src, planemask, depth, rop)
 }
 
 void
-afbComputeCompositeClip(pGC, pDrawable)
-	GCPtr pGC;
-	DrawablePtr pDrawable;
+afbComputeCompositeClip(GCPtr pGC, DrawablePtr pDrawable)
 {
 	if (pDrawable->type == DRAWABLE_WINDOW) {
 		WindowPtr pWin = (WindowPtr) pDrawable;

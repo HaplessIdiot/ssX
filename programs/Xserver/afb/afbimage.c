@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbimage.c,v 3.2 1998/03/20 21:04:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbimage.c,v 3.3 2001/10/28 03:32:58 tsi Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -11,13 +11,8 @@
 #include "mfb.h"
 
 void
-afbPutImage(pDraw, pGC, depth, x, y, width, height, leftPad, format, pImage)
-	DrawablePtr pDraw;
-	GCPtr pGC;
-	int depth, x, y, width, height;
-	int leftPad;
-	int format;
-	char *pImage;
+afbPutImage(DrawablePtr pDraw, GCPtr pGC, int depth, int x, int y, int width,
+	    int height, int leftPad, int format, char *pImage)
 {
 	PixmapPtr pPixmap;
 
@@ -81,17 +76,17 @@ afbPutImage(pDraw, pGC, depth, x, y, width, height, leftPad, format, pImage)
 		ScreenPtr pScreen = pDraw->pScreen;
 		int widthSrc;
 		int start_srcshift;
-		register int b;
-		register int dstshift;
-		register int shift_step;
-		register PixelType dst;
-		register PixelType srcbits;
-		register PixelType *pdst;
-		register PixelType *psrc;
+		int b;
+		int dstshift;
+		int shift_step;
+		PixelType dst;
+		PixelType srcbits;
+		PixelType *pdst;
+		PixelType *psrc;
 		int start_bit;
-		register int nl;
-		register int h;
-		register int d;
+		int nl;
+		int h;
+		int d;
 		int sizeDst;
 		PixelType *pdstBase;
 		int widthDst;
@@ -150,12 +145,8 @@ afbPutImage(pDraw, pGC, depth, x, y, width, height, leftPad, format, pImage)
 }
 
 void
-afbGetImage(pDrawable, sx, sy, width, height, format, planemask, pdstLine)
-	DrawablePtr pDrawable;
-	int sx, sy, width, height;
-	unsigned int format;
-	unsigned long planemask;
-	char *pdstLine;
+afbGetImage(DrawablePtr pDrawable, int sx, int sy, int width, int height,
+	    unsigned int format, unsigned long planemask, char *pdstLine)
 {
 	BoxRec box;
 	DDXPointRec ptSrc;
@@ -205,20 +196,20 @@ afbGetImage(pDrawable, sx, sy, width, height, format, planemask, pdstLine)
 		int sizeSrc;
 		int sizeDst;
 		int widthDst;
-		register PixelType *psrc;
-		register PixelType *pdst;
-		register PixelType dst;
-		register PixelType srcbits;
-		register int d;
-		register int b;
-		register int dstshift;
-		register int shift_step;
-		register int start_endbit;
+		PixelType *psrc;
+		PixelType *pdst;
+		PixelType dst;
+		PixelType srcbits;
+		int d;
+		int b;
+		int dstshift;
+		int shift_step;
+		int start_endbit;
 		int start_startbit;
-		register int end_endbit = 0;
-		register int start_dstshift;
-		register int nl;
-		register int h;
+		int end_endbit = 0;
+		int start_dstshift;
+		int nl;
+		int h;
 		int nlmiddle;
 
 		widthDst = PixmapWidthInPadUnits(width, pDrawable->depth);

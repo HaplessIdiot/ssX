@@ -45,11 +45,6 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Xorg: resource.c,v 1.5 2001/02/09 02:04:40 xorgcvs Exp $ */
-
-
-/* $TOG: resource.c /main/41 1998/02/09 14:20:31 kaleb $ */
-
 /*	Routines to manage various kinds of resources:
  *
  *	CreateNewResourceType, CreateNewResourceClass, InitClientResources,
@@ -72,7 +67,7 @@ SOFTWARE.
  *      1, and an otherwise arbitrary ID in the low 22 bits, we can create a
  *      resource "owned" by the client.
  */
-/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.13 2003/09/24 02:43:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.14 2003/11/17 22:20:34 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -132,7 +127,8 @@ static DeleteType *DeleteFuncs = (DeleteType *)NULL;
 
 Atom * ResourceNames = NULL;
 
-void RegisterResourceName (RESTYPE type, char *name)
+void
+RegisterResourceName(RESTYPE type, char *name)
 {
     ResourceNames[type & TypeMask] =  MakeAtom(name, strlen(name), TRUE);
 }
@@ -140,8 +136,7 @@ void RegisterResourceName (RESTYPE type, char *name)
 #endif
 
 RESTYPE
-CreateNewResourceType(deleteFunc)
-    DeleteType deleteFunc;
+CreateNewResourceType(DeleteType deleteFunc)
 {
     RESTYPE next = lastResourceType + 1;
     DeleteType *funcs;
@@ -191,10 +186,9 @@ ClientResourceRec clientTable[MAXCLIENTS];
  *****************/
 
 Bool
-InitClientResources(client)
-    ClientPtr client;
+InitClientResources(ClientPtr client)
 {
-    register int i, j;
+    int i, j;
  
     if (client == serverClient)
     {
@@ -251,7 +245,7 @@ InitClientResources(client)
 
 
 static int
-Hash(int client, register XID id)
+Hash(int client, XID id)
 {
     id &= RESOURCE_ID_MASK;
     switch (clientTable[client].hashsize)
@@ -273,13 +267,9 @@ Hash(int client, register XID id)
 }
 
 static XID
-AvailableID(
-    register int client,
-    register XID id,
-    register XID maxid,
-    register XID goodid)
+AvailableID(int client, XID id, XID maxid, XID goodid)
 {
-    register ResourcePtr res;
+    ResourcePtr res;
 
     if ((goodid >= id) && (goodid <= maxid))
 	return goodid;
@@ -295,15 +285,12 @@ AvailableID(
 }
 
 void
-GetXIDRange(client, server, minp, maxp)
-    int client;
-    Bool server;
-    XID *minp, *maxp;
+GetXIDRange(int client, Bool server, XID *minp, XID *maxp)
 {
-    register XID id, maxid;
-    register ResourcePtr *resp;
-    register ResourcePtr res;
-    register int i;
+    XID id, maxid;
+    ResourcePtr *resp;
+    ResourcePtr res;
+    int i;
     XID goodid;
 
     id = (Mask)client << CLIENTOFFSET;
@@ -348,10 +335,7 @@ GetXIDRange(client, server, minp, maxp)
  */
 
 unsigned int
-GetXIDList(pClient, count, pids)
-    ClientPtr pClient;
-    unsigned int count;
-    XID *pids;
+GetXIDList(ClientPtr pClient, unsigned int count, XID *pids)
 {
     unsigned int found = 0;
     XID id = pClient->clientAsMask;
@@ -378,8 +362,7 @@ GetXIDList(pClient, count, pids)
  */
 
 XID
-FakeClientID(client)
-    register int client;
+FakeClientID(int client)
 {
     XID id, maxid;
 
@@ -400,14 +383,11 @@ FakeClientID(client)
 }
 
 Bool
-AddResource(id, type, value)
-    XID id;
-    RESTYPE type;
-    pointer value;
+AddResource(XID id, RESTYPE type, pointer value)
 {
     int client;
-    register ClientResourceRec *rrec;
-    register ResourcePtr res, *head;
+    ClientResourceRec *rrec;
+    ResourcePtr res, *head;
     	
     client = CLIENT_ID(id);
     rrec = &clientTable[client];
@@ -439,13 +419,12 @@ AddResource(id, type, value)
 }
 
 static void
-RebuildTable(client)
-    int client;
+RebuildTable(int client)
 {
-    register int j;
-    register ResourcePtr res, next;
+    int j;
+    ResourcePtr res, next;
     ResourcePtr **tails, *resources;
-    register ResourcePtr **tptr, *rptr;
+    ResourcePtr **tptr, *rptr;
 
     /*
      * For now, preserve insertion order, since some ddx layers depend
@@ -489,14 +468,12 @@ RebuildTable(client)
 }
 
 void
-FreeResource(id, skipDeleteFuncType)
-    XID id;
-    RESTYPE skipDeleteFuncType;
+FreeResource(XID id, RESTYPE skipDeleteFuncType)
 {
     int		cid;
-    register    ResourcePtr res;
-    register	ResourcePtr *prev, *head;
-    register	int *eltptr;
+    ResourcePtr res;
+    ResourcePtr *prev, *head;
+    int *eltptr;
     int		elements;
     Bool	gotOne = FALSE;
 
@@ -538,14 +515,11 @@ FreeResource(id, skipDeleteFuncType)
 
 
 void
-FreeResourceByType(id, type, skipFree)
-    XID id;
-    RESTYPE type;
-    Bool    skipFree;
+FreeResourceByType(XID id, RESTYPE type, Bool skipFree)
 {
     int		cid;
-    register    ResourcePtr res;
-    register	ResourcePtr *prev, *head;
+    ResourcePtr res;
+    ResourcePtr *prev, *head;
     if (((cid = CLIENT_ID(id)) < MAXCLIENTS) && clientTable[cid].buckets)
     {
 	head = &clientTable[cid].resources[Hash(cid, id)];
@@ -581,13 +555,10 @@ FreeResourceByType(id, type, skipFree)
  */
 
 Bool
-ChangeResourceValue (id, rtype, value)
-    XID	id;
-    RESTYPE rtype;
-    pointer value;
+ChangeResourceValue(XID id, RESTYPE rtype, pointer value)
 {
     int    cid;
-    register    ResourcePtr res;
+    ResourcePtr res;
 
     if (((cid = CLIENT_ID(id)) < MAXCLIENTS) && clientTable[cid].buckets)
     {
@@ -618,10 +589,10 @@ FindClientResourcesByType(
     FindResType func,
     pointer cdata
 ){
-    register ResourcePtr *resources;
-    register ResourcePtr this, next;
+    ResourcePtr *resources;
+    ResourcePtr this, next;
     int i, elements;
-    register int *eltptr;
+    int *eltptr;
 
     if (!client)
 	client = serverClient;
@@ -649,10 +620,10 @@ FindAllClientResources(
     FindAllRes func,
     pointer cdata
 ){
-    register ResourcePtr *resources;
-    register ResourcePtr this, next;
+    ResourcePtr *resources;
+    ResourcePtr this, next;
     int i, elements;
-    register int *eltptr;
+    int *eltptr;
 
     if (!client)
         client = serverClient;
@@ -733,11 +704,10 @@ FreeClientNeverRetainResources(ClientPtr client)
 }
 
 void
-FreeClientResources(client)
-    ClientPtr client;
+FreeClientResources(ClientPtr client)
 {
-    register ResourcePtr *resources;
-    register ResourcePtr this;
+    ResourcePtr *resources;
+    ResourcePtr this;
     int j;
 
     /* This routine shouldn't be called with a null client, but just in
@@ -792,9 +762,7 @@ FreeAllResources()
 }
 
 Bool
-LegalNewID(id, client)
-    XID id;
-    register ClientPtr client;
+LegalNewID(XID id, ClientPtr client)
 {
 
 #ifdef PANORAMIX
@@ -824,14 +792,10 @@ LegalNewID(id, client)
  */
 
 pointer
-SecurityLookupIDByType(client, id, rtype, mode)
-    ClientPtr client;
-    XID id;
-    RESTYPE rtype;
-    Mask mode;
+SecurityLookupIDByType(ClientPtr client, XID id, RESTYPE rtype, Mask mode)
 {
     int    cid;
-    register    ResourcePtr res;
+    ResourcePtr res;
     pointer retval = NULL;
 
     assert(client == NullClient ||
@@ -857,14 +821,10 @@ SecurityLookupIDByType(client, id, rtype, mode)
 
 
 pointer
-SecurityLookupIDByClass(client, id, classes, mode)
-    ClientPtr client;
-    XID id;
-    RESTYPE classes;
-    Mask mode;
+SecurityLookupIDByClass(ClientPtr client, XID id, RESTYPE classes, Mask mode)
 {
     int    cid;
-    register ResourcePtr res = NULL;
+    ResourcePtr res = NULL;
     pointer retval = NULL;
 
     assert(client == NullClient ||
@@ -893,18 +853,14 @@ SecurityLookupIDByClass(client, id, classes, mode)
  */
 
 pointer
-LookupIDByType(id, rtype)
-    XID id;
-    RESTYPE rtype;
+LookupIDByType(XID id, RESTYPE rtype)
 {
     return SecurityLookupIDByType(NullClient, id, rtype,
 				  SecurityUnknownAccess);
 }
 
 pointer
-LookupIDByClass(id, classes)
-    XID id;
-    RESTYPE classes;
+LookupIDByClass(XID id, RESTYPE classes)
 {
     return SecurityLookupIDByClass(NullClient, id, classes,
 				   SecurityUnknownAccess);
@@ -916,12 +872,10 @@ LookupIDByClass(id, classes)
  *  LookupIDByType returns the object with the given id and type, else NULL.
  */ 
 pointer
-LookupIDByType(id, rtype)
-    XID id;
-    RESTYPE rtype;
+LookupIDByType(XID id, RESTYPE rtype)
 {
     int    cid;
-    register    ResourcePtr res;
+    ResourcePtr res;
 
     if (((cid = CLIENT_ID(id)) < MAXCLIENTS) &&
 	clientTable[cid].buckets)
@@ -940,12 +894,10 @@ LookupIDByType(id, rtype)
  *  given classes, else NULL.
  */ 
 pointer
-LookupIDByClass(id, classes)
-    XID id;
-    RESTYPE classes;
+LookupIDByClass(XID id, RESTYPE classes)
 {
     int    cid;
-    register    ResourcePtr res;
+    ResourcePtr res;
 
     if (((cid = CLIENT_ID(id)) < MAXCLIENTS) &&
 	clientTable[cid].buckets)

@@ -1,4 +1,4 @@
-/* $Xorg: cfb8bit.c,v 1.4 2001/02/09 02:04:37 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb8bit.c,v 1.5 2001/12/14 19:59:20 dawes Exp $ */
 /*
 
 Copyright 1989, 1994, 1998  The Open Group
@@ -26,7 +26,6 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/cfb/cfb8bit.c,v 1.4 2001/01/17 22:36:34 dawes Exp $ */
 
 /*
  * cfb8bit.c
@@ -192,9 +191,7 @@ PixelGroup cfb8StippleFg, cfb8StippleBg, cfb8StipplePm;
 PixelGroup cfb8StippleAnd[NUM_MASKS], cfb8StippleXor[NUM_MASKS];
 
 int
-cfb8SetStipple (alu, fg, planemask)
-int		alu;
-CfbBits	fg, planemask;
+cfb8SetStipple(int alu, CfbBits fg, CfbBits planemask)
 {
     CfbBits   and, xor, rrop;
     int	s;
@@ -221,9 +218,7 @@ CfbBits	fg, planemask;
 
 
 int
-cfb8SetOpaqueStipple (alu, fg, bg, planemask)
-int		alu;
-CfbBits	fg, bg, planemask;
+cfb8SetOpaqueStipple(int alu, CfbBits fg, CfbBits bg, CfbBits planemask)
 {
     CfbBits   andfg, xorfg, andbg, xorbg, rropfg, rropbg;
     int	s;
@@ -364,11 +359,8 @@ PixelGroup cfb8BitLenMasks[PGSZ] = {
 
 
 int
-cfb8ComputeClipMasks32 (pBox, numRects, x, y, w, h, clips)
-    BoxPtr	pBox;
-    int		numRects;
-    int		x, y, w, h;
-    CARD32      *clips;
+cfb8ComputeClipMasks32(BoxPtr pBox, int numRects, int x, int y, int w, int h,
+		       CARD32 *clips)
 {
     int	    yBand, yBandBot;
     int	    ch;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mizerclip.c,v 1.2 2001/08/06 20:51:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mizerclip.c,v 1.3 2001/12/14 20:00:29 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -402,17 +402,11 @@ the numerator is therefore (2^32 - 1), which does not overflow an unsigned
  *
  */
 int
-miZeroClipLine(xmin, ymin, xmax, ymax,
-	       new_x1, new_y1, new_x2, new_y2,
-	       adx, ady,
-	       pt1_clipped, pt2_clipped, octant, bias, oc1, oc2)
-    int xmin, ymin, xmax, ymax;
-    int *new_x1, *new_y1, *new_x2, *new_y2;
-    int *pt1_clipped, *pt2_clipped;
-    unsigned int adx, ady;
-    int octant;
-    unsigned int bias;
-    int oc1, oc2;
+miZeroClipLine(int xmin, int ymin, int xmax, int ymax,
+	       int *new_x1, int *new_y1, int *new_x2, int *new_y2,
+	       unsigned int adx, unsigned int ady,
+	       int *pt1_clipped, int *pt2_clipped, int octant,
+	       unsigned int bias, int oc1, int oc2)
 {
     int swapped = 0;
     int clipDone = 0;

@@ -4,7 +4,7 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbscrinit.c,v 1.7 2000/01/21 01:12:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbscrinit.c,v 1.8 2003/02/17 16:08:30 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -117,6 +117,18 @@ cfb8_16AllocatePrivates(ScreenPtr pScreen)
    return TRUE;
 }
 
+static void
+DestroyColormapNoop(ColormapPtr pColormap)
+{
+    /* NOOP */
+}
+
+static void
+StoreColorsNoop(ColormapPtr pColormap, int ndef, xColorItem *pdef)
+{
+    /* NOOP */
+}
+
 static Bool
 cfb8_16SetupScreen(
     ScreenPtr pScreen,
@@ -147,11 +159,11 @@ cfb8_16SetupScreen(
     pScreen->UnrealizeFont = mfbUnrealizeFont;
     pScreen->CreateGC = cfb8_16CreateGC;
     pScreen->CreateColormap = miInitializeColormap;
-    pScreen->DestroyColormap = (void (*)())NoopDDA;
+    pScreen->DestroyColormap = DestroyColormapNoop;
     pScreen->InstallColormap = miInstallColormap;
     pScreen->UninstallColormap = miUninstallColormap;
     pScreen->ListInstalledColormaps = miListInstalledColormaps;
-    pScreen->StoreColors = (void (*)())NoopDDA;
+    pScreen->StoreColors = StoreColorsNoop;
     pScreen->ResolveColor = miResolveColor;
     pScreen->BitmapToRegion = mfbPixmapToRegion;
 

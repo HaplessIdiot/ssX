@@ -1,6 +1,4 @@
 /*
- * $Xorg: xlsfonts.c,v 1.4 2001/02/09 02:05:54 xorgcvs Exp $
- *
  * 
 Copyright 1989, 1998  The Open Group
 
@@ -24,7 +22,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  * */
-/* $XFree86: xc/programs/xlsfonts/xlsfonts.c,v 1.9 2003/09/08 14:25:33 eich Exp $ */
+/* $XFree86: xc/programs/xlsfonts/xlsfonts.c,v 1.10 2003/09/13 21:33:11 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -68,7 +66,7 @@ static int max(int, int);
 static int IgnoreError(Display *, XErrorEvent *);
 static void PrintProperty(XFontProp *);
 static void ComputeFontType(XFontStruct *);
-static void print_character_metrics(register XFontStruct *);
+static void print_character_metrics(XFontStruct *);
 
 
 void
@@ -100,9 +98,7 @@ usage()
 }
 
 int
-main(argc, argv)
-int argc;
-char **argv;    
+main(int argc, char **argv)
 {
 	int	argcnt = 0, i;
 
@@ -168,8 +164,7 @@ char **argv;
 }
 
 void
-get_list(pattern)
-	char	*pattern;
+get_list(char *pattern)
 {
 	int	available = nnames+1,
 		i;
@@ -224,9 +219,7 @@ get_list(pattern)
 }
 
 static int
-compare(arg1, arg2)
-    const void *arg1;
-    const void *arg2;
+compare(const void *arg1, const void *arg2)
 {
 	const FontList *f1 = arg1;
 	const FontList *f2 = arg2;
@@ -397,8 +390,7 @@ show_fonts()
 
 #ifndef max
 static int
-max(i, j)
-	int	i, j;
+max(int i, int j)
 {
 	if (i > j)
 		return (i);
@@ -407,9 +399,7 @@ max(i, j)
 #endif
 
 void
-copy_number(pp1, pp2, n1, n2)
-	char	**pp1, **pp2;
-	int	n1, n2;
+copy_number(char **pp1, char **pp2, int n1, int n2)
 {
 	char	*p1 = *pp1;
 	char	*p2 = *pp2;
@@ -429,9 +419,8 @@ copy_number(pp1, pp2, n1, n2)
 
 
 /* ARGSUSED */
-static int IgnoreError(disp, event)
-    Display *disp;
-    XErrorEvent *event;
+static int
+IgnoreError(Display *disp, XErrorEvent *event)
 {
     return 0;
 }
@@ -445,7 +434,7 @@ static char *bounds_metrics_fmt =
 
 
 #define PrintBounds(_what,_ptr) \
-{   register XCharStruct *p = (_ptr); \
+{   XCharStruct *p = (_ptr); \
     printf (bounds_metrics_fmt, _what, p->width, p->lbearing, \
 	  p->rbearing, p->ascent, p->descent, p->attributes); }
 
@@ -488,8 +477,8 @@ static char* stringValued [] = { /* values are atoms */
      NULL
     };
 
-static void PrintProperty (prop)
-    XFontProp *prop;
+static void
+PrintProperty(XFontProp *prop)
 {
     char *atom, *value;
     char nosuch[40];
@@ -531,8 +520,7 @@ static void PrintProperty (prop)
 
 
 static void
-ComputeFontType (fs)
-    XFontStruct *fs;
+ComputeFontType(XFontStruct *fs)
 {
     int i;
     Bool char_cell = True;
@@ -600,11 +588,10 @@ ComputeFontType (fs)
 
 
 static void
-print_character_metrics (info)
-    register XFontStruct *info;
+print_character_metrics(XFontStruct *info)
 {
-    register XCharStruct *pc = info->per_char;
-    register int i, j;
+    XCharStruct *pc = info->per_char;
+    int i, j;
     unsigned n, saven;
 
     printf ("  character metrics:\n");
@@ -625,12 +612,10 @@ print_character_metrics (info)
 
 
 void
-do_query_font (dpy, name)
-    Display *dpy;
-    char *name;
+do_query_font(Display *dpy, char *name)
 {
-    register int i;
-    register XFontStruct *info = XLoadQueryFont (dpy, name);
+    int i;
+    XFontStruct *info = XLoadQueryFont (dpy, name);
 
     if (!info) {
 	fprintf (stderr, "%s:  unable to get info about font \"%s\"\n",

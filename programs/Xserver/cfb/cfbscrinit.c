@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.19 2001/01/17 22:36:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.20 2003/07/16 01:38:37 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -27,7 +27,6 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $Xorg: cfbscrinit.c,v 1.3 2000/08/17 19:48:15 cpqbld Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -53,9 +52,7 @@ BSFuncRec cfbBSFuncRec = {
 };
 
 Bool
-cfbCloseScreen (index, pScreen)
-    int		index;
-    ScreenPtr	pScreen;
+cfbCloseScreen(int index, ScreenPtr pScreen)
 {
     int	    d;
     DepthPtr	depths = pScreen->allowedDepths;
@@ -72,27 +69,21 @@ cfbCloseScreen (index, pScreen)
     return TRUE;
 }
 
-static void DestroyColormapNoop(
-        ColormapPtr pColormap)
+static void
+DestroyColormapNoop(ColormapPtr pColormap)
 {
     /* NOOP */
 }
 
-static void StoreColorsNoop(
-        ColormapPtr pColormap,
-        int ndef,
-        xColorItem * pdef)
+static void
+StoreColorsNoop(ColormapPtr pColormap, int ndef, xColorItem *pdef)
 {
     /* NOOP */
 }
 
 Bool
-cfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
-    register ScreenPtr pScreen;
-    pointer pbits;		/* pointer to screen bitmap */
-    int xsize, ysize;		/* in pixels */
-    int dpix, dpiy;		/* dots per inch */
-    int width;			/* pixel width of frame buffer */
+cfbSetupScreen(ScreenPtr pScreen, pointer pbits, int xsize, int ysize,
+	       int dpix, int dpiy, int width)
 {
     if (!cfbAllocatePrivates(pScreen, (int *) 0, (int *) 0))
 	return FALSE;
@@ -132,8 +123,7 @@ cfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 
 #ifdef CFB_NEED_SCREEN_PRIVATE
 Bool
-cfbCreateScreenResources(pScreen)
-    ScreenPtr pScreen;
+cfbCreateScreenResources(ScreenPtr pScreen)
 {
     Bool retval;
 
@@ -147,12 +137,8 @@ cfbCreateScreenResources(pScreen)
 #endif
 
 Bool
-cfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
-    register ScreenPtr pScreen;
-    pointer pbits;		/* pointer to screen bitmap */
-    int xsize, ysize;		/* in pixels */
-    int dpix, dpiy;		/* dots per inch */
-    int width;			/* pixel width of frame buffer */
+cfbFinishScreenInit(ScreenPtr pScreen, pointer pbits, int xsize, int ysize,
+		    int dpix, int dpiy, int width)
 {
 #ifdef CFB_NEED_SCREEN_PRIVATE
     pointer oldDevPrivate;
@@ -190,12 +176,8 @@ cfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
 Bool
-cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
-    register ScreenPtr pScreen;
-    pointer pbits;		/* pointer to screen bitmap */
-    int xsize, ysize;		/* in pixels */
-    int dpix, dpiy;		/* dots per inch */
-    int width;			/* pixel width of frame buffer */
+cfbScreenInit(ScreenPtr pScreen, pointer pbits, int xsize, int ysize,
+	      int dpix, int dpiy, int width)
 {
     if (!cfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width))
 	return FALSE;
@@ -203,8 +185,7 @@ cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 }
 
 PixmapPtr
-cfbGetScreenPixmap(pScreen)
-    ScreenPtr pScreen;
+cfbGetScreenPixmap(ScreenPtr pScreen)
 {
 #ifdef CFB_NEED_SCREEN_PRIVATE
     return (PixmapPtr)pScreen->devPrivates[cfbScreenPrivateIndex].ptr;
@@ -214,8 +195,7 @@ cfbGetScreenPixmap(pScreen)
 }
 
 void
-cfbSetScreenPixmap(pPix)
-    PixmapPtr pPix;
+cfbSetScreenPixmap(PixmapPtr pPix)
 {
 #ifdef CFB_NEED_SCREEN_PRIVATE
     if (pPix)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbline.c,v 3.5 2001/10/28 03:33:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbline.c,v 3.6 2001/12/14 19:59:23 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: cfbline.c,v 1.4 2001/02/09 02:04:38 xorgcvs Exp $ */
+
 #include "X.h"
 
 #include "gcstruct.h"
@@ -90,26 +90,18 @@ actual clipping.
 
 void
 #ifdef POLYSEGMENT
-cfbSegmentSS (pDrawable, pGC, nseg, pSeg)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		nseg;
-    register xSegment	*pSeg;
+cfbSegmentSS(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSeg)
 #else
-cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		mode;		/* Origin or Previous */
-    int		npt;		/* number of points */
-    DDXPointPtr pptInit;
+cfbLineSS(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+	  DDXPointPtr pptInit)
 #endif
 {
     int nboxInit;
-    register int nbox;
+    int nbox;
     BoxPtr pboxInit;
-    register BoxPtr pbox;
+    BoxPtr pbox;
 #ifndef POLYSEGMENT
-    register DDXPointPtr ppt;	/* pointer to list of translated points */
+    DDXPointPtr ppt;	/* pointer to list of translated points */
 #endif
 
     unsigned int oc1;		/* outcode of point 1 */
@@ -131,8 +123,8 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 
 				/* a bunch of temporaries */
     int tmp;
-    register int y1, y2;
-    register int x1, x2;
+    int y1, y2;
+    int x1, x2;
     RegionPtr cclip;
     cfbPrivGCPtr    devPriv;
     CfbBits   xor, and;
@@ -188,7 +180,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 	    */
 	    if (y1 > y2)
 	    {
-		register int tmp;
+		int tmp;
 
 		tmp = y2;
 		y2 = y1 + 1;
@@ -242,7 +234,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 	    */
 	    if (x1 > x2)
 	    {
-		register int tmp;
+		int tmp;
 
 		tmp = x2;
 		x2 = x1 + 1;
@@ -457,30 +449,22 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 
 void
 #ifdef POLYSEGMENT
-cfbSegmentSD (pDrawable, pGC, nseg, pSeg)
-    DrawablePtr	pDrawable;
-    register GCPtr	pGC;
-    int		nseg;
-    register xSegment	*pSeg;
+cfbSegmentSD(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSeg)
 #else
-cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr pDrawable;
-    register GCPtr pGC;
-    int mode;		/* Origin or Previous */
-    int npt;		/* number of points */
-    DDXPointPtr pptInit;
+cfbLineSD(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+	  DDXPointPtr pptInit)
 #endif
 {
     int nboxInit;
-    register int nbox;
+    int nbox;
     BoxPtr pboxInit;
-    register BoxPtr pbox;
+    BoxPtr pbox;
 #ifndef POLYSEGMENT
-    register DDXPointPtr ppt;	/* pointer to list of translated points */
+    DDXPointPtr ppt;	/* pointer to list of translated points */
 #endif
 
-    register unsigned int oc1;		/* outcode of point 1 */
-    register unsigned int oc2;		/* outcode of point 2 */
+    unsigned int oc1;		/* outcode of point 1 */
+    unsigned int oc2;		/* outcode of point 2 */
 
     CfbBits *addrl;		/* address of destination pixmap */
     int nlwidth;		/* width in longwords of destination pixmap */

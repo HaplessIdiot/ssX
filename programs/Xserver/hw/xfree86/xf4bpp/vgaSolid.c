@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaSolid.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaSolid.c,v 1.6 2003/11/03 05:11:57 tsi Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -22,8 +22,6 @@
  *
 */
 
-/* $XConsortium: vgaSolid.c /main/5 1996/02/21 17:59:06 kaleb $ */
-
 #include "xf4bpp.h"
 #include "OScompiler.h"
 #include "vgaReg.h"
@@ -43,18 +41,16 @@ extern void fastFill();
 extern void fastFillRMW();
 #else
 
-static void fastFill
-(
-	register volatile unsigned char *destination,
-	register const unsigned int bytes_per_line,
-	register const unsigned int bytewidth,	/* MUST BE > 0 !! */
-	register unsigned int height		/* MUST BE > 0 !! */
-)
+static void
+fastFill(volatile unsigned char *destination,
+	 const unsigned int bytes_per_line,
+	 const unsigned int bytewidth,	/* MUST BE > 0 !! */
+	 unsigned int height)		/* MUST BE > 0 !! */
 {
 int stop_count = bytewidth ;
-register int row_jump = bytes_per_line - bytewidth ;
+int row_jump = bytes_per_line - bytewidth ;
 #if !defined(OLDHC) && defined(BSDrt) && !defined(i386)
-register const unsigned int notZero = ((unsigned char)(~0x0));
+const unsigned int notZero = ((unsigned char)(~0x0));
 #else
 #define notZero ((unsigned char)(~0))
 #endif
@@ -101,20 +97,18 @@ switch ( bytewidth & 0xF ) { /* Jump into loop at mod 16 remainder */
 }
 
 /* For Read-Modify-Write Case */
-static void fastFillRMW
-(
-	register volatile unsigned char *destination,
-	register const unsigned int bytes_per_line,
-	register const unsigned int bytewidth,	/* MUST BE > 0 !! */
-	register unsigned int height		/* MUST BE > 0 !! */
-)
+static void
+fastFillRMW(volatile unsigned char *destination,
+	    const unsigned int bytes_per_line,
+	    const unsigned int bytewidth,	/* MUST BE > 0 !! */
+	    unsigned int height)		/* MUST BE > 0 !! */
 {
 int stop_count = bytewidth ;
-register int row_jump = bytes_per_line - bytewidth ;
+int row_jump = bytes_per_line - bytewidth ;
 #if !defined(OLDHC) && defined(BSDrt) && !defined(i386)
-register const unsigned int notZero = ((unsigned char)(~0x0));
+const unsigned int notZero = ((unsigned char)(~0x0));
 #endif
-register int tmp ;
+int tmp ;
 
 #define SINGLE_STORE \
     tmp = *( (VgaMemoryPtr) destination ) ;  (void)tmp; \
@@ -160,21 +154,15 @@ switch ( bytewidth & 0xF ) { /* Jump into loop at mod 16 remainder */
 #endif
 
 
-void xf4bppFillSolid( pWin, color, alu, planes, x0, y0, lx, ly )
-WindowPtr pWin; /* GJA */
-unsigned long int color ;
-const int alu ;
-unsigned long int planes ;
-register int x0 ;
-register const int y0 ;
-register int lx ;
-register const int ly ;		/* MUST BE > 0 !! */
+void
+xf4bppFillSolid(WindowPtr pWin, unsigned long color, const int alu,
+		unsigned long planes, int x0, int y0, int lx, const int ly)
 {
 IOADDRESS REGBASE;
-register volatile unsigned char *dst ;
-register int tmp ;
-register int tmp2 ;
-register int tmp3 ;
+volatile unsigned char *dst ;
+int tmp ;
+int tmp2 ;
+int tmp3 ;
 unsigned int data_rotate_value = VGA_COPY_MODE ;
 unsigned int read_write_modify = FALSE ;
 unsigned int invert_existing_data = FALSE ;
@@ -360,16 +348,16 @@ return ;
 }
 
 #else	/* for PC98 EGC */
-static void WordfastFill( destination, bytes_per_line, wordwidth, height )
-register volatile unsigned char *destination ;
-register const unsigned int bytes_per_line ;
-register const unsigned int wordwidth ;	/* MUST BE > 0 !! */
-register unsigned int height ;		/* MUST BE > 0 !! */
+static void
+WordfastFill(volatile unsigned char *destination,
+	     const unsigned int bytes_per_line,
+	     const unsigned int wordwidth ;	/* MUST BE > 0 !! */
+	     unsigned int height)		/* MUST BE > 0 !! */
 {
 int stop_count = wordwidth ;
-register int row_jump = bytes_per_line - wordwidth*2 ;
+int row_jump = bytes_per_line - wordwidth*2 ;
 #if !defined(OLDHC) && defined(BSDrt) && !defined(i386) && 0
-register const int notZero = ~0x0 ;
+const int notZero = ~0x0 ;
 #else
 #define notZero ( ~0 )
 #endif
@@ -415,20 +403,14 @@ switch ( wordwidth & 0xF ) { /* Jump into loop at mod 16 remainder */
 /*NOTREACHED*/
 }
 
-void xf4bppFillSolid( pWin, color, alu, planes, x0, y0, lx, ly )
-WindowPtr pWin; /* GJA */
-unsigned long int color ;
-const int alu ;
-unsigned long int planes ;
-register int x0 ;
-register const int y0 ;
-register int lx ;
-register const int ly ;		/* MUST BE > 0 !! */
+void
+xf4bppFillSolid(WindowPtr pWin, unsigned long color, const int alu,
+		unsigned long planes, int x0, int y0, int lx, const int ly)
 {
-register volatile unsigned char *dst ;
-register tmp ;
-register tmp2 ;
-register unsigned short tmp3 ;
+volatile unsigned char *dst ;
+tmp ;
+tmp2 ;
+unsigned short tmp3 ;
 unsigned short ROP_value;
 unsigned int data_rotate_value = VGA_COPY_MODE ;
 unsigned int read_write_modify = FALSE ;

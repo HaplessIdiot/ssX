@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbhrzvert.c,v 3.6 2001/10/28 03:33:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbhrzvert.c,v 3.8 2002/09/16 18:05:30 eich Exp $ */
 /***********************************************************
 
 Copyright 1987,1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: cfbhrzvert.c,v 1.4 2001/02/09 02:04:38 xorgcvs Exp $ */
+
 #include "X.h"
 
 #include "gc.h"
@@ -60,17 +60,10 @@ SOFTWARE.
    abs(len) > 1
 */
 void
-cfbHorzS(rop, and, xor, addrl, nlwidth, x1, y1, len)
-register int rop;
-register CfbBits and;
-register CfbBits xor;
-register CfbBits *addrl;	/* pointer to base of bitmap */
-int nlwidth;		/* width in longwords of bitmap */
-int x1;			/* initial point */ 
-int y1;
-int len;		/* length of line */
+cfbHorzS(int rop, CfbBits and, CfbBits xor, CfbBits *addrl, int nlwidth,
+	 int x1, int y1, int len)
 {
-    register int nlmiddle;
+    int nlmiddle;
 
 #if PSZ == 24
 
@@ -307,8 +300,8 @@ int len;		/* length of line */
       }
     }
 #else
-    register CfbBits startmask;
-    register CfbBits endmask;
+    CfbBits startmask;
+    CfbBits endmask;
 
     addrl = addrl + (y1 * nlwidth) + (x1 >> PWSH);
 
@@ -363,20 +356,15 @@ int len;		/* length of line */
 /* vertical solid line */
 
 void
-cfbVertS(rop, and, xor, addrl, nlwidth, x1, y1, len)
-int rop;
-register CfbBits and, xor;
-register CfbBits *addrl;	/* pointer to base of bitmap */
-register int nlwidth;	/* width in longwords of bitmap */
-int x1, y1;		/* initial point */
-register int len;	/* length of line */
+cfbVertS(int rop, CfbBits and, CfbBits xor, CfbBits *addrl, int nlwidth,
+	 int x1, int y1, int len)
 {
 #if PSZ == 24
     int xIdx;
     CfbBits and2 = 0, xor2 = 0, mask = 0, mask2;
 #endif
 #ifdef PIXEL_ADDR
-    register PixelType    *bits = (PixelType *) addrl;
+    PixelType    *bits = (PixelType *) addrl;
 
 #if PSZ == 24
     nlwidth <<= PWSH;

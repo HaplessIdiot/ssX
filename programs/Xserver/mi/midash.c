@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/midash.c,v 1.4 2001/12/14 20:00:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/midash.c,v 1.5 2003/07/16 01:38:56 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: midash.c,v 1.4 2001/02/09 02:05:20 xorgcvs Exp $ */
+
 #include "regionstr.h"
 #include "mistruct.h"
 #include "mifpoly.h"
@@ -80,13 +80,8 @@ NOTE ALSO:
 */
 
 miDashPtr
-miDashLine(npt, ppt, nDash, pDash, offset, pnseg)
-int npt;
-DDXPointPtr ppt;
-unsigned int nDash;
-unsigned char *pDash;
-unsigned int offset;
-int *pnseg;
+miDashLine(int npt, DDXPointPtr ppt, unsigned int nDash, unsigned char *pDash,
+	   unsigned int offset, int *pnseg)
 {
     DDXPointRec pt1, pt2;
     int lenCur;		/* npt used from this dash */
@@ -274,12 +269,12 @@ CheckDashStorage(
 }
 
 void
-miStepDash (dist, pDashIndex, pDash, numInDashList, pDashOffset)
-    int dist;			/* distance to step */
-    int *pDashIndex;		/* current dash */
-    unsigned char *pDash;	/* dash list */
-    int numInDashList;		/* total length of dash list */
-    int *pDashOffset;		/* offset into current dash */
+miStepDash(
+    int dist,			/* distance to step */
+    int *pDashIndex,		/* current dash */
+    unsigned char *pDash,	/* dash list */
+    int numInDashList,		/* total length of dash list */
+    int *pDashOffset)		/* offset into current dash */
 {
     int	dashIndex, dashOffset;
     int totallen;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.10 2003/11/10 18:22:49 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,8 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-
-/* $Xorg: miexpose.c,v 1.4 2001/02/09 02:05:20 xorgcvs Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -99,17 +97,11 @@ exposing is done by the backing store's GraphicsExpose function, of course.
 */
 
 RegionPtr
-miHandleExposures(pSrcDrawable, pDstDrawable,
-		  pGC, srcx, srcy, width, height, dstx, dsty, plane)
-    register DrawablePtr	pSrcDrawable;
-    register DrawablePtr	pDstDrawable;
-    GCPtr 			pGC;
-    int 			srcx, srcy;
-    int 			width, height;
-    int 			dstx, dsty;
-    unsigned long		plane;
+miHandleExposures(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
+		  GCPtr pGC, int srcx, int srcy, int width, int height,
+		  int dstx, int dsty, unsigned long plane)
 {
-    register ScreenPtr pscr;
+    ScreenPtr pscr;
     RegionPtr prgnSrcClip;	/* drawable-relative source clip */
     RegionRec rgnSrcRec;
     RegionPtr prgnDstClip;	/* drawable-relative dest clip */
@@ -348,19 +340,15 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 /* send GraphicsExpose events, or a NoExpose event, based on the region */
 
 void
-miSendGraphicsExpose (client, pRgn, drawable, major, minor)
-    ClientPtr	client;
-    RegionPtr	pRgn;
-    XID		drawable;
-    int	major;
-    int	minor;
+miSendGraphicsExpose(ClientPtr client, RegionPtr pRgn, XID drawable,
+		     int major, int minor)
 {
     if (pRgn && !REGION_NIL(pRgn))
     {
         xEvent *pEvent;
-	register xEvent *pe;
-	register BoxPtr pBox;
-	register int i;
+	xEvent *pe;
+	BoxPtr pBox;
+	int i;
 	int numRects;
 
 	numRects = REGION_NUM_RECTS(pRgn);
@@ -399,15 +387,12 @@ miSendGraphicsExpose (client, pRgn, drawable, major, minor)
 
 
 void
-miSendExposures(pWin, pRgn, dx, dy)
-    WindowPtr pWin;
-    RegionPtr pRgn;
-    register int dx, dy;
+miSendExposures(WindowPtr pWin, RegionPtr pRgn, int dx, int dy)
 {
-    register BoxPtr pBox;
+    BoxPtr pBox;
     int numRects;
-    register xEvent *pEvent, *pe;
-    register int i;
+    xEvent *pEvent, *pe;
+    int i;
 
     pBox = REGION_RECTS(pRgn);
     numRects = REGION_NUM_RECTS(pRgn);
@@ -462,9 +447,7 @@ miSendExposures(pWin, pRgn, dx, dy)
 }
 
 void 
-miWindowExposures(pWin, prgn, other_exposed)
-    WindowPtr pWin;
-    register RegionPtr prgn, other_exposed;
+miWindowExposures(WindowPtr pWin, RegionPtr prgn, RegionPtr other_exposed)
 {
     RegionPtr   exposures = prgn;
     if (pWin->backStorage && prgn)
@@ -599,10 +582,7 @@ tossGC (
 
 
 void
-miPaintWindow(pWin, prgn, what)
-register WindowPtr pWin;
-RegionPtr prgn;
-int what;
+miPaintWindow(WindowPtr pWin, RegionPtr prgn, int what)
 {
     int	status;
 
@@ -628,10 +608,10 @@ int what;
     BoxRec box;
     WindowPtr	pBgWin;
     GCPtr pGC;
-    register int i;
-    register BoxPtr pbox;
-    register ScreenPtr pScreen = pWin->drawable.pScreen;
-    register xRectangle *prect;
+    int i;
+    BoxPtr pbox;
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+    xRectangle *prect;
     int numRects;
 
     gcmask = 0;
@@ -853,9 +833,7 @@ int what;
  * the GC.  Useful when we have a scratch drawable and need to initialize 
  * it. */
 void
-miClearDrawable(pDraw, pGC)
-    DrawablePtr	pDraw;
-    GCPtr	pGC;
+miClearDrawable(DrawablePtr pDraw, GCPtr pGC)
 {
     XID fg = pGC->fgPixel;
     XID bg = pGC->bgPixel;

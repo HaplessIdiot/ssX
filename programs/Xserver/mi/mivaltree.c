@@ -1,4 +1,3 @@
-/* $Xorg: mivaltree.c,v 1.4 2001/02/09 02:05:22 xorgcvs Exp $ */
 /*
  * mivaltree.c --
  *	Functions for recalculating window clip lists. Main function
@@ -73,7 +72,7 @@ in this Software without prior written authorization from The Open Group.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/mi/mivaltree.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mivaltree.c,v 1.10 2003/11/10 18:22:49 tsi Exp $ */
 
  /* 
   * Aug '86: Susan Angebranndt -- original code
@@ -99,17 +98,14 @@ in this Software without prior written authorization from The Open Group.
  * Compute the visibility of a shaped window
  */
 int
-miShapedWindowIn (pScreen, universe, bounding, rect, x, y)
-    ScreenPtr	pScreen;
-    RegionPtr	universe, bounding;
-    BoxPtr	rect;
-    register int x, y;
+miShapedWindowIn(ScreenPtr pScreen, RegionPtr universe, RegionPtr bounding,
+		 BoxPtr rect, int x, int y)
 {
     BoxRec  box;
-    register BoxPtr  boundBox;
+    BoxPtr  boundBox;
     int	    nbox;
     Bool    someIn, someOut;
-    register int t, x1, y1, x2, y2;
+    int     t, x1, y1, x2, y2;
 
     nbox = REGION_NUM_RECTS (bounding);
     boundBox = REGION_RECTS (bounding);
@@ -182,16 +178,16 @@ miShapedWindowIn (pScreen, universe, bounding, rect, x, y)
  */
 static void
 miComputeClips (
-    register WindowPtr	pParent,
-    register ScreenPtr	pScreen,
-    register RegionPtr	universe,
-    VTKind		kind,
-    RegionPtr		exposed ) /* for intermediate calculations */
+    WindowPtr	pParent,
+    ScreenPtr	pScreen,
+    RegionPtr	universe,
+    VTKind	kind,
+    RegionPtr	exposed ) /* for intermediate calculations */
 {
     int			dx,
 			dy;
     RegionRec		childUniverse;
-    register WindowPtr	pChild;
+    WindowPtr		pChild;
     int     	  	oldVis, newVis;
     BoxRec		borderSize;
     RegionRec		childUnion;
@@ -502,11 +498,10 @@ miComputeClips (
 }
 
 static void
-miTreeObscured(
-    register WindowPtr pParent )
+miTreeObscured(WindowPtr pParent)
 {
-    register WindowPtr pChild;
-    register int    oldVis;
+    WindowPtr pChild;
+    int    oldVis;
 
     pChild = pParent;
     while (1)
@@ -562,11 +557,11 @@ miTreeObscured(
  */
 /*ARGSUSED*/
 int
-miValidateTree (pParent, pChild, kind)
-    WindowPtr	  	pParent;    /* Parent to validate */
-    WindowPtr	  	pChild;     /* First child of pParent that was
+miValidateTree(
+    WindowPtr	  	pParent,    /* Parent to validate */
+    WindowPtr	  	pChild,     /* First child of pParent that was
 				     * affected */
-    VTKind    	  	kind;       /* What kind of configuration caused call */
+    VTKind    	  	kind)       /* What kind of configuration caused call */
 {
     RegionRec	  	totalClip;  /* Total clipping region available to
 				     * the marked children. pParent's clipList
@@ -577,8 +572,8 @@ miValidateTree (pParent, pChild, kind)
     RegionRec		childUnion; /* the space covered by borderSize for
 				     * all marked children */
     RegionRec		exposed;    /* For intermediate calculations */
-    register ScreenPtr	pScreen;
-    register WindowPtr	pWin;
+    ScreenPtr		pScreen;
+    WindowPtr		pWin;
     Bool		overlap;
     int			viewvals;
     Bool		forward;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.10 2003/10/29 22:15:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.11 2003/11/17 22:20:32 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,7 +47,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: afb.h,v 5.31 94/04/17 20:28:15 dpw Exp $ */
 /* Monochrome Frame Buffer definitions
    written by drewry, september 1986
 */
@@ -80,6 +79,10 @@ extern void afbDoBitblt(
 	unsigned long /*planemask*/
 );
 
+typedef void (*afbDoBitBltProcPtr)(DrawablePtr pSrc, DrawablePtr pDst,
+				   int alu, RegionPtr prgnDst,
+				   DDXPointPtr pptSrc, unsigned long planemask);
+
 extern RegionPtr afbBitBlt(
 	DrawablePtr /*pSrc*/,
 	DrawablePtr /*pDst*/,
@@ -90,14 +93,7 @@ extern RegionPtr afbBitBlt(
 	int /*height*/,
 	int /*dstx*/,
 	int /*dsty*/,
-	void (*doBitBlt)(
-		DrawablePtr /*pSrc*/,
-		DrawablePtr /*pDst*/,
-		int /*alu*/,
-		RegionPtr /*prgnDst*/,
-		DDXPointPtr /*pptSrc*/,
-		unsigned long /*planemask*/
-        ),
+	afbDoBitBltProcPtr /*doBitBlt*/,
 	unsigned long /*planemask*/
 );
 
@@ -639,12 +635,6 @@ extern void afbPushPixels(
 	int /*xOrg*/,
 	int /*yOrg*/
 );
-/* afbscrclse.c */
-
-extern Bool afbCloseScreen(
-	int /*index*/,
-	ScreenPtr /*pScreen*/
-);
 /* afbscrinit.c */
 
 extern Bool afbAllocatePrivates(
@@ -652,6 +642,13 @@ extern Bool afbAllocatePrivates(
 	int * /*pWinIndex*/,
 	int * /*pGCIndex*/
 );
+
+extern Bool afbCloseScreen(
+	int /*index*/,
+	ScreenPtr /*pScreen*/
+);
+
+extern Bool afbCreateScreenResources(ScreenPtr pScreen);
 
 extern Bool afbScreenInit(
 	ScreenPtr /*pScreen*/,

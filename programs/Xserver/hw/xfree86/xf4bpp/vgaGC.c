@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaGC.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaGC.c,v 1.4 2003/02/18 21:29:59 tsi Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -69,8 +69,6 @@ SOFTWARE.
 
 */
 
-/* $XConsortium: vgaGC.c /main/6 1996/02/21 17:58:54 kaleb $ */
-
 #include "xf4bpp.h"
 #include "mfbmap.h"
 #include "mfb.h"
@@ -78,9 +76,7 @@ SOFTWARE.
 #include "ppcGCstr.h"
 
 void
-xf4bppChangeGCtype( pGC, devPriv )
-register GC *pGC ;
-register ppcPrivGCPtr devPriv ;
+xf4bppChangeGCtype(GC *pGC, ppcPrivGCPtr devPriv)
 {
 	if ( devPriv->lastDrawableType == DRAWABLE_PIXMAP ) {
 	    pGC->ops->CopyArea	= miCopyArea ;
@@ -102,12 +98,10 @@ register ppcPrivGCPtr devPriv ;
 }
 
 Mask
-xf4bppChangeWindowGC( pGC, changes )
-register GC *pGC ;
-register Mask changes ;
+xf4bppChangeWindowGC(GC *pGC, Mask changes)
 {
-register ppcPrivGCPtr devPriv = (ppcPrivGCPtr) (pGC->devPrivates[mfbGCPrivateIndex].ptr) ;
-register unsigned long int idx ; /* used for stepping through bitfields */
+ppcPrivGCPtr devPriv = (ppcPrivGCPtr) (pGC->devPrivates[mfbGCPrivateIndex].ptr) ;
+unsigned long int idx ; /* used for stepping through bitfields */
 
 #define LOWBIT( x ) ( x & - x ) /* Two's complement */
     while ((idx = LOWBIT(changes))) {

@@ -1,5 +1,5 @@
+/* $XFree86: xc/programs/Xserver/mfb/mfbply1rct.c,v 1.8 2002/12/09 04:10:57 tsi Exp $ */
 /*
- * $Xorg: mfbply1rct.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $
  *
 Copyright 1990, 1998  The Open Group
 
@@ -26,7 +26,6 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/mfb/mfbply1rct.c,v 1.7tsi Exp $ */
 
 #include "X.h"
 
@@ -59,19 +58,14 @@ in this Software without prior written authorization from The Open Group.
 #endif
 
 void
-MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		shape;
-    int		mode;
-    int		count;
-    DDXPointPtr	ptsIn;
+MFBFILLPOLY1RECT(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode,
+		 int count, DDXPointPtr ptsIn)
 {
     int		    nlwidth;
     PixelType	    *addrl, *addr;
     int		    maxy;
     int		    origin;
-    register int    vertex1, vertex2;
+    int		    vertex1, vertex2;
     int		    c;
     BoxPtr	    extents;
     int		    clip;

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -45,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mfbpntarea.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
+
 #include "X.h"
 
 #include "windowstr.h"
@@ -81,21 +82,17 @@ and *p++ = 0.
 
 /*ARGSUSED*/
 void
-MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
-    DrawablePtr pDraw;
-    int nbox;
-    BoxPtr pbox;
-    int alu;
-    PixmapPtr nop;
+MFBSOLIDFILLAREA(DrawablePtr pDraw, int nbox, BoxPtr pbox, int alu,
+		 PixmapPtr nop)
 {
     int nlwidth;	/* width in longwords of the drawable */
     int w;		/* width of current box */
-    register int h;	/* height of current box */
-    register PixelType *p;	/* pointer to bits we're writing */
-    register int nlw;	/* loop version of nlwMiddle */
-    register PixelType startmask;
-    register PixelType endmask;/* masks for reggedy bits at either end of line */
-    register int nlwExtra;	
+    int h;	/* height of current box */
+    PixelType *p;	/* pointer to bits we're writing */
+    int nlw;	/* loop version of nlwMiddle */
+    PixelType startmask;
+    PixelType endmask;/* masks for reggedy bits at either end of line */
+    int nlwExtra;	
 		        /* to get from right of box to left of next span */
     int nlwMiddle;	/* number of longwords between sides of boxes */
     PixelType *pbits;	/* pointer to start of drawable */
@@ -185,28 +182,24 @@ XOR the destination with the stipple pattern.
 
 /*ARGSUSED*/
 void
-MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
-    DrawablePtr pDraw;
-    int nbox;
-    BoxPtr pbox;
-    int alu;
-    PixmapPtr pstipple;
+MFBSTIPPLEFILLAREA(DrawablePtr pDraw, int nbox, BoxPtr pbox, int alu,
+		   PixmapPtr pstipple)
 {
-    register PixelType *psrc;
+    PixelType *psrc;
 			/* pointer to bits in tile, if needed */
     int tileHeight;	/* height of the tile */
-    register PixelType srcpix;	
+    PixelType srcpix;	
 
     int nlwidth;	/* width in longwords of the drawable */
     int w;		/* width of current box */
-    register int nlw;	/* loop version of nlwMiddle */
-    register PixelType *p;	/* pointer to bits we're writing */
-    register int h;	/* height of current box */
+    int nlw;	/* loop version of nlwMiddle */
+    PixelType *p;	/* pointer to bits we're writing */
+    int h;	/* height of current box */
     PixelType startmask;
     PixelType endmask;	/* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
     int nlwExtra;	/* to get from right of box to left of next span */
-    register int iy;	/* index of current scanline in tile */
+    int iy;	/* index of current scanline in tile */
     PixelType *pbits;	/* pointer to start of drawable */
 
     mfbGetPixelWidthAndPointer(pDraw, nlwidth, pbits);

@@ -90,7 +90,7 @@ SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/Xi/stubs.c,v 3.5 2003/11/17 22:20:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/stubs.c,v 3.6 2004/06/02 22:42:56 dawes Exp $ */
 
 /*
  * stubs.c -- stub routines for the X server side of the XINPUT
@@ -361,10 +361,12 @@ ChangeDeviceControl (client, dev, control)
 
 #else
 
+#include "extinit.h"
+
 int DeviceValuator = 0;
 
 DeviceIntPtr
-LookupDeviceIntRec(int i)
+LookupDeviceIntRec(CARD8 i)
 {
     return NULL;
 }

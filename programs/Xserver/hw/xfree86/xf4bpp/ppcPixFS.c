@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPixFS.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPixFS.c,v 1.5 2003/11/03 05:11:57 tsi Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -44,7 +44,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: ppcPixFS.c /main/3 1996/02/21 17:57:57 kaleb $ */
 
 #include "xf4bpp.h"
 #include "mfbmap.h"
@@ -75,11 +74,7 @@ MaxRectsPerBand * nSpans.
 /* A mod definition that goes smoothly into the negative.
  */
 static int
-modulo
-(
-      int n1,
-      int n2
-)
+modulo(int n1, int n2)
 {
       int tmp;
       if ( n1 < 0 ) {
@@ -95,22 +90,17 @@ modulo
 }
 
 void
-xf4bppSolidPixmapFS( pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted )
-    DrawablePtr pDrawable ;
-    GCPtr	pGC ;
-    int		nInit ;			/* number of spans to fill */
-    DDXPointPtr pptInit ;		/* pointer to list of start points */
-    int		*pwidthInit ;		/* pointer to list of n widths */
-    int 	fSorted ;
+xf4bppSolidPixmapFS(DrawablePtr pDrawable, GCPtr pGC, int nInit,
+		    DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
-    register unsigned long int pm, npm ;
-    register unsigned long int fg ;
-    register int alu ;
+    unsigned long int pm, npm ;
+    unsigned long int fg ;
+    int alu ;
 				/* next three parameters are post-clip */
     int n ;			/* number of spans to fill */
-    register DDXPointPtr ppt ;	/* pointer to list of start points */
-    register int *pwidth ;	/* pointer to list of n widths */
-    register unsigned char *addrl ;	/* pointer to current longword in bitmap */
+    DDXPointPtr ppt ;	/* pointer to list of start points */
+    int *pwidth ;	/* pointer to list of n widths */
+    unsigned char *addrl ;	/* pointer to current longword in bitmap */
     int i ;
     int *pwidthFree ;		/* copies of the pointers to free */
     DDXPointPtr pptFree ;
@@ -165,17 +155,13 @@ xf4bppSolidPixmapFS( pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted )
 
 /* GJA -- copied from vgaStipple.c */
 static unsigned char
-vgagetbits
-(
-	register const int x,
-	register const unsigned int patternWidth,
-	register const unsigned char * const lineptr
-)
+vgagetbits(const int x, const unsigned int patternWidth,
+	   const unsigned char * const lineptr)
 {
-register unsigned char bits ;
-register const unsigned char *cptr ;
-register int shift ;
-register int wrap ;
+unsigned char bits ;
+const unsigned char *cptr ;
+int shift ;
+int wrap ;
 
 cptr = lineptr + ( x >> 3 ) ;
 bits = *cptr ;
@@ -219,23 +205,18 @@ return bits ;
 }
 
 void
-xf4bppStipplePixmapFS( pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted )
-register DrawablePtr pDrawable ;
-GC *pGC ;
-int nInit ;			/* number of spans to fill */
-DDXPointPtr pptInit ;		/* pointer to list of start points */
-int *pwidthInit ;		/* pointer to list of n widths */
-int fSorted ;
+xf4bppStipplePixmapFS(DrawablePtr pDrawable, GC *pGC, int nInit,
+		      DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
-    register unsigned char *pdst ; /* pointer to current word in bitmap */
-    register int *psrc ;		/* pointer to current word in tile */
-    register unsigned long int pm, npm ;
-    register unsigned long int fg ;
-    register int alu ;
+    unsigned char *pdst ; /* pointer to current word in bitmap */
+    int *psrc ;		/* pointer to current word in tile */
+    unsigned long int pm, npm ;
+    unsigned long int fg ;
+    int alu ;
 				/* next three parameters are post-clip */
     int n ;			/* number of spans to fill */
-    register DDXPointPtr ppt ;	/* pointer to list of start points */
-    register int *pwidth ;	/* pointer to list of n widths */
+    DDXPointPtr ppt ;	/* pointer to list of start points */
+    int *pwidth ;	/* pointer to list of n widths */
     PixmapPtr	pTile ;		/* pointer to tile we want to fill with */
     int		width,  x, xSrc, ySrc ;
     int 	tlwidth, tileWidth ;
@@ -321,23 +302,18 @@ int fSorted ;
 }
 
 void
-xf4bppOpStipplePixmapFS( pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted )
-DrawablePtr pDrawable ;
-GC *pGC ;
-int nInit ;			/* number of spans to fill */
-DDXPointPtr pptInit ;		/* pointer to list of start points */
-int *pwidthInit ;		/* pointer to list of n widths */
-int fSorted ;
+xf4bppOpStipplePixmapFS(DrawablePtr pDrawable, GC *pGC, int nInit,
+			DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
-    register unsigned char *pdst ;	/* pointer to current word in bitmap */
-    register unsigned long int pm, npm ;
-    register unsigned long int fg, bg ;
-    register int alu ;
+    unsigned char *pdst ;	/* pointer to current word in bitmap */
+    unsigned long int pm, npm ;
+    unsigned long int fg, bg ;
+    int alu ;
 				/* next three parameters are post-clip */
     int n ;			/* number of spans to fill */
-    register DDXPointPtr ppt ;	/* pointer to list of start points */
-    register int *pwidth ;	/* pointer to list of n widths */
-    register int *psrc ;	/* pointer to current word in tile */
+    DDXPointPtr ppt ;	/* pointer to list of start points */
+    int *pwidth ;	/* pointer to list of n widths */
+    int *psrc ;	/* pointer to current word in tile */
     PixmapPtr pTile ;		/* pointer to tile we want to fill with */
     int	width ;
     int xSrc, ySrc ;
@@ -422,19 +398,14 @@ int fSorted ;
 }
 
 void
-xf4bppTilePixmapFS( pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted )
-register DrawablePtr pDrawable ;
-GC *pGC ;
-int nInit ;			/* number of spans to fill */
-DDXPointPtr pptInit ;		/* pointer to list of start points */
-int *pwidthInit ;		/* pointer to list of n widths */
-int fSorted ;
+xf4bppTilePixmapFS(DrawablePtr pDrawable, GC *pGC, int nInit,
+		   DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
-    register DDXPointPtr ppt ;	/* pointer to list of start points */
-    register int *pwidth ;	/* pointer to list of n widths */
-    register unsigned char *pdst ;	/* pointer to current word in bitmap */
-    register unsigned char *psrc ;	/* pointer to current word in tile */
-    register PixmapPtr pTile ;	/* pointer to tile we want to fill with */
+    DDXPointPtr ppt ;	/* pointer to list of start points */
+    int *pwidth ;	/* pointer to list of n widths */
+    unsigned char *pdst ;	/* pointer to current word in bitmap */
+    unsigned char *psrc ;	/* pointer to current word in tile */
+    PixmapPtr pTile ;	/* pointer to tile we want to fill with */
     int i ;
     int alu ;
     unsigned char pm, npm ;

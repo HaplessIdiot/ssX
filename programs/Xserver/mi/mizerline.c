@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mizerline.c,v 3.6 2001/08/06 20:51:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mizerline.c,v 3.7 2001/12/14 20:00:29 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mizerline.c,v 1.4 2001/02/09 02:05:22 xorgcvs Exp $ */
+
 #include "X.h"
 
 #include "misc.h"
@@ -96,12 +96,8 @@ SOFTWARE.
 }
 
 void
-miZeroLine(pDraw, pGC, mode, npt, pptInit)
-    DrawablePtr pDraw;
-    GCPtr	pGC;
-    int		mode;		/* Origin or Previous */
-    int		npt;		/* number of points */
-    DDXPointPtr pptInit;
+miZeroLine(DrawablePtr pDraw, GCPtr pGC, int mode, int npt,
+	   DDXPointPtr pptInit)
 {
     int Nspans, current_y = 0;
     DDXPointPtr ppt; 
@@ -362,12 +358,8 @@ miZeroLine(pDraw, pGC, mode, npt, pptInit)
 }
 
 void
-miZeroDashLine(dst, pgc, mode, nptInit, pptInit)
-DrawablePtr dst;
-GCPtr pgc;
-int mode;
-int nptInit;		/* number of points in polyline */
-DDXPointRec *pptInit;	/* points in the polyline */
+miZeroDashLine(DrawablePtr dst, GCPtr pgc, int mode, int nptInit,
+	       DDXPointPtr pptInit)
 {
     /* XXX kludge until real zero-width dash code is written */
     pgc->lineWidth = 1;

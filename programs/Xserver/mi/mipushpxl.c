@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mipushpxl.c,v 3.12 2001/12/14 20:00:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipushpxl.c,v 3.13 2003/07/16 01:38:57 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mipushpxl.c,v 1.4 2001/02/09 02:05:21 xorgcvs Exp $ */
+
 #include "X.h"
 #include "gcstruct.h"
 #include "scrnintstr.h"
@@ -76,18 +76,15 @@ bitsizeof(int) padding and sacnline unit == bitsizeof(int).)
  * in the server, we need to rename one of them
  */
 void
-miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
-    GCPtr	pGC;
-    PixmapPtr	pBitMap;
-    DrawablePtr pDrawable;
-    int		dx, dy, xOrg, yOrg;
+miPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDrawable,
+	     int dx, int dy, int xOrg, int yOrg)
 {
     int		h, dxDivPPW, ibEnd;
     MiBits *pwLineStart;
-    register MiBits	*pw, *pwEnd;
-    register MiBits msk;
-    register int ib, w;
-    register int ipt;		/* index into above arrays */
+    MiBits	*pw, *pwEnd;
+    MiBits msk;
+    int ib, w;
+    int ipt;		/* index into above arrays */
     Bool 	fInBox;
     DDXPointRec	pt[NPT], ptThisLine;
     int		width[NPT];

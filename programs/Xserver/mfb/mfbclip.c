@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbclip.c,v 1.5 2001/12/14 20:00:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbclip.c,v 1.6 2003/07/16 01:38:55 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mfbclip.c,v 1.4 2001/02/09 02:05:18 xorgcvs Exp $ */
+
 #include "X.h"
 #include "regionstr.h"
 #include "pixmapstr.h"
@@ -89,19 +89,18 @@ if (((rx1) < (rx2)) && ((ry1) < (ry2)) &&			\
  * at the same X coordinates.
  */
 RegionPtr
-mfbPixmapToRegion(pPix)
-    PixmapPtr	pPix;
+mfbPixmapToRegion(PixmapPtr pPix)
 {
-    register RegionPtr	pReg;
-    register PixelType	*pw, w;
-    register int	ib;
+    RegionPtr	pReg;
+    PixelType	*pw, w;
+    int	ib;
     int			width, h, base, rx1 = 0, crects;
     PixelType		*pwLineEnd;
     int			irectPrevStart, irectLineStart;
-    register BoxPtr	prectO, prectN;
+    BoxPtr	prectO, prectN;
     BoxPtr		FirstRect, rects, prectLineStart;
     Bool		fInBox, fSame;
-    register PixelType	mask0 = mask[0];
+    PixelType	mask0 = mask[0];
     PixelType		*pwLine;
     int			nWidth;
 

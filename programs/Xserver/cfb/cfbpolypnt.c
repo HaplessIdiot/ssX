@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbpolypnt.c,v 3.5 2001/10/28 03:33:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbpolypnt.c,v 3.6 2001/12/14 19:59:24 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -24,8 +24,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
-
-/* $Xorg: cfbpolypnt.c,v 1.4 2001/02/09 02:04:38 xorgcvs Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -64,39 +62,35 @@ in this Software without prior written authorization from The Open Group.
 #endif
 
 void
-cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr pDrawable;
-    GCPtr pGC;
-    int mode;
-    int npt;
-    xPoint *pptInit;
+cfbPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+	     xPoint *pptInit)
 {
-    register INT32   pt;
-    register INT32   c1, c2;
-    register CARD32    ClipMask = 0x80008000;
-    register CfbBits   xor;
+    INT32   pt;
+    INT32   c1, c2;
+    CARD32    ClipMask = 0x80008000;
+    CfbBits   xor;
 #ifdef PIXEL_ADDR
-    register PixelType   *addrp;
-    register int    npwidth;
+    PixelType   *addrp;
+    int    npwidth;
 #if PSZ != 24
     PixelType	    *addrpt;
 #endif
 #else
-    register CfbBits    *addrl;
-    register int    nlwidth;
-    register int    xoffset;
+    CfbBits    *addrl;
+    int    nlwidth;
+    int    xoffset;
     CfbBits   *addrlt;
 #endif
 #if PSZ == 24
     RROP_DECLARE
-    register int xtmp;
-    register PixelType *p;
+    int xtmp;
+    PixelType *p;
 #endif
-    register INT32  *ppt;
+    INT32  *ppt;
     RegionPtr	    cclip;
     int		    nbox;
-    register int    i;
-    register BoxPtr pbox;
+    int    i;
+    BoxPtr pbox;
     CfbBits   and;
     int		    rop = pGC->alu;
     int		    off;
@@ -146,7 +140,7 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 #ifdef sun
 	else if (npwidth == 1152)
 	{
-	    register int    y;
+	    int    y;
 	    PointLoop(y = intToY(pt); *(addrp + (y << 10) + (y << 7) + intToX(pt)) = xor;)
 	}
 #endif

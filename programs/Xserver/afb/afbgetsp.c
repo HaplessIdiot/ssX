@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbgetsp.c,v 3.0 1996/08/18 01:45:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbgetsp.c,v 3.1 2001/10/28 03:32:58 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,7 +47,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: afbgetsp.c,v 5.10 94/04/17 20:28:24 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -69,28 +68,32 @@ SOFTWARE.
  * Each scanline returned will be server scanline padded, i.e., it will come
  * out to an integral number of words.
  */
+/*
+	DrawablePtr pDrawable;	drawable from which to get bits
+	int wMax;		largest value of all *pwidths
+	DDXPointPtr ppt;	points to start copying from
+	int *pwidth;		list of number of bits to copy
+	int nspans;		number of scanlines to copy
+	char *pchardstStart;	where to put the bits
+*/
+
 /*ARGSUSED*/
 void
-afbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
-	DrawablePtr		pDrawable;	/* drawable from which to get bits */
-	int			wMax;		/* largest value of all *pwidths */
-	register DDXPointPtr	ppt;		/* points to start copying from */
-	int			*pwidth;	/* list of number of bits to copy */
-	int			nspans;		/* number of scanlines to copy */
-	char			*pchardstStart;	/* where to put the bits */
+afbGetSpans(DrawablePtr pDrawable, int wMax, DDXPointPtr ppt, int *pwidth,
+	    int nspans, char *pchardstStart)
 {
 	PixelType		*pdstStart = (PixelType *)pchardstStart;
-	register PixelType	*pdst;		/* where to put the bits */
-	register PixelType	*psrc;		/* where to get the bits */
-	register PixelType	tmpSrc;		/* scratch buffer for bits */
+	PixelType		*pdst;		/* where to put the bits */
+	PixelType		*psrc;		/* where to get the bits */
+	PixelType		tmpSrc;		/* scratch buffer for bits */
 	PixelType		*psrcBase;	/* start of src bitmap */
 	int			widthSrc;	/* width of pixmap in bytes */
 	int			sizeSrc;
 	int			depthSrc;
-	register DDXPointPtr	pptLast;	/* one past last point to get */
+	DDXPointPtr		pptLast;	/* one past last point to get */
 	int		 	xEnd;		/* last pixel to copy from */
-	register int		nstart;
-	register int		d;
+	int			nstart;
+	int			d;
 	int		 	nend = 0;
 	int		 	srcStartOver;
 	PixelType 		startmask, endmask;

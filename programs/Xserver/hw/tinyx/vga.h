@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/vga.h,v 1.5 2004/04/14 11:23:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/vga.h,v 1.1 2004/06/02 22:43:01 dawes Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -150,7 +150,13 @@ VGA32
 VgaGetImm (VgaCard *card, VgaReg *reg);
 
 void
+_VgaSync (VgaCard *card, VGA16 id);
+
+void
 VgaSet (VgaCard *card, VgaReg *reg, VGA32 value);
+
+void
+VgaFlushReg (VgaCard *card, VgaReg *reg);
 
 VGA32
 VgaGet (VgaCard *card, VgaReg *reg);

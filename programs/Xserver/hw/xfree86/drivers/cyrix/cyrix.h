@@ -37,7 +37,7 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix.h,v 1.2 2000/04/19 16:57:43 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix.h,v 1.4 2002/11/06 11:38:59 alanh Exp $ */
 
 #ifndef _CYRIX_H_
 #define _CYRIX_H_
@@ -166,6 +166,10 @@ extern void	CYRIXRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 
 extern void CYRIXsetBlitBuffers(void);
 extern void CYRIXsetBlitBuffersOnOldChip(void);
+
+extern int	CYRIXSetRead(ScreenPtr pScreen, int bank);
+extern int	CYRIXSetReadWrite(ScreenPtr pScreen, int bank);
+extern int	CYRIXSetWrite(ScreenPtr pScreen, int bank);
 
 /* 32 bit access to GX registers */
 #define GX_REG(a) (*(volatile CARD32*)(pCyrix->GXregisters + (a)))

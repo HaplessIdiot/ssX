@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.21tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.22 2003/04/27 18:17:34 tsi Exp $ */
 
 #include "lisp/read.h"
 #include "lisp/stream.h"
@@ -62,7 +62,10 @@
 #define NOEXT_CREATE		2
 #define NOEXT_NOTHING		3
 
+#include <stdlib.h>
+#ifndef _GNU_SOURCE
 extern char **environ;
+#endif
 
 LispObj *Oopen, *Oclose, *Otruename;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbhrzvert.c,v 1.2 1998/07/25 16:59:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbhrzvert.c,v 1.3 1999/06/06 08:48:55 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -48,7 +48,6 @@ SOFTWARE.
 
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
-/* $XConsortium: mfbhrzvert.c /main/3 1996/02/21 17:56:41 kaleb $ */
 
 #include "xf4bpp.h"
 #include "OScompiler.h"
@@ -62,16 +61,11 @@ SOFTWARE.
 */
 
 void
-xf4bppHorzS(addrl, nlwidth, x1, y1, len)
-register PixelType *addrl;	/* pointer to base of bitmap */
-register int nlwidth;	/* width in longwords of bitmap */
-int x1;			/* initial point */ 
-int y1;
-int len;		/* length of line */
+xf4bppHorzS(PixelType *addrl, int nlwidth, int x1, int y1, int len)
 {
-    register PixelType startmask;
-    register PixelType endmask;
-    register int nlmiddle;
+    PixelType startmask;
+    PixelType endmask;
+    int nlmiddle;
 
 
     /* force the line to go left to right
@@ -112,13 +106,9 @@ int len;		/* length of line */
 */
 
 void
-xf4bppVertS(addrl, nlwidth, x1, y1, len)
-register PixelType *addrl;	/* pointer to base of bitmap */
-register int nlwidth;	/* width in longwords of bitmap */
-int x1, y1;		/* initial point */
-register int len;	/* length of line */
+xf4bppVertS(PixelType *addrl, int nlwidth, int x1, int y1, int len)
 {
-    register PixelType bitmask;
+    PixelType bitmask;
 
     addrl = mfbScanline(addrl, x1, y1, nlwidth);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbimage.c,v 1.5 2001/01/17 22:37:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbimage.c,v 1.6 2001/12/14 20:00:08 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mfbimage.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
 
 #include "X.h"
 
@@ -86,13 +85,8 @@ SOFTWARE.
 
 /*ARGSUSED*/
 void
-mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
-    DrawablePtr dst;
-    GCPtr	pGC;
-    int		depth, x, y, w, h;
-    int leftPad;
-    int format;
-    char 	*pImage;
+mfbPutImage(DrawablePtr dst, GCPtr pGC, int depth, int x, int y, int w, int h,
+	    int leftPad, int format, char *pImage)
 {
     PixmapPtr	pPixmap;
 
@@ -133,12 +127,8 @@ mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
  */
 /*ARGSUSED*/
 void
-mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
-    DrawablePtr pDrawable;
-    int		sx, sy, w, h;
-    unsigned int format;
-    unsigned long planeMask;
-    char	*pdstLine;
+mfbGetImage(DrawablePtr pDrawable, int sx, int sy, int w, int h,
+	    unsigned int format, unsigned long planeMask, char *pdstLine)
 {
     BoxRec box;
     DDXPointRec ptSrc;

@@ -1,5 +1,5 @@
+/* $XFree86: xc/programs/Xserver/mfb/mfbbres.c,v 1.5 2001/12/14 20:00:05 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
-/* $XFree86: xc/programs/Xserver/mfb/mfbbres.c,v 1.4 2001/01/17 22:37:02 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mfbbres.c,v 1.4 2001/02/09 02:05:18 xorgcvs Exp $ */
+
 #include "X.h"
 #include "misc.h"
 #include "mfb.h"
@@ -54,30 +54,18 @@ SOFTWARE.
 #include "miline.h"
 
 /* Solid bresenham line */
-/* NOTES
-   e2 is used less often than e1, so it's not in a register
-*/
 
 void
-mfbBresS(rop, addrlbase, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2, len)
-int rop;		/* a reduced rasterop */
-PixelType *addrlbase;	/* pointer to base of bitmap */
-int nlwidth;		/* width in longwords of bitmap */
-int signdx, signdy;	/* signs of directions */
-int axis;		/* major axis (Y_AXIS or X_AXIS) */
-int x1, y1;		/* initial point */
-register int e;		/* error accumulator */
-register int e1;	/* bresenham increments */
-int e2;
-int len;		/* length of line */
+mfbBresS(int rop, PixelType *addrlbase, int nlwidth, int signdx, int signdy,
+	 int axis, int x1, int y1, int e, int e1, int e2, int len)
 {
-    register int yinc;	/* increment to next scanline, in bytes */
-    register PixelType *addrl;	/* bitmask 32-bit pointer */
-    register PixelType bit;	/* current bit being set/cleared/etc.  */
+    int yinc;	/* increment to next scanline, in bytes */
+    PixelType *addrl;	/* bitmask 32-bit pointer */
+    PixelType bit;	/* current bit being set/cleared/etc.  */
     PixelType leftbit = mask[0]; /* leftmost bit to process in new word */
     PixelType rightbit = mask[PPW-1]; /* rightmost bit to process in new word */
 
-    register int e3 = e2-e1;
+    int e3 = e2-e1;
     PixelType	tmp;
 
     /* point to longword containing first point */

@@ -1,6 +1,5 @@
+/* $XFree86: xc/programs/Xserver/cfb/cfbcppl.c,v 1.7 2003/07/16 01:38:37 dawes Exp $ */
 /*
- * $TOG: cfb8cppl.c /main/16 1998/02/09 14:04:13 kaleb $
- *
 Copyright 1990, 1998  The Open Group
 
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -25,7 +24,6 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbcppl.c,v 1.6 2001/12/14 19:59:22 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -46,13 +44,9 @@ in this Software without prior written authorization from The Open Group.
 
 
 void
-cfbCopyImagePlane(
-    DrawablePtr pSrcDrawable,
-    DrawablePtr pDstDrawable,
-    int	rop,
-    RegionPtr prgnDst,
-    DDXPointPtr pptSrc,
-    unsigned long planemask)
+cfbCopyImagePlane(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
+		  int rop, RegionPtr prgnDst, DDXPointPtr pptSrc,
+		  unsigned long planemask)
 {
     /* note: there must be some sort of trick behind,
        passing a planemask value with all bits set
@@ -95,14 +89,9 @@ cfbCopyImagePlane(
 }
 
 void
-cfbCopyPlane8to1(
-    DrawablePtr pSrcDrawable,
-    DrawablePtr pDstDrawable,
-    int	rop,
-    RegionPtr prgnDst,
-    DDXPointPtr pptSrc,
-    unsigned long planemask,
-    unsigned long bitPlane)
+cfbCopyPlane8to1(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
+		 int rop, RegionPtr prgnDst, DDXPointPtr pptSrc,
+		 unsigned long planemask, unsigned long bitPlane)
 {
     int			    srcx, srcy, dstx, dsty, width, height;
     unsigned char	    *psrcBase;
@@ -110,12 +99,12 @@ cfbCopyPlane8to1(
     int			    widthSrc, widthDst;
     unsigned char	    *psrcLine;
     PixelType		    *pdstLine;
-    register unsigned char  *psrc;
-    register int	    i;
-    register int	    curBit;
-    register int	    bitPos;
-    register CfbBits  bits;
-    register PixelType	    *pdst;
+    unsigned char	    *psrc;
+    int			    i;
+    int			    curBit;
+    int			    bitPos;
+    CfbBits		    bits;
+    PixelType		    *pdst;
     PixelType		    startmask, endmask;
     int			    niStart = 0, niEnd = 0;
     int			    bitStart = 0, bitEnd = 0;
@@ -304,14 +293,9 @@ cfbCopyPlane24to1
 #if PSZ == 32
 cfbCopyPlane32to1
 #endif
-(
-    DrawablePtr pSrcDrawable,
-    DrawablePtr pDstDrawable,
-    int	rop,
-    RegionPtr prgnDst,
-    DDXPointPtr pptSrc,
-    unsigned long planemask,
-    unsigned long bitPlane)
+(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, int rop,
+ RegionPtr prgnDst, DDXPointPtr pptSrc, unsigned long planemask,
+ unsigned long bitPlane)
 {
     int			    srcx, srcy, dstx, dsty, width, height;
     CfbBits	    *psrcBase;
@@ -319,22 +303,22 @@ cfbCopyPlane32to1
     int			    widthSrc, widthDst;
 #if PSZ == 16
     unsigned short	    *psrcLine;
-    register unsigned short *psrc;
+    unsigned short	    *psrc;
 #endif
 #if PSZ == 24
     unsigned char	    *psrcLine;
-    register unsigned char  *psrc;
+    unsigned char	    *psrc;
 #endif
 #if PSZ == 32
     unsigned int	    *psrcLine;
-    register unsigned int   *psrc;
+    unsigned int	    *psrc;
 #endif
     unsigned int	    *pdstLine;
-    register unsigned int   *pdst;
-    register int	    i;
-    register int	    curBit;
-    register int	    bitPos;
-    register unsigned int   bits;
+    unsigned int	    *pdst;
+    int			    i;
+    int			    curBit;
+    int			    bitPos;
+    unsigned int	    bits;
     unsigned int	    startmask = 0, endmask = 0;
     int			    niStart = 0, niEnd = 0;
     int			    bitStart = 0, bitEnd = 0;

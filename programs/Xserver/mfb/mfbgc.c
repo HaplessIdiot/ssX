@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbgc.c,v 1.9 2003/07/16 01:38:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbgc.c,v 1.10 2003/07/16 03:35:16 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mfbgc.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
+
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -682,8 +682,7 @@ static struct commonOps mfbCommonOps[] = {
 #define numberCommonOps	(sizeof (mfbCommonOps) / sizeof (mfbCommonOps[0]))
 
 static GCOps *
-matchCommon (
-    GCPtr   pGC)
+matchCommon(GCPtr pGC)
 {
     int	i;
     struct commonOps	*cop;
@@ -719,8 +718,7 @@ matchCommon (
 
 
 Bool
-mfbCreateGC(pGC)
-    register GCPtr pGC;
+mfbCreateGC(GCPtr pGC)
 {
     mfbPrivGC 	*pPriv;
 
@@ -750,38 +748,22 @@ mfbCreateGC(pGC)
 
 /* some noop functions */
 static void
-mfbPolyGlyphBltNoop(
-    DrawablePtr pDrawable,
-    GCPtr pGC,
-    int x,
-    int y,
-    unsigned int nglyph,
-    CharInfoPtr * ppci,
-    pointer pglyphBase)
+mfbPolyGlyphBltNoop(DrawablePtr pDrawable, GCPtr pGC, int x, int y,
+		    unsigned int nglyph, CharInfoPtr *ppci, pointer pglyphBase)
 {
     /* this is a no-op function */
 }
 
 static void
-mfbNoopFS(
-    DrawablePtr pDrawable,
-    GCPtr pGC,
-    int nInit,
-    DDXPointPtr pptInit,
-    int * pwidthInit,
-    int fSorted)
+mfbNoopFS(DrawablePtr pDrawable, GCPtr pGC, int nInit, DDXPointPtr pptInit,
+	  int *pwidthInit, int fSorted)
 {
     /* this is a no-op function */
 }
 
 static void
-mfbFillPolyNoop(
-    DrawablePtr pDrawable,
-    GCPtr pGC,
-    int shape,
-    int mode,
-    int count,
-    DDXPointPtr ptsIn)
+mfbFillPolyNoop(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode,
+		int count, DDXPointPtr ptsIn)
 {
     /* this is a no-op function */
 }
@@ -799,12 +781,9 @@ mfbFillPolyNoop(
 
 /*ARGSUSED*/
 void
-mfbValidateGC(pGC, changes, pDrawable)
-    register GCPtr 	pGC;
-    unsigned long	changes;
-    DrawablePtr 	pDrawable;
+mfbValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 {
-    register mfbPrivGCPtr	devPriv;
+    mfbPrivGCPtr	devPriv;
     int mask;			/* stateChanges */
     int index;			/* used for stepping through bitfields */
     int	xrot, yrot;		/* rotations for tile and stipple pattern */
@@ -1455,9 +1434,7 @@ int InverseAlu[16] = {
 };
 
 int
-mfbReduceRop(alu, src)
-    register int alu;
-    register Pixel src;
+mfbReduceRop(int alu, Pixel src)
 {
     int rop = 0;
     if ((src & 1) == 0)	/* src is black */

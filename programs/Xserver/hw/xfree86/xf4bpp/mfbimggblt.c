@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbimggblt.c,v 1.8 2003/11/03 05:11:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbimggblt.c,v 1.9 2003/11/17 22:20:42 dawes Exp $ */
 
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
@@ -48,7 +48,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c /main/5 1996/02/21 17:56:44 kaleb $ */
 
 #include "xf4bpp.h"
 #include "OScompiler.h"
@@ -94,31 +93,16 @@ three times:
 	mfbImageGlyphBltWhite	|=
 	mfbImageGlyphBltBlack	&=~
 
-    the register allocations for startmask and endmask may not
-be the right thing.  are there two other deserving candidates?
-xoff, pdst, pglyph, and tmpSrc seem like the right things, though.
 */
 
 /* Forward declarations -- GJA */
-static void doImageGlyphBlt(
-    DrawablePtr,
-    GC *,
-    int,
-    int,
-    unsigned int,
-    CharInfoPtr *,
-    unsigned char *,
-    ExtentInfoRec *
-);
+static void doImageGlyphBlt(DrawablePtr pDrawable, GC *pGC, int x, int y,
+			    unsigned int nglyph, CharInfoPtr *ppci,
+			    unsigned char *pglyphBase, ExtentInfoRec *infop);
 
 void
-xf4bppImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
-    DrawablePtr pDrawable;
-    GC 		*pGC;
-    int 	x, y;
-    unsigned int nglyph;
-    CharInfoPtr *ppci;		/* array of character info */
-    pointer	pglyphBase;	/* start of array of glyphs */
+xf4bppImageGlyphBlt(DrawablePtr pDrawable, GC *pGC, int x, int y,
+		    unsigned int nglyph, CharInfoPtr *ppci, pointer pglyphBase)
 {
     ExtentInfoRec info;	/* used by QueryGlyphExtents() */
     xRectangle backrect;/* backing rectangle to paint.
@@ -180,14 +164,9 @@ xf4bppImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 }
 
 static void
-doImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase,infop)
-    DrawablePtr pDrawable;
-    GC 		*pGC;
-    int 	x, y;
-    unsigned int nglyph;
-    CharInfoPtr *ppci;		/* array of character info */
-    unsigned char *pglyphBase;	/* start of array of glyphs */
-    ExtentInfoRec* infop;	/* used by QueryGlyphExtents() */
+doImageGlyphBlt(DrawablePtr pDrawable, GC *pGC, int x, int y,
+		unsigned int nglyph, CharInfoPtr *ppci,
+		unsigned char *pglyphBase, ExtentInfoRec *infop)
 {
     BoxRec bbox;	/* string's bounding box */
 
@@ -201,23 +180,23 @@ doImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase,infop)
     int xchar;		/* xorigin of char (mod 32) */
 
 			/* these are used for placing the glyph */
-    register int xoff;	/* x offset of left edge of glyph (mod 32) */
-    register CARD32 *pdst;
+    int xoff;	/* x offset of left edge of glyph (mod 32) */
+    CARD32 *pdst;
 			/* pointer to current longword in dst */
 
     int w;		/* width of glyph in bits */
     int h;		/* height of glyph */
     int widthGlyph;	/* width of glyph, in bytes */
-    register unsigned char *pglyph;
+    unsigned char *pglyph;
 			/* pointer to current row of glyph */
 
 			/* used for putting down glyph */    
-    register unsigned int tmpSrc;
+    unsigned int tmpSrc;
 			/* for getting bits from glyph */
-    register int startmask;
-    register int endmask;
+    int startmask;
+    int endmask;
 
-    register int nFirst;/* bits of glyph in current longword */
+    int nFirst;/* bits of glyph in current longword */
 
     xorg = pDrawable->x;
     yorg = pDrawable->y;

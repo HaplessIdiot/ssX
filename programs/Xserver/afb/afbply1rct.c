@@ -1,6 +1,5 @@
-/* $XFree86: xc/programs/Xserver/afb/afbply1rct.c,v 3.1 1998/03/20 21:04:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbply1rct.c,v 3.2 2001/10/28 03:32:58 tsi Exp $ */
 /*
- * $XConsortium: afbply1rct.c,v 1.9 94/04/17 20:28:28 dpw Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -59,20 +58,15 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 
 void
-afbFillPolygonSolid (pDrawable, pGC, shape, mode, count, ptsIn)
-	DrawablePtr pDrawable;
-	GCPtr pGC;
-	int shape;
-	int mode;
-	int count;
-	DDXPointPtr ptsIn;
+afbFillPolygonSolid(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode,
+		    int count, DDXPointPtr ptsIn)
 {
 	afbPrivGCPtr	devPriv;
 	int nlwidth;
 	PixelType *addrl, *addr;
 	int maxy;
 	int origin;
-	register int vertex1, vertex2;
+	int vertex1, vertex2;
 	int c;
 	BoxPtr extents;
 	int clip;
@@ -89,12 +83,12 @@ afbFillPolygonSolid (pDrawable, pGC, shape, mode, count, ptsIn)
 	int l, r;
 	PixelType mask, bits = ~((PixelType)0);
 	int nmiddle;
-	register unsigned char *rrops;
-	register int n;
-	register int d;
+	unsigned char *rrops;
+	int n;
+	int d;
 	int sizeDst;
 	int depthDst;
-	register PixelType *pdst;
+	PixelType *pdst;
 
 	devPriv = (afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.46tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.47 2004/06/23 19:40:17 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -92,8 +92,6 @@ SOFTWARE.
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-/* $Xorg: WaitFor.c,v 1.4 2001/02/09 02:05:22 xorgcvs Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -477,7 +475,7 @@ OsTimerPtr
 TimerSet(OsTimerPtr timer, int flags, CARD32 millis, 
     OsTimerCallback func, pointer arg)
 {
-    register OsTimerPtr *prev;
+    OsTimerPtr *prev;
     CARD32 now = GetTimeInMillis();
 
     if (!timer)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/maskbits.h,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/maskbits.h,v 3.9 2003/02/18 21:30:00 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.1, 1/24/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -22,7 +22,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: maskbits.h,v 1.3 2000/08/17 19:53:34 cpqbld Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -377,18 +376,18 @@ extern PixelType mask[];
 
 #define slo_putbits(src, x, w, pdst) \
 { \
-    register int n = (x)+(w)-PPW; \
+    int n = (x)+(w)-PPW; \
     \
     if (n <= 0) \
     { \
-	register PixelType tmpmask; \
+	PixelType tmpmask; \
 	maskpartialbits((x), (w), tmpmask); \
 	*(pdst) = (*(pdst) & ~tmpmask) | \
 		(SCRRIGHT(src, x) & tmpmask); \
     } \
     else \
     { \
-	register int d = PPW-(x); \
+	int d = PPW-(x); \
 	*(pdst) = (*(pdst) & endtab[x]) | (SCRRIGHT((src), x)); \
 	(pdst)[1] = ((pdst)[1] & starttab[n]) | \
 		(SCRLEFT(src, d) & endtab[n]); \
@@ -424,15 +423,15 @@ extern PixelType mask[];
 
 #define u_putbitsrop(src, x, w, pdst, rop) \
 {\
-	register PixelType t1, t2; \
-	register int n = (x)+(w)-PPW; \
+	PixelType t1, t2; \
+	int n = (x)+(w)-PPW; \
 	\
 	t1 = SCRRIGHT((src), (x)); \
 	DoRop(t2, rop, t1, *(pdst)); \
 	\
     if (n <= 0) \
     { \
-	register PixelType tmpmask; \
+	PixelType tmpmask; \
 	\
 	maskpartialbits((x), (w), tmpmask); \
 	*(pdst) = (*(pdst) & ~tmpmask) | (t2 & tmpmask); \
@@ -455,7 +454,7 @@ extern PixelType mask[];
 #if (BITMAP_BIT_ORDER == MSBFirst)
 #define putbitsrop(src, x, w, pdst, rop) \
 { \
-  register PixelType _tmp, _tmp2; \
+  PixelType _tmp, _tmp2; \
   FASTGETBITS(pdst, x, w, _tmp); \
   _tmp2 = SCRRIGHT(src, PPW-(w)); \
   DoRop(_tmp, rop, _tmp2, _tmp) \
@@ -463,7 +462,7 @@ extern PixelType mask[];
 }
 #define putbitsrrop(src, x, w, pdst, rop) \
 { \
-  register PixelType _tmp, _tmp2; \
+  PixelType _tmp, _tmp2; \
  \
   FASTGETBITS(pdst, x, w, _tmp); \
   _tmp2 = SCRRIGHT(src, PPW-(w)); \
@@ -474,14 +473,14 @@ extern PixelType mask[];
 #else
 #define putbitsrop(src, x, w, pdst, rop) \
 { \
-  register PixelType _tmp; \
+  PixelType _tmp; \
   FASTGETBITS(pdst, x, w, _tmp); \
   DoRop(_tmp, rop, src, _tmp) \
   FASTPUTBITS(_tmp, x, w, pdst); \
 }
 #define putbitsrrop(src, x, w, pdst, rop) \
 { \
-  register PixelType _tmp; \
+  PixelType _tmp; \
  \
   FASTGETBITS(pdst, x, w, _tmp); \
   _tmp= DoRRop(rop, src, _tmp); \
@@ -498,15 +497,15 @@ extern PixelType mask[];
 #ifndef putbitsrrop
 #define putbitsrrop(src, x, w, pdst, rop) \
 {\
-	register PixelType t1, t2; \
-	register int n = (x)+(w)-PPW; \
+	PixelType t1, t2; \
+	int n = (x)+(w)-PPW; \
 	\
 	t1 = SCRRIGHT((src), (x)); \
 	t2 = DoRRop(rop, t1, *(pdst)); \
 	\
     if (n <= 0) \
     { \
-	register PixelType tmpmask; \
+	PixelType tmpmask; \
 	\
 	maskpartialbits((x), (w), tmpmask); \
 	*(pdst) = (*(pdst) & ~tmpmask) | (t2 & tmpmask); \
@@ -572,14 +571,14 @@ extern PixelType mask[];
 
 #define getandputbits(psrc, srcbit, dstbit, width, pdst) \
 { \
-    register PixelType _tmpbits; \
+    PixelType _tmpbits; \
     FASTGETBITS(psrc, srcbit, width, _tmpbits); \
     u_FASTPUT(_tmpbits, dstbit, width, pdst); \
 }
 
 #define getandputrop(psrc, srcbit, dstbit, width, pdst, rop) \
 { \
-  register PixelType _tmpsrc, _tmpdst; \
+  PixelType _tmpsrc, _tmpdst; \
   FASTGETBITS(pdst, dstbit, width, _tmpdst); \
   FASTGETBITS(psrc, srcbit, width, _tmpsrc); \
   DoRop(_tmpdst, rop, _tmpsrc, _tmpdst); \
@@ -588,7 +587,7 @@ extern PixelType mask[];
 
 #define getandputrrop(psrc, srcbit, dstbit, width, pdst, rop) \
 { \
-  register PixelType _tmpsrc, _tmpdst; \
+  PixelType _tmpsrc, _tmpdst; \
   FASTGETBITS(pdst, dstbit, width, _tmpdst); \
   FASTGETBITS(psrc, srcbit, width, _tmpsrc); \
   _tmpdst = DoRRop(rop, _tmpsrc, _tmpdst); \
@@ -616,21 +615,21 @@ extern PixelType mask[];
 
 #define getandputbits(psrc, srcbit, dstbit, width, pdst) \
 { \
-    register PixelType _tmpbits; \
+    PixelType _tmpbits; \
     getbits(psrc, srcbit, width, _tmpbits); \
     putbits(_tmpbits, dstbit, width, pdst); \
 }
 
 #define getandputrop(psrc, srcbit, dstbit, width, pdst, rop) \
 { \
-    register PixelType _tmpbits; \
+    PixelType _tmpbits; \
     getbits(psrc, srcbit, width, _tmpbits) \
     putbitsrop(_tmpbits, dstbit, width, pdst, rop) \
 }
 
 #define getandputrrop(psrc, srcbit, dstbit, width, pdst, rop) \
 { \
-    register PixelType _tmpbits; \
+    PixelType _tmpbits; \
     getbits(psrc, srcbit, width, _tmpbits) \
     putbitsrrop(_tmpbits, dstbit, width, pdst, rop) \
 }
@@ -638,8 +637,8 @@ extern PixelType mask[];
 
 #define getandputbits0(psrc, sbindex, width, pdst) \
 {			/* unroll the whole damn thing to see how it * behaves */ \
-    register int          _flag = PPW - (sbindex); \
-    register PixelType _src; \
+    int          _flag = PPW - (sbindex); \
+    PixelType _src; \
  \
     _src = SCRLEFT (*(psrc), (sbindex)); \
     if ((width) > _flag) \
@@ -651,8 +650,8 @@ extern PixelType mask[];
 
 #define getandputrop0(psrc, sbindex, width, pdst, rop) \
 {			\
-    register int          _flag = PPW - (sbindex); \
-    register PixelType _src; \
+    int          _flag = PPW - (sbindex); \
+    PixelType _src; \
  \
     _src = SCRLEFT (*(psrc), (sbindex)); \
     if ((width) > _flag) \
@@ -665,7 +664,7 @@ extern PixelType mask[];
 #define getandputrrop0(psrc, sbindex, width, pdst, rop) \
 { \
     int             _flag = PPW - (sbindex); \
-    register PixelType _src; \
+    PixelType _src; \
  \
     _src = SCRLEFT (*(psrc), (sbindex)); \
     if ((width) > _flag) \

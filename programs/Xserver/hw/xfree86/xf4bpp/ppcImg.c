@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcImg.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcImg.c,v 1.5 2003/02/18 21:29:59 tsi Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -21,8 +21,6 @@
  * SOFTWARE.
  *
 */
-
-/* $XConsortium: ppcImg.c /main/4 1996/02/21 17:57:53 kaleb $ */
 
 #include "xf4bpp.h"
 #include "OScompiler.h"
@@ -49,12 +47,8 @@
  * get the single plane specified in planemask
  */
 void
-xf4bppGetImage( pDraw, sx, sy, w, h, format, planeMask, pdstLine ) 
-    DrawablePtr pDraw ;
-    int	sx, sy, w, h ;
-    unsigned int format ;
-    unsigned long planeMask ;
-    char *	     pdstLine ;
+xf4bppGetImage(DrawablePtr pDraw, int sx, int sy, int w, int h,
+	       unsigned int format, unsigned long planeMask, char *pdstLine) 
 {
 #if 1
     int	    depth, i, linelength, width ;

@@ -1,4 +1,4 @@
-/* $Xorg: cfbsetsp.c,v 1.4 2001/02/09 02:04:38 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbsetsp.c,v 3.6 2003/10/29 22:44:53 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbsetsp.c,v 3.5tsi Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -68,32 +67,33 @@ SOFTWARE.
  * boxes, we may not want to start grabbing bits at psrc but at some offset
  * further on.) 
  */
+/*
+    int			xOrigin;	where this scanline starts
+    int			xStart;		first bit to use from scanline
+    int			xEnd;		last bit to use from scanline + 1
+    int			alu;		raster op
+    int			*pdstBase;	start of the drawable
+    int			widthDst;	width of drawable in words
+*/
+
 void
-cfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst, planemask)
-    int			y;
-    int			xOrigin;	/* where this scanline starts */
-    int			xStart;		/* first bit to use from scanline */
-    int			xEnd;		/* last bit to use from scanline + 1 */
-    register unsigned int *psrc;
-    register int	alu;		/* raster op */
-    int			*pdstBase;	/* start of the drawable */
-    int			widthDst;	/* width of drawable in words */
-    unsigned long	planemask;
+cfbSetScanline(int y, int xOrigin, int xStart, int xEnd, unsigned int *psrc,
+	       int alu, int *pdstBase, int widthDst, unsigned long planemask)
 {
     int			w;		/* width of scanline in bits */
-    register int	*pdst;		/* where to put the bits */
-    register int	tmpSrc;		/* scratch buffer to collect bits in */
+    int	*pdst;		/* where to put the bits */
+    int	tmpSrc;		/* scratch buffer to collect bits in */
     int			offSrc;
     int			nl;
 #if PSZ == 24
-    register char *psrcb, *pdstb;
-    register int	xIndex;
+    char *psrcb, *pdstb;
+    int	xIndex;
 #else
     int			dstBit;		/* offset in bits from beginning of
 					 * word */
-    register int	nstart; 	/* number of bits from first partial */
+    int	nstart; 	/* number of bits from first partial */
 #if PSZ != 32 || PPW != 1
-    register int	nend; 		/* " " last partial word */
+    int	nend; 		/* " " last partial word */
 #endif
     int			startmask, endmask, nlMiddle;
 #endif
@@ -184,20 +184,14 @@ cfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst, planemas
  * on a word boundary.
  */ 
 void
-cfbSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
-    DrawablePtr		pDrawable;
-    GCPtr		pGC;
-    char		*pcharsrc;
-    register DDXPointPtr ppt;
-    int			*pwidth;
-    int			nspans;
-    int			fSorted;
+cfbSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *pcharsrc, DDXPointPtr ppt,
+	    int *pwidth, int nspans, int fSorted)
 {
     unsigned int	*psrc = (unsigned int *)pcharsrc;
     CfbBits	*pdstBase;	/* start of dst bitmap */
     int 		widthDst;	/* width of bitmap in words */
-    register BoxPtr 	pbox, pboxLast, pboxTest;
-    register DDXPointPtr pptLast;
+    BoxPtr 	pbox, pboxLast, pboxTest;
+    DDXPointPtr pptLast;
     int 		alu;
     RegionPtr 		prgnDst;
     int			xStart, xEnd;

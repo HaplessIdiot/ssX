@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcClip.c,v 1.4 1999/06/06 08:48:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcClip.c,v 1.5 1999/09/25 14:38:16 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -68,7 +68,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XConsortium: ppcClip.c /main/4 1996/02/21 17:57:21 kaleb $ */
 
 #include "xf4bpp.h"
 #include "mfbmap.h"
@@ -76,8 +75,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 
 void
-xf4bppDestroyClip(pGC)
-    GCPtr	pGC;
+xf4bppDestroyClip(GCPtr pGC)
 {
     if(pGC->clientClipType == CT_NONE)
 	return;
@@ -97,11 +95,7 @@ xf4bppDestroyClip(pGC)
 }
 
 void
-xf4bppChangeClip(pGC, type, pvalue, nrects)
-    GCPtr	    pGC;
-    int		    type;
-    pointer	    pvalue;
-    int		    nrects;
+xf4bppChangeClip(GCPtr pGC, int type, pointer pvalue, int nrects)
 {
     xf4bppDestroyClip(pGC);
     if(type == CT_PIXMAP)
@@ -131,8 +125,7 @@ xf4bppChangeClip(pGC, type, pvalue, nrects)
 }
 
 void
-xf4bppCopyClip (pgcDst, pgcSrc)
-    GCPtr pgcDst, pgcSrc;
+xf4bppCopyClip(GCPtr pgcDst, GCPtr pgcSrc)
 {
     RegionPtr prgnNew;
 

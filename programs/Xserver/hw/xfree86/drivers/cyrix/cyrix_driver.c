@@ -50,7 +50,7 @@
  *		(note that most of the data books have been released by
  *		 NatSemi and are downloadable for free as pdf files)
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.31tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.32 2004/11/26 11:48:47 tsi Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -108,11 +108,6 @@ static void	CYRIXRestore(ScrnInfoPtr pScrn);
 static Bool	CYRIXModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void	CYRIXRestorePalette(ScrnInfoPtr pScrn);
 static void	CYRIXSavePalette(ScrnInfoPtr pScrn);
-
-/* Misc additional routines */
-void     CYRIXSetRead(int bank);
-void     CYRIXSetWrite(int bank);
-void     CYRIXSetReadWrite(int bank);
 
 #define VERSION 4000
 #define CYRIX_NAME "CYRIX"

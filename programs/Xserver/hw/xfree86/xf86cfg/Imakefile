@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.28tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.29 2004/11/26 11:27:20 tsi Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
 
@@ -149,6 +149,8 @@ SpecialCObjectRule(libc_wrapper,NullParameter,$(WRAPPERDEFINES) $(EXT_DEFINES))
 #if !HasStrlcat
 LinkSourceFile(strlcat.c,$(LIBSRC)/misc)
 LinkSourceFile(strlcpy.c,$(LIBSRC)/misc)
+SpecialCObjectRule(strlcat,NullParameter,-I$(LIBSRC)/misc)
+SpecialCObjectRule(strlcpy,NullParameter,-I$(LIBSRC)/misc)
 #endif
 
 #if !HasSnprintf

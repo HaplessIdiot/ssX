@@ -1,5 +1,5 @@
+/* $XFree86: xc/programs/Xserver/cfb/cfbigblt8.c,v 1.6 2001/12/14 19:59:23 dawes Exp $ */
 /*
- * $Xorg: cfbigblt8.c,v 1.4 2001/02/09 02:04:38 xorgcvs Exp $
  *
 Copyright 1990, 1998  The Open Group
 
@@ -26,7 +26,6 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbigblt8.c,v 1.5 2001/10/28 03:33:01 tsi Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -44,13 +43,8 @@ in this Software without prior written authorization from The Open Group.
 #include	"cfb8bit.h"
 
 void
-cfbImageGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
-    DrawablePtr	    pDrawable;
-    GCPtr	    pGC;
-    int		    x, y;
-    unsigned int    nglyph;
-    CharInfoPtr	    *ppci;
-    pointer	    pglyphBase;
+cfbImageGlyphBlt8(DrawablePtr pDrawable, GCPtr pGC, int x, int y,
+		  unsigned int nglyph, CharInfoPtr *ppci, pointer pglyphBase)
 {
     ExtentInfoRec info;		/* used by QueryGlyphExtents() */
     xRectangle backrect;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcSetSp.c,v 1.2 1998/07/25 16:59:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcSetSp.c,v 1.3 1999/06/06 08:49:02 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -69,7 +69,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: ppcSetSp.c /main/5 1996/02/21 17:58:32 kaleb $ */
 
 #include "xf4bpp.h"
 #include "OScompiler.h"
@@ -84,17 +83,11 @@ SOFTWARE.
  * further on.) 
  */
 static void
-ppcSetScanline
-(
-    register int	   pixCount,	/* width of scanline in bits */
-    register char          *psrc,
-    register unsigned char *pdst,	/* where to put the bits */
-    register int	   pm,		/* plane mask */
-    const int		   alu		/* raster op */
-)
+ppcSetScanline(int pixCount, char *psrc, unsigned char *pdst, int pm,
+	       const int alu)
 {
-register int npm = ~pm ;	/* inverted plane mask */
-register char tmpx ;
+int npm = ~pm ;	/* inverted plane mask */
+char tmpx ;
 
 pm &= 0x0F; npm &= 0x0F; /* GJA */
 
@@ -184,21 +177,15 @@ return ;
  * on a word boundary.
  */ 
 void
-xf4bppSetSpans( pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted )
-    register DrawablePtr	pDrawable ;
-    GCPtr			pGC ;
-    char			*psrc ;
-    register DDXPointPtr	ppt ;
-    int				*pwidth ;
-    int				nspans ;
-    int				fSorted ;
+xf4bppSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
+	       DDXPointPtr ppt, int *pwidth, int nspans, int fSorted)
 {
     unsigned char	*pdstBase = NULL;	/* start of dst bitmap */
     int 		widthDst = 0;		/* width of bitmap in words */
-    register BoxPtr 	pbox, pboxLast, pboxTest ;
-    register DDXPointPtr pptLast ;
+    BoxPtr 	pbox, pboxLast, pboxTest ;
+    DDXPointPtr pptLast ;
     RegionPtr 		prgnDst ;
-    register int	width ;
+    int	width ;
     int			xStart, xEnd ;
     int			yMax ;
     int			alu ;

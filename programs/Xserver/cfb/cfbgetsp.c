@@ -1,4 +1,4 @@
-/* $Xorg: cfbgetsp.c,v 1.4 2001/02/09 02:04:38 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbgetsp.c,v 3.10 2003/10/29 22:44:53 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbgetsp.c,v 3.9tsi Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -66,31 +65,35 @@ SOFTWARE.
  * Each scanline returned will be server scanline padded, i.e., it will come
  * out to an integral number of words.
  */
+/*
+    DrawablePtr		pDrawable;	drawable from which to get bits
+    int			wMax;		largest value of all *pwidths
+    DDXPointPtr		ppt;		points to start copying from
+    int			*pwidth;	list of number of bits to copy
+    int			nspans;		number of scanlines to copy
+    char		*pchardstStart; where to put the bits
+*/
+
 void
-cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
-    DrawablePtr		pDrawable;	/* drawable from which to get bits */
-    int			wMax;		/* largest value of all *pwidths */
-    register DDXPointPtr ppt;		/* points to start copying from */
-    int			*pwidth;	/* list of number of bits to copy */
-    int			nspans;		/* number of scanlines to copy */
-    char		*pchardstStart; /* where to put the bits */
+cfbGetSpans(DrawablePtr pDrawable, int wMax, DDXPointPtr ppt,
+	    int *pwidth, int nspans, char *pchardstStart)
 {
-    PixelGroup	*pdstStart = (PixelGroup *)pchardstStart;
-    register PixelGroup	*pdst;		/* where to put the bits */
-    register PixelGroup	*psrc;		/* where to get the bits */
-    register PixelGroup	tmpSrc;		/* scratch buffer for bits */
+    PixelGroup		*pdstStart = (PixelGroup *)pchardstStart;
+    PixelGroup		*pdst;		/* where to put the bits */
+    PixelGroup		*psrc;		/* where to get the bits */
+    PixelGroup		tmpSrc;		/* scratch buffer for bits */
     PixelGroup		*psrcBase;	/* start of src bitmap */
     int			widthSrc;	/* width of pixmap in bytes */
-    register DDXPointPtr pptLast;	/* one past last point to get */
+    DDXPointPtr		pptLast;	/* one past last point to get */
     int         	xEnd;		/* last pixel to copy from */
     int			nl, srcBit;
     int			w;
     PixelGroup		*pdstNext;
 #if PSZ == 24
-    register char *psrcb, *pdstb;
-    register int xIndex = 0;
+    char		*psrcb, *pdstb;
+    int			xIndex = 0;
 #else
-    register int	nstart; 
+    int	nstart; 
 #if PSZ != 32 || PPW != 1
     int	 		nend; 
 #endif

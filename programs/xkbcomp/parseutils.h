@@ -1,4 +1,3 @@
-/* $Xorg: parseutils.h,v 1.3 2000/08/17 19:54:33 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/xkbcomp/parseutils.h,v 1.5 2002/07/01 02:26:01 tsi Exp $ */
 
 #ifndef XKBPARSE_H
 #define	XKBPARSE_H 1
@@ -236,7 +235,9 @@ extern int yywrap(
 );
 
 extern int yylex(void);
+#ifndef YYBISON
 extern int yyparse(void);
+#endif
 
 extern int setScanState(
     char *	/* file */,

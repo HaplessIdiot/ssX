@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbpushpxl.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbpushpxl.c,v 1.7 2003/02/18 21:30:01 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mfbpushpxl.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -94,18 +93,15 @@ For src=1: newRop = 0x4|(rop&3)
  * has a zero bit or outside the area covered by the stencil.
  */
 void
-mfbSolidPP(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
-    GCPtr	pGC;
-    PixmapPtr	pBitMap;
-    DrawablePtr pDrawable;
-    int		dx, dy, xOrg, yOrg;
+mfbSolidPP(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDrawable, int dx, int dy,
+	   int xOrg, int yOrg)
 {
     unsigned char alu;
     RegionRec rgnDst;
     DDXPointPtr pptSrc;
     BoxRec srcBox;
-    register DDXPointPtr ppt;
-    register BoxPtr pbox;
+    DDXPointPtr ppt;
+    BoxPtr pbox;
     int i;
 
     if (!(pGC->planemask & 1)) return;
@@ -155,19 +151,16 @@ mfbSolidPP(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
  * has a zero bit or outside the area covered by the stencil.
  */
 void
-mfbPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
-    GCPtr	pGC;
-    PixmapPtr	pBitMap;
-    DrawablePtr pDrawable;
-    int		dx, dy, xOrg, yOrg;
+mfbPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDrawable,
+	      int dx, int dy, int xOrg, int yOrg)
 {
     int		h, dxDivPPW, ibEnd;
     PixelType *pwLineStart;
-    register PixelType	*pw, *pwEnd;
-    register PixelType mask;
-    register int ib;
-    register PixelType w;
-    register int ipt;		/* index into above arrays */
+    PixelType	*pw, *pwEnd;
+    PixelType mask;
+    int ib;
+    PixelType w;
+    int ipt;		/* index into above arrays */
     Bool 	fInBox;
     DDXPointRec	pt[NPT];
     int		width[NPT];

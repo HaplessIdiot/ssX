@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -44,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mfbpixmap.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -65,11 +65,7 @@ SOFTWARE.
 #ifndef LOWMEMFTPT
 
 PixmapPtr
-mfbCreatePixmap (pScreen, width, height, depth)
-    ScreenPtr	pScreen;
-    int		width;
-    int		height;
-    int		depth;
+mfbCreatePixmap(ScreenPtr pScreen, int width, int height, int depth)
 {
     PixmapPtr pPixmap;
     int datasize;
@@ -107,8 +103,7 @@ mfbCreatePixmap (pScreen, width, height, depth)
 #endif /* ifndef LOWMEMFTPT */
 
 Bool
-mfbDestroyPixmap(pPixmap)
-    PixmapPtr pPixmap;
+mfbDestroyPixmap(PixmapPtr pPixmap)
 {
     if(--pPixmap->refcnt)
 	return TRUE;
@@ -118,10 +113,9 @@ mfbDestroyPixmap(pPixmap)
 
 
 PixmapPtr
-mfbCopyPixmap(pSrc)
-    register PixmapPtr	pSrc;
+mfbCopyPixmap(PixmapPtr pSrc)
 {
-    register PixmapPtr	pDst;
+    PixmapPtr	pDst;
     int		size;
     ScreenPtr pScreen;
 
@@ -148,15 +142,14 @@ mfbCopyPixmap(pSrc)
       left shift and or in original as many times as needed
 */
 void
-mfbPadPixmap(pPixmap)
-    PixmapPtr pPixmap;
+mfbPadPixmap(PixmapPtr pPixmap)
 {
-    register int width = pPixmap->drawable.width;
-    register int h;
-    register PixelType mask;
-    register PixelType *p;
-    register PixelType bits;	/* real pattern bits */
-    register int i;
+    int width = pPixmap->drawable.width;
+    int h;
+    PixelType mask;
+    PixelType *p;
+    PixelType bits;	/* real pattern bits */
+    int i;
     int rep;			/* repeat count for pattern */
 
     if (width >= PPW)
@@ -188,12 +181,10 @@ mfbPadPixmap(pPixmap)
  * left.
  */
 void
-mfbXRotatePixmap(pPix, rw)
-    PixmapPtr	pPix;
-    register int rw;
+mfbXRotatePixmap(PixmapPtr pPix, int rw)
 {
-    register PixelType	*pw, *pwFinal;
-    register PixelType	t;
+    PixelType	*pw, *pwFinal;
+    PixelType	t;
 
     if (pPix == NullPixmap)
         return;
@@ -228,9 +219,7 @@ mfbXRotatePixmap(pPix, rw)
    works on any width.
  */
 void
-mfbYRotatePixmap(pPix, rh)
-    register PixmapPtr	pPix;
-    int	rh;
+mfbYRotatePixmap(PixmapPtr pPix, int rh)
 {
     int nbyDown;	/* bytes to move down to row 0; also offset of
 			   row rh */
@@ -261,11 +250,9 @@ mfbYRotatePixmap(pPix, rh)
 }
 
 void
-mfbCopyRotatePixmap(psrcPix, ppdstPix, xrot, yrot)
-    register PixmapPtr psrcPix, *ppdstPix;
-    int	xrot, yrot;
+mfbCopyRotatePixmap(PixmapPtr psrcPix, PixmapPtr *ppdstPix, int xrot, int yrot)
 {
-    register PixmapPtr pdstPix;
+    PixmapPtr pdstPix;
 
     if ((pdstPix = *ppdstPix) &&
 	(pdstPix->devKind == psrcPix->devKind) &&

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -44,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mfbmisc.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
+
 #include "X.h"
 #include "misc.h"
 #include "cursor.h"
@@ -54,11 +55,8 @@ SOFTWARE.
 
 /*ARGSUSED*/
 void
-mfbQueryBestSize(class, pwidth, pheight, pScreen)
-int class;
-unsigned short *pwidth;
-unsigned short *pheight;
-ScreenPtr pScreen;
+mfbQueryBestSize(int class, unsigned short *pwidth, unsigned short *pheight,
+		 ScreenPtr pScreen)
 {
     unsigned width, test;
 

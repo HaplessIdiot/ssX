@@ -1,7 +1,7 @@
 /*
  * mfb copy area
  */
-/* $XFree86: xc/programs/Xserver/mfb/mfbblt.c,v 3.3 2001/10/28 03:34:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbblt.c,v 3.4 2001/12/14 20:00:04 dawes Exp $ */
 
 /*
 
@@ -30,7 +30,6 @@ in this Software without prior written authorization from The Open Group.
 Author: Keith Packard
 
 */
-/* $Xorg: mfbblt.c,v 1.4 2001/02/09 02:05:18 xorgcvs Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -46,11 +45,8 @@ Author: Keith Packard
 #include	"mergerop.h"
 
 void
-MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
-    DrawablePtr	    pSrc, pDst;
-    int		    alu;
-    RegionPtr	    prgnDst;
-    DDXPointPtr	    pptSrc;
+MROP_NAME(mfbDoBitblt)(DrawablePtr pSrc, DrawablePtr pDst, int alu,
+		       RegionPtr prgnDst, DDXPointPtr pptSrc)
 {
     PixelType *psrcBase, *pdstBase;	
 				/* start of src and dst bitmaps */
@@ -70,8 +66,8 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
 
     PixelType *psrcLine, *pdstLine;	
 				/* pointers to line with current src and dst */
-    register PixelType *psrc;/* pointer to current src longword */
-    register PixelType *pdst;/* pointer to current dst longword */
+    PixelType *psrc;/* pointer to current src longword */
+    PixelType *pdst;/* pointer to current dst longword */
 
     MROP_DECLARE_REG()
 
@@ -79,10 +75,10 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
     PixelType startmask, endmask;	/* masks for writing ends of dst */
     int nlMiddle;		/* whole longwords in dst */
     int xoffSrc, xoffDst;
-    register int leftShift, rightShift;
-    register PixelType bits;
-    register PixelType bits1;
-    register int nl;		/* temp copy of nlMiddle */
+    int leftShift, rightShift;
+    PixelType bits;
+    PixelType bits1;
+    int nl;		/* temp copy of nlMiddle */
     int careful;
 
     MROP_INITIALIZE(alu,0);

@@ -1,4 +1,3 @@
-/* $Xorg: mibstore.c,v 1.4 2001/02/09 02:05:20 xorgcvs Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -42,7 +41,7 @@ implied warranty.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/Xserver/mi/mibstore.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibstore.c,v 1.11 2003/11/10 18:22:47 tsi Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -150,11 +149,11 @@ static void	    miBSClearBackingRegion(WindowPtr pWin, RegionPtr pRgn);
 
 #define copyData(src,dst,n,morecopy) \
 { \
-    register short *srcCopy = (short *)(src); \
-    register short *dstCopy = (short *)(dst); \
-    register int i; \
-    register int bsx = pBackingStore->x; \
-    register int bsy = pBackingStore->y; \
+    short *srcCopy = (short *)(src); \
+    short *dstCopy = (short *)(dst); \
+    int i; \
+    int bsx = pBackingStore->x; \
+    int bsy = pBackingStore->y; \
     for (i = n; --i >= 0; ) \
     { \
 	*dstCopy++ = *srcCopy++ - bsx; \
@@ -354,8 +353,7 @@ static GCFuncs miBSCheapGCFuncs = {
  */
 
 void
-miInitializeBackingStore (pScreen)
-    ScreenPtr	pScreen;
+miInitializeBackingStore(ScreenPtr pScreen)
 {
     miBSScreenPtr    pScreenPriv;
 
@@ -415,9 +413,7 @@ miInitializeBackingStore (pScreen)
  */
 
 static Bool
-miBSCloseScreen (i, pScreen)
-    int		i;
-    ScreenPtr	pScreen;
+miBSCloseScreen(int i, ScreenPtr pScreen)
 {
     miBSScreenPtr   pScreenPriv;
 
@@ -439,12 +435,8 @@ static void miBSFillVirtualBits(DrawablePtr pDrawable, GCPtr pGC,
 				PixUnion pixunion, unsigned long planemask);
 
 static void
-miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
-    DrawablePtr	    pDrawable;
-    int		    sx, sy, w, h;
-    unsigned int    format;
-    unsigned long   planemask;
-    char	    *pdstLine;
+miBSGetImage(DrawablePtr pDrawable, int sx, int sy, int w, int h,
+	     unsigned int format, unsigned long planemask, char *pdstLine)
 {
     ScreenPtr		    pScreen = pDrawable->pScreen;
     BoxRec		    bounds;
@@ -618,13 +610,8 @@ punt:	;
 }
 
 static void
-miBSGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
-    DrawablePtr	pDrawable;
-    int		wMax;
-    DDXPointPtr	ppt;
-    int		*pwidth;
-    int		nspans;
-    char	*pdstStart;
+miBSGetSpans(DrawablePtr pDrawable, int wMax, DDXPointPtr ppt, int *pwidth,
+	     int nspans, char *pdstStart)
 {
     ScreenPtr		    pScreen = pDrawable->pScreen;
     BoxRec		    bounds;
@@ -719,9 +706,7 @@ miBSGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 }
 
 static Bool
-miBSChangeWindowAttributes (pWin, mask)
-    WindowPtr	    pWin;
-    unsigned long   mask;
+miBSChangeWindowAttributes(WindowPtr pWin, unsigned long mask)
 {
     ScreenPtr	pScreen;
     Bool	ret;
@@ -751,8 +736,7 @@ miBSChangeWindowAttributes (pWin, mask)
  */
 
 static Bool
-miBSCreateGC (pGC)
-    GCPtr   pGC;
+miBSCreateGC(GCPtr pGC)
 {
     ScreenPtr	pScreen = pGC->pScreen;
     Bool	ret;
@@ -771,8 +755,7 @@ miBSCreateGC (pGC)
 }
 
 static Bool
-miBSDestroyWindow (pWin)
-    WindowPtr	pWin;
+miBSDestroyWindow(WindowPtr pWin)
 {
     ScreenPtr	pScreen = pWin->drawable.pScreen;
     Bool	ret;
@@ -794,10 +777,8 @@ miBSDestroyWindow (pWin)
  */
 
 static void
-miBSCheapValidateGC (pGC, stateChanges, pDrawable)
-    GCPtr	    pGC;
-    unsigned long   stateChanges;
-    DrawablePtr	    pDrawable;
+miBSCheapValidateGC(GCPtr pGC, unsigned long stateChanges,
+		    DrawablePtr pDrawable)
 {
     CHEAP_FUNC_PROLOGUE (pGC);
     
@@ -819,9 +800,7 @@ miBSCheapValidateGC (pGC, stateChanges, pDrawable)
 }
 
 static void
-miBSCheapChangeGC (pGC, mask)
-    GCPtr   pGC;
-    unsigned long   mask;
+miBSCheapChangeGC(GCPtr pGC, unsigned long mask)
 {
     CHEAP_FUNC_PROLOGUE (pGC);
 
@@ -831,9 +810,7 @@ miBSCheapChangeGC (pGC, mask)
 }
 
 static void
-miBSCheapCopyGC (pGCSrc, mask, pGCDst)
-    GCPtr   pGCSrc, pGCDst;
-    unsigned long   mask;
+miBSCheapCopyGC(GCPtr pGCSrc, unsigned long mask, GCPtr pGCDst)
 {
     CHEAP_FUNC_PROLOGUE (pGCDst);
 
@@ -843,8 +820,7 @@ miBSCheapCopyGC (pGCSrc, mask, pGCDst)
 }
 
 static void
-miBSCheapDestroyGC (pGC)
-    GCPtr   pGC;
+miBSCheapDestroyGC(GCPtr pGC)
 {
     CHEAP_FUNC_PROLOGUE (pGC);
 
@@ -854,11 +830,7 @@ miBSCheapDestroyGC (pGC)
 }
 
 static void
-miBSCheapChangeClip (pGC, type, pvalue, nrects)
-    GCPtr   pGC;
-    int		type;
-    pointer	pvalue;
-    int		nrects;
+miBSCheapChangeClip(GCPtr pGC, int type, pointer pvalue, int nrects)
 {
     CHEAP_FUNC_PROLOGUE (pGC);
 
@@ -868,8 +840,7 @@ miBSCheapChangeClip (pGC, type, pvalue, nrects)
 }
 
 static void
-miBSCheapCopyClip(pgcDst, pgcSrc)
-    GCPtr pgcDst, pgcSrc;
+miBSCheapCopyClip(GCPtr pgcDst, GCPtr pgcSrc)
 {
     CHEAP_FUNC_PROLOGUE (pgcDst);
 
@@ -879,8 +850,7 @@ miBSCheapCopyClip(pgcDst, pgcSrc)
 }
 
 static void
-miBSCheapDestroyClip(pGC)
-    GCPtr	pGC;
+miBSCheapDestroyClip(GCPtr pGC)
 {
     CHEAP_FUNC_PROLOGUE (pGC);
 
@@ -894,8 +864,7 @@ miBSCheapDestroyClip(pGC)
  */
 
 static Bool
-miBSCreateGCPrivate (pGC)
-    GCPtr   pGC;
+miBSCreateGCPrivate(GCPtr pGC)
 {
     miBSGCRec	*pPriv;
 
@@ -915,7 +884,7 @@ miBSCreateGCPrivate (pGC)
 }
 
 static void
-miBSDestroyGCPrivate (GCPtr pGC)
+miBSDestroyGCPrivate(GCPtr pGC)
 {
     miBSGCRec	*pPriv;
 
@@ -948,13 +917,11 @@ miBSDestroyGCPrivate (GCPtr pGC)
  *-----------------------------------------------------------------------
  */
 static void
-miBSFillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		nInit;			/* number of spans to fill */
-    DDXPointPtr pptInit;		/* pointer to list of start points */
-    int		*pwidthInit;		/* pointer to list of n widths */
-    int 	fSorted;
+miBSFillSpans(DrawablePtr pDrawable, GCPtr pGC,
+	      int nInit,		/* number of spans to fill */
+	      DDXPointPtr pptInit,	/* pointer to list of start points */
+	      int *pwidthInit,		/* pointer to list of n widths */
+	      int fSorted)
 {
     DDXPointPtr	pptCopy, pptReset;
     int 	*pwidthCopy;
@@ -1010,14 +977,8 @@ miBSFillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
  *-----------------------------------------------------------------------
  */
 static void
-miBSSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
-    DrawablePtr		pDrawable;
-    GCPtr		pGC;
-    char		*psrc;
-    register DDXPointPtr ppt;
-    int			*pwidth;
-    int			nspans;
-    int			fSorted;
+miBSSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
+	     DDXPointPtr ppt, int *pwidth, int nspans, int fSorted)
 {
     DDXPointPtr	pptCopy, pptReset;
     int 	*pwidthCopy;
@@ -1072,17 +1033,8 @@ miBSSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
  *-----------------------------------------------------------------------
  */
 static void
-miBSPutImage(pDrawable, pGC, depth, x, y, w, h, leftPad, format, pBits)
-    DrawablePtr	  pDrawable;
-    GCPtr   	  pGC;
-    int		  depth;
-    int	    	  x;
-    int	    	  y;
-    int	    	  w;
-    int	    	  h;
-    int		  leftPad;
-    int	    	  format;
-    char    	  *pBits;
+miBSPutImage(DrawablePtr pDrawable, GCPtr pGC, int depth, int x, int y,
+	     int w, int h, int leftPad, int format, char *pBits)
 {
     SETUP_BACKING (pDrawable, pGC);
 
@@ -1154,8 +1106,8 @@ miBSDoCopy(
     }	    	  	*boxes;	    /* Array of box/drawable pairs covering
 				     * source box. */
     int  	  	*sequence;  /* Sequence of boxes to move */
-    register int  	i, j, k, l, y;
-    register BoxPtr	pBox;
+    int  	i, j, k, l, y;
+    BoxPtr	pBox;
     int	    	  	dx, dy, nrects;
     Bool    	  	graphicsExposures;
     CopyPlaneProcPtr  	pixCopyProc;
@@ -1482,16 +1434,8 @@ miBSDoCopy(
  *-----------------------------------------------------------------------
  */
 static RegionPtr
-miBSCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
-    DrawablePtr	  pSrc;
-    DrawablePtr	  pDst;
-    GCPtr   	  pGC;
-    int	    	  srcx;
-    int	    	  srcy;
-    int	    	  w;
-    int	    	  h;
-    int	    	  dstx;
-    int	    	  dsty;
+miBSCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
+	     int srcx, int srcy, int w, int h, int dstx, int dsty)
 {
     BoxPtr	pExtents;
     long	dx, dy;
@@ -1592,17 +1536,9 @@ miBSCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
  *-----------------------------------------------------------------------
  */
 static RegionPtr
-miBSCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
-    DrawablePtr	  pSrc;
-    DrawablePtr	  pDst;
-    register GC   *pGC;
-    int     	  srcx,
-		  srcy;
-    int     	  w,
-		  h;
-    int     	  dstx,
-		  dsty;
-    unsigned long  plane;
+miBSCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
+	      int srcx, int srcy, int w, int h, int dstx, int dsty,
+	      unsigned long plane)
 {
     BoxPtr	pExtents;
     long	dx, dy;
@@ -1707,12 +1643,8 @@ miBSCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
  *-----------------------------------------------------------------------
  */
 static void
-miBSPolyPoint (pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		mode;		/* Origin or Previous */
-    int		npt;
-    xPoint 	*pptInit;
+miBSPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+	      xPoint *pptInit)
 {
     xPoint	  *pptCopy;
     SETUP_BACKING (pDrawable, pGC);
@@ -1747,12 +1679,8 @@ miBSPolyPoint (pDrawable, pGC, mode, npt, pptInit)
  *-----------------------------------------------------------------------
  */
 static void
-miBSPolylines (pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr	  pDrawable;
-    GCPtr   	  pGC;
-    int	    	  mode;
-    int	    	  npt;
-    DDXPointPtr	  pptInit;
+miBSPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+	      DDXPointPtr pptInit)
 {
     DDXPointPtr	pptCopy;
     SETUP_BACKING (pDrawable, pGC);
@@ -1786,11 +1714,7 @@ miBSPolylines (pDrawable, pGC, mode, npt, pptInit)
  *-----------------------------------------------------------------------
  */
 static void
-miBSPolySegment(pDrawable, pGC, nseg, pSegs)
-    DrawablePtr pDrawable;
-    GCPtr 	pGC;
-    int		nseg;
-    xSegment	*pSegs;
+miBSPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 {
     xSegment	*pSegsCopy;
 
@@ -1826,11 +1750,8 @@ miBSPolySegment(pDrawable, pGC, nseg, pSegs)
  *-----------------------------------------------------------------------
  */
 static void
-miBSPolyRectangle(pDrawable, pGC, nrects, pRects)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		nrects;
-    xRectangle	*pRects;
+miBSPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects,
+		  xRectangle *pRects)
 {
     xRectangle	*pRectsCopy;
     SETUP_BACKING (pDrawable, pGC);
@@ -1864,11 +1785,7 @@ miBSPolyRectangle(pDrawable, pGC, nrects, pRects)
  *-----------------------------------------------------------------------
  */
 static void
-miBSPolyArc(pDrawable, pGC, narcs, parcs)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		narcs;
-    xArc	*parcs;
+miBSPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 {
     xArc  *pArcsCopy;
     SETUP_BACKING (pDrawable, pGC);
@@ -1903,12 +1820,8 @@ miBSPolyArc(pDrawable, pGC, narcs, parcs)
  *-----------------------------------------------------------------------
  */
 static void
-miBSFillPolygon(pDrawable, pGC, shape, mode, count, pPts)
-    DrawablePtr		pDrawable;
-    register GCPtr	pGC;
-    int			shape, mode;
-    register int	count;
-    DDXPointPtr		pPts;
+miBSFillPolygon(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode,
+		int count, DDXPointPtr pPts)
 {
     DDXPointPtr	pPtsCopy;
     SETUP_BACKING (pDrawable, pGC);
@@ -1943,11 +1856,8 @@ miBSFillPolygon(pDrawable, pGC, shape, mode, count, pPts)
  *-----------------------------------------------------------------------
  */
 static void
-miBSPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		nrectFill; 	/* number of rectangles to fill */
-    xRectangle	*prectInit;  	/* Pointer to first rectangle to fill */
+miBSPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
+		 xRectangle *prectInit)
 {
     xRectangle	*pRectCopy;
     SETUP_BACKING (pDrawable, pGC);
@@ -1983,11 +1893,7 @@ miBSPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
  *-----------------------------------------------------------------------
  */
 static void
-miBSPolyFillArc(pDrawable, pGC, narcs, parcs)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		narcs;
-    xArc	*parcs;
+miBSPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 {
     xArc  *pArcsCopy;
     SETUP_BACKING (pDrawable, pGC);
@@ -2020,12 +1926,8 @@ miBSPolyFillArc(pDrawable, pGC, narcs, parcs)
  *-----------------------------------------------------------------------
  */
 static int
-miBSPolyText8(pDrawable, pGC, x, y, count, chars)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		x, y;
-    int 	count;
-    char	*chars;
+miBSPolyText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count,
+	      char *chars)
 {
     int	    result;
     SETUP_BACKING (pDrawable, pGC);
@@ -2053,12 +1955,8 @@ miBSPolyText8(pDrawable, pGC, x, y, count, chars)
  *-----------------------------------------------------------------------
  */
 static int
-miBSPolyText16(pDrawable, pGC, x, y, count, chars)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		x, y;
-    int		count;
-    unsigned short *chars;
+miBSPolyText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count,
+	       unsigned short *chars)
 {
     int	result;
     SETUP_BACKING (pDrawable, pGC);
@@ -2087,12 +1985,8 @@ miBSPolyText16(pDrawable, pGC, x, y, count, chars)
  *-----------------------------------------------------------------------
  */
 static void
-miBSImageText8(pDrawable, pGC, x, y, count, chars)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		x, y;
-    int		count;
-    char	*chars;
+miBSImageText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count,
+	       char *chars)
 {
     SETUP_BACKING (pDrawable, pGC);
     PROLOGUE(pGC);
@@ -2117,12 +2011,8 @@ miBSImageText8(pDrawable, pGC, x, y, count, chars)
  *-----------------------------------------------------------------------
  */
 static void
-miBSImageText16(pDrawable, pGC, x, y, count, chars)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		x, y;
-    int		count;
-    unsigned short *chars;
+miBSImageText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count,
+		unsigned short *chars)
 {
     SETUP_BACKING (pDrawable, pGC);
     PROLOGUE(pGC);
@@ -2147,13 +2037,8 @@ miBSImageText16(pDrawable, pGC, x, y, count, chars)
  *-----------------------------------------------------------------------
  */
 static void
-miBSImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
-    DrawablePtr pDrawable;
-    GCPtr 	pGC;
-    int 	x, y;
-    unsigned int nglyph;
-    CharInfoPtr *ppci;		/* array of character info */
-    pointer 	pglyphBase;	/* start of array of glyphs */
+miBSImageGlyphBlt(DrawablePtr pDrawable, GCPtr pGC, int x, int y,
+		  unsigned int nglyph, CharInfoPtr *ppci, pointer pglyphBase)
 {
     SETUP_BACKING (pDrawable, pGC);
     PROLOGUE(pGC);
@@ -2179,13 +2064,8 @@ miBSImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
  *-----------------------------------------------------------------------
  */
 static void
-miBSPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int 	x, y;
-    unsigned int nglyph;
-    CharInfoPtr *ppci;		/* array of character info */
-    pointer	pglyphBase;	/* start of array of glyphs */
+miBSPolyGlyphBlt(DrawablePtr pDrawable, GCPtr pGC, int x, int y,
+		 unsigned int nglyph, CharInfoPtr *ppci, pointer pglyphBase)
 {
     SETUP_BACKING (pDrawable, pGC);
     PROLOGUE(pGC);
@@ -2210,11 +2090,8 @@ miBSPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
  *-----------------------------------------------------------------------
  */
 static void
-miBSPushPixels(pGC, pBitMap, pDst, w, h, x, y)
-    GCPtr	pGC;
-    PixmapPtr	pBitMap;
-    DrawablePtr pDst;
-    int		w, h, x, y;
+miBSPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst,
+	       int w, int h, int x, int y)
 {
     SETUP_BACKING (pDst, pGC);
     PROLOGUE(pGC);
@@ -2268,13 +2145,8 @@ miBSLineHelper()
  *-----------------------------------------------------------------------
  */
 static RegionPtr
-miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
-    WindowPtr	  	pWin;
-    int	    	  	x;
-    int	    	  	y;
-    int	    	  	w;
-    int	    	  	h;
-    Bool    	  	generateExposures;
+miBSClearBackingStore(WindowPtr pWin, int x, int y, int w, int h,
+		      Bool generateExposures)
 {
     RegionPtr	  	pRgn;
     int	    	  	i;
@@ -2436,9 +2308,7 @@ miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
 }
 
 static void
-miBSClearBackingRegion (pWin, pRgn)
-    WindowPtr	pWin;
-    RegionPtr	pRgn;
+miBSClearBackingRegion(WindowPtr pWin, RegionPtr pRgn)
 {
     BoxPtr	pBox;
     int		i;
@@ -2462,14 +2332,9 @@ miBSClearBackingRegion (pWin, pRgn)
  */
 
 static void
-miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, state, pixunion, planeMask)
-    DrawablePtr		pDrawable;
-    GCPtr		pGC;
-    RegionPtr		pRgn;
-    int			x, y;
-    int			state;
-    PixUnion		pixunion;
-    unsigned long	planeMask;
+miBSFillVirtualBits(DrawablePtr pDrawable, GCPtr pGC, RegionPtr pRgn,
+		    int x, int y, int state, PixUnion pixunion,
+		    unsigned long planeMask)
 {
     int		i;
     BITS32	gcmask;
@@ -2565,11 +2430,10 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, state, pixunion, planeMask)
  */
 
 static void
-miBSAllocate(pWin)
-    WindowPtr 	  pWin;
+miBSAllocate(WindowPtr pWin)
 {
-    register miBSWindowPtr  pBackingStore;
-    register ScreenPtr 	    pScreen;
+    miBSWindowPtr  pBackingStore;
+    ScreenPtr 	    pScreen;
 	
     if (pWin->drawable.pScreen->backingStoreSupport == NotUseful)
 	return;
@@ -2666,11 +2530,10 @@ miBSAllocate(pWin)
  *-----------------------------------------------------------------------
  */
 static void
-miBSFree(pWin)
-    WindowPtr pWin;
+miBSFree(WindowPtr pWin)
 {
     miBSWindowPtr 	pBackingStore;
-    register ScreenPtr	pScreen;
+    ScreenPtr	pScreen;
 
     pScreen = pWin->drawable.pScreen;
 
@@ -2813,10 +2676,7 @@ miResizeBackingStore(
  *-----------------------------------------------------------------------
  */
 static void
-miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
-    register WindowPtr pWin;
-    RegionPtr 	       pObscured;
-    int		       dx, dy;
+miBSSaveDoomedAreas(WindowPtr pWin, RegionPtr pObscured, int dx, int dy)
 {
     miBSWindowPtr 	pBackingStore;
     ScreenPtr	  	pScreen;
@@ -2920,15 +2780,13 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
  *-----------------------------------------------------------------------
  */
 static RegionPtr
-miBSRestoreAreas(pWin, prgnExposed)
-    register WindowPtr pWin;
-    RegionPtr prgnExposed;
+miBSRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)
 {
     PixmapPtr pBackingPixmap;
     miBSWindowPtr pBackingStore;
     RegionPtr prgnSaved;
     RegionPtr prgnRestored;
-    register ScreenPtr pScreen;
+    ScreenPtr pScreen;
     RegionPtr exposures = prgnExposed;
 
     pScreen = pWin->drawable.pScreen;
@@ -3111,18 +2969,18 @@ miBSRestoreAreas(pWin, prgnExposed)
  */
 
 static RegionPtr
-miBSTranslateBackingStore(pWin, windx, windy, oldClip, oldx, oldy)
-    WindowPtr 	  pWin;
-    int     	  windx;	/* bit translation distance in window */
-    int     	  windy;
-    RegionPtr	  oldClip;  	/* Region being copied */
-    int     	  oldx;		/* old window position */
-    int     	  oldy;
+miBSTranslateBackingStore(
+    WindowPtr 	  pWin,
+    int     	  windx,	/* bit translation distance in window */
+    int     	  windy,
+    RegionPtr	  oldClip,  	/* Region being copied */
+    int     	  oldx,		/* old window position */
+    int     	  oldy)
 {
-    register miBSWindowPtr 	pBackingStore;
-    register RegionPtr 	    	pSavedRegion;
-    register RegionPtr 	    	newSaved, doomed;
-    register ScreenPtr		pScreen;
+    miBSWindowPtr 	pBackingStore;
+    RegionPtr 	    	pSavedRegion;
+    RegionPtr 	    	newSaved, doomed;
+    ScreenPtr		pScreen;
     BoxRec			extents;
     int     	  scrdx;	/* bit translation distance on screen */
     int     	  scrdy;
@@ -3292,10 +3150,7 @@ miBSTranslateBackingStore(pWin, windx, windy, oldClip, oldx, oldy)
  */
 
 static void
-miBSDrawGuarantee (pWin, pGC, guarantee)
-    WindowPtr	pWin;
-    GCPtr	pGC;
-    int		guarantee;
+miBSDrawGuarantee(WindowPtr pWin, GCPtr pGC, int guarantee)
 {
     miBSGCPtr 	pPriv;
 
@@ -3354,10 +3209,7 @@ miBSDrawGuarantee (pWin, pGC, guarantee)
  */
 
 static void
-miBSValidateGC (pGC, stateChanges, pDrawable)
-    GCPtr   	  pGC;
-    unsigned long stateChanges;
-    DrawablePtr   pDrawable;
+miBSValidateGC(GCPtr pGC, unsigned long stateChanges, DrawablePtr pDrawable)
 {
     GCPtr   	  	pBackingGC;
     miBSWindowPtr	pWindowPriv = NULL;
@@ -3569,9 +3421,7 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
 }
 
 static void
-miBSChangeGC (pGC, mask)
-    GCPtr   pGC;
-    unsigned long   mask;
+miBSChangeGC(GCPtr pGC, unsigned long mask)
 {
     miBSGCPtr	pPriv = (miBSGCPtr) (pGC)->devPrivates[miBSGCIndex].ptr;
 
@@ -3583,9 +3433,7 @@ miBSChangeGC (pGC, mask)
 }
 
 static void
-miBSCopyGC (pGCSrc, mask, pGCDst)
-    GCPtr   pGCSrc, pGCDst;
-    unsigned long   mask;
+miBSCopyGC(GCPtr pGCSrc, unsigned long mask, GCPtr pGCDst)
 {
     miBSGCPtr	pPriv = (miBSGCPtr) (pGCDst)->devPrivates[miBSGCIndex].ptr;
 
@@ -3597,8 +3445,7 @@ miBSCopyGC (pGCSrc, mask, pGCDst)
 }
 
 static void
-miBSDestroyGC (pGC)
-    GCPtr   pGC;
+miBSDestroyGC(GCPtr pGC)
 {
     miBSGCPtr	pPriv = (miBSGCPtr) (pGC)->devPrivates[miBSGCIndex].ptr;
 
@@ -3615,11 +3462,7 @@ miBSDestroyGC (pGC)
 }
 
 static void
-miBSChangeClip(pGC, type, pvalue, nrects)
-    GCPtr	pGC;
-    int		type;
-    pointer	pvalue;
-    int		nrects;
+miBSChangeClip(GCPtr pGC, int type, pointer pvalue, int nrects)
 {
     miBSGCPtr	pPriv = (miBSGCPtr) (pGC)->devPrivates[miBSGCIndex].ptr;
 
@@ -3631,8 +3474,7 @@ miBSChangeClip(pGC, type, pvalue, nrects)
 }
 
 static void
-miBSCopyClip(pgcDst, pgcSrc)
-    GCPtr pgcDst, pgcSrc;
+miBSCopyClip(GCPtr pgcDst, GCPtr pgcSrc)
 {
     miBSGCPtr	pPriv = (miBSGCPtr) (pgcDst)->devPrivates[miBSGCIndex].ptr;
 
@@ -3644,8 +3486,7 @@ miBSCopyClip(pgcDst, pgcSrc)
 }
 
 static void
-miBSDestroyClip(pGC)
-    GCPtr	pGC;
+miBSDestroyClip(GCPtr pGC)
 {
     miBSGCPtr	pPriv = (miBSGCPtr) (pGC)->devPrivates[miBSGCIndex].ptr;
 
@@ -3657,8 +3498,7 @@ miBSDestroyClip(pGC)
 }
 
 static void
-miDestroyBSPixmap (pWin)
-    WindowPtr	pWin;
+miDestroyBSPixmap(WindowPtr pWin)
 {
     miBSWindowPtr	pBackingStore;
     ScreenPtr		pScreen;
@@ -3678,8 +3518,7 @@ miDestroyBSPixmap (pWin)
 }
 
 static void
-miTileVirtualBS (pWin)
-    WindowPtr	pWin;
+miTileVirtualBS(WindowPtr pWin)
 {
     miBSWindowPtr	pBackingStore;
 
@@ -3710,9 +3549,7 @@ static int failedIndex;
 #endif
 
 static void
-miCreateBSPixmap (pWin, pExtents)
-    WindowPtr	pWin;
-    BoxPtr	pExtents;
+miCreateBSPixmap(WindowPtr pWin, BoxPtr pExtents)
 {
     miBSWindowPtr	pBackingStore;
     ScreenPtr		pScreen;
@@ -3824,22 +3661,17 @@ miCreateBSPixmap (pWin, pExtents)
  *-----------------------------------------------------------------------
  */
 static void
-miBSExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
-    WindowPtr	  	pSrc;
-    DrawablePtr	  	pDst;
-    GCPtr   	  	pGC;
-    RegionPtr	  	prgnExposed;
-    int	    	  	srcx, srcy;
-    int	    	  	dstx, dsty;
-    unsigned long 	plane;
+miBSExposeCopy(WindowPtr pSrc, DrawablePtr pDst, GCPtr pGC,
+	       RegionPtr prgnExposed, int srcx, int srcy, int dstx, int dsty,
+	       unsigned long plane)
 {
     RegionRec	  	tempRgn;
     miBSWindowPtr	pBackingStore;
     CopyPlaneProcPtr 	copyProc;
     GCPtr		pScratchGC;
-    register BoxPtr	pBox;
-    register int  	i;
-    register int  	dx, dy;
+    BoxPtr	pBox;
+    int  	i;
+    int  	dx, dy;
     BITS32		gcMask;
 
     if (!REGION_NOTEMPTY(pGC->pScreen, prgnExposed))

@@ -1,4 +1,3 @@
-/* $Xorg: xkbActions.c,v 1.3 2000/08/17 19:53:47 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 3.13 2003/07/16 01:39:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 3.14 2003/11/17 22:20:46 dawes Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -156,8 +155,8 @@ static XkbAction 	fake;
     }
     type= XkbKeyKeyType(xkb,key,effectiveGroup);
     if (type->map!=NULL) {
-	register unsigned		i,mods;
-	register XkbKTMapEntryPtr	entry;
+	unsigned		i,mods;
+	XkbKTMapEntryPtr	entry;
 	mods= xkbState->mods&type->mods.mask;
 	for (entry= type->map,i=0;i<type->map_count;i++,entry++) {
 	    if ((entry->active)&&(entry->mods.mask==mods)) {
@@ -599,7 +598,7 @@ _XkbFilterPointerBtn(	XkbSrvInfoPtr	xkbi,
 		break;
 	    case XkbSA_PtrBtn:
 		{
-		    register int i,nClicks;
+		    int i,nClicks;
 		    AccessXCancelRepeatKey(xkbi,keycode);
 		    if (pAction->btn.count>0) {
 			nClicks= pAction->btn.count;
@@ -1052,7 +1051,7 @@ _XkbNextFreeFilter(
 	void
 )
 {
-register int	i;
+int	i;
 
     if (szFilters==0) {
 	szFilters = 4;
@@ -1075,7 +1074,7 @@ register int	i;
 static int
 _XkbApplyFilters(XkbSrvInfoPtr xkbi,unsigned kc,XkbAction *pAction)
 {
-register int	i,send;
+int	i,send;
 
     send= 1;
     for (i=0;i<szFilters;i++) {

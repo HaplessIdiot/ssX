@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbzerarc.c,v 3.7 2002/09/27 01:57:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbzerarc.c,v 3.8 2003/07/16 01:38:55 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -24,8 +24,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
-
-/* $Xorg: mfbzerarc.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -72,21 +70,18 @@ in this Software without prior written authorization from The Open Group.
 #define DoPix(bit,base,yoff,xoff) if (mask & bit) Pixelate(base,yoff,xoff);
 
 static void
-mfbZeroArcSS(
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    xArc *arc)
+mfbZeroArcSS(DrawablePtr pDraw, GCPtr pGC, xArc *arc)
 {
     miZeroArcRec info;
     Bool do360;
-    register int x, y, a, b, d, mask;
-    register int k1, k3, dx, dy;
+    int x, y, a, b, d, mask;
+    int k1, k3, dx, dy;
     PixelType *addrl;
     PixelType *yorgl, *yorgol;
     PixelType pixel;
     int nlwidth, yoffset, dyoffset;
     PixelType pmask;
-    register PixelType *paddr;
+    PixelType *paddr;
 
     if (((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop ==
 	RROP_BLACK)
@@ -206,14 +201,10 @@ mfbZeroArcSS(
 }
 
 void
-mfbZeroPolyArcSS(pDraw, pGC, narcs, parcs)
-    DrawablePtr	pDraw;
-    GCPtr	pGC;
-    int		narcs;
-    xArc	*parcs;
+mfbZeroPolyArcSS(DrawablePtr pDraw, GCPtr pGC, int narcs, xArc *parcs)
 {
-    register xArc *arc;
-    register int i;
+    xArc *arc;
+    int i;
     BoxRec box;
     int x2, y2;
     RegionPtr cclip;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcDepth.c,v 1.2 1998/07/25 16:59:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcDepth.c,v 1.3 1999/06/06 08:48:58 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -22,8 +22,6 @@
  *
 */
 
-/* $XConsortium: ppcDepth.c /main/3 1996/02/21 17:57:31 kaleb $ */
-
 /* Check to see if the alleged depth is acceptable for the Screen  
  *
  * T. Paquin 9/87
@@ -34,12 +32,10 @@
 #include "scrnintstr.h"
 
 Bool
-xf4bppDepthOK(pDraw,depth)
-register DrawablePtr pDraw;
-register int depth;
+xf4bppDepthOK(DrawablePtr pDraw, int depth)
 {
-register ScreenPtr pScreen= pDraw->pScreen;
-register int i = pScreen->numDepths;
+ScreenPtr pScreen= pDraw->pScreen;
+int i = pScreen->numDepths;
 
     if ( ( pDraw->type == DRAWABLE_PIXMAP ) && ( depth == 1 ) )
 	return TRUE ;

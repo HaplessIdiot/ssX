@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillsp.c,v 3.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillsp.c,v 3.8 2003/10/29 22:44:53 tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -75,8 +75,6 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Xorg: cfbfillsp.c,v 1.4 2001/02/09 02:04:37 xorgcvs Exp $ */
-
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -125,10 +123,7 @@ fgPixel != bgPixel.  based on the fill style, it uses
 #ifdef	notdef
 #include	<stdio.h>
 static
-dumpspans(n, ppt, pwidth)
-    int	n;
-    DDXPointPtr ppt;
-    int *pwidth;
+dumpspans(int n, DDXPointPtr ppt, int *pwidth)
 {
     fprintf(stderr,"%d spans\n", n);
     while (n--) {
@@ -142,17 +137,12 @@ dumpspans(n, ppt, pwidth)
 
 /* Fill spans with tiles that aren't 32 bits wide */
 void
-cfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-DrawablePtr pDrawable;
-GC		*pGC;
-int		nInit;		/* number of spans to fill */
-DDXPointPtr pptInit;		/* pointer to list of start points */
-int *pwidthInit;		/* pointer to list of n widths */
-int fSorted;
+cfbUnnaturalTileFS(DrawablePtr pDrawable, GC *pGC, int nInit,
+		   DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
     int n;			/* number of spans to fill */
-    register DDXPointPtr ppt;	/* pointer to list of start points */
-    register int *pwidth;	/* pointer to list of n widths */
+    DDXPointPtr ppt;	/* pointer to list of start points */
+    int *pwidth;	/* pointer to list of n widths */
     void    (*fill)(DrawablePtr, int, DDXPointPtr, int *, PixmapPtr, int, int, int, unsigned long);
     int	xrot, yrot;
 
@@ -208,13 +198,8 @@ int fSorted;
 #if PSZ == 8
 
 void
-cfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-DrawablePtr pDrawable;
-GC		*pGC;
-int		nInit;		/* number of spans to fill */
-DDXPointPtr pptInit;		/* pointer to list of start points */
-int *pwidthInit;		/* pointer to list of n widths */
-int fSorted;
+cfbUnnaturalStippleFS(DrawablePtr pDrawable, GC *pGC, int nInit,
+		      DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
 				/* next three parameters are post-clip */
     int		    n;		/* number of spans to fill */
@@ -224,14 +209,14 @@ int fSorted;
     DDXPointPtr	    pptFree;
     CfbBits   *pdstBase;	/* pointer to start of bitmap */
     int		    nlwDst;	/* width in longwords of bitmap */
-    register CfbBits    *pdst;	/* pointer to current word in bitmap */
+    CfbBits    *pdst;	/* pointer to current word in bitmap */
     PixmapPtr	    pStipple;	/* pointer to stipple we want to fill with */
     int		    nlw;
     int		    x, y, w, xrem, xSrc, ySrc;
     int		    stwidth, stippleWidth;
     int		    stippleHeight;
-    register CfbBits  bits, inputBits;
-    register int    partBitsLeft;
+    CfbBits  bits, inputBits;
+    int    partBitsLeft;
     int		    nextPartBits;
     int		    bitsLeft, bitsWhole;
     CfbBits   *srcTemp, *srcStart;
@@ -398,24 +383,19 @@ int fSorted;
 
 /* Fill spans with stipples that aren't 32 bits wide */
 void
-cfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-DrawablePtr pDrawable;
-GC		*pGC;
-int		nInit;		/* number of spans to fill */
-DDXPointPtr pptInit;		/* pointer to list of start points */
-int *pwidthInit;		/* pointer to list of n widths */
-int fSorted;
+cfbUnnaturalStippleFS(DrawablePtr pDrawable, GC *pGC, int nInit,
+		      DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
 				/* next three parameters are post-clip */
     int			    n;		/* number of spans to fill */
-    register DDXPointPtr    ppt;	/* pointer to list of start points */
-    register int	    *pwidth;	/* pointer to list of n widths */
+    DDXPointPtr    ppt;	/* pointer to list of start points */
+    int	    *pwidth;	/* pointer to list of n widths */
     int			    iline;	/* first line of tile to use */
     CfbBits	    *addrlBase;	/* pointer to start of bitmap */
     int			    nlwidth;	/* width in longwords of bitmap */
-    register CfbBits  *pdst;	/* pointer to current word in bitmap */
+    CfbBits  *pdst;	/* pointer to current word in bitmap */
     PixmapPtr		    pStipple;	/* pointer to stipple we want to fill with */
-    register int	    w;
+    int	    w;
     int			    width,  x, xrem, xSrc, ySrc;
     CfbBits	    tmpSrc, tmpDst1, tmpDst2;
     int			    stwidth, stippleWidth;
@@ -513,8 +493,8 @@ int fSorted;
 #if PSZ != 32 || PPW != 1
 		int tmpx;
 #endif
-		register CfbBits *ptemp;
-		register CfbBits *pdsttmp;
+		CfbBits *ptemp;
+		CfbBits *pdsttmp;
 		/*
 		 *  Do a stripe through the stipple & destination w pixels
 		 *  wide.  w is not more than:
@@ -606,13 +586,8 @@ int fSorted;
 #if PSZ == 8
 
 void
-cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		nInit;			/* number of spans to fill */
-    DDXPointPtr pptInit;		/* pointer to list of start points */
-    int		*pwidthInit;		/* pointer to list of n widths */
-    int 	fSorted;
+cfb8Stipple32FS(DrawablePtr pDrawable, GCPtr pGC, int nInit,
+		DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
 				/* next three parameters are post-clip */
     int		    n;			/* number of spans to fill */
@@ -626,15 +601,15 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int		    x,y,w;		/* current span */
     CfbBits   startmask;
     CfbBits   endmask;
-    register CfbBits *dst;	/* pointer to bits we're writing */
-    register int    nlw;
+    CfbBits *dst;	/* pointer to bits we're writing */
+    int    nlw;
     CfbBits   *dstTmp;
     int		    nlwTmp;
 
     CfbBits   *pbits;		/* pointer to start of pixmap */
-    register CfbBits  xor;
-    register CfbBits  mask;
-    register CfbBits  bits;	/* bits from stipple */
+    CfbBits  xor;
+    CfbBits  mask;
+    CfbBits  bits;	/* bits from stipple */
     int		    wEnd;
 
     int		    *pwidthFree;	/* copies of the pointers to free */
@@ -819,34 +794,29 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 }
 
 void
-cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		nInit;			/* number of spans to fill */
-    DDXPointPtr pptInit;		/* pointer to list of start points */
-    int		*pwidthInit;		/* pointer to list of n widths */
-    int 	fSorted;
+cfb8OpaqueStipple32FS(DrawablePtr pDrawable, GCPtr pGC, int nInit,
+		      DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
-				/* next three parameters are post-clip */
+	/* next three parameters are post-clip */
     int		    n;			/* number of spans to fill */
     DDXPointPtr	    ppt;		/* pointer to list of start points */
     int		    *pwidth;		/* pointer to list of n widths */
-    CfbBits   *src;		/* pointer to bits in stipple, if needed */
+    CfbBits	    *src;		/* pointer to bits in stipple, if needed */
     int		    stippleHeight;	/* height of the stipple */
     PixmapPtr	    stipple;
 
     int		    nlwDst;		/* width in longwords of the dest pixmap */
     int		    x,y,w;		/* current span */
-    CfbBits   startmask;
-    CfbBits   endmask;
-    register CfbBits *dst;	/* pointer to bits we're writing */
-    register int    nlw;
-    CfbBits   *dstTmp;
+    CfbBits	    startmask;
+    CfbBits	    endmask;
+    CfbBits	    *dst;		/* pointer to bits we're writing */
+    int		    nlw;
+    CfbBits	    *dstTmp;
     int		    nlwTmp;
 
-    CfbBits   *pbits;		/* pointer to start of pixmap */
-    register CfbBits  xor;
-    register CfbBits  bits;	/* bits from stipple */
+    CfbBits	    *pbits;		/* pointer to start of pixmap */
+    CfbBits	    xor;
+    CfbBits	    bits;		/* bits from stipple */
     int		    wEnd;
 
     int		    *pwidthFree;	/* copies of the pointers to free */

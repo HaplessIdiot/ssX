@@ -7,7 +7,7 @@
  * are used for depths other than 8.  Perhaps the file should be
  * renamed.  dpw
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfb8bit.h,v 3.7 2001/12/14 19:59:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb8bit.h,v 3.8 2003/11/17 22:20:32 dawes Exp $ */
 
 /*
 
@@ -33,8 +33,6 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-
-/* $Xorg: cfb8bit.h,v 1.4 2001/02/09 02:04:37 xorgcvs Exp $ */
 
 #include "servermd.h"
 
@@ -182,14 +180,14 @@ extern int		cfb8StippleRRop;
 
 #define WriteBitGroup(dst,pixel,bits)				\
     {								\
-    register PixelGroup _maskTmp = cfb8PixelMasks[(bits)];   \
+    PixelGroup _maskTmp = cfb8PixelMasks[(bits)];   \
     *(dst) = (*(dst) & ~_maskTmp) | ((pixel) & _maskTmp);	\
     }
 
 #define SwitchBitGroup(dst,pixel,bits)				\
     {								\
-    register PixelGroup _maskTmp = cfb8PixelMasks[(bits)];   \
-    register PixelGroup _pixTmp = ((pixel) & _maskTmp);	\
+    PixelGroup _maskTmp = cfb8PixelMasks[(bits)];   \
+    PixelGroup _pixTmp = ((pixel) & _maskTmp);	\
     _maskTmp = ~_maskTmp;					\
     SwitchBitsLoop (*(dst) = (*(dst) & _maskTmp) | _pixTmp;)	\
     }
@@ -901,7 +899,7 @@ extern int		cfb8StippleRRop;
 #if PGSZ == 32
 #define WriteBitGroup(dst,pixel,bits) \
 	{ \
-	register CARD32 reg_pixel = (pixel); \
+	CARD32 reg_pixel = (pixel); \
 	switch (bits) {			\
 	case 0:				\
 	    break;			\

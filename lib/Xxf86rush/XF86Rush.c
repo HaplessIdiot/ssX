@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86rush/XF86Rush.c,v 1.5 2000/09/26 15:56:59 tsi Exp $ */
+/* $XFree86: xc/lib/Xxf86rush/XF86Rush.c,v 1.6 2002/10/16 00:37:34 dawes Exp $ */
 /*
 
 Copyright (c) 1998 Daryll Strauss
@@ -27,7 +27,7 @@ static char *xf86rush_extension_name = XF86RUSHNAME;
  *                                                                           *
  *****************************************************************************/
 
-static int close_display();
+static int close_display(Display *dpy, XExtCodes *codes);
 static /* const */ XExtensionHooks xf86rush_extension_hooks = {
     NULL,				/* create_gc */
     NULL,				/* copy_gc */

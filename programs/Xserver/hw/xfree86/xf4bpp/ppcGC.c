@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcGC.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcGC.c,v 1.8 2003/02/18 21:29:59 tsi Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -69,12 +69,11 @@ SOFTWARE.
 
 */
 
-/* $XConsortium: ppcGC.c /main/6 1996/02/21 17:57:38 kaleb $ */
-
 #include "xf4bpp.h"
 #include "mfbmap.h"
 #include "mfb.h"
 #include "mi.h"
+#include "migc.h"
 #include "scrnintstr.h"
 #include "ppcGCstr.h"
 #include "vgaVideo.h"
@@ -91,8 +90,8 @@ SOFTWARE.
  */
 static GCFuncs vgaGCFuncs = {
 	xf4bppValidateGC,
-	(void (*)())NoopDDA,
-	(void (*)())NoopDDA,
+	miChangeGC,
+	miCopyGC,
 	xf4bppDestroyGC,
 	xf4bppChangeClip,
 	xf4bppDestroyClip,
@@ -147,8 +146,7 @@ static GCOps vgaGCOps = {
 };
 
 Bool
-xf4bppCreateGC( pGC )
-register GCPtr pGC ;
+xf4bppCreateGC(GCPtr pGC)
 {
 	ppcPrivGC *pPriv ;
 	GCOps *pOps ;
@@ -195,9 +193,7 @@ register GCPtr pGC ;
 }
 
 void
-xf4bppDestroyGC( pGC )
-    register GC	*pGC ;
-
+xf4bppDestroyGC(GCPtr pGC)
 {
     TRACE( ( "xf4bppDestroyGC(pGC=0x%x)\n", pGC ) ) ;
 
@@ -215,14 +211,10 @@ xf4bppDestroyGC( pGC )
 }
 
 static Mask
-ppcChangePixmapGC
-(
-	register GC *pGC,
-	register Mask changes
-)
+ppcChangePixmapGC(GC *pGC, Mask changes)
 {
-register ppcPrivGCPtr devPriv = (ppcPrivGCPtr) (pGC->devPrivates[mfbGCPrivateIndex].ptr ) ;
-register unsigned long int idx ; /* used for stepping through bitfields */
+ppcPrivGCPtr devPriv = (ppcPrivGCPtr) (pGC->devPrivates[mfbGCPrivateIndex].ptr ) ;
+unsigned long int idx ; /* used for stepping through bitfields */
 
 #define LOWBIT( x ) ( x & - x ) /* Two's complement */
 while ((idx = LOWBIT(changes))) {
@@ -295,12 +287,9 @@ return 0 ;
 */
 
 void
-xf4bppValidateGC( pGC, changes, pDrawable )
-    GCPtr         pGC;
-    unsigned long changes;
-    DrawablePtr   pDrawable;
+xf4bppValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 {
-    register ppcPrivGCPtr devPriv ;
+    ppcPrivGCPtr devPriv ;
     WindowPtr pWin ;
 
     devPriv = (ppcPrivGCPtr) (pGC->devPrivates[mfbGCPrivateIndex].ptr ) ;
