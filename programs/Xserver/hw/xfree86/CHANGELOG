@@ -1,4 +1,6 @@
 XFree86 4.0.1c (25 August 2000)
+ 561. Fix ATI driver bug that prevented the disabling of int10, ddc and vbe
+      through options (Marc La France).
  560. Improve libX11 behaviour when a server doesn't have XKB, allowing
       XKB-aware XLookupString features with servers without XKB (#4108,
       Ivan Pascal).
@@ -11074,4 +11076,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1282 2000/08/26 04:30:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1283 2000/08/26 15:11:24 dawes Exp $
