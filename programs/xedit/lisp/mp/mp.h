@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mp/mp.h,v 1.2 2002/01/31 04:33:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mp/mp.h,v 1.4 2002/11/08 08:01:00 paulo Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -121,15 +121,24 @@ typedef struct _mpr {
     mpi den;
 } mpr;
 
+typedef void *(*mp_malloc_fun)(size_t);
+typedef void *(*mp_calloc_fun)(size_t, size_t);
+typedef void *(*mp_realloc_fun)(void*, size_t);
+typedef void (*mp_free_fun)(void*);
+
 /*
  * Prototypes
  */
 /* GENERIC FUNCTIONS */
 	/* memory allocation wrappers */
-void *mp_malloc(unsigned long size);
-void *mp_calloc(unsigned long nmemb, unsigned long size);
-void *mp_realloc(void *pointer, unsigned long size);
+void *mp_malloc(size_t size);
+void *mp_calloc(size_t nmemb, size_t size);
+void *mp_realloc(void *pointer, size_t size);
 void mp_free(void *pointer);
+mp_malloc_fun mp_set_malloc(mp_malloc_fun);
+mp_calloc_fun mp_set_calloc(mp_calloc_fun);
+mp_realloc_fun mp_set_realloc(mp_realloc_fun);
+mp_free_fun mp_set_free(mp_free_fun);
 
 	/* adds op1 and op2, stores result in rop
 	 * rop must pointer to at least len1 + len2 + 1 elements

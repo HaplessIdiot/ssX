@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.26 2002/11/08 08:00:56 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.27 2002/11/13 04:35:46 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -49,6 +49,7 @@ LispObj *Lisp_Atom(LispBuiltin*);
 LispObj *Lisp_Block(LispBuiltin*);
 LispObj *Lisp_Boundp(LispBuiltin*);
 LispObj *Lisp_Butlast(LispBuiltin*);
+LispObj *Lisp_Nbutlast(LispBuiltin*);
 LispObj *Lisp_Car(LispBuiltin*);
 LispObj *Lisp_Case(LispBuiltin*);
 LispObj *Lisp_Catch(LispBuiltin*);
@@ -95,6 +96,7 @@ LispObj *Lisp_Get(LispBuiltin*);
 LispObj *Lisp_Getenv(LispBuiltin*);
 LispObj *Lisp_Go(LispBuiltin*);
 LispObj *Lisp_If(LispBuiltin*);
+LispObj *Lisp_IgnoreErrors(LispBuiltin*);
 LispObj *Lisp_Intersection(LispBuiltin*);
 LispObj *Lisp_Keywordp(LispBuiltin*);
 LispObj *Lisp_Lambda(LispBuiltin*);

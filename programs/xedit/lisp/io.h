@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.4 2002/11/08 08:00:56 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.5 2002/11/10 16:29:05 paulo Exp $ */
 
 #ifndef Lisp_io_h
 #define Lisp_io_h
@@ -40,14 +40,15 @@
 #define FILE_APPEND	0x06	/* append mode, write bit also set */
 #define FILE_BUFFERED	0x08	/* force buffered mode */
 #define FILE_UNBUFFERED	0x10	/* force unbuffered mode */
+#define FILE_BINARY	0x20
 
 /*
  * Types
  */
 struct _LispFile {
     char *buffer;
+    int line;			/* input line number */
     int column;			/* output column number */
-    int escape;			/* when set, print unquoted objects, (princ) */
     int descriptor;
     int length;			/* number of bytes used */
     int offset;			/* read/write offset */
@@ -58,17 +59,19 @@ struct _LispFile {
     int buffered : 1;
     int available : 1;		/* unget field holds a char */
     int nonblock : 1;		/* in nonblock mode */
+    int binary : 1;		/* if set, don't calculate column/line-number */
 };
 
 struct _LispString {
     char *string;
+    int line;			/* input line number */
     int column;			/* output column number */
-    int escape;			/* when set, print unquoted objects, (princ) */
-    int fixed;			/* if set, don't try to reallocate string */
     int space;			/* number of bytes alocated */
     int length;			/* number of bytes used */
     int input;			/* input offset, for read operations */
     int output;			/* output offset, for write operations */
+    int fixed : 1;		/* if set, don't try to reallocate string */
+    int binary : 1;		/* if set, don't calculate column/line-number */
 };
 
 /*

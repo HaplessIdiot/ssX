@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.10 2002/11/08 08:00:56 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.11 2002/11/10 16:29:05 paulo Exp $ */
 
 #include "io.h"
 #include <errno.h>
@@ -42,10 +42,12 @@
 #define APPEND_BIT	0x04
 #define BUFFERED_BIT	0x08
 #define UNBUFFERED_BIT	0x10
+#define BINARY_BIT	0x20
 
 /*
  * Prototypes
  */
+static int calculate_line(void*, int);
 static int calculate_column(void*, int, int);
 
 /*
@@ -63,7 +65,7 @@ LispGet(void)
     LispUngetInfo *unget = lisp__data.unget[lisp__data.iunget];
 
     if (unget->offset)
-	ch = unget->buffer[--unget->offset];
+	ch = ((unsigned char*)unget->buffer)[--unget->offset];
     else if (SINPUT->data.stream.readable) {
 	LispFile *file = NULL;
 
@@ -156,6 +158,19 @@ LispPopInput(LispObj *stream)
  * Low level functions
  */
 static int
+calculate_line(void *data, int size)
+{
+    int line = 0;
+    char *str, *ptr;
+
+    for (str = (char*)data, ptr = (char*)data + size; str < ptr; str++)
+	if (*ptr == '\n')
+	    ++line;
+
+    return (line);
+}
+
+static int
 calculate_column(void *data, int size, int column)
 {
     char *str, *ptr;
@@ -199,6 +214,8 @@ LispFdopen(int descriptor, int mode)
 	    if (file->buffer == NULL)
 		file->buffered = 0;
 	}
+	file->line = 1;
+	file->binary = (mode & BINARY_BIT) != 0;
     }
 
     return (file);
@@ -275,6 +292,9 @@ LispFungetc(LispFile *file, int ch)
     if (file->readable) {
 	file->available = 1;
 	file->unget = ch;
+	/* this should never happen */
+	if (ch == '\n' && !file->binary)
+	    --file->line;
     }
 
     return (ch);
@@ -302,7 +322,7 @@ LispFgetc(LispFile *file)
 	    }
 	    else {
 		if (file->offset < file->length)
-		    ch = file->buffer[file->offset++];
+		    ch = ((unsigned char*)file->buffer)[file->offset++];
 		else {
 		    int length = read(file->descriptor,
 				      file->buffer, pagesize);
@@ -313,7 +333,7 @@ LispFgetc(LispFile *file)
 			file->length = 0;
 		    file->offset = 0;
 		    if (file->length)
-			ch = file->buffer[file->offset++];
+			ch = ((unsigned char*)file->buffer)[file->offset++];
 		    else
 			ch = EOF;
 		}
@@ -326,6 +346,9 @@ LispFgetc(LispFile *file)
     }
     else
 	ch = EOF;
+
+    if (ch == '\n' && !file->binary)
+	++file->line;
 
     return (ch);
 }
@@ -344,11 +367,13 @@ LispFputc(LispFile *file, int ch)
 	else if (write(file->descriptor, &c, 1) != 1)
 	    ch = EOF;
 
-	/* update column number */
-	if (ch == '\n')
-	    file->column = 0;
-	else
-	    ++file->column;
+	if (!file->binary) {
+	    /* update column number */
+	    if (ch == '\n')
+		file->column = 0;
+	    else
+		++file->column;
+	}
     }
 
     return (ch);
@@ -357,10 +382,16 @@ LispFputc(LispFile *file, int ch)
 int
 LispSgetc(LispString *string)
 {
+    int ch;
+
     if (string->input >= string->length)
 	return (EOF);			/* EOF reading from string */
 
-    return (string->string[string->input++]);
+    ch = ((unsigned char*)string->string)[string->input++];
+    if (ch == '\n' && !string->binary)
+	++string->line;
+
+    return (ch);
 }
 
 int
@@ -384,10 +415,12 @@ LispSputc(LispString *string, int ch)
 	string->length = string->output;
 
     /* update column number */
-    if (ch == '\n')
-	string->column = 0;
-    else
-	++string->column;
+    if (!string->binary) {
+	if (ch == '\n')
+	    string->column = 0;
+	else
+	    ++string->column;
+    }
 
     return (ch);
 }
@@ -406,6 +439,7 @@ LispFgets(LispFile *file, char *string, int size)
 	if ((ch = LispFgetc(file)) == EOF)
 	    break;
 	string[offset++] = ch;
+	/* line number is calculated in LispFgetc */
 	if (ch == '\n')
 	    break;
     }
@@ -445,18 +479,26 @@ LispFread(LispFile *file, void *data, int size)
     if (file->available) {
 	*buffer++ = file->unget;
 	file->available = 0;
-	if (--size == 0)
+	if (--size == 0) {
+	    if (file->unget == '\n' && !file->binary)
+		++file->line;
+
 	    return (1);
+	}
 
 	length = 1;
     }
 
     if (file->buffered) {
+	void *base_data = (char*)data - length;
+
 	if (file->writable) {
 	    LispFflush(file);
 	    bytes = read(file->descriptor, buffer, size);
 	    if (bytes < 0)
 		bytes = 0;
+	    if (!file->binary)
+		file->line += calculate_line(base_data, length + bytes);
 
 	    return (length + bytes);
 	}
@@ -481,12 +523,17 @@ LispFread(LispFile *file, void *data, int size)
 	    length += bytes;
 	}
 
+	if (!file->binary)
+	    file->line += calculate_line(base_data, length);
+
 	return (length);
     }
 
     bytes = read(file->descriptor, buffer, size);
     if (bytes < 0)
 	bytes = 0;
+    if (!file->binary)
+	file->line += calculate_line(buffer - length, length + bytes);
 
     return (length + bytes);
 }
@@ -497,7 +544,8 @@ LispFwrite(LispFile *file, void *data, int size)
     if (!file->writable || size < 0)
 	return (EOF);
 
-    file->column = calculate_column(data, size, file->column);
+    if (!file->binary)
+	file->column = calculate_column(data, size, file->column);
 
     if (file->buffered) {
 	int length, bytes;
@@ -595,7 +643,8 @@ LispSwrite(LispString *string, void *data, int size)
     if (string->length < string->output)
 	string->length = string->output;
 
-    string->column = calculate_column(data, size, string->column);
+    if (!string->binary)
+	string->column = calculate_column(data, size, string->column);
 
     return (size);
 }
@@ -603,12 +652,29 @@ LispSwrite(LispString *string, void *data, int size)
 char *
 LispGetSstring(LispString *string, int *length)
 {
-    if (string->string == NULL) {
+    if (string->string == NULL || string->length <= 0) {
 	*length = 0;
 
 	return ("");
     }
     *length = string->length;
+    if (string->string[string->length -1] != '\0') {
+	if (string->length < string->space)
+	    string->string[string->length] = '\0';
+	else if (string->fixed && string->space)
+	    string->string[string->space - 1] = '\0';
+	else {
+	    char *tmp = realloc(string->string, string->space + pagesize);
+
+	    if (tmp == NULL)
+		string->string[string->space - 1] = '\0';
+	    else {
+		string->string = tmp;
+		string->space += pagesize;
+		string->string[string->length] = '\0';
+	    }
+	}
+    }
 
     return (string->string);
 }

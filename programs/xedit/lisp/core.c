@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.57 2002/11/13 04:35:45 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.58 2002/11/15 07:01:28 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -222,37 +222,51 @@ Lisp_Append(LispBuiltin *builtin)
  */
 {
     GC_ENTER();
+    LispObj *result, *cons, *list;
 
-    LispObj *result, *cons, *list, *lists;
+    LispObj *lists;
 
     lists = ARGUMENT(0);
 
-    result = cons = NIL;
-    for (; CONSP(lists); lists = CDR(lists)) {
+    /* no arguments */
+    if (!CONSP(lists))
+	return (NIL);
+
+    /* skip initial nil lists */
+    for (; CONSP(CDR(lists)) && CAR(lists) == NIL; lists = CDR(lists))
+	;
+
+    /* last argument is not copied (even if it is the single argument) */
+    if (!CONSP(CDR(lists)))
+	return (CAR(lists));
+
+    /* make sure result is a list */
+    list = CAR(lists);
+    CHECK_CONS(list);
+    result = cons = CONS(CAR(list), NIL);
+    GC_PROTECT(result);
+    for (list = CDR(list); CONSP(list); list = CDR(list)) {
+	RPLACD(cons, CONS(CAR(list), NIL));
+	cons = CDR(cons);
+    }
+    lists = CDR(lists);
+
+    /* copy intermediate lists */
+    for (; CONSP(CDR(lists)); lists = CDR(lists)) {
 	list = CAR(lists);
 	if (list == NIL)
 	    continue;
+	/* intermediate elements must be lists */
 	CHECK_CONS(list);
-	if (result == NIL) {
-	    result = cons = CONS(CAR(list), CDR(list));
-	    GC_PROTECT(result);
-	}
-	else {
-	    if (CONSP(CDR(cons))) {
-		LispObj *obj = CDR(cons);
-
-		while (CONSP(CDR(obj))) {
-		    RPLACD(cons, CONS(CAR(obj), CDR(obj)));
-		    cons = CDR(cons);
-		    obj = CDR(obj);
-		}
-		RPLACD(cons, CONS(CADR(cons), list));
-	    }
-	    else
-		RPLACD(cons, list);
+	for (; CONSP(list); list = CDR(list)) {
+	    RPLACD(cons, CONS(CAR(list), NIL));
 	    cons = CDR(cons);
 	}
     }
+
+    /* add last element */
+    RPLACD(cons, CAR(lists));
+
     GC_LEAVE();
 
     return (result);
@@ -587,9 +601,7 @@ Lisp_Butlast(LispBuiltin *builtin)
     ocount = ARGUMENT(1);
     list = ARGUMENT(0);
 
-    if (list == NIL)
-	return (NIL);
-    CHECK_CONS(list);
+    CHECK_LIST(list);
     if (ocount == NIL)
 	count = 1;
     else {
@@ -611,6 +623,41 @@ Lisp_Butlast(LispBuiltin *builtin)
 	cons = CDR(cons);
     }
     GC_LEAVE();
+
+    return (result);
+}
+
+LispObj *
+Lisp_Nbutlast(LispBuiltin *builtin)
+/*
+ nbutlast list &optional count
+ */
+{
+    long length, count;
+    LispObj *result, *list, *ocount;
+
+    ocount = ARGUMENT(1);
+    list = ARGUMENT(0);
+
+    CHECK_LIST(list);
+    if (ocount == NIL)
+	count = 1;
+    else {
+	CHECK_INDEX(ocount);
+	count = FIXNUM_VALUE(ocount);
+    }
+    length = LispLength(list);
+
+    if (count == 0)
+	return (list);
+    else if (count >= length)
+	return (NIL);
+
+    length -= count + 1;
+    result = list;
+    for (; length > 0; list = CDR(list), length--)
+	;
+    RPLACD(list, NIL);
 
     return (result);
 }
@@ -1590,6 +1637,49 @@ Lisp_If(LispBuiltin *builtin)
 	result = EVAL(then);
     else
 	result = EVAL(oelse);
+
+    return (result);
+}
+
+LispObj *
+Lisp_IgnoreErrors(LispBuiltin *builtin)
+/*
+ ignore-erros &rest body
+ */
+{
+    LispObj *result, **presult, **pbody;
+    int jumped, *pjumped;
+    LispBlock *block;
+
+    LispObj *body;
+
+    body = ARGUMENT(0);
+
+    RETURN_COUNT = 0;
+
+    presult = &result;
+    pjumped = &jumped;
+    pbody = &body;
+    result = NIL;
+    jumped = 1;
+    block = LispBeginBlock(NIL, LispBlockProtect);
+    if (setjmp(block->jmp) == 0) {
+	for (; CONSP(body); body = CDR(body))
+	    result = EVAL(CAR(body));
+	jumped = 0;
+    }
+    LispEndBlock(block);
+    if (!lisp__data.destroyed && jumped)
+	result = lisp__data.block.block_ret;
+
+    /* No condition system (yet?!), just return T, and for now, let
+     * LispDestroy print the error message */
+    if (lisp__data.destroyed) {
+	lisp__data.destroyed = 0;
+	result = NIL;
+	RETURN_COUNT = 1;
+	RETURN(0) = T;
+    }
 
     return (result);
 }

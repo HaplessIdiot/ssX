@@ -27,12 +27,8 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.10 2002/11/10 16:29:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.11 2002/11/17 07:51:29 paulo Exp $ */
 
-/*
- * FIXME: code in the mp library must use LispXalloc functions, to reclaim
- * memory in case of errors.
- */
 
 /*
  * Defines

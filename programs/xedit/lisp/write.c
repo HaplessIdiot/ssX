@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.22 2002/11/15 07:27:46 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.23 2002/11/17 07:51:29 paulo Exp $ */
 
 #include "write.h"
 #include "hash.h"
@@ -84,11 +84,15 @@ static void check_stream(LispObj*, LispFile**, LispString**, int);
 static void parse_double(char*, int*, double, int);
 static void format_integer(char*, long, int);
 static int LispWriteCPointer(LispObj*, void*);
-static int LispWriteCString(LispObj*, char*, long);
+static int LispWriteCString(LispObj*, char*, long, write_info*);
 static int LispDoFormatExponentialFloat(LispObj*, LispObj*,
 					int, int, int*, int, int,
 					int, int, int, int);
 
+static int LispWriteInteger(LispObj*, LispObj*);
+static int LispWriteCharacter(LispObj*, LispObj*, write_info*);
+static int LispWriteString(LispObj*, LispObj*, write_info*);
+static int LispWriteFloat(LispObj*, LispObj*);
 static int LispWriteAtom(LispObj*, LispObj*, write_info*);
 static int LispDoWriteAtom(LispObj*, char*, int, int);
 static int LispWriteList(LispObj*, LispObj*, write_info*, int);
@@ -252,7 +256,7 @@ int
 LispWriteObject(LispObj *stream, LispObj *object)
 {
     write_info info;
-    int bytes, escape;
+    int bytes;
     LispObj *level, *length, *circle, *oescape, *ocase;
 
     /* current state */
@@ -304,11 +308,7 @@ LispWriteObject(LispObj *stream, LispObj *object)
     else
 	info.print_case = UPCASE;
 
-    escape = LispGetEscape(stream);
-    if (info.print_escape >= 0)
-	LispSetEscape(stream, info.print_escape);
     bytes = LispDoWriteObject(stream, object, &info, 1);
-    LispSetEscape(stream, escape);
     if (circle && circle != NIL && info.num_circles)
 	LispFree(info.circles);
 
@@ -559,11 +559,11 @@ LispWriteCPointer(LispObj *stream, void *data)
 }
 
 static int
-LispWriteCString(LispObj *stream, char *string, long length)
+LispWriteCString(LispObj *stream, char *string, long length, write_info *info)
 {
     int result;
 
-    if (!LispGetEscape(stream)) {
+    if (!info->print_escape) {
 	char *base, *ptr, *end;
 
 	result = LispWriteChar(stream, '"');
@@ -692,10 +692,10 @@ write_again:
 	    length += LispWriteAtom(stream, object, info);
 	    break;
 	case LispString_t:
-	    length += LispWriteString(stream, object);
+	    length += LispWriteString(stream, object, info);
 	    break;
 	case LispSChar_t:
-	    length += LispWriteCharacter(stream, object);
+	    length += LispWriteCharacter(stream, object, info);
 	    break;
 	case LispDFloat_t:
 	    length += LispWriteFloat(stream, object);
@@ -825,7 +825,7 @@ write_again:
 		int size;
 		char *string = LispGetSstring(SSTREAMP(object), &size);
 
-		length += LispWriteCString(stream, string, size);
+		length += LispWriteCString(stream, string, size, info);
 	    }
 	    else {
 		length += LispDoWriteObject(stream,
@@ -835,6 +835,13 @@ write_again:
 		length += LispWriteChar(stream, ' ');
 		length += LispWriteCPointer(stream,
 					    object->data.stream.source.file);
+		if (object->data.stream.readable &&
+		    object->data.stream.type == LispStreamFile &&
+		    !object->data.stream.source.file->binary) {
+		    length += LispWriteStr(stream, " @", 2);
+		    format_integer(stk, object->data.stream.source.file->line, 10);
+		    length += LispWriteStr(stream, stk, strlen(stk));
+		}
 	    }
 	    length += LispWriteChar(stream, '>');
 	    break;
@@ -906,31 +913,6 @@ LispGetColumn(LispObj *stream)
     if (file != NULL)
 	return (file->column);
     return (string->column);
-}
-
-int
-LispGetEscape(LispObj *stream)
-{
-    LispFile *file;
-    LispString *string;
-
-    check_stream(stream, &file, &string, 0);
-    if (file != NULL)
-	return (file->escape);
-    return (string->escape);
-}
-
-void
-LispSetEscape(LispObj *stream, int escape)
-{
-    LispFile *file;
-    LispString *string;
-
-    check_stream(stream, &file, &string, 0);
-    if (file != NULL)
-	file->escape = escape;
-    else
-	string->escape = escape;
 }
 
 /* write a character to stream */
@@ -1096,26 +1078,25 @@ LispWriteAtom(LispObj *stream, LispObj *object, write_info *info)
     return (length);
 }
 
-int
+static int
 LispWriteInteger(LispObj *stream, LispObj *object)
 {
     return (LispFormatInteger(stream, object, 10, 0, 0, 0, 0, 0, 0));
 }
 
-int
-LispWriteCharacter(LispObj *stream, LispObj *object)
+static int
+LispWriteCharacter(LispObj *stream, LispObj *object, write_info *info)
 {
-    return (LispFormatCharacter(stream, object, 1,
-				LispGetEscape(stream)));
+    return (LispFormatCharacter(stream, object, 1, info->print_escape));
 }
 
-int
-LispWriteString(LispObj *stream, LispObj *object)
+static int
+LispWriteString(LispObj *stream, LispObj *object, write_info *info)
 {
-    return (LispWriteCString(stream, THESTR(object), STRLEN(object)));
+    return (LispWriteCString(stream, THESTR(object), STRLEN(object), info));
 }
 
-int
+static int
 LispWriteFloat(LispObj *stream, LispObj *object)
 {
     double value = DFLOAT_VALUE(object);
@@ -1358,7 +1339,7 @@ LispFormatInteger(LispObj *stream, LispObj *object, int radix,
 
     /* if number required more than sizeof(stk) bytes */
     if (str != stk)
-	free(str);
+	LispFree(str);
 
     return (length);
 }

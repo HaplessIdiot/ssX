@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.39 2002/11/15 07:01:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.40 2002/11/15 17:20:06 tsi Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -43,8 +43,9 @@
  */
 typedef struct _LispMac LispMac;
 
-#define STREAM_READ		1
-#define STREAM_WRITE		2
+#define STREAM_READ		0x01
+#define STREAM_WRITE		0x02
+#define STREAM_BINARY		0x20
 
 #define RPLACA(cons, object)	(CAR(cons) = object)
 #define RPLACD(cons, object)	(CDR(cons) = object)
@@ -693,9 +694,9 @@ LispAtom *LispGetAtom(char*);
  * itself. The argument string should never change. */
 LispAtom *LispGetPermAtom(char*);
 
-void *LispMalloc(unsigned);
-void *LispCalloc(unsigned, unsigned);
-void *LispRealloc(void*, unsigned);
+void *LispMalloc(size_t);
+void *LispCalloc(size_t, size_t);
+void *LispRealloc(void*, size_t);
 char *LispStrdup(char*);
 void LispFree(void*);
 /* LispMused means memory is now safe from LispDestroy, and should not be
@@ -716,6 +717,7 @@ void LispDestroy(char *fmt, ...) PRINTF_FORMAT;
 void LispContinuable(char *fmt, ...) PRINTF_FORMAT;
 void LispMessage(char *fmt, ...) PRINTF_FORMAT;
 void LispWarning(char *fmt, ...) PRINTF_FORMAT;
+#undef PRINTF_FORMAT
 
 LispObj *LispSetVariable(LispObj*, LispObj*, char*, int);
 
