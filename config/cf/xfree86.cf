@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.393 2002/02/27 00:51:12 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.395 2002/04/04 14:05:33 eich Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -32,30 +32,25 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
  *
  */
 #ifndef XFree86Version
-#ifdef XF86_VERSION_CURRENT
-# define XFree86Version XF86_VERSION_CURRENT
-#endif
-#endif
-
-#ifndef XFree86VersionString
-#ifdef XF86_VERSION_MAJOR
-#if XF86_VERSION_SNAP == 0
-#define XFree86VersionString `echo XF86_VERSION_MAJOR XF86_VERSION_MINOR XF86_VERSION_PATCH | sed 's/ /./g'`
-#else
-#define XFree86VersionString `echo XF86_VERSION_MAJOR XF86_VERSION_MINOR XF86_VERSION_PATCH XF86_VERSION_SNAP | sed 's/ /./g'`
-#endif
-#endif
+# ifdef XF86_VERSION_CURRENT
+#  define XFree86Version	XF86_VERSION_CURRENT
+# else	/* Must be defined for bootstrapping purposes */
+#  define XFree86Version	0
+# endif
 #endif
 
-#ifndef XFree86DateString
-#ifdef XF86_DATE
-#define XFree86DateString XF86_DATE
-#endif
+#if !defined(XFree86VersionString) && \
+    defined(XF86_VERSION_MAJOR) && defined(XF86_VERSION_MINOR) && \
+    defined(XF86_VERSION_PATCH) && defined(XF86_VERSION_SNAP)
+# if XF86_VERSION_SNAP == 0
+#  define XFree86VersionString `echo XF86_VERSION_MAJOR XF86_VERSION_MINOR XF86_VERSION_PATCH | sed 's/ /./g'`
+# else
+#  define XFree86VersionString `echo XF86_VERSION_MAJOR XF86_VERSION_MINOR XF86_VERSION_PATCH XF86_VERSION_SNAP | sed 's/ /./g'`
+# endif
 #endif
 
-/* This must be defined here for boostrapping purposes */
-#ifndef XFree86Version
-# define XFree86Version	0
+#if !defined(XFree86DateString) && defined(XF86_DATE)
+# define XFree86DateString XF86_DATE
 #endif
 
 #ifndef XVendorString
