@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.1 1994/05/14 05:58:50 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.2 1994/05/22 01:45:10 dawes Exp $
 
 #define OSName            FreeBSD 1.1
 #define OSVendor          /**/
@@ -40,7 +40,7 @@ XCOMM operating system:  OSName
 #define StandardCppDefines	-traditional
 #define DefaultCCOptions	/**/
 #define ExtensionOSDefines	-DXTESTEXT1
-#define ExtraLibraries		-lmalloc
+#define ExtraLibraries		-lgnumalloc
 #define InstUidFlags		-s -m 4755
 
 #ifdef InstallCmd
