@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.14 1996/05/10 06:58:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.15 1996/05/11 11:04:11 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -42,7 +42,9 @@
 #include "xf86_OSlib.h"
 #include "xf86_Config.h"
 
+#ifdef XINPUT
 #include "xf86Xinput.h"
+#endif
 
 #include "extnsionst.h"
 #include "extinit.h"
@@ -290,7 +292,7 @@ xf86MouseProtocol(device, rBuf, nBytes)
   int                  i, buttons, dx, dy;
   static int           pBufP = 0;
   static unsigned char pBuf[8];
-  MouseDevPtr          mouse = (MouseDevPtr) device->public.devicePrivate;
+  MouseDevPtr          mouse = MOUSE_DEV(device);
   
   static unsigned char proto[9][5] = {
     /*  hd_mask hd_id   dp_mask dp_id   nobytes */
@@ -306,11 +308,6 @@ xf86MouseProtocol(device, rBuf, nBytes)
     { 	0x40,	0x40,	0x40,	0x00,	3 	},  /* GlidePoint */
   };
   
-#ifdef XINPUT
-  if (mouse->extended)
-    mouse = (MouseDevPtr)PRIVATE(device);
-#endif
-
   for ( i=0; i < nBytes; i++) {
     /*
      * Hack for resyncing: We check here for a package that is:
@@ -593,13 +590,14 @@ xf86MouseAllocate()
     LocalDevicePtr	local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
     MouseDevPtr		mouse = (MouseDevPtr) xalloc(sizeof(MouseDevRec));
     
-    local->extended = TRUE;
     local->name = "MOUSE";
     local->type_name = "Mouse";
     local->flags = XI86_NO_OPEN_ON_INIT;
     local->device_config = xf86MouseConfig;
     local->device_control = xf86MouseProc;
     local->read_input = xf86MouseReadInput;
+    local->motion_history_proc = xf86GetMotionEvents;
+    local->history_size = 0;
     local->control_proc = 0;
     local->close_proc = 0;
     local->switch_mode = 0;
@@ -608,7 +606,6 @@ xf86MouseAllocate()
     local->dev = NULL;
     local->private = mouse;
 
-    mouse->extended = FALSE;
     mouse->device = NULL;
     mouse->mseFd = -1;
     mouse->mseDevice = "";

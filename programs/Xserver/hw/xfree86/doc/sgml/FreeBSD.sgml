@@ -106,7 +106,7 @@ need 9Mb for the minimum required run-time binaries only.
      4-bit color for VGA and Super-VGA cards
 
 <tag/X312W32.tgz/
-     8-bit Color for ET4000/W32, /W32i and /W32p cards.
+     8-bit Color for ET4000/W32, /W32i, /W32p and ET6000 cards.
 
 <tag/X312nest.tgz/
      A nested server running as a client window on another display.
@@ -581,7 +581,7 @@ Many thanks to:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.13 1995/07/24 05:56:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.14 1996/02/04 09:08:06 dawes Exp $ 
 
 
 

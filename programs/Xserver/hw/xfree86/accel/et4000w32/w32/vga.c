@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.28 1996/05/10 06:56:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.28 1996/05/10 06:56:47 dawes Exp $ */ 
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -315,6 +315,7 @@ vgaProbe()
             case GENDAC_DAC:
             case ICS5341_DAC:
             case STG1703_DAC:
+            case ET6000_DAC:
                                 vga256InfoRec.dacSpeed = 135000;
                                 break;
             default:
@@ -361,6 +362,12 @@ vgaProbe()
           {
             ErrorF("%s %s: Using W32 programmable clock chip ICD2061a\n",
                    OFLG_ISSET(CLOCK_OPTION_ICD2061A, &vga256InfoRec.clockOptions) ?
+                   XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name);
+          }
+          else if (OFLG_ISSET(CLOCK_OPTION_ET6000, &vga256InfoRec.clockOptions))
+          {
+            ErrorF("%s %s: Using ET6000 built-in programmable clock\n",
+                   OFLG_ISSET(CLOCK_OPTION_ET6000, &vga256InfoRec.clockOptions) ?
                    XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name);
           }
           else

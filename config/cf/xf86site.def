@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.75 1996/06/29 09:02:01 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.76 1996/07/08 10:15:25 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -100,6 +100,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.75 1996/06/29 09:02:01 dawes Exp $
  * considerable compile time.
  */
 
+#ifndef Mc68020Architecture
 #define XF86SVGAServer          YES
 #define XF86VGA16Server         YES
 #define XF86VGA16DualServer	YES
@@ -114,6 +115,9 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.75 1996/06/29 09:02:01 dawes Exp $
 #define XF86AGXServer		YES
 #define XF86W32Server		YES
 #define XF86I128Server		YES
+#else
+#define XF86FBDevServer		YES
+#endif
 
 /*
  * PC98 X servers

@@ -1,5 +1,5 @@
 /* $XConsortium: xkbUtils.c /main/21 1996/03/01 14:31:41 kaleb $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.6 1996/03/16 12:47:41 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -357,7 +357,7 @@ XkbUpdateDescActions(xkb,first,num,changes)
     XkbChangesPtr 	changes;
 #endif
 {
-register unsigned	i,key;
+register unsigned	key;
 
     for (key=first;key<(first+num);key++) {
 	XkbApplyCompatMapToKey(xkb,key,changes);
@@ -431,7 +431,6 @@ XkbUpdateActions(pXDev,first,num,changes,needChecksRtrn,cause)
 {
 XkbSrvInfoPtr		xkbi;
 XkbDescPtr		xkb;
-register unsigned	i,key;
 CARD8 *			repeat;
 
     if (needChecksRtrn)
@@ -931,13 +930,13 @@ XkbDescPtr	xkb;
 
 Bool
 #if NeedFunctionPrototypes
-XkbChangeEnabledControls(	XkbSrvInfoPtr		xkbi,
+XkbEnableDisableControls(	XkbSrvInfoPtr		xkbi,
 				unsigned long		change,
 				unsigned long		newValues,
 				XkbChangesPtr		changes,
 				XkbEventCausePtr	cause)
 #else
-XkbChangeEnabledControls(xkbi,change,newValues,changes,cause)
+XkbEnableDisableControls(xkbi,change,newValues,changes,cause)
     XkbSrvInfoPtr	xkbi;
     unsigned long	change;
     unsigned long	newValues;

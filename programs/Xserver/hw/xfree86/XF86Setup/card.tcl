@@ -1,11 +1,12 @@
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.1 1996/06/30 10:44:00 dawes Exp $
 #
 #
 
-proc Card_create_widgets { w } {
+proc Card_create_widgets { win } {
 	global ServerList XF86Setup_library cardDevNum DeviceIDs
 	global cardProbe cardDetail cardReadmeWasSeen UseConfigFile
 
+	set w [winpathprefix $win]
 	set cardDevNum 0
 	frame $w.card -width 640 -height 420 \
 		-relief ridge -borderwidth 5
@@ -14,12 +15,12 @@ proc Card_create_widgets { w } {
 	if { [llength $DeviceIDs] > 1 } {
 		label $w.card.title -text "Card selected:" -anchor w
 		pack  $w.card.title -side left -fill x -padx 5m -in $w.card.top
-		combobox $w.card.cardselect -state disabled
+		combobox $w.card.cardselect -state disabled -bd 2
 		pack  $w.card.cardselect -side left -in $w.card.top
 		eval [list $w.card.cardselect linsert end] $DeviceIDs
 		Card_cbox_setentry $w.card.cardselect [lindex $DeviceIDs 0]
 		bind $w.card.cardselect.popup.list <ButtonRelease-1> \
-			"+Card_cardselect [list $w]"
+			"+Card_cardselect $win"
 	} else {
 		label $w.card.title -text "Card selected: None" -anchor w
 		pack  $w.card.title -side left -fill x -padx 5m -in $w.card.top
@@ -30,7 +31,7 @@ proc Card_create_widgets { w } {
 	listbox   $w.card.list.lb -yscroll [list $w.card.list.sb set] \
 		-setgrid true -height 20
 	bind  $w.card.list.lb <ButtonRelease-1> \
-		[list Card_selected $w $w.card.list.lb]
+		[list Card_selected $win $w.card.list.lb]
 	eval  $w.card.list.lb insert 0 [xf86cards_getlist]
 	pack  $w.card.list.lb -side left -fill both -expand yes
 	pack  $w.card.list.sb -side left -fill y
@@ -50,18 +51,18 @@ proc Card_create_widgets { w } {
 	frame $w.card.buttons
 	pack  $w.card.buttons -side bottom -fill x
 	button $w.card.probe -text "Probe Clocks" \
-		-command [list Card_clockprobe $w]
+		-command [list Card_clockprobe $win]
 	$w.card.probe configure -state disabled
 	pack  $w.card.probe  -side left  -expand yes \
 		-in $w.card.buttons
 
 	button $w.card.readme -text "Read README file" \
-		-command [list Card_display_readme $w]
+		-command [list Card_display_readme $win]
 	pack  $w.card.readme -side left -expand yes \
 		-in $w.card.buttons
 
 	button $w.card.modebutton -text "Detailed Setup" \
-		-command [list Card_switchdetail $w]
+		-command [list Card_switchdetail $win]
 	pack  $w.card.modebutton -side left -expand yes \
 		-in $w.card.buttons
 
@@ -75,7 +76,7 @@ proc Card_create_widgets { w } {
 		set lcserv [string tolower $serv]
 		radiobutton $w.card.server.$lcserv -indicatoron no \
 			-text $serv -variable cardServer -value $serv \
-			-command [list Card_set_cboxlists $w]
+			-command [list Card_set_cboxlists $win]
 		pack $w.card.server.$lcserv -anchor w -side left \
 			-expand yes -fill x
 	}
@@ -87,21 +88,21 @@ proc Card_create_widgets { w } {
 	pack  $w.card.chipset -side left -expand yes -fill x \
 		-in $w.card.detail.cboxen -padx 5m
 	label $w.card.chipset.title -text Chipset
-	combobox $w.card.chipset.cbox -state disabled
+	combobox $w.card.chipset.cbox -state disabled -bd 2
 	pack  $w.card.chipset.title $w.card.chipset.cbox
 
 	frame $w.card.ramdac
 	pack  $w.card.ramdac -side left -expand yes -fill x \
 		-in $w.card.detail.cboxen -padx 5m
 	label $w.card.ramdac.title -text RamDac
-	combobox $w.card.ramdac.cbox -state disabled
+	combobox $w.card.ramdac.cbox -state disabled -bd 2
 	pack  $w.card.ramdac.title $w.card.ramdac.cbox
 
 	frame $w.card.clockchip
 	pack  $w.card.clockchip -side left -expand yes -fill x \
 		-in $w.card.detail.cboxen -padx 5m
 	label $w.card.clockchip.title -text ClockChip
-	combobox $w.card.clockchip.cbox -state disabled
+	combobox $w.card.clockchip.cbox -state disabled -bd 2
 	pack  $w.card.clockchip.title $w.card.clockchip.cbox
 
 	frame $w.card.clocks
@@ -125,7 +126,8 @@ proc Card_create_widgets { w } {
 		label $extr.dacspeed.title -text "RAMDAC Max Speed"
 		checkbutton $extr.dacspeed.probe -width 15 -text "Probed" \
 			-variable cardDacProbe -indicator off \
-			-command [list Card_dacspeed $w]
+			-command [list Card_dacspeed $win] \
+			-highlightthickness 0
 		scale $extr.dacspeed.value -variable cardDacSpeed \
 			-orient horizontal -from 60 -to 300 -resolution 5
 		pack  $extr.dacspeed.title -side top -fill x -expand yes
@@ -136,7 +138,8 @@ proc Card_create_widgets { w } {
 		label $extr.videoram.title -text "Video RAM"
 		pack  $extr.videoram.title -side top -fill x -expand yes
 		radiobutton $extr.videoram.mprobed -indicator off -width 15 \
-			-variable cardRamSize -value 0 -text "Probed"
+			-variable cardRamSize -value 0 -text "Probed" \
+			-highlightthickness 0
 		pack  $extr.videoram.mprobed -side top -expand yes
 		frame $extr.videoram.cols
 		pack  $extr.videoram.cols -side top -fill x -expand yes
@@ -146,21 +149,29 @@ proc Card_create_widgets { w } {
 			-side left -fill x -expand yes \
 			-in $extr.videoram.cols
 		radiobutton $extr.videoram.m256k \
-			-variable cardRamSize -value 256 -text "256K"
+			-variable cardRamSize -value 256 -text "256K" \
+			-highlightthickness 0
 		radiobutton $extr.videoram.m512k \
-			-variable cardRamSize -value 512 -text "512K"
+			-variable cardRamSize -value 512 -text "512K" \
+			-highlightthickness 0
 		radiobutton $extr.videoram.m1m \
-			-variable cardRamSize -value 1024 -text "1Meg"
+			-variable cardRamSize -value 1024 -text "1Meg" \
+			-highlightthickness 0
 		radiobutton $extr.videoram.m2m \
-			-variable cardRamSize -value 2048 -text "2Meg"
+			-variable cardRamSize -value 2048 -text "2Meg" \
+			-highlightthickness 0
 		radiobutton $extr.videoram.m3m \
-			-variable cardRamSize -value 3072 -text "3Meg"
+			-variable cardRamSize -value 3072 -text "3Meg" \
+			-highlightthickness 0
 		radiobutton $extr.videoram.m4m \
-			-variable cardRamSize -value 4096 -text "4Meg"
+			-variable cardRamSize -value 4096 -text "4Meg" \
+			-highlightthickness 0
 		radiobutton $extr.videoram.m6m \
-			-variable cardRamSize -value 6144 -text "6Meg"
+			-variable cardRamSize -value 6144 -text "6Meg" \
+			-highlightthickness 0
 		radiobutton $extr.videoram.m8m \
-			-variable cardRamSize -value 8192 -text "8Meg"
+			-variable cardRamSize -value 8192 -text "8Meg" \
+			-highlightthickness 0
 		pack  $extr.videoram.m256k $extr.videoram.m512k \
 		      $extr.videoram.m1m $extr.videoram.m2m \
 			-side top -fill x -expand yes \
@@ -177,7 +188,7 @@ proc Card_create_widgets { w } {
 		-setgrid true -height 6 -background white
 	scrollbar $w.card.options.sb -command \
 		[list $w.card.options.text yview]
-	combobox $w.card.options.cbox -state disabled -width 80
+	combobox $w.card.options.cbox -state disabled -width 80 -bd 2
 	if { !$UseConfigFile } {
 		label $w.card.options.title -text "Additional lines to\
 			add to Device section of the XF86Config file:"
@@ -199,27 +210,30 @@ proc Card_create_widgets { w } {
 	}
 	if { $UseConfigFile } {
 		set cardDetail		std
-		Card_switchdetail $w
+		Card_switchdetail $win
 		$w.card.modebutton configure -state disabled
 	} else {
 		set cardDetail		detail
-		Card_switchdetail $w
+		Card_switchdetail $win
 	}
 }
 
-proc Card_activate { w } {
-	Card_get_configvars $w
+proc Card_activate { win } {
+	set w [winpathprefix $win]
+	Card_get_configvars $win
 	pack $w.card -side top -fill both -expand yes
 }
 
-proc Card_deactivate { w } {
+proc Card_deactivate { win } {
+	set w [winpathprefix $win]
 	pack forget $w.card
-	Card_set_configvars $w
+	Card_set_configvars $win
 }
 
-proc Card_dacspeed { w } {
+proc Card_dacspeed { win } {
 	global cardDacSpeed cardDacProbe
 
+	set w [winpathprefix $win]
 	if { $cardDacProbe } {
 		#$w.card.extra.dacspeed.probe configure -text "Probed: Yes"
 		$w.card.extra.dacspeed.value configure \
@@ -231,12 +245,12 @@ proc Card_dacspeed { w } {
 	}
 }
 
-proc Card_clockprobe { w } {
+proc Card_clockprobe { win } {
 	global cardServer Xwinhome Confname cardClocks cardDevNum
+	global serverNumber
 
-	set tmpfd [open $Confname-probe w]
-	writeXF86Config $tmpfd -noclocks -defaultmodes
-	close $tmpfd
+	set w [winpathprefix $win]
+	writeXF86Config $Confname-probe -noclocks -defaultmodes
 
 	set server $cardServer
 	if { ![file exists $Xwinhome/bin/XF86_$server] } {
@@ -245,8 +259,10 @@ proc Card_clockprobe { w } {
 		bell
 		return
 	}
-	catch {exec $Xwinhome/bin/XF86_$server :5 -probeonly \
-		-xf86config $Confname-probe >& $Confname-pout}
+	#catch {exec $Xwinhome/bin/XF86_$server :[incr serverNumber] \
+		-probeonly -xf86config $Confname-probe >& $Confname-pout}
+	catch {exec $Xwinhome/bin/XF86_$server :5 \
+		-probeonly -xf86config $Confname-probe >& $Confname-pout}
 	#set fd [open $Confname-pout w]
 	#puts $fd "(--) S3: clocks:  80.0 56.2 0.00 124.2 76.5  35.1 31.5 48.0"
 	#puts $fd "(--) S3: clocks:  45.0 66.3 70.00 28.2 76.5  90.1 37.5 40.0"
@@ -292,12 +308,27 @@ proc Card_clockprobe { w } {
 		bell
 		return
 	}
-	Card_showclockrates $w
+	if { $cardDetail == "std" } {
+		if { $cardReadmeWasSeen($cardDevNum) } {
+		    $w.card.bot.message configure -text \
+			"That's all there is to configuring your card\n\
+			unless you would like to make changes to the\
+			standard settings (by pressing Detailed Setup)"
+		} else {
+		    $w.card.bot.message configure -text \
+			"That's probably all there is to configuring\
+			your card, but you should probably check the\n\
+			README to make sure. If any changes are needed,\
+			press the Detailed Setup button"
+		}
+	}
+	Card_showclockrates $win
 }
 
-proc Card_showclockrates { w } {
+proc Card_showclockrates { win } {
 	global cardClocks
 
+	set w [winpathprefix $win]
 	set clockcount [llength $cardClocks]
 	$w.card.clocks.text delete 0.0 end
 	for {set i 0} {$i < $clockcount} {incr i} {
@@ -309,9 +340,10 @@ proc Card_showclockrates { w } {
 	}
 }
 
-proc Card_switchdetail { w } {
+proc Card_switchdetail { win } {
 	global cardDetail cardProbe cardDevNum
 
+	set w [winpathprefix $win]
 	if { $cardDetail == "std" } {
 		set cardDetail detail
 		$w.card.modebutton configure -text "Card List"
@@ -350,14 +382,15 @@ proc Card_cbox_setentry { cb text } {
 	$cb econfig -state disabled
 }
 
-proc Card_selected { w lbox } {
+proc Card_selected { win lbox } {
 	global cardServer cardProbe cardReadmeWasSeen cardDevNum
 
+	set w [winpathprefix $win]
 	set wframe $w.card$cardDevNum
 	set cardentry [$lbox get [$lbox curselection]]
 	set carddata [xf86cards_getentry $cardentry]
 	set cardServer [lindex $carddata 2]
-	Card_set_cboxlists $w
+	Card_set_cboxlists $win
 	$w.card.title configure -text "Card selected: $cardentry"
 	#Card_cbox_setentry $w.card.chipset.cbox [lindex $carddata 1]
 	Card_cbox_setentry $w.card.ramdac.cbox [lindex $carddata 3]
@@ -388,10 +421,11 @@ proc Card_selected { w lbox } {
 	}
 }
 
-proc Card_set_cboxlists { w } {
+proc Card_set_cboxlists { win } {
 	global CardChipSets CardRamDacs CardClockChips cardServer
 	global CardReadmes cardReadmeWasSeen CardOptions
 
+	set w [winpathprefix $win]
 	if { [llength $CardReadmes($cardServer)] > 0 } {
 		$w.card.readme configure -state normal
 	} else {
@@ -460,10 +494,11 @@ proc Card_set_cboxlists { w } {
 
 }
 
-proc Card_display_readme { w } {
+proc Card_display_readme { win } {
 	global cardServer CardReadmes cardReadmeWasSeen
 	global cardDevNum Xwinhome
 
+	set w [winpathprefix $win]
 	catch {destroy .cardreadme}
         toplevel .cardreadme
 	wm title .cardreadme "Chipset Specific README"
@@ -497,19 +532,21 @@ proc Card_display_readme { w } {
 	set cardReadmeWasSeen($cardDevNum) 1
 }
 
-proc Card_cardselect { w } {
+proc Card_cardselect { win } {
 	global cardDevNum
 
-	Card_set_configvars $w
+	set w [winpathprefix $win]
+	Card_set_configvars $win
 	set cardDevNum [$w.card.cardselect curselection]
-	Card_get_configvars $w
+	Card_get_configvars $win
 }
 
-proc Card_set_configvars { w } {
+proc Card_set_configvars { win } {
 	global DeviceIDs cardServer ServerList cardDevNum cardClocks
 	global AccelServerList CardChipSets CardRamDacs CardClockChips
 	global cardDacSpeed cardDacProbe cardRamSize UseConfigFile
 
+	set w [winpathprefix $win]
 	set devid [lindex $DeviceIDs $cardDevNum]
 	global Device_$devid
 
@@ -534,24 +571,26 @@ proc Card_set_configvars { w } {
 	}
 }
 
-proc Card_get_configvars { w } {
+proc Card_get_configvars { win } {
 	global DeviceIDs cardServer ServerList cardDevNum cardClocks
 	global AccelServerList CardChipSets CardRamDacs CardClockChips
 	global cardDacSpeed cardDacProbe cardRamSize UseConfigFile
 
+	set w [winpathprefix $win]
 	set devid [lindex $DeviceIDs $cardDevNum]
 	global Device_$devid
 
 	set cardServer		[set Device_${devid}(Server)]
 	set cardClocks		[set Device_${devid}(Clocks)]
-	Card_showclockrates $w
+	Card_showclockrates $win
 	Card_cbox_setentry $w.card.chipset.cbox [set Device_${devid}(Chipset)]
 	Card_cbox_setentry $w.card.ramdac.cbox [set Device_${devid}(Ramdac)]
 	Card_cbox_setentry $w.card.clockchip.cbox [set Device_${devid}(ClockChip)]
 	$w.card.options.text delete 0.0 end
 	$w.card.options.text insert 0.0 [set Device_${devid}(ExtraLines)]
-	Card_cbox_setentry $w.card.options.cbox [join [set Device_${devid}(Options)] ,]
-	Card_set_cboxlists $w
+	Card_cbox_setentry $w.card.options.cbox \
+		[join [set Device_${devid}(Options)] ,]
+	Card_set_cboxlists $win
 	if { $UseConfigFile } {
 	    set ram [set Device_${devid}(VideoRam)]
 	    if { [string length $ram] > 0 } {
@@ -567,11 +606,11 @@ proc Card_get_configvars { w } {
 	        set cardDacSpeed	60
 	        set cardDacProbe	1
 	    }
-	    Card_dacspeed $w
+	    Card_dacspeed $win
 	}
 }
 
-proc Card_popup_help { w } {
+proc Card_popup_help { win } {
 	catch {destroy .cardhelp}
         toplevel .cardhelp
         wm title .cardhelp "Help"

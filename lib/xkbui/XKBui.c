@@ -25,14 +25,23 @@
 
  ********************************************************/
 
+#include <X11/Xos.h>
 #include <stdio.h>
-#include <math.h>
+
+#if defined(SVR4) && defined(i386) && !defined(_XOPEN_SOURCE)
+#  define _XOPEN_SOURCE
+#  include <math.h>
+#  undef _XOPEN_SOURCE
+#else
+#  include <math.h>
+#endif /* _XOPEN_SOURCE */
+
 #include <X11/Xfuncs.h>
 #include "XKBuiPriv.h"
 #include <X11/extensions/XKBfile.h>
 
 #ifndef M_PI
-#define M_PI	3.141592653589793238462
+#  define M_PI	3.141592653589793238462
 #endif
 
 static XkbUI_ViewOptsRec dfltOpts = { 
@@ -97,7 +106,9 @@ XkbDescPtr	xkb;
 	found= False;
 	if (XAllocNamedColor(view->dpy,view->opts.cmap,spec,&sdef,&xdef)) {
 	    xkb->geom->colors[i].pixel= sdef.pixel;
+#ifdef DEBUG
 	    fprintf(stderr,"got pixel %d for \"%s\"\n",sdef.pixel,spec);
+#endif
 	    found= True;
 	}
 	if ((!found)&&(XkbLookupCanonicalRGBColor(spec,&sdef))) { 
@@ -107,7 +118,9 @@ XkbDescPtr	xkb;
 						(sdef.blue>>8)&&0xff);
 	    if (XAllocNamedColor(view->dpy,view->opts.cmap,buf,&sdef,&xdef)) {
 		xkb->geom->colors[i].pixel= sdef.pixel;
+#ifdef DEBUG
 		fprintf(stderr,"got pixel %d for \"%s\"\n",sdef.pixel,spec);
+#endif
 		found= True;
 	    }
 	}
@@ -188,7 +201,7 @@ int		scrn,i;
 	tmp= (view->opts.viewport.width-view->canvas_width)/2;
 	view->opts.margin_width+= tmp;
     }
-    if (view->opts.viewport.width>view->canvas_height) {
+    if (view->opts.viewport.height>view->canvas_height) {
 	int tmp;
 	tmp= (view->opts.viewport.height-view->canvas_height)/2;
 	view->opts.margin_height+= tmp;
@@ -307,7 +320,7 @@ _RotatePoints(	double		rangle,
 		XkbUI_PointPtr	pts)
 #else
 _RotatePoints(rangle,corner_x,corner_y,nPts,pts)
-	double		angle;
+	double		rangle;
 	int		corner_x;
 	int		corner_y;
 	int		nPts;
@@ -344,10 +357,10 @@ register int	i;
     for (i=0;i<nPts;i++) {
 	if (pts[i].x>=0.0)	xpts[i].x=	pts[i].x*view->xscale+0.5;
 	else			xpts[i].x=	pts[i].x*view->xscale-0.5;
-	xpts[i].x-= view->opts.viewport.x;
+	xpts[i].x+= view->opts.viewport.x;
 	if (pts[i].y>=0.0)	xpts[i].y=	pts[i].y*view->yscale+0.5;
 	else			xpts[i].x=	pts[i].y*view->yscale-0.5;
-	xpts[i].y-= 	view->opts.viewport.y;
+	xpts[i].y+= 	view->opts.viewport.y;
     }
     if ((xpts[nPts-1].x!=xpts[0].x)||(xpts[nPts-1].y!=xpts[0].y))
 	xpts[nPts++]= xpts[0]; /* close the shape, if necessary */
@@ -372,10 +385,10 @@ register int	i;
     for (i=0;i<nPts;i++) {
 	if (pts[i].x>=0.0)	xpts[i].x=	pts[i].x*view->xscale+0.5;
 	else			xpts[i].x=	pts[i].x*view->xscale-0.5;
-	xpts[i].x-= view->opts.viewport.x;
+	xpts[i].x+= view->opts.viewport.x;
 	if (pts[i].y>=0.0)	xpts[i].y=	pts[i].y*view->yscale+0.5;
 	else			xpts[i].x=	pts[i].y*view->yscale-0.5;
-	xpts[i].y-= 	view->opts.viewport.y;
+	xpts[i].y+= 	view->opts.viewport.y;
     }
     if ((xpts[nPts-1].x!=xpts[0].x)||(xpts[nPts-1].y!=xpts[0].y))
 	xpts[nPts++]= xpts[0]; /* close the shape, if necessary */

@@ -3,9 +3,10 @@
 <article>
  
 <!-- added this title -->
-<title> Information for W32 Chipset Users
+<title> Information for W32 and ET6000 Chipset Users
 <author> Glenn G. Lai <it>&lt;glenn@cs.utexas.edu&gt;</it>,
-Dirk H. Hohndel <it>&lt;hohndel@XFree86.Org&gt;</it>
+Dirk H. Hohndel <it>&lt;hohndel@XFree86.Org&gt;</it>,
+Koen Gadeyne <it>&lt;koen.gadeyne@barco.com&gt;</it>
 <date>November 13, 1995
 <toc>
  
@@ -95,6 +96,25 @@ Ramdac     "stg1703"
 </verb></tscreen>
 line, but the RAMDAC should be auto-probed correctly. 
 
+<sect> Using XF86_W32 on an ET6000-based board <p>
+The ET6000 driver code was developed on top of the existing ET4000/W32 code,
+because of the many similarities between both devices. As with the other W32
+(external) clockchip/RAMDAC devices, the ET6000's built-in clockchip/RAMDAC
+provides a set of 8 standard clocks, which could be probed with the normal
+XFree clock probing procedure.
+In spite of that, XF86_W32 will always use the built-in programmable clockchip
+and RAMDAC. So there is no need for a
+<tscreen><verb> ClockChip "et6000" </verb></tscreen> or a 
+<tscreen><verb> Ramdac "et6000" </verb></tscreen> line in the
+Device Section of the XF86Config file. Once it knows it's dealing with an
+ET6000, XF86_W32 will find its own way.
+At this moment, accelerated support is very sketchy, and only uses those
+things the ET4000/W32 code already provided, with some changes due to
+incompatibilities between the two devices. Major speed improvements should
+be possible.
+Tseng Labs specifies a maximum pixel clock of 135 MHz for the ET6000 chips
+(with higher clocks to come).
+
 <sect> Acknowledgments <p>
 Jerry J. Shekhel (<it>jerry@msi.com</it>) gave me (GGL) the 1-M Mirage
 ET4000/W32 VLB board on which the initial development (X_W32) was done.
@@ -106,8 +126,12 @@ board for the development that led to <tt>XF86_W32</tt>.   They donated a
 Dynamite Power PCI to The XFree86 Project, that was used by DHH to extend
 the server.
 
-Koen Gadeyne (<it>kmg@barco.be</it>) wrote a patchkit for XFree86-3.1.1 that
-was partly integrated in this server and he continues to help develop it.
+Koen Gadeyne (<it>koen.gadeyne@barco.com</it>) wrote a patchkit for
+XFree86-3.1.1 that was partly integrated in this server and he continues to
+help develop it.
+
+Tseng Labs Europe kindly donated (KMG) an ET6000-based board (a Jazz
+Multimedia G-Force 128), which spurred the development of the ET6000 code.
 
 Numerous testers have given me feedback for <tt>X_W32</tt> and later
 <tt>XF86_W32</tt>.  I
@@ -140,7 +164,7 @@ listed below:
 <!-- moved author name to title page. -->
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.9 1995/12/16 08:20:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.10 1996/02/04 09:08:30 dawes Exp $ 
 
 
 

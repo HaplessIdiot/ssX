@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.h,v 3.2 1996/02/20 14:33:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.h,v 3.3 1996/04/15 11:29:46 dawes Exp $ */
 
 #ifndef _I128_H_
 #define _I128_H_
@@ -73,7 +73,8 @@ extern ScrnInfoRec i128InfoRec;
 #define UNKNOWN_DAC -1
 #define TI3025_DAC   0
 #define IBM524_DAC   1
-#define IBM528_DAC   2
+#define IBM526_DAC   2
+#define IBM528_DAC   3
 
 #ifndef LINKKIT
 _XFUNCPROTOBEGIN

@@ -120,7 +120,7 @@ XFree86 binary distribution.
     <tag/X312EMa64/ the X server for ATI Mach64 graphics boards
     <tag/X312EP9K/	the X server for P9000 based boards
     <tag/X312ES3/ 	the X server for S3 based boards
-    <tag/X312EW32/	the X server for et4000w32 based boards
+    <tag/X312EW32/	the X server for et4000w32 and et6000 based boards
     </descrip>
 
     The following servers are available for PC98 hardware from the
@@ -703,7 +703,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.26 1996/05/13 06:39:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.27 1996/08/10 13:06:38 dawes Exp $
 
 
 

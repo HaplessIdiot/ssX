@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32vars.c,v 3.5 1995/01/28 15:51:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32vars.c,v 3.6 1996/02/04 09:00:49 dawes Exp $ */ 
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -46,6 +46,9 @@ ByteP ACL_SUSPEND_TERMINATE,
 WordP ACL_X_POSITION,
       ACL_Y_POSITION;
 
+WordP ACL_NQ_X_POSITION,
+      ACL_NQ_Y_POSITION;
+
 LongP ACL_PATTERN_ADDRESS,
       ACL_SOURCE_ADDRESS;
 
@@ -78,6 +81,10 @@ WordP ACL_MIX_Y_OFFSET,
       ACL_DELTA_MINOR,
       ACL_DELTA_MAJOR;
 
+/* for ET6000 only */
+ByteP ACL_POWER_CONTROL;
+
+
 /*
  *  True for w32 and w32i 
  */
@@ -87,6 +94,7 @@ Bool W32OrW32i;
 Bool W32p;
 Bool W32pa;
 Bool W32pCAndLater;
+Bool W32et6000;
 Bool FrameBuffer;
 
 ByteP W32BytePtr;
@@ -99,6 +107,7 @@ LongP W32LongPtr;
 long W32Foreground;
 long W32Background;
 long W32Pattern;
+long W32Mix;
 
 long W32BltCount;
 long W32BltHop;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.10 1996/02/04 09:05:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.11 1996/06/29 09:07:18 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -173,9 +173,11 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->CopyWindow = s3CopyWindow;
     pScreen->RealizeFont = s3RealizeFont;
     pScreen->UnrealizeFont = s3UnrealizeFont;
+#if 0
     if (xf86bpp == 24) 
        rootdepth = 24;  /* HACK24 ! */
-    switch (rootdepth) {
+#endif
+    switch (xf86bpp) {
     case 8:
 	pScreen->CreateGC = s3CreateGC;
         if (!cfbAllocatePrivates(pScreen, &cfbWindowPrivateIndex,
@@ -253,17 +255,17 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 			rootdepth, ndepths, depths,
 			defaultVisual, nvisuals, visuals,
 			&s3BSFuncRec);
-    if (rootdepth > 24) {
+    if (xf86bpp > 24) {
 	pScreen->CreateScreenResources = cfb32CreateScreenResources;
 	pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;
     }
-    if (rootdepth > 16) {
+    else if (xf86bpp > 16) {
 	pScreen->CreateScreenResources = cfb24CreateScreenResources;
 	pScreen->devPrivates[cfb24ScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;
     }
-    else if (rootdepth > 8) {
+    else if (xf86bpp > 8) {
 	pScreen->CreateScreenResources = cfb16CreateScreenResources;
 	pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;

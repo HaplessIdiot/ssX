@@ -1,4 +1,4 @@
-// $XConsortium: jp /main/3 1996/01/24 12:18:12 kaleb $
+// $XConsortium: jp /main/5 1996/02/02 21:04:15 kaleb $
 //
 //Copyright (c) 1996  X Consortium
 //
@@ -89,7 +89,7 @@ default xkb_symbols "pc98" {
     key <AB09> { [ period, greater	], [ kana_RU, kana_fullstop ]	};
     key <AB10> { [ slash, question	], [ kana_ME, kana_middledot ]	};
     key <AB11> { [ NoSymbol, underscore	], [ kana_RO		]	};
-    key <RTSH> { [ Shift_R		]	};
+//    key <RTSH> { [ Shift_R		]	};
 
     key <ALGR> { [ Mode_switch		]	};
     key <LALT> { [ Alt_L		]	};
@@ -154,12 +154,14 @@ default xkb_symbols "pc98" {
     key  <KP0> { [ KP_0			]	};
     key <KPSP> { [ KP_Separator		]	};
     key <KPDC> { [ KP_Decimal		]	};
-    key <KPEN> { [ KP_Enter		]	}; 
+//    key <KPEN> { [ KP_Enter		]	}; 
     // End "Keypad" section
 
     // begin modifier mappings
-    modifier_map Shift  	{ Shift_L, Shift_R };
-    modifier_map Mod2   	{ Mode_switch };
-    modifier_map Mod3   	{ Alt_L };
+    modifier_map Shift  { Shift_L };
+    modifier_map Lock   { Caps_Lock };
+    modifier_map Control{ Control_L };
+    modifier_map Mod2   { Mode_switch };
+    modifier_map Mod3   { Alt_L };
 };
 

@@ -2,18 +2,11 @@
 ITEMS THAT SHOULD BE COMPLETED BEFORE FIRST PUBLIC RELEASE:
 ----------------------------------------------------------------------
 
-Finish keyboard configuration (use rules once they're added to XKB)
-
 Complete the info in carddata.tcl
 
 Finish writing the help text
 
-Finish the "Done" stuff
-
 Write documentation (modify the QuickStart guide)
-
-Improve robustness
-
 
 
 ITEMS THAT WOULD BE NICE TO HAVE BEFORE FIRST PUBLIC RELEASE:
@@ -33,9 +26,9 @@ Add configuration of related things that can be set with xset such as
    keyboard repeat rate, mouse acceleration, screen saver settings,
    etc. ???  - this probably should be a separate client
 
-Switch to Tcl 7.5/Tk 4.1 ???
-
 Check for proper permissions of various files ???
+
+If files are missing, go ftp them for the user ???
 
 More fine-grained control of what is read from the existing XF86Config
 

@@ -400,7 +400,7 @@ Bool		report,clobber;
 	    else 		{ use= toSym;	ignore= fromSym;	}
 	    if (report) {
 		WARN3("Multiple symbols for level %d/group %d on key %s\n",
-				i,group,longText(into->name,XkbMessage));
+				i+1,group+1,longText(into->name,XkbMessage));
 		ACTION2("Using %s, ignoring %s\n",XkbKeysymText(use,XkbMessage),
 					XkbKeysymText(ignore,XkbMessage));
 	    }
@@ -424,7 +424,7 @@ Bool		report,clobber;
 		else 		{ use= toAct;	ignore= fromAct;	}
 		if (report) {
 		  WARN3("Multiple actions for level %d/group %d on key %s\n",
-				i,group,longText(into->name,XkbMessage));
+				i+1,group+1,longText(into->name,XkbMessage));
 		  ACTION2("Using %s, ignoring %s\n",
 				XkbActionTypeText(use->type,XkbMessage),
 				XkbActionTypeText(ignore->type,XkbMessage));
@@ -975,7 +975,7 @@ XkbAnyAction *	toAct;
 	if (!HandleActionDef(act,xkb,toAct,MergeOverride,info->action)) {
 	    ERROR1("Illegal action definition for %s\n",
 	    				longText(key->name,XkbMessage));
-	    ACTION2("Action for group %d/level %d ignored\n",ndx,i);
+	    ACTION2("Action for group %d/level %d ignored\n",ndx+1,i+1);
 	}
 	act= (ExprDef *)act->common.next;
     }
@@ -1108,9 +1108,9 @@ ExprResult	tmp;
     else if ((uStrCaseCmp(field,"vmods")==0)||
 	     (uStrCaseCmp(field,"virtualmods")==0)||
 	     (uStrCaseCmp(field,"virtualmodifiers")==0)) {
-	ok= ExprResolveModMask(arrayNdx,&tmp,LookupVModMask,(XPointer)xkb);
+	ok= ExprResolveModMask(value,&tmp,LookupVModMask,(XPointer)xkb);
 	if (ok) {
-	    key->vmodmap= tmp.uval;
+	    key->vmodmap= (tmp.uval>>8);
 	    key->defs.defined|= _Key_VModMap;
 	}
 	else {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.9 1996/02/04 09:00:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.10 1996/03/29 22:15:38 dawes Exp $ */ 
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -55,6 +55,7 @@ static SymTabRec W32DacTable[] = {
    { GENDAC_DAC,         "gendac" },
    { STG1700_DAC,	 "stg1700" },
    { STG1703_DAC,	 "stg1703" },
+   { ET6000_DAC,	 "et6000" },
    { -1,                "" },
 };
 
@@ -702,6 +703,18 @@ static void check_ramdac()
 
 
 static BOOL generic_ramdac;
+
+void setup_et6000_ramdac()
+{
+   /* we do nothing special for the ET6000 RAMDAC yet, just set some 
+    * important variables
+    */
+   W32RamdacType = ET6000_DAC;
+   generic_ramdac = TRUE;   /* avoids RAMDAC code from using ATT-specific extensions */
+   RamdacShift = 10;
+   vgaRamdacMask = 0x3f;
+   W32Dac8Bit = FALSE;
+}
 
 void VGARamdac()
 {

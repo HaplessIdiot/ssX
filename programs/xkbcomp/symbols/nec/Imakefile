@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile /main/1 1996/01/23 06:59:52 kaleb $
+XCOMM $XConsortium: Imakefile /main/1 1996/01/30 14:27:50 kaleb $
 
      DATAFILES = jp
 

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.2 1996/06/30 10:44:06 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.3 1996/07/08 10:23:26 dawes Exp $
 
 #
 #
@@ -6,10 +6,11 @@
 set mseTypeList { Microsoft MouseSystems MMSeries Logitech BusMouse
 		MouseMan PS/2 MMHitTab GlidePoint Xqueue OSMouse }
 
-proc Mouse_proto_select { w } {
+proc Mouse_proto_select { win } {
 	global mseType baudRate chordMiddle clearDTR clearRTS sampleRate
 	global Pointer_realdevice
 
+	set w [winpathprefix $win]
 	if {[lsearch -exact {BusMouse Xqueue OSMouse PS/2} $mseType] == -1} {
 		foreach rate {1200 2400 4800 9600} {
 			$w.mouse.brate.$rate configure -state normal
@@ -65,10 +66,11 @@ proc Mouse_proto_select { w } {
 	}
 }
 
-proc Mouse_create_widgets { w } {
+proc Mouse_create_widgets { win } {
 	global mseType mseDev baudRate sampleRate mseTypeList clearDTR
 	global emulate3Buttons emulate3Timeout chordMiddle clearRTS
 
+	set w [winpathprefix $win]
 	frame $w.mouse -width 640 -height 420 \
 		-relief ridge -borderwidth 5
 	frame $w.mouse.top
@@ -86,7 +88,7 @@ proc Mouse_create_widgets { w } {
 		radiobutton $w.mouse.type.$type -text $Type \
 			-indicatoron false \
 			-variable mseType -value $Type \
-			-command [list Mouse_proto_select $w]
+			-command [list Mouse_proto_select $win]
 		pack $w.mouse.type.$type -side left -anchor n
 	}
 
@@ -98,18 +100,18 @@ proc Mouse_create_widgets { w } {
 	label $w.mouse.device.title -text "Mouse Device"
 	entry $w.mouse.device.entry
 	pack $w.mouse.device.title $w.mouse.device.entry -side top -fill x
-	bind $w.mouse.device.entry <Return> "focus [list $w].mouse.em3but; \
-		set Pointer_realdevice \[[list $w].mouse.device.entry get\]"
+	bind $w.mouse.device.entry <Return> "focus $w.mouse.em3but; \
+		set Pointer_realdevice \[$w.mouse.device.entry get\]"
 
 	frame $w.mouse.mid.left.buttons
 	pack $w.mouse.mid.left.buttons -in $w.mouse.mid.left \
 		-side top -fill x -pady 3m
 	checkbutton $w.mouse.em3but -text Emulate3Buttons \
 		-indicatoron no -variable emulate3Buttons \
-		-command [list Mouse_set_em3but $w]
+		-command [list Mouse_set_em3but $win]
 	checkbutton $w.mouse.chdmid -text ChordMiddle \
 		-indicatoron no -variable chordMiddle \
-		-command [list Mouse_set_chdmid $w]
+		-command [list Mouse_set_chdmid $win]
 	pack $w.mouse.em3but $w.mouse.chdmid -in $w.mouse.mid.left.buttons \
 		-side top -fill x -padx 3m -anchor w
 
@@ -166,27 +168,29 @@ proc Mouse_create_widgets { w } {
 	$canv create text 1.375i 2.25i -tag coord
 
 	button $w.mouse.mid.right.apply -text "Apply" \
-		-command [list Mouse_setsettings $w]
+		-command [list Mouse_setsettings $win]
 	pack $canv $w.mouse.mid.right.apply -side top
 
-	label $w.mouse.bot.wait -text "Applying changes..." -foreground grey
+	label $w.mouse.bot.wait -text "Applying changes..." \
+		-foreground [$w.mouse.bot cget -background]
 	label $w.mouse.bot.keylist -text "Press ? or Alt-H for a list of key bindings"
 	pack $w.mouse.bot.wait $w.mouse.bot.keylist
 
 	Mouse_getsettings $w
 }
 
-proc Mouse_activate { w } {
+proc Mouse_activate { win } {
+	set w [winpathprefix $win]
 	pack $w.mouse -side top -fill both -expand yes
 
 	set canv $w.mouse.mid.right.canvas
-	bind $w <ButtonPress>	  [list $canv itemconfigure mbut%b -fill black]
-	bind $w <ButtonRelease>	  [list $canv itemconfigure mbut%b -fill white]
-	bind $w <ButtonPress-4>	  [list $canv itemconfigure mbut4 -fill black;
+	bind $win <ButtonPress>	    [list $canv itemconfigure mbut%b -fill black]
+	bind $win <ButtonRelease>   [list $canv itemconfigure mbut%b -fill white]
+	bind $win <ButtonPress-4>   [list $canv itemconfigure mbut4 -fill black;
 				   $canv itemconfigure coord -fill white]
-	bind $w <ButtonRelease-4> [list $canv itemconfigure mbut4 -fill white;
+	bind $win <ButtonRelease-4> [list $canv itemconfigure mbut4 -fill white;
 				   $canv itemconfigure coord -fill black]
-	bind $w <Motion>	  [list $canv itemconfigure coord -text (%X,%Y)]
+	bind $win <Motion>          [list $canv itemconfigure coord -text (%X,%Y)]
 
 	$canv itemconfigure mbut  -fill white
 	$canv itemconfigure coord -fill black
@@ -194,40 +198,41 @@ proc Mouse_activate { w } {
 	set ifcmd {if { [string compare [focus] %s.mouse.device.entry]
 			!= 0 } { %s %s } }
 			
-	bind $w a [format $ifcmd $w Mouse_setsettings [list $w] ]
-	bind $w b [format $ifcmd $w Mouse_nextbaudrate [list $w] ]
-	bind $w c [format $ifcmd $w [list $w.mouse.chdmid] invoke ]
-	bind $w d [format $ifcmd $w [list $w.mouse.flags.dtr] invoke ]
-	bind $w e [format $ifcmd $w [list $w.mouse.em3but] invoke ]
-	bind $w n [format $ifcmd $w Mouse_selectentry [list $w] ]
-	bind $w p [format $ifcmd $w Mouse_nextprotocol [list $w] ]
-	bind $w r [format $ifcmd $w [list $w.mouse.flags.rts] invoke ]
-	bind $w s [format $ifcmd $w Mouse_incrsamplerate [list $w] ]
-	bind $w t [format $ifcmd $w Mouse_increm3timeout [list $w] ]
+	bind $win a [format $ifcmd $w Mouse_setsettings $win ]
+	bind $win b [format $ifcmd $w Mouse_nextbaudrate $win ]
+	bind $win c [format $ifcmd $w $w.mouse.chdmid invoke ]
+	bind $win d [format $ifcmd $w $w.mouse.flags.dtr invoke ]
+	bind $win e [format $ifcmd $w $w.mouse.em3but invoke ]
+	bind $win n [format $ifcmd $w Mouse_selectentry $win ]
+	bind $win p [format $ifcmd $w Mouse_nextprotocol $win ]
+	bind $win r [format $ifcmd $w $w.mouse.flags.rts invoke ]
+	bind $win s [format $ifcmd $w Mouse_incrsamplerate $win ]
+	bind $win t [format $ifcmd $w Mouse_increm3timeout $win ]
 }
 
-proc Mouse_deactivate { w } {
+proc Mouse_deactivate { win } {
+	set w [winpathprefix $win]
 	pack forget $w.mouse
 
-	bind $w <ButtonPress>	  ""
-	bind $w <ButtonRelease>	  ""
-	bind $w <ButtonPress-4>	  ""
-	bind $w <ButtonRelease-4> ""
-	bind $w <Motion>	  ""
+	bind $win <ButtonPress>		""
+	bind $win <ButtonRelease>	""
+	bind $win <ButtonPress-4>	""
+	bind $win <ButtonRelease-4>	""
+	bind $win <Motion>		""
 
-	bind $w a		  ""
-	bind $w b		  ""
-	bind $w c		  ""
-	bind $w d		  ""
-	bind $w e		  ""
-	bind $w n		  ""
-	bind $w p		  ""
-	bind $w r		  ""
-	bind $w s		  ""
-	bind $w t		  ""
+	bind $win a			""
+	bind $win b			""
+	bind $win c			""
+	bind $win d			""
+	bind $win e			""
+	bind $win n			""
+	bind $win p			""
+	bind $win r			""
+	bind $win s			""
+	bind $win t			""
 }
 
-proc Mouse_popup_help { w } {
+proc Mouse_popup_help { win } {
         toplevel .mousehelp
         wm title .mousehelp "Help"
 	wm geometry .mousehelp +30+30
@@ -267,15 +272,17 @@ proc Mouse_popup_help { w } {
         pack .mousehelp.text .mousehelp.ok
 }
 
-proc Mouse_selectentry { w } {
+proc Mouse_selectentry { win } {
+	set w [winpathprefix $win]
 	if { [ $w.mouse.device.entry cget -state] != "disabled" } {
 		focus $w.mouse.device.entry
 	}
 }
 
-proc Mouse_nextprotocol { w } {
+proc Mouse_nextprotocol { win } {
 	global mseType mseTypeList
 
+	set w [winpathprefix $win]
 	set idx [lsearch -exact $mseTypeList $mseType]
 	do {
 		incr idx
@@ -288,9 +295,10 @@ proc Mouse_nextprotocol { w } {
 	Mouse_proto_select $w
 }
 
-proc Mouse_nextbaudrate { w } {
+proc Mouse_nextbaudrate { win } {
 	global baudRate
 
+	set w [winpathprefix $win]
 	if { [$w.mouse.brate.$baudRate cget -state] == "disabled" } {
 		return
 	}
@@ -302,9 +310,10 @@ proc Mouse_nextbaudrate { w } {
 	} while { [$w.mouse.brate.$baudRate cget -state] == "disabled" }
 }
 
-proc Mouse_incrsamplerate { w } {
+proc Mouse_incrsamplerate { win } {
 	global sampleRate
 
+	set w [winpathprefix $win]
 	if { [$w.mouse.srate.scale cget -state] == "disabled" } {
 		return
 	}
@@ -318,9 +327,10 @@ proc Mouse_incrsamplerate { w } {
 	}
 }
 
-proc Mouse_increm3timeout { w } {
+proc Mouse_increm3timeout { win } {
 	global emulate3Timeout
 
+	set w [winpathprefix $win]
 	if { [$w.mouse.em3tm.scale cget -state] == "disabled" } {
 		return
 	}
@@ -333,9 +343,10 @@ proc Mouse_increm3timeout { w } {
 	}
 }
 
-proc Mouse_set_em3but { w } {
+proc Mouse_set_em3but { win } {
 	global emulate3Buttons chordMiddle
 
+	set w [winpathprefix $win]
 	if { $emulate3Buttons } {
 		$w.mouse.em3tm.scale configure -state normal
 	} else {
@@ -346,22 +357,24 @@ proc Mouse_set_em3but { w } {
 	}
 }
 
-proc Mouse_set_chdmid { w } {
+proc Mouse_set_chdmid { win } {
 	global emulate3Buttons chordMiddle
 
+	set w [winpathprefix $win]
 	if { $chordMiddle && $emulate3Buttons } {
 		$w.mouse.em3but invoke
 	}
 }
 
-proc Mouse_setsettings { w } {
+proc Mouse_setsettings { win } {
 	global mseType mseDev baudRate sampleRate clearDTR
 	global emulate3Buttons emulate3Timeout chordMiddle clearRTS
 	global Pointer Pointer_realdevice
 
+	set w [winpathprefix $win]
 	#grab set $w.mouse.bot.wait
 	$w.mouse.bot.wait configure -foreground black
-	$w configure -cursor watch
+	$win configure -cursor watch
 	update idletasks
 	set mseDev [$w.mouse.device.entry get]
 	set em3but off
@@ -402,19 +415,19 @@ proc Mouse_setsettings { w } {
 		set Pointer(ClearDTR) [expr $clearDTR?"ON":""]
 		set Pointer(ClearRTS) [expr $clearRTS?"ON":""]
 	}
-	$w.mouse.bot.wait configure -foreground grey
-	$w configure -cursor top_left_arrow
+	$w.mouse.bot.wait configure \
+		-foreground [$w.mouse.bot cget -background]
+	$win configure -cursor top_left_arrow
 	#grab release $w.mouse.bot.wait
 }
 
-proc Mouse_getsettings { w } {
+proc Mouse_getsettings { win } {
 	global mseType mseTypeList mseDev baudRate sampleRate clearDTR
 	global emulate3Buttons emulate3Timeout chordMiddle clearRTS
 	global Pointer_realdevice
 
+	set w [winpathprefix $win]
 	set initlist	[xf86misc_getmouse]
-	#set initlist	[list "" Xqueue 1200 0 on 50 off]
-	#set initlist	[list /dev/tty00 MouseSystems 1200 120 on 50 off ClearRTS]
 	set initdev	[lindex $initlist 0]
 	set inittype	[lindex $initlist 1]
 	set initbrate	[lindex $initlist 2]
@@ -423,8 +436,6 @@ proc Mouse_getsettings { w } {
 	set initem3tm	[lindex $initlist 5]
 	set initchdmid	[lindex $initlist 6]
 	set initflags	[lrange $initlist 7 end]
-	#xf86misc_setmouse "" Xqueue 1200 0 on 50 off
-	#xf86misc_setmouse "/dev/mouse" Microsoft 200 0 on 50 off
 
 	if { [info exists Pointer_realdevice] } {
 		$w.mouse.device.entry insert 0 $Pointer_realdevice

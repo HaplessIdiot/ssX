@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.5 1996/06/29 09:10:57 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.6 1996/08/11 13:04:54 dawes Exp $ */
 /*
  * Common/useful definitions for XTERM application
  */
@@ -54,6 +54,7 @@ extern void SwitchBufPtrs PROTO((TScreen *screen));
 extern void VTReset PROTO((int full));
 extern void VTRun PROTO((void));
 extern void set_cursor_gcs PROTO((TScreen *screen));
+extern void unparseputc1 PROTO((int c, int fd));
 extern void unparseputc PROTO((int c, int fd));
 extern void unparseseq PROTO((ANSI *ap, int fd));
 
@@ -67,6 +68,8 @@ extern void CarriageReturn PROTO((TScreen *screen));
 extern void CursorBack PROTO((TScreen *screen, int  n));
 extern void CursorDown PROTO((TScreen *screen, int  n));
 extern void CursorForward PROTO((TScreen *screen, int  n));
+extern void CursorNextLine PROTO((TScreen *screen, int count));
+extern void CursorPrevLine PROTO((TScreen *screen, int count));
 extern void CursorRestore PROTO((XtermWidget tw, SavedCursor *sc));
 extern void CursorSave PROTO((XtermWidget tw, SavedCursor *sc));
 extern void CursorSet PROTO((TScreen *screen, int row, int col, unsigned flags));
@@ -97,6 +100,7 @@ extern void do_hangup          PROTO_XT_CALLBACK_ARGS;
 extern Cursor make_colored_cursor PROTO((unsigned cursorindex, unsigned long fg, unsigned long bg));
 extern char *SysErrorMsg PROTO((int n));
 extern char *strindex PROTO((char *s1, char *s2));
+extern char *udk_lookup PROTO((int keycode, int *len));
 extern int XStrCmp PROTO((char *s1, char *s2));
 extern int xerror PROTO((Display *d, XErrorEvent *ev));
 extern int xioerror PROTO((Display *dpy));
@@ -119,7 +123,9 @@ extern void Setenv PROTO((char *var, char *value));
 extern void SysError PROTO((int i));
 extern void VisualBell PROTO((void));
 extern void creat_as PROTO((int uid, int gid, char *pathname, int mode));
-extern void do_osc PROTO((int (*func)(void)));
+extern void do_dcs PROTO((Char *buf, int len));
+extern void do_osc PROTO((Char *buf, int len));
+extern void do_xevents PROTO((void));
 extern void end_tek_mode PROTO((void));
 extern void end_vt_mode PROTO((void));
 extern void hide_tek_window PROTO((void));
@@ -162,7 +168,10 @@ extern void ScrollBarReverseVideo PROTO((Widget scrollWidget));
 extern void WindowScroll PROTO((TScreen *screen, int top));
 
 /* tabs.c */
+extern Boolean TabToNextStop PROTO((void));
+extern Boolean TabToPrevStop PROTO((void));
 extern int TabNext PROTO((Tabs tabs, int col));
+extern int TabPrev PROTO((Tabs tabs, int col));
 extern void TabClear PROTO((Tabs tabs, int col));
 extern void TabReset PROTO((Tabs tabs));
 extern void TabSet PROTO((Tabs tabs, int col));
@@ -173,11 +182,7 @@ extern GC updatedXtermGC PROTO((TScreen *screen, int flags, int fg, int bg, Bool
 extern int AddToRefresh PROTO((TScreen *screen));
 extern int HandleExposure PROTO((TScreen *screen, XEvent *event));
 extern void ChangeColors PROTO((XtermWidget tw, ScrnColors *pNew));
-extern void ClearAbove PROTO((TScreen *screen));
-extern void ClearBelow PROTO((TScreen *screen));
-extern void ClearLeft PROTO((TScreen *screen));
-extern void ClearLine PROTO((TScreen *screen));
-extern void ClearRight PROTO((TScreen *screen));
+extern void ClearRight PROTO((TScreen *screen, int n));
 extern void ClearScreen PROTO((TScreen *screen));
 extern void DeleteChar PROTO((TScreen *screen, int n));
 extern void DeleteLine PROTO((TScreen *screen, int n));
@@ -188,6 +193,9 @@ extern void InsertLine PROTO((TScreen *screen, int n));
 extern void RevScroll PROTO((TScreen *screen, int amount));
 extern void ReverseVideo PROTO((XtermWidget termw));
 extern void Scroll PROTO((TScreen *screen, int amount));
+extern void do_erase_display PROTO((TScreen *screen, int param, int mode));
+extern void do_erase_line PROTO((TScreen *screen, int param, int mode));
+extern void drawXtermText PROTO((TScreen *screen, unsigned flags, GC gc, int x, int y, char *text, int len));
 extern void recolor_cursor PROTO((Cursor cursor, unsigned long fg, unsigned long bg));
 extern void resetXtermGC PROTO((TScreen *screen, int flags, Bool hilite));
 extern void scrolling_copy_area PROTO((TScreen *screen, int firstline, int nlines, int amount));
@@ -212,5 +220,11 @@ extern void useCurBackground PROTO((Bool flag));
 #define useCurBackground(flag) /*nothing*/
 
 #endif	/* OPT_ISO_COLORS */
+
+#define FillCurBackground(screen, left, top, width, height) \
+	useCurBackground(TRUE); \
+	XFillRectangle (screen->display, TextWindow(screen), \
+		screen->reverseGC, left, top, width, height); \
+	useCurBackground(FALSE)
 
 #endif	/* included_xterm_h */

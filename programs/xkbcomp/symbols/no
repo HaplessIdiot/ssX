@@ -1,5 +1,6 @@
 // $XConsortium: no /main/2 1995/12/07 21:43:06 kaleb $
-partial default xkb_symbols "basic" {
+partial default alphanumeric_keys 
+xkb_symbols "basic" {
 
     // Describes the differences between a very simple en_US
     // keyboard and a very simple Norvegian keybaord
@@ -40,5 +41,14 @@ partial default xkb_symbols "basic" {
     modifier_map Control{ Control_L };
     modifier_map Mod3   { Mode_switch };
 };
+partial alphanumeric_keys 
+xkb_symbols "nodeadkeys" {
 
+    // Modifies the basic Norwegian layout to eliminate dead keys
 
+    key <AE12> {	[       backslash,           grave	],
+			[	    acute,          ogonek 	]	};
+    key <AD12> {	[       diaeresis,     asciicircum     	],	
+			[      asciitilde,          macron     	]      	};
+
+};

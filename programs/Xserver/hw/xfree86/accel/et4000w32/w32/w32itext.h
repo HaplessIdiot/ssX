@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32itext.h,v 3.4 1995/01/28 15:51:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32itext.h,v 3.5 1996/02/04 09:00:46 dawes Exp $ */ 
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -72,7 +72,10 @@ void W32pImageText4();
     SET_XY(X, Y) \
     *ACL_FOREGROUND_RASTER_OPERATION	= 0xcc; \
     *ACL_BACKGROUND_RASTER_OPERATION	= 0xf0; \
-    *ACL_ROUTING_CONTROL		= 0x02; \
+    if (W32et6000) \
+      *ACL_MIX_CONTROL			= 0x32; \
+    else \
+      *ACL_ROUTING_CONTROL		= 0x02; \
     *ACL_XY_DIRECTION			= 0; \
     *ACL_DESTINATION_Y_OFFSET		= DST_OFFSET; \
     *ACL_SOURCE_ADDRESS			= W32Foreground; \

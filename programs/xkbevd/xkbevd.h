@@ -1,4 +1,4 @@
-/* $XConsortium: xkbevd.h /main/1 1995/11/30 19:18:41 kaleb $ */
+/* $XConsortium: xkbevd.h /main/2 1996/05/24 15:03:23 kaleb $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -48,6 +48,8 @@ extern	Display *	dpy;
 extern	int		xkbOpcode;
 extern	int		xkbEventCode;
 extern	Bool		detectableRepeat;
+
+extern	XkbDescPtr	xkb;
 
 #define	UnknownAction	0
 #define	NoAction	1

@@ -1,5 +1,6 @@
 // $XConsortium: fr_CH /main/2 1995/12/07 21:42:37 kaleb $
-partial default xkb_symbols "basic" {
+partial default alphanumeric_keys 
+xkb_symbols "basic" {
 
     // Describes the differences between a very simple US/ASCII
     // keyboard and a very simple Swiss/French keybaord
@@ -18,4 +19,8 @@ partial default xkb_symbols "basic" {
 	[ agrave,	adiaeresis	],
 	[  braceleft			]
     };
+};
+partial alphanumeric_keys
+xkb_symbols "nodeadkeys" {
+    include "fr_CH(basic)" // for consistent naming
 };

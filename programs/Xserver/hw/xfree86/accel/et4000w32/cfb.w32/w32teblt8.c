@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32teblt8.c,v 3.3 1995/01/28 15:50:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32teblt8.c,v 3.4 1996/02/04 08:59:52 dawes Exp $ */ 
 /*
  * TEGblt - ImageText expanded glyph fonts only.  For
  * 8 bit displays, in Copy mode with no clipping.
@@ -157,27 +157,53 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     {
 	W32P_INIT_IMAGE_TEXT(PFILL(pGC->fgPixel), PFILL(pGC->bgPixel),
 			     line_hop - 1, widthGlyph, h)
-	switch (bytes)
+	if (W32et6000)
 	{
-	    case 1:
-		w32_text = W32pImageText1;
-		break;
-	    case 2:
-		w32_text = W32pImageText2;
-		break;
-	    case 3:
-		w32_text = W32pImageText3;
-		break;
-	    case 4:
-		w32_text = W32pImageText4;
-		break;
+	    long W32MixPong = W32Mix + 504;
+	    long MixDstPing = W32Mix << 3, MixDstPong = W32MixPong << 3;
+	    
+	    for (i = 0; i < nglyph; i++)
+	    {
+	        char1 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
+	        if (i&1)
+	        {
+	            *ACL_MIX_ADDRESS = MixDstPong;
+	            *MBP0 = W32MixPong;
+	        }
+	        else
+	        {
+	            *ACL_MIX_ADDRESS = MixDstPing;
+	            *MBP0 = W32Mix;
+	        }
+                memcpy(W32Buffer, char1, h<<2); /* is well-optimized in most OSses */
+	        *ACL_DESTINATION_ADDRESS = dst;
+	        dst += widthGlyph;
+	    }
 	}
-	for (i = 0; i < nglyph; i++)
+	else
 	{
-	    char1 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
-	    *ACL_DESTINATION_ADDRESS = dst;
-	    (*w32_text)(h, char1);
-	    dst += widthGlyph;
+	    switch (bytes)
+	    {
+	        case 1:
+	    	    w32_text = W32pImageText1;
+	    	    break;
+	        case 2:
+	    	    w32_text = W32pImageText2;
+	    	    break;
+	        case 3:
+	    	    w32_text = W32pImageText3;
+	    	    break;
+	        case 4:
+	    	    w32_text = W32pImageText4;
+	    	    break;
+	    }
+	    for (i = 0; i < nglyph; i++)
+	    {
+	        char1 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
+	        *ACL_DESTINATION_ADDRESS = dst;
+	        (*w32_text)(h, char1);
+	        dst += widthGlyph;
+	    }
 	}
     }
 

@@ -33,25 +33,25 @@ default xkb_geometry "dell101" {
     height= 210;
 
     shape.cornerRadius= 1;
-    shape "NORM" { { [ 18,18] }, { [2,1], [ 16,17] } };
-    shape "BKSP" { { [ 37,18] }, { [2,1], [ 35,17] } };
-    shape "TABK" { { [ 28,18] }, { [2,1], [ 26,17] } };
-    shape "BKSL" { { [ 28,18] }, { [2,1], [ 26,17] } };
-    shape "RTRN" { { [ 42,18] }, { [2,1], [ 40,17] } };
-    shape "CAPS" { { [ 32,18] }, { [2,1], [ 30,17] } };
-    shape "LFSH" { { [ 42,18] }, { [2,1], [ 40,17] } };
-    shape "RTSH" { { [ 52,18] }, { [2,1], [ 50,17] } };
-    shape "MODK" { { [ 28,18] }, { [2,1], [ 26,17] } };
-    shape "SPCE" { { [132,18] }, { [2,1], [130,17] } };
-    shape "KP0"  { { [ 37,18] }, { [2,1], [ 35,17] } };
-    shape "KPAD" { { [ 18,37] }, { [2,1], [ 16,36] } };
+    shape "NORM" { { [ 18,18] }, { [2,1], [ 16,16] } };
+    shape "BKSP" { { [ 38,18] }, { [2,1], [ 36,16] } };
+    shape "TABK" { { [ 28,18] }, { [2,1], [ 26,16] } };
+    shape "BKSL" { { [ 28,18] }, { [2,1], [ 26,16] } };
+    shape "RTRN" { { [ 42,18] }, { [2,1], [ 40,16] } };
+    shape "CAPS" { { [ 33,18] }, { [ 28,18] }, { [2,1], [ 26,16] } };
+    shape "LFSH" { { [ 42,18] }, { [2,1], [ 40,16] } };
+    shape "RTSH" { { [ 52,18] }, { [2,1], [ 50,16] } };
+    shape "MODK" { { [ 27,18] }, { [2,1], [ 25,16] } };
+    shape "SPCE" { { [133,18] }, { [2,1], [131,16] } };
+    shape "KP0"  { { [ 37,18] }, { [2,1], [ 35,16] } };
+    shape "KPAD" { { [ 18,37] }, { [2,1], [ 16,35] } };
 
-    shape "LEDS" { cornerRadius= 0, { [ 76 ,20 ] } };
+    shape "LEDS" { cornerRadius= 0, { [ 75 ,20 ] } };
     shape "LED"  { cornerRadius= 0, { [  5,  1 ] } };
     solid "LedPanel" {
 	shape= "LEDS";
 	top=  52;
-	left= 375;
+	left= 377;
 	color= "grey10";
     };
 
@@ -59,12 +59,12 @@ default xkb_geometry "dell101" {
     indicator.offColor= "green30";
     indicator.top= 67;
     indicator.shape= "LED";
-    indicator "NumLock"     { left= 379; };
-    indicator "CapsLock"    { left= 404; };
-    indicator "ScrollLock"  { left= 429; };
+    indicator "NumLock"     { left= 382; };
+    indicator "CapsLock"    { left= 407; };
+    indicator "ScrollLock"  { left= 433; };
     text.top= 55;
     text.color= "black";
-    text "NumLockLabel"	{ left= 378; text="Num\nLock"; };
+    text "NumLockLabel"		{ left= 378; text="Num\nLock"; };
     text "CapsLockLabel"	{ left= 403; text="Caps\nLock"; };
     text "ScrollLockLabel"	{ left= 428; text="Scroll\nLock"; };
 
@@ -77,7 +77,7 @@ default xkb_geometry "dell101" {
 	row {
 	    top= 1;
 	    keys {  { <ESC>, color="grey20" },
-		    { <FK01>, 18 }, <FK02>, <FK03>, <FK04>,
+		    { <FK01>, 20 }, <FK02>, <FK03>, <FK04>,
 		    { <FK05>, 11 }, <FK06>, <FK07>, <FK08>,
 		    { <FK09>, 11 }, <FK10>, <FK11>, <FK12>,
 		    { <PRSC>, 8 }, <SCLK>, <PAUS> 
@@ -123,16 +123,16 @@ default xkb_geometry "dell101" {
 	    top= 77;
 	    key.shape= "MODK";
 	    key.color= "grey20";
-	    keys { <LCTL>, { <LALT>, 20 },
+	    keys { <LCTL>, { <LALT>, 21 },
 		   { <SPCE>, "SPCE", color="white" },
-		   <RALT>, { <RCTL>, 20 }
+		   <RALT>, { <RCTL>, 21 }
 	    };
 	};
     }; // End of "Alpha" section
 
     section "Editing" {
 	top= 91;
-	left= 310;
+	left= 312;
 	key.color= "grey20";
 	row {
 	    top= 1;
@@ -155,7 +155,7 @@ default xkb_geometry "dell101" {
 
     section "Keypad" {
 	top= 91;
-	left= 375;
+	left= 376;
 	row {
 	    top= 1;
 	    key.color= "grey20";

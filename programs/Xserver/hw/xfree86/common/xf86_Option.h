@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.54 1996/08/10 13:06:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.55 1996/08/11 12:56:53 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -219,6 +219,7 @@ typedef struct {
 #define CLOCK_OPTION_ATT409     16 /* use ATT20C409 programmable clock */
 #define CLOCK_OPTION_CH8398     17 /* use Chrontel 8398 programmable clock */
 #define CLOCK_OPTION_GLORIA8    18 /* use ELSA Gloria-8 TVP3030/ICS9161 clock */
+#define CLOCK_OPTION_ET6000     19 /* use ET6000 built-in programmable clock */
 
 /*
  * Table to map option strings to tokens.
@@ -413,6 +414,7 @@ OptFlagRec xf86_ClockOptionTab [] = {
   { "att20c408",	CLOCK_OPTION_ATT409 },    /* ATT20C408, 409 compatible */
   { "ch8398",		CLOCK_OPTION_CH8398 },    /* Chrontel 8398 */
   { "ati18818",		CLOCK_OPTION_ICS2595 },   /* ATI18818, ICS2595 compatible */
+  { "et6000",		CLOCK_OPTION_ET6000 },    /* ET6000 */
   { "",			-1 },
 };
 

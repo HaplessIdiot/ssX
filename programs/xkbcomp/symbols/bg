@@ -1,5 +1,6 @@
 // $XConsortium: bg /main/2 1995/12/07 21:41:04 kaleb $
-partial default xkb_symbols "typewriter" {
+partial default alphanumeric_keys 
+xkb_symbols "typewriter" {
 
     // Describes the differences between a very simple US/ASCII
     // keyboard and a very simple Bulgarian keybaord
@@ -101,7 +102,8 @@ partial default xkb_symbols "typewriter" {
     modifier_map Mod3	{ Mode_switch };
 };
 
-partial xkb_symbols "iso-alternate" {
+partial alphanumeric_keys 
+xkb_symbols "iso-alternate" {
     include "be(basic)"
     replace key <AD01> {[		a,               A 	],
 			[              ae,              AE	]	};

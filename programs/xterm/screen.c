@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: screen.c,v 1.33 94/04/02 17:34:36 gildea Exp $
- *	$XFree86: xc/programs/xterm/screen.c,v 3.6 1996/08/10 13:09:51 dawes Exp $
+ *	$XFree86: xc/programs/xterm/screen.c,v 3.7 1996/08/11 13:04:51 dawes Exp $
  */
 
 /*
@@ -228,9 +228,16 @@ register int length;		/* length of string */
 	})
 
 	wrappedbit = *attrs & LINEWRAPPED;
+
+	/* write blanks if we're writing invisible text */
+	if (flags & INVISIBLE) {
+		bzero(col,   length);
+	} else {
+		memcpy( col,   str,    length);
+	}
+
 	flags &= ATTRIBUTES;
 	flags |= CHARDRAWN;
-	memcpy( col,   str,    length);
 	memset( attrs, flags,  length);
 
 	if_OPT_ISO_COLORS(screen,{
@@ -445,7 +452,7 @@ Boolean force;			/* ... leading/trailing spaces */
 	   int lastind;
 	   int flags;
 	   int fg = 0, bg = 0;
-	   int x, n;
+	   int x;
 	   GC gc;
 	   Boolean hilite;	
 
@@ -517,15 +524,8 @@ Boolean force;			/* ... leading/trailing spaces */
 		 || ((flags & BG_COLOR) && (bgs[col] != bg))
 #endif
 		 ) {
-
-		   XDrawImageString(screen->display, TextWindow(screen), 
-		        	gc, x, y, (char *) &chars[lastind], n = col - lastind);
-		   if((flags & BOLD) && screen->enbolden)
-		 	XDrawString(screen->display, TextWindow(screen), 
-			 gc, x + 1, y, (char *) &chars[lastind], n);
-		   if((flags & UNDERLINE) && screen->underline) 
-			XDrawLine(screen->display, TextWindow(screen), 
-			 gc, x, y+1, x+n*FontWidth(screen), y+1);
+		   drawXtermText(screen, flags, gc, x, y,
+			(char *) &chars[lastind], col - lastind);
 
 		   x += (col - lastind) * FontWidth(screen);
 
@@ -544,14 +544,8 @@ Boolean force;			/* ... leading/trailing spaces */
 			chars[col] = ' ';
 	   }
 
-	   XDrawImageString(screen->display, TextWindow(screen), gc, 
-	         x, y, (char *) &chars[lastind], n = col - lastind);
-	   if((flags & BOLD) && screen->enbolden)
-		XDrawString(screen->display, TextWindow(screen), gc,
-		x + 1, y, (char *) &chars[lastind], n);
-	   if((flags & UNDERLINE) && screen->underline) 
-		XDrawLine(screen->display, TextWindow(screen), gc, 
-		 x, y+1, x + n * FontWidth(screen), y+1);
+	   drawXtermText(screen, flags, gc, x, y,
+		(char *) &chars[lastind], col - lastind);
 	}
 
 	/*

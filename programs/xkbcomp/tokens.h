@@ -1,4 +1,4 @@
-/* $XConsortium: tokens.h,v 1.1 94/04/02 17:07:48 erik Exp $ */
+/* $XConsortium: tokens.h /main/5 1996/01/14 16:48:18 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -28,7 +28,7 @@
 #define	TOKENS_H 1
 
 #define	END_OF_FILE	0
-#define	ERROR		255
+#define	ERROR_TOK	255
 
 #define	XKB_KEYMAP	1
 #define	XKB_KEYCODES	2
@@ -47,11 +47,22 @@
 #define	VIRTUAL_MODS	20
 #define	TYPE		21
 #define	INTERPRET	22
-#define	ACTION		23
+#define	ACTION_TOK	23
 #define	KEY		24
-#define	MODIFIER	25
-#define	MODIFIER_MAP	26
-#define	INDICATOR	27
+#define	ALIAS		25
+#define	GROUP		26
+#define	MODIFIER_MAP	27
+#define	INDICATOR	28
+#define	SHAPE		29
+#define	KEYS		30
+#define	ROW		31
+#define	SECTION		32
+#define	OVERLAY		33
+#define	TEXT		34
+#define	OUTLINE		35
+#define	SOLID		36
+#define	LOGO		37
+#define	VIRTUAL		38
 
 #define	EQUALS		40
 #define	PLUS		41
@@ -71,8 +82,18 @@
 #define	INVERT		55
 
 #define	STRING		60
-#define	NUMBER		61
-#define	IDENT		62
-#define	KEYNAME		63
+#define	INTEGER		61
+#define	FLOAT		62
+#define	IDENT		63
+#define	KEYNAME		64
+
+#define	PARTIAL		70
+#define	DEFAULT		71
+#define	HIDDEN		72
+#define	ALPHANUMERIC_KEYS	73
+#define	MODIFIER_KEYS		74
+#define	KEYPAD_KEYS		75
+#define	FUNCTION_KEYS		76
+#define	ALTERNATE_GROUP		77
 
 #endif

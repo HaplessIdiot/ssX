@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.50 1996/05/11 11:04:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.51 1996/08/11 12:56:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -439,6 +439,11 @@ static SymTabRec DeviceTab[] = {
 #define XKBGEOMETRY	44
 #define XKBSYMBOLS	45
 #define XKBDISABLE	46
+#define XKBRULES	110
+#define XKBMODEL	111
+#define XKBLAYOUT	112
+#define XKBVARIANT	113
+#define XKBOPTIONS	114
 
 #ifdef INIT_CONFIG
 static SymTabRec KeyboardTab[] = {
@@ -461,6 +466,11 @@ static SymTabRec KeyboardTab[] = {
   { XKBGEOMETRY,"xkbgeometry" },
   { XKBSYMBOLS,	"xkbsymbols" },
   { XKBDISABLE, "xkbdisable" },
+  { XKBRULES,	"xkbrules" },
+  { XKBMODEL,	"xkbmodel" },
+  { XKBLAYOUT,	"xkblayout" },
+  { XKBVARIANT,	"xkbvariant" },
+  { XKBOPTIONS,	"xkboptions" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.132 1996/08/10 13:06:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.133 1996/08/11 12:54:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1223,7 +1223,6 @@ s3Probe()
 	 defaultColorVisualClass = s3InfoRec.defaultVisual;
       break;
    case 32:
-      xf86bpp = 32;
       s3InfoRec.depth = 24;
       s3InfoRec.bitsPerPixel = 32; /* Use sparse 24 bpp (RGBX) */
       s3Weight = RGB32_888;

@@ -1,5 +1,6 @@
 // $XConsortium: be /main/2 1995/12/07 21:40:55 kaleb $
-partial default xkb_symbols "basic" {
+partial default alphanumeric_keys 
+xkb_symbols "basic" {
 
     // Describes the differences between a very simple US/ASCII
     // keyboard and a very simple Belgian keybaord
@@ -54,7 +55,8 @@ partial default xkb_symbols "basic" {
     modifier_map Mod3	{ Mode_switch };
 };
 
-partial xkb_symbols "iso-alternate" {
+partial alphanumeric_keys 
+xkb_symbols "iso-alternate" {
     include "be(basic)"
     replace key <AD01> {[		a,               A 	],
 			[              ae,              AE	]	};
@@ -68,4 +70,13 @@ partial xkb_symbols "iso-alternate" {
 			[         lstroke,         Lstroke      ]	};
     replace key <AB07> {[           comma,        question 	],
 			[      dead_acute, dead_doubleacute	]	};
+};
+
+partial alphanumeric_keys 
+xkb_symbols "nodeadkeys" {
+
+    // Eliminates dead keys from the basic Belgian layout
+    include "be(basic)"
+    key <AD11> {	[ 	asciicircum,       diaeresis 	],
+			[     bracketleft			]	};
 };

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32blt.h,v 3.3 1995/01/28 15:51:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32blt.h,v 3.4 1996/02/04 09:00:43 dawes Exp $ */  
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -64,7 +64,10 @@ glenn@cs.utexas.edu)
     *ACL_XY_DIRECTION			= i; \
     *ACL_DESTINATION_Y_OFFSET		= DST_OFFSET; \
     *ACL_SOURCE_Y_OFFSET		= SRC_OFFSET; \
-    *ACL_ROUTING_CONTROL 		= 0x0; \
+    if (W32et6000) \
+	*ACL_MIX_CONTROL                = 0x33; \
+    else \
+	*ACL_ROUTING_CONTROL            = 0x00; \
 }
 
 

@@ -60,6 +60,7 @@ char *		_XkbErrMessages[] = {
 	"error in Xkm file",			/* _XkbErrBadFileFormat      */
 	"allocation failed",			/* _XkbErrBadAlloc           */
 	"bad length",                           /* _XkbErrBadLength          */
+	"X request failed",			/* _XkbErrXReqFailure        */
 	"not implemented"                       /* _XkbErrBadImplementation  */
 };
 

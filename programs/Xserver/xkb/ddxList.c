@@ -1,5 +1,5 @@
-/* $XConsortium: ddxList.c /main/3 1996/03/01 14:30:52 kaleb $ */
-/* $XFree86$ */
+/* $XConsortium: ddxList.c /main/1 1996/01/14 16:45:55 kaleb $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxList.c,v 3.1 1996/05/12 12:00:12 dawes Exp $ */
 /************************************************************
 Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -134,6 +134,7 @@ char 	*file,*map,*tmp,buf[PATH_MAX];
 FILE 	*in;
 Status	status;
 int	rval;
+Bool	haveDir;
 
     if ((list->pattern[what]==NULL)||(list->pattern[what][0]=='\0'))
 	return Success;
@@ -149,20 +150,47 @@ int	rval;
 	}
     }
 
+    in= NULL;
+    haveDir= True;
     if (XkbBaseDirectory!=NULL) {
-	sprintf(buf,"%s/xkbcomp -R%s/%s -w %d -l -vlfhpR '%s'",
+	if (strlen(XkbBaseDirectory)+strlen(componentDirs[what])+6 > PATH_MAX)
+	    return BadImplementation;
+	if ((list->pattern[what][0]=='*')&&(list->pattern[what][1]=='\0')) {
+	    sprintf(buf,"%s/%s.dir",XkbBaseDirectory,componentDirs[what]);
+	    in= fopen(buf,"r");
+	}
+	if (!in) {
+	    haveDir= False;
+	    if (strlen(XkbBaseDirectory)*2+strlen(componentDirs[what])
+		    +(xkbDebugFlags>9?2:1)+strlen(file)+31 > PATH_MAX)
+		return BadImplementation;
+	    sprintf(buf,"%s/xkbcomp -R%s/%s -w %d -l -vlfhpR '%s'",
 		XkbBaseDirectory,XkbBaseDirectory,componentDirs[what],
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		file);
+	}
     }
     else {
-	sprintf(buf,"xkbcomp -R%s -w %d -l -vlfhpR '%s'",
+	if (strlen(XkbBaseDirectory)+strlen(componentDirs[what])+6 > PATH_MAX)
+	    return BadImplementation;
+	if ((list->pattern[what][0]=='*')&&(list->pattern[what][1]=='\0')) {
+	    sprintf(buf,"%s.dir",componentDirs[what]);
+	    in= fopen(buf,"r");
+	}
+	if (!in) {
+	    haveDir= False;
+	    if (strlen(componentDirs[what])
+		    +(xkbDebugFlags>9?2:1)+strlen(file)+29 > PATH_MAX)
+		return BadImplementation;
+	    sprintf(buf,"xkbcomp -R%s -w %d -l -vlfhpR '%s'",
 		componentDirs[what],
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		file);
+	}
     }
     status= Success;
-    in= popen(buf,"r");
+    if (!haveDir)
+	in= popen(buf,"r");
     if (!in)
 	return BadImplementation;
     list->nFound[what]= 0;
@@ -170,6 +198,9 @@ int	rval;
 	unsigned flags;
 	register unsigned int i;
 	if (*tmp=='#') /* comment, skip it */
+	    continue;
+	if (!strncmp(tmp, "Warning:", 8) || !strncmp(tmp, "        ", 8))
+	    /* skip warnings too */
 	    continue;
 	flags= 0;
 	/* each line in the listing is supposed to start with two */
@@ -181,6 +212,7 @@ int	rval;
 	   else if (*tmp!='-')	status= BadImplementation;
 	   tmp++;
 	}
+	if (status != Success)  break;
 	if (!isspace(*tmp)) {
 	     status= BadImplementation;
 	     break;
@@ -191,9 +223,10 @@ int	rval;
 	   else if (*tmp!='-')	status= BadImplementation;
 	   tmp++;
 	}
+	if (status != Success)  break;
 	if (isspace(*tmp)) {
 	    while (isspace(*tmp)) {
-		*tmp++;
+		tmp++;
 	    }
 	}
 	else {
@@ -202,7 +235,9 @@ int	rval;
 	}
 	status= _AddListComponent(list,what,flags,tmp,client);
     }
-    if ((rval=pclose(in))!=0) {
+    if (haveDir)
+	fclose(in);
+    else if ((rval=pclose(in))!=0) {
 	if (xkbDebugFlags)
 	    ErrorF("xkbcomp returned exit code %d\n",rval);
     }

@@ -1,5 +1,4 @@
 /* $XConsortium: XKBMAlloc.c /main/7 1996/03/01 14:29:44 kaleb $ */
-/* $XFree86: xc/lib/X11/XKBMAlloc.c,v 3.4 1996/03/16 12:45:26 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

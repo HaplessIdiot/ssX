@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32rctstp8.c,v 3.6 1995/01/28 15:50:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32rctstp8.c,v 3.7 1996/02/04 08:59:51 dawes Exp $ */
 /*
  * Fill 32 bit stippled rectangles for 8 bit frame buffers
  */
@@ -55,6 +55,7 @@ Author: Keith Packard, MIT X Consortium
 #define STIPPLE   \
 	while (nBox--)  \
 	{  \
+            long ACLDst;\
 	    w = pBox->x2 - pBox->x1;  \
 	    h = pBox->y2 - pBox->y1;  \
 	    y = pBox->y1;  \
@@ -64,8 +65,16 @@ Author: Keith Packard, MIT X Consortium
 		continue;  \
 	    }  \
   \
-	    SET_XY(w, h)  \
-	    START_ACL_CPU(pBox->y1 * nlwDst + pBox->x1 * (PSZ >> 3))  \
+  	    ACLDst = pBox->y1 * nlwDst + pBox->x1 * (PSZ >> 3); \
+	    if (!W32et6000) \
+	    { \
+	        SET_XY(w, h)  \
+	        START_ACL_CPU(ACLDst)  \
+	    } \
+	    else \
+	    { \
+	        SET_XY(w, 1) /* line-per-line */ \
+	    } \
 	    rot = pBox->x1 & (PGSZ-1);  \
 	    pBox++;  \
 	    y = y % stippleHeight;  \
@@ -75,8 +84,17 @@ Author: Keith Packard, MIT X Consortium
   \
 	    if (W32OrW32i)  \
 		W32_STIPPLE  \
-	    else  \
-		W32P_STIPPLE  \
+	    else \
+	    { \
+	        if (W32et6000) \
+	        { \
+	            long W32MixPong = W32Mix + 504; \
+	            long MixDstPing = W32Mix << 3, MixDstPong = W32MixPong << 3; \
+	            ET6K_STIPPLE \
+	        } \
+	        else /* W32p */ \
+		    W32P_STIPPLE  \
+	    } \
 	}
 
 

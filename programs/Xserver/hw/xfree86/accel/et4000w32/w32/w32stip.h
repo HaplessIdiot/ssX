@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32stip.h,v 3.4 1995/01/28 15:51:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32stip.h,v 3.5 1996/02/04 09:00:48 dawes Exp $ */ 
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -90,7 +90,10 @@ glenn@cs.utexas.edu)
 { \
     *ACL_FOREGROUND_RASTER_OPERATION 	= W32OpTable[OP]; \
     *ACL_BACKGROUND_RASTER_OPERATION	= 0xf0; \
-    *ACL_ROUTING_CONTROL		= 0x2; \
+    if (W32et6000) \
+      *ACL_MIX_CONTROL			= 0x32; \
+    else \
+      *ACL_ROUTING_CONTROL		= 0x02; \
     *ACL_XY_DIRECTION			= 0; \
     *ACL_DESTINATION_Y_OFFSET		= DST_OFFSET; \
     *ACL_SOURCE_WRAP			= 0x02; \
@@ -123,7 +126,10 @@ glenn@cs.utexas.edu)
 	*(LongP)W32Buffer 		= MASK; \
     } \
     *ACL_BACKGROUND_RASTER_OPERATION	= 0xaa; \
-    *ACL_ROUTING_CONTROL		= 0x2; \
+    if (W32et6000) \
+      *ACL_MIX_CONTROL			= 0x32; \
+    else \
+      *ACL_ROUTING_CONTROL		= 0x02; \
     *ACL_XY_DIRECTION			= 0; \
     *ACL_DESTINATION_Y_OFFSET		= DST_OFFSET; \
     *ACL_SOURCE_WRAP			= 0x02; \
@@ -201,6 +207,31 @@ glenn@cs.utexas.edu)
 			*ACL = bits; \
 			break; \
 		} \
+	    }
+
+#define ET6K_STIPPLE \
+	    while (h--) \
+	    { \
+                if (h&1) /* ping-pong between stipple buffers */ \
+                { \
+                    *ACL_MIX_ADDRESS = MixDstPong; \
+                    *MBP0 = W32MixPong; \
+                } \
+                else \
+                { \
+                    *ACL_MIX_ADDRESS = MixDstPing; \
+                    *MBP0 = W32Mix; /* Ping */ \
+                } \
+	    	bits = src[y]; \
+	    	if (++y == stippleHeight) \
+		    y = 0; \
+	    	if (rot) \
+		    RotBitsLeft(bits,rot); \
+		w = w32_chunks+1; \
+		while (w--) \
+		    *((LongP)W32Buffer+w) = bits; \
+		*(ACL_DESTINATION_ADDRESS)=ACLDst; \
+	        ACLDst += nlwDst; \
 	    }
 
 

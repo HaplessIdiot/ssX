@@ -1,5 +1,5 @@
-/* $XConsortium: ddxLoad.c /main/8 1996/02/05 06:18:40 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.8 1996/05/12 12:00:13 dawes Exp $ */
+/* $XConsortium: ddxLoad.c /main/16 1996/06/11 11:31:21 kaleb $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.9 1996/05/13 06:50:27 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -77,10 +77,28 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #endif
 #endif
 
-#define	PRE_ERROR_MSG "\"The XKB keymap compiler (xkbcomp) reports:\""
+#define	PRE_ERROR_MSG "\"The XKEYBOARD keymap compiler (xkbcomp) reports:\""
 #define	ERROR_PREFIX	"\"> \""
 #define	POST_ERROR_MSG1 "\"Errors from xkbcomp are not fatal to the X server\""
 #define	POST_ERROR_MSG2 "\"End of messages from xkbcomp\""
+
+static void
+OutputDirectory (outdir)
+    char* outdir;
+{
+    if (getuid() == 0) {
+	/* if server running as root it'll be able to write */
+	(void) strcpy (outdir, XKM_OUTPUT_DIR);
+    } else {
+#ifdef _PATH_VARTMP
+	(void) strcpy (outdir, _PATH_VARTMP);
+	if (outdir[strlen(outdir)] != '/')
+	    (void) strcat (outdir, "/");
+#else
+	(void) strcpy (outdir, "/tmp/");
+#endif
+    }
+}
 
 Bool
 #if NeedFunctionPrototypes
@@ -115,10 +133,23 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
 	 outFile= _XkbDupString(&outFile[1]);
     else outFile= _XkbDupString(file);
     XkbEnsureSafeMapName(outFile);
-    (void) strcpy (xkm_output_dir, XKM_OUTPUT_DIR);
+    OutputDirectory(xkm_output_dir);
+/*  (void) strcpy (xkm_output_dir, XKM_OUTPUT_DIR); */
     if (xkm_output_dir[strlen(xkm_output_dir)] != '/') /* hi IBM, Digital */
 	(void) strcat (xkm_output_dir, "/");
     if (XkbBaseDirectory!=NULL) {
+	if (strlen(XkbBaseDirectory)*2+(xkbDebugFlags>9?2:1)
+		+(map?strlen(map)+3:0)+strlen(PRE_ERROR_MSG)
+		+strlen(ERROR_PREFIX)+strlen(POST_ERROR_MSG1)
+		+strlen(file)+strlen(xkm_output_dir)
+		+strlen(outFile)+53 > PATH_MAX)
+	{
+#ifdef DEBUG
+	    ErrorF("compiler command for keymap (%s) exceeds max length\n",
+								names->keymap);
+#endif
+	    return False;
+	}
 	sprintf(cmd,"%s/xkbcomp -w %d -R%s -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s%s.xkm",
 		XkbBaseDirectory,
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
@@ -127,6 +158,17 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
 		xkm_output_dir,outFile);
     }
     else {
+	if ((xkbDebugFlags>9?2:1)+(map?strlen(map)+3:0)+strlen(PRE_ERROR_MSG)
+		+strlen(ERROR_PREFIX)+strlen(POST_ERROR_MSG1)
+		+strlen(file)+strlen(xkm_output_dir)
+		+strlen(outFile)+49 > PATH_MAX)
+	{
+#ifdef DEBUG
+            ErrorF("compiler command for keymap (%s) exceeds max length\n",
+							names->keymap);
+#endif
+	    return False;
+	}
 	sprintf(cmd,"xkbcomp -w %d -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s%s.xkm",
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		(map?"-m ":""),(map?map:""),
@@ -145,14 +187,14 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
 	    nameRtrn[nameRtrnLen-1]= '\0';
 	}
 	if (outFile!=NULL)
-	    xfree(outFile);
+	    Xfree(outFile);
 	return True;
     } 
 #ifdef DEBUG
     ErrorF("Error compiling keymap (%s)\n",names->keymap);
 #endif
     if (outFile!=NULL)
-	xfree(outFile);
+	Xfree(outFile);
     return False;
 }
         	
@@ -175,7 +217,7 @@ XkbDDXCompileKeymapByNames(xkb,names,want,need,nameRtrn,nameRtrnLen)
 #endif
 {
 FILE *	out;
-char	buf[PATH_MAX],keymap[PATH_MAX];;
+char	buf[PATH_MAX],keymap[PATH_MAX],xkm_output_dir[PATH_MAX];
     
     if ((names->keymap==NULL)||(names->keymap[0]=='\0')) {
 	extern char *display;
@@ -186,37 +228,62 @@ char	buf[PATH_MAX],keymap[PATH_MAX];;
     }
 
     XkbEnsureSafeMapName(keymap);
+    OutputDirectory(xkm_output_dir);
     if (XkbBaseDirectory!=NULL) {
 #ifdef __EMX__
-        char *tmpbase = (char*)__XOS2RedirRoot(XkbBaseDirectory);
-        int i;
-        for (i=0; i<strlen(tmpbase); i++) if (tmpbase[i]=='/') tmpbase[i]='\\';
-	sprintf(buf,"%s\\xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
+	char *tmpbase = (char*)__XOS2RedirRoot(XkbBaseDirectory);
+	int i;
+#endif
+	if (strlen(XkbBaseDirectory)*2+(xkbDebugFlags>9?2:1)
+		+strlen(PRE_ERROR_MSG)+strlen(ERROR_PREFIX)
+		+strlen(POST_ERROR_MSG1)+strlen(xkm_output_dir)
+		+strlen(keymap)+48 > PATH_MAX)
+	{
+#ifdef DEBUG
+            ErrorF("compiler command for keymap (%s) exceeds max length\n",
+							names->keymap);
+#endif
+	    return False;
+	}
+#ifdef __EMX__
+	for (i=0; i<strlen(tmpbase); i++) if (tmpbase[i]=='/') tmpbase[i]='\\'
+
+	    sprintf(buf,"%s\\xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
 		tmpbase,
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		tmpbase,
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,XKM_OUTPUT_DIR,keymap);
+
 #else
 	sprintf(buf,"%s/xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
 		XkbBaseDirectory,
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		XkbBaseDirectory,
-		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,XKM_OUTPUT_DIR,keymap);
+		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,xkm_output_dir,keymap);
 #endif
     }
     else {
+	if ((xkbDebugFlags>9?2:1)+strlen(PRE_ERROR_MSG)
+		+strlen(ERROR_PREFIX)+strlen(POST_ERROR_MSG1)
+		+strlen(xkm_output_dir)+strlen(keymap)+44 > PATH_MAX)
+	{
+#ifdef DEBUG
+            ErrorF("compiler command for keymap (%s) exceeds max length\n",
+							names->keymap);
+#endif
+	    return False;
+	}
 	sprintf(buf,"xkbcomp -w %d -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
-		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,XKM_OUTPUT_DIR,keymap);
+		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,xkm_output_dir,keymap);
     }
-
     out= popen(buf,"w");
     if (out!=NULL) {
 #ifdef DEBUG
-	if (xkbDebugFlags) {
-	    ErrorF("XkbDDXCompileKeymapByNames compiling keymap:\n");
-	    XkbWriteXKBKeymapForNames(stderr,names,NULL,xkb,want,need);
-	}
+    if (xkbDebugFlags) {
+       ErrorF("XkbDDXCompileKeymapByNames compiling keymap:\n");
+       XkbWriteXKBKeymapForNames(stderr,names,NULL,xkb,want,need);
+    }
 #endif
 	XkbWriteXKBKeymapForNames(out,names,NULL,xkb,want,need);
 	if (pclose(out)==0) {
@@ -250,15 +317,25 @@ XkbDDXOpenConfigFile(mapName,fileNameRtrn,fileNameRtrnLen)
     int		fileNameRtrnLen;
 #endif
 {
-char	buf[PATH_MAX];
+char	buf[PATH_MAX],xkm_output_dir[PATH_MAX];
 FILE *	file;
 
     buf[0]= '\0';
     if (mapName!=NULL) {
-	if ((XkbBaseDirectory!=NULL)&&(XKM_OUTPUT_DIR[0]!='/'))
-	     sprintf(buf,"%s/%s%s.xkm",XkbBaseDirectory,XKM_OUTPUT_DIR,mapName);
-	else sprintf(buf,"%s%s.xkm",XKM_OUTPUT_DIR,mapName);
-	file= fopen(buf,"r");
+	OutputDirectory(xkm_output_dir);
+	if ((XkbBaseDirectory!=NULL)&&(xkm_output_dir[0]!='/')) {
+	    if (strlen(XkbBaseDirectory)+strlen(xkm_output_dir)
+		     +strlen(mapName)+6 <= PATH_MAX)
+	    {
+	        sprintf(buf,"%s/%s%s.xkm",XkbBaseDirectory,
+					xkm_output_dir,mapName);
+	    }
+	}
+	else if (strlen(xkm_output_dir)+strlen(mapName)+5 <= PATH_MAX)
+	    sprintf(buf,"%s%s.xkm",xkm_output_dir,mapName);
+	if (buf[0] != '\0')
+	    file= fopen(buf,"r");
+	else file= NULL;
     }
     else file= NULL;
     if ((fileNameRtrn!=NULL)&&(fileNameRtrnLen>0)) {
@@ -344,4 +421,53 @@ unsigned	missing;
     fclose(file);
     (void) unlink (fileName);
     return (need|want)&(~missing);
+}
+
+Bool
+#if NeedFunctionPrototypes
+XkbDDXNamesFromRules(	DeviceIntPtr		keybd,
+			char *			rules_name,
+			XkbRF_VarDefsPtr	defs,
+			XkbComponentNamesPtr	names)
+#else
+XkbDDXNamesFromRules(keybd,rules_name,defs,names)
+    DeviceIntPtr		keybd;
+    char *			rules_name;
+    XkbRF_VarDefsPtr		defs;
+    XkbComponentNamesPtr	names;
+#endif
+{
+char 		buf[PATH_MAX];
+FILE *		file;
+Bool		complete;
+XkbRF_RulesPtr	rules;
+
+    if (!rules_name)
+	return False;
+    if (XkbBaseDirectory==NULL) {
+	if (strlen(rules_name)+7 > PATH_MAX)
+	    return False;
+	sprintf(buf,"rules/%s",rules_name);
+    }
+    else {
+	if (strlen(XkbBaseDirectory)+strlen(rules_name)+8 > PATH_MAX)
+	    return False;
+        sprintf(buf,"%s/rules/%s",XkbBaseDirectory,rules_name);
+    }
+    if ((file= fopen(buf,"r"))==NULL)
+	return False;
+    if ((rules= XkbRF_Create(0,0))==NULL) {
+	fclose(file);
+	return False;
+    }
+    if (!XkbRF_LoadRules(file,rules)) {
+	fclose(file);
+	XkbRF_Free(rules,True);
+	return False;
+    }
+    bzero((char *)names,sizeof(XkbComponentNamesRec));
+    complete= XkbRF_GetComponents(rules,defs,names);
+    fclose(file);
+    XkbRF_Free(rules,True);
+    return complete;
 }

@@ -1093,7 +1093,7 @@ Bool		found;
 
 	xkbi= dev->key->xkbInfo;
 	XkbSetCauseXkbReq(&cause,X_kbPerClientFlags,client);
-	XkbChangeEnabledControls(xkbi,autoCtrls,autoValues,NULL,&cause);
+	XkbEnableDisableControls(xkbi,autoCtrls,autoValues,NULL,&cause);
     }
     return found;
 }
@@ -1144,7 +1144,7 @@ ClientPtr	client;
 
 	xkbi= dev->key->xkbInfo;
 	XkbSetCauseXkbReq(&cause,X_kbPerClientFlags,client);
-	XkbChangeEnabledControls(xkbi,autoCtrls,autoValues,NULL,&cause);
+	XkbEnableDisableControls(xkbi,autoCtrls,autoValues,NULL,&cause);
     }
     return found;
 }

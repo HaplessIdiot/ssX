@@ -1,4 +1,4 @@
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/filelist.tcl,v 3.1 1996/06/30 10:44:02 dawes Exp $
 
 # These lists are not meant to be exhaustive, but they should be
 # complete enough to ensure that all the needed .tgz files have been
@@ -76,6 +76,8 @@ array set FilePermsXKB {
 	lib/X11/xkb/semantics/default		444
 	lib/X11/xkb/symbols/us			444
 	lib/X11/xkb/types/default		444
+	lib/X11/xkb/rules/xfree86		444
+	lib/X11/xkb/rules/xfree86.lst		444
 }
 
 array set FilePermsReadMe {

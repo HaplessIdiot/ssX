@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.29 1996/03/31 11:43:18 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.30 1996/05/10 06:56:20 dawes Exp $ 
 .TH XF86_SVGA 1 "Version 3.1.2E"  "XFree86"
 .SH NAME
 XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
@@ -23,7 +23,7 @@ The
 server supports the following popular SuperVGA chipsets in 256 color mode.
 Virtual resolutions up to (approximately) 1152x900 are supported, using
 (up to) 1Mb of display memory.  The Western Digital WD90C33, some of
-the Cirrus chipsets, and the Oak OTI087 support
+the Cirrus chipsets, the Oak OTI087 and the ET6000 support
 up to 2Mb of display memory and virtual resolutions of 1280x1024 and higher.
 Some of the Cirrus chipsets also support 16bpp and 32bpp (truecolor) modes
 on certain configurations.  Some of the ARK chipsets support 16bpp modes
@@ -37,7 +37,7 @@ ATI:
 264VT, 264VT2, 264GT
 .TP 4
 Tseng:
-ET3000, ET4000, ET4000/W32
+ET3000, ET4000, ET4000/W32, ET6000
 .TP 4
 Western Digital:
 PVGA1, WD90C00, WD90C10, WD90C11, WD90C24A, WD90C30, WD90C31, WD90C33
@@ -88,10 +88,10 @@ HT216-32
 Accelerated support is included for most of the Cirrus chipsets,
 the Western Digital WD90C31 and WD90C33 chipsets, and the Oak OTI087 chipset.
 Accelerated support for the
-ET4000/W32 is implemented in a separate server (see \fIXF86_W32(1)\fP).
-Users of boards based on ATI's Mach8, Mach32 and Mach64 chipsets should refer
-to the \fIXF86_Mach8(1)\fP, \fIXF86_Mach32(1)\fP and \fIXF86_Mach64(1)\fP
-manual pages, respectively.
+ET4000/W32 and ET6000 acceleration is implemented in a separate server (see
+\fIXF86_W32(1)\fP). Users of boards based on ATI's Mach8, Mach32 and Mach64
+chipsets should refer to the \fIXF86_Mach8(1)\fP, \fIXF86_Mach32(1)\fP and
+\fIXF86_Mach64(1)\fP manual pages, respectively.
 .SH OPTIONS
 In addition to the normal server options described in the \fIXserver(1)\fP
 manual page, \fIXF86_SVGA\fP accepts some more command line switches,
@@ -124,7 +124,7 @@ ATI:
 ati (See README.ati for other recognized names)
 .TP 4
 Tseng:
-et3000, et4000, et4000w32, et4000w32i, et4000w32p
+et3000, et4000, et4000w32, et4000w32i, et4000w32p, et6000
 .TP 4
 Western Digital:
 pvga1, wd90c00, wd90c10, wd90c24, wd90c30, wd90c31, wd90c33

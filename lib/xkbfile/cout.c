@@ -1,4 +1,4 @@
-/* $XConsortium: cout.c /main/2 1995/12/07 21:18:35 kaleb $ */
+/* $XConsortium: cout.c /main/3 1996/01/01 10:52:28 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -33,6 +33,7 @@
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
+#include <X11/extensions/XKBgeom.h>
 
 #include "XKMformat.h"
 #include "XKBfileInt.h"
@@ -40,10 +41,14 @@
 #define	lowbit(x)	((x) & (-(x)))
 
 static Bool
+#if NeedFunctionPrototypes
+WriteCHdrVMods(FILE *file,Display *dpy,XkbDescPtr xkb)
+#else
 WriteCHdrVMods(file,dpy,xkb)
     FILE *	file;
     Display *	dpy;
     XkbDescPtr	xkb;
+#endif
 {
 register int i,nOut;
 
@@ -72,13 +77,17 @@ register int i,nOut;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+WriteCHdrKeycodes(FILE *file,XkbDescPtr xkb)
+#else
 WriteCHdrKeycodes(file,xkb)
     FILE *	file;
     XkbDescPtr	xkb;
+#endif
 {
 Atom			kcName;
 register unsigned 	i;
-char 			buf[8],buf2[8];
+char 			buf[8];
 
     if ((!xkb)||(!xkb->names)||(!xkb->names->keys)) {
 	_XkbLibError(_XkbErrMissingNames,"WriteCHdrKeycodes",0);
@@ -91,15 +100,14 @@ char 			buf[8],buf2[8];
  				XkbAtomText(xkb->dpy,kcName,XkbMessage));
     fprintf(file,"static XkbKeyNameRec	keyNames[NUM_KEYS]= {\n");
     for (i=0;i<=xkb->max_key_code;i++) {
-	memcpy(buf,xkb->names->keys[i].name,4);
-	sprintf(buf2,"\"%s\"",buf);
+	sprintf(buf,"\"%s\"",XkbKeyNameText(xkb->names->keys[i].name,XkbCFile));
 	if (i!=xkb->max_key_code)  {
-	    fprintf(file,"    {  %6s  },",buf2);
+	    fprintf(file,"    {  %6s  },",buf);
 	    if ((i&3)==3)
 		fprintf(file,"\n");
 	}
 	else {
-	    fprintf(file,"    {  %6s  }\n",buf2);
+	    fprintf(file,"    {  %6s  }\n",buf);
 	}
     }
     fprintf(file,"};\n");
@@ -107,12 +115,20 @@ char 			buf[8],buf2[8];
 }
 
 static void
+#if NeedFunctionPrototypes
+WriteTypePreserve(	FILE *		file,
+			Display *	dpy,
+			char *		prefix,
+			XkbDescPtr	xkb,
+			XkbKeyTypePtr	type)
+#else
 WriteTypePreserve(file,dpy,prefix,xkb,type)
     FILE *		file;
     Display *		dpy;
     char *		prefix;
     XkbDescPtr		xkb;
     XkbKeyTypePtr	type;
+#endif
 {
 register unsigned	i;
 XkbModsPtr		pre;
@@ -131,10 +147,14 @@ XkbModsPtr		pre;
 }
 
 static void
+#if NeedFunctionPrototypes
+WriteTypeInitFunc(FILE *file,Display *dpy,XkbDescPtr xkb)
+#else
 WriteTypeInitFunc(file,dpy,xkb)
     FILE *	file;
     Display *	dpy;
     XkbDescPtr	xkb;
+#endif
 {
 register unsigned 	i,n;
 XkbKeyTypePtr		type;
@@ -148,14 +168,14 @@ char			prefix[32];
 	strcpy(prefix,XkbAtomText(dpy,type->name,XkbCFile));
 	if (type->name!=None)
 	    fprintf(file,"    dflt_types[%d].name= GET_ATOM(dpy,\"%s\");\n",i,
-					XkbAtomGetString(dpy,type->name));
+					XkbAtomText(dpy,type->name,XkbCFile));
 	names= type->level_names;
 	if (names!=NULL) {
 	    char *tmp;
 	    for (n=0;n<type->num_levels;n++) {
 		if (names[n]==None)
 		    continue;
-		tmp= XkbAtomGetString(dpy,names[n]);
+		tmp= XkbAtomText(dpy,names[n],XkbCFile);
 		if (tmp==NULL)
 		    continue;
 		fprintf(file,"    lnames_%s[%d]=	",prefix,n);
@@ -168,10 +188,14 @@ char			prefix[32];
 }
 
 static Bool
+#if NeedFunctionPrototypes
+WriteCHdrKeyTypes(FILE *file,Display *dpy,XkbDescPtr xkb)
+#else
 WriteCHdrKeyTypes(file,dpy,xkb)
     FILE *	file;
     Display *	dpy;
     XkbDescPtr	xkb;
+#endif
 {
 register unsigned	i,n;
 XkbClientMapPtr		map;
@@ -189,7 +213,7 @@ char 			prefix[32];
     map= xkb->map;
     if ((xkb->names!=NULL)&&(xkb->names->types!=None)) {
 	fprintf(file,"/* types name is \"%s\" */\n",
-				XkbAtomGetString(dpy,xkb->names->types));
+				XkbAtomText(dpy,xkb->names->types,XkbCFile));
     }
     for (i=0,type=map->types;i<map->num_types;i++,type++) {
 	strcpy(prefix,XkbAtomText(dpy,type->name,XkbCFile));
@@ -238,7 +262,7 @@ char 			prefix[32];
 	else fprintf(file,"	NULL,\n");
 	if (type->level_names!=NULL)
 	     fprintf(file,"	None,	lnames_%s\n    }",prefix);
-	else fprintf(file,"	None,	NULL\n    }",prefix);
+	else fprintf(file,"	None,	NULL\n    }");
     }
     fprintf(file,"\n};\n");
     fprintf(file,"#define num_dflt_types (sizeof(dflt_types)/sizeof(XkbKeyTypeRec))\n");
@@ -247,10 +271,14 @@ char 			prefix[32];
 }
 
 static Bool
+#if NeedFunctionPrototypes
+WriteCHdrCompatMap(FILE *file,Display *dpy,XkbDescPtr xkb)
+#else
 WriteCHdrCompatMap(file,dpy,xkb)
     FILE *	file;
     Display *	dpy;
     XkbDescPtr	xkb;
+#endif
 {
 register unsigned	i;
 XkbCompatMapPtr		compat;
@@ -263,7 +291,7 @@ XkbSymInterpretPtr	interp;
     compat= xkb->compat;
     if ((xkb->names!=NULL)&&(xkb->names->compat!=None)) {
 	fprintf(file,"/* compat name is \"%s\" */\n",
-				XkbAtomGetString(dpy,xkb->names->compat));
+				XkbAtomText(dpy,xkb->names->compat,XkbCFile));
     }
     fprintf(file,"static XkbSymInterpretRec dfltSI[%d]= {\n",
 						compat->num_si);
@@ -277,8 +305,7 @@ XkbSymInterpretPtr	interp;
 	fprintf(file,"         %s, ",XkbSIMatchText(interp->match,XkbCFile));
 	fprintf(file,"%s,\n",XkbModMaskText(interp->mods,XkbCFile));
 	fprintf(file,"         %d,\n",interp->virtual_mod);
-	fprintf(file,"       %s }",
-		XkbActionText(dpy,xkb,act,XkbCFile));
+	fprintf(file,"       %s }",XkbActionText(dpy,xkb,act,XkbCFile));
     }
     fprintf(file,"\n};\n");
     fprintf(file,
@@ -302,9 +329,13 @@ XkbSymInterpretPtr	interp;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+WriteCHdrSymbols(FILE *file,XkbDescPtr xkb)
+#else
 WriteCHdrSymbols(file,xkb)
     FILE *	file;
     XkbDescPtr	xkb;
+#endif
 {
 register unsigned i;
 
@@ -342,10 +373,14 @@ register unsigned i;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+WriteCHdrClientMap(FILE *file,Display *dpy,XkbDescPtr xkb)
+#else
 WriteCHdrClientMap(file,dpy,xkb)
     FILE *	file;
     Display *	dpy;
     XkbDescPtr	xkb;
+#endif
 {
     if ((!xkb)||(!xkb->map)||(!xkb->map->syms)||(!xkb->map->key_sym_map)) {
 	_XkbLibError(_XkbErrMissingSymbols,"WriteCHdrClientMap",0);
@@ -363,10 +398,14 @@ WriteCHdrClientMap(file,dpy,xkb)
 }
 
 static Bool
+#if NeedFunctionPrototypes
+WriteCHdrServerMap(FILE *file,Display *dpy,XkbDescPtr xkb)
+#else
 WriteCHdrServerMap(file,dpy,xkb)
     FILE *	file;
     Display *	dpy;
     XkbDescPtr	xkb;
+#endif
 {
 register unsigned i;
 
@@ -382,14 +421,7 @@ register unsigned i;
 	for (i=0;i<xkb->server->num_acts;i++,act++) {
 	    if (i==0)	fprintf(file,"    ");
 	    else	fprintf(file,",\n    ");
-#ifdef NOLONGER
-	    fprintf(file,"{ %20s, ",XkbActionTypeText(act->type,XkbCFile));
-	    fprintf(file," 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x }",
-			act->data[0], act->data[1], act->data[2], act->data[3],
-			act->data[4], act->data[5], act->data[6]);
-#else
 	    fprintf(file,"%s",XkbActionText(dpy,xkb,(XkbAction *)act,XkbCFile));
-#endif
 	}
 	fprintf(file,"\n};\n");
     }
@@ -450,10 +482,14 @@ register unsigned i;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+WriteCHdrIndicators(FILE *file,Display *dpy,XkbDescPtr xkb)
+#else
 WriteCHdrIndicators(file,dpy,xkb)
     FILE *	file;
     Display *	dpy;
     XkbDescPtr	xkb;
+#endif
 {
 register int 		i,nNames;
 XkbIndicatorMapPtr	imap;
@@ -490,7 +526,8 @@ XkbIndicatorMapPtr	imap;
 		continue;
 	    name= xkb->names->indicators[i];
 	    fprintf(file,"    xkb->names->indicators[%2d]=	",i);
-	    fprintf(file,"GET_ATOM(dpy,\"%s\");\n",XkbAtomGetString(dpy,name));
+	    fprintf(file,"GET_ATOM(dpy,\"%s\");\n",
+						XkbAtomText(dpy,name,XkbCFile));
 	}
 	fprintf(file,"}\n");
     }
@@ -498,9 +535,576 @@ XkbIndicatorMapPtr	imap;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+WriteCHdrGeomProps(FILE *file,XkbDescPtr xkb,XkbGeometryPtr geom)
+#else
+WriteCHdrGeomProps(file,xkb,geom)
+    FILE *		file;
+    XkbDescPtr		xkb;
+    XkbGeometryPtr	geom;
+#endif
+{
+    if (geom->num_properties>0) {
+	register int i;
+	fprintf(file,"\nstatic XkbPropertyRec g_props[%d]= {\n",
+							geom->num_properties);
+	for (i=0;i<geom->num_properties;i++) {
+	    fprintf(file,"%s	{	\"%s\", \"%s\"	}",(i==0?"":",\n"),
+			XkbStringText(geom->properties[i].name,XkbCFile),
+			XkbStringText(geom->properties[i].value,XkbCFile));
+	}
+	fprintf(file,"\n};\n");
+    }
+    return True;
+}
+
+static Bool
+#if NeedFunctionPrototypes
+WriteCHdrGeomColors(FILE *file,XkbDescPtr xkb,XkbGeometryPtr geom)
+#else
+WriteCHdrGeomColors(file,xkb,geom)
+    FILE *		file;
+    XkbDescPtr		xkb;
+    XkbGeometryPtr	geom;
+#endif
+{
+    if (geom->num_colors>0) {
+	register int i;
+	fprintf(file,"\nstatic XkbColorRec g_colors[%d]= {\n",geom->num_colors);
+	for (i=0;i<geom->num_colors;i++) {
+	    fprintf(file,"%s	{	%3d, \"%s\"	}",(i==0?"":",\n"),
+			geom->colors[i].pixel,
+			XkbStringText(geom->colors[i].spec,XkbCFile));
+	}
+	fprintf(file,"\n};\n");
+    }
+    return True;
+}
+
+static Bool
+#if NeedFunctionPrototypes
+WriteCHdrGeomOutlines(FILE *file,int nOL,XkbOutlinePtr ol,int shapeNdx)
+#else
+WriteCHdrGeomOutlines(file,nOL,ol,shapeNdx)
+    FILE *		file;
+    int 		nOL;
+    XkbOutlinePtr 	ol;
+    int			shapeNdx;
+#endif
+{
+register int o,p;
+
+
+    for (o=0;o<nOL;o++) {
+	fprintf(file,"\nstatic XkbPointRec pts_sh%02do%02d[]= {\n",shapeNdx,o);
+	for (p=0;p<ol[o].num_points;p++) {
+	    if (p==0)			fprintf(file,"	");
+	    else if ((p&0x3)==0)	fprintf(file,",\n	");
+	    else 			fprintf(file,", ");
+	    fprintf(file,"{ %4d, %4d }",
+				ol[o].points[p].x,ol[o].points[p].y);
+	}
+	fprintf(file,"\n};");
+    }
+    fprintf(file,"\n\nstatic XkbOutlineRec ol_sh%02d[]= {\n",shapeNdx);
+    for (o=0;o<nOL;o++) {
+	fprintf(file,"%s	{ %d,	%d,	%d,	pts_sh%02do%02d	}",
+					(o==0?"":",\n"),
+					ol[o].num_points,ol[o].num_points,
+					ol[o].corner_radius,shapeNdx,o);
+    }
+    fprintf(file,"\n};\n");
+    return True;
+}
+
+static Bool
+#if NeedFunctionPrototypes
+WriteCHdrGeomShapes(FILE *file,XkbDescPtr xkb,XkbGeometryPtr geom)
+#else
+WriteCHdrGeomShapes(file,xkb,geom)
+    FILE *		file;
+    XkbDescPtr		xkb;
+    XkbGeometryPtr	geom;
+#endif
+{
+register int 		s;
+register XkbShapePtr	shape;
+
+    for (s=0,shape=geom->shapes;s<geom->num_shapes;s++,shape++) {
+	WriteCHdrGeomOutlines(file,shape->num_outlines,shape->outlines,s);
+    }
+    fprintf(file,"\n\nstatic XkbShapeRec g_shapes[%d]= {\n",geom->num_shapes);
+    for (s=0,shape=geom->shapes;s<geom->num_shapes;s++,shape++) {
+	fprintf(file,"%s	{ None, %3d, %3d, ol_sh%02d, ",
+					(s==0?"":",\n"),shape->num_outlines,
+					shape->num_outlines,s);
+	if (shape->approx) {
+	    fprintf(file,"&ol_sh%02d[%2d],	",s,
+					XkbOutlineIndex(shape,shape->approx));
+	}
+	else fprintf(file,"        NULL,	");
+	if (shape->primary) {
+	    fprintf(file,"&ol_sh%02d[%2d],\n",s,
+					XkbOutlineIndex(shape,shape->primary));
+	}
+	else fprintf(file,"        NULL,\n");
+	fprintf(file,"					{ %4d, %4d, %4d, %4d } }",
+					shape->bounds.x1,shape->bounds.y1,
+					shape->bounds.x2,shape->bounds.y2);
+    }
+    fprintf(file,"\n};\n");
+    return True;
+}
+
+static Bool
+#if NeedFunctionPrototypes
+WriteCHdrGeomDoodads(	FILE *		file,
+			XkbDescPtr	xkb,
+			XkbGeometryPtr	geom,
+			XkbSectionPtr	section,
+			int		section_num)
+#else
+WriteCHdrGeomDoodads(file,xkb,geom,section,section_num)
+    FILE *		file;
+    XkbDescPtr		xkb;
+    XkbGeometryPtr	geom;
+    XkbSectionPtr	section;
+    int			section_num;
+#endif
+{
+int		nd,d;
+XkbDoodadPtr	doodad;
+Display *	dpy;
+
+    dpy= xkb->dpy;
+    if (section==NULL) {
+	if (geom->num_doodads>0) {
+	    fprintf(file,"static XkbDoodadRec g_doodads[%d];\n",
+							geom->num_doodads);
+	}
+	fprintf(file,"static void\n");
+	fprintf(file,"#if NeedFunctionPrototypes\n");
+	fprintf(file,"_InitGeomDoodads(DPYTYPE dpy,XkbGeometryPtr geom)\n");
+	fprintf(file,"#else\n");
+	fprintf(file,"_InitGeomDoodads(dpy,geom)\n");
+	fprintf(file,"    DPYTYPE		dpy;\n");
+	fprintf(file,"    XkbGeometryPtr	geom;\n");
+	fprintf(file,"#endif\n");
+	fprintf(file,"{\n");
+	fprintf(file,"register XkbDoodadPtr doodads;\n\n");
+	fprintf(file,"    doodads= geom->doodads;\n");
+	nd= geom->num_doodads;
+	doodad= geom->doodads;
+    }
+    else {
+	if (section->num_doodads>0) {
+	    fprintf(file,"static XkbDoodadRec doodads_s%02d[%d];\n",
+					section_num,section->num_doodads);
+	}
+	fprintf(file,"static void\n");
+	fprintf(file,"#if NeedFunctionPrototypes\n");
+	fprintf(file,"_InitS%02dDoodads(",section_num);
+	fprintf(file,"    DPYTYPE		dpy,\n");
+	fprintf(file,"    XkbGeometryPtr 	geom,\n");
+	fprintf(file,"    XkbSectionPtr 	section)\n");
+	fprintf(file,"#else\n");
+	fprintf(file,"_InitS%02dDoodads(dpy,geom,section)\n",section_num);
+	fprintf(file,"    DPYTYPE		dpy;\n");
+	fprintf(file,"    XkbGeometryPtr	geom;\n");
+	fprintf(file,"    XkbSectionPtr		section;\n");
+	fprintf(file,"#endif\n");
+	fprintf(file,"{\n");
+	fprintf(file,"register XkbDoodadPtr doodads;\n\n");
+	fprintf(file,"    doodads= section->doodads;\n");
+	nd= geom->num_doodads;
+	doodad= geom->doodads;
+    }
+    for (d=0;d<nd;d++,doodad++) {
+	if (d!=0)	fprintf(file,"\n");
+	fprintf(file,"    doodads[%d].any.name= GET_ATOM(dpy,\"%s\");\n",d,
+			XkbAtomText(dpy,doodad->any.name,XkbCFile));
+	fprintf(file,"    doodads[%d].any.type= %s;\n",d,
+			XkbDoodadTypeText(doodad->any.type,XkbCFile));
+	fprintf(file,"    doodads[%d].any.priority= %d;\n",d,
+			doodad->any.priority);
+	fprintf(file,"    doodads[%d].any.top= %d;\n",d,doodad->any.top);
+	fprintf(file,"    doodads[%d].any.left= %d;\n",d,doodad->any.left);
+	fprintf(file,"    doodads[%d].any.angle= %d;\n",d,doodad->any.angle);
+	switch (doodad->any.type) {
+	    case XkbOutlineDoodad:
+	    case XkbSolidDoodad:
+		fprintf(file,"    doodads[%d].shape.color_ndx= %d;\n",d,
+					doodad->shape.color_ndx);
+		fprintf(file,"    doodads[%d].shape.shape_ndx= %d;\n",d,
+					doodad->shape.shape_ndx);
+		break;
+	    case XkbTextDoodad:
+		fprintf(file,"    doodads[%d].text.width= %d;\n",d,
+					doodad->text.width);
+		fprintf(file,"    doodads[%d].text.height= %d;\n",d,
+					doodad->text.height);
+		fprintf(file,"    doodads[%d].text.color_ndx= %d;\n",d,
+					doodad->text.color_ndx);
+		fprintf(file,"    doodads[%d].text.text= \"%s\";\n",d,
+				XkbStringText(doodad->text.text,XkbCFile));
+		fprintf(file,"    doodads[%d].text.font= \"%s\";\n",d,
+				XkbStringText(doodad->text.font,XkbCFile));
+		break;
+	    case XkbIndicatorDoodad:
+		fprintf(file,"    doodads[%d].indicator.shape_ndx= %d;\n",d,
+					doodad->indicator.shape_ndx);
+		fprintf(file,"    doodads[%d].indicator.on_color_ndx= %d;\n",d,
+					doodad->indicator.on_color_ndx);
+		fprintf(file,"    doodads[%d].indicator.off_color_ndx= %d;\n",d,
+					doodad->indicator.off_color_ndx);
+		break;
+	    case XkbLogoDoodad:
+		fprintf(file,"    doodads[%d].logo.color_ndx= %d;\n",d,
+					doodad->logo.color_ndx);
+		fprintf(file,"    doodads[%d].logo.shape_ndx= %d;\n",d,
+					doodad->logo.shape_ndx);
+		fprintf(file,"    doodads[%d].logo.logo_name= \"%s\";\n",d,
+				XkbStringText(doodad->logo.logo_name,XkbCFile));
+		break;
+	}
+    }
+    fprintf(file,"}\n");
+    return True;
+}
+
+static Bool
+#if NeedFunctionPrototypes
+WriteCHdrGeomOverlays(	FILE *		file,
+			XkbDescPtr	xkb,
+			XkbSectionPtr	section,
+			int		section_num)
+#else
+WriteCHdrGeomOverlays(file,xkb,section,section_num)
+    FILE *		file;
+    XkbDescPtr		xkb;
+    XkbSectionPtr	section;
+    int			section_num;
+#endif
+{
+register int		o,r,k;
+XkbOverlayPtr		ol;
+XkbOverlayRowPtr	row;
+XkbOverlayKeyPtr	key;
+
+    if (section->num_overlays<1)
+	return True;
+    for (o=0,ol=section->overlays;o<section->num_overlays;o++,ol++) {
+	for (r=0,row=ol->rows;r<ol->num_rows;r++,row++) {
+	    fprintf(file,"static XkbOverlayKeyRec olkeys_s%02dr%02d[%d]= {\n",
+						section_num,r,row->num_keys);
+	    for (k=0,key=row->keys;k<row->num_keys;k++,key++) {
+		fprintf(file,"%s	{ {\"%s\"},	{\"%s\"}	}",
+				(k==0?"":",\n"),
+				XkbKeyNameText(key->over.name,XkbCFile),
+				XkbKeyNameText(key->under.name,XkbCFile));
+	    }
+	    fprintf(file,"\n};\n");
+	}
+	fprintf(file,"static XkbOverlayRowRec olrows_s%02d[%d]= {\n",
+						section_num,section->num_rows);
+	for (r=0,row=ol->rows;r<ol->num_rows;r++,row++) {
+	    fprintf(file,"%s	{ %4d, %4d, %4d, olkeys_s%02dr%02d }",
+				(r==0?"":",\n"),
+				row->row_under,row->num_keys,row->num_keys,
+				section_num,r);
+	}
+	fprintf(file,"\n};\n");
+    }
+    fprintf(file,"static XkbOverlayRec overlays_s%02d[%d]= {\n",section_num,
+							section->num_overlays);
+    for (o=0,ol=section->overlays;o<section->num_overlays;o++,ol++) {
+	fprintf(file,"%s	{\n",(o==0?"":",\n"));
+	fprintf(file,"	    None, 	/* name */\n");
+	fprintf(file,"	    NULL,	/* section_under */\n");
+	fprintf(file,"	    %4d,	/* num_rows */\n",ol->num_rows);
+	fprintf(file,"	    %4d,	/* sz_rows */\n",ol->num_rows);
+	fprintf(file,"	    olrows_s%02d,\n",section_num);
+	fprintf(file,"	    NULL	/* bounds */\n");
+	fprintf(file,"	}");
+    }
+    fprintf(file,"\n};\n");
+    fprintf(file,"static void\n");
+    fprintf(file,"#if NeedFunctionPrototypes\n");
+    fprintf(file,"_InitS%02dOverlay(",section_num);
+    fprintf(file,"    DPYTYPE		dpy,\n");
+    fprintf(file,"    XkbGeometryPtr 	geom,\n");
+    fprintf(file,"    XkbSectionPtr 	section)\n");
+    fprintf(file,"#else\n");
+    fprintf(file,"_InitS%02dOverlay(dpy,geom,section)\n",section_num);
+    fprintf(file,"    DPYTYPE		dpy;\n");
+    fprintf(file,"    XkbGeometryPtr	geom;\n");
+    fprintf(file,"    XkbSectionPtr		section;\n");
+    fprintf(file,"#endif\n");
+    fprintf(file,"{\n");
+    fprintf(file,"XkbOverlayPtr	ol;\n\n");
+    fprintf(file,"    ol= section->overlays;\n");
+    for (o=0,ol=section->overlays;o<section->num_overlays;o++,ol++) {
+	fprintf(file,"    ol[%2d].name= GET_ATOM(dpy,\"%s\");\n",o,
+				XkbAtomText(xkb->dpy,ol->name,XkbCFile));
+	fprintf(file,"    ol[%2d].section_under= section;\n",o);
+    }
+    fprintf(file,"}\n");
+    return True;
+}
+
+static Bool
+#if NeedFunctionPrototypes
+WriteCHdrGeomRows(	FILE *		file,
+			XkbDescPtr	xkb,
+			XkbSectionPtr	section,
+			int		section_num)
+#else
+WriteCHdrGeomRows(file,xkb,section,section_num)
+    FILE *		file;
+    XkbDescPtr		xkb;
+    XkbSectionPtr	section;
+    int			section_num;
+#endif
+{
+register int 		k,r;
+register XkbRowPtr	row;
+register XkbKeyPtr	key;
+
+    for (r=0,row=section->rows;r<section->num_rows;r++,row++) {
+	fprintf(file,"static XkbKeyRec keys_s%02dr%02d[]= {\n",section_num,r);
+	for (k=0,key=row->keys;k<row->num_keys;k++,key++) {
+	    fprintf(file,"%s	{ { \"%s\" },	%4d, %4d, %4d }",
+				(k==0?"":",\n"),
+				XkbKeyNameText(key->name.name,XkbCFile),
+				key->gap,key->shape_ndx,key->color_ndx);
+	}
+	fprintf(file,"\n};\n");
+    }
+    fprintf(file,"static XkbRowRec rows_s%02d[]= {\n",section_num);
+    for (r=0,row=section->rows;r<section->num_rows;r++,row++) {
+	fprintf(file,"%s	{ %4d, %4d, %2d, %2d, %1d, keys_s%02dr%02d, ",
+				(r==0?"":",\n"),
+				row->top,row->left,row->num_keys,row->num_keys,
+				(row->vertical!=0),
+				section_num,r);
+	fprintf(file," { %4d, %4d, %4d, %4d } }",
+				row->bounds.x1,row->bounds.y1,
+				row->bounds.x2,row->bounds.y2);
+    }
+    fprintf(file,"\n};\n");
+    return True;
+}
+
+static Bool
+#if NeedFunctionPrototypes
+WriteCHdrGeomSections(FILE *file,XkbDescPtr xkb,XkbGeometryPtr geom)
+#else
+WriteCHdrGeomSections(file,xkb,geom)
+    FILE *		file;
+    XkbDescPtr		xkb;
+    XkbGeometryPtr	geom;
+#endif
+{
+register int		s;
+register XkbSectionPtr	section;
+
+    for (s=0,section=geom->sections;s<geom->num_sections;s++,section++) {
+	WriteCHdrGeomRows(file,xkb,section,s);
+#ifdef NOTYET
+	if (section->num_doodads>0)
+	    WriteCHdrGeomDoodads(file,xkb,geom,section,s);
+#endif
+	if (section->num_overlays>0)
+	    WriteCHdrGeomOverlays(file,xkb,section,s);
+    }
+    fprintf(file,"\nstatic XkbSectionRec g_sections[%d]= {\n",
+							geom->num_sections);
+    for (s=0,section=geom->sections;s<geom->num_sections;s++,section++) {
+	if (s!=0) fprintf(file,",\n");
+	fprintf(file,"	{\n	    None, /* name */\n");
+	fprintf(file,"	    %4d, /* priority */\n",section->priority);
+	fprintf(file,"	    %4d, /* top */\n",section->top);
+	fprintf(file,"	    %4d, /* left */\n",section->left);
+	fprintf(file,"	    %4d, /* width */\n",section->width);
+	fprintf(file,"	    %4d, /* height */\n",section->height);
+	fprintf(file,"	    %4d, /* angle */\n",section->angle);
+	fprintf(file,"	    %4d, /* num_rows */\n",section->num_rows);
+	fprintf(file,"	    %4d, /* num_doodads */\n",section->num_doodads);
+	fprintf(file,"	    %4d, /* num_overlays */\n",section->num_overlays);
+	fprintf(file,"	    %4d, /* sz_rows */\n",section->num_rows);
+	fprintf(file,"	    %4d, /* sz_doodads */\n",section->num_doodads);
+	fprintf(file,"	    %4d, /* sz_overlays */\n",section->num_overlays);
+	if (section->num_rows>0)
+	     fprintf(file,"	    rows_s%02d,\n",s);
+	else fprintf(file,"	    NULL, /* rows */\n");
+	if (section->num_doodads>0)
+	     fprintf(file,"	    doodads_s%02d,\n",s);
+	else fprintf(file,"	    NULL, /* doodads */\n");
+	fprintf(file,"	    { %4d, %4d, %4d, %4d }, /* bounds */\n",
+					section->bounds.x1,section->bounds.y1,
+					section->bounds.x2,section->bounds.y2);
+	if (section->num_overlays>0)
+	     fprintf(file,"	    overlays_s%02d\n",s);
+	else fprintf(file,"	    NULL /* overlays */\n");
+	fprintf(file,"	}");
+    }
+    fprintf(file,"\n};\n");
+    fprintf(file,"\nstatic Bool\n");
+    fprintf(file,"#if NeedFunctionPrototypes\n");
+    fprintf(file,"_InitSections(DPYTYPE dpy,XkbGeometryPtr geom)\n");
+    fprintf(file,"#else\n");
+    fprintf(file,"_InitSections(dpy,geom)\n");
+    fprintf(file,"    DPYTYPE		dpy;\n	XkbGeometryPtr	geom;\n");
+    fprintf(file,"#endif\n");
+    fprintf(file,"{\nXkbSectionPtr	sections;\n\n");
+    fprintf(file,"    sections= geom->sections;\n");
+    for (s=0,section=geom->sections;s<geom->num_sections;s++,section++) {
+	if (section->num_doodads>0) {
+	    fprintf(file,"    _InitS%02dDoodads(dpy,geom,&sections[%d]);\n",
+									s,s);
+	}
+	if (section->num_overlays>0) {
+	    fprintf(file,"    _InitS%02dOverlays(dpy,geom,&sections[%d]);\n",
+									s,s);
+	}
+    }
+    fprintf(file,"}\n");
+    return True;
+}
+
+static Bool
+#if NeedFunctionPrototypes
+WriteCHdrGeomAliases(FILE *file,XkbDescPtr xkb,XkbGeometryPtr geom)
+#else
+WriteCHdrGeomAliases(file,xkb,geom)
+    FILE *		file;
+    XkbDescPtr		xkb;
+    XkbGeometryPtr	geom;
+#endif
+{
+    if (geom->num_key_aliases>0) {
+	register int i;
+	fprintf(file,"\nstatic XkbKeyAliasRec g_aliases[%d]= {\n",
+						geom->num_key_aliases);
+	for (i=0;i<geom->num_key_aliases;i++) {
+	    fprintf(file,"%s	{	\"%s\", \"%s\"	}",(i==0?"":",\n"),
+			XkbKeyNameText(geom->key_aliases[i].real,XkbCFile),
+			XkbKeyNameText(geom->key_aliases[i].alias,XkbCFile));
+	}
+	fprintf(file,"\n};\n");
+    }
+    return True;
+}
+
+static Bool
+#if NeedFunctionPrototypes
+WriteCHdrGeometry(FILE *file,XkbDescPtr xkb)
+#else
+WriteCHdrGeometry(file,xkb)
+    FILE *		file;
+    XkbDescPtr		xkb;
+#endif
+{
+XkbGeometryPtr	geom;
+register int	i;
+
+    if ((!xkb)||(!xkb->geom)) {
+	_XkbLibError(_XkbErrMissingGeometry,"WriteCHdrGeometry",0);
+	return False;
+    }
+    geom= xkb->geom;
+    WriteCHdrGeomProps(file,xkb,geom);
+    WriteCHdrGeomColors(file,xkb,geom);
+    WriteCHdrGeomShapes(file,xkb,geom);
+    WriteCHdrGeomSections(file,xkb,geom);
+    WriteCHdrGeomDoodads(file,xkb,geom,NULL,0);
+    WriteCHdrGeomAliases(file,xkb,geom);
+    fprintf(file,"\nstatic XkbGeometryRec	geom= {\n");
+    fprintf(file,"	None,			/* name */\n");
+    fprintf(file,"	%d, %d,		/* width, height */\n",geom->width_mm,
+							geom->height_mm);
+    if (geom->label_font) {
+	 fprintf(file,"	\"%s\",/* label font */\n",
+				XkbStringText(geom->label_font,XkbCFile));
+    }
+    else fprintf(file,"	NULL,		/* label font */\n");
+    if (geom->label_color) {
+	fprintf(file,"	&g_colors[%d],		/* label color */\n",
+				XkbGeomColorIndex(geom,geom->label_color));
+    }
+    else fprintf(file,"	NULL,			/* label color */\n");
+    if (geom->base_color) {
+	fprintf(file,"	&g_colors[%d],		/* base color */\n",
+				XkbGeomColorIndex(geom,geom->base_color));
+    }
+    else fprintf(file,"	NULL,			/* base color */\n");
+    fprintf(file,"	%d,	%d,	%d,	/*  sz: props, colors, shapes */\n",
+				geom->num_properties,geom->num_colors,
+				geom->num_shapes);
+    fprintf(file,"	%d,	%d,	%d,	/*  sz: sections, doodads, aliases */\n",
+				geom->num_sections,geom->num_doodads,
+				geom->num_key_aliases);
+    fprintf(file,"	%d,	%d,	%d,	/* num: props, colors, shapes */\n",
+				geom->num_properties,geom->num_colors,
+				geom->num_shapes);
+    fprintf(file,"	%d,	%d,	%d,	/* num: sections, doodads, aliases */\n",
+				geom->num_sections,geom->num_doodads,
+				geom->num_key_aliases);
+    fprintf(file,"	%s,	%s,	%s,\n",
+				(geom->num_properties>0?"g_props":"NULL"),
+				(geom->num_colors>0?"g_colors":"NULL"),
+				(geom->num_shapes>0?"g_shapes":"NULL"));
+    fprintf(file,"	%s,	%s,	%s\n",
+				(geom->num_sections>0?"g_sections":"NULL"),
+				(geom->num_doodads>0?"g_doodads":"NULL"),
+				(geom->num_key_aliases>0?"g_aliases":"NULL"));
+    fprintf(file,"};\n\n");
+    fprintf(file,"static Bool\n");
+    fprintf(file,"#if NeedFunctionPrototypes\n");
+    fprintf(file,"_InitHdrGeom(DPYTYPE dpy,XkbGeometryPtr geom)\n");
+    fprintf(file,"#else\n");
+    fprintf(file,"_InitHdrGeom(dpy,geom)\n");
+    fprintf(file,"    DPYTYPE		dpy;\n	XkbGeometryPtr	geom;\n");
+    fprintf(file,"#endif\n");
+    fprintf(file,"{\n");
+    if (geom->name!=None) {
+	fprintf(file,"    geom->name= GET_ATOM(dpy,\"%s\");\n",
+				XkbAtomText(xkb->dpy,geom->name,XkbCFile));
+    }
+    for (i=0;i<geom->num_shapes;i++) {
+	fprintf(file,"    geom->shapes[%2d].name= GET_ATOM(dpy,\"%s\");\n",i,
+			XkbAtomText(xkb->dpy,geom->shapes[i].name,XkbCFile));
+    }
+    if (geom->num_doodads>0)
+	fprintf(file,"    _InitGeomDoodads(dpy,geom);\n");
+    fprintf(file,"    _InitSections(dpy,geom);\n");
+    fprintf(file,"}\n\n");
+    return True;
+}
+
+static Bool
+#if NeedFunctionPrototypes
+WriteCHdrGeomFile(FILE *file,XkbFileInfo *result)
+#else
+WriteCHdrGeomFile(file,result)
+    FILE *		file;
+    XkbFileInfo *	result;
+#endif
+{
+Bool		ok;
+
+    ok= WriteCHdrGeometry(file,result->xkb);
+    return ok;
+}
+
+static Bool
+#if NeedFunctionPrototypes
+WriteCHdrLayout(FILE *file,XkbFileInfo *result)
+#else
 WriteCHdrLayout(file,result)
     FILE *		file;
     XkbFileInfo *	result;
+#endif
 {
 Bool		ok;
 XkbDescPtr	xkb;
@@ -509,16 +1113,18 @@ XkbDescPtr	xkb;
     ok= WriteCHdrVMods(file,xkb->dpy,xkb);
     ok= WriteCHdrKeycodes(file,xkb)&&ok;
     ok= WriteCHdrSymbols(file,xkb)&&ok;
-#ifdef NOTDEF
-    ok= WriteCHdrGeometry(file,xkb->dpy,xkb)&&ok;
-#endif
+    ok= WriteCHdrGeometry(file,xkb)&&ok;
     return ok;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+WriteCHdrSemantics(FILE *file,XkbFileInfo *result)
+#else
 WriteCHdrSemantics(file,result)
     FILE *		file;
     XkbFileInfo *	result;
+#endif
 {
 Bool		ok;
 XkbDescPtr	xkb;
@@ -532,9 +1138,13 @@ XkbDescPtr	xkb;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+WriteCHdrKeymap(FILE *file,XkbFileInfo *result)
+#else
 WriteCHdrKeymap(file,result)
     FILE *		file;
     XkbFileInfo *	result;
+#endif
 {
 Bool		ok;
 XkbDescPtr	xkb;
@@ -546,21 +1156,28 @@ XkbDescPtr	xkb;
     ok= ok&&WriteCHdrServerMap(file,xkb->dpy,xkb);
     ok= ok&&WriteCHdrCompatMap(file,xkb->dpy,xkb);
     ok= WriteCHdrIndicators(file,xkb->dpy,xkb)&&ok;
-#ifdef NOTDEF
-    ok= ok&&WriteCHdrGeometry(file,xkb->dpy,xkb);
-#endif
+    ok= ok&&WriteCHdrGeometry(file,xkb);
     return ok;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbWriteCFile(FILE *out,char *name,XkbFileInfo *result)
+#else
 XkbWriteCFile(out,name,result)
     FILE *		out;
     char *		name;
     XkbFileInfo *	result;
+#endif
 {
 Bool	 		ok;
-Bool			(*func)();
 XkbDescPtr		xkb;
+Bool			(*func)(
+#if NeedFunctionPrototypes
+	FILE *		/* file*/,
+	XkbFileInfo *	/* result */
+#endif
+);
 
     switch (result->type) {
 	case XkmSemanticsFile:
@@ -571,6 +1188,10 @@ XkbDescPtr		xkb;
 	    break;
 	case XkmKeymapFile:
 	    func= WriteCHdrKeymap;
+	    break;
+        case XkmGeometryIndex:
+        case XkmGeometryFile:
+	    func= WriteCHdrGeomFile;
 	    break;
 	default:
 	    _XkbLibError(_XkbErrIllegalContents,"XkbWriteCFile",result->type);

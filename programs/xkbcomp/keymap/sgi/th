@@ -1,16 +1,15 @@
 // $XConsortium: th /main/1 1996/02/02 14:20:42 kaleb $
 default xkb_keymap "indy" {
-    xkb_keycodes	{ include "sgi(indy)"		};
+    xkb_keycodes	{ include "sgi/indy(pc102)"	};
     xkb_types		{ include "default"		};
     xkb_compatibility	{ include "default"		};
-    xkb_symbols 	{ include "en_US(pc102)+th"	};
-    xkb_geometry	{ include "sgi/indy(intl102)"	};
+    xkb_symbols 	{ include "en_US(pc102)+th+group(shift_toggle)"	};
+    xkb_geometry	{ include "sgi/indy(pc102)"	};
 };
-default xkb_keymap "indigo" {
-    xkb_keycodes	{ include "sgi(indigo)"		};
+xkb_keymap "indigo" {
+    xkb_keycodes	{ include "sgi/indigo(pc102)"	};
     xkb_types		{ include "default"		};
     xkb_compatibility	{ include "default"		};
-    xkb_symbols 	{ include "en_US(pc102)+th"	};
-    xkb_geometry	{ include "sgi/indigo(intl102)"	};
+    xkb_symbols 	{ include "en_US(pc102)+th+group(shift_toggle)"	};
+    xkb_geometry	{ include "sgi/indigo(pc102)"	};
 };
-

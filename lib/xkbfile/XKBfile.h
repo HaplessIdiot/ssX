@@ -82,7 +82,8 @@ typedef void	(*XkbFileAddOnFunc)(
 #define	_XkbErrBadFileFormat		22
 #define	_XkbErrBadAlloc			23
 #define	_XkbErrBadLength		24
-#define	_XkbErrBadImplementation	25
+#define	_XkbErrXReqFailure		25
+#define	_XkbErrBadImplementation	26
 
 extern char *		_XkbErrMessages[];
 extern unsigned		_XkbErrCode;
@@ -277,6 +278,19 @@ extern	Bool	XkbLookupGroupAndLevel(
     int	*	/* lvl_rtrn */
 #endif
 );
+
+/***====================================================================***/
+
+#ifndef XKB_IN_SERVER
+
+extern Bool	XkbLookupCanonicalRGBColor(
+#if NeedFunctionPrototypes
+    char *	/* def */,
+    XColor *	/* color */
+#endif
+);
+
+#endif
 
 /***====================================================================***/
 

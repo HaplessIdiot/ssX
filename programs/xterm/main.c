@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.39 1996/07/08 10:37:14 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.40 1996/08/11 13:04:46 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -708,7 +708,6 @@ static int tslot;
 static jmp_buf env;
 
 char *ProgramName;
-Boolean sunFunctionKeys;
 
 static struct _resource {
     char *xterm_name;
@@ -1017,7 +1016,6 @@ Arg ourTopLevelShellArgs[] = {
 };
 int number_ourTopLevelShellArgs = 2;
 	
-XtAppContext app_con;
 Widget toplevel;
 Bool waiting_for_initial_map;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.24 1996/05/13 06:39:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.25 1996/08/10 13:06:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -52,6 +52,10 @@ unsigned int xf86InitialNum = 0;
 unsigned int xf86InitialScroll = 0;
 
 #include "atKeynames.h"
+
+extern int miPointerGetMotionEvents(DeviceIntPtr pPtr, xTimecoord *coords,
+				    unsigned long start, unsigned long stop,
+				    ScreenPtr pScreen);
 
 /*
  * xf86KbdBell --
@@ -331,6 +335,13 @@ xf86KbdProc (pKeyboard, what)
 	    names.symbols = xf86Info.xkbsymbols;
 	    names.geometry = xf86Info.xkbgeometry;
 	}
+	if ((xf86Info.xkbkeymap || xf86Info.xkbcomponents_specified)
+	   && (xf86Info.xkbmodel == NULL || xf86Info.xkblayout == NULL)) {
+		xf86Info.xkbrules = NULL;
+	}
+	XkbSetRulesDflts(xf86Info.xkbrules, xf86Info.xkbmodel,
+			 xf86Info.xkblayout, xf86Info.xkbvariant,
+			 xf86Info.xkboptions);
 	XkbInitKeyboardDeviceStruct(pKeyboard, 
 				    &names,
 				    &keySyms, 
@@ -398,32 +409,11 @@ xf86MseCtrl(pPointer, ctrl)
      DevicePtr pPointer;
      PtrCtrl   *ctrl;
 {
-    MouseDevPtr	mouse = (MouseDevPtr) ((DeviceIntPtr) pPointer)->public.devicePrivate;
-
-#ifdef XINPUT
-    if (mouse->extended)
-	mouse = (MouseDevPtr)PRIVATE((DeviceIntPtr) pPointer);
-#endif
+    MouseDevPtr	mouse = MOUSE_DEV((DeviceIntPtr) pPointer);
 
     mouse->num       = ctrl->num;
     mouse->den       = ctrl->den;
     mouse->threshold = ctrl->threshold;
-}
-
-/*
- * GetMotionEvents --
- *      Return the (number of) motion events in the "motion history
- *      buffer" (snicker) between the given times.
- */
-
-int
-GetMotionEvents (pPtr, coords, start, stop, pScreen)
-     DeviceIntPtr pPtr;
-     xTimecoord *coords;
-     unsigned long start, stop;
-     ScreenPtr pScreen;
-{
-  return 0;
 }
 
 /*
@@ -436,7 +426,7 @@ xf86MseProc(pPointer, what)
      DeviceIntPtr pPointer;
      int        what;
 {
-  MouseDevPtr                  mouse = (MouseDevPtr) pPointer->public.devicePrivate;
+  MouseDevPtr                  mouse = MOUSE_DEV(pPointer);
 
   mouse->device = pPointer;
   
@@ -478,9 +468,9 @@ xf86MseProcAux(pPointer, what, mouse, fd, ctrl)
       InitPointerDeviceStruct((DevicePtr)pPointer, 
 			      map, 
 			      nbuttons, 
-			      GetMotionEvents, 
+			      miPointerGetMotionEvents,
 			      ctrl, 
-			      0);
+			      miPointerGetMotionBufferSize());
 
       xf86MouseInit(mouse);
 

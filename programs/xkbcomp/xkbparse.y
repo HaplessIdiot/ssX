@@ -1,4 +1,4 @@
-/* $XConsortium: xkbparse.y /main/8 1996/02/02 14:17:49 kaleb $ */
+/* $XConsortium: xkbparse.y /main/7 1996/01/14 16:48:48 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -82,6 +82,11 @@
 	PARTIAL		70
 	DEFAULT		71
 	HIDDEN		72
+	ALPHANUMERIC_KEYS	73
+	MODIFIER_KEYS		74
+	KEYPAD_KEYS		75
+	FUNCTION_KEYS		76
+	ALTERNATE_GROUP		77
 %{
 #ifdef DEBUG
 #define	YYDEBUG 1
@@ -223,6 +228,11 @@ Flags		:	Flags Flag		{ $$= (($1)|($2)); }
 Flag		:	PARTIAL			{ $$= XkbLC_Partial; }
 		|	DEFAULT			{ $$= XkbLC_Default; }
 		|	HIDDEN			{ $$= XkbLC_Hidden; }
+		|	ALPHANUMERIC_KEYS	{ $$= XkbLC_AlphanumericKeys; }
+		|	MODIFIER_KEYS		{ $$= XkbLC_ModifierKeys; }
+		|	KEYPAD_KEYS		{ $$= XkbLC_KeypadKeys; }
+		|	FUNCTION_KEYS		{ $$= XkbLC_FunctionKeys; }
+		|	ALTERNATE_GROUP		{ $$= XkbLC_AlternateGroup; }
 		;
 
 DeclList	:	DeclList Decl

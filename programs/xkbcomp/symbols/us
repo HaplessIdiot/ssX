@@ -5,8 +5,9 @@
 // one shift key, one control key and caps lock. It 
 // uses the punctuation keys configurations common on PC 
 // keyboards (e.g. key <ABO9> is { [ period greater ] })
-partial xkb_symbols "basic" {
 
+partial hidden alphanumeric_keys modifier_keys 
+xkb_symbols "basic" {
 
     name[Group1]= "US/ASCII";
     key <ESC>  {	[ Escape			]	};
@@ -127,10 +128,7 @@ xkb_symbols "generic101" {
     key <RGHT> {	[  Right		]	};
 
     // End "Editing" section, begin "Keypad"
-    key <NMLK> {
-        type= "SHIFT+ALT",
-        symbols[Group1]= [ Num_Lock, Pointer_EnableKeys]
-    };
+    key <NMLK> {	[  Num_Lock, Pointer_EnableKeys		]	};
     key <KPDV> {	[  KP_Divide		]	};
     key <KPMU> {	[  KP_Multiply		]	};
     key <KPSU> {	[  KP_Subtract		]	};
@@ -159,11 +157,12 @@ xkb_symbols "generic101" {
     modifier_map Control{ Control_R };
     modifier_map Mod1   { Alt_L, Alt_R };
     modifier_map Mod2   { Num_Lock };
-    modifier_map Mod3   { Scroll_Lock };
+    modifier_map Mod5   { Scroll_Lock };
 };
 
 // definition for the PC-AT type 101 key keyboard
-default xkb_symbols "pc101" {
+default 
+xkb_symbols "pc101" {
     include "us(generic101)"
     key <LALT> {	[ 	Alt_L,	Meta_L 		]	};
     key <RALT> {	[	Alt_R,	Meta_R		]	};
@@ -188,13 +187,28 @@ xkb_symbols "pc101euro" {
     modifier_map Mod1   { Alt_L, Meta_L };
 };
 
+// definition of Alternate Euro-style, Alt_R == [Multi_key]
+xkb_symbols "pc101compose" {
+    include "us(generic101)"
+    key <LALT> {	[ 	Alt_L,	Meta_L 		]	};
+    key <RALT> {	[ 	Multi_key		]	};
+
+    // begin modifier mappings
+    modifier_map Mod1   { Alt_L, Meta_L };
+};
+
 xkb_symbols "pc102euro" {
     include "us(pc101euro)"
     key <LSGT> {	[      less,    greater		]	};
 };
 
-// definition for the extra keys on Microsoft-style keyboards
-xkb_symbols "microsoft" {
+xkb_symbols "pc102compose" {
+    include "us(pc101compose)"
+    key <LSGT> {	[      less,    greater		]	};
+};
+
+// definition for the extra keys on 104-key "Windows95" keyboards
+xkb_symbols "pc104" {
     include "us(generic101)"
     key <LALT> {	[ 	Alt_L		]	};
     key <RALT> {	[	Alt_R		]	};
@@ -207,3 +221,15 @@ xkb_symbols "microsoft" {
     modifier_map Mod4   { Meta_L, Meta_R };
 };
 
+// put the compose key on the right "logo" key
+xkb_symbols "pc104compose" {
+    include "us(pc104)"
+    key <RWIN> {	[	Multi_key	]	};
+};
+
+// defintion which includes both the Windows95 keyboards _and_
+// the extra key on most European keyboards.
+xkb_symbols "pc105" {
+    include "us(pc104)"
+    key <LSGT> {	[      less,    greater		]	};
+};

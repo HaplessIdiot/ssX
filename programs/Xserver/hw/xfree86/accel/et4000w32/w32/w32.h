@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.8 1995/12/09 11:07:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.9 1996/02/04 09:00:42 dawes Exp $ */ 
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -58,6 +58,7 @@ int W32RamdacType;
 #define GENDAC_DAC     11
 #define STG1700_DAC    12
 #define STG1703_DAC    13
+#define ET6000_DAC     14
 
 
 extern
@@ -83,10 +84,16 @@ ByteP ACL_SUSPEND_TERMINATE,
       ACL_INTERRUPT_STATUS,
       ACL_ACCELERATOR_STATUS;
 
+/* for ET6000: */
+#define ACL_6K_CONFIG ACL_SYNC_ENABLE
 
 extern
 WordP ACL_X_POSITION,
       ACL_Y_POSITION;
+
+extern
+WordP ACL_NQ_X_POSITION,
+      ACL_NQ_Y_POSITION;
 
 
 extern
@@ -122,6 +129,9 @@ ByteP ACL_ROUTING_CONTROL,
       ACL_BACKGROUND_RASTER_OPERATION,
       ACL_FOREGROUND_RASTER_OPERATION;
 
+/* for ET6000: */
+#define ACL_MIX_CONTROL ACL_ROUTING_CONTROL
+#define ACL_STEPPING_INHIBIT ACL_RELOAD_CONTROL
 
 extern
 LongP ACL_DESTINATION_ADDRESS,
@@ -136,6 +146,10 @@ WordP ACL_MIX_Y_OFFSET,
       ACL_DELTA_MINOR,
       ACL_DELTA_MAJOR;
 
+/* for ET6000 only */
+extern
+ByteP ACL_POWER_CONTROL;
+
 
 extern ByteP W32Buffer;
 
@@ -146,11 +160,15 @@ extern Bool W32OrW32i;
 extern Bool W32p;
 extern Bool W32pa;
 extern Bool W32pCAndLater;
+extern Bool W32et6000;
 extern Bool FrameBuffer;
+
+extern unsigned long ET6Kbase;
 
 extern long W32Foreground;
 extern long W32Background;
 extern long W32Pattern;
+extern long W32Mix;
 
 extern long W32BltCount;
 extern long W32BltHop;
@@ -234,20 +252,34 @@ void figure(char*);
     *ACL_INTERRUPT_MASK = 0x0; \
     *ACL_INTERRUPT_STATUS = 0x0; \
     *ACL_ACCELERATOR_STATUS = 0x0; \
-    *ACL_RELOAD_CONTROL = 0x0; \
-    *ACL_SYNC_ENABLE = 0x1; \
+    if (W32et6000) \
+    { \
+      *ACL_STEPPING_INHIBIT = 0x0; \
+      *ACL_6K_CONFIG = 0x0; /* maximum performance */ \
+      *ACL_POWER_CONTROL = 0x01;  /* conserve power when ACL is idle */ \
+    } \
+    else \
+    { \
+      *ACL_RELOAD_CONTROL = 0x0; \
+      *ACL_SYNC_ENABLE = 0x1; \
+    } \
     if (W32OrW32i) \
     { \
         *ACL_X_POSITION = 0; \
         *ACL_Y_POSITION = 0; \
         *ACL_OPERATION_STATE = 0x0; \
     } \
-    else /* w32p */ \
+    else /* w32p and ET6000 */ \
     { /* Enable the W32p startup bit and set use an eight-bit pixel depth */ \
+        *ACL_NQ_X_POSITION = 0; \
+        *ACL_NQ_Y_POSITION = 0; \
 	*ACL_PIXEL_DEPTH = (PSZ - 8) << 1; \
         *ACL_OPERATION_STATE = 0x10; \
     } \
     *MMU_CONTROL = 0x74; \
+      /* bit 2 in MMU_CONTROL is set. This routes MBP2 data to the accel \
+       * instead of to video memory. This is not possible in the ET6000 \
+       */ \
 }
 
 

@@ -170,7 +170,7 @@ At this time, XFree86 3.1.2 supports the following accelerated chipsets:
     <tag/IBM /
 	XGA-2
     <tag/Tseng /
-	ET4000/W32, ET4000/W32i, ET4000/W32p 
+	ET4000/W32, ET4000/W32i, ET4000/W32p, ET6000 
     <tag/Oak Technologies Inc/
 	OTI087
  </DESCRIP>
@@ -185,7 +185,7 @@ They may well work on other cards, but we cannot guarantee it.
 In addition, the following SVGA chipsets are supported:
   <DESCRIP>
     <tag/Tseng /
-	ET3000, ET4000AX, ET4000/W32
+	ET3000, ET4000AX, ET4000/W32, ET6000
     <tag>Western Digital/Paradise </tag>
 	PVGA1 
     <tag/Western Digital /
@@ -248,11 +248,14 @@ size is limited to approximately 800x600.
 
 <bf>Note:</bf>
       The Diamond SpeedStar 24 (and possibly recent SpeedStar+) boards are
-      NOT supported, even though they use the ET4000.  The Stealth 32 which
-      uses the ET4000/W32p is also not fully supported.  The Weitek 9100
-      and 9130 chipsets are not supported (these are used on the Diamond
-      Viper Pro and Viper SE boards).  Most other Diamond boards
-      will work with this release of XFree86.  Diamond is now actively
+      NOT supported, even though they use the ET4000. The Stealth 32 which
+      uses the ET4000/W32p is also not fully supported by the SVGA server,
+      but it is supported by the accelerated server, XF86_W32 (using the
+      icd2061a clockchip).
+      
+      The Weitek 9100 and 9130 chipsets are not supported (these are used on
+      the Diamond Viper Pro and Viper SE boards). Most other Diamond boards
+      will work with this release of XFree86. Diamond is now actively
       supporting The XFree86 Project, Inc.
 
       The Trident TGUI9440 series of chips is not yet supported, but we
@@ -537,6 +540,10 @@ XFree86 support was integrated into the base X11R6 distribution by:
 <tag>ET4000/W32 accelerated code by:  </tag>
 <itemize>
        <item> Glenn Lai <it>&lt;glenn@cs.utexas.edu&gt;</it>,
+</itemize>
+<tag>ET6000 SVGA and accelerated support (both based on the existing W32 code) by: </tag>
+<itemize>
+       <item> Koen Gadeyne <it>&lt;koen.gadeyne@barco.com&gt;</it>,
 </itemize>
 <tag/Oak Technologies Inc. accelerated code by:  /
 <itemize>
@@ -970,7 +977,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.48 1996/03/31 11:48:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.49 1996/08/10 13:06:40 dawes Exp $
 
 
 

@@ -1,5 +1,4 @@
 /* $XConsortium: xkbatom.c /main/2 1996/01/01 10:52:48 kaleb $ */
-/* $XFree86$ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -75,14 +74,12 @@ SOFTWARE.
  ********************************************************/
 
 #include <stdio.h>
-#include <X11/Xlib.h>
-#ifndef X_NOT_STDC_ENV
-#include <string.h>
-#endif
 #include <ctype.h>
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #endif
+#include <X11/Xos.h>
+#include <X11/Xlib.h>
 #include <X11/XKBlib.h>
 
 #include "XKMformat.h"

@@ -1,5 +1,4 @@
 /* $XConsortium: xkbout.c /main/4 1996/01/23 10:10:56 kaleb $ */
-/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -27,13 +26,11 @@
  ********************************************************/
 
 #include <stdio.h>
-#ifndef X_NOT_STDC_ENV
-#include <string.h>
-#endif
 #include <ctype.h>
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #endif
+#include <X11/Xfuncs.h>
 
 #ifndef XKB_IN_SERVER
 
@@ -661,7 +658,7 @@ char *		iStr;
 	fprintf(file,"[ %3s, %3s ]",XkbGeomFPText(pt->x,XkbXKBFile),
 				  XkbGeomFPText(pt->y,XkbXKBFile));
     }
-    fprintf(file," }",iStr);
+    fprintf(file," }");
     return True;
 }
 

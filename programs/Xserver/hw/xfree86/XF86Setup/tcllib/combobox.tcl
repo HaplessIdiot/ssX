@@ -56,7 +56,7 @@ proc #combobox_proc {w op args} {
 	    lscan	{return [eval [list $p.list  scan]      $args]}
 	    see		{return [eval [list $p.list  see]       $args]}
 	    eselection	{return [eval [list $w.entry selection] $args]}
-	    lselection	{return [eval [list $w.entry selection] $args]}
+	    lselection	{return [eval [list $p.list  selection] $args]}
 	    size	{return [eval [list $p.list  size]      $args]}
 	    exview	{return [eval [list $w.entry xview]     $args]}
 	    lxview	{return [eval [list $p.list  xview]     $args]}

@@ -1,25 +1,25 @@
 # tkerror.tcl --
 #
-# This file contains a default version of the tkError procedure.  It
+# This file contains a modified version of the tkError procedure.  It
 # posts a dialog box with the error message and gives the user a chance
-# to see a more detailed stack trace.
+# to see a more detailed stack trace. It also saves a copy of the
+# stack trace to a file.
 #
-# @(#) tkerror.tcl 1.6 95/07/28 09:36:05
-#
+# Copyright 1996 by Joseph Moss,
+# based on the standard implementation which is:
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994-1995 Sun Microsystems, Inc.
 #
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-# tkerror --
-# This is the default version of tkerror.  It posts a dialog box containing
-# the error message and gives the user a chance to ask to see a stack
-# trace.
-# Arguments:
-# err -			The error message.
+if { $tk_version > 4.0 } {
+	set errprocname bgerror
+} else {
+	set errprocname tkerror
+}
 
-proc tkerror err {
+proc $errprocname err {
     global errorInfo
     set info $errorInfo
     set fd [open /tmp/XS[pid].err w]
@@ -73,3 +73,6 @@ proc tkerror err {
 	grab release [grab current .]
     }
 }
+
+unset errprocname
+

@@ -1,8 +1,8 @@
 XCOMM platform:  $XConsortium: linux.cf /main/18 1996/02/02 18:59:31 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.40 1996/06/29 09:01:58 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.41 1996/07/08 10:15:21 dawes Exp $
 
 #ifndef LinuxElfDefault
-#ifdef i386Architecture
+#if defined(i386Architecture) || defined(Mc68020Architecture)
 #define LinuxElfDefault		YES
 #else
 #define LinuxElfDefault		NO
@@ -77,18 +77,35 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.40 1996/06/29 09:01:58 dawe
 #define AsmDefines		-D__ELF__
 #define CplusplusCmd		c++
 #else
+#ifdef i386Architecture
 #define CcCmd			gcc -b i486-linuxaout
 #define AsCmd			/usr/i486-linuxaout/bin/as
 #define LdCmd			/usr/i486-linuxaout/bin/ld -m i386linux
 #define AsmDefines		-DUSE_GAS -U__ELF__
+#endif /* i386Architecture */
+#ifdef Mc68020Architecture
+#define CcCmd			gcc -b m68k-linuxaout
+#define AsCmd			/usr/m68k-linuxaout/bin/as
+#define LdCmd			/usr/m68k-linuxaout/bin/ld -m m68klinux
+#define AsmDefines		-DUSE_GAS -U__ELF__
+#endif /* Mc68020Architecture */
 #endif
 #else
 #if UseElfFormat
+#ifdef i386Architecture
 #define CcCmd			gcc -b i486-linux
 #define AsCmd			/usr/i486-linux/bin/as
 #define LdCmd			ld -m elf_i386
 #define AsmDefines		-D__ELF__
 #define CplusplusCmd		c++ -b i486-linux
+#endif /* i386Architecture */
+#ifdef Mc68020Architecture
+#define CcCmd			gcc -b m68k-linux
+#define AsCmd			/usr/m68k-linux/bin/as
+#define LdCmd			ld -m m68kelf
+#define AsmDefines		-D__ELF__
+#define CplusplusCmd		c++ -b m68k-linux
+#endif /* Mc68020Architecture */
 #else
 #define CcCmd			gcc
 #define AsCmd			as
@@ -137,6 +154,17 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.40 1996/06/29 09:01:58 dawe
 #define HasSharedLibraries	NO
 #define SharedLibXdmGreet	NO
 #endif /*  AlphaArchitecture */
+
+#ifdef Mc68020Architecture
+#define OptimizedCDebugFlags	-O2
+#define StandardDefines		-Dlinux -D__mc68000__ -D_POSIX_SOURCE \
+				-D_BSD_SOURCE -D_GNU_SOURCE -DX_LOCALE
+#define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
+#define HasWChar32		YES
+#define StandardCppDefines	-traditional StandardDefines
+#define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
+#define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
+#endif /* Mc68020Architecture */
 
 #if BuildDynamicLoading
 #define ServerExtraSysLibs	-rdynamic -ldl

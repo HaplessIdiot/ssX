@@ -1,5 +1,5 @@
 /* $XConsortium: button.c /main/72 1996/05/25 08:23:02 kaleb $ */
-/* $XFree86: xc/programs/xterm/button.c,v 3.7 1996/06/29 09:10:50 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.8 1996/08/11 13:04:42 dawes Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -576,9 +576,9 @@ EndExtend(w, event, params, num_params, use_cursor_loc)
     Cardinal num_params;
     Bool use_cursor_loc;
 {
-	int	row, col;
+	int	row, col, count;
 	TScreen *screen = &term->screen;
-	char line[9];
+	unsigned char line[9];
 
 	if (use_cursor_loc) {
 	    row = screen->cursor_row;
@@ -590,24 +590,30 @@ EndExtend(w, event, params, num_params, use_cursor_loc)
 	lastButtonUpTime = event->xbutton.time;
 	if (startSRow != endSRow || startSCol != endSCol) {
 		if (replyToEmacs) {
+			count = 0;
+			if (screen->control_eight_bits) {
+				line[count++] = CSI;
+			} else {
+				line[count++] = ESC;
+				line[count++] = '[';
+			}
 			if (rawRow == startSRow && rawCol == startSCol 
 			    && row == endSRow && col == endSCol) {
 			 	/* Use short-form emacs select */
-				strcpy(line, "\033[t");
-				line[3] = ' ' + endSCol + 1;
-				line[4] = ' ' + endSRow + 1;
-				v_write(screen->respond, line, 5);
+				line[count++] = 't';
+				line[count++] = ' ' + endSCol + 1;
+				line[count++] = ' ' + endSRow + 1;
 			} else {
 				/* long-form, specify everything */
-				strcpy(line, "\033[T");
-				line[3] = ' ' + startSCol + 1;
-				line[4] = ' ' + startSRow + 1;
-				line[5] = ' ' + endSCol + 1;
-				line[6] = ' ' + endSRow + 1;
-				line[7] = ' ' + col + 1;
-				line[8] = ' ' + row + 1;
-				v_write(screen->respond, line, 9);
+				line[count++] = 'T';
+				line[count++] = ' ' + startSCol + 1;
+				line[count++] = ' ' + startSRow + 1;
+				line[count++] = ' ' + endSCol + 1;
+				line[count++] = ' ' + endSRow + 1;
+				line[count++] = ' ' + col + 1;
+				line[count++] = ' ' + row + 1;
 			}
+			v_write(screen->respond, (char *)line, count);
 			TrackText(0, 0, 0, 0);
 		}
 	}
@@ -1459,9 +1465,9 @@ EditorButton(event)
 {
 	register TScreen *screen = &term->screen;
 	int pty = screen->respond;
-	char line[6];
+	char unsigned line[6];
 	register unsigned row, col;
-	int button; 
+	int button, count = 0;
 
 	button = event->button - 1; 
 
@@ -1469,16 +1475,22 @@ EditorButton(event)
 	 / FontHeight(screen);
 	col = (event->x - screen->border - screen->scrollbar)
 	 / FontWidth(screen);
-	(void) strcpy(line, "\033[M");
-	if (screen->send_mouse_pos == 1) {
-		line[3] = ' ' + button;
+	if (screen->control_eight_bits) {
+		line[count++] = CSI;
 	} else {
-		line[3] = ' ' + (KeyState(event->state) << 2) + 
+		line[count++] = ESC;
+		line[count++] = '[';
+	}
+	line[count++] = 'M';
+	if (screen->send_mouse_pos == 1) {
+		line[count++] = ' ' + button;
+	} else {
+		line[count++] = ' ' + (KeyState(event->state) << 2) + 
 			((event->type == ButtonPress)? button:3);
 	}
-	line[4] = ' ' + col + 1;
-	line[5] = ' ' + row + 1;
-	v_write(pty, line, 6);
+	line[count++] = ' ' + col + 1;
+	line[count++] = ' ' + row + 1;
+	v_write(pty, (char *)line, count);
 }
 
 

@@ -107,5 +107,124 @@
 0.7	22 Jun 1996	Added more XKB interface functions
 			Chosen geometry and symbol sets are now loaded
 			  into the server
-			Prepared for intergration into XFree86 tree
+			Prepared for integration into XFree86 tree
+
+0.8	30 Jun 1996	Various Imakefile changes (David Dawes)
+(3.1.2Eb)		Fix a few problems with mouse configuration
+			  in the generated XF86Config file (e.g. don't
+			  output a "SampleRate" line when not applicable
+			  to the selected protocol)
+			When checking for a running server, don't close
+			  the opened connection, thus preventing the
+			  ugly server reset (David Dawes)
+			Fix mouse bindings in keyboard configuration
+			  listboxes that weren't properly loading
+			  the geometry and symbols
+			Modify the tkerror procedure to write a copy
+			  of the stack trace to a file and tell the
+			  user to submit a bug report
+
+0.9	7 Jul 1996	Change all "gets response" lines to "gets stdin
+(3.1.2Ec)		  response" (Michael Rohleder)
+			Add a few prototypes and casts and some other
+			  code cleanups
+			Add code in several places in tclxfconf.c
+			  to prevent derefencing of NULL pointers
+			Plug some memory leaks
+			Don't output "SampleRate", if zero
+
+0.10	13 Jul 1996	Fix two more places where a NULL pointer could
+			  be dereferenced (David Dawes)
+			Fix inconsistencies in handling of Display
+			  subsections between C and Tcl code
+			Write out Display subsections for depths > 8
+			Fix memory leak in XKB handling
+			Remove the parray proc from phase1.tcl (it was
+			  used by some debugging code in an earlier
+			  version and was accidentally left in when
+			  that code was removed)
+			Check the found dialog executable to determine
+			  if it's really the one that is wanted
+			Improved(?) handling of Modes and ModeLine
+			  entries in generated XF86Config file
+			When writing the XF86Config file, the Visual
+			  wasn't properly quoted
+			Decrease the wait between checks for the server
+			  being ready to accept connections - for:
+			Put up a "Loading..." window asap after starting
+			  the VGA16 server
+			Adjust size of widget borders and highlight
+			  thicknesses in card.tcl to make things fit
+			  better
+			Adjust border widths in keyboard.tcl and
+			  monitor.tcl to be consistent w/ card.tcl
+			Start the VGA16 server with a larger stack size
+			  limit (Matthieu Herrb reported overflows on
+			  NetBSD)
+			Modify keyboard configuration code to use XKB
+			  "rules" facilities
+			Catch attempt to backup existing config file
+			  and display message indicating the backup
+			  occurred only if successful (Michael Rohleder)
+			Make symlink from preferred server to 'X'
+			  (based on patch by Michael Rohleder)
+
+0.11	20 Jul 1996	Fix bugs in "process_running" (Harald Koenig)
+			Fix ChipSet, RamDac, and ClockChip setting
+			  for S3 server (Harald Koenig)
+			Modify main.c to enable shutdown of VGA16
+			  server before starting second server (there
+			  are now five phases)
+			Added ability to specify on the command line
+			  a script to be run
+			Added handling of standard wish arguments to
+			  main.c (some are ignored unless a script is
+			  specified)
+			Updated tclkbd.c and keyboard.tcl to match
+			  latest XKB patches
+			Added separate mouse configuration program
+			Moved non-XF86Setup specific functions to
+			  from setuplib.tcl to tcllib/misc.tcl
+			Moved some code that is used in more than one
+			  phase to setuplib.tcl
+			If startup of second server fails, it is now
+			  caught and the user is returned to phase2
+			Moved the server flags to a separate "Other"
+			  configuration screen
+			Improved "done" stuff
+			Make it compile with newer Tcl/Tk releases
+
+0.12	2 Aug 1996	Updated Imakefile
+			Full support for Tcl 7.5/Tk 4.1 added
+			More XKB updates (_XKB_RULES_NAMES property
+			  support)
+			XKB functions no longer use a single static
+			  xkb structure and now return a handle to the
+			  allocated structure
+			Interface to xkbui library is now a full-
+			  fledged Tk widget
+			Add function to write out all significant
+			  variables to a state file
+			Add option to read in a state file
+			After shutting down a server, exec a new copy
+			  of XF86Setup -- workaround Tk caching some
+			  info about the server, which is no longer
+			  true, because we start/stop servers behind
+			  its back
+			Only put 640x480 modelines in the config file
+			  used to start the VGA16 server
+			Renamed "message" to "mesg" to avoid conflict
+			  with the Tk message widget
+			Handle XKB rules Options - add scrollbar, if
+			  there are too many options to fit
+			Change writeXF86Config to take a filename,
+			  instead of a file handle
+			In card configuration, update the message at
+			  the bottom after clock probing is completed
+			Add -nodialog option to force plain text
+			  output
+			Add some more comments to the C code
+			Add "flush stdout" statements to flush the
+			  (Tcl 7.5) channel buffers
+			
 

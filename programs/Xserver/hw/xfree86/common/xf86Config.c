@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.94 1996/06/30 04:41:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.95 1996/08/11 12:56:50 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -54,6 +54,14 @@ extern char *getenv();
 
 #ifdef XF86SETUP
 #include "xfsconf.h"
+#endif
+
+#ifdef XINPUT
+#include "xf86Xinput.h"
+
+#ifndef XF86SETUP
+extern DeviceAssocRec	mouse_assoc;
+#endif
 #endif
 
 #ifdef NEED_RETURN_VALUE
@@ -868,7 +876,10 @@ xf86Config (vtopen)
 #if defined(SYSV) || defined(linux)
   int            xcpipe[2];
 #endif
-
+#ifdef XINPUT
+  LocalDevicePtr	local;
+#endif
+  
  if (!vtopen)
  {
 
@@ -951,10 +962,19 @@ xf86Config (vtopen)
 #endif /* SYSV || linux */
   xf86Info.sharedMonitor = FALSE;
   xf86Info.kbdProc = NULL;
-  xf86Info.mouseDev.mseProc = NULL;
   xf86Info.notrapSignals = FALSE;
   xf86Info.caughtSignal = FALSE;
 
+  /* Allocate mouse device */
+#if defined(XINPUT) && !defined(XF86SETUP)
+  local = mouse_assoc.device_allocate();
+  xf86Info.mouseLocal = (pointer) local;
+  xf86Info.mouseDev = (MouseDevPtr) local->private;
+  xf86Info.mouseDev->mseProc = NULL;
+#else
+  xf86Info.mouseDev = (MouseDevPtr) xcalloc(1, sizeof(MouseDevRec));
+#endif
+  
   while ((token = xf86GetToken(TopLevelTab)) != EOF) {
       switch(token) {
       case SECTION:
@@ -967,7 +987,7 @@ xf86Config (vtopen)
 	  } else if ( StrCaseCmp(val.str, "keyboard") == 0 ) {
 	      HANDLE_RETURN(configKeyboardSection());
 	  } else if ( StrCaseCmp(val.str, "pointer") == 0 ) {
-	      HANDLE_RETURN(configPointerSection(&xf86Info.mouseDev, ENDSECTION, NULL));
+	      HANDLE_RETURN(configPointerSection(xf86Info.mouseDev, ENDSECTION, NULL));
 	  } else if ( StrCaseCmp(val.str, "device") == 0 ) {
 	      HANDLE_RETURN(configDeviceSection());
 	  } else if ( StrCaseCmp(val.str, "monitor") == 0 ) {
@@ -1056,7 +1076,7 @@ xf86Config (vtopen)
 
   if (!xf86Info.kbdProc)
     FatalError("You must specify a keyboard in XF86Config");
-  if (!xf86Info.mouseDev.mseProc)
+  if (!xf86Info.mouseDev->mseProc)
     FatalError("You must specify a mouse in XF86Config");
 
   if (!graphFound)
@@ -1109,6 +1129,7 @@ xf86Config (vtopen)
 
  }
 #endif  /* XF86SETUP */
+
 #ifdef NEED_RETURN_VALUE
  return RET_OKAY;
 #endif
@@ -1295,6 +1316,12 @@ configKeyboardSection()
   xf86Info.xkbsymbols  = "symbols/nec/jp(pc98)";
   xf86Info.xkbgeometry = "geometry/nec(pc98)";
 #endif
+  xf86Info.xkbcomponents_specified    = False;
+  xf86Info.xkbrules    = "xfree86";
+  xf86Info.xkbmodel    = NULL;
+  xf86Info.xkblayout   = NULL;
+  xf86Info.xkbvariant  = NULL;
+  xf86Info.xkboptions  = NULL;
 #endif
 
   while ((token = xf86GetToken(KeyboardTab)) != ENDSECTION) {
@@ -1311,9 +1338,9 @@ configKeyboardSection()
 #endif
       } else if ( StrCaseCmp(val.str,"xqueue") == 0 ) {
 #ifdef XQUEUE
-        xf86Info.kbdProc   = xf86XqueKbdProc;
+        xf86Info.kbdProc = xf86XqueKbdProc;
         xf86Info.kbdEvents = xf86XqueEvents;
-        xf86Info.mouseDev.xqueSema  = 0;
+        xf86Info.mouseDev->xqueSema  = 0;
         if (xf86Verbose)
           ErrorF("%s Xqueue selected for keyboard input\n",
   	         XCONFIG_GIVEN);
@@ -1396,6 +1423,7 @@ configKeyboardSection()
     case XKBCOMPAT:
       if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBCompat string expected");
       xf86Info.xkbcompat = val.str;
+      xf86Info.xkbcomponents_specified = True;
       if (xf86Verbose && !XkbInitialMap)
         ErrorF("%s XKB: compat: \"%s\"\n", XCONFIG_GIVEN, val.str);
       break;
@@ -1403,6 +1431,7 @@ configKeyboardSection()
     case XKBTYPES:
       if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBTypes string expected");
       xf86Info.xkbtypes = val.str;
+      xf86Info.xkbcomponents_specified = True;
       if (xf86Verbose && !XkbInitialMap)
         ErrorF("%s XKB: types: \"%s\"\n", XCONFIG_GIVEN, val.str);
       break;
@@ -1410,6 +1439,7 @@ configKeyboardSection()
     case XKBKEYCODES:
       if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBKeycodes string expected");
       xf86Info.xkbkeycodes = val.str;
+      xf86Info.xkbcomponents_specified = True;
       if (xf86Verbose && !XkbInitialMap)
         ErrorF("%s XKB: keycodes: \"%s\"\n", XCONFIG_GIVEN, val.str);
       break;
@@ -1417,6 +1447,7 @@ configKeyboardSection()
     case XKBGEOMETRY:
       if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBGeometry string expected");
       xf86Info.xkbgeometry = val.str;
+      xf86Info.xkbcomponents_specified = True;
       if (xf86Verbose && !XkbInitialMap)
         ErrorF("%s XKB: geometry: \"%s\"\n", XCONFIG_GIVEN, val.str);
       break;
@@ -1424,8 +1455,44 @@ configKeyboardSection()
     case XKBSYMBOLS:
       if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBSymbols string expected");
       xf86Info.xkbsymbols = val.str;
+      xf86Info.xkbcomponents_specified = True;
       if (xf86Verbose && !XkbInitialMap)
         ErrorF("%s XKB: symbols: \"%s\"\n", XCONFIG_GIVEN, val.str);
+      break;
+
+    case XKBRULES:
+      if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBRules string expected");
+      xf86Info.xkbrules = val.str;
+      if (xf86Verbose && !XkbInitialMap)
+        ErrorF("%s XKB: rules: \"%s\"\n", XCONFIG_GIVEN, val.str);
+      break;
+
+    case XKBMODEL:
+      if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBModel string expected");
+      xf86Info.xkbmodel = val.str;
+      if (xf86Verbose && !XkbInitialMap)
+        ErrorF("%s XKB: model: \"%s\"\n", XCONFIG_GIVEN, val.str);
+      break;
+
+    case XKBLAYOUT:
+      if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBLayout string expected");
+      xf86Info.xkblayout = val.str;
+      if (xf86Verbose && !XkbInitialMap)
+        ErrorF("%s XKB: layout: \"%s\"\n", XCONFIG_GIVEN, val.str);
+      break;
+
+    case XKBVARIANT:
+      if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBVariant string expected");
+      xf86Info.xkbvariant = val.str;
+      if (xf86Verbose && !XkbInitialMap)
+        ErrorF("%s XKB: variant: \"%s\"\n", XCONFIG_GIVEN, val.str);
+      break;
+
+    case XKBOPTIONS:
+      if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBOptions string expected");
+      xf86Info.xkboptions = val.str;
+      if (xf86Verbose && !XkbInitialMap)
+        ErrorF("%s XKB: options: \"%s\"\n", XCONFIG_GIVEN, val.str);
       break;
 #endif
 
@@ -1460,7 +1527,6 @@ configPointerSection(MouseDevPtr	mouse_dev,
   char *mouseType = "unknown";
 
   /* Set defaults */
-  mouse_dev->extended        = FALSE;
   mouse_dev->baudRate        = 1200;
   mouse_dev->oldBaudRate     = -1;
   mouse_dev->sampleRate      = 0;

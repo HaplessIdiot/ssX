@@ -1,6 +1,6 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.1 1996/06/30 10:44:07 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.2 1996/07/08 10:23:27 dawes Exp $
 #
-# Phase I
+# Phase I - Initial text mode interaction w/user and starting of VGA16 server
 #
 
 # load the autoload stuff
@@ -17,78 +17,18 @@ if { [info exists env(TMPDIR)] } {
 	set TmpDir /tmp
 }
 
-proc parray a {
-    upvar 1 $a array
-    if [catch {array size array}] {
-	error "\"$a\" isn't an array"
-    }
-    set maxl 0
-    foreach name [lsort [array names array]] {
-	if {[string length $name] > $maxl} {
-	    set maxl [string length $name]
-	}
-    }
-    set maxl [expr {$maxl + [string length $a] + 2}]
-    foreach name [lsort [array names array]] {
-	set nameString [format %s(%s) $a $name]
-	puts stdout [format "%-*s = %s" $maxl $nameString $array($name)]
-    }
-}
-
-proc message { text {buttontype okay} } {
-	global Dialog
-
-	if { ![string length $Dialog] } {
-		puts $text
-		if { [string compare $buttontype yesno] == 0 } {
-			puts -nonewline "Okay (y/n)? "
-			gets stdin response
-			return [string match {[yY]} [string index $response 0]]
-		}
-		if { [string compare $buttontype okay] == 0 } {
-			puts -nonewline "Press \[Enter\] to continue..."
-			gets stdin response
-		}
-		return
-	}
-	# else
-	set textlist [split $text \n]
-	set height [expr [llength $textlist]+2]
-	if { [string compare $buttontype info] != 0 } {
-		incr height 2
-	}
-	set width 0
-	foreach line $textlist {
-		if { [string length $line] > $width } {
-			set width [string length $line]
-		}
-	}
-	incr width 6
-	set minwidth 12
-	if { [string compare $buttontype yesno] == 0 } {
-		set boxtype --yesno
-		incr width 2
-		set minwidth 25
-	} elseif { [string compare $buttontype okay] == 0 } {
-		set boxtype --msgbox
-	} else {
-		set boxtype --infobox
-	}
-	if { $width < $minwidth } {
-		set width $minwidth
-	}
-	set retval [catch {
-		exec $Dialog $boxtype $text $height $width >&@stdout
-	}]
-	return [expr $retval==0]
-}
-
 proc find_dialog {} {
 	global env
 
 	foreach dir [split $env(PATH) :] {
 		if { [file executable $dir/dialog] } {
-			return $dir/dialog
+			# aha! found one, now let's test to make sure
+			set retval [catch {
+				exec strings $dir/dialog \
+				| grep infobox >& /dev/null }]
+			if {$retval == 0} {
+				return $dir/dialog
+			}
 		}
 	}
 	return ""
@@ -107,7 +47,7 @@ proc check_for_files { xwinhome } {
 				$FilePermsDescriptions($var) \
 				"are installed. The file" \
 				$xwinhome/$pattern "is missing"]
-			message [parafmt 65 $msg] okay
+			mesg [parafmt 65 $msg] okay
 			exit 1
 		}
 	    }
@@ -116,7 +56,7 @@ proc check_for_files { xwinhome } {
 	    set pattern [lindex $readme 0]
 	    set perms   [lindex $readme 1] ;# ignored (for now at least)
 	    if ![llength [glob -nocomplain -- $xwinhome/$pattern]] {
-		message [parafmt 65 "Warning! Not all of the READMEs are\
+		mesg [parafmt 65 "Warning! Not all of the READMEs are\
 			installed. You may not be able to view some of\
 			the instructions regarding setting up your card,\
 			but otherwise, everything should work correctly"] \
@@ -220,19 +160,20 @@ proc set_xf86config_defaults {} {
 	    }
 	}
     } else {
-	message "Error encountered reading existing\
+	mesg "Error encountered reading existing\
 		configuration file" okay
 	puts $tmp
 	exit 0
     }
 }
 
-set Dialog [find_dialog]
+if $NoDialog {
+	set Dialog ""
+} else {
+	set Dialog [find_dialog]
+}
 
 check_for_files $Xwinhome
-
-# initialize the configuration variables
-initconfig $Xwinhome
 
 set ConfigFile [xf86config_findfile]
 set StartServer 1
@@ -250,13 +191,13 @@ if { [string length $ConfigFile] > 0 } {
 				would like to go through the full \
 				configuration process, then answer no."] \
 			    "Is this a reconfiguration?" ]
-		set ReConfig [message $msg yesno]
+		set ReConfig [mesg $msg yesno]
 	}
 	if { $ReConfig } {
 		set UseConfigFile 1
 		set StartServer 0
 		if { [getuid] != 0 } {
-		    set proceed [message "You are not running as\
+		    set proceed [mesg "You are not running as\
 			root.\n\nSuperuser privileges are required to\
 			save any changes you make\nor to change the\
 			mouse device.\n\nWould you like\
@@ -267,31 +208,36 @@ if { [string length $ConfigFile] > 0 } {
 		}
 	} else {
 		if { [getuid] != 0 } {
-		    message "You need to be root to set the initial\
+		    mesg "You need to be root to set the initial\
 			configuration with this program" okay
 		    exit 1
 		}
 		if { ![file exists $Xwinhome/bin/XF86_VGA16] } {
-		    message "The VGA16 server is required when using\
+		    mesg "The VGA16 server is required when using\
 			this program to set the initial configuration" okay
 		    exit 1
 		}
-		set UseConfigFile [message "Would you like to use the\
+		set UseConfigFile [mesg "Would you like to use the\
 		    existing XF86Config file for defaults?" yesno]
 	}
+	# initialize the configuration variables
+	initconfig $Xwinhome
+
 	if { $UseConfigFile } {
 		set_xf86config_defaults
 	}
 } else {
 	set ConfigFile $Xwinhome/lib/X11/XF86Config
 	if { [getuid] != 0 } {
-	    message "You need to be root to run this program" okay
+	    mesg "You need to be root to run this program" okay
 	    exit 1
 	}
 	if { !$ReConfig && ![file exists $Xwinhome/bin/XF86_VGA16] } {
-	    message "The VGA16 server is required to run this program" okay
+	    mesg "The VGA16 server is required to run this program" okay
 	    exit 1
 	}
+	# initialize the configuration variables
+	initconfig $Xwinhome
 }
 
 
@@ -299,7 +245,7 @@ if { !$UseConfigFile } {
     # Check for the SysV Xqueue mouse driver
     if { [file exists /etc/conf/pack.d/xque]
 		&& [file exists /usr/lib/mousemgr] } {
-	set xque [message "Would you like to use the Xqueue driver\n\
+	set xque [mesg "Would you like to use the Xqueue driver\n\
 			for mouse and keyboard input?" yesno]
 	if $xque {
 		set Keyboard(Protocol)	Xqueue
@@ -312,7 +258,7 @@ if { !$UseConfigFile } {
     # Check for the SCO OsMouse
     if { [file exists /etc/conf/pack.d/cn/class.h]
 		&& [file exists /etc/conf/pack.d/ev] } {
-	set osmse [message "Would you like to use the system event\
+	set osmse [mesg "Would you like to use the system event\
 			queue for mouse input?" yesno]
 	if $osmse {
 		set Pointer(Protocol)	OsMouse
@@ -330,6 +276,7 @@ if { !$UseConfigFile } {
 		puts "This program needs to make a link to the real mouse device."
 		puts {What name should be used for the link (press [Enter] to accept}
 		puts -nonewline "the default of $Pointer(Device))? "
+		flush stdout
 		gets stdin response
 		if [string length $response] {
 			set Pointer(Device) $response
@@ -362,48 +309,34 @@ set Confname "$TmpDir/XS.[pid]"
 
 if $StartServer {
 	# write out a temp XF86Config file
-	set tmpfd [open $Confname-1 w]
-	writeXF86Config $tmpfd -defaultmodes
-	close $tmpfd
+	writeXF86Config $Confname-1 -vgamode
 
-	message "Press \[Enter\] to switch to graphics mode.\n\
+	mesg "Press \[Enter\] to switch to graphics mode.\n\
 		\nThis may take a while..." okay
 
-	set env(DISPLAY) :1
-	set server XF86_VGA16
+	#set ServerPID1 [start_server VGA16 $Confname-1 XSout[pid].1]
+	set ServerPID [start_server VGA16 $Confname-1 XSout[pid].1]
 
-	set ServerPID1 [exec $Xwinhome/bin/$server $env(DISPLAY) \
-		-allowMouseOpenFail -xf86config $Confname-1 \
-		>& $TmpDir/XSout[pid].1 & ]
-
-	sleep 15	;# The same as xinit
-	set devid   $Scrn_VGA16(Device)
-	set chipset [set Device_${devid}(Chipset)]
-	if { ![process_running $ServerPID1] && "$chipset" != "generic"} {
-		message "Hmmm.. server start-up failed!  Let me try one more time..." info
-		set tmpfd [open $Confname-1g w]
-		writeXF86Config $tmpfd -defaultmodes -generic
-		close $tmpfd
-		set ServerPID1 [exec $Xwinhome/bin/$server $env(DISPLAY) \
-			-allowMouseOpenFail -xf86config $Confname-1g \
-			>& $TmpDir/XSout[pid].1g & ]
-		sleep 15
+	if { $ServerPID < 1 } {
+		set devid   $Scrn_VGA16(Device)
+		set chipset [set Device_${devid}(Chipset)]
+		if {"X$chipset" != "Xgeneric"} {
+			mesg "Hmmm.. server start-up failed!\
+				Let me try one more time..." info
+			writeXF86Config $Confname-1g -defaultmodes -generic
+			set ServerPID [start_server VGA16 \
+				$Confname-1g XSout[pid].1]
+		}
 	}
-	if { ![process_running $ServerPID1] } {
-		message "Unable to start X server!" info
+	if { $ServerPID == 0 } {
+		mesg "Unable to start X server!" info
 		exit 1
 	}
-	set trycount 0
-	while { ![server_running $env(DISPLAY)] } {
-		if { [incr trycount] > 5 } {
-			message "Unable to communicate with X server!" info
-			catch {exec kill $ServerPID1}
-			exit 1
-		}
-		#puts stderr "Sleeping..."
-		sleep 5
+	if { $ServerPID == -1 } {
+		mesg "Unable to communicate with X server!" info
+		exit 1
 	}
 } else {
-	message "Please wait\n\nThis may take a while..." info
+	mesg "Please wait\n\nThis may take a while..." info
 }
 

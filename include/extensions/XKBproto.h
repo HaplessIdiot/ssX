@@ -1,4 +1,4 @@
-/* $XConsortium: XKBproto.h /main/19 1996/03/01 14:28:58 kaleb $ */
+/* $XConsortium: XKBproto.h /main/21 1996/03/21 10:04:37 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -75,23 +75,6 @@ typedef	struct _xkbSelectEvents {
     CARD16	map B16;
 } xkbSelectEventsReq;
 #define	sz_xkbSelectEventsReq	16
-
-#ifdef NEED_EVENTS
-
-typedef struct _xkbSendEvent {
-    CARD8	reqType;
-    CARD8	xkbReqType;	/* X_KBSendEvent */
-    CARD16	length B16;
-    BOOL	propagate;
-    BOOL	synthesizeClick;
-    CARD16	pad B16;
-    CARD32	destination B32;/* Window */
-    CARD32	eventMask B32;
-    xEvent	event;
-} xkbSendEventReq;
-#define	sz_xkbSendEventReq	48
-
-#endif /* NEED_EVENTS */
 
 typedef struct _xkbBell {
     CARD8	reqType;

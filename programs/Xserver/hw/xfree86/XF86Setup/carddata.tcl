@@ -1,4 +1,4 @@
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.1 1996/06/30 10:44:01 dawes Exp $
 #
 #
 
@@ -19,8 +19,7 @@ set CardChipSets(Mach8)	   { mach8 }
 set CardChipSets(Mach32)   { ??? }
 set CardChipSets(Mach64)   { ??? }
 set CardChipSets(P9000)	   { vipervlb viperpci orchid_p9000 }
-set CardChipSets(S3)	   { 911 924 801 805 928 Trio32/64 \
-			     864 868 964 968 Trio32 Trio64 Trio64V+ }
+set CardChipSets(S3)	   { s3_generic mmio_928 }
 set CardChipSets(W32)	   { et4000w32 et4000w32i et4000w32p_rev_a \
 			     et4000w32i_rev_b et4000w32p_rev_b \
 			     et4000w32p_rev_d et4000w32p_rev_c \
@@ -47,7 +46,7 @@ set CardRamDacs(Mach64)	   { internal ati68875 tlc34075 tvp3026 bt476 \
 set CardRamDacs(P9000)	   {}
 set CardRamDacs(S3)	   { normal bt485 bt9485 att20c505 \
 			     ti3020 att20c498 att21c498 att22c498 \
-			     ti3025 ti3026 ibm_rgb514 ibm_rgb524 \
+			     ti3025 ti3026 ti3030 ibm_rgb514 ibm_rgb524 \
 			     ibm_rgb525 ibm_rgb526 ibm_rgb528 att20c490 \
 			     att20c491 ch8391 sc11482 sc11483 \
 			     sc11484 sc11485 sc11487 sc11489 \
@@ -76,7 +75,7 @@ set CardClockChips(P9000)  { ??? }
 set CardClockChips(S3)	   { icd2061a ics9161a dcs2824 sc11412 \
 			     s3gendac s3_sdac ics5300 ics5342 \
 			     s3_trio s3_trio32 s3_trio64 ti3025 \
-			     ti3026 ibm_rgb5xx ics2595 ch8391 \
+			     ti3026 ti3030 ibm_rgb5xx ics2595 ch8391 \
 			     stg1703 att20c409 att20c499 }
 
 set CardClockChips(W32)	   { icd2061a ics5341 stg1703 }

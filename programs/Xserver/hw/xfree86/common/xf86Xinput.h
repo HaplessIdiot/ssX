@@ -22,12 +22,14 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.8 1996/05/10 06:58:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.9 1996/05/11 11:04:08 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
 
+#ifndef NEED_EVENTS
 #define NEED_EVENTS
+#endif
 #include "X.h"
 #include "Xproto.h"
 #include "inputstr.h"
@@ -49,7 +51,6 @@
 #define HAS_MOTION_HISTORY(local) ((local)->dev->valuator && (local)->dev->valuator->numMotionEvents)
 
 typedef struct _LocalDeviceRec {  
-  int		extended;		/* This must be first */
   char		*name;
   int           flags;
   Bool		(*device_config)(
@@ -95,6 +96,7 @@ typedef struct _LocalDeviceRec {
     pointer		private;
     int			private_flags;
     pointer		motion_history;
+    ValuatorMotionProcPtr motion_history_proc;
     unsigned int	history_size;	/* only for configuration purpose */
     unsigned int	first;
     unsigned int	last;

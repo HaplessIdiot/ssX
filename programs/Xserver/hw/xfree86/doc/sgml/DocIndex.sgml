@@ -80,14 +80,14 @@
 	url="tseng.html">
 <item> <htmlurl name="README.VIDEO7"
 	url="Video7.html">
-<item> <htmlurl name="Information for W32 Chipset Users"
+<item> <htmlurl name="Information for ET4000/W32 and ET6000 Chipset Users"
 	url="W32.html">
 <item> <htmlurl name="Information for Western Digital Chipset Users"
 	url="WstDig.html">
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.10 1996/02/24 10:19:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.11 1996/05/12 12:36:31 dawes Exp $ 
 
 
 

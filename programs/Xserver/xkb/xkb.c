@@ -1,5 +1,5 @@
 /* $XConsortium: xkb.c /main/20 1996/03/01 14:30:56 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.7 1996/03/04 05:24:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.8 1996/03/16 12:47:38 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -6013,6 +6013,13 @@ ProcXkbGetKbdByName(client)
 	xkb= finfo.xkb;
 	dev->key->xkbInfo->desc= xkb;
 	finfo.xkb= old_xkb; /* so it'll get freed automatically */
+
+	if (dev->kbdfeed && dev->kbdfeed->xkb_sli) {
+	    XkbFreeSrvLedInfo(dev->kbdfeed->xkb_sli);
+	    dev->kbdfeed->xkb_sli= NULL;
+	}
+	*xkb->ctrls= *old_xkb->ctrls;
+
 	memcpy(dev->key->modifierMap,xkb->map->modmap,xkb->max_key_code+1);
 	XkbUpdateCoreDescription(dev,True);
 
@@ -6340,7 +6347,7 @@ char *			str;
 	}
 
 	if ((stuff->firstBtn+stuff->nBtns)>dev->button->numButtons) {
-	    client->errorValue = _XkbErrCode4(0x01,dev->button->numButtons,
+	    client->errorValue = _XkbErrCode4(0x02,dev->button->numButtons,
 							stuff->firstBtn,
 							stuff->nBtns);
 	    return BadValue;

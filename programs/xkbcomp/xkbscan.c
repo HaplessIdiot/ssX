@@ -1,5 +1,5 @@
 /* $XConsortium: xkbscan.c /main/8 1996/02/05 06:00:09 kaleb $ */
-/* $XFree86: xc/programs/xkbcomp/xkbscan.c,v 3.2 1996/02/04 09:17:49 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbscan.c,v 3.3 1996/02/09 10:18:21 dawes Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -137,6 +137,12 @@ static char buf[32];
 	case PARTIAL:		sprintf(buf, "PARTIAL"); break;
 	case DEFAULT:		sprintf(buf, "DEFAULT"); break;
 	case HIDDEN:		sprintf(buf, "HIDDEN"); break;
+
+	case ALPHANUMERIC_KEYS:	sprintf(buf, "ALPHANUMERIC_KEYS"); break;
+	case MODIFIER_KEYS:	sprintf(buf, "MODIFIER_KEYS"); break;
+	case KEYPAD_KEYS:	sprintf(buf, "KEYPAD_KEYS"); break;
+	case FUNCTION_KEYS:	sprintf(buf, "FUNCTION_KEYS"); break;
+	case ALTERNATE_GROUP:	sprintf(buf, "ALTERNATE_GROUP"); break;
 
 	default:		sprintf(buf, "UNKNOWN");	break;
     }
@@ -334,7 +340,12 @@ struct _Keyword {
     { "outline",		OUTLINE			},
     { "solid",			SOLID			},
     { "logo",			LOGO			},
-    { "virtual",		VIRTUAL			}
+    { "virtual",		VIRTUAL			},
+    { "alphanumeric_keys",	ALPHANUMERIC_KEYS	},
+    { "modifier_keys",		MODIFIER_KEYS		},
+    { "keypad_keys",		KEYPAD_KEYS		},
+    { "function_keys",		FUNCTION_KEYS		},
+    { "alternate_group",	ALTERNATE_GROUP		}
 };
 int	numKeywords = sizeof(keywords)/sizeof(struct _Keyword);
 

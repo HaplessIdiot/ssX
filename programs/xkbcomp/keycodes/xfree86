@@ -1,5 +1,5 @@
 // $XConsortium: xfree86 /main/3 1996/01/27 18:08:52 kaleb $
-// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.0 1996/02/18 03:45:34 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.1 1996/06/10 09:18:12 dawes Exp $
 default xkb_keycodes "xfree86" {
 
     minimum= 8;
@@ -128,6 +128,8 @@ default xkb_keycodes "xfree86" {
     indicator 1 = "Caps Lock";
     indicator 2 = "Num Lock";
     indicator 3 = "Scroll Lock";
+
+    alias <ALGR> = <RALT>;
 };
 
 xkb_keycodes "102" {
@@ -254,6 +256,8 @@ xkb_keycodes "102" {
     indicator 1 = "Caps Lock";
     indicator 2 = "Num Lock";
     indicator 3 = "Scroll Lock";
+
+    alias <ALGR> = <RALT>;
 };
 
 

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.13 1996/06/10 09:14:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.14 1996/07/08 10:26:15 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -246,7 +246,7 @@ InitExtInput()
   for (i = 0; i < num_devices; i++) {
     if (localDevices[i]->flags & XI86_CONFIGURED) {
       dev = AddInputDevice(localDevices[i]->device_control,
-                                          (localDevices[i]->flags & XI86_NO_OPEN_ON_INIT) ? FALSE : TRUE);
+			   (localDevices[i]->flags & XI86_NO_OPEN_ON_INIT) ? FALSE : TRUE);
       if (dev == NULL)
         FatalError("Too many input devices");
       localDevices[i]->atom = MakeAtom(localDevices[i]->name, strlen(localDevices[i]->name), TRUE);
@@ -254,7 +254,7 @@ InitExtInput()
       localDevices[i]->dev = dev;
       RegisterOtherDevice(dev);
       ErrorF("%s Adding extended device \"%s\" (type: %s)\n", XCONFIG_GIVEN,
-	localDevices[i]->name, localDevices[i]->type_name);
+	     localDevices[i]->name, localDevices[i]->type_name);
     }
   }
 }
@@ -401,7 +401,23 @@ ChangePointerDevice (old_dev, new_dev, x, y)
    * We don't allow axis swap or other exotic features.
    */
   if (x == 0 && y == 1) {
-    InitFocusClassDeviceStruct(old_dev);
+      LocalDevicePtr	old_local = (LocalDevicePtr)old_dev->public.devicePrivate;
+      LocalDevicePtr	new_local = (LocalDevicePtr)new_dev->public.devicePrivate;
+      
+      InitFocusClassDeviceStruct(old_dev);
+    
+      /* Restore Extended motion history information */
+      old_dev->valuator->GetMotionProc   = old_local->motion_history_proc;
+      old_dev->valuator->numMotionEvents = old_local->history_size;
+
+      /* Save Extended motion history information */
+      new_local->motion_history_proc = new_dev->valuator->GetMotionProc;
+      new_local->history_size	     = new_dev->valuator->numMotionEvents;
+      
+      /* Set Core motion history information */
+      new_dev->valuator->GetMotionProc   = miPointerGetMotionEvents;
+      new_dev->valuator->numMotionEvents = miPointerGetMotionBufferSize();
+      
     return Success;
   }
   else

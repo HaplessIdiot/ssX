@@ -1,5 +1,6 @@
 // $XConsortium: fi /main/2 1995/12/07 21:42:23 kaleb $
-partial default xkb_symbols "basic" {
+partial default alphanumeric_keys 
+xkb_symbols "basic" {
 
     // Describes the differences between a very simple en_US
     // keyboard and a very simple Swedish(Finland) keybaord
@@ -42,4 +43,7 @@ partial default xkb_symbols "basic" {
     modifier_map Mod3   { Mode_switch };
 };
 
-
+partial alphanumeric_keys 
+xkb_symbols "nodeadkeys" {
+    include "fi(basic)"	// for consistent naming
+};

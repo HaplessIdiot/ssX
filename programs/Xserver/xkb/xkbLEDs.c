@@ -1,4 +1,4 @@
-/* $XConsortium: xkbLEDs.c /main/1 1996/01/14 16:46:34 kaleb $ */
+/* $XConsortium: xkbLEDs.c /main/2 1996/02/02 14:14:47 kaleb $ */
 /************************************************************
 Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -593,10 +593,10 @@ XkbFreeSrvLedInfo(sli)
     if ((sli->flags&XkbSLI_IsDefault)==0) {
 	if (sli->maps)	_XkbFree(sli->maps);
 	if (sli->names)	_XkbFree(sli->names);
-	sli->maps= NULL;
-	sli->names= NULL;
-	_XkbFree(sli);
     }
+    sli->maps= NULL;
+    sli->names= NULL;
+    _XkbFree(sli);
     return;
 }
 
@@ -1069,7 +1069,7 @@ register int i;
 
     for (i=0;i<num_btns;i++,acts++) {
 	if ((acts->any.type!=XkbSA_NoAction)&&
-				XkbCheckActionVMods(xkb,acts,changed)) {
+				XkbUpdateActionVirtualMods(xkb,acts,changed)) {
 	    if ((ed_inout->reason&XkbXI_ButtonActionsMask)==0) {
 		ed_inout->reason|= XkbXI_ButtonActionsMask;
 		ed_inout->firstBtn= i;

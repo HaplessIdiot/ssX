@@ -247,7 +247,9 @@ extern int	_XkbClientMajor;
 extern int	_XkbClientMinor;
 extern unsigned	int XkbXIUnsupported;
 
+extern char *	XkbModelUsed,*XkbLayoutUsed,*XkbVariantUsed,*XkbOptionsUsed;
 extern Bool	noXkbExtension;
+extern Bool	XkbWantRulesProp;
 
 extern pointer	XkbLastRepeatEvent;
 
@@ -845,7 +847,7 @@ extern void XkbHandleActions(
 #endif
 );
 
-extern Bool XkbChangeEnabledControls(
+extern Bool XkbEnableDisableControls(
 #if NeedFunctionPrototypes
     XkbSrvInfoPtr	/* xkbi */,
     unsigned long	/* change */,
@@ -1087,6 +1089,16 @@ extern	void XkbClearAllLatchesAndLocks(
 #endif
 );
 
+extern	void	XkbSetRulesDflts(
+#if NeedFunctionPrototypes
+	char *			/* rulesFile */,
+	char *			/* model */,
+	char *			/* layout */,
+	char *			/* variant */,
+	char *			/* options */
+#endif
+);
+
 extern	void	XkbInitDevice(
 #if NeedFunctionPrototypes
 	DeviceIntPtr 	/* pXDev */
@@ -1151,6 +1163,7 @@ extern	Status	 XkbChangeKeycodeRange(
 
 #include "extensions/XKMformat.h"
 #include "extensions/XKBfile.h"
+#include "extensions/XKBrules.h"
 
 #define	_XkbListKeymaps		0
 #define	_XkbListKeycodes	1
@@ -1172,6 +1185,20 @@ typedef struct _XkbSrvListInfo {
 	int		nFound[_XkbListNumComponents];
 } XkbSrvListInfoRec,*XkbSrvListInfoPtr;
 
+char *
+XkbGetRulesDflts(
+#if NeedFunctionPrototypes
+	XkbRF_VarDefsPtr	/* defs */
+#endif
+);
+
+extern void	XkbSetRulesUsed(
+#if NeedFunctionPrototypes
+	XkbRF_VarDefsPtr	/* defs */
+#endif
+);
+
+
 extern	Status	XkbDDXList(
 #if NeedFunctionPrototypes
 	DeviceIntPtr		/* dev */,
@@ -1192,6 +1219,15 @@ extern	unsigned int XkbDDXLoadKeymapByNames(
 #endif
 );
 
+extern	Bool XkbDDXNamesFromRules(
+#if NeedFunctionPrototypes
+	DeviceIntPtr		/* keybd */,
+	char *			/* rules */,
+	XkbRF_VarDefsPtr	/* defs */,
+	XkbComponentNamesPtr	/* names */
+#endif
+);
+
 extern	FILE *XkbDDXOpenConfigFile(
 #if NeedFunctionPrototypes
 	char *	/* mapName */,
@@ -1209,6 +1245,8 @@ extern	Bool XkbDDXApplyConfig(
 
 extern XPointer XkbDDXPreloadConfig(
 #if NeedFunctionPrototypes
+	char **			/* rulesFileRtrn */,
+	XkbRF_VarDefsPtr	/* defs */,
 	XkbComponentNamesPtr	/* names */,
 	DeviceIntPtr		/* dev */
 #endif

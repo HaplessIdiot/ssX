@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.53 1996/06/29 14:11:07 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.54 1996/06/30 10:14:50 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -379,7 +379,7 @@ InitInput(argc, argv)
 #endif /* XTESTEXT1 */
 
   xf86Info.pKeyboard = AddInputDevice(xf86Info.kbdProc, TRUE); 
-  xf86Info.pMouse =  AddInputDevice(xf86Info.mouseDev.mseProc, TRUE);
+  xf86Info.pMouse =  AddInputDevice(xf86Info.mouseDev->mseProc, TRUE);
   RegisterKeyboardDevice(xf86Info.pKeyboard); 
   RegisterPointerDevice(xf86Info.pMouse); 
 
@@ -466,7 +466,7 @@ AbortDDX()
   /*
    * try to deinitialize all input devices
    */
-  if (xf86Info.pMouse) (xf86Info.mouseDev.mseProc)(xf86Info.pMouse, DEVICE_CLOSE);
+  if (xf86Info.pMouse) (xf86Info.mouseDev->mseProc)(xf86Info.pMouse, DEVICE_CLOSE);
   if (xf86Info.pKeyboard) (xf86Info.kbdProc)(xf86Info.pKeyboard, DEVICE_CLOSE);
 
   /*

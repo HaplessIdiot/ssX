@@ -1,5 +1,4 @@
-/* $XConsortium: xkbtext.c /main/5 1996/03/01 14:30:35 kaleb $ */
-/* $XFree86$ */
+/* $XConsortium: xkbtext.c /main/4 1996/01/14 16:44:25 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -564,7 +563,7 @@ char *buf,*prefix;
 	case XkbAXN_BKAccept:	sprintf(buf,"%sBKAccept",prefix); break;
 	case XkbAXN_BKReject:	sprintf(buf,"%sBKReject",prefix); break;
 	case XkbAXN_AXKWarning:	sprintf(buf,"%sAXKWarning",prefix); break;
-	default:		sprintf(buf,"ILLEGAL",prefix); break;
+	default:		sprintf(buf,"ILLEGAL"); break;
     }
     return buf;
 }

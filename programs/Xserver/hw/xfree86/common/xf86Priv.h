@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.17 1996/03/04 05:14:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.18 1996/03/10 12:04:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -71,7 +71,10 @@ typedef struct {
 
   /* mouse part */
   DeviceIntPtr  pMouse;
-  MouseDevRec	mouseDev;
+#ifdef XINPUT
+  pointer	mouseLocal;
+#endif
+  MouseDevPtr	mouseDev;
 
   /* event handler part */
   int           lastEventTime;
@@ -93,11 +96,6 @@ typedef struct {
   void		*screenPtr;
 #endif
 
-#ifdef XINPUT
-  /* joystick part */
-  DeviceIntPtr  pJstk;          /* device pointer */
-#endif
-
 #ifdef XKB
 /* 
  * would like to use an XkbComponentNamesRec here but can't without
@@ -109,6 +107,12 @@ typedef struct {
   char		*xkbcompat;
   char		*xkbsymbols;
   char		*xkbgeometry;
+  Bool		xkbcomponents_specified;
+  char		*xkbrules;
+  char		*xkbmodel;
+  char		*xkblayout;
+  char		*xkbvariant;
+  char		*xkboptions;
 #endif
 
 } xf86InfoRec, *xf86InfoPtr;

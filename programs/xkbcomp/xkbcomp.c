@@ -1,5 +1,5 @@
 /* $XConsortium: xkbcomp.c /main/10 1996/02/05 14:08:51 kaleb $ */
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.2 1996/02/04 09:17:46 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.3 1996/02/09 10:18:19 dawes Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -719,7 +719,7 @@ Status		status;
     XkbInitIncludePath();
     if (xkblist) {
 	Bool	gotSome;
-	gotSome= GenerateListing();
+	gotSome= GenerateListing(outputFile);
 	if ((warningLevel>7)&&(!gotSome))
 	    return -1;
 	return 0;
@@ -812,8 +812,8 @@ Status		status;
 		    ok= CompileKeyTypes(mapToUse,&result,MergeReplace);
 		    break;
 		case XkmSymbolsIndex:
-		    ERROR("Symbols files cannot be compiled on their own\n");
-		    ACTION("You must include them in other files\n");
+		    /* if it's just symbols, invent key names */
+		    result.xkb->flags|= AutoKeyNames;
 		    ok= False;
 		    break;
 		case XkmCompatMapIndex:

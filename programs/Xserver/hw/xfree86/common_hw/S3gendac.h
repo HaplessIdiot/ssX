@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.h,v 3.5 1996/02/04 09:06:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.h,v 3.6 1996/05/06 05:58:00 dawes Exp $ */ 
 
 
 /* Jon Tombs <jon@esix2.us.es>  */
@@ -23,6 +23,12 @@ int ET4000gendacSetClock(
 );     
 
 int ET4000gendacSetpixmuxClock( 
+#if NeedFunctionPrototypes
+   long freq, int clock
+#endif
+);     
+
+int ET6000SetClock( 
 #if NeedFunctionPrototypes
    long freq, int clock
 #endif

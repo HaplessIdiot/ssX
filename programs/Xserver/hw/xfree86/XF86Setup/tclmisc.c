@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.1 1996/06/30 10:44:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.2 1996/07/08 10:23:30 dawes Exp $ */
 
 /*
 
@@ -481,7 +481,9 @@ TCL_XF86MiscSetMouseSettings(clientData, interp, argc, argv)
 		else if (!StrCaseCmp(argv[i], "reopen"))
 			mseinfo.flags |= MF_REOPEN;
 		else {
-			Tcl_AppendResult(interp, "Flag must be one of ClearDTR, ClearRTS, or ReOpen\n",
+			Tcl_AppendResult(interp,
+					"Flag must be one of ClearDTR,"
+					    "ClearRTS, or ReOpen\n",
 					setmouseusage, (char *) NULL);
 			return TCL_ERROR;
 		}

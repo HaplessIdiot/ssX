@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaBitBlt.c,v 3.3 1996/02/04 09:11:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaBitBlt.c,v 3.4 1996/05/06 05:58:29 dawes Exp $ */
 /* GJA -- span move routines */
 
 
@@ -674,8 +674,8 @@ else {
 	y_interval = BYTES_PER_LINE(pWin) * 8 ;
 }
 
-src = (int)src << 3 ;
-dst = (int)dst << 3 ;
+src = (unsigned char *)((int)src << 3) ;
+dst = (unsigned char *)((int)dst << 3) ;
 
 if ( y1 > y0) {
 	x_direction = 0x1000 ;
@@ -707,11 +707,11 @@ for ( ; h-- ; ) {
 		dst_off = (int)dst & 0xf ;
 	}
 #if defined(__NetBSD__)
-	src_x   = ((unsigned int)src >> 4 ) << 1 ;
-	dst_x   = ((unsigned int)dst >> 4 ) << 1 ;
+	src_x   = (unsigned short *)(((unsigned int)src >> 4 ) << 1) ;
+	dst_x   = (unsigned short *)(((unsigned int)dst >> 4 ) << 1) ;
 #else
-	src_x   = ((int)src >> 4 ) << 1 ;
-	dst_x   = ((int)dst >> 4 ) << 1 ;
+	src_x   = (unsigned short *)(((int)src >> 4 ) << 1) ;
+	dst_x   = (unsigned short *)(((int)dst >> 4 ) << 1) ;
 #endif
 	k = ( src_off + w + 15 ) >> 4 ;
 	if ( src_off < dst_off ) {

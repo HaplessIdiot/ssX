@@ -98,7 +98,7 @@ The server binaries are:
 	<tag>XF86_8514:</tag>   8514/A accelerated server.
 	<tag>XF86_P9000:</tag>  P9000 accelerated server.
 	<tag>XF86_AGX:</tag>    AGX accelerated server.
-	<tag>XF86_W32:</tag>    ET4000/W32 accelerated server.
+	<tag>XF86_W32:</tag>    ET4000/W32 and ET6000 accelerated server.
  </descrip>
 
 There is a manual page for each of these servers; refer to the manual
@@ -519,7 +519,7 @@ installation.
 </code>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Config.sgml,v 3.6 1995/07/07 15:40:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Config.sgml,v 3.7 1996/02/04 09:08:04 dawes Exp $ 
 
 
 

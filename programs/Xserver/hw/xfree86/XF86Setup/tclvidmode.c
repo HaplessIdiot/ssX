@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclvidmode.c,v 3.1 1996/06/30 10:44:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclvidmode.c,v 3.2 1996/07/08 10:23:32 dawes Exp $ */
 
 /*
 
@@ -31,6 +31,9 @@ static int (*savErrorFunc)();
 static int errorOccurred;
 static char errMsgBuf[512];
 
+/*
+  Simple error handler
+*/
 static int vidError(dis, err)
 Display *dis;
 XErrorEvent *err;
@@ -273,6 +276,11 @@ TCL_XF86VidModeGetAllModeLines(clientData, interp, argc, argv)
 	}
 }
 
+/*
+   Returns the monitor's manufacturer and model names and its
+   horiz and vert sync rates,
+*/
+
 int
 TCL_XF86VidModeGetMonitor(clientData, interp, argc, argv)
     ClientData	clientData;
@@ -336,6 +344,10 @@ TCL_XF86VidModeGetMonitor(clientData, interp, argc, argv)
 #undef MNVSync
 }
 
+/*
+   Turn on/off video mode switching
+*/
+
 int
 TCL_XF86VidModeLockModeSwitch(clientData, interp, argc, argv)
     ClientData	clientData;
@@ -372,13 +384,17 @@ TCL_XF86VidModeLockModeSwitch(clientData, interp, argc, argv)
 	XSync(Tk_Display(tkwin), False);
 	XSetErrorHandler(savErrorFunc);
 	if (errorOccurred) {
-		Tcl_AppendResult(interp,
-			"Unable to set screen saver timeouts: ",
+		Tcl_AppendResult(interp, "Unable to ",
+			(lock? "":"un"), "lock mode switching: ",
 			errMsgBuf, (char *) NULL);
 		return TCL_ERROR;
 	}
 	return TCL_OK;
 }
+
+/*
+   Change to the previous/next video mode
+*/
 
 int
 TCL_XF86VidModeSwitchMode(clientData, interp, argc, argv)

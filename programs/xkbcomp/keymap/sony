@@ -27,9 +27,9 @@
 //from the X Consortium.
 //
 xkb_keymap "news5000-nwp5461" {
-    xkb_keycodes	{ include "keycodes/sony(nwp5461)"	};
-    xkb_types		{ include "types/default"		};
-    xkb_compatibility	{ include "compat/default"		};
-    xkb_symbols 	{ include "symbols/sony/us(nwp5461)"	};
-    xkb_geometry	{ include "geometry/sony(nwp5461)"	};
+    xkb_keycodes	{ include "sony(nwp5461)"	};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols 	{ include "sony/us(nwp5461)"	};
+    xkb_geometry	{ include "sony(nwp5461)"	};
 };

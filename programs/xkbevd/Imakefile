@@ -13,7 +13,7 @@ INCLUDES = -I$(EXTINCSRC)
 
 all::
 
-YaccFileNoFlags(cfgparse)
+YaccFile(cfgparse,/**/)
 
 clean::
 	RemoveFiles(test.h *.xkm *.xkb)

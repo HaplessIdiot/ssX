@@ -1,8 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.13 1996/03/29 22:16:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.14 1996/05/06 05:57:59 dawes Exp $ */ 
 /*
  * Progaming of the S3 gendac programable clocks, from the S3 Gendac
  * programing documentation by S3 Inc. 
  * Jon Tombs <jon@esix2.us.es>
+ * Also used for GenDAC and GenDAC-like chips on non-S3 chipsets.
  */
 /* $XConsortium: S3gendac.c /main/9 1995/12/28 17:16:09 kaleb $ */
  
@@ -18,6 +19,7 @@
 #define PLL_S3TRIO        2
 #define PLL_ET4000GENDAC  3
 #define PLL_ARK2000GENDAC 4
+#define PLL_ET6000        5
 
 
 extern int vgaIOBase;
@@ -35,6 +37,12 @@ int reg, unsigned char data1, unsigned char data2
 );
 
 static void setET4000gendacpll(
+#if NeedFunctionPrototypes
+int reg, unsigned char data1, unsigned char data2
+#endif
+);
+
+static void setET6000pll(
 #if NeedFunctionPrototypes
 int reg, unsigned char data1, unsigned char data2
 #endif
@@ -69,6 +77,14 @@ long freq;
 int clk;
 {
    return commonSetClock(freq, clk, 0, PLL_ET4000GENDAC, 100000, 270000);
+}
+
+int
+ET6000SetClock(freq, clk)
+long freq;
+int clk;
+{
+   return commonSetClock(freq, clk, 0, PLL_ET6000, 100000, 270000);
 }
 
 int
@@ -162,7 +178,7 @@ unsigned char *mdiv, *ndiv;
    }
    
 #if EXTENDED_DEBUG
-   ErrorF("clk %d, setting to %1.6f MHz (m %d, n1 %d, n2 %d)\n", clk,
+   ErrorF("Clock parameters for %1.6f MHz: m=%d, n1=%d, n2=%d\n",
 	  ((double)(best_m) / (double)(best_n1) / (1 << best_n2)) * BASE_FREQ,
 	  best_m-2, best_n1-2, best_n2);
 #endif
@@ -200,6 +216,9 @@ long freq_min, freq_max;
          break;
      case PLL_ARK2000GENDAC:
          setARK2000gendacpll(clk, m, n);
+         break;
+     case PLL_ET6000:
+         setET6000pll(clk, m, n);
          break;
      default: 
          ErrorF("Internal error: unknown pll_type in S3gendac.c");
@@ -266,6 +285,50 @@ unsigned char data2;
    /* Now clean up our mess */
    outb(GENDAC_INDEX, tmp1);  
    outb(vgaCRReg, tmp);
+}
+
+
+static void
+#if NeedFunctionPrototypes
+setET6000pll(int reg, unsigned char data1, unsigned char data2)
+#else
+setET6000pll(reg, data1, data2)
+int reg;
+unsigned char data1;
+unsigned char data2;
+#endif
+{
+   /* Tseng Labs engineers were wise enough to use the same
+    * PLL scheme used in other standard GenDACs -- good!
+    * Clocks 0..7 are pixel clocks, clock 10 is the memory clock
+    */
+
+   unsigned long PCIIOBase  = 0xDEADBEEF;
+   unsigned char tmp;
+   int vgaCRIndex = vgaIOBase + 4;
+   int vgaCRReg = vgaIOBase + 5;
+
+   /* get PCI IO base address first */
+   outb(vgaCRIndex, 0x21);
+   PCIIOBase = (inb(vgaCRReg)<<8);
+   outb(vgaCRIndex, 0x22);
+   PCIIOBase += (inb(vgaCRReg)<<16);
+   outb(vgaCRIndex, 0x23);
+   PCIIOBase += (inb(vgaCRReg)<<24);
+
+#if EXTENDED_DEBUG
+   ErrorF("ET6000: PCIIOBase: 0x%lX ; M/N parameters: 0x%X 0x%X ; clk index: %d\n",
+           PCIIOBase, data1, data2, reg);
+#endif
+
+   /* set the PLL parameters for specified clock */
+   tmp = inb(PCIIOBase+0x67); /* remember old CLKDAC index register pointer */
+   outb(PCIIOBase+0x67, reg);
+   outb(PCIIOBase+0x69, data1);
+   outb(PCIIOBase+0x69, data2);
+
+   /* restore old index register */
+   outb(PCIIOBase+0x67, tmp);
 }
 
 

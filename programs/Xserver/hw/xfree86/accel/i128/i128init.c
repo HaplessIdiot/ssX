@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.2 1996/02/04 09:01:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.3 1996/04/15 11:29:50 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -65,7 +65,8 @@ saveI128state()
 			i128mem.rbase_g[INDEX_TI/4]; /*  0x0018  */
 		iR.i128_base_g[DATA_TI/4]  =
 			i128mem.rbase_g[DATA_TI/4];  /*  0x001C  */
-	} else if (i128RamdacType == IBM528_DAC) {
+	} else if ((i128RamdacType == IBM526_DAC) ||
+		   (i128RamdacType == IBM528_DAC)) {
 		iR.i128_base_g[IDXL_I/4] =
 			i128mem.rbase_g[IDXL_I/4];   /*  0x0010  */
 		iR.i128_base_g[IDXH_I/4] =
@@ -176,7 +177,8 @@ saveI128state()
 		i128mem.rbase_g_b[DATA_TI] = 0x02;
 		i128mem.rbase_g_b[INDEX_TI] = TI_LOOP_CLOCK_PLL_DATA;
 		iR.Ti3025[8] = i128mem.rbase_g_b[DATA_TI];
-	} else if (i128RamdacType == IBM528_DAC) {
+	} else if ((i128RamdacType == IBM526_DAC) ||
+		   (i128RamdacType == IBM528_DAC)) {
 		short i;
 
 		for (i=0; i<0x100; i++) {
@@ -270,7 +272,8 @@ restoreI128state()
 		i128mem.rbase_g_b[DATA_TI] = iR.Ti302X[TI_GENERAL_IO_DATA];
 		i128mem.rbase_g_b[INDEX_TI] = TI_MCLK_DCLK_CONTROL;
 		i128mem.rbase_g_b[DATA_TI] = iR.Ti302X[TI_MCLK_DCLK_CONTROL];
-	} else if (i128RamdacType == IBM528_DAC) {
+	} else if ((i128RamdacType == IBM526_DAC) ||
+		   (i128RamdacType == IBM528_DAC)) {
 		short i;
 
 		for (i=0; i<0x100; i++) {
@@ -293,7 +296,8 @@ restoreI128state()
 			iR.i128_base_g[INDEX_TI/4]; /* 0x0018 */
 		i128mem.rbase_g[DATA_TI/4]  =
 			iR.i128_base_g[DATA_TI/4];  /* 0x001C */
-	} else if (i128RamdacType == IBM528_DAC) {
+	} else if ((i128RamdacType == IBM526_DAC) ||
+		   (i128RamdacType == IBM528_DAC)) {
 		i128mem.rbase_g[IDXL_I/4] =
 			iR.i128_base_g[IDXL_I/4];   /* 0x0010 */
 		i128mem.rbase_g[IDXH_I/4] =
@@ -360,9 +364,10 @@ i128Init(mode)
 
 	if (i128RamdacType == TI3025_DAC)
 		iclock = 4;
-	else
+	else if (i128RamdacType == IBM528_DAC)
 		iclock = 128 / i128InfoRec.bitsPerPixel;
-		/* iclock = 64 / i128InfoRec.bitsPerPixel for IBM524 DAC */
+	else
+		iclock = 64 / i128InfoRec.bitsPerPixel; /* IBM524/526 DAC */
 
 	i128mem.rbase_g[INT_VCNT] = 0x00;
 	i128mem.rbase_g[INT_HCNT] = 0x00;

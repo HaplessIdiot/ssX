@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.26 1996/03/29 22:17:49 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.27 1996/06/29 09:08:44 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -22,6 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
+ *          ET6000 support by Koen Gadeyne
  */
 /* $XConsortium: et4_driver.c /main/16 1996/01/12 12:17:07 kaleb $ */
 
@@ -37,9 +38,11 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
+#include "xf86_PCI.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 #include "vga.h"
+#include "vgaPCI.h"
 
 #ifdef W32_ACCEL_SUPPORT
 #include "w32.h"
@@ -62,7 +65,7 @@
 #include "vga256.h"
 #endif
 
-#ifdef W32_ACCEL_SUPPORT
+#ifdef W32_SUPPORT
 typedef struct {
   unsigned char cmd_reg;
   unsigned char PLL_f2_M;
@@ -70,7 +73,7 @@ typedef struct {
   unsigned char PLL_ctrl;
   unsigned char PLL_w_idx;
   unsigned char PLL_r_idx;
-  } ICS5341state;
+  } GenDACstate;
 #endif
 
 typedef struct {
@@ -84,9 +87,7 @@ typedef struct {
   unsigned char SegSel;
 #ifdef W32_SUPPORT
   unsigned char VSConf2;        /* CRTC 0x37 */
-#endif
-#ifdef W32_ACCEL_SUPPORT
-  ICS5341state gendac;
+  GenDACstate gendac;
 #endif
 #ifndef MONOVGA
   unsigned char RCConf;       /* CRTC 0x32 */
@@ -99,10 +100,15 @@ typedef struct {
 #define TYPE_ET4000W32I		2
 #define TYPE_ET4000W32P		3
 #define TYPE_ET4000W32Pc	4
+#define TYPE_ET6000		5
+
+#define PCI_TSENG_VENDOR_ID	0x100C
+#define PCI_ET6000		0x3208
 
 static Bool     ET4000Probe();
 static char *   ET4000Ident();
 static Bool     ET4000ClockSelect();
+static Bool     ET6000ClockSelect();
 static Bool     LegendClockSelect();
 #ifdef W32_ACCEL_SUPPORT
 static Bool     ICS5341ClockSelect();
@@ -133,6 +139,7 @@ static unsigned char    initialVSConf2 = 0x0b;
 #endif
 #endif
 static int et4000_type;
+unsigned long ET6Kbase;  /* PCI config space base address for ET6000 */
 
 vgaVideoChipRec ET4000 = {
   ET4000Probe,
@@ -177,6 +184,8 @@ static SymTabRec chipsets[] = {
   { TYPE_ET4000W32,	"et4000w32" },
   { TYPE_ET4000W32I,	"et4000w32i" },
   { TYPE_ET4000W32P,	"et4000w32p" },
+  { TYPE_ET4000W32Pc,	"et4000w32p" },
+  { TYPE_ET6000,	"et6000" },
 #endif
   { -1,			"" },
 };
@@ -191,6 +200,15 @@ static unsigned ET4000_ExtPorts[] = {0x3B8, 0x3BF, 0x3CD, 0x3D8,
 
 static int Num_ET4000_ExtPorts = 
 	(sizeof(ET4000_ExtPorts)/sizeof(ET4000_ExtPorts[0]));
+
+/* ET6000 PCI-config space ports -- will be updated later: 
+ * these are just dummies (it's these addresses on my setup)
+ */
+static unsigned int ET6000_PCIPorts[] = {0x6045, 0x6047, 0x6067, 0x6069, };
+
+static int Num_ET6000_PCIPorts = 
+	(sizeof(ET6000_PCIPorts)/sizeof(ET6000_PCIPorts[0]));
+
 
 /*
  * ET4000Ident
@@ -319,6 +337,34 @@ LegendClockSelect(no)
   return(TRUE);
 }
 
+/*
+ * ET6000ClockSelect --
+ *      programmable clock chip
+ */
+
+static Bool
+ET6000ClockSelect(freq)
+     int freq;
+{
+   Bool result = TRUE;
+
+   switch(freq)
+   {
+   case CLK_REG_SAVE:
+   case CLK_REG_RESTORE:
+      result = ET4000ClockSelect(freq);
+      break;
+   default:
+      {
+        ET6000SetClock(freq, 2);
+        result = ET4000ClockSelect(2);
+        usleep(150000);
+      }
+   }
+   return(result);
+}
+
+
 #ifdef W32_ACCEL_SUPPORT
 /*
  * ICS5341ClockSelect --
@@ -410,6 +456,135 @@ ICD2061AClockSelect(freq)
 }
 #endif
 
+static Bool
+ET6000Probe()
+{
+   int ramtype=0;
+   struct pci_config_reg *pcrp;
+   Bool found=FALSE;
+   int i = 0;
+
+   
+
+   /* check the PCI config for an ET6000.
+    * Don't bother whether the chipset is already given or not:
+    * we have to go and get the IOBase address anyway, which needs
+    * the full PCI probe.
+    */
+
+#ifdef USE_VGA256_PCI   /* this uses VGA256 specific stuff... */
+   if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TSENG)
+   {
+     switch(vgaPCIInfo->ChipType)
+       {
+         case PCI_CHIP_ET6000:
+           found=TRUE;
+           et4000_type = TYPE_ET6000;
+           ET6Kbase = vgaPCIInfo->IOBase & ~0xFF;
+           ET6000_PCIPorts[0] = ET6Kbase+0x45;
+           ET6000_PCIPorts[1] = ET6Kbase+0x47;
+           ET6000_PCIPorts[2] = ET6Kbase+0x67;
+           ET6000_PCIPorts[3] = ET6Kbase+0x69;
+           xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_ET6000_PCIPorts, ET6000_PCIPorts);
+           break;
+       }
+   }
+
+#else
+   xf86scanpci(vga256InfoRec.scrnIndex);
+   while (pcrp = pci_devp[i]) {
+      if (pcrp->_vendor == PCI_TSENG_VENDOR_ID) {
+         switch (pcrp->_device) {
+         case PCI_ET6000:
+           found=TRUE;
+           et4000_type = TYPE_ET6000;
+           ET6Kbase = pcrp->_base1 & ~0xFF;
+           ET6000_PCIPorts[0] = ET6Kbase+0x45;
+           ET6000_PCIPorts[1] = ET6Kbase+0x47;
+           ET6000_PCIPorts[2] = ET6Kbase+0x67;
+           ET6000_PCIPorts[3] = ET6Kbase+0x69;
+           xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_ET6000_PCIPorts, ET6000_PCIPorts);
+           break;
+         }
+       break;
+      }
+      i++;
+   }
+   xf86cleanpci();
+
+#endif  /* USE_VGA256_PCI */
+
+   if (found==FALSE) return(FALSE);
+   
+   ErrorF("%s %s: PCI: %s , IOBase @ 0x%X\n", XCONFIG_PROBED,
+          vga256InfoRec.name, xf86TokenToString(chipsets, et4000_type),
+          ET6Kbase);
+ 
+   ET4000EnterLeave(ENTER);
+  /*
+   * Detect how much memory is installed
+   */
+  if (!vga256InfoRec.videoRam)
+    {
+       outb(vgaIOBase+0x04, 0x34);
+       switch (inb(vgaIOBase+0x05) & 0x80)
+       {
+         case 0x00:  /* MDRAM */
+           ramtype=0;
+           vga256InfoRec.videoRam = ((inb(ET6Kbase+0x47) & 0x07) + 1) * 8*32; /* number of 8 32kb banks  */
+           if (inb(ET6Kbase+0x45) & 0x04)
+           {
+             vga256InfoRec.videoRam <<= 1;
+           }
+           break;
+         case 0x80:  /* DRAM */
+           ramtype=1;
+           vga256InfoRec.videoRam = 1024 << (inb(ET6Kbase+0x45) & 0x03);
+           break;
+       }
+       ErrorF("%s %s: ET6000: Detected %d Mb of %sDRAM\n",
+           XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.videoRam,
+           (ramtype==0)?"M":"");
+    }
+
+  /*
+   * If more than 1MB of RAM is available, use the
+   * W32/ET6000-specific banking function that can address 4MB.
+   */ 
+  if (vga256InfoRec.videoRam > 1024) {
+      ET4000.ChipSetRead = ET4000W32SetRead;
+      ET4000.ChipSetWrite= ET4000W32SetWrite;
+      ET4000.ChipSetReadWrite = ET4000W32SetReadWrite;
+  }
+
+  ClockSelect = ET6000ClockSelect;
+  OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
+  OFLG_SET(CLOCK_OPTION_ET6000, &vga256InfoRec.clockOptions);
+  
+  outb(ET6Kbase+067, 0x0f);
+  ErrorF("%s %s: ET6000: CLKDAC ID: 0x%X\n",
+      XCONFIG_PROBED, vga256InfoRec.name, inb(ET6Kbase+0x69));
+
+#ifdef DO_WE_NEED_THIS
+  vga256InfoRec.clocks = 3;
+  vga256InfoRec.clock[0] = 25175;
+  vga256InfoRec.clock[1] = 28322;
+  vga256InfoRec.clock[2] = 31500; /* this one will be reprogrammed */
+#endif
+  /*  vga256InfoRec.dacSpeed = 135000;  doesn't work anyway [kmg] */
+  ErrorF("%s %s: ET6000: Using built-in 135 MHz programmable Clock Chip/RAMDAC\n",
+      XCONFIG_PROBED, vga256InfoRec.name);
+
+  vga256InfoRec.chipset = xf86TokenToString(chipsets, et4000_type);
+  vga256InfoRec.bankedMono = TRUE;
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+  vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
+
+  return(TRUE);
+}
 
 /*
  * ET4000Probe --
@@ -427,15 +602,17 @@ ET4000Probe()
   xf86ClearIOPortList(vga256InfoRec.scrnIndex);
   xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
   xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_ET4000_ExtPorts, ET4000_ExtPorts);
+ 
+  if (ET6000Probe()) return(TRUE);
 
-  if (vga256InfoRec.chipset)
+  if (vga256InfoRec.chipset)   /* no auto-detect: chipset is given */
     {
       et4000_type = xf86StringToToken(chipsets, vga256InfoRec.chipset);
       if (et4000_type < 0)
           return FALSE;
       ET4000EnterLeave(ENTER);
     }
-  else
+  else  /* autodetect */
     {
       unsigned char temp, origVal, newVal;
 
@@ -859,6 +1036,20 @@ ET4000Restore(restore)
     }
   }
 #endif
+  if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
+  {
+    if (OFLG_ISSET(CLOCK_OPTION_ET6000, &vga256InfoRec.clockOptions))
+    {
+       /* Restore ET6000 CLKDAC PLL registers */
+       i = inb(ET6Kbase+0x67); /* remember old CLKDAC index register pointer */
+       outb(ET6Kbase+0x67, 2);
+       outb(ET6Kbase+0x69, restore->gendac.PLL_f2_M);
+       outb(ET6Kbase+0x69, restore->gendac.PLL_f2_N);
+
+       /* restore old index register */
+       outb(ET6Kbase+0x67, i);
+    }
+  }
  
   vgaHWRestore((vgaHWPtr)restore);
 
@@ -984,6 +1175,20 @@ ET4000Save(save)
   }
 #endif
 
+  if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
+  {
+    if (OFLG_ISSET(CLOCK_OPTION_ET6000, &vga256InfoRec.clockOptions))
+    {
+       /* Save ET6000 CLKDAC PLL registers */
+       i = inb(ET6Kbase+0x67); /* remember old CLKDAC index register pointer */
+       outb(ET6Kbase+0x67, 2);
+       save->gendac.PLL_f2_M = inb(ET6Kbase+0x69);
+       save->gendac.PLL_f2_N = inb(ET6Kbase+0x69);
+       
+       /* restore old index register */
+       outb(ET6Kbase+0x67, i);
+    }
+  }
   return ((void *) save);
 }
 
@@ -1221,6 +1426,17 @@ ET4000Init(mode)
     else
 #endif
 
+    if (et4000_type==TYPE_ET6000)
+    {
+       commonCalcClock(vga256InfoRec.clock[new->std.NoClock],0,100000,270000, 
+       		 &(new->gendac.PLL_f2_M), &(new->gendac.PLL_f2_N));
+       /* force clock #2 */
+       new->Compatibility = (new->Compatibility & 0xFD);   
+       new->std.MiscOutReg = (new->std.MiscOutReg & 0xF3) | 0x08; 
+       new->std.NoClock = 2;
+       /* ET6000ClockSelect(vga256InfoRec.clock[new->std.NoClock]); */
+    }
+    else
     if (new->std.NoClock >= 0)
     {
       new->AuxillaryMode = (save_divide ^ ((new->std.NoClock & 8) << 3)) |

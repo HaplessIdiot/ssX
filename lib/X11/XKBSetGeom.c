@@ -1,4 +1,4 @@
-/* $XConsortium: XKBSetGeom.c /main/4 1996/03/01 14:29:56 kaleb $ */
+/* $XConsortium: XKBSetGeom.c /main/5 1996/03/22 12:52:41 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -290,7 +290,7 @@ static char *
 _WriteGeomDoodads(char *wire,int num_doodads,XkbDoodadPtr doodad)
 #else
 _WriteGeomDoodads(wire,num_doodads,doodad)
-    char *		dpy;
+    char *		wire;
     int			num_doodads;
     XkbDoodadPtr	doodad;
 #endif

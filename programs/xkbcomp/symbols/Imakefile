@@ -1,11 +1,11 @@
 XCOMM $XConsortium: Imakefile /main/8 1996/03/01 14:32:23 kaleb $
-XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.5 1996/03/04 05:31:19 dawes Exp $
 #define IHaveSubdirs
 
       TESTDATA = 
-     DATAFILES = be bg ca cs de de_CH de_nodead dk dvorak en_US es fi fr \
-		 fr_CH gb iso9995-3 it jp no pl pt ru se th us
+     DATAFILES = be bg ca cs ctrl de de_CH dk dvorak en_US es fi fr fr_CH \
+		 gb group iso9995-3 it jp no pl pt ru se th us
        SUBDIRS = digital nec sony sun
 
+MakeXkbDir($(LIBDIR)/xkb,symbols)
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/symbols)
 DependTarget()

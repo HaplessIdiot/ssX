@@ -1,5 +1,5 @@
 /* $XConsortium: menu.c /main/64 1996/01/14 16:52:55 kaleb $ */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.3 1996/01/16 15:09:42 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.4 1996/01/30 15:28:29 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -52,6 +52,7 @@ Arg menuArgs[2] = {{ XtNleftBitmap, (XtArgVal) 0 },
 static void do_logging PROTO_XT_CALLBACK_ARGS;
 #endif
 
+static void do_8bit_control    PROTO_XT_CALLBACK_ARGS;
 static void do_allow132        PROTO_XT_CALLBACK_ARGS;
 static void do_allowsends      PROTO_XT_CALLBACK_ARGS;
 static void do_altscreen       PROTO_XT_CALLBACK_ARGS;
@@ -76,6 +77,7 @@ static void do_scrollkey       PROTO_XT_CALLBACK_ARGS;
 static void do_scrollttyoutput PROTO_XT_CALLBACK_ARGS;
 static void do_securekbd       PROTO_XT_CALLBACK_ARGS;
 static void do_softreset       PROTO_XT_CALLBACK_ARGS;
+static void do_sun_fkeys       PROTO_XT_CALLBACK_ARGS;
 static void do_suspend         PROTO_XT_CALLBACK_ARGS;
 static void do_tekcopy         PROTO_XT_CALLBACK_ARGS;
 static void do_tekhide         PROTO_XT_CALLBACK_ARGS;
@@ -95,7 +97,7 @@ static void do_vtmode          PROTO_XT_CALLBACK_ARGS;
 static void do_vtshow          PROTO_XT_CALLBACK_ARGS;
 
 /*
- * The order entries MUST match the values given in menu.h
+ * The order of entries MUST match the values given in menu.h
  */
 MenuEntry mainMenuEntries[] = {
     { "securekbd",	do_securekbd, NULL },		/*  0 */
@@ -105,14 +107,17 @@ MenuEntry mainMenuEntries[] = {
 #endif
     { "redraw",		do_redraw, NULL },		/*  3 */
     { "line1",		NULL, NULL },			/*  4 */
-    { "suspend",	do_suspend, NULL },		/*  5 */
-    { "continue",	do_continue, NULL },		/*  6 */
-    { "interrupt",	do_interrupt, NULL },		/*  7 */
-    { "hangup",		do_hangup, NULL },		/*  8 */
-    { "terminate",	do_terminate, NULL },		/*  9 */
-    { "kill",		do_kill, NULL },		/* 10 */
-    { "line2",		NULL, NULL },			/* 11 */
-    { "quit",		do_quit, NULL }};		/* 12 */
+    { "8-bit control",	do_8bit_control, NULL },	/*  5 */
+    { "sun function-keys",do_sun_fkeys, NULL },		/*  6 */
+    { "line2",		NULL, NULL },			/*  7 */
+    { "suspend",	do_suspend, NULL },		/*  8 */
+    { "continue",	do_continue, NULL },		/*  9 */
+    { "interrupt",	do_interrupt, NULL },		/* 10 */
+    { "hangup",		do_hangup, NULL },		/* 11 */
+    { "terminate",	do_terminate, NULL },		/* 12 */
+    { "kill",		do_kill, NULL },		/* 13 */
+    { "line3",		NULL, NULL },			/* 14 */
+    { "quit",		do_quit, NULL }};		/* 15 */
 
 MenuEntry vtMenuEntries[] = {
     { "scrollbar",	do_scrollbar, NULL },		/*  0 */
@@ -235,6 +240,8 @@ static Bool domenu (w, event, params, param_count)
 #ifdef ALLOWLOGGING
 	    update_logging();
 #endif
+	    update_8bit_control();
+	    update_sun_fkeys();
 #if !defined(SIGTSTP) || defined(AMOEBA)
 	    set_sensitivity (screen->mainMenu,
 			     mainMenuEntries[mainMenu_suspend].widget, FALSE);
@@ -458,6 +465,23 @@ static void do_redraw (gw, closure, data)
     XtPointer closure, data;
 {
     Redraw ();
+}
+
+
+static void do_8bit_control (gw, closure, data)
+    Widget gw;
+    XtPointer closure, data;
+{
+    term->screen.control_eight_bits = ! term->screen.control_eight_bits;
+    update_8bit_control();
+}
+
+static void do_sun_fkeys (gw, closure, data)
+    Widget gw;
+    XtPointer closure, data;
+{
+    sunFunctionKeys = ! sunFunctionKeys;
+    update_sun_fkeys();
 }
 
 
@@ -1032,6 +1056,26 @@ void HandleQuit(w, event, params, param_count)
     Cardinal *param_count;
 {
     do_quit(w, NULL, NULL);
+}
+
+void Handle8BitControl(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_8bit_control, (int) term->screen.control_eight_bits,
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleSunFunctionKeys(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_sun_fkeys, (int) sunFunctionKeys,
+		   params, *param_count, w, NULL, NULL);
 }
 
 void HandleScrollbar(w, event, params, param_count)

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.11 1996/05/12 11:57:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.12 1996/08/11 12:38:23 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -132,6 +132,7 @@ short i128alu[16] =
 static SymTabRec i128DacTable[] = {
    { TI3025_DAC,	"ti3025" },
    { IBM524_DAC,	"ibm524" },
+   { IBM526_DAC,	"ibm526" },
    { IBM528_DAC,	"ibm528" },
    { -1,		"" },
 };
@@ -419,10 +420,7 @@ i128Probe()
       else
 	 i128RamdacType = TI3025_DAC;
    } if (pcrp->_device_vendor == I128_DEVICE_ID2) {
-      if (i128io.config1 & 0x40000000)       /* 2 banks VRAM   */
-	 i128RamdacType = IBM524_DAC;
-      else
-	 i128RamdacType = IBM528_DAC;
+	 i128RamdacType = IBM526_DAC;
    }
 
    switch(i128RamdacType) {
@@ -468,6 +466,21 @@ i128Probe()
          ErrorF("%s: Ramdac %s not supported.\n",
 		i128InfoRec.name, i128InfoRec.ramdac);
          return(FALSE);
+
+      case IBM526_DAC:
+         /* verify that the ramdac is an IBM526 */
+
+         i128mem.rbase_g_b[IDXH_I] = 0;
+         i128mem.rbase_g_b[IDXL_I] = IBMRGB_id;
+         if (i128mem.rbase_g_b[DATA_I] != 2) {
+            ErrorF("%s: IBM52X Ramdac not found.\n", i128InfoRec.name);
+            return(FALSE);
+         }
+/* Set MClock speed?? */
+         i128InfoRec.ramdac = "ibm526";
+         OFLG_SET(CLOCK_OPTION_IBMRGB, &i128InfoRec.clockOptions);
+
+         break;
 
       case IBM528_DAC:
          /* verify that the ramdac is an IBM528 */
@@ -739,7 +752,7 @@ i128ProgramIBMRGB(freq, flags)
    i128mem.rbase_g_b[IDXL_I] = IBMRGB_pwr_mgmt;
    i128mem.rbase_g_b[DATA_I] = 0x00;
    i128mem.rbase_g_b[IDXL_I] = IBMRGB_dac_op;
-   tmp2 = 0x02;  /* fast slew */
+   tmp2 = (i128RamdacType == IBM526_DAC) ? 0x00 : 0x02;  /* fast slew */
    if (i128DACSyncOnGreen) tmp2 |= 0x08;
    i128mem.rbase_g_b[DATA_I] = tmp2;
    i128mem.rbase_g_b[IDXL_I] = IBMRGB_pal_ctrl;
@@ -748,13 +761,21 @@ i128ProgramIBMRGB(freq, flags)
    i128mem.rbase_g_b[DATA_I] = 0x01;
    i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc1;
    tmp2 = i128mem.rbase_g_b[DATA_I] & 0xbc;
-   i128mem.rbase_g_b[DATA_I] = tmp2 | 0x03; /* "tmp2 | 0x01" for IBM524 DAC */
+   i128mem.rbase_g_b[DATA_I] = tmp2 | ((i128RamdacType == IBM528_DAC) ? 3 : 1);
    i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc2;
    i128mem.rbase_g_b[DATA_I] = 0x43 | (i128DAC8Bit ? 0x04 : 0x00);
    i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc3;
    i128mem.rbase_g_b[DATA_I] = 0x00;
    i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc4;
    i128mem.rbase_g_b[DATA_I] = 0x00;
+
+   if (i128RamdacType == IBM526_DAC) {
+	/* program mclock to 57MHz */
+   	i128mem.rbase_g_b[IDXL_I] = IBMRGB_pll_ref_div_fix;
+   	i128mem.rbase_g_b[DATA_I] = 0x08;
+   	i128mem.rbase_g_b[IDXL_I] = IBMRGB_sysclk_ref_div;
+   	i128mem.rbase_g_b[DATA_I] = 0x47;
+   }
 
    /* ?? There is no write to cursor control register */
 
