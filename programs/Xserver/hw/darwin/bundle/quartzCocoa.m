@@ -7,7 +7,7 @@
  * that use X include files to avoid symbol collisions.
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCocoa.m,v 1.3 2001/04/09 03:32:08 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCocoa.m,v 1.4 2001/04/25 02:23:47 torrey Exp $ */
 
 #include <Cocoa/Cocoa.h>
 
@@ -15,6 +15,7 @@
 #include "quartzShared.h"
 
 extern void FatalError(const char *, ...);
+extern char *display;
 
 // Read the user preferences from the Cocoa front end
 void QuartzReadPreferences(void)
@@ -23,13 +24,19 @@ void QuartzReadPreferences(void)
 
     darwinFakeButtons = [Preferences fakeButtons];
     quartzUseSysBeep = [Preferences systemBeep];
+
     if ([Preferences useKeymapFile]) {
-        fileString = [[Preferences keymapFile] lossyCString];
+        fileString = (char *) [[Preferences keymapFile] lossyCString];
         darwinKeymapFile = (char *) malloc(strlen(fileString)+1);
         if (! darwinKeymapFile)
             FatalError("malloc failed in QuartzReadPreferences()!\n");
         strcpy(darwinKeymapFile, fileString);
     }
+
+    display = (char *) malloc(8);
+    if (! display)
+        FatalError("malloc failed in QuartzReadPreferences()!\n");
+    snprintf(display, 8, "%i", [Preferences display]);
 }
 
 // Write text to the Mac OS X pasteboard.
@@ -70,7 +77,7 @@ char *QuartzReadCocoaPasteboard(void)
         char *buffer;
 
         if (! string) return NULL;
-        buffer = [string lossyCString];
+        buffer = (char *) [string lossyCString];
         text = (char *) malloc(strlen(buffer)+1);
         if (text)
             strcpy(text, buffer);

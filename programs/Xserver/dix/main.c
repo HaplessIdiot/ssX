@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.33 2001/02/16 13:24:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.34 2001/03/04 17:40:04 herrb Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -261,6 +261,8 @@ main(argc, argv, envp)
     char	*xauthfile;
     HWEventQueueType	alwaysCheckForInput[2];
 
+    display = "0";
+
     /* Quartz support on Mac OS X requires that the Cocoa event loop be in
      * the main thread. This allows the X server main to be called again
      * from another thread. */
@@ -290,7 +292,6 @@ main(argc, argv, envp)
      * can't be passed argc, argv as parameters */
     argcGlobal = argc;
     argvGlobal = argv;
-    display = "0";
     /* prep X authority file from environment; this can be overriden by a
      * command line option */
     xauthfile = getenv("XAUTHORITY");
