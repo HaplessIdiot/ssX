@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.23 1999/06/12 14:15:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.24 1999/06/20 08:41:36 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -147,7 +147,10 @@ MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out,
 	case PCI_CHIP_MGAG200:
 	case PCI_CHIP_MGAG200_PCI:
 	default:
-		ref_freq     = 27050.5;
+		if (pMga->Bios2.PinID && (pMga->Bios2.VidCtrl & 0x20))
+			ref_freq = 14318.18;
+		else
+			ref_freq = 27050.5;
 		feed_div_min = 7;
 		feed_div_max = 127;
 		in_div_min   = 1;
