@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.6 1996/10/10 14:03:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.7 1996/10/17 15:17:57 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1069,9 +1069,7 @@ s3InitEnvironment()
       IN_SUBSYS_STAT();
       WaitIdleEmpty();
 
-DBGOUT(0x0c);
       SETB_CMD_SET(CMD_NOP);
-DBGOUT(0x0d);
 
       WaitQueue(10);
       SETB_SRC_BASE(0);
@@ -1099,22 +1097,14 @@ DBGOUT(0x0d);
       else
 	 SETB_PAT_FG_CLR(0);
 
-DBGOUT(0x0e);
       SETB_RSRC_XY(0,0);
       SETB_RDEST_XY(0,0);
       SETB_RWIDTH_HEIGHT(s3InfoRec.virtualX-1, s3ScissB+1);
-DBGOUT(0x0f);
-#if 0  /* CMD_RECT broken :-( */
-      SETB_CMD_SET((s3_gcmd & ~CMD_HWCLIP) | CMD_RECT | INC_X | INC_Y | ROP_P);
-#else
       SETB_MONO_PAT0(~0);
       SETB_MONO_PAT1(~0);
       SETB_CMD_SET((s3_gcmd & ~CMD_HWCLIP) | CMD_BITBLT | MIX_MONO_PATT | INC_X | INC_Y | ROP_P);
-#endif
-DBGOUT(0x10);
 
       WaitQueue(4);
-DBGOUT(0x11);
 
       /* Reset current draw position */
       SETB_RSRC_XY(0,0);
@@ -1123,7 +1113,6 @@ DBGOUT(0x11);
       /* Reset current colors, foreground is all on, background is 0. */
       SETB_PAT_FG_CLR(~0);
       SETB_PAT_BG_CLR(0);
-DBGOUT(0x12);
    }
 
    /* Load the LUT */

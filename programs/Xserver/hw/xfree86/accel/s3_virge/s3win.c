@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3win.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3win.c,v 3.1 1996/10/03 08:33:42 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -136,59 +136,47 @@ s3CopyWindow(pWin, ptOldOrg, prgnSrc)
    WaitQueue(1);
    ;SET_MIX(FSS_BITBLT | ROP_S, BSS_BKGDCOL | ROP_S);
 
-DBGOUT(0x13);
    SETB_CMD_SET(s3_gcmd | CMD_BITBLT | CMD_AUTOEXEC | direction | ROP_S);
-DBGOUT(0x14);
    if (direction == (INC_X | INC_Y)) {
       for (i = 0; i < nbox; i++) {
 	 pbox = &pboxOrig[ordering[i]];
 
-DBGOUT(0x15);
 	 SETB_BLT(pbox->x1 + dx, pbox->y1 + dy,
 		  pbox->x1, pbox->y1,
 		  pbox->x2 - pbox->x1 - 1, pbox->y2 - pbox->y1,
 		  INC_X);
-DBGOUT(0x16);
       }
    } else if (direction == INC_X) {
       for (i = 0; i < nbox; i++) {
 	 pbox = &pboxOrig[ordering[i]];
 
-DBGOUT(0x17);
 	 SETB_BLT(pbox->x1 + dx, pbox->y2 + dy - 1,
 		  pbox->x1, pbox->y2 - 1,
 		  pbox->x2 - pbox->x1 - 1, pbox->y2 - pbox->y1,
 		  INC_X);
-DBGOUT(0x18);
       }
    } else if (direction == INC_Y) {
       for (i = 0; i < nbox; i++) {
 	 pbox = &pboxOrig[ordering[i]];
 
-DBGOUT(0x19);
 	 SETB_BLT(pbox->x2 + dx - 1, pbox->y1 + dy,
 		  pbox->x2 - 1, pbox->y1,
 		  pbox->x2 - pbox->x1 - 1, pbox->y2 - pbox->y1,
 		  !INC_X);
-DBGOUT(0x1a);
       }
    } else {
       for (i = 0; i < nbox; i++) {
 	 pbox = &pboxOrig[ordering[i]];
 
-DBGOUT(0x1b);
 	 SETB_BLT(pbox->x2 + dx - 1, pbox->y2 + dy - 1,
 		  pbox->x2 - 1, pbox->y2 - 1,
 		  pbox->x2 - pbox->x1 - 1, pbox->y2 - pbox->y1,
 		  !INC_X);
-DBGOUT(0x1c);
       }
    }
 
    WaitQueue(1);
-DBGOUT(0x1d);
    SETB_CMD_SET(CMD_NOP);
-DBGOUT(0x1e);
 
    UNBLOCK_CURSOR;
 

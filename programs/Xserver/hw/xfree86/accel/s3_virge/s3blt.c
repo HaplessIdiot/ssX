@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3blt.c,v 3.4 1996/10/10 14:03:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3blt.c,v 3.5 1996/10/17 15:17:51 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -307,61 +307,49 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	 WaitQueue(1);
 	 ;SET_MIX(FSS_BITBLT | s3alu[pGC->alu],BSS_BKGDCOL | ROP_S);
 	 ;SET_WRT_MASK(pGC->planemask);
-DBGOUT(0x00);
 	 SETB_CMD_SET(s3_gcmd | CMD_BITBLT | CMD_AUTOEXEC
 		  | direction | s3alu[pGC->alu]);
-DBGOUT(0x01);
 
 	 if (direction == (INC_X | INC_Y)) {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
-DBGOUT(0x02);
 	       SETB_BLT(prect->x1 + dx, prect->y1 + dy, 
 			prect->x1, prect->y1,
 			prect->x2 - prect->x1 - 1, prect->y2 - prect->y1,
 			INC_X);
-DBGOUT(0x03);
 	    }
 	 } else if (direction == INC_X) {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
-DBGOUT(0x04);
                SETB_BLT(prect->x1 + dx, prect->y2 + dy - 1,
 			prect->x1, prect->y2 - 1,
 			prect->x2 - prect->x1 - 1, prect->y2 - prect->y1,
 			INC_X);
-DBGOUT(0x05);
 	    }
 	 } else if (direction == INC_Y) {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
-DBGOUT(0x06);
                SETB_BLT(prect->x2 + dx - 1, prect->y1 + dy,
 			prect->x2 - 1, prect->y1,
 			prect->x2 - prect->x1 - 1, prect->y2 - prect->y1,
 			!INC_X);
-DBGOUT(0x07);
 	    }
 	 } else {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
-DBGOUT(0x08);
                SETB_BLT(prect->x2 + dx - 1, prect->y2 + dy - 1,
 			prect->x2 - 1, prect->y2 - 1,
 			prect->x2 - prect->x1 - 1, prect->y2 - prect->y1,
 			!INC_X);
-DBGOUT(0x09);
 	    }
 	 }
 
 	 WaitQueue(1);
-DBGOUT(0x0a);
 	 SETB_CMD_SET(CMD_NOP);
 	 UNBLOCK_CURSOR;
-DBGOUT(0x0b);
 	 DEALLOCATE_LOCAL(ordering);
       } else if (pSrcDrawable->type == DRAWABLE_WINDOW &&
 		 pDstDrawable->type != DRAWABLE_WINDOW) {

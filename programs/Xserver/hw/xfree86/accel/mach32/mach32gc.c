@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gc.c,v 3.6 1995/01/28 16:59:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gc.c,v 3.7 1996/02/04 09:02:30 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -234,9 +234,9 @@ static GCOps	mach32MemApertureOps = {
     mach32PolyFillRect,
     miPolyFillArc,
     xf86PolyText8,
-    miPolyText16,
+    xf86PolyText16,
     xf86ImageText8,
-    miImageText16,
+    xf86ImageText16,
     miImageGlyphBlt,
     miPolyGlyphBlt,
     mfbPushPixels

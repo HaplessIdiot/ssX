@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.2 1996/10/08 12:21:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.3 1996/10/08 13:12:09 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -144,7 +144,7 @@ extern int s3ScissR;
 extern int s3Bpp;    /* Bytes per pixel */
 extern int s3BppDisplayWidth;
 extern int s3Weight;
-extern int s3alu[], s3alu_sp[];
+extern int s3alu[], s3alu_sp[], s3alu_pat[];
 extern pointer s3VideoMem;
 extern pointer s3MmioMem;
 extern pointer vgaBase;

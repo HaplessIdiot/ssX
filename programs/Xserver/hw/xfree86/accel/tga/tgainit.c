@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgainit.c,v 3.5 1996/10/10 14:03:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgainit.c,v 3.6 1996/10/17 15:18:20 dawes Exp $ */
 
 #include "tga.h"
 #include "tga_presets.h"
@@ -72,7 +72,7 @@ tgaCalcCRTCRegs(crtcRegs, mode)
 	else
 		crtcRegs->v_pol = 0;
 
-	crtcRegs->clock_sel = mode->Clock;
+	crtcRegs->clock_sel = tgaInfoRec.clock[mode->Clock];
 }
 
 void
@@ -149,7 +149,7 @@ restoreTGAstate()
 	 * chosen by Jay Estabrook for Linux....
 	 * Until I can find out how to read the clock register
 	 */
-	ICS1562ClockSelect(14);
+	ICS1562ClockSelect(25175);
 
 	TGA_WRITE_REG(SR.tgaRegs[2], TGA_VALID_REG); /* Re-enable Video */
 }

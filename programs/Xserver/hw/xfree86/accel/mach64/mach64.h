@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.11 1996/03/31 11:48:23 dawes Exp $ */
 /*
- * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
+ * Copyright 1992,1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee,
@@ -81,7 +81,9 @@ extern int mach64RefDivider;
 extern int mach64NAdj;
 extern int mach64CXClk;
 extern int mach64MemClk;
+extern int mach64DRAMMemClk;
 extern int mach64VRAMMemClk;
+extern int mach64MemCycle;
 
 extern Bool mach64IntegratedController;
 

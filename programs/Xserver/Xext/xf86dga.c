@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.4 1996/08/10 13:03:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.5 1996/10/16 14:37:57 dawes Exp $ */
 
 /*
 
@@ -42,7 +42,7 @@ static DISPATCH_PROC(ProcXF86DGADirectVideo);
 static DISPATCH_PROC(ProcXF86DGADispatch);
 static DISPATCH_PROC(ProcXF86DGAGetVidPage);
 static DISPATCH_PROC(ProcXF86DGAGetVideoLL);
-static DISPATCH_PROC(ProcXF86DGAGetViewPort);
+static DISPATCH_PROC(ProcXF86DGAGetViewPortSize);
 static DISPATCH_PROC(ProcXF86DGASetVidPage);
 static DISPATCH_PROC(ProcXF86DGASetViewPort);
 static DISPATCH_PROC(ProcDGAInstallColormap);
@@ -205,11 +205,11 @@ ProcXF86DGADirectVideo(client)
 }
 
 static int
-ProcXF86DGAGetViewPort(client)
+ProcXF86DGAGetViewPortSize(client)
     register ClientPtr client;
 {
-    REQUEST(xXF86DGAGetViewPortReq);
-    xXF86DGAGetViewPortReply rep;
+    REQUEST(xXF86DGAGetViewPortSizeReq);
+    xXF86DGAGetViewPortSizeReply rep;
     register int n;
     ScrnInfoPtr vptr;
 
@@ -218,21 +218,20 @@ ProcXF86DGAGetViewPort(client)
 
     vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
 
-    REQUEST_SIZE_MATCH(xXF86DGAGetViewPortReq);
+    REQUEST_SIZE_MATCH(xXF86DGAGetViewPortSizeReq);
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.x = 0;
-    rep.y = 0;
+    rep.width = vptr->modes->HDisplay;
+    rep.height = vptr->modes->VDisplay;
 
-    ErrorF("Unimplemented XF86DGAGetViewPort requested\n");
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
     	swapl(&rep.length, n);
-    	swapl(&rep.x, n);
-    	swapl(&rep.y, n);
+    	swapl(&rep.width, n);
+    	swapl(&rep.height, n);
     }
-    WriteToClient(client, SIZEOF(xXF86DGAGetViewPortReply), (char *)&rep);
+    WriteToClient(client, SIZEOF(xXF86DGAGetViewPortSizeReply), (char *)&rep);
     return (client->noClientException);
 }
 
@@ -349,6 +348,7 @@ ProcDGAInstallColormap(client)
     pcmp = (ColormapPtr  )LookupIDByType(stuff->id, RT_COLORMAP);
     if (pcmp)
     {
+	vptr->directMode |= XF86DGADirectColormap;
         vptr->directMode |= XF86DGAHasColormap;
         (*(pcmp->pScreen->InstallColormap)) (pcmp);
         vptr->directMode &= ~XF86DGAHasColormap;
@@ -437,8 +437,8 @@ ProcXF86DGADispatch (client)
 	return ProcXF86DGAGetVideoLL(client);
     case X_XF86DGADirectVideo:
 	return ProcXF86DGADirectVideo(client);
-    case X_XF86DGAGetViewPort:
-	return ProcXF86DGAGetViewPort(client);
+    case X_XF86DGAGetViewPortSize:
+	return ProcXF86DGAGetViewPortSize(client);
     case X_XF86DGASetViewPort:
 	return ProcXF86DGASetViewPort(client);
     case X_XF86DGAGetVidPage:

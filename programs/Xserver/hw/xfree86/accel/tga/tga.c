@@ -22,7 +22,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.6 1996/10/10 14:03:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.7 1996/10/17 15:18:12 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -173,9 +173,10 @@ tgaPrintIdent()
  */
 
 Bool
-ICS1562ClockSelect(no)
-     int no;
+ICS1562ClockSelect(freq)
+     int freq;
 {
+  unsigned char pll_bits[7];
   unsigned long temp;
   int i, j;
 
@@ -184,7 +185,7 @@ ICS1562ClockSelect(no)
    * This requires the 55 clock bits be written in a serial manner to
    * bit 0 of the CLOCK register and on the 56th bit set the hold flag.
    */
-  switch(no)
+  switch(freq)
   {
     case CLK_REG_SAVE:
       /* The clock register is a write only register */
@@ -193,9 +194,10 @@ ICS1562ClockSelect(no)
       /* Therefore we don't know what the value is to read and restore */
       break;
     default:
+      ICS1562_CalcClockBits(freq, pll_bits);
       for (i = 0;i <= 6; i++) {
 	for (j = 0; j <= 7; j++) {
-	  temp = (ICS1562ClockTab[no].ics_bits[i] >> (7-j)) & 1;
+	  temp = (pll_bits[i] >> (7-j)) & 1;
 	  if (i == 6 && j == 7)
 	    temp |= 2;
 	  TGA_WRITE_REG(temp, TGA_CLOCK_REG);
@@ -261,7 +263,7 @@ tgaProbe()
 
   Base = xf86MapVidMem(0,EXTENDED_REGION,(pointer)tgaInfoRec.MemBase,2097152);
 
-  tga_reg_base = (pointer *)(Base + TGA_REGS_OFFSET);
+  tga_reg_base = (pointer *)((char*)(Base) + TGA_REGS_OFFSET);
   tga_type = (*(unsigned int *)Base >> 12) & 0xf;
 
   /* Let's find out what kind of TGA chip we've got ! */
@@ -294,32 +296,21 @@ tgaProbe()
   if (tgaInfoRec.videoRam == 0)
   {
 	tgaInfoRec.videoRam = 2048;
-  	ErrorF("%s %s: videoram : %dk", XCONFIG_PROBED, tgaInfoRec.name,
+  	ErrorF("%s %s: videoram : %dk\n", XCONFIG_PROBED, tgaInfoRec.name,
 		tgaInfoRec.videoRam);
   }
   else
   {
-  	ErrorF("%s %s: videoram : %dk", XCONFIG_GIVEN, tgaInfoRec.name,
+  	ErrorF("%s %s: videoram : %dk\n", XCONFIG_GIVEN, tgaInfoRec.name,
 		tgaInfoRec.videoRam);
   }
 
-#if 0
-  /* There must be some algorithm for the ICS 1562 */
+  /* There is an algorithm for the ICS 1562 */
   OFLG_SET(CLOCK_OPTION_ICS1562, &tgaInfoRec.clockOptions);
-#else
-  /* But we don't know this mysterious algorithm, so go for known clock */
-  tgaInfoRec.clocks = Num_TGAStaticClocks;
-  for (i = 0; i < Num_TGAStaticClocks; i++)
-	tgaInfoRec.clock[i] = 
-			ICS1562ClockTab[i].clock;
-  for (i = 0; i < tgaInfoRec.clocks; i++)
-  {
-	if ((i % 8) == 0)
-		ErrorF("\n%s %s: clocks:", XCONFIG_PROBED, tgaInfoRec.name);
-	ErrorF(" %6.2f", (double)tgaInfoRec.clock[i]/1000.0);
-  }
-  ErrorF("\n");
-#endif
+  OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &tgaInfoRec.clockOptions);
+  ErrorF("%s %s: Using ICS1562 programmable clock\n", 
+	 XCONFIG_PROBED, tgaInfoRec.name);
+
 
   /* Initialize options that reflect the TGA */
   OFLG_ZERO(&validOptions);

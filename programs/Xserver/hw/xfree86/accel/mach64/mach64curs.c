@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.13 1996/03/05 05:42:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.14 1996/05/13 06:38:49 dawes Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -474,6 +474,8 @@ mach64RecolorCursor(pScr, pCurs, displayed)
 	sourceColor.red >>= 8;
 	sourceColor.green >>= 8;
 	sourceColor.blue >>= 8;
+	sourceColor.pixel = 0;
+	maskColor.pixel = 0;
     } 
     else
     {

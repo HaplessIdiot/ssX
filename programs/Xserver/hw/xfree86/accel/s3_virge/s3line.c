@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.5 1996/10/10 14:03:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.6 1996/10/16 14:40:29 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -758,11 +758,10 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
    SETL_CMD_SET(CMD_NOP);
 
    /* avoid system hangs again :-( */
-   WaitIdle();
-   SETB_PAT_FG_CLR(0);
+   SETB_RSRC_XY(0,0);
    SETB_RDEST_XY(0,0);
    SETB_RWIDTH_HEIGHT(0,1);
-   SETB_CMD_SET(s3_gcmd | CMD_BITBLT | MIX_MONO_PATT | MIX_MONO_SRC | ROP_DPo);
+   SETB_CMD_SET(s3_gcmd | CMD_BITBLT | ROP_S);
 
    UNBLOCK_CURSOR;
 }

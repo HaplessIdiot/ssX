@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.54 1996/09/25 14:15:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.55 1996/10/16 14:40:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -252,7 +252,9 @@ typedef struct ATIInformationBlock {
    int  RefFreq;
    int  RefDivider;
    int  NAdj;
+   int  DRAMMemClk;
    int  VRAMMemClk;
+   int  MemCycle;
    int  MemClk;
    int  CXClk;
    int  ChipType;
@@ -362,7 +364,9 @@ int	mach64RefDivider;
 int	mach64NAdj;
 int	mach64CXClk;
 int	mach64MemClk;
+int	mach64DRAMMemClk;
 int	mach64VRAMMemClk;
+int	mach64MemCycle;
 Bool	mach64IntegratedController;
 
 static ATIInformationBlock *GetATIInformationBlock(BlockIO)
@@ -544,6 +548,7 @@ static ATIInformationBlock *GetATIInformationBlock(BlockIO)
    info.RefFreq = sbios_data[(Freq_Table_Ptr >> 1) + 4];
    info.RefDivider = sbios_data[(Freq_Table_Ptr >> 1) + 5];
    info.NAdj = sbios_data[(Freq_Table_Ptr >> 1) + 6];
+   info.DRAMMemClk = sbios_data[(Freq_Table_Ptr >> 1) + 8];
    info.VRAMMemClk = sbios_data[(Freq_Table_Ptr >> 1) + 9];
    info.MemClk = bios_data[Freq_Table_Ptr + 22];
    info.CXClk = bios_data[Freq_Table_Ptr + 6];
@@ -553,6 +558,8 @@ static ATIInformationBlock *GetATIInformationBlock(BlockIO)
 
    for (i = 0; i < MACH64_NUM_CLOCKS; i++)
       info.Clocks[i] = sbios_data[(Freq_Table_Ptr >> 1) + i];
+
+   info.MemCycle = bios_data[ROM_Table_Offset + 0];
 
    CTable_Size = bios_data[CDepth_Table_Ptr - 1];
    for (i = 0, j = 0;
@@ -1104,7 +1111,9 @@ mach64Probe()
     mach64RefFreq = info->RefFreq;
     mach64RefDivider = info->RefDivider;
     mach64NAdj = info->NAdj;
+    mach64DRAMMemClk = info->DRAMMemClk;
     mach64VRAMMemClk = info->VRAMMemClk;
+    mach64MemCycle = info->MemCycle;
     mach64MemClk = info->MemClk;
     if (mach64RamdacSubType == DAC_IBMRGB514)
 	mach64CXClk = 7;  /* Use IBM RGB514 PLL */
@@ -1229,6 +1238,17 @@ mach64Probe()
                 ErrorF("%s %s: Resolution %dx%d too large for virtual %dx%d\n",
                        XCONFIG_PROBED, mach64InfoRec.name,
                         pMode->HDisplay, pMode->VDisplay, tx, ty);
+                xf86DeleteMode(&mach64InfoRec, pMode);
+                pMode = pModeSv;
+          } else if ((pMode->Flags & V_DBLSCAN) &&
+		     (mach64ChipType == MACH64_GX ||
+		      mach64ChipType == MACH64_CX ||
+		      mach64ChipType == MACH64_CT ||
+		      mach64ChipType == MACH64_ET)) {
+                pModeSv=pMode->next;
+                ErrorF("%s %s: Doublescan mode not supported on the %s\n",
+                       XCONFIG_PROBED, mach64InfoRec.name,
+                        xf86TokenToString(mach64ChipTable, mach64ChipType));
                 xf86DeleteMode(&mach64InfoRec, pMode);
                 pMode = pModeSv;
           } else {
@@ -2015,14 +2035,19 @@ mach64AdjustFrame(x, y)
     if (!OFLG_ISSET(OPTION_SW_CURSOR, &mach64InfoRec.options))
 	mach64RepositionCursor(savepScreen);
 
-#if 0 /* Will this work in accelerated mode? */
 #ifdef XFreeXDGA
     if (mach64InfoRec.directMode & XF86DGADirectGraphics) {
+#if 0
+	/* Wait until the current vertical line has gone past 0. */
+	while (regr(CRTC_VLINE_CRNT_VLINE) & CRTC_CRNT_VLINE);
+	while (!(regr(CRTC_VLINE_CRNT_VLINE) & CRTC_CRNT_VLINE));
+#else
 	/* Wait until vertical retrace is in progress. */
-	while (inb(vgaIOBase + 0xA) & 0x08);
-	while (!(inb(vgaIOBase + 0xA) & 0x08));
-    }
+	/* This seems better */
+	while (regrb(CRTC_INT_CNTL) & CRTC_VBLANK);
+	while (!(regrb(CRTC_INT_CNTL) & CRTC_VBLANK));
 #endif
+    }
 #endif
 }
 

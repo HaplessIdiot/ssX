@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.6 1996/10/16 14:40:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.7 1996/10/17 15:17:55 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -398,14 +398,8 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
    SETB_RWIDTH_HEIGHT(w - 1, h);
    SETB_RDEST_XY(x, y);
    WaitIdle();
-   ;outw (CMD, CMD_RECT | BYTSEQ | _16BIT | INC_Y | INC_X | DRAW | PCDATA | WRTDATA);
-#if 0  /* CMD_RECT broken :-( */
-   SETB_CMD_SET(s3_gcmd | CMD_RECT | INC_X | INC_Y | alu
-		| CMD_ITA_DWORD | MIX_CPUDATA);
-#else
    SETB_CMD_SET(s3_gcmd | CMD_BITBLT | INC_X | INC_Y | alu
 		| CMD_ITA_DWORD | MIX_CPUDATA);
-#endif
 
    w *= s3Bpp;
    psrc += pwidth * py;
@@ -537,8 +531,6 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
    if (w == 0 || h == 0)
       return;
 
-   if (1) ErrorF("s3ImageFillNoMem called, please report!\n");
-
    BLOCK_CURSOR;
    ;outw (FRGD_MIX, FSS_PCDATA | alu);
    ;outw32 (WRT_MASK, planemask); /* SET_WRT_MASK(planemask); */
@@ -556,19 +548,14 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
    SETB_RWIDTH_HEIGHT(w - 1, h);
    SETB_RDEST_XY(x, y);
    WaitIdle();
-   ;outw (CMD, CMD_RECT | BYTSEQ | _16BIT | INC_Y | INC_X | DRAW | PCDATA | WRTDATA);
-#if 0  /* CMD_RECT broken :-( */
-   SETB_CMD_SET(s3_gcmd | CMD_RECT | INC_X | INC_Y | alu
-		| CMD_ITA_DWORD | MIX_CPUDATA);
-#else
    SETB_CMD_SET(s3_gcmd | CMD_BITBLT | INC_X | INC_Y | alu
 		| CMD_ITA_DWORD | MIX_CPUDATA);
-#endif
 
 
    if (alu != ROP_0 && alu != ROP_1 && alu != ROP_D && alu != ROP_Dn)
    for (j = 0; j < h; j++) {
-      CARD32 wrapped=0, *pnext=NULL;
+      CARD32 wrapped1=0, *pnext1=NULL;
+      CARD32 wrapped2=0, *pnext2=NULL;
       CARD32 wrapped3=0, *pnext3=NULL;
       CARD32 *pend;
       CARD32 *plines;
@@ -577,21 +564,12 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
       pline = (unsigned char *)(psrc + pwidth * mod);
       pend = (CARD32 *)(pline + pw * s3Bpp);
 
-      switch ((pw * s3Bpp) & 3) {
-      case 2:
-	 wrapped = (ldw_u(pline) << 16)
-	    | (ldw_u(pline + pw - 2) << 0);
-	 pnext = (CARD32 *)(pline + 2);
-	 break;
-      case 1:
-      case 3:
-	 wrapped = (ldl_u(pline) << 8)
-	    | (pline[pw - 1] << 0);
-	 pnext = (CARD32 *)(pline + 3);
-	 wrapped3 = (pline[0] << 24)
-	    | ((ldl_u(pline + pw - 3) & 0xffffff) << 0);
-	 pnext3 = (CARD32 *)(pline + 1);
-      }
+      wrapped1 = (ldl_u(pline) << 8) | (pline[pw - 1] << 0);
+      pnext1 = (CARD32 *)(pline + 3);
+      wrapped2 = (ldw_u(pline) << 16) | (ldw_u(pline + pw - 2) << 0);
+      pnext2 = (CARD32 *)(pline + 2);
+      wrapped3 = (pline[0] << 24) | ((ldl_u(pline + pw - 3) & 0xffffff) << 0);
+      pnext3 = (CARD32 *)(pline + 1);
 
       modulus (x - pox, pw, mod);
       plines = (CARD32 *)(pline + mod * s3Bpp);
@@ -601,9 +579,12 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
          if (plines + 1 > pend) {
 	    switch ((unsigned char *)(pend) - (unsigned char *)(plines)) {
 	    case 1:
+	       *IMG_TRANS = wrapped1;
+	       plines = pnext1;
+	       break;
 	    case 2:
-	       *IMG_TRANS = wrapped;
-	       plines = pnext;
+	       *IMG_TRANS = wrapped2;
+	       plines = pnext2;
 	       break;
 	    case 3:
 	       *IMG_TRANS = wrapped3;
@@ -618,6 +599,9 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
       }
    }
    WaitIdle();
+   if (w != origwidth) {
+      SETB_CLIP_L_R(0, s3DisplayWidth-1);
+   }
 
    UNBLOCK_CURSOR;
 }
@@ -689,13 +673,8 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
    SETB_RWIDTH_HEIGHT(w - 1, h);
    SETB_RDEST_XY(x, y);
    WaitIdle();
-#if 0  /* CMD_RECT broken :-( */
-   SETB_CMD_SET(s3_gcmd | CMD_RECT | INC_X | INC_Y | alu
-		| CMD_ITA_DWORD | MIX_CPUDATA | MIX_MONO_SRC );
-#else
    SETB_CMD_SET(s3_gcmd | CMD_BITBLT | INC_X | INC_Y | alu
 		| CMD_ITA_DWORD | MIX_CPUDATA | MIX_MONO_SRC );
-#endif
 
    modulus(x - pox, pw, x);
    modulus(y - poy, ph, y);

@@ -127,6 +127,10 @@ Mach32 X server.  They include:
 <item> Not all RAMDACs are supported at higher colour ranges, and not all
        that are can be detected properly.  In fact most of the RAMDAC values
        above have no effect except to block higher bit modes.
+<item> Sixteen bit character support (e.g., Chinese and Japanese character
+       sets) has been known to lose parts of characters.  While this should
+       be fixed, if it occurs try running the server with Option
+       &dquot;no_linear&dquot;.
 </itemize>
 
 Bug reports should be sent to XFree86@XFree86.org or posted to the
@@ -135,7 +139,7 @@ comp.windows.x.i386unix newsgroup.
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach32.sgml,v 1.00 1996/09/22 20:09:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach32.sgml,v 3.0 1996/09/25 14:17:32 dawes Exp $
 </verb>
 
 </article>

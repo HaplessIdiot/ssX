@@ -29,7 +29,7 @@
  * Courtesy of Jay Estabrook.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga_regs.h,v 3.0 1996/09/22 05:04:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga_regs.h,v 3.1 1996/09/29 13:35:36 dawes Exp $ */
 
 #ifndef TGA_REGS_H
 #define TGA_REGS_H
@@ -41,10 +41,10 @@
 #define TYPE_TGA_24PLUSZ		3
 
 #define TGA_WRITE_REG(v,r) \
-	{ *(unsigned int *)(tga_reg_base+(r)) = v; mb(); }
+	{ *(unsigned int *)((char*)(tga_reg_base)+(r)) = v; mb(); }
 
 #define TGA_READ_REG(r) \
-	( *(unsigned int *)(tga_reg_base+(r)))
+	( *(unsigned int *)((char*)(tga_reg_base)+(r)))
 
 #define BT485_WRITE(v,r) \
 	TGA_WRITE_REG((r),TGA_RAMDAC_SETUP_REG);		\

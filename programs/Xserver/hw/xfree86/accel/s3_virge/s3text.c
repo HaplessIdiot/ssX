@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.6 1996/10/16 14:40:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.7 1996/10/17 15:18:01 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -45,17 +45,32 @@
 extern unsigned char s3SwapBits[256];
 
 
-__inline__ void s3SimpleStipple(x, y, width, height, pb, pwidth, clip_l, clip_r, alu)
+__inline__ void s3SimpleStipple(x, y, width, height, pb, pwidth, clip_l, clip_r, alu, planemask)
      int x, y;
      int width, height, pwidth;
      unsigned char *pb;
      int clip_l, clip_r;
      int alu;
+     unsigned long planemask;
 {
    int newwidth;
+   int S_in_ROP;
 
    if (alu == GXnoop)
       return;  /* avoid lockup with ROP_D */
+
+   if ((planemask & s3BppPMask) == s3BppPMask) {
+      alu = s3alu[alu];
+      S_in_ROP = (alu != ROP_0 && alu != ROP_1 && alu != ROP_D && alu != ROP_Dn);
+   }
+   else {
+      alu = s3alu_pat[alu];
+      S_in_ROP = (alu != ROP_0PaDPnao && alu != ROP_1PaDPnao && alu != ROP_DPaDPnao && alu != ROP_DnPaDPnao);   
+      WaitQueue(3);
+      SETB_PAT_FG_CLR(planemask);
+      SETB_MONO_PAT0(~0);  /* set all pattern bits to use planemask */
+      SETB_MONO_PAT1(~0);  /* for all pixels */
+   }
 
    newwidth = s3CheckLSPN(width, 1);
    if (newwidth != width) {
@@ -66,19 +81,14 @@ __inline__ void s3SimpleStipple(x, y, width, height, pb, pwidth, clip_l, clip_r,
       WaitQueue(3);
    }
 	    
-DBGOUT(0x56);
    SETB_RDEST_XY((short) x, (short) y);
    SETB_RWIDTH_HEIGHT((short) (newwidth - 1), (short)(height));
-DBGOUT(0x57);
    WaitIdle();
-DBGOUT(0x58);
    SETB_CMD_SET(s3_gcmd | CMD_BITBLT | INC_Y | INC_X
 		| CMD_ITA_DWORD | MIX_MONO_TRANSP | MIX_MONO_PATT
-		| MIX_CPUDATA | MIX_MONO_SRC | s3alu[alu]);
-DBGOUT(0x59);
+		| MIX_CPUDATA | MIX_MONO_SRC | alu);
 
-   if (alu != ROP_0 && alu != ROP_1 && alu != ROP_D && alu != ROP_Dn)
-   {				/* The stipple code */
+   if (S_in_ROP)  {			/* The stipple code */
 #define SWPBIT(s) (s3SwapBits[pb[(s)]])
 
       int i, h, pix, n=0;
@@ -96,7 +106,6 @@ DBGOUT(0x59);
 	 pb += pwidth;
       }
    }
-DBGOUT(0x5f);
    WaitIdle();
    if (newwidth != width) {
       SETB_CLIP_L_R(clip_l, clip_r);
@@ -192,7 +201,7 @@ s3PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase, pBox)
 	      s3SimpleStipple(x + pci->metrics.leftSideBearing,
 			      y - pci->metrics.ascent + d,
 			      gWidth, gHeight, pb, nbyPadGlyph,
-			      pBox->x1, pBox->x2 - 1, pGC->alu);
+			      pBox->x1, pBox->x2 - 1, pGC->alu, pGC->planemask);
 	   }
         }
 	
@@ -216,7 +225,7 @@ unsigned char *pb;
    ;SET_MIX(FSS_FRGDCOL | s3alu[GXcopy], BSS_BKGDCOL | s3alu[GXcopy]);
    ;SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
 
-   s3SimpleStipple(x, y, width, height, pb, pwidth, 0, s3DisplayWidth - 1, GXcopy);
+   s3SimpleStipple(x, y, width, height, pb, pwidth, 0, s3DisplayWidth - 1, GXcopy, ~0);
 
    UNBLOCK_CURSOR;
 }
@@ -309,21 +318,16 @@ s3NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
        */
       if( pBox->y2 >= y - maxAscent && pBox->y1 <= y + maxDescent ) {
          WaitQueue(2);
-DBGOUT(0x5a);
          SETB_CLIP_L_R(pBox->x1, pBox->x2 - 1);
          SETB_CLIP_T_B(pBox->y1, pBox->y2 - 1);
-DBGOUT(0x5b);
          s3PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
 		        FONTGLYPHS(pGC->font), pBox);
-DBGOUT(0x5c);
       }
    }
 
    WaitQueue(2);
-DBGOUT(0x5d);
    SETB_CLIP_L_R(0, s3DisplayWidth - 1);
    SETB_CLIP_T_B(0, s3ScissB);
-DBGOUT(0x5e);
    UNBLOCK_CURSOR;
    DEALLOCATE_LOCAL(charinfo);
 

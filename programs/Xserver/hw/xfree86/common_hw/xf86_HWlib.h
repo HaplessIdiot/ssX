@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.25 1996/10/03 08:34:26 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.26 1996/10/06 13:16:32 dawes Exp $ */ 
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -86,6 +86,13 @@ extern void ICD2061ASetClock(
 extern Bool SC11412SetClock(
 #if NeedFunctionPrototypes
      long 
+#endif
+);
+
+/*  ICS1562.c */
+extern void ICS1562_CalcClockBits(
+#if NeedFunctionPrototypes
+    long f, unsigned char *bits
 #endif
 );
 

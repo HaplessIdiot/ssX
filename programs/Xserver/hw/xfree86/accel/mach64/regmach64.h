@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.11 1996/05/13 06:38:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.12 1996/10/16 14:40:04 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -217,6 +217,8 @@ extern unsigned ioCRTC_GEN_CNTL;
 #define CRTC_EXT_DISP_EN	0x01000000
 #define CRTC_EXT_EN		0x02000000
 
+#define CRTC_CRNT_VLINE		0x07f00000
+#define CRTC_VBLANK		0x00000001
 
 /* DAC control values */
 
@@ -330,6 +332,7 @@ extern unsigned ioCRTC_GEN_CNTL;
 #define LOCAL_BUS		6
 #define PCI			7
 
+/* Memory types for GX, CX */
 #define DRAMx4			0
 #define VRAMx16			1
 #define VRAMx16ssr		2
@@ -337,6 +340,12 @@ extern unsigned ioCRTC_GEN_CNTL;
 #define GraphicsDRAMx16		4
 #define EnhancedVRAMx16		5
 #define EnhancedVRAMx16ssr	6
+
+/* Memory types for CT, ET, VT, GT */
+#define DRAM			0
+#define EDO_DRAM		1
+#define PSEUDO_EDO		2
+#define SDRAM			3
 
 #define DAC_INTERNAL		0x00
 #define DAC_IBMRGB514		0x01

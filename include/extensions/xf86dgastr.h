@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.1 1996/08/10 13:03:34 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.2 1996/10/16 14:28:55 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -82,28 +82,28 @@ typedef struct _XF86DGADirectVideo {
 #define sz_xXF86DGADirectVideoReq	8
 
 
-typedef struct _XF86DGAGetViewPort {
+typedef struct _XF86DGAGetViewPortSize {
     CARD8	reqType;		/* always DGAReqCode */
     CARD8	dgaReqType;		/* always X_XF86DGAGetViewPort */
     CARD16	length B16;
     CARD16	screen B16;
     CARD16      pad B16;
-} xXF86DGAGetViewPortReq;
-#define sz_xXF86DGAGetViewPortReq	8
+} xXF86DGAGetViewPortSizeReq;
+#define sz_xXF86DGAGetViewPortSizeReq	8
 
 typedef struct {
     BYTE	type;
     BOOL	pad1;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
-    CARD32	x B32;
-    CARD32	y B32;
+    CARD32	width B32;
+    CARD32	height B32;
     CARD32	pad2 B32;
     CARD32	pad3 B32;
     CARD32	pad4 B32;
     CARD32	pad5 B32;
-} xXF86DGAGetViewPortReply;
-#define sz_xXF86DGAGetViewPortReply	32
+} xXF86DGAGetViewPortSizeReply;
+#define sz_xXF86DGAGetViewPortSizeReply	32
 
 typedef struct _XF86DGASetViewPort {
     CARD8	reqType;		/* always DGAReqCode */
@@ -132,8 +132,12 @@ typedef struct {
     CARD32	length B32;
     CARD32	vpage B32;
     CARD32	pad B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
 } xXF86DGAGetVidPageReply;
-#define sz_xXF86DGAGetVidPageReply	16
+#define sz_xXF86DGAGetVidPageReply	32
 
 
 typedef struct _XF86DGASetVidPage {
@@ -175,7 +179,7 @@ typedef struct _XF86DGAViewPortChanged {
     CARD8	dgaReqType;		/* always X_DGAQueryVersion */
     CARD16	length B16;
     CARD16	screen B16;
-    CARD16      pad B16;
+    CARD16      n B16;
 } xXF86DGAViewPortChangedReq;
 #define sz_xXF86DGAViewPortChangedReq	8
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.20 1996/08/25 14:10:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.21 1996/10/16 14:40:03 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -31,6 +31,7 @@
 #include "xf86_OSlib.h"
 #include "mach64.h"
 #include "ativga.h"
+#include "mach64fifo.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 #ifdef linux
@@ -335,146 +336,30 @@ int mach64FIFOdepth(cdepth, clock, width)
     int clock;
     int width;
 {
-    int fifo_v1;
+    int fifo_depth;
 
-    fifo_v1 = clock/100;
-
-    switch (cdepth) {
-    case CRTC_PIX_WIDTH_15BPP:
-    case CRTC_PIX_WIDTH_16BPP:
-	fifo_v1 <<= 1;
-	break;
-    case CRTC_PIX_WIDTH_32BPP:
-	fifo_v1 <<= 2;
-	break;
-    default:
-	break;
-    }
-
-    switch (mach64MemorySize) {
-    case MEM_SIZE_512K:
-    case MEM_SIZE_1M:
-	fifo_v1 /= 6;
-	break;
-    case MEM_SIZE_2M:
-    case MEM_SIZE_4M:
-    case MEM_SIZE_6M:
-    case MEM_SIZE_8M:
-	if (mach64IntegratedController)
-	    fifo_v1 /= 10;
-	else
-	    fifo_v1 /= 12;
-	break;
-    }
-
-    switch (cdepth) {
-    case CRTC_PIX_WIDTH_8BPP:
-	switch (mach64MemorySize) {
-	case MEM_SIZE_512K:
-	    if (mach64IntegratedController) {
-		if (fifo_v1 < 0x04) fifo_v1 = 0x04;
-	    } else {
-		if (fifo_v1 < 0x02) fifo_v1 = 0x02;
-	    }
-	    if (fifo_v1 > 0x0c) fifo_v1 = 0x0c;
-	    break;
-	case MEM_SIZE_1M:
-	    if (mach64IntegratedController) {
-		if (fifo_v1 < 0x04) fifo_v1 = 0x04;
-		if (fifo_v1 > 0x08) fifo_v1 = 0x08;
-	    } else {
-		if (fifo_v1 < 0x02) fifo_v1 = 0x02;
-		if (fifo_v1 > 0x06) fifo_v1 = 0x06;
-	    }
-	    break;
-	case MEM_SIZE_2M:
-	case MEM_SIZE_4M:
-	case MEM_SIZE_6M:
-	case MEM_SIZE_8M:
-	    if (mach64IntegratedController) {
-		if (width <= 640) {
-		    if (fifo_v1 < 0x09) fifo_v1 = 0x09;
-		} else if (width <= 1024) {
-		    if (fifo_v1 < 0x08) fifo_v1 = 0x08;
-		} else {
-		    if (fifo_v1 < 0x0e) fifo_v1 = 0x0e;
-		}
-		if (fifo_v1 > 0x0f) fifo_v1 = 0x0f;
-	    } else {
-		if (fifo_v1 < 0x02) fifo_v1 = 0x02;
-		if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
-	    }
-	    break;
+    if (mach64ChipType == MACH64_VT) {
+	if (mach64ChipRev == 0x48) { /* VTA4 */
+	    fifo_depth = mach64FIFOdepthVTA4(cdepth, clock, width);
+	} else { /* VTA3 */
+	    fifo_depth = mach64FIFOdepthVTA3(cdepth, clock, width);
 	}
-	break;
-    case CRTC_PIX_WIDTH_15BPP:
-    case CRTC_PIX_WIDTH_16BPP:
-	switch (mach64MemorySize) {
-	case MEM_SIZE_512K:
-	case MEM_SIZE_1M:
-	    if (mach64IntegratedController) {
-		if (fifo_v1 < 0x04) fifo_v1 = 0x04;
-		if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
-	    } else {
-		if (fifo_v1 < 0x02) fifo_v1 = 0x02;
-		if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
-	    }
-	    break;
-	case MEM_SIZE_2M:
-	case MEM_SIZE_4M:
-	case MEM_SIZE_6M:
-	case MEM_SIZE_8M:
-	    if (mach64IntegratedController) {
-		if (width <= 800) {
-		    if (fifo_v1 < 0x08) fifo_v1 = 0x08;
-		} else {
-		    if (fifo_v1 < 0x0e) fifo_v1 = 0x0e;
-		}
-		if (fifo_v1 > 0x0f) fifo_v1 = 0x0f;
-	    } else {
-		if (fifo_v1 < 0x02) fifo_v1 = 0x02;
-		if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
-	    }
-	    break;
-	}
-	break;
-    case CRTC_PIX_WIDTH_24BPP:
-    case CRTC_PIX_WIDTH_32BPP:
-	switch (mach64MemorySize) {
-	case MEM_SIZE_512K:
-	case MEM_SIZE_1M:
-	    if (mach64IntegratedController) {
-		if (fifo_v1 < 0x04) fifo_v1 = 0x04;
-		if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
-	    } else {
-		if (fifo_v1 < 0x02) fifo_v1 = 0x02;
-		if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
-	    }
-	    break;
-	case MEM_SIZE_2M:
-	case MEM_SIZE_4M:
-	case MEM_SIZE_6M:
-	case MEM_SIZE_8M:
-	    if (mach64IntegratedController) {
-		if (width <= 640) {
-		    if (fifo_v1 < 0x0d) fifo_v1 = 0x0d;
-		} else {
-		    if (fifo_v1 < 0x0e) fifo_v1 = 0x0e;
-		}
-		if (fifo_v1 > 0x0f) fifo_v1 = 0x0f;
-	    } else {
-		if (fifo_v1 < 0x02) fifo_v1 = 0x02;
-		if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
-	    }
-	    break;
-	}
-	break;
+    } else if (mach64ChipType == MACH64_GT) {
+	fifo_depth = mach64FIFOdepthGT(cdepth, clock, width);
+    } else if (mach64ChipType == MACH64_CT && mach64ChipRev == 0x0a) {
+	/* CT-D has a larger FIFO and thus requires special code */
+	fifo_depth = mach64FIFOdepthCTD(cdepth, clock, width);
+    } else if (mach64ChipType == MACH64_CT ||
+	       mach64ChipType == MACH64_ET) {
+	fifo_depth = mach64FIFOdepthCT(cdepth, clock, width);
+    } else {
+	fifo_depth = mach64FIFOdepthDefault(cdepth, clock, width);
     }
 
 #ifdef DEBUG
-    ErrorF("CRTC FIFO set to %d\n", fifo_v1);
+    ErrorF("CRTC FIFO set to %d\n", fifo_depth);
 #endif
-    return(fifo_v1);
+    return(fifo_depth);
 }
 
 
@@ -512,7 +397,7 @@ void mach64StrobeClock()
  * mach64ICS2595_1bit --
  *
  */
-mach64ICS2595_1bit(data)
+void mach64ICS2595_1bit(data)
     char data;
 {
     char tmp;
@@ -1234,6 +1119,7 @@ void mach64SetCRTCRegs(crtcRegs)
 {
     int crtcGenCntl;
     unsigned long depth = crtcRegs->color_depth;
+    unsigned char CTD_sharedCntl;
 
     /* Now initialize the display controller part of the Mach64.
      * The CRTC registers are passed in from the calling routine.
@@ -1308,13 +1194,21 @@ void mach64SetCRTCRegs(crtcRegs)
 	    depth = CRTC_PIX_WIDTH_32BPP;
     }
 
+    if (mach64ChipType == MACH64_CT && mach64ChipRev == 0x0a) { /* CT-D only */
+	/* The 0xfc00 IO block is supposed to be located at offset 26,27
+	 * in the BIOS ROM.
+	 */
+	CTD_sharedCntl = inb(0xfc3b) & 0xfe;
+	outb(0xfc3b, CTD_sharedCntl | ((crtcRegs->fifo_v1 & 0x10) >> 4));
+    }
+
     /* Display control register -- this one turns on the display */
     regw(CRTC_GEN_CNTL,
 	 (crtcGenCntl & 0xff0000ff &
 	  ~(CRTC_PIX_BY_2_EN | CRTC_DBL_SCAN_EN | CRTC_INTERLACE_EN)) |
 	 depth |
 	 (crtcRegs->crtc_gen_cntl & ~CRTC_PIX_BY_2_EN) |
-	 (crtcRegs->fifo_v1 << 16) |
+	 ((crtcRegs->fifo_v1 & 0x0f) << 16) |
 	 CRTC_EXT_DISP_EN | CRTC_EXT_EN);
 
     /* Set the DAC for the currect mode */
@@ -1436,70 +1330,19 @@ void mach64ResetEngine()
     temp = regr(GEN_TEST_CNTL);
     regw(GEN_TEST_CNTL, temp & ~GUI_ENGINE_ENABLE);
 
-    if (mach64ChipType == MACH64_GX)
-	if (mach64ChipRev < 3) {
-	    switch (mach64MemType) {
-	    case DRAMx4:
-	    case DRAMx16:
-	    case GraphicsDRAMx16:
-	    case EnhancedVRAMx16ssr:
-		if (OFLG_ISSET(OPTION_BLOCK_WRITE, &mach64InfoRec.options))
-		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE |
-			 BLOCK_WRITE_ENABLE);
-		else if (OFLG_ISSET(OPTION_NO_BLOCK_WRITE, &mach64InfoRec.options))
-		    regw(GEN_TEST_CNTL, (temp & ~BLOCK_WRITE_ENABLE) |
-			 GUI_ENGINE_ENABLE);
-		else /* Leave block write alone -- should be setup by BIOS */
-		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
-		break;
-	    case VRAMx16:
-	    case VRAMx16ssr:
-	    case EnhancedVRAMx16:
-		if (OFLG_ISSET(OPTION_NO_BLOCK_WRITE, &mach64InfoRec.options))
-		    regw(GEN_TEST_CNTL, (temp & ~BLOCK_WRITE_ENABLE) |
-			 GUI_ENGINE_ENABLE);
-		else
-		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE |
-			 BLOCK_WRITE_ENABLE);
-		break;
-	    default:
-		regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
-		ErrorF("mach64ResetEngine: Unknown Memory Type (%d)\n",
-		       mach64MemType);
-	    }
-	} else {
-	    switch (mach64MemType) {
-	    case DRAMx4:
-	    case DRAMx16:
-	    case GraphicsDRAMx16:
-		if (OFLG_ISSET(OPTION_BLOCK_WRITE, &mach64InfoRec.options))
-		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE |
-			 BLOCK_WRITE_ENABLE);
-		else if (OFLG_ISSET(OPTION_NO_BLOCK_WRITE, &mach64InfoRec.options))
-		    regw(GEN_TEST_CNTL, (temp & ~BLOCK_WRITE_ENABLE) |
-			 GUI_ENGINE_ENABLE);
-		else /* Leave block write alone -- should be setup by BIOS */
-		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
-		break;
-	    case VRAMx16:
-	    case VRAMx16ssr:
-	    case EnhancedVRAMx16:
-	    case EnhancedVRAMx16ssr:
-		if (OFLG_ISSET(OPTION_NO_BLOCK_WRITE, &mach64InfoRec.options))
-		    regw(GEN_TEST_CNTL, (temp & ~BLOCK_WRITE_ENABLE) |
-			 GUI_ENGINE_ENABLE);
-		else
-		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE |
-			 BLOCK_WRITE_ENABLE);
-		break;
-	    default:
-		regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
-		ErrorF("mach64ResetEngine: Unknown Memory Type (%d)\n",
-		       mach64MemType);
-	    }
-	}
-    else
-	regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
+    /* Block write mode _should_ be correctly initialized by the BIOS
+     * at boot time, but this may not be the case.  If it is not, then
+     * allow the user to explicitly turn on or turn off block write
+     * mode via the "block_write" and "no_block_write" option in their
+     * XF86Config file.
+     */
+    if (OFLG_ISSET(OPTION_BLOCK_WRITE, &mach64InfoRec.options)) {
+	temp |= BLOCK_WRITE_ENABLE;
+    } else if (OFLG_ISSET(OPTION_NO_BLOCK_WRITE, &mach64InfoRec.options)) {
+	temp &= ~BLOCK_WRITE_ENABLE;
+    }
+
+    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
 
     WaitIdleEmpty();
 }

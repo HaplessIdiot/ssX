@@ -41,6 +41,13 @@ Prototypes for these functions can be found in <X11/extensions/xf86dga.h>
      at least up until the point the function is called.
 
 
+  XF86DGAGetViewPortSize(Display *display, int screen, int *width,
+                         int *height)
+
+     Returns the width (*width) and height (*height) of the view port,
+     which is the part of the framebuffer that is visible on the monitor.
+
+
   XF86DGADirectVideo(Display *display, int screen, int flags)
 
      enables/disables Direct Video mode.  When Direct Video mode is
@@ -53,8 +60,6 @@ Prototypes for these functions can be found in <X11/extensions/xf86dga.h>
                                       as relative motion
        XF86DGADirectKeyb              enable direct reporting of keyboard
                                       events
-       XF86DGADirectColor             gives exclusive control of the colormap
-                                      to XF86DGAInstallColormap()
 
 
   XF86DGASetVidPage(Display *display, int screen, int page)
@@ -68,16 +73,18 @@ Prototypes for these functions can be found in <X11/extensions/xf86dga.h>
      Set the coordinates of the upper-left corner of the view port to (x,y).
 
 
-  Bool XF86DGAViewPortChanged(Display *display, int screen)
+  Bool XF86DGAViewPortChanged(Display *display, int screen, int n)
 
-     Checks whether the previous SetViewPort command has been performed
+     Checks whether a previous SetViewPort command has been performed
      by the hardware, that is, whether a vertical retrace has occurred
-     since the previous SetViewPort. This can (must, in fact) be used
+     since a previous SetViewPort. This can (must, in fact) be used
      with page-flipping; you can start writing to the next page only when
      this function returns TRUE. For some devices this will be the
-     case immediately after SetViewPort, however you must use this
-     function so that devices with special support for page-flipping
-     work correctly, while providing better performance.
+     case immediately after SetViewPort, however this may be changed in
+     in the future. The number of pages used is specified with n; it
+     should be 2 for simple page flipping. If n is greater than two
+     (triple or multi-buffering), the function checks whether the
+     (n - 2)-before-last SetViewPort has been performed.
 
 
   XF86DGAInstallColormap(Display *display, int screen, Colormap cmap)
@@ -93,4 +100,4 @@ Prototypes for these functions can be found in <X11/extensions/xf86dga.h>
      Fork the app, parent process hangs around to return non DGA mode should
      the child exit for any reason. Returns 0, or error returned by fork().
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.DGA,v 3.3 1996/10/16 14:40:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.DGA,v 3.4 1996/10/17 15:18:47 dawes Exp $

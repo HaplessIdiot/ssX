@@ -1,5 +1,5 @@
 .\" Copyright (c) 1996  The XFree86 Project
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86DGA.man,v 3.2 1996/10/16 14:41:04 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86DGA.man,v 3.3 1996/10/17 15:19:01 dawes Exp $
 .\" 
 .de ZN
 .ie t \fB\^\\$1\^\fR\\$2
@@ -7,7 +7,7 @@
 ..
 .TH XF86DGA 3X11 "3.2" "XFree86" "X FUNCTIONS"
 .SH NAME
-XF86DGAQueryExtension, XF86DGAQueryVersion, XF86DGAQueryDirectVideo, XF86DGAGetVideo, XF86DGADirectVideo, XF86DGASetVidPage, XF86DGASetViewPort, XF86DGAViewPortChanged, XF86DGAInstallColormap, XF86DGAForkApp \- XFree86-DGA extension interface functions
+XF86DGAQueryExtension, XF86DGAQueryVersion, XF86DGAQueryDirectVideo, XF86DGAGetVideo, XF86DGADirectVideo, XF86DGASetVidPage, XF86DGASetViewPort, XF86DGAViewPortChanged, XF86DGAGetViewPortSize, XF86DGAInstallColormap, XF86DGAForkApp \- XFree86-DGA extension interface functions
 .SH SYNTAX
 .nf
 .LP
@@ -54,7 +54,14 @@ Bool XF86DGASetViewPort(
 .LP
 Bool XF86DGAViewPortChanged(
     Display *\fIdisplay\fP\^,
-    int \fIscreen\fP\^);
+    int \fIscreen\fP\^,
+    int \fInum_pages\fP\^);
+.LP
+Bool XF86DGAGetViewPortSize(
+    Display *\fIdisplay\fP\^,
+    int \fIscreen\fP\^,
+    int *\fIviewport_width_return\fP\^,
+    int *\fIviewport_height_return\fP\^);
 .LP
 Bool XF86DGAInstallColormap(
     Display *\fIdisplay\fP\^,
@@ -94,8 +101,6 @@ XF86DGADirectGraphics          enable Direct Video mode
 XF86DGADirectMouse             enable reporting of pointer movement
                                as relative motion
 XF86DGADirectKeyb              enable direct reporting of keyboard events
-XF86DGADirectColormap          give direct control of the colormap to
-                               XF86DGAInstallColormap().
 .fi
 .IP \fIflags_return\fP 2i
 Reports the DirectVideo features supported by the hardware.  When zero,
@@ -111,6 +116,12 @@ Indicates the framebuffer page (bank) to activate for read/write access.
 Incidates the x coordinate for the upper-left corner of the view port.
 .IP \fIy\fP 2i
 Incidates the y coordinate for the upper-left corner of the view port.
+.IP \fIviewport_width_return\fP 2i
+Reports the width of the view port.
+.IP \fIviewport_width_return\fP 2i
+Reports the height of the view port.
+.IP \fInum_pages\fP 2i
+Indicates the number of pages when doing hardware multi-buffering.
 .IP \fIcmap\fP 2i
 Indicates the colormap to install.
 .SH DESCRIPTION
@@ -145,14 +156,22 @@ of the view port.
 .PP
 The
 .ZN XF86DGAViewPortChanged
-function checks whether the previous XF86DGASetViewPort command has been
+function checks whether a previous XF86DGASetViewPort command has been
 completed by the hardware, that is, whether a vertical retrace has
-occurred since the previous XF86DGASetViewPort.  This can (must, in fact)
+occurred since a previous XF86DGASetViewPort.  This can (must, in fact)
 be used with page-flipping; you can start writing to the next page only
 when this function returns TRUE.  For some devices this will be the case
-immediately after XF86DGASetViewPort, however this function must be used
-so that devices with special support for page-flipping work correctly,
-while providing better performance.
+immediately after XF86DGASetViewPort, however this may be changed in the
+future.  The number of pages used is specified with \fInum_pages\fP; it
+should be 2 for simple page flipping (double buffering).  If n is greater
+than two (triple or multi-buffering), the function checks whether the
+(n \- 2)-before-last SetViewPort has been completed.
+.PP
+The
+.ZN XF86DGAGetViewPortSize
+function returns the size of the view port, which is the part of the
+framebuffer that is visible on the screen.
+.PP
 The
 .ZN XF86DGAInstallColormap
 function is used to install a colormap.  This must be called after DirectVideo

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.45 1996/09/29 14:02:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.46 1996/10/16 14:43:34 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -113,6 +113,9 @@ typedef struct {
 	unsigned char AltClock;		/* For Alternate Clock Selection*/
 	unsigned char CurConReg;	/* For HW Cursor Control	*/
 	unsigned char CursorRegs[16];	/* For Cursor Registers 	*/
+#ifdef CYBER938X_SUPPORT
+	unsigned char Cyber;		/* For Cyber 938x		*/
+#endif
 } vgaTVGA8900Rec, *vgaTVGA8900Ptr;
 
 static Bool TVGA8900ClockSelect();
@@ -179,6 +182,9 @@ Bool tridentUseLinear = FALSE;
 Bool tridentTGUIProgrammableClocks = FALSE;
 Bool tridentIsTGUI = FALSE;
 Bool tridentLinearOK = FALSE;
+#ifdef CYBER938X_SUPPORT
+Bool IsCyber = FALSE;
+#endif
 static unsigned char DRAMspeed;
 static int TridentDisplayableMemory;
 
@@ -211,9 +217,26 @@ TGUISetClock(no)
 	int freq, ffreq;
 	int m, n, k;
 	int p, q, r, s; 
+	int startn, endn;
+	int endm;
 	unsigned char temp;
 
 	p = q = r = s = 0;
+
+#ifdef CYBER938X_SUPPORT
+	if (IsCyber)
+	{
+		startn = 64;
+		endn = 255;
+		endm = 64;
+	}
+	else
+#endif
+	{
+		startn = 1;
+		endn = 122;
+		endm = 32;
+	}
 
 	freq = vga256InfoRec.clock[no];
 
@@ -223,8 +246,8 @@ TGUISetClock(no)
 		freq *= 3;
 
 	for (k=1;k<3;k++)
-	  for (n=1;n<122;n++)
-	    for (m=1;m<32;m++)
+	  for (n=startn;n<endn;n++)
+	    for (m=1;m<endm;m++)
 	    {
 		ffreq = ((( (n + 8) * 14.31818) / ((m + 2) * k)) * 1000);
 		if ((ffreq > freq - clock_diff) && (ffreq < freq + clock_diff)) 
@@ -244,8 +267,18 @@ TGUISetClock(no)
 
 	temp = inb(0x3CC);
 	new->VCLK_O = (temp & 0xF3) | 0x08;
-	new->VCLK_A = ((1 & q) << 7) | p;
-	new->VCLK_B = (((q & 0xFE) >> 1) | ((r - 1) << 4));
+#ifdef CYBER938X_SUPPORT
+	if (IsCyber)
+	{
+		new->VCLK_A = p;
+		new->VCLK_B = (q & 0x2F) | ((r - 1) << 6);
+	}
+	else
+#endif
+	{
+		new->VCLK_A = ((1 & q) << 7) | p;
+		new->VCLK_B = (((q & 0xFE) >> 1) | ((r - 1) << 4));
+	}
 }
 
 /*
@@ -263,7 +296,11 @@ TVGA8900Ident(n)
 				   "tgui9400cxi", "tgui9420",
 				   "tgui9420dgi", "tgui9430dgi",
 				   "tgui9440agi", "tgui9660xgi",
-				   "tgui9680", };
+				   "tgui9680",
+#ifdef CYBER938X_SUPPORT
+				   "cyber938x",
+#endif
+				  };
 
 	if (n + 1 > sizeof(chipsets) / sizeof(char *))
 		return(NULL);
@@ -441,6 +478,13 @@ TVGA8900Probe()
 			TVGAchipset = TGUI9660XGi;
 		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(17)))
 			TVGAchipset = TGUI9680;
+#ifdef CYBER938X_SUPPORT
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(18)))
+		{
+			TVGAchipset = TGUI9660XGi;
+			IsCyber = TRUE;
+		}
+#endif
 		else
 			return(FALSE);
 		TVGA8900EnterLeave(ENTER);
@@ -1245,6 +1289,9 @@ TVGA8900Restore(restore)
 
 	if (tridentIsTGUI)
 	{
+#ifdef CYBER938X_SUPPORT
+		if (IsCyber) outw(0x3CE, ((restore->Cyber) << 8) | 0x30);
+#endif
 #ifndef MONOVGA
 		outw(0x3CE, ((restore->MiscExtFunc) << 8) | 0x0F);
 #endif
@@ -1382,6 +1429,13 @@ TVGA8900Save(save)
 
 	if (tridentIsTGUI)
 	{
+#ifdef CYBER938X_SUPPORT
+		if (IsCyber) 
+		{
+			outb(0x3CE, 0x30);
+			save->Cyber = inb(0x3CF);
+		}
+#endif
 #ifndef MONOVGA
 		outb(0x3CE, 0x0F); save->MiscExtFunc = inb(0x3CF);
 #endif
@@ -1631,6 +1685,10 @@ TVGA8900Init(mode)
 
 	if (TVGAchipset >= TGUI9440AGi)
 	{
+#ifdef CYBER938X_SUPPORT
+		if (IsCyber) new->Cyber = 0x00;
+#endif
+
 		if (TVGAchipset >= TGUI9660XGi)
 			new->AddColReg |= (offset & 0x200) >> 4;
 #ifndef MONOVGA

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86dga.h,v 3.3 1996/10/16 14:28:54 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga.h,v 3.4 1996/10/17 15:10:55 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -14,7 +14,7 @@ Copyright (c) 1995  XFree86 Inc
 #define X_XF86DGAQueryVersion		0
 #define X_XF86DGAGetVideoLL		1
 #define X_XF86DGADirectVideo		2
-#define X_XF86DGAGetViewPort		3
+#define X_XF86DGAGetViewPortSize	3
 #define X_XF86DGASetViewPort		4
 #define X_XF86DGAGetVidPage		5
 #define X_XF86DGASetVidPage		6
@@ -22,12 +22,12 @@ Copyright (c) 1995  XFree86 Inc
 #define X_XF86DGAQueryDirectVideo	8
 #define X_XF86DGAViewPortChanged	9
 
-#define XF86DGADirectPresent		0x01
-#define XF86DGADirectGraphics		0x02
-#define XF86DGADirectMouse		0x04
-#define XF86DGADirectKeyb		0x08
-#define XF86DGADirectColormap		0x10
-#define XF86DGAHasColormap		0x80
+#define XF86DGADirectPresent		0x0001
+#define XF86DGADirectGraphics		0x0002
+#define XF86DGADirectMouse		0x0004
+#define XF86DGADirectKeyb		0x0008
+#define XF86DGAHasColormap		0x0100
+#define XF86DGADirectColormap		0x0200
 
 #define XF86DGANumberEvents		0
 
@@ -95,12 +95,12 @@ Status XF86DGADirectVideoLL(
 #endif
 );
 
-Status XF86DGAGetViewPort(
+Status XF86DGAGetViewPortSize(
 #if NeedFunctionPrototypes
     Display*			/* dpy */,
     int				/* screen */,
-    int *x			/* X */,
-    int *y			/* Y */
+    int *			/* width */,
+    int *			/* height */
 #endif
 );
 
@@ -154,7 +154,8 @@ Status XF86DGAQueryDirectVideo(
 Bool XF86DGAViewPortChanged(
 #if NeedFunctionPrototypes
     Display *		/* dpy */,
-    int			/* screen */
+    int			/* screen */,
+    int			/* n */
 #endif
 );
 

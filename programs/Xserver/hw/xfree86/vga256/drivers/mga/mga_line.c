@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_line.c,v 3.1 1996/10/13 11:21:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_line.c,v 3.2 1996/10/16 14:43:03 dawes Exp $ */
 
 /***********************************************************
 
@@ -248,4 +248,5 @@ mgaLine (pDrawable, pGC, mode, npt, pptInit)
 		pbox++;
 	}
     }
+    MGAWAITFREE();
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3frect.c,v 3.3 1996/10/06 13:15:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3frect.c,v 3.4 1996/10/08 13:11:58 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -110,56 +110,44 @@ DoCacheExpandPixmap(pci)
    /* Expand in the x direction */
 
    WaitQueue(1);
-DBGOUT(0x1f);
    SETB_CMD_SET(s3_gcmd | CMD_BITBLT | CMD_AUTOEXEC |
 		INC_Y | INC_X | ROP_S );
-DBGOUT(0x20);
 
    while (cur_w * 2 <= pci->w) {
-DBGOUT(0x21);
       SETB_BLT(pci->x, pci->y,
 	       pci->x + cur_w, pci->y,
 	       cur_w - 1, cur_h,
 	       INC_X);
-DBGOUT(0x22);
 
       cur_w *= 2;
    }
    if (cur_w != pci->w) {
-DBGOUT(0x23);
       SETB_BLT(pci->x, pci->y,
 	       pci->x + cur_w, pci->y,
 	       pci->w - cur_w - 1, cur_h,
 	       INC_X);
-DBGOUT(0x24);
 
       cur_w = pci->w;
    }
 
    /* Expand in the y direction */
    while (cur_h * 2 <= pci->h) {
-DBGOUT(0x25);
       SETB_BLT(pci->x, pci->y,
 	       pci->x, pci->y + cur_h,
 	       cur_w - 1, cur_h,
 	       INC_X);
-DBGOUT(0x26);
 
       cur_h *= 2;
    }
    if (cur_h != pci->h) {
-DBGOUT(0x27);
       SETB_BLT(pci->x, pci->y,
 	       pci->x, pci->y + cur_h,
 	       cur_w - 1, pci->h - cur_h,
 	       INC_X);
-DBGOUT(0x28);
    }
 
    WaitQueue(1);
-DBGOUT(0x29);
    SETB_CMD_SET(CMD_NOP);
-DBGOUT(0x2a);
    UNBLOCK_CURSOR;
 }
 
@@ -257,103 +245,81 @@ DoCacheImageFill(pci, x, y, w, h, pox, poy, fgalu, bgalu,
    ;SET_WRT_MASK(planemask);
 
    WaitQueue(1);
-DBGOUT(0x2b);
    SETB_CMD_SET(s3_gcmd | CMD_BITBLT | CMD_AUTOEXEC |
 		INC_Y | INC_X | fgalu );
-DBGOUT(0x2c);
 
    if (starty + h - 1 < pci->h) {
       if (startx + w - 1 < pci->w) {
-DBGOUT(0x2d);
          SETB_BLT(pci->x + startx,pci->y + starty,
 		  x,y,
 		  w - 1, h,
 		  INC_X);	 
-DBGOUT(0x2e);
       } else {
-DBGOUT(0x2f);
 	 SETB_BLT(pci->x + startx, pci->y + starty,
 		  x,y,
 		  pci->w - startx - 1, h, 
 		  INC_X);
-DBGOUT(0x30);
 
 	 x += pci->w - startx;
 
 	 while (xwmid > 0) {
-DBGOUT(0x31);
 	    SETB_BLT(pci->x, pci->y + starty,
 		     x, y,
 		     pci->w - 1, h,
 		     INC_X);
-DBGOUT(0x32);
 	    x += pci->w;
 	    xwmid -= pci->w;
 	 }
 
-DBGOUT(0x33);
 	 SETB_BLT(pci->x, pci->y + starty,
 		  x, y,
 		  endx,h,
 		  INC_X);
-DBGOUT(0x34);
       }
    } else if (startx + w - 1 < pci->w) {
-DBGOUT(0x35);
       SETB_BLT(pci->x + startx, pci->y + starty,
 	       x, y,
 	       w - 1, pci->h - starty,
 	       INC_X);
-DBGOUT(0x36);
 
       y += pci->h - starty;
 
       while (ywmid > 0) {
-DBGOUT(0x37);
 	 SETB_BLT(pci->x + startx, pci->y,
 		  x, y,
 		  w - 1, pci->h,
 		  INC_X);
-DBGOUT(0x38);
 
 	 y += pci->h;
 	 ywmid -= pci->h;
       }
 
-DBGOUT(0x39);
       SETB_BLT(pci->x + startx, pci->y,
 	       x, y,
 	       w - 1, endy+1,
 	       INC_X);
-DBGOUT(0x3a);
    } else {
-DBGOUT(0x3b);
       SETB_BLT(pci->x + startx, pci->y + starty,
 	       x, y,
 	       pci->w - startx - 1, pci->h - starty,
 	       INC_X);
-DBGOUT(0x3c);
 
       x += pci->w - startx;
 
       while (xwmid > 0) {
-DBGOUT(0x3d);
 	 SETB_BLT(pci->x, pci->y + starty,
 		  x, y,
 		  pci->w - 1, pci->h - starty,
 		  INC_X);
-DBGOUT(0x3e);
 
 	 x += pci->w;
 	 xwmid -= pci->w;
       }
 
-DBGOUT(0x3f);
       SETB_BLT(pci->x, pci->y + starty,
 	       x, y,
 	       endx, pci->h - starty,
 	       INC_X);
-DBGOUT(0x40);
 
       y += pci->h - starty;
 
@@ -361,33 +327,27 @@ DBGOUT(0x40);
 	 x = orig_x;
 	 xwmid = orig_xwmid;
 
-DBGOUT(0x41);
 	 SETB_BLT(pci->x + startx, pci->y,
 		  x, y,
 		  pci->w - startx - 1, pci->h,
 		  INC_X);
-DBGOUT(0x42);
 
 	 x += pci->w - startx;
 
 	 while (xwmid > 0) {
-DBGOUT(0x43);
 	    SETB_BLT(pci->x, pci->y,
 		     x, y,
 		     pci->w - 1, pci->h,
 		     INC_X);
-DBGOUT(0x44);
 
 	    x += pci->w;
 	    xwmid -= pci->w;
 	 }
 
-DBGOUT(0x45);
 	 SETB_BLT(pci->x, pci->y,
 		  x, y,
 		  endx, pci->h,
 		  INC_X);
-DBGOUT(0x46);
 
 	 y += pci->h;
 	 ywmid -= pci->h;
@@ -396,40 +356,32 @@ DBGOUT(0x46);
       x = orig_x;
       xwmid = orig_xwmid;
 
-DBGOUT(0x47);
       SETB_BLT(pci->x + startx, pci->y,
 	       x, y,
 	       pci->w - startx - 1, endy+1,
 	       INC_X);
-DBGOUT(0x48);
 
       x += pci->w - startx;
 
       while (xwmid > 0) {
-DBGOUT(0x49);
 	 SETB_BLT(pci->x, pci->y,
 		  x, y,
 		  pci->w - 1, endy+1,
 		  INC_X);
-DBGOUT(0x4a);
 
 	 x += pci->w;
 	 xwmid -= pci->w;
       }
 
 
-DBGOUT(0x4b);
       SETB_BLT(pci->x, pci->y,
 	       x, y,
 	       endx, endy+1,
 	       INC_X);
-DBGOUT(0x4c);
    }
 
    WaitQueue(1);
-DBGOUT(0x4d);
    SETB_CMD_SET(CMD_NOP);
-DBGOUT(0x4e);
    UNBLOCK_CURSOR;
 }
 
@@ -666,44 +618,26 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	case FillSolid:
 	   BLOCK_CURSOR;
 	   WaitIdle();
-#if 0  /* CMD_RECT broken :-( */
-	   WaitQueue(2);
-DBGOUT(0x4f);
-	   SETB_PAT_FG_CLR(pGC->fgPixel);
-	   ;SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
-	   ;SET_WRT_MASK(pGC->planemask);
-DBGOUT(0x50);
-	   SETB_CMD_SET(s3_gcmd | CMD_RECT | CMD_AUTOEXEC |
-			INC_Y | INC_X | s3alu[pGC->alu] );
-#else
 	   WaitQueue(4);
-DBGOUT(0x4f);
 	   SETB_PAT_FG_CLR(pGC->fgPixel);
 	   ;SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
 	   ;SET_WRT_MASK(pGC->planemask);
-DBGOUT(0x50);
 	   SETB_MONO_PAT0(~0);
 	   SETB_MONO_PAT1(~0);
 	   SETB_CMD_SET(s3_gcmd | CMD_BITBLT | CMD_AUTOEXEC |
 			MIX_MONO_PATT |
 			INC_Y | INC_X | s3alu_sp[pGC->alu] );
-#endif
-DBGOUT(0x51);
 	   pboxClipped = pboxClippedBase;
 	   while (n--) {
-DBGOUT(0x52);
 	      SETB_BLT(pboxClipped->x1, pboxClipped->y1,
 		       pboxClipped->x1, pboxClipped->y1,
 		       pboxClipped->x2 - pboxClipped->x1 - 1,pboxClipped->y2 - pboxClipped->y1,
 		       INC_X);
-DBGOUT(0x53);
 	      pboxClipped++;
 	   }
 
 	   WaitQueue(1);
-DBGOUT(0x54);
 	   SETB_CMD_SET(CMD_NOP);
-DBGOUT(0x55);
 	   UNBLOCK_CURSOR;
 	   break;
 	case FillTiled:
