@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.13 1997/11/01 15:04:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.14 1997/11/01 23:11:53 hohndel Exp $ */
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
  *
@@ -144,6 +144,7 @@ void            GLINTSetupFor8x8PatternColorExpand ();
 void            GLINTSubsequent8x8PatternColorExpand ();
 void            GLINTSetupForScanlineScreenToScreenColorExpand ();
 void            GLINTSubsequentScanlineScreenToScreenColorExpand ();
+void            GLINTSubsequentScanlineScreenToScreenCopy ();
 
 
 void
@@ -218,6 +219,10 @@ GLINTAccelInit ()
 	GLINTSetupFor8x8PatternColorExpand;
       xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
 	GLINTSubsequent8x8PatternColorExpand;
+
+#if 0 /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22 */
+      /* the function GLINTSubsequentScanlineScreenToScreenCopy
+         referenced here is still missing */
       xf86AccelInfoRec.ImageWriteOffset = glintInfoRec.displayWidth *
                         glintInfoRec.virtualY * (glintInfoRec.bitsPerPixel /
 8);
@@ -240,6 +245,7 @@ GLINTAccelInit ()
         xf86AccelInfoRec.SubsequentScanlineScreenToScreenCopy =
                         GLINTSubsequentScanlineScreenToScreenCopy;
       }
+#endif /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */
     }
   else if (IS_3DLABS_PERMEDIA_CLASS (coprotype))
     PermediaAccelInit ();
