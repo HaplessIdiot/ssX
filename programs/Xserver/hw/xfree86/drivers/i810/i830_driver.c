@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.21 2002/12/10 01:27:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.22 2002/12/11 17:01:45 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2167,6 +2167,33 @@ RestoreHWState(ScrnInfoPtr pScrn)
    DPRINTF(PFX, "RestoreHWState\n");
 
    pVesa = pI830->vesa;
+
+   /*
+    * Workaround for text mode restoration with some flat panels.
+    * Temporarily program a 640x480 mode before switching back to
+    * text mode.
+    */
+   if (pVesa->useDefaultRefresh) {
+      int mode = 0;
+
+      switch (pScrn->depth) {
+      case 8:
+	 mode = 0x30;
+	 break;
+      case 15:
+	 mode = 0x40;
+	 break;
+      case 16:
+	 mode = 0x41;
+	 break;
+      case 24:
+	 mode = 0x50;
+	 break;
+      }
+      mode |= (1 << 15) | (1 << 14);
+      I830VESASetVBEMode(pScrn, mode, NULL);
+   }
+
    if (pVesa->state && pVesa->stateSize) {
       CARD16 imr = INREG16(IMR);
       CARD16 ier = INREG16(IER);
