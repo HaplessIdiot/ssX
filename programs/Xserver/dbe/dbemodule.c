@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dbe/dbemodule.c,v 1.3 1998/12/13 10:33:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dbe/dbemodule.c,v 1.4 1999/01/17 10:53:50 dawes Exp $ */
 
 #include "xf86Module.h"
 
@@ -16,19 +16,19 @@ ExtensionModule dbeExt = {
 
 static XF86ModuleVersionInfo VersRec =
 {
-        "dbe",
-        MODULEVENDORSTRING,
-        MODINFOSTRING1,
-        MODINFOSTRING2,
-        XF86_VERSION_CURRENT,
-        1, 0, 0,
-        ABI_CLASS_EXTENSION,
-        ABI_EXTENSION_VERSION,
+	"dbe",
+	MODULEVENDORSTRING,
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	1, 0, 0,
+	ABI_CLASS_EXTENSION,
+	ABI_EXTENSION_VERSION,
 	NULL,
-        {0,0,0,0}
+	{0,0,0,0}
 };
 
-/* 
+/*
  * Entry point for the loader code
  */
 void

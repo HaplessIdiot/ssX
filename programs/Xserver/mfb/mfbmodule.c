@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbmodule.c,v 1.4 1998/12/13 10:33:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbmodule.c,v 1.5 1999/01/17 10:54:15 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -32,16 +32,16 @@ MODULEINITPROTO(mfbModuleInit);
 
 static XF86ModuleVersionInfo VersRec =
 {
-        "mfb",
-        MODULEVENDORSTRING,
-        MODINFOSTRING1,
-        MODINFOSTRING2,
-        XF86_VERSION_CURRENT,
-        1, 0, 0,
+	"mfb",
+	MODULEVENDORSTRING,
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	1, 0, 0,
 	ABI_CLASS_ANSIC,		/* Only need the ansic layer */
 	ABI_ANSIC_VERSION,
 	NULL,
-        {0,0,0,0}       /* signature, to be patched into the file by a tool */
+	{0,0,0,0}       /* signature, to be patched into the file by a tool */
 };
 
 void
