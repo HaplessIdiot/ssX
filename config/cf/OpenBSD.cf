@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.104 2004/06/01 00:16:53 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.105 2004/06/02 22:42:53 dawes Exp $
 XCOMM
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -578,9 +578,6 @@ install::								@@\
 # if OSMajorVersion > 3 || (OSMajorVersion == 3 && OSMinorVersion > 2)
 #  ifndef BuildXF86DRI
 #   define BuildXF86DRI			NO
-#  endif 
-#  ifndef BuildXF86DRM
-#   define BuildXF86DRM			NO
 #  endif 
 #  ifndef BuildXF86OldDRMCompat
 #   define BuildXF86OldDRMCompat	NO
