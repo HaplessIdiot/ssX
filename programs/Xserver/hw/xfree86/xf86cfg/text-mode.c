@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.20 2003/01/18 07:27:12 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.21 2003/02/15 05:37:58 paulo Exp $
  */
 
 #include <stdio.h>
@@ -1117,7 +1117,7 @@ CardConfig(void)
 	drivers = NULL;
 	ndrivers = 0;
 	while (opts) {
-	    if (opts->chipsets) {
+	    if (opts->type == VideoModule) {
 		++ndrivers;
 		drivers = (char**)XtRealloc((XtPointer)drivers,
 					    ndrivers * sizeof(char*));
