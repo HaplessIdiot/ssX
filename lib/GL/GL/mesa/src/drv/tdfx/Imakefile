@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.21 2001/03/21 16:14:26 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/GL/mesa/src/drv/tdfx/Imakefile,v 1.1 2001/03/22 21:47:59 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -8,98 +8,12 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.21 2001/03/21 16:14:26
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 
-MESADRVSRC = $(GLXLIBSRC)/mesa/src/drv
+#define NeedToLinkMesaSrc
+#include "../../../../../mesa/src/drv/tdfx/Imakefile.inc"
 
-#if Malloc0ReturnsNull
-ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
-#endif
-
-#ifdef i386Architecture
-#if MesaUseMMX
-     MMX_DEFS = -DUSE_MMX_ASM
-#endif
-#if MesaUse3DNow
-   3DNOW_DEFS = -DUSE_3DNOW_ASM
-#endif
-#if MesaUseKatmai
-  KATMAI_DEFS = -DUSE_KATMAI_ASM
-#endif
-  ASM_DEFINES = -DUSE_X86_ASM $(MMX_DEFS) $(3DNOW_DEFS) $(KATMAI_DEFS)
-#endif
-
-#if BuildXF86DRI
-  DRI_DEFINES = GlxDefines -DFX_GLIDE3 -DDRIVERTS
- DRI_INCLUDES = -I$(GLXLIBSRC)/dri -I$(GLXLIBSRC)/glx \
-		-I$(INCLUDESRC) -I$(INCLUDESRC)/GL \
-		-I$(GLXLIBSRC)/mesa/dri \
-		-I$(SERVERSRC)/GL/dri \
-		-I$(XF86OSSRC) \
-		-I$(XF86DRIVERSRC)/tdfx \
-		-I$(GLXLIBSRC)/dri/drm
-#endif
-
-MESA_INCLUDES = -I$(MESASRCDIR)/src -I$(MESADRVSRC)/common -I$(MESADRVSRC)/tdfx
-
-      DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(ASM_DEFINES)
-     INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC) $(MESA_INCLUDES) \
-		$(DRI_INCLUDES) -I$(GLIDE3INCDIR)
-
-LinkSourceFile(tdfx_context.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_dd.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_pixels.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_fastpath.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_g3ext.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_lock.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_pipeline.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_render.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_screen.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_span.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_state.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_tex.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_texman.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_texstate.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_tris.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_vb.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_wrapper.c, $(MESADRVSRC)/tdfx)
-LinkSourceFile(tdfx_xmesa.c, $(MESADRVSRC)/tdfx)
-
-     TDFXSRCS = tdfx_context.c \
-		tdfx_dd.c \
-		tdfx_pixels.c \
-		tdfx_fastpath.c \
-		tdfx_g3ext.c \
-		tdfx_lock.c \
-		tdfx_pipeline.c \
-		tdfx_render.c \
-		tdfx_screen.c \
-		tdfx_span.c \
-		tdfx_state.c \
-		tdfx_tex.c \
-		tdfx_texman.c \
-		tdfx_texstate.c \
-		tdfx_tris.c \
-		tdfx_vb.c \
-		tdfx_wrapper.c \
-		tdfx_xmesa.c
-
-     TDFXOBJS = tdfx_context.o \
-		tdfx_dd.o \
-		tdfx_pixels.o \
-		tdfx_fastpath.o \
-		tdfx_g3ext.o \
-		tdfx_lock.o \
-		tdfx_pipeline.o \
-		tdfx_render.o \
-		tdfx_screen.o \
-		tdfx_span.o \
-		tdfx_state.o \
-		tdfx_tex.o \
-		tdfx_texman.o \
-		tdfx_texstate.o \
-		tdfx_tris.o \
-		tdfx_vb.o \
-		tdfx_wrapper.o \
-		tdfx_xmesa.o
+      DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(MESA_ASM_DEFINES)
+     INCLUDES = $(X_INCLUDES) $(MESA_INCLUDES) $(DRI_INCLUDES) \
+		-I$(GLIDE3INCDIR)
 
          SRCS = $(TDFXSRCS)
          OBJS = $(TDFXOBJS)

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i810/Imakefile,v 1.15 2001/03/21 16:14:21 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/GL/mesa/src/drv/i810/Imakefile,v 1.1 2001/03/22 21:47:59 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -8,74 +8,11 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i810/Imakefile,v 1.15 2001/03/21 16:14:21
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 
-MESADRVSRC = $(GLXLIBSRC)/mesa/src/drv
+#define NeedToLinkMesaSrc
+#include "../../../../../mesa/src/drv/i810/Imakefile.inc"
 
-#if Malloc0ReturnsNull
-ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
-#endif
-
-#ifdef i386Architecture
-#if MesaUseMMX
-     MMX_DEFS = -DUSE_MMX_ASM
-#endif
-#if MesaUse3DNow
-   3DNOW_DEFS = -DUSE_3DNOW_ASM
-#endif
-#if MesaUseKatmai
-  KATMAI_DEFS = -DUSE_KATMAI_ASM
-#endif
-  ASM_DEFINES = -DUSE_X86_ASM $(MMX_DEFS) $(3DNOW_DEFS) $(KATMAI_DEFS)
-#endif
-
-#if BuildXF86DRI
-  DRI_DEFINES = GlxDefines -DDRIVERTS
- DRI_INCLUDES = -I$(GLXLIBSRC)/dri -I$(GLXLIBSRC)/glx \
-		-I$(INCLUDESRC) -I$(INCLUDESRC)/GL \
-		-I$(GLXLIBSRC)/mesa/dri \
-		-I$(SERVERSRC)/GL/dri \
-		-I$(XF86OSSRC) \
-		-I$(XF86DRIVERSRC)/i810 \
-		-I$(GLXLIBSRC)/dri/drm
-#endif
-
-MESA_INCLUDES = -I$(MESASRCDIR)/src -I$(MESADRVSRC)/common -I$(MESADRVSRC)/i810
-
-      DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(ASM_DEFINES)
-     INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES)
-
-
-LinkSourceFile(i810_xmesa.c, $(MESADRVSRC)/i810)
-LinkSourceFile(i810dd.c, $(MESADRVSRC)/i810)
-LinkSourceFile(i810pipeline.c, $(MESADRVSRC)/i810)
-LinkSourceFile(i810span.c, $(MESADRVSRC)/i810)
-LinkSourceFile(i810state.c, $(MESADRVSRC)/i810)
-LinkSourceFile(i810tex.c, $(MESADRVSRC)/i810)
-LinkSourceFile(i810tris.c, $(MESADRVSRC)/i810)
-LinkSourceFile(i810vb.c, $(MESADRVSRC)/i810)
-LinkSourceFile(i810fastpath.c, $(MESADRVSRC)/i810)
-LinkSourceFile(i810ioctl.c, $(MESADRVSRC)/i810)
-
-     I810SRCS = i810_xmesa.c \
-		i810dd.c \
-		i810pipeline.c \
-		i810span.c \
-		i810state.c \
-		i810tex.c \
-		i810tris.c \
-		i810vb.c \
-		i810fastpath.c \
-		i810ioctl.c
-
-     I810OBJS = i810_xmesa.o \
-		i810dd.o \
-		i810pipeline.o \
-		i810span.o \
-		i810state.o \
-		i810tex.o \
-		i810tris.o \
-		i810vb.o \
-		i810fastpath.o \
-		i810ioctl.o
+      DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(MESA_ASM_DEFINES)
+     INCLUDES = $(X_INCLUDES) $(MESA_INCLUDES) $(DRI_INCLUDES)
 
          SRCS = $(I810SRCS)
          OBJS = $(I810OBJS)

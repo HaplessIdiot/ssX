@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/dri/Imakefile,v 1.5 2000/02/15 07:13:25 martin Exp $
+XCOMM $XFree86: xc/lib/GL/GL/dri/Imakefile,v 1.1 2001/03/22 21:47:57 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -22,7 +22,7 @@ LinkSourceFile(dri_glx.c, $(GLXLIBSRC)/dri)
      DRI_INCS = -I$(GLXLIBSRC)/dri -I$(GLXLIBSRC)/glx -I$(INCLUDESRC) \
 		-I$(XINCLUDESRC) -I$(INCLUDESRC)/GL \
 		-I$(SERVERSRC)/GL/dri \
-		-I$(GLXLIBSRC)/mesa/include -I$(GLXLIBSRC)/mesa/src
+		-I$(MESASRCDIR)/include -I$(MESASRCDIR)/src
 #endif
 
 #if GlxBuiltInTdfx
