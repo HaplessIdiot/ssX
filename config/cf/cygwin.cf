@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.20 2001/06/07 18:30:40 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.21 2001/06/08 08:06:50 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -90,15 +90,27 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.20 2001/06/07 18:30:40 ala
 #define HasThreadSafeAPI        NO
 
 #define LnCmd                   ln -s
+#ifndef CcCmd
 #define CcCmd                   gcc
+#endif /* CcCmd */
+#ifndef CplusplusCmd
 #define CplusplusCmd		g++
+#endif /* CplusplusCmd */
+#ifndef AsCmd
 #define AsCmd                   as
+#endif /* AsCmd */
 #define GccGasOption	        -DGCCUSESGAS
 #define AsmDefines	        -DUSE_GAS -DGCCUSESGAS
+#ifndef LdCmd
 #define LdCmd                   ld
+#endif /* LdCmd */
 #define MkdirHierCmd            mkdir -p
+#ifndef CppCmd
 #define CppCmd                  cpp
+#endif /* CppCmd */
+#ifndef YaccCmd
 #define YaccCmd                 byacc
+#endif /* YaccCmd */
 #define LexCmd                  flex -l
 #define LexLib                  -lfl
 #define HasFlex			YES
