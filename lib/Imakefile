@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/r61_main/1 1995/12/11 20:58:09 mor $
-XCOMM $XFree86: xc/lib/Imakefile,v 3.9 1996/04/15 11:15:03 dawes Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.10 1996/06/13 07:55:10 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -46,8 +46,8 @@ LBXUTIL = lbxutil
 #if !BuildServersOnly
 LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIB) X11 oldX ICE SM Xext \
 	     $(SSLIB) $(XF86MISCLIB) $(XF86VMLIB) $(XF86DGALIB) \
-	     $(LBXUTIL) Xt Xmu Xaw XIE Xi Xtst FS PEX5 $(XKBLIBDIR) \
-	     $(XKBUILIBDIR)
+	     $(LBXUTIL) Xt Xmu Xaw XIE Xi Xtst FS \
+	     PEX5 $(XKBLIBDIR) $(XKBUILIBDIR)
 #else
 /* For ServersOnly */
 LINTSUBDIRS = Xau Xdmcp X11 $(XKBLIBDIR) $(XKBUILIBDIR)
