@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the copyright holder.
 
 */
-/* $XFree86: xc/programs/xdm/socket.c,v 3.13 2003/07/18 15:39:52 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/socket.c,v 3.14tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -68,9 +68,9 @@ CreateWellKnownSockets (void)
 
 #if defined(IPv6) && defined(AF_INET6)
     chooserFd = socket (AF_INET6, SOCK_STREAM, 0);
-#else
-    chooserFd = socket (AF_INET, SOCK_STREAM, 0);
+    if (chooserFd < 0)
 #endif
+    chooserFd = socket (AF_INET, SOCK_STREAM, 0);
     Debug ("Created chooser socket %d\n", chooserFd);
     if (chooserFd == -1)
     {

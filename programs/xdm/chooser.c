@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdm/chooser.c,v 3.26 2003/07/18 15:53:28 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/chooser.c,v 3.27tsi Exp $ */
 
 /*
  * Chooser - display a menu of names and let the user select one
@@ -856,8 +856,9 @@ InitXDMCP (char **argv)
     XtAddInput (socketFD, (XtPointer) XtInputReadMask, ReceivePacket,
 		(XtPointer) &socketFD);
 #if defined(IPv6) && defined(AF_INET6)
-    XtAddInput (socket6FD, (XtPointer) XtInputReadMask, ReceivePacket,
-		(XtPointer) &socket6FD);
+    if (socket6FD > 0)
+	XtAddInput (socket6FD, (XtPointer) XtInputReadMask, ReceivePacket,
+		    (XtPointer) &socket6FD);
 #endif
     while (*argv)
     {
