@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/dps/Imakefile,v 1.1 2000/02/13 00:12:52 dawes Exp $
+XCOMM $XFree86: xc/lib/dps/Imakefile,v 1.2 2000/02/14 18:11:46 dawes Exp $
 
 #define DoNormalLib NormalLibDps
 #define DoSharedLib SharedLibDps
@@ -17,7 +17,8 @@ XCOMM  csconndi.c and csopendi.c
             SED = sed
             AWK = awk
            SORT = sort
-         PSWRAP = $(TOP)/config/pswrap/pswrap
+      PSWRAPSRC = $(TOP)/config/pswrap
+         PSWRAP = $(PSWRAPSRC)/pswrap
 
 
 COMMONOBJECTFILES = \
@@ -249,14 +250,19 @@ DERIVED_FILES = $(DPSOPSHEADERFILES) $(PSOPSHEADERFILES) \
 
 .SUFFIXES: .psw .ah .h
 
-.psw.c :
+.psw.c : ProgramTargetName($(PSWRAP))
 	RunProgram(PSWRAP,-o $*.c -h $*.h $<)
 
-.psw.ah :
+.psw.ah : ProgramTargetName($(PSWRAP))
 	RunProgram(PSWRAP,-a -h $*.ah $< > /dev/null)
 
-.psw.h :
+.psw.h : ProgramTargetName($(PSWRAP))
 	RunProgram(PSWRAP,-h $*.h $< > /dev/null)
+
+ProgramTargetName($(PSWRAP)):
+	@echo "checking $@ over in $(PSWRAPSRC) first..."; \
+	cd $(PSWRAPSRC) && $(MAKE); \
+	echo "okay, continuing in $(CURRENT_DIR)"
 
 HEADERS = psops.h dpsops.h
 
