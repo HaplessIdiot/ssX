@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.42 2001/05/04 19:05:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.43 2001/05/18 19:59:17 dawes Exp $
 </ident>
 
 
@@ -5774,7 +5774,7 @@ programming the standard VGA registers, and for handling VGA colourmaps.
       &s.code;hwp&e.code; with the standard VGA set of functions.  This
       is called by &s.code;vgaHWGetHWRec()&e.code;, so there is usually
       no need to call this explicitly.  The register access functions
-      are described below.  If the registers are shadows in some other
+      are described below.  If the registers are shadowed in some other
       port I/O space (for example a PCI I/O region), these functions
       can be used to access the shadowed registers if
       &s.code;hwp-&gt;PIOOffset&e.code; is initialised with
