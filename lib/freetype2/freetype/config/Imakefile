@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/freetype/config/Imakefile,v 1.1 2001/02/08 00:55:41 keithp Exp $
+XCOMM $XFree86: xc/lib/freetype2/freetype/config/Imakefile,v 1.2 2001/05/16 03:57:28 keithp Exp $
 
 FREETYPETOP = $(TOP)/extras/freetype2
 FREETYPESRC = $(FREETYPETOP)/src
@@ -17,3 +17,41 @@ LinkSourceFile(ftconfig.h,$(FREETYPEINC)/config)
 LinkSourceFile(ftheader.h,$(FREETYPEINC)/config)
 LinkSourceFile(ftmodule.h,$(FREETYPEINC)/config)
 LinkSourceFile(ftoption.h,$(FREETYPEINC)/config)
+
+XCOMM Build and install a configure-compatible freetype-config
+
+LinkSourceFile(freetype-config.in,$(FREETYPETOP)/builds/unix)
+
+FREETYPE_VERSION=6.1.0
+
+freetype-config: freetype-config.in
+	sed -e s%@prefix@%$(PROJECTROOT)% -e s%@exec_prefix@%$(PROJECTROOT)% \
+	-e s%@libdir@%$(USRLIBDIR)% -e s%@includedir@%$(INCDIR)% 	\
+	-e s%@ft_version@%$(FREETYPE_VERSION)% \
+	< freetype-config.in > $@
+
+includes:: freetype-config
+
+InstallProgram(freetype-config,$(BINDIR))
+
+cleandir::
+	RemoveFile(freetype-config)
+
+LinkSourceFile(freetype-config.in,$(FREETYPETOP)/builds/unix)
+
+XCOMM Build and install a configure-compatible freetype-config
+
+FREETYPE_VERSION=6.1.0
+
+freetype-config: freetype-config.in
+	sed -e s%@prefix@%$(PROJECTROOT)% -e s%@exec_prefix@%$(PROJECTROOT)% \
+	-e s%@libdir@%$(USRLIBDIR)% -e s%@includedir@%$(INCDIR)% 	\
+	-e s%@ft_version@%$(FREETYPE_VERSION)% \
+	< freetype-config.in > $@
+
+includes:: freetype-config
+
+InstallProgram(freetype-config,$(BINDIR))
+
+cleandir::
+	RemoveFile(freetype-config)
