@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/16 1997/09/03 17:04:58 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.13 1998/06/04 16:43:46 hohndel Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.14 1998/10/04 09:41:25 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -34,7 +34,10 @@ install::
 	@echo "Creating $(LIBDIR)/xkb"
 	MakeDir($(DESTDIR)$(LIBDIR)/xkb)
 
-LinkVarDirectory(xkb,xkb,compiled,compiled)
+#ifdef VarDbDirectory
+CONFDIR = $(VARDBDIR)
+#endif
+LinkConfDirectory(xkb,xkb,compiled,compiled)
 
 InstallProgram(xkbcomp,$(LIBDIR)/xkb)
 

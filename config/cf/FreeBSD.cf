@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.86 2000/01/24 23:22:30 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.87 2000/01/25 18:37:28 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -52,6 +52,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasWChar32		YES
 #define HasUsableFileMmap	YES
 #define HasNCurses		YES
+#define HasVarRun		YES
+#define HasVarDb		YES
 
 #define AvoidNullMakeCommand	YES
 #define StripInstalledPrograms	YES

@@ -1,4 +1,6 @@
 XFree86 3.9.17d (1 February 2000)
+3615. Implement some of the (installed) path restructuring that was
+      discussed back in April 1999 (David Dawes).
 3614. Remove duplicated code in XKB and InputMethod processing (#3396,
       Ivan Pascal).
 
@@ -9399,4 +9401,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.969 2000/01/30 17:58:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.970 2000/01/31 14:41:01 dawes Exp $

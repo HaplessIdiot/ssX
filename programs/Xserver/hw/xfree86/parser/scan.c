@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.7 1999/05/30 14:04:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.8 1999/06/06 15:23:04 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -397,7 +397,7 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 	char *result;
 	int i, l;
 	static const char *env = NULL, *home = NULL;
-    static char *hostname = NULL;
+	static char *hostname = NULL;
 
 	if (!template)
 		return NULL;
@@ -637,7 +637,7 @@ xf86OpenConfigFile (char *filename)
 	{
 
 		/* 
-		 * configPaths[0]         is used as a buffer for -xf86config
+		 * configPaths[0]   is used as a buffer for -xf86config
 		 *                  and $XF86CONFIG if it contains a path
 		 * configPaths[1...MAXPTRIES-1] is used to store the paths of each of
 		 *                  the other attempts
