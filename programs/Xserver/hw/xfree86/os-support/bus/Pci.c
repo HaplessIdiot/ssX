@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.51 2001/10/28 03:34:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.52 2002/01/25 21:56:18 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -1390,7 +1390,7 @@ xf86MapDomainIO(int ScreenNum, int Flags, PCITAG Tag,
 int 
 xf86ReadDomainMemory(PCITAG Tag, ADDRESS Base, int Len, unsigned char *Buf)
 {
-    int ret, length, len, rlength;
+    int ret, length, rlength;
 
     /* Read in 64kB chunks */
     ret = 0;
@@ -1401,11 +1401,11 @@ xf86ReadDomainMemory(PCITAG Tag, ADDRESS Base, int Len, unsigned char *Buf)
 	    ret = rlength;
 	    break;
 	}
-	ret += length;
+	ret += rlength;
 	if (rlength < length) break;
-	Base += length;
-	Buf += length;
-	Len -= length;
+	Base += rlength;
+	Buf += rlength;
+	Len -= rlength;
     }
 
     return ret;
