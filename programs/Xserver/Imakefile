@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.295 2003/11/07 13:45:26 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.296 2003/11/23 06:47:00 torrey Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1354,5 +1354,8 @@ MakeLintLibSubdirs($(SUBDIRS))
 LintSubdirs($(SUBDIRS))
 
 ForceSubdirs($(DEPDIRS) $(SUBDIRS))
+
+DEFAULTFONTPATH = DefaultFontPath
+EXTRAMANDEFS = -D__default_font_path__="`echo $(DEFAULTFONTPATH) | sed -e 's/,/, /g'`"
 
 InstallManPage(Xserver,$(MANDIR))
