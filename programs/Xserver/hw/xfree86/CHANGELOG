@@ -1,4 +1,17 @@
-XFree86 3.0c (4 May 1994)
+XFree86 3.0c (6 May 1994)
+ 39. Fixes for Solaris X86 (Doug Anson).
+ 38. No longer link the Mono and VGA16 servers with Xserver/mfb/libmfb.a.
+ 37. Updates to the VGA16 code (Gertjan Akkerman).  Includes banking support
+     (old-style rather than the Xsvga method), staticcolor visual, oak
+     driver enabled, added some missing files to vga16/mfb.
+ 36. Fix Linux shared libs (Orest Zborowski)
+ 35. Apollo mono driver (Hamish Coleman)
+ 34. Support for dual-headed vga2+mono and vga16+mono servers (Pascal Haible).
+ 33. Reorganisation of the mono server (Pascal Haible).  Includes removing
+     xfree86/bdm2, xfree86/hga2, and replacing them with xfree86/mono.
+ 32. Fixes for PEX font compiler (from our 940327a snapshot).
+ 31. Fix SIOCGIFCONF code in xdm and Xserver for SVR4 (with Lachman TCP).
+     and FreeBSD.  There are still xdm and chooser problems on SVR4.
 
 XFree86 3.0b (29 April 1994)
  30. Add S3 driver to SVGA server.
