@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.79 2001/11/21 22:43:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.80 2002/01/04 21:22:34 tsi Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -112,10 +112,10 @@ static int pix24bpp = 0;
  
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-#define S3VIRGE_VERSION_NAME "1.8.1"
+#define S3VIRGE_VERSION_NAME "1.8.3"
 #define S3VIRGE_VERSION_MAJOR   1
 #define S3VIRGE_VERSION_MINOR   8
-#define S3VIRGE_PATCHLEVEL      1
+#define S3VIRGE_PATCHLEVEL      3
 #define S3VIRGE_DRIVER_VERSION ((S3VIRGE_VERSION_MAJOR << 24) | \
 				(S3VIRGE_VERSION_MINOR << 16) | \
 				S3VIRGE_PATCHLEVEL)
