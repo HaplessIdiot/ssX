@@ -125,7 +125,7 @@ const UCHAR SiS310_LCDDelayCompensation_LVDS740[] =   	/* LVDS */
 
 const UCHAR SiS310_LCDDelayCompensation_651301LV[] =	  /* M650/651 301LV */
 {
-                 0x33,0x33,0x33,    /*   800x600 (guessed) */
+                 0x33,0x33,0x33,    /*   800x600 (guessed) - new: PanelType, not PanelRes ! */
 		 0x33,0x33,0x33,    /*  1024x768 */
 		 0x33,0x33,0x33,    /* 1280x1024 */
 		 0x33,0x33,0x33,    /*   640x480 (unknown) */

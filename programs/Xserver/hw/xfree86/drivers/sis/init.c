@@ -209,6 +209,12 @@ InitCommonPointer(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
    SiS_Pr->SiS_LVDS1280x960Data_2  = SiS_LVDS1280x1024Data_2;
    SiS_Pr->SiS_LVDS640x480Data_1   = SiS_LVDS640x480Data_1;
    SiS_Pr->SiS_LVDS640x480Data_2   = SiS_LVDS640x480Data_2;
+
+   SiS_Pr->SiS_LVDSBARCO1366Data_1 = SiS_LVDSBARCO1366Data_1;
+   SiS_Pr->SiS_LVDSBARCO1366Data_2 = SiS_LVDSBARCO1366Data_2;
+   SiS_Pr->SiS_LVDSBARCO1024Data_1 = SiS_LVDSBARCO1024Data_1;
+   SiS_Pr->SiS_LVDSBARCO1024Data_2 = SiS_LVDSBARCO1024Data_2;
+
    SiS_Pr->SiS_LCDA1400x1050Data_1 = SiS_LCDA1400x1050Data_1;
    SiS_Pr->SiS_LCDA1400x1050Data_2 = SiS_LCDA1400x1050Data_2;
    SiS_Pr->SiS_LCDA1600x1200Data_1 = SiS_LCDA1600x1200Data_1;
@@ -359,6 +365,15 @@ InitTo300Pointer(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
    SiS_Pr->SiS_PanelType0e_2 = (SiS_LVDSDesStruct *)SiS300_PanelType0e_2;
    SiS_Pr->SiS_PanelType0f_2 = (SiS_LVDSDesStruct *)SiS300_PanelType0f_2;
 
+   if(SiS_Pr->SiS_CustomT == CUT_BARCO1366) {
+      SiS_Pr->SiS_PanelType04_1 = (SiS_LVDSDesStruct *)SiS300_PanelType04_1a;
+      SiS_Pr->SiS_PanelType04_2 = (SiS_LVDSDesStruct *)SiS300_PanelType04_2a;
+   }
+   if(SiS_Pr->SiS_CustomT == CUT_BARCO1024) {
+      SiS_Pr->SiS_PanelType04_1 = (SiS_LVDSDesStruct *)SiS300_PanelType04_1b;
+      SiS_Pr->SiS_PanelType04_2 = (SiS_LVDSDesStruct *)SiS300_PanelType04_2b;
+   }
+
    SiS_Pr->SiS_LVDSCRT1800x600_1     = (SiS_LVDSCRT1DataStruct *)SiS300_LVDSCRT1800x600_1;
    SiS_Pr->SiS_LVDSCRT11024x768_1    = (SiS_LVDSCRT1DataStruct *)SiS300_LVDSCRT11024x768_1;
    SiS_Pr->SiS_LVDSCRT11280x1024_1   = (SiS_LVDSCRT1DataStruct *)SiS300_LVDSCRT11280x1024_1;
@@ -418,15 +433,16 @@ InitTo300Pointer(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
    SiS_Pr->SiS_Panel1024x600  = Panel_1024x600;
    SiS_Pr->SiS_Panel1152x768  = Panel_1152x768;
    SiS_Pr->SiS_Panel1280x768  = Panel_1280x768;
-   SiS_Pr->SiS_Panel1600x1200 = 16;  		/* TW: Something illegal */
-   SiS_Pr->SiS_Panel1400x1050 = 16;  		/* TW: Something illegal */
-   SiS_Pr->SiS_Panel640x480_2 = 16;  		/* TW: Something illegal */
-   SiS_Pr->SiS_Panel640x480_3 = 16;  		/* TW: Something illegal */
-   SiS_Pr->SiS_Panel1152x864  = 16;   		/* TW: Something illegal */
+   SiS_Pr->SiS_Panel1600x1200 = 255;  		/* TW: Something illegal */
+   SiS_Pr->SiS_Panel1400x1050 = 255;  		/* TW: Something illegal */
+   SiS_Pr->SiS_Panel640x480_2 = 255;  		/* TW: Something illegal */
+   SiS_Pr->SiS_Panel640x480_3 = 255;  		/* TW: Something illegal */
+   SiS_Pr->SiS_Panel1152x864  = 255;   		/* TW: Something illegal */
    SiS_Pr->SiS_PanelMax       = Panel_320x480;     /* TW: highest value */
    SiS_Pr->SiS_PanelMinLVDS   = Panel_800x600;     /* TW: Lowest value LVDS */
    SiS_Pr->SiS_PanelMin301    = Panel_1024x768;    /* TW: lowest value 301 */
    SiS_Pr->SiS_PanelCustom    = Panel_Custom;
+   SiS_Pr->SiS_PanelBarco1366 = Panel_Barco1366;
 }
 #endif
 
@@ -640,6 +656,7 @@ InitTo310Pointer(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
    SiS_Pr->SiS_PanelMinLVDS   = Panel_800x600;    /* TW: lowest value LVDS/LCDA */
    SiS_Pr->SiS_PanelMin301    = Panel_1024x768;   /* TW: lowest value 301 */
    SiS_Pr->SiS_PanelCustom    = Panel_Custom;
+   SiS_Pr->SiS_PanelBarco1366 = 255;
 }
 #endif
 
@@ -2065,12 +2082,19 @@ SiSDetermineROMUsage(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,
 	      SiS_Pr->SiS_UseROM = TRUE;
 	 else SiS_Pr->SiS_UseROM = FALSE;
      } else if(HwDeviceExtension->jChipType < SIS_315H) {
+#if 0
         /* TW: Rest of 300 series: We don't use the ROM image if
 	 *     the BIOS version < 2.0.0 as such old BIOSes don't
 	 *     have the needed data at the expected locations.
 	 */
         if(ROMAddr[0x06] < '2')  SiS_Pr->SiS_UseROM = FALSE;
 	else                     SiS_Pr->SiS_UseROM = TRUE;
+#else
+	/* Sony's VAIO BIOS 1.09 follows the standard, so perhaps
+	 * the others do as well
+	 */
+	SiS_Pr->SiS_UseROM = TRUE;
+#endif
      } else {
         /* TW: 315/330 series stick to the standard */
 	SiS_Pr->SiS_UseROM = TRUE;
@@ -2289,7 +2313,7 @@ SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, S
    SISPtr  pSiS     = SISPTR(pScrn);
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
    unsigned char tempr1, tempr2, backupreg=0;
-   
+
    SiS_Pr->UseCustomMode = FALSE;
 
    /* Remember: Custom modes for CRT2 are ONLY supported
@@ -2909,15 +2933,20 @@ void
 SiS_SetPitch(SiS_Private *SiS_Pr, ScrnInfoPtr pScrn, UShort BaseAddr)
 {
    SISPtr pSiS = SISPTR(pScrn);
+   BOOLEAN isslavemode = FALSE;
 
-   /* TW: We need to set pitch for CRT1 if bridge is in SlaveMode, too */
-   if( (pSiS->VBFlags & DISPTYPE_DISP1) ||
-       ( (pSiS->VBFlags & VB_VIDEOBRIDGE) &&
-         ( ((pSiS->VGAEngine == SIS_300_VGA) && (SiS_GetReg1(SiS_Pr->SiS_Part1Port,0x00) & 0xa0) == 0x20) ||
-           ((pSiS->VGAEngine == SIS_315_VGA) && (SiS_GetReg1(SiS_Pr->SiS_Part1Port,0x00) & 0x50) == 0x10) ) ) ) {
+   if( (pSiS->VBFlags & VB_VIDEOBRIDGE) &&
+       ( ((pSiS->VGAEngine == SIS_300_VGA) && (SiS_GetReg1(SiS_Pr->SiS_Part1Port,0x00) & 0xa0) == 0x20) ||
+         ((pSiS->VGAEngine == SIS_315_VGA) && (SiS_GetReg1(SiS_Pr->SiS_Part1Port,0x00) & 0x50) == 0x10) ) ) {
+      isslavemode = TRUE;
+   }
+
+   /* We need to set pitch for CRT1 if bridge is in slave mode, too */
+   if( (pSiS->VBFlags & DISPTYPE_DISP1) || (isslavemode) ) {
    	SiS_SetPitchCRT1(SiS_Pr, pScrn, BaseAddr);
    }
-   if (pSiS->VBFlags & DISPTYPE_DISP2) {
+   /* We must not set the pitch for CRT2 if bridge is in slave mode */
+   if( (pSiS->VBFlags & DISPTYPE_DISP2) && (!isslavemode) ) {
    	SiS_SetPitchCRT2(SiS_Pr, pScrn, BaseAddr);
    }
 }

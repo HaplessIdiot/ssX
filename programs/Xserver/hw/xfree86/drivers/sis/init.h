@@ -192,7 +192,8 @@ static const SiS_ModeResInfoStruct SiS_ModeResInfo[] =
 	{ 1360, 768, 8,16},   /* 0x18 */
 	{ 1024, 600, 8,16},   /* 0x19 */
 	{ 1152, 768, 8,16},   /* 0x1a */
-	{  768, 576, 8,16}    /* 0x1b */
+	{  768, 576, 8,16},   /* 0x1b */
+	{ 1360,1024, 8,16}    /* 0x1c */
 };
 
 static SiS_StandTableStruct SiS_StandTable[]=
@@ -826,7 +827,7 @@ static const SiS_TVDataStruct  SiS_ExtHiTVData[]=
 
 static const UCHAR SiS_OutputSelect = 0x40;
 
-static const UCHAR SiS_SoftSetting  = 0x30;   /* TW: RAM setting */
+static const UCHAR SiS_SoftSetting  = 0x30;   /* RAM setting */
 
 static const SiS_LCDDataStruct  SiS_LCD1280x960Data[] =
 {
@@ -844,7 +845,7 @@ static const SiS_LCDDataStruct  SiS_LCD1280x960Data[] =
 static const SiS_LCDDataStruct  SiS_StLCD1280x768Data[] =
 {
 	{ 211,  100, 2100,  408, 1688,  802 }, /* These values are *wrong* */
-	{ 211,   64, 1536,  358, 1688,  802 },
+	{ 211,   64, 1536,  358, 1688,  802 }, /* (which is why they aren't used yet) */
 	{ 211,  100, 2100,  408, 1688,  802 },
 	{ 211,   64, 1536,  358, 1688,  802 },
 	{ 211,   48,  840,  488, 1688,  802 },
@@ -857,7 +858,7 @@ static const SiS_LCDDataStruct  SiS_StLCD1280x768Data[] =
 static const SiS_LCDDataStruct  SiS_ExtLCD1280x768Data[] =
 {
 	{ 211,  100, 2100,  408, 1688,  802 }, /* These values are *wrong* */
-	{ 211,   64, 1536,  358, 1688,  802 },
+	{ 211,   64, 1536,  358, 1688,  802 }, /* (which is why they aren't used yet) */
 	{ 211,  100, 2100,  408, 1688,  802 },
 	{ 211,   64, 1536,  358, 1688,  802 },
 	{ 211,   48,  840,  488, 1688,  802 },
@@ -997,6 +998,32 @@ static const SiS_LVDSDataStruct  SiS_LVDS800x600Data_2[]=
 	{ 800, 525,1000, 635}
 };
 
+
+
+static const SiS_LVDSDataStruct  SiS_LVDS1280x1024Data_1[]=
+{
+	{1048, 442,1688,1066},
+	{1048, 392,1688,1066},
+	{1048, 442,1688,1066},
+	{1048, 392,1688,1066},
+	{1048, 522,1688,1066},
+	{1208, 642,1688,1066},
+	{1432, 810,1688,1066},
+	{1688,1066,1688,1066}
+};
+
+static const SiS_LVDSDataStruct  SiS_LVDS1280x1024Data_2[]=
+{
+	{1688,1066,1688,1066},
+	{1688,1066,1688,1066},
+	{1688,1066,1688,1066},
+	{1688,1066,1688,1066},
+	{1688,1066,1688,1066},
+	{1688,1066,1688,1066},
+	{1688,1066,1688,1066},
+	{1688,1066,1688,1066}
+};
+
 static const SiS_LVDSDataStruct  SiS_LVDS1024x768Data_1[]=
 {
 	{ 840, 438,1344, 806},
@@ -1023,28 +1050,54 @@ static const SiS_LVDSDataStruct  SiS_LVDS1024x768Data_2[]=
 	{ 800, 525,1280, 813}
 };
 
-static const SiS_LVDSDataStruct  SiS_LVDS1280x1024Data_1[]=
+/* Custom data for Barco iQ R300 */
+static const SiS_LVDSDataStruct  SiS_LVDSBARCO1366Data_1[]=
 {
-	{1048, 442,1688,1066},
-	{1048, 392,1688,1066},
-	{1048, 442,1688,1066},
-	{1048, 392,1688,1066},
-	{1048, 522,1688,1066},
-	{1208, 642,1688,1066},
-	{1432, 810,1688,1066},
-	{1688,1066,1688,1066}
+	{ 832, 438,1331, 806},
+	{ 832, 388,1331, 806},
+	{ 832, 438,1331, 806},
+	{ 832, 388,1331, 806},
+	{ 832, 518,1331, 806},
+	{1050, 638,1344, 806},
+	{1344, 806,1344, 806},
+	{1688,1066,1688,1066},
+	{1688,1066,1688,1066}   /* 1360x1024 */
 };
 
-static const SiS_LVDSDataStruct  SiS_LVDS1280x1024Data_2[]=
-{	
+/* Custom data for Barco iQ R300 */
+static const SiS_LVDSDataStruct  SiS_LVDSBARCO1366Data_2[]=
+{
+	{1344, 806,1344, 806},
+	{1344, 806,1344, 806},
+	{1344, 806,1344, 806},
+	{1344, 806,1344, 806},
+	{1344, 806,1344, 806},
+	{1344, 806,1344, 806},
+	{1344, 806,1344, 806},
 	{1688,1066,1688,1066},
-	{1688,1066,1688,1066},
-	{1688,1066,1688,1066},
-	{1688,1066,1688,1066},
-	{1688,1066,1688,1066},
-	{1688,1066,1688,1066},
-	{1688,1066,1688,1066},
-	{1688,1066,1688,1066}
+	{1688,1066,1688,1066}   /* 1360x1024 */
+};
+
+static const SiS_LVDSDataStruct  SiS_LVDSBARCO1024Data_1[]=
+{
+	{ 832, 438,1331, 806},
+	{ 832, 409,1331, 806},
+	{ 832, 438,1331, 806},
+	{ 832, 409,1331, 806},
+	{ 832, 518,1331, 806},   /* 640x480 */
+	{1050, 638,1344, 806},   /* 800x600 */
+	{1344, 806,1344, 806},   /* 1024x768 */
+};
+
+static const SiS_LVDSDataStruct  SiS_LVDSBARCO1024Data_2[]=
+{
+	{1344, 806,1344, 806},
+	{1344, 806,1344, 806},
+	{1344, 806,1344, 806},
+	{1344, 806,1344, 806},
+	{1344, 806,1344, 806},
+	{1344, 806,1344, 806},
+	{1344, 806,1344, 806},
 };
 
 static const SiS_LVDSDataStruct  SiS_LVDS1400x1050Data_1[]=

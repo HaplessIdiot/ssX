@@ -34,6 +34,8 @@
 
 #include "sis.h"
 
+extern const customttable mycustomttable[];
+
 typedef enum {
     OPTION_SW_CURSOR,
     OPTION_HW_CURSOR,
@@ -94,7 +96,14 @@ typedef enum {
     OPTION_XVDEFDISABLEGFX,
     OPTION_XVDEFDISABLEGFXLR,
     OPTION_XVMEMCPY,
+    OPTION_XVUSECHROMAKEY,
+    OPTION_XVCHROMAMIN,
+    OPTION_XVCHROMAMAX,
+    OPTION_XVDISABLECOLORKEY,
+    OPTION_XVINSIDECHROMAKEY,
+    OPTION_XVYUVCHROMAKEY,
     OPTION_SCALELCD,
+    OPTION_SPECIALTIMING,
     OPTION_ENABLEHOTKEY,
     OPTION_MERGEDFB,
     OPTION_CRT2HSYNC,
@@ -170,9 +179,16 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_XVDEFSATURATION,		"XvDefaultSaturation", 	  OPTV_INTEGER,   {0}, -1    },
     { OPTION_XVDEFDISABLEGFX,		"XvDefaultDisableGfx", 	  OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_XVDEFDISABLEGFXLR,		"XvDefaultDisableGfxLR",  OPTV_BOOLEAN,   {0}, -1    },
+    { OPTION_XVCHROMAMIN,		"XvChromaMin", 	  	  OPTV_INTEGER,   {0}, -1    },
+    { OPTION_XVCHROMAMAX,		"XvChromaMax", 	  	  OPTV_INTEGER,   {0}, -1    },
+    { OPTION_XVUSECHROMAKEY,		"XvUseChromaKey",         OPTV_BOOLEAN,   {0}, -1    },
+    { OPTION_XVINSIDECHROMAKEY,		"XvInsideChromaKey",      OPTV_BOOLEAN,   {0}, -1    },
+    { OPTION_XVYUVCHROMAKEY,		"XvYUVChromaKey",         OPTV_BOOLEAN,   {0}, -1    },
+    { OPTION_XVDISABLECOLORKEY,		"XvDisableColorKey",      OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_XVMEMCPY,			"XvUseMemcpy",  	  OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_SCALELCD,			"ScaleLCD",	   	  OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_ENABLEHOTKEY,		"EnableHotkey",	   	  OPTV_BOOLEAN,   {0}, -1    },
+    { OPTION_SPECIALTIMING,        	"SpecialTiming",          OPTV_STRING,    {0}, -1    },
 #ifdef SISMERGED
     { OPTION_MERGEDFB,			"MergedFB",		  OPTV_BOOLEAN,	  {0}, FALSE },
     { OPTION_CRT2HSYNC,			"CRT2HSync",		  OPTV_ANYSTR,	  {0}, FALSE },
@@ -270,6 +286,12 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->XvDefDisableGfxLR = FALSE;
     pSiS->UsePanelScaler = -1;
     pSiS->XvUseMemcpy = TRUE;
+    pSiS->XvUseChromaKey = FALSE;
+    pSiS->XvDisableColorKey = FALSE;
+    pSiS->XvInsideChromaKey = FALSE;
+    pSiS->XvYUVChromaKey = FALSE;
+    pSiS->XvChromaMin = 0x000101fe;
+    pSiS->XvChromaMax = 0x000101ff;
 #ifdef SISMERGED
     pSiS->MergedFB = FALSE;
     pSiS->CRT2Position = sisRightOf;
@@ -581,6 +603,9 @@ SiSOptions(ScrnInfoPtr pScrn)
        if(xf86GetOptValInteger(pSiS->Options, OPTION_PDC, &vali)) {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "PanelDelayCompensation");
        }
+       if(xf86GetOptValString(pSiS->Options, OPTION_SPECIALTIMING)) {
+          xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "SpecialTiming");
+       }
        if(xf86GetOptValString(pSiS->Options, OPTION_TVSTANDARD)) {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "TVStandard");
        }
@@ -814,6 +839,43 @@ SiSOptions(ScrnInfoPtr pScrn)
                 xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
                     "CRT2 type shall be %s\n", strptr);
           }
+
+	  strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_SPECIALTIMING);
+          if(strptr != NULL) {
+	     int i = 0;
+	     BOOLEAN found = FALSE;
+	     if(!xf86NameCmp(strptr,"NONE")) {
+	        pSiS->SiS_Pr->SiS_CustomT = CUT_FORCENONE;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+			"Special timing disabled\n");
+	     } else {
+	        while(mycustomttable[i].chipID != 0) {
+	           if(!xf86NameCmp(strptr,mycustomttable[i].optionName)) {
+		      pSiS->SiS_Pr->SiS_CustomT = mycustomttable[i].SpecialID;
+		      found = TRUE;
+		      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   	  "Special timing for %s %s forced\n",
+			  mycustomttable[i].vendorName, mycustomttable[i].cardName);
+		      break;
+		   }
+		   i++;
+	        }
+		if(!found) {
+		   xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "SpecialTiming");
+		   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Valid parameters are:\n");
+		   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "\t\"NONE\" (to disable special timings)\n");
+		   i = 0;
+		   while(mycustomttable[i].chipID != 0) {
+		      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		        	"\t\"%s\" (for %s %s)\n",
+				mycustomttable[i].optionName,
+				mycustomttable[i].vendorName,
+				mycustomttable[i].cardName);
+		      i++;
+		   }
+                }
+ 	     }
+	  }
 
          /* ScaleLCD (300/315/330 series only)
           * TW: Can be used to force the bridge/panel link to [do|not do] the
@@ -1251,6 +1313,45 @@ SiSOptions(ScrnInfoPtr pScrn)
 	        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 	     	   "Graphics display left/right of overlay will be %s during Xv usage\n",
 		   val ? disabledstr : enabledstr);
+             }
+	     if(xf86GetOptValBool(pSiS->Options, OPTION_XVDISABLECOLORKEY, &val)) {
+	        if(val) pSiS->XvDisableColorKey = TRUE;
+	        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+	     	   "Xv Color key is %s\n",
+		   val ? disabledstr : enabledstr);
+             }
+	     if(xf86GetOptValBool(pSiS->Options, OPTION_XVUSECHROMAKEY, &val)) {
+	        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+	     	   "Xv Chroma-keying is %s\n",
+		   val ? enabledstr : disabledstr);
+		if(val) pSiS->XvUseChromaKey = TRUE;
+             }
+	     if(xf86GetOptValBool(pSiS->Options, OPTION_XVINSIDECHROMAKEY, &val)) {
+	        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+	     	   "Xv: Video is transparent if %s chroma key range\n",
+		   val ? "inside" : "outside");
+		if(val) pSiS->XvInsideChromaKey = TRUE;
+             }
+	     if(pSiS->VGAEngine == SIS_300_VGA) {
+	        if(xf86GetOptValBool(pSiS->Options, OPTION_XVYUVCHROMAKEY, &val)) {
+	           xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+	     	      "Xv: Chroma key is in %s format\n",
+		      val ? "YUV" : "RGB");
+		   if(val) pSiS->XvYUVChromaKey = TRUE;
+		}
+             } else {
+	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "Xv: Chroma key is of same format as video source\n");
+	     }
+	     if(xf86GetOptValInteger(pSiS->Options, OPTION_XVCHROMAMIN, &tmp)) {
+                if((tmp >= 0) && (tmp <= 0xffffff)) pSiS->XvChromaMin = tmp;
+                else xf86DrvMsg(pScrn->scrnIndex, X_WARNING, ilrangestr,
+       	                       "XvChromaMin", 0, 0xffffff);
+             }
+	     if(xf86GetOptValInteger(pSiS->Options, OPTION_XVCHROMAMAX, &tmp)) {
+                if((tmp >= 0) && (tmp <= 0xffffff)) pSiS->XvChromaMax = tmp;
+                else xf86DrvMsg(pScrn->scrnIndex, X_WARNING, ilrangestr,
+       	                   "XvChromaMax", 0, 0xffffff);
              }
           }
 	  if(xf86GetOptValBool(pSiS->Options, OPTION_XVMEMCPY, &val)) {

@@ -186,50 +186,63 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
 #endif
 
     if(pSiS->VBFlags & CRT2_LCD) {
-        inSISIDXREG(SISCR, 0x36, CR36);
-	inSISIDXREG(SISCR, 0x37, CR37);
-	if((pSiS->VGAEngine == SIS_315_VGA) && (!CR36)) {
-	    /* TW: Old 650/301LV BIOS version "forgot" to set CR36, CR37 */
-	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	       "BIOS-provided LCD information invalid, probing myself...\n");
-	    if(pSiS->VBFlags & VB_LVDS) pSiS->SiS_Pr->SiS_IF_DEF_LVDS = 1;
-	    else pSiS->SiS_Pr->SiS_IF_DEF_LVDS = 0;
-	    SiS_GetPanelID(pSiS->SiS_Pr, &pSiS->sishw_ext);
-	    inSISIDXREG(SISCR, 0x36, CR36);
-	    inSISIDXREG(SISCR, 0x37, CR37);
-	}
-	if(((CR36 & 0x0f) == 0x0f) && (pSiS->SiS_Pr->CP_HaveCustomData)) {
-	    pSiS->VBLCDFlags |= VB_LCD_CUSTOM;
-            pSiS->LCDheight = pSiS->SiS_Pr->CP_MaxY;
-	    pSiS->LCDwidth = pSiS->SiS_Pr->CP_MaxX;
-            pSiS->sishw_ext.ulCRT2LCDType = LCD_CUSTOM;
-	    if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
-	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+       inSISIDXREG(SISCR, 0x36, CR36);
+       inSISIDXREG(SISCR, 0x37, CR37);
+       if(pSiS->SiS_Pr->SiS_CustomT == CUT_BARCO1366) {
+          pSiS->VBLCDFlags |= VB_LCD_BARCO1366;
+	  pSiS->LCDwidth = 1360;
+	  pSiS->LCDheight = 1024;
+	  if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
+	  xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		"Detected LCD panel (%dx%d, type %d, %sexpanding, RGB%d)\n",
+		pSiS->LCDwidth, pSiS->LCDheight,
+		((CR36 & 0xf0) >> 4),
+		(CR37 & 0x10) ? "" : "non-",
+		(CR37 & 0x01) ? 18 : 24);
+       } else {
+	  if((pSiS->VGAEngine == SIS_315_VGA) && (!CR36)) {
+	     /* TW: Old 650/301LV BIOS version "forgot" to set CR36, CR37 */
+	     xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	        "BIOS-provided LCD information invalid, probing myself...\n");
+	     if(pSiS->VBFlags & VB_LVDS) pSiS->SiS_Pr->SiS_IF_DEF_LVDS = 1;
+	     else pSiS->SiS_Pr->SiS_IF_DEF_LVDS = 0;
+	     SiS_GetPanelID(pSiS->SiS_Pr, &pSiS->sishw_ext);
+	     inSISIDXREG(SISCR, 0x36, CR36);
+	     inSISIDXREG(SISCR, 0x37, CR37);
+	  }
+	  if(((CR36 & 0x0f) == 0x0f) && (pSiS->SiS_Pr->CP_HaveCustomData)) {
+	     pSiS->VBLCDFlags |= VB_LCD_CUSTOM;
+             pSiS->LCDheight = pSiS->SiS_Pr->CP_MaxY;
+	     pSiS->LCDwidth = pSiS->SiS_Pr->CP_MaxX;
+             pSiS->sishw_ext.ulCRT2LCDType = LCD_CUSTOM;
+	     if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
+	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		"Detected non-standard LCD/Plasma panel (max. X %d Y %d, preferred %dx%d, RGB%d)\n",
  		pSiS->SiS_Pr->CP_MaxX, pSiS->SiS_Pr->CP_MaxY,
 		pSiS->SiS_Pr->CP_PreferredX, pSiS->SiS_Pr->CP_PreferredY,
 		(CR37 & 0x01) ? 18 : 24);
-	} else {
-	    if(pSiS->VGAEngine == SIS_300_VGA) {
-	       pSiS->VBLCDFlags |= SiS300_LCD_Type[(CR36 & 0x0f)].VBLCD_lcdflag;
-               pSiS->LCDheight = SiS300_LCD_Type[(CR36 & 0x0f)].LCDheight;
-	       pSiS->LCDwidth = SiS300_LCD_Type[(CR36 & 0x0f)].LCDwidth;
-               pSiS->sishw_ext.ulCRT2LCDType = SiS300_LCD_Type[(CR36 & 0x0f)].LCDtype;
-	       if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
-	    } else {
-	       pSiS->VBLCDFlags |= SiS315_LCD_Type[(CR36 & 0x0f)].VBLCD_lcdflag;
-               pSiS->LCDheight = SiS315_LCD_Type[(CR36 & 0x0f)].LCDheight;
-	       pSiS->LCDwidth = SiS315_LCD_Type[(CR36 & 0x0f)].LCDwidth;
-               pSiS->sishw_ext.ulCRT2LCDType = SiS315_LCD_Type[(CR36 & 0x0f)].LCDtype;
-	       if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
-	    }
-	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	  } else {
+	     if(pSiS->VGAEngine == SIS_300_VGA) {
+	        pSiS->VBLCDFlags |= SiS300_LCD_Type[(CR36 & 0x0f)].VBLCD_lcdflag;
+                pSiS->LCDheight = SiS300_LCD_Type[(CR36 & 0x0f)].LCDheight;
+	        pSiS->LCDwidth = SiS300_LCD_Type[(CR36 & 0x0f)].LCDwidth;
+                pSiS->sishw_ext.ulCRT2LCDType = SiS300_LCD_Type[(CR36 & 0x0f)].LCDtype;
+	        if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
+	     } else {
+	        pSiS->VBLCDFlags |= SiS315_LCD_Type[(CR36 & 0x0f)].VBLCD_lcdflag;
+                pSiS->LCDheight = SiS315_LCD_Type[(CR36 & 0x0f)].LCDheight;
+	        pSiS->LCDwidth = SiS315_LCD_Type[(CR36 & 0x0f)].LCDwidth;
+                pSiS->sishw_ext.ulCRT2LCDType = SiS315_LCD_Type[(CR36 & 0x0f)].LCDtype;
+	        if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
+	     }
+	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			"Detected LCD/Plasma panel (%dx%d, type %d, %sexpanding, RGB%d)\n",
 			pSiS->LCDwidth, pSiS->LCDheight,
 			(pSiS->VGAEngine == SIS_315_VGA) ? ((CR36 & 0x0f) - 1) : ((CR36 & 0xf0) >> 4),
 			(CR37 & 0x10) ? "" : "non-",
 			(CR37 & 0x01) ? 18 : 24);
-	}
+	  }
+       }
     }
 }
 

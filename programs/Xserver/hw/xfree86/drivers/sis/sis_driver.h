@@ -53,6 +53,7 @@ const UShort  ModeIndex_300_1280x768[] = {0x55, 0x5a, 0x00, 0x5b};
 const UShort  ModeIndex_310_1280x768[] = {0x23, 0x24, 0x00, 0x25};
 const UShort  ModeIndex_1280x720[]     = {0x79, 0x75, 0x00, 0x78};
 const UShort  ModeIndex_1360x768[]     = {0x48, 0x4b, 0x00, 0x4e};
+const UShort  ModeIndex_300_1360x1024[]= {0x67, 0x6f, 0x00, 0x72};  /* 300 series, BARCO only */
 const UShort  ModeIndex_1400x1050[]    = {0x26, 0x27, 0x00, 0x28};  /* 315 series only */
 const UShort  ModeIndex_1600x1200[]    = {0x3c, 0x3d, 0x00, 0x66};
 const UShort  ModeIndex_1920x1440[]    = {0x68, 0x69, 0x00, 0x6b};
@@ -120,7 +121,7 @@ static const struct _sis_vrate {
 	{1, 1600, 1200,  60,  TRUE}, {2, 1600, 1200,  65,  TRUE}, {3, 1600, 1200,  70,  TRUE}, 
 	{4, 1600, 1200,  75,  TRUE}, {5, 1600, 1200,  85,  TRUE}, {6, 1600, 1200, 100,  TRUE}, 
 	{7, 1600, 1200, 120,  TRUE},
-	{1, 1920, 1440,  60,  TRUE}, {2, 1920, 1440,  65,  TRUE}, {3, 1920, 1440,  70,  TRUE}, 
+	{1, 1920, 1440,  60,  TRUE}, {2, 1920, 1440,  65,  TRUE}, {3, 1920, 1440,  70,  TRUE},
 	{4, 1920, 1440,  75,  TRUE}, {5, 1920, 1440,  85,  TRUE}, {6, 1920, 1440, 100,  TRUE},
 	{1, 2048, 1536,  60,  TRUE}, {2, 2048, 1536,  65,  TRUE}, {3, 2048, 1536,  70,  TRUE}, 
 	{4, 2048, 1536,  75,  TRUE}, {5, 2048, 1536,  85,  TRUE},
@@ -141,7 +142,26 @@ static const pdctable mypdctable[] = {
 
 static const chswtable mychswtable[] = {
         { 0x1631, 0x1002, "Mitachi", "0x1002" },
+	{ 0x1071, 0x7521, "Mitac"  , "7521P"  },
 	{ 0,      0,      ""       , ""       }
+};
+
+const customttable mycustomttable[] = {
+        { SIS_630, "2.00.07", "09/27/2002-13:38:25",
+	  { 0x220, 0x227, 0x228, 0x229, 0x22a },
+	  {  0x01,  0xe3,  0x9a,  0x6a,  0x00 },
+	  "Barco", "iQ R200L/300/400", CUT_BARCO1366, "BARCO1366"
+	},
+	{ SIS_630, "2.00.07", "09/27/2002-13:38:25",
+	  { 0x220, 0x227, 0x228, 0x229, 0x22a },
+	  {  0x00,  0x5a,  0x64,  0x41,  0x00 },
+	  "Barco", "iQ G200L/300/400/500", CUT_BARCO1024, "BARCO1024"
+	},
+	{ 0, "", "",
+	  { 0, 0, 0, 0 },
+	  { 0, 0, 0, 0 },
+	  "", "", CUT_NONE, ""
+	}
 };
 
 /*     Our TV modes for the 6326. The data in these structures

@@ -161,6 +161,9 @@ static const SiS300_ExtStruct  SiS300_EModeIDTable[] =
 	{0x5f,0x2a1b,0x0f0e,0x0000,SIS_RI_768x576,  0x00,0x00,0x00,0x3e},  /* 768x576x8 */
 	{0x60,0x2a1d,0x0f0e,0x0000,SIS_RI_768x576,  0x00,0x00,0x00,0x3e},  /* 768x576x16 */
 	{0x61,0x2a1f,0x0f0e,0x0000,SIS_RI_768x576,  0x00,0x00,0x00,0x3e},  /* 768x576x32 */
+	{0x67,0x2e3b,0x0e08,0x0000,SIS_RI_1360x1024,0x00,0x00,0x00,0x3f},  /* 1360x1024x8 (BARCO) */
+	{0x6f,0x2e7d,0x0e08,0x0000,SIS_RI_1360x1024,0x00,0x00,0x00,0x3f},  /* 1360x1024x16 (BARCO) */
+	{0x72,0x2eff,0x0e08,0x0000,SIS_RI_1360x1024,0x00,0x00,0x00,0x3f},  /* 1360x1024x32 (BARCO) */
 	{0xff,0x0000,0x0000,0xffff,0x00,            0x00,0x00,0x00,0x00}
 };
 
@@ -240,6 +243,7 @@ static const SiS300_Ext2Struct  SiS300_RefIndex[] =
 	{0x0047,0x43,0x3e,0x00,0x48,1360, 768}, /* 3c 1360x768-60Hz */
 	{0x0077,0x46,0x3f,0x08,0x55,1280, 768}, /* 3d 1280x768-60Hz */
 	{0x000f,0x47,0x03,0x06,0x5f, 768, 576}, /* 3e 768x576 */
+	{0x0027,0x48,0x13,0x08,0x67,1360,1024}, /* 3f 1360x1024-59Hz (BARCO1366 only) */
 	{0xffff,   0,   0,   0,   0,   0,   0}
 };
 
@@ -575,7 +579,10 @@ static const SiS300_CRT1TableStruct  SiS300_CRT1Table[] =
    0x01}},  /* 0x46 */
  {{0x7b,0x5f,0x63,0x9f,0x6a,0x93,0x6f,0xf0,  /* 768x576 */
    0x58,0x8a,0x3f,0x57,0x70,0x20,0x00,0x05,
-   0x01}}   /* 0x47 */
+   0x01}},  /* 0x47 */
+ {{0xce,0xa9,0xa9,0x92,0xb1,0x07,0x28,0x52,  /* 1360x1024 (Barco iQ Pro R300) */
+   0x02,0x8e,0xff,0x00,0x29,0x0d,0x00,0x03,
+   0x00}}   /* 0x48 */
 };
 
 typedef struct _SiS300_MCLKDataStruct
@@ -707,6 +714,7 @@ static const SiS300_VCLKDataStruct  SiS300_VCLKData[] =
 	{ 0x15,0x21, 79}, /* 0x41 */  /* test for SiS730 */
 	{ 0xa1,0x42,108}, /* 0x42 */  /* 1280x960 LCD */
 	{ 0x37,0x61,100}, /* 0x43 */  /* 1280x960 LCD */
+	{ 0xe3,0x9a,106}, /* 0x44 */  /* 1360x1024 - special for Barco iQ R300 */
 	{ 0xff,0x00,  0}   
 };
 
@@ -1014,6 +1022,16 @@ typedef struct _SiS300_LVDSDesStruct
 
 static const SiS300_LVDSDesStruct  SiS300_PanelType00_1[] =
 {
+	{ 1059, 626 },   /* 2.08 */
+	{ 1059, 624 },
+	{ 1059, 626 },
+	{ 1059, 624 },
+	{ 1059, 624 },
+	{    0, 627 },
+	{    0, 627 },
+	{    0,   0 },
+	{    0,   0 }
+#if 0
 	{0, 626},
 	{0, 624},
 	{0, 626},
@@ -1023,10 +1041,21 @@ static const SiS300_LVDSDesStruct  SiS300_PanelType00_1[] =
 	{0, 627},
 	{0,   0},
 	{0,   0}
+#endif
 };
 
 static const SiS300_LVDSDesStruct  SiS300_PanelType01_1[] =
 {
+	{   0,   0 },  /* 2.08 */
+	{   0,   0 },
+	{   0,   0 },
+	{   0,   0 },
+	{   0,   0 },
+	{   0,   0 },
+	{   0,   0 },
+	{   0,   0 },
+	{   0,   0 }
+#if 0
 	{1343, 798},
 	{1343, 794},
 	{1343, 798},
@@ -1036,10 +1065,21 @@ static const SiS300_LVDSDesStruct  SiS300_PanelType01_1[] =
 	{   0, 805},
 	{   0, 794},
 	{   0,   0}
+#endif
 };
 
 static const SiS300_LVDSDesStruct  SiS300_PanelType02_1[] =
 {
+	{ 1059, 626 },  /* 2.08 */
+	{ 1059, 624 },
+	{ 1059, 626 },
+	{ 1059, 624 },
+	{ 1059, 624 },
+	{    0, 627 },
+	{    0, 627 },
+	{    0,   0 },
+	{    0,   0 }
+#if 0
 	{0, 626},
 	{0, 624},
 	{0, 626},
@@ -1049,6 +1089,7 @@ static const SiS300_LVDSDesStruct  SiS300_PanelType02_1[] =
 	{0, 627},
 	{0,   0},
 	{0,   0}
+#endif
 };
 
 static const SiS300_LVDSDesStruct  SiS300_PanelType03_1[] =
@@ -1064,7 +1105,7 @@ static const SiS300_LVDSDesStruct  SiS300_PanelType03_1[] =
 	{1343, 794}
 };
 
-static const SiS300_LVDSDesStruct  SiS300_PanelType04_1[] =
+static const SiS300_LVDSDesStruct  SiS300_PanelType04_1[] =	/* 1280x1024 */
 {
 	{1343, 798},
 	{1343, 794},
@@ -1200,8 +1241,8 @@ static const SiS300_LVDSDesStruct  SiS300_PanelType0e_1[] =
 	{1343, 794},
 	{1343, 798},
 	{1343, 794},
-	{1343,   0},  /* 640x480 */
-	{1343,   0},  /* 800x600 */
+	{1343,   0},    /* 640x480 */
+	{1343,   0},    /* 800x600 */
 	{   0, 805},    /* 1024x768 */
 	{   0, 794},    /* 1280x1024 */
 	{   0,   0}     /* 1280x960 - not applicable */
@@ -1427,6 +1468,57 @@ static const SiS300_LVDSDesStruct  SiS300_PanelType0f_2[] =
  	{   0, 794},
  	{   0,   0}
 };
+
+/* Custom data for Barco iQ R200/300/400 (BIOS 2.00.07) */
+static const SiS300_LVDSDesStruct  SiS300_PanelType04_1a[] =	/* 1280x1024 (1366x1024) */
+{
+	{1330, 798},  /* 320x200 */
+	{1330, 794},
+	{1330, 798},
+	{1330, 794},
+	{1330,   0},  /* 640x480 / 320x240  */
+	{1343,   0},  /* 800x600 / 400x300  */
+	{   0, 805},  /* 1024x768 / 512x384 */
+	{1688,1066},  /* 1280x1024          */
+	{   0,   0}   /* 1360x1024          */
+};
+
+static const SiS300_LVDSDesStruct  SiS300_PanelType04_2a[] =
+{
+	{1152, 622},
+	{1152, 597},
+	{1152, 622},
+	{1152, 597},
+	{1152, 662},
+	{1232, 722},
+	{   0, 805},
+	{1688,1066},
+	{   0,   0}
+};
+
+/* Custom data for Barco iQ G200/300/400 (BIOS 2.00.07) */
+static const SiS300_LVDSDesStruct  SiS300_PanelType04_1b[] =	/* 1024x768 */
+{
+	{1330, 798},  /* 320x200 */
+	{1330, 794},
+	{1330, 798},
+	{1330, 794},
+	{1330,   0},  /* 640x480 / 320x240  */
+	{1343,   0},  /* 800x600 / 400x300  */
+	{   0, 805}   /* 1024x768 / 512x384 */
+};
+
+static const SiS300_LVDSDesStruct  SiS300_PanelType04_2b[] =
+{
+	{1152, 622},
+	{1152, 597},
+	{1152, 622},
+	{1152, 597},
+	{1152, 662},
+	{1232, 722},
+	{   0, 805}
+};
+
 
 typedef struct _SiS300_Part2PortTblStruct
 {

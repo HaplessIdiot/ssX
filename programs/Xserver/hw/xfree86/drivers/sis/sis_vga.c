@@ -1425,8 +1425,8 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 	    pSiS->SiS_Pr->SiS_IF_DEF_CH70xx = chronteltype;
 
 	    if(chronteltype == 1) {
-	       /* TW: Do something mysterious (found in Mitac BIOS) */
-	       SiS_WhatIsThis(pSiS->SiS_Pr, 0x9c);
+	       /* Set general purpose IO for Chrontel communication */
+	       SiS_SetChrontelGPIO(pSiS->SiS_Pr, 0x9c);
 	    }
 
 	    /* TW: Read Chrontel version number */
@@ -1434,7 +1434,7 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 	    if(chronteltype == 1) {
 	        /* TW: See Chrontel TB31 for explanation */
 		temp2 = SiS_GetCH700x(pSiS->SiS_Pr, 0x0e);
-		if(((temp2 & 0x07) == 0x01) || (temp & 0x04)) {
+		if(((temp2 & 0x07) == 0x01) || (temp2 & 0x04)) {
 		    SiS_SetCH700x(pSiS->SiS_Pr, 0x0b0e);
 		    SiS_DDC2Delay(pSiS->SiS_Pr, 300);
 		}
@@ -1465,20 +1465,20 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 	               "Detected Chrontel %s TV encoder (ID 0x%02x; bridge type %d)\n",
 		       			ChrontelTypeStr[temp2], temp1, temp);
 
-		/* TW: Sense connected TV's */
+		/* Sense connected TV's */
 
 		if(chronteltype == 1) {
 
 		   /* Chrontel 700x */
 
-	    	   /* TW: Read power status */
+	    	   /* Read power status */
 	    	   temp1 = SiS_GetCH700x(pSiS->SiS_Pr, 0x0e);  /* Power status */
 	    	   if((temp1 & 0x03) != 0x03) {
 		        /* TW: Power all outputs */
 	        	SiS_SetCH700x(pSiS->SiS_Pr, 0x0B0E);
 			SiS_DDC2Delay(pSiS->SiS_Pr, 0x96);
 	    	   }
-		   /* TW: Sense connected TV devices */
+		   /* Sense connected TV devices */
 		   for(i = 0; i < 3; i++) {
 	    	      SiS_SetCH700x(pSiS->SiS_Pr, 0x0110);
 		      SiS_DDC2Delay(pSiS->SiS_Pr, 0x96);
@@ -1504,15 +1504,15 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 
 		   /* Chrontel 701x */
 
-		   /* TW: Backup Power register */
+		   /* Backup Power register */
 		   temp1 = SiS_GetCH701x(pSiS->SiS_Pr, 0x49);
 
-		   /* TW: Enable TV path */
+		   /* Enable TV path */
 		   SiS_SetCH701x(pSiS->SiS_Pr, 0x2049);
 
 		   SiS_DDC2Delay(pSiS->SiS_Pr, 0x96);
 
-		   /* TW: Sense connected TV devices */
+		   /* Sense connected TV devices */
 		   temp2 = SiS_GetCH701x(pSiS->SiS_Pr, 0x20);
 		   temp2 |= 0x01;
 		   SiS_SetCH701x(pSiS->SiS_Pr, (temp2 << 8) | 0x20);
@@ -1526,7 +1526,7 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 
 		   temp2 = SiS_GetCH701x(pSiS->SiS_Pr, 0x20); 
 
-		   /* TW: Restore Power register */
+		   /* Restore Power register */
 		   SiS_SetCH701x(pSiS->SiS_Pr, (temp1 << 8) | 0x49);
 
                    temp1 = 0;
@@ -1542,7 +1542,6 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 		     case 0x01:
 		        xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		  	   "Chrontel: Detected TV connected to COMPOSITE output\n");
-		        /* TW: So we can be sure that there IS a CVBS output */
 			pSiS->VBFlags |= TV_AVIDEO;
 			orSISIDXREG(SISCR, 0x32, 0x01);
 			andSISIDXREG(SISCR, 0x32, ~0x06);
@@ -1552,7 +1551,6 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
                      case 0x02:
 			xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			   "Chrontel: Detected TV connected to SVIDEO output\n");
-			/* TW: So we can be sure that there IS a SVIDEO output */
 			pSiS->VBFlags |= TV_SVIDEO;
 			orSISIDXREG(SISCR, 0x32, 0x02);
 			andSISIDXREG(SISCR, 0x32, ~0x05);
@@ -1582,8 +1580,8 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 		}
 
 	    } else if(temp1==0) {
-	        /* TW: This indicates a communication problem, but it only occures if there
-		 *     is no TV attached. So we don't use TV in this case.
+	        /* This indicates a communication problem, but it only occures if there
+		 * is no TV attached. So we don't use TV in this case.
 		 */
 	    	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 			"Detected Chrontel TV encoder in promiscuous state (DDC/I2C mix-up)\n");
@@ -1596,8 +1594,8 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 		pSiS->postVBCR32 &= ~0x07;
 	    }
 	    if(chronteltype == 1) {
-	       /* TW: Do something mysterious (found in Mitac BIOS) */
-	       SiS_WhatIsThis(pSiS->SiS_Pr, 0x00);
+	       /* Set general purpose IO for Chrontel communication */
+	       SiS_SetChrontelGPIO(pSiS->SiS_Pr, 0x00);
 	    }
 	}
 	if ((pSiS->VGAEngine == SIS_300_VGA) && (temp == 3)) {

@@ -204,6 +204,7 @@ typedef unsigned long IOADDRESS;
 #define VB_LCD_1024x600         0x00001000
 #define VB_LCD_640x480_2	0x00002000  	/* DSTN/FSTN */
 #define VB_LCD_640x480_3	0x00004000  	/* DSTN/FSTN */
+#define VB_LCD_BARCO1366        0x20000000
 #define VB_LCD_CUSTOM  		0x40000000
 #define VB_LCD_EXPANDING	0x80000000
 
@@ -641,6 +642,8 @@ typedef struct {
     Atom                xvBrightness, xvContrast, xvColorKey, xvHue, xvSaturation;
     Atom                xvAutopaintColorKey, xvSetDefaults, xvSwitchCRT;
     Atom		xvDisableGfx, xvDisableGfxLR, xvTVXPosition, xvTVYPosition;
+    Atom		xvDisableColorkey, xvUseChromakey, xvChromaMin, xvChromaMax;
+    Atom		xvInsideChromakey, xvYUVChromakey;
 #ifdef SIS_CP
     SIS_CP_H
 #endif
@@ -657,6 +660,11 @@ typedef struct {
     int			XvDefCon, XvDefBri, XvDefHue, XvDefSat;
     BOOLEAN		XvDefDisableGfx, XvDefDisableGfxLR;
     BOOLEAN		XvUseMemcpy;
+    BOOLEAN		XvUseChromaKey, XvDisableColorKey;
+    BOOLEAN		XvInsideChromaKey, XvYUVChromaKey;
+    int			XvChromaMin, XvChromaMax;
+    BOOLEAN		disablecolorkeycurrent;
+    CARD32		colorKey;
     CARD32		MiscFlags;
     int			UsePanelScaler;
     Time		AccelRenderTime;
@@ -753,6 +761,18 @@ typedef struct _chswtable {
     char *vendorName;
     char *cardName;
 } chswtable;
+
+typedef struct _customttable {
+    unsigned short chipID;
+    char *biosversion;
+    char *biosdate;
+    unsigned short biosFootprintAddr[5];
+    unsigned char biosFootprintData[5];
+    char *vendorName;
+    char *cardName;
+    unsigned long SpecialID;
+    char *optionName;
+} customttable;
 
 extern void  sisSaveUnlockExtRegisterLock(SISPtr pSiS, unsigned char *reg1, unsigned char *reg2);
 extern void  sisRestoreExtRegisterLock(SISPtr pSiS, unsigned char reg1, unsigned char reg2);

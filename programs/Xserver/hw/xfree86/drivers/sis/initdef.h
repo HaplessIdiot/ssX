@@ -262,6 +262,7 @@
 #define Panel300_1280x768       0x0a
 #define Panel300_320x480        0x0e 	/* fstn - TW: This is fake, can be any */
 #define Panel300_Custom		0x0f
+#define Panel300_Barco1366      0x10
 
 #define Panel310_800x600        0x01
 #define Panel310_1024x768       0x02
@@ -294,6 +295,7 @@
 #define Panel_640x480_3		0x0d
 #define Panel_320x480           0x0e    /* fstn - TW: This is fake, can be any */
 #define Panel_Custom		0x0f
+#define Panel_Barco1366         0x10
 
 /* Index in ModeResInfo table */
 #define SIS_RI_320x200 0
@@ -324,6 +326,7 @@
 #define SIS_RI_1024x600 25
 #define SIS_RI_1152x768 26
 #define SIS_RI_768x576 27
+#define SIS_RI_1360x1024 28
 
 #define ExtChipType             0x0e
 #define ExtChip301              0x02

@@ -528,6 +528,11 @@ SiSSetupForSolidFill(ScrnInfoPtr pScrn,
 	PDEBUG(ErrorF("Setup SolidFill(0x%x, 0x%x, 0x%x)\n",
 					color, rop, planemask));
 
+	if(pSiS->disablecolorkeycurrent) {
+	   if((CARD32)color == pSiS->colorKey) {
+	      rop = 5;  /* NOOP */
+	   }
+	}
 	SiSSetupPATFG(color)
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
 	SiSSetupDSTColorDepth(pSiS->DstColor);
