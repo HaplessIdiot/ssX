@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/fontutils.c,v 1.25 2000/11/01 01:12:38 dawes Exp $
+ * $XFree86: xc/programs/xterm/fontutils.c,v 1.27 2000/12/03 19:09:26 keithp Exp $
  */
 
 /************************************************************
@@ -830,24 +830,32 @@ xtermComputeFontInfo (TScreen *screen, struct _vtwin *win, XFontStruct *font, in
     if (!screen->renderFont && term->misc.face_name &&
 	XRenderFindVisualFormat (dpy, DefaultVisual (dpy, DefaultScreen (dpy))))
     {
-	screen->renderFont = XftFontOpen (dpy, DefaultScreen (dpy),
-					  XFT_FAMILY, XftTypeString, term->misc.face_name,
-					  XFT_FAMILY, XftTypeString, "mono",
-					  XFT_SIZE, XftTypeInteger, term->misc.face_size,
-					  XFT_SPACING, XftTypeInteger, XFT_MONO,
-					  0);
+	XftPattern  *pat, *match;
+	XftResult   result;
+
+	pat = XftNameParse (term->misc.face_name);
+	XftPatternBuild (pat, 
+			 XFT_FAMILY, XftTypeString, "mono",
+			 XFT_SIZE, XftTypeInteger, term->misc.face_size,
+			 XFT_SPACING, XftTypeInteger, XFT_MONO,
+			 0);
+	match = XftFontMatch (dpy, DefaultScreen (dpy), pat, &result);
+	screen->renderFont = XftFontOpenPattern (dpy, match);
+	if (!screen->renderFont && match)
+	    XftPatternDestroy (match);
 	if (screen->renderFont)
 	{
-	    screen->renderFontBold = XftFontOpen (dpy, DefaultScreen (dpy),
-						  XFT_FAMILY, XftTypeString, term->misc.face_name,
-						  XFT_FAMILY, XftTypeString, "mono",
-						  XFT_SIZE, XftTypeInteger, term->misc.face_size,
-						  XFT_WEIGHT, XftTypeInteger, XFT_WEIGHT_BOLD,
-						  XFT_SPACING, XftTypeInteger, XFT_MONO,
-						  XFT_CHAR_WIDTH, XftTypeInteger, 
-						    screen->renderFont->max_advance_width,
-						  0);
+	    XftPatternBuild (pat,
+			     XFT_WEIGHT, XftTypeInteger, XFT_WEIGHT_BOLD,
+			     XFT_CHAR_WIDTH, XftTypeInteger, screen->renderFont->max_advance_width,
+			     0);
+	    match = XftFontMatch (dpy, DefaultScreen (dpy), pat, &result);
+	    screen->renderFontBold = XftFontOpenPattern (dpy, match);
+	    if (!screen->renderFontBold && match)
+		XftPatternDestroy (match);
 	}
+	if (pat)
+	    XftPatternDestroy (pat);
     }
     if (screen->renderFont)
     {

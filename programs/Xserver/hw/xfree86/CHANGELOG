@@ -1,3 +1,5 @@
+1216. Change xterm from simple face name to full Xft font name so
+      that options can be provide (like minspace) (Keith Packard)
 1215. Add UTF-8 support to Xft (Keith Packard)
 1214. Add font/face sharing and a minumum vertical space option
       to Xft (Keith Packard)
@@ -12121,4 +12123,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1488 2000/12/20 00:24:16 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1489 2000/12/20 00:28:35 keithp Exp $
