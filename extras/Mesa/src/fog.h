@@ -31,6 +31,9 @@
 #include "types.h"
 
 
+extern struct gl_pipeline_stage gl_fog_coord_stage;
+
+
 extern void
 _mesa_Fogf(GLenum pname, GLfloat param);
 

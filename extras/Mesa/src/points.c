@@ -3,7 +3,7 @@
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -53,10 +53,12 @@ _mesa_PointSize( GLfloat size )
       return;
    }
 
-   if (ctx->Point.Size != size) {
-      ctx->Point.Size = size;
+   if (ctx->Point.UserSize != size) {
+      ctx->Point.UserSize = size;
+      ctx->Point.Size = CLAMP(size, ctx->Const.MinPointSize, ctx->Const.MaxPointSize);
       ctx->TriangleCaps &= ~DD_POINT_SIZE;
-      if (size != 1.0) ctx->TriangleCaps |= DD_POINT_SIZE;
+      if (size != 1.0)
+         ctx->TriangleCaps |= DD_POINT_SIZE;
       ctx->NewState |= NEW_RASTER_OPS;
    }
 }
@@ -145,20 +147,21 @@ _mesa_PointParameterfvEXT( GLenum pname, const GLfloat *params)
 /*
  * CI points with size == 1.0
  */
-static void size1_ci_points( GLcontext *ctx, GLuint first, GLuint last )
+static void
+size1_ci_points( GLcontext *ctx, GLuint first, GLuint last )
 {
    struct vertex_buffer *VB = ctx->VB;
    struct pixel_buffer *PB = ctx->PB;
    GLfloat *win;
    GLint *pbx = PB->x, *pby = PB->y;
    GLdepth *pbz = PB->z;
-   GLuint *pbi = PB->i;
+   GLuint *pbi = PB->index;
    GLuint pbcount = PB->count;
    GLuint i;
 
    win = &VB->Win.data[first][0];
-   for (i=first;i<=last;i++) {
-      if (VB->ClipMask[i]==0) {
+   for (i = first; i <= last; i++) {
+      if (VB->ClipMask[i] == 0) {
          pbx[pbcount] = (GLint)  win[0];
          pby[pbcount] = (GLint)  win[1];
          pbz[pbcount] = (GLint) (win[2] + ctx->PointZoffset);
@@ -176,14 +179,15 @@ static void size1_ci_points( GLcontext *ctx, GLuint first, GLuint last )
 /*
  * RGBA points with size == 1.0
  */
-static void size1_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
+static void
+size1_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
 {
    struct vertex_buffer *VB = ctx->VB;
    struct pixel_buffer *PB = ctx->PB;
    GLuint i;
 
-   for (i=first;i<=last;i++) {
-      if (VB->ClipMask[i]==0) {
+   for (i = first; i <= last; i++) {
+      if (VB->ClipMask[i] == 0) {
          GLint x, y, z;
          GLint red, green, blue, alpha;
 
@@ -199,7 +203,7 @@ static void size1_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
          PB_WRITE_RGBA_PIXEL( PB, x, y, z, red, green, blue, alpha );
       }
    }
-   PB_CHECK_FLUSH(ctx,PB);
+   PB_CHECK_FLUSH(ctx, PB);
 }
 
 
@@ -207,23 +211,23 @@ static void size1_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
 /*
  * General CI points.
  */
-static void general_ci_points( GLcontext *ctx, GLuint first, GLuint last )
+static void
+general_ci_points( GLcontext *ctx, GLuint first, GLuint last )
 {
    struct vertex_buffer *VB = ctx->VB;
    struct pixel_buffer *PB = ctx->PB;
-   GLuint i;
-   GLint isize = (GLint) (CLAMP(ctx->Point.Size,MIN_POINT_SIZE,MAX_POINT_SIZE) + 0.5F);
+   const GLint isize = (GLint) (ctx->Point.Size + 0.5F);
    GLint radius = isize >> 1;
+   GLuint i;
 
-   for (i=first;i<=last;i++) {
-      if (VB->ClipMask[i]==0) {
-         GLint x, y, z;
+   for (i = first; i <= last; i++) {
+      if (VB->ClipMask[i] == 0) {
          GLint x0, x1, y0, y1;
          GLint ix, iy;
 
-         x = (GLint)  VB->Win.data[i][0];
-         y = (GLint)  VB->Win.data[i][1];
-         z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
+         GLint x = (GLint)  VB->Win.data[i][0];
+         GLint y = (GLint)  VB->Win.data[i][1];
+         GLint z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
 
          if (isize & 1) {
             /* odd size */
@@ -240,10 +244,10 @@ static void general_ci_points( GLcontext *ctx, GLuint first, GLuint last )
             y1 = y0 + isize - 1;
          }
 
-         PB_SET_INDEX( ctx, PB, VB->IndexPtr->data[i] );
+         PB_SET_INDEX( PB, VB->IndexPtr->data[i] );
 
-         for (iy=y0;iy<=y1;iy++) {
-            for (ix=x0;ix<=x1;ix++) {
+         for (iy = y0; iy <= y1; iy++) {
+            for (ix = x0; ix <= x1; ix++) {
                PB_WRITE_PIXEL( PB, ix, iy, z );
             }
          }
@@ -256,23 +260,23 @@ static void general_ci_points( GLcontext *ctx, GLuint first, GLuint last )
 /*
  * General RGBA points.
  */
-static void general_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
+static void
+general_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
 {
    struct vertex_buffer *VB = ctx->VB;
    struct pixel_buffer *PB = ctx->PB;
-   GLuint i;
-   GLint isize = (GLint) (CLAMP(ctx->Point.Size,MIN_POINT_SIZE,MAX_POINT_SIZE) + 0.5F);
+   GLint isize = (GLint) (ctx->Point.Size + 0.5F);
    GLint radius = isize >> 1;
+   GLuint i;
 
-   for (i=first;i<=last;i++) {
-      if (VB->ClipMask[i]==0) {
-         GLint x, y, z;
+   for (i = first; i <= last; i++) {
+      if (VB->ClipMask[i] == 0) {
          GLint x0, x1, y0, y1;
          GLint ix, iy;
 
-         x = (GLint)  VB->Win.data[i][0];
-         y = (GLint)  VB->Win.data[i][1];
-         z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
+         GLint x = (GLint)  VB->Win.data[i][0];
+         GLint y = (GLint)  VB->Win.data[i][1];
+         GLint z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
 
          if (isize & 1) {
             /* odd size */
@@ -289,14 +293,14 @@ static void general_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
             y1 = y0 + isize - 1;
          }
 
-         PB_SET_COLOR( ctx, PB,
+         PB_SET_COLOR( PB,
                        VB->ColorPtr->data[i][0],
                        VB->ColorPtr->data[i][1],
                        VB->ColorPtr->data[i][2],
                        VB->ColorPtr->data[i][3] );
 
-         for (iy=y0;iy<=y1;iy++) {
-            for (ix=x0;ix<=x1;ix++) {
+         for (iy = y0; iy <= y1; iy++) {
+            for (ix = x0; ix <= x1; ix++) {
                PB_WRITE_PIXEL( PB, ix, iy, z );
             }
          }
@@ -311,28 +315,26 @@ static void general_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
 /*
  * Textured RGBA points.
  */
-static void textured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
+static void
+textured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
 {
    struct vertex_buffer *VB = ctx->VB;
    struct pixel_buffer *PB = ctx->PB;
    GLuint i;
 
-   for (i=first;i<=last;i++) {
-      if (VB->ClipMask[i]==0) {
-         GLint x, y, z;
+   for (i = first; i <= last; i++) {
+      if (VB->ClipMask[i] == 0) {
          GLint x0, x1, y0, y1;
-         GLint ix, iy;
-         GLint isize, radius;
+         GLint ix, iy, radius;
          GLint red, green, blue, alpha;
          GLfloat s, t, u;
 
-         x = (GLint)  VB->Win.data[i][0];
-         y = (GLint)  VB->Win.data[i][1];
-         z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
+         GLint x = (GLint)  VB->Win.data[i][0];
+         GLint y = (GLint)  VB->Win.data[i][1];
+         GLint z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
+         GLint isize = (GLint) (ctx->Point.Size + 0.5F);
 
-         isize = (GLint)
-                   (CLAMP(ctx->Point.Size,MIN_POINT_SIZE,MAX_POINT_SIZE) + 0.5F);
-         if (isize<1) {
+         if (isize < 1) {
             isize = 1;
          }
          radius = isize >> 1;
@@ -388,12 +390,12 @@ static void textured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
          PB_SET_COLOR( red, green, blue, alpha );
 */
 
-         for (iy=y0;iy<=y1;iy++) {
-            for (ix=x0;ix<=x1;ix++) {
+         for (iy = y0; iy <= y1; iy++) {
+            for (ix = x0; ix <= x1; ix++) {
                PB_WRITE_TEX_PIXEL( PB, ix, iy, z, red, green, blue, alpha, s, t, u );
             }
          }
-         PB_CHECK_FLUSH(ctx,PB);
+         PB_CHECK_FLUSH(ctx, PB);
       }
    }
 }
@@ -402,29 +404,28 @@ static void textured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
 /*
  * Multitextured RGBA points.
  */
-static void multitextured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
+static void
+multitextured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
 {
    struct vertex_buffer *VB = ctx->VB;
    struct pixel_buffer *PB = ctx->PB;
    GLuint i;
 
-   for (i=first;i<=last;i++) {
-      if (VB->ClipMask[i]==0) {
-         GLint x, y, z;
+   for (i = first; i <= last; i++) {
+      if (VB->ClipMask[i] == 0) {
          GLint x0, x1, y0, y1;
          GLint ix, iy;
-         GLint isize, radius;
+         GLint radius;
          GLint red, green, blue, alpha;
          GLfloat s, t, u;
          GLfloat s1, t1, u1;
 
-         x = (GLint)  VB->Win.data[i][0];
-         y = (GLint)  VB->Win.data[i][1];
-         z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
+         GLint x = (GLint)  VB->Win.data[i][0];
+         GLint y = (GLint)  VB->Win.data[i][1];
+         GLint z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
+         GLint isize = (GLint) (ctx->Point.Size + 0.5F);
 
-         isize = (GLint)
-                   (CLAMP(ctx->Point.Size,MIN_POINT_SIZE,MAX_POINT_SIZE) + 0.5F);
-         if (isize<1) {
+         if (isize < 1) {
             isize = 1;
          }
          radius = isize >> 1;
@@ -505,10 +506,11 @@ static void multitextured_rgba_points( GLcontext *ctx, GLuint first, GLuint last
 
          for (iy=y0;iy<=y1;iy++) {
             for (ix=x0;ix<=x1;ix++) {
-               PB_WRITE_MULTITEX_PIXEL( PB, ix, iy, z, red, green, blue, alpha, s, t, u, s1, t1, u1 );
+               PB_WRITE_MULTITEX_PIXEL( PB, ix, iy, z, red, green, blue, alpha,
+                                        s, t, u, s1, t1, u1 );
             }
          }
-         PB_CHECK_FLUSH(ctx,PB);
+         PB_CHECK_FLUSH(ctx, PB);
       }
    }
 }
@@ -519,35 +521,32 @@ static void multitextured_rgba_points( GLcontext *ctx, GLuint first, GLuint last
 /*
  * Antialiased points with or without texture mapping.
  */
-static void antialiased_rgba_points( GLcontext *ctx,
-                                     GLuint first, GLuint last )
+static void
+antialiased_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
 {
    struct vertex_buffer *VB = ctx->VB;
    struct pixel_buffer *PB = ctx->PB;
+   const GLfloat radius = ctx->Point.Size * 0.5F;
+   const GLfloat rmin = radius - 0.7071F;  /* 0.7071 = sqrt(2)/2 */
+   const GLfloat rmax = radius + 0.7071F;
+   const GLfloat rmin2 = rmin * rmin;
+   const GLfloat rmax2 = rmax * rmax;
+   const GLfloat cscale = 256.0F / (rmax2 - rmin2);
    GLuint i;
-   GLfloat radius, rmin, rmax, rmin2, rmax2, cscale;
-
-   radius = CLAMP( ctx->Point.Size, MIN_POINT_SIZE, MAX_POINT_SIZE ) * 0.5F;
-   rmin = radius - 0.7071F;  /* 0.7071 = sqrt(2)/2 */
-   rmax = radius + 0.7071F;
-   rmin2 = rmin*rmin;
-   rmax2 = rmax*rmax;
-   cscale = 256.0F / (rmax2-rmin2);
 
    if (ctx->Texture.ReallyEnabled) {
-      for (i=first;i<=last;i++) {
-         if (VB->ClipMask[i]==0) {
-            GLint xmin, ymin, xmax, ymax;
-            GLint x, y, z;
+      for (i = first; i <= last; i++) {
+         if (VB->ClipMask[i] == 0) {
+            GLint x, y;
             GLint red, green, blue, alpha;
             GLfloat s, t, u;
             GLfloat s1, t1, u1;
 
-            xmin = (GLint) (VB->Win.data[i][0] - radius);
-            xmax = (GLint) (VB->Win.data[i][0] + radius);
-            ymin = (GLint) (VB->Win.data[i][1] - radius);
-            ymax = (GLint) (VB->Win.data[i][1] + radius);
-            z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
+            GLint xmin = (GLint) (VB->Win.data[i][0] - radius);
+            GLint xmax = (GLint) (VB->Win.data[i][0] + radius);
+            GLint ymin = (GLint) (VB->Win.data[i][1] - radius);
+            GLint ymax = (GLint) (VB->Win.data[i][1] + radius);
+            GLint z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
 
             red   = VB->ColorPtr->data[i][0];
             green = VB->ColorPtr->data[i][1];
@@ -690,7 +689,8 @@ static void antialiased_rgba_points( GLcontext *ctx,
 /*
  * Null rasterizer for measuring transformation speed.
  */
-static void null_points( GLcontext *ctx, GLuint first, GLuint last )
+static void
+null_points( GLcontext *ctx, GLuint first, GLuint last )
 {
    (void) ctx;
    (void) first;
@@ -704,35 +704,36 @@ static void null_points( GLcontext *ctx, GLuint first, GLuint last )
 /* Calculates the distance attenuation formula of a vector of points in
  * eye space coordinates 
  */
-static void dist3(GLfloat *out, GLuint first, GLuint last,
-		  const GLcontext *ctx, const GLvector4f *v)
+static void
+dist3(GLfloat *out, GLuint first, GLuint last,
+      const GLcontext *ctx, const GLvector4f *v)
 {
    GLuint stride = v->stride;
-   GLfloat *p = VEC_ELT(v, GLfloat, first);
+   const GLfloat *p = VEC_ELT(v, GLfloat, first);
    GLuint i;
 
-   for (i = first ; i <= last ; i++, STRIDE_F(p, stride) )
-   {
+   for (i = first ; i <= last ; i++, STRIDE_F(p, stride) ) {
       GLfloat dist = GL_SQRT(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
-      out[i] = 1/(ctx->Point.Params[0]+ 
-		  dist * (ctx->Point.Params[1] +
-			  dist * ctx->Point.Params[2]));
+      out[i] = 1.0F / (ctx->Point.Params[0] +
+                       dist * (ctx->Point.Params[1] +
+                               dist * ctx->Point.Params[2]));
    }
 }
 
-static void dist2(GLfloat *out, GLuint first, GLuint last,
-		  const GLcontext *ctx, const GLvector4f *v)
+
+static void
+dist2(GLfloat *out, GLuint first, GLuint last,
+      const GLcontext *ctx, const GLvector4f *v)
 {
    GLuint stride = v->stride;
-   GLfloat *p = VEC_ELT(v, GLfloat, first);
+   const GLfloat *p = VEC_ELT(v, GLfloat, first);
    GLuint i;
 
-   for (i = first ; i <= last ; i++, STRIDE_F(p, stride) )
-   {
+   for (i = first ; i <= last ; i++, STRIDE_F(p, stride) ) {
       GLfloat dist = GL_SQRT(p[0]*p[0]+p[1]*p[1]);
-      out[i] = 1/(ctx->Point.Params[0]+ 
-		  dist * (ctx->Point.Params[1] +
-			  dist * ctx->Point.Params[2]));
+      out[i] = 1.0F / (ctx->Point.Params[0] +
+                       dist * (ctx->Point.Params[1] +
+                               dist * ctx->Point.Params[2]));
    }
 }
 
@@ -750,8 +751,9 @@ static dist_func eye_dist_tab[5] = {
 };
 
 
-static void clip_dist(GLfloat *out, GLuint first, GLuint last,
-		      const GLcontext *ctx, GLvector4f *clip)
+static void
+clip_dist(GLfloat *out, GLuint first, GLuint last,
+          const GLcontext *ctx, GLvector4f *clip)
 {
    /* this is never called */
    gl_problem(NULL, "clip_dist() called - dead code!\n");
@@ -782,15 +784,14 @@ static void clip_dist(GLfloat *out, GLuint first, GLuint last,
 /*
  * Distance Attenuated General CI points.
  */
-static void dist_atten_general_ci_points( GLcontext *ctx, GLuint first, 
-					GLuint last )
+static void
+dist_atten_general_ci_points( GLcontext *ctx, GLuint first, GLuint last )
 {
    struct vertex_buffer *VB = ctx->VB;
    struct pixel_buffer *PB = ctx->PB;
-   GLuint i;
-   GLfloat psize,dsize;
    GLfloat dist[VB_SIZE];
-   psize=CLAMP(ctx->Point.Size,MIN_POINT_SIZE,MAX_POINT_SIZE);
+   const GLfloat psize = ctx->Point.Size;
+   GLuint i;
 
    if (ctx->NeedEyeCoords)
       (eye_dist_tab[VB->EyePtr->size])( dist, first, last, ctx, VB->EyePtr );
@@ -799,20 +800,19 @@ static void dist_atten_general_ci_points( GLcontext *ctx, GLuint first,
 
    for (i=first;i<=last;i++) {
       if (VB->ClipMask[i]==0) {
-         GLint x, y, z;
          GLint x0, x1, y0, y1;
          GLint ix, iy;
          GLint isize, radius;
+         GLint x = (GLint)  VB->Win.data[i][0];
+         GLint y = (GLint)  VB->Win.data[i][1];
+         GLint z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
+         GLfloat dsize = psize * dist[i];
 
-         x = (GLint)  VB->Win.data[i][0];
-         y = (GLint)  VB->Win.data[i][1];
-         z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
-
-         dsize=psize*dist[i];
-         if(dsize>=ctx->Point.Threshold) {
-            isize=(GLint) (MIN2(dsize,ctx->Point.MaxSize)+0.5F);
-         } else {
-            isize=(GLint) (MAX2(ctx->Point.Threshold,ctx->Point.MinSize)+0.5F);
+         if (dsize >= ctx->Point.Threshold) {
+            isize = (GLint) (MIN2(dsize, ctx->Point.MaxSize) + 0.5F);
+         }
+         else {
+            isize = (GLint) (MAX2(ctx->Point.Threshold, ctx->Point.MinSize) + 0.5F);
          }
          radius = isize >> 1;
 
@@ -831,7 +831,7 @@ static void dist_atten_general_ci_points( GLcontext *ctx, GLuint first,
             y1 = y0 + isize - 1;
          }
 
-         PB_SET_INDEX( ctx, PB, VB->IndexPtr->data[i] );
+         PB_SET_INDEX( PB, VB->IndexPtr->data[i] );
 
          for (iy=y0;iy<=y1;iy++) {
             for (ix=x0;ix<=x1;ix++) {
@@ -846,16 +846,14 @@ static void dist_atten_general_ci_points( GLcontext *ctx, GLuint first,
 /*
  * Distance Attenuated General RGBA points.
  */
-static void dist_atten_general_rgba_points( GLcontext *ctx, GLuint first, 
-				GLuint last )
+static void
+dist_atten_general_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
 {
    struct vertex_buffer *VB = ctx->VB;
    struct pixel_buffer *PB = ctx->PB;
-   GLuint i;
-   GLubyte alpha;
-   GLfloat psize,dsize;
    GLfloat dist[VB_SIZE];
-   psize=CLAMP(ctx->Point.Size,MIN_POINT_SIZE,MAX_POINT_SIZE);
+   const GLfloat psize = ctx->Point.Size;
+   GLuint i;
 
    if (ctx->NeedEyeCoords)
       (eye_dist_tab[VB->EyePtr->size])( dist, first, last, ctx, VB->EyePtr );
@@ -864,15 +862,15 @@ static void dist_atten_general_rgba_points( GLcontext *ctx, GLuint first,
 
    for (i=first;i<=last;i++) {
       if (VB->ClipMask[i]==0) {
-         GLint x, y, z;
          GLint x0, x1, y0, y1;
          GLint ix, iy;
          GLint isize, radius;
+         GLint x = (GLint)  VB->Win.data[i][0];
+         GLint y = (GLint)  VB->Win.data[i][1];
+         GLint z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
+         GLfloat dsize=psize*dist[i];
+         GLubyte alpha;
 
-         x = (GLint)  VB->Win.data[i][0];
-         y = (GLint)  VB->Win.data[i][1];
-         z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
-         dsize=psize*dist[i];
          if (dsize >= ctx->Point.Threshold) {
             isize = (GLint) (MIN2(dsize,ctx->Point.MaxSize)+0.5F);
             alpha = VB->ColorPtr->data[i][3];
@@ -899,7 +897,7 @@ static void dist_atten_general_rgba_points( GLcontext *ctx, GLuint first,
             y1 = y0 + isize - 1;
          }
 
-         PB_SET_COLOR( ctx, PB,
+         PB_SET_COLOR( PB,
                        VB->ColorPtr->data[i][0],
                        VB->ColorPtr->data[i][1],
                        VB->ColorPtr->data[i][2],
@@ -918,15 +916,14 @@ static void dist_atten_general_rgba_points( GLcontext *ctx, GLuint first,
 /*
  *  Distance Attenuated Textured RGBA points.
  */
-static void dist_atten_textured_rgba_points( GLcontext *ctx, GLuint first, 
-					GLuint last )
+static void
+dist_atten_textured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
 {
    struct vertex_buffer *VB = ctx->VB;
    struct pixel_buffer *PB = ctx->PB;
-   GLuint i;
-   GLfloat psize,dsize;
    GLfloat dist[VB_SIZE];
-   psize=CLAMP(ctx->Point.Size,MIN_POINT_SIZE,MAX_POINT_SIZE);
+   const GLfloat psize = ctx->Point.Size;
+   GLuint i;
 
    if (ctx->NeedEyeCoords)
       (eye_dist_tab[VB->EyePtr->size])( dist, first, last, ctx, VB->EyePtr );
@@ -935,7 +932,6 @@ static void dist_atten_textured_rgba_points( GLcontext *ctx, GLuint first,
 
    for (i=first;i<=last;i++) {
       if (VB->ClipMask[i]==0) {
-         GLint x, y, z;
          GLint x0, x1, y0, y1;
          GLint ix, iy;
          GLint isize, radius;
@@ -943,21 +939,22 @@ static void dist_atten_textured_rgba_points( GLcontext *ctx, GLuint first,
          GLfloat s, t, u;
          GLfloat s1, t1, u1;
 
-         x = (GLint)  VB->Win.data[i][0];
-         y = (GLint)  VB->Win.data[i][1];
-         z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
+         GLint x = (GLint)  VB->Win.data[i][0];
+         GLint y = (GLint)  VB->Win.data[i][1];
+         GLint z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
 
-         dsize=psize*dist[i];
-         if(dsize>=ctx->Point.Threshold) {
-            isize=(GLint) (MIN2(dsize,ctx->Point.MaxSize)+0.5F);
-            alpha=VB->ColorPtr->data[i][3];
-         } else {
-            isize=(GLint) (MAX2(ctx->Point.Threshold,ctx->Point.MinSize)+0.5F);
-            dsize/=ctx->Point.Threshold;
-            alpha = (GLint) (VB->ColorPtr->data[i][3]* (dsize*dsize));
+         GLfloat dsize = psize*dist[i];
+         if(dsize >= ctx->Point.Threshold) {
+            isize = (GLint) (MIN2(dsize, ctx->Point.MaxSize) + 0.5F);
+            alpha = VB->ColorPtr->data[i][3];
+         }
+         else {
+            isize = (GLint) (MAX2(ctx->Point.Threshold, ctx->Point.MinSize) + 0.5F);
+            dsize /= ctx->Point.Threshold;
+            alpha = (GLint) (VB->ColorPtr->data[i][3] * (dsize * dsize));
          }
 
-         if (isize<1) {
+         if (isize < 1) {
             isize = 1;
          }
          radius = isize >> 1;
@@ -1066,16 +1063,14 @@ static void dist_atten_textured_rgba_points( GLcontext *ctx, GLuint first,
 /*
  * Distance Attenuated Antialiased points with or without texture mapping.
  */
-static void dist_atten_antialiased_rgba_points( GLcontext *ctx,
-                                     GLuint first, GLuint last )
+static void
+dist_atten_antialiased_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
 {
    struct vertex_buffer *VB = ctx->VB;
    struct pixel_buffer *PB = ctx->PB;
-   GLuint i;
-   GLfloat radius, rmin, rmax, rmin2, rmax2, cscale;
-   GLfloat psize,dsize,alphaf;
    GLfloat dist[VB_SIZE];
-   psize=CLAMP(ctx->Point.Size,MIN_POINT_SIZE,MAX_POINT_SIZE);
+   const GLfloat psize = ctx->Point.Size;
+   GLuint i;
 
    if (ctx->NeedEyeCoords)
       (eye_dist_tab[VB->EyePtr->size])( dist, first, last, ctx, VB->EyePtr );
@@ -1085,20 +1080,22 @@ static void dist_atten_antialiased_rgba_points( GLcontext *ctx,
    if (ctx->Texture.ReallyEnabled) {
       for (i=first;i<=last;i++) {
          if (VB->ClipMask[i]==0) {
+            GLfloat radius, rmin, rmax, rmin2, rmax2, cscale, alphaf;
             GLint xmin, ymin, xmax, ymax;
             GLint x, y, z;
             GLint red, green, blue, alpha;
             GLfloat s, t, u;
             GLfloat s1, t1, u1;
+            GLfloat dsize = psize * dist[i];
 
-            dsize=psize*dist[i];
-            if(dsize>=ctx->Point.Threshold) {
-               radius=(MIN2(dsize,ctx->Point.MaxSize)*0.5F);
-               alphaf=1.0;
-            } else {
-               radius=(MAX2(ctx->Point.Threshold,ctx->Point.MinSize)*0.5F);
-               dsize/=ctx->Point.Threshold;
-               alphaf=(dsize*dsize);
+            if (dsize >= ctx->Point.Threshold) {
+               radius = MIN2(dsize, ctx->Point.MaxSize) * 0.5F;
+               alphaf = 1.0F;
+            }
+            else {
+               radius = (MAX2(ctx->Point.Threshold, ctx->Point.MinSize) * 0.5F);
+               dsize /= ctx->Point.Threshold;
+               alphaf = (dsize*dsize);
             }
             rmin = radius - 0.7071F;  /* 0.7071 = sqrt(2)/2 */
             rmax = radius + 0.7071F;
@@ -1180,23 +1177,25 @@ static void dist_atten_antialiased_rgba_points( GLcontext *ctx,
 	       }
 	    }
 
-            for (y=ymin;y<=ymax;y++) {
-               for (x=xmin;x<=xmax;x++) {
+            for (y = ymin; y <= ymax; y++) {
+               for (x = xmin; x <= xmax; x++) {
                   GLfloat dx = x/*+0.5F*/ - VB->Win.data[i][0];
                   GLfloat dy = y/*+0.5F*/ - VB->Win.data[i][1];
                   GLfloat dist2 = dx*dx + dy*dy;
-                  if (dist2<rmax2) {
+                  if (dist2 < rmax2) {
                      alpha = VB->ColorPtr->data[i][3];
-                     if (dist2>=rmin2) {
-                        GLint coverage = (GLint) (256.0F-(dist2-rmin2)*cscale);
+                     if (dist2 >= rmin2) {
+                        GLint coverage = (GLint) (256.0F - (dist2 - rmin2) * cscale);
                         /* coverage is in [0,256] */
                         alpha = (alpha * coverage) >> 8;
                      }
                      alpha = (GLint) (alpha * alphaf);
                      if (ctx->Texture.ReallyEnabled >= TEXTURE1_1D) {
-                        PB_WRITE_MULTITEX_PIXEL( PB, x,y,z, red, green, blue, alpha, s, t, u, s1, t1, u1 );
+                        PB_WRITE_MULTITEX_PIXEL( PB, x,y,z, red, green, blue,
+                                                 alpha, s, t, u, s1, t1, u1 );
                      } else {
-                        PB_WRITE_TEX_PIXEL( PB, x,y,z, red, green, blue, alpha, s, t, u );
+                        PB_WRITE_TEX_PIXEL( PB, x,y,z, red, green, blue, alpha,
+                                            s, t, u );
                      }
                   }
                }
@@ -1207,26 +1206,28 @@ static void dist_atten_antialiased_rgba_points( GLcontext *ctx,
    }
    else {
       /* Not texture mapped */
-      for (i=first;i<=last;i++) {
-         if (VB->ClipMask[i]==0) {
+      for (i = first; i <= last; i++) {
+         if (VB->ClipMask[i] == 0) {
+            GLfloat radius, rmin, rmax, rmin2, rmax2, cscale, alphaf;
             GLint xmin, ymin, xmax, ymax;
             GLint x, y, z;
             GLint red, green, blue, alpha;
+            GLfloat dsize = psize * dist[i];
 
-            dsize=psize*dist[i];
-            if(dsize>=ctx->Point.Threshold) {
-               radius=(MIN2(dsize,ctx->Point.MaxSize)*0.5F);
-               alphaf=1.0;
-            } else {
-               radius=(MAX2(ctx->Point.Threshold,ctx->Point.MinSize)*0.5F);
-               dsize/=ctx->Point.Threshold;
-               alphaf=(dsize*dsize);
+            if (dsize >= ctx->Point.Threshold) {
+               radius = MIN2(dsize, ctx->Point.MaxSize) * 0.5F;
+               alphaf = 1.0F;
+            }
+            else {
+               radius = (MAX2(ctx->Point.Threshold, ctx->Point.MinSize) * 0.5F);
+               dsize /= ctx->Point.Threshold;
+               alphaf = dsize * dsize;
             }
             rmin = radius - 0.7071F;  /* 0.7071 = sqrt(2)/2 */
             rmax = radius + 0.7071F;
-            rmin2 = rmin*rmin;
-            rmax2 = rmax*rmax;
-            cscale = 256.0F / (rmax2-rmin2);
+            rmin2 = rmin * rmin;
+            rmax2 = rmax * rmax;
+            cscale = 256.0F / (rmax2 - rmin2);
 
             xmin = (GLint) (VB->Win.data[i][0] - radius);
             xmax = (GLint) (VB->Win.data[i][0] + radius);
@@ -1238,21 +1239,20 @@ static void dist_atten_antialiased_rgba_points( GLcontext *ctx,
             green = VB->ColorPtr->data[i][1];
             blue  = VB->ColorPtr->data[i][2];
 
-            for (y=ymin;y<=ymax;y++) {
-               for (x=xmin;x<=xmax;x++) {
+            for (y = ymin; y <= ymax; y++) {
+               for (x = xmin; x <= xmax; x++) {
                   GLfloat dx = x/*+0.5F*/ - VB->Win.data[i][0];
                   GLfloat dy = y/*+0.5F*/ - VB->Win.data[i][1];
-                  GLfloat dist2 = dx*dx + dy*dy;
-                  if (dist2<rmax2) {
+                  GLfloat dist2 = dx * dx + dy * dy;
+                  if (dist2 < rmax2) {
 		     alpha = VB->ColorPtr->data[i][3];
-                     if (dist2>=rmin2) {
-                        GLint coverage = (GLint) (256.0F-(dist2-rmin2)*cscale);
+                     if (dist2 >= rmin2) {
+                        GLint coverage = (GLint) (256.0F - (dist2 - rmin2) * cscale);
                         /* coverage is in [0,256] */
                         alpha = (alpha * coverage) >> 8;
                      }
                      alpha = (GLint) (alpha * alphaf);
-                     PB_WRITE_RGBA_PIXEL( PB, x, y, z, red, green, blue, alpha )
-			;
+                     PB_WRITE_RGBA_PIXEL(PB, x, y, z, red, green, blue, alpha);
                   }
                }
             }
@@ -1261,6 +1261,43 @@ static void dist_atten_antialiased_rgba_points( GLcontext *ctx,
       }
    }
 }
+
+
+#ifdef DEBUG
+void
+_mesa_print_points_function(GLcontext *ctx)
+{
+   printf("Point Func == ");
+   if (ctx->Driver.PointsFunc == size1_ci_points)
+      printf("size1_ci_points\n");
+   else if (ctx->Driver.PointsFunc == size1_rgba_points)
+      printf("size1_rgba_points\n");
+   else if (ctx->Driver.PointsFunc == general_ci_points)
+      printf("general_ci_points\n");
+   else if (ctx->Driver.PointsFunc == general_rgba_points)
+      printf("general_rgba_points\n");
+   else if (ctx->Driver.PointsFunc == textured_rgba_points)
+      printf("textured_rgba_points\n");
+   else if (ctx->Driver.PointsFunc == multitextured_rgba_points)
+      printf("multitextured_rgba_points\n");
+   else if (ctx->Driver.PointsFunc == antialiased_rgba_points)
+      printf("antialiased_rgba_points\n");
+   else if (ctx->Driver.PointsFunc == null_points)
+      printf("null_points\n");
+   else if (ctx->Driver.PointsFunc == dist_atten_general_ci_points)
+      printf("dist_atten_general_ci_points\n");
+   else if (ctx->Driver.PointsFunc == dist_atten_general_rgba_points)
+      printf("dist_atten_general_rgba_points\n");
+   else if (ctx->Driver.PointsFunc == dist_atten_textured_rgba_points)
+      printf("dist_atten_textured_rgba_points\n");
+   else if (ctx->Driver.PointsFunc == dist_atten_antialiased_rgba_points)
+      printf("dist_atten_antialiased_rgba_points\n");
+   else if (!ctx->Driver.PointsFunc)
+      printf("NULL\n");
+   else
+      printf("Driver func %p\n", ctx->Driver.PointsFunc);
+}
+#endif
 
 
 /*
@@ -1331,5 +1368,6 @@ void gl_set_point_function( GLcontext *ctx )
       ctx->Driver.PointsFunc = gl_select_points;
    }
 
+   /*_mesa_print_points_function(ctx);*/
 }
 

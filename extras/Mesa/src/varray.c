@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -369,6 +369,64 @@ static void gl_CVAEltPointer( GLcontext *ctx, GLenum type, const GLvoid *ptr )
 #endif
 
 
+
+void
+_mesa_VertexPointerEXT(GLint size, GLenum type, GLsizei stride,
+                       GLsizei count, const GLvoid *ptr)
+{
+   (void) count;
+   printf("glVertexPointerEXT %p\n", ptr);
+   _mesa_VertexPointer(size, type, stride, ptr);
+}
+
+
+void
+_mesa_NormalPointerEXT(GLenum type, GLsizei stride, GLsizei count,
+                       const GLvoid *ptr)
+{
+   (void) count;
+   _mesa_NormalPointer(type, stride, ptr);
+}
+
+
+void
+_mesa_ColorPointerEXT(GLint size, GLenum type, GLsizei stride, GLsizei count,
+                      const GLvoid *ptr)
+{
+   (void) count;
+   _mesa_ColorPointer(size, type, stride, ptr);
+}
+
+
+void
+_mesa_IndexPointerEXT(GLenum type, GLsizei stride, GLsizei count,
+                      const GLvoid *ptr)
+{
+   (void) count;
+   _mesa_IndexPointer(type, stride, ptr);
+}
+
+
+void
+_mesa_TexCoordPointerEXT(GLint size, GLenum type, GLsizei stride,
+                         GLsizei count, const GLvoid *ptr)
+{
+   (void) count;
+   _mesa_TexCoordPointer(size, type, stride, ptr);
+}
+
+
+void
+_mesa_EdgeFlagPointerEXT(GLsizei stride, GLsizei count, const GLboolean *ptr)
+{
+   (void) count;
+   _mesa_EdgeFlagPointer(stride, ptr);
+}
+
+
+
+
+
 /* KW: Batch function to exec all the array elements in the input
  *     buffer prior to transform.  Done only the first time a vertex
  *     buffer is executed or compiled.
@@ -680,6 +738,7 @@ _mesa_DrawArrays(GLenum mode, GLint start, GLsizei count)
 
 	 VB->NextPrimitive[VB->CopyStart] = VB->Count;
 	 VB->Primitive[VB->CopyStart] = mode;
+	 ctx->Array.Flag[count] |= VERT_END_VB;
 
          /* Transform and render.
 	  */
@@ -815,7 +874,7 @@ _mesa_DrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indice
       return;
    }
 
-   if (mode > GL_POLYGON) {
+   if (mode < 0 || mode > GL_POLYGON) {
       gl_error( ctx, GL_INVALID_ENUM, "glDrawArrays(mode)" );
       return;
    }

@@ -45,6 +45,7 @@
 #endif
 
 #include "glheader.h"
+#include "aatriangle.h"
 #include "accum.h"
 #include "alpha.h"
 #include "alphabuf.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.5 2000/02/23 04:46:36 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.6 2000/03/02 16:07:33 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -29,7 +29,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
- *   Brian Paul <brian@precisioninsight.com>
+ *   Brian E. Paul <brian@precisioninsight.com>
  */
 
 #ifdef GLX_DIRECT_RENDERING
@@ -39,16 +39,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <Xext.h>
 #include <extutil.h>
 #include "glxclient.h"
-#include "GL/xmesa.h"
 #include "xf86dri.h"
 #include "sarea.h"
 #include "dri_mesaint.h"
 #include "dri_xmesaapi.h"
-
-
-#if XMESA_MAJOR_VERSION != 3 || XMESA_MINOR_VERSION != 3
-#error using wrong version of Mesa (need 3.3)
-#endif
+#include "../src/context.h"
+#include "../src/mmath.h"
 
 
 /* Context binding */
@@ -73,6 +69,19 @@ static void driMesaDestroyContext(Display *dpy, int scrn, void *private);
 static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 				 int numConfigs, __GLXvisualConfig *config);
 static void driMesaDestroyScreen(Display *dpy, int scrn, void *private);
+
+
+
+/*
+** Print message to stderr if LIBGL_DEBUG env var is set.
+*/
+void
+__driMesaMessage(const char *msg)
+{
+    if (getenv("LIBGL_DEBUG")) {
+        fprintf(stderr, "libGL error: %s\n", msg);
+    }
+}
 
 
 /*****************************************************************/
@@ -109,6 +118,8 @@ static __DRIdrawable *__driMesaFindDrawable(GLXDrawable draw)
     return pdraw;
 }
 
+#if 0
+/* not used yet */
 static void __driMesaRemoveDrawable(__DRIdrawable *pdraw)
 {
     int retcode;
@@ -122,23 +133,22 @@ static void __driMesaRemoveDrawable(__DRIdrawable *pdraw)
 	drmHashDelete(drawHash, pdp->draw);
     }
 }
+#endif
 
 /*****************************************************************/
 
-static void driMesaInitAPI(__XMESAapi *XMesaAPI)
+static void driMesaInitAPI(__MesaAPI *MesaAPI)
 {
-    XMesaAPI->InitDriver = XMesaInitDriver;
-    XMesaAPI->ResetDriver = XMesaResetDriver;
-    XMesaAPI->CreateVisual = XMesaCreateVisual;
-    XMesaAPI->DestroyVisual = XMesaDestroyVisual;
-    XMesaAPI->CreateContext = XMesaCreateContext;
-    XMesaAPI->DestroyContext = XMesaDestroyContext;
-    XMesaAPI->CreateWindowBuffer = XMesaCreateWindowBuffer;
-    XMesaAPI->CreatePixmapBuffer = XMesaCreatePixmapBuffer;
-    XMesaAPI->DestroyBuffer = XMesaDestroyBuffer;
-    XMesaAPI->SwapBuffers = XMesaSwapBuffers;
-    XMesaAPI->MakeCurrent = XMesaMakeCurrent;
-    XMesaAPI->UnbindContext = XMesaUnbindContext;
+    MesaAPI->InitDriver = XMesaInitDriver;
+    MesaAPI->ResetDriver = XMesaResetDriver;
+    MesaAPI->CreateVisual = XMesaCreateVisual;
+    MesaAPI->CreateContext = XMesaCreateContext;
+    MesaAPI->DestroyContext = XMesaDestroyContext;
+    MesaAPI->CreateWindowBuffer = XMesaCreateWindowBuffer;
+    MesaAPI->CreatePixmapBuffer = XMesaCreatePixmapBuffer;
+    MesaAPI->SwapBuffers = XMesaSwapBuffers;
+    MesaAPI->MakeCurrent = XMesaMakeCurrent;
+    MesaAPI->UnbindContext = XMesaUnbindContext;
 }
 
 /*****************************************************************/
@@ -176,7 +186,7 @@ static Bool driMesaUnbindContext(Display *dpy, int scrn,
     }
 
     /* Unbind Mesa's drawable from Mesa's context */
-    (*psp->XMesaAPI.UnbindContext)(pcp->xm_ctx);
+    (*psp->MesaAPI.UnbindContext)(pcp);
 
     if (pdp->refcount == 0) {
 	/* ERROR!!! */
@@ -279,7 +289,7 @@ static Bool driMesaBindContext(Display *dpy, int scrn,
     }
 
     /* Bind Mesa's drawable to Mesa's context */
-    (*psp->XMesaAPI.MakeCurrent)(pcp->xm_ctx, pdp->xm_buf);
+    (*psp->MesaAPI.MakeCurrent)(pcp, pdp, pdp);
 
     return GL_TRUE;
 }
@@ -307,14 +317,26 @@ void driMesaUpdateDrawableInfo(Display *dpy, int scrn,
 	Xfree(pdp->pClipRects); 
     }
 
+    if (pdp->pBackClipRects) {
+	Xfree(pdp->pBackClipRects); 
+    }
+
+
     DRM_SPINUNLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);
 
     if (!XF86DRIGetDrawableInfo(dpy, scrn, pdp->draw,
 				&pdp->index, &pdp->lastStamp,
 				&pdp->x, &pdp->y, &pdp->w, &pdp->h,
-				&pdp->numClipRects, &pdp->pClipRects)) {
+				&pdp->numClipRects, &pdp->pClipRects,
+				&pdp->backX,
+				&pdp->backY,
+				&pdp->numBackClipRects,
+				&pdp->pBackClipRects
+                                )) {
 	pdp->numClipRects = 0;
 	pdp->pClipRects = NULL;
+	pdp->numBackClipRects = 0;
+	pdp->pBackClipRects = 0;
 	/* ERROR!!! */
     }
 
@@ -332,7 +354,7 @@ static void *driMesaCreateDrawable(Display *dpy, int scrn, GLXDrawable draw,
     __DRIscreenPrivate *psp;
     __DRIdrawablePrivate *pdp;
     int i;
-    XMesaVisual xm_vis = NULL;
+    GLvisual *mesaVis = NULL;
 
     pdp = (__DRIdrawablePrivate *)Xmalloc(sizeof(__DRIdrawablePrivate));
     if (!pdp) {
@@ -354,7 +376,9 @@ static void *driMesaCreateDrawable(Display *dpy, int scrn, GLXDrawable draw,
     pdp->w = 0;
     pdp->h = 0;
     pdp->numClipRects = 0;
+    pdp->numBackClipRects = 0;
     pdp->pClipRects = NULL;
+    pdp->pBackClipRects = NULL;
 
     pDRIScreen = __glXFindDRIScreen(dpy, scrn);
     pdp->driScreenPriv = psp = (__DRIscreenPrivate *)pDRIScreen->private;
@@ -363,20 +387,19 @@ static void *driMesaCreateDrawable(Display *dpy, int scrn, GLXDrawable draw,
 
     for (i = 0; i < psp->numVisuals; i++) {
 	if (vid == psp->visuals[i].vid) {
-	    xm_vis = psp->visuals[i].xm_vis;
+	    mesaVis = psp->visuals[i].mesaVisual;
 	    break;
 	}
     }
 
-    if (1 /* NOT_DONE: Determine if it is a pixmap or not */) {
-	pdp->xm_buf = (*psp->XMesaAPI.CreateWindowBuffer)(xm_vis, draw, pdp);
-    } else {
-	XMesaVisual xm_vis = NULL;
-	XMesaColormap cmap = 0;
-	pdp->xm_buf = (*psp->XMesaAPI.CreatePixmapBuffer)(xm_vis, draw, cmap,
-							  pdp);
+    /* XXX pixmap rendering not implemented yet */
+    if (1) {
+       pdp->mesaBuffer = (*psp->MesaAPI.CreateWindowBuffer)(dpy, psp, pdp, mesaVis);
     }
-    if (!pdp->xm_buf) {
+    else {
+       pdp->mesaBuffer = (*psp->MesaAPI.CreatePixmapBuffer)(dpy, psp, pdp, mesaVis);
+    }
+    if (!pdp->mesaBuffer) {
 	(void)XF86DRIDestroyDrawable(dpy, scrn, pdp->draw);
 	Xfree(pdp);
 	return NULL;
@@ -402,7 +425,7 @@ static void driMesaSwapBuffers(Display *dpy, void *private)
     __DRIdrawablePrivate *pdp = (__DRIdrawablePrivate *)private;
     __DRIscreenPrivate *psp = pdp->driScreenPriv;
 
-    (*psp->XMesaAPI.SwapBuffers)(pdp->xm_buf);
+    (*psp->MesaAPI.SwapBuffers)(pdp);
 }
 
 static void driMesaDestroyDrawable(Display *dpy, void *private)
@@ -412,7 +435,7 @@ static void driMesaDestroyDrawable(Display *dpy, void *private)
     int scrn = psp->myNum;
 
     if (pdp) {
-	(*psp->XMesaAPI.DestroyBuffer)(pdp->xm_buf);
+        gl_destroy_framebuffer(pdp->mesaBuffer);
 	(void)XF86DRIDestroyDrawable(dpy, scrn, pdp->draw);
 	if (pdp->pClipRects)
 	    Xfree(pdp->pClipRects);
@@ -427,8 +450,6 @@ static void *driMesaCreateContext(Display *dpy, XVisualInfo *vis, void *shared,
 {
     __DRIcontextPrivate *pcp;
     __DRIcontextPrivate *pshare = (__DRIcontextPrivate *)shared;
-    XMesaContext shared_xm_ctx = (pshare ?
-				  pshare->xm_ctx : (XMesaContext)NULL);
     __DRIscreenPrivate *psp;
     __DRIscreen *pDRIScreen;
     int i;
@@ -443,7 +464,7 @@ static void *driMesaCreateContext(Display *dpy, XVisualInfo *vis, void *shared,
 	    return NULL;
 	}
 	psp->dummyContextPriv.driScreenPriv = psp;
-	psp->dummyContextPriv.xm_ctx = NULL;
+	psp->dummyContextPriv.mesaContext = NULL;
 	psp->dummyContextPriv.driDrawablePriv = NULL;
 	/* No other fields should be used! */
     }
@@ -453,8 +474,9 @@ static void *driMesaCreateContext(Display *dpy, XVisualInfo *vis, void *shared,
 	return NULL;
     }
 
+    pcp->display = dpy;
     pcp->driScreenPriv = psp;
-    pcp->xm_ctx = NULL;
+    pcp->mesaContext = NULL;
     pcp->driDrawablePriv = NULL;
 
     if (!XF86DRICreateContext(dpy, vis->screen, vis->visual,
@@ -463,12 +485,28 @@ static void *driMesaCreateContext(Display *dpy, XVisualInfo *vis, void *shared,
 	return NULL;
     }
 
-    for (i = 0; i < psp->numVisuals; i++)
-	if (psp->visuals[i].vid == vis->visualid)
-	    pcp->xm_ctx = (*psp->XMesaAPI.CreateContext)
-		(psp->visuals[i].xm_vis, shared_xm_ctx, pcp);
+    for (i = 0; i < psp->numVisuals; i++) {
+        if (psp->visuals[i].vid == vis->visualid) {
+            GLvisual *mesaVis = psp->visuals[i].mesaVisual;
+            GLcontext *sharedMesaCtx = pshare ? pshare->mesaContext : NULL;
+            pcp->mesaContext = gl_create_context(mesaVis,
+                                                 sharedMesaCtx,
+                                                 NULL, /* set below */
+                                                 GL_TRUE);
+            if (pcp->mesaContext) {
+                /* Driver now creates its private context data */
+                if ((*psp->MesaAPI.CreateContext)(dpy, mesaVis, pcp)) {
+                    pcp->mesaContext->DriverCtx = pcp->driverPrivate;
+                }
+                else {
+                    gl_destroy_context(pcp->mesaContext);
+                    pcp->mesaContext = NULL;
+                }
+            }
+        }
+    }
 
-    if (!pcp->xm_ctx) {
+    if (!pcp->mesaContext) {
 	(void)XF86DRIDestroyContext(dpy, vis->screen, pcp->contextID);
 	Xfree(pcp);
 	return NULL;
@@ -487,7 +525,8 @@ static void driMesaDestroyContext(Display *dpy, int scrn, void *private)
 
     if (pcp) {
 	(void)XF86DRIDestroyContext(dpy, scrn, pcp->contextID);
-	(*pcp->driScreenPriv->XMesaAPI.DestroyContext)(pcp->xm_ctx);
+	(*pcp->driScreenPriv->MesaAPI.DestroyContext)(pcp);
+        gl_destroy_context(pcp->mesaContext);
 	Xfree(pcp);
     }
 }
@@ -517,6 +556,7 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 	return NULL;
     }
 
+    psp->display = dpy;
     psp->myNum = scrn;
 
     if (!XF86DRIOpenConnection(dpy, scrn, &hSAREA, &BusID)) {
@@ -532,7 +572,7 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
     psp->drawLockID = 1;
 
     psp->fd = drmOpen(NULL,BusID);
-    if (!psp->fd) {
+    if (psp->fd < 0) {
 	Xfree(BusID);
 	Xfree(psp);
 	(void)XF86DRICloseConnection(dpy, scrn);
@@ -547,6 +587,21 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 	return NULL;
     }
 
+    {
+        drmVersionPtr version = drmGetVersion(psp->fd);
+        if (version) {
+            psp->drmMajor = version->version_major;
+            psp->drmMinor = version->version_minor;
+            psp->drmPatch = version->version_patchlevel;
+            drmFreeVersion(version);
+        }
+        else {
+            psp->drmMajor = -1;
+            psp->drmMinor = -1;
+            psp->drmPatch = -1;
+        }
+    }
+
     if (!XF86DRIAuthConnection(dpy, scrn, magic)) {
 	(void)drmClose(psp->fd);
 	Xfree(psp);
@@ -555,9 +610,9 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
     }
 
     if (!XF86DRIGetClientDriverName(dpy, scrn,
-				    &psp->major,
-				    &psp->minor,
-				    &psp->patch,
+				    &psp->ddxMajor,
+				    &psp->ddxMinor,
+				    &psp->ddxPatch,
 				    &driverName)) {
 	(void)drmClose(psp->fd);
 	Xfree(psp);
@@ -565,7 +620,7 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 	return NULL;
     }
 
-    driMesaInitAPI(&psp->XMesaAPI);
+    driMesaInitAPI(&psp->MesaAPI);
 
     if (!XF86DRIGetDeviceInfo(dpy, scrn,
 			      &hFB,
@@ -627,22 +682,13 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 
     for (i = 0; i < numConfigs; i++, config++) {
 	psp->visuals[i].vid = visinfo[i].visualid;
-	psp->visuals[i].xm_vis =
-	    (*psp->XMesaAPI.CreateVisual)(dpy,
-					  &visinfo[i],
-					  config->rgba,
-					  (config->alphaSize > 0),
-					  config->doubleBuffer,
-					  config->stereo,
-					  GL_TRUE, /* ximage_flag */
-					  config->depthSize,
-					  config->stencilSize,
-					  config->accumRedSize,
-					  config->level);
-	if (!psp->visuals[i].xm_vis) {
+        psp->visuals[i].mesaVisual =
+                 (*psp->MesaAPI.CreateVisual) (dpy, psp, &visinfo[i], config);
+
+	if (!psp->visuals[i].mesaVisual) {
 	    /* Free the visuals so far created */
 	    while (--i >= 0) {
-		(*psp->XMesaAPI.DestroyVisual)(psp->visuals[i].xm_vis);
+               _mesa_destroy_visual(psp->visuals[i].mesaVisual);
 	    }
 	    Xfree(psp->visuals);
 	    XFree(visinfo);
@@ -658,11 +704,10 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
     XFree(visinfo);
 
     /* Initialize the screen specific GLX driver */
-    if (psp->XMesaAPI.InitDriver) {
-	if (!(*psp->XMesaAPI.InitDriver)(psp)) {
+    if (psp->MesaAPI.InitDriver) {
+	if (!(*psp->MesaAPI.InitDriver)(psp)) {
 	    while (--psp->numVisuals >= 0) {
-		(*psp->XMesaAPI.DestroyVisual)
-		    (psp->visuals[psp->numVisuals].xm_vis);
+               _mesa_destroy_visual(psp->visuals[psp->numVisuals].mesaVisual);
 	    }
 	    Xfree(psp->visuals);
 	    (void)drmUnmap((drmAddress)psp->pSAREA, SAREA_MAX);
@@ -699,11 +744,10 @@ static void driMesaDestroyScreen(Display *dpy, int scrn, void *private)
 	    (void)XF86DRIDestroyContext(dpy, scrn,
 					psp->dummyContextPriv.contextID);
 	}
-	if (psp->XMesaAPI.ResetDriver)
-	    (*psp->XMesaAPI.ResetDriver)(psp);
+	if (psp->MesaAPI.ResetDriver)
+	    (*psp->MesaAPI.ResetDriver)(psp);
 	while (--psp->numVisuals >= 0) {
-	    (*psp->XMesaAPI.DestroyVisual)
-		(psp->visuals[psp->numVisuals].xm_vis);
+           _mesa_destroy_visual(psp->visuals[psp->numVisuals].mesaVisual);
 	}
 	Xfree(psp->visuals);
 	(void)drmUnmap((drmAddress)psp->pSAREA, SAREA_MAX);

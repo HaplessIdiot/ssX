@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.6 2000/02/16 15:28:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.8 2000/04/17 16:30:07 eich Exp $ */
 
 
 #if 0
@@ -23,28 +23,41 @@
    C    - D-1  : Z buffer
 */
 
-void TDFXSendNOPPrivate2D(TDFXPtr pTDFX)
+void TDFXSendNOPPrivate3D(ScrnInfoPtr pScrn)
 {
+  TDFXPtr pTDFX;
+
+  pTDFX=TDFXPTR(pScrn);
   TDFXAllocateSlots(pTDFX, 2);
-  SET_3DPK4_HEADER(1, 0x48);
+  SET_3DPK4_HEADER(1, 0x48<<3);
   WRITE_FIFO(pTDFX, 0, 0);
 }
 
-void TDFXSendNOPPrivate3D(TDFXPtr pTDFX)
+void TDFXSendNOPPrivate2D(ScrnInfoPtr pScrn)
 {
+  TDFXPtr pTDFX;
+
+  pTDFX=TDFXPTR(pScrn);
+  if (!pTDFX->syncDone) {
+    TDFXFirstSync(pScrn);
+    return;
+  }
   TDFXAllocateSlots(pTDFX, 2);
   SET_PKT2_HEADER(SSTCP_COMMAND);
   WRITE_FIFO(pTDFX, SST_2D_COMMAND, SST_2D_NOP|SST_2D_GO);
 }  
 
-void TDFXSendNOPPrivate(TDFXPtr pTDFX)
+void TDFXSendNOPPrivate(ScrnInfoPtr pScrn)
 {
-  TDFXSendNOPPrivate2D(pTDFX);
-  TDFXSendNOPPrivate3D(pTDFX);
+  TDFXSendNOPPrivate2D(pScrn);
+  TDFXSendNOPPrivate3D(pScrn);
 }
 
-void InstallFifo(TDFXPtr pTDFX)
+void InstallFifo(ScrnInfoPtr pScrn)
 {
+  TDFXPtr pTDFX;
+
+  pTDFX=TDFXPTR(pScrn);
   /* Install the fifo */
   TDFXWriteLongMMIO(pTDFX, SST_FIFO_BASEADDR0, pTDFX->fifoOffset>>12);
   TDFXWriteLongMMIO(pTDFX, SST_FIFO_BUMP0, 0);
@@ -54,7 +67,7 @@ void InstallFifo(TDFXPtr pTDFX)
   TDFXWriteLongMMIO(pTDFX, SST_FIFO_AMAX0, pTDFX->fifoOffset-4);
   TDFXWriteLongMMIO(pTDFX, SST_FIFO_DEPTH0, 0);
   TDFXWriteLongMMIO(pTDFX, SST_FIFO_HOLECNT0, 0);
-  if (pTDFX->PciInfo->chipType == PCI_CHIP_BANSHEE) 
+  if (pTDFX->ChipType == PCI_CHIP_BANSHEE) 
     TDFXWriteLongMMIO(pTDFX, SST_FIFO_FIFOTHRESH, (0x9<<5) | 0x2);
   else 
     TDFXWriteLongMMIO(pTDFX, SST_FIFO_FIFOTHRESH, (0xf<<5) | 0x8);
@@ -65,14 +78,16 @@ void InstallFifo(TDFXPtr pTDFX)
   pTDFX->fifoPtr = pTDFX->fifoBase;
   pTDFX->fifoSlots = (pTDFX->fifoSize>>2) - 1;
   pTDFX->fifoEnd = pTDFX->fifoBase+pTDFX->fifoSlots;
-  TDFXSendNOPPrivate(pTDFX);
+  TDFXSendNOPPrivate(pScrn);
 }
 
-void TDFXResetFifo(TDFXPtr pTDFX)
+void TDFXResetFifo(ScrnInfoPtr pScrn)
 {
+  TDFXPtr pTDFX;
   int oldValue;
-  long start_sec, end_sec, dummy;
+  CARD32 start_sec, end_sec, dummy;
 
+  pTDFX=TDFXPTR(pScrn);
   ErrorF("Resetting FIFO\n");
   /* Shut down the fifo */
   TDFXWriteLongMMIO(pTDFX, SST_FIFO_BASESIZE0, 0);
@@ -91,7 +106,7 @@ void TDFXResetFifo(TDFXPtr pTDFX)
     xf86getsecs(&end_sec, &dummy);
   } while (end_sec-start_sec<2);
   TDFXWriteLongMMIO(pTDFX, MISCINIT1, oldValue);
-  InstallFifo(pTDFX);
+  InstallFifo(pScrn);
 }
 
 /*
@@ -102,16 +117,16 @@ void TDFXResetFifo(TDFXPtr pTDFX)
 
   !!! We should use expedential backoff in our reads !!!
 */
-void TDFXSyncFifo(ScrnInfoPtr pScrn)
+static void TDFXSyncFifo(ScrnInfoPtr pScrn)
 {
   TDFXPtr pTDFX;
   int i, cnt;
   int stat;
-  long start_sec, end_sec, dummy;
+  CARD32 start_sec, end_sec, dummy;
 
   TDFXTRACEACCEL("TDFXSyncFifo start\n");
   pTDFX=TDFXPTR(pScrn);
-  TDFXSendNOPPrivate(pTDFX);
+  TDFXSendNOPPrivate(pScrn);
   i=0;
   cnt=0;
   start_sec=0;
@@ -125,7 +140,7 @@ void TDFXSyncFifo(ScrnInfoPtr pScrn)
       } else {
 	xf86getsecs(&end_sec, &dummy);
 	if (end_sec-start_sec>3) {
-	  TDFXResetFifo(pTDFX);
+	  TDFXResetFifo(pScrn);
 	  start_sec=0;
         }
       }
@@ -153,7 +168,7 @@ Bool TDFXInitPrivate(ScreenPtr pScreen)
   pTDFX->fifoMirrorPtr = pTDFX->fifoMirrorBase;
 #endif
   pTDFX->sync=TDFXSyncFifo;
-  InstallFifo(pTDFX);
+  InstallFifo(pScrn);
   return TRUE;
 }
 
@@ -190,7 +205,6 @@ void TDFXSwapContextPrivate(ScreenPtr pScreen)
   ScrnInfoPtr pScrn;
   TDFXPtr pTDFX;
   int dummy, readPos;
-  int offset;
   TDFXSAREAPriv *sPriv;
 
   pScrn = xf86Screens[pScreen->myNum];
@@ -214,7 +228,7 @@ void TDFXSwapContextPrivate(ScreenPtr pScreen)
       (sPriv->fifoRead<pTDFX->fifoOffset) ||
       (sPriv->fifoRead>(int)pTDFX->fifoOffset+pTDFX->fifoSize)) {
     ErrorF("Invalid offsets passed between client and X server\n");
-    ResetFifo(pTDFX);
+    ResetFifo(pScrn);
   } else {
     pTDFX->fifoPtr = (unsigned int *)(pTDFX->FbBase+sPriv->fifoPtr);
     pTDFX->fifoRead = (unsigned int *)(pTDFX->FbBase+sPriv->fifoRead);
@@ -226,7 +240,8 @@ void TDFXSwapContextPrivate(ScreenPtr pScreen)
     pTDFX->fifoSlots = pTDFX->fifoEnd-pTDFX->fifoPtr-8;
 }    
 
-void TDFXLostContext(ScreenPtr pScreen) {
+void TDFXLostContext(ScreenPtr pScreen)
+{
   ScrnInfoPtr pScrn;
   TDFXPtr pTDFX;
   TDFXSAREAPriv *sPriv;
@@ -312,10 +327,14 @@ TDFXMakeSpace(TDFXPtr pTDFX, uint32 slots)
 }
 
 void 
-TDFXAllocateSlots(TDFXPtr pTDFX, int slots) {
+TDFXAllocateSlots(TDFXPtr pTDFX, int slots)
+{
 #ifdef TDFX_DEBUG_FIFO
   if (pTDFX->fifoEnd-pTDFX->fifoPtr<pTDFX->fifoSlots)
     ErrorF("FIFO overrun\n");
+  if (!pTDFX->syncDone) {
+    ErrorF("Writing to FIFO without sync\n");
+  }
 #endif
   pTDFX->fifoSlots-=slots;
   if (pTDFX->fifoSlots<0) TDFXMakeSpace(pTDFX, slots);

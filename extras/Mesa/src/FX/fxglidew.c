@@ -55,6 +55,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+grStencilFunc_t grStencilFuncPtr = NULL;
+grStencilMask_t grStencilMaskPtr = NULL;
+grStencilOp_t grStencilOpPtr = NULL;
+grBufferClearExt_t grBufferClearExtPtr = NULL;
+
+
 FxI32 FX_grGetInteger_NoLock(FxU32 pname)
 {
 #if !defined(FX_GLIDE3)
@@ -71,6 +78,8 @@ FxI32 FX_grGetInteger_NoLock(FxU32 pname)
     case FX_TEXTURE_ALIGN:
         /* This is a guess from reading the glide3 docs */
         return 8;
+    case FX_ZDEPTH_MAX:
+      return 0xFFFF;
     default:
        if (MESA_VERBOSE&VERBOSE_DRIVER) {
           fprintf(stderr,"Wrong parameter in FX_grGetInteger!\n");
@@ -90,6 +99,12 @@ FxI32 FX_grGetInteger_NoLock(FxU32 pname)
      case FX_TEXTURE_ALIGN:
        grname = pname;
        break;
+     case FX_ZDEPTH_MAX: {
+       int zvals[2];
+
+       grGet(GR_ZDEPTH_MIN_MAX, 8, zvals);
+       return zvals[0];
+     }
      default:
        if (MESA_VERBOSE&VERBOSE_DRIVER) {
           fprintf(stderr,"Wrong parameter in FX_grGetInteger!\n");
@@ -154,7 +169,17 @@ extern FxU32 FX_grTexMaxAddress(GrChipID_t tmu) {
 FxBool FX_grSstControl(FxU32 code)
 {
 #if defined(FX_GLIDE3)
-  (void) code;
+  /* The glide 3 sources call for grEnable/grDisable to be called in exchange
+   * for grSstControl. */
+  switch(code) {
+    case GR_CONTROL_ACTIVATE:
+      grEnable(GR_PASSTHRU);
+      break;
+    case GR_CONTROL_DEACTIVATE:
+      grDisable(GR_PASSTHRU);
+      break;
+  }
+  /* Appearently GR_CONTROL_RESIZE can be ignored. */
   return 1;  /* OK? */
 #else
   FxU32 result;
@@ -225,12 +250,12 @@ void FX_grGlideGetVersion(char *buf)
 
 void FX_grSstPerfStats(GrSstPerfStats_t *st)
 {
-  /* ToDo */
-  st->pixelsIn = 0;
-  st->chromaFail = 0;
-  st->zFuncFail = 0;
-  st->aFuncFail = 0;
-  st->pixelsOut = 0;
+  FxI32 n;
+  grGet(GR_STATS_PIXELS_IN, 4, &n);              st->pixelsIn = n;
+  grGet(GR_STATS_PIXELS_CHROMA_FAIL, 4, &n);     st->chromaFail = n;
+  grGet(GR_STATS_PIXELS_DEPTHFUNC_FAIL, 4, &n);  st->zFuncFail = n;
+  grGet(GR_STATS_PIXELS_AFUNC_FAIL, 4, &n);      st->aFuncFail = n;
+  grGet(GR_STATS_PIXELS_OUT, 4, &n);             st->pixelsOut = n;
 }
 
 void FX_grAADrawLine(GrVertex *a,GrVertex *b)
@@ -385,6 +410,10 @@ int FX_grSstQueryHardware(GrHwConfiguration *c)
    return i;
 } 
 
+
+#endif  /* FX_GLIDE3 */
+
+/* It appears to me that this function is needed either way. */
 FX_GrContext_t FX_grSstWinOpen( FxU32                hWnd,
                                 GrScreenResolution_t screen_resolution,
                                 GrScreenRefresh_t    refresh_rate,
@@ -403,6 +432,7 @@ FX_GrContext_t FX_grSstWinOpen( FxU32                hWnd,
                      nColBuffers,
                      nAuxBuffers );
    
+   /*
    fprintf(stderr, 
            "grSstWinOpen( win %d res %d ref %d fmt %d\n"
            "              org %d ncol %d naux %d )\n"
@@ -415,13 +445,13 @@ FX_GrContext_t FX_grSstWinOpen( FxU32                hWnd,
            nColBuffers,
            nAuxBuffers,
            i);
+   */
    END_BOARD_LOCK();
    return i;
 }
 
 
 
-#endif 
 #else
 
 /*

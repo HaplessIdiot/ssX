@@ -9,12 +9,6 @@
    SEG_TEXT
 
 
-#if !defined(NASM_ASSEMBLER) && !defined(MASM_ASSEMBLER)
-#define LLBL(a) .L ## a
-#else
-#define LLBL(a) a
-#endif
-
 #define S(i) 	REGOFF(i * 4, ESI)
 #define D(i) 	REGOFF(i * 4, EDI)
 #define M(i) 	REGOFF(i * 4, EDX)
@@ -97,7 +91,7 @@ ALIGNTEXT32
     MOVUPS( M(12), XMM2 )			/* m15 | m14 | m13 | m12 */
 
 ALIGNTEXT32
-LLBL( K_GTP2GM_top ):
+LLBL(K_GTP2GM_top):
     TEST_B( BL, REGIND(EBP) )
     JNZ( LLBL(K_GTP2GM_skip) )
 	
@@ -165,7 +159,7 @@ GLNAME( gl_katmai_transform_points2_identity_masked ):
     JE( LLBL(K_GTP2IM_finish) )
 
 ALIGNTEXT32
-LLBL( K_GTP2IM_top ):
+LLBL(K_GTP2IM_top):
     TEST_B( BL, REGIND(EBP) )
     JNZ( LLBL(K_GTP2IM_skip) )
 	

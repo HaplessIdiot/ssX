@@ -3,7 +3,7 @@
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -60,7 +60,7 @@ alloc_alpha_buffers( GLcontext *ctx, GLframebuffer *buf )
 {
    GLint bytes = buf->Width * buf->Height * sizeof(GLubyte);
 
-   ASSERT(ctx->Visual->SoftwareAlpha);
+   ASSERT(ctx->DrawBuffer->UseSoftwareAlphaBuffers);
 
    if (buf->FrontLeftAlpha) {
       FREE( buf->FrontLeftAlpha );
@@ -122,7 +122,8 @@ alloc_alpha_buffers( GLcontext *ctx, GLframebuffer *buf )
 /*
  * Allocate a new front and back alpha buffer.
  */
-void gl_alloc_alpha_buffers( GLcontext *ctx )
+void
+_mesa_alloc_alpha_buffers( GLcontext *ctx )
 {
    alloc_alpha_buffers( ctx, ctx->DrawBuffer );
    if (ctx->ReadBuffer != ctx->DrawBuffer) {
@@ -134,12 +135,13 @@ void gl_alloc_alpha_buffers( GLcontext *ctx )
 /*
  * Clear all the alpha buffers
  */
-void gl_clear_alpha_buffers( GLcontext *ctx )
+void
+_mesa_clear_alpha_buffers( GLcontext *ctx )
 {
    const GLubyte aclear = (GLint) (ctx->Color.ClearColor[3] * 255.0F);
    GLuint bufferBit;
 
-   ASSERT(ctx->Visual->SoftwareAlpha);
+   ASSERT(ctx->DrawBuffer->UseSoftwareAlphaBuffers);
    ASSERT(ctx->Color.ColorMask[ACOMP]);
 
    /* loop over four possible alpha buffers */
@@ -183,8 +185,9 @@ void gl_clear_alpha_buffers( GLcontext *ctx )
 
 
 
-void gl_write_alpha_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
-                          CONST GLubyte rgba[][4], const GLubyte mask[] )
+void
+_mesa_write_alpha_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
+                        CONST GLubyte rgba[][4], const GLubyte mask[] )
 {
    GLubyte *aptr = ALPHA_DRAW_ADDR( x, y );
    GLuint i;
@@ -205,8 +208,9 @@ void gl_write_alpha_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
 }
 
 
-void gl_write_mono_alpha_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
-                               GLubyte alpha, const GLubyte mask[] )
+void
+_mesa_write_mono_alpha_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
+                             GLubyte alpha, const GLubyte mask[] )
 {
    GLubyte *aptr = ALPHA_DRAW_ADDR( x, y );
    GLuint i;
@@ -227,9 +231,10 @@ void gl_write_mono_alpha_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
 }
 
 
-void gl_write_alpha_pixels( GLcontext *ctx,
-                            GLuint n, const GLint x[], const GLint y[],
-                            CONST GLubyte rgba[][4], const GLubyte mask[] )
+void
+_mesa_write_alpha_pixels( GLcontext *ctx,
+                          GLuint n, const GLint x[], const GLint y[],
+                          CONST GLubyte rgba[][4], const GLubyte mask[] )
 {
    GLuint i;
 
@@ -250,9 +255,10 @@ void gl_write_alpha_pixels( GLcontext *ctx,
 }
 
 
-void gl_write_mono_alpha_pixels( GLcontext *ctx,
-                                 GLuint n, const GLint x[], const GLint y[],
-                                 GLubyte alpha, const GLubyte mask[] )
+void
+_mesa_write_mono_alpha_pixels( GLcontext *ctx,
+                               GLuint n, const GLint x[], const GLint y[],
+                               GLubyte alpha, const GLubyte mask[] )
 {
    GLuint i;
 
@@ -274,8 +280,9 @@ void gl_write_mono_alpha_pixels( GLcontext *ctx,
 
 
 
-void gl_read_alpha_span( GLcontext *ctx,
-                         GLuint n, GLint x, GLint y, GLubyte rgba[][4] )
+void
+_mesa_read_alpha_span( GLcontext *ctx,
+                       GLuint n, GLint x, GLint y, GLubyte rgba[][4] )
 {
    GLubyte *aptr = ALPHA_READ_ADDR( x, y );
    GLuint i;
@@ -285,9 +292,10 @@ void gl_read_alpha_span( GLcontext *ctx,
 }
 
 
-void gl_read_alpha_pixels( GLcontext *ctx,
-                           GLuint n, const GLint x[], const GLint y[],
-                           GLubyte rgba[][4], const GLubyte mask[] )
+void
+_mesa_read_alpha_pixels( GLcontext *ctx,
+                         GLuint n, const GLint x[], const GLint y[],
+                         GLubyte rgba[][4], const GLubyte mask[] )
 {
    GLuint i;
    for (i=0;i<n;i++) {

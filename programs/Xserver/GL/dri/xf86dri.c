@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.5 2000/02/15 07:13:32 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.6 2000/02/23 04:46:52 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -161,6 +161,9 @@ ProcXF86DRIQueryDirectRenderingCapable(
     }
     rep.isCapable = isCapable;
 
+    if (!LocalClient(client))
+	rep.isCapable = 0;
+
     WriteToClient(client, 
 	sizeof(xXF86DRIQueryDirectRenderingCapableReply), (char *)&rep);
     return (client->noClientException);
@@ -210,12 +213,21 @@ ProcXF86DRIAuthConnection(
     register ClientPtr client
 )
 {
+    xXF86DRIAuthConnectionReply rep;
+    
     REQUEST(xXF86DRIAuthConnectionReq);
     REQUEST_SIZE_MATCH(xXF86DRIAuthConnectionReq);
 
-    if (!DRIAuthConnection( screenInfo.screens[stuff->screen], stuff->magic))
-	ErrorF("Failed to authenticate %u\n", stuff->magic);
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.authenticated = 1;
 
+    if (!DRIAuthConnection( screenInfo.screens[stuff->screen], stuff->magic)) {
+        ErrorF("Failed to authenticate %u\n", stuff->magic);
+	rep.authenticated = 0;
+    }
+    WriteToClient(client, sizeof(xXF86DRIAuthConnectionReply), (char *)&rep);
     return (client->noClientException);
 }
 
@@ -388,6 +400,8 @@ ProcXF86DRIGetDrawableInfo(
     DrawablePtr pDrawable;
     int X, Y, W, H;
     XF86DRIClipRectPtr pClipRects;
+    XF86DRIClipRectPtr pBackClipRects;
+    int backX, backY;
 
     REQUEST(xXF86DRIGetDrawableInfoReq);
     REQUEST_SIZE_MATCH(xXF86DRIGetDrawableInfoReq);
@@ -411,7 +425,11 @@ ProcXF86DRIGetDrawableInfo(
 			     (int*)&W,
 			     (int*)&H,
 			     (int*)&rep.numClipRects,
-			     &pClipRects)) {
+			     &pClipRects,
+			     &backX, 
+			     &backY,
+			     (int*)&rep.numBackClipRects,
+			     &pBackClipRects)) {
 	return BadValue;
     }
 
@@ -419,18 +437,32 @@ ProcXF86DRIGetDrawableInfo(
     rep.drawableY = Y;
     rep.drawableWidth = W;
     rep.drawableHeight = H;
+    rep.length = (SIZEOF(xXF86DRIGetDrawableInfoReply) - 
+		  SIZEOF(xGenericReply));
 
-    rep.length = 0;
-    if (rep.numClipRects) {
-	rep.length = (SIZEOF(xXF86DRIGetDrawableInfoReply) - 
-		      SIZEOF(xGenericReply) +
-		      sizeof(XF86DRIClipRectRec) * rep.numClipRects);
-    }
+    rep.backX = backX;
+    rep.backY = backY;
+        
+    if (rep.numBackClipRects) 
+       rep.length += sizeof(XF86DRIClipRectRec) * rep.numBackClipRects;    
 
+    if (rep.numClipRects) 
+       rep.length += sizeof(XF86DRIClipRectRec) * rep.numClipRects;
+    
     WriteToClient(client, sizeof(xXF86DRIGetDrawableInfoReply), (char *)&rep);
-    if (rep.length) {
-	WriteToClient(client, rep.length, (char *)pClipRects);
+
+    if (rep.numClipRects) {
+	WriteToClient(client,  
+		      sizeof(XF86DRIClipRectRec) * rep.numClipRects,
+		      (char *)pClipRects);
     }
+
+    if (rep.numBackClipRects) {
+       WriteToClient(client, 
+		     sizeof(XF86DRIClipRectRec) * rep.numBackClipRects,
+		     (char *)pBackClipRects);
+    }
+
     return (client->noClientException);
 }
 
@@ -487,15 +519,19 @@ ProcXF86DRIDispatch (
 {
     REQUEST(xReq);
 
-    if (!LocalClient(client))
-	return DRIErrorBase + XF86DRIClientNotLocal;
-
     switch (stuff->data)
     {
     case X_XF86DRIQueryVersion:
 	return ProcXF86DRIQueryVersion(client);
     case X_XF86DRIQueryDirectRenderingCapable:
 	return ProcXF86DRIQueryDirectRenderingCapable(client);
+    }
+
+    if (!LocalClient(client))
+	return DRIErrorBase + XF86DRIClientNotLocal;
+
+    switch (stuff->data)
+    {
     case X_XF86DRIOpenConnection:
 	return ProcXF86DRIOpenConnection(client);
     case X_XF86DRICloseConnection:

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/xf86dri.h,v 1.4 2000/02/14 06:27:11 martin Exp $ */
+/* $XFree86: xc/lib/GL/dri/xf86dri.h,v 1.5 2000/02/23 04:46:34 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -59,6 +59,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define XF86DRIOperationNotSupported	1
 #define XF86DRINumberErrors		(XF86DRIOperationNotSupported + 1)
 
+/* Warning : Do not change XF86DRIClipRect without changing the kernel 
+ * structure! */
 typedef struct _XF86DRIClipRect {
     unsigned short	x1; /* Upper left: inclusive */
     unsigned short	y1;
@@ -177,7 +179,11 @@ Bool XF86DRIGetDrawableInfo(
     int*		/* W */,
     int*		/* H */,
     int*		/* numClipRects */,
-    XF86DRIClipRectPtr*	/* pClipRects */
+    XF86DRIClipRectPtr*,/* pClipRects */
+    int*		/* backX */,
+    int*		/* backY */,
+    int*		/* numBackClipRects */,
+    XF86DRIClipRectPtr*	/* pBackClipRects */    
 #endif
 );
 

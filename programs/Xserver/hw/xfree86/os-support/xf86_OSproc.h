@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.37 1999/12/03 19:17:38 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.39 2000/02/08 13:13:27 eich Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -164,7 +164,7 @@ extern int xf86SetSerialModemState(int fd, int state);
 extern int xf86GetSerialModemState(int fd);
 extern int xf86SerialModemSetBits(int fd, int bits);
 extern int xf86SerialModemClearBits(int fd, int bits);
-
+extern int xf86LoadKernelModule(const char *pathname);
 
 #if defined(__alpha__)
 /* entry points for Mmio memory access routines */

@@ -722,8 +722,8 @@ render_func **fxDDChooseRenderVBTables(GLcontext *ctx)
     return null_tables;  
 
   switch (fxMesa->render_index) {
-  case FX_FLAT:
-    return fxDDRenderVBFlat_tables;
+/*    case FX_FLAT: */
+/*      return fxDDRenderVBFlat_tables; */
   case 0:
     return fxDDRenderVBSmooth_tables; 
   default:

@@ -53,7 +53,7 @@ render_bitmap( GLcontext *ctx, GLint px, GLint py,
 {
    struct pixel_buffer *PB = ctx->PB;
    GLint row, col;
-   GLint pz;
+   GLdepth fragZ;
 
    ASSERT(ctx->RenderMode == GL_RENDER);
 
@@ -68,16 +68,16 @@ render_bitmap( GLcontext *ctx, GLint px, GLint py,
       g = (GLint) (ctx->Current.RasterColor[1] * 255.0F);
       b = (GLint) (ctx->Current.RasterColor[2] * 255.0F);
       a = (GLint) (ctx->Current.RasterColor[3] * 255.0F);
-      PB_SET_COLOR( ctx, PB, r, g, b, a );
+      PB_SET_COLOR( PB, r, g, b, a );
    }
    else {
-      PB_SET_INDEX( ctx, PB, ctx->Current.RasterIndex );
+      PB_SET_INDEX( PB, ctx->Current.RasterIndex );
    }
 
-   pz = (GLint) ( ctx->Current.RasterPos[2] * DEPTH_SCALE );
+   fragZ = (GLdepth) ( ctx->Current.RasterPos[2] * ctx->Visual->DepthMaxF);
 
    for (row=0; row<height; row++) {
-      const GLubyte *src = (const GLubyte *) gl_pixel_addr_in_image( unpack,
+      const GLubyte *src = (const GLubyte *) _mesa_image_address( unpack,
                  bitmap, width, height, GL_COLOR_INDEX, GL_BITMAP, 0, row, 0 );
 
       if (unpack->LsbFirst) {
@@ -85,7 +85,7 @@ render_bitmap( GLcontext *ctx, GLint px, GLint py,
          GLubyte mask = 1U << (unpack->SkipPixels & 0x7);
          for (col=0; col<width; col++) {
             if (*src & mask) {
-               PB_WRITE_PIXEL( PB, px+col, py+row, pz );
+               PB_WRITE_PIXEL( PB, px+col, py+row, fragZ );
             }
             if (mask == 128U) {
                src++;
@@ -107,7 +107,7 @@ render_bitmap( GLcontext *ctx, GLint px, GLint py,
          GLubyte mask = 128U >> (unpack->SkipPixels & 0x7);
          for (col=0; col<width; col++) {
             if (*src & mask) {
-               PB_WRITE_PIXEL( PB, px+col, py+row, pz );
+               PB_WRITE_PIXEL( PB, px+col, py+row, fragZ );
             }
             if (mask == 1U) {
                src++;
@@ -166,6 +166,8 @@ _mesa_Bitmap( GLsizei width, GLsizei height,
          if (ctx->PB->primitive!=GL_BITMAP) {   /* A.W. 1.1.2000 */
             gl_reduced_prim_change( ctx, GL_BITMAP );
          }
+
+         ctx->OcclusionResult = GL_TRUE;
 
          if (ctx->Driver.Bitmap) {
             /* let device driver try to render the bitmap */

@@ -36,13 +36,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "tdfx_init.h"
 #include <glide.h>
 
-GLboolean tdfxInitHW(XMesaContext c)
+GLboolean tdfxInitHW(__DRIdrawablePrivate *driDrawPriv,
+                     tdfxContextPrivate *fxMesa)
 {
   /* KW: Would be nice to make one of these a member of the other.
    */
-  tdfxContextPrivate *cPriv = (tdfxContextPrivate*)c->private;
-  tdfxContextPrivate *fxMesa = cPriv;
-  __DRIdrawablePrivate *driDrawPriv = c->driContextPriv->driDrawablePriv;
   __DRIscreenPrivate *driScrnPriv = driDrawPriv->driScreenPriv;
   tdfxScreenPrivate *sPriv = (tdfxScreenPrivate*)driScrnPriv->private;
 
@@ -50,10 +48,10 @@ GLboolean tdfxInitHW(XMesaContext c)
   fprintf(stderr, "Debug locking enabled\n");
 #endif
     
-  if (cPriv->initDone) return GL_TRUE;
+  if (fxMesa->initDone) return GL_TRUE;
 
-  cPriv->width=driDrawPriv->w;
-  cPriv->height=driDrawPriv->h;
+  fxMesa->width=driDrawPriv->w;
+  fxMesa->height=driDrawPriv->h;
 
   /* We have to use a light lock here, because we can't do any glide
      operations yet. No use of FX_* functions in this function. */
@@ -70,18 +68,12 @@ GLboolean tdfxInitHW(XMesaContext c)
     fxMesa->haveTwoTMUs=GL_TRUE;
 
   /* !!! We are forcing these !!! */
-  fxMesa->haveDoubleBuffer=GL_TRUE; 
   fxMesa->haveAlphaBuffer=GL_FALSE; 
-  fxMesa->haveZBuffer=GL_TRUE;
   fxMesa->haveGlobalPaletteTexture=GL_FALSE;
 
   fxMesa->glideContext =  FX_grSstWinOpen_NoLock((FxU32)-1, GR_RESOLUTION_NONE,
 						 GR_REFRESH_NONE,
-#if  FXMESA_USE_ARGB
-						 GR_COLORFORMAT_ARGB,
-#else
 						 GR_COLORFORMAT_ABGR,
-#endif
 						 GR_ORIGIN_LOWER_LEFT, 2, 1);
 
   grDRIResetSAREA();
@@ -95,7 +87,7 @@ GLboolean tdfxInitHW(XMesaContext c)
 
   fxInitPixelTables(fxMesa, GL_FALSE); /* Load tables of pixel colors */
 
-  cPriv->initDone=GL_TRUE;
+  fxMesa->initDone=GL_TRUE;
   return GL_TRUE;
 
 }

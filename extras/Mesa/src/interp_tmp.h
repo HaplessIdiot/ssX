@@ -23,14 +23,43 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#define INTERP_UBYTE( out, t, a, b ) {			\
+      GLfloat fa = UBYTE_COLOR_TO_FLOAT_COLOR(a);	\
+      GLfloat fb = UBYTE_COLOR_TO_FLOAT_COLOR(b);	\
+      GLfloat fo = LINTERP(t, fa, fb);			\
+      FLOAT_COLOR_TO_UBYTE_COLOR(out, fo);		\
+}
+
+#if 1
+
+#define INTERP_RGBA(nr, t, out, a, b) {			\
+   int i;						\
+   for (i = 0; i < nr; i++) {				\
+      GLfloat fa = UBYTE_COLOR_TO_FLOAT_COLOR(a[i]);	\
+      GLfloat fb = UBYTE_COLOR_TO_FLOAT_COLOR(b[i]);	\
+      GLfloat fo = LINTERP(t, fa, fb);			\
+      FLOAT_COLOR_TO_UBYTE_COLOR(out[i], fo);		\
+   }							\
+}
+#else
+
+#define INTERP_RGBA(nr, t, out, a, b) {				\
+   int n;							\
+   const GLuint ti = FloatToInt(t*256.0F);			\
+   const GLubyte *Ib = (const GLubyte *)&a[0];			\
+   const GLubyte *Jb = (const GLubyte *)&b[0];			\
+   GLubyte *Ob = (GLubyte *)&out[0];				\
+								\
+   for (n = 0 ; n < nr ; n++)					\
+      Ob[n] = (GLubyte) (Ib[n] + ((ti * (Jb[n] - Ib[n]))/256));	\
+}
+#endif
+
+
 
 static void NAME( struct vertex_buffer *VB,
 		  GLuint dst, GLfloat t, GLuint in, GLuint out )
 {
-#if (IND & CLIP_RGBA0)
-   GLfloat col[3][4];
-#endif
-
    (void) VB;
    (void) dst;
    (void) t;
@@ -38,35 +67,43 @@ static void NAME( struct vertex_buffer *VB,
    (void) out;
 
 #if (IND & CLIP_RGBA0)
-   UBYTE_RGBA_TO_FLOAT_RGBA(col[1], VB->Color[0]->data[in]);
-   UBYTE_RGBA_TO_FLOAT_RGBA(col[2], VB->Color[0]->data[out]);
-   INTERP_SZ( t, col, 0, 1, 2, 4 );
-   FLOAT_RGBA_TO_UBYTE_RGBA(VB->Color[0]->data[dst], col[0]);
+   INTERP_RGBA( 4, t, 
+		VB->Color[0]->data[dst], 
+		VB->Color[0]->data[in],
+		VB->Color[0]->data[out] );
 #endif
 
 #if (IND & CLIP_RGBA1)
    if (VB->ctx->TriangleCaps & DD_TRI_LIGHT_TWOSIDE) {
-      UBYTE_RGBA_TO_FLOAT_RGBA(col[1], VB->Color[1]->data[in]);
-      UBYTE_RGBA_TO_FLOAT_RGBA(col[2], VB->Color[1]->data[out]);
-      INTERP_SZ( t, col, 0, 1, 2, 4 );
-      FLOAT_RGBA_TO_UBYTE_RGBA(VB->Color[1]->data[dst], col[0]);
+      INTERP_RGBA( 4, t, 
+		   VB->Color[1]->data[dst], 
+		   VB->Color[1]->data[in],
+		   VB->Color[1]->data[out] );
    }
 
    if (VB->ctx->TriangleCaps & DD_SEPERATE_SPECULAR) 
    {
-      UBYTE_RGBA_TO_FLOAT_RGBA(col[1], VB->Spec[0][in]);
-      UBYTE_RGBA_TO_FLOAT_RGBA(col[2], VB->Spec[0][out]);
-      INTERP_SZ( t, col, 0, 1, 2, 4 );
-      FLOAT_RGBA_TO_UBYTE_RGBA(VB->Spec[0][dst], col[0]);
+      INTERP_RGBA( 3, t, 
+		   VB->Spec[0][dst], 
+		   VB->Spec[0][in],
+		   VB->Spec[0][out] );
 
       if (VB->ctx->TriangleCaps & DD_TRI_LIGHT_TWOSIDE) {
-	 UBYTE_RGBA_TO_FLOAT_RGBA(col[1], VB->Spec[1][in]);
-	 UBYTE_RGBA_TO_FLOAT_RGBA(col[2], VB->Spec[1][out]);
-	 INTERP_SZ( t, col, 0, 1, 2, 4 );
-	 FLOAT_RGBA_TO_UBYTE_RGBA(VB->Spec[1][dst], col[0]);
+	 INTERP_RGBA( 3, t, 
+		      VB->Spec[1][dst], 
+		      VB->Spec[1][in],
+		      VB->Spec[1][out] );
       }
    }      
 #endif
+
+#if (IND & CLIP_FOG_COORD)
+   {
+      GLubyte a = VB->Spec[0][in][3], b = VB->Spec[0][out][3];
+      INTERP_UBYTE( VB->Spec[0][dst][3], t, a, b );
+   }
+#endif
+
 
 #if (IND & CLIP_INDEX0)
    VB->IndexPtr->data[dst] = (GLuint) (GLint) 

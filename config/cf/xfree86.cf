@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.291 2000/06/14 02:36:49 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.292 2000/06/15 20:49:56 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -586,12 +586,21 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #  ifndef GlxBuiltInTdfx
 #    define GlxBuiltInTdfx         NO
 #  endif
+#  ifndef GlxBuiltInMga
+#    define GlxBuiltInMga          NO
+#  endif
+#  ifndef GlxBuiltInI810
+#    define GlxBuiltInI810         NO
+#  endif
+#  ifndef GlxBuiltInR128
+#    define GlxBuiltInR128         NO
+#  endif
 
-#  if GlxBuiltInTdfx
+#  if GlxBuiltInTdfx || GlxBuiltInMga || GlxBuiltInI810 || GlxBuiltInR128
 #    define GlxDriverUsesMesa      YES
 #  endif
 
-#  if GlxBuiltInGamma || GlxBuiltInMesa || GlxBuiltInTdfx
+#  if GlxBuiltInGamma || GlxBuiltInTdfx || GlxBuiltInMga || GlxBuiltInI810 || GlxBuiltInR128 || GlxBuiltInMesa
 #    define GlxUseBuiltInDRIDriver YES
 #    define DRIDynLoadDefines /**/
 #  else

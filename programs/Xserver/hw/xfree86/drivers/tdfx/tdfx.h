@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.8 2000/02/15 07:13:41 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.9 2000/02/18 12:20:02 tsi Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -25,8 +25,21 @@
 #include "tdfx_dripriv.h"
 #endif
 
+#define TDFX_VERSION 4000
+#define TDFX_NAME "TDFX"
+#define TDFX_DRIVER_NAME "tdfx"
+#define TDFX_MAJOR_VERSION 1
+#define TDFX_MINOR_VERSION 0
+#define TDFX_PATCHLEVEL 0
+
 struct _TDFXRec;
 typedef struct _TDFXRec *TDFXPtr;
+
+#ifdef XF86DRI
+#define PIXMAP_CACHE_LINES 128
+#else
+#define PIXMAP_CACHE_LINES 512
+#endif
 
 #ifdef PROP_3DFX
 #include "tdfx_priv.h"
@@ -37,6 +50,7 @@ typedef struct _TDFXRec *TDFXPtr;
 extern Bool TDFXInitPrivate(ScreenPtr pScreen);
 extern void TDFXShutdownPrivate(ScreenPtr pScreen);
 extern void TDFXSwapContextPrivate(ScreenPtr pScreen);
+extern void TDFXLostContext(ScreenPtr pScreen);
 
 #ifdef XF86DRI
 extern void FillPrivateDRI(TDFXPtr pTDFX, TDFXDRIPtr pTDFXDRI);
@@ -49,6 +63,7 @@ extern void FillPrivateDRI(TDFXPtr pTDFX, TDFXDRIPtr pTDFXDRI);
 #define TDFX_DEBUG_CMDS
 #define TRACECURS 1
 #define REGDEBUG 1
+#define TRACEREG
 #endif
 
 #ifdef TRACE
@@ -84,6 +99,14 @@ typedef char (*TDFXReadIndexedByteFunc)(TDFXPtr pTDFX, int addr,
 					char index);
 typedef void (*TDFXWriteWordFunc)(TDFXPtr pTDFX, int addr, int value);
 typedef int (*TDFXReadWordFunc)(TDFXPtr pTDFX, int addr);
+typedef void (*TDFXWriteChipIndexedByteFunc)(TDFXPtr pTDFX, int chip, 
+					     int addr, char index, char value);
+typedef char (*TDFXReadChipIndexedByteFunc)(TDFXPtr pTDFX, int chip, 
+					    int addr, char index);
+typedef void (*TDFXWriteChipWordFunc)(TDFXPtr pTDFX, int chip, 
+				      int addr, int value);
+typedef int (*TDFXReadChipWordFunc)(TDFXPtr pTDFX, int chip,
+				    int addr);
 typedef void (*TDFXSyncFunc)(ScrnInfoPtr pScrn);
 typedef void (*TDFXBufferFunc)(TDFXPtr pTDFX, int which);
 
@@ -111,21 +134,26 @@ typedef struct TextureData_t {
   struct TextureData_t *next;
 } TextureData;
 
+#define MAXCHIPS 4
+
 typedef struct _TDFXRec {
-  unsigned char *MMIOBase;
+  unsigned char *MMIOBase[MAXCHIPS];
   unsigned char *FbBase;
-  unsigned int PIOBase;
+  unsigned char *myFbBase;
+  unsigned int PIOBase[MAXCHIPS];
   long FbMapSize;
+  int pixelFormat;
   int stride;
   int cpp;
   int maxClip;
   int MaxClock;
-  int Chipset;
-  int LinearAddr;
-  int MMIOAddr;
-  EntityInfoPtr pEnt;
+  int ChipType;
   pciVideoPtr PciInfo;
-  PCITAG PciTag;
+  int LinearAddr[MAXCHIPS];
+  int MMIOAddr[MAXCHIPS];
+  EntityInfoPtr pEnt;
+  int numChips;
+  PCITAG PciTag[MAXCHIPS];
   int HasSGRAM;
   int PciCnt;
   int PrevDrawState;
@@ -142,6 +170,7 @@ typedef struct _TDFXRec {
   Bool NoAccel;
   DGAModePtr DGAModes;
   Bool DGAactive;
+  Bool initDone;
   int DGAViewportStatus;
   int cursorOffset;
   int fbOffset;
@@ -153,6 +182,8 @@ typedef struct _TDFXRec {
   TDFXReadIndexedByteFunc readControl;
   TDFXWriteWordFunc writeLong;
   TDFXReadWordFunc readLong;
+  TDFXWriteChipWordFunc writeChipLong;
+  TDFXReadChipWordFunc readChipLong;
   TDFXSyncFunc sync;
   int syncDone;
   int scanlineWidth;
@@ -188,6 +219,10 @@ typedef struct {
 
 #define TDFX2XCUTOFF 135000
 
+#ifndef PCI_CHIP_VOODOO5
+#define PCI_CHIP_VOODOO5 9
+#endif
+
 extern Bool TDFXAccelInit(ScreenPtr pScreen);
 extern Bool TDFXCursorInit(ScreenPtr pScreen);
 extern void TDFXSync(ScrnInfoPtr pScrn);
@@ -197,6 +232,7 @@ extern Bool TDFXDRIFinishScreenInit(ScreenPtr pScreen);
 extern Bool TDFXDGAInit(ScreenPtr pScreen);
 extern void TDFXCursorGrabMemory(ScreenPtr pScreen);
 extern void TDFXSetLFBConfig(TDFXPtr pTDFX);
+extern void TDFXSendNOPPrivate(ScrnInfoPtr pScrn);
 
 extern Bool TDFXSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 extern void TDFXAdjustFrame(int scrnIndex, int x, int y, int flags);
@@ -220,6 +256,9 @@ extern void TDFXSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
 				  unsigned int planemask);
 extern void TDFXSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, 
 					int w, int h);
+
+extern void TDFXSelectBuffer(TDFXPtr pTDFX, int which);
+
 
 #ifndef PROP_3DFX
 #define DECLARE(a)

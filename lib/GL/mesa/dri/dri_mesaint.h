@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesaint.h,v 1.5 2000/02/15 07:13:28 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesaint.h,v 1.6 2000/02/23 04:46:38 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -29,6 +29,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Brian E. Paul <brian@precisioninsight.com>
  *
  */
 
@@ -40,9 +41,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <GL/glx.h>
 #include "xf86dri.h"
 #include "sarea.h"
-#include "GL/xmesa.h"
 #include "dri_mesa.h"
 #include "dri_xmesaapi.h"
+
 
 #define DRI_MESA_VALIDATE_DRAWABLE_INFO(dpy,scrn,pDrawPriv)  \
     do {                                                     \
@@ -59,9 +60,9 @@ struct __DRIdrawablePrivateRec {
     drmDrawable hHWDrawable;
 
     /*
-    ** Mesa's private context information.  This structure is opaque.
+    ** Mesa's private frame buffer information.  This structure is opaque.
     */
-    XMesaBuffer xm_buf;
+    GLframebuffer *mesaBuffer;
 
     /*
     ** X's drawable ID associated with this private drawable.
@@ -104,6 +105,16 @@ struct __DRIdrawablePrivateRec {
     XF86DRIClipRectPtr pClipRects;
 
     /*
+    ** Information about the back and depthbuffer where different
+    ** from above.
+    */
+    int backX;
+    int backY;
+    int backClipRectType;
+    int numBackClipRects;
+    XF86DRIClipRectPtr pBackClipRects;
+
+    /*
     ** Pointer to context to which this drawable is currently bound.
     */
     __DRIcontextPrivate *driContextPriv;
@@ -128,7 +139,17 @@ struct __DRIcontextPrivateRec {
     /*
     ** Mesa's private context information.  This structure is opaque.
     */
-    XMesaContext xm_ctx;
+    GLcontext *mesaContext;
+
+    /*
+    ** Device driver's private context data.  This structure is opaque.
+    */
+    void *driverPrivate;
+
+    /*
+    ** This context's display pointer.
+    */
+    Display *display;
 
     /*
     ** Pointer to drawable currently bound to this context.
@@ -145,7 +166,7 @@ struct __DRIvisualPrivateRec {
     /*
     ** Mesa's private visual information.  This structure is opaque.
     */
-    XMesaVisual xm_vis;
+    GLvisual *mesaVisual;
 
     /*
     ** X's visual ID associated with this private visual.
@@ -154,6 +175,11 @@ struct __DRIvisualPrivateRec {
 };
 
 struct __DRIscreenPrivateRec {
+    /*
+    ** Display for this screen
+    */
+    Display *display;
+
     /*
     ** Current screen's number
     */
@@ -169,14 +195,21 @@ struct __DRIscreenPrivateRec {
     /*
     ** Function pointers associated with Mesa's GLX functions.
     */
-    __XMESAapi XMesaAPI;
+    __MesaAPI MesaAPI;
 
     /*
-    ** Core rendering library's driver version information.
+    ** DDX / 2D driver version information.
     */
-    int major;
-    int minor;
-    int patch;
+    int ddxMajor;
+    int ddxMinor;
+    int ddxPatch;
+
+    /*
+    ** DRM version information.
+    */
+    int drmMajor;
+    int drmMinor;
+    int drmPatch;
 
     /*
     ** ID used when the client sets the drawable lock.  The X server

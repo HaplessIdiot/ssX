@@ -62,15 +62,10 @@ static void fxSetupTextureSingleTMU_NoLock(GLcontext *ctx, GLuint textureset);
 static void fxSetupDoubleTMU_NoLock(fxMesaContext fxMesa, 
 			     struct gl_texture_object *tObj0,
 			     struct gl_texture_object *tObj1);
-static void fxSetupTexture_NoLock(GLcontext *ctx);
-static void fxSetupTexture(GLcontext *ctx);
-static void fxSetupBlend(GLcontext *ctx);
-static void fxSetupDepthTest(GLcontext *ctx);
-static void fxSetupScissor(GLcontext *ctx);
-static void fxSetupCull(GLcontext *ctx);
 static void gl_print_fx_state_flags( const char *msg, GLuint flags);
-static GLboolean fxMultipassBlend(struct vertex_buffer *, GLuint);
 static GLboolean fxMultipassTexture( struct vertex_buffer *, GLuint );
+
+
 
 static void fxTexValidate(GLcontext *ctx, struct gl_texture_object *tObj)
 {
@@ -183,7 +178,7 @@ static GLuint fxGetTexSetConfiguration(GLcontext *ctx,
   GLuint envmode=0;
   GLuint ifmt=0;
 
-  if((ctx->Light.ShadeModel==GL_SMOOTH) ||
+  if((ctx->Light.ShadeModel==GL_SMOOTH) || 1 ||
      (ctx->Point.SmoothFlag) ||
      (ctx->Line.SmoothFlag) ||
      (ctx->Polygon.SmoothFlag))
@@ -191,10 +186,12 @@ static GLuint fxGetTexSetConfiguration(GLcontext *ctx,
   else
     unitsmode|=FX_UM_ALPHA_CONSTANT;
 
-  if(ctx->Light.ShadeModel==GL_SMOOTH)
+  if(ctx->Light.ShadeModel==GL_SMOOTH || 1)
     unitsmode|=FX_UM_COLOR_ITERATED;
   else
     unitsmode|=FX_UM_COLOR_CONSTANT;
+
+
 
   /* 
      OpenGL Feeds Texture 0 into Texture 1
@@ -476,11 +473,6 @@ static void fxSetupTextureSingleTMU_NoLock(GLcontext *ctx, GLuint textureset)
   else
     unitsmode=fxGetTexSetConfiguration(ctx,NULL,tObj);
 
-  if(fxMesa->lastUnitsMode==unitsmode)
-    return;
-
-  fxMesa->lastUnitsMode=unitsmode;
-
   fxMesa->stw_hint_state = 0;
   FX_grHints_NoLock(GR_HINT_STWHINT,0);
 
@@ -555,9 +547,8 @@ static void fxSetupTextureSingleTMU_NoLock(GLcontext *ctx, GLuint textureset)
 			       FXTRUE);
     ctx->Driver.MultipassFunc = fxMultipassBlend;
 #else
-#ifndef FX_SILENT
-    fprintf(stderr,"fx Driver: GL_BLEND not yet supported\n");
-#endif
+    if (MESA_VERBOSE&VERBOSE_DRIVER)
+      fprintf(stderr,"fx Driver: GL_BLEND not yet supported\n");
 #endif    
     break;
   case GL_REPLACE:
@@ -588,9 +579,9 @@ static void fxSetupTextureSingleTMU_NoLock(GLcontext *ctx, GLuint textureset)
 			       FXFALSE);
     break;
   default:
-#ifndef FX_SILENT
-    fprintf(stderr,"fx Driver: %x Texture.EnvMode not yet supported\n",ctx->Texture.Unit[textureset].EnvMode);
-#endif
+    if (MESA_VERBOSE&VERBOSE_DRIVER)
+      fprintf(stderr, "fx Driver: %x Texture.EnvMode not yet supported\n",
+	      ctx->Texture.Unit[textureset].EnvMode);
     break;
   }
 
@@ -599,7 +590,8 @@ static void fxSetupTextureSingleTMU_NoLock(GLcontext *ctx, GLuint textureset)
   }
 }
 
-static void fxSetupTextureSingleTMU(GLcontext *ctx, GLuint textureset) {
+static void fxSetupTextureSingleTMU(GLcontext *ctx, GLuint textureset)
+{
   BEGIN_BOARD_LOCK();
   fxSetupTextureSingleTMU_NoLock(ctx, textureset);
   END_BOARD_LOCK();
@@ -763,11 +755,6 @@ static void fxSetupTextureDoubleTMU_NoLock(GLcontext *ctx)
   fxSetupDoubleTMU_NoLock(fxMesa,tObj0,tObj1);
 
   unitsmode=fxGetTexSetConfiguration(ctx,tObj0,tObj1);
-
-  if(fxMesa->lastUnitsMode==unitsmode)
-    return;
-
-  fxMesa->lastUnitsMode=unitsmode;
 
   fxMesa->stw_hint_state |= GR_STWHINT_ST_DIFF_TMU1;
   FX_grHints_NoLock(GR_HINT_STWHINT, fxMesa->stw_hint_state);
@@ -1030,7 +1017,7 @@ static void fxSetupTextureNone_NoLock(GLcontext *ctx)
      fprintf(stderr,"fxmesa: fxSetupTextureNone(...)\n");
   }
 
-  if((ctx->Light.ShadeModel==GL_SMOOTH) ||
+  if((ctx->Light.ShadeModel==GL_SMOOTH) || 1 ||
      (ctx->Point.SmoothFlag) ||
      (ctx->Line.SmoothFlag) ||
      (ctx->Polygon.SmoothFlag))
@@ -1038,7 +1025,7 @@ static void fxSetupTextureNone_NoLock(GLcontext *ctx)
   else
     locala=GR_COMBINE_LOCAL_CONSTANT;
   
-  if(ctx->Light.ShadeModel==GL_SMOOTH)
+  if(ctx->Light.ShadeModel==GL_SMOOTH || 1)
     localc=GR_COMBINE_LOCAL_ITERATED;
   else
     localc=GR_COMBINE_LOCAL_CONSTANT;
@@ -1054,8 +1041,6 @@ static void fxSetupTextureNone_NoLock(GLcontext *ctx)
 			   localc,
 			   GR_COMBINE_OTHER_NONE,
 			   FXFALSE);
-
-  fxMesa->lastUnitsMode=FX_UM_NONE;
 }
 
 /************************************************************************/
@@ -1106,7 +1091,8 @@ static void fxSetupTexture_NoLock(GLcontext *ctx)
   }
 }
 
-static void fxSetupTexture(GLcontext *ctx) {
+static void fxSetupTexture(GLcontext *ctx)
+{
   BEGIN_BOARD_LOCK();
   fxSetupTexture_NoLock(ctx);
   END_BOARD_LOCK();
@@ -1239,15 +1225,19 @@ void fxDDBlendFunc(GLcontext *ctx, GLenum sfactor, GLenum dfactor)
 
 static void fxSetupBlend(GLcontext *ctx)
 {
-  fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
-  tfxUnitsState *us=&fxMesa->unitsState;
+  fxMesaContext fxMesa = FX_CONTEXT(ctx);
+  tfxUnitsState *us = &fxMesa->unitsState;
 
-  if(us->blendEnabled)
-     FX_grAlphaBlendFunction(us->blendSrcFuncRGB,us->blendDstFuncRGB,
-			  us->blendSrcFuncAlpha,us->blendDstFuncAlpha);
+  assert(us->blendEnabled == ctx->Color.BlendEnabled);
+
+  if (us->blendEnabled)
+     FX_grAlphaBlendFunction(us->blendSrcFuncRGB, us->blendDstFuncRGB,
+                             us->blendSrcFuncAlpha, us->blendDstFuncAlpha);
   else
-     FX_grAlphaBlendFunction(GR_BLEND_ONE,GR_BLEND_ZERO,GR_BLEND_ONE,GR_BLEND_ZERO);
+     FX_grAlphaBlendFunction(GR_BLEND_ONE, GR_BLEND_ZERO, 
+                             GR_BLEND_ONE, GR_BLEND_ZERO);
 }
+
   
 /************************************************************************/
 /************************** Alpha Test SetUp ****************************/
@@ -1255,8 +1245,8 @@ static void fxSetupBlend(GLcontext *ctx)
 
 void fxDDAlphaFunc(GLcontext *ctx, GLenum func, GLclampf ref)
 {
-  fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
-  tfxUnitsState *us=&fxMesa->unitsState;
+  fxMesaContext fxMesa = FX_CONTEXT(ctx);
+  tfxUnitsState *us = &fxMesa->unitsState;
   GrCmpFnc_t newfunc;
 
   switch(func) {
@@ -1316,80 +1306,117 @@ static void fxSetupAlphaTest(GLcontext *ctx)
      FX_grAlphaTestFunction(GR_CMP_ALWAYS);
 }
 
-/************************************************************************/
-/************************** Depth Test SetUp ****************************/
-/************************************************************************/
 
-void fxDDDepthFunc(GLcontext *ctx, GLenum func)
+/*
+ * Evaluate all depth-test state and make the Glide calls.
+ */
+static void
+fxSetupDepthTest(GLcontext *ctx)
 {
-  fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
-  tfxUnitsState *us=&fxMesa->unitsState;
-  GrCmpFnc_t dfunc;
-
-  switch(func) {
-  case GL_NEVER:
-    dfunc=GR_CMP_NEVER;
-    break;
-  case GL_LESS:
-    dfunc=GR_CMP_LESS;
-    break;
-  case GL_GEQUAL:
-    dfunc=GR_CMP_GEQUAL;
-    break;
-  case GL_LEQUAL:
-    dfunc=GR_CMP_LEQUAL;
-    break;
-  case GL_GREATER:
-    dfunc=GR_CMP_GREATER;
-    break;
-  case GL_NOTEQUAL:
-    dfunc=GR_CMP_NOTEQUAL;
-    break;
-  case GL_EQUAL:
-    dfunc=GR_CMP_EQUAL;
-    break;
-  case GL_ALWAYS:
-    dfunc=GR_CMP_ALWAYS;
-    break;
-  default:
-    fprintf(stderr,"fx Driver: internal error in fxDDDepthFunc()\n");
-    fxCloseHardware();
-    exit(-1);
-    break;
+  if (ctx->Depth.Test) {
+    GrCmpFnc_t dfunc;
+    switch (ctx->Depth.Func) {
+      case GL_NEVER:
+        dfunc = GR_CMP_NEVER;
+        break;
+      case GL_LESS:
+        dfunc = GR_CMP_LESS;
+        break;
+      case GL_GEQUAL:
+        dfunc = GR_CMP_GEQUAL;
+        break;
+      case GL_LEQUAL:
+        dfunc = GR_CMP_LEQUAL;
+        break;
+      case GL_GREATER:
+        dfunc = GR_CMP_GREATER;
+        break;
+      case GL_NOTEQUAL:
+        dfunc = GR_CMP_NOTEQUAL;
+        break;
+      case GL_EQUAL:
+        dfunc = GR_CMP_EQUAL;
+        break;
+      case GL_ALWAYS:
+        dfunc = GR_CMP_ALWAYS;
+        break;
+      default:
+        gl_problem(ctx, "bad depth mode in fxSetupDepthTest");
+        dfunc = GR_CMP_ALWAYS;
+    }
+    FX_grDepthBufferFunction(dfunc);
+    FX_grDepthMask(ctx->Depth.Mask);
   }
-
-  if(dfunc!=us->depthTestFunc) {
-    us->depthTestFunc=dfunc;
-    fxMesa->new_state |= FX_NEW_DEPTH;
-    ctx->Driver.RenderStart = fxSetupFXUnits;
-  }
-
-}
-
-void fxDDDepthMask(GLcontext *ctx, GLboolean flag)
-{
-  fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
-  tfxUnitsState *us=&fxMesa->unitsState;
-
-  if(flag!=us->depthMask) {
-    us->depthMask=flag;
-    fxMesa->new_state |= FX_NEW_DEPTH;
-    ctx->Driver.RenderStart = fxSetupFXUnits;
+  else {
+    /* depth test always passes, don't update Z buffer */
+    FX_grDepthBufferFunction(GR_CMP_ALWAYS);
+    FX_grDepthMask(FXFALSE);
   }
 }
 
-static void fxSetupDepthTest(GLcontext *ctx)
+
+/*
+ * Evaluate all stencil state and make the Glide calls.
+ */
+static GrStencil_t
+fxConvertGLStencilOp(GLenum op)
 {
-  fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
-  tfxUnitsState *us=&fxMesa->unitsState;
-
-  if(us->depthTestEnabled)
-     FX_grDepthBufferFunction(us->depthTestFunc);
-  else
-     FX_grDepthBufferFunction(GR_CMP_ALWAYS);
-
-  FX_grDepthMask(us->depthMask);
+  switch (op) {
+    case GL_KEEP:
+      return GR_STENCILOP_KEEP;
+    case GL_ZERO:
+      return GR_STENCILOP_ZERO;
+    case GL_REPLACE:
+      return GR_STENCILOP_REPLACE;
+    case GL_INCR:
+      return GR_STENCILOP_INCR_CLAMP;
+    case GL_DECR:
+      return GR_STENCILOP_DECR_CLAMP;
+    case GL_INVERT:
+      return GR_STENCILOP_INVERT;
+    default:
+      gl_problem(NULL, "bad stencil op in fxConvertGLStencilOp");
+  }
+  return GR_STENCILOP_KEEP;  /* never get, silence compiler warning */
 }
+
+/*
+ * This function is called just before any rendering is done.
+ * It will validate the stencil parameters.
+ */
+static void
+fxSetupStencilTest(GLcontext *ctx)
+{
+  if (ctx->Stencil.Enabled) {
+    GrStencil_t sfail = fxConvertGLStencilOp(ctx->Stencil.FailFunc);
+    GrStencil_t zfail = fxConvertGLStencilOp(ctx->Stencil.ZFailFunc);
+    GrStencil_t zpass = fxConvertGLStencilOp(ctx->Stencil.ZPassFunc);
+    FX_grStencilOp(sfail, zfail, zpass);
+    FX_grStencilFunc(ctx->Stencil.Function - GL_NEVER,
+                     ctx->Stencil.Ref, ctx->Stencil.ValueMask);
+    FX_grStencilMask(ctx->Stencil.WriteMask);
+    FX_grEnable(GR_STENCIL_MODE_EXT);
+  }
+  else {
+    FX_grDisable(GR_STENCIL_MODE_EXT);
+  }
+}
+
+
+/*
+ * Set the state so that stencil is either enabled or disabled.
+ * This is called from Mesa only.  Glide is invoked at
+ * setup time, not now.
+ */
+static void
+fxDDEnableStencil(GLcontext *ctx, GLboolean state)
+{
+  fxMesaContext fxMesa = FX_CONTEXT(ctx);
+  (void) state;
+  fxMesa->new_state |= FX_NEW_STENCIL;
+  ctx->Driver.RenderStart = fxSetupFXUnits;
+}
+
 
 /************************************************************************/
 /**************************** Color Mask SetUp **************************/
@@ -1410,11 +1437,17 @@ static void fxSetupColorMask(GLcontext *ctx)
 {
   fxMesaContext fxMesa = FX_CONTEXT(ctx);
 
-  FX_grColorMask(ctx->Color.ColorMask[RCOMP] ||
-	      ctx->Color.ColorMask[GCOMP] ||
-	      ctx->Color.ColorMask[BCOMP],
-	      ctx->Color.ColorMask[ACOMP] && fxMesa->haveAlphaBuffer);
+  if (ctx->Color.DrawBuffer == GL_NONE) {
+    FX_grColorMask(FXFALSE, FXFALSE);
+  }
+  else {
+    FX_grColorMask(ctx->Color.ColorMask[RCOMP] ||
+                   ctx->Color.ColorMask[GCOMP] ||
+                   ctx->Color.ColorMask[BCOMP],
+                   ctx->Color.ColorMask[ACOMP] && fxMesa->haveAlphaBuffer);
+  }
 }
+
 
 
 
@@ -1582,58 +1615,70 @@ static void fxSetupCull(GLcontext *ctx)
 
 void fxDDEnable(GLcontext *ctx, GLenum cap, GLboolean state)
 {
-  fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
-  tfxUnitsState *us=&fxMesa->unitsState;
+  fxMesaContext fxMesa = FX_CONTEXT(ctx);
+  tfxUnitsState *us = &fxMesa->unitsState;
 
   if (MESA_VERBOSE&VERBOSE_DRIVER) {
-     fprintf(stderr,"fxmesa: fxDDEnable(...)\n");
+    fprintf(stderr,"fxmesa: fxDDEnable(...)\n");
   }
 
   switch(cap) {
-  case GL_ALPHA_TEST:
-    if(state!=us->alphaTestEnabled) {
-      us->alphaTestEnabled=state;
-      fxMesa->new_state |= FX_NEW_ALPHA;
-      ctx->Driver.RenderStart = fxSetupFXUnits;
-    }
-    break;
-  case GL_BLEND:
-    if(state!=us->blendEnabled) {
-      us->blendEnabled=state;
-      fxMesa->new_state |= FX_NEW_BLEND;
-      ctx->Driver.RenderStart = fxSetupFXUnits;
-    }
-    break;
-  case GL_DEPTH_TEST:
-    if(state!=us->depthTestEnabled) {
-      us->depthTestEnabled=state;
+    case GL_ALPHA_TEST:
+      if(state!=us->alphaTestEnabled) {
+        us->alphaTestEnabled=state;
+        fxMesa->new_state |= FX_NEW_ALPHA;
+        ctx->Driver.RenderStart = fxSetupFXUnits;
+      }
+      break;
+    case GL_BLEND:
+      if(state!=us->blendEnabled) {
+        us->blendEnabled=state;
+        fxMesa->new_state |= FX_NEW_BLEND;
+        ctx->Driver.RenderStart = fxSetupFXUnits;
+      }
+      break;
+    case GL_DEPTH_TEST:
       fxMesa->new_state |= FX_NEW_DEPTH;
       ctx->Driver.RenderStart = fxSetupFXUnits;
-    }
-    break;
-  case GL_SCISSOR_TEST:
-     fxMesa->new_state |= FX_NEW_SCISSOR;
-     ctx->Driver.RenderStart = fxSetupFXUnits;
-     break;
-  case GL_FOG:
-     fxMesa->new_state |= FX_NEW_FOG;
-     ctx->Driver.RenderStart = fxSetupFXUnits;
-     break;
-  case GL_CULL_FACE:
-     fxMesa->new_state |= FX_NEW_CULL;
-     ctx->Driver.RenderStart = fxSetupFXUnits;
-     break;
-  case GL_LINE_SMOOTH:
-  case GL_POINT_SMOOTH:
-  case GL_POLYGON_SMOOTH:
-  case GL_TEXTURE_2D:
+      break;
+    case GL_DITHER:
+      if (state)
+        FX_grDitherMode(GR_DITHER_4x4);
+      else
+        FX_grDitherMode(GR_DITHER_DISABLE);
+      break;
+    case GL_SCISSOR_TEST:
+      fxMesa->new_state |= FX_NEW_SCISSOR;
+      ctx->Driver.RenderStart = fxSetupFXUnits;
+      break;
+    case GL_SHARED_TEXTURE_PALETTE_EXT:
+      fxDDTexUseGlbPalette(ctx, state);
+      break;
+    case GL_FOG:
+      fxMesa->new_state |= FX_NEW_FOG;
+      ctx->Driver.RenderStart = fxSetupFXUnits;
+      break;
+    case GL_CULL_FACE:
+      fxMesa->new_state |= FX_NEW_CULL;
+      ctx->Driver.RenderStart = fxSetupFXUnits;
+      break;
+    case GL_LINE_SMOOTH:
+    case GL_LINE_STIPPLE:
+    case GL_POINT_SMOOTH:
+    case GL_POLYGON_SMOOTH:
+    case GL_TEXTURE_2D:
       fxMesa->new_state |= FX_NEW_TEXTURING;
       ctx->Driver.RenderStart = fxSetupFXUnits;
       break;
-  default:
-    ;  /* XXX no-op??? */
+    case GL_STENCIL_TEST:
+      fxMesa->new_state |= FX_NEW_STENCIL;
+      ctx->Driver.RenderStart = fxSetupFXUnits;
+      break;
+    default:
+      ;  /* no-op */
   }    
 }
+
 
 #if 0
 /*
@@ -1663,11 +1708,17 @@ static GLboolean fxMultipassBlend(struct vertex_buffer *VB, GLuint pass)
       }
       fxDDDepthMask(ctx, FALSE);
     }
+   /*
+    * Disable stencil as well.
+    */
+    if (ctx->Stencil.Enabled) {
+      fxDDEnableStencil(ctx, GL_FALSE);
+    } 
     /* Enable Cc*Ct mode */
-    /* ??? Set the Constant Color ??? */
+    /* XXX Set the Constant Color ? */
     fxDDEnable(ctx, GL_BLEND, GL_TRUE);
-    fxDDBlendFunc(ctx, ???, ???);
-    fxSetupTextureSingleTMU(ctx, ???);
+    fxDDBlendFunc(ctx, XXX, XXX);
+    fxSetupTextureSingleTMU(ctx, XXX);
     fxSetupBlend(ctx);
     fxSetupDepthTest(ctx);
     break;
@@ -1675,10 +1726,11 @@ static GLboolean fxMultipassBlend(struct vertex_buffer *VB, GLuint pass)
   case 2:
     /* Reset everything back to normal */
     fxMesa->unitsState = fxMesa->restoreUnitsState;
-    fxMesa->setupdone &= ???;
-    fxSetupTextureSingleTMU(ctx, ???);
+    fxMesa->setupdone &= XXX;
+    fxSetupTextureSingleTMU(ctx, XXX);
     fxSetupBlend(ctx);
     fxSetupDepthTest(ctx);
+    fxSetupStencilText(ctx);
     break;
   }
 
@@ -1724,13 +1776,15 @@ static GLboolean fxMultipassTexture( struct vertex_buffer *VB, GLuint pass )
 	 case GL_ALWAYS:
 	    break;
 	 default:
-	    fxDDDepthFunc( ctx, GL_EQUAL );
+            /*fxDDDepthFunc( ctx, GL_EQUAL );*/
+            FX_grDepthBufferFunction(GR_CMP_EQUAL);
 	    break;
 	 }
 
-	 fxDDDepthMask( ctx, GL_FALSE ); 
+	 /*fxDDDepthMask( ctx, GL_FALSE ); */
+         FX_grDepthMask(FXFALSE);
       }
-      
+      fxDDEnableStencil(ctx, GL_FALSE);
       if (ctx->Texture.Unit[1].EnvMode == GL_MODULATE) {
 	 fxDDEnable( ctx, GL_BLEND, GL_TRUE );
 	 fxDDBlendFunc( ctx, GL_DST_COLOR, GL_ZERO );
@@ -1750,6 +1804,7 @@ static GLboolean fxMultipassTexture( struct vertex_buffer *VB, GLuint pass )
       fxSetupTextureSingleTMU( ctx, 0 ); 
       fxSetupBlend( ctx );
       fxSetupDepthTest( ctx );
+      fxSetupStencilTest( ctx );
       break;
    }
 
@@ -1807,9 +1862,12 @@ void fxSetupFXUnits( GLcontext *ctx )
 
      if (newstate & FX_NEW_ALPHA)
 	fxSetupAlphaTest(ctx);
-     
+
      if (newstate & FX_NEW_DEPTH)
 	fxSetupDepthTest(ctx);
+
+     if (newstate & FX_NEW_STENCIL)
+       fxSetupStencilTest(ctx);
 
      if (newstate & FX_NEW_FOG)
 	fxSetupFog(ctx);
@@ -1822,13 +1880,10 @@ void fxSetupFXUnits( GLcontext *ctx )
 
      if (newstate & FX_NEW_CULL)
 	fxSetupCull(ctx);     
-
      fxMesa->new_state = 0;
 /*       ctx->Driver.RenderStart = 0; */
   }
 }
-
-
 
 #else
 

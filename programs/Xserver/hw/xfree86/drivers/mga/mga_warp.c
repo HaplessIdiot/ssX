@@ -18,6 +18,8 @@ Bool mgaConfigureWarp(ScrnInfoPtr pScrn)
    MGAPtr pMga = MGAPTR(pScrn);
    int wmisc;
    
+   CHECK_DMA_QUIESCENT( pMga, pScrn );
+
    WAITFIFO(3);
    
    switch(pMga->Chipset) {
@@ -108,7 +110,7 @@ static unsigned int mgaG400InstallMicrocode(MGAPtr pMGA, int agp_offset)
    unsigned int microcode_size = 0;
 
    memset(pMGADRIServer->WarpIndex, 0, 
-	  sizeof(mgaWarpIndex) * MGA_MAX_WARP_PIPES);
+	  sizeof(drmMgaWarpIndex) * MGA_MAX_WARP_PIPES);
    microcode_size = mgaG400GetMicrocodeSize(pMGA);
 
    mgaWarpInstallCode(tgz,     MGA_WARP_TGZ);
@@ -150,7 +152,7 @@ static unsigned int mgaG200InstallMicrocode(MGAPtr pMGA, int agp_offset)
    unsigned int microcode_size = 0;
 
    memset(pMGADRIServer->WarpIndex, 0, 
-	  sizeof(mgaWarpIndex) * MGA_MAX_WARP_PIPES);
+	  sizeof(drmMgaWarpIndex) * MGA_MAX_WARP_PIPES);
 
    microcode_size = mgaG400GetMicrocodeSize(pMGA);   
    mgaWarpInstallCode(tgz,    MGA_WARP_TGZ);

@@ -29,10 +29,7 @@
 #include <stdio.h>
 
 #include "mm.h"
-#include "i810lib.h"
-#include "i810clear.h"
 #include "i810dd.h"
-#include "i810depth.h"
 #include "i810log.h"
 #include "i810state.h"
 #include "i810span.h"
@@ -59,7 +56,7 @@ static const GLubyte *i810DDGetString( GLcontext *ctx, GLenum name )
    case GL_VENDOR:
       return "Keith Whitwell, Precision Insight Inc.";
    case GL_RENDERER:
-      return "DRI-I810";
+      return "Mesa DRI I810 20000510";
    default:
       return 0;
    }
@@ -100,10 +97,13 @@ void i810DDExtensionsInit( GLcontext *ctx )
    /* The imaging subset of 1.2 isn't supported by any mesa driver.
     */
    gl_extensions_disable( ctx, "ARB_imaging" );
+   gl_extensions_disable( ctx, "GL_EXT_blend_color" );
    gl_extensions_disable( ctx, "GL_EXT_blend_minmax" );
    gl_extensions_disable( ctx, "GL_EXT_blend_logic_op" );
    gl_extensions_disable( ctx, "GL_EXT_blend_subtract" );
    gl_extensions_disable( ctx, "GL_INGR_blend_func_separate" );
+   gl_extensions_disable( ctx, "GL_EXT_texture_lod_bias" );   
+   gl_extensions_disable( ctx, "GL_MESA_resize_buffers" );   
 
 
    if (0) gl_extensions_disable( ctx, "GL_ARB_multitexture" );
@@ -115,18 +115,6 @@ void i810DDExtensionsInit( GLcontext *ctx )
 }
 
 
-static void i810DDFlush( GLcontext *ctx )
-{
-   i810DmaFlush( I810_CONTEXT(ctx) );
-}
-
-static void i810DDFinish( GLcontext *ctx )
-{
-   i810ContextPtr imesa = I810_CONTEXT(ctx);
-   LOCK_HARDWARE( imesa );
-   i810DmaFinish( imesa );
-   UNLOCK_HARDWARE( imesa );
-}
 
 
 void i810DDInitDriverFuncs( GLcontext *ctx )
@@ -138,9 +126,6 @@ void i810DDInitDriverFuncs( GLcontext *ctx )
    ctx->Driver.UnregisterVB = i810DDUnregisterVB;
    ctx->Driver.Clear = i810Clear;
 
-
-   ctx->Driver.Flush          = i810DDFlush;
-   ctx->Driver.Finish         = i810DDFinish;
 
    ctx->Driver.BuildPrecalcPipeline = i810DDBuildPrecalcPipeline;
 }

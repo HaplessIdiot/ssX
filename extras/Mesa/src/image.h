@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -31,62 +31,77 @@
 #include "types.h"
 
 
-extern struct gl_pixelstore_attrib _mesa_native_packing;
+extern const struct gl_pixelstore_attrib _mesa_native_packing;
 
 
-extern void gl_flip_bytes( GLubyte *p, GLuint n );
+extern void
+_mesa_swap2( GLushort *p, GLuint n );
 
+extern void
+_mesa_swap4( GLuint *p, GLuint n );
 
-extern void gl_swap2( GLushort *p, GLuint n );
+extern GLint
+_mesa_sizeof_type( GLenum type );
 
-extern void gl_swap4( GLuint *p, GLuint n );
+extern GLint
+_mesa_sizeof_packed_type( GLenum type );
 
+extern GLint
+_mesa_components_in_format( GLenum format );
 
-extern GLint gl_sizeof_type( GLenum type );
+extern GLint
+_mesa_bytes_per_pixel( GLenum format, GLenum type );
 
-extern GLint gl_sizeof_packed_type( GLenum type );
-
-extern GLint gl_components_in_format( GLenum format );
-
-extern GLint gl_bytes_per_pixel( GLenum format, GLenum type );
-
-extern GLboolean gl_is_legal_format_and_type( GLenum format, GLenum type );
+extern GLboolean
+_mesa_is_legal_format_and_type( GLenum format, GLenum type );
 
 
 extern GLvoid *
-gl_pixel_addr_in_image( const struct gl_pixelstore_attrib *packing,
-                        const GLvoid *image, GLsizei width,
-                        GLsizei height, GLenum format, GLenum type,
-                        GLint img, GLint row, GLint column );
+_mesa_image_address( const struct gl_pixelstore_attrib *packing,
+                     const GLvoid *image, GLsizei width,
+                     GLsizei height, GLenum format, GLenum type,
+                     GLint img, GLint row, GLint column );
+
+
+extern GLint
+_mesa_image_row_stride( const struct gl_pixelstore_attrib *packing,
+                        GLint width, GLenum format, GLenum type );
 
 
 extern void
-gl_unpack_polygon_stipple( const GLcontext *ctx,
-                           const GLubyte *pattern,
-                           GLuint dest[32] );
+_mesa_unpack_polygon_stipple( const GLubyte *pattern, GLuint dest[32],
+                              const struct gl_pixelstore_attrib *unpacking );
 
 
 extern void
-gl_pack_polygon_stipple( const GLcontext *ctx,
-                         const GLuint pattern[32],
-                         GLubyte *dest );
+_mesa_pack_polygon_stipple( const GLuint pattern[32], GLubyte *dest,
+                            const struct gl_pixelstore_attrib *packing );
 
 
 extern void
-gl_pack_rgba_span( const GLcontext *ctx,
-                   GLuint n, CONST GLubyte rgba[][4],
-                   GLenum format, GLenum type, GLvoid *dest,
-                   const struct gl_pixelstore_attrib *packing,
-                   GLboolean applyTransferOps );
+_mesa_pack_rgba_span( GLcontext *ctx,
+                      GLuint n, CONST GLubyte rgba[][4],
+                      GLenum format, GLenum type, GLvoid *dest,
+                      const struct gl_pixelstore_attrib *packing,
+                      GLboolean applyTransferOps );
 
 
 extern void
-_mesa_unpack_ubyte_color_span( const GLcontext *ctx,
+_mesa_unpack_ubyte_color_span( GLcontext *ctx,
                                GLuint n, GLenum dstFormat, GLubyte dest[],
                                GLenum srcFormat, GLenum srcType,
                                const GLvoid *source,
                                const struct gl_pixelstore_attrib *unpacking,
                                GLboolean applyTransferOps );
+
+
+extern void
+_mesa_unpack_float_color_span( GLcontext *ctx,
+                               GLuint n, GLenum dstFormat, GLfloat dest[],
+                               GLenum srcFormat, GLenum srcType,
+                               const GLvoid *source,
+                               const struct gl_pixelstore_attrib *unpacking,
+                               GLboolean applyTransferOps, GLboolean clamp );
 
 
 extern void
@@ -121,6 +136,10 @@ _mesa_unpack_image( GLsizei width, GLsizei height, GLsizei depth,
 extern GLvoid *
 _mesa_unpack_bitmap( GLint width, GLint height, const GLubyte *pixels,
                      const struct gl_pixelstore_attrib *packing );
+
+extern void
+_mesa_pack_bitmap( GLint width, GLint height, const GLubyte *source,
+                   GLubyte *dest, const struct gl_pixelstore_attrib *packing );
 
 
 #endif

@@ -3,13 +3,6 @@
    SEG_TEXT
 
 
-#if !defined(NASM_ASSEMBLER) && !defined(MASM_ASSEMBLER)
-#define LLBL(a) .L ## a
-#else
-#define LLBL(a) a
-#endif
-
-
 
 #define  VEC_SIZE_1   1
 #define  VEC_SIZE_2   3
@@ -41,7 +34,7 @@ GLNAME( gl_3dnow_transform_points4_general_raw ):
     MOV_L     ( REGOFF(4, EAX), EAX )
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TPGR_2 ) )
+    JE        ( LLBL(G3TPGR_2) )
 
     PREFETCHW ( REGIND(EDX) )
 
@@ -51,7 +44,7 @@ GLNAME( gl_3dnow_transform_points4_general_raw ):
     ADD_L     ( EDI, EAX )              /* next vertex                       */
 
 ALIGNTEXT32
-LLBL( G3TPGR_1 ):
+LLBL(G3TPGR_1):
 
     PREFETCHW ( REGOFF(32, EDX) )       /* prefetch 2 vertices ahead         */
 
@@ -103,11 +96,11 @@ LLBL( G3TPGR_1 ):
     ADD_L     ( EDI, EAX )              /* next vertex                       */
 
     DEC_L     ( ESI )                   /* decrement vertex counter          */
-    JA        ( LLBL( G3TPGR_1 ) )      /* cnt > 0 ? -> process next vertex  */
+    JA        ( LLBL(G3TPGR_1) )        /* cnt > 0 ? -> process next vertex  */
 
 
 ALIGNTEXT32
-LLBL( G3TPGR_2 ):
+LLBL(G3TPGR_2):
 
     FEMMS
     POP_L     ( EDI )
@@ -140,7 +133,7 @@ GLNAME( gl_3dnow_transform_points4_identity_raw ):
     MOV_L     ( REGOFF(4, EAX), EAX )
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TPIR_2 ) )
+    JE        ( LLBL(G3TPIR_2) )
 
     MOVQ      ( REGIND(EAX), MM0 )      /* x1            | x0                 */
     MOVQ      ( REGOFF(8, EAX), MM1 )   /* x3            | x2                 */
@@ -148,7 +141,7 @@ GLNAME( gl_3dnow_transform_points4_identity_raw ):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
 
 ALIGNTEXT32
-LLBL( G3TPIR_1 ):
+LLBL(G3TPIR_1):
 
     PREFETCHW ( REGOFF(32, EDX) )       /* prefetch 2 vertices ahead         */
 
@@ -164,10 +157,10 @@ LLBL( G3TPIR_1 ):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
 
     DEC_L     ( ESI )                   /* decrement vertex counter           */
-    JA        ( LLBL( G3TPIR_1 ) )      /* cnt > 0 ? -> process next vertex   */
+    JA        ( LLBL(G3TPIR_1) )        /* cnt > 0 ? -> process next vertex   */
 
 ALIGNTEXT32
-LLBL( G3TPIR_2 ):
+LLBL(G3TPIR_2):
 
     FEMMS
     POP_L     ( EDI )
@@ -200,7 +193,7 @@ GLNAME( gl_3dnow_transform_points4_2d_raw ):
     MOV_L     ( REGOFF(4, EAX), EAX )
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TP2R_2 ) )
+    JE        ( LLBL(G3TP2R_2) )
 
     MOVD      ( REGIND(ECX), MM0 )      /*               | m00                */
     PUNPCKLDQ ( REGOFF(16, ECX), MM0 )  /* m10           | m00                */
@@ -216,7 +209,7 @@ GLNAME( gl_3dnow_transform_points4_2d_raw ):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
 
 ALIGNTEXT32
-LLBL( G3TP2R_1 ):
+LLBL(G3TP2R_1):
 
     PREFETCHW ( REGOFF(32, EDX) )       /* prefetch 2 vertices ahead         */
 
@@ -244,10 +237,10 @@ LLBL( G3TP2R_1 ):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
 
     DEC_L     ( ESI )                   /* decrement vertex counter           */
-    JA        ( LLBL( G3TP2R_1 ) )      /* cnt > 0 ? -> process next vertex   */
+    JA        ( LLBL(G3TP2R_1) )        /* cnt > 0 ? -> process next vertex   */
 
 ALIGNTEXT32
-LLBL( G3TP2R_2 ):
+LLBL(G3TP2R_2):
 
     FEMMS
     POP_L     ( EDI )
@@ -280,7 +273,7 @@ GLNAME( gl_3dnow_transform_points4_2d_no_rot_raw ):
     MOV_L     ( REGOFF(4, EAX), EAX )
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TP2NRR_3 ) )
+    JE        ( LLBL(G3TP2NRR_3) )
 
     MOVD      ( REGIND(ECX), MM0 )      /*               | m00                */
     PUNPCKLDQ ( REGOFF(20, ECX), MM0 )  /* m11           | m00                */
@@ -293,7 +286,7 @@ GLNAME( gl_3dnow_transform_points4_2d_no_rot_raw ):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
 
 ALIGNTEXT32
-LLBL( G3TP2NRR_2 ):
+LLBL(G3TP2NRR_2):
 
     PREFETCHW ( REGOFF(32, EDX) )       /* prefetch 2 vertices ahead         */
 
@@ -317,10 +310,10 @@ LLBL( G3TP2NRR_2 ):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
     DEC_L     ( ESI )                   /* decrement vertex counter           */
 
-    JA        ( LLBL( G3TP2NRR_2 ) )    /* cnt > 0 ? -> process next vertex   */
+    JA        ( LLBL(G3TP2NRR_2) )    /* cnt > 0 ? -> process next vertex   */
 
 ALIGNTEXT32
-LLBL( G3TP2NRR_3 ):
+LLBL(G3TP2NRR_3):
 
     FEMMS
     POP_L     ( EDI )
@@ -353,7 +346,7 @@ GLNAME( gl_3dnow_transform_points4_3d_raw ):
     MOV_L     ( REGOFF(4, EAX), EAX )
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TP3R_2 ) )
+    JE        ( LLBL(G3TP3R_2) )
 
     MOVD      ( REGOFF(8, ECX), MM6 )   /*               | m2                */
     PUNPCKLDQ ( REGOFF(24, ECX), MM6 )  /* m6            | m2                */
@@ -365,7 +358,7 @@ GLNAME( gl_3dnow_transform_points4_3d_raw ):
     MOVQ      ( REGOFF(8, EAX), MM3 )   /* x3            | x2                */
 
 ALIGNTEXT32
-LLBL( G3TP3R_1 ):
+LLBL(G3TP3R_1):
 
     PREFETCHW ( REGOFF(32, EDX) )       /* prefetch 2 vertices ahead         */
 
@@ -411,11 +404,11 @@ LLBL( G3TP3R_1 ):
     MOVQ      ( REGOFF(8, EAX), MM3 )   /* x3            | x2                */
 
     DEC_L     ( ESI )                   /* decrement vertex counter          */
-    JA        ( LLBL( G3TP3R_1 ) )      /* cnt > 0 ? -> process next vertex  */
+    JA        ( LLBL(G3TP3R_1) )        /* cnt > 0 ? -> process next vertex  */
 
 
 ALIGNTEXT32
-LLBL( G3TP3R_2 ):
+LLBL(G3TP3R_2):
 
     FEMMS
     POP_L     ( EDI )
@@ -448,7 +441,7 @@ GLNAME( gl_3dnow_transform_points4_3d_no_rot_raw ):
     MOV_L     ( REGOFF(4, EAX), EAX )
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TP3NRR_2 ) )
+    JE        ( LLBL(G3TP3NRR_2) )
 
     MOVD      ( REGIND(ECX), MM0 )      /*               | m00               */
     PUNPCKLDQ ( REGOFF(20, ECX), MM0 )  /* m11           | m00               */
@@ -465,7 +458,7 @@ GLNAME( gl_3dnow_transform_points4_3d_no_rot_raw ):
     ADD_L     ( EDI, EAX )              /* next vertex                       */
 
 ALIGNTEXT32
-LLBL( G3TP3NRR_1 ):
+LLBL(G3TP3NRR_1):
 
     PREFETCHW ( REGOFF(32, EDX) )       /* prefetch 2 vertices ahead         */
 
@@ -493,10 +486,10 @@ LLBL( G3TP3NRR_1 ):
     ADD_L     ( EDI, EAX )              /* next vertex                       */
 
     DEC_L     ( ESI )                   /* decrement vertex counter          */
-    JA        ( LLBL( G3TP3NRR_1 ) )    /* cnt > 0 ? -> process next vertex  */
+    JA        ( LLBL(G3TP3NRR_1) )      /* cnt > 0 ? -> process next vertex  */
 
 ALIGNTEXT32
-LLBL( G3TP3NRR_2 ):
+LLBL(G3TP3NRR_2):
 
     FEMMS
     POP_L     ( EDI )
@@ -528,7 +521,7 @@ GLNAME( gl_3dnow_transform_points4_perspective_raw ):
     MOV_L     ( REGOFF(4, EAX), EAX )
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TPPR_2 ) )
+    JE        ( LLBL(G3TPPR_2) )
 
     PREFETCH  ( REGIND(EAX) )
 
@@ -550,7 +543,7 @@ GLNAME( gl_3dnow_transform_points4_perspective_raw ):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
 
 ALIGNTEXT32
-LLBL( G3TPPR_1 ):
+LLBL(G3TPPR_1):
 
     PREFETCHW ( REGOFF(32, EDX) )       /* prefetch 2 vertices ahead         */
 
@@ -580,10 +573,10 @@ LLBL( G3TPPR_1 ):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
     DEC_L     ( ESI )                   /* decrement vertex counter           */
 
-    JA        ( LLBL( G3TPPR_1 ) )      /* cnt > 0 ? -> process next vertex   */
+    JA        ( LLBL(G3TPPR_1) )        /* cnt > 0 ? -> process next vertex   */
 
 ALIGNTEXT32
-LLBL( G3TPPR_2 ):
+LLBL(G3TPPR_2):
 
     FEMMS
     POP_L     ( EDI )

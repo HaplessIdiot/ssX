@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.5 2000/04/17 16:30:04 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.6 2000/05/11 18:14:33 tsi Exp $ */
 
 /*
  * Authors:
@@ -36,15 +36,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _I810_H_
 #define _I810_H_
 
-
+#include "compiler.h"
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
 #include "i810_reg.h"
 #include "xaa.h"
 #include "xf86Cursor.h"
-
-#undef XF86DRI
-
 
 #ifdef XF86DRI
 #include "xf86drm.h"
@@ -56,6 +53,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "i810_dri.h"
 #endif
 
+
+#define I810_VERSION 4000
+#define I810_NAME "I810"
+#define I810_DRIVER_NAME "i810"
+#define I810_MAJOR_VERSION 1
+#define I810_MINOR_VERSION 0
+#define I810_PATCHLEVEL 0
 
 /* Globals */
 
@@ -211,8 +215,8 @@ typedef struct _I810Rec {
 extern Bool I810DRIScreenInit(ScreenPtr pScreen);
 extern void I810DRICloseScreen(ScreenPtr pScreen);
 extern Bool I810DRIFinishScreenInit(ScreenPtr pScreen);
-extern Bool I810drmInitDma(ScrnInfoPtr pScrn);
-extern Bool I810drmCleanupDma(ScrnInfoPtr pScrn);
+extern Bool I810InitDma(ScrnInfoPtr pScrn);
+extern Bool I810CleanupDma(ScrnInfoPtr pScrn);
 
 #define I810PTR(p) ((I810Ptr)((p)->driverPrivate))
 #define I810REGPTR(p) (&(I810PTR(p)->ModeReg))

@@ -3,7 +3,7 @@
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -168,8 +168,7 @@ XVisualInfo *glXChooseVisual(Display *dpy, int screen, int *list)
 }
 
 
-void glXCopyContext(Display *dpy, GLXContext src, GLXContext dst,
-                    unsigned long mask)
+void glXCopyContext(Display *dpy, GLXContext src, GLXContext dst, unsigned long mask)
 {
    struct _glxapi_table *t = get_dispatch(dpy);
    if (!t)
@@ -316,7 +315,7 @@ void glXWaitX(void)
 
 
 
-#ifdef _GLXAPI_VERSION_1_1
+#ifdef GLX_VERSION_1_1
 
 const char *glXGetClientString(Display *dpy, int name)
 {
@@ -348,7 +347,7 @@ const char *glXQueryServerString(Display *dpy, int screen, int name)
 
 
 
-#ifdef _GLXAPI_VERSION_1_2
+#ifdef GLX_VERSION_1_2
 Display *glXGetCurrentDisplay(void)
 {
    return CurrentDisplay;
@@ -357,9 +356,9 @@ Display *glXGetCurrentDisplay(void)
 
 
 
-#ifdef _GLXAPI_VERSION_1_3
+#ifdef GLX_VERSION_1_3
 
-GLXFBConfig glXChooseFBConfig(Display *dpy, int screen, const int *attribList, int *nitems)
+GLXFBConfig *glXChooseFBConfig(Display *dpy, int screen, const int *attribList, int *nitems)
 {
    struct _glxapi_table *t = get_dispatch(dpy);
    if (!t)
@@ -446,6 +445,14 @@ int glXGetFBConfigAttrib(Display *dpy, GLXFBConfig config, int attribute, int *v
 }
 
 
+GLXFBConfig *glXGetFBConfigs(Display *dpy, int screen, int *nelements)
+{
+   struct _glxapi_table *t = get_dispatch(dpy);
+   if (!t)
+      return 0;
+   return (t->GetFBConfigs)(dpy, screen, nelements);
+}
+
 void glXGetSelectedEvent(Display *dpy, GLXDrawable drawable, unsigned long *mask)
 {
    struct _glxapi_table *t = get_dispatch(dpy);
@@ -508,10 +515,10 @@ void glXSelectEvent(Display *dpy, GLXDrawable drawable, unsigned long mask)
    (t->SelectEvent)(dpy, drawable, mask);
 }
 
-#endif /* _GLXAPI_VERSION_1_3 */
+#endif /* GLX_VERSION_1_3 */
 
 
-#ifdef _GLXAPI_EXT_import_context
+#ifdef GLX_EXT_import_context
 
 void glXFreeContextEXT(Display *dpy, GLXContext context)
 {
@@ -557,7 +564,7 @@ int glXQueryContextInfoEXT(Display *dpy, GLXContext context, int attribute,int *
 #endif
 
 
-#ifdef _GLXAPI_SGI_video_sync
+#ifdef GLX_SGI_video_sync
 
 int glXGetVideoSyncSGI(unsigned int *count)
 {
@@ -579,7 +586,7 @@ int glXWaitVideoSyncSGI(int divisor, int remainder, unsigned int *count)
 #endif
 
 
-#ifdef _GLXAPI_MESA_copy_sub_buffer
+#ifdef GLX_MESA_copy_sub_buffer
 
 void glXCopySubBufferMESA(Display *dpy, GLXDrawable drawable, int x, int y, int width, int height)
 {
@@ -592,7 +599,7 @@ void glXCopySubBufferMESA(Display *dpy, GLXDrawable drawable, int x, int y, int 
 #endif
 
 
-#ifdef _GLXAPI_MESA_release_buffers
+#ifdef GLX_MESA_release_buffers
 
 Bool glXReleaseBuffersMESA(Display *dpy, Window w)
 {
@@ -605,7 +612,7 @@ Bool glXReleaseBuffersMESA(Display *dpy, Window w)
 #endif
 
 
-#ifdef _GLXAPI_MESA_pixmap_colormap
+#ifdef GLX_MESA_pixmap_colormap
 
 GLXPixmap glXCreateGLXPixmapMESA(Display *dpy, XVisualInfo *visinfo, Pixmap pixmap, Colormap cmap)
 {
@@ -618,7 +625,7 @@ GLXPixmap glXCreateGLXPixmapMESA(Display *dpy, XVisualInfo *visinfo, Pixmap pixm
 #endif
 
 
-#ifdef _GLXAPI_MESA_set_3dfx_mode
+#ifdef GLX_MESA_set_3dfx_mode
 
 GLboolean glXSet3DfxModeMESA(GLint mode)
 {
@@ -651,22 +658,22 @@ const char **
 _glxapi_get_extensions(void)
 {
    static const char *extensions[] = {
-#ifdef _GLXAPI_EXT_import_context
+#ifdef GLX_EXT_import_context
       "GLX_EXT_import_context",
 #endif
-#ifdef _GLXAPI_SGI_video_sync
+#ifdef GLX_SGI_video_sync
       "GLX_SGI_video_sync",
 #endif
-#ifdef _GLXAPI_MESA_copy_sub_buffer
+#ifdef GLX_MESA_copy_sub_buffer
       "GLX_MESA_copy_sub_buffer",
 #endif
-#ifdef _GLXAPI_MESA_release_buffers
+#ifdef GLX_MESA_release_buffers
       "GLX_MESA_release_buffers",
 #endif
-#ifdef _GLXAPI_MESA_pixmap_colormap
+#ifdef GLX_MESA_pixmap_colormap
       "GLX_MESA_pixmap_colormap",
 #endif
-#ifdef _GLXAPI_MESA_set_3dfx_mode
+#ifdef GLX_MESA_set_3dfx_mode
       "GLX_MESA_set_3dfx_mode",
 #endif
       NULL
@@ -732,17 +739,17 @@ static struct name_address_pair GLX_functions[] = {
    { "glXWaitGL", (GLvoid *) glXWaitGL },
    { "glXWaitX", (GLvoid *) glXWaitX },
 
-#ifdef _GLXAPI_VERSION_1_1
+#ifdef GLX_VERSION_1_1
    { "glXGetClientString", (GLvoid *) glXGetClientString },
    { "glXQueryExtensionsString", (GLvoid *) glXQueryExtensionsString },
    { "glXQueryServerString", (GLvoid *) glXQueryServerString },
 #endif
 
-#ifdef _GLXAPI_VERSION_1_2
+#ifdef GLX_VERSION_1_2
    { "glXGetCurrentDisplay", (GLvoid *) glXGetCurrentDisplay },
 #endif
 
-#ifdef _GLXAPI_VERSION_1_3
+#ifdef GLX_VERSION_1_3
    { "glXChooseFBConfig", (GLvoid *) glXChooseFBConfig },
    { "glXCreateNewContext", (GLvoid *) glXCreateNewContext },
    { "glXCreatePbuffer", (GLvoid *) glXCreatePbuffer },
@@ -761,24 +768,24 @@ static struct name_address_pair GLX_functions[] = {
    { "glXSelectEvent", (GLvoid *) glXSelectEvent },
 #endif
 
-#ifdef _GLXAPI_SGI_video_sync
+#ifdef GLX_SGI_video_sync
    { "glXGetVideoSyncSGI", (GLvoid *) glXGetVideoSyncSGI },
    { "glXWaitVideoSyncSGI", (GLvoid *) glXWaitVideoSyncSGI },
 #endif
 
-#ifdef _GLXAPI_MESA_copy_sub_buffer
+#ifdef GLX_MESA_copy_sub_buffer
    { "glXCopySubBufferMESA", (GLvoid *) glXCopySubBufferMESA },
 #endif
 
-#ifdef _GLXAPI_MESA_release_buffers
+#ifdef GLX_MESA_release_buffers
    { "glXReleaseBuffersMESA", (GLvoid *) glXReleaseBuffersMESA },
 #endif
 
-#ifdef _GLXAPI_MESA_pixmap_colormap
+#ifdef GLX_MESA_pixmap_colormap
    { "glXCreateGLXPixmapMESA", (GLvoid *) glXCreateGLXPixmapMESA },
 #endif
 
-#ifdef _GLXAPI_MESA_set_3dfx_mode
+#ifdef GLX_MESA_set_3dfx_mode
    { "glXSet3DfxModeMESA", (GLvoid *) glXSet3DfxModeMESA },
 #endif
 

@@ -28,7 +28,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Authors:
  *   Keith Whitwell <keithw@precisioninsight.com>
- *   Daryll Strauss <daryll@precisioninsight.com> (Origninal tdfx driver).
  *
  */
 
@@ -42,7 +41,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "dri_mesaint.h"
 #include "dri_mesa.h"
 #include "types.h"
-#include "xmesaP.h"
+#include "mgaregs.h"
+
+typedef struct {
+   drmHandle handle;
+   drmSize size;
+   char *map;
+} mgaRegion, *mgaRegionPtr;
 
 typedef struct {
 
@@ -54,53 +59,69 @@ typedef struct {
    int cpp;			/* for front and back buffers */
 
    int Attrib;
+   unsigned int mAccess;
 
-   int frontOffset;
-   int frontPitch;
-   int backOffset;
-   int backPitch;
+   unsigned int frontOffset;
+   unsigned int frontPitch;
+   unsigned int backOffset;
+   unsigned int backPitch;
 
-   int depthOffset;
-   int depthPitch;
+   unsigned int depthOffset;
+   unsigned int depthPitch;
    int depthCpp;
 
-   int textureOffset;
-   int textureSize;
-   int logTextureGranularity;
+   unsigned int dmaOffset;		
+
+   unsigned int textureOffset[MGA_NR_TEX_HEAPS];
+   unsigned int textureSize[MGA_NR_TEX_HEAPS];
+   int logTextureGranularity[MGA_NR_TEX_HEAPS];
+   char *texVirtual[MGA_NR_TEX_HEAPS];
+
 
    __DRIscreenPrivate *sPriv;
    drmBufMapPtr  bufs;
+
+   /* Maps the dma buffers as well as textures ? 
+    */
+   mgaRegion agp;
 
 } mgaScreenPrivate;
 
 
 #include "mgalib.h"
 
-extern void mgaXMesaUpdateState( mgaContextPtr mmesa );
+extern void mgaGetLock( mgaContextPtr mmesa, GLuint flags );
 extern void mgaEmitHwStateLocked( mgaContextPtr mmesa );
 extern void mgaEmitScissorValues( mgaContextPtr mmesa, int box_nr, int emit );
-extern void mgaXMesaSetBackClipRects( mgaContextPtr mmesa );
-extern void mgaXMesaSetFrontClipRects( mgaContextPtr mmesa );
+
+#define GET_DISPATCH_AGE( mmesa ) mmesa->sarea->last_dispatch
+#define GET_ENQUEUE_AGE( mmesa ) mmesa->sarea->last_enqueue
 
 
 
 /* Lock the hardware and validate our state.  
  */
-#define LOCK_HARDWARE( mmesa )				\
-  do {							\
-    char __ret=0;					\
-    DRM_CAS(mmesa->driHwLock, mmesa->hHWContext,	\
-	    (DRM_LOCK_HELD|mmesa->hHWContext), __ret);	\
-    if (__ret) {					\
-        drmGetLock(mmesa->driFd, mmesa->hHWContext, 0);	\
-        mgaXMesaUpdateState( mmesa );			\
-    }							\
+#define LOCK_HARDWARE( mmesa )					\
+  do {								\
+    char __ret=0;						\
+    DRM_CAS(mmesa->driHwLock, mmesa->hHWContext,		\
+	    (DRM_LOCK_HELD|mmesa->hHWContext), __ret);		\
+    if (__ret)							\
+        mgaGetLock( mmesa, 0 );					\
   } while (0)
+
+
+/* 
+ */
+#define LOCK_HARDWARE_QUIESCENT( mmesa ) do {	                        \
+	LOCK_HARDWARE( mmesa );			                        \
+	mgaUpdateLock( mmesa, DRM_LOCK_QUIESCENT | DRM_LOCK_FLUSH );	\
+} while (0)
 
 
 /* Unlock the hardware using the global current context 
  */
-#define UNLOCK_HARDWARE(mmesa)					\
+#define UNLOCK_HARDWARE(mmesa) 				\
     DRM_UNLOCK(mmesa->driFd, mmesa->driHwLock, mmesa->hHWContext);	
 
 
@@ -109,6 +130,8 @@ extern void mgaXMesaSetFrontClipRects( mgaContextPtr mmesa );
 #define REFRESH_DRAWABLE_INFO( mmesa )		\
 do {						\
    LOCK_HARDWARE( mmesa );			\
+   mmesa->lastX = mmesa->drawX; 		\
+   mmesa->lastY = mmesa->drawY; 		\
    UNLOCK_HARDWARE( mmesa );			\
 } while (0)
 

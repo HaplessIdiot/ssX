@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_macros.h,v 1.2 1999/06/27 14:07:31 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_macros.h,v 1.3 2000/02/23 04:46:44 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -228,14 +228,14 @@ do {                                                                       \
 #ifdef DO_VALIDATE
 #define VALIDATE_DRAWABLE_INFO_NO_LOCK(gcc,gcp)                            \
 do {                                                                       \
-    __DRIcontextPrivate *pcp = gcc->driContextPriv;                        \
+    __DRIcontextPrivate *pcp = gcc;                                        \
     __DRIscreenPrivate *psp = pcp->driScreenPriv;                          \
     __DRIdrawablePrivate *pdp = pcp->driDrawablePriv;                      \
                                                                            \
     if (*(pdp->pStamp) != pdp->lastStamp) {                                \
 	int old_index = pdp->index;                                        \
 	while (*(pdp->pStamp) != pdp->lastStamp) {                         \
-	    DRI_MESA_VALIDATE_DRAWABLE_INFO(gcc->display, psp->myNum, pdp);\
+	    DRI_MESA_VALIDATE_DRAWABLE_INFO(pcp->display, psp->myNum, pdp);\
         }                                                                  \
                                                                            \
 	if (pdp->index != old_index) {                                     \
@@ -303,7 +303,7 @@ do {                                                                       \
 
 #define VALIDATE_DRAWABLE_INFO(gcc,gcp)                                    \
 do {                                                                       \
-    __DRIcontextPrivate *pcp = gcc->driContextPriv;                        \
+    __DRIcontextPrivate *pcp = gcc;                                        \
     __DRIscreenPrivate *psp = pcp->driScreenPriv;                          \
                                                                            \
     DRM_SPINLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);            \

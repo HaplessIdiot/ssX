@@ -109,7 +109,7 @@ clear_color_buffer_with_masking( GLcontext *ctx )
             rgba[j][BCOMP] = b;
             rgba[j][ACOMP] = a;
          }
-         gl_mask_rgba_span( ctx, width, x, y + i, rgba );
+         _mesa_mask_rgba_span( ctx, width, x, y + i, rgba );
          (*ctx->Driver.WriteRGBASpan)( ctx, width, x, y + i,
 				       (CONST GLubyte (*)[4])rgba, NULL );
       }
@@ -124,7 +124,7 @@ clear_color_buffer_with_masking( GLcontext *ctx )
          for (j=0;j<width;j++) {
             span[j] = ctx->Color.ClearIndex;
          }
-         gl_mask_index_span( ctx, width, x, y + i, span );
+         _mesa_mask_index_span( ctx, width, x, y + i, span );
          (*ctx->Driver.WriteCI32Span)( ctx, width, x, y + i, span, mask );
       }
    }
@@ -290,16 +290,17 @@ _mesa_Clear( GLbitfield mask )
 
       /* do software clearing here */
       if (newMask) {
-         if (newMask & ctx->Color.DrawDestMask)   clear_color_buffers( ctx );
-         if (newMask & GL_DEPTH_BUFFER_BIT)    _mesa_clear_depth_buffer( ctx );
-         if (newMask & GL_ACCUM_BUFFER_BIT)    _mesa_clear_accum_buffer( ctx );
-         if (newMask & GL_STENCIL_BUFFER_BIT)  gl_clear_stencil_buffer( ctx );
+         if (newMask & ctx->Color.DrawDestMask)   clear_color_buffers(ctx);
+         if (newMask & GL_DEPTH_BUFFER_BIT)    _mesa_clear_depth_buffer(ctx);
+         if (newMask & GL_ACCUM_BUFFER_BIT)    _mesa_clear_accum_buffer(ctx);
+         if (newMask & GL_STENCIL_BUFFER_BIT)  _mesa_clear_stencil_buffer(ctx);
       }
 
       /* clear software-based alpha buffer(s) */
-      if ( (mask & GL_COLOR_BUFFER_BIT) && ctx->Visual->SoftwareAlpha
+      if ( (mask & GL_COLOR_BUFFER_BIT)
+           && ctx->DrawBuffer->UseSoftwareAlphaBuffers
            && ctx->Color.ColorMask[RCOMP]) {
-         gl_clear_alpha_buffers( ctx );
+         _mesa_clear_alpha_buffers( ctx );
       }
 
 #ifdef PROFILE
@@ -427,7 +428,7 @@ _mesa_DrawBuffer( GLenum mode )
    /*
     * Set current alpha buffer pointer
     */
-   if (ctx->Visual->SoftwareAlpha) {
+   if (ctx->DrawBuffer->UseSoftwareAlphaBuffers) {
       if (ctx->Color.DriverDrawBuffer == GL_FRONT_LEFT)
          ctx->DrawBuffer->Alpha = ctx->DrawBuffer->FrontLeftAlpha;
       else if (ctx->Color.DriverDrawBuffer == GL_BACK_LEFT)
@@ -552,12 +553,12 @@ _mesa_ResizeBuffersMESA( void )
       _mesa_alloc_depth_buffer( ctx );
    }
    if (ctx->DrawBuffer->UseSoftwareStencilBuffer) {
-      gl_alloc_stencil_buffer( ctx );
+      _mesa_alloc_stencil_buffer( ctx );
    }
    if (ctx->DrawBuffer->UseSoftwareAccumBuffer) {
       _mesa_alloc_accum_buffer( ctx );
    }
-   if (ctx->Visual->SoftwareAlpha) {
-      gl_alloc_alpha_buffers( ctx );
+   if (ctx->DrawBuffer->UseSoftwareAlphaBuffers) {
+      _mesa_alloc_alpha_buffers( ctx );
    }
 }

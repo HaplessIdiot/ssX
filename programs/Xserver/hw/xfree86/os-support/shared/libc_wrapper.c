@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.63 2000/04/17 16:30:13 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.64 2000/05/23 04:47:49 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -1362,6 +1362,18 @@ xf86uid_t
 xf86geteuid(void)
 {
     return geteuid();
+}
+
+xf86gid_t
+xf86getegid(void)
+{
+    return getegid();
+}
+
+int
+xf86getpid(void)
+{
+    return getpid();
 }
 
 static mode_t

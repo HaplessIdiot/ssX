@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_cursor.c,v 1.6 2000/03/06 22:59:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_cursor.c,v 1.7 2000/06/14 00:16:12 dawes Exp $ */
 /**************************************************************************
 
-Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
-                                         Cedar Park, Texas. 
+Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
+                                               Cedar Park, Texas. 
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -60,6 +60,19 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 				/* DDC support */
 #include "xf86DDC.h"
 
+				/* DRI support */
+#ifdef XF86DRI
+#include "GL/glxint.h"
+#include "xf86drm.h"
+#include "sarea.h"
+#define _XF86DRI_SERVER_
+#include "xf86dri.h"
+#include "dri.h"
+#include "r128_dri.h"
+#include "r128_dripriv.h"
+#include "r128_sarea.h"
+#endif
+
 				/* Driver data structures */
 #include "r128.h"
 #include "r128_reg.h"
@@ -92,16 +105,19 @@ static void R128SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
    (xorigin,yorigin). */
 static void R128SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
-    R128InfoPtr   info    = R128PTR(pScrn);
-    int           xorigin = 0;
-    int           yorigin = 0;
-    int           total_y = pScrn->frameY1 - pScrn->frameY0;
+    R128InfoPtr           info    = R128PTR(pScrn);
+    xf86CursorInfoPtr     cursor  = info->cursor;
+    int                   xorigin = 0;
+    int                   yorigin = 0;
+    int                   total_y = pScrn->frameY1 - pScrn->frameY0;
     R128MMIO_VARS();
     
-    if (x < 0)                   xorigin = -x;
-    if (y < 0)                   yorigin = -y;
-    if (y > total_y)             y       = total_y;
-    if (info->Flags & V_DBLSCAN) y       *= 2;
+    if (x < 0)                        xorigin = -x;
+    if (y < 0)                        yorigin = -y;
+    if (y > total_y)                  y       = total_y;
+    if (info->Flags & V_DBLSCAN)      y       *= 2;
+    if (xorigin >= cursor->MaxWidth)  xorigin = cursor->MaxWidth - 1;
+    if (yorigin >= cursor->MaxHeight) yorigin = cursor->MaxHeight - 1;
 
     OUTREG(R128_CUR_HORZ_VERT_OFF,  R128_CUR_LOCK | (xorigin << 16) | yorigin);
     OUTREG(R128_CUR_HORZ_VERT_POSN, (R128_CUR_LOCK
@@ -126,47 +142,58 @@ static void R128LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
  
 #if X_BYTE_ORDER == X_BIG_ENDIAN
     switch(info->pixel_bytes) {
-       case 4:
-       case 3:
-          for (y = 0; y < 64; y++) {
-             P_SWAP32(d,s);
-             d++; s++;
-             P_SWAP32(d,s);
-             d++; s++;
-             P_SWAP32(d,s);
-             d++; s++;
-             P_SWAP32(d,s);
-             d++; s++;
-          }
-          break;
-       case 2:
-          for (y = 0; y < 64; y++) {
-             P_SWAP16(d,s);
-             d++; s++;
-             P_SWAP16(d,s);
-             d++; s++;
-             P_SWAP16(d,s);
-             d++; s++;
-             P_SWAP16(d,s);
-             d++; s++;
-          }
-          break;
-      default:
-         for (y = 0; y < 64; y++) {
+    case 4:
+    case 3:
+	for (y = 0; y < 64; y++) {
+	    P_SWAP32(d,s);
+	    d++; s++;
+	    P_SWAP32(d,s);
+	    d++; s++;
+	    P_SWAP32(d,s);
+	    d++; s++;
+	    P_SWAP32(d,s);
+	    d++; s++;
+	}
+	break;
+    case 2:
+	for (y = 0; y < 64; y++) {
+	    P_SWAP16(d,s);
+	    d++; s++;
+	    P_SWAP16(d,s);
+	    d++; s++;
+	    P_SWAP16(d,s);
+	    d++; s++;
+	    P_SWAP16(d,s);
+	    d++; s++;
+	}
+	break;
+    default:
+	for (y = 0; y < 64; y++) {
             *d++ = *s++;
             *d++ = *s++;
             *d++ = *s++;
             *d++ = *s++;
-         }
+	}
     }
 #else
-   for (y = 0; y < 64; y++) {
+    for (y = 0; y < 64; y++) {
 	*d++ = *s++;
 	*d++ = *s++;
 	*d++ = *s++;
 	*d++ = *s++;
     }
 #endif
+
+    /* Set the area after the cursor to be all transparent so that we
+       won't display corrupted cursors on the screen */
+    for (y = 0; y < 64; y++) {
+	*d++ = 0xffffffff; /* The AND bits */
+	*d++ = 0xffffffff;
+	*d++ = 0x00000000; /* The XOR bits */
+	*d++ = 0x00000000;
+    }
+
+   
     OUTREG(R128_CRTC_GEN_CNTL, save);
 }
 
@@ -204,6 +231,7 @@ Bool R128CursorInit(ScreenPtr pScreen)
     FBAreaPtr             fbarea;
     int                   width;
     int                   height;
+    int                   size;
 
 
     if (!(cursor = info->cursor = xf86CreateCursorInfoRec())) return FALSE;
@@ -227,8 +255,9 @@ Bool R128CursorInit(ScreenPtr pScreen)
     cursor->ShowCursor        = R128ShowCursor;
     cursor->UseHWCursor       = R128UseHWCursor;
 
+    size                      = (cursor->MaxWidth/4) * cursor->MaxHeight;
     width                     = pScrn->displayWidth;
-    height                    = (1024 + 1023) / pScrn->displayWidth;
+    height                    = (size*2 + 1023) / pScrn->displayWidth;
     fbarea                    = xf86AllocateOffscreenArea(pScreen,
 							  width,
 							  height,
@@ -246,7 +275,7 @@ Bool R128CursorInit(ScreenPtr pScreen)
 	info->cursor_start    = R128_ALIGN((fbarea->box.x1
 					    + width * fbarea->box.y1)
 					   * info->CurrentLayout.pixel_bytes, 16);
-	info->cursor_end      = info->cursor_start + 1024;
+	info->cursor_end      = info->cursor_start + size;
     }
 
     R128TRACE(("R128CursorInit (0x%08x-0x%08x)\n",

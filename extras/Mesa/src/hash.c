@@ -202,17 +202,21 @@ void _mesa_HashRemove(struct _mesa_HashTable *table, GLuint key)
 
 /*
  * Return the key of the "first" entry in the hash table.
- * By calling this function until zero is returned we can get
- * the keys of all entries in the table.
+ * This is used in the course of deleting all display lists when
+ * a context is destroyed.
  */
-GLuint _mesa_HashFirstEntry(const struct _mesa_HashTable *table)
+GLuint _mesa_HashFirstEntry(struct _mesa_HashTable *table)
 {
    GLuint pos;
    assert(table);
+   _glthread_LOCK_MUTEX(table->Mutex);
    for (pos=0; pos < TABLE_SIZE; pos++) {
-      if (table->Table[pos])
+      if (table->Table[pos]) {
+         _glthread_UNLOCK_MUTEX(table->Mutex);
          return table->Table[pos]->Key;
+      }
    }
+   _glthread_UNLOCK_MUTEX(table->Mutex);
    return 0;
 }
 
@@ -242,11 +246,13 @@ void _mesa_HashPrint(const struct _mesa_HashTable *table)
  *         numKeys - number of keys needed
  * Return:  starting key of free block or 0 if failure
  */
-GLuint _mesa_HashFindFreeKeyBlock(const struct _mesa_HashTable *table, GLuint numKeys)
+GLuint _mesa_HashFindFreeKeyBlock(struct _mesa_HashTable *table, GLuint numKeys)
 {
    GLuint maxKey = ~((GLuint) 0);
+   _glthread_LOCK_MUTEX(table->Mutex);
    if (maxKey - numKeys > table->MaxKey) {
       /* the quick solution */
+      _glthread_UNLOCK_MUTEX(table->Mutex);
       return table->MaxKey + 1;
    }
    else {
@@ -264,11 +270,13 @@ GLuint _mesa_HashFindFreeKeyBlock(const struct _mesa_HashTable *table, GLuint nu
 	    /* this key not in use, check if we've found enough */
 	    freeCount++;
 	    if (freeCount == numKeys) {
+               _glthread_UNLOCK_MUTEX(table->Mutex);
 	       return freeStart;
 	    }
 	 }
       }
       /* cannot allocate a block of numKeys consecutive keys */
+      _glthread_UNLOCK_MUTEX(table->Mutex);
       return 0;
    }
 }

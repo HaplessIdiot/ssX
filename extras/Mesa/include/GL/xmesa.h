@@ -78,9 +78,6 @@ extern "C" {
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include "xmesa_x.h"
-#ifdef GLX_DIRECT_RENDERING
-#include "dri_mesa.h"
-#endif
 #endif
 #include "GL/gl.h"
 
@@ -116,18 +113,6 @@ typedef struct xmesa_visual *XMesaVisual;
 
 typedef struct xmesa_buffer *XMesaBuffer;
 
-#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
-/*
- * Initialize the XMesa driver.
- */
-extern GLboolean XMesaInitDriver( __DRIscreenPrivate *driScrnPriv );
-
-/*
- * Reset the XMesa driver when the X server resets.
- */
-extern void XMesaResetDriver( __DRIscreenPrivate *driScrnPriv );
-#endif
-
 
 
 /*
@@ -140,24 +125,35 @@ extern void XMesaResetDriver( __DRIscreenPrivate *driScrnPriv );
  *         db_flag - GL_TRUE = double-buffered,
  *                   GL_FALSE = single buffered
  *         stereo_flag - stereo visual?
- *         depth_size - requested bits/depth values, or zero
- *         stencil_size - requested bits/stencil values, or zero
- *         accum_size - requested bits/component values, or zero
  *         ximage_flag - GL_TRUE = use an XImage for back buffer,
  *                       GL_FALSE = use an off-screen pixmap for back buffer
+ *         depth_size - requested bits/depth values, or zero
+ *         stencil_size - requested bits/stencil values, or zero
+ *         accum_red_size - requested bits/red accum values, or zero
+ *         accum_green_size - requested bits/green accum values, or zero
+ *         accum_blue_size - requested bits/blue accum values, or zero
+ *         accum_alpha_size - requested bits/alpha accum values, or zero
+ *         num_samples - number of samples/pixel if multisampling, or zero
+ *         level - visual level, usually 0
+ *         visualCaveat - ala the GLX extension, usually GLX_NONE_EXT
  * Return;  a new XMesaVisual or 0 if error.
  */
 extern XMesaVisual XMesaCreateVisual( XMesaDisplay *display,
-				      XMesaVisualInfo visinfo,
-				      GLboolean rgb_flag,
-				      GLboolean alpha_flag,
-				      GLboolean db_flag,
-				      GLboolean stereo_flag,
-				      GLboolean ximage_flag,
-				      GLint depth_size,
-				      GLint stencil_size,
-				      GLint accum_size,
-				      GLint level );
+                                      XMesaVisualInfo visinfo,
+                                      GLboolean rgb_flag,
+                                      GLboolean alpha_flag,
+                                      GLboolean db_flag,
+                                      GLboolean stereo_flag,
+                                      GLboolean ximage_flag,
+                                      GLint depth_size,
+                                      GLint stencil_size,
+                                      GLint accum_red_size,
+                                      GLint accum_green_size,
+                                      GLint accum_blue_size,
+                                      GLint accum_alpha_size,
+                                      GLint num_samples,
+                                      GLint level,
+                                      GLint visualCaveat );
 
 /*
  * Destroy an XMesaVisual, but not the associated XVisualInfo.
@@ -175,11 +171,7 @@ extern void XMesaDestroyVisual( XMesaVisual v );
  * Return:  an XMesaContext or NULL if error.
  */
 extern XMesaContext XMesaCreateContext( XMesaVisual v,
-					XMesaContext share_list
-#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
-					, __DRIcontextPrivate *driContextPriv
-#endif
-				      );
+					XMesaContext share_list );
 
 
 /*
@@ -191,12 +183,7 @@ extern void XMesaDestroyContext( XMesaContext c );
 /*
  * Create an XMesaBuffer from an X window.
  */
-extern XMesaBuffer XMesaCreateWindowBuffer( XMesaVisual v,
-					    XMesaWindow w
-#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
-					    , __DRIdrawablePrivate *driDrawPriv
-#endif
-					  );
+extern XMesaBuffer XMesaCreateWindowBuffer( XMesaVisual v, XMesaWindow w );
 
 
 /*
@@ -204,11 +191,7 @@ extern XMesaBuffer XMesaCreateWindowBuffer( XMesaVisual v,
  */
 extern XMesaBuffer XMesaCreatePixmapBuffer( XMesaVisual v,
 					    XMesaPixmap p,
-					    XMesaColormap cmap
-#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
-					    , __DRIdrawablePrivate *driDrawPriv
-#endif
-					  );
+					    XMesaColormap cmap );
 
 
 /*

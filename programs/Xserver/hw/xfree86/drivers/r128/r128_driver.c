@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.33 2000/05/23 23:48:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.34 2000/06/14 00:16:12 dawes Exp $ */
 /**************************************************************************
 
-Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
-                                         Cedar Park, Texas. 
+Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
+                                               Cedar Park, Texas. 
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -107,6 +107,19 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 				/* VESA support */
 #include "vbe.h"
 
+				/* DRI support */
+#ifdef XF86DRI
+#include "GL/glxint.h"
+#include "xf86drm.h"
+#include "sarea.h"
+#define _XF86DRI_SERVER_
+#include "xf86dri.h"
+#include "dri.h"
+#include "r128_dri.h"
+#include "r128_dripriv.h"
+#include "r128_sarea.h"
+#endif
+
 				/* Driver data structures */
 #include "r128.h"
 #include "r128_reg.h"
@@ -156,6 +169,8 @@ static SymTabRec R128Chipsets[] = {
     { PCI_CHIP_RAGE128RK, "ATI Rage 128 RK (PCI)" },
     { PCI_CHIP_RAGE128RL, "ATI Rage 128 RL (AGP)" },
     { PCI_CHIP_RAGE128PF, "ATI Rage 128 Pro PF (AGP)" },
+    { PCI_CHIP_RAGE128LE, "ATI Rage 128 Mobility LE (PCI)" },
+    { PCI_CHIP_RAGE128LF, "ATI Rage 128 Mobility LF (AGP)" },
     { -1,                 NULL }
 };
 
@@ -165,6 +180,8 @@ static PciChipsets R128PciChipsets[] = {
     { PCI_CHIP_RAGE128RK, PCI_CHIP_RAGE128RK, RES_SHARED_VGA },
     { PCI_CHIP_RAGE128RL, PCI_CHIP_RAGE128RL, RES_SHARED_VGA },
     { PCI_CHIP_RAGE128PF, PCI_CHIP_RAGE128PF, RES_SHARED_VGA },
+    { PCI_CHIP_RAGE128LE, PCI_CHIP_RAGE128LE, RES_SHARED_VGA },
+    { PCI_CHIP_RAGE128LF, PCI_CHIP_RAGE128LF, RES_SHARED_VGA },
     { -1,                 -1,                 RES_UNDEFINED }
 };
 
@@ -174,17 +191,45 @@ typedef enum {
   OPTION_HW_CURSOR,
   OPTION_DAC_6BIT,
   OPTION_DAC_8BIT,
+#ifdef XF86DRI
+  OPTION_IS_PCI,
+  OPTION_CCE_PIO,
+  OPTION_NO_SECURITY,
+  OPTION_USEC_TIMEOUT,
+  OPTION_AGP_MODE,
+  OPTION_AGP_SIZE,
+  OPTION_RING_SIZE,
+  OPTION_VERT_SIZE,
+  OPTION_VBUF_SIZE,
+  OPTION_USE_CCE_2D,
+#endif
+  OPTION_ENABLE_FP,
+  OPTION_CRT,
   OPTION_FBDEV
 } R128Opts;
 
 static OptionInfoRec R128Options[] = {
-  { OPTION_NOACCEL,   "NoAccel",  OPTV_BOOLEAN, {0}, FALSE },
-  { OPTION_SW_CURSOR, "SWcursor", OPTV_BOOLEAN, {0}, FALSE },
-  { OPTION_HW_CURSOR, "HWcursor", OPTV_BOOLEAN, {0}, TRUE  },
-  { OPTION_DAC_6BIT,  "Dac6Bit",  OPTV_BOOLEAN, {0}, FALSE },
-  { OPTION_DAC_8BIT,  "Dac8Bit",  OPTV_BOOLEAN, {0}, TRUE  },
-  { OPTION_FBDEV,     "UseFBDev", OPTV_BOOLEAN, {0}, FALSE },
-  { -1,               NULL,       OPTV_NONE,    {0}, FALSE }
+  { OPTION_NOACCEL,      "NoAccel",          OPTV_BOOLEAN, {0}, FALSE },
+  { OPTION_SW_CURSOR,    "SWcursor",         OPTV_BOOLEAN, {0}, FALSE },
+  { OPTION_HW_CURSOR,    "HWcursor",         OPTV_BOOLEAN, {0}, TRUE  },
+  { OPTION_DAC_6BIT,     "Dac6Bit",          OPTV_BOOLEAN, {0}, FALSE },
+  { OPTION_DAC_8BIT,     "Dac8Bit",          OPTV_BOOLEAN, {0}, TRUE  },
+#ifdef XF86DRI
+  { OPTION_IS_PCI,       "ForcePCIMode",     OPTV_BOOLEAN, {0}, FALSE },
+  { OPTION_CCE_PIO,      "CCEPIOMode",       OPTV_BOOLEAN, {0}, FALSE },
+  { OPTION_NO_SECURITY,  "CCENoSecurity",    OPTV_BOOLEAN, {0}, FALSE },
+  { OPTION_USEC_TIMEOUT, "CCEusecTimeout",   OPTV_INTEGER, {0}, FALSE },
+  { OPTION_AGP_MODE,     "AGPMode",          OPTV_INTEGER, {0}, FALSE },
+  { OPTION_AGP_SIZE,     "AGPSize",          OPTV_INTEGER, {0}, FALSE },
+  { OPTION_RING_SIZE,    "RingSize",         OPTV_INTEGER, {0}, FALSE },
+  { OPTION_VERT_SIZE,    "VBListSize",       OPTV_INTEGER, {0}, FALSE },
+  { OPTION_VBUF_SIZE,    "VBSize",           OPTV_INTEGER, {0}, FALSE },
+  { OPTION_USE_CCE_2D,   "UseCCEfor2D",      OPTV_BOOLEAN, {0}, FALSE },
+#endif
+  { OPTION_ENABLE_FP,    "EnableFP",         OPTV_BOOLEAN, {0}, FALSE },
+  { OPTION_CRT,          "CRTOnly",          OPTV_BOOLEAN, {0}, FALSE },
+  { OPTION_FBDEV,        "UseFBDev",         OPTV_BOOLEAN, {0}, FALSE },
+  { -1,                  NULL,               OPTV_NONE,    {0}, FALSE }
 };
 
 R128RAMRec R128RAM[] = {	/* Memory Specifications
@@ -297,6 +342,38 @@ static const char *ramdacSymbols[] = {
     NULL
 };
 
+#ifdef XF86DRI
+static const char *drmSymbols[] = {
+    "drmAddBufs",
+    "drmAddMap",
+    "drmAvailable",
+    "drmCtlAddCommand",
+    "drmCtlInstHandler",
+    "drmGetInterruptFromBusID",
+    "drmMapBufs",
+    "drmMarkBufs",
+    "drmUnmapBufs",
+    NULL
+};
+
+static const char *driSymbols[] = {
+    "DRIGetDrawableIndex",
+    "DRIFinishScreenInit",
+    "DRIDestroyInfoRec",
+    "DRICloseScreen",
+    "DRIDestroyInfoRec",
+    "DRIScreenInit",
+    "DRIDestroyInfoRec",
+    "DRICreateInfoRec",
+    "DRILock",
+    "DRIUnlock",
+    "DRIGetSAREAPrivate",
+    "DRIGetContext",
+    "GlxSetVisualConfigs",
+    NULL
+};
+#endif
+
 static MODULESETUPPROTO(R128Setup);
 
 static XF86ModuleVersionInfo R128VersRec =
@@ -345,6 +422,10 @@ static pointer R128Setup(pointer module, pointer opts, int *errmaj,
 			  xaaSymbols, 
                           xf8_32bppSymbols,
 			  ramdacSymbols,
+#ifdef XF86DRI
+			  drmSymbols,
+			  driSymbols,
+#endif
 			  fbdevHWSymbols,
 			  vbeSymbols,
                           0 /* ddcsymbols */,
@@ -516,7 +597,7 @@ static void R128Unblank(ScrnInfoPtr pScrn)
 }
 
 /* Compute log base 2 of val. */
-static int R128MinBits(int val)
+int R128MinBits(int val)
 {
     int bits;
 
@@ -650,10 +731,11 @@ static Bool R128Probe(DriverPtr drv, int flags)
     if (flags & PROBE_DETECT)
     	foundScreen = TRUE;
     else for (i = 0; i < numUsed; i++) {
+	pEnt = xf86GetEntityInfo(usedChips[i]);
 
-	ScrnInfoPtr pScrn    = NULL;
-	if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
-					       R128PciChipsets, 0, 0, 0, 0, 0))) {
+	if (pEnt->active) {
+	    ScrnInfoPtr pScrn    = xf86AllocateScreen(drv, 0);
+
 	    pScrn->driverVersion = R128_VERSION;
 	    pScrn->driverName    = R128_NAME;
 	    pScrn->name          = R128_NAME;
@@ -668,7 +750,11 @@ static Bool R128Probe(DriverPtr drv, int flags)
 	    pScrn->ValidMode     = R128ValidMode;
 
 	    foundScreen          = TRUE;
+	    
+	    xf86ConfigActivePciEntity(pScrn, usedChips[i], R128PciChipsets,
+				      0, 0, 0, 0, 0);
 	}
+	xfree(pEnt);
     }
 
     if (numUsed) xfree(usedChips);
@@ -684,7 +770,9 @@ static Bool R128PreInitVisual(ScrnInfoPtr pScrn)
     
     if (!xf86SetDepthBpp(pScrn, 8, 8, 8, (Support24bppFb
 					  | Support32bppFb
+#ifndef USE_FB
 					  | SupportConvert32to24
+#endif
 					  )))
 	return FALSE;
 
@@ -772,6 +860,10 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
     int           offset = 0;	/* RAM Type */
     MessageType   from;
     unsigned char *R128MMIO;
+    CARD32        fp_horz_stretch      = 0, fp_vert_stretch      = 0;
+    CARD32        crtc_h_total_disp    = 0, crtc_v_total_disp    = 0;
+    CARD32        crtc_h_sync_strt_wid = 0, crtc_v_sync_strt_wid = 0;
+
 				/* Chipset */
     from = X_PROBED;
     if (dev->chipset && *dev->chipset) {
@@ -854,22 +946,47 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 		   "BIOS at 0x%08lx\n", info->BIOSAddr);
     }
 
-				/* RAM */
-    from             = X_PROBED;
+				/* Flat panel (part 1) */
+    /* FIXME: Make this an option */
+    switch (info->Chipset) {
+    case PCI_CHIP_RAGE128LE:
+    case PCI_CHIP_RAGE128LF: info->HasPanelRegs = TRUE;  break;
+    case PCI_CHIP_RAGE128RE:
+    case PCI_CHIP_RAGE128RF:
+    case PCI_CHIP_RAGE128RK:
+    case PCI_CHIP_RAGE128RL:
+    case PCI_CHIP_RAGE128PF:
+    default:                 info->HasPanelRegs = FALSE; break;
+    }
+
+				/* Read registers used to determine options */
+    from                     = X_PROBED;
     R128MapMMIO(pScrn);
-    R128MMIO         = info->MMIO;
+    R128MMIO                 = info->MMIO;
     if (info->FBDev)
-	pScrn->videoRam = fbdevHWGetVidmem(pScrn) / 1024;
+	pScrn->videoRam      = fbdevHWGetVidmem(pScrn) / 1024;
     else
-	pScrn->videoRam = INREG(R128_CONFIG_MEMSIZE) / 1024;
-    info->MemCntl    = INREG(R128_MEM_CNTL);
-    info->BusCntl    = INREG(R128_BUS_CNTL);
-    R128MMIO         = NULL;
+	pScrn->videoRam      = INREG(R128_CONFIG_MEMSIZE) / 1024;
+    info->MemCntl            = INREG(R128_MEM_CNTL);
+    info->BusCntl            = INREG(R128_BUS_CNTL);
+    if (info->HasPanelRegs) {
+	fp_horz_stretch      = INREG(R128_FP_HORZ_STRETCH);
+	fp_vert_stretch      = INREG(R128_FP_VERT_STRETCH);
+	crtc_h_total_disp    = INREG(R128_CRTC_H_TOTAL_DISP);
+	crtc_v_total_disp    = INREG(R128_CRTC_V_TOTAL_DISP);
+	crtc_h_sync_strt_wid = INREG(R128_CRTC_H_SYNC_STRT_WID);
+	crtc_v_sync_strt_wid = INREG(R128_CRTC_V_SYNC_STRT_WID);
+    }
+    R128MMIO                 = NULL;
     R128UnmapMMIO(pScrn);
+
+				/* RAM */
     switch (info->MemCntl & 0x3) {
     case 0:			/* SDR SGRAM 1:1 */
 	switch (info->Chipset) {
-	case PCI_CHIP_RAGE128RE: 
+	case PCI_CHIP_RAGE128LE:
+	case PCI_CHIP_RAGE128LF:
+	case PCI_CHIP_RAGE128RE:
 	case PCI_CHIP_RAGE128RF: offset = 0; break; /* 128-bit SDR SGRAM 1:1 */
 	case PCI_CHIP_RAGE128RK:
 	case PCI_CHIP_RAGE128RL:
@@ -888,11 +1005,97 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 		   pScrn->videoRam);
 	from             = X_CONFIG;
 	pScrn->videoRam  = dev->videoRam;
-    } 
+    }
     pScrn->videoRam  &= ~1023;
     info->FbMapSize  = pScrn->videoRam * 1024;
     xf86DrvMsg(pScrn->scrnIndex, from,
 	       "VideoRAM: %d kByte (%s)\n", pScrn->videoRam, info->ram->name);
+
+				/* Flat panel (part 2) */
+    if ((info->EnableFP = xf86ReturnOptValBool(R128Options,
+					       OPTION_ENABLE_FP, FALSE))) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "Enabling use of flat panel registers\n");
+	if ((info->CRTOnly = xf86ReturnOptValBool(R128Options,
+						  OPTION_CRT, FALSE))) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		       "Using external CRT instead of "
+		       "flat panel for display\n");
+	} else {
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		       "Using flat panel for display\n");
+	}
+    }
+
+    if (info->HasPanelRegs) {
+	int tmp;
+
+	info->PanelXRes  =
+	    (fp_horz_stretch & R128_HORZ_PANEL_SIZE) >> R128_HORZ_PANEL_SHIFT;
+	info->PanelXRes  = (info->PanelXRes + 1) * 8;
+	info->PanelYRes  =
+	    (fp_vert_stretch & R128_VERT_PANEL_SIZE) >> R128_VERT_PANEL_SHIFT;
+	info->PanelYRes += 1;
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Panel dimensions: %dx%d\n",
+		   info->PanelXRes, info->PanelYRes);
+
+	info->PanelHNonVis     =
+	    (crtc_h_total_disp & R128_CRTC_H_TOTAL) >> R128_CRTC_H_TOTAL_SHIFT;
+	info->PanelHNonVis    += 4; /* Add 4 since we are in VGA mode */
+	tmp                    =
+	    (crtc_h_total_disp & R128_CRTC_H_DISP) >> R128_CRTC_H_DISP_SHIFT;
+	info->PanelHNonVis    -= tmp;
+	info->PanelHOverPlus   =
+	    (crtc_h_sync_strt_wid & R128_CRTC_H_SYNC_STRT_CHAR)
+		>> R128_CRTC_H_SYNC_STRT_CHAR_SHIFT;
+	info->PanelHOverPlus  -= tmp;
+	switch (info->CurrentLayout.pixel_code) {
+	    /* Adjustments are from ATI */
+	case 8:  info->PanelHOverPlus += 2; break;
+	case 15:
+	case 16: info->PanelHOverPlus += 1; break;
+	case 24:
+	case 32: info->PanelHOverPlus += 0; break;
+	}
+	info->PanelHSyncWidth  =
+	    (crtc_h_sync_strt_wid & R128_CRTC_H_SYNC_WID)
+		>> R128_CRTC_H_SYNC_WID_SHIFT;
+	info->PanelHSyncWidth += 14; /* ??? */
+
+	info->PanelVNonVis     =
+	    (crtc_v_total_disp & R128_CRTC_V_TOTAL) >> R128_CRTC_V_TOTAL_SHIFT;
+	info->PanelVNonVis    += 1; /* Add 1 since we are in VGA mode */
+	tmp                    =
+	    (crtc_v_total_disp & R128_CRTC_V_DISP) >> R128_CRTC_V_DISP_SHIFT;
+	info->PanelVNonVis    -= tmp;
+	info->PanelVOverPlus   =
+	    (crtc_v_sync_strt_wid & R128_CRTC_V_SYNC_STRT)
+		>> R128_CRTC_V_SYNC_STRT_SHIFT;
+	info->PanelVOverPlus  -= tmp + 1;
+	info->PanelVSyncWidth  =
+	    (crtc_v_sync_strt_wid & R128_CRTC_V_SYNC_WID)
+		>> R128_CRTC_V_SYNC_WID_SHIFT;
+	info->PanelVSyncWidth -= 2; /* ??? */
+    }
+
+#ifdef XF86DRI
+				/* AGP/PCI */
+    if (xf86ReturnOptValBool(R128Options, OPTION_IS_PCI, FALSE)) {
+	info->IsPCI = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forced into PCI-only mode\n");
+    } else {
+	switch (info->Chipset) {
+	case PCI_CHIP_RAGE128LE:
+	case PCI_CHIP_RAGE128RE:
+	case PCI_CHIP_RAGE128RK: info->IsPCI = TRUE;  break;
+	case PCI_CHIP_RAGE128LF:
+	case PCI_CHIP_RAGE128RF:
+	case PCI_CHIP_RAGE128RL:
+	case PCI_CHIP_RAGE128PF:
+	default:                 info->IsPCI = FALSE; break;
+	}
+    }
+#endif
 
     return TRUE;
 }
@@ -1050,6 +1253,143 @@ static Bool R128PreInitInt10(ScrnInfoPtr pScrn)
     return TRUE;
 }
 
+#ifdef XF86DRI
+static Bool R128PreInitDRI(ScrnInfoPtr pScrn)
+{
+    R128InfoPtr   info = R128PTR(pScrn);    
+
+    if (info->IsPCI) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "CCE in PIO mode\n");
+	info->CCEMode = R128_DEFAULT_CCE_PIO_MODE;
+    } else if (xf86ReturnOptValBool(R128Options, OPTION_CCE_PIO, FALSE)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "CCE in PIO mode\n");
+	info->CCEMode = R128_DEFAULT_CCE_PIO_MODE;
+    } else {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "CCE in BM mode\n");
+	info->CCEMode = R128_DEFAULT_CCE_BM_MODE;
+    }
+
+    if (xf86ReturnOptValBool(R128Options, OPTION_USE_CCE_2D, FALSE)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using CCE for 2D\n");
+	info->CCE2D = TRUE;
+    } else {
+	info->CCE2D = FALSE;
+    }
+
+    if (xf86ReturnOptValBool(R128Options, OPTION_NO_SECURITY, FALSE)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "WARNING!!!  CCE Security checks disabled!!! **********\n");
+	info->CCESecure = FALSE;
+    } else {
+	info->CCESecure = TRUE;
+    }
+
+    info->agpMode        = R128_DEFAULT_AGP_MODE;
+    info->agpSize        = R128_DEFAULT_AGP_SIZE;
+    info->ringSize       = R128_DEFAULT_RING_SIZE;
+    info->vbSize         = R128_DEFAULT_VB_SIZE;
+    info->indSize        = R128_DEFAULT_IND_SIZE;
+    info->agpTexSize     = R128_DEFAULT_AGP_TEX_SIZE;
+
+    info->vbBufSize      = R128_DEFAULT_VB_BUF_SIZE;
+
+    info->CCEusecTimeout = R128_DEFAULT_CCE_TIMEOUT;
+
+    if (!info->IsPCI) {
+	if (xf86GetOptValInteger(R128Options,
+				 OPTION_AGP_MODE, &(info->agpMode))) {
+	    if (info->agpMode < 1 || info->agpMode > R128_AGP_MAX_MODE) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "Illegal AGP Mode: %d\n", info->agpMode);
+		return FALSE;
+	    }
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		       "Using AGP %dx mode\n", info->agpMode);
+	}
+
+	if (xf86GetOptValInteger(R128Options,
+				 OPTION_AGP_SIZE, (int *)&(info->agpSize))) {
+	    switch (info->agpSize) {
+	    case 4:
+	    case 8:
+	    case 16:
+	    case 32:
+	    case 64:
+	    case 128:
+	    case 256:
+		break;
+	    default:
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "Illegal AGP size: %d MB\n", info->agpSize);
+		return FALSE;
+	    }
+	}
+
+	if (xf86GetOptValInteger(R128Options,
+				 OPTION_RING_SIZE, &(info->ringSize))) {
+	    if (info->ringSize < 1 || info->ringSize >= info->agpSize) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "Illegal ring buffer size: %d MB\n",
+			   info->ringSize);
+		return FALSE;
+	    }
+	}
+
+	if (xf86GetOptValInteger(R128Options,
+				 OPTION_VERT_SIZE, &(info->vbSize))) {
+	    if (info->vbSize < 1 || info->vbSize >= info->agpSize) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "Illegal vertex buffers list size: %d MB\n",
+			   info->vbSize);
+		return FALSE;
+	    }
+	}
+
+	if (xf86GetOptValInteger(R128Options,
+				 OPTION_VBUF_SIZE, &(info->vbBufSize))) {
+	    int numBufs = info->vbSize*1024*1024/info->vbBufSize;
+	    if (numBufs < 2 || numBufs > 512) { /* FIXME: 512 is arbitrary */
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "Illegal individual vertex buffer size: %d bytes\n",
+			   info->vbBufSize);
+		return FALSE;
+	    }
+	}
+
+	if (info->ringSize + info->vbSize + info->indSize + info->agpTexSize >
+	    info->agpSize) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "Buffers are too big for requested AGP space\n");
+	    return FALSE;
+	}
+
+	info->agpTexSize = info->agpSize - (info->ringSize +
+					    info->vbSize +
+					    info->indSize);
+
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "Using %d MB AGP aperture\n", info->agpSize);
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "Using %d MB for the ring buffer\n", info->ringSize);
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "Using %d MB for vertex buffers\n", info->vbSize);
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "Using %d MB for indirect buffers\n", info->indSize);
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "Using %d MB for AGP textures\n", info->agpTexSize);
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "Using %d byte vertex buffers\n", info->vbBufSize);
+    }
+
+    if (xf86GetOptValInteger(R128Options, OPTION_USEC_TIMEOUT,
+			     &(info->CCEusecTimeout))) {
+	/* This option checked by the R128 DRM kernel module */
+    }
+
+    return TRUE;
+}
+#endif
+
 static void
 R128ProbeDDC(ScrnInfoPtr pScrn, int index)
 {
@@ -1147,6 +1487,10 @@ static Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
     
     if (!R128PreInitAccel(pScrn))     goto fail;
 
+#ifdef XF86DRI
+    if (!R128PreInitDRI(pScrn))       goto fail;
+#endif
+
     return TRUE;
 
   fail:
@@ -1214,9 +1558,20 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 
     R128TRACE(("R128ScreenInit %x %d\n", pScrn->memPhysBase, pScrn->fbOffset));
     
+#ifdef XF86DRI
+				/* Turn off the CCE for now. */
+    info->CCEInUse     = FALSE;
+#endif
+
     if (!R128MapMem(pScrn)) return FALSE;
     pScrn->fbOffset    = 0;
-    
+#ifdef XF86DRI
+    info->fbX          = 0;
+    info->fbY          = 0;
+#endif
+
+    info->PaletteSavedOnVT = FALSE;
+
     R128Save(pScrn);
     if (info->FBDev) {
 	if (!fbdevHWModeInit(pScrn, pScrn->currentMode)) return FALSE;
@@ -1233,6 +1588,18 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 			  miGetDefaultVisualMask(pScrn->depth),
 			  pScrn->rgbBits,
 			  pScrn->defaultVisual)) return FALSE;
+
+#ifdef XF86DRI
+				/* Setup DRI after visuals have been
+                                   established, but before cfbScreenInit is
+                                   called.  cfbScreenInit will eventually
+                                   call the driver's InitGLXVisuals call
+                                   back. */
+    if (!xf86ReturnOptValBool(R128Options, OPTION_NOACCEL, FALSE))
+	info->directRenderingEnabled = R128DRIScreenInit(pScreen);
+    else
+	info->directRenderingEnabled = FALSE;
+#endif
 
 #ifdef USE_FB
     if (!fbScreenInit (pScreen, info->FB,
@@ -1343,6 +1710,103 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 	}
     }
 
+#ifdef XF86DRI
+				/* Allocate frame buffer space for the
+                                   shared back and depth buffers as well
+                                   as for local textures. */
+    if (info->directRenderingEnabled) {
+	FBAreaPtr fbarea;
+	int       width_bytes = (pScrn->displayWidth *
+				 info->CurrentLayout.pixel_bytes);
+	int       maxy        = info->FbMapSize / width_bytes;
+	int       l;
+	
+				/* Allocate the shared back buffer */
+	if ((fbarea = xf86AllocateOffscreenArea(pScreen,
+						pScrn->virtualX,
+						pScrn->virtualY,
+						32, NULL, NULL, NULL))) {
+	    xf86DrvMsg(scrnIndex, X_INFO,
+		       "Reserved back buffer from (%d,%d) to (%d,%d)\n",
+		       fbarea->box.x1, fbarea->box.y1,
+		       fbarea->box.x2, fbarea->box.y2);
+
+	    info->backX = fbarea->box.x1;
+	    info->backY = fbarea->box.y1;
+	} else {
+	    xf86DrvMsg(scrnIndex, X_ERROR, "Unable to reserve back buffer\n");
+	    info->backX = -1;
+	    info->backY = -1;
+	}
+
+				/* Allocate the shared depth buffer */
+	if ((fbarea = xf86AllocateOffscreenArea(pScreen,
+						pScrn->virtualX,
+						pScrn->virtualY,
+						32, NULL, NULL, NULL))) {
+	    xf86DrvMsg(scrnIndex, X_INFO,
+		       "Reserved depth buffer from (%d,%d) to (%d,%d)\n",
+		       fbarea->box.x1, fbarea->box.y1,
+		       fbarea->box.x2, fbarea->box.y2);
+
+	    info->depthX = fbarea->box.x1;
+	    info->depthY = fbarea->box.y1;
+	} else {
+	    xf86DrvMsg(scrnIndex, X_ERROR, "Unable to reserve depth buffer\n");
+	    info->depthX = -1;
+	    info->depthY = -1;
+	}
+
+				/* Allocate local texture space */
+	if (((maxy - MemBox.y2 - 1) * width_bytes) >
+	    (pScrn->virtualX * pScrn->virtualY * 2 *
+	     info->CurrentLayout.pixel_bytes)) {
+	    info->textureX = 0;
+	    info->textureY = MemBox.y2 + 1;
+	    info->textureSize = (maxy - MemBox.y2 - 1) * width_bytes;
+
+	    l = R128MinBits((info->textureSize-1) / R128_NR_TEX_REGIONS);
+	    if (l < R128_LOG_TEX_GRANULARITY) l = R128_LOG_TEX_GRANULARITY;
+
+	    info->log2TexGran = l;
+	    info->textureSize = (info->textureSize >> l) << l;
+
+	    xf86DrvMsg(scrnIndex, X_INFO,
+		       "Reserved %d kb for textures: (%d,%d)-(%d,%d)\n",
+		       info->textureSize/1024,
+		       info->textureX,      info->textureY,
+		       pScrn->displayWidth, maxy);
+	} else if ((fbarea = xf86AllocateOffscreenArea(pScreen,
+						       pScrn->virtualX,
+						       pScrn->virtualY * 2,
+						       32,
+						       NULL, NULL, NULL))) {
+	    info->textureX = fbarea->box.x1;
+	    info->textureY = fbarea->box.y1;
+	    info->textureSize = ((fbarea->box.y2 - fbarea->box.y1) *
+				 (fbarea->box.x2 - fbarea->box.x1) *
+				 info->CurrentLayout.pixel_bytes);
+
+	    l = R128MinBits((info->textureSize-1) / R128_NR_TEX_REGIONS);
+	    if (l < R128_LOG_TEX_GRANULARITY) l = R128_LOG_TEX_GRANULARITY;
+
+	    info->log2TexGran = l;
+	    info->textureSize = (info->textureSize >> l) << l;
+
+	    xf86DrvMsg(scrnIndex, X_INFO,
+		       "Reserved %d kb for textures: (%d,%d)-(%d,%d)\n",
+		       info->textureSize/1024,
+		       fbarea->box.x1, fbarea->box.y1,
+		       fbarea->box.x2, fbarea->box.y2);
+	} else {
+	    xf86DrvMsg(scrnIndex, X_ERROR,
+		       "Unable to reserve texture space in frame buffer\n");
+	    info->textureX = -1;
+	    info->textureY = -1;
+	}
+    }
+#endif
+
 				/* Backing store setup */
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
@@ -1422,6 +1886,21 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
     if (serverGeneration == 1)
 	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
 
+#ifdef XF86DRI
+				/* DRI finalization */
+    if (info->directRenderingEnabled) {
+				/* Now that mi, cfb, drm and others have
+                                   done their thing, complete the DRI
+                                   setup. */
+        info->directRenderingEnabled = R128DRIFinishScreenInit(pScreen);
+    }
+    if (info->directRenderingEnabled) {
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Direct rendering enabled\n");
+    } else {
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Direct rendering disabled\n");
+    }
+#endif
+
     return TRUE;
 }
 
@@ -1442,7 +1921,7 @@ static void R128RestoreCommonRegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
     OUTREG(R128_GEN_INT_CNTL,         restore->gen_int_cntl);
     OUTREG(R128_CAP0_TRIG_CNTL,       restore->cap0_trig_cntl);
     OUTREG(R128_CAP1_TRIG_CNTL,       restore->cap1_trig_cntl);
-    OUTREG(R128_BUS_CNTL,	      restore->bus_cntl);
+    OUTREG(R128_BUS_CNTL,             restore->bus_cntl);
 }
 
 /* Write CRTC registers. */
@@ -1465,6 +1944,24 @@ static void R128RestoreCrtcRegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
     OUTREG(R128_CRTC_OFFSET,          restore->crtc_offset);
     OUTREG(R128_CRTC_OFFSET_CNTL,     restore->crtc_offset_cntl);
     OUTREG(R128_CRTC_PITCH,           restore->crtc_pitch);
+}
+
+/* Write flat panel registers */
+static void R128RestoreFPRegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
+{
+    R128MMIO_VARS();
+
+    OUTREG(R128_CRTC2_GEN_CNTL,       restore->crtc2_gen_cntl);
+    OUTREG(R128_FP_CRTC_H_TOTAL_DISP, restore->fp_crtc_h_total_disp);
+    OUTREG(R128_FP_CRTC_V_TOTAL_DISP, restore->fp_crtc_v_total_disp);
+    OUTREG(R128_FP_GEN_CNTL,          restore->fp_gen_cntl);
+    OUTREG(R128_FP_H_SYNC_STRT_WID,   restore->fp_h_sync_strt_wid);
+    OUTREG(R128_FP_HORZ_STRETCH,      restore->fp_horz_stretch);
+    OUTREG(R128_FP_PANEL_CNTL,        restore->fp_panel_cntl);
+    OUTREG(R128_FP_V_SYNC_STRT_WID,   restore->fp_v_sync_strt_wid);
+    OUTREG(R128_FP_VERT_STRETCH,      restore->fp_vert_stretch);
+    OUTREG(R128_LVDS_GEN_CNTL,        restore->lvds_gen_cntl);
+    OUTREG(R128_TMDS_CRC,             restore->tmds_crc);
 }
 
 static void R128PLLWaitForReadUpdateComplete(ScrnInfoPtr pScrn)
@@ -1550,6 +2047,8 @@ static void R128RestoreMode(ScrnInfoPtr pScrn, R128SavePtr restore)
     R128TRACE(("R128RestoreMode(%p)\n", restore));
     R128RestoreCommonRegisters(pScrn, restore);
     R128RestoreCrtcRegisters(pScrn, restore);
+    if (R128PTR(pScrn)->HasPanelRegs && R128PTR(pScrn)->EnableFP)
+	R128RestoreFPRegisters(pScrn, restore);
     R128RestorePLLRegisters(pScrn, restore);
     R128RestoreDDARegisters(pScrn, restore);
     R128RestorePalette(pScrn, restore);
@@ -1572,7 +2071,7 @@ static void R128SaveCommonRegisters(ScrnInfoPtr pScrn, R128SavePtr save)
     save->gen_int_cntl       = INREG(R128_GEN_INT_CNTL);
     save->cap0_trig_cntl     = INREG(R128_CAP0_TRIG_CNTL);
     save->cap1_trig_cntl     = INREG(R128_CAP1_TRIG_CNTL);
-    save->bus_cntl	     = INREG(R128_BUS_CNTL);
+    save->bus_cntl           = INREG(R128_BUS_CNTL);
 }
 
 /* Read CRTC registers. */
@@ -1590,6 +2089,24 @@ static void R128SaveCrtcRegisters(ScrnInfoPtr pScrn, R128SavePtr save)
     save->crtc_offset          = INREG(R128_CRTC_OFFSET);
     save->crtc_offset_cntl     = INREG(R128_CRTC_OFFSET_CNTL);
     save->crtc_pitch           = INREG(R128_CRTC_PITCH);
+}
+
+/* Read flat panel registers */
+static void R128SaveFPRegisters(ScrnInfoPtr pScrn, R128SavePtr save)
+{
+    R128MMIO_VARS();
+
+    save->crtc2_gen_cntl       = INREG(R128_CRTC2_GEN_CNTL);
+    save->fp_crtc_h_total_disp = INREG(R128_FP_CRTC_H_TOTAL_DISP);
+    save->fp_crtc_v_total_disp = INREG(R128_FP_CRTC_V_TOTAL_DISP);
+    save->fp_gen_cntl          = INREG(R128_FP_GEN_CNTL);
+    save->fp_h_sync_strt_wid   = INREG(R128_FP_H_SYNC_STRT_WID);
+    save->fp_horz_stretch      = INREG(R128_FP_HORZ_STRETCH);
+    save->fp_panel_cntl        = INREG(R128_FP_PANEL_CNTL);
+    save->fp_v_sync_strt_wid   = INREG(R128_FP_V_SYNC_STRT_WID);
+    save->fp_vert_stretch      = INREG(R128_FP_VERT_STRETCH);
+    save->lvds_gen_cntl        = INREG(R128_LVDS_GEN_CNTL);
+    save->tmds_crc             = INREG(R128_TMDS_CRC);
 }
 
 /* Read PLL registers. */
@@ -1636,6 +2153,8 @@ static void R128SaveMode(ScrnInfoPtr pScrn, R128SavePtr save)
 
     R128SaveCommonRegisters(pScrn, save);
     R128SaveCrtcRegisters(pScrn, save);
+    if (R128PTR(pScrn)->HasPanelRegs && R128PTR(pScrn)->EnableFP)
+	R128SaveFPRegisters(pScrn, save);
     R128SavePLLRegisters(pScrn, save);
     R128SaveDDARegisters(pScrn, save);
     R128SavePalette(pScrn, save);
@@ -1808,6 +2327,128 @@ static Bool R128InitCrtcRegisters(ScrnInfoPtr pScrn, R128SavePtr save,
     R128TRACE(("Pitch = %d bytes (virtualX = %d, displayWidth = %d)\n",
 	       save->crtc_pitch, pScrn->virtualX, info->CurrentLayout.displayWidth));
     return TRUE;
+}
+
+/* Define CRTC registers for requested video mode. */
+static void R128InitFPRegisters(ScrnInfoPtr pScrn, R128SavePtr orig,
+				R128SavePtr save, DisplayModePtr mode,
+				R128InfoPtr info)
+{
+    int   xres = mode->CrtcHDisplay;
+    int   yres = mode->CrtcVDisplay;
+    float Hratio, Vratio;
+    int   disp_end;
+
+    if (info->CRTOnly) {
+	save->crtc_ext_cntl  |= R128_CRTC_CRT_ON;
+	save->crtc2_gen_cntl  = 0;
+	save->fp_gen_cntl     = orig->fp_gen_cntl;
+	save->fp_gen_cntl    &= ~(R128_FP_FPON |
+				  R128_FP_CRTC_USE_SHADOW_VEND |
+				  R128_FP_CRTC_HORZ_DIV2_EN |
+				  R128_FP_CRTC_HOR_CRT_DIV2_DIS |
+				  R128_FP_USE_SHADOW_EN);
+	save->fp_gen_cntl    |= (R128_FP_SEL_CRTC2 |
+				 R128_FP_CRTC_DONT_SHADOW_VPAR);
+	save->fp_panel_cntl   = orig->fp_panel_cntl & ~R128_FP_DIGON;
+	save->lvds_gen_cntl   = orig->lvds_gen_cntl & ~R128_LVDS_ON;
+	return;
+    }
+
+    if (xres > info->PanelXRes) xres = info->PanelXRes;
+    if (yres > info->PanelYRes) yres = info->PanelYRes;
+
+    Hratio = (float)xres/(float)info->PanelXRes;
+    Vratio = (float)yres/(float)info->PanelYRes;
+
+    save->fp_horz_stretch =
+	(((((int)(Hratio * R128_HORZ_STRETCH_RATIO_MAX))
+	   & R128_HORZ_STRETCH_RATIO_MASK) << R128_HORZ_STRETCH_RATIO_SHIFT) |
+	 (orig->fp_horz_stretch & (R128_HORZ_PANEL_SIZE |
+				   R128_HORZ_FP_LOOP_STRETCH |
+				   R128_HORZ_STRETCH_RESERVED)));
+    if (Hratio != 1.0) save->fp_horz_stretch |= (R128_HORZ_STRETCH_BLEND |
+						 R128_HORZ_STRETCH_ENABLE);
+
+    save->fp_vert_stretch =
+	(((((int)(Vratio * R128_VERT_STRETCH_RATIO_MAX))
+	   & R128_VERT_STRETCH_RATIO_MASK) << R128_VERT_STRETCH_RATIO_SHIFT) |
+	 (orig->fp_vert_stretch & (R128_VERT_PANEL_SIZE |
+				   R128_VERT_STRETCH_RESERVED |
+				   R128_VERT_STRETCH_BLEND)));
+    if (Vratio == 1.0) save->fp_vert_stretch &= ~R128_VERT_STRETCH_ENABLE;
+    else               save->fp_vert_stretch |=  R128_VERT_STRETCH_ENABLE;
+
+    save->fp_gen_cntl = ((orig->fp_gen_cntl & ~(R128_FP_SEL_CRTC2 |
+						R128_FP_CRTC_USE_SHADOW_VEND |
+						R128_FP_CRTC_HORZ_DIV2_EN |
+						R128_FP_CRTC_HOR_CRT_DIV2_DIS |
+						R128_FP_USE_SHADOW_EN)) |
+			 R128_FP_CRTC_DONT_SHADOW_VPAR |
+			 R128_FP_TDMS_EN);
+    save->fp_panel_cntl        = orig->fp_panel_cntl;
+    save->fp_crtc_h_total_disp = orig->fp_crtc_h_total_disp;
+    save->fp_crtc_v_total_disp = orig->fp_crtc_v_total_disp;
+    save->fp_h_sync_strt_wid   = orig->fp_h_sync_strt_wid;
+    save->fp_v_sync_strt_wid   = orig->fp_v_sync_strt_wid;
+    save->lvds_gen_cntl        = orig->lvds_gen_cntl;
+
+    save->tmds_crc             = orig->tmds_crc;
+
+    /* Disable CRT output by disabling CRT output and setting the CRT
+       DAC to use CRTC2, which we set to 0's.  In the future, we will
+       want to use the dual CRTC capabilities of the R128 to allow both
+       the flat panel and external CRT to either simultaneously display
+       the same image or display two different images. */
+    save->crtc_ext_cntl  &= ~R128_CRTC_CRT_ON;
+    save->dac_cntl       |= R128_DAC_CRT_SEL_CRTC2;
+    save->crtc2_gen_cntl  = 0;
+
+    save->fp_panel_cntl  |= (R128_FP_DIGON | R128_FP_BLON);
+    save->fp_gen_cntl    |= (R128_FP_FPON);
+
+    save->crtc_gen_cntl  &= ~(R128_CRTC_DBL_SCAN_EN |
+			      R128_CRTC_INTERLACE_EN |
+			      R128_CRTC_CSYNC_EN |
+			      R128_CRTC_CUR_EN |
+			      R128_CRTC_CUR_MODE_MASK |
+			      R128_CRTC_ICON_EN |
+			      R128_CRTC_EXT_DISP_EN |
+			      R128_CRTC_EN |
+			      R128_CRTC_DISP_REQ_EN_B);
+    save->crtc_gen_cntl  |= R128_CRTC_EXT_DISP_EN | R128_CRTC_EN;
+
+    disp_end = xres/8 - 1;
+    save->crtc_h_total_disp = ((disp_end << R128_CRTC_H_DISP_SHIFT) |
+			       (disp_end + info->PanelHNonVis));
+
+    save->crtc_h_sync_strt_wid &= ~(R128_CRTC_H_SYNC_STRT_PIX |
+				    R128_CRTC_H_SYNC_STRT_CHAR |
+				    R128_CRTC_H_SYNC_WID);
+    save->crtc_h_sync_strt_wid |=
+	(disp_end + info->PanelHOverPlus) << R128_CRTC_H_SYNC_STRT_CHAR_SHIFT;
+    switch (info->CurrentLayout.pixel_code) {
+	/* Adjustments are from ATI */
+    case 8:  save->crtc_h_sync_strt_wid |= 2; break;
+    case 15:
+    case 16: save->crtc_h_sync_strt_wid |= 1; break;
+    case 24: save->crtc_h_sync_strt_wid |= 6; break;
+    case 32: save->crtc_h_sync_strt_wid |= 5; break;
+    }
+    save->crtc_h_sync_strt_wid |=
+	info->PanelHSyncWidth << R128_CRTC_H_SYNC_WID_SHIFT;
+    save->crtc_h_sync_strt_wid |= R128_CRTC_H_SYNC_POL;
+
+    disp_end = yres - 1;
+    save->crtc_v_total_disp = ((disp_end << R128_CRTC_V_DISP_SHIFT) |
+			       (disp_end + info->PanelVNonVis));
+
+    save->crtc_v_sync_strt_wid &= ~(R128_CRTC_V_SYNC_STRT |
+				    R128_CRTC_V_SYNC_WID);
+    save->crtc_v_sync_strt_wid |= (disp_end + info->PanelVOverPlus);
+    save->crtc_v_sync_strt_wid |=
+	info->PanelVSyncWidth << R128_CRTC_V_SYNC_WID_SHIFT;
+    save->crtc_v_sync_strt_wid |= R128_CRTC_V_SYNC_POL;
 }
 
 /* Define PLL registers for requested video mode. */
@@ -1991,10 +2632,12 @@ static Bool R128Init(ScrnInfoPtr pScrn, DisplayModePtr mode, R128SavePtr save)
     
     R128InitCommonRegisters(save, mode, info);
     if (!R128InitCrtcRegisters(pScrn, save, mode, info)) return FALSE;
+    if (info->HasPanelRegs && info->EnableFP)
+	R128InitFPRegisters(pScrn, &info->SavedReg, save, mode, info);
     R128InitPLLRegisters(pScrn, save, mode, &info->pll, dot_clock);
     if (!R128InitDDARegisters(pScrn, save, mode, &info->pll, info))
 	return FALSE;
-    R128InitPalette(save, info);
+    if (!info->PaletteSavedOnVT) R128InitPalette(save, info);
 
     R128TRACE(("R128Init returns %p\n", save));
     return TRUE;
@@ -2006,6 +2649,7 @@ static Bool R128ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     R128InfoPtr info      = R128PTR(pScrn);
     
     if (!R128Init(pScrn, mode, &info->ModeReg)) return FALSE;
+				/* FIXME?  DRILock/DRIUnlock here? */
     R128Blank(pScrn);
     R128RestoreMode(pScrn, &info->ModeReg);
     R128Unblank(pScrn);
@@ -2068,16 +2712,41 @@ void R128AdjustFrame(int scrnIndex, int x, int y, int flags)
    mode. */
 static Bool R128EnterVT(int scrnIndex, int flags)
 {
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    R128InfoPtr info = R128PTR(pScrn);
-    R128SavePtr restore = &info->SavedReg;
+    ScrnInfoPtr pScrn   = xf86Screens[scrnIndex];
+    R128InfoPtr info  = R128PTR(pScrn);
 
     R128TRACE(("R128EnterVT\n"));
+#ifdef XF86DRI
+    if (R128PTR(pScrn)->directRenderingEnabled) {
+	R128CCEStart(pScrn);
+	DRIUnlock(pScrn->pScreen);
+    }
+#endif
     if (!R128ModeInit(pScrn, pScrn->currentMode)) return FALSE;
+    info->PaletteSavedOnVT = FALSE;
     R128AdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
-    R128RestorePalette(pScrn,restore); 
 
     return TRUE;
+}
+
+/* Called when VT switching away from the X server.  Restore the original
+   text mode. */
+static void R128LeaveVT(int scrnIndex, int flags)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    R128InfoPtr info  = R128PTR(pScrn);
+    R128SavePtr save  = &info->ModeReg;
+
+    R128TRACE(("R128LeaveVT\n"));
+#ifdef XF86DRI
+    if (R128PTR(pScrn)->directRenderingEnabled) {
+	DRILock(pScrn->pScreen, 0);
+	R128CCEStop(pScrn);
+    }
+#endif
+    R128SavePalette(pScrn, save);
+    info->PaletteSavedOnVT = TRUE;
+    R128Restore(pScrn);
 }
 
 static Bool
@@ -2092,8 +2761,6 @@ R128EnterVTFBDev(int scrnIndex, int flags)
     return TRUE;
 }
 
-/* Called when VT switching away from the X server.  Restore the original
-   text mode. */
 static void R128LeaveVTFBDev(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
@@ -2101,18 +2768,6 @@ static void R128LeaveVTFBDev(int scrnIndex, int flags)
     R128SavePtr save = &info->SavedReg;
     R128SavePalette(pScrn,save); 
     fbdevHWLeaveVT(scrnIndex,flags);
-}
-
-static void R128LeaveVT(int scrnIndex, int flags)
-{
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    R128InfoPtr   info = R128PTR(pScrn);
-    R128SavePtr save = &info->SavedReg;
-
-    R128TRACE(("R128LeaveVT\n"));
-    R128SavePalette(pScrn,save); 
-
-    R128Restore(pScrn);
 }
 
 /* Called at the end of each server generation.  Restore the original text
@@ -2124,6 +2779,15 @@ static Bool R128CloseScreen(int scrnIndex, ScreenPtr pScreen)
     R128InfoPtr info  = R128PTR(pScrn);
 
     R128TRACE(("R128CloseScreen\n"));
+
+#ifdef XF86DRI
+				/* Disable direct rendering */
+    if (info->directRenderingEnabled) {
+	R128DRICloseScreen(pScreen);
+	info->directRenderingEnabled = FALSE;
+    }
+#endif
+    
     if (pScrn->vtSema) {
 	R128Restore(pScrn);
 	R128UnmapMem(pScrn);

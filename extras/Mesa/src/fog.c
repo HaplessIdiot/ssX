@@ -33,17 +33,10 @@
 #include "macros.h"
 #include "mmath.h"
 #include "types.h"
+#include "xform.h"
 #endif
 
 
-/*
- * DAG: This is needed to match the overflow check below. If that check
- * is extended to other systems than __alpha__, this ifdef must also be
- * changed!
- */
-#ifdef __alpha__
-#include <math.h>
-#endif
 
 void
 _mesa_Fogf(GLenum pname, GLfloat param)
@@ -92,6 +85,8 @@ _mesa_Fogfv( GLenum pname, const GLfloat *params )
    GET_CURRENT_CONTEXT(ctx);
    GLenum m;
 
+   ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glFog");
+
    switch (pname) {
       case GL_FOG_MODE:
          m = (GLenum) (GLint) *params;
@@ -113,23 +108,9 @@ _mesa_Fogfv( GLenum pname, const GLfloat *params )
 	 }
 	 break;
       case GL_FOG_START:
-#if 0
-         /* Prior to OpenGL 1.1, this was an error */
-         if (*params<0.0F) {
-            gl_error( ctx, GL_INVALID_VALUE, "glFog(GL_FOG_START)" );
-            return;
-         }
-#endif
 	 ctx->Fog.Start = *params;
 	 break;
       case GL_FOG_END:
-#if 0
-         /* Prior to OpenGL 1.1, this was an error */
-         if (*params<0.0F) {
-            gl_error( ctx, GL_INVALID_VALUE, "glFog(GL_FOG_END)" );
-            return;
-         }
-#endif
 	 ctx->Fog.End = *params;
 	 break;
       case GL_FOG_INDEX:
@@ -157,9 +138,13 @@ _mesa_Fogfv( GLenum pname, const GLfloat *params )
 typedef void (*fog_func)( struct vertex_buffer *VB, GLuint side, 
 			  GLubyte flag );
 
+typedef void (*fog_coord_func)( struct vertex_buffer *VB, 
+				const GLvector4f *from,
+				GLubyte flag );
 
 static fog_func fog_ci_tab[2];
 static fog_func fog_rgba_tab[2];
+static fog_coord_func make_fog_coord_tab[2];
 
 /*
  * Compute the fogged color for an array of vertices.
@@ -216,6 +201,71 @@ _mesa_fog_vertices( struct vertex_buffer *VB )
       }
    }
 }
+
+
+static void check_fog_coords( GLcontext *ctx, struct gl_pipeline_stage *d )
+{
+   d->type = 0;
+
+   if (ctx->FogMode==FOG_FRAGMENT)
+   {
+      d->type = PIPE_IMMEDIATE|PIPE_PRECALC;
+      d->inputs = VERT_OBJ_ANY;
+      d->outputs = VERT_FOG_COORD;
+   }
+}
+
+
+static void gl_make_fog_coords( struct vertex_buffer *VB )
+{
+   GLcontext *ctx = VB->ctx;
+
+   /* If full eye coords weren't required, just calculate the eye Z
+    * values.  
+    */
+   if (!ctx->NeedEyeCoords) {
+      GLfloat *m = ctx->ModelView.m;
+      GLfloat plane[4];
+
+      plane[0] = m[2];
+      plane[1] = m[6];
+      plane[2] = m[10];
+      plane[3] = m[14];
+
+      gl_dotprod_tab[0][VB->ObjPtr->size](&VB->Eye,
+					  2, /* fill z coordinates */
+					  VB->ObjPtr,
+					  plane,
+					  0 );
+
+      make_fog_coord_tab[0]( VB, &VB->Eye, 0 );
+   }
+   else
+   {
+      make_fog_coord_tab[0]( VB, VB->EyePtr, 0 );
+   }
+}
+
+
+/* Drivers that want fog coordinates in VB->Spec[0] alpha, can substitute this
+ * stage for the default PIPE_OP_FOG pipeline stage.
+ */
+struct gl_pipeline_stage gl_fog_coord_stage = {
+   "build fog coordinates",
+   PIPE_OP_FOG,
+   PIPE_PRECALC|PIPE_IMMEDIATE,
+   0,
+   NEW_FOG,
+   NEW_LIGHTING|NEW_RASTER_OPS|NEW_FOG|NEW_MODELVIEW,
+   0, 0,
+   0, 0, 0,
+   check_fog_coords,
+   gl_make_fog_coords 
+};
+
+
+
+
 
 /*
  * Apply fog to an array of RGBA pixels.

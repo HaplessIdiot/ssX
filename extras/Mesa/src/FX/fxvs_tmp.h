@@ -142,10 +142,39 @@ static void NAME(struct vertex_buffer *VB, GLuint start, GLuint end)
 	       DO_SETUP;
 	    }
 	 }
-      } else 
+      }
+      else {
 	 for (;v!=vend;v+=16 INCR) {
 	    DO_SETUP;
 	 }
+      }
+
+      if (ctx->FogMode == FOG_FRAGMENT && ctx->ProjectionMatrix.m[15] != 0.0F) {
+        /* need to compute W values for fogging purposes */
+        const GLfloat m10 = ctx->ProjectionMatrix.m[10];
+        const GLfloat m14 = ctx->ProjectionMatrix.m[14];
+        const GLfloat v10 = ctx->Viewport.WindowMap.m[10];
+        const GLfloat v14 = ctx->Viewport.WindowMap.m[14];
+        GLfloat *v = gWin[start].f;
+        GLfloat *win = VB->Win.data[start]; 
+        if (VB->ClipOrMask) {
+           GLubyte *clipmask = &VB->ClipMask[start];
+           for (;v!=vend;v+=16,clipmask++, win+=4) {
+              if (*clipmask == 0) {
+                GLfloat zNDC = (win[2] - v14) / v10;
+                GLfloat zEye = (zNDC - m14) / m10;
+                v[OOWCOORD] = -1.0F / zEye;
+              }
+           }
+        }
+        else {
+           for (;v!=vend;v+=16, win+=4) {
+             GLfloat zNDC = (win[2] - v14) / v10;
+             GLfloat zEye = (zNDC - m14) / m10;
+             v[OOWCOORD] = -1.0F / zEye;
+           }
+        }
+      }
 
       /* rare - I hope */
       FIXUP;

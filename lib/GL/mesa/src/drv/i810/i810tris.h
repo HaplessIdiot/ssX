@@ -27,37 +27,48 @@
 #define I810TRIS_INC
 
 #include "types.h"
-#include "i810dma.h"
+#include "i810ioctl.h"
 
 extern void i810PrintRenderState( const char *msg, GLuint state );
 extern void i810DDChooseRenderState(GLcontext *ctx);
 extern void i810DDTrifuncInit( void );
 
-extern GLuint *i810AllocPrimitiveVerts( i810ContextPtr imesa, int dwords );
 
-
-
-/* Todo: 
- *    - multidraw, ...
- *    - Antialiasing (?)
- *    - line and polygon stipple
- *    - select and feedback 
- *    - stencil 
- *    - point parameters
- *    - 
- */
-#define I810_ANTIALIAS_BIT   0       /* ignored for now, no fallback */
+/* shared */
 #define I810_FLAT_BIT 	     0x1
+
+/* triangle */
 #define I810_OFFSET_BIT	     0x2	
 #define I810_TWOSIDE_BIT     0x4
-#define I810_NODRAW_BIT	     0x8
-#define I810_FALLBACK_BIT    0x10
 
-/* Not in use:
- */
-#define I810_FEEDBACK_BIT    0x20
-#define I810_SELECT_BIT      0x40
-#define I810_POINT_PARAM_BIT 0x80	/* not needed? */
+/* line */
+#define I810_WIDE_LINE_BIT    0x2 
+#define I810_STIPPLE_LINE_BIT 0x4 
+
+/* shared */
+#define I810_FALLBACK_BIT    0x8 
+
+
+
+
+
+static i810_vertex __inline__ *i810AllocTriangles( i810ContextPtr imesa, int nr)
+{
+   GLuint *start = i810AllocDwords( imesa, 30*nr, PR_TRIANGLES );
+   return (i810_vertex *)start;
+}
+
+static i810_vertex __inline__ *i810AllocLine( i810ContextPtr imesa ) 
+{
+   GLuint *start = i810AllocDwords( imesa, 20, PR_LINES );
+   return (i810_vertex *)start;
+}
+
+static i810_vertex __inline__ *i810AllocRect( i810ContextPtr imesa ) 
+{
+   GLuint *start = i810AllocDwords( imesa, 30, PR_RECTS );
+   return (i810_vertex *)start;
+}
 
 
 
@@ -66,23 +77,17 @@ static void __inline__ i810_draw_triangle( i810ContextPtr imesa,
 					   i810_vertex *v1, 
 					   i810_vertex *v2 )
 {
-   i810_vertex *wv = (i810_vertex *)i810AllocPrimitiveVerts( imesa, 30 );
+   i810_vertex *wv = i810AllocTriangles( imesa, 1 );
    wv[0] = *v0;
    wv[1] = *v1;
    wv[2] = *v2;
-   FINISH_PRIM();
 }
 
 
-
-
-/* These can go soon, but for the meantime we're using triangles for 
- * everything.
- */
 static __inline__ void i810_draw_point( i810ContextPtr imesa,
 					i810_vertex *tmp, float sz )
 {
-   i810_vertex *wv = (i810_vertex *)i810AllocPrimitiveVerts( imesa, 6*10 );
+   i810_vertex *wv = i810AllocTriangles( imesa, 2 );
 
    wv[0] = *tmp;
    wv[0].x = tmp->x - sz;
@@ -108,16 +113,25 @@ static __inline__ void i810_draw_point( i810ContextPtr imesa,
    wv[5].x = tmp->x - sz;
    wv[5].y = tmp->y - sz;
 
-   FINISH_PRIM();
 }
 
 
-static __inline__ void i810_draw_line( i810ContextPtr imesa, 
-				       i810_vertex *tmp0, 
-				       i810_vertex *tmp1,
-				       float width )
+static __inline__ void i810_draw_line_line( i810ContextPtr imesa, 
+					    i810_vertex *tmp0, 
+					    i810_vertex *tmp1 )
 {
-   i810_vertex *wv = (i810_vertex *)i810AllocPrimitiveVerts( imesa, 6 * 10 );
+   i810_vertex *wv = i810AllocLine( imesa );
+   wv[0] = *tmp0;
+   wv[1] = *tmp1;
+}
+
+static __inline__ void i810_draw_tri_line( i810ContextPtr imesa, 
+					   i810_vertex *tmp0, 
+					   i810_vertex *tmp1,
+					   float width )
+{
+   i810_vertex *wv = i810AllocTriangles( imesa, 2 );
+      
    float dx, dy, ix, iy;
 
    dx = tmp0->x - tmp1->x;
@@ -151,8 +165,15 @@ static __inline__ void i810_draw_line( i810ContextPtr imesa,
    wv[5] = *tmp1;
    wv[5].x = tmp1->x + ix;
    wv[5].y = tmp1->y + iy;
+}
 
-   FINISH_PRIM();
+
+static __inline__ void i810_draw_line( i810ContextPtr imesa, 
+				       i810_vertex *tmp0, 
+				       i810_vertex *tmp1,
+				       float width )
+{
+   i810_draw_line_line( imesa, tmp0, tmp1 );
 }
 
 #endif

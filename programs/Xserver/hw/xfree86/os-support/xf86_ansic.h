@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.37 2000/04/05 18:13:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.39 2000/04/17 16:30:12 eich Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -287,6 +287,8 @@ extern long xf86fpossize(void);
 extern int xf86chmod(const char *, xf86mode_t);
 extern int xf86chown(const char *, xf86uid_t, xf86gid_t);
 extern xf86uid_t xf86geteuid(void);
+extern xf86gid_t xf86getegid(void);
+extern int xf86getpid(void);
 extern int xf86mknod(const char *, xf86mode_t, xf86dev_t);
 extern int xf86mkdir(const char *, xf86mode_t);
 unsigned int xf86sleep(unsigned int seconds);

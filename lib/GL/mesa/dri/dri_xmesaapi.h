@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_xmesaapi.h,v 1.2 2000/02/15 07:13:29 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_xmesaapi.h,v 1.3 2000/02/23 04:46:38 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -29,48 +29,110 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
- *
+ *   Brian E. Paul <brian@precisioninsight.com>
  */
+
 
 #ifndef _DRI_XMESAAPI_H_
 #define _DRI_XMESAAPI_H_
 
-#ifdef GLX_DIRECT_RENDERING
-
-#include "GL/xmesa.h"
+#include "glxclient.h"
 #include "dri_mesa.h"
+#include "../src/types.h"
 
-typedef struct __XMESAapiRec __XMESAapi;
 
-struct __XMESAapiRec {
+extern GLboolean XMesaInitDriver( __DRIscreenPrivate *driScrnPriv );
+
+extern void XMesaResetDriver( __DRIscreenPrivate *driScrnPriv );
+
+/* Driver creates a GLvisual and returns pointer to it.
+ */
+extern GLvisual *XMesaCreateVisual(Display *dpy,
+                                   __DRIscreenPrivate *driScrnPriv,
+                                   const XVisualInfo *visinfo,
+                                   const __GLXvisualConfig *config);
+
+/* Driver creates its private context struct and hooks it into
+ * the driContextPriv->driverPrivate field.  Return true/false for
+ * success/error.
+ */
+extern GLboolean XMesaCreateContext( Display *dpy, GLvisual *mesaVis,
+                                     __DRIcontextPrivate *driContextPriv );
+
+/* Driver frees data attached to driContextPriv->driverPrivate pointer.
+ */
+extern void XMesaDestroyContext( __DRIcontextPrivate *driContextPriv );
+
+/* Driver creates a GLframebuffer struct indicating which ancillary
+ * buffers are in hardware or software.
+ */
+extern GLframebuffer *XMesaCreateWindowBuffer( Display *dpy,
+                                           __DRIscreenPrivate *driScrnPriv,
+                                           __DRIdrawablePrivate *driDrawPriv,
+                                           GLvisual *mesaVis);
+
+extern GLframebuffer *XMesaCreatePixmapBuffer( Display *dpy,
+                                           __DRIscreenPrivate *driScrnPriv,
+                                           __DRIdrawablePrivate *driDrawPriv,
+                                           GLvisual *mesaVis);
+
+extern GLboolean XMesaMakeCurrent( __DRIcontextPrivate *driContextPriv,
+                                   __DRIdrawablePrivate *driDrawPriv,
+                                   __DRIdrawablePrivate *driReadPriv );
+
+extern GLboolean XMesaUnbindContext( __DRIcontextPrivate *driContextPriv );
+
+extern void XMesaSwapBuffers( __DRIdrawablePrivate *driDrawPriv );
+
+
+
+
+
+#define XMESA_VALIDATE_DRAWABLE_INFO(dpy, psp, pdp)                     \
+do {                                                                    \
+    while (*(pdp->pStamp) != pdp->lastStamp) {                          \
+	DRM_UNLOCK(psp->fd, &psp->pSAREA->lock,                         \
+		   pdp->driContextPriv->hHWContext);                    \
+                                                                        \
+	DRM_SPINLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);     \
+	DRI_MESA_VALIDATE_DRAWABLE_INFO(dpy, psp->myNum, pdp);          \
+	DRM_SPINUNLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);   \
+                                                                        \
+	DRM_LIGHT_LOCK(psp->fd, &psp->pSAREA->lock,                     \
+		       pdp->driContextPriv->hHWContext);                \
+    }                                                                   \
+} while (0)
+
+
+
+typedef struct __MesaAPIRec __MesaAPI;
+
+struct __MesaAPIRec {
     /* XMESA Functions */
     GLboolean    (*InitDriver)(__DRIscreenPrivate *driScrnPriv);
     void         (*ResetDriver)(__DRIscreenPrivate *driScrnPriv);
-    XMesaVisual  (*CreateVisual)(XMesaDisplay *display,
-				 XMesaVisualInfo visinfo,
-				 GLboolean rgb_flag,
-				 GLboolean alpha_flag,
-				 GLboolean db_flag,
-				 GLboolean stereo_flag,
-				 GLboolean ximage_flag,
-				 GLint depth_size,
-				 GLint stencil_size,
-				 GLint accum_size,
-				 GLint level);
-    void         (*DestroyVisual)(XMesaVisual v);
-    XMesaContext (*CreateContext)(XMesaVisual v, XMesaContext share_list,
-				  __DRIcontextPrivate *driContextPriv);
-    void         (*DestroyContext)(XMesaContext c);
-    XMesaBuffer  (*CreateWindowBuffer)(XMesaVisual v, XMesaWindow w,
-				       __DRIdrawablePrivate *driDrawPriv);
-    XMesaBuffer  (*CreatePixmapBuffer)(XMesaVisual v, XMesaPixmap p,
-				       XMesaColormap c,
-				       __DRIdrawablePrivate *driDrawPriv);
-    void         (*DestroyBuffer)(XMesaBuffer b);
-    void         (*SwapBuffers)(XMesaBuffer b);
-    GLboolean    (*MakeCurrent)(XMesaContext c, XMesaBuffer b);
-    GLboolean    (*UnbindContext)(XMesaContext c);
+    GLvisual *   (*CreateVisual)(Display *display,
+                                 __DRIscreenPrivate *driScrnPriv,
+                                 const XVisualInfo *visinfo,
+                                 const __GLXvisualConfig *config);
+    GLboolean    (*CreateContext)(Display *dpy, GLvisual *mesaVis,
+                                  __DRIcontextPrivate *driContextPriv);
+    void         (*DestroyContext)(__DRIcontextPrivate *driContextPriv);
+    GLframebuffer * (*CreateWindowBuffer)(Display *dpy,
+                                          __DRIscreenPrivate *driScrnPriv,
+                                          __DRIdrawablePrivate *driDrawPriv,
+                                          GLvisual *mesaVis);
+    GLframebuffer * (*CreatePixmapBuffer)(Display *dpy,
+                                          __DRIscreenPrivate *driScrnPriv,
+                                          __DRIdrawablePrivate *driDrawPriv,
+                                          GLvisual *mesaVis);
+    void         (*SwapBuffers)(__DRIdrawablePrivate *driDrawPriv);
+    GLboolean    (*MakeCurrent)(__DRIcontextPrivate *driContextPriv,
+                                __DRIdrawablePrivate *driDrawPriv,
+                                __DRIdrawablePrivate *driReadPriv);
+    GLboolean    (*UnbindContext)(__DRIcontextPrivate *driContextPriv);
 };
 
-#endif
+
+
 #endif /* _DRI_XMESAAPI_H_ */

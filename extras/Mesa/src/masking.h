@@ -3,7 +3,7 @@
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -43,35 +43,39 @@ _mesa_ColorMask( GLboolean red, GLboolean green,
 /*
  * Implement glColorMask for a span of RGBA pixels.
  */
-extern void gl_mask_rgba_span( GLcontext *ctx,
-                               GLuint n, GLint x, GLint y,
-                               GLubyte rgba[][4] );
+extern void
+_mesa_mask_rgba_span( GLcontext *ctx,
+                      GLuint n, GLint x, GLint y,
+                      GLubyte rgba[][4] );
 
 
 
 /*
  * Implement glColorMask for an array of RGBA pixels.
  */
-extern void gl_mask_rgba_pixels( GLcontext *ctx,
-                                 GLuint n, const GLint x[], const GLint y[],
-                                 GLubyte rgba[][4], const GLubyte mask[] );
+extern void
+_mesa_mask_rgba_pixels( GLcontext *ctx,
+                        GLuint n, const GLint x[], const GLint y[],
+                        GLubyte rgba[][4], const GLubyte mask[] );
 
 
 
 /*
  * Implement glIndexMask for a span of CI pixels.
  */
-extern void gl_mask_index_span( GLcontext *ctx,
-                                GLuint n, GLint x, GLint y, GLuint index[] );
+extern void
+_mesa_mask_index_span( GLcontext *ctx,
+                       GLuint n, GLint x, GLint y, GLuint index[] );
 
 
 
 /*
  * Implement glIndexMask for an array of CI pixels.
  */
-extern void gl_mask_index_pixels( GLcontext *ctx,
-                                  GLuint n, const GLint x[], const GLint y[],
-                                  GLuint index[], const GLubyte mask[] );
+extern void
+_mesa_mask_index_pixels( GLcontext *ctx,
+                         GLuint n, const GLint x[], const GLint y[],
+                         GLuint index[], const GLubyte mask[] );
 
 
 

@@ -3,7 +3,7 @@
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mmath.h,v 1.4 2000/03/03 18:30:08 tsi Exp $ */
 
 /*
  * Faster arithmetic functions.  If the FAST_MATH preprocessor symbol is
@@ -47,10 +47,7 @@
  * In the worst case, we force the compiler to use a memory access to
  * truncate the float, by specifying the 'volatile' keyword.
  */
-#if defined(__linux__) && defined(__i386__) && !defined(IN_MODULE)
-/*
- * A libc interface is needed for this...
- */
+#if defined(__linux__) && defined(__i386__) 
 #include <fpu_control.h>
 
 #if !defined(_FPU_SETCW)
@@ -82,12 +79,14 @@ typedef unsigned short fpu_control_t;
    }
 #endif
 
+
 /* Put it back how the application had it.
  */
 #define END_FAST_MATH(x)			\
    {						\
       _FPU_SETCW( x );				\
    }
+
 
 #define HAVE_FAST_MATH
 
@@ -330,7 +329,13 @@ do {						\
 } while(0)
 
 
-extern void gl_init_math(void);
+
+extern void
+_mesa_init_math(void);
+
+
+extern GLuint
+_mesa_bitcount(GLuint n);
 
 
 #endif

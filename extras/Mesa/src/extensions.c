@@ -3,7 +3,7 @@
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -40,7 +40,7 @@
 
 struct extension {
    struct extension *next, *prev;
-   int enabled;
+   GLint enabled;
    char name[MAX_EXT_NAMELEN+1];
    void (*notify)( GLcontext *, GLboolean ); 
 };
@@ -48,34 +48,69 @@ struct extension {
 
 
 static struct { int enabled; const char *name; } default_extensions[] = {
+   { DEFAULT_OFF,    "GL_ARB_imaging" },  /* in progress */
+   { DEFAULT_ON,     "GL_ARB_multitexture" },
+   { DEFAULT_OFF,    "GL_ARB_texture_compression" },  /* in progress */
+   { DEFAULT_OFF,    "GL_ARB_texture_cube_map" },  /* in progress */
+   { ALWAYS_ENABLED, "GL_ARB_tranpose_matrix" },
+   { ALWAYS_ENABLED, "GL_EXT_abgr" },
    { DEFAULT_ON,     "GL_EXT_blend_color" },
-   { DEFAULT_OFF,    "ARB_imaging" },
-   { DEFAULT_ON,     "GL_EXT_blend_minmax" },
+   { DEFAULT_ON,     "GL_EXT_blend_func_separate" },
    { DEFAULT_ON,     "GL_EXT_blend_logic_op" },
+   { DEFAULT_ON,     "GL_EXT_blend_minmax" },
    { DEFAULT_ON,     "GL_EXT_blend_subtract" },
+   { DEFAULT_ON,     "GL_EXT_clip_volume_hint" },
+   { DEFAULT_OFF,    "GL_EXT_convolution" },  /* in progress */
+   { DEFAULT_ON,     "GL_EXT_compiled_vertex_array" },
+   { DEFAULT_ON,     "GL_EXT_histogram" },
+   { DEFAULT_ON,     "GL_EXT_packed_pixels" },
    { DEFAULT_ON,     "GL_EXT_paletted_texture" },
    { DEFAULT_ON,     "GL_EXT_point_parameters" },
    { ALWAYS_ENABLED, "GL_EXT_polygon_offset" },
-   { ALWAYS_ENABLED, "GL_EXT_vertex_array" },
-   { ALWAYS_ENABLED, "GL_EXT_texture_object" },
+   { ALWAYS_ENABLED, "GL_EXT_rescale_normal" },
+   { DEFAULT_ON,     "GL_EXT_shared_texture_palette" },
+   { ALWAYS_ENABLED, "GL_EXT_stencil_wrap" },
    { DEFAULT_ON,     "GL_EXT_texture3D" },
+   { DEFAULT_OFF,    "GL_EXT_texture_compression_s3tc" },
+   { DEFAULT_OFF,    "GL_EXT_texture_env" },
+   { DEFAULT_ON,     "GL_EXT_texture_env_add" },
+   { ALWAYS_ENABLED, "GL_EXT_texture_object" },
+   { DEFAULT_ON,     "GL_EXT_texture_lod_bias" },
+   { ALWAYS_ENABLED, "GL_EXT_vertex_array" },
+   { DEFAULT_OFF,    "GL_EXT_vertex_array_set" },
+   { DEFAULT_OFF,    "GL_HP_occlusion_test" },
+   { DEFAULT_ON,     "GL_INGR_blend_func_separate" },
    { ALWAYS_ENABLED, "GL_MESA_window_pos" },
    { ALWAYS_ENABLED, "GL_MESA_resize_buffers" },
-   { ALWAYS_ENABLED, "GL_EXT_shared_texture_palette" },
-   { ALWAYS_ENABLED, "GL_EXT_rescale_normal" },
-   { ALWAYS_ENABLED, "GL_EXT_abgr" },
-   { ALWAYS_ENABLED, "GL_SGIS_texture_edge_clamp" },
-   { ALWAYS_ENABLED, "GL_EXT_stencil_wrap" },
-   { DEFAULT_ON,     "GL_INGR_blend_func_separate" },
-   { DEFAULT_ON,     "GL_ARB_multitexture" },
+   { DEFAULT_OFF,    "GL_NV_blend_square" },
    { ALWAYS_ENABLED, "GL_NV_texgen_reflection" },
    { DEFAULT_ON,     "GL_PGI_misc_hints" },
-   { DEFAULT_ON,     "GL_EXT_compiled_vertex_array" },
-   { DEFAULT_OFF,    "GL_EXT_vertex_array_set" },
-   { DEFAULT_ON,     "GL_EXT_clip_volume_hint" },
-   { DEFAULT_ON,     "GL_EXT_texture_env_add" },
-   { ALWAYS_ENABLED, "GL_ARB_tranpose_matrix" },
+   { DEFAULT_ON,     "GL_SGI_color_matrix" },
+   { DEFAULT_ON,     "GL_SGI_color_table" },
+   { DEFAULT_ON,     "GL_SGIS_pixel_texture" },
+   { DEFAULT_ON,     "GL_SGIS_texture_edge_clamp" },
+   { DEFAULT_ON,     "GL_SGIX_pixel_texture" },
+   { DEFAULT_OFF,    "GL_3DFX_texture_compression_FXT1" }
 };
+
+
+/*
+ * Update the boolean convenience flags in the Extensions struct.
+ */
+static void
+update_extension_flags( GLcontext *ctx )
+{
+   /* Update flags */
+   ctx->Extensions.HaveTextureEnvAdd = gl_extension_is_enabled(ctx, "GL_EXT_texture_env_add");
+   ctx->Extensions.HaveTextureLodBias = gl_extension_is_enabled(ctx, "GL_EXT_texture_lod_bias");
+   ctx->Extensions.HaveHpOcclusionTest = gl_extension_is_enabled(ctx, "GL_HP_occlusion_test");
+   ctx->Extensions.HaveTextureCubeMap = gl_extension_is_enabled(ctx, "GL_ARB_texture_cube_map");
+   ctx->Extensions.HaveTextureCompression = gl_extension_is_enabled(ctx, "GL_ARB_texture_compression");
+   ctx->Extensions.HaveTextureCompressionS3TC = gl_extension_is_enabled(ctx, "GL_EXT_texture_compression_s3tc");
+   ctx->Extensions.HaveTextureCompressionFXT1 = gl_extension_is_enabled(ctx, "GL_3DFX_texture_compression_FXT1");
+   ctx->Extensions.HaveBlendSquare = gl_extension_is_enabled(ctx, "GL_NV_blend_square");
+}
+
 
 
 int gl_extensions_add( GLcontext *ctx, 
@@ -99,20 +134,25 @@ int gl_extensions_add( GLcontext *ctx,
 }
 
 
-static int set_extension( GLcontext *ctx, const char *name, GLuint state )
+/*
+ * Either enable or disable the named extension.
+ */
+static int set_extension( GLcontext *ctx, const char *name, GLint state )
 {
    struct extension *i;
    foreach( i, ctx->Extensions.ext_list ) 
       if (strncmp(i->name, name, MAX_EXT_NAMELEN) == 0) 
 	 break;
 
-   if (i == ctx->Extensions.ext_list) return 1;
+   if (i == ctx->Extensions.ext_list)
+      return 1;
 
-   if (i->enabled && !(i->enabled & ALWAYS_ENABLED))
-   {
+   if (!(i->enabled & ALWAYS_ENABLED)) {
       if (i->notify) i->notify( ctx, state );      
       i->enabled = state;
    }
+
+   update_extension_flags(ctx);
 
    return 0;
 }   
@@ -187,6 +227,7 @@ void gl_extensions_ctr( GLcontext *ctx )
 			 default_extensions[i].name,
 			 0 );
    }
+   update_extension_flags(ctx);
 }
 
 

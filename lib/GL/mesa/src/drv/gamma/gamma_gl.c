@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_gl.c,v 1.3 2000/02/23 04:46:42 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_gl.c,v 1.5 2000/05/10 18:55:27 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,10 +30,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *   Brian Paul <brian@precisioninsight.com>
+ *   Alan Hourihane <Alan.Hourihane@btinternet.com>
  */
 
 #ifdef GLX_DIRECT_RENDERING
 
+#include <Xarch.h>
 #include <math.h>
 #include "gamma_gl.h"
 #include "gamma_init.h"
@@ -115,7 +117,7 @@ void _gamma_Begin(GLenum mode)
     DEBUG_GLCMDS(("Begin: %04x\n", (int)mode));
 
     if ((gCCPriv->Begin & B_PrimType_Mask) != B_PrimType_Null) {
-	/* ERROR!!! */
+        DEBUG_ERROR(("Begin: Error\n"));
 	return;
     }
 
@@ -178,8 +180,9 @@ void _gamma_BindTexture(GLenum target, GLuint texture)
     gCCPriv->curTexObj = gammaTOFind(texture);
 
     /* Make the new texture images resident */
-    if (!driTMMMakeImagesResident(gCCPriv->tmm, MIPMAP_LEVELS,
-				  gCCPriv->curTexObj->image, addrs)) {
+    if (driTMMMakeImagesResident(gCCPriv->tmm, MIPMAP_LEVELS,
+				  gCCPriv->curTexObj->image, addrs) < 0) {
+    	DEBUG_ERROR(("BindTexture: unable\n"));
 	/* NOT_DONE: Handle error */
     }
 
@@ -362,9 +365,9 @@ void _gamma_Clear(GLbitfield mask)
     int temp;
     unsigned int depth = 0;
     int do_clear = 0;
+    GLINTDRIPtr gDRIPriv = (GLINTDRIPtr)gCC->driScreenPriv->pDevPriv;
 #ifdef DO_VALIDATE
-    __DRIscreenPrivate *driScrnPriv = gCC->driContextPriv->driScreenPriv;
-    GLINTDRIPtr         gDRIPriv = (GLINTDRIPtr)driScrnPriv->pDevPriv;
+    __DRIscreenPrivate *driScrnPriv = gCC->driScreenPriv;
 #endif
 
     DEBUG_GLCMDS(("Clear: %04x\n", (int)mask));
@@ -631,33 +634,47 @@ void _gamma_ClipPlane(GLenum plane, const GLdouble *equation)
 
 void _gamma_Color3b(GLbyte red, GLbyte green, GLbyte blue)
 {
+    GLfloat r,g,b;
+
     DEBUG_GLCMDS(("Color3b: %d %d %d\n", red, green, blue));
+  
+    r = BYTE_TO_FLOAT(red);
+    g = BYTE_TO_FLOAT(green);
+    b = BYTE_TO_FLOAT(blue);
+
+    _gamma_Color3f(r,g,b);
 }
 
 void _gamma_Color3bv(const GLbyte *v)
 {
+    GLfloat p[3];
+
     DEBUG_GLCMDS(("Color3bv: %d %d %d\n", v[0], v[1], v[2]));
+
+    p[0] = BYTE_TO_FLOAT(v[0]);
+    p[1] = BYTE_TO_FLOAT(v[1]);
+    p[2] = BYTE_TO_FLOAT(v[2]);
+
+    _gamma_Color3f(p[0],p[1],p[2]);
 }
 
 void _gamma_Color3d(GLdouble red, GLdouble green, GLdouble blue)
 {
     DEBUG_GLCMDS(("Color3d: %f %f %f\n", red, green, blue));
+
+    _gamma_Color3f((GLfloat)red,(GLfloat)green,(GLfloat)blue);
 }
 
 void _gamma_Color3dv(const GLdouble *v)
 {
     DEBUG_GLCMDS(("Color3dv: %f %f %f\n", v[0], v[1], v[2]));
+
+    _gamma_Color3fv((GLfloat*)v);
 }
 
 void _gamma_Color3f(GLfloat red, GLfloat green, GLfloat blue)
 {
     DEBUG_GLCMDS(("Color3f: %f %f %f\n", red, green, blue));
-
-#ifdef RANDOMIZE_COLORS
-    red = (random() / (double)RAND_MAX);
-    green = (random() / (double)RAND_MAX);
-    blue = (random() / (double)RAND_MAX);
-#endif
 
     CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
     WRITEF(gCCPriv->buf, Cb,  blue);
@@ -669,106 +686,187 @@ void _gamma_Color3fv(const GLfloat *v)
 {
     DEBUG_GLCMDS(("Color3fv: %f %f %f\n", v[0], v[1], v[2]));
 
-#ifdef RANDOMIZE_COLORS
-    {
-	float r, g, b;
-	r = (random() / (double)RAND_MAX);
-	g = (random() / (double)RAND_MAX);
-	b = (random() / (double)RAND_MAX);
-	CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
-	WRITEF(gCCPriv->buf, Cb,  b);
-	WRITEF(gCCPriv->buf, Cg,  g);
-	WRITEF(gCCPriv->buf, Cr3, r);
-    }
-#else
     CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
     WRITEF(gCCPriv->buf, Cb,  v[2]);
     WRITEF(gCCPriv->buf, Cg,  v[1]);
     WRITEF(gCCPriv->buf, Cr3, v[0]);
-#endif
 }
 
 void _gamma_Color3i(GLint red, GLint green, GLint blue)
 {
+    GLfloat r,g,b;
+
     DEBUG_GLCMDS(("Color3i: %d %d %d\n", (int)red, (int)green, (int)blue));
+
+    r = INT_TO_FLOAT(red);
+    g = INT_TO_FLOAT(green);
+    b = INT_TO_FLOAT(blue);
+
+    _gamma_Color3f(r,g,b);
 }
 
 void _gamma_Color3iv(const GLint *v)
 {
+    GLfloat p[3];
+
     DEBUG_GLCMDS(("Color3iv: %d %d %d\n", (int)v[0], (int)v[1], (int)v[2]));
+
+    p[0] = INT_TO_FLOAT(v[0]);
+    p[1] = INT_TO_FLOAT(v[1]);
+    p[2] = INT_TO_FLOAT(v[2]);
+
+    _gamma_Color3f(p[0],p[1],p[2]);
 }
 
 void _gamma_Color3s(GLshort red, GLshort green, GLshort blue)
 {
+    GLfloat r,g,b;
+
     DEBUG_GLCMDS(("Color3s: %d %d %d\n", red, green, blue));
+
+    r = SHORT_TO_FLOAT(red);
+    g = SHORT_TO_FLOAT(green);
+    b = SHORT_TO_FLOAT(blue);
+
+    _gamma_Color3f(r,g,b);
 }
 
 void _gamma_Color3sv(const GLshort *v)
 {
+    GLfloat p[3];
+
     DEBUG_GLCMDS(("Color3sv: %d %d %d\n", v[0], v[1], v[2]));
+
+    p[0] = SHORT_TO_FLOAT(v[0]);
+    p[1] = SHORT_TO_FLOAT(v[1]);
+    p[2] = SHORT_TO_FLOAT(v[2]);
+
+    _gamma_Color3f(p[0],p[1],p[2]);
 }
 
 void _gamma_Color3ub(GLubyte red, GLubyte green, GLubyte blue)
 {
+    GLuint c;
+
     DEBUG_GLCMDS(("Color3ub: %d %d %d\n", red, green, blue));
+
+    c = (blue << 16) | (green << 8) | red;
+
+    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+    WRITE(gCCPriv->buf, PackedColor3,  c);
 }
 
 void _gamma_Color3ubv(const GLubyte *v)
 {
+    GLuint c;
+
     DEBUG_GLCMDS(("Color3ubv: %d %d %d\n", v[0], v[1], v[2]));
+
+    c = (v[2] << 16) | (v[1] << 8) | v[0];
+
+    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+    WRITE(gCCPriv->buf, PackedColor3,  c);
 }
 
 void _gamma_Color3ui(GLuint red, GLuint green, GLuint blue)
 {
+    GLfloat r,g,b;
+
     DEBUG_GLCMDS(("Color3ui: %d %d %d\n",
 		  (unsigned int)red, (unsigned int)green, (unsigned int)blue));
+
+    r = UINT_TO_FLOAT(red);
+    g = UINT_TO_FLOAT(green);
+    b = UINT_TO_FLOAT(blue);
+
+    _gamma_Color3f(r,g,b);
 }
 
 void _gamma_Color3uiv(const GLuint *v)
 {
+    GLfloat p[3];
+
     DEBUG_GLCMDS(("Color3uiv: %d %d %d\n",
 		  (unsigned int)v[0], (unsigned int)v[1], (unsigned int)v[2]));
+
+    p[0] = UINT_TO_FLOAT(v[0]);
+    p[1] = UINT_TO_FLOAT(v[1]);
+    p[2] = UINT_TO_FLOAT(v[2]);
+
+    _gamma_Color3f(p[0],p[1],p[2]);
 }
 
 void _gamma_Color3us(GLushort red, GLushort green, GLushort blue)
 {
+    GLfloat r,g,b;
+
     DEBUG_GLCMDS(("Color3us: %d %d %d\n", red, green, blue));
+
+    r = USHORT_TO_FLOAT(red);
+    g = USHORT_TO_FLOAT(green);
+    b = USHORT_TO_FLOAT(blue);
+
+    _gamma_Color3f(r,g,b);
 }
 
 void _gamma_Color3usv(const GLushort *v)
 {
+    GLfloat p[3];
+
     DEBUG_GLCMDS(("Color3usv: %d %d %d\n", v[0], v[1], v[2]));
+
+    p[0] = USHORT_TO_FLOAT(v[0]);
+    p[1] = USHORT_TO_FLOAT(v[1]);
+    p[2] = USHORT_TO_FLOAT(v[2]);
+
+    _gamma_Color3f(p[0],p[1],p[2]);
 }
 
 void _gamma_Color4b(GLbyte red, GLbyte green, GLbyte blue, GLbyte alpha)
 {
+    GLfloat r,g,b,a;
+
     DEBUG_GLCMDS(("Color4b: %d %d %d %d\n", red, green, blue, alpha));
+
+    r = BYTE_TO_FLOAT(red);
+    g = BYTE_TO_FLOAT(green);
+    b = BYTE_TO_FLOAT(blue);
+    a = BYTE_TO_FLOAT(alpha);
+
+    _gamma_Color4f(r,g,b,a);
 }
 
 void _gamma_Color4bv(const GLbyte *v)
 {
+    GLfloat p[4];
+
     DEBUG_GLCMDS(("Color4bv: %d %d %d %d\n", v[0], v[1], v[2], v[3]));
+
+    p[0] = BYTE_TO_FLOAT(v[0]);
+    p[1] = BYTE_TO_FLOAT(v[1]);
+    p[2] = BYTE_TO_FLOAT(v[2]);
+    p[3] = BYTE_TO_FLOAT(v[3]);
+
+    _gamma_Color4f(p[0],p[1],p[2],p[3]);
 }
 
 void _gamma_Color4d(GLdouble red, GLdouble green, GLdouble blue, GLdouble alpha)
 {
     DEBUG_GLCMDS(("Color4d: %f %f %f %f\n", red, green, blue, alpha));
+
+    _gamma_Color4f((GLfloat)red,(GLfloat)green,(GLfloat)blue,(GLfloat)alpha);
 }
 
 void _gamma_Color4dv(const GLdouble *v)
 {
     DEBUG_GLCMDS(("Color4dv: %f %f %f %f\n", v[0], v[1], v[2], v[3]));
+
+    _gamma_Color4fv((GLfloat*)v);
 }
 
 void _gamma_Color4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
 {
     DEBUG_GLCMDS(("Color4f: %f %f %f %f\n", red, green, blue, alpha));
-
-#ifdef RANDOMIZE_COLORS
-    red = (random() / (double)RAND_MAX);
-    green = (random() / (double)RAND_MAX);
-    blue = (random() / (double)RAND_MAX);
-#endif
 
     CHECK_DMA_BUFFER(gCC, gCCPriv, 4);
     WRITEF(gCCPriv->buf, Ca,  alpha);
@@ -781,47 +879,69 @@ void _gamma_Color4fv(const GLfloat *v)
 {
     DEBUG_GLCMDS(("Color4fv: %f %f %f %f\n", v[0], v[1], v[2], v[3]));
 
-#ifdef RANDOMIZE_COLORS
-    {
-	float r, g, b;
-	r = (random() / (double)RAND_MAX);
-	g = (random() / (double)RAND_MAX);
-	b = (random() / (double)RAND_MAX);
-	CHECK_DMA_BUFFER(gCC, gCCPriv, 4);
-	WRITEF(gCCPriv->buf, Ca,  v[3]);
-	WRITEF(gCCPriv->buf, Cb,  b);
-	WRITEF(gCCPriv->buf, Cg,  g);
-	WRITEF(gCCPriv->buf, Cr3, r);
-    }
-#else
     CHECK_DMA_BUFFER(gCC, gCCPriv, 4);
     WRITEF(gCCPriv->buf, Ca,  v[3]);
     WRITEF(gCCPriv->buf, Cb,  v[2]);
     WRITEF(gCCPriv->buf, Cg,  v[1]);
     WRITEF(gCCPriv->buf, Cr4, v[0]);
-#endif
 }
 
 void _gamma_Color4i(GLint red, GLint green, GLint blue, GLint alpha)
 {
+    GLfloat r,g,b,a;
+
     DEBUG_GLCMDS(("Color4i: %d %d %d %d\n", (int)red, (int)green, (int)blue,
 		  (int)alpha));
+
+    r = INT_TO_FLOAT(red);
+    g = INT_TO_FLOAT(green);
+    b = INT_TO_FLOAT(blue);
+    a = INT_TO_FLOAT(alpha);
+
+    _gamma_Color4f(r,g,b,a);
 }
 
 void _gamma_Color4iv(const GLint *v)
 {
+    GLfloat p[4];
+
     DEBUG_GLCMDS(("Color4iv: %d %d %d %d\n", (int)v[0], (int)v[1], (int)v[2],
 		  (int)v[3]));
+
+    p[0] = INT_TO_FLOAT(v[0]);
+    p[1] = INT_TO_FLOAT(v[1]);
+    p[2] = INT_TO_FLOAT(v[2]);
+    p[3] = INT_TO_FLOAT(v[3]);
+
+    _gamma_Color4f(p[0],p[1],p[2],p[3]);
 }
 
 void _gamma_Color4s(GLshort red, GLshort green, GLshort blue, GLshort alpha)
 {
+    GLfloat r,g,b,a;
+
     DEBUG_GLCMDS(("Color4s: %d %d %d %d\n", red, green, blue, alpha));
+
+    r = SHORT_TO_FLOAT(red);
+    g = SHORT_TO_FLOAT(green);
+    b = SHORT_TO_FLOAT(blue);
+    a = SHORT_TO_FLOAT(alpha);
+
+    _gamma_Color4f(r,g,b,a);
 }
 
 void _gamma_Color4sv(const GLshort *v)
 {
+    GLfloat p[4];
+
     DEBUG_GLCMDS(("Color4sv: %d %d %d %d\n", v[0], v[1], v[2], v[3]));
+
+    p[0] = SHORT_TO_FLOAT(v[0]);
+    p[1] = SHORT_TO_FLOAT(v[1]);
+    p[2] = SHORT_TO_FLOAT(v[2]);
+    p[3] = SHORT_TO_FLOAT(v[3]);
+
+    _gamma_Color4f(p[0],p[1],p[2],p[3]);
 }
 
 void _gamma_Color4ub(GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha)
@@ -830,11 +950,7 @@ void _gamma_Color4ub(GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha)
 
     DEBUG_GLCMDS(("Color4ub: %d %d %d %d\n", red, green, blue, alpha));
 
-#ifdef RANDOMIZE_COLORS
-    c = (random() / (double)RAND_MAX) * 16777216;
-#else
     c = (alpha << 24) | (blue << 16) | (green << 8) | red;
-#endif
 
     CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
     WRITE(gCCPriv->buf, PackedColor4,  c);
@@ -846,17 +962,7 @@ void _gamma_Color4ubv(const GLubyte *v)
 
     DEBUG_GLCMDS(("Color4ubv: %d %d %d %d\n", v[0], v[1], v[2], v[3]));
 
-#ifdef RANDOMIZE_COLORS
-    c = (random() / (double)RAND_MAX) * 16777216;
-#else
-/* NOT_DONE: Is there a standard define for endianness? */
-#define IS_LITTLE_ENDIAN 1
-#if IS_LITTLE_ENDIAN
-    c = *((GLuint *)v);
-#else
     c = (v[3] << 24) | (v[2] << 16) | (v[1] << 8) | v[0];
-#endif
-#endif
 
     CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
     WRITE(gCCPriv->buf, PackedColor4,  c);
@@ -864,26 +970,62 @@ void _gamma_Color4ubv(const GLubyte *v)
 
 void _gamma_Color4ui(GLuint red, GLuint green, GLuint blue, GLuint alpha)
 {
+    GLfloat r,g,b,a;
+
     DEBUG_GLCMDS(("Color4ui: %d %d %d %d\n",
 		  (unsigned int)red, (unsigned int)green,
 		  (unsigned int)blue, (unsigned int)alpha));
+
+    r = UINT_TO_FLOAT(red);
+    g = UINT_TO_FLOAT(green);
+    b = UINT_TO_FLOAT(blue);
+    a = UINT_TO_FLOAT(alpha);
+
+    _gamma_Color4f(r,g,b,a);
 }
 
 void _gamma_Color4uiv(const GLuint *v)
 {
+    GLfloat p[4];
+
     DEBUG_GLCMDS(("Color4uiv: %d %d %d %d\n",
 		  (unsigned int)v[0], (unsigned int)v[1],
 		  (unsigned int)v[2], (unsigned int)v[3]));
+
+    p[0] = UINT_TO_FLOAT(v[0]);
+    p[1] = UINT_TO_FLOAT(v[1]);
+    p[2] = UINT_TO_FLOAT(v[2]);
+    p[3] = UINT_TO_FLOAT(v[3]);
+
+    _gamma_Color4f(p[0],p[1],p[2],p[3]);
 }
 
 void _gamma_Color4us(GLushort red, GLushort green, GLushort blue, GLushort alpha)
 {
+    GLfloat r,g,b,a;
+
     DEBUG_GLCMDS(("Color4us: %d %d %d %d\n", red, green, blue, alpha));
+
+    r = USHORT_TO_FLOAT(red);
+    g = USHORT_TO_FLOAT(green);
+    b = USHORT_TO_FLOAT(blue);
+    a = USHORT_TO_FLOAT(alpha);
+
+    _gamma_Color4f(r,g,b,a);
 }
 
 void _gamma_Color4usv(const GLushort *v)
 {
+    GLfloat p[4];
+
     DEBUG_GLCMDS(("Color4usv: %d %d %d %d\n", v[0], v[1], v[2], v[3]));
+
+    p[0] = USHORT_TO_FLOAT(v[0]);
+    p[1] = USHORT_TO_FLOAT(v[1]);
+    p[2] = USHORT_TO_FLOAT(v[2]);
+    p[3] = USHORT_TO_FLOAT(v[3]);
+
+    _gamma_Color4f(p[0],p[1],p[2],p[3]);
 }
 
 void _gamma_ColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
@@ -894,6 +1036,43 @@ void _gamma_ColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean 
 void _gamma_ColorMaterial(GLenum face, GLenum mode)
 {
     DEBUG_GLCMDS(("ColorMaterial: %04x %04x\n", (int)face, (int)mode));
+
+    gCCPriv->MaterialMode &= ~MaterialModeEnable;
+    gCCPriv->ColorMaterialMode = ColorMaterialModeDisable;
+
+    switch (face) {
+    case GL_FRONT:
+	gCCPriv->ColorMaterialMode |= ColorMaterialModeFront;
+	break;
+    case GL_BACK:
+	gCCPriv->ColorMaterialMode |= ColorMaterialModeBack;
+	break;
+    case GL_FRONT_AND_BACK:
+	gCCPriv->ColorMaterialMode |= ColorMaterialModeFrontAndBack;
+	break;
+    }
+
+    switch (mode) {
+    case GL_AMBIENT:
+	gCCPriv->ColorMaterialMode |= ColorMaterialModeAmbient;
+	break;
+    case GL_EMISSION:
+	gCCPriv->ColorMaterialMode |= ColorMaterialModeEmission;
+	break;
+    case GL_DIFFUSE:
+	gCCPriv->ColorMaterialMode |= ColorMaterialModeDiffuse;
+	break;
+    case GL_SPECULAR:
+	gCCPriv->ColorMaterialMode |= ColorMaterialModeSpecular;
+	break;
+    case GL_AMBIENT_AND_DIFFUSE:
+	gCCPriv->ColorMaterialMode |= ColorMaterialModeAmbAndDiff;
+	break;
+    }
+
+    CHECK_DMA_BUFFER(gCC, gCCPriv, 2);
+    WRITE(gCCPriv->buf, ColorMaterialMode, gCCPriv->ColorMaterialMode);
+    WRITE(gCCPriv->buf, MaterialMode, gCCPriv->MaterialMode);
 }
 
 void _gamma_ColorPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
@@ -942,9 +1121,6 @@ void _gamma_CullFace(GLenum mode)
 
     gCCPriv->GeometryMode &= ~GM_PolyCullMask;
 
-#ifdef CULL_ALL_PRIMS
-    gCCPriv->GeometryMode |= GM_PolyCullBoth;
-#else
     switch (mode) {
     case GL_FRONT:
 	gCCPriv->GeometryMode |= GM_PolyCullFront;
@@ -959,7 +1135,7 @@ void _gamma_CullFace(GLenum mode)
 	/* ERROR!! */
 	break;
     }
-#endif
+
     CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
     WRITE(gCCPriv->buf, GeometryMode, gCCPriv->GeometryMode);
 }
@@ -984,7 +1160,8 @@ void _gamma_DeleteTextures(GLsizei n, const GLuint *textures)
 
     for (i = 0; i < n; i++) {
 	gammaTexObj *t = gammaTOFind(textures[i]);
-	if (!driTMMDeleteImages(gCCPriv->tmm, MIPMAP_LEVELS, t->image)) {
+	if (driTMMDeleteImages(gCCPriv->tmm, MIPMAP_LEVELS, t->image) < 0) {
+    	    DEBUG_ERROR(("DeleteTextures: unable\n"));
 	    /* NOT_DONE: Handle error */
 	}
 	gammaTODelete(textures[i]);
@@ -1072,11 +1249,9 @@ void _gamma_Disable(GLenum cap)
 
     switch (cap) {
     case GL_CULL_FACE:
-#ifdef CULL_ALL_PRIMS
 	gCCPriv->GeometryMode &= ~GM_PolyCullEnable;
 	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
 	WRITE(gCCPriv->buf, GeometryMode, gCCPriv->GeometryMode);
-#endif
 	break;
     case GL_DEPTH_TEST:
 	if (gCCPriv->Flags & GAMMA_DEPTH_BUFFER) {
@@ -1109,6 +1284,35 @@ void _gamma_Disable(GLenum cap)
 	WRITE(gCCPriv->buf, AlphaBlendMode, gCCPriv->AlphaBlendMode);
 	WRITE(gCCPriv->buf, FBReadMode, (gCCPriv->FBReadMode |
 					 gCCPriv->AB_FBReadMode));
+	break;
+    case GL_COLOR_MATERIAL:
+	gCCPriv->ColorMaterialMode &= ~ColorMaterialModeEnable;
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	WRITE(gCCPriv->buf, ColorMaterialMode, gCCPriv->ColorMaterialMode);
+	break;
+    case GL_FOG:
+	gCCPriv->Begin &= ~B_FogEnable;
+	gCCPriv->GeometryMode &= ~GM_FogEnable;
+	gCCPriv->DeltaMode &= ~DM_FogEnable;
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 2);
+	WRITE(gCCPriv->buf, GeometryMode, gCCPriv->GeometryMode);
+	WRITE(gCCPriv->buf, DeltaMode, gCCPriv->DeltaMode);
+	WRITE(gCCPriv->buf, FogMode, FogModeDisable);
+	break;
+    case GL_LIGHTING:
+	gCCPriv->LightingMode &= ~LightingModeEnable;
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	WRITE(gCCPriv->buf, LightingMode, gCCPriv->LightingMode);
+	break;
+    case GL_LIGHT0:
+	gCCPriv->Light0Mode &= ~LNM_On;
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	WRITE(gCCPriv->buf, Light0Mode, gCCPriv->Light0Mode);
+	break;
+    case GL_LIGHT1:
+	gCCPriv->Light1Mode &= ~LNM_On;
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	WRITE(gCCPriv->buf, Light1Mode, gCCPriv->Light1Mode);
 	break;
     case GL_TEXTURE_2D:
 	gCCPriv->Texture2DEnabled = GL_FALSE;
@@ -1231,6 +1435,35 @@ void _gamma_Enable(GLenum cap)
 	WRITE(gCCPriv->buf, FBReadMode, (gCCPriv->FBReadMode |
 					 gCCPriv->AB_FBReadMode));
 	break;
+    case GL_COLOR_MATERIAL:
+	gCCPriv->ColorMaterialMode |= ColorMaterialModeEnable;
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	WRITE(gCCPriv->buf, ColorMaterialMode, gCCPriv->ColorMaterialMode);
+	break;
+    case GL_FOG:
+	gCCPriv->Begin |= B_FogEnable;
+	gCCPriv->GeometryMode |= GM_FogEnable;
+	gCCPriv->DeltaMode |= DM_FogEnable;
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 2);
+	WRITE(gCCPriv->buf, GeometryMode, gCCPriv->GeometryMode);
+	WRITE(gCCPriv->buf, DeltaMode, gCCPriv->DeltaMode);
+	WRITE(gCCPriv->buf, FogMode, FogModeEnable);
+	break;
+    case GL_LIGHTING:
+	gCCPriv->LightingMode |= LightingModeEnable | 16<<6;
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	WRITE(gCCPriv->buf, LightingMode, gCCPriv->LightingMode);
+	break;
+    case GL_LIGHT0:
+	gCCPriv->Light0Mode |= LNM_On;
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	WRITE(gCCPriv->buf, Light0Mode, gCCPriv->Light0Mode);
+	break;
+    case GL_LIGHT1:
+	gCCPriv->Light1Mode |= LNM_On;
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	WRITE(gCCPriv->buf, Light1Mode, gCCPriv->Light1Mode);
+	break;
     case GL_TEXTURE_2D:
 	gCCPriv->Texture2DEnabled = GL_TRUE;
 #ifndef TURN_OFF_TEXTURES
@@ -1298,34 +1531,42 @@ void _gamma_EvalCoord1d(GLdouble u)
 
 void _gamma_EvalCoord1dv(const GLdouble *u)
 {
+    DEBUG_GLCMDS(("EvalCoord1dv: %f\n", *u));
 }
 
 void _gamma_EvalCoord1f(GLfloat u)
 {
+    DEBUG_GLCMDS(("EvalCoord1f: %f\n", u));
 }
 
 void _gamma_EvalCoord1fv(const GLfloat *u)
 {
+    DEBUG_GLCMDS(("EvalCoord1fv: %f\n", *u));
 }
 
 void _gamma_EvalCoord2d(GLdouble u, GLdouble v)
 {
+    DEBUG_GLCMDS(("EvalCoord2d: %f %f\n", u, v));
 }
 
 void _gamma_EvalCoord2dv(const GLdouble *u)
 {
+    DEBUG_GLCMDS(("EvalCoord2dv: %f %f\n", u[0], u[1]));
 }
 
 void _gamma_EvalCoord2f(GLfloat u, GLfloat v)
 {
+    DEBUG_GLCMDS(("EvalCoord2f: %f %f\n", u, v));
 }
 
 void _gamma_EvalCoord2fv(const GLfloat *u)
 {
+    DEBUG_GLCMDS(("EvalCoord1fv: %f %f\n", u[0], u[1]));
 }
 
 void _gamma_EvalMesh1(GLenum mode, GLint i1, GLint i2)
 {
+    DEBUG_GLCMDS(("EvalMesh1: %d %d %d\n", mode, i1, i2));
 }
 
 void _gamma_EvalMesh2(GLenum mode, GLint i1, GLint i2, GLint j1, GLint j2)
@@ -1362,16 +1603,55 @@ void _gamma_Flush(void)
 void _gamma_Fogf(GLenum pname, GLfloat param)
 {
     DEBUG_GLCMDS(("Fogf: %04x %f\n", (int)pname, param));
+
+    switch (pname) {
+    case GL_FOG_DENSITY:
+    	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	WRITEF(gCCPriv->buf, FogDensity, param);
+	break;
+    }
 }
 
 void _gamma_Fogfv(GLenum pname, const GLfloat *params)
 {
+    int color;
+
     DEBUG_GLCMDS(("Fogfv: %04x %f\n", (int)pname, *params));
+
+    switch (pname) {
+    case GL_FOG_COLOR:
+	color = ((int)params[3]<<24) | ((int)params[2]<<16) |
+	 	((int)params[1]<<8)  | ((int)params[0]);
+    	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	WRITE(gCCPriv->buf, FogColor, color);
+	break;
+    }
 }
 
 void _gamma_Fogi(GLenum pname, GLint param)
 {
     DEBUG_GLCMDS(("Fogi: %04x %d\n", (int)pname, (int)param));
+
+    gCCPriv->GeometryMode &= ~GM_FogMask;
+
+    switch (pname) {
+    case GL_FOG_MODE:
+	switch (param) {
+	case GL_EXP:
+	    gCCPriv->GeometryMode |= GM_FogExp;
+	    break;
+	case GL_EXP2:
+	    gCCPriv->GeometryMode |= GM_FogExpSquared;
+	    break;
+	case GL_LINEAR:
+	    gCCPriv->GeometryMode |= GM_FogLinear;
+	    break;
+	}
+ 	break;
+    }
+
+    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+    WRITE(gCCPriv->buf, GeometryMode, gCCPriv->GeometryMode);
 }
 
 void _gamma_Fogiv(GLenum pname, const GLint *params)
@@ -1382,6 +1662,16 @@ void _gamma_Fogiv(GLenum pname, const GLint *params)
 void _gamma_FrontFace(GLenum mode)
 {
     DEBUG_GLCMDS(("FrontFace: %04x\n", (int)mode));
+
+    gCCPriv->GeometryMode &= ~GM_FFMask;
+
+    if (mode == GL_CCW)
+	gCCPriv->GeometryMode |= GM_FrontFaceCCW;
+    else
+	gCCPriv->GeometryMode |= GM_FrontFaceCW;
+
+    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+    WRITE(gCCPriv->buf, GeometryMode, gCCPriv->GeometryMode);
 }
 
 void _gamma_Frustum(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
@@ -1467,14 +1757,24 @@ void _gamma_GetFloatv(GLenum val, GLfloat *f)
 void _gamma_GetIntegerv(GLenum val, GLint *i)
 {
     DEBUG_GLCMDS(("GetIntegerv: %04x\n", (int)val));
+
+    switch (val) {
+    case GL_MAX_TEXTURE_SIZE:
+	*i = 2048;
+	break;
+    }
 }
 
 void _gamma_GetLightfv(GLenum light, GLenum pname, GLfloat *params)
 {
+    DEBUG_GLCMDS(("GetLightfv: %04x %04x %f\n",
+		  (int)light, (int)pname, *params));
 }
 
 void _gamma_GetLightiv(GLenum light, GLenum pname, GLint *params)
 {
+    DEBUG_GLCMDS(("GetLightiv: %04x %04x %d\n",
+		  (int)light, (int)pname, *params));
 }
 
 void _gamma_GetMapdv(GLenum target, GLenum query, GLdouble *v)
@@ -1521,7 +1821,7 @@ void _gamma_GetPolygonStipple(GLubyte *mask)
 const GLubyte *_gamma_GetString(GLenum name)
 {
     static unsigned char vendor[] = "Precision Insight, Inc.";
-    static unsigned char renderer[] = "DRI Glint-Gamma 20000228";
+    static unsigned char renderer[] = "DRI Glint-Gamma 20000605";
     static unsigned char version[] = "1.1";
     static unsigned char ext[] = "";
 
@@ -1658,6 +1958,12 @@ GLboolean _gamma_IsEnabled(GLenum cap)
 {
     DEBUG_GLCMDS(("IsEnabled: %04x\n", (int)cap));
 
+    switch (cap) {
+    case GL_LIGHTING:
+	return ((gCCPriv->LightingMode & LightingModeEnable)?GL_TRUE:GL_FALSE);
+        break;
+    }
+
     return GL_TRUE;
 }
 
@@ -1677,10 +1983,44 @@ GLboolean _gamma_IsTexture(GLuint texture)
 
 void _gamma_LightModelf(GLenum pname, GLfloat param)
 {
+    DEBUG_GLCMDS(("LightModelf: %04x %f\n",
+		  (int)pname, param));
 }
 
 void _gamma_LightModelfv(GLenum pname, const GLfloat *params)
 {
+    DEBUG_GLCMDS(("LightModelfv: %04x %f\n",
+		  (int)pname, *params));
+
+    switch (pname) {
+    case GL_LIGHT_MODEL_AMBIENT:
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
+	/* We don't do alpha */
+	WRITEF(gCCPriv->buf, SceneAmbientColorBlue, params[2]);
+	WRITEF(gCCPriv->buf, SceneAmbientColorGreen, params[1]);
+	WRITEF(gCCPriv->buf, SceneAmbientColorRed, params[0]);
+	break;
+    case GL_LIGHT_MODEL_LOCAL_VIEWER:
+	if ((int)params[0] != 0)
+	    gCCPriv->LightingMode |= LightingModeLocalViewer;
+	else
+	    gCCPriv->LightingMode &= ~LightingModeLocalViewer;
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	WRITE(gCCPriv->buf, LightingMode, gCCPriv->LightingMode);
+	break;
+    case GL_LIGHT_MODEL_TWO_SIDE:
+	if ((int)params[0] != 0) {
+	    gCCPriv->LightingMode |= LightingModeTwoSides;
+	    gCCPriv->MaterialMode |= MaterialModeTwoSides;
+	} else {
+	    gCCPriv->LightingMode &= ~LightingModeTwoSides;
+	    gCCPriv->MaterialMode &= ~MaterialModeTwoSides;
+	}
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 2);
+	WRITE(gCCPriv->buf, LightingMode, gCCPriv->LightingMode);
+	WRITE(gCCPriv->buf, MaterialMode, gCCPriv->MaterialMode);
+	break;
+    }
 }
 
 void _gamma_LightModeli(GLenum pname, GLint param)
@@ -1693,10 +2033,173 @@ void _gamma_LightModeliv(GLenum pname, const GLint *params)
 
 void _gamma_Lightf(GLenum light, GLenum pname, GLfloat param)
 {
+    DEBUG_GLCMDS(("Lightf: %04x %04x %f\n",
+		  (int)light, (int)pname, param));
 }
 
 void _gamma_Lightfv(GLenum light, GLenum pname, const GLfloat *params)
 {
+    GLfloat l,x,y,z;
+    DEBUG_GLCMDS(("Lightfv: %04x %04x %f\n",
+		  (int)light, (int)pname, *params));
+
+    switch(light) {
+    case GL_LIGHT0:
+	switch (pname) {
+	case GL_AMBIENT:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
+	    /* We don't do alpha */
+	    WRITEF(gCCPriv->buf, Light0AmbientIntensityBlue, params[2]);
+	    WRITEF(gCCPriv->buf, Light0AmbientIntensityGreen, params[1]);
+	    WRITEF(gCCPriv->buf, Light0AmbientIntensityRed, params[0]);
+	    break;
+	case GL_DIFFUSE:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
+	    /* We don't do alpha */
+	    WRITEF(gCCPriv->buf, Light0DiffuseIntensityBlue, params[2]);
+	    WRITEF(gCCPriv->buf, Light0DiffuseIntensityGreen, params[1]);
+	    WRITEF(gCCPriv->buf, Light0DiffuseIntensityRed, params[0]);
+	    break;
+	case GL_SPECULAR:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
+	    /* We don't do alpha */
+	    WRITEF(gCCPriv->buf, Light0SpecularIntensityBlue, params[2]);
+	    WRITEF(gCCPriv->buf, Light0SpecularIntensityGreen, params[1]);
+	    WRITEF(gCCPriv->buf, Light0SpecularIntensityRed, params[0]);
+	    break;
+	case GL_POSITION:
+    	    /* Normalize <x,y,z> */
+	    x = params[0]; y = params[1]; z = params[2];
+	    l = sqrt(x*x + y*y + z*z);
+	    x /= l;
+	    y /= l;
+	    z /= l;
+	    if ((int)params[3] != 0) {
+		gCCPriv->Light0Mode |= Light0ModeAttenuation;
+		gCCPriv->Light0Mode |= Light0ModeLocal;
+	    } else {
+		gCCPriv->Light0Mode &= ~Light0ModeAttenuation;
+		gCCPriv->Light0Mode &= ~Light0ModeLocal;
+	    }
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 5);
+	    WRITE(gCCPriv->buf, Light0Mode, gCCPriv->Light0Mode);
+	    WRITEF(gCCPriv->buf, Light0PositionW, params[3]);
+	    WRITEF(gCCPriv->buf, Light0PositionZ, z);
+	    WRITEF(gCCPriv->buf, Light0PositionY, y);
+	    WRITEF(gCCPriv->buf, Light0PositionX, x);
+	    break;
+	case GL_SPOT_DIRECTION:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
+	    WRITEF(gCCPriv->buf, Light0SpotlightDirectionZ, params[3]);
+	    WRITEF(gCCPriv->buf, Light0SpotlightDirectionY, params[2]);
+	    WRITEF(gCCPriv->buf, Light0SpotlightDirectionX, params[1]);
+	    /* WRITEF(gCCPriv->buf, Light0SpotlightDirectionW, params[0]); */
+	    break;
+	case GL_SPOT_EXPONENT:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	    WRITEF(gCCPriv->buf, Light0SpotlightExponent, params[0]);
+	    break;
+	case GL_SPOT_CUTOFF:
+	    if ((int)params[0] != -1) 
+		gCCPriv->Light0Mode |= Light0ModeSpotLight;
+	    else
+		gCCPriv->Light0Mode &= ~Light0ModeSpotLight;
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 2);
+	    WRITE(gCCPriv->buf, Light0Mode, gCCPriv->Light0Mode);
+	    WRITEF(gCCPriv->buf, Light0CosSpotlightCutoffAngle, params[0]);
+	    break;
+	case GL_CONSTANT_ATTENUATION:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	    WRITEF(gCCPriv->buf, Light0ConstantAttenuation, params[0]);
+	    break;
+	case GL_LINEAR_ATTENUATION:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	    WRITEF(gCCPriv->buf, Light0LinearAttenuation, params[0]);
+	    break;
+	case GL_QUADRATIC_ATTENUATION:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	    WRITEF(gCCPriv->buf, Light0QuadraticAttenuation, params[0]);
+	    break;
+	}
+	break;
+    case GL_LIGHT1:
+	switch (pname) {
+	case GL_AMBIENT:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
+	    /* We don't do alpha */
+	    WRITEF(gCCPriv->buf, Light1AmbientIntensityBlue, params[2]);
+	    WRITEF(gCCPriv->buf, Light1AmbientIntensityGreen, params[1]);
+	    WRITEF(gCCPriv->buf, Light1AmbientIntensityRed, params[0]);
+	    break;
+	case GL_DIFFUSE:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
+	    /* We don't do alpha */
+	    WRITEF(gCCPriv->buf, Light1DiffuseIntensityBlue, params[2]);
+	    WRITEF(gCCPriv->buf, Light1DiffuseIntensityGreen, params[1]);
+	    WRITEF(gCCPriv->buf, Light1DiffuseIntensityRed, params[0]);
+	    break;
+	case GL_SPECULAR:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
+	    /* We don't do alpha */
+	    WRITEF(gCCPriv->buf, Light1SpecularIntensityBlue, params[2]);
+	    WRITEF(gCCPriv->buf, Light1SpecularIntensityGreen, params[1]);
+	    WRITEF(gCCPriv->buf, Light1SpecularIntensityRed, params[0]);
+	    break;
+	case GL_POSITION:
+    	    /* Normalize <x,y,z> */
+	    x = params[0]; y = params[1]; z = params[2];
+	    l = sqrt(x*x + y*y + z*z);
+	    x /= l;
+	    y /= l;
+	    z /= l;
+	    if ((int)params[3] != 0) {
+		gCCPriv->Light1Mode |= Light1ModeAttenuation;
+		gCCPriv->Light1Mode |= Light1ModeLocal;
+	    } else {
+		gCCPriv->Light0Mode &= ~Light0ModeAttenuation;
+		gCCPriv->Light0Mode &= ~Light0ModeLocal;
+	    }
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 5);
+	    WRITE(gCCPriv->buf, Light1Mode, gCCPriv->Light1Mode);
+	    WRITEF(gCCPriv->buf, Light1PositionW, params[3]);
+	    WRITEF(gCCPriv->buf, Light1PositionZ, z);
+	    WRITEF(gCCPriv->buf, Light1PositionY, y);
+	    WRITEF(gCCPriv->buf, Light1PositionX, x);
+	    break;
+	case GL_SPOT_DIRECTION:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
+	    WRITEF(gCCPriv->buf, Light1SpotlightDirectionZ, params[3]);
+	    WRITEF(gCCPriv->buf, Light1SpotlightDirectionY, params[2]);
+	    WRITEF(gCCPriv->buf, Light1SpotlightDirectionX, params[1]);
+	    /* WRITEF(gCCPriv->buf, Light1SpotlightDirectionW, params[0]); */
+	    break;
+	case GL_SPOT_EXPONENT:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	    WRITEF(gCCPriv->buf, Light1SpotlightExponent, params[0]);
+	    break;
+	case GL_SPOT_CUTOFF:
+	    if ((int)params[0] != -1) 
+		gCCPriv->Light1Mode |= Light1ModeSpotLight;
+	    else
+		gCCPriv->Light1Mode &= ~Light1ModeSpotLight;
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 2);
+	    WRITE(gCCPriv->buf, Light1Mode, gCCPriv->Light1Mode);
+	    WRITEF(gCCPriv->buf, Light1CosSpotlightCutoffAngle, params[0]);
+	    break;
+	case GL_CONSTANT_ATTENUATION:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	    WRITEF(gCCPriv->buf, Light1ConstantAttenuation, params[0]);
+	    break;
+	case GL_LINEAR_ATTENUATION:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	    WRITEF(gCCPriv->buf, Light1LinearAttenuation, params[0]);
+	    break;
+	case GL_QUADRATIC_ATTENUATION:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	    WRITEF(gCCPriv->buf, Light1QuadraticAttenuation, params[0]);
+	    break;
+	}
+    }
 }
 
 void _gamma_Lighti(GLenum light, GLenum pname, GLint param)
@@ -1821,6 +2324,104 @@ void _gamma_Materialfv(GLenum face, GLenum pname, const GLfloat *params)
 {
     DEBUG_GLCMDS(("Materialfv: %04x %04x %f\n",
 		  (int)face, (int)pname, *params));
+
+    gCCPriv->MaterialMode |= MaterialModeEnable;
+    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+    WRITE(gCCPriv->buf, MaterialMode, gCCPriv->MaterialMode);
+
+    if ((face == GL_FRONT) || (face == GL_FRONT_AND_BACK)) {
+	switch (pname) {
+	case GL_AMBIENT:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
+	    WRITEF(gCCPriv->buf, FrontAmbientColorBlue, params[2]);
+	    WRITEF(gCCPriv->buf, FrontAmbientColorGreen, params[1]);
+	    WRITEF(gCCPriv->buf, FrontAmbientColorRed, params[0]);
+	    break;
+	case GL_DIFFUSE:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 4);
+	    WRITEF(gCCPriv->buf, FrontAlpha, params[3]);
+	    WRITEF(gCCPriv->buf, FrontDiffuseColorBlue, params[2]);
+	    WRITEF(gCCPriv->buf, FrontDiffuseColorGreen, params[1]);
+	    WRITEF(gCCPriv->buf, FrontDiffuseColorRed, params[0]);
+	    break;
+	case GL_SPECULAR:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
+	    WRITEF(gCCPriv->buf, FrontSpecularColorBlue, params[2]);
+	    WRITEF(gCCPriv->buf, FrontSpecularColorGreen, params[1]);
+	    WRITEF(gCCPriv->buf, FrontSpecularColorRed, params[0]);
+	    break;
+	case GL_EMISSION:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
+	    WRITEF(gCCPriv->buf, FrontEmissiveColorBlue, params[2]);
+	    WRITEF(gCCPriv->buf, FrontEmissiveColorGreen, params[1]);
+	    WRITEF(gCCPriv->buf, FrontEmissiveColorRed, params[0]);
+	    break;
+	case GL_SHININESS:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	    WRITEF(gCCPriv->buf, FrontSpecularExponent, params[0]);
+	    break;
+	case GL_AMBIENT_AND_DIFFUSE:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 7);
+	    WRITEF(gCCPriv->buf, FrontAmbientColorBlue, params[2]);
+	    WRITEF(gCCPriv->buf, FrontAmbientColorGreen, params[1]);
+	    WRITEF(gCCPriv->buf, FrontAmbientColorRed, params[0]);
+	    WRITEF(gCCPriv->buf, FrontAlpha, params[3]);
+	    WRITEF(gCCPriv->buf, FrontDiffuseColorBlue, params[2]);
+	    WRITEF(gCCPriv->buf, FrontDiffuseColorGreen, params[1]);
+	    WRITEF(gCCPriv->buf, FrontDiffuseColorRed, params[0]);
+	    break;
+	case GL_COLOR_INDEXES:
+	    /* NOT_DONE */
+	    break;
+	}
+    }
+
+    if ((face == GL_BACK) || (face == GL_FRONT_AND_BACK)) {
+	switch (pname) {
+	case GL_AMBIENT:
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
+	WRITEF(gCCPriv->buf, BackAmbientColorBlue, params[2]);
+	WRITEF(gCCPriv->buf, BackAmbientColorGreen, params[1]);
+	WRITEF(gCCPriv->buf, BackAmbientColorRed, params[0]);
+	break;
+    case GL_DIFFUSE:
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 4);
+	WRITEF(gCCPriv->buf, BackAlpha, params[3]);
+	WRITEF(gCCPriv->buf, BackDiffuseColorBlue, params[2]);
+	WRITEF(gCCPriv->buf, BackDiffuseColorGreen, params[1]);
+	WRITEF(gCCPriv->buf, BackDiffuseColorRed, params[0]);
+	break;
+    case GL_SPECULAR:
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
+	WRITEF(gCCPriv->buf, BackSpecularColorBlue, params[2]);
+	WRITEF(gCCPriv->buf, BackSpecularColorGreen, params[1]);
+	WRITEF(gCCPriv->buf, BackSpecularColorRed, params[0]);
+	break;
+    case GL_EMISSION:
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
+	WRITEF(gCCPriv->buf, BackEmissiveColorBlue, params[2]);
+	WRITEF(gCCPriv->buf, BackEmissiveColorGreen, params[1]);
+	WRITEF(gCCPriv->buf, BackEmissiveColorRed, params[0]);
+	break;
+    case GL_SHININESS:
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	WRITEF(gCCPriv->buf, BackSpecularExponent, params[0]);
+	break;
+    case GL_AMBIENT_AND_DIFFUSE:
+	CHECK_DMA_BUFFER(gCC, gCCPriv, 7);
+	WRITEF(gCCPriv->buf, BackAmbientColorBlue, params[2]);
+	WRITEF(gCCPriv->buf, BackAmbientColorGreen, params[1]);
+	WRITEF(gCCPriv->buf, BackAmbientColorRed, params[0]);
+	WRITEF(gCCPriv->buf, BackAlpha, params[3]);
+	WRITEF(gCCPriv->buf, BackDiffuseColorBlue, params[2]);
+	WRITEF(gCCPriv->buf, BackDiffuseColorGreen, params[1]);
+	WRITEF(gCCPriv->buf, BackDiffuseColorRed, params[0]);
+	break;
+    case GL_COLOR_INDEXES:
+	/* NOT_DONE */
+	break;
+    }
+    }
 }
 
 void _gamma_Materiali(GLenum face, GLenum pname, GLint param)
@@ -1841,9 +2442,9 @@ void _gamma_MatrixMode(GLenum mode)
 
     switch (mode) {
     case GL_TEXTURE:
-	/* Eanble the Texture transform */
+	/* Enable the Texture transform */
 	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
-	WRITE(gCCPriv->buf, TransformModeOr, 0x00000010);
+	WRITE(gCCPriv->buf, TransformModeOr, XM_XformTexture);
     case GL_MODELVIEW:
     case GL_PROJECTION:
         gCCPriv->MatrixMode = mode;
@@ -1882,52 +2483,87 @@ void _gamma_NewList(GLuint list, GLenum mode)
 
 void _gamma_Normal3b(GLbyte nx, GLbyte ny, GLbyte nz)
 {
+    GLfloat x,y,z;
+
     DEBUG_GLCMDS(("Normal3b: %d %d %d\n", nx, ny, nz));
+
+    _gamma_Normal3f((GLfloat)nx,(GLfloat)ny,(GLfloat)nz);
 }
 
 void _gamma_Normal3bv(const GLbyte *v)
 {
+    GLfloat p[3];
+
     DEBUG_GLCMDS(("Normal3bv: %d %d %d\n", v[0], v[1], v[2]));
+
+    _gamma_Normal3f((GLfloat)v[0],(GLfloat)v[1],(GLfloat)v[2]);
 }
 
 void _gamma_Normal3d(GLdouble nx, GLdouble ny, GLdouble nz)
 {
     DEBUG_GLCMDS(("Normal3d: %f %f %f\n", nx, ny, nz));
+
+    _gamma_Normal3f((GLfloat)nx,(GLfloat)ny,(GLfloat)nz);
 }
 
 void _gamma_Normal3dv(const GLdouble *v)
 {
     DEBUG_GLCMDS(("Normal3dv: %f %f %f\n", v[0], v[1], v[2]));
+
+    _gamma_Normal3f((GLfloat)v[0],(GLfloat)v[1],(GLfloat)v[2]);
 }
 
 void _gamma_Normal3f(GLfloat nx, GLfloat ny, GLfloat nz)
 {
     DEBUG_GLCMDS(("Normal3f: %f %f %f\n", nx, ny, nz));
+
+    CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
+    WRITEF(gCCPriv->buf, Nz, nz);
+    WRITEF(gCCPriv->buf, Ny, ny);
+    WRITEF(gCCPriv->buf, Nx, nx);
 }
 
 void _gamma_Normal3fv(const GLfloat *v)
 {
     DEBUG_GLCMDS(("Normal3fv: %f %f %f\n", v[0], v[1], v[2]));
+
+    _gamma_Normal3f((GLfloat)v[0],(GLfloat)v[1],(GLfloat)v[2]);
 }
 
 void _gamma_Normal3i(GLint nx, GLint ny, GLint nz)
 {
+    GLfloat x,y,z;
+
     DEBUG_GLCMDS(("Normal3i: %d %d %d\n", (int)nx, (int)ny, (int)nz));
+
+    _gamma_Normal3f((GLfloat)nx,(GLfloat)ny,(GLfloat)nz);
 }
 
 void _gamma_Normal3iv(const GLint *v)
 {
+    GLfloat p[3];
+
     DEBUG_GLCMDS(("Normal3iv: %d %d %d\n", (int)v[0], (int)v[1], (int)v[2]));
+
+    _gamma_Normal3f((GLfloat)v[0],(GLfloat)v[1],(GLfloat)v[2]);
 }
 
 void _gamma_Normal3s(GLshort nx, GLshort ny, GLshort nz)
 {
+    GLfloat x,y,z;
+
     DEBUG_GLCMDS(("Normal3s: %d %d %d\n", nx, ny, nz));
+
+    _gamma_Normal3f((GLfloat)nx,(GLfloat)ny,(GLfloat)nz);
 }
 
 void _gamma_Normal3sv(const GLshort *v)
 {
+    GLfloat p[3];
+
     DEBUG_GLCMDS(("Normal3sv: %d %d %d\n", v[0], v[1], v[2]));
+
+    _gamma_Normal3f((GLfloat)v[0],(GLfloat)v[1],(GLfloat)v[2]);
 }
 
 void _gamma_NormalPointer(GLenum type, GLsizei stride, const GLvoid *pointer)
@@ -2024,6 +2660,56 @@ void _gamma_PointSize(GLfloat size)
 void _gamma_PolygonMode(GLenum face, GLenum mode)
 {
     DEBUG_GLCMDS(("PolygonMode: %04x %04x\n", (int)face, (int)mode));
+
+    gCCPriv->GeometryMode &= ~GM_FB_PolyMask;
+
+    switch (mode) {
+    case GL_FILL:
+	switch (face) {
+	case GL_FRONT:
+	    gCCPriv->GeometryMode |= GM_FrontPolyFill;
+	    break;
+	case GL_BACK:
+	    gCCPriv->GeometryMode |= GM_BackPolyFill;
+	    break;
+	case GL_FRONT_AND_BACK:
+	    gCCPriv->GeometryMode |= GM_FrontPolyFill;
+	    gCCPriv->GeometryMode |= GM_BackPolyFill;
+	    break;
+	}
+	break;
+    case GL_LINE:
+	switch (face) {
+	case GL_FRONT:
+	    gCCPriv->GeometryMode |= GM_FrontPolyLine;
+	    break;
+	case GL_BACK:
+	    gCCPriv->GeometryMode |= GM_BackPolyLine;
+	    break;
+	case GL_FRONT_AND_BACK:
+	    gCCPriv->GeometryMode |= GM_FrontPolyLine;
+	    gCCPriv->GeometryMode |= GM_BackPolyLine;
+	    break;
+	}
+	break;
+    case GL_POINT:
+	switch (face) {
+	case GL_FRONT:
+	    gCCPriv->GeometryMode |= GM_FrontPolyPoint;
+	    break;
+	case GL_BACK:
+	    gCCPriv->GeometryMode |= GM_BackPolyPoint;
+	    break;
+	case GL_FRONT_AND_BACK:
+	    gCCPriv->GeometryMode |= GM_FrontPolyPoint;
+	    gCCPriv->GeometryMode |= GM_BackPolyPoint;
+	    break;
+	}
+	break;
+    }
+
+    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+    WRITE(gCCPriv->buf, GeometryMode, gCCPriv->GeometryMode);
 }
 
 void _gamma_PolygonOffset(GLfloat factor, GLfloat units)
@@ -2276,6 +2962,15 @@ void _gamma_Rectdv(const GLdouble *v1, const GLdouble *v2)
 void _gamma_Rectf(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2)
 {
     DEBUG_GLCMDS(("Rectf: %f %f %f %f\n", x1, y1, x2, y2));
+ 
+    /* This should be done with Gamma's Rectangle engine - later */
+
+    _gamma_Begin(GL_POLYGON);
+    _gamma_Vertex2f(x1,y1);
+    _gamma_Vertex2f(x2,y1);
+    _gamma_Vertex2f(x2,y2);
+    _gamma_Vertex2f(x1,y2);
+    _gamma_End();
 }
 
 void _gamma_Rectfv(const GLfloat *v1, const GLfloat *v2)
@@ -2478,51 +3173,87 @@ void _gamma_StencilOp(GLenum fail, GLenum zfail, GLenum zpass)
 void _gamma_TexCoord1d(GLdouble s)
 {
     DEBUG_GLCMDS(("TexCoord1d: %f\n", s));
+
+    _gamma_TexCoord1f((GLfloat)s);
 }
 
 void _gamma_TexCoord1dv(const GLdouble *v)
 {
     DEBUG_GLCMDS(("TexCoord1dv: %f\n", *v));
+
+    _gamma_TexCoord1fv((GLfloat*)v);
 }
 
 void _gamma_TexCoord1f(GLfloat s)
 {
     DEBUG_GLCMDS(("TexCoord1f: %f\n", s));
+
+    WRITEF(gCCPriv->buf, Ts1, s);
 }
 
 void _gamma_TexCoord1fv(const GLfloat *v)
 {
     DEBUG_GLCMDS(("TexCoord1fv: %f\n", *v));
+
+    WRITEF(gCCPriv->buf, Ts1, v[0]);
 }
 
 void _gamma_TexCoord1i(GLint s)
 {
+    GLfloat x;
+
     DEBUG_GLCMDS(("TexCoord1i: %d\n", (int)s));
+
+    x = INT_TO_FLOAT(s);
+
+    _gamma_TexCoord1f(x);
 }
 
 void _gamma_TexCoord1iv(const GLint *v)
 {
+    GLfloat p[1];
+
     DEBUG_GLCMDS(("TexCoord1iv: %d\n", (int)*v));
+
+    p[0] = INT_TO_FLOAT(v[0]);
+
+    _gamma_TexCoord1fv(p);
 }
 
 void _gamma_TexCoord1s(GLshort s)
 {
+    GLfloat x;
+
     DEBUG_GLCMDS(("TexCoord1s: %d\n", s));
+
+    x = SHORT_TO_FLOAT(s);
+
+    _gamma_TexCoord1f(x);
 }
 
 void _gamma_TexCoord1sv(const GLshort *v)
 {
+    GLfloat p[1];
+
     DEBUG_GLCMDS(("TexCoord1sv: %d\n", *v));
+
+    p[0] = SHORT_TO_FLOAT(v[0]);
+
+    _gamma_TexCoord1fv(p);
 }
 
 void _gamma_TexCoord2d(GLdouble s, GLdouble t)
 {
     DEBUG_GLCMDS(("TexCoord2d: %f %f\n", s, t));
+
+    _gamma_TexCoord2f((GLfloat)s,(GLfloat)t);
 }
 
 void _gamma_TexCoord2dv(const GLdouble *v)
 {
     DEBUG_GLCMDS(("TexCoord2dv: %f %f\n", v[0], v[1]));
+
+    _gamma_TexCoord2fv((GLfloat*)v);
 }
 
 void _gamma_TexCoord2f(GLfloat s, GLfloat t)
@@ -2537,107 +3268,240 @@ void _gamma_TexCoord2f(GLfloat s, GLfloat t)
 void _gamma_TexCoord2fv(const GLfloat *v)
 {
     DEBUG_GLCMDS(("TexCoord2fv: %f %f\n", v[0], v[1]));
+
+    CHECK_DMA_BUFFER(gCC, gCCPriv, 2);
+    WRITEF(gCCPriv->buf, Tt2, v[1]);
+    WRITEF(gCCPriv->buf, Ts2, v[0]);
 }
 
 void _gamma_TexCoord2i(GLint s, GLint t)
 {
+    GLfloat x,y;
+
     DEBUG_GLCMDS(("TexCoord2i: %d %d\n", (int)s, (int)t));
+
+    x = INT_TO_FLOAT(s);
+    y = INT_TO_FLOAT(t);
+
+    _gamma_TexCoord2f(x,y);
 }
 
 void _gamma_TexCoord2iv(const GLint *v)
 {
+    GLfloat p[2];
+
     DEBUG_GLCMDS(("TexCoord2iv: %d %d\n", (int)v[0], (int)v[1]));
+
+    p[0] = INT_TO_FLOAT(v[0]);
+    p[1] = INT_TO_FLOAT(v[1]);
+
+    _gamma_TexCoord2fv(p);
 }
 
 void _gamma_TexCoord2s(GLshort s, GLshort t)
 {
+    GLfloat x,y;
+
     DEBUG_GLCMDS(("TexCoord2s: %d %d\n", s, t));
+
+    x = SHORT_TO_FLOAT(s);
+    y = SHORT_TO_FLOAT(t);
+
+    _gamma_TexCoord2f(x,y);
 }
 
 void _gamma_TexCoord2sv(const GLshort *v)
 {
+    GLfloat p[2];
+
     DEBUG_GLCMDS(("TexCoord2sv: %d %d\n", v[0], v[1]));
+
+    p[0] = SHORT_TO_FLOAT(v[0]);
+    p[1] = SHORT_TO_FLOAT(v[1]);
+
+    _gamma_TexCoord2fv(p);
 }
 
 void _gamma_TexCoord3d(GLdouble s, GLdouble t, GLdouble r)
 {
     DEBUG_GLCMDS(("TexCoord3d: %f %f %f\n", s, t, r));
+
+    _gamma_TexCoord3f((GLfloat)s,(GLfloat)t,(GLfloat)r);
 }
 
 void _gamma_TexCoord3dv(const GLdouble *v)
 {
     DEBUG_GLCMDS(("TexCoord3dv: %f %f %f\n", v[0], v[1], v[2]));
+
+    _gamma_TexCoord3fv((GLfloat*)v);
 }
 
 void _gamma_TexCoord3f(GLfloat s, GLfloat t, GLfloat r)
 {
     DEBUG_GLCMDS(("TexCoord3f: %f %f %f\n", s, t, r));
+
+    _gamma_TexCoord4f(s,t,r,1.0f);
 }
 
 void _gamma_TexCoord3fv(const GLfloat *v)
 {
+    GLfloat p[4];
+
     DEBUG_GLCMDS(("TexCoord3fv: %f %f %f\n", v[0], v[1], v[2]));
+
+    p[0] = v[0];
+    p[1] = v[1];
+    p[2] = v[2];
+    p[3] = 1.0f;
+
+    _gamma_TexCoord4fv(p);
 }
 
 void _gamma_TexCoord3i(GLint s, GLint t, GLint r)
 {
+    GLfloat x,y,z;
+
     DEBUG_GLCMDS(("TexCoord3i: %d %d %d\n", (int)s, (int)t, (int)r));
+
+    x = INT_TO_FLOAT(s);
+    y = INT_TO_FLOAT(t);
+    z = INT_TO_FLOAT(r);
+
+    _gamma_TexCoord4f(x,y,z,1.0f);
 }
 
 void _gamma_TexCoord3iv(const GLint *v)
 {
+    GLfloat p[4];
+
     DEBUG_GLCMDS(("TexCoord3iv: %d %d %d\n", (int)v[0], (int)v[1], (int)v[2]));
+
+    p[0] = INT_TO_FLOAT(v[0]);
+    p[1] = INT_TO_FLOAT(v[1]);
+    p[2] = INT_TO_FLOAT(v[2]);
+    p[3] = 1.0f;
+
+    _gamma_TexCoord4fv(p);
 }
 
 void _gamma_TexCoord3s(GLshort s, GLshort t, GLshort r)
 {
+    GLfloat x,y,z;
+
     DEBUG_GLCMDS(("TexCoord3s: %d %d %d\n", s, t, r));
+  
+    x = SHORT_TO_FLOAT(s);
+    y = SHORT_TO_FLOAT(t);
+    z = SHORT_TO_FLOAT(r);
+
+    _gamma_TexCoord4f(x,y,z,1.0f);
 }
 
 void _gamma_TexCoord3sv(const GLshort *v)
 {
+    GLfloat p[4];
+
     DEBUG_GLCMDS(("TexCoord3sv: %d %d %d\n", v[0], v[1], v[2]));
+
+    p[0] = SHORT_TO_FLOAT(v[0]);
+    p[1] = SHORT_TO_FLOAT(v[1]);
+    p[2] = SHORT_TO_FLOAT(v[2]);
+    p[3] = 1.0f;
+
+    _gamma_TexCoord4fv(p);
 }
 
 void _gamma_TexCoord4d(GLdouble s, GLdouble t, GLdouble r, GLdouble q)
 {
     DEBUG_GLCMDS(("TexCoord4d: %f %f %f %f\n", s, t, r, q));
+
+    _gamma_TexCoord4f((GLfloat)s,(GLfloat)t,(GLfloat)r,(GLfloat)q);
 }
 
 void _gamma_TexCoord4dv(const GLdouble *v)
 {
     DEBUG_GLCMDS(("TexCoord4dv: %f %f %f %f\n", v[0], v[1], v[2], v[3]));
+
+    _gamma_TexCoord4fv((GLfloat*)v);
 }
 
 void _gamma_TexCoord4f(GLfloat s, GLfloat t, GLfloat r, GLfloat q)
 {
     DEBUG_GLCMDS(("TexCoord4f: %f %f %f %f\n", s, t, r, q));
+
+    CHECK_DMA_BUFFER(gCC, gCCPriv, 4);
+    WRITEF(gCCPriv->buf, Tq4, q);
+    WRITEF(gCCPriv->buf, Tr4, r);
+    WRITEF(gCCPriv->buf, Tt4, t);
+    WRITEF(gCCPriv->buf, Ts4, s);
 }
 
 void _gamma_TexCoord4fv(const GLfloat *v)
 {
     DEBUG_GLCMDS(("TexCoord4fv: %f %f %f %f\n", v[0], v[1], v[2], v[3]));
+
+    CHECK_DMA_BUFFER(gCC, gCCPriv, 4);
+    WRITEF(gCCPriv->buf, Tq4, v[3]);
+    WRITEF(gCCPriv->buf, Tr4, v[2]);
+    WRITEF(gCCPriv->buf, Tt4, v[1]);
+    WRITEF(gCCPriv->buf, Ts4, v[0]);
 }
 
 void _gamma_TexCoord4i(GLint s, GLint t, GLint r, GLint q)
 {
+    GLfloat x,y,z,a;
+
     DEBUG_GLCMDS(("TexCoord4i: %d %d %d %d\n", (int)s, (int)t, (int)r, (int)q));
+
+    x = INT_TO_FLOAT(s);
+    y = INT_TO_FLOAT(t);
+    z = INT_TO_FLOAT(r);
+    a = INT_TO_FLOAT(q);
+
+    _gamma_TexCoord4f(x,y,z,a);
 }
 
 void _gamma_TexCoord4iv(const GLint *v)
 {
+    GLfloat p[4];
+
     DEBUG_GLCMDS(("TexCoord4iv: %d %d %d %d\n",
 		  (int)v[0], (int)v[1], (int)v[2], (int)v[3]));
+
+    p[0] = INT_TO_FLOAT(v[0]);
+    p[1] = INT_TO_FLOAT(v[1]);
+    p[2] = INT_TO_FLOAT(v[2]);
+    p[3] = INT_TO_FLOAT(v[3]);
+
+    _gamma_TexCoord4fv(p);
 }
 
 void _gamma_TexCoord4s(GLshort s, GLshort t, GLshort r, GLshort q)
 {
+    GLfloat x,y,z,a;
+
     DEBUG_GLCMDS(("TexCoord4s: %d %d %d %d\n", s, t, r, q));
+
+    x = SHORT_TO_FLOAT(s);
+    y = SHORT_TO_FLOAT(t);
+    z = SHORT_TO_FLOAT(r);
+    a = SHORT_TO_FLOAT(q);
+
+    _gamma_TexCoord4f(s,t,r,q);
 }
 
 void _gamma_TexCoord4sv(const GLshort *v)
 {
+    GLfloat p[4];
+
     DEBUG_GLCMDS(("TexCoord4sv: %d %d %d %d\n", v[0], v[1], v[2], v[3]));
+
+    p[0] = SHORT_TO_FLOAT(v[0]);
+    p[1] = SHORT_TO_FLOAT(v[1]);
+    p[2] = SHORT_TO_FLOAT(v[2]);
+    p[3] = SHORT_TO_FLOAT(v[3]);
+
+    _gamma_TexCoord4fv(p);
 }
 
 void _gamma_TexCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
@@ -2682,6 +3546,33 @@ void _gamma_TexEnvfv(GLenum target, GLenum pname, const GLfloat *params)
 {
     DEBUG_GLCMDS(("TexEnvfv: %04x %04x %f\n",
 		  (int)target, (int)pname, *params));
+
+    if (target != GL_TEXTURE_ENV) {
+	/* ERROR !! */
+    }
+
+    switch (pname) {
+    case GL_TEXTURE_ENV_MODE:
+	gCCPriv->curTexObj->TextureColorMode &= ~TCM_ApplicationMask;
+	switch ((int)params[0]) {
+	case GL_MODULATE:
+	    gCCPriv->curTexObj->TextureColorMode |= TCM_Modulate;
+	    break;
+	case GL_DECAL:
+	    gCCPriv->curTexObj->TextureColorMode |= TCM_Decal;
+	    break;
+	case GL_BLEND:
+	    gCCPriv->curTexObj->TextureColorMode |= TCM_Blend;
+	    break;
+	case GL_REPLACE:
+	    gCCPriv->curTexObj->TextureColorMode |= TCM_Replace;
+	    break;
+	}
+    }
+
+    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+    WRITE(gCCPriv->buf, TextureColorMode,
+	  gCCPriv->curTexObj->TextureColorMode);
 }
 
 void _gamma_TexEnvi(GLenum target, GLenum pname, GLint param)
@@ -2749,10 +3640,12 @@ void _gamma_TexImage2D(GLenum target, GLint level, GLint components, GLsizei wid
 
     if (target == GL_TEXTURE_1D) {
 	/* NOT_DONE */
+	DEBUG_ERROR(("TexImage2D: 1D requested - ERROR\n"));
     } else if (target == GL_TEXTURE_2D) {
 	/* NOT_DONE: The follow are not currently supported... */
-	if (border != 0 || format != GL_RGBA || type != GL_UNSIGNED_BYTE ||
+	if (border != 0 /* || format != GL_RGBA */ || type != GL_UNSIGNED_BYTE ||
 	    (components != 3 && components != 4)) {
+	    DEBUG_ERROR(("TexImage2D: 2D op not supported - ERROR\n"));
 	    return;
 	}
 
@@ -2794,7 +3687,11 @@ void _gamma_TexImage2D(GLenum target, GLint level, GLint components, GLsizei wid
 		break;
 	    }
 
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
 	    t->TextureFormat = (TF_LittleEndian |
+#else
+	    t->TextureFormat = (TF_BigEndian |
+#endif
 				TF_ColorOrder_BGR |
 				TF_Compnents_4 |
 				TF_OutputFmt_Texel);
@@ -2808,14 +3705,17 @@ void _gamma_TexImage2D(GLenum target, GLint level, GLint components, GLsizei wid
 	t->image[level] = driTMMInsertImage(gCCPriv->tmm,
 					    width, height, 1<<l2d,
 					    image, NULL);
+
 	if (!t->image[level]) {
 	    /* NOT_DONE: Handle error */
+	    DEBUG_ERROR(("TexImage2D: unable1\n"));
 	}
 
 	/* Make the new image resident (and all of the other mipmaps) */
-	if (!driTMMMakeImagesResident(gCCPriv->tmm, MIPMAP_LEVELS,
-				      t->image, addrs)) {
+	if (driTMMMakeImagesResident(gCCPriv->tmm, MIPMAP_LEVELS,
+				      t->image, addrs) < 0) {
 	    /* NOT_DONE: Handle error */
+	    DEBUG_ERROR(("TexImage2D: unable2\n"));
 	}
 
 	for (i = 0; i < MIPMAP_LEVELS; i++)
@@ -3014,6 +3914,123 @@ void _gamma_TexParameterfv(GLenum target, GLenum pname, const GLfloat *params)
 {
     DEBUG_GLCMDS(("TexParameterfv: %04x %04x %f\n",
 		  (int)target, (int)pname, *params));
+
+    if (target == GL_TEXTURE_1D) {
+	/* NOT_DONE */
+    } else if (target == GL_TEXTURE_2D) {
+	switch (pname) {
+	case GL_TEXTURE_MAG_FILTER:
+	    gCCPriv->curTexObj2D->TextureReadMode &= ~TRM_Mag_Mask;
+	    switch ((int)params[0]) {
+	    case GL_NEAREST:
+		gCCPriv->curTexObj2D->TextureReadMode |=
+		    TRM_Mag_Nearest;
+		break;
+	    case GL_LINEAR:
+		gCCPriv->curTexObj2D->TextureReadMode |=
+		    TRM_Mag_Linear;
+		break;
+	    default:
+		break;
+	    }
+
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
+	    WRITE(gCCPriv->buf, TextureReadMode,
+		  gCCPriv->curTexObj2D->TextureReadMode);
+	    break;
+	case GL_TEXTURE_MIN_FILTER:
+	    gCCPriv->curTexObj2D->TextureReadMode    &= ~TRM_Min_Mask;
+	    gCCPriv->curTexObj2D->TextureReadMode    |= TRM_MipMapEnable;
+	    gCCPriv->curTexObj2D->TextureAddressMode |= TAM_LODEnable;
+	    switch ((int)params[0]) {
+	    case GL_NEAREST:
+		gCCPriv->curTexObj2D->TextureReadMode |=
+		    TRM_Min_Nearest;
+		gCCPriv->curTexObj2D->TextureReadMode    &= ~TRM_MipMapEnable;
+		gCCPriv->curTexObj2D->TextureAddressMode &= ~TAM_LODEnable;
+		break;
+	    case GL_LINEAR:
+		gCCPriv->curTexObj2D->TextureReadMode |=
+		    TRM_Min_Linear;
+		gCCPriv->curTexObj2D->TextureReadMode    &= ~TRM_MipMapEnable;
+		gCCPriv->curTexObj2D->TextureAddressMode &= ~TAM_LODEnable;
+		break;
+	    case GL_NEAREST_MIPMAP_NEAREST:
+		gCCPriv->curTexObj2D->TextureReadMode |=
+		    TRM_Min_NearestMMNearest;
+		break;
+	    case GL_LINEAR_MIPMAP_NEAREST:
+		gCCPriv->curTexObj2D->TextureReadMode |=
+		    TRM_Min_NearestMMLinear;
+		break;
+	    case GL_NEAREST_MIPMAP_LINEAR:
+		gCCPriv->curTexObj2D->TextureReadMode |=
+		    TRM_Min_LinearMMNearest;
+		break;
+	    case GL_LINEAR_MIPMAP_LINEAR:
+		gCCPriv->curTexObj2D->TextureReadMode |=
+		    TRM_Min_LinearMMLinear;
+		break;
+	    default:
+		break;
+	    }
+
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 2);
+	    WRITE(gCCPriv->buf, TextureReadMode,
+		  gCCPriv->curTexObj2D->TextureReadMode);
+	    WRITE(gCCPriv->buf, TextureAddressMode,
+		  gCCPriv->curTexObj2D->TextureAddressMode);
+	    break;
+	case GL_TEXTURE_WRAP_S:
+	    gCCPriv->curTexObj2D->TextureAddressMode &= ~TAM_SWrap_Mask;
+	    gCCPriv->curTexObj2D->TextureReadMode    &= ~TRM_UWrap_Mask;
+	    switch ((int)params[0]) {
+	    case GL_CLAMP:
+		gCCPriv->curTexObj2D->TextureAddressMode |= TAM_SWrap_Clamp;
+		gCCPriv->curTexObj2D->TextureReadMode    |= TRM_UWrap_Clamp;
+		break;
+	    case GL_REPEAT:
+		gCCPriv->curTexObj2D->TextureAddressMode |= TAM_SWrap_Repeat;
+		gCCPriv->curTexObj2D->TextureReadMode    |= TRM_UWrap_Repeat;
+		break;
+	    default:
+		break;
+	    }
+
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 2);
+	    WRITE(gCCPriv->buf, TextureReadMode,
+		  gCCPriv->curTexObj2D->TextureReadMode);
+	    WRITE(gCCPriv->buf, TextureAddressMode,
+		  gCCPriv->curTexObj2D->TextureAddressMode);
+	    break;
+	case GL_TEXTURE_WRAP_T:
+	    gCCPriv->curTexObj2D->TextureAddressMode &= ~TAM_TWrap_Mask;
+	    gCCPriv->curTexObj2D->TextureReadMode    &= ~TRM_VWrap_Mask;
+	    switch ((int)params[0]) {
+	    case GL_CLAMP:
+		gCCPriv->curTexObj2D->TextureAddressMode |= TAM_TWrap_Clamp;
+		gCCPriv->curTexObj2D->TextureReadMode    |= TRM_VWrap_Clamp;
+		break;
+	    case GL_REPEAT:
+		gCCPriv->curTexObj2D->TextureAddressMode |= TAM_TWrap_Repeat;
+		gCCPriv->curTexObj2D->TextureReadMode    |= TRM_VWrap_Repeat;
+		break;
+	    default:
+		break;
+	    }
+
+	    CHECK_DMA_BUFFER(gCC, gCCPriv, 2);
+	    WRITE(gCCPriv->buf, TextureReadMode,
+		  gCCPriv->curTexObj2D->TextureReadMode);
+	    WRITE(gCCPriv->buf, TextureAddressMode,
+		  gCCPriv->curTexObj2D->TextureAddressMode);
+	    break;
+	default:
+	    break;
+	}
+    } else {
+	/* ERROR !! */
+    }
 }
 
 void _gamma_TexParameteri(GLenum target, GLenum pname, GLint param)
@@ -3058,8 +4075,8 @@ void _gamma_TexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffs
 	** format for the image that it is replacing.
 	*/
 
-	if (!driTMMSubImage(gCCPriv->tmm, gCCPriv->curTexObj2D->image[level],
-			    xoffset, yoffset, width, height, image)) {
+	if (driTMMSubImage(gCCPriv->tmm, gCCPriv->curTexObj2D->image[level],
+			    xoffset, yoffset, width, height, image) < 0) {
 	    /* NOT_DONE: Handle error */
 	}
     } else {
@@ -3093,7 +4110,7 @@ void _gamma_Translatef(GLfloat x, GLfloat y, GLfloat z)
     GLfloat m[16];
     int i;
 
-    DEBUG_GLCMDS(("Tranlatef: %f %f %f\n", x, y, z));
+    DEBUG_GLCMDS(("Translatef: %f %f %f\n", x, y, z));
 
     for (i = 0; i < 16; i++)
 	if (i % 5 == 0)
@@ -3112,25 +4129,20 @@ void _gamma_Translatef(GLfloat x, GLfloat y, GLfloat z)
 void _gamma_Vertex2d(GLdouble x, GLdouble y)
 {
     DEBUG_GLCMDS(("Vertex2d: %f %f\n", x, y));
+
+    _gamma_Vertex2f((GLfloat)x,(GLfloat)y);
 }
 
 void _gamma_Vertex2dv(const GLdouble *v)
 {
     DEBUG_GLCMDS(("Vertex2dv: %f %f\n", v[0], v[1]));
+
+    _gamma_Vertex2f((GLfloat)v[0],(GLfloat)v[1]);
 }
 
 void _gamma_Vertex2f(GLfloat x, GLfloat y)
 {
     DEBUG_GLCMDS(("Vertex2f: %f %f\n", x, y));
-
-#ifdef RANDOMIZE_COLORS
-    {
-	GLuint c;
-	c = (random() / (double)RAND_MAX) * 16777216;
-	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
-	WRITE(gCCPriv->buf, PackedColor4,  c);
-    }
-#endif
 
     CHECK_DMA_BUFFER(gCC, gCCPriv, 2);
     WRITEF(gCCPriv->buf, Vy,  y);
@@ -3140,50 +4152,63 @@ void _gamma_Vertex2f(GLfloat x, GLfloat y)
 void _gamma_Vertex2fv(const GLfloat *v)
 {
     DEBUG_GLCMDS(("Vertex2fv: %f %f\n", v[0], v[1]));
+
+    _gamma_Vertex2f(v[0],v[1]);
 }
 
 void _gamma_Vertex2i(GLint x, GLint y)
 {
+    GLfloat a,b;
+
     DEBUG_GLCMDS(("Vertex2i: %d %d\n", (int)x, (int)y));
+
+    _gamma_Vertex2f((GLfloat)x,(GLfloat)y);
 }
 
 void _gamma_Vertex2iv(const GLint *v)
 {
+    GLfloat p[2];
+
     DEBUG_GLCMDS(("Vertex2iv: %d %d\n", (int)v[0], (int)v[1]));
+
+    _gamma_Vertex2f((GLfloat)v[0],(GLfloat)v[1]);
 }
 
 void _gamma_Vertex2s(GLshort x, GLshort y)
 {
+    GLfloat a,b;
+
     DEBUG_GLCMDS(("Vertex2s: %d %d\n", x, y));
+
+    _gamma_Vertex2f((GLfloat)x,(GLfloat)y);
 }
 
 void _gamma_Vertex2sv(const GLshort *v)
 {
+    GLfloat p[2];
+
     DEBUG_GLCMDS(("Vertex2sv: %d %d\n", v[0], v[1]));
+
+    _gamma_Vertex2f((GLfloat)v[0],(GLfloat)v[1]);
 }
 
 void _gamma_Vertex3d(GLdouble x, GLdouble y, GLdouble z)
 {
     DEBUG_GLCMDS(("Vertex3d: %f %f %f\n", x, y, z));
+
+    _gamma_Vertex3f((GLfloat)x,(GLfloat)y,(GLfloat)z);
 }
 
 void _gamma_Vertex3dv(const GLdouble *v)
 {
     DEBUG_GLCMDS(("Vertex2fv: %f %f %f\n", v[0], v[1], v[2]));
+
+    _gamma_Vertex3f((GLfloat)v[0],(GLfloat)v[1],(GLfloat)v[2]);
 }
 
 void _gamma_Vertex3f(GLfloat x, GLfloat y, GLfloat z)
 {
     DEBUG_GLCMDS(("Vertex3f: %f %f %f\n", x, y, z));
-
-#ifdef RANDOMIZE_COLORS
-    {
-	GLuint c;
-	c = (random() / (double)RAND_MAX) * 16777216;
-	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
-	WRITE(gCCPriv->buf, PackedColor4,  c);
-    }
-#endif
 
     CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
     WRITEF(gCCPriv->buf, Vz,  z);
@@ -3195,80 +4220,112 @@ void _gamma_Vertex3fv(const GLfloat *v)
 {
     DEBUG_GLCMDS(("Vertex3fv: %f %f %f\n", v[0], v[1], v[2]));
 
-#ifdef RANDOMIZE_COLORS
-    {
-	GLuint c;
-	c = (random() / (double)RAND_MAX) * 16777216;
-	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
-	WRITE(gCCPriv->buf, PackedColor4,  c);
-    }
-#endif
-
-    CHECK_DMA_BUFFER(gCC, gCCPriv, 3);
-    WRITEF(gCCPriv->buf, Vz,  v[2]);
-    WRITEF(gCCPriv->buf, Vy,  v[1]);
-    WRITEF(gCCPriv->buf, Vx3, v[0]);
+    _gamma_Vertex3f(v[0],v[1],v[2]);
 }
 
 void _gamma_Vertex3i(GLint x, GLint y, GLint z)
 {
+    GLfloat a,b,c;
+
     DEBUG_GLCMDS(("Vertex3i: %d %d %d\n", (int)x, (int)y, (int)z));
+
+    _gamma_Vertex3f((GLfloat)x,(GLfloat)y,(GLfloat)z);
 }
 
 void _gamma_Vertex3iv(const GLint *v)
 {
+    GLfloat p[3];
+
     DEBUG_GLCMDS(("Vertex3iv: %d %d %d\n", (int)v[0], (int)v[1], (int)v[2]));
+
+    _gamma_Vertex3f((GLfloat)v[0],(GLfloat)v[1],(GLfloat)v[2]);
 }
 
 void _gamma_Vertex3s(GLshort x, GLshort y, GLshort z)
 {
+    GLfloat a,b,c;
+
     DEBUG_GLCMDS(("Vertex3s: %d %d %d\n", x, y, z));
+
+    _gamma_Vertex3f((GLfloat)x,(GLfloat)y,(GLfloat)z);
 }
 
 void _gamma_Vertex3sv(const GLshort *v)
 {
+    GLfloat p[3];
+
     DEBUG_GLCMDS(("Vertex3sv: %d %d %d\n", v[0], v[1], v[2]));
+
+    _gamma_Vertex3f((GLfloat)v[0],(GLfloat)v[1],(GLfloat)v[2]);
 }
 
 void _gamma_Vertex4d(GLdouble x, GLdouble y, GLdouble z, GLdouble w)
 {
     DEBUG_GLCMDS(("Vertex4d: %f %f %f %f\n", x, y, z, w));
+
+    _gamma_Vertex4f((GLfloat)x,(GLfloat)y,(GLfloat)z,(GLfloat)w);
 }
 
 void _gamma_Vertex4dv(const GLdouble *v)
 {
     DEBUG_GLCMDS(("Vertex4dv: %f %f %f %f\n", v[0], v[1], v[2], v[3]));
+
+    _gamma_Vertex4f((GLfloat)v[0],(GLfloat)v[1],(GLfloat)v[2],(GLfloat)v[3]);
 }
 
 void _gamma_Vertex4f(GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
     DEBUG_GLCMDS(("Vertex4f: %f %f %f %f\n", x, y, z, w));
+
+    CHECK_DMA_BUFFER(gCC, gCCPriv, 4);
+    WRITEF(gCCPriv->buf, Vw,  w);
+    WRITEF(gCCPriv->buf, Vz,  z);
+    WRITEF(gCCPriv->buf, Vy,  y);
+    WRITEF(gCCPriv->buf, Vx4, x);
 }
 
 void _gamma_Vertex4fv(const GLfloat *v)
 {
     DEBUG_GLCMDS(("Vertex4fv: %f %f %f %f\n", v[0], v[1], v[2], v[3]));
+
+    _gamma_Vertex4f(v[0],v[1],v[2],v[3]);
 }
 
 void _gamma_Vertex4i(GLint x, GLint y, GLint z, GLint w)
 {
+    GLfloat a,b,c,d;
+
     DEBUG_GLCMDS(("Vertex4i: %d %d %d %d\n", (int)x, (int)y, (int)z, (int)w));
+
+    _gamma_Vertex4f((GLfloat)x,(GLfloat)y,(GLfloat)z,(GLfloat)w);
 }
 
 void _gamma_Vertex4iv(const GLint *v)
 {
+    GLfloat p[4];
+
     DEBUG_GLCMDS(("Vertex4iv: %d %d %d %d\n",
 		  (int)v[0], (int)v[1], (int)v[2], (int)v[3]));
+
+    _gamma_Vertex4f((GLfloat)v[0],(GLfloat)v[1],(GLfloat)v[2],(GLfloat)v[3]);
 }
 
 void _gamma_Vertex4s(GLshort x, GLshort y, GLshort z, GLshort w)
 {
+    GLfloat a,b,c,d;
+
     DEBUG_GLCMDS(("Vertex4s: %d %d %d %d\n", x, y, z, w));
+
+    _gamma_Vertex4f((GLfloat)x,(GLfloat)y,(GLfloat)z,(GLfloat)w);
 }
 
 void _gamma_Vertex4sv(const GLshort *v)
 {
+    GLfloat p[4];
+
     DEBUG_GLCMDS(("Vertex4sv: %d %d %d %d\n", v[0], v[1], v[2], v[3]));
+
+    _gamma_Vertex4f((GLfloat)v[0],(GLfloat)v[1],(GLfloat)v[2],(GLfloat)v[3]);
 }
 
 void _gamma_VertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
@@ -3284,10 +4341,10 @@ void _gamma_Viewport(GLint x, GLint y, GLsizei width, GLsizei height)
     DEBUG_GLCMDS(("Viewport: %d %d %d %d\n",
 		  (int)x, (int)y, (int)width, (int)height));
 
-    gCCPriv->x = gCC->driContextPriv->driDrawablePriv->x + x;
-    gCCPriv->y = gCC->driContextPriv->driScreenPriv->fbHeight -
-	(gCC->driContextPriv->driDrawablePriv->y +
-	 gCC->driContextPriv->driDrawablePriv->h) + y;
+    gCCPriv->x = gCC->driDrawablePriv->x + x;
+    gCCPriv->y = gCC->driScreenPriv->fbHeight -
+	(gCC->driDrawablePriv->y +
+	 gCC->driDrawablePriv->h) + y;
     gCCPriv->w = width;
     gCCPriv->h = height;
 
@@ -3300,16 +4357,21 @@ void _gamma_Viewport(GLint x, GLint y, GLsizei width, GLsizei height)
     oy = y + sy;
 
     CHECK_DMA_BUFFER(gCC, gCCPriv, 4);
-    WRITEF(gCCPriv->buf, ViewPortOffsetX, ox);
-    WRITEF(gCCPriv->buf, ViewPortOffsetY, oy);
     WRITEF(gCCPriv->buf, ViewPortScaleX,  sx);
     WRITEF(gCCPriv->buf, ViewPortScaleY,  sy);
+    WRITEF(gCCPriv->buf, ViewPortOffsetX, ox);
+    WRITEF(gCCPriv->buf, ViewPortOffsetY, oy);
+#if 1 /* Err - this shouldn't be needed, but something isn't flushing */
+    FLUSH_DMA_BUFFER(gCC,gCCPriv);
+#endif
 }
 
 
 static GLint
 generic_noop(void)
 {
+   DEBUG_GLCMDS(("OOPS GENERIC NOOP CALLED\n"));
+
    return 0;
 }
 

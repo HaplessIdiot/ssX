@@ -61,10 +61,11 @@ struct i810_texture_object_t {
    int Height;
    int texelBytes;
    int totalSize;
+   int bound;
 
    PMemBlock MemBlock;   
    char *BufAddr;
-
+   
    GLuint min_level;
    GLuint max_level;
    GLuint dirty_images;
@@ -86,8 +87,6 @@ struct i810_texture_object_t {
 #define I810_USE_PALETTE       0x1
 #define I810_UPDATE_PALETTE    0x2
 #define I810_FALLBACK_PALETTE  0x4
-
-typedef struct i810_texture_object_t *i810TextureObjectPtr;
 
 void i810UpdateTextureState( GLcontext *ctx );
 void i810DDInitTextureFuncs( GLcontext *ctx );

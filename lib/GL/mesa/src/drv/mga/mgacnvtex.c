@@ -46,205 +46,206 @@
  */
 void mgaConvertTexture( mgaUI32 *destPtr, int texelBytes, 
 			struct gl_texture_image *image,
-			int x, int y, int width, int height ) {
+			int x, int y, int width, int height ) 
+{
 	register int		i, j;
 	mgaUI8		*src;
 	int stride;
 	
 	/* FIXME: g400 luminance_alpha internal format */
 	switch (texelBytes) {
-	  case 1:
-	    switch (image->Format) {
-		   case GL_COLOR_INDEX:
-		   case GL_INTENSITY:
-		   case GL_LUMINANCE:
-		   case GL_ALPHA:
- 	        src = (mgaUI8 *)image->Data + ( y * image->Width + x );
-			  stride = (image->Width - width);
-		     for ( i = height ; i ; i-- ) {
-			    for ( j = width >> 2  ; j ; j-- ) {
+	case 1:
+		switch (image->Format) {
+		case GL_COLOR_INDEX:
+		case GL_INTENSITY:
+		case GL_LUMINANCE:
+		case GL_ALPHA:
+			src = (mgaUI8 *)image->Data + ( y * image->Width + x );
+			stride = (image->Width - width);
+			for ( i = height ; i ; i-- ) {
+				for ( j = width >> 2  ; j ; j-- ) {
 			
-				   *destPtr++ = src[0] | ( src[1] << 8 ) | ( src[2] << 16 ) | ( src[3] << 24 );
-				   src += 4;
-			    }
-				 src += stride;
-		     }
-			  break;
-			default:
-			  goto format_error;
-		 }
-		 break;
-	  case 2:
-	    switch (image->Format) {
-			case GL_RGB:
- 	        src = (mgaUI8 *)image->Data + ( y * image->Width + x ) * 3;
-			  stride = (image->Width - width) * 3;
-		     for ( i = height ; i ; i-- ) {
-			    for ( j = width >> 1  ; j ; j-- ) {
+					*destPtr++ = src[0] | ( src[1] << 8 ) | ( src[2] << 16 ) | ( src[3] << 24 );
+					src += 4;
+				}
+				src += stride;
+			}
+			break;
+		default:
+			goto format_error;
+		}
+		break;
+	case 2:
+		switch (image->Format) {
+		case GL_RGB:
+			src = (mgaUI8 *)image->Data + ( y * image->Width + x ) * 3;
+			stride = (image->Width - width) * 3;
+			for ( i = height ; i ; i-- ) {
+				for ( j = width >> 1  ; j ; j-- ) {
 			
-				   *destPtr++ = MGAPACKCOLOR565(src[0],src[1],src[2]) |  
-					   ( MGAPACKCOLOR565(src[3],src[4],src[5]) << 16 );
-				   src += 6;
-			    }
-				 src += stride;
-		     }
-			  break;
-			case GL_RGBA:
- 	        src = (mgaUI8 *)image->Data + ( y * image->Width + x ) * 4;
-			  stride = (image->Width - width) * 4;
-		     for ( i = height ; i ; i-- ) {
-			    for ( j = width >> 1  ; j ; j-- ) {
+					*destPtr++ = MGAPACKCOLOR565(src[0],src[1],src[2]) |  
+						( MGAPACKCOLOR565(src[3],src[4],src[5]) << 16 );
+					src += 6;
+				}
+				src += stride;
+			}
+			break;
+		case GL_RGBA:
+			src = (mgaUI8 *)image->Data + ( y * image->Width + x ) * 4;
+			stride = (image->Width - width) * 4;
+			for ( i = height ; i ; i-- ) {
+				for ( j = width >> 1  ; j ; j-- ) {
 			
-				   *destPtr++ = MGAPACKCOLOR4444(src[0],src[1],src[2],src[3]) |  
-				   	( MGAPACKCOLOR4444(src[4],src[5],src[6],src[7]) << 16 );
-				   src += 8;
-			    }
-				 src += stride;
-		     }
-			  break;
-			case GL_LUMINANCE:
- 	        src = (mgaUI8 *)image->Data + ( y * image->Width + x );
-			  stride = (image->Width - width);
-		     for ( i = height ; i ; i-- ) {
-			    for ( j = width >> 1  ; j ; j-- ) {
-				   /* FIXME: should probably use 555 texture to get true grey */
-				   *destPtr++ = MGAPACKCOLOR565(src[0],src[0],src[0]) |  
-					   ( MGAPACKCOLOR565(src[1],src[1],src[1]) << 16 );
-				   src += 2;
-			    }
-				 src += stride;
-		     }
-			  break;
-			case GL_INTENSITY:
- 	        src = (mgaUI8 *)image->Data + ( y * image->Width + x );
-			  stride = (image->Width - width);
-		     for ( i = height ; i ; i-- ) {
-			    for ( j = width >> 1  ; j ; j-- ) {
+					*destPtr++ = MGAPACKCOLOR4444(src[0],src[1],src[2],src[3]) |  
+						( MGAPACKCOLOR4444(src[4],src[5],src[6],src[7]) << 16 );
+					src += 8;
+				}
+				src += stride;
+			}
+			break;
+		case GL_LUMINANCE:
+			src = (mgaUI8 *)image->Data + ( y * image->Width + x );
+			stride = (image->Width - width);
+			for ( i = height ; i ; i-- ) {
+				for ( j = width >> 1  ; j ; j-- ) {
+					/* FIXME: should probably use 555 texture to get true grey */
+					*destPtr++ = MGAPACKCOLOR565(src[0],src[0],src[0]) |  
+						( MGAPACKCOLOR565(src[1],src[1],src[1]) << 16 );
+					src += 2;
+				}
+				src += stride;
+			}
+			break;
+		case GL_INTENSITY:
+			src = (mgaUI8 *)image->Data + ( y * image->Width + x );
+			stride = (image->Width - width);
+			for ( i = height ; i ; i-- ) {
+				for ( j = width >> 1  ; j ; j-- ) {
 			
-				   *destPtr++ = MGAPACKCOLOR4444(src[0],src[0],src[0],src[0]) |  
-					   ( MGAPACKCOLOR4444(src[1],src[1],src[1],src[1]) << 16 );
-				   src += 2;
-			    }
-				 src += stride;
-		     }
-			  break;
-			case GL_ALPHA:
- 	        src = (mgaUI8 *)image->Data + ( y * image->Width + x );
-			  stride = (image->Width - width);
-		     for ( i = height ; i ; i-- ) {
-			    for ( j = width >> 1  ; j ; j-- ) {
+					*destPtr++ = MGAPACKCOLOR4444(src[0],src[0],src[0],src[0]) |  
+						( MGAPACKCOLOR4444(src[1],src[1],src[1],src[1]) << 16 );
+					src += 2;
+				}
+				src += stride;
+			}
+			break;
+		case GL_ALPHA:
+			src = (mgaUI8 *)image->Data + ( y * image->Width + x );
+			stride = (image->Width - width);
+			for ( i = height ; i ; i-- ) {
+				for ( j = width >> 1  ; j ; j-- ) {
 			
-				   *destPtr++ = MGAPACKCOLOR4444(255,255,255,src[0]) |  
-					   ( MGAPACKCOLOR4444(255,255,255,src[1]) << 16 );
-				   src += 2;
-			    }
-				 src += stride;
-		     }
-			  break;
-			case GL_LUMINANCE_ALPHA:
- 	        src = (mgaUI8 *)image->Data + ( y * image->Width + x ) * 2;
-			  stride = (image->Width - width) * 2;
-		     for ( i = height ; i ; i-- ) {
-			    for ( j = width >> 1  ; j ; j-- ) {
+					*destPtr++ = MGAPACKCOLOR4444(255,255,255,src[0]) |  
+						( MGAPACKCOLOR4444(255,255,255,src[1]) << 16 );
+					src += 2;
+				}
+				src += stride;
+			}
+			break;
+		case GL_LUMINANCE_ALPHA:
+			src = (mgaUI8 *)image->Data + ( y * image->Width + x ) * 2;
+			stride = (image->Width - width) * 2;
+			for ( i = height ; i ; i-- ) {
+				for ( j = width >> 1  ; j ; j-- ) {
 			
-				   *destPtr++ = MGAPACKCOLOR4444(src[0],src[0],src[0],src[1]) |  
-					   ( MGAPACKCOLOR4444(src[2],src[2],src[2],src[3]) << 16 );
-				   src += 4;
-			    }
-				 src += stride;
-		     }
-			  break;
-			default:
-			  goto format_error;
-		 }
-		 break;
-	  case 4:
-		 switch (image->Format) {
-			case GL_RGB:
- 	        src = (mgaUI8 *)image->Data + (  y * image->Width + x ) * 3;
-			  stride = (image->Width - width) * 3;
-		     for ( i = height ; i ; i-- ) {
-			    for ( j = width ; j ; j-- ) {
+					*destPtr++ = MGAPACKCOLOR4444(src[0],src[0],src[0],src[1]) |  
+						( MGAPACKCOLOR4444(src[2],src[2],src[2],src[3]) << 16 );
+					src += 4;
+				}
+				src += stride;
+			}
+			break;
+		default:
+			goto format_error;
+		}
+		break;
+	case 4:
+		switch (image->Format) {
+		case GL_RGB:
+			src = (mgaUI8 *)image->Data + (  y * image->Width + x ) * 3;
+			stride = (image->Width - width) * 3;
+			for ( i = height ; i ; i-- ) {
+				for ( j = width ; j ; j-- ) {
 			
-				   *destPtr++ = MGAPACKCOLOR8888(src[0],src[1],src[2], 255);
-				   src += 3;
-			    }
-				 src += stride;
-		     }
-			  break;
-			case GL_RGBA:
- 	        src = (mgaUI8 *)image->Data + (  y * image->Width + x ) * 4;
-			  stride = (image->Width - width) * 4;
-		     for ( i = height ; i ; i-- ) {
-			    for ( j = width  ; j ; j-- ) {
+					*destPtr++ = MGAPACKCOLOR8888(src[0],src[1],src[2], 255);
+					src += 3;
+				}
+				src += stride;
+			}
+			break;
+		case GL_RGBA:
+			src = (mgaUI8 *)image->Data + (  y * image->Width + x ) * 4;
+			stride = (image->Width - width) * 4;
+			for ( i = height ; i ; i-- ) {
+				for ( j = width  ; j ; j-- ) {
 			
-				   *destPtr++ = MGAPACKCOLOR8888(src[0],src[1],src[2],src[3]);
-				   src += 4;
-			    }
-				 src += stride;
-		     }
-			  break;
-			case GL_LUMINANCE:
- 	        src = (mgaUI8 *)image->Data + ( y * image->Width + x );
-			  stride = (image->Width - width);
-		     for ( i = height ; i ; i-- ) {
-			    for ( j = width ; j ; j-- ) {
+					*destPtr++ = MGAPACKCOLOR8888(src[0],src[1],src[2],src[3]);
+					src += 4;
+				}
+				src += stride;
+			}
+			break;
+		case GL_LUMINANCE:
+			src = (mgaUI8 *)image->Data + ( y * image->Width + x );
+			stride = (image->Width - width);
+			for ( i = height ; i ; i-- ) {
+				for ( j = width ; j ; j-- ) {
 			
-				   *destPtr++ = MGAPACKCOLOR8888(src[0],src[0],src[0], 255);
-				   src += 1;
-			    }
-				 src += stride;
-		     }
-			  break;
-			case GL_INTENSITY:
- 	        src = (mgaUI8 *)image->Data + (  y * image->Width + x );
-			  stride = (image->Width - width);
-		     for ( i = height ; i ; i-- ) {
-			    for ( j = width ; j ; j-- ) {
+					*destPtr++ = MGAPACKCOLOR8888(src[0],src[0],src[0], 255);
+					src += 1;
+				}
+				src += stride;
+			}
+			break;
+		case GL_INTENSITY:
+			src = (mgaUI8 *)image->Data + (  y * image->Width + x );
+			stride = (image->Width - width);
+			for ( i = height ; i ; i-- ) {
+				for ( j = width ; j ; j-- ) {
 			
-				   *destPtr++ = MGAPACKCOLOR8888(src[0],src[0],src[0],src[0]);
-				   src += 1;
-			    }
-				 src += stride;
-		     }
-			  break;
-			case GL_ALPHA:
- 	        src = (mgaUI8 *)image->Data + ( y * image->Width + x );
-			  stride = (image->Width - width);
-		     for ( i = height ; i ; i-- ) {
-			    for ( j = width ; j ; j-- ) {
+					*destPtr++ = MGAPACKCOLOR8888(src[0],src[0],src[0],src[0]);
+					src += 1;
+				}
+				src += stride;
+			}
+			break;
+		case GL_ALPHA:
+			src = (mgaUI8 *)image->Data + ( y * image->Width + x );
+			stride = (image->Width - width);
+			for ( i = height ; i ; i-- ) {
+				for ( j = width ; j ; j-- ) {
 			
-				   *destPtr++ = MGAPACKCOLOR8888(255,255,255,src[0]);
-				   src += 1;
-			    }
-				 src += stride;
-		     }
-			  break;
-			case GL_LUMINANCE_ALPHA:
- 	        src = (mgaUI8 *)image->Data + ( y * image->Width + x ) * 2;
-			  stride = (image->Width - width) * 2;
-		     for ( i = height ; i ; i-- ) {
-			    for ( j = width ; j ; j-- ) {
+					*destPtr++ = MGAPACKCOLOR8888(255,255,255,src[0]);
+					src += 1;
+				}
+				src += stride;
+			}
+			break;
+		case GL_LUMINANCE_ALPHA:
+			src = (mgaUI8 *)image->Data + ( y * image->Width + x ) * 2;
+			stride = (image->Width - width) * 2;
+			for ( i = height ; i ; i-- ) {
+				for ( j = width ; j ; j-- ) {
 			
-				   *destPtr++ = MGAPACKCOLOR8888(src[0],src[0],
-						       src[0],src[1]);
-				   src += 2;
-			    }
-				 src += stride;
-		     }
-			  break;
-			default:
-			  goto format_error;
-		 }
-		 break;
-	  default:
-		 goto format_error;
+					*destPtr++ = MGAPACKCOLOR8888(src[0],src[0],
+								      src[0],src[1]);
+					src += 2;
+				}
+				src += stride;
+			}
+			break;
+		default:
+			goto format_error;
+		}
+		break;
+	default:
+		goto format_error;
 	}
 
 	return;
 
-format_error:
+ format_error:
 
-		mgaError( "Unsupported texelBytes %i, image->Format %i\n", 
-			  texelBytes, image->Format );
+	mgaError( "Unsupported texelBytes %i, image->Format %i\n", 
+		  (int)texelBytes, (int)image->Format );
 }

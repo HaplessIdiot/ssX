@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/extras/Mesa/src/tritemp.h,v 1.7 2000/02/18 12:18:46 tsi Exp $ */
 
 /*
  * Triangle Rasterizer Template
@@ -49,6 +49,10 @@
  *    BYTES_PER_ROW       - number of bytes per row in the color buffer
  *    PIXEL_ADDRESS(X,Y)  - returns the address of pixel at (X,Y) where
  *                          Y==0 at bottom of screen and increases upward.
+ *
+ * Similarly, for direct depth buffer access, this type is used for depth
+ * buffer addressing:
+ *    DEPTH_TYPE          - either GLushort or GLuint
  *
  * Optionally, one may provide one-time setup code per triangle:
  *    SETUP_CODE    - code which is to be executed once per triangle
@@ -82,6 +86,12 @@
 	GLfixed fx0;	/* fixed pt X of lower endpoint */
    } EdgeT;
 
+#ifdef INTERP_Z
+   const GLint depthBits = ctx->Visual->DepthBits;
+   const GLint fixedToDepthShift = depthBits <= 16 ? FIXED_SHIFT : 0;
+   const GLfloat maxDepth = ctx->Visual->DepthMaxF;
+#define FixedToDepth(F)  ((F) >> fixedToDepthShift)
+#endif
    const struct vertex_buffer *VB = ctx->VB;
    EdgeT eMaj, eTop, eBot;
    GLfloat oneOverArea;
@@ -141,6 +151,10 @@
 
       oneOverArea = 1.0F / area;
    }
+
+#ifndef DO_OCCLUSION_TEST
+   ctx->OcclusionResult = GL_TRUE;
+#endif
 
    /* Edge setup.  For a triangle strip these could be reused... */
    {
@@ -273,7 +287,7 @@
          eMaj_dz = VB->Win.data[vMax][2] - VB->Win.data[vMin][2];
          eBot_dz = VB->Win.data[vMid][2] - VB->Win.data[vMin][2];
          dzdx = oneOverArea * (eMaj_dz * eBot.dy - eMaj.dy * eBot_dz);
-         if (dzdx>DEPTH_SCALE || dzdx<-DEPTH_SCALE) {
+         if (dzdx > maxDepth || dzdx < -maxDepth) {
             /* probably a sliver triangle */
             dzdx = 0.0;
             dzdy = 0.0;
@@ -281,11 +295,10 @@
          else {
             dzdy = oneOverArea * (eMaj.dx * eBot_dz - eMaj_dz * eBot.dx);
          }
-#if DEPTH_BITS==16
-         fdzdx = SignedFloatToFixed(dzdx);
-#else
-         fdzdx = (GLint) dzdx;
-#endif
+         if (depthBits <= 16)
+            fdzdx = SignedFloatToFixed(dzdx);
+         else
+            fdzdx = (GLint) dzdx;
       }
 #endif
 #ifdef INTERP_RGB
@@ -555,8 +568,10 @@
          int dPRowOuter, dPRowInner;  /* offset in bytes */
 #endif
 #ifdef INTERP_Z
-         GLdepth *zRow;
+#  ifdef DEPTH_TYPE
+         DEPTH_TYPE *zRow;
          int dZRowOuter, dZRowInner;  /* offset in bytes */
+#  endif
          GLfixed fz, fdzOuter, fdzInner;
 #endif
 #ifdef INTERP_RGB
@@ -676,24 +691,25 @@
 
 #ifdef INTERP_Z
                {
-                  GLfloat z0, tmp;
-                  z0 = VB->Win.data[vLower][2] + ctx->PolygonZoffset;
-#if DEPTH_BITS==16
-                  /* interpolate fixed-pt values */
-                  tmp = (z0 * FIXED_SCALE + dzdx * adjx + dzdy * adjy) + FIXED_HALF;
-                  if (tmp < MAX_GLUINT/2)
-                     fz = (GLfixed) tmp;
-                  else
-                     fz = MAX_GLUINT/2;
-                  fdzOuter = SignedFloatToFixed(dzdy + dxOuter * dzdx);
-#else
-                  (void) tmp;
-                  /* interpolate depth values exactly */
-                  fz = (GLint) (z0 + dzdx*FixedToFloat(adjx) + dzdy*FixedToFloat(adjy));
-                  fdzOuter = (GLint) (dzdy + dxOuter * dzdx);
-#endif
-                  zRow = Z_ADDRESS( ctx, FixedToInt(fxLeftEdge), iy );
-                  dZRowOuter = (ctx->DrawBuffer->Width + idxOuter) * sizeof(GLdepth);
+                  GLfloat z0 = VB->Win.data[vLower][2] + ctx->PolygonZoffset;
+                  if (depthBits <= 16) {
+                     /* interpolate fixed-pt values */
+                     GLfloat tmp = (z0 * FIXED_SCALE + dzdx * adjx + dzdy * adjy) + FIXED_HALF;
+                     if (tmp < MAX_GLUINT / 2)
+                        fz = (GLfixed) tmp;
+                     else
+                        fz = MAX_GLUINT / 2;
+                     fdzOuter = SignedFloatToFixed(dzdy + dxOuter * dzdx);
+                  }
+                  else {
+                     /* interpolate depth values exactly */
+                     fz = (GLint) (z0 + dzdx*FixedToFloat(adjx) + dzdy*FixedToFloat(adjy));
+                     fdzOuter = (GLint) (dzdy + dxOuter * dzdx);
+                  }
+#  ifdef DEPTH_TYPE
+                  zRow = (DEPTH_TYPE *) _mesa_zbuffer_address(ctx, FixedToInt(fxLeftEdge), iy);
+                  dZRowOuter = (ctx->DrawBuffer->Width + idxOuter) * sizeof(DEPTH_TYPE);
+#  endif
                }
 #endif
 #ifdef INTERP_RGB
@@ -838,7 +854,9 @@
             dPRowInner = dPRowOuter + sizeof(PIXEL_TYPE);
 #endif
 #ifdef INTERP_Z
-            dZRowInner = dZRowOuter + sizeof(GLdepth);
+#  ifdef DEPTH_TYPE
+            dZRowInner = dZRowOuter + sizeof(DEPTH_TYPE);
+#  endif
             fdzInner = fdzOuter + fdzdx;
 #endif
 #ifdef INTERP_RGB
@@ -879,7 +897,6 @@
                /* ff = fixed-pt fragment */
 #ifdef INTERP_Z
                GLfixed ffz = fz;
-               /*GLdepth *zp = zRow;*/
 #endif
 #ifdef INTERP_RGB
                GLfixed ffr = fr,  ffg = fg,  ffb = fb;
@@ -963,10 +980,12 @@
                if (fError >= 0) {
                   fError -= FIXED_ONE;
 #ifdef PIXEL_ADDRESS
-                  pRow = (PIXEL_TYPE*) ((GLubyte*)pRow + dPRowOuter);
+                  pRow = (PIXEL_TYPE *) ((GLubyte*)pRow + dPRowOuter);
 #endif
 #ifdef INTERP_Z
-                  zRow = (GLdepth*) ((GLubyte*)zRow + dZRowOuter);
+#  ifdef DEPTH_TYPE
+                  zRow = (DEPTH_TYPE *) ((GLubyte*)zRow + dZRowOuter);
+#  endif
                   fz += fdzOuter;
 #endif
 #ifdef INTERP_RGB
@@ -999,10 +1018,12 @@
                }
                else {
 #ifdef PIXEL_ADDRESS
-                  pRow = (PIXEL_TYPE*) ((GLubyte*)pRow + dPRowInner);
+                  pRow = (PIXEL_TYPE *) ((GLubyte*)pRow + dPRowInner);
 #endif
 #ifdef INTERP_Z
-                  zRow = (GLdepth*) ((GLubyte*)zRow + dZRowInner);
+#  ifdef DEPTH_TYPE
+                  zRow = (DEPTH_TYPE *) ((GLubyte*)zRow + dZRowInner);
+#  endif
                   fz += fdzInner;
 #endif
 #ifdef INTERP_RGB
@@ -1059,3 +1080,7 @@
 
 #undef S_SCALE
 #undef T_SCALE
+
+#undef FixedToDepth
+
+#undef DO_OCCLUSION_TEST

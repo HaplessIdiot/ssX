@@ -69,10 +69,11 @@ struct pixel_buffer *gl_alloc_pb(void)
       int i, j;
       /* set non-zero fields */
       pb->primitive = GL_BITMAP;
+      pb->mono = GL_TRUE;
+
       /* Set all lambda values to 0.0 since we don't do mipmapping for
        * points or lines and want to use the level 0 texture image.
        */
-
       for (j=0;j<MAX_TEXTURE_UNITS;j++) {
          for (i=0; i<PB_SIZE; i++) {
             pb->lambda[j][i] = 0.0;
@@ -115,10 +116,10 @@ static void multi_write_index_pixels( GLcontext *ctx, GLuint n,
          /* make copy of incoming indexes */
          MEMCPY( indexTmp, indexes, n * sizeof(GLuint) );
          if (ctx->Color.SWLogicOpEnabled) {
-            gl_logicop_ci_pixels( ctx, n, x, y, indexTmp, mask );
+            _mesa_logicop_ci_pixels( ctx, n, x, y, indexTmp, mask );
          }
          if (ctx->Color.SWmasking) {
-            gl_mask_index_pixels( ctx, n, x, y, indexTmp, mask );
+            _mesa_mask_index_pixels( ctx, n, x, y, indexTmp, mask );
          }
          (*ctx->Driver.WriteCI32Pixels)( ctx, n, x, y, indexTmp, mask );
       }
@@ -170,20 +171,20 @@ static void multi_write_rgba_pixels( GLcontext *ctx, GLuint n,
          MEMCPY( rgbaTmp, rgba, 4 * n * sizeof(GLubyte) );
 
          if (ctx->Color.SWLogicOpEnabled) {
-            gl_logicop_rgba_pixels( ctx, n, x, y, rgbaTmp, mask );
+            _mesa_logicop_rgba_pixels( ctx, n, x, y, rgbaTmp, mask );
          }
          else if (ctx->Color.BlendEnabled) {
             _mesa_blend_pixels( ctx, n, x, y, rgbaTmp, mask );
          }
          if (ctx->Color.SWmasking) {
-            gl_mask_rgba_pixels( ctx, n, x, y, rgbaTmp, mask );
+            _mesa_mask_rgba_pixels( ctx, n, x, y, rgbaTmp, mask );
          }
 
          (*ctx->Driver.WriteRGBAPixels)( ctx, n, x, y, 
 					 (const GLubyte (*)[4])rgbaTmp, mask );
          if (ctx->RasterMask & ALPHABUF_BIT) {
-            gl_write_alpha_pixels( ctx, n, x, y, 
-				   (const GLubyte (*)[4])rgbaTmp, mask );
+            _mesa_write_alpha_pixels( ctx, n, x, y, 
+                                      (const GLubyte (*)[4])rgbaTmp, mask );
          }
       }
    }
@@ -221,10 +222,13 @@ static void add_colors( GLuint n, GLubyte rgba[][4], CONST GLubyte spec[][3] )
  */
 void gl_flush_pb( GLcontext *ctx )
 {
-   struct pixel_buffer* PB = ctx->PB;
+   /* Pixel colors may be changed if any of these raster ops enabled */
+   const GLuint modBits = FOG_BIT | TEXTURE_BIT | BLEND_BIT |
+                          MASKING_BIT | LOGIC_OP_BIT;
+   struct pixel_buffer *PB = ctx->PB;
    GLubyte mask[PB_SIZE];
 
-   if (PB->count==0)
+   if (PB->count == 0)
       goto CleanUp;
 
    /* initialize mask array and clip pixels simultaneously */
@@ -245,19 +249,9 @@ void gl_flush_pb( GLcontext *ctx )
       /*
        * RGBA COLOR PIXELS
        */
-      if (PB->mono && ctx->MutablePixels) {
-	 /* Copy mono color to all pixels */
-         GLuint i;
-         for (i=0; i<PB->count; i++) {
-            PB->rgba[i][RCOMP] = PB->color[RCOMP];
-            PB->rgba[i][GCOMP] = PB->color[GCOMP];
-            PB->rgba[i][BCOMP] = PB->color[BCOMP];
-            PB->rgba[i][ACOMP] = PB->color[ACOMP];
-         }
-      }
 
       /* If each pixel can be of a different color... */
-      if (ctx->MutablePixels || !PB->mono) {
+      if ((ctx->RasterMask & modBits) || !PB->mono) {
 
 	 if (ctx->Texture.ReallyEnabled) {
             int texUnit;
@@ -292,7 +286,7 @@ void gl_flush_pb( GLcontext *ctx )
 
 	 if (ctx->Stencil.Enabled) {
 	    /* first stencil test */
-	    if (gl_stencil_and_depth_test_pixels(ctx, PB->count,
+	    if (_mesa_stencil_and_ztest_pixels(ctx, PB->count,
                                        PB->x, PB->y, PB->z, mask) == 0) {
 	       goto CleanUp;
 	    }
@@ -311,21 +305,21 @@ void gl_flush_pb( GLcontext *ctx )
             /* normal case: write to exactly one buffer */
 
             if (ctx->Color.SWLogicOpEnabled) {
-               gl_logicop_rgba_pixels( ctx, PB->count, PB->x, PB->y,
-                                       PB->rgba, mask);
+               _mesa_logicop_rgba_pixels( ctx, PB->count, PB->x, PB->y,
+                                          PB->rgba, mask);
             }
             else if (ctx->Color.BlendEnabled) {
                _mesa_blend_pixels( ctx, PB->count, PB->x, PB->y, PB->rgba, mask);
             }
             if (ctx->Color.SWmasking) {
-               gl_mask_rgba_pixels(ctx, PB->count, PB->x, PB->y, PB->rgba, mask);
+               _mesa_mask_rgba_pixels(ctx, PB->count, PB->x, PB->y, PB->rgba, mask);
             }
 
             (*ctx->Driver.WriteRGBAPixels)( ctx, PB->count, PB->x, PB->y,
                                             (const GLubyte (*)[4]) PB->rgba,
 					    mask );
             if (ctx->RasterMask & ALPHABUF_BIT) {
-               gl_write_alpha_pixels( ctx, PB->count, PB->x, PB->y, 
+               _mesa_write_alpha_pixels( ctx, PB->count, PB->x, PB->y, 
 				      (const GLubyte (*)[4]) PB->rgba, mask );
             }
          }
@@ -344,7 +338,7 @@ void gl_flush_pb( GLcontext *ctx )
 
 	 if (ctx->Stencil.Enabled) {
 	    /* first stencil test */
-	    if (gl_stencil_and_depth_test_pixels(ctx, PB->count,
+	    if (_mesa_stencil_and_ztest_pixels(ctx, PB->count,
                                        PB->x, PB->y, PB->z, mask) == 0) {
 	       goto CleanUp;
 	    }
@@ -360,30 +354,21 @@ void gl_flush_pb( GLcontext *ctx )
 
          if (ctx->RasterMask & MULTI_DRAW_BIT) {
             /* Copy mono color to all pixels */
-            GLuint i;
-            for (i=0; i<PB->count; i++) {
-               PB->rgba[i][RCOMP] = PB->color[RCOMP];
-               PB->rgba[i][GCOMP] = PB->color[GCOMP];
-               PB->rgba[i][BCOMP] = PB->color[BCOMP];
-               PB->rgba[i][ACOMP] = PB->color[ACOMP];
-            }
             multi_write_rgba_pixels( ctx, PB->count, PB->x, PB->y,
                                      (const GLubyte (*)[4]) PB->rgba, mask );
          }
          else {
             /* normal case: write to exactly one buffer */
-
-            GLubyte red, green, blue, alpha;
-            red   = PB->color[RCOMP];
-            green = PB->color[GCOMP];
-            blue  = PB->color[BCOMP];
-            alpha = PB->color[ACOMP];
+            GLubyte red   = PB->currentColor[RCOMP];
+            GLubyte green = PB->currentColor[GCOMP];
+            GLubyte blue  = PB->currentColor[BCOMP];
+            GLubyte alpha = PB->currentColor[ACOMP];
 	    (*ctx->Driver.Color)( ctx, red, green, blue, alpha );
 
             (*ctx->Driver.WriteMonoRGBAPixels)( ctx, PB->count, PB->x, PB->y, mask );
             if (ctx->RasterMask & ALPHABUF_BIT) {
-               gl_write_mono_alpha_pixels( ctx, PB->count, PB->x, PB->y,
-                                           PB->color[ACOMP], mask );
+               _mesa_write_mono_alpha_pixels( ctx, PB->count, PB->x, PB->y,
+                                              PB->currentColor[ACOMP], mask );
             }
          }
          /*** ALL DONE ***/
@@ -395,28 +380,18 @@ void gl_flush_pb( GLcontext *ctx )
        */
 
       /* If we may be writting pixels with different indexes... */
-      if (PB->mono && ctx->MutablePixels) {
-	 /* copy index to all pixels */
-         GLuint n = PB->count, indx = PB->index;
-         GLuint *pbindex = PB->i;
-         do {
-	    *pbindex++ = indx;
-            n--;
-	 } while (n);
-      }
-
-      if (ctx->MutablePixels || !PB->mono) {
+      if ((ctx->RasterMask & modBits) || !PB->mono) {
 
 	 if (ctx->Fog.Enabled
              && (ctx->Hint.Fog==GL_NICEST || PB->primitive==GL_BITMAP)) {
-	    _mesa_fog_ci_pixels( ctx, PB->count, PB->z, PB->i );
+	    _mesa_fog_ci_pixels( ctx, PB->count, PB->z, PB->index );
 	 }
 
          /* Scissoring already done above */
 
 	 if (ctx->Stencil.Enabled) {
 	    /* first stencil test */
-	    if (gl_stencil_and_depth_test_pixels(ctx, PB->count,
+	    if (_mesa_stencil_and_ztest_pixels(ctx, PB->count,
                                        PB->x, PB->y, PB->z, mask) == 0) {
 	       goto CleanUp;
 	    }
@@ -427,20 +402,20 @@ void gl_flush_pb( GLcontext *ctx )
 	 }
 
          if (ctx->RasterMask & MULTI_DRAW_BIT) {
-            multi_write_index_pixels( ctx, PB->count, PB->x, PB->y, PB->i, mask );
+            multi_write_index_pixels( ctx, PB->count, PB->x, PB->y, PB->index, mask );
          }
          else {
             /* normal case: write to exactly one buffer */
 
             if (ctx->Color.SWLogicOpEnabled) {
-               gl_logicop_ci_pixels( ctx, PB->count, PB->x, PB->y, PB->i, mask );
+               _mesa_logicop_ci_pixels( ctx, PB->count, PB->x, PB->y, PB->index, mask );
             }
             if (ctx->Color.SWmasking) {
-               gl_mask_index_pixels( ctx, PB->count, PB->x, PB->y, PB->i, mask );
+               _mesa_mask_index_pixels( ctx, PB->count, PB->x, PB->y, PB->index, mask );
             }
 
             (*ctx->Driver.WriteCI32Pixels)( ctx, PB->count, PB->x, PB->y,
-                                            PB->i, mask );
+                                            PB->index, mask );
          }
 
          /*** ALL DONE ***/
@@ -452,7 +427,7 @@ void gl_flush_pb( GLcontext *ctx )
 
 	 if (ctx->Stencil.Enabled) {
 	    /* first stencil test */
-	    if (gl_stencil_and_depth_test_pixels(ctx, PB->count,
+	    if (_mesa_stencil_and_ztest_pixels(ctx, PB->count,
                                        PB->x, PB->y, PB->z, mask) == 0) {
 	       goto CleanUp;
 	    }
@@ -463,19 +438,12 @@ void gl_flush_pb( GLcontext *ctx )
 	 }
          
          if (ctx->RasterMask & MULTI_DRAW_BIT) {
-            GLuint n = PB->count, indx = PB->index;
-            GLuint *pbindex = PB->i;
-            do {
-               *pbindex++ = indx;
-               n--;
-            } while (n);
-
-            multi_write_index_pixels( ctx, PB->count, PB->x, PB->y, PB->i, mask );
+            multi_write_index_pixels( ctx, PB->count, PB->x, PB->y, PB->index, mask );
          }
          else {
             /* normal case: write to exactly one buffer */
 
-            (*ctx->Driver.Index)( ctx, PB->index );
+            (*ctx->Driver.Index)( ctx, PB->currentIndex );
             (*ctx->Driver.WriteMonoCIPixels)( ctx, PB->count, PB->x, PB->y, mask );
          }
       }
@@ -483,6 +451,7 @@ void gl_flush_pb( GLcontext *ctx )
 
 CleanUp:
    PB->count = 0;
+   PB->mono = GL_TRUE;
 }
 
 

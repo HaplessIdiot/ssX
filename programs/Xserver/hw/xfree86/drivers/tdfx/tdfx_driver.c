@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.32 2000/04/17 16:30:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.33 2000/04/20 21:28:45 tsi Exp $ */
 
 /*
  * Authors:
@@ -35,10 +35,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * This server does not support these XFree 4.0 features yet
- * DDC1 & DDC2 (requires I2C)
+ * DDC2 (requires I2C)
  * shadowFb (if requested or acceleration is off)
  * Overlay planes
- * DGA
  */
 
 /*
@@ -147,20 +146,14 @@ static void TDFXDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					int PowerManagermentMode, int flags);
 #endif
 
-#define VERSION 4000
-#define TDFX_NAME "TDFX"
-#define TDFX_DRIVER_NAME "tdfx"
-#define TDFX_MAJOR_VERSION 1
-#define TDFX_MINOR_VERSION 0
-#define TDFX_PATCHLEVEL 0
 #define PCI_SUBDEVICE_ID_VOODOO3_2000 0x0036
 #define PCI_SUBDEVICE_ID_VOODOO3_3000 0x003a
 
 DriverRec TDFX = {
-  VERSION,
+  TDFX_VERSION,
   TDFX_DRIVER_NAME,
 #if 0
-  "Accelerated driver for 3dfx Voodoo Banshee and Voodoo3 cards",
+  "Accelerated driver for 3dfx cards",
 #endif
   TDFXIdentify,
   TDFXProbe,
@@ -172,12 +165,14 @@ DriverRec TDFX = {
 static SymTabRec TDFXChipsets[] = {
   { PCI_CHIP_BANSHEE, "3dfx Banshee"},
   { PCI_CHIP_VOODOO3, "3dfx Voodoo3"},
+  { PCI_CHIP_VOODOO5, "3dfx Voodoo5"},
   { -1, NULL }
 };
 
 static PciChipsets TDFXPciChipsets[] = {
   { PCI_CHIP_BANSHEE, PCI_CHIP_BANSHEE, RES_SHARED_VGA },
   { PCI_CHIP_VOODOO3, PCI_CHIP_VOODOO3, RES_SHARED_VGA },
+  { PCI_CHIP_VOODOO5, PCI_CHIP_VOODOO5, RES_SHARED_VGA },
   { -1, -1, RES_UNDEFINED }
 };
 
@@ -187,13 +182,15 @@ static PciChipsets TDFXPciChipsets[] = {
 typedef enum {
   OPTION_NOACCEL,
   OPTION_SW_CURSOR,
-  OPTION_USE_PIO
+  OPTION_USE_PIO,
+  OPTION_NO_SLI
 } TDFXOpts;
 
 static OptionInfoRec TDFXOptions[] = {
   { OPTION_NOACCEL, "NoAccel", OPTV_BOOLEAN, {0}, FALSE },
   { OPTION_SW_CURSOR, "SWcursor", OPTV_BOOLEAN, {0}, FALSE },
   { OPTION_USE_PIO, "UsePIO", OPTV_BOOLEAN, {0}, FALSE},
+  { OPTION_NO_SLI, "NoSLI", OPTV_BOOLEAN, {0}, FALSE},
   { -1, NULL, OPTV_NONE, {0}, FALSE}
 };
 
@@ -420,9 +417,9 @@ TDFXProbe(DriverPtr drv, int flags) {
 				  TDFXChipsets, TDFXPciChipsets,
 				  devSections, numDevSections,
 				  drv, &usedChips);
+
   if (devSections)
     xfree(devSections);
-  devSections=NULL;
   if (numUsed<=0) return FALSE;
 
   if (flags & PROBE_DETECT)
@@ -435,7 +432,7 @@ TDFXProbe(DriverPtr drv, int flags) {
     if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
 					   TDFXPciChipsets, 0, 0, 0, 0, 0))) {
 
-	pScrn->driverVersion = VERSION;
+	pScrn->driverVersion = TDFX_VERSION;
 	pScrn->driverName = TDFX_DRIVER_NAME;
 	pScrn->name = TDFX_NAME;
 	pScrn->Probe = TDFXProbe;
@@ -464,10 +461,11 @@ TDFXCountRam(ScrnInfoPtr pScrn) {
   pTDFX = TDFXPTR(pScrn);
   TDFXTRACE("TDFXCountRam start\n");
   memSize=0;
-  if (pTDFX->PIOBase) {
+  if (pTDFX->PIOBase[0]) {
     CARD32 
       partSize,                 /* size of SGRAM chips in Mbits */
       nChips,                   /* # chips of SDRAM/SGRAM */
+      banks,			/* Number of banks of chips */
       dramInit0_strap,    
       dramInit1_strap,    
       dramInit1,
@@ -493,23 +491,28 @@ TDFXCountRam(ScrnInfoPtr pScrn) {
     /* determine memory size from strapping pins (dramInit0 and dramInit1) */
     dramInit0_strap = pTDFX->readLong(pTDFX, DRAMINIT0);
 
-    dramInit0_strap &= SST_SGRAM_TYPE | SST_SGRAM_NUM_CHIPSETS;
-
-    if ( memType == MEM_TYPE_SDRAM ) {
-      memSize = 16;
-    } else {
-      nChips = ((dramInit0_strap & SST_SGRAM_NUM_CHIPSETS) == 0) ? 4 : 8;
-    
-      if ( (dramInit0_strap & SST_SGRAM_TYPE) == SST_SGRAM_TYPE_8MBIT )  {
-	partSize = 8;
-      } else if ( (dramInit0_strap & SST_SGRAM_TYPE) == SST_SGRAM_TYPE_16MBIT) {
-	partSize = 16;
+    if (pTDFX->ChipType<=PCI_CHIP_VOODOO3) { /* Banshee/V3 */
+      if (memType == MEM_TYPE_SDRAM) {
+	memSize = 16;
       } else {
-	ErrorF("Invalid sgram type = 0x%x",
-	       (dramInit0_strap & SST_SGRAM_TYPE) << SST_SGRAM_TYPE_SHIFT );
-	return 0;
+	nChips = ((dramInit0_strap & SST_SGRAM_NUM_CHIPSETS) == 0) ? 4 : 8;
+    
+	if ( (dramInit0_strap & SST_SGRAM_TYPE) == SST_SGRAM_TYPE_8MBIT )  {
+	  partSize = 8;
+	} else if ( (dramInit0_strap & SST_SGRAM_TYPE) == SST_SGRAM_TYPE_16MBIT) {
+	  partSize = 16;
+	} else {
+	  ErrorF("Invalid sgram type = 0x%x",
+		 (dramInit0_strap & SST_SGRAM_TYPE) << SST_SGRAM_TYPE_SHIFT );
+	  return 0;
+	}
+	memSize = (nChips * partSize) / 8;      /* in MBytes */
       }
-      memSize = (nChips * partSize) / 8;      /* in MBytes */
+    } else { /* V4, V5 */
+      nChips = ((dramInit0_strap & SST_SGRAM_NUM_CHIPSETS)==0) ? 4 : 8;
+      partSize=1<<((dramInit0_strap&0x38000000)>>28);
+      banks=((dramInit0_strap&BIT(30))==0) ? 2 : 4;
+      memSize=nChips*partSize*banks;
     }
     TDFXTRACEREG("dramInit0 = %x dramInit1 = %x\n", dramInit0_strap, dramInit1_strap);
     TDFXTRACEREG("MemConfig %d chips %d size %d total\n", nChips, partSize, memSize);
@@ -529,7 +532,7 @@ TDFXCountRam(ScrnInfoPtr pScrn) {
   return memSize*1024;
 }
 
-void
+static void
 TDFXProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
@@ -539,6 +542,85 @@ TDFXProbeDDC(ScrnInfoPtr pScrn, int index)
     }
 }
 
+static int TDFXCfgToSize(int cfg)
+{
+  if (cfg<4) return 0x8000000<<cfg;
+  return 0x4000000>>(cfg-4);
+}
+
+static int TDFXSizeToCfg(int size)
+{
+  switch (size) {
+  case 0x40000000: return 3;
+  case 0x20000000: return 2;
+  case 0x10000000: return 1;
+  case 0x08000000: return 0;
+  case 0x04000000: return 4;
+  case 0x02000000: return 5;
+  case 0x01000000: return 6;
+  case 0x00800000: return 7;
+  case 0x00400000: return 8;
+  default:
+    return -1;
+  }
+}
+
+static void
+TDFXFindChips(ScrnInfoPtr pScrn, pciVideoPtr match)
+{
+  TDFXPtr pTDFX;
+  pciVideoPtr *ppPci;
+
+  pTDFX=TDFXPTR(pScrn);
+  pTDFX->numChips=0;
+  pTDFX->ChipType=match->chipType;
+  for (ppPci = xf86GetPciVideoInfo(); *ppPci != NULL; ppPci++) {
+    if ((*ppPci)->bus == match->bus && 
+	(*ppPci)->device == match->device) {
+      pTDFX->PciTag[pTDFX->numChips] = pciTag((*ppPci)->bus, 
+					      (*ppPci)->device,
+					      (*ppPci)->func);
+      pTDFX->PIOBase[pTDFX->numChips] = (*ppPci)->ioBase[2]&0xFFFFFFFC;
+      pTDFX->numChips++;
+    }
+  }
+  /* Disable the secondary chips for now */
+  pTDFX->numChips=1;
+}
+
+static void
+TDFXInitChips(ScrnInfoPtr pScrn)
+{
+  TDFXPtr pTDFX;
+  int i, cfgbits, initbits;
+  int mem0base, mem1base, mem0size, mem0bits, mem1size, mem1bits;
+
+  pTDFX=TDFXPTR(pScrn);
+  cfgbits=pciReadLong(pTDFX->PciTag[0], CFG_PCI_DECODE);
+  mem0base=pciReadLong(pTDFX->PciTag[0], CFG_MEM0BASE);
+  mem1base=pciReadLong(pTDFX->PciTag[0], CFG_MEM1BASE);
+  mem0size=32*1024*1024; /* Registers are always 32MB */
+  mem1size=pScrn->videoRam*1024*2; /* Linear mapping is 2x memory */
+  mem0bits=TDFXSizeToCfg(mem0size);
+  mem1bits=TDFXSizeToCfg(mem1size)<<4;
+  cfgbits=(cfgbits&~(0xFF))|mem0bits|mem1bits;
+  for (i=0; i<pTDFX->numChips; i++) {
+    initbits=pciReadLong(pTDFX->PciTag[i], CFG_INIT_ENABLE);
+    initbits|=BIT(10);
+    pciWriteLong(pTDFX->PciTag[i], CFG_INIT_ENABLE, initbits);
+    pTDFX->MMIOAddr[i]=mem0base+i*mem0size;
+    pciWriteLong(pTDFX->PciTag[i], CFG_MEM0BASE, 0xFFFFFFFF);
+    pciWriteLong(pTDFX->PciTag[i], CFG_MEM0BASE, pTDFX->MMIOAddr[i]);
+    pTDFX->MMIOAddr[i]&=0xFFFFFF00;
+    pTDFX->LinearAddr[i]=mem1base+i*mem1size;
+    pciWriteLong(pTDFX->PciTag[i], CFG_MEM1BASE, 0xFFFFFFFF);
+    pciWriteLong(pTDFX->PciTag[i], CFG_MEM1BASE, pTDFX->LinearAddr[i]);
+    pTDFX->LinearAddr[i]&=0xFFFFFF00;
+    pciWriteLong(pTDFX->PciTag[i], CFG_PCI_DECODE, cfgbits);
+    initbits&=~BIT(10);
+    pciWriteLong(pTDFX->PciTag[i], CFG_INIT_ENABLE, initbits);
+  }
+}
 
 /*
  * TDFXPreInit --
@@ -548,8 +630,8 @@ TDFXProbeDDC(ScrnInfoPtr pScrn, int index)
  *
  */
 static Bool
-TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
-  vgaHWPtr hwp;
+TDFXPreInit(ScrnInfoPtr pScrn, int flags) 
+{
   TDFXPtr pTDFX;
   ClockRangePtr clockRanges;
   int i;
@@ -557,6 +639,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
   char *mod=0, *reqSym=0;
   int flags24;
   rgb defaultWeight = {0, 0, 0};
+  pciVideoPtr match;
 
   TDFXTRACE("TDFXPreInit start\n");
   if (pScrn->numEntities != 1) return FALSE;
@@ -568,9 +651,23 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
 
   pTDFX = TDFXPTR(pScrn);
 
+  pTDFX->initDone=FALSE;
   pTDFX->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
 
   if (pTDFX->pEnt->location.type != BUS_PCI) return FALSE;
+
+  if (flags & PROBE_DETECT) {
+    TDFXProbeDDC(pScrn, pTDFX->pEnt->index);
+    return FALSE;
+  }
+  
+  /* The vgahw module should be loaded here when needed */
+  if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
+
+  xf86LoaderReqSymLists(vgahwSymbols, NULL);
+
+  /* Allocate a vgaHWRec */
+  if (!vgaHWGetHWRec(pScrn)) return FALSE;
 
   if (xf86LoadSubModule(pScrn, "int10")) {
     xf86Int10InfoPtr pInt;
@@ -590,9 +687,8 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
     }
   }
 
-  pTDFX->PciInfo = xf86GetPciInfoForEntity(pTDFX->pEnt->index);
-  pTDFX->PciTag = pciTag(pTDFX->PciInfo->bus, pTDFX->PciInfo->device,
-			 pTDFX->PciInfo->func);
+  match=pTDFX->PciInfo=xf86GetPciInfoForEntity(pTDFX->pEnt->index);
+  TDFXFindChips(pScrn, match);
 
   if (xf86RegisterResources(pTDFX->pEnt->index, 0, ResNone))
       return FALSE;
@@ -601,11 +697,6 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
   else
     pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
 
-  if (flags & PROBE_DETECT) {
-    TDFXProbeDDC(pScrn, pTDFX->pEnt->index);
-    return FALSE;
-  }
-  
   /* Set pScrn->monitor */
   pScrn->monitor = pScrn->confScreen->monitor;
 
@@ -633,7 +724,6 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
       return FALSE;
   }
 
-  pScrn->rgbBits=8;
   if (!xf86SetDefaultVisual(pScrn, -1)) {
     return FALSE;
   } else {
@@ -646,18 +736,9 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
     }
   }
 
-  /* The vgahw module should be loaded here when needed */
-  if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
-
-  xf86LoaderReqSymLists(vgahwSymbols, NULL);
-
-  /* Allocate a vgaHWRec */
-  if (!vgaHWGetHWRec(pScrn)) return FALSE;
-
   /* We use a programamble clock */
   pScrn->progClock = TRUE;
 
-  hwp = VGAHWPTR(pScrn);
   pTDFX->cpp = pScrn->bitsPerPixel/8;
 
   /* Process the options */
@@ -678,7 +759,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
 	       pTDFX->pEnt->device->chipID);
   } else {
     from = X_PROBED;
-    pScrn->chipset = (char *)xf86TokenToString(TDFXChipsets, pTDFX->PciInfo->chipType);
+    pScrn->chipset = (char *)xf86TokenToString(TDFXChipsets, match->chipType);
   }
   if (pTDFX->pEnt->device->chipRev >= 0) {
     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
@@ -688,11 +769,11 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
   xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
 
   if (pTDFX->pEnt->device->MemBase != 0) {
-    pTDFX->LinearAddr = pTDFX->pEnt->device->MemBase;
+    pTDFX->LinearAddr[0] = pTDFX->pEnt->device->MemBase;
     from = X_CONFIG;
   } else {
-    if (pTDFX->PciInfo->memBase[1] != 0) {
-      pTDFX->LinearAddr = pTDFX->PciInfo->memBase[1];
+    if (match->memBase[1] != 0) {
+      pTDFX->LinearAddr[0] = match->memBase[1];
       from = X_PROBED;
     } else {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
@@ -702,14 +783,14 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
     }
   }
   xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
-	     (unsigned long)pTDFX->LinearAddr);
+	     (unsigned long)pTDFX->LinearAddr[0]);
 
   if (pTDFX->pEnt->device->IOBase != 0) {
-    pTDFX->MMIOAddr = pTDFX->pEnt->device->IOBase;
+    pTDFX->MMIOAddr[0] = pTDFX->pEnt->device->IOBase;
     from = X_CONFIG;
   } else {
-    if (pTDFX->PciInfo->memBase[0]) {
-      pTDFX->MMIOAddr = pTDFX->PciInfo->memBase[0];
+    if (match->memBase[0]) {
+      pTDFX->MMIOAddr[0] = match->memBase[0];
       from = X_PROBED;
     } else {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -721,8 +802,8 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
   xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at addr 0x%lX\n",
 	     (unsigned long)pTDFX->MMIOAddr);
 
-  if (pTDFX->PciInfo->ioBase[2]) {
-    pTDFX->PIOBase = pTDFX->PciInfo->ioBase[2]&0xFFFFFFFC;
+  if (match->ioBase[2]) {
+    pTDFX->PIOBase[0] = match->ioBase[2]&0xFFFFFFFC;
   } else {
     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	       "No valid PIO address in PCI config space\n");
@@ -730,7 +811,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
     return FALSE;
   }
   xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "PIO registers at addr 0x%lX\n",
-	     (unsigned long)pTDFX->PIOBase);
+	     (unsigned long)pTDFX->PIOBase[0]);
 
   /* We have to use PIO to probe, because we haven't mappend yet */
   TDFXSetPIOAccess(pTDFX);
@@ -742,6 +823,8 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
     pScrn->videoRam = pTDFX->pEnt->device->videoRam;
     from = X_CONFIG;
   }
+
+  TDFXInitChips(pScrn);
 
   /* Multiple by two because tiled access requires more address space */
   pTDFX->FbMapSize = pScrn->videoRam*1024*2;
@@ -777,12 +860,12 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
       pTDFX->MaxClock = pTDFX->pEnt->device->dacSpeeds[0];
     from = X_CONFIG;
   } else {
-    switch (pTDFX->PciInfo->chipType) {
+    switch (pTDFX->ChipType) {
     case PCI_CHIP_BANSHEE:
       pTDFX->MaxClock = 270000;
       break;
     case PCI_CHIP_VOODOO3:
-      switch(pTDFX->PciInfo->subsysCard) {
+      switch(match->subsysCard) {
       case PCI_SUBDEVICE_ID_VOODOO3_2000:
 	pTDFX->MaxClock = 300000;
 	break;
@@ -794,6 +877,9 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
 	break;
       }
       break;
+    case PCI_CHIP_VOODOO5:
+      pTDFX->MaxClock = 350000;
+      break;
     }
   }
   clockRanges = xnfalloc(sizeof(ClockRange));
@@ -801,7 +887,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
   clockRanges->minClock= 12000; /* !!! What's the min clock? !!! */
   clockRanges->maxClock=pTDFX->MaxClock;
   clockRanges->clockIndex = -1;
-  clockRanges->interlaceAllowed = TRUE;
+  clockRanges->interlaceAllowed = FALSE;
   clockRanges->doubleScanAllowed = TRUE;
 
   i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
@@ -882,25 +968,11 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
   /* Initialize DDC1 if possible */
   if (xf86LoadSubModule(pScrn, "vbe")) {
       xf86MonPtr pMon;
-      pMon = vbeDoEDID(VBEInit(NULL, pTDFX->pEnt->index), NULL);
+      pMon = vbeDoEDID(VBEInit(NULL,pTDFX->pEnt->index), NULL);
       xf86SetDDCproperties(pScrn,xf86PrintEDID(pMon));
   }
 
-  
-  /*  We wont be using the VGA access after the probe */
-  if (!xf86ReturnOptValBool(TDFXOptions, OPTION_USE_PIO, FALSE)) {
-    resRange vgaio[] = { {ResShrIoBlock,0x3B0,0x3BB},
-			 {ResShrIoBlock,0x3C0,0x3DF},
-			 _END };
-    resRange vgamem[] = {{ResShrMemBlock,0xA0000,0xAFFFF},
-			 {ResShrMemBlock,0xB8000,0xBFFFF},
-			 {ResShrMemBlock,0xB0000,0xB7FFF},
-			 _END };
-
-    pTDFX->usePIO=FALSE;
-    xf86SetOperatingState(vgaio, pTDFX->pEnt->index, ResUnusedOpr);
-    xf86SetOperatingState(vgamem, pTDFX->pEnt->index, ResDisableOpr);
-  } else {
+  if (xf86ReturnOptValBool(TDFXOptions, OPTION_USE_PIO, FALSE)) {
     pTDFX->usePIO=TRUE;
   }
 
@@ -910,7 +982,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
 static Bool
 TDFXMapMem(ScrnInfoPtr pScrn)
 {
-  int mmioFlags;
+  int mmioFlags, i;
   TDFXPtr pTDFX;
 
   TDFXTRACE("TDFXMapMem start\n");
@@ -918,15 +990,18 @@ TDFXMapMem(ScrnInfoPtr pScrn)
 
   mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
 
-  pTDFX->MMIOBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, 
-				      pTDFX->PciTag, 
-				      pTDFX->MMIOAddr,
-				      TDFXIOMAPSIZE);
-  if (!pTDFX->MMIOBase) return FALSE;
+  for (i=0; i<pTDFX->numChips; i++) {
+    pTDFX->MMIOBase[i] = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, 
+				       pTDFX->PciTag[i], 
+				       pTDFX->MMIOAddr[i],
+				       TDFXIOMAPSIZE);
+
+    if (!pTDFX->MMIOBase[i]) return FALSE;
+  }
 
   pTDFX->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
-				pTDFX->PciTag,
-				pTDFX->LinearAddr,
+				pTDFX->PciTag[0],
+				pTDFX->LinearAddr[0],
 				pTDFX->FbMapSize);
   if (!pTDFX->FbBase) return FALSE;
 
@@ -937,12 +1012,16 @@ static Bool
 TDFXUnmapMem(ScrnInfoPtr pScrn)
 {
   TDFXPtr pTDFX;
+  int i;
 
   TDFXTRACE("TDFXUnmapMem start\n");
   pTDFX = TDFXPTR(pScrn);
 
-  xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTDFX->MMIOBase, TDFXIOMAPSIZE);
-  pTDFX->MMIOBase=0;
+  for (i=0; i<pTDFX->numChips; i++) {
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTDFX->MMIOBase[i], 
+		    TDFXIOMAPSIZE);
+    pTDFX->MMIOBase[i]=0;
+  }
 
   xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTDFX->FbBase, pTDFX->FbMapSize);
   pTDFX->FbBase = 0;
@@ -1117,12 +1196,20 @@ TDFXRestore(ScrnInfoPtr pScrn) {
 #define REFFREQ 14318.18
 
 static int
-CalcPLL(int freq, int *f_out) {
+CalcPLL(int freq, int *f_out, int isBanshee) {
   int m, n, k, best_m, best_n, best_k, f_cur, best_error;
+  int minm, maxm;
 
   TDFXTRACE("CalcPLL start\n");
   best_error=freq;
   best_n=best_m=best_k=0;
+  if (isBanshee) {
+    minm=24;
+    maxm=24;
+  } else {
+    minm=1;
+    maxm=64;
+  }
   for (n=1; n<256; n++) {
     f_cur=REFFREQ*(n+2);
     if (f_cur<freq) {
@@ -1135,7 +1222,7 @@ CalcPLL(int freq, int *f_out) {
 	continue;
       }
     }
-    for (m=1; m<64; m++) {
+    for (m=minm; m<maxm; m++) {
       for (k=0; k<4; k++) {
 	f_cur=REFFREQ*(n+2)/(m+2)/(1<<k);
 	if (abs(f_cur-freq)<best_error) {
@@ -1174,7 +1261,7 @@ SetupVidPLL(ScrnInfoPtr pScrn, DisplayModePtr mode) {
     tdfxReg->dacmode|=SST_DAC_MODE_2X;
     tdfxReg->vidcfg|=SST_VIDEO_2X_MODE_EN;
   }
-  tdfxReg->vidpll=CalcPLL(freq, &f_out);
+  tdfxReg->vidpll=CalcPLL(freq, &f_out, 0);
   TDFXTRACEREG("Vid PLL freq=%d f_out=%d reg=%x\n", freq, f_out, 
      tdfxReg->vidpll);
   return TRUE;
@@ -1206,7 +1293,10 @@ SetupGfxPLL(int freq) {
   TDFXTRACE("SetupGfxPLL start\n");
   pTDFX=TDFXPTR();
   tdfxReg=(vgaTDFXPtr)vgaNewVideoState;
-  tdfxReg->gfxpll=CalcPLL(freq, &f_out);
+  if (pTDFX->chipType==PCI_CHIP_BANSHEE)
+    tdfxReg->gfxpll=CalcPLL(freq, &f_out, 1);
+  else
+    tdfxReg->gfxpll=CalcPLL(freq, &f_out, 0);
   pTDFX->writeLong(pTDFX, PLLCTRL2, tdfxReg->gfxpll);
   TDFXTRACEREG("Gfx PLL freq=%d f_out=%d reg=%x\n", freq, f_out, 
      tdfxReg->gfxpll);
@@ -1217,14 +1307,13 @@ SetupGfxPLL(int freq) {
 static Bool
 TDFXInitVGA(ScrnInfoPtr pScrn)
 {
-  static Bool initDone=FALSE;
   TDFXPtr pTDFX;
   TDFXRegPtr tdfxReg;
 
   TDFXTRACE("TDFXInitVGA start\n");
-  if (initDone) return TRUE;
-  initDone=TRUE;
   pTDFX=TDFXPTR(pScrn);
+  if (pTDFX->initDone) return TRUE;
+  pTDFX->initDone=TRUE;
   tdfxReg = &pTDFX->ModeReg;
   tdfxReg->vgainit0 = 0;
   tdfxReg->vgainit0 |= SST_VGA0_EXTENSIONS;
@@ -1239,8 +1328,9 @@ TDFXInitVGA(ScrnInfoPtr pScrn)
 
   tdfxReg->vidcfg = SST_VIDEO_PROCESSOR_EN | SST_CURSOR_X11 | SST_DESKTOP_EN |
     (pTDFX->cpp-1)<<SST_DESKTOP_PIXEL_FORMAT_SHIFT;
-  if (pTDFX->cpp!=1) tdfxReg->vidcfg |= SST_DESKTOP_CLUT_BYPASS;
 
+  /* tdfxReg->vidcfg |= SST_DESKTOP_CLUT_BYPASS; */
+   
   tdfxReg->stride = pTDFX->stride;
 
   tdfxReg->clip0min = tdfxReg->clip1min = 0;
@@ -1376,8 +1466,9 @@ TDFXModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #endif
   DoRestore(pScrn, &hwp->ModeReg, &pTDFX->ModeReg, FALSE);
 #ifdef XF86DRI
-  if (pTDFX->directRenderingEnabled)
+  if (pTDFX->directRenderingEnabled) {
     DRIUnlock(screenInfo.screens[pScrn->scrnIndex]);
+  }
 #endif
 
   return TRUE;
@@ -1387,30 +1478,37 @@ static void
 TDFXLoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 		  short visualClass) {
   TDFXPtr pTDFX;
-  vgaHWPtr hwp;
-  int i, index;
-  unsigned char r, g, b;
+  int i, j, index, v, repeat, max;
 
   TDFXTRACE("TDFXLoadPalette16 start\n");
   pTDFX = TDFXPTR(pScrn);
-  hwp = VGAHWPTR(pScrn);
   for (i=0; i<numColors; i++) {
-    index=indices[i/2];
-    r=colors[index].red;
-    b=colors[index].blue;
     index=indices[i];
-    g=colors[index].green;
-    hwp->writeDacWriteAddr(hwp, index<<2);
-    hwp->writeDacData(hwp, r);
-    hwp->writeDacData(hwp, g);
-    hwp->writeDacData(hwp, b);
-    i++;
-    index=indices[i];
-    g=colors[index].green;
-    hwp->writeDacWriteAddr(hwp, index<<2);
-    hwp->writeDacData(hwp, r);
-    hwp->writeDacData(hwp, g);
-    hwp->writeDacData(hwp, b);
+    v=(colors[index/2].red<<16)|(colors[index].green<<8)|colors[index/2].blue;
+    if (i<numColors-1) max=indices[i+1]<<2;
+    else max=256;
+    for (j=index<<2; j<max; j++) {
+      repeat=100;
+      do {
+	pTDFX->writeLong(pTDFX, DACADDR, j);
+      } while (--repeat && pTDFX->readLong(pTDFX, DACADDR)!=j);
+      if (!repeat) {
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Failed to set dac index, "
+		   "bypassing CLUT\n");
+	pTDFX->ModeReg.vidcfg |= SST_DESKTOP_CLUT_BYPASS;
+	return;
+      }
+      repeat=100;
+      do {
+	pTDFX->writeLong(pTDFX, DACDATA, v);
+      } while (--repeat && pTDFX->readLong(pTDFX, DACDATA)!=v);
+      if (!repeat) {
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Failed to set dac value, "
+		   "bypassing CLUT\n");
+	pTDFX->ModeReg.vidcfg |= SST_DESKTOP_CLUT_BYPASS;
+	return;
+      }
+    }
   }
 }
 
@@ -1418,23 +1516,33 @@ static void
 TDFXLoadPalette24(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 		  short visualClass) {
   TDFXPtr pTDFX;
-  vgaHWPtr hwp;
-  int i, index;
-  unsigned char r, g, b;
+  int i, index, v, repeat;
 
   TDFXTRACE("TDFXLoadPalette24 start\n");
   pTDFX = TDFXPTR(pScrn);
-  hwp = VGAHWPTR(pScrn);
   for (i=0; i<numColors; i++) {
     index=indices[i];
-    r=colors[index].red;
-    b=colors[index].blue;
-    index=indices[i];
-    g=colors[index].green;
-    hwp->writeDacWriteAddr(hwp, index);
-    hwp->writeDacData(hwp, r);
-    hwp->writeDacData(hwp, g);
-    hwp->writeDacData(hwp, b);
+    v=(colors[index].red<<16)|(colors[index].green<<8)|colors[index].blue;
+    repeat=100;
+    do {
+      pTDFX->writeLong(pTDFX, DACADDR, index);
+    } while (--repeat && pTDFX->readLong(pTDFX, DACADDR)!=index);
+    if (!repeat) {
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Failed to set dac index, "
+		 "bypassing CLUT\n");
+      pTDFX->ModeReg.vidcfg |= SST_DESKTOP_CLUT_BYPASS;
+      return;
+    }
+    repeat=100;
+    do {
+      pTDFX->writeLong(pTDFX, DACDATA, v);
+    } while (--repeat && pTDFX->readLong(pTDFX, DACDATA)!=v);
+    if (!repeat) {
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Failed to set dac value, "
+		 "bypassing CLUT\n");
+      pTDFX->ModeReg.vidcfg |= SST_DESKTOP_CLUT_BYPASS;
+      return;
+    }
   }
 }
 
@@ -1442,20 +1550,17 @@ TDFXLoadPalette24(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 #define TILE_HEIGHT 32
 
 static int
-calcBufferStride(int xres, Bool tiled)
+calcBufferStride(int xres, Bool tiled, int cpp)
 {
   int strideInTiles;
 
   if (tiled == TRUE) {
     /* Calculate tile width stuff */
-    strideInTiles = (xres << 1) >> 7;
-    if ((xres << 1) & (TILE_WIDTH - 1))
-      strideInTiles++;
+    strideInTiles = (xres+TILE_WIDTH-1)/TILE_WIDTH;
     
-    return (strideInTiles * TILE_WIDTH);
-
+    return strideInTiles*cpp*TILE_WIDTH;
   } else {
-    return (xres << 1);
+    return xres*cpp;
   }
 } /* calcBufferStride */
 
@@ -1476,26 +1581,26 @@ calcBufferHeightInTiles(int yres)
 } /* calcBufferHeightInTiles */
 
 static int
-calcBufferSizeInTiles(int xres, int yres) {
+calcBufferSizeInTiles(int xres, int yres, int cpp) {
   int bufSizeInTiles;           /* Size of buffer in tiles */
 
   bufSizeInTiles =
-    calcBufferHeightInTiles(yres) * (calcBufferStride(xres, TRUE) >> 7);
+    calcBufferHeightInTiles(yres) * (calcBufferStride(xres, TRUE, cpp) >> 7);
 
   return bufSizeInTiles;
 
 } /* calcBufferSizeInTiles */
 
 static int
-calcBufferSize(int xres, int yres, Bool tiled)
+calcBufferSize(int xres, int yres, Bool tiled, int cpp)
 {
   int stride, height, bufSize;
 
   if (tiled) {
-    stride = calcBufferStride(xres, tiled);
+    stride = calcBufferStride(xres, tiled, cpp);
     height = TILE_HEIGHT * calcBufferHeightInTiles(yres);
   } else {
-    stride = xres << 1;
+    stride = xres*cpp;
     height = yres;
   }
 
@@ -1521,7 +1626,15 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
   /* Remove one scanline for page alignment */
   memRemaining-=4095;
   /* Remove the back and Z buffers */
-  screenSizeInTiles=calcBufferSize(pScrn->virtualX, pScrn->virtualY, TRUE);
+  if (pTDFX->cpp!=3) {
+    screenSizeInTiles=calcBufferSize(pScrn->virtualX, pScrn->virtualY,
+				     TRUE, pTDFX->cpp);
+  }
+  else {
+    /* cpp==3 needs to bump up to 4 */
+    screenSizeInTiles=calcBufferSize(pScrn->virtualX, pScrn->virtualY,
+				     TRUE, 4);
+  }
   memRemaining-=screenSizeInTiles*2;
 
   /* Give all the rest to textures, rounded down to a page */
@@ -1577,20 +1690,26 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   hwp = VGAHWPTR(pScrn);
 
   if (!TDFXMapMem(pScrn)) return FALSE;
-  pScrn->memPhysBase = (int)pTDFX->LinearAddr;
+  pScrn->memPhysBase = (int)pTDFX->LinearAddr[0];
 
-  if (!pTDFX->usePIO) {
-    TDFXSetMMIOAccess(pTDFX);
-    hwp->IOBase = ((hwp->readMiscOut(hwp) & 0x01) ? 
-      VGA_IOBASE_COLOR : VGA_IOBASE_MONO) + (unsigned long)pTDFX->MMIOBase -
-      0x300;
-  } else {
-    vgaHWGetIOBase(hwp);
-  }
+  if (!pTDFX->usePIO) TDFXSetMMIOAccess(pTDFX);
+  vgaHWGetIOBase(hwp);
   if (!vgaHWMapMem(pScrn)) return FALSE;
 
   allocateMemory(pScrn);
 
+  if (pTDFX->numChips>1) {
+    if (xf86ReturnOptValBool(TDFXOptions, OPTION_NO_SLI, FALSE)) {
+      TDFXSetupSLI(pScrn, FALSE, 0);
+    } else {
+      TDFXSetupSLI(pScrn, TRUE, 0);
+    }
+  }
+
+  TDFXSetLFBConfig(pTDFX);
+
+  /* We initialize in the state that our FIFO is up to date */
+  pTDFX->syncDone=TRUE;
 #ifdef PROP_3DFX
   if (!TDFXInitPrivate(pScreen)) {
     xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Failed to initialize private\n");
@@ -1624,10 +1743,8 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
    * InitGLXVisuals call back.
    */
   pTDFX->directRenderingEnabled = TDFXDRIScreenInit(pScreen);
-  if (pTDFX->directRenderingEnabled) {
-    /* Force the initialization of the context */
-    TDFXLostContext(pScreen);
-  }
+  /* Force the initialization of the context */
+  TDFXLostContext(pScreen);
 #endif
 
   switch (pScrn->bitsPerPixel) {
@@ -1740,7 +1857,6 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
     }
     if (pTDFX->directRenderingEnabled) {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering enabled\n");
-	TDFXSetLFBConfig(pTDFX);
     } else {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering disabled\n");
     }
@@ -1807,6 +1923,7 @@ TDFXEnterVT(int scrnIndex, int flags) {
   if (pTDFX->directRenderingEnabled) {
     pScreen = screenInfo.screens[scrnIndex];
     DRIUnlock(pScreen);
+    TDFXLostContext(pScreen);
   }
 #endif
   if (!TDFXModeInit(pScrn, pScrn->currentMode)) return FALSE;
@@ -1833,6 +1950,7 @@ TDFXLeaveVT(int scrnIndex, int flags) {
   pTDFX = TDFXPTR(pScrn);
   if (pTDFX->directRenderingEnabled) {
     DRILock(pScreen, 0);
+    TDFXSwapContextPrivate(pScreen);
   }
 #endif
 }
@@ -1979,3 +2097,4 @@ TDFXDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
   pTDFX->writeLong(pTDFX, DACMODE, dacmode);
 }
 #endif
+

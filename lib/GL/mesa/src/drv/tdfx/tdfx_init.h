@@ -41,9 +41,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "dri_tmm.h"
 #include "dri_mesaint.h"
 #include "dri_mesa.h"
-#include "types.h"
-#include "xmesaP.h"
-/*  #include "fxdrv.h" */
+#include "dri_xmesaapi.h"
+
 
 typedef struct {
   drmHandle handle;
@@ -98,7 +97,8 @@ typedef struct tfxMesaContext tdfxContextPrivate;
 
 extern GLboolean tdfxMapAllRegions(__DRIscreenPrivate *driScrnPriv);
 extern void tdfxUnmapAllRegions(__DRIscreenPrivate *driScrnPriv);
-extern GLboolean tdfxInitHW(XMesaContext c);
+extern GLboolean tdfxInitHW(__DRIdrawablePrivate *driDrawPrivate,
+                            tdfxContextPrivate *cPriv);
 
 extern void XMesaWindowMoved(void);
 extern void XMesaUpdateState(int windowMoved);
@@ -119,8 +119,8 @@ extern void grDRIImportFifo(int fifoPtr, int fifoRead);
 extern void grDRIInvalidateAll(void);
 extern void grDRIResetSAREA(void);
 
-extern XMesaContext gCC;
-extern tdfxContextPrivate *gCCPriv;
+extern __DRIcontextPrivate *gCC;
+/*000extern tdfxContextPrivate *gCCPriv;*/
 
 /* You can turn this on to find locking conflicts.
 #define DEBUG_LOCKING 
@@ -167,7 +167,7 @@ extern int prevLockLine;
 #define LOCK_HARDWARE() \
   do { \
     char __ret=0; \
-    __DRIdrawablePrivate *dPriv = gCC->driContextPriv->driDrawablePriv; \
+    __DRIdrawablePrivate *dPriv = gCC->driDrawablePriv; \
     __DRIscreenPrivate *sPriv = dPriv->driScreenPriv; \
     DEBUG_CHECK_LOCK(); \
     DRM_CAS(&sPriv->pSAREA->lock, dPriv->driContextPriv->hHWContext, \
@@ -186,7 +186,7 @@ extern int prevLockLine;
 /* Unlock the hardware using the global current context */
 #define UNLOCK_HARDWARE() \
   do { \
-    __DRIdrawablePrivate *dPriv = gCC->driContextPriv->driDrawablePriv; \
+    __DRIdrawablePrivate *dPriv = gCC->driDrawablePriv; \
     __DRIscreenPrivate *sPriv = dPriv->driScreenPriv; \
     XMesaSetSAREA(); \
     DRM_UNLOCK(sPriv->fd, &sPriv->pSAREA->lock,  \
@@ -202,24 +202,26 @@ extern int prevLockLine;
   so it is not self contained and doesn't have the nice single 
   statement semantics of most macros
 */
-#define BEGIN_CLIP_LOOP()	\
-  do {				\
-    __DRIdrawablePrivate *dPriv = gCC->driContextPriv->driDrawablePriv; \
-    int _nc; \
-    LOCK_HARDWARE(); \
-    _nc = dPriv->numClipRects; \
-    while (_nc--) { \
-      if (gCCPriv->needClip) { \
-        gCCPriv->clipMinX=dPriv->pClipRects[_nc].x1; \
-        gCCPriv->clipMaxX=dPriv->pClipRects[_nc].x2; \
-        gCCPriv->clipMinY=dPriv->pClipRects[_nc].y1; \
-        gCCPriv->clipMaxY=dPriv->pClipRects[_nc].y2; \
-        fxSetScissorValues(gCCPriv->glCtx); \
+#define BEGIN_CLIP_LOOP()					\
+  do {								\
+    __DRIdrawablePrivate *dPriv = gCC->driDrawablePriv;		\
+    int _nc;							\
+    LOCK_HARDWARE();						\
+    _nc = dPriv->numClipRects;					\
+    while (_nc--) {						\
+      tdfxContextPrivate *gCCPriv =				\
+                    (tdfxContextPrivate *) gCC->driverPrivate;	\
+      if (gCCPriv->needClip) {					\
+        gCCPriv->clipMinX=dPriv->pClipRects[_nc].x1;		\
+        gCCPriv->clipMaxX=dPriv->pClipRects[_nc].x2;		\
+        gCCPriv->clipMinY=dPriv->pClipRects[_nc].y1;		\
+        gCCPriv->clipMaxY=dPriv->pClipRects[_nc].y2;		\
+        fxSetScissorValues(gCCPriv->glCtx);			\
       }
 
-#define END_CLIP_LOOP() \
-    } \
-    UNLOCK_HARDWARE(); \
+#define END_CLIP_LOOP()		\
+    }				\
+    UNLOCK_HARDWARE();		\
   } while (0)
 
 #endif

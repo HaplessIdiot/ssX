@@ -1,8 +1,8 @@
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -221,5 +221,15 @@ void gl_init_katmai_asm_transforms (void)
    /* test, if it works correctly ! */
    gl_project_clipped_v16 = gl_katmai_project_clipped_vertices;
 }
+
+#else
+
+
+/* silence compiler warning */
+extern void _mesa_katmai_dummy_function(void);
+void _mesa_katmai_dummy_function(void)
+{
+}
+
 
 #endif

@@ -52,6 +52,13 @@ _mesa_BlendFunc( GLenum sfactor, GLenum dfactor )
 	      gl_lookup_enum_by_nr(dfactor));
 
    switch (sfactor) {
+      case GL_SRC_COLOR:
+      case GL_ONE_MINUS_SRC_COLOR:
+         if (!ctx->Extensions.HaveBlendSquare) {
+            gl_error( ctx, GL_INVALID_ENUM, "glBlendFunc(sfactor)" );
+            return;
+         }
+         /* fall-through */
       case GL_ZERO:
       case GL_ONE:
       case GL_DST_COLOR:
@@ -73,6 +80,13 @@ _mesa_BlendFunc( GLenum sfactor, GLenum dfactor )
    }
 
    switch (dfactor) {
+      case GL_DST_COLOR:
+      case GL_ONE_MINUS_DST_COLOR:
+         if (!ctx->Extensions.HaveBlendSquare) {
+            gl_error( ctx, GL_INVALID_ENUM, "glBlendFunc(dfactor)" );
+            return;
+         }
+         /* fall-through */
       case GL_ZERO:
       case GL_ONE:
       case GL_SRC_COLOR:
@@ -117,6 +131,13 @@ _mesa_BlendFuncSeparateEXT( GLenum sfactorRGB, GLenum dfactorRGB,
 	      gl_lookup_enum_by_nr(dfactorA));
 
    switch (sfactorRGB) {
+      case GL_SRC_COLOR:
+      case GL_ONE_MINUS_SRC_COLOR:
+         if (!ctx->Extensions.HaveBlendSquare) {
+            gl_error(ctx, GL_INVALID_ENUM, "glBlendFuncSeparate(sfactorRGB)");
+            return;
+         }
+         /* fall-through */
       case GL_ZERO:
       case GL_ONE:
       case GL_DST_COLOR:
@@ -133,11 +154,18 @@ _mesa_BlendFuncSeparateEXT( GLenum sfactorRGB, GLenum dfactorRGB,
          ctx->Color.BlendSrcRGB = sfactorRGB;
          break;
       default:
-         gl_error( ctx, GL_INVALID_ENUM, "glBlendFuncSeparate(sfactorRGB)" );
+         gl_error(ctx, GL_INVALID_ENUM, "glBlendFuncSeparate(sfactorRGB)");
          return;
    }
 
    switch (dfactorRGB) {
+      case GL_DST_COLOR:
+      case GL_ONE_MINUS_DST_COLOR:
+         if (!ctx->Extensions.HaveBlendSquare) {
+            gl_error(ctx, GL_INVALID_ENUM, "glBlendFuncSeparate(dfactorRGB)");
+            return;
+         }
+         /* fall-through */
       case GL_ZERO:
       case GL_ONE:
       case GL_SRC_COLOR:
@@ -153,11 +181,18 @@ _mesa_BlendFuncSeparateEXT( GLenum sfactorRGB, GLenum dfactorRGB,
          ctx->Color.BlendDstRGB = dfactorRGB;
          break;
       default:
-         gl_error( ctx, GL_INVALID_ENUM, "glBlendFuncSeparate(dfactorRGB)" );
+         gl_error(ctx, GL_INVALID_ENUM, "glBlendFuncSeparate(dfactorRGB)");
          return;
    }
 
    switch (sfactorA) {
+      case GL_SRC_COLOR:
+      case GL_ONE_MINUS_SRC_COLOR:
+         if (!ctx->Extensions.HaveBlendSquare) {
+            gl_error(ctx, GL_INVALID_ENUM, "glBlendFuncSeparate(sfactorA)");
+            return;
+         }
+         /* fall-through */
       case GL_ZERO:
       case GL_ONE:
       case GL_DST_COLOR:
@@ -174,11 +209,18 @@ _mesa_BlendFuncSeparateEXT( GLenum sfactorRGB, GLenum dfactorRGB,
          ctx->Color.BlendSrcA = sfactorA;
          break;
       default:
-         gl_error( ctx, GL_INVALID_ENUM, "glBlendFuncSeparate(sfactorA)" );
+         gl_error(ctx, GL_INVALID_ENUM, "glBlendFuncSeparate(sfactorA)");
          return;
    }
 
    switch (dfactorA) {
+      case GL_DST_COLOR:
+      case GL_ONE_MINUS_DST_COLOR:
+         if (!ctx->Extensions.HaveBlendSquare) {
+            gl_error(ctx, GL_INVALID_ENUM, "glBlendFuncSeparate(dfactorA)");
+            return;
+         }
+         /* fall-through */
       case GL_ZERO:
       case GL_ONE:
       case GL_SRC_COLOR:
@@ -219,7 +261,6 @@ _mesa_BlendEquation( GLenum mode )
    if (MESA_VERBOSE & (VERBOSE_API|VERBOSE_TEXTURE))
       fprintf(stderr, "glBlendEquation %s\n",
 	      gl_lookup_enum_by_nr(mode));
-
 
    switch (mode) {
       case GL_MIN_EXT:
@@ -509,6 +550,16 @@ blend_general( GLcontext *ctx, GLuint n, const GLubyte mask[],
             case GL_ONE_MINUS_CONSTANT_ALPHA:
                sR = sG = sB = 1.0F - ctx->Color.BlendColor[3];
                break;
+            case GL_SRC_COLOR: /* GL_NV_blend_square */
+               sR = (GLfloat) Rs * rscale;
+               sG = (GLfloat) Gs * gscale;
+               sB = (GLfloat) Bs * bscale;
+               break;
+            case GL_ONE_MINUS_SRC_COLOR: /* GL_NV_blend_square */
+               sR = 1.0F - (GLfloat) Rs * rscale;
+               sG = 1.0F - (GLfloat) Gs * gscale;
+               sB = 1.0F - (GLfloat) Bs * bscale;
+               break;
             default:
                /* this should never happen */
                gl_problem(ctx, "Bad blend source RGB factor in do_blend");
@@ -555,6 +606,12 @@ blend_general( GLcontext *ctx, GLuint n, const GLubyte mask[],
                break;
             case GL_ONE_MINUS_CONSTANT_ALPHA:
                sA = 1.0F - ctx->Color.BlendColor[3];
+               break;
+            case GL_SRC_COLOR: /* GL_NV_blend_square */
+               sA = (GLfloat) As * ascale;
+               break;
+            case GL_ONE_MINUS_SRC_COLOR: /* GL_NV_blend_square */
+               sA = 1.0F - (GLfloat) As * ascale;
                break;
             default:
                /* this should never happen */
@@ -608,6 +665,16 @@ blend_general( GLcontext *ctx, GLuint n, const GLubyte mask[],
             case GL_ONE_MINUS_CONSTANT_ALPHA:
                dR = dG = dB = 1.0F - ctx->Color.BlendColor[3] * ascale;
                break;
+            case GL_DST_COLOR: /* GL_NV_blend_square */
+               dR = (GLfloat) Rd * rscale;
+               dG = (GLfloat) Gd * gscale;
+               dB = (GLfloat) Bd * bscale;
+               break;
+            case GL_ONE_MINUS_DST_COLOR: /* GL_NV_blend_square */
+               dR = 1.0F - (GLfloat) Rd * rscale;
+               dG = 1.0F - (GLfloat) Gd * gscale;
+               dB = 1.0F - (GLfloat) Bd * bscale;
+               break;
             default:
                /* this should never happen */
                dR = dG = dB = 0.0F;
@@ -651,6 +718,12 @@ blend_general( GLcontext *ctx, GLuint n, const GLubyte mask[],
                break;
             case GL_ONE_MINUS_CONSTANT_ALPHA:
                dA = 1.0F - ctx->Color.BlendColor[3] * ascale;
+               break;
+            case GL_DST_COLOR: /* GL_NV_blend_square */
+               dA = (GLfloat) Ad * ascale;
+               break;
+            case GL_ONE_MINUS_DST_COLOR: /* GL_NV_blend_square */
+               dA = 1.0F - (GLfloat) Ad * ascale;
                break;
             default:
                /* this should never happen */
@@ -825,7 +898,7 @@ _mesa_blend_pixels( GLcontext *ctx,
    /* Read pixels from current color buffer */
    (*ctx->Driver.ReadRGBAPixels)( ctx, n, x, y, dest, mask );
    if (ctx->RasterMask & ALPHABUF_BIT) {
-      gl_read_alpha_pixels( ctx, n, x, y, dest, mask );
+      _mesa_read_alpha_pixels( ctx, n, x, y, dest, mask );
    }
 
    if (!ctx->Color.BlendFunc)

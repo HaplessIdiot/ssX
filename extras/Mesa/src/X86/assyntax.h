@@ -243,10 +243,7 @@
 #endif /* ACK_ASSEMBLER */
 
 
-#if (defined(Lynx) || (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER) \
- || (defined(linux) || defined(__OS2ELF__)) && defined(__ELF__) \
- || defined(__FreeBSD__) && __FreeBSD__ >= 3) \
- || (defined(__NetBSD__) && defined(__ELF__))
+#if defined(__QNX__) || defined(Lynx) || (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER) || defined(__ELF__) || defined(__GNU__)
 #define GLNAME(a)       a
 #else
 #define GLNAME(a)       CONCAT(_,a)
@@ -850,6 +847,8 @@
 #define P_XMM5 	xmm5
 #define P_XMM6 	xmm6
 #define P_XMM7 	xmm7
+
+#define	CONCAT(x, y)	x ## y
 
 #if defined(NASM_ASSEMBLER)
 
@@ -1644,6 +1643,14 @@ SECTION _DATA public align=16 class=DATA use32 flat
 #define UNPCKHPS(a, b)	unpckhps P_ARG2(a, b)
 #define UNPCKLPS(a, b)	unpcklps P_ARG2(a, b)
 #define XORPS(a, b)	xorps P_ARG2(a, b)
+
+
+/* Added by BrianP for FreeBSD (per David Dawes) */
+#if !defined(NASM_ASSEMBLER) && !defined(MASM_ASSEMBLER)
+#define LLBL(a) CONCAT(.L,a)
+#else
+#define LLBL(a) a
+#endif
 
 
 #endif /* __ASSYNTAX_H__ */

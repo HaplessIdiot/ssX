@@ -43,20 +43,24 @@
 #include "mgalib.h"
 #endif
 
-
+#define DEPTH_SCALE 65535.0F
 
 /*
  * Return the address of the Z-buffer value for window coordinate (x,y):
  */
-#define Z_SETUP								\
-   mgaContextPtr mmesa = MGA_CONTEXT(ctx);				\
-   __DRIscreenPrivate *sPriv = mmesa->driScreen;			\
-   mgaScreenPrivate *mgaScreen = mmesa->mgaScreen;			\
-   GLdepth *zbstart = (GLdepth *)(sPriv->pFB + mgaScreen->depthOffset);\
-   GLint zbpitch = mgaScreen->depthPitch
+#define Z_SETUP						\
+   __DRIscreenPrivate *sPriv = mmesa->driScreen;	\
+   __DRIdrawablePrivate *dPriv = mmesa->driDrawable;	\
+   GLuint height = dPriv->h;				\
+   mgaScreenPrivate *mgaScreen = mmesa->mgaScreen;	\
+   GLint zbpitch = mgaScreen->depthPitch;		\
+   char *zbstart = (char *)(sPriv->pFB + 		\
+			       mgaScreen->depthOffset +	\
+			       dPriv->x * 2 +		\
+			       dPriv->y * zbpitch)
 
 #define Z_ADDRESS( X, Y )  \
-  (zbstart + zbpitch * (Y) + (X))
+  (GLdepth *)(zbstart + zbpitch * (height - (Y)) + (X) * 2)
 
 
 /**********************************************************************/
@@ -84,16 +88,18 @@ static GLuint mga_depth_test_span_generic( GLcontext* ctx,
 					   const GLdepth z[],
 					   GLubyte mask[] )
 {
-   Z_SETUP;
-   GLdepth *zptr = Z_ADDRESS( x, y );
+   mgaContextPtr mmesa = MGA_CONTEXT(ctx);
    GLubyte *m = mask;
    GLuint i;
    GLuint passed = 0;
 
-   LOCK_HARDWARE(mmesa);
+   LOCK_HARDWARE_QUIESCENT(mmesa);
+   {
+      Z_SETUP;
+      GLdepth *zptr = Z_ADDRESS( x, y );
 
-   /* switch cases ordered from most frequent to less frequent */
-   switch (ctx->Depth.Func) {
+      /* switch cases ordered from most frequent to less frequent */
+      switch (ctx->Depth.Func) {
       case GL_LESS:
          if (ctx->Depth.Mask) {
 	    /* Update Z buffer */
@@ -297,8 +303,8 @@ static GLuint mga_depth_test_span_generic( GLcontext* ctx,
 	 }
 	 break;
       default:
+      }
    }
-
    UNLOCK_HARDWARE(mmesa);
 
    return passed;
@@ -320,14 +326,16 @@ static void mga_depth_test_pixels_generic( GLcontext* ctx,
 					   const GLint x[], const GLint y[],
 					   const GLdepth z[], GLubyte mask[] )
 {
-   Z_SETUP;
-   register GLdepth *zptr;
-   register GLuint i;
+   mgaContextPtr mmesa = MGA_CONTEXT(ctx);
+   LOCK_HARDWARE_QUIESCENT(mmesa);
+   {
+      Z_SETUP;
+      register GLdepth *zptr;
+      register GLuint i;
 
-   LOCK_HARDWARE(mmesa);
 
-   /* switch cases ordered from most frequent to less frequent */
-   switch (ctx->Depth.Func) {
+      /* switch cases ordered from most frequent to less frequent */
+      switch (ctx->Depth.Func) {
       case GL_LESS:
          if (ctx->Depth.Mask) {
 	    /* Update Z buffer */
@@ -547,8 +555,8 @@ static void mga_depth_test_pixels_generic( GLcontext* ctx,
 	 }
 	 break;
       default:
-    } 
-
+      } 
+   }
    UNLOCK_HARDWARE(mmesa);
 }
 
@@ -570,27 +578,29 @@ static void mga_read_depth_span_float( GLcontext* ctx,
 				       GLuint n, GLint x, GLint y, 
 				       GLfloat depth[] )
 {
-   Z_SETUP;
-   GLdepth *zptr;
-   GLfloat scale;
-   GLuint i;
+   mgaContextPtr mmesa = MGA_CONTEXT(ctx);
+   LOCK_HARDWARE_QUIESCENT(mmesa);
+   {
 
-   LOCK_HARDWARE(mmesa);
+      Z_SETUP;
+      GLdepth *zptr;
+      GLfloat scale;
+      GLuint i;
 
-   scale = 1.0F / DEPTH_SCALE;
+      scale = 1.0F / DEPTH_SCALE;
 
-   if (ctx->Buffer->Depth) {
-      zptr = Z_ADDRESS( x, y );
-      for (i=0;i<n;i++) {
-	 depth[i] = (GLfloat) zptr[i] * scale;
+      if (ctx->ReadBuffer->Depth) {
+	 zptr = Z_ADDRESS( x, y );
+	 for (i=0;i<n;i++) {
+	    depth[i] = (GLfloat) zptr[i] * scale;
+	 }
+      }
+      else {
+	 for (i=0;i<n;i++) {
+	    depth[i] = 0.0F;
+	 }
       }
    }
-   else {
-      for (i=0;i<n;i++) {
-	 depth[i] = 0.0F;
-      }
-   }
-   
    UNLOCK_HARDWARE(mmesa);
 }
 
@@ -607,30 +617,32 @@ static void mga_read_depth_span_int( GLcontext* ctx,
 				     GLuint n, GLint x, GLint y, 
 				     GLdepth depth[] )
 {
-   Z_SETUP;
+   mgaContextPtr mmesa = MGA_CONTEXT(ctx);
+   LOCK_HARDWARE_QUIESCENT(mmesa);
+   {
+      Z_SETUP;
    
-   LOCK_HARDWARE(mmesa);
       
-   if (ctx->Buffer->Depth) {
-      GLdepth *zptr = Z_ADDRESS( x, y );
-      MEMCPY( depth, zptr, n * sizeof(GLdepth) );
-   }
-   else {
-      GLuint i;
-      for (i=0;i<n;i++) {
-	 depth[i] = 0;
+      if (ctx->ReadBuffer->Depth) {
+	 GLdepth *zptr = Z_ADDRESS( x, y );
+	 MEMCPY( depth, zptr, n * sizeof(GLdepth) );
+      }
+      else {
+	 GLuint i;
+	 for (i=0;i<n;i++) {
+	    depth[i] = 0;
+	 }
       }
    }
-   
    UNLOCK_HARDWARE(mmesa);
 }
 
 
 void mgaDDInitDepthFuncs( GLcontext *ctx )
 {
-   ctx->Driver.ReadDepthSpanFloat = mga_read_depth_span_float;
-   ctx->Driver.ReadDepthSpanInt = mga_read_depth_span_int;
-   ctx->Driver.DepthTestSpan = mga_depth_test_span_generic;
-   ctx->Driver.DepthTestPixels = mga_depth_test_pixels_generic;
+   ctx->Driver.ReadDepthSpan = mga_read_depth_span_float;
+   ctx->Driver.WriteDepthSpan = mga_read_depth_span_float;
+   ctx->Driver.ReadDepthPixels mga_read_depth_span_float;
+   ctx->Driver.WriteDepthPixels = mga_read_depth_span_float;
 }
 

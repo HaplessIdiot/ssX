@@ -51,6 +51,13 @@
  * the core Mesa library.
  */
 
+/*
+ * XXX XXX
+ * THIS FILE IS VERY OUT OF DATE!  LOOK AT OSmesa/osmesa.c FOR A BETTER
+ * EXAMPLE DRIVER!
+ */
+
+
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -240,10 +247,20 @@ static void dither( GLcontext *ctx, GLboolean enable )
 
 
 /*
- * Set the current drawing/reading buffer, return GL_TRUE or GL_FALSE
- * for success/failure.
+ * Set the current reading buffer.
  */
-static GLboolean set_buffer( GLcontext *ctx, GLenum mode )
+static void set_read_buffer( GLcontext *ctx, GLframebuffer *bufer,
+                             GLenum mode )
+{
+   struct foo_mesa_context *foo = (struct foo_mesa_context *) ctx->DriverCtx;
+   setup_DD_pointers( ctx );
+}
+
+
+/*
+ * Set the destination/draw buffer.
+ */
+static GLboolean set_draw_buffer( GLcontext *ctx, GLenum mode )
 {
    struct foo_mesa_context *foo = (struct foo_mesa_context *) ctx->DriverCtx;
    setup_DD_pointers( ctx );
@@ -311,8 +328,8 @@ static void fast_points_function( GLcontext *ctx, GLuint first, GLuint last )
    for (i=first;i<=last;i++) {
       if (VB->ClipMask[i]==0) {
          int x, y;
-         x =       (GLint) VB->Win[i][0];
-         y = FLIP( (GLint) VB->Win[i][1] );
+         x =       (GLint) VB->Win.data[i][0];
+         y = FLIP( (GLint) VB->Win.data[i][1] );
          WriteRGBAPixel( x, y, VB->ColorPtr->data[i] );
       }
    }
@@ -332,10 +349,10 @@ static void fast_line_function( GLcontext *ctx, GLuint v0, GLuint v1, GLuint pv 
 
    pixel = VB->ColorPtr->data[pv];
 
-   x0 =       (int) VB->Win[v0][0];
-   y0 = FLIP( (int) VB->Win[v0][1] );
-   x1 =       (int) VB->Win[v1][0];
-   y1 = FLIP( (int) VB->Win[v1][1] );
+   x0 =       (int) VB->Win.data[v0][0];
+   y0 = FLIP( (int) VB->Win.data[v0][1] );
+   x1 =       (int) VB->Win.data[v1][0];
+   y1 = FLIP( (int) VB->Win.data[v1][1] );
 
    /* Draw line from (x0,y0) to (x1,y1) with current pixel color/index */
 }
@@ -615,7 +632,8 @@ static void setup_DD_pointers( GLcontext *ctx )
    ctx->Driver.Index = set_index;
    ctx->Driver.Color = set_color;
 
-   ctx->Driver.SetBuffer = set_buffer;
+   ctx->Driver.SetDrawBuffer = set_draw_buffer;
+   ctx->Driver.SetReadBuffer = set_read_buffer;
    ctx->Driver.GetBufferSize = get_buffer_size;
 
    ctx->Driver.PointsFunc = fast_points_function;
@@ -730,7 +748,11 @@ FooMesaBuffer FooMesaCreateBuffer( FooMesaVisual visual,
       return NULL;
    }
 
-   b->gl_buffer = gl_create_framebuffer( visual->gl_visual );
+   b->gl_buffer = gl_create_framebuffer( visual->gl_visual,
+                                         visual->gl_visual->DepthBits > 0,
+                                         visual->gl_visual->StencilBits > 0,
+                                         visual->gl_visual->AccumBits > 0,
+                                         visual->gl_visual->AlphaBits > 0 );
    b->the_window = your_window_id;
 
    /* other stuff */
@@ -769,7 +791,7 @@ FooMesaContext FooMesaCreateContext( FooMesaVisual visual,
 
 
    /* and then, finally let the context examine your initializations */
-   gl_context_initialize( c->gl_ctx );
+   _mesa_initialize_context( c->gl_ctx );
 
 
    return c;

@@ -35,6 +35,7 @@
 #include "all.h"
 #else
 #include "glheader.h"
+#include "aatriangle.h"
 #include "context.h"
 #include "depth.h"
 #include "feedback.h"
@@ -77,7 +78,6 @@ static void flat_ci_triangle( GLcontext *ctx,
                               GLuint v0, GLuint v1, GLuint v2, GLuint pv )
 {
 #define INTERP_Z 1
-
 #define SETUP_CODE				\
    GLuint index = VB->IndexPtr->data[pv];	\
    if (1) {					\
@@ -143,6 +143,7 @@ static void flat_rgba_triangle( GLcontext *ctx,
                                 GLuint v0, GLuint v1, GLuint v2, GLuint pv )
 {
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 
 #define SETUP_CODE				\
    if (1) {					\
@@ -185,6 +186,7 @@ static void smooth_rgba_triangle( GLcontext *ctx,
 {
    (void) pv;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define INTERP_ALPHA 1
 
@@ -276,6 +278,7 @@ static void simple_z_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
                                         GLuint v2, GLuint pv )
 {
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_INT_ST 1
 #define S_SCALE twidth
 #define T_SCALE theight
@@ -335,6 +338,7 @@ static void affine_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 				      GLuint v2, GLuint pv )
 {
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define INTERP_ALPHA 1
 #define INTERP_INT_ST 1
@@ -611,16 +615,19 @@ static void affine_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
  * Render an perspective corrected RGB/RGBA textured triangle.
  * The Q (aka V in Mesa) coordinate must be zero such that the divide
  * by interpolated Q/W comes out right.
- *
- * XXX (May 15, 1999) this function not used for now because repeating
- * of negative texture coords not handled correctly!!!
  */
-#if 000
 static void persp_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 				     GLuint v2, GLuint pv )
 {
+/* The BIAS value is used to shift negative values into positive values.
+ * Without this, negative texture values don't GL_REPEAT correctly at just
+ * below zero.  We're not going to worry about texture coords less than -BIAS.
+ * Only seems to be a problem with GL_NEAREST filtering.
+ */
+#define BIAS 4096.0F
 
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define INTERP_ALPHA 1
 #define INTERP_STUV 1
@@ -681,8 +688,8 @@ static void persp_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 #define SPAN1(DO_TEX,COMP)                                 \
         for (i=0;i<n;i++) {                                \
            GLfloat invQ = 1.0f / vv;                       \
-           GLint s = (int)(SS * invQ) & smask;             \
-           GLint t = (int)(TT * invQ) & tmask;             \
+           GLint s = (int)(SS * invQ + BIAS) & smask;      \
+           GLint t = (int)(TT * invQ + BIAS) & tmask;      \
            GLint pos = COMP * ((t << twidth_log2) + s);    \
            GLubyte *tex00 = texture + pos;                 \
 	   zspan[i] = FixedToDepth(ffz);                   \
@@ -837,8 +844,8 @@ static void persp_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 #include "tritemp.h"
 #undef SPAN1
 #undef SPAN2
+#undef BIAS
 }
-#endif
 
 
 
@@ -852,6 +859,7 @@ static void general_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
                                        GLuint v2, GLuint pv )
 {
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define INTERP_ALPHA 1
 #define INTERP_STUV 1
@@ -936,6 +944,7 @@ static void general_textured_spec_triangle1( GLcontext *ctx, GLuint v0,
                                              GLubyte spec[MAX_WIDTH][4] )
 {
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define INTERP_SPEC 1
 #define INTERP_ALPHA 1
@@ -1021,7 +1030,7 @@ static void general_textured_spec_triangle1( GLcontext *ctx, GLuint v0,
 /*
  * Compute the lambda value for a fragment. (texture level of detail)
  */
-static GLfloat
+static INLINE GLfloat
 compute_lambda( GLfloat dsdx, GLfloat dsdy, GLfloat dtdx, GLfloat dtdy,
                 GLfloat invQ, GLfloat width, GLfloat height ) 
 {
@@ -1051,6 +1060,7 @@ static void lambda_textured_triangle1( GLcontext *ctx, GLuint v0, GLuint v1,
                                        GLfloat u[MAX_WIDTH] )
 {
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define INTERP_ALPHA 1
 #define INTERP_STUV 1
@@ -1146,6 +1156,7 @@ static void lambda_textured_spec_triangle1( GLcontext *ctx, GLuint v0,
                                             GLfloat u[MAX_WIDTH] )
 {
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define INTERP_SPEC 1
 #define INTERP_ALPHA 1
@@ -1255,6 +1266,7 @@ static void lambda_multitextured_triangle1( GLcontext *ctx, GLuint v0,
 {
    GLubyte rgba[MAX_WIDTH][4];
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define INTERP_ALPHA 1
 #define INTERP_STUV 1
@@ -1416,6 +1428,35 @@ static void lambda_multitextured_triangle( GLcontext *ctx, GLuint v0,
 }
 
 
+
+static void occlusion_zless_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
+                                      GLuint v2, GLuint pv )
+{
+   (void)pv;
+   if (ctx->OcclusionResult) {
+      return;
+   }
+
+#define DO_OCCLUSION_TEST
+#define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
+#define INNER_LOOP( LEFT, RIGHT, Y )		\
+   {						\
+      GLint i, len = RIGHT-LEFT;		\
+      for (i=0;i<len;i++) {			\
+	 GLdepth z = FixedToDepth(ffz);		\
+	 if (z < zRow[i]) {			\
+	    ctx->OcclusionResult = GL_TRUE;	\
+	    return;				\
+	 }					\
+	 ffz += fdzdx;				\
+      }						\
+   }
+#include "tritemp.h"
+}
+
+
+
 /*
  * Null rasterizer for measuring transformation speed.
  */
@@ -1453,12 +1494,36 @@ void gl_set_triangle_function( GLcontext *ctx )
       }
       if (ctx->Driver.TriangleFunc) {
          /* Device driver will draw triangles. */
+         dputs("Driver triangle");
 	 return;
+      }
+
+      if (ctx->Polygon.SmoothFlag) {
+         _mesa_set_aa_triangle_function(ctx);
+         ASSERT(ctx->Driver.TriangleFunc);
+         return;
+      }
+
+      if (ctx->Depth.OcclusionTest &&
+          ctx->Depth.Mask == GL_FALSE &&
+          ctx->Depth.Func == GL_LESS &&
+          !ctx->Stencil.Enabled) {
+         if ((ctx->Visual->RGBAflag &&
+              ctx->Color.ColorMask[0] == 0 && 
+              ctx->Color.ColorMask[1] == 0 && 
+              ctx->Color.ColorMask[2] == 0 &&
+              ctx->Color.ColorMask[3] == 0)
+             ||
+             (!ctx->Visual->RGBAflag && ctx->Color.IndexMask == 0)) {
+            dputs("occlusion_test_triangle");
+            ctx->Driver.TriangleFunc = occlusion_zless_triangle;
+            return;
+         }
       }
 
       if (ctx->Texture.ReallyEnabled) {
          /* Ugh, we do a _lot_ of tests to pick the best textured tri func */
-	 int format, filter;
+	 GLint format, filter;
 	 const struct gl_texture_object *current2Dtex = ctx->Texture.Unit[0].CurrentD[2];
          const struct gl_texture_image *image;
          /* First see if we can used an optimized 2-D texture function */
@@ -1504,8 +1569,7 @@ void gl_set_triangle_function( GLcontext *ctx )
 	       }
 	    }
 	    else {
-	       /*ctx->Driver.TriangleFunc = persp_textured_triangle;*/
-               ctx->Driver.TriangleFunc = general_textured_triangle;
+	       ctx->Driver.TriangleFunc = persp_textured_triangle;
 	       dputs("persp_textured_triangle");
 	    }
 	 }
@@ -1553,17 +1617,25 @@ void gl_set_triangle_function( GLcontext *ctx )
       else {
 	 if (ctx->Light.ShadeModel==GL_SMOOTH) {
 	    /* smooth shaded, no texturing, stippled or some raster ops */
-            if (rgbmode)
+            if (rgbmode) {
+               dputs("smooth_rgba_triangle");
                ctx->Driver.TriangleFunc = smooth_rgba_triangle;
-            else
+            }
+            else {
+               dputs("smooth_ci_triangle");
                ctx->Driver.TriangleFunc = smooth_ci_triangle;
+            }
 	 }
 	 else {
 	    /* flat shaded, no texturing, stippled or some raster ops */
-            if (rgbmode)
+            if (rgbmode) {
+               dputs("flat_rgba_triangle");
                ctx->Driver.TriangleFunc = flat_rgba_triangle;
-            else
+            }
+            else {
+               dputs("flat_ci_triangle");
                ctx->Driver.TriangleFunc = flat_ci_triangle;
+            }
 	 }
       }
    }

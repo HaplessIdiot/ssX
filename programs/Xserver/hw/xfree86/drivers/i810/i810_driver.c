@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.9 2000/05/11 18:14:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.10 2000/06/01 23:05:08 mvojkovi Exp $ */
 
 /*
  * Authors:
@@ -96,15 +96,8 @@ static void I810DisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					  int flags);
 #endif
 
-#define VERSION 4000
-#define I810_NAME "I810"
-#define I810_DRIVER_NAME "i810"
-#define I810_MAJOR_VERSION 1
-#define I810_MINOR_VERSION 0
-#define I810_PATCHLEVEL 0
-
 DriverRec I810 = {
-   VERSION,
+   I810_VERSION,
    "Accelerated driver for Intel i810 cards",
    I810Identify,
    I810Probe,
@@ -213,31 +206,19 @@ static int pix24bpp = 0;
 
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
+   "drmAvailable",
    "drmAddBufs",
    "drmAddMap",
-   "drmAvailable",
-   "drmCtlAddCommand",
    "drmCtlInstHandler",
    "drmGetInterruptFromBusID",
-   "drmMapBufs",
-   "drmMarkBufs",
-   "drmUnmapBufs",
    "drmAgpAcquire",
    "drmAgpRelease",
    "drmAgpEnable",
    "drmAgpAlloc",
    "drmAgpFree",
    "drmAgpBind",
-   "drmAgpUnbind",
-   "drmAgpVersionMajor",
-   "drmAgpVersionMinor",
-   "drmAgpGetMode",
-   "drmAgpBase",
-   "drmAgpSize",
-   "drmAgpMemoryUsed",
-   "drmAgpMemoryAvail",
-   "drmAgpVendorId",
-   "drmAgpDeviceId",
+   "drmI810CleanupDma",
+   "drmI810InitDma",
    NULL
 };
 
@@ -420,7 +401,7 @@ I810Probe(DriverPtr drv, int flags) {
        /* Allocate new ScrnInfoRec and claim the slot */
        if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
 					      I810PciChipsets, 0, 0, 0, 0, 0))){
-	   pScrn->driverVersion = VERSION;
+	   pScrn->driverVersion = I810_VERSION;
 	   pScrn->driverName = I810_DRIVER_NAME;
 	   pScrn->name = I810_NAME;
 	   pScrn->Probe = I810Probe;
@@ -1558,7 +1539,6 @@ I810AllocateFront(ScrnInfoPtr pScrn) {
    
    memset( &(pI810->LpRing), 0, sizeof( I810RingBuffer ) );
    if(I810AllocLow( &(pI810->LpRing.mem), &(pI810->SysMem), 16*4096 )) {
-
 	 if (I810_DEBUG & DEBUG_VERBOSE_MEMORY)
 	    ErrorF( "ring buffer at local %lx\n", 
 		    pI810->LpRing.mem.Start);
@@ -1612,6 +1592,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
    /* Have to init the DRM earlier than in other drivers to get agp
     * memory.  Wonder if this is going to be a problem...
     */
+
 #ifdef XF86DRI
    /*
     * Setup DRI after visuals have been established, but before cfbScreenInit
@@ -1742,6 +1723,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
       }
    }
 #endif
+
 #ifdef XF86DRI
    if (!pI810->directRenderingEnabled) {
       pI810->DoneFrontAlloc = FALSE;
@@ -1750,6 +1732,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
       I810AllocateFront(pScrn);
    }
 #endif
+
    
    if (!xf86InitFBManager(pScreen, &(pI810->FbMemBox))) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
@@ -1865,6 +1848,9 @@ I810AdjustFrame(int scrnIndex, int x, int y, int flags) {
 static Bool
 I810EnterVT(int scrnIndex, int flags) {
    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+#ifdef XF86DRI
+   I810Ptr pI810 = I810PTR(pScrn);
+#endif
 
    if (I810_DEBUG & DEBUG_VERBOSE_DRI)
       ErrorF("\n\nENTER VT\n");
@@ -1904,8 +1890,10 @@ I810LeaveVT(int scrnIndex, int flags) {
    }
 #endif
 
-   I810RefreshRing( pScrn );
-   I810Sync( pScrn );
+   if(pI810->AccelInfoRec != NULL) {
+      I810RefreshRing( pScrn );
+      I810Sync( pScrn );
+   }
    I810Restore(pScrn);
    vgaHWLock(hwp);
 }

@@ -103,7 +103,7 @@ _mesa_PushAttrib(GLbitfield mask)
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glPushAttrib");
 
    if (MESA_VERBOSE&VERBOSE_API)
-      fprintf(stderr, "glPushAttrib %x\n", mask);
+      fprintf(stderr, "glPushAttrib %x\n", (int)mask);
 
    if (ctx->AttribStackDepth>=MAX_ATTRIB_STACK_DEPTH) {
       gl_error( ctx, GL_STACK_OVERFLOW, "glPushAttrib" );
@@ -166,6 +166,9 @@ _mesa_PushAttrib(GLbitfield mask)
          attr->ClipPlane[i] = ctx->Transform.ClipEnabled[i];
       }
       attr->ColorMaterial = ctx->Light.ColorMaterialEnabled;
+      attr->Convolution1D = ctx->Pixel.Convolution1DEnabled;
+      attr->Convolution2D = ctx->Pixel.Convolution2DEnabled;
+      attr->Separable2D = ctx->Pixel.Separable2DEnabled;
       attr->CullFace = ctx->Polygon.CullFlag;
       attr->DepthTest = ctx->Depth.Test;
       attr->Dither = ctx->Color.DitherFlag;
@@ -176,6 +179,8 @@ _mesa_PushAttrib(GLbitfield mask)
       attr->Lighting = ctx->Light.Enabled;
       attr->LineSmooth = ctx->Line.SmoothFlag;
       attr->LineStipple = ctx->Line.StippleFlag;
+      attr->Histogram = ctx->Pixel.HistogramEnabled;
+      attr->MinMax = ctx->Pixel.MinMaxEnabled;
       attr->IndexLogicOp = ctx->Color.IndexLogicOpEnabled;
       attr->ColorLogicOp = ctx->Color.ColorLogicOpEnabled;
       attr->Map1Color4 = ctx->Eval.Map1Color4;
@@ -197,6 +202,7 @@ _mesa_PushAttrib(GLbitfield mask)
       attr->Map2Vertex3 = ctx->Eval.Map2Vertex3;
       attr->Map2Vertex4 = ctx->Eval.Map2Vertex4;
       attr->Normalize = ctx->Transform.Normalize;
+      attr->PixelTexture = ctx->Pixel.PixelTextureEnabled;
       attr->PointSmooth = ctx->Point.SmoothFlag;
       attr->PolygonOffsetPoint = ctx->Polygon.OffsetPoint;
       attr->PolygonOffsetLine = ctx->Polygon.OffsetLine;
@@ -422,21 +428,43 @@ _mesa_PopAttrib(void)
                GLubyte oldAlphaRef = ctx->Color.AlphaRef;
                GLenum oldBlendSrc = ctx->Color.BlendSrcRGB;
                GLenum oldBlendDst = ctx->Color.BlendDstRGB;
+	       GLenum oldLogicOp = ctx->Color.LogicOp;
                MEMCPY( &ctx->Color, attr->data,
                        sizeof(struct gl_colorbuffer_attrib) );
                if (ctx->Color.DrawBuffer != oldDrawBuffer) {
                   _mesa_DrawBuffer( ctx->Color.DrawBuffer);
                }
-               if ((ctx->Color.AlphaFunc != oldAlphaFunc ||
-                    ctx->Color.AlphaRef != oldAlphaRef) &&
-                   ctx->Driver.AlphaFunc)
-                  (*ctx->Driver.AlphaFunc)( ctx, ctx->Color.AlphaFunc,
-                                            ctx->Color.AlphaRef / 255.0F);
                if ((ctx->Color.BlendSrcRGB != oldBlendSrc ||
-                    ctx->Color.BlendSrcRGB != oldBlendDst) &&
+                    ctx->Color.BlendDstRGB != oldBlendDst) &&
                    ctx->Driver.BlendFunc)
                   (*ctx->Driver.BlendFunc)( ctx, ctx->Color.BlendSrcRGB,
                                             ctx->Color.BlendDstRGB);
+	       if (ctx->Color.LogicOp != oldLogicOp &&
+		   ctx->Driver.LogicOpcode) {
+		  ctx->Driver.LogicOpcode( ctx, ctx->Color.LogicOp );
+               }
+               if (ctx->Visual->RGBAflag) {
+                  GLubyte r = (GLint) (ctx->Color.ClearColor[0] * 255.0F);
+                  GLubyte g = (GLint) (ctx->Color.ClearColor[1] * 255.0F);
+                  GLubyte b = (GLint) (ctx->Color.ClearColor[2] * 255.0F);
+                  GLubyte a = (GLint) (ctx->Color.ClearColor[3] * 255.0F);
+                  (*ctx->Driver.ClearColor)( ctx, r, g, b, a );
+                  if ((ctx->Color.AlphaFunc != oldAlphaFunc ||
+                       ctx->Color.AlphaRef != oldAlphaRef) &&
+                      ctx->Driver.AlphaFunc)
+                     (*ctx->Driver.AlphaFunc)( ctx, ctx->Color.AlphaFunc,
+                                               ctx->Color.AlphaRef / 255.0F);
+                  if (ctx->Driver.ColorMask) {
+                     (*ctx->Driver.ColorMask)(ctx,
+                                              ctx->Color.ColorMask[0],
+                                              ctx->Color.ColorMask[1],
+                                              ctx->Color.ColorMask[2],
+                                              ctx->Color.ColorMask[3]);
+                  }
+               }
+               else {
+                  (*ctx->Driver.ClearIndex)( ctx, ctx->Color.ClearIndex);
+               }
             }
             break;
          case GL_CURRENT_BIT:
@@ -482,6 +510,9 @@ _mesa_PopAttrib(void)
                TEST_AND_UPDATE(ctx->Polygon.CullFlag, enable->CullFace, GL_CULL_FACE);
                TEST_AND_UPDATE(ctx->Depth.Test, enable->DepthTest, GL_DEPTH_TEST);
                TEST_AND_UPDATE(ctx->Color.DitherFlag, enable->Dither, GL_DITHER);
+               TEST_AND_UPDATE(ctx->Pixel.Convolution1DEnabled, enable->Convolution1D, GL_CONVOLUTION_1D);
+               TEST_AND_UPDATE(ctx->Pixel.Convolution2DEnabled, enable->Convolution2D, GL_CONVOLUTION_2D);
+               TEST_AND_UPDATE(ctx->Pixel.Separable2DEnabled, enable->Separable2D, GL_SEPARABLE_2D);
                TEST_AND_UPDATE(ctx->Fog.Enabled, enable->Fog, GL_FOG);
                TEST_AND_UPDATE(ctx->Light.Enabled, enable->Lighting, GL_LIGHTING);
                TEST_AND_UPDATE(ctx->Line.SmoothFlag, enable->LineSmooth, GL_LINE_SMOOTH);
@@ -508,6 +539,7 @@ _mesa_PopAttrib(void)
                TEST_AND_UPDATE(ctx->Eval.Map2Vertex4, enable->Map2Vertex4, GL_MAP2_VERTEX_4);
                TEST_AND_UPDATE(ctx->Transform.Normalize, enable->Normalize, GL_NORMALIZE);
                TEST_AND_UPDATE(ctx->Transform.RescaleNormals, enable->RescaleNormals, GL_RESCALE_NORMAL_EXT);
+               TEST_AND_UPDATE(ctx->Pixel.PixelTextureEnabled, enable->PixelTexture, GL_POINT_SMOOTH);
                TEST_AND_UPDATE(ctx->Point.SmoothFlag, enable->PointSmooth, GL_POINT_SMOOTH);
                TEST_AND_UPDATE(ctx->Polygon.OffsetPoint, enable->PolygonOffsetPoint, GL_POLYGON_OFFSET_POINT);
                TEST_AND_UPDATE(ctx->Polygon.OffsetLine, enable->PolygonOffsetLine, GL_POLYGON_OFFSET_LINE);
@@ -634,6 +666,11 @@ _mesa_PopAttrib(void)
                (*ctx->Driver.Enable)( ctx, GL_LINE_SMOOTH, ctx->Line.SmoothFlag );
                (*ctx->Driver.Enable)( ctx, GL_LINE_STIPPLE, ctx->Line.StippleFlag );
             }
+            if (ctx->Driver.LineStipple)
+               (*ctx->Driver.LineStipple)(ctx, ctx->Line.StippleFactor,
+                                          ctx->Line.StipplePattern);
+            if (ctx->Driver.LineWidth)
+               (*ctx->Driver.LineWidth)(ctx, ctx->Line.Width);
             break;
          case GL_LIST_BIT:
             MEMCPY( &ctx->List, attr->data, sizeof(struct gl_list_attrib) );
@@ -670,6 +707,8 @@ _mesa_PopAttrib(void)
             break;
 	 case GL_POLYGON_STIPPLE_BIT:
 	    MEMCPY( ctx->PolygonStipple, attr->data, 32*sizeof(GLuint) );
+	    if (ctx->Driver.PolygonStipple) 
+	       ctx->Driver.PolygonStipple( ctx, (const GLubyte *) attr->data );
 	    break;
          case GL_SCISSOR_BIT:
             MEMCPY( &ctx->Scissor, attr->data,

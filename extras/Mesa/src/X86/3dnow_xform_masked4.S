@@ -2,16 +2,6 @@
 
    SEG_TEXT
 
-#if !defined(NASM_ASSEMBLER) && !defined(MASM_ASSEMBLER)
-#define LLBL(a) .L ## a
-#else
-#define LLBL(a) a
-#endif
-
-
-
-
-
 ALIGNTEXT16
 GLOBL GLNAME(gl_3dnow_transform_points4_general_masked)
 GLNAME( gl_3dnow_transform_points4_general_masked ):
@@ -67,7 +57,7 @@ ALIGNTEXT32
     POR       ( MM7, MM3 )              /* m31           | m21                */
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TPGM_6 ) )
+    JE        ( LLBL(G3TPGM_6) )
 
     PUSH_L    ( EBP )
     PUSH_L    ( EAX )
@@ -76,9 +66,9 @@ ALIGNTEXT32
 
 ALIGNTEXT32
 
-LLBL( G3TPGM_2 ):
+LLBL(G3TPGM_2):
     TEST_B    ( BL, REGIND(EBP) )       /* mask [i] != clip flag ??           */
-    JNZ       ( LLBL( G3TPGM_3 )              /* skip vertex                        */ )
+    JNZ       ( LLBL(G3TPGM_3)              /* skip vertex                        */ )
 
     MOVQ      ( REGIND(EAX), MM4 )      /* x1            | x0                 */
     MOVQ      ( MM4, MM5 )              /* x1            | x0                 */
@@ -98,14 +88,14 @@ LLBL( G3TPGM_2 ):
     PFADD     ( MM4, MM6 )              /* r1            | r0                 */
     MOVQ      ( MM6, REGIND(EDX) )      /* write r0, r1                       */
 
-LLBL( G3TPGM_3 ):
+LLBL(G3TPGM_3):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
     ADD_L     ( CONST(16), EDX )        /* next r                             */
 
     INC_L     ( EBP )                   /* next clipmask                      */
     DEC_L     ( ESI )                   /* decrement vertex counter           */
 
-    JA        ( LLBL( G3TPGM_2 )              /* cnt > 0 ? -> process next vertex   */ )
+    JA        ( LLBL(G3TPGM_2)              /* cnt > 0 ? -> process next vertex   */ )
                                         /* and now the second stripe ...      */
     MOVD      ( REGOFF(8, ECX), MM0 )   /*               | m02                */
     MOVD      ( REGOFF(24, ECX), MM7 )  /*               | m12                */
@@ -138,9 +128,9 @@ LLBL( G3TPGM_3 ):
 
 ALIGNTEXT32
 
-LLBL( G3TPGM_4 ):
+LLBL(G3TPGM_4):
     TEST_B    ( BL, REGIND(EBP) )       /* mask [i] != clip flag ??           */
-    JNZ       ( LLBL( G3TPGM_5 )              /* skip vertex                        */ )
+    JNZ       ( LLBL(G3TPGM_5)              /* skip vertex                        */ )
 
     MOVQ      ( REGIND(EAX), MM4 )      /* x1            | x0                 */
     MOVQ      ( MM4, MM5 )              /* x1            | x0                 */
@@ -160,16 +150,16 @@ LLBL( G3TPGM_4 ):
     PFADD     ( MM4, MM6 )              /* r3            | r2                 */
     MOVQ      ( MM6, REGOFF(8, EDX) )   /* write r2, r3                       */
 
-LLBL( G3TPGM_5 ):
+LLBL(G3TPGM_5):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
     ADD_L     ( CONST(16), EDX )        /* next r                             */
 
     INC_L     ( EBP )                   /* next clipmask                      */
     DEC_L     ( ESI )                   /* decrement vertex counter           */
 
-    JA        ( LLBL( G3TPGM_4 )              /* cnt > 0 ? -> process next vertex   */ )
+    JA        ( LLBL(G3TPGM_4)              /* cnt > 0 ? -> process next vertex   */ )
 
-LLBL( G3TPGM_6 ):
+LLBL(G3TPGM_6):
     FEMMS
 
     POP_L     ( EBP )
@@ -216,9 +206,9 @@ ALIGNTEXT32
 
 ALIGNTEXT32
 
-LLBL( G3TPIM_2 ):
+LLBL(G3TPIM_2):
     TEST_B    ( BL, REGIND(EBP) )       /* mask [i] != clip flag ??           */
-    JNZ       ( LLBL( G3TPIM_3 )              /* skip vertex                        */ )
+    JNZ       ( LLBL(G3TPIM_3)              /* skip vertex                        */ )
 
     MOVQ      ( REGIND(EAX), MM0 )      /* x1            | x0                 */
     MOVQ      ( MM0, REGIND(EDX) )      /* r1            | r0                 */
@@ -226,16 +216,16 @@ LLBL( G3TPIM_2 ):
     MOVQ      ( REGOFF(8, EAX), MM1 )   /* x3            | x2                 */
     MOVQ      ( MM1, REGOFF(8, EDX) )   /* r3            | r2                 */
 
-LLBL( G3TPIM_3 ):
+LLBL(G3TPIM_3):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
     ADD_L     ( CONST(16), EDX )        /* next r                             */
 
     INC_L     ( EBP )                   /* next clipmask                      */
     DEC_L     ( ESI )                   /* decrement vertex counter           */
 
-    JA        ( LLBL( G3TPIM_2 )              /* cnt > 0 ? -> process next vertex   */ )
+    JA        ( LLBL(G3TPIM_2)              /* cnt > 0 ? -> process next vertex   */ )
 
-LLBL( G3TPIM_4 ):
+LLBL(G3TPIM_4):
     FEMMS
 
     POP_L     ( EBP )
@@ -293,13 +283,13 @@ ALIGNTEXT32
 
     MOVQ      ( REGOFF(48, ECX), MM2 )  /* m31           | m30                */
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TP2M_4 ) )
+    JE        ( LLBL(G3TP2M_4) )
 
 ALIGNTEXT32
 
-LLBL( G3TP2M_2 ):
+LLBL(G3TP2M_2):
     TEST_B    ( BL, REGIND(EBP) )       /* mask [i] != clip flag ??           */
-    JNZ       ( LLBL( G3TP2M_3 )              /* skip vertex                        */ )
+    JNZ       ( LLBL(G3TP2M_3)              /* skip vertex                        */ )
 
     MOVQ      ( REGIND(EAX), MM3 )      /* x1            | x0                 */
     MOVQ      ( MM3, MM4 )              /* x1            | x0                 */
@@ -319,16 +309,16 @@ LLBL( G3TP2M_2 ):
     MOVQ      ( MM3, REGIND(EDX) )      /* write r0, r1                       */
     MOVQ      ( MM5, REGOFF(8, EDX) )   /* write r2, r3                       */
 
-LLBL( G3TP2M_3 ):
+LLBL(G3TP2M_3):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
     ADD_L     ( CONST(16), EDX )        /* next r                             */
 
     INC_L     ( EBP )                   /* next clipmask                      */
     DEC_L     ( ESI )                   /* decrement vertex counter           */
 
-    JA        ( LLBL( G3TP2M_2 )              /* cnt > 0 ? -> process next vertex   */ )
+    JA        ( LLBL(G3TP2M_2)              /* cnt > 0 ? -> process next vertex   */ )
 
-LLBL( G3TP2M_4 ):
+LLBL(G3TP2M_4):
     FEMMS
 
     POP_L     ( EBP )
@@ -380,13 +370,13 @@ ALIGNTEXT32
 
     MOVQ      ( REGOFF(48, ECX), MM1 )  /* m31           | m30                */
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TP2NRM_4 ) )
+    JE        ( LLBL(G3TP2NRM_4) )
 
 ALIGNTEXT32
 
-LLBL( G3TP2NRM_2 ):
+LLBL(G3TP2NRM_2):
     TEST_B    ( BL, REGIND(EBP) )       /* mask [i] != clip flag ??           */
-    JNZ       ( LLBL( G3TP2NRM_3 ) )    /* skip vertex                        */
+    JNZ       ( LLBL(G3TP2NRM_3) )    /* skip vertex                        */
 
     MOVQ      ( REGIND(EAX), MM4 )      /* x1            | x0                 */
     MOVQ      ( REGOFF(8, EAX), MM5 )   /* x3            | x2                 */
@@ -402,16 +392,16 @@ LLBL( G3TP2NRM_2 ):
 
     MOVQ      ( MM5, REGOFF(8, EDX) )   /* write r2, r3                       */
 
-LLBL( G3TP2NRM_3 ):
+LLBL(G3TP2NRM_3):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
     ADD_L     ( CONST(16), EDX )        /* next r                             */
 
     INC_L     ( EBP )                   /* next clipmask                      */
     DEC_L     ( ESI )                   /* decrement vertex counter           */
 
-    JA        ( LLBL( G3TP2NRM_2 )            /* cnt > 0 ? -> process next vertex   */ )
+    JA        ( LLBL(G3TP2NRM_2)            /* cnt > 0 ? -> process next vertex   */ )
 
-LLBL( G3TP2NRM_4 ):
+LLBL(G3TP2NRM_4):
     FEMMS
 
     POP_L     ( EBP )
@@ -478,7 +468,7 @@ ALIGNTEXT32
     POR       ( MM7, MM3 )              /* m31           | m21                */
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TP3M_6 ) )
+    JE        ( LLBL(G3TP3M_6) )
 
     PUSH_L    ( EBP )
     PUSH_L    ( EAX )
@@ -487,9 +477,9 @@ ALIGNTEXT32
 
 ALIGNTEXT32
 
-LLBL( G3TP3M_2 ):
+LLBL(G3TP3M_2):
     TEST_B    ( BL, REGIND(EBP) )       /* mask [i] != clip flag ??           */
-    JNZ       ( LLBL( G3TP3M_3 ) )      /* skip vertex                        */
+    JNZ       ( LLBL(G3TP3M_3) )      /* skip vertex                        */
 
     MOVQ      ( REGIND(EAX), MM4 )      /* x1            | x0                 */
     MOVQ      ( MM4, MM5 )              /* x1            | x0                 */
@@ -509,14 +499,14 @@ LLBL( G3TP3M_2 ):
     PFADD     ( MM4, MM6 )              /* r1            | r0                 */
     MOVQ      ( MM6, REGIND(EDX) )      /* write r0, r1                       */
 
-LLBL( G3TP3M_3 ):
+LLBL(G3TP3M_3):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
     ADD_L     ( CONST(16), EDX )        /* next r                             */
 
     INC_L     ( EBP )                   /* next clipmask                      */
     DEC_L     ( ESI )                   /* decrement vertex counter           */
 
-    JA        ( LLBL( G3TP3M_2 ) )      /* cnt > 0 ? -> process next vertex   */
+    JA        ( LLBL(G3TP3M_2) )      /* cnt > 0 ? -> process next vertex   */
                                         /* and now the second stripe ...      */
     MOVD      ( REGOFF(8, ECX), MM0 )   /*               | m02                */
     MOVD      ( REGOFF(24, ECX), MM7 )  /*               | m12                */
@@ -538,9 +528,9 @@ LLBL( G3TP3M_3 ):
 
 ALIGNTEXT32
 
-LLBL( G3TP3M_4 ):
+LLBL(G3TP3M_4):
     TEST_B    ( BL, REGIND(EBP) )       /* mask [i] != clip flag ??           */
-    JNZ       ( LLBL( G3TP3M_5 ) )      /* skip vertex                        */
+    JNZ       ( LLBL(G3TP3M_5) )      /* skip vertex                        */
 
     MOVQ      ( REGIND(EAX), MM4 )      /* x1            | x0                 */
     MOVQ      ( REGOFF(8, EAX), MM6 )   /* x3            | x2                 */
@@ -554,16 +544,16 @@ LLBL( G3TP3M_4 ):
     PFACC     ( MM7, MM6 )              /* x3            | x2*m22+x3*m32      */
     MOVQ      ( MM6, REGOFF(8, EDX) )   /* write r2, r3                       */
 
-LLBL( G3TP3M_5 ):
+LLBL(G3TP3M_5):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
     ADD_L     ( CONST(16), EDX )        /* next r                             */
 
     INC_L     ( EBP )                   /* next clipmask                      */
     DEC_L     ( ESI )                   /* decrement vertex counter           */
 
-    JA        ( LLBL( G3TP3M_4 ) )      /* cnt > 0 ? -> process next vertex   */
+    JA        ( LLBL(G3TP3M_4) )      /* cnt > 0 ? -> process next vertex   */
 
-LLBL( G3TP3M_6 ):
+LLBL(G3TP3M_6):
     FEMMS
 
     POP_L     ( EBP )
@@ -623,13 +613,13 @@ ALIGNTEXT32
     MOVQ      ( REGOFF(48, ECX), MM1 )  /* m31           | m30                */
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TP3NRM_4 ) )
+    JE        ( LLBL(G3TP3NRM_4) )
 
 ALIGNTEXT32
 
-LLBL( G3TP3NRM_2 ):
+LLBL(G3TP3NRM_2):
     TEST_B    ( BL, REGIND(EBP) )       /* mask [i] != clip flag ??           */
-    JNZ       ( LLBL( G3TP3NRM_3 ) )    /* skip vertex                        */
+    JNZ       ( LLBL(G3TP3NRM_3) )    /* skip vertex                        */
 
     MOVQ      ( REGIND(EAX), MM4 )      /* x1            | x0                 */
     MOVQ      ( REGOFF(8, EAX), MM5 )   /* x3            | x2                 */
@@ -649,16 +639,16 @@ LLBL( G3TP3NRM_2 ):
     MOVQ      ( MM4, REGIND(EDX) )      /* write r0, r1                       */
     MOVQ      ( MM5, REGOFF(8, EDX) )   /* write r2, r3                       */
 
-LLBL( G3TP3NRM_3 ):
+LLBL(G3TP3NRM_3):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
     ADD_L     ( CONST(16), EDX )        /* next r                             */
 
     INC_L     ( EBP )                   /* next clipmask                      */
     DEC_L     ( ESI )                   /* decrement vertex counter           */
 
-    JA        ( LLBL( G3TP3NRM_2 )            /* cnt > 0 ? -> process next vertex   */ )
+    JA        ( LLBL(G3TP3NRM_2)            /* cnt > 0 ? -> process next vertex   */ )
 
-LLBL( G3TP3NRM_4 ):
+LLBL(G3TP3NRM_4):
     FEMMS
 
     POP_L     ( EBP )
@@ -718,13 +708,13 @@ ALIGNTEXT32
     PUNPCKLDQ ( MM7, MM7 )              /* 0             | 0                  */
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TPPM_4 ) )
+    JE        ( LLBL(G3TPPM_4) )
 
 ALIGNTEXT32
 
-LLBL( G3TPPM_2 ):
+LLBL(G3TPPM_2):
     TEST_B    ( BL, REGIND(EBP) )       /* mask [i] != clip flag ??           */
-    JNZ       ( LLBL( G3TPPM_3 ) )      /* skip vertex                        */
+    JNZ       ( LLBL(G3TPPM_3) )      /* skip vertex                        */
 
     MOVQ      ( REGIND(EAX), MM4 )      /* x1            | x0                 */
     MOVQ      ( REGOFF(8, EAX), MM5 )   /* x3            | x2                 */
@@ -746,16 +736,16 @@ LLBL( G3TPPM_2 ):
 
     MOVQ      ( MM6, REGOFF(8, EDX) )   /* write r2, r3                       */
 
-LLBL( G3TPPM_3 ):
+LLBL(G3TPPM_3):
     ADD_L     ( EDI, EAX )              /* next vertex                        */
     ADD_L     ( CONST(16), EDX )        /* next r                             */
 
     INC_L     ( EBP )                   /* next clipmask                      */
     DEC_L     ( ESI )                   /* decrement vertex counter           */
 
-    JA        ( LLBL( G3TPPM_2 ) )      /* cnt > 0 ? -> process next vertex   */
+    JA        ( LLBL(G3TPPM_2) )      /* cnt > 0 ? -> process next vertex   */
 
-LLBL( G3TPPM_4 ):
+LLBL(G3TPPM_4):
     FEMMS
 
     POP_L     ( EBP )

@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -22,9 +22,6 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
-
-
 
 
 #ifndef FIXED_H
@@ -50,15 +47,6 @@ typedef int GLfixed;
 #define FixedToFloat(X) ((X) * 0.00048828125f)
 #define PosFloatToFixed(X)      FloatToFixed(X)
 #define SignedFloatToFixed(X)   FloatToFixed(X)
-
-
-#if DEPTH_BITS==16
-/* use fixed-point interpolation */
-#define FixedToDepth(I) ((I) >> FIXED_SHIFT)
-#else
-/* don't really use fixed-point */
-#define FixedToDepth(I) (I)
-#endif
 
 
 #endif

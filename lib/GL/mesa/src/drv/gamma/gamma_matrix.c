@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_matrix.c,v 1.1 1999/06/14 07:31:16 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_matrix.c,v 1.2 2000/02/23 04:46:44 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -163,9 +163,7 @@ void gammaLoadHWMatrix(void)
 	WRITEF(gCCPriv->buf, ModelViewMatrix13, gCCPriv->ModelView[13]);
 	WRITEF(gCCPriv->buf, ModelViewMatrix14, gCCPriv->ModelView[14]);
 	WRITEF(gCCPriv->buf, ModelViewMatrix15, gCCPriv->ModelView[15]);
-	/* Fall through to load ModelViewProjectionMatrix */
 #endif
-
     case GL_PROJECTION:
 	CHECK_DMA_BUFFER(gCC, gCCPriv, 16);
 	WRITEF(gCCPriv->buf,

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/10 1996/10/19 18:06:19 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.38 2000/02/23 04:47:22 martin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.39 2000/03/31 22:55:52 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -42,12 +42,12 @@ AXP_OBJ=lnx_ev56.o
 SRCS = lnx_init.c lnx_video.c lnx_io.c libc_wrapper.c bios_mmap.c \
        mapVT_noop.c VTsw_usl.c std_kbdEv.c posix_tty.c $(MOUSESRC) \
        lnx_pci.c vidmem.c lnx_apm.c $(JOYSTICK_SRC) $(DRI_SRC) $(RES_SRCS) \
-       $(AXP_SRC)
+       $(AXP_SRC) lnx_kmod.c
 
 OBJS = lnx_init.o lnx_video.o lnx_io.o libc_wrapper.o bios_mmap.o \
        mapVT_noop.o VTsw_usl.o std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
        lnx_pci.o vidmem.o lnx_apm.o $(JOYSTICK_OBJ) $(DRI_OBJ) $(RES_OBJS) \
-       $(AXP_OBJ)
+       $(AXP_OBJ) lnx_kmod.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC)
@@ -100,6 +100,7 @@ LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(vidmem.c,../shared)
 LinkSourceFile(VTsw_usl.c,../shared)
+LinkSourceFile(kmod_noop.c,../shared)
 
 LinkSourceFile($(DRI_SRC),../shared)
 

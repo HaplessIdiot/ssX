@@ -3,7 +3,7 @@
  * Mesa 3-D graphics library
  * Version:  3.3
  *
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -34,12 +34,14 @@
 /*
  * Memory allocation
  */
-#ifdef DEBUG
-
-/* call Mesa memory functions */
 extern void *_mesa_malloc(size_t bytes);
 extern void *_mesa_calloc(size_t bytes);
 extern void _mesa_free(void *ptr);
+
+
+#ifdef DEBUG
+
+/* call Mesa memory functions */
 #define MALLOC(BYTES)      _mesa_malloc(BYTES)
 #define CALLOC(BYTES)      _mesa_calloc(BYTES)
 #define MALLOC_STRUCT(T)   (struct T *) _mesa_malloc(sizeof(struct T))
@@ -77,6 +79,15 @@ extern void _mesa_free(void *ptr);
 	memset( (void *) (DST), (int) (VAL), (size_t) (N) )
 #endif
 
+
+/* On some systems we might want to use bzero() (but is bzero portable?) */
+#if defined(__FreeBSD__)
+#define BZERO( ADDR, N ) \
+	bzero( (void *) (ADDR), (size_t) (N) )
+#else
+#define BZERO( ADDR, N ) \
+	memset( (void *) (ADDR), 0, (size_t) (N) )
+#endif
 
 
 /* MACs and BeOS don't support static larger than 32kb, so... */

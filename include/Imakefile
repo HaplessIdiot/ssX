@@ -3,7 +3,7 @@ XCOMM $TOG: Imakefile /main/93 1997/06/13 15:34:58 kaleb $
 
 
 
-XCOMM $XFree86: xc/include/Imakefile,v 3.19 2000/02/13 00:12:37 dawes Exp $
+XCOMM $XFree86: xc/include/Imakefile,v 3.20 2000/06/14 01:43:48 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags /**/
 
@@ -79,3 +79,10 @@ InstallDriverSDKNonExecFile(Xarch.h,$(DRIVERSDKINCLUDEDIR)/X11)
 InstallDriverSDKNonExecFile(Xos.h,$(DRIVERSDKINCLUDEDIR))
 #endif
 
+
+XCOMM For the Linux/OpenGL base standard
+#if LinkGLToUsrInclude
+install::
+	$(RM) /usr/include/GL
+	$(LN) $(INCDIR)/GL /usr/include/GL
+#endif

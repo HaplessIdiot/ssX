@@ -3,15 +3,6 @@
    SEG_TEXT
 
 
-#if !defined(NASM_ASSEMBLER) && !defined(MASM_ASSEMBLER)
-#define LLBL(a) .L ## a
-#else
-#define LLBL(a) a
-#endif
-
-
-
-
 ALIGNTEXT16
 GLOBL GLNAME(gl_3dnow_transform_points2_general_raw)
 GLNAME(gl_3dnow_transform_points2_general_raw):
@@ -39,7 +30,7 @@ ALIGNTEXT32
     FEMMS
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TPGR_3 ) )
+    JE        ( LLBL(G3TPGR_3) )
 
     MOVD      ( REGIND(ECX), MM0 )      /*               | m00                */
     PUNPCKLDQ ( REGOFF(16, ECX), MM0 )  /* m10           | m00                */
@@ -58,7 +49,7 @@ ALIGNTEXT32
 
 
 ALIGNTEXT32
-LLBL( G3TPGR_2 ):
+LLBL(G3TPGR_2):
 
     MOVQ      ( REGIND(EAX), MM6 )      /* x1            | x0                 */
     MOVQ      ( MM6, MM7 )              /* x1            | x0                 */
@@ -85,9 +76,9 @@ LLBL( G3TPGR_2 ):
     ADD_L     ( CONST(16), EDX )        /* next r                             */
 
     DEC_L     ( ESI )                   /* decrement vertex counter           */
-    JA        ( LLBL( G3TPGR_2 ) )      /* cnt > 0 ? -> process next vertex   */
+    JA        ( LLBL(G3TPGR_2) )        /* cnt > 0 ? -> process next vertex   */
 
-LLBL( G3TPGR_3 ):
+LLBL(G3TPGR_3):
     FEMMS
 
     POP_L     ( ESI )
@@ -128,9 +119,9 @@ ALIGNTEXT32
     FEMMS
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TPIR_3 ) )
+    JE        ( LLBL(G3TPIR_3) )
 
-LLBL( G3TPIR_3 ):
+LLBL(G3TPIR_3):
     MOVQ      ( REGIND(EAX), MM0 )      /* x1            | x0                 */
     ADD_L     ( EDI, EAX )              /* next vertex                        */
 
@@ -138,9 +129,9 @@ LLBL( G3TPIR_3 ):
     ADD_L     ( CONST(16), EDX )        /* next r                             */
 
     DEC_L     ( ESI )                   /* decrement vertex counter           */
-    JA        ( LLBL( G3TPIR_3 ) )      /* cnt > 0 ? -> process next vertex   */
+    JA        ( LLBL(G3TPIR_3) )        /* cnt > 0 ? -> process next vertex   */
 
-LLBL( G3TPIR_4 ):
+LLBL(G3TPIR_4):
     FEMMS
 
     POP_L     ( ESI )
@@ -179,7 +170,7 @@ ALIGNTEXT32
     FEMMS
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TP2R_3 ) )
+    JE        ( LLBL(G3TP2R_3) )
 
     MOVQ      ( REGIND(ECX), MM0 )      /* m01           | m00                */
     MOVQ      ( REGOFF(16, ECX), MM1 )  /* m11           | m10                */
@@ -187,7 +178,7 @@ ALIGNTEXT32
     MOVQ      ( REGOFF(48, ECX), MM2 )  /* m31           | m30                */
 
 ALIGNTEXT32
-LLBL( G3TP2R_2 ):
+LLBL(G3TP2R_2):
 
     MOVD      ( REGIND(EAX), MM4 )      /*               | x0                 */
     MOVD      ( REGOFF(4, EAX), MM5 )   /*               | x1                 */
@@ -207,9 +198,9 @@ LLBL( G3TP2R_2 ):
     ADD_L     ( CONST(16), EDX )        /* next r                             */
     DEC_L     ( ESI )                   /* decrement vertex counter           */
 
-    JA        ( LLBL( G3TP2R_2 ) )      /* cnt > 0 ? -> process next vertex   */
+    JA        ( LLBL(G3TP2R_2) )        /* cnt > 0 ? -> process next vertex   */
 
-LLBL( G3TP2R_3 ):
+LLBL(G3TP2R_3):
     FEMMS
 
     POP_L     ( ESI )
@@ -248,7 +239,7 @@ ALIGNTEXT32
     FEMMS
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TP2NRR_3 ) )
+    JE        ( LLBL(G3TP2NRR_3) )
 
     MOVD      ( REGIND(ECX), MM0 )      /*               | m00                */
     PUNPCKLDQ ( REGOFF(20, ECX), MM0 )  /* m11           | m00                */
@@ -256,7 +247,7 @@ ALIGNTEXT32
     MOVQ      ( REGOFF(48, ECX), MM2 )  /* m31           | m30                */
 
 ALIGNTEXT32
-LLBL( G3TP2NRR_2 ):
+LLBL(G3TP2NRR_2):
 
     MOVQ      ( REGIND(EAX), MM4 )      /* x1            | x0                 */
     ADD_L     ( EDI, EAX )              /* next vertex                        */
@@ -268,9 +259,9 @@ LLBL( G3TP2NRR_2 ):
     ADD_L     ( CONST(16), EDX )        /* next r                             */
 
     DEC_L     ( ESI )                   /* decrement vertex counter           */
-    JA        ( LLBL( G3TP2NRR_2 ) )    /* cnt > 0 ? -> process next vertex   */
+    JA        ( LLBL(G3TP2NRR_2) )      /* cnt > 0 ? -> process next vertex   */
 
-LLBL( G3TP2NRR_3 ):
+LLBL(G3TP2NRR_3):
     FEMMS
 
     POP_L     ( ESI )
@@ -310,7 +301,7 @@ ALIGNTEXT32
     FEMMS
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TP3R_3 ) )
+    JE        ( LLBL(G3TP3R_3) )
 
     MOVD      ( REGIND(ECX), MM0 )      /*               | m00                */
     PUNPCKLDQ ( REGOFF(16, ECX), MM0 )  /* m10           | m00                */
@@ -326,7 +317,7 @@ ALIGNTEXT32
 
 
 ALIGNTEXT32
-LLBL( G3TP3R_2 ):
+LLBL(G3TP3R_2):
 
     MOVQ      ( REGIND(EAX), MM6 )      /* x1            | x0                 */
     MOVQ      ( MM6, MM7 )              /* x1            | x0                 */
@@ -352,9 +343,9 @@ LLBL( G3TP3R_2 ):
     ADD_L     ( CONST(16), EDX )        /* next r                             */
     DEC_L     ( ESI )                   /* decrement vertex counter           */
 
-    JA        ( LLBL( G3TP3R_2 ) )      /* cnt > 0 ? -> process next vertex   */
+    JA        ( LLBL(G3TP3R_2) )        /* cnt > 0 ? -> process next vertex   */
 
-LLBL( G3TP3R_3 ):
+LLBL(G3TP3R_3):
     FEMMS
 
     POP_L     ( ESI )
@@ -393,7 +384,7 @@ ALIGNTEXT32
     FEMMS
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TP3NRR_3 ) )
+    JE        ( LLBL(G3TP3NRR_3) )
 
     MOVD      ( REGIND(ECX), MM0 )      /*               | m00                */
     PUNPCKLDQ ( REGOFF(20, ECX), MM0 )  /* m11           | m00                */
@@ -403,7 +394,7 @@ ALIGNTEXT32
 
 
 ALIGNTEXT32
-LLBL( G3TP3NRR_2 ):
+LLBL(G3TP3NRR_2):
 
     MOVQ      ( REGIND(EAX), MM4 )      /* x1            | x0                 */
     PFMUL     ( MM0, MM4 )              /* x1*m11        | x0*m00             */
@@ -417,9 +408,9 @@ LLBL( G3TP3NRR_2 ):
     ADD_L     ( CONST(16), EDX )        /* next r                             */
     DEC_L     ( ESI )                   /* decrement vertex counter           */
 
-    JA        ( LLBL( G3TP3NRR_2 ) )    /* cnt > 0 ? -> process next vertex   */
+    JA        ( LLBL(G3TP3NRR_2) )      /* cnt > 0 ? -> process next vertex   */
 
-LLBL( G3TP3NRR_3 ):
+LLBL(G3TP3NRR_3):
     FEMMS
 
     POP_L     ( ESI )
@@ -459,7 +450,7 @@ ALIGNTEXT32
     FEMMS
 
     CMP_L     ( CONST(0), ESI )
-    JE        ( LLBL( G3TPPR_3 ) )
+    JE        ( LLBL(G3TPPR_3) )
 
     MOVD      ( REGIND(ECX), MM0 )      /*               | m00                */
     PUNPCKLDQ ( REGOFF(20, ECX), MM0 )  /* m11           | m00                */
@@ -467,7 +458,7 @@ ALIGNTEXT32
     MOVD      ( REGOFF(56, ECX), MM3 )  /*               | m32                */
 
 ALIGNTEXT32
-LLBL( G3TPPR_2 ):
+LLBL(G3TPPR_2):
 
     MOVQ      ( REGIND(EAX), MM4 )      /* x1            | x0                 */
     PFMUL     ( MM0, MM4 )              /* x1*m11        | x0*m00             */
@@ -479,9 +470,9 @@ LLBL( G3TPPR_2 ):
     ADD_L     ( CONST(16), EDX )        /* next r                             */
 
     DEC_L     ( ESI )                   /* decrement vertex counter           */
-    JA        ( LLBL( G3TPPR_2 ) )      /* cnt > 0 ? -> process next vertex   */
+    JA        ( LLBL(G3TPPR_2) )        /* cnt > 0 ? -> process next vertex   */
 
-LLBL( G3TPPR_3 ):
+LLBL(G3TPPR_3):
     FEMMS
 
     POP_L     ( ESI )

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.40 2000/02/29 03:09:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.41 2000/03/05 16:59:16 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -43,6 +43,11 @@ IOPERM_OBJ = ioperm_noop.o
 # endif
 #endif
 
+#if BuildXF86DRI
+DRI_SRC = sigio.c
+DRI_OBJ = sigio.o
+#endif
+
 MOUSESRC = bsd_mouse.c
 MOUSEOBJ = bsd_mouse.o
 
@@ -68,6 +73,14 @@ APMSRC = pm_noop.c
 APMOBJ = pm_noop.o
 #endif
 
+#if defined(FreeBSDArchitecture)
+KMODSRC = bsd_kmod.c
+KMODOBJ = bsd_kmod.o
+#else
+KMODSRC = kmod_noop.c
+KMODOBJ = kmod_noop.o
+#endif
+
 #if defined(i386Architecture) || defined(ia64Architecture)
 RES_SRC=stdResource.c
 RES_OBJ=stdResource.o
@@ -84,12 +97,12 @@ AXP_OBJ=bsd_ev56.o
 SRCS = bsd_init.c bsd_video.c bsd_io.c bsd_VTsw.c \
        libc_wrapper.c $(IOPERM_SRC) std_kbdEv.c posix_tty.c $(MOUSESRC) \
        $(RES_SRC) stdPci.c vidmem.c $(JOYSTICK_SRC) sigio.c $(APMSRC) \
-       $(AXP_SRC)
+       $(AXP_SRC) $(KMODSRC)
 
 OBJS = bsd_init.o bsd_video.o bsd_io.o bsd_VTsw.o \
        libc_wrapper.o $(IOPERM_OBJ) std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
        $(RES_OBJ) stdPci.o vidmem.o $(JOYSTICK_OBJ) sigio.o $(APMOBJ) \
-       $(AXP_OBJ)
+       $(AXP_OBJ) $(KMODOBJ)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/mi -I$(APINCLUDES) \
@@ -114,6 +127,14 @@ SpecialObjectRule(bsd_ev56.o, bsd_ev56.c, -mcpu=ev56)
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 
+#if BuildXF86DRI
+#define IHaveSubdirs
+SUBDIRS = drm
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+#endif
+
 #if BuildXInputExt
 # if DoLoadableServer
 #  if JoystickSupport
@@ -136,6 +157,7 @@ LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(stdPci.c,../shared)
 LinkSourceFile(vidmem.c,../shared)
 LinkSourceFile(sigio.c,../shared)
+LinkSourceFile(kmod_noop.c,../shared)
 
 DependTarget()
 

@@ -7,23 +7,39 @@
 #include "dd.h"
 
 #include "mm.h"
-#include "i810lib.h"
 #include "i810dd.h"
 #include "i810context.h"
 #include "i810state.h"
-#include "i810depth.h"
 #include "i810tex.h"
 #include "i810log.h"
 #include "i810vb.h"
 #include "i810tris.h"
+#include "i810ioctl.h"
 
+  
+
+static __inline__ GLuint i810PackColor(GLuint format, 
+				       GLubyte r, GLubyte g, 
+				       GLubyte b, GLubyte a)
+{
+   switch (format) {
+   case DV_PF_555:
+      return I810PACKCOLOR1555(r,g,b,a);
+   case DV_PF_565:
+      return I810PACKCOLOR565(r,g,b);
+   default:
+      fprintf(stderr, "unknown format %d\n", (int)format);
+      return 0;
+   }
+}
 
 
 static void i810DDAlphaFunc(GLcontext *ctx, GLenum func, GLclampf ref)
 {
    i810ContextPtr imesa = I810_CONTEXT(ctx);
-
    CARD32 a = (ZA_UPDATE_ALPHAFUNC|ZA_UPDATE_ALPHAREF);
+
+   FLUSH_BATCH(imesa);
 
    switch (ctx->Color.AlphaFunc) {
    case GL_NEVER:    a |= ZA_ALPHA_NEVER;    break;
@@ -44,10 +60,6 @@ static void i810DDAlphaFunc(GLcontext *ctx, GLenum func, GLclampf ref)
    imesa->Setup[I810_CTXREG_ZA] |= a;
 }
 
-/* This shouldn't get called, as the extension is disabled.  However,
- * there are internal Mesa calls, and rogue use of the api which must be
- * caught.
- */
 static void i810DDBlendEquation(GLcontext *ctx, GLenum mode) 
 {
    if (mode != GL_FUNC_ADD_EXT) {
@@ -60,9 +72,8 @@ static void i810DDBlendEquation(GLcontext *ctx, GLenum mode)
 static void i810DDBlendFunc(GLcontext *ctx, GLenum sfactor, GLenum dfactor)
 {
    i810ContextPtr imesa = I810_CONTEXT(ctx);
-   GLuint a;
-
-   a = SDM_UPDATE_SRC_BLEND | SDM_UPDATE_DST_BLEND;
+   GLuint a = SDM_UPDATE_SRC_BLEND | SDM_UPDATE_DST_BLEND;
+   FLUSH_BATCH(imesa);
 
    switch (ctx->Color.BlendSrcRGB) {
    case GL_ZERO:                a |= SDM_SRC_ZERO; break;
@@ -73,13 +84,8 @@ static void i810DDBlendFunc(GLcontext *ctx, GLenum sfactor, GLenum dfactor)
    case GL_ONE_MINUS_SRC_ALPHA: a |= SDM_SRC_INV_SRC_ALPHA; break;
    case GL_DST_ALPHA:           a |= SDM_SRC_ONE; break;
    case GL_ONE_MINUS_DST_ALPHA: a |= SDM_SRC_ZERO; break;
-   case GL_SRC_ALPHA_SATURATE:      
-      a |= SDM_SRC_SRC_ALPHA;	/* use GFXRENDERSTATE_COLOR_FACTOR ??? */
-      break;
-   default: 
-      i810Error("unknown blend source func");
-      exit(1);
-      return;
+   case GL_SRC_ALPHA_SATURATE:  a |= SDM_SRC_SRC_ALPHA; break;
+   default: return;
    }
 
    switch (ctx->Color.BlendDstRGB) {
@@ -91,10 +97,7 @@ static void i810DDBlendFunc(GLcontext *ctx, GLenum sfactor, GLenum dfactor)
    case GL_ONE_MINUS_SRC_COLOR: a |= SDM_DST_INV_SRC_COLOR; break;
    case GL_DST_ALPHA:           a |= SDM_DST_ONE; break;
    case GL_ONE_MINUS_DST_ALPHA: a |= SDM_DST_ZERO; break;
-   default: 
-      i810Error( "unknown blend dst func");
-      exit(1);
-      return;      
+   default: return;      
    }  
 
    imesa->dirty |= I810_UPLOAD_CTX;
@@ -123,6 +126,8 @@ static void i810DDDepthFunc(GLcontext *ctx, GLenum func)
    i810ContextPtr imesa = I810_CONTEXT(ctx);
    int zmode;
 
+   FLUSH_BATCH(imesa);
+
    switch(func)  { 
    case GL_NEVER: zmode = LCS_Z_NEVER; break;
    case GL_ALWAYS: zmode = LCS_Z_ALWAYS; break;
@@ -134,9 +139,9 @@ static void i810DDDepthFunc(GLcontext *ctx, GLenum func)
    case GL_NOTEQUAL: zmode = LCS_Z_NOTEQUAL; break;
    default: return;
    }
-
+   
    imesa->Setup[I810_CTXREG_LCS] &= ~LCS_Z_MASK;
-   imesa->Setup[I810_CTXREG_LCS] |= LCS_UPDATE_ZMODE | zmode;
+   imesa->Setup[I810_CTXREG_LCS] |= LCS_UPDATE_ZMODE | zmode;   
    imesa->dirty |= I810_UPLOAD_CTX;
 }
 
@@ -144,20 +149,62 @@ static void i810DDDepthMask(GLcontext *ctx, GLboolean flag)
 {
    i810ContextPtr imesa = I810_CONTEXT(ctx);
 
+   FLUSH_BATCH(imesa);
+
    imesa->dirty |= I810_UPLOAD_CTX;
    imesa->Setup[I810_CTXREG_B2] &= ~B2_ZB_WRITE_ENABLE;
-   imesa->Setup[I810_CTXREG_B2] |= B2_UPDATE_ZB_WRITE_ENABLE;
 
    if (flag)
      imesa->Setup[I810_CTXREG_B2] |= B2_ZB_WRITE_ENABLE;
 }
 
 
+/* =============================================================
+ * Polygon stipple 
+ * 
+ * The i810 supports a 4x4 stipple natively, GL wants 32x32. 
+ * Fortunately stipple is usually a repeating pattern.  Could
+ * also consider using a multitexturing mechanism for this, but
+ * that has real issues, too.
+ */
+static void i810DDPolygonStipple( GLcontext *ctx, const GLubyte *mask )
+{
+   i810ContextPtr imesa = I810_CONTEXT(ctx);
+   const GLubyte *m = mask;
+   GLubyte p[4];
+   int i,j,k;
+   int active = (ctx->Polygon.StippleFlag && ctx->PB->primitive == GL_POLYGON);
 
+   FLUSH_BATCH(imesa);
+   ctx->Driver.TriangleCaps |= DD_TRI_STIPPLE;
 
+   if (active) {
+      imesa->dirty |= I810_UPLOAD_CTX;
+      imesa->Setup[I810_CTXREG_ST1] &= ~ST1_ENABLE;
+   }
 
+   p[0] = mask[0] & 0xf; p[0] |= p[0] << 4;
+   p[1] = mask[4] & 0xf; p[1] |= p[1] << 4;
+   p[2] = mask[8] & 0xf; p[2] |= p[2] << 4;
+   p[3] = mask[12] & 0xf; p[3] |= p[3] << 4;
 
+   for (k = 0 ; k < 8 ; k++)
+      for (j = 0 ; j < 4; j++) 
+	 for (i = 0 ; i < 4 ; i++) 
+	    if (*m++ != p[j]) {
+	       ctx->Driver.TriangleCaps &= ~DD_TRI_STIPPLE;
+	       return;
+	    }
+   
+   imesa->Setup[I810_CTXREG_ST1] &= ~0xffff;
+   imesa->Setup[I810_CTXREG_ST1] |= ( ((p[0] & 0xf) << 0) |
+				      ((p[1] & 0xf) << 4) |
+				      ((p[2] & 0xf) << 8) |
+				      ((p[3] & 0xf) << 12) );   
 
+   if (active)
+      imesa->Setup[I810_CTXREG_ST1] |= ST1_ENABLE;
+}
 
 
 
@@ -167,40 +214,26 @@ static void i810DDDepthMask(GLcontext *ctx, GLboolean flag)
 
 
 static void i810DDScissor( GLcontext *ctx, GLint x, GLint y, 
-			  GLsizei w, GLsizei h )
+			   GLsizei w, GLsizei h )
 { 
    i810ContextPtr imesa = I810_CONTEXT(ctx);
-   __DRIdrawablePrivate *dPriv = imesa->driDrawable;
-   int x1,x2,y1,y2;
 
-   x1 = ctx->Scissor.X;
-   x2 = ctx->Scissor.X + ctx->Scissor.Width - 1;
-   y1 = dPriv->h - ctx->Scissor.Y - ctx->Scissor.Height;
-   y2 = dPriv->h - ctx->Scissor.Y - 1;
-  
-   if (x1 < 0) x1 = 0;
-   if (y1 < 0) y1 = 0;
-   if (x2 >= dPriv->w) x2 = dPriv->w-1;
-   if (y2 >= dPriv->h) y2 = dPriv->h-1;
-
-   if (x1 > x2 || y1 > y2) {
-      x1 = 0; x2 = 0;
-      y2 = 0; y1 = 1;
-   }
-
-   /* Need to push this into drawing rectangle.
-    */
-#if 0
-   imesa->Setup[I810_CTXREG_SCI0] = GFX_OP_SCISSOR_INFO;
-   imesa->Setup[I810_CTXREG_SCI1] = (y1<<16)|x1;
-   imesa->Setup[I810_CTXREG_SCI2] = (y2<<16)|x2;
+   FLUSH_BATCH(imesa);
+   imesa->scissor_rect.x1 = x;
+   imesa->scissor_rect.y1 = imesa->driDrawable->h - (y+h);
+   imesa->scissor_rect.x2 = x+w;
+   imesa->scissor_rect.y2 = imesa->driDrawable->h - y;
 
 
-   /* Need to intersect with cliprects???
-    */
-   imesa->dirty |= I810_UPLOAD_CTX;
-#endif
+   if (I810_DEBUG&DEBUG_VERBOSE_2D) 
+      fprintf(stderr, "SET SCISSOR %d,%d-%d,%d\n", 
+	      imesa->scissor_rect.x1,
+	      imesa->scissor_rect.y1,
+	      imesa->scissor_rect.x2,
+	      imesa->scissor_rect.y2);
 
+
+   imesa->dirty |= I810_UPLOAD_CLIPRECTS;
 }
 
 
@@ -209,36 +242,54 @@ static void i810DDDither(GLcontext *ctx, GLboolean enable)
 }
 
 
-static GLboolean i810DDSetBuffer(GLcontext *ctx, GLenum mode )
+static GLboolean i810DDSetDrawBuffer(GLcontext *ctx, GLenum mode )
 {
    i810ContextPtr imesa = I810_CONTEXT(ctx);
 
+   FLUSH_BATCH(imesa);
 
-   fprintf(stderr, "i810DDSetBuffer %s\n", gl_lookup_enum_by_nr( mode ));
-
-   imesa->Fallback &= ~I810_FALLBACK_BUFFER;
+   imesa->Fallback &= ~I810_FALLBACK_DRAW_BUFFER;
 
    if (mode == GL_FRONT_LEFT) 
    {
-      imesa->drawOffset = imesa->i810Screen->fbOffset;
+      imesa->drawMap = imesa->driScreen->pFB;
       imesa->BufferSetup[I810_DESTREG_DI1] = (imesa->i810Screen->fbOffset | 
-					      imesa->i810Screen->auxPitchBits);
+					      imesa->i810Screen->backPitchBits);
       imesa->dirty |= I810_UPLOAD_BUFFERS;
       i810XMesaSetFrontClipRects( imesa );
       return GL_TRUE;
    } 
    else if (mode == GL_BACK_LEFT) 
    {
-      imesa->drawOffset = imesa->i810Screen->backOffset;
+      imesa->drawMap = imesa->i810Screen->back.map;
       imesa->BufferSetup[I810_DESTREG_DI1] = (imesa->i810Screen->backOffset | 
-					      imesa->i810Screen->auxPitchBits);
+					      imesa->i810Screen->backPitchBits);
       imesa->dirty |= I810_UPLOAD_BUFFERS;
       i810XMesaSetBackClipRects( imesa );
       return GL_TRUE;
    }
 
-   imesa->Fallback |= I810_FALLBACK_BUFFER;
+   imesa->Fallback |= I810_FALLBACK_DRAW_BUFFER;
    return GL_FALSE;
+}
+
+static void i810DDSetReadBuffer(GLcontext *ctx, GLframebuffer *colorBuffer,
+				GLenum mode )
+{
+   i810ContextPtr imesa = I810_CONTEXT(ctx);
+
+   if (mode == GL_FRONT_LEFT) 
+   {
+      imesa->readMap = imesa->driScreen->pFB;
+      imesa->Fallback &= ~I810_FALLBACK_READ_BUFFER;
+   } 
+   else if (mode == GL_BACK_LEFT) 
+   {
+      imesa->readMap = imesa->i810Screen->back.map;
+      imesa->Fallback &= ~I810_FALLBACK_READ_BUFFER;
+   }
+   else
+      imesa->Fallback |= I810_FALLBACK_READ_BUFFER;
 }
 
 
@@ -248,9 +299,7 @@ static void i810DDSetColor(GLcontext *ctx,
 			   GLubyte b, GLubyte a )
 {
    i810ContextPtr imesa = I810_CONTEXT(ctx);
-
-   imesa->MonoColor = i810PackColor( imesa->i810Screen->fbFormat,
-				      r, g, b, a );
+   imesa->MonoColor = i810PackColor( imesa->i810Screen->fbFormat, r, g, b, a );
 }
 
 
@@ -259,9 +308,7 @@ static void i810DDClearColor(GLcontext *ctx,
 			     GLubyte b, GLubyte a )
 {
    i810ContextPtr imesa = I810_CONTEXT(ctx);
-
-   imesa->ClearColor = i810PackColor( imesa->i810Screen->fbFormat,
-				      r, g, b, a );
+   imesa->ClearColor = i810PackColor( imesa->i810Screen->fbFormat, r, g, b, a );
 }
 
 
@@ -274,6 +321,8 @@ static void i810DDCullFaceFrontFace(GLcontext *ctx, GLenum unused)
    i810ContextPtr imesa = I810_CONTEXT(ctx);
    GLuint mode = LCS_CULL_BOTH;
    
+   FLUSH_BATCH(imesa);
+
    if (ctx->Polygon.CullFaceMode != GL_FRONT_AND_BACK) {
       mode = LCS_CULL_CW;
       if (ctx->Polygon.CullFaceMode == GL_FRONT)
@@ -288,27 +337,49 @@ static void i810DDCullFaceFrontFace(GLcontext *ctx, GLenum unused)
    {
       imesa->dirty |= I810_UPLOAD_CTX;
       imesa->Setup[I810_CTXREG_LCS] &= ~LCS_CULL_MASK;
-      imesa->Setup[I810_CTXREG_LCS] |= (LCS_UPDATE_CULL_MODE | mode);
+      imesa->Setup[I810_CTXREG_LCS] |= mode;
    }
 }
 
 
 static void i810DDReducedPrimitiveChange( GLcontext *ctx, GLenum prim )
 {
-   if (ctx->Polygon.CullFlag) {
-      i810ContextPtr imesa = I810_CONTEXT(ctx);
-      GLuint mode = imesa->LcsCullMode;
+   i810ContextPtr imesa = I810_CONTEXT(ctx);
+   FLUSH_BATCH(imesa);
 
-      if (ctx->PB->primitive != GL_POLYGON)
-	 mode = LCS_CULL_DISABLE;
+   imesa->dirty |= I810_UPLOAD_CTX;
+   imesa->Setup[I810_CTXREG_LCS] &= ~LCS_CULL_MASK;
+   imesa->Setup[I810_CTXREG_ST1] &= ~ST1_ENABLE;
+   imesa->Setup[I810_CTXREG_AA] &= ~AA_ENABLE;
 
-      imesa->dirty |= I810_UPLOAD_CTX;
-      imesa->Setup[I810_CTXREG_LCS] &= ~LCS_CULL_MASK;
-      imesa->Setup[I810_CTXREG_LCS] |= (LCS_UPDATE_CULL_MODE | mode);
-
-      LOCK_HARDWARE(imesa);
-      i810EmitHwStateLocked( imesa );	
-      UNLOCK_HARDWARE(imesa);
+   switch (ctx->PB->primitive) {
+   case GL_POLYGON:
+      if (ctx->Polygon.StippleFlag && 
+	  (ctx->Driver.TriangleCaps & DD_TRI_STIPPLE))
+	 imesa->Setup[I810_CTXREG_ST1] |= ST1_ENABLE;
+      if (ctx->Polygon.CullFlag) 
+	 imesa->Setup[I810_CTXREG_LCS] |= imesa->LcsCullMode;
+      else 
+	 imesa->Setup[I810_CTXREG_LCS] |= LCS_CULL_DISABLE;
+      if (ctx->Polygon.SmoothFlag)
+	 imesa->Setup[I810_CTXREG_AA] |= AA_ENABLE;
+      break;
+   case GL_LINES:
+      imesa->Setup[I810_CTXREG_LCS] &= ~LCS_LINEWIDTH_0_5;
+      if (ctx->Line.SmoothFlag) {
+	 imesa->Setup[I810_CTXREG_AA] |= AA_ENABLE;  
+	 imesa->Setup[I810_CTXREG_LCS] |= LCS_LINEWIDTH_0_5;
+      } 
+      imesa->Setup[I810_CTXREG_LCS] |= LCS_CULL_DISABLE;
+      break;
+   case GL_POINTS:
+      if (ctx->Point.SmoothFlag)
+	 imesa->Setup[I810_CTXREG_AA] |= AA_ENABLE;      
+      imesa->Setup[I810_CTXREG_LCS] |= LCS_CULL_DISABLE;
+      break;
+   default:
+      imesa->Setup[I810_CTXREG_LCS] |= LCS_CULL_DISABLE;
+      break;
    }
 }
 
@@ -318,15 +389,36 @@ static void i810DDReducedPrimitiveChange( GLcontext *ctx, GLenum prim )
  * Color masks
  */
 
-/* Mesa calls this from the wrong place.
+/* Mesa calls this from the wrong place - it is called a very large
+ * number of redundant times.
  *
- * Its a fallback...
+ * Colormask can be simulated by multipass or multitexture techniques.
  */
 static GLboolean i810DDColorMask(GLcontext *ctx, 
 				 GLboolean r, GLboolean g, 
 				 GLboolean b, GLboolean a )
 {
-   return 1;
+   i810ContextPtr imesa = I810_CONTEXT( ctx );
+   GLuint tmp = 0;
+   GLuint rv = 1;
+
+   imesa->Fallback &= ~I810_FALLBACK_COLORMASK;
+
+   if (r && g && b) {
+      tmp = imesa->Setup[I810_CTXREG_B2] | B2_FB_WRITE_ENABLE;
+   } else if (!r && !g && !b) {
+      tmp = imesa->Setup[I810_CTXREG_B2] & ~B2_FB_WRITE_ENABLE;
+   } else {
+      rv = 0;
+      imesa->Fallback |= I810_FALLBACK_COLORMASK;
+   }
+      
+   if (tmp != imesa->Setup[I810_CTXREG_B2]) {
+      FLUSH_BATCH(imesa);
+      imesa->Setup[I810_CTXREG_B2] = tmp;
+   }
+
+   return rv;
 }
 
 /* Seperate specular not fully implemented in hardware...  Needs
@@ -336,8 +428,14 @@ static GLboolean i810DDColorMask(GLcontext *ctx,
 static void i810DDLightModelfv(GLcontext *ctx, GLenum pname, 
 			      const GLfloat *param)
 {
-   if (pname == GL_LIGHT_MODEL_COLOR_CONTROL) {
-      I810_CONTEXT(ctx)->new_state |= I810_NEW_TEXTURE;
+   if (pname == GL_LIGHT_MODEL_COLOR_CONTROL) 
+   {            
+      i810ContextPtr imesa = I810_CONTEXT( ctx );
+      FLUSH_BATCH(imesa);
+
+      imesa->Fallback &= ~I810_FALLBACK_SPECULAR;
+      if (ctx->Light.Model.ColorControl == GL_SEPARATE_SPECULAR_COLOR)
+	 imesa->Fallback |= I810_FALLBACK_SPECULAR;
    }
 }
 
@@ -372,64 +470,105 @@ static void i810DDEnable(GLcontext *ctx, GLenum cap, GLboolean state)
 
    switch(cap) {
    case GL_ALPHA_TEST:
+      FLUSH_BATCH(imesa);
       imesa->dirty |= I810_UPLOAD_CTX;
       imesa->Setup[I810_CTXREG_B1] &= ~B1_ALPHA_TEST_ENABLE;
-      imesa->Setup[I810_CTXREG_B1] |= B1_UPDATE_ALPHA_TEST_ENABLE;
       if (state)
 	 imesa->Setup[I810_CTXREG_B1] |= B1_ALPHA_TEST_ENABLE;
       break;
    case GL_BLEND:
+      FLUSH_BATCH(imesa);
       imesa->dirty |= I810_UPLOAD_CTX;
       imesa->Setup[I810_CTXREG_B1] &= ~B1_BLEND_ENABLE;
-      imesa->Setup[I810_CTXREG_B1] |= B1_UPDATE_BLEND_ENABLE;
       if (state)
 	 imesa->Setup[I810_CTXREG_B1] |= B1_BLEND_ENABLE;
       break;
    case GL_DEPTH_TEST:
+      FLUSH_BATCH(imesa);
       imesa->dirty |= I810_UPLOAD_CTX;
       imesa->Setup[I810_CTXREG_B1] &= ~B1_Z_TEST_ENABLE;
-      imesa->Setup[I810_CTXREG_B1] |= B1_UPDATE_Z_TEST_ENABLE;
       if (state)
 	 imesa->Setup[I810_CTXREG_B1] |= B1_Z_TEST_ENABLE;
       break;
    case GL_SCISSOR_TEST:
-#if 0
-      imesa->dirty |= I810_UPLOAD_CTX;
-      imesa->Setup[I810_CTXREG_SC] &= ~SC_ENABLE_MASK;
-      imesa->Setup[I810_CTXREG_SC] |= SC_UPDATE_SCISSOR;
-      if (state)
-	 imesa->Setup[I810_CTXREG_SC] |= SC_ENABLE;
-#endif
+      FLUSH_BATCH(imesa);
+      imesa->scissor = state;
+      imesa->dirty |= I810_UPLOAD_CLIPRECTS;
+      break;
+   case GL_POLYGON_STIPPLE:      
+      if ((ctx->Driver.TriangleCaps & DD_TRI_STIPPLE) &&
+	  ctx->PB->primitive == GL_POLYGON) 
+      {
+	 FLUSH_BATCH(imesa);
+	 imesa->dirty |= I810_UPLOAD_CTX;
+	 imesa->Setup[I810_CTXREG_ST1] &= ~ST1_ENABLE;
+	 if (state)
+	    imesa->Setup[I810_CTXREG_ST1] |= ST1_ENABLE;
+      }
+      break;
+   case GL_LINE_SMOOTH:
+      if (ctx->PB->primitive == GL_LINE) {
+	 FLUSH_BATCH(imesa);
+	 imesa->dirty |= I810_UPLOAD_CTX;
+	 imesa->Setup[I810_CTXREG_AA] &= ~AA_ENABLE;
+	 imesa->Setup[I810_CTXREG_LCS] &= ~LCS_LINEWIDTH_0_5;
+	 if (state) {
+	    imesa->Setup[I810_CTXREG_AA] |= AA_ENABLE;
+	    imesa->Setup[I810_CTXREG_LCS] |= LCS_LINEWIDTH_0_5;
+	 }
+      }
+      break;
+   case GL_POINT_SMOOTH:
+      if (ctx->PB->primitive == GL_POINT) {
+	 FLUSH_BATCH(imesa);
+	 imesa->dirty |= I810_UPLOAD_CTX;
+	 imesa->Setup[I810_CTXREG_AA] &= ~AA_ENABLE;
+	 if (state) 
+	    imesa->Setup[I810_CTXREG_AA] |= AA_ENABLE;
+      }
+      break;
+   case GL_POLYGON_SMOOTH:
+      if (ctx->PB->primitive == GL_POLYGON) {
+	 FLUSH_BATCH(imesa);
+	 imesa->dirty |= I810_UPLOAD_CTX;
+	 imesa->Setup[I810_CTXREG_AA] &= ~AA_ENABLE;
+	 if (state) 
+	    imesa->Setup[I810_CTXREG_AA] |= AA_ENABLE;
+      }
       break;
    case GL_FOG:
+      FLUSH_BATCH(imesa);
       imesa->dirty |= I810_UPLOAD_CTX;
       imesa->Setup[I810_CTXREG_B1] &= ~B1_FOG_ENABLE;
-      imesa->Setup[I810_CTXREG_B1] |= B1_UPDATE_FOG_ENABLE;
       if (state)
 	 imesa->Setup[I810_CTXREG_B1] |= B1_FOG_ENABLE;
       break;
    case GL_CULL_FACE:
       if (ctx->PB->primitive == GL_POLYGON) {
+	 FLUSH_BATCH(imesa);
 	 imesa->dirty |= I810_UPLOAD_CTX;
 	 imesa->Setup[I810_CTXREG_LCS] &= ~LCS_CULL_MASK;
-	 imesa->Setup[I810_CTXREG_LCS] |= LCS_UPDATE_CULL_MODE;
 	 if (state)
 	    imesa->Setup[I810_CTXREG_LCS] |= imesa->LcsCullMode;
 	 else
 	    imesa->Setup[I810_CTXREG_LCS] |= LCS_CULL_DISABLE;
       }
       break;
+   case GL_TEXTURE_1D:      
+   case GL_TEXTURE_3D:      
+      FLUSH_BATCH(imesa);
+      imesa->new_state |= I810_NEW_TEXTURE;
+      break;
    case GL_TEXTURE_2D:      
+      FLUSH_BATCH(imesa);
       imesa->new_state |= I810_NEW_TEXTURE;
       imesa->dirty |= I810_UPLOAD_CTX;
       if (ctx->Texture.CurrentUnit == 0) {
 	 imesa->Setup[I810_CTXREG_MT] &= ~MT_TEXEL0_ENABLE;
-	 imesa->Setup[I810_CTXREG_MT] |= MT_UPDATE_TEXEL0_STATE;
 	 if (state)
 	    imesa->Setup[I810_CTXREG_MT] |= MT_TEXEL0_ENABLE;
       } else {
 	 imesa->Setup[I810_CTXREG_MT] &= ~MT_TEXEL1_ENABLE;
-	 imesa->Setup[I810_CTXREG_MT] |= MT_UPDATE_TEXEL1_STATE;
 	 if (state)
 	    imesa->Setup[I810_CTXREG_MT] |= MT_TEXEL1_ENABLE;
       }
@@ -444,91 +583,19 @@ static void i810DDEnable(GLcontext *ctx, GLenum cap, GLboolean state)
 /* =============================================================
  */
 
-/* Delightfully few possibilities:
- */
-void i810DDPrintState( const char *msg, GLuint state )
-{
-   fprintf(stderr, "%s (0x%x): %s\n",
-	   msg,
-	   (unsigned int) state,
-	   (state & I810_NEW_TEXTURE) ? "texture, " : "");
-}
 
 void i810DDUpdateHwState( GLcontext *ctx )
 {
    i810ContextPtr imesa = I810_CONTEXT(ctx);
 
-   if (imesa->new_state & I810_NEW_TEXTURE)
+   if (imesa->new_state & I810_NEW_TEXTURE) {
+      FLUSH_BATCH(imesa);
       i810UpdateTextureState( ctx );
+   }
 
    imesa->new_state = 0;
-
-   if (imesa->dirty) {
-      LOCK_HARDWARE(imesa);
-      i810EmitHwStateLocked( imesa );	
-      UNLOCK_HARDWARE(imesa);
-   }
 }
 
-
-
-/*
- * i810DmaExecute
- * Add a block of data to the dma buffer
- *
- * -- In ring buffer mode, must be called with lock held, and translates to 
- *    OUT_RING rather than outbatch
- *
- * -- In dma mode, probably won't be used because state updates will have
- *    to be done via the kernel for security...
- */
-static void i810DmaExecute( i810ContextPtr imesa,
-			    GLuint *code, int dwords, const char *where ) 
-{	
-   if (I810_DEBUG & DEBUG_VERBOSE_RING)
-      fprintf(stderr, "i810DmaExecute (%s)\n", where);
-
-   if (dwords & 1) {
-      i810Error( "Misaligned buffer in i810DmaExecute\n" );
-      exit(1);
-   }
-
-   {
-      int i;
-      BEGIN_BATCH( imesa, dwords);
-
-      for ( i = 0 ; i < dwords ; i++ ) {
-	 if (0) fprintf(stderr, "%d: %x\n", i, code[i]);
-	 OUT_BATCH( code[i] );
-      }
-
-      ADVANCE_BATCH();
-   }
-}
-
-
-
-void i810EmitScissorValues( i810ContextPtr imesa, int nr, int emit )
-{
-   int x1 = imesa->pClipRects[nr].x1 - imesa->drawX;
-   int y1 = imesa->pClipRects[nr].y1 - imesa->drawY;
-   int x2 = imesa->pClipRects[nr].x2 - imesa->drawX;
-   int y2 = imesa->pClipRects[nr].y2 - imesa->drawY;
-
-   if (I810_DEBUG&DEBUG_VERBOSE_DRI)
-      fprintf(stderr, "i810EmitScissorValues %d,%d - %d,%d\n",
-	      x1,y1,x2,y2);
-
-   imesa->ClipSetup[I810_CLIPREG_SCI1] = (x1 | (y1 << 16));
-   imesa->ClipSetup[I810_CLIPREG_SCI2] = (x2 | (y2 << 16));
-   imesa->ClipSetup[I810_CLIPREG_SC] = ( GFX_OP_SCISSOR |
-					 SC_UPDATE_SCISSOR |
-					 SC_ENABLE );
-
-   if (emit)
-      i810DmaExecute( imesa, 
-		      imesa->ClipSetup, I810_CLIP_SETUP_SIZE, "cliprect" );
-}
 
 void i810EmitDrawingRectangle( i810ContextPtr imesa )
 {
@@ -545,7 +612,6 @@ void i810EmitDrawingRectangle( i810ContextPtr imesa )
     */
    imesa->BufferSetup[I810_DESTREG_DR4] = ((y0<<16) | 
 					   (((unsigned)x0)&0xFFFF));
-
   
    /* Clip to screen.
     */
@@ -556,72 +622,72 @@ void i810EmitDrawingRectangle( i810ContextPtr imesa )
 
 
    /* Onscreen drawing rectangle.
-    *
-    * TODO: clip again to GL scissor values.
     */
    imesa->BufferSetup[I810_DESTREG_DR2] = ((y0<<16) | x0);
-   imesa->BufferSetup[I810_DESTREG_DR3] = ((y1<<16) | x1);
+   imesa->BufferSetup[I810_DESTREG_DR3] = (((y1+1)<<16) | (x1+1));
    imesa->dirty |= I810_UPLOAD_BUFFERS;
 }
 
 
 static void i810DDPrintDirty( const char *msg, GLuint state )
 {
-   fprintf(stderr, "%s (0x%x): %s%s%s%s%s%s%s\n",	   
+   fprintf(stderr, "%s (0x%x): %s%s%s%s%s\n",	   
 	   msg,
 	   (unsigned int) state,
-	   (state & I810_REFRESH_RING)      ? "read-lp-ring, " : "",
-	   (state & I810_REQUIRE_QUIESCENT) ? "req-quiescent, " : "",
 	   (state & I810_UPLOAD_TEX0IMAGE)  ? "upload-tex0, " : "",
 	   (state & I810_UPLOAD_TEX1IMAGE)  ? "upload-tex1, " : "",
 	   (state & I810_UPLOAD_CTX)        ? "upload-ctx, " : "",
 	   (state & I810_UPLOAD_BUFFERS)    ? "upload-bufs, " : "",
-	   (state & I810_EMIT_CLIPRECT)     ? "emit-single-cliprect, " : ""
+	   (state & I810_UPLOAD_CLIPRECTS)  ? "upload-cliprects, " : ""
 	   );
 }
 
 
-/* Spew the state onto the ringbuffer and/or texture memory.
+/* Push the state into the sarea and/or texture memory.
  */
 void i810EmitHwStateLocked( i810ContextPtr imesa )
 {
    if (I810_DEBUG & DEBUG_VERBOSE_API)
-      i810DDPrintDirty( "i810EmitHwStateLocked", imesa->dirty );
+      i810DDPrintDirty( "\n\n\ni810EmitHwStateLocked", imesa->dirty );
 
-   if (imesa->dirty & I810_REQUIRE_QUIESCENT) {
-      i810glx.c_drawWaits += _I810Sync( imesa );
-   }
-
-   /* TODO: Refine mechanism to be equivalent to UploadSubImage
-    */
-   if ((imesa->dirty & I810_UPLOAD_TEX0IMAGE) && imesa->CurrentTexObj[0])
-      i810UploadTexImages(imesa, imesa->CurrentTexObj[0]);
+   if (imesa->dirty & ~I810_UPLOAD_CLIPRECTS)
+   {
+      if ((imesa->dirty & I810_UPLOAD_TEX0IMAGE) && imesa->CurrentTexObj[0])
+	 i810UploadTexImages(imesa, imesa->CurrentTexObj[0]);
    
-   if ((imesa->dirty & I810_UPLOAD_TEX1IMAGE) && imesa->CurrentTexObj[1])
-      i810UploadTexImages(imesa, imesa->CurrentTexObj[1]);
+      if ((imesa->dirty & I810_UPLOAD_TEX1IMAGE) && imesa->CurrentTexObj[1])
+	 i810UploadTexImages(imesa, imesa->CurrentTexObj[1]);
   
-   if ((imesa->dirty & I810_UPLOAD_CTX)) {
-      i810DmaExecute( imesa, imesa->Setup, I810_CTX_SETUP_SIZE, "context" );
+      if (imesa->dirty & I810_UPLOAD_CTX)
+	 memcpy( imesa->sarea->ContextState, 
+		 imesa->Setup, 
+		 sizeof(imesa->Setup) );
 
-      if (imesa->CurrentTexObj[0])
-	 i810DmaExecute( imesa, imesa->CurrentTexObj[0]->Setup,
-			 I810_TEX_SETUP_SIZE, "tex-0");
+      if ((imesa->dirty & I810_UPLOAD_TEX0) && imesa->CurrentTexObj[0]) {
+	 imesa->sarea->dirty |= I810_UPLOAD_TEX0;
+	 memcpy(imesa->sarea->TexState[0],
+		imesa->CurrentTexObj[0]->Setup,
+		sizeof(imesa->sarea->TexState[0]));
+      }
 
-      if (imesa->CurrentTexObj[1]) 
-	 i810DmaExecute( imesa, imesa->CurrentTexObj[1]->Setup,
-			 I810_TEX_SETUP_SIZE, "tex-1");
+      if ((imesa->dirty & I810_UPLOAD_TEX1) && imesa->CurrentTexObj[1]) {
+	 imesa->sarea->dirty |= I810_UPLOAD_TEX1;
+	 memcpy(imesa->sarea->TexState[1],
+		imesa->CurrentTexObj[1]->Setup,
+		sizeof(imesa->sarea->TexState[1]));
+      }
+      
+      if (imesa->dirty & I810_UPLOAD_BUFFERS) 
+	 memcpy( imesa->sarea->BufferState, 
+		 imesa->BufferSetup, 
+		 sizeof(imesa->BufferSetup) );
+
+      imesa->sarea->dirty |= (imesa->dirty & 
+			      ~(I810_UPLOAD_TEX1|I810_UPLOAD_TEX0));
+      imesa->dirty &= I810_UPLOAD_CLIPRECTS;
    }
-
-   if (imesa->dirty & I810_UPLOAD_BUFFERS) 
-      i810DmaExecute( imesa, imesa->BufferSetup, 
-		      I810_DEST_SETUP_SIZE, "buffers" );
-   
-   if (imesa->dirty & I810_EMIT_CLIPRECT)
-      i810DmaExecute( imesa, imesa->ClipSetup, 
-		      I810_CLIP_SETUP_SIZE, "cliprect" );
-
-   imesa->dirty = 0;
 }
+
 
 
 void i810DDInitState( i810ContextPtr imesa )
@@ -797,7 +863,7 @@ void i810DDInitState( i810ContextPtr imesa )
 				     LCS_UPDATE_ZMODE |
 				     LCS_Z_LESS |
 				     LCS_UPDATE_LINEWIDTH |
-				     (0x2<<LCS_LINEWIDTH_SHIFT) |
+				     LCS_LINEWIDTH_1_0 |
 				     LCS_UPDATE_ALPHA_INTERP |
 				     LCS_ALPHA_INTERP |
 				     LCS_UPDATE_FOG_INTERP |
@@ -825,11 +891,9 @@ void i810DDInitState( i810ContextPtr imesa )
    imesa->Setup[I810_CTXREG_ST0] = GFX_OP_STIPPLE;
    imesa->Setup[I810_CTXREG_ST1] = 0;
 
-
-
    imesa->Setup[I810_CTXREG_AA] = ( GFX_OP_ANTIALIAS |
 				    AA_UPDATE_EDGEFLAG |
-				    0 |
+				    AA_ENABLE_EDGEFLAG | /* ? */
 				    AA_UPDATE_POLYWIDTH |
 				    AA_POLYWIDTH_05 |
 				    AA_UPDATE_LINEWIDTH |
@@ -839,38 +903,29 @@ void i810DDInitState( i810ContextPtr imesa )
 				    AA_UPDATE_AA_ENABLE |
 				    0 );
 
-
-
-   memset(imesa->ClipSetup, 0, sizeof(imesa->ClipSetup));
-   imesa->ClipSetup[I810_CLIPREG_SCI0] = GFX_OP_SCISSOR_INFO; 
-   imesa->ClipSetup[I810_CLIPREG_SCI1] = 0;
-   imesa->ClipSetup[I810_CLIPREG_SCI2] = 0;
-   imesa->ClipSetup[I810_CLIPREG_SC] = ( GFX_OP_SCISSOR | 
-					 SC_UPDATE_SCISSOR |
-					 0 );
-
-   /* This stuff is all invarient as long as we are using
-    * shared back and depth buffers.  
-    */
    memset(imesa->BufferSetup, 0, sizeof(imesa->BufferSetup));
-   imesa->drawOffset = i810Screen->backOffset;
    imesa->BufferSetup[I810_DESTREG_DI0] = CMD_OP_DESTBUFFER_INFO;
 
-   if (imesa->glCtx->Color.DriverDrawBuffer == GL_BACK_LEFT)
+   if (imesa->glCtx->Color.DriverDrawBuffer == GL_BACK_LEFT) {
+      imesa->drawMap = i810Screen->back.map;
       imesa->BufferSetup[I810_DESTREG_DI1] = (i810Screen->backOffset | 
-					      i810Screen->auxPitchBits);
-   else
+					      i810Screen->backPitchBits);
+   } else {
+      imesa->drawMap = imesa->driScreen->pFB;
       imesa->BufferSetup[I810_DESTREG_DI1] = (i810Screen->fbOffset | 
-					      i810Screen->auxPitchBits);
+					      i810Screen->backPitchBits);
+   }
 
+   if (imesa->glCtx->Color.DriverDrawBuffer == GL_BACK_LEFT) {
+      imesa->readMap = i810Screen->back.map;
+   } else {
+      imesa->readMap = imesa->driScreen->pFB;
+   }
 
    imesa->BufferSetup[I810_DESTREG_DV0] = GFX_OP_DESTBUFFER_VARS;
    imesa->BufferSetup[I810_DESTREG_DV1] = (DV_HORG_BIAS_OGL |
 					   DV_VORG_BIAS_OGL |
 					   i810Screen->fbFormat);
-   imesa->BufferSetup[I810_DESTREG_ZB0] = CMD_OP_Z_BUFFER_INFO;
-   imesa->BufferSetup[I810_DESTREG_ZB1] = (i810Screen->depthOffset | 
-					   i810Screen->auxPitchBits);
 
    imesa->BufferSetup[I810_DESTREG_DR0] = GFX_OP_DRAWRECT_INFO;
    imesa->BufferSetup[I810_DESTREG_DR1] = DR1_RECT_CLIP_ENABLE;
@@ -886,17 +941,31 @@ void i810DDUpdateState( GLcontext *ctx )
 {
    i810ContextPtr imesa = I810_CONTEXT( ctx );
 
+   /* Have to do this here to detect texture fallbacks in time:
+    */
+   if (I810_CONTEXT(ctx)->new_state & I810_NEW_TEXTURE)
+      i810DDUpdateHwState( ctx );
+
+
    if (ctx->NewState & INTERESTED) {
       i810DDChooseRenderState(ctx);  
       i810ChooseRasterSetupFunc(ctx);
    }
+
+   if (0) 
+      fprintf(stderr, "IndirectTriangles %x Fallback %x\n", 
+	      imesa->IndirectTriangles, imesa->Fallback);
    
-   /* TODO: stop mesa from clobbering these.
-    */
-   ctx->Driver.PointsFunc=imesa->PointsFunc;
-   ctx->Driver.LineFunc=imesa->LineFunc;
-   ctx->Driver.TriangleFunc=imesa->TriangleFunc;
-   ctx->Driver.QuadFunc=imesa->QuadFunc;
+   if (!imesa->Fallback)
+   {
+      ctx->IndirectTriangles &= ~DD_SW_RASTERIZE;
+      ctx->IndirectTriangles |= imesa->IndirectTriangles;
+
+      ctx->Driver.PointsFunc=imesa->PointsFunc;
+      ctx->Driver.LineFunc=imesa->LineFunc;
+      ctx->Driver.TriangleFunc=imesa->TriangleFunc;
+      ctx->Driver.QuadFunc=imesa->QuadFunc;
+   }
 }
 
 
@@ -919,8 +988,13 @@ void i810DDInitStateFuncs(GLcontext *ctx)
    ctx->Driver.ReducedPrimitiveChange = i810DDReducedPrimitiveChange;
    ctx->Driver.RenderStart = i810DDUpdateHwState; 
    ctx->Driver.RenderFinish = 0; 
+   
+   ctx->Driver.PolygonStipple = i810DDPolygonStipple;
+   ctx->Driver.LineStipple = 0;
 
-   ctx->Driver.SetBuffer = i810DDSetBuffer;
+   ctx->Driver.SetReadBuffer = i810DDSetReadBuffer;
+   ctx->Driver.SetDrawBuffer = i810DDSetDrawBuffer;
+
    ctx->Driver.Color = i810DDSetColor;
    ctx->Driver.ClearColor = i810DDClearColor;
    ctx->Driver.Dither = i810DDDither;
@@ -928,6 +1002,5 @@ void i810DDInitStateFuncs(GLcontext *ctx)
    ctx->Driver.Index = 0;
    ctx->Driver.ClearIndex = 0;
    ctx->Driver.IndexMask = 0;
-
 }
 

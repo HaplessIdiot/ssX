@@ -3,7 +3,7 @@
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -390,6 +390,8 @@ struct dd_function_table {
    /***
     *** For supporting hardware Z buffers:
     *** Either ALL or NONE of these functions must be implemented!
+    *** NOTE that Each depth value is a 32-bit GLuint.  If the depth
+    *** buffer is less than 32 bits deep then the extra upperbits are zero.
     ***/
 
    void (*WriteDepthSpan)( GLcontext *ctx, GLuint n, GLint x, GLint y,
@@ -431,12 +433,10 @@ struct dd_function_table {
     * Else, only write stencil[i] if mask[i] is non-zero.
     */
 
-
    void (*ReadStencilSpan)( GLcontext *ctx, GLuint n, GLint x, GLint y,
                             GLstencil stencil[] );
    /* Read a horizontal span of stencil values from the stencil buffer.
     */
-
 
    void (*WriteStencilPixels)( GLcontext *ctx, GLuint n,
                                const GLint x[], const GLint y[],
@@ -454,17 +454,9 @@ struct dd_function_table {
     */
   
 
-
    /***
-    *** Accelerated point, line, polygon, glDrawPixels and glBitmap functions:
+    *** glDraw/Read/CopyPixels and glBitmap functions:
     ***/
-
-   points_func   PointsFunc;
-   line_func     LineFunc;
-   triangle_func TriangleFunc;
-   quad_func     QuadFunc;
-   rect_func     RectFunc;    
-   
 
    GLboolean (*DrawPixels)( GLcontext *ctx,
                             GLint x, GLint y, GLsizei width, GLsizei height,
@@ -477,12 +469,309 @@ struct dd_function_table {
     * must do the job.
     */
 
+   GLboolean (*ReadPixels)( GLcontext *ctx,
+                            GLint x, GLint y, GLsizei width, GLsizei height,
+                            GLenum format, GLenum type,
+                            const struct gl_pixelstore_attrib *unpack,
+                            GLvoid *dest );
+   /* Called by glReadPixels.
+    * Return GL_TRUE if operation completed, else return GL_FALSE.
+    * This function must respect all glPixelTransfer settings.
+    */
+
+   GLboolean (*CopyPixels)( GLcontext *ctx,
+                            GLint srcx, GLint srcy,
+                            GLsizei width, GLsizei height,
+                            GLint dstx, GLint dsty, GLenum type );
+   /* Do a glCopyPixels.  Return GL_TRUE if operation completed, else
+    * return GL_FALSE.  This function must respect all rasterization
+    * state, glPixelTransfer, glPixelZoom, etc.
+    */
+
    GLboolean (*Bitmap)( GLcontext *ctx,
                         GLint x, GLint y, GLsizei width, GLsizei height,
                         const struct gl_pixelstore_attrib *unpack,
                         const GLubyte *bitmap );
    /* This is called by glBitmap.  Works the same as DrawPixels, above.
     */
+
+
+   /***
+    *** Texture mapping functions:
+    ***/
+
+   void (*TexImage)( GLcontext *ctx, GLenum target,
+                     struct gl_texture_object *tObj, GLint level,
+                     GLint internalFormat,
+                     const struct gl_texture_image *image );
+   /* XXX this function is obsolete */
+   /* Called whenever a texture object's image is changed.
+    *    texObject is the number of the texture object being changed.
+    *    level indicates the mipmap level.
+    *    internalFormat is the format in which the texture is to be stored.
+    *    image is a pointer to a gl_texture_image struct which contains
+    *       the actual image data.
+    */
+
+   void (*TexSubImage)( GLcontext *ctx, GLenum target,
+                        struct gl_texture_object *tObj, GLint level,
+                        GLint xoffset, GLint yoffset,
+                        GLsizei width, GLsizei height,
+                        GLint internalFormat,
+                        const struct gl_texture_image *image );
+   /* XXX this function is obsolete */
+   /* Called from glTexSubImage() to define a sub-region of a texture.
+    */
+
+
+   GLboolean (*TexImage1D)( GLcontext *ctx, GLenum target, GLint level,
+                            GLenum format, GLenum type, const GLvoid *pixels,
+                            const struct gl_pixelstore_attrib *packing,
+                            struct gl_texture_object *texObj,
+                            struct gl_texture_image *texImage,
+                            GLboolean *retainInternalCopy );
+   GLboolean (*TexImage2D)( GLcontext *ctx, GLenum target, GLint level,
+                            GLenum format, GLenum type, const GLvoid *pixels,
+                            const struct gl_pixelstore_attrib *packing,
+                            struct gl_texture_object *texObj,
+                            struct gl_texture_image *texImage,
+                            GLboolean *retainInternalCopy );
+   GLboolean (*TexImage3D)( GLcontext *ctx, GLenum target, GLint level,
+                            GLenum format, GLenum type, const GLvoid *pixels,
+                            const struct gl_pixelstore_attrib *packing,
+                            struct gl_texture_object *texObj,
+                            struct gl_texture_image *texImage,
+                            GLboolean *retainInternalCopy );
+   /* Called by glTexImage1/2/3D.
+    * Will not be called if any glPixelTransfer operations are enabled.
+    * Arguments:
+    *   <target>, <level>, <format>, <type> and <pixels> are user specified.
+    *   <packing> indicates the image packing of pixels.
+    *   <texObj> is the target texture object.
+    *   <texImage> is the target texture image.  It will have the texture
+    *      width, height, depth, border and internalFormat information.
+    *   <retainInternalCopy> is returned by this function and indicates whether
+    *      core Mesa should keep an internal copy of the texture image.
+    * Return GL_TRUE if operation completed, return GL_FALSE if core Mesa
+    * should do the job.  If GL_FALSE is returned, this function will be
+    * called a second time after the texture image has been unpacked into
+    * GLubytes.  It may be easier for the driver to handle then.
+    */
+
+   GLboolean (*TexSubImage1D)( GLcontext *ctx, GLenum target, GLint level,
+                               GLint xoffset, GLsizei width,
+                               GLenum format, GLenum type,
+                               const GLvoid *pixels,
+                               const struct gl_pixelstore_attrib *packing,
+                               struct gl_texture_object *texObj,
+                               struct gl_texture_image *texImage );
+   GLboolean (*TexSubImage2D)( GLcontext *ctx, GLenum target, GLint level,
+                               GLint xoffset, GLint yoffset,
+                               GLsizei width, GLsizei height,
+                               GLenum format, GLenum type,
+                               const GLvoid *pixels,
+                               const struct gl_pixelstore_attrib *packing,
+                               struct gl_texture_object *texObj,
+                               struct gl_texture_image *texImage );
+   GLboolean (*TexSubImage3D)( GLcontext *ctx, GLenum target, GLint level,
+                               GLint xoffset, GLint yoffset, GLint zoffset,
+                               GLsizei width, GLsizei height, GLint depth,
+                               GLenum format, GLenum type,
+                               const GLvoid *pixels,
+                               const struct gl_pixelstore_attrib *packing,
+                               struct gl_texture_object *texObj,
+                               struct gl_texture_image *texImage );
+   /* Called by glTexSubImage1/2/3D.
+    * Will not be called if any glPixelTransfer operations are enabled.
+    * Arguments:
+    *   <target>, <level>, <xoffset>, <yoffset>, <zoffset>, <width>, <height>,
+    *      <depth>, <format>, <type> and <pixels> are user specified.
+    *   <packing> indicates the image packing of pixels.
+    *   <texObj> is the target texture object.
+    *   <texImage> is the target texture image.  It will have the texture
+    *      width, height, border and internalFormat information.
+    * Return GL_TRUE if operation completed, return GL_FALSE if core Mesa
+    * should do the job.  If GL_FALSE is returned, then TexImage1/2/3D will
+    * be called with the complete texture image.
+    */
+      
+   GLboolean (*CopyTexImage1D)( GLcontext *ctx, GLenum target, GLint level,
+                                GLenum internalFormat, GLint x, GLint y,
+                                GLsizei width, GLint border );
+   GLboolean (*CopyTexImage2D)( GLcontext *ctx, GLenum target, GLint level,
+                                GLenum internalFormat, GLint x, GLint y,
+                                GLsizei width, GLsizei height, GLint border );
+   /* Called by glCopyTexImage1D and glCopyTexImage2D.
+    * Will not be called if any glPixelTransfer operations are enabled.
+    * Return GL_TRUE if operation completed, return GL_FALSE if core Mesa
+    * should do the job.
+    */
+
+   GLboolean (*CopyTexSubImage1D)( GLcontext *ctx, GLenum target, GLint level,
+                                   GLint xoffset,
+                                   GLint x, GLint y, GLsizei width );
+   GLboolean (*CopyTexSubImage2D)( GLcontext *ctx, GLenum target, GLint level,
+                                   GLint xoffset, GLint yoffset,
+                                   GLint x, GLint y,
+                                   GLsizei width, GLsizei height );
+   GLboolean (*CopyTexSubImage3D)( GLcontext *ctx, GLenum target, GLint level,
+                                   GLint xoffset, GLint yoffset, GLint zoffset,
+                                   GLint x, GLint y,
+                                   GLsizei width, GLsizei height );
+   /* Called by glCopyTexSubImage1/2/3D.
+    * Will not be called if any glPixelTransfer operations are enabled.
+    * Return GL_TRUE if operation completed, return GL_FALSE if core Mesa
+    * should do the job.
+    */
+
+   GLvoid *(*GetTexImage)( GLcontext *ctx, GLenum target, GLint level,
+                           const struct gl_texture_object *texObj,
+                           GLenum *formatOut, GLenum *typeOut,
+                           GLboolean *freeImageOut );
+   /* Called by glGetTexImage or by core Mesa when a texture image
+    * is needed for software fallback rendering.
+    * Return the address of the texture image or NULL if failure.
+    * The image must be tightly packed (i.e. row stride = image width)
+    * Return the image's format and type in formatOut and typeOut.
+    * The format and type must be values which are accepted by glTexImage.
+    * Set the freeImageOut flag if the returned image should be deallocated
+    * with FREE() when finished.
+    * The size of the image can be deduced from the target and level.
+    * Core Mesa will perform any image format/type conversions that are needed.
+    */
+
+   GLboolean (*CompressedTexImage1D)( GLcontext *ctx, GLenum target,
+                                      GLint level, const GLvoid *data,
+                                      struct gl_texture_object *texObj,
+                                      struct gl_texture_image *texImage,
+                                      GLboolean *retainInternalCopy);
+   GLboolean (*CompressedTexImage2D)( GLcontext *ctx, GLenum target,
+                                      GLint level, const GLvoid *data,
+                                      struct gl_texture_object *texObj,
+                                      struct gl_texture_image *texImage,
+                                      GLboolean *retainInternalCopy);
+   GLboolean (*CompressedTexImage3D)( GLcontext *ctx, GLenum target,
+                                      GLint level, const GLvoid *data,
+                                      struct gl_texture_object *texObj,
+                                      struct gl_texture_image *texImage,
+                                      GLboolean *retainInternalCopy);
+   /* Called by glCompressedTexImage1/2/3D.
+    * Arguments:
+    *   <target>, <level>, <internalFormat>, <data> are user specified.
+    *   <texObj> is the target texture object.
+    *   <texImage> is the target texture image.  It will have the texture
+    *      width, height, depth, border and internalFormat information.
+    *   <retainInternalCopy> is returned by this function and indicates whether
+    *      core Mesa should keep an internal copy of the texture image.
+    * Return GL_TRUE if operation completed, return GL_FALSE if core Mesa
+    * should do the job.
+    */
+
+   GLboolean (*CompressedTexSubImage1D)( GLcontext *ctx, GLenum target,
+                                         GLint level, GLint xoffset,
+                                         GLsizei width, GLenum format,
+                                         GLsizei imageSize, const GLvoid *data,
+                                         struct gl_texture_object *texObj,
+                                         struct gl_texture_image *texImage );
+   GLboolean (*CompressedTexSubImage2D)( GLcontext *ctx, GLenum target,
+                                         GLint level, GLint xoffset,
+                                         GLint yoffset, GLsizei width,
+                                         GLint height, GLenum format,
+                                         GLsizei imageSize, const GLvoid *data,
+                                         struct gl_texture_object *texObj,
+                                         struct gl_texture_image *texImage );
+   GLboolean (*CompressedTexSubImage3D)( GLcontext *ctx, GLenum target,
+                                         GLint level, GLint xoffset,
+                                         GLint yoffset, GLint zoffset,
+                                         GLsizei width, GLint height,
+                                         GLint depth, GLenum format,
+                                         GLsizei imageSize, const GLvoid *data,
+                                         struct gl_texture_object *texObj,
+                                         struct gl_texture_image *texImage );
+   /* Called by glCompressedTexSubImage1/2/3D.
+    * Arguments:
+    *   <target>, <level>, <x/z/zoffset>, <width>, <height>, <depth>,
+    *      <imageSize>, and <data> are user specified.
+    *   <texObj> is the target texture object.
+    *   <texImage> is the target texture image.  It will have the texture
+    *      width, height, depth, border and internalFormat information.
+    * Return GL_TRUE if operation completed, return GL_FALSE if core Mesa
+    * should do the job.
+    */
+
+   void (*GetCompressedTexImage)( GLcontext *ctx, GLenum target,
+                                  GLint lod, void *image,
+                                  const struct gl_texture_object *texObj,
+                                  struct gl_texture_image *texImage );
+   /* Called by glGetCompressedTexImageARB.
+    * <target>, <lod>, <image> are specified by user.
+    * <texObj> is the source texture object.
+    * <texImage> is the source texture image.
+    */
+
+   void (*TexEnv)( GLcontext *ctx, GLenum target, GLenum pname,
+                   const GLfloat *param );
+   /* Called by glTexEnv*().
+    */
+
+   void (*TexParameter)( GLcontext *ctx, GLenum target,
+                         struct gl_texture_object *texObj,
+                         GLenum pname, const GLfloat *params );
+   /* Called by glTexParameter*().
+    *    <target> is user specified
+    *    <texObj> the texture object to modify
+    *    <pname> is one of GL_TEXTURE_MIN_FILTER, GL_TEXTURE_MAG_FILTER,
+    *       GL_TEXTURE_WRAP_[STR], or GL_TEXTURE_BORDER_COLOR.
+    *    <params> is user specified.
+    */
+
+   void (*BindTexture)( GLcontext *ctx, GLenum target,
+                        struct gl_texture_object *tObj );
+   /* Called by glBindTexture().
+    */
+
+   void (*DeleteTexture)( GLcontext *ctx, struct gl_texture_object *tObj );
+   /* Called when a texture object is about to be deallocated.  Driver
+    * should free anything attached to the DriverData pointers.
+    */
+
+   GLboolean (*IsTextureResident)( GLcontext *ctx, 
+                                   struct gl_texture_object *t );
+   /* Called by glAreTextureResident().
+    */
+
+   void (*PrioritizeTexture)( GLcontext *ctx,  struct gl_texture_object *t,
+                              GLclampf priority );
+   /* Called by glPrioritizeTextures().
+    */
+
+   void (*ActiveTexture)( GLcontext *ctx, GLuint texUnitNumber );
+   /* Called by glActiveTextureARB to set current texture unit.
+    */
+
+   void (*UpdateTexturePalette)( GLcontext *ctx,
+                                 struct gl_texture_object *tObj );
+   /* Called when the texture's color lookup table is changed.
+    * If tObj is NULL then the shared texture palette ctx->Texture.Palette
+    * is to be updated.
+    */
+
+
+
+   /***
+    *** Accelerated point, line, polygon, glDrawPixels and glBitmap functions:
+    ***/
+
+   points_func   PointsFunc;
+   line_func     LineFunc;
+   triangle_func TriangleFunc;
+   quad_func     QuadFunc;
+   rect_func     RectFunc;    
+   
+
+   /***
+    *** Transformation/Rendering functions
+    ***/
 
    void (*RenderStart)( GLcontext *ctx );
    void (*RenderFinish)( GLcontext *ctx );
@@ -503,7 +792,6 @@ struct dd_function_table {
     * Note: Deprecated in favour of RegisterPipelineStages, below.
     */
 
-
    render_func *RenderVBClippedTab;
    render_func *RenderVBCulledTab;
    render_func *RenderVBRawTab;
@@ -511,7 +799,6 @@ struct dd_function_table {
     * entire begin/end group of primitives at once.  See the
     * gl_render_vb() function in vbrender.c for more details.  
     */
-
 
    void (*ReducedPrimitiveChange)( GLcontext *ctx, GLenum primitive );
    /* If registered, this will be called when rendering transitions between
@@ -527,7 +814,6 @@ struct dd_function_table {
     * implement DD_TRI_OFFSET.
     */
 
-
    GLboolean (*MultipassFunc)( struct vertex_buffer *VB, GLuint passno );
    /* Driver may request additional render passes by returning GL_TRUE
     * when this function is called.  This function will be called
@@ -537,102 +823,6 @@ struct dd_function_table {
     * 
     * This function will be first invoked with passno == 1.
     */
-
-   /***
-    *** Texture mapping functions:
-    ***/
-
-   void (*TexEnv)( GLcontext *ctx, GLenum pname, const GLfloat *param );
-   /*
-    * Called whenever glTexEnv*() is called.
-    * Pname will be one of GL_TEXTURE_ENV_MODE or GL_TEXTURE_ENV_COLOR.
-    * If pname is GL_TEXTURE_ENV_MODE then param will be one
-    * of GL_MODULATE, GL_BLEND, GL_DECAL, or GL_REPLACE.
-    */
-
-   void (*TexImage)( GLcontext *ctx, GLenum target,
-                     struct gl_texture_object *tObj, GLint level,
-                     GLint internalFormat,
-                     const struct gl_texture_image *image );
-   /*
-    * Called whenever a texture object's image is changed.
-    *    texObject is the number of the texture object being changed.
-    *    level indicates the mipmap level.
-    *    internalFormat is the format in which the texture is to be stored.
-    *    image is a pointer to a gl_texture_image struct which contains
-    *       the actual image data.
-    */
-
-   void (*TexSubImage)( GLcontext *ctx, GLenum target,
-                        struct gl_texture_object *tObj, GLint level,
-                        GLint xoffset, GLint yoffset,
-                        GLsizei width, GLsizei height,
-                        GLint internalFormat,
-                        const struct gl_texture_image *image );
-   /*
-    * Called from glTexSubImage() to define a sub-region of a texture.
-    */
-
-   void (*TexParameter)( GLcontext *ctx, GLenum target,
-                         struct gl_texture_object *tObj,
-                         GLenum pname, const GLfloat *params );
-   /*
-    * Called whenever glTexParameter*() is called.
-    *    target is GL_TEXTURE_1D or GL_TEXTURE_2D
-    *    texObject is the texture object to modify
-    *    pname is one of GL_TEXTURE_MIN_FILTER, GL_TEXTURE_MAG_FILTER,
-    *       GL_TEXTURE_WRAP_S, GL_TEXTURE_WRAP_T, or GL_TEXTURE_BORDER_COLOR.
-    *    params is dependant on pname.  See man glTexParameter.
-    */
-
-   void (*BindTexture)( GLcontext *ctx, GLenum target,
-                        struct gl_texture_object *tObj );
-   /*
-    * Called whenever glBindTexture() is called.  This specifies which
-    * texture is to be the current one.  No dirty flags will be set.
-    */
-
-   void (*DeleteTexture)( GLcontext *ctx, struct gl_texture_object *tObj );
-   /*
-    * Called when a texture object is about to be deallocated.  Driver
-    * should free anything attached to the DriverData pointers.
-    */
-
-   void (*UpdateTexturePalette)( GLcontext *ctx,
-                                 struct gl_texture_object *tObj );
-   /*
-    * Called when the texture's color lookup table is changed.
-    * If tObj is NULL then the shared texture palette ctx->Texture.Palette
-    * was changed.
-    */
-
-   void (*UseGlobalTexturePalette)( GLcontext *ctx, GLboolean state );
-   /*
-    * Called via glEnable/Disable(GL_SHARED_TEXTURE_PALETTE_EXT)
-    */
-
-   void (*ActiveTexture)( GLcontext *ctx, GLuint texUnitNumber );
-   /*
-    * Called by glActiveTextureARB to set current texture unit.
-    */
-
-
-   GLboolean (*IsTextureResident)( GLcontext *ctx, 
-				   struct gl_texture_object *t );
-   /*
-    * Allows the driver to implement the AreTexturesResident tests without
-    * knowing about Mesa's internal hash tables for textures.
-    */
-
-   void (*PrioritizeTexture)( GLcontext *ctx, 
-			      struct gl_texture_object *t,
-			      GLclampf priority );
-   /*
-    * Notify driver of priority change for a texture.
-    */
-
-
-
 
    /***
     *** NEW in Mesa 3.x
@@ -704,7 +894,11 @@ struct dd_function_table {
    void (*Lightfv)(GLcontext *ctx, GLenum light,
 		   GLenum pname, const GLfloat *params, GLint nparams );
    void (*LightModelfv)(GLcontext *ctx, GLenum pname, const GLfloat *params);
+   void (*LineStipple)(GLcontext *ctx, GLint factor, GLushort pattern );
+   void (*LineWidth)(GLcontext *ctx, GLfloat width);
+   void (*LogicOpcode)(GLcontext *ctx, GLenum opcode);
    void (*PolygonMode)(GLcontext *ctx, GLenum face, GLenum mode);
+   void (*PolygonStipple)(GLcontext *ctx, const GLubyte *mask );
    void (*Scissor)(GLcontext *ctx, GLint x, GLint y, GLsizei w, GLsizei h);
    void (*ShadeModel)(GLcontext *ctx, GLenum mode);
    void (*ClearStencil)(GLcontext *ctx, GLint s);

@@ -1,0 +1,507 @@
+<!doctype linuxdoc system>
+<!-- Created: Sun Mar 12 13:00:00 2000 by brian@precisioninsight.com -->
+<!-- Revised: Fri May 19 09:36:02 2000 by martin@valinux.com -->
+<!-- $Id: DRIcomp.sgml,v 1.1 2000/06/17 00:03:17 martin Exp $ -->
+
+  <article>
+
+      <title>DRI Compilation Guide
+      <author>
+          <htmlurl url="http://www.precisioninsight.com/"
+            name="Precision Insight, Inc.">
+      <date>18 May 2000
+        
+    <ident>
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.3 2000/04/05 05:38:41 brianp Exp $
+    </ident>
+
+    <toc>
+
+    <sect>Preamble
+
+      <sect1>Copyright
+        <p>
+          <bf>Copyright &copy; 2000 by Precision Insight, Inc.,
+          Cedar Park, Texas.
+          All Rights Reserved.</bf>
+        <p>
+          <bf>Permission is granted to make and distribute verbatim copies 
+          of this document provided the copyright notice and this permission
+          notice are preserved on all copies.</bf>
+          
+      <sect1>Trademarks
+        <p>
+          OpenGL is a registered trademark and SGI is a trademark of
+          Silicon Graphics, Inc.
+          Unix is a registered trademark of The Open Group.
+          The `X' device and X Window System are trademarks of The Open Group.
+          XFree86 is a trademark of The XFree86 Project.
+          Linux is a registered trademark of Linus Torvalds.
+          Intel is a registered trademark of Intel Corporation.
+          3Dlabs, GLINT, and Oxygen are either registered trademarks or
+          trademarks of 3Dlabs Inc. Ltd.
+          3dfx, Voodoo3, Voodoo4, and Voodoo5 are registered trademarks of
+          3dfx Interactive, Incorporated.
+	  Matrox is a registered trademark of Matrox Electronic Systems Ltd.
+	  ATI Rage is a registered trademark of ATI Technologies, Inc.
+          All other trademarks mentioned are the property of their
+          respective owners.
+
+
+    <sect>Introduction
+      <p>
+        This document describes how to download, compile and install the
+        DRI project.
+        This information is intended for experienced Linux developers.
+        Beginners are probably better off installing precompiled packages.
+      <p>
+        Edits, corrections and updates to this document may be mailed
+        to brian@precisioninsight.com.
+
+
+    <sect>Prerequisites
+      <p>
+        You'll need the following:
+        <itemize>
+          <item>At least 400MB of free disk space.  More is needed if you want
+            to build with debugging information or keep several build trees.
+          <item>A fast system.  Using a PIII-550 it takes about 1/2 hour to
+            build everthing.
+          <item>GCC compiler and related tools.
+          <item>ssh (secure shell) for registed developer downloading of the
+            DRI source tree
+        </itemize>
+
+      <p>
+        For 3dfx Voodoo3 hardware, you'll also need:
+        <itemize>
+          <item>Glide3x headers and runtime library if you want to use the
+            3dfx driver.
+            These can be obtained from
+            <htmlurl url="http://linux.3dfx.com/open_source/glide_kit.htm"
+            name="linux.3dfx.com">.
+          <item>Linux kernel 2.2.x.
+            The DRI developers have been using stock RedHat 6.1 systems
+            (kernel 2.2.12-20).
+            Later kernel versions will be supported in the future.
+        </itemize>
+
+      <p>
+        For Matrox G200/G400 hardware, you'll also need:
+        <itemize>
+          <item>Linux kernel 2.3.51.  Older kernel versions will not work.
+        </itemize>
+
+      <p>
+        For Intel i810 hardware, you'll also need:
+        <itemize>
+          <item>Linux kernel 2.3.99-pre6.  Older kernel versions will not work.
+        </itemize>
+
+      <p>
+        For ATI Rage hardware, you'll also need:
+        <itemize>
+          <item>Linux kernel 2.3.51.  Other kernel versions may work but
+            this one is known to work.
+        </itemize>
+
+
+    <sect>Kernel preparation
+      <p>
+        You may have to upgrade your Linux kernel in order to use the DRI.
+        This is because you need a kernel version which supports AGP.
+        Building a new Linux kernel can be difficult for beginners but
+        there are resouces on the Internet to help.
+        This document assumes experience with configuring, building and
+        installing Linux kernels.
+      <p>
+        Linux kernels can be downloaded from
+        <htmlurl url="http://www.kernel.org/pub/linux/kernel/"
+        name="www.kernel.org">
+      <p>
+        Download the needed kernel and put it in /usr/src.
+        Create a directory for the source and unpack it.
+        For example:
+            <verb>
+            cd /usr/src
+	    rm -f linux
+            mkdir linux-2.3.51
+            ln -s linux-2.3.51 linux
+            bzcat linux-2.3.51.tar.bz2 | tar xf -
+            </verb>
+      <p>
+        Now configure your kernel.
+        You might, for example, use <tt>make menuconfig</tt> and do the
+        following:
+
+        <itemize>
+        <item>Go to <em>Code maturity level options</em>
+	<item>Enable <em>Prompt for development and/or incomplete
+          code/drivers</em>
+	<item>hit ESC
+	<item>Go to <em>Character devices</em>
+	<item>Disable <em>Direct Rendering Manager (XFree86 DRI support)</em>
+          since we'll use the DRI module from the XFree86/DRI tree.
+        <item>Go to <em>/dev/agpgart (AGP Support) (EXPERIMENTAL) (NEW)</em>
+        <item>Hit SPACE twice
+	<item>Enable all chipsets' support for AGP
+	</itemize>
+
+      <p>It's recommended that you turn on MTRRs under <em>Processor type
+        and Features</em>, but not required.
+
+      <p>
+        Configure the rest of the kernel as required for your system
+        (i.e. ethernet, scsi, etc)
+      <p>
+        Exit, saving your kernel configuration.
+      <p>
+        Edit your /etc/lilo.conf file.
+	Make sure you have an image entry as follows (or similar):
+            <verb>
+            image=/boot/vmlinuz
+                  label=linux.2.3.51
+                  read-only
+                  root=/dev/hda1
+            </verb>
+      <p>
+	The important part is that you have /boot/vmlinuz without a
+	trailing version number.
+	If this is the first entry in your /etc/lilo.conf AND you
+	haven't set a default, then this will be your default kernel.
+
+      <p>
+        Now compile the new kernel:
+
+            <verb>
+            cd /usr/src/linux-2.3.51
+            make dep ; make bzImage
+            make modules ; make modules_install
+            make install
+            </verb>
+	Note that the final part, make install, will automatically run
+	lilo for you.
+      <p>
+        Now reboot to use this new kernel.
+
+
+    <sect>Downloading the XFree86/DRI CVS Sources
+      <p>
+        The DRI project is hosted by VA Linux Systems'
+        <htmlurl url="http://sourceforge.net/project/?group_id=387"
+        name="SourceForge">.
+        The DRI source code, which is a subset of the XFree86 source tree,
+        is kept in a CVS repository there.
+      <p>
+        The DRI CVS sources may be accessed either anonymously or as a
+        registered SourceForge user.
+        It's recommended that you become a registered SourceForge user so
+        that you may submit non-annonymous bug reports and can participate
+        in the mailing lists.
+
+      <sect1>Anonymous CVS download:
+      <p>
+        <enum>
+          <item>Create a directory to store the CVS files:
+            <p>
+            <verb>
+            cd ~
+            mkdir DRI-CVS
+            </verb>
+            You could put your CVS directory in a different place but we'll
+            use <tt>~/DRI-CVS/</tt> here.
+            <p>
+          <item>Check out the CVS sources:
+            <p>
+            <verb>
+            cd ~/DRI-CVS
+            cvs -d:pserver:anonymous@cvs.dri.sourceforge.net:/cvsroot/dri login
+              (hit ENTER when prompted for a password)
+            cvs -z3 -d:pserver:anonymous@cvs.dri.sourceforge.net:/cvsroot/dri co xc
+            </verb>
+            <p>
+            The -z3 flag causes compression to be used in order to reduce
+            the download time.
+        </enum>
+
+
+      <sect1>Registered CVS download:
+      <p>
+        <enum>
+          <item>Create a directory to store the CVS files:
+            <p>
+            <verb>
+            cd ~
+            mkdir DRI-CVS
+            </verb>
+            You could put your CVS directory in a different place but we'll
+            use <tt>~/DRI-CVS/</tt> here.
+            <p>
+          <item>Set the CVS_RSH environment variable:
+            <p>
+            <verb>
+            setenv CVS_RSH ssh      // if using csh or tcsh
+            export CVS_RSH=ssh      // if using sh or bash
+            </verb>
+          <item>Check out the CVS sources:
+            <p>
+            <verb>
+            cd ~/DRI-CVS
+            cvs -z3 -dYOURID@cvs.dri.sourceforge.net:/cvsroot/dri co xc
+            </verb>
+            Replace <tt>YOURID</tt> with your CVS login name.
+            You'll be prompted to enter your sourceforge password.
+            <p>
+            The -z3 flag causes compression to be used in order to reduce
+            the download time.
+        </enum>
+
+
+    <sect>Updating your CVS sources
+      <p>
+        In the future you'll want to occasionally update your local copy of
+        the DRI source code to get the latest changes.
+        This can be done with:
+        <verb>
+            cd ~/DRI-CVS
+            cvs -z3 update -dA xc
+        </verb>
+        The -d flag causes any new subdirectories to be created and -A causes
+        most recent trunc sources to be fetched, not branch sources.
+
+
+    <sect>Compiling the XFree86/DRI tree
+      <sect1>Make a build tree
+        <p>
+          Rather than placing object files and library files right in the
+          source tree, they're instead put into a parallel <em>build</em> tree.
+          The build tree is made with the <tt>lndir</tt> command:
+          <verb>
+            cd ~/DRI-CVS
+            ln -s xc XFree40
+            mkdir build
+            cd build
+            lndir -silent -ignorelinks ../XFree40
+          </verb>
+        <p>
+          The build tree will be populated with symbolic links which point
+          back into the CVS source tree.
+        <p>
+          Advanced users may have several build trees for compiling and
+          testing with different options.
+
+      <sect1>Edit the host.def file
+        <p>
+          The <tt>~/DRI-CVS/build/xc/config/cf/host.def</tt> file is used
+          to configure the XFree86 build process.
+          You can change it to customize your build options or make adjustments
+          for your particular system configuration
+        <p>
+          The default <tt>host.def</tt> file will look something like this:
+          <verb>
+            #define DefaultCCOptions -Wall
+            #define DefaultGcc2i386Opt -O2
+            #define LibraryCDebugFlags -O2
+            #define BuildServersOnly YES
+            #define XF86CardDrivers vga tdfx mga r128 i810
+            #define LinuxDistribution LinuxRedHat
+            #define DefaultCCOptions -ansi GccWarningOptions -pipe
+            #define BuildXF86DRI YES
+            #define HasGlide3 YES  
+            /* Optionally turn these on for debugging */
+            /* #define GlxBuiltInTdfx YES */
+            /* #define GlxBuiltInMga YES */
+            /* #define GlxBuiltInR128 YES */
+            /* #define DoLoadableServer NO */
+            #define SharedLibFont NO
+          </verb>
+          The <tt>ProjectRoot</tt> variable specifies where the XFree86 files
+          will be installed.
+          You probably don't want to use <tt>/usr/X11R6/</tt> because that
+          would overwrite your default X files.
+          The following is recommended:
+          <verb>
+            #define ProjectRoot /usr/XF86-main
+          </verb>
+        <p>
+          Especially note the <em>XF86CardDrivers</em> line to be sure your
+          driver is listed.
+        <p>
+          If you have 3dfx hardware be sure that the Glide 3x headers are
+          installed in <tt>/usr/include/glide3/</tt> and that the Glide 3x
+          library is installed at <tt>/usr/lib/libglide3x.so</tt>.
+        <p>
+          If you do not have 3dfx hardware comment out the <tt>HasGlide3</tt>
+          line in <tt>host.def</tt>.
+        <p>
+
+      <sect1>Compile
+        <p>
+          To compile the complete DRI tree:
+          <verb>
+            cd ~/DRI-CVS/build/xc/
+            make World >& World.LOG
+          </verb>
+          Or if you want to watch the compilation progress:
+          <verb>
+            cd ~/DRI-CVS/build/xc/
+            make World >& World.LOG &
+            tail -f World.LOG
+          </verb>
+          With the default compilation flags it's normal to get a lot of
+          warnings during compilation.
+        <p>
+          Building will take some time so you may want to go check your
+          email or visit slashdot.
+
+      <sect1>Check for compilation errors
+        <p>
+          Using your text editor, examine <tt>World.LOG</tt> for errors
+          by searching for the pattern <tt>***</tt>.
+        <p>
+          Verify that the DRI kernel module(s) for your system were built:
+          <verb>
+          cd ~/DRI-CVS/build/xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel
+          ls
+          </verb>
+        <p>
+          For the 3dfx Voodoo, you should see <em>tdfx.o</em>.
+          For the Matrox G200/G400, you should see <em>mga.o</em>.
+          For the ATI Rage 128, you should see <em>r128.o</em>.
+          For the Intel i810, you should see <em>i810.o</em>.
+        <p>
+          If the DRI kernel module(s) failed to build you should verify
+          that you're using the right version of the Linux kernel.
+          The most recent kernels are not always supported.
+        <p>
+          If your build machine is running a different version of the kernel
+          than your target machine (i.e. 2.2.12-20 vs. 2.3.99-pre6), make will
+          select the wrong kernel headers. This can be fixed by explicitly
+          setting the value of <tt>TREE</tt>.
+          If the path to your kernel source is 
+          <tt>/bigdisk/linux-2.3.99-pre6</tt>,
+          <verb>
+          cd ~/DRI-CVS/build/xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel
+          make TREE=/bigdisk/linux-2.3.99-pre6
+          </verb>
+          or alternatively, edit Makefile to include this change.
+        <p>
+          After fixing the errors, do <tt>make World</tt> again.
+          Later, you might just compile parts of the source tree but it's
+          important that the whole tree will build first.
+
+
+    <sect>Installing
+      <p>
+        After the DRI tree has been compiled you can install the XFree86
+        headers, libraries, programs, etc for testing.
+
+      <sect1>X Installation
+	<p>
+	  As mentioned above, the install directory is specified by the
+	  <tt>ProjectRoot</tt> variable in the <tt>host.def</tt> file.
+	  Create that directory now if it doesn't already exist:
+	  <verb>
+	      mkdir /usr/XF86-main
+	  </verb>
+	<p>
+	  You'll have to change to root since the install process puts
+	  several files in <tt>/etc/X11/</tt> and sets the setuid flag on
+	  the X server executable.
+	  <verb>
+	      cd ~/DRI-CVS/build/xc
+	      su
+	      make install
+	  </verb>
+	  Edit your <tt>/etc/ld.so.conf</tt> file and put
+	  <tt>/usr/XF86-main/lib</tt> as the first line.
+	  Continue with:
+	  <verb>
+	      ldconfig
+	      exit
+	  </verb>
+	<p>
+	  Look in <tt>/usr/XF86-main</tt> to be sure the files installed
+          there.
+	<P>
+	  Strictly speaking, installing the DRI tree isn't required.
+	  It's possible to run and test the X server directly from the
+	  build directory but it's a bit error prone.
+
+      <sect1>Update Locale Information
+        <p>
+          To update your X locale information do the following:
+          <verb>
+             cd ~/DRI-CVS/build/xc/nls
+             xmkmf -a
+             make
+             make install
+          </verb>
+          This will prevent a locale error message from being printed
+          when you run Xlib programs.
+
+    <sect>X Server Configuration
+      <p>
+        If your X server is currently running you'll have to stop it
+        and return to a virtual terminal.
+      <p>
+        First, setup your XF86Config file.
+        It should load the GLX and DRI modules and specify the driver to
+        use for your hardware.
+        See the <htmlurl url="http://dri.sourceforge.net/DRIuserguide.html"
+        name="DRI User Guide"> for detailed information.
+      <p>
+        You may want to make a backup copy of your existing
+        <tt>/etc/X11/XF86Config</tt> file first.
+      <p>
+        It's very important that you set the <tt>ModulePath</tt> option to
+        point to your installation directory:
+        <verb>
+            ModulePath "/usr/XF86-main/lib/modules"
+        </verb>
+      <p>
+        Double check with this:
+        <verb>
+            grep ModulePath /etc/X11/XF86Config
+        </verb>
+      <p>
+        Next, your <tt>~/.xinitrc</tt> file controls which clients will be
+        launched when your X server starts.
+        You might put the following in yours:
+        <verb>
+            xset b off
+            xsetroot -solid "#004070"
+            xmodmap -e "clear mod4"
+            xrdb -merge ~/.Xdefaults
+            xterm -geometry +0+0 &
+            xterm -geometry +512+0 &
+            fvwm
+        </verb>
+      <p>
+
+    <sect>X Server Start-up
+      <p>
+        The X server can be started with:
+      <p>
+        <verb>
+            xinit -- /usr/XF86-main/bin/XFree86
+        </verb>
+      <p>
+        Automatic loading of DRM kernel modules was added to the X server
+        in XFree86 4.0.1.
+        This feature, and manual loading of kernel modules, is documented
+        in the DRI user guide.
+      <p>
+        At this point your X server should be up and running with
+        hardware-accelerated direct rendering.
+        Please read the
+        <htmlurl url="http://dri.sourceforge.net/DRIuserguide.html"
+        name="DRI User Guide"> for trouble shooting information.
+
+
+  </article>
+
+
+  <!-- Local Variables: -->
+  <!-- fill-column: 72  -->
+  <!-- End:             -->

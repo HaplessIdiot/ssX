@@ -41,9 +41,9 @@ struct __DRIdisplayPrivateRec {
     /*
     ** XFree86-DRI version information
     */
-    int major;
-    int minor;
-    int patch;
+    int driMajor;
+    int driMinor;
+    int driPatch;
 
     /*
     ** Array of library handles [indexed by screen number]

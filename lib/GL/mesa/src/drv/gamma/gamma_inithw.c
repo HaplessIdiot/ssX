@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_inithw.c,v 1.2 1999/06/27 14:07:30 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_inithw.c,v 1.4 2000/05/10 18:55:27 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -29,6 +29,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Alan Hourihane <Alan.Hourihane@btinternet.com>
  *
  */
 
@@ -86,6 +87,7 @@ void gammaInitHW(gammaContextPrivate *gcp)
     WRITE(gcp->buf, PixelSize, 0);
 
     /* Set Gamma to known state */
+    CHECK_DMA_BUFFER(nullCC, gcp, 10);
     WRITE(gcp->buf, TriangleMode, 0);
     WRITE(gcp->buf, GeometryMode, 0);
     WRITE(gcp->buf, NormalizeMode, 0);
@@ -249,7 +251,7 @@ void gammaInitHW(gammaContextPrivate *gcp)
     CHECK_DMA_BUFFER(nullCC, gcp, 5);
     WRITE(gcp->buf, GeometryMode, gcp->GeometryMode);
     WRITE(gcp->buf, NormalizeMode, NormalizeModeDisable);
-    WRITE(gcp->buf, LightingMode, LightingModeDisable);
+    WRITE(gcp->buf, LightingMode, gcp->LightingMode);
     WRITE(gcp->buf, ColorMaterialMode, ColorMaterialModeDisable);
     WRITE(gcp->buf, MaterialMode, MaterialModeDisable);
 
@@ -258,18 +260,18 @@ void gammaInitHW(gammaContextPrivate *gcp)
     WRITE(gcp->buf, BackSpecularExponent,  0); /* fixed point */
 
     CHECK_DMA_BUFFER(nullCC, gcp, 29);
-    WRITEF(gcp->buf, FrontAmbientColorRed,    0.0);
-    WRITEF(gcp->buf, FrontAmbientColorGreen,  0.0);
-    WRITEF(gcp->buf, FrontAmbientColorBlue,   0.0);
-    WRITEF(gcp->buf, BackAmbientColorRed,     0.0);
-    WRITEF(gcp->buf, BackAmbientColorGreen,   0.0);
-    WRITEF(gcp->buf, BackAmbientColorBlue,    0.0);
-    WRITEF(gcp->buf, FrontDiffuseColorRed,    0.0);
-    WRITEF(gcp->buf, FrontDiffuseColorGreen,  0.0);
-    WRITEF(gcp->buf, FrontDiffuseColorBlue,   0.0);
-    WRITEF(gcp->buf, BackDiffuseColorRed,     0.0);
-    WRITEF(gcp->buf, BackDiffuseColorGreen,   0.0);
-    WRITEF(gcp->buf, BackDiffuseColorBlue,    0.0);
+    WRITEF(gcp->buf, FrontAmbientColorRed,    0.2);
+    WRITEF(gcp->buf, FrontAmbientColorGreen,  0.2);
+    WRITEF(gcp->buf, FrontAmbientColorBlue,   0.2);
+    WRITEF(gcp->buf, BackAmbientColorRed,     0.2);
+    WRITEF(gcp->buf, BackAmbientColorGreen,   0.2);
+    WRITEF(gcp->buf, BackAmbientColorBlue,    0.2);
+    WRITEF(gcp->buf, FrontDiffuseColorRed,    0.8);
+    WRITEF(gcp->buf, FrontDiffuseColorGreen,  0.8);
+    WRITEF(gcp->buf, FrontDiffuseColorBlue,   0.8);
+    WRITEF(gcp->buf, BackDiffuseColorRed,     0.8);
+    WRITEF(gcp->buf, BackDiffuseColorGreen,   0.8);
+    WRITEF(gcp->buf, BackDiffuseColorBlue,    0.8);
     WRITEF(gcp->buf, FrontSpecularColorRed,   0.0);
     WRITEF(gcp->buf, FrontSpecularColorGreen, 0.0);
     WRITEF(gcp->buf, FrontSpecularColorBlue,  0.0);
@@ -282,11 +284,11 @@ void gammaInitHW(gammaContextPrivate *gcp)
     WRITEF(gcp->buf, BackEmissiveColorRed,    0.0);
     WRITEF(gcp->buf, BackEmissiveColorGreen,  0.0);
     WRITEF(gcp->buf, BackEmissiveColorBlue,   0.0);
-    WRITEF(gcp->buf, SceneAmbientColorRed,    0.0);
-    WRITEF(gcp->buf, SceneAmbientColorGreen,  0.0);
-    WRITEF(gcp->buf, SceneAmbientColorBlue,   0.0);
-    WRITEF(gcp->buf, FrontAlpha,              0.0);
-    WRITEF(gcp->buf, BackAlpha,               0.0);
+    WRITEF(gcp->buf, SceneAmbientColorRed,    0.2);
+    WRITEF(gcp->buf, SceneAmbientColorGreen,  0.2);
+    WRITEF(gcp->buf, SceneAmbientColorBlue,   0.2);
+    WRITEF(gcp->buf, FrontAlpha,              1.0);
+    WRITEF(gcp->buf, BackAlpha,               1.0);
 
     CHECK_DMA_BUFFER(nullCC, gcp, 8);
     WRITE(gcp->buf, PointMode, (PM_AntialiasDisable |
@@ -326,28 +328,28 @@ void gammaInitHW(gammaContextPrivate *gcp)
     WRITE(gcp->buf, Light14Mode, LNM_Off);
     WRITE(gcp->buf, Light15Mode, LNM_Off);
 
-    CHECK_DMA_BUFFER(nullCC, gcp, 21);
-    WRITEF(gcp->buf, FrontAmbientColorRed,    1.0);
-    WRITEF(gcp->buf, FrontAmbientColorGreen,  1.0);
-    WRITEF(gcp->buf, FrontAmbientColorBlue,   1.0);
-    WRITEF(gcp->buf, BackAmbientColorRed,     1.0);
-    WRITEF(gcp->buf, BackAmbientColorGreen,   1.0);
-    WRITEF(gcp->buf, BackAmbientColorBlue,    1.0);
-    WRITEF(gcp->buf, FrontDiffuseColorRed,    1.0);
-    WRITEF(gcp->buf, FrontDiffuseColorGreen,  1.0);
-    WRITEF(gcp->buf, FrontDiffuseColorBlue,   1.0);
-    WRITEF(gcp->buf, BackDiffuseColorRed,     1.0);
-    WRITEF(gcp->buf, BackDiffuseColorGreen,   1.0);
-    WRITEF(gcp->buf, BackDiffuseColorBlue,    1.0);
-    WRITEF(gcp->buf, FrontSpecularColorRed,   0.0);
-    WRITEF(gcp->buf, FrontSpecularColorGreen, 0.0);
-    WRITEF(gcp->buf, FrontSpecularColorBlue,  0.0);
-    WRITEF(gcp->buf, BackSpecularColorRed,    0.0);
-    WRITEF(gcp->buf, BackSpecularColorGreen,  0.0);
-    WRITEF(gcp->buf, BackSpecularColorBlue,   0.0);
-    WRITEF(gcp->buf, SceneAmbientColorRed,    0.0);
-    WRITEF(gcp->buf, SceneAmbientColorGreen,  0.0);
-    WRITEF(gcp->buf, SceneAmbientColorBlue,   0.0);
+    CHECK_DMA_BUFFER(nullCC, gcp, 22);
+    WRITEF(gcp->buf, Light0AmbientIntensityBlue, 0.0);
+    WRITEF(gcp->buf, Light0AmbientIntensityGreen, 0.0);
+    WRITEF(gcp->buf, Light0AmbientIntensityRed, 0.0);
+    WRITEF(gcp->buf, Light0DiffuseIntensityBlue, 1.0);
+    WRITEF(gcp->buf, Light0DiffuseIntensityGreen, 1.0);
+    WRITEF(gcp->buf, Light0DiffuseIntensityRed, 1.0);
+    WRITEF(gcp->buf, Light0SpecularIntensityBlue, 1.0);
+    WRITEF(gcp->buf, Light0SpecularIntensityGreen, 1.0);
+    WRITEF(gcp->buf, Light0SpecularIntensityRed, 1.0);
+    WRITEF(gcp->buf, Light0SpotlightDirectionZ, 0.0);
+    WRITEF(gcp->buf, Light0SpotlightDirectionY, 0.0);
+    WRITEF(gcp->buf, Light0SpotlightDirectionX, -1.0);
+    WRITEF(gcp->buf, Light0SpotlightExponent, 0.0);
+    WRITEF(gcp->buf, Light0PositionZ, 0.0);
+    WRITEF(gcp->buf, Light0PositionY, 0.0);
+    WRITEF(gcp->buf, Light0PositionX, 1.0);
+    WRITEF(gcp->buf, Light0PositionW, 0.0);
+    WRITEF(gcp->buf, Light0CosSpotlightCutoffAngle, -1.0);
+    WRITEF(gcp->buf, Light0ConstantAttenuation, 1.0);
+    WRITEF(gcp->buf, Light0LinearAttenuation,   0.0);
+    WRITEF(gcp->buf, Light0QuadraticAttenuation,0.0);
 
     CHECK_DMA_BUFFER(nullCC, gcp, 6);
     WRITEF(gcp->buf, ViewPortScaleX,  (gcp->w)/2.0);

@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_io.c,v 1.3 1999/12/03 19:17:36 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_io.c,v 1.4 2000/02/23 04:47:21 martin Exp $ */
 
 /*
  * Authors:
@@ -39,27 +39,35 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "tdfx.h"
 
-#define minb(p) MMIO_IN8(pTDFX->MMIOBase, (p))
-#define moutb(p,v) MMIO_OUT8(pTDFX->MMIOBase, (p),(v))
-#define minl(p) MMIO_IN32(pTDFX->MMIOBase, (p))
-#define moutl(p,v) MMIO_OUT32(pTDFX->MMIOBase, (p),(v))
+#define minb(b, p) MMIO_IN8((b), (p))
+#define moutb(b, p,v) MMIO_OUT8((b), (p),(v))
+#define minl(b, p) MMIO_IN32((b), (p))
+#define moutl(b, p,v) MMIO_OUT32((b), (p),(v))
 
 static void TDFXWriteControlPIO(TDFXPtr pTDFX, int addr, char index, char val) {
-  outb(pTDFX->PIOBase+addr, index);
-  outb(pTDFX->PIOBase+addr+1, val);
+  outb(pTDFX->PIOBase[0]+addr, index);
+  outb(pTDFX->PIOBase[0]+addr+1, val);
 }
 
 static char TDFXReadControlPIO(TDFXPtr pTDFX, int addr, char index) {
-  outb(pTDFX->PIOBase+addr, index);
-  return inb(pTDFX->PIOBase+addr+1);
+  outb(pTDFX->PIOBase[0]+addr, index);
+  return inb(pTDFX->PIOBase[0]+addr+1);
+}
+
+void TDFXWriteChipLongPIO(TDFXPtr pTDFX, int chip, int addr, int val) {
+  outl(pTDFX->PIOBase[chip]+addr, val);
+}
+
+int TDFXReadChipLongPIO(TDFXPtr pTDFX, int chip, int addr) {
+  return inl(pTDFX->PIOBase[chip]+addr);
 }
 
 static void TDFXWriteLongPIO(TDFXPtr pTDFX, int addr, int val) {
-  outl(pTDFX->PIOBase+addr, val);
+  TDFXWriteChipLongPIO(pTDFX, 0, addr, val);
 }
 
 static int TDFXReadLongPIO(TDFXPtr pTDFX, int addr) {
-  return inl(pTDFX->PIOBase+addr);
+  return TDFXReadChipLongPIO(pTDFX, 0, addr);
 }
 
 void TDFXSetPIOAccess(TDFXPtr pTDFX) {
@@ -69,24 +77,34 @@ void TDFXSetPIOAccess(TDFXPtr pTDFX) {
   pTDFX->readControl=TDFXReadControlPIO;
   pTDFX->writeLong=TDFXWriteLongPIO;
   pTDFX->readLong=TDFXReadLongPIO;
+  pTDFX->readChipLong=TDFXReadChipLongPIO;
+  pTDFX->writeChipLong=TDFXWriteChipLongPIO;
 }
 
 static void TDFXWriteControlMMIO(TDFXPtr pTDFX, int addr, char index, char val) {
-  moutb(addr, index);
-  moutb(addr+1, val);
+  moutb(pTDFX->MMIOBase[0], addr, index);
+  moutb(pTDFX->MMIOBase[0], addr+1, val);
 }
 
 static char TDFXReadControlMMIO(TDFXPtr pTDFX, int addr, char index) {
-  moutb(addr, index);
-  return minb(addr+1);
+  moutb(pTDFX->MMIOBase[0], addr, index);
+  return minb(pTDFX->MMIOBase[0], addr+1);
+}
+
+void TDFXWriteChipLongMMIO(TDFXPtr pTDFX, int chip, int addr, int val) {
+  moutl(pTDFX->MMIOBase[chip], addr, val);
+}
+
+static int TDFXReadChipLongMMIO(TDFXPtr pTDFX, int chip, int addr) {
+  return minl(pTDFX->MMIOBase[chip], addr);
 }
 
 void TDFXWriteLongMMIO(TDFXPtr pTDFX, int addr, int val) {
-  moutl(addr, val);
+  TDFXWriteChipLongMMIO(pTDFX, 0, addr, val);
 }
 
 int TDFXReadLongMMIO(TDFXPtr pTDFX, int addr) {
-  return minl(addr);
+  return TDFXReadChipLongMMIO(pTDFX, 0, addr);
 }
 
 void TDFXSetMMIOAccess(TDFXPtr pTDFX) {
@@ -96,5 +114,7 @@ void TDFXSetMMIOAccess(TDFXPtr pTDFX) {
   pTDFX->readControl=TDFXReadControlMMIO;
   pTDFX->writeLong=TDFXWriteLongMMIO;
   pTDFX->readLong=TDFXReadLongMMIO;
+  pTDFX->writeChipLong=TDFXWriteChipLongMMIO;
+  pTDFX->readChipLong=TDFXReadChipLongMMIO;
 }
 

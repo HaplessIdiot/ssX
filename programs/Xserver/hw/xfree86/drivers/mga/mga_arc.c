@@ -19,7 +19,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_arc.c,v 1.6 1999/05/30 03:03:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_arc.c,v 1.7 1999/08/22 05:57:33 dawes Exp $ */
 
 
 #include "X.h"
@@ -68,6 +68,8 @@ MGAZeroArc(
     miZeroArcRec info;
     Bool do360;
     DDXPointRec org, orgo;
+
+    CHECK_DMA_QUIESCENT( pMga, infoRec->pScrn );
 
     (*infoRec->SetupForSolidFill)(infoRec->pScrn, pGC->fgPixel, 
 		pGC->alu, pGC->planemask);

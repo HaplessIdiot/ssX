@@ -3,7 +3,7 @@
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -144,7 +144,7 @@ _mesa_Accum( GLenum op, GLfloat value )
    
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glAccum");
 
-   if (ctx->Visual->AccumBits == 0 || ctx->DrawBuffer != ctx->ReadBuffer) {
+   if (ctx->Visual->AccumRedBits == 0 || ctx->DrawBuffer != ctx->ReadBuffer) {
       gl_error(ctx, GL_INVALID_OPERATION, "glAccum");
       return;
    }
@@ -350,7 +350,7 @@ _mesa_Accum( GLenum op, GLfloat value )
             static GLchan multTable[32768];
             static GLfloat prevMult = 0.0;
             GLuint j;
-            const GLint max = 256 / mult;
+            const GLint max = (GLint) (256 / mult);
             if (mult != prevMult) {
                assert(max <= 32768);
                for (j = 0; j < max; j++)
@@ -374,7 +374,7 @@ _mesa_Accum( GLenum op, GLfloat value )
                   rgba[i][ACOMP] = multTable[acc[i4+3]];
                }
                if (ctx->Color.SWmasking) {
-                  gl_mask_rgba_span( ctx, width, xpos, ypos, rgba );
+                  _mesa_mask_rgba_span( ctx, width, xpos, ypos, rgba );
                }
                (*ctx->Driver.WriteRGBASpan)( ctx, width, xpos, ypos, 
                                              (const GLubyte (*)[4])rgba, NULL );
@@ -401,7 +401,7 @@ _mesa_Accum( GLenum op, GLfloat value )
                   rgba[i][ACOMP] = CLAMP( a, 0, iChanMax );
                }
                if (ctx->Color.SWmasking) {
-                  gl_mask_rgba_span( ctx, width, xpos, ypos, rgba );
+                  _mesa_mask_rgba_span( ctx, width, xpos, ypos, rgba );
                }
                (*ctx->Driver.WriteRGBASpan)( ctx, width, xpos, ypos, 
                                              (const GLubyte (*)[4])rgba, NULL );
@@ -426,7 +426,7 @@ _mesa_clear_accum_buffer( GLcontext *ctx )
    GLuint buffersize;
    GLfloat acc_scale;
 
-   if (ctx->Visual->AccumBits==0) {
+   if (ctx->Visual->AccumRedBits==0) {
       /* No accumulation buffer! */
       return;
    }
@@ -486,7 +486,7 @@ _mesa_clear_accum_buffer( GLcontext *ctx )
 	     ctx->Accum.ClearColor[2]==0.0 &&
 	     ctx->Accum.ClearColor[3]==0.0) {
 	    /* Black */
-	    MEMSET( ctx->DrawBuffer->Accum, 0, buffersize * 4 * sizeof(GLaccum) );
+	    BZERO( ctx->DrawBuffer->Accum, buffersize * 4 * sizeof(GLaccum) );
 	 }
 	 else {
 	    /* Not black */

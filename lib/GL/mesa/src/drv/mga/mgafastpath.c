@@ -380,10 +380,12 @@ static void mga_project_vertices( struct vertex_buffer *VB )
    GLmatrix *mat = &ctx->Viewport.WindowMap;
    GLfloat m[16];
 
+   REFRESH_DRAWABLE_INFO(mmesa);
+
    m[MAT_SX] =   mat->m[MAT_SX];
-   m[MAT_TX] =   mat->m[MAT_TX] + mmesa->drawX - .5;
+   m[MAT_TX] =   mat->m[MAT_TX] + mmesa->drawX + SUBPIXEL_X;
    m[MAT_SY] = (- mat->m[MAT_SY]);
-   m[MAT_TY] = (- mat->m[MAT_TY]) + mmesa->driDrawable->h + mmesa->drawY - .5;
+   m[MAT_TY] = (- mat->m[MAT_TY]) + mmesa->driDrawable->h + mmesa->drawY + SUBPIXEL_Y;
    m[MAT_SZ] =   mat->m[MAT_SZ] * (1.0 / 0x10000);
    m[MAT_TZ] =   mat->m[MAT_TZ] * (1.0 / 0x10000);
 
@@ -401,10 +403,12 @@ static void mga_project_clipped_vertices( struct vertex_buffer *VB )
    GLmatrix *mat = &ctx->Viewport.WindowMap;
    GLfloat m[16];
 
+   REFRESH_DRAWABLE_INFO(mmesa);
+
    m[MAT_SX] =   mat->m[MAT_SX];
-   m[MAT_TX] =   mat->m[MAT_TX] + mmesa->drawX - .5;
+   m[MAT_TX] =   mat->m[MAT_TX] + mmesa->drawX + SUBPIXEL_X;
    m[MAT_SY] = (- mat->m[MAT_SY]);
-   m[MAT_TY] = (- mat->m[MAT_TY]) + mmesa->driDrawable->h + mmesa->drawY - .5;
+   m[MAT_TY] = (- mat->m[MAT_TY]) + mmesa->driDrawable->h + mmesa->drawY - SUBPIXEL_Y;
    m[MAT_SZ] =   mat->m[MAT_SZ] * (1.0 / 0x10000);
    m[MAT_TZ] =   mat->m[MAT_TZ] * (1.0 / 0x10000);
 
@@ -484,6 +488,16 @@ void mgaDDFastPath( struct vertex_buffer *VB )
 
    gl_prepare_arrays_cva( VB );	                 /* still need this */
 
+   if (gl_reduce_prim[prim] == GL_TRIANGLES && 
+       VB->Count < (MGA_DMA_BUF_SZ / 48) &&
+       (ctx->ModelProjectMatrix.flags & (MAT_FLAG_GENERAL|
+					 MAT_FLAG_PERSPECTIVE)) &&
+       mmesa->mgaScreen->chipset == MGA_CARD_TYPE_G400) 
+   {
+      mgaDDEltPath( VB );
+      return;
+   }
+
    /* Reserve enough space for the pathological case.
     */
    if (VB->EltPtr->count * 12 > MGA_DRIVER_DATA(VB)->size) {
@@ -507,18 +521,12 @@ void mgaDDFastPath( struct vertex_buffer *VB )
 	 ctx->CVA.elt_mode = gl_reduce_prim[prim];
 	 VB->EltPtr = &(MGA_DRIVER_DATA(VB)->clipped_elements);
 
-	 LOCK_HARDWARE( mmesa );
 	 mga_project_clipped_vertices( VB );    /* clip->device space */
 	 mga_render_elements_direct( VB );        /* render using new list */
-	 mgaFlushVerticesLocked( mmesa );
-	 UNLOCK_HARDWARE( mmesa );
       }
    } else {
-      LOCK_HARDWARE( mmesa );
       mga_project_vertices( VB );               /* clip->device space  */
       mga_render_elements_direct( VB );           /* render using orig list */
-      mgaFlushVerticesLocked( mmesa );
-      UNLOCK_HARDWARE( mmesa );
    }
 
    /* This indicates that there is no cached data to reuse.  

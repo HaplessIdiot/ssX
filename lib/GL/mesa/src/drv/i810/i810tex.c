@@ -28,9 +28,10 @@
 #include <GL/gl.h>
 
 #include "mm.h"
-#include "i810lib.h"
+#include "i810context.h"
 #include "i810tex.h"
 #include "i810log.h"
+#include "i810ioctl.h"
 #include "simple_list.h"
 #include "enums.h"
 
@@ -204,6 +205,7 @@ static i810TextureObjectPtr i810CreateTexObj(i810ContextPtr imesa,
       log_pitch++;
    
    t->dirty_images = 0;
+   t->bound = 0;
    
    for ( height = i = 0 ; i < I810_TEX_MAXLEVELS && tObj->Image[i] ; i++ ) {
       t->image[i].image = tObj->Image[i];
@@ -278,24 +280,24 @@ static i810TextureObjectPtr i810CreateTexObj(i810ContextPtr imesa,
 
 void i810DestroyTexObj(i810ContextPtr imesa, i810TextureObjectPtr t)
 {
-   int i;
    if (!t) return;
 
    /* This is sad - need to sync *in case* we upload a texture
     * to this newly free memory...
     */
    if (t->MemBlock) {
-      imesa->dirty |= I810_REQUIRE_QUIESCENT;
       mmFreeMem(t->MemBlock);
-      t->MemBlock = 0;      
+      t->MemBlock = 0;
+
+      if (t->age > imesa->dirtyAge)
+	 imesa->dirtyAge = t->age;
    }
 
    if (t->globj)
       t->globj->DriverData = 0;
 
-   for ( i = 0 ; i < 2 ; i++ ) 
-      if ( imesa->CurrentTexObj[i] == t ) 
-	 imesa->CurrentTexObj[i] = 0;
+   if (t->bound)
+      imesa->CurrentTexObj[t->bound - 1] = 0; 
 
    remove_from_list(t);
    free(t);
@@ -305,9 +307,11 @@ void i810DestroyTexObj(i810ContextPtr imesa, i810TextureObjectPtr t)
 static void i810SwapOutTexObj(i810ContextPtr imesa, i810TextureObjectPtr t)
 {
    if (t->MemBlock) {
-      imesa->dirty |= I810_REQUIRE_QUIESCENT;
       mmFreeMem(t->MemBlock);
       t->MemBlock = 0;      
+
+      if (t->age > imesa->dirtyAge)
+	 imesa->dirtyAge = t->age;
    }
 
    t->dirty_images = ~0;
@@ -413,13 +417,28 @@ static void i810UploadTexLevel( i810TextureObjectPtr t, int level )
    }
    break;
 
+   case GL_ALPHA:
+   {
+      GLushort *dst = (GLushort *)(t->BufAddr + t->image[level].offset);
+      GLubyte  *src = (GLubyte *)image->Data;
+      i810Msg(10,"  CopyA: %p %p\n", dst, src);      
+
+      for (j = 0 ; j < image->Height ; j++, dst += (t->Pitch/2)) {
+	 for (i = 0 ; i < image->Width ; i++) {
+	    dst[i] = I810PACKCOLOR4444(255,255,255,src[0]);
+	    src += 1;
+	 }
+      }
+   }
+   break;
+
    /* TODO: Translate color indices *now*:
     */
    case GL_COLOR_INDEX:
       {
 	 GLubyte *dst = (GLubyte *)(t->BufAddr + t->image[level].offset);
 	 GLubyte *src = (GLubyte *)image->Data;
-	 i810Msg(10,"  CopyIndex  %p %p\n", dst, src);      
+	 i810Msg(10,"  CopyIndex: %p %p\n", dst, src);      
 
 	 for (j = 0 ; j < image->Height ; j++, dst += t->Pitch) {
 	    for (i = 0 ; i < image->Width ; i++) {
@@ -431,8 +450,8 @@ static void i810UploadTexLevel( i810TextureObjectPtr t, int level )
    break;
       
    default:
-      i810Error("Not supported texture format %d\n",(int)image->Format);
-      exit(1);
+      i810Error("Not supported texture format %s\n",
+		gl_lookup_enum_by_nr(image->Format));
    }
 }
 
@@ -449,13 +468,19 @@ void i810PrintLocalLRU( i810ContextPtr imesa )
 		 t->MemBlock->ofs / sz,
 		 t->MemBlock->ofs,
 		 t->MemBlock->size);      
+      else
+	 fprintf(stderr, "Texture (bound %d) at %x sz %x\n", 
+		 t->bound,
+		 t->MemBlock->ofs,
+		 t->MemBlock->size);      
+
    }
 }
 
 void i810PrintGlobalLRU( i810ContextPtr imesa )
 {
    int i, j;
-   i810TexRegion *list = imesa->sarea->texList;
+   drm_i810_tex_region_t *list = imesa->sarea->texList;
 
    for (i = 0, j = I810_NR_TEX_REGIONS ; i < I810_NR_TEX_REGIONS ; i++) {
       fprintf(stderr, "list[%d] age %d next %d prev %d\n",
@@ -471,7 +496,7 @@ void i810PrintGlobalLRU( i810ContextPtr imesa )
 
 void i810ResetGlobalLRU( i810ContextPtr imesa )
 {
-   i810TexRegion *list = imesa->sarea->texList;
+   drm_i810_tex_region_t *list = imesa->sarea->texList;
    int sz = 1 << imesa->i810Screen->logTextureGranularity;
    int i;
 
@@ -481,7 +506,7 @@ void i810ResetGlobalLRU( i810ContextPtr imesa )
     * when looking up objects at a particular location in texture
     * memory.  
     */
-   for (i = 0 ; (i+1) * sz < imesa->i810Screen->textureSize ; i++) {
+   for (i = 0 ; (i+1) * sz <= imesa->i810Screen->textureSize ; i++) {
       list[i].prev = i-1;
       list[i].next = i+1;
       list[i].age = 0;
@@ -503,7 +528,7 @@ static void i810UpdateTexLRU( i810ContextPtr imesa, i810TextureObjectPtr t )
    int logsz = imesa->i810Screen->logTextureGranularity;
    int start = t->MemBlock->ofs >> logsz;
    int end = (t->MemBlock->ofs + t->MemBlock->size - 1) >> logsz;
-   i810TexRegion *list = imesa->sarea->texList;
+   drm_i810_tex_region_t *list = imesa->sarea->texList;
    
    imesa->texAge = ++imesa->sarea->texAge;
 
@@ -556,7 +581,7 @@ void i810TexturesGone( i810ContextPtr imesa,
       /* It overlaps - kick it off.  Need to hold onto the currently bound
        * objects, however.
        */
-      if (t == imesa->CurrentTexObj[0] || t == imesa->CurrentTexObj[1]) 
+      if (t->bound)
 	 i810SwapOutTexObj( imesa, t );
       else
 	 i810DestroyTexObj( imesa, t );
@@ -583,7 +608,6 @@ int i810UploadTexImages( i810ContextPtr imesa, i810TextureObjectPtr t )
 {
    int i;
    int ofs;
-   i810glx.c_textureSwaps++;
 
    /* Do we need to eject LRU texture objects?
     */
@@ -594,24 +618,38 @@ int i810UploadTexImages( i810ContextPtr imesa, i810TextureObjectPtr t )
 	 if (t->MemBlock)
 	    break;
 
-	 if (imesa->TexObjList.prev == &(imesa->TexObjList)) {
-	    fprintf(stderr, "Failed to upload texture, sz %d\n", t->totalSize);
-	    mmDumpMemInfo( imesa->texHeap );
+	 if (imesa->TexObjList.prev->bound) {
+  	    fprintf(stderr, "Hit bound texture in upload\n"); 
+	    i810PrintLocalLRU( imesa );
 	    return -1;
 	 }
 
+	 if (imesa->TexObjList.prev == &(imesa->TexObjList)) {
+ 	    fprintf(stderr, "Failed to upload texture, sz %d\n", t->totalSize);
+	    mmDumpMemInfo( imesa->texHeap );
+	    return -1;
+	 }
+	 
 	 i810DestroyTexObj( imesa, imesa->TexObjList.prev );
       }
  
       ofs = t->MemBlock->ofs;
       t->Setup[I810_TEXREG_MI3] = imesa->i810Screen->textureOffset + ofs;
-      t->BufAddr = i810glx.texVirtual + ofs;
+      t->BufAddr = imesa->i810Screen->tex.map + ofs;
       imesa->dirty |= I810_UPLOAD_CTX;
    }
 
    /* Let the world know we've used this memory recently.
     */
    i810UpdateTexLRU( imesa, t );
+
+   if (I810_DEBUG & DEBUG_VERBOSE_LRU)
+      fprintf(stderr, "dispatch age: %d age freed memory: %d\n",
+	      GET_DISPATCH_AGE(imesa), imesa->dirtyAge);
+
+   if (imesa->dirtyAge >= GET_DISPATCH_AGE(imesa)) 
+      i810WaitAgeLocked( imesa, imesa->dirtyAge );
+   
 
    if (t->dirty_images) {
       if (I810_DEBUG & DEBUG_VERBOSE_LRU)
@@ -694,21 +732,37 @@ static void i810UpdateTex0State( GLcontext *ctx )
     
    if (t->dirty_images) 
       imesa->dirty |= I810_UPLOAD_TEX0IMAGE;
-
+   
    imesa->CurrentTexObj[0] = t;
+   t->bound = 1;
+
+   if (t->MemBlock)
+      i810UpdateTexLRU( imesa, t );
   
    switch (ctx->Texture.Unit[0].EnvMode) {
-      case GL_REPLACE:
-      imesa->Setup[I810_CTXREG_MC0] = ( GFX_OP_MAP_COLOR_STAGES |
-					MC_STAGE_0 |
-					MC_UPDATE_DEST |
-					MC_DEST_CURRENT |
-					MC_UPDATE_ARG1 |
-					MC_ARG1_TEX0_COLOR | 
-					MC_UPDATE_ARG2 |
-					MC_ARG2_ONE |
-					MC_UPDATE_OP |
-					MC_OP_ARG1 );
+   case GL_REPLACE:
+      if (t->image[0].internalFormat == GL_ALPHA) 
+	 imesa->Setup[I810_CTXREG_MC0] = ( GFX_OP_MAP_COLOR_STAGES |
+					   MC_STAGE_0 |
+					   MC_UPDATE_DEST |
+					   MC_DEST_CURRENT |
+					   MC_UPDATE_ARG1 |
+					   MC_ARG1_TEX0_COLOR | 
+					   MC_UPDATE_ARG2 |
+					   MC_ARG2_ITERATED_COLOR |
+					   MC_UPDATE_OP |
+					   MC_OP_ARG2 );
+      else 
+	 imesa->Setup[I810_CTXREG_MC0] = ( GFX_OP_MAP_COLOR_STAGES |
+					   MC_STAGE_0 |
+					   MC_UPDATE_DEST |
+					   MC_DEST_CURRENT |
+					   MC_UPDATE_ARG1 |
+					   MC_ARG1_TEX0_COLOR | 
+					   MC_UPDATE_ARG2 |
+					   MC_ARG2_ONE |
+					   MC_UPDATE_OP |
+					   MC_OP_ARG1 );
 
       if (t->image[0].internalFormat == GL_RGB) {
 	 ma_modulate_op = MA_OP_ARG1;
@@ -812,16 +866,28 @@ static void i810UpdateTex0State( GLcontext *ctx )
 					MA_OP_ARG1 );
       break;
    case GL_BLEND:
-      imesa->Setup[I810_CTXREG_MC0] = ( GFX_OP_MAP_COLOR_STAGES |
-					MC_STAGE_0 |
-					MC_UPDATE_DEST |
-					MC_DEST_CURRENT |
-					MC_UPDATE_ARG1 |
-					MC_ARG1_COLOR_FACTOR | 
-					MC_UPDATE_ARG2 |
-					MC_ARG2_ITERATED_COLOR |
-					MC_UPDATE_OP |
-					MC_OP_LIN_BLEND_TEX0_COLOR );
+      if (t->image[0].internalFormat == GL_ALPHA) 
+	 imesa->Setup[I810_CTXREG_MC0] = ( GFX_OP_MAP_COLOR_STAGES |
+					   MC_STAGE_0 |
+					   MC_UPDATE_DEST |
+					   MC_DEST_CURRENT |
+					   MC_UPDATE_ARG1 |
+					   MC_ARG1_TEX0_COLOR | 
+					   MC_UPDATE_ARG2 |
+					   MC_ARG2_ITERATED_COLOR |
+					   MC_UPDATE_OP |
+					   MC_OP_ARG2 );
+      else 
+	 imesa->Setup[I810_CTXREG_MC0] = ( GFX_OP_MAP_COLOR_STAGES |
+					   MC_STAGE_0 |
+					   MC_UPDATE_DEST |
+					   MC_DEST_CURRENT |
+					   MC_UPDATE_ARG1 |
+					   MC_ARG1_COLOR_FACTOR | 
+					   MC_UPDATE_ARG2 |
+					   MC_ARG2_ITERATED_COLOR |
+					   MC_UPDATE_OP |
+					   MC_OP_LIN_BLEND_TEX0_COLOR );
 
       if (t->image[0].internalFormat == GL_RGB) {
 	 imesa->Setup[I810_CTXREG_MA0] = ( GFX_OP_MAP_ALPHA_STAGES |
@@ -911,7 +977,10 @@ static void i810UpdateTex1State( GLcontext *ctx )
       imesa->dirty |= I810_UPLOAD_TEX1IMAGE;
 
    imesa->CurrentTexObj[1] = t;
+   t->bound = 2;
 
+   if (t->MemBlock)
+      i810UpdateTexLRU( imesa, t );
 
    switch (ctx->Texture.Unit[1].EnvMode) {
    case GL_REPLACE:
@@ -1078,11 +1147,15 @@ static void i810UpdateTex1State( GLcontext *ctx )
 void i810UpdateTextureState( GLcontext *ctx )
 {
    i810ContextPtr imesa = I810_CONTEXT(ctx);
+   if (imesa->CurrentTexObj[0]) imesa->CurrentTexObj[0]->bound = 0;
+   if (imesa->CurrentTexObj[1]) imesa->CurrentTexObj[1]->bound = 0;
    imesa->CurrentTexObj[0] = 0;
-   imesa->CurrentTexObj[1] = 0;
+   imesa->CurrentTexObj[1] = 0;   
    i810UpdateTex0State( ctx );
    i810UpdateTex1State( ctx );
-   I810_CONTEXT( ctx )->dirty |= I810_UPLOAD_CTX;
+   I810_CONTEXT( ctx )->dirty |= (I810_UPLOAD_CTX |
+				  I810_UPLOAD_TEX0 | 
+				  I810_UPLOAD_TEX1);
 }
 
 
@@ -1091,25 +1164,30 @@ void i810UpdateTextureState( GLcontext *ctx )
  * DRIVER functions
  *****************************************/
 
-static void i810TexEnv( GLcontext *ctx, GLenum pname, const GLfloat *param )
+static void i810TexEnv( GLcontext *ctx, GLenum target, 
+			GLenum pname, const GLfloat *param )
 {
    i810ContextPtr imesa = I810_CONTEXT( ctx );
 
    if (pname == GL_TEXTURE_ENV_MODE) {
 
+      FLUSH_BATCH(imesa);	
       imesa->new_state |= I810_NEW_TEXTURE;
 
    } else if (pname == GL_TEXTURE_ENV_COLOR) {
 
       struct gl_texture_unit *texUnit = 
 	 &ctx->Texture.Unit[ctx->Texture.CurrentUnit];
-      GLubyte c[4];
+      GLfloat *fc = texUnit->EnvColor;
       GLuint col;
 
-      FLOAT_RGBA_TO_UBYTE_RGBA(texUnit->EnvColor, c);
-      col = (c[3]<<24) | (c[0]<<16) | (c[1]<<8) | (c[2]);
+      col = ((((GLubyte)fc[3])<<24) | 
+	     (((GLubyte)fc[0])<<16) | 
+	     (((GLubyte)fc[1])<<8) | 
+	     (((GLubyte)fc[2])<<0));
     
       if (imesa->Setup[I810_CTXREG_CF1] != col) {
+	 FLUSH_BATCH(imesa);	
 	 imesa->Setup[I810_CTXREG_CF1] = col;      
 	 imesa->dirty |= I810_UPLOAD_CTX;
       }
@@ -1137,6 +1215,7 @@ static void i810TexImage( GLcontext *ctx,
 
    t = (i810TextureObjectPtr) tObj->DriverData;
    if (t) {
+      if (t->bound) FLUSH_BATCH(imesa);
       /* if this is the current object, it will force an update */
       i810DestroyTexObj( imesa, t );
       tObj->DriverData = 0;
@@ -1163,10 +1242,10 @@ static void i810TexSubImage( GLcontext *ctx, GLenum target,
    
    t = (i810TextureObjectPtr) tObj->DriverData;
    if (t) {
+      if (t->bound) FLUSH_BATCH( imesa );
       i810DestroyTexObj( imesa, t );
       tObj->DriverData = 0;
       imesa->new_state |= I810_NEW_TEXTURE;
-      i810glx.c_textureSwaps++;
    }
 }
 
@@ -1183,15 +1262,18 @@ static void i810TexParameter( GLcontext *ctx, GLenum target,
    switch (pname) {
    case GL_TEXTURE_MIN_FILTER:
    case GL_TEXTURE_MAG_FILTER:
+      if (t->bound) FLUSH_BATCH( imesa );
       i810SetTexFilter(t,tObj->MinFilter,tObj->MagFilter);
       break;
 
    case GL_TEXTURE_WRAP_S:
    case GL_TEXTURE_WRAP_T:
+      if (t->bound) FLUSH_BATCH( imesa );
       i810SetTexWrapping(t,tObj->WrapS,tObj->WrapT);
       break;
   
    case GL_TEXTURE_BORDER_COLOR:
+      if (t->bound) FLUSH_BATCH( imesa );
       i810SetTexBorderColor(t,tObj->BorderColor);
       break;
 
@@ -1206,7 +1288,14 @@ static void i810BindTexture( GLcontext *ctx, GLenum target,
 			     struct gl_texture_object *tObj )
 {
    i810ContextPtr imesa = I810_CONTEXT( ctx );
-   imesa->CurrentTexObj[ctx->Texture.CurrentUnit] = 0;  
+   
+   FLUSH_BATCH(imesa);
+
+   if (imesa->CurrentTexObj[ctx->Texture.CurrentUnit]) {
+      imesa->CurrentTexObj[ctx->Texture.CurrentUnit]->bound = 0;
+      imesa->CurrentTexObj[ctx->Texture.CurrentUnit] = 0;  
+   }
+
    imesa->new_state |= I810_NEW_TEXTURE;
 }
 
@@ -1216,6 +1305,13 @@ static void i810DeleteTexture( GLcontext *ctx, struct gl_texture_object *tObj )
    i810ContextPtr imesa = I810_CONTEXT( ctx );
 
    if (t) {
+
+      if (t->bound) {
+	 FLUSH_BATCH(imesa);
+	 imesa->CurrentTexObj[t->bound-1] = 0;
+	 imesa->new_state |= I810_NEW_TEXTURE;
+      }
+
       i810DestroyTexObj(imesa,t);
       tObj->DriverData=0;
    }

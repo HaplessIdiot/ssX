@@ -61,11 +61,11 @@ static const GLubyte *mgaDDGetString( GLcontext *ctx, GLenum name )
    mgaContextPtr mmesa = MGA_CONTEXT( ctx );
    switch (name) {
    case GL_VENDOR:
-      return "Utah GLX";
+      return "Precision Insight, Inc.";
    case GL_RENDERER:
-      if (MGA_IS_G200(mmesa)) return "GLX-MGA-G200";
-      if (MGA_IS_G400(mmesa)) return "GLX-MGA-G400";
-      return "GLX-MGA";
+      if (MGA_IS_G200(mmesa)) return "Mesa DRI G200 20000510";
+      if (MGA_IS_G400(mmesa)) return "Mesa DRI G400 20000510";
+      return "Mesa DRI MGA 20000510";
    default:
       return 0;
    }
@@ -102,7 +102,7 @@ void mgaDDExtensionsInit( GLcontext *ctx )
 
    /* Support multitexture only on the g400.
     */
-   if (!MGA_IS_G400(MGA_CONTEXT(ctx))) 
+   if (1 /*!MGA_IS_G400(MGA_CONTEXT(ctx))*/) 
    {
       gl_extensions_disable( ctx, "GL_EXT_multitexture" );
       gl_extensions_disable( ctx, "GL_SGIS_multitexture" );
@@ -123,10 +123,13 @@ void mgaDDExtensionsInit( GLcontext *ctx )
     * a few rogue fallbacks.
     */
    gl_extensions_disable( ctx, "ARB_imaging" );
+   gl_extensions_disable( ctx, "GL_EXT_blend_color" );
    gl_extensions_disable( ctx, "GL_EXT_blend_minmax" );
    gl_extensions_disable( ctx, "GL_EXT_blend_logic_op" );
    gl_extensions_disable( ctx, "GL_EXT_blend_subtract" );
    gl_extensions_disable( ctx, "GL_INGR_blend_func_separate" );   
+   gl_extensions_disable( ctx, "GL_EXT_texture_lod_bias" );   
+   gl_extensions_disable( ctx, "GL_MESA_resize_buffers" );   
 }
 
 

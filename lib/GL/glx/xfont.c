@@ -360,7 +360,7 @@ bm_height);
       glEndList ();
     }
 
-  free (bm);
+  Xfree(bm);
   XFreeFontInfo( NULL, fs, 0 );
   XFreeGC (dpy, gc);
 

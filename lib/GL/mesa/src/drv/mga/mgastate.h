@@ -7,9 +7,10 @@ extern void mgaDDUpdateHwState( GLcontext *ctx );
 extern void mgaDDUpdateState( GLcontext *ctx );
 extern void mgaDDReducedPrimitiveChange( GLcontext *ctx, GLenum prim );
 
-/* reprograms the current registers without updating them, used to
-reset state after a dma buffer overflow */
-void mgaUpdateRegs( GLuint regs );
+extern void mgaInitState( mgaContextPtr mmesa );
+
+extern void mgaUpdateClipping(const GLcontext *ctx);
+
 
 
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.1 2000/02/11 17:25:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.2 2000/05/11 18:14:35 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -22,7 +22,7 @@
 #include "mga.h"
 #include "mga_macros.h"
 #include "mga_dri.h"
-#include "mga_dripriv.h"
+#include "mga_wrap.h"
 
 static char MGAKernelDriverName[] = "mga";
 static char MGAClientDriverName[] = "mga";
@@ -30,9 +30,9 @@ static char MGAClientDriverName[] = "mga";
 static Bool MGAInitVisualConfigs(ScreenPtr pScreen);
 static Bool MGACreateContext(ScreenPtr pScreen, VisualPtr visual, 
 			      drmContext hwContext, void *pVisualConfigPriv,
-			      void *contextStore);
+			      DRIContextType contextStore);
 static void MGADestroyContext(ScreenPtr pScreen, drmContext hwContext,
-			       void *contextStore);
+			       DRIContextType contextStore);
 static void MGADRISwapContext(ScreenPtr pScreen, DRISyncType syncType, 
 			       DRIContextType readContextType, 
 			       void *readContextStore,
@@ -51,250 +51,307 @@ extern void Mga32DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index);
 extern void Mga32DRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg, 
 			       RegionPtr prgnSrc, CARD32 index);
 
+Bool MgaCleanupDma(ScrnInfoPtr pScrn)
+{
+   MGAPtr pMGA = MGAPTR(pScrn);
+   Bool ret_val;
+
+   ret_val = drmMgaCleanupDma(pMGA->drmSubFD);
+   if (ret_val == FALSE)
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Mga Dma Cleanup Failed\n");
+
+   return ret_val;
+}
+
+Bool MgaLockUpdate(ScrnInfoPtr pScrn, drmLockFlags flags)
+{
+   MGAPtr pMGA = MGAPTR(pScrn);
+   Bool ret_val;
+
+   ret_val = drmMgaLockUpdate(pMGA->drmSubFD, flags);
+   if (ret_val == FALSE)
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "LockUpdate failed\n");
+
+   return ret_val;
+}
+
+Bool MgaInitDma(ScrnInfoPtr pScrn, int prim_size)
+{
+   MGAPtr pMGA = MGAPTR(pScrn);
+   MGADRIPtr pMGADRI = (MGADRIPtr)pMGA->pDRIInfo->devPrivate;
+   MGADRIServerPrivatePtr pMGADRIServer = pMGA->DRIServerInfo;
+   drmMgaInit init;
+   Bool ret_val;
+   
+   memset(&init, 0, sizeof(drmMgaInit));
+   init.reserved_map_agpstart = 0;
+   init.reserved_map_idx = 3;
+   init.buffer_map_idx = 4;
+   init.sarea_priv_offset = sizeof(XF86DRISAREARec);
+   init.primary_size = prim_size;
+   init.warp_ucode_size = pMGADRIServer->warp_ucode_size;
+
+   switch(pMGA->Chipset) {
+   case PCI_CHIP_MGAG400:
+      init.chipset = MGA_CARD_TYPE_G400;
+      break;
+   case PCI_CHIP_MGAG200:
+      init.chipset = MGA_CARD_TYPE_G200;
+      break;
+   case PCI_CHIP_MGAG200_PCI:
+   default:
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                 "[drm] Direct rendering not supported on this card/chipset\n");
+      return FALSE;
+   }
+
+   init.frontOffset = pMGADRI->frontOffset;
+   init.backOffset = pMGADRI->backOffset;
+   init.depthOffset = pMGADRI->depthOffset;
+   init.textureOffset = pMGADRI->textureOffset;
+   init.textureSize = pMGADRI->textureSize;
+   init.agpTextureSize = pMGADRI->agpTextureSize;
+   init.cpp = pMGADRI->cpp;
+   init.stride = pMGADRI->frontPitch;
+   init.mAccess = pMGA->MAccess;
+   init.sgram = !pMGA->HasSDRAM;
+   
+   memcpy(&init.WarpIndex, &pMGADRIServer->WarpIndex, 
+	  sizeof(drmMgaWarpIndex) * MGA_MAX_WARP_PIPES);
+
+   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[drm] Mga Dma Initialization start\n");
+
+   ret_val = drmMgaInitDma(pMGA->drmSubFD, &init);
+   if (ret_val == FALSE)
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "[drm] Mga Dma Initialization Failed\n");
+   else
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[drm] Mga Dma Initialization done\n");
+   return ret_val;
+}
+
 static Bool
 MGAInitVisualConfigs(ScreenPtr pScreen)
 {
-  ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-  MGAPtr pMGA = MGAPTR(pScrn);
-  int numConfigs = 0;
-  __GLXvisualConfig *pConfigs = 0;
-  MGAConfigPrivPtr pMGAConfigs = 0;
-  MGAConfigPrivPtr *pMGAConfigPtrs = 0;
-  int i;
+   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+   MGAPtr pMGA = MGAPTR(pScrn);
+   int numConfigs = 0;
+   __GLXvisualConfig *pConfigs = 0;
+   MGAConfigPrivPtr pMGAConfigs = 0;
+   MGAConfigPrivPtr *pMGAConfigPtrs = 0;
+   int i, db, depth, stencil, accum;
 
-  switch (pScrn->bitsPerPixel) {
-  case 8:
-  case 24:
-  case 32:
-    break;
-  case 16:
-    numConfigs = 4;
+   switch (pScrn->bitsPerPixel) {
+   case 8:
+   case 24:
+   case 32:
+      break;
+   case 16:
+      numConfigs = 4;
 
-    if (!(pConfigs = (__GLXvisualConfig*)xnfcalloc(sizeof(__GLXvisualConfig),
-						   numConfigs))) {
-      return FALSE;
-    }
-    if (!(pMGAConfigs = (MGAConfigPrivPtr)xnfcalloc(sizeof(MGAConfigPrivRec),
+      if (!(pConfigs = (__GLXvisualConfig*)xnfcalloc(sizeof(__GLXvisualConfig),
 						     numConfigs))) {
-      xfree(pConfigs);
-      return FALSE;
-    }
-    if (!(pMGAConfigPtrs = (MGAConfigPrivPtr*)xnfcalloc(sizeof(MGAConfigPrivPtr),
-							 numConfigs))) {
-      xfree(pConfigs);
-      xfree(pMGAConfigs);
-      return FALSE;
-    }
-    for (i=0; i<numConfigs; i++) 
-      pMGAConfigPtrs[i] = &pMGAConfigs[i];
+	 return FALSE;
+      }
+      if (!(pMGAConfigs = (MGAConfigPrivPtr)xnfcalloc(sizeof(MGAConfigPrivRec),
+						      numConfigs))) {
+	 xfree(pConfigs);
+	 return FALSE;
+      }
+      if (!(pMGAConfigPtrs = (MGAConfigPrivPtr*)xnfcalloc(sizeof(MGAConfigPrivPtr),
+							  numConfigs))) {
+	 xfree(pConfigs);
+	 xfree(pMGAConfigs);
+	 return FALSE;
+      }
+      for (i=0; i<numConfigs; i++) 
+	 pMGAConfigPtrs[i] = &pMGAConfigs[i];
 
-    /* config 0: db=FALSE, depth=0
-       config 1: db=FALSE, depth=16
-       config 2: db=TRUE, depth=0;
-       config 3: db=TRUE, depth=16
-    */
-    pConfigs[0].vid = -1;
-    pConfigs[0].class = -1;
-    pConfigs[0].rgba = TRUE;
-    pConfigs[0].redSize = 8;
-    pConfigs[0].greenSize = 8;
-    pConfigs[0].blueSize = 8;
-    pConfigs[0].redMask =   0x00FF0000;
-    pConfigs[0].greenMask = 0x0000FF00;
-    pConfigs[0].blueMask =  0x000000FF;
-    pConfigs[0].alphaMask = 0;
-    pConfigs[0].accumRedSize = 0;
-    pConfigs[0].accumGreenSize = 0;
-    pConfigs[0].accumBlueSize = 0;
-    pConfigs[0].accumAlphaSize = 0;
-    pConfigs[0].doubleBuffer = FALSE;
-    pConfigs[0].stereo = FALSE;
-    pConfigs[0].bufferSize = 16;
-    pConfigs[0].depthSize = 0;
-    pConfigs[0].stencilSize = 0;
-    pConfigs[0].auxBuffers = 0;
-    pConfigs[0].level = 0;
-    pConfigs[0].visualRating = 0;
-    pConfigs[0].transparentPixel = 0;
-    pConfigs[0].transparentRed = 0;
-    pConfigs[0].transparentGreen = 0;
-    pConfigs[0].transparentBlue = 0;
-    pConfigs[0].transparentAlpha = 0;
-    pConfigs[0].transparentIndex = 0;
-
-    pConfigs[1].vid = -1;
-    pConfigs[1].class = -1;
-    pConfigs[1].rgba = TRUE;
-    pConfigs[1].redSize = 8;
-    pConfigs[1].greenSize = 8;
-    pConfigs[1].blueSize = 8;
-    pConfigs[1].redMask = 0x00FF0000;
-    pConfigs[1].greenMask = 0x0000FF00;
-    pConfigs[1].blueMask = 0x000000FF;
-    pConfigs[1].alphaMask = 0;
-    pConfigs[1].accumRedSize = 0;
-    pConfigs[1].accumGreenSize = 0;
-    pConfigs[1].accumBlueSize = 0;
-    pConfigs[1].accumAlphaSize = 0;
-    pConfigs[1].doubleBuffer = FALSE;
-    pConfigs[1].stereo = FALSE;
-    pConfigs[1].bufferSize = 16;
-    pConfigs[1].depthSize = 16;
-    pConfigs[1].stencilSize = 0;
-    pConfigs[1].auxBuffers = 0;
-    pConfigs[1].level = 0;
-    pConfigs[1].visualRating = 0;
-    pConfigs[1].transparentPixel = 0;
-    pConfigs[1].transparentRed = 0;
-    pConfigs[1].transparentGreen = 0;
-    pConfigs[1].transparentBlue = 0;
-    pConfigs[1].transparentAlpha = 0;
-    pConfigs[1].transparentIndex = 0;
-
-    pConfigs[2].vid = -1;
-    pConfigs[2].class = -1;
-    pConfigs[2].rgba = TRUE;
-    pConfigs[2].redSize = 8;
-    pConfigs[2].greenSize = 8;
-    pConfigs[2].blueSize = 8;
-    pConfigs[2].redMask = 0x00FF0000;
-    pConfigs[2].greenMask = 0x0000FF00;
-    pConfigs[2].blueMask = 0x000000FF;
-    pConfigs[2].alphaMask = 0;
-    pConfigs[2].accumRedSize = 0;
-    pConfigs[2].accumGreenSize = 0;
-    pConfigs[2].accumBlueSize = 0;
-    pConfigs[2].accumAlphaSize = 0;
-    pConfigs[2].doubleBuffer = TRUE;
-    pConfigs[2].stereo = FALSE;
-    pConfigs[2].bufferSize = 16;
-    pConfigs[2].depthSize = 0;
-    pConfigs[2].stencilSize = 0;
-    pConfigs[2].auxBuffers = 0;
-    pConfigs[2].level = 0;
-    pConfigs[2].visualRating = 0;
-    pConfigs[2].transparentPixel = 0;
-    pConfigs[2].transparentRed = 0;
-    pConfigs[2].transparentGreen = 0;
-    pConfigs[2].transparentBlue = 0;
-    pConfigs[2].transparentAlpha = 0;
-    pConfigs[2].transparentIndex = 0;
-
-    pConfigs[3].vid = -1;
-    pConfigs[3].class = -1;
-    pConfigs[3].rgba = TRUE;
-    pConfigs[3].redSize = 8;
-    pConfigs[3].greenSize = 8;
-    pConfigs[3].blueSize = 8;
-    pConfigs[3].redMask = 0x00FF0000;
-    pConfigs[3].greenMask = 0x0000FF00;
-    pConfigs[3].blueMask = 0x000000FF;
-    pConfigs[3].alphaMask = 0;
-    pConfigs[3].accumRedSize = 0;
-    pConfigs[3].accumGreenSize = 0;
-    pConfigs[3].accumBlueSize = 0;
-    pConfigs[3].accumAlphaSize = 0;
-    pConfigs[3].doubleBuffer = TRUE;
-    pConfigs[3].stereo = FALSE;
-    pConfigs[3].bufferSize = 16;
-    pConfigs[3].depthSize = 16;
-    pConfigs[3].stencilSize = 0;
-    pConfigs[3].auxBuffers = 0;
-    pConfigs[3].level = 0;
-    pConfigs[3].visualRating = 0;
-    pConfigs[3].transparentPixel = 0;
-    pConfigs[3].transparentRed = 0;
-    pConfigs[3].transparentGreen = 0;
-    pConfigs[3].transparentBlue = 0;
-    pConfigs[3].transparentAlpha = 0;
-    pConfigs[3].transparentIndex = 0;
-    break;
-  }
-  pMGA->numVisualConfigs = numConfigs;
-  pMGA->pVisualConfigs = pConfigs;
-  pMGA->pVisualConfigsPriv = pMGAConfigs;
-  GlxSetVisualConfigs(numConfigs, pConfigs, (void**)pMGAConfigPtrs);
-  return TRUE;
+      i = 0;
+      depth = 1;
+      for (accum = 0; accum <= 1; accum++) {
+         for (stencil = 0; stencil <= 0; stencil++) { /* no stencil for now */
+            for (db=0; db<=1; db++) {
+               pConfigs[i].vid = -1;
+               pConfigs[i].class = -1;
+               pConfigs[i].rgba = TRUE;
+               pConfigs[i].redSize = 5;
+               pConfigs[i].greenSize = 6;
+               pConfigs[i].blueSize = 5;
+               pConfigs[i].redMask = 0x0000F800;
+               pConfigs[i].greenMask = 0x000007E0;
+               pConfigs[i].blueMask = 0x0000001F;
+               pConfigs[i].alphaMask = 0;
+               if (accum) {
+                  pConfigs[i].accumRedSize = 16;
+                  pConfigs[i].accumGreenSize = 16;
+                  pConfigs[i].accumBlueSize = 16;
+                  pConfigs[i].accumAlphaSize = 0;
+               } else {
+                  pConfigs[i].accumRedSize = 0;
+                  pConfigs[i].accumGreenSize = 0;
+                  pConfigs[i].accumBlueSize = 0;
+                  pConfigs[i].accumAlphaSize = 0;
+               }
+               if (db)
+                  pConfigs[i].doubleBuffer = TRUE;
+               else
+                  pConfigs[i].doubleBuffer = FALSE;
+               pConfigs[i].stereo = FALSE;
+               pConfigs[i].bufferSize = 16;
+               if (depth)
+                  pConfigs[i].depthSize = 16;
+               else 
+                  pConfigs[i].depthSize = 0;
+               if (stencil)
+                  pConfigs[i].stencilSize = 8;
+               else
+                  pConfigs[i].stencilSize = 0;
+               pConfigs[i].auxBuffers = 0;
+               pConfigs[i].level = 0;
+               if (stencil)
+                  pConfigs[i].visualRating = GLX_SLOW_VISUAL_EXT;
+               else
+                  pConfigs[i].visualRating = GLX_NONE_EXT;
+               pConfigs[i].transparentPixel = 0;
+               pConfigs[i].transparentRed = 0;
+               pConfigs[i].transparentGreen = 0;
+               pConfigs[i].transparentBlue = 0;
+               pConfigs[i].transparentAlpha = 0;
+               pConfigs[i].transparentIndex = 0;
+               i++;
+            }
+         }
+      }
+      if (i != numConfigs) {
+         xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                    "[drm] Incorrect initialization of visuals\n");
+         return FALSE;
+      }
+      break;
+   default:
+      ;  /* unexpected bits/pixelx */
+   }
+   pMGA->numVisualConfigs = numConfigs;
+   pMGA->pVisualConfigs = pConfigs;
+   pMGA->pVisualConfigsPriv = pMGAConfigs;
+   GlxSetVisualConfigs(numConfigs, pConfigs, (void**)pMGAConfigPtrs);
+   return TRUE;
 }
+
+static unsigned int mylog2(unsigned int n)
+{
+   unsigned int log2 = 1;
+   while (n>1) n >>= 1, log2++;
+   return log2;
+}
+
 
 Bool MGADRIScreenInit(ScreenPtr pScreen)
 {
-  ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-  MGAPtr pMGA = MGAPTR(pScrn);
-  DRIInfoPtr pDRIInfo;
-  MGADRIPtr pMGADRI;
-  MGADRIServerPrivatePtr pMGADRIServer;
-  int bufs;
+   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+   MGAPtr pMGA = MGAPTR(pScrn);
+   DRIInfoPtr pDRIInfo;
+   MGADRIPtr pMGADRI;
+   MGADRIServerPrivatePtr pMGADRIServer;
+   int bufs, size;
    int prim_size;
    int init_offset;
+   int i;
 
-  pDRIInfo = DRICreateInfoRec();
-  if (!pDRIInfo) return FALSE;
-  pMGA->pDRIInfo = pDRIInfo;
+#if XFree86LOADER
+   /* Check that the GLX, DRI, and DRM modules have been loaded by testing
+    * for canonical symbols in each module. */
+   if (!LoaderSymbol("GlxSetVisualConfigs")) return FALSE;
+   if (!LoaderSymbol("DRIScreenInit"))       return FALSE;
+   if (!LoaderSymbol("drmAvailable"))        return FALSE;
+#endif   
+     
+   /* Check the DRI version */
+   {
+      int major, minor, patch;
+      DRIQueryVersion(&major, &minor, &patch);
+      if (major != 3 || minor != 0 || patch < 0) {
+         xf86DrvMsg(pScreen->myNum, X_ERROR,
+                    "[drm] MGADRIScreenInit failed (DRI version = %d.%d.%d, expected 3.0.x).  Disabling DRI.\n",
+                    major, minor, patch);
+         return FALSE;
+      }
+   }
 
-  pDRIInfo->drmDriverName = MGAKernelDriverName;
-  pDRIInfo->clientDriverName = MGAClientDriverName;
-  pDRIInfo->busIdString = xalloc(64);
-  sprintf(pDRIInfo->busIdString, "PCI:%d:%d:%d",
-	  ((pciConfigPtr)pMGA->PciInfo->thisCard)->busnum,
-	  ((pciConfigPtr)pMGA->PciInfo->thisCard)->devnum,
-	  ((pciConfigPtr)pMGA->PciInfo->thisCard)->funcnum);
-  pDRIInfo->ddxDriverMajorVersion = 0;
-  pDRIInfo->ddxDriverMinorVersion = 1;
-  pDRIInfo->ddxDriverPatchVersion = 0;
-  pDRIInfo->frameBufferPhysicalAddress = pMGA->FbAddress;
-  pDRIInfo->frameBufferSize = pMGA->FbMapSize;
-  pDRIInfo->frameBufferStride = pScrn->displayWidth*(pScrn->bitsPerPixel/8);
-  pDRIInfo->ddxDrawableTableEntry = MGA_MAX_DRAWABLES;
+   if ((pScrn->bitsPerPixel / 8) != 2) {
+      xf86DrvMsg(pScreen->myNum, X_INFO,
+                 "[drm] Direct Rendering only supported in 16 bpp mode\n");
+      return FALSE;
+   }
+   
+   pDRIInfo = DRICreateInfoRec();
+   if (!pDRIInfo)
+      return FALSE;
+   pMGA->pDRIInfo = pDRIInfo;
 
-  if (SAREA_MAX_DRAWABLES < MGA_MAX_DRAWABLES)
-    pDRIInfo->maxDrawableTableEntry = SAREA_MAX_DRAWABLES;
-  else
-    pDRIInfo->maxDrawableTableEntry = MGA_MAX_DRAWABLES;
+   pDRIInfo->drmDriverName = MGAKernelDriverName;
+   pDRIInfo->clientDriverName = MGAClientDriverName;
+   pDRIInfo->busIdString = xalloc(64);
+   sprintf(pDRIInfo->busIdString, "PCI:%d:%d:%d",
+           ((pciConfigPtr)pMGA->PciInfo->thisCard)->busnum,
+           ((pciConfigPtr)pMGA->PciInfo->thisCard)->devnum,
+           ((pciConfigPtr)pMGA->PciInfo->thisCard)->funcnum);
+   pDRIInfo->ddxDriverMajorVersion = MGA_MAJOR_VERSION;
+   pDRIInfo->ddxDriverMinorVersion = MGA_MINOR_VERSION;
+   pDRIInfo->ddxDriverPatchVersion = MGA_PATCHLEVEL;
+   pDRIInfo->frameBufferPhysicalAddress = pMGA->FbAddress;
+   pDRIInfo->frameBufferSize = pMGA->FbMapSize;
+   pDRIInfo->frameBufferStride = pScrn->displayWidth*(pScrn->bitsPerPixel/8);
+   pDRIInfo->ddxDrawableTableEntry = MGA_MAX_DRAWABLES;
 
-#ifdef NOT_DONE
-  /* FIXME need to extend DRI protocol to pass this size back to client 
-   * for SAREA mapping that includes a device private record
-   */
-  pDRIInfo->SAREASize = 
-    ((sizeof(XF86DRISAREARec) + 0xfff) & 0x1000); /* round to page */
-  /* + shared memory device private rec */
-#else
-  /* For now the mapping works by using a fixed size defined
-   * in the SAREA header
-   */
-  if (sizeof(XF86DRISAREARec)+sizeof(drm_mga_sarea_t)>SAREA_MAX) {
-    ErrorF("Data does not fit in SAREA\n");
-    return FALSE;
-  }
-  pDRIInfo->SAREASize = SAREA_MAX;
-#endif
+   MGADRIWrapFunctions( pScreen, pDRIInfo );
 
-  if (!(pMGADRI = (MGADRIPtr)xnfcalloc(sizeof(MGADRIRec),1))) {
-    DRIDestroyInfoRec(pMGA->pDRIInfo);
-    pMGA->pDRIInfo=0;
-    ErrorF("Failed to allocate memory for private record \n");
-    return FALSE;
-  }
-   if (!(pMGADRIServer = (MGADRIServerPrivatePtr)
-	 xnfcalloc(sizeof(MGADRIServerPrivate),1))) {
-    xfree(pMGADRI);
-    DRIDestroyInfoRec(pMGA->pDRIInfo);
-    pMGA->pDRIInfo=0;
-    ErrorF("Failed to allocate memory for private record \n");
-    return FALSE;
-  }
+   if (SAREA_MAX_DRAWABLES < MGA_MAX_DRAWABLES)
+      pDRIInfo->maxDrawableTableEntry = SAREA_MAX_DRAWABLES;
+   else
+      pDRIInfo->maxDrawableTableEntry = MGA_MAX_DRAWABLES;
 
-  pDRIInfo->devPrivate = pMGADRI;
-  pMGA->DRIServerInfo = pMGADRIServer;
-  pDRIInfo->devPrivateSize = sizeof(MGADRIRec);
-  pDRIInfo->contextSize = sizeof(MGADRIContextRec);
-
-  pDRIInfo->CreateContext = MGACreateContext;
-  pDRIInfo->DestroyContext = MGADestroyContext;
-  pDRIInfo->SwapContext = MGADRISwapContext;
+   /* For now the mapping works by using a fixed size defined
+    * in the SAREA header
+    */
+   if (sizeof(XF86DRISAREARec)+sizeof(MGASAREARec)>SAREA_MAX) {
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "[drm] Data does not fit in SAREA\n");
+      return FALSE;
+   }
   
-  switch( pScrn->bitsPerPixel ) {
+   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[drm] Sarea %d+%d: %d\n",
+              sizeof(XF86DRISAREARec), sizeof(MGASAREARec),
+              sizeof(XF86DRISAREARec) + sizeof(MGASAREARec));
+
+   pDRIInfo->SAREASize = SAREA_MAX;
+
+   if (!(pMGADRI = (MGADRIPtr)xnfcalloc(sizeof(MGADRIRec),1))) {
+      DRIDestroyInfoRec(pMGA->pDRIInfo);
+      pMGA->pDRIInfo=0;
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                 "[drm] Failed to allocate memory for private record\n");
+      return FALSE;
+   }
+   if (!(pMGADRIServer = (MGADRIServerPrivatePtr)
+	 xnfcalloc(sizeof(MGADRIServerPrivateRec),1))) {
+      xfree(pMGADRI);
+      DRIDestroyInfoRec(pMGA->pDRIInfo);
+      pMGA->pDRIInfo=0;
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                 "[drm] Failed to allocate memory for private record\n");
+      return FALSE;
+   }
+
+   pDRIInfo->devPrivate = pMGADRI;
+   pMGA->DRIServerInfo = pMGADRIServer;
+   pDRIInfo->devPrivateSize = sizeof(MGADRIRec);
+   pDRIInfo->contextSize = sizeof(MGADRIContextRec);
+
+   pDRIInfo->CreateContext = MGACreateContext;
+   pDRIInfo->DestroyContext = MGADestroyContext;
+   pDRIInfo->SwapContext = MGADRISwapContext;
+  
+   switch( pScrn->bitsPerPixel ) {
    case 8:
        pDRIInfo->InitBuffers = Mga8DRIInitBuffers;
        pDRIInfo->MoveBuffers = Mga8DRIMoveBuffers;
@@ -307,172 +364,271 @@ Bool MGADRIScreenInit(ScreenPtr pScreen)
    case 32:
        pDRIInfo->InitBuffers = Mga32DRIInitBuffers;
        pDRIInfo->MoveBuffers = Mga32DRIMoveBuffers;
-  }
+   }
    
-  pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
+   pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
 
-  if (!DRIScreenInit(pScreen, pDRIInfo, &pMGA->drmSubFD)) {
-    xfree(pMGADRIServer);
-    pMGA->DRIServerInfo = 0;
-    xfree(pDRIInfo->devPrivate);
-    pDRIInfo->devPrivate = 0;
-    DRIDestroyInfoRec(pMGA->pDRIInfo);
-    pMGA->pDRIInfo = 0;
-    ErrorF("DRIScreenInit Failed\n");
-    return FALSE;
-  }
+   if (!DRIScreenInit(pScreen, pDRIInfo, &pMGA->drmSubFD)) {
+      xfree(pMGADRIServer);
+      pMGA->DRIServerInfo = 0;
+      xfree(pDRIInfo->devPrivate);
+      pDRIInfo->devPrivate = 0;
+      DRIDestroyInfoRec(pMGA->pDRIInfo);
+      pMGA->pDRIInfo = 0;
+      xf86DrvMsg(pScreen->myNum, X_ERROR, "[drm] DRIScreenInit Failed\n");
+      return FALSE;
+   }
 
-  pMGADRIServer->regsSize = MGAIOMAPSIZE;
-  if (drmAddMap(pMGA->drmSubFD, (drmHandle)pMGA->IOAddress, 
-		pMGADRIServer->regsSize, DRM_REGISTERS, 0, 
-		&pMGADRIServer->regs)<0) {
-    DRICloseScreen(pScreen);
-    ErrorF("drmAddMap failed Register MMIO region\n");
-    return FALSE;
-  }
-  xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] Registers = 0x%08lx\n",
-	     pMGADRIServer->regs);
+   /* Check the MGA DRM version */
+   {
+      drmVersionPtr version = drmGetVersion(pMGA->drmSubFD);
+      if (version) {
+         if (version->version_major != 1 ||
+             version->version_minor != 0 ||
+             version->version_patchlevel < 0) {
+            /* incompatible drm version */
+            xf86DrvMsg(pScreen->myNum, X_ERROR,
+                       "[drm] MGADRIScreenInit failed (DRM version = %d.%d.%d, expected 1.0.x).  Disabling DRI.\n",
+                       version->version_major,
+                       version->version_minor,
+                       version->version_patchlevel);
+            MGADRICloseScreen(pScreen);
+            drmFreeVersion(version);
+            return FALSE;
+         }
+         drmFreeVersion(version);
+      }
+   }
+
+   pMGADRIServer->regsSize = MGAIOMAPSIZE;
+   if (drmAddMap(pMGA->drmSubFD, (drmHandle)pMGA->IOAddress, 
+                 pMGADRIServer->regsSize, DRM_REGISTERS, 0, 
+                 &pMGADRIServer->regs)<0) {
+      DRICloseScreen(pScreen);
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "[drm] drmAddMap failed Register MMIO region\n");
+      return FALSE;
+   }
+   xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] Registers = 0x%08lx\n",
+              pMGADRIServer->regs);
    
-  /* Agp Support */
-  if(drmAgpAcquire(pMGA->drmSubFD) < 0) {
-     DRICloseScreen(pScreen);
-     ErrorF("drmAgpAcquire failed\n");
-     return FALSE;
-  }
-  pMGADRIServer->warp_ucode_size = mgaGetMicrocodeSize(pScreen);
-   if(pMGADRIServer->warp_ucode_size == 0) {
-      ErrorF("microcodeSize is zero\n");
+   /* Agp Support */
+   pMGADRIServer->agpAcquired = FALSE;
+   pMGADRIServer->agpHandle = 0;
+   pMGADRIServer->agpSizep = 0;
+   pMGADRIServer->agp_map = 0;
+   
+   if (drmAgpAcquire(pMGA->drmSubFD) < 0) {
+      DRICloseScreen(pScreen);
+      xf86DrvMsg(pScreen->myNum, X_ERROR, "[drm] drmAgpAcquire failed\n");
+      return FALSE;
+   }
+   pMGADRIServer->agpAcquired = TRUE;
+
+   pMGADRIServer->warp_ucode_size = mgaGetMicrocodeSize(pScreen);
+   if (pMGADRIServer->warp_ucode_size == 0) {
+      xf86DrvMsg(pScreen->myNum, X_ERROR, "[drm] microcodeSize is zero\n");
+      DRICloseScreen(pScreen);
+      return FALSE;
+   }
+   
+   pMGADRIServer->agpMode = drmAgpGetMode(pMGA->drmSubFD);
+   /* Default to 1X agp mode */
+   pMGADRIServer->agpMode &= ~0x00000002;
+   if (drmAgpEnable(pMGA->drmSubFD, pMGADRIServer->agpMode) < 0) {
+      xf86DrvMsg(pScreen->myNum, X_ERROR, "[drm] drmAgpEnable failed\n");
+      DRICloseScreen(pScreen);
+      return FALSE;
+   }
+   ErrorF("[drm] drmAgpEnabled succeeded\n");
+
+   prim_size = 65536;
+   init_offset = ((prim_size + pMGADRIServer->warp_ucode_size + 
+		  4096 - 1) / 4096) * 4096;
+   
+   pMGADRIServer->agpSizep = init_offset;
+   pMGADRI->agpSize = (drmAgpSize(pMGA->drmSubFD)) - init_offset;
+
+   pMGADRIServer->agpBase = (drmAddress) drmAgpBase(pMGA->drmSubFD);
+   if (drmAddMap(pMGA->drmSubFD, 0,
+                 init_offset, DRM_AGP, 0, 
+                 &pMGADRIServer->agp_private) < 0) {
+      DRICloseScreen(pScreen);
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "[drm] drmAddMap failed on AGP aperture\n");
+      return FALSE;
+   }
+   
+   if (drmMap(pMGA->drmSubFD, (drmHandle)pMGADRIServer->agp_private,
+              init_offset, 
+              (drmAddressPtr)&pMGADRIServer->agp_map) < -1) {
+      DRICloseScreen(pScreen);
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "[drm] drmMap failed on AGP aperture\n");
+      return FALSE;
+   }
+   
+   /* Now allocate and bind a default of 8 megs */
+   drmAgpAlloc(pMGA->drmSubFD, 0x00800000, 0, 0,
+               &pMGADRIServer->agpHandle);
+   
+   if (pMGADRIServer->agpHandle == 0) {
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "[drm] drmAgpAlloc failed\n");
+      DRICloseScreen(pScreen);
+      return FALSE;
+   }
+   
+   if (drmAgpBind(pMGA->drmSubFD, pMGADRIServer->agpHandle, 0) < 0) {
+      DRICloseScreen(pScreen);
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "[drm] drmAgpBind failed\n");
+      return FALSE;
+   }
+
+   mgaInstallMicrocode(pScreen, prim_size);
+
+   if (drmAddMap(pMGA->drmSubFD, (drmHandle)init_offset,
+                 pMGADRI->agpSize, DRM_AGP, 0, 
+                 &pMGADRI->agp) < 0) {
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "[drm] Failed to map public agp area\n");
       DRICloseScreen(pScreen);
       return FALSE;
    }
 
-  prim_size = 65536;
-  init_offset = ((prim_size + pMGADRIServer->warp_ucode_size + 
-		  4096 - 1) / 4096) * 4096;
+   switch(pMGA->Chipset) {
+   case PCI_CHIP_MGAG400:
+      pMGADRI->chipset = MGA_CARD_TYPE_G400;
+      break;
+   case PCI_CHIP_MGAG200:
+      pMGADRI->chipset = MGA_CARD_TYPE_G200;
+      break;
+   case PCI_CHIP_MGAG200_PCI:
+   default:
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
+                "[drm] Direct rendering not supported on this card/chipset\n");
+      return FALSE;
+   }
    
-  pMGADRIServer->agpSizep = drmAgpSize(pMGA->drmSubFD);
-  pMGADRIServer->agpBase = drmAgpBase(pMGA->drmSubFD);
-  if (drmAddMap(pMGA->drmSubFD, (drmHandle)pMGADRIServer->agpBase,
-		init_offset, DRM_AGP, 0, 
-		&pMGADRIServer->agp_private) < 0) {
-    DRICloseScreen(pScreen);
-    ErrorF("drmAddMap failed on AGP aperture\n");
-    return FALSE;
-  }
-   
-  if (drmMap(pMGA->drmSubFD, (drmHandle)pMGADRIServer->agp_private,
-	     init_offset, 
-	     (drmAddressPtr)&pMGADRIServer->agp_map) < -1) {
-    DRICloseScreen(pScreen);
-    ErrorF("drmMap failed on AGP aperture\n");
-    return FALSE;
-  }
-   
-  /* Now allocate and bind a default of 8 megs */
-
-  pMGADRIServer->agpHandle = drmAgpAlloc(pMGA->drmSubFD, 0x00800000, 0, 0);
-  if(pMGADRIServer->agpHandle == 0) {
-    ErrorF("drmAgpAlloc failed\n");
-    DRICloseScreen(pScreen);
-    return FALSE;
-  }
-  if(drmAgpBind(pMGA->drmSubFD, pMGADRIServer->agpHandle, 0) < 0) {
-    DRICloseScreen(pScreen);
-    ErrorF("drmAgpBind failed\n");
-    return FALSE;
-  }
-
-  mgaInstallMicrocode(pScreen, prim_size);
-
-   ErrorF("init_offset: %x\n", init_offset);
-  pMGADRI->agpSize = pMGADRIServer->agpSizep - init_offset;
-   ErrorF("pMGADRI->agpSize: %x\n", pMGADRI->agpSize);
-	  
-  if(drmAddMap(pMGA->drmSubFD, (drmHandle)pMGADRIServer->agpBase + init_offset,
-	       pMGADRI->agpSize, DRM_AGP, 0, 
-	       &pMGADRI->agp) < 0) {
-     ErrorF("Failed to map public agp area\n");
-     DRICloseScreen(pScreen);
-     return FALSE;
-  }
-   ErrorF("Mapped public agp area\n");
-  /* Here is where we need to do initialization of the dma engine */
-   
-  pMGADRIServer->agpMode = drmAgpGetMode(pMGA->drmSubFD);
-  /* Default to 1X agp mode */
-  pMGADRIServer->agpMode &= ~0x00000002;
-  if (drmAgpEnable(pMGA->drmSubFD, pMGADRIServer->agpMode) < 0) {
-    ErrorF("drmAgpEnable failed\n");
-    DRICloseScreen(pScreen);
-    return FALSE;
-  }
-   ErrorF("drmAgpEnabled succeeded\n");
-     if((bufs = drmAddBufs(pMGA->drmSubFD,
-			/*63*/ 15,
-			/* 65536 */ 524288,
-			DRM_AGP_BUFFER,
-			init_offset)) <= 0) {
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	       "[drm] failure adding %d %d byte DMA buffers\n",
-	       /* 63 */ 15,
-	       /* 65536 */ 524288);
-    DRICloseScreen(pScreen);
-    return FALSE;
-  }
-   
-  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	     "[drm] added %d %d byte DMA buffers\n",
-	     bufs, /* 65536 */ 524288);
+   pMGADRI->width = pScrn->virtualX;
+   pMGADRI->height = pScrn->virtualY;
+   pMGADRI->mem = pScrn->videoRam * 1024;
+   pMGADRI->cpp = pScrn->bitsPerPixel / 8;
+   pMGADRI->frontPitch = pScrn->displayWidth * (pScrn->bitsPerPixel / 8);
 
 
-  if((mgadrmInitDma(pScrn, prim_size)) != TRUE) {
-    ErrorF("Failed to initialize dma engine\n");
-    DRICloseScreen(pScreen);
-    return FALSE;
-  }
-   
-  ErrorF("Initialized Dma Engine\n");
+   pMGADRI->frontOffset = 0; /* pMGA->YDstOrg * (pScrn->bitsPerPixel / 8) */
+   pMGADRI->backOffset = ((pScrn->virtualY + pMGA->numXAALines + 1) * 
+			  pScrn->displayWidth *
+                          (pScrn->bitsPerPixel / 8) + 4095) & ~0xFFF;
 
-   
-  if(drmMarkBufs(pMGA->drmSubFD, 0.133333, 0.266666) != 0) {
+
+   xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] calced backoffset: 0x%x\n",
+              pMGADRI->backOffset);
+
+
+#if 0
+   size = 2 * pScrn->virtualX * pScrn->virtualY;
+   pMGADRI->depthOffset = (pMGADRI->backOffset + size + 4095) & ~0xFFF;
+   pMGADRI->textureOffset = pMGADRI->depthOffset + size;
+   pMGADRI->textureSize = pMGA->FbUsableSize - pMGADRI->textureOffset;
+#else
+   size = 2 * pScrn->virtualX * pScrn->virtualY;
+   size += 4095;
+   size &= ~4095;
+   pMGADRI->depthOffset = pMGA->FbUsableSize - size;
+   pMGADRI->depthOffset &= ~4095;  
+   pMGADRI->textureOffset = pMGADRI->backOffset + size;
+   pMGADRI->textureSize = pMGADRI->depthOffset - pMGADRI->textureOffset;
+
+   if (pMGADRI->depthOffset < pMGADRI->textureOffset + 512*1024) {
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "[drm] Insufficient memory for direct rendering\n");
+      DRICloseScreen(pScreen);
+      return FALSE;
+   }
+#endif
+
+   pMGADRI->mAccess = pMGA->MAccess;
+
+   i = mylog2(pMGADRI->textureSize / MGA_NR_TEX_REGIONS);
+   if (i < MGA_LOG_MIN_TEX_REGION_SIZE)
+      i = MGA_LOG_MIN_TEX_REGION_SIZE;
+  
+   pMGADRI->logTextureGranularity = i;
+   pMGADRI->textureSize = (pMGADRI->textureSize >> i) << i; /* truncate */
+
+
+   /* Here is where we need to do initialization of the dma engine */
+   if((bufs = drmAddBufs(pMGA->drmSubFD,
+                         MGA_DMA_BUF_NR,
+                         MGA_DMA_BUF_SZ,
+                         DRM_AGP_BUFFER,
+                         init_offset)) <= 0) {
      xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		"[drm] failure marking DMA buffers\n");
+                "[drm] failure adding %d %d byte DMA buffers\n",
+                MGA_DMA_BUF_NR,
+                MGA_DMA_BUF_SZ);
      DRICloseScreen(pScreen);
      return FALSE;
-  }
-  if (!(pMGADRIServer->drmBufs = drmMapBufs(pMGA->drmSubFD))) { 
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	       "[drm] failure mapping DMA buffers\n");
-    DRICloseScreen(pScreen);
-    return FALSE;
-  }
-  xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[drm] buffers mapped with %p\n",
-	     pMGADRIServer->drmBufs);
-  xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[drm] %d DMA buffers mapped\n",
-	     pMGADRIServer->drmBufs->count);
-  if (!pMGADRIServer->irq) {
-    pMGADRIServer->irq = drmGetInterruptFromBusID(pMGA->drmSubFD,
-					    ((pciConfigPtr)pMGA->PciInfo
+   }
+
+   pMGADRI->agpBufferOffset = init_offset + pMGADRIServer->agp_private;
+
+   /* Calculate texture constants for AGP texture space
+    */
+   {
+      CARD32 agpTextureOffset = MGA_DMA_BUF_SZ * MGA_DMA_BUF_NR;
+      CARD32 agpTextureSize = pMGADRI->agpSize - agpTextureOffset;
+
+      i = mylog2(agpTextureSize / MGA_NR_TEX_REGIONS);
+      if (i < MGA_LOG_MIN_TEX_REGION_SIZE)
+         i = MGA_LOG_MIN_TEX_REGION_SIZE;
+
+      pMGADRI->logAgpTextureGranularity = i;
+      pMGADRI->agpTextureSize = (agpTextureSize >> i) << i; 
+      pMGADRI->agpTextureOffset = agpTextureOffset;
+   }
+
+   
+   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+              "[drm] added %d %d byte DMA buffers\n",
+              bufs, MGA_DMA_BUF_SZ);
+
+
+   if ((MgaInitDma(pScrn, prim_size)) != TRUE) {
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "[drm] Failed to initialize dma engine\n");
+      DRICloseScreen(pScreen);
+      return FALSE;
+   }
+
+   xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] Initialized Dma Engine\n");
+   
+   if (!pMGADRIServer->irq) {
+      pMGADRIServer->irq = drmGetInterruptFromBusID(pMGA->drmSubFD,
+                                            ((pciConfigPtr)pMGA->PciInfo
 					     ->thisCard)->busnum,
 					    ((pciConfigPtr)pMGA->PciInfo
 					     ->thisCard)->devnum,
 					    ((pciConfigPtr)pMGA->PciInfo
 					     ->thisCard)->funcnum);
-     drmCtlInstHandler(pMGA->drmSubFD, pMGADRIServer->irq);
-  }
+      drmCtlInstHandler(pMGA->drmSubFD, pMGADRIServer->irq);
+   }
 
-  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	     "[drm] dma control initialized, using IRQ %d\n",
-	     pMGADRIServer->irq);
-   
-   
-  if (!(MGAInitVisualConfigs(pScreen))) {
-    DRICloseScreen(pScreen);
-    return FALSE;
-  }
-  xf86DrvMsg(pScrn->scrnIndex, X_INFO, "visual configs initialized\n" );
+   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+              "[drm] dma control initialized, using IRQ %d\n",
+              pMGADRIServer->irq);
 
-  return TRUE;
+
+   if (!(MGAInitVisualConfigs(pScreen))) {
+      DRICloseScreen(pScreen);
+      return FALSE;
+   }
+   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "visual configs initialized\n" );
+
+   return TRUE;
 }
 
 void
@@ -481,16 +637,26 @@ MGADRICloseScreen(ScreenPtr pScreen)
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
   MGAPtr pMGA = MGAPTR(pScrn);
   MGADRIServerPrivatePtr pMGADRIServer = pMGA->DRIServerInfo;
-   
-  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	     "[drm] unmapping %d buffers\n",
-	     pMGADRIServer->drmBufs->count);
-  if (drmUnmapBufs(pMGADRIServer->drmBufs)) {
-     xf86DrvMsg(pScreen->myNum, X_INFO,
-		"[drm] unable to unmap DMA buffers\n");
+
+  MgaCleanupDma(pScrn);
+
+  if(pMGADRIServer->agp_map) {  
+     ErrorF("Unmapped agp region\n");
+     drmUnmap(pMGADRIServer->agp_map, pMGADRIServer->agpSizep);
+     pMGADRIServer->agp_map = 0;
   }
-  mgadrmCleanupDma(pScrn);
-   
+  if(pMGADRIServer->agpHandle) {
+     ErrorF("Freeing agp memory\n");
+     drmAgpFree(pMGA->drmSubFD, pMGADRIServer->agpHandle);
+     pMGADRIServer->agpHandle = 0;
+     pMGADRIServer->agpSizep = 0;
+  }
+  if(pMGADRIServer->agpAcquired == TRUE) {
+     ErrorF("releasing agp module\n");
+     drmAgpRelease(pMGA->drmSubFD);
+     pMGADRIServer->agpAcquired = FALSE;
+  }
+
   DRICloseScreen(pScreen);
 
   if (pMGA->pDRIInfo) {
@@ -516,14 +682,14 @@ MGADRICloseScreen(ScreenPtr pScreen)
 static Bool
 MGACreateContext(ScreenPtr pScreen, VisualPtr visual, 
 		  drmContext hwContext, void *pVisualConfigPriv,
-		  void *contextStore)
+		  DRIContextType contextStore)
 {
   return TRUE;
 }
 
 static void
 MGADestroyContext(ScreenPtr pScreen, drmContext hwContext, 
-		   void *contextStore)
+		   DRIContextType contextStore)
 {
 }
 
@@ -531,98 +697,115 @@ Bool
 MGADRIFinishScreenInit(ScreenPtr pScreen)
 {
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+  MGASAREAPtr sPriv;
   MGAPtr pMGA = MGAPTR(pScrn);
-  MGADRIPtr pMGADRI;
-  int size;
 
+  if (!pMGA->pDRIInfo) return FALSE;
+
+  sPriv = (MGASAREAPtr)DRIGetSAREAPrivate(pScreen);
   pMGA->pDRIInfo->driverSwapMethod = DRI_HIDE_X_CONTEXT;
-  /* pMGA->pDRIInfo->driverSwapMethod = DRI_SERVER_SWAP; */
 
-  pMGADRI = (MGADRIPtr)pMGA->pDRIInfo->devPrivate;
-  pMGADRI->deviceID = pMGA->PciInfo->chipType;
-  pMGADRI->width = pScrn->virtualX;
-  pMGADRI->height = pScrn->virtualY;
-  pMGADRI->mem = pScrn->videoRam * 1024;
-  pMGADRI->cpp = pScrn->bitsPerPixel / 8;
-  pMGADRI->stride = pScrn->displayWidth * (pScrn->bitsPerPixel / 8);
-  pMGADRI->backOffset = ((pScrn->virtualY+129) * pScrn->displayWidth *
-			 (pScrn->bitsPerPixel / 8) + 4095) & ~0xFFF;
-  size = 2 * pScrn->virtualX * pScrn->virtualY;
-  pMGADRI->depthOffset = (pMGADRI->backOffset + size + 4095) & ~0xFFF;
-  pMGADRI->textureOffset = pMGADRI->depthOffset + size;
-  /*
-   * The rest of the framebuffer is for textures except for the
-   * memory for the hardware cursor. 
-   */
-  pMGADRI->textureSize = pMGA->FbUsableSize - pMGADRI->textureOffset;
-  pMGADRI->fbOffset = pMGA->YDstOrg * (pScrn->bitsPerPixel / 8);
+  xf86memset( sPriv, 0, sizeof(MGASAREARec) );
 
   return DRIFinishScreenInit(pScreen);
 }
 
+
+void mgaGetQuiescence( ScrnInfoPtr pScrn )
+{
+   MGAPtr pMga = MGAPTR(pScrn);
+
+   pMga->have_quiescense = 1;					
+
+   if (pMga->directRenderingEnabled) {
+      MGAFBLayout *pLayout = &pMga->CurrentLayout;
+
+      MgaLockUpdate(pScrn, (DRM_LOCK_QUIESCENT | DRM_LOCK_FLUSH));	
+
+      WAITFIFO(12);
+      OUTREG(MGAREG_MACCESS, pMga->MAccess);
+      OUTREG(MGAREG_PITCH, pLayout->displayWidth);
+      OUTREG(MGAREG_YDSTORG, pMga->YDstOrg);
+      OUTREG(MGAREG_PLNWT, pMga->PlaneMask);
+      OUTREG(MGAREG_BCOL, pMga->BgColor);
+      OUTREG(MGAREG_FCOL, pMga->FgColor);
+      pMga->SrcOrg = 0;
+      OUTREG(MGAREG_SRCORG, 0);
+      OUTREG(MGAREG_DSTORG, pMga->DstOrg);
+      OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT);
+      OUTREG(MGAREG_CXBNDRY, 0xFFFF0000); /* (maxX << 16) | minX */
+      OUTREG(MGAREG_YTOP, 0x00000000);    /* minPixelPointer */
+      OUTREG(MGAREG_YBOT, 0x007FFFFF);    /* maxPixelPointer */ 
+      pMga->AccelFlags &= ~CLIPPER_ON;
+   }
+}
+
+
+
 void MGASwapContext(ScreenPtr pScreen)
 {
-#if 0
-  ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-  MGAPtr pMga = MGAPTR(pScrn);
-  MGAFBLayout *pLayout = &pMga->CurrentLayout;
+   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+   MGAPtr pMga = MGAPTR(pScrn);
 
-  usleep(500);
-  ErrorF("Syncing : swap\n");
-  MGABUSYWAIT();
-  ErrorF("Sync : swap 1\n");
-  MGAStormSync(pScrn);
-  ErrorF("Syncing done\n");
-  pMga->AccelInfoRec->NeedToSync = TRUE;
-   
-  WAITFIFO(12);
-  OUTREG(MGAREG_MACCESS, pMga->MAccess);
-  OUTREG(MGAREG_PITCH, pLayout->displayWidth);
-  OUTREG(MGAREG_YDSTORG, pMga->YDstOrg);
-  OUTREG(MGAREG_PLNWT, pMga->PlaneMask);
-  OUTREG(MGAREG_BCOL, pMga->BgColor);
-  OUTREG(MGAREG_FCOL, pMga->FgColor);
-  OUTREG(MGAREG_SRCORG, pMga->SrcOrg);
-  OUTREG(MGAREG_DSTORG, pMga->DstOrg);
-  OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT);
-  OUTREG(MGAREG_CXBNDRY, 0xFFFF0000); /* (maxX << 16) | minX */
-  OUTREG(MGAREG_YTOP, 0x00000000);    /* minPixelPointer */
-  OUTREG(MGAREG_YBOT, 0x007FFFFF);    /* maxPixelPointer */ 
-  pMga->AccelFlags &= ~CLIPPER_ON;
-#endif
+   /* Arrange for dma_quiescence and xaa sync to be called as
+    * appropriate.
+    */
+   pMga->have_quiescense = 0;
+   pMga->AccelInfoRec->NeedToSync = TRUE;
 }
 
-void MGALostContext(ScreenPtr pScreen)
-{
-#if 0
-  ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-  MGAPtr pMga = MGAPTR(pScrn);
-  MGAFBLayout *pLayout = &pMga->CurrentLayout;
 
-  ErrorF("Syncing : lost\n");
-  MGAStormSync(pScrn);
-  ErrorF("Sync : lost 1\n");
-  MGABUSYWAIT();
-  ErrorF("Syncing done\n");
-#endif
-}
 
+/* This is really only called from validate/postvalidate as we
+ * override the dri lock/unlock.  Want to remove validate/postvalidate
+ * processing, but need to remove all client-side use of drawable lock
+ * first (otherwise there is noone recover when a client dies holding
+ * the drawable lock).
+ *
+ * What does this mean? 
+ *
+ *   - The above code gets executed every time a
+ *     window changes shape or the focus changes, which isn't really
+ *     optimal.  
+ *   - The X server therefore believes it needs to do an XAA sync
+ *     *and* a dma quiescense ioctl each time that happens.
+ *
+ * We don't wrap wakeuphandler any longer, so at least we can say that
+ * this doesn't happen *every time the mouse moves*...
+ */
 static void
 MGADRISwapContext(ScreenPtr pScreen, DRISyncType syncType, 
 		   DRIContextType oldContextType, void *oldContext,
 		   DRIContextType newContextType, void *newContext)
 {
-  if ((syncType == DRI_3D_SYNC) && (oldContextType == DRI_2D_CONTEXT) &&
-      (newContextType == DRI_2D_CONTEXT)) { /* Entering from Wakeup */
-    MGASwapContext(pScreen);
-  }
-  if ((syncType == DRI_2D_SYNC) && (oldContextType == DRI_NO_CONTEXT) &&
-      (newContextType == DRI_2D_CONTEXT)) { /* Exiting from Block Handler */
-    MGALostContext(pScreen);
-  }
+   if (syncType == DRI_3D_SYNC && 
+       oldContextType == DRI_2D_CONTEXT &&
+       newContextType == DRI_2D_CONTEXT)
+   {
+      MGASwapContext(pScreen);
+   }
 }
 
-/* Needs to be written */
-void MGASelectBuffer(MGAPtr pMGA, int which)
+
+void 
+MGASelectBuffer(ScrnInfoPtr pScrn, int which)
 {
+   MGAPtr pMga = MGAPTR(pScrn);
+   MGADRIPtr pMGADRI = (MGADRIPtr)pMga->pDRIInfo->devPrivate;
+
+   switch (which) {
+   case MGA_BACK:
+      OUTREG(MGAREG_DSTORG, pMGADRI->backOffset);
+      OUTREG(MGAREG_SRCORG, pMGADRI->backOffset);
+      break;
+   case MGA_DEPTH:
+      OUTREG(MGAREG_DSTORG, pMGADRI->depthOffset);
+      OUTREG(MGAREG_SRCORG, pMGADRI->depthOffset);
+      break;
+   default:
+   case MGA_FRONT:
+      OUTREG(MGAREG_DSTORG, pMGADRI->frontOffset);
+      OUTREG(MGAREG_SRCORG, pMGADRI->frontOffset);
+      break;
+   }
 }

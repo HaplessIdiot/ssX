@@ -34,7 +34,8 @@
 #include "types.h"
 
 
-extern void gl_set_texture_sampler( struct gl_texture_object *t );
+extern void
+_mesa_set_texture_sampler( struct gl_texture_object *t );
 
 extern void gl_init_texture( void );
 

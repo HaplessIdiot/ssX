@@ -34,13 +34,36 @@
 /*** Internal functions ***/
 
 
+extern GLint
+_mesa_base_tex_format( GLcontext *ctx, GLint format );
+
+
 extern struct gl_texture_image *
-gl_alloc_texture_image( void );
+_mesa_alloc_texture_image( void );
 
 
 extern void
-gl_free_texture_image( struct gl_texture_image *teximage );
+_mesa_free_texture_image( struct gl_texture_image *teximage );
 
+
+extern GLuint
+_mesa_compressed_image_size(GLenum internalFormat,
+                            GLint width, GLint height, GLint depth);
+
+
+extern struct gl_texture_object *
+_mesa_select_tex_object(GLcontext *ctx, struct gl_texture_unit *texUnit,
+                        GLenum target);
+
+
+extern struct gl_texture_image *
+_mesa_select_tex_image(GLcontext *ctx, const struct gl_texture_unit *texUnit,
+                       GLenum target, GLint level);
+
+
+extern void
+_mesa_get_teximage_from_driver( GLcontext *ctx, GLenum target, GLint level,
+                                const struct gl_texture_object *texObj );
 
 
 /*** API entry point functions ***/
@@ -125,6 +148,52 @@ extern void
 _mesa_CopyTexSubImage3D( GLenum target, GLint level,
                          GLint xoffset, GLint yoffset, GLint zoffset,
                          GLint x, GLint y, GLsizei width, GLsizei height );
+
+
+
+extern void
+_mesa_CompressedTexImage1DARB(GLenum target, GLint level,
+                              GLenum internalformat, GLsizei width,
+                              GLint border, GLsizei imageSize,
+                              const GLvoid *data);
+
+extern void
+_mesa_CompressedTexImage2DARB(GLenum target, GLint level,
+                              GLenum internalformat, GLsizei width,
+                              GLsizei height, GLint border, GLsizei imageSize,
+                              const GLvoid *data);
+
+extern void
+_mesa_CompressedTexImage3DARB(GLenum target, GLint level,
+                              GLenum internalformat, GLsizei width,
+                              GLsizei height, GLsizei depth, GLint border,
+                              GLsizei imageSize, const GLvoid *data);
+
+#ifdef VMS
+#define _mesa_CompressedTexSubImage1DARB _mesa_CompressedTexSubImage1DAR
+#define _mesa_CompressedTexSubImage2DARB _mesa_CompressedTexSubImage2DAR
+#define _mesa_CompressedTexSubImage3DARB _mesa_CompressedTexSubImage3DAR
+#endif
+extern void
+_mesa_CompressedTexSubImage1DARB(GLenum target, GLint level, GLint xoffset,
+                                 GLsizei width, GLenum format,
+                                 GLsizei imageSize, const GLvoid *data);
+
+extern void
+_mesa_CompressedTexSubImage2DARB(GLenum target, GLint level, GLint xoffset,
+                                 GLint yoffset, GLsizei width, GLsizei height,
+                                 GLenum format, GLsizei imageSize,
+                                 const GLvoid *data);
+
+extern void
+_mesa_CompressedTexSubImage3DARB(GLenum target, GLint level, GLint xoffset,
+                                 GLint yoffset, GLint zoffset, GLsizei width,
+                                 GLsizei height, GLsizei depth, GLenum format,
+                                 GLsizei imageSize, const GLvoid *data);
+
+extern void
+_mesa_GetCompressedTexImageARB(GLenum target, GLint lod, GLvoid *img);
+
 
 #endif
 

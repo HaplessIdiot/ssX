@@ -684,7 +684,7 @@ void *__glapi_noop_table[] = {
    (void *) NoOpFogCoordfEXT,
    (void *) NoOpFogCoordfvEXT,
    (void *) NoOpFogCoorddEXT,
-   (void *) NoOpFogCoorddEXT,
+   (void *) NoOpFogCoorddvEXT,
    (void *) NoOpFogCoordPointerEXT,
    /* GL_EXT_color_table */
    (void *) NoOpGetColorTableEXT,

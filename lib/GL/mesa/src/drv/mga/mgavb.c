@@ -100,11 +100,11 @@ static void name(struct vertex_buffer *VB, GLuint start, GLuint end)	\
    mgaVertexPtr v;							\
    GLfloat (*tc0)[4];							\
    GLfloat (*tc1)[4];							\
-   GLfloat xoffset = 0.5 + mmesa->drawX;		\
-   GLfloat yoffset = mmesa->driDrawable->h - 0.5 + mmesa->drawY;	\
+   GLfloat xoffset = mmesa->drawX + SUBPIXEL_X;				\
+   GLfloat yoffset = mmesa->driDrawable->h + mmesa->drawY + SUBPIXEL_Y;	\
    int i;								\
    (void) xoffset; (void) yoffset;					\
-									\
+   if (0) fprintf(stderr, "V");						\
    gl_import_client_data( VB, VB->ctx->RenderFlags,			\
 			  (VB->ClipOrMask				\
 			   ? VEC_WRITABLE|VEC_GOOD_STRIDE		\
@@ -260,10 +260,20 @@ void mgaChooseRasterSetupFunc(GLcontext *ctx)
    mmesa->tex_dest[0] = MGA_TEX0_BIT;
    mmesa->tex_dest[1] = MGA_TEX1_BIT;
    mmesa->multitex = 0;
+   mmesa->blend_flags &= ~MGA_BLEND_MULTITEX;
 
    if (ctx->Texture.Enabled & 0xf) {
       if (ctx->Texture.Unit[0].EnvMode == GL_REPLACE)
 	 funcindex &= ~MGA_RGBA_BIT;
+
+      if (ctx->Texture.Unit[0].EnvMode == GL_BLEND &&
+	  mmesa->envcolor) 
+      {
+	 mmesa->multitex = 1;
+	 mmesa->vertsize = 10;
+	 mmesa->tmu_source[1] = 0;
+	 funcindex |= MGA_TEX1_BIT;
+      }	 
 
       funcindex |= MGA_TEX0_BIT;
    }
@@ -272,7 +282,8 @@ void mgaChooseRasterSetupFunc(GLcontext *ctx)
       if (ctx->Texture.Enabled & 0xf) {
 	 mmesa->multitex = 1;
 	 mmesa->vertsize = 10;
-	 funcindex |= MGA_TEX1_BIT;
+	 mmesa->blend_flags |= MGA_BLEND_MULTITEX;
+	 funcindex |= MGA_TEX1_BIT;	 
       } else {
 	 /* Just a funny way of doing single texturing 
 	  */
@@ -281,10 +292,24 @@ void mgaChooseRasterSetupFunc(GLcontext *ctx)
 
 	 if (ctx->Texture.Unit[1].EnvMode == GL_REPLACE)
 	    funcindex &= ~MGA_RGBA_BIT;
+	 
+	 if (ctx->Texture.Unit[0].EnvMode == GL_BLEND &&
+	     mmesa->envcolor) 
+	 {
+	    mmesa->multitex = 1;
+	    mmesa->vertsize = 10;
+	    mmesa->tmu_source[1] = 1;
+	    funcindex |= MGA_TEX1_BIT;
+	 }	 
 
 	 funcindex |= MGA_TEX0_BIT;
       }
    }
+
+   /* Not really a good place to do this - need to make the mga state
+    * management code more event-driven so this can be calculated for
+    * free.
+    */
 
    if (ctx->Color.BlendEnabled)
       funcindex |= MGA_ALPHA_BIT;
@@ -298,6 +323,7 @@ void mgaChooseRasterSetupFunc(GLcontext *ctx)
    if (0)
       mgaPrintSetupFlags("xsmesa: full setup function", funcindex); 
 
+   mmesa->dirty |= MGA_UPLOAD_PIPE;
    mmesa->setupindex = funcindex;
 
    /* Called by mesa's clip functons:
@@ -477,17 +503,3 @@ void mgaDDUnregisterVB( struct vertex_buffer *VB )
 }
 
 
-mgaUI32 *mgaAllocVertexDwords( mgaContextPtr mmesa, int dwords )
-{
-   int bytes = dwords * 4;
-   mgaUI32 *head;
-
-   if (mmesa->dma_buffer->used + bytes > mmesa->dma_buffer->total)
-      mgaFlushVertices( mmesa );
-
-   head = (mgaUI32 *)((char *)mmesa->dma_buffer->address + 
-		      mmesa->dma_buffer->used);
-
-   mmesa->dma_buffer->used += bytes;
-   return head;
-}

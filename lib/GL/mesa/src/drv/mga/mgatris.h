@@ -34,26 +34,16 @@ extern void mgaDDTrifuncInit( void );
 
 
 /* Todo: 
- *    - multidraw, ...
  *    - Antialiasing (?)
  *    - line and polygon stipple
- *    - select and feedback 
  *    - stencil 
- *    - point parameters
- *    - 
  */
 #define MGA_ANTIALIAS_BIT   0       /* ignored for now, no fallback */
-#define MGA_FLAT_BIT	0x1
-#define MGA_OFFSET_BIT	0x2	/* 3.1 only */
-#define MGA_TWOSIDE_BIT	0x4	/* 3.1 only */
-#define MGA_NODRAW_BIT	0x8
-#define MGA_FALLBACK_BIT	0x10
-
-/* Not in use:
- */
-#define MGA_FEEDBACK_BIT    0x20
-#define MGA_SELECT_BIT      0x40
-#define MGA_POINT_PARAM_BIT 0x80	/* not needed? */
+#define MGA_FLAT_BIT	    0x1
+#define MGA_OFFSET_BIT	    0x2	
+#define MGA_TWOSIDE_BIT	    0x4	
+#define MGA_NODRAW_BIT	    0x8
+#define MGA_FALLBACK_BIT    0x10
 
 
 

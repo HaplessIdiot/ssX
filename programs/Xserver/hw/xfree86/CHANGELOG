@@ -1,4 +1,9 @@
 XFree86 4.0d (15 June 2000)
+ 300. DRI megapatch III.  This includes DRI enhancements, 3dfx fixes and
+      updates, updates Mesa to the latest version, adds Intel i810, Matrox
+      G200/G400, ATI Rage 128 and 3dfx Voodoo5 3D support, adds ATI Rage
+      Mobility 2D support (disabled by default).  (Precision Insight and
+      VA Linux Systems).
  299. Add a function to the X server that performs the same checks on
       command line arguments and environment variables as the Xwrapper
       from 3.3.x.  This function is called very early from main()
@@ -10598,4 +10603,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1185 2000/06/15 20:50:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1186 2000/06/16 01:50:19 dawes Exp $

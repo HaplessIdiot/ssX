@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.56 2000/06/13 02:28:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.57 2000/06/15 01:26:21 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -216,6 +216,8 @@
 #define PCI_CHIP_MACH64GZ	0x475A
 #define PCI_CHIP_MACH64LB	0x4C42
 #define PCI_CHIP_MACH64LD	0x4C44
+#define PCI_CHIP_RAGE128LE	0x4C45
+#define PCI_CHIP_RAGE128LF	0x4C46
 #define PCI_CHIP_MACH64LG	0x4C47
 #define PCI_CHIP_MACH64LI	0x4C49
 #define PCI_CHIP_MACH64LM	0x4C4D
@@ -223,14 +225,12 @@
 #define PCI_CHIP_MACH64LP	0x4C50
 #define PCI_CHIP_MACH64LR	0x4C52
 #define PCI_CHIP_MACH64LS	0x4C53
+#define PCI_CHIP_RAGE128PF	0x5046
+#define PCI_CHIP_RAGE128PR	0x5052
 #define PCI_CHIP_RAGE128RE	0x5245
 #define PCI_CHIP_RAGE128RF	0x5246
 #define PCI_CHIP_RAGE128RK	0x524B
 #define PCI_CHIP_RAGE128RL	0x524C
-#define PCI_CHIP_RAGE128PF      0x5046
-#define PCI_CHIP_RAGE128PR	0x5052
-#define PCI_CHIP_RAGE128LE	0x4c45
-#define PCI_CHIP_RAGE128LF	0x4c46
 #define PCI_CHIP_MACH64VT	0x5654
 #define PCI_CHIP_MACH64VU	0x5655
 #define PCI_CHIP_MACH64VV	0x5656
@@ -732,6 +732,8 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_MACH64GZ,	"Mach64 GZ",0},
 				{PCI_CHIP_MACH64LB,	"Mach64 LB",0},
 				{PCI_CHIP_MACH64LD,	"Mach64 LD",0},
+				{PCI_CHIP_RAGE128LE,    "Rage 128 Mobility LE",0},
+				{PCI_CHIP_RAGE128LF,    "Rage 128 Mobility LF",0},
 				{PCI_CHIP_MACH64LG,	"Mach64 LG",0},
 				{PCI_CHIP_MACH64LI,	"Mach64 LI",0},
 				{PCI_CHIP_MACH64LM,	"Mach64 LM",0},
@@ -739,14 +741,12 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_MACH64LP,	"Mach64 LP",0},
 				{PCI_CHIP_MACH64LR,	"Mach64 LR",0},
 				{PCI_CHIP_MACH64LS,	"Mach64 LS",0},
+				{PCI_CHIP_RAGE128PF,    "Rage 128 Pro PF",0},
+				{PCI_CHIP_RAGE128PR,    "Rage 128 Pro PR",0},
 				{PCI_CHIP_RAGE128RE,	"Rage 128 RE",0},
 				{PCI_CHIP_RAGE128RF,	"Rage 128 RF",0},
 				{PCI_CHIP_RAGE128RK,	"Rage 128 RK",0},
 				{PCI_CHIP_RAGE128RL,	"Rage 128 RL",0},
-				{PCI_CHIP_RAGE128PF,    "Rage 128 Pro PF",0},
-				{PCI_CHIP_RAGE128PR,    "Rage 128 Pro PR",0},
-				{PCI_CHIP_RAGE128LE,    "Rage 128 LE",0},
-				{PCI_CHIP_RAGE128LF,    "Rage 128 LF",0},
 				{PCI_CHIP_MACH64VT,	"Mach64 VT",0},
 				{PCI_CHIP_MACH64VU,	"Mach64 VU",0},
 				{PCI_CHIP_MACH64VV,	"Mach64 VV",0},

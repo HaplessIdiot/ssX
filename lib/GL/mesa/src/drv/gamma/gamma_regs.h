@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_regs.h,v 1.1 1999/06/14 07:31:16 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_regs.h,v 1.2 2000/02/23 04:46:45 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -162,6 +162,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define FBWriteModeDisable            0x00000000
 #define FBWriteModeEnable             0x00000001
 #define FBW_UploadColorData           0x00000008
+
+/* FogMode */
+#define FogModeDisable                0x00000000
+#define FogModeEnable                 0x00000001
 
 /* LBWriteMode */
 #define LBWriteModeDisable            0x00000000
@@ -391,14 +395,17 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define GM_FogLinear                  0x00000000
 #define GM_FogExp                     0x00000004
 #define GM_FogExpSquared              0x00000008
+#define GM_FogMask                    0x0000000C
 #define GM_FrontPolyPoint             0x00000000
 #define GM_FrontPolyLine              0x00000010
 #define GM_FrontPolyFill              0x00000020
 #define GM_BackPolyPoint              0x00000000
 #define GM_BackPolyLine               0x00000040
 #define GM_BackPolyFill               0x00000080
+#define GM_FB_PolyMask                0x000000F0
 #define GM_FrontFaceCW                0x00000000
 #define GM_FrontFaceCCW               0x00000100
+#define GM_FFMask                     0x00000100
 #define GM_PolyCullDisable            0x00000000
 #define GM_PolyCullEnable             0x00000200
 #define GM_PolyCullFront              0x00000000
@@ -480,18 +487,44 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* LightingMode */
 #define LightingModeDisable           0x00000000
 #define LightingModeEnable            0x00000001
+#define LightingModeTwoSides          0x00000002
+#define LightingModeLocalViewer       0x00000008
+
+/* Light0Mode */
+#define Light0ModeDisable             0x00000000
+#define Light0ModeEnable              0x00000001
+#define Light0ModeSpotLight           0x00000002
+#define Light0ModeAttenuation         0x00000004
+#define Light0ModeLocal               0x00000008
+
+/* Light0Mode */
+#define Light1ModeDisable             0x00000000
+#define Light1ModeEnable              0x00000001
+#define Light1ModeSpotLight           0x00000002
+#define Light1ModeAttenuation         0x00000004
+#define Light1ModeLocal               0x00000008
 
 /* ColorMaterialMode */
 #define ColorMaterialModeDisable      0x00000000
 #define ColorMaterialModeEnable       0x00000001
+#define ColorMaterialModeFront        0x00000000
+#define ColorMaterialModeBack         0x00000002
+#define ColorMaterialModeFrontAndBack 0x00000004
+#define ColorMaterialModeEmission     0x00000000
+#define ColorMaterialModeAmbient      0x00000008
+#define ColorMaterialModeDiffuse      0x00000010
+#define ColorMaterialModeSpecular     0x00000018
+#define ColorMaterialModeAmbAndDiff   0x00000020
+#define ColorMaterialModeMask         0x0000003e
 
 /* MaterialMode */
 #define MaterialModeDisable           0x00000000
 #define MaterialModeEnable            0x00000001
+#define MaterialModeTwoSides          0x00000080
 
 /* DeltaMode */
 #define DM_Target300SX                0x00000000
-#define DM_Target300TXMX              0x00000001
+#define DM_Target500TXMX              0x00000001
 #define DM_Depth16                    0x00000004
 #define DM_Depth24                    0x00000008
 #define DM_Depth32                    0x0000000c

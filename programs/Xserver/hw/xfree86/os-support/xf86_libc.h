@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.46 2000/02/08 13:13:28 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.47 2000/02/08 17:19:21 dawes Exp $ */
 
 
 
@@ -421,6 +421,10 @@ typedef int xf86key_t;
 #define chown(a,b,c)            xf86chown(a,b,c)
 #undef geteuid
 #define geteuid                 xf86geteuid
+#undef getegid
+#define getegid                 xf86getegid
+#undef getpid
+#define getpid                  xf86getpid
 #undef mknod
 #define mknod(a,b,c)            xf86mknod(a,b,c)
 #undef sleep

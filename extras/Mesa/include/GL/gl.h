@@ -32,113 +32,57 @@
 #endif
 
 
+/**********************************************************************
+ * Begin system-specific stuff.
+ */
 #if defined(__BEOS__)
 #include <stdlib.h>     /* to get some BeOS-isms */
 #endif
-
 
 #if !defined(OPENSTEP) && (defined(NeXT) || defined(NeXT_PDO))
 #define OPENSTEP
 #endif
 
-
-/*
- * XXX move as many of these pragma's and MS Windows-isms into
- * the new src/glheader.h file.
- */
-
 #if defined(_WIN32) && !defined(__WIN32__)
-#	define __WIN32__
+#define __WIN32__
 #endif
 
-#if !defined(OPENSTEP) && (defined(__WIN32__) || defined(__CYGWIN32__))
-#  pragma warning( disable : 4068 ) /* unknown pragma */
-#  pragma warning( disable : 4710 ) /* function 'foo' not inlined */
-#  pragma warning( disable : 4711 ) /* function 'foo' selected for automatic inline expansion */
-#  pragma warning( disable : 4127 ) /* conditional expression is constant */
-#  if defined(MESA_MINWARN)
-#    pragma warning( disable : 4244 ) /* '=' : conversion from 'const double ' to 'float ', possible loss of data */
-#    pragma warning( disable : 4018 ) /* '<' : signed/unsigned mismatch */
-#    pragma warning( disable : 4305 ) /* '=' : truncation from 'const double ' to 'float ' */
-#    pragma warning( disable : 4550 ) /* 'function' undefined; assuming extern returning int */
-#    pragma warning( disable : 4761 ) /* integral size mismatch in argument; conversion supplied */
-#  endif
+#if !defined(OPENSTEP) && (defined(__WIN32__) || defined(__CYGWIN__))
 #  if defined(_MSC_VER) && defined(BUILD_GL32) /* tag specify we're building mesa as a DLL */
 #    define GLAPI __declspec(dllexport)
-#    define WGLAPI __declspec(dllexport)
 #  elif defined(_MSC_VER) && defined(_DLL) /* tag specifying we're building for DLL runtime support */
 #    define GLAPI __declspec(dllimport)
-#    define WGLAPI __declspec(dllimport)
 #  else /* for use with static link lib build of Win32 edition only */
 #    define GLAPI extern
-#    define WGLAPI __declspec(dllimport)
 #  endif /* _STATIC_MESA support */
 #  define GLAPIENTRY __stdcall
-#  define GLAPIENTRYP __stdcall *
-#  define GLCALLBACK __stdcall
-#  define GLCALLBACKP __stdcall *
-#  if defined(__CYGWIN32__)
-#    define GLCALLBACKPCAST *
-#  else
-#    define GLCALLBACKPCAST __stdcall *
-#  endif
-#  define GLWINAPI __stdcall
-#  define GLWINAPIV __cdecl
 #else
 /* non-Windows compilation */
 #  define GLAPI extern
 #  define GLAPIENTRY
-#  define GLAPIENTRYP *
-#  define GLCALLBACK
-#  define GLCALLBACKP *
-#  define GLCALLBACKPCAST *
-#  define GLWINAPI
-#  define GLWINAPIV
-#endif /* WIN32 / CYGWIN32 bracket */
+#endif /* WIN32 / CYGWIN bracket */
 
-/* compatability guard so we don't need to change client code */
-
-#if defined(_WIN32) && !defined(_WINDEF_) && !defined(OPENSTEP)
-#	define CALLBACK GLCALLBACK
-typedef int (GLAPIENTRY *PROC)();
-typedef void *HGLRC;
-typedef void *HDC;
-typedef unsigned long COLORREF;
-#endif
-
-#if defined(_WIN32) && !defined(_WINGDI_) && !defined(OPENSTEP)
-#	define WGL_FONT_LINES      0
-#	define WGL_FONT_POLYGONS   1
-#	ifdef UNICODE
-#		define wglUseFontBitmaps  wglUseFontBitmapsW
-#		define wglUseFontOutlines  wglUseFontOutlinesW
-#	else
-#		define wglUseFontBitmaps  wglUseFontBitmapsA
-#		define wglUseFontOutlines  wglUseFontOutlinesA
-#	endif /* !UNICODE */
-typedef struct tagLAYERPLANEDESCRIPTOR LAYERPLANEDESCRIPTOR, *PLAYERPLANEDESCRIPTOR, *LPLAYERPLANEDESCRIPTOR;
-typedef struct _GLYPHMETRICSFLOAT GLYPHMETRICSFLOAT, *PGLYPHMETRICSFLOAT, *LPGLYPHMETRICSFLOAT;
-typedef struct tagPIXELFORMATDESCRIPTOR PIXELFORMATDESCRIPTOR, *PPIXELFORMATDESCRIPTOR, *LPPIXELFORMATDESCRIPTOR;
+#if defined(_WIN32) && !defined(_WINGDI_) && !defined(_GNU_H_WINDOWS32_DEFINES) && !defined(OPENSTEP)
 #include <gl/mesa_wgl.h>
 #endif
+
+#if defined(macintosh) && PRAGMA_IMPORT_SUPPORTED
+#pragma import on
+#endif
+/*
+ * End system-specific stuff.
+ **********************************************************************/
+
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-#ifdef macintosh
-	#pragma enumsalwaysint on
-	#if PRAGMA_IMPORT_SUPPORTED
-	#pragma import on
-	#endif
-#endif
-
-
 
 #define GL_VERSION_1_1   1
 #define GL_VERSION_1_2   1
-#define GL_HAS_GLEXT     1
 
 
 
@@ -1778,425 +1722,8 @@ GLAPI void GLAPIENTRY glGetSeparableFilter( GLenum target, GLenum format,
 
 
 
-
 /*
- * XXX these extensions may eventually be moved into glext.h
- */
-
-
-/*
- * GL_EXT_abgr (number 1)
- */
-#ifndef GL_EXT_abgr
-#define GL_EXT_abgr 1
-
-#define GL_ABGR_EXT				0x8000
-
-#endif /* GL_EXT_abgr */
-
-
-
-/*
- * GL_EXT_blend_color (number 2)
- */
-#ifndef GL_EXT_blend_color
-#define GL_EXT_blend_color 1
-
-#define GL_CONSTANT_COLOR_EXT			0x8001
-#define GL_ONE_MINUS_CONSTANT_COLOR_EXT		0x8002
-#define GL_CONSTANT_ALPHA_EXT			0x8003
-#define GL_ONE_MINUS_CONSTANT_ALPHA_EXT		0x8004
-#define GL_BLEND_COLOR_EXT			0x8005
-
-GLAPI void GLAPIENTRY glBlendColorEXT( GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha );
-
-#endif /* GL_EXT_blend_color */
-
-
-
-/*
- * GL_EXT_polygon_offset (number 3)
- */
-#ifndef GL_EXT_polygon_offset
-#define GL_EXT_polygon_offset 1
-
-#define GL_POLYGON_OFFSET_EXT			0x8037
-#define GL_POLYGON_OFFSET_FACTOR_EXT		0x8038
-#define GL_POLYGON_OFFSET_BIAS_EXT		0x8039
-
-GLAPI void GLAPIENTRY glPolygonOffsetEXT( GLfloat factor, GLfloat bias );
-
-#endif /* GL_EXT_polygon_offset */
-
-
-
-/*
- * GL_EXT_texture3D (number 6)
- */
-#ifndef GL_EXT_texture3D
-#define GL_EXT_texture3D 1
-
-#define GL_PACK_SKIP_IMAGES_EXT			0x806B
-#define GL_PACK_IMAGE_HEIGHT_EXT		0x806C
-#define GL_UNPACK_SKIP_IMAGES_EXT		0x806D
-#define GL_UNPACK_IMAGE_HEIGHT_EXT		0x806E
-#define GL_TEXTURE_3D_EXT			0x806F
-#define GL_PROXY_TEXTURE_3D_EXT			0x8070
-#define GL_TEXTURE_DEPTH_EXT			0x8071
-#define GL_TEXTURE_WRAP_R_EXT			0x8072
-#define GL_MAX_3D_TEXTURE_SIZE_EXT		0x8073
-#define GL_TEXTURE_3D_BINDING_EXT		0x806A
-
-GLAPI void GLAPIENTRY glTexImage3DEXT( GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels );
-
-GLAPI void GLAPIENTRY glTexSubImage3DEXT( GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
-
-GLAPI void GLAPIENTRY glCopyTexSubImage3DEXT( GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height );
-
-#endif /* GL_EXT_texture3D */
-
-
-
-/*
- * GL_EXT_texture_object (number 20)
- */
-#ifndef GL_EXT_texture_object
-#define GL_EXT_texture_object 1
-
-#define GL_TEXTURE_PRIORITY_EXT			0x8066
-#define GL_TEXTURE_RESIDENT_EXT			0x8067
-#define GL_TEXTURE_1D_BINDING_EXT		0x8068
-#define GL_TEXTURE_2D_BINDING_EXT		0x8069
-
-GLAPI void GLAPIENTRY glGenTexturesEXT( GLsizei n, GLuint *textures );
-
-GLAPI void GLAPIENTRY glDeleteTexturesEXT( GLsizei n, const GLuint *textures);
-
-GLAPI void GLAPIENTRY glBindTextureEXT( GLenum target, GLuint texture );
-
-GLAPI void GLAPIENTRY glPrioritizeTexturesEXT( GLsizei n, const GLuint *textures, const GLclampf *priorities );
-
-GLAPI GLboolean GLAPIENTRY glAreTexturesResidentEXT( GLsizei n, const GLuint *textures, GLboolean *residences );
-
-GLAPI GLboolean GLAPIENTRY glIsTextureEXT( GLuint texture );
-
-#endif /* GL_EXT_texture_object */
-
-
-
-/*
- * GL_EXT_rescale_normal (number 27)
- */
-#ifndef GL_EXT_rescale_normal
-#define GL_EXT_rescale_normal 1
-
-#define GL_RESCALE_NORMAL_EXT			0x803A
-
-#endif /* GL_EXT_rescale_normal */
-
-
-
-/*
- * GL_EXT_vertex_array (number 30)
- */
-#ifndef GL_EXT_vertex_array
-#define GL_EXT_vertex_array 1
-
-#define GL_VERTEX_ARRAY_EXT			0x8074
-#define GL_NORMAL_ARRAY_EXT			0x8075
-#define GL_COLOR_ARRAY_EXT			0x8076
-#define GL_INDEX_ARRAY_EXT			0x8077
-#define GL_TEXTURE_COORD_ARRAY_EXT		0x8078
-#define GL_EDGE_FLAG_ARRAY_EXT			0x8079
-#define GL_VERTEX_ARRAY_SIZE_EXT		0x807A
-#define GL_VERTEX_ARRAY_TYPE_EXT		0x807B
-#define GL_VERTEX_ARRAY_STRIDE_EXT		0x807C
-#define GL_VERTEX_ARRAY_COUNT_EXT		0x807D
-#define GL_NORMAL_ARRAY_TYPE_EXT		0x807E
-#define GL_NORMAL_ARRAY_STRIDE_EXT		0x807F
-#define GL_NORMAL_ARRAY_COUNT_EXT		0x8080
-#define GL_COLOR_ARRAY_SIZE_EXT			0x8081
-#define GL_COLOR_ARRAY_TYPE_EXT			0x8082
-#define GL_COLOR_ARRAY_STRIDE_EXT		0x8083
-#define GL_COLOR_ARRAY_COUNT_EXT		0x8084
-#define GL_INDEX_ARRAY_TYPE_EXT			0x8085
-#define GL_INDEX_ARRAY_STRIDE_EXT		0x8086
-#define GL_INDEX_ARRAY_COUNT_EXT		0x8087
-#define GL_TEXTURE_COORD_ARRAY_SIZE_EXT		0x8088
-#define GL_TEXTURE_COORD_ARRAY_TYPE_EXT		0x8089
-#define GL_TEXTURE_COORD_ARRAY_STRIDE_EXT	0x808A
-#define GL_TEXTURE_COORD_ARRAY_COUNT_EXT	0x808B
-#define GL_EDGE_FLAG_ARRAY_STRIDE_EXT		0x808C
-#define GL_EDGE_FLAG_ARRAY_COUNT_EXT		0x808D
-#define GL_VERTEX_ARRAY_POINTER_EXT		0x808E
-#define GL_NORMAL_ARRAY_POINTER_EXT		0x808F
-#define GL_COLOR_ARRAY_POINTER_EXT		0x8090
-#define GL_INDEX_ARRAY_POINTER_EXT		0x8091
-#define GL_TEXTURE_COORD_ARRAY_POINTER_EXT	0x8092
-#define GL_EDGE_FLAG_ARRAY_POINTER_EXT		0x8093
-
-GLAPI void GLAPIENTRY glVertexPointerEXT( GLint size, GLenum type, GLsizei stride, GLsizei count, const GLvoid *ptr );
-
-GLAPI void GLAPIENTRY glNormalPointerEXT( GLenum type, GLsizei stride, GLsizei count, const GLvoid *ptr );
-
-GLAPI void GLAPIENTRY glColorPointerEXT( GLint size, GLenum type, GLsizei stride, GLsizei count, const GLvoid *ptr );
-
-GLAPI void GLAPIENTRY glIndexPointerEXT( GLenum type, GLsizei stride, GLsizei count, const GLvoid *ptr );
-
-GLAPI void GLAPIENTRY glTexCoordPointerEXT( GLint size, GLenum type, GLsizei stride, GLsizei count, const GLvoid *ptr );
-
-GLAPI void GLAPIENTRY glEdgeFlagPointerEXT( GLsizei stride, GLsizei count, const GLboolean *ptr );
-
-GLAPI void GLAPIENTRY glGetPointervEXT( GLenum pname, void **params );
-
-GLAPI void GLAPIENTRY glArrayElementEXT( GLint i );
-
-GLAPI void GLAPIENTRY glDrawArraysEXT( GLenum mode, GLint first, GLsizei count );
-
-#endif /* GL_EXT_vertex_array */
-
-
-
-/*
- * GL_SGIS_texture_edge_clamp (number 35)
- */
-#ifndef GL_SGIS_texture_edge_clamp
-#define GL_SGIS_texture_edge_clamp 1
-
-#define GL_CLAMP_TO_EDGE_SGIS			0x812F
-
-#endif /* GL_SGIS_texture_edge_clamp */
-
-
-
-/*
- * GL_EXT_blend_minmax (number 37)
- */
-#ifndef GL_EXT_blend_minmax
-#define GL_EXT_blend_minmax 1
-
-#define GL_FUNC_ADD_EXT				0x8006
-#define GL_MIN_EXT				0x8007
-#define GL_MAX_EXT				0x8008
-#define GL_BLEND_EQUATION_EXT			0x8009
-
-GLAPI void GLAPIENTRY glBlendEquationEXT( GLenum mode );
-
-#endif /* GL_EXT_blend_minmax */
-
-
-
-/*
- * GL_EXT_blend_subtract (number 38) (requires GL_EXT_blend_max )
- */
-#ifndef GL_EXT_blend_subtract
-#define GL_EXT_blend_subtract 1
-
-#define GL_FUNC_SUBTRACT_EXT			0x800A
-#define GL_FUNC_REVERSE_SUBTRACT_EXT		0x800B
-
-#endif /* GL_EXT_blend_subtract */
-
-
-
-/*
- * GL_EXT_blend_logic_op (number 39)
- */
-#ifndef GL_EXT_blend_logic_op
-#define GL_EXT_blend_logic_op 1
-
-/* No new tokens or functions */
-
-#endif /* GL_EXT_blend_logic_op */
-
-
-
-/*
- * GL_EXT_point_parameters (number 54)
- */
-#ifndef GL_EXT_point_parameters
-#define GL_EXT_point_parameters 1
-
-#define GL_POINT_SIZE_MIN_EXT			0x8126
-#define GL_POINT_SIZE_MAX_EXT			0x8127
-#define GL_POINT_FADE_THRESHOLD_SIZE_EXT	0x8128
-#define GL_DISTANCE_ATTENUATION_EXT		0x8129
-
-GLAPI void GLAPIENTRY glPointParameterfEXT( GLenum pname, GLfloat param );
-GLAPI void GLAPIENTRY glPointParameterfvEXT( GLenum pname, const GLfloat *params );
-
-#endif /* GL_EXT_point_parameters */
-
-
-
-/*
- * GL_PGI_misc_hints (number 77)
- */
-#ifndef GL_PGI_misc_hints
-#define GL_PGI_misc_hints 1
-
-#define GL_PREFER_DOUBLEBUFFER_HINT_PGI		107000
-#define GL_STRICT_DEPTHFUNC_HINT_PGI		107030
-#define GL_STRICT_LIGHTING_HINT_PGI		107031
-#define GL_STRICT_SCISSOR_HINT_PGI		107032
-#define GL_FULL_STIPPLE_HINT_PGI		107033
-#define GL_NATIVE_GRAPHICS_BEGIN_HINT_PGI	107011
-#define GL_NATIVE_GRAPHICS_END_HINT_PGI		107012
-#define GL_CONSERVE_MEMORY_HINT_PGI		107005
-#define GL_RECLAIM_MEMORY_HINT_PGI		107006
-#define GL_ALWAYS_FAST_HINT_PGI			107020
-#define GL_ALWAYS_SOFT_HINT_PGI			107021
-#define GL_ALLOW_DRAW_OBJ_HINT_PGI		107022
-#define GL_ALLOW_DRAW_WIN_HINT_PGI		107023
-#define GL_ALLOW_DRAW_FRG_HINT_PGI		107024
-#define GL_ALLOW_DRAW_SPN_HINT_PGI		107024
-#define GL_ALLOW_DRAW_MEM_HINT_PGI		107025
-#define GL_CLIP_NEAR_HINT_PGI			107040
-#define GL_CLIP_FAR_HINT_PGI			107041
-#define GL_WIDE_LINE_HINT_PGI		  	107042
-#define GL_BACK_NORMALS_HINT_PGI		107043
-#define GL_NATIVE_GRAPHICS_HANDLE_PGI		107010
-
-GLAPI void GLAPIENTRY glHintPGI(GLenum target, GLint mode);
-
-#endif /* GL_PGI_misc_hints */
-
-
-
-/*
- * GL_EXT_paletted_texture (number 78)
- */
-#ifndef GL_EXT_paletted_texture
-#define GL_EXT_paletted_texture 1
-
-#define GL_TABLE_TOO_LARGE_EXT			0x8031
-#define GL_COLOR_TABLE_FORMAT_EXT		0x80D8
-#define GL_COLOR_TABLE_WIDTH_EXT		0x80D9
-#define GL_COLOR_TABLE_RED_SIZE_EXT		0x80DA
-#define GL_COLOR_TABLE_GREEN_SIZE_EXT		0x80DB
-#define GL_COLOR_TABLE_BLUE_SIZE_EXT		0x80DC
-#define GL_COLOR_TABLE_ALPHA_SIZE_EXT	 	0x80DD
-#define GL_COLOR_TABLE_LUMINANCE_SIZE_EXT	0x80DE
-#define GL_COLOR_TABLE_INTENSITY_SIZE_EXT	0x80DF
-#define GL_TEXTURE_INDEX_SIZE_EXT		0x80ED
-#define GL_COLOR_INDEX1_EXT			0x80E2
-#define GL_COLOR_INDEX2_EXT			0x80E3
-#define GL_COLOR_INDEX4_EXT			0x80E4
-#define GL_COLOR_INDEX8_EXT			0x80E5
-#define GL_COLOR_INDEX12_EXT			0x80E6
-#define GL_COLOR_INDEX16_EXT			0x80E7
-
-GLAPI void GLAPIENTRY glColorTableEXT( GLenum target, GLenum internalformat, GLsizei width, GLenum format, GLenum type, const GLvoid *table );
-
-GLAPI void GLAPIENTRY glColorSubTableEXT( GLenum target, GLsizei start, GLsizei count, GLenum format, GLenum type, const GLvoid *data );
-
-GLAPI void GLAPIENTRY glGetColorTableEXT( GLenum target, GLenum format, GLenum type, GLvoid *table );
-
-GLAPI void GLAPIENTRY glGetColorTableParameterfvEXT( GLenum target, GLenum pname, GLfloat *params );
-
-GLAPI void GLAPIENTRY glGetColorTableParameterivEXT( GLenum target, GLenum pname, GLint *params );
-
-#endif /* GL_EXT_paletted_texture */
-
-
-
-/*
- * GL_EXT_clip_volume_hint (number 79)
- */
-#ifndef GL_EXT_clip_volume_hint
-#define GL_EXT_clip_volume_hint 1
-
-#define GL_CLIP_VOLUME_CLIPPING_HINT_EXT	0x80F
-
-#endif /* GL_EXT_clip_volume_hint */
-
-
-
-/*
- * GL_EXT_compiled_vertex_array (number 97)
- */
-#ifndef GL_EXT_compiled_vertex_array
-#define GL_EXT_compiled_vertex_array 1
-
-#define GL_ARRAY_ELEMENT_LOCK_FIRST_EXT		0x81A8
-#define GL_ARRAY_ELEMENT_LOCK_COUNT_EXT		0x81A9
-
-GLAPI void GLAPIENTRY glLockArraysEXT( GLint first, GLsizei count );
-GLAPI void GLAPIENTRY glUnlockArraysEXT( void );
-
-#endif /* GL_EXT_compiled_vertex_array */
-
-
-
-/*
- * GL_EXT_shared_texture_palette (number 141) (req's GL_EXT_paletted_texture)
- */
-#ifndef GL_EXT_shared_texture_palette
-#define GL_EXT_shared_texture_palette 1
-
-#define GL_SHARED_TEXTURE_PALETTE_EXT		0x81FB
-
-#endif /* GL_EXT_shared_texture_palette */
-
-
-
-/*
- * GL_EXT_stencil_wrap (number 176)
- */
-#ifndef GL_EXT_stencil_wrap
-#define GL_EXT_stencil_wrap 1
-
-#define GL_INCR_WRAP_EXT			0x8507
-#define GL_DECR_WRAP_EXT			0x8508
-
-#endif /* GL_EXT_stencil_wrap */
-
-
-
-/*
- * GL_EXT_blend_func_separate (EXT number 173) (aka GL_INGR_blend_func_separate)
- */
-#ifndef GL_EXT_blend_func_separate
-#define GL_EXT_blend_func_separate 1
-
-#define GL_BLEND_DST_RGB_EXT			0x80C8
-#define GL_BLEND_SRC_RGB_EXT			0x80C9
-#define GL_BLEND_DST_ALPHA_EXT			0x80CA
-#define GL_BLEND_SRC_ALPHA_EXT			0x80CB
-
-GLAPI void GLAPIENTRY glBlendFuncSeparateEXT( GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha );
-
-#endif /* GL_EXT_blend_func_separate */
-
-
-
-/*
- * GL_NV_texgen_reflection (number 179)
- */
-#ifndef GL_NV_texgen_reflection
-#define GL_NV_texgen_reflection 1
-
-#define GL_NORMAL_MAP_NV			0x8511
-#define GL_REFLECTION_MAP_NV			0x8512
-
-#endif /* GL_NV_texgen_reflection */
-
-
-
-/*
- * GL_EXT_texture_env_add (number 185)
- */
-#ifndef GL_EXT_texture_env_add
-#define GL_EXT_texture_env_add 1
-
-/* No new tokens or functions */
-
-#endif /* GL_EXT_texture_env_add */
-
-
-
-/*
- * GL_ARB_multitexture (ARB 0)
+ * GL_ARB_multitexture (ARB extension 1 and OpenGL 1.2.1)
  */
 #ifndef GL_ARB_multitexture
 #define GL_ARB_multitexture 1
@@ -2276,8 +1803,386 @@ GLAPI void GLAPIENTRY glMultiTexCoord4svARB(GLenum target, const GLshort *v);
 
 
 
+
+#if defined(GL_GLEXT_LEGACY)
+
+
 /*
- * GL_MESA_window_pos (197)
+ * 1. GL_EXT_abgr
+ */
+#ifndef GL_EXT_abgr
+#define GL_EXT_abgr 1
+
+#define GL_ABGR_EXT				0x8000
+
+#endif /* GL_EXT_abgr */
+
+
+
+/*
+ * 2. GL_EXT_blend_color
+ */
+#ifndef GL_EXT_blend_color
+#define GL_EXT_blend_color 1
+
+#define GL_CONSTANT_COLOR_EXT			0x8001
+#define GL_ONE_MINUS_CONSTANT_COLOR_EXT		0x8002
+#define GL_CONSTANT_ALPHA_EXT			0x8003
+#define GL_ONE_MINUS_CONSTANT_ALPHA_EXT		0x8004
+#define GL_BLEND_COLOR_EXT			0x8005
+
+GLAPI void GLAPIENTRY glBlendColorEXT( GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha );
+
+#endif /* GL_EXT_blend_color */
+
+
+
+/*
+ * 3. GL_EXT_polygon_offset
+ */
+#ifndef GL_EXT_polygon_offset
+#define GL_EXT_polygon_offset 1
+
+#define GL_POLYGON_OFFSET_EXT			0x8037
+#define GL_POLYGON_OFFSET_FACTOR_EXT		0x8038
+#define GL_POLYGON_OFFSET_BIAS_EXT		0x8039
+
+GLAPI void GLAPIENTRY glPolygonOffsetEXT( GLfloat factor, GLfloat bias );
+
+#endif /* GL_EXT_polygon_offset */
+
+
+
+/*
+ * 6. GL_EXT_texture3D
+ */
+#ifndef GL_EXT_texture3D
+#define GL_EXT_texture3D 1
+
+#define GL_PACK_SKIP_IMAGES_EXT			0x806B
+#define GL_PACK_IMAGE_HEIGHT_EXT		0x806C
+#define GL_UNPACK_SKIP_IMAGES_EXT		0x806D
+#define GL_UNPACK_IMAGE_HEIGHT_EXT		0x806E
+#define GL_TEXTURE_3D_EXT			0x806F
+#define GL_PROXY_TEXTURE_3D_EXT			0x8070
+#define GL_TEXTURE_DEPTH_EXT			0x8071
+#define GL_TEXTURE_WRAP_R_EXT			0x8072
+#define GL_MAX_3D_TEXTURE_SIZE_EXT		0x8073
+#define GL_TEXTURE_3D_BINDING_EXT		0x806A
+
+GLAPI void GLAPIENTRY glTexImage3DEXT( GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels );
+
+GLAPI void GLAPIENTRY glTexSubImage3DEXT( GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
+
+GLAPI void GLAPIENTRY glCopyTexSubImage3DEXT( GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height );
+
+#endif /* GL_EXT_texture3D */
+
+
+
+/*
+ * 20. GL_EXT_texture_object
+ */
+#ifndef GL_EXT_texture_object
+#define GL_EXT_texture_object 1
+
+#define GL_TEXTURE_PRIORITY_EXT			0x8066
+#define GL_TEXTURE_RESIDENT_EXT			0x8067
+#define GL_TEXTURE_1D_BINDING_EXT		0x8068
+#define GL_TEXTURE_2D_BINDING_EXT		0x8069
+
+GLAPI void GLAPIENTRY glGenTexturesEXT( GLsizei n, GLuint *textures );
+
+GLAPI void GLAPIENTRY glDeleteTexturesEXT( GLsizei n, const GLuint *textures);
+
+GLAPI void GLAPIENTRY glBindTextureEXT( GLenum target, GLuint texture );
+
+GLAPI void GLAPIENTRY glPrioritizeTexturesEXT( GLsizei n, const GLuint *textures, const GLclampf *priorities );
+
+GLAPI GLboolean GLAPIENTRY glAreTexturesResidentEXT( GLsizei n, const GLuint *textures, GLboolean *residences );
+
+GLAPI GLboolean GLAPIENTRY glIsTextureEXT( GLuint texture );
+
+#endif /* GL_EXT_texture_object */
+
+
+
+/*
+ * 27. GL_EXT_rescale_normal
+ */
+#ifndef GL_EXT_rescale_normal
+#define GL_EXT_rescale_normal 1
+
+#define GL_RESCALE_NORMAL_EXT			0x803A
+
+#endif /* GL_EXT_rescale_normal */
+
+
+
+/*
+ * 30. GL_EXT_vertex_array
+ */
+#ifndef GL_EXT_vertex_array
+#define GL_EXT_vertex_array 1
+
+#define GL_VERTEX_ARRAY_EXT			0x8074
+#define GL_NORMAL_ARRAY_EXT			0x8075
+#define GL_COLOR_ARRAY_EXT			0x8076
+#define GL_INDEX_ARRAY_EXT			0x8077
+#define GL_TEXTURE_COORD_ARRAY_EXT		0x8078
+#define GL_EDGE_FLAG_ARRAY_EXT			0x8079
+#define GL_VERTEX_ARRAY_SIZE_EXT		0x807A
+#define GL_VERTEX_ARRAY_TYPE_EXT		0x807B
+#define GL_VERTEX_ARRAY_STRIDE_EXT		0x807C
+#define GL_VERTEX_ARRAY_COUNT_EXT		0x807D
+#define GL_NORMAL_ARRAY_TYPE_EXT		0x807E
+#define GL_NORMAL_ARRAY_STRIDE_EXT		0x807F
+#define GL_NORMAL_ARRAY_COUNT_EXT		0x8080
+#define GL_COLOR_ARRAY_SIZE_EXT			0x8081
+#define GL_COLOR_ARRAY_TYPE_EXT			0x8082
+#define GL_COLOR_ARRAY_STRIDE_EXT		0x8083
+#define GL_COLOR_ARRAY_COUNT_EXT		0x8084
+#define GL_INDEX_ARRAY_TYPE_EXT			0x8085
+#define GL_INDEX_ARRAY_STRIDE_EXT		0x8086
+#define GL_INDEX_ARRAY_COUNT_EXT		0x8087
+#define GL_TEXTURE_COORD_ARRAY_SIZE_EXT		0x8088
+#define GL_TEXTURE_COORD_ARRAY_TYPE_EXT		0x8089
+#define GL_TEXTURE_COORD_ARRAY_STRIDE_EXT	0x808A
+#define GL_TEXTURE_COORD_ARRAY_COUNT_EXT	0x808B
+#define GL_EDGE_FLAG_ARRAY_STRIDE_EXT		0x808C
+#define GL_EDGE_FLAG_ARRAY_COUNT_EXT		0x808D
+#define GL_VERTEX_ARRAY_POINTER_EXT		0x808E
+#define GL_NORMAL_ARRAY_POINTER_EXT		0x808F
+#define GL_COLOR_ARRAY_POINTER_EXT		0x8090
+#define GL_INDEX_ARRAY_POINTER_EXT		0x8091
+#define GL_TEXTURE_COORD_ARRAY_POINTER_EXT	0x8092
+#define GL_EDGE_FLAG_ARRAY_POINTER_EXT		0x8093
+
+GLAPI void GLAPIENTRY glVertexPointerEXT( GLint size, GLenum type, GLsizei stride, GLsizei count, const GLvoid *ptr );
+
+GLAPI void GLAPIENTRY glNormalPointerEXT( GLenum type, GLsizei stride, GLsizei count, const GLvoid *ptr );
+
+GLAPI void GLAPIENTRY glColorPointerEXT( GLint size, GLenum type, GLsizei stride, GLsizei count, const GLvoid *ptr );
+
+GLAPI void GLAPIENTRY glIndexPointerEXT( GLenum type, GLsizei stride, GLsizei count, const GLvoid *ptr );
+
+GLAPI void GLAPIENTRY glTexCoordPointerEXT( GLint size, GLenum type, GLsizei stride, GLsizei count, const GLvoid *ptr );
+
+GLAPI void GLAPIENTRY glEdgeFlagPointerEXT( GLsizei stride, GLsizei count, const GLboolean *ptr );
+
+GLAPI void GLAPIENTRY glGetPointervEXT( GLenum pname, void **params );
+
+GLAPI void GLAPIENTRY glArrayElementEXT( GLint i );
+
+GLAPI void GLAPIENTRY glDrawArraysEXT( GLenum mode, GLint first, GLsizei count );
+
+#endif /* GL_EXT_vertex_array */
+
+
+
+/*
+ * 35. GL_SGIS_texture_edge_clamp
+ */
+#ifndef GL_SGIS_texture_edge_clamp
+#define GL_SGIS_texture_edge_clamp 1
+
+#define GL_CLAMP_TO_EDGE_SGIS			0x812F
+
+#endif /* GL_SGIS_texture_edge_clamp */
+
+
+
+/*
+ * 37. GL_EXT_blend_minmax
+ */
+#ifndef GL_EXT_blend_minmax
+#define GL_EXT_blend_minmax 1
+
+#define GL_FUNC_ADD_EXT				0x8006
+#define GL_MIN_EXT				0x8007
+#define GL_MAX_EXT				0x8008
+#define GL_BLEND_EQUATION_EXT			0x8009
+
+GLAPI void GLAPIENTRY glBlendEquationEXT( GLenum mode );
+
+#endif /* GL_EXT_blend_minmax */
+
+
+
+/*
+ * 38. GL_EXT_blend_subtract (requires GL_EXT_blend_max )
+ */
+#ifndef GL_EXT_blend_subtract
+#define GL_EXT_blend_subtract 1
+
+#define GL_FUNC_SUBTRACT_EXT			0x800A
+#define GL_FUNC_REVERSE_SUBTRACT_EXT		0x800B
+
+#endif /* GL_EXT_blend_subtract */
+
+
+
+/*
+ * 39. GL_EXT_blend_logic_op
+ */
+#ifndef GL_EXT_blend_logic_op
+#define GL_EXT_blend_logic_op 1
+
+/* No new tokens or functions */
+
+#endif /* GL_EXT_blend_logic_op */
+
+
+
+/*
+ * 54. GL_EXT_point_parameters
+ */
+#ifndef GL_EXT_point_parameters
+#define GL_EXT_point_parameters 1
+
+#define GL_POINT_SIZE_MIN_EXT			0x8126
+#define GL_POINT_SIZE_MAX_EXT			0x8127
+#define GL_POINT_FADE_THRESHOLD_SIZE_EXT	0x8128
+#define GL_DISTANCE_ATTENUATION_EXT		0x8129
+
+GLAPI void GLAPIENTRY glPointParameterfEXT( GLenum pname, GLfloat param );
+GLAPI void GLAPIENTRY glPointParameterfvEXT( GLenum pname, const GLfloat *params );
+GLAPI void GLAPIENTRY glPointParameterfSGIS(GLenum pname, GLfloat param);
+GLAPI void GLAPIENTRY glPointParameterfvSGIS(GLenum pname, const GLfloat *params);
+
+#endif /* GL_EXT_point_parameters */
+
+
+
+/*
+ * 78. GL_EXT_paletted_texture
+ */
+#ifndef GL_EXT_paletted_texture
+#define GL_EXT_paletted_texture 1
+
+#define GL_TABLE_TOO_LARGE_EXT			0x8031
+#define GL_COLOR_TABLE_FORMAT_EXT		0x80D8
+#define GL_COLOR_TABLE_WIDTH_EXT		0x80D9
+#define GL_COLOR_TABLE_RED_SIZE_EXT		0x80DA
+#define GL_COLOR_TABLE_GREEN_SIZE_EXT		0x80DB
+#define GL_COLOR_TABLE_BLUE_SIZE_EXT		0x80DC
+#define GL_COLOR_TABLE_ALPHA_SIZE_EXT	 	0x80DD
+#define GL_COLOR_TABLE_LUMINANCE_SIZE_EXT	0x80DE
+#define GL_COLOR_TABLE_INTENSITY_SIZE_EXT	0x80DF
+#define GL_TEXTURE_INDEX_SIZE_EXT		0x80ED
+#define GL_COLOR_INDEX1_EXT			0x80E2
+#define GL_COLOR_INDEX2_EXT			0x80E3
+#define GL_COLOR_INDEX4_EXT			0x80E4
+#define GL_COLOR_INDEX8_EXT			0x80E5
+#define GL_COLOR_INDEX12_EXT			0x80E6
+#define GL_COLOR_INDEX16_EXT			0x80E7
+
+GLAPI void GLAPIENTRY glColorTableEXT( GLenum target, GLenum internalformat, GLsizei width, GLenum format, GLenum type, const GLvoid *table );
+
+GLAPI void GLAPIENTRY glColorSubTableEXT( GLenum target, GLsizei start, GLsizei count, GLenum format, GLenum type, const GLvoid *data );
+
+GLAPI void GLAPIENTRY glGetColorTableEXT( GLenum target, GLenum format, GLenum type, GLvoid *table );
+
+GLAPI void GLAPIENTRY glGetColorTableParameterfvEXT( GLenum target, GLenum pname, GLfloat *params );
+
+GLAPI void GLAPIENTRY glGetColorTableParameterivEXT( GLenum target, GLenum pname, GLint *params );
+
+#endif /* GL_EXT_paletted_texture */
+
+
+
+/*
+ * 79. GL_EXT_clip_volume_hint
+ */
+#ifndef GL_EXT_clip_volume_hint
+#define GL_EXT_clip_volume_hint 1
+
+#define GL_CLIP_VOLUME_CLIPPING_HINT_EXT	0x80F0
+
+#endif /* GL_EXT_clip_volume_hint */
+
+
+
+/*
+ * 97. GL_EXT_compiled_vertex_array
+ */
+#ifndef GL_EXT_compiled_vertex_array
+#define GL_EXT_compiled_vertex_array 1
+
+#define GL_ARRAY_ELEMENT_LOCK_FIRST_EXT		0x81A8
+#define GL_ARRAY_ELEMENT_LOCK_COUNT_EXT		0x81A9
+
+GLAPI void GLAPIENTRY glLockArraysEXT( GLint first, GLsizei count );
+GLAPI void GLAPIENTRY glUnlockArraysEXT( void );
+
+#endif /* GL_EXT_compiled_vertex_array */
+
+/*
+ * 137. GL_HP_occlusion_test
+ */
+#ifndef GL_HP_occlusion_test
+#define GL_HP_occlusion_test 1
+
+#define GL_OCCLUSION_TEST_HP                    0x8165
+#define GL_OCCLUSION_TEST_RESULT_HP             0x8166
+
+#endif /* GL_HP_occlusion_test */
+
+
+/*
+ * 141. GL_EXT_shared_texture_palette (req's GL_EXT_paletted_texture)
+ */
+#ifndef GL_EXT_shared_texture_palette
+#define GL_EXT_shared_texture_palette 1
+
+#define GL_SHARED_TEXTURE_PALETTE_EXT		0x81FB
+
+#endif /* GL_EXT_shared_texture_palette */
+
+
+
+/*
+ * 176. GL_EXT_stencil_wrap
+ */
+#ifndef GL_EXT_stencil_wrap
+#define GL_EXT_stencil_wrap 1
+
+#define GL_INCR_WRAP_EXT			0x8507
+#define GL_DECR_WRAP_EXT			0x8508
+
+#endif /* GL_EXT_stencil_wrap */
+
+
+
+/*
+ * 179. GL_NV_texgen_reflection
+ */
+#ifndef GL_NV_texgen_reflection
+#define GL_NV_texgen_reflection 1
+
+#define GL_NORMAL_MAP_NV			0x8511
+#define GL_REFLECTION_MAP_NV			0x8512
+
+#endif /* GL_NV_texgen_reflection */
+
+
+
+/*
+ * 185. GL_EXT_texture_env_add
+ */
+#ifndef GL_EXT_texture_env_add
+#define GL_EXT_texture_env_add 1
+
+/* No new tokens or functions */
+
+#endif /* GL_EXT_texture_env_add */
+
+
+
+
+
+/*
+ * 197. GL_MESA_window_pos
  */
 #ifndef GL_MESA_window_pos
 #define GL_MESA_window_pos 1
@@ -2312,7 +2217,7 @@ GLAPI void GLAPIENTRY glWindowPos4dvMESA( const GLdouble *p );
 
 
 /*
- * GL_MESA_resize_bufffers (196)
+ * 196. GL_MESA_resize_bufffers
  */
 #ifndef GL_MESA_resize_bufffers
 #define GL_MESA_resize_buffers 1
@@ -2322,52 +2227,27 @@ GLAPI void GLAPIENTRY glResizeBuffersMESA( void );
 #endif /* GL_MESA_resize_bufffers */
 
 
+#else  /* GL_GLEXT_LEGACY */
 
-/*
- * GL_ARB_tranpose_matrix (ARB 2)
+#include <GL/glext.h>
+
+#endif  /* GL_GLEXT_LEGACY */
+
+
+
+/**********************************************************************
+ * Begin system-specific stuff
  */
-#ifndef GL_ARB_transpose_matrix
-#define GL_ARB_transpose_matrix 1
-
-#define GL_TRANSPOSE_MODELVIEW_MATRIX_ARB		0x84E3
-#define GL_TRANSPOSE_PROJECTION_MATRIX_ARB		0x84E4
-#define GL_TRANSPOSE_TEXTURE_MATRIX_ARB			0x84E5
-#define GL_TRANSPOSE_COLOR_MATRIX_ARB			0x84E6
-
-GLAPI void GLAPIENTRY glLoadTransposeMatrixdARB( const GLdouble m[16] );
-GLAPI void GLAPIENTRY glLoadTransposeMatrixfARB( const GLfloat m[16] );
-GLAPI void GLAPIENTRY glMultTransposeMatrixdARB( const GLdouble m[16] );
-GLAPI void GLAPIENTRY glMultTransposeMatrixfARB( const GLfloat m[16] );
-
-#endif /* GL_ARB_tranpose_matrix */
-
-
-
-/*
- * GL_ARB_multisample (ARB 4)
- */
-#ifndef GL_ARB_multisample
-#define GL_ARB_multisample 1
-
-GLAPI void GLAPIENTRY glSampleCoverageARB(GLclampf value, GLboolean invert);
-
-GLAPI void GLAPIENTRY glSamplePassARB(GLenum pass);
-
-#endif /* GL_ARB_multisample */
-
-
-
 #if defined(__BEOS__) || defined(__QUICKDRAW__)
 #pragma export off
 #endif
 
-
-#ifdef macintosh
-	#pragma enumsalwaysint reset
-	#if PRAGMA_IMPORT_SUPPORTED
-	#pragma import off
-	#endif
+#if defined(macintosh) && PRAGMA_IMPORT_SUPPORTED
+#pragma import off
 #endif
+/*
+ * End system-specific stuff
+ **********************************************************************/
 
 
 #ifdef __cplusplus

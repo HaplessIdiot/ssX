@@ -108,6 +108,8 @@
 #define LCS_UPDATE_LINEWIDTH    (0x1<<15)
 #define LCS_LINEWIDTH_MASK      (0x7<<12)
 #define LCS_LINEWIDTH_SHIFT           12
+#define LCS_LINEWIDTH_0_5       (0x1<<12)
+#define LCS_LINEWIDTH_1_0       (0x2<<12)
 #define LCS_UPDATE_ALPHA_INTERP (0x1<<11)
 #define LCS_ALPHA_FLAT          (0x0<<10)
 #define LCS_ALPHA_INTERP        (0x1<<10)
@@ -616,9 +618,6 @@ typedef struct {
 #define DV_PF_555           (0x1<<8)
 #define DV_PF_565           (0x2<<8)
 
-
-
-
 #define GFX_OP_ANTIALIAS         ((0x3<<29)|(0x6<<24))
 #define AA_UPDATE_EDGEFLAG       (1<<13)
 #define AA_ENABLE_EDGEFLAG       (1<<12)
@@ -641,84 +640,16 @@ typedef struct {
 #define ST1_ENABLE               (1<<16)
 #define ST1_MASK                 (0xffff)
 
-
-/* Indices into buf.Setup where various bits of state are mirrored per
- * context and per buffer.  These can be fired at the card as a unit,
- * or in a piecewise fashion as required.
- */
-
-/* Destbuffer state 
- *    - backbuffer linear offset and pitch -- invarient in the current dri
- *    - zbuffer linear offset and pitch -- also invarient
- *    - drawing origin in back and depth buffers.
- *
- * Keep the depth/back buffer state here to acommodate private buffers
- * in the future.
- */
-#define I810_DESTREG_DI0  0	/* CMD_OP_DESTBUFFER_INFO (2 dwords) */
-#define I810_DESTREG_DI1  1
-#define I810_DESTREG_ZB0  2	/* CMD_OP_Z_BUFFER_INFO */
-#define I810_DESTREG_ZB1  3	/* CMD_OP_Z_BUFFER_INFO */
-#define I810_DESTREG_DV0  4	/* GFX_OP_DESTBUFFER_VARS (2 dwords) */
-#define I810_DESTREG_DV1  5
-#define I810_DESTREG_DR0  6	/* GFX_OP_DRAWRECT_INFO (4 dwords) */
-#define I810_DESTREG_DR1  7
-#define I810_DESTREG_DR2  8
-#define I810_DESTREG_DR3  9
-#define I810_DESTREG_DR4  10
-
-#define I810_DEST_SETUP_SIZE (11+1)
-
-/* Context state
- */
-#define I810_CTXREG_VF    0	/* GFX_OP_VERTEX_FMT */
-#define I810_CTXREG_MT    1	/* GFX_OP_MAP_TEXELS */
-#define I810_CTXREG_MC0   2	/* GFX_OP_MAP_COLOR_STAGES - stage 0 */
-#define I810_CTXREG_MC1   3	/* GFX_OP_MAP_COLOR_STAGES - stage 1 */
-#define I810_CTXREG_MC2   4	/* GFX_OP_MAP_COLOR_STAGES - stage 2 */
-#define I810_CTXREG_MA0   5	/* GFX_OP_MAP_ALPHA_STAGES - stage 0 */
-#define I810_CTXREG_MA1   6	/* GFX_OP_MAP_ALPHA_STAGES - stage 1 */
-#define I810_CTXREG_MA2   7	/* GFX_OP_MAP_ALPHA_STAGES - stage 2 */
-#define I810_CTXREG_SDM   8	/* GFX_OP_SRC_DEST_MONO */
-#define I810_CTXREG_CF0   9	/* GFX_OP_COLOR_FACTOR */
-#define I810_CTXREG_CF1   10	
-#define I810_CTXREG_FOG   11	/* GFX_OP_FOG_COLOR */
-#define I810_CTXREG_B1    12	/* GFX_OP_BOOL_1 */
-#define I810_CTXREG_B2    13	/* GFX_OP_BOOL_2 */
-#define I810_CTXREG_LCS   14	/* GFX_OP_LINEWIDTH_CULL_SHADE_MODE */
-#define I810_CTXREG_PV    15	/* GFX_OP_PV_RULE -- Invarient! */
-#define I810_CTXREG_ZA    16	/* GFX_OP_ZBIAS_ALPHAFUNC */
-#define I810_CTXREG_ST0   17    /* GFX_OP_STIPPLE */
-#define I810_CTXREG_ST1   18
-#define I810_CTXREG_AA    19	/* GFX_OP_ANTIALIAS */
-#define I810_CTX_SETUP_SIZE (20) /* pad to qword */
-
-
-/* Cliprect state - keep seperate from context as it is used for
- *                  drawing triangles to the shared backbuffer, and
- *                  changes more frequently than the 'normal' context.
- */
-#define I810_CLIPREG_SCI0  0 	/* GFX_OP_SCISSOR_INFO (3 dwords) */
-#define I810_CLIPREG_SCI1  1	
-#define I810_CLIPREG_SCI2  2	
-#define I810_CLIPREG_SC    3	/* GFX_OP_SCISSOR */
-
-#define I810_CLIP_SETUP_SIZE 4
-
-/* Texture state (per tex_buffer)
- */
-#define I810_TEXREG_MI0  0	/* GFX_OP_MAP_INFO (4 dwords) */
-#define I810_TEXREG_MI1  1	
-#define I810_TEXREG_MI2  2	
-#define I810_TEXREG_MI3  3	
-#define I810_TEXREG_MF   4	/* GFX_OP_MAP_FILTER */
-#define I810_TEXREG_MLC  5	/* GFX_OP_MAP_LOD_CTL */
-#define I810_TEXREG_MLL  6	/* GFX_OP_MAP_LOD_LIMITS */
-#define I810_TEXREG_MCS  7	/* GFX_OP_MAP_COORD_SETS ??? */
-
-#define I810_TEX_SETUP_SIZE 8
-
-
 #define I810_SET_FIELD( var, mask, value ) (var &= ~(mask), var |= value)
+
+#define I810PACKCOLOR4444(r,g,b,a) \
+  ((((a) & 0xf0) << 8) | (((r) & 0xf0) << 4) | ((g) & 0xf0) | ((b) >> 4))
+
+#define I810PACKCOLOR1555(r,g,b,a) \
+  ((((r) & 0xf8) << 7) | (((g) & 0xf8) << 2) | (((b) & 0xf8) >> 3) | \
+    ((a) ? 0x8000 : 0))
+
+#define I810PACKCOLOR565(r,g,b) \
+  ((((r) & 0xf8) << 8) | (((g) & 0xfc) << 3) | (((b) & 0xf8) >> 3))
 
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.145 2000/06/09 22:42:52 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.146 2000/06/15 02:58:50 mvojkovi Exp $ */
 
 /*
  *
@@ -54,6 +54,14 @@
 #include "xf86Priv.h"
 #include "vbe.h"
 #include "xf86sbusBus.h"
+
+#ifdef __FreeBSD__
+/* XXX used in drmOpen(). This should change to use a less os-specific
+ * method. */
+int sysctlbyname(const char*, void *, size_t *, void *, size_t);
+#endif
+
+extern xf86MonPtr ConfiguredMonitor;
 
 /* XXX Should get all of these from elsewhere */
 #if defined (PowerMAX_OS)
@@ -230,6 +238,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86GetSerialModemState)
    SYMFUNC(xf86SerialModemSetBits)
    SYMFUNC(xf86SerialModemClearBits)
+   SYMFUNC(xf86LoadKernelModule)
    SYMFUNC(xf86OSMouseInit)
 
 #ifdef XINPUT
@@ -803,6 +812,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86fstat)
    SYMFUNC(xf86access)
    SYMFUNC(xf86geteuid)
+   SYMFUNC(xf86getegid)
+   SYMFUNC(xf86getpid)
    SYMFUNC(xf86mknod)
    SYMFUNC(xf86chmod)
    SYMFUNC(xf86chown)
@@ -914,6 +925,10 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(debug_outw)
    SYMFUNC(debug_outl)
 #endif
+#endif
+
+#ifdef __FreeBSD__
+   SYMFUNC(sysctlbyname)
 #endif
 
 /*

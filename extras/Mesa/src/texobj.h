@@ -31,9 +31,6 @@
 #include "types.h"
 
 
-#ifdef VMS
-#define gl_test_texture_object_completeness gl_test_texture_object_complete
-#endif
 
 /*
  * Internal functions
@@ -48,7 +45,9 @@ extern void gl_free_texture_object( struct gl_shared_state *shared,
                                     struct gl_texture_object *t );
 
 
-extern void gl_test_texture_object_completeness( const GLcontext *ctx, struct gl_texture_object *t );
+extern void
+_mesa_test_texobj_completeness( const GLcontext *ctx,
+                                struct gl_texture_object *t );
 
 
 /*

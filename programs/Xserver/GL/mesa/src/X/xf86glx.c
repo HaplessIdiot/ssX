@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.7 2000/02/23 04:46:56 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.8 2000/05/23 04:47:36 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -29,6 +29,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Brian E. Paul <brian@precisioninsight.com>
  *
  */
 
@@ -93,12 +94,13 @@ __GLXextensionInfo __glDDXExtensionInfo = {
     __MESA_setVisualConfigs
 };
 
-__MESA_screen  MESAScreens[MAXSCREENS];
-__GLcontext   *MESA_CC        = NULL;
+static __MESA_screen  MESAScreens[MAXSCREENS];
+static __GLcontext   *MESA_CC        = NULL;
 
-int                 numConfigs     = 0;
-__GLXvisualConfig  *visualConfigs  = NULL;
-void              **visualPrivates = NULL;
+static int                 numConfigs     = 0;
+static __GLXvisualConfig  *visualConfigs  = NULL;
+static void              **visualPrivates = NULL;
+
 
 static int count_bits(unsigned int n)
 {
@@ -110,6 +112,7 @@ static int count_bits(unsigned int n)
    }
    return bits;
 }
+
 
 static XMesaVisual find_mesa_visual(int screen, VisualID vid)
 {
@@ -129,251 +132,148 @@ static XMesaVisual find_mesa_visual(int screen, VisualID vid)
     return xm_vis;
 }
 
-#define VISUAL_CONFIG(rgba,accum,back,depth,stencil,rating)                  \
-{                                                                            \
-    -1,                 /* vid */                                            \
-    -1,                 /* class */                                          \
-    rgba,               /* rgba */                                           \
-    -1, -1, -1, 0,      /* rgba sizes, alpha not supported, yet */           \
-    -1, -1, -1, 0,      /* rgba masks, alpha not supported, yet */           \
-    accum, accum, accum, accum, /* rgba accum sizes */                       \
-    back,               /* doubleBuffer */                                   \
-    GL_FALSE,           /* stereo */                                         \
-    -1,                 /* bufferSize */                                     \
-    depth,              /* depthSize */                                      \
-    stencil,            /* stencilSize */                                    \
-    0,                  /* auxBuffers */                                     \
-    0,                  /* level */                                          \
-    rating,             /* visualRating */                                   \
-    0,                  /* transparentPixel */                               \
-    0, 0, 0, 0,         /* transparent rgba color (floats scaled to ints) */ \
-    0                   /* transparentIndex */                               \
-}
 
-#define IS_RGBA     GL_TRUE
-#define IS_CI       GL_FALSE
-#define HAS_ACCUM   ACCUM_BITS
-#define NO_ACCUM    0
-#define HAS_BACK    GL_TRUE
-#define NO_BACK     GL_FALSE
-#define HAS_DEPTH   DEPTH_BITS
-#define NO_DEPTH    0
-#define HAS_STENCIL STENCIL_BITS
-#define NO_STENCIL  0
-
-static __GLXvisualConfig __MESAvisualConfigs[] = {
-    VISUAL_CONFIG(IS_RGBA,  NO_ACCUM,  NO_BACK,  NO_DEPTH,  NO_STENCIL, 0),
-    VISUAL_CONFIG(IS_RGBA,  NO_ACCUM,  NO_BACK, HAS_DEPTH,  NO_STENCIL, 0),
-    VISUAL_CONFIG(IS_RGBA,  NO_ACCUM, HAS_BACK,  NO_DEPTH,  NO_STENCIL, 0),
-    VISUAL_CONFIG(IS_RGBA,  NO_ACCUM, HAS_BACK, HAS_DEPTH,  NO_STENCIL, 0),
-    VISUAL_CONFIG(IS_RGBA,  NO_ACCUM,  NO_BACK,  NO_DEPTH,  NO_STENCIL, 0),
-    VISUAL_CONFIG(IS_RGBA,  NO_ACCUM, HAS_BACK, HAS_DEPTH, HAS_STENCIL, 0),
-    VISUAL_CONFIG(IS_RGBA, HAS_ACCUM, HAS_BACK, HAS_DEPTH, HAS_STENCIL, 0),
-    VISUAL_CONFIG(  IS_CI,  NO_ACCUM,  NO_BACK,  NO_DEPTH,  NO_STENCIL, 0),
-    VISUAL_CONFIG(  IS_CI,  NO_ACCUM,  NO_BACK, HAS_DEPTH,  NO_STENCIL, 0),
-    VISUAL_CONFIG(  IS_CI,  NO_ACCUM, HAS_BACK,  NO_DEPTH,  NO_STENCIL, 0),
-    VISUAL_CONFIG(  IS_CI,  NO_ACCUM, HAS_BACK, HAS_DEPTH,  NO_STENCIL, 0),
-    VISUAL_CONFIG(  IS_CI,  NO_ACCUM,  NO_BACK,  NO_DEPTH,  NO_STENCIL, 0),
-    VISUAL_CONFIG(  IS_CI,  NO_ACCUM, HAS_BACK, HAS_DEPTH, HAS_STENCIL, 0),
-    VISUAL_CONFIG(  IS_CI,  NO_ACCUM, HAS_BACK, HAS_DEPTH, HAS_STENCIL, 0),
+/*
+ * In the case the driver has no GLX visuals we'll use these.
+ * [0] = RGB, double buffered
+ * [1] = RGB, double buffered, stencil, accum
+ * [2] = CI, double buffered
+ */
+#define NUM_FALLBACK_CONFIGS 3
+static __GLXvisualConfig FallbackConfigs[NUM_FALLBACK_CONFIGS] = {
+  {
+    -1,                 /* vid */
+    -1,                 /* class */
+    True,               /* rgba */
+    -1, -1, -1, 0,      /* rgba sizes */
+    -1, -1, -1, 0,      /* rgba masks */
+     0,  0,  0, 0,      /* rgba accum sizes */
+    True,               /* doubleBuffer */
+    False,              /* stereo */
+    -1,                 /* bufferSize */
+    16,                 /* depthSize */
+    0,                  /* stencilSize */
+    0,                  /* auxBuffers */
+    0,                  /* level */
+    GLX_NONE_EXT,       /* visualRating */
+    0,                  /* transparentPixel */
+    0, 0, 0, 0,         /* transparent rgba color (floats scaled to ints) */
+    0                   /* transparentIndex */
+  },
+  {
+    -1,                 /* vid */
+    -1,                 /* class */
+    True,               /* rgba */
+    -1, -1, -1, 0,      /* rgba sizes */
+    -1, -1, -1, 0,      /* rgba masks */
+    16, 16, 16, 0,      /* rgba accum sizes */
+    True,               /* doubleBuffer */
+    False,              /* stereo */
+    -1,                 /* bufferSize */
+    16,                 /* depthSize */
+    8,                  /* stencilSize */
+    0,                  /* auxBuffers */
+    0,                  /* level */
+    GLX_NONE_EXT,       /* visualRating */
+    0,                  /* transparentPixel */
+    0, 0, 0, 0,         /* transparent rgba color (floats scaled to ints) */
+    0                   /* transparentIndex */
+  },
+  {
+    -1,                 /* vid */
+    -1,                 /* class */
+    False,              /* color index */
+    -1, -1, -1, 0,      /* rgba sizes */
+    -1, -1, -1, 0,      /* rgba masks */
+     0,  0,  0, 0,      /* rgba accum sizes */
+    True,               /* doubleBuffer */
+    False,              /* stereo */
+    -1,                 /* bufferSize */
+    16,                 /* depthSize */
+    0,                  /* stencilSize */
+    0,                  /* auxBuffers */
+    0,                  /* level */
+    GLX_NONE_EXT,       /* visualRating */
+    0,                  /* transparentPixel */
+    0, 0, 0, 0,         /* transparent rgba color (floats scaled to ints) */
+    0                   /* transparentIndex */
+  },
 };
 
-static int __numMESAvisualConfigs =
-                    sizeof(__MESAvisualConfigs)/sizeof(__GLXvisualConfig);
-static int __numRGBconfigs        = -1;
-static int __numCIconfigs         = -1;
 
 static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
 			 VisualID *defaultVisp,
 			 int ndepth, DepthPtr pdepth,
 			 int rootDepth)
 {
+    int numRGBconfigs;
+    int numCIconfigs;
     int numVisuals = *nvisualp;
-    int numMesaVisuals = 0;
-    int numMergedVisualConfigs = 0;
+    int numNewVisuals;
+    int numNewConfigs;
     VisualPtr pVisual = *visualp;
     VisualPtr pVisualNew = NULL;
     VisualID *orig_vid = NULL;
     __GLXvisualConfig *glXVisualPtr = NULL;
-    __GLXvisualConfig *pMergedVisualConfigs = NULL;
+    __GLXvisualConfig *pNewVisualConfigs = NULL;
     void **glXVisualPriv;
-    void **pMergedVisualPriv;
-    int *mesaConfigUsed;
-    int *driverConfigUsed;
-    int found_default = FALSE;
+    void **pNewVisualPriv;
+    int found_default;
     int i, j, k;
-    int is_rgb;
-    Bool match;
 
-    /* Alloc space for the list of merged GLX visuals */
-    pMergedVisualConfigs =
-	(__GLXvisualConfig *)__glXMalloc((numConfigs +
-					  __numMESAvisualConfigs) * 
-					 sizeof(__GLXvisualConfig));
-    if (!pMergedVisualConfigs) {
+    if (numConfigs > 0)
+        numNewConfigs = numConfigs;
+    else
+        numNewConfigs = NUM_FALLBACK_CONFIGS;
+
+    /* Alloc space for the list of new GLX visuals */
+    pNewVisualConfigs = (__GLXvisualConfig *)
+                     __glXMalloc(numNewConfigs * sizeof(__GLXvisualConfig));
+    if (!pNewVisualConfigs) {
 	return FALSE;
     }
 
-    /* Alloc space for the list of merged GLX visual privates */
-    pMergedVisualPriv =
-	(void **)__glXMalloc((numConfigs + __numMESAvisualConfigs) *
-			     sizeof(void *));
-    if (!pMergedVisualPriv) {
-	__glXFree(pMergedVisualConfigs);
+    /* Alloc space for the list of new GLX visual privates */
+    pNewVisualPriv = (void **) __glXMalloc(numNewConfigs * sizeof(void *));
+    if (!pNewVisualPriv) {
+	__glXFree(pNewVisualConfigs);
 	return FALSE;
     }
 
-    /* Compute the intersection of the driver's visual configs */
-    mesaConfigUsed = __glXCalloc(__numMESAvisualConfigs, sizeof(int));
-    driverConfigUsed = __glXCalloc(numConfigs, sizeof(int));
-
-    for (i = j = 0; i < numConfigs; i++) {
-	k = 0;
-	while ((k < __numMESAvisualConfigs) && (!driverConfigUsed[i])) {
-	    if (!mesaConfigUsed[k]) {
-
-#ifdef DEBUG_VISUAL_CONFIG
-#define TEST_AND_COPY(fld) do {						    \
-	if (match) {							    \
-	    if ((__MESAvisualConfigs[k].fld == visualConfigs[i].fld) ||	    \
-		(__MESAvisualConfigs[k].fld == -1)) {		    	    \
-		pMergedVisualConfigs[j].fld = visualConfigs[i].fld; 	    \
-	    } 								    \
-	    else if (visualConfigs[i].fld == -1) {			    \
-		pMergedVisualConfigs[j].fld = __MESAvisualConfigs[k].fld;   \
-	    }								    \
-	    else {							    \
-		match = FALSE;						    \
-		xf86DrvMsg (0, 0, "[GLXVisualInit] mismatch: "		    \
-		    "(%s) DriverVisualConfig[%d] MesaVisualConfig[%d]\n",   \
-		    #fld, i, k);					    \
-	    } 								    \
-	} 								    \
-    } while (0)
-#else
-#define TEST_AND_COPY(fld) do {						    \
-	if (match) {							    \
-	    if ((__MESAvisualConfigs[k].fld == visualConfigs[i].fld) ||	    \
-		(__MESAvisualConfigs[k].fld == -1)) {		    	    \
-		pMergedVisualConfigs[j].fld = visualConfigs[i].fld; 	    \
-	    } 								    \
-	    else if (visualConfigs[i].fld == -1) {			    \
-		pMergedVisualConfigs[j].fld = __MESAvisualConfigs[k].fld;   \
-	    }								    \
-	    else {							    \
-		match = FALSE;						    \
-	    } 								    \
-	} 								    \
-    } while (0)
-#endif
-
-		match = TRUE;
-		TEST_AND_COPY(class);
-		TEST_AND_COPY(rgba);
-		TEST_AND_COPY(redSize);
-		TEST_AND_COPY(greenSize);
-		TEST_AND_COPY(blueSize);
-		TEST_AND_COPY(alphaSize);
-		TEST_AND_COPY(redMask);
-		TEST_AND_COPY(greenMask);
-		TEST_AND_COPY(blueMask);
-		TEST_AND_COPY(alphaMask);
-		TEST_AND_COPY(accumRedSize);
-		TEST_AND_COPY(accumGreenSize);
-		TEST_AND_COPY(accumBlueSize);
-		TEST_AND_COPY(accumAlphaSize);
-		TEST_AND_COPY(doubleBuffer);
-		TEST_AND_COPY(stereo);
-		TEST_AND_COPY(bufferSize);
-		TEST_AND_COPY(depthSize);
-		TEST_AND_COPY(stencilSize);
-		TEST_AND_COPY(auxBuffers);
-		TEST_AND_COPY(level);
-		TEST_AND_COPY(visualRating);
-		TEST_AND_COPY(transparentPixel);
-		TEST_AND_COPY(transparentRed);
-		TEST_AND_COPY(transparentGreen);
-		TEST_AND_COPY(transparentBlue);
-		TEST_AND_COPY(transparentAlpha);
-		TEST_AND_COPY(transparentIndex);
-		if (match) {
-		    driverConfigUsed[i] = TRUE;
-		    mesaConfigUsed[k] = TRUE;
-		    pMergedVisualPriv[j] = visualPrivates[i];
-		    j++;
-#ifdef DEBUG_VISUAL_CONFIG
-		    xf86DrvMsg (0, 0, "[GLXVisualInit] MATCH: "
-			"DriverVisualConfig[%d] MesaVisualConfig[%d]\n", i, k);
-#endif
-		}
-	    }
-	    k++;
-	}
-    }
-
     /*
-    ** If SetVisualConfigs was not called, then just make all of Mesa's
-    ** visual configs available.
+    ** If SetVisualConfigs was not called, then use default GLX
+    ** visual configs.
     */
-    if (!numConfigs) {
-	memcpy(pMergedVisualConfigs, __MESAvisualConfigs,
-	       sizeof(__GLXvisualConfig) * __numMESAvisualConfigs);
-	memset(pMergedVisualPriv, 0, sizeof(void *) * __numMESAvisualConfigs);
-	memset(mesaConfigUsed, TRUE, sizeof(int) * __numMESAvisualConfigs);
-	j = __numMESAvisualConfigs;
+    if (numConfigs == 0) {
+	memcpy(pNewVisualConfigs, FallbackConfigs,
+               NUM_FALLBACK_CONFIGS * sizeof(__GLXvisualConfig));
+	memset(pNewVisualPriv, 0, NUM_FALLBACK_CONFIGS * sizeof(void *));
+    }
+    else {
+        /* copy driver's visual config info */
+        for (i = 0; i < numConfigs; i++) {
+            pNewVisualConfigs[i] = visualConfigs[i];
+            pNewVisualPriv[i] = visualPrivates[i];
+        }
     }
 
-    /*
-    ** This code is not currently used.  When the visual caveat
-    ** extension is supported by the DRI and Mesa, we can take advantage
-    ** of this code.
-    */
-#if 0
-    /* Add any unclaimed MESA configs w/ slow caveat */
-    for (i = 0; i < __numMESAvisualConfigs; i++) {
-	if (!mesaConfigUsed[i]) {
-	    memcpy(&pMergedVisualConfigs[j], &__MESAvisualConfigs[i],
-		   sizeof(__GLXvisualConfig));
-	    pMergedVisualConfigs[j].visualRating = GLX_SLOW_VISUAL_EXT;
-	    j++;
-#ifdef DEBUG_VISUAL_CONFIG
-	    xf86DrvMsg (0, 0, "[GLXVisualInit] slow config: "
-				    "MesaVisualConfig[%d]\n", i);
-#endif
-	}
-    }
-
-    /* Add any unclaimed driver configs w/ nonconformant caveat */
-    for (i = 0; i < numConfigs; i++) {
-	if (!driverConfigUsed[i]) {
-	    memcpy(&pMergedVisualConfigs[j], &visualConfigs[i],
-		   sizeof(__GLXvisualConfig));
-	    pMergedVisualConfigs[j].visualRating = GLX_NON_CONFORMANT_VISUAL_EXT;
-	    j++;
-#ifdef DEBUG_VISUAL_CONFIG
-	    xf86DrvMsg (0, 0, "[GLXVisualInit] non-conformant config: "
-				    "DriverVisualConfig[%d]\n", i);
-#endif
-	}
-    }
-#endif
-
-    numMergedVisualConfigs = j;
 
     /* Count the number of RGB and CI visual configs */
-    __numRGBconfigs = __numCIconfigs = 0;
-    for (i = 0; i < numMergedVisualConfigs; i++) {
-	if (pMergedVisualConfigs[i].rgba)
-	    __numRGBconfigs++;
+    numRGBconfigs = 0;
+    numCIconfigs = 0;
+    for (i = 0; i < numNewConfigs; i++) {
+	if (pNewVisualConfigs[i].rgba)
+	    numRGBconfigs++;
 	else
-	    __numCIconfigs++;
+	    numCIconfigs++;
     }
 
     /* Count the total number of visuals to compute */
+    numNewVisuals = 0;
     for (i = 0; i < numVisuals; i++) {
-        numMesaVisuals +=
+        numNewVisuals +=
 	    (pVisual[i].class == TrueColor || pVisual[i].class == DirectColor)
-	    ? __numRGBconfigs : __numCIconfigs;
+	    ? numRGBconfigs : numCIconfigs;
     }
 
     /* Reset variables for use with the next screen/driver's visual configs */
@@ -381,51 +281,52 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
     numConfigs = 0;
 
     /* Alloc temp space for the list of orig VisualIDs for each new visual */
-    orig_vid = (VisualID *)__glXMalloc(numMesaVisuals * sizeof(VisualID));
+    orig_vid = (VisualID *)__glXMalloc(numNewVisuals * sizeof(VisualID));
     if (!orig_vid) {
-	__glXFree(pMergedVisualPriv);
-	__glXFree(pMergedVisualConfigs);
+	__glXFree(pNewVisualPriv);
+	__glXFree(pNewVisualConfigs);
 	return FALSE;
     }
 
     /* Alloc space for the list of glXVisuals */
-    glXVisualPtr = (__GLXvisualConfig *)__glXMalloc(numMesaVisuals *
+    glXVisualPtr = (__GLXvisualConfig *)__glXMalloc(numNewVisuals *
 						    sizeof(__GLXvisualConfig));
     if (!glXVisualPtr) {
 	__glXFree(orig_vid);
-	__glXFree(pMergedVisualPriv);
-	__glXFree(pMergedVisualConfigs);
+	__glXFree(pNewVisualPriv);
+	__glXFree(pNewVisualConfigs);
 	return FALSE;
     }
 
     /* Alloc space for the list of glXVisualPrivates */
-    glXVisualPriv = (void **)__glXMalloc(numMesaVisuals * sizeof(void *));
+    glXVisualPriv = (void **)__glXMalloc(numNewVisuals * sizeof(void *));
     if (!glXVisualPriv) {
 	__glXFree(glXVisualPtr);
 	__glXFree(orig_vid);
-	__glXFree(pMergedVisualPriv);
-	__glXFree(pMergedVisualConfigs);
+	__glXFree(pNewVisualPriv);
+	__glXFree(pNewVisualConfigs);
 	return FALSE;
     }
 
     /* Alloc space for the new list of the X server's visuals */
-    pVisualNew = (VisualPtr)__glXMalloc(numMesaVisuals * sizeof(VisualRec));
+    pVisualNew = (VisualPtr)__glXMalloc(numNewVisuals * sizeof(VisualRec));
     if (!pVisualNew) {
 	__glXFree(glXVisualPriv);
 	__glXFree(glXVisualPtr);
 	__glXFree(orig_vid);
-	__glXFree(pMergedVisualPriv);
-	__glXFree(pMergedVisualConfigs);
+	__glXFree(pNewVisualPriv);
+	__glXFree(pNewVisualConfigs);
 	return FALSE;
     }
 
     /* Initialize the new visuals */
+    found_default = FALSE;
     for (i = j = 0; i < numVisuals; i++) {
-	is_rgb = (pVisual[i].class == TrueColor ||
-		  pVisual[i].class == DirectColor);
+        int is_rgb = (pVisual[i].class == TrueColor ||
+		      pVisual[i].class == DirectColor);
 
-	for (k = 0; k < numMergedVisualConfigs; k++) {
-	    if (pMergedVisualConfigs[k].rgba != is_rgb)
+	for (k = 0; k < numNewConfigs; k++) {
+	    if (pNewVisualConfigs[k].rgba != is_rgb)
 		continue;
 
 	    /* Initialize the new visual */
@@ -442,7 +343,7 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
 	    orig_vid[j] = pVisual[i].vid;
 
 	    /* Initialize the glXVisual */
-	    glXVisualPtr[j] = pMergedVisualConfigs[k];
+	    glXVisualPtr[j] = pNewVisualConfigs[k];
 	    glXVisualPtr[j].vid = pVisualNew[j].vid;
 
 	    /*
@@ -456,23 +357,25 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
 		glXVisualPtr[j].redSize    = count_bits(pVisual[i].redMask);
 		glXVisualPtr[j].greenSize  = count_bits(pVisual[i].greenMask);
 		glXVisualPtr[j].blueSize   = count_bits(pVisual[i].blueMask);
-		glXVisualPtr[j].alphaSize  = 0; /* Not supported in Mesa */
+		glXVisualPtr[j].alphaSize  = glXVisualPtr[j].alphaSize;
 		glXVisualPtr[j].redMask    = pVisual[i].redMask;
 		glXVisualPtr[j].greenMask  = pVisual[i].greenMask;
 		glXVisualPtr[j].blueMask   = pVisual[i].blueMask;
-		glXVisualPtr[j].alphaMask  = 0; /* Not supported in Mesa */
+		glXVisualPtr[j].alphaMask  = glXVisualPtr[j].alphaMask;
 		glXVisualPtr[j].bufferSize = rootDepth;
 	    }
 
 	    /* Save the device-dependent private for this visual */
-	    glXVisualPriv[j] = pMergedVisualPriv[k];
+	    glXVisualPriv[j] = pNewVisualPriv[k];
 
 	    j++;
 	}
     }
 
+    assert(j <= numNewVisuals);
+
     /* Save the GLX visuals in the screen structure */
-    MESAScreens[screenInfo.numScreens-1].num_vis = numMesaVisuals;
+    MESAScreens[screenInfo.numScreens-1].num_vis = numNewVisuals;
     MESAScreens[screenInfo.numScreens-1].glx_vis = glXVisualPtr;
     MESAScreens[screenInfo.numScreens-1].private = glXVisualPriv;
 
@@ -484,7 +387,7 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
 
 	/* Count the new number of VisualIDs at this depth */
 	for (j = 0; j < pdepth[i].numVids; j++)
-	    for (k = 0; k < numMesaVisuals; k++)
+	    for (k = 0; k < numNewVisuals; k++)
 		if (pdepth[i].vids[j] == orig_vid[k])
 		    numVids++;
 
@@ -493,7 +396,7 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
 
 	/* Initialize the new list of VisualIDs for this depth */
 	for (j = 0; j < pdepth[i].numVids; j++)
-	    for (k = 0; k < numMesaVisuals; k++)
+	    for (k = 0; k < numNewVisuals; k++)
 		if (pdepth[i].vids[j] == orig_vid[k])
 		    pVids[n++] = pVisualNew[k].vid;
 
@@ -504,7 +407,7 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
     }
 
     /* Update the X server's visuals */
-    *nvisualp = numMesaVisuals;
+    *nvisualp = numNewVisuals;
     *visualp = pVisualNew;
 
     /* Free the old list of the X server's visuals */
@@ -512,11 +415,12 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
 
     /* Clean up temporary allocations */
     __glXFree(orig_vid);
-    __glXFree(pMergedVisualPriv);
-    __glXFree(pMergedVisualConfigs);
+    __glXFree(pNewVisualPriv);
+    __glXFree(pNewVisualConfigs);
 
     /* Free the private list created by DDX HW driver */
-    if (visualPrivates) xfree(visualPrivates);
+    if (visualPrivates)
+        xfree(visualPrivates);
     visualPrivates = NULL;
 
     return TRUE;
@@ -605,18 +509,22 @@ static void init_screen_visuals(int screen)
 
 		    /* Create the XMesa visual */
 		    pXMesaVisual[i] =
-			XMesaCreateVisual(pScreen,
-					  pVis,
-					  pGLXVis->rgba,
-					  (pGLXVis->alphaSize > 0),
-					  pGLXVis->doubleBuffer,
-					  pGLXVis->stereo,
-					  GL_TRUE, /* ximage_flag */
-					  pGLXVis->depthSize,
-					  pGLXVis->stencilSize,
-					  pGLXVis->accumRedSize,
-					  pGLXVis->level);
-
+                         XMesaCreateVisual(pScreen,
+					   pVis,
+					   pGLXVis->rgba,
+					   (pGLXVis->alphaSize > 0),
+					   pGLXVis->doubleBuffer,
+					   pGLXVis->stereo,
+					   GL_TRUE, /* ximage_flag */
+					   pGLXVis->depthSize,
+					   pGLXVis->stencilSize,
+					   pGLXVis->accumRedSize,
+					   pGLXVis->accumGreenSize,
+					   pGLXVis->accumBlueSize,
+					   pGLXVis->accumAlphaSize,
+                                           0,  /* numSamples */
+					   pGLXVis->level,
+                                           pGLXVis->visualRating );
 		    /* Set the VisualID */
 		    pGLXVis->vid = pVis->vid;
 

@@ -1,5 +1,5 @@
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/Imakefile,v 1.7 1999/12/03 19:17:44 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/Imakefile,v 1.8 2000/02/13 03:36:10 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -9,12 +9,15 @@ MOUSEOBJ = pmax_mouse.o
 SRCS =  pmax_devs.c pmax_init.c pmax_map.c pmax_pci.c pmax_ppc.c \
 	bios_V4mmap.c VTsw_usl.c sysv_kbd.c std_kbdEv.c \
 	posix_tty.c $(MOUSESRC) xqueue.c ioperm_noop.c \
-	libc_wrapper.c stdResource.c stdPci.o sigiostubs.c pm_noop.c
+	libc_wrapper.c stdResource.c stdPci.o sigiostubs.c pm_noop.c \
+        kmod_noop.c
 
 OBJS =  pmax_devs.o pmax_init.o pmax_map.o pmax_pci.o pmax_ppc.o \
 	bios_V4mmap.o VTsw_usl.o sysv_kbd.o std_kbdEv.o \
 	posix_tty.o $(MOUSESRC) xqueue.o ioperm_noop.o \
-	libc_wrapper.o stdResource.o stdPci.o sigiostubs.o pm_noop.o
+	libc_wrapper.o stdResource.o stdPci.o sigiostubs.o pm_noop.o \
+        kmod_noop.o
+
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86OSSRC)/bus -I. \
            -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(EXTINCSRC) -I../sysv
@@ -36,6 +39,7 @@ LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(stdPci.c,../shared)
 LinkSourceFile(sigiostubs.c,../shared)
 LinkSourceFile(pm_noop.c,../shared)
+LinkSourceFile(kmod_noop.c,../shared)
 
 LinkSourceFile(bios_V4mmap.c,../sysv)
 LinkSourceFile(xqueue.c,../sysv)

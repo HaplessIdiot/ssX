@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dga.c,v 1.1 1999/08/29 12:21:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dga.c,v 1.2 2000/02/08 17:19:17 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -31,6 +31,13 @@ DGAFunctionRec TDFX_DGAFuncs = {
   TDFX_BlitTransRect
 };
 
+/*
+We should allow you to change the depth, but the accel driver isn't
+ready to handle that yet. Also, we are currently taking the default
+visual and using it for the visual reported by DGA. It would be
+relatively easy to at least give DirectColor and TrueColor visuals
+instead of just the default
+*/
 Bool
 TDFXDGAInit(ScreenPtr pScreen)
 {
@@ -71,12 +78,13 @@ SECOND_PASS:
     currentMode->red_mask = pScrn->mask.red;
     currentMode->green_mask = pScrn->mask.green;
     currentMode->blue_mask = pScrn->mask.blue;
+    currentMode->visualClass = pScrn->defaultVisual;
     currentMode->viewportWidth = pMode->HDisplay;
     currentMode->viewportHeight = pMode->VDisplay;
     currentMode->xViewportStep = (3 - pTDFX->cpp);
     currentMode->yViewportStep = 1;
     currentMode->viewportFlags = DGA_FLIP_RETRACE;
-    currentMode->offset = 0;
+    currentMode->offset = pTDFX->fbOffset;
     currentMode->address = pTDFX->FbBase;
 
     if (oneMore) { /* first one is narrow width */
@@ -214,7 +222,7 @@ TDFX_OpenFramebuffer(
     TDFXPtr pTDFX = TDFXPTR(pScrn);
 
     *name = NULL; 		/* no special device */
-    *mem = (unsigned char*)pTDFX->LinearAddr;
+    *mem = (unsigned char*)pTDFX->LinearAddr[0];
     *size = pTDFX->FbMapSize;
     *offset = 0;
     *flags = DGA_NEED_ROOT;

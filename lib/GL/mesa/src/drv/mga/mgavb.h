@@ -27,6 +27,7 @@
 #ifndef MGAVB_INC
 #define MGAVB_INC
 
+#include "types.h"
 #include "vb.h"
 #include "mgacommon.h"
 
@@ -124,9 +125,6 @@ extern void mgaDDRegisterVB( struct vertex_buffer *VB );
 extern void mgaDDResizeVB( struct vertex_buffer *VB, GLuint size );
 
 extern void mgaDDSetupInit( void );
-
-
-extern mgaUI32 *mgaAllocVertexDwords( mgaContextPtr mmesa, int dwords );
 
 
 #endif

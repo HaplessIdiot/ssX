@@ -85,6 +85,7 @@ struct xmesa_visual {
    GLint BitsPerPixel;		/* True bits per pixel for XImages */
 
    GLint level;			/* 0=normal, 1=overlay, etc */
+   GLint VisualCaveat;          /* for GLX_EXT_visual_rating extension */
 
    GLboolean ximage_flag;	/* Use XImage for back buffer (not pixmap)? */
 
@@ -510,8 +511,9 @@ static int const kernel1[16] = {
  * External functions:
  */
 
-extern unsigned long xmesa_color_to_pixel( XMesaContext xmesa,
-		                  GLubyte r, GLubyte g, GLubyte b, GLubyte a );
+extern unsigned long
+xmesa_color_to_pixel( XMesaContext xmesa, GLubyte r, GLubyte g, GLubyte b, GLubyte a,
+                      GLuint pixelFormat );
 
 extern void xmesa_alloc_back_buffer( XMesaBuffer b );
 

@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.122 2000/06/07 02:13:01 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.123 2000/06/15 20:49:56 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -537,6 +537,10 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #ifndef LinkGLToUsrLib
 #define LinkGLToUsrLib	YES
 #endif
+#ifndef LinkGLToUsrInclude
+#define LinkGLToUsrInclude	YES
+#endif
+
 
 #define HasGnuMake	YES
 

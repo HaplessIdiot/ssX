@@ -1,8 +1,8 @@
 /* xf86drm.h -- OS-independent header for DRM user-level library interface
  * Created: Tue Jan  5 08:17:23 1999 by faith@precisioninsight.com
- * Revised: Sun Feb 13 23:46:21 2000 by kevin@precisioninsight.com
  *
- * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 1999, 2000 Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,7 +24,9 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.6 2000/02/14 06:27:24 martin Exp $
+ * Author: Rickard E. (Rik) Faith <faith@valinux.com>
+ *
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.7 2000/02/23 04:47:21 martin Exp $
  * 
  */
 
@@ -65,7 +67,8 @@ typedef struct _drmVersion {
 typedef enum {
     DRM_FRAME_BUFFER    = 0,      /* WC, no caching, no core dump           */
     DRM_REGISTERS       = 1,      /* no caching, no core dump               */
-    DRM_SHM             = 2       /* shared, cached                         */
+    DRM_SHM             = 2,      /* shared, cached                         */
+    DRM_AGP             = 3	  /* AGP/GART                               */
 } drmMapType;
 
 typedef enum {
@@ -93,6 +96,11 @@ typedef enum {			 /* These values *MUST* match drm.h         */
     DRM_DMA_SMALLER_OK   = 0x20, /* Smaller-than-requested buffers ok       */
     DRM_DMA_LARGER_OK    = 0x40  /* Larger-than-requested buffers ok        */
 } drmDMAFlags;
+
+typedef enum {
+    DRM_PAGE_ALIGN       = 0x01,
+    DRM_AGP_BUFFER       = 0x02
+} drmBufDescFlags;
 
 typedef enum {
     DRM_LOCK_READY      = 0x01, /* Wait until hardware is ready for DMA */
@@ -196,7 +204,7 @@ typedef struct { unsigned int a[100]; } __drm_dummy_lock_t;
 #endif
 
 #ifndef DRM_CAS
-#define DRM_CAS(lock,old,new,ret) /* FAST LOCK FAILS */
+#define DRM_CAS(lock,old,new,ret) do { ret=1; } while (0) /* FAST LOCK FAILS */
 #endif
 
 #define DRM_LIGHT_LOCK(fd,lock,context)                                \
@@ -291,7 +299,9 @@ extern int           drmAddMap(int fd,
 			       drmMapType type,
 			       drmMapFlags flags,
 			       drmHandlePtr handle);
-extern int           drmAddBufs(int fd, int count, int size, int flags);
+extern int           drmAddBufs(int fd, int count, int size, 
+				drmBufDescFlags flags,
+				int agp_offset);
 extern int           drmMarkBufs(int fd, double low, double high);
 extern int           drmCreateContext(int fd, drmContextPtr handle);
 extern int           drmSetContextFlags(int fd, drmContext context,
@@ -331,6 +341,29 @@ extern int           drmGetLock(int fd,
 			        drmLockFlags flags);
 extern int           drmUnlock(int fd, drmContext context);
 extern int           drmFinish(int fd, int context, drmLockFlags flags);
+
+/* AGP/GART support: X server (root) only */
+extern int           drmAgpAcquire(int fd);
+extern int           drmAgpRelease(int fd);
+extern int           drmAgpEnable(int fd, unsigned long mode);
+extern int           drmAgpAlloc(int fd, unsigned long size, 
+				 unsigned long type, unsigned long *address,
+				 unsigned long *handle);
+extern int           drmAgpFree(int fd, unsigned long handle);
+extern int 	     drmAgpBind(int fd, unsigned long handle,
+				unsigned long offset);
+extern int           drmAgpUnbind(int fd, unsigned long handle);
+
+/* AGP/GART info: authenticated client and/or X */
+extern int           drmAgpVersionMajor(int fd);
+extern int           drmAgpVersionMinor(int fd);
+extern unsigned long drmAgpGetMode(int fd);
+extern unsigned long drmAgpBase(int fd); /* Physical location */
+extern unsigned long drmAgpSize(int fd); /* Bytes */
+extern unsigned long drmAgpMemoryUsed(int fd);
+extern unsigned long drmAgpMemoryAvail(int fd);
+extern unsigned int  drmAgpVendorId(int fd);
+extern unsigned int  drmAgpDeviceId(int fd);
 
 /* Support routines */
 extern int           drmError(int err, const char *label);

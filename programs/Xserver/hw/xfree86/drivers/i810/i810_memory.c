@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.6 2000/05/11 18:14:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.7 2000/05/20 22:30:47 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -32,15 +32,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
-#include "Xos.h"
-#include "xf86.h"
+#ifdef linux
+#include <asm/ioctl.h>
+#include <linux/agpgart.h>
+#endif
 
+#include "xf86.h"
 #include "xf86_ansic.h"
 
 #include "i810.h"
 #include "i810_reg.h"
-
-#include <linux/agpgart.h>
 
 int I810AllocLow( I810MemRange *result, I810MemRange *pool, int size )
 {
@@ -68,6 +69,7 @@ int I810AllocHigh( I810MemRange *result, I810MemRange *pool, int size )
 
 int I810AllocateGARTMemory( ScrnInfoPtr pScrn ) 
 {
+#ifdef linux
    struct _agp_info agpinf;
    struct _agp_bind bind;
    struct _agp_allocate alloc;
@@ -205,18 +207,23 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
 
 
    return TRUE;
+#else
+   return FALSE;
+#endif
 }
 
 
 
 void I810FreeGARTMemory( ScrnInfoPtr pScrn ) 
 {
+#ifdef linux
    I810Ptr pI810 = I810PTR(pScrn);
 
    if (pI810->gartfd != -1) {
       close( pI810->gartfd );
       pI810->gartfd = -1;
    }
+#endif
 }
 
 

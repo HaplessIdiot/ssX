@@ -66,7 +66,7 @@ static void draw_points_ANY_pixmap( GLcontext *ctx, GLuint first, GLuint last )
             register int x, y;
 	    const GLubyte *color = VB->ColorPtr->data[i];
             unsigned long pixel = xmesa_color_to_pixel( xmesa,
-				      color[0], color[1], color[2], color[3] );
+                          color[0], color[1], color[2], color[3], xmesa->pixelformat);
             XMesaSetForeground( dpy, gc, pixel );
             x =                         (GLint) VB->Win.data[i][0];
             y = FLIP( xmesa->xm_buffer, (GLint) VB->Win.data[i][1] );
@@ -131,7 +131,8 @@ static void flat_pixmap_line( GLcontext *ctx,
    unsigned long pixel;
    if (xmesa->xm_visual->gl_visual->RGBAflag) {
       const GLubyte *color = VB->ColorPtr->data[pv];
-      pixel = xmesa_color_to_pixel( xmesa, color[0], color[1], color[2], color[3] );
+      pixel = xmesa_color_to_pixel( xmesa, color[0], color[1], color[2], color[3],
+                                    xmesa->pixelformat );
    }
    else {
       pixel = VB->IndexPtr->data[pv];
@@ -353,6 +354,7 @@ static void flat_TRUECOLOR_z_line( GLcontext *ctx,
 
 #define INTERP_XY 1
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define CLIP_HACK 1
 #define PLOT(X,Y)							\
 	if (Z < *zPtr) {						\
@@ -375,6 +377,7 @@ static void flat_8A8B8G8R_z_line( GLcontext *ctx,
    GLuint pixel = PACK_8B8G8R( color[0], color[1], color[2] );
 
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define PIXEL_TYPE GLuint
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
@@ -400,6 +403,7 @@ static void flat_8R8G8B_z_line( GLcontext *ctx,
    GLuint pixel = PACK_8R8G8B( color[0], color[1], color[2] );
 
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define PIXEL_TYPE GLuint
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
@@ -424,6 +428,7 @@ static void flat_8R8G8B24_z_line( GLcontext *ctx,
    const GLubyte *color = ctx->VB->ColorPtr->data[pv];
 
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define PIXEL_TYPE bgr_t
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define PIXEL_ADDRESS(X,Y) PIXELADDR3(xmesa->xm_buffer,X,Y)
@@ -451,6 +456,7 @@ static void flat_5R6G5B_z_line( GLcontext *ctx,
    GLushort pixel = PACK_5R6G5B( color[0], color[1], color[2] );
 
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define PIXEL_TYPE GLushort
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
@@ -474,6 +480,7 @@ static void flat_DITHER_5R6G5B_z_line( GLcontext *ctx,
    const GLubyte *color = ctx->VB->ColorPtr->data[pv];
 
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define PIXEL_TYPE GLushort
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
@@ -500,6 +507,7 @@ static void flat_DITHER8_z_line( GLcontext *ctx,
 
 #define INTERP_XY 1
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
@@ -526,6 +534,7 @@ static void flat_LOOKUP8_z_line( GLcontext *ctx,
    pixel = (GLubyte) LOOKUP( color[0], color[1], color[2] );
 
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
@@ -552,6 +561,7 @@ static void flat_HPCR_z_line( GLcontext *ctx,
 
 #define INTERP_XY 1
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
@@ -670,6 +680,7 @@ line_func xmesa_get_line_func( GLcontext *ctx )
        && ctx->RasterMask==DEPTH_BIT
        && ctx->Depth.Func==GL_LESS
        && ctx->Depth.Mask==GL_TRUE
+       && ctx->Visual->DepthBits == DEFAULT_SOFTWARE_DEPTH_BITS
        && ctx->Line.Width==1.0F) {
       switch (xmesa->pixelformat) {
          case PF_TRUECOLOR:

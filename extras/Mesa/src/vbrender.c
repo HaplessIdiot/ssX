@@ -164,7 +164,7 @@ static void unfilled_polygon( GLcontext *ctx,
 	 j1 = vlist[i+1];
 	
 	 if (edge_ptr[j0] & 0x1) {
-	    edge_ptr[j0] &= ~1;
+	    edge_ptr[j0] &= ~0x1;
 	    (*ctx->Driver.LineFunc)( ctx, j0, j1, pv );
 	 }
       }
@@ -174,7 +174,7 @@ static void unfilled_polygon( GLcontext *ctx,
       j1 = vlist[0];
 
       if (edge_ptr[j0] & 0x2) {
-	 edge_ptr[j0] &= ~2;
+	 edge_ptr[j0] &= ~0x2;
 	 (*ctx->Driver.LineFunc)( ctx, j0, j1, pv );
       }
    }
@@ -219,7 +219,9 @@ static INLINE void gl_render_clipped_triangle2( GLcontext *ctx,
 						GLuint pv )
 {
    struct vertex_buffer *VB = ctx->VB;
-   GLubyte mask = (GLubyte) (VB->ClipMask[v1] | VB->ClipMask[v2] | VB->ClipMask[v3]);
+   GLubyte mask = (GLubyte) (VB->ClipMask[v1] | 
+			     VB->ClipMask[v2] | 
+			     VB->ClipMask[v3]);
    GLuint vlist[VB_MAX_CLIPPED_VERTS];
    GLuint i, n;
 
@@ -233,7 +235,38 @@ static INLINE void gl_render_clipped_triangle2( GLcontext *ctx,
 
    ASSIGN_3V(vlist, v1, v2, v3 );
    n = (ctx->poly_clip_tab[VB->ClipPtr->size])( VB, 3, vlist, mask );
-      
+
+   for (i=2;i<n;i++) 
+      ctx->TriangleFunc( ctx, *vlist, vlist[i-1], vlist[i], pv ); 
+}
+
+
+static INLINE void gl_render_clipped_quad2( GLcontext *ctx, 
+					    GLuint v1, GLuint v2, GLuint v3,
+					    GLuint v4,
+					    GLuint pv )
+{
+   struct vertex_buffer *VB = ctx->VB;
+   GLubyte mask = (GLubyte) (VB->ClipMask[v1] | 
+			     VB->ClipMask[v2] | 
+			     VB->ClipMask[v3] |
+			     VB->ClipMask[v4]);
+   GLuint vlist[VB_MAX_CLIPPED_VERTS];
+   GLuint i, n;
+
+   if (!mask) {
+      ctx->QuadFunc( ctx, v1, v2, v3, v4, pv ); 
+      return;
+   }
+
+   if (CLIP_ALL_BITS & VB->ClipMask[v1] & 
+       VB->ClipMask[v2] & VB->ClipMask[v3] &
+       VB->ClipMask[v4]) 
+      return;
+
+   ASSIGN_4V(vlist, v1, v2, v3, v4 );
+   n = (ctx->poly_clip_tab[VB->ClipPtr->size])( VB, 4, vlist, mask );
+
    for (i=2;i<n;i++) 
       ctx->TriangleFunc( ctx, *vlist, vlist[i-1], vlist[i], pv ); 
 }
@@ -309,16 +342,14 @@ static void render_quad( GLcontext *ctx, GLuint v0, GLuint v1,
    GLfloat fy = win[v3][1] - win[v1][1];
    GLfloat c = ex*fy-ey*fx;
    GLuint facing;
-   GLuint tricaps;
+   GLuint tricaps = ctx->IndirectTriangles;
 
    if (c * ctx->backface_sign > 0)
       return;
 
    facing = (c<0.0F) ^ (ctx->Polygon.FrontFace==GL_CW);
-   tricaps = ctx->IndirectTriangles;
-   (void) tricaps;  /* not needed? */
 
-   if (ctx->IndirectTriangles & DD_TRI_OFFSET) {
+   if (tricaps & DD_TRI_OFFSET) {
       GLfloat ez = win[v2][2] - win[v0][2];
       GLfloat fz = win[v3][2] - win[v1][2];
       GLfloat a = ey*fz-ez*fy;
@@ -327,7 +358,7 @@ static void render_quad( GLcontext *ctx, GLuint v0, GLuint v1,
    }
 
 
-   if (ctx->IndirectTriangles & DD_TRI_LIGHT_TWOSIDE) {
+   if (tricaps & DD_TRI_LIGHT_TWOSIDE) {
       VB->Specular = VB->Spec[facing];
       VB->ColorPtr = VB->Color[facing];
       VB->IndexPtr = VB->Index[facing];
@@ -335,7 +366,7 @@ static void render_quad( GLcontext *ctx, GLuint v0, GLuint v1,
 
 
    /* Render the quad! */
-   if (ctx->IndirectTriangles & DD_TRI_UNFILLED) {
+   if (tricaps & DD_TRI_UNFILLED) {
       GLuint vlist[4];
       vlist[0] = v0;
       vlist[1] = v1;
@@ -373,15 +404,28 @@ extern const char *gl_prim_name[];
 
 #define EDGEFLAG_TRI( i2, i1, i, pv, parity)	\
 do {						\
-  GLuint e1=i1, e0=i;				\
-  if (parity) { GLuint t=e1; e1=e0; e0=t; }	\
-  eflag[i2] = eflag[e1] = 1; eflag[e0] = 2;	\
+  eflag[i2] = eflag[i1] = 1; eflag[i] = 2;	\
 } while (0)
 
 #define EDGEFLAG_QUAD( i3, i2, i1, i, pv)		\
 do {							\
   eflag[i3] = eflag[i2] = eflag[i1] = 1; eflag[i] = 2;	\
 } while (0)
+
+
+#define EDGEFLAG_POLY_TRI_PRE( i2, i1, i, pv)	\
+do {						\
+  eflag[i1] |= (eflag[i1] >> 2) & 1; 		\
+  eflag[i] |= (eflag[i] >> 2) & 2;		\
+} while (0)
+
+#define EDGEFLAG_POLY_TRI_POST( i2, i1, i, pv)	\
+do {						\
+  eflag[i2] = 0; 		\
+  eflag[i1] &= ~(4|1); 		\
+  eflag[i] &= ~(8|2);		\
+} while (0)
+
 
 
 /* Culled and possibly clipped primitives.
@@ -455,10 +499,12 @@ do {							\
     const GLubyte *cullmask = VB->CullMask;	\
     GLuint vlist[VB_SIZE];			\
     GLubyte *eflag = VB->EdgeFlagPtr->data;    	\
-    (void) vlist; (void) eflag;
+    GLuint *stipplecounter = &VB->ctx->StippleCounter; \
+    (void) vlist; (void) eflag; (void) stipplecounter;
 
 #define TAG(x) x##_cull
 #define INIT(x)  FLUSH_PRIM(x)
+#define RESET_STIPPLE *stipplecounter = 0
 #include "render_tmp.h"
 
 
@@ -492,9 +538,11 @@ do {						\
 #define LOCAL_VARS  				\
     GLcontext *ctx = VB->ctx;			\
     GLubyte *eflag = VB->EdgeFlagPtr->data;	\
-    (void) eflag;
+    GLuint *stipplecounter = &VB->ctx->StippleCounter; \
+    (void) eflag; (void) stipplecounter;
 
 #define INIT(x)  FLUSH_PRIM(x);
+#define RESET_STIPPLE *stipplecounter = 0
 #include "render_tmp.h"
 
 
@@ -510,24 +558,27 @@ do {						\
 
 #define RENDER_TRI( i2, i1, i, pv, parity)	\
 do {						\
-  GLuint e1=i1, e0=i;				\
-  if (parity) { GLuint t=e1; e1=e0; e0=t; }	\
-  gl_render_clipped_triangle2(ctx,i2,e1,e0,pv);	\
+  GLuint e2=i2, e1=i1;				\
+  if (parity) { GLuint t=e2; e2=e1; e1=t; }	\
+  gl_render_clipped_triangle2(ctx,e2,e1,i,pv);	\
 } while (0)
 
 #define RENDER_QUAD( i3, i2, i1, i, pv)		\
 do {						\
-  gl_render_clipped_triangle2(ctx,i3,i2,i1,pv);	\
-  gl_render_clipped_triangle2(ctx,i3,i1,i,pv);	\
+  gl_render_clipped_quad2(ctx,i3,i2,i1,i,pv);	\
 } while (0)
 
 
 #define LOCAL_VARS  				\
     GLcontext *ctx = VB->ctx;			\
     GLubyte *eflag = VB->EdgeFlagPtr->data;	\
-    (void) eflag;
+    GLuint *stipplecounter = &VB->ctx->StippleCounter; \
+    (void) eflag; (void) stipplecounter;
+
 #define INIT(x)  FLUSH_PRIM(x);
 #define TAG(x) x##_clipped
+#define RESET_STIPPLE *stipplecounter = 0
+
 #include "render_tmp.h"
 
 /* Bits:
@@ -566,24 +617,25 @@ setup_edgeflag( struct vertex_buffer *VB,
    switch (prim) {
    case GL_TRIANGLES:
       for (i = 0 ; i < n-2 ; i+=3) {
-	 if (flag[i])   flag[i]   = 0x5;
-	 if (flag[i+1]) flag[i+1] = 0x5;
-	 if (flag[i+2]) flag[i+2] = 0x6;
+	 if (flag[i])   flag[i]   = 0x1;
+	 if (flag[i+1]) flag[i+1] = 0x1;
+	 if (flag[i+2]) flag[i+2] = 0x3;
       }
       break;
    case GL_QUADS:
       for (i = 0 ; i < n-3 ; i+=4) {
-	 if (flag[i])   flag[i]   = 0x5;
-	 if (flag[i+1]) flag[i+1] = 0x5;
-	 if (flag[i+2]) flag[i+2] = 0x5;
-	 if (flag[i+3]) flag[i+3] = 0x6;
+	 if (flag[i])   flag[i]   = 0x1;
+	 if (flag[i+1]) flag[i+1] = 0x1;
+	 if (flag[i+2]) flag[i+2] = 0x1;
+	 if (flag[i+3]) flag[i+3] = 0x3;
       }
       break;
    case GL_POLYGON:
-      for (i = 0 ; i < n-1 ; i++) {
-	 if (flag[i]) flag[i] = 0x5;
+      if (flag[0]) flag[0] = 0x1;
+      for (i = 1 ; i < n-1 ; i++) {
+	 if (flag[i]) flag[i] = 0x1<<2;
       }
-      if (flag[i]) flag[i] = 0x6;
+      if (flag[i]) flag[i] = 0x3<<2;
       break;
    default:
       break;
@@ -667,12 +719,12 @@ void gl_reduced_prim_change( GLcontext *ctx, GLenum prim )
    if (ctx->PB->count > 0) 
       gl_flush_pb(ctx);	
 
-   ctx->PB->count = 0;				
-   ctx->PB->mono = GL_FALSE;			
-   ctx->PB->primitive = prim;			
+   if (ctx->PB->primitive != prim) {
+      ctx->PB->primitive = prim;			
 
-   if (ctx->Driver.ReducedPrimitiveChange)
-      ctx->Driver.ReducedPrimitiveChange( ctx, prim );
+      if (ctx->Driver.ReducedPrimitiveChange)
+	 ctx->Driver.ReducedPrimitiveChange( ctx, prim );
+   }
 }
 
 

@@ -541,9 +541,9 @@ do_stencil_test( GLcontext *ctx, GLuint n, GLstencil stencil[],
  * 
  */
 static GLboolean
-stencil_and_depth_test_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
-                             const GLdepth z[], GLstencil stencil[],
-                             GLubyte mask[] )
+stencil_and_ztest_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
+                        const GLdepth z[], GLstencil stencil[],
+                        GLubyte mask[] )
 {
    ASSERT(ctx->Stencil.Enabled);
    ASSERT(n <= PB_SIZE);
@@ -624,8 +624,8 @@ stencil_and_depth_test_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
  * 
  */
 GLboolean
-gl_stencil_and_depth_test_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
-                                const GLdepth z[], GLubyte mask[] )
+_mesa_stencil_and_ztest_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
+                              const GLdepth z[], GLubyte mask[] )
 {
    GLstencil stencilRow[MAX_WIDTH];
    GLstencil *stencil;
@@ -647,7 +647,7 @@ gl_stencil_and_depth_test_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
    }
 
    /* do all the stencil/depth testing/updating */
-   result = stencil_and_depth_test_span( ctx, n, x, y, z, stencil, mask );
+   result = stencil_and_ztest_span( ctx, n, x, y, z, stencil, mask );
 
    if (ctx->Driver.WriteStencilSpan) {
       /* Write updated stencil values into hardware stencil buffer */
@@ -1016,7 +1016,7 @@ stencil_test_pixels( GLcontext *ctx, GLuint n,
  * This is used both for software and hardware stencil buffers.
  *
  * The comments in this function are a bit sparse but the code is
- * almost identical to stencil_and_depth_test_span(), which is well
+ * almost identical to stencil_and_ztest_span(), which is well
  * commented.
  * 
  * Input:  n - number of pixels in the array
@@ -1028,9 +1028,9 @@ stencil_test_pixels( GLcontext *ctx, GLuint n,
  *         GL_FALSE - one or more fragments passed the testing
  */
 GLboolean
-gl_stencil_and_depth_test_pixels( GLcontext *ctx,
-                                  GLuint n, const GLint x[], const GLint y[],
-                                  const GLdepth z[], GLubyte mask[] )
+_mesa_stencil_and_ztest_pixels( GLcontext *ctx,
+                                GLuint n, const GLint x[], const GLint y[],
+                                const GLdepth z[], GLubyte mask[] )
 {
    ASSERT(ctx->Stencil.Enabled);
    ASSERT(n <= PB_SIZE);
@@ -1129,24 +1129,44 @@ gl_stencil_and_depth_test_pixels( GLcontext *ctx,
  *         x,y - location of first pixel
  * Output:  stencil - the array of stencil values
  */
-void gl_read_stencil_span( GLcontext *ctx,
-                           GLint n, GLint x, GLint y, GLstencil stencil[] )
+void
+_mesa_read_stencil_span( GLcontext *ctx,
+                         GLint n, GLint x, GLint y, GLstencil stencil[] )
 {
+   if (y < 0 || y >= ctx->DrawBuffer->Height ||
+       x + n <= 0 || x >= ctx->DrawBuffer->Width) {
+      /* span is completely outside framebuffer */
+      return; /* undefined values OK */
+   }
+
+   if (x < 0) {
+      GLint dx = -x;
+      x = 0;
+      n -= dx;
+      stencil += dx;
+   }
+   if (x + n > ctx->DrawBuffer->Width) {
+      GLint dx = x + n - ctx->DrawBuffer->Width;
+      n -= dx;
+   }
+   if (n <= 0) {
+      return;
+   }
+
+
    ASSERT(n >= 0);
-   if (ctx->DrawBuffer->Stencil) {
-      if (ctx->Driver.ReadStencilSpan) {
-         (*ctx->Driver.ReadStencilSpan)( ctx, (GLuint) n, x, y, stencil );
-      }
-      else {
-         const GLstencil *s = STENCIL_ADDRESS( x, y );
+   if (ctx->Driver.ReadStencilSpan) {
+      (*ctx->Driver.ReadStencilSpan)( ctx, (GLuint) n, x, y, stencil );
+   }
+   else if (ctx->DrawBuffer->Stencil) {
+      const GLstencil *s = STENCIL_ADDRESS( x, y );
 #if STENCIL_BITS == 8
-         MEMCPY( stencil, s, n * sizeof(GLstencil) );
+      MEMCPY( stencil, s, n * sizeof(GLstencil) );
 #else
-         GLuint i;
-         for (i=0;i<n;i++)
-            stencil[i] = s[i];
+      GLuint i;
+      for (i=0;i<n;i++)
+         stencil[i] = s[i];
 #endif
-      }
    }
 }
 
@@ -1159,41 +1179,42 @@ void gl_read_stencil_span( GLcontext *ctx,
  *         x, y - location of first pixel
  *         stencil - the array of stencil values
  */
-void gl_write_stencil_span( GLcontext *ctx,
-                            GLint n, GLint x, GLint y,
-			    const GLstencil stencil[] )
+void
+_mesa_write_stencil_span( GLcontext *ctx, GLint n, GLint x, GLint y,
+                          const GLstencil stencil[] )
 {
-   ASSERT(n >= 0);
-   if (ctx->DrawBuffer->Stencil) {
-      /* do clipping */
-      if (y < ctx->DrawBuffer->Ymin || y > ctx->DrawBuffer->Ymax)
-         return;
-      if (x < ctx->DrawBuffer->Xmin) {
-         GLint diff = ctx->DrawBuffer->Xmin - x;
-         n -= diff;
-         stencil += diff;
-         x = ctx->DrawBuffer->Xmin;
-      }
-      if (x + n > ctx->DrawBuffer->Xmax) {
-         GLint diff = x + n - ctx->DrawBuffer->Xmax;
-         n -= diff;
-      }
+   if (y < 0 || y >= ctx->DrawBuffer->Height ||
+       x + n <= 0 || x >= ctx->DrawBuffer->Width) {
+      /* span is completely outside framebuffer */
+      return; /* undefined values OK */
+   }
 
-      ASSERT( n >= 0);
+   if (x < 0) {
+      GLint dx = -x;
+      x = 0;
+      n -= dx;
+      stencil += dx;
+   }
+   if (x + n > ctx->DrawBuffer->Width) {
+      GLint dx = x + n - ctx->DrawBuffer->Width;
+      n -= dx;
+   }
+   if (n <= 0) {
+      return;
+   }
 
-      if (ctx->Driver.WriteStencilSpan) {
-         (*ctx->Driver.WriteStencilSpan)( ctx, n, x, y, stencil, NULL );
-      }
-      else {
-         GLstencil *s = STENCIL_ADDRESS( x, y );
+   if (ctx->Driver.WriteStencilSpan) {
+      (*ctx->Driver.WriteStencilSpan)( ctx, n, x, y, stencil, NULL );
+   }
+   else if (ctx->DrawBuffer->Stencil) {
+      GLstencil *s = STENCIL_ADDRESS( x, y );
 #if STENCIL_BITS == 8
-         MEMCPY( s, stencil, n * sizeof(GLstencil) );
+      MEMCPY( s, stencil, n * sizeof(GLstencil) );
 #else
-         GLuint i;
-         for (i=0;i<n;i++)
-            s[i] = stencil[i];
+      GLuint i;
+      for (i=0;i<n;i++)
+         s[i] = stencil[i];
 #endif
-      }
    }
 }
 
@@ -1203,7 +1224,8 @@ void gl_write_stencil_span( GLcontext *ctx,
  * Allocate a new stencil buffer.  If there's an old one it will be
  * deallocated first.  The new stencil buffer will be uninitialized.
  */
-void gl_alloc_stencil_buffer( GLcontext *ctx )
+void
+_mesa_alloc_stencil_buffer( GLcontext *ctx )
 {
    GLuint buffersize = ctx->DrawBuffer->Width * ctx->DrawBuffer->Height;
 
@@ -1218,7 +1240,7 @@ void gl_alloc_stencil_buffer( GLcontext *ctx )
    if (!ctx->DrawBuffer->Stencil) {
       /* out of memory */
       _mesa_set_enable( ctx, GL_STENCIL_TEST, GL_FALSE );
-      gl_error( ctx, GL_OUT_OF_MEMORY, "gl_alloc_stencil_buffer" );
+      gl_error( ctx, GL_OUT_OF_MEMORY, "_mesa_alloc_stencil_buffer" );
    }
 }
 
@@ -1390,7 +1412,8 @@ clear_hardware_stencil_buffer( GLcontext *ctx )
 /*
  * Clear the stencil buffer.
  */
-void gl_clear_stencil_buffer( GLcontext *ctx )
+void
+_mesa_clear_stencil_buffer( GLcontext *ctx )
 {
    if (ctx->Driver.WriteStencilSpan) {
       ASSERT(ctx->Driver.ReadStencilSpan);

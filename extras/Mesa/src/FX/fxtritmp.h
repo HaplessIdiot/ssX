@@ -66,7 +66,9 @@ static void TAG(fx_tri)(GLcontext *ctx, GLuint e1, GLuint e2, GLuint e3, GLuint 
 	 GLuint facing = (c<0.0) ^ ctx->Polygon.FrontBit;
 	 GLubyte (*color)[4] = VB->Color[facing]->data;
 	 if (IND & FX_FLAT) {
-	    FX_VB_COLOR(fxMesa, color[pv]);
+	    GOURAUD2(v1,color[pv]); 
+	    GOURAUD2(v2,color[pv]); 
+	    GOURAUD2(v3,color[pv]); 
 	 } else {
 	    GOURAUD2(v1,color[e1]); 
 	    GOURAUD2(v2,color[e2]); 
@@ -103,7 +105,9 @@ static void TAG(fx_tri)(GLcontext *ctx, GLuint e1, GLuint e2, GLuint e3, GLuint 
    }
    else if (IND & FX_FLAT) {
       GLubyte (*color)[4] = VB->Color[0]->data;
-      FX_VB_COLOR(fxMesa, color[pv]);
+      GOURAUD2(v1,color[pv]); 
+      GOURAUD2(v2,color[pv]); 
+      GOURAUD2(v3,color[pv]); 
    }
 
    if (IND & FX_FRONT_BACK) {
@@ -168,7 +172,10 @@ static void TAG(fx_quad)(GLcontext *ctx, GLuint e1, GLuint e2, GLuint e3,
 	 GLuint facing = (c<0.0) ^ ctx->Polygon.FrontBit;
 	 GLubyte (*color)[4] = VB->Color[facing]->data;
 	 if (IND & FX_FLAT) {
-	    FX_VB_COLOR(fxMesa, color[pv]);
+	    GOURAUD2(v1,color[pv]); 
+	    GOURAUD2(v2,color[pv]); 
+	    GOURAUD2(v3,color[pv]); 
+	    GOURAUD2(v4,color[pv]); 
 	 } else {
 	    GOURAUD2(v1,color[e1]); 
 	    GOURAUD2(v2,color[e2]); 
@@ -206,7 +213,10 @@ static void TAG(fx_quad)(GLcontext *ctx, GLuint e1, GLuint e2, GLuint e3,
    }
    else if (IND & FX_FLAT) {
       GLubyte (*color)[4] = VB->Color[0]->data;
-      FX_VB_COLOR(fxMesa, color[pv]);
+      GOURAUD2(v1,color[pv]); 
+      GOURAUD2(v2,color[pv]); 
+      GOURAUD2(v3,color[pv]); 
+      GOURAUD2(v4,color[pv]); 
    }
 
    if (IND & FX_FRONT_BACK) {
@@ -249,9 +259,10 @@ static void TAG(fx_quad)(GLcontext *ctx, GLuint e1, GLuint e2, GLuint e3,
    }   
 }
 
-#define DRAW_LINE(tmp0, tmp1, width)	\
-  do {					\
-    GrVertex verts[4];			\
+#define DRAW_LINE(tmp0, tmp1, width)		\
+  do {						\
+    const float xoff = 0.125, yoff = 0.125;	\
+    GrVertex verts[4];				\
     float dx, dy, wx, wy;		\
 					\
     dx = tmp0->x - tmp1->x;		\
@@ -270,17 +281,17 @@ static void TAG(fx_quad)(GLcontext *ctx, GLuint e1, GLuint e2, GLuint e3,
    verts[2] = *tmp1;			\
    verts[3] = *tmp1;			\
 					\
-   verts[0].x = tmp0->x - wx;		\
-   verts[0].y = tmp0->y - wy;		\
+   verts[0].x = tmp0->x - wx + xoff;	\
+   verts[0].y = tmp0->y - wy + yoff;	\
 					\
-   verts[1].x = tmp0->x + wx;		\
-   verts[1].y = tmp0->y + wy;		\
+   verts[1].x = tmp0->x + wx + xoff;	\
+   verts[1].y = tmp0->y + wy + yoff;	\
 					\
-   verts[2].x = tmp1->x + wx;		\
-   verts[2].y = tmp1->y + wy;		\
+   verts[2].x = tmp1->x + wx + xoff;	\
+   verts[2].y = tmp1->y + wy + yoff;	\
 					\
-   verts[3].x = tmp1->x - wx;		\
-   verts[3].y = tmp1->y - wy;		\
+   verts[3].x = tmp1->x - wx + xoff;	\
+   verts[3].y = tmp1->y - wy + yoff;	\
 	 				\
    FX_grDrawPolygonVertexList(4, verts); \
   } while (0)
@@ -291,28 +302,20 @@ static void TAG(fx_line)(GLcontext *ctx, GLuint e1, GLuint e2, GLuint pv)
    fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
    struct vertex_buffer *VB=ctx->VB;
    fxVertex *gWin = FX_DRIVER_DATA(VB)->verts;
-   GLubyte (* const color)[4] = VB->Color[0]->data;
+   GLubyte (* const color)[4] = VB->ColorPtr->data;
    GrVertex *v1 = (GrVertex *)gWin[e1].f; 
    GrVertex *v2 = (GrVertex *)gWin[e2].f;
    GLfloat w = ctx->Line.Width*.5;
 
-   if (IND & FX_FLAT) 
-   {
-      FX_VB_COLOR(fxMesa, color[pv]);
-      if (IND & FX_ANTIALIAS)
-#if FX_USE_PARGB
-      {
-        GLuint v1argb = v1->argb;
-        GLuint v2argb = v2->argb;
-	v1->argb = (color[pv][ACOMP] << 24) | (v1argb & 0x00FFFFFF);
-	v2->argb = (color[pv][ACOMP] << 24) | (v2argb & 0x00FFFFFF);
-      }
-#else
-	v1->a = v2->a = UBYTE_COLOR_TO_FLOAT_255_COLOR(color[pv][3]);
-#endif 
+   if (IND & FX_FLAT) {
+      v1->r = v2->r = UBYTE_COLOR_TO_FLOAT_255_COLOR(color[pv][0]);
+      v1->g = v2->g = UBYTE_COLOR_TO_FLOAT_255_COLOR(color[pv][1]);
+      v1->b = v2->b = UBYTE_COLOR_TO_FLOAT_255_COLOR(color[pv][2]);
+      v1->a = v2->a = UBYTE_COLOR_TO_FLOAT_255_COLOR(color[pv][3]);
    } 
    else if (IND & FX_TWOSIDE) 
    {
+      /* XXX use signed area of the polygon to determine front/back color choice */
       GOURAUD2(v1,color[e1]); 
       GOURAUD2(v2,color[e2]); 
    }
@@ -331,8 +334,7 @@ static void TAG(fx_line)(GLcontext *ctx, GLuint e1, GLuint e2, GLuint pv)
    else
       DRAW_LINE(v1,v2,w);
 
-   if (IND & FX_FRONT_BACK) 
-   {
+   if (IND & FX_FRONT_BACK) {
       FX_grColorMask(ctx->Color.ColorMask[RCOMP] ||
 		  ctx->Color.ColorMask[GCOMP] ||
 		  ctx->Color.ColorMask[BCOMP],

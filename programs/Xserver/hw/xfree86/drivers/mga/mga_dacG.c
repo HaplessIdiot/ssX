@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.31 1999/09/25 14:37:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.35 2000/05/11 18:58:35 mvojkovi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -24,6 +24,7 @@
 
 #include "mga_bios.h"
 #include "mga_reg.h"
+#include "mga_macros.h"
 #include "mga.h"
 
 #include "xf86DDC.h"
@@ -593,6 +594,7 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	CARD32 optionMask;
 	MGAPtr pMga = MGAPTR(pScrn);
 
+	CHECK_DMA_QUIESCENT( pMga, pScrn );
 	/*
 	 * Code is needed to get things back to bank zero.
 	 */
@@ -673,7 +675,9 @@ MGAGSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 {
 	int i;
 	MGAPtr pMga = MGAPTR(pScrn);
-	
+
+	CHECK_DMA_QUIESCENT( pMga, pScrn );
+
 	/* Allocate the DacRegs space if not done already */
 	if (mgaReg->DacRegs == NULL) {
 		mgaReg->DacRegs = xnfcalloc(DACREGSIZE, 1);

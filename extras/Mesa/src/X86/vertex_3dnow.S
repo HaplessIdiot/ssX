@@ -3,15 +3,8 @@
    SEG_TEXT
 
 
-#if !defined(NASM_ASSEMBLER) && !defined(MASM_ASSEMBLER)
-#define LLBL(a) .L##a
-#else
-#define LLBL(a) a
-#endif
 
-
-
-/*#define MAT_SX 0        /*  accessed by REGIND !! */
+/*#define MAT_SX 0         accessed by REGIND !! */
 #define MAT_SY 20
 #define MAT_SZ 40
 #define MAT_TX 48
