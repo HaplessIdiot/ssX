@@ -1,4 +1,9 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 333. Fix build problem when calling GNU make with "--" prefixed options
+      (#5291, Toomas (toomas at tklabor.ee)).
+ 332. Avoid noise from hostname call in startx (#5270, Mike Harris).
+ 331. xwd ignores the -frame option if the -id option is used (#5251,
+      Mike Harris).
  330. Fix problem where DRIUnlock was called when DRI fails to load
       (Kevin Martin)
  329. Fix erroneous warnings about removing DRM signal handler when DRI
@@ -15186,4 +15191,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2301 2002/09/18 01:24:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2302 2002/09/18 18:14:53 martin Exp $
