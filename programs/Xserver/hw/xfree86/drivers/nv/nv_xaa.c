@@ -41,7 +41,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.19 2001/02/15 11:03:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.20 2001/02/21 00:42:57 mvojkovi Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -51,7 +51,6 @@
 #include "nvvga.h"
 
 #include "miline.h"
-
 
 static void
 NVSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2)
@@ -215,6 +214,18 @@ NVSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
     pNv->riva.Bitmap->UnclippedRectangle[0].TopLeft     = (x << 16) | y;
     pNv->riva.Bitmap->UnclippedRectangle[0].WidthHeight = (w << 16) | h;
     write_mem_barrier();
+}
+
+
+void
+NVResetGraphics(ScrnInfoPtr pScrn)
+{
+    NVPtr pNv = NVPTR(pScrn);
+
+    if(pNv->NoAccel) return;
+
+    pNv->currentRop = -1;
+    NVSetRopPattern(pNv, GXcopy); 
 }
 
 
