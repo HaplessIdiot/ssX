@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.23 2002/03/05 03:44:51 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.24 2002/03/14 03:50:25 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -71,7 +71,7 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if(mode->Flags & V_INTERLACE) 
         vertTotal |= 1;
 
-    if(pNv->FlatPanel) {
+    if(pNv->FlatPanel == 1) {
        vertStart = vertTotal - 3;  
        vertEnd = vertTotal - 2;
        vertBlankStart = vertStart;
@@ -168,7 +168,7 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 			   mode->Flags);
 
     nvReg->scale = pNv->riva.PRAMDAC[0x00000848/4] & 0xfff000ff;
-    if(pNv->FlatPanel) {
+    if(pNv->FlatPanel == 1) {
        nvReg->pixel |= (1 << 7);
        nvReg->scale |= (1 << 8) ;
     }

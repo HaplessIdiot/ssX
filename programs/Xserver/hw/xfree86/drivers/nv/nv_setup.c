@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.15 2002/02/21 21:04:53 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.16 2002/03/01 22:41:38 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -210,11 +210,13 @@ NVIsSecond (ScrnInfoPtr pScrn)
 {
     NVPtr pNv = NVPTR(pScrn);
 
-    if(pNv->FlatPanel) {
+    if(pNv->FlatPanel == 1) {
        switch(pNv->Chipset) {
        case NV_CHIP_GEFORCE4_440_GO:
+       case NV_CHIP_GEFORCE4_440_GO_M64:
        case NV_CHIP_GEFORCE4_420_GO:
        case NV_CHIP_GEFORCE4_420_GO_M32:
+       case NV_CHIP_QUADRO4_500_GOGL:
            pNv->SecondCRTC = TRUE;
            break;
        default:
@@ -252,7 +254,6 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Regbase %x\n", regBase));
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- riva %x\n", &pNv->riva));
 
-    pNv->PreInit = NVRamdacInit;
     pNv->Save = NVDACSave;
     pNv->Restore = NVDACRestore;
     pNv->ModeInit = NVDACInit;
@@ -339,12 +340,29 @@ NVCommonSetup(ScrnInfoPtr pScrn)
                                            pNv->PciTag, regBase+0x000C0000,
                                            0x00001000);
 
+    if(pNv->FlatPanel == -1) {
+       switch(pNv->Chipset) {
+       case NV_CHIP_GEFORCE4_440_GO:
+       case NV_CHIP_GEFORCE4_440_GO_M64:
+       case NV_CHIP_GEFORCE4_420_GO:
+       case NV_CHIP_GEFORCE4_420_GO_M32:
+       case NV_CHIP_QUADRO4_500_GOGL:
+       case NV_CHIP_GEFORCE2_GO:
+           xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+                      "On a laptop.  Assuming Digital Flat Panel\n");
+           pNv->FlatPanel = 1;
+           break;
+       default:
+           break;
+       }
+    }
+
     switch(pNv->Chipset & 0x0ff0) {
     case 0x0110:
         if(pNv->Chipset == NV_CHIP_GEFORCE2_GO)
             pNv->SecondCRTC = TRUE;
 #if defined(__powerpc__)
-        else if(pNv->FlatPanel)
+        else if(pNv->FlatPanel == 1)
             pNv->SecondCRTC = TRUE;
 #endif
         NVOverrideCRTC(pScrn);
@@ -374,6 +392,26 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     pNv->Dac.maxPixelClock = pNv->riva.MaxVClockFreqKHz;
 
     pNv->riva.LockUnlock(&pNv->riva, 0);
+
+    NVRamdacInit(pScrn);
+
+#if !defined(__powerpc__)
+    /* Read and print the Monitor DDC info */
+    pScrn->monitor->DDC = NVdoDDC(pScrn);
+#endif
+    if(pNv->FlatPanel == -1) {
+        pNv->FlatPanel = 0;
+        if(pScrn->monitor->DDC) {
+           xf86MonPtr ddc = (xf86MonPtr)pScrn->monitor->DDC;
+
+           if(ddc->features.input_type) {
+               pNv->FlatPanel = 1;
+               xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+                         "autodetected Digital Flat Panel\n");
+           }
+        }
+    }
+    pNv->riva.flatPanel = (pNv->FlatPanel > 0) ? TRUE : FALSE;
 }
 
 void
