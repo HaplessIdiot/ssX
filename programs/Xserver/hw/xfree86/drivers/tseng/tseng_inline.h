@@ -1,3 +1,4 @@
+/* $XFree86: $ */
 
 /*
  * Some commonly used inline functions and utility functions.

@@ -1,4 +1,4 @@
-
+/* $XFree86: $ */
 /*
  * Tseng acceleration interface -- color expansion primitives.
  */
