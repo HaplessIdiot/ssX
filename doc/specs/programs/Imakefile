@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:42:50 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.17 2003/02/18 03:01:42 dawes Exp $
+XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.18 2003/03/19 01:49:24 dawes Exp $
 
 /* does not include manual pages under util (not X programs)
    or any of the library function manual pages under doc/man */
@@ -85,6 +85,8 @@ XFREE86_MANUALS = \
   $(TOP)/programs/Xserver/hw/xfree86/doc/man/XF86Misc.man \
   $(TOP)/programs/Xserver/hw/xfree86/doc/man/XF86VM.man
 
+EXTRA_MANUALS = \
+  $(TOP)/extras/rman/rman.1
 
 MANUALS = \
   $(TOP)/doc/man/general/X.man \
@@ -137,7 +139,6 @@ MANUALS = \
   $(TOP)/config/pswrap/pswrap.man \
   $(TOP)/programs/xterm/resize.man \
   $(TOP)/config/util/revpath.man \
-  $(TOP)/config/util/rman.man \
   $(TOP)/programs/rstart/rstart.man \
   $(TOP)/programs/rstart/rstartd.man \
   $(TOP)/programs/xdm/sessreg.man \
@@ -218,7 +219,8 @@ MANUALS = \
   $(TOP)/programs/Xserver/hw/vfb/Xvfb.man \
   $(TOP)/programs/xwd/xwd.man \
   $(TOP)/programs/xwininfo/xwininfo.man \
-  $(TOP)/programs/xwud/xwud.man
+  $(TOP)/programs/xwud/xwud.man \
+  $(EXTRA_MANUALS)
 
 XCOMM Sun's -man macros use the D and C registers
 MANUALFLAGS = -rD1 -rC1
