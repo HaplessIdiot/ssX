@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.35 2000/11/22 07:19:44 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.36 2001/01/21 21:19:37 tsi Exp $ */
 
 
 /*
@@ -168,6 +168,7 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(XvScreenInitProc)
   SYMVAR(XvGetScreenIndexProc)
   SYMVAR(XvGetRTPortProc)
+  SYMVAR(XvMCScreenInitProc)
 #endif
   SYMVAR(ScreenSaverBlanking)
   SYMVAR(WindowTable)
