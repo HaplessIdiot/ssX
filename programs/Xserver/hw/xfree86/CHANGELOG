@@ -1,3 +1,8 @@
+XFree86 3.1.2Ba (28 December 1995)
+176. Modify lnxLib.rules to find libc.sa on Slackware 3.0.
+175. Fix Linux Joystick compilation problems.
+174. Doc updates.
+
 XFree86 3.1.2B (28 December 1995)
 173. Fix a problem with the ARK/ICS5342 clock programming (don't know if this
      completely fixes the clock programming problems).
