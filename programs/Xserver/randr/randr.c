@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.16 2002/10/14 18:01:42 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.17 2002/11/28 18:21:12 keithp Exp $
  *
  * Copyright © 2000, Compaq Computer Corporation, 
  * Copyright © 2002, Hewlett Packard, Inc.
@@ -751,7 +751,6 @@ ProcRRSetScreenConfig (ClientPtr client)
 	 * Invalid size ID
 	 */
 	client->errorValue = stuff->sizeID;
-	ErrorF ("Bad sizeID %d\n", stuff->sizeID);
 	return BadValue;
     }
     
@@ -772,7 +771,6 @@ ProcRRSetScreenConfig (ClientPtr client)
 	 * Invalid rotation
 	 */
 	client->errorValue = stuff->rotation;
-	ErrorF ("Bad rotation %d\n", stuff->rotation);
 	return BadValue;
     }
 
@@ -782,7 +780,6 @@ ProcRRSetScreenConfig (ClientPtr client)
 	 * requested rotation or reflection not supported by screen
 	 */
 	client->errorValue = stuff->rotation;
-	ErrorF ("Unsupported rotation %d\n", stuff->rotation);
 	return BadMatch;
     }
 
@@ -808,7 +805,6 @@ ProcRRSetScreenConfig (ClientPtr client)
 	     * Invalid rate
 	     */
 	    client->errorValue = rate;
-	    ErrorF ("Unsupported rate %d\n", stuff->rate);
 	    return BadValue;
 	}
     }
