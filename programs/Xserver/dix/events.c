@@ -392,7 +392,7 @@ PanoramiXCheckPhysLimits(
 }
 
 
-static void
+static Bool
 PanoramiXSetWindowPntrs(WindowPtr pWin)
 {
     if(pWin == WindowTable[0]) {
@@ -404,14 +404,16 @@ PanoramiXSetWindowPntrs(WindowPtr pWin)
 
 	win = (PanoramiXRes*)LookupIDByType(pWin->drawable.id, XRT_WINDOW);
 
-	if(!win) {
-	    ErrorF("BAD WINDOW IN PanoramiXSetWindowPntrs!!!\n");
-	    return;
-	}
+	if(!win)
+	    return FALSE;
 
-	for(i = 0; i < PanoramiXNumScreens; i++)
+	for(i = 0; i < PanoramiXNumScreens; i++) {
 	   sprite.windows[i] = LookupIDByType(win->info[i].id, RT_WINDOW);
+	   if(!sprite.windows[i])  /* window is being unmapped */
+		return FALSE;
+	}
     }
+    return TRUE;
 }
 
 static void
@@ -433,7 +435,8 @@ PanoramiXCheckVirtualMotion(
 	int x, y, off_x, off_y, i;
 	BoxRec lims;
 
-	PanoramiXSetWindowPntrs(pWin);
+	if(!PanoramiXSetWindowPntrs(pWin))
+	    return;
 
 	i = PanoramiXNumScreens - 1;
 	
@@ -549,7 +552,8 @@ PanoramiXConfineCursorToWindow(WindowPtr pWin, Bool generateEvents)
     {
 	int x, y, off_x, off_y, i;
 
-	PanoramiXSetWindowPntrs(pWin);
+	if(!PanoramiXSetWindowPntrs(pWin))
+	    return;
 
 	i = PanoramiXNumScreens - 1;
 	
@@ -1955,10 +1959,9 @@ PointInBorderSize(WindowPtr pWin, int x, int y)
 	return TRUE;
 
 #ifdef PANORAMIX
-    if(!noPanoramiXExtension) {
+    if(!noPanoramiXExtension && PanoramiXSetWindowPntrs(pWin)) {
 	int i;
 
-	PanoramiXSetWindowPntrs(pWin);
 	for(i = 1; i < PanoramiXNumScreens; i++) {
 	   if(POINT_IN_REGION(sprite.screen, 
 			&sprite.windows[i]->borderSize, 
@@ -2283,10 +2286,9 @@ BorderSizeNotEmpty(WindowPtr pWin)
 	return TRUE;
 
 #ifdef PANORAMIX
-     if(!noPanoramiXExtension) {
+     if(!noPanoramiXExtension && PanoramiXSetWindowPntrs(pWin)) {
 	int i;
 
-	PanoramiXSetWindowPntrs(pWin);
 	for(i = 1; i < PanoramiXNumScreens; i++) {
 	    if(REGION_NOTEMPTY(sprite.screen, &sprite.windows[i]->borderSize))
 		return TRUE;
