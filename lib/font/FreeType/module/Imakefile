@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.16 2003/11/05 16:58:35 tsi Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.17 2003/11/20 02:35:40 dawes Exp $
 
 FT2SOURCEDIR = $(TOP)/extras/freetype2/src
 FT2INCDIR = $(TOP)/extras/freetype2/include
@@ -35,7 +35,12 @@ FT2OBJS = ftbase.o ftinit.o ftglyph.o ftbbox.o ftsystem.o fttype1.o ftxf86.o \
           psaux.o psnames.o pshinter.o autohint.o \
           ftbdf.o bdf.o pcf.o
 
-SRCS = xttcap.c ftfuncs.c ftenc.c fttools.c $(FT2SRCS) ftmodule.c
+#if !BuildXTrueType
+XTTSRCS = xttmodule.c
+XTTOBJS = xttmodule.o
+#endif
+
+SRCS = xttcap.c ftfuncs.c ftenc.c fttools.c $(FT2SRCS) ftmodule.c $(XTTSRCS)
 OBJS = xttcap.o ftfuncs.o ftenc.o fttools.o $(FT2OBJS) ftmodule.o
 
 LinkSourceFile(ftenc.c,..)
@@ -68,6 +73,11 @@ LinkSourceFile(pcf.c,$(FT2SOURCEDIR)/pcf)
 ModuleObjectRule()
 LibraryModuleTarget(freetype,$(OBJS))
 InstallLibraryModule(freetype,$(MODULEDIR),fonts)
+
+#if !BuildXTrueType
+LibraryModuleTarget(xtt,$(XTTOBJS))
+InstallLibraryModule(xtt,$(MODULEDIR),fonts)
+#endif
 
 DependTarget()
 
