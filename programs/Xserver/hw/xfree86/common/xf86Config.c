@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.132 1997/06/08 15:31:54 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.133 1997/06/11 12:24:43 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -989,24 +989,28 @@ xf86Config (vtopen)
 #ifndef __EMX__ /* in OS/2 we don't care about uids */
     int real_uid = getuid();
 
+    if (real_uid) {
 #ifdef MINIX
-    setuid(getuid());
+      setuid(getuid());
 #else
 #if !defined(SVR4) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__FreeBSD__)
-    setruid(0);
+      setruid(0);
 #endif
-    seteuid(real_uid);
+      seteuid(real_uid);
 #endif /* MINIX */
+    }
 #endif /* __EMX__ */
 
     HANDLE_RETURN(findConfigFile(configPath, &configFile));
 #if defined(MINIX) || defined(__EMX__)
     /* no need to restore the uid to root */
 #else
-    seteuid(0);
+    if (real_uid) {
+      seteuid(0);
 #if !defined(SVR4) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__FreeBSD__)
-    setruid(real_uid);
+      setruid(real_uid);
 #endif
+    }
 #endif /* MINIX */
   }
 #endif /* SYSV || linux */

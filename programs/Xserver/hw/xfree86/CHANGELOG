@@ -1,4 +1,6 @@
 XFree86 3.9h (30 June 1997)
+1066. Don't call seteuid in the server when the real uid is root.  This
+      fixes a problem of not getting a core file under some FreeBSD versions.
 1065. Tseng driver cleanups (#717, Koen Gadeyne).
 1064. 'xset dpms 600 0 0' complains about 600 being greater than 0.
 1063. New XInput driver for the AceCad ADVANCEDigitizer (#716, Shane Watts).
@@ -5031,4 +5033,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.500 1997/06/29 11:40:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.501 1997/06/30 06:31:10 dawes Exp $
