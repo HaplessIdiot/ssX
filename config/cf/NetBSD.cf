@@ -1,11 +1,11 @@
 XCOMM platform:  $XConsortium: NetBSD.cf,v 1.5 95/04/07 19:42:55 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.22 1995/09/22 07:06:27 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.23 1995/10/21 11:25:58 dawes Exp $
 
-#define OSName		NetBSD 1.0
+#define OSName		NetBSD 1.1
 #define	OSVendor	/**/
 XCOMM operating system:  OSName
 #define OSMajorVersion    1
-#define OSMinorVersion    0
+#define OSMinorVersion    1
 /* 1 = A, 2 = B, 3 = C */
 #define OSTeenyVersion	  0
 
