@@ -4,7 +4,7 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbscrinit.c,v 1.5 1999/04/04 08:46:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbscrinit.c,v 1.6 1999/09/25 14:38:19 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -84,7 +84,7 @@ cfb8_16GetImage (
 );
 
 static Bool cfb8_16CreateGC(GCPtr pGC);
-static Bool cfb8_16SaveRestoreImage(int index, SaveRestoreFlags what);
+static void cfb8_16EnableDisableFBAccess(int index, Bool enable);
 
 
 static Bool
@@ -232,7 +232,7 @@ cfb8_16FinishScreenInit(
     pScreen->GetWindowPixmap = cfb8_16GetWindowPixmap;
     pScreen->WindowExposures = cfb8_16WindowExposures;
 
-    pScrn->SaveRestoreImage = cfb8_16SaveRestoreImage;
+    pScrn->EnableDisableFBAccess = cfb8_16EnableDisableFBAccess;
 
     return TRUE;
 }
@@ -343,169 +343,29 @@ cfb8_16CreateGC(GCPtr pGC)
 	return(cfb16CreateGC(pGC));
 }
 
-static Bool
-cfb8_16SaveRestoreImage(int index, SaveRestoreFlags what)
+static void
+cfb8_16EnableDisableFBAccess(int index, Bool enable)
 {
     ScreenPtr pScreen = xf86Screens[index]->pScreen;
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     cfb8_16ScreenPtr pScreenPriv = CFB8_16_GET_SCREEN_PRIVATE(pScreen);
-    static unsigned char *devPrivates8[MAXSCREENS];
-    static unsigned char *devPrivates16[MAXSCREENS];
-    static int devKinds8[MAXSCREENS];
-    static int devKinds16[MAXSCREENS];
-    pointer devPrivate8, devPrivate16;
-    Bool ret = FALSE;
-    int devKind8, devKind16;
-    PixmapPtr pPixSrc, pPixDst;
-    BoxRec pixBox;
-    RegionRec pixReg;
-    DDXPointRec Pnt;
+    static DevUnion devPrivates8[MAXSCREENS];
+    static DevUnion devPrivates16[MAXSCREENS];
+    PixmapPtr	pix8, pix16;
 
-    pixBox.x1 = pixBox.y1 = 0;
-    pixBox.x2 = pScreen->width;
-    pixBox.y2 = pScreen->height;
-    REGION_INIT(pScreen, &pixReg, &pixBox, 1);
+    pix8 = (PixmapPtr) pScreenPriv->pix8;
+    pix16 = (PixmapPtr) pScreenPriv->pix16;
 
-    Pnt.x = 0;
-    Pnt.y = 0;
-
-    switch (what) {
-    case SaveImage:
-
-	/* save the old data */
-	devPrivates8[index] = 
-	  (unsigned char*)(((PixmapPtr)pScreenPriv->pix8)->devPrivate.ptr);
-	devKinds8[index] = ((PixmapPtr)pScreenPriv->pix8)->devKind;
-	devPrivates16[index] = 
-	  (unsigned char*)(((PixmapPtr)pScreenPriv->pix16)->devPrivate.ptr);
-	devKinds16[index] = ((PixmapPtr)pScreenPriv->pix16)->devKind;
-	
-	/* allocate new data */
-	devKind8 = PixmapBytePad(pScreen->width, 8);
-        if(!(devPrivate8 = xalloc(devKind8 * pScreen->height)))
-	   break;
-
-	devKind16 = PixmapBytePad(pScreen->width, pScrn->depth);
-        if(!(devPrivate16 = xalloc(devKind16 * pScreen->height))) {
-	    xfree(devPrivate8);
-	    break;
-	}
-
-	/* DEPTH 8 */
-
-	pPixDst = GetScratchPixmapHeader(pScreen, pScreen->width, 
-				pScreen->height, 8, 8, devKind8, devPrivate8);
-
-	pPixSrc = GetScratchPixmapHeader(pScreen, pScreen->width, 
-				pScreen->height, 8, 8, devKinds8[index],
-				devPrivates8[index]);
-
-	cfbDoBitbltCopy((DrawablePtr)pPixSrc, (DrawablePtr)pPixDst,
-                    			GXcopy, &pixReg, &Pnt, ~0L);
-
-	FreeScratchPixmapHeader(pPixSrc);
-	FreeScratchPixmapHeader(pPixDst);
-
-	((PixmapPtr)pScreenPriv->pix8)->devPrivate.ptr = (pointer)devPrivate8;
-	((PixmapPtr)pScreenPriv->pix8)->devKind = devKind8;
-
-
-	/* DEPTH 16 */
-
-	pPixDst = GetScratchPixmapHeader(pScreen, pScreen->width, 
-			pScreen->height, pScrn->depth, 16, devKind16,
-			devPrivate16);
-
-	pPixSrc = GetScratchPixmapHeader(pScreen, pScreen->width, 
-				pScreen->height, pScrn->depth, 16,
-				devKinds16[index], devPrivates16[index]);
-
-	cfb16DoBitbltCopy((DrawablePtr)pPixSrc, (DrawablePtr)pPixDst,
-                    			GXcopy, &pixReg, &Pnt, ~0L);
-
-	FreeScratchPixmapHeader(pPixSrc);
-	FreeScratchPixmapHeader(pPixDst);
-
-	((PixmapPtr)pScreenPriv->pix16)->devPrivate.ptr = (pointer)devPrivate16;
-	((PixmapPtr)pScreenPriv->pix16)->devKind = devKind16;
-	((PixmapPtr)pScreen->devPrivate)->devKind = devKind16;
-	((PixmapPtr)pScreen->devPrivate)->devPrivate.ptr = 
-						(pointer)devPrivate16;
-
-	ret = TRUE;
-
-	WalkTree(xf86Screens[index]->pScreen,xf86NewSerialNumber,0);
-
-	break;
-    case RestoreImage:
-	
-	if (!xf86ServerIsResetting()) {
-            devPrivate8 = ((PixmapPtr)pScreenPriv->pix8)->devPrivate.ptr;
-	    devKind8 = ((PixmapPtr)pScreenPriv->pix8)->devKind;
-
-            devPrivate16 = ((PixmapPtr)pScreenPriv->pix16)->devPrivate.ptr;
-	    devKind16 = ((PixmapPtr)pScreenPriv->pix16)->devKind;
-
-	    /* DEPTH 8 */
-
-	    pPixSrc = GetScratchPixmapHeader(pScreen, pScreen->width, 
-		   pScreen->height, 8, 8, devKind8, devPrivate8);
-
-
-	    pPixDst = GetScratchPixmapHeader(pScreen, pScreen->width, 
-		   pScreen->height, 8, 8, devKinds8[index], 
-		   devPrivates8[index]);
-
-	    cfbDoBitbltCopy((DrawablePtr)pPixSrc, (DrawablePtr)pPixDst,
-                    			GXcopy, &pixReg, &Pnt, ~0L);
-
-	    xfree(devPrivate8);
-	    FreeScratchPixmapHeader(pPixSrc);
-	    FreeScratchPixmapHeader(pPixDst);
-
-	    ((PixmapPtr)pScreenPriv->pix8)->devPrivate.ptr = 
-					(pointer)devPrivates8[index];
-	    ((PixmapPtr)pScreenPriv->pix8)->devKind = devKinds8[index];
-
-
-	    /* DEPTH 16 */
-	    pPixSrc = GetScratchPixmapHeader(pScreen, pScreen->width, 
-		   pScreen->height, 16, 16, devKind16, devPrivate16);
-
-
-	    pPixDst = GetScratchPixmapHeader(pScreen, pScreen->width, 
-		   pScreen->height, 16, 16, devKinds16[index], 
-		   devPrivates16[index]);
-
-	    cfbDoBitbltCopy((DrawablePtr)pPixSrc, (DrawablePtr)pPixDst,
-                    			GXcopy, &pixReg, &Pnt, ~0L);
-
-	    xfree(devPrivate16);
-	    FreeScratchPixmapHeader(pPixSrc);
-	    FreeScratchPixmapHeader(pPixDst);
-
-	    ((PixmapPtr)pScreenPriv->pix16)->devPrivate.ptr = 
-					(pointer)devPrivates16[index];
-	    ((PixmapPtr)pScreenPriv->pix16)->devKind = devKinds16[index];
-	    ((PixmapPtr)pScreen->devPrivate)->devKind = devKinds16[index];
-	    ((PixmapPtr)pScreen->devPrivate)->devPrivate.ptr = 
-					(pointer)devPrivates16[index];
-
-	    WalkTree(xf86Screens[index]->pScreen,xf86NewSerialNumber,0);
-	    ret = TRUE;
-	    break;
-	}
-	/* Fall through */
-    case FreeImage:
-	if (((PixmapPtr)pScreenPriv->pix16)->devPrivate.ptr)
-	    xfree(((PixmapPtr)pScreenPriv->pix16)->devPrivate.ptr);
-	if (((PixmapPtr)pScreenPriv->pix8)->devPrivate.ptr)
-	    xfree(((PixmapPtr)pScreenPriv->pix8)->devPrivate.ptr);
-	ret = TRUE;
-	break;
-    default:
-	ErrorF("cfb8_16SaveRestoreImage: Invalid flag (%d)\n", what);
+    if (enable)
+    {
+	pix8->devPrivate = devPrivates8[index];
+	pix16->devPrivate = devPrivates16[index];
     }
-    REGION_UNINIT(pScreen, &pixReg);
-    return ret;
+    xf86EnableDisableFBAccess (index, enable);
+    if (!enable)
+    {
+	devPrivates8[index] = pix8->devPrivate;
+	pix8->devPrivate.ptr = 0;
+	devPrivates16[index] = pix16->devPrivate;
+	pix16->devPrivate.ptr = 0;
+    }
 }

@@ -28,7 +28,7 @@
  * 
  * Permedia accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.15 2000/01/18 18:40:13 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.16 2000/01/20 01:40:17 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1303,7 +1303,7 @@ PermediaSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
 	return;
     }
 
-    fbBresSolid(pGlint->CurrentDrawable, pGlint->CurrentGC, 0,
+    fbBres(pGlint->CurrentDrawable, pGlint->CurrentGC, 0,
                 (octant & XDECREASING) ? -1 : 1, 
                 (octant & YDECREASING) ? -1 : 1, 
                 (octant & YMAJOR) ? Y_AXIS : X_AXIS,

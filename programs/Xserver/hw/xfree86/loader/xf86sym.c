@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.119 1999/12/14 01:33:52 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.120 1999/12/28 13:47:44 robin Exp $ */
 
 /*
  *
@@ -323,7 +323,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86SetGamma)
    SYMFUNC(xf86SetDpi)
    SYMFUNC(xf86SetBlackWhitePixels)
-   SYMFUNC(xf86SaveRestoreImage)
+   SYMFUNC(xf86EnableDisableFBAccess)
    SYMFUNC(xf86VDrvMsgVerb)
    SYMFUNC(xf86DrvMsgVerb)
    SYMFUNC(xf86DrvMsg)
@@ -365,7 +365,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86Break3)
    SYMFUNC(xf86SetBackingStore)
    SYMFUNC(xf86SetSilkenMouse)
-   SYMFUNC(xf86NewSerialNumber)
+   /* SYMFUNC(xf86NewSerialNumber) */
    SYMFUNC(xf86FindXvOptions)
    SYMFUNC(xf86GetOS)
    SYMFUNC(xf86ConfigActivePciEntity)

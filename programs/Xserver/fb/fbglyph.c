@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.1 1999/11/19 13:53:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.2 1999/12/30 02:33:59 robin Exp $ */
 
 #include "fb.h"
 #include	"fontstruct.h"
@@ -44,6 +44,9 @@ fbGlyphIn (RegionPtr	pRegion,
     box.y2 = y + height;
     return RECT_IN_REGION (0, pRegion, &box) == rgnIN;
 }
+
+#ifdef FB_24BIT
+#ifndef FBNOPIXADDR
 
 #define WRITE1(d,n,fg)	((d)[n] = (CARD8) fg)
 #define WRITE2(d,n,fg)	(*(CARD16 *) &(d[n]) = (CARD16) fg)
@@ -185,6 +188,8 @@ fbGlyph24 (FbBits   *dstBits,
 	dstLine += dstStride;
     }
 }
+#endif
+#endif
 
 void
 fbPolyGlyphBlt (DrawablePtr	pDrawable,
@@ -220,7 +225,9 @@ fbPolyGlyphBlt (DrawablePtr	pDrawable,
 	switch (dstBpp) {
 	case 8:	    glyph = fbGlyph8; break;
 	case 16:    glyph = fbGlyph16; break;
+#ifdef FB_24BIT
 	case 24:    glyph = fbGlyph24; break;
+#endif
 	case 32:    glyph = fbGlyph32; break;
 	}
     }

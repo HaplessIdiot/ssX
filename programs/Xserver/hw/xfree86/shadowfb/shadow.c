@@ -4,7 +4,7 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.6 1999/09/25 14:38:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.7 1999/09/27 06:30:03 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -54,7 +54,7 @@ static Bool ShadowModifyPixmapHeader(
 
 static Bool ShadowEnterVT(int index, int flags);
 static void ShadowLeaveVT(int index, int flags);
-static Bool ShadowSaveRestoreImage(int index, SaveRestoreFlags what);
+static void ShadowEnableDisableFBAccess(int index, Bool enable);
 
 
 typedef struct {
@@ -69,7 +69,7 @@ typedef struct {
   ModifyPixmapHeaderProcPtr		ModifyPixmapHeader;
   Bool				(*EnterVT)(int, int);
   void				(*LeaveVT)(int, int);
-  Bool				(*SaveRestoreImage)(int, SaveRestoreFlags);
+  void				(*EnableDisableFBAccess)(int, Bool);
   Bool				vtSema;
 } ShadowScreenRec, *ShadowScreenPtr;
 
@@ -182,7 +182,7 @@ ShadowFBInit (
 
     pPriv->EnterVT = pScrn->EnterVT;
     pPriv->LeaveVT = pScrn->LeaveVT;
-    pPriv->SaveRestoreImage = pScrn->SaveRestoreImage;
+    pPriv->EnableDisableFBAccess = pScrn->EnableDisableFBAccess;
 
     pScreen->CloseScreen = ShadowCloseScreen;
     pScreen->PaintWindowBackground = ShadowPaintWindow;
@@ -194,7 +194,7 @@ ShadowFBInit (
 
     pScrn->EnterVT = ShadowEnterVT;
     pScrn->LeaveVT = ShadowLeaveVT;
-    pScrn->SaveRestoreImage = ShadowSaveRestoreImage;
+    pScrn->EnableDisableFBAccess = ShadowEnableDisableFBAccess;
 
     return TRUE;
 }
@@ -233,35 +233,10 @@ ShadowLeaveVT(int index, int flags)
     (*pPriv->LeaveVT)(index, flags);
 }
 
-static Bool
-ShadowSaveRestoreImage(int index, SaveRestoreFlags what)
+static void
+ShadowEnableDisableFBAccess(int index, Bool enable)
 {
-    ScrnInfoPtr pScrn = xf86Screens[index];
-    ScreenPtr pScreen = pScrn->pScreen;
-
-    /* Fake being switched out */
-    switch (what) {
-    case SaveImage:
-	if (pScrn->ppix)
-	    return TRUE;
-
-	pScrn->ppix = GetScratchPixmapHeader(pScreen,
-	    -1, -1, pScreen->rootDepth, -1, -1, NULL);
-	return TRUE;
-
-    case RestoreImage:
-    case FreeImage:
-	if (!pScrn->ppix)
-	    return TRUE;
-
-	FreeScratchPixmapHeader(pScrn->ppix);
-	pScrn->ppix = NULL;
-	return TRUE;
-
-    default:
-	ErrorF("ShadowSaveRestoreImage: Invalid flag (%d)\n", what);
-	return FALSE;
-    }
+    /* nothing happens here; nothing touches the real frame buffer */
 }
 
 
@@ -284,7 +259,7 @@ ShadowCloseScreen (int i, ScreenPtr pScreen)
 
     pScrn->EnterVT = pPriv->EnterVT;
     pScrn->LeaveVT = pPriv->LeaveVT;
-    pScrn->SaveRestoreImage = pPriv->SaveRestoreImage;
+    pScrn->EnableDisableFBAccess = pPriv->EnableDisableFBAccess;
 
     xfree((pointer)pPriv);
 
@@ -379,6 +354,7 @@ ShadowModifyPixmapHeader(
     ScrnInfoPtr pScrn;
     ShadowScreenPtr pPriv;
     Bool retval;
+    PixmapPtr pScreenPix;
 
     if (!pPixmap)
 	return FALSE;
@@ -386,10 +362,11 @@ ShadowModifyPixmapHeader(
     pScreen = pPixmap->drawable.pScreen;
     pScrn = xf86Screens[pScreen->myNum];
 
-    /* Ignore changes to root pixmap while switched out */
-    if (pPixmap == pScrn->ppix)
-        return TRUE;
-
+    pScreenPix = (*pScreen->GetScreenPixmap);
+    
+    if (pPixmap == pScreenPix && !pScrn->vtSema)
+	pScreenPix->devPrivate = pScrn->pixmapPrivate;
+    
     pPriv = GET_SCREEN_PRIVATE(pScreen);
 
     pScreen->ModifyPixmapHeader = pPriv->ModifyPixmapHeader;
@@ -397,6 +374,11 @@ ShadowModifyPixmapHeader(
 	width, height, depth, bitsPerPixel, devKind, pPixData);
     pScreen->ModifyPixmapHeader = ShadowModifyPixmapHeader;
 
+    if (pPixmap == pScreenPix && !pScrn->vtSema)
+    {
+	pScrn->pixmapPrivate = pScreenPix->devPrivate;
+	pScreenPix->devPrivate.ptr = 0;
+    }
     return retval;
 }
 

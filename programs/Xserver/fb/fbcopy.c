@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.1 1999/11/19 13:53:42 hohndel Exp $ */
 
 #include "fb.h"
 
@@ -424,7 +424,13 @@ fbDoCopy (DrawablePtr	pSrcDrawable,
     {
 	if (pGC->subWindowMode == IncludeInferiors)
 	{
-	    if (!((WindowPtr) pSrcDrawable)->parent)
+	    /*
+	     * XFree86 DDX empties the border clip when the
+	     * VT is inactive
+	     */
+	    if (!((WindowPtr) pSrcDrawable)->parent &&
+		REGION_NOTEMPTY (pSrcDrawable->pScreen,
+				 &((WindowPtr) pSrcDrawable)->borderClip))
 	    {
 		/*
 		 * special case bitblt from root window in

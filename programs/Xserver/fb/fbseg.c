@@ -21,10 +21,14 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbseg.c,v 1.1 1999/11/19 13:53:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbseg.c,v 1.2 2000/01/20 01:40:14 tsi Exp $ */
 
 #include "fb.h"
 #include "miline.h"
+
+#define fbBresShiftMask(mask,dir,bpp) ((bpp == FB_STIP_UNIT) ? 0 : \
+					((dir < 0) ? FbStipLeft(mask,bpp) : \
+					 FbStipRight(mask,bpp)))
 
 void
 fbBresSolid (DrawablePtr    pDrawable,
@@ -40,24 +44,24 @@ fbBresSolid (DrawablePtr    pDrawable,
 	     int	    e3,
 	     int	    len)
 {
-    FbBits	*dst;
+    FbStip	*dst;
     FbStride	dstStride;
     int		dstBpp;
     FbGCPrivPtr	pPriv = fbGetGCPrivate (pGC);
-    FbBits	and = pPriv->and;
-    FbBits	xor = pPriv->xor;
-    FbBits	mask, mask0;
-    FbBits	bits;
+    FbStip	and = (FbStip) pPriv->and;
+    FbStip	xor = (FbStip) pPriv->xor;
+    FbStip	mask, mask0;
+    FbStip	bits;
     
-    fbGetDrawable (pDrawable, dst, dstStride, dstBpp);
+    fbGetStipDrawable (pDrawable, dst, dstStride, dstBpp);
     dst += (y1 * dstStride);
     x1 *= dstBpp;
-    dst += x1 >> FB_SHIFT;
-    x1 &= FB_MASK;
-    mask0 = FbBitsMask(0, dstBpp);
-    mask = FbScrRight (mask0, x1);
+    dst += x1 >> FB_STIP_SHIFT;
+    x1 &= FB_STIP_MASK;
+    mask0 = FbStipMask(0, dstBpp);
+    mask = FbStipRight (mask0, x1);
     if (signdx < 0)
-	mask0 = FbScrRight (mask0, FB_UNIT - dstBpp);
+	mask0 = FbStipRight (mask0, FB_STIP_UNIT - dstBpp);
     if (signdy < 0)
 	dstStride = -dstStride;
     if (axis == X_AXIS)
@@ -66,10 +70,7 @@ fbBresSolid (DrawablePtr    pDrawable,
 	while (len--)
 	{
 	    bits |= mask;
-	    if (signdx > 0)
-		mask = FbScrRight(mask, dstBpp);
-	    else
-		mask = FbScrLeft(mask, dstBpp);
+	    mask = fbBresShiftMask(mask,signdx,dstBpp);
 	    if (!mask)
 	    {
 		*dst = FbDoMaskRRop (*dst, and, xor, bits);
@@ -99,10 +100,7 @@ fbBresSolid (DrawablePtr    pDrawable,
 	    if (e >= 0)
 	    {
 		e += e3;
-		if (signdx > 0)
-		    mask = FbScrRight(mask, dstBpp);
-		else
-		    mask = FbScrLeft(mask, dstBpp);
+		mask = fbBresShiftMask(mask,signdx,dstBpp);
 		if (!mask)
 		{
 		    dst += signdx;
@@ -127,21 +125,21 @@ fbBresDash (DrawablePtr	pDrawable,
 	    int		e3,
 	    int		len)
 {
-    FbBits	*dst;
+    FbStip	*dst;
     FbStride	dstStride;
     int		dstBpp;
     FbGCPrivPtr	pPriv = fbGetGCPrivate (pGC);
-    FbBits	and = pPriv->and;
-    FbBits	xor = pPriv->xor;
-    FbBits	bgand = pPriv->bgand;
-    FbBits	bgxor = pPriv->bgxor;
-    FbBits	mask, mask0;
+    FbStip	and = (FbStip) pPriv->and;
+    FbStip	xor = (FbStip) pPriv->xor;
+    FbStip	bgand = (FbStip) pPriv->bgand;
+    FbStip	bgxor = (FbStip) pPriv->bgxor;
+    FbStip	mask, mask0;
     unsigned char   *dash, *lastDash;
     int		dashlen;
     Bool	even;
     Bool	doOdd;
     
-    fbGetDrawable (pDrawable, dst, dstStride, dstBpp);
+    fbGetStipDrawable (pDrawable, dst, dstStride, dstBpp);
     doOdd = pGC->lineStyle == LineDoubleDash;
     even = TRUE;
     dash = pGC->dash;
@@ -157,12 +155,12 @@ fbBresDash (DrawablePtr	pDrawable,
     dashlen = *dash - dashOffset;
     dst += (y1 * dstStride);
     x1 *= dstBpp;
-    dst += x1 >> FB_SHIFT;
-    x1 &= FB_MASK;
-    mask0 = FbBitsMask(0, dstBpp);
-    mask = FbScrRight (mask0, x1);
+    dst += x1 >> FB_STIP_SHIFT;
+    x1 &= FB_STIP_MASK;
+    mask0 = FbStipMask(0, dstBpp);
+    mask = FbStipRight (mask0, x1);
     if (signdx < 0)
-	mask0 = FbScrRight (mask0, FB_UNIT - dstBpp);
+	mask0 = FbStipRight (mask0, FB_STIP_UNIT - dstBpp);
     if (signdy < 0)
 	dstStride = -dstStride;
     while (len--)
@@ -173,10 +171,7 @@ fbBresDash (DrawablePtr	pDrawable,
 	    *dst = FbDoMaskRRop (*dst, bgand, bgxor, mask);
 	if (axis == X_AXIS)
 	{
-	    if (signdx > 0)
-		mask = FbScrRight(mask, dstBpp);
-	    else
-		mask = FbScrLeft(mask, dstBpp);
+	    mask = fbBresShiftMask(mask,signdx,dstBpp);
 	    if (!mask)
 	    {
 		dst += signdx;
@@ -196,10 +191,7 @@ fbBresDash (DrawablePtr	pDrawable,
 	    if (e >= 0)
 	    {
 		e += e3;
-		if (signdx > 0)
-		    mask = FbScrRight(mask, dstBpp);
-		else
-		    mask = FbScrLeft(mask, dstBpp);
+		mask = fbBresShiftMask(mask,signdx,dstBpp);
 		if (!mask)
 		{
 		    dst += signdx;
@@ -372,21 +364,21 @@ fbBresSolid24 (DrawablePtr  pDrawable,
 	       int	    e3,
 	       int	    len)
 {
-    FbBits	*dst;
+    FbStip	*dst;
     FbStride	dstStride;
     int		dstBpp;
     FbGCPrivPtr	pPriv = fbGetGCPrivate (pGC);
-    FbBits	and = pPriv->and;
-    FbBits	xor = pPriv->xor;
-    FbBits	leftMask, rightMask;
+    FbStip	and = pPriv->and;
+    FbStip	xor = pPriv->xor;
+    FbStip	leftMask, rightMask;
     int		nl;
-    FbBits	bits;
-    FbBits	*d;
+    FbStip	bits;
+    FbStip	*d;
     int		x;
     int		rot;
-    FbBits	andT, xorT;
+    FbStip	andT, xorT;
     
-    fbGetDrawable (pDrawable, dst, dstStride, dstBpp);
+    fbGetStipDrawable (pDrawable, dst, dstStride, dstBpp);
     dst += (y1 * dstStride);
     x1 *= 24;
     if (signdy < 0)
@@ -394,18 +386,18 @@ fbBresSolid24 (DrawablePtr  pDrawable,
     signdx *= 24;
     while (len--)
     {
-	d = dst + (x1 >> FB_SHIFT);
-	x = x1 & FB_MASK;
+	d = dst + (x1 >> FB_STIP_SHIFT);
+	x = x1 & FB_STIP_MASK;
 	rot = x % 24;
-	andT = FbRot24(and,rot);
-	xorT = FbRot24(xor,rot);
-	FbMaskBits (x, 24, leftMask, nl, rightMask);
+	andT = FbRot24Stip(and,rot);
+	xorT = FbRot24Stip(xor,rot);
+	FbMaskStip (x, 24, leftMask, nl, rightMask);
 	if (leftMask)
 	{
 	    *d = FbDoMaskRRop (*d, andT, xorT, leftMask);
 	    d++;
-	    andT = FbNext24Pix (andT);
-	    xorT = FbNext24Pix (xorT);
+	    andT = FbNext24Stip (andT);
+	    xorT = FbNext24Stip (xorT);
 	}
 	if (rightMask)
 	    *d = FbDoMaskRRop (*d, andT, xorT, rightMask);
@@ -445,19 +437,19 @@ fbBresDash24 (DrawablePtr   pDrawable,
 	      int	    e3,
 	      int	    len)
 {
-    FbBits	*dst;
+    FbStip	*dst;
     FbStride	dstStride;
     int		dstBpp;
     FbGCPrivPtr	pPriv = fbGetGCPrivate (pGC);
-    FbBits	andT, xorT;
-    FbBits	fgand = pPriv->and;
-    FbBits	fgxor = pPriv->xor;
-    FbBits	bgand = pPriv->bgand;
-    FbBits	bgxor = pPriv->bgxor;
-    FbBits	leftMask, rightMask;
+    FbStip	andT, xorT;
+    FbStip	fgand = pPriv->and;
+    FbStip	fgxor = pPriv->xor;
+    FbStip	bgand = pPriv->bgand;
+    FbStip	bgxor = pPriv->bgxor;
+    FbStip	leftMask, rightMask;
     int		nl;
-    FbBits	bits;
-    FbBits	*d;
+    FbStip	bits;
+    FbStip	*d;
     int		x;
     int		rot;
     unsigned char   *dash, *lastDash;
@@ -465,7 +457,7 @@ fbBresDash24 (DrawablePtr   pDrawable,
     Bool	even;
     Bool	doOdd;
     
-    fbGetDrawable (pDrawable, dst, dstStride, dstBpp);
+    fbGetStipDrawable (pDrawable, dst, dstStride, dstBpp);
     doOdd = pGC->lineStyle == LineDoubleDash;
     even = TRUE;
     dash = pGC->dash;
@@ -498,18 +490,18 @@ fbBresDash24 (DrawablePtr   pDrawable,
 		andT = bgand;
 		xorT = bgxor;
 	    }
-	    d = dst + (x1 >> FB_SHIFT);
-	    x = x1 & FB_MASK;
+	    d = dst + (x1 >> FB_STIP_SHIFT);
+	    x = x1 & FB_STIP_MASK;
 	    rot = x % 24;
-	    andT = FbRot24 (andT, rot);
-	    xorT = FbRot24 (xorT, rot);
-	    FbMaskBits (x, 24, leftMask, nl, rightMask);
+	    andT = FbRot24Stip (andT, rot);
+	    xorT = FbRot24Stip (xorT, rot);
+	    FbMaskStip (x, 24, leftMask, nl, rightMask);
 	    if (leftMask)
 	    {
 		*d = FbDoMaskRRop (*d, andT, xorT, leftMask);
 		d++;
-		andT = FbNext24Pix (andT);
-		xorT = FbNext24Pix (xorT);
+		andT = FbNext24Stip (andT);
+		xorT = FbNext24Stip (xorT);
 	    }
 	    if (rightMask)
 		*d = FbDoMaskRRop (*d, andT, xorT, rightMask);
@@ -542,42 +534,22 @@ fbBresDash24 (DrawablePtr   pDrawable,
 	    even = !even;
 	}
     }
-}
+  }
 #endif
 
-void
-fbSegment (DrawablePtr	pDrawable,
-	   GCPtr	pGC,
-	   int		x1,
-	   int		y1,
-	   int		x2,
-	   int		y2,
-	   Bool		drawLast,
-	   int		*dashOffset)
-{
-    FbBres *	bres;
-    FbGCPrivPtr	pPriv = fbGetGCPrivate(pGC);
-    RegionPtr	pClip = fbGetCompositeClip(pGC);
-    BoxPtr	pBox;
-    int		dstBpp = pDrawable->bitsPerPixel;
-    int		nBox;
-    int		tmp;
-    int		adx;		/* abs values of dx and dy */
-    int		ady;
-    int		signdx;		/* sign of dx and dy */
-    int		signdy;
-    int		e, e1, e2, e3;		/* bresenham error and increments */
-    int		len;			/* length of segment */
-    int		axis;			/* major axis */
-    int		octant;
-    int		dashoff;
-    int		doff;
-    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
-    unsigned int oc1;	/* outcode of point 1 */
-    unsigned int oc2;	/* outcode of point 2 */
+/*
+ * For drivers that want to bail drawing some lines, this
+ * function takes care of selecting the appropriate rasterizer
+ * based on the contents of the specified GC.
+ */
 
-    nBox = REGION_NUM_RECTS (pClip);
-    pBox = REGION_RECTS (pClip);
+FbBres *
+fbSelectBres (DrawablePtr   pDrawable,
+	      GCPtr	    pGC)
+{
+    FbGCPrivPtr	pPriv = fbGetGCPrivate(pGC);
+    int		dstBpp = pDrawable->bitsPerPixel;
+    FbBres *	bres;
     
     if (pGC->lineStyle == LineSolid)
     {
@@ -628,6 +600,61 @@ fbSegment (DrawablePtr	pDrawable,
 #endif
 	}
     }
+    return bres;
+}
+
+void
+fbBres (DrawablePtr	pDrawable,
+	GCPtr		pGC,
+	int		dashOffset,
+	int		signdx,
+	int		signdy,
+	int		axis,
+	int		x1,
+	int		y1,
+	int		e,
+	int		e1,
+	int		e3,
+	int		len)
+{
+    (*fbSelectBres (pDrawable, pGC)) (pDrawable, pGC, dashOffset,
+				      signdx, signdy, axis, x1, y1,
+				      e, e1, e3, len);
+}
+
+void
+fbSegment (DrawablePtr	pDrawable,
+	   GCPtr	pGC,
+	   int		x1,
+	   int		y1,
+	   int		x2,
+	   int		y2,
+	   Bool		drawLast,
+	   int		*dashOffset)
+{
+    FbBres *	bres;
+    RegionPtr	pClip = fbGetCompositeClip(pGC);
+    BoxPtr	pBox;
+    int		nBox;
+    int		tmp;
+    int		adx;		/* abs values of dx and dy */
+    int		ady;
+    int		signdx;		/* sign of dx and dy */
+    int		signdy;
+    int		e, e1, e2, e3;		/* bresenham error and increments */
+    int		len;			/* length of segment */
+    int		axis;			/* major axis */
+    int		octant;
+    int		dashoff;
+    int		doff;
+    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
+    unsigned int oc1;	/* outcode of point 1 */
+    unsigned int oc2;	/* outcode of point 2 */
+
+    nBox = REGION_NUM_RECTS (pClip);
+    pBox = REGION_RECTS (pClip);
+    
+    bres = fbSelectBres (pDrawable, pGC);
     
     CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy,
 		   1, 1, octant);

@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.1 1999/11/19 13:53:42 hohndel Exp $ */
 
 #include "fb.h"
 
@@ -79,6 +79,7 @@ fbBltOne (FbStip    *src,
     int		    leftShift, rightShift;	/* align source with dest */
     FbBits	    startmask, endmask;		/* dest scanline masks */
     FbStip	    bits, bitsLeft, bitsRight;	/* source bits */
+    FbStip	    left;
     FbBits	    mask;
     int		    nDst;			/* dest longwords (w.o. end) */
     int		    w;
@@ -86,6 +87,7 @@ fbBltOne (FbStip    *src,
     int		    nthistime;
     int		    dstS;			/* stipple-relative dst X coordinate */
     Bool	    copy;			/* accelerate dest-invariant */
+    Bool	    transparent;		/* accelerate 0 nop */
     int		    srcinc;			/* source units consumed */
     int		    dstinc;			/* dest units produced */
     Bool	    endNeedsLoad;		/* need load for endmask */
@@ -113,8 +115,11 @@ fbBltOne (FbStip    *src,
     unitsPerSrc = FB_STIP_UNIT / pixelsPerDst;
     
     copy = FALSE;
+    transparent = FALSE;
     if (bgand == 0 && fgand == 0)
 	copy = TRUE;
+    else if (bgand == FB_ALLONES && bgxor == 0)
+	transparent = TRUE;
 
     /*
      * Adjust source and dest to nearest FbBits boundary
@@ -209,9 +214,12 @@ fbBltOne (FbStip    *src,
 		else
 #endif
 		    mask = fbBits[FbLeftStipBits(bits,pixelsPerDst)];
-		*dst = FbStippleRRopMask (*dst, mask, 
-					  fgand, fgxor, bgand, bgxor, 
-					  startmask);
+		if (!transparent || (mask & startmask))
+		{
+		    *dst = FbStippleRRopMask (*dst, mask, 
+					      fgand, fgxor, bgand, bgxor, 
+					      startmask);
+		}
 		bits = FbStipLeft (bits, pixelsPerDst);
 		dst++;
 		n--;
@@ -240,9 +248,13 @@ fbBltOne (FbStip    *src,
 		    {
 			while (n--)
 			{
-			    mask = FbStipple16Bits(FbLeftStipBits(bits,16));
-			    *dst = FbStippleRRop (*dst, mask,
-						  fgand, fgxor, bgand, bgxor);
+			    left = FbLeftStipBits(bits,16);
+			    if (left || !transparent)
+			    {
+				mask = FbStipple16Bits(left);
+				*dst = FbStippleRRop (*dst, mask,
+						      fgand, fgxor, bgand, bgxor);
+			    }
 			    dst++;
 			    bits = FbStipLeft(bits, 16);
 			}
@@ -265,9 +277,13 @@ fbBltOne (FbStip    *src,
 		    {
 			while (n--)
 			{
-			    mask = fbBits[FbLeftStipBits(bits,pixelsPerDst)];
-			    *dst = FbStippleRRop (*dst, mask,
-						  fgand, fgxor, bgand, bgxor);
+			    left = FbLeftStipBits(bits,pixelsPerDst);
+			    if (left || !transparent)
+			    {
+				mask = fbBits[left];
+				*dst = FbStippleRRop (*dst, mask,
+						      fgand, fgxor, bgand, bgxor);
+			    }
 			    dst++;
 			    bits = FbStipLeft(bits, pixelsPerDst);
 			}
@@ -299,9 +315,12 @@ fbBltOne (FbStip    *src,
 	    else
 #endif
 		mask = fbBits[FbLeftStipBits(bits,pixelsPerDst)];
-	    *dst = FbStippleRRopMask (*dst, mask, 
-				      fgand, fgxor, bgand, bgxor, 
-				      endmask);
+	    if (!transparent || (mask & endmask))
+	    {
+		*dst = FbStippleRRopMask (*dst, mask, 
+					  fgand, fgxor, bgand, bgxor, 
+					  endmask);
+	    }
 	    dst;
 	}
 	dst += dstStride;

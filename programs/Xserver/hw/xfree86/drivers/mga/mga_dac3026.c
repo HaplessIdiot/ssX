@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.50 1999/09/27 06:29:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.51 1999/12/26 18:06:02 robin Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -1084,14 +1084,29 @@ MGA3026RamdacInit(ScrnInfoPtr pScrn)
 	    break;
 	}
 	/* Set MCLK based on amount of memory */
-    	if ( pScrn->videoRam < 4096 )
+	if(pMga->OverclockMem) {
+	  if ( pScrn->videoRam < 4096 )
+            MGAdac->MemoryClock = pMga->Bios.ClkBase * 12;
+	  else if ( pScrn->videoRam < 8192 )
+            MGAdac->MemoryClock = pMga->Bios.Clk4MB * 12;
+	  else
+            MGAdac->MemoryClock = pMga->Bios.Clk8MB * 12;
+	  MGAdac->MemClkFrom = X_CONFIG;
+	  MGAdac->SetMemClk = TRUE;
+#if 0
+	  ErrorF("BIOS Memory clock settings: 2Mb %d, 4Mb %d, 8MB %d\n",
+		 pMga->Bios.ClkBase, pMga->Bios.Clk4MB, pMga->Bios.Clk8MB);
+#endif
+	} else {
+	  if ( pScrn->videoRam < 4096 )
             MGAdac->MemoryClock = pMga->Bios.ClkBase * 10;
-   	else if ( pScrn->videoRam < 8192 )
+	  else if ( pScrn->videoRam < 8192 )
             MGAdac->MemoryClock = pMga->Bios.Clk4MB * 10;
-    	else
+	  else
             MGAdac->MemoryClock = pMga->Bios.Clk8MB * 10;
-    	MGAdac->MemClkFrom = X_PROBED;
-    	MGAdac->SetMemClk = TRUE;
+	  MGAdac->MemClkFrom = X_PROBED;
+	  MGAdac->SetMemClk = TRUE;
+	}
     }
     else
     {

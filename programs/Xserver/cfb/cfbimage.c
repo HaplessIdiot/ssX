@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbimage.c,v 1.6 1999/03/14 03:21:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbimage.c,v 1.7 1999/08/21 13:48:15 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -148,6 +148,12 @@ cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
 	return;
     }
     pScreen = pDrawable->pScreen;
+    /*
+     * XFree86 DDX empties the root borderClip when the VT is
+     * switched away; this checks for that case
+     */
+    if (!cfbDrawableEnabled (pDrawable))
+	return;
     if (format == ZPixmap)
     {
 	pPixmap = GetScratchPixmapHeader(pScreen, w, h, 

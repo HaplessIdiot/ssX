@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbline.c,v 1.1 1999/11/19 13:53:44 hohndel Exp $ */
 
 #include "fb.h"
 
@@ -70,21 +70,78 @@ fbZeroLine (DrawablePtr	pDrawable,
 }
 
 void
+fbFixCoordModePrevious (int	    npt,
+			DDXPointPtr ppt)
+{
+    int	    x, y;
+
+    x = ppt->x;
+    y = ppt->y;
+    npt--;
+    while (npt--)
+    {
+	ppt++;
+	x = (ppt->x += x);
+	y = (ppt->y += y);
+    }
+}
+
+void
 fbPolyLine (DrawablePtr	pDrawable,
 	    GCPtr	pGC,
 	    int		mode,
 	    int		npt,
 	    DDXPointPtr	ppt)
 {
+    void	(*line) (DrawablePtr, GCPtr, int mode, int npt, DDXPointPtr ppt);
+    
     if (pGC->lineWidth == 0)
     {
-	fbZeroLine (pDrawable, pGC, mode, npt, ppt);
+	line = fbZeroLine;
+#ifndef FBNOPIXADDR
+	if (pGC->fillStyle == FillSolid &&
+	    pGC->lineStyle == LineSolid &&
+	    REGION_NUM_RECTS (fbGetCompositeClip(pGC)) == 1)
+	{
+	    switch (pDrawable->bitsPerPixel) {
+	    case 8:  line = fbPolyline8; break;
+	    case 16: line = fbPolyline16; break;
+	    case 32: line = fbPolyline32; break;
+	    }
+	}
+#endif
     }
     else
     {
 	if (pGC->lineStyle != LineSolid)
-	    miWideDash (pDrawable, pGC, mode, npt, ppt);
+	    line = miWideDash;
 	else
-	    miWideLine (pDrawable, pGC, mode, npt, ppt);
+	    line = miWideLine;
     }
+    (*line) (pDrawable, pGC, mode, npt, ppt);
+}
+
+void
+fbPolySegment (DrawablePtr  pDrawable,
+	       GCPtr	    pGC,
+	       int	    nseg,
+	       xSegment	    *pseg)
+{
+    void    (*seg) (DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pseg);
+
+    seg = miPolySegment;
+#ifndef FBNOPIXADDR
+    if (pGC->lineWidth == 0 &&
+	pGC->fillStyle == FillSolid &&
+	pGC->lineStyle == LineSolid &&
+	REGION_NUM_RECTS (fbGetCompositeClip(pGC)) == 1)
+    {
+	switch (pDrawable->bitsPerPixel) {
+	case 8:  seg = fbPolySegment8; break;
+	case 16: seg = fbPolySegment16; break;
+	case 32: seg = fbPolySegment32; break;
+	}
+    }
+#endif
+    (*seg) (pDrawable, pGC, nseg, pseg);
 }

@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbits.c,v 1.1 1999/11/19 13:53:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbits.c,v 1.2 2000/01/18 16:35:41 tsi Exp $ */
 
 #include "fb.h"
 #include "miline.h"
@@ -41,6 +41,8 @@
 #define DOTS	    fbDots8
 #define ARC	    fbArc8
 #define GLYPH	    fbGlyph8
+#define POLYLINE    fbPolyline8
+#define POLYSEGMENT fbPolySegment8
 #define BITS	    BYTE
 #define BITS2	    CARD16
 #define BITS4	    CARD32
@@ -52,6 +54,8 @@
 #undef DOTS
 #undef ARC
 #undef GLYPH
+#undef POLYLINE
+#undef POLYSEGMENT
 #undef BITS
 #undef BITS2
 #undef BITS4
@@ -61,6 +65,8 @@
 #define DOTS	    fbDots16
 #define ARC	    fbArc16
 #define GLYPH	    fbGlyph16
+#define POLYLINE    fbPolyline16
+#define POLYSEGMENT fbPolySegment16
 #define BITS	    CARD16
 #define BITS2	    CARD32
 #if FB_SHIFT == 6
@@ -73,6 +79,8 @@
 #undef DOTS
 #undef ARC
 #undef GLYPH
+#undef POLYLINE
+#undef POLYSEGMENT
 #undef BITS
 #undef BITS2
 #if FB_SHIFT == 6
@@ -84,6 +92,8 @@
 #define DOTS	    fbDots32
 #define ARC	    fbArc32
 #define GLYPH	    fbGlyph32
+#define POLYLINE    fbPolyline32
+#define POLYSEGMENT fbPolySegment32
 #define BITS	    CARD32
 #if FB_SHIFT == 6
 #define BITS2	    FbBits
@@ -96,6 +106,8 @@
 #undef DOTS
 #undef ARC
 #undef GLYPH
+#undef POLYLINE
+#undef POLYSEGMENT
 #undef BITS
 #if FB_SHIFT == 6
 #undef BITS2

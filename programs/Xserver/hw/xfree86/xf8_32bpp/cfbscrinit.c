@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbscrinit.c,v 1.3 1999/03/21 07:35:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbscrinit.c,v 1.4 1999/10/13 04:21:37 dawes Exp $ */
 
 
 #include "X.h"
@@ -39,8 +39,6 @@ int cfb8_32GCPrivateIndex;
 int cfb8_32ScreenPrivateIndex;
 
 static unsigned long cfb8_32Generation = 0;
-
-static Bool xf8_32SaveRestoreImage(int scrnIndex, SaveRestoreFlags what);
 
 static Bool
 cfb8_32AllocatePrivates(ScreenPtr pScreen)
@@ -167,7 +165,6 @@ cfb8_32FinishScreenInit(
     int dpix, int dpiy,		/* dots per inch */
     int width			/* pixel width of frame buffer */
 ){
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     VisualPtr	visuals;
     DepthPtr	depths;
     int		nvisuals;
@@ -191,8 +188,6 @@ cfb8_32FinishScreenInit(
     pScreen->SetScreenPixmap = cfb32SetScreenPixmap;	/* OK */
     pScreen->WindowExposures = cfb8_32WindowExposures;
 
-    pScrn->SaveRestoreImage = xf8_32SaveRestoreImage;
-
     return TRUE;
 }
 
@@ -215,129 +210,4 @@ cfb8_32ScreenInit(
 
     return cfb8_32FinishScreenInit(
 		pScreen, pbits, xsize, ysize, dpix, dpiy, width);
-}
-
-/*
- * Function to save/restore the video image and replace the root drawable
- * with a pixmap.
- *
- * This is used when VT switching and when entering/leaving DGA direct mode.
- *
- * This has been rewritten compared with the older code, with the intention
- * of making it more general.  It relies on some new functions added to
- * the ScreenRec.  It has not been tested yet.
- *
- * Here, we switch the pixmap data pointers, rather than the pixmaps themselves
- * to avoid having to find and change any references to the screen pixmap
- * such as GC's, window privates etc.
- *
- * This version does not currently deal with aperture remappings.  Drivers
- * directly or indirectly calling this should not unmap the aperture on
- * LeaveVT() and remap it on EnterVT().
- */
-
-static Bool
-xf8_32SaveRestoreImage(int scrnIndex, SaveRestoreFlags what)
-{
-    ScreenPtr pScreen;
-    static unsigned char *devPrivates[MAXSCREENS];
-    static int devKinds[MAXSCREENS];
-    pointer devPrivate;
-    Bool ret = FALSE;
-    int width, height, devKind, bitsPerPixel;
-    PixmapPtr pScreenPix, pPix;
-
-    BoxRec pixBox;
-    RegionRec pixReg;
-
-    pScreen = xf86Screens[scrnIndex]->pScreen;
-
-    pixBox.x1 = pixBox.y1 = 0;
-    pixBox.x2 = pScreen->width;
-    pixBox.y2 = pScreen->height;
-    REGION_INIT(pScreen, &pixReg, &pixBox, 1);
-
-    pScreenPix = (*pScreen->GetScreenPixmap)(pScreen);
-
-    switch (what) {
-    case SaveImage:
-        /*
-         * Create a dummy pixmap to write to while VT is switched out, and
-         * copy the screen to that pixmap.
-         */
-	width = pScreenPix->drawable.width;
-	height = pScreenPix->drawable.height;
-	bitsPerPixel = pScreenPix->drawable.bitsPerPixel;
-
-	/* save the old data */
-	devPrivates[scrnIndex] = pScreenPix->devPrivate.ptr;
-	devKinds[scrnIndex] = pScreenPix->devKind;
-	
-	/* allocate new data */
-	devKind = (((width * bitsPerPixel) + 31) >> 5) << 2; /* which macro ? */
-        devPrivate = xalloc(devKind * height);
-
-        if(devPrivate) {
-	    pPix = GetScratchPixmapHeader(pScreen, width, height, 
-		   pScreen->rootDepth, bitsPerPixel, devKind, devPrivate);
-				
-	    if(pPix) {
-		(*pScreen->BackingStoreFuncs.SaveAreas)(pPix, &pixReg, 0, 0,
-						WindowTable[scrnIndex]);
-
-		FreeScratchPixmapHeader(pPix);
-
-		/* modify the pixmap */
-		pScreenPix->devPrivate.ptr = devPrivate;
-		pScreenPix->devKind = devKind;
-
-		WalkTree(xf86Screens[scrnIndex]->pScreen,xf86NewSerialNumber,0);
-		ret = TRUE;
-	    } else
-		xfree(devPrivate);
-	}
-	break;
-    case RestoreImage:
-	/*
-	 * Reinstate the screen pixmap and copy the dummy pixmap back
-	 * to the screen.
-	 */
-	
-	if (!xf86ServerIsResetting()) {
-	     width = pScreenPix->drawable.width;
-	     height = pScreenPix->drawable.height;
-	     bitsPerPixel = pScreenPix->drawable.bitsPerPixel;
-	     devPrivate = pScreenPix->devPrivate.ptr;
-	     devKind = pScreenPix->devKind;
-
-	     /* scratch pixmap for the saved screen */
-	     pPix = GetScratchPixmapHeader(pScreen, width, height, 
-		   pScreen->rootDepth, bitsPerPixel, devKind, devPrivate);
-
-	     if(pPix) {
-		/* restore the screen pixmap's correct values */
-		pScreenPix->devPrivate.ptr = devPrivates[scrnIndex];
-		pScreenPix->devKind = devKinds[scrnIndex];
-
-		(*pScreen->BackingStoreFuncs.RestoreAreas)(pPix, &pixReg, 0, 0,
-						       WindowTable[scrnIndex]);
-		xfree(devPrivate);
-		FreeScratchPixmapHeader(pPix);
-		/* restore old values */
-		WalkTree(xf86Screens[scrnIndex]->pScreen,xf86NewSerialNumber,0);
-		ret = TRUE;
-	     }
-	     break;
-	} 
-	/* Fall through */
-    case FreeImage:
-	if (pScreenPix->devPrivate.ptr)
-	    xfree(pScreenPix->devPrivate.ptr);
-	ret = TRUE;
-	break;
-    default:
-	ErrorF("xf8_32SaveRestoreImage: Invalid flag (%d)\n", what);
-    }
-    REGION_UNINIT(pScreen, &pixReg);
-    return ret;
 }

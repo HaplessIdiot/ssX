@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbgetsp.c,v 1.1 1999/11/19 13:53:43 hohndel Exp $ */
 
 #include "fb.h"
 
@@ -38,7 +38,15 @@ fbGetSpans(DrawablePtr	pDrawable,
     int		    srcBpp;
     int		    xoff;
     
+    /*
+     * XFree86 DDX empties the root borderClip when the VT is
+     * switched away; this checks for that case
+     */
+    if (!fbDrawableEnabled(pDrawable))
+	return;
+    
     fbGetDrawable (pDrawable, src, srcStride, srcBpp);
+    
     while (nspans--)
     {
 	xoff = (((int) pchardstStart) & (FB_MASK >> 3));

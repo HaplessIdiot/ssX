@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.1 1999/11/19 13:53:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.2 1999/12/30 02:33:58 robin Exp $ */
 
 /*
  * This file defines functions for drawing some primitives using
@@ -168,33 +168,40 @@ BRESDASH (DrawablePtr	pDrawable,
     }
 }
 
+#define isClipped(c,ul,lr)  ((((c) - (ul)) | ((lr) - (c))) & 0x80008000)
+
 void
 DOTS (FbBits	    *dst,
       FbStride	    dstStride,
       int	    dstBpp,
       BoxPtr	    pBox,
-      xPoint	    *pts,
+      xPoint	    *ptsOrig,
       int	    npt,
+      int	    xoff,
+      int	    yoff,
       FbBits	    and,
       FbBits	    xor)
 {
+    INT32    	*pts = (INT32 *) ptsOrig;
     BITS	*bits = (BITS *) dst;
     BITS	fg = (BITS) xor;
     FbStride	bitsStride = dstStride * (sizeof (FbBits) / sizeof (BITS));
-    int		x1, y1, x2, y2;
-    int		x, y;
+    INT32    	ul, lr;
+    INT32    	off;
+    INT32    	pt;
 
-    x1 = pBox->x1;
-    y1 = pBox->y1;
-    x2 = pBox->x2;
-    y2 = pBox->y2;
+    off = coordToInt(xoff,yoff);
+    off -= (off & 0x8000) << 1;
+    ul = *((int *) &pBox->x1) - off;
+    lr = *((int *) &pBox->x2) - off - 0x00010001;
+    
+    bits += bitsStride * yoff + xoff;
+    
     while (npt--)
     {
-	x = pts->x;
-	y = pts->y;
-	pts++;
-	if (x1 <= x && x < x2 && y1 <= y && y < y2)
-	    *(bits + y * bitsStride + x) = fg;
+	pt = *pts++;
+	if (!isClipped(pt,ul,lr))
+	    *(bits + intToY(pt) * bitsStride + intToX(pt)) = fg; 
     }
 }
 
@@ -398,14 +405,73 @@ ARC (FbBits	*dst,
 # define WRITE4(d,n,fg)	    WRITE2(d,n+2,WRITE2(d,n,fg))
 #endif
 
+#define WRITE_STIPPLE(bits,dst,fg) \
+    switch (bits) { \
+    case 0: \
+	break; \
+    case 1: \
+	WRITE1(dst,0,fg); \
+	break; \
+    case 2: \
+	WRITE1(dst,1,fg); \
+	break; \
+    case 3: \
+	WRITE2(dst,0,fg); \
+	break; \
+    case 4: \
+	WRITE1(dst,2,fg); \
+	break; \
+    case 5: \
+	WRITE1(dst,0,fg); \
+	WRITE1(dst,2,fg); \
+	break; \
+    case 6: \
+	WRITE1(dst,1,fg); \
+	WRITE1(dst,2,fg); \
+	break; \
+    case 7: \
+	WRITE2(dst,0,fg); \
+	WRITE1(dst,2,fg); \
+	break; \
+    case 8: \
+	WRITE1(dst,3,fg); \
+	break; \
+    case 9: \
+	WRITE1(dst,0,fg); \
+	WRITE1(dst,3,fg); \
+	break; \
+    case 10: \
+	WRITE1(dst,1,fg); \
+	WRITE1(dst,3,fg); \
+	break; \
+    case 11: \
+	WRITE2(dst,0,fg); \
+	WRITE1(dst,3,fg); \
+	break; \
+    case 12: \
+	WRITE2(dst,2,fg); \
+	break; \
+    case 13: \
+	WRITE1(dst,0,fg); \
+	WRITE2(dst,2,fg); \
+	break; \
+    case 14: \
+	WRITE1(dst,1,fg); \
+	WRITE2(dst,2,fg); \
+	break; \
+    case 15: \
+	WRITE4(dst,0,fg); \
+	break; \
+    }
+
 void
 GLYPH (FbBits	*dstBits,
-       FbStride	dstStride,
-       int	dstBpp,
-       FbStip	*stipple,
-       FbBits	fg,
-       int	x,
-       int	height)
+   FbStride	dstStride,
+   int	dstBpp,
+   FbStip	*stipple,
+   FbBits	fg,
+   int	x,
+   int	height)
 {
     int	    lshift;
     FbStip  bits;
@@ -426,63 +492,8 @@ GLYPH (FbBits	*dstBits,
 	n = lshift;
 	while (bits)
 	{
-	    switch (FbStipMoveLsb (FbLeftStipBits (bits, n), 4, n)) {
-	    case 0:
-		break;
-	    case 1:
-		WRITE1(dst,0,fg);
-		break;
-	    case 2:
-		WRITE1(dst,1,fg);
-		break;
-	    case 3:
-		WRITE2(dst,0,fg);
-		break;
-	    case 4:
-		WRITE1(dst,2,fg);
-		break;
-	    case 5:
-		WRITE1(dst,0,fg);
-		WRITE1(dst,2,fg);
-		break;
-	    case 6:
-		WRITE1(dst,1,fg);
-		WRITE1(dst,2,fg);
-		break;
-	    case 7:
-		WRITE2(dst,0,fg);
-		WRITE1(dst,2,fg);
-		break;
-	    case 8:
-		WRITE1(dst,3,fg);
-		break;
-	    case 9:
-		WRITE1(dst,0,fg);
-		WRITE1(dst,3,fg);
-		break;
-	    case 10:
-		WRITE1(dst,1,fg);
-		WRITE1(dst,3,fg);
-		break;
-	    case 11:
-		WRITE2(dst,0,fg);
-		WRITE1(dst,3,fg);
-		break;
-	    case 12:
-		WRITE2(dst,2,fg);
-		break;
-	    case 13:
-		WRITE1(dst,0,fg);
-		WRITE2(dst,2,fg);
-		break;
-	    case 14:
-		WRITE1(dst,1,fg);
-		WRITE2(dst,2,fg);
-		break;
-	    case 15:
-		WRITE4(dst,0,fg);
-		break;
-	    }
+	    WRITE_STIPPLE (FbStipMoveLsb (FbLeftStipBits (bits, n), 4, n),
+			   dst, fg);
 	    bits = FbStipLeft (bits, n);
 	    n = 4;
 	    dst += 4;
@@ -491,6 +502,347 @@ GLYPH (FbBits	*dstBits,
     }
 }
 
+void
+POLYLINE (DrawablePtr	pDrawable,
+	  GCPtr		pGC,
+	  int		mode,
+	  int		npt,
+	  DDXPointPtr	ptsOrig)
+{
+    INT32	    *pts = (INT32 *) ptsOrig;
+    int		    xoff = pDrawable->x;
+    int		    yoff = pDrawable->y;
+    unsigned int    bias = miGetZeroLineBias(pDrawable->pScreen);
+    BoxPtr	    pBox = REGION_EXTENTS (pDrawable->pScreen, fbGetCompositeClip (pGC));
+    
+    FbBits	    *dst;
+    int		    dstStride;
+    int		    dstBpp;
+    
+    BITS	    *bits, *bitsBase;
+    FbStride	    bitsStride;
+    BITS	    xor = fbGetGCPrivate(pGC)->xor;
+    BITS	    and = fbGetGCPrivate(pGC)->and;
+    int		    dashoffset = 0;
+    
+    INT32	    ul, lr;
+    INT32	    off;
+    INT32	    pt1, pt2;
+
+    int		    e, e1, e3, len;
+    int		    stepmajor, stepminor;
+    int		    octant;
+
+    if (mode == CoordModePrevious)
+	fbFixCoordModePrevious (npt, ptsOrig);
+    
+    fbGetDrawable (pDrawable, dst, dstStride, dstBpp);
+    bitsStride = dstStride * (sizeof (FbBits) / sizeof (BITS));
+    bitsBase = ((BITS *) dst) + yoff * bitsStride + xoff;
+    off = coordToInt(xoff,yoff);
+    off -= (off & 0x8000) << 1;
+    ul = *((int *) &pBox->x1) - off;
+    lr = *((int *) &pBox->x2) - off - 0x00010001;
+    
+    bits += bitsStride * yoff + xoff;
+    
+    pt1 = *pts++;
+    npt--;
+    pt2 = *pts++;
+    npt--;
+    for (;;)
+    {
+	if (isClipped (pt1, ul, lr) | isClipped (pt2, ul, lr))
+	{
+	    fbSegment (pDrawable, pGC, 
+		       intToX(pt1) + xoff, intToY(pt1) + yoff,
+		       intToX(pt2) + xoff, intToY(pt2) + yoff,
+		       npt == 0 && pGC->capStyle != CapNotLast,
+		       &dashoffset);
+	    if (!npt)
+		return;
+	    pt1 = pt2;
+	    pt2 = *pts++;
+	    npt--;
+	}
+	else
+	{
+	    bits = bitsBase + intToY(pt1) * bitsStride + intToX(pt1);
+	    for (;;)
+	    {
+		CalcLineDeltas (intToX(pt1), intToY(pt1),
+				intToX(pt2), intToY(pt2),
+				len, e1, stepmajor, stepminor, 1, bitsStride,
+				octant);
+		if (len < e1)
+		{
+		    e3 = len;
+		    len = e1;
+		    e1 = e3;
+
+		    e3 = stepminor;
+		    stepminor = stepmajor;
+		    stepmajor = e3;
+		    SetYMajorOctant(octant);
+		}
+		e = -len;
+		e1 <<= 1;
+		e3 = e << 1;
+		FIXUP_ERROR (e, octant, bias);
+		if (and == 0)
+		{
+		    while (len--)
+		    {
+			*bits = xor;
+			bits += stepmajor;
+			e += e1;
+			if (e >= 0)
+			{
+			    bits += stepminor;
+			    e += e3;
+			}
+		    }
+		}
+		else
+		{
+		    while (len--)
+		    {
+			*bits = FbDoRRop (*bits, and, xor);
+			bits += stepmajor;
+			e += e1;
+			if (e >= 0)
+			{
+			    bits += stepminor;
+			    e += e3;
+			}
+		    }
+		}
+		if (!npt)
+		{
+		    if (pGC->capStyle != CapNotLast && 
+			pt2 != *((INT32 *) ptsOrig))
+			*bits = FbDoRRop (*bits, and, xor);
+		    return;
+		}
+		pt1 = pt2;
+		pt2 = *pts++;
+		--npt;
+		if (isClipped (pt2, ul, lr))
+		    break;
+    	    }
+	}
+    }
+}
+
+void
+POLYSEGMENT (DrawablePtr    pDrawable,
+	     GCPtr	    pGC,
+	     int	    nseg,
+	     xSegment	    *pseg)
+{
+    INT32	    *pts = (INT32 *) pseg;
+    int		    xoff = pDrawable->x;
+    int		    yoff = pDrawable->y;
+    unsigned int    bias = miGetZeroLineBias(pDrawable->pScreen);
+    BoxPtr	    pBox = REGION_EXTENTS (pDrawable->pScreen, fbGetCompositeClip (pGC));
+    
+    FbBits	    *dst;
+    int		    dstStride;
+    int		    dstBpp;
+    
+    BITS	    *bits, *bitsBase;
+    FbStride	    bitsStride;
+    FbBits	    xorBits = fbGetGCPrivate(pGC)->xor;
+    FbBits	    andBits = fbGetGCPrivate(pGC)->and;
+    BITS	    xor = xorBits;
+    BITS	    and = andBits;
+    int		    dashoffset = 0;
+    
+    INT32	    ul, lr;
+    INT32	    off;
+    INT32	    pt1, pt2;
+
+    int		    e, e1, e3, len;
+    int		    stepmajor, stepminor;
+    int		    octant;
+    Bool	    capNotLast;
+
+    fbGetDrawable (pDrawable, dst, dstStride, dstBpp);
+    bitsStride = dstStride * (sizeof (FbBits) / sizeof (BITS));
+    bitsBase = ((BITS *) dst) + yoff * bitsStride + xoff;
+    off = coordToInt(xoff,yoff);
+    off -= (off & 0x8000) << 1;
+    ul = *((int *) &pBox->x1) - off;
+    lr = *((int *) &pBox->x2) - off - 0x00010001;
+    
+    bits += bitsStride * yoff + xoff;
+    
+    capNotLast = pGC->capStyle == CapNotLast;
+    
+    while (nseg--)
+    {
+	pt1 = *pts++;
+	pt2 = *pts++;
+	if (isClipped (pt1, ul, lr) | isClipped (pt2, ul, lr))
+	{
+	    fbSegment (pDrawable, pGC, 
+		       intToX(pt1) + xoff, intToY(pt1) + yoff,
+		       intToX(pt2) + xoff, intToY(pt2) + yoff,
+		       !capNotLast, &dashoffset);
+	}
+	else
+	{
+	    CalcLineDeltas (intToX(pt1), intToY(pt1),
+			    intToX(pt2), intToY(pt2),
+			    len, e1, stepmajor, stepminor, 1, bitsStride,
+			    octant);
+	    if (e1 == 0 && len > 3)
+	    {
+		int	x1, x2;
+		FbBits	*dstLine;
+		int	dstX, width;
+		FbBits	startmask, endmask;
+		int	nmiddle;
+		
+		if (stepmajor < 0)
+		{
+		    x1 = intToX(pt2);
+		    x2 = intToX(pt1) + 1;
+		    if (capNotLast)
+			x1++;
+		}
+		else
+		{
+		    x1 = intToX(pt1);
+		    x2 = intToX(pt2);
+		    if (!capNotLast)
+			x2++;
+		}
+		dstX = (x1 + xoff) * (sizeof (BITS) * 8);
+		width = (x2 - x1) * (sizeof (BITS) * 8);
+		
+		dstLine = dst + (intToY(pt1) + yoff) * dstStride;
+		dstLine += dstX >> FB_SHIFT;
+		dstX &= FB_MASK;
+		FbMaskBits (dstX, width, startmask, nmiddle, endmask);
+		if (startmask)
+		{
+		    *dstLine = FbDoMaskRRop (*dstLine, andBits, xorBits, startmask);
+		    dstLine++;
+		}
+		if (!andBits)
+		    while (nmiddle--)
+			*dstLine++ = xorBits;
+		else
+		    while (nmiddle--)
+		    {
+			*dstLine = FbDoRRop (*dstLine, andBits, xorBits);
+			dstLine++;
+		    }
+		if (endmask)
+		    *dstLine = FbDoMaskRRop (*dstLine, andBits, xorBits, endmask);
+	    }
+	    else
+	    {
+		bits = bitsBase + intToY(pt1) * bitsStride + intToX(pt1);
+		if (len < e1)
+		{
+		    e3 = len;
+		    len = e1;
+		    e1 = e3;
+    
+		    e3 = stepminor;
+		    stepminor = stepmajor;
+		    stepmajor = e3;
+		    SetYMajorOctant(octant);
+		}
+		e = -len;
+		e1 <<= 1;
+		e3 = e << 1;
+		FIXUP_ERROR (e, octant, bias);
+		if (!capNotLast)
+		    len++;
+		if (and == 0)
+		{
+		    while (len--)
+		    {
+			*bits = xor;
+			bits += stepmajor;
+			e += e1;
+			if (e >= 0)
+			{
+			    bits += stepminor;
+			    e += e3;
+			}
+		    }
+		}
+		else
+		{
+		    while (len--)
+		    {
+			*bits = FbDoRRop (*bits, and, xor);
+			bits += stepmajor;
+			e += e1;
+			if (e >= 0)
+			{
+			    bits += stepminor;
+			    e += e3;
+			}
+		    }
+		}
+	    }
+	}
+    }
+}
+
+#if 0
+void
+STIPPLE ()
+{
+    FbStip  bits;
+    FbStip  startmask, endmask;
+    int	    nmiddle, n;
+    
+    /*
+     * convert from bit positions to 4-pixel positions
+     */
+    dstX /= (sizeof (BITS) * 8) / 4;
+    width /= (sizeof (BITS) * 8) / 4;
+    
+    while (height--)
+    {
+	bits = stipple[stippos++];
+	if (stippos == stipheight)
+	    stippos = 0;
+	n = nmiddle;
+	if (startmask)
+	{
+	    WRITE_STIPPLE (FbStipMoveLsb (FbLeftStipBits (bits, 4), 4, 4) & startmask,
+			   dst, fg);
+	    dst++;
+	    bits = FbRotStipLeft (bits, 4);
+	}
+	while (n--)
+	{
+	    WRITE_STIPPLE (FbStipMoveLsb (FbLeftStipBits (bits, 4), 4, 4),
+			   dst, fg);
+	    dst++;
+	    bits = FbRotStipLeft (bits, 4);
+	}
+	if (endmask)
+	{
+	    WRITE_STIPPLE (FbStipMoveLsb (FbLeftStipBits (bits, 4), 4, 4) & endmask,
+			   dst, fg);
+	}
+	dst += dstStride;
+    }
+}
+#endif
+
+#undef WRITE_ADDR1
+#undef WRITE_ADDR2
+#undef WRITE_ADDR4
 #undef WRITE1
 #undef WRITE2
 #undef WRITE4
+#undef WRITE_STIPPLE

@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbimage.c,v 1.2 2000/01/09 17:54:34 alanh Exp $ */
 
 #include "fb.h"
 #ifdef XFree86LOADER
@@ -279,6 +279,13 @@ fbGetImage (DrawablePtr	    pDrawable,
     int		    srcBpp;
     FbStip	    *dst;
     FbStride	    dstStride;
+    
+    /*
+     * XFree86 DDX empties the root borderClip when the VT is
+     * switched away; this checks for that case
+     */
+    if (!fbDrawableEnabled(pDrawable))
+	return;
     
     fbGetDrawable (pDrawable, src, srcStride, srcBpp);
     

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbgetsp.c,v 3.3 1998/07/25 09:06:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbgetsp.c,v 3.4 1998/10/04 09:37:43 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -100,6 +100,12 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
 	    FatalError("cfbGetSpans: invalid depth\n");
     }
 
+    /*
+     * XFree86 DDX empties the root borderClip when the VT is
+     * switched away; this checks for that case
+     */
+    if (!cfbDrawableEnabled(pDrawable))
+	return;
     
     cfbGetLongWidthAndPointer (pDrawable, widthSrc, psrcBase)
 

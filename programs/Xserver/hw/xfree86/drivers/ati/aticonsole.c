@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.4 1999/09/25 14:37:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.5 1999/09/27 06:29:40 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -198,6 +198,9 @@ ATIEnterVT
     ScrnInfoPtr pScreenInfo = xf86Screens[iScreen];
     ScreenPtr   pScreen     = pScreenInfo->pScreen;
     ATIPtr      pATI        = ATIPTR(pScreenInfo);
+    PixmapPtr	pPixmap	    = (*pScreen->GetScreenPixmap) (pScreen);
+    Bool	ret;
+    Bool	enabled;
 
     if (!ATIEnterGraphics(NULL, pScreenInfo, pATI))
         return FALSE;
@@ -206,9 +209,20 @@ ATIEnterVT
     if (!miModifyBanking(pScreen, &pATI->BankInfo))
         return FALSE;
 
+    enabled = pPixmap->devPrivate.ptr != NULL;
+    if (!enabled)
+	pPixmap->devPrivate = pScreenInfo->pixmapPrivate;
+    
     /* Tell framebuffer about remapped aperture */
-    return (*pScreen->ModifyPixmapHeader)(pScreenInfo->ppix,
-        -1, -1, -1, -1, -1, pATI->pMemory);
+    ret = (*pScreen->ModifyPixmapHeader)(pPixmap, 
+					 -1, -1, -1, -1, -1, pATI->pMemory);
+
+    if (!enabled)
+    {
+	pScreenInfo->pixmapPrivate = pPixmap->devPrivate;
+	pPixmap->devPrivate.ptr = NULL;
+    }
+    return ret;
 }
 
 /*
