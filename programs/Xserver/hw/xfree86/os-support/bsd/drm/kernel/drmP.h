@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 /* drmP.h -- Private header for Direct Rendering Manager -*- linux-c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
  *
@@ -312,7 +314,7 @@ struct drm_device {
 #ifdef __FreeBSD__
 	device_t	  device;	/* Device instance from newbus     */
 #endif
-	dev_t		  devnode;	/* Device number for mknod	   */
+	DEV_T		  devnode;	/* Device number for mknod	   */
 	int		  if_version;	/* Highest interface version set */
 
 	int		  flags;	/* Flags to open(2)		   */
