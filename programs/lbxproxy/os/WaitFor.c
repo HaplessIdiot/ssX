@@ -1,4 +1,4 @@
-/* $XConsortium: WaitFor.c /main/13 1996/11/17 15:01:26 rws $ */
+/* $TOG: WaitFor.c /main/14 1997/09/12 14:26:41 barstow $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -70,23 +70,11 @@ extern int errno;
 #include <X11/Xpoll.h>
 #include "osdep.h"
 #include "os.h"
-
-extern fd_set AllSockets;
-extern fd_set AllClients;
-extern fd_set LastSelectMask;
-extern fd_set WellKnownConnections;
-extern fd_set ClientsWithInput;
-extern fd_set ClientsWriteBlocked;
-extern fd_set OutputPending;
+#include "pm.h"
 
 extern int ConnectionTranslation[];
 
-extern Bool NewOutputPending;
-extern Bool AnyClientsWriteBlocked;
-
 extern WorkQueuePtr workQueue;
-
-extern int proxy_manager_fd;
 
 /*****************
  * WaitForSomething:

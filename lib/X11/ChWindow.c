@@ -1,4 +1,4 @@
-/* $XConsortium: ChWindow.c,v 11.12 94/04/17 20:18:44 rws Exp $ */
+/* $TOG: ChWindow.c /main/9 1997/09/12 15:29:53 kaleb $ */
 /*
 
 Copyright (c) 1986  X Consortium
@@ -38,8 +38,6 @@ unsigned int width, height;
     LockDisplay(dpy);
     GetReqExtra(ConfigureWindow, 8, req); /* 2 4-byte quantities */
 
-    /* XXX assuming that sizeof(unsigned long) is 32 bits */
-
     req->window = w;
     req->mask = CWWidth | CWHeight;
 #ifdef MUSTCOPY
@@ -58,4 +56,5 @@ unsigned int width, height;
 #endif /* MUSTCOPY */
     UnlockDisplay(dpy);
     SyncHandle();
+    return 1;
 }

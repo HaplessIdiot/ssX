@@ -1,4 +1,4 @@
-/* $XConsortium: XKBNames.c,v 1.3 94/04/08 15:12:04 erik Exp $ */
+/* $TOG: XKBNames.c /main/10 1997/09/08 13:56:03 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,7 +25,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-#include <stdio.h>
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -34,44 +33,65 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
 static Status
+#if NeedFunctionPrototypes
+_XkbReadAtoms(	XkbReadBufferPtr	buf,
+		Atom *			atoms,
+		int			maxAtoms,
+		CARD32		 	present)
+#else
 _XkbReadAtoms(buf,atoms,maxAtoms,present)
     XkbReadBufferPtr	 buf;
     Atom		*atoms;
     int			 maxAtoms;
     CARD32		 present;
+#endif
 {
 register int i,bit;
 
     for (i=0,bit=1;(i<maxAtoms)&&(present);i++,bit<<=1) {
 	if (present&bit) {
 	    if (!_XkbReadBufferCopy32(buf,(long *)&atoms[i],1))
-		return False;
+		return BadLength;
 	    present&= ~bit;
 	}
     }
-    return True;
+    return Success;
 }
 
-static Status
-_XkbReadGetNamesReply(dpy,rep,xkb)
-    Display *dpy;
-    xkbGetNamesReply *rep;
-    XkbDescPtr xkb;
+Status
+#if NeedFunctionPrototypes
+_XkbReadGetNamesReply(	Display *		dpy,
+			xkbGetNamesReply *	rep,
+			XkbDescPtr 		xkb,
+			int *			nread_rtrn)
+#else
+_XkbReadGetNamesReply(dpy,rep,xkb,nread_rtrn)
+    Display *		dpy;
+    xkbGetNamesReply *	rep;
+    XkbDescPtr 		xkb;
+    int *		nread_rtrn;
+#endif
 {
     int				 i,len;
-    char		 	*desc;
     XkbReadBufferRec		 buf;
     register XkbNamesPtr	 names;
 
     if ( xkb->device_spec == XkbUseCoreKbd )
 	xkb->device_spec = rep->deviceID;
 
+    if ((xkb->names==NULL)&&
+	(XkbAllocNames(xkb,rep->which,
+				rep->nRadioGroups,rep->nKeyAliases)!=Success)) {
+	return BadAlloc;
+    }
     names= xkb->names;
     if (rep->length==0)
-	return True;
+	return Success;
 
-    if (!_XkbInitReadBuffer(dpy,&buf,rep->length*4))
-	return False;
+    if (!_XkbInitReadBuffer(dpy,&buf,(int)rep->length*4))
+	return BadAlloc;
+    if (nread_rtrn)
+	*nread_rtrn= (int)rep->length*4;
 
     if ((rep->which&XkbKeycodesNameMask)&&
 	(!_XkbReadBufferCopy32(&buf,(long *)&names->keycodes,1)))
@@ -82,8 +102,14 @@ _XkbReadGetNamesReply(dpy,rep,xkb)
     if ((rep->which&XkbSymbolsNameMask)&&
 	(!_XkbReadBufferCopy32(&buf,(long *)&names->symbols,1)))
 	    goto BAILOUT;
-    if ((rep->which&XkbSemanticsNameMask)&&
-	(!_XkbReadBufferCopy32(&buf,(long *)&names->semantics,1)))
+    if ((rep->which&XkbPhysSymbolsNameMask)&&
+	(!_XkbReadBufferCopy32(&buf,(long *)&names->phys_symbols,1)))
+	    goto BAILOUT;
+    if ((rep->which&XkbTypesNameMask)&&
+	(!_XkbReadBufferCopy32(&buf,(long *)&names->types,1)))
+	    goto BAILOUT;
+    if ((rep->which&XkbCompatNameMask)&&
+	(!_XkbReadBufferCopy32(&buf,(long *)&names->compat,1)))
 	    goto BAILOUT;
 
     if ( rep->which & XkbKeyTypeNamesMask ) {
@@ -99,8 +125,8 @@ _XkbReadGetNamesReply(dpy,rep,xkb)
 		len-= 4;
 	    }
 	}
-	if (len>0) 
-	    _XkbSkipReadBufferData(&buf,len);
+	if ((len>0)&&(!_XkbSkipReadBufferData(&buf,len)))
+	    goto BAILOUT;
     }
     if ( rep->which&XkbKTLevelNamesMask ) {
 	CARD8 *nLevels;
@@ -114,22 +140,22 @@ _XkbReadGetNamesReply(dpy,rep,xkb)
 	    type= map->types;
 	    for (i=0;i<(int)rep->nTypes;i++,type++) {
 		if (i>=map->num_types) {
-		    _XkbSkipReadBufferData(&buf,nLevels[i]*4);
+		    if (!_XkbSkipReadBufferData(&buf,nLevels[i]*4))
+			goto BAILOUT;
 		    continue;
 		}
-		if ((nLevels[i]>0)&&(nLevels[i]!=type->group_width)) {
-		    fprintf(stderr,"group_width in names doesn't match type\n");
+		if ((nLevels[i]>0)&&(nLevels[i]!=type->num_levels)) {
 		    goto BAILOUT;
 		}
-		if (type->lvl_names!=NULL)
-		    Xfree(type->lvl_names);
+		if (type->level_names!=NULL)
+		    Xfree(type->level_names);
 		if (nLevels[i]==0) {
-		    type->lvl_names= NULL;
+		    type->level_names= NULL;
 		    continue;
 		}
-		type->lvl_names= (Atom *)Xmalloc(nLevels[i]*sizeof(Atom));
-		if (type->lvl_names!=NULL) {
-		    if (!_XkbReadBufferCopy32(&buf,(long *)type->lvl_names,
+		type->level_names= _XkbTypedCalloc(nLevels[i],Atom);
+		if (type->level_names!=NULL) {
+		    if (!_XkbReadBufferCopy32(&buf,(long *)type->level_names,
 								nLevels[i]))
 			goto BAILOUT;
 		}
@@ -139,51 +165,64 @@ _XkbReadGetNamesReply(dpy,rep,xkb)
 	    }
 	}
 	else {
-	    for (i=0;i<(int)rep->nTypes;i++,type++) {
+	    for (i=0;i<(int)rep->nTypes;i++) {
 		_XkbSkipReadBufferData(&buf,nLevels[i]*4);
 	    }
 	}
     }
     if (rep->which & XkbIndicatorNamesMask) {
-	if (!_XkbReadAtoms(&buf,names->indicators,XkbNumIndicators,
-							rep->indicators))
-	    goto BAILOUT;
-    }
-    if ( rep->which&XkbModifierNamesMask ) {
-	if (!_XkbReadAtoms(&buf,names->mods,
-			   XkbNumModifiers,(CARD32)rep->modifiers))
+	if (_XkbReadAtoms(&buf,names->indicators,XkbNumIndicators,
+						rep->indicators)!=Success)
 	    goto BAILOUT;
     }
     if ( rep->which&XkbVirtualModNamesMask ) {
-	if (!_XkbReadAtoms(&buf,names->vmods,XkbNumVirtualMods,
-						(CARD32)rep->virtualMods))
+	if (_XkbReadAtoms(&buf,names->vmods,XkbNumVirtualMods,
+					(CARD32)rep->virtualMods)!=Success)
+	    goto BAILOUT;
+    }
+    if ( rep->which&XkbGroupNamesMask ) {
+	if (_XkbReadAtoms(&buf,names->groups,XkbNumKbdGroups,
+					(CARD32)rep->groupNames)!=Success)
 	    goto BAILOUT;
     }
     if ( rep->which&XkbKeyNamesMask ) {
 	if (names->keys==NULL) {
-	    int nKeys= xkb->max_key_code+1;
-	    names->keys= (XkbKeyNamePtr)Xmalloc(nKeys*4);
+	    int nKeys;
+	    if (xkb->max_key_code==0) {
+		xkb->min_key_code= rep->minKeyCode;
+		xkb->max_key_code= rep->maxKeyCode;
+	    }
+	    nKeys= xkb->max_key_code+1;
+	    names->keys= _XkbTypedCalloc(nKeys,XkbKeyNameRec);
 	}
 	if (names->keys!=NULL) {
 	    if (!_XkbCopyFromReadBuffer(&buf,
 					(char *)&names->keys[rep->firstKey],
-					rep->nKeys*4))
+					rep->nKeys*XkbKeyNameLength))
 		goto BAILOUT;
 	}
-	else _XkbSkipReadBufferData(&buf,rep->nKeys*4);
+	else _XkbSkipReadBufferData(&buf,rep->nKeys*XkbKeyNameLength);
+    }
+    if ( rep->which&XkbKeyAliasesMask && (rep->nKeyAliases>0) ) {
+	if (XkbAllocNames(xkb,XkbKeyAliasesMask,0,rep->nKeyAliases)!=Success)
+	    goto BAILOUT;
+	if (!_XkbCopyFromReadBuffer(&buf,(char *)names->key_aliases,
+				rep->nKeyAliases*XkbKeyNameLength*2))
+	    goto BAILOUT;
     }
     if ( rep->which&XkbRGNamesMask ) {
 	if (rep->nRadioGroups>0) {
 	    Atom *rgNames;
 
-	    len= sizeof(Atom)*rep->nRadioGroups;
 	    if (names->radio_groups==NULL)
-		names->radio_groups = (Atom *)Xmalloc(len);
-	    else if (names->num_rg<rep->nRadioGroups)
-		names->radio_groups = (Atom *)Xrealloc(names->radio_groups,len);
+		names->radio_groups = _XkbTypedCalloc(rep->nRadioGroups,Atom);
+	    else if (names->num_rg<rep->nRadioGroups) {
+		names->radio_groups = _XkbTypedRealloc(names->radio_groups,
+							rep->nRadioGroups,
+							Atom);
+	    }
 	    rgNames= names->radio_groups;
 	    if (!rgNames) {
-		fprintf(stderr,"Couldn't allocate radio group names\n");
 		goto BAILOUT;
 	    }
 	    if (!_XkbReadBufferCopy32(&buf,(long *)rgNames,rep->nRadioGroups))
@@ -195,68 +234,40 @@ _XkbReadGetNamesReply(dpy,rep,xkb)
 	    Xfree(names->radio_groups);
 	}
     }
-    if ( (rep->which&XkbCharSetsMask)&&(rep->nCharSets>0) ) {
-	len= rep->nCharSets*sizeof(Atom);
-	if (names->char_sets) {
-	    if (names->num_char_sets<rep->nCharSets) {
-		Xfree(names->char_sets);
-		names->char_sets= NULL;
-		names->num_char_sets= 0;
-	    }
-	}
-	if (!names->char_sets) {
-	    names->char_sets= (Atom *)Xmalloc(len);
-	    if (!names->char_sets) {
-		fprintf(stderr,"Couldn't allocate char set names\n");
-		goto BAILOUT;
-	    }
-	    if (!_XkbReadBufferCopy32(&buf,
-				      (long *)names->char_sets,rep->nCharSets))
-		goto BAILOUT;
-	    names->num_char_sets= rep->nCharSets;
-	}
-    }
-    if (rep->which&XkbPhysicalNamesMask) {
-	if (!_XkbReadBufferCopy32(&buf,(long *)&names->phys_symbols,1))
-	    goto BAILOUT;
-	if (!_XkbReadBufferCopy32(&buf,(long *)&names->phys_geometry,1))
-	    goto BAILOUT;
-    }
     len= _XkbFreeReadBuffer(&buf);
-    if (len!=0) {
-	fprintf(stderr,"Warning! Bad length (got %d, not %d) in XkbGetNames\n",
-					rep->length-len,rep->length);
-    }
-    return True;
+    if (len!=0) 	return BadLength;
+    else		return Success;
 BAILOUT:
     _XkbFreeReadBuffer(&buf);
-    return False;
+    return BadLength;
 }
 
 Status
+#if NeedFunctionPrototypes
+XkbGetNames(Display *dpy,unsigned which,XkbDescPtr xkb)
+#else
 XkbGetNames(dpy,which,xkb)
     Display *	dpy;
     unsigned	which;
     XkbDescPtr	xkb;
+#endif
 {
     register xkbGetNamesReq *req;
     xkbGetNamesReply	     rep;
-    Status		     ok;
+    Status		     status;
     XkbInfoPtr xkbi;
 
     if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
-	return False;
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
+	return BadAccess;
     LockDisplay(dpy);
     xkbi = dpy->xkb_info;
     if (!xkb->names) {
-	xkb->names = (XkbNamesRec *)Xmalloc(sizeof(XkbNamesRec));
-	if (xkb->names)
-	    bzero(xkb->names,sizeof(XkbNamesRec));
-	else {
+	xkb->names = _XkbTypedCalloc(1,XkbNamesRec);
+	if (!xkb->names) {
 	    UnlockDisplay(dpy);
 	    SyncHandle();
-	    return False;
+	    return BadAlloc;
 	}
     }
     GetReq(kbGetNames, req);
@@ -267,22 +278,45 @@ XkbGetNames(dpy,which,xkb)
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
-	return False;
+	return BadImplementation;
     }
 
-    ok = _XkbReadGetNamesReply(dpy,&rep,xkb);
+    status = _XkbReadGetNamesReply(dpy,&rep,xkb,NULL);
     UnlockDisplay(dpy);
     SyncHandle();
-    return ok;
+    return status;
 }
 
 /***====================================================================***/
 
+static int
+#if NeedFunctionPrototypes
+_XkbCountBits(int nBitsMax,unsigned long mask)
+#else
+_XkbCountBits(nBitsMax,mask)
+    int			nBitsMax;
+    unsigned long	mask;
+#endif
+{
+register unsigned long y, nBits;
+
+    y = (mask >> 1) &033333333333;
+    y = mask - y - ((y >>1) & 033333333333);
+    nBits = ((unsigned int) (((y + (y >> 3)) & 030707070707) % 077));
+
+    /* nBitsMax really means max+1 */
+    return (nBits < nBitsMax) ? nBits : (nBitsMax - 1);
+}
+
 static CARD32
+#if NeedFunctionPrototypes
+_XkbCountAtoms(Atom *atoms,int maxAtoms,int *count)
+#else
 _XkbCountAtoms(atoms,maxAtoms,count)
     Atom *atoms;
     int   maxAtoms;
     int  *count;
+#endif
 {
 register unsigned int i,bit,nAtoms;
 register CARD32 atomsPresent;
@@ -299,57 +333,85 @@ register CARD32 atomsPresent;
 }
 
 static void
-_XkbCopyAtoms(dpy,atoms,maxAtoms)
+#if NeedFunctionPrototypes
+_XkbCopyAtoms(Display *dpy,Atom *atoms,CARD32 mask,int maxAtoms)
+#else
+_XkbCopyAtoms(dpy,atoms,mask,maxAtoms)
     Display *	dpy;
     Atom *	atoms;
+    CARD32	mask;
     int   	maxAtoms;
+#endif
 {
-register unsigned int i;
+register unsigned int i,bit;
 
-    for (i=0;i<maxAtoms;i++) {
-        if (atoms[i]!=None)
+    for (i=0,bit=1;i<maxAtoms;i++,bit<<=1) {
+        if (mask&bit)
 	    Data32(dpy,&atoms[i],4);
     }
     return;
 }
 
-Status
+Bool
+#if NeedFunctionPrototypes
+XkbSetNames(	Display *	dpy,
+		unsigned int 	which,
+		unsigned int 	firstType,
+		unsigned int 	nTypes,
+		XkbDescPtr 	xkb)
+#else
 XkbSetNames(dpy,which,firstType,nTypes,xkb)
-    Display *	dpy;
-    unsigned	which;
-    unsigned	firstType;
-    unsigned	nTypes;
-    XkbDescPtr	xkb;
+    Display *		dpy;
+    unsigned int 	which;
+    unsigned int 	firstType;
+    unsigned int 	nTypes;
+    XkbDescPtr		xkb;
+#endif
 {
     register xkbSetNamesReq *req;
     int  nLvlNames;
     XkbInfoPtr xkbi;
     XkbNamesPtr names;
-    int	nMods,nVMods,nLEDs,nRG,nCharSets;
+    unsigned firstLvlType,nLvlTypes;
+    int	nVMods,nLEDs,nRG,nKA,nGroups;
     int nKeys,firstKey,nAtoms;
+    CARD32 leds,vmods,groups;
 
     if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
 	return False;
     if ((!xkb)||(!xkb->names))
 	return False;
+    firstLvlType= firstType;
+    nLvlTypes= nTypes;
+    if (nTypes<1)
+	which&= ~(XkbKTLevelNamesMask|XkbKeyTypeNamesMask);
+    else if (firstType<=XkbLastRequiredType) {
+	int	adjust;
+	adjust= XkbLastRequiredType-firstType+1;
+	firstType+= adjust;
+	nTypes-= adjust;
+	if (nTypes<1)
+	    which&= ~XkbKeyTypeNamesMask;
+    }
     names= xkb->names;
     if (which&(XkbKTLevelNamesMask|XkbKeyTypeNamesMask)) {
 	register int	i;
 	XkbKeyTypePtr	type;
 	if((xkb->map==NULL)||(xkb->map->types==NULL)||(nTypes==0)||
-				(firstType+nTypes>xkb->map->num_types))
+				(firstType+nTypes>xkb->map->num_types)||
+				(firstLvlType+nLvlTypes>xkb->map->num_types))
 	    return False;
 	if (which&XkbKTLevelNamesMask) {
-	    type= &xkb->map->types[firstType];
-	    for (i=nLvlNames=0;i<nTypes;i++,type++) {
-		if (type->lvl_names[i]!=None)
-		    nLvlNames+= type->group_width;
+	    type= &xkb->map->types[firstLvlType];
+	    for (i=nLvlNames=0;i<nLvlTypes;i++,type++) {
+		if (type->level_names!=NULL)
+		    nLvlNames+= type->num_levels;
 	    }
 	}
     }
  
-    nMods= nVMods= nLEDs= nRG= nCharSets= nAtoms= 0;
+    nVMods= nLEDs= nRG= nKA= nAtoms= nGroups= 0;
     LockDisplay(dpy);
     xkbi = dpy->xkb_info;
     GetReq(kbSetNames, req);
@@ -367,40 +429,48 @@ XkbSetNames(dpy,which,firstType,nTypes,xkb)
 	nAtoms++;
     if (which&XkbSymbolsNameMask)
 	nAtoms++;
-    if (which&XkbSemanticsNameMask)
+    if (which&XkbPhysSymbolsNameMask)
+	nAtoms++;
+    if (which&XkbTypesNameMask)
+	nAtoms++;
+    if (which&XkbCompatNameMask)
 	nAtoms++;
     if (which&XkbKeyTypeNamesMask)
 	nAtoms+= nTypes;
     if (which&XkbKTLevelNamesMask) {
-	req->length+= XkbPaddedSize(nTypes)/4; /* room for group widths */
+	req->firstKTLevel= firstLvlType;
+	req->nKTLevels= nLvlTypes;
+	req->length+= XkbPaddedSize(nLvlTypes)/4; /* room for group widths */
 	nAtoms+= nLvlNames;
     }
+    else req->firstKTLevel= req->nKTLevels= 0;
 
     if (which&XkbIndicatorNamesMask) {
-	req->indicators= 
+	req->indicators= leds=
 		_XkbCountAtoms(names->indicators,XkbNumIndicators,&nLEDs);
 	if (nLEDs>0)
 	     nAtoms+= nLEDs;
 	else which&= ~XkbIndicatorNamesMask;
     }
-    else req->indicators= 0;
-
-    if (which&XkbModifierNamesMask) {
-	req->modifiers= _XkbCountAtoms(names->mods,XkbNumModifiers,&nMods);
-	if (nMods>0)
-	     nAtoms+= nMods;
-	else which&= ~XkbModifierNamesMask;
-    }
-    else req->modifiers= 0;
+    else req->indicators= leds= 0;
 
     if (which&XkbVirtualModNamesMask) {
-	req->virtualMods= 
+	vmods= req->virtualMods= (CARD16) 
 		_XkbCountAtoms(names->vmods,XkbNumVirtualMods,&nVMods);
 	if (nVMods>0)
 	     nAtoms+= nVMods;
 	else which&= ~XkbVirtualModNamesMask;
     }
-    else req->virtualMods= 0;
+    else vmods= req->virtualMods= 0;
+
+    if (which&XkbGroupNamesMask) {
+	groups= req->groupNames= (CARD8)
+		_XkbCountAtoms(names->groups,XkbNumKbdGroups,&nGroups);
+	if (nGroups>0)
+	     nAtoms+= nGroups;
+	else which&= ~XkbGroupNamesMask;
+    }
+    else groups= req->groupNames= 0;
 
     if ((which&XkbKeyNamesMask)&&(names->keys!=NULL)) {
 	firstKey= req->firstKey;
@@ -409,6 +479,19 @@ XkbSetNames(dpy,which,firstType,nTypes,xkb)
     }
     else which&= ~XkbKeyNamesMask;
 
+    if (which&XkbKeyAliasesMask) {
+	nKA= ((names->key_aliases!=NULL)?names->num_key_aliases:0);
+	if (nKA>0) {
+	    req->nKeyAliases= nKA;
+	    nAtoms+= nKA*2; /* not atoms, but 8 bytes on the wire */
+	}
+	else {
+	    which&= ~XkbKeyAliasesMask;
+	    req->nKeyAliases = 0;
+	}
+    }
+    else req->nKeyAliases= 0;
+
     if (which&XkbRGNamesMask) {
 	nRG= names->num_rg;
 	if (nRG>0)
@@ -416,18 +499,8 @@ XkbSetNames(dpy,which,firstType,nTypes,xkb)
 	else which&= ~XkbRGNamesMask;
     }
 
-    if (which&XkbCharSetsMask) {
-	nCharSets= names->num_char_sets;
-	if (nCharSets>0)
-	     nAtoms+= nCharSets;
-	else which&= ~XkbCharSetsMask;
-    }
-    if (which&XkbCharSetsMask)
-	nAtoms+= 2;
-
     req->which= which;
     req->nRadioGroups= nRG;
-    req->nCharSets= nCharSets;
     req->length+= (nAtoms*4)/4;
 
     if (which&XkbKeycodesNameMask)
@@ -436,13 +509,17 @@ XkbSetNames(dpy,which,firstType,nTypes,xkb)
 	Data32(dpy,(long *)&names->geometry,4);
     if (which&XkbSymbolsNameMask)
 	Data32(dpy,(long *)&names->symbols,4);
-    if (which&XkbSemanticsNameMask)
-	Data32(dpy,(long *)&names->semantics,4);
+    if (which&XkbPhysSymbolsNameMask)
+	Data32(dpy,(long *)&names->phys_symbols,4);
+    if (which&XkbTypesNameMask)
+	Data32(dpy,(long *)&names->types,4);
+    if (which&XkbCompatNameMask)
+	Data32(dpy,(long *)&names->compat,4);
     if (which&XkbKeyTypeNamesMask) {
 	register int 		i;
 	register XkbKeyTypePtr	type;
 	type= &xkb->map->types[firstType];
-	for (i=0;i<xkb->map->num_types;i++,type++) {
+	for (i=0;i<nTypes;i++,type++) {
 	    Data32(dpy,(long *)&type->name,4);
 	}
     }
@@ -451,22 +528,286 @@ XkbSetNames(dpy,which,firstType,nTypes,xkb)
 	int i;
 	char *tmp;
 
-	BufAlloc(char *,tmp,XkbPaddedSize(nTypes));
-	type = &xkb->map->types[firstType];
-	for (i=0;i<nTypes;i++,type++) {
-	    *tmp++ = type->group_width;
+	BufAlloc(char *,tmp,XkbPaddedSize(nLvlTypes));
+	type = &xkb->map->types[firstLvlType];
+	for (i=0;i<nLvlTypes;i++,type++) {
+	    *tmp++ = type->num_levels;
 	}
-	for (i=0;i<nTypes;i++,type++) {
-	    if (type->lvl_names!=NULL)
-		Data32(dpy,(long *)type->lvl_names,type->group_width*4);
+	type = &xkb->map->types[firstLvlType];
+	for (i=0;i<nLvlTypes;i++,type++) {
+	    if (type->level_names!=NULL)
+		Data32(dpy,(long *)type->level_names,type->num_levels*4);
 	}
     }
     if (which&XkbIndicatorNamesMask)
-	_XkbCopyAtoms(dpy,names->indicators,XkbNumIndicators);
-    if (which&XkbModifierNamesMask)
-	_XkbCopyAtoms(dpy,names->mods,XkbNumModifiers);
+	_XkbCopyAtoms(dpy,names->indicators,leds,XkbNumIndicators);
     if (which&XkbVirtualModNamesMask)
-	_XkbCopyAtoms(dpy,names->vmods,XkbNumVirtualMods);
+	_XkbCopyAtoms(dpy,names->vmods,vmods,XkbNumVirtualMods);
+    if (which&XkbGroupNamesMask)
+	_XkbCopyAtoms(dpy,names->groups,groups,XkbNumKbdGroups);
+    if (which&XkbKeyNamesMask) {
+#ifdef WORD64
+	char *tmp;
+	register int i;
+	BufAlloc(char *,tmp,nKeys*XkbKeyNameLength);
+	for (i=0;i<nKeys;i++,tmp+= XkbKeyNameLength) {
+	    tmp[0]= names->keys[firstKey+i].name[0];
+	    tmp[1]= names->keys[firstKey+i].name[1];
+	    tmp[2]= names->keys[firstKey+i].name[2];
+	    tmp[3]= names->keys[firstKey+i].name[3];
+	}
+#else
+	Data(dpy,(char *)&names->keys[firstKey],nKeys*XkbKeyNameLength);
+#endif
+    }
+    if (which&XkbKeyAliasesMask) {
+#ifdef WORD64
+	char *tmp;
+	register int i;
+	BufAlloc(char *,tmp,nKA*XkbKeyNameLength*2);
+	for (i=0;i<nKeys;i++,tmp+= 2*XkbKeyNameLength) {
+	    tmp[0]= names->key_aliases[i].real[0];
+	    tmp[1]= names->key_aliases[i].real[1];
+	    tmp[2]= names->key_aliases[i].real[2];
+	    tmp[3]= names->key_aliases[i].real[3];
+	    tmp[4]= names->key_aliases[i].alias[0];
+	    tmp[5]= names->key_aliases[i].alias[1];
+	    tmp[6]= names->key_aliases[i].alias[2];
+	    tmp[7]= names->key_aliases[i].alias[3];
+	}
+#else
+	Data(dpy,(char *)names->key_aliases,nKA*XkbKeyNameLength*2);
+#endif
+    }
+    if (which&XkbRGNamesMask) {
+	Data32(dpy,(long *)names->radio_groups,nRG*4);
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+Bool
+#if NeedFunctionPrototypes
+XkbChangeNames(Display *dpy,XkbDescPtr xkb,XkbNameChangesPtr changes)
+#else
+XkbChangeNames(dpy,xkb,changes)
+    Display *		dpy;
+    XkbDescPtr		xkb;
+    XkbNameChangesPtr	changes;
+#endif
+{
+    register xkbSetNamesReq *req;
+    int  nLvlNames;
+    XkbInfoPtr xkbi;
+    XkbNamesPtr names;
+    unsigned which,firstType,nTypes;
+    unsigned firstLvlType,nLvlTypes;
+    int	nVMods,nLEDs,nRG,nKA,nGroups;
+    int nKeys,firstKey,nAtoms;
+    CARD32 leds,vmods,groups;
+
+    if ((dpy->flags & XlibDisplayNoXkb) ||
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
+	return False;
+    if ((!xkb)||(!xkb->names)||(!changes))
+	return False;
+    which= changes->changed;
+    firstType= changes->first_type;
+    nTypes= changes->num_types;
+    firstLvlType= changes->first_lvl;;
+    nLvlTypes= changes->num_lvls;
+    if (which&XkbKeyTypeNamesMask) {
+	if (nTypes<1)	
+	    which&= ~XkbKeyTypeNamesMask;
+	else if (firstType<=XkbLastRequiredType) {
+	    int	adjust;
+	    adjust= XkbLastRequiredType-firstType+1;
+	    firstType+= adjust;
+	    nTypes-= adjust;
+	    if (nTypes<1)
+		which&= ~XkbKeyTypeNamesMask;
+	}
+    }
+    else firstType= nTypes= 0;
+
+    if (which&XkbKTLevelNamesMask) {
+	if (nLvlTypes<1)
+	    which&= ~XkbKTLevelNamesMask;
+    }
+    else firstLvlType= nLvlTypes= 0;
+
+    names= xkb->names;
+    if (which&(XkbKTLevelNamesMask|XkbKeyTypeNamesMask)) {
+	register int	i;
+	XkbKeyTypePtr	type;
+	if((xkb->map==NULL)||(xkb->map->types==NULL)||(nTypes==0)||
+				(firstType+nTypes>xkb->map->num_types)||
+				(firstLvlType+nLvlTypes>xkb->map->num_types))
+	    return False;
+	if (which&XkbKTLevelNamesMask) {
+	    type= &xkb->map->types[firstLvlType];
+	    for (i=nLvlNames=0;i<nLvlTypes;i++,type++) {
+		if (type->level_names!=NULL)
+		    nLvlNames+= type->num_levels;
+	    }
+	}
+    }
+
+    if (changes->num_keys<1)
+	which&= ~XkbKeyNamesMask;
+    if ((which&XkbKeyNamesMask)==0)
+	changes->first_key= changes->num_keys= 0;
+    else if ((changes->first_key<xkb->min_key_code)||
+	     (changes->first_key+changes->num_keys>xkb->max_key_code)) {
+	return False;
+    }
+
+    if ((which&XkbVirtualModNamesMask)==0)
+	changes->changed_vmods= 0;
+    else if (changes->changed_vmods==0)
+	which&= ~XkbVirtualModNamesMask;
+
+    if ((which&XkbIndicatorNamesMask)==0)
+	changes->changed_indicators= 0;
+    else if (changes->changed_indicators==0)
+	which&= ~XkbIndicatorNamesMask;
+
+    if ((which&XkbGroupNamesMask)==0)
+	changes->changed_groups= 0;
+    else if (changes->changed_groups==0)
+	which&= ~XkbGroupNamesMask;
+ 
+    nVMods= nLEDs= nRG= nKA= nAtoms= nGroups= 0;
+    LockDisplay(dpy);
+    xkbi = dpy->xkb_info;
+    GetReq(kbSetNames, req);
+    req->reqType = xkbi->codes->major_opcode;
+    req->xkbReqType = X_kbSetNames;
+    req->deviceSpec = xkb->device_spec;
+    req->firstType = firstType;
+    req->nTypes = nTypes;
+    req->firstKey = changes->first_key;
+    req->nKeys = changes->num_keys;
+
+    if (which&XkbKeycodesNameMask)
+	nAtoms++;
+    if (which&XkbGeometryNameMask)
+	nAtoms++;
+    if (which&XkbSymbolsNameMask)
+	nAtoms++;
+    if (which&XkbPhysSymbolsNameMask)
+	nAtoms++;
+    if (which&XkbTypesNameMask)
+	nAtoms++;
+    if (which&XkbCompatNameMask)
+	nAtoms++;
+    if (which&XkbKeyTypeNamesMask)
+	nAtoms+= nTypes;
+    if (which&XkbKTLevelNamesMask) {
+	req->firstKTLevel= firstLvlType;
+	req->nKTLevels= nLvlTypes;
+	req->length+= XkbPaddedSize(nLvlTypes)/4; /* room for group widths */
+	nAtoms+= nLvlNames;
+    }
+    else req->firstKTLevel= req->nKTLevels= 0;
+
+    if (which&XkbIndicatorNamesMask) {
+	leds= req->indicators= (CARD32)changes->changed_indicators;
+	nLEDs= _XkbCountBits(XkbNumIndicators,changes->changed_indicators);
+	if (nLEDs>0)
+	     nAtoms+= nLEDs;
+	else which&= ~XkbIndicatorNamesMask;
+    }
+    else req->indicators= 0;
+
+    if (which&XkbVirtualModNamesMask) {
+	vmods= req->virtualMods= changes->changed_vmods;
+	nVMods= _XkbCountBits(XkbNumVirtualMods,
+					(unsigned long)changes->changed_vmods);
+	if (nVMods>0)
+	     nAtoms+= nVMods;
+	else which&= ~XkbVirtualModNamesMask;
+    }
+    else req->virtualMods= 0;
+
+    if (which&XkbGroupNamesMask) {
+	groups= req->groupNames= changes->changed_groups;
+	nGroups= _XkbCountBits(XkbNumKbdGroups,
+					(unsigned long)changes->changed_groups);
+	if (nGroups>0)
+	     nAtoms+= nGroups;
+	else which&= ~XkbGroupNamesMask;
+    }
+    else req->groupNames= 0;
+
+    if ((which&XkbKeyNamesMask)&&(names->keys!=NULL)) {
+	firstKey= req->firstKey;
+	nKeys= req->nKeys;
+	nAtoms+= nKeys;	/* technically not atoms, but 4 bytes wide */
+    }
+    else which&= ~XkbKeyNamesMask;
+
+    if (which&XkbKeyAliasesMask) {
+	nKA= ((names->key_aliases!=NULL)?names->num_key_aliases:0);
+	if (nKA>0)
+	    nAtoms+= nKA*2; /* not atoms, but 8 bytes on the wire */
+	else which&= ~XkbKeyAliasesMask;
+    }
+
+    if (which&XkbRGNamesMask) {
+	nRG= names->num_rg;
+	if (nRG>0)
+	     nAtoms+= nRG;
+	else which&= ~XkbRGNamesMask;
+    }
+
+    req->which= which;
+    req->nRadioGroups= nRG;
+    req->length+= (nAtoms*4)/4;
+
+    if (which&XkbKeycodesNameMask)
+	Data32(dpy,(long *)&names->keycodes,4);
+    if (which&XkbGeometryNameMask)
+	Data32(dpy,(long *)&names->geometry,4);
+    if (which&XkbSymbolsNameMask)
+	Data32(dpy,(long *)&names->symbols,4);
+    if (which&XkbPhysSymbolsNameMask)
+	Data32(dpy,(long *)&names->phys_symbols,4);
+    if (which&XkbTypesNameMask)
+	Data32(dpy,(long *)&names->types,4);
+    if (which&XkbCompatNameMask)
+	Data32(dpy,(long *)&names->compat,4);
+    if (which&XkbKeyTypeNamesMask) {
+	register int 		i;
+	register XkbKeyTypePtr	type;
+	type= &xkb->map->types[firstType];
+	for (i=0;i<nTypes;i++,type++) {
+	    Data32(dpy,(long *)&type->name,4);
+	}
+    }
+    if (which&XkbKTLevelNamesMask) {
+	XkbKeyTypePtr type;
+	int i;
+	char *tmp;
+
+	BufAlloc(char *,tmp,XkbPaddedSize(nLvlTypes));
+	type = &xkb->map->types[firstLvlType];
+	for (i=0;i<nLvlTypes;i++,type++) {
+	    *tmp++ = type->num_levels;
+	}
+	type = &xkb->map->types[firstLvlType];
+	for (i=0;i<nLvlTypes;i++,type++) {
+	    if (type->level_names!=NULL)
+		Data32(dpy,(long *)type->level_names,type->num_levels*4);
+	}
+    }
+    if (which&XkbIndicatorNamesMask)
+	_XkbCopyAtoms(dpy,names->indicators,leds,XkbNumIndicators);
+    if (which&XkbVirtualModNamesMask)
+	_XkbCopyAtoms(dpy,names->vmods,vmods,XkbNumVirtualMods);
+    if (which&XkbGroupNamesMask)
+	_XkbCopyAtoms(dpy,names->groups,groups,XkbNumKbdGroups);
     if (which&XkbKeyNamesMask) {
 #ifdef WORD64
 	char *tmp;
@@ -479,126 +820,134 @@ XkbSetNames(dpy,which,firstType,nTypes,xkb)
 	    tmp[3]= names->keys[firstKey+i].name[3];
 	}
 #else
-	Data(dpy,(char *)&names->keys[firstKey],nKeys*4);
+	Data(dpy,(char *)&names->keys[firstKey],nKeys*XkbKeyNameLength);
+#endif
+    }
+    if (which&XkbKeyAliasesMask) {
+#ifdef WORD64
+	char *tmp;
+	register int i;
+	BufAlloc(char *,tmp,nKA*XkbKeyNameLength*2);
+	for (i=0;i<nKeys;i++,tmp+= 2*XkbKeyNameLength) {
+	    tmp[0]= names->key_aliases[i].real[0];
+	    tmp[1]= names->key_aliases[i].real[1];
+	    tmp[2]= names->key_aliases[i].real[2];
+	    tmp[3]= names->key_aliases[i].real[3];
+	    tmp[4]= names->key_aliases[i].alias[0];
+	    tmp[5]= names->key_aliases[i].alias[1];
+	    tmp[6]= names->key_aliases[i].alias[2];
+	    tmp[7]= names->key_aliases[i].alias[3];
+	}
+#else
+	Data(dpy,(char *)names->key_aliases,nKA*XkbKeyNameLength*2);
 #endif
     }
     if (which&XkbRGNamesMask) {
 	Data32(dpy,(long *)names->radio_groups,nRG*4);
-    }
-    if (which&XkbCharSetsMask) {
-	Data32(dpy,(long *)names->char_sets,nCharSets*4);
-    }
-    if (which&XkbPhysicalNamesMask) {
-	Data32(dpy,(long *)&names->phys_symbols,4);
-	Data32(dpy,(long *)&names->phys_geometry,4);
     }
     UnlockDisplay(dpy);
     SyncHandle();
     return True;
 }
 
-/***====================================================================***/
-
-Status
-XkbFreeNames(xkb,all,which)
-    XkbDescPtr	xkb;
-    Bool	all;
-    unsigned	which;
+void
+#if NeedFunctionPrototypes
+XkbNoteNameChanges(	XkbNameChangesPtr	old,
+			XkbNamesNotifyEvent *	new,
+			unsigned int	 	wanted)
+#else
+XkbNoteNameChanges(old,new,wanted)
+    XkbNameChangesPtr		old;
+    XkbNamesNotifyEvent	*	new;
+    unsigned int	 	wanted;
+#endif
 {
-XkbNamesPtr	names;
+int	first,last,old_last,new_last;
 
-    if ((xkb==NULL)||(xkb->names==NULL))
-	return False;
+    wanted&= new->changed;
+    if ((old==NULL)||(new==NULL)||(wanted==0))
+	return;
+    if (wanted&XkbKeyTypeNamesMask) {
+	if (old->changed&XkbKeyTypeNamesMask) {
+	    new_last= (new->first_type+new->num_types-1);
+	    old_last= (old->first_type+old->num_types-1);
 
-    names= xkb->names;
-    if (all)
-	which= XkbAllNamesMask; 
-    if (which&XkbKTLevelNamesMask) {
-	XkbClientMapPtr	map= xkb->map;
-	if ((map!=NULL)&&(map->types!=NULL)) {
-	    register int 		i;
-	    register XkbKeyTypePtr	type;
-	    type= map->types;
-	    for (i=0;i<map->num_types;i++,type++) {
-		if (type->lvl_names!=NULL) {
-		    Xfree(type->lvl_names);
-		    type->lvl_names= NULL;
-		}
-	    }
+	    if (new->first_type<old->first_type)
+		 first= new->first_type;
+	    else first= old->first_type;
+
+	    if (old_last>new_last)
+		 last= old_last;
+	    else last= new_last;
+
+	    old->first_type= first;
+	    old->num_types= (last-first)+1;
+	}
+	else {
+	    old->first_type= new->first_type;
+	    old->num_types= new->num_types;
 	}
     }
-    if ((which&XkbKeyNamesMask)&&(names->keys!=NULL)) {
-	Xfree(names->keys);
-	names->keys= NULL;
-	names->num_keys= 0;
-    }
-    if ((which&XkbRGNamesMask)&&(names->radio_groups)) {
-	Xfree(names->radio_groups);
-	names->radio_groups= NULL;
-	names->num_rg= 0;
-    }
-    if ((which&XkbCharSetsMask)&&(names->char_sets)) {
-	Xfree(names->char_sets);
-	names->char_sets= NULL;
-	names->num_char_sets= 0;
-    }
-    if (all) {
-	Xfree(names);
-	xkb->names= NULL;
-    }
-    return True;
-}
+    if (wanted&XkbKTLevelNamesMask) {
+	if (old->changed&XkbKTLevelNamesMask) {
+	    new_last= (new->first_lvl+new->num_lvls-1);
+	    old_last= (old->first_lvl+old->num_lvls-1);
 
-/***====================================================================***/
+	    if (new->first_lvl<old->first_lvl)
+		 first= new->first_lvl;
+	    else first= old->first_lvl;
 
-Status
-XkbAllocNames(xkb,which)
-    XkbDescPtr	xkb;
-    unsigned	which;
-{
-XkbNamesPtr	names;
+	    if (old_last>new_last)
+		 last= old_last;
+	    else last= new_last;
 
-    if (xkb==NULL)
-	return False;
-    if (!xkb->names) {
-	xkb->names = (XkbNamesRec *)Xmalloc(sizeof(XkbNamesRec));
-	if (xkb->names==NULL)
-	    return False;
-	bzero(xkb->names,sizeof(XkbNamesRec));
-    }
-    names= xkb->names;
-    if ((which&XkbKeyTypeNamesMask)&&
-			((xkb->map==NULL)||(xkb->map->types==NULL))) {
-	return False;
-    }
-    if (which&XkbKTLevelNamesMask) {
-	register int	i;
-	XkbKeyTypePtr	type;
-
-	if ((xkb->map==NULL)||(xkb->map->types==NULL))
-	    return False;
-	type= xkb->map->types;
-	for (i=0;i<xkb->map->num_types;i++,type++) {
-	    if (type->lvl_names==NULL) {
-		type->lvl_names=
-				(Atom*)Xcalloc(type->group_width,sizeof(Atom));
-		if (type->lvl_names==NULL)
-		    return False;
-	    }
+	    old->first_lvl= first;
+	    old->num_lvls= (last-first)+1;
+	}
+	else {
+	    old->first_lvl= new->first_lvl;
+	    old->num_lvls= new->num_lvls;
 	}
     }
-    if (which&XkbKeyNamesMask) {
-	int size;
-	if ((xkb->min_key_code<1)||(xkb->max_key_code<1))
-	    return False;
-	size= (xkb->max_key_code+1)*sizeof(XkbKeyNameRec);
-	names->keys= (XkbKeyNamePtr)Xmalloc(size);
-	if (names->keys==NULL)
-	    return False;
-	bzero(names->keys,size);
+    if (wanted&XkbIndicatorNamesMask) {
+	if (old->changed&XkbIndicatorNamesMask)
+	     old->changed_indicators|= new->changed_indicators;
+	else old->changed_indicators=  new->changed_indicators;
     }
-    /* 3/12/94 (ef) -- XXX! Handle XkbRGNamesMask */
-    /* 3/12/94 (ef) -- XXX! Handle XkbCharSetsMask */
-    return True;
-}
+    if (wanted&XkbKeyNamesMask) {
+	if (old->changed&XkbKeyNamesMask) {
+	    new_last= (new->first_key+new->num_keys-1);
+	    old_last= (old->first_key+old->num_keys-1);
 
+	    first= old->first_key;
+
+	    if (new->first_key<old->first_key)
+		first= new->first_key;
+	    if (old_last>new_last)
+		new_last= old_last;
+
+	    old->first_key= first;
+	    old->num_keys= (new_last-first)+1;
+	}
+	else {
+	    old->first_key= new->first_key;
+	    old->num_keys= new->num_keys;
+	}
+    }
+    if (wanted&XkbVirtualModNamesMask) {
+	if (old->changed&XkbVirtualModNamesMask)
+	     old->changed_vmods|= new->changed_vmods;
+	else old->changed_vmods=  new->changed_vmods;
+    }
+    if (wanted&XkbGroupNamesMask) {
+	if (old->changed&XkbGroupNamesMask)
+	     old->changed_groups|= new->changed_groups;
+	else old->changed_groups=  new->changed_groups;
+    }
+    if (wanted&XkbRGNamesMask) 
+	old->num_rg= new->num_radio_groups;
+    if (wanted&XkbKeyAliasesMask) 
+	old->num_aliases= new->num_aliases;
+    old->changed|= wanted;
+    return;
+}

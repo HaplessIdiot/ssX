@@ -1,4 +1,4 @@
-/* $TOG: lcFile.c /main/9 1997/06/03 15:52:47 kaleb $ */
+/* $TOG: lcFile.c /main/10 1997/08/27 12:13:03 kaleb $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -23,7 +23,7 @@
  * SOFTWARE.
  *
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.11 1997/07/31 13:47:06 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -37,7 +37,11 @@ extern char *getenv();
 /************************************************************************/
 
 #define	iscomment(ch)	((ch) == '#' || (ch) == '\0')
+#if defined(WIN32) || defined(__EMX__) /* || defined(OS2) */
+#define isreadable(f)	(_XAccessFile(f))
+#else
 #define isreadable(f)	((access((f), R_OK) != -1) ? 1 : 0)
+#endif
 
 #ifndef __EMX__
 #define LC_PATHDELIM ':'
@@ -172,7 +176,7 @@ resolve_name(lc_name, file_name, direction)
     FILE *fp;
     char buf[XLC_BUFSIZE], *name = NULL;
 
-    fp = fopen(file_name, "r");
+    fp = _XFopenFile (file_name, "r");
     if(fp == (FILE *)NULL){
 	return NULL;
     }

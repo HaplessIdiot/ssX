@@ -1,5 +1,4 @@
-/* $XConsortium: xkbatom.c /main/3 1996/08/31 12:45:22 kaleb $ */
-/* $XFree86: xc/lib/xkbfile/xkbatom.c,v 3.2 1996/10/13 11:18:12 dawes Exp $ */
+/* $TOG: xkbatom.c /main/4 1997/08/17 23:06:31 kaleb $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -73,6 +72,7 @@ SOFTWARE.
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86: xc/lib/xkbfile/xkbatom.c,v 3.3 1996/12/23 06:04:03 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>

@@ -1,5 +1,4 @@
-/* $XConsortium: makekeys.c,v 11.8 94/04/17 20:22:22 gildea Exp $ */
-/* $XFree86$ */
+/* $TOG: makekeys.c /main/10 1997/08/17 22:39:17 kaleb $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -29,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/X11/util/makekeys.c,v 3.1 1996/12/09 12:14:18 dawes Exp $ */
 
 /* Constructs hash tables for XStringToKeysym and XKeysymToString. */
 

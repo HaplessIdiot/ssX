@@ -1,4 +1,4 @@
-.\" $XConsortium: lbxproxy.man /main/9 1996/12/02 15:47:09 swick $
+.\" $TOG: lbxproxy.man /main/10 1997/09/12 14:32:24 barstow $
 .\" Copyright (c) 1996  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -74,6 +74,14 @@ between the server and the proxy at any given time.  The maximimum
 number of motion events that can be in flight is set with this option;
 the default is 8.
 .TP 8
+.B \-maxservers \fInumber\fP
+The default behavior of lbxproxy is to manage a single server.
+However, lbxproxy can manage more than one server.  The default
+maximum number of servers is 20.  The number of servers can be 
+overridden by setting the environment variable LBXPROXY_MAXSERVERS 
+to the desired number.  The order of precedence from highest
+to lowest: command line, environment variable, default number.
+.TP 8
 .B \-[terminate|reset]
 The default behavior of lbxproxy is to continue running as usual when
 it's last client exits.  The
@@ -147,7 +155,7 @@ Set the size of the proxy's tag cache (in bytes).
 .B \-zlevel \fIlevel\fP
 Set the Zlib compression level (used for stream compression).
 .br
-default is 9
+default is 6
 .br
 1 = worst compression, fastest
 .br

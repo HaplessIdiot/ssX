@@ -1,4 +1,4 @@
-/* $XConsortium: unsquish.c /main/3 1996/12/15 21:28:52 rws $ */
+/* $TOG: unsquish.c /main/4 1997/09/12 14:31:43 barstow $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  * Copyright 1996 X Consortium, Inc.
@@ -75,10 +75,11 @@ static char lbxevsize[] = {
 };
 
 int
-EventLength(ev)
+EventLength(ev, squish)
     xEvent     *ev;
+    Bool       squish;
 {
-    if (!lbxNegOpt.squish || ev->u.u.type >= LASTEvent)
+    if (!squish || ev->u.u.type >= LASTEvent)
 	return sz_xEvent;
     return lbxevsize[ev->u.u.type];
 }

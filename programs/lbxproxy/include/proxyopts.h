@@ -1,4 +1,4 @@
-/* $XConsortium: proxyopts.h /main/6 1996/11/15 21:29:14 rws $ */
+/* $TOG: proxyopts.h /main/7 1997/09/12 14:28:39 barstow $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -50,18 +50,20 @@ extern LbxNegOptsRec lbxNegOpt;
 
 extern void LbxOptInit(
 #if NeedFunctionPrototypes
-    void
+    XServerPtr /*server*/
 #endif
 );
 
 extern int LbxOptBuildReq(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     char * /*buf*/
 #endif
 );
 
 extern int LbxOptParseReply(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     int /*nopts*/,
     unsigned char * /*preply*/,
     int /*replylen*/
@@ -88,24 +90,27 @@ extern void LbxNoSquish(
 
 extern LbxBitmapCompMethod *LbxLookupBitmapCompMethod (
 #if NeedFunctionPrototypes
-	int		/* methodOpCode */
+    XServerPtr 	/*server*/,
+    int		/* methodOpCode */
 #endif
 );
 
 extern LbxPixmapCompMethod *LbxLookupPixmapCompMethod (
 #if NeedFunctionPrototypes
-	int		/* methodOpCode */
+    XServerPtr 	/*server*/,
+    int		/* methodOpCode */
 #endif
 );
 
 extern LbxBitmapCompMethod *LbxFindPreferredBitmapCompMethod (
 #if NeedFunctionPrototypes
-    void
+    XServerPtr 	/*server*/
 #endif
 );
 
 extern LbxPixmapCompMethod *LbxFindPreferredPixmapCompMethod (
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     int		/* format */,
     int		/* depth */
 #endif

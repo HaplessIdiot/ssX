@@ -1,4 +1,4 @@
-/* $TOG: lcDB.c /main/12 1997/06/02 17:27:50 kaleb $ */
+/* $TOG: lcDB.c /main/13 1997/08/27 12:12:53 kaleb $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -28,7 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/lcDB.c,v 3.4 1997/06/08 15:31:45 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcDB.c,v 3.5 1997/07/06 05:30:36 dawes Exp $ */
 
 
 
@@ -1044,7 +1044,7 @@ CreateDatabase(dbfile)
     int len;
     int error = 0;
 
-    fd = fopen(dbfile, "r");
+    fd = _XFopenFile(dbfile, "r");
     if(fd == (FILE *)NULL){
 	return NULL;
     }

@@ -45,10 +45,11 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c /main/6 1996/11/17 14:53:07 rws $ */
+/* $TOG: osinit.c /main/7 1997/09/12 14:27:01 barstow $ */
 
 #include <stdio.h>
 #include "misc.h"
+#include "util.h"
 
 void
 OsInit()

@@ -1,5 +1,4 @@
-/* $XConsortium: xkbpath.c /main/4 1996/01/14 16:48:53 kaleb $ */
-/* $XFree86: xc/programs/xkbcomp/xkbpath.c,v 3.0 1996/02/09 08:22:57 dawes Exp $ */
+/* $TOG: xkbpath.c /main/5 1997/08/02 10:10:22 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,6 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86: xc/programs/xkbcomp/xkbpath.c,v 3.1 1996/08/26 10:52:31 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>

@@ -1,5 +1,5 @@
 /* $XConsortium: lcUTF.c /main/12 1996/12/04 10:12:29 swick $ */
-/* $XFree86: xc/lib/X11/lcUTF.c,v 3.2 1996/12/23 06:00:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF.c,v 3.3 1996/12/24 02:22:50 dawes Exp $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -226,7 +226,7 @@ init_latin_tab(tbl, fb_default, which)
 	if ((3 + (p ? strlen(p) : 0) + 
 	    strlen (TBL_DATA_DIR) + strlen (which)) < BUFSIZE) {
 	    sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, which);
-	    fp = fopen(filename, "r");
+	    fp = _XFopenFile (filename, "r");
 	}
 	if(fp) {
 	    set_latin_tab(fp, tbl, fb_default);
@@ -271,7 +271,7 @@ init_cjk_tab(tbl, fb_default, which, tab, max)
 	if ((3 + (p ? strlen(p) : 0) + 
 	    strlen (TBL_DATA_DIR) + strlen (which)) < BUFSIZE) {
 	    sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, which);
-	    fp = fopen(filename, "r");
+	    fp = _XFopenFile (filename, "r");
 	}
 	if(fp) {
 	    set_cjk_tab(fp, tab, tbl, max, fb_default);

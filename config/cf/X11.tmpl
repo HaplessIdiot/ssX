@@ -1,11 +1,11 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $TOG: X11.tmpl /main/294 1997/08/05 09:23:04 kaleb $
+XCOMM $TOG: X11.tmpl /main/295 1997/08/27 15:20:30 kaleb $
 XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.17 1997/09/09 10:27:34 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.18 1997/10/25 13:49:52 hohndel Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -837,9 +837,9 @@ XCOMM X Window System make variables; these need to be coordinated with rules
      INSTAPPFLAGS = $(INSTDATFLAGS)	/* XXX - this should go away - XXX */
 
 #if UseInstalledX11
-              RGB = rgb			/* assume BINDIR in path */
-            FONTC = bdftopcf		/* assume BINDIR in path */
-        MKFONTDIR = mkfontdir		/* assume BINDIR in path */
+              RGB = $(BINDIR)/rgb
+            FONTC = $(BINDIR)/bdftopcf
+        MKFONTDIR = $(BINDIR)/mkfontdir
 #else
               RGB = $(CLIENTENVSETUP) $(XBUILDBINDIR)/rgb
             FONTC = $(CLIENTENVSETUP) $(XBUILDBINDIR)/bdftopcf
@@ -1516,7 +1516,7 @@ ProjectUnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC),XBuildLibDir)
 #endif
 #endif
 #if defined(UseInstalled) || defined(OS2Architecture)
-     XKBCOMPCMD = XkbComp                       /* assume BINDIR in path */
+     XKBCOMPCMD = $(BINDIR)/xkbcomp
 #else
      XKBCOMPSRC = $(PROGRAMSRC)/xkbcomp
      XKBCOMPCMD = $(CLIENTENVSETUP) $(XBUILDBINDIR)/xkbcomp
@@ -1727,10 +1727,10 @@ all::   Concat(subdir,.dir)						@@\
 Concat(subdir,.dir):							@@\
 	$(XKBCOMPCMD) -lfhlpR -o Concat(subdir,.dir) '*'		@@\
 									@@\
-clean::									@@\
-	RemoveFile(Concat(subdir,.dir))					@@\
+InstallTarget(install,Concat(subdir,.dir),$(INSTDATFLAGS),basedir)	@@\
 									@@\
-InstallTarget(install,Concat(subdir,.dir),$(INSTDATFLAGS),basedir)
+clean::									@@\
+	RemoveFile(Concat(subdir,.dir))
 #endif
 
 /*

@@ -1,5 +1,4 @@
-/* $XConsortium: XKBGAlloc.c /main/7 1996/02/02 14:38:24 kaleb $ */
-/* $XFree86$ */
+/* $TOG: XKBGAlloc.c /main/8 1997/08/17 20:49:48 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86: xc/lib/X11/XKBGAlloc.c,v 3.2 1996/10/13 11:17:25 dawes Exp $ */
 
 #define	NEED_EVENTS
 #define	NEED_REPLIES

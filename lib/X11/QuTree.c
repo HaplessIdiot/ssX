@@ -1,4 +1,4 @@
-/* $XConsortium: QuTree.c,v 11.20 94/04/17 20:20:40 rws Exp $ */
+/* $TOG: QuTree.c /main/7 1997/09/12 15:30:24 kaleb $ */
 /*
 
 Copyright (c) 1986  X Consortium
@@ -61,7 +61,6 @@ Status XQueryTree (dpy, w, root, parent, children, nchildren)
 	    return (0);
 	}
 	_XRead32 (dpy, (char *) *children, nbytes);
-       /* Note: won't work if sizeof(Window) is not 32 bits! */
     }
     *parent = rep.parent;
     *root = rep.root;

@@ -1,4 +1,4 @@
-/* $XConsortium: cache.h /main/8 1996/11/17 22:25:36 rws $ */
+/* $TOG: cache.h /main/9 1997/09/12 14:27:55 barstow $ */
 /*
 
 Copyright (c) 1994  X Consortium
@@ -61,6 +61,8 @@ from the X Consortium.
 #define	CacheEntryFreed		2
 #define	CacheEntryOld		3
 
+#define MAX_NUM_CACHES  2
+
 typedef unsigned long CacheID;
 typedef unsigned long Cache;
 typedef void (*CacheFree) ();
@@ -69,36 +71,35 @@ typedef struct _cache *CachePtr;
 
 extern Cache CacheInit(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     unsigned long /*maxsize*/
 #endif
 );
 
 extern void CacheFreeCache(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     Cache /*cid*/
-#endif
-);
-
-extern void CacheFreeAll(
-#if NeedFunctionPrototypes
-    void
 #endif
 );
 
 extern Bool CacheTrimNeeded(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     Cache /*cid*/
 #endif
 );
 
 extern void CacheTrim(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     Cache /*cid*/
 #endif
 );
 
 extern Bool CacheStoreMemory(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     Cache /*cid*/,
     CacheID /*id*/,
     pointer /*data*/,
@@ -110,6 +111,7 @@ extern Bool CacheStoreMemory(
 
 extern pointer CacheFetchMemory(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     Cache /*cid*/,
     CacheID /*id*/,
     Bool /*update*/
@@ -118,6 +120,7 @@ extern pointer CacheFetchMemory(
 
 extern void CacheFreeMemory(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     Cache /*cacheid*/,
     CacheID /*cid*/,
     Bool /*notify*/

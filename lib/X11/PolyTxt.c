@@ -1,5 +1,4 @@
-/* $XConsortium: PolyTxt.c,v 11.23 94/04/17 20:20:28 kaleb Exp $ */
-/* $XFree86$ */
+/* $TOG: PolyTxt.c /main/14 1997/08/17 20:42:12 kaleb $ */
 /*
 
 Copyright (c) 1986  X Consortium
@@ -26,6 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+/* $XFree86: xc/lib/X11/PolyTxt.c,v 3.0 1995/06/01 08:21:14 dawes Exp $ */
 
 #include "Xlibint.h"
 

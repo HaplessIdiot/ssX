@@ -1,10 +1,10 @@
-// $TOG: xfree86 /main/2 1997/06/13 06:28:57 kaleb $
+// $TOG: xfree86 /main/3 1997/08/02 10:11:25 kaleb $
 
 //
 //  Rules for resolving XKB components for use with XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.7 1997/07/06 05:31:04 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.8 1997/07/29 12:08:26 hohndel Exp $
 //
 
 ! model 	=	keycodes	geometry

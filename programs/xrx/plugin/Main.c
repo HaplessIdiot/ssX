@@ -1,4 +1,4 @@
-/* $XConsortium: Main.c /main/9 1996/11/18 11:22:07 lehors $ */
+/* $TOG: Main.c /main/12 1997/08/29 18:31:37 kaleb $ */
 /*
 
 Copyright (C) 1996 X Consortium
@@ -56,8 +56,9 @@ the X Consortium.
 #include <ctype.h>
 #include <stdlib.h>
 #include "RxPlugin.h"
-#include <Xm/Label.h>
-#include <Xm/PushB.h>
+#include <X11/StringDefs.h>
+#include "rxLabel.h"
+#include "rxPushB.h"
 
 
 /***********************************************************************
@@ -400,36 +401,29 @@ RxpSetStatusWidget(PluginInstance* This, PluginState state)
 	return;
 
     n = 0;
-    XtSetArg(args[n], XmNshadowThickness, 1); n++;
-    XtSetArg(args[n], XmNwidth, This->width); n++;
-    XtSetArg(args[n], XmNheight, This->height); n++;
+    XtSetArg(args[n], XtNwidth, This->width); n++;
+    XtSetArg(args[n], XtNheight, This->height); n++;
     if (state == LOADING) {
 	/* create a label */
-	XmString string = XmStringCreateSimple("Loading...");
-	XtSetArg(args[n], XmNlabelString, string); n++;
+	XtSetArg(args[n], XtNlabel, "Loading..."); n++;
 	This->status_widget =
-	    XmCreateLabel(This->plugin_widget, "plugin", args, n);
-	XtManageChild(This->status_widget);
-	XmStringFree(string);
+	    XtCreateManagedWidget("plugin", rxLabelWidgetClass, 
+				  This->plugin_widget, args, n);
 #ifndef NO_STARTING_STATE
     } else if (state == STARTING) {
 	/* create a label */
-	XmString string = XmStringCreateSimple("Starting...");
-	XtSetArg(args[n], XmNlabelString, string); n++;
+	XtSetArg(args[n], XtNlabel, "Starting..."); n++;
 	This->status_widget =
-	    XmCreateLabel(This->plugin_widget, "plugin", args, n);
-	XtManageChild(This->status_widget);
-	XmStringFree(string);
+	    XtCreateManagedWidget("plugin", rxLabelWidgetClass, 
+				  This->plugin_widget, args, n);
 #endif
     } else if (state == WAITING) {
 	/* create a push button */
-	XmString string = XmStringCreateSimple("Start");
-	XtSetArg(args[n], XmNlabelString, string); n++;
+	XtSetArg(args[n], XtNlabel, "Press to start"); n++;
 	This->status_widget =
-	    XmCreatePushButton(This->plugin_widget, "plugin", args, n);
-	XtAddCallback(This->status_widget, XmNactivateCallback, StartCB, This);
-	XtManageChild(This->status_widget);
-	XmStringFree(string);
+	    XtCreateManagedWidget("plugin", rxPushBWidgetClass,
+				  This->plugin_widget, args, n);
+	XtAddCallback(This->status_widget, XtNcallback, StartCB, This);
     } else if (state == RUNNING) {
 	/* nothing else to be done */
     }

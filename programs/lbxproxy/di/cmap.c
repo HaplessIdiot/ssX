@@ -1,4 +1,4 @@
-/* $XConsortium: cmap.c /main/20 1996/12/19 11:29:22 rws $ */
+/* $TOG: cmap.c /main/21 1997/09/12 14:29:45 barstow $ */
 
 /*
 Copyright (c) 1996  X Consortium
@@ -571,7 +571,7 @@ GrabCmap (client, pmap, red, green, blue, alloc_named, xred, xgreen, xblue)
     if (client->swapped)
 	SwapGrabCmap (&req);
 
-    WriteReqToServer (client, sz_xLbxGrabCmapReq, (char *) &req);
+    WriteReqToServer (client, sz_xLbxGrabCmapReq, (char *) &req, TRUE);
 
     pmap->grab_status = CMAP_GRAB_REQUESTED;
 }
@@ -669,12 +669,12 @@ ReleaseCmap (client, pmap)
     req.length = sz_xLbxReleaseCmapReq >> 2;
     req.cmap = pmap->id;
 
-    if (clients[0]->swapped)
-	SwapReleaseCmap (&req);
-
     /* write the request on the proxy control connection */
 
-    WriteReqToServer (clients[0], sz_xLbxReleaseCmapReq, (char *) &req);
+    WriteReqToServer (client->server->serverClient, 
+		      sz_xLbxReleaseCmapReq, 
+		      (char *) &req,
+		      FALSE);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -945,7 +945,6 @@ ProcLBXCreateColormap(client)
     ClientPtr   client;
 {
     REQUEST(xCreateColormapReq);
-    Window      win;
     Colormap    cmap;
     VisualID    vis;
     char        n;
@@ -971,7 +970,7 @@ create_colormap(cmap, visual)
 {
     ColormapPtr pmap;
     LbxVisualPtr pvis;
-    int         tsize, size, csize;
+    int         tsize, csize;
     Pixel     **pptr;
 
     pvis = GetVisual(visual);
@@ -1044,7 +1043,7 @@ CreateColormap(client, cmap, visual)
     pmap = create_colormap(cmap, visual);
     if (!pmap)
 	return FALSE;
-    return AddResource(cmap, RT_COLORMAP, (pointer) pmap);
+    return AddResource(client, cmap, RT_COLORMAP, (pointer) pmap);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1075,10 +1074,10 @@ FreeColormap(client, cmap)
 {
     ColormapPtr pmap;
 
-    pmap = (ColormapPtr) LookupIDByType(cmap, RT_COLORMAP);
+    pmap = (ColormapPtr) LookupIDByType(client, cmap, RT_COLORMAP);
     if (!pmap)
 	return FALSE;
-    FreeResource(cmap, RT_NONE);
+    FreeResource(client, cmap, RT_NONE);
     return TRUE;
 }
 
@@ -1100,7 +1099,7 @@ ProcLBXCopyColormapAndFree(client)
     if (client->swapped) {
 	swapl(&srcmap, n);
     }
-    pmap = (ColormapPtr) LookupIDByType(srcmap, RT_COLORMAP);
+    pmap = (ColormapPtr) LookupIDByType(client, srcmap, RT_COLORMAP);
     if (pmap)
 	FreeAllClientPixels(pmap, client->index);
 
@@ -1132,7 +1131,7 @@ ProcLBXFreeColors(client)
 	swapl(&mask, n);
 	swaps(&len, n);
     }
-    pmap = (ColormapPtr) LookupIDByType(cmap, RT_COLORMAP);
+    pmap = (ColormapPtr) LookupIDByType(client, cmap, RT_COLORMAP);
     if (!pmap)
 	return ProcStandardRequest(client);
 
@@ -1180,7 +1179,7 @@ ProcLBXAllocColor(client)
     if (client->swapped)
 	swapl(&cmap, n);
 
-    pmap = (ColormapPtr) LookupIDByType (cmap, RT_COLORMAP);
+    pmap = (ColormapPtr) LookupIDByType (client, cmap, RT_COLORMAP);
 
     if (!pmap)
 	return ProcStandardRequest(client);
@@ -1265,13 +1264,14 @@ ProcLBXAllocNamedColor(client)
 	swaps(&nbytes, n);
     }
 
-    pmap = (ColormapPtr) LookupIDByType (cmap, RT_COLORMAP);
+    pmap = (ColormapPtr) LookupIDByType (client, cmap, RT_COLORMAP);
 
     if (nbytes > MAX_COLORNAME_LENGTH || !pmap)
 	return ProcStandardRequest(client);
 
     pent = NULL;
-    rgbe = FindColorName((char *) &stuff[1], nbytes, pmap->pVisual);
+    rgbe = FindColorName(client->server, (char *) &stuff[1], nbytes, 
+			 pmap->pVisual);
     if (rgbe) {
 #ifdef COLOR_DEBUG
 	fprintf(stderr, "looking for %.*s = (%d,%d,%d)\n", nbytes,
@@ -1378,7 +1378,8 @@ alloc_named_color_reply(client, nr, data)
 		 pixel, rgbe.vred, rgbe.vgreen, rgbe.vblue);
 #endif
 
-    AddColorName(nr->request_info.xallocnamedcolor.name,
+    AddColorName(client->server,
+		 nr->request_info.xallocnamedcolor.name,
 		 nr->request_info.xallocnamedcolor.namelen,
 		 &rgbe);
 
@@ -1402,7 +1403,7 @@ ProcLBXAllocColorCells(client)
     if (client->swapped)
 	swapl(&cmap, n);
 
-    pmap = (ColormapPtr) LookupIDByType (cmap, RT_COLORMAP);
+    pmap = (ColormapPtr) LookupIDByType (client, cmap, RT_COLORMAP);
 
     if (!pmap)
 	return ProcStandardRequest(client);
@@ -1535,7 +1536,7 @@ ProcLBXAllocColorPlanes(client)
     if (client->swapped)
 	swapl(&cmap, n);
 
-    pmap = (ColormapPtr) LookupIDByType (cmap, RT_COLORMAP);
+    pmap = (ColormapPtr) LookupIDByType (client, cmap, RT_COLORMAP);
 
     if (!pmap)
 	return ProcStandardRequest(client);
@@ -1672,12 +1673,13 @@ ProcLBXLookupColor(client)
 	swaps(&len, n);
     }
 
-    pmap = (ColormapPtr) LookupIDByType (cmap, RT_COLORMAP);
+    pmap = (ColormapPtr) LookupIDByType (client, cmap, RT_COLORMAP);
 
     if (len > MAX_COLORNAME_LENGTH || !pmap)
 	return ProcStandardRequest(client);
 
-    rgbe = FindColorName((char *) &stuff[1], len, pmap->pVisual);
+    rgbe = FindColorName(client->server, (char *) &stuff[1], len, 
+			 pmap->pVisual);
 
     if (rgbe) {	/* found the value */
 	reply.type = X_Reply;
@@ -1764,7 +1766,8 @@ lookup_color_reply(client, nr, data)
 	swaps(&rgbe.vgreen, n);
 	swaps(&rgbe.vblue, n);
     }
-    AddColorName(nr->request_info.xlookupcolor.name,
+    AddColorName(client->server, 
+		 nr->request_info.xlookupcolor.name,
 		 nr->request_info.xlookupcolor.namelen,
 		 &rgbe);
     return TRUE;

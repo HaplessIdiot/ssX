@@ -1,4 +1,4 @@
-/* $XConsortium: pm.h /main/1 1996/12/01 00:33:52 swick $ */
+/* $TOG: pmP.h /main/2 1997/09/12 14:31:06 barstow $ */
 
 /*
 Copyright (c) 1996  X Consortium
@@ -33,27 +33,20 @@ from the X Consortium.
 /*
  * Pad to a 64 bit boundary
  */
-
 #define PAD64(_bytes) ((8 - ((unsigned int) (_bytes) % 8)) % 8)
 
 #define PADDED_BYTES64(_bytes) (_bytes + PAD64 (_bytes))
 
-
 /*
  * Number of 8 byte units in _bytes.
  */
-
 #define WORD64COUNT(_bytes) (((unsigned int) ((_bytes) + 7)) >> 3)
-
 
 /*
  * Compute the number of bytes for a STRING representation
  */
-
 #define STRING_BYTES(_str) (2 + (_str ? strlen (_str) : 0) + \
 		     PAD64 (2 + (_str ? strlen (_str) : 0)))
-
-
 
 #define SKIP_STRING(_pBuf, _swap) \
 { \
@@ -67,7 +60,6 @@ from the X Consortium.
 /*
  * STORE macros
  */
-
 #define STORE_CARD16(_pBuf, _val) \
 { \
     *((CARD16 *) _pBuf) = _val; \
@@ -86,11 +78,9 @@ from the X Consortium.
         _pBuf += PAD64 (2 + _len); \
 }
 
-
 /*
  * EXTRACT macros
  */
-
 #define EXTRACT_CARD16(_pBuf, _swap, _val) \
 { \
     _val = *((CARD16 *) _pBuf); \
@@ -110,21 +100,6 @@ from the X Consortium.
     if (PAD64 (2 + _len)) \
         _pBuf += PAD64 (2 + _len); \
 }
-
-
-/*
- * Byte swapping
- */
-
-/* byte swap a long literal */
-#define lswapl(_val) ((((_val) & 0xff) << 24) |\
-		   (((_val) & 0xff00) << 8) |\
-		   (((_val) & 0xff0000) >> 8) |\
-		   (((_val) >> 24) & 0xff))
-
-/* byte swap a short literal */
-#define lswaps(_val) ((((_val) & 0xff) << 8) | (((_val) >> 8) & 0xff))
-
 
 #define CHECK_AT_LEAST_SIZE(_iceConn, _majorOp, _minorOp, _expected_len, _actual_len, _severity) \
     if ((((_actual_len) - SIZEOF (iceMsg)) >> 3) > _expected_len) \

@@ -1,11 +1,11 @@
-XCOMM	$TOG: locale.alias /main/22 1997/04/18 07:56:01 barstow $
+XCOMM $TOG: locale.alias /main/23 1997/07/31 10:17:56 kaleb $
 XCOMM
 XCOMM	This file contains alias name of locale.
 XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.5 1997/05/03 09:15:15 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.6 1997/07/31 13:47:06 dawes Exp $
 XCOMM
 POSIX			C
 POSIX-UTF2		C

@@ -1,4 +1,4 @@
-/* $XConsortium: main.c /main/22 1996/11/22 11:03:55 rws $ */
+/* $TOG: main.c /main/23 1997/09/12 14:30:44 barstow $ */
 /*
  * Copyright 1992 Network Computing Devices
  *
@@ -29,6 +29,8 @@
 #include "lbxext.h"
 #include "os.h"
 #include "resource.h"
+#include "pm.h"
+#include "misc.h"
 
 int LbxWhoAmI = 0;		/*
 				 * for lbx zlib library to know who we are
@@ -36,72 +38,107 @@ int LbxWhoAmI = 0;		/*
 				 * proxy = 0
 				 */
 
-XServerPtr  servers[MAX_SERVERS];
+#define DEFAULT_MAXSERVERS 20
 
-char *display;
+XServerPtr  	*servers;
 
-Bool proxyMngr;
+char 		*display;
+
+int		lbxMaxServers = DEFAULT_MAXSERVERS;
+
+static void InitializeGlobals ();
 
 int
 main (argc, argv)
     int	    argc;
     char    **argv;
 {
-    int	    i;
     display = "63";
+
     ProcessCommandLine (argc, argv);
- 
+
+    AdjustProcVector();
+
+    InitializeGlobals ();
+
     proxyMngr = CheckForProxyManager ();
     CreateWellKnownSockets ();
     if (proxyMngr)
+    {
 	ConnectToProxyManager ();
+	ListenToProxyManager ();
+    }
 
-    AdjustProcVector();
     while (1)
     {
-	serverGeneration++;
 	OsInit ();
 	InitColors ();
-	if (serverGeneration == 1)
-	{
-	    if (proxyMngr)
-		ListenToProxyManager ();
-
-	    clients = (ClientPtr *)xalloc(MAXCLIENTS * sizeof(ClientPtr));
-	    if (!clients)
-		FatalError("couldn't create client array");
-	    for (i=1; i<MAXCLIENTS; i++) 
-		clients[i] = NullClient;
-	    serverClient = (ClientPtr)xalloc(sizeof(ClientRec));
-	    if (!serverClient)
-		FatalError("couldn't create server client");
-            serverClient->sequence = 0;
-            serverClient->closeDownMode = RetainPermanent;
-            serverClient->clientGone = FALSE;
-            serverClient->server = servers[0];
-	    serverClient->index = 0;
-	    serverClient->noClientException = Success;
-            serverClient->awaitingSetup = FALSE;
-            serverClient->swapped = FALSE;
-            serverClient->big_requests = FALSE;
-	}
-        if (!InitClientResources(serverClient))
-            FatalError("couldn't init server resources");
-	FinishInitClientResources(serverClient, 0, 0x3ffff);
         InitDeleteFuncs();
-        clients[0] = serverClient;
-        currentMaxClients = 1;
+
+	if (!proxyMngr && !ConnectToServer (display_name))
+	{
+	    char msg[100];
+
+            (void) sprintf (msg, "could not connect to '%s'", display_name);
+	    FatalError(msg);
+	}
+
+        if (!InitClientResources(clients[0]))
+            FatalError("couldn't init server resources");
+	FinishInitClientResources(clients[0], 0, 0x3ffff);
 
 	if (Dispatch () != 0)
 	    break;
+
         FreeAllResources();
         FreeAtoms();
         FreeColors();
         FreeTags();
-	CacheFreeAll();
     }
     exit (0);
 }
+
+/*
+ * Initalize those global variables that are needed to connect
+ * to a display server.
+ */
+static void
+InitializeGlobals ()
+{
+    int		i;
+    ClientPtr	tmp;
+
+    clients = (ClientPtr *)xalloc(MAXCLIENTS * sizeof(ClientPtr));
+	if (!clients)
+	    FatalError("couldn't create client array");
+    for (i=1; i < MAXCLIENTS; i++) 
+	clients[i] = NullClient;
+
+    servers = (XServerPtr *)xalloc(lbxMaxServers * sizeof (XServerPtr));
+	if (!servers)
+	    FatalError("couldn't create servers array");
+    for (i=0; i < lbxMaxServers; i++)
+	servers[i] = (XServerPtr) NULL;
+
+    tmp = (ClientPtr)xcalloc(sizeof(ClientRec));
+    if (!tmp)
+	FatalError("couldn't create server client");
+
+    tmp->sequence = 0;
+    tmp->closeDownMode = RetainPermanent;
+    tmp->clientGone = FALSE;
+    tmp->server = servers[0];
+    tmp->index = 0;
+    tmp->noClientException = Success;
+    tmp->awaitingSetup = FALSE;
+    tmp->swapped = FALSE;
+    tmp->big_requests = FALSE;
+
+    clients[0] = tmp;
+
+    currentMaxClients = 1;
+}
+
 
 /* ARGSUSED */
 void

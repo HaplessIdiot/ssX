@@ -1,4 +1,4 @@
-/* $XConsortium: lbxfuncs.c /main/45 1996/12/15 21:28:12 rws $ */
+/* $TOG: lbxfuncs.c /main/47 1997/09/12 14:30:30 barstow $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  * Copyright 1996 X Consortium, Inc.
@@ -51,6 +51,10 @@
 #include	"lbxext.h"
 #include	"proxyopts.h"
 
+#ifdef DEBUG
+extern int lbxDebug;
+#endif
+
 static Bool intern_atom_reply();
 static Bool get_atom_name_reply();
 static Bool get_mod_map_reply();
@@ -65,6 +69,7 @@ static Bool GetWinAttrAndGeomReply();
 
 char protocolMode = PROTOCOL_FULL;
 
+/* ARGSUSED */
 static void 
 get_connection_info(client, cs, cs_len, change_type, changes, changes_len)
     ClientPtr   client;
@@ -124,8 +129,8 @@ get_connection_info(client, cs, cs_len, change_type, changes, changes_len)
 		vis = (xVisualType *) dp;
 	    }
 	}
-	if (!LookupIDByType(root->defaultColormap, RT_COLORMAP))
-	    CreateColormap(serverClient,
+	if (!LookupIDByType(client, root->defaultColormap, RT_COLORMAP))
+	    CreateColormap(client,
 			   root->defaultColormap, root->rootVisualID);
     }
 }
@@ -217,7 +222,8 @@ get_setup_reply(client, data, len)
 #endif
 	tag_data = (xConnSetup *) &rep[1];
 	if (rep->tag != 0) {
-	    if (!TagStoreData(global_cache, rep->tag, rep->length,
+	    if (!TagStoreData(client->server, client->server->global_cache, 
+			      rep->tag, rep->length,
 			      LbxTagTypeConnInfo, tag_data)) {
 		/* tell server we lost it */
 		SendInvalidateTag(client, rep->tag);
@@ -234,7 +240,8 @@ get_setup_reply(client, data, len)
 	    SwapLongs(changes, changes_len);
 
 	if (rep->tag != 0) {
-	    td = TagGetTag(global_cache, rep->tag);
+	    td = TagGetTag(client->server, client->server->global_cache, 
+			   rep->tag);
 	    if (!td) {
 		fprintf(stderr, "no data for setup tag 0x%x\n", rep->tag);
 		send_setup_reply(client, FALSE, 0, 0, "bad tag data from server", 0);
@@ -286,7 +293,7 @@ ProcLBXInternAtom(client)
 
     s = (char *)stuff + sizeof(xInternAtomReq);
 
-    atom = LbxMakeAtom(s, nbytes, a, FALSE);
+    atom = LbxMakeAtom(client->server, s, nbytes, a, FALSE);
     if (atom != None) {
 	reply.type = X_Reply;
 	reply.length = 0;
@@ -348,7 +355,7 @@ intern_atom_reply(client, nr, data)
     }
     if (atom != None)
 	/* make sure it gets stuffed in the DB */
-	(void) LbxMakeAtom(str, len, atom, TRUE);
+	(void) LbxMakeAtom(client->server, str, len, atom, TRUE);
     return TRUE;
 }
 
@@ -368,7 +375,7 @@ ProcLBXGetAtomName(client)
     if (client->swapped) {
 	swapl(&id, n);
     }
-    str = NameForAtom(id);
+    str = NameForAtom(client->server, id);
 
     if (str) {	/* found the value */
 	len = strlen(str);
@@ -436,7 +443,7 @@ get_atom_name_reply(client, nr, data)
     atom = nr->request_info.xgetatom.atom;
     /* make sure it gets stuffed in the DB */
     if (atom)
-	(void) LbxMakeAtom(s, (unsigned) len, atom, TRUE);
+	(void) LbxMakeAtom(client->server, s, (unsigned) len, atom, TRUE);
     return TRUE;
 }
 
@@ -463,9 +470,10 @@ SendLbxSync (client)
     req.lbxReqType = X_LbxSync;
     req.length = sz_xLbxSyncReq >> 2;
 
-    WriteReqToServer (client, sz_xLbxSyncReq, (char *) &req);
+    WriteReqToServer (client, sz_xLbxSyncReq, (char *) &req, TRUE);
 }
 
+/* ARGSUSED */
 static Bool
 sync_reply(client, nr, data)
     ClientPtr   client;
@@ -548,13 +556,15 @@ get_mod_map_reply(client, nr, data)
 #endif
 
 	    tag_data = (pointer) &rep[1];
-	    if (!TagStoreData(global_cache, tag, len,
+	    if (!TagStoreData(client->server, client->server->global_cache, 
+			      tag, len,
 			      LbxTagTypeModmap, tag_data)) {
 		/* tell server we lost it */
 		SendInvalidateTag(client, tag);
 	    }
 	} else {
-	    tag_data = TagGetData(global_cache, tag);
+	    tag_data = TagGetData(client->server, client->server->global_cache, 
+				  tag);
 	    if (!tag_data) {
 		fprintf(stderr, "no data for mod map tag 0x%x\n", tag);
 		WriteError(client, X_GetModifierMapping, 0, 0, BadAlloc);
@@ -646,13 +656,15 @@ get_key_map_reply(client, nr, data)
 	    /* data always swapped, because reswapped when written */
 	    if (client->swapped)
 		SwapLongs((CARD32 *) tag_data, len / 4);
-	    if (!TagStoreData(global_cache, tag, len,
+	    if (!TagStoreData(client->server, client->server->global_cache, 
+			      tag, len,
 			      LbxTagTypeKeymap, tag_data)) {
 		/* tell server we lost it */
 		SendInvalidateTag(client, tag);
 	    }
 	} else {
-	    tag_data = TagGetData(global_cache, tag);
+	    tag_data = TagGetData(client->server, 
+				  client->server->global_cache, tag);
 	    if (!tag_data) {
 		fprintf(stderr, "no data for key map tag 0x%x\n", tag);
 		WriteError(client, X_GetKeyboardMapping, 0, 0, BadAlloc);
@@ -869,7 +881,8 @@ get_queryfont_reply(client, nr, data)
 	    /*
 	     * store squished version of data
 	     */
-	    if (!TagStoreData(global_cache, tag, sqlen,
+	    if (!TagStoreData(client->server, client->server->global_cache, 
+				      tag, sqlen,
 				      LbxTagTypeFont, sqtag_data)) {
 		/* tell server we lost it */
 		SendInvalidateTag(client, tag);
@@ -877,7 +890,7 @@ get_queryfont_reply(client, nr, data)
 	    len = UnsquishFontInfo(rep->compression, sqtag_data, sqlen,
 				   &tag_data);
 	} else {
-	    td = TagGetTag(global_cache, tag);
+	    td = TagGetTag(client->server, client->server->global_cache, tag);
 	    if (!td) {
 		fprintf(stderr, "no data for font tag 0x%x\n", tag);
 		WriteError(client, X_QueryFont, 0, 0, BadAlloc);
@@ -969,7 +982,7 @@ ProcLBXGetWindowAttributes(client)
     newreq.length = sz_xLbxGetWinAttrAndGeomReq >> 2;
     newreq.id = stuff->id;
 
-    WriteReqToServer (client, sz_xLbxGetWinAttrAndGeomReq, (char *) &newreq);
+    WriteReqToServer (client, sz_xLbxGetWinAttrAndGeomReq, (char *) &newreq, TRUE);
     return Success;
 }
 
@@ -1332,25 +1345,8 @@ HandleReply(client, data, len)
 
 	AttendClient(client);
 	if (prefix->success) {
-	    if (lbxNegOpt.useTags) {
-		get_setup_reply(client, (char *) reply, len);
-		return FALSE;
-	    } else {
-		CARD16 majorVer = prefix->majorVersion,
-		       minorVer = prefix->minorVersion;
-
-		if (client->swapped) {
-		    SwapConnectionInfo((xConnSetup *) & prefix[1]);
-		    swaps (&majorVer, n);
-		    swaps (&minorVer, n);
-		}
-
-		finish_setup_reply (client, (xConnSetup *)&prefix[1], len, 
-				    0, NULL, 0,
-				    (int) majorVer, (int) minorVer);
-
-		return FALSE;
-	    }
+	    get_setup_reply(client, (char *) reply, len);
+	    return FALSE;
 	}
 	return TRUE;
     }

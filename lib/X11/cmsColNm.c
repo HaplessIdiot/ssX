@@ -1,5 +1,4 @@
-/* $XConsortium: cmsColNm.c,v 1.30 95/06/08 23:20:39 gildea Exp $" */
-/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.1 1995/06/14 07:07:18 dawes Exp $ */
+/* $TOG: cmsColNm.c /main/31 1997/08/27 12:12:32 kaleb $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -32,6 +31,7 @@
  *
  *
  */
+/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.2 1995/07/08 10:24:00 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
@@ -746,7 +746,7 @@ LoadColornameDB()
 	return(XcmsFailure);
     }
 
-    if ((stream = fopen(pathname, "r")) == NULL) {
+    if ((stream = _XFopenFile (pathname, "r")) == NULL) {
 	return(XcmsFailure);
     }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c /main/27 1996/12/26 18:53:34 rws $ */
+/* $TOG: connection.c /main/29 1997/09/12 14:26:48 barstow $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -72,7 +72,7 @@ SOFTWARE.
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
- *      EstablishNewConnections, CreateWellKnownSockets, ResetWellKnownSockets,
+ *      EstablishNewConnections, CreateWellKnownSockets, 
  *      CloseDownConnection, CheckConnections, AddEnabledDevice,
  *	RemoveEnabledDevice, OnlyListToOneClient,
  *      ListenToAllClients,
@@ -94,6 +94,7 @@ SOFTWARE.
 #include "Xos.h"			/* for strings, file, time */
 #include <sys/param.h>
 #include <errno.h>
+#include <stdlib.h>			/* atoi */
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
@@ -144,6 +145,8 @@ static int unixDomainConnection = -1;
 #include "os.h"
 #include "lbx.h"
 #include "util.h"
+#include "pm.h"
+#include "wire.h"
 
 #ifdef DNETCONN
 #include <netdnet/dn.h>
@@ -168,7 +171,6 @@ extern int read(), close();
 #endif
 #endif
 
-extern char *display;		/* The display number */
 int lastfdesc;			/* maximum file descriptor */
 
 fd_set WellKnownConnections;	/* Listener mask */
@@ -193,17 +195,17 @@ static fd_set GrabImperviousClients;
 static fd_set SavedAllClients;
 static fd_set SavedAllSockets;
 static fd_set SavedClientsWithInput;
-int GrabInProgress = 0;
 
+static int auditTrailLevel = 1;
+
+int GrabInProgress = 0;
 int ConnectionTranslation[MAXSOCKS];
 int ConnectionOutputTranslation[MAXSOCKS];
-extern int auditTrailLevel;
 
 unsigned long raw_stream_out;	/* out to server, in from client */
 unsigned long raw_stream_in;	/* in from server, out to client */
 extern unsigned long  stream_out_plain;
 extern unsigned long  stream_in_plain;
-extern void CloseServer();
 
 static void ErrorConnMax(
 #if NeedFunctionPrototypes
@@ -211,24 +213,24 @@ static void ErrorConnMax(
 #endif
 );
 
-static void
+static Bool
 PickNewListenDisplay (displayP)
-
-char **displayP;
-
+    char **displayP;
 {
     static char newDisplay[16];
-    sprintf (newDisplay, "%d", atoi (*displayP) - 1);
+    sprintf (newDisplay, "%d", atoi (*displayP) + 1);
     *displayP = newDisplay;
-}
 
+    if (atoi (*displayP) > 65535)
+	return (FALSE);
+
+    return (TRUE);
+}
 
 #ifdef TCPCONN
 static int
 open_tcp_socket (retry)
-
-int retry;  /* boolean - retry if addr busy */
-
+    int retry;  /* boolean - retry if addr busy */
 {
     struct sockaddr_in insock;
     int request;
@@ -248,7 +250,7 @@ int retry;  /* boolean - retry if addr busy */
     /* Necesary to restart the server without a reboot */
     {
 	int one = 1;
-	setsockopt(request, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
+	setsockopt(request, SOL_SOCKET, SO_REUSEADDR, (char *) &one, sizeof(int));
     }
 #endif /* SO_REUSEADDR */
     {
@@ -265,7 +267,11 @@ int retry;  /* boolean - retry if addr busy */
     while (bind(request, (struct sockaddr *) &insock, sizeof (insock)))
     {
 	if (retryCount-- == 0) {
-	    Error ("Binding TCP socket");
+	    char msg[100];
+
+	    (void) sprintf (msg, "Bind failure on port number '%d'", 
+			    insock.sin_port);
+	    Error (msg);
 	    close (request);
 	    return -1;
 	}
@@ -1085,12 +1091,14 @@ close_named_local()
 #endif /* XLOCAL_NAMED */
 
 static int
-xlocal_create_sockets(findPort)
+xlocal_create_sockets(findPort, fds)
 
 int findPort;
+int fds[];
 
 {
     int request;
+    int num_fds = 0;
 
     ChooseLocalConnectionType();
 
@@ -1100,6 +1108,7 @@ int findPort;
 	XLOCAL_MSG((0,"open_pts_local(): failed.\n"));
     } else {
 	FD_SET (ptsFd, &WellKnownConnections);
+	fds[num_fds++] = ptsFd;
     }
 #endif
 #ifdef XLOCAL_NAMED
@@ -1107,6 +1116,7 @@ int findPort;
 	XLOCAL_MSG((0,"open_named_local(): failed.\n"));
     } else {
 	FD_SET (namedFd, &WellKnownConnections);
+	fds[num_fds++] = namedFd;
     }
 #endif
 #ifdef XLOCAL_ISC
@@ -1114,6 +1124,7 @@ int findPort;
 	XLOCAL_MSG((0,"open_isc_local(): failed.\n"));
     } else {
 	FD_SET (iscFd, &WellKnownConnections);
+	fds[num_fds++] = iscFd;
     }
 #endif
 #ifdef XLOCAL_SCO
@@ -1121,6 +1132,7 @@ int findPort;
 	XLOCAL_MSG((0,"open_sco_local(): failed.\n"));
     } else {
 	FD_SET (scoFd, &WellKnownConnections);
+	fds[num_fds++] = scoFd;
     } 
 #endif
 #ifdef XLOCAL_UNIX
@@ -1129,6 +1141,7 @@ int findPort;
     } else {
 	FD_SET (request, &WellKnownConnections);
 	unixDomainConnection = request;
+	fds[num_fds++] = request;
     }
 #endif
 #ifdef TCPCONN
@@ -1142,18 +1155,10 @@ int findPort;
 	XLOCAL_MSG((0,"TCP connections available at port %d\n",
 		    X_TCP_PORT + atoi(display)));
 	FD_SET (request, &WellKnownConnections);
+	fds[num_fds++] = request;
 	return 0;
     }
 #endif /* TCPCONN */
-}
-
-static void
-xlocal_reset_sockets()
-{
-#ifdef XLOCAL_UNIX
-    reset_unix_local();
-#endif
-    FD_ZERO(&AllStreams);
 }
 
 static int
@@ -1302,19 +1307,112 @@ open_dnet_socket ()
 }
 #endif /* DNETCONN */
 
+/*
+ * Create the socket(s) that clients will use for one server.
+ */
+void
+CreateServerSockets(fds)
+    int		fds[];
+{
+    int		tcp_request = -1, dnet_request = - 1, unix_request;
+    int		done = 0;
+    int		findPort = proxyMngr;
+    int		num_fds = 0;
+    static	int been_there;
+
+    if (!been_there) 
+    {
+	been_there=1;
+        FD_ZERO(&WellKnownConnections);
+    }
+
+    while (!done)
+    {
+
+#ifdef LOCALCONN
+	if (xlocal_create_sockets(findPort, fds) == -1 && findPort)
+	{
+	    if (PickNewListenDisplay (&display))
+		continue;
+	}
+#else  /* LOCALCONN */
+#ifdef TCPCONN
+	if ((tcp_request = open_tcp_socket (!findPort)) != -1) {
+	    FD_SET (tcp_request, &WellKnownConnections);
+	    fds[num_fds++] = tcp_request;
+	}
+	else if (findPort)
+	{
+	    if (PickNewListenDisplay (&display))
+		continue;
+	}
+	else if (!PartialNetwork) 
+	{
+	    FatalError ("Cannot establish tcp listening socket");
+	}
+#endif /* TCPCONN */
+#ifdef DNETCONN
+	if ((dnet_request = open_dnet_socket ()) != -1) {
+	    FD_SET (dnet_request, &WellKnownConnections);
+	    fds[num_fds++] = dnet_request;
+	}
+	else if (findPort)
+	{
+	    Bool try_again;
+
+	    try_again = PickNewListenDisplay (&display);
+	    if (tcp_request >= 0)
+		close (tcp_request);
+	    if (try_again)
+		continue;
+	}
+	else if (!PartialNetwork) 
+	{
+	    FatalError ("Cannot establish dnet listening socket");
+	}
+#endif /* DNETCONN */
+#ifdef UNIXCONN
+	if ((unix_request = open_unix_socket ()) != -1) {
+	    FD_SET (unix_request, &WellKnownConnections);
+	    unixDomainConnection = unix_request;
+	    fds[num_fds++] = dnet_request;
+	}
+	else if (findPort)
+	{
+	    Bool try_again;
+
+	    try_again = PickNewListenDisplay (&display);
+	    if (tcp_request >= 0)
+		close (tcp_request);
+	    if (dnet_request >= 0)
+		close (dnet_request);
+	    if (try_again)
+		continue;
+	}
+	else if (!PartialNetwork) 
+	{
+	    FatalError ("Cannot establish unix listening socket");
+	}
+#endif /* UNIXCONN */
+
+#endif /* LOCALCONN */
+
+	done = 1;
+    }
+
+    if (!XFD_ANYSET (&WellKnownConnections))
+        FatalError ("Cannot establish any listening sockets");
+}
+
 /*****************
  * CreateWellKnownSockets
  *    At initialization, create the sockets to listen on for new clients.
  *****************/
 
-extern Bool proxyMngr;
-
 void
 CreateWellKnownSockets()
 {
-    int		tcp_request = -1, dnet_request = - 1, unix_request;
-    int		i, done = 0;
-    int		findPort = proxyMngr;
+    int		i;
 
     FD_ZERO(&AllSockets);
     FD_ZERO(&AllClients);
@@ -1343,79 +1441,6 @@ CreateWellKnownSockets()
 	    ErrorF( "GOT TO END OF SOCKETS %d\n", MAXSOCKS);
     }
 
-    while (!done)
-    {
-	FD_ZERO(&WellKnownConnections);
-
-#ifdef LOCALCONN
-	if (xlocal_create_sockets() == -1 && findPort)
-	{
-	    PickNewListenDisplay (&display);
-	    continue;
-	}
-#else  /* LOCALCONN */
-#ifdef TCPCONN
-	if ((tcp_request = open_tcp_socket (!findPort)) != -1) {
-	    FD_SET (tcp_request, &WellKnownConnections);
-	}
-	else if (findPort)
-	{
-	    PickNewListenDisplay (&display);
-	    continue;
-	}
-	else if (!PartialNetwork) 
-	{
-	    FatalError ("Cannot establish tcp listening socket");
-	}
-#endif /* TCPCONN */
-#ifdef DNETCONN
-	if ((dnet_request = open_dnet_socket ()) != -1) {
-	    FD_SET (dnet_request, &WellKnownConnections);
-	}
-	else if (findPort)
-	{
-	    PickNewListenDisplay (&display);
-	    if (tcp_request >= 0)
-		close (tcp_request);
-	    continue;
-	}
-	else if (!PartialNetwork) 
-	{
-	    FatalError ("Cannot establish dnet listening socket");
-	}
-#endif /* DNETCONN */
-#ifdef UNIXCONN
-	if ((unix_request = open_unix_socket ()) != -1) {
-	    FD_SET (unix_request, &WellKnownConnections);
-	    unixDomainConnection = unix_request;
-	}
-	else if (findPort)
-	{
-	    PickNewListenDisplay (&display);
-	    if (tcp_request >= 0)
-		close (tcp_request);
-	    if (dnet_request >= 0)
-		close (dnet_request);
-	    continue;
-	}
-	else if (!PartialNetwork) 
-	{
-	    FatalError ("Cannot establish unix listening socket");
-	}
-#endif /* UNIXCONN */
-
-#endif /* LOCALCONN */
-
-	done = 1;
-    }
-
-    /*
-     * We will start listening on the well known connections
-     * after the proxy finishes connecting to the server.
-     */
-
-    if (!XFD_ANYSET (&WellKnownConnections))
-        FatalError ("Cannot establish any listening sockets");
     OsSignal (SIGPIPE, SIG_IGN);
     OsSignal (SIGHUP, AutoResetServer);
     OsSignal (SIGINT, GiveUp);
@@ -1445,64 +1470,17 @@ CreateWellKnownSockets()
     }
 }
 
-
-extern int proxy_manager_fd;
-
+void
 ListenToProxyManager ()
-
 {
-    FD_SET(proxy_manager_fd, &AllSockets);
+    if (proxy_manager_fd >= 0)
+	FD_SET(proxy_manager_fd, &AllSockets);
 }
 
 void
 ListenWellKnownSockets ()
-
 {
     XFD_ORSET (&AllSockets, &AllSockets, &WellKnownConnections);
-}
-
-void
-ResetWellKnownSockets ()
-{
-    ResetOsBuffers();
-
-#ifdef LOCALCONN
-	xlocal_reset_sockets();
-#else /* LOCALCONN */
-#if defined(UNIXCONN) && !defined(SVR4)
-    if (unixDomainConnection != -1)
-    {
-	/*
-	 * see if the unix domain socket has disappeared
-	 */
-	struct stat	statb;
-
-	if (stat (unsock.sun_path, &statb) == -1 ||
-	    (statb.st_mode & S_IFMT) != S_IFSOCK)
-	{
-	    ErrorF ("Unix domain socket %s trashed, recreating\n",
-	    	unsock.sun_path);
-	    (void) unlink (unsock.sun_path);
-	    (void) close (unixDomainConnection);
-	    FD_CLR(unixDomainConnection, &WellKnownConnections);
-	    unixDomainConnection = open_unix_socket ();
-	    if (unixDomainConnection != -1)
-		FD_SET (unixDomainConnection, &WellKnownConnections);
-	}
-    }
-#endif /* UNIXCONN */
-
-#endif /* LOCALCONN */
-
-
-    /*
-     * See above in CreateWellKnownSockets about SIGUSR1
-     */
-    if (RunFromSmartParent) {
-	if (ParentProcess > 0) {
-	    kill (ParentProcess, SIGUSR1);
-	}
-    }
 }
 
 void
@@ -1570,8 +1548,9 @@ ServerWritev(fd, iov, iovcnt)
 }
 
 ClientPtr
-AllocNewConnection (fd, to_server)
+AllocNewConnection (fd, connect_fd, to_server)
     int	    fd;
+    int     connect_fd;
     Bool    to_server;
 {
     OsCommPtr	oc;
@@ -1596,7 +1575,7 @@ AllocNewConnection (fd, to_server)
     }
     oc->flushClient = StandardFlushClient;
     oc->ofirst = (ConnectionOutputPtr) NULL;
-    if (!(client = NextAvailableClient((pointer)oc)))
+    if (!(client = NextAvailableClient((pointer)oc, connect_fd)))
     {
 	xfree (oc);
 	return NullClient;
@@ -1663,9 +1642,7 @@ EstablishNewConnections(clientUnused, closure)
     fd_mask readyconnections;     /* mask of listeners that are ready */
     int curconn;                  /* fd of listener that's ready */
     register int newconn;         /* fd of new client */
-    register int i;
     register ClientPtr client;
-    register OsCommPtr oc;
     fd_set tmask;
 
 #ifdef TCP_NODELAY
@@ -1731,7 +1708,7 @@ EstablishNewConnections(clientUnused, closure)
 #endif
 #endif
 
-	client = AllocNewConnection (newconn, FALSE);
+	client = AllocNewConnection (newconn, curconn, FALSE);
 	if (!client)
 	{
 	    ErrorConnMax(newconn);

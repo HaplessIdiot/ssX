@@ -1,4 +1,4 @@
-/* $TOG: keysymdef.h /main/25 1997/06/21 10:54:51 kaleb $ */
+/* $TOG: keysymdef.h /main/26 1997/09/10 13:54:34 kaleb $ */
 
 /***********************************************************
 Copyright (c) 1987, 1994  X Consortium
@@ -75,6 +75,7 @@ SOFTWARE.
 /* International & multi-key character composition */
 
 #define XK_Multi_key		0xFF20  /* Multi-key character compose */
+#define XK_Codeinput		0xFF37
 #define XK_SingleCandidate	0xFF3C
 #define XK_MultipleCandidate	0xFF3D
 #define XK_PreviousCandidate	0xFF3E
@@ -98,6 +99,7 @@ SOFTWARE.
 #define XK_Kana_Shift		0xFF2E  /* Kana Shift */
 #define XK_Eisu_Shift		0xFF2F  /* Alphanumeric Shift */
 #define XK_Eisu_toggle		0xFF30  /* Alphanumeric toggle */
+#define XK_Kanji_Bangou		0xFF37  /* Codeinput */
 #define XK_Zen_Koho		0xFF3D	/* Multiple/All Candidate(s) */
 #define XK_Mae_Koho		0xFF3E	/* Previous Candidate */
 

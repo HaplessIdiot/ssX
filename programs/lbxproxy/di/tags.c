@@ -1,4 +1,4 @@
-/* $XConsortium: tags.c /main/11 1996/11/19 14:24:49 rws $ */
+/* $TOG: tags.c /main/12 1997/09/12 14:31:37 barstow $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -30,34 +30,38 @@
 #include	"wire.h"
 #include	"proxyopts.h"
 
-Cache       global_cache;
-Cache       prop_cache;
 int         lbxTagCacheSize = 1 << 20;
 
-
 void
-TagsInit(useTags)
-
-Bool useTags;
+TagsInit(server, useTags)
+    XServerPtr server;
+    Bool useTags;
 {
     if (!useTags) {
 	lbxTagCacheSize = 0;
     }
-    global_cache = CacheInit(lbxTagCacheSize);
-    prop_cache = CacheInit(lbxTagCacheSize);
+    server->global_cache = CacheInit(server, lbxTagCacheSize);
+    server->prop_cache = CacheInit(server, lbxTagCacheSize);
 }
 
 void
 FreeTags()
 {
-    CacheFreeCache(global_cache);
-    CacheFreeCache(prop_cache);
+    int 	i;
+
+    for (i=0; i < lbxMaxServers; i++) {
+	if (servers[i] && servers[i]->caches[servers[i]->global_cache])
+	    CacheFreeCache(servers[i], servers[i]->global_cache);
+	if (servers[i] && servers[i]->caches[servers[i]->prop_cache])
+	    CacheFreeCache(servers[i], servers[i]->prop_cache);
+    }
 }
 
 /* ARGSUSED */
 static void
-cache_free(id, data, reason)
+cache_free(id, client, data, reason)
     CacheID     id;
+    ClientPtr	client;
     pointer     data;
     int         reason;
 {
@@ -65,13 +69,14 @@ cache_free(id, data, reason)
 
     /* tell server we toasted this one */
     if (reason != CacheEntryFreed)
-	SendInvalidateTag(0, tag->tid);
+	SendInvalidateTag(client, tag->tid);
     xfree(tag->tdata);
     xfree(data);
 }
 
 Bool
-TagStoreData(cache, id, size, dtype, data)
+TagStoreData(server, cache, id, size, dtype, data)
+    XServerPtr  server;
     Cache       cache;
     CacheID     id;
     int         size;
@@ -84,11 +89,12 @@ TagStoreData(cache, id, size, dtype, data)
     if (!tdata)
 	return FALSE;
     memcpy((char *) tdata, (char *) data, size);
-    return TagStoreDataNC(cache, id, size, dtype, tdata);
+    return TagStoreDataNC(server, cache, id, size, dtype, tdata);
 }
 
 Bool
-TagStoreDataNC(cache, id, size, dtype, data)
+TagStoreDataNC(server, cache, id, size, dtype, data)
+    XServerPtr  server;
     Cache       cache;
     CacheID     id;
     int         size;
@@ -98,7 +104,8 @@ TagStoreDataNC(cache, id, size, dtype, data)
     TagData     tag;
     Bool	ret;
 
-    assert(lbxNegOpt.useTags);
+    assert(server->lbxNegOpt.useTags);
+
     tag = (TagData) xalloc(sizeof(TagDataRec));
     if (!tag)
 	return FALSE;
@@ -107,8 +114,8 @@ TagStoreDataNC(cache, id, size, dtype, data)
     tag->data_type = dtype;
     tag->size = size;
 
-    ret = CacheStoreMemory(cache, id, (pointer) tag, size, cache_free,
-			   !AnyTagBearingReplies(cache));
+    ret = CacheStoreMemory(server, cache, id, (pointer) tag, size, cache_free,
+			   !AnyTagBearingReplies(server, cache));
     if (!ret) {
     	xfree(tag->tdata);
         xfree(tag);
@@ -117,26 +124,30 @@ TagStoreDataNC(cache, id, size, dtype, data)
 }
 
 TagData
-TagGetTag(cache, id)
+TagGetTag(server, cache, id)
+    XServerPtr	server;
     Cache       cache;
     CacheID     id;
 {
     TagData     tag;
 
-    assert(lbxNegOpt.useTags);
-    tag = (TagData) CacheFetchMemory(cache, id, TRUE);
+    assert(server->lbxNegOpt.useTags);
+
+    tag = (TagData) CacheFetchMemory(server, cache, id, TRUE);
     return tag;
 }
 
 pointer
-TagGetData(cache, id)
+TagGetData(server, cache, id)
+    XServerPtr	server;
     Cache       cache;
     CacheID     id;
 {
     TagData     tag;
 
-    assert(lbxNegOpt.useTags);
-    tag = (TagData) CacheFetchMemory(cache, id, TRUE);
+    assert(server->lbxNegOpt.useTags);
+
+    tag = (TagData) CacheFetchMemory(server, cache, id, TRUE);
     if (tag)
 	return tag->tdata;
     else
@@ -144,11 +155,13 @@ TagGetData(cache, id)
 }
 
 void
-TagFreeData(cache, id, notify)
+TagFreeData(server, cache, id, notify)
+    XServerPtr	server;
     Cache       cache;
     CacheID     id;
     Bool        notify;
 {
-    assert(lbxNegOpt.useTags);
-    CacheFreeMemory(cache, id, notify);
+    assert(server->lbxNegOpt.useTags);
+
+    CacheFreeMemory(server, cache, id, notify);
 }

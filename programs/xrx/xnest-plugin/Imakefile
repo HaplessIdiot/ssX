@@ -1,16 +1,21 @@
-XCOMM $XConsortium: Imakefile /main/7 1996/12/02 14:03:11 kaleb $
+XCOMM $TOG: Imakefile /main/10 1997/09/10 10:47:15 kaleb $
 
 XCOMM This isn't an option we must build a shared lib
 #define DoSharedLib YES
 
 #define LibHeaders NO
 #define LibName xrxnest
-#define SoRev SOREV
-SOREV = 1.0
+#define SoRev SOXRXREV
+
+SharedLibReferences(xrxnest,xrxnest,$(RXSRC),SOXRXREV,6.3)
 
           RXSRC = ../rx
     RX_INCLUDES = -I$(RXSRC)
       PLUGINSRC = ../plugin
+
+#if HasBSD44Sockets
+SOCKET_DEFINES = -DBSD44SOCKETS
+#endif
 
 #ifdef SGIArchitecture
 #if OSMajorVersion == 5 && OSMinorVersion < 3 || OSMajorVersion == 6 && OSMinorV
@@ -34,26 +39,31 @@ ersion < 2
 #endif
 
 #ifdef SunArchitecture
-MOTIF_INCLUDES = -I/usr/dt/include
+VENDOR_INCLUDES = -I/usr/openwin/include
 #endif
 
 XCOMM -DPLUGIN_TRACE can be added to the following definition to debug
  PLUGIN_DEFINES = -DXP_UNIX
-PLUGIN_INCLUDES = -I$(PLUGINSRC)/include
+PLUGIN_INCLUDES = -I$(PLUGINSRC) -I$(PLUGINSRC)/include
 
-DEFINES = -DNETSCAPE_PLUGIN $(PLUGIN_DEFINES) -DNO_STARTING_STATE
-INCLUDES = -I. $(PLUGIN_INCLUDES) $(RX_INCLUDES) $(MOTIF_INCLUDES)
+DEFINES = -DNETSCAPE_PLUGIN $(PLUGIN_DEFINES) -DNO_STARTING_STATE $(SOCKET_DEFINES)
+INCLUDES = -I. $(PLUGIN_INCLUDES) $(RX_INCLUDES) $(VENDOR_INCLUDES)
 
 # most objects are the same as the ones for the standard plugin
 PLUGIN_OBJS = $(PLUGINSRC)/PRead.o $(PLUGINSRC)/PParse.o \
 	$(PLUGINSRC)/BuildReq.o $(PLUGINSRC)/XUrls.o
 
-SRCS = Main.c SetWin.c PProcess.c NewNDest.c XnestDis.c
+WIDGET_SRCS = rxLabel.c rxPushB.c
+WIDGET_OBJS = rxLabel.o rxPushB.o
+
+SRCS = Main.c SetWin.c PProcess.c NewNDest.c XnestDis.c $(IWDGET_SRCS)
 OBJS = Main.o SetWin.o PProcess.o NewNDest.o XnestDis.o \
-	$(PLUGINSRC)/stubs.o $(PLUGIN_OBJS)
+	$(PLUGINSRC)/stubs.o $(PLUGIN_OBJS) $(WIDGET_OBJS)
 
 #include <Library.tmpl>
 
 LinkFile(Main.c,$(PLUGINSRC)/Main.c)
+LinkFile(rxLabel.c,$(PLUGINSRC)/rxLabel.c)
+LinkFile(rxPushB.c,$(PLUGINSRC)/rxPushB.c)
 
 DependTarget()

@@ -1,5 +1,4 @@
-/* $XConsortium: fontdir.c /main/24 1996/09/28 16:49:04 rws $ */
-/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.6 1996/02/09 08:19:38 dawes Exp $ */
+/* $TOG: fontdir.c /main/25 1997/08/17 22:58:01 kaleb $ */
 
 /*
 
@@ -27,6 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.7 1996/12/23 06:02:21 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c /main/37 1996/12/20 10:02:30 rws $ */
+/* $TOG: dispatch.c /main/39 1997/09/12 14:29:59 barstow $ */
 /*
  * Copyright 1992 Network Computing Devices
  * Copyright 1996 X Consortium, Inc.
@@ -22,6 +22,7 @@
  *
  */
 
+#include <stdio.h>
 #include "assert.h"
 #include "lbx.h"
 #include "wire.h"
@@ -29,6 +30,7 @@
 #include "lbxext.h"
 #include "util.h"
 #include "resource.h"
+#include "pm.h"
 
 extern int (* InitialVector[3]) ();
 
@@ -45,10 +47,8 @@ HandleLargeRequest(
 #endif
 );
 
-static int nextFreeClientID; /* always MIN free client ID */
-
-int	nClients;	/* number active clients */
-
+int nextFreeClientID; /* always MIN free client ID */
+int nClients;	/* number active clients */
 char *display_name = 0;
 char dispatchException = 0;
 char isItTimeToYield;
@@ -72,18 +72,13 @@ Dispatch ()
     register ClientPtr	client;
     register int	nready;
 
-    nextFreeClientID = 1;
+    nextFreeClientID = 2;
     nClients = 0;
 
     clientReady = (int *) xalloc(sizeof(int) * MaxClients);
     if (!clientReady)
 	FatalError("couldn't create client ready array");
 
-    LBXReadAtomsFile();
-
-    if (!ConnectToServer (display_name))
-	FatalError("couldn't connect to X server");
-    
     while (!dispatchException)
     {
 	if (numLargeRequestsInQueue == 0) {
@@ -153,7 +148,7 @@ Dispatch ()
 		    break;
 	        }
 	    }
-	    if (result >= 0)
+	    if (result >= 0 && client != client->server->serverClient)
 		client->server->prev_exec = client;
 	    FlushAllOutput();
 	}
@@ -208,13 +203,19 @@ SendErrorToClient(client, majorCode, minorCode, resId, errorCode)
  *************************/
 
 ClientPtr
-NextAvailableClient(ospriv)
+NextAvailableClient(ospriv, connect_fd)
     pointer ospriv;
+    int connect_fd;
 {
     register int i;
     register ClientPtr client;
     xReq data;
+    static int been_there;
 
+    if (!been_there) {
+       nextFreeClientID = 1; /* The first client is serverClient */
+       been_there++;
+    }
     i = nextFreeClientID;
     if (i == MAXCLIENTS)
 	return (ClientPtr)NULL;
@@ -229,14 +230,42 @@ NextAvailableClient(ospriv)
     client->public.requestLength = StandardRequestLength;
     client->requestVector = InitialVector;
     client->osPrivate = ospriv;
-    client->server = servers[0];    /* XXX want to use multiple servers */
     client->big_requests = TRUE;
 
-    if (!InitClientResources(client))
+    /*
+     * Use the fd the client connected on as a search key to find the 
+     * associated display for this client
+     */
+    if (connect_fd != -1)
+    {
+	int j, k, found = 0;
+	for (j=0; j < lbxMaxServers; j++)
+	{
+	    if (servers[j])
+	    {
+	        for (k=0; k < MAXTRANSPORTS; k++)
+		   if (servers[j]->listen_fds[k] == connect_fd)
+		   {
+		       found = 1;
+		       break;
+		   }
+	    }
+	    if (found)
+		break;
+	}
+	if (!found) {
+	    fprintf (stderr, "fd %d NOT found among active servers\n", connect_fd);
+	    return (ClientPtr) NULL;
+	}
+        client->server = servers[j];
+    }
+
+    if (client->server && !InitClientResources(client))
     {
 	xfree(client);
 	return (ClientPtr)NULL;
     }
+
     if (i == currentMaxClients)
 	currentMaxClients++;
     while ((nextFreeClientID < MAXCLIENTS) && clients[nextFreeClientID])
@@ -294,7 +323,7 @@ ProcEstablishConnection(client)
     prefix = (xConnClientPrefix *) ((char *) stuff + sz_xReq);
 
     nClients++;
-    client->requestVector = ProcVector;
+    client->requestVector = client->server->requestVector;
     client->sequence = 0;
     LBXSequenceNumber(client) = 0;
     client->largeRequest = NULL;
@@ -315,7 +344,9 @@ ProcEstablishConnection(client)
     len = (stuff->length << 2) - sz_xReq;
     if (!NewClient(client, len))
 	return (client->noClientException = -1);
-    WriteToServer(clients[0], len, (char *) prefix, TRUE);
+
+    WriteToServer(client->server->serverClient, len, (char *) prefix, 
+		  TRUE, FALSE);
 
     /*
      * Can't allow any requests to be passed on to the server until the
@@ -349,8 +380,8 @@ CloseDownClient(client)
 	if (client->closeDownMode == DestroyAll)
 	{
 	    client->clientGone = TRUE;  /* so events aren't sent to client */
-	    CloseDownConnection(client);
 	    FreeClientResources(client);
+	    CloseDownConnection(client);
 	    if (ClientIsAsleep (client))
 		ClientSignal (client);
 	    if (client->index < nextFreeClientID)
@@ -420,13 +451,12 @@ ProcStandardRequest (client)
     REQUEST(xReq);
     void (*zeroPadProc)();
     extern int lbxZeroPad;
-    int res;
 
     if (lbxZeroPad &&
 	(MAJOROP < 128) && (zeroPadProc = ZeroPadReqVector[MAJOROP]))
 	(*zeroPadProc) ((void *) stuff);
     FinishLBXRequest(client, REQ_PASSTHROUGH);
-    WriteReqToServer(client, client->req_len << 2, (char *) stuff);
+    WriteReqToServer(client, client->req_len << 2, (char *) stuff, TRUE);
     return Success;
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: cache.c /main/11 1996/11/17 22:27:57 rws $ */
+/* $TOG: cache.c /main/12 1997/09/12 14:29:39 barstow $ */
 /*
 Copyright (c) 1994  X Consortium
 
@@ -50,6 +50,7 @@ in this Software without prior written authorization from the X Consortium.
 #include	"misc.h"
 #include	"util.h"
 #include	"cache.h"
+#include	"wire.h"
 
 #define INITBUCKETS 64
 #define INITHASHSIZE 6
@@ -62,29 +63,26 @@ in this Software without prior written authorization from the X Consortium.
 #define	CACHE_ID(id)		((int)(CACHE_ENTRY_BITS(id) >> ENTRYOFFSET))
 
 typedef struct _cache_entry {
-    pointer     data;
-    unsigned long timestamp;
-    CacheID     id;
-    unsigned long size;
-    CacheFree   free_func;
-    struct _cache_entry *next;
-}           CacheEntryRec, *CacheEntryPtr;
+    pointer     		data;
+    unsigned long 		timestamp;
+    CacheID     		id;
+    unsigned long 		size;
+    CacheFree			free_func;
+    ClientPtr			client;	      /* for a server's serverClient */
+    struct _cache_entry 	*next;
+} CacheEntryRec, *CacheEntryPtr;
 
 typedef struct _cache {
-    Cache       id;
-    CacheEntryPtr *entries;
-    int         elements;
-    int         buckets;
-    int         hashsize;
-    CacheID     nextid;
-    unsigned long maxsize;
-    unsigned long cursize;
-}           CacheRec;
+    Cache       	id;
+    CacheEntryPtr 	*entries;
+    int         	elements;
+    int         	buckets;
+    int         	hashsize;
+    CacheID     	nextid;
+    unsigned long 	maxsize;
+    unsigned long 	cursize;
+} CacheRec;
 
-#define	MAX_NUM_CACHES	2
-static CachePtr caches[MAX_NUM_CACHES + 1];
-static int  num_caches = 0;
-static unsigned long seed = 0;
 
 /*-
  * Notes on cache implementation
@@ -98,7 +96,8 @@ static unsigned long seed = 0;
  */
 
 Cache
-CacheInit(maxsize)
+CacheInit(server, maxsize)
+    XServerPtr server;
     unsigned long maxsize;
 {
     Cache       id;
@@ -114,8 +113,8 @@ CacheInit(maxsize)
 	return (Cache) 0;
     }
     bzero((char *) cache->entries, (INITBUCKETS * sizeof(CacheEntryPtr)));
-    id = (Cache) ++num_caches;
-    caches[id] = cache;
+    id = (Cache) ++server->num_caches;
+    server->caches[id] = cache;
     cache->elements = 0;
     cache->buckets = INITBUCKETS;
     cache->hashsize = INITHASHSIZE;
@@ -127,31 +126,36 @@ CacheInit(maxsize)
 }
 
 void
-CacheFreeCache(cid)
+CacheFreeCache(server, cid)
+    XServerPtr server;
     Cache       cid;
 {
-    CachePtr cache = caches[cid];
+    CachePtr cache = server->caches[cid];
     int i;
     CacheEntryPtr cp;
 
     for (i = 0; i < cache->buckets; i++) {
 	while (cp = cache->entries[i]) {
 	    cache->entries[i] = cp->next;
-	    (*cp->free_func) (cp->id, cp->data, CacheWasReset);
+	    (*cp->free_func) (cp->id, cp->client, cp->data, CacheWasReset);
 	    xfree(cp);
 	}
     }
-    caches[cid] = NULL;
+    server->caches[cid] = NULL;
+    server->num_caches = 0;
+    server->seed = 0;
+
     xfree(cache->entries);
     xfree(cache);
 }
 
 static int
-hash(cid, id)
+hash(server, cid, id)
+    XServerPtr server;
     Cache       cid;
     CacheID     id;
 {
-    CachePtr    cache = caches[cid];
+    CachePtr    cache = server->caches[cid];
 
     switch (cache->hashsize) {
 #if INITHASHSIZE < 6
@@ -181,7 +185,8 @@ hash(cid, id)
 }
 
 static void
-rebuild_cache(cache)
+rebuild_cache(server, cache)
+    XServerPtr server;
     CachePtr    cache;
 {
     int j;
@@ -205,7 +210,7 @@ rebuild_cache(cache)
 	for (cp = *cptr; cp; cp = next) {
 	    next = cp->next;
 	    cp->next = NULL;
-	    tptr = &tails[hash(cache->id, cp->id)];
+	    tptr = &tails[hash(server, cache->id, cp->id)];
 	    **tptr = cp;
 	    *tptr = &cp->next;
 	}
@@ -214,18 +219,6 @@ rebuild_cache(cache)
     cache->buckets <<= 1;
     xfree(cache->entries);
     cache->entries = entries;
-}
-
-void
-CacheFreeAll()
-{
-    int         i;
-
-    for (i = 1; i <= num_caches; i++) {
-	if (caches[i])
-	    CacheFreeCache(i);
-    }
-    num_caches = 0;
 }
 
 static void
@@ -253,29 +246,32 @@ flush_cache(cache, needed)
 	cache->elements--;
 	cache->cursize -= oldest->size;
 	*oldprev = oldest->next;
-	(*oldest->free_func) (oldest->id, oldest->data, CacheEntryOld);
+	(*oldest->free_func) (oldest->id, oldest->client, oldest->data, CacheEntryOld);
 	xfree(oldest);
     }
 }
 
 Bool
-CacheTrimNeeded(cid)
+CacheTrimNeeded(server, cid)
+    XServerPtr server;
     Cache       cid;
 {
-    CachePtr    cache = caches[cid];
+    CachePtr    cache = server->caches[cid];
 
     return cache->cursize > cache->maxsize;
 }
 
 void
-CacheTrim(cid)
+CacheTrim(server, cid)
+    XServerPtr	server;
     Cache       cid;
 {
-    flush_cache(caches[cid], 0);
+    flush_cache(server->caches[cid], 0);
 }
 
 Bool
-CacheStoreMemory(cid, id, data, size, free_func, can_flush)
+CacheStoreMemory(server, cid, id, data, size, free_func, can_flush)
+    XServerPtr server;
     Cache       cid;
     CacheID     id;
     pointer     data;
@@ -284,7 +280,7 @@ CacheStoreMemory(cid, id, data, size, free_func, can_flush)
     Bool	can_flush;
 {
     CacheEntryPtr cp, *head;
-    CachePtr    cache = caches[cid];
+    CachePtr    cache = server->caches[cid];
 
     if (can_flush && (size > cache->maxsize)) /* beyond cache limits */
 	return FALSE;
@@ -295,14 +291,15 @@ CacheStoreMemory(cid, id, data, size, free_func, can_flush)
 	flush_cache(cache, size);
     if ((cache->elements >= (cache->buckets << 2)) &&
 	(cache->hashsize < MAXHASHSIZE))
-	rebuild_cache(cache);
-    head = &cache->entries[hash(cid, id)];
+	rebuild_cache(server, cache);
+    head = &cache->entries[hash(server, cid, id)];
     cp->next = *head;
     cp->id = id;
-    cp->timestamp = ++seed;
+    cp->timestamp = ++server->seed;
     cp->free_func = free_func;
     cp->size = size;
     cp->data = data;
+    cp->client = server->serverClient;
     cache->cursize += size;
     cache->elements++;
     *head = cp;
@@ -310,20 +307,21 @@ CacheStoreMemory(cid, id, data, size, free_func, can_flush)
 }
 
 pointer
-CacheFetchMemory(cid, id, update)
+CacheFetchMemory(server, cid, id, update)
+    XServerPtr server;
     Cache       cid;
     CacheID     id;
     Bool        update;
 {
-    CachePtr    cache = caches[cid];
+    CachePtr    cache = server->caches[cid];
     CacheEntryPtr cp,
                *head;
 
-    head = &cache->entries[hash(cid, id)];
+    head = &cache->entries[hash(server, cid, id)];
     for (cp = *head; cp; cp = cp->next) {
 	if (cp->id == id) {
 	    if (update)
-		cp->timestamp = ++seed;
+		cp->timestamp = ++server->seed;
 	    return cp->data;
 	}
     }
@@ -331,15 +329,16 @@ CacheFetchMemory(cid, id, update)
 }
 
 void
-CacheFreeMemory(cacheid, cid, notify)
+CacheFreeMemory(server, cacheid, cid, notify)
+    XServerPtr server;
     Cache       cacheid;
     CacheID     cid;
     Bool        notify;
 {
-    CachePtr    cache = caches[cacheid];
+    CachePtr    cache = server->caches[cacheid];
     CacheEntryPtr cp, *prev;
 
-    for (prev = &cache->entries[hash(cacheid, cid)];
+    for (prev = &cache->entries[hash(server, cacheid, cid)];
 	 cp = *prev;
 	 prev = &cp->next) {
 	if (cp->id == cid) {
@@ -347,7 +346,7 @@ CacheFreeMemory(cacheid, cid, notify)
 	    cache->elements--;
 	    cache->cursize -= cp->size;
 	    if (notify)
-		(*cp->free_func)(cid, cp->data, CacheEntryFreed);
+		(*cp->free_func)(cid, cp->client, cp->data, CacheEntryFreed);
 	    xfree(cp);
 	    break;
 	}

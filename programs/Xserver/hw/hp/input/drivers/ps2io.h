@@ -1,7 +1,7 @@
-/* $XConsortium: ps2io.h,v 1.1 94/05/28 14:32:49 dpw Exp $ */
+/* $TOG: ps2io.h /main/3 1997/09/08 13:19:15 kaleb $ */
 /*
- * @(#)ps2io.h: Revision: 1.1 Date: 94/12/15 09:22:14
- * Locker:  
+ * @(#)ps2io.h: Revision: /main/3 Date: 1997/09/08 13:19:15
+ * Locker:
  */
 
 #ifndef _SYS_PS2IO_INCLUDED /* allows multiple inclusion */
@@ -101,9 +101,9 @@ struct ps2_4 {
 
 /* values for PS2_INDICATORS */
 
-#define  CAPS_LED	0x04
+#define  CAPS_LED	0x01
 #define  NUM_LED	0x02
-#define  SCROLL_LED	0x01
+#define  SCROLL_LED	0x04
 
 /* values for PS2_RESOLUTION */
 /*  (RES_3 is te default)             Resolution in counts/mm */

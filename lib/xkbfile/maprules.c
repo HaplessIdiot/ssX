@@ -1,4 +1,4 @@
-/* $TOG: maprules.c /main/12 1997/06/10 06:53:35 kaleb $ */
+/* $TOG: maprules.c /main/13 1997/08/17 23:06:24 kaleb $ */
 /************************************************************
  Copyright (c) 1996 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.9 1997/06/22 10:16:54 dawes Exp $ */
+/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.10 1997/07/05 15:15:48 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>

@@ -1,8 +1,8 @@
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
+
 <!-- This is the Linux Distribution HOWTO, SGML source -- >
 <!-- Eric S. Raymond, esr@snark.thyrsus.com -- >
 <!-- The submission address is gregh@sunsite.unc.edu -- >
-
-<!doctype linuxdoc system>
 
 <article>
 
@@ -1196,7 +1196,7 @@ Here is a copy of modeplot:
 #
 # Do `modeplot -?' to see the control options.
 #
-# ($Id: VidModes.sgml,v 3.12 1997/08/12 12:02:04 hohndel Exp $)
+# ($Id: VidModes.sgml,v 3.13 1997/10/26 13:25:06 dawes Exp $)
 
 # Monitor description. Bandwidth in MHz, horizontal frequencies in kHz
 # and vertical frequencies in Hz.
@@ -1235,7 +1235,7 @@ output can be redirected to a printer.  See gnuplot(1) for  details.
 The modeplot tool was created by Eric S. Raymond <esr@thyrsus.com> based on
 analysis and scratch code by Martin Lottermoser <Martin.Lottermoser@mch.sni.de>
 
-This is modeplot $Revision: 3.12 $
+This is modeplot $Revision: 3.13 $
 EOF
 		exit;;
 	esac
@@ -1408,7 +1408,7 @@ mathematical analysis behind <TT>modeplot</TT>.  The distributed
 <TT>modeplot</TT> was redesigned and generalized by ESR from
 Martin's original gnuplot code for one case.
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.11 1997/01/25 03:22:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.12 1997/08/12 12:02:04 hohndel Exp $
   
   
   

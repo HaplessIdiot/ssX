@@ -1,5 +1,4 @@
-/* $XConsortium: XlibInt.c /main/183 1996/10/22 14:24:21 kaleb $ */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.8 1996/05/13 06:37:11 dawes Exp $ */
+/* $TOG: XlibInt.c /main/184 1997/08/27 12:12:00 kaleb $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -29,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.9 1996/12/23 05:59:48 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -3241,5 +3241,157 @@ _XANYSET(src)
     return (0);
 }
 #endif
+
+#if defined(WIN32) || defined(__EMX__) /* || defined(OS2) */
+
+/*
+ * These functions are intended to be used internally to Xlib only.
+ * These functions will always prefix the path with a DOS drive in the
+ * form "<drive-letter>:". As such, these functions are only suitable
+ * for use by Xlib function that supply a root-based path to some
+ * particular file, e.g. <ProjectRoot>/lib/X11/locale/locale.dir will
+ * be converted to "C:/usr/X11R6.3/lib/X11/locale/locale.dir".
+ */
+
+static int access_file (path, pathbuf, len_pathbuf, pathret)
+    char* path;
+    char* pathbuf;
+    int len_pathbuf;
+    char** pathret;
+{
+    if (access (path, F_OK) == 0) {
+	if (strlen (path) < len_pathbuf)
+	    *pathret = pathbuf;
+	else
+	    *pathret = Xmalloc (strlen (path) + 1);
+	if (*pathret) {
+	    strcpy (*pathret, path);
+	    return 1;
+	}
+    }
+    return 0;
+}
+
+static int AccessFile (path, pathbuf, len_pathbuf, pathret)
+    char* path;
+    char* pathbuf;
+    int len_pathbuf;
+    char** pathret;
+{
+    unsigned long drives;
+    int i, len;
+    char* drive;
+    char buf[MAX_PATH];
+    char* bufp;
+
+    /* just try the "raw" name first and see if it works */
+    if (access_file (path, pathbuf, len_pathbuf, pathret))
+	return 1;
+
+    /* try the places set in the environment */
+    drive = getenv ("_XBASEDRIVE");
+#ifdef __EMX__
+    if (!drive)
+	drive = getenv ("X11ROOT");
+#endif
+    if (!drive)
+	drive = "C:";
+    len = strlen (drive) + strlen (path);
+    if (len < MAX_PATH) bufp = buf;
+    else bufp = Xmalloc (len + 1);
+    strcpy (bufp, drive);
+    strcat (bufp, path);
+    if (access_file (bufp, pathbuf, len_pathbuf, pathret)) {
+	if (bufp != buf) Xfree (bufp);
+	return 1;
+    }
+
+#ifndef __EMX__ 
+    /* one last place to look */
+    drive = getenv ("HOMEDRIVE");
+    if (drive) {
+	len = strlen (drive) + strlen (path);
+	if (len < MAX_PATH) bufp = buf;
+	else bufp = Xmalloc (len + 1);
+	strcpy (bufp, drive);
+	strcat (bufp, path);
+	if (access_file (bufp, pathbuf, len_pathbuf, pathret)) {
+	    if (bufp != buf) Xfree (bufp);
+	    return 1;
+	}
+    }
+
+    /* tried everywhere else, go fishing */
+#define C_DRIVE ('C' - 'A')
+#define Z_DRIVE ('Z' - 'A')
+    /* does OS/2 (with or with gcc-emx) have getdrives? */
+    drives = _getdrives ();
+    for (i = C_DRIVE; i <= Z_DRIVE; i++) { /* don't check on A: or B: */
+	if ((1 << i) & drives) {
+	    len = 2 + strlen (path);
+	    if (len < MAX_PATH) bufp = buf;
+	    else bufp = Xmalloc (len + 1);
+	    *bufp = 'A' + i;
+	    *(bufp + 1) = ':';
+	    *(bufp + 2) = '\0';
+	    strcat (bufp, path);
+	    if (access_file (bufp, pathbuf, len_pathbuf, pathret)) {
+		if (bufp != buf) Xfree (bufp);
+		return 1;
+	    }
+	}
+    }
+#endif
+    return 0;
+}
+
+int _XOpenFile(path, flags)
+    char* path;
+    int flags;
+{
+    char buf[MAX_PATH];
+    char* bufp;
+    int ret = -1;
+
+    if (AccessFile (path, buf, MAX_PATH, &bufp))
+	ret = open (bufp, flags);
+
+    if (bufp != buf) Xfree (bufp);
+
+    return ret;
+}
+
+void* _XFopenFile(path, mode)
+    char* path;
+    char* mode;
+{
+    char buf[MAX_PATH];
+    char* bufp;
+    void* ret = NULL;
+
+    if (AccessFile (path, buf, MAX_PATH, &bufp))
+	ret = fopen (bufp, mode);
+
+    if (bufp != buf) Xfree (bufp);
+
+    return ret;
+}
+
+int _XAccessFile(path)
+    char* path;
+{
+    char buf[MAX_PATH];
+    char* bufp;
+    int ret = -1;
+
+    ret = AccessFile (path, buf, MAX_PATH, &bufp);
+
+    if (bufp != buf) Xfree (bufp);
+
+    return ret;
+}
+
+#endif
+
 
 

@@ -1,4 +1,4 @@
-/* $TOG: Initialize.c /main/210 1997/05/15 17:29:50 kaleb $ */
+/* $TOG: Initialize.c /main/211 1997/08/27 12:13:21 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Initialize.c,v 3.11 1996/12/24 02:22:59 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Initialize.c,v 3.12 1997/05/17 12:52:11 dawes Exp $ */
 
 /*
 
@@ -259,16 +259,22 @@ static String GetRootDirName(dest, len)
     int len; 
 {
 #ifdef WIN32
-    register char *ptr;
+    register char *ptr1;
+    register char *ptr2;
+    int len1 = 0, len2 = 0;
 
-    if (ptr = getenv("HOME")) {
-	(void) strncpy(dest, ptr, len);
-	dest[len-1] = '\0';
-    } else if (ptr = getenv("USERNAME")) {
-	(void) strcpy (dest, "/users/");
-	(void) strncat (dest, ptr, len - strlen (dest));
-	dest[len-1] = '\0';
-    } else
+    if (ptr1 = getenv("HOME")) {	/* old, deprecated */
+	len1 = strlen (ptr1);
+    } else if ((ptr1 = getenv("HOMEDRIVE")) && (ptr2 = getenv("HOMEDIR"))) {
+	len1 = strlen (ptr1);
+	len2 = strlen (ptr2);
+    } else if (ptr2 = getenv("USERNAME")) {
+	len1 = strlen (ptr1 = "/users/");
+	len2 = strlen (ptr2);
+    }
+    if ((len1 + len2 + 1) < len)
+	sprintf (dest, "%s%s", ptr1, (ptr2) ? ptr2 : "");
+    else
 	*dest = '\0';
 #else
     _Xgetpwparams pwparams;

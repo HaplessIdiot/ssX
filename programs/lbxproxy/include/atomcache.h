@@ -1,4 +1,4 @@
-/* $XConsortium: atomcache.h /main/8 1996/11/18 20:17:12 rws $ */
+/* $TOG: atomcache.h /main/9 1997/09/12 14:27:32 barstow $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -34,13 +34,21 @@ typedef struct {
     char *name;
 } AtomControlRec, *AtomControlPtr;
 
-extern AtomControlPtr atom_control;
-extern int atom_control_count;
-extern int min_keep_prop_size;
+typedef struct _AtomList {
+    char       *name;
+    unsigned char flags;
+    int         len;
+    int         hash;
+    Atom        atom;
+} AtomListRec, *AtomListPtr;
+
 #define DEF_KEEP_PROP_SIZE 8
+
+extern int min_keep_prop_size;
 
 extern Atom LbxMakeAtom(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     char * /*string*/,
     unsigned /*len*/,
     Atom /*atom*/,
@@ -50,12 +58,14 @@ extern Atom LbxMakeAtom(
 
 extern char *NameForAtom(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     Atom /*atom*/
 #endif
 );
 
 extern unsigned FlagsForAtom(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     Atom /*atom*/
 #endif
 );

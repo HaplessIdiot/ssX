@@ -1,4 +1,8 @@
-// $XFree86: xc/programs/xkbcomp/geometry/amiga,v 3.0 1996/08/18 01:55:32 dawes Exp $
+// $TOG: amiga /main/1 1997/08/02 10:10:42 kaleb $
+
+
+
+// $XFree86: xc/programs/xkbcomp/geometry/amiga,v 3.1 1997/08/12 12:02:15 hohndel Exp $
 default xkb_geometry "usa1" {
 
     description= "Amiga (usa1)";

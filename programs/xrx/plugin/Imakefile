@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile /main/27 1996/12/16 11:37:06 lehors $
+XCOMM $TOG: Imakefile /main/34 1997/09/10 10:47:20 kaleb $
 
 XCOMM This isn't an option we must build a shared lib
 #define DoSharedLib YES
@@ -11,6 +11,10 @@ SharedLibReferences(xrx,xrx,$(RXSRC),SOXRXREV,6.3)
 
           RXSRC = ../rx
     RX_INCLUDES = -I$(RXSRC)
+
+#if HasBSD44Sockets
+ SOCKET_DEFINES = -DBSD44SOCKETS
+#endif
 
 #ifdef SGIArchitecture
 #if OSMajorVersion == 5 && OSMinorVersion < 3 || OSMajorVersion == 6 && OSMinorVersion < 2
@@ -33,15 +37,23 @@ SharedLibReferences(xrx,xrx,$(RXSRC),SOXRXREV,6.3)
 #endif
 
 #ifdef SunArchitecture
-MOTIF_INCLUDES = -I/usr/dt/include
+VENDOR_INCLUDES = -I/usr/openwin/include
 #if OSMajorVersion < 5 || OSMajorVersion == 5 && OSMinorVersion < 6
      XT_DEFINES = -DXUSE_XTREGISTERWINDOW
 #endif
 #endif
 
 #ifdef HPArchitecture
-# No clue when HP might ship R6
+/* Even though HP ships R6 in 10.20, Netscape 3.x is built on HPUX 9 and is 
+ * linked against X11R5 libraries, so we continue to use _XtRegisterWindow 
+ * until such time as Netscape releases a version that is linked with X11R6.
+ */
      XT_DEFINES = -DXUSE_XTREGISTERWINDOW
+#if OSMajorVersion < 10 || (OSMajorVersion == 10 && OSMinorVersion < 2)
+   TOP_INCLUDES = -I/usr/include -I$(BUILDINCDIR)
+#else
+   TOP_INCLUDES = -I/usr/include/X11R5 -I$(BUILDINCDIR)
+#endif
 #endif
 
 #ifdef AlphaArchitecture
@@ -58,8 +70,8 @@ MOTIF_INCLUDES = -I/usr/dt/include
  PLUGIN_DEFINES = -DXP_UNIX
 PLUGIN_INCLUDES = -I./include
 
-        DEFINES = StrcasecmpDefines -DNETSCAPE_PLUGIN $(PLUGIN_DEFINES) $(XT_DEFINES)
-       INCLUDES = -I. $(PLUGIN_INCLUDES) $(RX_INCLUDES) $(MOTIF_INCLUDES)
+        DEFINES = StrcasecmpDefines -DNETSCAPE_PLUGIN $(PLUGIN_DEFINES) $(XT_DEFINES) $(SOCKET_DEFINES)
+       INCLUDES = -I. $(PLUGIN_INCLUDES) $(RX_INCLUDES) $(VENDOR_INCLUDES)
 
     PARAMS_SRCS = PRead.c PParse.c BuildReq.c
     PARAMS_OBJS = PRead.o PParse.o BuildReq.o
@@ -67,18 +79,28 @@ PLUGIN_INCLUDES = -I./include
      XMISC_SRCS = XUrls.c XAuth.c XDpyName.c Prefs.c
      XMISC_OBJS = XUrls.o XAuth.o XDpyName.o Prefs.o
 
+    WIDGET_SRCS = rxLabel.c rxPushB.c
+    WIDGET_OBJS = rxLabel.o rxPushB.o
+
            SRCS = Main.c SetWin.c PProcess.c NewNDest.c Global.c stubs.c \
-		$(PARAMS_SRCS) $(XMISC_SRCS)
+		$(PARAMS_SRCS) $(XMISC_SRCS) $(WIDGET_SRCS)
            OBJS = Main.o SetWin.o PProcess.o NewNDest.o Global.o stubs.o \
-		$(PARAMS_OBJS) $(XMISC_OBJS)
+		$(PARAMS_OBJS) $(XMISC_OBJS) $(WIDGET_OBJS)
 
 XCOMM we need to link in the right libraries so it will work no matter
 XCOMM which libraries Netscape itself is using.
 #if !VendorHasX11R6_3libXext
 X11R6_3_EXTENSIONS = ../libxplugin/libxplugin.a
 #ifdef SunArchitecture
-PLUGIN_LDOPTIONS = -L/usr/dt/lib -L/usr/openwin/lib
+PLUGIN_LDOPTIONS = -L/usr/openwin/lib
 CCENVSETUP =
+#endif
+#ifdef HPArchitecture
+#if OSMajorVersion < 10 || (OSMajorVersion == 10 && OSMinorVersion < 2)
+       LDPRELIBS = -L/usr/lib/X11
+#else
+       LDPRELIBS = -L/usr/lib/X11R5
+#endif
 #endif
 #else
 PLUGIN_LDOPTIONS = $(LDPRELIBS)
@@ -89,7 +111,7 @@ PLUGIN_LDOPTIONS = $(LDPRELIBS)
 RXICELIB = $(ICELIB)
 #endif
 
-    REQUIREDLIBS =  $(X11R6_3_EXTENSIONS) $(PLUGIN_LDOPTIONS) -lXm $(RXICELIB) $(XTOOLONLYLIB) $(XLIB)
+    REQUIREDLIBS =  $(X11R6_3_EXTENSIONS) $(PLUGIN_LDOPTIONS) $(RXICELIB) $(XTOOLONLYLIB) $(XLIB)
 
 #include <Library.tmpl>
 

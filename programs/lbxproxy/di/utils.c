@@ -45,15 +45,16 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $TOG: utils.c /main/39 1997/06/23 21:37:31 kaleb $ */
+/* $TOG: utils.c /main/42 1997/09/12 14:31:50 barstow $ */
 
 
 
 
-/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.5 1997/01/27 06:59:02 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.6 1997/07/05 15:16:51 dawes Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
+#include <stdlib.h>		/* getenv(), {m,re}alloc() */
 #ifdef X_POSIX_C_SOURCE
 #define _POSIX_C_SOURCE X_POSIX_C_SOURCE
 #include <signal.h>
@@ -87,6 +88,7 @@ static void VErrorF(char*, va_list);
 #endif
 
 #include "util.h"
+#include "wire.h"
 #include "atomcache.h"
 #include "proxyopts.h"
 
@@ -97,14 +99,37 @@ extern char *malloc();
 extern char *realloc();
 #endif
 
+/*
+ * External declarations not in header files
+ */
 extern char *display_name;
 extern char *display;
-
 extern Bool PartialNetwork;
+extern int lbxDebug;
 
-Bool CoreDump;
-int auditTrailLevel = 1;
+extern char protocolMode;
+extern Bool reconnectAfterCloseServer;
+extern Bool resetAfterLastClient;
+extern Bool terminateAfterLastClient;
+extern int  lbxTagCacheSize;
+extern Bool lbxUseLbx;
+extern Bool lbxUseTags;
+extern Bool lbxDoSquishing;
+extern Bool lbxCompressImages;
+extern Bool lbxDoAtomShortCircuiting;
+extern Bool lbxDoLbxGfx;
+extern Bool compStats;
 
+/*
+ * Static vars
+ */
+static Bool CoreDump;
+static Bool Must_have_memory = FALSE;
+static char *dev_tty_from_init = NULL;	/* since we need to parse it anyway */
+
+/*
+ * Debug stuff
+ */
 #ifdef DEBUG
 #ifndef SPECIAL_MALLOC
 #define MEMBUG
@@ -114,13 +139,43 @@ int auditTrailLevel = 1;
 #ifdef MEMBUG
 #define MEM_FAIL_SCALE 100000
 long Memory_fail = 0;
-
 #endif
 
-Bool Must_have_memory = FALSE;
+/*
+ * Global vars that may get set when the command line opts are parsed.
+ */
+#ifdef RGB_DB
+char *rgbPath = RGB_DB;
+#else
+char *rgbPath;
+#endif
 
-char *dev_tty_from_init = NULL;		/* since we need to parse it anyway */
+Bool lbxZeroPad = TRUE; /* zero out pad bytes in X requests */
 
+char *atomsFile = DEF_ATOMS_FILE;
+
+Bool lbxWinAttr = TRUE;	/* group GetWindowAttributes/GetGeometry into 1 trip */
+
+Bool lbxDoCmapGrabbing = TRUE; /* do colormap grabbing? */
+
+int lbxMaxMotionEvents = NUM_MOTION_EVENTS;	/* max # motion events */
+
+int min_keep_prop_size = DEF_KEEP_PROP_SIZE;
+
+/* 
+ * zlevel = 1..9, 9 == max compression. 6 == good tradeoff between 
+ * compression and speed. Try gzipping a large file at the default
+ * level (which is 6) and at max compression (9) and notice the
+ * difference in time it takes to compress the file and the difference 
+ * in file size. level 9 compression takes ~50 more (time, cpu) but 
+ * only yields a very small improvement in compression.
+ */
+int zlevel = 6;		
+
+
+/*
+ * The functions
+ */
 OsSigHandlerPtr
 OsSignal(sig, handler)
     int sig;
@@ -143,6 +198,7 @@ OsSignal(sig, handler)
 
 /* Force connections to close on SIGHUP from init */
 
+/* ARGSUSED */
 SIGVAL
 AutoResetServer (sig)
     int	sig;
@@ -160,6 +216,7 @@ AutoResetServer (sig)
 
 /* Force connections to close and then exit on SIGTERM, SIGINT */
 
+/* ARGSUSED */
 SIGVAL
 GiveUp(sig)
     int	sig;
@@ -167,7 +224,6 @@ GiveUp(sig)
     dispatchException |= DE_TERMINATE;
     isItTimeToYield = TRUE;
 }
-
 
 static void
 AbortServer()
@@ -211,6 +267,10 @@ void UseMsg()
     ErrorF("                          grouping into one round trip\n");
     ErrorF("-nograbcmap            disable colormap grabbing\n");
     ErrorF("-tagcachesize #        set tag cache size\n");
+    ErrorF("-maxservers #          maximum number of servers to use\n");
+    ErrorF("                          default is 20, but this is overrided\n");
+    ErrorF("                          the following environment variable:\n");
+    ErrorF("                          LBXPROXY_MAXSERVERS=<max servers>\n");
     ErrorF("-zlevel #              zlib compression level (1-9)\n");
     ErrorF("                          default is 9\n");
     ErrorF("                          1 = worst compression, fastest\n");
@@ -229,54 +289,12 @@ ShowHelpAndExit (status)
     exit (status);
 }
 
-extern char protocolMode;
-extern Bool reconnectAfterCloseServer;
-extern Bool resetAfterLastClient;
-extern Bool terminateAfterLastClient;
-extern int  lbxTagCacheSize;
-extern Bool lbxUseLbx;
-extern Bool lbxUseTags;
-extern Bool lbxDoSquishing;
-extern Bool lbxCompressImages;
-extern Bool lbxDoAtomShortCircuiting;
-extern Bool lbxDoLbxGfx;
-extern Bool compStats;
-#ifdef RGB_DB
-char *rgbPath = RGB_DB;
-#else
-char *rgbPath;
-#endif
-
-Bool lbxZeroPad = TRUE; /* zero out pad bytes in X requests */
-char *atomsFile = DEF_ATOMS_FILE;
-
-Bool lbxWinAttr = TRUE;	/* group GetWindowAttributes/GetGeometry into 1 trip */
-
-Bool lbxDoCmapGrabbing = TRUE; /* do colormap grabbing? */
-
-int lbxMaxMotionEvents = NUM_MOTION_EVENTS;	/* max # motion events */
-
-/* 
- * zlevel = 1..9, 9 == max compression. 6 == good tradeoff between 
- * compression and speed. Try gzipping a large file at the default
- * level (which is 6) and at max compression (9) and notice the
- * difference in time it takes to compress the file and the difference 
- * in file size. level 9 compression takes ~50 more (time, cpu) but 
- * only yields a very small improvement in compression.
- */
-int zlevel = 6;		
-
-AtomControlPtr atom_control = NULL;
-int atom_control_count = 0;
-int min_keep_prop_size = DEF_KEEP_PROP_SIZE;
-
 static int
 proxyProcessArgument (argc, argv, i)
     int argc;
     char    **argv;
     int i;
 {
-#ifdef DEBUG
     if (strcmp (argv[i], "-debug") == 0)
     {
 	if (++i < argc)
@@ -285,7 +303,6 @@ proxyProcessArgument (argc, argv, i)
 	    ShowHelpAndExit (1);
 	return 2;
     }
-#endif
     if (strcmp (argv[i], "-cheaterrors") == 0)
     {
 	protocolMode = PROTOCOL_MOST;
@@ -393,6 +410,14 @@ proxyProcessArgument (argc, argv, i)
 	    ShowHelpAndExit (1);
 	return 2;
     }
+    if (strcmp (argv[i], "-maxservers") == 0)
+    {
+	if (++i < argc)
+	    lbxMaxServers = atoi(argv[i]);
+	else
+	    ShowHelpAndExit (1);
+	return 2;
+    }
     if (strcmp (argv[i], "-motion") == 0)
     {
 	if (++i < argc)
@@ -438,6 +463,15 @@ char	*argv[];
 
 {
     int i, skip;
+    char *env;
+
+    /*
+     * Some options may also be defined by environment variables.
+     * However, if this is the case, the command line options will
+     * take precedence so check the environment first.
+     */
+    if (env = getenv ("LBXPROXY_MAXSERVERS"))
+	lbxMaxServers = atoi (env);
 
     for ( i = 1; i < argc; i++ )
     {
@@ -562,7 +596,6 @@ Xrealloc (ptr, amount)
     register pointer ptr;
     unsigned long amount;
 {
-
 #ifdef MEMBUG
     if (!Must_have_memory && Memory_fail &&
 	((random() % MEM_FAIL_SCALE) < Memory_fail))
@@ -671,7 +704,7 @@ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
 #if NeedVarargsPrototypes
     va_list args;
 #endif
-    ErrorF("\nFatal proxy error:\n");
+    ErrorF("\nFatal lbxproxy error: ");
 #if NeedVarargsPrototypes
     va_start(args, f);
     VErrorF(f, args);
@@ -930,7 +963,8 @@ char *__XOS2RedirRoot(char *fname)
 
 
 void
-LBXReadAtomsFile ()
+LBXReadAtomsFile (server)
+    XServerPtr server;
 {
     FILE *f;
     char buf[256], *p;
@@ -939,10 +973,10 @@ LBXReadAtomsFile ()
     if (!atomsFile)
 	return;
 
-    while (atom_control_count)
-	xfree(atom_control[--atom_control_count].name);
-    xfree(atom_control);
-    atom_control = NULL;
+    while (server->atom_control_count)
+	xfree(server->atom_control[--server->atom_control_count].name);
+    xfree(server->atom_control);
+    server->atom_control = NULL;
     min_keep_prop_size = DEF_KEEP_PROP_SIZE;
 
 #ifdef __EMX__
@@ -955,19 +989,19 @@ LBXReadAtomsFile ()
 
     while (fgets (buf, 256, f))
 	if (*buf != '!' && *buf != 0 && *buf != '\n')
-	    atom_control_count++;
+	    server->atom_control_count++;
 
-    if (!atom_control_count) {
+    if (!server->atom_control_count) {
 	fclose(f);
 	return;
     }
 
-    atom_control = (AtomControlPtr) xalloc (atom_control_count *
+    server->atom_control = (AtomControlPtr) xalloc (server->atom_control_count *
 					     sizeof(AtomControlRec));
 
-    atom_control_count = 0;
+    server->atom_control_count = 0;
 
-    if (!atom_control) {
+    if (!server->atom_control) {
 	fclose(f);
 	return;
     }
@@ -990,17 +1024,20 @@ LBXReadAtomsFile ()
 	    min_keep_prop_size = atoi(p);
 	    continue;
 	}
-	atom_control[atom_control_count].flags = 0;
+	server->atom_control[server->atom_control_count].flags = 0;
 	while (*p && *p != ' ' && *p != '\t') {
 	    switch (*p) {
 	    case 'i':
-		atom_control[atom_control_count].flags |= AtomPreInternFlag;
+		server->atom_control[server->atom_control_count].flags 
+				|= AtomPreInternFlag;
 		break;
 	    case 'n':
-		atom_control[atom_control_count].flags |= AtomNoCacheFlag;
+		server->atom_control[server->atom_control_count].flags 
+				|= AtomNoCacheFlag;
 		break;
 	    case 'w':
-		atom_control[atom_control_count].flags |= AtomWMCacheFlag;
+		server->atom_control[server->atom_control_count].flags 
+				|= AtomWMCacheFlag;
 		break;
 	    default:
 		fprintf(stderr, "bad atom control: %c\n", *p);
@@ -1013,11 +1050,12 @@ LBXReadAtomsFile ()
 	if (!*p)
 	    continue;
 	len = strlen(p);
-	atom_control[atom_control_count].name = (char *) xalloc(len + 1);
-	if (atom_control[atom_control_count].name) {
-	    atom_control[atom_control_count].len = len;
-	    strcpy(atom_control[atom_control_count].name, p);
-	    atom_control_count++;
+	server->atom_control[server->atom_control_count].name = 
+			(char *) xalloc(len + 1);
+	if (server->atom_control[server->atom_control_count].name) {
+	    server->atom_control[server->atom_control_count].len = len;
+	    strcpy(server->atom_control[server->atom_control_count].name, p);
+	    server->atom_control_count++;
 	}
     }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: os.h /main/6 1996/12/04 17:37:12 rws $ */
+/* $TOG: os.h /main/7 1997/09/12 14:28:26 barstow $ */
 
 /*
 
@@ -32,6 +32,14 @@ from the X Consortium.
 #ifndef OS_H
 #define OS_H
 
+extern fd_set AllSockets;
+extern fd_set AllClients;
+extern fd_set LastSelectMask;
+extern fd_set WellKnownConnections;
+extern fd_set ClientsWithInput;
+extern fd_set ClientsWriteBlocked;
+extern fd_set OutputPending;
+
 /* WaitFor.c */
 
 extern int WaitForSomething(
@@ -43,7 +51,29 @@ extern int WaitForSomething(
 
 /* connection.c */
 
+extern Bool NewOutputPending;
+extern Bool AnyClientsWriteBlocked;
+extern int GrabInProgress;
+
+extern void CreateServerSockets(
+#if NeedFunctionPrototypes
+    int * /*listen_fds[]*/
+#endif
+);
+
 extern void CreateWellKnownSockets(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void ListenToProxyManager (
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void ListenWellKnownSockets (
 #if NeedFunctionPrototypes
     void
 #endif
@@ -63,7 +93,8 @@ extern void AvailableClientInput(
 
 extern ClientPtr AllocNewConnection(
 #if NeedFunctionPrototypes
-    int /*fd*/,
+    int /*fd*/,			/* the fd to the display */
+    int /*connect_fd*/,		/* the fd the client connected on */
     Bool /*to_server*/
 #endif
 );

@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c /main/11 1996/11/17 14:48:09 rws $ */
+/* $TOG: globals.c /main/12 1997/09/12 14:30:18 barstow $ */
 /************************************************************
 
 Copyright (c) 1987  X Consortium
@@ -51,10 +51,7 @@ SOFTWARE.
 #include "lbx.h"
 
 ClientPtr *clients;
-ClientPtr  serverClient;
 int  currentMaxClients;   /* current size of clients array */
 
 LbxLargeRequestRec *largeRequestQueue[LARGE_REQUEST_QUEUE_LEN];
 int numLargeRequestsInQueue = 0;
-
-unsigned long serverGeneration = 0;

@@ -114,15 +114,15 @@ ber of names over the years.  Among them are:
 			VGA 1024 DXL, VGA 1024 VLB
 	 Mach8 series:	Graphics Ultra, Graphics Vantage, VGAWonder GT
 			(None of the 8514/Ultra and 8514 Vantage series is
-			 supported)
+			 supported at this time)
 	Mach32 series:	Graphics Ultra+, Graphics Ultra Pro, Graphics Wonder,
 			Graphics Ultra XLR, Graphics Ultra AXO, VLB mach32-D,
 			PCI mach32-D, ISA mach32
 	Mach64 series:	Graphics Xpression, Graphics Pro Turbo, Win Boost,
 			Win Turbo, Graphics Pro Turbo 1600, Video Xpression,
 			3D Xpression, Video Xpression+, 3D Xpression+,
-			All-In-Wonder, 3D Pro Turbo, ATI-TV, XPERT@Play,
-			XPERT@Work
+			All-In-Wonder, All-In-Wonder PRO, 3D Pro Turbo, ATI-TV,
+			XPERT@Play, XPERT@Work, XPERT XL
 
 
 
@@ -613,7 +613,7 @@ than I could comfortably handle in one source file.  This version will make it
 quite a bit easier to introduce new function such as acceleration, additional
 colour depths, and so on.  This is the version found in XFree86 4.0.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.17 1997/07/29 12:07:54 hohndel Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.18 1997/10/25 13:50:18 hohndel Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XConsortium: PProcess.c /main/4 1996/09/25 20:28:56 lehors $ */
+/* $TOG: PProcess.c /main/5 1997/09/09 11:18:38 kaleb $ */
 /*
 
 Copyright (C) 1996 X Consortium
@@ -53,7 +53,7 @@ RxpProcessParams(PluginInstance* This, RxParams *in, RxReturnParams *out)
     out->height = in->height;	
 
     if (in->ui[0] == XUI) {	/* X display needed */
-        out->ui = GetXUrl(RxpXnestDisplay(This->display_num), NULL);
+        out->ui = GetXUrl(RxpXnestDisplay(This->display_num), NULL, in->action);
 
 	if (in->x_ui_lbx != RxUndef)
 	    out->x_ui_lbx = RxFalse; /* we do not support LBX */

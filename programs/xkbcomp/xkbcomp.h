@@ -1,4 +1,4 @@
-/* $TOG: xkbcomp.h /main/12 1997/06/10 06:54:19 kaleb $ */
+/* $TOG: xkbcomp.h /main/13 1997/08/02 10:10:18 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.h,v 3.3 1996/12/23 07:11:41 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.h,v 3.4 1997/06/22 10:17:04 dawes Exp $ */
 
 #ifndef XKBCOMP_H
 #define	XKBCOMP_H 1

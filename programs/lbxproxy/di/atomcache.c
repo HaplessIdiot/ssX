@@ -1,4 +1,4 @@
-/* $XConsortium: atomcache.c /main/9 1996/11/19 14:25:44 rws $ */
+/* $TOG: atomcache.c /main/10 1997/09/12 14:29:33 barstow $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -45,26 +45,8 @@
 
 #include "misc.h"
 #include "util.h"
+#include "wire.h"
 #include "atomcache.h"
-
-typedef struct _AtomList {
-    char       *name;
-    unsigned char flags;
-    int         len;
-    int         hash;
-    Atom        atom;
-}           AtomListRec, *AtomListPtr;
-
-static AtomListPtr *hashTable;
-
-static int  hashSize,
-            hashUsed;
-static int  hashMask;
-static int  rehash;
-
-static AtomListPtr *reverseMap;
-static int  reverseMapSize;
-static Atom lastAtom;
 
 static int
 Hash(string, len)
@@ -82,7 +64,8 @@ Hash(string, len)
 }
 
 static Bool
-ResizeHashTable()
+ResizeHashTable(server)
+    XServerPtr	server;
 {
     int         newHashSize;
     int         newHashMask;
@@ -92,54 +75,61 @@ ResizeHashTable()
     int         newRehash;
     int         r;
 
-    if (hashSize == 0)
+    if (server->hashSize == 0)
 	newHashSize = 1024;
     else
-	newHashSize = hashSize * 2;
+	newHashSize = server->hashSize * 2;
     newHashTable = (AtomListPtr *) xalloc(newHashSize * sizeof(AtomListPtr));
     if (!newHashTable)
 	return FALSE;
     bzero((char *) newHashTable, newHashSize * sizeof(AtomListPtr));
     newHashMask = newHashSize - 1;
     newRehash = (newHashMask - 2);
-    for (i = 0; i < hashSize; i++) {
-	if (hashTable[i]) {
-	    h = (hashTable[i]->hash) & newHashMask;
+    for (i = 0; i < server->hashSize; i++) {
+	if (server->hashTable[i]) {
+	    h = (server->hashTable[i]->hash) & newHashMask;
 	    if (newHashTable[h]) {
-		r = hashTable[i]->hash % newRehash | 1;
+		r = server->hashTable[i]->hash % newRehash | 1;
 		do {
 		    h += r;
 		    if (h >= newHashSize)
 			h -= newHashSize;
 		} while (newHashTable[h]);
 	    }
-	    newHashTable[h] = hashTable[i];
+	    newHashTable[h] = server->hashTable[i];
 	}
     }
-    xfree(hashTable);
-    hashTable = newHashTable;
-    hashSize = newHashSize;
-    hashMask = newHashMask;
-    rehash = newRehash;
+    xfree(server->hashTable);
+    server->hashTable = newHashTable;
+    server->hashSize = newHashSize;
+    server->hashMask = newHashMask;
+    server->rehash = newRehash;
     return TRUE;
 }
 
 static Bool
-ResizeReverseMap()
+ResizeReverseMap(server)
+    XServerPtr	server;
 {
-    if (reverseMapSize == 0)
-	reverseMapSize = 1000;
+    if (server->reverseMapSize == 0)
+	server->reverseMapSize = 1000;
     else
-	reverseMapSize *= 2;
-    reverseMap = (AtomListPtr *) xrealloc(reverseMap, reverseMapSize * sizeof(AtomListPtr));
-    bzero((char *)reverseMap, (reverseMapSize * sizeof(AtomListPtr)));
-    if (!reverseMap)
+	server->reverseMapSize *= 2;
+
+    server->reverseMap = (AtomListPtr *) xrealloc(server->reverseMap, 
+		server->reverseMapSize * sizeof(AtomListPtr));
+    bzero((char *)server->reverseMap, 
+	  (server->reverseMapSize * sizeof(AtomListPtr)));
+
+    if (!server->reverseMap)
 	return FALSE;
+
     return TRUE;
 }
 
 Atom
-LbxMakeAtom(string, len, atom, makeit)
+LbxMakeAtom(server, string, len, atom, makeit)
+    XServerPtr	server;
     char       *string;
     Atom        atom;
     unsigned    len;
@@ -151,23 +141,25 @@ LbxMakeAtom(string, len, atom, makeit)
     int         r;
 
     hash = Hash(string, len);
-    if (hashTable) {
-	h = hash & hashMask;
-	if (hashTable[h]) {
-	    if (hashTable[h]->hash == hash && hashTable[h]->len == len &&
-		!strncmp(hashTable[h]->name, string, len)) {
-		return hashTable[h]->atom;
+    if (server->hashTable) {
+	h = hash & server->hashMask;
+	if (server->hashTable[h]) {
+	    if (server->hashTable[h]->hash == hash && 
+		server->hashTable[h]->len == len &&
+		!strncmp(server->hashTable[h]->name, string, len)) {
+		    return server->hashTable[h]->atom;
 	    }
-	    r = (hash % rehash) | 1;
+	    r = (hash % server->rehash) | 1;
 	    for (;;) {
 		h += r;
-		if (h >= hashSize)
-		    h -= hashSize;
-		if (!hashTable[h])
+		if (h >= server->hashSize)
+		    h -= server->hashSize;
+		if (!server->hashTable[h])
 		    break;
-		if (hashTable[h]->hash == hash && hashTable[h]->len == len &&
-		    !strncmp(hashTable[h]->name, string, len)) {
-		    return hashTable[h]->atom;
+		if (server->hashTable[h]->hash == hash && 
+		    server->hashTable[h]->len == len &&
+		    !strncmp(server->hashTable[h]->name, string, len)) {
+			return server->hashTable[h]->atom;
 		}
 	    }
 	}
@@ -180,52 +172,54 @@ LbxMakeAtom(string, len, atom, makeit)
     strncpy(a->name, string, len);
     a->name[len] = '\0';
     a->atom = atom;
-    if (atom > lastAtom)
-	lastAtom = atom;
+    if (atom > server->lastAtom)
+	server->lastAtom = atom;
     a->hash = hash;
-    if (hashUsed >= hashSize / 2) {
-	ResizeHashTable();
-	h = hash & hashMask;
-	if (hashTable[h]) {
-	    r = (hash % rehash) | 1;
+    if (server->hashUsed >= server->hashSize / 2) {
+	ResizeHashTable(server);
+	h = hash & server->hashMask;
+	if (server->hashTable[h]) {
+	    r = (hash % server->rehash) | 1;
 	    do {
 		h += r;
-		if (h >= hashSize)
-		    h -= hashSize;
-	    } while (hashTable[h]);
+		if (h >= server->hashSize)
+		    h -= server->hashSize;
+	    } while (server->hashTable[h]);
 	}
     }
-    hashTable[h] = a;
-    hashUsed++;
+    server->hashTable[h] = a;
+    server->hashUsed++;
     a->flags = 0;
-    for (r = 0; r < atom_control_count; r++) {
-	if (a->len == atom_control[r].len &&
-	    !strncmp(a->name, atom_control[r].name, a->len)) {
-	    a->flags = atom_control[r].flags;
+    for (r = 0; r < server->atom_control_count; r++) {
+	if (a->len == server->atom_control[r].len &&
+	    !strncmp(a->name, server->atom_control[r].name, a->len)) {
+	    a->flags = server->atom_control[r].flags;
 	    break;
 	}
     }
-    if (reverseMapSize <= a->atom)
-	ResizeReverseMap();
-    reverseMap[a->atom] = a;
+    if (server->reverseMapSize <= a->atom)
+	ResizeReverseMap(server);
+    server->reverseMap[a->atom] = a;
     return a->atom;
 }
 
-char       *
-NameForAtom(atom)
+char *
+NameForAtom(server, atom)
+    XServerPtr	server;
     Atom        atom;
 {
-    if (atom != None && atom <= lastAtom && reverseMap[atom])
-	return reverseMap[atom]->name;
+    if (atom != None && atom <= server->lastAtom && server->reverseMap[atom])
+	return server->reverseMap[atom]->name;
     return 0;
 }
 
 unsigned
-FlagsForAtom(atom)
+FlagsForAtom(server, atom)
+    XServerPtr	server;
     Atom        atom;
 {
-    if (atom != None && atom <= lastAtom && reverseMap[atom])
-	return reverseMap[atom]->flags;
+    if (atom != None && atom <= server->lastAtom && server->reverseMap[atom])
+	return server->reverseMap[atom]->flags;
     return 0;
 }
 
@@ -234,16 +228,20 @@ FreeAtoms()
 {
     int         i;
 
-    if (reverseMap) {
-	for (i = 0; i <= lastAtom; i++)
-	    xfree(reverseMap[i]);
-	xfree(reverseMap);
+    for (i=0; i < lbxMaxServers; i++) {
+	if (servers[i]) {
+	    if (servers[i]->reverseMap) {
+		for (i = 0; i <= servers[i]->lastAtom; i++)
+		    xfree(servers[i]->reverseMap[i]);
+		xfree(servers[i]->reverseMap);
+	    }
+	    xfree(servers[i]->hashTable);
+	    servers[i]->reverseMapSize = 0;
+	    servers[i]->reverseMap = NULL;
+	    servers[i]->hashTable = NULL;
+	    servers[i]->lastAtom = 0;
+	    servers[i]->hashSize = 0;
+	    servers[i]->hashUsed = 0;
+	}
     }
-    xfree(hashTable);
-    reverseMapSize = 0;
-    reverseMap = NULL;
-    hashTable = NULL;
-    lastAtom = 0;
-    hashSize = 0;
-    hashUsed = 0;
 }

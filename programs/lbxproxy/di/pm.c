@@ -1,4 +1,4 @@
-/* $XConsortium: pm.c /main/21 1996/12/01 00:39:04 swick $ */
+/* $TOG: pm.c /main/23 1997/09/12 14:31:00 barstow $ */
 
 /*
 Copyright (c) 1996  X Consortium
@@ -29,36 +29,103 @@ from the X Consortium.
 */
 
 #include <stdio.h>
-#include <X11/Xos.h>
-#include <X11/Xfuncs.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
 #include <X11/Xmd.h>
-#include <X11/StringDefs.h>
-#include <X11/Intrinsic.h>
 #include <X11/ICE/ICElib.h>
 #include <X11/ICE/ICEmsg.h>
 #include <X11/ICE/ICEproto.h>
 #include <X11/PM/PM.h>
 #include <X11/PM/PMproto.h>
+
+/* 
+ * Because ICElib.h had a #define for Bool and because misc.h 
+ * has a typedef for Bool, _BOOL_ALREADY_DEFINED_ is defined so 
+ * that misc.h does not cause a conflict for Bool.
+ */
+#define _BOOL_ALREADY_DEFINED_
+#include "wire.h"
+#include "pmP.h"
 #include "pm.h"
 
+extern char *display_name;
+
+/*
+ * Local constants
+ */
 #define ERROR_STRING_SIZE 256
 
-void PMprocessMessages ();
+/*
+ * Static definitions
+ */
+static void PMprocessMessages ();
+static Status _ConnectToProxyManager ();
 
-int PMopcode;
-int PMversionCount = 1;
-IcePoVersionRec	PMversions[] =
+static int PMopcode;
+static int PMversionCount = 1;
+static IcePoVersionRec	PMversions[] =
 	{{PM_MAJOR_VERSION, PM_MINOR_VERSION, PMprocessMessages}};
-int gotFirstGetProxyAddr = 0;
-extern char *display_name;
-IceConn	PM_iceConn;
-int proxy_manager_fd = -1;
+static int gotFirstGetProxyAddr = 0;
 
-char proxyAddress[40];
+/*
+ * Public variables
+ */
+IceConn		PM_iceConn;
+int 		proxy_manager_fd = -1;
+Bool		proxyMngr;
+
+/*
+ * The following comment and ICE I/O error handler code were taken
+ * from the X Session Manager.  What's good enough for the XSM
+ * is good enough for the LBX proxy ...
+ *
+ *     The real way to handle IO errors is to check the return status
+ *     of IceProcessMessages.  xsm properly does this.
+ *    
+ *     Unfortunately, a design flaw exists in the ICE library in which
+ *     a default IO error handler is invoked if no IO error handler is
+ *     installed.  This default handler exits.  We must avoid this.
+ *    
+ *     To get around this problem, we install an IO error handler that
+ *     does a little magic.  Since a previous IO handler might have been
+ *     installed, when we install our IO error handler, we do a little
+ *     trick to get both the previous IO error handler and the default
+ *     IO error handler.  When our IO error handler is called, if the
+ *     previous handler is not the default handler, we call it.  This
+ *     way, everyone's IO error handler gets called except the stupid
+ *     default one which does an exit!
+ *
+ */
+static IceIOErrorHandler prev_handler;
+
+static void
+MyIoErrorHandler (ice_conn)
+    IceConn ice_conn;
+{
+    if (prev_handler)
+        (*prev_handler) (ice_conn);
+    fprintf (stderr, "Received an ICE I/O error from the Proxy Manager\n");
+ 
+    proxy_manager_fd = -1;
+}
+
+static void
+InstallIOErrorHandler ()
+{
+    IceIOErrorHandler default_handler;
+
+    prev_handler = IceSetIOErrorHandler (NULL);
+    default_handler = IceSetIOErrorHandler (MyIoErrorHandler);
+    if (prev_handler == default_handler)
+        prev_handler = NULL;
+}
+
 
 Bool
 CheckForProxyManager ()
-
 {
     if (getenv ("PROXY_MANAGER"))
 	return 1;
@@ -66,9 +133,8 @@ CheckForProxyManager ()
 	return 0;
 }
 
-
+void
 ConnectToProxyManager ()
-
 {
     char    *proxyManagerAddr;
     char    errorString[ERROR_STRING_SIZE];
@@ -77,6 +143,8 @@ ConnectToProxyManager ()
 
     if (proxyManagerAddr)
     {
+	InstallIOErrorHandler ();
+
 	if (!_ConnectToProxyManager (proxyManagerAddr, errorString))
 	{
 	    fprintf (stderr, "%s\n", errorString);
@@ -86,30 +154,23 @@ ConnectToProxyManager ()
 }
 
 
-Status
+static Status
 _ConnectToProxyManager (pmAddr, errorString)
-
-char *pmAddr;
-char *errorString;
-
+    char *pmAddr;
+    char *errorString;
 {
     IceProtocolSetupStatus	setupstat;
     char			*vendor = NULL;
     char			*release = NULL;
     pmStartProxyMsg		*pMsg;
     char 			*pData;
-    int				len, i;
+    int				len;
     int				majorVersion, minorVersion;
-    Bool			gotReply, ioErrorOccured;
     char			iceError[ERROR_STRING_SIZE];
-    char			*serviceName = NULL, *serverAddress = NULL;
-    char			*hostAddress = NULL, *startOptions = NULL;
-
 
     /*
      * Register support for PROXY_MANAGEMENT.
      */
-
     if ((PMopcode = IceRegisterForProtocolSetup (
 	PM_PROTOCOL_NAME,
 	"X Consortium, Inc.", "1.0",
@@ -175,6 +236,8 @@ char *errorString;
 
     proxy_manager_fd = IceConnectionNumber (PM_iceConn);
 
+    ListenToProxyManager();
+
     return 1;
 }
 
@@ -233,18 +296,17 @@ casecmp (str1, str2)
 }
 
 
-void
-PMprocessMessages (iceConn, clientData, opcode,
-    length, swap, replyWait, replyReadyRet)
-
-IceConn		 iceConn;
-IcePointer       clientData;
-int		 opcode;
-unsigned long	 length;
-Bool		 swap;
-IceReplyWaitInfo *replyWait;
-Bool		 *replyReadyRet;
-
+/* ARGSUSED */
+static void
+PMprocessMessages (iceConn, clientData, opcode, length, 
+		   swap, replyWait, replyReadyRet)
+    IceConn		 iceConn;
+    IcePointer       clientData;
+    int		 opcode;
+    unsigned long	 length;
+    Bool		 swap;
+    IceReplyWaitInfo *replyWait;
+    Bool		 *replyReadyRet;
 {
     switch (opcode)
     {
@@ -255,8 +317,9 @@ Bool		 *replyReadyRet;
 	char *serviceName = NULL, *serverAddress = NULL;
 	char *hostAddress = NULL, *startOptions = NULL;
 	char *authName = NULL, *authData = NULL;
-	int len, authLen;
-	extern char *display;
+	int authLen;
+	char * colon;
+	char * fqdn;
 	
 	CHECK_AT_LEAST_SIZE (iceConn, PMopcode, opcode,
 	    length, SIZEOF (pmGetProxyAddrMsg), IceFatalToProtocol);
@@ -301,6 +364,33 @@ Bool		 *replyReadyRet;
 	    memcpy (authData, pData, authLen);
 	}
 
+	/*
+	 * Convert the display name (serverAddress) into a FQDN
+	 * to consolidate servers.  So that for example, requests
+	 * for displays foo:0, foo.bar:0 and foo.bar.com:0 will
+	 * be set to the same server.
+	 *
+	 * If gethostbyname fails, try to connect anyhow because
+	 * the display name could be something like :0, local:0
+	 * or unix:0.
+	 */
+	colon = strchr (serverAddress, ':');
+	if (colon)
+	{
+	    struct hostent *hostent;
+
+	    *colon = '\0';
+	    hostent = gethostbyname (serverAddress);
+	    *colon = ':';
+
+	    if (hostent && hostent->h_name) {
+		serverAddress = (char *) realloc (serverAddress, 
+			strlen (hostent->h_name) + strlen (colon) + 1);
+		(void) sprintf (serverAddress, "%s%s", hostent->h_name, colon);
+	    }
+	}
+	display_name = serverAddress;
+
 	if (casecmp (serviceName, "LBX") != 0)
 	{
 	    SendGetProxyAddrReply (iceConn, PM_Unable,
@@ -308,40 +398,59 @@ Bool		 *replyReadyRet;
 	}
 	else
 	{
-	    int status;
-	    char *addr;
-	    char *error = NULL;
-
 	    if (!gotFirstGetProxyAddr)
 	    {
-		char port[6];
-
 		gotFirstGetProxyAddr = 1;
-		display_name = serverAddress;
 		if (authLen > 0)
 		    XSetAuthorization (authName, strlen (authName),
 		        authData, authLen);
-		_IceTransGetHostname (proxyAddress,
-				      sizeof (proxyAddress) - 6);
-		sprintf (port, ":%s", display);
-		strcat (proxyAddress, port);
-		/* don't reply now; wait for ConnectToServer() */
+		/*
+		 * Connect to this server and send a GetProxyAddrReply msg.
+		 */
+		if (!ConnectToServer (display_name)) {
+		    char msg [100];
+
+		    (void) sprintf (msg, 
+				    "could not connect to '%s'", 
+				    display_name);
+		    FatalError(msg);
+		}
 	    }
 	    else
 	    {
-		if (casecmp (serverAddress, display_name) == 0)
-		{
-		    status = PM_Success;
-		    addr = proxyAddress;
-		}
-		else
-		{
-		    status = PM_Unable;
-		    addr = NULL;
-		    error = "lbxproxy can not service more than one display";
-		}
+                /*
+		 * First check to see if a server for this serverAddress
+		 * already exists.
+		 */
+		int		i;
+		int		found = 0;
 
-		SendGetProxyAddrReply (iceConn, status, addr, error);
+		for (i=0; i < lbxMaxServers; i++)
+		{
+		    if (servers[i] && servers[i]->display_name &&
+		       casecmp (serverAddress, servers[i]->display_name) == 0)
+		    {
+		        SendGetProxyAddrReply (iceConn, 
+					       PM_Success, 
+					       servers[i]->proxy_name, 
+					       NULL);
+			found = 1;
+			break;
+		    }
+		}
+		if (!found)
+		{
+		    /*
+		     * Go ahead and try to connect to the new server.  If
+		     * there is an error, the connection code will send
+		     * a GetProxyAddrReply message.
+		     */
+		    if (authLen > 0)
+			XSetAuthorization (authName, strlen (authName),
+			    authData, authLen);
+
+		    (void) ConnectToServer (display_name);
+		}
 	    }
 	}
 
@@ -370,16 +479,12 @@ Bool		 *replyReadyRet;
     }
 }
 
-
+void
 HandleProxyManagerConnection ()
-
 {
-    IceProcessMessagesStatus	status;
-
-    status = IceProcessMessages (PM_iceConn, NULL, NULL);
-
-    if (status == IceProcessMessagesIOError)
-    {
-	fprintf (stderr, "IO error occured on proxy management connection\n");
-    }
+    /*
+     * If an IO error occurs, the IO error handler will output
+     * an error message.
+     */
+    (void) IceProcessMessages (PM_iceConn, NULL, NULL);
 }

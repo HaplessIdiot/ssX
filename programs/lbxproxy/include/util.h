@@ -1,4 +1,4 @@
-/* $XConsortium: util.h /main/5 1996/11/15 21:29:45 rws $ */
+/* $TOG: util.h /main/6 1997/09/12 14:29:02 barstow $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -190,6 +190,12 @@ extern void ClientWakeup(
 extern Bool ClientIsAsleep(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
+#endif
+);
+
+extern void LBXReadAtomsFile(
+#if NeedFunctionPrototypes
+    XServerPtr /*server*/
 #endif
 );
 

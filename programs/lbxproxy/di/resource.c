@@ -1,4 +1,4 @@
-/* $XConsortium: resource.c /main/12 1996/11/22 10:14:07 kaleb $ */
+/* $TOG: resource.c /main/13 1997/09/12 14:31:17 barstow $ */
 
 /************************************************************
 
@@ -50,11 +50,13 @@ SOFTWARE.
 ********************************************************/
 
 
+#include <stdio.h>
 #include "misc.h"
 #include "os.h"
 #include "resource.h" 
 #include "lbx.h" 
 #include "colormap.h"
+#include "wire.h"
 
 static void RebuildTable();
 
@@ -62,35 +64,27 @@ static void RebuildTable();
 #define INITHASHSIZE 6
 #define MAXHASHSIZE 11
 
-typedef struct _Resource {
-    struct _Resource	*next;
-    XID			id;
-    RESTYPE		type;
-    pointer		value;
-} ResourceRec, *ResourcePtr;
 #define NullResource ((ResourcePtr)NULL)
-
-typedef struct _ClientResource {
-    ResourcePtr *resources;
-    int		elements;
-    int		buckets;
-    int		hashsize;	/* log(2)(buckets) */
-    XID		fakeID;
-    XID		endFakeID;
-} ClientResourceRec;
 
 #define TypeMask (RC_LASTPREDEF - 1)
 
 static DeleteType *DeleteFuncs = (DeleteType *)NULL;
 
-static ClientResourceRec clientTable[MAXCLIENTS];
-
-static ClientPtr lastLbxClientIndexLookup;
+/*
+ * NOTE for LBX Multi Display
+ *
+ * The index field for each client in the global "clients" array
+ * represents that client's position in the "clients" array.
+ *
+ * Each server has its own clientTable array and the client's
+ * index in the "clients" array is identical to the client's
+ * index in its server's clientTable array.   This facilitates
+ * the storage and retrieval of a client's resources.
+ */
 
 Bool
 InitDeleteFuncs()
 {
-    lastLbxClientIndexLookup = NULL;
     if (DeleteFuncs)
 	xfree(DeleteFuncs);
     DeleteFuncs = (DeleteType *) xalloc((RT_LASTPREDEF + 1) *
@@ -114,16 +108,24 @@ InitClientResources(client)
 {
     register int i, j;
  
-    clientTable[i = client->index].resources =
+    if (!client || !client->server)
+	/*
+	 * This can occur during a reset
+	 */
+	return TRUE;
+
+    client->server->clientTable[i = client->index].resources =
 	(ResourcePtr *)xalloc(INITBUCKETS*sizeof(ResourcePtr));
-    if (!clientTable[i].resources)
+    if (!client->server->clientTable[i].resources)
 	return FALSE;
-    clientTable[i].buckets = INITBUCKETS;
-    clientTable[i].elements = 0;
-    clientTable[i].hashsize = INITHASHSIZE;
+
+    client->server->clientTable[i].buckets = INITBUCKETS;
+    client->server->clientTable[i].elements = 0;
+    client->server->clientTable[i].hashsize = INITHASHSIZE;
+
     for (j=0; j<INITBUCKETS; j++) 
     {
-        clientTable[i].resources[j] = NullResource;
+        client->server->clientTable[i].resources[j] = NullResource;
     }
     return TRUE;
 }
@@ -135,8 +137,9 @@ FinishInitClientResources(client, ridBase, ridMask)
 {
     client->ridBase = ridBase;
     client->ridMask = ridMask;
-    clientTable[client->index].fakeID = ridBase | PROXY_BIT;
-    clientTable[client->index].endFakeID = (ridBase | ridMask) + 1;
+    client->server->clientTable[client->index].endFakeID = 
+		(ridBase | ridMask) + 1;
+    client->server->clientTable[client->index].fakeID = ridBase | PROXY_BIT;
 }
 
 static int
@@ -145,7 +148,7 @@ Hash(client, id)
     register XID id;
 {
     id &= clients[client]->ridMask;
-    switch (clientTable[client].hashsize)
+    switch (clients[client]->server->clientTable[client].hashsize)
     {
 	case 6:
 	    return ((int)(0x03F & (id ^ (id>>6) ^ (id>>12))));
@@ -174,7 +177,7 @@ AvailableID(client, id, maxid, goodid)
 	return goodid;
     for (; id <= maxid; id++)
     {
-	res = clientTable[client].resources[Hash(client, id)];
+	res = clients[client]->server->clientTable[client].resources[Hash(client, id)];
 	while (res && (res->id != id))
 	    res = res->next;
 	if (!res)
@@ -193,21 +196,24 @@ AvailableID(client, id, maxid, goodid)
 
 XID
 FakeClientID(client)
-    register int client;
+    register int client;	/* Index of a client for the global clients 
+				 * array and the server's clientTable */
 {
     register XID id, maxid;
     register ResourcePtr *resp;
     register ResourcePtr res;
     register int i;
-    XID goodid;
+    XID goodid = 0;
 
-    id = clientTable[client].fakeID++;
-    if (id != clientTable[client].endFakeID)
+    id = clients[client]->server->clientTable[client].fakeID++;
+    if (id != clients[client]->server->clientTable[client].endFakeID)
 	return id;
+
     id = clients[client]->ridBase | PROXY_BIT;
     maxid = id | clients[client]->ridMask;
-    goodid = 0;
-    for (resp = clientTable[client].resources, i = clientTable[client].buckets;
+
+    for (resp = clients[client]->server->clientTable[client].resources, 
+	 i    = clients[client]->server->clientTable[client].buckets;
 	 --i >= 0;)
     {
 	for (res = *resp++; res; res = res->next)
@@ -215,50 +221,23 @@ FakeClientID(client)
 	    if ((res->id < id) || (res->id > maxid))
 		continue;
 	    if (((res->id - id) >= (maxid - res->id)) ?
-		(goodid = AvailableID(client, id, res->id - 1, goodid)) :
+		 (goodid = AvailableID(client, id, res->id - 1, goodid)) :
 		!(goodid = AvailableID(client, res->id + 1, maxid, goodid)))
 		maxid = res->id - 1;
 	    else
 		id = res->id + 1;
 	}
     }
-    clientTable[client].fakeID = id + 1;
-    clientTable[client].endFakeID = maxid + 1;
+
+    clients[client]->server->clientTable[client].fakeID = id + 1;
+    clients[client]->server->clientTable[client].endFakeID = maxid + 1;
+
     return id;
 }
 
-
-/*
- * Return the client index assigned by the proxy for this XID.
- * If this isn't a proxy client, return 0.
- */
-
-int
-LbxClientIndex (id)
-    XID id;
-{
-    int i;
-
-    if (lastLbxClientIndexLookup &&
-	(lastLbxClientIndexLookup->ridBase ==
-	 (id & ~(PROXY_BIT | lastLbxClientIndexLookup->ridMask))))
-	return (lastLbxClientIndexLookup->index);
-
-    for (i = 1; i < currentMaxClients; i++) {
-	if (clients[i] &&
-	    (clients[i]->ridBase == (id & ~(PROXY_BIT | clients[i]->ridMask))))
-	{
-	    lastLbxClientIndexLookup = clients[i];
-	    return clients[i]->index;
-	}		
-    }
-
-    return 0;
-}
-
-
 Bool
-AddResource(id, type, value)
+AddResource(pclient, id, type, value)
+    ClientPtr pclient;
     XID id;
     RESTYPE type;
     pointer value;
@@ -267,8 +246,9 @@ AddResource(id, type, value)
     register ClientResourceRec *rrec;
     register ResourcePtr res, *head;
     	
-    client = LbxClientIndex(id);
-    rrec = &clientTable[client];
+    client = pclient->index;
+
+    rrec = &clients[client]->server->clientTable[client];
     if (!rrec->buckets)
     {
 	ErrorF("AddResource(%x, %x, %x), client=%d \n",
@@ -282,7 +262,7 @@ AddResource(id, type, value)
     res = (ResourcePtr)xalloc(sizeof(ResourceRec));
     if (!res)
     {
-	(*DeleteFuncs[type & TypeMask])(value, id);
+	(*DeleteFuncs[type & TypeMask])(pclient, value, id);
 	return FALSE;
     }
     res->next = *head;
@@ -308,7 +288,7 @@ RebuildTable(client)
      * on resources being free in the opposite order they are added.
      */
 
-    j = 2 * clientTable[client].buckets;
+    j = 2 * clients[client]->server->clientTable[client].buckets;
     tails = (ResourcePtr **)ALLOCATE_LOCAL(j * sizeof(ResourcePtr *));
     if (!tails)
 	return;
@@ -323,9 +303,9 @@ RebuildTable(client)
 	*rptr = NullResource;
 	*tptr = rptr;
     }
-    clientTable[client].hashsize++;
-    for (j = clientTable[client].buckets,
-	 rptr = clientTable[client].resources;
+    clients[client]->server->clientTable[client].hashsize++;
+    for (j = clients[client]->server->clientTable[client].buckets,
+	 rptr = clients[client]->server->clientTable[client].resources;
 	 --j >= 0;
 	 rptr++)
     {
@@ -339,13 +319,14 @@ RebuildTable(client)
 	}
     }
     DEALLOCATE_LOCAL(tails);
-    clientTable[client].buckets *= 2;
-    xfree(clientTable[client].resources);
-    clientTable[client].resources = resources;
+    clients[client]->server->clientTable[client].buckets *= 2;
+    xfree(clients[client]->server->clientTable[client].resources);
+    clients[client]->server->clientTable[client].resources = resources;
 }
 
 void
-FreeResource(id, skipDeleteFuncType)
+FreeResource(client, id, skipDeleteFuncType)
+    ClientPtr client;
     XID id;
     RESTYPE skipDeleteFuncType;
 {
@@ -356,11 +337,12 @@ FreeResource(id, skipDeleteFuncType)
     int		elements;
     Bool	gotOne = FALSE;
 
-    cid = LbxClientIndex(id);
-    if (clientTable[cid].buckets)
+    cid = client->index;
+
+    if (clients[cid]->server->clientTable[cid].buckets)
     {
-	head = &clientTable[cid].resources[Hash(cid, id)];
-	eltptr = &clientTable[cid].elements;
+	head =   &clients[cid]->server->clientTable[cid].resources[Hash(cid, id)];
+	eltptr = &clients[cid]->server->clientTable[cid].elements;
 
 	prev = head;
 	while (res = *prev)
@@ -371,7 +353,7 @@ FreeResource(id, skipDeleteFuncType)
 		*prev = res->next;
 		elements = --*eltptr;
 		if (rtype != skipDeleteFuncType)
-		    (*DeleteFuncs[rtype & TypeMask])(res->value, res->id);
+		    (*DeleteFuncs[rtype & TypeMask])(client, res->value, res->id);
 		xfree(res);
 		if (*eltptr != elements)
 		    prev = head; /* prev may no longer be valid */
@@ -399,8 +381,15 @@ FreeClientResources(client)
     if (!client)
 	return;
 
-    resources = clientTable[client->index].resources;
-    for (j=0; j < clientTable[client->index].buckets; j++) 
+    /*
+     * For a multi-display proxy, must not re-free the clientTable
+     * for a server.
+     */
+    if (!client->server)
+	return;
+
+    resources = client->server->clientTable[client->index].resources;
+    for (j=0; j < client->server->clientTable[client->index].buckets; j++) 
     {
         /* It may seem silly to update the head of this resource list as
 	we delete the members, since the entire list will be deleted any way, 
@@ -419,25 +408,25 @@ FreeClientResources(client)
 	{
 	    RESTYPE rtype = this->type;
 	    *head = this->next;
-	    (*DeleteFuncs[rtype & TypeMask])(this->value, this->id);
+	    (*DeleteFuncs[rtype & TypeMask])(client, this->value, this->id);
 	    xfree(this);	    
 	}
     }
-    xfree(clientTable[client->index].resources);
-    clientTable[client->index].buckets = 0;
-    if (lastLbxClientIndexLookup == client)
-	lastLbxClientIndexLookup = NULL;
+    xfree(client->server->clientTable[client->index].resources);
+    client->server->clientTable[client->index].buckets = 0;
+    if (client->server->lastLbxClientIndexLookup == client)
+	client->server->lastLbxClientIndexLookup = NULL;
 }
 
 void
 FreeAllResources()
 {
-    int	i;
+    int	j;
 
-    for (i = currentMaxClients; --i >= 0; ) 
+    for (j = currentMaxClients; --j >= 0; ) 
     {
-        if (clientTable[i].buckets)
-	    FreeClientResources(clients[i]);
+	if (clients[j]->server->clientTable[j].buckets)
+	    FreeClientResources(clients[j]);
     }
 }
 
@@ -445,21 +434,27 @@ FreeAllResources()
  *  LookupIDByType returns the object with the given id and type, else NULL.
  */ 
 pointer
-LookupIDByType(id, rtype)
+LookupIDByType(pclient, id, rtype)
+    ClientPtr pclient;
     XID id;
     RESTYPE rtype;
 {
-    int    cid;
     register    ResourcePtr res;
+    int i, j;
+    XServerPtr pserver = pclient->server;
 
-    cid = LbxClientIndex(id);
-    if (clientTable[cid].buckets)
-    {
-	res = clientTable[cid].resources[Hash(cid, id)];
-
-	for (; res; res = res->next)
-	    if ((res->id == id) && (res->type == rtype))
-		return res->value;
+    for (i = 1; i < currentMaxClients; i++) {
+	if (pserver->clientTable[i].buckets) {
+	    for (j = 0; j < INITBUCKETS; j++) {
+		if (pserver->clientTable[i].resources[j]) {
+	            res = pserver->clientTable[i].resources[Hash(j, id)];
+		    for (; res; res = res->next)
+			if ((res->id == id) && (res->type == rtype))
+			    return res->value;
+		}
+	    }
+	}
     }
+
     return (pointer)NULL;
 }

@@ -11,19 +11,22 @@
 
 			   The XFree86 Project, Inc.
 
-				16 February 1996
+				 6 October 1997
 
 
 
 1.  Supported chipsets
 
-The Trident driver has undergone major work for XFree86 3.1.2B.  Because of
-this work, all of the Trident SVGA chipsets, except the very first one, are
-supported by both the color and monochrome servers.
+All of the Trident SVGA chipsets, except the very first one, are supported are
+supported by both the color and monochrome servers. It must be noted that the
+LCD based chipsets (i.e. the Cyber series) are in preliminary stages and work
+for some but not others.
 
-     8800CS 8200LX 8900B 8900C 8900CL/D 9000 9000i 9100B 9200CXr 9320LCD
-     9400CXi 9420 9420DGi 9430DGi 9440AGi 9660XGi 9680 9682 9685 Cyber9382
-     Cyber9385 Cyber9385-1
+     ISA: TVGA8800CS TVGA8200LX TVGA8900B TVGA8900C TVGA8900CL/D TVGA9000
+     TVGA9000i TVGA9100B ISA/VLB/PCI: TVGA9200CXr TGUI9400CXi TGUI9420
+     TGUI9420DGi TGUI9430DGi TGUI9440AGi TGUI9660XGi TGUI9680 TGUI9680-1
+     TGUI9682 PCI: ProVidia9685 LCD: Cyber9320 Cyber9382 Cyber9385
+     Cyber9385-1
 
 
 It must be noted that the 9000i chipset is treated as a 9000 by the server.
@@ -34,43 +37,44 @@ server, but should work in this way according to the chipset documentation.
 
  NOTES:
 
-   o Acceleration is now supported for the 9320, 9440 and 96xx chips.
+   o Acceleration is supported for the all the TGUI based chips including the
+     ProVidia and Cyber series, although the Cyber based chipsets may need the
+     acceleration disabling. The 9420 acceleration has not been tested.
 
-   o The Cyber 9382/5 chips that have started to appear, have preliminary sup-
-     port in XFree86 3.2 and appear to work at 800x600 on the LCD.
+   o The Cyber 938x chips have preliminary support in XFree86 3.9.
 
-   o The TGUI9440 and TGUI96xx based cards are supported by the SVGA server.
-
-   o 16 bits per pixel is now supported for the 8900D, 9200CXr, 9400CXi,
-     9420DGi, 9430DGi, 9440AGi, 96xx, but only the 9440AGi and 9400CXi have
-     been tested.
+   o 16 bits per pixel is supported for the 8900D, 9200CXr, 9400CXi, 9420DGi,
+     9430DGi and all the accelerated chipsets. 24bpp is supported for the 9440,
+     but is not accelerated. 32bpp is supported for the TGUI96xx, ProVidia and
+     Cyber chipsets but has not been extensively tested.
 
    o Linear access has been implemented for chipsets that support it.  It is
      enabled by default for PCI cards, and disabled by default for other cards.
-     Additionally Hardware cursor is implemented for the 9430, 9440, 96xx,
-     although only the 9440 and 9660 have been tested with the hardware cursor.
+
+   o Hardware cursor is implemented for the 9430, 96xx, ProVidia and Cyber
+     chipsets. NOTE: the 9440 hw_cursor is not supported.
 
    o The following options may be specified for the Trident driver:
 
 	   Option "nolinear"
 		 Turn off linear mapping
 
+
+
+ Information for Trident Chipset Users
+
+
+
+
+
+ Information for Trident Chipset Users
+
+
+
 	   Option "linear"
 		 Force linear mapping.	Use this if you have a non-PCI card and
 		 require 16bpp support.  Note: ISA cards can only access up to
 		 16MB of memory, so be sure you have less than this or it could
-
-
- Information for Trident Chipset Users
-
-
-
-
-
- Information for Trident Chipset Users
-
-
-
 		 cause a system hang.
 
 	   MemBase "0x???????"
@@ -83,9 +87,8 @@ server, but should work in this way according to the chipset documentation.
 		 enabled by default when acceleration is enabled.  Acceleration
 		 doesn't work well when MMIO is disabled.
 
-	   Option "hw_cursor"
-		 Turn on hardware cursor (NOTE: it is off by default) This is
-		 known to be buggy.
+	   Option "sw_cursor"
+		 Turn off hardware cursor (NOTE: it is on by default)
 
 	   Option "tgui_pci_read_on"
 		 Turn on PCI burst read mode.
@@ -109,8 +112,7 @@ server, but should work in this way according to the chipset documentation.
 		 Turn off XAA acceleration.
 
 	   Option "xaa_no_color_exp"
-		 Disable color expansion, which is needed for some 9440 cards
-		 (and maybe others?).
+		 Disable color expansion.
 
 	   Option "no_stretch"
 		 Disable LCD stretching on Cyber 938x based chips.
@@ -118,13 +120,11 @@ server, but should work in this way according to the chipset documentation.
 	   Option "lcd_center"
 		 Enable LCD centering on Cyber 938x based chips.
 
-	   Option "tgui_mclk_66'
-		 Pushes the Memory Clock from its default value to 66MHz.
-		 Increases graphics speed dramatically, but use entirely at
-		 your own risk, as it may damage the video card.  If snow
-		 appears, disable.
+	   Option "tgui_tvout"
+		 Enable Television output for 9685 cards that support NTSC/PAL.
+		 Maximum resolution with TV mode is 800 pixels wide.
 
-The original Trident chipset, 8800BR, cannot be supported as an SVGA chipset by
+
 
 
 
@@ -137,6 +137,14 @@ The original Trident chipset, 8800BR, cannot be supported as an SVGA chipset by
 
 
 
+	   set_mclk xx
+		 Sets the Memory Clock to XXMHz. The server displays the
+		 default MCLK. It is not recommended to alter this value, but
+		 in some circumstance it can dramatically increase performance.
+		 Limit is 80MHz.  !!! NOT FULLY IMPLEMENTED YET !!!  USE
+		 ENTIRELY AT YOUR OWN RISK, AS IT MAY DAMAGE YOUR VIDEOCARD !
+
+The original Trident chipset, 8800BR, cannot be supported as an SVGA chipset by
 either the color or monochrome servers.  The chip is supported, however, by the
 ``generic'' driver for the monochrome server.
 
@@ -183,14 +191,6 @@ as the 9002 + 4 others).  If you see such a chip on a board with an 8900B or
 	     Option "16clocks"
 
 
-This will cause the same clock selection code as is used for the 8900CL to be
-used for the board.
-
-While developing the Trident driver, an interesting and perturbing hardware
-phenomenon was discovered.  When using the default board jumper configuration,
-dot-clocks above 57Mhz would frequently lock up the machine.  There appear to
-be jumpers on all of the Trident boards that determine whether the board will
-operate in zero-wait-state mode on the ISA bus.  Disabling the zero-wait-state
 
 
 
@@ -203,6 +203,14 @@ operate in zero-wait-state mode on the ISA bus.  Disabling the zero-wait-state
 
 
 
+This will cause the same clock selection code as is used for the 8900CL to be
+used for the board.
+
+While developing the Trident driver, an interesting and perturbing hardware
+phenomenon was discovered.  When using the default board jumper configuration,
+dot-clocks above 57Mhz would frequently lock up the machine.  There appear to
+be jumpers on all of the Trident boards that determine whether the board will
+operate in zero-wait-state mode on the ISA bus.  Disabling the zero-wait-state
 mode via jumpers cured the lockups, but at the expense of performance.	Whether
 or not a given system will experience this problem is likely a combination of
 (a) bus speed, (b) video memory speed, and (c) dot clock speed.  So be prepared
@@ -212,7 +220,7 @@ NOTE: VLBus cards are also subject to the above. By specifying the Clocks in
 the XF86Config file, these lockups are overcome. But it may be worth checking
 wait states etc. on the card and in the BIOS setup.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.22 1997/01/28 10:54:26 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.23 1997/10/13 17:16:39 hohndel Exp $
 
 
 
@@ -220,14 +228,6 @@ wait states etc. on the card and in the BIOS setup.
 
 
      $XConsortium: trident.sgml /main/11 1996/10/28 04:24:08 kaleb $
-
-
-
-
-
-
-
-
 
 
 

@@ -1,4 +1,4 @@
-/* $TOG: fontfile.c /main/29 1997/05/23 16:36:56 barstow $ */
+/* $TOG: fontfile.c /main/30 1997/08/17 22:58:08 kaleb $ */
 
 /*
 
@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.4 1997/06/11 12:24:29 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.5 1997/07/05 15:15:42 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: XrmI.h,v 1.9 94/04/17 20:21:55 rws Exp $ */
+/* $TOG: XrmI.h /main/10 1997/08/27 12:12:26 kaleb $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -39,17 +39,10 @@ from the X Consortium.
 #include	<X11/Xos.h>
 #include        <sys/stat.h>                        
 
-#ifdef WIN32
-#define OpenFile(name) 		open((name), O_RDONLY|O_TEXT)
-#else
-#define OpenFile(name) 		open((name), O_RDONLY)
-#endif
-#define CloseFile(fd)           close((fd))
-#define ReadFile(fd,buf,size)	read((fd), (buf), (size))
-#define GetSizeOfFile(name,size)                    \
+#define GetSizeOfFile(fd,size)                      \
 {                                                   \
     struct stat status_buffer;                      \
-    if ( (stat((name), &status_buffer)) == -1 )     \
+    if ( (fstat((fd), &status_buffer)) == -1 )      \
 	size = -1;                                  \
     else                                            \
 	size = status_buffer.st_size;               \

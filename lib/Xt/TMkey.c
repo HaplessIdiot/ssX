@@ -1,4 +1,4 @@
-/* $TOG: TMkey.c /main/32 1997/05/15 17:31:22 kaleb $ */
+/* $TOG: TMkey.c /main/33 1997/09/08 09:16:19 kaleb $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -220,6 +220,16 @@ void _XtAllocTMContext(pd)
     pd->tm_context = ctx;
 }
 
+static unsigned int num_bits(mask)
+    unsigned long mask;
+{
+    register unsigned long y;
+
+    y = (mask >> 1) &033333333333;
+    y = mask - y - ((y >>1) & 033333333333);
+    return ((unsigned int) (((y + (y >> 3)) & 030707070707) % 077));
+}
+
 Boolean _XtMatchUsingDontCareMods(typeMatch, modMatch, eventSeq)
     TMTypeMatch 	typeMatch;
     TMModifierMatch 	modMatch;
@@ -245,7 +255,6 @@ Boolean _XtMatchUsingDontCareMods(typeMatch, modMatch, eventSeq)
     
     if ( (computed & computedMask) ==
         (eventSeq->event.modifiers & computedMask) ) {
-	Modifiers least_mod;
 	
 	pd = _XtGetPerDisplay(dpy);
 	tm_context = pd->tm_context;
@@ -262,11 +271,7 @@ Boolean _XtMatchUsingDontCareMods(typeMatch, modMatch, eventSeq)
         useful_mods = ~computedMask & modifiers_return;
         if (useful_mods == 0) return FALSE;
 
-	for (num_modbits = 0, least_mod = useful_mods;
-	     least_mod != 0; least_mod >>= 1)
-	    if (least_mod & 1) num_modbits++;
-
-	switch (num_modbits) {
+	switch (num_modbits = num_bits(useful_mods)) {
 	case 1:
 	case 8:
 	    /* 

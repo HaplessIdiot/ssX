@@ -1,4 +1,4 @@
-/* $TOG: cout.c /main/5 1997/06/10 06:53:31 kaleb $ */
+/* $TOG: cout.c /main/6 1997/08/17 23:01:29 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbfile/cout.c,v 3.2 1996/12/23 06:04:00 dawes Exp $ */
+/* $XFree86: xc/lib/xkbfile/cout.c,v 3.3 1997/06/22 10:16:54 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>

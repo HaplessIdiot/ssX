@@ -1,4 +1,4 @@
-/* $XConsortium: XUrls.h /main/4 1996/11/27 12:09:33 lehors $ */
+/* $TOG: XUrls.h /main/5 1997/09/09 11:14:12 kaleb $ */
 /*
 
 Copyright (C) 1996 X Consortium
@@ -32,8 +32,8 @@ the X Consortium.
 #ifndef _XUrls_h
 #define _XUrls_h
 
-extern char *GetXUrl(char *display, char *auth);
-extern char *GetXPrintUrl(char *display, char *printer, char *auth);
+extern char *GetXUrl(char *display, char *auth, char* dest);
+extern char *GetXPrintUrl(char *display, char *printer, char *auth, char* dest);
 extern int ParseHostname(char *url, char *buf, int buflen);
 
 #endif /* _XUrls_h */

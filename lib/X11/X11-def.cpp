@@ -1,12 +1,12 @@
 LIBRARY X11
 VERSION LIBRARY_VERSION
 EXPORTS
- _Xdebug_p=_Xdebug CONSTANT
- _XCreateMutex_fn_p=_XCreateMutex_fn CONSTANT
- _XFreeMutex_fn_p=_XFreeMutex_fn CONSTANT
- _XLockMutex_fn_p=_XLockMutex_fn CONSTANT
- _XUnlockMutex_fn_p=_XUnlockMutex_fn CONSTANT
- _Xglobal_lock_p=_Xglobal_lock CONSTANT
+ _Xdebug_p=_Xdebug DATA
+ _XCreateMutex_fn_p=_XCreateMutex_fn DATA
+ _XFreeMutex_fn_p=_XFreeMutex_fn DATA
+ _XLockMutex_fn_p=_XLockMutex_fn DATA
+ _XUnlockMutex_fn_p=_XUnlockMutex_fn DATA
+ _Xglobal_lock_p=_Xglobal_lock DATA
  XActivateScreenSaver
  XAddConnectionWatch
  XAddExtension
@@ -622,3 +622,112 @@ EXPORTS
  _XVIDtoVisual
  _Xthread_init
  _Xthread_waiter
+ XkbIgnoreExtension
+ XkbOpenDisplay
+ XkbQueryExtension
+ XkbUseExtension
+ XkbLibraryVersion
+ XkbSetXlibControls
+ XkbGetXlibControls
+ XkbSetAtomFuncs
+ XkbKeycodeToKeysym
+ XkbKeysymToModifiers
+ XkbLookupKeySym
+ XkbLookupKeyBinding
+ XkbTranslateKeyCode
+ XkbTranslateKeySym
+ XkbSetAutoRepeatRate
+ XkbGetAutoRepeatRate
+ XkbChangeEnabledControls
+ XkbDeviceBell
+ XkbForceDeviceBell
+ XkbDeviceBellEvent
+ XkbBell
+ XkbForceBell
+ XkbBellEvent
+ XkbSelectEvents
+ XkbSelectEventDetails
+ XkbNoteMapChanges
+ XkbNoteNameChanges
+ XkbGetIndicatorState
+ XkbGetIndicatorMap
+ XkbSetIndicatorMap
+ XkbGetNamedIndicator
+ XkbGetNamedDeviceIndicator
+ XkbSetNamedIndicator
+ XkbSetNamedDeviceIndicator
+ XkbLockModifiers
+ XkbLatchModifiers
+ XkbLockGroup
+ XkbLatchGroup
+ XkbSetServerInternalMods
+ XkbSetIgnoreLockMods
+ XkbVirtualModsToReal
+ XkbComputeEffectiveMap
+ XkbInitCanonicalKeyTypes
+ XkbAllocKeyboard
+ XkbFreeKeyboard
+ XkbAllocClientMap
+ XkbAllocServerMap
+ XkbFreeClientMap
+ XkbFreeServerMap
+ XkbAddKeyType
+ XkbAllocIndicatorMaps
+ XkbFreeIndicatorMaps
+ XkbGetMap
+ XkbGetUpdatedMap
+ XkbGetMapChanges
+ XkbRefreshKeyboardMapping
+ XkbGetKeyTypes
+ XkbGetKeySyms
+ XkbGetKeyActions
+ XkbGetKeyBehaviors
+ XkbGetVirtualMods
+ XkbGetKeyExplicitComponents
+ XkbGetKeyModifierMap
+ XkbAllocControls
+ XkbFreeControls
+ XkbGetControls
+ XkbSetControls
+ XkbAllocCompatMap
+ XkbFreeCompatMap
+ XkbGetCompatMap
+ XkbSetCompatMap
+ XkbAllocNames
+ XkbGetNames
+ XkbSetNames
+ XkbChangeNames
+ XkbFreeNames
+ XkbGetState
+ XkbSetMap
+ XkbChangeMap
+ XkbSetDetectableAutoRepeat
+ XkbGetDetectableAutoRepeat
+ XkbSetAutoResetControls
+ XkbGetAutoResetControls
+ XkbCopyKeyType
+ XkbCopyKeyTypes
+ XkbResizeKeyType
+ XkbResizeKeySyms
+ XkbResizeKeyActions
+ XkbChangeTypesOfKey
+ XkbListComponents
+ XkbFreeComponentList
+ XkbGetKeyboard
+ XkbGetKeyboardByName
+ XkbAddDeviceLedInfo
+ XkbResizeDeviceButtonActions
+ XkbAllocDeviceInfo
+ XkbFreeDeviceInfo
+ XkbNoteDeviceChanges
+ XkbGetDeviceInfo
+ XkbGetDeviceInfoChanges
+ XkbGetDeviceButtonActions
+ XkbGetDeviceLedInfo
+ XkbSetDeviceInfo
+ XkbChangeDeviceInfo
+ XkbSetDeviceLedInfo
+ XkbSetDeviceButtonActions
+ XkbToControl
+ XkbSetDebuggingFlags
+/* $TOG: X11-def.cpp /main/15 1997/08/27 12:11:54 kaleb $ */

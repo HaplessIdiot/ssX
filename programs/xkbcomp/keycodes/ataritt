@@ -1,4 +1,8 @@
-// $XFree86$
+// $TOG: ataritt /main/1 1997/08/02 10:11:01 kaleb $
+
+
+
+// $XFree86: xc/programs/xkbcomp/keycodes/ataritt,v 3.0 1996/08/18 01:55:38 dawes Exp $
 default xkb_keycodes "us" {
 
     minimum= 8;

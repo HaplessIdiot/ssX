@@ -1,4 +1,4 @@
-/* $XConsortium: cmaputil.c /main/6 1996/12/15 21:27:58 rws $ */
+/* $TOG: cmaputil.c /main/7 1997/09/12 14:29:52 barstow $ */
 
 /*
 Copyright (c) 1996  X Consortium
@@ -50,7 +50,7 @@ from the X Consortium.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/lbxproxy/di/cmaputil.c,v 1.2 1997/01/27 06:59:00 dawes Exp $ */
 
 #include	<stdio.h>
 #include	"misc.h"
@@ -59,27 +59,19 @@ from the X Consortium.
 #include	"colormap.h"
 #include	"util.h"
 #include	"resource.h"
+#include	"wire.h"
 #define  XK_LATIN1
-#include "keysymdef.h"
+#include 	"keysymdef.h"
 
-
-#define	NBUCKETS	16
-
-typedef struct _RGBEntry {
-    struct _RGBEntry *next;
-    RGBEntryRec color;
-}           RGBCacheEntryRec, *RGBCacheEntryPtr;
-
-static RGBCacheEntryPtr rgb_cache[NBUCKETS];
+typedef struct {
+    Colormap    mid;
+} colorResource;
 
 
 static int  num_visuals = 0;
 
 LbxVisualPtr *visuals;
 
-typedef struct {
-    Colormap    mid;
-}           colorResource;
 
 int
 CreateVisual(depth, vis)
@@ -342,10 +334,9 @@ Hash(name, len)
     return hash;
 }
 
-static RGBEntryRec rgb_buf;
-
 RGBEntryPtr
-FindColorName(name, len, pVisual)
+FindColorName(server, name, len, pVisual)
+    XServerPtr	 server;
     char        *name;
     int          len;
     LbxVisualPtr pVisual;
@@ -356,19 +347,26 @@ FindColorName(name, len, pVisual)
 
     if (have_rgb_db &&
 	OsLookupColor(name, len,
-		      &rgb_buf.xred, &rgb_buf.xgreen, &rgb_buf.xblue)) {
-	rgb_buf.vred = rgb_buf.xred;
-	rgb_buf.vgreen = rgb_buf.xgreen;
-	rgb_buf.vblue = rgb_buf.xblue;
+		      &server->rgb_buf.xred, 
+		      &server->rgb_buf.xgreen, 
+		      &server->rgb_buf.xblue)) {
+
+	server->rgb_buf.vred   = server->rgb_buf.xred;
+	server->rgb_buf.vgreen = server->rgb_buf.xgreen;
+	server->rgb_buf.vblue  = server->rgb_buf.xblue;
+
 	(*LbxResolveColor)(pVisual,
-			   &rgb_buf.vred, &rgb_buf.vgreen, &rgb_buf.vblue);
-	return &rgb_buf;
+			   &server->rgb_buf.vred, 
+			   &server->rgb_buf.vgreen, 
+			   &server->rgb_buf.vblue);
+
+	return &server->rgb_buf;
     }
 
     CopyISOLatin1Lowered((unsigned char *)cname, (unsigned char *)name, len);
     hash = Hash(cname, len) % NBUCKETS;
 
-    ce = rgb_cache[hash];
+    ce = server->rgb_cache[hash];
 
     while (ce) {
 	if ((ce->color.visual == pVisual->id) &&
@@ -382,7 +380,8 @@ FindColorName(name, len, pVisual)
 }
 
 Bool
-AddColorName(name, len, rgbe)
+AddColorName(server, name, len, rgbe)
+    XServerPtr	server;
     char       *name;
     int         len;
     RGBEntryRec *rgbe;
@@ -395,8 +394,8 @@ AddColorName(name, len, rgbe)
     new = (RGBCacheEntryPtr) xalloc(sizeof(RGBCacheEntryRec));
     if (!new)
 	return FALSE;
-    new->next = rgb_cache[hash];
-    rgb_cache[hash] = new;
+    new->next = server->rgb_cache[hash];
+    server->rgb_cache[hash] = new;
     new->color = *rgbe;
     new->color.name = (char *)xalloc(len + 1);
     CopyISOLatin1Lowered((unsigned char *)new->color.name,
@@ -411,15 +410,19 @@ FreeColors()
 {
     RGBCacheEntryPtr ce,
                 nce;
-    int         i;
+    int         i, j;
 
-    for (i = 0; i < NBUCKETS; i++) {
-	for (ce = rgb_cache[i]; ce; ce = nce) {
-	    nce = ce->next;
-	    xfree(ce->color.name);
-	    xfree(ce);
+    for (i = 0; i < lbxMaxServers; i++) {
+	if (servers[i]) {
+	    for (j = 0; j < NBUCKETS; j++) {
+		for (ce = servers[i]->rgb_cache[j]; ce; ce = nce) {
+		    nce = ce->next;
+		    xfree(ce->color.name);
+		    xfree(ce);
+		}
+		servers[i]->rgb_cache[j] = NULL;
+	    }
 	}
-	rgb_cache[i] = NULL;
     }
 }
 
@@ -427,7 +430,8 @@ FreeColors()
 
 /* ARGSUSED */
 int
-DestroyColormap(value, id)
+DestroyColormap(client, value, id)
+    ClientPtr	client;
     pointer	value;
     XID		id;
 {
@@ -493,8 +497,6 @@ find_matching_pixel(pent, num, channels, red, green, blue, pe)
     return 0;
 }
 
-static Entry rgb_ent;
-
 /* ARGSUSED */
 int
 FindPixel(client, pmap, red, green, blue, pent)
@@ -524,43 +526,43 @@ FindPixel(client, pmap, red, green, blue, pent)
 	if (pmap->grab_status != CMAP_GRABBED)
 	    break;
 	p = (*LbxFindBestPixel)(pmap, red, green, blue, DoRed);
-	rgb_ent.pixel = p->pixel << pmap->pVisual->offsetRed;
-	rgb_ent.red = p->red;
-	rgb_ent.refcnt = p->refcnt;
+	client->server->rgb_ent.pixel = p->pixel << pmap->pVisual->offsetRed;
+	client->server->rgb_ent.red = p->red;
+	client->server->rgb_ent.refcnt = p->refcnt;
 	p = (*LbxFindBestPixel)(pmap, red, green, blue, DoGreen);
-	rgb_ent.pixel |= p->pixel << pmap->pVisual->offsetGreen;
-	rgb_ent.green = p->green;
+	client->server->rgb_ent.pixel |= p->pixel << pmap->pVisual->offsetGreen;
+	client->server->rgb_ent.green = p->green;
 	if (!p->refcnt)
-	    rgb_ent.refcnt = 0;
+	    client->server->rgb_ent.refcnt = 0;
 	p = (*LbxFindBestPixel)(pmap, red, green, blue, DoBlue);
-	rgb_ent.pixel |= p->pixel << pmap->pVisual->offsetBlue;
-	rgb_ent.blue = p->blue;
+	client->server->rgb_ent.pixel |= p->pixel << pmap->pVisual->offsetBlue;
+	client->server->rgb_ent.blue = p->blue;
 	if (!p->refcnt)
-	    rgb_ent.refcnt = 0;
-	*pent = &rgb_ent;
+	    client->server->rgb_ent.refcnt = 0;
+	*pent = &client->server->rgb_ent;
 	return 1;
     case DirectColor:
 	if (!find_matching_pixel(pmap->red, NUMRED(pmap->pVisual),
 				 DoRed, red, green, blue, &p))
 	    break;
-	rgb_ent.pixel = p->pixel << pmap->pVisual->offsetRed;
-	rgb_ent.red = p->red;
-	rgb_ent.refcnt = p->refcnt;
+	client->server->rgb_ent.pixel = p->pixel << pmap->pVisual->offsetRed;
+	client->server->rgb_ent.red = p->red;
+	client->server->rgb_ent.refcnt = p->refcnt;
 	if (!find_matching_pixel(pmap->green, NUMGREEN(pmap->pVisual),
 				 DoGreen, red, green, blue, &p))
 	    break;
-	rgb_ent.pixel |= p->pixel << pmap->pVisual->offsetGreen;
-	rgb_ent.green = p->green;
+	client->server->rgb_ent.pixel |= p->pixel << pmap->pVisual->offsetGreen;
+	client->server->rgb_ent.green = p->green;
 	if (!p->refcnt)
-	    rgb_ent.refcnt = 0;
+	    client->server->rgb_ent.refcnt = 0;
 	if (!find_matching_pixel(pmap->blue, NUMBLUE(pmap->pVisual),
 				 DoBlue, red, green, blue, &p))
 	    break;
-	rgb_ent.pixel |= p->pixel << pmap->pVisual->offsetBlue;
-	rgb_ent.blue = p->blue;
+	client->server->rgb_ent.pixel |= p->pixel << pmap->pVisual->offsetBlue;
+	client->server->rgb_ent.blue = p->blue;
 	if (!p->refcnt)
-	    rgb_ent.refcnt = 0;
-	*pent = &rgb_ent;
+	    client->server->rgb_ent.refcnt = 0;
+	*pent = &client->server->rgb_ent;
 	return 1;
     }
     *pent = NULL;
@@ -613,13 +615,13 @@ AddPixel(pclient, pmap, pixel)
 	pmap->clientPixelsBlue[client] = ppix;
 	pmap->numPixelsBlue[client]++;
     }
-    if ((LbxClientIndex(pmap->id) != client) &&
+    if ((pclient->index != client) &&
 	(pmap->numPixelsRed[client] == 1)) {
 	pcr = (colorResource *) xalloc(sizeof(colorResource));
 	if (!pcr)
 	    return 0;
 	pcr->mid = pmap->id;
-	AddResource(FakeClientID(client), RT_CMAPENTRY, (pointer) pcr);
+	AddResource(pclient, FakeClientID(client), RT_CMAPENTRY, (pointer) pcr);
     }
     return 1;
 }
@@ -726,13 +728,13 @@ StorePixel (client, pmap, red, green, blue, pixel, from_server)
 	IncrementPixel(client, pmap, &pent[pixel], from_server);
 	return 1;
     case DirectColor:
-	rgb_ent.refcnt = 1;
+	client->server->rgb_ent.refcnt = 1;
 	p = REDPART(pmap->pVisual, pixel);
 	pent = pmap->red;
 	pent[p].red = red;
 	pent[p].pixel = p;
 	if (pent[p].status != PIXEL_SHARED)
-	    rgb_ent.refcnt = pent[p].refcnt = 0;
+	    client->server->rgb_ent.refcnt = pent[p].refcnt = 0;
 	pent[p].status = PIXEL_SHARED;
 	pent[p].server_ref = 1;
 	p = GREENPART(pmap->pVisual, pixel);
@@ -740,7 +742,7 @@ StorePixel (client, pmap, red, green, blue, pixel, from_server)
 	pent[p].green = green;
 	pent[p].pixel = p;
 	if (pent[p].status != PIXEL_SHARED)
-	    rgb_ent.refcnt = pent[p].refcnt = 0;
+	    client->server->rgb_ent.refcnt = pent[p].refcnt = 0;
 	pent[p].status = PIXEL_SHARED;
 	pent[p].server_ref = 1;
 	p = BLUEPART(pmap->pVisual, pixel);
@@ -748,14 +750,14 @@ StorePixel (client, pmap, red, green, blue, pixel, from_server)
 	pent[p].blue = blue;
 	pent[p].pixel = p;
 	if (pent[p].status != PIXEL_SHARED)
-	    rgb_ent.refcnt = pent[p].refcnt = 0;
+	    client->server->rgb_ent.refcnt = pent[p].refcnt = 0;
 	pent[p].status = PIXEL_SHARED;
 	pent[p].server_ref = 1;
-	rgb_ent.pixel = pixel;
-	rgb_ent.red = red;
-	rgb_ent.green = green;
-	rgb_ent.blue = blue;
-	IncrementPixel(client, pmap, &rgb_ent, from_server);
+	client->server->rgb_ent.pixel = pixel;
+	client->server->rgb_ent.red = red;
+	client->server->rgb_ent.green = green;
+	client->server->rgb_ent.blue = blue;
+	IncrementPixel(client, pmap, &client->server->rgb_ent, from_server);
 	return 0;
     default:
 	fprintf(stderr, "storing pixel in class %d colormap\n",
@@ -851,16 +853,18 @@ FreeAllClientPixels(pmap, client)
 
 /* ARGSUSED */
 int
-FreeClientPixels(value, id)
+FreeClientPixels(client, value, id)
+    ClientPtr	client;
     pointer	value;
     XID		id;
 {
     colorResource *pcr = (colorResource *)value;
     ColormapPtr pmap;
 
-    pmap = (ColormapPtr) LookupIDByType(pcr->mid, RT_COLORMAP);
+    pmap = (ColormapPtr) LookupIDByType(client, pcr->mid, RT_COLORMAP);
+
     if (pmap)
-	FreeAllClientPixels(pmap, LbxClientIndex(id));
+	FreeAllClientPixels(pmap, client->index);
     xfree(pcr);
     return Success;
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: resource.h /main/3 1996/11/03 18:41:08 rws $ */
+/* $TOG: resource.h /main/4 1997/09/12 14:28:51 barstow $ */
 
 /*
 
@@ -44,11 +44,30 @@ from the X Consortium.
 
 typedef unsigned long RESTYPE;
 
+typedef struct _Resource {
+    struct _Resource	*next;
+    XID			id;
+    RESTYPE		type;
+    pointer		value;
+} ResourceRec, *ResourcePtr;
+#define NullResource ((ResourcePtr)NULL)
+
+typedef struct _ClientResource {
+    ResourcePtr *resources;
+    int		elements;
+    int		buckets;
+    int		hashsize;	/* log(2)(buckets) */
+    XID		fakeID;
+    XID		endFakeID;
+} ClientResourceRec;
+
+
 /* bits and fields within a resource id */
 #define PROXY_BIT		0x40000000		/* use illegal bit */
 
 typedef int (*DeleteType)(
 #if NeedNestedPrototypes
+    ClientPtr /*client*/,
     pointer /*value*/,
     XID /*id*/
 #endif
@@ -80,14 +99,9 @@ extern XID FakeClientID(
 #endif
 );
 
-extern int LbxClientIndex(
-#if NeedFunctionPrototypes
-    XID /*id*/
-#endif
-);
-
 extern Bool AddResource(
 #if NeedFunctionPrototypes
+    ClientPtr /*client*/,
     XID /*id*/,
     RESTYPE /*type*/,
     pointer /*value*/
@@ -96,6 +110,7 @@ extern Bool AddResource(
 
 extern void FreeResource(
 #if NeedFunctionPrototypes
+    ClientPtr /*client*/,
     XID /*id*/,
     RESTYPE /*skipDeleteFuncType*/
 #endif
@@ -115,6 +130,7 @@ extern void FreeAllResources(
 
 extern pointer LookupIDByType(
 #if NeedFunctionPrototypes
+    ClientPtr /*client*/,
     XID /*id*/,
     RESTYPE /*rtype*/
 #endif

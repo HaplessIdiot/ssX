@@ -1,5 +1,4 @@
-/* $XConsortium: x_hilinit.c,v 8.205 95/01/27 19:02:07 gildea Exp $ */
-/* $XFree86$ */
+/* $TOG: x_hilinit.c /main/8 1997/09/08 13:19:43 kaleb $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -53,6 +52,8 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 
 */
+/* $XFree86: xc/programs/Xserver/hw/hp/input/x_hilinit.c,v 3.0 1996/03/29 22:15:17 dawes Exp $ */
+
 #define	NEED_EVENTS
 #define NITEMS(array) (sizeof(array)/sizeof(array[0]))
 #define BEEPER_DEVICE   "/dev/rhil"
@@ -111,6 +112,13 @@ University of California.
 
 #include "extnsionst.h"
 #include "extinit.h"			/* LookupDeviceIntRec */
+
+#ifdef XKB
+#undef IsKeypadKey
+#include <X11/extensions/XKB.h>
+#include <X11/extensions/XKBstr.h>
+#include <X11/extensions/XKBsrv.h>
+#endif
 
 /******************************************************************
  *
@@ -459,6 +467,8 @@ unsigned char HIL_AUTOREPEATS[] =
  0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff, 
  0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};
 
+extern Bool noXkbExtension;
+
 static Bool hpDeviceProc(pDev, onoff)
     DevicePtr pDev;
     int onoff;
@@ -497,9 +507,30 @@ static Bool hpDeviceProc(pDev, onoff)
 		    KeyCode tmp;
     		    extern KeyCode xtest_command_key; /* see xtestext1dd.c */
 
+
+#ifdef XKB
+		    if (noXkbExtension) {
+#endif
 		    InitKeyboardDeviceStruct(pDev, key_syms, the_modmap, 
 			(BellProcPtr) hpBell, 
 			(KbdCtrlProcPtr) hpChangeKeyboardControl);
+#ifdef XKB
+		    } else {
+			static XkbComponentNamesRec names = { 
+			    NULL,
+			    "keycodes/hp",
+			    "types/complete",
+			    "compat/complete",
+			    "symbols/us(pc101)",
+			    "geometry/hp",
+			};
+			XkbInitKeyboardDeviceStruct((DeviceIntPtr) pDev, &names,
+				key_syms, the_modmap, (BellProcPtr) hpBell, 
+				(KbdCtrlProcPtr) hpChangeKeyboardControl);
+		    }
+#endif
+
+
 		    get_pointerkeys();
 		    fix_modifierkeys();
 		    if ((tmp=HPKeySymToKeyCode (dev, XK_F9)))

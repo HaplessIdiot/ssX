@@ -1,4 +1,4 @@
-/* $XConsortium: colormap.h /main/11 1996/11/15 21:29:01 rws $ */
+/* $TOG: colormap.h /main/12 1997/09/12 14:28:01 barstow $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -35,10 +35,16 @@ typedef struct _rgbentry {
     CARD16      vred,
                 vblue,
                 vgreen;		/* visual */
-}           RGBEntryRec, *RGBEntryPtr;
+} RGBEntryRec, *RGBEntryPtr;
+
+typedef struct _RGBEntry {
+    struct _RGBEntry *next;
+    RGBEntryRec color;
+} RGBCacheEntryRec, *RGBCacheEntryPtr;
+
+#define NBUCKETS        16
 
 typedef CARD32 Pixel;
-
 
 #define PIXEL_FREE		0
 #define PIXEL_PRIVATE		1
@@ -52,7 +58,7 @@ typedef struct _entry {
     char	server_ref;
     int		refcnt;
     Pixel	pixel;
-}           Entry;
+} Entry;
 
 
 #define CMAP_NOT_GRABBED	0
@@ -69,7 +75,7 @@ typedef struct _visual {
     int		colormapEntries;
     CARD32	redMask, greenMask, blueMask;
     int		offsetRed, offsetGreen, offsetBlue;
-}           LbxVisualRec, *LbxVisualPtr;
+} LbxVisualRec, *LbxVisualPtr;
 
 #define NUMRED(pv) (((pv)->redMask >> (pv)->offsetRed) + 1)
 #define NUMGREEN(pv) (((pv)->greenMask >> (pv)->offsetGreen) + 1)
@@ -152,6 +158,7 @@ extern Entry * FindBestPixel(
 
 extern RGBEntryPtr FindColorName(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     char * /*name*/,
     int /*len*/,
     LbxVisualPtr /*pVisual*/
@@ -160,6 +167,7 @@ extern RGBEntryPtr FindColorName(
 
 extern Bool AddColorName(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     char * /*name*/,
     int /*len*/,
     RGBEntryRec * /*rgbe*/
@@ -204,6 +212,7 @@ extern int StorePixel(
 
 extern int FreeClientPixels(
 #if NeedFunctionPrototypes
+    ClientPtr /*client*/,
     pointer /*pcr*/,
     XID /*id*/
 #endif
@@ -246,6 +255,7 @@ extern int CreateColormap(
 
 extern int DestroyColormap(
 #if NeedFunctionPrototypes
+    ClientPtr /*client*/,
     pointer /*pmap*/,
     XID /*id*/
 #endif
