@@ -2,7 +2,14 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:48:12 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.26 2001/01/17 22:36:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.1 2002/05/31 15:12:55 dawes Exp $
+
+#if !BuildModuleInSubdir
+#define IHaveModules
+#elif !defined(IHaveModules) && DoLoadableServer
+#define IHaveSubdirs
+SUBDIRS = module
+#endif
 
 #include <Server.tmpl>
 
@@ -37,7 +44,7 @@ STIPPLEDEF = -DHAS_STIPPLE_CODE
 #endif
 #endif
 
-#ifdef IHaveModules
+#if defined(XFree86Version) && defined(IHaveModules)
 #if DoLoadableServer
 XFMODSRC = cfbmodule.c
 XFMODOBJ = cfbmodule.o
@@ -89,7 +96,7 @@ PLATFORMDEFS = -DXFREE86
   LMDEFINES = -ULOWMEMFTPT
 #endif
 
-   INCLUDES = -I. -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+   INCLUDES = -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
 	      -I$(SERVERSRC)/cfb24 -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	      -I$(FONTINCSRC) -I$(EXTINCSRC) -I$(SERVERSRC)/Xext
    LINTLIBS = $(SERVERSRC)/dix/llib-ldix.ln $(SERVERSRC)/os/llib-los.ln \
@@ -120,8 +127,6 @@ NormalLintTarget($(SRCS))
 
 #ifdef LinkDirectory
 
-LinkSourceFile(cfb.h,LinkDirectory)
-LinkSourceFile(cfbmap.h,LinkDirectory)
 LinkSourceFile(cfballpriv.c,LinkDirectory)
 LinkSourceFile(cfbbitblt.c,LinkDirectory)
 LinkSourceFile(cfbblt.c,LinkDirectory)
@@ -140,13 +145,11 @@ LinkSourceFile(cfbimage.c,LinkDirectory)
 LinkSourceFile(cfbline.c,LinkDirectory)
 LinkSourceFile(cfb8line.c,LinkDirectory)
 LinkSourceFile(cfbmskbits.c,LinkDirectory)
-LinkSourceFile(cfbmskbits.h,LinkDirectory)
 LinkSourceFile(cfbpixmap.c,LinkDirectory)
 LinkSourceFile(cfbply1rct.c,LinkDirectory)
 LinkSourceFile(cfbpntwin.c,LinkDirectory)
 LinkSourceFile(cfbpolypnt.c,LinkDirectory)
 LinkSourceFile(cfbrrop.c,LinkDirectory)
-LinkSourceFile(cfbrrop.h,LinkDirectory)
 LinkSourceFile(cfbscrinit.c,LinkDirectory)
 LinkSourceFile(cfbsetsp.c,LinkDirectory)
 LinkSourceFile(cfbsolid.c,LinkDirectory)
@@ -157,7 +160,6 @@ LinkSourceFile(cfbtileodd.c,LinkDirectory)
 LinkSourceFile(cfbtile32.c,LinkDirectory)
 LinkSourceFile(cfbwindow.c,LinkDirectory)
 LinkSourceFile(cfbzerarc.c,LinkDirectory)
-LinkSourceFile(cfb8bit.h,LinkDirectory)
 #if PixelSize == 8
 LinkSourceFile(cfb8bit.c,LinkDirectory)
 LinkSourceFile(cfbpush8.c,LinkDirectory)
