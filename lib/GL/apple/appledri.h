@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/xf86dri.h,v 1.7 2000/12/07 20:26:02 dawes Exp $ */
+/* $XFree86: xc/lib/GL/apple/appledri.h,v 1.1 2003/06/30 01:45:10 torrey Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -46,7 +46,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define X_AppleDRICreateSurface			2
 #define X_AppleDRIDestroySurface		3
 #define X_AppleDRIAuthConnection                4
-
 /* Requests up to and including 18 were used in a previous version */
 
 /* Events */
@@ -98,6 +97,8 @@ Bool XAppleDRICreateSurface (Display *dpy, int screen, Drawable drawable,
 			     unsigned int* uid);
 
 Bool XAppleDRIDestroySurface (Display *dpy, int screen, Drawable drawable);
+
+Bool XAppleDRISynchronizeSurfaces (Display *dpy);
 
 _XFUNCPROTOEND
 

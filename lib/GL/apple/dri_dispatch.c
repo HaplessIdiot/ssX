@@ -1,5 +1,5 @@
 /* dri_dispatch.c
-   $Id: dri_dispatch.c,v 1.2 2003/08/12 00:28:57 torrey Exp $
+   $Id: dri_dispatch.c,v 1.3 2003/10/31 02:22:12 torrey Exp $
 
    Copyright (c) 2002 Apple Computer, Inc. All rights reserved.
 
@@ -27,7 +27,7 @@
    copyright holders shall not be used in advertising or otherwise to
    promote the sale, use or other dealings in this Software without
    prior written authorization. */
-/* $XFree86: xc/lib/GL/apple/dri_dispatch.c,v 1.1 2003/06/30 01:45:10 torrey Exp $ */
+/* $XFree86: xc/lib/GL/apple/dri_dispatch.c,v 1.2 2003/08/12 00:28:57 torrey Exp $ */
 
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/CGLContext.h>
@@ -122,17 +122,18 @@ XAppleDRIGetIndirectContext (void)
     int i;
 
     if (ctx != NULL)
-	return ctx;
+        return ctx;
 
     /* initialize gl */
     CGLSetOption (kCGLGOResetLibrary, 0);
 
-    /* create an empty "context" for dispatching purposes */
-    ctx = Xcalloc (1, sizeof (struct _CGLContextObject));
+    /* Create an empty "context" for dispatching purposes. Add some slop
+       in case the dispatch table grows in future updates. */
+    ctx = Xcalloc (1, sizeof (struct _CGLContextObject) + 1024);
 
     /* fill it with no-op vectors */
     t = (void **) &ctx->disp;
-    for (i = 0; i < (sizeof (ctx->disp) / sizeof (t[0])); i++)
+    for (i = 0; i < (int) (sizeof (ctx->disp) / sizeof (t[0])); i++)
         t[i] = &indirect_noop;
 
     /* then install the functions we actually support */

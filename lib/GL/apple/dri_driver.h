@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.h,v 1.4 2000/06/17 00:02:50 martin Exp $ */
+/* $XFree86: xc/lib/GL/apple/dri_driver.h,v 1.1 2003/06/30 01:45:10 torrey Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -37,6 +37,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _DRI_DRIVER_H_
 
 #include "Xplugin.h"
+#include "Xthreads.h"
 #include <CoreGraphics/CoreGraphics.h>
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/CGLContext.h>
@@ -53,9 +54,9 @@ typedef struct __DRIdrawablePrivateRec __DRIdrawablePrivate;
 
 #define DRI_MESA_VALIDATE_DRAWABLE_INFO(dpy,scrn,pDrawPriv)  \
     do {                                                     \
-	if (*(pDrawPriv->pStamp) != pDrawPriv->lastStamp) {  \
-	    driMesaUpdateDrawableInfo(dpy,scrn,pDrawPriv);   \
-	}                                                    \
+        if (*(pDrawPriv->pStamp) != pDrawPriv->lastStamp) {  \
+            driMesaUpdateDrawableInfo(dpy,scrn,pDrawPriv);   \
+        }                                                    \
     } while (0)
 
 struct __DRIdrawablePrivateRec {
@@ -107,6 +108,7 @@ struct __DRIcontextPrivateRec {
     ** Set when attached
     */
     xp_surface_id surface_id;
+    xthread_t thread_id;
 
     /*
     ** This context's display pointer.
@@ -122,6 +124,19 @@ struct __DRIcontextPrivateRec {
     ** Pointer to screen on which this context was created.
     */
     __DRIscreenPrivate *driScreenPriv;
+
+    /*
+    ** wrapped CGL vectors
+    */
+    struct {
+        void (*viewport)(GLIContext ctx, GLint x, GLint y,
+                         GLsizei width, GLsizei height);
+        void (*new_list)(GLIContext ctx, GLuint list, GLenum mode);
+        void (*end_list)(GLIContext ctx);
+    } disp;
+
+    unsigned int pending_update :1;
+    unsigned int pending_clear :1;
 };
 
 struct __DRIvisualPrivateRec {
@@ -143,6 +158,11 @@ struct __DRIscreenPrivateRec {
     Display *display;
 
     /*
+    ** Mutex for this screen
+    */
+    xmutex_t mutex;
+
+    /*
     ** Current screen's number
     */
     int myNum;
@@ -162,7 +182,7 @@ struct __DRIscreenPrivateRec {
 
 
 extern void driMesaUpdateDrawableInfo(Display *dpy, int scrn,
-				      __DRIdrawablePrivate *pdp);
+                                      __DRIdrawablePrivate *pdp);
 
 
 #endif /* _DRI_DRIVER_H_ */
