@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: NetBSD.cf,v 1.5 95/04/07 19:42:55 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.19 1995/07/12 15:27:27 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.20 1995/07/22 04:11:38 dawes Exp $
 
 #define OSName		NetBSD 1.0
 #define	OSVendor	/**/
@@ -145,6 +145,17 @@ XCOMM operating system:  OSName
 #define HasNetBSDApertureDrv	NO
 #endif
 #endif
+
+/*
+ * ForceSubdirs - force make to build subdirectories
+ * 
+ * For BSD 4.4 make 
+ */
+#define ForceSubdirs(dirs)						@@\
+dirs:	.EXEC								@@\
+	@cd $@ ; echo "making all in $(CURRENT_DIR)/$@..."; \		@@\
+	$(MAKE) $(MFLAGS) PassCDebugFlags all
+
 
 XCOMM Man pages need to be formatted when installed, so override the default
 XCOMM imake rules.

@@ -337,15 +337,15 @@ ScrollBarOn (xw, init, doalloc)
 	if (doalloc && screen->allbuf) {
 	    if((screen->allbuf =
 		(ScrnBuf) realloc((char *) screen->buf,
-				  (unsigned) 2*(screen->max_row + 2 +
+				  (unsigned) 4*(screen->max_row + 2 +
 						screen->savelines) *
 				  sizeof(char *)))
 	       == NULL)
 	      Error (ERROR_SBRALLOC);
-	    screen->buf = &screen->allbuf[2 * screen->savelines];
+	    screen->buf = &screen->allbuf[4 * screen->savelines];
 	    memmove( (char *)screen->buf, (char *)screen->allbuf, 
-		   2 * (screen->max_row + 2) * sizeof (char *));
-	    for(i = 2 * screen->savelines - 1 ; i >= 0 ; i--)
+		   4 * (screen->max_row + 2) * sizeof (char *));
+	    for(i = 4 * screen->savelines - 1 ; i >= 0 ; i--)
 	      if((screen->allbuf[i] =
 		  calloc((unsigned) screen->max_col + 1, sizeof(char))) ==
 		 NULL)

@@ -1,4 +1,13 @@
-XFree86 3.1.2a (13 August 1995)
+XFree86 3.1.2a (17 September 1995)
+ 15. Fix xvidtune/XF86VidMode problem when the Monitor Vendor and/or Model
+     are not specified in the XF86Config file.
+ 14. Colour support for xterm (David Wexelblat).
+ 13. Fix usage of $LINES and $COLUMNS by xterm on SVR4 (David Wexelblat).
+ 12. Fix xconsole for Unixware 2.0 (David Wexelblat).
+ 11. Fix optimisation problem with inline asm on Unixware 2.0
+     (David Wexelblat).
+ 10. Improve subdir/lib dependence on systems using BSD 4.4. make
+     (Matthieu Herrb)
   9. Allow the Xserver to accept InvertVCLK, EarlySC and BlankDelay.  It
      previously expected Invert_VCLK, Early_SC and Blank_Delay.
   8. Fix problem selecting a StaticGray visual with the VGA16 server

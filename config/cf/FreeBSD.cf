@@ -1,12 +1,12 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.5 95/04/07 19:42:53 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.30 1995/07/08 10:21:33 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.31 1995/07/12 15:27:09 dawes Exp $
 
 #define OSName            FreeBSD 2.0.5
 #define OSVendor          /**/
 XCOMM operating system:  OSName
 #define OSMajorVersion    2
-#define OSMinorVersion    0
-#define OSTeenyVersion    5
+#define OSMinorVersion    1
+#define OSTeenyVersion    0
 
 #define HasGcc			YES
 #define HasGcc2			YES
@@ -173,6 +173,16 @@ install.man::                                                           @@\
 #define InstallGenManPageAliases(file,destdir,suffix,aliases)              @@\
 	InstallManPageAliases(file,destdir,aliases)
 #endif
+#endif
+
+#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 1)
+/*
+ * ForceSubdirs - force make to build subdirectories
+ */
+#define ForceSubdirs(dirs)						@@\
+dirs: .EXEC								@@\
+	@cd $@ ; echo "making all in $(CURRENT_DIR)/$@..."; \		@@\
+	$(MAKE) $(MFLAGS) PassCDebugFlags all
 #endif
 
 #include <bsdLib.rules>

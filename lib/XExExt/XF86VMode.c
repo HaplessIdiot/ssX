@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.8 1995/07/16 14:51:04 dawes Exp $ */
+/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.9 1995/08/13 09:40:58 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -326,29 +326,43 @@ Bool XF86VidModeGetMonitor(dpy, screen, monitor)
     monitor->nhsync = rep.nhsync;
     monitor->nvsync = rep.nvsync;
     monitor->bandwidth = (float)rep.bandwidth / 1e6;
-    if (!(monitor->vendor = (char *)Xcalloc(rep.vendorLength + 1, 1))) {
-	_XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
-		  (rep.vendorLength + 3 & 3) + (rep.modelLength + 3 & 3));
-	return False;
+    if (rep.vendorLength) {
+	if (!(monitor->vendor = (char *)Xcalloc(rep.vendorLength + 1, 1))) {
+	    _XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
+		      (rep.vendorLength + 3 & 3) + (rep.modelLength + 3 & 3));
+	    return False;
+	}
+    } else {
+	monitor->vendor = NULL;
     }
-    if (!(monitor->model = Xcalloc(rep.modelLength + 1, 1))) {
-	_XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
-		  (rep.vendorLength + 3 & 3) + (rep.modelLength + 3 & 3));
-	Xfree(monitor->vendor);
-	return False;
+    if (rep.modelLength) {
+	if (!(monitor->model = Xcalloc(rep.modelLength + 1, 1))) {
+	    _XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
+		      (rep.vendorLength + 3 & 3) + (rep.modelLength + 3 & 3));
+	    if (monitor->vendor)
+		Xfree(monitor->vendor);
+	    return False;
+	}
+    } else {
+	monitor->model = NULL;
     }
     if (!(monitor->hsync = Xcalloc(rep.nhsync, sizeof(XF86VidModeSyncRange)))) {
 	_XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
 		  (rep.vendorLength + 3 & 3) + (rep.modelLength + 3 & 3));
-	Xfree(monitor->vendor);
-	Xfree(monitor->model);
+	
+	if (monitor->vendor)
+	    Xfree(monitor->vendor);
+	if (monitor->model)
+	    Xfree(monitor->model);
 	return False;
     }
     if (!(monitor->vsync = Xcalloc(rep.nvsync, sizeof(XF86VidModeSyncRange)))) {
 	_XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
 		  (rep.vendorLength + 3 & 3) + (rep.modelLength + 3 & 3));
-	Xfree(monitor->vendor);
-	Xfree(monitor->model);
+	if (monitor->vendor)
+	    Xfree(monitor->vendor);
+	if (monitor->model)
+	    Xfree(monitor->model);
 	Xfree(monitor->hsync);
 	return False;
     }
@@ -362,8 +376,14 @@ Bool XF86VidModeGetMonitor(dpy, screen, monitor)
 	monitor->vsync[i].lo = (float)(syncrange & 0xFFFF) / 100.0;
 	monitor->vsync[i].hi = (float)(syncrange >> 16) / 100.0;
     }
-    _XReadPad(dpy, monitor->vendor, rep.vendorLength);
-    _XReadPad(dpy, monitor->model, rep.modelLength);
+    if (rep.vendorLength)
+	_XReadPad(dpy, monitor->vendor, rep.vendorLength);
+    else
+	monitor->vendor = "";
+    if (rep.modelLength)
+	_XReadPad(dpy, monitor->model, rep.modelLength);
+    else
+	monitor->model = "";
 	
     UnlockDisplay(dpy);
     SyncHandle();

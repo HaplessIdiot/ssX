@@ -616,12 +616,16 @@ register TScreen *screen;
 		 FontHeight(screen));
 	    }
 	}
-	bzero(screen->buf [2 * screen->cur_row] + screen->cur_col,
+	bzero(screen->buf [4 * screen->cur_row] + screen->cur_col,
 	       (screen->max_col - screen->cur_col + 1));
-	bzero(screen->buf [2 * screen->cur_row + 1] + screen->cur_col,
+	bzero(screen->buf [4 * screen->cur_row + 1] + screen->cur_col,
+	       (screen->max_col - screen->cur_col + 1));
+	bzero(screen->buf [4 * screen->cur_row + 2] + screen->cur_col,
+	       (screen->max_col - screen->cur_col + 1));
+	bzero(screen->buf [4 * screen->cur_row + 3] + screen->cur_col,
 	       (screen->max_col - screen->cur_col + 1));
 	/* with the right part cleared, we can't be wrapping */
-	screen->buf [2 * screen->cur_row + 1] [0] &= ~LINEWRAPPED;
+	screen->buf [4 * screen->cur_row + 1] [0] &= ~LINEWRAPPED;
 }
 
 /*
@@ -649,14 +653,17 @@ ClearLeft (screen)
 	    }
 	}
 	
-	for ( i=0, cp=screen->buf[2 * screen->cur_row];
+	for ( i=0, cp=screen->buf[4 * screen->cur_row];
 	      i < screen->cur_col + 1;
 	      i++, cp++)
 	    *cp = ' ';
-	for ( i=0, cp=screen->buf[2 * screen->cur_row + 1];
+	for ( i=0, cp=screen->buf[4 * screen->cur_row + 1];
 	      i < screen->cur_col + 1;
 	      i++, cp++)
 	    *cp = CHARDRAWN;
+	bzero (screen->buf [4 * screen->cur_row + 2], (screen->cur_col + 1));
+	bzero (screen->buf [4 * screen->cur_row + 3], (screen->cur_col + 1));
+
 }
 
 /* 
@@ -679,8 +686,10 @@ register TScreen *screen;
 		     Width(screen), FontHeight(screen));
 	    }
 	}
-	bzero (screen->buf [2 * screen->cur_row], (screen->max_col + 1));
-	bzero (screen->buf [2 * screen->cur_row + 1], (screen->max_col + 1));
+	bzero (screen->buf [4 * screen->cur_row], (screen->max_col + 1));
+	bzero (screen->buf [4 * screen->cur_row + 1], (screen->max_col + 1));
+	bzero (screen->buf [4 * screen->cur_row + 2], (screen->max_col + 1));
+	bzero (screen->buf [4 * screen->cur_row + 3], (screen->max_col + 1));
 }
 
 ClearScreen(screen)
@@ -921,6 +930,108 @@ handle_translated_exposure (screen, rect_x, rect_y, rect_width, rect_height)
 	return (0);
 }
 
+/***====================================================================***/
+
+void
+GetColors(term,pColors)
+	XtermWidget term;
+	ScrnColors *pColors;
+{
+	register TScreen *screen = &term->screen;
+	GC tmpGC;
+	Window tek = TWindow(screen);
+	unsigned long tmp;
+
+
+	pColors->which=	0;
+	SET_COLOR_VALUE(pColors,TEXT_FG,	screen->foreground);
+	SET_COLOR_VALUE(pColors,TEXT_BG,	term->core.background_pixel);
+	SET_COLOR_VALUE(pColors,TEXT_CURSOR,	screen->cursorcolor);
+	SET_COLOR_VALUE(pColors,MOUSE_FG,	screen->mousecolor);
+	SET_COLOR_VALUE(pColors,MOUSE_BG,	screen->mousecolorback);
+
+
+	SET_COLOR_VALUE(pColors,TEK_FG,		screen->Tforeground);
+	SET_COLOR_VALUE(pColors,TEK_BG,		screen->Tbackground);
+}
+
+
+ChangeColors(term,pNew)
+	XtermWidget term;
+	ScrnColors *pNew;
+{
+	register TScreen *screen = &term->screen;
+	GC tmpGC;
+	Window tek = TWindow(screen);
+	unsigned long tmp;
+	Bool	newCursor=	TRUE;
+
+
+	if (COLOR_DEFINED(pNew,TEXT_BG)) {
+	    term->core.background_pixel=	COLOR_VALUE(pNew,TEXT_BG);
+	}
+
+	if (COLOR_DEFINED(pNew,TEXT_CURSOR)) {
+	    screen->cursorcolor=	COLOR_VALUE(pNew,TEXT_CURSOR);
+	}
+	else if ((screen->cursorcolor == screen->foreground)&&
+		 (COLOR_DEFINED(pNew,TEXT_FG))) {
+	    screen->cursorcolor=	COLOR_VALUE(pNew,TEXT_FG);
+	}
+	else newCursor=	FALSE;
+
+	if (COLOR_DEFINED(pNew,TEXT_FG)) {
+	    Pixel	fg=	COLOR_VALUE(pNew,TEXT_FG);
+	    screen->foreground=	fg;
+	    XSetForeground(screen->display,screen->normalGC,fg);
+	    XSetBackground(screen->display,screen->reverseGC,fg);
+	    XSetForeground(screen->display,screen->normalboldGC,fg);
+	    XSetBackground(screen->display,screen->reverseboldGC,fg);
+	}
+
+	if (COLOR_DEFINED(pNew,TEXT_BG)) {
+	    Pixel	bg=	COLOR_VALUE(pNew,TEXT_BG);
+	    term->core.background_pixel=	bg;
+	    XSetBackground(screen->display,screen->normalGC,bg);
+	    XSetForeground(screen->display,screen->reverseGC,bg);
+	    XSetBackground(screen->display,screen->normalboldGC,bg);
+	    XSetForeground(screen->display,screen->reverseboldGC,bg);
+	    XSetWindowBackground(screen->display, TextWindow(screen),
+						  term->core.background_pixel);
+	}
+
+	if (COLOR_DEFINED(pNew,MOUSE_FG)||(COLOR_DEFINED(pNew,MOUSE_BG))) {
+	    if (COLOR_DEFINED(pNew,MOUSE_FG))
+		screen->mousecolor=	COLOR_VALUE(pNew,MOUSE_FG);
+	    if (COLOR_DEFINED(pNew,MOUSE_BG))
+		screen->mousecolorback=	COLOR_VALUE(pNew,MOUSE_BG);
+
+	    recolor_cursor (screen->pointer_cursor,
+		screen->mousecolor, screen->mousecolorback);
+	    recolor_cursor (screen->arrow,
+		screen->mousecolor, screen->mousecolorback);
+	    XDefineCursor(screen->display, TextWindow(screen),
+					   screen->pointer_cursor);
+	    if(tek)
+		XDefineCursor(screen->display, tek, screen->arrow);
+	}
+
+	if ((tek)&&(COLOR_DEFINED(pNew,TEK_FG)||COLOR_DEFINED(pNew,TEK_BG))) {
+	    ChangeTekColors(screen,pNew);
+	}
+	set_cursor_gcs(screen);
+	XClearWindow(screen->display, TextWindow(screen));
+	ScrnRefresh (screen, 0, 0, screen->max_row + 1,
+	 screen->max_col + 1, False);
+	if(screen->Tshow) {
+	    XClearWindow(screen->display, tek);
+	    TekExpose((XExposeEvent *) NULL);
+	}
+}
+
+/***====================================================================***/
+
+
 ReverseVideo (termw)
 	XtermWidget termw;
 {
@@ -973,6 +1084,7 @@ ReverseVideo (termw)
 	    XClearWindow(screen->display, tek);
 	    TekExpose((Widget)NULL, (XEvent *)NULL, (Region)NULL);
 	}
+ReverseOldColors();
 	update_reversevideo();
 }
 

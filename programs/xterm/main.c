@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.19 1995/07/08 10:33:37 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.20 1995/07/08 13:16:41 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -731,15 +731,23 @@ static XrmOptionDescRec optionDescList[] = {
 {"+132",	"*c132",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-ah",		"*alwaysHighlight", XrmoptionNoArg,	(caddr_t) "on"},
 {"+ah",		"*alwaysHighlight", XrmoptionNoArg,	(caddr_t) "off"},
+{"-aw",		"*autoWrap",	XrmoptionNoArg,		(caddr_t) "on"},
+{"+aw",		"*autoWrap",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-b",		"*internalBorder",XrmoptionSepArg,	(caddr_t) NULL},
+{"-bdc",	"*colorBDMode",	XrmoptionNoArg,		(caddr_t) "off"},
+{"+bdc",	"*colorBDMode",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-cb",		"*cutToBeginningOfLine", XrmoptionNoArg, (caddr_t) "off"},
 {"+cb",		"*cutToBeginningOfLine", XrmoptionNoArg, (caddr_t) "on"},
 {"-cc",		"*charClass",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-cm",		"*colorMode",	XrmoptionNoArg,		(caddr_t) "off"},
+{"+cm",		"*colorMode",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-cn",		"*cutNewline",	XrmoptionNoArg,		(caddr_t) "off"},
 {"+cn",		"*cutNewline",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-cr",		"*cursorColor",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-cu",		"*curses",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+cu",		"*curses",	XrmoptionNoArg,		(caddr_t) "off"},
+{"-dc",		"*dynamicColors",XrmoptionNoArg,	(caddr_t) "off"},
+{"+dc",		"*dynamicColors",XrmoptionNoArg,	(caddr_t) "on"},
 {"-e",		NULL,		XrmoptionSkipLine,	(caddr_t) NULL},
 {"-fb",		"*boldFont",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-j",		"*jumpScroll",	XrmoptionNoArg,		(caddr_t) "on"},
@@ -755,10 +763,10 @@ static XrmOptionDescRec optionDescList[] = {
 {"-mc",		"*multiClickTime", XrmoptionSepArg,	(caddr_t) NULL},
 {"-ms",		"*pointerColor",XrmoptionSepArg,	(caddr_t) NULL},
 {"-nb",		"*nMarginBell",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-nul",	"*underLine",	XrmoptionNoArg,		(caddr_t) "off"},
+{"+nul",	"*underLine",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-rw",		"*reverseWrap",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+rw",		"*reverseWrap",	XrmoptionNoArg,		(caddr_t) "off"},
-{"-aw",		"*autoWrap",	XrmoptionNoArg,		(caddr_t) "on"},
-{"+aw",		"*autoWrap",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-s",		"*multiScroll",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+s",		"*multiScroll",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-sb",		"*scrollBar",	XrmoptionNoArg,		(caddr_t) "on"},
@@ -778,6 +786,8 @@ static XrmOptionDescRec optionDescList[] = {
 {"-ul",		"*useLocale",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+ul",		"*useLocale",	XrmoptionNoArg,		(caddr_t) "off"},
 #endif
+{"-ulc",	"*colorULMode",	XrmoptionNoArg,		(caddr_t) "off"},
+{"+ulc",	"*colorULMode",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-im",		"*useInsertMode", XrmoptionNoArg,	(caddr_t) "on"},
@@ -819,11 +829,14 @@ static struct _options {
 { "-/+132",                "turn on/off column switch inhibiting" },
 { "-/+ah",                 "turn on/off always highlight" },
 { "-b number",             "internal border in pixels" },
+{ "-/+bdc",                "turn off/on display of bold as color"},
 { "-/+cb",                 "turn on/off cut-to-beginning-of-line inhibit" },
 { "-cc classrange",        "specify additional character classes" },
+{ "-/+cm",                 "turn off/on ANSI color mode" },
 { "-/+cn",                 "turn on/off cut newline inhibit" },
 { "-cr color",             "text cursor color" },
 { "-/+cu",                 "turn on/off curses emulation" },
+{ "-/+dc",		   "turn off/on dynamic color selection" },
 { "-fb fontname",          "bold text font" },
 { "-/+im",		   "use insert mode for TERMCAP" },
 { "-/+j",                  "turn on/off jump scroll" },
@@ -839,6 +852,7 @@ static struct _options {
 { "-mc milliseconds",      "multiclick time in milliseconds" },
 { "-ms color",             "pointer color" },
 { "-nb number",            "margin bell in characters from right end" },
+{ "-/+nul",                "turn on/off display of underlining" },
 { "-/+aw",                 "turn on/off auto wraparound" },
 { "-/+rw",                 "turn on/off reverse wraparound" },
 { "-/+s",                  "turn on/off multiscroll" },
@@ -853,6 +867,7 @@ static struct _options {
 #ifdef sgi
 { "-/+ul",                 "use/don't use locale for character input" },
 #endif
+{ "-/+ulc",                "turn off/on display of underline as color" },
 #ifdef UTMP
 { "-/+ut",                 "turn on/off utmp inhibit" },
 #else
@@ -3000,10 +3015,12 @@ spawn ()
 #endif /* USE_HANDSHAKE */
 
 #ifdef USE_SYSV_ENVVARS
+#ifndef TIOCSWINSZ		/* window size not stored in driver? */
 		sprintf (numbuf, "%d", screen->max_col + 1);
 		Setenv("COLUMNS=", numbuf);
 		sprintf (numbuf, "%d", screen->max_row + 1);
 		Setenv("LINES=", numbuf);
+#endif
 #ifdef UTMP
 		if (pw) {	/* SVR4 doesn't provide these */
 		    if (!getenv("HOME"))
@@ -3894,7 +3911,6 @@ static int parse_tty_modes (s, modelist)
 	s++;
     }
 }
-
 
 int GetBytesAvailable (fd)
     int fd;

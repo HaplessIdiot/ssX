@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c,v 1.102 94/03/28 18:27:08 gildea Exp $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.1 1994/08/31 04:57:20 dawes Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.2 1995/01/21 07:21:03 dawes Exp $
  */
 
 /*
@@ -66,11 +66,12 @@ extern char *getenv();
 static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
 
+
 xevents()
 {
 	XEvent event;
+	XtInputMask input_mask;
 	register TScreen *screen = &term->screen;
-	extern XtAppContext app_con;
 
 	if(screen->scroll_amt)
 		FlushScroll(screen);
@@ -332,7 +333,7 @@ Bell()
        the bell again? */
     if(screen->bellSuppressTime) {
 	if(screen->bellInProgress) {
-	    if (QLength(screen->display) > 0 ||
+	    if (QLength(screen->display) ||
 		GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
 		xevents();
 	    if(screen->bellInProgress) { /* even after new events? */
@@ -704,6 +705,15 @@ int (*func)();
 	 case 2:	/* new title only */
 		Changetitle(buf);
 		break;
+        case 10:       case 11:        case 12:
+        case 13:       case 14:        case 15:
+        case 16:
+               {
+                   extern Boolean ChangeColorsRequest();
+                   if (term->misc.dynamicColors)
+                       ChangeColorsRequest(term,mode-10,buf);
+               }
+               break;
 
 #ifdef ALLOWLOGGING
 	 case 46:	/* new log file */
@@ -758,6 +768,185 @@ register char *name;
 {
     ChangeGroup( XtNtitle, (XtArgVal)name );
 }
+
+/***====================================================================***/
+
+ScrnColors	*pOldColors= NULL;
+
+Boolean
+GetOldColors(pTerm)
+XtermWidget	pTerm;
+{
+int	i;
+    if (pOldColors==NULL) {
+	pOldColors=	(ScrnColors *)XtMalloc(sizeof(ScrnColors));
+	if (pOldColors==NULL) {
+	    fprintf(stderr,"allocation failure in GetOldColors\n");
+	    return(FALSE);
+	}
+	pOldColors->which=	0;
+	for (i=0;i<NCOLORS;i++) {
+	    pOldColors->colors[i]=	0;
+	    pOldColors->names[i]=	NULL;
+	}
+	GetColors(pTerm,pOldColors);
+    }
+    return(TRUE);
+}
+
+Boolean
+UpdateOldColors(pTerm,pNew)
+XtermWidget	pTerm;
+ScrnColors	*pNew;
+{
+int	i;
+
+    /* if we were going to free old colors, this would be the place to
+     * do it.   I've decided not to (for now), because it seems likely
+     * that we'd have a small set of colors we use over and over, and that
+     * we could save some overhead this way.   The only case in which this
+     * (clearly) fails is if someone is trying a boatload of colors, in
+     * which case they can restart xterm
+     */
+    for (i=0;i<NCOLORS;i++) {
+	if (COLOR_DEFINED(pNew,i)) {
+	    if (pOldColors->names[i]!=NULL) {
+		XtFree(pOldColors->names[i]);
+		pOldColors->names[i]= NULL;
+	    }
+	    if (pNew->names[i]) {
+		pOldColors->names[i]= pNew->names[i];
+	    }
+	    pOldColors->colors[i]=	pNew->colors[i];
+	}
+    }
+    return(TRUE);
+}
+
+void
+ReverseOldColors()
+{
+register ScrnColors	*pOld= pOldColors;
+Pixel	 tmpPix;
+char	*tmpName;
+
+    if (pOld) {
+	/* change text cursor, if necesary */
+	if (pOld->colors[TEXT_CURSOR]==pOld->colors[TEXT_FG]) {
+	    pOld->colors[TEXT_CURSOR]=	pOld->colors[TEXT_BG];
+	    if (pOld->names[TEXT_CURSOR]) {
+		XtFree(pOldColors->names[TEXT_CURSOR]);
+		pOld->names[TEXT_CURSOR]= NULL;
+	    }
+	    if (pOld->names[TEXT_BG]) {
+		tmpName= XtMalloc(strlen(pOld->names[TEXT_BG])+1);
+		if (tmpName) {
+		    strcpy(tmpName,pOld->names[TEXT_BG]);
+		    pOld->names[TEXT_CURSOR]= tmpName;
+		}
+	    }
+	}
+
+	/* swap text FG and BG */
+	tmpPix=		pOld->colors[TEXT_FG];
+	tmpName=	pOld->names[TEXT_FG];
+	pOld->colors[TEXT_FG]=	pOld->colors[TEXT_BG];
+	pOld->names[TEXT_FG]=	pOld->names[TEXT_BG];
+	pOld->colors[TEXT_BG]=	tmpPix;
+	pOld->names[TEXT_BG]=	tmpName;
+
+	/* swap mouse FG and BG */
+	tmpPix=		pOld->colors[MOUSE_FG];
+	tmpName=	pOld->names[MOUSE_FG];
+	pOld->colors[MOUSE_FG]=	pOld->colors[MOUSE_BG];
+	pOld->names[MOUSE_FG]=	pOld->names[MOUSE_BG];
+	pOld->colors[MOUSE_BG]=	tmpPix;
+	pOld->names[MOUSE_BG]=	tmpName;
+
+	/* swap Tek FG and BG */
+	tmpPix=		pOld->colors[TEK_FG];
+	tmpName=	pOld->names[TEK_FG];
+	pOld->colors[TEK_FG]=	pOld->colors[TEK_BG];
+	pOld->names[TEK_FG]=	pOld->names[TEK_BG];
+	pOld->colors[TEK_BG]=	tmpPix;
+	pOld->names[TEK_BG]=	tmpName;
+    }
+    return;
+}
+
+Boolean
+AllocateColor(pTerm,pNew,ndx,name)
+XtermWidget	 pTerm;
+ScrnColors	*pNew;
+int		 ndx;
+char		*name;
+{
+XColor			 def;
+register TScreen	*screen=	&pTerm->screen;
+Colormap		 cmap=		pTerm->core.colormap;
+char			*newName;
+
+    if ((XParseColor(screen->display,cmap,name,&def))&&
+	(XAllocColor(screen->display,cmap,&def))) {
+	SET_COLOR_VALUE(pNew,ndx,def.pixel);
+	newName= XtMalloc(strlen(name)+1);
+	if (newName) {
+	    strcpy(newName,name);
+	    SET_COLOR_NAME(pNew,ndx,newName);
+	}
+	return(TRUE);
+    }
+    return(FALSE);
+}
+
+Boolean
+ChangeColorsRequest(pTerm,start,names)
+XtermWidget	pTerm;
+int		start;
+register char	*names;
+{
+char		*thisName;
+ScrnColors	newColors;
+int		i,ndx;
+
+    if ((pOldColors==NULL)&&(!GetOldColors(pTerm))) {
+	return(FALSE);
+    }
+    newColors.which=	0;
+    for (i=0;i<NCOLORS;i++) {
+	newColors.names[i]=	NULL;
+    }
+    for (i=start;i<NCOLORS;i++) {
+	if (term->misc.re_verse)	ndx=	OPPOSITE_COLOR(i);
+	else				ndx=	i;
+	if ((names==NULL)||(names[0]=='\0')) {
+	    newColors.names[ndx]=	NULL;
+	}
+	else {
+	    if (names[0]==';')
+		 thisName=	NULL;
+	    else thisName=	names;
+	    names=	index(names,';');
+	    if (names!=NULL) {
+		*names=	'\0';
+		names++;
+	    }
+	    if ((!pOldColors->names[ndx])||
+		(thisName&&(strcmp(thisName,pOldColors->names[ndx])))) {
+		AllocateColor(pTerm,&newColors,ndx,thisName);
+	    }
+	}
+    }
+
+    if (newColors.which==0)
+	return(TRUE);
+
+    ChangeColors(pTerm,&newColors);
+    UpdateOldColors(pTerm,&newColors);
+    return(TRUE);
+}
+
+/***====================================================================***/
 
 #ifndef DEBUG
 /* ARGSUSED */
