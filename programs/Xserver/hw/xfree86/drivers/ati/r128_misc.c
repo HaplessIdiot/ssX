@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.10 2000/10/30 23:02:12 tsi Exp $ */
+/* $XFree86$ */
 /*
- * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -23,61 +23,22 @@
 
 #ifdef XFree86LOADER
 
-#include "ati.h"
-#include "atimodule.h"
 #include "ativersion.h"
 
-/* Module loader interface */
+#include "r128_version.h"
 
-const char *ATISymbols[] =
-{
-    "ATIPreInit",
-    "ATIScreenInit",
-    "ATISwitchMode",
-    "ATIAdjustFrame",
-    "ATIEnterVT",
-    "ATILeaveVT",
-    "ATIFreeScreen",
-    "ATIValidMode",
-    NULL
-};
+#include "xf86.h"
 
-const char *R128Symbols[] =
-{
-    "R128PreInit",
-    "R128ScreenInit",
-    "R128SwitchMode",
-    "R128AdjustFrame",
-    "R128EnterVT",
-    "R128LeaveVT",
-    "R128FreeScreen",
-    "R128ValidMode",
-    "R128Options",
-    NULL
-};
+/* Module loader interface for subsidiary driver module */
 
-const char *RADEONSymbols[] =
+static XF86ModuleVersionInfo R128VersionRec =
 {
-    "RADEONPreInit",
-    "RADEONScreenInit",
-    "RADEONSwitchMode",
-    "RADEONAdjustFrame",
-    "RADEONEnterVT",
-    "RADEONLeaveVT",
-    "RADEONFreeScreen",
-    "RADEONValidMode",
-    "RADEONOptions",
-    NULL
-};
-
-static XF86ModuleVersionInfo ATIVersionRec =
-{
-    ATI_DRIVER_NAME,
+    R128_DRIVER_NAME,
     MODULEVENDORSTRING,
     MODINFOSTRING1,
     MODINFOSTRING2,
     XF86_VERSION_CURRENT,
-    ATI_VERSION_MAJOR, ATI_VERSION_MINOR, ATI_VERSION_PATCH,
+    R128_VERSION_MAJOR, R128_VERSION_MINOR, R128_VERSION_PATCH,
     ABI_CLASS_VIDEODRV,
     ABI_VIDEODRV_VERSION,
     MOD_CLASS_VIDEODRV,
@@ -85,12 +46,12 @@ static XF86ModuleVersionInfo ATIVersionRec =
 };
 
 /*
- * ATISetup --
+ * R128Setup --
  *
  * This function is called every time the module is loaded.
  */
 static pointer
-ATISetup
+R128Setup
 (
     pointer Module,
     pointer Options,
@@ -102,24 +63,21 @@ ATISetup
 
     if (!Inited)
     {
-        Inited = TRUE;
-        xf86AddDriver(&ATI, Module, 0);
+        /* Ensure main driver module is loaded, but not as a submodule */
+        if (!xf86ServerIsOnlyDetecting() && !LoaderSymbol(ATI_NAME))
+            xf86LoadOneModule(ATI_DRIVER_NAME, Options);
 
-        LoaderRefSymLists(
-            ATISymbols,
-            R128Symbols,
-            RADEONSymbols,
-            NULL);
+        Inited = TRUE;
     }
 
-    return (pointer)1;
+    return (pointer)TRUE;
 }
 
-/* The following record must be called atiModuleData */
-XF86ModuleData atiModuleData =
+/* The following record must be called r128ModuleData */
+XF86ModuleData r128ModuleData =
 {
-    &ATIVersionRec,
-    ATISetup,
+    &R128VersionRec,
+    R128Setup,
     NULL
 };
 

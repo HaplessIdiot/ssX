@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativersion.h,v 1.25 2000/10/30 23:02:12 tsi Exp $ */
+/* $XFree86$ */
 /*
- * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,19 +21,21 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATIVERSION_H___
-#define ___ATIVERSION_H___ 1
+#ifndef _R128_VERSION_H_
+#define _R128_VERSION_H_ 1
 
-#define ATI_NAME          "ATI"
-#define ATI_DRIVER_NAME   "ati"
+#define R128_NAME          "R128"
+#define R128_DRIVER_NAME   "r128"
 
-#define ATI_VERSION_NAME  "6.2.0"
+#define R128_VERSION_NAME  "4.0.1"
 
-#define ATI_VERSION_MAJOR 6
-#define ATI_VERSION_MINOR 2
-#define ATI_VERSION_PATCH 0
+#define R128_VERSION_MAJOR 4
+#define R128_VERSION_MINOR 0
+#define R128_VERSION_PATCH 1
 
-#define ATI_VERSION_CURRENT \
-    ((ATI_VERSION_MAJOR << 20) | (ATI_VERSION_MINOR << 10) | ATI_VERSION_PATCH)
+#define R128_VERSION_CURRENT \
+    ((R128_VERSION_MAJOR << 20) | \
+     (R128_VERSION_MINOR << 10) | \
+     (R128_VERSION_PATCH))
 
-#endif /* ___ATIVERSION_H___ */
+#endif /* _R128_VERSION_H_ */
