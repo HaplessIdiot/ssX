@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.58 2001/12/11 15:33:45 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.59 2001/12/13 18:01:50 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -446,7 +446,6 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case IMAGE975:
 	case IMAGE985:
 	case CYBER9388:
-        case CYBERBLADEXPAI1:
 	    if (pScrn->bitsPerPixel >= 8)
     	    	pReg->tridentRegs3CE[MiscExtFunc] |= 0x10;
 	    else
