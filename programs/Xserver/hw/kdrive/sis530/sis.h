@@ -1,5 +1,5 @@
 /*
- * $Id: sis.h,v 1.1 1999/11/19 13:53:58 hohndel Exp $
+ * $Id: sis.h,v 1.2 1999/12/30 03:03:14 robin Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/kdrive/sis530/sis.h,v 1.1 1999/11/19 13:53:58 hohndel Exp $ */
 
 #ifndef _SIS_H_
 #define _SIS_H_
@@ -1098,6 +1098,7 @@ void	sisRecolorCursor (ScreenPtr pScreen, int ndef, xColorItem *pdefs);
 
 Bool	sisDrawInit (ScreenPtr pScreen);
 void	sisDrawEnable (ScreenPtr pScreen);
+void	sisDrawSync (ScreenPtr pScreen);
 void	sisDrawDisable (ScreenPtr pScreen);
 void	sisDrawFini (ScreenPtr pScreen);
 

@@ -1,5 +1,5 @@
 /*
- * $Id: ts300.c,v 1.1 1999/11/19 13:54:06 hohndel Exp $
+ * $Id: ts300.c,v 1.2 1999/12/30 03:03:20 robin Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/kdrive/ts300/ts300.c,v 1.1 1999/11/19 13:54:06 hohndel Exp $ */
 
 #include "kdrive.h"
 
@@ -123,9 +123,8 @@ InitInput (int argc, char **argv)
     KdInitInput (&Ps2MouseFuncs, &LinuxKeyboardFuncs);
 }
 
-void
-OsVendorInit (void)
+int
+ddxProcessArgument (int argc, char **argv, int i)
 {
-    KdOsInit (&LinuxFuncs);
+    return KdProcessArgument (argc, argv, i);
 }
-
