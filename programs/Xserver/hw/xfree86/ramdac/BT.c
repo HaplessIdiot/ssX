@@ -23,7 +23,7 @@
  *
  * BT RAMDAC routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/BT.c,v 1.4 1998/08/20 08:56:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/BT.c,v 1.5 1998/12/06 06:08:36 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -117,6 +117,7 @@ BTramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/*, RamDacRecP
 	return NULL;
     }
 
+    ramdacHelperPtr = RamDacHelperCreateInfoRec();
     switch(BTramdac_ID) {
 	case BT485_RAMDAC:
 	    ramdacHelperPtr->SetBpp = BTramdacSetBpp;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.28 1999/01/03 03:58:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.29 1999/01/14 13:04:57 dawes Exp $ */
 
 /*
  *
@@ -213,20 +213,20 @@ LoaderInit(void)
 
     xf86MsgVerb(X_INFO, 2, "Module ABI versions:\n");
     xf86ErrorFVerb(2, "\tANSI C Emulation: %d.%d\n",
-			LoaderVersionInfo.ansicVersion >> 16,
-			LoaderVersionInfo.ansicVersion & 0xFFFF);
+			GET_ABI_MAJOR(LoaderVersionInfo.ansicVersion),
+			GET_ABI_MINOR(LoaderVersionInfo.ansicVersion));
     xf86ErrorFVerb(2, "\tXFree86 Video Driver: %d.%d\n",
-			LoaderVersionInfo.videodrvVersion >> 16,
-			LoaderVersionInfo.videodrvVersion & 0xFFFF);
+			GET_ABI_MAJOR(LoaderVersionInfo.videodrvVersion),
+			GET_ABI_MINOR(LoaderVersionInfo.videodrvVersion));
     xf86ErrorFVerb(2, "\tXInput Driver: %d.%d\n",
-			LoaderVersionInfo.xinputVersion >> 16,
-			LoaderVersionInfo.xinputVersion & 0xFFFF);
+			GET_ABI_MAJOR(LoaderVersionInfo.xinputVersion),
+			GET_ABI_MINOR(LoaderVersionInfo.xinputVersion));
     xf86ErrorFVerb(2, "\tServer Extension: %d.%d\n",
-			LoaderVersionInfo.extensionVersion >> 16,
-			LoaderVersionInfo.extensionVersion & 0xFFFF);
+			GET_ABI_MAJOR(LoaderVersionInfo.extensionVersion),
+			GET_ABI_MINOR(LoaderVersionInfo.extensionVersion));
     xf86ErrorFVerb(2, "\tFont Renderer: %d.%d\n",
-			LoaderVersionInfo.fontVersion >> 16,
-			LoaderVersionInfo.fontVersion & 0xFFFF);
+			GET_ABI_MAJOR(LoaderVersionInfo.fontVersion),
+			GET_ABI_MINOR(LoaderVersionInfo.fontVersion));
 #if defined(linux) && defined(__alpha__)
     /*
      * The glibc malloc uses mmap for large allocations anyway. This breaks

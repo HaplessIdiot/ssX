@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.34 1999/01/15 02:12:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.35 1999/01/15 02:51:57 dawes Exp $ */
 
 /*
  *
@@ -71,7 +71,8 @@ typedef struct _pattern {
 
 /* Prototypes for static functions */
 static char *FindModule (const char *, const char *, const char **, PatternPtr);
-static void CheckVersion (const char *, XF86ModuleVersionInfo *);
+static Bool CheckVersion (const char *, XF86ModuleVersionInfo *,
+				const XF86ModReqInfo *);
 static void UnloadModuleOrDriver (ModuleDescPtr mod);
 static char *LoaderGetCanonicalName(const char *, PatternPtr);
 static void RemoveChild(ModuleDescPtr);
@@ -534,8 +535,9 @@ FindModule (const char *module, const char *dir, const char **subdirlist,
 }
 #endif
 
-static void
-CheckVersion (const char *module, XF86ModuleVersionInfo *data)
+static Bool
+CheckVersion (const char *module, XF86ModuleVersionInfo *data,
+				const XF86ModReqInfo *req)
 {
 	int vercode[3];
 	char verstr[4];
@@ -560,58 +562,135 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data)
 	if (vercode[2] != 0)
 		xf86ErrorF(".%d", vercode[2]);
 	xf86ErrorF("%s%s, module version = %d.%d.%d\n", verstr, verstr + 2,
-		   data->majorversion, data->minorversion, data->patchlevel);
-	switch (data->abiclass)
-	{
-	case ABI_CLASS_NONE:
-		abiname = NULL;
-		break;
-	case ABI_CLASS_ANSIC:
-		abiname = "ANSI C Emulation";
-		ver = LoaderVersionInfo.ansicVersion;
-		break;
-	case ABI_CLASS_VIDEODRV:
-		abiname = "XFree86 Video Driver";
-		ver = LoaderVersionInfo.videodrvVersion;
-		break;
-	case ABI_CLASS_XINPUT:
-		abiname = "XInput Driver";
-		ver = LoaderVersionInfo.xinputVersion;
-		break;
-	case ABI_CLASS_EXTENSION:
-		abiname = "Server Extension";
-		ver = LoaderVersionInfo.extensionVersion;
-		break;
-	case ABI_CLASS_FONT:
-		abiname = "Font Renderer";
-		ver = LoaderVersionInfo.fontVersion;
-		break;
-	default:
-		/* XXX This should be an error condition */
-		abiname = NULL;
-		xf86MsgVerb(X_WARNING, 0,
-			    "Unknown ABI class (%d) for module \"%s\"\n",
-			    data->abiclass, data->modname);
+			data->majorversion, data->minorversion, data->patchlevel);
+
+	if (!data->abivendor) {
+		switch (data->abiclass)
+		{
+		case ABI_CLASS_NONE:
+			abiname = NULL;
+			break;
+		case ABI_CLASS_ANSIC:
+			abiname = "ANSI C Emulation";
+			ver = LoaderVersionInfo.ansicVersion;
+			break;
+		case ABI_CLASS_VIDEODRV:
+			abiname = "XFree86 Video Driver";
+			ver = LoaderVersionInfo.videodrvVersion;
+			break;
+		case ABI_CLASS_XINPUT:
+			abiname = "XInput Driver";
+			ver = LoaderVersionInfo.xinputVersion;
+			break;
+		case ABI_CLASS_EXTENSION:
+			abiname = "Server Extension";
+			ver = LoaderVersionInfo.extensionVersion;
+			break;
+		case ABI_CLASS_FONT:
+			abiname = "Font Renderer";
+			ver = LoaderVersionInfo.fontVersion;
+			break;
+		default:
+			/* XXX This should be an error condition */
+			abiname = NULL;
+			xf86MsgVerb(X_WARNING, 0,
+			    	"Unknown ABI class (%d) for module \"%s\"\n",
+			    	data->abiclass, data->modname);
+		}
+	} else {
+		abiname = data->abivendor;
 	}
 	if (abiname) {
+		int abimaj, abimin;
+		int vermaj, vermin;
+
+		abimaj = GET_ABI_MAJOR(data->abiversion);
+		abimin = GET_ABI_MINOR(data->abiversion);
+		vermaj = GET_ABI_MAJOR(ver);
+		vermin = GET_ABI_MINOR(ver);
 		xf86ErrorFVerb(2, "\tABI class: %s, version %d.%d\n",
-			       abiname, data->abiversion >> 16,
-			       data->abiversion & 0xFFFF);
-		if ((data->abiversion >> 16) != (ver >> 16)) {
-			/* XXX This should be an error condition */
-			xf86MsgVerb(X_WARNING, 0,
-				"module ABI major version (%d) doesn't"
-				" match the server's version (%d)\n",
-				data->abiversion >> 16, ver >> 16);
-		} else if ((data->abiversion & 0xFFFF) > (ver & 0xFFFF)) {
-			/* XXX This should be an error condition */
-			xf86MsgVerb(X_WARNING, 0,
-				"module ABI minor version (%d) is "
-				"newer than the server's version "
-				"(%d)\n", data->abiversion & 0xFFFF,
-				ver & 0xFFFF);
+			       abiname, abimaj, abimin);
+		if (!data->abivendor) {
+			if (abimaj != vermaj) {
+				/* XXX This should be an error condition */
+				xf86MsgVerb(X_WARNING, 0,
+					"module ABI major version (%d) doesn't"
+					" match the server's version (%d)\n",
+					abimaj, vermaj);
+			} else if (abimin > vermin) {
+				/* XXX This should be an error condition */
+				xf86MsgVerb(X_WARNING, 0,
+					"module ABI minor version (%d) is "
+					"newer than the server's version "
+					"(%d)\n", data->abiversion & 0xFFFF,
+					ver & 0xFFFF);
+			}
 		}
 	}
+
+	/* Check against requirements that the caller has specified */
+	if (req) {
+		if (req->majorversion != MAJOR_UNSPEC) {
+			if (data->majorversion != req->majorversion) {
+				xf86MsgVerb(X_WARNING, 2, "module major version (%d) "
+							"doesn't match required major version (%d)\n",
+							data->majorversion, req->majorversion);
+				return FALSE;
+			} else if (req->minorversion != MINOR_UNSPEC) {
+				if (data->minorversion < req->minorversion) {
+					xf86MsgVerb(X_WARNING, 2, "module minor version (%d) "
+							"is less than the required minor version (%d)\n",
+							data->minorversion, req->minorversion);
+					return FALSE;
+				} else if (data->minorversion == req->minorversion &&
+						   req->patchlevel != PATCH_UNSPEC) {
+					if (data->patchlevel < req->patchlevel) {
+						xf86MsgVerb(X_WARNING, 2, "module patch level (%d) "
+								"is less than the required patch level (%d)\n",
+								data->patchlevel, req->patchlevel);
+						return FALSE;
+					}
+				}
+			}
+		}
+		if (req->abivendor) {
+			if (!data->abivendor || strcmp(req->abivendor, data->abivendor)) {
+				xf86MsgVerb(X_WARNING, 2, "vendor ABI (%s) doesn't match the "
+							"required vendor ABI (%s)\n", data->abivendor,
+							req->abivendor);
+				return FALSE;
+			}
+		} else if (req->abiclass != ABI_CLASS_NONE) {
+			if (data->abiclass != req->abiclass) {
+				xf86MsgVerb(X_WARNING, 2, "ABI class (%d) doesn't match the "
+							"required ABI class (%d)\n", data->abiclass,
+							req->abiclass);
+				return FALSE;
+			}
+		}
+		if ((req->abivendor || req->abiclass != ABI_CLASS_NONE) &&
+			req->abiversion != ABI_VERS_UNSPEC) {
+			int reqmaj, reqmin, maj, min;
+			reqmaj = GET_ABI_MAJOR(req->abiversion);
+			reqmin = GET_ABI_MINOR(req->abiversion);
+			maj = GET_ABI_MAJOR(data->abiversion);
+			min = GET_ABI_MINOR(data->abiversion);
+			if (maj != reqmaj) {
+				xf86MsgVerb(X_WARNING, 2, "ABI major version (%d) doesn't "
+							"match the required ABI major version (%d)\n",
+							maj, reqmaj);
+				return FALSE;
+			}
+			/* XXX Maybe this should be the other way around? */
+			if (min > reqmin) {
+				xf86MsgVerb(X_WARNING, 2, "module ABI minor version (%d) "
+							"is new than that available (%d)\n",
+							min, reqmin);
+				return FALSE;
+			}
+		}
+	}
+
 #if NOTYET
 	if (data->checksum)
 	{
@@ -623,12 +702,14 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data)
 		ErrorF ("\t*** Checksum field is 0 - this module is untrusted!\n");
 	}
 #endif
+    return TRUE;
 }
 
 ModuleDescPtr
 LoadSubModule(ModuleDescPtr parent, const char *module, const char *path,
 	      const char **subdirlist, const char **patternlist,
-	      pointer options, int *errmaj, int *errmin)
+	      pointer options, const XF86ModReqInfo *modreq,
+	      int *errmaj, int *errmin)
 {
 	ModuleDescPtr submod;
 
@@ -638,7 +719,7 @@ LoadSubModule(ModuleDescPtr parent, const char *module, const char *path,
 		path = parent->path;
 
 	submod = LoadModule (module, path, subdirlist, patternlist, options,
-						 errmaj, errmin);
+						 modreq, errmaj, errmin);
 	if (submod) {
 		parent->child = AddSibling (parent->child, submod);
 		submod->parent = parent;
@@ -707,7 +788,7 @@ DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent)
 /*
  * LoadModule: load a module
  *
- * module      	The module name.  Normally this is not a filename but the
+ * module       The module name.  Normally this is not a filename but the
  *              module's "canonical name.  A full pathname is, however,
  *              also accepted.
  * path         A comma separated list of module directories.  This argument
@@ -723,6 +804,21 @@ DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent)
  *              DEFAULT_LIST.
  * options      A NULL terminated list of Options that are passed to the
  *              module's SetupProc function.
+ * modreq       An optional XF86ModReqInfo* containing
+ *              version/ABI/vendor-ABI requirements to check for when
+ *              loading the module.  The following fields of the
+ *              XF86ModReqInfo struct are checked:
+ *                majorversion - must match the module's majorversion exactly
+ *                minorversion - the module's minorversion must be >= this
+ *                patchlevel   - the module's minorversion.patchlevel must be
+ *                               >= this.  Patchlevel is ignored when
+ *                               minorversion is not set.
+ *                abiclass     - must match the module's abiclass
+ *                abiversion   - must be consistent with the module's
+ *                               abiversion (major equal, minor no older)
+ *                abivendor    - string must match the module's abivendor
+ *                               string
+ *              "don't care" values are ~0 for numbers, and NULL for strings
  * errmaj       Major error return.
  * errmin       Minor error return.
  *
@@ -731,6 +827,7 @@ DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent)
 ModuleDescPtr
 LoadModule (const char *module, const char *path, const char **subdirlist,
 			const char **patternlist, pointer options,
+			const XF86ModReqInfo * modreq,
 			int *errmaj, int *errmin)
 {
 	ModuleInitProc initfunc = NULL;
@@ -838,7 +935,13 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 		initfunc(&vers, &setup, &teardown);
 		if (!wasLoaded) {
 			if (vers) {
-				CheckVersion (module, vers);
+				if (!CheckVersion (module, vers, modreq)) {
+					if (errmaj)
+						*errmaj = LDR_MISMATCH;
+					if (errmin)
+						*errmin = 0;
+					goto LoadModule_fail;
+				}
 			} else {
 				xf86Msg(X_WARNING,
 					"LoadModule: Module %s does not supply"
@@ -903,7 +1006,7 @@ ModuleDescPtr
 LoadDriver (const char *module, const char *path, int handle, pointer options,
 	    int *errmaj, int *errmin)
 {
-return LoadModule (module, path, NULL, NULL, options, errmaj, errmin);
+return LoadModule (module, path, NULL, NULL, options, NULL, errmaj, errmin);
 }
 
 void
@@ -1083,11 +1186,18 @@ LoaderErrorMsg(const char *name, const char *modname, int errmaj, int errmin)
 	case LDR_NOHARDWARE:
 		msg = "no hardware found";
 		break;
+	case LDR_MISMATCH:
+		msg = "module requirement mismatch";
+		break;
 	default:
 		msg = "uknown error";
 	}
-	xf86Msg(X_ERROR, "%s: Failed to load module \"%s\" (%s, %d)\n",
-		name, modname, msg, errmin);
+	if (name)
+		xf86Msg(X_ERROR, "%s: Failed to load module \"%s\" (%s, %d)\n",
+			name, modname, msg, errmin);
+	else
+		xf86Msg(X_ERROR, "Failed to load module \"%s\" (%s, %d)\n",
+			modname, msg, errmin);
 }
 
 

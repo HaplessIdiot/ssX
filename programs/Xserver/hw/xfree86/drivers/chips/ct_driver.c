@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.45 1999/01/14 13:04:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.46 1999/01/15 02:27:13 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -665,6 +665,7 @@ static XF86ModuleVersionInfo chipsVersRec =
 	CHIPS_MAJOR_VERSION, CHIPS_MINOR_VERSION, CHIPS_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,
 	ABI_VIDEODRV_VERSION,
+	NULL,
 	{0,0,0,0}
 };
 

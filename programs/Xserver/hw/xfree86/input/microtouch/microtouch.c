@@ -48,7 +48,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.c,v 1.2 1998/12/13 10:33:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.c,v 1.3 1999/01/14 13:04:46 dawes Exp $ */
 
 #define _microtouch_C_
 /*****************************************************************************
@@ -85,6 +85,7 @@ static XF86ModuleVersionInfo VersionRec =
 	1, 0, 0,
 	ABI_CLASS_XINPUT,
 	ABI_XINPUT_VERSION,
+	NULL,
 	{0, 0, 0, 0}				/* signature, to be patched into the file by
 								 * a tool */
 };

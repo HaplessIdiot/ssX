@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.10 1999/01/03 03:58:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.11 1999/01/15 02:12:39 dawes Exp $ */
 
 /*
  *
@@ -54,10 +54,11 @@ void LoaderInit(void);
 ModuleDescPtr LoadDriver(const char *, const char *, int, pointer, int *,
 			 int *);
 ModuleDescPtr LoadModule(const char *, const char *, const char **,
-			 const char **, pointer, int *, int *);
+			 const char **, pointer, const XF86ModReqInfo *,
+			 int *, int *);
 ModuleDescPtr LoadSubModule(ModuleDescPtr, const char *, const char *,
 			    const char **, const char **, pointer,
-			    int *, int *);
+			    const XF86ModReqInfo *, int *, int *);
 ModuleDescPtr DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent);
 void LoadFont (FontModule *);
 void UnloadModule (ModuleDescPtr);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbmodule.c,v 1.3 1998/07/26 02:33:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbmodule.c,v 1.4 1998/12/13 10:33:53 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -40,6 +40,7 @@ static XF86ModuleVersionInfo VersRec =
         1, 0, 0,
 	ABI_CLASS_ANSIC,		/* Only need the ansic layer */
 	ABI_ANSIC_VERSION,
+	NULL,
         {0,0,0,0}       /* signature, to be patched into the file by a tool */
 };
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/record/recordmod.c,v 1.2 1998/08/13 14:46:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/record/recordmod.c,v 1.3 1998/12/13 10:33:53 dawes Exp $ */
 
 #include "xf86Module.h"
 
@@ -25,6 +25,7 @@ static XF86ModuleVersionInfo VersRec = {
 	1, 13, 0,
 	ABI_CLASS_EXTENSION,
 	ABI_EXTENSION_VERSION,
+	NULL,
 	{0,0,0,0}
 };
 

@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/sample/sample.c,v 1.2 1998/12/13 10:33:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/sample/sample.c,v 1.3 1999/01/14 13:04:47 dawes Exp $ */
 
 #define _SAMPLE_C_
 /*****************************************************************************
@@ -61,6 +61,7 @@ static XF86ModuleVersionInfo VersionRec =
 	1, 0, 0,
 	ABI_CLASS_XINPUT,
 	ABI_XINPUT_VERSION,
+	NULL,
 	{0, 0, 0, 0}				/* signature, to be patched into the file by
 								 * a tool */
 };

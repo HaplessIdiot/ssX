@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.13 1998/11/29 10:50:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.14 1999/01/14 13:04:27 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -313,6 +313,11 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		pReg->Option  = 0x400FCC21;
 		pReg->Option2 = 0x00008000;
 #endif
+		/* should this apply to the G100 as well? */
+		if(pMga->HasSDRAM)
+		    pReg->Option &= ~0x00004000;
+		else
+		    pReg->Option |= 0x00004000;
 		break;
 	}
 	

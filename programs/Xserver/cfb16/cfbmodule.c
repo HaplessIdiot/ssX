@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb16/cfbmodule.c,v 1.4 1998/12/13 10:33:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb16/cfbmodule.c,v 1.5 1999/01/03 03:58:20 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -50,6 +50,7 @@ static XF86ModuleVersionInfo VersRec =
 	1, 0, 0,
 	ABI_CLASS_ANSIC,		/* Only need the ansic layer */
 	ABI_ANSIC_VERSION,
+	NULL,
 	{0,0,0,0}       /* signature, to be patched into the file by a tool */
 };
 
@@ -66,7 +67,8 @@ static pointer
 cfb16Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     /* This modules requires cfb, so load it */
-    return LoadSubModule(module, "cfb", NULL, NULL, NULL, NULL, errmaj, errmin);
+    return LoadSubModule(module, "cfb", NULL, NULL, NULL, NULL, NULL,
+			 errmaj, errmin);
 }
 
 #endif
