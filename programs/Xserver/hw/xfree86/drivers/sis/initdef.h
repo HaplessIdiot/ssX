@@ -93,7 +93,7 @@
 #define SupportTV               0x0008
 #define SupportHiVisionTV       0x0010
 #define SupportLCD              0x0020
-#define SupportRAMDAC2          0x0040  
+#define SupportRAMDAC2          0x0040
 #define NoSupportTV             0x0070
 #define NoSupportHiVisionTV     0x0060
 #define NoSupportLCD            0x0058
@@ -260,7 +260,7 @@
 #define Panel300_1024x600       0x06
 #define Panel300_1152x768       0x07
 #define Panel300_1280x768       0x0a
-#define Panel300_320x480        0x0c 	/* fstn - TW: This is fake, can be any */
+#define Panel300_320x480        0x0e 	/* fstn - TW: This is fake, can be any */
 #define Panel300_Custom		0x0f
 
 #define Panel310_800x600        0x01
@@ -274,7 +274,9 @@
 #define Panel310_1400x1050      0x09
 #define Panel310_1280x768       0x0a
 #define Panel310_1600x1200      0x0b
-#define Panel310_320x480        0x0c    /* fstn - TW: This is fake, can be any */
+#define Panel310_640x480_2      0x0c
+#define Panel310_640x480_3      0x0d
+#define Panel310_320x480        0x0e    /* fstn - TW: This is fake, can be any */
 #define Panel310_Custom		0x0f
 
 #define Panel_800x600           0x01	/* Unified values */
@@ -288,7 +290,9 @@
 #define Panel_1400x1050         0x09
 #define Panel_1280x768          0x0a    /* LVDS only */
 #define Panel_1600x1200         0x0b
-#define Panel_320x480           0x0c    /* fstn - TW: This is fake, can be any */
+#define Panel_640x480_2		0x0c
+#define Panel_640x480_3		0x0d
+#define Panel_320x480           0x0e    /* fstn - TW: This is fake, can be any */
 #define Panel_Custom		0x0f
 
 /* Index in ModeResInfo table */
@@ -353,6 +357,7 @@
 
 /* Indices in (VB)VCLKData tables */
 
+#define VCLK28                  0x00   /* Index in VCLKData table (300 and 315) */
 #define VCLK40                  0x04   /* Index in VCLKData table (300 and 315) */
 #define VCLK65_300              0x09   /* Index in VCLKData table (300) */
 #define VCLK108_2_300           0x14   /* Index in VCLKData table (300) */

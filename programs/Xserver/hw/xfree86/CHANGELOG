@@ -1,4 +1,9 @@
 XFree86 4.3.99.5 (xx May 2003)
+ 179. SiS driver update
+       - Allow Modelines for LCD and secondary VGA on 301B
+       - Support plasma panels natively (including a small
+         database for some known panels since some panels
+	 report wrong timing data via DDC)
  178. DRM resync from the DRI trunk...
        - Lots of fixes/cleanups/resyncs for the BSD DRM drivers (Eric Anholt).
        - Fix potential oops and memory leaks when allocations fail in
@@ -16991,7 +16996,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2698 2003/05/20 21:44:45 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2699 2003/05/20 21:59:29 dawes Exp $
 
 
 

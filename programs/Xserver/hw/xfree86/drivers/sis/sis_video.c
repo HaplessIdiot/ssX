@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.13 2003/05/06 15:40:17 twini Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.4 2001/06/15 21:23:00 dawes Exp $ */
 /*
  * Xv driver for SiS 300, 315 and 330 series.
  *
@@ -350,8 +350,8 @@ static XF86AttributeRec SISAttributes_315[NUM_ATTRIBUTES_315] =
 };
 
 #define NUM_IMAGES_300 6
-#define NUM_IMAGES_315 7
-#define NUM_IMAGES_330 9
+#define NUM_IMAGES_315 7	    /* NV12 only - but does not work */
+#define NUM_IMAGES_330 9  	    /* NV12 and NV21 */
 #define PIXEL_FMT_YV12 FOURCC_YV12  /* 0x32315659 */
 #define PIXEL_FMT_UYVY FOURCC_UYVY  /* 0x59565955 */
 #define PIXEL_FMT_YUY2 FOURCC_YUY2  /* 0x32595559 */
@@ -1060,6 +1060,9 @@ SISSetupImageVideo(ScreenPtr pScreen)
        DummyEncoding.height = IMAGE_MAX_HEIGHT_315;
        pPriv->linebufmask = 0xb1;
        if(pPriv->hasTwoOverlays) {
+          /* Only half width available if both overlays
+	   * are going to be used
+	   */
 #ifdef SISDUALHEAD
           if(pSiS->DualHeadMode) {
              DummyEncoding.width >>= 1;
@@ -2432,7 +2435,7 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 #endif
           overlay.PSY >>= pPriv->shiftValue;
           overlay.PSV >>= pPriv->shiftValue;
-          overlay.PSU = overlay.PSV;
+          overlay.PSU = overlay.PSV; 
 #ifdef SISMERGED
        }
        if((pSiS->MergedFB) && (overlay.DoSecond)) {
@@ -2886,26 +2889,14 @@ SISPutImage(
       memcpy(pSiS->FbBase + pPriv->bufAddr[pPriv->currentBuf], buf, totalSize);
    } else {
       unsigned long i;
-#if 0
-      if(pSiS->sishw_ext.jChipType == SIS_730 || pSiS->sishw_ext.jChipType == SIS_740) {
-         char *dest = (char *)(pSiS->FbBase + pPriv->bufAddr[pPriv->currentBuf]);
-         char *src  = (char *)buf;
-         for(i = 0; i < totalSize; i++) {
-            dest[i] = src[i];
-         }
-      } else {
-#endif
-         CARD32 *src = (CARD32 *)buf;
-	 CARD32 *dest = (CARD32 *)(pSiS->FbBase + pPriv->bufAddr[pPriv->currentBuf]);
-         for(i = 0; i < (totalSize/16); i++) {
-            *dest++ = *src++;
-	    *dest++ = *src++;
-	    *dest++ = *src++;
-	    *dest++ = *src++;
-         }
-#if 0
+      CARD32 *src = (CARD32 *)buf;
+      CARD32 *dest = (CARD32 *)(pSiS->FbBase + pPriv->bufAddr[pPriv->currentBuf]);
+      for(i = 0; i < (totalSize/16); i++) {
+         *dest++ = *src++;
+	 *dest++ = *src++;
+	 *dest++ = *src++;
+	 *dest++ = *src++;
       }
-#endif
    }
 
    SISDisplayVideo(pScrn, pPriv);

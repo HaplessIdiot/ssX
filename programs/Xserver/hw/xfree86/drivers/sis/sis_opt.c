@@ -50,7 +50,6 @@ typedef enum {
     OPTION_VESA,
     OPTION_MAXXFBMEM,
     OPTION_FORCECRT1,
-    OPTION_DSTN,
     OPTION_XVONCRT2,
     OPTION_PDC,
     OPTION_TVSTANDARD,
@@ -85,6 +84,7 @@ typedef enum {
     OPTION_USERGBCURSORBLENDTH,
     OPTION_RESTOREBYSET,
     OPTION_NODDCFORCRT2,
+    OPTION_FORCECRT2REDETECTION,
     OPTION_CRT1GAMMA,
     OPTION_CRT2GAMMA,
     OPTION_XVDEFCONTRAST,
@@ -127,7 +127,6 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_VESA,			"Vesa",		          OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_MAXXFBMEM,         	"MaxXFBMem",              OPTV_INTEGER,   {0}, -1    },
     { OPTION_FORCECRT1,         	"ForceCRT1",              OPTV_BOOLEAN,   {0}, FALSE },
-    { OPTION_DSTN,              	"DSTN",                   OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_XVONCRT2,          	"XvOnCRT2",               OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_PDC,               	"PanelDelayCompensation", OPTV_INTEGER,   {0}, -1    },
     { OPTION_TVSTANDARD,        	"TVStandard",             OPTV_STRING,    {0}, -1    },
@@ -162,6 +161,7 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_USERGBCURSORBLENDTH,	"ColorHWCursorBlendThreshold", 	  OPTV_INTEGER,   {0}, -1    },
     { OPTION_RESTOREBYSET,		"RestoreBySetMode", 	  OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_NODDCFORCRT2,		"NoCRT2Detection", 	  OPTV_BOOLEAN,   {0}, -1    },
+    { OPTION_FORCECRT2REDETECTION,	"ForceCRT2ReDetection",   OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_CRT1GAMMA,			"CRT1Gamma", 	  	  OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_CRT2GAMMA,			"CRT2Gamma", 	  	  OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_XVDEFCONTRAST,		"XvDefaultContrast", 	  OPTV_INTEGER,   {0}, -1    },
@@ -223,6 +223,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->maxxfbmem = 0;
     pSiS->forceCRT1 = -1;
     pSiS->DSTN = FALSE;
+    pSiS->FSTN = FALSE;
     pSiS->XvOnCRT2 = FALSE;
     pSiS->NoYV12 = -1;
     pSiS->PDC = -1;
@@ -254,6 +255,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->chtvtype = -1;
     pSiS->restorebyset = TRUE;
     pSiS->nocrt2ddcdetection = FALSE;
+    pSiS->forcecrt2redetection = FALSE;
     pSiS->ForceCRT2Type = CRT2_DEFAULT;
     pSiS->ForceTVType = -1;
     pSiS->CRT1gamma = TRUE;
@@ -561,6 +563,9 @@ SiSOptions(ScrnInfoPtr pScrn)
        if(xf86GetOptValBool(pSiS->Options, OPTION_NODDCFORCRT2, &val)) {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "NoCRT2Detection");
        }
+       if(xf86GetOptValBool(pSiS->Options, OPTION_FORCECRT2REDETECTION, &val)) {
+          xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "ForceCRT2ReDetection");
+       }
        if(xf86GetOptValString(pSiS->Options, OPTION_FORCE_CRT2TYPE)) {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "ForceCRT2Type");
        }
@@ -569,11 +574,6 @@ SiSOptions(ScrnInfoPtr pScrn)
        }
        if(xf86GetOptValInteger(pSiS->Options, OPTION_PDC, &vali)) {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "PanelDelayCompensation");
-       }
-       if(pSiS->Chipset == PCI_CHIP_SIS550) {
-          if(xf86GetOptValBool(pSiS->Options, OPTION_DSTN, &val)) {
-             xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "DSTN");
-	  }
        }
        if(xf86GetOptValString(pSiS->Options, OPTION_TVSTANDARD)) {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "TVStandard");
@@ -733,7 +733,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 	         val ? "ON" : "OFF");
 	  }
 
-	 /* NoCRT2DDCDetection (300/315/330 series only)
+	 /* NoCRT2DDCDetection (315/330 series only)
           * TW: If set to true, this disables CRT2 detection using DDC. This is
           *     to avoid problems with not entirely DDC compiant LCD panels or
           *     VGA monitors connected to the secondary VGA plug. Since LCD and
@@ -743,6 +743,22 @@ SiSOptions(ScrnInfoPtr pScrn)
           if(xf86GetOptValBool(pSiS->Options, OPTION_NODDCFORCRT2, &val)) {
              if(val) pSiS->nocrt2ddcdetection = TRUE;
 	     else    pSiS->nocrt2ddcdetection = FALSE;
+          }
+
+	 /* ForceCRT2ReDetection (315/330 series only)
+          * TW: If set to true, it forces re-detection of the LCD panel and
+	  *     a secondary VGA connection even if the BIOS already had found
+	  *     about it. This is meant for custom panels (ie such with
+	  *     non-standard resolutions) which the BIOS will "detect" according
+	  *     to the established timings, resulting in only a very vague idea
+	  *     about the panels real resolution. As for secondary VGA, this
+	  *     enables us to include a Plasma panel's proprietary modes.
+          */
+          if(xf86GetOptValBool(pSiS->Options, OPTION_FORCECRT2REDETECTION, &val)) {
+             if(val) {
+	             pSiS->forcecrt2redetection = TRUE;
+		     pSiS->nocrt2ddcdetection = FALSE;
+	     } else  pSiS->forcecrt2redetection = FALSE;
           }
 
 	 /* ForceCRT2Type (300/315/330 series only)
@@ -773,12 +789,21 @@ SiSOptions(ScrnInfoPtr pScrn)
                 pSiS->ForceCRT2Type = CRT2_VGA;
              else if((!strcmp(strptr,"NONE")) || (!strcmp(strptr,"none")))
                 pSiS->ForceCRT2Type = 0;
-	     else {
+	     else if(pSiS->Chipset == PCI_CHIP_SIS550) {
+	        if((!strcmp(strptr,"DSTN")) || (!strcmp(strptr,"dstn"))) {
+		   pSiS->ForceCRT2Type = CRT2_LCD;
+		   pSiS->DSTN = TRUE;
+		} else if((!strcmp(strptr,"FSTN")) || (!strcmp(strptr,"fstn"))) {
+		   pSiS->ForceCRT2Type = CRT2_LCD;
+		   pSiS->FSTN = TRUE;
+		}
+	     } else {
 	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 	      	    "\"%s\" is not a valid parameter for Option \"ForceCRT2Type\"\n", strptr);
 	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	            "Valid parameters are \"LCD\" (= \"DVI-D\"), \"TV\", \"SVIDEO\", \"COMPOSITE\", "
-		    "\"SCART\", \"VGA\" (= \"DVI-A\") or \"NONE\"\n");
+	            "Valid parameters are \"LCD\" (=\"DVI-D\"), \"TV\", \"SVIDEO\", \"COMPOSITE\", "
+		    "\"SCART\", \"VGA\" (=\"DVI-A\") or \"NONE\", on the SiS550 also \"DSTN\" "
+		    "and \"FSTN\"\n");
 	     }
 
              if(pSiS->ForceCRT2Type != CRT2_DEFAULT)
@@ -823,22 +848,6 @@ SiSOptions(ScrnInfoPtr pScrn)
 
        }
 
-       if(pSiS->Chipset == PCI_CHIP_SIS550) {
-         /* TW: SiS 550 DSTN/FSTN
-          *     This is for notifying the driver to use the DSTN registers on 550.
-          *     DSTN/FSTN is a special LCD port of the SiS550 (notably not the 551
-          *     and 552, which I don't know how to detect) that uses an extended
-          *     register range. The only effect of this option is that the driver
-          *     saves and restores these registers. DSTN display modes are chosen
-          *     by using resultion 320x480x8 or 320x480x16.
-          */
-          if(xf86ReturnOptValBool(pSiS->Options, OPTION_DSTN, FALSE)) {
-             pSiS->DSTN = TRUE;
-             xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "SiS 550 DSTN/FSTN enabled\n");
-          } else {
-	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "SiS 550 DSTN/FSTN disabled\n");
-          }
-       }
 
       /* TVStandard (300/315/330 series and 6326 w/ TV only)
        * TW: This option is for overriding the autodetection of

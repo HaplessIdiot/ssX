@@ -599,44 +599,44 @@ static void
 SiS300LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 {
     SISPtr pSiS = SISPTR(pScrn);
-    DisplayModePtr  mode = pSiS->CurrentLayout.mode; /* pScrn->currentMode; */
     int cursor_addr;
     CARD32 status1 = 0, status2 = 0;
-
+    unsigned char *dest = pSiS->FbBase;
+    BOOLEAN sizedouble = FALSE;
 #ifdef SISDUALHEAD
     SISEntPtr pSiSEnt = pSiS->entityPrivate;
 #endif
-    
+
+#ifdef SISMERGED
+    if(pSiS->MergedFB) {
+       if((CDMPTR->CRT1->Flags & V_DBLSCAN) && (CDMPTR->CRT2->Flags & V_DBLSCAN)) {
+          sizedouble = TRUE;
+       }
+    } else
+#endif
+           if(pSiS->CurrentLayout.mode->Flags & V_DBLSCAN) {
+       sizedouble = TRUE;
+    }
+
     cursor_addr = pScrn->videoRam - pSiS->cursorOffset - (pSiS->CursorSize/1024);  /* 1K boundary */
 
 #ifdef SISDUALHEAD
-    if(pSiS->DualHeadMode) {
-    	/* TW: Use the global (real) FbBase in DHM */
-	if(mode->Flags & V_DBLSCAN) {
-           int i;
-           for(i = 0; i < 32; i++) {
-              memcpy((unsigned char *)pSiSEnt->FbBase + (cursor_addr * 1024) + (32 * i),
-	               src + (16 * i), 16);
-              memcpy((unsigned char *)pSiSEnt->FbBase + (cursor_addr * 1024) + (32 * i) + 16,
-	 	       src + (16 * i), 16);
-           }
-        } else {
-    	   memcpy((unsigned char *)pSiSEnt->FbBase + (cursor_addr * 1024), src, 1024);
-	}
-    } else 
+    /* TW: Use the global (real) FbBase in DHM */
+    if(pSiS->DualHeadMode) dest = pSiSEnt->FbBase;
 #endif
-      if(mode->Flags & V_DBLSCAN) {
-        int i;
-        for(i = 0; i < 32; i++) {
-           memcpy((unsigned char *)pSiS->FbBase + (cursor_addr * 1024) + (32 * i),
-	            src + (16 * i), 16);
-           memcpy((unsigned char *)pSiS->FbBase + (cursor_addr * 1024) + (32 * i) + 16,
-	 	    src + (16 * i), 16);
-        }
+
+    if(sizedouble) {
+       int i;
+       for(i = 0; i < 32; i++) {
+          memcpy((unsigned char *)dest + (cursor_addr * 1024) + (32 * i),
+	           src + (16 * i), 16);
+          memcpy((unsigned char *)dest + (cursor_addr * 1024) + (32 * i) + 16,
+	           src + (16 * i), 16);
+       }
     } else {
-    	memcpy((unsigned char *)pSiS->FbBase + (cursor_addr * 1024), src, 1024);
+       memcpy((unsigned char *)dest + (cursor_addr * 1024), src, 1024);
     }
-    
+
     if(pSiS->UseHWARGBCursor) {
         if(pSiS->VBFlags & DISPTYPE_CRT1) {
 	   status1 = sis300GetCursorStatus;
@@ -676,42 +676,44 @@ static void
 SiS310LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 {
     SISPtr pSiS = SISPTR(pScrn);
-    DisplayModePtr  mode = pSiS->CurrentLayout.mode; /* pScrn->currentMode; */
     int cursor_addr;
     CARD32 status1 = 0, status2 = 0;
-
+    unsigned char *dest = pSiS->FbBase;
+    BOOLEAN sizedouble = FALSE;
 #ifdef SISDUALHEAD
     SISEntPtr pSiSEnt = pSiS->entityPrivate;
 #endif
 
+#ifdef SISMERGED
+    if(pSiS->MergedFB) {
+       if((CDMPTR->CRT1->Flags & V_DBLSCAN) && (CDMPTR->CRT2->Flags & V_DBLSCAN)) {
+          sizedouble = TRUE;
+       }
+    } else
+#endif
+           if(pSiS->CurrentLayout.mode->Flags & V_DBLSCAN) {
+       sizedouble = TRUE;
+    }
+
     cursor_addr = pScrn->videoRam - pSiS->cursorOffset - (pSiS->CursorSize/1024); /* 1K boundary */
 
 #ifdef SISDUALHEAD
-    if (pSiS->DualHeadMode) {
-    	/* TW: Use the global (real) FbBase in DHM */
-	if(mode->Flags & V_DBLSCAN) {
-           int i;
-           for(i = 0; i < 32; i++) {
-              memcpy((unsigned char *)pSiSEnt->FbBase + (cursor_addr * 1024) + (32 * i),
-	               src + (16 * i), 16);
-              memcpy((unsigned char *)pSiSEnt->FbBase + (cursor_addr * 1024) + (32 * i) + 16,
-	 	       src + (16 * i), 16);
-           }
-        } else {
-    	   memcpy((unsigned char *)pSiSEnt->FbBase + (cursor_addr * 1024), src, 1024);
-	}
-    } else
+    /* TW: Use the global (real) FbBase in DHM */
+    if(pSiS->DualHeadMode) dest = pSiSEnt->FbBase;
 #endif
-      if(mode->Flags & V_DBLSCAN) {
-        int i;
-        for(i = 0; i < 32; i++) {
-           memcpy((unsigned char *)pSiS->FbBase + (cursor_addr * 1024) + (32 * i),
-	            src + (16 * i), 16);
-           memcpy((unsigned char *)pSiS->FbBase + (cursor_addr * 1024) + (32 * i) + 16,
-	 	    src + (16 * i), 16);
-        }
+
+    if(sizedouble) {
+       int i;
+       for(i = 0; i < 32; i++) {
+          memcpy((unsigned char *)dest + (cursor_addr * 1024) + (32 * i),
+	           src + (16 * i), 16);
+          memcpy((unsigned char *)dest + (cursor_addr * 1024) + (32 * i) + 16,
+	           src + (16 * i), 16);
+       }
     } else {
-    	memcpy((unsigned char *)pSiS->FbBase + (cursor_addr * 1024), src, 1024);
+       memcpy((unsigned char *)dest + (cursor_addr * 1024), src, 1024);
+       /* memset((unsigned char *)dest + (cursor_addr * 1024), 0xff, 1024); */ /* DEBUG */
+
     }
     
     if(pSiS->UseHWARGBCursor) {
@@ -771,6 +773,14 @@ SiS300UseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     SISPtr  pSiS = SISPTR(pScrn);
     DisplayModePtr  mode = pSiS->CurrentLayout.mode; /* pScrn->currentMode; */
+#ifdef SISMERGED
+    DisplayModePtr  mode2 = NULL;
+
+    if(pSiS->MergedFB) {
+       mode = CDMPTR->CRT1;
+       mode2 = CDMPTR->CRT2;
+    }
+#endif
 
     switch (pSiS->Chipset)  {
       case PCI_CHIP_SIS300:
@@ -780,6 +790,14 @@ SiS300UseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
             return FALSE;
 	if((mode->Flags & V_DBLSCAN) && (pCurs->bits->height > 32))
 	    return FALSE;
+#ifdef SISMERGED
+        if(pSiS->MergedFB) {
+	   if(mode2->Flags & V_INTERLACE)
+              return FALSE;
+	   if((mode2->Flags & V_DBLSCAN) && (pCurs->bits->height > 32))
+	      return FALSE;
+	}
+#endif
         break;
       case PCI_CHIP_SIS550:
       case PCI_CHIP_SIS650:
@@ -792,6 +810,14 @@ SiS300UseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
             return FALSE;
 	if((mode->Flags & V_DBLSCAN) && (pCurs->bits->height > 32))
 	    return FALSE;
+#ifdef SISMERGED
+        if(pSiS->MergedFB) {
+	   if(mode2->Flags & V_INTERLACE)
+              return FALSE;
+	   if((mode2->Flags & V_DBLSCAN) && (pCurs->bits->height > 32))
+	      return FALSE;
+	}
+#endif
         break;
       default:
         if(mode->Flags & V_INTERLACE)
@@ -812,7 +838,15 @@ SiSUseHWCursorARGB(ScreenPtr pScreen, CursorPtr pCurs)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     SISPtr  pSiS = SISPTR(pScrn);
     DisplayModePtr  mode = pSiS->CurrentLayout.mode; /* pScrn->currentMode; */
-    	
+#ifdef SISMERGED
+    DisplayModePtr  mode2 = NULL;
+
+    if(pSiS->MergedFB) {
+       mode = CDMPTR->CRT1;
+       mode2 = CDMPTR->CRT2;
+    }
+#endif
+
     switch (pSiS->Chipset)  {
       case PCI_CHIP_SIS300:
       case PCI_CHIP_SIS630:
@@ -823,6 +857,14 @@ SiSUseHWCursorARGB(ScreenPtr pScreen, CursorPtr pCurs)
 	    return FALSE;
 	if((mode->Flags & V_DBLSCAN) && (pCurs->bits->height > 16))
 	    return FALSE;
+#ifdef SISMERGED
+        if(pSiS->MergedFB) {
+	   if(mode2->Flags & V_INTERLACE)
+              return FALSE;
+	   if((mode2->Flags & V_DBLSCAN) && (pCurs->bits->height > 16))
+	      return FALSE;
+	}
+#endif
         break;
       case PCI_CHIP_SIS550:
       case PCI_CHIP_SIS650:
@@ -837,6 +879,14 @@ SiSUseHWCursorARGB(ScreenPtr pScreen, CursorPtr pCurs)
 	    return FALSE;
 	if((mode->Flags & V_DBLSCAN) && (pCurs->bits->height > 32))
 	    return FALSE;
+#ifdef SISMERGED
+        if(pSiS->MergedFB) {
+	   if(mode2->Flags & V_INTERLACE)
+              return FALSE;
+	   if((mode->Flags & V_DBLSCAN) && (pCurs->bits->height > 32))
+	      return FALSE;
+	}
+#endif
         break;
       default:        
         return FALSE;
@@ -859,28 +909,37 @@ static void SiS300LoadCursorImageARGB(ScrnInfoPtr pScrn, CursorPtr pCurs)
 #endif    
     int srcwidth = pCurs->bits->width;
     int srcheight = pCurs->bits->height;
-    BOOLEAN sizedouble = FALSE;
     CARD32 temp, status1 = 0, status2 = 0;
-
+    BOOLEAN sizedouble = FALSE;
 #ifdef SISDUALHEAD
     SISEntPtr pSiSEnt = pSiS->entityPrivate;
 #endif
 
+#ifdef SISMERGED
+    if(pSiS->MergedFB) {
+       if((CDMPTR->CRT1->Flags & V_DBLSCAN) && (CDMPTR->CRT2->Flags & V_DBLSCAN)) {
+          sizedouble = TRUE;
+       }
+    } else
+#endif
+           if(pSiS->CurrentLayout.mode->Flags & V_DBLSCAN) {
+       sizedouble = TRUE;
+    }
+
     cursor_addr = pScrn->videoRam - pSiS->cursorOffset - ((pSiS->CursorSize/1024) * 2);
-    
+
     if(srcwidth > 32)  srcwidth = 32;
     if(srcheight > 32) srcheight = 32;
 
 #ifdef SISDUALHEAD
-    if (pSiS->DualHeadMode) 
+    if (pSiS->DualHeadMode)
     	/* TW: Use the global (real) FbBase in DHM */
-	dest = (MYSISPTRTYPE *)((unsigned char *)pSiSEnt->FbBase + (cursor_addr * 1024)); 
+	dest = (MYSISPTRTYPE *)((unsigned char *)pSiSEnt->FbBase + (cursor_addr * 1024));
     else
 #endif
-        dest = (MYSISPTRTYPE *)((unsigned char *)pSiS->FbBase + (cursor_addr * 1024)); 
+        dest = (MYSISPTRTYPE *)((unsigned char *)pSiS->FbBase + (cursor_addr * 1024));
 
-    if(pSiS->CurrentLayout.mode->Flags & V_DBLSCAN) {
-        sizedouble = TRUE;
+    if(sizedouble) {
 	if(srcheight > 16) srcheight = 16;
 	maxheight = 16;
     }
@@ -1005,28 +1064,37 @@ static void SiS310LoadCursorImageARGB(ScrnInfoPtr pScrn, CursorPtr pCurs)
     CARD32 *src = pCurs->bits->argb, *p, *pb, *dest;
     int srcwidth = pCurs->bits->width;
     int srcheight = pCurs->bits->height;
-    BOOLEAN sizedouble = FALSE;
     CARD32 status1 = 0, status2 = 0;
-
+    BOOLEAN sizedouble = FALSE;
 #ifdef SISDUALHEAD
     SISEntPtr pSiSEnt = pSiS->entityPrivate;
 #endif
-    
+
+#ifdef SISMERGED
+    if(pSiS->MergedFB) {
+       if((CDMPTR->CRT1->Flags & V_DBLSCAN) && (CDMPTR->CRT2->Flags & V_DBLSCAN)) {
+          sizedouble = TRUE;
+       }
+    } else
+#endif
+           if(pSiS->CurrentLayout.mode->Flags & V_DBLSCAN) {
+       sizedouble = TRUE;
+    }
+
     cursor_addr = pScrn->videoRam - pSiS->cursorOffset - ((pSiS->CursorSize/1024) * 2);
-    
+
     if(srcwidth > 64)  srcwidth = 64;
     if(srcheight > 64) srcheight = 64;
 
 #ifdef SISDUALHEAD
-    if(pSiS->DualHeadMode) 
+    if(pSiS->DualHeadMode)
     	/* TW: Use the global (real) FbBase in DHM */
-	dest = (CARD32 *)((unsigned char *)pSiSEnt->FbBase + (cursor_addr * 1024)); 
+	dest = (CARD32 *)((unsigned char *)pSiSEnt->FbBase + (cursor_addr * 1024));
     else
 #endif
-        dest = (CARD32 *)((unsigned char *)pSiS->FbBase + (cursor_addr * 1024)); 
+        dest = (CARD32 *)((unsigned char *)pSiS->FbBase + (cursor_addr * 1024));
 
-    if(pSiS->CurrentLayout.mode->Flags & V_DBLSCAN) {
-        sizedouble = TRUE;
+    if(sizedouble) {
 	if(srcheight > 32) srcheight = 32;
 	maxheight = 32;
     }

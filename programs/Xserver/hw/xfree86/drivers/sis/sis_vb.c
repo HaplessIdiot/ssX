@@ -45,34 +45,34 @@ static const SiS_LCD_StStruct SiS300_LCD_Type[]=
 	{ VB_LCD_640x480,   640,  480, LCD_640x480  },  /* 5 */
 	{ VB_LCD_1024x600, 1024,  600, LCD_1024x600 },  /* 6 */
 	{ VB_LCD_1152x768, 1152,  768, LCD_1152x768 },  /* 7 */
-	{ VB_LCD_320x480,   320,  480, LCD_320x480  },  /* 8 */
+	{ VB_LCD_1024x768, 1024,  768, LCD_1024x768 },  /* 8 */
 	{ VB_LCD_1024x768, 1024,  768, LCD_1024x768 },  /* 9 */
 	{ VB_LCD_1280x768, 1280,  768, LCD_1280x768 },  /* a */
 	{ VB_LCD_1024x768, 1024,  768, LCD_1024x768 },  /* b */
 	{ VB_LCD_1024x768, 1024,  768, LCD_1024x768 },  /* c */
 	{ VB_LCD_1024x768, 1024,  768, LCD_1024x768 },  /* d */
-	{ VB_LCD_1024x768, 1024,  768, LCD_1024x768 },  /* e */
+	{ VB_LCD_320x480,   320,  480, LCD_320x480  },  /* e */
 	{ VB_LCD_CUSTOM,      0,    0, LCD_CUSTOM   }   /* f */
 };
 
 static const SiS_LCD_StStruct SiS315_LCD_Type[]=
 {
-        { VB_LCD_1024x768, 1024,  768, LCD_1024x768 },  /* 0 - invalid */
-	{ VB_LCD_800x600,   800,  600, LCD_800x600  },  /* 1 */
-	{ VB_LCD_1024x768, 1024,  768, LCD_1024x768 },  /* 2 */
-	{ VB_LCD_1280x1024,1280, 1024, LCD_1280x1024},  /* 3 */
-	{ VB_LCD_640x480,   640,  480, LCD_640x480  },  /* 4 */
-	{ VB_LCD_1024x600, 1024,  600, LCD_1024x600 },  /* 5 */
-	{ VB_LCD_1152x864, 1152,  864, LCD_1152x864 },  /* 6 */
-	{ VB_LCD_1280x960, 1280,  960, LCD_1280x960 },  /* 7 */
-	{ VB_LCD_1152x768, 1152,  768, LCD_1152x768 },  /* 8 */
-	{ VB_LCD_1400x1050,1400, 1050, LCD_1400x1050},  /* 9 */
-	{ VB_LCD_1280x768, 1280,  768, LCD_1280x768 },  /* a */
-	{ VB_LCD_1600x1200,1600, 1200, LCD_1600x1200},  /* b */
-	{ VB_LCD_320x480,   320,  480, LCD_320x480  },  /* c */
-	{ VB_LCD_1024x768, 1024,  768, LCD_1024x768 },  /* d */
-	{ VB_LCD_1024x768, 1024,  768, LCD_1024x768 },  /* e */
-	{ VB_LCD_CUSTOM,      0,    0, LCD_CUSTOM,  }   /* f */
+        { VB_LCD_1024x768, 1024,  768, LCD_1024x768  },  /* 0 - invalid */
+	{ VB_LCD_800x600,   800,  600, LCD_800x600   },  /* 1 */
+	{ VB_LCD_1024x768, 1024,  768, LCD_1024x768  },  /* 2 */
+	{ VB_LCD_1280x1024,1280, 1024, LCD_1280x1024 },  /* 3 */
+	{ VB_LCD_640x480,   640,  480, LCD_640x480   },  /* 4 */
+	{ VB_LCD_1024x600, 1024,  600, LCD_1024x600  },  /* 5 */
+	{ VB_LCD_1152x864, 1152,  864, LCD_1152x864  },  /* 6 */
+	{ VB_LCD_1280x960, 1280,  960, LCD_1280x960  },  /* 7 */
+	{ VB_LCD_1152x768, 1152,  768, LCD_1152x768  },  /* 8 */
+	{ VB_LCD_1400x1050,1400, 1050, LCD_1400x1050 },  /* 9 */
+	{ VB_LCD_1280x768, 1280,  768, LCD_1280x768  },  /* a */
+	{ VB_LCD_1600x1200,1600, 1200, LCD_1600x1200 },  /* b */
+	{ VB_LCD_640x480_2, 640,  480, LCD_640x480_2 },  /* c DSTN/FSTN */
+	{ VB_LCD_640x480_3, 640,  480, LCD_640x480_3 },  /* d DSTN/FSTN */
+	{ VB_LCD_320x480,   320,  480, LCD_320x480   },  /* e */
+	{ VB_LCD_CUSTOM,      0,    0, LCD_CUSTOM,   }   /* f */
 };
 
 /* Detect CRT1 */
@@ -140,36 +140,51 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
      * on machines with DVI connectors where the panel was 
      * connected after booting. This is only supported on the
      * 315/330 series and the 301/30xB bridge (because the 30xLV/LVX
-     * don't seem to have a DDC port). We only do this if there was no
+     * don't seem to have a DDC port and operates only LVDS panels
+     * which mostly don't support DDC). We only do this if there was no
      * secondary VGA detected by the BIOS, because LCD and VGA2
      * share the same DDC channel and might be misdetected as the
      * wrong type (especially if the LCD panel only supports
      * EDID Version 1).
      */
-    if(!(pSiS->nocrt2ddcdetection)) {
+#ifdef SISDUALHEAD
+    if((!pSiS->DualHeadMode) || (!pSiS->SecondHead)) {
+#endif
        if((pSiS->VGAEngine == SIS_315_VGA) &&
           (pSiS->VBFlags & (VB_301|VB_301B|VB_302B)) &&
-	  (!(pSiS->VBFlags & VB_30xBDH))) {
-          if((!(pSiS->VBFlags & CRT2_LCD)) && (!(CR32 & 0x10))) {
-             xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	       "BIOS detected no LCD panel, sensing via DDC\n");
-             if(SiS_SenseLCDDDC(pSiS->SiS_Pr, pSiS)) {
-    	        xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-	           "DDC error during LCD panel detection\n");
-	     } else {
-	        inSISIDXREG(SISCR, 0x32, CR32);
-	        if(CR32 & 0x08) {
-	           pSiS->VBFlags |= CRT2_LCD;
-		   pSiS->postVBCR32 |= 0x08;
-	        } else {
-	           xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-	        	"No LCD panel detected\n");
-	        }
-	     }
+          (!(pSiS->VBFlags & VB_30xBDH))) {
+
+          if(pSiS->forcecrt2redetection) {
+             pSiS->VBFlags &= ~CRT2_LCD;
           }
+
+          if(!(pSiS->nocrt2ddcdetection)) {
+             if((!(pSiS->VBFlags & CRT2_LCD)) && (!(CR32 & 0x10))) {
+	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	             "%s LCD/Plasma panel, sensing via DDC\n",
+		     pSiS->forcecrt2redetection ?
+		        "Forced re-detection of" : "BIOS detected no");
+                if(SiS_SenseLCDDDC(pSiS->SiS_Pr, pSiS)) {
+    	           xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	              "DDC error during LCD panel detection\n");
+	        } else {
+	           inSISIDXREG(SISCR, 0x32, CR32);
+	           if(CR32 & 0x08) {
+	              pSiS->VBFlags |= CRT2_LCD;
+		      pSiS->postVBCR32 |= 0x08;
+	           } else {
+	              xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	        	   "No LCD/Plasma panel detected\n");
+	           }
+	        }
+             }
+          }
+
        }
+#ifdef SISDUALHEAD
     }
-    
+#endif
+
     if(pSiS->VBFlags & CRT2_LCD) {
         inSISIDXREG(SISCR, 0x36, CR36);
 	inSISIDXREG(SISCR, 0x37, CR37);
@@ -183,31 +198,38 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
 	    inSISIDXREG(SISCR, 0x36, CR36);
 	    inSISIDXREG(SISCR, 0x37, CR37);
 	}
-	if(((CR36 & 0x0f) == 0x0f) && (pSiS->SiS_Pr->CP_DataValid)) {
+	if(((CR36 & 0x0f) == 0x0f) && (pSiS->SiS_Pr->CP_HaveCustomData)) {
 	    pSiS->VBLCDFlags |= VB_LCD_CUSTOM;
-            pSiS->LCDheight = pSiS->SiS_Pr->CP_VDisplay;
-	    pSiS->LCDwidth = pSiS->SiS_Pr->CP_HDisplay;
+            pSiS->LCDheight = pSiS->SiS_Pr->CP_MaxY;
+	    pSiS->LCDwidth = pSiS->SiS_Pr->CP_MaxX;
             pSiS->sishw_ext.ulCRT2LCDType = LCD_CUSTOM;
 	    if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
-	} else if(pSiS->VGAEngine == SIS_300_VGA) {
-	    pSiS->VBLCDFlags |= SiS300_LCD_Type[(CR36 & 0x0f)].VBLCD_lcdflag;
-            pSiS->LCDheight = SiS300_LCD_Type[(CR36 & 0x0f)].LCDheight;
-	    pSiS->LCDwidth = SiS300_LCD_Type[(CR36 & 0x0f)].LCDwidth;
-            pSiS->sishw_ext.ulCRT2LCDType = SiS300_LCD_Type[(CR36 & 0x0f)].LCDtype;
-	    if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
+	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		"Detected non-standard LCD/Plasma panel (max. X %d Y %d, preferred %dx%d, RGB%d)\n",
+ 		pSiS->SiS_Pr->CP_MaxX, pSiS->SiS_Pr->CP_MaxY,
+		pSiS->SiS_Pr->CP_PreferredX, pSiS->SiS_Pr->CP_PreferredY,
+		(CR37 & 0x01) ? 18 : 24);
 	} else {
-	    pSiS->VBLCDFlags |= SiS315_LCD_Type[(CR36 & 0x0f)].VBLCD_lcdflag;
-            pSiS->LCDheight = SiS315_LCD_Type[(CR36 & 0x0f)].LCDheight;
-	    pSiS->LCDwidth = SiS315_LCD_Type[(CR36 & 0x0f)].LCDwidth;
-            pSiS->sishw_ext.ulCRT2LCDType = SiS315_LCD_Type[(CR36 & 0x0f)].LCDtype;
-	    if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
-	}
-	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-			"Detected LCD panel (%dx%d, type %d, %sexpanding, RGB%d)\n",
+	    if(pSiS->VGAEngine == SIS_300_VGA) {
+	       pSiS->VBLCDFlags |= SiS300_LCD_Type[(CR36 & 0x0f)].VBLCD_lcdflag;
+               pSiS->LCDheight = SiS300_LCD_Type[(CR36 & 0x0f)].LCDheight;
+	       pSiS->LCDwidth = SiS300_LCD_Type[(CR36 & 0x0f)].LCDwidth;
+               pSiS->sishw_ext.ulCRT2LCDType = SiS300_LCD_Type[(CR36 & 0x0f)].LCDtype;
+	       if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
+	    } else {
+	       pSiS->VBLCDFlags |= SiS315_LCD_Type[(CR36 & 0x0f)].VBLCD_lcdflag;
+               pSiS->LCDheight = SiS315_LCD_Type[(CR36 & 0x0f)].LCDheight;
+	       pSiS->LCDwidth = SiS315_LCD_Type[(CR36 & 0x0f)].LCDwidth;
+               pSiS->sishw_ext.ulCRT2LCDType = SiS315_LCD_Type[(CR36 & 0x0f)].LCDtype;
+	       if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
+	    }
+	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+			"Detected LCD/Plasma panel (%dx%d, type %d, %sexpanding, RGB%d)\n",
 			pSiS->LCDwidth, pSiS->LCDheight,
 			(pSiS->VGAEngine == SIS_315_VGA) ? ((CR36 & 0x0f) - 1) : ((CR36 & 0xf0) >> 4),
 			(CR37 & 0x10) ? "" : "non-",
 			(CR37 & 0x01) ? 18 : 24);
+	}
     }
 }
 
@@ -324,38 +346,49 @@ void SISCRT2PreInit(ScrnInfoPtr pScrn)
     inSISIDXREG(SISCR, 0x32, CR32);
     
     if(CR32 & 0x10)  pSiS->VBFlags |= CRT2_VGA;
-    
-    /* We don't trust the normal sensing method for VGA2 since
-     * it is performed by the BIOS during POST, and it is
-     * impossible to sense VGA2 if the bridge is disabled.
-     * Therefore, we try sensing VGA2 by DDC as well (if not
-     * detected otherwise and only if there is no LCD panel
-     * which is prone to be misdetected as a secondary VGA)
-     */
-    if(!(pSiS->nocrt2ddcdetection)) {
-       if(pSiS->VBFlags & (VB_301B|VB_302B)) {
-          if(!(pSiS->VBFlags & (CRT2_VGA | CRT2_LCD))) {
-	     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	       "BIOS detected no secondary VGA, sensing via DDC\n");
-             if(SiS_SenseVGA2DDC(pSiS->SiS_Pr, pSiS)) {
-    	        xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
-	           "DDC error during secondary VGA detection\n");
-	     } else {
-	        inSISIDXREG(SISCR, 0x32, CR32);
-	        if(CR32 & 0x10) {
-	           pSiS->VBFlags |= CRT2_VGA;
-	           pSiS->postVBCR32 |= 0x10;
-		   xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		      "Detected secondary VGA connection\n");
+
+#ifdef SISDUALHEAD
+    if((!pSiS->DualHeadMode) || (!pSiS->SecondHead)) {
+#endif
+
+       if(pSiS->forcecrt2redetection) {
+          pSiS->VBFlags &= ~CRT2_VGA;
+       }
+
+       /* We don't trust the normal sensing method for VGA2 since
+        * it is performed by the BIOS during POST, and it is
+        * impossible to sense VGA2 if the bridge is disabled.
+        * Therefore, we try sensing VGA2 by DDC as well (if not
+        * detected otherwise and only if there is no LCD panel
+        * which is prone to be misdetected as a secondary VGA)
+        */
+       if(!(pSiS->nocrt2ddcdetection)) {
+          if(pSiS->VBFlags & (VB_301|VB_301B|VB_302B)) {
+             if(!(pSiS->VBFlags & (CRT2_VGA | CRT2_LCD))) {
+	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	           "%s secondary VGA, sensing via DDC\n",
+	           pSiS->forcecrt2redetection ?
+		      "Forced redetection of" : "BIOS detected no");
+                if(SiS_SenseVGA2DDC(pSiS->SiS_Pr, pSiS)) {
+    	           xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	              "DDC error during secondary VGA detection\n");
 	        } else {
-	           xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		      "No secondary VGA connection detected\n");
+	           inSISIDXREG(SISCR, 0x32, CR32);
+	           if(CR32 & 0x10) {
+	              pSiS->VBFlags |= CRT2_VGA;
+	              pSiS->postVBCR32 |= 0x10;
+		      xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		         "Detected secondary VGA connection\n");
+	           } else {
+	              xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		         "No secondary VGA connection detected\n");
+	           }
 	        }
-	     }
+             }
           }
        }
+
     }
-    
 }
 
 
