@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/fbdev/fbdev.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/fbdev/fbdev.h,v 1.2 2004/08/04 16:33:35 tsi Exp $ */
 
 #ifndef _FBDEV_H_
 #define _FBDEV_H_
@@ -38,9 +38,9 @@
 typedef struct _fbdevPriv {
     struct fb_var_screeninfo	var;
     struct fb_fix_screeninfo	fix;
-    __u16			red[256];
-    __u16			green[256];
-    __u16			blue[256];
+    unsigned short		red[256];
+    unsigned short		green[256];
+    unsigned short		blue[256];
     int				fd;
     char			*fb;
     char			*fb_base;
