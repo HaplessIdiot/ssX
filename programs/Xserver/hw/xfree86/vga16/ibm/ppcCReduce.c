@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCReduce.c,v 3.0 1996/11/18 13:13:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCReduce.c,v 3.1 1996/12/23 06:52:54 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -24,6 +24,7 @@
 
 /* $XConsortium: ppcCReduce.c /main/3 1996/02/21 17:57:17 kaleb $ */
 
+#include "../mfb/mfbmap.h"
 #include "X.h"
 #include "misc.h"
 #include "gcstruct.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulOpStip.c,v 3.3 1996/02/04 09:11:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulOpStip.c,v 3.4 1996/12/23 06:52:35 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -30,6 +30,7 @@
  *
  */
 
+#include "../mfb/mfbmap.h"
 #include "X.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"

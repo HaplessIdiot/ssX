@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcDepth.c,v 3.0 1996/11/18 13:13:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcDepth.c,v 3.1 1996/12/23 06:52:58 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -30,6 +30,7 @@
  *
  */
 
+#include "../mfb/mfbmap.h"
 #include "X.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGC.c,v 3.5 1996/02/04 09:11:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGC.c,v 3.6 1996/12/23 06:53:00 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -91,6 +91,7 @@ SOFTWARE.
 
 /* $XConsortium: ppcGC.c /main/6 1996/02/21 17:57:38 kaleb $ */
 
+#include "../mfb/mfbmap.h"
 #include "X.h"
 #include "Xproto.h"
 #include "windowstr.h"

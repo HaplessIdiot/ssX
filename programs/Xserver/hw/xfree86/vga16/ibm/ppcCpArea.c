@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCpArea.c,v 3.6 1996/02/04 09:11:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCpArea.c,v 3.7 1996/12/23 06:52:56 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -47,6 +47,7 @@ SOFTWARE.
 
 ******************************************************************/
 
+#include "../mfb/mfbmap.h"
 #include "X.h"
 #include "servermd.h"
 #include "misc.h"

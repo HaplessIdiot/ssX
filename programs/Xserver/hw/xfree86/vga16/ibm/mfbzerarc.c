@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbzerarc.c,v 3.0 1996/11/18 13:13:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbzerarc.c,v 3.1 1996/12/23 06:52:47 dawes Exp $ */
 
 /************************************************************
 
@@ -37,6 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 #define BANKING_MODS
+#include "../mfb/mfbmap.h"
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"

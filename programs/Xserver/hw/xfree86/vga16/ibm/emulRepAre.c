@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulRepAre.c,v 3.3 1996/02/04 09:11:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulRepAre.c,v 3.4 1996/12/23 06:52:36 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -28,6 +28,7 @@
  * P. Shupak 1/88
  */
 
+#include "../mfb/mfbmap.h"
 #include "X.h"
 #include "scrnintstr.h"
 #include "screenint.h"

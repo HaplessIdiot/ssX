@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPntWin.c,v 3.3 1996/02/04 09:11:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPntWin.c,v 3.4 1996/12/23 06:53:10 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -72,6 +72,7 @@ SOFTWARE.
 /* $XConsortium: ppcPntWin.c /main/5 1996/02/21 17:58:04 kaleb $ */
 
 #define BANKING_MODS
+#include "../mfb/mfbmap.h"
 #include "X.h"
 
 #include "windowstr.h"

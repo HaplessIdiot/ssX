@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcQuery.c,v 3.0 1996/11/18 13:13:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcQuery.c,v 3.1 1996/12/23 06:53:13 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -23,6 +23,7 @@
 */
 /* $XConsortium: ppcQuery.c /main/3 1996/02/21 17:58:18 kaleb $ */
 
+#include "../mfb/mfbmap.h"
 #include "X.h"
 #include "Xproto.h"
 

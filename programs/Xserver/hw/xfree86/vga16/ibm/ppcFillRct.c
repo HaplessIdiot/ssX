@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcFillRct.c,v 3.0 1996/11/18 13:13:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcFillRct.c,v 3.1 1996/12/23 06:52:59 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -49,6 +49,7 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: ppcFillRct.c /main/5 1996/02/21 17:57:35 kaleb $ */
 
+#include "../mfb/mfbmap.h"
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"

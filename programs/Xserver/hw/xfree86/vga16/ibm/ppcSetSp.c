@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcSetSp.c,v 3.4 1996/02/04 09:11:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcSetSp.c,v 3.5 1996/12/23 06:53:17 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -71,6 +71,7 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: ppcSetSp.c /main/5 1996/02/21 17:58:32 kaleb $ */
 
+#include "../mfb/mfbmap.h"
 #include "X.h"
 #include "Xmd.h"
 

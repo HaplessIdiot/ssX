@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.82 1997/03/11 13:07:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.83 1997/03/11 17:27:44 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1087,8 +1087,8 @@ vgaProbe()
 	  }
 	  else
 	  {
-	    ourmfbDoBitbltCopy = mfbDoBitbltCopy;
-	    ourmfbDoBitbltCopyInverted = mfbDoBitbltCopyInverted;
+	    ourmfbDoBitbltCopy = vga2_mfbDoBitbltCopy;
+	    ourmfbDoBitbltCopyInverted = vga2_mfbDoBitbltCopyInverted;
 	  }
 #else
 	  ourmfbDoBitbltCopy = mfbDoBitbltTwoBanksCopy;
@@ -1295,7 +1295,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 #else /* XFree86LOADER */	/* } { */
   switch (xf86bpp) {
     case 1:
-        if (!mfbScreenInit(pScreen,
+        if (!vga2_mfbScreenInit(pScreen,
 		     (pointer) vgaVirtBase,
 		     vga256InfoRec.virtualX,
 		     vga256InfoRec.virtualY,
@@ -1304,13 +1304,15 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     	    return(FALSE);
     	break;
     case 4:
+        /*
+	 * for some reason this function is void and cannot fail
+	 */
   	Init16Output(pScreen,
 		     (pointer) vgaVirtBase,
 		     vga256InfoRec.virtualX,
 		     vga256InfoRec.virtualY,
 		     displayResolution, displayResolution,
 		     vga256InfoRec.displayWidth);
-    	    return(FALSE);
     	break;
     default:
   	xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
@@ -1387,7 +1389,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 
   switch (xf86bpp) {
     case 1:
-  	if (!mfbCreateDefColormap(pScreen))
+  	if (!vga2_mfbCreateDefColormap(pScreen))
     		return(FALSE);
     	break;
     case 4:
@@ -1606,7 +1608,7 @@ vgaEnterLeaveVT(enter, screen_idx)
 	  else
 	      pspix->devPrivate.ptr = vgaLinearBase;
 	  if (vgaBitsPerPixel == 1)
-	      mfbDoBitblt(&ppix->drawable, &pspix->drawable, GXcopy, &pixReg,
+	      vga2_mfbDoBitblt(&ppix->drawable, &pspix->drawable, GXcopy, &pixReg,
                       &pixPt);
 	  else if (vgaBitsPerPixel == 4)
 	      vgaRestoreScreenPix(pScreen,ppix);
@@ -1662,7 +1664,7 @@ vgaEnterLeaveVT(enter, screen_idx)
         if (ppix)
         {
           if (vgaBitsPerPixel == 1)
-	      mfbDoBitblt(&pspix->drawable, &ppix->drawable, GXcopy, &pixReg,
+	      vga2_mfbDoBitblt(&pspix->drawable, &ppix->drawable, GXcopy, &pixReg,
                       &pixPt);
           else if (vgaBitsPerPixel == 4)
 	      vgaSaveScreenPix(pScreen,ppix);

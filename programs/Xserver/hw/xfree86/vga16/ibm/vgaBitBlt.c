@@ -1,10 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaBitBlt.c,v 3.6 1996/10/16 14:42:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaBitBlt.c,v 3.7 1996/12/23 06:53:23 dawes Exp $ */
 /* GJA -- span move routines */
 
 
 
 /* $XConsortium: vgaBitBlt.c /main/8 1996/10/27 11:06:39 kaleb $ */
 
+#include "../mfb/mfbmap.h"
 #include "X.h"
 #include "OScompiler.h"
 #include "vgaReg.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaStipple.c,v 3.4 1996/02/04 09:11:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaStipple.c,v 3.5 1996/12/23 06:53:28 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -23,6 +23,7 @@
 */
 /* $XConsortium: vgaStipple.c /main/5 1996/02/21 17:59:10 kaleb $ */
 
+#include "../mfb/mfbmap.h"
 #include "X.h"
 #include "pixmapstr.h"
 #include "OScompiler.h"

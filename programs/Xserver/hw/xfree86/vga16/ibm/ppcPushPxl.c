@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPushPxl.c,v 3.3 1996/02/04 09:11:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPushPxl.c,v 3.4 1996/12/23 06:53:12 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -25,6 +25,7 @@
 
 /* ppc PushPixels */
 
+#include "../mfb/mfbmap.h"
 #include "X.h"
 #include "misc.h"
 #include "gcstruct.h"

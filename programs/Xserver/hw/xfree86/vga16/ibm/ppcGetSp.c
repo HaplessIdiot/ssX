@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGetSp.c,v 3.3 1996/02/04 09:11:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGetSp.c,v 3.4 1996/12/23 06:53:02 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -72,6 +72,7 @@ SOFTWARE.
 
 /* $XConsortium: ppcGetSp.c /main/5 1996/02/21 17:57:45 kaleb $ */
 
+#include "../mfb/mfbmap.h"
 #include "X.h"
 #include "servermd.h"
 #include "scrnintstr.h"
