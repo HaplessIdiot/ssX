@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.21 2002/10/06 17:11:41 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.22 2002/11/08 08:00:56 paulo Exp $ */
 
 #include <ctype.h>
 #include "io.h"
@@ -140,9 +140,9 @@ Subcommands may be abbreviated.\n";
  *		NAM is an ATOM for the function/macro name
  *		    or NIL for lambda expressions
  *		ARG is NAM arguments (a LIST)
- *		ENV is the value of lisp__data.stack.base (a INTEGER)
- *		LEN is the value of lisp__data.env.length (a INTEGER)
- *		LEX is the value of lisp__data.env.lex (a INTEGER)
+ *		ENV is the value of lisp__data.stack.base (a FIXNUM)
+ *		LEN is the value of lisp__data.env.length (a FIXNUM)
+ *		LEX is the value of lisp__data.env.lex (a FIXNUM)
  *	new elements are added to the beggining of the DBG list
  *
  * BRK
@@ -153,10 +153,10 @@ Subcommands may be abbreviated.\n";
  *	where
  *		NAM is an ATOM for the name of the object at
  *		    wich the breakpoint was added
- *		IDX is a INTEGER, the breakpoint number
+ *		IDX is a FIXNUM, the breakpoint number
  *		    must be stored, as breakpoints may be deleted
- *		TYP is a INTEGER that must be an integer of enum LispBreakType
- *		HIT is a INTEGER, with the number of times this breakpoint was
+ *		TYP is a FIXNUM that must be an integer of enum LispBreakType
+ *		HIT is a FIXNUM, with the number of times this breakpoint was
  *		    hitted.
  *		VAR variable to watch a SYMBOL	(not needed for breakpoints)
  *		VAL value of watched variable	(not needed for breakpoints)
@@ -178,13 +178,14 @@ LispDebugger(LispDebugCall call, LispObj *name, LispObj *arg)
 	case LispDebugCallBegin:
 	    ++lisp__data.debug_level;
 	    GCDisable();
-	    DBG = CONS(CONS(name, CONS(arg, CONS(SMALLINT(lisp__data.stack.base),
-		       CONS(SMALLINT(lisp__data.env.length),
-			    SMALLINT(lisp__data.env.lex))))), DBG);
+	    DBG = CONS(CONS(name, CONS(arg, CONS(FIXNUM(lisp__data.stack.base),
+		       CONS(FIXNUM(lisp__data.env.length),
+			    FIXNUM(lisp__data.env.lex))))), DBG);
 	    GCEnable();
 	    for (obj = BRK; obj != NIL; obj = CDR(obj))
 		if (ATOMID(CAR(CAR(obj))) == ATOMID(name) &&
-		    GETINT(CAR(CDR(CDR(CAR(obj))))) == LispDebugBreakFunction)
+		    FIXNUM_VALUE(CAR(CDR(CDR(CAR(obj))))) ==
+		    LispDebugBreakFunction)
 		    break;
 	    if (obj != NIL) {
 		long counter;
@@ -201,8 +202,8 @@ LispDebugger(LispDebugCall call, LispObj *name, LispObj *arg)
 		LispFputs(Stdout, ")\n");
 		force = 1;
 		/* update hits counter */
-		counter = GETINT(CAR(CDR(CDR(CDR(CAR(obj))))));
-		SETINT(CAR(CDR(CDR(CDR(CAR(obj))))), counter + 1);
+		counter = FIXNUM_VALUE(CAR(CDR(CDR(CDR(CAR(obj))))));
+		CAR(CDR(CDR(CDR(CAR(obj))))) FIXNUM(counter + 1);
 	    }
 	    break;
 	case LispDebugCallEnd:
@@ -222,7 +223,8 @@ LispDebugger(LispDebugCall call, LispObj *name, LispObj *arg)
     if (call == LispDebugCallEnd || call == LispDebugCallWatch) {
 watch_again:
 	for (prev = obj = BRK; obj != NIL; prev = obj, obj = CDR(obj)) {
-	    if (GETINT(CAR(CDR(CDR(CAR(obj))))) == LispDebugBreakVariable) {
+	    if (FIXNUM_VALUE(CAR(CDR(CDR(CAR(obj))))) ==
+		LispDebugBreakVariable) {
 		/* the variable */
 		LispObj *wat = CAR(CDR(CDR(CDR(CDR(CAR(obj))))));
 		void *sym = LispGetVarAddr(CAAR(obj));
@@ -230,9 +232,9 @@ watch_again:
 
 		if ((sym == NULL && lisp__data.debug_level <= 0) ||
 		    (sym != wat->data.opaque.data &&
-		     GETINT(frm) > lisp__data.debug_level)) {
+		     FIXNUM_VALUE(frm) > lisp__data.debug_level)) {
 		    LispFputs(Stdout, "WATCH #");
-		    LispFputs(Stdout, format_integer(GETINT(CAR(CDR(CAR(obj))))));
+		    LispFputs(Stdout, format_integer(FIXNUM_VALUE(CAR(CDR(CAR(obj))))));
 		    LispFputs(Stdout, "> ");
 		    LispFputs(Stdout, STRPTR(CAR(CAR(obj))));
 		    LispFputs(Stdout, " deleted. Variable does not exist anymore.\n");
@@ -255,7 +257,7 @@ watch_again:
 			long counter;
 
 			LispFputs(Stdout, "WATCH #");
-			LispFputs(Stdout, format_integer(GETINT(CAR(CDR(CAR(obj))))));
+			LispFputs(Stdout, format_integer(FIXNUM_VALUE(CAR(CDR(CAR(obj))))));
 			LispFputs(Stdout, "> ");
 			LispFputs(Stdout, STRPTR(CAR(CAR(obj))));
 			LispFputc(Stdout, '\n');
@@ -270,8 +272,8 @@ watch_again:
 			/* update current value */
 			CAR(CDR(CDR(CDR(CDR(CDR(CAR(obj))))))) = cur;
 			/* update hits counter */
-			counter = GETINT(CAR(CDR(CDR(CDR(CAR(obj))))));
-			SETINT(CAR(CDR(CDR(CDR(CAR(obj))))), counter + 1);
+			counter = FIXNUM_VALUE(CAR(CDR(CDR(CDR(CAR(obj))))));
+			CAR(CDR(CDR(CDR(CAR(obj))))) = FIXNUM(counter + 1);
 			/* force debugger to stop */
 			force = 1;
 		    }
@@ -492,7 +494,7 @@ LispDebuggerCommand(LispObj *args)
 
 			    /* breakpoint type */
 			    LispFputc(Stdout, '\t');
-			    switch ((int)GETINT(CAR(CDR(CDR(CAR(obj)))))) {
+			    switch ((int)FIXNUM_VALUE(CAR(CDR(CDR(CAR(obj)))))) {
 				case LispDebugBreakFunction:
 				    LispFputs(Stdout, "Function");
 				    break;
@@ -548,9 +550,9 @@ LispDebuggerCommand(LispObj *args)
 		    ++lisp__data.debug_break;
 		    GCDisable();
 		    obj = CONS(ATOM(arg),
-			       CONS(SMALLINT(i),
-				    CONS(SMALLINT(LispDebugBreakFunction),
-					 CONS(SMALLINT(0), NIL))));
+			       CONS(FIXNUM(i),
+				    CONS(FIXNUM(LispDebugBreakFunction),
+					 CONS(FIXNUM(0), NIL))));
 		    if (BRK == NIL)
 			BRK = CONS(obj, NIL);
 		    else
@@ -589,9 +591,9 @@ LispDebuggerCommand(LispObj *args)
 			     frm = CDR(frm), i--)
 			    ;
 			obj = CAR(frm);
-			lisp__data.stack.base = GETINT(CAR(CDR(CDR(obj))));
-			lisp__data.env.length = GETINT(CAR(CDR(CDR(CDR(obj)))));
-			lisp__data.env.lex = GETINT(CDR(CDR(CDR(CDR(obj)))));
+			lisp__data.stack.base = FIXNUM_VALUE(CAR(CDR(CDR(obj))));
+			lisp__data.env.length = FIXNUM_VALUE(CAR(CDR(CDR(CDR(obj)))));
+			lisp__data.env.lex = FIXNUM_VALUE(CDR(CDR(CDR(CDR(obj)))));
 
 			if (LispGetVarAddr(atom) == sym)
 			    /* got variable initial frame */
@@ -604,9 +606,9 @@ LispDebuggerCommand(LispObj *args)
 			     frm = CDR(frm), i--)
 			    ;
 			obj = CAR(frm);
-			lisp__data.stack.base = GETINT(CAR(CDR(CDR(obj))));
-			lisp__data.env.length = GETINT(CAR(CDR(CDR(CDR(obj)))));
-			lisp__data.env.lex = GETINT(CDR(CDR(CDR(CDR(obj)))));
+			lisp__data.stack.base = FIXNUM_VALUE(CAR(CDR(CDR(obj))));
+			lisp__data.env.length = FIXNUM_VALUE(CAR(CDR(CDR(CDR(obj)))));
+			lisp__data.env.lex = FIXNUM_VALUE(CDR(CDR(CDR(CDR(obj)))));
 		    }
 		}
 
@@ -616,13 +618,13 @@ LispDebuggerCommand(LispObj *args)
 		    ;
 
 		GCDisable();
-		obj = CONS(atom,					  /* NAM */
-			   CONS(SMALLINT(i),				  /* IDX */
-				CONS(SMALLINT(LispDebugBreakVariable),	  /* TYP */
-				     CONS(SMALLINT(0),			  /* HIT */
-					  CONS(OPAQUE(sym, 0),		  /* VAR */
-					       CONS(val,		  /* VAL */
-						    CONS(SMALLINT(vframe),/* FRM */
+		obj = CONS(atom,					/* NAM */
+			   CONS(FIXNUM(i),				/* IDX */
+				CONS(FIXNUM(LispDebugBreakVariable),	/* TYP */
+				     CONS(FIXNUM(0),			/* HIT */
+					  CONS(OPAQUE(sym, 0),		/* VAR */
+					       CONS(val,		/* VAL */
+						    CONS(FIXNUM(vframe),/* FRM */
 							      NIL)))))));
 
 		/* add watchpoint */
@@ -669,7 +671,7 @@ LispDebuggerCommand(LispObj *args)
 			i = atoi(arg);
 			for (obj = frm = BRK; frm != NIL;
 			     obj = frm, frm = CDR(frm))
-			    if (GETINT(CAR(CDR(CAR(frm)))) == i)
+			    if (FIXNUM_VALUE(CAR(CDR(CAR(frm)))) == i)
 				break;
 			if (frm == NIL) {
 			    LispFputs(Stdout, "* No breakpoint number ");
@@ -794,9 +796,9 @@ debugger_new_frame:
 		 i > frame; frm = CDR(frm), i--)
 		;
 	    curframe = CAR(frm);
-	    lisp__data.stack.base = GETINT(CAR(CDR(CDR(curframe))));
-	    lisp__data.env.length = GETINT(CAR(CDR(CDR(CDR(curframe)))));
-	    lisp__data.env.lex = GETINT(CDR(CDR(CDR(CDR(curframe)))));
+	    lisp__data.stack.base = FIXNUM_VALUE(CAR(CDR(CDR(curframe))));
+	    lisp__data.env.length = FIXNUM_VALUE(CAR(CDR(CDR(CDR(curframe)))));
+	    lisp__data.env.lex = FIXNUM_VALUE(CDR(CDR(CDR(CDR(curframe)))));
 	}
 debugger_print_frame:
 	LispFputc(Stdout, '#');

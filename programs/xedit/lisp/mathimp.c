@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 by The XFree86 Project, Inc.
+ * Copyright (c) 2002 by The XFree86 Project, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -10,7 +10,7 @@
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *  
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -27,836 +27,3101 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.8 2002/10/06 17:11:44 paulo Exp $ */
+/* $XFree86$ */
 
+/*
+ * Defines
+ */
 #ifdef __GNUC__
-#define CONST __attribute__ ((__const__))
+#define CONST			__attribute__ ((__const__))
 #else
-#define CONST	/**/
+#define CONST			/**/
 #endif
 
-#define FI		LispInteger_t	  /* FIXNUM INTEGER */
-#define FR		LispRatio_t	  /* FIXNUM RATIONAL */
-#define FF		LispReal_t	  /* FIXED-PRECISION (DEFAULT) FLOAT */
-#define BI		LispBigInteger_t  /* BIGNUM INTEGER */
-#define BR		LispBigRatio_t	  /* BIGNUM RATIONAL */
-/* RE					     REAL NUMBER */
-#define CX		LispComplex_t	  /* COMPLEX NUMBER */
-
-#define XFI(obj)	GETINT(obj)
-#define XFRN(obj)	(obj)->data.ratio.numerator
-#define XFRD(obj)	(obj)->data.ratio.denominator
-#define XFF(obj)	(obj)->data.real
-#define XBI(obj)	(obj)->data.mp.integer
-#define XBR(obj)	(obj)->data.mp.ratio
-#define XBRN(obj)	mpr_num((obj)->data.mp.ratio)
-#define XBRD(obj)	mpr_den((obj)->data.mp.ratio)
-#define CXR(obj)	(obj)->data.complex.real
-#define CXI(obj)	(obj)->data.complex.imag
-
-#define DIVIDE_CEIL	1
-#define DIVIDE_FLOOR	2
-#define DIVIDE_ROUND	3
-#define DIVIDE_TRUNC	4
-
-#define XTYPE(obj)	(obj)->type
-#ifdef DEBUG
-#define XALLOC(type)	LispMalloc(sizeof(type))
-#define XFREE(pointer)	LispFree(pointer)
-#define XMEM(pointer)	LispMused(pointer)
-#else
-#define XALLOC(type)	malloc(sizeof(type))
-#define XFREE(pointer)	free(pointer)
-#define XMEM(pointer)	/**/
-#endif
-
-#define XCLEAR_BI(obj)			\
-    mpi_clear(XBI(obj));		\
-    XFREE(XBI(obj))
-#define XCLEAR_BR(obj)			\
-    mpr_clear(XBR(obj));		\
-    XFREE(XBR(obj))
-
-#define XCLEAR_ACCUM(accum)		\
-    switch (XTYPE(accum)) {		\
-	case BI:			\
-	    XCLEAR_BI(accum);		\
-	    XTYPE(accum) = FI;		\
-	    break;			\
-	case BR:			\
-	    XCLEAR_BR(accum);		\
-	    XTYPE(accum) = FI;		\
-	    break;			\
-	default:			\
-	    break;			\
-    }
-
-/* Mask for checking overflow on long operations */
+/* mask for checking overflow on long operations */
 #ifdef LONG64
-#define FI_MASK		0x4000000000000000L
-#define LONGSBITS	63
+#define FI_MASK			0x4000000000000000L
+#define LONGSBITS		63
 #else
-#define FI_MASK		0x40000000L
-#define LONGSBITS	31
+#define FI_MASK			0x40000000L
+#define LONGSBITS		31
 #endif
 
-#define XERROR(msg)					\
-    LispDestroy("%s: " msg, STRFUN(builtin))
+#define N_FIXNUM		1
+#define N_BIGNUM		2
+#define N_FLONUM		3
+#define N_FIXRATIO		4
+#define N_BIGRATIO		5
 
-#define XWARN(msg)					\
-    LispWarning("%s: " msg, STRFUN(builtin))
+#define NOP_ADD			1
+#define NOP_SUB			2
+#define NOP_MUL			3
+#define NOP_DIV			4
 
-#define NOT_A_NUMBER(object)				\
-    LispDestroy("%s: %s is not a number",		\
-		STRFUN(builtin), STROBJ(object))
+#define NDIVIDE_CEIL		1
+#define NDIVIDE_FLOOR		2
+#define NDIVIDE_ROUND		3
+#define NDIVIDE_TRUNC		4
 
-#define NOT_A_REAL_NUMBER(object)			\
-    LispDestroy("%s: %s is not a real number",		\
-		STRFUN(builtin), STROBJ(object))
+/* real part from number */
+#define NREAL(num)		&((num)->real)
+#define NRTYPE(num)		(num)->real.type
+#define NRFI(num)		(num)->real.data.fixnum
+#define NRBI(num)		(num)->real.data.bignum
+#define NRFF(num)		(num)->real.data.flonum
+#define NRFRN(Num)		(Num)->real.data.fixratio.num
+#define NRFRD(num)		(num)->real.data.fixratio.den
+#define NRBR(num)		(num)->real.data.bigratio
+#define NRBRN(num)		mpr_num(NRBR(num))
+#define NRBRD(num)		mpr_den(NRBR(num))
 
-#define NOT_AN_INTEGER(object)				\
-    LispDestroy("%s: %s is not an integer",		\
-		STRFUN(builtin), STROBJ(object))
+#define NRINTEGERP(num)				\
+    (NRTYPE(num) == N_FIXNUM || NRTYPE(num) == N_BIGNUM)
+
+#define NRCLEAR_BI(num)		mpi_clear(NRBI(num)); XFREE(NRBI(num))
+#define NRCLEAR_BR(num)		mpr_clear(NRBR(num)); XFREE(NRBR(num))
 
 
-
+/* imag part from number */
+#define NIMAG(num)		&((num)->imag)
+#define NITYPE(num)		(num)->imag.type
+#define NIFI(num)		(num)->imag.data.fixnum
+#define NIBI(num)		(num)->imag.data.bignum
+#define NIFF(num)		(num)->imag.data.flonum
+#define NIFRN(Num)		(Num)->imag.data.fixratio.num
+#define NIFRD(num)		(num)->imag.data.fixratio.den
+#define NIBR(num)		(num)->imag.data.bigratio
+#define NIBRN(obj)		mpr_num(NIBR(obj))
+#define NIBRD(obj)		mpr_den(NIBR(obj))
+
+#define NIINTEGERP(num)				\
+    (NITYPE(num) == N_FIXNUM || NITYPE(num) == N_BIGNUM)
+
+/* real number fields */
+#define RTYPE(real)		(real)->type
+#define RFI(real)		(real)->data.fixnum
+#define RBI(real)		(real)->data.bignum
+#define RFF(real)		(real)->data.flonum
+#define RFRN(real)		(real)->data.fixratio.num
+#define RFRD(real)		(real)->data.fixratio.den
+#define RBR(real)		(real)->data.bigratio
+#define RBRN(real)		mpr_num(RBR(real))
+#define RBRD(real)		mpr_den(RBR(real))
+
+#define RINTEGERP(real)				\
+    (RTYPE(real) == N_FIXNUM || RTYPE(real) == N_BIGNUM)
+
+#define RCLEAR_BI(real)		mpi_clear(RBI(real)); XFREE(RBI(real))
+#define RCLEAR_BR(real)		mpr_clear(RBR(real)); XFREE(RBR(real))
+
+
+/* numeric value from lisp object */
+#define OFI(object)		FIXNUM_VALUE(object)
+#define OII(object)		INT_VALUE(object)
+#define OBI(object)		(object)->data.mp.integer
+#define ODF(object)		DFLOAT_VALUE(object)
+#define OFRN(object)		(object)->data.ratio.numerator
+#define OFRD(object)		(object)->data.ratio.denominator
+#define OBR(object)		(object)->data.mp.ratio
+#define OBRN(object)		mpr_num(OBR(object))
+#define OBRD(object)		mpr_den(OBR(object))
+#define OCXR(object)		(object)->data.complex.real
+#define OCXI(object)		(object)->data.complex.imag
+
+#define XALLOC(type)		LispMalloc(sizeof(type))
+#define XFREE(ptr)		LispFree(ptr)
+#define XMEM(ptr)		LispMused(ptr)
+
+
+/*
+ * Types
+ */
+typedef struct _n_real {
+    char type;
+    union {
+	long fixnum;
+	mpi *bignum;
+	double flonum;
+	struct {
+	    long num;
+	    long den;
+	} fixratio;
+	mpr *bigratio;
+    } data;
+} n_real;
+
+typedef struct _n_number {
+    char complex;
+    n_real real;
+    n_real imag;
+} n_number;
+
+
 /*
  * Prototypes
  */
-static LispObj *math_pi(void);
-static void add_accumulator(LispBuiltin*, LispObj*, LispObj*);
-static void add_float(LispBuiltin*, LispObj*, double, double);
-static void sub_accumulator(LispBuiltin*, LispObj*, LispObj*);
-static void sub_float(LispBuiltin*, LispObj*, double, double);
-static void mul_accumulator(LispBuiltin*, LispObj*, LispObj*);
-static void mul_float(LispBuiltin*, LispObj*, double, double);
-static void div_accumulator(LispBuiltin*, LispObj*, LispObj*);
-static void div_float(LispBuiltin*, LispObj*, double, double);
-static INLINE void abs_accumulator(LispBuiltin*, LispObj*);
-static INLINE void neg_accumulator(LispBuiltin*, LispObj*);
-static INLINE void mod_accumulator(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void rem_accumulator(LispBuiltin*, LispObj*, LispObj*);
-static void gcd_accumulator(LispBuiltin*, LispObj*, LispObj*);
-static int math_compare(LispBuiltin*, LispObj*, LispObj*);
-static int cmp_float(LispBuiltin*, double, double);
-static INLINE void sqrt_accumulator(LispBuiltin*, LispObj*);
-static INLINE LispObj *copy_number(LispBuiltin*, LispObj*);
-static INLINE LispObj *copy_real(LispBuiltin*, LispObj*);
-static INLINE void set_real(LispBuiltin*, LispObj*, LispObj*);
-static INLINE LispObj *copy_complex(LispBuiltin*, LispObj*);
-static INLINE void fr_canonicalize(LispBuiltin*, LispObj*);
-static INLINE void br_canonicalize(LispBuiltin*, LispObj*);
-static INLINE void maybe_integer(LispObj*);
-static INLINE void cx_canonicalize(LispBuiltin*, LispObj*, int, int);
-static INLINE void abs_cx(LispBuiltin*, LispObj*);
-static INLINE void abs_fi(LispBuiltin*, LispObj*);
-static INLINE void abs_fr(LispBuiltin*, LispObj*);
-static INLINE void abs_ff(LispBuiltin*, LispObj*);
-static INLINE void abs_bi(LispBuiltin*, LispObj*);
-static INLINE void abs_br(LispBuiltin*, LispObj*);
-static INLINE void neg_cx(LispBuiltin*, LispObj*);
-static INLINE void neg_fi(LispBuiltin*, LispObj*);
-static INLINE void neg_fr(LispBuiltin*, LispObj*);
-static INLINE void neg_ff(LispBuiltin*, LispObj*);
-static INLINE void neg_bi(LispBuiltin*, LispObj*);
-static INLINE void neg_br(LispBuiltin*, LispObj*);
-static INLINE void mod_fi_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mod_fi_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mod_bi_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mod_bi_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void rem_fi_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void rem_fi_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void rem_bi_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void rem_bi_bi(LispBuiltin*, LispObj*, LispObj*);
-static void sqrt_fi(LispBuiltin*, LispObj*);
-static void sqrt_fr(LispBuiltin*, LispObj*);
-static INLINE void sqrt_ff(LispBuiltin*, LispObj*);
-static void sqrt_bi(LispBuiltin*, LispObj*);
-static void sqrt_br(LispBuiltin*, LispObj*);
-static void sqrt_cx(LispBuiltin*, LispObj*);
+static void number_init(void);
+static LispObj *number_pi(void);
+
+static void set_real_real(n_real*, n_real*);
+static void set_real_object(n_real*, LispObj*);
+static void set_number_object(n_number*, LispObj*);
+static void clear_real(n_real*);
+static void clear_number(n_number*);
+
+static LispObj *make_real_object(n_real*);
+static LispObj *make_number_object(n_number*);
+
+static void fatal_error(int);
+static void fatal_object_error(LispObj*, int);
+static void fatal_builtin_object_error(LispBuiltin*, LispObj*, int);
+
+/* add */
+static void add_real_object(n_real*, LispObj*);
+static void add_number_object(n_number*, LispObj*);
+
+/* sub */
+static void sub_real_object(n_real*, LispObj*);
+static void sub_number_object(n_number*, LispObj*);
+
+/* mul */
+static void mul_real_object(n_real*, LispObj*);
+static void mul_number_object(n_number*, LispObj*);
+
+/* div */
+static void div_real_object(n_real*, LispObj*);
+static void div_number_object(n_number*, LispObj*);
+
+/* compare */
+static int cmp_real_real(n_real*, n_real*);
+static int cmp_real_object(n_real*, LispObj*);
+#if 0	/* not used */
+static int cmp_number_object(n_number*, LispObj*);
+#endif
+static int cmp_object_object(LispObj*, LispObj*);
+
+/* fixnum */
 static INLINE int fi_fi_add_overflow(long, long) CONST;
 static INLINE int fi_fi_sub_overflow(long, long) CONST;
 static INLINE int fi_fi_mul_overflow(long, long) CONST;
-static INLINE void add_re_cx(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_re_cx(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_re_cx(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_re_cx(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_cx_re(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_cx_re(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_cx_re(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_cx_re(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_cx_cx(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_cx_cx(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_cx_cx(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_cx_cx(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_cx_cx(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fi_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fi_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fi_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fi_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fi_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fi_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fi_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fi_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fi_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fi_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fi_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fi_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fi_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fi_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fi_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fi_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fi_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fi_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fi_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fi_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fi_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fi_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fi_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fi_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fi_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fr_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fr_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fr_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fr_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fr_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fr_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fr_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fr_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fr_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fr_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fr_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fr_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fr_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fr_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fr_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fr_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fr_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fr_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fr_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fr_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fr_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fr_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fr_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fr_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fr_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_ff_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_ff_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_ff_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_ff_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_ff_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_ff_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_ff_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_ff_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_ff_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_ff_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_ff_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_ff_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_ff_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_ff_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_ff_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_ff_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_ff_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_ff_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_ff_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_ff_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_ff_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_ff_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_ff_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_ff_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_ff_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_bi_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_bi_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_bi_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_bi_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_bi_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_bi_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_bi_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_bi_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_bi_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_bi_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_bi_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_bi_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_bi_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_bi_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_bi_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_bi_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_bi_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_bi_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_bi_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_bi_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_bi_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_bi_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_bi_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_bi_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_bi_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_br_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_br_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_br_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_br_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_br_fi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_br_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_br_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_br_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_br_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_br_fr(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_br_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_br_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_br_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_br_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_br_ff(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_br_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_br_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_br_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_br_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_br_bi(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_br_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_br_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_br_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_br_br(LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_br_br(LispBuiltin*, LispObj*, LispObj*);
-static LispObj *math_divide(LispBuiltin*, int, int);
-static LispObj *divide_float(LispBuiltin*, double, double, int, int);
-static LispObj *divide_xi_xi(LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_xi_xr(LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_xr_xi(LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_xr_xr(LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_fi_fi(LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_fi_ff(LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_fr_ff(LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_ff_fi(LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_ff_fr(LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_ff_ff(LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_ff_bi(LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_ff_br(LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_bi_ff(LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_br_ff(LispBuiltin*,LispObj*,LispObj*,int,int);
 
-
-/************************************************************************
- *	HELPER FUNCTIONS
- ************************************************************************/
+/* bignum */
+static void rbi_canonicalize(n_real*);
+
+/* ratio */
+static void rfr_canonicalize(n_real*);
+static void rbr_canonicalize(n_real*);
+
+/* complex */
+static void real_maybe_integer(n_real*);
+static void ncx_canonicalize(n_number*, int, int);
+
+/* abs */
+static void abs_real(n_real*);
+static void abs_number(n_number*);
+static void nabs_cx(n_number*);
+static INLINE void rabs_fi(n_real*);
+static INLINE void rabs_bi(n_real*);
+static INLINE void rabs_ff(n_real*);
+static INLINE void rabs_fr(n_real*);
+static INLINE void rabs_br(n_real*);
+
+/* neg */
+static void neg_real(n_real*);
+static void neg_number(n_number*);
+static void rneg_fi(n_real*);
+static INLINE void rneg_bi(n_real*);
+static INLINE void rneg_ff(n_real*);
+static INLINE void rneg_fr(n_real*);
+static INLINE void rneg_br(n_real*);
+
+/* sqrt */
+static void sqrt_real(n_real*);
+static void sqrt_number(n_number*);
+static void rsqrt_xi(n_real*);
+static void rsqrt_xr(n_real*);
+static void rsqrt_ff(n_real*);
+static void nsqrt_cx(n_number*);
+static void nsqrt_xi(n_number*);
+static void nsqrt_ff(n_number*);
+static void nsqrt_xr(n_number*);
+
+/* mod */
+static void mod_real_real(n_real*, n_real*);
+static void mod_real_object(n_real*, LispObj*);
+static void rmod_fi_fi(n_real*, long);
+static void rmod_fi_bi(n_real*, mpi*);
+static void rmod_bi_fi(n_real*, long);
+static void rmod_bi_bi(n_real*, mpi*);
+
+/* rem */
+static void rem_real_object(n_real*, LispObj*);
+static void rrem_fi_fi(n_real*, long);
+static void rrem_fi_bi(n_real*, mpi*);
+static void rrem_bi_fi(n_real*, long);
+static void rrem_bi_bi(n_real*, mpi*);
+
+/* gcd */
+static void gcd_real_object(n_real*, LispObj*);
+
+/* and */
+static void and_real_object(n_real*, LispObj*);
+
+/* eqv */
+static void eqv_real_object(n_real*, LispObj*);
+
+/* ior */
+static void ior_real_object(n_real*, LispObj*);
+
+/* not */
+static void not_real(n_real*);
+
+/* xor */
+static void xor_real_object(n_real*, LispObj*);
+
+/* divide */
+static void divide_number_object(n_number*, LispObj*, int, int);
+static void ndivide_xi_xi(n_number*, LispObj*, int, int);
+static void ndivide_flonum(n_number*, double, double, int, int);
+static void ndivide_xi_xr(n_number*, LispObj*, int, int);
+static void ndivide_xr_xi(n_number*, LispObj*, int, int);
+static void ndivide_xr_xr(n_number*, LispObj*, int, int);
+
+/* real complex */
+static void nadd_re_cx(n_number*, LispObj*);
+static void nsub_re_cx(n_number*, LispObj*);
+static void nmul_re_cx(n_number*, LispObj*);
+static void ndiv_re_cx(n_number*, LispObj*);
+
+/* complex real */
+static void nadd_cx_re(n_number*, LispObj*);
+static void nsub_cx_re(n_number*, LispObj*);
+static void nmul_cx_re(n_number*, LispObj*);
+static void ndiv_cx_re(n_number*, LispObj*);
+
+/* complex complex */
+static void nadd_cx_cx(n_number*, LispObj*);
+static void nsub_cx_cx(n_number*, LispObj*);
+static void nmul_cx_cx(n_number*, LispObj*);
+static void ndiv_cx_cx(n_number*, LispObj*);
+static int cmp_cx_cx(LispObj*, LispObj*);
+
+/* flonum flonum */
+static void radd_flonum(n_real*, double, double);
+static void rsub_flonum(n_real*, double, double);
+static void rmul_flonum(n_real*, double, double);
+static void rdiv_flonum(n_real*, double, double);
+static int cmp_flonum(double, double);
+
+/* fixnum fixnum */
+static void rop_fi_fi_bi(n_real*, long, int);
+static INLINE void radd_fi_fi(n_real*, long);
+static INLINE void rsub_fi_fi(n_real*, long);
+static INLINE void rmul_fi_fi(n_real*, long);
+static INLINE void rdiv_fi_fi(n_real*, long);
+static INLINE int cmp_fi_fi(long, long);
+static void ndivide_fi_fi(n_number*, long, int, int);
+
+/* fixnum bignum */
+static void rop_fi_bi_xi(n_real*, mpi*, int);
+static INLINE void radd_fi_bi(n_real*, mpi*);
+static INLINE void rsub_fi_bi(n_real*, mpi*);
+static INLINE void rmul_fi_bi(n_real*, mpi*);
+static void rdiv_fi_bi(n_real*, mpi*);
+static INLINE int cmp_fi_bi(long, mpi*);
+
+/* fixnum fixratio */
+static void rop_fi_fr_as_xr(n_real*, long, long, int);
+static void rop_fi_fr_md_xr(n_real*, long, long, int);
+static INLINE void radd_fi_fr(n_real*, long, long);
+static INLINE void rsub_fi_fr(n_real*, long, long);
+static INLINE void rmul_fi_fr(n_real*, long, long);
+static INLINE void rdiv_fi_fr(n_real*, long, long);
+static INLINE int cmp_fi_fr(long, long, long);
+
+/* fixnum bigratio */
+static void rop_fi_br_as_xr(n_real*, mpr*, int);
+static void rop_fi_br_md_xr(n_real*, mpr*, int);
+static INLINE void radd_fi_br(n_real*, mpr*);
+static INLINE void rsub_fi_br(n_real*, mpr*);
+static INLINE void rmul_fi_br(n_real*, mpr*);
+static INLINE void rdiv_fi_br(n_real*, mpr*);
+static INLINE int cmp_fi_br(long, mpr*);
+
+/* bignum fixnum */
+static INLINE void radd_bi_fi(n_real*, long);
+static INLINE void rsub_bi_fi(n_real*, long);
+static INLINE void rmul_bi_fi(n_real*, long);
+static void rdiv_bi_fi(n_real*, long);
+static INLINE int cmp_bi_fi(mpi*, long);
+
+/* bignum bignum */
+static INLINE void radd_bi_bi(n_real*, mpi*);
+static INLINE void rsub_bi_bi(n_real*, mpi*);
+static INLINE void rmul_bi_bi(n_real*, mpi*);
+static void rdiv_bi_bi(n_real*, mpi*);
+static INLINE int cmp_bi_bi(mpi*, mpi*);
+
+/* bignum fixratio */
+static void rop_bi_fr_as_xr(n_real*, long, long, int);
+static void rop_bi_fr_md_xr(n_real*, long, long, int);
+static INLINE void radd_bi_fr(n_real*, long, long);
+static INLINE void rsub_bi_fr(n_real*, long, long);
+static INLINE void rmul_bi_fr(n_real*, long, long);
+static INLINE void rdiv_bi_fr(n_real*, long, long);
+static int cmp_bi_fr(mpi*, long, long);
+
+/* bignum bigratio */
+static void rop_bi_br_as_xr(n_real*, mpr*, int);
+static void rop_bi_br_md_xr(n_real*, mpr*, int);
+static INLINE void radd_bi_br(n_real*, mpr*);
+static INLINE void rsub_bi_br(n_real*, mpr*);
+static INLINE void rmul_bi_br(n_real*, mpr*);
+static INLINE void rdiv_bi_br(n_real*, mpr*);
+static int cmp_bi_br(mpi*, mpr*);
+
+/* fixratio fixnum */
+static void rop_fr_fi_as_xr(n_real*, long, int);
+static void rop_fr_fi_md_xr(n_real*, long, int);
+static INLINE void radd_fr_fi(n_real*, long);
+static INLINE void rsub_fr_fi(n_real*, long);
+static INLINE void rmul_fr_fi(n_real*, long);
+static INLINE void rdiv_fr_fi(n_real*, long);
+static INLINE int cmp_fr_fi(long, long, long);
+
+/* fixratio bignum */
+static void rop_fr_bi_as_xr(n_real*, mpi*, int);
+static void rop_fr_bi_md_xr(n_real*, mpi*, int);
+static INLINE void radd_fr_bi(n_real*, mpi*);
+static INLINE void rsub_fr_bi(n_real*, mpi*);
+static INLINE void rmul_fr_bi(n_real*, mpi*);
+static INLINE void rdiv_fr_bi(n_real*, mpi*);
+static int cmp_fr_bi(long, long, mpi*);
+
+/* fixratio fixratio */
+static void rop_fr_fr_as_xr(n_real*, long, long, int);
+static void rop_fr_fr_md_xr(n_real*, long, long, int);
+static INLINE void radd_fr_fr(n_real*, long, long);
+static INLINE void rsub_fr_fr(n_real*, long, long);
+static INLINE void rmul_fr_fr(n_real*, long, long);
+static INLINE void rdiv_fr_fr(n_real*, long, long);
+static INLINE int cmp_fr_fr(long, long, long, long);
+
+/* fixratio bigratio */
+static void rop_fr_br_asmd_xr(n_real*, mpr*, int);
+static INLINE void radd_fr_br(n_real*, mpr*);
+static INLINE void rsub_fr_br(n_real*, mpr*);
+static INLINE void rmul_fr_br(n_real*, mpr*);
+static INLINE void rdiv_fr_br(n_real*, mpr*);
+static int cmp_fr_br(long, long, mpr*);
+
+/* bigratio fixnum */
+static void rop_br_fi_asmd_xr(n_real*, long, int);
+static INLINE void radd_br_fi(n_real*, long);
+static INLINE void rsub_br_fi(n_real*, long);
+static INLINE void rmul_br_fi(n_real*, long);
+static INLINE void rdiv_br_fi(n_real*, long);
+static int cmp_br_fi(mpr*, long);
+
+/* bigratio bignum */
+static void rop_br_bi_as_xr(n_real*, mpi*, int);
+static INLINE void radd_br_bi(n_real*, mpi*);
+static INLINE void rsub_br_bi(n_real*, mpi*);
+static INLINE void rmul_br_bi(n_real*, mpi*);
+static INLINE void rdiv_br_bi(n_real*, mpi*);
+static int cmp_br_bi(mpr*, mpi*);
+
+/* bigratio fixratio */
+static void rop_br_fr_asmd_xr(n_real*, long, long, int);
+static INLINE void radd_br_fr(n_real*, long, long);
+static INLINE void rsub_br_fr(n_real*, long, long);
+static INLINE void rmul_br_fr(n_real*, long, long);
+static INLINE void rdiv_br_fr(n_real*, long, long);
+static int cmp_br_fr(mpr*, long, long);
+
+/* bigratio bigratio */
+static INLINE void radd_br_br(n_real*, mpr*);
+static INLINE void rsub_br_br(n_real*, mpr*);
+static INLINE void rmul_br_br(n_real*, mpr*);
+static INLINE void rdiv_br_br(n_real*, mpr*);
+static INLINE int cmp_br_br(mpr*, mpr*);
+
+/*
+ * Initialization
+ */
+static n_real zero, one, two;
+
+static char *fatal_error_strings[] = {
+#define DIVIDE_BY_ZERO			0
+    "divide by zero",
+#define FLOATING_POINT_OVERFLOW		1
+    "floating point overflow",
+#define FLOATING_POINT_EXCEPTION	2
+    "floating point exception"
+};
+
+static char *fatal_object_error_strings[] = {
+#define NOT_A_NUMBER			0
+    "is not a number",
+#define NOT_A_REAL_NUMBER		1
+    "is not a real number",
+#define NOT_AN_INTEGER			2
+    "is not an integer"
+};
+
+/*
+ * Implementation
+ */
+static void
+fatal_error(int num)
+{
+    LispDestroy(fatal_error_strings[num]);
+}
+
+static void
+fatal_object_error(LispObj *obj, int num)
+{
+    LispDestroy("%s %s", STROBJ(obj), fatal_object_error_strings[num]);
+}
+
+static void
+fatal_builtin_object_error(LispBuiltin *builtin, LispObj *obj, int num)
+{
+    LispDestroy("%s: %s %s", STRFUN(builtin), STROBJ(obj),
+		fatal_object_error_strings[num]);
+}
+
+static void
+number_init(void)
+{
+    zero.type = one.type = two.type = N_FIXNUM;
+    zero.data.fixnum = 0;
+    one.data.fixnum = 1;
+    two.data.fixnum = 2;
+}
+
 static LispObj *
-math_pi(void)
+number_pi(void)
 {
     LispObj *result;
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-    result = REAL(M_PI);
+    result = DFLOAT(M_PI);
 
     return (result);
 }
 
 static void
-add_accumulator(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+set_real_real(n_real *real, n_real *val)
 {
-    if (XTYPE(accum) == CX) {
-	if (XTYPE(ope) == CX)	add_cx_cx(builtin, accum, ope);
-	else			add_cx_re(builtin, accum, ope);
+    switch (RTYPE(real) = RTYPE(val)) {
+	case N_FIXNUM:
+	    RFI(real) = RFI(val);
+	    break;
+	case N_BIGNUM:
+	    RBI(real) = XALLOC(mpi);
+	    mpi_init(RBI(real));
+	    mpi_set(RBI(real), RBI(val));
+	    break;
+	case N_FLONUM:
+	    RFF(real) = RFF(val);
+	    break;
+	case N_FIXRATIO:
+	    RFRN(real) = RFRN(val);
+	    RFRD(real) = RFRD(val);
+	    break;
+	case N_BIGRATIO:
+	    RBR(real) = XALLOC(mpr);
+	    mpr_init(RBR(real));
+	    mpr_set(RBR(real), RBR(val));
+	    break;
     }
-    else if (XTYPE(ope) == CX)	add_re_cx(builtin, accum, ope);
-    else
-	switch (XTYPE(accum)) {
-	    case FI:
-		switch (XTYPE(ope)) {
-		    case FI:	add_fi_fi(builtin, accum, ope);	break;
-		    case FR:	add_fi_fr(builtin, accum, ope);	break;
-		    case FF:	add_fi_ff(builtin, accum, ope);	break;
-		    case BI:	add_fi_bi(builtin, accum, ope);	break;
-		    case BR:	add_fi_br(builtin, accum, ope);	break;
-		    default:	goto add_bad_ope;
-		}
-		break;
-	    case FR:
-		switch (XTYPE(ope)) {
-		    case FI:	add_fr_fi(builtin, accum, ope);	break;
-		    case FR:	add_fr_fr(builtin, accum, ope);	break;
-		    case FF:	add_fr_ff(builtin, accum, ope);	break;
-		    case BI:	add_fr_bi(builtin, accum, ope);	break;
-		    case BR:	add_fr_br(builtin, accum, ope);	break;
-		    default:	goto add_bad_ope;
-		}
-		break;
-	    case FF:
-		switch (XTYPE(ope)) {
-		    case FI:	add_ff_fi(builtin, accum, ope);	break;
-		    case FR:	add_ff_fr(builtin, accum, ope);	break;
-		    case FF:	add_ff_ff(builtin, accum, ope);	break;
-		    case BI:	add_ff_bi(builtin, accum, ope);	break;
-		    case BR:	add_ff_br(builtin, accum, ope);	break;
-		    default:	goto add_bad_ope;
-		}
-		break;
-	    case BI:
-		switch (XTYPE(ope)) {
-		    case FI:	add_bi_fi(builtin, accum, ope);	break;
-		    case FR:	add_bi_fr(builtin, accum, ope);	break;
-		    case FF:	add_bi_ff(builtin, accum, ope);	break;
-		    case BI:	add_bi_bi(builtin, accum, ope);	break;
-		    case BR:	add_bi_br(builtin, accum, ope);	break;
-		    default:	goto add_bad_ope;
-		}
-		break;
-	    case BR:
-		switch (XTYPE(ope)) {
-		    case FI:	add_br_fi(builtin, accum, ope);	break;
-		    case FR:	add_br_fr(builtin, accum, ope);	break;
-		    case FF:	add_br_ff(builtin, accum, ope);	break;
-		    case BI:	add_br_bi(builtin, accum, ope);	break;
-		    case BR:	add_br_br(builtin, accum, ope);	break;
-		    default:	goto add_bad_ope;
-		}
-		break;
-	    default:
-		NOT_A_NUMBER(accum);
-		break;
-	}
-    return;
-add_bad_ope:
-    NOT_A_NUMBER(ope);
 }
 
 static void
-add_float(LispBuiltin *builtin, LispObj *accum, double op1, double op2)
+set_real_object(n_real *real, LispObj *obj)
 {
-    double value = op1 + op2;
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    switch (XTYPE(accum)) {
-	case FI:
-	case FR:
-	    XTYPE(accum) = FF;
+    switch (OBJECT_TYPE(obj)) {
+	case LispFixnum_t:
+	    RTYPE(real) = N_FIXNUM;
+	    RFI(real) = OFI(obj);
 	    break;
-	case BI:
-	    XCLEAR_BI(accum);
-	    XTYPE(accum) = FF;
+	case LispInteger_t:
+	    RTYPE(real) = N_FIXNUM;
+	    RFI(real) = OII(obj);
 	    break;
-	case BR:
-	    XCLEAR_BR(accum);
-	    XTYPE(accum) = FF;
+	case LispBignum_t:
+	    RTYPE(real) = N_BIGNUM;
+	    RBI(real) = XALLOC(mpi);
+	    mpi_init(RBI(real));
+	    mpi_set(RBI(real), OBI(obj));
+	    break;
+	case LispDFloat_t:
+	    RTYPE(real) = N_FLONUM;
+	    RFF(real) = ODF(obj);
+	    break;
+	case LispRatio_t:
+	    RTYPE(real) = N_FIXRATIO;
+	    RFRN(real) = OFRN(obj);
+	    RFRD(real) = OFRD(obj);
+	    break;
+	case LispBigratio_t:
+	    RTYPE(real) = N_BIGRATIO;
+	    RBR(real) = XALLOC(mpr);
+	    mpr_init(RBR(real));
+	    mpr_set(RBR(real), OBR(obj));
 	    break;
 	default:
+	    fatal_object_error(obj, NOT_A_REAL_NUMBER);
 	    break;
     }
-    XFF(accum) = value;
 }
 
 static void
-sub_accumulator(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+set_number_object(n_number *num, LispObj *obj)
 {
-    if (XTYPE(accum) == CX) {
-	if (XTYPE(ope) == CX)	sub_cx_cx(builtin, accum, ope);
-	else			sub_cx_re(builtin, accum, ope);
-    }
-    else if (XTYPE(ope) == CX)	sub_re_cx(builtin, accum, ope);
-    else
-	switch (XTYPE(accum)) {
-	    case FI:
-		switch (XTYPE(ope)) {
-		    case FI:	sub_fi_fi(builtin, accum, ope);	break;
-		    case FR:	sub_fi_fr(builtin, accum, ope);	break;
-		    case FF:	sub_fi_ff(builtin, accum, ope);	break;
-		    case BI:	sub_fi_bi(builtin, accum, ope);	break;
-		    case BR:	sub_fi_br(builtin, accum, ope);	break;
-		    default:	goto sub_bad_ope;
-		}
-		break;
-	    case FR:
-		switch (XTYPE(ope)) {
-		    case FI:	sub_fr_fi(builtin, accum, ope);	break;
-		    case FR:	sub_fr_fr(builtin, accum, ope);	break;
-		    case FF:	sub_fr_ff(builtin, accum, ope);	break;
-		    case BI:	sub_fr_bi(builtin, accum, ope);	break;
-		    case BR:	sub_fr_br(builtin, accum, ope);	break;
-		    default:	goto sub_bad_ope;
-		}
-		break;
-	    case FF:
-		switch (XTYPE(ope)) {
-		    case FI:	sub_ff_fi(builtin, accum, ope);	break;
-		    case FR:	sub_ff_fr(builtin, accum, ope);	break;
-		    case FF:	sub_ff_ff(builtin, accum, ope);	break;
-		    case BI:	sub_ff_bi(builtin, accum, ope);	break;
-		    case BR:	sub_ff_br(builtin, accum, ope);	break;
-		    default:	goto sub_bad_ope;
-		}
-		break;
-	    case BI:
-		switch (XTYPE(ope)) {
-		    case FI:	sub_bi_fi(builtin, accum, ope);	break;
-		    case FR:	sub_bi_fr(builtin, accum, ope);	break;
-		    case FF:	sub_bi_ff(builtin, accum, ope);	break;
-		    case BI:	sub_bi_bi(builtin, accum, ope);	break;
-		    case BR:	sub_bi_br(builtin, accum, ope);	break;
-		    default:	goto sub_bad_ope;
-		}
-		break;
-	    case BR:
-		switch (XTYPE(ope)) {
-		    case FI:	sub_br_fi(builtin, accum, ope);	break;
-		    case FR:	sub_br_fr(builtin, accum, ope);	break;
-		    case FF:	sub_br_ff(builtin, accum, ope);	break;
-		    case BI:	sub_br_bi(builtin, accum, ope);	break;
-		    case BR:	sub_br_br(builtin, accum, ope);	break;
-		    default:	goto sub_bad_ope;
-		}
-		break;
-	    default:
-		NOT_A_NUMBER(accum);
-		break;
-	}
-    return;
-sub_bad_ope:
-    NOT_A_NUMBER(ope);
-}
-
-static void
-sub_float(LispBuiltin *builtin, LispObj *accum, double op1, double op2)
-{
-    double value = op1 - op2;
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    switch (XTYPE(accum)) {
-	case FI:
-	case FR:
-	    XTYPE(accum) = FF;
+    switch (OBJECT_TYPE(obj)) {
+	case LispFixnum_t:
+	    num->complex = 0;
+	    NRTYPE(num) = N_FIXNUM;
+	    NRFI(num) = OFI(obj);
 	    break;
-	case BI:
-	    XCLEAR_BI(accum);
-	    XTYPE(accum) = FF;
+	case LispInteger_t:
+	    num->complex = 0;
+	    NRTYPE(num) = N_FIXNUM;
+	    NRFI(num) = OII(obj);
 	    break;
-	case BR:
-	    XCLEAR_BR(accum);
-	    XTYPE(accum) = FF;
+	case LispBignum_t:
+	    num->complex = 0;
+	    NRTYPE(num) = N_BIGNUM;
+	    NRBI(num) = XALLOC(mpi);
+	    mpi_init(NRBI(num));
+	    mpi_set(NRBI(num), OBI(obj));
+	    break;
+	case LispDFloat_t:
+	    num->complex = 0;
+	    NRTYPE(num) = N_FLONUM;
+	    NRFF(num) = ODF(obj);
+	    break;
+	case LispRatio_t:
+	    num->complex = 0;
+	    NRTYPE(num) = N_FIXRATIO;
+	    NRFRN(num) = OFRN(obj);
+	    NRFRD(num) = OFRD(obj);
+	    break;
+	case LispBigratio_t:
+	    num->complex = 0;
+	    NRTYPE(num) = N_BIGRATIO;
+	    NRBR(num) = XALLOC(mpr);
+	    mpr_init(NRBR(num));
+	    mpr_set(NRBR(num), OBR(obj));
+	    break;
+	case LispComplex_t:
+	    num->complex = 1;
+	    set_real_object(NREAL(num), OCXR(obj));
+	    set_real_object(NIMAG(num), OCXI(obj));
 	    break;
 	default:
+	    fatal_object_error(obj, NOT_A_NUMBER);
 	    break;
     }
-    XFF(accum) = value;
 }
 
 static void
-mul_accumulator(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+clear_real(n_real *real)
 {
-    if (XTYPE(accum) == CX) {
-	if (XTYPE(ope) == CX)	mul_cx_cx(builtin, accum, ope);
-	else			mul_cx_re(builtin, accum, ope);
+    if (RTYPE(real) == N_BIGNUM) {
+	mpi_clear(RBI(real));
+	XFREE(RBI(real));
     }
-    else if (XTYPE(ope) == CX)	mul_re_cx(builtin, accum, ope);
-    else
-	switch (XTYPE(accum)) {
-	    case FI:
-		switch (XTYPE(ope)) {
-		    case FI:	mul_fi_fi(builtin, accum, ope);	break;
-		    case FR:	mul_fi_fr(builtin, accum, ope);	break;
-		    case FF:	mul_fi_ff(builtin, accum, ope);	break;
-		    case BI:	mul_fi_bi(builtin, accum, ope);	break;
-		    case BR:	mul_fi_br(builtin, accum, ope);	break;
-		    default:	goto mul_bad_ope;
-		}
-		break;
-	    case FR:
-		switch (XTYPE(ope)) {
-		    case FI:	mul_fr_fi(builtin, accum, ope);	break;
-		    case FR:	mul_fr_fr(builtin, accum, ope);	break;
-		    case FF:	mul_fr_ff(builtin, accum, ope);	break;
-		    case BI:	mul_fr_bi(builtin, accum, ope);	break;
-		    case BR:	mul_fr_br(builtin, accum, ope);	break;
-		    default:	goto mul_bad_ope;
-		}
-		break;
-	    case FF:
-		switch (XTYPE(ope)) {
-		    case FI:	mul_ff_fi(builtin, accum, ope);	break;
-		    case FR:	mul_ff_fr(builtin, accum, ope);	break;
-		    case FF:	mul_ff_ff(builtin, accum, ope);	break;
-		    case BI:	mul_ff_bi(builtin, accum, ope);	break;
-		    case BR:	mul_ff_br(builtin, accum, ope);	break;
-		    default:	goto mul_bad_ope;
-		}
-		break;
-	    case BI:
-		switch (XTYPE(ope)) {
-		    case FI:	mul_bi_fi(builtin, accum, ope);	break;
-		    case FR:	mul_bi_fr(builtin, accum, ope);	break;
-		    case FF:	mul_bi_ff(builtin, accum, ope);	break;
-		    case BI:	mul_bi_bi(builtin, accum, ope);	break;
-		    case BR:	mul_bi_br(builtin, accum, ope);	break;
-		    default:	goto mul_bad_ope;
-		}
-		break;
-	    case BR:
-		switch (XTYPE(ope)) {
-		    case FI:	mul_br_fi(builtin, accum, ope);	break;
-		    case FR:	mul_br_fr(builtin, accum, ope);	break;
-		    case FF:	mul_br_ff(builtin, accum, ope);	break;
-		    case BI:	mul_br_bi(builtin, accum, ope);	break;
-		    case BR:	mul_br_br(builtin, accum, ope);	break;
-		    default:	goto mul_bad_ope;
-		}
-		break;
-	    default:
-		NOT_A_NUMBER(accum);
-		break;
-	}
-    return;
-mul_bad_ope:
-    NOT_A_NUMBER(ope);
+    else if (RTYPE(real) == N_BIGRATIO) {
+	mpr_clear(RBR(real));
+	XFREE(RBR(real));
+    }
 }
 
 static void
-mul_float(LispBuiltin *builtin, LispObj *accum, double op1, double op2)
+clear_number(n_number *num)
 {
-    double value = op1 * op2;
+    clear_real(NREAL(num));
+    if (num->complex)
+	clear_real(NIMAG(num));
+}
 
-    if (!finite(value))
-	XERROR("floating point overflow");
-    switch (XTYPE(accum)) {
-	case FI:
-	case FR:
-	    XTYPE(accum) = FF;
+static LispObj *
+make_real_object(n_real *real)
+{
+    LispObj *obj;
+
+    switch (RTYPE(real)) {
+	case N_FIXNUM:
+	    if (RFI(real) > MOST_POSITIVE_FIXNUM ||
+		RFI(real) < MOST_NEGATIVE_FIXNUM) {
+		obj = LispNew(NIL, NIL);
+		obj->type = LispInteger_t;
+		OII(obj) = RFI(real);
+	    }
+	    else
+		obj = FIXNUM(RFI(real));
 	    break;
-	case BI:
-	    XCLEAR_BI(accum);
-	    XTYPE(accum) = FF;
+	case N_BIGNUM:
+	    obj = BIGNUM(RBI(real));
+	    XMEM(RBI(real));
 	    break;
-	case BR:
-	    XCLEAR_BR(accum);
-	    XTYPE(accum) = FF;
+	case N_FLONUM:
+	    obj = DFLOAT(RFF(real));
+	    break;
+	case N_FIXRATIO:
+	    obj = LispNew(NIL, NIL);
+	    obj->type = LispRatio_t;
+	    OFRN(obj) = RFRN(real);
+	    OFRD(obj) = RFRD(real);
+	    break;
+	case N_BIGRATIO:
+	    obj = BIGRATIO(RBR(real));
+	    XMEM(RBR(real));
 	    break;
 	default:
+	    obj = NIL;
 	    break;
     }
-    XFF(accum) = value;
+
+    return (obj);
 }
 
-static void
-div_accumulator(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static LispObj *
+make_number_object(n_number *num)
 {
-    if (XTYPE(accum) == CX) {
-	if (XTYPE(ope) == CX)	div_cx_cx(builtin, accum, ope);
-	else			div_cx_re(builtin, accum, ope);
+    LispObj *obj;
+
+    if (num->complex) {
+	GC_ENTER();
+
+	obj = LispNew(NIL, NIL);
+	GC_PROTECT(obj);
+	OCXI(obj) = NIL;
+	obj->type = LispComplex_t;
+	OCXR(obj) = make_real_object(NREAL(num));
+	OCXI(obj) = make_real_object(NIMAG(num));
+	GC_LEAVE();
     }
-    else if (XTYPE(ope) == CX)	div_re_cx(builtin, accum, ope);
-    else
-	switch (XTYPE(accum)) {
-	    case FI:
-		switch (XTYPE(ope)) {
-		    case FI:	div_fi_fi(builtin, accum, ope);	break;
-		    case FR:	div_fi_fr(builtin, accum, ope);	break;
-		    case FF:	div_fi_ff(builtin, accum, ope);	break;
-		    case BI:	div_fi_bi(builtin, accum, ope);	break;
-		    case BR:	div_fi_br(builtin, accum, ope);	break;
-		    default:	goto div_bad_ope;
+    else {
+	switch (NRTYPE(num)) {
+	    case N_FIXNUM:
+		if (NRFI(num) > MOST_POSITIVE_FIXNUM ||
+		    NRFI(num) < MOST_NEGATIVE_FIXNUM) {
+		    obj = LispNew(NIL, NIL);
+		    obj->type = LispInteger_t;
+		    OII(obj) = NRFI(num);
 		}
+		else
+		    obj = FIXNUM(NRFI(num));
 		break;
-	    case FR:
-		switch (XTYPE(ope)) {
-		    case FI:	div_fr_fi(builtin, accum, ope);	break;
-		    case FR:	div_fr_fr(builtin, accum, ope);	break;
-		    case FF:	div_fr_ff(builtin, accum, ope);	break;
-		    case BI:	div_fr_bi(builtin, accum, ope);	break;
-		    case BR:	div_fr_br(builtin, accum, ope);	break;
-		    default:	goto div_bad_ope;
-		}
+	    case N_BIGNUM:
+		obj = BIGNUM(NRBI(num));
+		XMEM(NRBI(num));
 		break;
-	    case FF:
-		switch (XTYPE(ope)) {
-		    case FI:	div_ff_fi(builtin, accum, ope);	break;
-		    case FR:	div_ff_fr(builtin, accum, ope);	break;
-		    case FF:	div_ff_ff(builtin, accum, ope);	break;
-		    case BI:	div_ff_bi(builtin, accum, ope);	break;
-		    case BR:	div_ff_br(builtin, accum, ope);	break;
-		    default:	goto div_bad_ope;
-		}
+	    case N_FLONUM:
+		obj = DFLOAT(NRFF(num));
 		break;
-	    case BI:
-		switch (XTYPE(ope)) {
-		    case FI:	div_bi_fi(builtin, accum, ope);	break;
-		    case FR:	div_bi_fr(builtin, accum, ope);	break;
-		    case FF:	div_bi_ff(builtin, accum, ope);	break;
-		    case BI:	div_bi_bi(builtin, accum, ope);	break;
-		    case BR:	div_bi_br(builtin, accum, ope);	break;
-		    default:	goto div_bad_ope;
-		}
+	    case N_FIXRATIO:
+		obj = LispNew(NIL, NIL);
+		obj->type = LispRatio_t;
+		OFRN(obj) = NRFRN(num);
+		OFRD(obj) = NRFRD(num);
 		break;
-	    case BR:
-		switch (XTYPE(ope)) {
-		    case FI:	div_br_fi(builtin, accum, ope);	break;
-		    case FR:	div_br_fr(builtin, accum, ope);	break;
-		    case FF:	div_br_ff(builtin, accum, ope);	break;
-		    case BI:	div_br_bi(builtin, accum, ope);	break;
-		    case BR:	div_br_br(builtin, accum, ope);	break;
-		    default:	goto div_bad_ope;
-		}
+	    case N_BIGRATIO:
+		obj = BIGRATIO(NRBR(num));
+		XMEM(NRBR(num));
 		break;
 	    default:
-		NOT_A_NUMBER(accum);
+		obj = NIL;
 		break;
 	}
-    return;
-div_bad_ope:
-    NOT_A_NUMBER(ope);
+    }
+
+    return (obj);
+}
+
+#define DEFOP_REAL_REAL(OP)						\
+OP##_real_real(n_real *real, n_real *val)				\
+{									\
+    switch (RTYPE(real)) {						\
+	case N_FIXNUM:							\
+	    switch (RTYPE(val)) {					\
+		case N_FIXNUM:						\
+		    r##OP##_fi_fi(real, RFI(val));			\
+		    break;						\
+		case N_BIGNUM:						\
+		    r##OP##_fi_bi(real, RBI(val));			\
+		    break;						\
+		case N_FLONUM:						\
+		    r##OP##_flonum(real, (double)RFI(real), RFF(val));	\
+		    break;						\
+		case N_FIXRATIO:					\
+		    r##OP##_fi_fr(real, RFRN(val), RFRD(val));		\
+		    break;						\
+		case N_BIGRATIO:					\
+		    r##OP##_fi_br(real, RBR(val));			\
+		    break;						\
+	    }								\
+	    break;							\
+	case N_BIGNUM:							\
+	    switch (RTYPE(val)) {					\
+		case N_FIXNUM:						\
+		    r##OP##_bi_fi(real, RFI(val));			\
+		    break;						\
+		case N_BIGNUM:						\
+		    r##OP##_bi_bi(real, RBI(val));			\
+		    break;						\
+		case N_FLONUM:						\
+		    r##OP##_flonum(real, mpi_getd(RBI(real)), RFF(val));\
+		    break;						\
+		case N_FIXRATIO:					\
+		    r##OP##_bi_fr(real, RFRN(val), RFRD(val));		\
+		    break;						\
+		case N_BIGRATIO:					\
+		    r##OP##_bi_br(real, RBR(val));			\
+		    break;						\
+	    }								\
+	    break;							\
+	case N_FLONUM:							\
+	    switch (RTYPE(val)) {					\
+		case N_FIXNUM:						\
+		    r##OP##_flonum(real, RFF(real), (double)RFI(val));	\
+		    break;						\
+		case N_BIGNUM:						\
+		    r##OP##_flonum(real, RFF(real), mpi_getd(RBI(val)));\
+		    break;						\
+		case N_FLONUM:						\
+		    r##OP##_flonum(real, RFF(real), RFF(val));		\
+		    break;						\
+		case N_FIXRATIO:					\
+		    r##OP##_flonum(real, RFF(real),			\
+				 (double)RFRN(val) / (double)RFRD(val));\
+		    break;						\
+		case N_BIGRATIO:					\
+		    r##OP##_flonum(real, RFF(real), mpr_getd(RBR(val)));\
+		    break;						\
+	    }								\
+	    break;							\
+	case N_FIXRATIO:						\
+	    switch (RTYPE(val)) {					\
+		case N_FIXNUM:						\
+		    r##OP##_fr_fi(real, RFI(val));			\
+		    break;						\
+		case N_BIGNUM:						\
+		    r##OP##_fr_bi(real, RBI(val));			\
+		    break;						\
+		case N_FLONUM:						\
+		    r##OP##_flonum(real,				\
+				(double)RFRN(real) / (double)RFRD(real),\
+				RFF(val));				\
+		    break;						\
+		case N_FIXRATIO:					\
+		    r##OP##_fr_fr(real, RFRN(val), RFRD(val));		\
+		    break;						\
+		case N_BIGRATIO:					\
+		    r##OP##_fr_br(real, RBR(val));			\
+		    break;						\
+	    }								\
+	    break;							\
+	case N_BIGRATIO:						\
+	    switch (RTYPE(val)) {					\
+		case N_FIXNUM:						\
+		    r##OP##_br_fi(real, RFI(val));			\
+		    break;						\
+		case N_BIGNUM:						\
+		    r##OP##_br_bi(real, RBI(val));			\
+		    break;						\
+		case N_FLONUM:						\
+		    r##OP##_flonum(real, mpr_getd(RBR(real)), RFF(val));\
+		    break;						\
+		case N_FIXRATIO:					\
+		    r##OP##_br_fr(real, RFRN(val), RFRD(val));		\
+		    break;						\
+		case N_BIGRATIO:					\
+		    r##OP##_br_br(real, RBR(val));			\
+		    break;						\
+	    }								\
+	    break;							\
+    }									\
 }
 
 static void
-div_float(LispBuiltin *builtin, LispObj *accum, double op1, double op2)
+DEFOP_REAL_REAL(add)
+
+static void
+DEFOP_REAL_REAL(sub)
+
+static void
+DEFOP_REAL_REAL(div)
+
+static void
+DEFOP_REAL_REAL(mul)
+
+
+#define DEFOP_REAL_OBJECT(OP)						\
+OP##_real_object(n_real *real, LispObj *obj)				\
+{									\
+    switch (OBJECT_TYPE(obj)) {						\
+	case LispFixnum_t:						\
+	    switch (RTYPE(real)) {					\
+		case N_FIXNUM:						\
+		    r##OP##_fi_fi(real, OFI(obj));			\
+		    break;						\
+		case N_BIGNUM:						\
+		    r##OP##_bi_fi(real, OFI(obj));			\
+		    break;						\
+		case N_FLONUM:						\
+		    r##OP##_flonum(real, RFF(real), (double)OFI(obj));	\
+		    break;						\
+		case N_FIXRATIO:					\
+		    r##OP##_fr_fi(real, OFI(obj));			\
+		    break;						\
+		case N_BIGRATIO:					\
+		    r##OP##_br_fi(real, OFI(obj));			\
+		    break;						\
+	    }								\
+	    break;							\
+	case LispInteger_t:						\
+	    switch (RTYPE(real)) {					\
+		case N_FIXNUM:						\
+		    r##OP##_fi_fi(real, OII(obj));			\
+		    break;						\
+		case N_BIGNUM:						\
+		    r##OP##_bi_fi(real, OII(obj));			\
+		    break;						\
+		case N_FLONUM:						\
+		    r##OP##_flonum(real, RFF(real), (double)OII(obj));	\
+		    break;						\
+		case N_FIXRATIO:					\
+		    r##OP##_fr_fi(real, OII(obj));			\
+		    break;						\
+		case N_BIGRATIO:					\
+		    r##OP##_br_fi(real, OII(obj));			\
+		    break;						\
+	    }								\
+	    break;							\
+	case LispBignum_t:						\
+	    switch (RTYPE(real)) {					\
+		case N_FIXNUM:						\
+		    r##OP##_fi_bi(real, OBI(obj));			\
+		    break;						\
+		case N_BIGNUM:						\
+		    r##OP##_bi_bi(real, OBI(obj));			\
+		    break;						\
+		case N_FLONUM:						\
+		    r##OP##_flonum(real, RFF(real), mpi_getd(OBI(obj)));\
+		    break;						\
+		case N_FIXRATIO:					\
+		    r##OP##_fr_bi(real, OBI(obj));			\
+		    break;						\
+		case N_BIGRATIO:					\
+		    r##OP##_br_bi(real, OBI(obj));			\
+		    break;						\
+	    }								\
+	    break;							\
+	case LispDFloat_t:						\
+	    switch (RTYPE(real)) {					\
+		case N_FIXNUM:						\
+		    r##OP##_flonum(real, (double)RFI(real), ODF(obj));	\
+		    break;						\
+		case N_BIGNUM:						\
+		    r##OP##_flonum(real, mpi_getd(RBI(real)), ODF(obj));\
+		    break;						\
+		case N_FLONUM:						\
+		    r##OP##_flonum(real, RFF(real), ODF(obj));		\
+		    break;						\
+		case N_FIXRATIO:					\
+		    r##OP##_flonum(real,				\
+				(double)RFRN(real) / (double)RFRD(real),\
+				ODF(obj));				\
+		    break;						\
+		case N_BIGRATIO:					\
+		    r##OP##_flonum(real, mpr_getd(RBR(real)), ODF(obj));\
+		    break;						\
+	    }								\
+	    break;							\
+	case LispRatio_t:						\
+	    switch (RTYPE(real)) {					\
+		case N_FIXNUM:						\
+		    r##OP##_fi_fr(real, OFRN(obj), OFRD(obj));		\
+		    break;						\
+		case N_BIGNUM:						\
+		    r##OP##_bi_fr(real, OFRN(obj), OFRD(obj));		\
+		    break;						\
+		case N_FLONUM:						\
+		    r##OP##_flonum(real, RFF(real),			\
+				(double)OFRN(obj) / (double)OFRD(obj));	\
+		    break;						\
+		case N_FIXRATIO:					\
+		    r##OP##_fr_fr(real, OFRN(obj), OFRD(obj));		\
+		    break;						\
+		case N_BIGRATIO:					\
+		    r##OP##_br_fr(real, OFRN(obj), OFRD(obj));		\
+		    break;						\
+	    }								\
+	    break;							\
+	case LispBigratio_t:						\
+	    switch (RTYPE(real)) {					\
+		case N_FIXNUM:						\
+		    r##OP##_fi_br(real, OBR(obj));			\
+		    break;						\
+		case N_BIGNUM:						\
+		    r##OP##_bi_br(real, OBR(obj));			\
+		    break;						\
+		case N_FLONUM:						\
+		    r##OP##_flonum(real, RFF(real), mpr_getd(OBR(obj)));\
+		    break;						\
+		case N_FIXRATIO:					\
+		    r##OP##_fr_br(real, OBR(obj));			\
+		    break;						\
+		case N_BIGRATIO:					\
+		    r##OP##_br_br(real, OBR(obj));			\
+		    break;						\
+	    }								\
+	    break;							\
+	default:							\
+	    fatal_object_error(obj, NOT_A_REAL_NUMBER);			\
+	    break;							\
+    }									\
+}
+
+static void
+DEFOP_REAL_OBJECT(add)
+
+static void
+DEFOP_REAL_OBJECT(sub)
+
+static void
+DEFOP_REAL_OBJECT(div)
+
+static void
+DEFOP_REAL_OBJECT(mul)
+
+
+#define DEFOP_NUMBER_OBJECT(OP)						\
+OP##_number_object(n_number *num, LispObj *obj)				\
+{									\
+    if (num->complex) {							\
+	switch (OBJECT_TYPE(obj)) {					\
+	    case LispFixnum_t:						\
+	    case LispInteger_t:						\
+	    case LispBignum_t:						\
+	    case LispDFloat_t:						\
+	    case LispRatio_t:						\
+	    case LispBigratio_t:					\
+		n##OP##_cx_re(num, obj);				\
+		break;							\
+	    case LispComplex_t:						\
+		n##OP##_cx_cx(num, obj);				\
+		break;							\
+	    default:							\
+		fatal_object_error(obj, NOT_A_NUMBER);			\
+		break;							\
+	}								\
+    }									\
+    else {								\
+	switch (OBJECT_TYPE(obj)) {					\
+	    case LispFixnum_t:						\
+		switch (NRTYPE(num)) {					\
+		    case N_FIXNUM:					\
+			r##OP##_fi_fi(NREAL(num), OFI(obj));		\
+			break;						\
+		    case N_BIGNUM:					\
+			r##OP##_bi_fi(NREAL(num), OFI(obj));		\
+			break;						\
+		    case N_FLONUM:					\
+			r##OP##_flonum(NREAL(num), NRFF(num),		\
+				    (double)OFI(obj));			\
+			break;						\
+		    case N_FIXRATIO:					\
+			r##OP##_fr_fi(NREAL(num), OFI(obj));		\
+			break;						\
+		    case N_BIGRATIO:					\
+			r##OP##_br_fi(NREAL(num), OFI(obj));		\
+			break;						\
+		}							\
+		break;							\
+	    case LispInteger_t:						\
+		switch (NRTYPE(num)) {					\
+		    case N_FIXNUM:					\
+			r##OP##_fi_fi(NREAL(num), OII(obj));		\
+			break;						\
+		    case N_BIGNUM:					\
+			r##OP##_bi_fi(NREAL(num), OII(obj));		\
+			break;						\
+		    case N_FLONUM:					\
+			r##OP##_flonum(NREAL(num), NRFF(num),		\
+				    (double)OII(obj));			\
+			break;						\
+		    case N_FIXRATIO:					\
+			r##OP##_fr_fi(NREAL(num), OII(obj));		\
+			break;						\
+		    case N_BIGRATIO:					\
+			r##OP##_br_fi(NREAL(num), OII(obj));		\
+			break;						\
+		}							\
+		break;							\
+	    case LispBignum_t:						\
+		switch (NRTYPE(num)) {					\
+		    case N_FIXNUM:					\
+			r##OP##_fi_bi(NREAL(num), OBI(obj));		\
+			break;						\
+		    case N_BIGNUM:					\
+			r##OP##_bi_bi(NREAL(num), OBI(obj));		\
+			break;						\
+		    case N_FLONUM:					\
+			r##OP##_flonum(NREAL(num), NRFF(num),		\
+				    mpi_getd(OBI(obj)));		\
+			break;						\
+		    case N_FIXRATIO:					\
+			r##OP##_fr_bi(NREAL(num), OBI(obj));		\
+			break;						\
+		    case N_BIGRATIO:					\
+			r##OP##_br_bi(NREAL(num), OBI(obj));		\
+			break;						\
+		}							\
+		break;							\
+	    case LispDFloat_t:						\
+		switch (NRTYPE(num)) {					\
+		    case N_FIXNUM:					\
+			r##OP##_flonum(NREAL(num), (double)NRFI(num),	\
+				    ODF(obj));				\
+			break;						\
+		    case N_BIGNUM:					\
+			r##OP##_flonum(NREAL(num), mpi_getd(NRBI(num)),	\
+				    ODF(obj));				\
+			break;						\
+		    case N_FLONUM:					\
+			r##OP##_flonum(NREAL(num), NRFF(num), ODF(obj));\
+			break;						\
+		    case N_FIXRATIO:					\
+			r##OP##_flonum(NREAL(num),			\
+				    (double)NRFRN(num) /		\
+				    (double)NRFRD(num),			\
+				    ODF(obj));				\
+			break;						\
+		    case N_BIGRATIO:					\
+			r##OP##_flonum(NREAL(num), mpr_getd(NRBR(num)),	\
+				    ODF(obj));				\
+			break;						\
+		}							\
+		break;							\
+	    case LispRatio_t:						\
+		switch (NRTYPE(num)) {					\
+		    case N_FIXNUM:					\
+			r##OP##_fi_fr(NREAL(num), OFRN(obj), OFRD(obj));\
+			break;						\
+		    case N_BIGNUM:					\
+			r##OP##_bi_fr(NREAL(num), OFRN(obj), OFRD(obj));\
+			break;						\
+		    case N_FLONUM:					\
+			r##OP##_flonum(NREAL(num), NRFF(num),		\
+				    (double)OFRN(obj) /			\
+				    (double)OFRD(obj));			\
+			break;						\
+		    case N_FIXRATIO:					\
+			r##OP##_fr_fr(NREAL(num), OFRN(obj), OFRD(obj));\
+			break;						\
+		    case N_BIGRATIO:					\
+			r##OP##_br_fr(NREAL(num), OFRN(obj), OFRD(obj));\
+			break;						\
+		}							\
+		break;							\
+	    case LispBigratio_t:					\
+		switch (NRTYPE(num)) {					\
+		    case N_FIXNUM:					\
+			r##OP##_fi_br(NREAL(num), OBR(obj));		\
+			break;						\
+		    case N_BIGNUM:					\
+			r##OP##_bi_br(NREAL(num), OBR(obj));		\
+			break;						\
+		    case N_FLONUM:					\
+			r##OP##_flonum(NREAL(num), NRFF(num),		\
+				    mpr_getd(OBR(obj)));		\
+			break;						\
+		    case N_FIXRATIO:					\
+			r##OP##_fr_br(NREAL(num), OBR(obj));		\
+			break;						\
+		    case N_BIGRATIO:					\
+			r##OP##_br_br(NREAL(num), OBR(obj));		\
+			break;						\
+		}							\
+		break;							\
+	    case LispComplex_t:						\
+		n##OP##_re_cx(num, obj);				\
+		break;							\
+	    default:							\
+		fatal_object_error(obj, NOT_A_NUMBER);			\
+		break;							\
+	}								\
+    }									\
+}
+
+static void
+DEFOP_NUMBER_OBJECT(add)
+
+static void
+DEFOP_NUMBER_OBJECT(sub)
+
+static void
+DEFOP_NUMBER_OBJECT(div)
+
+static void
+DEFOP_NUMBER_OBJECT(mul)
+
+
+/************************************************************************
+ * ABS
+ ************************************************************************/
+static void
+abs_real(n_real *real)
+{
+    switch (RTYPE(real)) {
+	case N_FIXNUM:		rabs_fi(real);	break;
+	case N_BIGNUM:		rabs_bi(real);	break;
+	case N_FLONUM:		rabs_ff(real);	break;
+	case N_FIXRATIO:	rabs_fr(real);	break;
+	case N_BIGRATIO:	rabs_br(real);	break;
+    }
+}
+
+static void
+abs_number(n_number *num)
+{
+    if (num->complex)
+	nabs_cx(num);
+    else {
+	switch (NRTYPE(num)) {
+	    case N_FIXNUM:	rabs_fi(NREAL(num));	break;
+	    case N_BIGNUM:	rabs_bi(NREAL(num));	break;
+	    case N_FLONUM:	rabs_ff(NREAL(num));	break;
+	    case N_FIXRATIO:	rabs_fr(NREAL(num));	break;
+	    case N_BIGRATIO:	rabs_br(NREAL(num));	break;
+	}
+    }
+}
+
+static void
+nabs_cx(n_number *num)
+{
+    n_real temp;
+
+    abs_real(NREAL(num));
+    abs_real(NIMAG(num));
+
+    if (cmp_real_real(NREAL(num), NIMAG(num)) < 0) {
+	memcpy(&temp, NIMAG(num), sizeof(n_real));
+	memcpy(NIMAG(num), NREAL(num), sizeof(n_real));
+	memcpy(NREAL(num), &temp, sizeof(n_real));
+    }
+
+    if (cmp_real_real(NIMAG(num), &zero) == 0)
+	num->complex = 0;
+    else {
+	int rational;
+
+	rational = NRINTEGERP(num) && NIINTEGERP(num);
+
+	div_real_real(NREAL(num), NIMAG(num));
+	set_real_real(&temp, NIMAG(num));
+	mul_real_real(NIMAG(num), &temp);
+	clear_real(&temp);
+
+	add_real_real(NIMAG(num), &one);
+	sqrt_real(NIMAG(num));
+
+	mul_real_real(NREAL(num), NIMAG(num));
+	clear_real(NIMAG(num));
+	num->complex = 0;
+
+	if (rational)
+	    real_maybe_integer(NREAL(num));
+    }
+}
+
+static INLINE void
+rabs_fi(n_real *real)
+{
+    if (RFI(real) < 0)
+	rneg_fi(real);
+}
+
+static INLINE void
+rabs_bi(n_real *real)
+{
+    if (mpi_cmpi(RBI(real), 0) < 0)
+	mpi_neg(RBI(real), RBI(real));
+}
+
+static INLINE void
+rabs_ff(n_real *real)
+{
+    if (RFF(real) < 0.0)
+	RFF(real) = -RFF(real);
+}
+
+static INLINE void
+rabs_fr(n_real *real)
+{
+    if (RFRN(real) < 0)
+	rneg_fr(real);
+}
+
+static INLINE void
+rabs_br(n_real *real)
+{
+    if (mpi_cmpi(RBRN(real), 0) < 0)
+	mpi_neg(RBRN(real), RBRN(real));
+}
+
+
+/************************************************************************
+ * NEG
+ ************************************************************************/
+static void
+neg_real(n_real *real)
+{
+    switch (RTYPE(real)) {
+	case N_FIXNUM:		rneg_fi(real);	break;
+	case N_BIGNUM:		rneg_bi(real);	break;
+	case N_FLONUM:		rneg_ff(real);	break;
+	case N_FIXRATIO:	rneg_fr(real);	break;
+	case N_BIGRATIO:	rneg_br(real);	break;
+    }
+}
+
+static void
+neg_number(n_number *num)
+{
+    if (num->complex) {
+	neg_real(NREAL(num));
+	neg_real(NIMAG(num));
+    }
+    else {
+	switch (NRTYPE(num)) {
+	    case N_FIXNUM:	rneg_fi(NREAL(num));	break;
+	    case N_BIGNUM:	rneg_bi(NREAL(num));	break;
+	    case N_FLONUM:	rneg_ff(NREAL(num));	break;
+	    case N_FIXRATIO:	rneg_fr(NREAL(num));	break;
+	    case N_BIGRATIO:	rneg_br(NREAL(num));	break;
+	}
+    }
+}
+
+static void
+rneg_fi(n_real *real)
+{
+    if (RFI(real) == MINSLONG) {
+	mpi *bigi = XALLOC(mpi);
+
+	mpi_init(bigi);
+	mpi_seti(bigi, RFI(real));
+	mpi_neg(bigi, bigi);
+	RTYPE(real) = N_BIGNUM;
+	RBI(real) = bigi;
+    }
+    else
+	RFI(real) = -RFI(real);
+}
+
+static INLINE void
+rneg_bi(n_real *real)
+{
+    mpi_neg(RBI(real), RBI(real));
+}
+
+static INLINE void
+rneg_ff(n_real *real)
+{
+    RFF(real) = -RFF(real);
+}
+
+static void
+rneg_fr(n_real *real)
+{
+    if (RFRN(real) == MINSLONG) {
+	mpr *bigr = XALLOC(mpr);
+
+	mpr_init(bigr);
+	mpr_seti(bigr, RFRN(real), RFRD(real));
+	mpi_neg(mpr_num(bigr), mpr_num(bigr));
+	RTYPE(real) = N_BIGRATIO;
+	RBR(real) = bigr;
+    }
+    else
+	RFRN(real) = -RFRN(real);
+}
+
+static INLINE void
+rneg_br(n_real *real)
+{
+    mpi_neg(RBRN(real), RBRN(real));
+}
+
+
+/************************************************************************
+ * SQRT
+ ************************************************************************/
+static void
+sqrt_real(n_real *real)
+{
+    switch (RTYPE(real)) {
+	case N_FIXNUM:
+	case N_BIGNUM:
+	    rsqrt_xi(real);
+	    break;
+	case N_FLONUM:
+	    rsqrt_ff(real);
+	    break;
+	case N_FIXRATIO:
+	case N_BIGRATIO:
+	    rsqrt_xr(real);
+	    break;
+    }
+}
+
+static void
+sqrt_number(n_number *num)
+{
+    if (num->complex)
+	nsqrt_cx(num);
+    else {
+	switch (NRTYPE(num)) {
+	    case N_FIXNUM:
+	    case N_BIGNUM:
+		nsqrt_xi(num);
+		break;
+	    case N_FLONUM:
+		nsqrt_ff(num);
+		break;
+	    case N_FIXRATIO:
+	    case N_BIGRATIO:
+		nsqrt_xr(num);
+		break;
+	}
+    }
+}
+
+static void
+rsqrt_xi(n_real *real)
 {
     double value;
 
-    if (op2 == 0.0)
-	XERROR("divide by zero");
-    value = op1 / op2;
+    if (RTYPE(real) == N_BIGNUM) {
+	value = mpi_getd(RBI(real));
+	RCLEAR_BI(real);
+    }
+    else
+	value = (double)RFI(real);
+
+    if (value < 0.0)
+	fatal_error(FLOATING_POINT_EXCEPTION);
+    value = sqrt(value);
+    RTYPE(real) = N_FLONUM;
+    RFF(real) = value;
+    real_maybe_integer(real);
+}
+
+/*
+ * FIXME: check if sqrt of rational is rational
+ */
+static void
+rsqrt_xr(n_real *real)
+{
+    double value;
+
+    if (RTYPE(real) == N_BIGRATIO) {
+	value = mpr_getd(RBR(real));
+	RCLEAR_BR(real);
+    }
+    else
+	value = (double)RFRN(real) / (double)RFRD(real);
+
     if (!finite(value))
-	XERROR("floating point overflow");
-    switch (XTYPE(accum)) {
-	case FI:
-	case FR:
-	    XTYPE(accum) = FF;
-	    break;
-	case BI:
-	    XCLEAR_BI(accum);
-	    XTYPE(accum) = FF;
-	    break;
-	case BR:
-	    XCLEAR_BR(accum);
-	    XTYPE(accum) = FF;
-	    break;
-	default:
-	    break;
-    }
-    XFF(accum) = value;
+	fatal_error(FLOATING_POINT_OVERFLOW);
+    else if (value < 0)
+	fatal_error(FLOATING_POINT_EXCEPTION);
+    RTYPE(real) = N_FLONUM;
+    RFF(real) = sqrt(value);
 }
 
-static LispObj *
-math_divide(LispBuiltin *builtin, int function, int floating)
+static void
+rsqrt_ff(n_real *real)
 {
-    LispObj *number, *divisor;
+    if (RFF(real) < 0.0)
+	fatal_error(FLOATING_POINT_EXCEPTION);
+    RFF(real) = sqrt(RFF(real));
+}
 
-    divisor = ARGUMENT(1);
-    number = ARGUMENT(0);
 
-    if (divisor == NIL)
-	divisor = &one;
+static void
+nsqrt_cx(n_number *num)
+{
+    int ireal, iimag;
+    n_number mag;
+    n_real *real, *imag;
 
-    RETURN_COUNT = 1;
-    if (math_compare(builtin, divisor, &zero) == 0)
-	XERROR("divide by zero");
-    if (math_compare(builtin, number, &zero) == 0)
-	return (RETURN(0) = &zero);
-    switch (XTYPE(number)) {
-	case FI:
-	    switch (XTYPE(divisor)) {
-		case FI: return (divide_fi_fi(builtin, number,
-					      divisor, function, floating));
-		case FR: return (divide_xi_xr(builtin, number,
-					      divisor, function, floating));
-		case FF: return (divide_fi_ff(builtin, number,
-					      divisor, function, floating));
-		case BI: return (divide_xi_xi(builtin, number,
-					      divisor, function, floating));
-		case BR: return (divide_xi_xr(builtin, number,
-					      divisor, function, floating));
-		default: goto divide_bad_divisor;
+    ireal = NRINTEGERP(num);
+    iimag = NIINTEGERP(num);
+
+    real = &(mag.real);
+    imag = &(mag.imag);
+    set_real_real(real, NREAL(num));
+    set_real_real(imag, NIMAG(num));
+    mag.complex = 1;
+
+    nabs_cx(&mag);	/* this will free the imag part data */
+    if (!mag.complex && cmp_real_real(real, &zero) == 0) {
+	clear_number(num);
+	memcpy(NREAL(num), real, sizeof(n_real));
+	clear_real(real);
+	num->complex = 0;
+	return;
+    }
+    else if (cmp_real_real(NREAL(num), &zero) > 0) {
+	/* R = sqrt((mag + Ra) / 2) */
+	add_real_real(NREAL(num), real);
+	clear_real(real);
+	div_real_real(NREAL(num), &two);
+	sqrt_real(NREAL(num));
+
+	/* I = Ia / R / 2 */
+	div_real_real(NIMAG(num), NREAL(num));
+	div_real_real(NIMAG(num), &two);
+    }
+    else {
+	/* remember old imag part */
+	memcpy(imag, NIMAG(num), sizeof(n_real));
+
+	/* I = sqrt((mag - Ra) / 2) */
+	memcpy(NIMAG(num), real, sizeof(n_real));
+	sub_real_real(NIMAG(num), NREAL(num));
+	div_real_real(NIMAG(num), &two);
+
+	/* R = Ia / I / 2 */
+	clear_real(NREAL(num));
+	/* start with old imag part */
+	memcpy(NREAL(num), imag, sizeof(n_real));
+	div_real_real(NREAL(num), NIMAG(num));
+	div_real_real(NREAL(num), &two);
+    }
+
+    ncx_canonicalize(num, ireal, iimag);
+}
+
+static void
+nsqrt_xi(n_number *num)
+{
+    double value;
+
+    if (NRTYPE(num) == N_BIGNUM) {
+	value = mpi_getd(NRBI(num));
+	RCLEAR_BI(NREAL(num));
+    }
+    else
+	value = NRFI(num);
+
+    if (value < 0.0) {
+	value = sqrt(-value);
+
+	NITYPE(num) = N_FLONUM;
+	NIFF(num) = value;
+	NRFI(num) = 0;
+	num->complex = 1;
+	real_maybe_integer(NIMAG(num));
+    }
+    else {
+	value = sqrt(value);
+	NRTYPE(num) = N_FLONUM;
+	NRFF(num) = value;
+	real_maybe_integer(NREAL(num));
+    }
+}
+
+static void
+nsqrt_ff(n_number *num)
+{
+    double value;
+
+    if (NRFF(num) < 0.0) {
+	value = sqrt(-NRFF(num));
+
+	NITYPE(num) = N_FLONUM;
+	NIFF(num) = value;
+	NRTYPE(num) = N_FIXNUM;
+	NRFI(num) = 0;
+	num->complex = 1;
+    }
+    else {
+	value = sqrt(NRFF(num));
+	NRFF(num) = value;
+    }
+}
+
+/*
+ * FIXME: check if sqrt of rational is rational
+ */
+static void
+nsqrt_xr(n_number *num)
+{
+    double value, ratio;
+    int cmp;
+
+    if (NRTYPE(num) == N_BIGRATIO) {
+	ratio = mpr_getd(NRBR(num));
+	RCLEAR_BR(NREAL(num));
+    }
+    else
+	ratio = (double)NRFRN(num) / (double)NRFRD(num);
+
+    if (!finite(ratio))
+	fatal_error(FLOATING_POINT_OVERFLOW);
+    cmp = ratio < 0 ? -1 : 0;
+    if (cmp < 0)
+	ratio = -ratio;
+    value = sqrt(ratio);
+
+    if (cmp < 0) {
+	NITYPE(num) = N_FLONUM;
+	NIFF(num) = value;
+	NRTYPE(num) = N_FIXNUM;
+	NRFI(num) = 0;
+	num->complex = 1;
+    }
+    else {
+	NRTYPE(num) = N_FLONUM;
+	NRFF(num) = value;
+    }
+}
+
+
+/************************************************************************
+ * MOD
+ ************************************************************************/
+static void
+mod_real_real(n_real *real, n_real *val)
+{
+    /* Assume both operands are integers */
+    switch (RTYPE(real)) {
+	case N_FIXNUM:
+	    switch (RTYPE(val)) {
+		case N_FIXNUM:
+		    rmod_fi_fi(real, RFI(val));
+		    break;
+		case N_BIGNUM:
+		    rmod_fi_bi(real, RBI(val));
+		    break;
 	    }
 	    break;
-	case FR:
-	    switch (XTYPE(divisor)) {
-		case FI: return (divide_xr_xi(builtin, number,
-					      divisor, function, floating));
-		case FR: return (divide_xr_xr(builtin, number,
-					      divisor, function, floating));
-		case FF: return (divide_fr_ff(builtin, number,
-					      divisor, function, floating));
-		case BI: return (divide_xr_xi(builtin, number,
-					      divisor, function, floating));
-		case BR: return (divide_xr_xr(builtin, number,
-					      divisor, function, floating));
-		default: goto divide_bad_divisor;
+	case N_BIGNUM:
+	    switch (RTYPE(val)) {
+		case N_FIXNUM:
+		    rmod_bi_fi(real, RFI(val));
+		    break;
+		case N_BIGNUM:
+		    rmod_bi_bi(real, RBI(val));
+		    break;
 	    }
 	    break;
-	case FF:
-	    switch (XTYPE(divisor)) {
-		case FI: return (divide_ff_fi(builtin, number,
-					      divisor, function, floating));
-		case FR: return (divide_ff_fr(builtin, number,
-					      divisor, function, floating));
-		case FF: return (divide_ff_ff(builtin, number,
-					      divisor, function, floating));
-		case BI: return (divide_ff_bi(builtin, number,
-					      divisor, function, floating));
-		case BR: return (divide_ff_br(builtin, number,
-					      divisor, function, floating));
-		default: goto divide_bad_divisor;
+    }
+}
+
+static void
+mod_real_object(n_real *real, LispObj *obj)
+{
+    switch (RTYPE(real)) {
+	case N_FIXNUM:
+	    switch (OBJECT_TYPE(obj)) {
+		case LispFixnum_t:
+		    rmod_fi_fi(real, OFI(obj));
+		    return;
+		case LispInteger_t:
+		    rmod_fi_fi(real, OII(obj));
+		    return;
+		case LispBignum_t:
+		    rmod_fi_bi(real, OBI(obj));
+		    return;
+		default:
+		    break;
 	    }
 	    break;
-	case BI:
-	    switch (XTYPE(divisor)) {
-		case FI: return (divide_xi_xi(builtin, number,
-					      divisor, function, floating));
-		case FR: return (divide_xi_xr(builtin, number,
-					      divisor, function, floating));
-		case FF: return (divide_bi_ff(builtin, number,
-					      divisor, function, floating));
-		case BI: return (divide_xi_xi(builtin, number,
-					      divisor, function, floating));
-		case BR: return (divide_xi_xr(builtin, number,
-					      divisor, function, floating));
-		default: goto divide_bad_divisor;
+	case N_BIGNUM:
+	    switch (OBJECT_TYPE(obj)) {
+		case LispFixnum_t:
+		    rmod_bi_fi(real, OFI(obj));
+		    return;
+		case LispInteger_t:
+		    rmod_bi_fi(real, OII(obj));
+		    return;
+		case LispBignum_t:
+		    rmod_bi_bi(real, OBI(obj));
+		    return;
+		default:
+		    break;
 	    }
 	    break;
-	case BR:
-	    switch (XTYPE(divisor)) {
-		case FI: return (divide_xr_xi(builtin, number,
-					      divisor, function, floating));
-		case FR: return (divide_xr_xr(builtin, number,
-					      divisor, function, floating));
-		case FF: return (divide_br_ff(builtin, number,
-					      divisor, function, floating));
-		case BI: return (divide_xr_xi(builtin, number,
-					      divisor, function, floating));
-		case BR: return (divide_xr_xr(builtin, number,
-					      divisor, function, floating));
-		default: goto divide_bad_divisor;
+	/* Assume the n_real object is an integer */
+    }
+    fatal_object_error(obj, NOT_AN_INTEGER);
+}
+
+static void
+rmod_fi_fi(n_real *real, long fi)
+{
+    if (fi == 0)
+	fatal_error(DIVIDE_BY_ZERO);
+
+    if ((RFI(real) < 0) ^ (fi < 0))
+	RFI(real) = (RFI(real) % fi) + fi;
+    else
+	RFI(real) = RFI(real) % fi;
+}
+
+static void
+rmod_fi_bi(n_real *real, mpi *bignum)
+{
+    mpi *bigi;
+
+    if (mpi_cmpi(bignum, 0) == 0)
+	fatal_error(DIVIDE_BY_ZERO);
+
+    bigi = XALLOC(mpi);
+    mpi_init(bigi);
+    mpi_seti(bigi, RFI(real));
+    mpi_mod(bigi, bigi, bignum);
+    RTYPE(real) = N_BIGNUM;
+    RBI(real) = bigi;
+    rbi_canonicalize(real);
+}
+
+static void
+rmod_bi_fi(n_real *real, long fi)
+{
+    mpi iop;
+
+    if (fi == 0)
+	fatal_error(DIVIDE_BY_ZERO);
+
+    mpi_init(&iop);
+    mpi_seti(&iop, fi);
+    mpi_mod(RBI(real), RBI(real), &iop);
+    mpi_clear(&iop);
+    rbi_canonicalize(real);
+}
+
+static void
+rmod_bi_bi(n_real *real, mpi *bignum)
+{
+    if (mpi_cmpi(bignum, 0) == 0)
+	fatal_error(DIVIDE_BY_ZERO);
+
+    mpi_mod(RBI(real), RBI(real), bignum);
+    rbi_canonicalize(real);
+}
+
+/************************************************************************
+ * REM
+ ************************************************************************/
+static void
+rem_real_object(n_real *real, LispObj *obj)
+{
+    switch (RTYPE(real)) {
+	case N_FIXNUM:
+	    switch (OBJECT_TYPE(obj)) {
+		case LispFixnum_t:
+		    rrem_fi_fi(real, OFI(obj));
+		    return;
+		case LispInteger_t:
+		    rrem_fi_fi(real, OII(obj));
+		    return;
+		case LispBignum_t:
+		    rrem_fi_bi(real, OBI(obj));
+		    return;
+		default:
+		    break;
+	    }
+	    break;
+	case N_BIGNUM:
+	    switch (OBJECT_TYPE(obj)) {
+		case LispFixnum_t:
+		    rrem_bi_fi(real, OFI(obj));
+		    return;
+		case LispInteger_t:
+		    rrem_bi_fi(real, OII(obj));
+		    return;
+		case LispBignum_t:
+		    rrem_bi_bi(real, OBI(obj));
+		    return;
+		default:
+		    break;
+	    }
+	    break;
+	/* Assume the n_real object is an integer */
+    }
+    fatal_object_error(obj, NOT_AN_INTEGER);
+}
+
+static void
+rrem_fi_fi(n_real *real, long fi)
+{
+    if (fi == 0)
+	fatal_error(DIVIDE_BY_ZERO);
+
+    RFI(real) = RFI(real) % fi;
+}
+
+static void
+rrem_fi_bi(n_real *real, mpi *bignum)
+{
+    mpi *bigi;
+
+    if (mpi_cmpi(bignum, 0) == 0)
+	fatal_error(DIVIDE_BY_ZERO);
+
+    bigi = XALLOC(mpi);
+    mpi_init(bigi);
+    mpi_seti(bigi, RFI(real));
+    mpi_rem(bigi, bigi, bignum);
+    RTYPE(real) = N_BIGNUM;
+    RBI(real) = bigi;
+    rbi_canonicalize(real);
+}
+
+static void
+rrem_bi_fi(n_real *real, long fi)
+{
+    mpi iop;
+
+    if (fi == 0)
+	fatal_error(DIVIDE_BY_ZERO);
+
+    mpi_init(&iop);
+    mpi_seti(&iop, fi);
+    mpi_rem(RBI(real), RBI(real), &iop);
+    mpi_clear(&iop);
+    rbi_canonicalize(real);
+}
+
+static void
+rrem_bi_bi(n_real *real, mpi *bignum)
+{
+    if (mpi_cmpi(bignum, 0) == 0)
+	fatal_error(DIVIDE_BY_ZERO);
+
+    mpi_rem(RBI(real), RBI(real), bignum);
+    rbi_canonicalize(real);
+}
+
+
+/************************************************************************
+ * GCD
+ ************************************************************************/
+static void
+gcd_real_object(n_real *real, LispObj *obj)
+{
+    if (!INTEGERP(obj))
+	fatal_object_error(obj, NOT_AN_INTEGER);
+
+    /* check for zero operand */
+    if (cmp_real_real(real, &zero) == 0)
+	set_real_object(real, obj);
+    else if (cmp_real_object(&zero, obj) != 0) {
+	n_real rest, temp;
+
+	set_real_object(&rest, obj);
+	for (;;) {
+	    mod_real_real(&rest, real);
+	    if (cmp_real_real(&rest, &zero) == 0)
+		break;
+	    memcpy(&temp, real, sizeof(n_real));
+	    memcpy(real, &rest, sizeof(n_real));
+	    memcpy(&rest, &temp, sizeof(n_real));
+	}
+	clear_real(&rest);
+    }
+}
+
+/************************************************************************
+ * AND
+ ************************************************************************/
+static void
+and_real_object(n_real *real, LispObj *obj)
+{
+    mpi *bigi, iop;
+
+    switch (OBJECT_TYPE(obj)) {
+	case LispFixnum_t:
+	    switch (RTYPE(real)) {
+		case N_FIXNUM:
+		    RFI(real) &= OFI(obj);
+		    break;
+		case N_BIGNUM:
+		    mpi_init(&iop);
+		    mpi_seti(&iop, OFI(obj));
+		    mpi_and(RBI(real), RBI(real), &iop);
+		    mpi_clear(&iop);
+		    rbi_canonicalize(real);
+		    break;
+	    }
+	    break;
+	case LispInteger_t:
+	    switch (RTYPE(real)) {
+		case N_FIXNUM:
+		    RFI(real) &= OII(obj);
+		    break;
+		case N_BIGNUM:
+		    mpi_init(&iop);
+		    mpi_seti(&iop, OII(obj));
+		    mpi_and(RBI(real), RBI(real), &iop);
+		    mpi_clear(&iop);
+		    rbi_canonicalize(real);
+		    break;
+	    }
+	    break;
+	case LispBignum_t:
+	    switch (RTYPE(real)) {
+		case N_FIXNUM:
+		    bigi = XALLOC(mpi);
+		    mpi_init(bigi);
+		    mpi_seti(bigi, RFI(real));
+		    mpi_and(bigi, bigi, OBI(obj));
+		    RTYPE(real) = N_BIGNUM;
+		    RBI(real) = bigi;
+		    rbi_canonicalize(real);
+		    break;
+		case N_BIGNUM:
+		    mpi_and(RBI(real), RBI(real), OBI(obj));
+		    rbi_canonicalize(real);
+		    break;
 	    }
 	    break;
 	default:
-	    NOT_A_REAL_NUMBER(number);
+	    fatal_object_error(obj, NOT_AN_INTEGER);
 	    break;
     }
-divide_bad_divisor:
-    NOT_A_REAL_NUMBER(divisor);
-
-    return (NIL);
 }
 
-static LispObj *
-divide_float(LispBuiltin *builtin, double num, double div,
-	     int function, int floating)
+
+/************************************************************************
+ * EQV
+ ************************************************************************/
+static void
+eqv_real_object(n_real *real, LispObj *obj)
 {
-    LispObj *result;
+    mpi *bigi, iop;
+
+    switch (OBJECT_TYPE(obj)) {
+	case LispFixnum_t:
+	    switch (RTYPE(real)) {
+		case N_FIXNUM:
+		    RFI(real) ^= ~OFI(obj);
+		    break;
+		case N_BIGNUM:
+		    mpi_init(&iop);
+		    mpi_seti(&iop, OFI(obj));
+		    mpi_com(&iop, &iop);
+		    mpi_xor(RBI(real), RBI(real), &iop);
+		    mpi_clear(&iop);
+		    rbi_canonicalize(real);
+		    break;
+	    }
+	    break;
+	case LispInteger_t:
+	    switch (RTYPE(real)) {
+		case N_FIXNUM:
+		    RFI(real) ^= ~OII(obj);
+		    break;
+		case N_BIGNUM:
+		    mpi_init(&iop);
+		    mpi_seti(&iop, OII(obj));
+		    mpi_com(&iop, &iop);
+		    mpi_xor(RBI(real), RBI(real), &iop);
+		    mpi_clear(&iop);
+		    rbi_canonicalize(real);
+		    break;
+	    }
+	    break;
+	case LispBignum_t:
+	    switch (RTYPE(real)) {
+		case N_FIXNUM:
+		    bigi = XALLOC(mpi);
+		    mpi_init(bigi);
+		    mpi_seti(bigi, RFI(real));
+		    mpi_com(bigi, bigi);
+		    mpi_xor(bigi, bigi, OBI(obj));
+		    RTYPE(real) = N_BIGNUM;
+		    RBI(real) = bigi;
+		    rbi_canonicalize(real);
+		    break;
+		case N_BIGNUM:
+		    mpi_com(RBI(real), RBI(real));
+		    mpi_xor(RBI(real), RBI(real), OBI(obj));
+		    rbi_canonicalize(real);
+		    break;
+	    }
+	    break;
+	default:
+	    fatal_object_error(obj, NOT_AN_INTEGER);
+	    break;
+    }
+}
+
+
+/************************************************************************
+ * IOR
+ ************************************************************************/
+static void
+ior_real_object(n_real *real, LispObj *obj)
+{
+    mpi *bigi, iop;
+
+    switch (OBJECT_TYPE(obj)) {
+	case LispFixnum_t:
+	    switch (RTYPE(real)) {
+		case N_FIXNUM:
+		    RFI(real) |= OFI(obj);
+		    break;
+		case N_BIGNUM:
+		    mpi_init(&iop);
+		    mpi_seti(&iop, OFI(obj));
+		    mpi_ior(RBI(real), RBI(real), &iop);
+		    mpi_clear(&iop);
+		    rbi_canonicalize(real);
+		    break;
+	    }
+	    break;
+	case LispInteger_t:
+	    switch (RTYPE(real)) {
+		case N_FIXNUM:
+		    RFI(real) |= OII(obj);
+		    break;
+		case N_BIGNUM:
+		    mpi_init(&iop);
+		    mpi_seti(&iop, OII(obj));
+		    mpi_ior(RBI(real), RBI(real), &iop);
+		    mpi_clear(&iop);
+		    rbi_canonicalize(real);
+		    break;
+	    }
+	    break;
+	case LispBignum_t:
+	    switch (RTYPE(real)) {
+		case N_FIXNUM:
+		    bigi = XALLOC(mpi);
+		    mpi_init(bigi);
+		    mpi_seti(bigi, RFI(real));
+		    mpi_ior(bigi, bigi, OBI(obj));
+		    RTYPE(real) = N_BIGNUM;
+		    RBI(real) = bigi;
+		    rbi_canonicalize(real);
+		    break;
+		case N_BIGNUM:
+		    mpi_ior(RBI(real), RBI(real), OBI(obj));
+		    rbi_canonicalize(real);
+		    break;
+	    }
+	    break;
+	default:
+	    fatal_object_error(obj, NOT_AN_INTEGER);
+	    break;
+    }
+}
+
+
+/************************************************************************
+ * NOT
+ ************************************************************************/
+static void
+not_real(n_real *real)
+{
+    if (RTYPE(real) == N_FIXNUM)
+	RFI(real) = ~RFI(real);
+    else {
+	mpi_com(RBI(real), RBI(real));
+	rbi_canonicalize(real);
+    }
+}
+
+/************************************************************************
+ * XOR
+ ************************************************************************/
+static void
+xor_real_object(n_real *real, LispObj *obj)
+{
+    mpi *bigi, iop;
+
+    switch (OBJECT_TYPE(obj)) {
+	case LispFixnum_t:
+	    switch (RTYPE(real)) {
+		case N_FIXNUM:
+		    RFI(real) ^= OFI(obj);
+		    break;
+		case N_BIGNUM:
+		    mpi_init(&iop);
+		    mpi_seti(&iop, OFI(obj));
+		    mpi_xor(RBI(real), RBI(real), &iop);
+		    mpi_clear(&iop);
+		    rbi_canonicalize(real);
+		    break;
+	    }
+	    break;
+	case LispInteger_t:
+	    switch (RTYPE(real)) {
+		case N_FIXNUM:
+		    RFI(real) ^= OII(obj);
+		    break;
+		case N_BIGNUM:
+		    mpi_init(&iop);
+		    mpi_seti(&iop, OII(obj));
+		    mpi_xor(RBI(real), RBI(real), &iop);
+		    mpi_clear(&iop);
+		    rbi_canonicalize(real);
+		    break;
+	    }
+	    break;
+	case LispBignum_t:
+	    switch (RTYPE(real)) {
+		case N_FIXNUM:
+		    bigi = XALLOC(mpi);
+		    mpi_init(bigi);
+		    mpi_seti(bigi, RFI(real));
+		    mpi_xor(bigi, bigi, OBI(obj));
+		    RTYPE(real) = N_BIGNUM;
+		    RBI(real) = bigi;
+		    rbi_canonicalize(real);
+		    break;
+		case N_BIGNUM:
+		    mpi_xor(RBI(real), RBI(real), OBI(obj));
+		    rbi_canonicalize(real);
+		    break;
+	    }
+	    break;
+	default:
+	    fatal_object_error(obj, NOT_AN_INTEGER);
+	    break;
+    }
+}
+
+
+/************************************************************************
+ * DIVIDE
+ ************************************************************************/
+static void
+divide_number_object(n_number *num, LispObj *obj, int fun, int flo)
+{
+    switch (OBJECT_TYPE(obj)) {
+	case LispFixnum_t:
+	    switch (NRTYPE(num)) {
+		case N_FIXNUM:
+		    ndivide_fi_fi(num, OFI(obj), fun, flo);
+		    break;
+		case N_BIGNUM:
+		    ndivide_xi_xi(num, obj, fun, flo);
+		    break;
+		case N_FLONUM:
+		    ndivide_flonum(num, NRFF(num), (double)OII(obj),
+				   fun, flo);
+		    break;
+		case N_FIXRATIO:
+		case N_BIGRATIO:
+		    ndivide_xr_xi(num, obj, fun, flo);
+		    break;
+	    }
+	    break;
+	case LispInteger_t:
+	    switch (NRTYPE(num)) {
+		case N_FIXNUM:
+		    ndivide_fi_fi(num, OII(obj), fun, flo);
+		    break;
+		case N_BIGNUM:
+		    ndivide_xi_xi(num, obj, fun, flo);
+		    break;
+		case N_FLONUM:
+		    ndivide_flonum(num, NRFF(num), (double)OII(obj),
+				   fun, flo);
+		    break;
+		case N_FIXRATIO:
+		case N_BIGRATIO:
+		    ndivide_xr_xi(num, obj, fun, flo);
+		    break;
+	    }
+	    break;
+	case LispBignum_t:
+	    switch (NRTYPE(num)) {
+		case N_FIXNUM:
+		case N_BIGNUM:
+		    ndivide_xi_xi(num, obj, fun, flo);
+		    break;
+		case N_FLONUM:
+		    ndivide_flonum(num, NRFF(num), mpi_getd(OBI(obj)),
+				   fun, flo);
+		    break;
+		case N_FIXRATIO:
+		case N_BIGRATIO:
+		    ndivide_xr_xi(num, obj, fun, flo);
+		    break;
+	    }
+	    break;
+	case LispDFloat_t:
+	    switch (NRTYPE(num)) {
+		case N_FIXNUM:
+		    ndivide_flonum(num, (double)NRFI(num), ODF(obj),
+				   fun, flo);
+		    break;
+		case N_BIGNUM:
+		    ndivide_flonum(num, mpi_getd(NRBI(num)), ODF(obj),
+				   fun, flo);
+		    break;
+		case N_FLONUM:
+		    ndivide_flonum(num, NRFF(num), ODF(obj), fun, flo);
+		    break;
+		case N_FIXRATIO:
+		    ndivide_flonum(num,
+				   (double)NRFRN(num) / (double)NRFRD(num),
+				   ODF(obj), fun, flo);
+		    break;
+		case N_BIGRATIO:
+		    ndivide_flonum(num, mpr_getd(NRBR(num)), ODF(obj),
+				   fun, flo);
+		    break;
+	    }
+	    break;
+	case LispRatio_t:
+	    switch (NRTYPE(num)) {
+		case N_FIXNUM:
+		case N_BIGNUM:
+		    ndivide_xi_xr(num, obj, fun, flo);
+		    break;
+		case N_FLONUM:
+		    ndivide_flonum(num, NRFF(num),
+				   (double)OFRN(obj) / (double)OFRD(obj),
+				   fun, flo);
+		case N_FIXRATIO:
+		case N_BIGRATIO:
+		    ndivide_xr_xr(num, obj, fun, flo);
+		    break;
+	    }
+	    break;
+	case LispBigratio_t:
+	    switch (NRTYPE(num)) {
+		case N_FIXNUM:
+		case N_BIGNUM:
+		    ndivide_xi_xr(num, obj, fun, flo);
+		    break;
+		case N_FLONUM:
+		    ndivide_flonum(num, NRFF(num), mpr_getd(OBR(obj)),
+				   fun, flo);
+		case N_FIXRATIO:
+		case N_BIGRATIO:
+		    ndivide_xr_xr(num, obj, fun, flo);
+		    break;
+	    }
+	    break;
+	default:
+	    fatal_object_error(obj, NOT_A_REAL_NUMBER);
+	    break;
+    }
+}
+
+
+/************************************************************************
+ * COMPARE
+ ************************************************************************/
+static int
+cmp_real_real(n_real *op1, n_real *op2)
+{
+    switch (RTYPE(op1)) {
+	case N_FIXNUM:
+	    switch (RTYPE(op2)) {
+		case N_FIXNUM:
+		    return (cmp_fi_fi(RFI(op1), RFI(op2)));
+		case N_BIGNUM:
+		    return (cmp_fi_bi(RFI(op1), RBI(op2)));
+		case N_FLONUM:
+		    return (cmp_flonum((double)RFI(op1), RFF(op2)));
+		case N_FIXRATIO:
+		    return (cmp_fi_fr(RFI(op1), RFRN(op2), RFRD(op2)));
+		case N_BIGRATIO:
+		    return (cmp_fi_br(RFI(op1), RBR(op2)));
+	    }
+	    break;
+	case N_BIGNUM:
+	    switch (RTYPE(op2)) {
+		case N_FIXNUM:
+		    return (cmp_bi_fi(RBI(op1), RFI(op2)));
+		case N_BIGNUM:
+		    return (cmp_bi_bi(RBI(op1), RBI(op2)));
+		case N_FLONUM:
+		    return (cmp_flonum(mpi_getd(RBI(op1)), RFF(op2)));
+		case N_FIXRATIO:
+		    return (cmp_bi_fr(RBI(op1), RFRN(op2), RFRD(op2)));
+		case N_BIGRATIO:
+		    return (cmp_bi_br(RBI(op1), RBR(op2)));
+	    }
+	    break;
+	case N_FLONUM:
+	    switch (RTYPE(op2)) {
+		case N_FIXNUM:
+		    return (cmp_flonum(RFF(op1), (double)RFI(op2)));
+		case N_BIGNUM:
+		    return (cmp_flonum(RFF(op1), mpi_getd(RBI(op2))));
+		case N_FLONUM:
+		    return (cmp_flonum(RFF(op1), RFF(op2)));
+		case N_FIXRATIO:
+		    return (cmp_flonum(RFF(op1),
+				       (double)RFRN(op2) / (double)RFRD(op2)));
+		case N_BIGRATIO:
+		    return (cmp_flonum(RFF(op1), mpr_getd(RBR(op2))));
+	    }
+	    break;
+	case N_FIXRATIO:
+	    switch (RTYPE(op2)) {
+		case N_FIXNUM:
+		    return (cmp_fr_fi(RFRN(op1), RFRD(op1), RFI(op2)));
+		case N_BIGNUM:
+		    return (cmp_fr_bi(RFRN(op1), RFRD(op1), RBI(op2)));
+		case N_FLONUM:
+		    return (cmp_flonum((double)RFRN(op1) / (double)RFRD(op1),
+				       RFF(op2)));
+		case N_FIXRATIO:
+		    return (cmp_fr_fr(RFRN(op1), RFRD(op1),
+				      RFRN(op2), RFRD(op2)));
+		case N_BIGRATIO:
+		    return (cmp_fr_br(RFRN(op1), RFRD(op1), RBR(op2)));
+	    }
+	    break;
+	case N_BIGRATIO:
+	    switch (RTYPE(op2)) {
+		case N_FIXNUM:
+		    return (cmp_br_fi(RBR(op1), RFI(op2)));
+		case N_BIGNUM:
+		    return (cmp_br_bi(RBR(op1), RBI(op2)));
+		case N_FLONUM:
+		    return (cmp_flonum(mpr_getd(RBR(op1)), RFF(op2)));
+		case N_FIXRATIO:
+		    return (cmp_br_fr(RBR(op1), RFRN(op2), RFRD(op2)));
+		case N_BIGRATIO:
+		    return (cmp_br_br(RBR(op1), RBR(op2)));
+	    }
+    }
+
+    return (0);
+}
+
+static int
+cmp_real_object(n_real *op1, LispObj *op2)
+{
+    switch (OBJECT_TYPE(op2)) {
+	case LispFixnum_t:
+	    switch (RTYPE(op1)) {
+		case N_FIXNUM:
+		    return (cmp_fi_fi(RFI(op1), OFI(op2)));
+		case N_BIGNUM:
+		    return (cmp_bi_fi(RBI(op1), OFI(op2)));
+		case N_FLONUM:
+		    return (cmp_flonum(RFF(op1), (double)OFI(op2)));
+		case N_FIXRATIO:
+		    return (cmp_fr_fi(RFRD(op1), RFRN(op1), OFI(op2)));
+		case N_BIGRATIO:
+		    return (cmp_br_fi(RBR(op1), OFI(op2)));
+	    }
+	    break;
+	case LispInteger_t:
+	    switch (RTYPE(op1)) {
+		case N_FIXNUM:
+		    return (cmp_fi_fi(RFI(op1), OII(op2)));
+		case N_BIGNUM:
+		    return (cmp_bi_fi(RBI(op1), OII(op2)));
+		case N_FLONUM:
+		    return (cmp_flonum(RFF(op1), (double)OII(op2)));
+		case N_FIXRATIO:
+		    return (cmp_fr_fi(RFRD(op1), RFRN(op1), OII(op2)));
+		case N_BIGRATIO:
+		    return (cmp_br_fi(RBR(op1), OII(op2)));
+	    }
+	    break;
+	case LispBignum_t:
+	    switch (RTYPE(op1)) {
+		case N_FIXNUM:
+		    return (cmp_fi_bi(RFI(op1), OBI(op2)));
+		case N_BIGNUM:
+		    return (cmp_bi_bi(RBI(op1), OBI(op2)));
+		case N_FLONUM:
+		    return (cmp_flonum(RFF(op1), mpi_getd(OBI(op2))));
+		case N_FIXRATIO:
+		    return (cmp_fr_bi(RFRD(op1), RFRN(op1), OBI(op2)));
+		case N_BIGRATIO:
+		    return (cmp_br_bi(RBR(op1), OBI(op2)));
+	    }
+	    break;
+	case LispDFloat_t:
+	    switch (RTYPE(op1)) {
+		case N_FIXNUM:
+		    return (cmp_flonum((double)RFI(op1), ODF(op2)));
+		case N_BIGNUM:
+		    return (cmp_flonum(mpi_getd(RBI(op1)), ODF(op2)));
+		case N_FLONUM:
+		    return (cmp_flonum(RFF(op1), ODF(op2)));
+		case N_FIXRATIO:
+		    return (cmp_flonum((double)RFRN(op1) / (double)RFRD(op1),
+				       ODF(op2)));
+		case N_BIGRATIO:
+		    return (cmp_flonum(mpr_getd(RBR(op1)), ODF(op2)));
+	    }
+	    break;
+	case LispRatio_t:
+	    switch (RTYPE(op1)) {
+		case N_FIXNUM:
+		    return (cmp_fi_fr(RFI(op1), OFRN(op2), OFRD(op2)));
+		case N_BIGNUM:
+		    return (cmp_bi_fr(RBI(op1), OFRN(op2), OFRD(op2)));
+		case N_FLONUM:
+		    return (cmp_flonum(RFF(op1),
+				       (double)OFRN(op2) / (double)OFRD(op2)));
+		case N_FIXRATIO:
+		    return (cmp_fr_fr(RFRN(op1), RFRD(op1),
+				      OFRN(op2), OFRD(op2)));
+		case N_BIGRATIO:
+		    return (cmp_br_fr(RBR(op1), OFRN(op2), OFRD(op2)));
+	    }
+	    break;
+	case LispBigratio_t:
+	    switch (RTYPE(op1)) {
+		case N_FIXNUM:
+		    return (cmp_fi_br(RFI(op1), OBR(op2)));
+		case N_BIGNUM:
+		    return (cmp_bi_br(RBI(op1), OBR(op2)));
+		case N_FLONUM:
+		    return (cmp_flonum(RFF(op1), mpr_getd(OBR(op2))));
+		case N_FIXRATIO:
+		    return (cmp_fr_br(RFRN(op1), RFRD(op1), OBR(op2)));
+		case N_BIGRATIO:
+		    return (cmp_br_br(RBR(op1), OBR(op2)));
+	    }
+	    break;
+	default:
+	    fatal_object_error(op2, NOT_A_REAL_NUMBER);
+	    break;
+    }
+
+    return (0);
+}
+
+#if 0		/* not used */
+static int
+cmp_number_object(n_number *op1, LispObj *op2)
+{
+    if (op1->complex) {
+	if (OBJECT_TYPE(op2) == LispComplex_t) {
+	    if (cmp_real_object(NREAL(op1), OCXR(op2)) == 0)
+		return (cmp_real_object(NIMAG(op1), OCXI(op2)));
+	    return (1);
+	}
+	else if (cmp_real_real(NIMAG(op1), &zero) == 0)
+	    return (cmp_real_object(NREAL(op1), op2));
+	else
+	    return (1);
+    }
+    else {
+	switch (OBJECT_TYPE(op2)) {
+	    case LispFixnum_t:
+		switch (NRTYPE(op1)) {
+		    case N_FIXNUM:
+			return (cmp_fi_fi(NRFI(op1), OFI(op2)));
+		    case N_BIGNUM:
+			return (cmp_bi_fi(NRBI(op1), OFI(op2)));
+		    case N_FLONUM:
+			return (cmp_flonum(NRFF(op1), (double)OFI(op2)));
+		    case N_FIXRATIO:
+			return (cmp_fr_fi(NRFRD(op1), NRFRN(op1), OFI(op2)));
+		    case N_BIGRATIO:
+			return (cmp_br_fi(NRBR(op1), OFI(op2)));
+		}
+		break;
+	    case LispInteger_t:
+		switch (NRTYPE(op1)) {
+		    case N_FIXNUM:
+			return (cmp_fi_fi(NRFI(op1), OII(op2)));
+		    case N_BIGNUM:
+			return (cmp_bi_fi(NRBI(op1), OII(op2)));
+		    case N_FLONUM:
+			return (cmp_flonum(NRFF(op1), (double)OII(op2)));
+		    case N_FIXRATIO:
+			return (cmp_fr_fi(NRFRD(op1), NRFRN(op1), OII(op2)));
+		    case N_BIGRATIO:
+			return (cmp_br_fi(NRBR(op1), OII(op2)));
+		}
+		break;
+	    case LispBignum_t:
+		switch (NRTYPE(op1)) {
+		    case N_FIXNUM:
+			return (cmp_fi_bi(NRFI(op1), OBI(op2)));
+		    case N_BIGNUM:
+			return (cmp_bi_bi(NRBI(op1), OBI(op2)));
+		    case N_FLONUM:
+			return (cmp_flonum(NRFF(op1), mpi_getd(OBI(op2))));
+		    case N_FIXRATIO:
+			return (cmp_fr_bi(NRFRD(op1), NRFRN(op1), OBI(op2)));
+		    case N_BIGRATIO:
+			return (cmp_br_bi(NRBR(op1), OBI(op2)));
+		}
+		break;
+	    case LispDFloat_t:
+		switch (NRTYPE(op1)) {
+		    case N_FIXNUM:
+			return (cmp_flonum((double)NRFI(op1), ODF(op2)));
+		    case N_BIGNUM:
+			return (cmp_flonum(mpi_getd(NRBI(op1)), ODF(op2)));
+		    case N_FLONUM:
+			return (cmp_flonum(NRFF(op1), ODF(op2)));
+		    case N_FIXRATIO:
+			return (cmp_flonum((double)NRFRN(op1) /
+					   (double)NRFRD(op1),
+					   ODF(op2)));
+		    case N_BIGRATIO:
+			return (cmp_flonum(mpr_getd(NRBR(op1)), ODF(op2)));
+		}
+		break;
+	    case LispRatio_t:
+		switch (NRTYPE(op1)) {
+		    case N_FIXNUM:
+			return (cmp_fi_fr(NRFI(op1), OFRN(op2), OFRD(op2)));
+		    case N_BIGNUM:
+			return (cmp_bi_fr(NRBI(op1), OFRN(op2), OFRD(op2)));
+		    case N_FLONUM:
+			return (cmp_flonum(NRFF(op1),
+					   (double)OFRN(op2) / (double)OFRD(op2)));
+		    case N_FIXRATIO:
+			return (cmp_fr_fr(NRFRN(op1), NRFRD(op1),
+					  OFRN(op2), OFRD(op2)));
+		    case N_BIGRATIO:
+			return (cmp_br_fr(NRBR(op1), OFRN(op2), OFRD(op2)));
+		}
+		break;
+	    case LispBigratio_t:
+		switch (NRTYPE(op1)) {
+		    case N_FIXNUM:
+			return (cmp_fi_br(NRFI(op1), OBR(op2)));
+		    case N_BIGNUM:
+			return (cmp_bi_br(NRBI(op1), OBR(op2)));
+		    case N_FLONUM:
+			return (cmp_flonum(NRFF(op1), mpr_getd(OBR(op2))));
+		    case N_FIXRATIO:
+			return (cmp_fr_br(NRFRN(op1), NRFRD(op1), OBR(op2)));
+		    case N_BIGRATIO:
+			return (cmp_br_br(NRBR(op1), OBR(op2)));
+		}
+		break;
+	    case LispComplex_t:
+		if (cmp_real_object(&zero, OCXI(op2)) == 0)
+		    return (cmp_real_object(NREAL(op1), OCXR(op2)));
+		return (1);
+	    default:
+		fatal_object_error(op2, NOT_A_NUMBER);
+		break;
+	}
+    }
+
+    return (0);
+}
+#endif
+
+static int
+cmp_object_object(LispObj *op1, LispObj *op2)
+{
+    if (OBJECT_TYPE(op1) == LispComplex_t) {
+	if (OBJECT_TYPE(op2) == LispComplex_t)
+	    return (cmp_cx_cx(op1, op2));
+	else if (cmp_real_object(&zero, OCXI(op1)) == 0)
+	    return (cmp_object_object(OCXR(op1), op2));
+	return (1);
+    }
+    else if (OBJECT_TYPE(op2) == LispComplex_t) {
+	if (cmp_real_object(&zero, OCXI(op2)) == 0)
+	    return (cmp_object_object(op1, OCXR(op2)));
+	return (1);
+    }
+    else {
+	switch (OBJECT_TYPE(op1)) {
+	    case LispFixnum_t:
+		switch (OBJECT_TYPE(op2)) {
+		    case LispFixnum_t:
+			return (cmp_fi_fi(OFI(op1), OFI(op2)));
+		    case LispInteger_t:
+			return (cmp_fi_fi(OFI(op1), OII(op2)));
+		    case LispBignum_t:
+			return (cmp_fi_bi(OFI(op1), OBI(op2)));
+		    case LispDFloat_t:
+			return (cmp_flonum((double)OFI(op1), ODF(op2)));
+		    case LispRatio_t:
+			return (cmp_fi_fr(OFI(op1),
+					  OFRN(op2), OFRD(op2)));
+		    case LispBigratio_t:
+			return (cmp_fi_br(OFI(op1), OBR(op2)));
+		    default:
+			break;
+		}
+		break;
+	    case LispInteger_t:
+		switch (OBJECT_TYPE(op2)) {
+		    case LispFixnum_t:
+			return (cmp_fi_fi(OII(op1), OFI(op2)));
+		    case LispInteger_t:
+			return (cmp_fi_fi(OII(op1), OII(op2)));
+		    case LispBignum_t:
+			return (cmp_fi_bi(OII(op1), OBI(op2)));
+		    case LispDFloat_t:
+			return (cmp_flonum((double)OII(op1), ODF(op2)));
+		    case LispRatio_t:
+			return (cmp_fi_fr(OII(op1),
+					  OFRN(op2), OFRD(op2)));
+		    case LispBigratio_t:
+			return (cmp_fi_br(OII(op1), OBR(op2)));
+		    default:
+			break;
+		}
+		break;
+	    case LispBignum_t:
+		switch (OBJECT_TYPE(op2)) {
+		    case LispFixnum_t:
+			return (cmp_bi_fi(OBI(op1), OFI(op2)));
+		    case LispInteger_t:
+			return (cmp_bi_fi(OBI(op1), OII(op2)));
+		    case LispBignum_t:
+			return (cmp_bi_bi(OBI(op1), OBI(op2)));
+		    case LispDFloat_t:
+			return (cmp_flonum(mpi_getd(OBI(op1)), ODF(op2)));
+		    case LispRatio_t:
+			return (cmp_bi_fr(OBI(op1),
+					  OFRN(op2), OFRD(op2)));
+		    case LispBigratio_t:
+			return (cmp_bi_br(OBI(op1), OBR(op2)));
+		    default:
+			break;
+		}
+		break;
+	    case LispDFloat_t:
+		switch (OBJECT_TYPE(op2)) {
+		    case LispFixnum_t:
+			return (cmp_flonum(ODF(op1), (double)OFI(op2)));
+		    case LispInteger_t:
+			return (cmp_flonum(ODF(op1), (double)OII(op2)));
+		    case LispBignum_t:
+			return (cmp_flonum(ODF(op1), mpi_getd(OBI(op2))));
+		    case LispDFloat_t:
+			return (cmp_flonum(ODF(op1), ODF(op2)));
+			break;
+		    case LispRatio_t:
+			return (cmp_flonum(ODF(op1),
+					   (double)OFRN(op2) /
+					   (double)OFRD(op2)));
+		    case LispBigratio_t:
+			return (cmp_flonum(ODF(op1), mpr_getd(OBR(op2))));
+		    default:
+			break;
+		}
+		break;
+	    case LispRatio_t:
+		switch (OBJECT_TYPE(op2)) {
+		    case LispFixnum_t:
+			return (cmp_fr_fi(OFRN(op1), OFRD(op1), OFI(op2)));
+		    case LispInteger_t:
+			return (cmp_fr_fi(OFRN(op1), OFRD(op1), OII(op2)));
+		    case LispBignum_t:
+			return (cmp_fr_bi(OFRN(op1), OFRD(op1), OBI(op2)));
+		    case LispDFloat_t:
+			return (cmp_flonum((double)OFRN(op1) /
+					   (double)OFRD(op1),
+					   ODF(op2)));
+		    case LispRatio_t:
+			return (cmp_fr_fr(OFRN(op1), OFRD(op1),
+					  OFRN(op2), OFRD(op2)));
+		    case LispBigratio_t:
+			return (cmp_fr_br(OFRN(op1), OFRD(op1), OBR(op2)));
+		    default:
+			break;
+		}
+		break;
+	    case LispBigratio_t:
+		switch (OBJECT_TYPE(op2)) {
+		    case LispFixnum_t:
+			return (cmp_br_fi(OBR(op1), OFI(op2)));
+		    case LispInteger_t:
+			return (cmp_br_fi(OBR(op1), OII(op2)));
+		    case LispBignum_t:
+			return (cmp_br_bi(OBR(op1), OBI(op2)));
+		    case LispDFloat_t:
+			return (cmp_flonum(mpr_getd(OBR(op1)), ODF(op2)));
+		    case LispRatio_t:
+			return (cmp_br_fr(OBR(op1), OFRN(op2), OFRD(op2)));
+		    case LispBigratio_t:
+			return (cmp_br_br(OBR(op1), OBR(op2)));
+		    default:
+			break;
+		}
+		break;
+	    default:
+		fatal_object_error(op1, NOT_A_NUMBER);
+		break;
+	}
+    }
+
+    fatal_object_error(op2, NOT_A_NUMBER);
+    return (0);
+}
+
+
+/************************************************************************
+ * FIXNUM
+ ************************************************************************/
+/*
+ * check if op1 + op2 will overflow
+ */
+static INLINE int
+fi_fi_add_overflow(long op1, long op2)
+{
+    long op = op1 + op2;
+
+    return (op1 > 0 ? op2 > op : op2 < op);
+}
+
+/*
+ * check if op1 - op2 will overflow
+ */
+static INLINE int
+fi_fi_sub_overflow(long op1, long op2)
+{
+    long op = op1 - op2;
+
+    return (((op1 < 0) ^ (op2 < 0)) && ((op < 0) ^ (op1 < 0)));
+}
+
+/*
+ * check if op1 * op2 will overflow
+ */
+static INLINE int
+fi_fi_mul_overflow(long op1, long op2)
+{
+#ifndef LONG64
+    double op = (double)op1 * (double)op2;
+
+    return (op > 2147483647.0 || op < -2147483648.0);
+#else
+    int shift, sign;
+    long mask;
+
+    if (op1 == 0 || op1 == 1 || op2 == 0 || op2 == 1)
+	return (0);
+
+    if (op1 == MINSLONG || op2 == MINSLONG)
+	return (1);
+
+    sign = (op1 < 0) ^ (op2 < 0);
+
+    if (op1 < 0)
+	op1 = -op1;
+    if (op2 < 0)
+	op2 = -op2;
+
+    for (shift = 0, mask = FI_MASK; shift < LONGSBITS; shift++, mask >>= 1)
+	if (op1 & mask)
+	    break;
+    ++shift;
+    for (mask = FI_MASK; shift < LONGSBITS; shift++, mask >>= 1)
+	if (op2 & mask)
+	    break;
+
+    return (shift < LONGSBITS);
+#endif
+}
+
+
+/************************************************************************
+ * BIGNUM
+ ************************************************************************/
+static void
+rbi_canonicalize(n_real *real)
+{
+    if (mpi_fiti(RBI(real))) {
+	long fi = mpi_geti(RBI(real));
+
+	RTYPE(real) = N_FIXNUM;
+	mpi_clear(RBI(real));
+	XFREE(RBI(real));
+	RFI(real) = fi;
+    }
+}
+
+
+/************************************************************************
+ * RATIO
+ ************************************************************************/
+static void
+rfr_canonicalize(n_real *real)
+{
+    long num, numerator, den, denominator, rest;
+
+    num = numerator = RFRN(real);
+    den = denominator = RFRD(real);
+    if (denominator == 0)
+	fatal_error(DIVIDE_BY_ZERO);
+    if (num < 0)
+	num = -num;
+    else if (num == 0) {
+	RFI(real) = 0;
+	RTYPE(real) = N_FIXNUM;
+	return;
+    }
+    for (;;) {
+	if ((rest = den % num) == 0)
+	    break;
+	den = num;
+	num = rest;
+    }
+    if (den != 1) {
+	denominator /= num;
+	numerator /= num;
+    }
+    if (denominator < 0) {
+	numerator = -numerator;
+	denominator = -denominator;
+    }
+    if (denominator == 1) {
+	RTYPE(real) = N_FIXNUM;
+	RFI(real) = numerator;
+    }
+    else {
+	RFRN(real) = numerator;
+	RFRD(real) = denominator;
+    }
+}
+
+static void
+rbr_canonicalize(n_real *real)
+{
+    int fitnum, fitden;
+    long numerator, denominator;
+
+    mpr_canonicalize(RBR(real));
+    fitnum = mpi_fiti(RBRN(real));
+    fitden = mpi_fiti(RBRD(real));
+    if (fitnum && fitden) {
+	numerator = mpi_geti(RBRN(real));
+	denominator = mpi_geti(RBRD(real));
+	mpr_clear(RBR(real));
+	XFREE(RBR(real));
+	if (numerator == 0) {
+	    RFI(real) = 0;
+	    RTYPE(real) = N_FIXNUM;
+	}
+	else if (denominator == 1) {
+	    RTYPE(real) = N_FIXNUM;
+	    RFI(real) = numerator;
+	}
+	else {
+	    RTYPE(real) = N_FIXRATIO;
+	    RFRN(real) = numerator;
+	    RFRD(real) = denominator;
+	}
+    }
+    else if (fitden) {
+	denominator = mpi_geti(RBRD(real));
+	if (denominator == 1) {
+	    mpi *bigi = XALLOC(mpi);
+
+	    mpi_init(bigi);
+	    mpi_set(bigi, RBRN(real));
+	    mpr_clear(RBR(real));
+	    XFREE(RBR(real));
+	    RTYPE(real) = N_BIGNUM;
+	    RBI(real) = bigi;
+	}
+	else if (denominator == 0)
+	    fatal_error(DIVIDE_BY_ZERO);
+    }
+}
+
+/************************************************************************
+ * COMPLEX
+ ************************************************************************/
+static void
+real_maybe_integer(n_real *real)
+{
+    if (RTYPE(real) == N_FLONUM) {
+	double value = RFF(real);
+
+	if (!finite(value))
+	    fatal_error(FLOATING_POINT_OVERFLOW);
+	if ((long)value == value) {
+	    RTYPE(real) = N_FIXNUM;
+	    RFI(real) = value;
+	}
+	else if (value == rint(value)) {
+	    mpi *bigi = XALLOC(mpi);
+
+	    mpi_init(bigi);
+	    mpi_setd(bigi, value);
+	    RTYPE(real) = N_BIGNUM;
+	    RBI(real) = bigi;
+	}
+    }
+}
+
+static void
+ncx_canonicalize(n_number *num, int ireal, int iimag)
+{
+    if (ireal && !RINTEGERP(NREAL(num)))
+	real_maybe_integer(NREAL(num));
+    if (iimag && !RINTEGERP(NIMAG(num)))
+	real_maybe_integer(NIMAG(num));
+
+    if (NITYPE(num) == N_FIXNUM && NIFI(num) == 0)
+	num->complex = 0;
+}
+
+
+/************************************************************************
+ * DIVIDE
+ ************************************************************************/
+#define NDIVIDE_NOP	0
+#define NDIVIDE_ADD	1
+#define NDIVIDE_SUB	2
+static void
+ndivide_fi_fi(n_number *num, long div, int fun, int flo)
+{
+    long quo, rem;
+
+    quo = NRFI(num) / div;
+    rem = NRFI(num) % div;
+
+    switch (fun) {
+	case NDIVIDE_CEIL:
+	    if ((rem < 0 && div < 0) || (rem > 0 && div > 0)) {
+		++quo;
+		rem -= div;
+	    }
+	    break;
+	case NDIVIDE_FLOOR:
+	    if ((rem < 0 && div > 0) || (rem > 0 && div < 0)) {
+		--quo;
+		rem += div;
+	    }
+	    break;
+	case NDIVIDE_ROUND:
+	    if (div > 0) {
+		if (rem > 0) {
+		    if (rem >= (div + 1) / 2) {
+			++quo;
+			rem -= div;
+		    }
+		}
+		else {
+		    if (rem <= (-div - 1) / 2) {
+			--quo;
+			rem += div;
+		    }
+		}
+	    }
+	    else {
+		if (rem > 0) {
+		    if (rem >= (-div + 1) / 2) {
+			--quo;
+			rem += div;
+		    }
+		}
+		else {
+		    if (rem <= (div - 1) / 2) {
+			++quo;
+			rem -= div;
+		    }
+		}
+	    }
+	    break;
+    }
+
+    NITYPE(num) = N_FIXNUM;
+    NIFI(num) = rem;
+    if (flo) {
+	NRTYPE(num) = N_FLONUM;
+	NRFF(num) = (double)quo;
+    }
+    else
+	NRFI(num) = quo;
+}
+
+static void
+ndivide_xi_xi(n_number *num, LispObj *div, int fun, int flo)
+{
+    LispType type = OBJECT_TYPE(div);
+    int state = NDIVIDE_NOP, dsign, rsign;
+    mpi *quo, *rem;
+
+    quo = XALLOC(mpi);
+    mpi_init(quo);
+    if (NRTYPE(num) == N_FIXNUM)
+	mpi_seti(quo, NRFI(num));
+    else
+	mpi_set(quo, NRBI(num));
+
+    rem = XALLOC(mpi);
+    mpi_init(rem);
+
+    switch (type) {
+	case LispFixnum_t:
+	    mpi_seti(rem, OFI(div));
+	    break;
+	case LispInteger_t:
+	    mpi_seti(rem, OII(div));
+	    break;
+	default:
+	    mpi_set(rem, OBI(div));
+    }
+
+    dsign = mpi_sgn(rem);
+
+    mpi_divqr(quo, rem, quo, rem);
+    rsign = mpi_sgn(rem);
+
+    switch (fun) {
+	case NDIVIDE_CEIL:
+	    if ((rsign < 0 && dsign < 0) || (rsign > 0 && dsign > 0))
+		state = NDIVIDE_ADD;
+	    break;
+	case NDIVIDE_FLOOR:
+	    if ((rsign < 0 && dsign > 0) || (rsign > 0 && dsign < 0))
+		state = NDIVIDE_SUB;
+	    break;
+	case NDIVIDE_ROUND: {
+	    mpi test;
+
+	    mpi_init(&test);
+	    switch (type) {
+		case LispFixnum_t:
+		    mpi_seti(&test, OFI(div));
+		    break;
+		case LispInteger_t:
+		    mpi_seti(&test, OII(div));
+		    break;
+		default:
+		    mpi_set(&test, OBI(div));
+	    }
+	    if (dsign > 0) {
+		if (rsign > 0) {
+		    mpi_addi(&test, &test, 1);
+		    mpi_divi(&test, &test, 2);
+		    if (mpi_cmp(rem, &test) >= 0)
+			state = NDIVIDE_ADD;
+		}
+		else {
+		    mpi_neg(&test, &test);
+		    mpi_subi(&test, &test, 1);
+		    mpi_divi(&test, &test, 2);
+		    if (mpi_cmp(rem, &test) <= 0)
+			state = NDIVIDE_SUB;
+		}
+	    }
+	    else {
+		if (rsign > 0) {
+		    mpi_neg(&test, &test);
+		    mpi_addi(&test, &test, 1);
+		    mpi_divi(&test, &test, 2);
+		    if (mpi_cmp(rem, &test) >= 0)
+			state = NDIVIDE_SUB;
+		}
+		else {
+		    mpi_subi(&test, &test, 1);
+		    mpi_divi(&test, &test, 2);
+		    if (mpi_cmp(rem, &test) <= 0)
+			state = NDIVIDE_ADD;
+		}
+	    }
+	    mpi_clear(&test);
+	}   break;
+    }
+
+    if (state == NDIVIDE_ADD) {
+	mpi_addi(quo, quo, 1);
+	switch (type) {
+	    case LispFixnum_t:
+		mpi_subi(rem, rem, OFI(div));
+		break;
+	    case LispInteger_t:
+		mpi_subi(rem, rem, OII(div));
+		break;
+	    default:
+		mpi_sub(rem, rem, OBI(div));
+	}
+    }
+    else if (state == NDIVIDE_SUB) {
+	mpi_subi(quo, quo, 1);
+	switch (type) {
+	    case LispFixnum_t:
+		mpi_addi(rem, rem, OFI(div));
+		break;
+	    case LispInteger_t:
+		mpi_addi(rem, rem, OII(div));
+		break;
+	    default:
+		mpi_add(rem, rem, OBI(div));
+	}
+    }
+
+    if (mpi_fiti(rem)) {
+	NITYPE(num) = N_FIXNUM;
+	NIFI(num) = mpi_geti(rem);
+	mpi_clear(rem);
+	XFREE(rem);
+    }
+    else {
+	NITYPE(num) = N_BIGNUM;
+	NIBI(num) = rem;
+    }
+
+    clear_real(NREAL(num));
+
+    if (flo) {
+	double dval = mpi_getd(quo);
+
+	mpi_clear(quo);
+	XFREE(quo);
+	if (!finite(dval))
+	    fatal_error(FLOATING_POINT_OVERFLOW);
+	NRTYPE(num) = N_FLONUM;
+	NRFF(num) = dval;
+    }
+    else {
+	NRTYPE(num) = N_BIGNUM;
+	NRBI(num) = quo;
+	rbi_canonicalize(NREAL(num));
+    }
+}
+
+static void
+ndivide_flonum(n_number *number, double num, double div, int fun, int flo)
+{
     double quo, rem, modp, tmp;
 
     modp = modf(num / div, &quo);
     rem = num - quo * div;
 
-    switch (function) {
-	case DIVIDE_CEIL:
+    switch (fun) {
+	case NDIVIDE_CEIL:
 	    if ((rem < 0.0 && div < 0.0) || (rem > 0.0 && div > 0.0)) {
 		quo += 1.0;
 		rem -= div;
 	    }
 	    break;
-	case DIVIDE_FLOOR:
+	case NDIVIDE_FLOOR:
 	    if ((rem < 0.0 && div > 0.0) || (rem > 0.0 && div < 0.0)) {
 		quo -= 1.0;
 		rem += div;
 	    }
 	    break;
-	case DIVIDE_ROUND:
+	case NDIVIDE_ROUND:
 	    if (fabs(modp) != 0.5 || modf(quo * 0.5, &tmp) != 0.0) {
 		if (div > 0.0) {
 		    if (rem > 0.0) {
@@ -890,180 +3155,54 @@ divide_float(LispBuiltin *builtin, double num, double div,
 	    break;
     }
     if (!finite(quo) || !finite(rem))
-	XERROR("floating point overflow");
+	fatal_error(FLOATING_POINT_OVERFLOW);
 
-    RETURN(0) = REAL(rem);
+    NITYPE(number) = N_FLONUM;
+    NIFF(number) = rem;
 
-    if (floating)
-	result = REAL(quo);
+    clear_real(NREAL(number));
+
+    if (flo) {
+	NRTYPE(number) = N_FLONUM;
+	NRFF(number) = quo;
+    }
     else {
-	if ((long)quo == quo)
-	    result = SMALLINT((long)quo);
+	if ((long)quo == quo) {
+	    NRTYPE(number) = N_FIXNUM;
+	    NRFI(number) = (long)quo;
+	}
 	else {
 	    mpi *bigi = XALLOC(mpi);
 
 	    mpi_init(bigi);
 	    mpi_setd(bigi, quo);
-	    result = BIGINTEGER(bigi);
-	    XMEM(bigi);
+	    NRBI(number) = bigi;
+	    NRTYPE(number) = N_BIGNUM;
 	}
     }
-
-    return (result);
 }
 
-#define DIVIDE_NOP	0
-#define DIVIDE_ADD	1
-#define DIVIDE_SUB	2
-static LispObj *
-divide_xi_xi(LispBuiltin *builtin, LispObj *num, LispObj *div,
-	     int function, int floating)
+static void
+ndivide_xi_xr(n_number *num, LispObj *div, int fun, int flo)
 {
-    int state = DIVIDE_NOP, dsign, rsign;
-    LispObj *result;
-    mpi *quo, *rem;
-
-    quo = XALLOC(mpi);
-    mpi_init(quo);
-    if (XTYPE(num) == FI)
-	mpi_seti(quo, XFI(num));
-    else
-	mpi_set(quo, XBI(num));
-
-    rem = XALLOC(mpi);
-    mpi_init(rem);
-    if (XTYPE(div) == FI)
-	mpi_seti(rem, XFI(div));
-    else
-	mpi_set(rem, XBI(div));
-    dsign = mpi_sgn(rem);
-
-    mpi_divqr(quo, rem, quo, rem);
-    rsign = mpi_sgn(rem);
-
-    switch (function) {
-	case DIVIDE_CEIL:
-	    if ((rsign < 0 && dsign < 0) || (rsign > 0 && dsign > 0))
-		state = DIVIDE_ADD;
-	    break;
-	case DIVIDE_FLOOR:
-	    if ((rsign < 0 && dsign > 0) || (rsign > 0 && dsign < 0))
-		state = DIVIDE_SUB;
-	    break;
-	case DIVIDE_ROUND: {
-	    mpi test;
-
-	    mpi_init(&test);
-	    if (XTYPE(div) == FI)
-		mpi_seti(&test, XFI(div));
-	    else
-		mpi_set(&test, XBI(div));
-	    if (dsign > 0) {
-		if (rsign > 0) {
-		    mpi_addi(&test, &test, 1);
-		    mpi_divi(&test, &test, 2);
-		    if (mpi_cmp(rem, &test) >= 0)
-			state = DIVIDE_ADD;
-		}
-		else {
-		    mpi_neg(&test, &test);
-		    mpi_subi(&test, &test, 1);
-		    mpi_divi(&test, &test, 2);
-		    if (mpi_cmp(rem, &test) <= 0)
-			state = DIVIDE_SUB;
-		}
-	    }
-	    else {
-		if (rsign > 0) {
-		    mpi_neg(&test, &test);
-		    mpi_addi(&test, &test, 1);
-		    mpi_divi(&test, &test, 2);
-		    if (mpi_cmp(rem, &test) >= 0)
-			state = DIVIDE_SUB;
-		}
-		else {
-		    mpi_subi(&test, &test, 1);
-		    mpi_divi(&test, &test, 2);
-		    if (mpi_cmp(rem, &test) <= 0)
-			state = DIVIDE_ADD;
-		}
-	    }
-	    mpi_clear(&test);
-	}   break;
-    }
-
-    if (state == DIVIDE_ADD) {
-	mpi_addi(quo, quo, 1);
-	if (XTYPE(div) == FI)
-	    mpi_subi(rem, rem, XFI(div));
-	else
-	    mpi_sub(rem, rem, XBI(div));
-    }
-    else if (state == DIVIDE_SUB) {
-	mpi_subi(quo, quo, 1);
-	if (XTYPE(div) == FI)
-	    mpi_addi(rem, rem, XFI(div));
-	else
-	    mpi_add(rem, rem, XBI(div));
-    }
-
-    if (mpi_fiti(rem)) {
-	RETURN(0) = SMALLINT(mpi_geti(rem));
-	mpi_clear(rem);
-	XFREE(rem);
-    }
-    else {
-	RETURN(0) = BIGINTEGER(rem);
-	XMEM(rem);
-    }
-
-    if (floating) {
-	double dval = mpi_getd(quo);
-
-	mpi_clear(quo);
-	XFREE(quo);
-	if (!finite(dval))
-	    LispDestroy("floating point overflow");
-	result = REAL(dval);
-    }
-    else {
-	if (mpi_fiti(quo)) {
-	    result = SMALLINT(mpi_geti(quo));
-	    mpi_clear(quo);
-	    XFREE(quo);
-	}
-	else {
-	    result = BIGINTEGER(quo);
-	    XMEM(quo);
-	}
-    }
-
-    return (result);
-}
-
-static LispObj *
-divide_xi_xr(LispBuiltin *builtin, LispObj *num, LispObj *div,
-	     int function, int floating)
-{
-    int state = DIVIDE_NOP, dsign, rsign;
-    LispObj *result, *remainder;
+    int state = NDIVIDE_NOP, dsign, rsign;
     mpi *quo;
     mpr *rem;
 
     quo = XALLOC(mpi);
     mpi_init(quo);
-    if (XTYPE(num) == FI)
-	mpi_seti(quo, XFI(num));
+    if (NRTYPE(num) == N_FIXNUM)
+	mpi_seti(quo, NRFI(num));
     else    
-	mpi_set(quo, XBI(num));
+	mpi_set(quo, NRBI(num));
 
     rem = XALLOC(mpr);
     mpr_init(rem);
 
-    if (XTYPE(div) == FR)
-	mpr_seti(rem, XFRN(div), XFRD(div));
+    if (XOBJECT_TYPE(div) == LispRatio_t)
+	mpr_seti(rem, OFRN(div), OFRD(div));
     else
-	mpr_set(rem, XBR(div));
+	mpr_set(rem, OBR(div));
     dsign = mpi_sgn(mpr_num(rem));
     mpi_mul(quo, quo, mpr_den(rem));
 
@@ -1072,2887 +3211,1582 @@ divide_xi_xr(LispBuiltin *builtin, LispObj *num, LispObj *div,
 
     rsign = mpi_sgn(mpr_num(rem));
     if (mpr_fiti(rem)) {
-	remainder = RATIO(mpi_geti(mpr_num(rem)), mpi_geti(mpr_den(rem)));
+	NITYPE(num) = N_FIXNUM;
+	NIFRN(num) = mpi_geti(mpr_num(rem));
+	NIFRD(num) = mpi_geti(mpr_den(rem));
 	mpr_clear(rem);
 	XFREE(rem);
     }
     else {
 	if (mpi_fiti(mpr_den(rem)) && mpi_geti(mpr_den(rem)) == 1) {
-	    remainder = BIGINTEGER(mpr_num(rem));
+	    NITYPE(num) = N_BIGNUM;
+	    NIBI(num) = mpr_num(rem);
 	    mpi_clear(mpr_den(rem));
 	    XFREE(rem);
 	}
 	else {
-	    remainder = BIGRATIO(rem);
-	    XMEM(rem);
+	    NITYPE(num) = N_BIGRATIO;
+	    NIBR(num) = rem;
 	}
     }
 
-    switch (function) {
-	case DIVIDE_CEIL:
+    switch (fun) {
+	case NDIVIDE_CEIL:
 	    if ((rsign < 0 && dsign < 0) || (rsign > 0 && dsign > 0))
-		state = DIVIDE_ADD;
+		state = NDIVIDE_ADD;
 	    break;
-	case DIVIDE_FLOOR:
+	case NDIVIDE_FLOOR:
 	    if ((rsign < 0 && dsign > 0) || (rsign > 0 && dsign < 0))
-		state = DIVIDE_SUB;
+		state = NDIVIDE_SUB;
 	    break;
-	case DIVIDE_ROUND: {
-	    LispObj *cmp = copy_real(builtin, div);
+	case NDIVIDE_ROUND: {
+	    n_real cmp;
 
-	    div_accumulator(builtin, cmp, &two);
+	    set_real_object(&cmp, div);
+	    div_real_real(&cmp, &two);
 	    if (dsign > 0) {
 		if (rsign > 0) {
-		    if (math_compare(builtin, remainder, cmp) >= 0)
-			state = DIVIDE_ADD;
+		    if (cmp_real_real(NIMAG(num), &cmp) >= 0)
+			state = NDIVIDE_ADD;
 		}
 		else {
-		    if (math_compare(builtin, remainder, cmp) >= 0)
-			state = DIVIDE_SUB;
+		    if (cmp_real_real(NIMAG(num), &cmp) >= 0)
+			state = NDIVIDE_SUB;
 		}
 	    }
 	    else {
 		if (rsign > 0) {
-		    if (math_compare(builtin, remainder, cmp) <= 0)
-			state = DIVIDE_SUB;
+		    if (cmp_real_real(NIMAG(num), &cmp) <= 0)
+			state = NDIVIDE_SUB;
 		}
 		else {
-		    if (math_compare(builtin, remainder, cmp) <= 0)
-			state = DIVIDE_ADD;
+		    if (cmp_real_real(NIMAG(num), &cmp) <= 0)
+			state = NDIVIDE_ADD;
 		}
 	    }
-	    XCLEAR_ACCUM(cmp);
+	    clear_real(&cmp);
 	}   break;
     }
 
-    if (state == DIVIDE_ADD) {
+    if (state == NDIVIDE_ADD) {
 	mpi_addi(quo, quo, 1);
-	sub_accumulator(builtin, remainder, div);
+	sub_real_object(NIMAG(num), div);
     }
-    else if (state == DIVIDE_SUB) {
+    else if (state == NDIVIDE_SUB) {
 	mpi_subi(quo, quo, 1);
-	add_accumulator(builtin, remainder, div);
+	add_real_object(NIMAG(num), div);
     }
 
-    if (floating) {
+    clear_real(NREAL(num));
+
+    if (flo) {
 	double dval = mpi_getd(quo);
 
 	mpi_clear(quo);
 	XFREE(quo);
 	if (!finite(dval))
-	    XERROR("floating point overflow");
-	result = REAL(dval);
+	    fatal_error(FLOATING_POINT_OVERFLOW);
+	NRTYPE(num) = N_FLONUM;
+	NRFF(num) = dval;
     }
     else {
-	if (mpi_fiti(quo)) {
-	    result = SMALLINT(mpi_geti(quo));
-	    mpi_clear(quo);
-	    XFREE(quo);
-	}
-	else {
-	    result = BIGINTEGER(quo);
-	    XMEM(quo);
-	}
+	NRBI(num)  = quo;
+	NRTYPE(num) = N_BIGNUM;
+	rbi_canonicalize(NREAL(num));
     }
-
-    RETURN(0) = remainder;
-    return (result);
 }
 
-static LispObj *
-divide_xr_xi(LispBuiltin *builtin, LispObj *num, LispObj *div,
-	     int function, int floating)
+static void
+ndivide_xr_xi(n_number *num, LispObj *div, int fun, int flo)
 {
-    int state = DIVIDE_NOP, dsign, rsign;
-    LispObj *result, *remainder;
+    LispType type = OBJECT_TYPE(div);
+    int state = NDIVIDE_NOP, dsign, rsign;
     mpi *quo;
     mpr *rem;
 
     quo = XALLOC(mpi);
     mpi_init(quo);
-    if (XTYPE(div) == FI) {
-	dsign = XFI(div) < 0 ? -1 : XFI(div) > 0 ? 1 : 0;
-	mpi_seti(quo, XFI(div));
-    }
-    else {
-	dsign = mpi_sgn(XBI(div));
-	mpi_set(quo, XBI(div));
+    switch (type) {
+	case LispFixnum_t:
+	    dsign = OFI(div) < 0 ? -1 : OFI(div) > 0 ? 1 : 0;
+	    mpi_seti(quo, OFI(div));
+	    break;
+	case LispInteger_t:
+	    dsign = OII(div) < 0 ? -1 : OII(div) > 0 ? 1 : 0;
+	    mpi_seti(quo, OII(div));
+	    break;
+	default:
+	    dsign = mpi_sgn(OBI(div));
+	    mpi_set(quo, OBI(div));
+	    break;
     }
 
     rem = XALLOC(mpr);
     mpr_init(rem);
-    if (XTYPE(num) == FR) {
-	mpr_seti(rem, XFRN(num), XFRD(num));
-	mpi_muli(quo, quo, XFRD(num));
+    if (NRTYPE(num) == N_FIXRATIO) {
+	mpr_seti(rem, NRFRN(num), NRFRD(num));
+	mpi_muli(quo, quo, NRFRD(num));
     }
     else {
-	mpr_set(rem, XBR(num));
-	mpi_mul(quo, quo, XBRD(num));
+	mpr_set(rem, NRBR(num));
+	mpi_mul(quo, quo, NRBRD(num));
     }
     mpi_divqr(quo, mpr_num(rem), mpr_num(rem), quo);
     mpr_canonicalize(rem);
 
     rsign = mpi_sgn(mpr_num(rem));
     if (mpr_fiti(rem)) {
-	remainder = RATIO(mpi_geti(mpr_num(rem)), mpi_geti(mpr_den(rem)));
+	NITYPE(num) = N_FIXRATIO;
+	NIFRN(num) = mpi_geti(mpr_num(rem));
+	NIFRD(num) = mpi_geti(mpr_den(rem));
 	mpr_clear(rem);
 	XFREE(rem);
     }
     else {
-	remainder = BIGRATIO(rem);
-	XMEM(rem);
+	NITYPE(num) = N_BIGRATIO;
+	NIBR(num) = rem;
     }
 
-    switch (function) {
-	case DIVIDE_CEIL:
+    switch (fun) {
+	case NDIVIDE_CEIL:
 	    if ((rsign < 0 && dsign < 0) || (rsign > 0 && dsign > 0))
-		state = DIVIDE_ADD;
+		state = NDIVIDE_ADD;
 	    break;
-	case DIVIDE_FLOOR:
+	case NDIVIDE_FLOOR:
 	    if ((rsign < 0 && dsign > 0) || (rsign > 0 && dsign < 0))
-		state = DIVIDE_SUB;
+		state = NDIVIDE_SUB;
 	    break;
-	case DIVIDE_ROUND: {
+	case NDIVIDE_ROUND: {
 	    int modp;
 
-	    if (XTYPE(remainder) == FR)
-		modp = XFRD(remainder) == 2;
+	    if (NITYPE(num) == N_FIXRATIO)
+		modp = NIFRD(num) == 2;
 	    else
-		modp = mpi_cmpi(XBRD(remainder), 2) == 0;
+		modp = mpi_cmpi(NIBRD(num), 2) == 0;
 
 	    if (!modp || (quo->digs[0] & 1) == 1) {
-		LispObj *cmp = copy_real(builtin, div);
+		n_real cmp;
 
-		div_accumulator(builtin, cmp, &two);
+		set_real_object(&cmp, div);
+		div_real_real(&cmp, &two);
 		if (dsign > 0) {
 		    if (rsign > 0) {
-			if (math_compare(builtin, remainder, cmp) >= 0)
-			    state = DIVIDE_ADD;
+			if (cmp_real_real(NIMAG(num), &cmp) >= 0)
+			    state = NDIVIDE_ADD;
 		    }
 		    else {
-			if (math_compare(builtin, remainder, cmp) >= 0)
-			    state = DIVIDE_SUB;
+			if (cmp_real_real(NIMAG(num), &cmp) >= 0)
+			    state = NDIVIDE_SUB;
 		    }
 		}
 		else {
 		    if (rsign > 0) {
-			if (math_compare(builtin, remainder, cmp) <= 0)
-			    state = DIVIDE_SUB;
+			if (cmp_real_real(NIMAG(num), &cmp) <= 0)
+			    state = NDIVIDE_SUB;
 		    }
 		    else {
-			if (math_compare(builtin, remainder, cmp) <= 0)
-			    state = DIVIDE_ADD;
+			if (cmp_real_real(NIMAG(num), &cmp) <= 0)
+			    state = NDIVIDE_ADD;
 		    }
 		}
-		XCLEAR_ACCUM(cmp);
+		clear_real(&cmp);
 	    }
 	}   break;
     }
 
-    if (state == DIVIDE_ADD) {
+    if (state == NDIVIDE_ADD) {
 	mpi_addi(quo, quo, 1);
-	sub_accumulator(builtin, remainder, div);
+	sub_real_object(NIMAG(num), div);
     }
-    else if (state == DIVIDE_SUB) {
+    else if (state == NDIVIDE_SUB) {
 	mpi_subi(quo, quo, 1);
-	add_accumulator(builtin, remainder, div);
+	add_real_object(NIMAG(num), div);
     }
 
-    if (floating) {
+    clear_real(NREAL(num));
+
+    if (flo) {
 	double dval = mpi_getd(quo);
 
 	mpi_clear(quo);
 	XFREE(quo);
 	if (!finite(dval))
-	    XERROR("floating point overflow");
-	result = REAL(dval);
+	    fatal_error(FLOATING_POINT_OVERFLOW);
+	NRTYPE(num) = N_FLONUM;
+	NRFF(num) = dval;
     }
     else {
-	if (mpi_fiti(quo)) {
-	    result = SMALLINT(mpi_geti(quo));
-	    mpi_clear(quo);
-	    XFREE(quo);
-	}
-	else {
-	    result = BIGINTEGER(quo);
-	    XMEM(quo);
-	}
+	NRBI(num) = quo;
+	NRTYPE(num) = N_BIGNUM;
+	rbi_canonicalize(NREAL(num));
     }
-
-    RETURN(0) = remainder;
-    return (result);
 }
 
-static LispObj *
-divide_xr_xr(LispBuiltin *builtin, LispObj *num, LispObj *div,
-	     int function, int floating)
+static void
+ndivide_xr_xr(n_number *num, LispObj *div, int fun, int flo)
 {
-    int state = DIVIDE_NOP, dsign, rsign;
+    int state = NDIVIDE_NOP, dsign, rsign;
     mpr *bigr;
     mpi *bigi;
-    LispObj *quo, *rem;
 
     bigr = XALLOC(mpr);
     mpr_init(bigr);
-    if (XTYPE(num) == FR)
-	mpr_seti(bigr, XFRN(num), XFRD(num));
+    if (NRTYPE(num) == N_FIXRATIO)
+	mpr_seti(bigr, NRFRN(num), NRFRD(num));
     else
-	mpr_set(bigr, XBR(num));
-    rem = BIGRATIO(bigr);
-    XMEM(bigr);
-    if (XTYPE(div) == FR) {
-	dsign = XFRN(div) < 0 ? -1 : XFRN(div) > 0 ? 1 : 0;
-	mpi_muli(mpr_num(bigr), mpr_num(bigr), XFRD(div));
-	mpi_muli(mpr_den(bigr), mpr_den(bigr), XFRN(div));
+	mpr_set(bigr, NRBR(num));
+    NITYPE(num) = N_BIGRATIO;
+    NIBR(num) = bigr;
+
+    if (XOBJECT_TYPE(div) == LispRatio_t) {
+	dsign = OFRN(div) < 0 ? -1 : OFRN(div) > 0 ? 1 : 0;
+	mpi_muli(mpr_num(bigr), mpr_num(bigr), OFRD(div));
+	mpi_muli(mpr_den(bigr), mpr_den(bigr), OFRN(div));
     }
     else {
-	dsign = mpi_sgn(XBRN(div));
-	mpr_div(bigr, bigr, XBR(div));
+	dsign = mpi_sgn(OBRN(div));
+	mpr_div(bigr, bigr, OBR(div));
     }
 
     bigi = XALLOC(mpi);
     mpi_init(bigi);
     mpi_divqr(bigi, mpr_num(bigr), mpr_num(bigr), mpr_den(bigr));
-    quo = BIGINTEGER(bigi);
-    XMEM(bigi);
+    NRTYPE(num) = N_BIGNUM;
+    NRBI(num) = bigi;
 
-    if (XTYPE(div) == FR)
-	mpi_seti(mpr_den(bigr), XFRD(div));
+    if (XOBJECT_TYPE(div) == LispRatio_t)
+	mpi_seti(mpr_den(bigr), OFRD(div));
     else
-	mpi_set(mpr_den(bigr), XBRD(div));
-    if (XTYPE(num) == FR)
-	mpi_muli(mpr_den(bigr), mpr_den(bigr), XFRD(num));
+	mpi_set(mpr_den(bigr), OBRD(div));
+    if (NRTYPE(num) == N_FIXRATIO)
+	mpi_muli(mpr_den(bigr), mpr_den(bigr), NRFRD(num));
     else
-	mpi_mul(mpr_den(bigr), mpr_den(bigr), XBRD(num));
+	mpi_mul(mpr_den(bigr), mpr_den(bigr), NRBRD(num));
 
-    br_canonicalize(builtin, rem);
-    rsign = math_compare(builtin, rem, &zero);
+    rbr_canonicalize(NIMAG(num));
+    rsign = cmp_real_real(NIMAG(num), &zero);
 
-    switch (function) {
-	case DIVIDE_CEIL:
+    switch (fun) {
+	case NDIVIDE_CEIL:
 	    if ((rsign < 0 && dsign < 0) || (rsign > 0 && dsign > 0))
-		state = DIVIDE_ADD;
+		state = NDIVIDE_ADD;
 	    break;
-	case DIVIDE_FLOOR:
+	case NDIVIDE_FLOOR:
 	    if ((rsign < 0 && dsign > 0) || (rsign > 0 && dsign < 0))
-		state = DIVIDE_SUB;
+		state = NDIVIDE_SUB;
 	    break;
-	case DIVIDE_ROUND: {
+	case NDIVIDE_ROUND: {
 	    int modp;
 
-	    if (XTYPE(num) == FR)
-		modp = XFRD(num) == 2;
+	    if (NRTYPE(num) == N_FIXRATIO)
+		modp = NRFRD(num) == 2;
 	    else
-		modp = mpi_cmpi(XBRD(num), 2) == 0;
+		modp = mpi_cmpi(NRBRD(num), 2) == 0;
 
 	    if (!modp || (bigi->digs[0] & 1) == 1) {
-		LispObj *cmp;
+		n_real cmp;
 
-		cmp = copy_real(builtin, div);
-		div_accumulator(builtin, cmp, &two);
+		set_real_object(&cmp, div);
+		div_real_real(&cmp, &two);
 		if (dsign > 0) {
 		    if (rsign > 0) {
-			if (math_compare(builtin, rem, cmp) >= 0)
-			    state = DIVIDE_ADD;
+			if (cmp_real_real(NIMAG(num), &cmp) >= 0)
+			    state = NDIVIDE_ADD;
 		    }
 		    else {
-			if (math_compare(builtin, rem, cmp) >= 0)
-			    state = DIVIDE_SUB;
+			if (cmp_real_real(NIMAG(num), &cmp) >= 0)
+			    state = NDIVIDE_SUB;
 		    }
 		}
 		else {
 		    if (rsign > 0) {
-			if (math_compare(builtin, rem, cmp) <= 0)
-			    state = DIVIDE_SUB;
+			if (cmp_real_real(NIMAG(num), &cmp) <= 0)
+			    state = NDIVIDE_SUB;
 		    }
 		    else {
-			if (math_compare(builtin, rem, cmp) <= 0)
-			    state = DIVIDE_ADD;
+			if (cmp_real_real(NIMAG(num), &cmp) <= 0)
+			    state = NDIVIDE_ADD;
 		    }
 		}
-		XCLEAR_ACCUM(cmp);
+		clear_real(&cmp);
 	    }
 	}   break;
     }
 
-    if (state == DIVIDE_ADD) {
-	add_accumulator(builtin, quo, &one);
-	sub_accumulator(builtin, rem, div);
+    if (state == NDIVIDE_ADD) {
+	add_real_real(NREAL(num), &one);
+	sub_real_object(NIMAG(num), div);
     }
-    else if (state == DIVIDE_SUB) {
-	sub_accumulator(builtin, quo, &one);
-	add_accumulator(builtin, rem, div);
+    else if (state == NDIVIDE_SUB) {
+	sub_real_real(NREAL(num), &one);
+	add_real_object(NIMAG(num), div);
     }
 
-    if (floating) {
+    if (flo) {
 	double dval = mpi_getd(bigi);
 
 	mpi_clear(bigi);
 	XFREE(bigi);
 	if (!finite(dval))
-	    XERROR("floating point overflow");
-	quo = REAL(dval);
+	    fatal_error(FLOATING_POINT_OVERFLOW);
+	NRTYPE(num) = N_FLONUM;
+	NRFF(num) = dval;
     }
-    else if (mpi_fiti(bigi)) {
-	long lval = mpi_geti(bigi);
-
-	XCLEAR_BI(quo);
-	quo = SMALLINT(lval);
-    }
-
-    RETURN(0) = rem;
-    return (quo);
+    else
+	rbi_canonicalize(NREAL(num));
 }
 
-static INLINE void
-abs_accumulator(LispBuiltin *builtin, LispObj *accum)
-{
-    switch (XTYPE(accum)) {
-	case CX:	abs_cx(builtin, accum);	break;
-	case FI:	abs_fi(builtin, accum);	break;
-	case FR:	abs_fr(builtin, accum);	break;
-	case FF:	abs_ff(builtin, accum);	break;
-	case BI:	abs_bi(builtin, accum);	break;
-	case BR:	abs_br(builtin, accum);	break;
-	default:	NOT_A_NUMBER(accum);	break;
-    }
-}
-
-static INLINE void
-neg_accumulator(LispBuiltin *builtin, LispObj *accum)
-{
-    switch (XTYPE(accum)) {
-	case CX:	neg_cx(builtin, accum);	break;
-	case FI:	neg_fi(builtin, accum);	break;
-	case FR:	neg_fr(builtin, accum);	break;
-	case FF:	neg_ff(builtin, accum);	break;
-	case BI:	neg_bi(builtin, accum);	break;
-	case BR:	neg_br(builtin, accum);	break;
-	default:	NOT_A_NUMBER(accum);	break;
-    }
-}
-
-static INLINE void
-mod_accumulator(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    switch (XTYPE(accum)) {
-	case FI:
-	    switch (XTYPE(ope)) {
-		case FI:
-		    mod_fi_fi(builtin, accum, ope);
-		    break;
-		case BI:
-		    mod_fi_bi(builtin, accum, ope);
-		    break;
-		default:	goto mod_bad_ope;
-	    }
-	    break;
-	case BI:
-	    switch (XTYPE(ope)) {
-		case FI:
-		    mod_bi_fi(builtin, accum, ope);
-		    break;
-		case BI:
-		    mod_bi_bi(builtin, accum, ope);
-		    break;
-		default:	goto mod_bad_ope;
-	    }
-	    break;
-	default:
-	    NOT_AN_INTEGER(accum);
-	    break;
-    }
-    return;
-mod_bad_ope:
-    NOT_AN_INTEGER(ope);
-}
-
-static INLINE void
-rem_accumulator(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    switch (XTYPE(accum)) {
-	case FI:
-	    switch (XTYPE(ope)) {
-		case FI:
-		    rem_fi_fi(builtin, accum, ope);
-		    break;
-		case BI:
-		    rem_fi_bi(builtin, accum, ope);
-		    break;
-		default:	goto rem_bad_ope;
-	    }
-	    break;
-	case BI:
-	    switch (XTYPE(ope)) {
-		case FI:
-		    rem_bi_fi(builtin, accum, ope);
-		    break;
-		case BI:
-		    rem_bi_bi(builtin, accum, ope);
-		    break;
-		default:	goto rem_bad_ope;
-	    }
-	    break;
-	default:
-	    NOT_AN_INTEGER(accum);
-	    break;
-    }
-    return;
-rem_bad_ope:
-    NOT_AN_INTEGER(ope);
-}
-
-static void
-gcd_accumulator(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    /* check for zero operand */
-    if (math_compare(builtin, accum, &zero) == 0)
-	set_real(builtin, accum, ope);
-    else if (math_compare(builtin, ope, &zero) != 0) {
-	LispObj operand, *integer = accum, *rest = &operand;
-
-	XTYPE(rest) = FI;
-	set_real(builtin, rest, ope);
-	for (;;) {
-	    mod_accumulator(builtin, rest, integer);
-	    if (math_compare(builtin, rest, &zero) == 0)
-		break;
-	    /* swap values */
-	    ope = integer;
-	    integer = rest;
-	    rest = ope;
-	}
-	if (accum != integer) {
-	    /* integer is a pointer to local variable operand */
-	    if (XTYPE(integer) == BI) {
-		if (XTYPE(accum) == BI) {
-		    XCLEAR_ACCUM(accum);
-		}
-		else
-		    XTYPE(accum) = BI;
-		XBI(accum) = XBI(integer);
-	    }
-	    else if (XTYPE(integer) == FI)
-		XFI(accum) = XFI(integer);
-	    else
-		NOT_AN_INTEGER(accum);
-	}
-	else {
-	    XCLEAR_ACCUM(rest);	/* won't be freed by gc as is local variable */
-	}
-    }
-}
-
-static int
-math_compare(LispBuiltin *builtin, LispObj *op1, LispObj *op2)
-{
-    if (XTYPE(op1) == CX) {
-	if (XTYPE(op2) == CX)
-	    return (cmp_cx_cx(builtin, op1, op2));
-	else if (math_compare(builtin, CXI(op1), &zero) == 0)
-	    return (math_compare(builtin, CXR(op1), op2));
-	else
-	    return (1);
-    }
-    else if (XTYPE(op2) == CX) {
-	if (math_compare(builtin, CXI(op2), &zero) == 0)
-	    return (math_compare(builtin, op1, CXR(op2)));
-	else
-	    return (1);
-    }
-    else {
-	switch (XTYPE(op1)) {
-	    case FI:
-		switch (XTYPE(op2)) {
-		    case FI: return (cmp_fi_fi(builtin, op1, op2));
-		    case FR: return (cmp_fi_fr(builtin, op1, op2));
-		    case FF: return (cmp_fi_ff(builtin, op1, op2));
-		    case BI: return (cmp_fi_bi(builtin, op1, op2));
-		    case BR: return (cmp_fi_br(builtin, op1, op2));
-		    default:	break;
-		}
-		break;
-	    case FR:
-		switch (XTYPE(op2)) {
-		    case FI: return (cmp_fr_fi(builtin, op1, op2));
-		    case FR: return (cmp_fr_fr(builtin, op1, op2));
-		    case FF: return (cmp_fr_ff(builtin, op1, op2));
-		    case BI: return (cmp_fr_bi(builtin, op1, op2));
-		    case BR: return (cmp_fr_br(builtin, op1, op2));
-		    default:	break;
-		}
-		break;
-	    case FF:
-		switch (XTYPE(op2)) {
-		    case FI: return (cmp_ff_fi(builtin, op1, op2));
-		    case FR: return (cmp_ff_fr(builtin, op1, op2));
-		    case FF: return (cmp_ff_ff(builtin, op1, op2));
-		    case BI: return (cmp_ff_bi(builtin, op1, op2));
-		    case BR: return (cmp_ff_br(builtin, op1, op2));
-		    default:	break;
-		}
-		break;
-	    case BI:
-		switch (XTYPE(op2)) {
-		    case FI: return (cmp_bi_fi(builtin, op1, op2));
-		    case FR: return (cmp_bi_fr(builtin, op1, op2));
-		    case FF: return (cmp_bi_ff(builtin, op1, op2));
-		    case BI: return (cmp_bi_bi(builtin, op1, op2));
-		    case BR: return (cmp_bi_br(builtin, op1, op2));
-		    default:	break;
-		}
-		break;
-	    case BR:
-		switch (XTYPE(op2)) {
-		    case FI: return (cmp_br_fi(builtin, op1, op2));
-		    case FR: return (cmp_br_fr(builtin, op1, op2));
-		    case FF: return (cmp_br_ff(builtin, op1, op2));
-		    case BI: return (cmp_br_bi(builtin, op1, op2));
-		    case BR: return (cmp_br_br(builtin, op1, op2));
-		    default:	break;
-		}
-		break;
-	    default:
-		NOT_A_NUMBER(op1);
-		break;
-	}
-    }
-    NOT_A_NUMBER(op2);
-    return (-1);
-}
-
-static int
-cmp_float(LispBuiltin *builtin, double cmp1, double cmp2)
-{
-    double value = cmp1 - cmp2;
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    return (value > 0.0 ? 1 : value < 0.0 ? -1 : 0);
-}
-
-static INLINE void
-sqrt_accumulator(LispBuiltin *builtin, LispObj *accum)
-{
-    switch (XTYPE(accum)) {
-	case FI:	sqrt_fi(builtin, accum);	break;
-	case FR:	sqrt_fr(builtin, accum);	break;
-	case FF:	sqrt_ff(builtin, accum);	break;
-	case BI:	sqrt_bi(builtin, accum);	break;
-	case BR:	sqrt_br(builtin, accum);	break;
-	case CX:	sqrt_cx(builtin, accum);	break;
-	default:	NOT_A_NUMBER(accum);		break;
-    }
-}
-
-
-static INLINE LispObj *
-copy_number(LispBuiltin *builtin, LispObj *obj)
-{
-    if (XTYPE(obj) == CX)
-	return (copy_complex(builtin, obj));
-    return (copy_real(builtin, obj));
-}
-
-static INLINE LispObj *
-copy_real(LispBuiltin *builtin, LispObj *obj)
-{
-    LispObj *accum = LispNew(obj, NIL);
-
-    switch (XTYPE(accum) = XTYPE(obj)) {
-	case FI:
-	    XFI(accum) = XFI(obj);
-	    break;
-	case FR:
-	    XFRN(accum) = XFRN(obj);
-	    XFRD(accum) = XFRD(obj);
-	    break;
-	case FF:
-	    XFF(accum) = XFF(obj);
-	    break;
-	case BI:
-	    XBI(accum) = XALLOC(mpi);
-	    mpi_init(XBI(accum));
-	    mpi_set(XBI(accum), XBI(obj));
-	    XMEM(XBI(accum));
-	    break;
-	case BR:
-	    XBR(accum) = XALLOC(mpr);
-	    mpr_init(XBR(accum));
-	    mpr_set(XBR(accum), XBR(obj));
-	    XMEM(XBR(accum));
-	    break;
-	default:
-	    NOT_A_NUMBER(accum);
-	    break;
-    }
-
-    return (accum);
-}
-
-/*
- * Almost the same of copy real, but don't allocate a new object cell,
- * reducing gc time on very heavy math calculations.
- */
-static INLINE void
-set_real(LispBuiltin *builtin, LispObj *accum, LispObj *obj)
-{
-    XCLEAR_ACCUM(accum);
-
-    switch (XTYPE(accum) = XTYPE(obj)) {
-	case FI:
-	    XFI(accum) = XFI(obj);
-	    break;
-	case FR:
-	    XFRN(accum) = XFRN(obj);
-	    XFRD(accum) = XFRD(obj);
-	    break;
-	case FF:
-	    XFF(accum) = XFF(obj);
-	    break;
-	case BI:
-	    XBI(accum) = XALLOC(mpi);
-	    mpi_init(XBI(accum));
-	    mpi_set(XBI(accum), XBI(obj));
-	    XMEM(XBI(accum));
-	    break;
-	case BR:
-	    XBR(accum) = XALLOC(mpr);
-	    mpr_init(XBR(accum));
-	    mpr_set(XBR(accum), XBR(obj));
-	    XMEM(XBR(accum));
-	    break;
-	default:
-	    NOT_A_NUMBER(accum);
-	    break;
-    }
-}
-
-static INLINE LispObj *
-copy_complex(LispBuiltin *builtin, LispObj *obj)
-{
-    GC_ENTER();
-    LispObj *accum;
-
-    accum = LispNew(obj, NIL);
-    GC_PROTECT(accum);
-    CXR(accum) = copy_real(builtin, CXR(obj));
-    XTYPE(accum) = CX;
-    /* just in case GC is called and there is garbage in imagpart */
-    CXI(accum) = NIL;
-    CXI(accum) = copy_real(builtin, CXI(obj));
-    GC_LEAVE();
-
-    return (accum);
-}
-
-
-static INLINE void
-fr_canonicalize(LispBuiltin *builtin, LispObj *accum)
-{
-    long num, numerator, den, denominator, rest;
-
-    num = numerator = XFRN(accum);
-    den = denominator = XFRD(accum);
-    if (denominator == 0)
-	XERROR("divide by zero");
-    if (num < 0)
-	num = -num;
-    else if (num == 0) {
-	XFI(accum) = 0;
-	XTYPE(accum) = FI;
-	return;
-    }
-    for (;;) {
-	if ((rest = den % num) == 0)
-	    break;
-	den = num;
-	num = rest;
-    }
-    if (den != 1) {
-	denominator /= num;
-	numerator /= num;
-    }
-    if (denominator < 0) {
-	numerator = -numerator;
-	denominator = -denominator;
-    }
-    if (denominator == 1) {
-	/* => FIXNUM INTEGER */
-	XTYPE(accum) = FI;
-	XFI(accum) = numerator;
-    }
-    else {
-	XFRN(accum) = numerator;
-	XFRD(accum) = denominator;
-    }
-}
-
-static INLINE void
-br_canonicalize(LispBuiltin *builtin, LispObj *accum)
-{
-    int fitnum, fitden;
-    long numerator, denominator;
-
-    mpr_canonicalize(XBR(accum));
-    fitnum = mpi_fiti(XBRN(accum));
-    fitden = mpi_fiti(XBRD(accum));
-    if (fitnum && fitden) {
-	numerator = mpi_geti(XBRN(accum));
-	denominator = mpi_geti(XBRD(accum));
-	mpr_clear(XBR(accum));
-	XFREE(XBR(accum));
-	if (numerator == 0) {
-	    XFI(accum) = 0;
-	    XTYPE(accum) = FI;
-	}
-	else if (denominator == 1) {
-	    XTYPE(accum) = FI;
-	    XFI(accum) = numerator;
-	}
-	else {
-	    XTYPE(accum) = FR;
-	    XFRN(accum) = numerator;
-	    XFRD(accum) = denominator;
-	}
-    }
-    else if (fitden) {
-	denominator = mpi_geti(XBRD(accum));
-	if (denominator == 1) {
-	    mpi *bigi = XALLOC(mpi);
-
-	    mpi_init(bigi);
-	    mpi_set(bigi, XBRN(accum));
-	    mpr_clear(XBR(accum));
-	    XFREE(XBR(accum));
-	    XTYPE(accum) = BI;
-	    XBI(accum) = bigi;
-	    XMEM(XBI(accum));
-	}
-	else if (denominator == 0)
-	    XERROR("divide by zero");
-    }
-}
-
-static INLINE void
-maybe_integer(LispObj *accum)
-{
-    double value;
-
-    switch (XTYPE(accum)) {
-	case FF:
-	    value = XFF(accum);
-	    if ((long)value == value) {
-		XTYPE(accum) = FI;
-		XFI(accum) = value;
-	    }
-	    else if (value == rint(value)) {
-		mpi *bigi = XALLOC(mpi);
-
-		mpi_init(bigi);
-		mpi_setd(bigi, value);
-		XTYPE(accum) = BI;
-		XBI(accum) = bigi;
-		XMEM(bigi);
-	    }
-	    break;
-	default:
-	    break;
-    }
-}
-
-static INLINE void
-cx_canonicalize(LispBuiltin *builtin, LispObj *accum,
-		int irealpart, int iimagpart)
-{
-    if (irealpart && !INTEGER_P(CXR(accum)))
-	maybe_integer(CXR(accum));
-    if (iimagpart && !INTEGER_P(CXI(accum)))
-	maybe_integer(CXI(accum));
-
-    if (XTYPE(CXI(accum)) == FI && XFI(CXI(accum)) == 0) {
-	switch (XTYPE(accum) = XTYPE(CXR(accum))) {
-	    case FI:
-		XFI(accum) = XFI(CXR(accum));
-		break;
-	    case FR: {
-		long num = XFRN(CXR(accum)), den = XFRD(CXR(accum));
-
-		XFRN(accum) = num;
-		XFRD(accum) = den;
-	    }	break;
-	    case FF:
-		XFF(accum) = XFF(CXR(accum));
-		break;
-	    case BI: {
-		mpi *bigi = XALLOC(mpi);
-
-		mpi_init(bigi);
-		mpi_set(bigi, XBI(CXR(accum)));
-		XBI(accum) = bigi;
-		XMEM(bigi);
-	    }	break;
-	    case BR: {
-		mpr *bigr = XALLOC(mpr);
-
-		mpr_init(bigr);
-		mpr_set(bigr, XBR(CXR(accum)));
-		XBR(accum) = bigr;
-		XMEM(bigr);
-	    }	break;
-	    default:
-		break;
-	}
-    }
-}
-
-
-/*
- * check if op1 + op2 will overflow
- */
-static INLINE int
-fi_fi_add_overflow(long op1, long op2)
-{
-    long op = op1 + op2;
-
-    return (op1 > 0 ? op2 > op : op2 < op);
-}
-
-/*
- * check if op1 - op2 will overflow
- */
-static INLINE int
-fi_fi_sub_overflow(long op1, long op2)
-{
-    long op = op1 - op2;
-
-    return (((op1 < 0) ^ (op2 < 0)) && ((op < 0) ^ (op1 < 0)));
-}
-
-/*
- * check if op1 * op2 will overflow
- */
-static INLINE int
-fi_fi_mul_overflow(long op1, long op2)
-{
-#ifndef LONG64
-    double op = (double)op1 * (double)op2;
-
-    return (op > 2147483647.0 || op < -2147483647.0);
-#else
-    int shift, sign;
-    long mask;
-
-    if (op1 == 0 || op1 == 1 || op2 == 0 || op2 == 1)
-	return (0);
-
-    if (op1 == MINSLONG || op2 == MINSLONG)
-	return (1);
-
-    sign = (op1 < 0) ^ (op2 < 0);
-
-    if (op1 < 0)
-	op1 = -op1;
-    if (op2 < 0)
-	op2 = -op2;
-
-    for (shift = 0, mask = FI_MASK; shift < LONGSBITS; shift++, mask >>= 1)
-	if (op1 & mask)
-	    break;
-    ++shift;
-    for (mask = FI_MASK; shift < LONGSBITS; shift++, mask >>= 1)
-	if (op2 & mask)
-	    break;
-
-    return (shift < LONGSBITS);
-#endif
-}
 
 /************************************************************************
- *	COMPLEX NUMBER OPERATIONS
+ * REAL COMPLEX
  ************************************************************************/
-/*
-	RE accumulator - CX operator
- */
-static INLINE void
-add_re_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static void
+nadd_re_cx(n_number *num, LispObj *comp)
 {
 /*
 	Ra+Rb Ib
  */
-    GC_ENTER();
-    int irealpart, iimagpart;
-    LispObj *realpart, *imagpart;
+    int ireal, iimag;
 
-    irealpart = INTEGER_P(accum) && INTEGER_P(CXR(ope));
-    iimagpart = INTEGER_P(CXI(ope));
-
-    /* protect accumulator */
-    GC_PROTECT(accum);
-
-    /* protect realpart */
-    realpart = copy_number(builtin, accum);
-    GC_PROTECT(realpart);
+    ireal = NRINTEGERP(num) && INTEGERP(OCXR(comp));
+    iimag = INTEGERP(OCXI(comp));
 
     /* Ra+Rb */
-    add_accumulator(builtin, realpart, CXR(ope));
+    add_real_object(NREAL(num), OCXR(comp));
 
     /* Ib */
-    imagpart = copy_real(builtin, CXI(ope));
+    set_real_object(NIMAG(num), OCXI(comp));
 
-    GC_LEAVE();
+    num->complex = 1;
 
-    XCLEAR_ACCUM(accum);
-
-    /* change object type */
-    XTYPE(accum) = CX;
-    CXR(accum) = realpart;
-    CXI(accum) = imagpart;
-
-    cx_canonicalize(builtin, accum, irealpart, iimagpart);
+    ncx_canonicalize(num, ireal, iimag);
 }
 
-static INLINE void
-sub_re_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static void
+nsub_re_cx(n_number *num, LispObj *comp)
 {
 /*
 	Ra-Rb -Ib
  */
-    GC_ENTER();
-    int irealpart, iimagpart;
-    LispObj *realpart, *imagpart;
+    int ireal, iimag;
 
-    irealpart = INTEGER_P(accum) && INTEGER_P(CXR(ope));
-    iimagpart = INTEGER_P(CXI(ope));
-
-    /* protect accumulator */
-    GC_PROTECT(accum);
-
-    /* protect realpart */
-    realpart = copy_real(builtin, accum);
-    GC_PROTECT(realpart);
+    ireal = NRINTEGERP(num) && INTEGERP(OCXR(comp));
+    iimag = INTEGERP(OCXI(comp));
  
     /* Ra-Rb */
-    sub_accumulator(builtin, realpart, CXR(ope));
+    sub_real_object(NREAL(num), OCXR(comp));
 
     /* -Ib */
-    imagpart = INTEGER(-1);
-    mul_accumulator(builtin, imagpart, CXI(ope));
+    NITYPE(num) = N_FIXNUM;
+    NIFI(num) = -1;
+    mul_real_object(NIMAG(num), OCXI(comp));
 
-    GC_LEAVE();
+    num->complex = 1;
 
-    XCLEAR_ACCUM(accum);
-
-    /* change object type */
-    XTYPE(accum) = CX;
-    CXR(accum) = realpart;
-    CXI(accum) = imagpart;
-
-    cx_canonicalize(builtin, accum, irealpart, iimagpart);
+    ncx_canonicalize(num, ireal, iimag);
 }
 
-static INLINE void
-mul_re_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static void
+nmul_re_cx(n_number *num, LispObj *comp)
 {
 /*
 	Ra*Rb Ra*Ib
  */
-    GC_ENTER();
-    int irealpart, iimagpart;
-    LispObj *realpart, *imagpart;
+    int ireal, iimag;
 
-    irealpart = INTEGER_P(accum) && INTEGER_P(CXR(ope));
-    iimagpart = INTEGER_P(CXI(ope));
+    ireal = NRINTEGERP(num) && INTEGERP(OCXR(comp));
+    iimag = INTEGERP(OCXI(comp));
 
-    /* protect accumulator */
-    GC_PROTECT(accum);
+    /* copy before change */
+    set_real_real(NIMAG(num), NREAL(num));
 
-    /* protect realpart */
-    realpart = copy_real(builtin, accum);
-    GC_PROTECT(realpart);
- 
     /* Ra*Rb */
-    mul_accumulator(builtin, realpart, CXR(ope));
+    mul_real_object(NREAL(num), OCXR(comp));
 
     /* Ra*Ib */
-    imagpart = copy_real(builtin, accum);
-    mul_accumulator(builtin, imagpart, CXI(ope));
+    mul_real_object(NIMAG(num), OCXI(comp));
 
-    GC_LEAVE();
+    num->complex = 1;
 
-    XCLEAR_ACCUM(accum);
-
-    /* change object type */
-    XTYPE(accum) = CX;
-    CXR(accum) = realpart;
-    CXI(accum) = imagpart;
-
-    cx_canonicalize(builtin, accum, irealpart, iimagpart);
+    ncx_canonicalize(num, ireal, iimag);
 }
 
-static INLINE void
-div_re_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static void
+ndiv_re_cx(n_number *num, LispObj *comp)
 {
 /*
 	Ra*Rb        -Ib*Ra
 	-----------  -----------
 	Rb*Rb+Ib*Ib  Rb*Rb+Ib*Ib
  */
-    GC_ENTER();
-    int irealpart, iimagpart;
-    LispObj *realpart, *imagpart, *object;
+    int ireal, iimag;
+    n_real div, temp;
 
-	/* may change to floating point if operation done, and it is not
-	 * the expected behaviour */
-    if (XTYPE(accum) == FI && XFI(accum) == 0)
+    /* may change to flonum if operation done */
+    if (NRTYPE(num) == N_FIXNUM && NRFI(num) == 0)
 	return;
 
-    irealpart = INTEGER_P(accum) && INTEGER_P(CXR(ope));
-    iimagpart = INTEGER_P(CXI(ope));
+    ireal = NRINTEGERP(num) && INTEGERP(OCXR(comp));
+    iimag = INTEGERP(OCXI(comp));
 
-    /* Ra*Rb */
-    GC_PROTECT(accum);
-    realpart = copy_real(builtin, accum);
-    GC_PROTECT(realpart);
-    mul_accumulator(builtin, realpart, CXR(ope));
+    /* Rb*Rb */
+    set_real_object(&div, OCXR(comp));
+    mul_real_object(&div, OCXR(comp));
+
+    /* Ib*Ib */
+    set_real_object(&temp, OCXI(comp));
+    mul_real_object(&temp, OCXI(comp));
+
+    /* Rb*Rb+Ib*Ib */
+    add_real_real(&div, &temp);
+    clear_real(&temp);
 
     /* -Ib*Ra */
-    imagpart = INTEGER(-1);
-    GC_PROTECT(imagpart);
-    mul_accumulator(builtin, imagpart, CXI(ope));
-    mul_accumulator(builtin, imagpart, accum);
+    NITYPE(num) = N_FIXNUM;
+    NIFI(num) = -1;
+    mul_real_object(NIMAG(num), OCXI(comp));
+    mul_real_real(NIMAG(num), NREAL(num));
 
-    object = copy_real(builtin, CXR(ope));
-    mul_accumulator(builtin, object, CXR(ope));
+    /* Ra*Rb */
+    mul_real_object(NREAL(num), OCXR(comp));
 
-    XCLEAR_ACCUM(accum);	/* destructively change */
-    set_real(builtin, accum, CXI(ope));
-    mul_accumulator(builtin, accum, CXI(ope));
+    div_real_real(NREAL(num), &div);
+    div_real_real(NIMAG(num), &div);
+    clear_real(&div);
 
-    add_accumulator(builtin, object, accum);
+    num->complex = 1;
 
-    div_accumulator(builtin, realpart, object);
-    div_accumulator(builtin, imagpart, object);
-
-    GC_LEAVE();
-
-    XCLEAR_ACCUM(accum);
-
-    XTYPE(accum) = CX;
-    CXR(accum) = realpart;
-    CXI(accum) = imagpart;
-
-    cx_canonicalize(builtin, accum, irealpart, iimagpart);
+    ncx_canonicalize(num, ireal, iimag);
 }
 
-
-/*
-	CX accumulator - RE operator
- */
-static INLINE void
-add_cx_re(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+
+/************************************************************************
+ * COMPLEX REAL
+ ************************************************************************/
+static void
+nadd_cx_re(n_number *num, LispObj *re)
 {
 /*
 	Ra+Rb Ia
  */
-    int irealpart, iimagpart;
+    int ireal, iimag;
 
-    irealpart = INTEGER_P(ope) && INTEGER_P(CXR(accum));
-    iimagpart = INTEGER_P(CXI(accum));
+    ireal = INTEGERP(re) && NRINTEGERP(num);
+    iimag = NIINTEGERP(num);
 
-    add_accumulator(builtin, CXR(accum), ope);
+    add_real_object(NREAL(num), re);
 
-    cx_canonicalize(builtin, accum, irealpart, iimagpart);
+    ncx_canonicalize(num, ireal, iimag);
 }
 
-static INLINE void
-sub_cx_re(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static void
+nsub_cx_re(n_number *num, LispObj *re)
 {
 /*
 	Ra-Rb Ia
  */
-    int irealpart, iimagpart;
+    int ireal, iimag;
 
-    irealpart = INTEGER_P(ope) && INTEGER_P(CXR(accum));
-    iimagpart = INTEGER_P(CXI(accum));
+    ireal = INTEGERP(re) && NRINTEGERP(num);
+    iimag = NIINTEGERP(num);
 
-    sub_accumulator(builtin, CXR(accum), ope);
+    sub_real_object(NREAL(num), re);
 
-    cx_canonicalize(builtin, accum, irealpart, iimagpart);
+    ncx_canonicalize(num, ireal, iimag);
 }
 
-static INLINE void
-mul_cx_re(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static void
+nmul_cx_re(n_number *num, LispObj *re)
 {
 /*
 	Ra*Rb Ia*Rb
  */
-    int irealpart, iimagpart;
+    int ireal, iimag;
 
-    irealpart = INTEGER_P(ope) && INTEGER_P(CXR(accum));
-    iimagpart = INTEGER_P(CXI(accum));
+    ireal = INTEGERP(re) && NRINTEGERP(num);
+    iimag = NIINTEGERP(num);
 
-    mul_accumulator(builtin, CXR(accum), ope);
-    mul_accumulator(builtin, CXI(accum), ope);
+    mul_real_object(NREAL(num), re);
+    mul_real_object(NIMAG(num), re);
 
-    cx_canonicalize(builtin, accum, irealpart, iimagpart);
+    ncx_canonicalize(num, ireal, iimag);
 }
 
-static INLINE void
-div_cx_re(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static void
+ndiv_cx_re(n_number *num, LispObj *re)
 {
 /*
 	Ra/Rb Ia/Rb
  */
-    int irealpart, iimagpart;
+    int ireal, iimag;
 
-    irealpart = INTEGER_P(ope) && INTEGER_P(CXR(accum));
-    iimagpart = INTEGER_P(CXI(accum));
+    ireal = INTEGERP(re) && NRINTEGERP(num);
+    iimag = NIINTEGERP(num);
 
-    div_accumulator(builtin, CXR(accum), ope);
-    div_accumulator(builtin, CXI(accum), ope);
+    div_real_object(NREAL(num), re);
+    div_real_object(NIMAG(num), re);
 
-    cx_canonicalize(builtin, accum, irealpart, iimagpart);
+    ncx_canonicalize(num, ireal, iimag);
 }
 
-
-/*
-	CX accumulator - CX operator
- */
-static INLINE void
-add_cx_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+
+/************************************************************************
+ * COMPLEX COMPLEX
+ ************************************************************************/
+static void
+nadd_cx_cx(n_number *num, LispObj *comp)
 {
 /*
 	Ra+Rb Ia+Ib
  */
-    int irealpart, iimagpart;
+    int ireal, iimag;
 
-    irealpart = INTEGER_P(CXR(accum)) && INTEGER_P(CXR(ope));
-    iimagpart = INTEGER_P(CXI(accum)) && INTEGER_P(CXI(ope));
+    ireal = NRINTEGERP(num) && INTEGERP(OCXR(comp));
+    iimag = NIINTEGERP(num) && INTEGERP(OCXI(comp));
 
-    add_accumulator(builtin, CXR(accum), CXR(ope));
-    add_accumulator(builtin, CXI(accum), CXI(ope));
+    add_real_object(NREAL(num), OCXR(comp));
+    add_real_object(NIMAG(num), OCXI(comp));
 
-    cx_canonicalize(builtin, accum, irealpart, iimagpart);
+    ncx_canonicalize(num, ireal, iimag);
 }
 
-static INLINE void
-sub_cx_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static void
+nsub_cx_cx(n_number *num, LispObj *comp)
 {
 /*
 	Ra-Rb Ia-Ib
  */
-    int irealpart, iimagpart;
+    int ireal, iimag;
 
-    irealpart = INTEGER_P(CXR(accum)) && INTEGER_P(CXR(ope));
-    iimagpart = INTEGER_P(CXI(accum)) && INTEGER_P(CXI(ope));
+    ireal = NRINTEGERP(num) && INTEGERP(OCXR(comp));
+    iimag = NIINTEGERP(num) && INTEGERP(OCXI(comp));
 
-    sub_accumulator(builtin, CXR(accum), CXR(ope));
-    sub_accumulator(builtin, CXI(accum), CXI(ope));
+    sub_real_object(NREAL(num), OCXR(comp));
+    sub_real_object(NIMAG(num), OCXI(comp));
 
-    cx_canonicalize(builtin, accum, irealpart, iimagpart);
+    ncx_canonicalize(num, ireal, iimag);
 }
 
-static INLINE void
-mul_cx_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static void
+nmul_cx_cx(n_number *num, LispObj *comp)
 {
 /*
 	Ra*Rb-Ia*Ib Ra*Ib+Ia*Rb
  */
-    GC_ENTER();
-    int irealpart, iimagpart;
-    LispObj *realpart, *imagpart, *object;
+    int ireal, iimag;
+    n_real IaIb, RaIb;
 
-    irealpart = INTEGER_P(CXR(accum)) && INTEGER_P(CXR(ope));
-    iimagpart = INTEGER_P(CXI(accum)) && INTEGER_P(CXI(ope));
+    ireal = NRINTEGERP(num) && INTEGERP(OCXR(comp));
+    iimag = NIINTEGERP(num) && INTEGERP(OCXI(comp));
 
-    GC_PROTECT(accum);
-    realpart = copy_real(builtin, CXR(accum));
-    GC_PROTECT(realpart);
-    imagpart = copy_number(builtin, CXI(accum));
+    set_real_real(&IaIb, NIMAG(num));
+    mul_real_object(&IaIb, OCXI(comp));
+
+    set_real_real(&RaIb, NREAL(num));
+    mul_real_object(&RaIb, OCXI(comp));
 
     /* Ra*Rb-Ia*Ib */
-    mul_accumulator(builtin, realpart, CXR(ope));
-    mul_accumulator(builtin, imagpart, CXI(ope));
-    sub_accumulator(builtin, realpart, imagpart);
+    mul_real_object(NREAL(num), OCXR(comp));
+    sub_real_real(NREAL(num), &IaIb);
+    clear_real(&IaIb);
 
     /* Ra*Ib+Ia*Rb */
-    object = CXI(accum);	/* destructively change */
-    imagpart = CXR(accum);	/* destructively change */
-    mul_accumulator(builtin, imagpart, CXI(ope));
-    mul_accumulator(builtin, object, CXR(ope));
-    add_accumulator(builtin, imagpart, object);
+    mul_real_object(NIMAG(num), OCXR(comp));
+    add_real_real(NIMAG(num), &RaIb);
+    clear_real(&RaIb);
 
-    GC_LEAVE();
-
-    CXR(accum) = realpart;
-    CXI(accum) = imagpart;
-
-    cx_canonicalize(builtin, accum, irealpart, iimagpart);
+    ncx_canonicalize(num, ireal, iimag);
 }
 
-static INLINE void
-div_cx_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static void
+ndiv_cx_cx(n_number *num, LispObj *comp)
 {
 /*
 	Ra*Rb+Ia*Ib  Ia*Rb-Ib*Ra
 	-----------  -----------
 	Rb*Rb+Ib*Ib  Rb*Rb+Ib*Ib
  */
-    GC_ENTER();
-    int irealpart, iimagpart;
-    LispObj *realpart, *imagpart, *object;
+    int ireal, iimag;
+    n_real temp1, temp2;
 
-    irealpart = INTEGER_P(CXR(accum)) && INTEGER_P(CXR(ope));
-    iimagpart = INTEGER_P(CXI(accum)) && INTEGER_P(CXI(ope));
+    ireal = NRINTEGERP(num) && INTEGERP(OCXR(comp));
+    iimag = NIINTEGERP(num) && INTEGERP(OCXI(comp));
 
+    /* IaIb */
+    set_real_real(&temp1, NIMAG(num));
+    mul_real_object(&temp1, OCXI(comp));
 
-    GC_PROTECT(accum);
-
-    /* Ra*Rb+Ia*Ib */
-    realpart = copy_real(builtin, CXR(accum));
-    GC_PROTECT(realpart);
-    imagpart = copy_real(builtin, CXI(accum));
-    GC_PROTECT(imagpart);
-    mul_accumulator(builtin, realpart, CXR(ope));
-    mul_accumulator(builtin, imagpart, CXI(ope));
-    add_accumulator(builtin, realpart, imagpart);
+    /* IbRa */
+    set_real_real(&temp2, NREAL(num));
+    mul_real_object(&temp2, OCXI(comp));
 
     /* Ra*Rb+Ia*Ib */
-    set_real(builtin, imagpart, CXI(accum));
-    mul_accumulator(builtin, imagpart, CXR(ope));
-    object = CXR(accum);	/* destructively change */
-    mul_accumulator(builtin, object, CXI(ope));
-    sub_accumulator(builtin, imagpart, object);
+    mul_real_object(NREAL(num), OCXR(comp));
+    add_real_real(NREAL(num), &temp1);
+    clear_real(&temp1);
+
+    /* Ia*Rb-Ib*Ra */
+    mul_real_object(NIMAG(num), OCXR(comp));
+    sub_real_real(NIMAG(num), &temp2);
+    clear_real(&temp2);
+
+
+    /* Rb*Rb */
+    set_real_object(&temp1, OCXR(comp));
+    mul_real_object(&temp1, OCXR(comp));
+
+    /* Ib*Ib */
+    set_real_object(&temp2, OCXI(comp));
+    mul_real_object(&temp2, OCXI(comp));
 
     /* Rb*Rb+Ib*Ib */
-    set_real(builtin, CXI(accum), CXI(ope));    /* destructively change */
-    set_real(builtin, object, CXR(ope));	     /* destructively change */
-    mul_accumulator(builtin, object, CXR(ope));
-    mul_accumulator(builtin, CXI(accum), CXI(ope));
-    add_accumulator(builtin, object, CXI(accum));
+    add_real_real(&temp1, &temp2);
+    clear_real(&temp2);
 
-    div_accumulator(builtin, realpart, object);
-    div_accumulator(builtin, imagpart, object);
+    div_real_real(NREAL(num), &temp1);
+    div_real_real(NIMAG(num), &temp1);
+    clear_real(&temp1);
 
-    GC_LEAVE();
-
-    CXR(accum) = realpart;
-    CXI(accum) = imagpart;
-
-    cx_canonicalize(builtin, accum, irealpart, iimagpart);
+    ncx_canonicalize(num, ireal, iimag);
 }
 
-static INLINE int
-cmp_cx_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static int
+cmp_cx_cx(LispObj *op1, LispObj *op2)
 {
     int cmp;
 
-    if ((cmp = math_compare(builtin, CXR(accum), CXR(ope))) == 0)
-	cmp = math_compare(builtin, CXI(accum), CXI(ope));
+    cmp = cmp_object_object(OCXR(op1), OCXR(op2));
+    if (cmp == 0)
+	cmp = cmp_object_object(OCXI(op1), OCXI(op2));
 
     return (cmp);
 }
 
+
 /************************************************************************
- *	ABS OPERATIONS
+ * FLONUM FLONUM
  ************************************************************************/
 static void
-abs_cx(LispBuiltin *builtin, LispObj *accum)
+radd_flonum(n_real *real, double op1, double op2)
 {
-    abs_accumulator(builtin, CXR(accum));
-    abs_accumulator(builtin, CXI(accum));
+    double value = op1 + op2;
 
-    if (math_compare(builtin, CXR(accum), CXI(accum)) < 0) {
-	LispObj *temp = CXR(accum);
-
-	CXR(accum) = CXI(accum);
-	CXI(accum) = temp;
-    }
-
-    if (math_compare(builtin, CXI(accum), &zero) == 0) {
-	XCLEAR_ACCUM(CXI(accum));
-	set_real(builtin, accum, CXR(accum));
-    }
-    else {
-	int rational;
-	LispObj operand;
-
-	rational = INTEGER_P(CXR(accum)) && INTEGER_P(CXI(accum));
-
-	div_accumulator(builtin, CXI(accum), CXR(accum));
-	/* just to make sure no side effects will happen in the future,
-	 * currently, it is safe to call
-		mul_accumulator(builtin, CXI(accum), CXI(accum));
-	 */
-	set_real(builtin, &operand, CXI(accum));
-	mul_accumulator(builtin, CXI(accum), &operand);
-	XCLEAR_ACCUM(&operand);
-
-	add_accumulator(builtin, CXI(accum), &one);
-	sqrt_accumulator(builtin, CXI(accum));
-
-	mul_accumulator(builtin, CXI(accum), CXR(accum));
-	XCLEAR_ACCUM(CXR(accum));
-	set_real(builtin, accum, CXI(accum));
-
-	if (rational) {
-	    if ((long)XFF(accum) == XFF(accum)) {
-		XFI(accum) = (long)XFF(accum);
-		XTYPE(accum) = FI;
-	    }
-	}
-    }
-}
-
-static INLINE void
-abs_fi(LispBuiltin *builtin, LispObj *accum)
-{
-    if (XFI(accum) == MINSLONG) {
-	mpi *bigi = XALLOC(mpi);
-
-	mpi_init(bigi);
-	mpi_seti(bigi, XFI(accum));
-	mpi_neg(bigi, bigi);
-	XTYPE(accum) = BI;
-	XBI(accum) = bigi;
-	XMEM(bigi);
-    }
-    else if (XFI(accum) < 0)
-	XFI(accum) = -XFI(accum);
-}
-
-static INLINE void
-abs_fr(LispBuiltin *builtin, LispObj *accum)
-{
-    if (XFRN(accum) == MINSLONG) {
-	mpr *bigr = XALLOC(mpr);
-
-	mpr_init(bigr);
-	mpr_seti(bigr, XFRN(accum), XFRD(accum));
-	mpi_neg(mpr_num(bigr), mpr_num(bigr));
-	XTYPE(accum) = BR;
-	XBR(accum) = bigr;
-	XMEM(bigr);
-    }
-    else if (XFRN(accum) < 0)
-	XFRN(accum) = -XFRN(accum);
-}
-
-static INLINE void
-abs_ff(LispBuiltin *builtin, LispObj *accum)
-{
-    if (XFF(accum) < 0.0)
-	XFF(accum) = -XFF(accum);
-}
-
-static INLINE void
-abs_bi(LispBuiltin *builtin, LispObj *accum)
-{
-    if (mpi_cmpi(XBI(accum), 0) < 0)
-	mpi_neg(XBI(accum), XBI(accum));
-}
-
-static INLINE void
-abs_br(LispBuiltin *builtin, LispObj *accum)
-{
-    if (mpi_cmpi(XBRN(accum), 0) < 0)
-	mpi_neg(XBRN(accum), XBRN(accum));
-}
-
-/************************************************************************
- *	NEG OPERATIONS
- ************************************************************************/
-static INLINE void
-neg_cx(LispBuiltin *builtin, LispObj *accum)
-{
-    neg_accumulator(builtin, CXR(accum));
-    neg_accumulator(builtin, CXI(accum));
-}
-
-static INLINE void
-neg_fi(LispBuiltin *builtin, LispObj *accum)
-{
-    if (XFI(accum) == MINSLONG) {
-	mpi *bigi = XALLOC(mpi);
-
-	mpi_init(bigi);
-	mpi_seti(bigi, XFI(accum));
-	mpi_neg(bigi, bigi);
-	XTYPE(accum) = BI;
-	XBI(accum) = bigi;
-	XMEM(bigi);
-    }
-    else
-	XFI(accum) = -XFI(accum);
-}
-
-static INLINE void
-neg_fr(LispBuiltin *builtin, LispObj *accum)
-{
-    if (XFRN(accum) == MINSLONG) {
-	mpr *bigr = XALLOC(mpr);
-
-	mpr_init(bigr);
-	mpr_seti(bigr, XFRN(accum), XFRD(accum));
-	mpi_neg(mpr_num(bigr), mpr_num(bigr));
-	XTYPE(accum) = BR;
-	XBR(accum) = bigr;
-	XMEM(bigr);
-    }
-    else
-	XFRN(accum) = -XFRN(accum);
-}
-
-static INLINE void
-neg_ff(LispBuiltin *builtin, LispObj *accum)
-{
-    XFF(accum) = -XFF(accum);
-}
-
-static INLINE void
-neg_bi(LispBuiltin *builtin, LispObj *accum)
-{
-    mpi_neg(XBI(accum), XBI(accum));
-}
-
-static INLINE void
-neg_br(LispBuiltin *builtin, LispObj *accum)
-{
-    mpi_neg(XBRN(accum), XBRN(accum));
-}
-
-
-/************************************************************************
- *	MOD INTEGER
- ************************************************************************/
-static INLINE void
-mod_fi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    if (XFI(ope) == 0)
-	XERROR("divide by zero");
-
-    if ((XFI(accum) < 0) ^ (XFI(ope) < 0))
-	XFI(accum) = (XFI(accum) % XFI(ope)) + XFI(ope);
-    else
-	XFI(accum) = XFI(accum) % XFI(ope);
-}
-
-static INLINE void
-mod_fi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi *bigi;
-
-    if (mpi_cmpi(XBI(ope), 0) == 0)
-	XERROR("divide by zero");
-
-    bigi = XALLOC(mpi);
-    mpi_init(bigi);
-    mpi_seti(bigi, XFI(accum));
-    mpi_mod(bigi, bigi, XBI(ope));
-    if (mpi_fiti(bigi)) {
-	XFI(accum) = mpi_geti(bigi);
-	mpi_clear(bigi);
-	XFREE(bigi);
-    }
-    else {
-	XTYPE(accum) = BI;
-	XBI(accum) = bigi;
-	XMEM(bigi);
-    }
-}
-
-static INLINE void
-mod_bi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi iop;
-
-    if (XFI(ope) == 0)
-	XERROR("divide by zero");
-
-    mpi_init(&iop);
-    mpi_seti(&iop, XFI(ope));
-    mpi_mod(XBI(accum), XBI(accum), &iop);
-    mpi_clear(&iop);
-    if (mpi_fiti(XBI(accum))) {
-	long mod = mpi_geti(XBI(accum));
-
-	mpi_clear(XBI(accum));
-	XFREE(XBI(accum));
-	XTYPE(accum) = FI;
-	XFI(accum) = mod;
-    }
-}
-
-static INLINE void
-mod_bi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    if (mpi_cmpi(XBI(ope), 0) == 0)
-	XERROR("divide by zero");
-
-    mpi_mod(XBI(accum), XBI(accum), XBI(ope));
-    if (mpi_fiti(XBI(accum))) {
-	long mod = mpi_geti(XBI(accum));
-
-	mpi_clear(XBI(accum));
-	XFREE(XBI(accum));
-	XTYPE(accum) = FI;
-	XFI(accum) = mod;
-    }
-}
-
-/************************************************************************
- *	REM INTEGER
- ************************************************************************/
-static INLINE void
-rem_fi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    if (XFI(ope) == 0)
-	XERROR("divide by zero");
-
-    XFI(accum) = XFI(accum) % XFI(ope);
-}
-
-static INLINE void
-rem_fi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi *bigi;
-
-    if (mpi_cmpi(XBI(ope), 0) == 0)
-	XERROR("divide by zero");
-
-    bigi = XALLOC(mpi);
-    mpi_init(bigi);
-    mpi_seti(bigi, XFI(accum));
-    mpi_rem(bigi, bigi, XBI(ope));
-    if (mpi_fiti(bigi)) {
-	XFI(accum) = mpi_geti(bigi);
-	mpi_clear(bigi);
-	XFREE(bigi);
-    }
-    else {
-	XTYPE(accum) = BI;
-	XBI(accum) = bigi;
-	XMEM(bigi);
-    }
-}
-
-static INLINE void
-rem_bi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi iop;
-
-    if (XFI(ope) == 0)
-	XERROR("divide by zero");
-
-    mpi_init(&iop);
-    mpi_seti(&iop, XFI(ope));
-    mpi_rem(XBI(accum), XBI(accum), &iop);
-    mpi_clear(&iop);
-    if (mpi_fiti(XBI(accum))) {
-	long mod = mpi_geti(XBI(accum));
-
-	mpi_clear(XBI(accum));
-	XFREE(XBI(accum));
-	XTYPE(accum) = FI;
-	XFI(accum) = mod;
-    }
-}
-
-static INLINE void
-rem_bi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    if (mpi_cmpi(XBI(ope), 0) == 0)
-	XERROR("divide by zero");
-
-    mpi_rem(XBI(accum), XBI(accum), XBI(ope));
-    if (mpi_fiti(XBI(accum))) {
-	long mod = mpi_geti(XBI(accum));
-
-	mpi_clear(XBI(accum));
-	XFREE(XBI(accum));
-	XTYPE(accum) = FI;
-	XFI(accum) = mod;
-    }
-}
-
-/************************************************************************
- *	SQRT OPERATION
- ************************************************************************/
-static void
-sqrt_fi(LispBuiltin *builtin, LispObj *accum)
-{
-    double value;
-
-    if (XFI(accum) < 0) {
-	GC_ENTER();
-	LispObj *realpart, *imagpart;
-
-	value = XFI(accum);
-	value = sqrt(-value);
-
-	if (!finite(value))
-	    XERROR("floating point overflow");
-	if ((long)value == value)
-	    imagpart = INTEGER(value);
-	else
-	    imagpart = REAL(value);
-
-	GC_PROTECT(imagpart);
-	realpart = INTEGER(0);
-	GC_LEAVE();
-	XTYPE(accum) = CX;
-	CXR(accum) = realpart;
-	CXI(accum) = imagpart;
-    }
-    else {
-	value = sqrt(XFI(accum));
-
-	if (!finite(value))
-	    XERROR("floating point overflow");
-	if ((long)value == value)
-	    XFI(accum) = value;
-	else {
-	    XTYPE(accum) = FF;
-	    XFF(accum) = value;
-	}
-    }
-}
-
-/*
- * FIXME: check if sqrt of rational is rational
- */
-static void
-sqrt_fr(LispBuiltin *builtin, LispObj *accum)
-{
-    LispObj *imagpart = NIL;
-    double value, ratio;
-    int cmp;
-
-    ratio = XFRN(accum) / (double)XFRD(accum);
-    if (!finite(ratio))
-	XERROR("floating point overflow");
-    cmp = ratio < 0 ? -1 : 0;
-    if (cmp < 0)
-	ratio = -ratio;
-    value = sqrt(ratio);
-    if (!finite(value) || value == 0.0)
-	XERROR("floating point overflow");
-    if (cmp < 0)
-	imagpart = REAL(value);
-    else {
-	XTYPE(accum) = FF;
-	XFF(accum) = value;
-    }
-
-    if (cmp < 0) {
-	GC_ENTER();
-	LispObj *realpart;
-
-	GC_PROTECT(imagpart);
-	realpart = INTEGER(0);
-	GC_LEAVE();
-	XTYPE(accum) = CX;
-	CXR(accum) = realpart;
-	CXI(accum) = imagpart;
-    }
-}
-
-static INLINE void
-sqrt_ff(LispBuiltin *builtin, LispObj *accum)
-{
-    double value;
-
-    if (XFF(accum) < 0) {
-	GC_ENTER();
-	LispObj *realpart, *imagpart;
-	value = sqrt(-XFF(accum));
-
-	if (!finite(value))
-	    XERROR("floating point overflow");
-	realpart = INTEGER(0);
-	GC_PROTECT(realpart);
-	imagpart = REAL(value);
-	GC_LEAVE();
-	XTYPE(accum) = CX;
-	CXR(accum) = realpart;
-	CXI(accum) = imagpart;
-    }
-    else {
-	value = sqrt(XFF(accum));
-
-	if (!finite(value))
-	    XERROR("floating point overflow");
-	XFF(accum) = value;
-    }
-}
-
-static void
-sqrt_bi(LispBuiltin *builtin, LispObj *accum)
-{
-    int cmp;
-    double value;
-    mpi *bigi;
-    LispObj *imagpart = NIL;
-
-    cmp = mpi_cmpi(XBI(accum), 0);
-    value = mpi_getd(XBI(accum));
     if (!finite(value))
-	XERROR("floating point overflow");
-
-    if (cmp < 0)
-	value = -value;
-    value = sqrt(value);
-
-    /* check if result is an integer */
-    if (value == rint(value)) {
-	if ((long)value == value && (long)value != MINSLONG) {
-	    if (cmp < 0)
-		imagpart = INTEGER((long)value);
-	    else {
-		XCLEAR_BI(accum);
-		XTYPE(accum) = FI;
-		XFI(accum) = (long)value;
-	    }
-	}
-	else {
-	    if (cmp < 0) {
-		bigi = XALLOC(mpi);
-		mpi_init(bigi);
-		mpi_setd(bigi, value);
-		imagpart = BIGINTEGER(bigi);
-		XMEM(bigi);
-	    }
-	    else
-		mpi_setd(XBI(accum), value);
-	}
+	fatal_error(FLOATING_POINT_OVERFLOW);
+    switch (RTYPE(real)) {
+	case N_FIXNUM:
+	case N_FIXRATIO:
+	    RTYPE(real) = N_FLONUM;
+	    break;
+	case N_BIGNUM:
+	    RCLEAR_BI(real);
+	    RTYPE(real) = N_FLONUM;
+	    break;
+	case N_BIGRATIO:
+	    RCLEAR_BR(real);
+	    RTYPE(real) = N_FLONUM;
+	    break;
     }
-    else {
-	if (cmp < 0)
-	    imagpart = REAL(value);
-	else {
-	    XCLEAR_BI(accum);
-	    XTYPE(accum) = FF;
-	    XFF(accum) = value;
-	}
-    }
-
-    if (cmp < 0) {
-	GC_ENTER();
-	LispObj *realpart;
-
-	GC_PROTECT(imagpart);
-	realpart = INTEGER(0);
-	GC_LEAVE();
-	XCLEAR_BI(accum);
-	XTYPE(accum) = CX;
-	CXR(accum) = realpart;
-	CXI(accum) = imagpart;
-    }
+    RFF(real) = value;
 }
 
-/*
- * FIXME: check if sqrt of rational is rational
- */
 static void
-sqrt_br(LispBuiltin *builtin, LispObj *accum)
+rsub_flonum(n_real *real, double op1, double op2)
 {
-    int cmp;
-    double value;
-    LispObj *imagpart = NIL;
+    double value = op1 - op2;
 
-    cmp = mpi_cmpi(XBRN(accum), 0);
-    value = mpr_getd(XBR(accum));
     if (!finite(value))
-	XERROR("floating point overflow");
-
-    if (cmp < 0)
-	value = -value;
-    value = sqrt(value);
-
-    if (cmp < 0)
-	imagpart = REAL(value);
-    else {
-	XCLEAR_BR(accum);
-	XTYPE(accum) = FF;
-	XFF(accum) = value;
+	fatal_error(FLOATING_POINT_OVERFLOW);
+    switch (RTYPE(real)) {
+	case N_FIXNUM:
+	case N_FIXRATIO:
+	    RTYPE(real) = N_FLONUM;
+	    break;
+	case N_BIGNUM:
+	    RCLEAR_BI(real);
+	    RTYPE(real) = N_FLONUM;
+	    break;
+	case N_BIGRATIO:
+	    RCLEAR_BR(real);
+	    RTYPE(real) = N_FLONUM;
+	    break;
     }
-
-    if (cmp < 0) {
-	GC_ENTER();
-	LispObj *realpart;
-
-	GC_PROTECT(imagpart);
-	realpart = INTEGER(0);
-	GC_LEAVE();
-	XCLEAR_BR(accum);
-	XTYPE(accum) = CX;
-	CXR(accum) = realpart;
-	CXI(accum) = imagpart;
-    }
+    RFF(real) = value;
 }
 
 static void
-sqrt_cx(LispBuiltin *builtin, LispObj *accum)
+rmul_flonum(n_real *real, double op1, double op2)
 {
-    GC_ENTER();
-    int irealpart, iimagpart;
-    LispObj *mag = copy_complex(builtin, accum);
-    LispObj *realpart, *imagpart;
+    double value = op1 * op2;
 
-    irealpart = INTEGER_P(CXR(accum));
-    iimagpart = INTEGER_P(CXI(accum));
-
-    /* protect mag, realpart and imagpart so that they can be reused below
-     * avoiding the need of requesting more object cells, so this operation
-     * will put left only 3 objects to be catched by gc */
-    GC_PROTECT(mag);
-    realpart = CXR(mag);
-    GC_PROTECT(realpart);
-    imagpart = CXI(mag);
-    GC_PROTECT(imagpart);
-
-    abs_accumulator(builtin, mag);
-    if (math_compare(builtin, mag, &zero) == 0)
-	set_real(builtin, accum, mag);
-    else if (math_compare(builtin, CXR(accum), &zero) > 0) {
-	/* R = sqrt((mag + Ra) / 2) */
-	set_real(builtin, realpart, mag);
-	add_accumulator(builtin, realpart, CXR(accum));
-	div_accumulator(builtin, realpart, &two);
-	sqrt_accumulator(builtin, realpart);
-
-	/* I = Ia / R / 2 */
-	set_real(builtin, imagpart, CXI(accum));
-	div_accumulator(builtin, imagpart, realpart);
-	div_accumulator(builtin, imagpart, &two);
-
-	CXR(accum) = realpart;
-	CXI(accum) = imagpart;
+    if (!finite(value))
+	fatal_error(FLOATING_POINT_OVERFLOW);
+    switch (RTYPE(real)) {
+	case N_FIXNUM:
+	case N_FIXRATIO:
+	    RTYPE(real) = N_FLONUM;
+	    break;
+	case N_BIGNUM:
+	    RCLEAR_BI(real);
+	    RTYPE(real) = N_FLONUM;
+	    break;
+	case N_BIGRATIO:
+	    RCLEAR_BR(real);
+	    RTYPE(real) = N_FLONUM;
+	    break;
     }
-    else {
-	/* I = sqrt((mag - Ra) / 2) */
-	set_real(builtin, imagpart, mag);
-	sub_accumulator(builtin, imagpart, CXR(accum));
-	div_accumulator(builtin, imagpart, &two);
-	sqrt_accumulator(builtin, imagpart);
-	if (math_compare(builtin, CXI(accum), &zero) < 0)
-	    neg_accumulator(builtin, imagpart);
-
-	/* R = Ia / I / 2 */
-	set_real(builtin, realpart, CXI(accum));
-	div_accumulator(builtin, realpart, imagpart);
-	div_accumulator(builtin, realpart, &two);
-
-	CXR(accum) = realpart;
-	CXI(accum) = imagpart;
-    }
-
-    GC_LEAVE();
-    cx_canonicalize(builtin, accum, irealpart, iimagpart);
+    RFF(real) = value;
 }
 
-
+static void
+rdiv_flonum(n_real *real, double op1, double op2)
+{
+    double value;
+
+    if (op2 == 0.0)
+	fatal_error(DIVIDE_BY_ZERO);
+    value = op1 / op2;
+    if (!finite(value))
+	fatal_error(FLOATING_POINT_OVERFLOW);
+    switch (RTYPE(real)) {
+	case N_FIXNUM:
+	case N_FIXRATIO:
+	    RTYPE(real) = N_FLONUM;
+	    break;
+	case N_BIGNUM:
+	    RCLEAR_BI(real);
+	    RTYPE(real) = N_FLONUM;
+	    break;
+	case N_BIGRATIO:
+	    RCLEAR_BR(real);
+	    RTYPE(real) = N_FLONUM;
+	    break;
+    }
+    RFF(real) = value;
+}
+
+static int
+cmp_flonum(double op1, double op2)
+{
+    double value = op1 - op2;
+
+    if (!finite(value))
+	fatal_error(FLOATING_POINT_OVERFLOW);
+
+    return (value > 0.0 ? 1 : value < 0.0 ? -1 : 0);
+}
+
+
 /************************************************************************
- *	FIXNUM INTEGER OPERATIONS
+ * FIXNUM FIXNUM
  ************************************************************************/
-/*
-	FI accumulator - FI operator
- */
-static INLINE void
-add_fi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static void
+rop_fi_fi_bi(n_real *real, long fi, int op)
 {
-    if (!fi_fi_add_overflow(XFI(accum), XFI(ope)))
-	XFI(accum) += XFI(ope);
-    else {
-	mpi *bigi = XALLOC(mpi);
+    mpi *bigi = XALLOC(mpi);
 
-	mpi_init(bigi);
-	mpi_seti(bigi, XFI(accum));
-	mpi_addi(bigi, bigi, XFI(ope));
-	XBI(accum) = bigi;
-	XTYPE(accum) = BI;
-	XMEM(XBI(accum));
-    }
+    mpi_init(bigi);
+    mpi_seti(bigi, RFI(real));
+    if (op == NOP_ADD)
+	mpi_addi(bigi, bigi, fi);
+    else if (op == NOP_SUB)
+	mpi_subi(bigi, bigi, fi);
+    else
+	mpi_muli(bigi, bigi, fi);
+    RBI(real) = bigi;
+    RTYPE(real) = N_BIGNUM;
 }
 
 static INLINE void
-sub_fi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+radd_fi_fi(n_real *real, long fi)
 {
-    if (!fi_fi_sub_overflow(XFI(accum), XFI(ope)))
-	XFI(accum) -= XFI(ope);
-    else {
-	mpi *bigi = XALLOC(mpi);
-
-	mpi_init(bigi);
-	mpi_seti(bigi, XFI(accum));
-	mpi_subi(bigi, bigi, XFI(ope));
-	XBI(accum) = bigi;
-	XTYPE(accum) = BI;
-	XMEM(XBI(accum));
-    }
+    if (!fi_fi_add_overflow(RFI(real), fi))
+	RFI(real) += fi;
+    else
+	rop_fi_fi_bi(real, fi, NOP_ADD);
 }
 
 static INLINE void
-mul_fi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rsub_fi_fi(n_real *real, long fi)
 {
-    long op1 = XFI(accum), op2 = XFI(ope);
-
-    if (!fi_fi_mul_overflow(op1, op2))
-	XFI(accum) *= op2;
-    else {
-	mpi *bigi = XALLOC(mpi);
-
-	mpi_init(bigi);
-	mpi_seti(bigi, op1);
-	mpi_muli(bigi, bigi, op2);
-	XBI(accum) = bigi;
-	XTYPE(accum) = BI;
-	XMEM(XBI(accum));
-    }
+    if (!fi_fi_sub_overflow(RFI(real), fi))
+	RFI(real) -= fi;
+    else
+	rop_fi_fi_bi(real, fi, NOP_SUB);
 }
 
 static INLINE void
-div_fi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rmul_fi_fi(n_real *real, long fi)
 {
-    XTYPE(accum) = FR;
-    XFRN(accum) = XFI(accum);
-    XFRD(accum) = XFI(ope);
-    fr_canonicalize(builtin, accum);
+    if (!fi_fi_mul_overflow(RFI(real), fi))
+	RFI(real) *= fi;
+    else
+	rop_fi_fi_bi(real, fi, NOP_MUL);
+}
+
+static INLINE void
+rdiv_fi_fi(n_real *real, long fi)
+{
+    RTYPE(real) = N_FIXRATIO;
+    RFRN(real) = RFI(real);
+    RFRD(real) = fi;
+    rfr_canonicalize(real);
 }
 
 static INLINE int
-cmp_fi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_fi_fi(long op1, long op2)
 {
-    if (XFI(accum) > XFI(ope))
+    if (op1 > op2)
 	return (1);
-    else if (XFI(accum) < XFI(ope))
+    else if (op1 < op2)
 	return (-1);
 
     return (0);
 }
 
-static LispObj *
-divide_fi_fi(LispBuiltin *builtin, LispObj *num, LispObj *div,
-	     int function, int floating)
-{
-    long quo, rem;
 
-    quo = XFI(num) / XFI(div);
-    rem = XFI(num) % XFI(div);
-
-    switch (function) {
-	case DIVIDE_CEIL:
-	    if ((rem < 0 && XFI(div) < 0) || (rem > 0 && XFI(div) > 0)) {
-		++quo;
-		rem -= XFI(div);
-	    }
-	    break;
-	case DIVIDE_FLOOR:
-	    if ((rem < 0 && XFI(div) > 0) || (rem > 0 && XFI(div) < 0)) {
-		--quo;
-		rem += XFI(div);
-	    }
-	    break;
-	case DIVIDE_ROUND:
-	    if (XFI(div) > 0) {
-		if (rem > 0) {
-		    if (rem >= (XFI(div) + 1) / 2) {
-			++quo;
-			rem -= XFI(div);
-		    }
-		}
-		else {
-		    if (rem <= (-XFI(div) - 1) / 2) {
-			--quo;
-			rem += XFI(div);
-		    }
-		}
-	    }
-	    else {
-		if (rem > 0) {
-		    if (rem >= (-XFI(div) + 1) / 2) {
-			--quo;
-			rem += XFI(div);
-		    }
-		}
-		else {
-		    if (rem <= (XFI(div) - 1) / 2) {
-			++quo;
-			rem -= XFI(div);
-		    }
-		}
-	    }
-	    break;
-    }
-
-    RETURN(0) = SMALLINT(rem);
-    return (floating ? REAL(quo) : SMALLINT(quo));
-}
-
-
-/*
-	FI accumulator - FR operator
- */
-static INLINE void
-add_fi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    int fit;
-    long value = 0, op = XFI(accum), num = XFRN(ope), den = XFRD(ope);
-
-    fit = !fi_fi_mul_overflow(op, den);
-    if (fit) {
-	value = op * den;
-	fit = !fi_fi_add_overflow(value, num);
-    }
-    if (fit) {
-	XFRN(accum) = value + num;
-	XFRD(accum) = den;
-	XTYPE(accum) = FR;
-	fr_canonicalize(builtin, accum);
-    }
-    else {
-	mpi iop;
-	mpr *bigr = XALLOC(mpr);
-
-	mpi_init(&iop);
-	mpi_seti(&iop, op);
-	mpi_muli(&iop, &iop, den);
-
-	mpr_init(bigr);
-	mpr_seti(bigr, num, den);
-	mpi_add(mpr_num(bigr), mpr_num(bigr), &iop);
-	mpi_clear(&iop);
-	XBR(accum) = bigr;
-	XTYPE(accum) = BR;
-	XMEM(XBR(accum));
-	br_canonicalize(builtin, accum);
-    }
-}
-
-static INLINE void
-sub_fi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    int fit;
-    long value = 0, op = XFI(accum), num = XFRN(ope), den = XFRD(ope);
-
-    fit = !fi_fi_mul_overflow(op, den);
-    if (fit) {
-	value = op * den;
-	fit = !fi_fi_sub_overflow(value, num);
-    }
-    if (fit) {
-	XFRN(accum) = value - num;
-	XFRD(accum) = den;
-	XTYPE(accum) = FR;
-	fr_canonicalize(builtin, accum);
-    }
-    else {
-	mpi iop;
-	mpr *bigr = XALLOC(mpr);
-
-	mpi_init(&iop);
-	mpi_seti(&iop, op);
-	mpi_muli(&iop, &iop, den);
-
-	mpr_init(bigr);
-	mpr_seti(bigr, num, den);
-	mpi_sub(mpr_num(bigr), mpr_num(bigr), &iop);
-	mpi_clear(&iop);
-	XBR(accum) = bigr;
-	XTYPE(accum) = BR;
-	XMEM(XBR(accum));
-	br_canonicalize(builtin, accum);
-    }
-}
-
-static INLINE void
-mul_fi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    int fit;
-    long op = XFI(accum), num = XFRN(ope), den = XFRD(ope);
-
-    fit = !fi_fi_mul_overflow(op, num);
-    if (fit) {
-	XFRN(accum) = op * num;
-	XFRD(accum) = den;
-	XTYPE(accum) = FR;
-	fr_canonicalize(builtin, accum);
-    }
-    else {
-	mpi iop;
-	mpr *bigr = XALLOC(mpr);
-
-	mpi_init(&iop);
-	mpi_seti(&iop, op);
-
-	mpr_init(bigr);
-	mpr_seti(bigr, num, den);
-	mpi_mul(mpr_num(bigr), mpr_num(bigr), &iop);
-	mpi_clear(&iop);
-	XBR(accum) = bigr;
-	XTYPE(accum) = BR;
-	XMEM(XBR(accum));
-	br_canonicalize(builtin, accum);
-    }
-}
-
-static INLINE void
-div_fi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    int fit;
-    long op = XFI(accum), num = XFRN(ope), den = XFRD(ope);
-
-    fit = !fi_fi_mul_overflow(op, den);
-    if (fit) {
-	XFRN(accum) = op * den;
-	XFRD(accum) = num;
-	XTYPE(accum) = FR;
-	fr_canonicalize(builtin, accum);
-    }
-    else {
-	mpi iop;
-	mpr *bigr = XALLOC(mpr);
-	
-	mpi_init(&iop);
-	mpi_seti(&iop, op);
-
-	mpr_init(bigr);
-	mpr_seti(bigr, den, num);
-	mpi_mul(mpr_num(bigr), mpr_num(bigr), &iop);
-	mpi_clear(&iop);
-	XBR(accum) = bigr;
-	XTYPE(accum) = BR;
-	XMEM(XBR(accum));
-	br_canonicalize(builtin, accum);
-    }
-}
-
-static INLINE int
-cmp_fi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    double val1 = XFRD(ope) / (double)XFRN(ope),
-		  val = XFI(accum) - val1;
-
-    if (!finite(val1) || !finite(val))
-	XERROR("floating point overflow");
-
-    return (val > 0.0 ? 1 : val < 0.0 ? -1 : 0);
-}
-
-/* divide_fi_fr => divide_xi_xr */
-
-
-/*
-	FI accumulator - FF operator
- */
-static INLINE void
-add_fi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    add_float(builtin, accum, (double)XFI(accum), XFF(ope));
-}
-
-static INLINE void
-sub_fi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    sub_float(builtin, accum, (double)XFI(accum), XFF(ope));
-}
-
-static INLINE void
-mul_fi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mul_float(builtin, accum, (double)XFI(accum), XFF(ope));
-}
-
-static INLINE void
-div_fi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    div_float(builtin, accum, (double)XFI(accum), XFF(ope));
-}
-
-static INLINE int
-cmp_fi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    return (cmp_float(builtin, (double)XFI(accum), XFF(ope)));
-}
-
-static LispObj *
-divide_fi_ff(LispBuiltin *builtin, LispObj *num, LispObj *div,
-	     int function, int floating)
-{
-    return (divide_float(builtin, (double)XFI(num), XFF(div),
-			 function, floating));
-}
-
-
-/*
-	FI accumulator - BI operator
- */
-static INLINE void
-add_fi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+/************************************************************************
+ * FIXNUM BIGNUM
+ ************************************************************************/
+static void
+rop_fi_bi_xi(n_real *real, mpi *bi, int nop)
 {
     mpi *bigi = XALLOC(mpi);
 
     mpi_init(bigi);
-    mpi_seti(bigi, XFI(accum));
-    mpi_add(bigi, bigi, XBI(ope));
+    mpi_seti(bigi, RFI(real));
+    if (nop == NOP_ADD)
+	mpi_add(bigi, bigi, bi);
+    else if (nop == NOP_SUB)
+	mpi_sub(bigi, bigi, bi);
+    else
+	mpi_mul(bigi, bigi, bi);
 
     if (mpi_fiti(bigi)) {
-	XFI(accum) = mpi_geti(bigi);
+	RFI(real) = mpi_geti(bigi);
 	mpi_clear(bigi);
 	XFREE(bigi);
-	XTYPE(accum) = FI;
     }
     else {
-	XBI(accum) = bigi;
-	XTYPE(accum) = BI;
-	XMEM(XBI(accum));
+	RBI(real) = bigi;
+	RTYPE(real) = N_BIGNUM;
     }
 }
 
 static INLINE void
-sub_fi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+radd_fi_bi(n_real *real, mpi *bi)
 {
-    mpi *bigi = XALLOC(mpi);
-
-    mpi_init(bigi);
-    mpi_seti(bigi, XFI(accum));
-    mpi_sub(bigi, bigi, XBI(ope));
-
-    if (mpi_fiti(bigi)) {
-	XFI(accum) = mpi_geti(bigi);
-	mpi_clear(bigi);
-	XFREE(bigi);
-	XTYPE(accum) = FI;
-    }
-    else {
-	XBI(accum) = bigi;
-	XTYPE(accum) = BI;
-	XMEM(XBI(accum));
-    }
+    rop_fi_bi_xi(real, bi, NOP_ADD);
 }
 
 static INLINE void
-mul_fi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rsub_fi_bi(n_real *real, mpi *bi)
 {
-    mpi *bigi = XALLOC(mpi);
-
-    mpi_init(bigi);
-    mpi_seti(bigi, XFI(accum));
-    mpi_mul(bigi, bigi, XBI(ope));
-
-    if (mpi_fiti(bigi)) {
-	XFI(accum) = mpi_geti(bigi);
-	mpi_clear(bigi);
-	XFREE(bigi);
-	XTYPE(accum) = FI;
-    }
-    else {
-	XBI(accum) = bigi;
-	XTYPE(accum) = BI;
-	XMEM(XBI(accum));
-    }
+    rop_fi_bi_xi(real, bi, NOP_SUB);
 }
 
 static INLINE void
-div_fi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rmul_fi_bi(n_real *real, mpi *bi)
+{
+    rop_fi_bi_xi(real, bi, NOP_MUL);
+}
+
+static void
+rdiv_fi_bi(n_real *real, mpi *bi)
 {
     mpr *bigr;
 
-    if (mpi_cmpi(XBI(ope), 0) == 0)
-	XERROR("divide by zero");
+    if (mpi_cmpi(bi, 0) == 0)
+	fatal_error(DIVIDE_BY_ZERO);
 
     bigr = XALLOC(mpr);
     mpr_init(bigr);
-    mpi_seti(mpr_num(bigr), XFI(accum));
-    mpi_set(mpr_den(bigr), XBI(ope));
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum);
+    mpi_seti(mpr_num(bigr), RFI(real));
+    mpi_set(mpr_den(bigr), bi);
+    RBR(real) = bigr;
+    RTYPE(real) = N_BIGRATIO;
+    rbr_canonicalize(real);
 }
 
 static INLINE int
-cmp_fi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_fi_bi(long fixnum, mpi *bignum)
 {
-    return (-mpi_cmpi(XBI(ope), XFI(accum)));
+    return (-mpi_cmpi(bignum, fixnum));
 }
 
-/* divide_fi_bi => divide_xi_xi */
 
-
-/*
-	FI accumulator - BR operator
- */
-static INLINE void
-add_fi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi iop;
-    mpr *bigr = XALLOC(mpr);
-
-    mpi_init(&iop);
-    mpi_seti(&iop, XFI(accum));
-
-    mpr_init(bigr);
-    mpr_set(bigr, XBR(ope));
-
-    mpi_mul(&iop, &iop, XBRD(ope));
-    mpi_add(mpr_num(bigr), &iop, mpr_num(bigr));
-
-    mpi_clear(&iop);
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE void
-sub_fi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi iop;
-    mpr *bigr = XALLOC(mpr);
-
-    mpi_init(&iop);
-    mpi_seti(&iop, XFI(accum));
-
-    mpr_init(bigr);
-    mpr_set(bigr, XBR(ope));
-
-    mpi_mul(&iop, &iop, XBRD(ope));
-    mpi_sub(mpr_num(bigr), &iop, mpr_num(bigr));
-
-    mpi_clear(&iop);
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE void
-mul_fi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi iop;
-    mpr *bigr = XALLOC(mpr);
-
-    mpi_init(&iop);
-    mpi_seti(&iop, XFI(accum));
-
-    mpr_init(bigr);
-    mpr_set(bigr, XBR(ope));
-
-    mpi_mul(mpr_num(bigr), &iop, mpr_num(bigr));
-
-    mpi_clear(&iop);
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE void
-div_fi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi iop;
-    mpr *bigr = XALLOC(mpr);
-
-    mpi_init(&iop);
-    mpi_seti(&iop, XFI(accum));
-
-    mpr_init(bigr);
-    mpr_inv(bigr, XBR(ope));
-
-    mpi_mul(mpr_num(bigr), &iop, mpr_num(bigr));
-
-    mpi_clear(&iop);
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE int
-cmp_fi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    int cmp;
-
-    cmp = -mpr_cmpi(XBR(ope), XFI(accum));
-
-    return (cmp);
-}
-
-/* divide_fi_br => divide_xi_xr */
-
-
 /************************************************************************
- *	FIXNUM RATIONAL OPERATIONS
+ * FIXNUM FIXRATIO
  ************************************************************************/
-/*
-	FR accumulator - FI operator
- */
-static INLINE void
-add_fr_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static void
+rop_fi_fr_as_xr(n_real *real, long num, long den, int nop)
 {
     int fit;
-    long value = 0, op = XFI(ope), num = XFRN(accum), den = XFRD(accum);
+    long value = 0, op = RFI(real);
 
     fit = !fi_fi_mul_overflow(op, den);
     if (fit) {
 	value = op * den;
-	fit = !fi_fi_add_overflow(value, num);
+	if (nop == NOP_ADD)
+	    fit = !fi_fi_add_overflow(value, num);
+	else
+	    fit = !fi_fi_sub_overflow(value, num);
     }
     if (fit) {
-	XFRN(accum) = value + num;
-	fr_canonicalize(builtin, accum);
+	if (nop == NOP_ADD)
+	    RFRN(real) = value + num;
+	else
+	    RFRN(real) = value - num;
+	RFRD(real) = den;
+	RTYPE(real) = N_FIXRATIO;
+	rfr_canonicalize(real);
     }
     else {
 	mpi iop;
 	mpr *bigr = XALLOC(mpr);
 
-	mpr_init(bigr);
-	mpr_seti(bigr, num, den);
 	mpi_init(&iop);
 	mpi_seti(&iop, op);
 	mpi_muli(&iop, &iop, den);
-	mpi_add(mpr_num(bigr), mpr_num(bigr), &iop);
-	mpi_clear(&iop);
-	XBR(accum) = bigr;
-	XTYPE(accum) = BR;
-	XMEM(XBR(accum));
-	br_canonicalize(builtin, accum);
-    }
-}
-
-static INLINE void
-sub_fr_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    int fit;
-    long value = 0, op = XFI(ope), num = XFRN(accum), den = XFRD(accum);
-
-    fit = !fi_fi_mul_overflow(op, den);
-    if (fit) {
-	value = op * den;
-	fit = !fi_fi_sub_overflow(value, num);
-    }
-    if (fit) {
-	XFRN(accum) = num - value;
-	fr_canonicalize(builtin, accum);
-    }
-    else {
-	mpi iop;
-	mpr *bigr = XALLOC(mpr);
 
 	mpr_init(bigr);
 	mpr_seti(bigr, num, den);
-	mpi_init(&iop);
-	mpi_seti(&iop, op);
-	mpi_muli(&iop, &iop, den);
-	mpi_sub(mpr_num(bigr), mpr_num(bigr), &iop);
+	if (nop == NOP_ADD)
+	    mpi_add(mpr_num(bigr), mpr_num(bigr), &iop);
+	else
+	    mpi_sub(mpr_num(bigr), mpr_num(bigr), &iop);
 	mpi_clear(&iop);
-	XBR(accum) = bigr;
-	XTYPE(accum) = BR;
-	XMEM(XBR(accum));
-	br_canonicalize(builtin, accum);
+	RBR(real) = bigr;
+	RTYPE(real) = N_BIGRATIO;
+	rbr_canonicalize(real);
     }
 }
 
-static INLINE void
-mul_fr_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static void
+rop_fi_fr_md_xr(n_real *real, long num, long den, int nop)
 {
     int fit;
-    long op = XFI(ope), num = XFRN(accum), den = XFRD(accum);
+    long op = RFI(real);
 
-    fit = !fi_fi_mul_overflow(op, num);
+    if (nop == NOP_MUL)
+	fit = !fi_fi_mul_overflow(op, num);
+    else
+	fit = !fi_fi_mul_overflow(op, den);
     if (fit) {
-	XFRN(accum) = op * num;
-	fr_canonicalize(builtin, accum);
-    }
-    else {
-	mpi iop;
-	mpr *bigr = XALLOC(mpr);
-
-	mpr_init(bigr);
-	mpr_seti(bigr, num, den);
-	mpi_init(&iop);
-	mpi_seti(&iop, op);
-	mpi_mul(mpr_num(bigr), mpr_num(bigr), &iop);
-	mpi_clear(&iop);
-	XBR(accum) = bigr;
-	XTYPE(accum) = BR;
-	XMEM(XBR(accum));
-	br_canonicalize(builtin, accum);
-    }
-}
-
-static INLINE void
-div_fr_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    int fit;
-    long op = XFI(ope), num = XFRN(accum), den = XFRD(accum);
-
-    fit = !fi_fi_mul_overflow(op, den);
-    if (fit) {
-	XFRD(accum) = op * den;
-	fr_canonicalize(builtin, accum);
-    }
-    else {
-	mpi iop;
-	mpr *bigr = XALLOC(mpr);
-
-	mpr_init(bigr);
-	mpr_seti(bigr, den, num);
-	mpi_init(&iop);
-	mpi_seti(&iop, op);
-	mpi_mul(mpr_num(bigr), mpr_num(bigr), &iop);
-	mpi_clear(&iop);
-	XBR(accum) = bigr;
-	XTYPE(accum) = BR;
-	XMEM(XBR(accum));
-	br_canonicalize(builtin, accum);
-    }
-}
-
-static INLINE int
-cmp_fr_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    double val1 = XFRN(accum) / (double)XFRD(accum),
-	   val = val1 - XFI(ope);
-
-    if (!finite(val1) || !finite(val))
-	XERROR("floating point overflow");
-
-   return (val > 0.0 ? 1 : val < 0.0 ? -1 : 0);
-}
-
-/* divide_fr_fi => divide_xr_xi */
-
-
-/*
-	FR accumulator - FR operator
- */
-static INLINE void
-add_fr_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    int fit;
-    long num1 = XFRN(accum), den1 = XFRD(accum),
-	 num2 = XFRN(ope), den2 = XFRD(ope), num = 0, den = 0;
-
-    fit = !fi_fi_mul_overflow(num1, den2);
-    if (fit) {
-	num = num1 * den2;
-	fit = !fi_fi_mul_overflow(num2, den1);
-	if (fit) {
-	    den = num2 * den1;
-	    fit = !fi_fi_add_overflow(num, den);
-	    if (fit) {
-		num += den;
-		fit = !fi_fi_mul_overflow(den1, den2);
-		if (fit)
-		    den = den1 * den2;
-	    }
+	if (nop == NOP_MUL) {
+	    RFRN(real) = op * num;
+	    RFRD(real) = den;
 	}
-    }
-    if (fit) {
-	XFRN(accum) = num;
-	XFRD(accum) = den;
-	fr_canonicalize(builtin, accum);
-    }
-    else {
-	mpi iop;
-	mpr *bigr = XALLOC(mpr);
-
-	mpr_init(bigr);
-	mpr_seti(bigr, num1, den1);
-	mpi_muli(mpr_den(bigr), mpr_den(bigr), den2);
-	mpi_init(&iop);
-	mpi_seti(&iop, num2);
-	mpi_muli(&iop, &iop, den1);
-	mpi_muli(mpr_num(bigr), mpr_num(bigr), den2);
-	mpi_add(mpr_num(bigr), mpr_num(bigr), &iop);
-	mpi_clear(&iop);
-	XBR(accum) = bigr;
-	XTYPE(accum) = BR;
-	XMEM(XBR(accum));
-	br_canonicalize(builtin, accum);
-    }
-}
-
-static INLINE void
-sub_fr_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    int fit;
-    long num1 = XFRN(accum), den1 = XFRD(accum),
-	 num2 = XFRN(ope), den2 = XFRD(ope), num = 0, den = 0;
-
-    fit = !fi_fi_mul_overflow(num1, den2);
-    if (fit) {
-	num = num1 * den2;
-	fit = !fi_fi_mul_overflow(num2, den1);
-	if (fit) {
-	    den = num2 * den1;
-	    fit = !fi_fi_add_overflow(num, den);
-	    if (fit) {
-		num -= den;
-		fit = !fi_fi_mul_overflow(den1, den2);
-		if (fit)
-		    den = den1 * den2;
-	    }
-	}
-    }
-    if (fit) {
-	XFRN(accum) = num;
-	XFRD(accum) = den;
-	fr_canonicalize(builtin, accum);
-    }
-    else {
-	mpi iop;
-	mpr *bigr = XALLOC(mpr);
-
-	mpr_init(bigr);
-	mpr_seti(bigr, num1, den1);
-	mpi_muli(mpr_den(bigr), mpr_den(bigr), den1);
-	mpi_init(&iop);
-	mpi_seti(&iop, num2);
-	mpi_muli(&iop, &iop, den1);
-	mpi_muli(mpr_num(bigr), mpr_num(bigr), den2);
-	mpi_sub(mpr_num(bigr), mpr_num(bigr), &iop);
-	mpi_clear(&iop);
-	XBR(accum) = bigr;
-	XTYPE(accum) = BR;
-	XMEM(XBR(accum));
-	br_canonicalize(builtin, accum);
-    }
-}
-
-static INLINE void
-mul_fr_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    int fit;
-    long num1 = XFRN(accum), den1 = XFRD(accum),
-	 num2 = XFRN(ope), den2 = XFRD(ope), num = 0, den = 0;
-
-    fit = !fi_fi_mul_overflow(num1, num2);
-    if (fit) {
-	fit = !fi_fi_mul_overflow(den1, den2);
-	if (fit) {
-	    num = num1 * num2;
-	    den = den1 * den2;
-	}
-    }
-    if (fit) {
-	XFRN(accum) = num;
-	XFRD(accum) = den;
-	fr_canonicalize(builtin, accum);
-    }
-    else {
-	mpr *bigr = XALLOC(mpr);
-
-	mpr_init(bigr);
-	mpr_seti(bigr, num1, den1);
-
-	if (num2 > 0)
-	    mpi_muli(mpr_num(bigr), mpr_num(bigr), num2);
 	else {
-	    mpi_muli(mpr_num(bigr), mpr_num(bigr), -num2);
-	    mpi_neg(mpr_num(bigr), mpr_num(bigr));
+	    RFRN(real) = op * den;
+	    RFRD(real) = num;
 	}
-	mpi_muli(mpr_den(bigr), mpr_den(bigr), den2);
-	XBR(accum) = bigr;
-	XTYPE(accum) = BR;
-	XMEM(XBR(accum));
-	br_canonicalize(builtin, accum);
-    }
-}
-
-static INLINE void
-div_fr_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    int fit;
-    long num1 = XFRN(accum), den1 = XFRD(accum),
-	 num2 = XFRN(ope), den2 = XFRD(ope), num = 0, den = 0;
-
-    fit = !fi_fi_mul_overflow(num1, den2);
-    if (fit) {
-	fit = !fi_fi_mul_overflow(den1, num2);
-	if (fit) {
-	    num = num1 * den2;
-	    den = den1 * num2;
-	}
-    }
-    if (fit) {
-	XFRN(accum) = num;
-	XFRD(accum) = den;
-	fr_canonicalize(builtin, accum);
+	RTYPE(real) = N_FIXRATIO;
+	rfr_canonicalize(real);
     }
     else {
+	mpi iop;
 	mpr *bigr = XALLOC(mpr);
 
-	mpr_init(bigr);
-	mpr_seti(bigr, num1, num2);
+	mpi_init(&iop);
+	mpi_seti(&iop, op);
 
-	mpi_muli(mpr_num(bigr), mpr_num(bigr), den2);
-	mpi_muli(mpr_den(bigr), mpr_den(bigr), den1);
-	XBR(accum) = bigr;
-	XTYPE(accum) = BR;
-	XMEM(XBR(accum));
-	br_canonicalize(builtin, accum);
+	mpr_init(bigr);
+	if (nop == NOP_MUL)
+	    mpr_seti(bigr, num, den);
+	else
+	    mpr_seti(bigr, den, num);
+	mpi_mul(mpr_num(bigr), mpr_num(bigr), &iop);
+	mpi_clear(&iop);
+	RBR(real) = bigr;
+	RTYPE(real) = N_BIGRATIO;
+	rbr_canonicalize(real);
     }
 }
 
-static INLINE int
-cmp_fr_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    long num1 = XFRN(accum), den1 = XFRD(accum),
-	 num2 = XFRN(ope), den2 = XFRD(ope);
-    double val1 = num1 / (double)den1,
-	   val2 = num2 / (double)den2,
-	   val = val1 - val2;
-
-    if (!finite(val1) || !finite(val2))
-	XERROR("floating point overflow");
-
-    return (val > 0.0 ? 1 : val < 0.0 ? -1 : 0);
-}
-
-/* divide_fr_fr => divide_xr_xr */
-
-
-/*
-	FR accumulator - FF operator
- */
 static INLINE void
-add_fr_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+radd_fi_fr(n_real *real, long num, long den)
 {
-    add_float(builtin, accum,
-	      (double)XFRN(accum) / (double)XFRD(accum), XFF(ope));
+    rop_fi_fr_as_xr(real, num, den, NOP_ADD);
 }
 
 static INLINE void
-sub_fr_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rsub_fi_fr(n_real *real, long num, long den)
 {
-    sub_float(builtin, accum,
-	      (double)XFRN(accum) / (double)XFRD(accum), XFF(ope));
+    rop_fi_fr_as_xr(real, num, den, NOP_SUB);
 }
 
 static INLINE void
-mul_fr_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rmul_fi_fr(n_real *real, long num, long den)
 {
-    mul_float(builtin, accum,
-	      (double)XFRN(accum) / (double)XFRD(accum), XFF(ope));
+    rop_fi_fr_md_xr(real, num, den, NOP_MUL);
 }
 
 static INLINE void
-div_fr_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rdiv_fi_fr(n_real *real, long num, long den)
 {
-    div_float(builtin, accum,
-	      (double)XFRN(accum) / (double)XFRD(accum), XFF(ope));
+    rop_fi_fr_md_xr(real, num, den, NOP_DIV);
 }
 
 static INLINE int
-cmp_fr_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_fi_fr(long fi, long num, long den)
 {
-    return (cmp_float(builtin,
-		      (double)XFRN(accum) / (double)XFRD(accum), XFF(ope)));
+    return (cmp_flonum((double)fi, (double)num / (double)den));
 }
 
-static LispObj *
-divide_fr_ff(LispBuiltin *builtin, LispObj *num, LispObj *div,
-	     int function, int floating)
-{
-    return (divide_float(builtin, (double)XFRN(num) / (double)XFRD(num),
-			 XFF(div), function, floating));
-}
 
-
-/*
-	FR accumulator - BI operator
- */
-static INLINE void
-add_fr_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+/************************************************************************
+ * FIXNUM BIGRATIO
+ ************************************************************************/
+static void
+rop_fi_br_as_xr(n_real *real, mpr *ratio, int nop)
 {
     mpi iop;
     mpr *bigr = XALLOC(mpr);
 
-    mpr_init(bigr);
-    mpr_seti(bigr, XFRN(accum), XFRD(accum));
-
     mpi_init(&iop);
-    mpi_set(&iop, XBI(ope));
-    mpi_muli(&iop, &iop, XFRD(accum));
+    mpi_seti(&iop, RFI(real));
 
-    mpi_add(mpr_num(bigr), mpr_num(bigr), &iop);
+    mpr_init(bigr);
+    mpr_set(bigr, ratio);
+
+    mpi_mul(&iop, &iop, mpr_den(ratio));
+    if (nop == NOP_ADD)
+	mpi_add(mpr_num(bigr), &iop, mpr_num(bigr));
+    else
+	mpi_sub(mpr_num(bigr), &iop, mpr_num(bigr));
+
     mpi_clear(&iop);
-
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
+    RBR(real) = bigr;
+    RTYPE(real) = N_BIGRATIO;
+    rbr_canonicalize(real); 
 }
 
-static INLINE void
-sub_fr_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static void
+rop_fi_br_md_xr(n_real *real, mpr *ratio, int nop)
 {
     mpi iop;
     mpr *bigr = XALLOC(mpr);
 
-    mpr_init(bigr);
-    mpr_seti(bigr, XFRN(accum), XFRD(accum));
-
     mpi_init(&iop);
-    mpi_set(&iop, XBI(ope));
-    mpi_muli(&iop, &iop, XFRD(accum));
+    mpi_seti(&iop, RFI(real));
 
-    mpi_sub(mpr_num(bigr), mpr_num(bigr), &iop);
+    mpr_init(bigr);
+    if (nop == NOP_MUL)
+	mpr_set(bigr, ratio);
+    else
+	mpr_inv(bigr, ratio);
+
+    mpi_mul(mpr_num(bigr), &iop, mpr_num(bigr));
+
     mpi_clear(&iop);
-
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
+    RBR(real) = bigr;
+    RTYPE(real) = N_BIGRATIO;
+    rbr_canonicalize(real);
 }
 
 static INLINE void
-mul_fr_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+radd_fi_br(n_real *real, mpr *ratio)
 {
-    mpr *bigr = XALLOC(mpr);
-
-    mpr_init(bigr);
-    mpr_seti(bigr, XFRN(accum), XFRD(accum));
-
-    mpi_mul(mpr_num(bigr), mpr_num(bigr), XBI(ope));
-
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
+    rop_fi_br_as_xr(real, ratio, NOP_ADD);
 }
 
 static INLINE void
-div_fr_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rsub_fi_br(n_real *real, mpr *ratio)
 {
-    mpr *bigr = XALLOC(mpr);
+    rop_fi_br_as_xr(real, ratio, NOP_SUB);
+}
 
-    mpr_init(bigr);
-    mpr_seti(bigr, XFRN(accum), XFRD(accum));
+static INLINE void
+rmul_fi_br(n_real *real, mpr *ratio)
+{
+    rop_fi_br_md_xr(real, ratio, NOP_MUL);
+}
 
-    mpi_mul(mpr_den(bigr), mpr_den(bigr), XBI(ope));
-
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
+static INLINE void
+rdiv_fi_br(n_real *real, mpr *ratio)
+{
+    rop_fi_br_md_xr(real, ratio, NOP_DIV);
 }
 
 static INLINE int
-cmp_fr_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_fi_br(long op1, mpr *op2)
+{
+    return (-mpr_cmpi(op2, op1));
+}
+
+
+/************************************************************************
+ * BIGNUM FIXNUM
+ ************************************************************************/
+static INLINE void
+radd_bi_fi(n_real *real, long fi)
+{
+    mpi_addi(RBI(real), RBI(real), fi);
+    rbi_canonicalize(real);
+}
+
+static INLINE void
+rsub_bi_fi(n_real *real, long fi)
+{
+    mpi_subi(RBI(real), RBI(real), fi);
+    rbi_canonicalize(real);
+}
+
+static INLINE void
+rmul_bi_fi(n_real *real, long fi)
+{
+    mpi_muli(RBI(real), RBI(real), fi);
+    rbi_canonicalize(real);
+}
+
+static void
+rdiv_bi_fi(n_real *real, long fi)
+{
+    mpr *bigr;
+
+    if (RFI(real) == 0)
+	fatal_error(DIVIDE_BY_ZERO);
+
+    bigr = XALLOC(mpr);
+    mpr_init(bigr);
+    mpi_set(mpr_num(bigr), RBI(real));
+    mpi_seti(mpr_den(bigr), fi);
+    RCLEAR_BI(real);
+    RBR(real) = bigr;
+    RTYPE(real) = N_BIGRATIO;
+    rbr_canonicalize(real);
+}
+
+static INLINE int
+cmp_bi_fi(mpi *bignum, long fi)
+{
+    return (mpi_cmpi(bignum, fi));
+}
+
+
+/************************************************************************
+ * BIGNUM BIGNUM
+ ************************************************************************/
+static INLINE void
+radd_bi_bi(n_real *real, mpi *bignum)
+{
+    mpi_add(RBI(real), RBI(real), bignum);
+    rbi_canonicalize(real);
+}
+
+static INLINE void
+rsub_bi_bi(n_real *real, mpi *bignum)
+{
+    mpi_sub(RBI(real), RBI(real), bignum);
+    rbi_canonicalize(real);
+}
+
+static INLINE void
+rmul_bi_bi(n_real *real, mpi *bignum)
+{
+    mpi_mul(RBI(real), RBI(real), bignum);
+    rbi_canonicalize(real);
+}
+
+static void
+rdiv_bi_bi(n_real *real, mpi *bignum)
+{
+    mpr *bigr;
+
+    if (mpi_cmpi(bignum, 0) == 0)
+	fatal_error(DIVIDE_BY_ZERO);
+
+    bigr = XALLOC(mpr);
+    mpr_init(bigr);
+    mpi_set(mpr_num(bigr), RBI(real));
+    mpi_set(mpr_den(bigr), bignum);
+    RCLEAR_BI(real);
+    RBR(real) = bigr;
+    RTYPE(real) = N_BIGRATIO;
+    rbr_canonicalize(real); 
+}
+
+static INLINE int
+cmp_bi_bi(mpi *op1, mpi *op2)
+{
+    return (mpi_cmp(op1, op2));
+}
+
+
+/************************************************************************
+ * BIGNUM FIXRATIO
+ ************************************************************************/
+static void
+rop_bi_fr_as_xr(n_real *real, long num, long den, int nop)
+{
+    mpi iop;
+    mpr *bigr = XALLOC(mpr);
+
+    mpi_init(&iop);
+    mpi_set(&iop, RBI(real));
+    mpi_muli(&iop, &iop, den);
+
+    mpr_init(bigr);
+    mpr_seti(bigr, num, den);
+
+    if (nop == NOP_ADD)
+	mpi_add(mpr_num(bigr), &iop, mpr_num(bigr));
+    else
+	mpi_sub(mpr_num(bigr), &iop, mpr_num(bigr));
+    mpi_clear(&iop);
+
+    RCLEAR_BI(real);
+    RBR(real) = bigr;
+    RTYPE(real) = N_BIGRATIO;
+    rbr_canonicalize(real);
+}
+
+static INLINE void
+rop_bi_fr_md_xr(n_real *real, long num, long den, int nop)
+{
+    mpr *bigr = XALLOC(mpr);
+
+    mpr_init(bigr);
+    mpr_seti(bigr, num, den);
+
+    if (nop == NOP_MUL)
+	mpi_mul(mpr_num(bigr), RBI(real), mpr_num(bigr));
+    else
+	mpi_mul(mpr_num(bigr), RBI(real), mpr_den(bigr));
+
+    RCLEAR_BI(real);
+    RBR(real) = bigr;
+    RTYPE(real) = N_BIGRATIO;
+    rbr_canonicalize(real);
+}
+
+static INLINE void
+radd_bi_fr(n_real *real, long num, long den)
+{
+    rop_bi_fr_as_xr(real, num, den, NOP_ADD);
+}
+
+static INLINE void
+rsub_bi_fr(n_real *real, long num, long den)
+{
+    rop_bi_fr_as_xr(real, num, den, NOP_SUB);
+}
+
+static INLINE void
+rmul_bi_fr(n_real *real, long num, long den)
+{
+    rop_bi_fr_md_xr(real, num, den, NOP_MUL);
+}
+
+static INLINE void
+rdiv_bi_fr(n_real *real, long num, long den)
+{
+    rop_bi_fr_md_xr(real, num, den, NOP_DIV);
+}
+
+static int
+cmp_bi_fr(mpi *bignum, long num, long den)
 {
     int cmp;
     mpr cmp1, cmp2;
 
     mpr_init(&cmp1);
-    mpr_seti(&cmp1, XFRN(accum), XFRD(accum));
+    mpi_set(mpr_num(&cmp1), bignum);
+    mpi_seti(mpr_den(&cmp1), 1);
 
     mpr_init(&cmp2);
-    mpi_set(mpr_num(&cmp2), XBI(ope));
+    mpr_seti(&cmp2, num, den);
+
+    cmp = mpr_cmp(&cmp1, &cmp2);
+    mpr_clear(&cmp1);
+    mpr_clear(&cmp2);
+
+    return (cmp);
+}
+
+
+/************************************************************************
+ * BIGNUM BIGRATIO
+ ************************************************************************/
+static void
+rop_bi_br_as_xr(n_real *real, mpr *bigratio, int nop)
+{
+    mpi iop;
+    mpr *bigr = XALLOC(mpr);
+
+    mpi_init(&iop);
+    mpi_set(&iop, RBI(real));
+    mpr_init(bigr);
+    mpr_set(bigr, bigratio);
+
+    mpi_mul(&iop, &iop, mpr_den(bigratio));
+
+    if (nop == NOP_ADD)
+	mpi_add(mpr_num(bigr), &iop, mpr_num(bigr));
+    else
+	mpi_sub(mpr_num(bigr), &iop, mpr_num(bigr));
+    mpi_clear(&iop);
+
+    RCLEAR_BI(real);
+    RBR(real) = bigr;
+    RTYPE(real) = N_BIGRATIO;
+    rbr_canonicalize(real);
+}
+
+static void
+rop_bi_br_md_xr(n_real *real, mpr *bigratio, int nop)
+{
+    mpr *bigr = XALLOC(mpr);
+
+    mpr_init(bigr);
+    if (nop == NOP_MUL)
+	mpr_set(bigr, bigratio);
+    else
+	mpr_inv(bigr, bigratio);
+
+    mpi_mul(mpr_num(bigr), RBI(real), mpr_num(bigr));
+
+    RCLEAR_BI(real);
+    RBR(real) = bigr;
+    RTYPE(real) = N_BIGRATIO;
+    rbr_canonicalize(real); 
+}
+
+static INLINE void
+radd_bi_br(n_real *real, mpr *bigratio)
+{
+    rop_bi_br_as_xr(real, bigratio, NOP_ADD);
+}
+
+static INLINE void
+rsub_bi_br(n_real *real, mpr *bigratio)
+{
+    rop_bi_br_as_xr(real, bigratio, NOP_SUB);
+}
+
+static INLINE void
+rmul_bi_br(n_real *real, mpr *bigratio)
+{
+    rop_bi_br_md_xr(real, bigratio, NOP_MUL);
+}
+
+static INLINE void
+rdiv_bi_br(n_real *real, mpr *bigratio)
+{
+    rop_bi_br_md_xr(real, bigratio, NOP_DIV);
+}
+
+static int
+cmp_bi_br(mpi *bignum, mpr *bigratio)
+{
+    int cmp;
+    mpr cmp1;
+
+    mpr_init(&cmp1);
+    mpi_set(mpr_num(&cmp1), bignum);
+    mpi_seti(mpr_den(&cmp1), 1);
+
+    cmp = mpr_cmp(&cmp1, bigratio);
+    mpr_clear(&cmp1);
+
+    return (cmp);
+}
+
+
+/************************************************************************
+ * FIXRATIO FIXNUM
+ ************************************************************************/
+static void
+rop_fr_fi_as_xr(n_real *real, long op, int nop)
+{
+    int fit;
+    long value = 0, num = RFRN(real), den = RFRD(real);
+
+    fit = !fi_fi_mul_overflow(op, den);
+
+    if (fit) {
+	value = op * den;
+	if (nop == NOP_ADD)
+	    fit = !fi_fi_add_overflow(value, num);
+	else
+	    fit = !fi_fi_sub_overflow(value, num);
+    }
+    if (fit) {
+	if (nop == NOP_ADD)
+	    RFRN(real) = value + num;
+	else
+	    RFRN(real) = value - num;
+	rfr_canonicalize(real);
+    }
+    else {
+	mpi iop;
+	mpr *bigr = XALLOC(mpr);
+
+	mpr_init(bigr);
+	mpr_seti(bigr, num, den);
+	mpi_init(&iop);
+	mpi_seti(&iop, op);
+	mpi_muli(&iop, &iop, den);
+	if (nop == NOP_ADD)
+	    mpi_add(mpr_num(bigr), mpr_num(bigr), &iop);
+	else
+	    mpi_sub(mpr_num(bigr), mpr_num(bigr), &iop);
+	mpi_clear(&iop);
+	RBR(real) = bigr;
+	RTYPE(real) = N_BIGRATIO;
+	rbr_canonicalize(real);
+    }
+}
+
+static void
+rop_fr_fi_md_xr(n_real *real, long op, int nop)
+{
+    long num = RFRN(real), den = RFRD(real);
+
+    if (nop == NOP_MUL) {
+	if (!fi_fi_mul_overflow(op, num)) {
+	    RFRN(real) = op * num;
+	    rfr_canonicalize(real);
+	    return;
+	}
+    }
+    else if (!fi_fi_mul_overflow(op, den)) {
+	RFRN(real) = op * den;
+	rfr_canonicalize(real);
+	return;
+    }
+
+    {
+	mpi iop;
+	mpr *bigr = XALLOC(mpr);
+
+	mpr_init(bigr);
+	if (nop == NOP_MUL)
+	    mpr_seti(bigr, num, den);
+	else
+	    mpr_seti(bigr, den, num);
+	mpi_init(&iop);
+	mpi_seti(&iop, op);
+	mpi_mul(mpr_num(bigr), mpr_num(bigr), &iop);
+	mpi_clear(&iop);
+	RBR(real) = bigr;
+	RTYPE(real) = N_BIGRATIO;
+	rbr_canonicalize(real);
+    }
+}
+
+static INLINE void
+radd_fr_fi(n_real *real, long op)
+{
+    rop_fr_fi_as_xr(real, op, NOP_ADD);
+}
+
+static INLINE void
+rsub_fr_fi(n_real *real, long op)
+{
+    rop_fr_fi_as_xr(real, op, NOP_SUB);
+}
+
+static INLINE void
+rmul_fr_fi(n_real *real, long op)
+{
+    rop_fr_fi_md_xr(real, op, NOP_MUL);
+}
+
+static INLINE void
+rdiv_fr_fi(n_real *real, long op)
+{
+    rop_fr_fi_md_xr(real, op, NOP_DIV);
+}
+
+static INLINE int
+cmp_fr_fi(long num, long den, long fixnum)
+{
+    return (cmp_flonum((double)num / (double)den, (double)fixnum));
+}
+
+
+/************************************************************************
+ * FIXRATIO BIGNUM
+ ************************************************************************/
+static void
+rop_fr_bi_as_xr(n_real *real, mpi *bignum, int nop)
+{
+    mpi iop;
+    mpr *bigr = XALLOC(mpr);
+
+    mpr_init(bigr);
+    mpr_seti(bigr, RFRN(real), RFRD(real));
+
+    mpi_init(&iop);
+    mpi_set(&iop, bignum);
+    mpi_muli(&iop, &iop, RFRD(real));
+
+    if (nop == NOP_ADD)
+	mpi_add(mpr_num(bigr), mpr_num(bigr), &iop);
+    else
+	mpi_sub(mpr_num(bigr), mpr_num(bigr), &iop);
+    mpi_clear(&iop);
+
+    RBR(real) = bigr;
+    RTYPE(real) = N_BIGRATIO;
+    rbr_canonicalize(real); 
+}
+
+static void
+rop_fr_bi_md_xr(n_real *real, mpi *bignum, int nop)
+{
+    mpr *bigr = XALLOC(mpr);
+
+    mpr_init(bigr);
+    mpr_seti(bigr, RFRN(real), RFRD(real));
+
+    if (nop == NOP_MUL)
+	mpi_mul(mpr_num(bigr), mpr_num(bigr), bignum);
+    else
+	mpi_mul(mpr_num(bigr), mpr_den(bigr), bignum);
+
+    RBR(real) = bigr;
+    RTYPE(real) = N_BIGRATIO;
+    rbr_canonicalize(real); 
+}
+
+static INLINE void
+radd_fr_bi(n_real *real, mpi *bignum)
+{
+    rop_fr_bi_as_xr(real, bignum, NOP_ADD);
+}
+
+static INLINE void
+rsub_fr_bi(n_real *real, mpi *bignum)
+{
+    rop_fr_bi_as_xr(real, bignum, NOP_SUB);
+}
+
+static INLINE void
+rmul_fr_bi(n_real *real, mpi *bignum)
+{
+    rop_fr_bi_md_xr(real, bignum, NOP_MUL);
+}
+
+static INLINE void
+rdiv_fr_bi(n_real *real, mpi *bignum)
+{
+    rop_fr_bi_md_xr(real, bignum, NOP_DIV);
+}
+
+static int
+cmp_fr_bi(long num, long den, mpi *bignum)
+{
+    int cmp;
+    mpr cmp1, cmp2;
+
+    mpr_init(&cmp1);
+    mpr_seti(&cmp1, num, den);
+
+    mpr_init(&cmp2);
+    mpi_set(mpr_num(&cmp2), bignum);
     mpi_seti(mpr_den(&cmp2), 1);
 
     cmp = mpr_cmp(&cmp1, &cmp2);
@@ -3962,954 +4796,442 @@ cmp_fr_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     return (cmp);
 }
 
-/* divide_fr_bi => divide_xr_xi */
 
-
-/*
-	FR accumulator - BR operator
- */
-static INLINE void
-add_fr_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+/************************************************************************
+ * FIXRATIO FIXRATIO
+ ************************************************************************/
+static void
+rop_fr_fr_as_xr(n_real *real, long num2, long den2, int nop)
 {
-    mpr *bigr = XALLOC(mpr);
+    int fit;
+    long num1 = RFRN(real), den1 = RFRD(real), num = 0, den = 0;
 
-    mpr_init(bigr);
-    mpr_seti(bigr, XFRN(accum), XFRD(accum));
+    fit = !fi_fi_mul_overflow(num1, den2);
+    if (fit) {
+	num = num1 * den2;
+	fit = !fi_fi_mul_overflow(num2, den1);
+	if (fit) {
+	    den = num2 * den1;
+	    if (nop == NOP_ADD) {
+		if ((fit = !fi_fi_add_overflow(num, den)) != 0)
+		    num += den;
+	    }
+	    else if ((fit = !fi_fi_sub_overflow(num, den)) != 0)
+		num -= den;
+	    if (fit) {
+		fit = !fi_fi_mul_overflow(den1, den2);
+		if (fit)
+		    den = den1 * den2;
+	    }
+	}
+    }
+    if (fit) {
+	RFRN(real) = num;
+	RFRD(real) = den;
+	rfr_canonicalize(real);
+    }
+    else {
+	mpi iop;
+	mpr *bigr = XALLOC(mpr);
 
-    mpr_add(bigr, bigr, XBR(ope));
+	mpr_init(bigr);
+	mpr_seti(bigr, num1, den1);
+	mpi_muli(mpr_den(bigr), mpr_den(bigr), den2);
+	mpi_init(&iop);
+	mpi_seti(&iop, num2);
+	mpi_muli(&iop, &iop, den1);
+	mpi_muli(mpr_num(bigr), mpr_num(bigr), den2);
+	if (nop == NOP_ADD)
+	    mpi_add(mpr_num(bigr), mpr_num(bigr), &iop);
+	else
+	    mpi_sub(mpr_num(bigr), mpr_num(bigr), &iop);
+	mpi_clear(&iop);
+	RBR(real) = bigr;
+	RTYPE(real) = N_BIGRATIO;
+	rbr_canonicalize(real);
+    }
+}
 
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
+static void
+rop_fr_fr_md_xr(n_real *real, long num2, long den2, int nop)
+{
+    int fit;
+    long num1 = RFRN(real), den1 = RFRD(real), num = 0, den = 0;
+
+    if (nop == NOP_MUL) {
+	fit = !fi_fi_mul_overflow(num1, num2) && !fi_fi_mul_overflow(den1, den2);
+	if (fit) {
+	    num = num1 * num2;
+	    den = den1 * den2;
+	}
+    }
+    else {
+	fit = !fi_fi_mul_overflow(num1, den2) && !fi_fi_mul_overflow(den1, num2);
+	if (fit) {
+	    num = num1 * den2;
+	    den = den1 * num2;
+	}
+    }
+
+    if (fit) {
+	RFRN(real) = num;
+	RFRD(real) = den;
+	rfr_canonicalize(real);
+    }
+    else {
+	mpr *bigr = XALLOC(mpr);
+
+	mpr_init(bigr);
+
+	if (nop == NOP_MUL) {
+	    mpr_seti(bigr, num1, den1);
+	    mpi_muli(mpr_num(bigr), mpr_num(bigr), num2);
+	    mpi_muli(mpr_den(bigr), mpr_den(bigr), den2);
+	}
+	else {
+	    mpr_seti(bigr, num1, num2);
+	    mpi_muli(mpr_num(bigr), mpr_num(bigr), den2);
+	    mpi_muli(mpr_den(bigr), mpr_den(bigr), den1);
+	}
+
+	RBR(real) = bigr;
+	RTYPE(real) = N_BIGRATIO;
+	rbr_canonicalize(real);
+    }
 }
 
 static INLINE void
-sub_fr_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+radd_fr_fr(n_real *real, long num, long den)
 {
-    mpr *bigr = XALLOC(mpr);
-
-    mpr_init(bigr);
-    mpr_seti(bigr, XFRN(accum), XFRD(accum));
-
-    mpr_sub(bigr, bigr, XBR(ope));
-
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
+    rop_fr_fr_as_xr(real, num, den, NOP_ADD);
 }
 
 static INLINE void
-mul_fr_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rsub_fr_fr(n_real *real, long num, long den)
 {
-    mpr *bigr = XALLOC(mpr);
-
-    mpr_init(bigr);
-    mpr_seti(bigr, XFRN(accum), XFRD(accum));
-
-    mpr_mul(bigr, bigr, XBR(ope));
-
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
+    rop_fr_fr_as_xr(real, num, den, NOP_SUB);
 }
 
 static INLINE void
-div_fr_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rmul_fr_fr(n_real *real, long num, long den)
 {
-    mpr *bigr = XALLOC(mpr);
+    rop_fr_fr_md_xr(real, num, den, NOP_MUL);
+}
 
-    mpr_init(bigr);
-    mpr_seti(bigr, XFRN(accum), XFRD(accum));
-
-    mpr_div(bigr, bigr, XBR(ope));
-
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
+static INLINE void
+rdiv_fr_fr(n_real *real, long num, long den)
+{
+    rop_fr_fr_md_xr(real, num, den, NOP_DIV);
 }
 
 static INLINE int
-cmp_fr_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_fr_fr(long num1, long den1, long num2, long den2)
+{
+    return (cmp_flonum((double)num1 / (double)den1,
+		       (double)num2 / (double)den2));
+}
+
+
+/************************************************************************
+ * FIXRATIO BIGRATIO
+ ************************************************************************/
+static void
+rop_fr_br_asmd_xr(n_real *real, mpr *bigratio, int nop)
+{
+    mpr *bigr = XALLOC(mpr);
+
+    mpr_init(bigr);
+    mpr_seti(bigr, RFRN(real), RFRD(real));
+
+    switch (nop) {
+	case NOP_ADD:
+	    mpr_add(bigr, bigr, bigratio);
+	    break;
+	case NOP_SUB:
+	    mpr_sub(bigr, bigr, bigratio);
+	    break;
+	case NOP_MUL:
+	    mpr_mul(bigr, bigr, bigratio);
+	    break;
+	default:
+	    mpr_div(bigr, bigr, bigratio);
+	    break;
+    }
+
+    RBR(real) = bigr;
+    RTYPE(real) = N_BIGRATIO;
+    rbr_canonicalize(real); 
+}
+
+static INLINE void
+radd_fr_br(n_real *real, mpr *bigratio)
+{
+    rop_fr_br_asmd_xr(real, bigratio, NOP_ADD);
+}
+
+static INLINE void
+rsub_fr_br(n_real *real, mpr *bigratio)
+{
+    rop_fr_br_asmd_xr(real, bigratio, NOP_SUB);
+}
+
+static INLINE void
+rmul_fr_br(n_real *real, mpr *bigratio)
+{
+    rop_fr_br_asmd_xr(real, bigratio, NOP_MUL);
+}
+
+static INLINE void
+rdiv_fr_br(n_real *real, mpr *bigratio)
+{
+    rop_fr_br_asmd_xr(real, bigratio, NOP_DIV);
+}
+
+static int
+cmp_fr_br(long num, long den, mpr *bigratio)
 {
     int cmp;
     mpr cmp1;
 
     mpr_init(&cmp1);
-    mpr_seti(&cmp1, XFRN(accum), XFRD(accum));
+    mpr_seti(&cmp1, num, den);
 
-    cmp = mpr_cmp(&cmp1, XBR(ope));
+    cmp = mpr_cmp(&cmp1, bigratio);
     mpr_clear(&cmp1);
 
     return (cmp);
 }
 
-/* divide_fr_br => divide_xr_xr */
 
-
 /************************************************************************
- *	FIXNUM (DEFAULT) FLOAT OPERATIONS
+ * BIGRATIO FIXNUM
  ************************************************************************/
-/*
-	FF accumulator - FI operator
- */
-static INLINE void
-add_ff_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static void
+rop_br_fi_asmd_xr(n_real *real, long fixnum, int nop)
 {
-    add_float(builtin, accum, XFF(accum), (double)XFI(ope));
-}
+    mpr *bigratio = RBR(real);
 
-static INLINE void
-sub_ff_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    sub_float(builtin, accum, XFF(accum), (double)XFI(ope));
-}
-
-static INLINE void
-mul_ff_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mul_float(builtin, accum, XFF(accum), (double)XFI(ope));
-}
-
-static INLINE void
-div_ff_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    div_float(builtin, accum, XFF(accum), (double)XFI(ope));
-}
-
-static INLINE int
-cmp_ff_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    return (cmp_float(builtin, XFF(accum), (double)XFI(ope)));
-}
-
-static LispObj *
-divide_ff_fi(LispBuiltin *builtin, LispObj *num, LispObj *div,
-	     int function, int floating)
-{
-    return (divide_float(builtin, XFF(num), (double)XFI(div),
-			 function, floating));
-}
-
-
-/*
-	FF accumulator - FR operator
- */
-static INLINE void
-add_ff_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    add_float(builtin, accum, XFF(accum),
-	      (double)XFRN(ope) / (double)XFRD(ope));
-}
-
-static INLINE void
-sub_ff_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    sub_float(builtin, accum, XFF(accum),
-	      (double)XFRN(ope) / (double)XFRD(ope));
-}
-
-static INLINE void
-mul_ff_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mul_float(builtin, accum, XFF(accum),
-	      (double)XFRN(ope) / (double)XFRD(ope));
-}
-
-static INLINE void
-div_ff_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    div_float(builtin, accum, XFF(accum),
-	      (double)XFRN(ope) / (double)XFRD(ope));
-}
-
-static INLINE int
-cmp_ff_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    return (cmp_float(builtin, XFF(accum),
-		      (double)XFRN(ope) / (double)XFRD(ope)));
-}
-
-static LispObj *
-divide_ff_fr(LispBuiltin *builtin, LispObj *num, LispObj *div,
-	     int function, int floating)
-{
-    return (divide_float(builtin, XFF(num),
-			 (double)XFRN(div) / (double)XFRD(div),
-			 function, floating));
-}
-
-
-/*
-	FF accumulator - FF operator
- */
-static INLINE void
-add_ff_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    add_float(builtin, accum, XFF(accum), XFF(ope));
-}
-
-static INLINE void
-sub_ff_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    sub_float(builtin, accum, XFF(accum), XFF(ope));
-}
-
-static INLINE void
-mul_ff_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mul_float(builtin, accum, XFF(accum), XFF(ope));
-}
-
-static INLINE void
-div_ff_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    div_float(builtin, accum, XFF(accum), XFF(ope));
-}
-
-static INLINE int
-cmp_ff_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    return (cmp_float(builtin, XFF(accum), XFF(ope)));
-}
-
-static LispObj *
-divide_ff_ff(LispBuiltin *builtin, LispObj *num, LispObj *div,
-	     int function, int floating)
-{
-    return (divide_float(builtin, XFF(num), XFF(div), function, floating));
-}
-
-
-/*
-	FF accumulator - BI operator
- */
-static INLINE void
-add_ff_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    add_float(builtin, accum, XFF(accum), mpi_getd(XBI(ope)));
-}
-
-static INLINE void
-sub_ff_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    sub_float(builtin, accum, XFF(accum), mpi_getd(XBI(ope)));
-}
-
-static INLINE void
-mul_ff_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mul_float(builtin, accum, XFF(accum), mpi_getd(XBI(ope)));
-}
-
-static INLINE void
-div_ff_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    div_float(builtin, accum, XFF(accum), mpi_getd(XBI(ope)));
-}
-
-static INLINE int
-cmp_ff_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    return (cmp_float(builtin, XFF(accum), mpi_getd(XBI(ope))));
-}
-
-static LispObj *
-divide_ff_bi(LispBuiltin *builtin, LispObj *num, LispObj *div,
-	     int function, int floating)
-{
-    return (divide_float(builtin, XFF(num), mpi_getd(XBI(div)),
-			 function, floating));
-}
-
-
-/*
-	FF accumulator - BR operator
- */
-static INLINE void
-add_ff_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    add_float(builtin, accum, XFF(accum), mpr_getd(XBR(ope)));
-}
-
-static INLINE void
-sub_ff_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    sub_float(builtin, accum, XFF(accum), mpr_getd(XBR(ope)));
-}
-
-static INLINE void
-mul_ff_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mul_float(builtin, accum, XFF(accum), mpr_getd(XBR(ope)));
-}
-
-static INLINE void
-div_ff_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    div_float(builtin, accum, XFF(accum), mpr_getd(XBR(ope)));
-}
-
-static INLINE int
-cmp_ff_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    return (cmp_float(builtin, XFF(accum), mpr_getd(XBR(ope))));
-}
-
-static LispObj *
-divide_ff_br(LispBuiltin *builtin, LispObj *num, LispObj *div,
-	     int function, int floating)
-{
-    return (divide_float(builtin, XFF(num), mpr_getd(XBR(div)),
-			 function, floating));
-}
-
-
-/************************************************************************
- *	BIGNUM INTEGER OPERATIONS
- ************************************************************************/
-/*
-	BI accumulator - FI operator
- */
-static INLINE void
-add_bi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi_addi(XBI(accum), XBI(accum), XFI(ope));
-    if (mpi_fiti(XBI(accum))) {
-	long value = mpi_geti(XBI(accum));
-
-	XCLEAR_BI(accum);
-	XFI(accum) = value;
-	XTYPE(accum) = FI;
+    switch (nop) {
+	case NOP_ADD:
+	    mpr_addi(bigratio, bigratio, fixnum);
+	    break;
+	case NOP_SUB:
+	    mpr_subi(bigratio, bigratio, fixnum);
+	    break;
+	case NOP_MUL:
+	    mpr_muli(bigratio, bigratio, fixnum);
+	    break;
+	default:
+	    if (fixnum == 0)
+		fatal_error(DIVIDE_BY_ZERO);
+	    mpr_divi(bigratio, bigratio, fixnum);
+	    break;
     }
+    rbr_canonicalize(real); 
 }
 
 static INLINE void
-sub_bi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+radd_br_fi(n_real *real, long fixnum)
 {
-    mpi_subi(XBI(accum), XBI(accum), XFI(ope));
-    if (mpi_fiti(XBI(accum))) {
-	long value = mpi_geti(XBI(accum));
-
-	XCLEAR_BI(accum);
-	XFI(accum) = value;
-	XTYPE(accum) = FI;
-    }
+    rop_br_fi_asmd_xr(real, fixnum, NOP_ADD);
 }
 
 static INLINE void
-mul_bi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rsub_br_fi(n_real *real, long fixnum)
 {
-    mpi_muli(XBI(accum), XBI(accum), XFI(ope));
-    if (mpi_fiti(XBI(accum))) {
-	long value = mpi_geti(XBI(accum));
-
-	XCLEAR_BI(accum);
-	XFI(accum) = value;
-	XTYPE(accum) = FI;
-    }
+    rop_br_fi_asmd_xr(real, fixnum, NOP_SUB);
 }
 
 static INLINE void
-div_bi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rmul_br_fi(n_real *real, long fixnum)
 {
-    mpr *bigr;
-
-    if (XFI(ope) == 0)
-	XERROR("divide by zero");
-
-    bigr = XALLOC(mpr);
-    mpr_init(bigr);
-    mpi_set(mpr_num(bigr), XBI(accum));
-    mpi_seti(mpr_den(bigr), XFI(ope));
-    XCLEAR_BI(accum);
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum);
-}
-
-static INLINE int
-cmp_bi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    return (mpi_cmpi(XBI(accum), XFI(ope)));
-}
-
-/* divide_bi_fi => divide_xi_xi */
-
-
-/*
-	BI accumulator - FR operator
- */
-static INLINE void
-add_bi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi iop;
-    mpr *bigr = XALLOC(mpr);
-
-    mpi_init(&iop);
-    mpi_set(&iop, XBI(accum));
-    mpi_muli(&iop, &iop, XFRD(ope));
-
-    mpr_init(bigr);
-    mpr_seti(bigr, XFRN(ope), XFRD(ope));
-
-    mpi_add(mpr_num(bigr), &iop, mpr_num(bigr));
-    mpi_clear(&iop);
-
-    XCLEAR_BI(accum);
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum);
+    rop_br_fi_asmd_xr(real, fixnum, NOP_MUL);
 }
 
 static INLINE void
-sub_bi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rdiv_br_fi(n_real *real, long fixnum)
 {
-    mpi iop;
-    mpr *bigr = XALLOC(mpr);
-
-    mpi_init(&iop);
-    mpi_set(&iop, XBI(accum));
-    mpi_muli(&iop, &iop, XFRD(ope));
-
-    mpr_init(bigr);
-    mpr_seti(bigr, XFRN(ope), XFRD(ope));
-
-    mpi_sub(mpr_num(bigr), &iop, mpr_num(bigr));
-    mpi_clear(&iop);
-
-    XCLEAR_BI(accum);
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum);
+    rop_br_fi_asmd_xr(real, fixnum, NOP_DIV);
 }
 
-static INLINE void
-mul_bi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpr *bigr = XALLOC(mpr);
-
-    mpr_init(bigr);
-    mpr_seti(bigr, XFRN(ope), XFRD(ope));
-
-    mpi_mul(mpr_num(bigr), XBI(accum), mpr_num(bigr));
-
-    XCLEAR_BI(accum);
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum);
-}
-
-static INLINE void
-div_bi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpr *bigr = XALLOC(mpr);
-
-    mpr_init(bigr);
-    mpr_seti(bigr, XFRN(ope), XFRD(ope));
-
-    mpi_mul(mpr_den(bigr), XBI(accum), mpr_den(bigr));
-
-    XCLEAR_BI(accum);
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum);
-}
-
-static INLINE int
-cmp_bi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    int cmp;
-    mpr cmp1, cmp2;
-
-    mpr_init(&cmp1);
-    mpi_set(mpr_num(&cmp1), XBI(accum));
-    mpi_seti(mpr_den(&cmp1), 1);
-
-    mpr_init(&cmp2);
-    mpr_seti(&cmp2, XFRN(ope), XFRD(ope));
-
-    cmp = mpr_cmp(&cmp1, &cmp2);
-    mpr_clear(&cmp1);
-    mpr_clear(&cmp2);
-
-    return (cmp);
-}
-
-/* divide_bi_fr => divide_xi_xr */
-
-
-/*
-	BI accumulator - FF operator
- */
-static INLINE void
-add_bi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    add_float(builtin, accum, mpi_getd(XBI(accum)), XFF(ope));
-}
-
-static INLINE void
-sub_bi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    sub_float(builtin, accum, mpi_getd(XBI(accum)), XFF(ope));
-}
-
-static INLINE void
-mul_bi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mul_float(builtin, accum, mpi_getd(XBI(accum)), XFF(ope));
-}
-
-static INLINE void
-div_bi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    div_float(builtin, accum, mpi_getd(XBI(accum)), XFF(ope));
-}
-
-static INLINE int
-cmp_bi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    return (cmp_float(builtin, mpi_getd(XBI(accum)), XFF(ope)));
-}
-
-static LispObj *
-divide_bi_ff(LispBuiltin *builtin, LispObj *num, LispObj *div,
-	     int function, int floating)
-{
-    return (divide_float(builtin, mpi_getd(XBI(num)), XFF(div),
-			 function, floating));
-}
-
-
-/*
-	BI accumulator - BI operator
- */
-static INLINE void
-add_bi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi_add(XBI(accum), XBI(accum), XBI(ope));
-}
-
-static INLINE void
-sub_bi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi_sub(XBI(accum), XBI(accum), XBI(ope));
-}
-
-static INLINE void
-mul_bi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi_mul(XBI(accum), XBI(accum), XBI(ope));
-}
-
-static INLINE void
-div_bi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpr *bigr;
-
-    if (mpi_cmpi(XBI(ope), 0) == 0)
-	XERROR("divide by zero");
-
-    bigr = XALLOC(mpr);
-    mpr_init(bigr);
-    mpi_set(mpr_num(bigr), XBI(accum));
-    mpi_set(mpr_den(bigr), XBI(ope));
-    XCLEAR_BI(accum);
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE int
-cmp_bi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    return (mpi_cmp(XBI(accum), XBI(ope)));
-}
-
-/* divide_bi_bi => divide_xi_xi */
-
-
-/*
-	BI accumulator - BR operator
- */
-static INLINE void
-add_bi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi iop;
-    mpr *bigr = XALLOC(mpr);
-
-    mpi_init(&iop);
-    mpi_set(&iop, XBI(accum));
-    mpr_init(bigr);
-    mpr_set(bigr, XBR(ope));
-
-    mpi_mul(&iop, &iop, XBRD(ope));
-    mpi_add(mpr_num(bigr), &iop, mpr_num(bigr));
-
-    mpi_clear(&iop);
-    XCLEAR_BI(accum);
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE void
-sub_bi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi iop;
-    mpr *bigr = XALLOC(mpr);
-
-    mpi_init(&iop);
-    mpi_set(&iop, XBI(accum));
-    mpr_init(bigr);
-    mpr_set(bigr, XBR(ope));
-
-    mpi_mul(&iop, &iop, XBRD(ope));
-    mpi_sub(mpr_num(bigr), &iop, mpr_num(bigr));
-
-    mpi_clear(&iop);
-    XCLEAR_BI(accum);
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE void
-mul_bi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpr *bigr = XALLOC(mpr);
-
-    mpr_init(bigr);
-    mpr_set(bigr, XBR(ope));
-
-    mpi_mul(mpr_num(bigr), XBI(accum), mpr_num(bigr));
-
-    XCLEAR_BI(accum);
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE void
-div_bi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpr *bigr = XALLOC(mpr);
-
-    mpr_init(bigr);
-    mpr_inv(bigr, XBR(ope));
-
-    mpi_mul(mpr_num(bigr), XBI(accum), mpr_num(bigr));
-
-    XCLEAR_BI(accum);
-    XBR(accum) = bigr;
-    XTYPE(accum) = BR;
-    XMEM(XBR(accum));
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE int
-cmp_bi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    int cmp;
-    mpr cmp1;
-
-    mpr_init(&cmp1);
-    mpi_set(mpr_num(&cmp1), XBI(accum));
-    mpi_seti(mpr_den(&cmp1), 1);
-
-    cmp = mpr_cmp(&cmp1, XBR(ope));
-    mpr_clear(&cmp1);
-
-    return (cmp);
-}
-
-/* divide_bi_br => divide_xi_xr */
-
-
-/************************************************************************
- *	BIGNUM RATIONAL OPERATIONS
- ************************************************************************/
-/*
-	BR accumulator - FI operator
- */
-static INLINE void
-add_br_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi iop;
-
-    mpi_init(&iop);
-    mpi_seti(&iop, XFI(ope));
-    mpi_mul(&iop, &iop, XBRD(accum));
-    mpi_add(mpr_num(XBR(accum)), mpr_num(XBR(accum)), &iop);
-    mpi_clear(&iop);
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE void
-sub_br_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi iop;
-
-    mpi_init(&iop);
-    mpi_seti(&iop, XFI(ope));
-    mpi_mul(&iop, &iop, XBRD(accum));
-    mpi_sub(mpr_num(XBR(accum)), mpr_num(XBR(accum)), &iop);
-    mpi_clear(&iop);
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE void
-mul_br_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi_muli(mpr_num(XBR(accum)), mpr_num(XBR(accum)), XFI(ope));
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE void
-div_br_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpi_muli(mpr_den(XBR(accum)), mpr_den(XBR(accum)), 	XFI(ope));
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE int
-cmp_br_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static int
+cmp_br_fi(mpr *bigratio, long fixnum)
 {
     int cmp;
     mpr cmp2;
 
     mpr_init(&cmp2);
-    mpr_seti(&cmp2, XFI(ope), 1);
-    cmp = mpr_cmp(XBR(accum), &cmp2);
+    mpr_seti(&cmp2, fixnum, 1);
+    cmp = mpr_cmp(bigratio, &cmp2);
     mpr_clear(&cmp2);
 
     return (cmp);
 }
 
-/* divide_br_fi => divide_xr_xi */
 
-
-/*
-	BR accumulator - FR operator
- */
-static INLINE void
-add_br_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpr rop;
-
-    mpr_init(&rop);
-    mpr_seti(&rop, XFRN(ope), XFRD(ope));
-    mpr_add(XBR(accum), XBR(accum), &rop);
-    mpr_clear(&rop);
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE void
-sub_br_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpr rop;
-
-    mpr_init(&rop);
-    mpr_seti(&rop, XFRN(ope), XFRD(ope));
-    mpr_sub(XBR(accum), XBR(accum), &rop);
-    mpr_clear(&rop);
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE void
-mul_br_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpr rop;
-
-    mpr_init(&rop);
-    mpr_seti(&rop, XFRN(ope), XFRD(ope));
-    mpr_mul(XBR(accum), XBR(accum), &rop);
-    mpr_clear(&rop);
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE void
-div_br_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mpr rop;
-
-    mpr_init(&rop);
-    mpr_seti(&rop, XFRN(ope), XFRD(ope));
-    mpr_div(XBR(accum), XBR(accum), &rop);
-    mpr_clear(&rop);
-    br_canonicalize(builtin, accum); 
-}
-
-static INLINE int
-cmp_br_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    int cmp;
-    mpr cmp2;
-
-    mpr_init(&cmp2);
-    mpr_seti(&cmp2, XFRN(ope), XFRD(ope));
-    cmp = mpr_cmp(XBR(accum), &cmp2);
-    mpr_clear(&cmp2);
-
-    return (cmp);
-}
-
-/* divide_br_fr => divide_xr_xr */
-
-
-/*
-	BR accumulator - FF operator
- */
-static INLINE void
-add_br_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    add_float(builtin, accum, mpr_getd(XBR(accum)), XFF(ope));
-}
-
-static INLINE void
-sub_br_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    sub_float(builtin, accum, mpr_getd(XBR(accum)), XFF(ope));
-}
-
-static INLINE void
-mul_br_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    mul_float(builtin, accum, mpr_getd(XBR(accum)), XFF(ope));
-}
-
-static INLINE void
-div_br_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    div_float(builtin, accum, mpr_getd(XBR(accum)), XFF(ope));
-}
-
-static INLINE int
-cmp_br_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
-{
-    return (cmp_float(builtin, mpr_getd(XBR(accum)), XFF(ope)));
-}
-
-static LispObj *
-divide_br_ff(LispBuiltin *builtin, LispObj *num, LispObj *div,
-	     int function, int floating)
-{
-    return (divide_float(builtin, mpr_getd(XBR(num)), XFF(div),
-			 function, floating));
-}
-
-
-/*
-	BR accumulator - BI operator
- */
-static INLINE void
-add_br_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+/************************************************************************
+ * BIGRATIO BIGNUM
+ ************************************************************************/
+static void
+rop_br_bi_as_xr(n_real *real, mpi *bignum, int nop)
 {
     mpi iop;
 
     mpi_init(&iop);
-    mpi_set(&iop, XBI(ope));
+    mpi_set(&iop, bignum);
 
-    mpi_mul(&iop, &iop, XBRD(accum));
-    mpi_add(XBRN(accum), XBRN(accum), &iop);
+    mpi_mul(&iop, &iop, RBRD(real));
+    if (nop == NOP_ADD)
+	mpi_add(RBRN(real), RBRN(real), &iop);
+    else
+	mpi_sub(RBRN(real), RBRN(real), &iop);
     mpi_clear(&iop);
-    br_canonicalize(builtin, accum); 
+    rbr_canonicalize(real); 
 }
 
 static INLINE void
-sub_br_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+radd_br_bi(n_real *real, mpi *bignum)
 {
-    mpi iop;
-
-    mpi_init(&iop);
-    mpi_set(&iop, XBI(ope));
-
-    mpi_mul(&iop, &iop, XBRD(accum));
-    mpi_sub(XBRN(accum), XBRN(accum), &iop);
-    mpi_clear(&iop);
-    br_canonicalize(builtin, accum); 
+    rop_br_bi_as_xr(real, bignum, NOP_ADD);
 }
 
 static INLINE void
-mul_br_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rsub_br_bi(n_real *real, mpi *bignum)
 {
-    mpi_mul(XBRN(accum), XBRN(accum), XBI(ope));
-    br_canonicalize(builtin, accum); 
+    rop_br_bi_as_xr(real, bignum, NOP_SUB);
 }
 
 static INLINE void
-div_br_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rmul_br_bi(n_real *real, mpi *bignum)
 {
-    mpi_mul(XBRD(accum), XBRD(accum), XBI(ope));
-    br_canonicalize(builtin, accum); 
+    mpi_mul(RBRN(real), RBRN(real), bignum);
+    rbr_canonicalize(real);
 }
 
-static INLINE int
-cmp_br_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+static INLINE void
+rdiv_br_bi(n_real *real, mpi *bignum)
+{
+    mpi_mul(RBRD(real), RBRD(real), bignum);
+    rbr_canonicalize(real);
+}
+
+static int
+cmp_br_bi(mpr *bigratio, mpi *bignum)
 {
     int cmp;
     mpr cmp1;
 
     mpr_init(&cmp1);
-    mpi_set(mpr_num(&cmp1), XBI(ope));
+    mpi_set(mpr_num(&cmp1), bignum);
     mpi_seti(mpr_den(&cmp1), 1);
 
-    cmp = mpr_cmp(XBR(accum), &cmp1);
+    cmp = mpr_cmp(bigratio, &cmp1);
     mpr_clear(&cmp1);
 
     return (cmp);
 }
 
-/* divide_br_bi => divide_xr_xi */
 
-
-/*
-	BR accumulator - BR operator
- */
-static INLINE void
-add_br_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+/************************************************************************
+ * BIGRATIO FIXRATIO
+ ************************************************************************/
+static void
+rop_br_fr_asmd_xr(n_real *real, long num, long den, int nop)
 {
-    mpr_add(XBR(accum), XBR(accum), XBR(ope));
-    br_canonicalize(builtin, accum); 
+    mpr *bigratio = RBR(real), rop;
+
+    mpr_init(&rop);
+    mpr_seti(&rop, num, den);
+    switch (nop) {
+	case NOP_ADD:
+	    mpr_add(bigratio, bigratio, &rop);
+	    break;
+	case NOP_SUB:
+	    mpr_sub(bigratio, bigratio, &rop);
+	    break;
+	case NOP_MUL:
+	    mpr_mul(bigratio, bigratio, &rop);
+	    break;
+	default:
+	    mpr_div(bigratio, bigratio, &rop);
+	    break;
+    }
+    mpr_clear(&rop);
+    rbr_canonicalize(real); 
 }
 
 static INLINE void
-sub_br_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+radd_br_fr(n_real *real, long num, long den)
 {
-    mpr_sub(XBR(accum), XBR(accum), XBR(ope));
-    br_canonicalize(builtin, accum); 
+    rop_br_fr_asmd_xr(real, num, den, NOP_ADD);
 }
 
 static INLINE void
-mul_br_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rsub_br_fr(n_real *real, long num, long den)
 {
-    mpr_mul(XBR(accum), XBR(accum), XBR(ope));
-    br_canonicalize(builtin, accum); 
+    rop_br_fr_asmd_xr(real, num, den, NOP_SUB);
 }
 
 static INLINE void
-div_br_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rmul_br_fr(n_real *real, long num, long den)
 {
-    mpr_div(XBR(accum), XBR(accum), XBR(ope));
-    br_canonicalize(builtin, accum); 
+    rop_br_fr_asmd_xr(real, num, den, NOP_MUL);
+}
+
+static INLINE void
+rdiv_br_fr(n_real *real, long num, long den)
+{
+    rop_br_fr_asmd_xr(real, num, den, NOP_DIV);
+}
+
+static int
+cmp_br_fr(mpr *bigratio, long num, long den)
+{
+    int cmp;
+    mpr cmp2;
+
+    mpr_init(&cmp2);
+    mpr_seti(&cmp2, num, den);
+    cmp = mpr_cmp(bigratio, &cmp2);
+    mpr_clear(&cmp2);
+
+    return (cmp);
+}
+
+
+/************************************************************************
+ * BIGRATIO BIGRATIO
+ ************************************************************************/
+static INLINE void
+radd_br_br(n_real *real, mpr *bigratio)
+{
+    mpr_add(RBR(real), RBR(real), bigratio);
+    rbr_canonicalize(real); 
+}
+
+static INLINE void
+rsub_br_br(n_real *real, mpr *bigratio)
+{
+    mpr_sub(RBR(real), RBR(real), bigratio);
+    rbr_canonicalize(real); 
+}
+
+static INLINE void
+rmul_br_br(n_real *real, mpr *bigratio)
+{
+    mpr_mul(RBR(real), RBR(real), bigratio);
+    rbr_canonicalize(real); 
+}
+
+static INLINE void
+rdiv_br_br(n_real *real, mpr *bigratio)
+{
+    mpr_div(RBR(real), RBR(real), bigratio);
+    rbr_canonicalize(real); 
 }
 
 static INLINE int
-cmp_br_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_br_br(mpr *op1, mpr *op2)
 {
-    return (mpr_cmp(XBR(accum), XBR(accum)));
+    return (mpr_cmp(op1, op2));
 }
-
-/* divide_br_br => divide_xr_xr */

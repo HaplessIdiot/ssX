@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.9 2002/08/25 02:48:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.10 2002/11/08 08:00:56 paulo Exp $ */
 
 #include "io.h"
 #include <errno.h>
@@ -119,7 +119,7 @@ LispUnget(int ch)
 void
 LispPushInput(LispObj *stream)
 {
-    if (!STREAM_P(stream) || !stream->data.stream.readable)
+    if (!STREAMP(stream) || !stream->data.stream.readable)
 	LispDestroy("bad stream at PUSH-INPUT");
     lisp__data.input_list = CONS(stream, lisp__data.input_list);
     SINPUT = stream;
@@ -136,18 +136,17 @@ LispPushInput(LispObj *stream)
 	++lisp__data.nunget;
     }
     ++lisp__data.iunget;
-    memset((char*)lisp__data.unget[lisp__data.iunget], '\0',
-	   sizeof(LispUngetInfo));
+    memset(lisp__data.unget[lisp__data.iunget], '\0', sizeof(LispUngetInfo));
     lisp__data.eof = 0;
 }
 
 void
 LispPopInput(LispObj *stream)
 {
-    if (!CONS_P(lisp__data.input_list) || stream != CAR(lisp__data.input_list))
+    if (!CONSP(lisp__data.input_list) || stream != CAR(lisp__data.input_list))
 	LispDestroy("bad stream at POP-INPUT");
     lisp__data.input_list = CDR(lisp__data.input_list);
-    SINPUT = CONS_P(lisp__data.input_list) ?
+    SINPUT = CONSP(lisp__data.input_list) ?
     CAR(lisp__data.input_list) : lisp__data.input_list;
     --lisp__data.iunget;
     lisp__data.eof = 0;
@@ -371,8 +370,7 @@ LispSputc(LispString *string, int ch)
 	if (string->fixed)
 	    return (EOF);
 	else {
-	    unsigned char *tmp = realloc(string->string,
-					 string->space + pagesize);
+	    char *tmp = realloc(string->string, string->space + pagesize);
 
 	    if (tmp == NULL)
 		return (EOF);
@@ -432,7 +430,7 @@ int
 LispFread(LispFile *file, void *data, int size)
 {
     int bytes, length;
-    unsigned char *buffer;
+    char *buffer;
 
     if (!file->readable)
 	return (EOF);
@@ -441,7 +439,7 @@ LispFread(LispFile *file, void *data, int size)
 	return (size);
 
     length = 0;
-    buffer = (unsigned char*)data;
+    buffer = (char*)data;
 
     /* check if there is an unget character */
     if (file->available) {
@@ -503,7 +501,7 @@ LispFwrite(LispFile *file, void *data, int size)
 
     if (file->buffered) {
 	int length, bytes;
-	unsigned char *buffer = (unsigned char*)data;
+	char *buffer = (char*)data;
 
 	length = 0;
 	if (size + file->length > pagesize) {
@@ -582,8 +580,8 @@ LispSwrite(LispString *string, void *data, int size)
 		return (-1);
 	}
 	else {
-	    unsigned char *tmp = realloc(string->string, string->space +
-					 (size / pagesize) * pagesize + pagesize);
+	    char *tmp = realloc(string->string, string->space +
+				(size / pagesize) * pagesize + pagesize);
 
 	    if (tmp == NULL)
 		return (-1);
@@ -612,5 +610,5 @@ LispGetSstring(LispString *string, int *length)
     }
     *length = string->length;
 
-    return ((char*)string->string);
+    return (string->string);
 }

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/regex.c,v 1.5 2002/09/15 21:32:22 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/regex.c,v 1.6 2002/11/08 08:00:57 paulo Exp $ */
 
 #include "regex.h"
 #include "private.h"
@@ -90,10 +90,10 @@ Lisp_Recomp(LispBuiltin *builtin)
     pattern = ARGUMENT(0);
 
     /* Don't generate an error if it is already a compiled regex. */
-    if (REGEX_P(pattern))
+    if (REGEXP(pattern))
 	return (pattern);
 
-    ERROR_CHECK_STRING(pattern);
+    CHECK_STRING(pattern);
 
     if (nospec != NIL)
 	cflags |= RE_NOSPEC;
@@ -140,21 +140,21 @@ Lisp_Reexec(LispBuiltin *builtin)
     ostring = ARGUMENT(1);
     regex = ARGUMENT(0);
 
-    if (STRING_P(regex))
+    if (STRINGP(regex))
 	regexp = LispRecomp(builtin, THESTR(regex), cflags = 0);
     else {
-	ERROR_CHECK_REGEX(regex);
+	CHECK_REGEX(regex);
 	regexp = regex->data.regex.regex;
 	cflags = regex->data.regex.options;
     }
 
-    ERROR_CHECK_STRING(ostring);
+    CHECK_STRING(ostring);
 
     if (count == NIL)
 	nmatch = 1;
     else {
-	ERROR_CHECK_INDEX(count);
-	nmatch = GETINT(count);
+	CHECK_INDEX(count);
+	nmatch = FIXNUM_VALUE(count);
 	if (nmatch > 10)
 	    LispDestroy("%s: COUNT cannot be larger than 10", STRFUN(builtin));
     }
@@ -185,8 +185,8 @@ Lisp_Reexec(LispBuiltin *builtin)
 	if (nmatch && match[0].rm_eo >= match[0].rm_so) {
 	    result = CONS(CONS(NIL, NIL), NIL);
 	    GC_PROTECT(result);
-	    RPLACA(CAR(result), SMALLINT(match[0].rm_so));
-	    RPLACD(CAR(result), SMALLINT(match[0].rm_eo));
+	    RPLACA(CAR(result), FIXNUM(match[0].rm_so));
+	    RPLACD(CAR(result), FIXNUM(match[0].rm_eo));
 	    if (nmatch > 1 && match[1].rm_eo >= match[1].rm_so) {
 		int i;
 		LispObj *cons = result;
@@ -194,8 +194,8 @@ Lisp_Reexec(LispBuiltin *builtin)
 		for (i = 1; i < nmatch && match[i].rm_eo > match[i].rm_so; i++) {
 		    RPLACD(cons, CONS(CONS(NIL, NIL), NIL));
 		    cons = CDR(cons);
-		    RPLACA(CAR(cons), SMALLINT(match[i].rm_so));
-		    RPLACD(CAR(cons), SMALLINT(match[i].rm_eo));
+		    RPLACA(CAR(cons), FIXNUM(match[i].rm_so));
+		    RPLACD(CAR(cons), FIXNUM(match[i].rm_eo));
 		}
 	    }
 	}
@@ -203,7 +203,8 @@ Lisp_Reexec(LispBuiltin *builtin)
     else
 	result = Knomatch;
 
-    if (!REGEX_P(regex)) {
+    /* Maybe shoud cache compiled regex, but better the caller do it */
+    if (!XREGEXP(regex)) {
 	refree(regexp);
 	LispFree(regexp);
     }
@@ -223,5 +224,5 @@ Lisp_Rep(LispBuiltin *builtin)
 
     object = ARGUMENT(0);
 
-    return (REGEX_P(object) ? T : NIL);
+    return (REGEXP(object) ? T : NIL);
 }

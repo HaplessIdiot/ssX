@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.6 2002/11/04 04:58:09 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.7 2002/11/08 08:00:58 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -109,7 +109,6 @@ static void (*old_sigalrm)(int);
 static LispObj *Oauto_mode, *Osyntax_highlight, *Osyntable_indent;
 
 /* Just to make calling interactive reparse easier */
-static LispObj interactive_left, interactive_right;
 static LispObj interactive_arguments[4];
 
 static LispObj *justify_modes[4];
@@ -185,9 +184,9 @@ SigalrmHandler(int signum)
     /* Check if user pressed C-g */
     if (XCheckIfEvent(XtDisplay(textwindow), &event, ControlGPredicate, NULL)) {
 	XPutBackEvent(XtDisplay(textwindow), &event);
+	alarm(0);
 	/* Tell a signal was received, print message for SIGINT */
 	LispSignal(SIGINT);
-	alarm(0);
     }
     else
 	alarm(1);
@@ -245,7 +244,7 @@ LispXeditInitialize(void)
     Osyntable_indent	= STATIC_ATOM("SYNTABLE-INDENT");
 
     /*  Import symbols from the LISP and EXT packages */
-    for (list = PACK; CONS_P(list); list = CDR(list)) {
+    for (list = PACK; CONSP(list); list = CDR(list)) {
 	string = THESTR(CAR(list)->data.package.name);
 	if (strcmp(string, "LISP") == 0 || strcmp(string, "EXT") == 0)
 	    LispUsePackage(CAR(list));
@@ -269,22 +268,19 @@ LispXeditInitialize(void)
     result_stream.data.stream.type = LispStreamString;
     result_stream.data.stream.readable = 0;
     result_stream.data.stream.writable = 1;
-    result_string.string = (unsigned char*)result_buffer;
+    result_string.string = result_buffer;
     result_string.fixed = 1;
     result_string.space = sizeof(result_buffer) - 2;
 
     /* Initialize interactive edition function arguments */
-    interactive_left.type = interactive_right.type = LispInteger_t;
     /* first argument is syntax table */
     interactive_arguments[0].type = LispCons_t;
     interactive_arguments[0].data.cons.cdr = &interactive_arguments[1];
     /* second argument is where to start reparsing */
     interactive_arguments[1].type = LispCons_t;
-    interactive_arguments[1].data.cons.car = &interactive_left;
     interactive_arguments[1].data.cons.cdr = &interactive_arguments[2];
     /* third argument is where to stop reparsing */
     interactive_arguments[2].type = LispCons_t;
-    interactive_arguments[2].data.cons.car = &interactive_right;
     interactive_arguments[2].data.cons.cdr = &interactive_arguments[3];
     /* fourth argument is interactive flag */
     interactive_arguments[3].type = LispCons_t;
@@ -302,7 +298,7 @@ XeditLispExecute(Widget output, XawTextPosition left, XawTextPosition right)
     int alloced;
     XawTextBlock block;
     XawTextPosition position;
-    unsigned char *string, *ptr;
+    char *string, *ptr;
     LispObj *result, *code, *_cod, **presult = &result;
 
     LISP_ENTER();
@@ -327,7 +323,7 @@ XeditLispExecute(Widget output, XawTextPosition left, XawTextPosition right)
     }
     else {
 	alloced = 0;
-	string = (unsigned char*)block.ptr;
+	string = block.ptr;
     }
 
     execute_string.string = string;
@@ -564,11 +560,10 @@ XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
     /* Remember old state */
     STORE_STATE(num_oinfo, oinfo, begin, right);
 
-
     /* Reparse the lines in the modified/edited range of text */
     interactive_arguments[0].data.cons.car = syntax;
-    interactive_left.data.integer = left;
-    interactive_right.data.integer = right;
+    interactive_arguments[1].data.cons.car = FIXNUM(left);
+    interactive_arguments[2].data.cons.car = FIXNUM(right);
     result = APPLY(Osyntax_highlight, &interactive_arguments[0]);
     /* Indent table is the second return value */
     if (RETURN_COUNT)
@@ -578,8 +573,8 @@ XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
 
     /* This normally is the same value as right, but the parser may have
      * continued when the syntax table stack did not finish. */
-    if (INT_P(result))
-	right = GETINT(result);
+    if (FIXNUMP(result))
+	right = FIXNUM_VALUE(result);
 
     LISP_LEAVE();
 
@@ -719,13 +714,13 @@ Xedit_AddEntity(LispBuiltin *builtin)
     length = ARGUMENT(1);
     offset = ARGUMENT(0);
 
-    ERROR_CHECK_INDEX(offset);
-    ERROR_CHECK_INDEX(length);
-    ERROR_CHECK_INDEX(identifier);
+    CHECK_INDEX(offset);
+    CHECK_INDEX(length);
+    CHECK_LONGINT(identifier);
 
     return (XawTextSourceAddEntity(XawTextGetSource(textwindow), 0, 0, NULL,
-				   GETINT(offset), GETINT(length),
-				   GETINT(identifier)) ? T : NIL);
+				   FIXNUM_VALUE(offset), FIXNUM_VALUE(length),
+				   LONGINT_VALUE(identifier)) ? T : NIL);
 }
 
 LispObj *
@@ -771,7 +766,7 @@ Xedit_Background(LispBuiltin *builtin)
     color = ARGUMENT(0);
 
     if (specified != NIL) {
-	ERROR_CHECK_STRING(color);
+	CHECK_STRING(color);
 
 	from.size = STRLEN(color);
 	from.addr = (XtPointer)THESTR(color);
@@ -813,12 +808,12 @@ XeditCharAt(LispBuiltin *builtin, int before)
 
     offset = ARGUMENT(0);
     if (offset != NIL) {
-	ERROR_CHECK_INDEX(offset);
+	CHECK_INDEX(offset);
     }
 
     first = XawTextSourceScan(source, 0, XawstAll, XawsdLeft, 1, True);
-    if (INT_P(offset))
-	point = GETINT(offset);
+    if (FIXNUMP(offset))
+	point = FIXNUM_VALUE(offset);
     else
 	point = XawTextGetInsertionPoint(textwindow);
     if (before && point > first) {
@@ -837,7 +832,7 @@ XeditCharAt(LispBuiltin *builtin, int before)
 
     XawTextSourceRead(source, point, &block, 1);
 
-    return (block.length ? CHAR(block.ptr[0]) : NIL);
+    return (block.length ? SCHAR(*(unsigned char*)block.ptr) : NIL);
 }
 
 LispObj *
@@ -869,11 +864,11 @@ Xedit_ClearEntities(LispBuiltin *builtin)
     right = ARGUMENT(1);
     left = ARGUMENT(0);
 
-    ERROR_CHECK_INDEX(left);
-    ERROR_CHECK_INDEX(right);
+    CHECK_INDEX(left);
+    CHECK_INDEX(right);
 
     XawTextSourceClearEntities(XawTextGetSource(textwindow),
-			       GETINT(left), GETINT(right));
+			       FIXNUM_VALUE(left), FIXNUM_VALUE(right));
 
     return (T);
 }
@@ -892,8 +887,8 @@ Xedit_ConvertPropertyList(LispBuiltin *builtin)
     definition = ARGUMENT(1);
     name = ARGUMENT(0);
 
-    ERROR_CHECK_STRING(name);
-    ERROR_CHECK_STRING(definition);
+    CHECK_STRING(name);
+    CHECK_STRING(definition);
 
     result = NIL;
     property_list = XawTextSinkConvertPropertyList(THESTR(name),
@@ -918,7 +913,7 @@ Xedit_ConvertPropertyList(LispBuiltin *builtin)
 			  (num_property_lists + 1));
 	    property_lists[num_property_lists++] = property_list;
 	}
-	result = SMALLINT(property_list->identifier);
+	result = INTEGER(property_list->identifier);
     }
 
     return (result);
@@ -940,7 +935,7 @@ Xedit_Font(LispBuiltin *builtin)
     font = ARGUMENT(0);
 
     if (specified != NIL) {
-	ERROR_CHECK_STRING(font);
+	CHECK_STRING(font);
 
 	from.size = STRLEN(font);
 	from.addr = (XtPointer)THESTR(font);
@@ -986,7 +981,7 @@ Xedit_Foreground(LispBuiltin *builtin)
     color = ARGUMENT(0);
 
     if (specified != NIL) {
-	ERROR_CHECK_STRING(color);
+	CHECK_STRING(color);
 
 	from.size = STRLEN(color);
 	from.addr = (XtPointer)THESTR(color);
@@ -1028,11 +1023,11 @@ Xedit_GotoChar(LispBuiltin *builtin)
 
     offset = ARGUMENT(0);
 
-    ERROR_CHECK_INDEX(offset);
-    XawTextSetInsertionPoint(textwindow, GETINT(offset));
+    CHECK_INDEX(offset);
+    XawTextSetInsertionPoint(textwindow, FIXNUM_VALUE(offset));
     point = XawTextGetInsertionPoint(textwindow);
-    if (point != GETINT(offset))
-	offset = SMALLINT(point);
+    if (point != FIXNUM_VALUE(offset))
+	offset = FIXNUM(point);
 
     return (offset);
 }
@@ -1078,7 +1073,7 @@ Xedit_Insert(LispBuiltin *builtin)
 
     text = ARGUMENT(0);
 
-    ERROR_CHECK_STRING(text);
+    CHECK_STRING(text);
     
     block.firstPos = 0;
     block.format = FMT8BIT;
@@ -1143,11 +1138,11 @@ Xedit_LeftColumn(LispBuiltin *builtin)
     oleft = ARGUMENT(0);
 
     if (specified != NIL) {
-	ERROR_CHECK_INDEX(oleft);
-	if (GETINT(oleft) >= 32767)
+	CHECK_INDEX(oleft);
+	if (FIXNUM_VALUE(oleft) >= 32767)
 	    left = 32767;
 	else
-	    left = GETINT(oleft);
+	    left = FIXNUM_VALUE(oleft);
 
 	XtSetArg(arg[0], XtNleftColumn, left);
 	XtSetValues(textwindow, arg, 1);
@@ -1156,7 +1151,7 @@ Xedit_LeftColumn(LispBuiltin *builtin)
 	XtSetArg(arg[0], XtNleftColumn, &left);
 	XtGetValues(textwindow, arg, 1);
 
-	oleft = SMALLINT(left);
+	oleft = FIXNUM((long)left);
     }
 
     return (oleft);
@@ -1168,7 +1163,7 @@ Xedit_Point(LispBuiltin *builtin)
  point
  */
 {
-    return (SMALLINT(XawTextGetInsertionPoint(textwindow)));
+    return (FIXNUM(XawTextGetInsertionPoint(textwindow)));
 }
 
 LispObj *
@@ -1177,8 +1172,8 @@ Xedit_PointMax(LispBuiltin *builtin)
  point-max
  */
 {
-    return (SMALLINT(XawTextSourceScan(XawTextGetSource(textwindow), 0,
-				       XawstAll, XawsdRight, 1, True)));
+    return (FIXNUM(XawTextSourceScan(XawTextGetSource(textwindow), 0,
+				     XawstAll, XawsdRight, 1, True)));
 }
 
 LispObj *
@@ -1187,8 +1182,8 @@ Xedit_PointMin(LispBuiltin *builtin)
  point-min
  */
 {
-    return (SMALLINT(XawTextSourceScan(XawTextGetSource(textwindow), 0,
-				       XawstAll, XawsdLeft, 1, True)));
+    return (FIXNUM(XawTextSourceScan(XawTextGetSource(textwindow), 0,
+				     XawstAll, XawsdLeft, 1, True)));
 }
 
 LispObj *
@@ -1209,9 +1204,9 @@ Xedit_PropertyList(LispBuiltin *builtin)
 	Cardinal i;
 	XrmQuark quark;
 
-	ERROR_CHECK_INDEX(value);
+	CHECK_LONGINT(value);
 	property_list = NULL;
-	quark = GETINT(value);
+	quark = LONGINT_VALUE(value);
 	for (i = 0; i < num_property_lists; i++)
 	    if (property_lists[i]->identifier == quark) {
 		property_list = property_lists[i];
@@ -1230,7 +1225,7 @@ Xedit_PropertyList(LispBuiltin *builtin)
 	XtSetArg(arg[0], XawNtextProperties, &property_list);
 	XtGetValues(XawTextGetSink(textwindow), arg, 1);
 	if (property_list)
-	    value = SMALLINT(property_list->identifier);
+	    value = INTEGER(property_list->identifier);
     }
 
     return (value);
@@ -1253,11 +1248,11 @@ Xedit_ReadText(LispBuiltin *builtin)
     length = ARGUMENT(1);
     offset = ARGUMENT(0);
 
-    ERROR_CHECK_INDEX(offset);
-    ERROR_CHECK_INDEX(length);
+    CHECK_INDEX(offset);
+    CHECK_INDEX(length);
 
-    from = GETINT(offset);
-    to = from + GETINT(length);
+    from = FIXNUM_VALUE(offset);
+    to = from + FIXNUM_VALUE(length);
     if (from > last)
 	from = last;
     if (to > last)
@@ -1296,12 +1291,12 @@ Xedit_ReplaceText(LispBuiltin *builtin)
     oright = ARGUMENT(1);
     oleft = ARGUMENT(0);
 
-    ERROR_CHECK_INDEX(oleft);
-    ERROR_CHECK_INDEX(oright);
-    ERROR_CHECK_STRING(text);
+    CHECK_INDEX(oleft);
+    CHECK_INDEX(oright);
+    CHECK_STRING(text);
 
-    left = GETINT(oleft);
-    right = GETINT(oright);
+    left = FIXNUM_VALUE(oleft);
+    right = FIXNUM_VALUE(oright);
     if (left > last)
 	left = last;
     if (left > right)
@@ -1333,11 +1328,11 @@ Xedit_RightColumn(LispBuiltin *builtin)
     oright = ARGUMENT(0);
 
     if (specified != NIL) {
-	ERROR_CHECK_INDEX(oright);
-	if (GETINT(oright) >= 32767)
+	CHECK_INDEX(oright);
+	if (FIXNUM_VALUE(oright) >= 32767)
 	    right = 32767;
 	else
-	    right = GETINT(oright);
+	    right = FIXNUM_VALUE(oright);
 
 	XtSetArg(arg[0], XtNrightColumn, right);
 	XtSetValues(textwindow, arg, 1);
@@ -1346,7 +1341,7 @@ Xedit_RightColumn(LispBuiltin *builtin)
 	XtSetArg(arg[0], XtNrightColumn, &right);
 	XtGetValues(textwindow, arg, 1);
 
-	oright = SMALLINT(right);
+	oright = FIXNUM(right);
     }
 
     return (oright);
@@ -1372,8 +1367,8 @@ Xedit_Scan(LispBuiltin *builtin)
     otype = ARGUMENT(1);
     ooffset = ARGUMENT(0);
 
-    ERROR_CHECK_INDEX(ooffset);
-    offset = GETINT(ooffset);
+    CHECK_INDEX(ooffset);
+    offset = FIXNUM_VALUE(ooffset);
 
     for (i = 0; i < 2; i++)
 	if (odirection == scan_directions[i])
@@ -1394,13 +1389,13 @@ Xedit_Scan(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(otype));
     type = (XawTextScanType)i;
 
-    ERROR_CHECK_INDEX(ocount);
-    count = GETINT(ocount);
+    CHECK_INDEX(ocount);
+    count = FIXNUM_VALUE(ocount);
 
     offset = XawTextSourceScan(XawTextGetSource(textwindow),
 			       offset, type, direction, count, include != NIL);
 
-    return (SMALLINT(offset));
+    return (FIXNUM(offset));
 }
 
 static LispObj *
@@ -1415,10 +1410,10 @@ XeditSearch(LispBuiltin *builtin, XawTextScanDirection direction)
     offset = ARGUMENT(1);
     string = ARGUMENT(0);
 
-    ERROR_CHECK_STRING(string);
+    CHECK_STRING(string);
     if (offset != NIL) {
-	ERROR_CHECK_INDEX(offset);
-	position = GETINT(offset);
+	CHECK_INDEX(offset);
+	position = FIXNUM_VALUE(offset);
     }
     else
 	position = XawTextGetInsertionPoint(textwindow);
@@ -1430,7 +1425,7 @@ XeditSearch(LispBuiltin *builtin, XawTextScanDirection direction)
     position = XawTextSourceSearch(XawTextGetSource(textwindow),
 				   position, direction, &block);
 
-    return (position != XawTextSearchError ? SMALLINT(position) : NIL);
+    return (position != XawTextSearchError ? FIXNUM(position) : NIL);
 }
 
 
@@ -1528,7 +1523,7 @@ Xedit_XrmStringToQuark(LispBuiltin *builtin)
 
     string = ARGUMENT(0);
 
-    ERROR_CHECK_STRING(string);
+    CHECK_STRING(string);
 
-    return (SMALLINT(XrmStringToQuark(THESTR(string))));
+    return (INTEGER(XrmStringToQuark(THESTR(string))));
 }

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.4 2002/11/02 22:58:09 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.5 2002/11/08 08:00:56 paulo Exp $ */
 
 #define VARIABLE_USED		0x0001
 #define VARIABLE_ARGUMENT	0x0002
@@ -83,19 +83,19 @@ Com_And(LispCom *com, LispBuiltin *builtin)
 
     args = ARGUMENT(0);
 
-    if (CONS_P(args)) {
+    if (CONSP(args)) {
 	/* Evaluate first argument */
 	ComEval(com, CAR(args));
 	args = CDR(args);
 
 	/* If more than one argument, create jump list */
-	if (CONS_P(args)) {
+	if (CONSP(args)) {
 	    CodeTree *tree = NULL, *group;
 
 	    group = NEW_TREE(CodeTreeJumpIf);
 	    group->code = XBC_JUMPNIL;
 
-	    for (; CONS_P(args); args = CDR(args)) {
+	    for (; CONSP(args); args = CDR(args)) {
 		ComEval(com, CAR(args));
 		tree = NEW_TREE(CodeTreeJumpIf);
 		tree->code = XBC_JUMPNIL;
@@ -126,10 +126,10 @@ Com_Block(LispCom *com, LispBuiltin *builtin)
     body = ARGUMENT(1);
     name = ARGUMENT(0);
 
-    if (name != NIL && name != T && !SYMBOL_P(name))
+    if (name != NIL && name != T && !SYMBOLP(name))
 	LispDestroy("%s: %s cannot name a block",
 		    STRFUN(builtin), STROBJ(name));
-    if (CONS_P(body)) {
+    if (CONSP(body)) {
 	CompileIniBlock(com, LispBlockTag, name);
 	ComProgn(com, body);
 	CompileFiniBlock(com);
@@ -180,10 +180,10 @@ Com_Cond(LispCom *com, LispBuiltin *builtin)
 
     count = 0;
     group = NULL;
-    if (CONS_P(body)) {
-	for (; CONS_P(body); body = CDR(body)) {
+    if (CONSP(body)) {
+	for (; CONSP(body); body = CDR(body)) {
 	    code = CAR(body);
-	    ERROR_CHECK_LIST(code);
+	    CHECK_CONS(code);
 	    ++count;
 	    ComEval(com, CAR(code));
 	    tree = NEW_TREE(CodeTreeCond);
@@ -256,20 +256,20 @@ Com_Dolist(LispCom *com, LispBuiltin *builtin)
     body = ARGUMENT(1);
     init = ARGUMENT(0);
 
-    ERROR_CHECK_LIST(init);
+    CHECK_CONS(init);
     symbol = CAR(init);
-    ERROR_CHECK_SYMBOL(symbol);
-    ERROR_CHECK_CONSTANT(symbol);
+    CHECK_SYMBOL(symbol);
+    CHECK_CONSTANT(symbol);
     init = CDR(init);
-    if (CONS_P(init)) {
+    if (CONSP(init)) {
 	list = CAR(init);
 	init = CDR(init);
     }
     else
 	list = NIL;
-    if (CONS_P(init)) {
+    if (CONSP(init)) {
 	result = CAR(init);
-	if (CONS_P(CDR(init)))
+	if (CONSP(CDR(init)))
 	    LispDestroy("%s: too many arguments %s",
 			STRFUN(builtin), STROBJ(CDR(init)));
     }
@@ -537,62 +537,64 @@ Com_Let(LispCom *com, LispBuiltin *builtin)
  let init &rest body
  */
 {
+    int count;
+    LispObj *symbol, *value, *pair;
+
     LispObj *init, *body;
 
     body = ARGUMENT(1);
     init = ARGUMENT(0);
 
-    if (init == NIL)
+    if (init == NIL) {
 	/* If no local variables */
 	ComProgn(com, body);
-    else ERROR_CHECK_LIST(init);
-    else {
-	/* Could optimize if the body is empty and the
-	 * init form is known to have no side effects */
-	int count;
-	LispObj *symbol, *value, *pair;
-
-	for (count = 0; CONS_P(init); init = CDR(init), count++) {
-	    pair = CAR(init);
-	    if (CONS_P(pair)) {
-		symbol = CAR(pair);
-		pair = CDR(pair);
-		if (CONS_P(pair)) {
-		    value = CAR(pair);
-		    if (CDR(pair) != NIL)
-			LispDestroy("%s: too much arguments to initialize %s",
-				    STRFUN(builtin), STROBJ(symbol));
-		}
-		else
-		    value = NIL;
-	    }
-	    else {
-		symbol = pair;
-		value = NIL;
-	    }
-	    ERROR_CHECK_SYMBOL(symbol);
-	    ERROR_CHECK_CONSTANT(symbol);
-
-	    /* Add the variable */
-	    ComPush(com, symbol, value, 1, 0, 0);
-	}
-
-	/* Stack length is increased */
-	CompileStackEnter(com, count, 0);
-	/* Bind the added variables */
-	com_Bind(com, count);
-	com->block->bind += count;
-	lisp__data.env.head += count;
-	/* Generate code for the body of the form */
-	ComProgn(com, body);
-	/* Unbind the added variables */
-	lisp__data.env.head -= count;
-	lisp__data.env.length -= count;
-	com->block->bind -= count;
-	com_Unbind(com, count);
-	/* Stack length is reduced. */
-	CompileStackLeave(com, count, 0);
+	return;
     }
+    CHECK_CONS(init);
+
+    /* Could optimize if the body is empty and the
+     * init form is known to have no side effects */
+
+    for (count = 0; CONSP(init); init = CDR(init), count++) {
+	pair = CAR(init);
+	if (CONSP(pair)) {
+	    symbol = CAR(pair);
+	    pair = CDR(pair);
+	    if (CONSP(pair)) {
+		value = CAR(pair);
+		if (CDR(pair) != NIL)
+		    LispDestroy("%s: too much arguments to initialize %s",
+				STRFUN(builtin), STROBJ(symbol));
+	    }
+	    else
+		value = NIL;
+	}
+	else {
+	    symbol = pair;
+	    value = NIL;
+	}
+	CHECK_SYMBOL(symbol);
+	CHECK_CONSTANT(symbol);
+
+	/* Add the variable */
+	ComPush(com, symbol, value, 1, 0, 0);
+    }
+
+    /* Stack length is increased */
+    CompileStackEnter(com, count, 0);
+    /* Bind the added variables */
+    com_Bind(com, count);
+    com->block->bind += count;
+    lisp__data.env.head += count;
+    /* Generate code for the body of the form */
+    ComProgn(com, body);
+    /* Unbind the added variables */
+    lisp__data.env.head -= count;
+    lisp__data.env.length -= count;
+    com->block->bind -= count;
+    com_Unbind(com, count);
+    /* Stack length is reduced. */
+    CompileStackLeave(com, count, 0);
 }
 
 void
@@ -601,60 +603,62 @@ Com_Letx(LispCom *com, LispBuiltin *builtin)
  let* init &rest body
  */
 {
+    int count;
+    LispObj *symbol, *value, *pair;
+
     LispObj *init, *body;
 
     body = ARGUMENT(1);
     init = ARGUMENT(0);
 
-    if (init == NIL)
+    if (init == NIL) {
 	/* If no local variables */
 	ComProgn(com, body);
-    else ERROR_CHECK_LIST(body);
-    else {
-	/* Could optimize if the body is empty and the
-	 * init form is known to have no side effects */
-	int count;
-	LispObj *symbol, *value, *pair;
-
-	for (count = 0; CONS_P(init); init = CDR(init), count++) {
-	    pair = CAR(init);
-	    if (CONS_P(pair)) {
-		symbol = CAR(pair);
-		pair = CDR(pair);
-		if (CONS_P(pair)) {
-		    value = CAR(pair);
-		    if (CDR(pair) != NIL)
-			LispDestroy("%s: too much arguments to initialize %s",
-				    STRFUN(builtin), STROBJ(symbol));
-		}
-		else
-		    value = NIL;
-	    }
-	    else {
-		symbol = pair;
-		value = NIL;
-	    }
-	    ERROR_CHECK_SYMBOL(symbol);
-	    ERROR_CHECK_CONSTANT(symbol);
-
-	    /* LET* is identical to &AUX arguments, just bind the symbol */
-	    ComPush(com, symbol, value, 1, 0, 0);
-	    /* Every added variable is binded */
-	    com_Bind(com, 1);
-	    /* Must be binded at compile time also */
-	    ++lisp__data.env.head;
-	    ++com->block->bind;
-	}
-
-	/* Generate code for the body of the form */
-	CompileStackEnter(com, count, 0);
-	ComProgn(com, body);
-	com_Unbind(com, count);
-	com->block->bind -= count;
-	lisp__data.env.head -= count;
-	lisp__data.env.length -= count;
-	CompileStackLeave(com, count, 0);
+	return;
     }
+    CHECK_CONS(body);
+
+    /* Could optimize if the body is empty and the
+     * init form is known to have no side effects */
+
+    for (count = 0; CONSP(init); init = CDR(init), count++) {
+	pair = CAR(init);
+	if (CONSP(pair)) {
+	    symbol = CAR(pair);
+	    pair = CDR(pair);
+	    if (CONSP(pair)) {
+		value = CAR(pair);
+		if (CDR(pair) != NIL)
+		    LispDestroy("%s: too much arguments to initialize %s",
+				STRFUN(builtin), STROBJ(symbol));
+	    }
+	    else
+		value = NIL;
+	}
+	else {
+	    symbol = pair;
+	    value = NIL;
+	}
+	CHECK_SYMBOL(symbol);
+	CHECK_CONSTANT(symbol);
+
+	/* LET* is identical to &AUX arguments, just bind the symbol */
+	ComPush(com, symbol, value, 1, 0, 0);
+	/* Every added variable is binded */
+	com_Bind(com, 1);
+	/* Must be binded at compile time also */
+	++lisp__data.env.head;
+	++com->block->bind;
+    }
+
+    /* Generate code for the body of the form */
+    CompileStackEnter(com, count, 0);
+    ComProgn(com, body);
+    com_Unbind(com, count);
+    com->block->bind -= count;
+    lisp__data.env.head -= count;
+    lisp__data.env.length -= count;
+    CompileStackLeave(com, count, 0);
 }
 
 void
@@ -685,7 +689,7 @@ Com_Loop(LispCom *com, LispBuiltin *builtin)
     tree->code = XBC_NOOP;
 
     /* Execute @BODY */
-    if (CONS_P(body))
+    if (CONSP(body))
 	ComProgn(com, body);
     else
 	/* XXX bytecode.c code require that blocks have at least one opcode */
@@ -758,19 +762,19 @@ Com_Or(LispCom *com, LispBuiltin *builtin)
 
     args = ARGUMENT(0);
 
-    if (CONS_P(args)) {
+    if (CONSP(args)) {
 	/* Evaluate first argument */
 	ComEval(com, CAR(args));
 	args = CDR(args);
 
 	/* If more than one argument, create jump list */
-	if (CONS_P(args)) {
+	if (CONSP(args)) {
 	    CodeTree *tree = NULL, *group;
 
 	    group = NEW_TREE(CodeTreeJumpIf);
 	    group->code = XBC_JUMPT;
 
-	    for (; CONS_P(args); args = CDR(args)) {
+	    for (; CONSP(args); args = CDR(args)) {
 		ComEval(com, CAR(args));
 		tree = NEW_TREE(CodeTreeJumpIf);
 		tree->code = XBC_JUMPT;
@@ -849,12 +853,12 @@ Com_Setq(LispCom *com, LispBuiltin *builtin)
 
     form = ARGUMENT(0);
 
-    for (; CONS_P(form); form = CDR(form)) {
+    for (; CONSP(form); form = CDR(form)) {
 	symbol = CAR(form);
-	ERROR_CHECK_SYMBOL(symbol);
-	ERROR_CHECK_CONSTANT(symbol);
+	CHECK_SYMBOL(symbol);
+	CHECK_CONSTANT(symbol);
 	form = CDR(form);
-	if (!CONS_P(form))
+	if (!CONSP(form))
 	    LispDestroy("%s: odd number of arguments", STRFUN(builtin));
 	value = CAR(form);
 	/* Generate code to load value */
@@ -877,7 +881,7 @@ Com_Tagbody(LispCom *com, LispBuiltin *builtin)
 
     body = ARGUMENT(0);
 
-    if (CONS_P(body)) {
+    if (CONSP(body)) {
 	CompileIniBlock(com, LispBlockBody, NIL);
 	ComProgn(com, body);
 	/* Tagbody returns NIL */
@@ -1023,14 +1027,14 @@ ComPredicate(LispCom *com, LispBuiltin *builtin, LispBytePredicate predicate)
     if (ComConstantp(com, object)) {
 	switch (predicate) {
 	    case XBP_CONSP:
-		com_Bytecode(com, CONS_P(object) ? XBC_T : XBC_NIL);
+		com_Bytecode(com, CONSP(object) ? XBC_T : XBC_NIL);
 		break;
 	    case XBP_LISTP:
-		com_Bytecode(com, CONS_P(object) || object == NIL ?
+		com_Bytecode(com, CONSP(object) || object == NIL ?
 			     XBC_T : XBC_NIL);
 		break;
 	    case XBP_NUMBERP:
-		com_Bytecode(com, NUMBER_P(object) ? XBC_T : XBC_NIL);
+		com_Bytecode(com, NUMBERP(object) ? XBC_T : XBC_NIL);
 		break;
 	}
     }
@@ -1093,7 +1097,7 @@ ComReturnFrom(LispCom *com, LispBuiltin *builtin, int from)
 static int
 ComConstantp(LispCom *com, LispObj *object)
 {
-    switch (object->type) {
+    switch (OBJECT_TYPE(object)) {
 	case LispAtom_t:
 	    /* Keywords are guaranteed to evaluate to itself */
 	    if (object->data.atom->package == lisp__data.keyword)
@@ -1266,7 +1270,7 @@ ComLabel(LispCom *com, LispObj *label)
     CodeTree *tree;
 
     for (i = 0; i < com->block->tagbody.length; i++)
-	if (XEQL(label, com->block->tagbody.labels[i]) == T)
+	if (XEQ(label, com->block->tagbody.labels[i]) == T)
 	    LispDestroy("TAGBODY: tag %s specified more than once",
 			STROBJ(label));
 
@@ -1312,7 +1316,7 @@ ComPush(LispCom *com, LispObj *symbol, LispObj *value,
     /*  If <eval> is set, it must generate the opcodes to evaluate <value>.
      * If <value> is a constant, just generate the opcodes to load it. */
     else if (eval && !ComConstantp(com, value)) {
-	switch (value->type) {
+	switch (OBJECT_TYPE(value)) {
 	    case LispAtom_t: {
 		int offset = ComGetVariable(com, value);
 
@@ -1360,12 +1364,6 @@ ComPush(LispCom *com, LispObj *symbol, LispObj *value,
 	    ComAddVariable(com, symbol, value);
 	return;
     }
-
-    /* XXX all builtin macros should be implemented as bytecode, but
-     * do this for now, just to remember variable is used, in case it
-     * is only referenced as an argument to a builtin macro */
-    if (SYMBOL_P(value))
-	COM_VARIABLE_USED(value->data.atom);
 
     if (builtin) {
 	/* Load <value> as a constant in builtin stack */
@@ -1427,7 +1425,7 @@ normal_label:
     i = 0;
     symbols = alist->normals.symbols;
     count = alist->normals.num_symbols;
-    for (; i < count && CONS_P(values); i++, values = CDR(values)) {
+    for (; i < count && CONSP(values); i++, values = CDR(values)) {
 	ComPush(com, symbols[i], CAR(values), eval, builtin, compile);
 	if (!builtin && !com->macro)
 	    COM_VARIABLE_ARGUMENT(symbols[i]->data.atom);
@@ -1456,7 +1454,7 @@ optional_label:
     symbols = alist->optionals.symbols;
     defaults = alist->optionals.defaults;
     sforms = alist->optionals.sforms;
-    for (; i < count && CONS_P(values); i++, values = CDR(values)) {
+    for (; i < count && CONSP(values); i++, values = CDR(values)) {
 	ComPush(com, symbols[i], CAR(values), eval, builtin, compile);
 	if (!builtin && !com->macro)
 	    COM_VARIABLE_ARGUMENT(symbols[i]->data.atom);
@@ -1513,16 +1511,16 @@ key_label:
 	keys = alist->keys.keys;
 
 	/* Check if arguments are correctly specified */
-	for (karg = values; CONS_P(karg); karg = CDR(karg)) {
+	for (karg = values; CONSP(karg); karg = CDR(karg)) {
 	    val = CAR(karg);
-	    if (SYMBOL_P(val) && KEYWORD_P(val)) {
+	    if (KEYWORDP(val)) {
 		for (i = 0; i < alist->keys.num_symbols; i++)
 		    if (!keys[i] && symbols[i] == val)
 			break;
 	    }
 
 	    else if (!builtin &&
-		     val->type == LispQuote_t && SYMBOL_P(val->data.quote)) {
+		     QUOTEP(val) && SYMBOLP(val->data.quote)) {
 		for (i = 0; i < alist->keys.num_symbols; i++)
 		    if (keys[i] && ATOMID(keys[i]) == ATOMID(val->data.quote))
 			break;
@@ -1542,7 +1540,7 @@ key_label:
 	    }
 
 	    karg = CDR(karg);
-	    if (!CONS_P(karg))
+	    if (!CONSP(karg))
 		LispDestroy("%s: &KEY needs arguments as pairs",
 			    STROBJ(name));
 	}
@@ -1556,10 +1554,9 @@ key_label:
 
 		/* Special keyword specification, need to compare ATOMID
 		 * and keyword specification must be a quoted object */
-		for (karg = values; CONS_P(karg); karg = CDR(karg)) {
+		for (karg = values; CONSP(karg); karg = CDR(karg)) {
 		    val = CAR(karg);
-		    if (val->type == LispQuote_t &&
-			atom == ATOMID(val->data.quote)) {
+		    if (QUOTEP(val) && atom == ATOMID(val->data.quote)) {
 			val = CADR(karg);
 			varset = 1;
 			break;
@@ -1571,7 +1568,7 @@ key_label:
 	    else {
 		/* Normal keyword specification, can compare object pointers,
 		 * as they point to the same object in the keyword package */
-		for (karg = values; CONS_P(karg); karg = CDR(karg)) {
+		for (karg = values; CONSP(karg); karg = CDR(karg)) {
 		    /* Don't check if argument is a valid keyword or
 		     * special quoted keyword */
 		    if (symbols[i] == CAR(karg)) {
@@ -1623,7 +1620,7 @@ key_label:
 
     /* &REST */
 rest_label:
-    if (!eval || !CONS_P(values) || (compile && !builtin))
+    if (!eval || !CONSP(values) || (compile && !builtin))
 	ComPush(com, alist->rest, values, eval, builtin, compile);
     else {
 	char *string;
@@ -1632,12 +1629,12 @@ rest_label:
 
 	/* Count number of arguments and check if it is a list of constants */
 	for (count = 0, constantp = 1, list = values;
-	     CONS_P(list);
+	     CONSP(list);
 	     list = CDR(list), count++)
 	    if (constantp && !ComConstantp(com, CAR(values)))
 		constantp = 0;
 
-	string = builtin ? STRPTR(name) : NULL;
+	string = builtin ? ATOMID(name) : NULL;
 	/* XXX FIXME should have a flag indicating if function call
 	 * change the &REST arguments even if it is a constant list
 	 * (or if the returned value may be changed). */
@@ -1652,7 +1649,7 @@ rest_label:
 	    }
 	    else {
 		CompileStackEnter(com, count - 1, 1);
-		for (; CONS_P(CDR(values)); values = CDR(values)) {
+		for (; CONSP(CDR(values)); values = CDR(values)) {
 		    /* Evaluate this argument */
 		    ComEval(com, CAR(values));
 		    /* Save result in builtin stack */
@@ -1678,7 +1675,7 @@ rest_label:
 	    com_Bytecode(com, XBC_LSTAR);
 
 	    values = CDR(values);
-	    for (; CONS_P(values); values = CDR(values)) {
+	    for (; CONSP(values); values = CDR(values)) {
 		/* Generate code to evaluate object */
 		ComEval(com, CAR(values));
 
@@ -1735,7 +1732,7 @@ aux_label:
     }
 
 done_label:
-    if (CONS_P(values))
+    if (CONSP(values))
 	LispDestroy("%s: too many arguments", STROBJ(name));
 
 finished_label:
@@ -1756,7 +1753,7 @@ ComFuncall(LispCom *com, LispObj *function, LispObj *arguments, int eval)
     LispBuiltin *builtin;
     LispObj *lambda;
 
-    switch (function->type) {
+    switch (OBJECT_TYPE(function)) {
 	case LispAtom_t:
 	    atom = function->data.atom;
 	    alist = atom->property->alist;
@@ -1822,9 +1819,9 @@ ComFuncall(LispCom *com, LispObj *function, LispObj *arguments, int eval)
 		     atom->property->structure.function != STRUCT_CONSTRUCTOR) {
 		LispObj *definition = atom->property->structure.definition;
 
-		if (!CONS_P(arguments) || CONS_P(CDR(arguments)))
+		if (!CONSP(arguments) || CONSP(CDR(arguments)))
 		    LispDestroy("%s: too %s arguments", atom->string,
-				CONS_P(arguments) ? "many" : "few");
+				CONSP(arguments) ? "many" : "few");
 
 		ComEval(com, CAR(arguments));
 		if (atom->property->structure.function == STRUCT_CHECK)
@@ -1877,8 +1874,8 @@ ComFuncall(LispCom *com, LispObj *function, LispObj *arguments, int eval)
 static void
 ComProgn(LispCom *com, LispObj *code)
 {
-    if (CONS_P(code)) {
-	for (; CONS_P(code); code = CDR(code))
+    if (CONSP(code)) {
+	for (; CONSP(code); code = CDR(code))
 	    ComEval(com, CAR(code));
     }
     else
@@ -1893,7 +1890,7 @@ ComEval(LispCom *com, LispObj *object)
     int offset;
     LispObj *form;
 
-    switch (object->type) {
+    switch (OBJECT_TYPE(object)) {
 	case LispAtom_t:
 	    if (IN_TAGBODY())
 		ComLabel(com, object);
@@ -1934,7 +1931,7 @@ ComEval(LispCom *com, LispObj *object)
 	    LispDestroy("EVAL: comma outside of backquote");
 	    break;
 
-	case LispInteger_t:
+	case LispFixnum_t:
 	    if (IN_TAGBODY()) {
 		ComLabel(com, object);
 		break;
@@ -1968,15 +1965,19 @@ ComRecursiveCall(LispCom *com, LispArgList *alist,
     /* Stack will grow this amount */
     CompileStackEnter(com, alist->num_arguments, 0);
 
+#if 0
     /* Make the variables available at run time */
     com_Bind(com, alist->num_arguments);
     com->block->bind += alist->num_arguments;
+#endif
 
     com_BytecodeChar(com, XBC_LETREC, alist->num_arguments);
 
+#if 0
     /* The variables are now unbound */
     com_Unbind(com, alist->num_arguments);
     com->block->bind -= alist->num_arguments;
+#endif
 
     /* Stack length is reduced */
     CompileStackLeave(com, alist->num_arguments, 0);
@@ -2051,7 +2052,7 @@ ComMacroExpandEval(LispCom *com, LispObj *object)
 {
     LispObj *result;
 
-    switch (object->type) {
+    switch (OBJECT_TYPE(object)) {
 	case LispAtom_t:
 	    result = LispGetVar(object);
 
@@ -2102,12 +2103,12 @@ ComMacroExpand(LispCom *com, LispObj *lambda)
     plambda = &lambda;
     *presult = NIL;
     *pjumped = 1;
-    *pbackquote = !CONS_P(lambda);
+    *pbackquote = !CONSP(lambda);
 
     block = LispBeginBlock(NIL, LispBlockProtect);
     if (setjmp(block->jmp) == 0) {
 	if (!backquote) {
-	    for (; CONS_P(lambda); lambda = CDR(lambda))
+	    for (; CONSP(lambda); lambda = CDR(lambda))
 		result = ComMacroExpandEval(com, CAR(lambda));
 	}
 	else
@@ -2124,7 +2125,7 @@ ComMacroExpand(LispCom *com, LispObj *lambda)
     /* Macro expansion did something wrong */
     if (lisp__data.destroyed) {
 	LispMessage("*** EVAL: aborting macro expansion");
-	LispDestroy(NULL);
+	LispDestroy(".");
     }
 
     /* Restore interpreter state */

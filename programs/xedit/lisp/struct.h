@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.h,v 1.4 2002/03/10 04:57:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.h,v 1.5 2002/11/08 08:00:57 paulo Exp $ */
 
 #ifndef Lisp_struct_h
 #define Lisp_struct_h
@@ -37,6 +37,8 @@
 /*
  * Defines
  */
+#define XSTRUCTP(object)	((object)->type == LispStruct_t)
+#define STRUCTP(object)		(POINTERP(object) && XSTRUCTP(object))
 #define STRUCT(fields, def)	LispNewStruct(fields, def)
 
 /*

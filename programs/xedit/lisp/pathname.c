@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.12 2002/10/06 17:11:44 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.13 2002/11/08 08:00:57 paulo Exp $ */
 
 #include <stdio.h>		/* including dirent.h first may cause problems */
 #include <dirent.h>
@@ -193,7 +193,7 @@ Lisp_Directory(LispBuiltin *builtin)
     cons = NIL;
 
     if (if_cannot_read != NIL) {
-	if (!KEYWORD_P(if_cannot_read) ||
+	if (!KEYWORDP(if_cannot_read) ||
 	    (ATOMID(if_cannot_read) != Sskip &&
 	     ATOMID(if_cannot_read) != Serror))
 	    LispDestroy("%s: bad :IF-CANNOT-READ %s",
@@ -206,11 +206,11 @@ Lisp_Directory(LispBuiltin *builtin)
     else
 	cannot_read = NOREAD_SKIP;
 
-    if (PATHNAME_P(pathname))
+    if (PATHNAMEP(pathname))
 	pathname = CAR(pathname->data.pathname);
-    else if (STREAM_P(pathname) && pathname->data.stream.type == LispStreamFile)
+    else if (STREAMP(pathname) && pathname->data.stream.type == LispStreamFile)
 	pathname = CAR(pathname->data.stream.pathname->data.pathname);
-    else if (!STRING_P(pathname))
+    else if (!STRINGP(pathname))
 	LispDestroy("%s: %s is not a pathname",
 		    STRFUN(builtin), STROBJ(pathname));
 
@@ -462,21 +462,21 @@ Lisp_ParseNamestring(LispBuiltin *builtin)
     object = ARGUMENT(0);
 
     if (host != NIL) {
-	ERROR_CHECK_STRING(host);
+	CHECK_STRING(host);
     }
     if (defaults != NIL) {
-	if (!PATHNAME_P(defaults)) {
+	if (!PATHNAMEP(defaults)) {
 	    defaults = APPLY1(Oparse_namestring, defaults);
 	    GC_PROTECT(defaults);
 	}
     }
 
-    if (STREAM_P(object)) {
+    if (STREAMP(object)) {
 	if (object->data.stream.type == LispStreamFile)
 	    object = object->data.stream.pathname;
 	/* else just check for JUNK-ALLOWED... */
     }
-    else if (PATHNAME_P(object)) {
+    else if (PATHNAMEP(object)) {
 	if (defaults == NIL) {
 	    GC_LEAVE();
 
@@ -486,7 +486,7 @@ Lisp_ParseNamestring(LispBuiltin *builtin)
     }
 
     result = NIL;
-    if (STRING_P(object)) {
+    if (STRINGP(object)) {
 	LispObj *cons, *cdr;
 	char *name = THESTR(object), *ptr, *str, data[PATH_MAX + 1],
 	      string[PATH_MAX + 1], *namestr, *typestr;
@@ -502,7 +502,7 @@ Lisp_ParseNamestring(LispBuiltin *builtin)
 	data[alength] = '\0';
 	strcpy(string, data);
 
-	if (PATHNAME_P(defaults))
+	if (PATHNAMEP(defaults))
 	    defaults = defaults->data.pathname;
 
 	/* string name */
@@ -563,7 +563,7 @@ Lisp_ParseNamestring(LispBuiltin *builtin)
 	    *str++ = '\0';
 	if (ptr && *ptr)
 	    cdr = STRING(ptr);
-	namestr = STRING_P(cdr) ? THESTR(cdr) : "";
+	namestr = STRINGP(cdr) ? THESTR(cdr) : "";
 	RPLACD(cons, CONS(cdr, NIL));
 	cons = CDR(cons);
 
@@ -574,7 +574,7 @@ Lisp_ParseNamestring(LispBuiltin *builtin)
 	ptr = str;
 	if (ptr && *ptr)
 	    cdr = STRING(ptr);
-	typestr = STRING_P(cdr) ? THESTR(cdr) : "";
+	typestr = STRINGP(cdr) ? THESTR(cdr) : "";
 	RPLACD(cons, CONS(cdr, NIL));
 	cons = CDR(cons);
 
@@ -647,17 +647,17 @@ Lisp_MakePathname(LispBuiltin *builtin)
     host = ARGUMENT(0);
 
     if (host != NIL) {
-	ERROR_CHECK_STRING(host);
+	CHECK_STRING(host);
     }
     if (device != NIL) {
-	ERROR_CHECK_STRING(device);
+	CHECK_STRING(device);
     }
 
     if (directory != NIL) {
 	Atom_id atom;
 
-	ERROR_CHECK_CONS(directory);
-	ERROR_CHECK_KEYWORD(CAR(directory));
+	CHECK_CONS(directory);
+	CHECK_KEYWORD(CAR(directory));
 	atom = ATOMID(CAR(directory));
 	if (atom != Sabsolute && atom != Srelative)
 	    LispDestroy("%s: bad directory type %s",
@@ -665,16 +665,33 @@ Lisp_MakePathname(LispBuiltin *builtin)
     }    
 
     if (name != NIL) {
-	ERROR_CHECK_STRING(name);
+	CHECK_STRING(name);
     }
     if (type != NIL) {
-	ERROR_CHECK_STRING(type);
+	CHECK_STRING(type);
     }
 
-    if (version != NIL && (!FIXNUM_P(version) || FIXNUM_VALUE(version) < 0))
+    if (version != NIL) {
+	switch (OBJECT_TYPE(version)) {
+	    case LispFixnum_t:
+		if (FIXNUM_VALUE(version) >= 0)
+		    goto version_ok;
+	    case LispInteger_t:
+		if (INT_VALUE(version) >= 0)
+		    goto version_ok;
+		break;
+	    case LispDFloat_t:
+		if (DFLOAT_VALUE(version) >= 0.0)
+		    goto version_ok;
+		break;
+	    default:
+		break;
+	}
 	LispDestroy("%s: bad :VERSION %s", STRFUN(builtin), STROBJ(version));
+    }
+version_ok:
 
-    if (defaults != NIL && !PATHNAME_P(defaults) &&
+    if (defaults != NIL && !PATHNAMEP(defaults) &&
 	(host == NIL || device == NIL || directory == NIL ||
 	 name == NIL || type == NIL || version == NIL)) {
 	defaults = APPLY1(Oparse_namestring, defaults);
@@ -709,8 +726,8 @@ Lisp_MakePathname(LispBuiltin *builtin)
 	if (ATOMID(CAR(directory)) == Sabsolute)
 	    pathname[length++] = PATH_SEP;
 
-	for (cdr = CDR(directory); CONS_P(cdr); cdr = CDR(cdr)) {
-	    ERROR_CHECK_STRING(CAR(cdr));
+	for (cdr = CDR(directory); CONSP(cdr); cdr = CDR(cdr)) {
+	    CHECK_STRING(CAR(cdr));
 	    string = THESTR(CAR(cdr));
 	    alength = STRLEN(CAR(cdr));
 	    if (alength > NAME_MAX)
@@ -871,10 +888,10 @@ Lisp_EnoughNamestring(LispBuiltin *builtin)
     if (defaults != NIL) {
 	char *ppathname, *pdefaults, *pp, *pd;
 
-	if (!STRING_P(pathname)) {
-	    if (PATHNAME_P(pathname))
+	if (!STRINGP(pathname)) {
+	    if (PATHNAMEP(pathname))
 		pathname  = CAR(pathname->data.pathname);
-	    else if (STREAM_P(pathname) &&
+	    else if (STREAMP(pathname) &&
 		     pathname->data.stream.type == LispStreamFile)
 		pathname  = CAR(pathname->data.stream.pathname->data.pathname);
 	    else
@@ -882,10 +899,10 @@ Lisp_EnoughNamestring(LispBuiltin *builtin)
 			    STRFUN(builtin), STROBJ(pathname));
 	}
 
-	if (!STRING_P(defaults)) {
-	    if (PATHNAME_P(defaults))
+	if (!STRINGP(defaults)) {
+	    if (PATHNAMEP(defaults))
 		defaults  = CAR(defaults->data.pathname);
-	    else if (STREAM_P(defaults) &&
+	    else if (STREAMP(defaults) &&
 		     defaults->data.stream.type == LispStreamFile)
 		defaults  = CAR(defaults->data.stream.pathname->data.pathname);
 	    else
@@ -912,11 +929,11 @@ Lisp_EnoughNamestring(LispBuiltin *builtin)
 	return (STRING(ppathname));
     }
     else {
-	if (STRING_P(pathname))
+	if (STRINGP(pathname))
 	    return (pathname);
-	else if (PATHNAME_P(pathname))
+	else if (PATHNAMEP(pathname))
 	    return (CAR(pathname->data.pathname));
-	else if (STREAM_P(pathname)) {
+	else if (STREAMP(pathname)) {
 	    if (pathname->data.stream.type == LispStreamFile)
 		return (CAR(pathname->data.stream.pathname->data.pathname));
 	}
@@ -954,7 +971,7 @@ Lisp_Pathnamep(LispBuiltin *builtin)
 
     object = ARGUMENT(0);
 
-    return (PATHNAME_P(object) ? T : NIL);
+    return (PATHNAMEP(object) ? T : NIL);
 }
 
 /* XXX only checks if host is a string and only checks the HOME enviroment
@@ -974,7 +991,7 @@ Lisp_UserHomedirPathname(LispBuiltin *builtin)
 
     host = ARGUMENT(0);
 
-    if (host != NIL && !STRING_P(host))
+    if (host != NIL && !STRINGP(host))
 	LispDestroy("%s: bad hostname %s", STRFUN(builtin), STROBJ(host));
 
     length = 0;

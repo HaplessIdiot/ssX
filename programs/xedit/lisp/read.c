@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.22 2002/09/22 07:09:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.23 2002/11/08 08:00:57 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -100,268 +100,266 @@ static char *Char_Sp[]  = {"Space", "Sp", NULL};
 static char *Char_Del[] = {"Rubout", "Del", "Delete", NULL};
 
 LispCharInfo LispChars[256] = {
-    {{LispCharacter_t /*   0 */}, Char_Nul},
-    {{LispCharacter_t /*   1 */}, Char_Soh},
-    {{LispCharacter_t /*   2 */}, Char_Stx},
-    {{LispCharacter_t /*   3 */}, Char_Etx},
-    {{LispCharacter_t /*   4 */}, Char_Eot},
-    {{LispCharacter_t /*   5 */}, Char_Enq},
-    {{LispCharacter_t /*   6 */}, Char_Ack},
-    {{LispCharacter_t /*   7 */}, Char_Bel},
-    {{LispCharacter_t /*   8 */}, Char_Bs},
-    {{LispCharacter_t /*   9 */}, Char_Tab},
-    {{LispCharacter_t /*  10 */}, Char_Nl},
-    {{LispCharacter_t /*  11 */}, Char_Vt},
-    {{LispCharacter_t /*  12 */}, Char_Np},
-    {{LispCharacter_t /*  13 */}, Char_Cr},
-    {{LispCharacter_t /*  14 */}, Char_Ff},
-    {{LispCharacter_t /*  15 */}, Char_Si},
-    {{LispCharacter_t /*  16 */}, Char_Dle},
-    {{LispCharacter_t /*  17 */}, Char_Dc1},
-    {{LispCharacter_t /*  18 */}, Char_Dc2},
-    {{LispCharacter_t /*  19 */}, Char_Dc3},
-    {{LispCharacter_t /*  20 */}, Char_Dc4},
-    {{LispCharacter_t /*  21 */}, Char_Nak},
-    {{LispCharacter_t /*  22 */}, Char_Syn},
-    {{LispCharacter_t /*  23 */}, Char_Etb},
-    {{LispCharacter_t /*  24 */}, Char_Can},
-    {{LispCharacter_t /*  25 */}, Char_Em},
-    {{LispCharacter_t /*  26 */}, Char_Sub},
-    {{LispCharacter_t /*  27 */}, Char_Esc},
-    {{LispCharacter_t /*  28 */}, Char_Fs},
-    {{LispCharacter_t /*  29 */}, Char_Gs},
-    {{LispCharacter_t /*  30 */}, Char_Rs},
-    {{LispCharacter_t /*  31 */}, Char_Us},
-    {{LispCharacter_t /*  32 */}, Char_Sp},
-    {{LispCharacter_t /*  33 */}, NULL},
-    {{LispCharacter_t /*  34 */}, NULL},
-    {{LispCharacter_t /*  35 */}, NULL},
-    {{LispCharacter_t /*  36 */}, NULL},
-    {{LispCharacter_t /*  37 */}, NULL},
-    {{LispCharacter_t /*  38 */}, NULL},
-    {{LispCharacter_t /*  39 */}, NULL},
-    {{LispCharacter_t /*  40 */}, NULL},
-    {{LispCharacter_t /*  41 */}, NULL},
-    {{LispCharacter_t /*  42 */}, NULL},
-    {{LispCharacter_t /*  43 */}, NULL},
-    {{LispCharacter_t /*  44 */}, NULL},
-    {{LispCharacter_t /*  45 */}, NULL},
-    {{LispCharacter_t /*  46 */}, NULL},
-    {{LispCharacter_t /*  47 */}, NULL},
-    {{LispCharacter_t /*  48 */}, NULL},
-    {{LispCharacter_t /*  49 */}, NULL},
-    {{LispCharacter_t /*  50 */}, NULL},
-    {{LispCharacter_t /*  51 */}, NULL},
-    {{LispCharacter_t /*  52 */}, NULL},
-    {{LispCharacter_t /*  53 */}, NULL},
-    {{LispCharacter_t /*  54 */}, NULL},
-    {{LispCharacter_t /*  55 */}, NULL},
-    {{LispCharacter_t /*  56 */}, NULL},
-    {{LispCharacter_t /*  57 */}, NULL},
-    {{LispCharacter_t /*  58 */}, NULL},
-    {{LispCharacter_t /*  59 */}, NULL},
-    {{LispCharacter_t /*  60 */}, NULL},
-    {{LispCharacter_t /*  61 */}, NULL},
-    {{LispCharacter_t /*  62 */}, NULL},
-    {{LispCharacter_t /*  63 */}, NULL},
-    {{LispCharacter_t /*  64 */}, NULL},
-    {{LispCharacter_t /*  65 */}, NULL},
-    {{LispCharacter_t /*  66 */}, NULL},
-    {{LispCharacter_t /*  67 */}, NULL},
-    {{LispCharacter_t /*  68 */}, NULL},
-    {{LispCharacter_t /*  69 */}, NULL},
-    {{LispCharacter_t /*  70 */}, NULL},
-    {{LispCharacter_t /*  71 */}, NULL},
-    {{LispCharacter_t /*  72 */}, NULL},
-    {{LispCharacter_t /*  73 */}, NULL},
-    {{LispCharacter_t /*  74 */}, NULL},
-    {{LispCharacter_t /*  75 */}, NULL},
-    {{LispCharacter_t /*  76 */}, NULL},
-    {{LispCharacter_t /*  77 */}, NULL},
-    {{LispCharacter_t /*  78 */}, NULL},
-    {{LispCharacter_t /*  79 */}, NULL},
-    {{LispCharacter_t /*  80 */}, NULL},
-    {{LispCharacter_t /*  81 */}, NULL},
-    {{LispCharacter_t /*  82 */}, NULL},
-    {{LispCharacter_t /*  83 */}, NULL},
-    {{LispCharacter_t /*  84 */}, NULL},
-    {{LispCharacter_t /*  85 */}, NULL},
-    {{LispCharacter_t /*  86 */}, NULL},
-    {{LispCharacter_t /*  87 */}, NULL},
-    {{LispCharacter_t /*  88 */}, NULL},
-    {{LispCharacter_t /*  89 */}, NULL},
-    {{LispCharacter_t /*  90 */}, NULL},
-    {{LispCharacter_t /*  91 */}, NULL},
-    {{LispCharacter_t /*  92 */}, NULL},
-    {{LispCharacter_t /*  93 */}, NULL},
-    {{LispCharacter_t /*  94 */}, NULL},
-    {{LispCharacter_t /*  95 */}, NULL},
-    {{LispCharacter_t /*  96 */}, NULL},
-    {{LispCharacter_t /*  97 */}, NULL},
-    {{LispCharacter_t /*  98 */}, NULL},
-    {{LispCharacter_t /*  99 */}, NULL},
-    {{LispCharacter_t /* 100 */}, NULL},
-    {{LispCharacter_t /* 101 */}, NULL},
-    {{LispCharacter_t /* 102 */}, NULL},
-    {{LispCharacter_t /* 103 */}, NULL},
-    {{LispCharacter_t /* 104 */}, NULL},
-    {{LispCharacter_t /* 105 */}, NULL},
-    {{LispCharacter_t /* 106 */}, NULL},
-    {{LispCharacter_t /* 107 */}, NULL},
-    {{LispCharacter_t /* 108 */}, NULL},
-    {{LispCharacter_t /* 109 */}, NULL},
-    {{LispCharacter_t /* 110 */}, NULL},
-    {{LispCharacter_t /* 111 */}, NULL},
-    {{LispCharacter_t /* 112 */}, NULL},
-    {{LispCharacter_t /* 113 */}, NULL},
-    {{LispCharacter_t /* 114 */}, NULL},
-    {{LispCharacter_t /* 115 */}, NULL},
-    {{LispCharacter_t /* 116 */}, NULL},
-    {{LispCharacter_t /* 117 */}, NULL},
-    {{LispCharacter_t /* 118 */}, NULL},
-    {{LispCharacter_t /* 119 */}, NULL},
-    {{LispCharacter_t /* 110 */}, NULL},
-    {{LispCharacter_t /* 121 */}, NULL},
-    {{LispCharacter_t /* 122 */}, NULL},
-    {{LispCharacter_t /* 123 */}, NULL},
-    {{LispCharacter_t /* 124 */}, NULL},
-    {{LispCharacter_t /* 125 */}, NULL},
-    {{LispCharacter_t /* 126 */}, NULL},
-    {{LispCharacter_t /* 127 */}, Char_Del},
-    {{LispCharacter_t /* 128 */}, NULL},
-    {{LispCharacter_t /* 129 */}, NULL},
-    {{LispCharacter_t /* 130 */}, NULL},
-    {{LispCharacter_t /* 131 */}, NULL},
-    {{LispCharacter_t /* 132 */}, NULL},
-    {{LispCharacter_t /* 133 */}, NULL},
-    {{LispCharacter_t /* 134 */}, NULL},
-    {{LispCharacter_t /* 135 */}, NULL},
-    {{LispCharacter_t /* 136 */}, NULL},
-    {{LispCharacter_t /* 137 */}, NULL},
-    {{LispCharacter_t /* 138 */}, NULL},
-    {{LispCharacter_t /* 139 */}, NULL},
-    {{LispCharacter_t /* 140 */}, NULL},
-    {{LispCharacter_t /* 141 */}, NULL},
-    {{LispCharacter_t /* 142 */}, NULL},
-    {{LispCharacter_t /* 143 */}, NULL},
-    {{LispCharacter_t /* 144 */}, NULL},
-    {{LispCharacter_t /* 145 */}, NULL},
-    {{LispCharacter_t /* 146 */}, NULL},
-    {{LispCharacter_t /* 147 */}, NULL},
-    {{LispCharacter_t /* 148 */}, NULL},
-    {{LispCharacter_t /* 149 */}, NULL},
-    {{LispCharacter_t /* 150 */}, NULL},
-    {{LispCharacter_t /* 151 */}, NULL},
-    {{LispCharacter_t /* 152 */}, NULL},
-    {{LispCharacter_t /* 153 */}, NULL},
-    {{LispCharacter_t /* 154 */}, NULL},
-    {{LispCharacter_t /* 155 */}, NULL},
-    {{LispCharacter_t /* 156 */}, NULL},
-    {{LispCharacter_t /* 157 */}, NULL},
-    {{LispCharacter_t /* 158 */}, NULL},
-    {{LispCharacter_t /* 159 */}, NULL},
-    {{LispCharacter_t /* 160 */}, NULL},
-    {{LispCharacter_t /* 161 */}, NULL},
-    {{LispCharacter_t /* 162 */}, NULL},
-    {{LispCharacter_t /* 163 */}, NULL},
-    {{LispCharacter_t /* 164 */}, NULL},
-    {{LispCharacter_t /* 165 */}, NULL},
-    {{LispCharacter_t /* 166 */}, NULL},
-    {{LispCharacter_t /* 167 */}, NULL},
-    {{LispCharacter_t /* 168 */}, NULL},
-    {{LispCharacter_t /* 169 */}, NULL},
-    {{LispCharacter_t /* 170 */}, NULL},
-    {{LispCharacter_t /* 171 */}, NULL},
-    {{LispCharacter_t /* 172 */}, NULL},
-    {{LispCharacter_t /* 173 */}, NULL},
-    {{LispCharacter_t /* 174 */}, NULL},
-    {{LispCharacter_t /* 175 */}, NULL},
-    {{LispCharacter_t /* 176 */}, NULL},
-    {{LispCharacter_t /* 177 */}, NULL},
-    {{LispCharacter_t /* 178 */}, NULL},
-    {{LispCharacter_t /* 179 */}, NULL},
-    {{LispCharacter_t /* 180 */}, NULL},
-    {{LispCharacter_t /* 181 */}, NULL},
-    {{LispCharacter_t /* 182 */}, NULL},
-    {{LispCharacter_t /* 183 */}, NULL},
-    {{LispCharacter_t /* 184 */}, NULL},
-    {{LispCharacter_t /* 185 */}, NULL},
-    {{LispCharacter_t /* 186 */}, NULL},
-    {{LispCharacter_t /* 187 */}, NULL},
-    {{LispCharacter_t /* 188 */}, NULL},
-    {{LispCharacter_t /* 189 */}, NULL},
-    {{LispCharacter_t /* 190 */}, NULL},
-    {{LispCharacter_t /* 191 */}, NULL},
-    {{LispCharacter_t /* 192 */}, NULL},
-    {{LispCharacter_t /* 193 */}, NULL},
-    {{LispCharacter_t /* 194 */}, NULL},
-    {{LispCharacter_t /* 195 */}, NULL},
-    {{LispCharacter_t /* 196 */}, NULL},
-    {{LispCharacter_t /* 197 */}, NULL},
-    {{LispCharacter_t /* 198 */}, NULL},
-    {{LispCharacter_t /* 199 */}, NULL},
-    {{LispCharacter_t /* 200 */}, NULL},
-    {{LispCharacter_t /* 201 */}, NULL},
-    {{LispCharacter_t /* 202 */}, NULL},
-    {{LispCharacter_t /* 203 */}, NULL},
-    {{LispCharacter_t /* 204 */}, NULL},
-    {{LispCharacter_t /* 205 */}, NULL},
-    {{LispCharacter_t /* 206 */}, NULL},
-    {{LispCharacter_t /* 207 */}, NULL},
-    {{LispCharacter_t /* 208 */}, NULL},
-    {{LispCharacter_t /* 209 */}, NULL},
-    {{LispCharacter_t /* 210 */}, NULL},
-    {{LispCharacter_t /* 211 */}, NULL},
-    {{LispCharacter_t /* 212 */}, NULL},
-    {{LispCharacter_t /* 213 */}, NULL},
-    {{LispCharacter_t /* 214 */}, NULL},
-    {{LispCharacter_t /* 215 */}, NULL},
-    {{LispCharacter_t /* 216 */}, NULL},
-    {{LispCharacter_t /* 217 */}, NULL},
-    {{LispCharacter_t /* 218 */}, NULL},
-    {{LispCharacter_t /* 219 */}, NULL},
-    {{LispCharacter_t /* 210 */}, NULL},
-    {{LispCharacter_t /* 221 */}, NULL},
-    {{LispCharacter_t /* 222 */}, NULL},
-    {{LispCharacter_t /* 223 */}, NULL},
-    {{LispCharacter_t /* 224 */}, NULL},
-    {{LispCharacter_t /* 225 */}, NULL},
-    {{LispCharacter_t /* 226 */}, NULL},
-    {{LispCharacter_t /* 227 */}, NULL},
-    {{LispCharacter_t /* 228 */}, NULL},
-    {{LispCharacter_t /* 229 */}, NULL},
-    {{LispCharacter_t /* 230 */}, NULL},
-    {{LispCharacter_t /* 231 */}, NULL},
-    {{LispCharacter_t /* 232 */}, NULL},
-    {{LispCharacter_t /* 233 */}, NULL},
-    {{LispCharacter_t /* 234 */}, NULL},
-    {{LispCharacter_t /* 235 */}, NULL},
-    {{LispCharacter_t /* 236 */}, NULL},
-    {{LispCharacter_t /* 237 */}, NULL},
-    {{LispCharacter_t /* 238 */}, NULL},
-    {{LispCharacter_t /* 239 */}, NULL},
-    {{LispCharacter_t /* 240 */}, NULL},
-    {{LispCharacter_t /* 241 */}, NULL},
-    {{LispCharacter_t /* 242 */}, NULL},
-    {{LispCharacter_t /* 243 */}, NULL},
-    {{LispCharacter_t /* 244 */}, NULL},
-    {{LispCharacter_t /* 245 */}, NULL},
-    {{LispCharacter_t /* 246 */}, NULL},
-    {{LispCharacter_t /* 247 */}, NULL},
-    {{LispCharacter_t /* 248 */}, NULL},
-    {{LispCharacter_t /* 249 */}, NULL},
-    {{LispCharacter_t /* 250 */}, NULL},
-    {{LispCharacter_t /* 251 */}, NULL},
-    {{LispCharacter_t /* 252 */}, NULL},
-    {{LispCharacter_t /* 253 */}, NULL},
-    {{LispCharacter_t /* 254 */}, NULL},
-    {{LispCharacter_t /* 255 */}, NULL}
+    {Char_Nul},
+    {Char_Soh},
+    {Char_Stx},
+    {Char_Etx},
+    {Char_Eot},
+    {Char_Enq},
+    {Char_Ack},
+    {Char_Bel},
+    {Char_Bs},
+    {Char_Tab},
+    {Char_Nl},
+    {Char_Vt},
+    {Char_Np},
+    {Char_Cr},
+    {Char_Ff},
+    {Char_Si},
+    {Char_Dle},
+    {Char_Dc1},
+    {Char_Dc2},
+    {Char_Dc3},
+    {Char_Dc4},
+    {Char_Nak},
+    {Char_Syn},
+    {Char_Etb},
+    {Char_Can},
+    {Char_Em},
+    {Char_Sub},
+    {Char_Esc},
+    {Char_Fs},
+    {Char_Gs},
+    {Char_Rs},
+    {Char_Us},
+    {Char_Sp},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {Char_Del},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL},
+    {NULL}
 };
 
 Atom_id Sand, Sor, Snot;
 
-static LispObj lispdot = {LispNil_t};
-LispObj *DOT = &lispdot;
 
 /*
  * Implementation
@@ -399,7 +397,7 @@ LispRead(void)
 	    object = LispReadMacro();
 	    /* Don't "link" EOLIST to COD, this may happen if
 	     * a multiline comment is the last token in a form. */
-	    if (INVALID_P(object))
+	    if (INVALIDP(object))
 		return (object);
 	    break;
 	default:
@@ -499,7 +497,7 @@ LispReadMacroArg(void)
 	    if (len + 1 >= sizeof(stk)) {
 		if (lisp__data.discard)
 		    continue;
-		LispDestroy("READ: number is not a FIXNUM");
+		LispDestroy("READ: number is not a fixnum");
 	    }
 	    stk[len++] = ch;
 	}
@@ -507,7 +505,7 @@ LispReadMacroArg(void)
 	integer = strtol(stk, &str, 10);
 	if (*str || errno == ERANGE) {
 	    if (!lisp__data.discard)
-		LispDestroy("READ: number is not a FIXNUM");
+		LispDestroy("READ: number is not a fixnum");
 	}
     }
     else
@@ -635,7 +633,7 @@ LispReadQuote(void)
 {
     LispObj *quote = LispRead();
 
-    if (INVALID_P(quote)) {
+    if (INVALIDP(quote)) {
 	if (lisp__data.discard)
 	    return (NULL);
 	LispDestroy("READ: illegal quoted object");
@@ -649,7 +647,7 @@ LispReadBackquote(void)
 {
     LispObj *backquote = LispRead();
 
-    if (INVALID_P(backquote)) {
+    if (INVALIDP(backquote)) {
 	if (lisp__data.discard)
 	    return (NULL);
 	LispDestroy("READ: illegal back-quoted object");
@@ -674,7 +672,7 @@ LispReadCommaquote(void)
 	atlist = '@';
 	comma = LispRead();
     }
-    if (INVALID_P(comma)) {
+    if (INVALIDP(comma)) {
 	if (lisp__data.discard)
 	    return (NULL);
 	LispDestroy("READ: illegal comma-quoted object");
@@ -846,8 +844,7 @@ LispReadObject(int unintern)
 }
 
 static LispObj *
-LispParseAtom(char *package, char *symbol,
-	      int intern, int unreadable)
+LispParseAtom(char *package, char *symbol, int intern, int unreadable)
 {
     LispObj *object = NULL, *thepackage = NULL;
     LispPackage *pack = NULL;
@@ -936,7 +933,7 @@ LispParseNumber(char *str, int radix)
     mpr *rop;
     mpi *iop;
     int len;
-    double real;
+    double dfloat;
     long integer;
     LispObj *number;
     char *ratio, *ptr;
@@ -1012,11 +1009,11 @@ LispParseNumber(char *str, int radix)
 		}
 	    }
 
-	    real = strtod(str, NULL);
-	    if (!finite(real))
+	    dfloat = strtod(str, NULL);
+	    if (!finite(dfloat))
 		LispDestroy("READ: floating point overflow");
 
-	    return (REAL(real));
+	    return (DFLOAT(dfloat));
 	}
     }
 
@@ -1053,7 +1050,7 @@ LispParseNumber(char *str, int radix)
 	mpi_init(iop);
 	mpi_setstr(iop, str, radix);
 	if (ratio == NULL) {
-	    number = BIGINTEGER(iop);
+	    number = BIGNUM(iop);
 	    LispMused(iop);
 
 	    return (number);
@@ -1115,11 +1112,11 @@ LispParseNumber(char *str, int radix)
     }
 
     if (iop) {
-	number = BIGINTEGER(iop);
+	number = BIGNUM(iop);
 	LispMused(iop);
     }
     else
-	number = SMALLINT(integer);
+	number = INTEGER(integer);
 
     return (number);
 }
@@ -1167,7 +1164,7 @@ LispReadVector(void)
     if (lisp__data.discard)
 	return (NULL);
 
-    for (object = objects; CONS_P(object); object = CDR(object))
+    for (object = objects; CONSP(object); object = CDR(object))
 	;
     if (object != NIL)
 	LispDestroy("READ: vector cannot be a dotted list");
@@ -1183,15 +1180,15 @@ LispReadFunction(void)
     if (lisp__data.discard)
 	return (function);
 
-    if (INVALID_P(function)) 
+    if (INVALIDP(function)) 
 	LispDestroy("READ: illegal function object");
-    else if (CONS_P(function)) {
+    else if (CONSP(function)) {
 	if (CAR(function) != Olambda)
 	    LispDestroy("READ: %s is not a valid lambda", STROBJ(function));
 
 	return (EVAL(function));
     }
-    else if (!SYMBOL_P(function))
+    else if (!SYMBOLP(function))
 	LispDestroy("READ: %s cannot name a function", STROBJ(function));
 
     return (QUOTE(function));
@@ -1252,7 +1249,7 @@ LispReadRational(int radix)
     if (str != stk)
 	LispFree(str);
 
-    if (!RATIONAL_P(number))
+    if (!RATIONALP(number))
 	LispDestroy("READ: bad rational number specification");
 
     return (number);
@@ -1314,7 +1311,7 @@ LispReadCharacter(void)
     else
 	c = stk[0];
 
-    return (CHAR(c));
+    return (SCHAR(c));
 }
 
 static void
@@ -1348,7 +1345,7 @@ LispReadEval(void)
     if (lisp__data.discard)
 	return (code);
 
-    if (INVALID_P(code))
+    if (INVALIDP(code))
 	LispDestroy("READ: invalid eval code");
 
     return (EVAL(code));
@@ -1364,7 +1361,7 @@ LispReadComplex(void)
     if (lisp__data.discard)
 	return (arguments);
 
-    if (INVALID_P(arguments) || !CONS_P(arguments))
+    if (INVALIDP(arguments) || !CONSP(arguments))
 	LispDestroy("READ: invalid complex-number specification");
 
     GC_PROTECT(arguments);
@@ -1384,7 +1381,7 @@ LispReadPathname(void)
     if (lisp__data.discard)
 	return (path);
 
-    if (INVALID_P(path))
+    if (INVALIDP(path))
 	LispDestroy("READ: invalid pathname specification");
 
     GC_PROTECT(path);
@@ -1406,18 +1403,18 @@ LispReadStruct(void)
     if (lisp__data.discard)
 	return (arguments);
 
-    if (INVALID_P(arguments) || !CONS_P(arguments) || !SYMBOL_P(CAR(arguments)))
+    if (INVALIDP(arguments) || !CONSP(arguments) || !SYMBOLP(CAR(arguments)))
 	LispDestroy("READ: invalid structure specification");
 
     GC_PROTECT(arguments);
 
-    len = strlen(STRPTR(CAR(arguments)));
+    len = strlen(ATOMID(CAR(arguments)));
 	   /* MAKE- */
     if (len + 6 > sizeof(stk))
 	str = LispMalloc(len + 6);
     else
 	str = stk;
-    sprintf(str, "MAKE-%s", STRPTR(CAR(arguments)));
+    sprintf(str, "MAKE-%s", ATOMID(CAR(arguments)));
     RPLACA(arguments, ATOM(str));
     if (str != stk)
 	LispFree(str);
@@ -1439,7 +1436,7 @@ LispReadArray(long dimensions)
     if (lisp__data.discard)
 	return (data);
 
-    if (INVALID_P(data))
+    if (INVALIDP(data))
 	LispDestroy("READ: invalid array specification");
 
     initial = Kinitial_contents;
@@ -1452,20 +1449,20 @@ LispReadArray(long dimensions)
 	    long length;
 	    LispObj *item;
 
-	    if (!CONS_P(array))
+	    if (!CONSP(array))
 		LispDestroy("READ: bad array for given dimension");
 	    item = array;
 	    array = CAR(array);
 
-	    for (length = 0; CONS_P(item); item = CDR(item), length++)
+	    for (length = 0; CONSP(item); item = CDR(item), length++)
 		;
 
 	    if (dim == NIL) {
-		dim = cons = CONS(SMALLINT(length), NIL);
+		dim = cons = CONS(FIXNUM(length), NIL);
 		GC_PROTECT(dim);
 	    }
 	    else {
-		RPLACD(cons, CONS(SMALLINT(length), NIL));
+		RPLACD(cons, CONS(FIXNUM(length), NIL));
 		cons = CDR(cons);
 	    }
 	}
@@ -1489,7 +1486,7 @@ LispReadFeature(int with)
     if (lisp__data.discard)
 	return (feature);
 
-    if (INVALID_P(feature))
+    if (INVALIDP(feature))
 	LispDestroy("READ: invalid feature specification");
 
     status = LispEvalFeature(feature);
@@ -1528,53 +1525,50 @@ LispEvalFeature(LispObj *feature)
     Atom_id test;
     LispObj *object;
 
-    if (CONS_P(feature)) {
+    if (CONSP(feature)) {
 	LispObj *function = CAR(feature), *arguments = CDR(feature);
 
-	if (!SYMBOL_P(function))
+	if (!SYMBOLP(function))
 	    LispDestroy("READ: bad feature test function %s",
 			STROBJ(function));
-	if (!CONS_P(arguments))
+	if (!CONSP(arguments))
 	    LispDestroy("READ: bad feature test arguments %s",
 			STROBJ(arguments));
 	test = ATOMID(function);
 	if (test == Sand) {
-	    for (; CONS_P(arguments); arguments = CDR(arguments)) {
+	    for (; CONSP(arguments); arguments = CDR(arguments)) {
 		if (LispEvalFeature(CAR(arguments)) == NIL)
 		    return (NIL);
 	    }
 	    return (T);
 	}
 	else if (test == Sor) {
-	    for (; CONS_P(arguments); arguments = CDR(arguments)) {
+	    for (; CONSP(arguments); arguments = CDR(arguments)) {
 		if (LispEvalFeature(CAR(arguments)) == T)
 		    return (T);
 	    }
 	    return (NIL);
 	}
 	else if (test == Snot) {
-	    if (CONS_P(CDR(arguments)))
+	    if (CONSP(CDR(arguments)))
 		LispDestroy("READ: too many arguments to NOT");
 
 	    return (LispEvalFeature(CAR(arguments)) == NIL ? T : NIL);
 	}
 	else
-	    LispDestroy("READ: unimplemented feature test function %s",
-			test);
+	    LispDestroy("READ: unimplemented feature test function %s", test);
     }
 
-    if (KEYWORD_P(feature))
+    if (KEYWORDP(feature))
 	feature = feature->data.quote;
-
-    if (!SYMBOL_P(feature))
-	LispDestroy("READ: bad feature specification %s",
-		    STROBJ(feature));
+    else if (!SYMBOLP(feature))
+	LispDestroy("READ: bad feature specification %s", STROBJ(feature));
 
     test = ATOMID(feature);
 
     /* check if specified atom is in the feature list
      * note that all elements of the feature list must be keywords */
-    for (object = FEATURES; CONS_P(object); object = CDR(object))
+    for (object = FEATURES; CONSP(object); object = CDR(object))
 	if (ATOMID(CAR(object)) == test)
 	    return (T);
 

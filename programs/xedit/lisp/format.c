@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.23 2002/09/15 21:32:19 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.24 2002/11/08 08:00:56 paulo Exp $ */
 
 #include "io.h"
 #include "write.h"
@@ -323,19 +323,19 @@ parse_arguments(char *format, FmtArgs *arguments,
 
 	    ++ptr;			/* skip V */
 	    if (!test) {
-		if (!CONS_P(*objects)) {
+		if (!CONSP(*objects)) {
 		    *code = PARSE_NOARGSLEFT;
 		    return (ptr);
 		}
 		object = CAR((*objects));
-		if (INT_P(object)) {
+		if (FIXNUMP(object)) {
 		    argument->achar = 0;
 		    argument->specified = 1;
-		    argument->value = GETINT(object);
+		    argument->value = FIXNUM_VALUE(object);
 		}
-		else if (CHAR_P(object)) {
+		else if (SCHARP(object)) {
 		    argument->achar = argument->specified = 1;
-		    argument->value = GETINT(object);
+		    argument->value = SCHAR_VALUE(object);
 		}
 		else {
 		    *code = PARSE_BADFMTARG;
@@ -524,15 +524,14 @@ format_ascii(LispObj *stream, LispObj *object, FmtArgs *args)
 
     if (object == NIL)
 	length = collon ? 2 : 3;	    /* () or NIL */
-    else if (CHAR_P(object))
+    else if (SCHARP(object))
 	length = 1;
 
     /* left padding */
     if (atsign) {
 	/* if length not yet known */
-	if (object != NIL && !CHAR_P(object)) {
-	    string = LSTRINGSTREAM((unsigned char*)"",
-				   STREAM_READ | STREAM_WRITE, 1);
+	if (object != NIL && !SCHARP(object)) {
+	    string = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 1);
 	    GC_PROTECT(string);
 	    length = LispWriteObject(string, object);
 	}
@@ -560,8 +559,8 @@ format_ascii(LispObj *stream, LispObj *object, FmtArgs *args)
 	    LispWriteStr(stream,  Snil, 3);
     }
     else {
-	if (CHAR_P(object))
-	    LispWriteChar(stream, GETINT(object));
+	if (SCHARP(object))
+	    LispWriteChar(stream, SCHAR_VALUE(object));
 	else {
 	    /* if string is not NIL, atsign was specified
 	     * and object printed to string */
@@ -600,7 +599,7 @@ format_ascii(LispObj *stream, LispObj *object, FmtArgs *args)
 static void
 format_in_radix(LispObj *stream, LispObj *object, int radix, FmtArgs *args)
 {
-    if (INTEGER_P(object)) {
+    if (INTEGERP(object)) {
 	int i, check, atsign, collon, mincol, padchar, commachar, commainterval;
 
 	i = check = (radix == 0);
@@ -628,7 +627,7 @@ format_in_radix(LispObj *stream, LispObj *object, int radix, FmtArgs *args)
 static void
 format_radix_special(LispObj *stream, LispObj *object, FmtArgs *args)
 {
-    if (INTEGER_P(object)) {
+    if (FIXNUMP(object)) {
 	if (args->atsign)
 	    format_roman(stream, object, args);
 	else
@@ -644,8 +643,8 @@ format_roman(LispObj *stream, LispObj *object, FmtArgs *args)
     long value = 0;
     int cando, new_roman = args->collon == 0;
 
-    if (INT_P(object)) {
-	value = GETINT(object);
+    if (FIXNUMP(object)) {
+	value = FIXNUM_VALUE(object);
 	if (new_roman)
 	    cando = value >= 1 && value <= 3999;
 	else
@@ -666,8 +665,8 @@ format_english(LispObj *stream, LispObj *object, FmtArgs *args)
     int cando;
     long number = 0;
 
-    if (INT_P(object)) {
-	number = GETINT(object);
+    if (FIXNUMP(object)) {
+	number = FIXNUM_VALUE(object);
 	cando = number >= -999999999 && number <= 999999999;
     }
     else
@@ -682,7 +681,7 @@ format_english(LispObj *stream, LispObj *object, FmtArgs *args)
 static void
 format_character(LispObj *stream, LispObj *object, FmtArgs *args)
 {
-    if (CHAR_P(object))
+    if (SCHARP(object))
 	LispFormatCharacter(stream, object, args->atsign, args->collon);
     else
 	format_object(stream, object);
@@ -691,7 +690,7 @@ format_character(LispObj *stream, LispObj *object, FmtArgs *args)
 static void
 format_fixed_float(LispObj *stream, LispObj *object, FmtArgs *args)
 {
-    if (FLOAT_P(object))
+    if (FLOATP(object))
 	LispFormatFixedFloat(stream, object, args->atsign,
 			     args->arguments[0].value,
 			     IF_SPECIFIED(args->arguments[1]),
@@ -705,7 +704,7 @@ format_fixed_float(LispObj *stream, LispObj *object, FmtArgs *args)
 static void
 format_exponential_float(LispObj *stream, LispObj *object, FmtArgs *args)
 {
-    if (FLOAT_P(object))
+    if (FLOATP(object))
 	LispFormatExponentialFloat(stream, object, args->atsign,
 				   args->arguments[0].value,
 				   IF_SPECIFIED(args->arguments[1]),
@@ -721,7 +720,7 @@ format_exponential_float(LispObj *stream, LispObj *object, FmtArgs *args)
 static void
 format_general_float(LispObj *stream, LispObj *object, FmtArgs *args)
 {
-    if (FLOAT_P(object))
+    if (FLOATP(object))
 	LispFormatGeneralFloat(stream, object, args->atsign,
 				args->arguments[0].value,
 				IF_SPECIFIED(args->arguments[1]),
@@ -737,7 +736,7 @@ format_general_float(LispObj *stream, LispObj *object, FmtArgs *args)
 static void
 format_dollar_float(LispObj *stream, LispObj *object, FmtArgs *args)
 {
-    if (FLOAT_P(object))
+    if (FLOATP(object))
 	LispFormatDollarFloat(stream, object,
 			      args->atsign, args->collon,
 			      args->arguments[0].value,
@@ -864,7 +863,7 @@ format_indirection(LispObj *stream, LispObj *format, FmtInfo *info)
     LispObj *object;
     FmtInfo indirect_info;
 
-    if (!STRING_P(format))
+    if (!STRINGP(format))
 	generic_error(&(info->args), GENERIC_BADSTRING);
     string = THESTR(format);
 
@@ -888,12 +887,12 @@ format_indirection(LispObj *stream, LispObj *format, FmtInfo *info)
 
 	/* it is valid to not have an list following string, as string may
 	 * not have format directives */
-	if (CONS_P(*(indirect_info.arguments)))
+	if (CONSP(*(indirect_info.arguments)))
 	    object = CAR(*(indirect_info.arguments));
 	else
 	    object = NIL;
 
-	if (object != NIL && !CONS_P(object))
+	if (!LISTP(object))
 	    generic_error(&(info->args), GENERIC_BADLIST);
 
 	/* update information now */
@@ -904,7 +903,7 @@ format_indirection(LispObj *stream, LispObj *format, FmtInfo *info)
 	/* set arguments for recursive call */
 	indirect_info.base_arguments = object;
 	indirect_info.arguments = &object;
-	for (num_arguments = 0; CONS_P(object); object = CDR(object))
+	for (num_arguments = 0; CONSP(object); object = CDR(object))
 	    ++num_arguments;
 
 	/* note that indirect_info.arguments is a pointer to "object",
@@ -1057,7 +1056,7 @@ format_case_conversion(LispObj *stream, FmtInfo *info)
     GC_ENTER();
     LispObj *string;
     FmtInfo case_info;
-    unsigned char *str, *ptr;
+    char *str, *ptr;
     char *format, *next_format, **formats;
     int atsign, collon, num_formats, length;
 
@@ -1065,7 +1064,7 @@ format_case_conversion(LispObj *stream, FmtInfo *info)
     collon = info->args.collon;
 
     /* output to a string, before case conversion */
-    string = LSTRINGSTREAM((unsigned char*)"", STREAM_READ | STREAM_WRITE, 1);
+    string = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 1);
     GC_PROTECT(string);
 
     /* most information is the same */
@@ -1084,7 +1083,7 @@ format_case_conversion(LispObj *stream, FmtInfo *info)
     /* format text to string */
     LispFormat(string, &case_info);
 
-    str = ptr = (unsigned char*)LispGetSstring(SSTREAMP(string), &length);
+    str = ptr = LispGetSstring(SSTREAMP(string), &length);
 
     /* do case conversion */
     if (!atsign && !collon) {
@@ -1127,7 +1126,7 @@ format_case_conversion(LispObj *stream, FmtInfo *info)
     }
 
     /* output case converted string */
-    LispWriteStr(stream, (char*)str, length);
+    LispWriteStr(stream, str, length);
 
     /* temporary string stream is not necessary anymore */
     GC_LEAVE();
@@ -1162,7 +1161,7 @@ format_conditional(LispObj *stream, FmtInfo *info)
     /* ~:[false;true] */
     if (info->args.collon) {
 	/* one argument always consumed */
-	if (!CONS_P(arguments))
+	if (!CONSP(arguments))
 	    parse_error(&(info->args), PARSE_NOARGSLEFT);
 	object = CAR(arguments);
 	arguments = CDR(arguments);
@@ -1172,7 +1171,7 @@ format_conditional(LispObj *stream, FmtInfo *info)
     /* ~@[true] */
     else if (info->args.atsign) {
 	/* argument consumed only if nil, but one must be available */
-	if (!CONS_P(arguments))
+	if (!CONSP(arguments))
 	    parse_error(&(info->args), PARSE_NOARGSLEFT);
 	if (CAR(arguments) != NIL)
 	    choice = 0;
@@ -1189,14 +1188,14 @@ format_conditional(LispObj *stream, FmtInfo *info)
     /* ~[...~] */
     else {
 	/* one argument consumed, it is the index in the available formats */
-	if (!CONS_P(arguments))
+	if (!CONSP(arguments))
 	    parse_error(&(info->args), PARSE_NOARGSLEFT);
 	object = CAR(arguments);
 	arguments = CDR(arguments);
 	--num_arguments;
 	/* */
-	if (INT_P(object))
-	    choice = GETINT(object);
+	if (FIXNUMP(object))
+	    choice = FIXNUM_VALUE(object);
 	/* if choice is out of range check if there is a default choice */
 	if (has_default && (choice < 0 || choice >= num_formats))
 	    choice = num_formats - 1;
@@ -1265,7 +1264,7 @@ format_iterate(LispObj *stream, FmtInfo *info)
 	/* next argument is the argument list for the iteration */
 
 	/* fetch argument list, must exist */
-	if (!CONS_P(arguments))
+	if (!CONSP(arguments))
 	    parse_error(&(info->args), PARSE_NOARGSLEFT);
 	iarguments = object = CAR(arguments);
 	object = CAR(arguments);
@@ -1273,9 +1272,9 @@ format_iterate(LispObj *stream, FmtInfo *info)
 	--num_arguments;
 
 	inum_arguments = 0;
-	if (CONS_P(object)) {
+	if (CONSP(object)) {
 	    /* count arguments to format */
-	    for (iobject = object; CONS_P(iobject); iobject = CDR(iobject))
+	    for (iobject = object; CONSP(iobject); iobject = CDR(iobject))
 		++inum_arguments;
 	}
 	else if (object != NIL)
@@ -1329,7 +1328,7 @@ format_iterate(LispObj *stream, FmtInfo *info)
 		break;
 
 	    /* fetch argument list, must exist */
-	    if (!CONS_P(arguments))
+	    if (!CONSP(arguments))
 		parse_error(&(info->args), PARSE_NOARGSLEFT);
 	    iarguments = object = CAR(arguments);
 	    object = CAR(arguments);
@@ -1337,9 +1336,9 @@ format_iterate(LispObj *stream, FmtInfo *info)
 	    --num_arguments;
 
 	    inum_arguments = 0;
-	    if (CONS_P(object)) {
+	    if (CONSP(object)) {
 		/* count arguments to format */
-		for (iobject = object; CONS_P(iobject); iobject = CDR(iobject))
+		for (iobject = object; CONSP(iobject); iobject = CDR(iobject))
 		    ++inum_arguments;
 	    }
 	    else if (object != NIL)
@@ -1381,7 +1380,7 @@ format_iterate(LispObj *stream, FmtInfo *info)
 	int snum_arguments;
 
 	/* fetch argument list, must exist */
-	if (!CONS_P(arguments))
+	if (!CONSP(arguments))
 	    parse_error(&(info->args), PARSE_NOARGSLEFT);
 	sarguments = object = CAR(arguments);
 	object = CAR(arguments);
@@ -1389,9 +1388,9 @@ format_iterate(LispObj *stream, FmtInfo *info)
 	--num_arguments;
 
 	snum_arguments = 0;
-	if (CONS_P(object)) {
+	if (CONSP(object)) {
 	    /* count arguments to format */
-	    for (sobject = object; CONS_P(sobject); sobject = CDR(sobject))
+	    for (sobject = object; CONSP(sobject); sobject = CDR(sobject))
 		++snum_arguments;
 	}
 	else
@@ -1406,7 +1405,7 @@ format_iterate(LispObj *stream, FmtInfo *info)
 		break;
 
 	    /* fetch argument list, must exist */
-	    if (!CONS_P(sarguments))
+	    if (!CONSP(sarguments))
 		parse_error(&(info->args), PARSE_NOARGSLEFT);
 	    iarguments = sobject = CAR(sarguments);
 	    sobject = CAR(sarguments);
@@ -1414,9 +1413,9 @@ format_iterate(LispObj *stream, FmtInfo *info)
 	    --snum_arguments;
 
 	    inum_arguments = 0;
-	    if (CONS_P(object)) {
+	    if (CONSP(object)) {
 		/* count arguments to format */
-		for (iobject = sobject; CONS_P(iobject); iobject = CDR(iobject))
+		for (iobject = sobject; CONSP(iobject); iobject = CDR(iobject))
 		    ++inum_arguments;
 	    }
 	    else if (sobject != NIL)
@@ -1522,13 +1521,11 @@ format_justify(LispObj *stream, FmtInfo *info)
 
     /* initialize list of strings streams */
     if (num_formats) {
-	string = LSTRINGSTREAM((unsigned char*)"",
-			       STREAM_READ | STREAM_WRITE, 1);
+	string = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 1);
 	strings = cons = CONS(string, NIL);
 	GC_PROTECT(strings);
 	for (i = 1; i < num_formats; i++) {
-	    string = LSTRINGSTREAM((unsigned char*)"",
-				   STREAM_READ | STREAM_WRITE, 1);
+	    string = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 1);
 	    RPLACD(cons, CONS(string, NIL));
 	    cons = CDR(cons);
 	}
@@ -1573,8 +1570,8 @@ format_justify(LispObj *stream, FmtInfo *info)
     }
 	/* now remove intermediary discarded formats */
     cons = strings;
-    while (CONS_P(cons)) {
-	if (CONS_P(CDR(cons)) && CAR(CDR(cons)) == NIL) {
+    while (CONSP(cons)) {
+	if (CONSP(CDR(cons)) && CAR(CDR(cons)) == NIL) {
 	    RPLACD(cons, CDR(CDR(cons)));
 	    --num_formats;
 	}
@@ -1587,7 +1584,7 @@ format_justify(LispObj *stream, FmtInfo *info)
 	cons = CDR(strings);	/* if has_defaults, strings is surely a list */
     else
 	cons = strings;
-    for (total_length = 0; CONS_P(cons); cons = CDR(cons))
+    for (total_length = 0; CONSP(cons); cons = CDR(cons))
 	total_length += SSTREAMP(CAR(cons))->length;
 
     /* initialize pointer to string streams */
@@ -1656,8 +1653,7 @@ format_justify(LispObj *stream, FmtInfo *info)
 
 	/* if has default, need to check output length */
 	if (has_default && line_width > 0 && comma_width >= 0) {
-	    result = LSTRINGSTREAM((unsigned char*)"",
-				   STREAM_READ | STREAM_WRITE, 1);
+	    result = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 1);
 	    GC_PROTECT(result);
 	}
 	/* else write directly to stream */
@@ -1669,9 +1665,9 @@ format_justify(LispObj *stream, FmtInfo *info)
 	     * is separated in n-1 chunks, where n is the number of
 	     * formatted strings.
 	     */
-	for (i = padout = 0; CONS_P(cons); i++, cons = CDR(cons)) {
+	for (i = padout = 0; CONSP(cons); i++, cons = CDR(cons)) {
 	    string = CAR(cons);
-	    last = !CONS_P(CDR(cons));
+	    last = !CONSP(CDR(cons));
 
 	    spaces_before = (i != 0 || collon) && (!last || !atsign);
 
@@ -1872,7 +1868,7 @@ LispFormat(LispObj *stream, FmtInfo *info)
 		    break;
 	    }
 	    if (need_argument) {
-		if (!CONS_P(arguments))
+		if (!CONSP(arguments))
 		    parse_error(args, PARSE_NOARGSLEFT);
 		object = CAR(arguments);
 		arguments = CDR(arguments);
@@ -1919,12 +1915,12 @@ LispFormat(LispObj *stream, FmtInfo *info)
 		    break;
 		case 'P':
 		    if (args->atsign) {
-			if (INT_P(object) && GETINT(object) == 1)
+			if (FIXNUMP(object) && FIXNUM_VALUE(object) == 1)
 			    LispWriteChar(stream, 'y');
 			else
 			    LispWriteStr(stream, "ies", 3);
 		    }
-		    else if (!INT_P(object) || GETINT(object) != 1)
+		    else if (!FIXNUMP(object) || FIXNUM_VALUE(object) != 1)
 			LispWriteChar(stream, 's');
 		    break;
 		case 'C':
@@ -2062,24 +2058,23 @@ Lisp_Format(LispBuiltin *builtin)
     stream = ARGUMENT(0);
 
     /* check format and stream */
-    ERROR_CHECK_STRING(format);
+    CHECK_STRING(format);
     if (stream == NIL) {	/* return a string */
-	stream = LSTRINGSTREAM((unsigned char*)"",
-			       STREAM_READ | STREAM_WRITE, 1);
+	stream = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 1);
 	GC_PROTECT(stream);
     }
     else if (stream == T ||	/* print directly to *standard-output* */
 	     stream == STANDARD_OUTPUT)
 	stream = NIL;
-    else if (!STREAM_P(stream))
-	LispDestroy("%s: %s is not a stream",
-		    STRFUN(builtin), STROBJ(stream));
-    else if (!stream->data.stream.writable)
-	LispDestroy("%s: stream %s is not writable",
-		    STRFUN(builtin), STROBJ(stream));
+    else {
+	CHECK_STREAM(stream);
+	if (!stream->data.stream.writable)
+	    LispDestroy("%s: stream %s is not writable",
+			STRFUN(builtin), STROBJ(stream));
+    }
 
     /* count number of arguments */
-    for (object = arguments, num_arguments = 0; CONS_P(object);
+    for (object = arguments, num_arguments = 0; CONSP(object);
 	 object = CDR(object), num_arguments++)
 	;
 
