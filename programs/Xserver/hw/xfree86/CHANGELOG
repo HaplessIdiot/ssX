@@ -1,4 +1,6 @@
 XFree86 4.2.99.1 (XX June 2002)
+ 151. Updates to bdf/misc UCS fonts, and generate ISO8859-16 subsets
+      (#5147, Markus Kuhn).
  150. Fix some empty delay loops and jiffie wrap bugs in the i830 drm driver
       (#5149, Arjan Van de Ven).
  149. Fix a potential NULL dereference in the drm kernel module (#5148,
@@ -14815,4 +14817,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2227 2002/05/31 18:45:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2228 2002/06/03 18:29:06 dawes Exp $
