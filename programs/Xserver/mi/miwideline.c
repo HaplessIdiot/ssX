@@ -1,4 +1,5 @@
 /* $XConsortium: miwideline.c /main/58 1996/08/12 21:51:21 dpw $ */
+/* $XFree86: */
 /*
 
 Copyright (c) 1988  X Consortium
