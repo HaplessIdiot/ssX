@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 245. A "hammer" approach at ensuring font properties are freed properly
+      (Marc La France).
  244. Fix 'su' usage for FreeBSD in the default xdm config (Eric Anholt).
  243. Fix a FreeBSD scrollwheel problem that shows up with gcc 3.1
       (Eric Anholt).
@@ -15009,4 +15011,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2291 2002/09/09 19:18:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2292 2002/09/10 16:09:18 dawes Exp $
