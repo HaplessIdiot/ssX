@@ -24,7 +24,7 @@
  * or publicity pertaining to distribution of the software without specific,
  * written prior permission.
  */
-/* $XFree86: xc/programs/xmh/tsource.c,v 1.2 2001/10/28 03:34:40 tsi Exp $ */
+/* $XFree86: xc/programs/xmh/tsource.c,v 1.3 2002/04/05 21:06:29 dickey Exp $ */
 
 /* File: tsource.c -- the code for a toc source */
 
@@ -52,7 +52,7 @@ static XtResource resources[] = {
 
 static void Initialize(Widget, Widget, ArgList, Cardinal *num_args);
 static XawTextPosition Read(Widget, XawTextPosition, XawTextBlock *, int);
-static XawTextPosition Scan(Widget, XawTextPosition, XawTextScanType, XawTextScanDirection, int, Boolean);
+static XawTextPosition Scan(Widget, XawTextPosition, XawTextScanType, XawTextScanDirection, int, Bool);
 static XawTextPosition Search(Widget, XawTextPosition, XawTextScanDirection, XawTextBlock *);
 static int Replace(Widget, XawTextPosition, XawTextPosition, XawTextBlock *);
 
@@ -232,7 +232,7 @@ Scan(
     XawTextScanType sType,
     XawTextScanDirection dir,
     int count,
-    Boolean include)
+    Bool include)
 {
     TocSourceWidget source = (TocSourceWidget) w;
     Toc toc = source->toc_source.toc;
