@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.74 2003/04/28 15:02:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.75tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -19,8 +19,6 @@
  *	pciWriteByte()         - Write an 8 bit value to a device's cfg space
  *	pciSetBitsLong()       - Write a 32 bit value against a mask
  *	pciSetBitsByte()       - Write an 8 bit value against a mask
- *	pciLongFunc()          - Return pointer to the requested low level
- *                               function
  *	pciTag()               - Return tag for a given PCI bus, device, &
  *                               function
  *	pciBusAddrToHostAddr() - Convert a PCI address to a host address
@@ -391,27 +389,6 @@ pciSetBitsByte(PCITAG tag, int offset, CARD8 mask, CARD8 val)
   tmp_mask = mask << shift;
   tmp_val = val << shift;
   pciSetBitsLong(tag, aligned_offset, tmp_mask, tmp_val);
-}
-
-pointer
-pciLongFunc(PCITAG tag, pciFunc func)
-{
-    int bus = PCI_BUS_FROM_TAG(tag);
-
-    pciInit();
-
-    if ((bus < 0) || (bus > pciNumBuses) || !pciBusInfo[bus] ||
-	!pciBusInfo[bus]->funcs->pciReadLong) return NULL;
-
-    switch (func) {
-    case WRITE:
-	return (void *)pciBusInfo[bus]->funcs->pciWriteLong;
-    case READ:
-	return (void *)pciBusInfo[bus]->funcs->pciReadLong;
-    case SET_BITS:
-	return (void *)pciBusInfo[bus]->funcs->pciSetBitsLong;
-    }
-    return NULL;
 }
 
 ADDRESS
@@ -1359,22 +1336,20 @@ HandlePciBios(PCITAG Tag, int basereg,
   if (!num) return 0;
 
 #define PCI_ENA (PCI_CMD_MEM_ENABLE | PCI_CMD_IO_ENABLE)
-  Acc1 = ((ReadProcPtr)(pciLongFunc(Tag,READ)))(Tag,PCI_CMD_STAT_REG);
-  ((WriteProcPtr)(pciLongFunc(Tag,WRITE)))(Tag,
-					   PCI_CMD_STAT_REG,(Acc1 & ~PCI_ENA));
+  Acc1 = pciReadLong(Tag, PCI_CMD_STAT_REG);
+  pciWriteLong(Tag, PCI_CMD_STAT_REG, (Acc1 & ~PCI_ENA));
 
   for (i = 0; i < num; i++) {
-    Acc2 = ((ReadProcPtr)(pciLongFunc(pTag[i],READ)))(pTag[i],PCI_CMD_STAT_REG);
-    ((WriteProcPtr)(pciLongFunc(pTag[i],WRITE)))(pTag[i],
-					     PCI_CMD_STAT_REG,(Acc2 | PCI_ENA));
+    Acc2 = pciReadLong(pTag[i], PCI_CMD_STAT_REG);
+    pciWriteLong(pTag[i], PCI_CMD_STAT_REG, (Acc2 | PCI_ENA));
 
     n = handlePciBIOS(pTag[i],0,func,ptr);
 
-    ((WriteProcPtr)(pciLongFunc(pTag[i],WRITE)))(pTag[i],PCI_CMD_STAT_REG,Acc2);
+    pciWriteLong(pTag[i], PCI_CMD_STAT_REG, Acc2);
     if (n)
       break;
   }
-  ((WriteProcPtr)(pciLongFunc(Tag,WRITE)))(Tag,PCI_CMD_STAT_REG,Acc1);
+  pciWriteLong(Tag, PCI_CMD_STAT_REG, Acc1);
   return n;
 }
 

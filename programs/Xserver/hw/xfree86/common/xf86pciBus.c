@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.69tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.70tsi Exp $ */
 /*
  * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
  */
@@ -567,7 +567,7 @@ pciIoAccessEnable(void* arg)
     ErrorF("pciIoAccessEnable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
     pArg->ctrl |= SETBITS | PCI_CMD_MASTER_ENABLE;
-    (*pArg->func)(pArg->tag, PCI_CMD_STAT_REG, pArg->ctrl);
+    pciWriteLong(pArg->tag, PCI_CMD_STAT_REG, pArg->ctrl);
 }
 
 static void
@@ -577,7 +577,7 @@ pciIoAccessDisable(void* arg)
     ErrorF("pciIoAccessDisable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
     pArg->ctrl &= ~SETBITS;
-    (*pArg->func)(pArg->tag, PCI_CMD_STAT_REG, pArg->ctrl);
+    pciWriteLong(pArg->tag, PCI_CMD_STAT_REG, pArg->ctrl);
 }
 
 #undef SETBITS
@@ -589,7 +589,7 @@ pciIo_MemAccessEnable(void* arg)
     ErrorF("pciIo_MemAccessEnable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
     pArg->ctrl |= SETBITS | PCI_CMD_MASTER_ENABLE;
-    (*pArg->func)(pArg->tag, PCI_CMD_STAT_REG, pArg->ctrl);
+    pciWriteLong(pArg->tag, PCI_CMD_STAT_REG, pArg->ctrl);
 }
 
 static void
@@ -599,7 +599,7 @@ pciIo_MemAccessDisable(void* arg)
     ErrorF("pciIo_MemAccessDisable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
     pArg->ctrl &= ~SETBITS;
-    (*pArg->func)(pArg->tag, PCI_CMD_STAT_REG, pArg->ctrl);
+    pciWriteLong(pArg->tag, PCI_CMD_STAT_REG, pArg->ctrl);
 }
 
 #undef SETBITS
@@ -611,7 +611,7 @@ pciMemAccessEnable(void* arg)
     ErrorF("pciMemAccessEnable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
     pArg->ctrl |= SETBITS | PCI_CMD_MASTER_ENABLE;
-    (*pArg->func)(pArg->tag, PCI_CMD_STAT_REG, pArg->ctrl);
+    pciWriteLong(pArg->tag, PCI_CMD_STAT_REG, pArg->ctrl);
 }
 
 static void
@@ -621,38 +621,48 @@ pciMemAccessDisable(void* arg)
     ErrorF("pciMemAccessDisable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
     pArg->ctrl &= ~SETBITS;
-    (*pArg->func)(pArg->tag, PCI_CMD_STAT_REG, pArg->ctrl);
+    pciWriteLong(pArg->tag, PCI_CMD_STAT_REG, pArg->ctrl);
 }
 #undef SETBITS
 #undef pArg
 
 
 /* move to OS layer */
-#define PCI_PCI_BRDG_CTRL_BASE (PCI_PCI_BRIDGE_CONTROL_REG & 0xFC)
-#define SHIFT_BITS ((PCI_PCI_BRIDGE_CONTROL_REG & 0x3) << 3)
-#define SETBITS (CARD32)((PCI_PCI_BRIDGE_VGA_EN) << SHIFT_BITS)
+#define MASKBITS (PCI_PCI_BRIDGE_VGA_EN | PCI_PCI_BRIDGE_MASTER_ABORT_EN)
 static void
 pciBusAccessEnable(BusAccPtr ptr)
 {
+    PCITAG tag = ptr->busdep.pci.acc;
+    CARD16 ctrl;
+
 #ifdef DEBUG
     ErrorF("pciBusAccessEnable: bus=%d\n", ptr->busdep.pci.bus);
 #endif
-    (*ptr->busdep.pci.func)(ptr->busdep.pci.acc, PCI_PCI_BRDG_CTRL_BASE,
-			    SETBITS, SETBITS);
+    ctrl = pciReadWord(tag, PCI_PCI_BRIDGE_CONTROL_REG);
+    if ((ctrl & MASKBITS) != PCI_PCI_BRIDGE_VGA_EN) {
+	ctrl = (ctrl | PCI_PCI_BRIDGE_VGA_EN) &
+	    ~(PCI_PCI_BRIDGE_MASTER_ABORT_EN | PCI_PCI_BRIDGE_SECONDARY_RESET);
+	pciWriteWord(tag, PCI_PCI_BRIDGE_CONTROL_REG, ctrl);
+    }
 }
 
 /* move to OS layer */
 static void
 pciBusAccessDisable(BusAccPtr ptr)
 {
+    PCITAG tag = ptr->busdep.pci.acc;
+    CARD16 ctrl;
+
 #ifdef DEBUG
     ErrorF("pciBusAccessDisable: bus=%d\n", ptr->busdep.pci.bus);
 #endif
-    (*ptr->busdep.pci.func)(ptr->busdep.pci.acc, PCI_PCI_BRDG_CTRL_BASE,
-			    SETBITS, 0);
+    ctrl = pciReadWord(tag, PCI_PCI_BRIDGE_CONTROL_REG);
+    if (ctrl & MASKBITS) {
+	ctrl &= ~(MASKBITS | PCI_PCI_BRIDGE_SECONDARY_RESET);
+	pciWriteWord(tag, PCI_PCI_BRIDGE_CONTROL_REG, ctrl);
+    }
 }
-#undef SETBITS
-#undef SHIFT_BITS
+#undef MASKBITS
 
 /* move to OS layer */
 static void
@@ -740,23 +750,34 @@ restorePciState(PCITAG tag, pciSavePtr ptr)
 static void
 savePciBusState(BusAccPtr ptr)
 {
+    PCITAG tag = ptr->busdep.pci.acc;
+
     ptr->busdep.pci.save.control =
-	pciReadWord(ptr->busdep.pci.acc, PCI_PCI_BRIDGE_CONTROL_REG) &
+	pciReadWord(tag, PCI_PCI_BRIDGE_CONTROL_REG) &
 	~PCI_PCI_BRIDGE_SECONDARY_RESET;
     /* Allow master aborts to complete normally on non-root buses */
     if (ptr->busdep.pci.save.control & PCI_PCI_BRIDGE_MASTER_ABORT_EN)
-	pciWriteWord(ptr->busdep.pci.acc, PCI_PCI_BRIDGE_CONTROL_REG,
-	    ptr->busdep.pci.save.control
-		     & ~PCI_PCI_BRIDGE_MASTER_ABORT_EN);
+	pciWriteWord(tag, PCI_PCI_BRIDGE_CONTROL_REG,
+	    ptr->busdep.pci.save.control & ~PCI_PCI_BRIDGE_MASTER_ABORT_EN);
 }
 
 /* move to OS layer */
+#define MASKBITS (PCI_PCI_BRIDGE_VGA_EN | PCI_PCI_BRIDGE_MASTER_ABORT_EN)
 static void
 restorePciBusState(BusAccPtr ptr)
 {
-    pciWriteWord(ptr->busdep.pci.acc, PCI_PCI_BRIDGE_CONTROL_REG,
-		 ptr->busdep.pci.save.control);
+    PCITAG tag = ptr->busdep.pci.acc;
+    CARD16 ctrl;
+
+    /* Only restore the bits we've changed (and don't cause resets) */
+    ctrl = pciReadWord(tag, PCI_PCI_BRIDGE_CONTROL_REG);
+    if ((ctrl ^ ptr->busdep.pci.save.control) & MASKBITS) {
+	ctrl &= ~(MASKBITS | PCI_PCI_BRIDGE_SECONDARY_RESET);
+	ctrl |= ptr->busdep.pci.save.control & MASKBITS;
+	pciWriteWord(tag, PCI_PCI_BRIDGE_CONTROL_REG, ctrl);
+    }
 }
+#undef MASKBITS
 
 /* move to OS layer */
 static void
@@ -2596,8 +2617,6 @@ initPciState(void)
  	    pcaccp->devnum = pvp->device; 
  	    pcaccp->funcnum = pvp->func;
  	    pcaccp->arg.tag = pciTag(pvp->bus, pvp->device, pvp->func);
- 	    pcaccp->arg.func =
-	        (WriteProcPtr)pciLongFunc(pcaccp->arg.tag,WRITE);
   	    pcaccp->ioAccess.AccessDisable = pciIoAccessDisable;
   	    pcaccp->ioAccess.AccessEnable = pciIoAccessEnable;
   	    pcaccp->ioAccess.arg = &pcaccp->arg;
@@ -2674,8 +2693,6 @@ initPciBusState(void)
 	    pbap->enable_f = pciBusAccessEnable;
 	    pbap->disable_f = pciBusAccessDisable;
 	    pbap->busdep.pci.acc = pciTag(pbp->brbus,pbp->brdev,pbp->brfunc);
-	    pbap->busdep.pci.func =
-		(SetBitsProcPtr)pciLongFunc(pbap->busdep.pci.acc,SET_BITS);
 	    savePciBusState(pbap);
 	    break;
 	case PCI_SUBCLASS_BRIDGE_ISA:

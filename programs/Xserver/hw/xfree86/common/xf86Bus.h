@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.18 2001/02/12 01:25:23 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.21tsi Exp $ */
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
  */
@@ -98,7 +98,6 @@ typedef struct x_BusAccRec {
 	    int primary_bus;
 	    PCITAG acc;
 	    pciBridgesSave save;
-	    void (*func)(PCITAG,int,CARD32,CARD32);
 	} pci;
     } busdep;
 } BusAccRec, *BusAccPtr;

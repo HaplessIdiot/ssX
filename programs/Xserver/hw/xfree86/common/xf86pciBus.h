@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.h,v 3.7 2002/06/28 20:47:02 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.h,v 3.8tsi Exp $ */
 
 #ifndef _XF86_PCI_BUS_H
 #define _XF86_PCI_BUS_H
@@ -11,12 +11,8 @@ typedef struct {
     CARD32 biosBase;
 } pciSave, *pciSavePtr;
 
-typedef void (*SetBitsProcPtr)(PCITAG, int, CARD32, CARD32);
-typedef void (*WriteProcPtr)(PCITAG, int, CARD32);
-
 typedef struct {
     PCITAG tag;
-    WriteProcPtr func;
     CARD32 ctrl;
 } pciArg;
 
