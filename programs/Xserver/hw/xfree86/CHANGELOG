@@ -1,3 +1,6 @@
+XFree86 3.1.2Cc (10 February 1996)
+326. Merge in final form of R6.1.
+
 XFree86 3.1.2Cb (9 February 1996)
 325. XC fix-trackers to seq-4114 (mostly XKB).
 324. Xlib prototyping improvements/fixes (Thomas E. Dickey).
