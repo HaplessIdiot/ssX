@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.23 2001/11/30 12:12:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.43 2003/08/23 10:25:18 twini Exp $ */
 /*
  * Main global data and definitions
  *
@@ -411,8 +411,8 @@ typedef struct {
     unsigned char       *agpVtxBufBase;
     unsigned int        agpVtxBufSize;
     unsigned int        agpVtxBufFree;
-    sisRegion 		agp;
 #ifdef XF86DRI
+    sisRegion 		agp;
     int 		drmSubFD;
 #endif
     Bool		AGPInitOK;
@@ -637,7 +637,9 @@ typedef struct {
     unsigned char       *agpVtxBufBase;
     unsigned int        agpVtxBufSize;
     unsigned int        agpVtxBufFree;
+#ifdef XF86DRI
     sisRegion 		agp;
+#endif
     Bool		AGPInitOK;
     Bool 		irqEnabled;
     int 		irq;
