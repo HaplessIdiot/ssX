@@ -1,10 +1,10 @@
-/* $XTermId: misc.c,v 1.219 2004/05/16 23:20:55 tom Exp $ */
+/* $XTermId: misc.c,v 1.221 2004/05/24 23:45:22 tom Exp $ */
 
 /*
  *	$Xorg: misc.c,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/misc.c,v 3.86 2004/05/13 00:41:21 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/misc.c,v 3.87 2004/05/16 23:59:13 dickey Exp $ */
 
 /*
  *
@@ -2547,7 +2547,12 @@ set_tek_visibility(Boolean on)
 	if (!screen->Tshow && (tekWidget || TekInit())) {
 	    Widget tekParent = SHELL_OF(tekWidget);
 	    XtRealizeWidget(tekParent);
+	    XtMapWidget(XtParent(tekWidget));
+#if OPT_TOOLBAR
+	    /* we need both of these during initialization */
 	    XtMapWidget(tekParent);
+	    XtMapWidget(tekWidget);
+#endif
 	    XtOverrideTranslations(tekParent,
 				   XtParseTranslationTable
 				   ("<Message>WM_PROTOCOLS: DeleteWindow()"));
