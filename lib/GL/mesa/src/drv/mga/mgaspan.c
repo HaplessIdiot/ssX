@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaspan.c,v 1.4 2000/08/28 02:43:12 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaspan.c,v 1.5 2000/09/24 13:51:07 alanh Exp $ */
 
 #include "types.h"
 #include "mgadd.h"
@@ -23,7 +23,7 @@
 			mmesa->drawOffset +		\
 			dPriv->x * mgaScreen->cpp +	\
 			dPriv->y * pitch);		\
-   GLushort p = MGA_CONTEXT( ctx )->MonoColor;		\
+   GLuint p = MGA_CONTEXT( ctx )->MonoColor;		\
    (void) read_buf; (void) buf; (void) p
    
 
@@ -36,7 +36,7 @@
    GLuint height = dPriv->h;				\
    char *buf = (char *)(sPriv->pFB +			\
 			mgaScreen->depthOffset +	\
-			dPriv->x * 2 +			\
+			dPriv->x * mgaScreen->cpp +	\
 			dPriv->y * pitch)
 
 #define LOCAL_STENCIL_VARS LOCAL_DEPTH_VARS 
@@ -174,7 +174,7 @@ do {								\
 }
 
 #define READ_DEPTH( d, _x, _y )		\
-   d = *(GLuint *)(buf + _x*4 + _y*pitch) >> 8;	
+   d = *(GLuint *)(buf + _x*4 + _y*pitch) & ~0xff;	
 
 
 #define TAG(x) mga##x##_24_8
@@ -225,7 +225,7 @@ void mgaDDInitSpanFuncs( GLcontext *ctx )
       ctx->Driver.ReadRGBASpan = mgaReadRGBASpan_8888;
       ctx->Driver.ReadRGBAPixels = mgaReadRGBAPixels_8888;
       
-      if (mmesa->hw_stencil) {
+      if (!mmesa->hw_stencil) {
 	 ctx->Driver.ReadDepthSpan = mgaReadDepthSpan_32;
 	 ctx->Driver.WriteDepthSpan = mgaWriteDepthSpan_32;
 	 ctx->Driver.ReadDepthPixels = mgaReadDepthPixels_32;
@@ -243,13 +243,4 @@ void mgaDDInitSpanFuncs( GLcontext *ctx )
       }
       break;
    }
-
-
-   ctx->Driver.WriteCI8Span = 0;
-   ctx->Driver.WriteCI32Span = 0;
-   ctx->Driver.WriteMonoCISpan = 0;
-   ctx->Driver.WriteCI32Pixels = 0;
-   ctx->Driver.WriteMonoCIPixels = 0;
-   ctx->Driver.ReadCI32Span = 0;
-   ctx->Driver.ReadCI32Pixels = 0;
 }

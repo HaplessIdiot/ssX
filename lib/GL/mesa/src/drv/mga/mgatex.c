@@ -25,7 +25,7 @@
  *	9/20/99 rewrite by John Carmack <johnc@idsoftware.com>
  *      13/1/00 port to DRI by Keith Whitwell <keithw@precisioninsight.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatex.c,v 1.6 2000/09/24 13:51:07 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatex.c,v 1.7 2000/11/08 05:02:46 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -625,24 +625,14 @@ static void mgaDDTexSubImage( GLcontext *ctx, GLenum target,
    mgaTextureObjectPtr t;
 
    t = (mgaTextureObjectPtr) tObj->DriverData;
-
-
-   /* just free the mga texture if it exists, it will be recreated at
-      mgaUpdateTextureState time. */  
-   t = (mgaTextureObjectPtr) tObj->DriverData;
-   if ( t ) {
+   if (t) {
       if (t->bound) FLUSH_BATCH(mmesa);
-      /* if this is the current object, it will force an update */
-      mgaDestroyTexObj( mmesa, t );
-      mmesa->new_state |= MGA_NEW_TEXTURE;
+      LOCK_HARDWARE( mmesa );
+      /* the texture currently exists, so directly update it */
+      mgaUploadSubImageLocked( mmesa, t, level, 
+			       xoffset, yoffset, width, height );
+      UNLOCK_HARDWARE( mmesa );
    }
-
-
-
-#if 0
-   /* the texture currently exists, so directly update it */
-   mgaUploadSubImage( t, level, xoffset, yoffset, width, height );
-#endif
 }
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxglidew.c,v 1.1 2000/09/24 13:51:15 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxglidew.c,v 1.2 2000/12/08 19:36:23 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -199,7 +199,6 @@ FX_grColorMaskv_NoLock(GLcontext *ctx, const GLboolean rgba[4])
 }
 
 
-
 FxBool
 FX_grLfbLock(fxMesaContext fxMesa, GrLock_t type, GrBuffer_t buffer,
              GrLfbWriteMode_t writeMode, GrOriginLocation_t origin,
@@ -265,6 +264,30 @@ FX_getGrStateSize(fxMesaContext fxMesa)
     grGet(GR_GLIDE_STATE_SIZE, sizeof(int), (void *) &result);
     END_BOARD_LOCK(fxMesa);
     return result;
+}
+
+void
+FX_grGlideGetVersion(fxMesaContext fxMesa, char *buf)
+{
+    BEGIN_BOARD_LOCK(fxMesa);
+    strcpy(buf, grGetString(GR_VERSION));
+    END_BOARD_LOCK(fxMesa);
+}
+
+void
+FX_grSstPerfStats(GrSstPerfStats_t * st)
+{
+    FxI32 n;
+    grGet(GR_STATS_PIXELS_IN, 4, &n);
+    st->pixelsIn = n;
+    grGet(GR_STATS_PIXELS_CHROMA_FAIL, 4, &n);
+    st->chromaFail = n;
+    grGet(GR_STATS_PIXELS_DEPTHFUNC_FAIL, 4, &n);
+    st->zFuncFail = n;
+    grGet(GR_STATS_PIXELS_AFUNC_FAIL, 4, &n);
+    st->aFuncFail = n;
+    grGet(GR_STATS_PIXELS_OUT, 4, &n);
+    st->pixelsOut = n;
 }
 
 void

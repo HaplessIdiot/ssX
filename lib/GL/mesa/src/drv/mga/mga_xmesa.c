@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.8 2000/12/07 20:26:06 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.9 2000/12/21 13:58:55 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -53,6 +53,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "mgatris.h"
 #include "mgapipeline.h"
 #include "mgabuffers.h"
+#include "mgapixel.h"
 
 #include "xf86dri.h"
 #include "mga_xmesa.h"
@@ -127,18 +128,21 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
 
    /* Check that the DRM driver version is compatible */
    if (sPriv->drmMajor != 2 ||
-       sPriv->drmMinor != 0 ||
+       sPriv->drmMinor != 1 ||
        sPriv->drmPatch < 0) {
       char msg[1000];
-      sprintf(msg, "MGA DRI driver expected DRM driver version 2.0.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch);
+      sprintf(msg, "MGA DRI driver expected DRM driver version 2.{0,1}.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch);
       __driMesaMessage(msg);
       return GL_FALSE;
    }
 
+
    /* Allocate the private area */
    mgaScreen = (mgaScreenPrivate *)MALLOC(sizeof(mgaScreenPrivate));
-   if (!mgaScreen)
+   if (!mgaScreen) {
+      __driMesaMessage("Couldn't malloc screen struct");
       return GL_FALSE;
+   }
 
    mgaScreen->sPriv = sPriv;
    sPriv->private = (void *)mgaScreen;
@@ -147,6 +151,7 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
        serverInfo->chipset != MGA_CARD_TYPE_G400) {
       XFree(mgaScreen);
       sPriv->private = NULL;
+      __driMesaMessage("Unrecognized chipset");
       return GL_FALSE;
    }
 
@@ -174,6 +179,7 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
    {
       Xfree(mgaScreen);
       sPriv->private = NULL;
+      __driMesaMessage("Couldn't map agp region");
       return GL_FALSE;
    }
 
@@ -206,6 +212,7 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
       /*drmUnmap(mgaScreen->agp_tex.map, mgaScreen->agp_tex.size);*/
       XFree(mgaScreen);
       sPriv->private = NULL;
+      __driMesaMessage("Couldn't map dma buffers");
       return GL_FALSE;
    }
 
@@ -326,14 +333,6 @@ GLboolean XMesaCreateContext( Display *dpy, GLvisual *mesaVis,
 
    mmesa->hw_stencil = mesaVis->StencilBits && mesaVis->DepthBits == 24;
 
-/*     fprintf(stderr,  */
-/*  	   "mesaVis->DepthBits: %d " */
-/*  	   "mmesa->glCtx->Visual->DepthBits: %d " */
-/*  	   "mmesa->glCtx->Visual->DepthMax: %x\n",  */
-/*  	   mesaVis->DepthBits, */
-/*  	   ctx->Visual->DepthBits,  */
-/*  	   ctx->Visual->DepthMax); */
-
    switch (mesaVis->DepthBits) {
    case 16: 
       mmesa->depth_scale = 1.0/(GLdouble)0xffff; 
@@ -377,6 +376,7 @@ GLboolean XMesaCreateContext( Display *dpy, GLvisual *mesaVis,
    mgaDDInitSpanFuncs( ctx );
    mgaDDInitDriverFuncs( ctx );
    mgaDDInitIoctlFuncs( ctx );
+   mgaDDInitPixelFuncs( ctx );
 
 
    ctx->Driver.TriangleCaps = (DD_TRI_CULL|
@@ -530,7 +530,8 @@ void mgaGetLock( mgaContextPtr mmesa, GLuint flags )
 
    drmGetLock(mmesa->driFd, mmesa->hHWContext, flags);	
 
-   if (*(dPriv->pStamp) != dPriv->lastStamp) { 
+   if (*(dPriv->pStamp) != mmesa->lastStamp) { 
+      mmesa->lastStamp = *(dPriv->pStamp);
       mmesa->setupdone = 0;
       mmesa->dirty_cliprects = (MGA_FRONT|MGA_BACK);
       mgaUpdateRects( mmesa, (MGA_FRONT|MGA_BACK) );

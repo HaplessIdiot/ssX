@@ -23,7 +23,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgadd.c,v 1.5 2000/09/24 13:51:06 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgadd.c,v 1.6 2000/11/08 05:02:45 dawes Exp $ */
 
 
 
@@ -114,6 +114,12 @@ void mgaDDExtensionsInit( GLcontext *ctx )
    if (MGA_IS_G400(MGA_CONTEXT(ctx)))
    {
       gl_extensions_enable( ctx, "GL_EXT_texture_env_add" );
+      gl_extensions_enable( ctx, "GL_MESA_packed_depth_stencil" );
+
+#if defined (MESA_experimetal_agp_allocator)
+      if (!getenv("MGA_DISABLE_AGP_ALLOCATOR"))  
+	 gl_extensions_enable( ctx, "GL_MESA_experimental_agp_allocator" );
+#endif
    }
 
    /* we don't support point parameters in hardware yet */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.9 2000/12/22 12:13:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.10 2001/01/06 20:19:10 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -66,8 +66,8 @@
 
 #ifdef XF86DRI
 #define _XF86DRI_SERVER_
-#include "r128_dri.h"
-#include "r128_sarea.h"
+#include "radeon_dri.h"
+#include "radeon_sarea.h"
 #endif
 
 #define USE_FB                  /* not until overlays */
@@ -130,9 +130,7 @@ typedef enum {
     OPTION_AGP_MODE,
     OPTION_AGP_SIZE,
     OPTION_RING_SIZE,
-    OPTION_VERT_SIZE,
-    OPTION_VBUF_SIZE,
-    OPTION_USE_CP_2D,
+    OPTION_BUFFER_SIZE,
 #endif
 #ifdef ENABLE_FLAT_PANEL
     /* Note: Radeon flat panel support has been disabled for now */
@@ -154,14 +152,11 @@ OptionInfoRec RADEONOptions[] = {
 #ifdef XF86DRI
     { OPTION_IS_PCI,       "ForcePCIMode",     OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_CP_PIO,       "CPPIOMode",        OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_NO_SECURITY,  "CPNoSecurity",     OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_USEC_TIMEOUT, "CPusecTimeout",    OPTV_INTEGER, {0}, FALSE },
     { OPTION_AGP_MODE,     "AGPMode",          OPTV_INTEGER, {0}, FALSE },
     { OPTION_AGP_SIZE,     "AGPSize",          OPTV_INTEGER, {0}, FALSE },
     { OPTION_RING_SIZE,    "RingSize",         OPTV_INTEGER, {0}, FALSE },
-    { OPTION_VERT_SIZE,    "VBListSize",       OPTV_INTEGER, {0}, FALSE },
-    { OPTION_VBUF_SIZE,    "VBSize",           OPTV_INTEGER, {0}, FALSE },
-    { OPTION_USE_CP_2D,    "UseCPfor2D",       OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_BUFFER_SIZE,  "BufferSize",       OPTV_INTEGER, {0}, FALSE },
 #endif
 #ifdef ENABLE_FLAT_PANEL
     /* Note: Radeon flat panel support has been disabled for now */
@@ -1095,12 +1090,11 @@ static Bool RADEONPreInitAccel(ScrnInfoPtr pScrn)
 static Bool RADEONPreInitInt10(ScrnInfoPtr pScrn, xf86Int10InfoPtr *ppInt10)
 {
     RADEONInfoPtr   info = RADEONPTR(pScrn);
-#if 1
+
     if (xf86LoadSubModule(pScrn, "int10")) {
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
 	*ppInt10 = xf86InitInt10(info->pEnt->index);
     }
-#endif
     return TRUE;
 }
 
@@ -1118,29 +1112,11 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 	info->CPMode = RADEON_DEFAULT_CP_BM_MODE;
     }
 
-    if (xf86ReturnOptValBool(RADEONOptions, OPTION_USE_CP_2D, FALSE)) {
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using CP for 2D\n");
-	info->CP2D = TRUE;
-    } else {
-	info->CP2D = FALSE;
-    }
-
-    if (xf86ReturnOptValBool(RADEONOptions, OPTION_NO_SECURITY, FALSE)) {
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		   "WARNING!!!  CP Security checks disabled!!! **********\n");
-	info->CPSecure = FALSE;
-    } else {
-	info->CPSecure = TRUE;
-    }
-
     info->agpMode       = RADEON_DEFAULT_AGP_MODE;
     info->agpSize       = RADEON_DEFAULT_AGP_SIZE;
     info->ringSize      = RADEON_DEFAULT_RING_SIZE;
-    info->vbSize        = RADEON_DEFAULT_VB_SIZE;
-    info->indSize       = RADEON_DEFAULT_IND_SIZE;
+    info->bufSize       = RADEON_DEFAULT_BUFFER_SIZE;
     info->agpTexSize    = RADEON_DEFAULT_AGP_TEX_SIZE;
-
-    info->vbBufSize     = RADEON_DEFAULT_VB_BUF_SIZE;
 
     info->CPusecTimeout = RADEON_DEFAULT_CP_TIMEOUT;
 
@@ -1185,36 +1161,31 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 	}
 
 	if (xf86GetOptValInteger(RADEONOptions,
-				 OPTION_VERT_SIZE, &(info->vbSize))) {
-	    if (info->vbSize < 1 || info->vbSize >= info->agpSize) {
+				 OPTION_BUFFER_SIZE, &(info->bufSize))) {
+	    if (info->bufSize < 1 || info->bufSize >= (int)info->agpSize) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			   "Illegal vertex buffers list size: %d MB\n",
-			   info->vbSize);
+			   "Illegal vertex/indirect buffers size: %d MB\n",
+			   info->bufSize);
 		return FALSE;
+	    }
+	    if (info->bufSize > 2) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "Illegal vertex/indirect buffers size: %d MB\n",
+			   info->bufSize);
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "Clamping vertex/indirect buffers size to 2 MB\n");
+		info->bufSize = 2;
 	    }
 	}
 
-	if (xf86GetOptValInteger(RADEONOptions,
-				 OPTION_VBUF_SIZE, &(info->vbBufSize))) {
-	    int numBufs = info->vbSize*1024*1024/info->vbBufSize;
-	    if (numBufs < 2 || numBufs > 512) { /* FIXME: 512 is arbitrary */
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			   "Illegal individual vertex buffer size: %d bytes\n",
-			   info->vbBufSize);
-		return FALSE;
-	    }
-	}
-
-	if (info->ringSize + info->vbSize + info->indSize + info->agpTexSize >
+	if (info->ringSize + info->bufSize + info->agpTexSize >
 	    info->agpSize) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		       "Buffers are too big for requested AGP space\n");
 	    return FALSE;
 	}
 
-	info->agpTexSize = info->agpSize - (info->ringSize +
-					    info->vbSize +
-					    info->indSize);
+	info->agpTexSize = info->agpSize - (info->ringSize + info->bufSize);
     }
 
     if (xf86GetOptValInteger(RADEONOptions, OPTION_USEC_TIMEOUT,
@@ -1456,14 +1427,14 @@ static void RADEONLoadPalette(ScrnInfoPtr pScrn, int numColors,
 static void
 RADEONBlockHandler(int i, pointer blockData, pointer pTimeout, pointer pReadmask)
 {
-    ScreenPtr   pScreen = screenInfo.screens[i]; 
-    ScrnInfoPtr pScrn   = xf86Screens[i];
+    ScreenPtr     pScreen = screenInfo.screens[i];
+    ScrnInfoPtr   pScrn   = xf86Screens[i];
     RADEONInfoPtr info    = RADEONPTR(pScrn);
-    
+
     pScreen->BlockHandler = info->BlockHandler;
     (*pScreen->BlockHandler) (i, blockData, pTimeout, pReadmask);
     pScreen->BlockHandler = RADEONBlockHandler;
-    
+
     if(info->VideoTimerCallback) {
         (*info->VideoTimerCallback)(pScrn, currentTime.milliseconds);
     }
@@ -1526,21 +1497,19 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			   info->CurrentLayout.pixel_bytes);
 	int maxy        = info->FbMapSize / width_bytes;
 
-	if (!xf86ReturnOptValBool(RADEONOptions, OPTION_NOACCEL, FALSE) &&
-	    (maxy > pScrn->virtualY * 3)
-#ifdef ENABLE_FLAT_PANEL
-	    /* FIXME: Disable 3D support for FPs until it is tested  */
-	    && !info->HasPanelRegs
-#endif
-	    ) {
-	    info->directRenderingEnabled = RADEONDRIScreenInit(pScreen);
-	} else {
+	if (xf86ReturnOptValBool(RADEONOptions, OPTION_NOACCEL, FALSE)) {
+	    xf86DrvMsg(scrnIndex, X_WARNING,
+		       "Acceleration disabled, not initializing the DRI\n");
+	    info->directRenderingEnabled = FALSE;
+	} else if (maxy <= pScrn->virtualY * 3) {
 	    xf86DrvMsg(scrnIndex, X_WARNING,
 		       "Static buffer allocation failed -- "
 		       "need at least %d kB video memory\n",
 		       (pScrn->displayWidth * pScrn->virtualY *
 			info->CurrentLayout.pixel_bytes * 3 + 1023) / 1024);
 	    info->directRenderingEnabled = FALSE;
+	} else {
+	    info->directRenderingEnabled = RADEONDRIScreenInit(pScreen);
 	}
     }
 #endif
@@ -1601,55 +1570,19 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     RADEONDGAInit(pScreen);
 
 				/* Memory manager setup */
-    MemBox.x1 = 0;
-    MemBox.y1 = 0;
-    MemBox.x2 = pScrn->displayWidth;
-    y2        = (info->FbMapSize
-		 / (pScrn->displayWidth * info->CurrentLayout.pixel_bytes));
-				/* The acceleration engine uses 14 bit
-				   signed coordinates, so we can't have any
-				   drawable caches beyond this region. */
-    if (y2 > 8191 ) y2 = 8191; /* because MemBox.y2 is signed short */
-    MemBox.y2 = y2;
-
-    if (!xf86InitFBManager(pScreen, &MemBox)) {
-	xf86DrvMsg(scrnIndex, X_ERROR,
-		   "Memory manager initialization to (%d,%d) (%d,%d) failed\n",
-		   MemBox.x1, MemBox.y1, MemBox.x2, MemBox.y2);
-	return FALSE;
-    } else {
-	int       width, height;
-	FBAreaPtr fbarea;
-
-	xf86DrvMsg(scrnIndex, X_INFO,
-		   "Memory manager initialized to (%d,%d) (%d,%d)\n",
-		   MemBox.x1, MemBox.y1, MemBox.x2, MemBox.y2);
-	if ((fbarea = xf86AllocateOffscreenArea(pScreen, pScrn->displayWidth,
-						2, 0, NULL, NULL, NULL))) {
-	    xf86DrvMsg(scrnIndex, X_INFO,
-		       "Reserved area from (%d,%d) to (%d,%d)\n",
-		       fbarea->box.x1, fbarea->box.y1,
-		       fbarea->box.x2, fbarea->box.y2);
-	} else {
-	    xf86DrvMsg(scrnIndex, X_ERROR, "Unable to reserve area\n");
-	}
-	if (xf86QueryLargestOffscreenArea(pScreen, &width, &height, 0, 0, 0)) {
-	    xf86DrvMsg(scrnIndex, X_INFO,
-		       "Largest offscreen area available: %d x %d\n",
-		       width, height);
-	}
-    }
-
 #ifdef XF86DRI
-				/* Allocate frame buffer space for the
-				   shared back and depth buffers as well
-				   as for local textures. */
     if (info->directRenderingEnabled) {
 	FBAreaPtr fbarea;
-	int       width_bytes = (pScrn->displayWidth *
-				 info->CurrentLayout.pixel_bytes);
-	int       maxy        = info->FbMapSize / width_bytes;
-	int       l;
+	int width_bytes = (pScrn->displayWidth *
+			   info->CurrentLayout.pixel_bytes);
+	int cpp = info->CurrentLayout.pixel_bytes;
+	int bufferSize = ((pScrn->virtualY * width_bytes + RADEON_BUFFER_ALIGN)
+			  & ~RADEON_BUFFER_ALIGN);
+	int l;
+	int scanlines;
+
+	info->frontOffset = 0;
+	info->frontPitch = pScrn->displayWidth;
 
 	switch (info->CPMode) {
 	case RADEON_DEFAULT_CP_PIO_MODE:
@@ -1668,99 +1601,172 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		   "Using %d MB for the ring buffer\n", info->ringSize);
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "Using %d MB for vertex buffers\n", info->vbSize);
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "Using %d MB for indirect buffers\n", info->indSize);
+		   "Using %d MB for vertex/indirect buffers\n", info->bufSize);
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		   "Using %d MB for AGP textures\n", info->agpTexSize);
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "Using %d byte vertex buffers\n", info->vbBufSize);
 
-				/* Allocate the shared back buffer */
-	if ((fbarea = xf86AllocateOffscreenArea(pScreen,
-						pScrn->virtualX,
-						pScrn->virtualY,
-						32, NULL, NULL, NULL))) {
-	    xf86DrvMsg(scrnIndex, X_INFO,
-		       "Reserved back buffer from (%d,%d) to (%d,%d)\n",
-		       fbarea->box.x1, fbarea->box.y1,
-		       fbarea->box.x2, fbarea->box.y2);
+	/* Try for front, back, depth, and three framebuffers worth of
+	 * pixmap cache.  Should be enough for a fullscreen background
+	 * image plus some leftovers.
+	 */
+	info->textureSize = info->FbMapSize - 6 * bufferSize;
 
-	    info->backX = fbarea->box.x1;
-	    info->backY = fbarea->box.y1;
-	} else {
-	    xf86DrvMsg(scrnIndex, X_ERROR, "Unable to reserve back buffer\n");
-	    info->backX = -1;
-	    info->backY = -1;
+	/* If that gives us less than half the available memory, let's
+	 * be greedy and grab some more.  Sorry, I care more about 3D
+	 * performance than playing nicely, and you'll get around a full
+	 * framebuffer's worth of pixmap cache anyway.
+	 */
+	if (info->textureSize < (int)info->FbMapSize / 2) {
+	    info->textureSize = info->FbMapSize - 5 * bufferSize;
+	}
+	if (info->textureSize < (int)info->FbMapSize / 2) {
+	    info->textureSize = info->FbMapSize - 4 * bufferSize;
 	}
 
-				/* Allocate the shared depth buffer */
-	if ((fbarea = xf86AllocateOffscreenArea(pScreen,
-						pScrn->virtualX,
-						pScrn->virtualY,
-						32, NULL, NULL, NULL))) {
-	    xf86DrvMsg(scrnIndex, X_INFO,
-		       "Reserved depth buffer from (%d,%d) to (%d,%d)\n",
-		       fbarea->box.x1, fbarea->box.y1,
-		       fbarea->box.x2, fbarea->box.y2);
-
-	    info->depthX = fbarea->box.x1;
-	    info->depthY = fbarea->box.y1;
-	} else {
-	    xf86DrvMsg(scrnIndex, X_ERROR, "Unable to reserve depth buffer\n");
-	    info->depthX = -1;
-	    info->depthY = -1;
+	/* Check to see if there is more room available after the 8192nd
+	   scanline for textures */
+	if (info->FbMapSize - 8192*width_bytes - bufferSize*2
+	    > info->textureSize) {
+	    info->textureSize =
+		info->FbMapSize - 8192*width_bytes - bufferSize*2;
 	}
 
-				/* Allocate local texture space */
-	if (((maxy - MemBox.y2 - 1) * width_bytes) >
-	    (pScrn->virtualX * pScrn->virtualY * 2 *
-	     info->CurrentLayout.pixel_bytes)) {
-	    info->textureX = 0;
-	    info->textureY = MemBox.y2 + 1;
-	    info->textureSize = (maxy - MemBox.y2 - 1) * width_bytes;
-
+	if (info->textureSize > 0) {
 	    l = RADEONMinBits((info->textureSize-1) / RADEON_NR_TEX_REGIONS);
 	    if (l < RADEON_LOG_TEX_GRANULARITY) l = RADEON_LOG_TEX_GRANULARITY;
 
+	    /* Round the texture size up to the nearest whole number of
+	     * texture regions.  Again, be greedy about this, don't
+	     * round down.
+	     */
 	    info->log2TexGran = l;
 	    info->textureSize = (info->textureSize >> l) << l;
-
-	    xf86DrvMsg(scrnIndex, X_INFO,
-		       "Reserved %d kb for textures: (%d,%d)-(%d,%d)\n",
-		       info->textureSize/1024,
-		       info->textureX,      info->textureY,
-		       pScrn->displayWidth, maxy);
-	} else if ((fbarea = xf86AllocateOffscreenArea(pScreen,
-						       pScrn->virtualX,
-						       pScrn->virtualY * 2,
-						       32,
-						       NULL, NULL, NULL))) {
-	    info->textureX = fbarea->box.x1;
-	    info->textureY = fbarea->box.y1;
-	    info->textureSize = ((fbarea->box.y2 - fbarea->box.y1) *
-				 (fbarea->box.x2 - fbarea->box.x1) *
-				 info->CurrentLayout.pixel_bytes);
-
-	    l = RADEONMinBits((info->textureSize-1) / RADEON_NR_TEX_REGIONS);
-	    if (l < RADEON_LOG_TEX_GRANULARITY) l = RADEON_LOG_TEX_GRANULARITY;
-
-	    info->log2TexGran = l;
-	    info->textureSize = (info->textureSize >> l) << l;
-
-	    xf86DrvMsg(scrnIndex, X_INFO,
-		       "Reserved %d kb for textures: (%d,%d)-(%d,%d)\n",
-		       info->textureSize/1024,
-		       fbarea->box.x1, fbarea->box.y1,
-		       fbarea->box.x2, fbarea->box.y2);
 	} else {
+	    info->textureSize = 0;
+	}
+
+	/* Set a minimum usable local texture heap size.  This will fit
+	 * two 256x256x32bpp textures.
+	 */
+	if (info->textureSize < 512 * 1024) {
+	    info->textureOffset = 0;
+	    info->textureSize = 0;
+	}
+
+				/* Reserve space for textures */
+	info->textureOffset = (info->FbMapSize - info->textureSize +
+			       RADEON_BUFFER_ALIGN) & ~RADEON_BUFFER_ALIGN;
+
+				/* Reserve space for the shared depth buffer */
+	info->depthOffset = (info->textureOffset - bufferSize +
+			     RADEON_BUFFER_ALIGN) & ~RADEON_BUFFER_ALIGN;
+	info->depthPitch = pScrn->displayWidth;
+
+				/* Reserve space for the shared back buffer */
+	info->backOffset = (info->depthOffset - bufferSize +
+			    RADEON_BUFFER_ALIGN) & ~RADEON_BUFFER_ALIGN;
+	info->backPitch = pScrn->displayWidth;
+
+	scanlines = info->backOffset / width_bytes - 1;
+	if (scanlines > 8191) scanlines = 8191;
+
+	MemBox.x1 = 0;
+	MemBox.y1 = 0;
+	MemBox.x2 = pScrn->displayWidth;
+	MemBox.y2 = scanlines;
+
+	if (!xf86InitFBManager(pScreen, &MemBox)) {
 	    xf86DrvMsg(scrnIndex, X_ERROR,
-		       "Unable to reserve texture space in frame buffer\n");
-	    info->textureX = -1;
-	    info->textureY = -1;
+		       "Memory manager initialization to (%d,%d) (%d,%d) failed\n",
+		       MemBox.x1, MemBox.y1, MemBox.x2, MemBox.y2);
+	    return FALSE;
+	} else {
+	    int width, height;
+
+	    xf86DrvMsg(scrnIndex, X_INFO,
+		       "Memory manager initialized to (%d,%d) (%d,%d)\n",
+		       MemBox.x1, MemBox.y1, MemBox.x2, MemBox.y2);
+	    if ((fbarea = xf86AllocateOffscreenArea(pScreen,
+						    pScrn->displayWidth,
+						    2, 0, NULL, NULL, NULL))) {
+		xf86DrvMsg(scrnIndex, X_INFO,
+			   "Reserved area from (%d,%d) to (%d,%d)\n",
+			   fbarea->box.x1, fbarea->box.y1,
+			   fbarea->box.x2, fbarea->box.y2);
+	    } else {
+		xf86DrvMsg(scrnIndex, X_ERROR, "Unable to reserve area\n");
+	    }
+	    if (xf86QueryLargestOffscreenArea(pScreen, &width,
+					      &height, 0, 0, 0)) {
+		xf86DrvMsg(scrnIndex, X_INFO,
+			   "Largest offscreen area available: %d x %d\n",
+			   width, height);
+	    }
+	}
+
+	xf86DrvMsg(scrnIndex, X_INFO,
+		   "Reserved back buffer at offset 0x%x\n",
+		   info->backOffset);
+	xf86DrvMsg(scrnIndex, X_INFO,
+		   "Reserved depth buffer at offset 0x%x\n",
+		   info->depthOffset);
+	xf86DrvMsg(scrnIndex, X_INFO,
+		   "Reserved %d kb for textures at offset 0x%x\n",
+		   info->textureSize/1024, info->textureOffset);
+
+	info->frontPitchOffset = (((info->frontPitch * cpp / 64) << 22) |
+				  (info->frontOffset >> 10));
+
+	info->backPitchOffset = (((info->backPitch * cpp / 64) << 22) |
+				 (info->backOffset >> 10));
+
+	info->depthPitchOffset = (((info->depthPitch * cpp / 64) << 22) |
+				  (info->depthOffset >> 10));
+    }
+    else
+#endif
+    {
+	MemBox.x1 = 0;
+	MemBox.y1 = 0;
+	MemBox.x2 = pScrn->displayWidth;
+	y2        = (info->FbMapSize
+		     / (pScrn->displayWidth *
+			info->CurrentLayout.pixel_bytes));
+				/* The acceleration engine uses 14 bit
+				   signed coordinates, so we can't have any
+				   drawable caches beyond this region. */
+	if (y2 > 8191 ) y2 = 8191;
+	MemBox.y2 = y2;
+
+	if (!xf86InitFBManager(pScreen, &MemBox)) {
+	    xf86DrvMsg(scrnIndex, X_ERROR,
+		       "Memory manager initialization to (%d,%d) (%d,%d) failed\n",
+		       MemBox.x1, MemBox.y1, MemBox.x2, MemBox.y2);
+	    return FALSE;
+	} else {
+	    int       width, height;
+	    FBAreaPtr fbarea;
+
+	    xf86DrvMsg(scrnIndex, X_INFO,
+		       "Memory manager initialized to (%d,%d) (%d,%d)\n",
+		       MemBox.x1, MemBox.y1, MemBox.x2, MemBox.y2);
+	    if ((fbarea = xf86AllocateOffscreenArea(pScreen, pScrn->displayWidth,
+						    2, 0, NULL, NULL, NULL))) {
+		xf86DrvMsg(scrnIndex, X_INFO,
+			   "Reserved area from (%d,%d) to (%d,%d)\n",
+			   fbarea->box.x1, fbarea->box.y1,
+			   fbarea->box.x2, fbarea->box.y2);
+	    } else {
+		xf86DrvMsg(scrnIndex, X_ERROR, "Unable to reserve area\n");
+	    }
+	    if (xf86QueryLargestOffscreenArea(pScreen, &width, &height,
+					      0, 0, 0)) {
+		xf86DrvMsg(scrnIndex, X_INFO,
+			   "Largest offscreen area available: %d x %d\n",
+			   width, height);
+	    }
 	}
     }
-#endif
 
 				/* Backing store setup */
     miInitializeBackingStore(pScreen);
@@ -2849,13 +2855,13 @@ Bool RADEONEnterVT(int scrnIndex, int flags)
     RADEONTRACE(("RADEONEnterVT\n"));
 #ifdef XF86DRI
     if (RADEONPTR(pScrn)->directRenderingEnabled) {
-	RADEONCPStart(pScrn);
+	RADEONCP_START(pScrn, info);
 	DRIUnlock(pScrn->pScreen);
     }
 #endif
     if (!RADEONModeInit(pScrn, pScrn->currentMode)) return FALSE;
     if (info->accelOn)
-	RADEONEngineInit(pScrn);
+	RADEONEngineRestore(pScrn);
 
     info->PaletteSavedOnVT = FALSE;
     RADEONAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
@@ -2875,7 +2881,7 @@ void RADEONLeaveVT(int scrnIndex, int flags)
 #ifdef XF86DRI
     if (RADEONPTR(pScrn)->directRenderingEnabled) {
 	DRILock(pScrn->pScreen, 0);
-	RADEONCPStop(pScrn);
+	RADEONCP_STOP(pScrn, info);
     }
 #endif
     RADEONSavePalette(pScrn, save);
@@ -2891,7 +2897,8 @@ RADEONEnterVTFBDev(int scrnIndex, int flags)
     RADEONSavePtr restore = &info->SavedReg;
     fbdevHWEnterVT(scrnIndex,flags);
     RADEONRestorePalette(pScrn,restore);
-    RADEONEngineInit(pScrn);
+    if (info->accelOn)
+	RADEONEngineRestore(pScrn);
     return TRUE;
 }
 

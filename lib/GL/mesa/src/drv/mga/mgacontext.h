@@ -1,4 +1,4 @@
-/* $XFree86: $*/
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgacontext.h,v 1.1 2000/09/24 13:51:06 alanh Exp $*/
 /*
  * GLX Hardware Device Driver for Matrox Millenium G200
  * Copyright (C) 1999 Wittawat Yamwong
@@ -117,7 +117,8 @@ typedef struct mga_texture_object_s
 struct mga_context_t {
 
    GLcontext *glCtx;
-
+   GLuint lastStamp;		/* fullscreen breaks dpriv->laststamp, 
+				 * need to shadow it here. */
 
    /* Bookkeeping for texturing 
     */
@@ -175,8 +176,8 @@ struct mga_context_t {
    GLuint        Setup[MGA_CTX_SETUP_SIZE];
    GLuint        warp_pipe;
    GLuint        vertsize;
-   GLushort      MonoColor;
-   GLushort      ClearColor;
+   GLuint        MonoColor;
+   GLuint        ClearColor;
    GLuint        ClearDepth;
    GLuint        poly_stipple;
    GLfloat       depth_scale;
@@ -249,6 +250,9 @@ struct mga_context_t {
 
 #define MGAPACKCOLOR565(r,g,b) \
   ((((r) & 0xf8) << 8) | (((g) & 0xfc) << 3) | (((b) & 0xf8) >> 3))
+
+#define MGAPACKCOLOR88(l, a) \
+  (((l) << 8) | (a))
 
 #define MGAPACKCOLOR888(r,g,b) \
   (((r) << 16) | ((g) << 8) | (b))

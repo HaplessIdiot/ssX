@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.33 2000/11/13 23:31:22 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.34 2000/12/12 23:24:26 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -129,13 +129,14 @@ XCOMM nothing
   GAMMAPOBJS = mesa/src/drv/gamma/profiled/?*.o
   GAMMADONES = mesa/src/drv/gamma/DONE
 
-     DRVOBJS = $(GAMMAOBJS) $(MESAOBJS) $(DRIMESAOBJS) $(DRMOBJS)
+     DRVOBJS = $(GAMMAOBJS)  $(MESAOBJS)  $(DRIMESAOBJS)  $(DRMOBJS)
     DRVUOBJS = $(GAMMAUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) $(DRMUOBJS)
     DRVDOBJS = $(GAMMADOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
     DRVPOBJS = $(GAMMAPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
     DRVDONES = $(GAMMADONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
 
-  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src mesa/src/drv/gamma
+  DRVSUBDIRS = mesa/src/drv/gamma
+  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src $(DRVSUBDIRS)
 
 #elif GlxBuiltInTdfx
 
@@ -145,7 +146,7 @@ XCOMM nothing
    TDFXPOBJS = mesa/src/drv/tdfx/profiled/?*.o
    TDFXDONES = mesa/src/drv/tdfx/DONE
 
-     DRVOBJS = $(TDFXOBJS) $(MESAOBJS) $(DRIMESAOBJS) $(DRMOBJS)
+     DRVOBJS = $(TDFXOBJS)  $(MESAOBJS)  $(DRIMESAOBJS)  $(DRMOBJS)
     DRVUOBJS = $(TDFXUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) $(DRMUOBJS)
     DRVDOBJS = $(TDFXDOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
     DRVPOBJS = $(TDFXPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
@@ -153,7 +154,8 @@ XCOMM nothing
 
 REQUIREDLIBS += -lglide3 -ldl
 
-  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src mesa/src/drv/tdfx
+  DRVSUBDIRS = mesa/src/drv/tdfx
+  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src $(DRVSUBDIRS)
 
 #elif GlxBuiltInI810
 
@@ -163,13 +165,14 @@ REQUIREDLIBS += -lglide3 -ldl
    I810POBJS = mesa/src/drv/i810/profiled/?*.o
    I810DONES = mesa/src/drv/i810/DONE
 
-     DRVOBJS = $(I810OBJS) $(COMMONOBJS) $(MESAOBJS) $(DRIMESAOBJS) $(DRMOBJS)
+     DRVOBJS = $(I810OBJS)  $(COMMONOBJS)  $(MESAOBJS)  $(DRIMESAOBJS)  $(DRMOBJS)
     DRVUOBJS = $(I810UOBJS) $(COMMONUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) $(DRMUOBJS)
     DRVDOBJS = $(I810DOBJS) $(COMMONDOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
     DRVPOBJS = $(I810POBJS) $(COMMONPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
     DRVDONES = $(I810DONES) $(COMMONDONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
 
-  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src mesa/src/drv/i810
+  DRVSUBDIRS = mesa/src/drv/i810
+  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src $(DRVSUBDIRS)
 
 #elif GlxBuiltInMga
 
@@ -179,13 +182,14 @@ REQUIREDLIBS += -lglide3 -ldl
     MGAPOBJS = mesa/src/drv/mga/profiled/?*.o
     MGADONES = mesa/src/drv/mga/DONE
 
-     DRVOBJS = $(MGAOBJS) $(MESAOBJS) $(DRIMESAOBJS) $(DRMOBJS)
+     DRVOBJS = $(MGAOBJS)  $(MESAOBJS)  $(DRIMESAOBJS)  $(DRMOBJS)
     DRVUOBJS = $(MGAUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) $(DRMUOBJS)
     DRVDOBJS = $(MGADOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
     DRVPOBJS = $(MGAPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
     DRVDONES = $(MGADONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
 
-  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src mesa/src/drv/mga
+  DRVSUBDIRS = mesa/src/drv/mga
+  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src $(DRVSUBDIRS)
 
 #elif GlxBuiltInR128
 
@@ -195,13 +199,31 @@ REQUIREDLIBS += -lglide3 -ldl
    R128POBJS = mesa/src/drv/r128/profiled/?*.o
    R128DONES = mesa/src/drv/r128/DONE
 
-     DRVOBJS = $(R128OBJS)  $(MESAOBJS)  $(DRIMESAOBJS)  $(DRMOBJS)
-    DRVUOBJS = $(R128UOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) $(DRMUOBJS)
-    DRVDOBJS = $(R128DOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
-    DRVPOBJS = $(R128POBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
-    DRVDONES = $(R128DONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
+     DRVOBJS = $(R128OBJS)  $(COMMONOBJS)  $(MESAOBJS)  $(DRIMESAOBJS)  $(DRMOBJS)
+    DRVUOBJS = $(R128UOBJS) $(COMMONUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) $(DRMUOBJS)
+    DRVDOBJS = $(R128DOBJS) $(COMMONDOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
+    DRVPOBJS = $(R128POBJS) $(COMMONPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
+    DRVDONES = $(R128DONES) $(COMMONDONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
 
-  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src mesa/src/drv/r128
+  DRVSUBDIRS = mesa/src/drv/common mesa/src/drv/r128
+  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src $(DRVSUBDIRS)
+
+#elif GlxBuiltInRadeon
+
+    RADEONOBJS = mesa/src/drv/radeon/?*.o
+   RADEONUOBJS = mesa/src/drv/radeon/unshared/?*.o
+   RADEONDOBJS = mesa/src/drv/radeon/debugger/?*.o
+   RADEONPOBJS = mesa/src/drv/radeon/profiled/?*.o
+   RADEONDONES = mesa/src/drv/radeon/DONE
+
+     DRVOBJS = $(RADEONOBJS)  $(COMMONOBJS)  $(MESAOBJS)  $(DRIMESAOBJS)  $(DRMOBJS)
+    DRVUOBJS = $(RADEONUOBJS) $(COMMONUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) $(DRMUOBJS)
+    DRVDOBJS = $(RADEONDOBJS) $(COMMONDOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
+    DRVPOBJS = $(RADEONPOBJS) $(COMMONPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
+    DRVDONES = $(RADEONDONES) $(COMMONDONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
+
+  DRVSUBDIRS = mesa/src/drv/common mesa/src/drv/radeon
+  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src $(DRVSUBDIRS)
 
 #elif GlxBuiltInFfb
 
@@ -217,7 +239,8 @@ REQUIREDLIBS += -lglide3 -ldl
     DRVPOBJS = $(FFBPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
     DRVDONES = $(FFBDONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
 
-  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src mesa/src/drv/ffb
+  DRVSUBDIRS = mesa/src/drv/ffb
+  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src $(DRVSUBDIRS)
 
 #elif GlxBuiltInSIS
 
@@ -227,13 +250,14 @@ REQUIREDLIBS += -lglide3 -ldl
     SISPOBJS = mesa/src/drv/sis/profiled/?*.o
     SISDONES = mesa/src/drv/sis/DONE
 
-     DRVOBJS = $(SISOBJS) $(MESAOBJS) $(DRIMESAOBJS) $(DRMOBJS)
+     DRVOBJS = $(SISOBJS)  $(MESAOBJS)  $(DRIMESAOBJS)  $(DRMOBJS)
     DRVUOBJS = $(SISUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) $(DRMUOBJS)
     DRVDOBJS = $(SISDOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
     DRVPOBJS = $(SISPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
     DRVDONES = $(SISDONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
 
-  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src mesa/src/drv/sis
+  DRVSUBDIRS = mesa/src/drv/sis
+  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src $(DRVSUBDIRS)
 
 #elif GlxBuiltInMesa
 
@@ -343,6 +367,7 @@ XCOMM libGL has now been made, continue with building the drivers.
     !GlxBuiltInI810 && \
     !GlxBuiltInMga && \
     !GlxBuiltInR128 && \
+    !GlxBuiltInRadeon && \
     !GlxBuiltInFfb && \
     !GlxBuiltInSIS && \
     !GlxBuiltInMesa

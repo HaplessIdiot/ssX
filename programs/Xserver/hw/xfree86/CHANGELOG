@@ -1,4 +1,10 @@
 XFree86 4.0.2a (?? January 2001)
+1252. Resync with DRI CVS trunk (Kevin Martin, VA Linux Systems)
+      - Add Radeon 3D driver (Kevin Martin and Gareth Hughes)
+      - Improve Rage 128 3D driver support (Gareth Hughes)
+      - Add fast AGP read/drawpixels support in MGA driver (Keith Whitwell)
+      - Update DRI docs (Kevin Martin, Brian Paul)
+      - Fix various bugs (Keith Whitwell, Brian Paul, Kevin Martin)
 1251. Rename fsinfo to xfsinfo to avoid a name clash with the fsinfo utility
       in the Berkeley automounter amd (Matthieu Herrb).
 1250. Invert NO_COMPILER_H_EXTRAS to prevent unintentional references to inx()/
@@ -12194,4 +12200,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1511 2001/01/06 21:29:00 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1512 2001/01/06 21:58:29 herrb Exp $

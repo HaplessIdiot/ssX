@@ -23,7 +23,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatris.c,v 1.4 2000/08/28 02:43:12 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatris.c,v 1.5 2000/09/24 13:51:08 alanh Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -129,7 +129,7 @@ void mgaDDTrifuncInit()
 
 
 
-#define ALL_FALLBACK (DD_MULTIDRAW | DD_SELECT | DD_FEEDBACK)
+#define ALL_FALLBACK (DD_SELECT | DD_FEEDBACK)
 #define POINT_FALLBACK (ALL_FALLBACK | DD_POINT_SMOOTH)
 #define LINE_FALLBACK (ALL_FALLBACK | DD_LINE_SMOOTH | DD_LINE_STIPPLE)
 #define TRI_FALLBACK (ALL_FALLBACK | DD_TRI_SMOOTH | DD_TRI_UNFILLED)

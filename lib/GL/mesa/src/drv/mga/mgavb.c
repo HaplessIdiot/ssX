@@ -23,7 +23,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgavb.c,v 1.6 2000/09/24 13:51:09 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgavb.c,v 1.7 2000/11/08 05:02:46 dawes Exp $ */
  
 #include "mgacontext.h"
 #include "mgavb.h"
@@ -297,11 +297,6 @@ void mgaChooseRasterSetupFunc(GLcontext *ctx)
 	 mmesa->tmu_source[0] = 1;
 	 mmesa->tex_dest[1] = MGA_TEX0_BIT;
 
-         /* This doesn't work for non-RGBA textures
-	 if (ctx->Texture.Unit[1].EnvMode == GL_REPLACE)
-	    funcindex &= ~MGA_RGBA_BIT;
-         */
-
 	 if (ctx->Texture.Unit[0].EnvMode == GL_BLEND &&
 	     mmesa->envcolor) 
 	 {
@@ -315,15 +310,6 @@ void mgaChooseRasterSetupFunc(GLcontext *ctx)
       }
    }
 
-/*       if (mmesa->multitex == 0) {  */
-/*          mmesa->tmu_source[1] = mmesa->tmu_source[0];  */
-/*          mmesa->tex_dest[1] = mmesa->tex_dest[0];  */
-/*          mmesa->vertsize = 10;  */
-/*          mmesa->multitex = 1;  */
-/*          funcindex |= MGA_TEX0_BIT|MGA_TEX1_BIT;  */
-/*       }  */
-
-/*     mmesa->vertsize = 10; */
    if (multi != mmesa->multitex)
         mmesa->new_state |= MGA_NEW_WARP; 
 
@@ -424,7 +410,7 @@ void mgaDDDoRasterSetup( struct vertex_buffer *VB )
 
    /* Can't lock, won't lock
     */
-   REFRESH_DRAWABLE_INFO( mmesa );
+/*     REFRESH_DRAWABLE_INFO( mmesa ); */
 
    if (VB->Type == VB_CVA_PRECALC) 
       mgaDDPartialRasterSetup( VB );

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.7 2000/12/12 17:17:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.8 2000/12/21 12:22:56 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -666,12 +666,6 @@ static Bool R128DRIBufInit(R128InfoPtr info, ScreenPtr pScreen)
 	       "[drm] Added %d %d byte vertex/indirect buffers\n",
 	       info->bufNumBufs, R128_BUFFER_SIZE);
 
-    if (drmMarkBufs(info->drmFD, 0.133333, 0.266666)) {
-	xf86DrvMsg(pScreen->myNum, X_ERROR,
-		   "[drm] Failed to mark vertex/indirect buffers list\n");
-	return FALSE;
-    }
-
     if (!(info->buffers = drmMapBufs(info->drmFD))) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[drm] Failed to map vertex/indirect buffers list\n");
@@ -932,30 +926,15 @@ Bool R128DRIFinishScreenInit(ScreenPtr pScreen)
     memset(pSAREAPriv, 0, sizeof(*pSAREAPriv));
 
     pR128DRI                 = (R128DRIPtr)info->pDRIInfo->devPrivate;
-    pR128DRI->registerHandle = info->registerHandle;
-    pR128DRI->registerSize   = info->registerSize;
-
-    pR128DRI->ringHandle     = info->ringHandle;
-    pR128DRI->ringMapSize    = info->ringMapSize;
-    pR128DRI->ringSize       = info->ringSize*1024*1024;
-
-    pR128DRI->ringReadPtrHandle = info->ringReadPtrHandle;
-    pR128DRI->ringReadMapSize   = info->ringReadMapSize;
-
-    pR128DRI->bufHandle      = info->bufHandle;
-    pR128DRI->bufMapSize     = info->bufMapSize;
-    pR128DRI->bufOffset      = info->bufStart;
-
-    pR128DRI->agpTexHandle   = info->agpTexHandle;
-    pR128DRI->agpTexMapSize  = info->agpTexMapSize;
-    pR128DRI->log2AGPTexGran = info->log2AGPTexGran;
-    pR128DRI->agpTexOffset   = info->agpTexStart;
 
     pR128DRI->deviceID       = info->Chipset;
     pR128DRI->width          = pScrn->virtualX;
     pR128DRI->height         = pScrn->virtualY;
     pR128DRI->depth          = pScrn->depth;
     pR128DRI->bpp            = pScrn->bitsPerPixel;
+
+    pR128DRI->IsPCI          = info->IsPCI;
+    pR128DRI->AGPMode        = info->agpMode;
 
     pR128DRI->frontOffset    = info->frontOffset;
     pR128DRI->frontPitch     = info->frontPitch;
@@ -968,11 +947,13 @@ Bool R128DRIFinishScreenInit(ScreenPtr pScreen)
     pR128DRI->textureSize    = info->textureSize;
     pR128DRI->log2TexGran    = info->log2TexGran;
 
-    pR128DRI->IsPCI          = info->IsPCI;
-    pR128DRI->AGPMode        = info->agpMode;
+    pR128DRI->registerHandle = info->registerHandle;
+    pR128DRI->registerSize   = info->registerSize;
 
-    pR128DRI->CCEMode        = info->CCEMode;
-    pR128DRI->CCEFifoSize    = info->CCEFifoSize;
+    pR128DRI->agpTexHandle   = info->agpTexHandle;
+    pR128DRI->agpTexMapSize  = info->agpTexMapSize;
+    pR128DRI->log2AGPTexGran = info->log2AGPTexGran;
+    pR128DRI->agpTexOffset   = info->agpTexStart;
 
     return TRUE;
 }

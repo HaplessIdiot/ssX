@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.14 2000/12/11 22:34:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.15 2000/12/21 12:22:56 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -527,11 +527,11 @@ Bool MGADRIScreenInit(ScreenPtr pScreen)
       drmVersionPtr version = drmGetVersion(pMGA->drmSubFD);
       if (version) {
          if (version->version_major != 2 ||
-             version->version_minor != 0 ||
+             version->version_minor != 1 ||
              version->version_patchlevel < 0) {
             /* incompatible drm version */
             xf86DrvMsg(pScreen->myNum, X_ERROR,
-                       "[drm] MGADRIScreenInit failed (DRM version = %d.%d.%d, expected 2.0.x).  Disabling DRI.\n",
+                       "[drm] MGADRIScreenInit failed (DRM version = %d.%d.%d, expected 2.1.x).  Disabling DRI.\n",
                        version->version_major,
                        version->version_minor,
                        version->version_patchlevel);

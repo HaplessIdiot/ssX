@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.15 2000/12/22 12:13:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.16 2001/01/06 20:19:10 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -651,10 +651,10 @@ static Bool R128GetPLLParameters(ScrnInfoPtr pScrn)
 	INPLL(pScrn,R128_PPLL_REF_DIV) & R128_PPLL_REF_DIV_MASK;
     /* unmap it again */
     R128UnmapMMIO(pScrn);
-     
+
     Nx = (x_mpll_ref_fb_div & 0x00FF00) >> 8;
     M =  (x_mpll_ref_fb_div & 0x0000FF);
-     
+
     pll->xclk =  R128Div((2 * Nx * pll->reference_freq),
 			 (M * PostDivSet[xclk_cntl]));
 
@@ -1025,7 +1025,7 @@ static Bool R128PreInitDDC(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 #ifdef XFree86LOADER
 	xf86LoaderReqSymLists(vbeSymbols,NULL);
 #endif
-	pVbe = VBEInit(pInt10, info->pEnt->index);
+	pVbe = VBEInit(pInt10,info->pEnt->index);
 	if (!pVbe) return FALSE;
 
 	xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(pVbe,NULL)));
@@ -1401,26 +1401,26 @@ Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     if (!info->FBDev)
-	if (!R128PreInitInt10(pScrn, &pInt10))  goto fail;
+	if (!R128PreInitInt10(pScrn, &pInt10)) goto fail;
 
-    if (!R128PreInitConfig(pScrn))              goto fail;
+    if (!R128PreInitConfig(pScrn))             goto fail;
 
-    if (!R128GetBIOSParameters(pScrn, pInt10))  goto fail;
+    if (!R128GetBIOSParameters(pScrn, pInt10)) goto fail;
 
-    if (!R128GetPLLParameters(pScrn))           goto fail;
+    if (!R128GetPLLParameters(pScrn))          goto fail;
 
-    if (!R128PreInitDDC(pScrn, pInt10))         goto fail;
+    if (!R128PreInitDDC(pScrn, pInt10))        goto fail;
 
-    if (!R128PreInitGamma(pScrn))               goto fail;
+    if (!R128PreInitGamma(pScrn))              goto fail;
 
-    if (!R128PreInitModes(pScrn))               goto fail;
+    if (!R128PreInitModes(pScrn))              goto fail;
 
-    if (!R128PreInitCursor(pScrn))              goto fail;
+    if (!R128PreInitCursor(pScrn))             goto fail;
 
-    if (!R128PreInitAccel(pScrn))               goto fail;
+    if (!R128PreInitAccel(pScrn))              goto fail;
 
 #ifdef XF86DRI
-    if (!R128PreInitDRI(pScrn))                 goto fail;
+    if (!R128PreInitDRI(pScrn))                goto fail;
 #endif
 
 				/* Free the video bios (if applicable) */
@@ -1666,189 +1666,184 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 				/* Memory manager setup */
 #ifdef XF86DRI
     if (info->directRenderingEnabled) {
-       FBAreaPtr fbarea;
-       int width_bytes = (pScrn->displayWidth *
-			  info->CurrentLayout.pixel_bytes);
-       int cpp = info->CurrentLayout.pixel_bytes;
-       int bufferSize = pScrn->virtualY * width_bytes;
-       int l, total;
-       int scanlines;
+	FBAreaPtr fbarea;
+	int width_bytes = (pScrn->displayWidth *
+			   info->CurrentLayout.pixel_bytes);
+	int cpp = info->CurrentLayout.pixel_bytes;
+	int bufferSize = pScrn->virtualY * width_bytes;
+	int l, total;
+	int scanlines;
 
-       switch (info->CCEMode) {
-       case R128_DEFAULT_CCE_PIO_MODE:
-	  xf86DrvMsg(pScrn->scrnIndex, X_INFO, "CCE in PIO mode\n");
-	  break;
-       case R128_DEFAULT_CCE_BM_MODE:
-	  xf86DrvMsg(pScrn->scrnIndex, X_INFO, "CCE in BM mode\n");
-	  break;
-       default:
-	  xf86DrvMsg(pScrn->scrnIndex, X_INFO, "CCE in UNKNOWN mode\n");
-	  break;
-       }
+	switch (info->CCEMode) {
+	case R128_DEFAULT_CCE_PIO_MODE:
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "CCE in PIO mode\n");
+	    break;
+	case R128_DEFAULT_CCE_BM_MODE:
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "CCE in BM mode\n");
+	    break;
+	default:
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "CCE in UNKNOWN mode\n");
+	    break;
+	}
 
-       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		  "Using %d MB AGP aperture\n", info->agpSize);
-       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		  "Using %d MB for the ring buffer\n", info->ringSize);
-       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		  "Using %d MB for vertex/indirect buffers\n", info->bufSize);
-       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		  "Using %d MB for AGP textures\n", info->agpTexSize);
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "Using %d MB AGP aperture\n", info->agpSize);
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "Using %d MB for the ring buffer\n", info->ringSize);
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "Using %d MB for vertex/indirect buffers\n", info->bufSize);
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "Using %d MB for AGP textures\n", info->agpTexSize);
 
-       /* Try for front, back, depth, and two framebuffers worth of
-	* pixmap cache.  Should be enough for a fullscreen background
-	* image plus some leftovers.
-	*/
-       info->textureSize = info->FbMapSize - 5 * bufferSize;
+	/* Try for front, back, depth, and two framebuffers worth of
+	 * pixmap cache.  Should be enough for a fullscreen background
+	 * image plus some leftovers.
+	 */
+	info->textureSize = info->FbMapSize - 5 * bufferSize;
 
-       /* If that gives us less than half the available memory, let's
-	* be greedy and grab some more.  Sorry, I care more about 3D
-	* performance than playing nicely, and you'll get around a full
-	* framebuffer's worth of pixmap cache anyway.
-	*/
-       if ( info->textureSize < (int)info->FbMapSize / 2 ) {
-	  info->textureSize = info->FbMapSize - 4 * bufferSize;
-       }
-       if ( info->textureSize > 0 ) {
-	  l = R128MinBits((info->textureSize-1) / R128_NR_TEX_REGIONS);
-	  if (l < R128_LOG_TEX_GRANULARITY) l = R128_LOG_TEX_GRANULARITY;
+	/* If that gives us less than half the available memory, let's
+	 * be greedy and grab some more.  Sorry, I care more about 3D
+	 * performance than playing nicely, and you'll get around a full
+	 * framebuffer's worth of pixmap cache anyway.
+	 */
+	if (info->textureSize < (int)info->FbMapSize / 2) {
+	    info->textureSize = info->FbMapSize - 4 * bufferSize;
+	}
 
-	  /* Round the texture size up to the nearest whole number of
-	   * texture regions.  Again, be greedy about this, don't
-	   * round down.
-	   */
-	  info->log2TexGran = l;
-	  info->textureSize = ((info->textureSize >> l) + 1) << l;
-       } else {
-	  info->textureSize = 0;
-       }
+	if (info->textureSize > 0) {
+	    l = R128MinBits((info->textureSize-1) / R128_NR_TEX_REGIONS);
+	    if (l < R128_LOG_TEX_GRANULARITY) l = R128_LOG_TEX_GRANULARITY;
 
-       total = info->FbMapSize - info->textureSize;
-       scanlines = total / width_bytes;
-       if (scanlines > 8191) scanlines = 8191;
+	    /* Round the texture size up to the nearest whole number of
+	     * texture regions.  Again, be greedy about this, don't
+	     * round down.
+	     */
+	    info->log2TexGran = l;
+	    info->textureSize = (info->textureSize >> l) << l;
+	} else {
+	    info->textureSize = 0;
+	}
 
-       /* Recalculate the texture offset and size to accomodate any
-	* rounding to a whole number of scanlines.
-	* FIXME: Is this actually needed?
-	*/
-       info->textureOffset = scanlines * width_bytes;
-       info->textureSize = info->FbMapSize - info->textureOffset;
+	/* Set a minimum usable local texture heap size.  This will fit
+	 * two 256x256x32bpp textures.
+	 */
+	if (info->textureSize < 512 * 1024) {
+	    info->textureOffset = 0;
+	    info->textureSize = 0;
+	}
 
-       /* Set a minimum usable local texture heap size.  This will fit
-	* two 256x256x32bpp textures.
-	*/
-       if ( info->textureSize < 512 * 1024 ) {
-	  info->textureOffset = 0;
-	  info->textureSize = 0;
-       }
+	total = info->FbMapSize - info->textureSize;
+	scanlines = total / width_bytes;
+	if (scanlines > 8191) scanlines = 8191;
 
-       MemBox.x1 = 0;
-       MemBox.y1 = 0;
-       MemBox.x2 = pScrn->displayWidth;
-       MemBox.y2 = scanlines;
-
-       if (!xf86InitFBManager(pScreen, &MemBox)) {
-	  xf86DrvMsg(scrnIndex, X_ERROR,
-		     "Memory manager initialization to (%d,%d) (%d,%d) failed\n",
-		     MemBox.x1, MemBox.y1, MemBox.x2, MemBox.y2);
-	  return FALSE;
-       } else {
-	  int       width, height;
-
-	  xf86DrvMsg(scrnIndex, X_INFO,
-		     "Memory manager initialized to (%d,%d) (%d,%d)\n",
-		     MemBox.x1, MemBox.y1, MemBox.x2, MemBox.y2);
-	  if ((fbarea = xf86AllocateOffscreenArea(pScreen, pScrn->displayWidth,
-						  2, 0, NULL, NULL, NULL))) {
-	     xf86DrvMsg(scrnIndex, X_INFO,
-			"Reserved area from (%d,%d) to (%d,%d)\n",
-			fbarea->box.x1, fbarea->box.y1,
-			fbarea->box.x2, fbarea->box.y2);
-	  } else {
-	     xf86DrvMsg(scrnIndex, X_ERROR, "Unable to reserve area\n");
-	  }
-	  if (xf86QueryLargestOffscreenArea(pScreen, &width,
-					    &height, 0, 0, 0)) {
-	     xf86DrvMsg(scrnIndex, X_INFO,
-			"Largest offscreen area available: %d x %d\n",
-			width, height);
-	  }
-       }
-
-				/* Allocate the shared back buffer */
-       if ((fbarea = xf86AllocateOffscreenArea(pScreen,
-					       pScrn->virtualX,
-					       pScrn->virtualY,
-					       32, NULL, NULL, NULL))) {
-	  xf86DrvMsg(scrnIndex, X_INFO,
-		     "Reserved back buffer from (%d,%d) to (%d,%d)\n",
-		     fbarea->box.x1, fbarea->box.y1,
-		     fbarea->box.x2, fbarea->box.y2);
-
-	  info->backX = fbarea->box.x1;
-	  info->backY = fbarea->box.y1;
-	  info->backOffset = (fbarea->box.y1 * width_bytes +
-			       fbarea->box.x1 * cpp);
-	  info->backPitch = pScrn->displayWidth;
-       } else {
-	  xf86DrvMsg(scrnIndex, X_ERROR, "Unable to reserve back buffer\n");
-	  info->backX = -1;
-	  info->backY = -1;
-	  info->backOffset = -1;
-	  info->backPitch = -1;
-       }
-
-				/* Allocate the shared depth buffer */
-       if ((fbarea = xf86AllocateOffscreenArea(pScreen,
-					       pScrn->virtualX,
-					       pScrn->virtualY + 1,
-					       32, NULL, NULL, NULL))) {
-	  xf86DrvMsg(scrnIndex, X_INFO,
-		     "Reserved depth buffer from (%d,%d) to (%d,%d)\n",
-		     fbarea->box.x1, fbarea->box.y1,
-		     fbarea->box.x2, fbarea->box.y2);
-
-	  info->depthX = fbarea->box.x1;
-	  info->depthY = fbarea->box.y1;
-	  info->depthOffset = (fbarea->box.y1 * width_bytes +
-			       fbarea->box.x1 * cpp);
-	  info->depthPitch = pScrn->displayWidth;
-	  info->spanOffset = ((fbarea->box.y2 - 1) * width_bytes +
-			      fbarea->box.x1 * cpp);
-	  xf86DrvMsg(scrnIndex, X_INFO,
-		     "Reserved depth span from (%d,%d) offset 0x%x\n",
-		     fbarea->box.x1, fbarea->box.y2 - 1, info->spanOffset);
-       } else {
-	  xf86DrvMsg(scrnIndex, X_ERROR, "Unable to reserve depth buffer\n");
-	  info->depthX = -1;
-	  info->depthY = -1;
-	  info->depthOffset = -1;
-	  info->depthPitch = -1;
-	  info->spanOffset = -1;
-       }
-
-       xf86DrvMsg(scrnIndex, X_INFO,
-		  "Reserved %d kb for textures at offset 0x%x\n",
-		  info->textureSize/1024, total);
-    }
-    else
-#endif
-    {
-	int y;
-
-	y = (info->FbMapSize
-		     / (pScrn->displayWidth *
-			info->CurrentLayout.pixel_bytes));
-	
-				/* The acceleration engine uses 14 bit
-				   signed coordinates, so we can't have any
-				   drawable caches beyond this region. */
-	if (y > 8191) y = 8191;
+	/* Recalculate the texture offset and size to accomodate any
+	 * rounding to a whole number of scanlines.
+	 */
+	info->textureOffset = scanlines * width_bytes;
 
 	MemBox.x1 = 0;
 	MemBox.y1 = 0;
 	MemBox.x2 = pScrn->displayWidth;
-	MemBox.y2 = y;
+	MemBox.y2 = scanlines;
+
+	if (!xf86InitFBManager(pScreen, &MemBox)) {
+	    xf86DrvMsg(scrnIndex, X_ERROR,
+		       "Memory manager initialization to (%d,%d) (%d,%d) failed\n",
+		       MemBox.x1, MemBox.y1, MemBox.x2, MemBox.y2);
+	    return FALSE;
+	} else {
+	    int width, height;
+
+	    xf86DrvMsg(scrnIndex, X_INFO,
+		       "Memory manager initialized to (%d,%d) (%d,%d)\n",
+		       MemBox.x1, MemBox.y1, MemBox.x2, MemBox.y2);
+	    if ((fbarea = xf86AllocateOffscreenArea(pScreen,
+						    pScrn->displayWidth,
+						    2, 0, NULL, NULL, NULL))) {
+		xf86DrvMsg(scrnIndex, X_INFO,
+			   "Reserved area from (%d,%d) to (%d,%d)\n",
+			   fbarea->box.x1, fbarea->box.y1,
+			   fbarea->box.x2, fbarea->box.y2);
+	    } else {
+		xf86DrvMsg(scrnIndex, X_ERROR, "Unable to reserve area\n");
+	    }
+	    if (xf86QueryLargestOffscreenArea(pScreen, &width,
+					      &height, 0, 0, 0)) {
+		xf86DrvMsg(scrnIndex, X_INFO,
+			   "Largest offscreen area available: %d x %d\n",
+			   width, height);
+	    }
+	}
+
+				/* Allocate the shared back buffer */
+	if ((fbarea = xf86AllocateOffscreenArea(pScreen,
+						pScrn->virtualX,
+						pScrn->virtualY,
+						32, NULL, NULL, NULL))) {
+	    xf86DrvMsg(scrnIndex, X_INFO,
+		       "Reserved back buffer from (%d,%d) to (%d,%d)\n",
+		       fbarea->box.x1, fbarea->box.y1,
+		       fbarea->box.x2, fbarea->box.y2);
+
+	    info->backX = fbarea->box.x1;
+	    info->backY = fbarea->box.y1;
+	    info->backOffset = (fbarea->box.y1 * width_bytes +
+				fbarea->box.x1 * cpp);
+	    info->backPitch = pScrn->displayWidth;
+	} else {
+	    xf86DrvMsg(scrnIndex, X_ERROR, "Unable to reserve back buffer\n");
+	    info->backX = -1;
+	    info->backY = -1;
+	    info->backOffset = -1;
+	    info->backPitch = -1;
+	}
+
+				/* Allocate the shared depth buffer */
+	if ((fbarea = xf86AllocateOffscreenArea(pScreen,
+						pScrn->virtualX,
+						pScrn->virtualY + 1,
+						32, NULL, NULL, NULL))) {
+	    xf86DrvMsg(scrnIndex, X_INFO,
+		       "Reserved depth buffer from (%d,%d) to (%d,%d)\n",
+		       fbarea->box.x1, fbarea->box.y1,
+		       fbarea->box.x2, fbarea->box.y2);
+
+	    info->depthX = fbarea->box.x1;
+	    info->depthY = fbarea->box.y1;
+	    info->depthOffset = (fbarea->box.y1 * width_bytes +
+				 fbarea->box.x1 * cpp);
+	    info->depthPitch = pScrn->displayWidth;
+	    info->spanOffset = ((fbarea->box.y2 - 1) * width_bytes +
+				fbarea->box.x1 * cpp);
+	    xf86DrvMsg(scrnIndex, X_INFO,
+		       "Reserved depth span from (%d,%d) offset 0x%x\n",
+		       fbarea->box.x1, fbarea->box.y2 - 1, info->spanOffset);
+	} else {
+	    xf86DrvMsg(scrnIndex, X_ERROR, "Unable to reserve depth buffer\n");
+	    info->depthX = -1;
+	    info->depthY = -1;
+	    info->depthOffset = -1;
+	    info->depthPitch = -1;
+	    info->spanOffset = -1;
+	}
+
+	xf86DrvMsg(scrnIndex, X_INFO,
+		   "Reserved %d kb for textures at offset 0x%x\n",
+		   info->textureSize/1024, info->textureOffset);
+    }
+    else
+#endif
+    {
+	MemBox.x1 = 0;
+	MemBox.y1 = 0;
+	MemBox.x2 = pScrn->displayWidth;
+	MemBox.y2 = (info->FbMapSize
+		     / (pScrn->displayWidth *
+			info->CurrentLayout.pixel_bytes));
+				/* The acceleration engine uses 14 bit
+				   signed coordinates, so we can't have any
+				   drawable caches beyond this region. */
+	if (MemBox.y2 > 8191) MemBox.y2 = 8191;
 
 	if (!xf86InitFBManager(pScreen, &MemBox)) {
 	    xf86DrvMsg(scrnIndex, X_ERROR,
@@ -2050,7 +2045,7 @@ static void R128RestoreFPRegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
     } else {
 	if (restore->lvds_gen_cntl & (R128_LVDS_ON | R128_LVDS_BLON)) {
 	    OUTREG(R128_LVDS_GEN_CNTL,
-		restore->lvds_gen_cntl & (CARD32)~R128_LVDS_BLON);
+		   restore->lvds_gen_cntl & (CARD32)~R128_LVDS_BLON);
 	    usleep(R128PTR(pScrn)->PanelPwrDly * 1000);
 	    OUTREG(R128_LVDS_GEN_CNTL, restore->lvds_gen_cntl);
 	} else {
@@ -2516,12 +2511,12 @@ static void R128InitFPRegisters(R128SavePtr orig, R128SavePtr save,
     else               save->fp_vert_stretch |=  (R128_VERT_STRETCH_ENABLE |
 						  R128_VERT_STRETCH_BLEND);
 
-    save->fp_gen_cntl = orig->fp_gen_cntl &
+    save->fp_gen_cntl = (orig->fp_gen_cntl &
 			 (CARD32)~(R128_FP_SEL_CRTC2 |
 				   R128_FP_CRTC_USE_SHADOW_VEND |
 				   R128_FP_CRTC_HORZ_DIV2_EN |
 				   R128_FP_CRTC_HOR_CRT_DIV2_DIS |
-				   R128_FP_USE_SHADOW_EN);
+				   R128_FP_USE_SHADOW_EN));
     if (orig->fp_gen_cntl & R128_FP_DETECT_SENSE) {
 	save->fp_gen_cntl |= (R128_FP_CRTC_DONT_SHADOW_VPAR |
 			      R128_FP_TDMS_EN);

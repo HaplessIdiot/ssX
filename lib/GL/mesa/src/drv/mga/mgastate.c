@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgastate.c,v 1.5 2000/09/24 13:51:07 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgastate.c,v 1.6 2000/11/08 05:02:46 dawes Exp $ */
 
 #include <stdio.h>
 
@@ -834,15 +834,7 @@ void mgaEmitHwStateLocked( mgaContextPtr mmesa )
 
    mmesa->sarea->WarpPipe = mmesa->warp_pipe;
    mmesa->sarea->vertexsize = mmesa->vertsize;
-/*     mmesa->sarea->vertexsize = 10; */
    mmesa->sarea->dirty |= mmesa->dirty;
-
-#if 0
-   if (mmesa->dirty & MGA_UPLOAD_PIPE) 
-      mgaPrintSetupFlags("warp pipe", mmesa->sarea->WarpPipe);
-/*     fprintf(stderr, "in mgaEmitHwStateLocked: dirty now %x\n", */
-/*  	   mmesa->sarea->dirty); */
-#endif
 
    mmesa->dirty &= (MGA_UPLOAD_CLIPRECTS|MGA_WAIT_AGE);
 }
@@ -1051,9 +1043,6 @@ void mgaDDUpdateState( GLcontext *ctx )
    if (mmesa->new_state & MGA_NEW_TEXTURE)
       mgaDDUpdateHwState( ctx );
 
-   if (0) fprintf(stderr, "fallback %x indirect %x\n", mmesa->Fallback, 
-		  mmesa->IndirectTriangles);
-   
    if (!mmesa->Fallback) {
       ctx->IndirectTriangles &= ~DD_SW_RASTERIZE;
       ctx->IndirectTriangles |= mmesa->IndirectTriangles;

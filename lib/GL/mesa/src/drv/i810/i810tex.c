@@ -194,10 +194,10 @@ static i810TextureObjectPtr i810CreateTexObj(i810ContextPtr imesa,
    switch( image->Format ) {
    case GL_RGB:
    case GL_LUMINANCE:
-   case GL_ALPHA:
       t->texelBytes = 2;
       textureFormat = MI1_FMT_16BPP | MI1_PF_16BPP_RGB565;
       break;
+   case GL_ALPHA:
    case GL_LUMINANCE_ALPHA:
    case GL_INTENSITY:
    case GL_RGBA:

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.7 2000/09/26 15:56:47 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.8 2000/11/08 05:02:45 dawes Exp $ */
 
 #include <stdio.h>
 
@@ -18,9 +18,6 @@
 
 #include "drm.h"
 #include <sys/ioctl.h>
-
-#define DEPTH_SCALE_16 ((GLfloat)0xffff)
-#define DEPTH_SCALE_32 ((GLfloat)0xffffffff) 
 
 static void mga_iload_dma_ioctl(mgaContextPtr mmesa,
 				unsigned long dest, 
@@ -161,8 +158,6 @@ GLbitfield mgaClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
    int retcode;
    int i;
    static int nrclears;
-
-   if (0) fprintf(stderr, "clear %d: %d,%d %dx%d\n", all,cx,cy,cw,ch);
 
    clear.flags = 0;
    clear.clear_color = mmesa->ClearColor;
@@ -308,8 +303,6 @@ void mgaSwapBuffers( mgaContextPtr mmesa )
    pbox = dPriv->pClipRects;
    nbox = dPriv->numClipRects;
 
-   if (0) fprintf(stderr, "swap, nbox %d\n", nbox);
-
    for (i = 0 ; i < nbox ; )
    {
       int nr = MIN2(i + MGA_NR_SAREA_CLIPRECTS, dPriv->numClipRects);
@@ -320,20 +313,11 @@ void mgaSwapBuffers( mgaContextPtr mmesa )
       for ( ; i < nr ; i++) 
 	 *b++ = pbox[i];
       
-      if (0)
-	 fprintf(stderr, "DRM_IOCTL_MGA_SWAP\n"); 
-
-#if 1
       if((retcode = ioctl(mmesa->driFd, DRM_IOCTL_MGA_SWAP, &swap))) {
 	 printf("send swap retcode = %d\n", retcode);
+	 UNLOCK_HARDWARE( mmesa );
 	 exit(1);
       }
-#else
-      mgaUpdateLock( mmesa, DRM_LOCK_FLUSH );
-#endif
-
-      if (0)
-	 fprintf(stderr, "finished swap %d\n", ++nrswaps);
    }
 
    tmp = GET_ENQUEUE_AGE(mmesa);
@@ -371,7 +355,6 @@ void mgaDDFinish( GLcontext *ctx  )
 void mgaWaitAgeLocked( mgaContextPtr mmesa, int age  ) 
 {
    if (GET_DISPATCH_AGE(mmesa) < age) {
-      if (0) fprintf(stderr, "\n\n\nmgaWaitAgeLocked\n");
       mgaUpdateLock( mmesa, DRM_LOCK_FLUSH );
    }
 }
@@ -382,7 +365,6 @@ void mgaWaitAge( mgaContextPtr mmesa, int age  )
    if (GET_DISPATCH_AGE(mmesa) < age) {
       LOCK_HARDWARE(mmesa);
       if (GET_DISPATCH_AGE(mmesa) < age) {
-	 if (0) fprintf(stderr, "\n\n\nmgaWaitAge\n");
 	 mgaUpdateLock( mmesa, DRM_LOCK_FLUSH );
       }
       UNLOCK_HARDWARE(mmesa);
@@ -436,14 +418,6 @@ void mgaFlushVerticesLocked( mgaContextPtr mmesa )
     */
    mmesa->sarea->dirty |= MGA_UPLOAD_CTX; 
       
-   /* FIXME: dstorg bug
-    */
-   if (0)
-      if (mmesa->lastX != mmesa->drawX || mmesa->lastY != mmesa->drawY)
-	 fprintf(stderr, "****** last: %d,%d current: %d,%d\n",
-		 mmesa->lastX, mmesa->lastY,
-		 mmesa->drawX, mmesa->drawY);
-
    vertex.idx = buffer->idx;
    vertex.used = buffer->used;
    vertex.discard = 0;
@@ -454,6 +428,7 @@ void mgaFlushVerticesLocked( mgaContextPtr mmesa )
    if (nbox >= MGA_NR_SAREA_CLIPRECTS)
       mmesa->dirty |= MGA_UPLOAD_CLIPRECTS;
 
+#if 0
    if (!vertex.used || !(mmesa->dirty & MGA_UPLOAD_CLIPRECTS)) 
    {
       if (nbox == 1) 
@@ -469,6 +444,7 @@ void mgaFlushVerticesLocked( mgaContextPtr mmesa )
       age_mmesa(mmesa, mmesa->sarea->last_enqueue);
    } 
    else 
+#endif
    {      
       for (i = 0 ; i < nbox ; )
       {
@@ -596,6 +572,18 @@ void mgaGetILoadBufferLocked( mgaContextPtr mmesa )
    mmesa->iload_buffer = mga_get_buffer_ioctl( mmesa );
 }
 
+drmBufPtr mgaGetBufferLocked( mgaContextPtr mmesa )
+{
+   return mga_get_buffer_ioctl( mmesa );
+}
+
+void mgaGetEltBufLocked( mgaContextPtr mmesa )
+{
+   mmesa->elt_buf = mga_get_buffer_ioctl( mmesa );
+}
+
+
+
 
 void mgaDDFlush( GLcontext *ctx )
 {
@@ -609,7 +597,6 @@ void mgaDDFlush( GLcontext *ctx )
     */
    if (1 || GET_DISPATCH_AGE( mmesa ) < mmesa->sarea->last_enqueue) {
       LOCK_HARDWARE( mmesa );
-      if (0) fprintf(stderr, "mgaDDFlush %d %d\n", GET_DISPATCH_AGE( mmesa ),  mmesa->sarea->last_enqueue);
       mgaUpdateLock( mmesa, DRM_LOCK_FLUSH );
       UNLOCK_HARDWARE( mmesa );
    }
@@ -627,9 +614,6 @@ void mgaFireEltsLocked( mgaContextPtr mmesa,
    drmBufPtr buffer = mmesa->elt_buf;
    drm_mga_indices_t elts;
    int i;
-
-
-   if (0) fprintf(stderr, "FireElts %d %d\n", start/4, end/4);
 
    if (!buffer)
       return;
@@ -662,8 +646,6 @@ void mgaFireEltsLocked( mgaContextPtr mmesa,
       else
 	 mmesa->sarea->nbox = nbox;
 
-      if (0)
-	 fprintf(stderr, "Firing elts -- case a nbox %d\n", nbox);
 
       elts.discard = discard;
       ioctl(mmesa->driFd, DRM_IOCTL_MGA_INDICES, &elts);
@@ -704,8 +686,6 @@ void mgaFireEltsLocked( mgaContextPtr mmesa,
 	 if (nr == nbox) 
 	    elts.discard = discard;
 
-	 if (0)
-	    fprintf(stderr, "Firing elts -- case b nbox %d\n", nbox);
 
 	 mmesa->sarea->dirty |= MGA_UPLOAD_CLIPRECTS;
 	 ioctl(mmesa->driFd, DRM_IOCTL_MGA_INDICES, &elts);
@@ -716,10 +696,6 @@ void mgaFireEltsLocked( mgaContextPtr mmesa,
    mmesa->dirty &= ~MGA_UPLOAD_CLIPRECTS;
 }
 
-void mgaGetEltBufLocked( mgaContextPtr mmesa )
-{
-   mmesa->elt_buf = mga_get_buffer_ioctl( mmesa );
-}
 
 void mgaReleaseBufLocked( mgaContextPtr mmesa, drmBufPtr buffer )
 {

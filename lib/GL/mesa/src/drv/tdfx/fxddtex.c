@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxddtex.c,v 1.2 2000/12/08 19:36:23 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxddtex.c,v 1.3 2000/12/08 21:34:20 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -873,7 +873,7 @@ fxDDTexImage2D(GLcontext * ctx, GLenum target, GLint level,
                GLboolean * retainInternalCopy)
 {
     fxMesaContext fxMesa = FX_CONTEXT(ctx);
-    const GLboolean allow32bpt = fxMesa->haveHwStencil;
+    const GLboolean allow32bpt = fxMesa->isNapalm;
     GrTextureFormat_t gldformat;
     tfxTexInfo *ti;
     tfxMipMapLevel *mml;
@@ -1239,7 +1239,7 @@ fxDDCompressedTexImage2D( GLcontext *ctx, GLenum target,
                           GLboolean *retainInternalCopy)
 {
     fxMesaContext fxMesa = FX_CONTEXT(ctx);
-    const GLboolean allow32bpt = fxMesa->haveHwStencil;
+    const GLboolean allow32bpt = fxMesa->isNapalm;
     GrTextureFormat_t gldformat;
     tfxTexInfo *ti;
     tfxMipMapLevel *mml;
