@@ -1,4 +1,14 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 666. Via driver updates:
+       - Fix pixmap caches and Xv. The blitter has a 2048 pixel limit so we
+         must constrain the pixmap cache.
+       - Rip out all the memory allocator garbage and put it in one place.
+       - Allow optional use of AlanH's new linear allocator (not yet heavily
+         tested).
+       - Fix allocation bugs that this clean up made visible.
+       - Add missing I2C symbols.
+       - Some small formatting/other cleanups.
+      (Alan Cox).
  665. Fix a problem with distinguishing unassigned characters in the FreeType
       backend (Bugzilla #975, Roland Mainz, Chisato Yamauchi).
  664. Update Japanese localization of XDarwin GUI (Toshimitsu Tanaka).
@@ -18361,7 +18371,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3034 2003/12/17 18:03:02 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3035 2003/12/17 18:14:43 dawes Exp $
 
 
 
