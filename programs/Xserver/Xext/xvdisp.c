@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.20 2001/06/19 01:26:36 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.21 2001/07/10 07:49:33 mvojkovi Exp $ */
 
 /*
 ** File: 
@@ -1162,9 +1162,9 @@ ProcXvShmPutImage(ClientPtr client)
       }
   }
 
-  if(!pImage) {
+  if(!pImage)
      return BadMatch;
-  }
+
   if(!(shmdesc = (ShmDescPtr)LookupIDByType(stuff->shmseg, ShmSegType))) 
     {
       client->errorValue = stuff->shmseg;
@@ -1175,12 +1175,12 @@ ProcXvShmPutImage(ClientPtr client)
   height = stuff->height;
   size_needed = (*pPort->pAdaptor->ddQueryImageAttributes)(client, 
 			pPort, pImage, &width, &height, NULL, NULL);
-  if((size_needed + stuff->offset) > shmdesc->size) {
+  if((size_needed + stuff->offset) > shmdesc->size)
       return BadAccess;
-  }
-  if((width < stuff->width) || (height < stuff->height)) {
+
+  if((width < stuff->width) || (height < stuff->height))
      return BadValue;
-  }
+     
   status = XVCALL(diPutImage)(client, pDraw, pPort, pGC, 
 			    stuff->src_x, stuff->src_y,
 			    stuff->src_w, stuff->src_h,
@@ -1200,7 +1200,7 @@ ProcXvShmPutImage(ClientPtr client)
         ev.shmseg = stuff->shmseg;
         ev.offset = stuff->offset;
         WriteEventsToClient(client, 1, (xEvent *) &ev);
-  } 
+  }
 
   return status;
 }
@@ -1938,8 +1938,6 @@ XineramaXvShmPutImage(ClientPtr client)
     y = stuff->drw_y;
 
     FOR_NSCREENS_BACKWARD(i) {
-        Bool SentEvent = FALSE;
-
 	if(port->info[i].id) {
 	   stuff->drawable = draw->info[i].id;
 	   stuff->port = port->info[i].id;
@@ -1950,8 +1948,7 @@ XineramaXvShmPutImage(ClientPtr client)
 		stuff->drw_x -= panoramiXdataPtr[i].x;
 		stuff->drw_y -= panoramiXdataPtr[i].y;
 	   }
-	   stuff->send_event = (send_event && !SentEvent) ? 1 : 0;
-	   SentEvent = TRUE;
+	   stuff->send_event = (send_event && !i) ? 1 : 0;
 
 	   result = ProcXvShmPutImage(client);
 	}
@@ -2101,37 +2098,26 @@ XineramaXvPutStill(ClientPtr client)
 
 void XineramifyXv(void)
 {
-   ScreenPtr pScreen;
+   ScreenPtr pScreen, screen0 = screenInfo.screens[0];
+   XvScreenPtr xvsp0 = (XvScreenPtr)screen0->devPrivates[XvScreenIndex].ptr;
    XvAdaptorPtr refAdapt, pAdapt;
    XvAttributePtr pAttr;
    XvScreenPtr xvsp;
    Bool isOverlay, hasOverlay;
    PanoramiXRes *port;
    XvAdaptorPtr MatchingAdaptors[MAXSCREENS];
-   int i, j, k, l, init;
-   ScreenPtr screen_init;
-   XvScreenPtr xvsp_init = NULL;
-
-   for(init = 0; init < PanoramiXNumScreens; init++) {   
-     screen_init = screenInfo.screens[init];
-     if (screen_init->devPrivates[XvScreenIndex].ptr) {
-       xvsp_init = (XvScreenPtr)screen_init->devPrivates[XvScreenIndex].ptr;
-       break;
-     }
-   }
-   if (!xvsp_init) return;
-   
-   if (init != 0)
-     screenInfo.screens[0]->devPrivates[XvScreenIndex].ptr = xvsp_init;
+   int i, j, k, l;
 
    XvXRTPort = CreateNewResourceType(XineramaDeleteResource);
 
-   for(i = 0; i < xvsp_init->nAdaptors; i++) {
-      refAdapt = xvsp_init->pAdaptors + i;
+   if(!xvsp0) return;
+   
+   for(i = 0; i < xvsp0->nAdaptors; i++) {
+      refAdapt = xvsp0->pAdaptors + i;
 
       bzero(MatchingAdaptors, sizeof(XvAdaptorPtr) * MAXSCREENS);
       
-      MatchingAdaptors[init] = refAdapt;
+      MatchingAdaptors[0] = refAdapt;
    
       if(!(refAdapt->type & XvInputMask)) continue;
       
@@ -2144,7 +2130,7 @@ void XineramifyXv(void)
 	 }
       }
    
-      for(j = init + 1; j < PanoramiXNumScreens; j++) {
+      for(j = 1; j < PanoramiXNumScreens; j++) {
          pScreen = screenInfo.screens[j];
 	 xvsp = (XvScreenPtr)pScreen->devPrivates[XvScreenIndex].ptr;
 
@@ -2204,11 +2190,10 @@ void XineramifyXv(void)
       for(j = 0; j < refAdapt->nPorts; j++) {
          if(!(port = xalloc(sizeof(PanoramiXRes))))
 	    break;
-	 port->info[init].id = MatchingAdaptors[init]->base_id + j;
-	 AddResource(port->info[init].id, XvXRTPort, port);
+	 port->info[0].id = MatchingAdaptors[0]->base_id + j;
+	 AddResource(port->info[0].id, XvXRTPort, port);
 
-	 for(k = 0; k < PanoramiXNumScreens; k++) {
-	   if (k == init) continue;
+	 for(k = 1; k < PanoramiXNumScreens; k++) {
 	    if(MatchingAdaptors[k] && (MatchingAdaptors[k]->nPorts > j)) 
 		port->info[k].id = MatchingAdaptors[k]->base_id + j;
 	    else
