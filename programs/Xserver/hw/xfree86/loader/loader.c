@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.50 2001/01/06 21:29:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.51 2001/02/16 01:36:06 dawes Exp $ */
 
 /*
  *
@@ -1196,20 +1196,20 @@ LoaderHandleOpen(int handle)
 void *
 LoaderSymbol(const char *sym)
 {
-  int i;
-  itemPtr item = NULL;
-  for (i = 0; i < numloaders; i++)
+    int i;
+    itemPtr item = NULL;
+    for (i = 0; i < numloaders; i++)
 	funcs[i].ResolveSymbols(&funcs[i]);
 
-      item = (itemPtr) LoaderHashFind(sym);
+    item = (itemPtr) LoaderHashFind(sym);
 
-  if ( item )
-    return item->address ;
-  else
+    if ( item )
+	return item->address ;
+    else
 #ifdef DLOPEN_SUPPORT
-    return(DLFindSymbol(sym));
+	return(DLFindSymbol(sym));
 #else
-    return NULL;
+	return NULL;
 #endif
 }
 
