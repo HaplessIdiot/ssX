@@ -12,9 +12,9 @@ XCOMM $XFree86: xc/lib/font/bitmap/Imakefile,v 1.11 2001/04/03 17:51:59 paulo Ex
 SUBDIRS = module
 #endif
 
-#ifndef KDriveXServer
 BDFSRCS=bdfread.c bdfutils.c
 BDFOBJS=bdfread.o bdfutils.o
+#ifndef KDriveXServer
 BDFDEFS=-DBDFFORMAT
 
 SNFSRCS=snfread.c
