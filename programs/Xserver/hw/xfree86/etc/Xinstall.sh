@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.39 2002/05/05 17:53:42 herrb Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.40 2002/12/22 01:49:32 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -748,6 +748,7 @@ GetBindistVersion()
 		*)
 			BINDISTFULLVERSION=$BINDISTFULLPREFIX.0
 			;;
+		esac
 	else
 		echo "Warning: can't detect the bindist version"
 	fi
