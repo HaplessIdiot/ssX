@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.19 2001/03/07 19:37:51 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.20 2001/06/19 01:26:36 mvojkovi Exp $ */
 
 /*
 ** File: 
@@ -2109,6 +2109,8 @@ void XineramifyXv(void)
    int i, j, k, l;
 
    XvXRTPort = CreateNewResourceType(XineramaDeleteResource);
+
+   if(!xvsp0) return;
    
    for(i = 0; i < xvsp0->nAdaptors; i++) {
       refAdapt = xvsp0->pAdaptors + i;
