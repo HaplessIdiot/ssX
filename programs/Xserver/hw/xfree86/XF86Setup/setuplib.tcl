@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.12 1996/09/29 12:51:14 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.13 1996/12/27 06:54:13 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -480,16 +480,16 @@ proc mesg { text {buttontype okay} } {
 	global Dialog
 
 	if { ![string length $Dialog] } {
-		puts $text
+		puts -nonewline $text
 		flush stdout
 		if { [string compare $buttontype yesno] == 0 } {
-			puts -nonewline "Okay (y/n)? "
+			puts -nonewline " "
 			flush stdout
 			gets stdin response
 			return [string match {[yY]} [string index $response 0]]
 		}
 		if { [string compare $buttontype okay] == 0 } {
-			puts -nonewline "Press \[Enter\] to continue..."
+			puts -nonewline "\n\nPress \[Enter\] to continue..."
 			flush stdout
 			gets stdin response
 		}

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.102 1997/03/17 07:17:35 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.103 1997/03/22 09:34:25 hohndel Exp $
 /*
  * Server Master Makefile
  */
@@ -764,6 +764,7 @@ XF86S3OBJS = $(XF86COMSRC)/XF86_S3.o $(XF86ACCELSRC)/s3/s3Conf.o \
              $(S3DRIVERSRC)/s3_generic/s3_generic.o
 XF86S3LIBS = $(XF86ACCELSRC)/s3/LibraryTargetName(s3) \
              $(XF86ACCELSRC)/s3/LibraryTargetName(s3pio) \
+             $(XF86ACCELSRC)/s3/LibraryTargetName(s3) \
              $(XF86ACCELSRC)/s3/s3newmmio/LibraryTargetName(s3newmmio) \
              $(XF86ACCELSRC)/s3/s3mmio/LibraryTargetName(s3mmio) $(XF86LIBS) \
              CFBLibs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache)
@@ -1307,6 +1308,8 @@ XF98NECS3OBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3nec/s3Conf.o \
                 $(XF98NECS3DRIVERSRC)/mmio_928/mmio_928.o \
                 $(XF98NECS3DRIVERSRC)/s3_generic/s3_generic.o
 XF98NECS3LIBS = $(XF98ACCELSRC)/s3nec/LibraryTargetName(s3nec) \
+                $(XF98ACCELSRC)/s3nec/LibraryTargetName(s3necpio) \
+                $(XF98ACCELSRC)/s3nec/LibraryTargetName(s3nec) \
                 $(XF98ACCELSRC)/s3nec/s3newmmio/LibraryTargetName(s3necnewmmio) \
                 $(XF98ACCELSRC)/s3nec/s3mmio/LibraryTargetName(s3necmmio) \
                 $(XF98LIBSNEC) CFBLibs \
@@ -1343,6 +1346,8 @@ XF98PWSKBOBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3pwskb/s3Conf.o \
                 $(XF98PWSKBDRIVERSRC)/mmio_928/mmio_928.o \
                 $(XF98PWSKBDRIVERSRC)/s3_generic/s3_generic.o
 XF98PWSKBLIBS = $(XF98ACCELSRC)/s3pwskb/LibraryTargetName(s3pwskb) \
+                $(XF98ACCELSRC)/s3pwskb/LibraryTargetName(s3pwskbpio) \
+                $(XF98ACCELSRC)/s3pwskb/LibraryTargetName(s3pwskb) \
                 $(XF98ACCELSRC)/s3pwskb/s3newmmio/LibraryTargetName(s3pwskbnewmmio) \
                 $(XF98ACCELSRC)/s3pwskb/s3mmio/LibraryTargetName(s3pwskbmmio) \
                 $(XF98LIBSPWSKB) CFBLibs \
@@ -1379,6 +1384,8 @@ XF98PWLBOBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3pwlb/s3Conf.o \
                $(XF98PWLBDRIVERSRC)/mmio_928/mmio_928.o \
                $(XF98PWLBDRIVERSRC)/s3_generic/s3_generic.o
 XF98PWLBLIBS = $(XF98ACCELSRC)/s3pwlb/LibraryTargetName(s3pwlb) \
+               $(XF98ACCELSRC)/s3pwlb/LibraryTargetName(s3pwlbpio) \
+               $(XF98ACCELSRC)/s3pwlb/LibraryTargetName(s3pwlb) \
                $(XF98ACCELSRC)/s3pwlb/s3newmmio/LibraryTargetName(s3pwlbnewmmio) \
                $(XF98ACCELSRC)/s3pwlb/s3mmio/LibraryTargetName(s3pwlbmmio) \
                $(XF98LIBSPWLB) CFBLibs \
@@ -1415,6 +1422,8 @@ XF98GA968OBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3ga968/s3Conf.o \
                 $(XF98GA968DRIVERSRC)/mmio_928/mmio_928.o \
                 $(XF98GA968DRIVERSRC)/s3_generic/s3_generic.o
 XF98GA968LIBS = $(XF98ACCELSRC)/s3ga968/LibraryTargetName(s3ga968) \
+                $(XF98ACCELSRC)/s3ga968/LibraryTargetName(s3ga968pio) \
+                $(XF98ACCELSRC)/s3ga968/LibraryTargetName(s3ga968) \
                 $(XF98ACCELSRC)/s3ga968/s3newmmio/LibraryTargetName(s3ga968newmmio) \
                 $(XF98ACCELSRC)/s3ga968/s3mmio/LibraryTargetName(s3ga968mmio) \
                 $(XF98LIBSGA968) CFBLibs \

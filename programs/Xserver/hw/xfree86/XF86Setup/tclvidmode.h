@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclvidmode.h,v 3.2 1996/12/27 06:54:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclvidmode.h,v 3.3 1996/12/28 08:13:06 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/Xmd.h>
@@ -31,6 +31,15 @@ int TCL_XF86VidModeQueryExtension(
 );
 
 int TCL_XF86VidModeAddModeLine(
+#if NeedNestedPrototypes
+    ClientData	clientData,
+    Tcl_Interp	*interp,
+    int		argc,
+    char	**argv
+#endif
+);
+
+int TCL_XF86VidModeModModeLine(
 #if NeedNestedPrototypes
     ClientData	clientData,
     Tcl_Interp	*interp,

@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/newmmio/newmmio.c,v 3.7 1997/03/22 09:35:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/newmmio/newmmio.c,v 3.8 1997/03/23 07:58:58 hohndel Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -144,7 +144,22 @@ NEWMMIO_Probe()
       s3InfoRec.chipset = NEWMMIO_Ident(0);
       s3NewMmio = TRUE;
 #if defined(XFree86LOADER)
+#ifndef PC98
       LoadModule("libs3newmmio.a", xf86ModulePath);
+#else
+#ifdef PC98_NEC
+      LoadModule("libs3necnewmmio.a", xf86ModulePath);
+#endif
+#ifdef PC98_XKB
+      LoadModule("libs3pwskbnewmmio.a", xf86ModulePath);
+#endif
+#ifdef PC98_PWLB
+      LoadModule("libs3pwlbnewmmio.a", xf86ModulePath);
+#endif
+#ifdef PC98_GA968
+      LoadModule("libs3ga968newmmio.a", xf86ModulePath);
+#endif
+#endif
 #endif
       return(TRUE);
    } else {

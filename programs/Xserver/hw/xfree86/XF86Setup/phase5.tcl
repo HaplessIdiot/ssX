@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase5.tcl,v 3.6 1996/12/27 06:54:12 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase5.tcl,v 3.7 1997/01/02 11:58:41 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -60,7 +60,7 @@ if { ![getuid] } {
 	set linkdir [file dirname $lastlink]
 	set mklink [mesg "Do you want to create an 'X' link\
 		to the $server server?\n\n(the link will be\
-		created in the directory: $linkdir)" yesno]
+		created in the directory: $linkdir) Okay?" yesno]
 	if $mklink {
 	    set CWD [pwd]
 	    cd $linkdir

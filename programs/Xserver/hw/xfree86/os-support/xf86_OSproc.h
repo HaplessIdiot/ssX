@@ -31,7 +31,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.7 1997/02/25 14:21:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.8 1997/02/25 16:04:44 hohndel Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -418,6 +418,8 @@ double xf86pow(double, double);
 double xf86sqrt(double);
 
 double xf86cos(double);
+
+double xf86fabs(double);
 
 void xf86bzero(void *, unsigned int);
 

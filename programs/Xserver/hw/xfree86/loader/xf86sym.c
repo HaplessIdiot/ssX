@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.15 1997/03/11 13:06:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.16 1997/03/22 09:36:02 hohndel Exp $ */
 
 
 
@@ -164,6 +164,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86pow)
    SYMFUNC(xf86sqrt)
    SYMFUNC(xf86cos)
+   SYMFUNC(xf86fabs)
    SYMFUNC(xf86usleep)
    SYMFUNC(xf86bzero)
    SYMFUNC(xf86getbitsperpixel)

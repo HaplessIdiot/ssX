@@ -4,28 +4,40 @@ XCOMM $XConsortium: Imakefile /main/6 1996/10/25 15:40:48 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3pwlb/Imakefile,v 3.11 1996/12/24 02:26:04 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3pwlb/Imakefile,v 3.12 1997/03/11 13:08:55 hohndel Exp $
+
+#define IHaveModules
 #include <Server.tmpl>
 
 #define IHaveSubdirs
 
 SUBDIRS = s3newmmio s3mmio drivers
 
-SRCS = 	s3.c s3misc.c s3cmap.c s3gc.c s3gc16.c s3gc24.c s3gc32.c s3fs.c s3ss.c \
-	s3gs.c s3win.c s3init.c s3im.c s3bstor.c \
-	s3scrin.c s3blt.c s3plypt.c s3ramdacs.c \
-	s3line.c s3seg.c s3frect.c s3text.c \
-	s3font.c s3fcach.c s3Cursor.c s3BtCursor.c vgaHW.c s3dline.c \
-	s3dseg.c s3bcach.c s3gtimg.c s3TiCursor.c s3ELSA.c Ti3026Curs.c \
-	IBMRGBCurs.c s3pc98.c
+S3SRCS = s3.c s3init.c s3gtimg.c vgaHW.c s3ramdacs.c \
+	s3ELSA.c s3BtCursor.c s3TiCursor.c Ti3026Curs.c IBMRGBCurs.c \
+	s3misc.c s3Cursor.c s3pc98.c
 
-OBJS = 	s3.o s3misc.o s3cmap.o s3gc.o s3gc16.o s3gc24.o s3gc32.o s3fs.o s3ss.o \
-	s3gs.o s3win.o s3init.o s3im.o s3bstor.o \
-	s3scrin.o s3blt.o s3plypt.o s3ramdacs.o \
+S3OBJS = s3.o s3init.o s3gtimg.o vgaHW.o s3ramdacs.o \
+	s3ELSA.o s3BtCursor.o s3TiCursor.o Ti3026Curs.o IBMRGBCurs.o \
+	s3misc.o s3Cursor.o s3pc98.o
+
+PIOSRCS =  s3cmap.c s3gc.c s3gc16.c s3gc24.c s3gc32.c s3fs.c s3ss.c \
+	s3gs.c s3win.c s3im.c s3bstor.c \
+	s3scrin.c s3blt.c s3plypt.c \
+	s3line.c s3seg.c s3frect.c s3text.c \
+	s3font.c s3fcach.c s3dline.c \
+	s3dseg.c s3bcach.c
+
+PIOOBJS =  s3cmap.o s3gc.o s3gc16.o s3gc24.o s3gc32.o s3fs.o s3ss.o \
+	s3gs.o s3win.o s3im.o s3bstor.o \
+	s3scrin.o s3blt.o s3plypt.o \
 	s3line.o s3seg.o s3frect.o s3text.o \
-	s3font.o s3fcach.o s3Cursor.o s3BtCursor.o vgaHW.o s3dline.o \
-	s3dseg.o s3bcach.o s3gtimg.o s3TiCursor.o s3ELSA.o Ti3026Curs.o \
-	IBMRGBCurs.o s3pc98.o
+	s3font.o s3fcach.o s3dline.o \
+	s3dseg.o s3bcach.o
+
+SRCS = 	$(S3SRCS) $(PIOSRCS)
+
+OBJS = 	$(S3OBJS) $(PIOOBJS)
 
 INCLUDES = -I$(XF98SRC) -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
 	   -I$(SERVERSRC)/include -I$(SERVERSRC)/cfb -I$(XINCLUDESRC) \
@@ -47,7 +59,9 @@ NormalLibraryObjectRule()
 
 NormalAsmObjectRule()
 
-NormalLibraryTarget(s3pwlb,$(OBJS))
+NormalLibraryTarget(s3pwlb,$(S3OBJS))
+
+NormalLibraryTarget(s3pwlbpio,$(PIOOBJS))
 
 MakeSubdirs($(SUBDIRS))
 
@@ -112,6 +126,7 @@ InstallLinkKitNonExecFile(newmmio.h,$(XF98LINKKITDIR)/drivers98)
 
 #if DoLoadableServer
 InstallDynamicModule(LibraryTargetName(s3pwlb),$(MODULEDIR))
+InstallDynamicModule(LibraryTargetName(s3pwlbpio),$(MODULEDIR))
 #ifndef DontInstallPC98Version
 InstallDynamicModule(s3Conf.o,$(MODULEDIR))
 #endif

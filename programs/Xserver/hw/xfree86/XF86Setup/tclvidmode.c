@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclvidmode.c,v 3.5 1996/12/27 06:54:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclvidmode.c,v 3.6 1996/12/28 08:13:05 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -171,6 +171,10 @@ XF86vid_Init(interp)
 	     TCL_XF86VidModeAddModeLine, (ClientData) NULL,
 	     (void (*)()) NULL);
 
+     Tcl_CreateCommand(interp, "xf86vid_modifymodeline",
+	     TCL_XF86VidModeModModeLine, (ClientData) NULL,
+	     (void (*)()) NULL);
+
      Tcl_CreateCommand(interp, "xf86vid_checkmodeline",
 	     TCL_XF86VidModeValidateModeLine, (ClientData) NULL,
 	     (void (*)()) NULL);
@@ -285,7 +289,6 @@ TCL_XF86VidModeQueryExtension(clientData, interp, argc, argv)
 /*
    Implements the xf86vid_addmodeline command which
    adds a new mode to the list of video modes.
-   It returns zero for success.
 */
 
 int
@@ -308,26 +311,68 @@ TCL_XF86VidModeAddModeLine(clientData, interp, argc, argv)
 	if ((tkwin = Tk_MainWindow(interp)) == NULL)
 		return TCL_ERROR;
 	TclOkay(list2modeline(interp, argv[1], &newmode));
-	if (argc == 2) {
-	    if (!XF86VidModeAddModeLine(Tk_Display(tkwin),
-			Tk_ScreenNumber(tkwin), &newmode, NULL)) {
-		Tcl_SetResult(interp, "Unable to add mode line", TCL_STATIC);
-		return TCL_ERROR;
-	    }
-	} else {
-	    TclOkay(list2modeline(interp, argv[2], &aftermode));
-	    if (!XF86VidModeAddModeLine(Tk_Display(tkwin),
-			Tk_ScreenNumber(tkwin), &newmode, &aftermode)) {
-		Tcl_SetResult(interp, "Unable to add mode line", TCL_STATIC);
-		return TCL_ERROR;
-	    }
+	XSync(Tk_Display(tkwin), False);
+	savErrorFunc = XSetErrorHandler(vidError);
+	errorOccurred = 0;
+	XF86VidModeAddModeLine(Tk_Display(tkwin),
+				Tk_ScreenNumber(tkwin), &newmode,
+				(argc==2)? NULL: &aftermode);
+	XSync(Tk_Display(tkwin), False);
+	XSetErrorHandler(savErrorFunc);
+	if (errorOccurred) {
+                Tcl_AppendResult(interp, "Unable to add modeline: ",
+                        errMsgBuf, (char *) NULL);
+                return TCL_ERROR;
 	}
+
+	return TCL_OK;
+}
+
+/*
+   Implements the xf86vid_modifymodeline command which
+   changes the current mode is to match the specified parameters.
+*/
+
+int
+TCL_XF86VidModeModModeLine(clientData, interp, argc, argv)
+    ClientData	clientData;
+    Tcl_Interp	*interp;
+    int		argc;
+    char	*argv[];
+{
+	Tk_Window tkwin;
+	XF86VidModeModeInfo mode_info;
+	XF86VidModeModeLine mode_line;
+
+        if (argc != 2) {
+                Tcl_SetResult(interp,
+		    "Usage: xf86vid_modifymodeline <modeline>", TCL_STATIC);
+                return TCL_ERROR;
+        }
+
+	if ((tkwin = Tk_MainWindow(interp)) == NULL)
+		return TCL_ERROR;
+	TclOkay(list2modeline(interp, argv[1], &mode_info));
+	mode_line.hdisplay =	mode_info.hdisplay;
+	mode_line.hsyncstart =	mode_info.hsyncstart;
+	mode_line.hsyncend =	mode_info.hsyncend;
+	mode_line.htotal =	mode_info.htotal;
+	mode_line.vdisplay =	mode_info.vdisplay;
+	mode_line.vsyncstart =	mode_info.vsyncstart;
+	mode_line.vsyncend =	mode_info.vsyncend;
+	mode_line.vtotal =	mode_info.vtotal;
+	mode_line.flags =	mode_info.flags;
+	mode_line.privsize =	mode_info.privsize;
+	mode_line.private =	mode_info.private;
+	sprintf(interp->result, "%d",
+		XF86VidModeModModeLine(Tk_Display(tkwin),
+		    Tk_ScreenNumber(tkwin), &mode_line));
 	return TCL_OK;
 }
 
 /*
    Implements the xf86vid_checkmodeline command which
-   returns checks that the specified mode is usable with
+   checks that the specified mode is usable with the
    video driver and monitor.
 */
 
@@ -381,9 +426,19 @@ TCL_XF86VidModeDeleteModeLine(clientData, interp, argc, argv)
 		return TCL_ERROR;
 	TclOkay(list2modeline(interp, argv[1], &mode_line));
 
-	sprintf(interp->result, "%d",
-		XF86VidModeDeleteModeLine(Tk_Display(tkwin),
-		    Tk_ScreenNumber(tkwin), &mode_line));
+	XSync(Tk_Display(tkwin), False);
+	savErrorFunc = XSetErrorHandler(vidError);
+	errorOccurred = 0;
+	XF86VidModeDeleteModeLine(Tk_Display(tkwin),
+				Tk_ScreenNumber(tkwin), &mode_line);
+	XSync(Tk_Display(tkwin), False);
+	XSetErrorHandler(savErrorFunc);
+	if (errorOccurred) {
+                Tcl_AppendResult(interp, "Unable to delete modeline: ",
+                        errMsgBuf, (char *) NULL);
+                return TCL_ERROR;
+	}
+
 	return TCL_OK;
 }
 

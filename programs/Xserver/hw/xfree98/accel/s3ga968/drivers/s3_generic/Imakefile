@@ -4,10 +4,10 @@ XCOMM $XConsortium: Imakefile /main/4 1996/10/25 21:23:07 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3ga968/drivers/s3_generic/Imakefile,v 3.5 1996/12/27 07:06:21 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3ga968/drivers/s3_generic/Imakefile,v 3.6 1997/03/11 13:08:28 hohndel Exp $
 
 
-
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = s3_generic.c
@@ -18,10 +18,12 @@ OBJS = s3_generic.o
 INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
 #else
 INCLUDES = -I. -I../.. -I$(XF86COMSRC) -I$(XF86HWSRC) \
-	   -I$(XF86OSSRC) -I$(SERVERSRC)/mi \
+	   -I$(XF86OSSRC) -I$(XF86SRC) -I$(SERVERSRC)/mi \
            -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I$(XF86SRC)/accel/cache
 #endif
+
+DEFINES = -DPC98 -DPC98_GA968
 
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
