@@ -465,7 +465,7 @@ CMapSetDGAMode(int index, int num, DGADevicePtr dev)
 
     pScreenPriv->isDGAmode = DGAActive(index);
 
-    if(miInstalledMaps[index])
+    if(!pScreenPriv->isDGAmode && miInstalledMaps[index])
 	CMapReinstallMap(miInstalledMaps[index]);
 
     return ret;
