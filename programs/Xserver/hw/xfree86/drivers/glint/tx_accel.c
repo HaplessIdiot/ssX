@@ -108,7 +108,7 @@ static void TXPolySegmentThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
 
 #define MAX_FIFO_ENTRIES		15
 
-static void
+void
 TXInitializeEngine(ScrnInfoPtr pScrn)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);

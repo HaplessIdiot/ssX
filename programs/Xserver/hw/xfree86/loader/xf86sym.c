@@ -438,6 +438,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86AllocateLinearOffscreenArea)
    SYMFUNC(xf86ResizeOffscreenArea)
    SYMFUNC(xf86FBManagerRunning)
+   SYMFUNC(xf86QueryLargestOffscreenArea)
 
    /* xf86cmap.c */
    SYMFUNC(xf86HandleColormaps)

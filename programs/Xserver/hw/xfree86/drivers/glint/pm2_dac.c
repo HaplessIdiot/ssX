@@ -23,6 +23,7 @@
  *           Dirk Hohndel,   <hohndel@suse.de>
  *	     Stefan Dirsch,  <sndirsch@suse.de>
  *	     Helmut Fahrion, <hf@suse.de>
+ *	     Michel Dänzer,  <michdaen@iiic.ethz.ch>
  *
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
@@ -486,9 +487,14 @@ Permedia2HWCursorInit(ScreenPtr pScreen)
 
     infoPtr->MaxWidth = 64;
     infoPtr->MaxHeight = 64;
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
     infoPtr->Flags = HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
 		HARDWARE_CURSOR_SOURCE_MASK_NOT_INTERLEAVED |
 		HARDWARE_CURSOR_BIT_ORDER_MSBFIRST;
+#else
+    infoPtr->Flags = HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
+		HARDWARE_CURSOR_SOURCE_MASK_NOT_INTERLEAVED;
+#endif
     infoPtr->SetCursorColors = Permedia2SetCursorColors;
     infoPtr->SetCursorPosition = Permedia2SetCursorPosition;
     infoPtr->LoadCursorImage = Permedia2LoadCursorImage;

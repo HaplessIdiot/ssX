@@ -1,0 +1,225 @@
+/*
+ * $Id$
+ *
+ * Copyright © 1998 Keith Packard
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Keith Packard not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Keith Packard makes no
+ * representations about the suitability of this software for any purpose.  It
+ * is provided "as is" without express or implied warranty.
+ *
+ * KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
+/* $XFree86: $ */
+
+#include "fb.h"
+
+void
+fbEvenStipple (FbBits	*dst,
+	       FbStride	dstStride,
+	       int	dstX,
+	       int	dstBpp,
+
+	       int	width,
+	       int	height,
+
+	       FbStip	*stip,
+	       int	stipHeight,
+
+	       FbBits	fgand,
+	       FbBits	fgxor,
+	       FbBits	bgand,
+	       FbBits	bgxor,
+
+	       int	xRot,
+	       int	yRot)
+{
+    FbBits	startmask, endmask;
+    FbBits	mask, and, xor;
+    int		nmiddle, n;
+    FbStip	*s, *stipEnd, bits;
+    int		rot, stipX, stipY;
+    int		pixelsPerDst;
+    const FbBits    *fbBits;
+    
+    pixelsPerDst = FB_UNIT / dstBpp;
+    /*
+     * Adjust dest pointers
+     */
+    dst += dstX >> FB_SHIFT;
+    dstX &= FB_MASK;
+    FbMaskBits(dstX, width, startmask, nmiddle, endmask);
+    if (startmask)
+	dstStride--;
+    dstStride -= nmiddle;
+    
+    xRot *= dstBpp;
+    /*
+     * Compute stip start scanline and rotation parameters
+     */
+    stipEnd = stip + 2 * stipHeight;
+    modulus (- yRot, stipHeight, stipY);
+    s = stip + 2 * stipY;
+    modulus (- xRot, FB_UNIT, stipX);
+    rot = stipX;
+    
+    /*
+     * Get pointer to stipple mask array for this depth
+     */
+    fbBits = 0;	/* unused */
+    if (pixelsPerDst <= 8)
+	fbBits = fbStippleTable[pixelsPerDst];
+    
+    while (height--)
+    {
+	/*
+	 * Extract stipple bits for this scanline;
+	 */
+	bits = *s;
+	s += 2;
+	if (s == stipEnd)
+	    s = stip;
+#if FB_UNIT > 32
+	if (pixelsPerDst == 16)
+	    mask = FbStipple16Bits(FbLeftStipBits(bits,16));
+	else
+#endif
+	    mask = fbBits[FbLeftStipBits(bits,pixelsPerDst)];
+	/*
+	 * Rotate into position and compute reduced rop values
+	 */
+	mask = FbRotLeft(mask, rot);
+	and = fgand & mask | bgand & ~mask;
+	xor = fgxor & mask | bgxor & ~mask;
+	
+	/*
+	 * Fill scanline
+	 */
+	if (startmask)
+	{
+	    *dst = FbDoMaskRRop(*dst, and, xor, startmask);
+	    dst++;
+	}
+	n = nmiddle;
+	if (!and)
+	    while (n--)
+		*dst++ = xor;
+	else
+	    while (n--)
+	    {
+		*dst = FbDoRRop (*dst, and, xor);
+		dst++;
+	    }
+	if (endmask)
+	    *dst = FbDoMaskRRop (*dst, and, xor, endmask);
+	dst += dstStride;
+    }
+}
+
+void
+fbOddStipple (FbBits	*dst,
+	      FbStride	dstStride,
+	      int	dstX,
+	      int	dstBpp,
+
+	      int	width,
+	      int	height,
+
+	      FbStip	*stip,
+	      FbStride	stipStride,
+	      int	stipWidth,
+	      int	stipHeight,
+
+	      FbBits	fgand,
+	      FbBits	fgxor,
+	      FbBits	bgand,
+	      FbBits	bgxor,
+
+	      int	xRot,
+	      int	yRot)
+{
+    int		stipX, stipY, sx;
+    int		widthTmp;
+    int		h, w;
+    int		x, y;
+
+    modulus (- yRot, stipHeight, stipY);
+    modulus (dstX / dstBpp - xRot, stipWidth, stipX);
+    y = 0;
+    while (height)
+    {
+	h = stipHeight - stipY;
+	if (h > height)
+	    h = height;
+	height -= h;
+	widthTmp = width;
+	x = dstX;
+	sx = stipX;
+	while (widthTmp)
+	{
+	    w = (stipWidth - sx) * dstBpp;
+	    if (w > widthTmp)
+		w = widthTmp;
+	    widthTmp -= w;
+	    fbBltOne (stip + stipY * stipStride,
+		      stipStride,
+		      sx,
+
+		      dst + y * dstStride,
+		      dstStride,
+		      x,
+		      dstBpp,
+
+		      w, h,
+
+		      fgand, fgxor, bgand, bgxor);
+	    x += w;
+	    sx = 0;
+	}
+	y += h;
+	stipY = 0;
+    }
+}
+
+void
+fbStipple (FbBits	*dst,
+	   FbStride	dstStride,
+	   int		dstX,
+	   int		dstBpp,
+
+	   int		width,
+	   int		height,
+
+	   FbStip	*stip,
+	   FbStride	stipStride,
+	   int		stipWidth,
+	   int		stipHeight,
+
+	   FbBits	fgand,
+	   FbBits	fgxor,
+	   FbBits	bgand,
+	   FbBits	bgxor,
+
+	   int		xRot,
+	   int		yRot)
+{
+    if (FbEvenStip (stipWidth, dstBpp))
+	fbEvenStipple (dst, dstStride, dstX, dstBpp, width, height,
+		       stip, stipHeight,
+		       fgand, fgxor, bgand, bgxor, xRot, yRot);
+    else
+	fbOddStipple (dst, dstStride, dstX, dstBpp, width, height,
+		      stip, stipStride, stipWidth, stipHeight,
+		      fgand, fgxor, bgand, bgxor, xRot, yRot);
+}

@@ -58,32 +58,40 @@ FREETYPEPROFILEOBJS = FreeType/profiled/?*.o
            XTTDONES = X-TrueType/DONE
 #endif
 #endif
+#if BuildBuiltinFonts
+        BUILTINDIRS = builtins
+  BUILTINSHAREDOBJS = builtins/?*.o
+  BUILTINSTATICOBJS = builtins/$(STATIC_OBJSDIR)?*.o
+   BUILTINDEBUGOBJS = builtins/debugger/?*.o
+ BUILTINPROFILEOBJS = builtins/profiled/?*.o
+       BUILTINDONES = builtins/DONE
+#endif
 
        SUBDIRS = bitmap fontfile fc \
 		 $(SPEEDODIRS) $(TYPE1DIRS) \
-		 $(FREETYPEDIRS) $(XTTDIRS) \
+		 $(FREETYPEDIRS) $(XTTDIRS) $(BUILTINDIRS) \
 		 util stubs
    SHARED_OBJS = bitmap/?*.o fontfile/?*.o fc/?*.o \
 		 $(SPEEDOSHAREDOBJS) $(TYPE1SHAREDOBJS) \
 		 $(FREETYPESHAREDOBJS) $(XTTSHAREDOBJS) \
-		 util/?*.o
+		 $(BUILTINSHAREDOBJS) util/?*.o
    STATIC_OBJS = bitmap/$(STATIC_OBJSDIR)?*.o fontfile/$(STATIC_OBJSDIR)?*.o \
 		 fc/$(STATIC_OBJSDIR)?*.o \
 		 $(SPEEDOSTATICOBJS) $(TYPE1STATICOBJS) \
 		 $(FREETYPESTATICOBJS) $(XTTSTATICOBJS) \
-		 util/$(STATIC_OBJSDIR)?*.o
+		 $(BUILTINSTATICOBJS) util/$(STATIC_OBJSDIR)?*.o
     DEBUG_OBJS = bitmap/debugger/?*.o fontfile/debugger/?*.o fc/debugger/?*.o \
 		 $(SPEEDODEBUGOBJS) $(TYPE1DEBUGOBJS) \
 		 $(FREETYPEDEBUGOBJS) $(XTTDEBUGOBJS) \
-		 util/debugger/?*.o
+		 $(BUILTINDEBUGOBJS) util/debugger/?*.o
   PROFILE_OBJS = bitmap/profiled/?*.o fontfile/profiled/?*.o fc/profiled/?*.o \
 		 $(SPEEDOPROFILEOBJS) $(TYPE1PROFILEOBJS) \
 		 $(FREETYPEPROFILEOBJS) $(XTTPROFILEOBJS) \
-		 util/profiled/?*.o
+		 $(BUILTINPROFILEOBJS) util/profiled/?*.o
          DONES = bitmap/DONE fontfile/DONE fc/DONE \
 		 $(SPEEDODONES) $(TYPE1DONES) \
 		 $(FREETYPEDONES) $(XTTDONES) \
-		 util/DONE
+		 $(BUILTINDONES) util/DONE
 
 #if DoLoadableServer
       BASEDIRS = fontfile fc util

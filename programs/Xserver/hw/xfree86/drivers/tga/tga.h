@@ -33,6 +33,7 @@ typedef struct {
 	unsigned long tgaRegs[0x100];
 } TGARegRec, *TGARegPtr;
 
+
 #define TGAPTR(p)	((TGAPtr)((p)->driverPrivate))
 
 typedef struct {
@@ -51,7 +52,8 @@ typedef struct {
     long		FbMapSize;
     unsigned long	regOffset;
     Bool		NoAccel;
-/*      Bool		Dac6Bit; */
+    Bool		Dac6Bit;
+    Bool		SyncOnGreen;
     Bool		HWCursor;
     Bool		UsePCIRetry;
     int			MinClock;
@@ -67,9 +69,7 @@ typedef struct {
     unsigned char       Bt463modeReg[59];
     unsigned char       Bt463saveReg[59];
     EntityInfoPtr       pEnt;
-#ifdef __alpha__
-    CARD64              *buffers[1];
-#endif
+    CARD32     *buffers[1];
     unsigned int        current_rop;
     int                 transparent_pattern_p;
     int                 blitdir;

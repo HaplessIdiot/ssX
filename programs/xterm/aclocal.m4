@@ -476,15 +476,15 @@ dnl Well, yes we could work around it...
 AC_DEFUN([CF_GNU_SOURCE],
 [
 AC_CACHE_CHECK(if we must define _GNU_SOURCE,cf_cv_gnu_source,[
-AC_TRY_COMPILE([],[
+AC_TRY_COMPILE([#include <sys/types.h>],[
 #ifndef _XOPEN_SOURCE
 make an error
 #endif],
 	[cf_cv_gnu_source=no],
 	[cf_save="$CFLAGS"
 	 CFLAGS="$CFLAGS -D_GNU_SOURCE"
-	 AC_TRY_COMPILE([],[
-#ifndef _XOPEN_SOURCE
+	 AC_TRY_COMPILE([#include <sys/types.h>],[
+#ifdef _XOPEN_SOURCE
 make an error
 #endif],
 	[cf_cv_gnu_source=no],
@@ -629,6 +629,8 @@ AC_TRY_LINK([
 [cf_cv_input_method=no])])
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Check for header defining _PATH_LASTLOG, or failing that, see if the lastlog
+dnl file exists.
 AC_DEFUN([CF_LASTLOG],
 [
 AC_CHECK_HEADERS(lastlog.h paths.h)
@@ -650,7 +652,8 @@ AC_TRY_COMPILE([
 	fi])
 ])
 test $cf_cv_path_lastlog != no && AC_DEFINE(USE_LASTLOG)
-])dnl
+]
+)dnl
 dnl ---------------------------------------------------------------------------
 dnl Special test to workaround gcc 2.6.2, which cannot parse C-preprocessor
 dnl conditionals.
@@ -719,14 +722,15 @@ AC_DEFUN([CF_SYSV_UTMP],
 [
 AC_REQUIRE([CF_UTMP])
 AC_CACHE_CHECK(if $cf_cv_have_utmp is SYSV flavor,cf_cv_sysv_utmp,[
+test "$cf_cv_have_utmp" = "utmp" && cf_prefix="ut" || cf_prefix="utx"
 AC_TRY_LINK([
 #include <sys/types.h>
 #include <${cf_cv_have_utmp}.h>],[
 struct $cf_cv_have_utmp x;
-	setutent ();
-	getutid(&x);
-	pututline(&x);
-	endutent();],
+	set${cf_prefix}ent ();
+	get${cf_prefix}id(&x);
+	put${cf_prefix}line(&x);
+	end${cf_prefix}ent();],
 	[cf_cv_sysv_utmp=yes],
 	[cf_cv_sysv_utmp=no])
 ])
@@ -757,22 +761,31 @@ test $cf_cv_tty_group = yes && AC_DEFINE(USE_TTY_GROUP)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for the declaration of fd_set.  Some platforms declare it in
-dnl <sys/types.h>, and some in <sys/select.h>, which requires <sys/types.h>
+dnl <sys/types.h>, and some in <sys/select.h>, which requires <sys/types.h>.
+dnl Finally, if we are using this for an X application, Xpoll.h may include
+dnl <sys/select.h>, so we don't want to do it twice.
 AC_DEFUN([CF_TYPE_FD_SET],
 [
-AC_MSG_CHECKING(for declaration of fd_set)
-AC_CACHE_VAL(cf_cv_type_fd_set,[
+AC_CACHE_CHECK(for declaration of fd_set,cf_cv_type_fd_set,
+	[echo "trying sys/types alone" 1>&AC_FD_CC
 AC_TRY_COMPILE([
 #include <sys/types.h>],
 	[fd_set x],
 	[cf_cv_type_fd_set=sys/types.h],
-	[AC_TRY_COMPILE([
+	[echo "trying X11/Xpoll.h" 1>&AC_FD_CC
+AC_TRY_COMPILE([
+#ifdef HAVE_X11_XPOLL_H
+#include <X11/Xpoll.h>
+#endif],
+	[fd_set x],
+	[cf_cv_type_fd_set=X11/Xpoll.h],
+	[echo "trying sys/select.h" 1>&AC_FD_CC
+AC_TRY_COMPILE([
 #include <sys/types.h>
 #include <sys/select.h>],
 	[fd_set x],
 	[cf_cv_type_fd_set=sys/select.h],
-	[cf_cv_type_fd_set=unknown])])])
-AC_MSG_RESULT($cf_cv_type_fd_set)
+	[cf_cv_type_fd_set=unknown])])])])
 if test $cf_cv_type_fd_set = sys/select.h ; then
 	AC_DEFINE(USE_SYS_SELECT_H)
 fi
@@ -803,10 +816,26 @@ for cf_header in utmpx utmp ; do
 #endif
 ],
 	[struct $cf_header x;
-	 char *name = x.ut_name; /* HP-UX 10.x omits this in utmpx.h */
+	 char *name = x.ut_name; /* utmp.h and compatible definitions */
 	],
 	[cf_cv_have_utmp=$cf_header
-	 break])
+	 break],
+	[
+	AC_TRY_COMPILE([
+#include <sys/types.h>
+#include <${cf_header}.h>
+#define getutent getutxent
+#ifdef USE_LASTLOG
+#include <lastlog.h>	/* may conflict with utmpx.h on Linux */
+#endif
+],
+	[struct $cf_header x;
+	 char *name = x.ut_user; /* utmpx.h must declare this */
+	],
+	[cf_cv_have_utmp=$cf_header
+	 AC_DEFINE(ut_name,ut_user)
+	 break
+	])])
 done
 ])
 
@@ -814,7 +843,9 @@ if test $cf_cv_have_utmp != no ; then
 	AC_DEFINE(HAVE_UTMP)
 	test $cf_cv_have_utmp = utmpx && AC_DEFINE(UTMPX_FOR_UTMP)
 	CF_UTMP_UT_HOST
+	CF_UTMP_UT_XSTATUS
 	CF_UTMP_UT_XTIME
+	CF_UTMP_UT_SESSION
 	CF_SYSV_UTMP
 fi
 ])
@@ -838,22 +869,87 @@ test $cf_cv_have_utmp_ut_host != no && AC_DEFINE(HAVE_UTMP_UT_HOST)
 fi
 ])
 dnl ---------------------------------------------------------------------------
+dnl Check if UTMP/UTMPX struct defines ut_session member
+AC_DEFUN([CF_UTMP_UT_SESSION],
+[
+AC_REQUIRE([CF_UTMP])
+if test $cf_cv_have_utmp != no ; then
+AC_CACHE_CHECK(if utmp.ut_session is declared, cf_cv_have_utmp_ut_session,[
+	AC_TRY_COMPILE([
+#include <sys/types.h>
+#include <${cf_cv_have_utmp}.h>],
+	[struct $cf_cv_have_utmp x; long y = x.ut_session],
+	[cf_cv_have_utmp_ut_session=yes],
+	[cf_cv_have_utmp_ut_session=no])
+])
+if test $cf_cv_have_utmp_ut_session != no ; then
+	AC_DEFINE(HAVE_UTMP_UT_SESSION)
+fi
+fi
+])
+dnl ---------------------------------------------------------------------------
+dnl Check for known variants on the UTMP/UTMPX struct's exit-status as reported
+dnl by various people:
+dnl
+dnl	ut_exit.__e_exit (HPUX 11 - David Ellement, also in glibc2)
+dnl	ut_exit.e_exit (SVR4)
+dnl	ut_exit.ut_e_exit (os390 - Greg Smith)
+dnl	ut_exit.ut_exit (Tru64 4.0f - Jeremie Petit, 4.0e - Tomas Vanhala)
+dnl
+dnl Note: utmp_xstatus is not a conventional compatibility definition in the
+dnl system header files.
+AC_DEFUN([CF_UTMP_UT_XSTATUS],
+[
+AC_REQUIRE([CF_UTMP])
+if test $cf_cv_have_utmp != no ; then
+AC_CACHE_CHECK(for exit-status in $cf_cv_have_utmp,cf_cv_have_utmp_ut_xstatus,[
+for cf_result in \
+	ut_exit.__e_exit \
+	ut_exit.e_exit \
+	ut_exit.ut_e_exit \
+	ut_exit.ut_exit
+do
+AC_TRY_COMPILE([
+#include <sys/types.h>
+#include <${cf_cv_have_utmp}.h>],
+	[struct $cf_cv_have_utmp x; long y = x.$cf_result = 0],
+	[cf_cv_have_utmp_ut_xstatus=$cf_result
+	 break],
+	[cf_cv_have_utmp_ut_xstatus=no])
+done
+])
+if test $cf_cv_have_utmp_ut_xstatus != no ; then
+	AC_DEFINE(HAVE_UTMP_UT_XSTATUS)
+	AC_DEFINE_UNQUOTED(ut_xstatus,$cf_cv_have_utmp_ut_xstatus)
+fi
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl Check if UTMP/UTMPX struct defines ut_xtime member
 AC_DEFUN([CF_UTMP_UT_XTIME],
 [
 AC_REQUIRE([CF_UTMP])
 if test $cf_cv_have_utmp != no ; then
-AC_MSG_CHECKING(if utmp.ut_xtime is declared)
-AC_CACHE_VAL(cf_cv_have_utmp_ut_xtime,[
+AC_CACHE_CHECK(if utmp.ut_xtime is declared, cf_cv_have_utmp_ut_xtime,[
 	AC_TRY_COMPILE([
 #include <sys/types.h>
 #include <${cf_cv_have_utmp}.h>],
-	[struct $cf_cv_have_utmp x; long y = x.ut_xtime],
+	[struct $cf_cv_have_utmp x; long y = x.ut_xtime = 0],
 	[cf_cv_have_utmp_ut_xtime=yes],
+	[AC_TRY_COMPILE([
+#include <sys/types.h>
+#include <${cf_cv_have_utmp}.h>],
+	[struct $cf_cv_have_utmp x; long y = x.ut_tv.tv_sec],
+	[cf_cv_have_utmp_ut_xtime=define],
 	[cf_cv_have_utmp_ut_xtime=no])
 	])
-AC_MSG_RESULT($cf_cv_have_utmp_ut_xtime)
-test $cf_cv_have_utmp_ut_xtime != no && AC_DEFINE(HAVE_UTMP_UT_XTIME)
+])
+if test $cf_cv_have_utmp_ut_xtime != no ; then
+	AC_DEFINE(HAVE_UTMP_UT_XTIME)
+	if test $cf_cv_have_utmp_ut_xtime = define ; then
+		AC_DEFINE(ut_xtime,ut_tv.tv_sec)
+	fi
+fi
 fi
 ])
 dnl ---------------------------------------------------------------------------

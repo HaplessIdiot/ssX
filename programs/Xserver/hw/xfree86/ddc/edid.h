@@ -411,6 +411,7 @@ typedef struct {
   struct detailed_monitor_section det_mon[4];
   xf86vdifPtr vdif;
   int no_sections;
+  Uchar *rawData;
 } xf86Monitor, *xf86MonPtr;
 
 

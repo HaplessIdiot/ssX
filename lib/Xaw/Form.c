@@ -1108,11 +1108,12 @@ XawFormDoLayout(Widget w,
 	    XMoveResizeWindow(XtDisplay(nw), XtWindow(nw),
 			      XtX(nw), XtY(nw), XtWidth(nw), XtHeight(nw));
 
-	    if (form->form.deferred_resize &&
+	    if (form)
+	      if (form->form.deferred_resize &&
 		XtClass(nw)->core_class.resize != NULL) {
 		(*(XtClass(nw)->core_class.resize))(nw);
 		form->form.deferred_resize = False;
-	    }
+	      }
 	}
     }
 }

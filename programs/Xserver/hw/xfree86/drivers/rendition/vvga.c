@@ -14,6 +14,7 @@
 #include "vvga.h"
 #include "vtypes.h"
 #include "vos.h"
+#include "vmisc.h"
 #include "v1kregs.h"
 #include "v2kregs.h"
 
@@ -29,25 +30,6 @@ void set_PLL(vu16, vu32);
 #include "vgafont-vrx.data"
 #endif
 #include "vgapalette.data"
-
-#ifdef __alpha__
-void v_bustomem(vu8 *dst, vu8 *src, vu32 num)
-{
-    int i;
-    for (i=0; i<num; i++)
-        dst[i] = v_read_memory8(src, i);
-}
-
-void v_memtobus(vu8 *dst, vu32 offset, vu8 *src, vu32 num)
-{
-    int i;
-    for (i=0; i<num; i++)
-        v_write_memory8(dst, offset+i, src[i]);
-}
-#else
-#define v_bustomem(dst, src, num) memcpy(dst,src,num)
-#define v_memtobus(dst, offset, src, num) memcpy((dst)+(offset),src,num)
-#endif
 
 /*
  * local function prototypes
@@ -143,15 +125,12 @@ void v_loadvgafont(void)
 
     /* fill plane 2 with 8x16 font */
     address=font8x16;
-#if defined(__alpha__)
-    fbFlags = VIDMEM_FRAMEBUFFER | VIDMEM_SPARSE;
-#else
-    fbFlags = VIDMEM_FRAMEBUFFER;
-#endif
+    fbFlags = VIDMEM_MMIO; /* VIDMEM_SPARSE is implied on Alpha */
+
     vbase = xf86MapVidMem(0, fbFlags, 0xa0000, 64*1024);
     vidmem=vbase;
     for (c=0; c<=255; c++) {
-        v_memtobus(vbase, 32*c, address, 16);
+        v_memtobus_cpy(vbase+(32*c), address, 16);
 	    address+=16;
     }
 
@@ -243,13 +222,10 @@ void v_savetextmode(struct v_board_t *board)
 
     /* save the screen contents */
     board->scr_contents=(vu8 *)xalloc(0x8000);
-#if defined(__alpha__)
-    fbFlags = VIDMEM_FRAMEBUFFER | VIDMEM_SPARSE;
-#else
-    fbFlags = VIDMEM_FRAMEBUFFER;
-#endif
+    fbFlags = VIDMEM_MMIO; /* VIDMEM_SPARSE is implied on Alpha */
+
     vbase = xf86MapVidMem(0, fbFlags, 0xb8000, 0x8000);
-    v_bustomem(board->scr_contents, vbase, 0x8000);
+    v_bustomem_cpy(board->scr_contents, vbase, 0x8000);
     xf86UnMapVidMem(0, vbase, 0x8000);
 }
 
@@ -269,13 +245,10 @@ void v_restoretextmode(struct v_board_t *board)
     setvgareg(0x3d4, 0xd, board->offset_low);
 
     /* restore the screen contents */
-#if defined(__alpha__)
-    fbFlags = VIDMEM_FRAMEBUFFER | VIDMEM_SPARSE;
-#else
-    fbFlags = VIDMEM_FRAMEBUFFER;
-#endif
-    vbase = xf86MapVidMem(0, VIDMEM_FRAMEBUFFER, 0xb8000, 0x8000);
-    v_memtobus(vbase, 0, board->scr_contents, 0x8000);
+    fbFlags = VIDMEM_MMIO; /* VIDMEM_SPARSE is implied on Alpha */
+
+    vbase = xf86MapVidMem(0, fbFlags, 0xb8000, 0x8000);
+    v_memtobus_cpy(vbase, board->scr_contents, 0x8000);
     xf86UnMapVidMem(0, vbase, 0x8000);
     xfree(board->scr_contents);
 }

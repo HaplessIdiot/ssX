@@ -98,6 +98,11 @@ typedef struct {
     long		FbMapSize;
     Bool		DoubleBuffer;
     Bool		NoAccel;
+    Bool		FBDev;
+    Bool		ShadowFB;
+    Bool		WriteBitmap;
+    unsigned char *	ShadowPtr;
+    int			ShadowPitch;
     Bool		Dac6Bit;
     Bool		HWCursor;
     Bool		ClippingOn;
@@ -252,4 +257,6 @@ void GLINTDRIMoveBuffers(WindowPtr pWin, DDXPointRec ptOldOrg,
 
 void GLINT_VERB_WRITE_REG(GLINTPtr, CARD32 v, int r, char *file, int line);
 CARD32 GLINT_VERB_READ_REG(GLINTPtr, CARD32 r, char *file, int line);
+
+void GLINTRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 #endif /* _GLINT_H_ */

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.22 1999/04/17 09:08:04 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.23 1999/04/29 09:13:19 dawes Exp $
 XCOMM
 XCOMM $OpenBSD: OpenBSD.cf,v 1.33 1998/09/27 04:52:48 rahnds Exp $
 XCOMM
@@ -323,6 +323,15 @@ install:: fonts.alias							@@\
  * Definitions for the i386 architecture
  */
 #ifdef i386Architecture
+
+/* 2.7 and later will have support for setting MTRRs */
+#ifndef HasMTRRSupport
+#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 6)
+#define HasMTRRSupport		YES
+#else
+#define HasMTRRSupport		NO
+#endif
+#endif
 
 # include <xfree86.cf>
 

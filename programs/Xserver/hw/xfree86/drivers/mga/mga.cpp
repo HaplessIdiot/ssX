@@ -118,5 +118,5 @@ Default: off.
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)
 .SH AUTHORS
 Authors include: Radoslaw Kapitan, Mark Vojkovich, and also David Dawes, Guy
-Desbief, Dirk Hohndel, Doug Merritt, Andrew E. Mileski, Andrew Vanderstock,
+Desbief, Dirk Hohndel, Doug Merritt, Andrew E. Mileski, Andrew van der Stock,
 Leonard N. Zubkoff.

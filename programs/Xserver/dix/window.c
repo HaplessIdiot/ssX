@@ -3510,6 +3510,15 @@ SaveScreens(on, mode)
 #endif
 		screenIsSaved = SCREEN_SAVER_ON;
 	    }
+	    /*
+	     * Call the DDX saver in case it wants to do something
+	     * at cycle time
+	     */
+	    else if (savedScreenInfo[i].blanked == SCREEN_IS_BLANKED)
+	    {
+		(* screenInfo.screens[i]->SaveScreen) (screenInfo.screens[i],
+						       type);
+	    }
 	    break;
 	case SCREEN_SAVER_ON:
 	    if (ScreenSaverBlanking != DontPreferBlanking)

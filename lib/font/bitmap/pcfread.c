@@ -326,7 +326,7 @@ pcfReadFont(FontPtr pFont, FontFilePtr file,
     xCharInfo  *ink_metrics = 0;
     char       *bitmaps = 0;
     CharInfoPtr **encoding = 0;
-    int         nencoding;
+    int         nencoding = 0;
     int         encodingOffset;
     CARD32      bitmapSizes[GLYPHPADOPTIONS];
     CARD32     *offsets = 0;
@@ -678,7 +678,7 @@ pmfReadFont(FontPtr pFont, FontFilePtr file,
     xCharInfo  *ink_metrics = 0;
     char       *bitmaps = 0;
     CharInfoPtr **encoding = 0;
-    int         nencoding;
+    int         nencoding = 0;
     int         encodingOffset;
     Bool	hasBDFAccelerators;
     CharInfoPtr pci;

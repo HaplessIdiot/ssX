@@ -25,8 +25,8 @@
 xgamma - Alter a monitor's gamma correction for XFree86
 .SH SYNOPSIS
 .B "xgamma"
-[-display \fIdisplay\fP] [-quiet] [-gamma f.f | [[-rgamma f.f] [-ggamma f.f]
-[-bgamma f.f]]]
+[-display \fIdisplay\fP] [-screen \fIscreen\fP] [-quiet]
+[-gamma f.f | [[-rgamma f.f] [-ggamma f.f] [-bgamma f.f]]]
 .SH DESCRIPTION
 .PP
 .B xgamma

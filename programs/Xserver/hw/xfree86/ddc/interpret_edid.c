@@ -31,6 +31,7 @@ InterpretEDID(Uchar *block)
 
     if (!block) return NULL;
     if (! (m = xnfcalloc(sizeof(xf86Monitor),1))) return NULL;
+    m->rawData = block;
     get_vendor_section(SECTION(VENDOR_SECTION,block),&m->vendor);
     get_version_section(SECTION(VERSION_SECTION,block),&m->ver);
     get_display_section(SECTION(DISPLAY_SECTION,block),&m->features);

@@ -22,12 +22,14 @@
  * function prototypes
  */
 
-void RENDITIONAccelInit(struct v_board_t *board);
-void RENDITIONAccelNone(void);
-int RENDITIONInitUcode(struct v_board_t *board);
+void RENDITIONAccelPreInit(ScrnInfoPtr pScreenInfo);
+void RENDITIONAccelXAAInit(ScreenPtr pScreen);
+void RENDITIONAccelNone(ScrnInfoPtr pScreenInfo);
+int RENDITIONInitUcode(ScrnInfoPtr pScreenInfo);
+int RENDITIONLoadUcode(ScrnInfoPtr pScreenInfo);
 
-void RENDITIONDumpUcode(void);
-void RENDITIONDrawSomething(void);
+void RENDITIONDumpUcode(ScrnInfoPtr pScreenInfo);
+void RENDITIONDrawSomething(ScrnInfoPtr pScreenInfo);
 
 
 

@@ -71,17 +71,20 @@ DEC21030Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if (pTga->RamDac != NULL) {
         RamDacHWRecPtr pBT = RAMDACHWPTR(pScrn);
 	RamDacRegRecPtr ramdacReg = &pBT->ModeReg;
-      
-	ramdacReg->DacRegs[BT_COMMAND_REG_0] = 0xA0 | (pScrn->rgbBits ? 2 : 0);
+
+	ramdacReg->DacRegs[BT_COMMAND_REG_0] = 0xA0 |
+	    (!pTga->Dac6Bit ? 0x2 : 0x0) | (pTga->SyncOnGreen ? 0x8 : 0x0);
 	ramdacReg->DacRegs[BT_COMMAND_REG_2] = 0x20;
 	ramdacReg->DacRegs[BT_STATUS_REG] = 0x14;
 	(*pTga->RamDac->SetBpp)(pScrn, ramdacReg);
+
     } else {
         unsigned char *Bt463 = pTga->Bt463modeReg;
 	int i, j;
  
 	/* Command registers */
-	Bt463[0] = 0x40;  Bt463[1] = 0x08;  Bt463[2] = 0x00;
+	Bt463[0] = 0x40;  Bt463[1] = 0x08;
+	Bt463[2] = (pTga->SyncOnGreen ? 0x80 : 0x00);
 	
 	/* Read mask */
 	Bt463[3] = 0xff;  Bt463[4] = 0xff;  Bt463[5] = 0xff;  Bt463[6] = 0x0f;

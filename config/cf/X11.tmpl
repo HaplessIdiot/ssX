@@ -67,6 +67,9 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.52 1999/09/27 06:29:01 dawes Exp $
 #ifndef BuildXTrueType
 #define BuildXTrueType		NO
 #endif
+#ifndef BuildBuiltinFonts
+#define BuildBuiltinFonts	NO
+#endif
 #ifndef BuildFonts
 #define BuildFonts		(BuildServer | BuildFontServer)
 #endif

@@ -1,0 +1,83 @@
+XCOMM $XFree86: $
+XCOMM 
+XCOMM 
+XCOMM $Id$
+#include <Server.tmpl>
+
+#ifdef FbNoPixelAddrCode
+DEFINES=-DFBNOPIXADDR -DFBNO24BIT
+#endif
+
+SRCS =	fbarc.c \
+	fballpriv.c \
+	fbbits.c \
+	fbblt.c \
+	fbbltone.c \
+	fbbstore.c \
+	fbcmap.c \
+	fbcopy.c \
+	fbfill.c \
+	fbfillrect.c \
+	fbfillsp.c \
+	fbgc.c \
+	fbgetsp.c \
+	fbglyph.c \
+	fbimage.c \
+	fbline.c \
+	fbpixmap.c \
+	fbpoint.c \
+	fbpush.c \
+	fbscreen.c \
+	fbseg.c \
+	fbsetsp.c \
+	fbsolid.c \
+	fbstipple.c \
+	fbtile.c \
+	fbutil.c \
+	fbwindow.c
+
+OBJS =	fbarc.o \
+	fballpriv.o \
+	fbbits.o \
+	fbblt.o \
+	fbbltone.o \
+	fbbstore.o \
+	fbcmap.o \
+	fbcopy.o \
+	fbfill.o \
+	fbfillrect.o \
+	fbfillsp.o \
+	fbgc.o \
+	fbgetsp.o \
+	fbglyph.o \
+	fbimage.o \
+	fbline.o \
+	fbpixmap.o \
+	fbpoint.o \
+	fbpush.o \
+	fbscreen.o \
+	fbseg.o \
+	fbsetsp.o \
+	fbsolid.o \
+	fbstipple.o \
+	fbtile.o \
+	fbutil.o \
+	fbwindow.o
+	
+   INCLUDES = -I. -I../mi -I../include -I$(XINCLUDESRC) \
+	      -I$(FONTINCSRC) $(EXTRAINCLUDES)
+   LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln \
+	     ../mi/llib-lmi.ln
+
+   CCOPTIONS=-ansi
+   
+NormalLibraryObjectRule()
+NormalLibraryTarget(fb,$(OBJS))
+LintLibraryTarget(fb,$(SRCS))
+
+NormalLintTarget($(SRCS))
+
+#ifndef OS2Architecture
+DependTarget()
+#endif
+

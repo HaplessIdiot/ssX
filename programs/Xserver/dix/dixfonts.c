@@ -1965,13 +1965,21 @@ InitFonts ()
 {
     patternCache = MakeFontPatternCache();
 
+#ifndef KDRIVESERVER
     if (screenInfo.numScreens > screenInfo.numVideoScreens) {
 	PrinterFontRegisterFpeFunctions();
 	FontFileCheckRegisterFpeFunctions();
 	check_fs_register_fpe_functions();
-    } else {
+    } else 
+#endif
+    {
+#ifdef KDRIVESERVER
+	BuiltinRegisterFpeFunctions();
+#endif
 	FontFileRegisterFpeFunctions();
+#ifndef NOFONTSERVERACCESS
 	fs_register_fpe_functions();
+#endif
     }
 }
 

@@ -1883,20 +1883,20 @@ miSpriteSetCursor (pScreen, pCursor, x, y)
     miSpriteScreenPtr	pScreenPriv;
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
-    pScreenPriv->shouldBeUp = TRUE;
-    if (pScreenPriv->x == x &&
-	pScreenPriv->y == y &&
-	pScreenPriv->pCursor == pCursor &&
-	!pScreenPriv->checkPixels)
-    {
-	return;
-    }
     if (!pCursor)
     {
     	pScreenPriv->shouldBeUp = FALSE;
     	if (pScreenPriv->isUp)
 	    miSpriteRemoveCursor (pScreen);
 	pScreenPriv->pCursor = 0;
+	return;
+    }
+    pScreenPriv->shouldBeUp = TRUE;
+    if (pScreenPriv->x == x &&
+	pScreenPriv->y == y &&
+	pScreenPriv->pCursor == pCursor &&
+	!pScreenPriv->checkPixels)
+    {
 	return;
     }
     pScreenPriv->x = x;

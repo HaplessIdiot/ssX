@@ -197,7 +197,7 @@ TDFXAccelInit(ScreenPtr pScreen)
   infoPtr->ColorExpandRange = 128;
   infoPtr->CPUToScreenColorExpandFillFlags = commonFlags |
     CPU_TRANSFER_PAD_DWORD | SCANLINE_PAD_DWORD |
-    LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X;
+    LEFT_EDGE_CLIPPING; /* | LEFT_EDGE_CLIPPING_NEGATIVE_X; */
   pTDFX->scanlineColorExpandBuffers[0]=0;
   pTDFX->scanlineColorExpandBuffers[1]=0;
 #else
@@ -214,7 +214,7 @@ TDFXAccelInit(ScreenPtr pScreen)
     TDFXSubsequentColorExpandScanline;
   infoPtr->ScanlineCPUToScreenColorExpandFillFlags = commonFlags |
     CPU_TRANSFER_PAD_DWORD | SCANLINE_PAD_DWORD |
-    LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X;
+    LEFT_EDGE_CLIPPING; /* | LEFT_EDGE_CLIPPING_NEGATIVE_X; */
 #endif
 
   infoPtr->SetupForMono8x8PatternFill = TDFXSetupForMono8x8PatternFill;
@@ -287,7 +287,6 @@ static void
 TDFXMatchState(TDFXPtr pTDFX)
 {
   if (pTDFX->PrevDrawState==pTDFX->DrawState) return;
-  pTDFX->PrevDrawState=pTDFX->DrawState;
 
   /* Do we need to set a clipping rectangle? */
   if (pTDFX->DrawState&DRAW_STATE_CLIPPING)
@@ -312,6 +311,8 @@ TDFXMatchState(TDFXPtr pTDFX)
     TDFXWriteLong(pTDFX, SST_2D_CLIP1MAX, pTDFX->ModeReg.clip1max);
     pTDFX->DrawState&=~DRAW_STATE_CLIP1CHANGED;
   }
+
+  pTDFX->PrevDrawState=pTDFX->DrawState;
 }
 
 static void

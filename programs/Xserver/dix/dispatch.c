@@ -252,6 +252,104 @@ FlushClientCaches(id)
     }
 }
 
+#ifdef SMART_SCHEDULE
+
+#define SMART_SCHEDULE_DEFAULT_INTERVAL	20	    /* ms */
+#define SMART_SCHEDULE_MAX_SLICE	200	    /* ms */
+
+Bool	    SmartScheduleDisable;
+int	    SmartMaxPriority = 20;
+int	    SmartMinPriority = -20;
+long	    SmartScheduleSlice = SMART_SCHEDULE_DEFAULT_INTERVAL;
+long	    SmartScheduleInterval = SMART_SCHEDULE_DEFAULT_INTERVAL;
+long	    SmartScheduleTime;
+ClientPtr   SmartLastClient;
+int	    SmartLastIndex;
+
+#ifdef SMART_DEBUG
+long	    SmartLastPrint;
+#endif
+
+int
+SmartScheduleClient (int *clientReady, int nready)
+{
+    ClientPtr	pClient;
+    int		i;
+    int		client;
+    int		bestPrio, best;
+    int		bestRobin, robin;
+    int		prio;
+    long	now = SmartScheduleTime;
+    long	idle;
+
+    bestPrio = -0x7fffffff;
+    bestRobin = 0;
+    idle = nready * 2 * SmartScheduleSlice;
+    for (i = 0; i < nready; i++)
+    {
+	client = clientReady[i];
+	pClient = clients[client];
+	/* Praise clients which are idle */
+	if ((now - pClient->smart_stop_tick) >= idle)
+	{
+	    if (pClient->smart_priority < 0)
+		pClient->smart_priority++;
+	}
+	
+	/* check priority to select best client */
+	robin = (pClient->index - SmartLastIndex) & 0xff;
+	if (pClient->smart_priority > bestPrio ||
+	    (pClient->smart_priority == bestPrio && robin > bestRobin))
+	{
+	    bestPrio = pClient->smart_priority;
+	    bestRobin = robin;
+	    best = client;
+	}
+#ifdef SMART_DEBUG
+	if ((now - SmartLastPrint) >= 5000)
+	    fprintf (stderr, " %2d: %3d", client, pClient->smart_priority);
+#endif
+    }
+#ifdef SMART_DEBUG
+    if ((now - SmartLastPrint) >= 5000)
+    {
+	fprintf (stderr, " use %2d\n", best);
+	SmartLastPrint = now;
+    }
+#endif
+    /*
+     * Set current client pointer
+     */
+    if (SmartLastClient != clients[best])
+    {
+	SmartLastClient = clients[best];
+	SmartLastIndex = SmartLastClient->index;
+	SmartLastClient->smart_start_tick = now;
+    }
+    /*
+     * Adjust slice
+     */
+    if (nready == 1)
+    {
+	/*
+	 * If it's been a long time since another client
+	 * has run, bump the slice up to get maximal
+	 * performance from a single client
+	 */
+	if ((now - SmartLastClient->smart_start_tick) > 1000 &&
+	    SmartScheduleSlice < SMART_SCHEDULE_MAX_SLICE)
+	{
+	    SmartScheduleSlice += 20;
+	}
+    }
+    else
+    {
+	SmartScheduleSlice = SmartScheduleInterval;
+    }
+    return best;
+}
+#endif
+
 #define MAJOROP ((xReq *)client->requestBuffer)->reqType
 
 void
@@ -262,6 +360,9 @@ Dispatch()
     register ClientPtr	client;
     register int	nready;
     register HWEventQueuePtr* icheck = checkForInput;
+#ifdef SMART_SCHEDULE
+    int			start_tick;
+#endif
 
     nextFreeClientID = 1;
     InitSelections();
@@ -281,6 +382,13 @@ Dispatch()
 
 	nready = WaitForSomething(clientReady);
 
+#ifdef SMART_SCHEDULE
+	if (nready && !SmartScheduleDisable)
+	{
+	    clientReady[0] = SmartScheduleClient (clientReady, nready);
+	    nready = 1;
+	}
+#endif
        /***************** 
 	*  Handle events in round robin fashion, doing input between 
 	*  each round 
@@ -303,6 +411,9 @@ Dispatch()
 	    isItTimeToYield = FALSE;
  
             requestingClient = client;
+#ifdef SMART_SCHEDULE
+	    start_tick = SmartScheduleTime;
+#endif
 	    while (!isItTimeToYield)
 	    {
 	        if (*icheck[0] != *icheck[1])
@@ -310,7 +421,16 @@ Dispatch()
 		    ProcessInputEvents();
 		    FlushIfCriticalOutputPending();
 		}
-	   
+#ifdef SMART_SCHEDULE
+		if (!SmartScheduleDisable && 
+		    (SmartScheduleTime - start_tick) >= SmartScheduleSlice)
+		{
+		    /* Penalize clients which consume ticks */
+		    if (client->smart_priority > SmartMinPriority)
+			client->smart_priority--;
+		    break;
+		}
+#endif
 		/* now, finally, deal with client requests */
 
 	        result = ReadRequestFromClient(client);
@@ -345,7 +465,11 @@ Dispatch()
 	        }
 	    }
 	    FlushAllOutput();
-
+#ifdef SMART_SCHEDULE
+	    client = clients[clientReady[nready]];
+	    if (client)
+		client->smart_stop_tick = SmartScheduleTime;
+#endif
 	    requestingClient = NULL;
 	}
 	dispatchException &= ~DE_PRIORITYCHANGE;
@@ -3658,6 +3782,9 @@ CloseDownClient(client)
 	if (client->index < nextFreeClientID)
 	    nextFreeClientID = client->index;
 	clients[client->index] = NullClient;
+#ifdef SMART_SCHEDULE
+	SmartLastClient = NullClient;
+#endif
 	xfree(client);
 
 	while (!clients[currentMaxClients-1])
@@ -3751,6 +3878,11 @@ void InitClient(client, i, ospriv)
     client->appgroup = NULL;
 #endif
     client->fontResFunc = NULL;
+#ifdef SMART_SCHEDULE
+    client->smart_priority = 0;
+    client->smart_start_tick = SmartScheduleTime;
+    client->smart_stop_tick = SmartScheduleTime;
+#endif
 }
 
 extern int clientPrivateLen;

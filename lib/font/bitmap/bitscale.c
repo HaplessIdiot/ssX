@@ -386,13 +386,13 @@ FindBestToScale(FontPathElementPtr fpe, FontEntryPtr entry,
     int		    source, i;
     int		    best_score, best_unscaled_score,
 		    score;
-    double	    dx, sdx, dx_amount,
-		    dy, sdy, dy_amount,
-		    best_dx, best_sdx, best_dx_amount,
-		    best_dy, best_sdy, best_dy_amount,
-		    best_unscaled_sdx, best_unscaled_sdy,
-		    rescale_x, best_rescale_x,
-		    best_unscaled_rescale_x;
+    double	    dx = 0.0, sdx = 0.0, dx_amount = 0.0,
+		    dy = 0.0, sdy = 0.0, dy_amount = 0.0,
+		    best_dx = 0.0, best_sdx = 0.0, best_dx_amount = 0.0,
+		    best_dy = 0.0, best_sdy = 0.0, best_dy_amount = 0.0,
+		    best_unscaled_sdx = 0.0, best_unscaled_sdy = 0.0,
+		    rescale_x = 0.0, best_rescale_x = 0.0,
+		    best_unscaled_rescale_x = 0.0;
     FontEntryPtr    zero;
     FontNameRec	    zeroName;
     char	    zeroChars[MAXFONTNAMELEN];
@@ -400,11 +400,11 @@ FindBestToScale(FontPathElementPtr fpe, FontEntryPtr entry,
     FontScaledPtr   scaled;
     FontScalableExtraPtr   extra;
     FontScaledPtr   best_scaled, best_unscaled;
-    FontPathElementPtr	best_fpe, best_unscaled_fpe;
+    FontPathElementPtr	best_fpe = NULL, best_unscaled_fpe = NULL;
     FontEntryPtr    bitmap = NULL;
     FontEntryPtr    result;
     int		    aliascount = 20;
-    FontPathElementPtr	bitmap_fpe;
+    FontPathElementPtr	bitmap_fpe = NULL;
     FontNameRec	    xlfdName;
 
     /* find the best match */
@@ -653,7 +653,7 @@ computeProps(FontPropPtr pf, char *wasStringProp,
     int         n;
     int         count;
     fontProp   *t;
-    double      rawfactor;
+    double      rawfactor = 0.0;
 
     for (count = 0; nprops > 0; nprops--, pf++, wasStringProp++) {
 	n = sizeof(fontPropTable) / sizeof(fontProp);
@@ -676,6 +676,8 @@ computeProps(FontPropPtr pf, char *wasStringProp,
 	    npf++;
 	    count++;
 	    *isStringProp++ = *wasStringProp;
+	    break;
+	default:
 	    break;
 	}
 	if (t->type != unscaled)
@@ -708,8 +710,7 @@ ComputeScaledProperties(FontInfoPtr sourceFontInfo, /* the font to be scaled */
 						   preallocated */
 {
     int         n;
-    char       *ptr1,
-               *ptr2;
+    char       *ptr1 = NULL, *ptr2 = NULL;
     char       *ptr3;
     FontPropPtr fp;
     fontProp   *fpt;
@@ -793,6 +794,8 @@ ComputeScaledProperties(FontInfoPtr sourceFontInfo, /* the font to be scaled */
 	    break;
 	case raw_average_width:
 	    fp->value = sWidth;
+	    break;
+	default:
 	    break;
 	}
 	fp->name = fpt->atom;
@@ -885,7 +888,7 @@ ScaleFont(FontPtr opf,            /* originating font */
                 obitmapFont;
     CharInfoPtr pci,
                 opci;
-    int         nchars;		/* how many characters in the font */
+    int         nchars = 0;	/* how many characters in the font */
     int         i;
     int         glyph;
     int		firstCol, lastCol, firstRow, lastRow;
@@ -1246,8 +1249,9 @@ ScaleBitmap(FontPtr pFont, CharInfoPtr opci, CharInfoPtr pci,
 		yValue;
     double	point[2];
     unsigned char *char_grayscale = 0;
-    INT32	*diffusion_workspace, *thisrow, *nextrow, pixmult;
-    int		box_x, box_y;
+    INT32	*diffusion_workspace = NULL, *thisrow = NULL,
+                *nextrow = NULL, pixmult = 0;
+    int		box_x = 0, box_y = 0;
 
     static unsigned char masklsb[] =
 	{ 0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80 };
@@ -1575,7 +1579,7 @@ BitmapScaleBitmaps(FontPtr pf,          /* scaled font */
 		   FontScalablePtr vals)
 {
     register int i;
-    int		nchars;
+    int		nchars = 0;
     char       *glyphBytes;
     BitmapFontPtr  bitmapFont,
 		   obitmapFont;
@@ -1656,7 +1660,7 @@ PrinterScaleBitmaps(FontPtr pf,         /* scaled font */
 		    FontScalablePtr vals)
 {
     register int i;
-    int		nchars;
+    int		nchars = 0;
     char       *glyphBytes;
     BitmapFontPtr  bitmapFont,
 		   obitmapFont;

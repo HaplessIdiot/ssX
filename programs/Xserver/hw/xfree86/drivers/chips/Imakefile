@@ -43,6 +43,11 @@ ObjectFromSpecialSource(ct_accelhi, ct_accel, -DCHIPS_MMIO -DCHIPS_HIQV)
 
 InstallObjectModule(chips,$(MODULEDIR),drivers)
 
+#if !defined(XF86DriverSDK)
+CppManTarget(chips,)
+InstallModuleManPage(chips)
+#endif
+
 #ifndef OS2Architecture
 DependTarget()
 #endif

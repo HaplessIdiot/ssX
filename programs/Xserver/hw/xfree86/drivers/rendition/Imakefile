@@ -8,10 +8,10 @@ XCOMM
 #include <Server.tmpl>
 
 SRCS = rendition.c vboard.c vmodes.c vramdac.c v1krisc.c vvga.c \
-       hwcursor.c vloaduc.c accel.c
+       vmisc.c hwcursor.c vloaduc.c accel.c
 
 OBJS = rendition.o vboard.o vmodes.o vramdac.o v1krisc.o vvga.o \
-       hwcursor.o vloaduc.o accel.o
+       vmisc.o hwcursor.o vloaduc.o accel.o
 
 #if defined(XF86DriverSDK)
 INCLUDES = -I. -I../../include
@@ -31,7 +31,7 @@ INCLUDES = -I. -I$(XF86SRC)/xf4bpp -I$(XF86SRC)/xf1bpp \
 XCOMM
 XCOMM Temporary solution for the loader to find the microcode
 XCOMM
-DEFINES = -DMODULEDIR=\"$(MODULEDIR)\"
+DEFINES = -DMODULEDIR=\"$(MODULEDIR)/\"
 
 
 #if MakeHasPosixVariableSubstitutions
@@ -42,12 +42,7 @@ ModuleObjectRule()
 
 ObjectModuleTarget(rendition,$(OBJS))
 
-/* Is this -DPSZ really needed?  It gets redefined in rendition.h */
-#if 0
 ObjectFromSpecialSource(accel, accelX, -DPSZ=16)
-#else
-ObjectFromSpecialSource(accel, accelX, NullParameter)
-#endif
 
 InstallObjectModule(rendition,$(MODULEDIR),drivers)
 InstallNonExecFile(v10002d.uc,$(MODULEDIR))
@@ -59,6 +54,9 @@ InstallDriverSDKNonExecFile(Imakefile,$(DRIVERSDKDIR)/drivers/rendition)
 InstallDriverSDKNonExecFile(cscode.h,$(DRIVERSDKDIR)/drivers/rendition)
 InstallDriverSDKNonExecFile(rendition.c,$(DRIVERSDKDIR)/drivers/rendition)
 InstallDriverSDKNonExecFile(rendition_options.h,$(DRIVERSDKDIR)/drivers/rendition)
+InstallDriverSDKNonExecFile(commonregs.h,$(DRIVERSDKDIR)/drivers/rendition)
+InstallDriverSDKNonExecFile(vmisc.h,$(DRIVERSDKDIR)/drivers/rendition)
+InstallDriverSDKNonExecFile(vmisc.c,$(DRIVERSDKDIR)/drivers/rendition)
 InstallDriverSDKNonExecFile(v1kregs.h,$(DRIVERSDKDIR)/drivers/rendition)
 InstallDriverSDKNonExecFile(v1krisc.c,$(DRIVERSDKDIR)/drivers/rendition)
 InstallDriverSDKNonExecFile(v1krisc.h,$(DRIVERSDKDIR)/drivers/rendition)

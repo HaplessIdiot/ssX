@@ -210,10 +210,10 @@ pcfWriteFont(FontPtr pFont, FontFilePtr file)
     xCharInfo  *ink_minbounds,
                *ink_maxbounds;
     BitmapFontPtr  bitmapFont;
-    int         nencodings;
+    int         nencodings = 0;
     int         header_size;
     FontPropPtr offsetProps;
-    int         prop_pad;
+    int         prop_pad = 0;
     char       *atom_name;
     int         glyph;
     int         offset;
@@ -348,7 +348,7 @@ pcfWriteFont(FontPtr pFont, FontFilePtr file)
 	    cur_table < ntables;
 	    cur_table++, table++) {
 	if (current_position > table->offset) {
-	    printf("can't go backwards... %d > %ld\n",
+	    printf("can't go backwards... %d > %d\n",
 		   current_position, table->offset);
 	    return BadFontName;
 	}

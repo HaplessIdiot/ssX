@@ -155,6 +155,9 @@ WaitForSomething(pClientsReady)
     int nready;
     fd_set devicesReadable;
     CARD32 now;
+#ifdef SMART_SCHEDULE
+    Bool    someReady = FALSE;
+#endif
 
     FD_ZERO(&clientsReadable);
 
@@ -165,12 +168,32 @@ WaitForSomething(pClientsReady)
 	/* deal with any blocked jobs */
 	if (workQueue)
 	    ProcessWorkQueue();
-
 	if (XFD_ANYSET (&ClientsWithInput))
 	{
-	    XFD_COPYSET (&ClientsWithInput, &clientsReadable);
-	    break;
+#ifdef SMART_SCHEDULE
+	    if (!SmartScheduleDisable)
+	    {
+		someReady = TRUE;
+		waittime.tv_sec = 0;
+		waittime.tv_usec = 0;
+		wt = &waittime;
+	    }
+	    else
+#endif
+	    {
+		XFD_COPYSET (&ClientsWithInput, &clientsReadable);
+		break;
+	    }
 	}
+#ifdef SMART_SCHEDULE
+	if (someReady)
+	{
+	    XFD_COPYSET(&AllSockets, &LastSelectMask);
+	    XFD_UNSET(&LastSelectMask, &ClientsWithInput);
+	}
+	else
+	{
+#endif
 #ifdef DPMSExtension
 	if (ScreenSaverTime > 0 || DPMSEnabled || timers)
 #else
@@ -304,6 +327,9 @@ WaitForSomething(pClientsReady)
 #endif
 	}
 	XFD_COPYSET(&AllSockets, &LastSelectMask);
+#ifdef SMART_SCHEDULE
+	}
+#endif
 	BlockHandler((pointer)&wt, (pointer)&LastSelectMask);
 	if (NewOutputPending)
 	    FlushAllOutput();
@@ -331,6 +357,21 @@ WaitForSomething(pClientsReady)
 	    i = XTestProcessInputAction (i, &waittime);
 	}
 #endif /* XTESTEXT1 */
+#ifdef SMART_SCHEDULE
+	if (someReady)
+	{
+	    /*
+	     * If no-one else is home, bail quickly
+	     */
+	    if (i == 0)
+	    {
+		XFD_COPYSET(&ClientsWithInput, &LastSelectMask);
+		XFD_COPYSET(&ClientsWithInput, &clientsReadable);
+		break;
+	    }
+	    XFD_ORSET(&LastSelectMask, &ClientsWithInput, &LastSelectMask);
+	}
+#endif
 	if (i <= 0) /* An error or timeout occurred */
 	{
 

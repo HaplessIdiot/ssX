@@ -91,17 +91,6 @@
 #undef interval
 #endif
 
-/* Extra Xlib definitions */
-#define AllButtonsUp(detail, ignore)  (\
-		((ignore) == Button1) ? \
-				(((detail)&(Button2Mask|Button3Mask)) == 0) \
-				: \
-		 (((ignore) == Button2) ? \
-		  		(((detail)&(Button1Mask|Button3Mask)) == 0) \
-				: \
-		  		(((detail)&(Button1Mask|Button2Mask)) == 0)) \
-		)
-
 /*
 ** System V definitions
 */
@@ -257,7 +246,7 @@ typedef Char **ScrnBuf;
 #define NMENUFONTS 9			/* font entries in fontMenu */
 
 #define	NBOX	5			/* Number of Points in box	*/
-#define	NPARAM	10			/* Max. parameters		*/
+#define	NPARAM	30			/* Max. parameters		*/
 
 typedef struct {
 	unsigned char	a_type;
@@ -265,9 +254,7 @@ typedef struct {
 	unsigned char	a_final;
 	unsigned char	a_inters;
 	char	a_nparam;		/* # of parameters		*/
-	char	a_dflt[NPARAM];		/* Default value flags		*/
 	short	a_param[NPARAM];	/* Parameters			*/
-	char	a_nastyf;		/* Error flag			*/
 } ANSI;
 
 #define TEK_FONT_LARGE 0
@@ -382,7 +369,7 @@ typedef struct {
 #endif
 
 #ifndef OPT_I18N_SUPPORT
-#if (XtSpecificationRelease >= 6)
+#if (XtSpecificationRelease >= 5)
 #define OPT_I18N_SUPPORT 1 /* true if xterm uses internationalization support */
 #else
 #define OPT_I18N_SUPPORT 0
@@ -875,7 +862,6 @@ typedef struct {
 #endif
 #if OPT_WIDE_CHARS
 	Boolean		wide_chars;	/* true when 16-bit chars	*/
-	Boolean		utf8_controls;	/* UTF-8 contains control chars	*/
 	int		utf8_mode;	/* use UTF-8 decode/encode: 0-2	*/
 	int		utf_count;	/* state of utf_char */
 	IChar		utf_char;	/* in-progress character */

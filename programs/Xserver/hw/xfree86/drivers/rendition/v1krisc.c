@@ -146,24 +146,38 @@ void v1k_stop(ScrnInfoPtr pScreenInfo)
   vu8	debugreg, statusreg;
   vu16 io_base=pRendition->board.io_base;
   vu16 STATUS = 0x4A;   /* v2x00 io register offset */
+  int c;
 
   debugreg=v_in8(io_base+DEBUGREG);
 
-  if (pRendition->board.chip == V2000_DEVICE)
+  if (pRendition->board.chip == V2000_DEVICE){
+    c=0;
     do {
+/*      if(!(c%10000))ErrorF("#S1# !0x%x! -- ",v_in8((vu16)(io_base+STATUS))); */
       statusreg = v_in8((vu16)(io_base+STATUS));
       if ((statusreg & 0x8C) == 0x8C)
 	break;
-    } while (1);
+    } while (c++<0xfffff);
+    if (c >= 0xfffff)
+      ErrorF ("RENDITION: Status timeout (1)\n");
 
-  v_out8(io_base+DEBUGREG, debugreg|HOLDRISC);
+    v_out8(io_base+DEBUGREG, debugreg|HOLDRISC);
 
-  if (pRendition->board.chip == V2000_DEVICE)
-    do {
-      statusreg = v_in8((vu16)(io_base+STATUS));
-      if (statusreg & HOLDRISC) break;
-    } while (1);
+    if (pRendition->board.chip == V2000_DEVICE){
+      c=0;
+      do {
+/*	if(!(c%10000))ErrorF("#S2# !0x%x! -- ",v_in8((vu16)(io_base+STATUS))); */
+	statusreg = v_in8((vu16)(io_base+STATUS));
+	if (statusreg & HOLDRISC) break;
+      } while (c++<0xfffff);
+      if (c >= 0xfffff)
+	ErrorF ("RENDITION: Status timeout (2)\n");
+    }
+  }   
   else {
+    /* V1000 stop */
+    v_out8(io_base+DEBUGREG, debugreg|HOLDRISC);
+
     v_iopoll(io_base+STATEDATA, 0, 0); /* short pause */
     v_iopoll(io_base+STATEDATA, 0, 0); /* short pause */
     v_iopoll(io_base+STATEDATA, 0, 0); /* short pause */
