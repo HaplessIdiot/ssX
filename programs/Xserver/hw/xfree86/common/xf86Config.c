@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.46 1995/06/02 10:10:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.47 1995/06/08 06:27:06 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2793,6 +2793,10 @@ xf86CheckMode(scrp, dispmp, monp, verbose)
 	    }
 	    return MODE_VSYNC;
 	}
+
+	/* Interlaced modes should have an odd VTotal */
+	if (dispmp->Flags & V_INTERLACE)
+	    dispmp->CrtcVTotal = dispmp->VTotal |= 1;
 
 	/* Passed every test. */
 	return MODE_OK;

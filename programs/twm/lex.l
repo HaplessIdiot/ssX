@@ -53,8 +53,8 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.69 94/11/21 18:33:32 kaleb Exp $
- * $XFree86: xc/programs/twm/lex.l,v 3.3 1995/01/28 16:16:30 dawes Exp $
+ * $XConsortium: lex.l,v 1.70 95/03/01 16:37:51 kaleb Exp $
+ * $XFree86: xc/programs/twm/lex.l,v 3.4 1995/06/02 10:28:49 dawes Exp $
  *
  * .twmrc lex file
  *
@@ -68,9 +68,9 @@ in this Software without prior written authorization from the X Consortium.
 extern char *ProgramName;
 
 extern int ParseError;
-
-#if defined(Lynx) || defined(CSRG_BASED) || defined(linux) || ((defined(AMOEBA) || defined(MINIX)) && defined(yywrap))
+#if defined(FLEX_SCANNER) || defined(Lynx) || ((defined(AMOEBA) || defined(MINIX)) && defined(yywrap))
 int yylineno;
+
 #undef YY_INPUT
 #define YY_INPUT(buf,result,size) ((result) = doinput((buf),(size)))
 doinput (buf, size)

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.6 95/01/06 20:59:04 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.19 1995/06/02 10:28:10 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.20 1995/06/04 02:56:18 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -329,14 +329,6 @@ void
 vgaHWSaveScreen(start)
     Bool start;
 {
-#if 0
-  static Bool started = SS_FINISH;
-
-  if (start == started)
-    return;
-  started = start;
-#endif
-
   if (start == SS_START)
   {
     outw(0x3C4, 0x0100);        /* synchronous reset */
@@ -867,10 +859,14 @@ vgaHWInit(mode, size)
       }
       else
       {
-	if      (mode->CrtcVDisplay < 400) new->MiscOutReg = 0xA3;
-	else if (mode->CrtcVDisplay < 480) new->MiscOutReg = 0x63;
-	else if (mode->CrtcVDisplay < 768) new->MiscOutReg = 0xE3;
-	else                           new->MiscOutReg = 0x23;
+	if      (mode->VDisplay < 400)
+		new->MiscOutReg = 0xA3;		/* +hsync -vsync */
+	else if (mode->VDisplay < 480)
+		new->MiscOutReg = 0x63;		/* -hsync +vsync */
+	else if (mode->VDisplay < 768)
+		new->MiscOutReg = 0xE3;		/* -hsync -vsync */
+	else
+		new->MiscOutReg = 0x23;		/* +hsync +vsync */
       }
   if (!vga256InfoRec.clockprog)
     new->MiscOutReg |= (new->NoClock & 0x03) << 2;

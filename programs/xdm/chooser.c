@@ -1,6 +1,6 @@
 /*
- * $XConsortium: chooser.c,v 1.21 94/11/21 18:33:11 kaleb Exp $
- * $XFree86: xc/programs/xdm/chooser.c,v 3.5 1995/01/28 16:16:48 dawes Exp $
+ * $XConsortium: chooser.c,v 1.22 95/06/08 23:20:39 gildea Exp $
+ * $XFree86: xc/programs/xdm/chooser.c,v 3.6 1995/05/07 12:27:03 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -284,7 +284,7 @@ int	NameTableSize;
 
 static int
 HostnameCompare (a, b)
-#if __STDC__
+#ifdef __STDC__
     const void *a, *b;
 #else
     char *a, *b;
@@ -295,6 +295,7 @@ HostnameCompare (a, b)
 
 static void
 RebuildTable (size)
+    int size;
 {
     char	**newTable = 0;
     HostName	*names;
@@ -421,7 +422,7 @@ AddHostname (hostname, status, addr, willing)
     return 1;
 }
 
-static
+static void
 DisposeHostname (host)
     HostName	*host;
 {
@@ -432,7 +433,7 @@ DisposeHostname (host)
     free ((char *) host);
 }
 
-static
+static void
 RemoveHostname (host)
     HostName	*host;
 {
@@ -453,7 +454,7 @@ RemoveHostname (host)
     RebuildTable (NameTableSize);
 }
 
-static
+static void
 EmptyHostnames ()
 {
     HostName	*hosts, *next;
@@ -562,6 +563,7 @@ ReceivePacket (closure, source, id)
     }
 }
 
+static void
 RegisterHostaddr (addr, len, type)
     struct sockaddr *addr;
     int		    len;
@@ -605,6 +607,7 @@ RegisterHostaddr (addr, len, type)
 #define ifr_size(p) (sizeof (struct ifreq))
 #endif
 
+static void
 RegisterHostname (name)
     char    *name;
 {
@@ -798,6 +801,7 @@ RegisterHostname (name)
 
 static ARRAYofARRAY8	AuthenticationNames;
 
+static void
 RegisterAuthenticationName (name, namelen)
     char    *name;
     int	    namelen;
@@ -812,13 +816,13 @@ RegisterAuthenticationName (name, namelen)
     memmove( authName->data, name, namelen);
 }
 
+int
 InitXDMCP (argv)
     char    **argv;
 {
     int	soopts = 1;
     XdmcpHeader	header;
     int	i;
-    int optlen;
 #ifdef MINIX
     char *udp_device;
     nwio_udpopt_t udpopt;
@@ -928,7 +932,7 @@ InitXDMCP (argv)
     return 1;
 }
 
-Boolean
+static void
 Choose (h)
     HostName	*h;
 {
@@ -1146,6 +1150,7 @@ static XtActionsRec app_actions[] = {
 };
 
 main (argc, argv)
+    int     argc;
     char    **argv;
 {
     Arg		position[3];

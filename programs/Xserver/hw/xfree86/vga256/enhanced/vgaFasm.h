@@ -1,5 +1,5 @@
-/* $XConsortium: vgaFasm.h,v 1.3 95/01/05 20:50:47 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaFasm.h,v 3.2 1994/10/21 11:24:26 dawes Exp $ */
+/* $XConsortium: vgaFasm.h,v 1.4 95/06/09 20:57:00 gildea Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaFasm.h,v 3.4 1995/01/28 17:09:43 dawes Exp $ */
 /* Copyright 1992 by James Tsillas, Arlignton, Massachusetts.
 
 		All Rights Reserved
@@ -23,7 +23,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 
 #ifndef RROP_NAME_CAT
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP) || (defined (sun) && defined (__STDC__) && !defined (__GNUC__))
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP) || (defined (sun) && defined (__STDC__) && !defined (__GNUC__))
 #define RROP_NAME_CAT(prefix,suffix)    prefix##suffix
 #else
 #define RROP_NAME_CAT(prefix,suffix)    prefix/**/suffix

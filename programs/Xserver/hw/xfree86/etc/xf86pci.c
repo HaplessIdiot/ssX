@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.0 1995/03/18 11:02:21 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -26,11 +26,25 @@
 #include <stdio.h>
 #include <sys/types.h>
 #if defined(SVR4)
+#ifdef sun
+#define __EXTENSIONS__
+#endif
 #include <sys/proc.h>
 #include <sys/tss.h>
+#ifdef NCR
+#define __STDC
 #include <sys/sysi86.h>
+#undef __STDC
+#else
+#include <sys/sysi86.h>
+#endif
+#ifndef sun
 #include <sys/seg.h>
+#endif
 #include <sys/v86.h>
+#ifdef sun
+#include <sys/psw.h>
+#endif
 #endif
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__386BSD__)
 #include <sys/file.h>

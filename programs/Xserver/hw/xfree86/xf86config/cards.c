@@ -1,5 +1,5 @@
-/* $XConsortium: cards.c,v 1.3 95/01/23 15:35:22 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.2 1995/01/23 01:33:07 dawes Exp $ */
+/* $XConsortium: cards.c,v 1.4 95/06/09 20:57:00 gildea Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.3 1995/01/28 16:15:18 dawes Exp $ */
 
 /*
  *  Functions to manipulate card database.
@@ -245,7 +245,7 @@ int parse_database() {
 	return 0;
 }
 
-#if __STDC__
+#ifdef __STDC__
 #define CONST const
 #else
 #define CONST

@@ -46,8 +46,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.64 95/01/05 19:50:01 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.5 1995/01/28 16:15:34 dawes Exp $ */
+/* $XConsortium: os.h,v 1.66 95/04/07 20:33:29 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.6 1995/04/09 13:54:09 dawes Exp $ */
 
 #ifndef OS_H
 #define OS_H
