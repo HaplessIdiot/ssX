@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+/* $XFree86$ */
 
 /*
  * Faster arithmetic functions.  If the FAST_MATH preprocessor symbol is
@@ -47,7 +47,10 @@
  * In the worst case, we force the compiler to use a memory access to
  * truncate the float, by specifying the 'volatile' keyword.
  */
-#if defined(__linux__) && defined(__i386__) 
+#if defined(__linux__) && defined(__i386__) && !defined(IN_MODULE)
+/*
+ * A libc interface is needed for this...
+ */
 #include <fpu_control.h>
 
 #if !defined(_FPU_SETCW)
