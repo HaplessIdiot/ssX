@@ -1,3 +1,61 @@
+XFree86 3.9Nc (29 August 1998)
+1786. Add a resize function to the offscreen memory manager (#1937,
+      Mark Vojkovich).
+1785. Fix C&T 69000 horizontal CRT overflow register settings (#1936,
+      David Bateman).
+1784. Add some missing UnlockDisplay calls to lib/Xv/Xv.c (#1935,
+      Thomas Mueller).
+1783. Fix colourmap save problem (#1935, Thomas Mueller).
+1782. Support for LynxOS 3.0.0 and LynxOS PowerPC fixes (#1935,
+      Thomas Mueller).
+1781. An ND version of the Cirrus driver, currently for 5480 and 5446 chips
+      only.  The old driver has been moved to xfree86/olddrivers/cirrus
+      for reference (#1932, 1938, Itai Nahshon).
+1780. Xterm updates:
+        - add configure test to infer if xterm should be installed setuid
+          based on previously installed xterm (reported by Stephen Marley).
+        - integrate/extend patch by Jason Bacon to implement quasi-continuous
+          mouse reporting. 
+        - correct control sequences transmitted by function keys F1 to F4
+          when sunFunctionKeys resource is true (it was still using the
+          VT100 control sequences).
+        - modify handling of backarrow key so that the control modifier
+          toggles the backspace/delete interpretation set by the
+          backarrowKey resource.
+        - limit the row and column values used to report mouse position.
+      (#1931, Thomas Dickey).
+1779. Fix clockRanges alloction problem in the tseng driver (#1927,
+      Koen Gadeyne).
+1778. Fix tseng banked accelerated mode, and disable ImageWrite in banked
+      mode if it requires more than 8k (#1927, Koen Gadeyne).
+1777. Some initial ET4000W32p acceleration (#1927, Koen Gadeyne).
+1776. Fix 24 and 32bpp tseng modes for cards with programmable clocks
+      (#1930, Koen Gadeyne).
+1775. Implement the pci_retry and Memclk options for the MGA driver (#1927,
+      Mark Vojkovich).
+1774. Update the mga driver to use MMIO for everything (making use of the
+      MMIO support in the vgahw module), and do its own colourmap handling
+      (#1927, Mark Vojkovich).
+1773. Add a MMIO version of the vgahw code to the vgahw module (#1926, 1928,
+      Mark Vojkovich).
+1772. Small Xv DDX udpate (#1925, Mark Vojkovich).
+1771. Update the C&T driver to use the new ClockMulFactor code (#1924, 1936,
+      David Bateman).
+1770. Add a ROP_NEEDS_SOURCE option to XAA, as needed by the C&T driver
+      (#1924, David Bateman).
+1769. Add support to the tga driver for 24 plane cards (#1923, Tim Rowley).
+1768. Resync the scale[] find_scale[] arrays in the bitmap font code, which
+      got out of sync when gzipped font support was added (#1921 Doug Ridgway).
+1767. Fix incorrect #ifdef in sunKeyMap.c for Danish Type 5 Sun keyboards
+      (#1919, Erik Bertelsen).
+1766. Move HW cursor support from the XAA module to the ramdac module,
+      update drivers for this change, move IBM cursor code from  the glint
+      driver to the ramdac module, and intergrate the HW cursor code fir
+      the IBM ramdacs using a new helper function in the ramdac module.
+      (#1918, Alan Hourihane).
+1765. Fix some more compiler.h problems for AXP platforms (#1918,
+      Alan Hourihane).
+
 XFree86 3.9Nb (20 August 1998)
 1764. Fix some memory leaks in Xlib that happen on realloc failures
       (#1914, ??)
@@ -6348,4 +6406,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.613 1998/08/19 13:13:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.614 1998/08/20 08:55:52 dawes Exp $

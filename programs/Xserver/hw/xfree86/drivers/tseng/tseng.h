@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.21 1998/08/13 14:45:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.22 1998/08/19 07:49:14 dawes Exp $ */
 
 
 
@@ -56,7 +56,7 @@
 /* Drivers using the XAA interface ... */
 #include "xaa.h"
 #include "xaalocal.h"
-#include "xaacursor.h"
+#include "xf86Cursor.h"
 #include "xf86fbman.h"
 
 
@@ -223,6 +223,7 @@ typedef struct {
     TsengDacInfoRec DacInfo;
     TsengMClkInfoRec MClkInfo;
     t_clockchip_type ClockChip;
+    int max_vco_freq;                  /* max internal VCO frequency */
     CloseScreenProcPtr CloseScreen;
     int save_divide;
     XAAInfoRecPtr AccelInfoRec;
@@ -234,7 +235,8 @@ typedef struct {
     unsigned char * XAAScanlineImageWriteBuffers[2];   /* pointers to ImageWrite Buffers */
     CARD32 HWCursorBufferOffset;
     unsigned char *XAAHWCursorBuffer;
-    unsigned char save_ExtCRTC36;      /* save CRTC 0x36 during sequencer resets */
+    unsigned char * XAAScanlineColorExpandBuffers[1];
+    CARD32* ColExpLUT;
 } TsengRec, *TsengPtr;
 
 #define TsengPTR(p) ((TsengPtr)((p)->driverPrivate))

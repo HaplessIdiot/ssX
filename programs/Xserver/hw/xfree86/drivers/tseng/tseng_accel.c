@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.23 1998/08/13 14:45:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.24 1998/08/19 07:49:15 dawes Exp $ */
 
 
 
@@ -271,7 +271,9 @@ TsengXAAInit(ScreenPtr pScreen)
 #endif
 
     /* set up color expansion acceleration */
-    TsengXAAInit_Colexp(pScrn);
+    if (!TsengXAAInit_Colexp(pScrn))
+	return FALSE;
+
 
     /*
      * For Tseng, we set up some often-used values

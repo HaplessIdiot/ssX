@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_dac.c,v 1.3 1998/08/13 14:45:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_dac.c,v 1.4 1998/08/20 08:56:01 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -64,13 +64,33 @@ DEC21030Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     TGAPtr pTga = TGAPTR(pScrn);
     TGARegPtr pReg = &pTga->ModeReg;
-    RamDacHWRecPtr pBT = RAMDACHWPTR(pScrn);
-    RamDacRegRecPtr ramdacReg = &pBT->ModeReg;
 
-    ramdacReg->DacRegs[BT_COMMAND_REG_0] = 0xA0 | (pScrn->rgbBits ? 2 : 0);
-    ramdacReg->DacRegs[BT_COMMAND_REG_2] = 0x20;
-    ramdacReg->DacRegs[BT_STATUS_REG] = 0x14;
-    (*pTga->RamDac->SetBpp)(pScrn, ramdacReg);
+    if (pTga->RamDac != NULL) {
+        RamDacHWRecPtr pBT = RAMDACHWPTR(pScrn);
+	RamDacRegRecPtr ramdacReg = &pBT->ModeReg;
+      
+	ramdacReg->DacRegs[BT_COMMAND_REG_0] = 0xA0 | (pScrn->rgbBits ? 2 : 0);
+	ramdacReg->DacRegs[BT_COMMAND_REG_2] = 0x20;
+	ramdacReg->DacRegs[BT_STATUS_REG] = 0x14;
+	(*pTga->RamDac->SetBpp)(pScrn, ramdacReg);
+    } else {
+        unsigned char *Bt463 = pTga->Bt463modeReg;
+	int i, j;
+ 
+	/* Command registers */
+	Bt463[0] = 0x40;  Bt463[1] = 0x08;  Bt463[2] = 0x00;
+	
+	/* Read mask */
+	Bt463[3] = 0xff;  Bt463[4] = 0xff;  Bt463[5] = 0xff;  Bt463[6] = 0x0f;
+	
+	/* Blink mask */
+	Bt463[7] = 0x00;  Bt463[8] = 0x00;  Bt463[9] = 0x00; Bt463[10] = 0x00;
+	
+	/* Window attributes */
+	for (i = 0, j=11; i < 16; i++) {
+	    Bt463[j++] = 0x00;  Bt463[j++] = 0x01;  Bt463[j++] = 0x80;
+	}
+    }
 
     pReg->tgaRegs[0x00] = mode->CrtcHDisplay;
     pReg->tgaRegs[0x01] = (mode->CrtcHSyncStart - mode->CrtcHDisplay) / 4;
@@ -111,6 +131,8 @@ DEC21030Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		(pReg->tgaRegs[0x09] << 30);
 
     pReg->tgaRegs[0x12] = 0x05;
+
+/*    pReg->tgaRegs[0x13] = 0x0000; */
     return TRUE;
 }
 
@@ -122,6 +144,7 @@ DEC21030Save(ScrnInfoPtr pScrn, TGARegPtr tgaReg)
     tgaReg->tgaRegs[0x10] = TGA_READ_REG(TGA_HORIZ_REG);
     tgaReg->tgaRegs[0x11] = TGA_READ_REG(TGA_VERT_REG);
     tgaReg->tgaRegs[0x12] = TGA_READ_REG(TGA_VALID_REG);
+/*    tgaReg->tgaRegs[0x13] = TGA_READ_REG(TGA_BASE_ADDR_REG); */
 }
 
 void
@@ -135,6 +158,7 @@ DEC21030Restore(ScrnInfoPtr pScrn, TGARegPtr tgaReg)
 
     TGA_WRITE_REG(tgaReg->tgaRegs[0x10], TGA_HORIZ_REG);
     TGA_WRITE_REG(tgaReg->tgaRegs[0x11], TGA_VERT_REG);
+/*    TGA_WRITE_REG(tgaReg->tgaRegs[0x13], TGA_BASE_ADDR_REG); */
 
     TGA_WRITE_REG(tgaReg->tgaRegs[0x12], TGA_VALID_REG); /* Re-enable Video */
 }

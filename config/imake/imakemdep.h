@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.28 1998/01/24 16:56:18 hohndel Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.29 1998/08/16 10:24:04 dawes Exp $ */
 
 
 /* 
@@ -128,7 +128,7 @@ in this Software without prior written authorization from the X Consortium.
 # endif
 #endif
 
-#ifdef Lynx
+#if defined(Lynx) || defined(__Lynx__)
 #define imake_ccflags "-DLynx"
 #endif /* Lynx */
 
@@ -230,7 +230,7 @@ in this Software without prior written authorization from the X Consortium.
  *     If use cc -E but want a different compiler, define DEFAULT_CC.
  *     If the cpp you need is not in /lib/cpp, define DEFAULT_CPP.
  */
-#ifdef Lynx
+#if defined(Lynx) || defined(__Lynx__)
 #define DEFAULT_CC "gcc"
 #define USE_CC_E
 #endif
@@ -504,9 +504,11 @@ char *cpp_argv[ARGUMENTS] = {
         "-traditional",
         "-Dlinux",
 #endif
-#ifdef Lynx
+#if defined(Lynx) || defined(__Lynx__)
         "-traditional",
-        "-DLYNX",
+#if 0
+        "-DLYNX",		/* do we really need this?? */
+#endif
 	"-DLynx",
 # ifdef ppc
 	"-Dppc",

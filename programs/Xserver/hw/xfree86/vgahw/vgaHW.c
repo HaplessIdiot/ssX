@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.3 1998/08/19 07:49:24 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.4 1998/08/19 12:48:33 dawes Exp $
  *
  * Copyright 1991-1998 by The XFree86 Project, Inc.
  *
@@ -17,12 +17,21 @@
 #include "X.h"
 #include "misc.h"
 
+#ifndef VGA_MMIO
 #include "compiler.h"
+#define VGANAME(x) x
+#else 
+#define VGANAME(x) x##MMIO
+#endif /* VGA_MMIO */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
+#ifndef VGA_MMIO
 #include "vgaHW.h"
+#else
+#include "vgaHWmmio.h"
+#endif
 
 /* XXX The PC98 bits here need to be cleaned up */
 
@@ -95,14 +104,15 @@
 #define BLACK_VALUE 0x00
 #define OVERSCAN_VALUE 0x01
 
-int vgaHWPrivateIndex = -1;
 
 /* Use a private definition of this here */
 #undef VGAHWPTR
 #define VGAHWPTRLVAL(p) (p)->privates[vgaHWPrivateIndex].ptr
 #define VGAHWPTR(p) ((vgaHWPtr)(VGAHWPTRLVAL(p)))
 
+#ifndef VGA_MMIO
 int vgaRamdacMask = 0x3F;
+int vgaHWPrivateIndex = -1;
 
 #ifdef NEED_SAVED_CMAP
 /* This default colourmap is used only when it can't be read from the VGA */
@@ -175,6 +185,7 @@ unsigned char defaultDAC[768] =
      0,  0,  0,    0,  0,  0,    0,  0,  0,    0,  0,  0,
 };
 #endif /* NEED_SAVED_CMAP */
+#endif /* VGA_MMIO */
 
 /*
  * With Intel, the version in os-support/misc/SlowBcopy.s is used.
@@ -194,7 +205,7 @@ unsigned char defaultDAC[768] =
  *	Protect VGA registers and memory from corruption during loads.
  */
 void
-vgaHWProtect(ScrnInfoPtr pScrn, Bool on)
+VGANAME(vgaHWProtect)(ScrnInfoPtr pScrn, Bool on)
 {
 #if !defined(PC98_PEGC) && !defined(PC98_EGC)
   vgaHWPtr hwp = VGAHWPTR(pScrn);
@@ -209,7 +220,7 @@ vgaHWProtect(ScrnInfoPtr pScrn, Bool on)
       outb(0x3C4, 0x01);
       tmp = inb(0x3C5);
 
-      vgaHWSeqReset(hwp, TRUE);		/* start synchronous reset */
+      VGANAME(vgaHWSeqReset)(hwp, TRUE);	/* start synchronous reset */
       outw(0x3C4, ((tmp | 0x20) << 8) | 0x01);	/* disable the display */
 
       tmp = inb(hwp->IOBase + 0x0A);
@@ -223,7 +234,7 @@ vgaHWProtect(ScrnInfoPtr pScrn, Bool on)
       tmp = inb(0x3C5);
 
       outw(0x3C4, ((tmp & 0xDF) << 8) | 0x01);	/* reenable display */
-      vgaHWSeqReset(hwp, FALSE);		/* clear synchronousreset */
+      VGANAME(vgaHWSeqReset)(hwp, FALSE);	/* clear synchronousreset */
 
       tmp = inb(hwp->IOBase + 0x0A);
       outb(0x3C0, 0x20);			/* disable pallete access */
@@ -237,7 +248,7 @@ vgaHWProtect(ScrnInfoPtr pScrn, Bool on)
  */
 
 void
-vgaHWBlankScreen(ScrnInfoPtr pScrn, Bool on)
+VGANAME(vgaHWBlankScreen)(ScrnInfoPtr pScrn, Bool on)
 {
   vgaHWPtr hwp = VGAHWPTR(pScrn);
 #if !defined(PC98_EGC) && !defined(PC98_PEGC)
@@ -252,9 +263,9 @@ vgaHWBlankScreen(ScrnInfoPtr pScrn, Bool on)
     scrn |= 0x20;			/* blank screen */
   }
 
-  vgaHWSeqReset(hwp, TRUE);
+  VGANAME(vgaHWSeqReset)(hwp, TRUE);
   outw(0x3C4, (scrn << 8) | 0x01); /* change mode */
-  vgaHWSeqReset(hwp, FALSE);
+  VGANAME(vgaHWSeqReset)(hwp, FALSE);
 #else
   if(on) 
     outb(0xa2, 0xd);
@@ -268,7 +279,7 @@ vgaHWBlankScreen(ScrnInfoPtr pScrn, Bool on)
  */
 
 Bool
-vgaHWSaveScreen(ScreenPtr pScreen, Bool on)
+VGANAME(vgaHWSaveScreen)(ScreenPtr pScreen, Bool on)
 {
    ScrnInfoPtr pScrn = NULL;
 
@@ -279,7 +290,7 @@ vgaHWSaveScreen(ScreenPtr pScreen, Bool on)
       SetTimeSinceLastInputEvent();
 
    if ((pScrn != NULL) && pScrn->vtSema) {
-     vgaHWBlankScreen(pScrn, on);
+     VGANAME(vgaHWBlankScreen)(pScrn, on);
    }
    return (TRUE);
 }
@@ -293,7 +304,7 @@ vgaHWSaveScreen(ScreenPtr pScreen, Bool on)
  */
 
 void
-vgaHWDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
+VGANAME(vgaHWDPMSSet)(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 {
 #ifdef DPMSExtension
   unsigned char seq1, crtc17;
@@ -341,7 +352,7 @@ vgaHWDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
  */
 
 void
-vgaHWSeqReset(vgaHWPtr hwp, Bool start)
+VGANAME(vgaHWSeqReset)(vgaHWPtr hwp, Bool start)
 {
 #if !defined(PC98_PEGC) && !defined(PC98_EGC)
   if (start == TRUE)
@@ -357,7 +368,7 @@ vgaHWSeqReset(vgaHWPtr hwp, Bool start)
  */
 
 void
-vgaHWRestore(ScrnInfoPtr scrninfp, vgaRegPtr restore, Bool restoreFonts)
+VGANAME(vgaHWRestore)(ScrnInfoPtr scrninfp, vgaRegPtr restore, Bool restoreFonts)
 {
     int i,tmp;
     vgaHWPtr hwp = VGAHWPTR(scrninfp);
@@ -379,7 +390,7 @@ vgaHWRestore(ScrnInfoPtr scrninfp, vgaRegPtr restore, Bool restoreFonts)
    * a font.
    */
   
-  vgaHWBlankScreen(scrninfp, FALSE);
+  VGANAME(vgaHWBlankScreen)(scrninfp, FALSE);
 #if defined(SAVE_TEXT) || defined(SAVE_FONT1) || defined(SAVE_FONT2)
   if (restoreFonts)
   if(hwp->FontInfo1 || hwp->FontInfo2 || hwp->TextInfo) {
@@ -436,7 +447,7 @@ vgaHWRestore(ScrnInfoPtr scrninfp, vgaRegPtr restore, Bool restoreFonts)
   }
 #endif /* defined(SAVE_TEXT) || defined(SAVE_FONT1) || defined(SAVE_FONT2) */
 
-  vgaHWBlankScreen(scrninfp, TRUE);
+  VGANAME(vgaHWBlankScreen)(scrninfp, TRUE);
 
 #if !defined(PC98_PEGC) && !defined(PC98_EGC)
 
@@ -498,10 +509,10 @@ vgaHWRestore(ScrnInfoPtr scrninfp, vgaRegPtr restore, Bool restoreFonts)
  */
 
 void
-vgaHWSave(ScrnInfoPtr scrninfp, vgaRegPtr save, Bool saveFonts)
+VGANAME(vgaHWSave)(ScrnInfoPtr scrninfp, vgaRegPtr save, Bool saveFonts)
 {
+  static Bool	first_time = TRUE;
   int           i,tmp;
-  Bool	        first_time = FALSE;  /* Should be static? */
   vgaHWPtr      hwp = VGAHWPTR(scrninfp);
 
   if (save == NULL) {
@@ -586,6 +597,7 @@ vgaHWSave(ScrnInfoPtr scrninfp, vgaRegPtr save, Bool saveFonts)
       }
     }
   }
+  first_time = FALSE;
 #endif /* NEED_SAVED_CMAP */
 
   for (i=0; i<25; i++) { outb(hwp->IOBase + 4,i);
@@ -603,7 +615,7 @@ vgaHWSave(ScrnInfoPtr scrninfp, vgaRegPtr save, Bool saveFonts)
 
 #endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
 
-  vgaHWBlankScreen(scrninfp, FALSE);
+  VGANAME(vgaHWBlankScreen)(scrninfp, FALSE);
   
 #if !defined(PC98_PEGC) && !defined(PC98_EGC)
   outb(0x3C2, save->MiscOutReg | 0x01);		/* shift to colour emulation */
@@ -691,7 +703,7 @@ vgaHWSave(ScrnInfoPtr scrninfp, vgaRegPtr save, Bool saveFonts)
   outb(0x3C2, save->MiscOutReg);		/* back to original setting */
 #endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
   
-  vgaHWBlankScreen(scrninfp, TRUE);
+  VGANAME(vgaHWBlankScreen)(scrninfp, TRUE);
 
 #if !defined(PC98_PEGC) && !defined(PC98_EGC)
   /* Turn on PAS bit */
@@ -709,6 +721,7 @@ vgaHWSave(ScrnInfoPtr scrninfp, vgaRegPtr save, Bool saveFonts)
  *      Return FALSE on failure.
  */
 
+#ifndef VGA_MMIO
 Bool
 vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
 {
@@ -883,7 +896,9 @@ vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
     regp->Attribute[18] = 0x0F;
     regp->Attribute[19] = 0x00;
     regp->Attribute[20] = 0x00;
+#if 0
 #ifdef PC98_EGC
+    /* There should be no writing of registers in this function */
     outb (0x7c, 0x00);
     /* set to 16color mode */
     outb(0x6a, 0x01);
@@ -906,15 +921,17 @@ vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
     outw (EGC_ADD, 0x0000) ;
     outw (EGC_LENGTH, 0x000f) ;
 #endif /* PC98_EGC */
+#endif
     return(TRUE);
 }
+
 
 
 /*
  * these are some more hardware specific helpers, formerly in vga.c
  */
 static void
-vgaHWGetHWRecPrivate()
+vgaHWGetHWRecPrivate(void)
 {
     if (vgaHWPrivateIndex < 0)
 	vgaHWPrivateIndex = xf86AllocateScrnInfoPrivateIndex();
@@ -1008,6 +1025,7 @@ vgaHWFreeHWRec(ScrnInfoPtr scrp)
 }
 
 
+
 Bool
 vgaHWMapMem(ScrnInfoPtr scrp)
 {
@@ -1044,16 +1062,25 @@ vgaHWUnmapMem(ScrnInfoPtr scrp)
     xf86UnMapVidMem(scr_index, (pointer)hwp->Base, hwp->MapSize);
 }
 
-    
+int
+vgaHWGetIndex()
+{
+    return vgaHWPrivateIndex;
+}
+
+
+#endif /* VGA_MMIO */
+ 
 void
-vgaHWGetIOBase(vgaHWPtr hwp)
+VGANAME(vgaHWGetIOBase)(vgaHWPtr hwp)
 {
     hwp->IOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
 }
 
 
+
 void
-vgaHWLock(vgaHWPtr hwp)
+VGANAME(vgaHWLock)(vgaHWPtr hwp)
 {
     unsigned char temp;
 
@@ -1066,7 +1093,7 @@ vgaHWLock(vgaHWPtr hwp)
 }
 
 void
-vgaHWUnlock(vgaHWPtr hwp)
+VGANAME(vgaHWUnlock)(vgaHWPtr hwp)
 {
     unsigned char temp;
 
@@ -1079,8 +1106,3 @@ vgaHWUnlock(vgaHWPtr hwp)
 }
 
 
-int
-vgaHWGetIndex()
-{
-    return vgaHWPrivateIndex;
-}

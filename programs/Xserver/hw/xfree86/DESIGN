@@ -1767,12 +1767,19 @@ The XF86VideoAdaptorRec:
 
 
 	typedef void (* StopVideoFuncPtr)(ScrnInfoPtr pScrn, 
-			pointer data, Bool exiting);
+			pointer data, Bool cleanup);
 
 	  This indicates the the driver should stop displaying the video.
-	  This is used to stop both input and output video.  The "exiting"
+	  This is used to stop both input and output video.  The "cleanup"
 	  field indicates that the video is being stopped because the
-	  server is quiting or switching VTs. 
+	  client requested it to stop or because the server is exiting 
+	  the current VT.  In that case the driver should deallocate
+	  any offscreen memory areas (if there are any) being used to
+	  put the video to the screen.  If "cleanup" is not set, the
+	  video is being stopped temporarily due to clipping or moving
+	  of the window, etc... and video will likely be restarted soon
+	  so the driver should not deallocate any offscreen areas
+	  associated with that port.  
 
 
 	typedef void (* ReclipVideoFuncPtr)(ScrnInfoPtr pScrn, 
@@ -3699,4 +3706,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.6 1998/08/19 07:49:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.7 1998/08/19 13:14:11 dawes Exp $

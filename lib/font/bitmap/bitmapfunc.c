@@ -1,5 +1,5 @@
 /* $XConsortium: bitmapfunc.c /main/10 1996/11/03 19:31:55 kaleb $ */
-/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.3 1995/11/30 12:48:55 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.4 1996/12/23 06:01:49 dawes Exp $ */
 
 /*
 
@@ -51,7 +51,9 @@ extern int  BitmapGetInfoScalable ();
 int	    BitmapGetRenderIndex ();
 
 /*
- * these two arrays must be in the same order
+ * the readers[] and renderers[] arrays must be in the same order,
+ * and also in the same order as scale[] and find_scale[] in bitscale.c
+ *
  */
 static BitmapFileFunctionsRec readers[] = {
     pcfReadFont, pcfReadFontInfo,

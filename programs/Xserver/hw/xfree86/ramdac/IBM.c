@@ -23,11 +23,13 @@
  *
  * IBM RAMDAC routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.c,v 1.3 1998/08/13 14:46:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.c,v 1.4 1998/08/20 08:56:03 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
+
+#include "xf86Cursor.h"
 
 #define INIT_IBM_RAMDAC_INFO
 #include "IBMPriv.h"
@@ -293,9 +295,11 @@ IBMramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRe
 	case IBM526_RAMDAC:
 	case IBM526DB_RAMDAC:
  	    ramdacHelperPtr->SetBpp = IBMramdac526SetBpp;
+    	    ramdacHelperPtr->HWCursorInit = IBMramdac526HWCursorInit;
 	    break;
 	case IBM640_RAMDAC:
  	    ramdacHelperPtr->SetBpp = IBMramdac640SetBpp;
+    	    ramdacHelperPtr->HWCursorInit = IBMramdac640HWCursorInit;
 	    break;
     }
     ramdacPtr->RamDacType = IBMramdac_ID;
@@ -415,4 +419,168 @@ IBMramdac640SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 	    ramdacReg->DacRegs[i+0x103] = 0x44;
         }
     }
+}
+
+void 
+IBMramdac526ShowCursor(ScrnInfoPtr pScrn)
+{
+   RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
+
+   /* Enable cursor - X11 mode */
+   (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs, 0x00, 0x27);
+}
+
+void 
+IBMramdac640ShowCursor(ScrnInfoPtr pScrn)
+{
+   RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
+
+   /* Enable cursor - mode2 (x11 mode) */
+   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURSOR_CONTROL, 0x00, 0x0B);
+}
+
+void
+IBMramdac526HideCursor(ScrnInfoPtr pScrn)
+{
+   RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
+
+   /* Disable cursor - X11 mode */
+   (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs, 0x00, 0x24);
+}
+
+void
+IBMramdac640HideCursor(ScrnInfoPtr pScrn)
+{
+   RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
+
+   /* Disable cursor - mode2 (x11 mode) */
+   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURSOR_CONTROL, 0x00, 0x08);
+}
+
+void
+IBMramdac526SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
+{
+   RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
+
+   x += 64;
+   y += 64;
+
+   (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs_hot_x, 0x00, 0x3f);
+   (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs_hot_y, 0x00, 0x3f);
+   (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs_xl, 0x00, x & 0xff);
+   (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs_xh, 0x00, (x>>8) & 0xf);
+   (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs_yl, 0x00, y & 0xff);
+   (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs_yh, 0x00, (y>>8) & 0xf);
+}
+
+void
+IBMramdac640SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
+{
+   RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
+
+   x += 64;
+   y += 64;
+
+   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_OFFSETX, 0x00, 0x3f);
+   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_OFFSETY, 0x00, 0x3f);
+   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_X_LOW, 0x00, x & 0xff);
+   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_X_HIGH, 0x00, (x>>8) & 0xf);
+   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_Y_LOW, 0x00, y & 0xff);
+   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_Y_HIGH, 0x00, (y>>8) & 0xf);
+}
+
+void
+IBMramdac526SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
+{
+   RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
+
+   (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs_col1_r, 0x00, bg >> 16);
+   (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs_col1_g, 0x00, bg >> 8);
+   (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs_col1_b, 0x00, bg);
+   (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs_col2_r, 0x00, fg >> 16);
+   (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs_col2_g, 0x00, fg >> 8);
+   (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs_col2_b, 0x00, fg);
+}
+
+void
+IBMramdac640SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
+{
+   RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
+
+   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_COL2, 0x00, bg>>16);
+   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_COL2, 0x00, bg>>8);
+   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_COL2, 0x00, bg);
+   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_COL3, 0x00, fg>>16);
+   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_COL3, 0x00, fg>>8);
+   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_COL3, 0x00, fg);
+}
+
+void 
+IBMramdac526LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
+{
+   RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
+   int i;
+   /* 
+    * Output the cursor data.  The realize function has put the planes into
+    * their correct order, so we can just blast this out.
+    */
+   for (i = 0; i < 1024; i++)
+      (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs_array + i, 0x00, (*src++));
+}
+
+void 
+IBMramdac640LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
+{
+   RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
+   int i;
+   /* 
+    * Output the cursor data.  The realize function has put the planes into
+    * their correct order, so we can just blast this out.
+    */
+   for (i = 0; i < 1024; i++)
+      (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_WRITE + i, 0x00, (*src++));
+}
+
+static Bool 
+IBMramdac526UseHWCursor(ScreenPtr pScr, CursorPtr pCurs)
+{
+    return TRUE;
+}
+
+static Bool 
+IBMramdac640UseHWCursor(ScreenPtr pScr, CursorPtr pCurs)
+{
+    return TRUE;
+}
+
+void
+IBMramdac526HWCursorInit(XAACursorInfoPtr infoPtr)
+{
+    infoPtr->MaxWidth = 64;
+    infoPtr->MaxHeight = 64;
+    infoPtr->Flags = HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
+		     HARDWARE_CURSOR_AND_SOURCE_WITH_MASK |
+		     HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_1;
+    infoPtr->SetCursorColors = IBMramdac526SetCursorColors;
+    infoPtr->SetCursorPosition = IBMramdac526SetCursorPosition;
+    infoPtr->LoadCursorImage = IBMramdac526LoadCursorImage;
+    infoPtr->HideCursor = IBMramdac526HideCursor;
+    infoPtr->ShowCursor = IBMramdac526ShowCursor;
+    infoPtr->UseHWCursor = IBMramdac526UseHWCursor;
+}
+
+void
+IBMramdac640HWCursorInit(XAACursorInfoPtr infoPtr)
+{
+    infoPtr->MaxWidth = 64;
+    infoPtr->MaxHeight = 64;
+    infoPtr->Flags = HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
+		     HARDWARE_CURSOR_AND_SOURCE_WITH_MASK |
+		     HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_1;
+    infoPtr->SetCursorColors = IBMramdac640SetCursorColors;
+    infoPtr->SetCursorPosition = IBMramdac640SetCursorPosition;
+    infoPtr->LoadCursorImage = IBMramdac640LoadCursorImage;
+    infoPtr->HideCursor = IBMramdac640HideCursor;
+    infoPtr->ShowCursor = IBMramdac640ShowCursor;
+    infoPtr->UseHWCursor = IBMramdac640UseHWCursor;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.8.4.6 1998/06/21 15:38:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.12 1998/07/25 16:57:01 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -279,8 +279,8 @@ xf86OpenSerial (pointer options)
 
 #ifdef Lynx
 	/* LynxOS does not assert DTR without this */
-	ioctl (control, TIOCGETP, (char *) &ms_sgtty);
-	ioctl (control, TIOCSDTR, (char *) &ms_sgtty);
+	ioctl (fd, TIOCGETP, (char *) &ms_sgtty);
+	ioctl (fd, TIOCSDTR, (char *) &ms_sgtty);
 #endif
 
 	/* set up default port parameters */

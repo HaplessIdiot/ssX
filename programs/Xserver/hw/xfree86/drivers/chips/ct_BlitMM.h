@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BlitMM.h,v 1.2 1998/07/25 16:55:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BlitMM.h,v 1.3 1998/08/20 08:55:56 dawes Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* These are done using Memory Mapped IO, of the registers */
@@ -63,7 +63,7 @@
 
 #define ctSETBGCOLOR8(c) {\
     HW_DEBUG(0x2); \
-    if (cAcl->bgColor != (c)) { \
+    if ((cAcl->bgColor != (c)) || (cAcl->bgColor == -1)) { \
 	cAcl->bgColor = (c); \
 	*(unsigned int *)(cPtr->MMIOBase + MR(0x2)) = \
 	   ((((((c)&0xFF)<<8)|((c)&0xFF))<<16) | \
@@ -73,7 +73,7 @@
 
 #define ctSETBGCOLOR16(c) {\
     HW_DEBUG(0x2); \
-    if (cAcl->bgColor != (c)) { \
+    if ((cAcl->bgColor != (c)) || (cAcl->bgColor == -1)) { \
 	cAcl->bgColor = (c); \
 	*(unsigned int *)(cPtr->MMIOBase + MR(0x2)) = \
 	   ((((c)&0xFFFF)<<16)|((c)&0xFFFF)); \
@@ -84,7 +84,7 @@
  * It is here only for later use with the 65550 */
 #define ctSETBGCOLOR24(c) {\
     HW_DEBUG(0x2); \
-    if (cAcl->bgColor != (c)) { \
+    if ((cAcl->bgColor != (c)) || (cAcl->bgColor == -1)) { \
 	cAcl->bgColor = (c); \
 	*(unsigned int *)(cPtr->MMIOBase + MR(0x2)) = ((c)&0xFFFFFF); \
     } \
@@ -92,7 +92,7 @@
 
 #define ctSETFGCOLOR8(c) {\
     HW_DEBUG(0x3); \
-    if (cAcl->fgColor != (c)) { \
+    if ((cAcl->fgColor != (c)) || (cAcl->fgColor == -1)) { \
 	cAcl->fgColor = (c); \
 	*(unsigned int *)(cPtr->MMIOBase + MR(0x3)) = \
            ((((((c)&0xFF)<<8)|((c)&0xFF))<<16) | \
@@ -102,7 +102,7 @@
 
 #define ctSETFGCOLOR16(c) {\
     HW_DEBUG(0x3); \
-    if (cAcl->fgColor != (c)) { \
+    if ((cAcl->fgColor != (c)) || (cAcl->fgColor == -1)) { \
 	cAcl->fgColor = (c); \
 	*(unsigned int *)(cPtr->MMIOBase + MR(0x3)) = \
            ((((c)&0xFFFF)<<16)|((c)&0xFFFF)); \
@@ -113,7 +113,7 @@
  * It is here only for later use with the 65550 */
 #define ctSETFGCOLOR24(c) {\
     HW_DEBUG(0x3); \
-    if (cAcl->fgColor != (c)) { \
+    if ((cAcl->fgColor != (c)) || (cAcl->fgColor == -1)) { \
 	cAcl->fgColor = (c); \
 	*(unsigned int *)(cPtr->MMIOBase + MR(0x3)) = ((c)&0xFFFFFF); \
     } \

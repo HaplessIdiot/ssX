@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_dac.c,v 1.2 1998/07/25 16:55:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_dac.c,v 1.3 1998/08/20 08:55:59 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -83,47 +83,49 @@ PermediaInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     GLINTRegPtr pReg = &pGlint->ModeReg;
     RamDacHWRecPtr pIBM = RAMDACHWPTR(pScrn);
     RamDacRegRecPtr ramdacReg = &pIBM->ModeReg;
+    CARD32 temp1, temp2, temp3, temp4;
 
-    pReg->glintRegs[0x00] = 0;
-    pReg->glintRegs[0x01] = 0;
-    pReg->glintRegs[0x02] = 0xFFFFFFFF;
-    pReg->glintRegs[0x03] = 0xFFFFFFFF;
+    pReg->glintRegs[Aperture0 >> 3] = 0;
+    pReg->glintRegs[Aperture1 >> 3] = 0;
+    pReg->glintRegs[PMFramebufferWriteMask >> 3] = 0xFFFFFFFF;
+    pReg->glintRegs[PMBypassWriteMask >> 3] = 0xFFFFFFFF;
 
     if (pGlint->UsePCIRetry) {
-	pReg->glintRegs[0x04] = 1;
-	pReg->glintRegs[0x05] = 3;
+	pReg->glintRegs[DFIFODis >> 3] = 1;
+	pReg->glintRegs[FIFODis >> 3] = 3;
     } else {
-	pReg->glintRegs[0x04] = 0;
-	pReg->glintRegs[0x05] = 1;
+	pReg->glintRegs[DFIFODis >> 3] = 0;
+	pReg->glintRegs[FIFODis >> 3] = 1;
     }
 
-    pReg->glintRegs[0x50] = mode->CrtcHSyncStart - mode->CrtcHDisplay;
-    pReg->glintRegs[0x51] = mode->CrtcVSyncStart - mode->CrtcVDisplay;
-    pReg->glintRegs[0x52] = mode->CrtcHSyncEnd - mode->CrtcHSyncStart;
-    pReg->glintRegs[0x53] = mode->CrtcVSyncEnd - mode->CrtcVSyncStart;
+    temp1 = mode->CrtcHSyncStart - mode->CrtcHDisplay;
+    temp2 = mode->CrtcVSyncStart - mode->CrtcVDisplay;
+    temp3 = mode->CrtcHSyncEnd - mode->CrtcHSyncStart;
+    temp4 = mode->CrtcVSyncEnd - mode->CrtcVSyncStart;
 
-    pReg->glintRegs[0x54] = Shiftbpp(pScrn,mode->CrtcHTotal);
-    pReg->glintRegs[0x55] = Shiftbpp(pScrn,pReg->glintRegs[0x50] + 
-					   pReg->glintRegs[0x52]);
-    pReg->glintRegs[0x56] = Shiftbpp(pScrn,pReg->glintRegs[0x50]);
-    pReg->glintRegs[0x57] = Shiftbpp(pScrn,mode->CrtcHTotal-mode->CrtcHDisplay);
-    pReg->glintRegs[0x58] = Shiftbpp(pScrn,pScrn->displayWidth>>1);
+    pReg->glintRegs[PMHTotal >> 3] = Shiftbpp(pScrn,mode->CrtcHTotal);
+    pReg->glintRegs[PMHsEnd >> 3] = Shiftbpp(pScrn, temp1 + temp3);
+    pReg->glintRegs[PMHsStart >> 3] = Shiftbpp(pScrn, temp1);
+    pReg->glintRegs[PMHgEnd >> 3] = Shiftbpp(pScrn, mode->CrtcHTotal - 
+							mode->CrtcHDisplay);
+    pReg->glintRegs[PMScreenStride >> 3] = 
+					Shiftbpp(pScrn,pScrn->displayWidth>>1);
 
-    pReg->glintRegs[0x59] = mode->CrtcVTotal;
-    pReg->glintRegs[0x5A] = pReg->glintRegs[0x51] + pReg->glintRegs[0x53];
-    pReg->glintRegs[0x5B] = pReg->glintRegs[0x51];
-    pReg->glintRegs[0x5C] = mode->CrtcVTotal - mode->CrtcVDisplay;
+    pReg->glintRegs[PMVTotal >> 3] = mode->CrtcVTotal;
+    pReg->glintRegs[PMVsEnd >> 3] = temp2 + temp4;
+    pReg->glintRegs[PMVsStart >> 3] = temp2;
+    pReg->glintRegs[PMVbEnd >> 3] = mode->CrtcVTotal - mode->CrtcVDisplay;
 
-    pReg->glintRegs[0x5D] = 
+    pReg->glintRegs[PMVideoControl >> 3] = 
  	    (((mode->Flags & V_PHSYNC) ? 0x1 : 0x3) << 3) |  
  	    (((mode->Flags & V_PVSYNC) ? 0x1 : 0x3) << 5) | 1; 
 
-    pReg->glintRegs[0x5E] = 3; /* VClkCtl (GL 1000 none recovery time) */
-    pReg->glintRegs[0x5F] = 0; /* PMScreenBase */
-    pReg->glintRegs[0x54] -= 1; /* PMHTotal */
-    pReg->glintRegs[0x56] -= 1; /* PMHsStart */
-    pReg->glintRegs[0x59] -= 1; /* PMVTotal */
-    pReg->glintRegs[0x60] = GLINT_READ_REG(ChipConfig) & 0xFFFFFFFD;
+    pReg->glintRegs[VClkCtl >> 3] = 3;
+    pReg->glintRegs[PMScreenBase >> 3] = 0;
+    pReg->glintRegs[PMHTotal >> 3] -= 1; /* PMHTotal */
+    pReg->glintRegs[PMHsStart >> 3] -= 1; /* PMHsStart */
+    pReg->glintRegs[PMVTotal >> 3] -= 1; /* PMVTotal */
+    pReg->glintRegs[ChipConfig >> 3] = GLINT_READ_REG(ChipConfig) & 0xFFFFFFFD;
 
     {
 	/* Get the programmable clock values */
@@ -177,27 +179,29 @@ PermediaSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
-    glintReg->glintRegs[0x00]  = GLINT_READ_REG(Aperture0);
-    glintReg->glintRegs[0x01]  = GLINT_READ_REG(Aperture1);
-    glintReg->glintRegs[0x02]  = GLINT_READ_REG(PMFramebufferWriteMask);
-    glintReg->glintRegs[0x03]  = GLINT_READ_REG(PMBypassWriteMask);
-    glintReg->glintRegs[0x04]  = GLINT_READ_REG(DFIFODis);
-    glintReg->glintRegs[0x05]  = GLINT_READ_REG(FIFODis);
+    glintReg->glintRegs[Aperture0 >> 3]  = GLINT_READ_REG(Aperture0);
+    glintReg->glintRegs[Aperture1 >> 3]  = GLINT_READ_REG(Aperture1);
+    glintReg->glintRegs[PMFramebufferWriteMask] = 
+					GLINT_READ_REG(PMFramebufferWriteMask);
+    glintReg->glintRegs[PMBypassWriteMask >> 3] = 
+					GLINT_READ_REG(PMBypassWriteMask);
+    glintReg->glintRegs[DFIFODis >> 3]  = GLINT_READ_REG(DFIFODis);
+    glintReg->glintRegs[FIFODis >> 3]  = GLINT_READ_REG(FIFODis);
 
-    glintReg->glintRegs[0x54] = GLINT_READ_REG(PMHTotal);
-    glintReg->glintRegs[0x57] = GLINT_READ_REG(PMHbEnd);
-    glintReg->glintRegs[0x57] = GLINT_READ_REG(PMHgEnd);
-    glintReg->glintRegs[0x58] = GLINT_READ_REG(PMScreenStride);
-    glintReg->glintRegs[0x56] = GLINT_READ_REG(PMHsStart);
-    glintReg->glintRegs[0x55] = GLINT_READ_REG(PMHsEnd);
-    glintReg->glintRegs[0x59] = GLINT_READ_REG(PMVTotal);
-    glintReg->glintRegs[0x5C] = GLINT_READ_REG(PMVbEnd);
-    glintReg->glintRegs[0x5B] = GLINT_READ_REG(PMVsStart);
-    glintReg->glintRegs[0x5A] = GLINT_READ_REG(PMVsEnd);
-    glintReg->glintRegs[0x5F] = GLINT_READ_REG(PMScreenBase);
-    glintReg->glintRegs[0x5D] = GLINT_READ_REG(PMVideoControl);
-    glintReg->glintRegs[0x5E] = GLINT_READ_REG(VClkCtl);
-    glintReg->glintRegs[0x60] = GLINT_READ_REG(ChipConfig);
+    glintReg->glintRegs[PMHTotal >> 3] = GLINT_READ_REG(PMHTotal);
+    glintReg->glintRegs[PMHgEnd >> 3] = GLINT_READ_REG(PMHbEnd);
+    glintReg->glintRegs[PMHgEnd >> 3] = GLINT_READ_REG(PMHgEnd);
+    glintReg->glintRegs[PMScreenStride >> 3] = GLINT_READ_REG(PMScreenStride);
+    glintReg->glintRegs[PMHsStart >> 3] = GLINT_READ_REG(PMHsStart);
+    glintReg->glintRegs[PMHsEnd >> 3] = GLINT_READ_REG(PMHsEnd);
+    glintReg->glintRegs[PMVTotal >> 3] = GLINT_READ_REG(PMVTotal);
+    glintReg->glintRegs[PMVbEnd >> 3] = GLINT_READ_REG(PMVbEnd);
+    glintReg->glintRegs[PMVsStart >> 3] = GLINT_READ_REG(PMVsStart);
+    glintReg->glintRegs[PMVsEnd >> 3] = GLINT_READ_REG(PMVsEnd);
+    glintReg->glintRegs[PMScreenBase >> 3] = GLINT_READ_REG(PMScreenBase);
+    glintReg->glintRegs[PMVideoControl >> 3] = GLINT_READ_REG(PMVideoControl);
+    glintReg->glintRegs[VClkCtl >> 3] = GLINT_READ_REG(VClkCtl);
+    glintReg->glintRegs[ChipConfig >> 3] = GLINT_READ_REG(ChipConfig);
 }
 
 void
@@ -212,25 +216,29 @@ PermediaRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     };
 #endif
 
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x00], Aperture0);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x01], Aperture1);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x02], PMFramebufferWriteMask);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x03], PMBypassWriteMask);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x04], DFIFODis);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x05], FIFODis);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[Aperture0 >> 3], Aperture0);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[Aperture1 >> 3], Aperture1);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMFramebufferWriteMask >> 3], 
+							PMFramebufferWriteMask);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMBypassWriteMask >> 3], 
+							PMBypassWriteMask);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[DFIFODis >> 3], DFIFODis);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[FIFODis >> 3], FIFODis);
 
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5D], PMVideoControl);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x57], PMHgEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5F], PMScreenBase);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5E], VClkCtl);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x58], PMScreenStride);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x54], PMHTotal);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x57], PMHbEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x56], PMHsStart);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x55], PMHsEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x59], PMVTotal);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5C], PMVbEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5B], PMVsStart);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5A], PMVsEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x60], ChipConfig);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVideoControl >> 3], 
+								PMVideoControl);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMHgEnd >> 3], PMHgEnd);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMScreenBase >> 3], PMScreenBase);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VClkCtl >> 3], VClkCtl);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMScreenStride >> 3], 
+								PMScreenStride);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMHTotal >> 3], PMHTotal);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMHgEnd >> 3], PMHbEnd);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMHsStart >> 3], PMHsStart);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMHsEnd >> 3], PMHsEnd);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVTotal >> 3], PMVTotal);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVbEnd >> 3], PMVbEnd);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVsStart >> 3], PMVsStart);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVsEnd >> 3], PMVsEnd);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[ChipConfig >> 3], ChipConfig);
 }

@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.4 1998/08/13 14:45:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.5 1998/08/20 08:55:58 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1127,6 +1127,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	if ( (pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA) ||
 	     (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA) ) {
 		switch (pScrn->bitsPerPixel) {
+		    case 4:
 		    case 8:
 			pGlint->MaxClock = 200000;
 			break;
@@ -1145,6 +1146,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	     (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) ||
 	     (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) ) {
 		switch (pScrn->bitsPerPixel) {
+		    case 4:
 		    case 8:
 			pGlint->MaxClock = 230000;
 			break;
@@ -1255,6 +1257,9 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
+    case 4:
+	mod = "xf4bpp";
+	break;
     case 8:
 	mod = "cfb";
 	break;
@@ -1274,7 +1279,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* Load XAA if needed */
-    if (!pGlint->NoAccel || pGlint->HWCursor)
+    if (!pGlint->NoAccel)
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    GLINTFreeRec(pScrn);
 	    return FALSE;
@@ -1460,14 +1465,14 @@ GLINTSave(ScrnInfoPtr pScrn)
     GLINTPtr pGlint;
     vgaRegPtr vgaReg;
     GLINTRegPtr glintReg;
-    RamDacHWRecPtr pIBM;
-    RamDacRegRecPtr IBMreg;
+    RamDacHWRecPtr pRAMDAC;
+    RamDacRegRecPtr RAMDACreg;
 
     pGlint = GLINTPTR(pScrn);
     vgaReg = &VGAHWPTR(pScrn)->SavedReg;
-    pIBM = RAMDACHWPTR(pScrn);
+    pRAMDAC = RAMDACHWPTR(pScrn);
     glintReg = &pGlint->SavedReg;
-    IBMreg = &pIBM->SavedReg;
+    RAMDACreg = &pRAMDAC->SavedReg;
 
     if (pGlint->VGAcore) 
 	vgaHWSave(pScrn, vgaReg, TRUE);
@@ -1484,12 +1489,12 @@ GLINTSave(ScrnInfoPtr pScrn)
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
 	PermediaSave(pScrn, glintReg);
-	(*pGlint->RamDac->Save)(pScrn, pGlint->RamDacRec, IBMreg);
+	(*pGlint->RamDac->Save)(pScrn, pGlint->RamDacRec, RAMDACreg);
 	break;
     case PCI_VENDOR_3DLABS_CHIP_500TX:
     case PCI_VENDOR_3DLABS_CHIP_MX:
 	TXSave(pScrn, glintReg);
-	(*pGlint->RamDac->Save)(pScrn, pGlint->RamDacRec, IBMreg);
+	(*pGlint->RamDac->Save)(pScrn, pGlint->RamDacRec, RAMDACreg);
 	break;
     }
 }
@@ -1509,8 +1514,8 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     vgaRegPtr vgaReg;
     GLINTPtr pGlint;
     GLINTRegPtr glintReg;
-    RamDacHWRecPtr pIBM;
-    RamDacRegRecPtr IBMreg;
+    RamDacHWRecPtr pRAMDAC;
+    RamDacRegRecPtr RAMDACreg;
 
     hwp = VGAHWPTR(pScrn);
     vgaHWUnlock(hwp);
@@ -1521,7 +1526,7 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pScrn->vtSema = TRUE;
 
     pGlint = GLINTPTR(pScrn);
-    pIBM = RAMDACHWPTR(pScrn);
+    pRAMDAC = RAMDACHWPTR(pScrn);
 
     switch (pGlint->Chipset) {
     case PCI_VENDOR_TI_CHIP_PERMEDIA2:
@@ -1548,7 +1553,7 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     vgaHWProtect(pScrn, TRUE);
     vgaReg = &hwp->ModeReg;
     glintReg = &pGlint->ModeReg;
-    IBMreg = &pIBM->ModeReg;
+    RAMDACreg = &pRAMDAC->ModeReg;
 
     if (pGlint->VGAcore)
 	vgaHWRestore(pScrn, vgaReg, FALSE);
@@ -1564,12 +1569,12 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
 	PermediaRestore(pScrn, glintReg);
-	(*pGlint->RamDac->Restore)(pScrn, pGlint->RamDacRec, IBMreg);
+	(*pGlint->RamDac->Restore)(pScrn, pGlint->RamDacRec, RAMDACreg);
 	break;
     case PCI_VENDOR_3DLABS_CHIP_500TX:
     case PCI_VENDOR_3DLABS_CHIP_MX:
 	TXRestore(pScrn, glintReg);
-	(*pGlint->RamDac->Restore)(pScrn, pGlint->RamDacRec, IBMreg);
+	(*pGlint->RamDac->Restore)(pScrn, pGlint->RamDacRec, RAMDACreg);
 	break;
     }
 
@@ -1588,15 +1593,15 @@ GLINTRestore(ScrnInfoPtr pScrn)
     vgaRegPtr vgaReg;
     GLINTPtr pGlint;
     GLINTRegPtr glintReg;
-    RamDacHWRecPtr pIBM;
-    RamDacRegRecPtr IBMreg;
+    RamDacHWRecPtr pRAMDAC;
+    RamDacRegRecPtr RAMDACreg;
 
     hwp = VGAHWPTR(pScrn);
     pGlint = GLINTPTR(pScrn);
-    pIBM = RAMDACHWPTR(pScrn);
+    pRAMDAC = RAMDACHWPTR(pScrn);
     vgaReg = &hwp->SavedReg;
     glintReg = &pGlint->SavedReg;
-    IBMreg = &pIBM->SavedReg;
+    RAMDACreg = &pRAMDAC->SavedReg;
 
     vgaHWProtect(pScrn, TRUE);
 
@@ -1611,12 +1616,12 @@ GLINTRestore(ScrnInfoPtr pScrn)
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
 	PermediaRestore(pScrn, glintReg);
-	(*pGlint->RamDac->Restore)(pScrn, pGlint->RamDacRec, IBMreg);
+	(*pGlint->RamDac->Restore)(pScrn, pGlint->RamDacRec, RAMDACreg);
 	break;
     case PCI_VENDOR_3DLABS_CHIP_500TX:
     case PCI_VENDOR_3DLABS_CHIP_MX:
 	TXRestore(pScrn, glintReg);
-	(*pGlint->RamDac->Restore)(pScrn, pGlint->RamDacRec, IBMreg);
+	(*pGlint->RamDac->Restore)(pScrn, pGlint->RamDacRec, RAMDACreg);
 	break;
     }
 
@@ -1731,6 +1736,12 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
 
     switch (pScrn->bitsPerPixel) {
+    case 4:
+	ret = xf4bppScreenInit(pScreen, pGlint->FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	break;
     case 8:
 	ret = cfbScreenInit(pScreen, pGlint->FbBase,
 			pScrn->virtualX, pScrn->virtualY,
@@ -1821,12 +1832,9 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	else
 #endif
 	if ((pGlint->RamDac->RamDacType == (IBM526DB_RAMDAC)) ||
-	    (pGlint->RamDac->RamDacType == (IBM526_RAMDAC))) {
-	    glintIBM526HWCursorInit(pScreen);
-	}
-	else
-	if (pGlint->RamDac->RamDacType == (IBM640_RAMDAC))
-	    glintIBM640HWCursorInit(pScreen);
+	    (pGlint->RamDac->RamDacType == (IBM526_RAMDAC)) ||
+	    (pGlint->RamDac->RamDacType == (IBM640_RAMDAC)))
+	    glintIBMHWCursorInit(pScreen);
 	else
 	    xf86DrvMsg(scrnIndex, X_ERROR,
 		   "Not Using Hardware cursor\n");
@@ -1834,8 +1842,16 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     /* Initialise default colourmap */
-    if (!miCreateDefColormap(pScreen))
-	return FALSE;
+    switch (pScrn->bitsPerPixel) {
+	case 4:
+	     if (!xf4bppCreateDefColormap(pScreen))
+		return FALSE;
+	     break;
+	default:
+	     if (!miCreateDefColormap(pScreen))
+		return FALSE;
+	     break;
+    }
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)GLINTDisplayPowerManagementSet, 0);

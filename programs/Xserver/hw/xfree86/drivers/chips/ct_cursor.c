@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.11 1998/07/25 16:55:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.12 1998/08/02 05:16:58 dawes Exp $ */
 
 /*
  * Copyright 1994  The XFree86 Project
@@ -44,7 +44,7 @@
 /* This driver needs to be modified to not use vgaHW for multihead operation */
 #include "vgaHW.h"
 
-#include "xaacursor.h"
+#include "xf86Cursor.h"
 
 /* Driver specific headers */
 #include "ct_driver.h"

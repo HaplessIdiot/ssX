@@ -47,7 +47,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.12 1998/07/26 09:56:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.13 1998/07/26 13:14:26 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -87,6 +87,14 @@ SOFTWARE.
 #endif
 #endif
 typedef struct dirent	 ENTRY;
+
+#ifndef FILENAME_MAX
+#ifdef MAXNAMLEN
+#define FILENAME_MAX MAXNAMLEN
+#else
+#define FILENAME_MAX 255
+#endif
+#endif
 
 #else /* XFree86LOADER */
 

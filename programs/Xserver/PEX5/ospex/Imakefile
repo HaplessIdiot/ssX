@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile /main/8 1996/09/28 16:55:19 rws $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/ospex/Imakefile,v 3.7.2.1 1998/06/03 15:49:30 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/ospex/Imakefile,v 3.8 1998/07/25 07:36:51 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -73,6 +73,8 @@ SubdirLibraryRule($(OBJS))
 #if !PexModule
 NormalLibraryTarget(ospex,$(OBJS))
 #endif
+
+SpecialCLibObjectRule(osPexFont,$(ICONFIGFILES),NullParameter)
 
 LintLibraryTarget(osp,$(SRCS))
 NormalLintTarget($(SRCS))

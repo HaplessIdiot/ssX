@@ -40,16 +40,13 @@
  *		RAMDAC MGA1064 timing,
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.35 1998/08/16 10:25:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.36 1998/08/19 12:48:31 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
  * new server design (DHD).
  */
 
-
-/* Everything using inb/outb, etc needs "compiler.h" */
-#include "compiler.h"
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -64,9 +61,8 @@
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
 
-/* All drivers using the vgahw module need this */
-/* This driver needs to be modified to not use vgaHW for multihead operation */
-#include "vgaHW.h"
+/* We use the MMIO version of vgaHW */
+#include "vgaHWmmio.h"
 
 /* All drivers initialising the SW cursor need this */
 #include "mipointer.h"
@@ -611,9 +607,9 @@ MGACountRam(ScrnInfoPtr pScrn)
 				8192 * 1024);
 	
 		/* turn MGA mode on - enable linear frame buffer (CRTCEXT3) */
-		outb(0x3DE, 3);
-		tmp = inb(0x3DF);
-		outb(0x3DF, tmp | 0x80);
+		OUTREG8(0x1FDE, 3);
+		tmp = INREG8(0x1FDF);
+		OUTREG8(0x1FDF, tmp | 0x80);
 	
 		/* write, read and compare method */
 		base[0x500000] = 0x55;
@@ -623,8 +619,8 @@ MGACountRam(ScrnInfoPtr pScrn)
 		tmp3 = base[0x300000];
 
 		/* restore CRTCEXT3 state */
-		outb(0x3DE, 3);
-		outb(0x3DF, tmp);
+		OUTREG8(0x1FDE, 3);
+		OUTREG8(0x1FDF, tmp);
 	
 		xf86UnMapVidMem(pScrn->scrnIndex, (pointer)base, 8192 * 1024);
 	
@@ -1298,8 +1294,15 @@ MGAUnmapMem(pScrn);
     }
 
     /* Load XAA if needed */
-    if (!pMga->NoAccel || pMga->HWCursor)
+    if (!pMga->NoAccel)
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	    MGAFreeRec(pScrn);
+	    return FALSE;
+	}
+
+    /* Load ramdac if needed */
+    if (pMga->HWCursor)
+	if (!xf86LoadSubModule(pScrn, "ramdac")) {
 	    MGAFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1469,7 +1472,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     MGARegPtr mgaReg;
 
     hwp = VGAHWPTR(pScrn);
-    vgaHWUnlock(hwp);
+    vgaHWUnlockMMIO(hwp);
 
     /* Initialise the ModeReg values */
     if (!vgaHWInit(pScrn, mode))
@@ -1493,7 +1496,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	return FALSE;
 
     /* Program the registers */
-    vgaHWProtect(pScrn, TRUE);
+    vgaHWProtectMMIO(pScrn, TRUE);
     vgaReg = &hwp->ModeReg;
     mgaReg = &pMga->ModeReg;
     switch (pMga->Chipset) {
@@ -1511,7 +1514,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     MGAStormSync(pScrn);
     /* XXX Does this belong here? */
     MGAStormEngineInit(pScrn);
-    vgaHWProtect(pScrn, FALSE);
+    vgaHWProtectMMIO(pScrn, FALSE);
 
     return TRUE;
 }
@@ -1532,7 +1535,7 @@ MGARestore(ScrnInfoPtr pScrn)
     vgaReg = &hwp->SavedReg;
     mgaReg = &pMga->SavedReg;
 
-    vgaHWProtect(pScrn, TRUE);
+    vgaHWProtectMMIO(pScrn, TRUE);
     switch (pMga->Chipset) {
     case PCI_CHIP_MGA2064:
     case PCI_CHIP_MGA2164:
@@ -1547,7 +1550,7 @@ MGARestore(ScrnInfoPtr pScrn)
     }
     MGAStormSync(pScrn);
     MGAStormEngineInit(pScrn);
-    vgaHWProtect(pScrn, FALSE);
+    vgaHWProtectMMIO(pScrn, FALSE);
 }
 
 
@@ -1572,18 +1575,17 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     hwp = VGAHWPTR(pScrn);
 
-    hwp->MapSize = 0x10000;		/* Standard 64k VGA window */
 
     pMga = MGAPTR(pScrn);
-
-    /* Map the VGA memory and get the VGA IO base */
-    if (!vgaHWMapMem(pScrn))
-	return FALSE;
-    vgaHWGetIOBase(hwp);
 
     /* Map the MGA memory and MMIO areas */
     if (!MGAMapMem(pScrn))
 	return FALSE;
+
+    /* Map the VGA memory and get the VGA IO base */
+    hwp->Base = pMga->FbBase;
+    hwp->MemBase = pMga->IOBase + PORT_OFFSET;
+    vgaHWGetIOBaseMMIO(hwp);
 
     /* Save the current state */
     MGASave(pScrn);
@@ -1680,7 +1682,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     if (pScrn->bitsPerPixel == 8) {
 	/* Another VGA dependency to remove */
-	vgaHandleColormaps(pScreen, pScrn);
+	MGAHandleColormaps(pScreen, pScrn);
     } else {
         /* Fixup RGB ordering */
         visual = pScreen->visuals + pScreen->numVisuals;
@@ -1777,17 +1779,17 @@ MGAAdjustFrame(int scrnIndex, int x, int y, int flags)
 	Base *= 3;
 
     /* find start of retrace */
-    while (inb(hwp->IOBase + 0x0A) & 0x08);
-    while (!(inb(hwp->IOBase + 0xA) & 0x08)); 
+    while (INREG8(PORT_OFFSET + hwp->IOBase + 0x0A) & 0x08);
+    while (!(INREG8(PORT_OFFSET + hwp->IOBase + 0xA) & 0x08)); 
     /* wait until we're past the start (fixseg.c in the DDK) */
     count = INREG(MGAREG_VCOUNT) + 2;
     while(INREG(MGAREG_VCOUNT) < count);
     
-    outw(hwp->IOBase + 4, (Base & 0x00FF00) | 0x0C);
-    outw(hwp->IOBase + 4, ((Base & 0x0000FF) << 8) | 0x0D);
-    outb(0x3DE, 0x00);
-    tmp = inb(0x3DF);
-    outb(0x3DF, (tmp & 0xF0) | ((Base & 0x0F0000) >> 16));
+    OUTREG16(PORT_OFFSET + hwp->IOBase + 4, (Base & 0x00FF00) | 0x0C);
+    OUTREG16(PORT_OFFSET + hwp->IOBase + 4, ((Base & 0x0000FF) << 8) | 0x0D);
+    OUTREG8(0x1FDE, 0x00);
+    tmp = INREG8(0x1FDF);
+    OUTREG8(0x1FDF, (tmp & 0xF0) | ((Base & 0x0F0000) >> 16));
 
 }
 
@@ -1825,7 +1827,7 @@ MGALeaveVT(int scrnIndex, int flags)
     vgaHWPtr hwp = VGAHWPTR(pScrn);
 
     MGARestore(pScrn);
-    vgaHWLock(hwp);
+    vgaHWLockMMIO(hwp);
 }
 
 
@@ -1845,7 +1847,7 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
     MGAPtr pMga = MGAPTR(pScrn);
 
     MGARestore(pScrn);
-    vgaHWLock(hwp);
+    vgaHWLockMMIO(hwp);
     MGAUnmapMem(pScrn);
     if (pMga->AccelInfoRec)
 	XAADestroyInfoRec(pMga->AccelInfoRec);
@@ -1904,7 +1906,7 @@ MGAValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 static Bool
 MGASaveScreen(ScreenPtr pScreen, Bool unblank)
 {
-    return vgaHWSaveScreen(pScreen, unblank);
+    return vgaHWSaveScreenMMIO(pScreen, unblank);
 }
 
 
@@ -1918,6 +1920,7 @@ static void
 MGADisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 			     int flags)
 {
+	MGAPtr pMga = MGAPTR(pScrn);
 	unsigned char seq1, crtcext1;
 
 ErrorF("MGADisplayPowerManagementSet: %d\n", PowerManagementMode);
@@ -1946,12 +1949,12 @@ ErrorF("MGADisplayPowerManagementSet: %d\n", PowerManagementMode);
 	    break;
 	}
 	/* XXX Prefer an implementation that doesn't depend on VGA specifics */
-	outb(0x3C4, 0x01);	/* Select SEQ1 */
-	seq1 |= inb(0x3C5) & ~0x20;
-	outb(0x3C5, seq1);
-	outb(0x3DE, 0x01);	/* Select CRTCEXT1 */
-	crtcext1 |= inb(0x3DF) & ~0x30;
-	outb(0x3DF, crtcext1);
+	OUTREG8(0x1FC4, 0x01);	/* Select SEQ1 */
+	seq1 |= INREG8(0x1FC5) & ~0x20;
+	OUTREG8(0x1FC5, seq1);
+	OUTREG8(0x1FDE, 0x01);	/* Select CRTCEXT1 */
+	crtcext1 |= INREG8(0x1FDF) & ~0x30;
+	OUTREG8(0x1FDF, crtcext1);
 }
 #endif
 

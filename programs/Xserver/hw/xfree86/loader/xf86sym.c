@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.36 1998/07/25 16:56:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.37 1998/08/13 14:46:07 dawes Exp $ */
 
 /*
  *
@@ -83,6 +83,7 @@ extern void* __remqu(long, long);
 
 #if defined(__powerpc__) && defined(Lynx)
 void eieio();
+void _restf17();
 void _restf23();
 void _restf24();
 void _restf25();
@@ -90,6 +91,7 @@ void _restf26();
 void _restf27();
 void _restf28();
 void _restf29();
+void _savef17();
 void _savef23();
 void _savef24();
 void _savef25();
@@ -97,6 +99,39 @@ void _savef26();
 void _savef27();
 void _savef28();
 void _savef29();
+
+/* even if we compile without -DNO_INLINE we still provide
+ * the usual port i/o functions for module use
+ */
+
+extern volatile unsigned char *ioBase;
+
+/* XXX Should get all of these from elsewhere */
+
+extern void outb(unsigned short, unsigned char);
+extern void outw(unsigned short, unsigned short);
+extern void outl(unsigned short, unsigned int);
+extern unsigned int inb(unsigned short);
+extern unsigned int inw(unsigned short);
+extern unsigned int inl(unsigned short);
+extern unsigned long ldq_u(void *);
+extern unsigned long ldl_u(void *);
+extern unsigned short ldw_u(void *);
+extern void stl_u(unsigned long, void *);
+extern void stq_u(unsigned long, void *);
+extern void stw_u(unsigned short, void *);
+extern void mem_barrier(void);
+extern void write_mem_barrier(void);
+extern void stl_brx(unsigned long, volatile unsigned char *, int);
+extern void stw_brx(unsigned short, volatile unsigned char *, int);
+extern unsigned long ldl_brx(volatile unsigned char *, int);
+extern unsigned short ldw_brx(volatile unsigned char *, int);
+extern unsigned char rdinx(unsigned short, unsigned char);
+extern void wrinx(unsigned short, unsigned char, unsigned char);
+extern void modinx(unsigned short, unsigned char, unsigned char, unsigned char);
+extern int testrg(unsigned short, unsigned char);
+extern int testinx2(unsigned short, unsigned char, unsigned char);
+extern int testinx(unsigned short, unsigned char);
 #endif
 
 /* XXX This needs to be cleaned up for the new design */
@@ -515,7 +550,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(outb)
    SYMFUNC(outw)
    SYMFUNC(outl)
-#if defined(NO_INLINE)
+#if defined(NO_INLINE) || defined(Lynx)
    SYMFUNC(mem_barrier)
    SYMFUNC(ldl_u)
    SYMFUNC(eieio)
@@ -537,6 +572,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(testinx2)
    SYMFUNC(testinx)
 #if defined(Lynx)
+   SYMFUNC(_restf17)
    SYMFUNC(_restf23)
    SYMFUNC(_restf24)
    SYMFUNC(_restf25)
@@ -544,6 +580,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(_restf27)
    SYMFUNC(_restf28)
    SYMFUNC(_restf29)
+   SYMFUNC(_savef17)
    SYMFUNC(_savef23)
    SYMFUNC(_savef24)
    SYMFUNC(_savef25)
@@ -593,7 +630,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(defaultDPMSEnabled)
 #endif
 
-#if defined(__powerpc__) && !defined(NO_INLINE)
+#if defined(__powerpc__) && (!defined(NO_INLINE) || defined(Lynx))
    SYMVAR(ioBase)
 #endif
 

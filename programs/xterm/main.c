@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.75 1998/08/16 10:26:00 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.76 1998/08/19 07:49:30 dawes Exp $ */
 
 
 /* main.c */
@@ -1142,9 +1142,6 @@ XtActionsRec actionProcs[] = {
 };
 
 Atom wm_delete_window;
-extern fd_set Select_mask;
-extern fd_set X_mask;
-extern fd_set pty_mask;
 
 int
 main (int argc, char *argv[])

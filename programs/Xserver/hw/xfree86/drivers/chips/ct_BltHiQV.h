@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BltHiQV.h,v 1.3 1998/07/25 16:55:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BltHiQV.h,v 1.4 1998/08/20 08:55:56 dawes Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* These are done using Memory Mapped IO, of the registers */
@@ -110,42 +110,42 @@
   *(unsigned int *)(cPtr->MMIOBase + BR(0x5)) = (srcAddr)&0x1FFFFFL
 
 #define ctSETBGCOLOR8(c) {\
-    if (cAcl->bgColor != (c)) { \
+    if ((cAcl->bgColor != (c)) || (cAcl->bgColor == -1)) { \
 	cAcl->bgColor = (c); \
 	*(unsigned int *)(cPtr->MMIOBase + BR(0x1)) = ((c)&0xFF); \
     } \
 }
 
 #define ctSETBGCOLOR16(c) {\
-    if (cAcl->bgColor != (c)) { \
+    if ((cAcl->bgColor != (c)) || (cAcl->bgColor == -1)) { \
 	cAcl->bgColor = (c); \
 	*(unsigned int *)(cPtr->MMIOBase + BR(0x1)) = ((c)&0xFFFF); \
     } \
 }
 
 #define ctSETBGCOLOR24(c) {\
-    if (cAcl->bgColor != (c)) { \
+    if ((cAcl->bgColor != (c)) || (cAcl->bgColor == -1)) { \
 	cAcl->bgColor = (c); \
 	*(unsigned int *)(cPtr->MMIOBase + BR(0x1)) = ((c)&0xFFFFFF); \
     } \
 }
 
 #define ctSETFGCOLOR8(c) {\
-    if (cAcl->fgColor != (c)) { \
+    if ((cAcl->fgColor != (c)) || (cAcl->fgColor == -1)) { \
 	cAcl->fgColor = (c); \
 	*(unsigned int *)(cPtr->MMIOBase + BR(0x2)) = ((c)&0xFF); \
     } \
 }
 
 #define ctSETFGCOLOR16(c) {\
-    if (cAcl->fgColor != (c)) { \
+    if ((cAcl->fgColor != (c)) || (cAcl->fgColor == -1)) { \
 	cAcl->fgColor = (c); \
 	*(unsigned int *)(cPtr->MMIOBase + BR(0x2)) = ((c)&0xFFFF); \
     } \
 }
 
 #define ctSETFGCOLOR24(c) {\
-    if (cAcl->fgColor != (c)) { \
+    if ((cAcl->fgColor != (c)) || (cAcl->fgColor == -1)) { \
 	cAcl->fgColor = (c); \
 	*(unsigned int *)(cPtr->MMIOBase + BR(0x2)) = ((c)&0xFFFFFF); \
     } \

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.3 1998/07/31 10:41:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.4 1998/08/13 14:45:51 dawes Exp $ */
 
 /*
  * glint register file 
@@ -335,13 +335,13 @@
 #define Continue							GLINT_TAG_ADDR(0x00,0x0b)
 #define FlushSpan							GLINT_TAG_ADDR(0x00,0x0c)
 #define BitMaskPattern							GLINT_TAG_ADDR(0x00,0x0d)
-#define		BitMaskPackingEachScanline	1<<9
 
 #define PointTable0							GLINT_TAG_ADDR(0x01,0x00)
 #define PointTable1							GLINT_TAG_ADDR(0x01,0x01)
 #define PointTable2							GLINT_TAG_ADDR(0x01,0x02)
 #define PointTable3							GLINT_TAG_ADDR(0x01,0x03)
 #define RasterizerMode							GLINT_TAG_ADDR(0x01,0x04)
+#define		BitMaskPackingEachScanline	1<<9
 #define		ForceBackgroundColor		1<<6
 #define		InvertBitMask			1<<1
 #define YLimits								GLINT_TAG_ADDR(0x01,0x05)

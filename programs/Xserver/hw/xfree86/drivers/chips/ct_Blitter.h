@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_Blitter.h,v 1.1 1997/03/06 23:14:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_Blitter.h,v 1.2 1998/08/20 08:55:56 dawes Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* registers */
@@ -93,55 +93,55 @@
 /* I can't help pointing out at this point that I'm not complaining
  * about the american spelling of Colour!! [DGB] */
 
-#define ctSETBGCOLOR8(bg) {\
+#define ctSETBGCOLOR8(c) {\
     HW_DEBUG(0x2); \
-    if (cAcl->bgColor != (bg)) { \
-	cAcl->bgColor = (bg); \
-	outl(DR(0x2),((((((bg)&0xFF)<<8)|((bg)&0xFF))<<16) | \
-	       ((((bg)&0xFF)<<8)|((bg)&0xFF)))); \
+    if ((cAcl->bgColor != (c)) || (cAcl->bgColor == -1)) { \
+	cAcl->bgColor = (c); \
+	outl(DR(0x2),((((((c)&0xFF)<<8)|((c)&0xFF))<<16) | \
+	       ((((c)&0xFF)<<8)|((c)&0xFF)))); \
     } \
 }
 
-#define ctSETBGCOLOR16(bg) {\
+#define ctSETBGCOLOR16(c) {\
     HW_DEBUG(0x2); \
-    if (cAcl->bgColor != (bg)) { \
-	cAcl->bgColor = (bg); \
-	outl(DR(0x2),((((bg)&0xFFFF)<<16)|((bg)&0xFFFF))); \
+    if ((cAcl->bgColor != (c)) || (cAcl->bgColor == -1)) { \
+	cAcl->bgColor = (c); \
+	outl(DR(0x2),((((c)&0xFFFF)<<16)|((c)&0xFFFF))); \
     } \
 }
 
 /* As the 6554x doesn't support 24bpp colour expansion this doesn't work */
-#define ctSETBGCOLOR24(bg) {\
+#define ctSETBGCOLOR24(c) {\
     HW_DEBUG(0x2); \
-    if (cAcl->bgColor != (bg)) { \
-	cAcl->bgColor = (bg); \
-	outl(DR(0x2),(bg)&0xFFFFFF); \
+    if ((cAcl->bgColor != (c)) || (cAcl->bgColor == -1)) { \
+	cAcl->bgColor = (c); \
+	outl(DR(0x2),(c)&0xFFFFFF); \
     } \
 }
 
-#define ctSETFGCOLOR8(fg) {\
+#define ctSETFGCOLOR8(c) {\
     HW_DEBUG(0x3); \
-    if (cAcl->fgColor != (fg)) { \
-	cAcl->fgColor = (fg); \
-	outl(DR(0x3),((((((fg)&0xFF)<<8)|((fg)&0xFF))<<16) | \
-	       ((((fg)&0xFF)<<8)|((fg)&0xFF)))); \
+    if ((cAcl->fgColor != (c)) || (cAcl->fgColor == -1)) { \
+	cAcl->fgColor = (c); \
+	outl(DR(0x3),((((((c)&0xFF)<<8)|((c)&0xFF))<<16) | \
+	       ((((c)&0xFF)<<8)|((c)&0xFF)))); \
     } \
 }
 
-#define ctSETFGCOLOR16(fg) {\
+#define ctSETFGCOLOR16(c) {\
     HW_DEBUG(0x3); \
-    if (cAcl->fgColor != (fg)) { \
-	cAcl->fgColor = (fg); \
-	outl(DR(0x3),((((fg)&0xFFFF)<<16)|((fg)&0xFFFF))); \
+    if ((cAcl->fgColor != (c)) || (cAcl->fgColor == -1)) { \
+	cAcl->fgColor = (c); \
+	outl(DR(0x3),((((c)&0xFFFF)<<16)|((c)&0xFFFF))); \
     } \
 }
 
 /* As the 6554x doesn't support 24bpp colour expansion this doesn't work */
-#define ctSETFGCOLOR24(fg) {\
+#define ctSETFGCOLOR24(c) {\
     HW_DEBUG(0x3); \
-    if (cAcl->fgColor != (fg)) { \
-	cAcl->fgColor = (fg); \
-	outl(DR(0x3),(fg)&0xFFFFFF); \
+    if ((cAcl->fgColor != (c)) || (cAcl->fgColor == -1)) { \
+	cAcl->fgColor = (c); \
+	outl(DR(0x3),(c)&0xFFFFFF); \
     } \
 }
 

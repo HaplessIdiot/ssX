@@ -29,7 +29,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.5.2.1 1998/07/11 13:52:14 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.8 1998/07/25 06:57:04 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -77,12 +77,25 @@ ScaleFunc scale[] =
 {
     BitmapScaleBitmaps,
     BitmapScaleBitmaps,
+#ifdef X_GZIP_FONT_COMPRESSION
+    BitmapScaleBitmaps,
+#endif
+#ifdef __EMX__
+    BitmapScaleBitmaps,
+#endif
     BitmapScaleBitmaps,
     BitmapScaleBitmaps,
+#ifdef X_GZIP_FONT_COMPRESSION
+    BitmapScaleBitmaps,
+#endif
     BitmapScaleBitmaps,
     BitmapScaleBitmaps,
+#ifdef X_GZIP_FONT_COMPRESSION
+    BitmapScaleBitmaps,
+#endif
     PrinterScaleBitmaps,
 };
+ 
 
 static FontEntryPtr FindBestToScale();
 static FontEntryPtr FindPmfToScale();
@@ -92,10 +105,22 @@ FindToScale find_scale[] =
 {
     FindBestToScale,
     FindBestToScale,
+#ifdef X_GZIP_FONT_COMPRESSION
+    FindBestToScale,
+#endif
+#ifdef __EMX__
+    FindBestToScale,
+#endif
     FindBestToScale,
     FindBestToScale,
+#ifdef X_GZIP_FONT_COMPRESSION
+    FindBestToScale,
+#endif
     FindBestToScale,
     FindBestToScale,
+#ifdef X_GZIP_FONT_COMPRESSION
+    FindBestToScale,
+#endif
     FindPmfToScale,
 };
 

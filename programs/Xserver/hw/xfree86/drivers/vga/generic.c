@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.4 1998/08/19 12:48:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.5 1998/08/20 08:56:02 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -606,7 +606,7 @@ GenericSetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
         {
             0x5F, 0x4F, 0x4F, 0x80, 0x54, 0x00, 0xBF, 0x1F,
             0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x9C, 0x0E, 0x8F, 0x28, 0x40, 0x8F, 0x00, 0xA3
+            0x9C, 0x0E, 0x8F, 0x28, 0x40, 0x8F, 0xC0, 0xA3
         };
 
         /* Override vgaHW's CRTC timings */

@@ -5,7 +5,7 @@ XCOMM $XConsortium: Imakefile /main/10 1996/10/25 10:34:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/Imakefile,v 1.1.2.11 1998/07/19 13:22:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/Imakefile,v 1.2 1998/07/25 16:58:34 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -15,9 +15,9 @@ MODSRC = vgaHWmodule.c
 MODOBJ = vgaHWmodule.o
 #endif
 
-SRCS =   vgaHW.c vgaCmap.c $(MODSRC)
+SRCS =   vgaHW.c vgaHWmmio.c vgaCmap.c $(MODSRC)
 
-OBJS =   vgaHW.o vgaCmap.o $(MODOBJ)
+OBJS =   vgaHW.o vgaHWmmio.o vgaCmap.o $(MODOBJ)
 
    INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
 	      -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
@@ -32,6 +32,8 @@ STARTUPDEFINES = -DDIRTY_STARTUP
     DEFINES = $(STARTUPDEFINES)
 
 ModuleObjectRule()
+
+ObjectFromSpecialSource(vgaHWmmio, vgaHW, -DVGA_MMIO)
 
 LibraryModuleTarget(vgahw,$(OBJS))
 

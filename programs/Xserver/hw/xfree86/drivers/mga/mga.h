@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.13 1998/08/16 10:25:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.14 1998/08/19 12:48:29 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -15,7 +15,7 @@
 #define MGA_H
 
 #include "xaa.h"
-#include "xaacursor.h"
+#include "xf86Cursor.h"
 
 #if defined(__alpha__)
 #define mb() __asm__ __volatile__("mb": : :"memory")
@@ -37,31 +37,33 @@
 #define OUTREG(addr, val) *(volatile CARD32 *)(pMga->IOBase + (addr)) = (val)
 #endif /* __alpha__ */
 
-#define MGAISBUSY() (INREG8(MGAREG_Status + 2) & 0x01)
+#define PORT_OFFSET 	(0x1F00 - 0x300)
+
 
 typedef struct {
     Bool	isHwCursor;
     int		CursorMaxWidth;
     int 	CursorMaxHeight;
     int		CursorFlags;
-    Bool	(*UseHWCursor)();
-    void	(*LoadCursorImage)();
-    void	(*ShowCursor)();
-    void	(*HideCursor)();
-    void	(*SetCursorPosition)();
-    void	(*SetCursorColors)();
+    Bool        (*UseHWCursor)(ScreenPtr, CursorPtr);
+    void        (*LoadCursorImage)(ScrnInfoPtr, unsigned char*);
+    void        (*ShowCursor)(ScrnInfoPtr);
+    void        (*HideCursor)(ScrnInfoPtr);
+    void        (*SetCursorPosition)(ScrnInfoPtr, int, int);
+    void        (*SetCursorColors)(ScrnInfoPtr, int, int);
     long	maxPixelClock;
     long	MemoryClock;
     MessageType ClockFrom;
     MessageType MemClkFrom;
     Bool	SetMemClk;
+    void        (*StoreColors)(ScrnInfoPtr, xColorItem*, int);
 } MGARamdacRec, *MGARamdacPtr;
 
 typedef struct {
     unsigned char	ExtVga[6];
     unsigned char 	DacClk[6];
     unsigned char *     DacRegs;
-    CARD32		DacLong;
+    CARD32		Option;
 } MGARegRec, *MGARegPtr;
 
 /* Card-specific driver information */
@@ -127,6 +129,9 @@ extern CARD32 MGAAtypeNoBLK[16];
 
 
 /* Prototypes */
+
+void MGAHandleColormaps(ScreenPtr pScreen, ScrnInfoPtr pScrn);
+
 void MGA3026RamdacInit(ScrnInfoPtr pScrn);
 void MGA3026Save(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 		    Bool saveFonts);
