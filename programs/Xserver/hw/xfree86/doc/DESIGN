@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                          Last modified 1 May 2001
+                         Last modified 1 August 2001
 
 NOTE: This is a DRAFT document, and the interfaces described here are subject
 to change without notice.
@@ -6346,7 +6346,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.46 2001/08/01 00:44:52 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.47 2002/01/16 20:38:44 dawes Exp $
 
 
 $XFree86: $

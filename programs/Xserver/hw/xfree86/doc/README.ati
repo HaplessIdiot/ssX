@@ -611,7 +611,8 @@ Support for the following will be added in a future release:
 
    o Mach32, Mach8 and 8514/A Draw Engines.
 
-   o Hardware cursors.
+   o Hardware cursors where implemented by hardware.  This has already been
+     done for Mach64 integrated controllers.
 
    o TVOut, i.e. the ability to use a television screen as a monitor.
 
@@ -689,7 +690,7 @@ newer driver API of XFree86 4.0 and later.
 The introduction of version 6 is a first swipe at porting the driver to non-
 Intel architectures.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.38 2001/08/10 16:38:13 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.39 2002/01/16 16:25:54 tsi Exp $
 
 
-$XFree86:$
+$XFree86: $

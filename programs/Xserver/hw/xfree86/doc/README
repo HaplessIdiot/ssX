@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                               15 January 2002
+                               16 January 2002
 
                                   Abstract
 
@@ -12,7 +12,7 @@
 
 1.  What is XFree86 4.2.0?
 
-XFree86 4.2.0 is the sixth full release in the XFree86 4 series.
+XFree86 4.2.0 is the fifth full release in the XFree86 4 series.
 
 XFree86 release 4 is a major re-design of the basic architectural underpin-
 nings of XFree86's implementation of the original X Consortium's X Server.
@@ -144,6 +144,15 @@ tory.  The patches should be applied by running:
      gzip -d < 4.1.0-4.2.0.diff3.gz | patch -p0 -E
      gzip -d < 4.1.0-4.2.0.diff4.gz | patch -p0 -E
 
+     rm -f xc/extras/freetype2/builds/mac/ftlib.prj
+     rm -fr xc/extras/freetype2/docs/design
+     rm -fr xc/extras/freetype2/docs/glyphs
+     rm -fr xc/extras/freetype2/docs/image
+     rm -fr xc/extras/freetype2/docs/tutorial
+     rm -f xc/programs/Xserver/hw/darwin/bundle/English.lproj/MainMenu.nib/objects.nib
+     rm -f xc/programs/Xserver/hw/darwin/bundle/Japanese.lproj/Localizable.strings
+     rm -f xc/programs/Xserver/hw/darwin/bundle/Japanese.lproj/MainMenu.nib/objects.nib
+
      gzip -d < 4.2.0.tgz | tar vxf -
 
 The contrib part of the distribution was folded into the main source tree a
@@ -167,7 +176,7 @@ yourself, send the entire log file with your bug report but not the operating
 system core dump.  Do not edit  the log file as our developers use it to
 reproduce and debug your problem.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.118 2002/01/15 21:51:50 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.119 2002/01/16 19:40:48 dawes Exp $
 
 
 $XFree86: $

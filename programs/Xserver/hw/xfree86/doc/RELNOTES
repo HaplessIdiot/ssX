@@ -47,6 +47,9 @@ here.
 
 2.1  Video Driver Enhancements
 
+   o  An s3 driver is added, which provides support for many of the older
+     non-ViRGE and non-Savage S3 chipsets.
+
    o  Some vmware driver problems are fixed, and the driver is updated to
      take advantage of VMWare Workstation 3.0 features.  These include
      improved hardware cursor handling and support for 8 bit emulation.
@@ -59,25 +62,36 @@ here.
    o  Support added for the older Trident chipsets again for ISA/VLBus (not
      tested)
 
-   o  Support added for 3DLabs Permedia4, GLINT R4 and Gamma 2 chipsets.
+   o  Support added to the glint driver for 3DLabs Permedia4, GLINT R4 and
+     Gamma 2 chipsets.
 
-   o  Support added for Intel i830 (tested on Linux only).
+   o  Support added to the i810 driver for Intel i830 (tested on Linux only).
 
-   o  Support added for ATI Radeon 7500 (2D and 3D), Radeon 8500 (2D only),
-     and Rage128ProII.
+   o  Support added to the ATI radeon driver for Radeon 7500 (2D and 3D),
+     Radeon 8500 (2D only), and Rage128ProII.
 
    o  Support added for the Matrox G550 support.  This included dual-head
      support.
 
    o  Support added for NVIDIA nForce integrated graphics.
 
+   o  The NVIDIA nv driver now has preliminary powerpc support for the NV11
+     and NV20.
+
+   o  Support added to the NVIDIA nv driver for interlaced modes on hardware
+     that supports this, and support for resolutions higher than 1600x1200.
+
    o  Fixes for the savage driver on 64-bit platforms, XVideo support for the
      SuperSavage, and other savage driver updates.
 
-   o  The s3 driver is updated to support the Aurora64V+ and a console
-     restoration problem is fixed.
-
    o  Cirrus driver updates.
+
+   o  The ATI r128 driver now uses the CCE DMA engine for 2D acceleration
+     when direct rendering is enabled, which reduces context switching over-
+     head and improves stability and performance for XVideo and some 2D oper-
+     ations.
+
+   o  The fbdev driver now supports rotation.
 
 2.2  Input Driver Enhancements
 
@@ -115,6 +129,8 @@ here.
    o  An i810 XvMC (motion compensation) driver is now available (Linux
      only).
 
+   o  A fatal bug XVideo Xineramification bug is fixed.
+
 2.4  Client and Library Updates
 
    o  FreeType2 updated to version 2.0.6.
@@ -150,8 +166,9 @@ here.
 
    o  Improvements to the input method framework in Xlib for UTF-8 locales.
 
-   o  A filter called "luit" is added, which provides locale and ISO 2022
-     support for Unicode terminals.
+   o  A filter called ``luit'' is added, which provides locale and ISO 2022
+     support to any Unicode terminal, notably xterm.  Use of luit is still
+     experimental in this release.
 
 2.6  OS Support Updates
 
@@ -195,7 +212,7 @@ XFree86 4.2.0 includes the following video drivers:
 |chips         | Chips & Technologies     | README.chips, chips(4)           |
 |cirrus        | Cirrus Logic             |                                  |
 |cyrix (*)     | Cyrix MediaGX            | README.cyrix                     |
-|fbdev         | Linux fbdev              | fbdev(4)                         |
+|fbdev         | Linux framebuffer device | fbdev(4)                         |
 |glide         | Glide2x (3Dfx)           | glide(4)                         |
 |glint         | 3Dlabs, TI               | glint(4)                         |
 |i128          | Number Nine              | README.I128, i128(4)             |
@@ -263,7 +280,7 @@ XFree86 4.2.0 includes the following input drivers:
           |wacom       | Wacom tablets      | wacom(4)            |
           +------------+--------------------+---------------------+
 
-4.  Summary of XFree86 4.
+4.  Overview of XFree86 4.x.
 
 Unlike XFree86 3.3.x where there are multiple X server binaries, each of
 which drive different hardware, XFree86 4.2.0 has a single X server binary
@@ -323,11 +340,12 @@ basic config file, that may require some manual editing.  The X server also
 has preliminary support for generating a basic config file.  This is done by
 running (as root) "XFree86 -configure".  Alternatively, the sample config
 file XF86Config.eg that is installed in /usr/X11R6/lib/X11 may be used as a
-starting point.  The XF86Setup utility is currently not usable, but work is
-continuing in this area.
+starting point.  The xf86cfg utility can also be used to create a new config-
+uration file or to edit an existing one.  The XF86Setup utility is currently
+not usable, but work is continuing in this area.
 
-The main changes are covered here, but please refer to the XF86Config manual
-page for more comprehensive information:
+The main changes are covered here, but please refer to the XF86Config(5) man-
+ual page for more comprehensive information:
 
    o The Module section is used to load server extension modules and font
      modules, but not XInput drivers.  The .so suffix should no longer be
@@ -395,6 +413,13 @@ page for more comprehensive information:
                    Option "standby time"  "20"
                    Option "suspend time"  "30"
                    Option "off time"      "40"
+
+     The new option AllowDeactivateGrabs allows deactivating any active grab
+     with the key sequence Ctrl+Alt+Keypad-Divide and the new option Allow-
+     ClosedownGrabs allows closing the conection to the grabbing client with
+     the key sequence Ctrl+Alt+Keypad-Multiply. Note that these options are
+     off by default as they allow users to remove the grab used by screen
+     saver/locker programs.
 
    o The Keyboard, Pointer and XInput sections have been replaced by a more
      general InputDevice section.  The old Keyboard and Pointer sections are
@@ -574,7 +599,7 @@ The following X server command line options have been changed since 3.3.x:
           specified multiple times to increase the verbosity level
           (as with 3.3.x), or the verbosity level may be specified
           explicitly as a number.  The default verbosity level is
-          1.
+          0.
 
      -xf86config filename
 
@@ -583,6 +608,9 @@ The following X server command line options have been changed since 3.3.x:
           search path will be used to locate the file in this case.
           This makes it possible for users to choose from multiple
           config files that the the sysadmin has provided.
+
+A more complete list of XFree86 X server command line options can be found in
+the XFree86(1) manual page.
 
 4.4  XAA
 
@@ -646,16 +674,18 @@ DDC is enabled by default, but can be disabled with a "Device" section entry:
 Option "NoDDC".  We have support for DDC versions 1 and 2; these can be dis-
 abled independently with Option "NoDDC1" and Option "NoDDC2".
 
-At startup the server prints out DDC information from the display, but it
-does not yet use it the determine modelines.  For some drivers, the X
-server's new -configure option uses the DDC information when generating the
-config file.
+At startup the server prints out DDC information from the display, and can
+use this information to set or warn about monitor sync limits (but not mode-
+lines yet).  For some drivers, the X server's new -configure option uses the
+DDC information when generating the config file.
 
-Changed behavior caused by DDC. Several drivers uses DDC information to set
-the screen size and pitch.  This can be overridden by explicitly resetting it
-to the and non-DDC default value 75 with the -dpi 75 command line option for
-the X server, or by specifying appropriate screen dimensions with the "Dis-
-playSize" keyword in the "Monitor" section of the config file.
+4.8.1  Changed behavior caused by DDC.
+
+Several drivers uses DDC information to set the screen size and pitch.  This
+can be overridden by explicitly resetting it to the and non-DDC default value
+75 with the -dpi 75 command line option for the X server, or by specifying
+appropriate screen dimensions with the "DisplaySize" keyword in the "Monitor"
+section of the config file.
 
 4.9  GLX and the Direct Rendering Infrastructure (DRI)
 
@@ -780,9 +810,9 @@ The XFree86-VidModeExtension extension has been updated, and mostly ported to
 the new server architecture.  The area of mode validation needs further work,
 and the extension should be used with care.  This extension has support for
 changing the gamma setting at run-time, for modes where this is possible.
-The new xgamma utility makes use of this feature.  Compatibility with the
-3.3.x version of the extension is provided.  The missing parts of this exten-
-sion and some new features should be completed in a future release.
+The xgamma utility makes use of this feature.  Compatibility with the 3.3.x
+version of the extension is provided.  The missing parts of this extension
+and some new features should be completed in a future release.
 
 4.13  Xaw
 
@@ -917,9 +947,9 @@ different re-encoding method based on loadable encoding modules.
 4.20  Large font optimisation
 
 The glyph metrics array, which all the X clients using a particular font have
-access to, is now placed in shared memory, so as to reduce redundant memory
-consumption.  For non-local clients, the glyph metrics array is transmitted
-in a compressed format.
+access to, is placed in shared memory, so as to reduce redundant memory con-
+sumption.  For non-local clients, the glyph metrics array is transmitted in a
+compressed format.
 
 4.21  Unicode/ISO 10646 support
 
@@ -990,7 +1020,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.66 2002/01/15 21:24:46 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.69 2002/01/16 18:21:04 dawes Exp $
 
 
 $XFree86: $
