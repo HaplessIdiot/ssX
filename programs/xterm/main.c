@@ -89,7 +89,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.154 2002/08/12 00:36:33 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.155 2002/08/17 19:52:26 dickey Exp $ */
 
 /* main.c */
 
@@ -1847,8 +1847,8 @@ main(int argc, char *argv[]ENVP_ARG)
 #endif
 		(void) fprintf(stderr, "seteuid(%d): %s\n",
 			       (int) ruid, strerror(errno));
-#endif
 	}
+#endif
 
 	XtSetErrorHandler(xt_error);
 	toplevel = XtAppInitialize(&app_con, my_class,
@@ -1877,8 +1877,9 @@ main(int argc, char *argv[]ENVP_ARG)
 #endif
 		(void) fprintf(stderr, "setegid(%d): %s\n",
 			       (int) egid, strerror(errno));
-#endif
 	}
+#endif
+
 #ifdef __OpenBSD__
 	if (resource.utmpInhibit) {
 	    /* Can totally revoke group privs */

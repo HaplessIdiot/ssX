@@ -2,7 +2,7 @@
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.131 2002/08/12 00:36:32 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.132 2002/08/17 19:52:25 dickey Exp $ */
 
 /*
 
@@ -358,6 +358,9 @@ static XtActionsRec actionsList[] = {
     { "meta-sends-escape",	HandleMetaEsc },
     { "set-num-lock",		HandleNumLock },
 #endif
+#if OPT_READLINE
+    { "readline-button",	ReadLineButton },
+#endif
 #if OPT_SCO_FUNC_KEYS
     { "set-sco-function-keys",	HandleScoFunctionKeys },
 #endif
@@ -548,6 +551,11 @@ static XtResource resources[] =
 #endif
 
 #endif				/* OPT_ISO_COLORS */
+
+#if OPT_MOD_FKEYS
+    Ires(XtNmodifyCursorKeys, XtCModifyCursorKeys,
+	 keyboard.modify_cursor_keys, 2),
+#endif
 
 #if OPT_NUM_LOCK
     Bres(XtNalwaysUseMods, XtCAlwaysUseMods, misc.alwaysUseMods, FALSE),
@@ -3183,6 +3191,10 @@ ansi_modes(XtermWidget termw,
 
 #define set_mousemode(mode) \
 	screen->send_mouse_pos = (func == bitset) ? mode : MOUSE_OFF
+#define set_mouseflag(f)		\
+	((func == bitset)		\
+	 ? SCREEN_FLAG_set(screen, f)	\
+	 : SCREEN_FLAG_unset(screen, f))
 
 /*
  * process DEC private modes set, reset
@@ -3448,6 +3460,26 @@ dpmodes(XtermWidget termw,
 	    set_keyboard_type(keyboardIsVT220, func == bitset);
 	    break;
 #endif
+#if OPT_READLINE
+	case SET_BUTTON1_MOVE_POINT:
+	    set_mouseflag(click1_moves);
+	    break;
+	case SET_BUTTON2_MOVE_POINT:
+	    set_mouseflag(paste_moves);
+	    break;
+	case SET_DBUTTON3_DELETE:
+	    set_mouseflag(dclick3_deletes);
+	    break;
+	case SET_PASTE_IN_BRACKET:
+	    set_mouseflag(paste_brackets);
+	    break;
+	case SET_PASTE_QUOTE:
+	    set_mouseflag(paste_quotes);
+	    break;
+	case SET_PASTE_LITERAL_NL:
+	    set_mouseflag(paste_literal_nl);
+	    break;
+#endif /* OPT_READLINE */
 	}
     }
 }
@@ -3522,6 +3554,26 @@ savemodes(XtermWidget termw)
 		CursorSave(termw);
 	    }
 	    break;
+#if OPT_READLINE
+	case SET_BUTTON1_MOVE_POINT:
+	    SCREEN_FLAG_save(screen, click1_moves);
+	    break;
+	case SET_BUTTON2_MOVE_POINT:
+	    SCREEN_FLAG_save(screen, paste_moves);
+	    break;
+	case SET_DBUTTON3_DELETE:
+	    SCREEN_FLAG_save(screen, dclick3_deletes);
+	    break;
+	case SET_PASTE_IN_BRACKET:
+	    SCREEN_FLAG_save(screen, paste_brackets);
+	    break;
+	case SET_PASTE_QUOTE:
+	    SCREEN_FLAG_save(screen, paste_quotes);
+	    break;
+	case SET_PASTE_LITERAL_NL:
+	    SCREEN_FLAG_save(screen, paste_literal_nl);
+	    break;
+#endif /* OPT_READLINE */
 	}
     }
 }
@@ -3641,6 +3693,26 @@ restoremodes(XtermWidget termw)
 		CursorRestore(termw);
 	    }
 	    break;
+#if OPT_READLINE
+	case SET_BUTTON1_MOVE_POINT:
+	    SCREEN_FLAG_restore(screen, click1_moves);
+	    break;
+	case SET_BUTTON2_MOVE_POINT:
+	    SCREEN_FLAG_restore(screen, paste_moves);
+	    break;
+	case SET_DBUTTON3_DELETE:
+	    SCREEN_FLAG_restore(screen, dclick3_deletes);
+	    break;
+	case SET_PASTE_IN_BRACKET:
+	    SCREEN_FLAG_restore(screen, paste_brackets);
+	    break;
+	case SET_PASTE_QUOTE:
+	    SCREEN_FLAG_restore(screen, paste_quotes);
+	    break;
+	case SET_PASTE_LITERAL_NL:
+	    SCREEN_FLAG_restore(screen, paste_literal_nl);
+	    break;
+#endif /* OPT_READLINE */
 	}
     }
 }
@@ -4821,9 +4893,13 @@ VTInitialize(Widget wrequest,
 
     wnew->initflags = wnew->flags;
 
+    init_Ires(keyboard.modify_cursor_keys);
+
+    init_Ires(misc.appcursorDefault);
     if (wnew->misc.appcursorDefault)
 	wnew->keyboard.flags |= MODE_DECCKM;
 
+    init_Ires(misc.appkeypadDefault);
     if (wnew->misc.appkeypadDefault)
 	wnew->keyboard.flags |= MODE_DECKPAM;
 

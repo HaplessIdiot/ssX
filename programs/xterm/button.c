@@ -50,7 +50,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/button.c,v 3.67 2002/04/28 19:04:19 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.68 2002/08/12 00:36:32 dickey Exp $ */
 
 /*
 button.c	Handles button events in the terminal emulator.
@@ -136,7 +136,17 @@ static int saveStartWRow, saveStartWCol;
 /* Multi-click handling */
 static int numberOfClicks = 0;
 static Time lastButtonUpTime = 0;
+
+#if OPT_READLINE
+static Time lastButtonDownTime = 0;
+static int ExtendingSelection = 0;
+static Time lastButton3UpTime = 0;
+static Time lastButton3DoubleDownTime = 0;
+static int lastButton3row, lastButton3col;	/* At the release time */
+#endif /* OPT_READLINE */
+
 typedef int SelectUnit;
+
 #define SELECTCHAR 0
 #define SELECTWORD 1
 #define SELECTLINE 2
@@ -164,6 +174,8 @@ static void SelectionReceived PROTO_XT_SEL_CB_ARGS;
 static void StartSelect(int startrow, int startcol);
 static void TrackDown(XButtonEvent * event);
 static void _OwnSelection(XtermWidget termw, String * selections, Cardinal count);
+static void do_select_end(Widget w, XEvent * event, String * params,
+			  Cardinal * num_params, Bool use_cursor_loc);
 
 Boolean
 SendMousePosition(Widget w, XEvent * event)
@@ -580,6 +592,182 @@ InitLocatorFilter(XtermWidget w)
     MotionOn(screen, term);
 }
 
+#if OPT_READLINE
+static int
+isClick1_clean(XEvent * event)
+{
+    register TScreen *screen = &term->screen;
+    register int delta;
+
+    if (!(event->type == ButtonPress || event->type == ButtonRelease)
+    /* Disable on Shift-Click-1, including the application-mouse modes */
+	|| (KeyModifiers & ShiftMask)
+	|| (screen->send_mouse_pos != MOUSE_OFF)	/* Kinda duplicate... */
+	||ExtendingSelection)	/* Was moved */
+	return 0;
+    if (event->type != ButtonRelease)
+	return 0;
+    if (lastButtonDownTime == (Time) 0)		/* first time or once in a blue moon */
+	delta = term->screen.multiClickTime + 1;
+    else if (event->xbutton.time > lastButtonDownTime)	/* most of the time */
+	delta = event->xbutton.time - lastButtonDownTime;
+    else			/* time has rolled over since lastButtonUpTime */
+	delta = (((Time) ~ 0) - lastButtonDownTime) + event->xbutton.time;
+    return delta <= term->screen.multiClickTime;
+}
+
+static int
+isDoubleClick3(XEvent * event)
+{
+    int delta;
+
+    if (event->type != ButtonRelease
+	|| (KeyModifiers & ShiftMask)
+	|| event->xbutton.button != Button3) {
+	lastButton3UpTime = 0;	/* Disable the cached info */
+	return 0;
+    }
+    /* Process Btn3Release. */
+    if (lastButton3DoubleDownTime == (Time) 0)	/* No previous click
+						   or once in a blue moon */
+	delta = term->screen.multiClickTime + 1;
+    else if (event->xbutton.time > lastButton3DoubleDownTime)	/* most of the time */
+	delta = event->xbutton.time - lastButton3DoubleDownTime;
+    else			/* time has rolled over since lastButton3DoubleDownTime */
+	delta = (((Time) ~ 0) - lastButton3DoubleDownTime) + event->xbutton.time;
+    if (delta <= term->screen.multiClickTime) {
+	/* Double click */
+	int row, col;
+
+	/* Cannot check ExtendingSelection, since mouse-3 always sets it */
+	PointToRowCol(event->xbutton.y, event->xbutton.x, &row, &col);
+	if (row == lastButton3row && col == lastButton3col) {
+	    lastButton3DoubleDownTime = 0;	/* Disable the third click */
+	    return 1;
+	}
+    }
+    /* Not a double click, memorize for future check. */
+    lastButton3UpTime = event->xbutton.time;
+    PointToRowCol(event->xbutton.y, event->xbutton.x,
+		  &lastButton3row, &lastButton3col);
+    return 0;
+}
+
+static int
+CheckSecondPress3(XEvent * event)
+{
+    int delta, row, col;
+
+    if (event->type != ButtonPress
+	|| (KeyModifiers & ShiftMask)
+	|| event->xbutton.button != Button3) {
+	lastButton3DoubleDownTime = 0;	/* Disable the cached info */
+	return 0;
+    }
+    /* Process Btn3Press. */
+    if (lastButton3UpTime == (Time) 0)	/* No previous click
+					   or once in a blue moon */
+	delta = term->screen.multiClickTime + 1;
+    else if (event->xbutton.time > lastButton3UpTime)	/* most of the time */
+	delta = event->xbutton.time - lastButton3UpTime;
+    else			/* time has rolled over since lastButton3UpTime */
+	delta = (((Time) ~ 0) - lastButton3UpTime) + event->xbutton.time;
+    if (delta <= term->screen.multiClickTime) {
+	PointToRowCol(event->xbutton.y, event->xbutton.x, &row, &col);
+	if (row == lastButton3row && col == lastButton3col) {
+	    /* A candidate for a double-click */
+	    lastButton3DoubleDownTime = event->xbutton.time;
+	    PointToRowCol(event->xbutton.y, event->xbutton.x,
+			  &lastButton3row, &lastButton3col);
+	    return 1;
+	}
+	lastButton3UpTime = 0;	/* Disable the info about the previous click */
+    }
+    /* Either too long, or moved, disable. */
+    lastButton3DoubleDownTime = 0;
+    return 0;
+}
+
+static int
+rowOnCurrentLine(int line, int *deltap)		/* must be XButtonEvent */
+{
+    register TScreen *screen = &term->screen;
+    register int l1, l2;
+
+    *deltap = 0;
+    if (line == screen->cur_row)
+	return 1;
+
+    if (line < screen->cur_row)
+	l1 = line, l2 = screen->cur_row;
+    else
+	l2 = line, l1 = screen->cur_row;
+    l1--;
+    while (++l1 < l2)
+	if (!ScrnTstWrapped(screen, l1))
+	    return 0;
+    /* Everything is on one "wrapped line" now */
+    *deltap = line - screen->cur_row;
+    return 1;
+}
+
+static int
+eventRow(XEvent * event)	/* must be XButtonEvent */
+{
+    register TScreen *screen = &term->screen;
+
+    return (event->xbutton.y - screen->border) / FontHeight(screen);
+}
+
+static int
+eventColBetween(XEvent * event)	/* must be XButtonEvent */
+{
+    register TScreen *screen = &term->screen;
+
+    /* Correct by half a width - we are acting on a boundary, not on a cell. */
+    return ((event->xbutton.x - OriginX(screen) + (FontWidth(screen) - 1) / 2)
+	    / FontWidth(screen));
+}
+
+static int
+ReadLineMovePoint(int col, int ldelta)
+{
+    register TScreen *screen = &term->screen;
+    Char line[6];
+    register int count = 0;
+
+    col += ldelta * (screen->max_col + 1) - screen->cur_col;
+    if (col == 0)
+	return 0;
+    if (screen->control_eight_bits) {
+	line[count++] = CSI;
+    } else {
+	line[count++] = ESC;
+	line[count++] = '[';	/* XXX maybe sometimes O is better? */
+    }
+    line[count++] = (col > 0 ? 'C' : 'D');
+    if (col < 0)
+	col = -col;
+    while (col--)
+	v_write(screen->respond, line, 3);
+    return 1;
+}
+
+static int
+ReadLineDelete(int r1, int c1, int r2, int c2)
+{
+    register TScreen *screen = &term->screen;
+    int del;
+
+    del = c2 - c1 + (r2 - r1) * (screen->max_col + 1);
+    if (del <= 0)		/* Just in case... */
+	return 0;
+    while (del--)
+	v_write(screen->respond, "\177", 1);	/* XXX Sometimes "\08"? */
+    return 1;
+}
+#endif /* OPT_READLINE */
+
 void
 CheckLocatorPosition(Widget w, XEvent * event)
 {
@@ -653,7 +841,67 @@ DiredButton(Widget w GCC_UNUSED,
     }
 }
 
-/* ^XM-G<line+' '><col+' '> */
+#if OPT_READLINE
+void
+ReadLineButton(Widget w GCC_UNUSED,
+	       XEvent * event,	/* must be XButtonEvent */
+	       String * params GCC_UNUSED,	/* selections */
+	       Cardinal * num_params GCC_UNUSED)
+{
+    register TScreen *screen = &term->screen;
+    Char Line[6];
+    register int line, col, ldelta = 0;
+
+    if (!(event->type == ButtonPress || event->type == ButtonRelease)
+	|| (screen->send_mouse_pos != MOUSE_OFF) || ExtendingSelection)
+	goto finish;
+    if (event->type == ButtonRelease) {
+	int delta;
+
+	if (lastButtonDownTime == (Time) 0)	/* first time and once in a blue moon */
+	    delta = screen->multiClickTime + 1;
+	else if (event->xbutton.time > lastButtonDownTime)	/* most of the time */
+	    delta = event->xbutton.time - lastButtonDownTime;
+	else			/* time has rolled over since lastButtonUpTime */
+	    delta = (((Time) ~ 0) - lastButtonDownTime) + event->xbutton.time;
+	if (delta > screen->multiClickTime)
+	    goto finish;	/* All this work for this... */
+    }
+    line = (event->xbutton.y - screen->border) / FontHeight(screen);
+    if (line != screen->cur_row) {
+	int l1, l2;
+
+	if (line < screen->cur_row)
+	    l1 = line, l2 = screen->cur_row;
+	else
+	    l2 = line, l1 = screen->cur_row;
+	l1--;
+	while (++l1 < l2)
+	    if (!ScrnTstWrapped(screen, l1))
+		goto finish;
+	/* Everything is on one "wrapped line" now */
+	ldelta = line - screen->cur_row;
+    }
+    /* Correct by half a width - we are acting on a boundary, not on a cell. */
+    col = (event->xbutton.x - OriginX(screen) + (FontWidth(screen) - 1) / 2)
+	/ FontWidth(screen) - screen->cur_col + ldelta * (screen->max_col + 1);
+    if (col == 0)
+	goto finish;
+    Line[0] = ESC;
+    /* XXX: sometimes it is better to send '['? */
+    Line[1] = 'O';
+    Line[2] = (col > 0 ? 'C' : 'D');
+    if (col < 0)
+	col = -col;
+    while (col--)
+	v_write(screen->respond, Line, 3);
+  finish:
+    if (event->type == ButtonRelease)
+	do_select_end(w, event, params, num_params, False);
+}
+#endif /* OPT_READLINE */
+
+/* repeats <ESC>n or <ESC>p */
 void
 ViButton(Widget w GCC_UNUSED,
 	 XEvent * event,	/* must be XButtonEvent */
@@ -730,6 +978,11 @@ do_select_end(Widget w,
 	      Cardinal * num_params,
 	      Bool use_cursor_loc)
 {
+#if OPT_READLINE
+    int ldelta1, ldelta2;
+    TScreen *screen = &term->screen;
+#endif
+
     if (!IsXtermWidget(w))
 	return;
 
@@ -741,6 +994,20 @@ do_select_end(Widget w,
     case LEFTEXTENSION:
     case RIGHTEXTENSION:
 	EndExtend(w, event, params, *num_params, use_cursor_loc);
+#if OPT_READLINE
+	if (isClick1_clean(event)
+	    && SCREEN_FLAG(screen, click1_moves)
+	    && rowOnCurrentLine(eventRow(event), &ldelta1)) {
+	    ReadLineMovePoint(eventColBetween(event), ldelta1);
+	}
+	if (isDoubleClick3(event)
+	    && SCREEN_FLAG(screen, dclick3_deletes)
+	    && rowOnCurrentLine(startSRow, &ldelta1)
+	    && rowOnCurrentLine(endSRow, &ldelta2)) {
+	    ReadLineMovePoint(endSCol, ldelta2);
+	    ReadLineDelete(startSRow, startSCol, endSRow, endSCol);
+	}
+#endif /* OPT_READLINE */
 	break;
     }
 }
@@ -1055,9 +1322,28 @@ GettingSelection(Display * dpy, Atom type, Char * line, int len)
 #define GettingSelection(dpy,type,line,len)	/* nothing */
 #endif
 
-#ifndef VMS
+#ifdef VMS
+#  define tty_vwrite(pty,lag,l)		tt_write(lag,l)
+#else /* !( VMS ) */
+#  define tty_vwrite(pty,lag,l)		v_write(pty,lag,l)
+#endif /* defined VMS */
+
 static void
-_WriteSelectionData(int pty, Char * line, int length)
+_qWriteSelectionData(TScreen * screen, Char * lag, int length)
+{
+#if OPT_READLINE
+    if (SCREEN_FLAG(screen, paste_quotes)) {
+	while (length--) {
+	    tty_vwrite(screen->respond, "\026", 1);	/* Control-V */
+	    tty_vwrite(screen->respond, lag++, 1);
+	}
+    } else
+#endif
+	tty_vwrite(screen->respond, lag, length);
+}
+
+static void
+_WriteSelectionData(TScreen * screen, Char * line, int length)
 {
     /* Write data to pty a line at a time. */
     /* Doing this one line at a time may no longer be necessary
@@ -1065,51 +1351,53 @@ _WriteSelectionData(int pty, Char * line, int length)
 
     register Char *lag, *cp, *end;
 
-    end = &line[length];
-    lag = line;
-    for (cp = line; cp != end; cp++) {
-	if (*cp == '\n') {
-	    *cp = '\r';
-	    v_write(pty, lag, cp - lag + 1);
-	    lag = cp + 1;
-	}
-    }
-    if (lag != end) {
-	v_write(pty, lag, end - lag);
-    }
-}
-
-#else /* VMS */
-
-static void
-_WriteSelectionData(int pty, Char * line, int length)
-{
     /* in the VMS version, if tt_pasting isn't set to TRUE then qio
        reads aren't blocked and an infinite loop is entered, where the
        pasted text shows up as new input, goes in again, shows up
        again, ad nauseum. */
-
-    register Char *lag, *cp, *end;
-
+#ifdef VMS
     tt_pasting = TRUE;
+#endif
 
     end = &line[length];
     lag = line;
-    for (cp = line; cp != end; cp++) {
-	if (*cp == '\n') {
-	    *cp = '\r';
-	    tt_write(lag, cp - lag + 1);
-	    lag = cp + 1;
+    if (!SCREEN_FLAG(screen, paste_literal_nl)) {
+	for (cp = line; cp != end; cp++) {
+	    if (*cp == '\n') {
+		*cp = '\r';
+		_qWriteSelectionData(screen, lag, cp - lag + 1);
+		lag = cp + 1;
+	    }
 	}
     }
     if (lag != end) {
-	tt_write(lag, end - lag);
+	_qWriteSelectionData(screen, lag, end - lag);
     }
-
+#ifdef VMS
     tt_pasting = FALSE;
     tt_start_read();		/* reenable reads or a character may be lost */
+#endif
 }
-#endif /* VMS */
+
+#if OPT_READLINE
+static void
+_WriteKey(TScreen * screen, Char * in)
+{
+    char line[16];
+    int count = 0, length = strlen(in);
+
+    if (screen->control_eight_bits) {
+	line[count++] = CSI;
+    } else {
+	line[count++] = ESC;
+	line[count++] = '[';
+    }
+    while (length--)
+	line[count++] = *in++;
+    line[count++] = '~';
+    tty_vwrite(screen->respond, line, count);
+}
+#endif /* OPT_READLINE */
 
 /* SelectionReceived: stuff received selection text into pty */
 
@@ -1192,11 +1480,19 @@ SelectionReceived(Widget w,
 
     if (text_list != NULL && text_list_count != 0) {
 	int i;
+
+#if OPT_READLINE
+	if (SCREEN_FLAG(screen, paste_brackets))
+	    _WriteKey(screen, "200");
+#endif
 	for (i = 0; i < text_list_count; i++) {
 	    int len = strlen(text_list[i]);
-	    _WriteSelectionData(((XtermWidget) w)->screen.respond,
-				(Char *) text_list[i], len);
+	    _WriteSelectionData(screen, (Char *) text_list[i], len);
 	}
+#if OPT_READLINE
+	if (SCREEN_FLAG(screen, paste_brackets))
+	    _WriteKey(screen, "201");
+#endif
 	XFreeStringList(text_list);
     } else
 	goto fail;
@@ -1222,8 +1518,24 @@ HandleInsertSelection(Widget w,
 		      String * params,	/* selections in precedence order */
 		      Cardinal * num_params)
 {
+#if OPT_READLINE
+    int ldelta;
+    register TScreen *screen = &((XtermWidget) w)->screen;
+#endif
+
     if (SendMousePosition(w, event))
 	return;
+
+#if OPT_READLINE
+    if ((event->type == ButtonPress || event->type == ButtonRelease)
+    /* Disable on Shift-mouse, including the application-mouse modes */
+	&& !(KeyModifiers & ShiftMask)
+	&& (screen->send_mouse_pos == MOUSE_OFF)
+	&& SCREEN_FLAG(screen, paste_moves)
+	&& rowOnCurrentLine(eventRow(event), &ldelta))
+	ReadLineMovePoint(eventColBetween(event), ldelta);
+#endif /* OPT_READLINE */
+
     _GetSelection(w, event->xbutton.time, params, *num_params, NULL);
 }
 
@@ -1258,6 +1570,11 @@ do_select_start(Widget w,
 	return;
     selectUnit = EvalSelectUnit(event->xbutton.time, SELECTCHAR);
     replyToEmacs = FALSE;
+
+#if OPT_READLINE
+    lastButtonDownTime = event->xbutton.time;
+#endif
+
     StartSelect(startrow, startcol);
 }
 
@@ -1278,6 +1595,11 @@ HandleSelectStart(Widget w,
     firstValidRow = 0;
     lastValidRow = screen->max_row;
     PointToRowCol(event->xbutton.y, event->xbutton.x, &startrow, &startcol);
+
+#if OPT_READLINE
+    ExtendingSelection = 0;
+#endif
+
     do_select_start(w, event, startrow, startcol);
 }
 
@@ -1467,10 +1789,21 @@ do_start_extend(Widget w,
 	return;
     firstValidRow = 0;
     lastValidRow = screen->max_row;
-    selectUnit = EvalSelectUnit(event->xbutton.time, selectUnit);
+#if OPT_READLINE
+    if ((KeyModifiers & ShiftMask)
+	|| event->xbutton.button != Button3
+	|| !(SCREEN_FLAG(screen, dclick3_deletes)))
+#endif
+	selectUnit = EvalSelectUnit(event->xbutton.time, selectUnit);
     replyToEmacs = FALSE;
 
-    if (numberOfClicks == 1) {
+#if OPT_READLINE
+    CheckSecondPress3(event);
+#endif
+
+    if (numberOfClicks == 1
+	|| (SCREEN_FLAG(screen, dclick3_deletes)	/* Dclick special */
+	    &&!(KeyModifiers & ShiftMask))) {
 	/* Save existing selection so we can reestablish it if the guy
 	   extends past the other end of the selection */
 	saveStartRRow = startERow = startRRow;
@@ -1507,6 +1840,11 @@ do_start_extend(Widget w,
 	endECol = col;
     }
     ComputeSelect(startERow, startECol, endERow, endECol, True);
+
+#if OPT_READLINE
+    if (startSRow != endSRow || startSCol != endSCol)
+	ExtendingSelection = 1;
+#endif
 }
 
 static void
@@ -1536,6 +1874,11 @@ ExtendExtend(int row, int col)
 	endECol = col;
     }
     ComputeSelect(startERow, startECol, endERow, endECol, False);
+
+#if OPT_READLINE
+    if (startSRow != endSRow || startSCol != endSCol)
+	ExtendingSelection = 1;
+#endif
 }
 
 void

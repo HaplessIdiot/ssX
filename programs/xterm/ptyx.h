@@ -2,7 +2,7 @@
  *	$Xorg: ptyx.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/ptyx.h,v 3.95 2002/08/06 19:55:56 herrb Exp $ */
+/* $XFree86: xc/programs/xterm/ptyx.h,v 3.96 2002/08/17 19:52:27 dickey Exp $ */
 
 /*
  * Copyright 1999,2000,2001,2002 by Thomas E. Dickey
@@ -499,12 +499,12 @@ typedef struct {
 #define OPT_MAXIMIZE	1 /* add actions for iconify ... maximize */
 #endif
 
-#ifndef OPT_NUM_LOCK
-#define OPT_NUM_LOCK	1 /* use NumLock key only for numeric-keypad */
+#ifndef OPT_MOD_FKEYS
+#define OPT_MOD_FKEYS	1 /* modify cursor- and function-keys in normal mode */
 #endif
 
-#ifndef OPT_SAME_NAME
-#define OPT_SAME_NAME   1 /* suppress redundant updates of title, icon, etc. */
+#ifndef OPT_NUM_LOCK
+#define OPT_NUM_LOCK	1 /* use NumLock key only for numeric-keypad */
 #endif
 
 #ifndef OPT_PC_COLORS
@@ -513,6 +513,14 @@ typedef struct {
 
 #ifndef OPT_PRINT_COLORS
 #define OPT_PRINT_COLORS 1 /* true if we print color information */
+#endif
+
+#ifndef OPT_READLINE
+#define OPT_READLINE	0 /* mouse-click/paste support for readline */
+#endif
+
+#ifndef OPT_SAME_NAME
+#define OPT_SAME_NAME   1 /* suppress redundant updates of title, icon, etc. */
 #endif
 
 #ifndef OPT_SCO_FUNC_KEYS
@@ -1079,6 +1087,14 @@ typedef struct {
 	unsigned long	event_mask;
 	unsigned short	send_mouse_pos;	/* user wants mouse transition  */
 					/* and position information	*/
+#if OPT_READLINE
+	unsigned	click1_moves;
+	unsigned	paste_moves;
+	unsigned	dclick3_deletes;
+	unsigned	paste_brackets;
+	unsigned	paste_quotes;
+	unsigned	paste_literal_nl;
+#endif	/* OPT_READLINE */
 #if OPT_DEC_LOCATOR
 	Boolean		locator_reset;	/* turn mouse off after 1 report? */
 	Boolean		locator_pixels;	/* report in pixels?		*/
@@ -1315,7 +1331,16 @@ typedef struct _TekPart {
 #endif
 } TekPart;
 
-
+#if OPT_READLINE
+#define SCREEN_FLAG(screenp,f)		(1&(screenp)->f)
+#define SCREEN_FLAG_set(screenp,f)	((screenp)->f |= 1)
+#define SCREEN_FLAG_unset(screenp,f)	((screenp)->f &= ~1L)
+#define SCREEN_FLAG_save(screenp,f)	\
+	((screenp)->f = (((screenp)->f)<<1) | SCREEN_FLAG(screenp,f))
+#define SCREEN_FLAG_restore(screenp,f)	((screenp)->f = (((screenp)->f)>>1))
+#else
+#define SCREEN_FLAG(screenp,f)		(0)
+#endif
 
 /* meaning of bits in screen.select flag */
 #define	INWINDOW	01	/* the mouse is in one of the windows */
@@ -1339,6 +1364,7 @@ typedef struct
 #if OPT_INITIAL_ERASE
     int	reset_DECBKM;		/* reset should set DECBKM */
 #endif
+    int modify_cursor_keys;	/* how to handle modifiers */
 } TKeyboard;
 
 typedef struct _Misc {
