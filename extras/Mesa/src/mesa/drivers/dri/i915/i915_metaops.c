@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i915/i915_metaops.c,v 1.4 2004/12/15 15:40:28 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i915/i915_metaops.c,v 1.5 2005/01/09 20:47:18 alanh Exp $ */
 /**************************************************************************
  * 
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
@@ -324,12 +324,8 @@ static void set_tex_rect_source( i915ContextPtr i915,
 
    i915->meta.emitted &= ~I915_UPLOAD_TEX(0);
 }
-<<<<<<< i915_metaops.c
-#endif
-=======
 #endif /* UNUSED */
 
->>>>>>> 1.4
 
 /* Select between front and back draw buffers.
  */
@@ -340,12 +336,8 @@ static void set_draw_offset( i915ContextPtr i915,
    i915->meta.emitted &= ~I915_UPLOAD_BUFFERS;
 }
 
-<<<<<<< i915_metaops.c
-#if 0
-=======
 
 #ifdef UNUSED
->>>>>>> 1.4
 /* Setup an arbitary draw format, useful for targeting texture or agp
  * memory.
  */
@@ -364,11 +356,7 @@ static void set_draw_format( i915ContextPtr i915,
 /*    fprintf(stderr, "%s: DV1: %x\n",  */
 /* 	   __FUNCTION__, i915->meta.Buffer[I915_DESTREG_DV1]); */
 }
-<<<<<<< i915_metaops.c
-#endif
-=======
 #endif /* UNUSED */
->>>>>>> 1.4
 
 static void set_vertex_format( i915ContextPtr i915 )
 {
