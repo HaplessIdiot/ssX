@@ -32,12 +32,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
-#include <math.h>
-#include <stdio.h>
-#include <sys/mman.h>
-#include <sys/time.h>
-#include <signal.h>
-
+#include "xf86_ansic.h"
 #include "xf86.h"
 
 #include "i810.h"
@@ -115,7 +110,6 @@ I810AccelInit( ScreenPtr pScreen )
    XAAInfoRecPtr infoPtr;
    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
    I810Ptr pI810 = I810PTR(pScrn);
-   I810MemRange scratch;	/* push into pI810 */
 
    if (I810_DEBUG & DEBUG_VERBOSE_ACCEL)
       ErrorF( "I810AccelInit\n");
@@ -160,6 +154,7 @@ I810AccelInit( ScreenPtr pScreen )
       infoPtr->SubsequentScreenToScreenCopy = I810SubsequentScreenToScreenCopy;
    }
 
+
    /* 8x8 pattern fills 
     */
    {
@@ -180,15 +175,12 @@ I810AccelInit( ScreenPtr pScreen )
    /* Scanline color expansion - Use the same scheme as the 3.3 driver.  
     *
     */
-   if ( I810AllocLow( &scratch, &(pI810->SysMem), 64*1024 ) || 
-	I810AllocLow( &scratch, &(pI810->SysMem), 16*1024 ) )
-   {
+   if(pI810->Scratch.Size != 0) {
       int i;
       int width = ((pScrn->displayWidth + 31) & ~31) / 8; 
-      int nr_buffers = scratch.Size / width;
-      unsigned char *ptr = pI810->FbBase + scratch.Start;
+      int nr_buffers = pI810->Scratch.Size / width;
+      unsigned char *ptr = pI810->FbBase + pI810->Scratch.Start;
       
-
       pI810->NumScanlineColorExpandBuffers = nr_buffers;
       pI810->ScanlineColorExpandBuffers = (unsigned char **) 
 	 xnfcalloc( nr_buffers,  sizeof (unsigned char *) );
@@ -218,13 +210,11 @@ I810AccelInit( ScreenPtr pScreen )
 	 I810SubsequentScanlineCPUToScreenColorExpandFill;
        
       infoPtr->SubsequentColorExpandScanline = 
-	 I810SubsequentColorExpandScanline;
-	  
+	 I810SubsequentColorExpandScanline;	  
    }
 
    /* Possible todo: Image writes w/ non-GXCOPY rop.
     */
-
 
    I810SelectBuffer(pScrn, I810_FRONT);
 
@@ -241,15 +231,18 @@ I810WaitLpRing( ScrnInfoPtr pScrn, int n, int timeout_millis )
    int start = 0;
    int now = 0;
    int last_head = 0;
-   
+   int first = 0;
+
    /* If your system hasn't moved the head pointer in 2 seconds, I'm going to
     * call it crashed.
     */
    if (timeout_millis == 0)
       timeout_millis = 2000;
 
-   if (I810_DEBUG & DEBUG_VERBOSE_ACCEL)
+   if (I810_DEBUG & DEBUG_VERBOSE_ACCEL) {
       ErrorF( "I810WaitLpRing %d\n", n);
+      first = GetTimeInMillis();
+   }
 
    while (ring->space < n) 
    {
@@ -264,16 +257,34 @@ I810WaitLpRing( ScrnInfoPtr pScrn, int n, int timeout_millis )
       iters++;
       now = GetTimeInMillis();
       if ( start == 0 || now < start || ring->head != last_head) {
+	 if (I810_DEBUG & DEBUG_VERBOSE_ACCEL)
+	    if (now > start) 
+	       ErrorF( "space: %d wanted %d\n", ring->space, n ); 
 	 start = now;
 	 last_head = ring->head;
       } else if ( now - start > timeout_millis ) { 
 	 I810PrintErrorState( pScrn ); 
 	 ErrorF( "space: %d wanted %d\n", ring->space, n );
+#ifdef XF86DRI
+	 if(pI810->directRenderingEnabled) {
+	    DRIUnlock(screenInfo.screens[pScrn->scrnIndex]);
+	    DRICloseScreen(screenInfo.screens[pScrn->scrnIndex]);
+	 }
+#endif
 	 FatalError("lockup\n"); 
       }
 
       for (i = 0 ; i < 2000 ; i++)
 	 ;
+   }
+
+   if (I810_DEBUG & DEBUG_VERBOSE_ACCEL)
+   {
+      now = GetTimeInMillis();
+      if (now - first) {
+	 ErrorF("Elapsed %d ms\n", now - first);
+	 ErrorF( "space: %d wanted %d\n", ring->space, n );
+      }
    }
 
    return iters;
@@ -291,9 +302,12 @@ I810Sync( ScrnInfoPtr pScrn )
    /* VT switching tries to do this.  
     */
    if (!pI810->LockHeld) {
-      ErrorF( "I810Sync called with lock not held\n" );
-      return;
+      return;   
    }
+
+
+/*     if (pI810->directRenderingEnabled)  */
+/*        DRIUnlockLockQueiscent( pScrn->pScreen ); */
 #endif
 
    /* Send a flush instruction and then wait till the ring is empty.
@@ -302,7 +316,7 @@ I810Sync( ScrnInfoPtr pScrn )
     */
    {
       BEGIN_LP_RING(2);   
-      OUT_RING( INST_PARSER_CLIENT | INST_OP_FLUSH );
+      OUT_RING( INST_PARSER_CLIENT | INST_OP_FLUSH | INST_FLUSH_MAP_CACHE );
       OUT_RING( 0 );		/* pad to quadword */
       ADVANCE_LP_RING();
    }
@@ -312,7 +326,6 @@ I810Sync( ScrnInfoPtr pScrn )
    pI810->LpRing.space = pI810->LpRing.mem.Size - 8;			
    pI810->nextColorExpandBuf = 0;
 }
-
 
 void 
 I810SetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
@@ -577,7 +590,7 @@ I810EmitFlush( ScrnInfoPtr pScrn )
    I810Ptr pI810 = I810PTR(pScrn);
    
    BEGIN_LP_RING(2);
-   OUT_RING( INST_PARSER_CLIENT | INST_OP_FLUSH );
+   OUT_RING( INST_PARSER_CLIENT | INST_OP_FLUSH | INST_FLUSH_MAP_CACHE);
    OUT_RING( 0 );
    ADVANCE_LP_RING();
 }
@@ -629,9 +642,9 @@ I810EmitInvarientState(ScrnInfoPtr pScrn)
    I810Ptr pI810 = I810PTR(pScrn);
    BEGIN_LP_RING( 8 );
 
-   OUT_RING( INST_PARSER_CLIENT | INST_OP_FLUSH );
+   OUT_RING( INST_PARSER_CLIENT | INST_OP_FLUSH | INST_FLUSH_MAP_CACHE );
    OUT_RING( GFX_CMD_CONTEXT_SEL | CS_UPDATE_USE | CS_USE_CTX0 );
-   OUT_RING( INST_PARSER_CLIENT | INST_OP_FLUSH );
+   OUT_RING( INST_PARSER_CLIENT | INST_OP_FLUSH | INST_FLUSH_MAP_CACHE);
    OUT_RING( 0 );
 
 

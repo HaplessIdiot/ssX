@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.4 2000/02/15 07:13:28 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.5 2000/02/23 04:46:36 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -29,7 +29,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
- *
+ *   Brian Paul <brian@precisioninsight.com>
  */
 
 #ifdef GLX_DIRECT_RENDERING
@@ -44,9 +44,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "sarea.h"
 #include "dri_mesaint.h"
 #include "dri_xmesaapi.h"
-#ifdef BRIAN
-#include <dlfcn.h>
-#endif
 
 
 #if XMESA_MAJOR_VERSION != 3 || XMESA_MINOR_VERSION != 3
@@ -734,8 +731,8 @@ static void driMesaDestroyScreen(Display *dpy, int scrn, void *private)
  * This is the entrypoint into the driver.
  * The driCreateScreen name is the symbol that libGL.so fetches.
  */
-void *driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
-                      int numConfigs, __GLXvisualConfig *config)
+void *__driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
+                        int numConfigs, __GLXvisualConfig *config)
 {
    return driMesaCreateScreen(dpy, scrn, psc, numConfigs, config);
 }

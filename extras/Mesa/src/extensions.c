@@ -48,7 +48,7 @@ struct extension {
 
 
 static struct { int enabled; const char *name; } default_extensions[] = {
-   { ALWAYS_ENABLED, "GL_EXT_blend_color" },
+   { DEFAULT_ON,     "GL_EXT_blend_color" },
    { DEFAULT_OFF,    "ARB_imaging" },
    { DEFAULT_ON,     "GL_EXT_blend_minmax" },
    { DEFAULT_ON,     "GL_EXT_blend_logic_op" },

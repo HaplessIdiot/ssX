@@ -77,7 +77,6 @@ typedef XColor       XMesaColor;
 #define GET_REDMASK(__v)        __v->visinfo->red_mask
 #define GET_GREENMASK(__v)      __v->visinfo->green_mask
 #define GET_BLUEMASK(__v)       __v->visinfo->blue_mask
-#define GET_BITS_PER_PIXEL(__v) bits_per_pixel(__v->display, __v->visinfo)
 #if defined(__cplusplus) || defined(c_plusplus)
 #define GET_VISUAL_CLASS(__v)   __v->visinfo->c_class
 #else

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx_util.h,v 1.2 1999/06/14 07:31:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx_util.h,v 1.3 2000/02/23 04:46:57 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -29,7 +29,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
- *
+ *   Brian Paul <brian@precisioninsight.com>
  */
 
 #ifndef _XF86GLX_UTIL_H_
@@ -49,7 +49,7 @@ struct _XMesaImageRec {
     int bits_per_pixel;
 };
 
-extern XMesaImage *XMesaCreateImage(int depth, int width, int height,
+extern XMesaImage *XMesaCreateImage(int bitsPerPixel, int width, int height,
 				    char *data);
 extern void XMesaDestroyImage(XMesaImage *image);
 extern unsigned long XMesaGetPixel(XMesaImage *image, int x, int y);

@@ -145,7 +145,7 @@ static void TAG(fx_project_vertices)( GLfloat *first,
 
    for ( f = first ; f != last ; STRIDE_F(f, stride)) 
    {
-      GLfloat oow = 1.0f/f[3];	/* urp! */
+      GLfloat oow = 1.0f/f[CLIP_WCOORD];	/* urp! */
 
 #if FX_USE_PARGB
       if (TYPE & SETUP_RGBA) {
@@ -184,7 +184,7 @@ static void TAG(fx_project_clipped_vertices)( GLfloat *first,
    for ( f = first ; f != last ; STRIDE_F(f, stride), mask++) {
       if (!*mask) {
 
-	 GLfloat oow = 1.0f / f[3];
+	 GLfloat oow = 1.0f / f[CLIP_WCOORD];
 #if FX_USE_PARGB
         if (TYPE & SETUP_RGBA) {
            const GLuint r  = f[CLIP_R];

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.7 2000/02/18 12:20:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.8 2000/02/20 04:12:40 tsi Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -622,6 +622,7 @@ TDFXNonTEGlyphRenderer(ScrnInfoPtr pScrn, int x, int y, int n,
     int w = glyph->end - glyph->start;
     int *glyph_data = (int*)glyph->bits;
 
+    if (!glyph->srcwidth) continue;
     ndwords = (glyph->srcwidth+3)>>2;
     ndwords *= glyph->height;
 

@@ -121,16 +121,16 @@ _mesa_GetBooleanv( GLenum pname, GLboolean *params )
       case GL_BLEND_SRC:
          *params = ENUM_TO_BOOL(ctx->Color.BlendSrcRGB);
          break;
-      case GL_BLEND_SRC_RGB_INGR:
+      case GL_BLEND_SRC_RGB_EXT:
          *params = ENUM_TO_BOOL(ctx->Color.BlendSrcRGB);
          break;
-      case GL_BLEND_DST_RGB_INGR:
+      case GL_BLEND_DST_RGB_EXT:
          *params = ENUM_TO_BOOL(ctx->Color.BlendDstRGB);
          break;
-      case GL_BLEND_SRC_ALPHA_INGR:
+      case GL_BLEND_SRC_ALPHA_EXT:
          *params = ENUM_TO_BOOL(ctx->Color.BlendSrcA);
          break;
-      case GL_BLEND_DST_ALPHA_INGR:
+      case GL_BLEND_DST_ALPHA_EXT:
          *params = ENUM_TO_BOOL(ctx->Color.BlendDstA);
          break;
       case GL_BLEND_EQUATION_EXT:
@@ -1083,16 +1083,16 @@ _mesa_GetDoublev( GLenum pname, GLdouble *params )
       case GL_BLEND_SRC:
          *params = ENUM_TO_DOUBLE(ctx->Color.BlendSrcRGB);
          break;
-      case GL_BLEND_SRC_RGB_INGR:
+      case GL_BLEND_SRC_RGB_EXT:
          *params = ENUM_TO_DOUBLE(ctx->Color.BlendSrcRGB);
          break;
-      case GL_BLEND_DST_RGB_INGR:
+      case GL_BLEND_DST_RGB_EXT:
          *params = ENUM_TO_DOUBLE(ctx->Color.BlendDstRGB);
          break;
-      case GL_BLEND_SRC_ALPHA_INGR:
+      case GL_BLEND_SRC_ALPHA_EXT:
          *params = ENUM_TO_DOUBLE(ctx->Color.BlendSrcA);
          break;
-      case GL_BLEND_DST_ALPHA_INGR:
+      case GL_BLEND_DST_ALPHA_EXT:
          *params = ENUM_TO_DOUBLE(ctx->Color.BlendDstA);
          break;
       case GL_BLEND_EQUATION_EXT:
@@ -2046,16 +2046,16 @@ _mesa_GetFloatv( GLenum pname, GLfloat *params )
       case GL_BLEND_SRC:
          *params = ENUM_TO_FLOAT(ctx->Color.BlendSrcRGB);
          break;
-      case GL_BLEND_SRC_RGB_INGR:
+      case GL_BLEND_SRC_RGB_EXT:
          *params = ENUM_TO_FLOAT(ctx->Color.BlendSrcRGB);
          break;
-      case GL_BLEND_DST_RGB_INGR:
+      case GL_BLEND_DST_RGB_EXT:
          *params = ENUM_TO_FLOAT(ctx->Color.BlendDstRGB);
          break;
-      case GL_BLEND_SRC_ALPHA_INGR:
+      case GL_BLEND_SRC_ALPHA_EXT:
          *params = ENUM_TO_FLOAT(ctx->Color.BlendSrcA);
          break;
-      case GL_BLEND_DST_ALPHA_INGR:
+      case GL_BLEND_DST_ALPHA_EXT:
          *params = ENUM_TO_FLOAT(ctx->Color.BlendDstA);
          break;
       case GL_BLEND_EQUATION_EXT:
@@ -2986,16 +2986,16 @@ _mesa_GetIntegerv( GLenum pname, GLint *params )
       case GL_BLEND_SRC:
          *params = (GLint) ctx->Color.BlendSrcRGB;
          break;
-      case GL_BLEND_SRC_RGB_INGR:
+      case GL_BLEND_SRC_RGB_EXT:
          *params = (GLint) ctx->Color.BlendSrcRGB;
          break;
-      case GL_BLEND_DST_RGB_INGR:
+      case GL_BLEND_DST_RGB_EXT:
          *params = (GLint) ctx->Color.BlendDstRGB;
          break;
-      case GL_BLEND_SRC_ALPHA_INGR:
+      case GL_BLEND_SRC_ALPHA_EXT:
          *params = (GLint) ctx->Color.BlendSrcA;
          break;
-      case GL_BLEND_DST_ALPHA_INGR:
+      case GL_BLEND_DST_ALPHA_EXT:
          *params = (GLint) ctx->Color.BlendDstA;
          break;
       case GL_BLEND_EQUATION_EXT:
@@ -3932,47 +3932,32 @@ const GLubyte *
 _mesa_GetString( GLenum name )
 {
    GET_CURRENT_CONTEXT(ctx);
-   static char result[1000];
    static char *vendor = "Brian Paul";
+   static char *renderer = "Mesa";
    static char *version = "1.2 Mesa 3.3 beta";
 
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH_WITH_RETVAL(ctx, "glGetString", 0);
 
-   /* First see if device driver can satisfy this call */
-   switch (name) {
-      case GL_VENDOR:
-      case GL_RENDERER:
-      case GL_VERSION:
-         if (ctx->Driver.GetString) {
-            const GLubyte *str = (*ctx->Driver.GetString)(ctx, name);
-            if (str && str[0])
-               return str;
-         }
-         break;
-      /* Extensions always handled by extensions.c */
-      case GL_EXTENSIONS:
-	 return (GLubyte *) gl_extensions_get_string( ctx );
-      default:
-         gl_error( ctx, GL_INVALID_ENUM, "glGetString" );
-         return (GLubyte *) 0;
-   }
+   /* this is a required driver function */
+   assert(ctx->Driver.GetString);
+   {
+      const GLubyte *str = (*ctx->Driver.GetString)(ctx, name);
+      if (str)
+         return str;
 
-   /* If we get here, device driver didn't return a string */
-   switch (name) {
-      case GL_VENDOR:
-         return (GLubyte *) vendor;
-      case GL_RENDERER:
-         strcpy(result, "Mesa");
-         if (ctx->Driver.RendererString) {
-            strcat(result, " ");
-            strcat(result, (*ctx->Driver.RendererString)());
-         }
-         return (GLubyte *) result;
-      case GL_VERSION:
-         return (GLubyte *) version;
-      default:
-         /* caught above */
-         return NULL;
+       switch (name) {
+          case GL_VENDOR:
+             return (const GLubyte *) vendor;
+          case GL_RENDERER:
+             return (const GLubyte *) renderer;
+          case GL_VERSION:
+             return (const GLubyte *) version;
+          case GL_EXTENSIONS:
+             return (GLubyte *) gl_extensions_get_string( ctx );
+          default:
+             gl_error( ctx, GL_INVALID_ENUM, "glGetString" );
+             return (GLubyte *) 0;
+       }
    }
 }
 

@@ -61,15 +61,6 @@ render_bitmap( GLcontext *ctx, GLint px, GLint py,
       return;  /* NULL bitmap is legal, a no-op */
    }
 
-   if (ctx->NewState) {
-      gl_update_state(ctx);
-      gl_reduced_prim_change( ctx, GL_BITMAP );
-   }
-
-   if (ctx->PB->primitive!=GL_BITMAP) {   /* A.W. 1.1.2000 */
-      gl_reduced_prim_change( ctx, GL_BITMAP );
-   }
-
    /* Set bitmap drawing color */
    if (ctx->Visual->RGBAflag) {
       GLint r, g, b, a;
@@ -166,6 +157,16 @@ _mesa_Bitmap( GLsizei width, GLsizei height,
          GLint x = (GLint) ( (ctx->Current.RasterPos[0] - xorig) + 0.0F );
          GLint y = (GLint) ( (ctx->Current.RasterPos[1] - yorig) + 0.0F );
          GLboolean completed = GL_FALSE;
+
+         if (ctx->NewState) {
+            gl_update_state(ctx);
+            gl_reduced_prim_change( ctx, GL_BITMAP );
+         }
+
+         if (ctx->PB->primitive!=GL_BITMAP) {   /* A.W. 1.1.2000 */
+            gl_reduced_prim_change( ctx, GL_BITMAP );
+         }
+
          if (ctx->Driver.Bitmap) {
             /* let device driver try to render the bitmap */
             completed = (*ctx->Driver.Bitmap)( ctx, x, y, width, height,

@@ -816,15 +816,17 @@ void gl_write_texture_span( GLcontext *ctx,
  * As above but perform multiple stages of texture application.
  * Input:  texUnits - number of texture units to apply
  */
-void gl_write_multitexture_span( GLcontext *ctx, GLuint texUnits,
-                                 GLuint n, GLint x, GLint y,
-                                 const GLdepth z[],
-                                 CONST GLfloat s[][MAX_WIDTH],
-                                 CONST GLfloat t[][MAX_WIDTH],
-                                 CONST GLfloat u[][MAX_WIDTH],
-                                 GLfloat lambda[][MAX_WIDTH],
-                                 GLubyte rgbaIn[][4], CONST GLubyte spec[][4],
-                                 GLenum primitive )
+void
+gl_write_multitexture_span( GLcontext *ctx, GLuint texUnits,
+                            GLuint n, GLint x, GLint y,
+                            const GLdepth z[],
+                            CONST GLfloat s[MAX_TEXTURE_UNITS][MAX_WIDTH],
+                            CONST GLfloat t[MAX_TEXTURE_UNITS][MAX_WIDTH],
+                            CONST GLfloat u[MAX_TEXTURE_UNITS][MAX_WIDTH],
+                            GLfloat lambda[][MAX_WIDTH],
+                            GLubyte rgbaIn[MAX_TEXTURE_UNITS][4],
+                            CONST GLubyte spec[MAX_TEXTURE_UNITS][4],
+                            GLenum primitive )
 {
    GLubyte mask[MAX_WIDTH];
    GLboolean write_all = GL_TRUE;

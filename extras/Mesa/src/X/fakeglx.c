@@ -1206,12 +1206,12 @@ Fake_glXDestroyGLXPixmap( Display *dpy, GLXPixmap pixmap )
 
 static void
 Fake_glXCopyContext( Display *dpy, GLXContext src, GLXContext dst,
-                     GLuint mask )
+                     unsigned long mask )
 {
    XMesaContext xm_src = (XMesaContext) src;
    XMesaContext xm_dst = (XMesaContext) dst;
    (void) dpy;
-   gl_copy_context( xm_src->gl_ctx, xm_dst->gl_ctx, mask );
+   gl_copy_context( xm_src->gl_ctx, xm_dst->gl_ctx, (GLuint) mask );
 }
 
 

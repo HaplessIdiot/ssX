@@ -40,6 +40,7 @@
 
 
 
+#if 0
 void _mesa_BlendColor(GLclampf r, GLclampf g, GLclampf b, GLclampf a)
 {
    (void) r;
@@ -76,6 +77,7 @@ void _mesa_ColorTable(GLenum target, GLenum internalformat, GLsizei width, GLenu
    (void) table;
    WARNING("glColorTable");
 }
+#endif
 
 void _mesa_ColorTableParameterfv(GLenum target, GLenum pname, const GLfloat *params)
 {
@@ -190,6 +192,7 @@ void _mesa_CopyConvolutionFilter2D(GLenum target, GLenum internalformat, GLint x
    WARNING("glCopyConvolutionFilter2D");
 }
 
+#if 0
 void _mesa_GetColorTable(GLenum target, GLenum format, GLenum type, GLvoid *table)
 {
    (void) target;
@@ -214,6 +217,7 @@ void _mesa_GetColorTableParameteriv(GLenum target, GLenum pname, GLint *params)
    (void) params;
    WARNING("glGetColorTableParameteriv");
 }
+#endif
 
 void _mesa_GetConvolutionFilter(GLenum target, GLenum format, GLenum type, GLvoid *image)
 {

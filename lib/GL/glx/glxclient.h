@@ -537,6 +537,10 @@ extern void __glXSendLargeCommand(__GLXcontext *, const GLvoid *, GLint,
 /* Initialize the GLX extension for dpy */
 extern __GLXdisplayPrivate *__glXInitialize(Display*);
 
+/* Query drivers for dynamically registered extensions */
+extern void __glXRegisterExtensions(void);
+
+
 /************************************************************************/
 
 extern int __glXDebug;

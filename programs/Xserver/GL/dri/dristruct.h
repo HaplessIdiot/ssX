@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dristruct.h,v 1.5 2000/02/14 06:27:14 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dristruct.h,v 1.6 2000/02/23 04:46:52 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -87,29 +87,7 @@ typedef struct _DRIScreenPrivRec
     void**		hiddenContextStore;    /* hidden X context          */
     void**		partial3DContextStore; /* parital 3D context        */
     DRIInfoPtr		pDriverInfo;
-    void		(*WakeupHandler)(int screenNum,
-					 pointer wakeupData,
-					 unsigned long result,
-					 pointer pReadmask);
-    void		(*BlockHandler)(int screenNum,
-					pointer blockData,
-					struct timeval **pTimeout,
-					pointer pReadmask);
-    void		(*PaintWindowBackground)(WindowPtr pWin,
-						 RegionPtr prgn,
-						 int what);
-    void		(*PaintWindowBorder)(WindowPtr pWin,
-					     RegionPtr prgn,
-					     int what);
-    void		(*CopyWindow)(WindowPtr pWin,
-				      DDXPointRec ptOldOrg,
-				      RegionPtr prgnSrc);
-    int			(*ValidateTree)(WindowPtr pParent,
-				        WindowPtr pChild,
-				        VTKind    kind);
-    void		(*PostValidateTree)(WindowPtr pParent,
-					    WindowPtr pChild,
-					    VTKind    kind);
+    DRIWrappedFuncsRec	wrap;
     DrawablePtr		DRIDrawables[SAREA_MAX_DRAWABLES];
 } DRIScreenPrivRec, *DRIScreenPrivPtr;
 

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.26 2000/02/29 22:02:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.27 2000/03/01 16:01:22 tsi Exp $ */
 
 /*
  * Authors:
@@ -1365,7 +1365,7 @@ TDFXModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 #ifdef XF86DRI
   if (pTDFX->directRenderingEnabled) {
-    DRILock(screenInfo.screens[pScrn->scrnIndex]);
+    DRILock(screenInfo.screens[pScrn->scrnIndex], 0);
     TDFXSwapContextPrivate(screenInfo.screens[pScrn->scrnIndex]);
   }
 #endif
@@ -1825,7 +1825,7 @@ TDFXLeaveVT(int scrnIndex, int flags) {
 #ifdef XF86DRI
   pTDFX = TDFXPTR(pScrn);
   if (pTDFX->directRenderingEnabled) {
-    DRILock(pScreen);
+    DRILock(pScreen, 0);
   }
 #endif
 }

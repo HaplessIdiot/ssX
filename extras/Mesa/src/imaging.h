@@ -3,7 +3,7 @@
  * Mesa 3-D graphics library
  * Version:  3.3
  *
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -36,6 +36,7 @@
 
 
 
+#if 0
 extern void _mesa_BlendColor(GLclampf r, GLclampf g, GLclampf b, GLclampf a);
 
 extern void _mesa_BlendEquation(GLenum eq);
@@ -43,10 +44,12 @@ extern void _mesa_BlendEquation(GLenum eq);
 extern void _mesa_ColorSubTable(GLenum target, GLsizei start, GLsizei count, GLenum format, GLenum type, const GLvoid *data);
 
 extern void _mesa_ColorTable(GLenum target, GLenum internalformat, GLsizei width, GLenum format, GLenum type, const GLvoid *table);
+#endif
 
 extern void _mesa_ColorTableParameterfv(GLenum target, GLenum pname, const GLfloat *params);
 
 extern void _mesa_ColorTableParameteriv(GLenum target, GLenum pname, const GLint *params);
+
 
 extern void _mesa_ConvolutionFilter1D(GLenum target, GLenum internalformat, GLsizei width, GLenum format, GLenum type, const GLvoid *image);
 
@@ -68,11 +71,13 @@ extern void _mesa_CopyConvolutionFilter1D(GLenum target, GLenum internalformat, 
 
 extern void _mesa_CopyConvolutionFilter2D(GLenum target, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height);
 
+#if 0
 extern void _mesa_GetColorTable(GLenum target, GLenum format, GLenum type, GLvoid *table);
 
 extern void _mesa_GetColorTableParameterfv(GLenum target, GLenum pname, GLfloat *params);
 
 extern void _mesa_GetColorTableParameteriv(GLenum target, GLenum pname, GLint *params);
+#endif
 
 extern void _mesa_GetConvolutionFilter(GLenum target, GLenum format, GLenum type, GLvoid *image);
 

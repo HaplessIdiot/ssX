@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_xmesa.c,v 1.2 1999/06/27 14:07:31 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_xmesa.c,v 1.3 2000/02/23 04:46:46 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -29,17 +29,21 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
- *
+ *   Brian Paul <brian@precisioninsight.com>
  */
 
 #ifdef GLX_DIRECT_RENDERING
 
 #include <X11/Xlibint.h>
 #include "gamma_init.h"
+#include "glapi.h"
+
 
 XMesaContext         nullCC  = NULL;
 XMesaContext         gCC     = NULL;
 gammaContextPrivate *gCCPriv = NULL;
+
+static struct _glapi_table *Dispatch = NULL;
 
 static int count_bits(unsigned int n)
 {
@@ -151,6 +155,12 @@ XMesaContext XMesaCreateContext(XMesaVisual v, XMesaContext share_list,
     gammaContextPrivate *cPriv;
     __DRIscreenPrivate *driScrnPriv = driContextPriv->driScreenPriv;
     gammaScreenPrivate *gPriv = (gammaScreenPrivate *)driScrnPriv->private;
+
+    if (!Dispatch) {
+       GLuint size = _glapi_get_dispatch_table_size() * sizeof(GLvoid *);
+       Dispatch = (struct _glapi_table *) malloc(size);
+       _gamma_init_dispatch(Dispatch);
+    }
 
     c = (XMesaContext)Xmalloc(sizeof(struct xmesa_context));
     if (!c) {
@@ -488,11 +498,27 @@ GLboolean XMesaMakeCurrent(XMesaContext c, XMesaBuffer b)
 
 	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
 	WRITE(gCCPriv->buf, GLINTWindow, gCCPriv->Window);
+
+        _glapi_set_dispatch(Dispatch);
     } else {
 	gCC     = NULL;
 	gCCPriv = NULL;
     }
     return GL_TRUE;
 }
+
+
+GLboolean XMesaUnbindContext( XMesaContext c )
+{
+   /* XXX not 100% sure what's supposed to be done here */
+   return GL_TRUE;
+}
+
+
+void __driRegisterExtensions(void)
+{
+   /* No extensions */
+}
+
 
 #endif

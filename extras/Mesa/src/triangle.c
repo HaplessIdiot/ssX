@@ -3,7 +3,7 @@
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -1019,29 +1019,19 @@ static void general_textured_spec_triangle1( GLcontext *ctx, GLuint v0,
 
 
 /*
- * Compute the lambda value (texture level value) for a fragment.
+ * Compute the lambda value for a fragment. (texture level of detail)
  */
-static GLfloat compute_lambda( GLfloat s, GLfloat dsdx, GLfloat dsdy,
-                               GLfloat t, GLfloat dtdx, GLfloat dtdy,
-                               GLfloat invQ, GLfloat dqdx, GLfloat dqdy,
-                               GLfloat width, GLfloat height ) 
+static GLfloat
+compute_lambda( GLfloat dsdx, GLfloat dsdy, GLfloat dtdx, GLfloat dtdy,
+                GLfloat invQ, GLfloat width, GLfloat height ) 
 {
-   GLfloat dudx, dudy, dvdx, dvdy;
-   GLfloat r1, r2, rho2;
-   GLfloat invQ_width = invQ * width;
-   GLfloat invQ_height = invQ * height;
-
-   dudx = (dsdx - s*dqdx) * invQ_width;
-   dudy = (dsdy - s*dqdy) * invQ_width;
-   dvdx = (dtdx - t*dqdx) * invQ_height;
-   dvdy = (dtdy - t*dqdy) * invQ_height;
-
-   r1 = dudx * dudx + dudy * dudy;
-   r2 = dvdx * dvdx + dvdy * dvdy;
-
-   rho2 = r1 + r2;     /* used to be:  rho2 = MAX2(r1,r2); */
-   ASSERT( rho2 >= 0.0 );
-
+   GLfloat dudx = dsdx * invQ * width;
+   GLfloat dudy = dsdy * invQ * width;
+   GLfloat dvdx = dtdx * invQ * height;
+   GLfloat dvdy = dtdy * invQ * height;
+   GLfloat r1 = dudx * dudx + dudy * dudy;
+   GLfloat r2 = dvdx * dvdx + dvdy * dvdy;
+   GLfloat rho2 = r1 + r2;     /* used to be:  rho2 = MAX2(r1,r2); */
    /* return log base 2 of rho */
    return log(rho2) * 1.442695 * 0.5;       /* 1.442695 = 1/log(2) */
 }
@@ -1098,10 +1088,8 @@ static void lambda_textured_triangle1( GLcontext *ctx, GLuint v0, GLuint v1,
 		    s[i] = ss*invQ;					\
 		    t[i] = tt*invQ;					\
 		    u[i] = uu*invQ;					\
-		    lambda[i] = compute_lambda( s[i], dsdx, dsdy,	\
-						t[i], dtdx, dtdy,	\
-						invQ, dvdx, dvdy,	\
-						twidth, theight );	\
+		    lambda[i] = compute_lambda( dsdx, dsdy, dtdx, dtdy,	\
+						invQ, twidth, theight );\
 		    ffz += fdzdx;					\
 		    ss += dsdx;						\
 		    tt += dtdx;						\
@@ -1120,10 +1108,8 @@ static void lambda_textured_triangle1( GLcontext *ctx, GLuint v0, GLuint v1,
 		    s[i] = ss*invQ;					\
 		    t[i] = tt*invQ;					\
 		    u[i] = uu*invQ;					\
-		    lambda[i] = compute_lambda( s[i], dsdx, dsdy,	\
-						t[i], dtdx, dtdy,	\
-						invQ, dvdx, dvdy,	\
-						twidth, theight );	\
+		    lambda[i] = compute_lambda( dsdx, dsdy, dtdx, dtdy,	\
+						invQ, twidth, theight );\
 		    ffz += fdzdx;					\
 		    ffr += fdrdx;					\
 		    ffg += fdgdx;					\
@@ -1205,10 +1191,8 @@ static void lambda_textured_spec_triangle1( GLcontext *ctx, GLuint v0,
 		    s[i] = ss*invQ;					\
 		    t[i] = tt*invQ;					\
 		    u[i] = uu*invQ;					\
-		    lambda[i] = compute_lambda( s[i], dsdx, dsdy,	\
-						t[i], dtdx, dtdy,	\
-						invQ, dvdx, dvdy,	\
-						twidth, theight );	\
+		    lambda[i] = compute_lambda( dsdx, dsdy, dtdx, dtdy,	\
+						invQ, twidth, theight );\
 		    ffz += fdzdx;					\
 		    ss += dsdx;						\
 		    tt += dtdx;						\
@@ -1230,10 +1214,8 @@ static void lambda_textured_spec_triangle1( GLcontext *ctx, GLuint v0,
 		    s[i] = ss*invQ;					\
 		    t[i] = tt*invQ;					\
 		    u[i] = uu*invQ;					\
-		    lambda[i] = compute_lambda( s[i], dsdx, dsdy,	\
-						t[i], dtdx, dtdy,	\
-						invQ, dvdx, dvdy,	\
-						twidth, theight );	\
+		    lambda[i] = compute_lambda( dsdx, dsdy, dtdx, dtdy,	\
+						invQ, twidth, theight );\
 		    ffz += fdzdx;					\
 		    ffr += fdrdx;					\
 		    ffg += fdgdx;					\
@@ -1316,16 +1298,16 @@ static void lambda_multitextured_triangle1( GLcontext *ctx, GLuint v0,
 		    s[0][i] = ss*invQ;					\
 		    t[0][i] = tt*invQ;					\
 		    u[0][i] = uu*invQ;					\
-		    lambda[0][i] = compute_lambda( s[0][i], dsdx, dsdy,	\
-						   t[0][i], dtdx, dtdy,	\
-						   invQ, dvdx, dvdy,	\
+		    lambda[0][i] = compute_lambda( dsdx, dsdy,		\
+						   dtdx, dtdy,		\
+						   invQ,		\
 						   twidth0, theight0 );	\
 		    s[1][i] = ss1*invQ1;				\
 		    t[1][i] = tt1*invQ1;				\
 		    u[1][i] = uu1*invQ1;				\
-		    lambda[1][i] = compute_lambda( s[1][i], ds1dx, ds1dy,	\
-						   t[1][i], dt1dx, dt1dy,	\
-						   invQ1, dvdx, dvdy,	\
+		    lambda[1][i] = compute_lambda( ds1dx, ds1dy,	\
+						   dt1dx, dt1dy,	\
+						   invQ1,		\
 						   twidth1, theight1 );	\
 		    ffz += fdzdx;					\
 		    ss += dsdx;						\
@@ -1350,16 +1332,16 @@ static void lambda_multitextured_triangle1( GLcontext *ctx, GLuint v0,
 		    s[0][i] = ss*invQ;					\
 		    t[0][i] = tt*invQ;					\
 		    u[0][i] = uu*invQ;					\
-		    lambda[0][i] = compute_lambda( s[0][i], dsdx, dsdy,	\
-						   t[0][i], dtdx, dtdy,	\
-						   invQ, dvdx, dvdy,	\
+		    lambda[0][i] = compute_lambda( dsdx, dsdy,		\
+						   dtdx, dtdy,		\
+						   invQ,		\
 						   twidth0, theight0 );	\
 		    s[1][i] = ss1*invQ1;				\
 		    t[1][i] = tt1*invQ1;				\
 		    u[1][i] = uu1*invQ1;				\
-		    lambda[1][i] = compute_lambda( s[1][i], ds1dx, ds1dy, \
-						   t[1][i], dt1dx, dt1dy, \
-						   invQ1, dvdx, dvdy,	\
+		    lambda[1][i] = compute_lambda( ds1dx, ds1dy,	\
+						   dt1dx, dt1dy,	\
+						   invQ1,		\
 						   twidth1, theight1 );	\
 		    ffz += fdzdx;					\
 		    ffr += fdrdx;					\
@@ -1453,6 +1435,8 @@ static void null_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 #else
 # define dputs(s)
 #endif
+
+
 
 /*
  * Determine which triangle rendering function to use given the current

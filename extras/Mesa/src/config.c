@@ -217,7 +217,6 @@ static void default_hint( GLcontext *ctx, struct cnode *args )
 {
    struct cnode *hint, *tail, *value;
    const char *hname, *vname;
-   GLenum h, v;
 
    if (is_list(args, &hint, &tail) && 
        is_list(tail, &value, &tail) &&
@@ -225,11 +224,12 @@ static void default_hint( GLcontext *ctx, struct cnode *args )
        is_word(hint, &hname) &&
        is_word(value, &vname))
    {
-      if ((h = (GLenum) gl_lookup_enum_by_name(hname)) != -1 &&
-	  (v = (GLenum) gl_lookup_enum_by_name(vname)) != -1)
+      GLint h = gl_lookup_enum_by_name(hname);
+      GLint v = gl_lookup_enum_by_name(vname);
+      if (h != -1 && v != -1)
       {
 	 printf("calling glHint(%s=%d, %s=%d)\n", hname, h, vname, v);
-	 if (!_mesa_try_Hint( ctx, h, v ))
+	 if (!_mesa_try_Hint( ctx, (GLenum) h, (GLenum) v ))
 	    error( hint, "glHint failed");
 	 printf("allow draw mem: %d\n", ctx->Hint.AllowDrawMem);
 	 return;

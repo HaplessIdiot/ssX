@@ -1,6 +1,5 @@
 /* sigio.c -- Support for SIGIO handler installation and removal
  * Created: Thu Jun  3 15:39:18 1999 by faith@precisioninsight.com
- * Revised: Thu Jun  3 16:16:35 1999 by faith@precisioninsight.com
  * Revised: Thu Jan  6 10:32:25 2000 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -25,7 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.7 1999/12/13 23:38:16 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.8 2000/02/08 17:19:24 dawes Exp $
  * 
  */
 
