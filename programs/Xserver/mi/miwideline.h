@@ -1,5 +1,5 @@
 /* $XConsortium: miwideline.h,v 1.11 94/04/17 20:28:02 dpw Exp $ */
-/* $XFree86: */
+/* $XFree86: $ */
 /*
 
 Copyright (c) 1988  X Consortium
