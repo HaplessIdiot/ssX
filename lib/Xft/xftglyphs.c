@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.13 2001/05/16 10:32:54 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.15 2002/02/15 07:36:11 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -44,6 +44,32 @@ static const int    filters[3][3] = {
     /* blue */
 {    65538*1/13,65538*3/13,65538*9/13 },
 };
+
+/*
+ * Validate the memory info for a font
+ */
+
+static void
+_XftFontValidateMemory (Display *dpy, XftFont *public)
+{
+    XftFontInt	    *font = (XftFontInt *) public;
+    unsigned long   glyph_memory;
+    FT_UInt	    glyphindex;
+    XftGlyph	    *xftg;
+
+    glyph_memory = 0;
+    for (glyphindex = 0; glyphindex < font->num_glyphs; glyphindex++)
+    {
+	xftg = font->glyphs[glyphindex];
+	if (xftg)
+	{
+	    glyph_memory += xftg->glyph_memory;
+	}
+    }
+    if (glyph_memory != font->glyph_memory)
+	printf ("Font glyph cache incorrect has %ld bytes, should have %ld\n",
+		font->glyph_memory, glyph_memory);
+}
 
 void
 XftFontLoadGlyphs (Display	*dpy,
@@ -115,6 +141,16 @@ XftFontLoadGlyphs (Display	*dpy,
 	glyphindex = *glyphs++;
 	xftg = font->glyphs[glyphindex];
 	if (!xftg)
+	    continue;
+	
+	if (XftDebug() & XFT_DBG_CACHE)
+	    _XftFontValidateMemory (dpy, public);
+	/*
+	 * Check to see if this glyph has just been loaded,
+	 * this happens when drawing the same glyph twice
+	 * in a single string
+	 */
+	if (xftg->glyph_memory)
 	    continue;
 	
 	error = FT_Load_Glyph (face, glyphindex, font->load_flags);
@@ -548,6 +584,8 @@ XftFontLoadGlyphs (Display	*dpy,
 	}
 	font->glyph_memory += xftg->glyph_memory;
 	info->glyph_memory += xftg->glyph_memory;
+	if (XftDebug() & XFT_DBG_CACHE)
+	    _XftFontValidateMemory (dpy, public);
 	if (XftDebug() & XFT_DBG_CACHEV)
 	    printf ("Caching glyph 0x%x size %ld\n", glyphindex,
 		    xftg->glyph_memory);
@@ -728,6 +766,8 @@ _XftFontUncacheGlyph (Display *dpy, XftFont *public)
 	glyph_memory = 0;
     }
 	
+    if (XftDebug() & XFT_DBG_CACHE)
+	_XftFontValidateMemory (dpy, public);
     for (glyphindex = 0; glyphindex < font->num_glyphs; glyphindex++)
     {
 	xftg = font->glyphs[glyphindex];
@@ -746,6 +786,8 @@ _XftFontUncacheGlyph (Display *dpy, XftFont *public)
 	    glyph_memory -= xftg->glyph_memory;
 	}
     }
+    if (XftDebug() & XFT_DBG_CACHE)
+	_XftFontValidateMemory (dpy, public);
 }
 
 void
