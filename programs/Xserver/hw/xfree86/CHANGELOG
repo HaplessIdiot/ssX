@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 119. Fix Offscreen Image support for Xv/v4l in tdfx driver (Alan Hourihane).
  118. Add MagicTouch driver (A.482,  Mauro Ziliani)
  117. Fix side effect in XFree86 of the recent changes to libxf86config
       (A.486, Knuts Andy).
@@ -13522,4 +13523,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1863 2001/07/02 21:32:26 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1864 2001/07/03 15:13:54 paulo Exp $
