@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.3 1997/05/26 15:35:05 dawes Exp $
+dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.4 1997/06/11 12:24:56 dawes Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl 
@@ -392,6 +392,10 @@ changequote([,])dnl
 					break
 				fi
 			done
+			;;
+		"\\")	cf_found=yes #(vi
+			;;
+		"&&")	cf_found=yes #(vi
 			;;
 		-*)	;; #(vi
 		$CC|cc|gcc|main.*|echo)	cf_found=yes

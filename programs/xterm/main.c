@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/247 1996/11/29 10:33:51 swick $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.52 1997/06/20 09:24:51 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.53 1997/07/06 05:31:07 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -79,11 +79,6 @@ SOFTWARE.
 #include <X11/Xos.h>
 #include <X11/cursorfont.h>
 #include <X11/Xaw/SimpleMenu.h>
-
-#if XtSpecificationRelease >= 6
-#include <X11/Xpoll.h>
-#endif
-
 #include <X11/Xlocale.h>
 
 #include <pwd.h>
