@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:46:24 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.34 2002/10/21 16:37:22 keithp Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.35 2002/10/21 18:03:39 keithp Exp $
 
 #include <Server.tmpl>
 
@@ -125,13 +125,13 @@ FONTCACHEPROFILEOBJS = fontcache/profiled/?*.o
 		 $(BUILTINDONES) util/DONE
 
 #if BuildServer && DoLoadableServer
-      BASEDIRS = fontfile fc util fontcache
+      BASEDIRS = fontfile fc util $(FONTCACHEDIRS)
    BASELIBOBJS = fontfile/$(STATIC_OBJSDIR)?*.o fc/$(STATIC_OBJSDIR)?*.o \
-		 util/$(STATIC_OBJSDIR)?*.o fontcache/$(STATIC_OBJSDIR)?*.o 
+		 util/$(STATIC_OBJSDIR)?*.o $(FONTCACHESTATICOBJS)
       BASEOBJS = fontfile/module/ffcheck.o fontfile/module/register.o \
 		 util/private.o
      BASEDONES = fontfile/DONE fontfile/module/DONE fc/DONE util/DONE \
-		 fontcache/DONE
+		 $(FONTCACHEDONES)
 #endif
 
 #if HasParallelMake
