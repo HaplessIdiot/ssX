@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.20 2001/01/30 10:18:49 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.21 2001/01/31 16:15:00 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -185,9 +185,9 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->DacRegs[PM2VDACRDMiscControl] = 0x00; /* 6bit DAC */
 
     pReg->DacRegs[PM2VDACRDSyncControl] = 0x00;
-    if (!(mode->Flags & V_PHSYNC))
+    if (mode->Flags & V_PHSYNC)
         pReg->DacRegs[PM2VDACRDSyncControl] |= 0x01; /* invert hsync */
-    if (!(mode->Flags & V_PVSYNC))
+    if (mode->Flags & V_PVSYNC)
         pReg->DacRegs[PM2VDACRDSyncControl] |= 0x08; /* invert vsync */
 
     switch (pScrn->bitsPerPixel)

@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.14 2001/02/01 10:04:49 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.15 2001/02/02 11:45:58 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -309,8 +309,8 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
 			(GLINT_READ_REG(VSConfiguration) & 0xFFFFFFF8) | 0x06));
     STOREREG(VSBBase, 1<<14);
 #endif
-    if (!(mode->Flags & V_PHSYNC)) temp1 |= 0x01; /* invert hsync */
-    if (!(mode->Flags & V_PVSYNC)) temp1 |= 0x08; /* invert vsync */
+    if (mode->Flags & V_PHSYNC) temp1 |= 0x01; /* invert hsync */
+    if (mode->Flags & V_PVSYNC) temp1 |= 0x08; /* invert vsync */
 
     STOREDAC(PM2VDACRDIndexControl, 0x00);
     STOREDAC(PM2VDACRDSyncControl, temp1);
