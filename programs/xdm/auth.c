@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.32 2003/12/22 17:48:12 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.33tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -1182,9 +1182,9 @@ writeLocalAuth (FILE *file, Xauth *auth, char *name)
 #ifdef TCPCONN
 #if defined(IPv6) && defined(AF_INET6)
     fd = socket (AF_INET6, SOCK_STREAM, 0);
-#else
-    fd = socket (AF_INET, SOCK_STREAM, 0);
+    if (fd < 0)
 #endif
+    fd = socket (AF_INET, SOCK_STREAM, 0);
     DefineSelf (fd, file, auth);
     close (fd);
 #endif
