@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.26 2001/05/16 07:56:07 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.27 2001/11/28 21:53:01 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -442,11 +442,21 @@ Permedia2vLoadCursorCallback(
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int i;
-       
+
     for (i=0; i<1024; i++) 
     	Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPattern+i, 0x00, 
 					pGlint->HardwareCursorPattern[i]);
 
+    if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) {
+	/*
+	 * Seems like a bug in the PM3, this flips back the RGB/BGR
+	 * triggered by a cursor update. Strange, but true....
+	 */
+    	GLINTRegPtr glintReg = &pGlint->ModeReg[0];
+    	Permedia2vOutIndReg(pScrn, PM2VDACRDColorFormat, 0x00, 
+				glintReg->DacRegs[PM2VDACRDColorFormat]);
+    }
+       
     pGlint->LoadCursorCallback = NULL;
 }
 
