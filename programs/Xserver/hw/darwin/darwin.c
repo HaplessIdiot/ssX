@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.2 2000/12/01 19:47:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.3 2001/01/14 16:44:55 herrb Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -210,7 +210,7 @@ static Bool DarwinAddScreen(
                 visual->offsetRed = bitsPerRGB * 2;
                 visual->offsetGreen = bitsPerRGB;
                 visual->offsetBlue = 0;
-#if FALSE
+#if TRUE
                 visual->redMask = ((1<<bitsPerRGB)-1) << visual->offsetRed;
                 visual->greenMask = ((1<<bitsPerRGB)-1) << visual->offsetGreen;
                 visual->blueMask = ((1<<bitsPerRGB)-1) << visual->offsetBlue;
@@ -441,8 +441,8 @@ void ProcessInputEvents(void)
         gettimeofday(&tv, &tz);
         if (startsec == 0) startsec = tv.tv_sec;
         if (startsec + QUARTZ_SAFETY_DELAY< tv.tv_sec) {
-	    QuartzGiveUp();
-	    FatalError("%d second safety quit", QUARTZ_SAFETY_DELAY);
+            QuartzGiveUp();
+            FatalError("%d second safety quit", QUARTZ_SAFETY_DELAY);
         }
     }
 #endif
@@ -930,9 +930,9 @@ void AbortDDX( void )
 {
     ErrorF( "   AbortDDX\n" ); 
     /*
-    * This is needed for a abnormal server exit, since the normal exit stuff
-    * MUST also be performed (i.e. the vt must be left in a defined state)
-    */
+     * This is needed for a abnormal server exit, since the normal exit stuff
+     * MUST also be performed (i.e. the vt must be left in a defined state)
+     */
     ddxGiveUp();
 }
 
