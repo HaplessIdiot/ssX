@@ -19,7 +19,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_arc.c,v 1.7 1999/08/22 05:57:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_arc.c,v 1.8 2000/06/17 00:03:19 martin Exp $ */
 
 
 #include "X.h"
@@ -34,6 +34,8 @@ in this Software without prior written authorization from The Open Group.
 #include "scrnintstr.h"
 #include "xaa.h"
 #include "xaalocal.h"
+#include "xf86.h"
+#include "xf86_OSproc.h"
 #include "xf86_ansic.h"
 
 #include "xf86Pci.h"
