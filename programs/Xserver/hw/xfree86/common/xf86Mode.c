@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.54 2002/01/29 19:25:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.56 2002/09/29 23:54:34 keithp Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1139,6 +1139,8 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     int modeSize;					/* in pixels */
     int bitsPerPixel, pixmapPad;
     Bool validateAllDefaultModes;
+    Bool userModes = FALSE;
+    int saveType;
     PixmapFormatRec *BankFormat;
     ClockRangePtr cp;
     ClockRangesPtr storeClockRanges;
@@ -1464,6 +1466,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     last = NULL;
     if (modeNames != NULL) {
 	for (i = 0; modeNames[i] != NULL; i++) {
+	    userModes = TRUE;
 	    new = xnfcalloc(1, sizeof(DisplayModeRec));
 	    new->prev = last;
 	    new->type = M_T_USERDEF;
@@ -1532,6 +1535,8 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    p = xnfcalloc(1, sizeof(DisplayModeRec));
 	    p->prev = last;
 	    p->name = xnfalloc(strlen(r->name) + 1);
+	    if (!userModes)
+		p->type = M_T_USERDEF;
 	    strcpy(p->name, r->name);
 	    if (p->prev)
 		p->prev->next = p;
@@ -1555,6 +1560,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 			       "Not using mode \"%s\" (%s)\n", p->name,
 			       xf86ModeStatusToString(status));
 	}
+	saveType = p->type;
 	status = xf86LookupMode(scrp, p, clockRanges, strategy);
 	if (repeat && status == MODE_NOMODE) {
 	    continue;
@@ -1583,6 +1589,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		p->status = status;
 	    continue;
 	}
+	p->type |= saveType;
 	repeat = TRUE;
 
 	newLinePitch = linePitch;
