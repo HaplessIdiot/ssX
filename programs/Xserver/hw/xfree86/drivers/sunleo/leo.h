@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo.h,v 1.1 2000/05/18 23:21:38 dawes Exp $ */
 
 #ifndef LEO_H
 #define LEO_H
@@ -58,12 +58,6 @@ typedef struct {
 typedef struct {
 	int type;
 	LeoStipplePtr stipple;
-	void (*PolyGlyphBlt) (DrawablePtr, GCPtr, int, int, unsigned int, CharInfoPtr *, pointer);
-	void (*ImageGlyphBlt) (DrawablePtr, GCPtr, int, int, unsigned int, CharInfoPtr *, pointer);
-	void (*FillSpans) (DrawablePtr, GCPtr, int, DDXPointPtr, int *, int);
-	void (*Polylines)(DrawablePtr, GCPtr, int, int, DDXPointPtr);
-	void (*PolySegment)(DrawablePtr, GCPtr, int, xSegment *);
-	void (*FillPolygon)(DrawablePtr, GCPtr, int, int, int, DDXPointPtr);
 } LeoPrivGCRec, *LeoPrivGCPtr;
 
 typedef struct {

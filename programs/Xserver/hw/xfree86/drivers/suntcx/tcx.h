@@ -1,5 +1,5 @@
 /*
- * GX and Turbo GX framebuffer - defines.
+ * TCX framebuffer - defines.
  *
  * Copyright (C) 2000 Jakub Jelinek (jakub@redhat.com)
  *
@@ -20,10 +20,10 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/cg6.h,v 1.1 2000/05/23 04:47:43 dawes Exp $ */
+/* $XFree86:$ */
 
-#ifndef CG6_H
-#define CG6_H
+#ifndef TCX_H
+#define TCX_H
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -31,67 +31,39 @@
 #include "xf86RamDac.h"
 #include "Xmd.h"
 #include "gcstruct.h"
-#include "cg6_regs.h"
 #include "xf86sbusBus.h"
+#include "tcx_regs.h"
 
 /* Various offsets in virtual (ie. mmap()) spaces Linux and Solaris support. */
-#define CG6_FBC_VOFF	0x70000000
-#define CG6_TEC_VOFF	0x70001000
-#define CG6_BTREGS_VOFF	0x70002000
-#define CG6_FHC_VOFF	0x70004000
-#define CG6_THC_VOFF	0x70005000
-#define CG6_ROM_VOFF	0x70006000
-#define CG6_RAM_VOFF	0x70016000
-#define CG6_DHC_VOFF	0x80000000
-
-typedef struct {
-	unsigned int fg, bg;			/* FG/BG colors for stipple */
-	unsigned int patalign;                  /* X/Y alignment of bits */
-        unsigned int alu;			/* Transparent/Opaque + rop */
-        unsigned int bits[32];                  /* The stipple bits themselves */
-} Cg6StippleRec, *Cg6StipplePtr;
-
-typedef struct {
-	int type;
-	Cg6StipplePtr stipple;
-} Cg6PrivGCRec, *Cg6PrivGCPtr;
+#define TCX_RAM8_VOFF		0x00000000
+#define TCX_RAM24_VOFF		0x01000000
+#define TCX_CPLANE_VOFF		0x28000000
+#define TCX_TEC_VOFF		0x70000000
+#define TCX_BTREGS_VOFF		0x70002000
+#define TCX_THC_VOFF		0x70004000
+#define TCX_DHC_VOFF		0x70008000
+#define TCX_ALT_VOFF		0x7000a000
+#define TCX_SYNC_VOFF		0x7000e000
 
 typedef struct {
 	unsigned char	*fb;
-	Cg6FbcPtr	fbc;
-	Cg6ThcPtr	thc;
-	int		vclipmax;
 	int		width;
 	int		height;
-
+	unsigned int	*cplane;
+	TcxThcPtr	thc;
 	sbusDevicePtr	psdp;
-	Bool		HWCursor;
-	Bool		NoAccel;
 	CloseScreenProcPtr CloseScreen;
+	Bool		HWCursor;
 	xf86CursorInfoPtr CursorInfoRec;
 	unsigned int	CursorXY;
 	int		CursorBg, CursorFg;
 	Bool		CursorEnabled;
-} Cg6Rec, *Cg6Ptr;
+	unsigned char	CursorShiftX, CursorShiftY;
+	unsigned char	*CursorData;
+} TcxRec, *TcxPtr;
 
-extern int  Cg6ScreenPrivateIndex;
-extern int  Cg6GCPrivateIndex;
-extern int  Cg6WindowPrivateIndex;
+#define TCX_CPLANE_MODE		0x03000000
 
-#define GET_CG6_FROM_SCRN(p)    ((Cg6Ptr)((p)->driverPrivate))
+#define GET_TCX_FROM_SCRN(p)    ((TcxPtr)((p)->driverPrivate))
 
-#define Cg6GetScreenPrivate(s)						\
-((Cg6Ptr) (s)->devPrivates[Cg6ScreenPrivateIndex].ptr)
-
-#define Cg6GetGCPrivate(g)						\
-((Cg6PrivGCPtr) (g)->devPrivates [Cg6GCPrivateIndex].ptr)
-
-#define Cg6GetWindowPrivate(w)						\
-((Cg6StipplePtr) (w)->devPrivates[Cg6WindowPrivateIndex].ptr)
-                            
-#define Cg6SetWindowPrivate(w,p) 					\
-((w)->devPrivates[Cg6WindowPrivateIndex].ptr = (pointer) p)
-
-extern int cg6RopTable[];
-
-#endif /* CG6_H */
+#endif /* TCX_H */

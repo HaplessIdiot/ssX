@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo.h,v 1.9 2000/06/15 01:26:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo.h,v 1.10 2000/06/22 18:09:37 alanh Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -69,7 +69,8 @@ typedef enum {
     NM2097,
     NM2160,
     NM2200,
-    NM2360
+    NM2360,
+    NM2380
 } NEOType;
 
 /* function prototypes */

@@ -1,4 +1,27 @@
-XFree86 4.0h (?? June 2000)
+XFree86 4.0Z (30 June 2000)
+ 407. Sparc/sbus updates: put sparcProm* in the correct header file, add
+      xf86SbusSetOsHwCursorCmap sbus layer interface, and export symbols for
+      this new interface and the sparcProm* interfaces in the loader (#4046,
+      Jakub Jelinek).
+ 406. Add cg3/cg14/tcx/bw2 drivers (sparc), and fix a few bugs in leo and
+      cg6 drivers.  Build these driver, plus the ati and glint drivers
+      on Linux/sparc (#4046, Jakub Jelinek).
+ 405. Fix Elite3D detection (#4045, David S. Miller).
+ 404. Treat SBUS like ISA when assigning access control records, so now
+      multi-head, Xinerama, etc works with SBUS drivers (#4045,
+      David S. Miller).
+ 403. SDK install updates (#4044, David Bateman).
+ 402. Work around an odd problem with waitpid() in the code for auto-loading
+      DRM kernel modules on Linux (#4042, Brian Paul).
+ 401. Change the imake parameter for BSD/OS from BSD386Architecture to
+      BSDOSArchitecture (#4041, Kurt Lidl).
+ 400. Make the neomagic driver recognise the NM2380 chip, and treat it
+      exactly like a NM2360 (#4041, Kurt Lidl).
+ 399. Updates for compiling cleanly on BSD/OS 4.0.1, and to make the
+      BSD/OS support less i386-centric (#4041, Kurt Lidl).
+ 398. Disable SilkenMouse for the s3virge GX2 to avoid some lockup problems
+      (#4039, Kevin Brosius).
+ 397. Some mga DRI updates to improve stability (Jeff Hartmann).
  396. Fix some DRI offscreen memory calculations in the Matrox driver 
       (Mark Vojkovich).
  395. IA64 workarounds - should compile and run right out of the box now 
@@ -10774,4 +10797,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1221 2000/06/27 21:48:40 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1222 2000/06/29 20:58:39 mvojkovi Exp $
