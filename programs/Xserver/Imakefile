@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/r61_main/5 1996/02/02 18:44:52 gildea $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.50 1996/02/18 03:41:27 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.51 1996/02/19 09:49:19 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -81,7 +81,7 @@ INSTPGMFLAGS =
                   $(XIEEXT) $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS)
         EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) \
                   $(LBXDIRS) $(DBEDIR) $(RECORDDIR) $(SITEEXTDIRS)
-     EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
+     EXTENSIONS = $(PEXLIBS) $(OTHEREXTS)
          XAULIB = $(XAUTHSRC)/LibraryTargetName(Xau)
        XDMCPLIB = $(XDMCPLIBSRC)/LibraryTargetName(Xdmcp)
              OS = os/LibraryTargetName(os) $(XAULIB) $(XDMCPLIB)
