@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.4 2003/02/06 17:46:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.5 2003/02/11 13:36:41 alanh Exp $ */
 /*
  * $Workfile: nsc_gx2_driver.c $
- * $Revision: 1.5 $
+ * $Revision: 1.6 $
  * $Author: alanh $
  *
  * File Contents: This is the main module configures the interfacing 
@@ -1290,8 +1290,6 @@ GX2SetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
       GFX(set_display_offset(0L));
       GFX(wait_vertical_blank());
 
-      pGeode->CursorSize = 16 * 64;	/* 64x64, And, Xor make 16 DWords in a scan */
-
       DEBUGMSG(1, (0, X_PROBED, "Display mode set\n"));
       /* enable compression if option selected */
       if (pGeode->Compression) {
@@ -1798,11 +1796,22 @@ GX2ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
    AvailBox.x1 = 0;
    AvailBox.y1 = pScreenInfo->virtualY;
    AvailBox.x2 = pScreenInfo->displayWidth;
-   AvailBox.y2 = (pGeode->FBSize / pGeode->Pitch) - 1;
+   AvailBox.y2 = (pGeode->FBSize / pGeode->Pitch);
+
+   pGeode->CursorSize = 16 * 64;	/* 64x64 */
+
+   if (pGeode->HWCursor) {
+      /* Compute cursor buffer */
+      /* Default cursor offset, end of the frame buffer */
+      pGeode->CursorStartOffset = pGeode->FBSize - pGeode->CursorSize;
+      AvailBox.y2 -= 1;
+   }
+
    DEBUGMSG(1, (scrnIndex, X_PROBED,
-		"Memory manager initialized to (%d,%d) (%d,%d) %d %d\n",
+		"Memory manager initialized to (%d,%d) (%d,%d) %d %d %d\n",
 		AvailBox.x1, AvailBox.y1, AvailBox.x2, AvailBox.y2,
-		pGeode->Pitch, pScreenInfo->displayWidth));
+		pGeode->Pitch, pScreenInfo->displayWidth,
+		pScreenInfo->bitsPerPixel));
 
    /* set the offscreen offset accordingly */
    if (pGeode->Compression) {
@@ -1820,53 +1829,49 @@ GX2ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		"Memory manager initialized to (%d,%d) (%d,%d)\n",
 		AvailBox.x1, AvailBox.y1, AvailBox.x2, AvailBox.y2));
 
-   if (pGeode->NoOfImgBuffers > 0) {
-      if (pGeode->NoOfImgBuffers <= (AvailBox.y2 - AvailBox.y1)) {
-	 pGeode->AccelImageWriteBufferOffsets =
-	       xalloc(sizeof(unsigned long) * pGeode->NoOfImgBuffers);
+   if (!pGeode->NoAccel) {
+      if (pGeode->NoOfImgBuffers > 0) {
+	 if (pGeode->NoOfImgBuffers <= (AvailBox.y2 - AvailBox.y1)) {
+	    pGeode->AccelImageWriteBufferOffsets =
+		  xalloc(sizeof(unsigned long) * pGeode->NoOfImgBuffers);
 
-	 pGeode->AccelImageWriteBufferOffsets[0] =
-	       ((unsigned char *)pGeode->FBBase) +
-	       (AvailBox.y1 * pGeode->Pitch);
+	    pGeode->AccelImageWriteBufferOffsets[0] =
+		  ((unsigned char *)pGeode->FBBase) +
+		  (AvailBox.y1 * pGeode->Pitch);
 
-	 for (i = 1; i < pGeode->NoOfImgBuffers; i++) {
-	    pGeode->AccelImageWriteBufferOffsets[i] =
-		  pGeode->AccelImageWriteBufferOffsets[i - 1] + pGeode->Pitch;
+	    for (i = 1; i < pGeode->NoOfImgBuffers; i++) {
+	       pGeode->AccelImageWriteBufferOffsets[i] =
+		     pGeode->AccelImageWriteBufferOffsets[i - 1] +
+		     pGeode->Pitch;
+	    }
+
+	    for (i = 0; i < pGeode->NoOfImgBuffers; i++) {
+	       DEBUGMSG(1, (scrnIndex, X_PROBED,
+			    "memory  %d %x\n", i,
+			    pGeode->AccelImageWriteBufferOffsets[i]));
+	    }
+	    AvailBox.y1 += pGeode->NoOfImgBuffers;
+	 } else {
+	    xf86DrvMsg(scrnIndex, X_ERROR,
+		       "Unable to reserve scanline area\n");
 	 }
-
-	 for (i = 0; i < pGeode->NoOfImgBuffers; i++) {
-	    DEBUGMSG(1, (scrnIndex, X_PROBED,
-			 "memory  %d %x\n", i,
-			 pGeode->AccelImageWriteBufferOffsets[i]));
-	 }
-	 AvailBox.y1 += pGeode->NoOfImgBuffers;
-      } else {
-	 xf86DrvMsg(scrnIndex, X_ERROR, "Unable to reserve scanline area\n");
       }
-   }
-   DEBUGMSG(1, (scrnIndex, X_PROBED,
-		"Memory manager initialized to (%d,%d) (%d,%d)\n",
-		AvailBox.x1, AvailBox.y1, AvailBox.x2, AvailBox.y2));
+      DEBUGMSG(1, (scrnIndex, X_PROBED,
+		   "Memory manager initialized to (%d,%d) (%d,%d)\n",
+		   AvailBox.x1, AvailBox.y1, AvailBox.x2, AvailBox.y2));
 
-   REGION_INIT(pScreen, &OffscreenRegion, &AvailBox, 2);
+      REGION_INIT(pScreen, &OffscreenRegion, &AvailBox, 2);
 
-   if (!xf86InitFBManagerRegion(pScreen, &OffscreenRegion)) {
-      xf86DrvMsg(scrnIndex, X_ERROR,
-		 "Memory manager initialization to (%d,%d) (%d,%d) failed\n",
-		 AvailBox.x1, AvailBox.y1, AvailBox.x2, AvailBox.y2);
-   } else {
-      xf86DrvMsg(scrnIndex, X_INFO,
-		 "Memory manager initialized to (%d,%d) (%d,%d)\n",
-		 AvailBox.x1, AvailBox.y1, AvailBox.x2, AvailBox.y2);
-   }
-   REGION_UNINIT(pScreen, &OffscreenRegion);
-
-   pGeode->CursorSize = 16 * 64;	/* 64x64 */
-
-   if (pGeode->HWCursor) {
-      /* Compute cursor buffer */
-      /* Default cursor offset, end of the frame buffer */
-      pGeode->CursorStartOffset = pGeode->FBSize - pGeode->CursorSize;
+      if (!xf86InitFBManagerRegion(pScreen, &OffscreenRegion)) {
+	 xf86DrvMsg(scrnIndex, X_ERROR,
+		    "Memory manager initialization to (%d,%d) (%d,%d) failed\n",
+		    AvailBox.x1, AvailBox.y1, AvailBox.x2, AvailBox.y2);
+      } else {
+	 xf86DrvMsg(scrnIndex, X_INFO,
+		    "Memory manager initialized to (%d,%d) (%d,%d)\n",
+		    AvailBox.x1, AvailBox.y1, AvailBox.x2, AvailBox.y2);
+      }
+      REGION_UNINIT(pScreen, &OffscreenRegion);
    }
 
    /* Initialise graphics mode */
