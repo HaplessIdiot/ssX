@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the copyright holders.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.63 2003/11/10 19:29:14 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.64 2003/11/10 20:10:48 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -270,6 +270,15 @@ static Sockettrans2dev Sockettrans2devtab[] = {
 #endif /* UNIXCONN */
 
 #define PORTBUFSIZE	32
+
+/*
+ * This provides compatibility for apps linked against system libraries
+ * that don't have IPv6 support.
+ */
+#if defined(IPv6) && defined(AF_INET6)
+static const struct in6_addr local_in6addr_any = IN6ADDR_ANY_INIT;
+#pragma weak in6addr_any = local_in6addr_any
+#endif
 
 /*
  * These are some utility function used by the real interface function below.
