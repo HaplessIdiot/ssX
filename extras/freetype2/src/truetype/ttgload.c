@@ -251,7 +251,7 @@
     FT_TRACE5(( "  yMin: %4d  yMax: %4d\n", loader->bbox.yMin,
                                             loader->bbox.yMax ));
 
-    return FT_Err_Ok;
+    return TT_Err_Ok;
   }
 
 
@@ -534,7 +534,7 @@
     FT_UInt          n_points = outline->n_points;
     FT_UInt          n_ins;
     TT_GlyphZone*    zone     = &load->zone;
-    FT_Error         error    = FT_Err_Ok;
+    FT_Error         error    = TT_Err_Ok;
 
     FT_UNUSED( debug );  /* used by truetype interpreter only */
 
@@ -625,7 +625,7 @@
         if ( error && load->exec->pedantic_hinting )
           goto Exit;
 
-        error = FT_Err_Ok;  /* ignore bytecode errors in non-pedantic mode */
+        error = TT_Err_Ok;  /* ignore bytecode errors in non-pedantic mode */
       }
 
 #endif /* TT_CONFIG_OPTION_BYTECODE_INTERPRETER */
@@ -740,7 +740,7 @@
 
 #endif
 
-      error = FT_Err_Ok;
+      error = TT_Err_Ok;
       goto Exit;
     }
 
@@ -831,23 +831,6 @@
       start_point   = gloader->base.outline.n_points;
       start_contour = gloader->base.outline.n_contours;
 
-#if 1
-      /*
-       * XXX a hack to try and make sure enough space exists for this glyph;
-       * trying to update this incrementally below means tracking all of the
-       * pointers into the various arrays which I've failed to do.  Note the
-       * magic constant -- best not have any composite glyphs with more than
-       * this number of overall points.
-       *
-       * keithp@keithp.com
-       */
-      if (start_point == 0 && start_contour == 0)
-      {
-	error = FT_GlyphLoader_Check_Points( gloader, 512, 0 );
-	if ( error )
-	  goto Fail;
-      }
-#endif
       error = face->read_composite_glyph( loader );
       if ( error )
         goto Fail;
@@ -908,6 +891,7 @@
           if ( error )
             goto Fail;
 
+          /* restore subglyph pointer */
           subglyph = gloader->base.subglyphs + num_base_subgs + n;
 
           if ( subglyph->flags & USE_MY_METRICS )
@@ -988,8 +972,16 @@
             }
           }
 
-          translate_array( num_new_points, loader->zone.cur, x, y );
-          cur_to_org( num_new_points, &loader->zone );
+          if ( x | y )
+          {
+            translate_array( num_new_points,
+                             gloader->base.outline.points + num_base_points,
+                             x, y );
+
+            translate_array( num_new_points,
+                             gloader->base.extra_points + num_base_points,
+                             x, y );
+          }
         }
 
         /*******************************************************************/
@@ -1500,3 +1492,4 @@
 
 
 /* END */
+
