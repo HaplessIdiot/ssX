@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.162 2000/06/25 20:17:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.166 2000/09/20 22:04:11 keithp Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -810,6 +810,11 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 
   for (i = 0; i < xf86NumScreens; i++) {    
    	xf86EnableAccess(xf86Screens[i]);
+	/*
+	 * Almost everything uses this default, and many of those that
+	 * don't, will wrap it.
+	 */
+	xf86Screens[i]->EnableDisableFBAccess = xf86EnableDisableFBAccess;
 	scr_index = AddScreen(xf86Screens[i]->ScreenInit, argc, argv);
       if (scr_index == i) {
 	/*

@@ -1,5 +1,5 @@
 // $XConsortium: pt /main/3 1996/08/31 12:20:08 kaleb $
-// $XFree86: xc/programs/xkbcomp/symbols/pt,v 3.3.2.1 1999/11/18 15:37:37 hohndel Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/pt,v 3.4 1999/11/19 13:55:13 hohndel Exp $
 partial default alphanumeric_keys 
 xkb_symbols "basic" {
 
@@ -33,6 +33,9 @@ xkb_symbols "basic" {
     key <AE12> {	[   guillemotleft,  guillemotright     	]	};
     key <AD12> {	[      dead_acute,      dead_grave 	]	};
     key <BKSL> {	[      dead_tilde, dead_circumflex	]	};
+    key <AD03> {        [               e,               E      ],
+                        [        EuroSign,            cent      ]	};
+
     // End alphanumeric section
 
     // begin modifier mappings

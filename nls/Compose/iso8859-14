@@ -3,7 +3,7 @@
 #
 # ISO 8859-14 (Latin-8) Compose Sequence
 #
-# $XFree86$
+# $XFree86: xc/nls/Compose/iso8859-14,v 1.2 2000/02/08 17:18:48 dawes Exp $
 #
 # The following is from the Latin-1 definitions
 # Sequence Definition
@@ -13,7 +13,7 @@
 <Multi_key> <plus> <plus>		: "#"	numbersign
 <Multi_key> <apostrophe> <space>	: "'"	apostrophe
 <Multi_key> <space> <apostrophe>	: "'"	apostrophe
-<Multi_key> <A> <A>			: "@"	at
+<Multi_key> <A> <T>			: "@"	at
 <Multi_key> <parenleft> <parenleft>	: "["	bracketleft
 <Multi_key> <slash> <slash>		: "\\"	backslash
 <Multi_key> <slash> <less>		: "\\"	backslash
@@ -21,8 +21,8 @@
 <Multi_key> <parenright> <parenright>	: "]"	bracketright
 <Multi_key> <asciicircum> <space>	: "^"	asciicircum
 <Multi_key> <space> <asciicircum>	: "^"	asciicircum
-<Multi_key> <greater> <space>		: "^"	asciicirum
-<Multi_key> <space> <greater>		: "^"	asciicirum
+<Multi_key> <greater> <space>		: "^"	asciicircum
+<Multi_key> <space> <greater>		: "^"	asciicircum
 <Multi_key> <grave> <space>		: "`"	grave
 <Multi_key> <space> <grave>		: "`"	grave
 <Multi_key> <parenleft> <minus>		: "{"	braceleft
@@ -349,10 +349,6 @@
 <Multi_key> <acute> <Y>			: "\335"	Yacute
 <Multi_key> <Y> <apostrophe>		: "\335"	Yacute
 <Multi_key> <apostrophe> <Y>		: "\335"	Yacute
-<Multi_key> <Y> <quotedbl>		: "\276"	Ydiaeresis
-<Multi_key> <quotedbl> <Y>		: "\276"	Ydiaeresis
-<Multi_key> <Y> <diaeresis>		: "\276"	Ydiaeresis
-<Multi_key> <diaeresis> <Y>		: "\276"	Ydiaeresis
 <Multi_key> <y> <acute>			: "\375"	yacute
 <Multi_key> <acute> <y>			: "\375"	yacute
 <Multi_key> <y> <apostrophe>		: "\375"	yacute
@@ -439,7 +435,6 @@
 <dead_circumflex> <u>			: "\373"	ucircumflex
 <dead_diaeresis> <u>			: "\374"	udiaeresis
 <dead_acute> <Y>			: "\335"	Yacute
-<dead_diaeresis> <Y>			: "\276"	Ydiaeresis
 <dead_acute> <y>			: "\375"	yacute
 <dead_diaeresis> <y>			: "\377"	ydiaeresis
 <dead_caron> <Z>			: "\264"	Zcaron
@@ -448,51 +443,146 @@
 # The following is Celtic character support
 #
 
-<Multi_Key> <.> <b>			: "¢"	bdotabove
-<Multi_Key> <.> <B>			: "¡"   Bdotabove
-<Multi_Key> <.> <c>			: "¥"   cdotabove
-<Multi_Key> <.> <C>			: "¤"   Cdotabove
-<Multi_Key> <.> <d>			: "«"   ddotabove
-<Multi_Key> <.> <D>			: "¦"   Ddotabove
-<Multi_Key> <.> <f>			: "¯"   fdotabove
-<Multi_Key> <.> <F>			: "°"   Fdotabove
-<Multi_Key> <.> <g>			: "³"   gdotabove
-<Multi_Key> <.> <G>			: "²"   Gdotabove
-<Multi_Key> <.> <m>			: "µ"   mdotabove
-<Multi_Key> <.> <M>			: "´"   Mdotabove
-<Multi_Key> <.> <p>			: "¹"   pdotabove
-<Multi_Key> <.> <P>			: "·"   Pdotabove
-<Multi_Key> <.> <s>			: "¿"   sdotabove
-<Multi_Key> <.> <S>			: "»"   Sdotabove
-<Multi_Key> <.> <t>			: "÷"   tdotabove
-<Multi_Key> <.> <T>			: "×"   Tdotabove
-<Multi_Key> <b> <.>			: "¢"   bdotabove
-<Multi_Key> <B> <.>			: "¡"   Bdotabove
-<Multi_Key> <c> <.>			: "¥"   cdotabove
-<Multi_Key> <C> <.>			: "¤"   Cdotabove
-<Multi_Key> <d> <.>			: "«"   ddotabove
-<Multi_Key> <D> <.>			: "¦"   Ddotabove
-<Multi_Key> <f> <.>			: "¯"   fdotabove
-<Multi_Key> <F> <.>			: "°"   Fdotabove
-<Multi_Key> <g> <.>			: "³"   gdotabove
-<Multi_Key> <G> <.>			: "²"   Gdotabove
-<Multi_Key> <m> <.>			: "µ"   mdotabove
-<Multi_Key> <M> <.>			: "´"   Mdotabove
-<Multi_Key> <p> <.>			: "¹"   pdotabove
-<Multi_Key> <P> <.>			: "·"   Pdotabove
-<Multi_Key> <s> <.>			: "¿"   sdotabove
-<Multi_Key> <S> <.>			: "»"   Sdotabove
-<Multi_Key> <t> <.>			: "÷"   tdotabove
-<Multi_Key> <T> <.>			: "×"   Tdotabove
+<Multi_key> <period> <b>			: "¢"	bdotabove
+<Multi_key> <period> <B>			: "¡"   Bdotabove
+<Multi_key> <period> <c>			: "¥"   cdotabove
+<Multi_key> <period> <C>			: "¤"   Cdotabove
+<Multi_key> <period> <d>			: "«"   ddotabove
+<Multi_key> <period> <D>			: "¦"   Ddotabove
+<Multi_key> <period> <f>			: "¯"   fdotabove
+<Multi_key> <period> <F>			: "°"   Fdotabove
+<Multi_key> <period> <g>			: "³"   gdotabove
+<Multi_key> <period> <G>			: "²"   Gdotabove
+<Multi_key> <period> <m>			: "µ"   mdotabove
+<Multi_key> <period> <M>			: "´"   Mdotabove
+<Multi_key> <period> <p>			: "¹"   pdotabove
+<Multi_key> <period> <P>			: "·"   Pdotabove
+<Multi_key> <period> <s>			: "¿"   sdotabove
+<Multi_key> <period> <S>			: "»"   Sdotabove
+<Multi_key> <period> <t>			: "÷"   tdotabove
+<Multi_key> <period> <T>			: "×"   Tdotabove
+<Multi_key> <b> <period>			: "¢"   bdotabove
+<Multi_key> <B> <period>			: "¡"   Bdotabove
+<Multi_key> <c> <period>			: "¥"   cdotabove
+<Multi_key> <C> <period>			: "¤"   Cdotabove
+<Multi_key> <d> <period>			: "«"   ddotabove
+<Multi_key> <D> <period>			: "¦"   Ddotabove
+<Multi_key> <f> <period>			: "¯"   fdotabove
+<Multi_key> <F> <period>			: "°"   Fdotabove
+<Multi_key> <g> <period>			: "³"   gdotabove
+<Multi_key> <G> <period>			: "²"   Gdotabove
+<Multi_key> <m> <period>			: "µ"   mdotabove
+<Multi_key> <M> <period>			: "´"   Mdotabove
+<Multi_key> <p> <period>			: "¹"   pdotabove
+<Multi_key> <P> <period>			: "·"   Pdotabove
+<Multi_key> <s> <period>			: "¿"   sdotabove
+<Multi_key> <S> <period>			: "»"   Sdotabove
+<Multi_key> <t> <period>			: "÷"   tdotabove
+<Multi_key> <T> <period>			: "×"   Tdotabove
 
-<Multi_Key> <y> <asciicircum>		: "\376" ycircumflex
-<Multi_Key> <asciicircum> <y>           : "\376" ycircumflex
-<Multi_Key> <Y> <asciicircum>           : "\336" Ycircumflex
-<Multi_Key> <asciicircum> <Y>           : "\336" Ycircumflex
-<Multi_Key> <w> <asciicircum>		: "\360" wcircumflex
-<Multi_Key> <asciicircum> <w>           : "\360" wcircumflex
-<Multi_Key> <W> <asciicircum>           : "\320" Wcircumflex
-<Multi_Key> <asciicircum> <W>           : "\320" Wcircumflex
+<Multi_key> <y> <asciicircum>		: "\376" ycircumflex
+<Multi_key> <asciicircum> <y>           : "\376" ycircumflex
+<Multi_key> <Y> <asciicircum>           : "\336" Ycircumflex
+<Multi_key> <asciicircum> <Y>           : "\336" Ycircumflex
+<Multi_key> <w> <asciicircum>		: "\360" wcircumflex
+<Multi_key> <asciicircum> <w>           : "\360" wcircumflex
+<Multi_key> <W> <asciicircum>           : "\320" Wcircumflex
+<Multi_key> <asciicircum> <W>           : "\320" Wcircumflex
 
+<Multi_key> <Y> <quotedbl>		: "\257"	Ydiaeresis
+<Multi_key> <quotedbl> <Y>		: "\257"	Ydiaeresis
+<Multi_key> <Y> <diaeresis>		: "\257"	Ydiaeresis
+<Multi_key> <diaeresis> <Y>		: "\257"	Ydiaeresis
+<Multi_key> <W> <quotedbl>		: "½"	Wdiaeresis
+<Multi_key> <quotedbl> <W>		: "½"	Wdiaeresis
+<Multi_key> <W> <diaeresis>		: "½"	Wdiaeresis
+<Multi_key> <diaeresis> <W>		: "½"	Wdiaeresis
+<Multi_key> <w> <quotedbl>		: "¾"	wdiaeresis
+<Multi_key> <quotedbl> <w>		: "¾"	wdiaeresis
+<Multi_key> <w> <diaeresis>		: "¾"	wdiaeresis
+<Multi_key> <diaeresis> <w>		: "¾"	wdiaeresis
+
+<Multi_key> <Y> <grave>			: "¬"	Ygrave
+<Multi_key> <grave> <Y>			: "¬"	Ygrave
+<Multi_key> <y> <grave>			: "¼"	ygrave
+<Multi_key> <grave> <y>			: "¼"	ygrave
+<Multi_key> <W> <grave>			: "¨"	Wgrave
+<Multi_key> <grave> <w>			: "¨"	Wgrave
+<Multi_key> <W> <grave>			: "¸"	wgrave
+<Multi_key> <grave> <w>			: "¸"	wgrave
+
+
+
+<dead_abovedot> <b>			: "¢"	bdotabove
+<dead_abovedot> <B>			: "¡"   Bdotabove
+<dead_abovedot> <c>			: "¥"   cdotabove
+<dead_abovedot> <C>			: "¤"   Cdotabove
+<dead_abovedot> <d>			: "«"   ddotabove
+<dead_abovedot> <D>			: "¦"   Ddotabove
+<dead_abovedot> <f>			: "¯"   fdotabove
+<dead_abovedot> <F>			: "°"   Fdotabove
+<dead_abovedot> <g>			: "³"   gdotabove
+<dead_abovedot> <G>			: "²"   Gdotabove
+<dead_abovedot> <m>			: "µ"   mdotabove
+<dead_abovedot> <M>			: "´"   Mdotabove
+<dead_abovedot> <p>			: "¹"   pdotabove
+<dead_abovedot> <P>			: "·"   Pdotabove
+<dead_abovedot> <s>			: "¿"   sdotabove
+<dead_abovedot> <S>			: "»"   Sdotabove
+<dead_abovedot> <t>			: "÷"   tdotabove
+<dead_abovedot> <T>			: "×"   Tdotabove
+
+<dead_circumflex> <y>           : "\376" ycircumflex
+<dead_circumflex> <Y>           : "\336" Ycircumflex
+<dead_circumflex> <w>           : "\360" wcircumflex
+<dead_circumflex> <W>           : "\320" Wcircumflex
+<dead_circumflex> <b>			: "¢"	bdotabove
+<dead_circumflex> <B>			: "¡"   Bdotabove
+<dead_circumflex> <c>			: "¥"   cdotabove
+<dead_circumflex> <C>			: "¤"   Cdotabove
+<dead_circumflex> <d>			: "«"   ddotabove
+<dead_circumflex> <D>			: "¦"   Ddotabove
+<dead_circumflex> <f>			: "¯"   fdotabove
+<dead_circumflex> <F>			: "°"   Fdotabove
+<dead_circumflex> <g>			: "³"   gdotabove
+<dead_circumflex> <G>			: "²"   Gdotabove
+<dead_circumflex> <m>			: "µ"   mdotabove
+<dead_circumflex> <M>			: "´"   Mdotabove
+<dead_circumflex> <p>			: "¹"   pdotabove
+<dead_circumflex> <P>			: "·"   Pdotabove
+<dead_circumflex> <s>			: "¿"   sdotabove
+<dead_circumflex> <S>			: "»"   Sdotabove
+<dead_circumflex> <t>			: "÷"   tdotabove
+<dead_circumflex> <T>			: "×"   Tdotabove
+
+<dead_acute> <w>			: "ª"	wacute
+<dead_acute> <W>			: "º"   Wacute
+<dead_acute> <b>			: "¢"	bdotabove
+<dead_acute> <B>			: "¡"   Bdotabove
+<dead_acute> <c>			: "¥"   cdotabove
+<dead_acute> <C>			: "¤"   Cdotabove
+<dead_acute> <d>			: "«"   ddotabove
+<dead_acute> <D>			: "¦"   Ddotabove
+<dead_acute> <f>			: "¯"   fdotabove
+<dead_acute> <F>			: "°"   Fdotabove
+<dead_acute> <g>			: "³"   gdotabove
+<dead_acute> <G>			: "²"   Gdotabove
+<dead_acute> <m>			: "µ"   mdotabove
+<dead_acute> <M>			: "´"   Mdotabove
+<dead_acute> <p>			: "¹"   pdotabove
+<dead_acute> <P>			: "·"   Pdotabove
+<dead_acute> <s>			: "¿"   sdotabove
+<dead_acute> <S>			: "»"   Sdotabove
+<dead_acute> <t>			: "÷"   tdotabove
+<dead_acute> <T>			: "×"   Tdotabove
+
+<dead_diaeresis> <Y>			: "\257"	Ydiaeresis
+<dead_diaeresis> <w>			: "½"	wdiaeresis
+<dead_diaeresis> <W>			: "¾"   Wdiaeresis
+
+<dead_grave> <Y>			: "¬"	Ygrave
+<dead_grave> <y>			: "¼"	ygrave
+<dead_grave> <w>			: "¨"	Wgrave
+<dead_grave> <w>			: "¸"	wgrave
 
 # End of Sequence Definition

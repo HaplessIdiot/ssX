@@ -1,4 +1,29 @@
 XFree86 4.0.1d (27 October 2000)
+ 829. Add code to the xf86config utility to get the list of XKB selections
+      from the appropriate XKB files rather than having them hard-coded.
+      Also allow XkbOptions to be set (#4209, Ivan Pascal).
+ 828. Fix two more bugs in xkbcomp: handling of 'keycode aliases', and
+      copying of strings when copying structures (#4208, Ivan Pascal).
+ 827. Xterm patch #147 (#4207, Thomas Dickey).
+ 826. Move the initialisation of pScrn->EnableDisableFBAccess into
+      InitOutput(), which fixes an infinite loop problem that can show up
+      on server resets (#4206, Joe Moss).
+ 825. Make xf86cfg use the same config file search path as the X server
+      (#4203, Paulo Cesar Pereira de Andrade).
+ 824. Update the XFree86 -configure code to put the default font path
+      in the Files section of the config file it generates (#4202,
+      Paulo Cesar Pereira de Andrade).
+ 823. Fix a bug in the vesa driver when finding the linear address for the
+      card, some compile time warnings, faster code for handling colormap
+      changes, and add DGA support (#4201, Paulo Cesar Pereira de Andrade).
+ 822. Fix a typo in the mga driver that causes planemask problems with
+      the PCI version of the G100 (#4198, Antti Tapaninen).
+ 821. Add an option to the C&T driver to disable "TMED" (DSTN dithering
+      scheme) (#A.172, Damir Anicic, #4196, 4197, David Bateman).
+ 820. Pablo Saratxaga's i18n updates for XFree86 that are used in Mandrake 7.2.
+      Includes various new and fixed xkb files, locale name additions and
+      updates, and new support for varios charset encodings (#4195,
+      Pablo Saratxaga).
  819. Improve Xaw 7 compatibility with version 6 in the form widget geometry
       management code.  This should fix some problems seen with ghostview
       (#4194, Paulo Cesar Pereira de Andrade).
@@ -11331,4 +11356,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1357 2000/10/26 11:47:42 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1358 2000/10/26 17:57:51 dawes Exp $

@@ -36,7 +36,7 @@
  *  Modifier: Ivan Pascal     The XFree86 Project
  *  Modifier: Bruno Haible    The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcCT.c,v 3.16 2000/02/25 18:27:54 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCT.c,v 3.17 2000/05/18 16:29:51 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -112,6 +112,8 @@ static CTDataRec default_ct_data[] =
     /* Encodings without ISO-IR assigned escape sequence */
     { "KOI8-R:GR",           "\033%/1\200\210koi8-r\002"},
     { "KOI8-U:GR",           "\033%/1\200\211koi8-u\002"},
+    { "KOI8-C:GR",           "\033%/1\200\210koi8-c\002"},
+    { "TATAR-CYR:GR",        "\033%/1\200\210tatar-cyr\002"},
     { "ARMSCII-8:GR",        "\033%/1\200\210armscii-8\002"},
     { "IBM-CP1133:GR",       "\033%/1\200\210ibm-cp1133\002"},
     { "MULELAO-1:GR",        "\033%/1\200\210mulelao-1\002"},
@@ -119,15 +121,19 @@ static CTDataRec default_ct_data[] =
     { "TCVN-5712:GR",        "\033%/1\200\210tcvn-5712\002"},
     { "GEORGIAN-ACADEMY:GR", "\033%/1\200\210georgian-academy\002"},
     { "GEORGIAN-PS:GR",      "\033%/1\200\210georgian-ps\002"},
+    { "ISO8859-9E:GR",       "\033%/1\200\210iso8859-9e\002"},
+    { "MICROSOFT-CP1251:GR", "\033%/1\200\210microsoft-cp1251\002"},
+    { "MICROSOFT-CP1255:GR", "\033%/1\200\210microsoft-cp1255\002"},
+    { "MICROSOFT-CP1256:GR", "\033%/1\200\210microsoft-cp1256\002"},
     /* Backward compatibility with XFree86 3.x */
     { "ISO8859-14:GR",       "\033%/1\200\213iso8859-14\002"},
     { "ISO8859-15:GR",       "\033%/1\200\213iso8859-15\002"},
-#ifdef notdef /* used by Emacs, but not backed by ISO-IR */
+    /* used by Emacs, but not backed by ISO-IR */
     { "BIG5-0:GL", "\033$(0" },
     { "BIG5-0:GR", "\033$)0" },
     { "BIG5-1:GL", "\033$(1" },
     { "BIG5-1:GR", "\033$)1" },
-#endif
+
 }; 
 
 /* ======================= Parsing ESC Sequences ======================= */

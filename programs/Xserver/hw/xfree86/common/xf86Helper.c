@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.94 2000/06/20 05:08:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.96 2000/09/19 12:46:13 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -122,10 +122,9 @@ xf86AllocateScreen(DriverPtr drv, int flags)
     xf86Screens[i]->privates = xnfcalloc(sizeof(DevUnion),
 					 xf86ScrnInfoPrivateCount);
     /*
-     * Almost everything uses this default, and many of those that don't
-     * will wrap it.
+     * EnableDisableFBAccess now gets initialized in InitOutput()
+     * xf86Screens[i]->EnableDisableFBAccess = xf86EnableDisableFBAccess;
      */
-    xf86Screens[i]->EnableDisableFBAccess = xf86EnableDisableFBAccess;
 
     xf86Screens[i]->drv = drv;
     drv->refCount++;

@@ -1,5 +1,5 @@
 //
-// $XFree86: xc/programs/xkbcomp/symbols/us_intl,v 1.1.2.2 1999/06/25 10:40:39 hohndel Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/us_intl,v 1.2 1999/08/30 02:28:57 dawes Exp $
 //
 // Dead-keys definition for a very simple US/ASCII layout.
 // by Conectiva (http://www.conectiva.com.br)
@@ -11,9 +11,12 @@ xkb_symbols "basic" {
     name[Group1]= "US/ASCII";
 
     // Alphanumeric section
-    key <TLDE> {	[ dead_grave,	dead_tilde	]	};
-    key <AE06> {	[	  6,	dead_circumflex	]	};
-    key <AC11> {	[ dead_acute,	dead_diaeresis	]	};
+    key <TLDE> {	[ dead_grave,	dead_tilde	],
+			[      grave,	asciitilde	]	};
+    key <AE06> {	[	  6,	dead_circumflex	],
+			[ asciicircum,	asciicircum	]	};
+    key <AC11> {	[ dead_acute,	dead_diaeresis	],
+			[ apostrophe,	quotedbl	]	};
 
     // End alphanumeric section
 };

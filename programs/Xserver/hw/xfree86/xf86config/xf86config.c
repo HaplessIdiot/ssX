@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.52 2000/04/05 18:14:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.53 2000/06/14 00:16:13 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -72,6 +72,10 @@
  * - The card database.
  *
  */
+/*  Oct2000
+ *  New 'Configuration of XKB' section.
+ *  Author: Ivan Pascal      The XFree86 Project.
+ */
 /* $XConsortium: xf86config.c /main/21 1996/10/28 05:43:57 kaleb $ */
 
 #include <stdlib.h>
@@ -82,6 +86,11 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#include <X11/Xlib.h>
+#include <X11/extensions/XKBstr.h>
+#include <X11/extensions/XKBrules.h>
+#define MAX_XKBOPTIONS	5
 
 #include "cards.h"
 
@@ -178,9 +187,10 @@ char *config_dacspeed;
 char *config_clockchip;
 int config_xkbdisable = 0;
 char *config_xkbrules;
-char *config_xkbmodel;
-char *config_xkblayout;
-char *config_xkbcompat;
+char *config_xkbmodel = "pc101";
+char *config_xkblayout = "us";
+char *config_xkbvariant = (char *) 0;
+char *config_xkboptions = (char *) 0;
 char *config_depth;
 
 char *temp_dir = "";
@@ -513,7 +523,6 @@ mouse_configuration(void) {
  * Keyboard configuration.
  */
 
-
 /*
  * Configuration of XKB 
  */
@@ -522,130 +531,140 @@ static char *xkbmodeltext =
 "description of your keyboard. If nothing really matches,\n"
 "choose 1 (Generic 101-key PC)\n\n";
 
-static struct xkb_model_str {
-    char *model;
-    char *desc;
-} xkb_model_list[] = {
-    { "pc101",         "Generic 101-key PC" },
-    { "pc102",         "Generic 102-key (Intl) PC" },
-    { "pc104",         "Generic 104-key PC" },
-    { "pc105",         "Generic 105-key (Intl) PC" },
-    { "dell101",       "Dell 101-key PC" },
-    { "everex",        "Everex STEPnote" },
-    { "flexpro",       "Keytronic FlexPro" },
-    { "microsoft",     "Microsoft Natural" },
-    { "omnikey101",    "Northgate OmniKey 101" },
-    { "winbook",       "Winbook Model XP5" },
-    { "jp106",         "Japanese 106-key" },
-    { "pc98",          "PC-98xx Series" },
-};
-static int nmodels = sizeof(xkb_model_list)/sizeof(struct xkb_model_str);
-
 static char *xkblayouttext = 
 "Please select the layout corresponding to your keyboard\n";
 
-static struct xkb_layout_str {
-    char *layout;
-    char *desc;
-    char *compat;
-} xkb_layout_list[] = {
-    { "us",                 "U.S. English",             ""},
-    { "en_US",              "U.S. English w/ISO9995-3", "" },
-    { "be",                 "Belgian",                  "" },
-    { "bg",                 "Bulgarian",                "" },
-    { "ca",                 "Canadian",                 "" },
-    { "czsk(cz_us_qwertz)", "Czech",                    "group_led" },
-    { "de",                 "German",                   "" },
-    { "de_CH",              "Swiss German",             "" },
-    { "dk",                 "Danish",                   "" },
-    { "es",                 "Spanish",                  "" },
-    { "fi",                 "Finnish",                  "" },
-    { "fr",                 "French",                   "" },
-    { "fr_CH",              "Swiss French",             "" },
-    { "gb",                 "United Kingdom",           "" },
-    { "hu",                 "Hungarian",                "" },
-    { "it",                 "Italian",                  "" },
-    { "jp",                 "Japanese",                 "" },
-    { "no",                 "Norwegian",                "" },
-    { "pl",                 "Polish",                   "" },
-    { "pt",                 "Portugese",                "" },
-    { "ru",                 "Russian",                  "" },
-    { "czsk(sk_us_qwertz)", "Slovak",                   "group_led" },
-    { "se",                 "Swedish",                  "" },
-    { "th",                 "Thai",                     "" },
-    { "nec/jp",             "PC-98xx Series",           "" },
-};
-static int nlayouts = sizeof(xkb_layout_list)/sizeof(struct xkb_layout_str);
+static char *xkbvarianttext =
+"Please enter a variant name for '%s' layout. Or just press enter\n"
+"for default variant\n\n";
+
+static char *xkboptionstext = 
+"Please answer the following question with either 'y' or 'n'.\n"
+"Do you want to select additional XKB options (group switcher,\n"
+"group indicator, etc.)? ";
 
 static void 
 keyboard_configuration(void)
 {
-	int i;
+	int i, j;
 	char s[80];
-	int xkbmodel,xkblayout;
+        char *rulesfile;
+	int number, options[MAX_XKBOPTIONS], num_options;
+        XkbRF_RulesPtr rules;
 
-	/* this is entered when the user did not find a preconfigured 
-	 * XkbKeymap 
-	 */
+#ifdef XFREE98_XKB
+	config_xkbrules = "xfree98";	/* static */
+        rulesfile = XKB_RULES_DIR "/xfree98";
+#else
+	config_xkbrules = "xfree86";	/* static */
+        rulesfile = XKB_RULES_DIR "/xfree86";
+#endif
+
+        rules = XkbRF_Load(rulesfile, "", True, False);
 	emptylines();
+
+        if (!rules) {
+            printf("XKB rules file '%s' not found\n", rulesfile);
+            printf("Keyboard XKB options will be set to default values.\n");
+            keypress();
+            return;
+        }
+
 	printf(xkbmodeltext);
-	for (i=0; i<nmodels; i++) {
-	    printf("%3d  %-50s\n",i+1,xkb_model_list[i].desc);
+	for (i=0; i < rules->models.num_desc; i++) {
+	    printf("%3d  %-50s\n", i+1, rules->models.desc[i].desc);
 	}
 	
 	printf("\nEnter a number to choose the keyboard.\n\n");
 	getstring(s);
 	if (strlen(s) == 0)
-	    xkbmodel = 0;
+	    number = 0;
 	else {
 	    i = atoi(s)-1;
-	    xkbmodel = (i < 0 || i > nmodels) ? 0 : i;
+	    number = (i < 0 || i > rules->models.num_desc) ? 0 : i;
 	}
+	i = strlen(rules->models.desc[number].name) + 1;
+	config_xkbmodel = Malloc(i);
+	sprintf(config_xkbmodel,"%s", rules->models.desc[number].name);
+
 	emptylines();
 	printf(xkblayouttext);
 
-	xkblayout = -1;
+	number = -1;
 	for (i=0;;) {
-	    	int j;
 	    	emptylines();
-		for (j = i; j < i + 18 && j < nlayouts; j++)
+		for (j = i; j < i + 18 && j < rules->layouts.num_desc; j++)
 			printf("%3d  %-50s\n", j+1,
-				xkb_layout_list[j].desc);
+				rules->layouts.desc[j].desc);
 		printf("\n");
 		printf("Enter a number to choose the country.\n");
-		if (nlayouts >= 18)
+		if (rules->layouts.num_desc >= 18)
 			printf("Press enter for the next page\n");
 		printf("\n");
 		getstring(s);
 		if (strlen(s) == 0) {
 			i += 18;
-			if (i > nlayouts)
+			if (i > rules->layouts.num_desc)
 				i = 0;
 			continue;
 		}
-		xkblayout = atoi(s) - 1;
-		if (xkblayout >= 0 && xkblayout < nlayouts)
+		number = atoi(s) - 1;
+		if (number >= 0 && number < rules->layouts.num_desc)
 			break;
 	}
+	config_xkblayout = Malloc(strlen(rules->layouts.desc[number].name)+1);
+	sprintf(config_xkblayout,"%s", rules->layouts.desc[number].name);
 
+	emptylines();
+	printf(xkbvarianttext);
+	getstring(s);
+	if (strlen(s) != 0) {
+	    config_xkbvariant = Malloc(strlen(s) + 1);
+	    strcpy(config_xkbvariant, s);
+        }
 
-	/* compose the lines */
-#ifdef XFREE98_XKB
-	config_xkbrules = "xfree98";	/* static */
-#else
-	config_xkbrules = "xfree86";	/* static */
-#endif
+	emptylines();
+	printf(xkboptionstext);
+	getstring(s);
+	if (!answerisyes(s))
+            return;
 
-	i = strlen(xkb_model_list[xkbmodel].model) + 1;
-	config_xkbmodel = Malloc(i);
-	sprintf(config_xkbmodel,"%s", xkb_model_list[xkbmodel].model);
+        num_options = 0;
+        for (j=0,i=0;;) {
+            if (!strchr(rules->options.desc[i].name, ':')) {
+	        emptylines();
+                printf("   %s\n\n", rules->options.desc[i].desc);
+                j = i;
+            } else {
+                printf("%3d  %-50s\n", i - j, rules->options.desc[i].desc);
+            }
+            i++;
+            if ( i == rules->options.num_desc ||
+                 !strchr(rules->options.desc[i].name, ':')) {
+                printf("\nPlease select the option or just press enter if none\n");
+	        getstring(s);
+	        if (strlen(s) != 0) {
+	            number = atoi(s);
+                    if (number && (num_options < MAX_XKBOPTIONS)) {
+                        options[num_options++] = number + j;
+                    }
+                }    
+            }
+            if (i == rules->options.num_desc)
+                break;
+        }
 
-	config_xkblayout = Malloc(strlen(xkb_layout_list[xkblayout].layout)+1);
-	sprintf(config_xkblayout,"%s", xkb_layout_list[xkblayout].layout);
+        if (!num_options)
+            return;
 
-	config_xkbcompat = Malloc(strlen(xkb_layout_list[xkblayout].compat)+1);
-	sprintf(config_xkbcompat,"%s", xkb_layout_list[xkblayout].compat);
-
+        for (j=0,i=0; i<num_options; i++) {
+            j += strlen(rules->options.desc[options[i]].name);
+        }
+	config_xkboptions = Malloc(j + num_options);
+        for (j=0,i=0; i<num_options; i++) {
+	    j += sprintf(config_xkboptions+j,"%s%s",
+                    i == 0 ? "": "," ,rules->options.desc[options[i]].name);
+        }
 	return;
 }
 
@@ -2301,8 +2320,12 @@ write_XF86Config(char *filename)
 		config_xkbmodel);
 	fprintf(f, "    Option \"XkbLayout\"	\"%s\"\n",
 		config_xkblayout);
-	fprintf(f, "    Option \"XkbCompat\"	\"%s\"\n",
-		config_xkbcompat);
+        if (config_xkbvariant)
+	    fprintf(f, "    Option \"XkbVariant\"	\"%s\"\n",
+		    config_xkbvariant);
+        if (config_xkboptions)
+	    fprintf(f, "    Option \"XkbOptions\"	\"%s\"\n",
+		    config_xkboptions);
 
 	fprintf(f, "%s",keyboardlastchunk_text);
 

@@ -11,7 +11,7 @@
 <date> 14th June 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.30 2000/03/05 16:59:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.31 2000/06/14 01:43:49 dawes Exp $
 </ident>
 
 <!-- Table of contents -->
@@ -400,6 +400,20 @@ Option "ShadowFB"
 	is never performed and the performance is improved. Because the
 	rendering is all done into a virtual framebuffer acceleration can not
 	be used.
+<tag>
+Option "NoTMED"
+</tag>
+	The new TMED DSTN dithering scheme available on recent HiQV chipsets
+	gives improved performance. However, some machines appear to have this
+	feature incorrectly setup. If you have <tt>snow</tt> on your DSTN
+	LCD, try using this option. This option is only relevant for chipsets
+	more recent than the ct65555 and only when used with a DSTN LCD.
+<tag>
+Option "UseFB"
+</tag>
+	Force the new framebuffer (fb) code to be used in place of its older
+	counterpart (cfb). The sense of this option will probably be reversed
+	when fb becomes the default.
 <tag>
 Option "Overlay"
 </tag>

@@ -1,6 +1,6 @@
 // $TOG: is /main/1 1997/08/27 15:27:24 kaleb $
 // XKB keyboard by Hrafnkell Eiriksson - hkelle@rhi.hi.is
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/is,v 3.3 2000/08/03 12:24:03 dawes Exp $
 
 default partial alphanumeric_keys 
 xkb_symbols "default" {
@@ -36,6 +36,8 @@ xkb_symbols "default" {
 			[ ccedilla			]	};
     key <AD01> {	[	  q,	Q 		],
 			[	 at			]	};
+    key <AD03> {        [         e,    E		],
+                        [  EuroSign,    cent		]	};
 //    key <AD05> {	[	  t,	T		]	};
 //    key <AD06> {	[	  z,	Z		]	};
 //    key <AD07> {	[	  u,	U		]	};

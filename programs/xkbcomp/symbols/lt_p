@@ -1,0 +1,83 @@
+// $XConsortium: lt_p /main/3 1997/12/18 12:40:12 rch $
+
+partial alphanumeric_keys modifier_keys 
+xkb_symbols "basic" {
+
+    // Describes the differences between a very simple en_US
+    // keyboard and a very simple Lithuanian "P" keyboard
+    // ("phonetic" qwerty layout with Lithuanian letters on the
+    // closer ascii ones)
+
+    name[Group1]= "US/ASCII";
+    name[Group2]= "Lithuanian";
+
+    key <RTRN> {	[   Return,  ISO_Next_Group	]};
+    key <AD01> {        [         q,    Q               ],
+			[   umacron,    Umacron		]};
+    key <AD02> {        [         w,    W               ],
+			[ eabovedot,    Eabovedot	]};
+    key <AD03> {        [         e,    E               ],
+			[   eogonek,    Eogonek		]};
+    key <AD07> {        [         u,    U               ],
+			[   uogonek,	Uogonek		]};
+    key <AD08> {        [         i,    I               ],
+			[   iogonek,	Iogonek		]};
+    key <AC01> {        [         a,    A               ],
+			[   aogonek,	Aogonek		]};
+    key <AC02> {        [         s,    S               ],
+			[    scaron,	Scaron		]};
+    key <AC11> {        [ quoteright,   quotedbl        ],
+			[ leftdoublequotemark, doublelowquotemark]};
+    key <AB01> {        [         z,    Z               ],
+			[    zcaron,	Zcaron		]};
+    key <AB03> {        [         c,    C               ],
+			[    ccaron,	Ccaron		]};
+
+    // End alphanumeric section
+    
+    // Begin modifier mappings 
+
+    modifier_map Shift  { Shift_L };
+    modifier_map Lock   { Caps_Lock, ISO_Lock };
+    modifier_map Control{ Control_L };
+    modifier_map Mod3   { Mode_switch };
+};
+
+xkb_symbols "generic101" {
+    include "lt_p(basic)"
+};
+
+xkb_symbols "pc101" {
+    include "lt_p(generic101)"
+};
+
+default
+xkb_symbols "pc102" {
+    include "lt_p(pc101)"
+    include "lt_p(left_switch)"
+};
+
+partial alphanumeric_keys 
+xkb_symbols "Sundeadkeys" {
+    include "lt_p(basic)" // for consistent naming
+};
+
+partial alphanumeric_keys 
+xkb_symbols "sundeadkeys" {
+    include "lt_p(Sundeadkeys)" // for consistent naming
+};
+
+partial alphanumeric_keys 
+xkb_symbols "nodeadkeys" {
+    include "lt_p(basic)" // for consistent naming
+};
+
+// definition for the extra key on 102-key keyboards
+// between left Control and Alt
+xkb_symbols "left_switch" {
+    key	<LSGT> {	[     Mode_switch,	 Multi_key 	],
+			[     Mode_switch,	 Multi_key 	]	};
+    // Begin modifier mappings 
+    modifier_map Mod3   { Mode_switch };
+};
+

@@ -1,0 +1,84 @@
+// $XConsortium: lt_b /main/3 1997/12/18 12:40:12 rch $
+
+partial alphanumeric_keys modifier_keys 
+xkb_symbols "basic" {
+
+    // Describes the differences between a very simple en_US
+    // keyboard and a very simple Lithuanian "B" keyboard
+    // (qwerty layout with Lithuanian letters on the number rows)
+
+    name[Group1]= "US/ASCII";
+    name[Group2]= "Lithuanian";
+
+    key <AE01> {        [               1,          exclam      ],
+                        [         aogonek,          Aogonek     ]       };
+    key <AE02> {        [               2,              at      ],
+                        [          ccaron,          Ccaron      ]       };
+    key <AE03> {        [               3,      numbersign      ],
+                        [         eogonek,         Eogonek      ]       };
+    key <AE04> {        [               4,          dollar      ],
+                        [       eabovedot,       Eabovedot      ]       };
+    key <AE05> {        [               5,         percent      ],
+                        [         iogonek,         Iogonek      ]       };
+    key <AE06> {        [               6,     asciicircum      ],
+                        [          scaron,          Scaron      ]       };
+    key <AE07> {        [               7,       ampersand      ],
+                        [         uogonek,         Uogonek      ]       };
+    key <AE08> {        [               8,        asterisk      ],
+                        [         umacron,         Umacron  	]       };
+    key <AE09> {        [               9,       parenleft      ],
+                        [ doublelowquotemark,    parenleft      ]       };
+    key <AE10> {        [               0,      parenright      ],
+                        [ leftdoublequotemark,  parenright      ]       };
+    key <AE12> {        [           equal,            plus      ],
+                        [          zcaron,          Zcaron      ]       };
+    key <RTRN> {	[	   Return,  ISO_Next_Group	]	};
+
+    // End alphanumeric section
+    
+    // Begin modifier mappings 
+
+    modifier_map Shift  { Shift_L };
+    modifier_map Lock   { Caps_Lock, ISO_Lock };
+    modifier_map Control{ Control_L };
+    modifier_map Mod3   { Mode_switch };
+};
+
+xkb_symbols "generic101" {
+    include "lt_b(basic)"
+};
+
+xkb_symbols "pc101" {
+    include "lt_b(generic101)"
+};
+
+default
+xkb_symbols "pc102" {
+    include "lt_b(pc101)"
+    include "lt_b(left_switch)"
+};
+
+partial alphanumeric_keys 
+xkb_symbols "Sundeadkeys" {
+    include "lt_b(basic)" // for consistent naming
+};
+
+partial alphanumeric_keys 
+xkb_symbols "sundeadkeys" {
+    include "lt_b(Sundeadkeys)" // for consistent naming
+};
+
+partial alphanumeric_keys 
+xkb_symbols "nodeadkeys" {
+    include "lt_b(basic)" // for consistent naming
+};
+
+// definition for the extra key on 102-key keyboards
+// between left Control and Alt
+xkb_symbols "left_switch" {
+    key	<LSGT> {	[     Mode_switch,	 Multi_key 	],
+			[     Mode_switch,	 Multi_key 	]	};
+    // Begin modifier mappings 
+    modifier_map Mod3   { Mode_switch };
+};
+

@@ -1,4 +1,4 @@
-# $XFree86$
+# $XFree86: xc/nls/Compose/iso8859-4,v 1.1 1998/01/11 03:48:18 dawes Exp $
 #
 # ISO 8859-4 (Latin4) Compose Sequence
 #
@@ -341,8 +341,8 @@
 <dead_ogonek> <i>			: "\347"	iogonek
 <dead_ogonek> <e>			: "\352"	eogonek
 <dead_ogonek> <u>			: "\371"	uogonek
-<dead_ring> <ring>			: "\260"	ring
-<dead_ring> <dead_ring>			: "\260"	ring
+<dead_abovering> <ring>			: "\260"	ring
+<dead_abovering> <dead_abovering>	: "\260"	ring
 <dead_tilde> <I>			: "\245"	Itilde
 <dead_tilde> <i>			: "\265"	itilde
 <dead_tilde> <A>			: "\303"	Atilde

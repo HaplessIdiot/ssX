@@ -1,5 +1,5 @@
 // $XConsortium: dk /main/3 1996/08/31 12:19:29 kaleb $
-// $XFree86: xc/programs/xkbcomp/symbols/dk,v 3.3 1996/12/23 07:13:17 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/dk,v 3.4 1999/12/14 03:26:18 robin Exp $
 partial alphanumeric_keys 
 xkb_symbols "basic" {
 
@@ -48,7 +48,7 @@ xkb_symbols "basic" {
     key <AC03> {        [               d,               D      ],
                         [             eth,             ETH      ]};
     key <AD03> {        [               e,               E      ],
-                        [        NoSymbol,            cent      ]};
+                        [        EuroSign,            cent      ]};
     key <AD04> {        [               r,               R      ],
                         [      registered,        NoSymbol      ]};
     key <AD05> {        [               t,               T      ],

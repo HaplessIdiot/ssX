@@ -1,44 +1,76 @@
-// $XConsortium: fi /main/4 1996/09/13 09:23:11 kaleb $
-// $XFree86: xc/programs/xkbcomp/symbols/fi,v 3.3 1996/12/23 07:13:22 dawes Exp $
-partial default alphanumeric_keys 
-xkb_symbols "basic" {
-
-    // Describes the differences between a very simple en_US
-    // keyboard and a very simple Swedish(Finland) keybaord
-
-    name[Group1]= "Finnish";
-
-    key <TLDE> {	[         section,         onehalf      ]	};
-    key <AE02> {	[               2,        quotedbl     	],	
-			[	       at,	 oneeighth	]	};
-    key <AE04> {	[               4,        currency     	],	
-			[	   dollar,	    dollar	]	};
-    key <AE03> {	[               3,      numbersign 	],	
-			[        sterling,        sterling	]	};
-    key <AE06> {	[               6,       ampersand     	]	};
-    key <AE07> {	[               7,           slash     	],
-			[	braceleft,	 braceleft	]	};
-    key <AE08> {	[               8,       parenleft     	],
-			[     bracketleft,     bracketleft	]	};
-    key <AB08> {	[           comma,       semicolon     	]	};
-    key <AE10> {	[               0,           equal     	],
-			[      braceright,      braceright	]	};
-    key <AE09> {	[               9,      parenright     	],
-			[    bracketright,    bracketright	]	};
-    key <AB09> {	[          period,           colon     	]	};
-    key <AB10> {	[           minus,      underscore     	]	};
-    key	<AC10> {	[      odiaeresis,      Odiaeresis     	]	};
-    key <AE11> {	[            plus,        question      ],
-			[	backslash,	 backslash	]	};
-    key <AC11> {	[      adiaeresis,      Adiaeresis 	]	};
-    key <AD11> {	[	    aring,           Aring     	]	};
-    key <AE12> {	[      dead_acute,      dead_grave	]	};
-    key <AD12> {	[  dead_diaeresis, dead_circumflex     	],
-			[      dead_tilde,	dead_tilde	]	};
-    key <BKSL> {	[      apostrophe,        asterisk	]	};
+// $XConsortium: fi /main/3 1996/08/31 12:19:29 kaleb $
+// $XFree86: xc/programs/xkbcomp/symbols/fi,v 3.3 1996/12/23 07:13:17 dawes Exp $
+partial alphanumeric_keys 
+ xkb_symbols "basic" {
+ 
+     // Describes the differences between a very simple en_US
+    // keyboard and a Finnish keyboard with dead key support
+    // and all of ISO-8859-1 characters available.
+ 
+     name[Group1]= "Finnish";
+ 
+    key <TLDE> {	[         section,         onehalf      ],
+			[       paragraph,   threequarters      ]};
     key <LSGT> {	[	     less,	   greater	],
-			[	      bar,       brokenbar	]	};
-    key <KPDL> {	[	KP_Delete,    KP_Separator	]	};
+                 	[             bar,       brokenbar      ]};
+    key <SPCE> {	[	    space,	     space	],
+			[    nobreakspace,    nobreakspace	]};
+    key <AE01> {	[               1,          exclam  	],
+			[      exclamdown,     onesuperior	]};
+    key <AE02> {	[               2,        quotedbl  	],
+			[	       at,     twosuperior	]};
+    key <AE03> {	[              	3,	numbersign	],
+			[	 sterling,   threesuperior	]};
+    key <AE04> {	[               4,        currency     	],
+			[	   dollar,	onequarter	]};
+    key <AE05> {	[               5,         percent     	],
+			[        NoSymbol,	      cent	]};
+    key <AE06> {	[               6,       ampersand     	],
+			[	      yen,	  NoSymbol	]};
+    key <AE07> {	[               7,           slash     	],
+			[       braceleft,        division	]};
+    key <AE08> {	[               8,       parenleft     	],
+			[     bracketleft,   guillemotleft	]};
+    key <AE09> {	[               9,      parenright     	],
+			[    bracketright,  guillemotright	]};
+    key <AE10> {	[               0,           equal     	],
+                        [      braceright,          degree      ]};
+    key <AB08> {	[           comma,       semicolon     	],
+			[    dead_cedilla,     dead_ogonek	]};
+    key <AB09> {	[          period,           colon     	],
+			[  periodcentered,   dead_abovedot	]};
+    key <AB03> {        [               c,               C      ],
+                        [       copyright,        NoSymbol      ]};
+    key <AB10> {	[           minus,      underscore     	],
+			[	   hyphen,          macron	]};
+    key <AC01> {        [               a,               A      ],
+                        [     ordfeminine,       masculine      ]};
+    key <AC03> {        [               d,               D      ],
+                        [             eth,             ETH      ]};
+    key <AD03> {        [               e,               E      ],
+                        [        EuroSign,            cent      ]};
+    key <AD04> {        [               r,               R      ],
+                        [      registered,        NoSymbol      ]};
+    key <AD05> {        [               t,               T      ],
+                        [           thorn,           THORN      ]};
+    key <AD08> {        [               i,               I      ],
+                        [        NoSymbol,        NoSymbol      ]};
+    key <AD09> {        [               o,               O      ],
+                        [              oe,              OE      ]};
+    key <AC10> {	[      odiaeresis,      Odiaeresis	],
+			[	   oslash,        Ooblique 	]};
+    key <AE11> {	[            plus,        question      ],
+			[       backslash,    questiondown	]};
+    key	<AC11> {	[      adiaeresis,      Adiaeresis	],
+			[	       ae,	        AE	]};
+    key <BKSL> {	[      apostrophe,        asterisk	],
+                 	[           acute,        multiply      ]};
+    key <AD11> {	[	    aring,           Aring 	]};
+    key <AE12> {   	[      dead_acute,      dead_grave      ],
+			[	plusminus,         notsign	]};
+    key <AD12> {   	[  dead_diaeresis, dead_circumflex      ],
+                 	[      dead_tilde,      dead_caron      ]};
+
 
     // End alphanumeric section
 
@@ -64,3 +96,4 @@ partial alphanumeric_keys
 xkb_symbols "nodeadkeys" {
     include "fi(basic)"	// for consistent naming
 };
+ 

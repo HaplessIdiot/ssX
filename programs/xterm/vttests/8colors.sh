@@ -1,5 +1,5 @@
 #!/bin/sh
-# $XFree86: xc/programs/xterm/vttests/8colors.sh,v 1.1 1999/03/28 15:33:29 dawes Exp $
+# $XFree86: xc/programs/xterm/vttests/8colors.sh,v 1.2 1999/04/25 10:03:08 dawes Exp $
 #
 # -- Thomas Dickey (1999/3/27)
 # Show a simple 8-color test pattern
@@ -9,7 +9,7 @@ CMD='echo'
 OPT='-n'
 SUF=''
 TMP=/tmp/xterm$$
-for verb in print printf ; do
+for verb in printf print ; do
     rm -f $TMP
     eval '$verb "\c" >$TMP || echo fail >$TMP' 2>/dev/null
     if test -f $TMP ; then

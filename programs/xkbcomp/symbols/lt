@@ -1,97 +1,55 @@
-// $XFree86: xc/programs/xkbcomp/symbols/lt,v 1.1 1998/01/11 03:48:34 dawes Exp $
+// $XConsortium: lt /main/3 1997/12/18 12:40:12 rch $
 
 partial alphanumeric_keys modifier_keys 
 xkb_symbols "basic" {
 
     // Describes the differences between a very simple en_US
-    // keyboard and a very simple Lithuanian keyboard
-    // Ričardas Čepas <rch@richard.eu.org>
-    //  Usage: put these commands in `XF86Config' file
-    // and remove other Xkb* commands:
+    // keyboard and a very simple Lithuanian "azerty" keyboard
 
-    // # XFree86 4.x syntax:
-    //  Section "InputDevice"
-    //  	Identifier  "Keyboard0"
-    //  	Driver      "keyboard"
-    //  	Option	"XkbRules"        "xfree86"
-    //  	Option	"XkbModel"        "pc102"
-    //   # +lt(left_switch) turns key between left ctrl and shift on "German" keyboards into AltGr
-    //  	Option	"XkbLayout"       "lt+lt(left_switch)"
-    //  	Option	"XkbOptions"      "grp:shift_toggle"
-    //  EndSection
-    //
-    // # XFree86 3.x syntax:
-    //  Section "Keyboard"
-    //...
-    //     XkbRules        "xfree86"
-    //     XkbModel        "pc102"
-    // # +lt(left_switch) turns key between left ctrl and shift on "German" keyboards into AltGr
-    //     XkbLayout       "lt+lt(left_switch)"
-    //     XkbOptions      "grp:ctrl_shift_toggle"
-    //  EndSection
-    //  
-    name[Group1]= "US/ASCII";
-    name[Group2]= "Lithuanian";
+    name[Group1]= "Lithuanian";
 
-    key	<TLDE> {	[], [	    grave,	asciitilde	]	};
-    key	<AE01> {	[		1,	    exclam	],
-			[	  aogonek,	   Aogonek	]	};
-    key	<AE02> {	[		2,		at	],
-			[	   ccaron,	    Ccaron	]	};
-    key	<AE03> {	[		3,	numbersign	],
-			[	  eogonek,	   Eogonek	]	};
-    key	<AE04> {	[		4,	    dollar	],
-			[	eabovedot,	 Eabovedot	]	};
-    key	<AE05> {	[		5,	   percent	],
-			[	  iogonek,	   Iogonek	]	};
-    key	<AE06> {	[		6,     asciicircum	],
-			[	   scaron,	    Scaron	]	};
-    key	<AE07> {	[		7,	 ampersand	],
-			[	  uogonek,	   Uogonek	]	};
-    key	<AE08> {	[		8,	  asterisk	],
-			[	  umacron,	   Umacron	]	};
-    key	<AE09> {	[		9,	 parenleft	],
-			[ doublelowquotemark,    parenleft	]	};
-    key	<AE10> {	[		0,	parenright	],
-			[ leftdoublequotemark,  parenright	]	};
-    key	<AE11> {	[], [	    minus,	underscore	]	};
-    key	<AE12> {	[	    equal,	      plus	],
-			[	   zcaron,	    Zcaron	]	};
-    key	<AD01> {	[], [		q,		 Q	]	};
-    key	<AD02> {	[], [		w,		 W	]	};
-    key	<AD03> {	[], [		e,		 E	]	};
-    key	<AD04> {	[], [		r,		 R	]	};
-    key	<AD05> {	[], [		t,		 T	]	};
-    key	<AD06> {	[], [		y,		 Y	]	};
-    key	<AD07> {	[], [		u,		 U	]	};
-    key	<AD08> {	[], [		i,		 I	]	};
-    key	<AD09> {	[], [		o,		 O	]	};
-    key	<AD10> {	[], [		p,		 P	]	};
-    key	<AD11> {	[], [     bracketleft,	 braceleft	]	};
-    key	<AD12> {	[], [    bracketright,	braceright	]	};
-    key <RTRN> {	[	   Return,  ISO_Next_Group	]	};
-    key	<AC01> {	[], [		a,		 A	]	};
-    key	<AC02> {	[], [		s,		 S	]	};
-    key	<AC03> {	[], [		d,		 D	]	};
-    key	<AC04> {	[], [		f,		 F	]	};
-    key	<AC05> {	[], [		g,		 G	]	};
-    key	<AC06> {	[], [		h,		 H	]	};
-    key	<AC07> {	[], [		j,		 J	]	};
-    key	<AC08> {	[], [		k,		 K	]	};
-    key	<AC09> {	[], [		l,		 L	]	};
-    key	<AC10> {	[], [	semicolon,	     colon	]	};
-    key	<AC11> {	[], [      apostrophe,	  quotedbl	]	};
-    key	<AB01> {	[], [		z,		 Z	]	};
-    key	<AB02> {	[], [		x,		 X	]	};
-    key	<AB03> {	[], [		c,		 C	]	};
-    key	<AB04> {	[], [		v,		 V	]	};
-    key	<AB05> {	[], [		b,		 B	]	};
-    key	<AB06> {	[], [		n,		 N	]	};
-    key	<AB07> {	[], [		m,		 M	]	};
-    key	<AB08> {	[], [	    comma,	      less	]	};
-    key	<AB09> {	[], [	   period,	   greater	]	};
-    key	<AB10> {	[], [	    slash,	  question	]	};
-    key	<BKSL> {	[], [	backslash,             bar	]	};
+    key	<TLDE> {[], [		grave,		asciitilde	]};
+    key <AE01> {[		exclam,		1		]};
+    key <AE02> {[               quotedbl,       2               ],
+                [		at				]};
+    key <AE03> {[		slash,		3		],
+                [		numbersign			]};
+    key <AE04> {[		semicolon,	4		],
+		[		dollar				]};
+    key <AE05> {[		colon,		5		],
+                [		percent				]};
+    key <AE06> {[		comma,		6		],
+                [		asciicircum			]};
+    key <AE07> {[		period,		7		],
+		[		ampersand			]};
+    key <AE08> {[		question,	8		],
+		[		asterisk			]};
+    key <AE09> {[		parenleft,	9		]};
+    key <AE10> {[		parenright,	0		]};
+    key <AE11> {[		underscore,	minus		],
+		[		minus,		underscore	]};
+    key <AE12> {[		plus,		equal		],
+		[		equal,		plus		]};
+    key	<AD01> {[		Aogonek,	aogonek		],
+		[		q,		Q		]};
+    key	<AD02> {[		zcaron,		Zcaron		],
+		[		w,		W		]};
+    key	<AD11> {[		iogonek,	Iogonek		],
+		[		bracketleft,	braceleft	]};
+    key	<AD12> {[ leftdoublequotemark,	doublelowquotemark	],
+		[		bracketright,	braceright	]};
+    key	<AC10> {[		uogonek,	Uogonek		],
+		[		semicolon,	colon		]};
+    key	<AC11> {[		eabovedot,	Eabovedot	],
+		[		apostrophe,	quotedbl	]};
+    key	<AB02> {[		umacron,	Umacron		],
+		[		x,		X		]};
+    key	<AB08> {[		ccaron,		Ccaron		],
+		[		comma,		less		]};
+    key	<AB09> {[		scaron,		Scaron		],
+		[		period,		greater		]};
+    key	<AB10> {[		eogonek,	Eogonek		],
+		[		slash,		question	]};
 
     // End alphanumeric section
     
@@ -140,7 +98,4 @@ xkb_symbols "left_switch" {
     // Begin modifier mappings 
     modifier_map Mod3   { Mode_switch };
 };
-
-
-
 

@@ -1,4 +1,4 @@
-// $XFree86:$
+// $XFree86: xc/programs/xkbcomp/symbols/ee,v 1.1 2000/01/25 00:09:02 dawes Exp $
 // Estonian XKB-keymap by Ville Hallik <ville@linux.ee>
 
 partial default alphanumeric_keys 
@@ -28,7 +28,8 @@ xkb_symbols "basic" {
 			[      braceright			]	};
     key <AE11> {	[            plus,        question      ],
 			[       backslash			]	};
-    key <AE12> {	[      dead_acute,      dead_grave	]	};
+    key <AE12> {	[      dead_acute,      dead_grave	],
+			[       quoteleft,      quoteright	]	};
     key <AD03> {	[               e,               E	],
 			[        EuroSign			]	};
     key <AD11> {	[      udiaeresis,      Udiaeresis     	]	};
@@ -41,8 +42,10 @@ xkb_symbols "basic" {
 			[     asciicircum			]	};
     key <AB01> {	[               z,               Z	],
 			[          zcaron,          Zcaron	]	};
-    key <AB08> {	[           comma,       semicolon     	]	};
-    key <AB09> {	[          period,           colon     	]	};
+    key <AB08> {	[           comma,       semicolon     	],
+			[            less			]	};
+    key <AB09> {	[          period,           colon     	],
+			[	  greater			]	};
     key <AB10> {	[           minus,      underscore     	]	};
     key <BKSL> {	[      apostrophe,        asterisk	],
 			[	  onehalf			]	};

@@ -24,7 +24,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.4 2000/06/26 23:00:31 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.5 2000/06/30 18:27:00 dawes Exp $ */
 
 /*
  * This file contains:
@@ -184,10 +184,12 @@ typedef struct _Utf8ConvRec {
 #include "lcUniConv/iso8859_14.h"
 #include "lcUniConv/iso8859_15.h"
 #include "lcUniConv/iso8859_16.h"
+#include "lcUniConv/iso8859_9e.h"
 #include "lcUniConv/jisx0201.h"
 #include "lcUniConv/tis620.h"
 #include "lcUniConv/koi8_r.h"
 #include "lcUniConv/koi8_u.h"
+#include "lcUniConv/koi8_c.h"
 #include "lcUniConv/armscii_8.h"
 #include "lcUniConv/cp1133.h"
 #include "lcUniConv/mulelao.h"
@@ -195,6 +197,10 @@ typedef struct _Utf8ConvRec {
 #include "lcUniConv/tcvn.h"
 #include "lcUniConv/georgian_academy.h"
 #include "lcUniConv/georgian_ps.h"
+#include "lcUniConv/microsoft_cp1251.h"
+#include "lcUniConv/microsoft_cp1255.h"
+#include "lcUniConv/microsoft_cp1256.h"
+#include "lcUniConv/tatar_cyr.h"
 
 typedef struct {
     unsigned short indx; /* index into big table */
@@ -258,6 +264,9 @@ static Utf8ConvRec all_charsets[] = {
     { "ISO8859-16", NULLQUARK,
 	iso8859_16_mbtowc, iso8859_16_wctomb
     },
+    { "ISO8859-9E", NULLQUARK,
+	iso8859_9e_mbtowc, iso8859_9e_wctomb
+    },
     { "JISX0201.1976-0", NULLQUARK,
 	jisx0201_mbtowc, jisx0201_wctomb
     },
@@ -282,6 +291,9 @@ static Utf8ConvRec all_charsets[] = {
     { "KOI8-U", NULLQUARK,
 	koi8_u_mbtowc, koi8_u_wctomb
     },
+    { "KOI8-C", NULLQUARK,
+	koi8_c_mbtowc, koi8_c_wctomb
+    },
     { "ARMSCII-8", NULLQUARK,
 	armscii_8_mbtowc, armscii_8_wctomb
     },
@@ -302,6 +314,18 @@ static Utf8ConvRec all_charsets[] = {
     },
     { "GEORGIAN-PS", NULLQUARK,
 	georgian_ps_mbtowc, georgian_ps_wctomb
+    },
+    { "MICROSOFT-CP1251", NULLQUARK,
+	microsoft_cp1251_mbtowc, microsoft_cp1251_wctomb
+    },
+    { "MICROSOFT-CP1255", NULLQUARK,
+	microsoft_cp1255_mbtowc, microsoft_cp1255_wctomb
+    },
+    { "MICROSOFT-CP1256", NULLQUARK,
+	microsoft_cp1256_mbtowc, microsoft_cp1256_wctomb
+    },
+    { "TATAR-CYR", NULLQUARK,
+	tatar_cyr_mbtowc, tatar_cyr_wctomb
     },
 #ifdef notdef
     { "BIG-5", NULLQUARK,

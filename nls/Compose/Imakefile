@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/9 1998/06/29 09:17:20 kaleb $
-XCOMM $XFree86: xc/nls/Compose/Imakefile,v 1.9 2000/03/16 21:59:40 dawes Exp $
+XCOMM $XFree86: xc/nls/Compose/Imakefile,v 1.10 2000/10/24 18:07:39 dawes Exp $
 
 #ifndef Win32Architecture
 #ifndef OS2Architecture
@@ -40,14 +40,17 @@ ComposeTarget(iso8859-7)
 ComposeTarget(iso8859-8)
 ComposeTarget(iso8859-9)
 ComposeTarget(iso8859-10)
+ComposeTarget(iso8859-13)
 ComposeTarget(iso8859-14)
 ComposeTarget(iso8859-15)
+ComposeTarget(iso8859-9e)
 ComposeTarget(ja)
 ComposeTarget(ja.JIS)
 ComposeTarget(ja.SJIS)
 ComposeTarget(ko)
 ComposeTarget(koi8-r)
 ComposeTarget(koi8-u)
+ComposeTarget(koi8-c)
 ComposeTarget(mulelao-1)
 ComposeTarget(th_TH.TACTIS)
 ComposeTarget(vi_VN.tcvn)

@@ -1,4 +1,33 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.2 2000/10/23 21:16:51 tsi Exp $ */
+/*
+ * Copyright (c) 2000 by Conectiva S.A. (http://www.conectiva.com)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * CONECTIVA LINUX BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Except as contained in this notice, the name of Conectiva Linux shall
+ * not be used in advertising or otherwise to promote the sale, use or other
+ * dealings in this Software without prior written authorization from
+ * Conectiva Linux.
+ *
+ * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
+ *
+ * $XFree86$
+ */
 
 #include "vesa.h"
 
@@ -46,6 +75,8 @@ static void *VESAWindowLinear(ScreenPtr pScrn, CARD32 row, CARD32 offset,
 			      int mode, CARD32 *size);
 static void *VESAWindowWindowed(ScreenPtr pScrn, CARD32 row, CARD32 offset,
 				int mode, CARD32 *size);
+
+static Bool VESADGAInit(ScrnInfoPtr pScrn, ScreenPtr pScreen);
 
 /* 
  * This contains the functions needed by the server after loading the
@@ -331,6 +362,7 @@ VESAFreeRec(ScrnInfoPtr pScrn)
 	    mode = mode->next;
 	} while (mode && mode != pScrn->modes);
     }
+    xfree(pVesa->monitor);
     xfree(pVesa->vbeInfo);
     xfree(pVesa->pal);
     xfree(pVesa->savedPal);
@@ -350,8 +382,8 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     VBEInfoBlock *vbe;
     DisplayModePtr pMode, tmp;
     ModeInfoBlock *mode;
-    ModeInfoData *data;
-    char *mod;
+    ModeInfoData *data = NULL;
+    char *mod = NULL;
     const char *reqSym = NULL;
     Gamma gzeros = {0.0, 0.0, 0.0};
     rgb rzeros = {0, 0, 0};
@@ -368,14 +400,23 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 
     pVesa = VESAGetRec(pScrn);
     pVesa->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
+    pVesa->device = xf86GetDevFromEntity(pScrn->entityList[0],
+					 pScrn->entityInstanceList[0]);
+    if (pVesa->pEnt->location.type == BUS_PCI) {
+	pVesa->pciInfo = xf86GetPciInfoForEntity(pVesa->pEnt->index);
+	pVesa->pciTag = pciTag(pVesa->pciInfo->bus, pVesa->pciInfo->device,
+			       pVesa->pciInfo->func);
+	pVesa->primary = xf86IsPrimaryPci(pVesa->pciInfo);
+    }
+    else
+	pVesa->primary = TRUE;
 
     pScrn->chipset = "vesa";
     pScrn->monitor = pScrn->confScreen->monitor;
     pScrn->progClock = TRUE;
     pScrn->rgbBits = 8;
 
-    if (!xf86SetDepthBpp(pScrn, -1, -1, -1,
-			 Support24bppFb | Support32bppFb))
+    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb))
 	return (FALSE);
     xf86PrintDepthBpp(pScrn);
 
@@ -405,147 +446,149 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	return (FALSE);
     }
 
-    /* Load vbe module */
-    if ((pVbeModule = xf86LoadSubModule(pScrn, "vbe")) == NULL)
-	return (FALSE);
-    if ((pVbe = VBEInit(pVesa->pInt, pVesa->pEnt->index)) == NULL)
-	return (FALSE);
-
-    /* Load ddc module */
-    if ((pDDCModule = xf86LoadSubModule(pScrn, "ddc")) == NULL)
-	return (FALSE);
-
-    if ((pVesa->monitor = vbeDoEDID(pVbe, pDDCModule)) != NULL) {
-	xf86PrintEDID(pVesa->monitor);
-#ifdef DEBUG
-	ErrorF("Monitor data blocks:\n");
-	ErrorF("VENDOR: name %s  -  id %d  -  serial %d  -  week %d  -  year %d\n",
-	       pVesa->monitor->vendor.name, pVesa->monitor->vendor.prod_id,
-	       pVesa->monitor->vendor.serial, pVesa->monitor->vendor.week,
-	       pVesa->monitor->vendor.year);
-	ErrorF("EDID:  Version %d  -  Revision %d\n",
-	       pVesa->monitor->ver.version,
-	       pVesa->monitor->ver.revision);
-	ErrorF("FEATURES:\n input: type %d  -  voltage %d  -  setup %d  -  sync %d\n"
-	       " size: %d x %d\n gamma: %f\n dpms: %d\n type: %d\n"
-	       " misc: %d\n redx %d  -  redy %d\n greenx %d  -  greeny %d\n"
-	       " bluex: %d  -  bluey %d\n whitex %d  -  whitey\n"
-	       "ESTABLISHED TIMES: %d %d %d\n"
-	       "STD TIMINGS:\n",
-	       pVesa->monitor->features.input_type,
-	       pVesa->monitor->features.input_voltage,
-	       pVesa->monitor->features.input_setup,
-	       pVesa->monitor->features.input_sync,
-	       pVesa->monitor->features.hsize, pVesa->monitor->features.vsize,
-	       pVesa->monitor->features.gamma,
-	       pVesa->monitor->features.dpms,
-	       pVesa->monitor->features.display_type,
-	       pVesa->monitor->features.msc, pVesa->monitor->features.redx,
-	       pVesa->monitor->features.redy,
-	       pVesa->monitor->features.greenx, pVesa->monitor->features.greeny,
-	       pVesa->monitor->features.bluex, pVesa->monitor->features.bluey,
-	       pVesa->monitor->features.whitex, pVesa->monitor->features.whitey,
-	       pVesa->monitor->timings1.t1,
-	       pVesa->monitor->timings1.t2,
-	       pVesa->monitor->timings1.t_manu);
-	for (i = 0; i < 8; i++) {
-	    ErrorF(" %d %d  %d  %d\n",
-		   pVesa->monitor->timings2[i].hsize,
-		   pVesa->monitor->timings2[i].vsize,
-		   pVesa->monitor->timings2[i].refresh,
-		   pVesa->monitor->timings2[i].id);
-	}
-	ErrorF("DETAILED MONITOR SECTION:\n");
-	for (i = 0; i < 4; i++) {
-	    int j;
-
-	    ErrorF(" type ");
-	    switch (pVesa->monitor->det_mon[i].type) {
-		case DT:
-		    ErrorF("DT\n");
-		    ErrorF("  clock: %d\n"
-			   "  hactive: %d\n  hblanking: %d\n"
-			   "  vactive: %d\n  vblanking: %d\n"
-			   "  hsyncoff: %d\n  hsyncwidth: %d\n"
-			   "  vsyncoff: %d\n  vsyncwidth: %d\n"
-			   "  hsize: %d\n  vsize: %d\n"
-			   "  hborder: %d\n  vborder: %d\n"
-			   "  interlaced: %d\n	stereo: %d\n"
-			   "  sync: %d\n  misc: %d\n",
-		       pVesa->monitor->det_mon[i].section.d_timings.clock,
-		       pVesa->monitor->det_mon[i].section.d_timings.h_active,
-		       pVesa->monitor->det_mon[i].section.d_timings.h_blanking,
-		       pVesa->monitor->det_mon[i].section.d_timings.v_active,
-		       pVesa->monitor->det_mon[i].section.d_timings.v_blanking,
-		       pVesa->monitor->det_mon[i].section.d_timings.h_sync_off,
-		       pVesa->monitor->det_mon[i].section.d_timings.h_sync_width,
-		       pVesa->monitor->det_mon[i].section.d_timings.v_sync_off,
-		       pVesa->monitor->det_mon[i].section.d_timings.v_sync_width,
-		       pVesa->monitor->det_mon[i].section.d_timings.h_size,
-		       pVesa->monitor->det_mon[i].section.d_timings.v_size,
-		       pVesa->monitor->det_mon[i].section.d_timings.h_border,
-		       pVesa->monitor->det_mon[i].section.d_timings.v_border,
-		       pVesa->monitor->det_mon[i].section.d_timings.interlaced,
-		       pVesa->monitor->det_mon[i].section.d_timings.stereo,
-		       pVesa->monitor->det_mon[i].section.d_timings.sync,
-		       pVesa->monitor->det_mon[i].section.d_timings.misc);
-		    break;
-		case DS_SERIAL:
-		    ErrorF("SERIAL\n");
-		    ErrorF("  serial: %s\n", pVesa->monitor->det_mon[i].section.serial);
-		    break;
-		case DS_ASCII_STR:
-		    ErrorF("ASCII_STR\n");
-		    ErrorF("  ascii_str: %s\n", pVesa->monitor->det_mon[i].section.ascii_data);
-		    break;
-		case DS_NAME:
-		    ErrorF("NAME\n");
-		    ErrorF("  name: %s\n", pVesa->monitor->det_mon[i].section.name);
-		    break;
-		case DS_RANGES:
-		    ErrorF("RANGES\n");
-		    ErrorF("  ranges: minv %d  -  maxv %d  -  minh %d  -  maxh %d  -  maxclock %d\n",
-			   pVesa->monitor->det_mon[i].section.ranges.min_v,
-			   pVesa->monitor->det_mon[i].section.ranges.max_v,
-			   pVesa->monitor->det_mon[i].section.ranges.min_h,
-			   pVesa->monitor->det_mon[i].section.ranges.min_h,
-			   pVesa->monitor->det_mon[i].section.ranges.max_clock);
-		    break;
-		case DS_WHITE_P:
-		    ErrorF("WHITE_P\n");
-		    for (j = 0; j < 2; j++)
-			ErrorF("  index %d  -  whitex %d  -  whitey %d  -  whitegamma %d\n",
-			       pVesa->monitor->det_mon[i].section.wp[j].index,
-			       pVesa->monitor->det_mon[i].section.wp[j].white_x,
-			       pVesa->monitor->det_mon[i].section.wp[j].white_y,
-			       pVesa->monitor->det_mon[i].section.wp[j].white_gamma);
-		    break;
-		case DS_STD_TIMINGS:
-		    ErrorF("STD_TIMINGS\n");
-		    for (j = 0; j < 5; j++)
-			ErrorF("  %d %d  %d  %d\n",
-			       pVesa->monitor->det_mon[i].section.std_t[j].hsize,
-			       pVesa->monitor->det_mon[i].section.std_t[j].vsize,
-			       pVesa->monitor->det_mon[i].section.std_t[j].refresh,
-			       pVesa->monitor->det_mon[i].section.std_t[j].id);
-		    break;
-		default:
-		    ErrorF(" UNKNOWN\n");
-		    break;
-	    }
-	}
-#endif
-    }
-
-    /* unload modules */
-    xf86UnloadSubModule(pVbeModule);
-    xf86UnloadSubModule(pDDCModule);
-
     vbe = VESAGetVBEInfo(pScrn);
-    pVesa->major = (unsigned)vbe->VESAVersion >> 8;
+    pVesa->major = (unsigned)(vbe->VESAVersion >> 8);
     pVesa->minor = vbe->VESAVersion & 0xff;
     pVesa->vbeInfo = vbe;
     pScrn->videoRam = vbe->TotalMemory * 64 * 1024;
+
+    if (pVesa->major >= 2) {
+	/* Load vbe module */
+	if ((pVbeModule = xf86LoadSubModule(pScrn, "vbe")) == NULL)
+	    return (FALSE);
+	if ((pVbe = VBEInit(pVesa->pInt, pVesa->pEnt->index)) == NULL)
+	    return (FALSE);
+
+	/* Load ddc module */
+	if ((pDDCModule = xf86LoadSubModule(pScrn, "ddc")) == NULL)
+	    return (FALSE);
+
+	if ((pVesa->monitor = vbeDoEDID(pVbe, pDDCModule)) != NULL) {
+	    xf86PrintEDID(pVesa->monitor);
+#ifdef DEBUG
+	    ErrorF("Monitor data blocks:\n");
+	    ErrorF("VENDOR: name %s  -	id %d  -  serial %d  -	week %d  -  year %d\n",
+		   pVesa->monitor->vendor.name, pVesa->monitor->vendor.prod_id,
+		   pVesa->monitor->vendor.serial, pVesa->monitor->vendor.week,
+		   pVesa->monitor->vendor.year);
+	    ErrorF("EDID:  Version %d  -  Revision %d\n",
+		   pVesa->monitor->ver.version,
+		   pVesa->monitor->ver.revision);
+	    ErrorF("FEATURES:\n input: type %d	-  voltage %d  -  setup %d  -  sync %d\n"
+		   " size: %d x %d\n gamma: %f\n dpms: %d\n type: %d\n"
+		   " misc: %d\n redx %d  -  redy %d\n greenx %d  -  greeny %d\n"
+		   " bluex: %d	-  bluey %d\n whitex %d  -  whitey\n"
+		   "ESTABLISHED TIMES: %d %d %d\n"
+		   "STD TIMINGS:\n",
+		   pVesa->monitor->features.input_type,
+		   pVesa->monitor->features.input_voltage,
+		   pVesa->monitor->features.input_setup,
+		   pVesa->monitor->features.input_sync,
+		   pVesa->monitor->features.hsize, pVesa->monitor->features.vsize,
+		   pVesa->monitor->features.gamma,
+		   pVesa->monitor->features.dpms,
+		   pVesa->monitor->features.display_type,
+		   pVesa->monitor->features.msc, pVesa->monitor->features.redx,
+		   pVesa->monitor->features.redy,
+		   pVesa->monitor->features.greenx, pVesa->monitor->features.greeny,
+		   pVesa->monitor->features.bluex, pVesa->monitor->features.bluey,
+		   pVesa->monitor->features.whitex, pVesa->monitor->features.whitey,
+		   pVesa->monitor->timings1.t1,
+		   pVesa->monitor->timings1.t2,
+		   pVesa->monitor->timings1.t_manu);
+	    for (i = 0; i < 8; i++) {
+		ErrorF(" %d %d	%d  %d\n",
+		       pVesa->monitor->timings2[i].hsize,
+		       pVesa->monitor->timings2[i].vsize,
+		       pVesa->monitor->timings2[i].refresh,
+		       pVesa->monitor->timings2[i].id);
+	    }
+	    ErrorF("DETAILED MONITOR SECTION:\n");
+	    for (i = 0; i < 4; i++) {
+		int j;
+
+		ErrorF(" type ");
+		switch (pVesa->monitor->det_mon[i].type) {
+		    case DT:
+			ErrorF("DT\n");
+			ErrorF("  clock: %d\n"
+			       "  hactive: %d\n  hblanking: %d\n"
+			       "  vactive: %d\n  vblanking: %d\n"
+			       "  hsyncoff: %d\n  hsyncwidth: %d\n"
+			       "  vsyncoff: %d\n  vsyncwidth: %d\n"
+			       "  hsize: %d\n  vsize: %d\n"
+			       "  hborder: %d\n  vborder: %d\n"
+			       "  interlaced: %d\n  stereo: %d\n"
+			       "  sync: %d\n  misc: %d\n",
+			   pVesa->monitor->det_mon[i].section.d_timings.clock,
+			   pVesa->monitor->det_mon[i].section.d_timings.h_active,
+			   pVesa->monitor->det_mon[i].section.d_timings.h_blanking,
+			   pVesa->monitor->det_mon[i].section.d_timings.v_active,
+			   pVesa->monitor->det_mon[i].section.d_timings.v_blanking,
+			   pVesa->monitor->det_mon[i].section.d_timings.h_sync_off,
+			   pVesa->monitor->det_mon[i].section.d_timings.h_sync_width,
+			   pVesa->monitor->det_mon[i].section.d_timings.v_sync_off,
+			   pVesa->monitor->det_mon[i].section.d_timings.v_sync_width,
+			   pVesa->monitor->det_mon[i].section.d_timings.h_size,
+			   pVesa->monitor->det_mon[i].section.d_timings.v_size,
+			   pVesa->monitor->det_mon[i].section.d_timings.h_border,
+			   pVesa->monitor->det_mon[i].section.d_timings.v_border,
+			   pVesa->monitor->det_mon[i].section.d_timings.interlaced,
+			   pVesa->monitor->det_mon[i].section.d_timings.stereo,
+			   pVesa->monitor->det_mon[i].section.d_timings.sync,
+			   pVesa->monitor->det_mon[i].section.d_timings.misc);
+			break;
+		    case DS_SERIAL:
+			ErrorF("SERIAL\n");
+			ErrorF("  serial: %s\n", pVesa->monitor->det_mon[i].section.serial);
+			break;
+		    case DS_ASCII_STR:
+			ErrorF("ASCII_STR\n");
+			ErrorF("  ascii_str: %s\n", pVesa->monitor->det_mon[i].section.ascii_data);
+			break;
+		    case DS_NAME:
+			ErrorF("NAME\n");
+			ErrorF("  name: %s\n", pVesa->monitor->det_mon[i].section.name);
+			break;
+		    case DS_RANGES:
+			ErrorF("RANGES\n");
+			ErrorF("  ranges: minv %d  -  maxv %d  -  minh %d  -  maxh %d  -  maxclock %d\n",
+			       pVesa->monitor->det_mon[i].section.ranges.min_v,
+			       pVesa->monitor->det_mon[i].section.ranges.max_v,
+			       pVesa->monitor->det_mon[i].section.ranges.min_h,
+			       pVesa->monitor->det_mon[i].section.ranges.min_h,
+			       pVesa->monitor->det_mon[i].section.ranges.max_clock);
+			break;
+		    case DS_WHITE_P:
+			ErrorF("WHITE_P\n");
+			for (j = 0; j < 2; j++)
+			    ErrorF("  index %d	-  whitex %d  -  whitey %d  -  whitegamma %d\n",
+				   pVesa->monitor->det_mon[i].section.wp[j].index,
+				   pVesa->monitor->det_mon[i].section.wp[j].white_x,
+				   pVesa->monitor->det_mon[i].section.wp[j].white_y,
+				   pVesa->monitor->det_mon[i].section.wp[j].white_gamma);
+			break;
+		    case DS_STD_TIMINGS:
+			ErrorF("STD_TIMINGS\n");
+			for (j = 0; j < 5; j++)
+			    ErrorF("  %d %d  %d  %d\n",
+				   pVesa->monitor->det_mon[i].section.std_t[j].hsize,
+				   pVesa->monitor->det_mon[i].section.std_t[j].vsize,
+				   pVesa->monitor->det_mon[i].section.std_t[j].refresh,
+				   pVesa->monitor->det_mon[i].section.std_t[j].id);
+			break;
+		    default:
+			ErrorF(" UNKNOWN\n");
+			break;
+		}
+	    }
+#endif
+	}
+
+	/* unload modules */
+	xf86UnloadSubModule(pVbeModule);
+	xf86UnloadSubModule(pDDCModule);
+    }
 
 #ifdef DEBUG
     ErrorF("%c%c%c%c %d.%d - %s\n",
@@ -563,7 +606,8 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     /* Set display resolution */
     xf86SetDpi(pScrn, 0, 0);
 
-    pScrn->monitor->DDC = pVesa->monitor;
+    if ((pScrn->monitor->DDC = pVesa->monitor) != NULL)
+	xf86SetDDCproperties(pScrn, pVesa->monitor);
 
 #ifdef DEBUG
     ErrorF("Searching for matching VESA mode(s):\n");
@@ -573,21 +617,10 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     while (vbe->VideoModePtr[i] != 0xffff) {
 	int id = vbe->VideoModePtr[i++];
 
-	/* try to get a linear mode */
-	if ((mode = VESAGetModeInfo(pScrn, id | (1 << 14))) == NULL &&
-	    !(id & (1 << 14)))
-	    /* no linear/clock selectable mode information/availability */
-	    mode = VESAGetModeInfo(pScrn, id);
-	else
-	    id |= (1 << 14);
+	if ((mode = VESAGetModeInfo(pScrn, id)) == NULL)
+	    continue;
 
-	if (mode && mode->PhysBasePtr == NULL && (id & (1 << 14))) {
-	    VESAFreeModeInfo(mode);
-	    mode = VESAGetModeInfo(pScrn, id &= ~(1 << 14));
-	}
-
-	if (mode == NULL ||
-	    !(mode->ModeAttributes & (1 << 0)) ||	/* supported in the configured hardware */
+	if (!(mode->ModeAttributes & (1 << 0)) ||	/* supported in the configured hardware */
 	    !(mode->ModeAttributes & (1 << 4)) ||	/* text mode */
 	    (pScrn->bitsPerPixel != 1 && !(mode->ModeAttributes & (1 << 3))) || /* monochrome */
 	    (mode->BitsPerPixel > 8 &&
@@ -804,7 +837,7 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     if (pScrn->modes == NULL)
 	return (FALSE);
 
-    /* Deal with options */
+    /* options */
     xf86CollectOptions(pScrn, NULL);
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, VESAOptions);
 
@@ -918,35 +951,30 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     VESAPtr pVesa = VESAGetRec(pScrn);
     VisualPtr visual;
     ModeInfoBlock *mode;
-    VESApmi *pmi;
     int flags;
 
-    if ((pmi = VESAGetVBEpmi(pScrn)) == NULL) {
-	if (pVesa->major >= 2)
-	    return (FALSE);
+    if (pVesa->mapPhys == 0) {
+	mode = ((ModeInfoData*)(pScrn->currentMode->Private))->data;
+	pScrn->videoRam = pVesa->mapSize;
+	pVesa->mapPhys = mode->PhysBasePtr;
+	pVesa->mapOff = 0;
     }
-    else {
-	VESAFreeVBEpmi(pmi);
-    }
-
-    mode = VESAGetModeInfo(pScrn,
-			   ((ModeInfoData*)pScrn->currentMode->Private)->mode);
-
-/*    mode = VESAGetModeInfo(pScrn, 0x81ff);*/
-
-    pScrn->videoRam = pVesa->mapSize;
-    pVesa->mapPhys = mode->PhysBasePtr;
-    pVesa->mapOff = 0;
-
-    VESAFreeModeInfo(mode);
 
     if ((void*)pVesa->mapPhys == NULL) {
 	pVesa->mapPhys = 0xa0000;
 	pVesa->mapSize = 0x10000;
     }
 
-    if (!VESAMapVidMem(pScrn))
-	return (FALSE);
+    if (!VESAMapVidMem(pScrn)) {
+	if (pVesa->mapPhys != 0xa0000) {
+	    pVesa->mapPhys = 0xa0000;
+	    pVesa->mapSize = 0x10000;
+	    if (!VESAMapVidMem(pScrn))
+		return (FALSE);
+	}
+	else
+	    return (FALSE);
+    }
 
     if (pVesa->shadowFB && (pVesa->shadowPtr =
 	shadowAlloc(pScrn->virtualX, pScrn->virtualY,
@@ -1142,6 +1170,8 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
+    VESADGAInit(pScrn, pScreen);
+
     xf86SetBlackWhitePixels(pScreen);
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
@@ -1150,17 +1180,14 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
     /* colormap */
-
     if (!miCreateDefColormap(pScreen))
 	return (FALSE);
 
     flags = CMAP_RELOAD_ON_MODE_SWITCH;
 
-    /* if switchable to 8 bits per pixel */
-    if (pVesa->vbeInfo->Capabilities[0] & 0x01)
-	flags |= CMAP_PALETTED_TRUECOLOR;
-
-    if(!xf86HandleColormaps(pScreen, 256, 8, VESALoadPalette, NULL, flags))
+    if(!xf86HandleColormaps(pScreen, 256,
+	pVesa->vbeInfo->Capabilities[0] & 0x01 ? 8 : 6,
+	VESALoadPalette, NULL, flags))
 	return (FALSE);
 
     pScreen->CloseScreen = VESACloseScreen;
@@ -1191,11 +1218,14 @@ VESACloseScreen(int scrnIndex, ScreenPtr pScreen)
     VESASaveRestore(xf86Screens[scrnIndex], MODE_RESTORE);
     VESASetGetPaletteData(pScrn, TRUE, 0, 256,
 			  pVesa->savedPal, FALSE, TRUE);
+
     VESAUnmapVidMem(pScrn);
     if (pVesa->shadowPtr) {
 	xfree(pVesa->shadowPtr);
 	pVesa->shadowPtr = NULL;
     }
+    if (pVesa->pDGAMode)
+	xfree(pVesa->pDGAMode);
     pScrn->vtSema = FALSE;
 
     return (TRUE);
@@ -1327,7 +1357,7 @@ VESAWindowPlanar(ScreenPtr pScreen, CARD32 row, CARD32 offset, int mode,
     *size = data->WinSize * 1024 - (offset - pVesa->windowAoffset);
 
     return (void *)((unsigned long)pVesa->base +
-		    (offset - pVesa->windowAoffset));
+		   (offset - pVesa->windowAoffset));
 }
 
 static void *
@@ -1364,32 +1394,55 @@ static void
 VESALoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 		LOCO *colors, VisualPtr pVisual)
 {
+#if 0
+    /* This code works, but is very slow for programs that use it intensively */
     VESAPtr pVesa = VESAGetRec(pScrn);
-    int i, shift, idx, base;
+    int i, idx, base;
 
     if (pVesa->pal == NULL)
 	pVesa->pal = xcalloc(1, sizeof(CARD32) * 256);
 
-    /* switchable to 8 bits */
-    if (pVesa->vbeInfo->Capabilities[0] & 0x01)
-	shift = 0;
-    else
-	shift = 2;
-
     for (i = 0, base = idx = indices[i]; i < numColors; i++, idx++) {
-	pVesa->pal[indices[i]] =  ((colors[indices[i]].blue) >> shift) |
-				 (((colors[indices[i]].green) >> shift) << 8) |
-				 (((colors[indices[i]].red) >> shift) << 16);
-	if (indices[i] != idx) {
+	int j = indices[i];
+
+	if (j < 0 || j >= 256)
+	    continue;
+	pVesa->pal[j] = colors[j].blue |
+			(colors[j].green << 8) |
+			(colors[j].red << 16);
+	if (j != idx) {
 	    VESASetGetPaletteData(pScrn, TRUE, base, idx - base,
 				  pVesa->pal + base, FALSE, TRUE);
-	    idx = base = indices[i];
+	    idx = base = j;
 	}
     }
 
     if (idx - 1 == indices[i - 1])
 	VESASetGetPaletteData(pScrn, TRUE, base, idx - base,
 			      pVesa->pal + base, FALSE, TRUE);
+#else
+#define WriteDacWriteAddr(value)	outb(VGA_DAC_WRITE_ADDR, value)
+#define WriteDacData(value)		outb(VGA_DAC_DATA, value);
+#undef DACDelay
+#define DACDelay()								\
+	do {									\
+	    unsigned char temp = inb(VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);	\
+	    temp = inb(VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);		\
+	} while (0)
+    int i, idx;
+
+    for (i = 0; i < numColors; i++) {
+	idx = indices[i];
+	WriteDacWriteAddr(idx);
+	DACDelay();
+	WriteDacData(colors[idx].red);
+	DACDelay();
+	WriteDacData(colors[idx].green);
+	DACDelay();
+	WriteDacData(colors[idx].blue);
+	DACDelay();
+    }
+#endif
 }
 
 /*
@@ -1845,7 +1898,7 @@ VESAGetModeInfo(ScrnInfoPtr pScrn, int mode)
 	    memcpy(&block->Reserved2, pVesa->block + 66, 188);
 	}
 	else
-	    memcpy(&block->PhysBasePtr, pVesa->block + 50, 206);
+	    memcpy(&block->LinBytesPerScanLine, pVesa->block + 50, 206);
     }
     else
 	memcpy(&block->PhysBasePtr, pVesa->block + 40, 216);
@@ -1990,7 +2043,6 @@ VESABankSwitch(ScreenPtr pScreen, unsigned int iBank)
 
     Output:
      */
-
     pVesa->pInt->num = 0x10;
     pVesa->pInt->ax = 0x4f05;
     pVesa->pInt->bx = 0;
@@ -2233,4 +2285,145 @@ VESAGetVBEpmi(ScrnInfoPtr pScrn)
     pmi->tbl_len = pVesa->pInt->cx;
 
     return (pmi);
+}
+
+/***********************************************************************
+ * DGA stuff
+ ***********************************************************************/
+static Bool VESADGAOpenFramebuffer(ScrnInfoPtr pScrn, char **DeviceName,
+				   unsigned char **ApertureBase,
+				   int *ApertureSize, int *ApertureOffset,
+				   int *flags);
+static Bool VESADGASetMode(ScrnInfoPtr pScrn, DGAModePtr pDGAMode);
+static void VESADGASetViewport(ScrnInfoPtr pScrn, int x, int y, int flags);
+
+static Bool
+VESADGAOpenFramebuffer(ScrnInfoPtr pScrn, char **DeviceName,
+		       unsigned char **ApertureBase, int *ApertureSize,
+		       int *ApertureOffset, int *flags)
+{
+    VESAPtr pVesa = VESAGetRec(pScrn);
+
+    *DeviceName = NULL;		/* No special device */
+    *ApertureBase = (unsigned char *)(pVesa->mapPhys);
+    *ApertureSize = pVesa->mapSize;
+    *ApertureOffset = pVesa->mapOff;
+    *flags = DGA_NEED_ROOT;
+
+    return (TRUE);
+}
+
+static Bool
+VESADGASetMode(ScrnInfoPtr pScrn, DGAModePtr pDGAMode)
+{
+    DisplayModePtr pMode;
+    int scrnIdx = pScrn->pScreen->myNum;
+    int frameX0, frameY0;
+
+    if (pDGAMode) {
+	pMode = pDGAMode->mode;
+	frameX0 = frameY0 = 0;
+    }
+    else {
+	if (!(pMode = pScrn->currentMode))
+	    return (TRUE);
+
+	frameX0 = pScrn->frameX0;
+	frameY0 = pScrn->frameY0;
+    }
+
+    if (!(*pScrn->SwitchMode)(scrnIdx, pMode, 0))
+	return (FALSE);
+    (*pScrn->AdjustFrame)(scrnIdx, frameX0, frameY0, 0);
+
+    return (TRUE);
+}
+
+static void
+VESADGASetViewport(ScrnInfoPtr pScrn, int x, int y, int flags)
+{
+    (*pScrn->AdjustFrame)(pScrn->pScreen->myNum, x, y, flags);
+}
+
+static int
+VESADGAGetViewport(ScrnInfoPtr pScrn)
+{
+    return (0);
+}
+
+static DGAFunctionRec VESADGAFunctions =
+{
+    VESADGAOpenFramebuffer,
+    NULL,       /* CloseFramebuffer */
+    VESADGASetMode,
+    VESADGASetViewport,
+    VESADGAGetViewport,
+    NULL,       /* Sync */
+    NULL,       /* FillRect */
+    NULL,       /* BlitRect */
+    NULL,       /* BlitTransRect */
+};
+
+static void
+VESADGAAddModes(ScrnInfoPtr pScrn)
+{
+    VESAPtr pVesa = VESAGetRec(pScrn);
+    DisplayModePtr pMode = pScrn->modes;
+    DGAModePtr pDGAMode;
+
+    do {
+	pDGAMode = xrealloc(pVesa->pDGAMode,
+			    (pVesa->nDGAMode + 1) * sizeof(DGAModeRec));
+	if (!pDGAMode)
+	    break;
+
+	pVesa->pDGAMode = pDGAMode;
+	pDGAMode += pVesa->nDGAMode;
+	(void)memset(pDGAMode, 0, sizeof(DGAModeRec));
+
+	++pVesa->nDGAMode;
+	pDGAMode->mode = pMode;
+	pDGAMode->flags = DGA_CONCURRENT_ACCESS | DGA_PIXMAP_AVAILABLE;
+	pDGAMode->byteOrder = pScrn->imageByteOrder;
+	pDGAMode->depth = pScrn->depth;
+	pDGAMode->bitsPerPixel = pScrn->bitsPerPixel;
+	pDGAMode->red_mask = pScrn->mask.red;
+	pDGAMode->green_mask = pScrn->mask.green;
+	pDGAMode->blue_mask = pScrn->mask.blue;
+	pDGAMode->visualClass = pScrn->bitsPerPixel > 8 ?
+	    TrueColor : PseudoColor;
+	pDGAMode->xViewportStep = 1;
+	pDGAMode->yViewportStep = 1;
+	pDGAMode->viewportWidth = pMode->HDisplay;
+	pDGAMode->viewportHeight = pMode->VDisplay;
+
+	pDGAMode->bytesPerScanline = pVesa->maxBytesPerScanline;
+	pDGAMode->imageWidth = pMode->HDisplay;
+	pDGAMode->imageHeight =  pMode->VDisplay;
+	pDGAMode->pixmapWidth = pDGAMode->imageWidth;
+	pDGAMode->pixmapHeight = pDGAMode->imageHeight;
+	pDGAMode->maxViewportX = pScrn->virtualX -
+				    pDGAMode->viewportWidth;
+	pDGAMode->maxViewportY = pScrn->virtualY -
+				    pDGAMode->viewportHeight;
+
+	pDGAMode->address = pVesa->base;
+
+	pMode = pMode->next;
+    } while (pMode != pScrn->modes);
+}
+
+static Bool
+VESADGAInit(ScrnInfoPtr pScrn, ScreenPtr pScreen)
+{
+    VESAPtr pVesa = VESAGetRec(pScrn);
+
+    if (pScrn->depth < 8 || pVesa->mapPhys == 0xa0000L)
+	return (FALSE);
+
+    if (!pVesa->nDGAMode)
+	VESADGAAddModes(pScrn);
+
+    return (DGAInit(pScreen, &VESADGAFunctions,
+	    pVesa->pDGAMode, pVesa->nDGAMode));
 }

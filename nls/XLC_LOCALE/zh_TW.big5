@@ -1,14 +1,14 @@
-#
-# (c) 1996, X11R6 L10N for Taiwan and Big5 Encoding Project
-#
-# modified for X11R6.3 by Hung-Chi Chu <hcchu@r350.ee.ntu.edu.tw> 1998/01/10
-#
-# $XFree86$
-#
-#	XLC_FONTSET category
-#
+XCOMM
+XCOMM (c) 1996, X11R6 L10N for Taiwan and Big5 Encoding Project
+XCOMM
+XCOMM modified for X11R6.3 by Hung-Chi Chu <hcchu@r350.ee.ntu.edu.tw> 1998/01/10
+XCOMM
+XCOMM $XFree86: xc/nls/XLC_LOCALE/zh_TW.big5,v 1.1 1999/08/28 09:00:41 dawes Exp $
+XCOMM
+XCOMM	XLC_FONTSET category
+XCOMM
 XLC_FONTSET
-#       fs0 class (7 bit ASCII)
+XCOMM       fs0 class (7 bit ASCII)
 fs0     {
         charset {
                 name    ISO8859-1:GL
@@ -18,33 +18,36 @@ fs0     {
                 vertical_rotate all
         }
 }
-#       fs1 class
+XCOMM       fs1 class
 fs1     {
         charset {
                 name    BIG5-0:GLGR
         }
         font    {
                 primary BIG5-0:GLGR
+				substitute BIG5-0:GLGR
         }
 }
 END XLC_FONTSET
 
-#
-#	XLC_XLOCALE category
-#
+XCOMM
+XCOMM	XLC_XLOCALE category
+XCOMM
 XLC_XLOCALE
 
-encoding_name		zh_TW.big5
+encoding_name		zh_TW.Big5
 mb_cur_max		2
 state_depend_encoding	False
 
 wc_encoding_mask	\x00008000
 wc_shift_bits		8
 
-#use_stdc_env		False
-#force_convert_to_mb	True
+#ifndef X_LOCALE
+use_stdc_env		True
+force_convert_to_mb	True
+#endif
 
-#	cs0 class
+XCOMM	cs0 class
 cs0	{
 	side		GL:Default
 	length		1
@@ -52,7 +55,7 @@ cs0	{
 	ct_encoding	ISO8859-1:GL
 }
 
-#	cs1 class
+XCOMM	cs1 class
 cs1	{
 	side		none
 	length		2
