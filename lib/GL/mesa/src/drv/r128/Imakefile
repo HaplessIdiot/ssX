@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/r128/Imakefile,v 1.5 2000/08/24 22:20:07 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/r128/Imakefile,v 1.6 2000/09/24 13:51:10 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -302,7 +302,7 @@ MESA_INCLUDES = -I. -I.. -I../../include \
          OBJS = $(DRIOBJS) $(DRMOBJS) $(MESAOBJS) $(ASMOBJS) \
 		$(COMMONOBJS) $(R128OBJS)
 
-REQUIREDLIBS += -lm
+REQUIREDLIBS += MathLibrary
 #if !GlxBuiltInMga
 REQUIREDLIBS += -L../../../.. -lGL
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel.c,v 1.9 1999/12/16 02:26:30 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel.c,v 1.10 2000/03/06 22:59:31 dawes Exp $ */
 
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
@@ -135,14 +135,11 @@ DEC21030AccelInit(ScreenPtr pScreen)
   TGA_AccelInfoRec->SubsequentSolidFillRect = TGASubsequentSolidFillRect;
 
   /* screen to screen copy */
-  if(pTga->depthflag == BPP8PACKED) {  /* screen to screen copy apparently doesn't work
-			                  for 32bpp tga */
-    TGA_AccelInfoRec->ScreenToScreenCopyFlags = NO_TRANSPARENCY;
-    TGA_AccelInfoRec->SetupForScreenToScreenCopy =
-      TGASetupForScreenToScreenCopy;
-    TGA_AccelInfoRec->SubsequentScreenToScreenCopy =
-      TGASubsequentScreenToScreenCopy;
-  }
+  TGA_AccelInfoRec->ScreenToScreenCopyFlags = NO_TRANSPARENCY;
+  TGA_AccelInfoRec->SetupForScreenToScreenCopy =
+    TGASetupForScreenToScreenCopy;
+  TGA_AccelInfoRec->SubsequentScreenToScreenCopy =
+    TGASubsequentScreenToScreenCopy;
 
   /* mono 8x8 pattern fill */
   
@@ -155,21 +152,19 @@ DEC21030AccelInit(ScreenPtr pScreen)
 
   /* color expand */
   /* does not work for 32bpp (yet) */
-  if(pTga->depthflag == BPP8PACKED) {
-    TGA_AccelInfoRec->ScanlineCPUToScreenColorExpandFillFlags =
-      BIT_ORDER_IN_BYTE_LSBFIRST;
-  
-    TGA_AccelInfoRec->NumScanlineColorExpandBuffers = 1;
-    pTga->buffers[0] = (CARD32 *)malloc(CE_BUFSIZE);
-    TGA_AccelInfoRec->ScanlineColorExpandBuffers =
-      (unsigned char **)pTga->buffers;
-    TGA_AccelInfoRec->SetupForScanlineCPUToScreenColorExpandFill =
-      TGASetupForScanlineCPUToScreenColorExpandFill;
-    TGA_AccelInfoRec->SubsequentScanlineCPUToScreenColorExpandFill = 
-      TGASubsequentScanlineCPUToScreenColorExpandFill;
-    TGA_AccelInfoRec->SubsequentColorExpandScanline = 
-      TGASubsequentColorExpandScanline;
-  }
+  TGA_AccelInfoRec->ScanlineCPUToScreenColorExpandFillFlags =
+    BIT_ORDER_IN_BYTE_LSBFIRST;
+
+  TGA_AccelInfoRec->NumScanlineColorExpandBuffers = 1;
+  pTga->buffers[0] = (CARD32 *)malloc(CE_BUFSIZE);
+  TGA_AccelInfoRec->ScanlineColorExpandBuffers =
+    (unsigned char **)pTga->buffers;
+  TGA_AccelInfoRec->SetupForScanlineCPUToScreenColorExpandFill =
+    TGASetupForScanlineCPUToScreenColorExpandFill;
+  TGA_AccelInfoRec->SubsequentScanlineCPUToScreenColorExpandFill = 
+    TGASubsequentScanlineCPUToScreenColorExpandFill;
+  TGA_AccelInfoRec->SubsequentColorExpandScanline = 
+    TGASubsequentColorExpandScanline;
 
   /* lines */
   
@@ -210,9 +205,9 @@ TGASetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 #ifdef PROFILE
     unsigned int start, stop;
 #endif
-    register unsigned long iobase, offset;
     TGAPtr pTga = NULL;
     unsigned int fgcolor = 0, bgcolor = 0, pmask = 0;
+    TGA_DECL();
 
     pTga = TGAPTR(pScrn);
     TGA_GET_IOBASE();
@@ -274,8 +269,8 @@ TGASubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 #ifdef PROFILE
     unsigned int start, stop;
 #endif
-    register unsigned long iobase, offset;
     TGAPtr pTga;
+    TGA_DECL();
 
     pTga = TGAPTR(pScrn);
     TGA_GET_IOBASE();
@@ -315,27 +310,32 @@ TGASubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 #ifdef PROFILE
     unsigned int start, stop;
 #endif
-    register unsigned long iobase, offset;
     TGAPtr pTga;
     unsigned char *p = NULL;
     int width = 0;
     unsigned int addr;
     unsigned int pixelmask = 0;
     unsigned int stipple;
+    unsigned int align_mask;
     int align = 0;
     int skipleft;
 
     CARD32 c = 0, d = 0;
     CARD32 *e = NULL;
     int i = 0, num_dwords = 0;
+    TGA_DECL();
     
     pTga = TGAPTR(pScrn);
     TGA_GET_IOBASE();
     TGA_GET_OFFSET();
 
-/*      ErrorF("TGASubsequentColorExpandScanline called\n"); */
-/*      if(pTga->transparent_pattern_p) */
-/*  	ErrorF("transparent color expand\n"); */
+    align_mask = (pTga->depthflag == BPP24) ? 0x0f : 0x03;
+
+#if 0
+    ErrorF("TGASubsequentColorExpandScanline called\n");
+    if(pTga->transparent_pattern_p)
+      ErrorF("transparent color expand\n");
+#endif
 
     p = (unsigned char *)pTga->buffers[0];
     addr = FB_OFFSET(pTga->ce_x, pTga->ce_y);
@@ -345,12 +345,13 @@ TGASubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     while(width > 0) {
 	if(!pTga->transparent_pattern_p)
 	    pixelmask = 0xFFFFFFFF;
-	if(addr & 0x3) {
-	    align = addr & 0x3;
-	    if(!pTga->transparent_pattern_p)
+	
+	align = (addr & align_mask) / pTga->Bpp; /* no. pixels out of align */
+	if (align) {
+	    if (!pTga->transparent_pattern_p)
 		pixelmask <<= align;
-/*  	    ErrorF("aligment is %d\n", align); */
-	    addr -= align;
+/*  	    ErrorF("alignment is %d\n", align); */
+	    addr -= align * pTga->Bpp;
 	    width += align;
 
 	    e = (CARD32 *)p;
@@ -369,41 +370,43 @@ TGASubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 	    }
 	}
 	
-	
-	if(!pTga->transparent_pattern_p) {
-	    if(skipleft) {
+	if (!pTga->transparent_pattern_p) {
+	    if (skipleft) {
 		pixelmask <<= skipleft;
 		skipleft = 0;
 	    }
-	    if(width < 32)
+	    if (width < 32) {
 		pixelmask &= (0xFFFFFFFF >> (32 - width));
+	    }
+	    TGA_FAST_WRITE_REG(pixelmask, TGA_PIXELMASK_REG);
 	}
 	else {
 	    unsigned int *i = NULL;
 	
 /*  	    ErrorF("transparent scanline with x = %d, y = %d, w = %d, h = %d\n",  pTga->ce_x, pTga->ce_y, pTga->ce_width, pTga->ce_height); */
-	    if(skipleft) {
+	    if (skipleft) {
 		i = (unsigned int *)p;
 		*i &= (0xFFFFFFFF << skipleft);
 		skipleft = 0;
 	    }
-	    if(width < 32) {
+	    if (width < 32) {
 		i = (unsigned int *)p;
 		*i &= (0xFFFFFFFF >> (32 - width));
 	    }
 	}
     
-	if(!pTga->transparent_pattern_p)
-	    TGA_FAST_WRITE_REG(pixelmask, TGA_PIXELMASK_REG);
-	TGA_FAST_WRITE_REG(addr, TGA_ADDRESS_REG);
 	stipple = *((unsigned int *)p);
-	TGA_FAST_WRITE_REG(stipple, TGA_CONTINUE_REG);
-	addr += 32;
+	switch (pTga->Chipset) {
+	case PCI_CHIP_TGA2:
+	    *(unsigned int *)(pTga->FbBase + addr) = stipple; WMB;
+	    break;
+	case PCI_CHIP_DEC21030:
+	    TGA_FAST_WRITE_REG(addr, TGA_ADDRESS_REG);
+	    TGA_FAST_WRITE_REG(stipple, TGA_CONTINUE_REG);
+	}
+	addr += 32 * pTga->Bpp;
 	p += 4;
 	width -= 32;
-	if(align) {
-	    align = 0;
-	}
     }
     pTga->ce_height--;
     if(pTga->ce_height == 0) {
@@ -430,9 +433,9 @@ TGASetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
 #ifdef PROFILE
   unsigned int start, stop;
 #endif
-  register unsigned long iobase, offset;
   TGAPtr pTga;
   unsigned int fgcolor = 0, pmask = 0;
+  TGA_DECL();
   
   pTga = TGAPTR(pScrn);
   TGA_GET_IOBASE();
@@ -487,8 +490,8 @@ TGASubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 #ifdef PROFILE
   unsigned int stop, start;
 #endif
-  register unsigned long iobase, offset;
   TGAPtr pTga;
+  TGA_DECL();
 
   pTga = TGAPTR(pScrn);
   TGA_GET_IOBASE();
@@ -547,9 +550,9 @@ TGASetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
 #ifdef PROFILE
   unsigned int start, stop;
 #endif
-  register unsigned long iobase, offset;
   TGAPtr pTga;
   unsigned int pmask = 0;
+  TGA_DECL();
 
   pTga = TGAPTR(pScrn);
   TGA_GET_IOBASE();
@@ -557,9 +560,7 @@ TGASetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
   
   /* see section 6.2.9 */
 
-  /*  ErrorF("TGASetupForScreenToScreenCopy called\n"); */
-
-  if(pTga->depthflag == BPP8PACKED) {
+  if (pTga->depthflag == BPP8PACKED) {
     pmask = planemask | (planemask << 8) | (planemask << 16) |
 		 (planemask << 24);
   }
@@ -572,7 +573,7 @@ TGASetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
   pTga->current_rop = rop | pTga->depthflag;
 
   /* do we copy a rectangle from top to bottom or bottom to top? */
-  if(ydir == -1) {
+  if (ydir == -1) {
     pTga->blitdir = BLIT_FORWARDS;
   }
   else {
@@ -581,6 +582,7 @@ TGASetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
   TGA_SAVE_OFFSET();
   return;
 }
+
 /*
  * This is the implementation of the SubsequentForScreenToScreenCopy
  * that sends commands to the coprocessor to perform a screen-to-screen
@@ -601,23 +603,32 @@ TGASubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1, int x2,
 #ifdef PROFILE
   unsigned int stop, start;
 #endif
-  register unsigned long iobase, offset;
   TGAPtr pTga;
+  TGA_DECL();
 
   pTga = TGAPTR(pScrn);
   TGA_GET_IOBASE();
   TGA_GET_OFFSET();
-  
-  /*  ErrorF("TGASubsequentScreenToScreenCopy called\n"); */
-  
+#if 0
+  ErrorF("TGASubsequentScreenToScreenCopy(,%d,%d,%d,%d,%d,%d):"
+	 " COPY %s BLIT %s\n",
+	 x1, y1, x2, y2, w, h, (x2 > x1 && (x1 + w) > x2)?"BWD":"FWD",
+	 (pTga->blitdir == BLIT_FORWARDS)?"FWD":"BWD");
+#endif
+  TGASync(pScrn); /* ?? */
+
   TGA_FAST_WRITE_REG(COPY | X11 | pTga->depthflag, TGA_MODE_REG);
   TGA_FAST_WRITE_REG(pTga->current_rop, TGA_RASTEROP_REG);
   TGA_FAST_WRITE_REG(pTga->current_planemask, TGA_PLANEMASK_REG);
 
+#if 1
   if(x2 > x1 && (x1 + w) > x2)
     copy_func = TGACopyLineBackwards;
   else 
     copy_func = TGACopyLineForwards; 
+#else
+    copy_func = TGACopyLineForwards; 
+#endif
 
   TGA_SAVE_OFFSET();  
   if(pTga->blitdir == BLIT_FORWARDS) {
@@ -630,6 +641,8 @@ TGASubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1, int x2,
       (*copy_func)(pScrn, x1, y1 + i, x2, y2 + i, w);
     }
   }
+
+  TGASync(pScrn); /* ?? */
 
   TGA_GET_OFFSET();
   TGA_FAST_WRITE_REG(SIMPLE | X11 | pTga->depthflag, TGA_MODE_REG);
@@ -648,59 +661,84 @@ TGACopyLineForwards(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2, int w)
   int read;
   unsigned long source_address, destination_address;
   unsigned int mask_source, mask_destination;
+  unsigned int cando, cando_mask;
   int source_align, destination_align;
   int pixel_shift;
-  register unsigned long iobase, offset;
 #ifdef PROFILE
   unsigned int start, stop;
 #endif
   TGAPtr pTga;
+  TGA_DECL();
 
   pTga = TGAPTR(pScrn);
   TGA_GET_IOBASE();
   TGA_GET_OFFSET();
 
+  cando = 32;
+  cando_mask = 0xFFFFFFFFU;
+  if (pTga->Chipset == PCI_CHIP_DEC21030 && pTga->depthflag == BPP24) {
+    cando = 16;
+    cando_mask = 0x0000FFFFU;
+  }
+
   source_address = FB_OFFSET(x1, y1);
   destination_address = FB_OFFSET(x2, y2);
- 
+#if 0 
+  ErrorF("CPY-FWD(,%d,%d,%d,%d,%d): sadr = 0x%lx, dadr = 0x%lx\n",
+	 x1, y1, x2, y2, w, source_address, destination_address);
+#endif
   read = 0;
-  while(read < w) {
-    mask_source = 0xFFFFFFFF;
-    if((w - read) >= 32)
-      mask_destination = 0xFFFFFFFF;
-    else
-      mask_destination = ((unsigned int)0xFFFFFFFF) >> (32 - (w - read));
-    source_align = source_address & 0x07;
-    destination_align = destination_address & 0x07;
-    source_address = source_address - source_align;
-    mask_source <<= source_align;
-    destination_address = destination_address - destination_align;
-    mask_destination <<= destination_align;
+  while (read < w) {
 
-    if(destination_align >= source_align)
+    mask_source = cando_mask;
+    if ((w - read) >= cando)
+      mask_destination = cando_mask;
+    else
+      mask_destination = cando_mask >> (cando - (w - read));
+
+    source_align = source_address & 0x07;
+    source_address -= source_align;
+    mask_source <<= source_align / pTga->Bpp;
+    /*    mask_source &= cando_mask; */
+
+    destination_align = destination_address & 0x07;
+    destination_address -= destination_align;
+    mask_destination <<= destination_align / pTga->Bpp;
+    /*    mask_destination &= cando_mask; */
+
+    if (destination_align >= source_align)
       pixel_shift = destination_align - source_align;
     else {
       pixel_shift = 8 - (source_align - destination_align);
       /* we need to prime the residue register in this case */
-      destination_address = destination_address - 8;
-      mask_destination <<= 8;
+      destination_address -= 8;
+      mask_destination <<= 8 / pTga->Bpp;
+      mask_destination &= cando_mask;/* ?? */
+    }
+
+    TGA_FAST_WRITE_REG(pixel_shift, TGA_PIXELSHIFT_REG);
+    switch (pTga->Chipset) {
+    case PCI_CHIP_TGA2:
+        *(unsigned int *)(pTga->FbBase + source_address) = mask_source; WMB;
+	*(unsigned int *)(pTga->FbBase + destination_address) = mask_destination; WMB;
+	break;
+    case PCI_CHIP_DEC21030:
+        /* use GADR and GCTR */
+        TGA_FAST_WRITE_REG(source_address, TGA_ADDRESS_REG);
+	TGA_FAST_WRITE_REG(mask_source, TGA_CONTINUE_REG);
+	TGA_FAST_WRITE_REG(destination_address, TGA_ADDRESS_REG);
+	TGA_FAST_WRITE_REG(mask_destination, TGA_CONTINUE_REG);
+	break;
     }
     
-    TGA_FAST_WRITE_REG(pixel_shift, TGA_PIXELSHIFT_REG);
-    /* use GADR and GCTR */
-    TGA_FAST_WRITE_REG(source_address, TGA_ADDRESS_REG);
-    TGA_FAST_WRITE_REG(mask_source, TGA_CONTINUE_REG);
-    TGA_FAST_WRITE_REG(destination_address, TGA_ADDRESS_REG);
-    TGA_FAST_WRITE_REG(mask_destination, TGA_CONTINUE_REG);
-    
-    source_address = source_address + (32 - pixel_shift);
-    destination_address += 32;
+    source_address += (cando - (pixel_shift / pTga->Bpp)) * pTga->Bpp;
+    destination_address += cando * pTga->Bpp;
 
-    read += 32;
-    read -= destination_align; /* "read" is perhaps better
+    read += cando;
+    read -= destination_align / pTga->Bpp; /* "read" is perhaps better
 				    called "written"... */
-    if(destination_align < source_align) {
-      read -= 8;
+    if (destination_align < source_align) {
+      read -= 8 / pTga->Bpp;
     }
   }
 
@@ -720,124 +758,166 @@ TGACopyLineBackwards(ScrnInfoPtr pScrn, int x1, int y1, int x2,
   unsigned long a1, a2;
   unsigned long source_address, destination_address;
   unsigned int mask_source, mask_destination;
+  unsigned int cando, cando_mask;
   int source_align, destination_align;
   int pixel_shift;
   int read;
 #ifdef PROFILE
   unsigned int start, stop;
 #endif
-  register unsigned long iobase, offset;
   TGAPtr pTga;
+  TGA_DECL();
 
   pTga = TGAPTR(pScrn);
   TGA_GET_IOBASE();
   TGA_GET_OFFSET();
   
+  cando = 32;
+  cando_mask = 0xFFFFFFFFU;
+  if (pTga->Chipset == PCI_CHIP_DEC21030 && pTga->depthflag == BPP24) {
+    cando = 16;
+    cando_mask = 0x0000FFFFU;
+  }
+
   a1 = FB_OFFSET(x1, y1);
   a2 = FB_OFFSET(x2, y2);
       
-  source_address = FB_OFFSET((x1 + w) - 32, y1);
-  destination_address = FB_OFFSET((x2 + w) - 32, y2);
-  
+  source_address = FB_OFFSET((x1 + w) - cando, y1);
+  destination_address = FB_OFFSET((x2 + w) - cando, y2);
+
+#if 0
+  ErrorF("CPY-BWD(,%d,%d,%d,%d,%d): sadr = 0x%lx, dadr = 0x%lx"
+	 " a1 0x%lx a2 0x%lx\n",
+	 x1, y1, x2, y2, w, source_address, destination_address, a1, a2);
+#endif
+
   read = 0;
-  while(read < w) {
-    mask_source = 0xFFFFFFFF;
-    if((w - read) >= 32)
-      mask_destination = 0xFFFFFFFF;
-    else
-      mask_destination = ((unsigned int)0xFFFFFFFF) << (32 - (w - read));
+  while (read < w) {
+    mask_source = cando_mask;
+    if ((w - read) >= cando)
+      mask_destination = cando_mask;
+    else {
+      mask_destination = ((unsigned int)cando_mask) << (cando - (w - read));
+      mask_destination &= cando_mask; /* esp. for cando==16 */
+    }
 
     source_align = source_address & 0x07;
     destination_align = destination_address & 0x07;
 
-    if(read == 0 && destination_align &&
+    if (read == 0 && destination_align &&
        (source_align > destination_align)) {
       /* we want to take out all the destination_align pixels in one
 	 little copy first, then move on to the main stuff */
       unsigned long tmp_src, tmp_dest;
       unsigned int tmp_src_mask, tmp_dest_mask;
       
-      tmp_src = (a1 + w) - source_align;
-      tmp_dest = ((a2 + w) - destination_align) - 8;
-      tmp_src_mask = 0xFFFFFFFF;
-      tmp_dest_mask = ((unsigned int)0x000000FF) >> (8 - destination_align);
-      tmp_dest_mask <<= 8;
+      tmp_src = a1 + (w - (source_align / pTga->Bpp)) * pTga->Bpp;
+      tmp_dest = a2 + (w - (destination_align / pTga->Bpp) - (8 / pTga->Bpp)) * pTga->Bpp;
+      tmp_src_mask = cando_mask;
+      tmp_dest_mask = ((unsigned int)0x000000FF) >> (8 - destination_align) / pTga->Bpp;
+      tmp_dest_mask <<= 8 / pTga->Bpp;
       pixel_shift = (8 - source_align) + destination_align;
-
+#if 0
+      ErrorF("CPY-BWD - premature copy: sa = %d, da = %d, ps =%d\n",
+	     source_align, destination_align, pixel_shift);
+#endif
       TGA_FAST_WRITE_REG(pixel_shift, TGA_PIXELSHIFT_REG);
-      TGA_FAST_WRITE_REG(tmp_src, TGA_ADDRESS_REG);
-      TGA_FAST_WRITE_REG(tmp_src_mask, TGA_CONTINUE_REG);
-      TGA_FAST_WRITE_REG(tmp_dest, TGA_ADDRESS_REG);
-      TGA_FAST_WRITE_REG(tmp_dest_mask, TGA_CONTINUE_REG);
-
-/*        ErrorF("premature copy: sa = %d, da = %d, ps =%d\n", source_align, */
-/*    	     destination_align, pixel_shift); */
+      switch (pTga->Chipset)
+      {
+      case PCI_CHIP_TGA2:
+	  *(unsigned int *)(pTga->FbBase + tmp_src) = tmp_src_mask; WMB;
+	  *(unsigned int *)(pTga->FbBase + tmp_dest) = tmp_dest_mask; WMB;
+	  break;
+      case PCI_CHIP_DEC21030:
+	  /* use GADR and GCTR */
+	  TGA_FAST_WRITE_REG(tmp_src, TGA_ADDRESS_REG);
+	  TGA_FAST_WRITE_REG(tmp_src_mask, TGA_CONTINUE_REG);
+	  TGA_FAST_WRITE_REG(tmp_dest, TGA_ADDRESS_REG);
+	  TGA_FAST_WRITE_REG(tmp_dest_mask, TGA_CONTINUE_REG);
+	  break;
+      }
 
       source_address += (8 - source_align);
-      mask_source >>= (8 - source_align);
-      mask_source >>= destination_align;
-      mask_destination >>= destination_align;
+      mask_source >>= (8 - source_align) / pTga->Bpp;
+      mask_source >>= destination_align / pTga->Bpp;
+      mask_destination >>= destination_align / pTga->Bpp;
     }
-    else if(read == 0 && (source_align != destination_align)) {
+    else if (read == 0 && (source_align != destination_align)) {
       source_address += (8 - source_align);
       /*    	mask_source >>= (8 - source_align); */
-      /* if we comment this out, it breaks...TGA tries to
+      /* if we uncomment this, it breaks...TGA tries to
 	 optimize away a read of our last pixels... */
     }
-    else if(source_align) {
+    else if (source_align) {
       source_address += (8 - source_align);
-      mask_source >>= (8 - source_align);
-    }
-    if(destination_align) {
-      destination_address += (8 - destination_align);
-      mask_destination >>= (8 - destination_align);
+      mask_source >>= (8 - source_align) / pTga->Bpp;
     }
 
-    if(destination_align >= source_align)
+    if (destination_align) {
+      destination_address += (8 - destination_align);
+      mask_destination >>= (8 - destination_align) / pTga->Bpp;
+    }
+
+    if (destination_align >= source_align)
       pixel_shift = destination_align - source_align;
     else {
       pixel_shift = (8 - source_align) + destination_align;
-      if(destination_align) {
+      if (destination_align) {
 	source_address += 8;
-	mask_source >>= 8;
+	mask_source >>= 8 / pTga->Bpp;
       }
     }
 
+#if 0
+    ErrorF("CPY-BWD - normal: sadr 0x%lx sm 0x%x dadr 0x%lx dm 0x%x"
+	   " sa %d da %d ps %d read %d\n",
+	   source_address, mask_source,
+	   destination_address, mask_destination,
+	   source_align, destination_align, pixel_shift, read);
+#endif
     TGA_FAST_WRITE_REG(pixel_shift, TGA_PIXELSHIFT_REG);
-    /* use GADR and GCTR */
-    TGA_FAST_WRITE_REG(source_address, TGA_ADDRESS_REG);
-    TGA_FAST_WRITE_REG(mask_source, TGA_CONTINUE_REG);
-    TGA_FAST_WRITE_REG(destination_address, TGA_ADDRESS_REG);
-    TGA_FAST_WRITE_REG(mask_destination, TGA_CONTINUE_REG);
+    switch (pTga->Chipset) {
+    case PCI_CHIP_TGA2:
+        *(unsigned int *)(pTga->FbBase + source_address) = mask_source; WMB;
+	*(unsigned int *)(pTga->FbBase + destination_address) = mask_destination; WMB;
+	break;
+    case PCI_CHIP_DEC21030:
+        /* use GADR and GCTR */
+        TGA_FAST_WRITE_REG(source_address, TGA_ADDRESS_REG);
+	TGA_FAST_WRITE_REG(mask_source, TGA_CONTINUE_REG);
+	TGA_FAST_WRITE_REG(destination_address, TGA_ADDRESS_REG);
+	TGA_FAST_WRITE_REG(mask_destination, TGA_CONTINUE_REG);
+	break;
+    }
 
 /*      if(read == 0) */
 /*        ErrorF("sa = %d, da = %d, ps = %d\n", source_align, destination_align, */
 /*      	     pixel_shift); */
     
-    if(destination_align > source_align) {
-      source_address -= 24;
-      destination_address -= (32 - pixel_shift);
-      if(read == 0)
-	read += 24 + source_align;
+    if (destination_align > source_align) {
+      source_address -= cando * pTga->Bpp - 8;
+      destination_address -= (cando - (pixel_shift / pTga->Bpp)) * pTga->Bpp;
+      if (read == 0)
+	read += (cando - 8 / pTga->Bpp) + source_align / pTga->Bpp;
       else 
-	read += 24;      
+	read += cando - 8 / pTga->Bpp;      
     }
-    else if(destination_align == source_align) {
-      source_address -= 32;
-      destination_address -= 32;
-      if(read == 0 && destination_align)
-	read += (32 - (8 - destination_align));
+    else if (destination_align == source_align) {
+      source_address -= cando * pTga->Bpp;
+      destination_address -= cando * pTga->Bpp;
+      if (read == 0 && destination_align)
+	read += (cando - (8 - destination_align) / pTga->Bpp);
       else
-	read += 32;
+	read += cando;
     }
-    else if(source_align > destination_align) {
-      source_address -= 24;
-      destination_address -= (32 - pixel_shift);
+    else if (source_align > destination_align) {
+      source_address -= cando * pTga->Bpp - 8;
+      destination_address -= (cando - (pixel_shift / pTga->Bpp)) * pTga->Bpp;
       /* only happens when read == 0 */
-      if(destination_align)
-	read += 16 + source_align;
+      if (destination_align)
+	read += (cando - 16 / pTga->Bpp) + source_align / pTga->Bpp;
       else
-	read += 32 - pixel_shift;
+	read += cando - pixel_shift / pTga->Bpp;
     }
   }
 
@@ -852,9 +932,9 @@ TGASetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patx, int paty,
 #ifdef PROFILE
   unsigned int start, stop;
 #endif
-  register unsigned long iobase, offset;
   TGAPtr pTga;
   unsigned int fgcolor = 0, bgcolor = 0, pmask = 0;
+  TGA_DECL();
 
   pTga = TGAPTR(pScrn);
   TGA_GET_IOBASE();
@@ -925,7 +1005,7 @@ TGASubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int patx, int paty,
 #ifdef PROFILE
   register unsigned int stop, start;
 #endif
-  register unsigned long iobase, offset;
+  TGA_DECL();
 
 
 /*    ErrorF("TGASubsequentMono8x8PatternFillRect called with x = %d, y = %d, w = %d, h = %d\n", x, y, w, h); */
@@ -1005,9 +1085,9 @@ TGASetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop,
 #ifdef PROFILE
   unsigned int start, stop;
 #endif
-  register unsigned long iobase, offset;
   TGAPtr pTga = NULL;
   unsigned int fgcolor = 0, pmask = 0;
+  TGA_DECL();
   
   pTga = TGAPTR(pScrn);
   TGA_GET_IOBASE();
@@ -1056,10 +1136,10 @@ TGASubsequentSolidLine(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2,
 #ifdef PROFILE
   unsigned int start, stop;
 #endif
-  register unsigned long iobase, offset;
   TGAPtr pTga = NULL;
   CARD32 abs_dx = 0, abs_dy = 0, address = 0, octant_reg = 0;
   int length = 0;
+  TGA_DECL();
 
   pTga = TGAPTR(pScrn);
   TGA_GET_IOBASE();
@@ -1136,10 +1216,9 @@ TGASetupForClippedLine(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2,
 #ifdef PROFILE
   unsigned int start, stop;
 #endif
-  register unsigned long iobase, offset;
   TGAPtr pTga = NULL;
   CARD32 abs_dx = 0, abs_dy = 0, octant_reg = 0;
-
+  TGA_DECL();
 
   pTga = TGAPTR(pScrn);
   TGA_GET_IOBASE();
@@ -1200,10 +1279,10 @@ TGASubsequentClippedSolidLine(ScrnInfoPtr pScrn, int x1, int y1, int len,
 #ifdef PROFILE
   unsigned int start, stop;
 #endif
-  register unsigned long iobase, offset;
   TGAPtr pTga = NULL;
   CARD32 address = 0;
   int length = 0;
+  TGA_DECL();
 
   pTga = TGAPTR(pScrn);
   TGA_GET_IOBASE();
@@ -1246,9 +1325,9 @@ TGASetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg, int rop,
 #ifdef PROFILE
   unsigned int start = 0, stop = 0;
 #endif
-  register unsigned long iobase = 0, offset = 0;
   TGAPtr pTga = NULL;
   unsigned int color1 = 0, color2 = 0, pmask = 0;
+  TGA_DECL();
   
   pTga = TGAPTR(pScrn);
   TGA_GET_IOBASE();
@@ -1293,13 +1372,13 @@ TGASubsequentDashedLine(ScrnInfoPtr pScrn, int x1, int y1, int x2,
 #ifdef PROFILE
   unsigned int start, stop;
 #endif
-  register unsigned long iobase, offset;
   TGAPtr pTga = NULL;
   CARD32 abs_dx = 0, abs_dy = 0, address = 0, octant_reg = 0;
   int length = 0;
   CARD16 line_mask = 0;
   int pattern_overflow = 0;
   int l = 0;
+  TGA_DECL();
   
   pTga = TGAPTR(pScrn);
   TGA_GET_IOBASE();
@@ -1418,13 +1497,13 @@ TGASubsequentClippedDashedLine(ScrnInfoPtr pScrn, int x1, int y1, int len,
 #ifdef PROFILE
   unsigned int start, stop;
 #endif
-  register unsigned long iobase, offset;
   TGAPtr pTga = NULL;
   CARD32 address = 0;
   int length = 0;
   CARD16 line_mask = 0;
   int pattern_overflow = 0;
   int l = 0;
+  TGA_DECL();
   
   pTga = TGAPTR(pScrn);
   TGA_GET_IOBASE();

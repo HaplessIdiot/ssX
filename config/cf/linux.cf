@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.139 2000/09/29 08:59:41 eich Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.140 2000/10/17 16:53:12 tsi Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault		YES
@@ -459,6 +459,9 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 # define LinuxMachineDefines	-D__alpha__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
+# ifdef UseCompaqMathLibrary
+#  define MathLibrary		-lcpml -lm
+# endif
 #endif /* AlphaArchitecture */
 
 #ifdef Arm32Architecture

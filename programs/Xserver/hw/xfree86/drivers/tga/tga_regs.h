@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.9 1999/12/13 23:48:22 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.10 2000/07/26 01:52:22 tsi Exp $ */
 
 /* TGA hardware description (minimal)
  *
@@ -41,20 +41,43 @@
 #define TYPE_TGA_24PLANE		1
 #define TYPE_TGA_24PLUSZ		3
 
+#if 1
+#define WMB	mem_barrier()
+#else
+#define WMB	write_mem_barrier()
+#endif
+
 #define TGA_WRITE_REG(v,r) \
 	do {\
-		 *(unsigned int *)((char*)(pTga->IOBase)+(r)) = v;\
-		 mem_barrier();\
+		 *(unsigned int *)((char*)(pTga->IOBase)+(r)) = (v);\
+		 WMB;\
 	} while (0)
+
 #define TGA_READ_REG(r) \
 	( *(unsigned int *)((char*)(pTga->IOBase)+(r)))
 
-#ifdef __alpha__
+#define TGA2_WRITE_CLOCK_REG(v,r) \
+	do {\
+		 *(unsigned int *)((char*)(pTga->ClkBase)+(r)) = (v);\
+		 WMB;\
+	} while (0)
+
+#define TGA2_WRITE_RAMDAC_REG(v,r) \
+	do {\
+		 *(unsigned int *)((char*)(pTga->DACBase)+(r)) = (v);\
+		 WMB;\
+	} while (0)
+
+#define TGA2_READ_RAMDAC_REG(r) \
+	( *(unsigned int *)((char*)(pTga->DACBase)+(r)))
+
+#if defined(__alpha__) && 0 /* ?? disable this for now ?? */
 /* we can avoid an mb() if we write to an alternate register space each time */
 
 #define MAX_OFFSET 8192
 #define OFFSET_INC 1024
 
+#define TGA_DECL() register unsigned long iobase, offset
 #define TGA_GET_IOBASE() iobase = (unsigned long)pTga->IOBase;
 #define TGA_GET_OFFSET() offset = pTga->regOffset;
 #define TGA_SAVE_OFFSET() pTga->regOffset = offset;
@@ -92,6 +115,7 @@ do {\
 
 #else /* __alpha__ */
 
+#define TGA_DECL()
 #define TGA_GET_IOBASE() ;
 #define TGA_GET_OFFSET() ;
 #define TGA_SAVE_OFFSET() ;
@@ -99,15 +123,13 @@ do {\
 
 #endif /* __alpha__ */
 
-#define BT485_WRITE(v,r) \
-	TGA_WRITE_REG((r),TGA_RAMDAC_SETUP_REG);		\
-	TGA_WRITE_REG(((v)&0xff)|((r)<<8),TGA_RAMDAC_REG);
-
-#define	TGA_ROM_OFFSET			0x0000000
-#define	TGA_REGS_OFFSET			0x0100000
-#define	TGA_8PLANE_FB_OFFSET		0x0200000
-#define	TGA_24PLANE_FB_OFFSET		0x0800000
-#define	TGA_24PLUSZ_FB_OFFSET		0x1000000
+#define	TGA_ROM_OFFSET			0x00000000
+#define TGA2_CLOCK_OFFSET		0x00060000
+#define TGA2_RAMDAC_OFFSET		0x00080000
+#define	TGA_REGS_OFFSET			0x00100000
+#define	TGA_8PLANE_FB_OFFSET		0x00200000
+#define	TGA_24PLANE_FB_OFFSET		0x00800000
+#define	TGA_24PLUSZ_FB_OFFSET		0x01000000
 
 #define TGA_FOREGROUND_REG		0x0020
 #define TGA_BACKGROUND_REG		0x0024
@@ -140,7 +162,9 @@ do {\
 #define TGA_ADDRESS_REG			0x003c
 #define TGA_CONTINUE_REG                0x004c
 #define	TGA_DEEP_REG			0x0050
+#define	TGA_REVISION_REG		0x0054		/* TGA2 */
 #define	TGA_PIXELMASK_REG		0x002c
+#define	TGA_PIXELMASK_PERS_REG		0x005c
 #define	TGA_CURSOR_BASE_REG		0x0060
 #define	TGA_HORIZ_REG			0x0064
 #define	TGA_VERT_REG			0x0068

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i810/Imakefile,v 1.9 2000/08/25 13:42:19 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i810/Imakefile,v 1.10 2000/09/24 13:51:03 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -267,7 +267,7 @@ XCOMM Disabling 3Dnow code for the time being.
          OBJS = $(LOOBJS) $(DRIOBJS) $(DRMOBJS) $(MESAOBJS) $(ASMOBJS)	\
 		$(COMMONOBJS) $(I810OBJS) $(HIOBJS)
 
-REQUIREDLIBS += -lm
+REQUIREDLIBS += MathLibrary
 #if !GlxBuiltInI810
 REQUIREDLIBS += -L../../../.. -lGL
 #endif

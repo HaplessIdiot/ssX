@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.52 2000/04/05 18:13:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.53 2000/06/07 02:13:03 dawes Exp $ */
 
 /*
  *
@@ -994,6 +994,9 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 	TestFree (found);
 	TestFree (name);
 	TestFree (p);
+#ifdef __alpha__
+	istream_mem_barrier();
+#endif
 	return ret;
 }
 
@@ -1035,6 +1038,9 @@ UnloadModuleOrDriver (ModuleDescPtr mod)
     TestFree (mod->name);
     TestFree (mod->filename);
     xfree (mod);
+#ifdef __alpha__
+	istream_mem_barrier();
+#endif
 }
 
 void

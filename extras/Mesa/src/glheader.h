@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/glheader.h,v 1.8 2000/08/11 17:01:49 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/glheader.h,v 1.9 2000/09/24 13:50:11 alanh Exp $ */
 
 
 #ifndef GLHEADER_H
@@ -47,7 +47,12 @@
 #else
 #include <assert.h>
 #include <ctype.h>
+/* If we can use Compaq's Fast Math Library on Alpha */
+#if defined(__alpha__) && defined(CCPML)
+#include <cpml.h>
+#else
 #include <math.h>
+#endif
 #include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>

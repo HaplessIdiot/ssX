@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.12tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.13 2000/08/24 22:20:06 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -259,7 +259,7 @@ XCOMM Disabling 3Dnow code for the time being.
          SRCS = $(LOWSRC) $(DRISRCS) $(DRMSRCS) $(MESASRCS) $(ASMSRCS) $(GAMMASRCS) $(HISRC)
          OBJS = $(LOWOBJ) $(DRIOBJS) $(DRMOBJS) $(MESAOBJS) $(ASMOBJS) $(GAMMAOBJS) $(HIOBJ)
 
-REQUIREDLIBS += -lm
+REQUIREDLIBS += MathLibrary
 #if !GlxBuiltInGamma
 REQUIREDLIBS += -L../../../.. -lGL
 #endif

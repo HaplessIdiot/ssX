@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile,v 1.9 2000/08/25 13:42:22 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile,v 1.10 2000/09/24 13:51:05 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -276,7 +276,7 @@ MESA_INCLUDES = -I. -I.. -I../../include \
          OBJS = $(LOOBJS) $(DRIOBJS) $(DRMOBJS) $(MESAOBJS) $(ASMOBJS)	\
 		$(COMMONOBJS) $(MGAOBJS) $(HIOBJS)
 
-REQUIREDLIBS += -lm 
+REQUIREDLIBS += MathLibrary 
 #if !GlxBuiltInMga
 REQUIREDLIBS += -L../../../.. -lGL -L../../../../../X11 -lX11
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.69 2000/10/07 05:09:37 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.70 2000/10/17 16:53:15 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -355,6 +355,9 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 #endif
 }
 
+#define PAL_imb 134
+#define istream_mem_barrier() \
+	__asm__ __volatile__("call_pal %0 #imb" : : "i" (PAL_imb) : "memory")
 #define mem_barrier()        __asm__ __volatile__("mb"  : : : "memory")
 #ifdef __ELF__
 #define write_mem_barrier()  __asm__ __volatile__("wmb" : : : "memory")

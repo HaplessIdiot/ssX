@@ -23,7 +23,7 @@
  *
  * BT RAMDAC routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/BT.c,v 1.5 1998/12/06 06:08:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/BT.c,v 1.6 1999/01/17 10:54:13 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -85,6 +85,10 @@ BTramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/*, RamDacRecP
 	case 0xD0:
 		BTramdac_ID = ATT20C505_RAMDAC;
 		break;
+	default:
+		xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
+			   "Unknown BT RAMDAC type (0x%x), assuming BT485\n",
+			   status);
 	case 0x80:
 	case 0x90:
 	case 0xA0:

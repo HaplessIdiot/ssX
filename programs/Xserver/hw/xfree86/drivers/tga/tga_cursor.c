@@ -25,7 +25,7 @@
  * 
  * DEC TGA hardware cursor using BT485 ramdac
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_cursor.c,v 1.1 1999/04/17 07:06:58 dawes Exp $ */
 
 
 /* tga_cursor.c */
@@ -53,25 +53,26 @@ static void TGASetCursorColors(ScrnInfoPtr pScrn, int bg, int fg);
 static void
 TGALoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 {
+  TGAPtr pTga = TGAPTR(pScrn);
   int i;
 
   /* set 64 bit cursor */
-  tgaBTOutIndReg(pScrn, BT_COMMAND_REG_0, 0x7F, 0x80);
-  tgaBTOutIndReg(pScrn, BT_WRITE_ADDR, 0x00, 0x01);
-  tgaBTOutIndReg(pScrn, BT_STATUS_REG, 0xF8, 0x04);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_COMMAND_REG_0, 0x7F, 0x80);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_WRITE_ADDR, 0x00, 0x01);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_STATUS_REG, 0xF8, 0x04);
 
   /* first write address reg @ 0x0, then write 0xb with the data (for 32 bit
      cursor) */
 
-  tgaBTOutIndReg(pScrn, BT_WRITE_ADDR, 0xFC, 0x00);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_WRITE_ADDR, 0xFC, 0x00);
   
   for(i = 0; i < ((CURSOR_SIZE * CURSOR_SIZE) / 8); i++)
-    tgaBTOutIndReg(pScrn, BT_CURS_RAM_DATA, 0x00, *src++);
+    pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_RAM_DATA, 0x00, *src++);
   
   for(i = 0; i < ((CURSOR_SIZE * CURSOR_SIZE) / 8); i++)
-    tgaBTOutIndReg(pScrn, BT_CURS_RAM_DATA, 0x00, *src++);
+    pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_RAM_DATA, 0x00, *src++);
   
-/*    tgaBTOutIndReg(pScrn, BT_WRITE_ADDR, 0xFC, 0x00); */
+/*    pTga->RamDacRec->WriteDAC(pScrn, BT_WRITE_ADDR, 0xFC, 0x00); */
 
   return;
 }
@@ -80,8 +81,10 @@ TGALoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 static void 
 TGAShowCursor(ScrnInfoPtr pScrn)
 {
+  TGAPtr pTga = TGAPTR(pScrn);
+
   /* enable BT485 X11 cursor */
-  tgaBTOutIndReg(pScrn, BT_COMMAND_REG_2, 0xFC, 0x03);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_COMMAND_REG_2, 0xFC, 0x03);
   
   return;
 }
@@ -90,7 +93,9 @@ TGAShowCursor(ScrnInfoPtr pScrn)
 static void
 TGAHideCursor(ScrnInfoPtr pScrn)
 {
-  tgaBTOutIndReg(pScrn, BT_COMMAND_REG_2, 0xFC, 0x00);
+  TGAPtr pTga = TGAPTR(pScrn);
+
+  pTga->RamDacRec->WriteDAC(pScrn, BT_COMMAND_REG_2, 0xFC, 0x00);
 
   return;
 }
@@ -98,6 +103,7 @@ TGAHideCursor(ScrnInfoPtr pScrn)
 static void
 TGASetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
+   TGAPtr pTga = TGAPTR(pScrn);
    unsigned int tmp_x, tmp_y;
 
    /* translate x && y to BT485 cursor addresses */
@@ -109,11 +115,11 @@ TGASetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
    tmp_y &= 0x0FFF;
 
    /* write out the addresses */
-   tgaBTOutIndReg(pScrn, BT_CURS_X_LOW, 0x00, (tmp_x & 0xFF));
-   tgaBTOutIndReg(pScrn, BT_CURS_X_HIGH, 0xF0, (tmp_x >> 8));
+   pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_X_LOW, 0x00, (tmp_x & 0xFF));
+   pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_X_HIGH, 0xF0, (tmp_x >> 8));
 
-   tgaBTOutIndReg(pScrn, BT_CURS_Y_LOW, 0x00, (tmp_y & 0xFF));
-   tgaBTOutIndReg(pScrn, BT_CURS_Y_HIGH, 0xF0, (tmp_y >> 8));
+   pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_Y_LOW, 0x00, (tmp_y & 0xFF));
+   pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_Y_HIGH, 0xF0, (tmp_y >> 8));
 
    return;
 }
@@ -123,23 +129,25 @@ static void
 TGASetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
      /* set pScrn->cursor_fg and pScrn->cursor_bg */
 {
+  TGAPtr pTga = TGAPTR(pScrn);
+
     /* first, load address register at 0x4 with 0x1, then write 3 color
        octets RGB to 0x5 (background), then write three octets to 0x5
        (foreground), then write to address register 0xFC */
   
-  tgaBTOutIndReg(pScrn, BT_CURS_WR_ADDR, 0xFC, 0x01);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_WR_ADDR, 0xFC, 0x01);
   
   /* we don't seem to support the 6 bit DAC option as of 4.0, and why
      would we? */
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, (bg & 0x00FF0000) >> 16);
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, (bg & 0x0000FF00) >> 8);
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, (bg & 0x000000FF));
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, (bg & 0x00FF0000) >> 16);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, (bg & 0x0000FF00) >> 8);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, (bg & 0x000000FF));
   
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, (fg & 0x00FF0000) >> 16);
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, (fg & 0x0000FF00) >> 8);
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, (fg & 0x000000FF));
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, (fg & 0x00FF0000) >> 16);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, (fg & 0x0000FF00) >> 8);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, (fg & 0x000000FF));
 
-/*    tgaBTOutIndReg(pScrn, BT_CURS_WR_ADDR, 0xFC, 0x00); */
+/*    pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_WR_ADDR, 0xFC, 0x00); */
   
   return;
 }

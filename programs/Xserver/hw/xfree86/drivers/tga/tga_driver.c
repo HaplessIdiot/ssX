@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.44 2000/04/17 16:30:08 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.45 2000/06/21 17:28:15 dawes Exp $ */
 
 /* everybody includes these */
 #include "xf86.h"
@@ -151,11 +151,13 @@ DriverRec TGA = {
 
 static SymTabRec TGAChipsets[] = {
     { PCI_CHIP_DEC21030,		"tga" },
+    { PCI_CHIP_TGA2,			"tga2" },
     { -1,				NULL }
 };
 
 static PciChipsets TGAPciChipsets[] = {
     { PCI_CHIP_DEC21030,	PCI_CHIP_DEC21030,	NULL },
+    { PCI_CHIP_TGA2,		PCI_CHIP_TGA2,		NULL },
     { -1,			-1,			RES_UNDEFINED }
 };
 
@@ -306,14 +308,12 @@ static Bool
 TGAProbe(DriverPtr drv, int flags)
 {
     int i;
-    pciVideoPtr pPci;
     GDevPtr *devSections = NULL;
 /*      GDevPtr *usedDevs; */
     int *usedChips;
     int numDevSections;
     int numUsed;
     Bool foundScreen = FALSE;
-    EntityInfoPtr pEnt;
 
     /*
      * The aim here is to find all cards that this driver can handle,
@@ -380,7 +380,7 @@ TGAProbe(DriverPtr drv, int flags)
 	ScrnInfoPtr pScrn = NULL;
 	    
 	/* Allocate a ScrnInfoRec and claim the slot */
-	if ((pScrn = xf86ConfigPciEntity(pScrn, 0, pEnt->index,
+	if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
 					       TGAPciChipsets, NULL, NULL,
 					       NULL, NULL, NULL))) {
 	    /* Fill in what we can of the ScrnInfoRec */
@@ -648,14 +648,15 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
         
     if (pTga->pEnt->device->MemBase != 0) {
-	pTga->FbAddress = pTga->pEnt->device->MemBase;
+	pTga->CardAddress = pTga->pEnt->device->MemBase;
 	from = X_CONFIG;
     } else {
-      pTga->FbAddress = pTga->PciInfo->memBase[0] & 0xFF800000;
+      pTga->CardAddress = pTga->PciInfo->memBase[0] & 0xFFC00000;/*??*/
     }
 
+    pTga->FbAddress = pTga->CardAddress;
     /* Adjust MMIO region */
-    pTga->IOAddress = pTga->FbAddress + TGA_REGS_OFFSET;
+    pTga->IOAddress = pTga->CardAddress + TGA_REGS_OFFSET;
 
     
     /*********************
@@ -683,10 +684,22 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
       }
     }
     else { /* try to divine the amount of RAM */
-      Base = xf86MapPciMem(pScrn->scrnIndex, 0x0,
-			   pTga->PciTag, pTga->FbAddress, 4);
-      pTga->CardType = (*(unsigned int *)Base >> 12) & 0xf;
-      xf86UnMapVidMem(pScrn->scrnIndex, Base, 4);
+      switch (pTga->Chipset)
+	{
+	case PCI_CHIP_TGA2:
+	  Base = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO_32BIT,
+			       pTga->PciTag, pTga->IOAddress, 0x1000);
+	  pTga->CardType = (*(unsigned int *)((char *)Base+TGA_REVISION_REG) >> 21) & 0x3;
+	  pTga->CardType ^= (pTga->CardType == 1) ? 0 : 3;
+	  xf86UnMapVidMem(pScrn->scrnIndex, Base, 0x1000);
+	  break;
+	case PCI_CHIP_DEC21030:
+	  Base = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO_32BIT,
+			       pTga->PciTag, pTga->FbAddress, 4);
+	  pTga->CardType = (*(unsigned int *)Base >> 12) & 0xf;
+	  xf86UnMapVidMem(pScrn->scrnIndex, Base, 4);
+	  break;
+	}
     }
 
     switch (pTga->CardType) {
@@ -787,37 +800,46 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     
     pTga->RamDac = NULL;
     
-    switch (pTga->Chipset)
-    {
+    if (pTga->CardType != TYPE_TGA_8PLANE) {
+        pTga->RamDacRec = NULL;
+	pTga->RamDac = NULL;
+    } else {
+
+        pTga->RamDacRec = RamDacCreateInfoRec();
+        switch (pTga->Chipset)
+	{
 	case PCI_CHIP_DEC21030:
-	    if (pTga->CardType != TYPE_TGA_8PLANE) {
-	        pTga->RamDacRec = NULL;
-	        pTga->RamDac = NULL;
-	        break;
-	    }
-	    pTga->RamDacRec = RamDacCreateInfoRec();
 	    pTga->RamDacRec->ReadDAC = tgaBTInIndReg;
 	    pTga->RamDacRec->WriteDAC = tgaBTOutIndReg;
 	    pTga->RamDacRec->ReadAddress = tgaBTReadAddress;
 	    pTga->RamDacRec->WriteAddress = tgaBTWriteAddress;
 	    pTga->RamDacRec->ReadData = tgaBTReadData;
 	    pTga->RamDacRec->WriteData = tgaBTWriteData;
-	    if(!RamDacInit(pScrn, pTga->RamDacRec)) {
-		RamDacDestroyInfoRec(pTga->RamDacRec);
-		return FALSE;
-	    }
-
-            TGAMapMem(pScrn);
-	    
-	    pTga->RamDac = BTramdacProbe(pScrn, BTramdacs);
-
-	    TGAUnmapMem(pScrn);
-
-	    if (pTga->RamDac == NULL)
-		return FALSE;
 	    break;
-    }
+	case PCI_CHIP_TGA2:
+	    pTga->RamDacRec->ReadDAC = tga2BTInIndReg;
+	    pTga->RamDacRec->WriteDAC = tga2BTOutIndReg;
+	    pTga->RamDacRec->ReadAddress = tga2BTReadAddress;
+	    pTga->RamDacRec->WriteAddress = tga2BTWriteAddress;
+	    pTga->RamDacRec->ReadData = tga2BTReadData;
+	    pTga->RamDacRec->WriteData = tga2BTWriteData;
+	    break;
+	}
 
+	if (!RamDacInit(pScrn, pTga->RamDacRec)) {
+	    RamDacDestroyInfoRec(pTga->RamDacRec);
+	    return FALSE;
+	}
+
+	TGAMapMem(pScrn);
+	    
+	pTga->RamDac = BTramdacProbe(pScrn, BTramdacs);
+
+	TGAUnmapMem(pScrn);
+
+	if (pTga->RamDac == NULL)
+	    return FALSE;
+    }
     
     /*********************
     set up clock and mode stuff
@@ -851,8 +873,14 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTga->MaxClock = speed;
 	from = X_CONFIG;
     } else {
-	if (pTga->Chipset == PCI_CHIP_DEC21030)
+	switch (pTga->Chipset) {
+	case PCI_CHIP_DEC21030:
 		pTga->MaxClock = 135000;
+		break;
+	case PCI_CHIP_TGA2:
+		pTga->MaxClock = 170000;
+		break;
+	}
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Max pixel clock is %d MHz\n",
 	       pTga->MaxClock / 1000);
@@ -956,7 +984,7 @@ TGAMapMem(ScrnInfoPtr pScrn)
     /* TGA doesn't need a sparse memory mapping, because all register
        accesses are doublewords */
     
-    pTga->IOBase = xf86MapPciMem(pScrn->scrnIndex, 0x0,
+    pTga->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO_32BIT,
 				      pTga->PciTag,
 				      pTga->IOAddress, 0x100000);
     if (pTga->IOBase == NULL)
@@ -967,6 +995,23 @@ TGAMapMem(ScrnInfoPtr pScrn)
 				 (unsigned long)pTga->FbAddress,
 				 pTga->FbMapSize);
     if (pTga->FbBase == NULL)
+	return FALSE;
+
+    if (pTga->Chipset == PCI_CHIP_DEC21030)
+	return TRUE;
+
+    pTga->ClkBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO_32BIT,
+			pTga->PciTag,
+			(unsigned long)pTga->CardAddress + TGA2_CLOCK_OFFSET,
+			0x10000);
+    if (pTga->ClkBase == NULL)
+	return FALSE;
+
+    pTga->DACBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO_32BIT,
+			pTga->PciTag,
+			(unsigned long)pTga->CardAddress + TGA2_RAMDAC_OFFSET,
+			0x10000);
+    if (pTga->DACBase == NULL)
 	return FALSE;
 
     return TRUE;
@@ -990,6 +1035,15 @@ TGAUnmapMem(ScrnInfoPtr pScrn)
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->FbBase, pTga->FbMapSize);
     pTga->FbBase = NULL;
 
+    if (pTga->Chipset == PCI_CHIP_DEC21030)
+	return TRUE;
+
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->ClkBase, 0x10000);
+    pTga->ClkBase = NULL;
+
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->DACBase, 0x10000);
+    pTga->DACBase = NULL;
+
     return TRUE;
 }
 
@@ -1008,17 +1062,18 @@ TGASave(ScrnInfoPtr pScrn)
     pTga = TGAPTR(pScrn);
     tgaReg = &pTga->SavedReg;
 
-    switch (pTga->Chipset)
+    DEC21030Save(pScrn, tgaReg);
+    if (pTga->RamDac) { /* must be BT485... */
+        pBT = RAMDACHWPTR(pScrn);
+	BTreg = &pBT->SavedReg;
+	(*pTga->RamDac->Save)(pScrn, pTga->RamDacRec, BTreg);
+    } else switch (pTga->Chipset)
     {
+    case PCI_CHIP_TGA2:
+        IBM561ramdacSave(pScrn, pTga->Ibm561saveReg);
+	break;
     case PCI_CHIP_DEC21030:
-	DEC21030Save(pScrn, tgaReg);
-	if (pTga->RamDac) {
-	    pBT = RAMDACHWPTR(pScrn);
-	    BTreg = &pBT->SavedReg;
-	    (*pTga->RamDac->Save)(pScrn, pTga->RamDacRec, BTreg);
-	} else {
-	    BT463ramdacSave(pScrn, pTga->Bt463saveReg);
-	}
+        BT463ramdacSave(pScrn, pTga->Bt463saveReg);
 	break;
     }
 }
@@ -1043,11 +1098,10 @@ TGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     pScrn->vtSema = TRUE;
 
-    switch (pTga->Chipset) {
-    case PCI_CHIP_DEC21030:
-	ret = DEC21030Init(pScrn, mode);
-	break;
-    }
+    ret = DEC21030Init(pScrn, mode);
+
+    if (pTga->Chipset == PCI_CHIP_TGA2 && pTga->RamDac == NULL)
+        IBM561ramdacHWInit(pScrn);
 
     if (!ret)
 	return FALSE;
@@ -1055,19 +1109,27 @@ TGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     /* Program the registers */
     tgaReg = &pTga->ModeReg;
 
-    switch (pTga->Chipset) {
-    case PCI_CHIP_DEC21030:
-	DEC21030Restore(pScrn, tgaReg);
-	if (pTga->RamDac != NULL) {
-	    pBT = RAMDACHWPTR(pScrn);
-	    BTreg = &pBT->ModeReg;
-	    (*pTga->RamDac->Restore)(pScrn, pTga->RamDacRec, BTreg);
-	} else {
-	    BT463ramdacRestore(pScrn, pTga->Bt463modeReg);
-	}
-	break;
-    }
+    DEC21030Restore(pScrn, tgaReg);
 
+    if (pTga->RamDac != NULL) {
+        pBT = RAMDACHWPTR(pScrn);
+	BTreg = &pBT->ModeReg;
+	(*pTga->RamDac->Restore)(pScrn, pTga->RamDacRec, BTreg);
+	if (pTga->Chipset == PCI_CHIP_TGA2) {
+	    pTga->RamDacRec->WriteDAC(pScrn, BT_WRITE_ADDR, 0x00, 0x01);
+	    pTga->RamDacRec->WriteDAC(pScrn, BT_STATUS_REG, 0x00, 0x0c);
+	}
+	pTga->RamDacRec->WriteDAC(pScrn, BT_PIXEL_MASK, 0x00, 0xff);
+    } else {
+        switch (pTga->Chipset) {
+	case PCI_CHIP_TGA2:
+	    IBM561ramdacRestore(pScrn, pTga->Ibm561modeReg);
+	    break;
+	case PCI_CHIP_DEC21030:
+	    BT463ramdacRestore(pScrn, pTga->Bt463modeReg);
+	    break;
+	}
+    }
     return TRUE;
 }
 
@@ -1088,20 +1150,28 @@ TGARestore(ScrnInfoPtr pScrn)
     /* Initial Text mode clock */
     tgaReg->tgaRegs[0x0A] = 25175;
 
-    switch (pTga->Chipset) {
-    case PCI_CHIP_DEC21030:
-	DEC21030Restore(pScrn, tgaReg);
-	if (pTga->RamDac != NULL) {
-	    pBT = RAMDACHWPTR(pScrn);
-	    BTreg = &pBT->SavedReg;
-	    (*pTga->RamDac->Restore)(pScrn, pTga->RamDacRec, BTreg);
-	    if(pTga->HWCursor)
-	      TGARestoreHWCursor(pScrn);
-	} else {
-	    BT463ramdacRestore(pScrn, pTga->Bt463saveReg);
+    DEC21030Restore(pScrn, tgaReg);
+
+    if (pTga->RamDac != NULL) {
+        pBT = RAMDACHWPTR(pScrn);
+	BTreg = &pBT->SavedReg;
+	(*pTga->RamDac->Restore)(pScrn, pTga->RamDacRec, BTreg);
+	if (pTga->Chipset == PCI_CHIP_TGA2) {
+	    pTga->RamDacRec->WriteDAC(pScrn, BT_WRITE_ADDR, 0x00, 0x01);
+	    pTga->RamDacRec->WriteDAC(pScrn, BT_STATUS_REG, 0x00, 0x00);
 	}
+	pTga->RamDacRec->WriteDAC(pScrn, BT_PIXEL_MASK, 0x00, 0xff);
+    } else switch (pTga->Chipset) {
+    case PCI_CHIP_TGA2:
+        IBM561ramdacRestore(pScrn, pTga->Ibm561saveReg);
+	break;
+    case PCI_CHIP_DEC21030:
+        BT463ramdacRestore(pScrn, pTga->Bt463saveReg);
 	break;
     }
+
+ if (pTga->HWCursor)
+     TGARestoreHWCursor(pScrn);
 }
 
 
@@ -1121,12 +1191,35 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * First get the ScrnInfoRec
      */
     pScrn = xf86Screens[pScreen->myNum];
-
     pTga = TGAPTR(pScrn);
 
     /* Map the TGA memory and MMIO areas */
     if (!TGAMapMem(pScrn))
 	return FALSE;
+
+#if 1
+    /* dump original register contents */
+    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MODE 0x%x\n",
+	       TGA_READ_REG(TGA_MODE_REG));
+    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "VALID 0x%x\n",
+	       TGA_READ_REG(TGA_VALID_REG));
+    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "DEEP 0x%x\n",
+	       TGA_READ_REG(TGA_DEEP_REG));
+    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PIXSH 0x%x\n",
+	       TGA_READ_REG(TGA_PIXELSHIFT_REG));
+    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ROP 0x%x\n",
+	       TGA_READ_REG(TGA_RASTEROP_REG));
+    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "HORIZ 0x%x\n",
+	       TGA_READ_REG(TGA_HORIZ_REG));
+    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "VERT 0x%x\n",
+	       TGA_READ_REG(TGA_VERT_REG));
+    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PIXMSK 0x%x\n",
+	       TGA_READ_REG(TGA_PIXELMASK_REG));
+    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "REV 0x%x\n",
+	       TGA_READ_REG(TGA_REVISION_REG));
+    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "VADDR 0x%x\n",
+	       TGA_READ_REG(TGA_BASE_ADDR_REG));
+#endif
 
     /* Save the current state */
     TGASave(pScrn);
@@ -1220,14 +1313,30 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
+    /* we should ALWAYS do this */
+    if (pScrn->bitsPerPixel == 8) {
+      TGA_WRITE_REG(SIMPLE | X11 | BPP8PACKED, TGA_MODE_REG);
+      TGA_WRITE_REG(0x3 | BPP8PACKED, TGA_RASTEROP_REG);
+      if (pTga->Chipset == PCI_CHIP_TGA2)
+	TGA_WRITE_REG(2 << 28, TGA_DEEP_REG);
+    } else {
+      TGA_WRITE_REG(SIMPLE | X11 | BPP24, TGA_MODE_REG);
+      TGA_WRITE_REG(0x3 | BPP24, TGA_RASTEROP_REG);
+      if (pTga->Chipset == PCI_CHIP_TGA2)
+	TGA_WRITE_REG((7 << 2) | 1 | (2 << 28), TGA_DEEP_REG);
+    }
+    TGA_WRITE_REG(0xFFFFFFFF, TGA_PLANEMASK_REG);
+    TGA_WRITE_REG(0xFFFFFFFF, TGA_PIXELMASK_REG);
+
     if (!pTga->NoAccel) {
         switch (pTga->Chipset)
         {
+	case PCI_CHIP_TGA2:
 	case PCI_CHIP_DEC21030:
 	  if(DEC21030AccelInit(pScreen) == FALSE) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "XAA Initialization failed\n");
-	    return(FALSE);
+	      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			 "XAA Initialization failed\n");
+	      return(FALSE);
 	  }
 	  break;
         }
@@ -1349,7 +1458,7 @@ TGAEnterVT(int scrnIndex, int flags)
 static void
 TGALeaveVT(int scrnIndex, int flags)
 {
-  TGAPtr pTga;
+    TGAPtr pTga;
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 
     pTga = TGAPTR(pScrn);
@@ -1363,7 +1472,7 @@ TGALeaveVT(int scrnIndex, int flags)
 
 /*
  * This is called at the end of each server generation.  It restores the
- * original (text) mode.  It should really also unmap the video memory too.
+ * original (text) mode.
  */
 
 /* Mandatory */
@@ -1373,12 +1482,11 @@ TGACloseScreen(int scrnIndex, ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     TGAPtr pTga = TGAPTR(pScrn);
 
-    if (pScrn->vtSema) {
     TGARestore(pScrn);
-    memset(pTga->FbBase, 0, pScrn->videoRam * 1024);
-    }
-    
+    /*    memset(pTga->FbBase, 0, pScrn->videoRam * 1024); */
+    TGASync(pScrn);
     TGAUnmapMem(pScrn);
+
     if(pTga->AccelInfoRec)
 	XAADestroyInfoRec(pTga->AccelInfoRec);
     pScrn->vtSema = FALSE;
@@ -1487,7 +1595,6 @@ TGADisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 
 #endif /* DPMSExtension */
 
-
 static void
 TGARestoreHWCursor(ScrnInfoPtr pScrn)
      /*
@@ -1503,9 +1610,10 @@ TGARestoreHWCursor(ScrnInfoPtr pScrn)
   unsigned char *p = NULL;
   int i = 0;
   TGAPtr pTga;
-  /* this is the linux console hw cursor...what about the bsd console? */
-  /* what about tgafb? */
-  const CARD32 cursor_source[128] = {
+
+  /* Making this static prevents EGCS from compiling memset code
+     to initialize it, which was causing a problem. */
+  static const CARD32 tga_cursor_source[128] = {
     0x000000ff, 0x00000000, 0x000000ff, 0x00000000, 0x000000ff,
     0x00000000, 0x000000ff, 0x00000000, 0x000000ff, 0x00000000,
     0x000000ff, 0x00000000, 0x000000ff, 0x00000000, 0x000000ff,
@@ -1521,52 +1629,55 @@ TGARestoreHWCursor(ScrnInfoPtr pScrn)
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
   };
 
+  /* this is the linux console hw cursor...what about the bsd console? */
+  /* what about tgafb? */
   pTga = TGAPTR(pScrn);
 
   /* we want to move the cursor off the screen before we do anything with it
      otherwise, there is a "ghost cursor" that shows up */
-  tgaBTOutIndReg(pScrn, BT_CURS_X_LOW, 0x00, 0);
-  tgaBTOutIndReg(pScrn, BT_CURS_X_HIGH, 0xF0, 0);
 
-  tgaBTOutIndReg(pScrn, BT_CURS_Y_LOW, 0x00, 0);
-  tgaBTOutIndReg(pScrn, BT_CURS_Y_HIGH, 0xF0, 0);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_X_LOW, 0x00, 0);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_X_HIGH, 0xF0, 0);
+
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_Y_LOW, 0x00, 0);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_Y_HIGH, 0xF0, 0);
 
   
   /* set a windows cursor -- oddly, this doesn't seem necessary */
-  tgaBTOutIndReg(pScrn, BT_COMMAND_REG_2, 0xFC, 0x02);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_COMMAND_REG_2, 0xFC, 0x02);
   
   /* set a 64 bit cursor */
-/*    tgaBTOutIndReg(pScrn, BT_COMMAND_REG_0, 0x7F, 0x80); */
-/*    tgaBTOutIndReg(pScrn, BT_WRITE_ADDR, 0x00, 0x01); */
-/*    tgaBTOutIndReg(pScrn, BT_STATUS_REG, 0xF8, 0x04); */
+/*    pTga->RamDacRec->WriteDAC(pScrn, BT_COMMAND_REG_0, 0x7F, 0x80); */
+/*    pTga->RamDacRec->WriteDAC(pScrn, BT_WRITE_ADDR, 0x00, 0x01); */
+/*    pTga->RamDacRec->WriteDAC(pScrn, BT_STATUS_REG, 0xF8, 0x04); */
 
   /* set the colors */
-  tgaBTOutIndReg(pScrn, BT_CURS_WR_ADDR, 0xFC, 0x01);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_WR_ADDR, 0xFC, 0x01);
   
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0xaa);
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0xaa);
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0xaa);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, 0xaa);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, 0xaa);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, 0xaa);
 
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, 0x00);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, 0x00);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, 0x00);
 
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, 0x00);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, 0x00);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, 0x00);
 
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
-  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, 0x00);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, 0x00);
+  pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_DATA, 0x00, 0x00);
  
   
   /* load the console cursor */
-  tgaBTOutIndReg(pScrn, BT_WRITE_ADDR, 0xFC, 0x00);
-  p = (unsigned char *)cursor_source;
+  pTga->RamDacRec->WriteDAC(pScrn, BT_WRITE_ADDR, 0xFC, 0x00);
+  p = (unsigned char *)tga_cursor_source;
   for(i = 0; i < 512; i++)
-    tgaBTOutIndReg(pScrn, BT_CURS_RAM_DATA, 0x00, *p++);
+    pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_RAM_DATA, 0x00, *p++);
   for(i = 0; i < 512; i++)
-    tgaBTOutIndReg(pScrn, BT_CURS_RAM_DATA, 0x00, 0xff);
+    pTga->RamDacRec->WriteDAC(pScrn, BT_CURS_RAM_DATA, 0x00, 0xff);
 
   return;
 }
@@ -1578,16 +1689,36 @@ TGARestoreHWCursor(ScrnInfoPtr pScrn)
 void
 TGASync(ScrnInfoPtr pScrn)
 {
-#if 0
-  /* I'm experiencing lockups which could be due to this function.
-     We don't seem to need it anyway...
-  */
-    TGAPtr pTga = NULL;
-    
-    pTga = TGAPTR(pScrn);
+    TGAPtr pTga = TGAPTR(pScrn);
+    unsigned int stat;
 
-    while (TGA_READ_REG(TGA_CMD_STAT_REG) & 0x01);
+    switch (pTga->Chipset)
+    {
+    case PCI_CHIP_TGA2:
+      /* This code is weird, but then so is TGA2... ;-} */
+	mem_barrier();
+	while((stat = TGA_READ_REG(TGA_CMD_STAT_REG))) {
+	    if (((stat >> 8) & 0xff) == ((stat >> 16) & 0xff)) {
+	        TGA_WRITE_REG(0, TGA_CMD_STAT_REG);
+		mem_barrier();
+#if 0
+ErrorF("TGASync: writing CMD_STATUS\n");
 #endif
+	    }
+	    usleep(1000);
+	}
+	break;
+
+    case PCI_CHIP_DEC21030:
+#if 0
+        /* I'm experiencing lockups which could be due to this function.
+	   We don't seem to need it anyway...
+	*/
+        while (TGA_READ_REG(TGA_CMD_STAT_REG) & 0x01);
+#endif
+	break;
+    }
+
     return;
 }
 

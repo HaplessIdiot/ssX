@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/ffb/Imakefile,v 1.4tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/ffb/Imakefile,v 1.5 2000/08/24 22:20:06 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -204,7 +204,7 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 	 SRCS = $(FFBSRCS) $(DRISRCS) $(DRMSRCS) $(MESASRCS)
 	 OBJS = $(FFBOBJS) $(DRIOBJS) $(DRMOBJS) $(MESAOBJS)
 
-REQUIREDLIBS += -lm
+REQUIREDLIBS += MathLibrary
 #if !GlxBuiltInFfb
 REQUIREDLIBS += -L../../../.. -lGL
 #endif

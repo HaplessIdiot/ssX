@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.13 1999/12/13 23:48:20 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.14 2000/03/06 22:59:31 dawes Exp $ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -45,10 +45,13 @@ typedef struct {
     int			HwBpp;
     int			BppShift;
     int			pprod;
+    CARD32		CardAddress;
     CARD32		IOAddress;
     CARD32		FbAddress;
     unsigned char *     FbBase;
     unsigned char *     IOBase;
+    unsigned char *     ClkBase; /* TGA2 */
+    unsigned char *     DACBase; /* TGA2 */
     long		FbMapSize;
     unsigned long	regOffset;
     Bool		NoAccel;
@@ -69,6 +72,8 @@ typedef struct {
     int                 CardType;
     unsigned char       Bt463modeReg[59];
     unsigned char       Bt463saveReg[59];
+    unsigned char       Ibm561modeReg[59];
+    unsigned char       Ibm561saveReg[59];
     EntityInfoPtr       pEnt;
     CARD32     *buffers[1];
     unsigned int        current_rop;
@@ -87,6 +92,36 @@ typedef struct {
     int                 depthflag; /* either BPP8PACKED or BPP24 */
 } TGARec, *TGAPtr;
 
+/* ?? this is a hack for initial TGA2 support */
+struct monitor_data {
+  unsigned int max_rows;   /* Monitor setup */
+  unsigned int max_cols;
+  unsigned int pixel_freq;
+  unsigned int refresh_rate;
+  unsigned int vert_slines;
+  unsigned int vert_fp;
+  unsigned int vert_sync;
+  unsigned int vert_bp;
+  unsigned int horz_pix;
+  unsigned int horz_fp;
+  unsigned int horz_sync;
+  unsigned int horz_bp;
+  unsigned int vco_div;      /* ICS setup */
+  unsigned int ref_div;
+  unsigned int vco_pre;
+  unsigned int clk_div;
+  unsigned int vco_out_div;
+  unsigned int clk_out_en;
+  unsigned int clk_out_enX;
+  unsigned int res0;
+  unsigned int clk_sel;
+  unsigned int res1;
+  unsigned int ibm561_vco_div; /* IBM561 PLL setup */
+  unsigned int ibm561_ref;
+};
+
+extern struct monitor_data crystal_table;
+
 /* Prototypes */
 
 /* tga_dac.c */
@@ -95,6 +130,7 @@ void DEC21030Restore(ScrnInfoPtr pScrn,/* vgaRegPtr vgaReg,*/
 void DEC21030Save(ScrnInfoPtr pScrn, /*vgaRegPtr vgaReg,*/ TGARegPtr tgaReg/*,
 		   Bool saveFonts*/);
 Bool DEC21030Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
+void write_av9110(ScrnInfoPtr pScrn, unsigned int *);
 
 /* tga_accel.c */
 Bool DEC21030AccelInit(ScreenPtr pScreen);
@@ -108,9 +144,22 @@ void tgaBTReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void tgaBTWriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char tgaBTReadData(ScrnInfoPtr pScrn);
 
+void tga2BTOutIndReg(ScrnInfoPtr pScrn,
+		     CARD32 reg, unsigned char mask, unsigned char data);
+unsigned char tga2BTInIndReg(ScrnInfoPtr pScrn, CARD32 reg);
+void tga2BTWriteAddress(ScrnInfoPtr pScrn, CARD32 index);
+void tga2BTReadAddress(ScrnInfoPtr pScrn, CARD32 index);
+void tga2BTWriteData(ScrnInfoPtr pScrn, unsigned char data);
+unsigned char tga2BTReadData(ScrnInfoPtr pScrn);
+
 /* BT463ramdac.c */
 void BT463ramdacSave(ScrnInfoPtr pScrn, unsigned char *data);
 void BT463ramdacRestore(ScrnInfoPtr pScrn, unsigned char *data);
+
+/* IBM561ramdac.c */
+void IBM561ramdacSave(ScrnInfoPtr pScrn, unsigned char *data);
+void IBM561ramdacHWInit(ScrnInfoPtr pScrn);
+void IBM561ramdacRestore(ScrnInfoPtr pScrn, unsigned char *data);
 
 /* tga_cursor.c */
 Bool TGAHWCursorInit(ScreenPtr pScreen);
