@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.87 2000/04/17 16:29:57 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.90 2000/05/31 07:15:02 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1117,7 +1117,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
      */
-    clockRanges = xnfalloc(sizeof(ClockRange));
+    clockRanges = xnfcalloc(sizeof(ClockRange), 1);
     clockRanges->next = NULL;
     clockRanges->ClockMulFactor = cPtr->ClockMulFactor;
     clockRanges->minClock = cPtr->MinClock;

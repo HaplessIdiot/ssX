@@ -45,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.13 2000/04/17 16:30:03 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.14 2000/06/20 20:34:37 dawes Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -576,7 +576,7 @@ GLIDEPreInit(ScrnInfoPtr pScrn, int flags)
 
   /* Set up clock ranges so that the xf86ValidateModes() function will not fail a mode because of the clock
      requirement (because we don't use the clock value anyway) */
-  clockRanges = xnfalloc(sizeof(ClockRange));
+  clockRanges = xnfcalloc(sizeof(ClockRange), 1);
   clockRanges->next = NULL;
   clockRanges->minClock = 10000;
   clockRanges->maxClock = 300000;

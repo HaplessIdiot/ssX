@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.38 2000/03/08 19:25:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.41 2000/04/20 13:31:50 eich Exp $ */
 
 
 #include "apm.h"
@@ -934,7 +934,7 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
      */
-    clockRanges = (ClockRangePtr)xnfalloc(sizeof(ClockRange));
+    clockRanges = (ClockRangePtr)xnfcalloc(sizeof(ClockRange), 1);
     clockRanges->next = NULL;
     clockRanges->minClock = pApm->MinClock;
     clockRanges->maxClock = pApm->MaxClock;

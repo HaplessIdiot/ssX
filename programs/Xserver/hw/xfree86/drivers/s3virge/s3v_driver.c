@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.58 2000/04/20 21:28:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.59 2000/06/14 21:57:55 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -1347,7 +1347,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
      */
-    clockRanges = xnfalloc(sizeof(ClockRange));
+    clockRanges = xnfcalloc(sizeof(ClockRange), 1);
     clockRanges->next = NULL;
     clockRanges->minClock = ps3v->minClock;
     clockRanges->maxClock = ps3v->maxClock;

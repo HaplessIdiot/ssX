@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.86 2000/06/16 12:23:31 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.87 2000/06/17 16:32:50 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1617,7 +1617,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
      */
-    clockRanges = xnfalloc(sizeof(ClockRange));
+    clockRanges = xnfcalloc(sizeof(ClockRange), 1);
     clockRanges->next = NULL;
     clockRanges->minClock = pGlint->MinClock;
     clockRanges->maxClock = pGlint->MaxClock;

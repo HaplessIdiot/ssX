@@ -9,7 +9,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.8 2000/02/27 02:45:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.10 2000/04/17 16:29:59 eich Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -941,7 +941,7 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	 * Setup the ClockRanges, which describe what clock ranges are available,
 	 * and what sort of modes they can be used for.
 	 */
-	clockRanges = xnfalloc(sizeof(ClockRange));
+	clockRanges = xnfcalloc(sizeof(ClockRange), 1);
 	clockRanges->next = NULL;
 	clockRanges->minClock = pCir->MinClock;
 	clockRanges->maxClock = pCir->MaxClock;

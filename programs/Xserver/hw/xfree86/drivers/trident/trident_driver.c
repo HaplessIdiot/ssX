@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.98 2000/06/06 18:07:37 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.99 2000/06/13 02:28:34 dawes Exp $ */
 
 #include "cfb24_32.h"
 
@@ -1806,7 +1806,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
      */
-    clockRanges = xnfalloc(sizeof(ClockRange));
+    clockRanges = xnfcalloc(sizeof(ClockRange), 1);
     clockRanges->next = NULL;
     if (!pScrn->progClock) {
 	if (pScrn->bitsPerPixel == 16)
