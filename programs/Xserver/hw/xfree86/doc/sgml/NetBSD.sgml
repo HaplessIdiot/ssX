@@ -60,7 +60,7 @@ url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/OpenBSD">
 <p>
 <bf/Note:/ the OpenBSD binary distribution only support recent
 OpenBSD snapshots (after August 23) where ttyC0 is used for the
-console device. Prior OpenBSD snapshots can run the NetBSD binrary
+console device. Prior OpenBSD snapshots can run the NetBSD binary
 distribution.
 
 <p>
@@ -221,7 +221,7 @@ below.
  tar xzf X312Gdoc.tgz
  tar xzf X312Gbin.tgz
  tar xzf X312Glib.tgz 
- tar xzf X312Gfont.tgz
+ tar xzf X312Gfnts.tgz
  tar xzf X312Gman.tgz
 
  tar xzf X312Gprog.tgz
@@ -740,7 +740,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.30 1996/08/26 14:08:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.31 1996/09/03 04:12:37 dawes Exp $
 
 
 

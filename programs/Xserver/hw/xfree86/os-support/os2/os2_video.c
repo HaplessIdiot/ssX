@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.4 1996/04/15 11:31:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.5 1996/05/10 06:59:20 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -115,7 +115,22 @@ unsigned long Size;
 	dlen		= sizeof(dta);
 
 	/* First, redirect stderr to file so that video calls do not block */
-	if (!ErrRedir) { freopen("xf86log.os2","w",stderr); ErrRedir=TRUE; }
+	if (!ErrRedir) {
+		/* hv300996 create redirect file on boot drive, instead 
+		 * anywhere you are just standing
+		 */
+		char buf[20],dr[3];
+		ULONG drive;
+		APIRET rc = DosQuerySysInfo(5,5,&drive,sizeof(drive));
+		if (!rc) dr[0] = 0;
+		else {	dr[0] = drive+96;
+			dr[1] = ':';
+			dr[2] = 0;
+		}
+		sprintf(buf,"%s\\xf86log.os2",dr);
+		freopen(buf,"w",stderr); 
+		ErrRedir=TRUE; 
+	}
 
 	open_mmap();
 	if (mapdev == -1)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.8 1996/04/15 11:31:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.9 1996/05/13 06:40:06 dawes Exp $ */
 /*
  * (c) Copyright 1994,1996 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -268,9 +268,11 @@ void os2PostKbdEvent(scanCode, down)
      * window list... handled by keyboard driverand PM if you tell it. This is 
      * what we have done, and thus should never detect this key combo */
     if (ModifierDown(ControlMask) && scanCode==KEY_Escape) {
-	/* Nothing to be done for now */
+	/* eat it */
+	return;	
     } else if (ModifierDown(AltLangMask|AltMask) && scanCode==KEY_Escape) {
 	/* same here */
+	return;
     }
 
   /*

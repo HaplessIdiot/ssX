@@ -4,7 +4,7 @@
 
  <title>Release Notes for XFree86&tm; 3.1.2G (beta version)
  <author>The XFree86 Project, Inc
- <date>1 September 1996
+ <date>3 September 1996
 
 
 <abstract>
@@ -1115,7 +1115,6 @@ is, you don't need any of these.
 312G9GAN.tgz       PC98 GANB-WAP(cirrus) server
 312G9480.tgz       PC98 PEGC-480(generic) server
 312G9NKV.tgz       PC98 NKV-NEC(cirrus) server
-312G9TGU.tgz       PC98 TGUI server
 312G9WBS.tgz       PC98 WABS(cirrus) server
 312G9WEP.tgz       PC98 WAB-EP(cirrus) server
 312G9WSN.tgz       PC98 WSN-A2F(cirrus) server
@@ -1230,7 +1229,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.39 1996/09/03 04:12:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.40 1996/09/03 06:25:23 dawes Exp $
 </verb>
 
 </article>

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.0 1996/09/01 04:47:31 dawes Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -229,14 +229,14 @@ static int apmDacPathWidth, apmMultiplexingThreshold;
 static int apmUse8bitColorComponents;
 static int apmDisplayableMemory;
 
-#define AT24    0
-#define AP6422  1
+#define AP6422  0
+#define AT24    1
 
 static SymTabRec chipsets[] = {
+	{ AP6422,  "AP6422"},
 #if 0
 	{ AT24,    "AT24" },
 #endif
-	{ AP6422,  "AP6422"},
 	{ -1,		"" },
 };
 

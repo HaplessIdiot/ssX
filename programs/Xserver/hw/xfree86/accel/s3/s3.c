@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.141 1996/09/01 04:15:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.142 1996/09/01 12:29:48 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -3772,9 +3772,13 @@ redo_mode_lookup:
 
 #ifdef PC98
 void
+#if NeedFunctionPrototypes
+s3ConnectPCI(CARD16 vendor, CARD16 device)
+#else
 s3ConnectPCI(vendor, device)
     CARD16 vendor;
     CARD16 device;
+#endif
 {
     struct pci_config_reg *pcrp;
     unsigned int dev;
@@ -3797,9 +3801,13 @@ s3ConnectPCI(vendor, device)
 }
 
 void
+#if NeedFunctionPrototypes
+s3DisconnectPCI(CARD16 vendor, CARD16 device)
+#else
 s3DisconnectPCI(vendor, device)
     CARD16 vendor;
     CARD16 device;
+#endif
 {
     struct pci_config_reg *pcrp;
     unsigned int dev;

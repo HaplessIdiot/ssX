@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.1 1996/05/13 06:40:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.2 1996/08/21 08:39:50 dawes Exp $ */
 
 /*
  * (c) Copyright 1996 by Sebastien Marineau
@@ -151,9 +151,8 @@ if(FirstTime){
    rc = DosCreateMuxWaitSem(NULL, &hSelectWait, 4, SelectMuxRecord,
                 DC_SEM_SHARED | DCMW_WAIT_ANY);
    if(rc){
-        fprintf(stderr,"Could not create MuxWait semaphore, rc=%d\n",rc);
+        fprintf(stderr,"XFree86-OS/2: Could not create MuxWait semaphore, rc=%d\n",rc);
         }
-   fprintf(stderr,"MuxWait sem created, rc=%d, hsem=%d\n",rc,hSelectWait);
    FirstTime = FALSE;
 }
 

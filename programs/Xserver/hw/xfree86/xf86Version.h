@@ -1,13 +1,13 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.181 1996/09/01 12:29:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.182 1996/09/03 04:10:06 dawes Exp $ */
 
-#define XF86_VERSION " 3.1.2Fc "
+#define XF86_VERSION " 3.1.2G "
 
 /* The finer points in versions... */
 #define XF86_VERSION_MAJOR	3
 #define XF86_VERSION_MINOR	1
 #define XF86_VERSION_SUBMINOR	2
-#define XF86_VERSION_BETA	6	/* 0="", 1="A", 2="B", etc... */
-#define XF86_VERSION_ALPHA	3	/* 0="", 1="a", 2="b", etc... */
+#define XF86_VERSION_BETA	7	/* 0="", 1="A", 2="B", etc... */
+#define XF86_VERSION_ALPHA	0	/* 0="", 1="a", 2="b", etc... */
 
 #define XF86_VERSION_NUMERIC(major,minor,subminor,beta,alpha)	\
    ((((((((major << 7) | minor) << 7) | subminor) << 5) | beta) << 5) | alpha)

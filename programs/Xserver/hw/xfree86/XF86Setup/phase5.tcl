@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase5.tcl,v 3.2 1996/08/24 12:50:55 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase5.tcl,v 3.3 1996/09/03 06:48:29 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -40,7 +40,7 @@ if { ![getuid] } {
 	    set linkname [readlink $linkname]
 	}
 	if { $nlinks < 20 } {
-	    set servname [string range [file tail $filename] 5 end]
+	    set servname [string range [file tail $linkname] 5 end]
 	    if ![string compare $servname $server] {
 		unset linkname
 	    }
@@ -49,7 +49,7 @@ if { ![getuid] } {
 	}
     }
     if [info exists linkname] {
-	set linkdir [file directory $linkname]
+	set linkdir [file dirname $linkname]
 	set mklink [mesg "Do you want to create an 'X' link\
 		to the $server server?\n\n(the link will be\
 		created in the directory: $linkdir)" yesno]

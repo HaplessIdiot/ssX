@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.6 1996/08/24 12:52:28 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.7 1996/09/01 04:46:21 dawes Exp $
 #
 # postinst.sh (for XFree86 3.1.2F)
 #
@@ -16,8 +16,12 @@ fi
 
 # Since the misc fonts are distributed in two parts, make sure that the
 # fonts.dir file is correct if only one part has been installed.
-echo "Updating fonts.dir file in $RUNDIR/lib/X11/fonts/misc"
-$RUNDIR/bin/mkfontdir $RUNDIR/lib/X11/fonts/misc
+if [ -d $RUNDIR/lib/X11/fonts/misc ]; then
+	echo ""
+	echo "Updating fonts.dir file in $RUNDIR/lib/X11/fonts/misc"
+	echo "This might take a while ..."
+	$RUNDIR/bin/mkfontdir $RUNDIR/lib/X11/fonts/misc
+fi
 
 # Check if the system has a termcap file
 TERMCAP1DIR=/usr/share
@@ -55,7 +59,12 @@ if [ -d $TINFODIR ]; then
 			rm -f $TINFODIR/$t
 		fi
 	done
+	echo ""
 	echo "Installing new terminfo entries for xterm"
+	echo ""
+	echo "On some systems you may get warnings from tic about 'meml'"
+	echo "and 'memu'.  These warnings can safely be ignored."
+	echo ""
 	tic /usr/X11R6/lib/X11/etc/xterm.terminfo
 fi
 

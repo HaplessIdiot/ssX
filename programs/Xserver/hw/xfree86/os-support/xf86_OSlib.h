@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.27 1996/08/11 13:02:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.28 1996/09/03 04:13:10 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -39,9 +39,6 @@
 #include <X11/Xos.h>
 #include <X11/Xfuncproto.h>
 
-#ifdef __EMX__
-#define NO_INLINE
-#endif
 #include "compiler.h"
 
 #if defined(MACH386) || defined(__OSF__)

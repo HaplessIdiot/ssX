@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.27 1996/08/20 12:25:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/XF68Conf.cpp,v 3.0 1996/08/21 13:05:15 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -403,6 +403,7 @@ Section "Screen"
     Driver	"svga"
     Device	"Generic SVGA"
     Monitor	"Generic Monitor"
+    DefaultColorDepth 8
     Subsection "Display"
         Depth	    8
         Modes	    "640x480"
@@ -453,6 +454,7 @@ XCOMM Section "Screen"
 XCOMM     Driver	"accel"
 XCOMM     Device	"Actix GE32+ 2MB"
 XCOMM     Monitor	"Generic Monitor"
+XCOMM     DefaultColorDepth 8
 XCOMM     Subsection  "Display"
 XCOMM         Depth	    8
 XCOMM         Modes	    "640x480"
