@@ -106,13 +106,7 @@ static unsigned char * DDCRead_DDC2(
     int len
 );
 
-typedef enum {
-    DDCOPT_NODDC1,
-    DDCOPT_NODDC2,
-    DDCOPT_NODDC
-} DDCOpts;
-
-static OptionInfoRec DDCOptions[] = {
+OptionInfoRec DDCOptions[] = {
     { DDCOPT_NODDC1,	"NoDDC1",	OPTV_BOOLEAN,	{0},	FALSE },
     { DDCOPT_NODDC2,	"NoDDC2",	OPTV_BOOLEAN,	{0},	FALSE },
     { DDCOPT_NODDC,	"NoDDC",	OPTV_BOOLEAN,	{0},	FALSE },
@@ -143,7 +137,7 @@ xf86DoEDID_DDC1(
     EDID_block = EDIDRead_DDC1(pScrn,DDC1SetSpeed,DDC1Read);
 
     if (EDID_block){
-	tmp = xf86InterpretEDID(EDID_block);
+	tmp = xf86InterpretEDID(scrnIndex,EDID_block);
     }
 #ifdef DEBUG
 	else ErrorF("No EDID block returned\n");
@@ -174,7 +168,7 @@ xf86DoEDID_DDC2(int scrnIndex, I2CBusPtr pBus)
     EDID_block = EDID1Read_DDC2(scrnIndex,pBus);
 
     if (EDID_block){
-	tmp = xf86InterpretEDID(EDID_block);
+	tmp = xf86InterpretEDID(scrnIndex,EDID_block);
     } else {
 #ifdef DEBUG
 	ErrorF("No EDID block returned\n");

@@ -439,24 +439,26 @@ SISProbe(DriverPtr drv, int flags)
 	ScrnInfoPtr pScrn;
 
 	/* Allocate a ScrnInfoRec and claim the slot */
-	pScrn = xf86AllocateScreen(drv, 0);
+	pScrn = NULL;
 
-	/* Fill in what we can of the ScrnInfoRec */
-	pScrn->driverVersion	= SIS_CURRENT_VERSION;
-	pScrn->driverName	= SIS_DRIVER_NAME;
-	pScrn->name		= SIS_NAME;
-	pScrn->Probe		= SISProbe;
-	pScrn->PreInit		= SISPreInit;
-	pScrn->ScreenInit	= SISScreenInit;
-	pScrn->SwitchMode	= SISSwitchMode;
-	pScrn->AdjustFrame	= SISAdjustFrame;
-	pScrn->EnterVT		= SISEnterVT;
-	pScrn->LeaveVT		= SISLeaveVT;
-	pScrn->FreeScreen	= SISFreeScreen;
-	pScrn->ValidMode	= SISValidMode;
-	foundScreen = TRUE;
-	xf86ConfigActivePciEntity(pScrn, usedChips[i], SISPciChipsets,
-				  NULL, NULL, NULL, NULL, NULL);
+	if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
+					       SISPciChipsets, NULL, NULL,
+					       NULL, NULL, NULL))) {
+	    /* Fill in what we can of the ScrnInfoRec */
+	    pScrn->driverVersion	= SIS_CURRENT_VERSION;
+	    pScrn->driverName	= SIS_DRIVER_NAME;
+	    pScrn->name		= SIS_NAME;
+	    pScrn->Probe		= SISProbe;
+	    pScrn->PreInit		= SISPreInit;
+	    pScrn->ScreenInit	= SISScreenInit;
+	    pScrn->SwitchMode	= SISSwitchMode;
+	    pScrn->AdjustFrame	= SISAdjustFrame;
+	    pScrn->EnterVT		= SISEnterVT;
+	    pScrn->LeaveVT		= SISLeaveVT;
+	    pScrn->FreeScreen	= SISFreeScreen;
+	    pScrn->ValidMode	= SISValidMode;
+	    foundScreen = TRUE;
+	}
     }
     xfree(usedChips);
     return foundScreen;

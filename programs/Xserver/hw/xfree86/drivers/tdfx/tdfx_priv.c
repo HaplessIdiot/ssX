@@ -71,7 +71,7 @@ void InstallFifo(TDFXPtr pTDFX)
 void TDFXResetFifo(TDFXPtr pTDFX)
 {
   int oldValue;
-  CARD32 start_sec, end_sec, dummy;
+  long start_sec, end_sec, dummy;
 
   ErrorF("Resetting FIFO\n");
   /* Shut down the fifo */
@@ -107,7 +107,7 @@ void TDFXSyncFifo(ScrnInfoPtr pScrn)
   TDFXPtr pTDFX;
   int i, cnt;
   int stat;
-  CARD32 start_sec, end_sec, dummy;
+  long start_sec, end_sec, dummy;
 
   TDFXTRACEACCEL("TDFXSyncFifo start\n");
   pTDFX=TDFXPTR(pScrn);

@@ -16,7 +16,7 @@ X86TOPDIR = $(TOP)/extras/x86emu
 X86SRCDIR = $(X86TOPDIR)/src/x86emu
 X86EMUINCLUDES = -I$(X86TOPDIR)/include -I$(X86SRCDIR)
 
-#if !defined(X86EMU_LIBPATH)
+# if !defined(X86EMU_LIBPATH)
 X86EMUSRCS = debug.c decode.c fpu.c ops.c ops2.c prim_ops.c sys.c
 X86EMUOBJS = debug.o decode.o fpu.o ops.o ops2.o prim_ops.o sys.o
 
@@ -28,16 +28,16 @@ LinkSourceFile(ops2.c,$(X86SRCDIR))
 LinkSourceFile(prim_ops.c,$(X86SRCDIR))
 LinkSourceFile(sys.c,$(X86SRCDIR))
 
-#else
+# else
 BuildObjectFromLibraryWithPath(X86EMU_LIBPATH,x86emu,x86emu)
 X86EMUOBJS = x86emu.o
-#endif
+# endif
 
 X86EMUDEFINES = -D__DRIVER__ -DFORCE_POST -D_CEXPORT= -DNO_LONG_LONG
 
-#if defined(i386Architecture)
+# if defined(i386Architecture)
 ARCHDEFINES = -D_PC
-#endif
+# endif
 
 INT10DEFINES = -D_X86EMU $(ARCHDEFINES)
 

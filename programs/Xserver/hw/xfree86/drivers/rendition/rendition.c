@@ -325,22 +325,25 @@ renditionProbe(DriverPtr drv, int flags)
         else for (c=0; c<numUsed; c++) {
             ScrnInfoPtr pScrn;
             /* Allocate a ScrnInfoRec and claim the slot */
-            pScrn=xf86AllocateScreen(drv, 0);
-            pScrn->driverVersion=RENDITION_VERSION_CURRENT;
-            pScrn->driverName   =RENDITION_DRIVER_NAME;
-            pScrn->name         =RENDITION_NAME;
-            pScrn->Probe        =renditionProbe;
-            pScrn->PreInit      =renditionPreInit;
-            pScrn->ScreenInit   =renditionScreenInit;
-            pScrn->SwitchMode   =renditionSwitchMode;
-            pScrn->AdjustFrame  =renditionAdjustFrame;
-            pScrn->EnterVT      =renditionEnterVT;
-            pScrn->LeaveVT      =renditionLeaveVT;
-            pScrn->FreeScreen   =renditionFreeScreen;
-            pScrn->ValidMode    =renditionValidMode;
-            foundScreen=TRUE;
-            xf86ConfigActivePciEntity(pScrn, usedChips[c],
-                    renditionPCIchipsets, NULL, NULL, NULL, NULL, NULL);
+            pScrn=NULL;
+            if ((pScrn = xf86ConfigPciEntity(pScrn, 0,usedChips[c],
+						   renditionPCIchipsets, NULL,
+						   NULL, NULL, NULL, NULL))) {
+						       
+		pScrn->driverVersion=RENDITION_VERSION_CURRENT;
+		pScrn->driverName   =RENDITION_DRIVER_NAME;
+		pScrn->name         =RENDITION_NAME;
+		pScrn->Probe        =renditionProbe;
+		pScrn->PreInit      =renditionPreInit;
+		pScrn->ScreenInit   =renditionScreenInit;
+		pScrn->SwitchMode   =renditionSwitchMode;
+		pScrn->AdjustFrame  =renditionAdjustFrame;
+		pScrn->EnterVT      =renditionEnterVT;
+		pScrn->LeaveVT      =renditionLeaveVT;
+		pScrn->FreeScreen   =renditionFreeScreen;
+		pScrn->ValidMode    =renditionValidMode;
+		foundScreen=TRUE;
+	    }
         }
     }
     xfree(usedChips);
@@ -400,7 +403,6 @@ renditionFreeRec(ScrnInfoPtr pScreenInfo)
     ErrorF("FreeRec...!!!!\n");
     sleep(1);
 #endif
-
     if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
 	vgaHWFreeHWRec(pScreenInfo);
     xfree(pScreenInfo->driverPrivate);

@@ -9,7 +9,7 @@
 Bool  fbdevHWGetRec(ScrnInfoPtr pScrn);
 void  fbdevHWFreeRec(ScrnInfoPtr pScrn);
 
-Bool  fbdevHWProbe(pciVideoPtr pPci, char *device);
+Bool  fbdevHWProbe(pciVideoPtr pPci, char *device, char **namep);
 Bool  fbdevHWInit(ScrnInfoPtr pScrn, pciVideoPtr pPci, char *device);
 
 char* fbdevHWGetName(ScrnInfoPtr pScrn);

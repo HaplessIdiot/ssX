@@ -848,7 +848,42 @@ CHIPSProbe(DriverPtr drv, int flags)
 		foundScreen = TRUE;
 	    else for (i = 0; i < numUsed; i++) {
 		/* Allocate a ScrnInfoRec  */
-		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
+		ScrnInfoPtr pScrn = NULL;
+		if ((pScrn = xf86ConfigPciEntity(pScrn,0,usedChips[i],
+						       CHIPSPCIchipsets,NULL,
+						       NULL,NULL,NULL,NULL))){
+		    pScrn->driverVersion = VERSION;
+		    pScrn->driverName    = CHIPS_DRIVER_NAME;
+		    pScrn->name          = CHIPS_NAME;
+		    pScrn->Probe         = CHIPSProbe;
+		    pScrn->PreInit       = CHIPSPreInit;
+		    pScrn->ScreenInit    = CHIPSScreenInit;
+		    pScrn->SwitchMode    = CHIPSSwitchMode;
+		    pScrn->AdjustFrame   = CHIPSAdjustFrame;
+		    pScrn->EnterVT       = CHIPSEnterVT;
+		    pScrn->LeaveVT       = CHIPSLeaveVT;
+		    pScrn->FreeScreen    = CHIPSFreeScreen;
+		    pScrn->ValidMode     = CHIPSValidMode;
+		    foundScreen = TRUE;
+		}
+	    }
+	    xfree(usedChips);
+	}
+    }
+    
+    /* Isa Bus */
+    numUsed = xf86MatchIsaInstances(CHIPS_NAME,CHIPSChipsets,CHIPSISAchipsets,
+				    drv,chipsFindIsaDevice,devSections,
+				    numDevSections,&usedChips);
+    if (numUsed > 0) {
+	if (flags & PROBE_DETECT)
+	    foundScreen = TRUE;
+	else for (i = 0; i < numUsed; i++) {
+	    ScrnInfoPtr pScrn = NULL;
+	    if ((pScrn = xf86ConfigIsaEntity(pScrn,0,
+						   usedChips[i],
+						   CHIPSISAchipsets,NULL,
+						   NULL,NULL,NULL,NULL))) {
 		pScrn->driverVersion = VERSION;
 		pScrn->driverName    = CHIPS_DRIVER_NAME;
 		pScrn->name          = CHIPS_NAME;
@@ -862,41 +897,11 @@ CHIPSProbe(DriverPtr drv, int flags)
 		pScrn->FreeScreen    = CHIPSFreeScreen;
 		pScrn->ValidMode     = CHIPSValidMode;
 		foundScreen = TRUE;
-		xf86ConfigActivePciEntity(pScrn,usedChips[i],CHIPSPCIchipsets,
-					  NULL,NULL,NULL,NULL,NULL);
 	    }
 	    xfree(usedChips);
 	}
     }
     
-    /* Isa Bus */
-    numUsed = xf86MatchIsaInstances(CHIPS_NAME,CHIPSChipsets,CHIPSISAchipsets,
-				     drv,chipsFindIsaDevice,devSections,
-				     numDevSections,&usedChips);
-    if (numUsed > 0) {
-	if (flags & PROBE_DETECT)
-	    foundScreen = TRUE;
-	else for (i = 0; i < numUsed; i++) {
-	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
-	    
-	    pScrn->driverVersion = VERSION;
-	    pScrn->driverName    = CHIPS_DRIVER_NAME;
-	    pScrn->name          = CHIPS_NAME;
-	    pScrn->Probe         = CHIPSProbe;
-	    pScrn->PreInit       = CHIPSPreInit;
-	    pScrn->ScreenInit    = CHIPSScreenInit;
-	    pScrn->SwitchMode    = CHIPSSwitchMode;
-	    pScrn->AdjustFrame   = CHIPSAdjustFrame;
-	    pScrn->EnterVT       = CHIPSEnterVT;
-	    pScrn->LeaveVT       = CHIPSLeaveVT;
-	    pScrn->FreeScreen    = CHIPSFreeScreen;
-	    pScrn->ValidMode     = CHIPSValidMode;
-	    foundScreen = TRUE;
-	    xf86ConfigActiveIsaEntity(pScrn,usedChips[i],CHIPSISAchipsets,
-				      NULL,NULL,NULL,NULL,NULL);
-	}
-	xfree(usedChips);
-    }
     xfree(devSections);
     return foundScreen;
 }
@@ -1954,7 +1959,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	    }
 	} else
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		       "Memory clock of %7.3f MHz exceeds limit of %7.3 MHz\n",
+		       "Memory clock of %7.3f MHz exceeds limit of %7.3f MHz\n",
 		       (float)(mclk/1000.), 
 		       (float)(MemClk->Max/1000.));
     } else 
@@ -2033,11 +2038,11 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	}
 
 	if (speed == 0)
-	    cPtr->MaxClock = cPtr->pEnt->device->dacSpeeds[0];
+	    speed = cPtr->pEnt->device->dacSpeeds[0];
 	from = X_CONFIG;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "User max pixel clock of %7.3f MHz overrides %7.3f MHz limit\n",
-		   (float)(cPtr->MaxClock / 1000.), (float)(speed / 1000.));
+		   (float)(speed / 1000.), (float)(cPtr->MaxClock / 1000.));
 	cPtr->MaxClock = speed;
     } else {
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
@@ -3350,7 +3355,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	    } else {
 		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			   "Memory clock of %7.3f MHz exceeds limit of "
-			   "%7.3 MHz\n",(float)(mclk/1000.),
+			   "%7.3f MHz\n",(float)(mclk/1000.),
 			   (float)(cPtr->MemClock.Max/1000.));
 		cPtr->MemClock.Clk = cPtr->MemClock.Max * 0.9;
 	    }

@@ -534,25 +534,25 @@ S3VProbe(DriverPtr drv, int flags)
 	foundScreen = TRUE;
     else for (i = 0; i < numUsed; i++) {
 	/* Allocate a ScrnInfoRec and claim the slot */
-	ScrnInfoPtr pScrn = xf86AllocateScreen(drv, 0);
-	
-	/* Fill in what we can of the ScrnInfoRec */
-	pScrn->driverVersion = S3VIRGE_DRIVER_VERSION;
-	pScrn->driverName	 = S3VIRGE_DRIVER_NAME;
-	pScrn->name		 = S3VIRGE_NAME;
-	pScrn->Probe	 = S3VProbe;
-	pScrn->PreInit	 = S3VPreInit;
-	pScrn->ScreenInit	 = S3VScreenInit;
-	pScrn->SwitchMode	 = S3VSwitchMode;
-	pScrn->AdjustFrame	 = S3VAdjustFrame;
-	pScrn->EnterVT	 = S3VEnterVT;
-	pScrn->LeaveVT	 = S3VLeaveVT;
-	pScrn->FreeScreen	 = NULL; /*S3VFreeScreen;*/
-	pScrn->ValidMode	 = S3VValidMode;
-	foundScreen = TRUE;
-	xf86ConfigActivePciEntity(pScrn,usedChips[i],S3VPciChipsets,
-				  NULL,NULL, NULL,NULL,NULL);
-
+	ScrnInfoPtr pScrn = NULL;
+	if ((pScrn = xf86ConfigPciEntity(pScrn,0,usedChips[i],
+					       S3VPciChipsets,NULL,NULL, NULL,
+					       NULL,NULL))) {
+	    /* Fill in what we can of the ScrnInfoRec */
+	    pScrn->driverVersion = S3VIRGE_DRIVER_VERSION;
+	    pScrn->driverName	 = S3VIRGE_DRIVER_NAME;
+	    pScrn->name		 = S3VIRGE_NAME;
+	    pScrn->Probe	 = S3VProbe;
+	    pScrn->PreInit	 = S3VPreInit;
+	    pScrn->ScreenInit	 = S3VScreenInit;
+	    pScrn->SwitchMode	 = S3VSwitchMode;
+	    pScrn->AdjustFrame	 = S3VAdjustFrame;
+	    pScrn->EnterVT	 = S3VEnterVT;
+	    pScrn->LeaveVT	 = S3VLeaveVT;
+	    pScrn->FreeScreen	 = NULL; /*S3VFreeScreen;*/
+	    pScrn->ValidMode	 = S3VValidMode;
+	    foundScreen = TRUE;
+	}
     }
     xfree(usedChips);
     PVERB5("	S3VProbe end\n");

@@ -374,19 +374,15 @@ TGAProbe(DriverPtr drv, int flags)
     if (flags & PROBE_DETECT)
 	foundScreen = TRUE;
     else for (i = 0; i < numUsed; i++) {
-	pEnt = xf86GetEntityInfo(usedChips[i]);
-
 	/*
 	 * Check that nothing else has claimed the slots.
 	 */
-	if(pEnt->active) {
-	    ScrnInfoPtr pScrn;
+	ScrnInfoPtr pScrn = NULL;
 	    
-	    /* Allocate a ScrnInfoRec and claim the slot */
-	    pScrn = xf86AllocateScreen(drv, 0);
-
-	    pPci = xf86GetPciInfoForEntity(pEnt->index);
-	    
+	/* Allocate a ScrnInfoRec and claim the slot */
+	if ((pScrn = xf86ConfigPciEntity(pScrn, 0, pEnt->index,
+					       TGAPciChipsets, NULL, NULL,
+					       NULL, NULL, NULL))) {
 	    /* Fill in what we can of the ScrnInfoRec */
 	    pScrn->driverVersion = VERSION;
 	    pScrn->driverName	 = TGA_DRIVER_NAME;
@@ -400,15 +396,9 @@ TGAProbe(DriverPtr drv, int flags)
 	    pScrn->LeaveVT	 = TGALeaveVT;
 	    pScrn->FreeScreen	 = TGAFreeScreen;
 	    pScrn->ValidMode	 = TGAValidMode;
-/*  	    pScrn->device	 = usedDevs[i]; */
-	    xf86ConfigActivePciEntity(pScrn, pEnt->index, TGAPciChipsets, NULL,
-				      NULL, NULL, NULL, NULL);
 	    foundScreen = TRUE;
 	}
-	xfree(pEnt);
     }
-/*      xfree(usedDevs); */
-/*      xfree(usedPci); */
     return foundScreen;
 }
 

@@ -528,7 +528,7 @@ MGAProbe(DriverPtr drv, int flags)
 {
     int i;
     GDevPtr *devSections = NULL;
-    int *usedChips;
+    int *usedChips = NULL;
     int numDevSections;
     int numUsed;
     Bool foundScreen = FALSE;
@@ -598,34 +598,40 @@ MGAProbe(DriverPtr drv, int flags)
 #endif
 	
 	/* Allocate a ScrnInfoRec and claim the slot */
-	pScrn = xf86AllocateScreen(drv, 0);
+	pScrn = NULL;
 	
-	/* Fill in what we can of the ScrnInfoRec */
-	pScrn->driverVersion	= VERSION;
-	pScrn->driverName	= MGA_DRIVER_NAME;
-	pScrn->name		= MGA_NAME;
-	pScrn->Probe		= MGAProbe;
-	pScrn->PreInit		= MGAPreInit;
-	pScrn->ScreenInit	= MGAScreenInit;
-	pScrn->SwitchMode	= MGASwitchMode;
-	pScrn->AdjustFrame	= MGAAdjustFrame;
-	pScrn->EnterVT		= MGAEnterVT;
-	pScrn->LeaveVT		= MGALeaveVT;
-	pScrn->FreeScreen	= MGAFreeScreen;
-	pScrn->ValidMode	= MGAValidMode;
-	foundScreen = TRUE;
 #ifndef DISABLE_VGA_IO
-	xf86ConfigActivePciEntity(pScrn, usedChips[i], MGAPciChipsets, NULL,
-				      NULL, NULL, NULL, NULL);
+	if ((pScrn = xf86ConfigPciEntity(pScrn, 0,usedChips[i],
+					       MGAPciChipsets, NULL, NULL,
+					       NULL, NULL, NULL))) 
 #else
-	smga = xnfalloc(sizeof(MgaSave));
-	smga->pvp = xf86GetPciInfoForEntity(usedChips[i]);
-	xf86ConfigActivePciEntity(pScrn, usedChips[i], MGAPciChipsets, NULL,
-				  VgaIOSave, VgaIOSave, VgaIORestore,
-				  smga);
+	    smga = xnfalloc(sizeof(MgaSave));
+	    smga->pvp = xf86GetPciInfoForEntity(usedChips[i]);
+	    if ((pScrn = xf86ConfigPciEntity(pScrn, 0,usedChips[i],
+					       MGAPciChipsets, NULL,VgaIOSave,
+					       VgaIOSave, VgaIORestore,smga)))
 #endif
+	    {
+		
+	/* Fill in what we can of the ScrnInfoRec */
+		pScrn->driverVersion	= VERSION;
+		pScrn->driverName	= MGA_DRIVER_NAME;
+		pScrn->name		= MGA_NAME;
+		pScrn->Probe		= MGAProbe;
+		pScrn->PreInit		= MGAPreInit;
+		pScrn->ScreenInit	= MGAScreenInit;
+		pScrn->SwitchMode	= MGASwitchMode;
+		pScrn->AdjustFrame	= MGAAdjustFrame;
+		pScrn->EnterVT		= MGAEnterVT;
+		pScrn->LeaveVT		= MGALeaveVT;
+		pScrn->FreeScreen	= MGAFreeScreen;
+		pScrn->ValidMode	= MGAValidMode;
+		foundScreen = TRUE;
+	    }
     }
-    xfree(usedChips);
+    if (usedChips)
+	xfree(usedChips);
+    
     return foundScreen;
 }
 
@@ -794,7 +800,6 @@ static void
 MGASoftReset(ScrnInfoPtr pScrn)
 {
 	MGAPtr pMga = MGAPTR(pScrn);
-	int i;
 
 	pMga->FbMapSize = 8192 * 1024;
 	MGAMapMem(pScrn);

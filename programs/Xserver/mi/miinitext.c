@@ -228,9 +228,9 @@ InitExtensions(argc, argv)
     char	*argv[];
 {
 #ifdef PANORAMIX
-#if !defined(PRINT_ONLY_SERVER) && !defined(NO_PANORAMIX)
+# if !defined(PRINT_ONLY_SERVER) && !defined(NO_PANORAMIX)
   if (!noPanoramiXExtension) PanoramiXExtensionInit();
-#endif
+# endif
 #endif
 #ifdef BEZIER
     BezierExtensionInit();

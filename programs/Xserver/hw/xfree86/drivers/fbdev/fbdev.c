@@ -243,7 +243,7 @@ static Bool
 FBDevProbe(DriverPtr drv, int flags)
 {
 	int i;
-	ScrnInfoPtr pScrn, pScrn0;
+	ScrnInfoPtr pScrn;
        	GDevPtr *devSections = NULL;
 	int numDevSections;
 	int bus,device,func;
@@ -256,71 +256,66 @@ FBDevProbe(DriverPtr drv, int flags)
 	if (flags & PROBE_DETECT)
 		return FALSE;
 
-	pScrn0 = xf86AllocateScreen(drv, 0);
-	if (!xf86LoadSubModule(pScrn0, "fbdevhw")) {
-		xf86DeleteScreen(pScrn0->scrnIndex,0);
-		return FALSE;
-	}
+	if ((numDevSections = xf86MatchDevice(FBDEV_DRIVER_NAME, &devSections)) <= 0) 
+	    return FALSE;
+	
+	if (!xf86LoadDrvSubModule(drv, "fbdevhw"))
+	    return FALSE;
+	    
 	xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
-
-	if ((numDevSections = xf86MatchDevice(FBDEV_DRIVER_NAME, &devSections)) <= 0) {
-		xf86DeleteScreen(pScrn0->scrnIndex,0);
-		return FALSE;
-	}
-
+	
 	for (i = 0; i < numDevSections; i++) {
-		dev = xf86FindOptionValue(devSections[i]->options,"fbdev");
+	    dev = xf86FindOptionValue(devSections[i]->options,"fbdev");
+	    if (devSections[i]->busID) {
+		xf86ParsePciBusString(devSections[i]->busID,&bus,&device,&func);
+		if (!xf86CheckPciSlot(bus,device,func))
+		    continue;
+	    }
+	    if (fbdevHWProbe(NULL,dev,NULL)) {
+		pScrn = NULL;
 		if (devSections[i]->busID) {
-			xf86ParsePciBusString(devSections[i]->busID,&bus,&device,&func);
-			if (!xf86CheckPciSlot(bus,device,func))
-				continue;
+		    /* XXX what about when there's no busID set? */
+		    int entity;
+		    
+		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+			       "claimed PCI slot %d:%d:%d\n",bus,device,func);
+		    entity = xf86ClaimPciSlot(bus,device,func,drv,
+					      0,devSections[i],
+					      TRUE);
+		    pScrn = xf86ConfigPciEntity(pScrn,0,entity,
+						      NULL,RES_SHARED_VGA,
+						      NULL,NULL,NULL,NULL);
+		} else {
+		    /* XXX This is a quick hack */
+		    int entity;
+		    
+		    entity = xf86ClaimIsaSlot(drv, 0,
+					      devSections[i], TRUE);
+		    pScrn = xf86ConfigIsaEntity(pScrn,0,entity,
+						      NULL,RES_SHARED_VGA,
+						      NULL,NULL,NULL,NULL);
 		}
-		if (fbdevHWProbe(NULL,dev)) {
-			foundScreen = TRUE;
-			pScrn = xf86AllocateScreen(drv, 0);
-			xf86LoadSubModule(pScrn, "fbdevhw");
-			xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
-
-			pScrn->driverVersion = VERSION;
-	                pScrn->driverName    = FBDEV_DRIVER_NAME;
-			pScrn->name          = FBDEV_NAME;
-			pScrn->Probe         = FBDevProbe;
-			pScrn->PreInit       = FBDevPreInit;
-			pScrn->ScreenInit    = FBDevScreenInit;
-			pScrn->SwitchMode    = fbdevHWSwitchMode;
-			pScrn->AdjustFrame   = fbdevHWAdjustFrame;
-			pScrn->EnterVT       = fbdevHWEnterVT;
-			pScrn->LeaveVT       = fbdevHWLeaveVT;
-			pScrn->ValidMode     = fbdevHWValidMode;
-
-			xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-				   "using %s\n", dev ? dev : "default device");
-			if (devSections[i]->busID) {
-				/* XXX what about when there's no busID set? */
-				int entity;
-
-				xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-					   "claimed PCI slot %d:%d:%d\n",bus,device,func);
-				entity = xf86ClaimPciSlot(bus,device,func,drv,
-							  0,devSections[i],
-							  TRUE);
-				xf86ConfigActivePciEntity(pScrn,entity,
-							  NULL,RES_SHARED_VGA,
-							  NULL,NULL,NULL,NULL);
-			} else {
-				/* XXX This is a quick hack */
-				int entity;
-
-				entity = xf86ClaimIsaSlot(drv, 0,
-							  devSections[i], TRUE);
-				xf86ConfigActiveIsaEntity(pScrn,entity,
-							  NULL,RES_SHARED_VGA,
-							  NULL,NULL,NULL,NULL);
-			}
+		if (pScrn) {
+		    foundScreen = TRUE;
+		    
+		    pScrn->driverVersion = VERSION;
+		    pScrn->driverName    = FBDEV_DRIVER_NAME;
+		    pScrn->name          = FBDEV_NAME;
+		    pScrn->Probe         = FBDevProbe;
+		    pScrn->PreInit       = FBDevPreInit;
+		    pScrn->ScreenInit    = FBDevScreenInit;
+		    pScrn->SwitchMode    = fbdevHWSwitchMode;
+		    pScrn->AdjustFrame   = fbdevHWAdjustFrame;
+		    pScrn->EnterVT       = fbdevHWEnterVT;
+		    pScrn->LeaveVT       = fbdevHWLeaveVT;
+		    pScrn->ValidMode     = fbdevHWValidMode;
+		    
+		    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			       "using %s\n", dev ? dev : "default device");
 		}
+	    }
 	}
 	xfree(devSections);
-	xf86DeleteScreen(pScrn0->scrnIndex,0);
 	TRACE("probe done");
 	return foundScreen;
 }

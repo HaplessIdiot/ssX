@@ -68,6 +68,8 @@
 # define DEBUG_DISASSEMBLE()   	(M.x86.debug & DEBUG_DISASSEMBLE_F)
 # define DEBUG_BREAK()         	(M.x86.debug & DEBUG_BREAK_F)
 # define DEBUG_SVC()           	(M.x86.debug & DEBUG_SVC_F)
+# define DEBUG_SAVE_IP_CS()     (M.x86.debug & DEBUG_SAVE_CS_IP)
+
 # define DEBUG_FS()            	(M.x86.debug & DEBUG_FS_F)
 # define DEBUG_PROC()          	(M.x86.debug & DEBUG_PROC_F)
 # define DEBUG_SYSINT()        	(M.x86.debug & DEBUG_SYSINT_F)
@@ -85,6 +87,7 @@
 # define DEBUG_DISASSEMBLE()   	0
 # define DEBUG_BREAK()         	0
 # define DEBUG_SVC()           	0
+# define DEBUG_SAVE_IP_CS()     0
 # define DEBUG_FS()            	0
 # define DEBUG_PROC()          	0
 # define DEBUG_SYSINT()        	0
@@ -114,7 +117,8 @@
 		x86emu_inc_decoded_inst_len(x)
 
 #define SAVE_IP_CS(x,y)                               			\
-	if (DEBUG_DECODE() | DEBUG_TRACECALL() | DEBUG_BREAK() | DEBUG_IO_TRACE()) { \
+	if (DEBUG_DECODE() | DEBUG_TRACECALL() | DEBUG_BREAK() \
+              | DEBUG_IO_TRACE() | DEBUG_SAVE_IP_CS()) { \
 		M.x86.saved_cs = x;                          			\
 		M.x86.saved_ip = y;                          			\
 	}

@@ -38,10 +38,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "screenint.h"
 #include "compiler.h"
 #include "xf86.h"
-#include "xf86Priv.h"
-#include "xf86_OSlib.h"
 
-/*  #include "xf86_ansic.h" */
+#include "xf86_OSproc.h"
+#include "xf86_ansic.h" 
 
 #include "i810.h"
 #include "i810_reg.h"

@@ -1730,6 +1730,256 @@ void x86emuOp2_movzx_word_R_RM(u8 X86EMU_UNUSED(op2))
 
 /****************************************************************************
 REMARKS:
+Handles opcode 0x0f,0xba
+****************************************************************************/
+void x86emuOp2_btX_I(u8 X86EMU_UNUSED(op2))
+{
+    int mod, rl, rh;
+    uint srcoffset;
+    int bit;
+
+    START_OF_INSTR();
+    FETCH_DECODE_MODRM(mod, rh, rl);
+    switch (rh) {
+    case 3:
+	DECODE_PRINTF("BT\t");
+	break;
+    case 4:
+	DECODE_PRINTF("BTS\t");
+	break;
+    case 5:
+	DECODE_PRINTF("BTR\t");
+	break;
+    case 6:
+	DECODE_PRINTF("BTC\t");
+	break;
+    default:
+	DECODE_PRINTF("ILLEGAL EXTENDED X86 OPCODE\n");
+	TRACE_REGS();
+	printk("%04x:%04x: %02X%02X ILLEGAL EXTENDED X86 OPCODE EXTENSION!\n",
+		M.x86.R_CS, M.x86.R_IP-3,op2, (mod<<6)|(rh<<3)|rl);
+	HALT_SYS();
+    }
+    switch (mod) {
+    case 0:
+        if (M.x86.mode & SYSMODE_PREFIX_DATA) {
+            u32 srcval, mask;
+            u8 shift;
+
+            srcoffset = decode_rm00_address(rl);
+            DECODE_PRINTF(",");
+            shift = fetch_byte_imm();
+            TRACE_AND_STEP();
+            bit = shift & 0x1F;
+            srcval = fetch_data_long(srcoffset);
+	    mask = (0x1 << bit);
+            CONDITIONAL_SET_FLAG(srcval & mask,F_CF);
+	    switch (rh) {
+	    case 4:
+		store_data_long(srcoffset, srcval | mask);
+		break;
+	    case 5:
+		store_data_long(srcoffset, srcval & ~mask);
+		break;
+	    case 6:
+		store_data_long(srcoffset, srcval ^ mask);
+		break;
+	    default:
+		break;
+	    }
+        } else {
+            u16 srcval, mask;
+            u8 shift;
+
+            srcoffset = decode_rm00_address(rl);
+            DECODE_PRINTF(",");
+            shift = fetch_byte_imm();
+            TRACE_AND_STEP();
+            bit = shift & 0xF;
+            srcval = fetch_data_word(srcoffset);
+	    mask = (0x1 << bit);
+            CONDITIONAL_SET_FLAG(srcval & mask,F_CF);
+	    switch (rh) {
+	    case 4:
+		store_data_word(srcoffset, srcval | mask);
+		break;
+	    case 5:
+		store_data_word(srcoffset, srcval & ~mask);
+		break;
+	    case 6:
+		store_data_word(srcoffset, srcval ^ mask);
+		break;
+	    default:
+		break;
+	    }
+        }
+        break;
+    case 1:
+        if (M.x86.mode & SYSMODE_PREFIX_DATA) {
+            u32 srcval, mask;
+            u8 shift;
+
+            srcoffset = decode_rm01_address(rl);
+            DECODE_PRINTF(",");
+            shift = fetch_byte_imm();
+            TRACE_AND_STEP();
+            bit = shift & 0x1F;
+            srcval = fetch_data_long(srcoffset);
+	    mask = (0x1 << bit);
+            CONDITIONAL_SET_FLAG(srcval & mask,F_CF);
+	    switch (rh) {
+	    case 4:
+		store_data_long(srcoffset, srcval | mask);
+		break;
+	    case 5:
+		store_data_long(srcoffset, srcval & ~mask);
+		break;
+	    case 6:
+		store_data_long(srcoffset, srcval ^ mask);
+		break;
+	    default:
+		break;
+	    }
+        } else {
+            u16 srcval, mask;
+            u8 shift;
+
+            srcoffset = decode_rm01_address(rl);
+            DECODE_PRINTF(",");
+            shift = fetch_byte_imm();
+            TRACE_AND_STEP();
+            bit = shift & 0xF;
+            srcval = fetch_data_word(srcoffset);
+	    mask = (0x1 << bit);
+            CONDITIONAL_SET_FLAG(srcval & mask,F_CF);
+	    switch (rh) {
+	    case 4:
+		store_data_word(srcoffset, srcval | mask);
+		break;
+	    case 5:
+		store_data_word(srcoffset, srcval & ~mask);
+		break;
+	    case 6:
+		store_data_word(srcoffset, srcval ^ mask);
+		break;
+	    default:
+		break;
+	    }
+        }
+        break;
+    case 2:
+        if (M.x86.mode & SYSMODE_PREFIX_DATA) {
+            u32 srcval, mask;
+            u8 shift;
+
+            srcoffset = decode_rm10_address(rl);
+            DECODE_PRINTF(",");
+            shift = fetch_byte_imm();
+            TRACE_AND_STEP();
+            bit = shift & 0x1F;
+            srcval = fetch_data_long(srcoffset);
+	    mask = (0x1 << bit);
+            CONDITIONAL_SET_FLAG(srcval & mask,F_CF);
+	    switch (rh) {
+	    case 4:
+		store_data_long(srcoffset, srcval | mask);
+		break;
+	    case 5:
+		store_data_long(srcoffset, srcval & ~mask);
+		break;
+	    case 6:
+		store_data_long(srcoffset, srcval ^ mask);
+		break;
+	    default:
+		break;
+	    }
+        } else {
+            u16 srcval, mask;
+            u8 shift;
+
+            srcoffset = decode_rm10_address(rl);
+            DECODE_PRINTF(",");
+            shift = fetch_byte_imm();
+            TRACE_AND_STEP();
+            bit = shift & 0xF;
+            srcval = fetch_data_word(srcoffset);
+	    mask = (0x1 << bit);
+            CONDITIONAL_SET_FLAG(srcval & mask,F_CF);
+	    switch (rh) {
+	    case 4:
+		store_data_word(srcoffset, srcval | mask);
+		break;
+	    case 5:
+		store_data_word(srcoffset, srcval & ~mask);
+		break;
+	    case 6:
+		store_data_word(srcoffset, srcval ^ mask);
+		break;
+	    default:
+		break;
+	    }
+        }
+        break;
+    case 3:                     /* register to register */
+        if (M.x86.mode & SYSMODE_PREFIX_DATA) {
+            u32 *srcreg;
+	    u32 mask;
+	    u8 shift;
+
+            srcreg = DECODE_RM_LONG_REGISTER(rl);
+            DECODE_PRINTF(",");
+            shift = fetch_byte_imm();
+            TRACE_AND_STEP();
+            bit = shift & 0x1F;
+	    mask = (0x1 << bit);
+            CONDITIONAL_SET_FLAG(*srcreg & mask,F_CF);
+	    switch (rh) {
+	    case 4:
+		*srcreg |= mask;
+		break;
+	    case 5:
+		*srcreg &= ~mask;
+		break;
+	    case 6:
+		*srcreg ^= mask;
+		break;
+	    default:
+		break;
+	    }
+        } else {
+            u16 *srcreg;
+	    u16 mask;
+	    u8 shift;
+
+            srcreg = DECODE_RM_WORD_REGISTER(rl);
+            DECODE_PRINTF(",");
+            shift = fetch_byte_imm();
+            TRACE_AND_STEP();
+            bit = shift & 0xF;
+	    mask = (0x1 << bit);
+            CONDITIONAL_SET_FLAG(*srcreg & mask,F_CF);
+	    switch (rh) {
+	    case 4:
+		*srcreg |= mask;
+		break;
+	    case 5:
+		*srcreg &= ~mask;
+		break;
+	    case 6:
+		*srcreg ^= mask;
+		break;
+	    default:
+		break;
+	    }
+        }
+        break;
+    }
+    DECODE_CLEAR_SEGOVR();
+    END_OF_INSTR();
+}
+
+/****************************************************************************
+REMARKS:
 Handles opcode 0x0f,0xbb
 ****************************************************************************/
 void x86emuOp2_btc_R(u8 X86EMU_UNUSED(op2))
@@ -2241,7 +2491,7 @@ void (*x86emu_optab2[256])(u8) =
 /*  0xb7 */ x86emuOp2_movzx_word_R_RM,
 /*  0xb8 */ x86emuOp2_illegal_op,
 /*  0xb9 */ x86emuOp2_illegal_op,
-/*  0xba */ x86emuOp2_illegal_op,  /* TOOD: Group H (bts,btr,btc,bt etc) */
+/*  0xba */ x86emuOp2_btX_I,
 /*  0xbb */ x86emuOp2_btc_R,
 /*  0xbc */ x86emuOp2_illegal_op,  /* TODO: bsf */
 /*  0xbd */ x86emuOp2_illegal_op,  /* TODO: bsr */

@@ -40,8 +40,8 @@ static Bool	CIRProbe(DriverPtr drv, int flags);
 
 extern OptionInfoPtr	AlpAvailableOptions(int chipid);
 extern OptionInfoPtr	LgAvailableOptions(int chipid);
-extern Bool AlpProbe(int entity, ScrnInfoPtr pScrn);
-extern Bool LgProbe(int entity, ScrnInfoPtr pScrn);
+extern ScrnInfoPtr AlpProbe(int entity);
+extern ScrnInfoPtr LgProbe(int entity);
 
 static Bool lg_loaded = FALSE;
 static Bool alp_loaded = FALSE;
@@ -180,7 +180,6 @@ static
 OptionInfoPtr
 CIRAvailableOptions(int chipid, int busid)
 {
-	int vendor = (chipid & 0xffff0000) >> 16;
 	int chip = chipid & 0xffff;
 
 	if (chip == PCI_CHIP_GD5462 ||
@@ -199,130 +198,110 @@ CIRAvailableOptions(int chipid, int busid)
 	}
 }
 
-/* Mandatory */
 static Bool
 CIRProbe(DriverPtr drv, int flags)
 {
-	int i;
-	GDevPtr *devSections = NULL;
-	pciVideoPtr pPci;
-	int *usedChips;
-	int numDevSections;
-	int numUsed;
-	Bool foundScreen = FALSE;
-	Bool (*subProbe)(int entity, ScrnInfoPtr pScrn);
+    int i;
+    GDevPtr *devSections = NULL;
+    pciVideoPtr pPci;
+    int *usedChips;
+    int numDevSections;
+    int numUsed;
+    Bool foundScreen = FALSE;
+    ScrnInfoPtr (*subProbe)(int entity);
+    ScrnInfoPtr pScrn;
+
 #ifdef CIR_DEBUG
-	ErrorF("CirProbe\n");
+    ErrorF("CirProbe\n");
 #endif
+  
+    /*
+     * For PROBE_DETECT, make sure both sub-modules are loaded before
+     * calling xf86MatchPciInstances(), because the AvailableOptions()
+     * functions may be called before xf86MatchPciInstances() returns.
+     */
+    
+    if (flags & PROBE_DETECT) {
+	if (!lg_loaded) {
+	    if (xf86LoadDrvSubModule(drv, "cirrus_laguna")) {
+		xf86LoaderReqSymLists(lgSymbols, NULL);
+		lg_loaded = TRUE;
+	    }
+	}
+	if (!alp_loaded) {
+	    if (xf86LoadDrvSubModule(drv, "cirrus_alpine")) {
+		xf86LoaderReqSymLists(alpSymbols, NULL);
+		alp_loaded = TRUE;
+	    }
+	}
+    }
 
-	if ((numDevSections = xf86MatchDevice(CIR_DRIVER_NAME,
+    if ((numDevSections = xf86MatchDevice(CIR_DRIVER_NAME,
 					  &devSections)) <= 0) {
-		return FALSE;
-	}
-
+	return FALSE;
+    }
+    
+    if (xf86GetPciVideoInfo() == NULL) {
 	/*
-	 * While we're VGA-dependent, can really only have one such instance, but
-	 * we'll ignore that.
+	 * We won't let anything in the config file override finding no
+	 * PCI video cards at all.  This seems reasonable now, but we'll see.
 	 */
-
-	/*
-	 * We need to probe the hardware first.  We then need to see how this
-	 * fits in with what is given in the config file, and allow the config
-	 * file info to override any contradictions.
-	 */
-
-	/*
-	 * All of the cards this driver supports are PCI, so the "probing" just
-	 * amounts to checking the PCI data that the server has already collected.
-	 */
-	if (xf86GetPciVideoInfo() == NULL) {
-		/*
-		 * We won't let anything in the config file override finding no
-		 * PCI video cards at all.  This seems reasonable now, but we'll see.
-		 */
-		return FALSE;
-	}
-
-	/*
-	 * For PROBE_DETECT, make sure both sub-modules are loaded before
-	 * calling xf86MatchPciInstances(), because the AvailableOptions()
-	 * functions may be called before xf86MatchPciInstances() returns.
-	 */
-	if (flags & PROBE_DETECT) {
-		if (!lg_loaded) {
-			if(xf86LoadSubModule(NULL, "cirrus_laguna")) {
-				xf86LoaderReqSymLists(lgSymbols, NULL);
-				lg_loaded = TRUE;
-			}
-		}
-		if (!alp_loaded) {
-			if(xf86LoadSubModule(NULL, "cirrus_alpine")) {
-				xf86LoaderReqSymLists(alpSymbols, NULL);
-				alp_loaded = TRUE;
-			}
-		}
-	}
-
-	numUsed = xf86MatchPciInstances(CIR_NAME, PCI_VENDOR_CIRRUS,
-					CIRChipsets, CIRPciChipsets,
-					devSections, numDevSections, drv,
-					&usedChips);
-	/* Free it since we don't need that list after this */
-	if (devSections)
-		xfree(devSections);
-	devSections = NULL;
-	if (numUsed <= 0)
-		return FALSE;
-	if (flags & PROBE_DETECT)
-		foundScreen = TRUE;
-	else for (i = 0; i < numUsed; i++) {
-		ScrnInfoPtr pScrn;
-
-		/* Allocate a ScrnInfoRec and claim the slot */
-		pScrn = xf86AllocateScreen(drv, 0);
-
-		/* Fill in what we can of the ScrnInfoRec */
-		pScrn->driverVersion = VERSION;
-		pScrn->driverName	 = CIR_DRIVER_NAME;
-		pScrn->name		 = CIR_NAME;
-		pScrn->Probe	 = NULL;
-		/* The Laguna family of chips is so different from the Alpine
-		   family that we won't share even the highest-level of
-		   functions.  But, the Laguna chips /are/ Cirrus chips, so
-		   they should be handled in this driver (as opposed to their
-		   own driver). */
-		pPci = xf86GetPciInfoForEntity(usedChips[i]);
-		if (pPci->chipType == PCI_CHIP_GD5462 ||
-			pPci->chipType == PCI_CHIP_GD5464 ||
-			pPci->chipType == PCI_CHIP_GD5464BD ||
-			pPci->chipType == PCI_CHIP_GD5465) {
-
-		    if (!lg_loaded) {
-		        if(!xf86LoadSubModule(pScrn, "cirrus_laguna")) {
-			  xf86DeleteScreen(pScrn->scrnIndex, 0);
-			  continue;
-			}
-			xf86LoaderReqSymLists(lgSymbols, NULL);
-			lg_loaded = TRUE;
-		    }
-		    subProbe = LgProbe;
-		} else {
-		    if (!alp_loaded) {
-		        if (!xf86LoadSubModule(pScrn, "cirrus_alpine")) {
-			    xf86DeleteScreen(pScrn->scrnIndex, 0);
-			    continue;
-			}
-			xf86LoaderReqSymLists(alpSymbols, NULL);
-			alp_loaded = TRUE;
-		    }
-		    subProbe = AlpProbe;
-		}
-		if (subProbe(usedChips[i], pScrn))
-			foundScreen = TRUE;
-	}
-	xfree(usedChips);
-
-	return foundScreen;
+	return FALSE;
+    }
+  
+    numUsed = xf86MatchPciInstances(CIR_NAME, PCI_VENDOR_CIRRUS,
+				    CIRChipsets, CIRPciChipsets, devSections,
+ 				    numDevSections, drv, &usedChips);
+    /* Free it since we don't need that list after this */
+    if (devSections)
+ 	xfree(devSections);
+    devSections = NULL;
+    if (numUsed <= 0)
+ 	return FALSE;
+    if (flags & PROBE_DETECT)
+ 	foundScreen = TRUE;
+    else for (i = 0; i < numUsed; i++) {
+ 	/* The Laguna family of chips is so different from the Alpine
+ 	   family that we won't share even the highest-level of
+ 	   functions.  But, the Laguna chips /are/ Cirrus chips, so
+ 	   they should be handled in this driver (as opposed to their
+ 	   own driver). */
+	pPci = xf86GetPciInfoForEntity(usedChips[i]);
+ 	if (pPci->chipType == PCI_CHIP_GD5462 ||
+ 	    pPci->chipType == PCI_CHIP_GD5464 ||
+ 	    pPci->chipType == PCI_CHIP_GD5464BD ||
+ 	    pPci->chipType == PCI_CHIP_GD5465) {
+ 	    
+ 	    if (!lg_loaded) {
+ 		if (!xf86LoadDrvSubModule(drv, "cirrus_laguna")) 
+		    continue;
+ 		xf86LoaderReqSymLists(lgSymbols, NULL);
+ 		lg_loaded = TRUE;
+ 	    }
+ 	    subProbe = LgProbe;
+ 	} else {
+ 	    if (!alp_loaded) {
+ 		if (!xf86LoadDrvSubModule(drv, "cirrus_alpine")) 
+ 		    continue;
+ 		xf86LoaderReqSymLists(alpSymbols, NULL);
+ 		alp_loaded = TRUE;
+ 	    }
+ 	    subProbe = AlpProbe;
+ 	}
+ 	pScrn = NULL;
+ 	
+ 	if ((pScrn = subProbe(usedChips[i]))) {
+ 	    foundScreen = TRUE;
+ 	    /* Fill in what we can of the ScrnInfoRec */
+ 	    pScrn->driverVersion = VERSION;
+ 	    pScrn->driverName	 = CIR_DRIVER_NAME;
+ 	    pScrn->name		 = CIR_NAME;
+ 	    pScrn->Probe	 = NULL;
+ 	}
+    }
+    xfree(usedChips);
+     
+    return foundScreen;
 }
 
 /*

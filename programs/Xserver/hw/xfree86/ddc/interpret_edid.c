@@ -25,12 +25,13 @@ static void get_whitepoint_section(Uchar *, struct whitePoints *);
 static void get_detailed_timing_section(Uchar*, struct 	detailed_timings *);
 
 xf86MonPtr
-xf86InterpretEDID(Uchar *block)
+xf86InterpretEDID(int scrnIndex, Uchar *block)
 {
     xf86MonPtr m;
 
     if (!block) return NULL;
     if (! (m = xnfcalloc(sizeof(xf86Monitor),1))) return NULL;
+    m->scrnIndex = scrnIndex;
     m->rawData = block;
     get_vendor_section(SECTION(VENDOR_SECTION,block),&m->vendor);
     get_version_section(SECTION(VERSION_SECTION,block),&m->ver);

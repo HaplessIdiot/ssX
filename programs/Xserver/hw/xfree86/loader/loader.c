@@ -1167,10 +1167,18 @@ LoaderCheckUnresolved(int delay_flag )
 }
 
 void
+xf86LoaderTrap()
+{
+}
+
+void
 LoaderDefaultFunc(void)
 {
 	ErrorF("\n\n\tThis should not happen!\n"
 		"\tAn unresolved function was called!\n");
+
+	xf86LoaderTrap();
+	
 	FatalError("\n");
 }
 

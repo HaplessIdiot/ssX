@@ -247,7 +247,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86CheckPciSlot)
    SYMFUNC(xf86ClaimPciSlot)
    SYMFUNC(xf86GetPciVideoInfo)
-   SYMFUNC(xf86GetEntityForPciInfo)
+   SYMFUNC(xf86GetPciEntity)
    SYMFUNC(xf86GetPciConfigInfo)
    SYMFUNC(xf86SetPciVideo)
    SYMFUNC(xf86ClaimIsaSlot)
@@ -385,6 +385,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86GetAllowMouseOpenFail)
    SYMFUNC(xf86IsPc98)
    SYMFUNC(xf86GetClocks)
+   SYMFUNC(xf86LoadDrvSubModule)
    SYMFUNC(xf86LoadSubModule)
    SYMFUNC(xf86UnloadSubModule)
    SYMFUNC(xf86LoaderCheckSymbol)
@@ -398,6 +399,8 @@ LOOKUP xfree86LookupTab[] = {
    /* SYMFUNC(xf86NewSerialNumber) */
    SYMFUNC(xf86FindXvOptions)
    SYMFUNC(xf86GetOS)
+   SYMFUNC(xf86ConfigPciEntity)
+   SYMFUNC(xf86ConfigIsaEntity)
    SYMFUNC(xf86ConfigActivePciEntity)
    SYMFUNC(xf86ConfigActiveIsaEntity)
    SYMFUNC(xf86ConfigPciEntityInactive)
@@ -524,6 +527,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(MiscExtGetKbdValue)
    SYMFUNC(MiscExtSetKbdValue)
    SYMFUNC(MiscExtCreateStruct)
+   SYMFUNC(MiscExtDestroyStruct)
    SYMFUNC(MiscExtApply)
 #endif
 

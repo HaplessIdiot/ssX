@@ -100,7 +100,6 @@ typedef struct _MouseDevRec {
     const char *	protocol;
     int			protocolID;
     int			class;
-    Bool		automatic;
     int			mseModel;
     int			baudRate;
     int			oldBaudRate;

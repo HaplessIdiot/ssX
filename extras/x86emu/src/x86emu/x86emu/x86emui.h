@@ -37,6 +37,7 @@
 *				and never in a binary portable driver.
 *
 ****************************************************************************/
+
 /* $XFree86$ */
 
 #ifndef __X86EMU_X86EMUI_H
@@ -75,8 +76,7 @@
 #else
 #include <stdio.h>
 #include <string.h>
-#endif
-
+#endif                                                                                           
 /*--------------------------- Inline Functions ----------------------------*/
 
 #ifdef  __cplusplus

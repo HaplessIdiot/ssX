@@ -198,9 +198,14 @@ vbeReadEDID(vbeInfoPtr pVbe)
     int RealOff = pVbe->real_mode_base;
     pointer page = pVbe->memory;
     unsigned char *tmp = NULL;
+    Bool noddc = FALSE;
     int screen = pVbe->pInt10->scrnIndex;
 
     if (!page) return NULL;
+
+    xf86GetOptValBool(DDCOptions, DDCOPT_NODDC, &noddc);
+    if (noddc) return NULL;
+    
     if (!vbeProbeDDC(pVbe)) goto error;
     
     pVbe->pInt10->ax = 0x4F15;
@@ -249,7 +254,7 @@ vbeDoEDID(vbeInfoPtr pVbe)
   	return NULL;
     xf86LoaderReqSymLists(ddcSymbols, NULL);
 
-    return xf86InterpretEDID(DDC_data);
+    return xf86InterpretEDID(pVbe->pInt10->scrnIndex,DDC_data);
 }
 
 

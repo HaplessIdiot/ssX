@@ -654,11 +654,10 @@ static Bool R128Probe(DriverPtr drv, int flags)
     if (flags & PROBE_DETECT)
     	foundScreen = TRUE;
     else for (i = 0; i < numUsed; i++) {
-	pEnt = xf86GetEntityInfo(usedChips[i]);
 
-	if (pEnt->active) {
-	    ScrnInfoPtr pScrn    = xf86AllocateScreen(drv, 0);
-
+	ScrnInfoPtr pScrn    = NULL;
+	if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
+					       R128PciChipsets, 0, 0, 0, 0, 0))) {
 	    pScrn->driverVersion = R128_VERSION;
 	    pScrn->driverName    = R128_NAME;
 	    pScrn->name          = R128_NAME;
@@ -673,11 +672,7 @@ static Bool R128Probe(DriverPtr drv, int flags)
 	    pScrn->ValidMode     = R128ValidMode;
 
 	    foundScreen          = TRUE;
-	    
-	    xf86ConfigActivePciEntity(pScrn, usedChips[i], R128PciChipsets,
-				      0, 0, 0, 0, 0);
 	}
-	xfree(pEnt);
     }
 
     if (numUsed) xfree(usedChips);

@@ -60,6 +60,7 @@
 #include "xf86_ansic.h"
 #include "xisb.h"
 #include "mouse.h"
+#include "mousePriv.h"
 #include "mipointer.h"
 
 static InputInfoPtr MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags);
@@ -76,8 +77,6 @@ static void MouseCtrl(DeviceIntPtr device, PtrCtrl *ctrl);
 static void MousePostEvent(InputInfoPtr pInfo, int buttons,
 			   int dx, int dy, int dz, int dw);
 static void MouseReadInput(InputInfoPtr pInfo);
-/* XXX This is temporary. */
-const char * xf86ProtocolIDToName(ProtocolID id);
 
 #undef MOUSE
 InputDriverRec MOUSE = {
@@ -199,7 +198,7 @@ static MouseProtocolRec mouseProtocols[] = {
     { NULL,			MSE_NONE,	NULL,		PROT_UNKNOWN }
 };
 
-static ProtocolID
+static MouseProtocolID
 ProtocolNameToID(const char *name)
 {
     int i;
@@ -211,7 +210,7 @@ ProtocolNameToID(const char *name)
 }
 
 static const char *
-ProtocolIDToName(ProtocolID id)
+ProtocolIDToName(MouseProtocolID id)
 {
     int i;
 
@@ -231,13 +230,19 @@ ProtocolIDToName(ProtocolID id)
 }
 
 const char *
-xf86ProtocolIDToName(ProtocolID id)
+xf86MouseProtocolIDToName(MouseProtocolID id)
 {
 	return ProtocolIDToName(id);
 }
 
+MouseProtocolID
+xf86MouseProtocolNameToID(const char *name)
+{
+    return ProtocolNameToID(name);
+}
+
 static int
-ProtocolIDToClass(ProtocolID id)
+ProtocolIDToClass(MouseProtocolID id)
 {
     int i;
 
@@ -255,7 +260,7 @@ ProtocolIDToClass(ProtocolID id)
 }
 
 static MouseProtocolPtr
-GetProtocol(ProtocolID id) {
+GetProtocol(MouseProtocolID id) {
     int i;
 
     switch (id) {
@@ -414,7 +419,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     MouseDevPtr pMse;
     MessageType from = X_DEFAULT;
     const char *protocol;
-    ProtocolID protocolID;
+    MouseProtocolID protocolID;
     MouseProtocolPtr pProto;
 
     if (!InitProtocols())
@@ -492,7 +497,6 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     pMse->protocol = protocol;
     pMse->protocolID = protocolID;
     pMse->class = ProtocolIDToClass(protocolID);
-    pMse->automatic = (protocolID == PROT_AUTO);
 
     /* Collect the options, and process the common options. */
     xf86CollectInputOptions(pInfo, pProto->defaults, NULL);
@@ -552,8 +556,8 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 }
 
 /*
- * This array is indexed by the ProtocolID values, so the order of the entries
- * must match that of the ProtocolID enum in mouse.h.
+ * This array is indexed by the MouseProtocolID values, so the order of the entries
+ * must match that of the MouseProtocolID enum in mouse.h.
  */
 static unsigned char proto[PROT_NUMPROTOS][8] = {
   /* --header--  ---data--- packet -4th-byte-  mouse   */
@@ -640,14 +644,17 @@ SetupMouse(InputInfoPtr pInfo)
     int protoPara[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
     const char *name = NULL;
     const char *s;
+    Bool automatic = FALSE;
     unsigned char c;
-    ProtocolID protocolID = PROT_UNKNOWN;
     pointer options;
 
     pMse = pInfo->private;
-
     /* Handle the "Auto" protocol. */
-    if (pMse->automatic) {
+    if (pMse->protocolID == PROT_AUTO) {
+	MouseProtocolID protocolID = PROT_UNKNOWN;
+	
+	automatic = TRUE;
+
 	/* Check if the OS has a detection mechanism. */
 	if (osInfo->SetupAuto) {
 	    name = osInfo->SetupAuto(pInfo, protoPara);
@@ -686,19 +693,20 @@ SetupMouse(InputInfoPtr pInfo)
 	}
     }
     memcpy(pMse->protoPara, proto[pMse->protocolID], sizeof(pMse->protoPara));
-    if (pMse->automatic && name) {
-	/* Possible protoPara overrides from SetupAuto. */
-	for (i = 0; i < sizeof(pMse->protoPara); i++)
-	    if (protoPara[i] != -1)
-		pMse->protoPara[i] = protoPara[i];
+    if (automatic) {
+	
+	if (name) {
+	    /* Possible protoPara overrides from SetupAuto. */
+	    for (i = 0; i < sizeof(pMse->protoPara); i++)
+		if (protoPara[i] != -1)
+		    pMse->protoPara[i] = protoPara[i];
+	} else {
+	    xf86Msg(X_ERROR, "%s: cannot determine the mouse protocol\n",
+		    pInfo->name);
+	    return FALSE;
+	}
     }
-
-    if (pMse->automatic && !name) {
-	xf86Msg(X_ERROR, "%s: cannot determine the mouse protocol\n",
-		pInfo->name);
-	return FALSE;
-    }
-
+    
     /* Set the port parameters. */
     xf86SetSerial(pInfo->fd, pInfo->options);
     param = NULL;

@@ -236,6 +236,7 @@ void x86emu_single_step (void)
     int ntok;
     int cmd;
     int done;
+		int segment;
     int offset;
     static int breakpoint;
     static int noDecode = 1;
@@ -264,14 +265,21 @@ void x86emu_single_step (void)
 			disassemble_forward(M.x86.saved_cs,(u16)offset,10);
             break;
           case 'd':  
-            if (ntok == 2) {
-                offset = ps[1];
-				X86EMU_dump_memory(M.x86.saved_cs,(u16)offset,16);
-				offset += 16;
-			} else {
-				X86EMU_dump_memory(M.x86.saved_cs,(u16)offset,16);
-                offset += 16;
-            }
+							if (ntok == 2) {
+									segment = M.x86.saved_cs;
+									offset = ps[1];
+									X86EMU_dump_memory(segment,(u16)offset,16);
+									offset += 16;
+							} else if (ntok == 3) {
+									segment = ps[1];
+									offset = ps[2];
+									X86EMU_dump_memory(segment,(u16)offset,16);
+									offset += 16;
+							} else {
+									segment = M.x86.saved_cs;
+									X86EMU_dump_memory(segment,(u16)offset,16);
+									offset += 16;
+							}
             break;
           case 'c':
 			M.x86.debug ^= DEBUG_TRACECALL_F;
@@ -338,16 +346,17 @@ static int parse_line (char *s, int *ps, int *n)
         *n += 1;
     }
 
-    while (*s != ' ' && *s != '\t' && *s != '\n')  s++;
-
-    if (*s == '\n')
-      return cmd;
-
-	while(*s == ' ' || *s == '\t') s++;
-
-    sscanf(s,"%x",&ps[*n]);
-    *n += 1;
-    return cmd;
+	while (1) {
+		while (*s != ' ' && *s != '\t' && *s != '\n')  s++;
+		
+		if (*s == '\n')
+			return cmd;
+		
+		while(*s == ' ' || *s == '\t') s++;
+		
+		sscanf(s,"%x",&ps[*n]);
+		*n += 1;
+	}
 }
 
 #endif /* DEBUG */

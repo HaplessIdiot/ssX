@@ -49,8 +49,7 @@
 #include "xf86_ansic.h"
 #else
 #include <string.h>
-#endif
-
+#endif                                                                                           
 /*------------------------- Global Variables ------------------------------*/
 
 X86EMU_sysEnv		_X86EMU_env;		/* Global emulator machine state */
@@ -265,7 +264,7 @@ u16 X86API rdw(
 	else
 #endif
 #ifdef __alpha__
-		val = ldw_u(M.mem_base + addr);
+		val = ldw_u((u16*)(M.mem_base + addr));
 #else
 		val = *(u16*)(M.mem_base + addr);
 #endif
@@ -302,7 +301,7 @@ u32 X86API rdl(
 	else
 #endif
 #ifdef __alpha__
-		val = ldl_u(M.mem_base + addr);
+		val = ldl_u((u32*)(M.mem_base + addr));
 #else
 		val = *(u32*)(M.mem_base + addr);
 #endif
@@ -358,7 +357,7 @@ DB(	if (DEBUG_MEM_TRACE())
 	else
 #endif
 #ifdef __alpha__
-	 stw_u(val,M.mem_base + addr);
+	 stw_u(val,(u16*)(M.mem_base + addr));
 #else
 	 *(u16*)(M.mem_base + addr) = val;
 #endif
@@ -392,7 +391,7 @@ DB(	if (DEBUG_MEM_TRACE())
 	else
 #endif
 #ifdef __alpha__
-	 stl_u(val,M.mem_base + addr);
+	 stl_u(val,(u32*)(M.mem_base + addr));
 #else
 	 *(u32*)(M.mem_base + addr) = val;
 #endif

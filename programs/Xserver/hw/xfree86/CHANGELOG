@@ -1,4 +1,29 @@
 XFree86 4.0b (?? April 2000)
+ 120. Added support for 'inactive' devices. (Egbert Eich)
+ 119. Fixed xf86misc extensions. (Egbert Eich)
+ 118. Fixed design of xf86SetAccessFuncs(). Now all old access funcs
+      are returned if the driver asks for them not only the one
+      that is used in OPERATING state. (Egbert Eich)
+ 117. Added a function LoadDrvSubModule() to allow drivers to load
+      sub modules before a screen is allocated. (Egbert Eich)
+ 116. Fixed lndir to handle trailing '/' on path correctly. (Egbert Eich)
+ 115. Undefined i486/i586/i686 in Imake.cf. cpp might predefine
+      them which might cause undesirable results. (Egbert Eich)
+ 114. Updated x86emu. (Egbert Eich)
+ 113. Fixed problems with xf86RegisterResources() if preregistered
+      resources are not marked ResBios. Identical ranges are not considered
+      to conflict with each other. (Egbert Eich)
+ 112. Improved DDC information printout. (Egbert Eich)
+ 111. Added NODDC options to vbe. (Egbert Eich)
+ 110. Added fixes for Lynx OS. (Egbert Eich)
+      Changed int10 code to always map/allocate entire 1Meg. (Egbert Eich)
+ 109. Let int10 code try harder to locate a video bios to work
+      around some system bios bugs. (Holger Veit, Egbert Eich)
+ 108. Modified fbdevProbe() to return the name string representing 
+      the chipset. (Egbert Eich)
+ 107. Minor fixes to i810 driver (Egbert Eich)
+ 106. Fixed format of float numbers in C&T driver. (Jens Taprogge)
+ 105. Added support for the NeoMagic 2360. (Gregory Pomerantz)
  104. Add an XF86UnloadSubModule() entry (Marc La France).
  103. Fix missing symbol "ServerGrabCallback" (Mark Vojkovich).
  102. Fix XAA problems with CPU-to-screen colour expansion (Marc La France).

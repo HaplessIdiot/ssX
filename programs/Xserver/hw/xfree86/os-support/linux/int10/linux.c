@@ -62,7 +62,6 @@ xf86InitInt10(int entityIndex)
     char *base;
     char *base_high;
     int pagesize;
-    int alloc_entries;
     legacyVGARec vga;
     
     screen = (xf86FindScreenForEntity(entityIndex))->scrnIndex;
@@ -111,7 +110,6 @@ xf86InitInt10(int entityIndex)
 	goto error0;
     pInt->mem = &linuxMem;
     pagesize = getpagesize();
-    alloc_entries = ALLOC_ENTRIES(pagesize);
     pInt->private = (pointer)xnfcalloc(1,sizeof(linuxInt10Priv));
     ((linuxInt10Priv*)pInt->private)->screen = screen;
     ((linuxInt10Priv*)pInt->private)->alloc = 
@@ -155,28 +153,24 @@ xf86InitInt10(int entityIndex)
 #endif
     
     if (xf86IsEntityPrimary(entityIndex)) {
+	int size;
 	int cs = ((CARD16*)0)[(0x10<<1)+1];
 	CARD8 *bios_base = (unsigned char *)(cs << 4);
-	int size;
 	
-	xf86DrvMsg(screen,X_INFO,"Primary V_BIOS segment is: 0x%x\n",cs);
-	if (xf86ReadBIOS(cs << 4,0,bios_base, 0x10) < 0) {
-	    xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS\n");
-	    goto error3;
+	if (!int10_read_bios(screen,cs,bios_base)) {
+	    int cs = ((CARD16*)0)[(0x42<<1)+1];
+	    bios_base = (unsigned char *)(cs << 4);
+	    if (!int10_read_bios(screen,cs,bios_base)) {
+		cs = V_BIOS >> 4;
+		bios_base = (unsigned char *)(cs << 4);
+		if (!int10_read_bios(screen,cs,bios_base)) {
+		    xf86DrvMsg(screen,X_ERROR,"No V_BIOS found\n");
+		    goto error3;
+		}
+	    }
 	}
-	if (!(*bios_base == 0x55 && *(bios_base + 1) == 0xAA)) {
-	    xf86DrvMsg(screen,X_ERROR,"No V_BIOS found\n");
-	    goto error3;
-	}
-	size = *(bios_base + 2) * 512;
-	if (xf86ReadBIOS(cs << 4,0,bios_base, size) < 0) {
-	    xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS\n");
-	    goto error3;
-	}
-	if (bios_checksum(bios_base,size)) {
-	    xf86DrvMsg(screen,X_ERROR,"Bad checksum of V_BIOS \n");
-	    goto error3;
-	}
+	xf86DrvMsg(screen,X_INFO,"Primary V_BIOS segmant is: 0x%x\n",cs);
+
 	pInt->BIOSseg = cs;
 	set_return_trap(pInt);
     } else {

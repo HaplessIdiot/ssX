@@ -87,7 +87,7 @@ static void AlpProbeI2C(int scrnIndex);
  * Forward definitions for the functions that make up the driver.
  */
 
-Bool AlpProbe(int entity, ScrnInfoPtr pScrn);
+ScrnInfoPtr AlpProbe(int entity);
 
 /* Mandatory functions */
 
@@ -288,9 +288,13 @@ AlpAvailableOptions(int chipid)
     return CirOptions;
 }
 
-Bool
-AlpProbe(int entity, ScrnInfoPtr pScrn)
+ScrnInfoPtr
+AlpProbe(int entity)
 {
+    ScrnInfoPtr pScrn = NULL;
+    
+    if ((pScrn = xf86ConfigPciEntity(pScrn, 0, entity, CIRPciChipsets,
+					   NULL,NULL, NULL, NULL, NULL))) {
 	pScrn->PreInit		= AlpPreInit;
 	pScrn->ScreenInit	= AlpScreenInit;
 	pScrn->SwitchMode	= AlpSwitchMode;
@@ -299,11 +303,9 @@ AlpProbe(int entity, ScrnInfoPtr pScrn)
 	pScrn->LeaveVT		= AlpLeaveVT;
 	pScrn->FreeScreen	= AlpFreeScreen;
 	pScrn->ValidMode	= AlpValidMode;
+    }
 
-	xf86ConfigActivePciEntity(pScrn, entity, CIRPciChipsets, NULL,
-								NULL, NULL, NULL, NULL);
-
-	return TRUE;
+    return pScrn;
 }
 
 
