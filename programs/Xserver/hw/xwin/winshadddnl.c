@@ -30,32 +30,34 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.3 2001/05/01 22:57:15 alanh Exp $ */
 
 #include "win.h"
 
-/* FIXME: Headers are broken, DEFINE_GUID doesn't work correctly,
-   so we have to redefine it here.
-*/
+/*
+ * FIXME: Headers are broken, DEFINE_GUID doesn't work correctly,
+ * so we have to redefine it here.
+ */
 #ifdef DEFINE_GUID
 #undef DEFINE_GUID
 #define DEFINE_GUID(n,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8) GUID_EXT const GUID n GUID_SECT = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
 #endif /* DEFINE_GUID */
 
-/* FIXME: Headers are broken, IID_IDirectDraw4 has to be defined
-   here manually.  Should be handled by ddraw.h
-*/
+/*
+ * FIXME: Headers are broken, IID_IDirectDraw4 has to be defined
+ * here manually.  Should be handled by ddraw.h
+ */
 #ifndef IID_IDirectDraw4
 DEFINE_GUID( IID_IDirectDraw4, 0x9c59509a,0x39bd,0x11d1,0x8c,0x4a,0x00,0xc0,0x4f,0xd9,0x30,0xc5 );
 #endif /* IID_IDirectDraw4 */
 
 /*
-  Create a DirectDraw surface for the shadow framebuffer; also create
-  a primary surface object so we can blit to the display.
-
-  Install a DirectDraw clipper on our primary surface object
-  that clips our blits to the unobscured client area of our display window.
-*/
+ * Create a DirectDraw surface for the shadow framebuffer; also create
+ * a primary surface object so we can blit to the display.
+ * 
+ * Install a DirectDraw clipper on our primary surface object
+ * that clips our blits to the unobscured client area of our display window.
+ */
 Bool
 winAllocateFBShadowDDNL (ScreenPtr pScreen)
 {
@@ -77,9 +79,10 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
   if (lpSurface == NULL)
       FatalError ("winAllocateFBShadowDDNL () - Could not allocate bits\n");
 
-  /* Initialize the framebuffer memory so we don't get a 
-     strange display at startup
-  */
+  /*
+   * Initialize the framebuffer memory so we don't get a 
+   * strange display at startup
+   */
   ZeroMemory (lpSurface, pScreenInfo->dwPaddedWidth * pScreenInfo->dwHeight);
   
   /* Create a clipper */
@@ -113,7 +116,7 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
 
   /* Create a DirectDraw object, store the address at lpdd */
   ddrval = DirectDrawCreate (NULL,
-			     (void**) &pScreenPriv->pdd,
+			     (LPDIRECTDRAW*) &pScreenPriv->pdd,
 			     NULL);
   if (ddrval != DD_OK)
     {
@@ -186,7 +189,8 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
   
   /* Create the primary surface */
   ddrval = IDirectDraw_CreateSurface (pScreenPriv->pdd4,
-				      &ddsdPrimary,
+				      (LPDDSURFACEDESC)&ddsdPrimary,
+				      (LPDIRECTDRAWSURFACE*)
 				      &pScreenPriv->pddsPrimary4,
 				      NULL);
   if (FAILED (ddrval))
@@ -200,6 +204,7 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
   ErrorF ("winAllocateFBShadowDDNL () - Created primary\n");
 #endif
 
+  /* Get primary surface's pixel format */
   ZeroMemory (&ddpfPrimary, sizeof (ddpfPrimary));
   ddpfPrimary.dwSize = sizeof (ddpfPrimary);
   ddrval = IDirectDrawSurface_GetPixelFormat (pScreenPriv->pddsPrimary4,
@@ -236,13 +241,14 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
 #endif
 
   /* Describe the shadow surface to be created */
-  /* NOTE: Do not use a DDSCAPS_VIDEOMEMORY surface,
-     as drawing, locking, and unlocking take forever
-     with video memory surfaces.  In addition,
-     video memory is a somewhat scarce resource,
-     so you shouldn't be allocating video memory when
-     you could use system memory instead.
-  */
+  /*
+   * NOTE: Do not use a DDSCAPS_VIDEOMEMORY surface,
+   * as drawing, locking, and unlocking take forever
+   * with video memory surfaces.  In addition,
+   * video memory is a somewhat scarce resource,
+   * so you shouldn't be allocating video memory when
+   * you have the option of using system memory instead.
+   */
   ZeroMemory (&ddsdShadow, sizeof (ddsdShadow));
   ddsdShadow.dwSize = sizeof (ddsdShadow);
   ddsdShadow.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH
@@ -256,7 +262,8 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
   
   /* Create the shadow surface */
   ddrval = IDirectDraw_CreateSurface (pScreenPriv->pdd4,
-				      &ddsdShadow,
+				      (LPDDSURFACEDESC)&ddsdShadow,
+				      (LPDIRECTDRAWSURFACE*)
 				      &pScreenPriv->pddsShadow4,
 				      NULL);
   if (ddrval != DD_OK)
@@ -291,8 +298,8 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
 }
 
 /*
-  Transfer the damaged regions of the shadow framebuffer to the display.
-*/
+ * Transfer the damaged regions of the shadow framebuffer to the display.
+ */
 void
 winShadowUpdateDDNL (ScreenPtr pScreen, 
 		     PixmapPtr pShadow,
@@ -343,10 +350,10 @@ winShadowUpdateDDNL (ScreenPtr pScreen,
 }
 
 /*
-  Return a pointer to some part of the shadow framebuffer.
-
-  NOTE: I have not seen this function get called, yet.
-*/
+ * Return a pointer to some part of the shadow framebuffer.
+ * 
+ * NOTE: I have not seen this function get called, yet.
+ */
 void *
 winShadowSetWindowLinearDDNL (ScreenPtr	pScreen,
 			    CARD32	dwRow,
@@ -358,19 +365,19 @@ winShadowSetWindowLinearDDNL (ScreenPtr	pScreen,
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
 
   *pdwSize = pScreenInfo->dwPaddedWidth;
-  return (CARD8 *) pScreenInfo->pfb + dwRow * pScreenInfo->dwPaddedWidth
-    + dwOffset;
+  return (CARD8 *) pScreenInfo->pfb
+    + dwRow * pScreenInfo->dwPaddedWidth + dwOffset;
 }
 
 /*
-  Return a pointer to some part of the shadow framebuffer.
-  
-  NOTE: I have not seen this function get called, yet.
-  
-  We call winShadowSetWindowLinearDD because there could,
-  theoretically, be other framebuffer styles that
-  required a different calculation.
-*/
+ * Return a pointer to some part of the shadow framebuffer.
+ * 
+ * NOTE: I have not seen this function get called, yet.
+ *  
+ * We call winShadowSetWindowLinearDD because there could,
+ * theoretically, be other framebuffer styles that
+ * required a different calculation.
+ */
 void *
 winShadowWindowDDNL (ScreenPtr	pScreen,
 		     CARD32	row,
@@ -385,10 +392,10 @@ winShadowWindowDDNL (ScreenPtr	pScreen,
 }
 
 /*
-  Call the wrapped CloseScreen function.
-
-  Free our resources and private structures.
-*/
+ * Call the wrapped CloseScreen function.
+ *
+ * Free our resources and private structures.
+ */
 Bool
 winCloseScreenShadowDDNL (int nIndex, ScreenPtr pScreen)
 {
@@ -463,12 +470,12 @@ winCloseScreenShadowDDNL (int nIndex, ScreenPtr pScreen)
 }
 
 /*
-  Tell mi what sort of visuals we need.
-
-  Generally we only need one visual, as our screen can only
-  handle one format at a time, I believe.  You may want
-  to verify that last sentence.
-*/
+ * Tell mi what sort of visuals we need.
+ *
+ * Generally we only need one visual, as our screen can only
+ * handle one format at a time, I believe.  You may want
+ * to verify that last sentence.
+ */
 Bool
 winInitVisualsShadowDDNL (ScreenPtr pScreen)
 {
@@ -518,8 +525,10 @@ winInitVisualsShadowDDNL (ScreenPtr pScreen)
       break;
 
     case 8:
+#if CYGDEBUG
       ErrorF ("winInitVisualsShadowDDNL () - Calling "\
 	      "miSetVisualTypesAndMasks\n");
+#endif /* CYGDEBUG */
       if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
 				     PseudoColorMask,
 				     pScreenPriv->dwBitsPerRGB,
@@ -535,7 +544,8 @@ winInitVisualsShadowDDNL (ScreenPtr pScreen)
       break;
 
     default:
-      break;
+      ErrorF ("winInitVisualsDDNL () - Unknown screen depth\n");
+      return FALSE;
     }
   
   /* Set DPI info */
@@ -587,6 +597,67 @@ winAdjustVideoModeShadowDDNL (ScreenPtr pScreen)
   return TRUE;
 }
 
+/* Blt exposed regions to the screen */
+Bool
+winBltExposedRegionsShadowDDNL (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  RECT			rcClient, rcSrc;
+  HDC			hdcUpdate;
+  PAINTSTRUCT		ps;
+  HRESULT		ddrval = DD_OK;
+
+  /* BeginPaint gives us an hdc that clips to the invalidated region */
+  hdcUpdate = BeginPaint (pScreenPriv->hwndScreen, &ps);
+
+  /* Get client area in screen coords */
+  GetClientRect (pScreenPriv->hwndScreen, &rcClient);
+  MapWindowPoints (pScreenPriv->hwndScreen,
+		   HWND_DESKTOP,
+		   (LPPOINT)&rcClient, 2);
+	  
+  /* Source can be enter shadow surface, as Blt should clip */
+  rcSrc.left = 0;
+  rcSrc.top = 0;
+  rcSrc.right = pScreenInfo->dwWidth;
+  rcSrc.bottom = pScreenInfo->dwHeight;
+
+  /* Our Blt should be clipped to the invalidated region */
+  ddrval = IDirectDrawSurface_Blt (pScreenPriv->pddsPrimary4,
+				   &rcClient,
+				   pScreenPriv->pddsShadow4,
+				   &rcSrc,
+				   DDBLT_WAIT,
+				   NULL);
+
+  /* EndPaint frees the DC */
+  EndPaint (pScreenPriv->hwndScreen, &ps);
+
+  return TRUE;
+}
+
+Bool
+winActivateAppShadowDDNL (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+
+  /*
+   * Do we have a surface?
+   * Are we active?
+   * Are we full screen?
+   */
+  if (pScreenPriv != NULL
+      && pScreenPriv->pddsPrimary4 != NULL
+      && pScreenPriv->fActive
+      )
+    {
+      /* Primary surface was lost, restore it */
+      IDirectDrawSurface_Restore (pScreenPriv->pddsPrimary4);
+    }
+
+  return TRUE;
+}
 
 /* Set pointers to our engine specific functions */
 Bool
@@ -607,6 +678,10 @@ winSetEngineFunctionsShadowDDNL (ScreenPtr pScreen)
   else
     pScreenPriv->pwinCreateBoundingWindow = winCreateBoundingWindowWindowed;
   pScreenPriv->pwinFinishScreenInit = winFinishScreenInitFB;
+  pScreenPriv->pwinBltExposedRegions = winBltExposedRegionsShadowDDNL;
+  pScreenPriv->pwinActivateApp = winActivateAppShadowDDNL;
 
   return TRUE;
 }
+
+

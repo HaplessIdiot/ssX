@@ -30,17 +30,17 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winmouse.c,v 1.1 2001/04/18 17:14:06 dawes Exp $ */
 
 #include "win.h"
 
 void
 winMouseCtrl (DeviceIntPtr pDevice, PtrCtrl *pCtrl)
 {
-
 }
 
-/* See Porting Layer Definition - p. 18
+/*
+ * See Porting Layer Definition - p. 18
  * This is known as a DeviceProc
  */
 int
@@ -75,4 +75,96 @@ winMouseProc (DeviceIntPtr pDeviceInt, int iState)
       break;
     }
   return Success;
+}
+
+/* Handle the mouse wheel */
+int
+winMouseWheel (ScreenPtr pScreen, int iDeltaZ)
+{
+  winScreenPriv(pScreen);
+  xEvent		xCurrentEvent;
+
+  /* Button4 = WheelUp */
+  /* Button5 = WheelDown */
+
+  /* Do we have any previous delta stored? */
+  if ((pScreenPriv->iDeltaZ > 0
+       && iDeltaZ > 0)
+      || (pScreenPriv->iDeltaZ < 0
+	  && iDeltaZ < 0))
+    {
+      /* Previous delta and of same sign as current delta */
+      iDeltaZ += pScreenPriv->iDeltaZ;
+      pScreenPriv->iDeltaZ = 0;
+    }
+  else
+    {
+      /*
+       * Previous delta of different sign, or zero.
+       * We will set it to zero for either case,
+       * as blindly setting takes just as much time
+       * as checking, then setting if necessary :)
+       */
+      pScreenPriv->iDeltaZ = 0;
+    }
+
+  /*
+   * Only process this message if the wheel has moved further than
+   * WHEEL_DELTA
+   */
+  if (iDeltaZ >= WHEEL_DELTA || (-1 * iDeltaZ) >= WHEEL_DELTA)
+    {
+      pScreenPriv->iDeltaZ = 0;
+	  
+      /* Figure out how many whole deltas of the wheel we have */
+      iDeltaZ /= WHEEL_DELTA;
+    }
+  else
+    {
+      /*
+       * Wheel has not moved past WHEEL_DELTA threshold;
+       * we will store the wheel delta until the threshold
+       * has been reached.
+       */
+      pScreenPriv->iDeltaZ = iDeltaZ;
+      return 0;
+    }
+
+  /* Set the button to indicate up or down wheel delta */
+  if (iDeltaZ > 0)
+    {
+      xCurrentEvent.u.u.detail = Button4;
+    }
+  else
+    {
+      xCurrentEvent.u.u.detail = Button5;
+    }
+
+  /*
+   * Flip iDeltaZ to positive, if negative,
+   * because always need to generate a *positive* number of
+   * button clicks for the Z axis.
+   */
+  if (iDeltaZ < 0)
+    {
+      iDeltaZ *= -1;
+    }
+
+  /* Generate X input messages for each wheel delta we have seen */
+  while (iDeltaZ--)
+    {
+      /* Push the wheel button */
+      xCurrentEvent.u.u.type = ButtonPress;
+      xCurrentEvent.u.keyButtonPointer.time
+	= g_c32LastInputEventTime = GetTickCount ();
+      mieqEnqueue (&xCurrentEvent);
+
+      /* Release the wheel button */
+      xCurrentEvent.u.u.type = ButtonRelease;
+      xCurrentEvent.u.keyButtonPointer.time
+	= g_c32LastInputEventTime = GetTickCount ();
+      mieqEnqueue (&xCurrentEvent);
+    }
+
+  return 0;
 }

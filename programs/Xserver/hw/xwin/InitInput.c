@@ -22,17 +22,20 @@
   from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.2 2001/04/05 20:13:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.3 2001/04/18 17:14:06 dawes Exp $ */
 
 #include "win.h"
 
-/* Called from dix/devices.c */
-/* All of our keys generate up and down transition notifications,
-   so all of our keys can be used as modifiers.
+CARD32		g_c32LastInputEventTime = 0;
 
-   An example of a modifier is mapping the A key to the Control key.
-   A has to be a legal modifier.  I think.
-*/
+/* Called from dix/devices.c */
+/*
+ * All of our keys generate up and down transition notifications,
+ * so all of our keys can be used as modifiers.
+ * 
+ * An example of a modifier is mapping the A key to the Control key.
+ * A has to be a legal modifier.  I think.
+ */
 Bool
 LegalModifier (unsigned int uiKey, DevicePtr pDevice)
 {
@@ -46,6 +49,14 @@ ProcessInputEvents (void)
 {
   mieqProcessInputEvents ();
   miPointerUpdate ();
+}
+
+int
+TimeSinceLastInputEvent ()
+{
+    if (g_c32LastInputEventTime == 0)
+        g_c32LastInputEventTime = GetTickCount ();
+    return GetTickCount () - g_c32LastInputEventTime;
 }
 
 /* See Porting Layer Definition - p. 17 */

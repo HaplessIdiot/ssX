@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.4 2001/04/05 20:13:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.5 2001/04/18 17:14:06 dawes Exp $ */
 
 #include "win.h"
 
@@ -40,7 +40,7 @@ static PixmapFormatRec g_PixmapFormats[] = {
         { 8,    8,      BITMAP_SCANLINE_PAD },
         { 15,   16,     BITMAP_SCANLINE_PAD },
         { 16,   16,     BITMAP_SCANLINE_PAD },
-        { 24,   32,     BITMAP_SCANLINE_PAD },
+        { 24,   24,     BITMAP_SCANLINE_PAD },
 	{ 32,	32,	BITMAP_SCANLINE_PAD }
 };
 const int NUMFORMATS = sizeof (g_PixmapFormats) / sizeof (g_PixmapFormats[0]);
@@ -148,8 +148,8 @@ ddxProcessArgument (int argc, char *argv[], int i)
     }
   
   /*
-    Look for the '-screen n WxHxD' arugment
-  */
+   * Look for the '-screen n WxHxD' arugment
+   */
   if (strcmp (argv[i], "-screen") == 0)
     {
       int		nScreenNum;
@@ -186,8 +186,8 @@ ddxProcessArgument (int argc, char *argv[], int i)
     }
 
   /*
-    Look for the '-blackpixel n' argument
-  */
+   * Look for the '-blackpixel n' argument
+   */
   if (strcmp (argv[i], "-blackpixel") == 0)     /* -blackpixel n */
     {
       Pixel		pix;
@@ -216,8 +216,8 @@ ddxProcessArgument (int argc, char *argv[], int i)
     }
 
   /*
-    Look for the '-whitepixel n' argument
-  */
+   * Look for the '-whitepixel n' argument
+   */
   if (strcmp (argv[i], "-whitepixel") == 0)     /* -whitepixel n */
     {
       Pixel		pix;
@@ -246,8 +246,8 @@ ddxProcessArgument (int argc, char *argv[], int i)
     }
 
   /*
-    Look for the '-linebias n' argument
-  */
+   * Look for the '-linebias n' argument
+   */
   if (strcmp (argv[i], "-linebias") == 0)
     {
       unsigned int	uiLinebias;
@@ -278,8 +278,8 @@ ddxProcessArgument (int argc, char *argv[], int i)
     }
 
   /*
-    Look for the '-engine n' argument
-  */
+   * Look for the '-engine n' argument
+   */
   if (strcmp (argv[i], "-engine") == 0)
     {
       DWORD		dwEngine = 0;
@@ -326,7 +326,9 @@ ddxProcessArgument (int argc, char *argv[], int i)
       return 2;
     }
 
-  /* Look for the '-fullscreen' argument */
+  /*
+   * Look for the '-fullscreen' argument
+   */
   if (strcmp(argv[i], "-fullscreen") == 0)
     {
       /* Is this parameter attached to a screen or is it global? */
