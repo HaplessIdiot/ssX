@@ -1,6 +1,6 @@
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
- * (c) Copyright IBM Corporation 2002
+ * (C) Copyright IBM Corporation 2002, 2003
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,7 +28,7 @@
  *    Kevin E. Martin <kem@users.sourceforge.net>
  *    Gareth Hughes <gareth@nvidia.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/common/texmem.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/common/texmem.c,v 1.2 2003/11/13 04:01:04 tsi Exp $ */
 
 /** \file texmem.c
  * Implements all of the device-independent texture memory management.
@@ -46,6 +46,7 @@
 #include "texmem.h"
 #include "simple_list.h"
 #include "imports.h"
+#include "macros.h"
 
 #include <assert.h>
 
@@ -894,7 +895,7 @@ get_max_size( unsigned nr_heaps,
 /**
  * Given the amount of texture memory, the number of texture units, and the
  * maximum size of a texel, calculate the maximum texture size the driver can
- * adverteise.
+ * advertise.
  * 
  * \param heaps Texture heaps for this card
  * \param nr_heap Number of texture heaps
@@ -1170,4 +1171,62 @@ driValidateTextureHeaps( driTexHeap * const * texture_heaps,
 #endif
 
    return GL_TRUE;
+}
+
+/****************************************************************************/
+/**
+ * Compute which mipmap levels that really need to be sent to the hardware.
+ * This depends on the base image size, GL_TEXTURE_MIN_LOD,
+ * GL_TEXTURE_MAX_LOD, GL_TEXTURE_BASE_LEVEL, and GL_TEXTURE_MAX_LEVEL.
+ */
+
+void
+driCalculateTextureFirstLastLevel( driTextureObject * t )
+{
+   struct gl_texture_object * const tObj = t->tObj;
+   const struct gl_texture_image * const baseImage =
+       tObj->Image[tObj->BaseLevel];
+
+   /* These must be signed values.  MinLod and MaxLod can be negative numbers,
+    * and having firstLevel and lastLevel as signed prevents the need for
+    * extra sign checks.
+    */
+   int   firstLevel;
+   int   lastLevel;
+
+   /* Yes, this looks overly complicated, but it's all needed.
+    */
+
+   switch (tObj->Target) {
+   case GL_TEXTURE_1D:
+   case GL_TEXTURE_2D:
+   case GL_TEXTURE_3D:
+   case GL_TEXTURE_CUBE_MAP:
+      if (tObj->MinFilter == GL_NEAREST || tObj->MinFilter == GL_LINEAR) {
+         /* GL_NEAREST and GL_LINEAR only care about GL_TEXTURE_BASE_LEVEL.
+          */
+
+         firstLevel = lastLevel = tObj->BaseLevel;
+      }
+      else {
+	 firstLevel = tObj->BaseLevel + (GLint)(tObj->MinLod + 0.5);
+	 firstLevel = MAX2(firstLevel, tObj->BaseLevel);
+	 lastLevel = tObj->BaseLevel + (GLint)(tObj->MaxLod + 0.5);
+	 lastLevel = MAX2(lastLevel, t->tObj->BaseLevel);
+	 lastLevel = MIN2(lastLevel, t->tObj->BaseLevel + baseImage->MaxLog2);
+	 lastLevel = MIN2(lastLevel, t->tObj->MaxLevel);
+	 lastLevel = MAX2(firstLevel, lastLevel); /* need at least one level */
+      }
+      break;
+   case GL_TEXTURE_RECTANGLE_NV:
+   case GL_TEXTURE_4D_SGIS:
+      firstLevel = lastLevel = 0;
+      break;
+   default:
+      return;
+   }
+
+   /* save these values */
+   t->firstLevel = firstLevel;
+   t->lastLevel = lastLevel;
 }

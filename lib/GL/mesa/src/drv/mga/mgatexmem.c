@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatexmem.c,v 1.7 2002/10/30 12:51:36 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatexmem.c,v 1.8 2003/09/28 20:15:18 alanh Exp $ */
 
 #include "glheader.h"
 
@@ -131,10 +131,6 @@ static void mgaUploadSubImage( mgaContextPtr mmesa,
       for ( i = 0 ; i < hwlevel ; i++ ) {
 	 offset += (t->offsets[1] >> (i * 2));
       }
-
-      /* Each mipmap must be DWORD aligned.
-       */
-      offset &= ~0x03;
    }
 
 

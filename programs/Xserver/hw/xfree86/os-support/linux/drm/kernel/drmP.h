@@ -102,8 +102,8 @@
 #ifndef __HAVE_DMA
 #define __HAVE_DMA		0
 #endif
-#ifndef __HAVE_DMA_IRQ
-#define __HAVE_DMA_IRQ		0
+#ifndef __HAVE_IRQ
+#define __HAVE_IRQ		0
 #endif
 #ifndef __HAVE_DMA_WAITLIST
 #define __HAVE_DMA_WAITLIST	0
@@ -353,6 +353,7 @@ do {											\
 #define DRM_BUFCOUNT(x) ((x)->count - DRM_LEFTCOUNT(x))
 #define DRM_WAITCOUNT(dev,idx) DRM_BUFCOUNT(&dev->queuelist[idx]->waitlist)
 
+#define DRM_IF_VERSION(maj, min) (maj << 16 | min)
 /**
  * Get the private SAREA mapping.
  *
@@ -391,10 +392,13 @@ do {									\
 typedef int drm_ioctl_t( struct inode *inode, struct file *filp,
 			 unsigned int cmd, unsigned long arg );
 
-typedef struct drm_pci_list {
-	u16 vendor;
-	u16 device;
-} drm_pci_list_t;
+typedef struct drm_pci_id_list
+{
+	int vendor;
+	int device;
+	long driver_private;
+	char *name;
+} drm_pci_id_list_t;
 
 typedef struct drm_ioctl_desc {
 	drm_ioctl_t	     *func;
@@ -517,6 +521,9 @@ typedef struct drm_file {
 	struct drm_device *dev;
 	int 		  remove_auth_on_close;
 	unsigned long     lock_count;
+#ifdef DRIVER_FILE_FIELDS
+	DRIVER_FILE_FIELDS;
+#endif
 } drm_file_t;
 
 /** Wait queue */
@@ -651,6 +658,8 @@ typedef struct drm_device {
 	int		  unique_len;	/**< Length of unique field */
 	dev_t		  device;	/**< Device number for mknod */
 	char		  *devname;	/**< For /proc/interrupts */
+	int		  minor;        /**< Minor device number */
+	int		  if_version;	/**< Highest interface version set */
 
 	int		  blocked;	/**< Blocked due to VC switch? */
 	struct proc_dir_entry *root;	/**< Root for this device's entries */
@@ -708,6 +717,7 @@ typedef struct drm_device {
 	/** \name Context support */
 	/*@{*/
 	int		  irq;		/**< Interrupt used by board */
+	int		  irq_enabled;	/**< True if irq handler is enabled */
 	__volatile__ long context_flag;	/**< Context swapping flag */
 	__volatile__ long interrupt_flag; /**< Interruption handler flag */
 	__volatile__ long dma_flag;	/**< DMA dispatch flag */
@@ -747,7 +757,12 @@ typedef struct drm_device {
 #if __REALLY_HAVE_AGP
 	drm_agp_head_t    *agp;	/**< AGP data */
 #endif
-	struct pci_dev *pdev;		/**< PCI device structure */
+
+	struct pci_dev    *pdev;	/**< PCI device structure */
+	int               pci_domain;	/**< PCI bus domain number */
+	int               pci_bus;	/**< PCI bus number */
+	int               pci_slot;	/**< PCI slot number */
+	int               pci_func;	/**< PCI function number */
 #ifdef __alpha__
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,3)
 	struct pci_controler *hose;
@@ -837,8 +852,8 @@ extern int           DRM(unbind_agp)(DRM_AGP_MEM *handle);
 #endif
 
 				/* Misc. IOCTL support (drm_ioctl.h) */
-extern int	     DRM(irq_busid)(struct inode *inode, struct file *filp,
-				    unsigned int cmd, unsigned long arg);
+extern int	     DRM(irq_by_busid)(struct inode *inode, struct file *filp,
+				       unsigned int cmd, unsigned long arg);
 extern int	     DRM(getunique)(struct inode *inode, struct file *filp,
 				    unsigned int cmd, unsigned long arg);
 extern int	     DRM(setunique)(struct inode *inode, struct file *filp,
@@ -849,6 +864,8 @@ extern int	     DRM(getclient)(struct inode *inode, struct file *filp,
 				    unsigned int cmd, unsigned long arg);
 extern int	     DRM(getstats)(struct inode *inode, struct file *filp,
 				   unsigned int cmd, unsigned long arg);
+extern int	     DRM(setversion)(struct inode *inode, struct file *filp,
+				     unsigned int cmd, unsigned long arg);
 
 				/* Context IOCTL support (drm_context.h) */
 extern int	     DRM(resctx)( struct inode *inode, struct file *filp,
@@ -933,12 +950,17 @@ extern int	     DRM(dma_setup)(drm_device_t *dev);
 extern void	     DRM(dma_takedown)(drm_device_t *dev);
 extern void	     DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf);
 extern void	     DRM(reclaim_buffers)( struct file *filp );
-#if __HAVE_DMA_IRQ
+#endif /* __HAVE_DMA */
+
+				/* IRQ support (drm_irq.h) */
+#if __HAVE_IRQ || __HAVE_DMA
 extern int           DRM(control)( struct inode *inode, struct file *filp,
 				   unsigned int cmd, unsigned long arg );
-extern int           DRM(irq_install)( drm_device_t *dev, int irq );
+#endif
+#if __HAVE_IRQ
+extern int           DRM(irq_install)( drm_device_t *dev );
 extern int           DRM(irq_uninstall)( drm_device_t *dev );
-extern irqreturn_t   DRM(dma_service)( DRM_IRQ_ARGS );
+extern irqreturn_t   DRM(irq_handler)( DRM_IRQ_ARGS );
 extern void          DRM(driver_irq_preinstall)( drm_device_t *dev );
 extern void          DRM(driver_irq_postinstall)( drm_device_t *dev );
 extern void          DRM(driver_irq_uninstall)( drm_device_t *dev );
@@ -948,12 +970,11 @@ extern int           DRM(wait_vblank)(struct inode *inode, struct file *filp,
 extern int           DRM(vblank_wait)(drm_device_t *dev, unsigned int *vbl_seq);
 extern void          DRM(vbl_send_signals)( drm_device_t *dev );
 #endif
-#if __HAVE_DMA_IRQ_BH
-extern void          DRM(dma_immediate_bh)( void *dev );
+#if __HAVE_IRQ_BH
+extern void          DRM(irq_immediate_bh)( void *dev );
 #endif
 #endif
 
-#endif /* __HAVE_DMA */
 
 #if __REALLY_HAVE_AGP
 				/* AGP/GART support (drm_agpsupport.h) */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.h,v 1.5 2002/12/16 16:18:58 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.h,v 1.6 2003/09/28 20:15:29 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -67,6 +67,7 @@ typedef struct {
    int AGPMode;
    unsigned int irq;			/* IRQ number (0 means none) */
 
+   unsigned int fbLocation;
    unsigned int frontOffset;
    unsigned int frontPitch;
    unsigned int backOffset;

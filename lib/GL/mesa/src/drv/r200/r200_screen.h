@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_screen.h,v 1.1 2002/10/30 12:51:52 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_screen.h,v 1.2 2003/09/28 20:15:24 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -63,6 +63,7 @@ typedef struct {
    int AGPMode;
    unsigned int irq;			/* IRQ number (0 means none) */
 
+   unsigned int fbLocation;
    unsigned int frontOffset;
    unsigned int frontPitch;
    unsigned int backOffset;

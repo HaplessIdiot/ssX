@@ -1,6 +1,6 @@
-/* tdfx.h -- 3dfx DRM template customization -*- linux-c -*-
- * Created: Wed Feb 14 12:32:32 2001 by gareth@valinux.com
+/* sis.c -- sis driver -*- linux-c -*-
  *
+ * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
  *
@@ -10,34 +10,43 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * VA LINUX SYSTEMS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * PRECISION INSIGHT AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
- *
- * Authors:
- *    Gareth Hughes <gareth@valinux.com>
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  *
  */
 
-#ifndef __TDFX_H__
-#define __TDFX_H__
+#include "sis.h"
+#include "drmP.h"
+#include "sis_drm.h"
+#include "sis_drv.h"
 
-/* This remains constant for all DRM template files.
- */
-#define DRM(x) tdfx_##x
+#include "drm_auth.h"
+#include "drm_agpsupport.h"
+#include "drm_bufs.h"
+#include "drm_context.h"
+#include "drm_dma.h"
+#include "drm_drawable.h"
+#include "drm_drv.h"
+#include "drm_fops.h"
+#include "drm_ioctl.h"
+#include "drm_lock.h"
+#include "drm_memory.h"
+#include "drm_vm.h"
+#include "drm_sysctl.h"
 
-/* General customization:
- */
-#define __HAVE_MTRR		1
-#define __HAVE_CTX_BITMAP	1
-
-#endif
+#ifdef __FreeBSD__
+/* Avoid clash with sis ethernet */
+DRIVER_MODULE(sisdrm, pci, sis_driver, sis_devclass, 0, 0);
+#elif defined(__NetBSD__)
+CFDRIVER_DECL(sis, DV_TTY, NULL);
+#endif /* __FreeBSD__ */

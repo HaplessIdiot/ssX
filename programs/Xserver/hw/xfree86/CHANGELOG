@@ -1,4 +1,10 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 633. DRI updates.
+      - Latest kernel drivers from the DRI trunk.
+      - Fix FB_LOCATION in radeon driver (Michel Daenzer).
+      - Texture managment code consolidation (Ian Romanick)
+      - i830 stencil fix (Keith Whitwell)
+      - mga blend fixes (Ville Syrjala)
  632. Fix a problem that prevented the i810 driver from using dot clocks less
       than 12MHz (which appear to work) (Bugzilla #925, Richard Dengler).
  631. Fix a server crash that can happen when loading some CID fonts
@@ -513,7 +519,8 @@ XFree86 4.3.99.14 (10 October 2003)
       Frank Giessler).
  458. Import Mesa 5.0.2 (Alan Hourihane).
  457. DRI merge (DRI Project)
-      * details to follow..........
+      - Update the SiS driver to use Mesa 5.0
+      - 
  456. Fixes and updates for XKB keyboard maps:
       - Update xkb geometry files (Alexander Pohoyda).
       - Fix German-Romanian maps (Manfred Pohler).
@@ -18282,7 +18289,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3002 2003/11/29 17:27:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3003 2003/12/01 03:20:09 dawes Exp $
 
 
 

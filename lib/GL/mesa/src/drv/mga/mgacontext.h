@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgacontext.h,v 1.9 2003/11/13 04:01:04 tsi Exp $*/
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgacontext.h,v 1.10 2003/11/13 17:22:49 dawes Exp $*/
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -54,7 +54,7 @@
 #define MGA_FALLBACK_TEXTURE        0x1
 #define MGA_FALLBACK_DRAW_BUFFER    0x2
 #define MGA_FALLBACK_READ_BUFFER    0x4
-#define MGA_FALLBACK_LOGICOP        0x8
+#define MGA_FALLBACK_BLEND          0x8
 #define MGA_FALLBACK_RENDERMODE     0x10
 #define MGA_FALLBACK_STENCIL        0x20
 #define MGA_FALLBACK_DEPTH          0x40
@@ -77,12 +77,14 @@ typedef void (*mga_point_func)( mgaContextPtr, mgaVertex * );
 
 
 
-/* GL_BLEND has some limitations
+/* Texture environment color
  */
-#define MGA_BLEND_RGB_ZERO   0x1
-#define MGA_BLEND_RGB_ONE    0x2
-#define MGA_BLEND_ALPHA_ZERO 0x4
-#define MGA_BLEND_ALPHA_ONE  0x8
+#define RGB_ZERO(c)   (((c) & 0xffffff) == 0x000000)
+#define RGB_ONE(c)    (((c) & 0xffffff) == 0xffffff)
+#define ALPHA_ZERO(c) (((c) >> 24) == 0x00)
+#define ALPHA_ONE(c)  (((c) >> 24) == 0xff)
+#define RGBA_EQUAL(c) ((c) == PACK_COLOR_8888( (c) & 0xff, (c) & 0xff, \
+                                               (c) & 0xff, (c) & 0xff ))
 
 struct mga_texture_object_s;
 struct mga_screen_private_s;
@@ -206,11 +208,11 @@ struct mga_context_t {
    struct gl_client_array UbyteColor;
    struct gl_client_array UbyteSecondaryColor;
 
-   /* Support for GL_DECAL and GL_BLEND
+   /* Texture environment color.
     */
-   unsigned int blend_flags;
-   unsigned int envcolor;
-   GLboolean dualtex_env;
+   unsigned int envcolor[2];
+   GLboolean fcol_used;
+   GLboolean force_dualtex;
 
    /* Rasterization state 
     */

@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatris.c,v 1.10 2002/10/30 12:51:36 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatris.c,v 1.11 2003/09/28 20:15:18 alanh Exp $ */
 
 #include "mtypes.h"
 #include "macros.h"
@@ -830,7 +830,7 @@ static const char * const fallbackStrings[] = {
    "Texture mode",
    "glDrawBuffer(GL_FRONT_AND_BACK)",
    "read buffer",
-   "LogicOp != GL_COPY",
+   "glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ZERO)",
    "glRenderMode(selection or feedback)",
    "No hardware stencil",
    "glDepthFunc( GL_NEVER )",

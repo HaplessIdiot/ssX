@@ -25,7 +25,7 @@
  *    Keith Whitwell <keith@tungstengraphics.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.h,v 1.11 2002/10/30 12:51:36 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.h,v 1.12 2003/09/28 20:15:17 alanh Exp $ */
 
 #ifndef MGA_IOCTL_H
 #define MGA_IOCTL_H
@@ -33,7 +33,7 @@
 #include "mgacontext.h"
 #include "mga_xmesa.h"
 
-void mgaSwapBuffers( __DRIdrawablePrivate *dPriv );
+void mgaCopyBuffer( const __DRIdrawablePrivate *dPriv );
 void mgaWaitForVBlank( mgaContextPtr mmesa );
 
 GLuint *mgaAllocVertexDwords( mgaContextPtr mmesa, int dwords );

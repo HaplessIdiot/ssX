@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_state_init.c,v 1.3 2003/02/22 06:21:11 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_state_init.c,v 1.4 2003/09/28 20:15:29 alanh Exp $ */
 /*
  * Copyright 2000, 2001 VA Linux Systems Inc., Fremont, California.
  *
@@ -322,7 +322,7 @@ void radeonInitState( radeonContextPtr rmesa )
 					    RADEON_DST_BLEND_GL_ZERO );
 
    rmesa->hw.ctx.cmd[CTX_RB3D_DEPTHOFFSET] =
-      rmesa->radeonScreen->depthOffset;
+      rmesa->radeonScreen->depthOffset + rmesa->radeonScreen->fbLocation;
 
    rmesa->hw.ctx.cmd[CTX_RB3D_DEPTHPITCH] = 
       ((rmesa->radeonScreen->depthPitch &
@@ -421,8 +421,9 @@ void radeonInitState( radeonContextPtr rmesa )
 	   (2 << RADEON_TXFORMAT_WIDTH_SHIFT) |
 	   (2 << RADEON_TXFORMAT_HEIGHT_SHIFT));
 
-      /* FIXME: What is this magic value? */
-      rmesa->hw.tex[i].cmd[TEX_PP_TXOFFSET] = 0x2000 << (2 * i);
+      /* Initialize the texture offset to the start of the card texture heap */
+      rmesa->hw.tex[i].cmd[TEX_PP_TXOFFSET] =
+	  rmesa->radeonScreen->texOffset[RADEON_CARD_HEAP];
 
       rmesa->hw.tex[i].cmd[TEX_PP_BORDER_COLOR] = 0;
       rmesa->hw.tex[i].cmd[TEX_PP_TXCBLEND] =  

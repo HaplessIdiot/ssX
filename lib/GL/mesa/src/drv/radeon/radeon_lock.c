@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_lock.c,v 1.5 2002/10/30 12:51:55 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_lock.c,v 1.6 2003/09/28 20:15:28 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -73,7 +73,8 @@ radeonUpdatePageFlipping( radeonContextPtr rmesa )
    }
 
    RADEON_STATECHANGE( rmesa, ctx );
-   rmesa->hw.ctx.cmd[CTX_RB3D_COLOROFFSET] = rmesa->state.color.drawOffset;
+   rmesa->hw.ctx.cmd[CTX_RB3D_COLOROFFSET] = rmesa->state.color.drawOffset
+					   + rmesa->radeonScreen->fbLocation;
    rmesa->hw.ctx.cmd[CTX_RB3D_COLORPITCH]  = rmesa->state.color.drawPitch;
 }
 

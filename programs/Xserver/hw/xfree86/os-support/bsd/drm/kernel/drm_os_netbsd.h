@@ -101,10 +101,10 @@ extern struct cfdriver DRM(cd);
 #define DRM_CURPROC		curproc
 #define DRM_STRUCTPROC		struct proc
 #define DRM_SPINTYPE		struct simplelock
-#define DRM_SPININIT(l,name)	simple_lock_init(&l)
+#define DRM_SPININIT(l,name)
 #define DRM_SPINUNINIT(l)
-#define DRM_SPINLOCK(l)		simple_lock(l)
-#define DRM_SPINUNLOCK(u)	simple_unlock(u);
+#define DRM_SPINLOCK(l)	
+#define DRM_SPINUNLOCK(u)
 #define DRM_CURRENTPID		curproc->p_pid
 
 /* Currently our DRMFILE (filp) is a void * which is actually the pid
@@ -112,8 +112,8 @@ extern struct cfdriver DRM(cd);
  * code for that is not yet written */
 #define DRMFILE			void *
 #define DRM_IOCTL_ARGS		dev_t kdev, u_long cmd, caddr_t data, int flags, DRM_STRUCTPROC *p, DRMFILE filp
-#define DRM_LOCK		lockmgr(&dev->dev_lock, LK_EXCLUSIVE, NULL)
-#define DRM_UNLOCK 		lockmgr(&dev->dev_lock, LK_RELEASE, NULL)
+#define DRM_LOCK()
+#define DRM_UNLOCK()
 #define DRM_SUSER(p)		suser(p->p_ucred, &p->p_acflag)
 #define DRM_TASKQUEUE_ARGS	void *dev, int pending
 #define DRM_IRQ_ARGS		void *arg
@@ -136,14 +136,22 @@ extern const int DRM(M_DRM) = M_DEVBUF;
 #define DRM_WRITE8(map, offset, val)	bus_space_write_1( (map)->iot, (map)->ioh, (offset), (val) )
 #define DRM_WRITE32(map, offset, val)	bus_space_write_4( (map)->iot, (map)->ioh, (offset), (val) )
 
+#define DRM_MTRR_WC	MTRR_TYPE_WC
+
 #define DRM_AGP_FIND_DEVICE()	agp_find_device(0)
 
-#define DRM_PRIV					\
-	drm_file_t	*priv	= (drm_file_t *) DRM(find_file_by_proc)(dev, p); \
-	if (!priv) {						\
-		DRM_DEBUG("can't find authenticator\n");	\
+#define DRM_GET_PRIV_WITH_RETURN(_priv, _filp)			\
+do {								\
+	if (_filp != (DRMFILE)DRM_CURRENTPID) {			\
+		DRM_ERROR("filp doesn't match curproc\n");	\
 		return EINVAL;					\
-	}
+	}							\
+	_priv = DRM(find_file_by_proc)(dev, DRM_CURPROC);	\
+	if (_priv == NULL) {					\
+		DRM_ERROR("can't find authenticator\n");	\
+		return EINVAL;					\
+	}							\
+} while (0)
 
 #define LOCK_TEST_WITH_RETURN(dev, filp)				\
 do {									\
@@ -182,9 +190,11 @@ do {								\
 
 #define DRM_WAIT_ON( ret, queue, timeout, condition )		\
 while (!condition) {						\
+	int s = spldrm();					\
 	ret = tsleep( (void *)&(queue), PZERO | PCATCH, "drmwtq", (timeout) ); \
 	if ( ret )						\
 		return ret;					\
+	splx(s);					\
 }
 
 #define DRM_ERR(v)		v
@@ -205,6 +215,8 @@ while (!condition) {						\
 	(!uvm_useracc((caddr_t)uaddr, size, VM_PROT_READ))
 #define DRM_COPY_FROM_USER_UNCHECKED(arg1, arg2, arg3) 	\
 	copyin(arg2, arg1, arg3)
+#define DRM_COPY_TO_USER_UNCHECKED(arg1, arg2, arg3)	\
+	copyout(arg2, arg1, arg3)
 #define DRM_GET_USER_UNCHECKED(val, uaddr)			\
 	((val) = fuword(uaddr), 0)
 
@@ -229,14 +241,6 @@ while (!condition) {						\
 #define DRM_INIT_WAITQUEUE( queue )  do {} while (0)
 
 #define PAGE_ALIGN(addr) (((addr)+PAGE_SIZE-1)&PAGE_MASK)
-
-typedef struct drm_chipinfo
-{
-	int vendor;
-	int device;
-	int supported;
-	char *name;
-} drm_chipinfo_t;
 
 #define cpu_to_le32(x) htole32(x)
 #define le32_to_cpu(x) le32toh(x)
@@ -328,7 +332,7 @@ find_first_zero_bit(atomic_t *p, int max)
 #define jiffies			hardclock_ticks
 
 /* Redefinitions to make templating easy */
-#define wait_queue_head_t	atomic_t
+#define wait_queue_head_t	int
 #define agp_memory		void
 
 				/* Macros to make printf easier */
@@ -352,12 +356,6 @@ do { \
 #else
 #define DRM_DEBUG(fmt, arg...)		 do { } while (0)
 #endif
-
-#define DRM_SYSCTL_PRINT(fmt, arg...)		\
-  snprintf(buf, sizeof(buf), fmt, ##arg);	\
-  error = SYSCTL_OUT(req, buf, strlen(buf));	\
-  if (error) return error;
-
 
 #define DRM_FIND_MAP(dest, o)						\
 	do {								\

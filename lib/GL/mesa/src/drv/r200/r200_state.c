@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_state.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_state.c,v 1.6 2003/11/06 18:37:55 tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -1647,8 +1647,9 @@ static void r200DrawBuffer( GLcontext *ctx, GLenum mode )
    _swrast_DrawBuffer(ctx, mode);
 
    R200_STATECHANGE( rmesa, ctx );
-   rmesa->hw.ctx.cmd[CTX_RB3D_COLOROFFSET] = (rmesa->state.color.drawOffset &
-					    R200_COLOROFFSET_MASK);
+   rmesa->hw.ctx.cmd[CTX_RB3D_COLOROFFSET] = ((rmesa->state.color.drawOffset +
+					       rmesa->r200Screen->fbLocation)
+					      & R200_COLOROFFSET_MASK);
    rmesa->hw.ctx.cmd[CTX_RB3D_COLORPITCH] = rmesa->state.color.drawPitch;
 }
 

@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatex.c,v 1.14 2002/10/30 12:51:36 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatex.c,v 1.15 2003/09/28 20:15:17 alanh Exp $ */
 
 #include "glheader.h"
 #include "mm.h"
@@ -133,9 +133,9 @@ mgaSetTexFilter( mgaTextureObjectPtr t, GLenum minf, GLenum magf )
    /* See OpenGL 1.2 specification */
    if (magf == GL_LINEAR && (minf == GL_NEAREST_MIPMAP_NEAREST ||
 			     minf == GL_NEAREST_MIPMAP_LINEAR)) {
-      val |= (0x20 << TF_fthres_SHIFT); /* c = 0.5 */
+      val |= MGA_FIELD( TF_fthres, 0x20 ); /* c = 0.5 */
    } else {
-      val |= (0x10 << TF_fthres_SHIFT); /* c = 0 */
+      val |= MGA_FIELD( TF_fthres, 0x10 ); /* c = 0 */
    }
 
 
@@ -302,10 +302,7 @@ mgaAllocTexObj( struct gl_texture_object *tObj )
 
       t->setup.texctl = TMC_takey_1 | TMC_tamask_0;
       t->setup.texctl2 = TMC_ckstransdis_enable;
-      t->setup.texfilter = (TF_minfilter_nrst 
-			    | TF_magfilter_nrst
-			    | TF_filteralpha_enable
-			    | TF_uvoffset_OGL);
+      t->setup.texfilter = TF_filteralpha_enable | TF_uvoffset_OGL;
 
       t->border_fallback = GL_FALSE;
       t->texenv_fallback = GL_FALSE;
@@ -333,27 +330,7 @@ static void mgaDDTexEnv( GLcontext *ctx, GLenum target,
       GLubyte c[4];
 
       UNCLAMPED_FLOAT_TO_RGBA_CHAN( c, texUnit->EnvColor );
-      mmesa->envcolor = PACK_COLOR_8888( c[3], c[0], c[1], c[2] );
-
-      if (mmesa->setup.fcol != mmesa->envcolor) {
-	 FLUSH_BATCH(mmesa);
-	 mmesa->setup.fcol = mmesa->envcolor;
-	 mmesa->dirty |= MGA_UPLOAD_CONTEXT;
-
-	 mmesa->blend_flags = 0;
-
-         if ((mmesa->envcolor & 0xffffff) == 0x0) {
-            mmesa->blend_flags |= MGA_BLEND_RGB_ZERO;
-         } else if ((mmesa->envcolor & 0xffffff) == 0xffffff) {
-            mmesa->blend_flags |= MGA_BLEND_RGB_ONE;
-         }
-
-	 if ((mmesa->envcolor >> 24) == 0x0) {
-            mmesa->blend_flags |= MGA_BLEND_ALPHA_ZERO;
-         } else if ((mmesa->envcolor >> 24) == 0xff) {
-            mmesa->blend_flags |= MGA_BLEND_ALPHA_ONE;
-         }
-      }
+      mmesa->envcolor[unit] = PACK_COLOR_8888( c[3], c[0], c[1], c[2] );
       break;
    }
    }
