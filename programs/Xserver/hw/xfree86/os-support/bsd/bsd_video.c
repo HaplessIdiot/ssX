@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.41 2001/02/15 19:34:19 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.42 2001/02/27 23:05:00 alanh Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -118,10 +118,10 @@ struct memAccess ioMemInfo = { CONSOLE_GET_IO_INFO, NULL, NULL,
 #define SYSCTL_MSG "\tCheck that you have set 'machdep.allowaperture=1'\n"\
 		   "\tin /etc/sysctl.conf and reboot your machine\n" \
 		   "\trefer to xf86(4) for details\n"
-#define SECURELEVEL_MSG \
-                "A card in your system needs more than the aperture driver\n" \
-                "\tYou need to rebuild a kernel with \"Option INSECURE\"\n" \
-                "\tand set securelevel=-1 in /etc/rc.securelevel\n"
+#define SYSCTL_MSG2 \
+		"Check that you have set 'machdep.allowaperture=2'\n" \
+		"\tin /etc/sysctl.conf and reboot your machine\n" \
+		"\trefer to xf86(4) for details\n"
 #endif
 
 #ifdef __alpha__
@@ -433,7 +433,7 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 			DEV_MEM, Len, Base, Offset, strerror(errno));
 #ifdef __OpenBSD__
 		if (Base < 0xa0000) {
-		    xf86Msg(X_WARNING, SECURELEVEL_MSG);
+		    xf86Msg(X_WARNING, SYSCTL_MSG2);
 		} 
 #endif
 		return(-1);
