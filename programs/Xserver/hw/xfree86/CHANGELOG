@@ -1,4 +1,6 @@
 XFree86 4.2.99.1 (XX March 2002)
+  55. Fix some nForce graphics regressions caused by recent flat panel and
+      Mac updates to the nv driver (Mark Vojkovich).
   54. Recognise the "Absolute" keyword that was documented in the
       XF86Config man page (David Dawes).
   53. Fix the man page information about Absolute screen positioning in
@@ -14669,4 +14671,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2185 2002/03/04 16:11:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2186 2002/03/11 21:34:25 dawes Exp $
