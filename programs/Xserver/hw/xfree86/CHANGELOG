@@ -1,4 +1,6 @@
 XFree86 4.3.99.5 (xx May 2003)
+ 185. Fix libexpat shared lib revision on platforms that use minor version
+      numbers (David Dawes).
  184. Update Tamil keyboard map (Thuraiappah Vaseeharan).
  183. Add missing xfs reply to GetEventMask requests (Marc La France).
  182. Change the ELF loader to ignore .debug* sections (Marc La France).
@@ -17004,7 +17006,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2704 2003/05/23 15:03:07 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2705 2003/05/24 11:32:49 pascal Exp $
 
 
 

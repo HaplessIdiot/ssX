@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/nto.rules,v 1.2 1999/12/27 00:45:44 robin Exp $ 
+XCOMM $XFree86: xc/config/cf/nto.rules,v 1.4 2002/01/16 00:40:00 keithp Exp $ 
 XCOMM Rules for QNX/Neutrino
 XCOMM Note that some of these will disappear when we stop cross-compiling
 
@@ -134,7 +134,7 @@ Concat(lib,libname.so.rev):  solist $(EXTRALIBRARYDEPS)			@@\
 	LinkBuildLibrary(Concat(lib,libname.so))			@@\
 									@@\
 clean::									@@\
-	@MAJREV=`expr rev : '\([^.]*\)'`; \				@@\
+	@MAJREV=`echo rev | sed 's/\.[^\.]*$$//'`; \			@@\
 	set -x; $(RM) Concat(lib,libname.so.$$MAJREV)			@@\
 	$(RM) Concat(lib,libname.so.rev) Concat(lib,libname.so)
 #endif
@@ -234,7 +234,7 @@ Concat(lib,libname.so.rev):  deplist $(EXTRALIBRARYDEPS)		@@\
 	LinkBuildLibraryMaybe(Concat(lib,libname.so),$(SOSYMLINK))	@@\
 									@@\
 clean::									@@\
-	@MAJREV=`expr rev : '\([^.]*\)'`; \				@@\
+	@MAJREV=`echo rev | sed 's/\.[^\.]*$$//'`; \			@@\
 	set -x; $(RM) Concat(lib,libname.so.$$MAJREV)			@@\
 	$(RM) Concat(lib,libname.so.rev) Concat(lib,libname.so)
 
