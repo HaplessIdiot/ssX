@@ -1,4 +1,6 @@
 XFree86 4.0a (xx March 2000)
+  33. A first step at allowing -configure to deal with more than one device per
+      driver (Marc La France).
   32. ATI driver changes:  Implement Mach64 engine restriction on virtual
       resolution;  Add DPMS support;  More DSP calculation fixes;  Fix text
       mode restoration bug;  Fix Mach64 screen blanking;  Don't probe for
@@ -10090,4 +10092,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1097 2000/03/21 21:46:25 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1098 2000/03/22 03:10:31 tsi Exp $

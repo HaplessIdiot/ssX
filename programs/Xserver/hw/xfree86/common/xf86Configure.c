@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.26 2000/03/02 23:15:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.27 2000/03/04 03:58:05 dawes Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -620,12 +620,21 @@ DoConfigure()
 
     xf86DoConfigurePass1 = FALSE;
 
+    i = -1;
     for (screennum = 0;  screennum < nDevToConfig;  screennum++) {
+        if (i == DevToConfig[screennum].iDriver) continue;
+
 	i = DevToConfig[screennum].iDriver;
 
 	(*xf86DriverList[i]->Probe)(xf86DriverList[i], 0);
 
 	xf86SetPciVideo(NULL,NONE);
+    }
+
+    if (nDevToConfig != xf86NumScreens) {
+	ErrorF("Number of created screens does not match number of detected"
+	       " devices.\n  Configuration failed.\n");
+	goto bail;
     }
 
     xf86PostProbe();
