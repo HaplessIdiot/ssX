@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt.h,v 1.1 2000/06/14 00:16:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt.h,v 1.2 2000/08/01 20:05:43 dawes Exp $ */
 
 #ifndef _IMSTT_H
 #define _IMSTT_H
@@ -59,6 +59,8 @@ typedef struct _IMSTTRec {
 
 #if 0
 #define IMSTTTRACE	ErrorF
+#else
+#define IMSTTTRACE
 #endif
 
 #define IMSTTPTR(p)	((IMSTTPtr)((p)->driverPrivate))
