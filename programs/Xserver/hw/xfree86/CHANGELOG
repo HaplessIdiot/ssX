@@ -1,4 +1,6 @@
 XFree86 4.2.99.5 (XX January 2003)
+ 806. Fixed patch 760: VBEInit takes entity index, not screen index 
+      (Egbert Eich).
  805. Card name changes/fixes (Hui Yu@ATI).
  804. Panel color channel depth fix for Radeons (Hui Yu@ATI).
  803. Include list_for_each_safe define for kernels that do not have it
@@ -10,7 +12,7 @@ XFree86 4.2.99.5 (XX January 2003)
  800. Enable PCI GART for all architectures (still gated by ForcePCIMode, if
       on an AGP card) (Michel Dänzer).
  799. Fix for Radeon's CP accelerated 2D sync routine (Michel Dänzer).
- 798.  SiS driver fixes:
+ 798. SiS driver fixes:
 	- Fix for SiS730+LVDS machines (display modes restricted due to 
 	  hardware limits; LCD text mode restoration fixed)
 	- Fix for SiS300 bus width detection
@@ -16161,4 +16163,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2506 2003/01/29 15:42:14 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2507 2003/01/29 18:06:03 martin Exp $

@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.229 2003/01/08 15:06:40 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.230 2003/01/20 03:22:49 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1070,7 +1070,7 @@ MGAdoDDC(ScrnInfoPtr pScrn)
   if (!MonInfo){
     vbeInfoPtr pVbe;
     if (xf86LoadSubModule(pScrn, "vbe")) {
-      pVbe = VBEInit(NULL,pScrn->scrnIndex);
+      pVbe = VBEInit(NULL,pMga->pEnt->index);
       MonInfo = vbeDoEDID(pVbe, NULL);
       vbeFree(pVbe);
 
