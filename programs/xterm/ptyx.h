@@ -2,7 +2,7 @@
  *	$Xorg: ptyx.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/ptyx.h,v 3.109 2003/10/20 00:58:54 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/ptyx.h,v 3.110 2003/10/27 01:07:57 dickey Exp $ */
 
 /*
  * Copyright 1999-2002,2003 by Thomas E. Dickey
@@ -835,7 +835,7 @@ extern int A2E(int);
 /***====================================================================***/
 
 #if OPT_VT52_MODE
-#define if_OPT_VT52_MODE(screen, code) if(screen->ansi_level == 0) code
+#define if_OPT_VT52_MODE(screen, code) if(screen->vtXX_level == 0) code
 #else
 #define if_OPT_VT52_MODE(screen, code) /* nothing */
 #endif
@@ -1286,7 +1286,8 @@ typedef struct {
 	char		curss;		/* Current single shift.	*/
 	String		term_id;	/* resource for terminal_id	*/
 	int		terminal_id;	/* 100=vt100, 220=vt220, etc.	*/
-	int		ansi_level;	/* 0=vt100, 1,2,3 = vt100 ... vt320 */
+	int		vtXX_level;	/* 0=vt52, 1,2,3 = vt100 ... vt320 */
+	int		ansi_level;	/* levels 1,2,3			*/
 	int		scroll_amt;	/* amount to scroll		*/
 	int		refresh_amt;	/* amount to refresh		*/
 	int		protected_mode;	/* 0=off, 1=DEC, 2=ISO		*/
@@ -1303,6 +1304,14 @@ typedef struct {
 	unsigned	restore_y;
 	unsigned	restore_width;
 	unsigned	restore_height;
+#endif
+
+#if OPT_VT52_MODE
+	int		vt52_save_level; /* save-area for DECANM	*/
+	char		vt52_save_curgl;
+	char		vt52_save_curgr;
+	char		vt52_save_curss;
+	char		vt52_save_gsets[4];
 #endif
 	/* Testing */
 #if OPT_XMC_GLITCH

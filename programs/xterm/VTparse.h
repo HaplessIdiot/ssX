@@ -2,7 +2,7 @@
  *	$Xorg: VTparse.h,v 1.3 2000/08/17 19:55:08 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/VTparse.h,v 3.17 2002/12/08 22:31:47 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/VTparse.h,v 3.18 2003/10/27 01:07:55 dickey Exp $ */
 /*
  * Copyright 2002 by Thomas E. Dickey
  *
@@ -226,5 +226,6 @@ extern Const PARSE_T esc_pct_table[];
 #define CASE_DECSLE 118
 #define CASE_CSI_IGNORE 119
 #define CASE_VT52_IGNORE 120
+#define CASE_VT52_FINISH 121
 
 #endif /* included_VTparse_h */
