@@ -1,6 +1,6 @@
   README for XFree86 3.2 on LynxOS
   Thomas Mueller
-  Last modified on: 30 September 1996
+  Last modified on: 12 October 1996
 
   1.  What and Where is XFree86?
 
@@ -43,7 +43,7 @@
   pages, config files, and the server link kit.  The full distribution
   takes over 80MB of disk space.
 
-  At a minimum you need to unpack the 'required' X312*.tgz archives plus
+  At a minimum you need to unpack the 'required' X32*.tgz archives plus
   at least one server that matches your vga card. If you will be using
   the new XF86Setup utility you will also need the VGA16 server.  You'll
   need about 40Mb for the minimum required run-time binaries only.
@@ -51,92 +51,95 @@
 
      REQUIRED:
 
-        312Gbin
+        X32bin
            Clients, run-time libs, and app-defaults files
 
-        312Gdoc
+        X32doc
            Documentation
 
-        312Gfnts
+        X32fnts
            75dpi and misc fonts
 
-        312Glib
+        X32lib
            Data files required at run-time
 
 
-        312Gman
-           Manual pages
+        X32cfg
+           sample config files for xinit, xdm
 
-        312Gset
+        X32set
            XF86Setup utility
 
-        312GVG16
+        X32VG16
            16 colour VGA server (XF86Setup needs this server)
 
         Choose at least one of the following server to match your
         hardware:
 
 
-        312G8514
+        X328514
            8514/A server
 
-        312GAGX
+        X32AGX
            AGX server
 
-        312GI128
+        X32I128
            I128 server
 
-        312GMa64
+        X32Ma64
            Mach 64 server
 
-        312GMa32
+        X32Ma32
            Mach 32 server
 
-        312GMa8
+        X32Ma8
            Mach 8 server
 
-        312GMono
+        X32Mono
            Monochrome server
 
-        312GP9K
+        X32P9K
            P9000 server
 
-        312GS3
+        X32S3
            S3 server
 
-        312GSVGA
+        X32S3V
+           S3 ViRGE server
+
+        X32SVGA
            SVGA server
 
-        312GVG16
+        X32VG16
            16 colour VGA server
 
-        312GW32
+        X32W32
            ET4000/W32, ET6000 server
 
      OPTIONAL:
 
-        312Gf100
+        X32f100
            100dpi fonts
 
-        312Gfcyr
+        X32fcyr
            Cyrillic fonts
 
-        312Gfnon
+        X32fnon
            Other fonts (Chinese, Japanese, Korean, Hebrew)
 
-        312Gfscl
+        X32fscl
            Scalable fonts (Speedo and Type1)
 
-        312Gfsrv
+        X32fsrv
            Font server and config files
 
-        312Gprog
+        X32prog
            X header files, config files and compile-time libs
 
-        312Gcfg
-           sample config files for xinit, xdm
+        X32man
+           Manual pages
 
-        312Gnest
+        X32nest
            Nested X server
 
   If this is your first time, then you can safely install all of the
@@ -170,7 +173,7 @@
 
 
 
-           # for i in X312*.tgz; do
+           # for i in X32*.tgz; do
            #   gnutar -xzpPf $i
            # done
 
@@ -181,7 +184,7 @@
      Else, if you are using csh:
 
 
-           % foreach i (X312*.tgz)
+           % foreach i (X32*.tgz)
            %   gnutar -xzpPf $i
            % end
 
@@ -192,11 +195,12 @@
      4. Create a symbolic link ``X'' that points to the server that
         matches your video card.  The XF86_* man pages list which vga
         chip sets are supported by each server.  For example, if you
+
         have an ET4000 based card you will use the XF86_SVGA server:
 
 
 
-      # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
+           # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 
 
 
@@ -208,7 +212,7 @@
 
 
         # for i in bin fnts lib xicf; do
-        #   gnutar -xzpPf  X312$i.tgz
+        #   gnutar -xzpPf  X32$i.tgz
         # done
 
 
@@ -221,7 +225,7 @@
 
 
 
-        # gnutar -xzpPf X312SVGA.tgz
+        # gnutar -xzpPf X32SVGA.tgz
         # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 
 
@@ -254,12 +258,14 @@
   will require approximately 70-90 MBytes of disk space. To compile the
   system you will need at least 230 MBytes of free disk space.
 
+
+
+
+
   3.2.  Changes to system environment
 
   Before compiling the XFree86 distribution you will have to make a few
   little adjustments to your system:
-
-
 
 
      LynxOS AT 2.3 and 2.4
@@ -319,12 +325,17 @@
            following steps to install it:
 
 
-                   # cd xc/programs/Xserver/hw/xfree/etc
-                   # cc -o ld ld-wrapper.c
-                   # mv /bin/ld /bin/ld.org
-                   # mv ld /bin/ld
-                   # chmod 511 /bin/ld
-                   # chown root /bin/ld
+
+
+
+              # cd xc/programs/Xserver/hw/xfree/etc
+              # cc -o ld ld-wrapper.c
+              # mv /bin/ld /bin/ld.org
+              # mv ld /bin/ld
+              # chmod 511 /bin/ld
+              # chown root /bin/ld
+
+
 
 
 
@@ -382,13 +393,13 @@
 
 
 
+
   to compile XFree86. After a few hours (and hopefully a successful
   build of the XFree86 system) you can install the software using
 
 
 
             make install
-
 
 
 
@@ -411,7 +422,8 @@
   This is due to a problem with the strip program which shows up when
   installing across file system boundaries.
 
-  Refer to section 5 for manual page installation.
+  Refer to section ``Installing XFree86 manual pages'' for manual page
+  installation.
 
   4.  Running XFree86
 
@@ -447,6 +459,7 @@
 
   You should also increase the number of ptys to be able run a couple
   more xterms. You may replace /sys/lynx.os/pty.cfg with
+
   /usr/X11R6/lib/X11/etc/pty.cfg.
 
   4.2.3.  Kernel build
@@ -457,12 +470,9 @@
 
 
 
-
-
-
-       # cd /sys/lynx.os
-       # make install
-       # reboot -N
+            # cd /sys/lynx.os
+            # make install
+            # reboot -N
 
 
 
@@ -512,8 +522,12 @@
 
        to
 
-              /dev/atc3:0:default:vt100at:/bin/login
-                        ^
+
+
+
+
+         /dev/atc3:0:default:vt100at:/bin/login
+                   ^
 
 
 
@@ -525,7 +539,6 @@
   stderr during startup. This output will be lost after the server
   reached a certain point in its console initialization process. You
   should redirect stdout and stderr if you want to analyze the
-
   diagnostics produced by the server.
 
   When the X server is running output made to other consoles will be
@@ -533,6 +546,7 @@
   be inconsistent with what one would expect (i.e. random).
 
   5.  Installing XFree86 manual pages
+
 
   LynxOS uses cat-able manual pages, and because a doc preparation
   system is definitely not a vital component of a real-time operating
@@ -550,7 +564,7 @@
 
 
   The index and whatis database for the XFree86 manual pages will be
-  created automatically. If you have already a whatis database or index
+  created automatically. If you already have a whatis database or index
   file in the destination directories you should perform a sort/uniq
   operation to remove duplicate entries:
 
@@ -577,28 +591,20 @@
 
 
   The /bin/man command of LynxOS 2.2.1 does not support the MANPATH
+
   environment variable properly. The XFree86 manual pages must be copied
   (or linked) to the standard manual page locations (/usr/man/catx) in
   order to be read the man command:
 
 
 
-
-
-
-
-
-
-
-
-
-        for i in 1 3 5
-        do
-          ln -s /usr/X11R6/man/cat$i/*.* /usr/man/cat$i
-          cat /usr/X11R6/man/cat$i/LIST$i >> /usr/man/cat$i/LIST$i
-          sort -o /usr/man/cat$i/LIST$i /usr/man/cat$i/LIST$i
-          cat /usr/X11R6/man/cat$i/whatis$i >> /usr/man/whatis
-        done
+             for i in 1 3 5
+             do
+               ln -s /usr/X11R6/man/cat$i/*.* /usr/man/cat$i
+               cat /usr/X11R6/man/cat$i/LIST$i >> /usr/man/cat$i/LIST$i
+               sort -o /usr/man/cat$i/LIST$i /usr/man/cat$i/LIST$i
+               cat /usr/X11R6/man/cat$i/whatis$i >> /usr/man/whatis
+             done
 
 
 
@@ -647,12 +653,17 @@
   problem apply the following patch to the library:
 
 
-             cp /usr/lib/libXm.a /usr/X11R6/lib
-             ar x /usr/X11R6/lib/libXm.a Xmos.o
-             ar x /lib/libc.a directory.s.o
-             ld -r -o x.o Xmos.o directory.s.o
-             mv x.o Xmos.o
-             ar r /usr/X11R6/lib/libXm.a Xmos.o
+
+
+
+
+
+        cp /usr/lib/libXm.a /usr/X11R6/lib
+        ar x /usr/X11R6/lib/libXm.a Xmos.o
+        ar x /lib/libc.a directory.s.o
+        ld -r -o x.o Xmos.o directory.s.o
+        mv x.o Xmos.o
+        ar r /usr/X11R6/lib/libXm.a Xmos.o
 
 
 
@@ -712,6 +723,7 @@
   the CYGNUS gcc to a file named cc somewhere in a directory included in
   your PATH environment variable.
 
+
   7.1.  Console driver patch for microSPARC
 
   Before building on the microSPARC you should install the patch for the
@@ -722,16 +734,14 @@
   backup of the original driver and install the patch issue the commands
 
 
-
-
-   # cd /
-   # tar cf /sys/drivers/console.tar /sys/drivers/console
-   # patch -p -E < xc/programs/Xserver/hw/sunLynx/patch.Console
-   # cd /sys/drivers/console
-   # make install
-   # cd /sys/lynx.os
-   # make install
-   # reboot -a
+        # cd /
+        # tar cf /sys/drivers/console.tar /sys/drivers/console
+        # patch -p -E < xc/programs/Xserver/hw/sunLynx/patch.Console
+        # cd /sys/drivers/console
+        # make install
+        # cd /sys/lynx.os
+        # make install
+        # reboot -a
 
 
 
@@ -766,23 +776,13 @@
   lynx.cf but it has never been tested.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.8 1996/10/03 08:34:48 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.9 1996/10/13 11:19:45 dawes Exp $
 
 
 
 
 
   $XConsortium: LynxOS.sgml /main/4 1995/12/29 15:58:36 kaleb $
-
-
-
-
-
-
-
-
-
-
 
 
 

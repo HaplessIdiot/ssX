@@ -8,10 +8,10 @@
   There are two different SVGA drivers for Cirrus chipsets, one called
   ``cirrus'' and one called ``cl64xx''.  The ``cirrus'' driver is used
   in the 256-color SVGA server (with acceleration) and the mono server
-  (without acceleration). The SVGA server supports 16 and 32 bits-per-
-  pixel truecolor modes on some configurations.  The ``cl64xx'' driver
-  is used in the 256-color SVGA, 16-color and mono servers.  Note that
-  except where stated otherwise, this document is referring to the
+  (without acceleration). The SVGA server supports 16, 24, and 32 bits-
+  per-pixel truecolor modes on some configurations.  The ``cl64xx''
+  driver is used in the 256-color SVGA, 16-color and mono servers.  Note
+  that except where stated otherwise, this document is referring to the
   ``cirrus'' driver.  The following chipsets by Cirrus Logic are
   supported:
 
@@ -82,8 +82,8 @@
         use Rambus RDRAM memory.  The '62 is a 64-bit 2D accelerator,
         including a BitBlit engine, video windows (not currently used by
         the server), and 64x64 HW cursor.  Mono modes have not been
-        tested. The CL-GD5464 is also supported, but has not been
-        tested.
+        tested. The CL-GD5464 is the next chip in the Laguna family, and
+        is supported and has been tested.
 
      CL-GD7541/7542/7543/7548
         Laptop chipsets more or less compatible with the 5428/3x. The
@@ -109,7 +109,7 @@
        CL-GD5436/2Mb   85 MHz   135 MHz      85 MHz       85 MHz (3)   60 MHz (3)
        CL-GD5446/1Mb   85 MHz   110 MHz (3)  60 MHz (3)   40 MHz (3)
        CL-GD5446/2Mb   85 MHz   135 MHz      85 MHz       85 MHz (3)   60 MHz (3)
-       CL-GD5462       170 MHz  170 Mhz      170 MHz      170 MHz      170 MHz
+       CL-GD546X       170 MHz  170 Mhz      170 MHz      170 MHz      170 MHz
        CL-GD754x       80 MHz   80 MHz       40 MHz (4)   (5)
 
        (1) with 512K memory.
@@ -140,14 +140,17 @@
 
 
 
-  For 546x chips, the virtual width will be rounded up to one of the
-  following values (this places restrictions on the size of the virtual
-  screen by possibly increasing the amount of video memory required):
+  For 546x chips, the virtual width may be any size.  However, the
+  screen pitch will be rounded up to the nearest value in the table
+  below.  Thus, each line on the screen will take more video memory than
+  just what is displayed.  To maximize video memory, then, choose the
+  virtual desktop width from the table of pixel widths below:
 
 
        8bpp:   640, 1024, 1280, 1664, 2048, 2560, 3328, 4096, 5120, 6656
-       16bpp:  320, 512, 640, 832, 1024, 1280, 1664, 2048, 2560, 3328
-       32bpp:  160, 256, 320, 416, 512, 640, 832, 1024, 1280, 1664
+       16bpp:  320,  512,  640,  832, 1024, 1280, 1664, 2048, 2560, 3328
+       24bpp:  640, 1024, 1280, 1664, 2048, 2560, 3328, 4096, 5120, 6656
+       32bpp:  160,  256,  320,  416,  512,  640,  832, 1024, 1280, 1664
 
 
 
@@ -160,7 +163,7 @@
   as follows:
 
   startx -- -bpp 16               5-6-5 RGB ('64K color', XGA)
-  startx -- -bpp 16 -weight 555   5-5-5 RGB ('Hicolor') (not on 546X)
+  startx -- -bpp 16 -weight 555   5-5-5 RGB ('Hicolor') (not on 5462)
   startx -- -bpp 24               8-8-8 RGB truecolor
   startx -- -bpp 32               8-8-8 XRGB truecolor (543X/46/6X)
 
@@ -192,10 +195,10 @@
   is generally possible on 543x local bus cards, and if you have less
   than 16Mb of system memory, on local bus 542x cards and ISA 543x
   cards. You must specify the "linear" option and possibly a Membase
+
   address. See the following sections for a detailed description.
 
   Also, on the 543x, it is advisable to use the "mmio" option in the
-
   Device section for better acceleration (this might also apply to the
   5429, which has not been tested).
 
@@ -261,7 +264,6 @@
 
         Typical MCLK values:
 
-
         0x1c (50 MHz)
            This is usually the BIOS default.  It is forced by the
            "slow_dram" option.
@@ -319,16 +321,16 @@
         the upper megabyte of memory, or if the memory detection goes
         wrong. It must be specified in the Device section.
 
-     Option "fifo_conservative" (5424/6/8/9/3x/46/754x)
+     Option "fifo_conservative" (5424/6/8/9/3x/46/6x/754x)
         This option will set the CRT FIFO threshold to a conservative
         value for high dot clocks (>= 65 MHz), reducing performance but
         hopefully alleviating problems with what can be described as
         flashing `streaks', `jitter' or horizontally repeated display
         areas on the screen (especially when a BitBLT operation is in
+
         progress, e.g.  scrolling).
 
-
-     Option "fifo_aggressive" (5424/6/8/9/3x/46/754x)
+     Option "fifo_aggressive" (5424/6/8/9/3x/46/6x/754x)
         This option will set the CRT FIFO threshold to an aggressive
         value; it will be the same as that used for lower dot clocks. It
         improves performance at high dot clocks.
@@ -391,9 +393,9 @@
      Option "mmio" (5429/3x/46/754x)
         This enables the use of memory-mapped I/O to talk to the BitBLT
         engine on the 543x/5429, which is a bit faster. It also enables
+
         additional acceleration using memory-mapped I/O. This is option
         has no effect when not using the BitBLT engine (e.g. when using
-
         "no_bitblt").
 
      Option "sw_cursor" (542x/3x/46)
@@ -457,8 +459,8 @@
 
   If you have a 5424/26/28/29 on VESA local bus, the situation is more
   complicated. There are two different types of cards w.r.t. linear
-  addressing:
 
+  addressing:
 
      o  Cards that can only map in the lower 16Mb, like cards on the ISA
         bus.  This is the case with most cards. The same restrictions
@@ -518,6 +520,11 @@
 
 
 
+
+  Finally, for 546X cards, you are in luck:  there are no "issues" to
+  worry about.  The '6X will always use linear addressing and memmory-
+  mapped I/O, and will use the memory addresses up near 4GB.  Yay for
+  PCI!
 
   The 16bpp and 32bpp modes have limited acceleration (scroll, text,
   fill) which means they can be slow, although a good local bus host
@@ -584,6 +591,7 @@
   clocks is obtained, I would recommend using Clocks lines in
   XF86Config.  Doing so will also decrease startup time significantly.
   The clocks may be obtained by running the X server -probeonly (see the
+
   XFree86 man page for more information about -probeonly).
 
   The data book indicates that only a configuration of one megabyte of
@@ -591,7 +599,6 @@
   set in the driver.  If one finds a need, one should be able to
   override the default size in XF86Config.  Also, with 1MB of video
   memory, one should be able to have a virtual screen size of e.g.
-
   1024x1024 and this is possible in CRT-only screen mode.  However,
   whenever the LCD is in use (LCD and SimulScan), the chip uses a
   portion of upper video ram for its own internal acceleration purposes.
@@ -648,16 +655,16 @@
 
      Horizontal jitter at high dot clocks.
         This problem shows especially when drawing operations such as
-        scrolling are in progress.  If you're using a 542x/3x/46, try
+        scrolling are in progress.  If you're using a 542x/3x/46/6x, try
         the "fifo_conservative" option. Failing that, you can try the
+
         "fast_dram" option, or use a lower dot clock.  If that is not
-        sufficient, or if you have a 546X, the "noaccel" option or
-        "no_bitblt" will probably help.
+        sufficient, the "noaccel" option or "no_bitblt" will probably
+        help.
 
      `Wavy' screen.
         Horizontal waving or jittering of the whole screen, continuously
         (independent from drawing operations).  You are probably using a
-
         dot clock that is too high; it is also possible that there is
         interference with a close MCLK. Try a lower dot clock. You can
         also try to tweak the mode timings; try increasing the second
@@ -690,21 +697,6 @@
         two megabytes of memory, try the "no_2mb_banksel" option, or use
         videoram "1024" if you only use 1 Mbyte for the virtual screen.
 
-     Screen is `wrapped' horizontally. (546x)
-        The 546x chips must have their viewport on the virtual screen
-        aligned to tile boundaries, typically 128, 64, or 32 pixels.
-        For display modes that are not a multiple of the tile size
-        (i.e., 800x600 display on a 1664x1024 virtual desktop), the
-        display may wrap about half a tile on the far right hand side.
-        This is because the left side of the viewable screen is aligned
-        to a tile, but the right side is hanging over the edge of the
-        virtual desktop.  The solution is to use a display resolution
-        that is a multiple of the tile size.  Horizontal resolutions of
-        640, 896, 1024, and 1280 are usually okay.
-
-     Screen won't pan over all of virtual desktop. (546x)
-        Same as previous entry.
-
      Corrupted text in terminal window.
         This has been reported on non-standard video implementations.
         Use the "no_bitblt" option.
@@ -723,7 +715,6 @@
         Try forcing the chipset to a type that is most similar to what
         you have.
 
-
      Incorrect little lines (mostly white) appear occasionally
         This may be related to a problem with system-to-video-memory
         BitBLT operations. Try the "no_imageblt" option if it annoys
@@ -732,6 +723,7 @@
      Textmode is not properly restored
         This has been reported on some configurations. In XFree86 3.1
         the SVGA server probe would corrupt a register on the 543x,
+
         requiring a Chipset line. Normally you should be able to restore
         the textmode font using a utility that sets it (setfont, runx,
         restorefont on Linux).
@@ -785,13 +777,17 @@
         "fifo_conservative".
 
      CL-GD5462 with 2MB memory on PCI bus
+
+     CL-GD5462 with 4MB memory on PCI bus
+
+     CL-GD5464 with 4MB memory on PCI bus
         Works OK at 8bpp, 16bpp, 24bpp and 32bpp.
 
      CL-GD6440 on ISA bus
 
-
      Some configurations for which no up-to-date testing data is
      available:
+
 
 
      CL-GD5430, and CL-GD5436 and CL-GD5446 with 1MB memory
@@ -835,13 +831,17 @@
         with 1MB memory).
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.14 1996/10/10 14:04:02 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.15 1996/10/13 11:19:48 dawes Exp $
 
 
 
 
 
   $XConsortium: cirrus.sgml /main/6 1995/11/12 20:00:36 kaleb $
+
+
+
+
 
 
 

@@ -46,6 +46,37 @@
 
         o  To build the IBM 8514/A server: set XF86I8514Server to YES.
 
+        o  To build the I128 server: set XF86I128Server to YES.
+
+        o  To build the TGA server: set XF86TGAServer to YES.
+
+        o  To build the GA-98NB/WAP server: set XF98GANBServer to YES.
+
+        o  To build the NEC480 server: set XF98NEC480Server to YES.
+
+        o  To build the NEC-CIRRUS/EPSON NKV/NKV2 server: set
+           XF98NKVNECServer to YES.
+
+        o  To build the WAB-S server: set XF98WABSServer to YES.
+
+        o  To build the WAB-EP server: set XF98WABEPServer to YES.
+
+        o  To build the WSN-A2F server: set XF98WSNAServer to YES.
+
+
+        o  To build the Trident Cyber9320/9680 server: set
+           XF98TGUIServer to YES.
+
+        o  To build the EGC server: set XF98EGCServer to YES.
+
+        o  To build the NEC S3 server: set XF98NECS3Server to YES.
+
+        o  To build the S3 PW/PCSKB server: set XF98PWSKBServer to YES.
+
+        o  To build the S3 PW/LB server: set XF98PWLBServer to YES.
+
+        o  To build the S3 GA-968 server: set XF98GA968Server to YES.
+
         o  To build the Xnest server: set XnestServer to YES.
 
         o  Set XF86SvgaDrivers to the list of drivers you want to
@@ -63,7 +94,6 @@
 
         o  Note: the ordering of drivers determines the order in which
            the probing is done.  The `generic' driver should be the last
-
            one included in the Mono and VGA16 and SVGA servers because
            its probe always succeeds.
 
@@ -99,6 +129,7 @@
         (refer to the documentation in the VGADriverDoc directory for
         more details).
 
+
      5. To build the Makefile, run
 
           ./mkmf
@@ -124,39 +155,8 @@
         extensions are included, start the Xserver and run `xdpyinfo'.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.9 1996/10/03 08:34:47 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.10 1996/10/13 11:19:44 dawes Exp $
   $XConsortium: LinkKit.sgml /main/4 1995/11/12 19:59:36 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
