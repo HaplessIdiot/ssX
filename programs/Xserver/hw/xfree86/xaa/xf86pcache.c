@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.6 1997/01/14 22:22:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.7 1997/01/18 06:57:27 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -612,10 +612,10 @@ static void WriteRotatedMonoPatterns(x, y, pattern)
             int k;
             if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_BIT_ORDER_MSBFIRST)
                 for (k = 0; k < 8; k++)
-                    pattern[k] = (pattern[k] << 1) | (pattern[k] >> 7);
+                    pattern[k] = (pattern[k] >> 1) | (pattern[k] << 7);
             else
                 for (k = 0; k < 8; k++)
-                    pattern[k] = (pattern[k] >> 1) | (pattern[k] << 7);
+                    pattern[k] = (pattern[k] << 1) | (pattern[k] >> 7);
         }
     }
     DEALLOCATE_LOCAL(buf);

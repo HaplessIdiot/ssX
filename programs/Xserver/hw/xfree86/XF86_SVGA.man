@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.39 1996/12/31 04:59:43 dawes Exp $ 
-.TH XF86_SVGA 1 "Version 3.2"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.40 1997/01/19 12:49:15 dawes Exp $ 
+.TH XF86_SVGA 1 "Version 3.2A"  "XFree86"
 .SH NAME
 XF86_SVGA - SVGA X Window System servers for UNIX on 
 x86 platforms
@@ -268,6 +268,17 @@ of operation.
 disables the accelerated features for the clgd542X, clgd543x, clgd5446,
 clgd546X, wd90c24, wd90c31 and wd90c33, C&T, ARK, MGA and Tseng chipsets.
 .sp
+\fBno_pixmap_cache\fP - for any chip that uses XAA for acceleration,
+which includes ARK, Cirrus, C&T, MGA, SiS, Trident 9440/9680, and Tseng
+chipsets. This disables the use of a pixmap cache by XAA.
+.sp
+\fBxaa_no_col_exp\fP - for any chip that uses XAA for acceleration.
+This option disables the use by XAA of hardware color expansion features.
+.sp
+\fBxaa_benchmarks\fP - most useful for a chip that uses XAA for
+acceleration. This option makes the server perform and report the results
+of benchmarks performed at start-up of XAA acceleration primitives.
+.sp
 \fBfifo_conservative\fP - for Cirrus chipsets 542x/3x/46/6x, oti087, and
 ARK.
 This option
@@ -311,9 +322,10 @@ the ET6000, and the ET4000W32p rev C and D.
 Automatically selected (and hence the option is ignored) for the clgd5462 
 and clgd5464, C&T, NVidia, and the ARK chipsets.
 .sp
-\fBnolinear\fP - Disable linear mapping. Useful for C&T and ARK chipsets.
+\fBnolinear\fP - Disable linear mapping. Useful for C&T, ARK and some
+Cirrus chipsets.
 .sp
-\fBmed_dram, favour_bitblt, clgd6225_lcd\fP
+\fBmed_dram, favour_bitblt, clgd6225_lcd, no_stretch, no_mmio\fP
 - more Cirrus-specific options. Refer to
 /usr/X11R6/lib/X11/doc/README.cirrus for a detailed description of Cirrus
 options.

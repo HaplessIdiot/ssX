@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.66 1997/01/18 06:55:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.67 1997/01/19 12:49:59 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1017,32 +1017,42 @@ void
 s3DPMSSet(PowerManagementMode)
     int PowerManagementMode;
 {
-  unsigned char extsync;
+  unsigned char seq1, extsync;
   if (!xf86VTSema) return;
-  outw(0x3C4, 0x0608);		/* unlock SRD */
-  outb(0x3C4, 0x0D);
-  extsync = inb(0x3C5) & ~0x30;
   switch (PowerManagementMode)
     {
     case DPMSModeOn:
-      /* HSync: On, VSync: On */
+      /* Screen: On; HSync: On, VSync: On */
+      seq1 = 0x00;
+      extsync = 0x00;
       break;
     case DPMSModeStandby:
-      /* HSync: Off, VSync: On */
-      extsync |= 0x10;
+      /* Screen: Off; HSync: Off, VSync: On */
+      seq1 = 0x20;
+      extsync = 0x10;
       break;
     case DPMSModeSuspend:
-      /* HSync: On, VSync: Off */
-      extsync |= 0x20;
+      /* Screen: Off; HSync: On, VSync: Off */
+      seq1 = 0x20;
+      extsync = 0x40;
       break;
     case DPMSModeOff:
-      /* HSync: Off, VSync: Off */
-      extsync |= 0x30;
+      /* Screen: Off; HSync: Off, VSync: Off */
+      seq1 = 0x20;
+      extsync = 0x50;
       break;
     }
+  outw(0x3C4, 0x0608);	/* Unlock SRD */
+  outw(0x3C4, 0x0100);	/* Synchronous Reset */
+  outb(0x3C4, 0x01);	/* Select SEQ1 */
+  seq1 |= inb(0x3C5) & ~0x20;
+  outb(0x3C5, seq1);
+  outb(0x3C4, 0x0D);	/* Select SEQD */
+  extsync |= inb(0x3C5) & ~0xF0;
   usleep(10000);
-  outw(0x3C4, (extsync << 8) | 0x0D);
-  outw(0x3C4, 0x0008);		/* lock SRD */
+  outb(0x3C5, extsync);
+  outw(0x3C4, 0x0300);	/* End Reset */
+  outw(0x3C4, 0x0008);	/* Lock SRD */
 }
 #endif
 

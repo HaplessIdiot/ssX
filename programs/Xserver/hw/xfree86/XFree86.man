@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.34 1996/10/24 12:29:39 dawes Exp $ 
-.TH XFree86 1 "Version 3.2"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.35 1996/12/23 06:30:37 dawes Exp $ 
+.TH XFree86 1 "Version 3.2A"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
 .SH DESCRIPTION

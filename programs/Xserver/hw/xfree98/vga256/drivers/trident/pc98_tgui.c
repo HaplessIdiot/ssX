@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/trident/pc98_tgui.c,v 3.4 1996/12/27 07:07:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/trident/pc98_tgui.c,v 3.5 1996/12/28 08:20:01 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -69,17 +69,22 @@ static PC98TGUiTable pc98TGUiTab[]={
      0x20000000, 0, 0x20400000,
      45, 0x00af, {108000, 58500, 0, 31500},
      crtswNEC96xx, testTRUE, ChipInit}
+  ,{"NEC Trident TGUi96xx(PCI Bus Type)",
+      PC98NEC96xx, PC98PCIBus, PC98LINEAR,
+      0x21000000, 0, 0x21400000,
+      45, 0x00af, {108000, 58500, 0, 31500},
+      crtswNEC96xx, testTRUE, ChipInit}
   ,{"NEC Trident Cyber9320(PCI Bus Type)", 
       PC98NEC9320, PC98PCIBus, PC98LINEAR,
       0xffc00000, 0, 0xffe00000,
       45, 0x00af, {108000, 58500, 0, 25175},
       crtswNEC9320, testTRUE, ChipInit}
-  ,{"I/O-Data GA-DRV/98(C Bus Type)",
+  ,{"I/O-Data GA-DRV/98,GA-DR/98(C Bus Type)",
       PC98DRV96xx, PC98CBus, PC98PAGE,
       0, 0x00f20000, 0x00f00000,
       45, 0x00af, {108000, 58500, 0, 25175},
       crtswDRV96xx, testDRV, ChipInit}
-  ,{"Non other Board Data Base",
+  ,{"End of Data Base",
       PC98NoExist, PC98Unknown, PC98PAGE,
       0, 0, 0,
       0, 0, {0, 0, 0, 0},
@@ -171,7 +176,7 @@ Bool BoardInit(void)
 	   pc98TGUi->mmioBase);
     pc98TGUi->init();
   } else {
-    FatalError("I cann7t find Trident Chip\n");
+    FatalError("No Data Base Entry for this Trident Chip\n");
   }
 
   return TRUE;

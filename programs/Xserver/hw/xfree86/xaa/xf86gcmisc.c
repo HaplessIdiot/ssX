@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.3 1997/01/14 22:22:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.4 1997/01/18 06:57:21 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -84,24 +84,6 @@
 # define useImageGlyphBlt	miImageGlyphBlt
 # define usePolyGlyphBlt	miPolyGlyphBlt
 #endif
-
-#define CHECKPLANEMASK(flag) \
-    (!(flag & NO_PLANEMASK) || (pGC->planemask & PMSK) == PMSK)
-#define CHECKROP(flag) \
-    (!(flag & GXCOPY_ONLY) || devPriv->rop == GXcopy)
-#define CHECKTRANSPARENCYROP(flag) \
-    (!((flag & GXCOPY_ONLY) || (flag & TRANSPARENCY_GXCOPY)) \
-    || devPriv->rop == GXcopy)
-#define CHECKRGBEQUAL(flag) \
-    (!(flag & RGB_EQUAL) || ((pGC->fgPixel & 0xFF) == ((pGC->fgPixel \
-    & 0xFF00) >> 8) && (pGC->fgPixel & 0xFF) == ((pGC->fgPixel \
-    & 0xFF0000) >> 16)))
-#define CHECKRGBEQUALBOTH(flag) \
-    (!(flag & RGB_EQUAL) || ((pGC->fgPixel & 0xFF) == ((pGC->fgPixel \
-    & 0xFF00) >> 8) && (pGC->fgPixel & 0xFF) == ((pGC->fgPixel \
-    & 0xFF0000) >> 16)) && ((pGC->bgPixel & 0xFF) == ((pGC->bgPixel \
-    & 0xFF00) >> 8) && (pGC->bgPixel & 0xFF) == ((pGC->bgPixel \
-    & 0xFF0000) >> 16)))
 
 
 void xf86GCNewFillPolygon(pGC, new_cfb_line)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.2 1997/01/12 10:48:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.3 1997/01/14 22:22:07 dawes Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -540,3 +540,27 @@ xf86Bench();
 
 extern int xf86PixmapIndex;
 extern unsigned int byte_expand3[256], byte_reversed_expand3[256];
+
+/*
+ * Macros to check graphics operation restrictions.
+ */
+
+#define CHECKPLANEMASK(flag) \
+    (!(flag & NO_PLANEMASK) || (pGC->planemask & \
+    xf86AccelInfoRec.FullPlanemask) == xf86AccelInfoRec.FullPlanemask)
+#define CHECKROP(flag) \
+    (!(flag & GXCOPY_ONLY) || pGC->alu == GXcopy)
+#define CHECKTRANSPARENCYROP(flag) \
+    (!((flag & GXCOPY_ONLY) || (flag & TRANSPARENCY_GXCOPY)) \
+    || pGC->alu == GXcopy)
+#define CHECKRGBEQUAL(flag) \
+    (!(flag & RGB_EQUAL) || ((pGC->fgPixel & 0xFF) == ((pGC->fgPixel \
+    & 0xFF00) >> 8) && (pGC->fgPixel & 0xFF) == ((pGC->fgPixel \
+    & 0xFF0000) >> 16)))
+#define CHECKRGBEQUALBOTH(flag) \
+    (!(flag & RGB_EQUAL) || ((pGC->fgPixel & 0xFF) == ((pGC->fgPixel \
+    & 0xFF00) >> 8) && (pGC->fgPixel & 0xFF) == ((pGC->fgPixel \
+    & 0xFF0000) >> 16)) && ((pGC->bgPixel & 0xFF) == ((pGC->bgPixel \
+    & 0xFF00) >> 8) && (pGC->bgPixel & 0xFF) == ((pGC->bgPixel \
+    & 0xFF0000) >> 16)))
+

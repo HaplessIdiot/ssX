@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.6 1997/01/14 22:22:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.7 1997/01/18 06:57:29 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -103,8 +103,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /* This is defined in cfbscrinit.c */
 extern Bool cfbCreateScreenResources();
 
-extern Bool xf86Resetting;
-
 /* We need to define this here instead of use the cfb one. */
 static miBSFuncRec xf86BSFuncRec = {
     cfbSaveAreas,
@@ -197,10 +195,12 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     /* This may not be the right way to get the number of bits of pixel. */
     xf86AccelInfoRec.BitsPerPixel = (rootdepth + 7) & ~7;
     xf86AccelInfoRec.FramebufferWidth = width;
+    /* It might be worthwhile to only define 24 bits for 32bpp. */
+    xf86AccelInfoRec.FullPlanemask = PMSK;
 
     xf86InitializeAcceleration(pScreen);
 
-    if (!xf86Resetting && OFLG_ISSET(OPTION_XAA_BENCHMARK,
+    if (serverGeneration == 1 && OFLG_ISSET(OPTION_XAA_BENCHMARK,
     &(xf86AccelInfoRec.ServerInfoRec->options)))
         xf86Bench();
 

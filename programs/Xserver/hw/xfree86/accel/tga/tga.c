@@ -23,7 +23,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.15 1997/01/18 06:55:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.16 1997/01/19 12:50:12 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -54,6 +54,11 @@
 #include "servermd.h"
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
+#endif
+
+#ifdef DPMSExtension
+#include "opaque.h"
+#include "extensions/dpms.h"
 #endif
 
 static int tgaValidMode(

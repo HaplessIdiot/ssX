@@ -19,35 +19,86 @@ and ET6000 server, refer to
 <sect> ET4000 driver features <p>
 
 The SVGA driver for ET4000 chipsets only supports 8bpp mode (256 colors).
-hi- and truecolor modes are not supported.
+hi- and truecolor modes are not supported. This is being worked on.
+
+Linear memory mode (especially important for some DGA clients) is supported
+on the ET4000W32p rev C and D. Work is underway to support it on some of the
+older cards as well.
+
+To enable linear memory mode, put the following in the Device section of your
+<tt>XF86Config</tt>:
+<verb>
+  Option "linear"
+</verb>
+
+Acceleration support is present, and enabled by default, for W32p chips (not
+yet for W32i, but that's being worked on). This is based on the new XFree86
+acceleration interface. See also
+<htmlurl name="README.W32" url="W32.html">.
+
+Acceleration does not work together with linear memory mode, and the server
+disables linear memory mode if acceleration isn't disabled in the Device
+section.
+
+To disable acceleration, put the following in the Device section of your
+<tt>XF86Config</tt>:
+<verb>
+  Option "noaccel"
+</verb>
+
+On some systems, acceleration may cause occasional font corruption. Until
+this problem is fixed, font acceleration may be disabled using the following
+in the Device section of your
+<tt>XF86Config</tt>:
+<verb>
+  Option "xaa_no_color_exp"
+</verb>
+
 
 <sect> ET6000 driver features <p>
 In addition to the features in the ET4000 driver, the SVGA ET6000 server
 supports all possible color depths in the SVGA server: 8bpp, 16bpp (both at
 5-5-5 and 5-6-5 color resolutions), 24bpp and 32 bpp.
 
-<sect> features common to ET6000 and ET4000W32p <p>
-The features listed below are only functional on ET4000W32p and ET6000
-cards, and thus not on ET4000W32i, ET4000W32, ET4000AX and ET4000.
-
 Linear memory mode (as opposed to the default, banked memory layout) is
-supported. It is required for 16/24/32 bpp modes. It does not currently work
-when acceleration is enabled on ET4000W32 chips. Put the following in the
-SVGA section of your
+supported. It is required for the 16/24/32 bpp modes. The server will exit
+with an appropriate error message when attempting to run 16/24/32 bpp modes
+without linear memory mode enabled.
+
+To enable linear memory, put the following in the SVGA section of your
 <tt>XF86Config</tt>:
 <verb>
   Option "linear"
 </verb>
 
-Acceleration is supported and is enabled on ET6000 and ET4000W32p by
-default, and accelerates all color depths on the ET6000. The ET4000W32p
-driver currently works only in "banked" (= non-linear) memory mode when
-acceleration is enabled. Acceleration can be disabled on all cards by adding
-the following to your
+Acceleration is supported and is enabled by default, and accelerates all
+color depths on the ET6000. Acceleration can be disabled by adding the
+following in the Device section of your
 <tt>XF86Config</tt>:
 <verb>
   Option "noaccel"
 </verb>
+
+On some systems, acceleration may cause occasional font corruption. Until
+this problem is fixed, font acceleration may be disabled using the following
+in the Device section of your
+<tt>XF86Config</tt>:
+<verb>
+  Option "xaa_no_color_exp"
+</verb>
+
+When using accelerated high color-depths (24bpp and 32bpp), high-resolution
+modes (starting somewhere around 800x600) may cause temporary "garbage"
+lines to the right of the screen while the accelerator is busy. The garbage
+should not be persistent: it should go away as soon as the server is left
+alone. This may get fixed in the future. This may also be a bandwidth
+problem, in which case it cannot be resolved (except by not allowing such
+modes at all).
+
+Ignoring it is one option (it isn't destructive). Disabling acceleration in
+the Device section of the <tt>XF86Config</tt> file is another option: since
+the accelerator is not being used, there is ample bandwidth to avoid such
+problems.
 
 
 <sect> Clock selection problems with some ET4000 boards <p>
@@ -90,7 +141,7 @@ has been removed.  Hopefully the past text-restoration problems are alleviated
 in XFree86 2.0.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.8 1996/12/23 06:46:29 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.9 1996/12/31 05:01:00 dawes Exp $ 
 
 
 

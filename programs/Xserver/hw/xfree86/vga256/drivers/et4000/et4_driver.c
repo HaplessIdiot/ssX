@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.40 1997/01/18 09:10:52 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.41 1997/01/19 12:51:03 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -621,6 +621,13 @@ ET6000InitVars(Bool autodetect)
     * in the system, XFree's PCI scanner might give us the wrong one).
     */
 
+   /* define used IO ports... Is this really necessary for PCI config space IO? */
+   for (i=0; i<Num_ET6000_PCIPorts; i++)
+     ET6000_PCIPorts[i] = ET6Kbase+i;
+   xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_ET6000_PCIPorts, ET6000_PCIPorts);
+   
+   ET4000EnterLeave(ENTER);
+
    if (autodetect)
    {
      ET6Kbase = vgaPCIInfo->IOBase & ~0xFF;
@@ -632,13 +639,6 @@ ET6000InitVars(Bool autodetect)
      outb(vgaIOBase + 4, 0x22); ET6Kbase += (inb(vgaIOBase + 5) << 16);
      outb(vgaIOBase + 4, 0x23); ET6Kbase += (inb(vgaIOBase + 5) << 24); /* keep this split up */
    }
-
-   /* define used IO ports... Is this really necessary for PCI config space IO? */
-   for (i=0; i<Num_ET6000_PCIPorts; i++)
-     ET6000_PCIPorts[i] = ET6Kbase+i;
-   xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_ET6000_PCIPorts, ET6000_PCIPorts);
-   
-   ET4000EnterLeave(ENTER);
 
   /*
    * clock related stuff
@@ -936,11 +936,12 @@ ET4000Probe()
 
   /*
    * acceleration-related stuff
+   *
+   * Currently only works on W32p or newer chips. W32i doesn't work yet.
    */  
 
-  if (et4000_type >= TYPE_ET4000W32I) 
+  if (et4000_type > TYPE_ET4000W32I) 
   {
-    OFLG_SET(OPTION_NOACCEL, &ET4000.ChipOptionFlags);
     if (et4000_type < TYPE_ET6000)
     {
       if (vga256InfoRec.videoRam > (4096-516))
@@ -971,15 +972,18 @@ ET4000Probe()
         && OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
     {
       if (et4000_type < TYPE_ET6000)
-      ErrorF("%s %s: Acceleration disabled (not yet supported in linear mode).\n",
-             XCONFIG_PROBED, vga256InfoRec.name);
-      OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
+      {
+        ErrorF("%s %s: Acceleration disabled (not yet supported in linear mode).\n",
+               XCONFIG_PROBED, vga256InfoRec.name);
+        OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
+      }
     }
   }
-#endif
-
-#ifndef MONOVGA
-    OFLG_SET(OPTION_FAST_DRAM, &ET4000.ChipOptionFlags);
+  else   /* no acceleration supported */
+  {
+    /* this makes life easier in the rest of the server code */
+    OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
+  }
 #endif
 
   if (et4000_type < TYPE_ET6000)
@@ -994,6 +998,7 @@ ET4000Probe()
     OFLG_SET(OPTION_W32_INTERLEAVE_ON, &ET4000.ChipOptionFlags);
     OFLG_SET(OPTION_W32_INTERLEAVE_OFF, &ET4000.ChipOptionFlags);
     OFLG_SET(OPTION_SLOW_DRAM, &ET4000.ChipOptionFlags);
+    OFLG_SET(OPTION_FAST_DRAM, &ET4000.ChipOptionFlags);
     OFLG_SET(OPTION_NOACCEL, &ET4000.ChipOptionFlags);
 #endif
 
@@ -1007,6 +1012,17 @@ ET4000Probe()
            XCONFIG_GIVEN, vga256InfoRec.name);
     OFLG_CLR(OPTION_POWER_SAVER, &vga256InfoRec.options);
   }
+
+/*
+ * because of some problems with W32 cards, SLOW_DRAM is _always_ enabled
+ * for those cards
+ */
+ if (et4000_type <= TYPE_ET4000W32)
+ {
+   ErrorF("%s %s: option \"slow_dram\" is enabled by default on this card.\n",
+         XCONFIG_PROBED, vga256InfoRec.name);
+   OFLG_SET(OPTION_SLOW_DRAM, &vga256InfoRec.options);
+ }
 
 #ifdef W32_ACCEL_SUPPORT
     if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
@@ -1290,12 +1306,14 @@ ET4000Restore(restore)
        outb(ET6Kbase+0x69, restore->gendac.PLL_f2_M);
        outb(ET6Kbase+0x69, restore->gendac.PLL_f2_N);
        /* set MClk values if needed, but don't touch them if not needed */
+#ifdef ALLOW_ET6K_FAST_DRAM
        if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
        {
          outb(ET6Kbase+0x67, 10);
          outb(ET6Kbase+0x69, restore->ET6KMclkM);
          outb(ET6Kbase+0x69, restore->ET6KMclkN);
        }
+#endif
        /* restore old index register */
        outb(ET6Kbase+0x67, i);
     }

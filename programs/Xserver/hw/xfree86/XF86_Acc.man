@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.56 1996/10/19 15:14:15 dawes Exp $ 
-.TH XF86_Accel 1 "Version 3.2"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.57 1996/12/23 06:30:32 dawes Exp $ 
+.TH XF86_Accel 1 "Version 3.2A"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
 UNIX on x86 and Alpha platforms with an S3, Mach8, Mach32, Mach64, P9000, AGX,

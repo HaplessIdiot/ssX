@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.21 1997/01/18 06:56:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.22 1997/01/19 12:51:10 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -1690,28 +1690,36 @@ DisplayModePtr mode;
 static void MGADisplayPowerManagementSet(PowerManagementMode)
 int PowerManagementMode;
 {
-	unsigned char crtcext1;
+	unsigned char seq1, crtcext1;
 	if (!xf86VTSema) return;
-	outb(0x3DE, 0x01);
-	crtcext1 = inb(0x3DF) & ~0x30;
 	switch (PowerManagementMode)
 	{
 	case DPMSModeOn:
-	    /* HSync: On, VSync: On */
+	    /* Screen: On; HSync: On, VSync: On */
+	    seq1 = 0x00;
+	    crtcext1 = 0x00;
 	    break;
 	case DPMSModeStandby:
-	    /* HSync: Off, VSync: On */
-	    crtcext1 |= 0x10;
+	    /* Screen: Off; HSync: Off, VSync: On */
+	    seq1 = 0x20;
+	    crtcext1 = 0x10;
 	    break;
 	case DPMSModeSuspend:
-	    /* HSync: On, VSync: Off */
-	    crtcext1 |= 0x20;
+	    /* Screen: Off; HSync: On, VSync: Off */
+	    seq1 = 0x20;
+	    crtcext1 = 0x20;
 	    break;
 	case DPMSModeOff:
-	    /* HSync: Off, VSync: Off */
-	    crtcext1 |= 0x30;
+	    /* Screen: Off; HSync: Off, VSync: Off */
+	    seq1 = 0x20;
+	    crtcext1 = 0x30;
 	    break;
 	}
+	outb(0x3C4, 0x01);	/* Select SEQ1 */
+	seq1 |= inb(0x3C5) & ~0x20;
+	outb(0x3C5, seq1);
+	outb(0x3DE, 0x01);	/* Select CRTCEXT1 */
+	crtcext1 |= inb(0x3DF) & ~0x30;
 	outb(0x3DF, crtcext1);
 }
 #endif

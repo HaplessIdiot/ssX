@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.6 1997/01/14 22:22:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.7 1997/01/18 06:57:22 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -49,8 +49,6 @@
  */
 int xf86PixmapIndex;
 #endif
-
-extern Bool xf86Resetting;
 
 #define STIPPLE_COLOR_EXPANSION
 
@@ -152,7 +150,7 @@ xf86InitializeAcceleration(pScreen)
         ErrorF("%s %s: XAA: No acceleration primitives defined.\n",
             XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
 
-    if (xf86Resetting)
+    if (serverGeneration != 1)
         goto do_not_touch_xf86AccelInfoRec;
 
     /*
@@ -271,6 +269,8 @@ xf86InitializeAcceleration(pScreen)
                     xf86FillRectStippledCPUToScreenColorExpand;
                 xf86GCInfoRec.PolyFillRectOpaqueStippledFlags =
                     xf86AccelInfoRec.ColorExpandFlags;
+                xf86GCInfoRec.SecondaryPolyFillRectOpaqueStippledFlags =
+                    xf86AccelInfoRec.ColorExpandFlags;
                 if (xf86Verbose)
                     ErrorF("stipple, ");
             }
@@ -285,6 +285,8 @@ xf86InitializeAcceleration(pScreen)
             xf86AccelInfoRec.FillRectStippled =
                 xf86FillRectStippledCPUToScreenColorExpand;
             xf86GCInfoRec.PolyFillRectStippledFlags =
+                xf86AccelInfoRec.ColorExpandFlags;
+            xf86GCInfoRec.SecondaryPolyFillRectStippledFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
         }
 #endif

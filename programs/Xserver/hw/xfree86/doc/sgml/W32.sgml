@@ -16,7 +16,9 @@ Koen Gadeyne <it>&lt;koen.gadeyne@barco.com&gt;</it>
 <tt>XF86_W32</tt> gets phased out, now that the SVGA server with XAA
 acceleration is at least as fast as the W32 server but supports more cards
 and for some even higher color depths. For details about using the
-<tt>XF86_SVGA</tt> with W32 cards, look below.
+<tt>XF86_SVGA</tt> with W32 cards, look below. Note that currently not all
+accelerated cards that are supported by XF86_W32 are supported by XF86_SVGA
+at this moment (only ET6000 and ET4000W32p to be exact).
 
 <!-- so this will become obsolete at some point -->
 <tt>XF86_W32</tt> is basically <tt>XF86_SVGA</tt> with the drawing code
@@ -25,7 +27,7 @@ modified for the ET4000/W32 series.  Even
 though it accepts the same keywords as <tt>XF86_SVGA</tt>,
 those not applicable to the ET4000/W32 series are silently ignored;
 e.g., the keyword "SpeedUp" is a no-op.
-The server currently supports the w32, w32i, and w32p chips.  For
+The server currently supports the w32, w32i, w32p and et6000 chips.  For
 a complete list, see the sign-on message printed by <tt>XF86_W32</tt>.
 The server only supports 256 colors.
 
@@ -62,6 +64,10 @@ If you have problems with the server.  Try the following:
 <item> Cold-boot your machine.  Do not run anything that messes with the
     video hardware, including other X servers, before running
     <tt>XF86_W32</tt>.	
+<item> In case of an ET6000 card, try specifying chipset "et6000" 
+    in the Device Section. The card normally autoprobes from the PCI bus,
+    but on some systems, another on-board VGA card, although disabled, may
+    cause the ET6000 server to want to use the other card.
 <item>
      Try XF86_SVGA.  If it works, put the following in your XF86Config:
 
@@ -71,8 +77,9 @@ Ramdac "generic"
 
 </itemize>
 Note that the built-in power saver (for a "green" monitor) has not been
-tested.  Also do not expect it to work on a board without a w32p_rev_c or
-later chip.
+tested. Also do not expect it to work on a board without a w32p_rev_c or
+later chip. This option is currently disabled completely, because it causes
+video memory corruption.
 
 <sect> Using XF86_W32 on a board with an ICS5341 GENDAC <p>
 Even though the GENDAC provides a set of standard clocks that can be found
@@ -194,7 +201,7 @@ listed below:
 <!-- moved author name to title page. -->
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.12 1996/12/23 06:46:19 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.13 1997/01/18 09:10:47 dawes Exp $ 
 
 
 

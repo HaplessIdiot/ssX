@@ -61,6 +61,23 @@ back-trace ('backtrace').
 
 Change Log:
 
+214. Add FullPlanemask field to xf86AccelInfoRec, and use it for planemask
+     checks.
+213. Use GC alu instead of cfb reduced "rrop" when checking raster-op
+     restrictions.
+212. Add secondary restriction flag hack for stippled rectangles to
+     correctly handle different restrictions for pixmap cache and color
+     expansion stipple acceleration.
+211. Move macros for graphics operations restriction checks to from
+     xf86gcmisc.c to xf86local.h.
+210. Fix the check for server resets in xf86initac.c and xf86scrin.c (use
+     serverGeneration instead of xf86Resetting).
+
+XFree86 3.2u
+209. Fix monochrome pattern stored in video memory with PROGRAMMED_ORIGIN
+     and SCREEN_ORIGIN (Corin Anderson).
+
+XFree86 3.2s
 208. Respect CapStyle when using TwoPointLine for a non-clipped segment.
 207. Fix line clipping when hardware clipping is used with multiple
      clipping regions (Xavier Ducoin).

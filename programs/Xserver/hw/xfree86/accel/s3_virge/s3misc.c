@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.12 1997/01/18 06:55:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.13 1997/01/19 12:50:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -602,32 +602,42 @@ s3DPMSSet(PowerManagementMode)
     int PowerManagementMode;
 {
 #ifdef DPMSExtension
-  unsigned char extsync;
+  unsigned char seq1, extsync;
   if (!xf86VTSema) return;
-  outw(0x3C4, 0x0608);		/* unlock SRD */
-  outb(0x3C4, 0x0D);
-  extsync = inb(0x3C5) & ~0x30;
   switch (PowerManagementMode)
     {
     case DPMSModeOn:
-      /* HSync: On, VSync: On */
+      /* Screen: On; HSync: On, VSync: On */
+      seq1 = 0x00;
+      extsync = 0x00;
       break;
     case DPMSModeStandby:
-      /* HSync: Off, VSync: On */
-      extsync |= 0x10;
+      /* Screen: Off; HSync: Off, VSync: On */
+      seq1 = 0x20;
+      extsync = 0x10;
       break;
     case DPMSModeSuspend:
-      /* HSync: On, VSync: Off */
-      extsync |= 0x20;
+      /* Screen: Off; HSync: On, VSync: Off */
+      seq1 = 0x20;
+      extsync = 0x40;
       break;
     case DPMSModeOff:
-      /* HSync: Off, VSync: Off */
-      extsync |= 0x30;
+      /* Screen: Off; HSync: Off, VSync: Off */
+      seq1 = 0x20;
+      extsync = 0x50;
       break;
     }
+  outw(0x3C4, 0x0608);	/* Unlock SRD */
+  outw(0x3C4, 0x0100);	/* Synchronous Reset */
+  outb(0x3C4, 0x01);	/* Select SEQ1 */
+  seq1 |= inb(0x3C5) & ~0x20;
+  outb(0x3C5, seq1);
+  outb(0x3C4, 0x0D);	/* Select SEQD */
+  extsync |= inb(0x3C5) & ~0xF0;
   usleep(10000);
-  outw(0x3C4, (extsync << 8) | 0x0D);
-  outw(0x3C4, 0x0008);		/* lock SRD */
+  outb(0x3C5, extsync);
+  outw(0x3C4, 0x0300);	/* End Reset */
+  outw(0x3C4, 0x0008);	/* Lock SRD */
 #endif
 }
 
@@ -686,7 +696,7 @@ s3AdjustFrame(int x, int y)
    origBase = (y * s3DisplayWidth + x) * s3Bpp;
    Base = (origBase >> 2) & ~1;
 
-    /* STREAMS handler - KJB */
+    /* STREAMS handler */
     if ( s3InfoRec.bitsPerPixel == 32 || 
          s3InfoRec.bitsPerPixel == 24 ) { 
       if ( s3MmioMem != NULL ) {
@@ -706,20 +716,19 @@ s3AdjustFrame(int x, int y)
 		((y * s3DisplayWidth + (x & ~3)) * s3Bpp) /* & ~3 */;
          #endif
          }
-      } else {
-
-   outb(vgaCRIndex, 0x31);
-   outb(vgaCRReg, ((Base & 0x030000) >> 12) | s3Port31);
-   s3Port51 &= ~0x03;
-   s3Port51 |= ((Base & 0x0c0000) >> 18);
-   outb(vgaCRIndex, 0x51);
-   /* Don't override current bank selection */
-   tmp = (inb(vgaCRReg) & ~0x03) | (s3Port51 & 0x03);
-   outb(vgaCRReg, tmp);
-
-   outw(vgaCRIndex, (Base & 0x00FF00) | 0x0C);
-   outw(vgaCRIndex, ((Base & 0x00FF) << 8) | 0x0D);
-     } /* if!(24bpp) */
+    } else {
+	   outb(vgaCRIndex, 0x31);
+	   outb(vgaCRReg, ((Base & 0x030000) >> 12) | s3Port31);
+	   s3Port51 &= ~0x03;
+	   s3Port51 |= ((Base & 0x0c0000) >> 18);
+	   outb(vgaCRIndex, 0x51);
+	   /* Don't override current bank selection */
+	   tmp = (inb(vgaCRReg) & ~0x03) | (s3Port51 & 0x03);
+	   outb(vgaCRReg, tmp);
+	
+	   outw(vgaCRIndex, (Base & 0x00FF00) | 0x0C);
+	   outw(vgaCRIndex, ((Base & 0x00FF) << 8) | 0x0D);
+    } /* if!(24bpp) */
 
 #ifdef XFreeXDGA
    if (!(s3InfoRec.directMode & XF86DGADirectMouse)) {

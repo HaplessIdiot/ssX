@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.4 1997/01/14 22:21:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.5 1997/01/19 12:51:02 dawes Exp $ */
 
 
 /*
@@ -291,9 +291,9 @@ void TsengAccelInit() {
      {
        case 1: powerPerPixel = 0;
                break;
-       case 2: powerPerPixel = 1;
+       case 2:
+       case 3: powerPerPixel = 1;
                break;
-       case 3:
        case 4: powerPerPixel = 2;
      }
      
@@ -349,16 +349,36 @@ static __inline__ void SET_FG_COLOR(int color)
 {
     *ACL_SOURCE_ADDRESS  = Fg;
     *ACL_SOURCE_Y_OFFSET = 3;
-    *ACL_SOURCE_WRAP     = 0x02;
-    *MemFg               = COLOR_REPLICATE_DWORD(color);
+    color = COLOR_REPLICATE_DWORD(color);
+    if (et4000_type > TYPE_ET4000W32I)
+    {
+      *ACL_SOURCE_WRAP   = 0x02;
+      *MemFg             = color;
+    }
+    else
+    {
+      *ACL_SOURCE_WRAP    = 0x12;
+      *MemFg             = color;
+      *(MemFg + 4)       = color;
+    }
 }
 
 static __inline__ void SET_BG_COLOR(int color)
 {
     *ACL_PATTERN_ADDRESS  = Pat;
     *ACL_PATTERN_Y_OFFSET = 3;
-    *ACL_PATTERN_WRAP     = 0x02;
-    *MemPat               = COLOR_REPLICATE_DWORD(color);
+    color = COLOR_REPLICATE_DWORD(color);
+    if (et4000_type > TYPE_ET4000W32I)
+    {
+      *ACL_PATTERN_WRAP   = 0x02;
+      *MemPat             = color;
+    }
+    else
+    {
+      *ACL_PATTERN_WRAP   = 0x12;
+      *MemPat             = color;
+      *(MemPat + 4)       = color;
+    }
 }
 
 /*
@@ -372,10 +392,24 @@ static __inline__ void SET_FG_BG_COLOR(int fgcolor, int bgcolor)
     *ACL_PATTERN_ADDRESS  = Pat;
     *ACL_SOURCE_ADDRESS   = Fg;
     *((LongP) ACL_PATTERN_Y_OFFSET) = 0x00030003;
-    *ACL_SOURCE_WRAP      = 0x02;
-    *ACL_PATTERN_WRAP     = 0x02;
-    *MemFg                = COLOR_REPLICATE_DWORD(fgcolor);
-    *MemPat               = COLOR_REPLICATE_DWORD(bgcolor);
+    fgcolor = COLOR_REPLICATE_DWORD(fgcolor);
+    bgcolor = COLOR_REPLICATE_DWORD(bgcolor);
+    if (et4000_type > TYPE_ET4000W32I)
+    {
+      *ACL_SOURCE_WRAP    = 0x02;
+      *ACL_PATTERN_WRAP   = 0x02;
+      *MemFg              = fgcolor;
+      *MemPat             = bgcolor;
+    }
+    else
+    {
+      *ACL_SOURCE_WRAP    = 0x12;
+      *ACL_PATTERN_WRAP   = 0x12;
+      *MemFg              = fgcolor;
+      *(MemFg+4)          = fgcolor;
+      *MemPat             = bgcolor;
+      *(MemPat+4)         = bgcolor;
+    }
 }
 
 #define SET_FUNCTION_BLT \
@@ -410,7 +444,7 @@ static __inline__ MULBPP(int x)
     if (bytesperpixel != 3)
       return result;
     else
-      return result + 3;
+      return result + x;
 }
 #endif
 
@@ -834,7 +868,11 @@ void TsengSubsequentScanlineScreenToScreenColorExpand(srcaddr)
      * register should not do anything at all here (only one line done at a
      * time, so no Y_OFFSET needed). Setting the offset to 0x0FFF seems to
      * remedy this situation most of the time (still an occasional error
-     * here and there). This _could_ be a bug in the ET6000.
+     * here and there). This _could_ be a bug, but then it would have to be
+     * in both in the ET6000 _and_ the ET4000W32p.
+     *
+     * The more delay added after starting a color-expansion operation, the
+     * less font corruption we get. But nothing really solves it.
      */
     
     *ACL_MIX_ADDRESS = srcaddr;
@@ -870,7 +908,7 @@ void TsengSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
 
   SET_FG_ROP(rop);
   SET_BG_ROP_TR(rop, bg);
-      
+
   SET_XYDIR(0);
 
   SET_FG_BG_COLOR(fg,bg);

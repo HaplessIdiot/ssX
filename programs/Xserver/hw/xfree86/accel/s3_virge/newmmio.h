@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/newmmio.h,v 3.4 1996/12/09 11:51:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/newmmio.h,v 3.5 1996/12/27 07:02:15 dawes Exp $ */
 /***************************************************************************
  *
  * typedefs and macros for MMIO mode, S3 ViRGE
@@ -82,7 +82,6 @@ typedef struct  {
 } streams_proc_regs;
 
 typedef struct {
-/*   int32  second_window_size; */
    int32  fifo_control;
    int32  miu_control;
    int32  streams_timeout;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.5 1997/01/14 22:22:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.6 1997/01/18 06:57:32 dawes Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -83,6 +83,7 @@ typedef struct {
 #endif
     );
     int PolyFillRectStippledFlags;
+    int SecondaryPolyFillRectStippledFlags;
     void (*PolyFillRectOpaqueStippled)(
 #if NeedNestedPrototypes
 	DrawablePtr	pDrawable,
@@ -92,6 +93,7 @@ typedef struct {
 #endif
     );
     int PolyFillRectOpaqueStippledFlags;
+    int SecondaryPolyFillRectOpaqueStippledFlags;
     void (*PolyFillArcSolid)(
 #if NeedNestedPrototypes
 	DrawablePtr	pDrawable,
@@ -740,6 +742,7 @@ typedef struct {
     unsigned char *FramebufferBase;
     int FramebufferWidth;
     int BitsPerPixel;
+    unsigned int FullPlanemask;
     int ScratchBufferAddr;	/* Framebuffer address in byte units. */
     unsigned char *ScratchBufferBase;	/* Framebuffer address pointer. */
     int ScratchBufferSize;

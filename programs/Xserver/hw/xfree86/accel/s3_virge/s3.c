@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.12 1997/01/14 22:17:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.13 1997/01/18 06:55:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -115,7 +115,7 @@ ScrnInfoRec s3InfoRec =
    NULL,			/* char           *clockprog */
    -1,			        /* int textclock */
    FALSE,			/* Bool           bankedMono */
-   "S3",			/* char           *name */
+   "S3V",			/* char           *name */
    {0, },			/* xrgb blackColour */
    {0, },			/* xrgb whiteColour */
    s3ValidTokens,		/* int *validTokens */
@@ -828,10 +828,7 @@ s3Probe()
       if (defaultColorVisualClass < 0)
 	 defaultColorVisualClass = s3InfoRec.defaultVisual;
       break;
-#if 1
    case 24:
-#if 1
-/* #ifdef NOT_YET */
       s3InfoRec.depth = 24;
       s3InfoRec.bitsPerPixel = 32; /* Use packed 24 bpp (RGB) but this
 				      should be transparant for clients */
@@ -844,10 +841,7 @@ s3Probe()
       if (defaultColorVisualClass < 0)
 	 defaultColorVisualClass = s3InfoRec.defaultVisual;
       break;
-#else
-      xf86bpp = 32;
-      /* FALLTHROUGH */
-#endif
+   #if 0
    case 32:
       s3InfoRec.depth = 24;
       s3InfoRec.bitsPerPixel = 32; /* Use sparse 24 bpp (RGBX) */
@@ -859,10 +853,10 @@ s3Probe()
       if (defaultColorVisualClass < 0)
 	 defaultColorVisualClass = s3InfoRec.defaultVisual;
       break;
-#endif
+   #endif
    default:
       ErrorF(
-	"Invalid value for bpp.  Valid values are 8, 15, 16"
+	"Invalid value for bpp.  Valid values are 8, 15, 16, and 24"
 	/*", 24 and 32"*/
 	".\n");
       xf86DisableIOPorts(s3InfoRec.scrnIndex);

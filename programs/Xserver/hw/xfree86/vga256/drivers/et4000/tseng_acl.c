@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.c,v 3.4 1997/01/14 22:21:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.c,v 3.5 1997/01/19 12:51:05 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -301,7 +301,7 @@ void tseng_init_acl()
     if (et4000_type>=TYPE_ET6000)
     {
       *ACL_STEPPING_INHIBIT = 0x0; /* let all maps (Src, Dst, Mix, Pat) step */
-      *ACL_6K_CONFIG = 0x0;        /* maximum performance -- what did you think? */
+      *ACL_6K_CONFIG = 0x00;        /* maximum performance -- what did you think? */
       *ACL_POWER_CONTROL = 0x01;   /* conserve power when ACL is idle */
     }
     else /* W32i/W32p */
@@ -316,6 +316,11 @@ void tseng_init_acl()
         *ACL_X_POSITION = 0;
         *ACL_Y_POSITION = 0;
         *ACL_OPERATION_STATE = 0x0;
+        /* if we ever use CPU-to-screen pixmap uploading on W32I or W32,
+         * this will need to be made dynamic (i.e. moved to Setup()
+         * functions)
+         */
+        *ACL_VIRTUAL_BUS_SIZE = 0x00;
     }
     else /* w32p and ET6000 */
     { 

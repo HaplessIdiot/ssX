@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.13 1996/12/27 07:02:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.14 1997/01/18 06:55:15 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -43,7 +43,7 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
-void s3InitSTREAMS( void ); /* KJB */
+void s3InitSTREAMS( void );
 
 typedef struct {
    vgaHWRec std;                /* good old IBM VGA */
@@ -118,6 +118,24 @@ s3CleanUp(void)
 
    outb(vgaCRIndex, 0x39);
    outb(vgaCRReg, 0xa5);
+
+   #if 1			   
+   			/* This seems to help, but maybe a wait for */
+			/* VSYNC would be better than WaitIdleEmpty(). */
+   				/* STREAMS disable code, for 24 & 32 Bpp */
+   if ( ( s3InfoRec.bitsPerPixel == 32 || 
+          s3InfoRec.bitsPerPixel == 24 ) &&
+          s3MmioMem != NULL ) {
+ 				/* Reset fifo thresh's and ratio. */
+       ((mmtr)s3MmioMem)->memport_regs.regs.fifo_control = 0xC000;
+       
+       outb(vgaCRIndex, 0x67);
+       tmp = inb(vgaCRReg);
+       WaitIdleEmpty();
+ 				/* Disable STREAMS processor */
+       outb( vgaCRReg, tmp & ~0x0C );
+   }	
+   #endif
 
    vgaProtect(TRUE);
 
@@ -375,7 +393,9 @@ s3Init(mode)
    else
       pixMuxShift = 0;
 
-   if (!mode->CrtcHAdjusted) {
+   if (!mode->CrtcHAdjusted) {	 
+      #if 0
+      		/* Removed for STREAMS */
       if (s3Bpp == 3) {
 	 mode->CrtcHTotal     = (mode->CrtcHTotal     * 3) / 4;
 	 mode->CrtcHDisplay   = (mode->CrtcHDisplay   * 3) / 4;
@@ -383,6 +403,7 @@ s3Init(mode)
 	 mode->CrtcHSyncEnd   = (mode->CrtcHSyncEnd   * 3) / 4;
 	 mode->CrtcHSkew      = (mode->CrtcHSkew      * 3) / 4;
       }
+      #endif
       if (pixMuxShift > 0) {
 	 /* now divide the horizontal timing parameters as required */
 	 mode->CrtcHTotal     >>= pixMuxShift;
@@ -432,6 +453,8 @@ s3Init(mode)
 	    changed = TRUE;
 	 }
       }
+      #if 0
+      		/* Removed for STREAMS */
       if (s3Bpp == 3) {
 	 /* for packed 24bpp CrtcHTotal must be multiple of 3*8... */
 	 if ((mode->CrtcHTotal >> 3) % 3 != 0) {
@@ -442,6 +465,7 @@ s3Init(mode)
 	    p24_fact = 3;
 	 }
       }
+      #endif
       if (changed) {
 	 ErrorF("%s %s: mode line has to be modified ...\n",
 		XCONFIG_PROBED, s3InfoRec.name);
@@ -460,7 +484,28 @@ s3Init(mode)
    }
    if (!vgaHWInit(mode, sizeof(vgaS3Rec)))
       return(FALSE);
-
+   
+      
+   #if 1
+   			/* This seems to help, but maybe a wait for */
+			/* VSYNC would be better than WaitIdleEmpty(). */
+   				/* STREAMS disable code, for 24 & 32 Bpp */
+				/* Disable the STREAMS processor BEFORE */
+				/* any mode switching... */
+   if ( ( s3InfoRec.bitsPerPixel == 32 || 
+          s3InfoRec.bitsPerPixel == 24 ) &&
+          s3MmioMem != NULL ) {
+ 				/* Reset fifo thresh's and ratio. */
+       ((mmtr)s3MmioMem)->memport_regs.regs.fifo_control = 0xC000;
+       
+       outb(vgaCRIndex, 0x67);
+       tmp = inb(vgaCRReg);	   
+       WaitIdleEmpty(); /*cep*/
+ 				/* Disable STREAMS processor */
+       outb( vgaCRReg, tmp & ~0x0C );
+   }	
+   #endif
+      
    new->MiscOutReg |= 0x0C;		/* enable CR42 clock selection */
    new->Sequencer[0] = 0x03;		/* XXXX shouldn't need this */
    new->CRTC[19] = s3BppDisplayWidth >> 3;
@@ -474,8 +519,8 @@ s3Init(mode)
       new->MiscOutReg &= 0xFE;
    else
       new->MiscOutReg |= 0x01;
-
-
+     
+      
    /* Don't change the clock bits when using an external clock program */
 
    if (new->NoClock < 0) {
@@ -950,7 +995,7 @@ s3Init(mode)
       outb(vgaCRReg, tmp);
    }
 
-   s3InitSTREAMS(); /* KJB */
+   s3InitSTREAMS();
 
    if (s3MmioMem != NULL)
       s3AdjustFrame(s3InfoRec.frameX0, s3InfoRec.frameY0);
@@ -1057,16 +1102,11 @@ s3InitSTREAMS()
 
    unsigned char tmp;
 
-    /* KJB - inserted STREAMS processor enable. */
-
+    				/* Only for 24 or 32 bpp!  Also needs */
+				/* s3MmioMem to be defined. */
     if ( ( s3InfoRec.bitsPerPixel == 32 || 
            s3InfoRec.bitsPerPixel == 24 ) &&
            s3MmioMem != NULL ) {
-       /* kjbMem = s3InfoRec.MemBase; */
-       #if 0
-				/* Set the STREAM source to the frame. */
-         WinSize = (s3InfoRec.frameX1 - s3InfoRec.frameX0) << 16 | (s3InfoRec.frameY1 - s3InfoRec.frameY0 + 1);
-       #endif
  
        outb(vgaCRIndex, 0x67);
        tmp = inb(vgaCRReg);
@@ -1138,15 +1178,13 @@ s3InitSTREAMS()
  				/* ??? check offset */
        ((mmtr)s3MmioMem)->memport_regs.regs.fifo_control = 0x6088;
  
-       /* ((mmtr)s3MmioMem->streams_regs.regs. */
-
                                 /* STREAMS enable after? */
 				/* NO, YOU DON't want to do this! */
        /* outb( vgaCRReg, tmp | 0x0C ); */
  
        } /*if(bitsPerPix...=32)*/
  
-    /* KJB - end STREAMS processor. */
+    /* end STREAMS processor. */
  
 } /*s3InitSTREAMS()*/
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_accel.c,v 3.0 1996/11/18 13:15:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_accel.c,v 3.1 1996/12/09 11:53:50 dawes Exp $ */
 
 #include "vga256.h"
 #include "compiler.h"
@@ -21,6 +21,8 @@ void ArkSetupForScreenToScreenCopy();
 void ArkSubsequentScreenToScreenCopy();
 void ArkSetupForScanlineScreenToScreenColorExpand();
 void ArkSubsequentScanlineScreenToScreenColorExpand();
+void Ark24SetupForScanlineScreenToScreenColorExpand();
+void Ark24SubsequentScanlineScreenToScreenColorExpand();
 void ArkSetupForScreenToScreenColorExpand();
 void ArkSubsequentScreenToScreenColorExpand();
 void ArkSubsequentBresenhamLine();
@@ -35,7 +37,8 @@ static int CommandFlags;
 
 void ArkAccelInit() {
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE |
-        COP_FRAMEBUFFER_CONCURRENCY | HARDWARE_PATTERN_TRANSPARENCY;
+        COP_FRAMEBUFFER_CONCURRENCY | HARDWARE_PATTERN_TRANSPARENCY |
+        HARDWARE_PATTERN_MOD_64_OFFSET;
     xf86AccelInfoRec.Sync = ArkSync;
         xf86GCInfoRec.PolyFillRectSolidFlags = 0;
         xf86AccelInfoRec.SetupForScreenToScreenCopy =
@@ -65,19 +68,43 @@ void ArkAccelInit() {
         xf86AccelInfoRec.SubsequentFillRectSolid = Ark24SubsequentFillRectSolid;
         break;
     }
-    if (vga256InfoRec.bitsPerPixel != 24) {
-        xf86AccelInfoRec.ColorExpandFlags =
-            VIDEO_SOURCE_GRANULARITY_PIXEL | BIT_ORDER_IN_BYTE_LSBFIRST;
+    xf86AccelInfoRec.ColorExpandFlags =
+        VIDEO_SOURCE_GRANULARITY_PIXEL | BIT_ORDER_IN_BYTE_LSBFIRST;
+    if (vga256InfoRec.bitsPerPixel == 24) {
+        /*
+         * There is no 24bpp acceleration, but we can take advantage of
+         * the "24bpp in 8bpp mode" color expansion support in XAA.
+         *
+         * However, this is not recommended for all purposes on a video
+         * memory bandwidth-starved configuration, since due to the
+         * indirect buffering, the video memory bandwidth used is
+         * greater than plain cfb24 framebuffer code, and this shows
+         * up with text.
+         *
+         * For stipples and bitmaps, things are different. So we
+         * disable the use color expansion for text.
+         */
+        xf86AccelInfoRec.ColorExpandFlags |=
+            TRIPLE_BITS_24BPP | RGB_EQUAL | NO_PLANEMASK;
+        xf86AccelInfoRec.Flags |= NO_TEXT_COLOR_EXPANSION;
+        xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
+            Ark24SetupForScanlineScreenToScreenColorExpand;
+        xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
+            Ark24SubsequentScanlineScreenToScreenColorExpand;
+    }
+    else {
         xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
             ArkSetupForScanlineScreenToScreenColorExpand;
         xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
             ArkSubsequentScanlineScreenToScreenColorExpand;
+    }
+    xf86AccelInfoRec.ScratchBufferAddr = arkCOPBufferSpaceAddr;
+    xf86AccelInfoRec.ScratchBufferSize = arkCOPBufferSpaceSize;
+    if (vga256InfoRec.bitsPerPixel != 24) {
         xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
             ArkSetupForScreenToScreenColorExpand;
         xf86AccelInfoRec.SubsequentScreenToScreenColorExpand =
             ArkSubsequentScreenToScreenColorExpand;
-        xf86AccelInfoRec.ScratchBufferAddr = arkCOPBufferSpaceAddr;
-        xf86AccelInfoRec.ScratchBufferSize = arkCOPBufferSpaceSize;
         xf86AccelInfoRec.SubsequentBresenhamLine =
             ArkSubsequentBresenhamLine;
         xf86GCInfoRec.PolyLineSolidZeroWidthFlags = 0;
@@ -161,7 +188,7 @@ void Ark32SetupForFillRectSolid(color, rop, planemask)
 {
     SETFOREGROUNDCOLOR32(color);
     SETCOLORMIXSELECT(rop | (rop << 8));
-    if (planemask == 0xFFFFFFFF)
+    if ((planemask & 0xFFFFFF) == 0xFFFFFF)
         CommandFlags = DISABLEPLANEMASK;
     else {
         SETWRITEPLANEMASK(planemask);
@@ -236,7 +263,7 @@ transparency_color)
     /* Set up the planemask. */
     if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF)
     || (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF)
-    || (vga256InfoRec.bitsPerPixel == 32 && planemask == 0xFFFFFFFF)
+    || (vga256InfoRec.bitsPerPixel == 32 && (planemask & 0xFFFFFF) == 0xFFFFFF)
     || vga256InfoRec.bitsPerPixel == 24)
         CommandFlags |= DISABLEPLANEMASK;
     else
@@ -320,7 +347,7 @@ planemask)
         }
         SETCOLORMIXSELECT(rop | (rop << 8));
     }
-    mask = (1 << vga256InfoRec.bitsPerPixel) - 1;
+    mask = (1 << vga256InfoRec.depth) - 1;
     if ((planemask & mask) == mask)
         CommandFlags = DISABLEPLANEMASK;
     else {
@@ -340,6 +367,41 @@ void ArkSubsequentScanlineScreenToScreenColorExpand(srcaddr)
     SETSTENCILADDR(srcaddr);
     SETCOMMAND(SELECTBGCOLOR | SELECTFGCOLOR | STENCILBITMAP
         | DISABLECLIPPING | BITBLT | CommandFlags);
+}
+
+void Ark24SetupForScanlineScreenToScreenColorExpand(x, y, w, h, bg, fg, rop,
+planemask)
+    int x, y, w, h, bg, fg, rop;
+    unsigned int planemask;
+{
+    int destaddr;
+    unsigned int mask;
+    destaddr = (y * vga256InfoRec.displayWidth + x) * 3;
+    SETDESTADDR(destaddr);
+    SETWIDTHANDHEIGHT(w * 3, 1);
+    SETSTENCILPITCH(w * 3);
+#if 0
+    SETBITMAPCONFIG(LINEARSTENCILADDR | LINEARSOURCEADDR | 
+        LINEARDESTADDR);
+#endif
+
+    if (bg == -1) {
+        SETCOLORMIXSELECT((rop << 8) | 0x05);	/* Background = Destination */
+        SETFOREGROUNDCOLOR(fg);
+    }
+    else {
+    	SETBGANDFGCOLOR((bg & 0xFF) | (fg << 16));
+        SETCOLORMIXSELECT(rop | (rop << 8));
+    }
+    /* No planemask supported at 24bpp. */
+}
+
+void Ark24SubsequentScanlineScreenToScreenColorExpand(srcaddr)
+    int srcaddr;
+{
+    SETSTENCILADDR(srcaddr);
+    SETCOMMAND(SELECTBGCOLOR | SELECTFGCOLOR | STENCILBITMAP
+        | DISABLECLIPPING | BITBLT | DISABLEPLANEMASK);
 }
 
 void ArkSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
@@ -368,7 +430,7 @@ void ArkSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
         }
         SETCOLORMIXSELECT(rop | (rop << 8));
     }
-    mask = (1 << vga256InfoRec.bitsPerPixel) - 1;
+    mask = (1 << vga256InfoRec.depth) - 1;
     if ((planemask & mask) == mask)
         CommandFlags = DISABLEPLANEMASK;
     else {
@@ -434,7 +496,7 @@ transparency_color)
     else {
         SETCOLORMIXSELECT(rop | (rop << 8));
     }
-    mask = (1 << vga256InfoRec.bitsPerPixel) - 1;
+    mask = (1 << vga256InfoRec.depth) - 1;
     if ((planemask & mask) == mask)
         CommandFlags |= DISABLEPLANEMASK;
     else {
@@ -463,32 +525,7 @@ void ArkSubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
     SETSOURCEPITCH(vga256InfoRec.displayWidth);
 }
 
-void ArkEmulateSubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
-    int patternx, patterny;
-    int x, y, w, h;
-{
-    int destaddr, patternaddr;
-    int i,j;
-    patternaddr = patterny * vga256InfoRec.displayWidth + patternx;
-    SETSOURCEPITCH(8);
-    for (i = 0; i < h / 8; i++) {
-        for (j = 0; j < w / 8; j++)
-            ArkSubsequentScreenToScreenCopy(patternx, patterny, x + j * 8,
-                y + i * 8, 8, 8);
-        if ((w & 7) > 0)
-            ArkSubsequentScreenToScreenCopy(patternx, patterny, x + j * 8,
-                y + i * 8, w & 7, 8);
-    }
-    if ((h & 7) > 0) {
-        for (j = 0; j < w / 8; j++)
-            ArkSubsequentScreenToScreenCopy(patternx, patterny, x + j * 8,
-                y + i * 8, 8, h & 7);
-        if ((w & 7) > 0)
-            ArkSubsequentScreenToScreenCopy(patternx, patterny, x + j * 8,
-                y + i * 8, w & 7, h & 7);
-    }
-    SETSOURCEPITCH(vga256InfoRec.displayWidth);
-}
+/* This doesn't work. */
 
 void ArkSetupFor8x8PatternColorExpand(patternx, patterny, bg, fg, rop,
 planemask)
@@ -518,7 +555,7 @@ planemask)
         }
         SETCOLORMIXSELECT(rop | (rop << 8));
     }
-    mask = (1 << vga256InfoRec.bitsPerPixel) - 1;
+    mask = (1 << vga256InfoRec.depth) - 1;
     if ((planemask & mask) == mask)
         CommandFlags |= DISABLEPLANEMASK;
     else {

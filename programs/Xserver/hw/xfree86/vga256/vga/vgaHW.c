@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.48 1997/01/18 06:57:07 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.49 1997/01/19 12:51:29 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -361,29 +361,40 @@ vgaDPMSSet(PowerManagementMode)
     int PowerManagementMode;
 {
 #ifdef DPMSExtension
-    unsigned char crtc17;
-    if (!xf86VTSema) return;
-    outb(vgaIOBase + 4, 0x17);
-    crtc17 = inb(vgaIOBase + 5);
-    switch (PowerManagementMode)
-    {
-    case DPMSModeOn:
-	/* HSync: On, VSync: On */
-	crtc17 |= 0x80;
-	break;
-    case DPMSModeStandby:
-	/* HSync: Off, VSync: On -- Not Supported */
-	break;
-    case DPMSModeSuspend:
-	/* HSync: On, VSync: Off -- Not Supported */
-	break;
-    case DPMSModeOff:
-	/* HSync: Off, VSync: Off */
-	crtc17 &= ~0x80;
-	break;
-    }
-    usleep(10000);
-    outb(vgaIOBase + 5, crtc17);
+  unsigned char seq1, crtc17;
+  if (!xf86VTSema) return;
+  switch (PowerManagementMode)
+  {
+  case DPMSModeOn:
+    /* Screen: On; HSync: On, VSync: On */
+    seq1 = 0x00;
+    crtc17 = 0x80;
+    break;
+  case DPMSModeStandby:
+    /* Screen: Off; HSync: Off, VSync: On -- Not Supported */
+    seq1 = 0x20;
+    crtc17 = 0x80;
+    break;
+  case DPMSModeSuspend:
+    /* Screen: Off; HSync: On, VSync: Off -- Not Supported */
+    seq1 = 0x20;
+    crtc17 = 0x80;
+    break;
+  case DPMSModeOff:
+    /* Screen: Off; HSync: Off, VSync: Off */
+    seq1 = 0x20;
+    crtc17 = 0x00;
+    break;
+  }
+  outw(0x3C4, 0x0100);	/* Synchronous Reset */
+  outb(0x3C4, 0x01);	/* Select SEQ1 */
+  seq1 |= inb(0x3C5) & ~0x20;
+  outb(0x3C5, seq1);
+  outb(vgaIOBase+4, 0x17); /* Select CRTC17 */
+  crtc17 |= inb(vgaIOBase+5) & ~0x80;
+  usleep(10000);
+  outb(vgaIOBase+5, crtc17);
+  outw(0x3C4, 0x0300);	/* End Reset */
 #endif
 }
 

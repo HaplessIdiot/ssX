@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.78 1997/01/18 06:56:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.79 1997/01/19 12:50:57 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -1584,11 +1584,17 @@ cirrusProbe()
       *
       * I have no idea what the real limits should be.
       */
-     if (lcd_is_on && vgaBitsPerPixel <= 8) {
+     if (lcd_is_on && vgaBitsPerPixel <= 8 && !HAVE754X()) {
          cirrusClockLimit[cirrusChip] = 44000;
      }
 
      cirrusClockNo = cirrusNumClocks(cirrusChip);
+     if (vga256InfoRec.clocks) {
+         ErrorF("%s %s: %s: Specifying a Clocks line makes no sense "
+             "for this driver\n", XCONFIG_PROBED, vga256InfoRec.name,
+	     vga256InfoRec.chipset);
+	 vga256InfoRec.clocks = 0;
+     }
      if (!vga256InfoRec.clocks)
           if (OFLG_ISSET(OPTION_PROBE_CLKS, &vga256InfoRec.options))
 	       vgaGetClocks(cirrusClockNo, cirrusClockSelect);
@@ -1611,12 +1617,6 @@ cirrusProbe()
 	           vga256InfoRec.clocks = last_valid_clock + 1;
 	       }
 	  }
-     else {
-         ErrorF("%s %s: %s: Specifying a Clocks line makes no sense "
-             "for this driver\n", XCONFIG_PROBED, vga256InfoRec.name,
-	     vga256InfoRec.chipset);
-	 return FALSE;
-     }
 
      vga256InfoRec.bankedMono = TRUE;
 #ifdef ALLOW_OUT_OF_SPEC_CLOCKS
@@ -2244,8 +2244,8 @@ nolinear:
     /* MMIO is _not_ optional for 546X chips.  But it doesn't hurt anything
        anyway, unless you happen to have about 4GB of RAM */
     /* Register is set in init function. */
-    if ((cirrusChip == CLGD5429 && OFLG_ISSET(OPTION_MMIO,
-    &vga256InfoRec.options))
+    if (((cirrusChip == CLGD5429 || cirrusChip == CLGD7548) &&
+    OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options))
     || ((HAVEALPINE() && !(cirrusChip == CLGD7548)) &&
     !(OFLG_ISSET(OPTION_NO_MMIO, &vga256InfoRec.options)))
     || HAVE546X()) {
@@ -3691,7 +3691,7 @@ cirrusInit(mode)
           new->SR17 = inb(0x3c5);
 #ifdef CIRRUS_SUPPORT_MMIO
           /* Optionally enable Memory-Mapped I/O. */
-          if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options)) {
+          if (cirrusUseMMIO) {
      	       /* Set SR17 bit 2. */
                new->SR17 |= 0x04;
                if (cirrusChip != CLGD5434)
@@ -3730,7 +3730,7 @@ cirrusInit(mode)
 #ifdef ALLOW_8BPP_MULTIPLEXING
      if (multiplexing) {
          if (cirrusChip >= CLGD5446)
-             new->HIDDENDAC = 0xCA;
+             new->HIDDENDAC = 0xEA;
          else
              new->HIDDENDAC = 0x4A;
      }

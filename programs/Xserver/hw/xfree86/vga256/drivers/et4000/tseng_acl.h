@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.h,v 3.3 1997/01/08 20:50:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.h,v 3.4 1997/01/14 22:21:11 dawes Exp $ */
 
 #ifndef _TSENG_ACL_H
 #define _TSENG_ACL_H
@@ -149,9 +149,12 @@ extern LongP CPU2ACLBase;
   {while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x4);}
 
 #define FLUSH_ACL \
+  if (et4000_type > TYPE_ET4000W32I) \
+  { \
     *ACL_SUSPEND_TERMINATE = 0x00; \
     *ACL_SUSPEND_TERMINATE = 0x02; \
-    *ACL_SUSPEND_TERMINATE = 0x00;
+    *ACL_SUSPEND_TERMINATE = 0x00; \
+  }
 
 
 /***********************************************************************/

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.2 1997/01/12 10:48:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.3 1997/01/18 06:57:17 dawes Exp $ */
 
 
 #include "windowstr.h"
@@ -13,7 +13,9 @@ xf86GCInfoRecType xf86GCInfoRec = {
     NULL, 0,	/* PolyFillRectSolid() */
     NULL, 0,	/* PolyFillRectTiled() */
     NULL, 0,	/* PolyFillRectStippled() */
+    0,		/* SecondaryPolyFillRectStippledFlags */
     NULL, 0,	/* PolyFillRectOpaqueStippled() */
+    0,		/* SecondaryPolyFillRectOpaqueStippledFlags */
     NULL, 0,	/* PolyFillArcSolid() */
     NULL, 0,	/* FillPolygonSolid() */
     NULL, 0,	/* PolyRectangleSolidZeroWidth() */
@@ -87,6 +89,7 @@ xf86AccelInfoRecType xf86AccelInfoRec = {
     NULL,	/* FramebufferBase */
     0,		/* FramebufferWidth */
     0,		/* BitsPerPixel */
+    0xFF,	/* FullPlanemask */
     0,		/* ScratchBufferAddr */
     NULL,	/* ScratchBufferBase */
     0,		/* ScratchBufferSize */

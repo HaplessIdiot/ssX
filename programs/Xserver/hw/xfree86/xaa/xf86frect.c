@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.8 1997/01/18 06:57:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.9 1997/01/19 12:51:34 dawes Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.8 1997/01/18 06:57:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.9 1997/01/19 12:51:34 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -304,7 +304,7 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
             BoxFill = xf86FillRectTileCached;
         }
         else
-            if (xf86AccelInfoRec.FillRectStippled)
+            if (xf86AccelInfoRec.FillRectStippled &&
                 /*
                  * There might be a problem here. The restriction
                  * flags for entering this function come from
@@ -312,7 +312,15 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
                  * cache, other restriction flags (such as those
                  * defined for color expansion) should have been
                  * checked, but have not.
+                 * This has been temporarily solved by a secondary flag,
+                 * which indicates the restrictions for color expansion
+                 * acceleration of stipples, and is explicitly checked
+                 * here.
                  */
+            CHECKTRANSPARENCYROP(
+                xf86GCInfoRec.SecondaryPolyFillRectStippledFlags) &&
+            CHECKRGBEQUAL(xf86GCInfoRec.SecondaryPolyFillRectStippledFlags) &&
+            CHECKPLANEMASK(xf86GCInfoRec.SecondaryPolyFillRectStippledFlags))
                 BoxFill = xf86AccelInfoRec.FillRectStippled;
             else
                 if (xf86AccelInfoRec.FillRectStippledFallBack) {
@@ -332,7 +340,12 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
             BoxFill = xf86FillRectTileCached;
         }
         else
-            if (xf86AccelInfoRec.FillRectOpaqueStippled)
+            if (xf86AccelInfoRec.FillRectOpaqueStippled &&
+            CHECKROP(xf86GCInfoRec.SecondaryPolyFillRectOpaqueStippledFlags) &&
+            CHECKRGBEQUALBOTH(
+                xf86GCInfoRec.SecondaryPolyFillRectOpaqueStippledFlags) &&
+            CHECKPLANEMASK(
+                xf86GCInfoRec.SecondaryPolyFillRectOpaqueStippledFlags))
                 BoxFill = xf86AccelInfoRec.FillRectOpaqueStippled;
             else
                 if (xf86AccelInfoRec.FillRectOpaqueStippledFallBack) {
