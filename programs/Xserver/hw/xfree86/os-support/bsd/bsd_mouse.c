@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.35 2005/02/09 23:02:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.36 2005/02/09 23:50:06 dawes Exp $ */
 
 /*
  * Copyright (c) 1999-2005 by The XFree86 Project, Inc.
@@ -313,6 +313,7 @@ MousedRunning(void)
 		if (fscanf(f, "%u", &pid) == 1 && pid > 0) {
 		    if (kill(pid, 0) == 0) {
 			fclose(f);
+			closedir(d);
 			return TRUE;
 		    }
 		}
@@ -320,6 +321,7 @@ MousedRunning(void)
 	    }
 	}
     }
+    closedir(d);
     return FALSE;
 }
 
