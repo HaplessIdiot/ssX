@@ -1,13 +1,13 @@
 //
 // Extra modes to include as default modes in the X server.
 //
-// $XFree86: xc/programs/Xserver/hw/xfree86/etc/extramodes,v 1.1 2001/02/15 18:20:34 dawes Exp $
+// $XFree86: xc/programs/Xserver/hw/xfree86/etc/extramodes,v 1.2 2001/08/18 17:04:27 alanh Exp $
 //
 
-# 1400x1050 @ 60Hz (VESA GFT) hsync: 65.5kHz
+# 1400x1050 @ 60Hz (VESA GTF) hsync: 65.5kHz
 ModeLine "1400x1050" 122.0 1400 1488 1640 1880   1050 1052 1064 1082 +hsync +vsync
 
-# 1400x1050 @ 75Hz (VESA GFT) hsync: 82.2kHz
+# 1400x1050 @ 75Hz (VESA GTF) hsync: 82.2kHz
 ModeLine "1400x1050" 155.8 1400 1464 1784 1912   1050 1052 1064 1090 +hsync +vsync
 
 # 1600x1024 @ 60Hz (SGI 1600SW) hsync: 64.0kHz
