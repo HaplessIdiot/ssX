@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.8 2001/04/16 06:51:48 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.9 2001/04/18 20:28:52 torrey Exp $
 
 #include <Server.tmpl>
 
@@ -28,9 +28,9 @@ CUSTOMVERSION = XFree86CustomVersion
 CUSTOMVERDEF =  -DXF86_CUSTOM_VERSION='$(CUSTOMVERSION)'
 #endif
 
-DEFINES = $(CUSTOMVERDEF) -DXBINDIR=$(DESTDIR)$(BINDIR) -DXINITDIR=$(XINITDIR)
+DEFINES = $(CUSTOMVERDEF) -DXBINDIR=$(BINDIR) -DXINITDIR=$(XINITDIR)
 #if NothingOutsideProjectRoot
-XDARWINROOT = $(DESTDIR)$(BINDIR)
+XDARWINROOT = $(BINDIR)
 #else
 XDARWINROOT = /Applications
 #endif
@@ -43,7 +43,7 @@ AllTarget(quartzStartup.o)
 AllTarget(XDarwinStartup)
 NormalProgramTarget(XDarwinStartup,XDarwinStartup.o,NullParameter, \
 	NullParameter,NullParameter)
-InstallProgram(XDarwinStartup,$(DESTDIR)$(BINDIR))
+InstallProgram(XDarwinStartup,$(BINDIR))
 install::
 	-(cd $(DESTDIR)$(BINDIR); $(RM) X; $(LN) XDarwinStartup X)
 
@@ -52,7 +52,7 @@ XDarwin:
 	pbxbuild -target XDarwin
 
 install::
-	pbxbuild install -target XDarwin DSTROOT=$(XDARWINROOT)
+	pbxbuild install -target XDarwin DSTROOT=$(DESTDIR)$(XDARWINROOT)
 
 clean::
 	pbxbuild "clean" -target XDarwin
