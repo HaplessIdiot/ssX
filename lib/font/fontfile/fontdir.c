@@ -1,5 +1,5 @@
 /* $XConsortium: fontdir.c,v 1.23 95/02/21 14:25:17 mor Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.2 1995/07/12 16:06:55 dawes Exp $ */
 
 /*
 
@@ -602,6 +602,20 @@ FontFileAddFontFile (dir, fontName, fileName)
 	      (vals.values_supplied & PIXELSIZE_MASK) != PIXELSIZE_ARRAY &&
 	      (vals.values_supplied & POINTSIZE_MASK) != POINTSIZE_ARRAY &&
 	      !(vals.values_supplied & ENHANCEMENT_SPECIFY_MASK);
+#ifdef NOSCALE_HACK
+    if (!isscale && entry.name.ndashes == 15 &&
+	!strcmp(entry.name.name + entry.name.length - 8, "-noscale"))
+    {
+      entry.name.length -= 8;
+      entry.name.name[entry.name.length] = '\0';
+      entry.name.ndashes = 14;
+      FontParseXLFDName(entry.name.name,
+			&vals, FONT_XLFD_REPLACE_NONE) &&
+      (vals.values_supplied & PIXELSIZE_MASK) != PIXELSIZE_ARRAY &&
+      (vals.values_supplied & POINTSIZE_MASK) != POINTSIZE_ARRAY &&
+      !(vals.values_supplied & ENHANCEMENT_SPECIFY_MASK);
+    }      
+#endif
     if (!isscale || (vals.values_supplied & SIZE_SPECIFY_MASK))
     {
       /* If the fontname says it is nonScalable, make sure that the
