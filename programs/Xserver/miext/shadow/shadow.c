@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.1 2000/09/03 05:07:23 keithp Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -1290,6 +1290,27 @@ GCOps shadowGCOps = {
     {NULL}		/* devPrivate */
 };
 
+static void
+shadowGetImage (DrawablePtr pDrawable,
+		int sx,
+		int sy,
+		int w,
+		int h,
+		unsigned int format,
+		unsigned long planeMask,
+		char * pdstLine)
+{
+    ScreenPtr pScreen = pDrawable->pScreen;
+    shadowScrPriv(pScreen);
+
+    if (pDrawable->type == DRAWABLE_WINDOW)
+	shadowRedisplay (pScreen);
+    unwrap (pScrPriv, pScreen, GetImage);
+    (*pScreen->GetImage) (pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+    wrap (pScrPriv, pScreen, GetImage, shadowGetImage);
+}
+
+		
 static Bool
 shadowCloseScreen (int i, ScreenPtr pScreen)
 {
@@ -1336,6 +1357,7 @@ shadowInit (ScreenPtr pScreen, ShadowUpdateProc update, ShadowWindowProc window)
     wrap (pScrPriv, pScreen, PaintWindowBorder, shadowPaintWindow);
     wrap (pScrPriv, pScreen, CopyWindow, shadowCopyWindow);
     wrap (pScrPriv, pScreen, CloseScreen, shadowCloseScreen);
+    wrap (pScrPriv, pScreen, GetImage, shadowGetImage);
 #ifdef RENDER
     wrap (pScrPriv, ps, Glyphs, shadowGlyphs);
     wrap (pScrPriv, ps, Composite, shadowComposite);

@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/miext/shadow/shadow.h,v 1.1 2000/09/03 05:07:23 keithp Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -49,6 +49,7 @@ typedef struct _shadowScrPriv {
     CopyWindowProcPtr		CopyWindow;
     CloseScreenProcPtr		CloseScreen;
     CreateGCProcPtr		CreateGC;
+    GetImageProcPtr		GetImage;
 #ifdef RENDER
     CompositeProcPtr		Composite;
     GlyphsProcPtr		Glyphs;
@@ -78,5 +79,20 @@ void
 shadowUpdatePlanar4 (ScreenPtr pScreen,
 		     PixmapPtr pShadow,
 		     RegionPtr damage);
+
+void
+shadowUpdateRotate8 (ScreenPtr pScreen,
+		     PixmapPtr pShadow,
+		     RegionPtr damage);
+
+void
+shadowUpdateRotate16 (ScreenPtr pScreen,
+		      PixmapPtr pShadow,
+		      RegionPtr damage);
+
+void
+shadowUpdateRotate32 (ScreenPtr pScreen,
+		      PixmapPtr pShadow,
+		      RegionPtr damage);
 
 #endif /* _SHADOW_H_ */
