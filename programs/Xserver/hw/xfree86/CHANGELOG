@@ -1,4 +1,6 @@
 XFree86 4.3.99.4 (xx April 2003)
+ 146. Fix infinite loop that occurs on systems whose PCI configuration space
+      doesn't advertise a host bridge (Marc La France).
  145. Workaround for broken devices that don't implement the header type field
       in their PCI configuration space (Marc La France).
  144. Portability changes for older Sun compilers (Alan Coopersmith).
@@ -16897,7 +16899,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2667 2003/04/25 16:09:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2668 2003/04/25 16:10:43 dawes Exp $
 
 
 
