@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.92 2002/07/02 20:21:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.94 2002/09/16 18:05:42 eich Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -124,9 +124,9 @@ extern unsigned short ldw_brx(volatile unsigned char *, int);
 
 # ifndef NO_INLINE
 #  ifdef __GNUC__
-#   if (defined(linux) || defined(__FreeBSD__) || defined(__NetBSD__)) && defined(__alpha__)
-#    ifdef linux
+#   if (defined(linux) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)) && defined(__alpha__)
 
+#    ifdef linux
 /* for Linux on Alpha, we use the LIBC _inx/_outx routines */
 /* note that the appropriate setup via "ioperm" needs to be done */
 /*  *before* any inx/outx is done. */
@@ -175,9 +175,11 @@ inl(unsigned short port)
 
 #    endif /* linux */
 
-#    if defined(__FreeBSD__) && !defined(DO_PROTOTYPES)
+#    if (defined(__FreeBSD__) || defined(__OpenBSD__)) \
+      && !defined(DO_PROTOTYPES)
 
-/* for FreeBSD on Alpha, we use the libio inx/outx routines */
+/* for FreeBSD and OpenBSD on Alpha, we use the libio (resp. libalpha) */
+/*  inx/outx routines */
 /* note that the appropriate setup via "ioperm" needs to be done */
 /*  *before* any inx/outx is done. */
 
@@ -188,7 +190,8 @@ extern unsigned char inb(unsigned int port);
 extern unsigned short inw(unsigned int port);
 extern unsigned int inl(unsigned int port);
 
-#    endif /* __FreeBSD__ && !DO_PROTOTYPES */
+#    endif /* (__FreeBSD__ || __OpenBSD__ ) && !DO_PROTOTYPES */
+
 
 #if defined(__NetBSD__)
 #include <machine/pio.h>
