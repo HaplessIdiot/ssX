@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.142 2001/09/15 18:31:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.143 2001/09/23 18:03:26 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -2771,7 +2771,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScrn->fbOffset = 0;
 
 #ifdef XvExtension
-    if ((pTrident->Chipset >= CYBER9397) && (!pTrident->NoAccel))
+    if (pTrident->Chipset >= CYBER9397)
 	TRIDENTInitVideo(pScreen);
 #endif
 
