@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaline.c,v 3.7 1996/12/09 11:54:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaline.c,v 3.8 1996/12/23 06:59:50 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -136,7 +136,7 @@ vga256LineSS (pDrawable, pGC, mode, npt, pptInit)
 #endif
 
     devPriv = cfbGetGCPrivate(pGC);
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 

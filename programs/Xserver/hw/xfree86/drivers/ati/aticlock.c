@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.1tsi Exp $ */
 /*
- * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -593,7 +593,7 @@ ATIClockProbe(void)
     unsigned short int Number_Of_Dividers, Number_Of_Clocks;
     int Calibration_Clock_Number, Calibration_Clock_Value;
     int Clock_Index, Specification_Clock, Clock_Map = 0;
-    pointer saved_vgaBase;
+    pointer saved_vgaBase = NULL;
     CARD16 VSyncRegister = GENS1(vgaIOBase);
     CARD8 VSyncBit = 0x08U;
 
@@ -755,15 +755,19 @@ probe_clocks:
             Calibration_Clock_Value *= 10;
         }
 
-        /*
-         * The current video state needs to be saved before the clock probe,
-         * and restored after.  On some older adapters, the sequencer resets
-         * that occur during the clock probe cause memory corruption.
-         */
-        saved_vgaBase = vgaBase;
-        vgaBase = xf86MapVidMem(vga256InfoRec.scrnIndex, VGA_REGION,
-            (pointer)vga256InfoRec.VGAbase, ATI.ChipMapSize);
-        ATICurrentHWPtr = ATISave(NULL);
+        if (ATIVGAAdapter != ATI_ADAPTER_NONE)
+        {
+            /*
+             * The current video state needs to be saved before the clock
+             * probe, and restored after.  On some older adapters, the
+             * sequencer resets that occur during the clock probe cause memory
+             * corruption.
+             */
+            saved_vgaBase = vgaBase;
+            vgaBase = xf86MapVidMem(vga256InfoRec.scrnIndex, VGA_REGION,
+                (pointer)vga256InfoRec.VGAbase, ATI.ChipMapSize);
+            ATICurrentHWPtr = ATISave(NULL);
+        }
 
         switch (ATICurrentHWPtr->crtc)
         {
@@ -785,12 +789,15 @@ probe_clocks:
             (SaveScreenProcPtr)NoopDDA, VSyncRegister, VSyncBit,
             Calibration_Clock_Number, Calibration_Clock_Value, &vga256InfoRec);
 
-        /* Restore video state */
-        ATIRestore(ATICurrentHWPtr);
-        xfree(ATICurrentHWPtr);
-        xf86UnMapVidMem(vga256InfoRec.scrnIndex, VGA_REGION, vgaBase,
-            ATI.ChipMapSize);
-        vgaBase = saved_vgaBase;
+        if (ATIVGAAdapter != ATI_ADAPTER_NONE)
+        {
+            /* Restore video state */
+            ATIRestore(ATICurrentHWPtr);
+            xfree(ATICurrentHWPtr);
+            xf86UnMapVidMem(vga256InfoRec.scrnIndex, VGA_REGION, vgaBase,
+                ATI.ChipMapSize);
+            vgaBase = saved_vgaBase;
+        }
 
         /* Tell user clocks were probed, instead of supplied */
         OFLG_CLR(XCONFIG_CLOCKS, &vga256InfoRec.xconfigFlag);

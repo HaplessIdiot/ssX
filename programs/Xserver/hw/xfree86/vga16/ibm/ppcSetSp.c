@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcSetSp.c,v 3.5 1996/12/23 06:53:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcSetSp.c,v 3.6 1997/03/13 15:11:27 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -225,7 +225,7 @@ ppcSetSpans( pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted )
       || ( ( alu = pGC->alu ) == GXnoop ) )
 	return ;
 
-    prgnDst = ( (ppcPrivGC *) (pGC->devPrivates[mfbGCPrivateIndex].ptr) )->pCompositeClip ;
+    prgnDst = pGC->pCompositeClip ;
 
     if ( ! REGION_NUM_RECTS(prgnDst))
 	return ;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wline.c,v 1.7 1997/11/16 11:51:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wline.c,v 1.8 1998/01/11 03:48:30 dawes Exp $ */
 /*
 
 xf86WideLine does not maintain a span list and subsequently does not
@@ -817,17 +817,16 @@ xf86WideLineSolid1Rect (pDrawable, pGC, mode, npt, pPts)
     int    	    first = TRUE;
     Bool	    somethingDrawn = FALSE;
     Bool	    selfJoin = FALSE;
-    cfbPrivGCPtr    devPriv = cfbGetGCPrivate(pGC);
 
-    if(REGION_NUM_RECTS(devPriv->pCompositeClip) != 1) {
+    if(REGION_NUM_RECTS(pGC->pCompositeClip) != 1) {
 	miWideLine(pDrawable, pGC, mode, npt, pPts);
 	return;
     }
 
-    LeftClip = devPriv->pCompositeClip->extents.x1;
-    RightClip = devPriv->pCompositeClip->extents.x2 - 1;
-    TopClip = devPriv->pCompositeClip->extents.y1;
-    BottomClip = devPriv->pCompositeClip->extents.y2 - 1;
+    LeftClip = pGC->pCompositeClip->extents.x1;
+    RightClip = pGC->pCompositeClip->extents.x2 - 1;
+    TopClip = pGC->pCompositeClip->extents.y1;
+    BottomClip = pGC->pCompositeClip->extents.y2 - 1;
 
     xf86AccelInfoRec.SetupForFillRectSolid(pGC->fgPixel, pGC->alu, 
 						pGC->planemask);

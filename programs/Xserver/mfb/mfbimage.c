@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/mfb/mfbimage.c,v 1.0tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -110,14 +111,14 @@ mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     if (!pPixmap)
 	return;
 
-    ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->fExpose = FALSE;
+    pGC->fExpose = FALSE;
     if (format != XYBitmap)
 	(*pGC->ops->CopyArea)((DrawablePtr)pPixmap, dst, pGC, leftPad, 0,
 			      w, h, x, y);
     else
 	(*pGC->ops->CopyPlane)((DrawablePtr)pPixmap, dst, pGC, leftPad, 0,
 			       w, h, x, y, 1);
-    ((mfbPrivGC*)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->fExpose = TRUE;
+    pGC->fExpose = TRUE;
     FreeScratchPixmapHeader(pPixmap);
 }
 

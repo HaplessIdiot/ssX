@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mfbply1rct.c,v 1.9 94/04/17 20:28:28 dpw Exp $
+ * $XConsortium: mfbply1rct.c /main/10 1996/08/23 10:35:13 dpw $
  *
 Copyright (c) 1990  X Consortium
 
@@ -26,6 +26,8 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
+
+/* $XFree86: xc/programs/Xserver/mfb/mfbply1rct.c,v 1.0tsi Exp $ */
 
 #include "X.h"
 
@@ -64,7 +66,6 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
     int		count;
     DDXPointPtr	ptsIn;
 {
-    mfbPrivGCPtr    devPriv;
     int		    nlwidth;
     PixelType	    *addrl, *addr;
     int		    maxy;
@@ -87,18 +88,17 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
     PixelType	    mask, bits = ~((PixelType)0);
     int		    nmiddle;
 
-    devPriv = (mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr);
     if (mode == CoordModePrevious || shape != Convex ||
-	REGION_NUM_RECTS(devPriv->pCompositeClip) != 1)
+	REGION_NUM_RECTS(pGC->pCompositeClip) != 1)
     {
 	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
 	return;
     }
     origin = *((int *) &pDrawable->x);
-    origin -= (origin & 0x8000) << 1;
-    extents = &devPriv->pCompositeClip->extents;
-    vertex1 = *((int *) &extents->x1) - origin;
-    vertex2 = *((int *) &extents->x2) - origin - 0x00010001;
+    vertex2 = origin - ((origin & 0x8000) << 1);
+    extents = &pGC->pCompositeClip->extents;
+    vertex1 = *((int *) &extents->x1) - vertex2;
+    vertex2 = *((int *) &extents->x2) - vertex2 - 0x00010001;
     clip = 0;
     y = 32767;
     maxy = 0;

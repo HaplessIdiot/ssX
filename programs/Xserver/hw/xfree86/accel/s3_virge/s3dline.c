@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3dline.c,v 3.3 1996/12/27 07:02:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3dline.c,v 3.4 1997/01/14 22:17:18 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -157,7 +157,6 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
    register int y1, y2;
    register int x1, x2;
    RegionPtr cclip;
-   cfbPrivGCPtr devPriv;
    short fix;
 
    if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
@@ -198,8 +197,7 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
       return;
    }
 
-   devPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
-   cclip = devPriv->pCompositeClip;
+   cclip = pGC->pCompositeClip;
    pboxInit = REGION_RECTS(cclip);
    nboxInit = REGION_NUM_RECTS(cclip);
 

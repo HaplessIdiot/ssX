@@ -1,6 +1,6 @@
 /*
  * $XConsortium: cfbply1rct.c /main/16 1996/08/12 22:07:31 dpw $
- * $XFree86: xc/programs/Xserver/cfb/cfbply1rct.c,v 3.2 1996/06/29 09:05:44 dawes Exp $
+ * $XFree86: xc/programs/Xserver/cfb/cfbply1rct.c,v 3.3 1996/12/23 06:29:21 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -86,7 +86,7 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     
     devPriv = cfbGetGCPrivate(pGC);
 #ifdef NO_ONE_RECT
-    if (REGION_NUM_RECTS(devPriv->pCompositeClip) != 1)
+    if (REGION_NUM_RECTS(pGC->pCompositeClip) != 1)
     {
 	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
 	return;
@@ -94,7 +94,7 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 #endif
     origin = *((int *) &pDrawable->x);
     vertex2 = origin - ((origin & 0x8000) << 1);
-    extents = &devPriv->pCompositeClip->extents;
+    extents = &pGC->pCompositeClip->extents;
     RROP_FETCH_GCPRIV(devPriv);
     vertex1 = *((int *) &extents->x1) - vertex2;
     vertex2 = *((int *) &extents->x2) - vertex2 - 0x00010001;

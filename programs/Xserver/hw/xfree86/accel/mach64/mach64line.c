@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64line.c,v 3.2 1996/02/04 09:03:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64line.c,v 3.3 1996/12/23 06:39:22 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -96,10 +96,6 @@ mach64Line(pDrawable, pGC, mode, npt, pptInit)
     register int y1, y2;
     register int x1, x2;
     register int tmp;
-    cfbPrivGCPtr devPriv;
-
-
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
 
     if (!xf86VTSema)
     {
@@ -121,8 +117,8 @@ mach64Line(pDrawable, pGC, mode, npt, pptInit)
 	return;
     }
 
-    pboxInit = REGION_RECTS(devPriv->pCompositeClip);
-    nboxInit = REGION_NUM_RECTS(devPriv->pCompositeClip);
+    pboxInit = REGION_RECTS(pGC->pCompositeClip);
+    nboxInit = REGION_NUM_RECTS(pGC->pCompositeClip);
 
     WaitQueue(4);
     regw(DP_FRGD_CLR, pGC->fgPixel);

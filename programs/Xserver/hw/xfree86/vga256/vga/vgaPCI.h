@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.39 1997/11/22 00:00:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.40 1998/01/24 16:58:47 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -112,6 +112,7 @@
 #define PCI_CHIP_65554		0x00E4
 #define PCI_CHIP_65555		0x00E5
 #define PCI_CHIP_68554		0x00F4
+#define PCI_CHIP_69000		0x00C0
 
 /* SiS */
 #define PCI_CHIP_SG86C201	0x0001
@@ -140,6 +141,7 @@
 
 /* Rendition */
 #define PCI_CHIP_V1000		0x0001
+#define PCI_CHIP_V2x00		0x2000
 
 /* 3Dlabs */
 #define PCI_CHIP_300SX		0x0001
@@ -288,6 +290,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_65554,	"65554"},
 				{PCI_CHIP_65555,	"65555"},
 				{PCI_CHIP_68554,	"68554"},
+				{PCI_CHIP_69000,	"69000"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_SIS,	"SiS",	{
 				{PCI_CHIP_SG86C201,	"SG86C201"},
@@ -316,6 +319,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_RENDITION, "Rendition", {
 				{PCI_CHIP_V1000,	"Verite 1000"},
+				{PCI_CHIP_V2x00,	"Verite 2x00"},
 				{0x0000,		NULL}}},
      {PCI_VENDOR_3DLABS, "3Dlabs", {
 				{PCI_CHIP_300SX,	"GLINT 300SX"},

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.28 1997/11/08 16:24:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.29 1998/01/24 16:58:54 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -609,7 +609,7 @@ xf86InitializeAcceleration(pScreen)
 	    xf86GCInfoRec.PolySegmentSolidZeroWidthFlags |=
 	        xf86GCInfoRec.PolyFillRectSolidFlags;
 	    if (xf86Verbose) {
-                if (xf86AccelInfoRec.SubsequentTwoPointLine)
+                if (xf86AccelInfoRec.Flags & USE_TWO_POINT_LINE)
                     ErrorF("%s %s: XAA: Non-clipped general lines and segments\n",
                         XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
                 else

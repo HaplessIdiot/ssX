@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgafillsp.c,v 3.3 1996/12/09 11:54:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgafillsp.c,v 3.4 1996/12/23 06:59:41 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -420,7 +420,7 @@ vga2568Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
     devPriv = cfbGetGCPrivate(pGC);
     cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
-    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     if ( n == 0 )
 	return;
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
@@ -433,11 +433,10 @@ vga2568Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(devPriv->pCompositeClip,
-		     pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
-    stipple = devPriv->pRotatedPixmap;
+    stipple = pGC->pRotatedPixmap;
     src = (unsigned long *)stipple->devPrivate.ptr;
     stippleHeight = stipple->drawable.height;
 
@@ -639,7 +638,7 @@ vga2568OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
     cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel, pGC->planemask);
 
-    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     if ( n == 0 )
 	return;
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
@@ -652,11 +651,10 @@ vga2568OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(devPriv->pCompositeClip,
-		     pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
-    stipple = devPriv->pRotatedPixmap;
+    stipple = pGC->pRotatedPixmap;
     src = (unsigned long *)stipple->devPrivate.ptr;
     stippleHeight = stipple->drawable.height;
 

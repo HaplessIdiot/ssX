@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.20 1998/01/11 03:48:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.21 1998/01/24 16:58:54 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -285,7 +285,6 @@ xf86GCNewText(pGC)
 {
     void (*PolyGlyphBltFunc) () = miPolyGlyphBlt;
     void (*ImageGlyphBltFunc) () = miImageGlyphBlt;
-    cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
 
     /* This is the MatchCommon logic. */
  
@@ -413,7 +412,6 @@ xf86GCNewFillArea(pGC)
     GCPtr pGC;
 {
     void (*PolyFillRectFunc) ();
-    cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
 
 #ifdef FOUR_BIT_CODE
     PolyFillRectFunc = xf86GCInfoRec.PolyFillRectWrapper;
@@ -515,7 +513,6 @@ pglyphBase)
 {
     void (*ImageGlyphBltFunc) ();
     cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
-
 
     /* Simulate the MatchCommon logic. */
     if (pGC->fillStyle == FillSolid && devPriv->rop == GXcopy
@@ -653,7 +650,7 @@ void xf86FillSpansFallBack(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	    }
 	    break;
         case FillTiled:
-	    if (devPriv->pRotatedPixmap) {
+	    if (pGC->pRotatedPixmap) {
 	        if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
 		    FillSpansFunc = cfbTile32FSCopy;
 	        else
@@ -663,7 +660,7 @@ void xf86FillSpansFallBack(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	    break;
         case FillStippled:
 #ifdef FOUR_BIT_CODE
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 	        FillSpansFunc = cfb8Stipple32FS;
 	    else
 #endif
@@ -671,7 +668,7 @@ void xf86FillSpansFallBack(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	    break;
         case FillOpaqueStippled:
 #ifdef FOUR_BIT_CODE
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 	        FillSpansFunc = cfb8OpaqueStipple32FS;
 	    else 
 #endif
@@ -692,10 +689,8 @@ void xf86FillRectTileFallBack(pDrawable, pGC, nBoxInit, pBoxInit)
     BoxPtr	pBoxInit;  	/* Pointer to first rectangle to fill */
 {
     void (*FillRectTileFunc) ();
-    cfbPrivGCPtr devPriv;
 
-    devPriv = cfbGetGCPrivate(pGC);
-    if (!devPriv->pRotatedPixmap)
+    if (!pGC->pRotatedPixmap)
         FillRectTileFunc = cfbFillRectTileOdd;
     else {
 	if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
@@ -717,11 +712,9 @@ void xf86FillRectStippledFallBack(pDrawable, pGC, nBoxInit, pBoxInit)
     BoxPtr	pBoxInit;  	/* Pointer to first rectangle to fill */
 {
 #if PSZ == 8
-    cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
-
     SYNC_CHECK;
 
-    if (!devPriv->pRotatedPixmap)
+    if (!pGC->pRotatedPixmap)
 	cfb8FillRectStippledUnnatural(pDrawable, pGC, nBoxInit, pBoxInit);
     else
 	cfb8FillRectTransparentStippled32(pDrawable, pGC, nBoxInit, pBoxInit);
@@ -738,11 +731,9 @@ void xf86FillRectOpaqueStippledFallBack(pDrawable, pGC, nBoxInit, pBoxInit)
     BoxPtr	pBoxInit;  	/* Pointer to first rectangle to fill */
 {
 #if PSZ == 8
-    cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
-
     SYNC_CHECK;
 
-    if (!devPriv->pRotatedPixmap)
+    if (!pGC->pRotatedPixmap)
 	cfb8FillRectStippledUnnatural(pDrawable, pGC, nBoxInit, pBoxInit);
     else
 	cfb8FillRectOpaqueStippled32(pDrawable, pGC, nBoxInit, pBoxInit);

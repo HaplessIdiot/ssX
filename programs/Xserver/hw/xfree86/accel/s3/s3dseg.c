@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.13 1996/12/23 06:41:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.14 1997/01/08 20:33:45 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -146,7 +146,6 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
    register int y1, y2;
    register int x1, x2;
    RegionPtr cclip;
-   cfbPrivGCPtr devPriv;
    short fix;
 
    if (!xf86VTSema)
@@ -168,8 +167,7 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
       return;
    }
 
-   devPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
-   cclip = devPriv->pCompositeClip;
+   cclip = pGC->pCompositeClip;
    pboxInit = REGION_RECTS(cclip);
    nboxInit = REGION_NUM_RECTS(cclip);
 

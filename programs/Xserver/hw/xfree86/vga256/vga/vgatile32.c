@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgatile32.c,v 3.3 1996/12/09 11:55:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgatile32.c,v 3.4 1996/12/23 07:00:03 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -136,7 +136,7 @@ MROP_NAME(vga256FillRectTile32) (pDrawable, pGC, nBox, pBox)
     MROP_DECLARE_REG()
     MROP_PREBUILT_DECLARE()
 
-    tile = cfbGetGCPrivate(pGC)->pRotatedPixmap;
+    tile = pGC->pRotatedPixmap;
     tileHeight = tile->drawable.height;
     psrc = (unsigned long *)tile->devPrivate.ptr;
 
@@ -264,7 +264,7 @@ MROP_NAME(vga256Tile32FS)(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		     pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
-    tile = cfbGetGCPrivate(pGC)->pRotatedPixmap;
+    tile = pGC->pRotatedPixmap;
     tileHeight = tile->drawable.height;
     psrc = (unsigned long *)tile->devPrivate.ptr;
 

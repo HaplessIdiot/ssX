@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Pci.c,v 3.3 1998/01/24 23:58:35 hohndel Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -167,9 +167,7 @@
  */
 #include <errno.h>
 #include <signal.h>
-/*** this file doesn't exist (dhh)
 #include "Xarch.h"
-***/
 #include "os.h"
 #include "compiler.h"
 #include "input.h"
@@ -888,6 +886,14 @@ xf86MapPciMem(int ScreenNum, int Region, PCITAG Tag, pointer Base, unsigned long
 			   "xf86MapPciMem", Base, hostbase, Size, strerror(errno));
 	}
 	return((pointer)base);
+}
+
+int
+xf86ReadPciBIOS(unsigned long Base, unsigned long Offset, PCITAG Tag, unsigned char *Buf, int Len)
+{
+    pointer hostbase = pciBusAddrToHostAddr(Tag, Base);
+    
+    return(xf86ReadBIOS(Base, Offset, Buf, Len));
 }
 
 #endif /* INCLUDE_XF86_MAP_PCI_MEM */

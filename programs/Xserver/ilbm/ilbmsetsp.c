@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmsetsp.c,v 3.0 1996/08/18 01:54:10 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -173,7 +173,7 @@ ilbmSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
 	int yMax;
 
 	alu = pGC->alu;
-	prgnDst = ((ilbmPrivGC *)(pGC->devPrivates[ilbmGCPrivateIndex].ptr))->pCompositeClip;
+	prgnDst = pGC->pCompositeClip;
 
 	pptLast = ppt + nspans;
 

@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 ********************************************************/
 
 /* $XConsortium: mfbzerarc.c /main/21 1995/12/06 16:55:48 dpw $ */
-/* $XFree86: xc/programs/Xserver/mfb/mfbzerarc.c,v 3.0 1994/08/01 12:19:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbzerarc.c,v 3.1 1996/01/05 13:19:46 dawes Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -221,7 +221,7 @@ mfbZeroPolyArcSS(pDraw, pGC, narcs, parcs)
 
     if (!pGC->planemask & 1)
 	return;
-    cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
 	if (miCanZeroArc(arc))

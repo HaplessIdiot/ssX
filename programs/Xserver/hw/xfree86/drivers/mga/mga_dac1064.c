@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.10 1997/10/14 04:51:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.11 1998/01/24 01:53:08 hohndel Exp $ */
 
 
 /*
@@ -610,7 +610,7 @@ MGA1064SGSetMCLK( f_out )
 
 	rfhcnt <<= 16;
 
-    	if(OFLG_ISSET(OPTION_NO_PCI_RETRY, &vga256InfoRec.options))
+    	if(!OFLG_ISSET(OPTION_PCI_RETRY, &vga256InfoRec.options))
 	   rfhcnt |= (1 << 29);
 
  	pciWriteLong( MGAPciTag, PCI_OPTION_REG, rfhcnt |

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86spoly.c,v 3.1 1998/01/11 03:48:29 dawes Exp $ */
  
 
 #include "X.h"
@@ -103,17 +103,6 @@ NonExpandingSCREEN_ORIGIN(x, y, w, h)
 				x, y, w, h);
 }
 
-
-static void 
-NonExpandingNOT_LINEAR(x, y, w, h)
-   int x, y, w, h;
-{
-    xf86AccelInfoRec.SubsequentFill8x8Pattern(
-		            	patternx + ((- adjLeftX) & 7),
-			   	patterny + ((- adjTopY) & 7), 
-				x, y, w, h);
-}
-
 static void 
 NonExpandingOTHER(x, y, w, h)
    int x, y, w, h;
@@ -205,7 +194,6 @@ xf86FillPolygonStippled(pDrawable, pGC, shape, mode, count, ptsIn)
     int		count;
     DDXPointPtr	ptsIn;
 {
-    cfbPrivGCPtr    devPriv;
     int		    maxy;
     int		    origin;
     register int    vertex1, vertex2;
@@ -230,9 +218,8 @@ xf86FillPolygonStippled(pDrawable, pGC, shape, mode, count, ptsIn)
     void (*SubsequentRectFunction)(); 
     void (*SubsequentTrapFunction)() = NULL; 
 
-    devPriv = cfbGetGCPrivate(pGC);
 #ifdef NO_ONE_RECT
-    if (REGION_NUM_RECTS(devPriv->pCompositeClip) != 1) {
+    if (REGION_NUM_RECTS(pGC->pCompositeClip) != 1) {
 	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
 	return;
     }
@@ -281,7 +268,7 @@ xf86FillPolygonStippled(pDrawable, pGC, shape, mode, count, ptsIn)
 
     origin = *((int *) &pDrawable->x);
     origin -= (origin & 0x8000) << 1;
-    extents = &devPriv->pCompositeClip->extents;
+    extents = &pGC->pCompositeClip->extents;
     vertex1 = *((int *) &extents->x1) - origin;
     vertex2 = *((int *) &extents->x2) - origin - 0x00010001;
     clip = 0;
@@ -365,9 +352,6 @@ xf86FillPolygonStippled(pDrawable, pGC, shape, mode, count, ptsIn)
 	} else if (xf86AccelInfoRec.PatternFlags
 		    & HARDWARE_PATTERN_SCREEN_ORIGIN)
       		SubsequentRectFunction = NonExpandingSCREEN_ORIGIN;
-	else if (xf86AccelInfoRec.PatternFlags
-		    & HARDWARE_PATTERN_NOT_LINEAR)
-     		SubsequentRectFunction = NonExpandingNOT_LINEAR;
 	else
      		SubsequentRectFunction = NonExpandingOTHER;
 
@@ -385,8 +369,6 @@ xf86FillPolygonStippled(pDrawable, pGC, shape, mode, count, ptsIn)
 				HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
 	    if(xf86AccelInfoRec.PatternFlags
                         & HARDWARE_PATTERN_SCREEN_ORIGIN) {
-		SubsequentTrapFunction = 
-			ExpandingTrapPROGRAMMED_ORIGIN_SCREEN_ORIGIN;
       		SubsequentRectFunction = 
 			ExpandingPROGRAMMED_ORIGIN_SCREEN_ORIGIN;
 	    } else
@@ -420,7 +402,11 @@ xf86FillPolygonStippled(pDrawable, pGC, shape, mode, count, ptsIn)
 	        patternx = pci->pattern0;
 	        patterny = pci->pattern1;
             }
-	} else {
+	} else if (xf86AccelInfoRec.PatternFlags
+	        & HARDWARE_PATTERN_NOT_LINEAR) {
+		patternx = pci->x + (((-adjLeftX) & 7) << 3);
+		patterny = pci->y + ((-adjTopY) & 7);
+  	} else {
                 /*
                  * Video memory location of pattern data.
                  * Note that the x-coordinate is defined in "bit" or

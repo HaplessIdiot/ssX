@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGCstr.h,v 3.0 1996/11/18 13:13:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGCstr.h,v 3.1 1996/12/23 06:53:01 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -57,18 +57,14 @@ typedef struct {
 
 /* private field of GC */
 typedef struct {
-/* The Next eleven (11) fields MUST CORRESPOND to
+/* The next five (5) fields MUST CORRESPOND to
  * the fields of a "mfbPrivGC" struct
  * ----- BEGINNING OF "DO-NOT-CHANGE" REGION -----
  */
     unsigned char	rop ;		/* reduction of rasterop to 1 of 3 */
     unsigned char	ropOpStip ;	/* rop for opaque stipple */
     unsigned char	ropFillArea ;	/*  == alu, rop, or ropOpStip */
-    unsigned	fExpose:1 ;		/* callexposure handling ? */
-    unsigned	freeCompClip:1 ;
-    PixmapPtr	pRotatedPixmap ;	/* tile/stipple  rotated to align */
-    RegionPtr	pCompositeClip ;		/* free this based on freeCompClip
-					   flag rather than NULLness */
+    unsigned char	unused[sizeof(long) - 3];
     void 	(* FillArea)() ;		/* fills regions; look at the code */
 /* ----- END OF "DO-NOT-CHANGE" REGION ----- */
     ppcReducedRrop	colorRrop ;

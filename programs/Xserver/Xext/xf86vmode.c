@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.37 1997/09/25 16:13:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.38 1997/11/16 06:17:52 dawes Exp $ */
 
 /*
 
@@ -63,7 +63,7 @@ from Kaleb S. KEITHLEY
 #include "swaprep.h"
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 
 #include "../hw/xfree86/common/xf86.h"

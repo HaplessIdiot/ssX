@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.13 1997/05/03 09:17:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.14 1997/06/03 14:11:39 hohndel Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -258,7 +258,6 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
    register int y1, y2;
    register int x1, x2;
    RegionPtr cclip;
-   cfbPrivGCPtr devPriv;
    int s3_clr, s3_rop;
 
    unsigned char *pDash;
@@ -311,8 +310,7 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
       return;
    }
 
-   devPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
-   cclip = devPriv->pCompositeClip;
+   cclip = pGC->pCompositeClip;
    pboxInit = REGION_RECTS(cclip);
    nboxInit = REGION_NUM_RECTS(cclip);
 

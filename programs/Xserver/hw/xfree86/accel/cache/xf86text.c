@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86text.c,v 3.0 1996/11/18 13:08:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86text.c,v 3.1 1996/12/23 06:33:22 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -112,7 +112,7 @@ static int xf86CPolyText8(pDraw, pGC, x, y, count, chars, fentry)
    maxAscent = FONTMAXBOUNDS(pfont, ascent);
    maxDescent = FONTMAXBOUNDS(pfont, descent);
    minLeftBearing = FONTMINBOUNDS(pfont, leftSideBearing);
-   pRegion = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+   pRegion = pGC->pCompositeClip;
 
    pBox = REGION_RECTS(pRegion);
    numRects = REGION_NUM_RECTS(pRegion);

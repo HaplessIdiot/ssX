@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32dline.c,v 3.9 1996/02/04 09:02:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32dline.c,v 3.10 1996/12/23 06:38:27 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -151,11 +151,9 @@ mach32Dline(pDrawable, pGC, mode, npt, pptInit)
    register int y1, y2;
    register int x1, x2;
    RegionPtr cclip;
-   cfbPrivGCPtr devPriv;
    short fix;
 
-   devPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
-   cclip = devPriv->pCompositeClip;
+   cclip = pGC->pCompositeClip;
    pboxInit = REGION_RECTS(cclip);
    nboxInit = REGION_NUM_RECTS(cclip);
 

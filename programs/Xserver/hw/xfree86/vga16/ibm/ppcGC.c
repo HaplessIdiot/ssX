@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGC.c,v 3.6 1996/12/23 06:53:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGC.c,v 3.7 1997/03/13 15:11:13 hohndel Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -141,10 +141,7 @@ static ppcPrivGC vgaPrototypeGCPriv = {
 	GXcopy,	/* unsigned char	rop */
 	0,	/* unsigned char	ropOpStip */
 	0,	/* unsigned char	ropFillArea */
-	TRUE,		/* short	fExpose */
-	FALSE,		/* short	freeCompClip */
-	NullPixmap,	/* PixmapPtr	pRotatedPixmap */
-	0,	/* RegionPtr	pCompositeClip */
+	{0, },	/* unsigned char	unused[sizeof(long) - 3] */
 	ppcAreaFill,	/* void 	(* FillArea)() */
 		{
 		    VGA_ALLPLANES,	/* unsigned long	planemask */
@@ -221,6 +218,10 @@ register GCPtr pGC ;
 	pGC->bgPixel = VGA_WHITE_PIXEL;
 	pGC->funcs = &vgaGCFuncs;
 	/* ops, -- see below */
+
+	pGC->fExpose = TRUE;
+	pGC->freeCompClip = FALSE;
+	pGC->pRotatedPixmap = NullPixmap;
 	
 	/* GJA: I don't like this code:
          * they allocated a mfbPrivGC, ignore the allocated data and place
@@ -242,20 +243,16 @@ ppcDestroyGC( pGC )
     register GC	*pGC ;
 
 {
-    register ppcPrivGC *pPriv ;
-
     TRACE( ( "ppcDestroyGC(pGC=0x%x)\n", pGC ) ) ;
-
-    pPriv = (ppcPrivGC *) ( pGC->devPrivates[mfbGCPrivateIndex].ptr ) ;
 
     /* (ef) 11/9/87 -- ppc doesn't use rotated tile or stipple, but */
     /*		*does* call mfbValidateGC under some conditions.    */
     /*		mfbValidateGC *does* use rotated tile and stipple   */
-    if ( pPriv->pRotatedPixmap )
-	mfbDestroyPixmap( pPriv->pRotatedPixmap ) ;
+    if ( pGC->pRotatedPixmap )
+	mfbDestroyPixmap( pGC->pRotatedPixmap ) ;
 
-    if ( pPriv->freeCompClip && pPriv->pCompositeClip )
-	(* pGC->pScreen->RegionDestroy)( pPriv->pCompositeClip ) ;
+    if ( pGC->freeCompClip && pGC->pCompositeClip )
+	(* pGC->pScreen->RegionDestroy)( pGC->pCompositeClip ) ;
     if(pGC->ops->devPrivate.val) xfree( pGC->ops );
     xfree( pGC->devPrivates[mfbGCPrivateIndex].ptr ) ;
     return ;
@@ -407,7 +404,7 @@ ppcValidateGC( pGC, changes, pDrawable )
  		pregWin = &pWin->clipList;
  		freeTmpClip = FALSE;
   	    }
- 	    freeCompClip = devPriv->freeCompClip;
+ 	    freeCompClip = pGC->freeCompClip;
   
  	    /*
  	     * if there is no client clip, we can get by with just keeping
@@ -418,9 +415,9 @@ ppcValidateGC( pGC, changes, pDrawable )
  	     */
  	    if (pGC->clientClipType == CT_NONE) {
  		if (freeCompClip)
- 		    (*pScreen->RegionDestroy) (devPriv->pCompositeClip);
- 		devPriv->pCompositeClip = pregWin;
- 		devPriv->freeCompClip = freeTmpClip;
+ 		    (*pScreen->RegionDestroy) (pGC->pCompositeClip);
+ 		pGC->pCompositeClip = pregWin;
+ 		pGC->freeCompClip = freeTmpClip;
   	    }
   	    else {
  		/*
@@ -439,7 +436,7 @@ ppcValidateGC( pGC, changes, pDrawable )
  						  
  		if (freeCompClip)
  		{
- 		    (*pGC->pScreen->Intersect)(devPriv->pCompositeClip,
+ 		    (*pGC->pScreen->Intersect)(pGC->pCompositeClip,
  					       pregWin, pGC->clientClip);
  		    if (freeTmpClip)
  			(*pScreen->RegionDestroy)(pregWin);
@@ -447,16 +444,15 @@ ppcValidateGC( pGC, changes, pDrawable )
  		else if (freeTmpClip)
  		{
  		    (*pScreen->Intersect)(pregWin, pregWin, pGC->clientClip);
- 		    devPriv->pCompositeClip = pregWin;
+ 		    pGC->pCompositeClip = pregWin;
   		}
  		else
  		{
- 		    devPriv->pCompositeClip = (*pScreen->RegionCreate)(NullBox,
- 								       0);
- 		    (*pScreen->Intersect)(devPriv->pCompositeClip,
+ 		    pGC->pCompositeClip = (*pScreen->RegionCreate)(NullBox, 0);
+ 		    (*pScreen->Intersect)(pGC->pCompositeClip,
  					  pregWin, pGC->clientClip);
  		}
- 		devPriv->freeCompClip = TRUE;
+ 		pGC->freeCompClip = TRUE;
  		(*pScreen->TranslateRegion)(pGC->clientClip,
  					    -(pDrawable->x + pGC->clipOrg.x),
  					    -(pDrawable->y + pGC->clipOrg.y));
@@ -472,22 +468,21 @@ ppcValidateGC( pGC, changes, pDrawable )
  	    pixbounds.x2 = pDrawable->width;
  	    pixbounds.y2 = pDrawable->height;
   
- 	    if (devPriv->freeCompClip)
- 		(*pScreen->RegionReset)(devPriv->pCompositeClip, &pixbounds);
+ 	    if (pGC->freeCompClip)
+ 		(*pScreen->RegionReset)(pGC->pCompositeClip, &pixbounds);
   	    else {
- 		devPriv->freeCompClip = TRUE;
- 		devPriv->pCompositeClip = (*pScreen->RegionCreate)(&pixbounds,
- 								   1);
+ 		pGC->freeCompClip = TRUE;
+ 		pGC->pCompositeClip = (*pScreen->RegionCreate)(&pixbounds, 1);
   	    }
   
  	    if (pGC->clientClipType == CT_REGION)
  	    {
- 		(*pScreen->TranslateRegion)(devPriv->pCompositeClip,
+ 		(*pScreen->TranslateRegion)(pGC->pCompositeClip,
  					    -pGC->clipOrg.x, -pGC->clipOrg.y);
- 		(*pScreen->Intersect)(devPriv->pCompositeClip,
- 				      devPriv->pCompositeClip,
+ 		(*pScreen->Intersect)(pGC->pCompositeClip,
+ 				      pGC->pCompositeClip,
  				      pGC->clientClip);
- 		(*pScreen->TranslateRegion)(devPriv->pCompositeClip,
+ 		(*pScreen->TranslateRegion)(pGC->pCompositeClip,
  					    pGC->clipOrg.x, pGC->clipOrg.y);
  	    }
 	}			/* end of composute clip for pixmap */

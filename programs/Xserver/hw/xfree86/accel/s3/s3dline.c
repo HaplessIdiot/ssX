@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dline.c,v 3.12 1996/12/23 06:41:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dline.c,v 3.13 1997/01/08 20:33:44 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -148,7 +148,6 @@ s3Dline(pDrawable, pGC, mode, npt, pptInit)
    register int y1, y2;
    register int x1, x2;
    RegionPtr cclip;
-   cfbPrivGCPtr devPriv;
    short fix;
 
    if (!xf86VTSema)
@@ -170,8 +169,7 @@ s3Dline(pDrawable, pGC, mode, npt, pptInit)
       return;
    }
 
-   devPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
-   cclip = devPriv->pCompositeClip;
+   cclip = pGC->pCompositeClip;
    pboxInit = REGION_RECTS(cclip);
    nboxInit = REGION_NUM_RECTS(cclip);
 

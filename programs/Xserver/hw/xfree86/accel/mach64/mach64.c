@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.87 1998/01/24 01:53:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.88 1998/01/24 16:56:49 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996,1997 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -197,13 +197,17 @@ ScrnInfoRec mach64InfoRec = {
     0,			/* int textClockFreq */
     NULL,               /* char* DCConfig */
     NULL,               /* char* DCOptions */
-    0			/* int MemClk */
+    0,			/* int MemClk */
 #ifdef XFreeXDGA
-    ,0,                  /* int directMode */
+    0,                  /* int directMode */
     NULL,               /* Set Vid Page */
     0,                  /* unsigned long physBase */
-    0                  /* int physSize */
+    0,                  /* int physSize */
 #endif
+#ifdef XF86SETUP
+    NULL,		/* void *device */
+#endif
+    FALSE		/* hasDirectColor */
 };
 
 #if defined(XFree86LOADER)

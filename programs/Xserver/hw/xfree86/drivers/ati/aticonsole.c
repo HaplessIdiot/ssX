@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.1tsi Exp $ */
 /*
- * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,6 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "atiadapter.h"
 #include "atichip.h"
 #include "aticonsole.h"
 #include "atidepth.h"
@@ -148,113 +149,122 @@ ATIEnterLeave(const Bool enter)
             }
         }
 
-        if (ATIChipHasVGAWonder)
+        if (ATIVGAAdapter != ATI_ADAPTER_NONE)
         {
-            /*
-             * Ensure all registers are read/write and disable all non-VGA
-             * emulations.
-             */
-            saved_b1 = ATIGetExtReg(0xB1U);
-            ATIModifyExtReg(0xB1U, saved_b1, 0xFCU, 0x00U);
-            saved_b4 = ATIGetExtReg(0xB4U);
-            ATIModifyExtReg(0xB4U, saved_b4, 0x00U, 0x00U);
-            saved_b5 = ATIGetExtReg(0xB5U);
-            ATIModifyExtReg(0xB5U, saved_b5, 0xBFU, 0x00U);
-            saved_b6 = ATIGetExtReg(0xB6U);
-            ATIModifyExtReg(0xB6U, saved_b6, 0xDDU, 0x00U);
-            saved_b8 = ATIGetExtReg(0xB8U);
-            ATIModifyExtReg(0xB8U, saved_b8, 0xC0U, 0x00U);
-            saved_b9 = ATIGetExtReg(0xB9U);
-            ATIModifyExtReg(0xB9U, saved_b9, 0x7FU, 0x00U);
-            if (ATIChip > ATI_CHIP_18800)
+            if (ATIChipHasVGAWonder)
             {
-                saved_be = ATIGetExtReg(0xBEU);
-                ATIModifyExtReg(0xBEU, saved_be, 0xFAU, 0x01U);
-                if (ATIChip >= ATI_CHIP_28800_2)
+                /*
+                 * Ensure all registers are read/write and disable all non-VGA
+                 * emulations.
+                 */
+                saved_b1 = ATIGetExtReg(0xB1U);
+                ATIModifyExtReg(0xB1U, saved_b1, 0xFCU, 0x00U);
+                saved_b4 = ATIGetExtReg(0xB4U);
+                ATIModifyExtReg(0xB4U, saved_b4, 0x00U, 0x00U);
+                saved_b5 = ATIGetExtReg(0xB5U);
+                ATIModifyExtReg(0xB5U, saved_b5, 0xBFU, 0x00U);
+                saved_b6 = ATIGetExtReg(0xB6U);
+                ATIModifyExtReg(0xB6U, saved_b6, 0xDDU, 0x00U);
+                saved_b8 = ATIGetExtReg(0xB8U);
+                ATIModifyExtReg(0xB8U, saved_b8, 0xC0U, 0x00U);
+                saved_b9 = ATIGetExtReg(0xB9U);
+                ATIModifyExtReg(0xB9U, saved_b9, 0x7FU, 0x00U);
+                if (ATIChip > ATI_CHIP_18800)
                 {
-                    saved_a6 = ATIGetExtReg(0xA6U);
-                    ATIModifyExtReg(0xA6U, saved_a6, 0x7FU, 0x00U);
-                    saved_ab = ATIGetExtReg(0xABU);
-                    ATIModifyExtReg(0xABU, saved_ab, 0xE7U, 0x00U);
+                    saved_be = ATIGetExtReg(0xBEU);
+                    ATIModifyExtReg(0xBEU, saved_be, 0xFAU, 0x01U);
+                    if (ATIChip >= ATI_CHIP_28800_2)
+                    {
+                        saved_a6 = ATIGetExtReg(0xA6U);
+                        ATIModifyExtReg(0xA6U, saved_a6, 0x7FU, 0x00U);
+                        saved_ab = ATIGetExtReg(0xABU);
+                        ATIModifyExtReg(0xABU, saved_ab, 0xE7U, 0x00U);
+                    }
                 }
             }
-        }
 
-        ATISetVGAIOBase(inb(R_GENMO));
+            ATISetVGAIOBase(inb(R_GENMO));
 
-        /*
-         * There's a bizarre interaction here.  If bit 0x80 of CRTC[17] is on,
-         * then CRTC[3] is read-only.  If bit 0x80 of CRTC[3] is off, then
-         * CRTC[17] is write-only (or a read attempt actually returns bits from
-         * C/EGA's light pen position).  This means that if both conditions are
-         * met, CRTC[17]'s value on server entry cannot be retrieved.
-         */
-
-        tmp = GetReg(CRTX(vgaIOBase), 0x03U);
-        if ((tmp & 0x80U) ||
-            ((outb(CRTD(vgaIOBase), tmp | 0x80U),
-                tmp = inb(CRTD(vgaIOBase))) & 0x80U))
-        {
-            /* CRTC[16-17] should be readable */
-            tmp = GetReg(CRTX(vgaIOBase), 0x11U);
-            if (tmp & 0x80U)            /* Unprotect CRTC[0-7] */
-                outb(CRTD(vgaIOBase), tmp & 0x7FU);
-        }
-        else
-        {
             /*
-             * Could not make CRTC[17] readable, so unprotect CRTC[0-7]
-             * replacing VSyncEnd with zero.  This zero will be replaced after
-             * acquiring the needed access.
+             * There's a bizarre interaction here.  If bit 0x80 of CRTC[17] is
+             * on, then CRTC[3] is read-only.  If bit 0x80 of CRTC[3] is off,
+             * then CRTC[17] is write-only (or a read attempt actually returns
+             * bits from C/EGA's light pen position).  This means that if both
+             * conditions are met, CRTC[17]'s value on server entry cannot be
+             * retrieved.
              */
-            unsigned int VSyncEnd, VBlankStart, VBlankEnd;
-            CARD8 crt07, crt09;
 
-            PutReg(CRTX(vgaIOBase), 0x11U, 0x20U);
-            /* Make CRTC[16-17] readable */
-            PutReg(CRTX(vgaIOBase), 0x03U, tmp | 0x80U);
-            /* Make vertical synch pulse as wide as possible */
-            crt07 = GetReg(CRTX(vgaIOBase), 0x07U);
-            crt09 = GetReg(CRTX(vgaIOBase), 0x09U);
-            VBlankStart = (((crt09 & 0x20U) << 4) | ((crt07 & 0x08U) << 5) |
-                GetReg(CRTX(vgaIOBase), 0x15U)) + 1;
-            VBlankEnd = (VBlankStart & 0x300U) | GetReg(CRTX(vgaIOBase), 0x16U);
-            if (VBlankEnd <= VBlankStart)
-                VBlankEnd += 0x0100U;
-            VSyncEnd = (((crt07 & 0x80U) << 2) | ((crt07 & 0x04U) << 6) |
-                GetReg(CRTX(vgaIOBase), 0x10U)) + 0x0FU;
-            if (VSyncEnd >= VBlankEnd)
-                VSyncEnd = VBlankEnd - 1;
-            PutReg(CRTX(vgaIOBase), 0x11U, (VSyncEnd & 0x0FU) | 0x20U);
+            tmp = GetReg(CRTX(vgaIOBase), 0x03U);
+            if ((tmp & 0x80U) ||
+                ((outb(CRTD(vgaIOBase), tmp | 0x80U),
+                    tmp = inb(CRTD(vgaIOBase))) & 0x80U))
+            {
+                /* CRTC[16-17] should be readable */
+                tmp = GetReg(CRTX(vgaIOBase), 0x11U);
+                if (tmp & 0x80U)        /* Unprotect CRTC[0-7] */
+                    outb(CRTD(vgaIOBase), tmp & 0x7FU);
+            }
+            else
+            {
+                /*
+                 * Could not make CRTC[17] readable, so unprotect CRTC[0-7]
+                 * replacing VSyncEnd with zero.  This zero will be replaced
+                 * after acquiring the needed access.
+                 */
+                unsigned int VSyncEnd, VBlankStart, VBlankEnd;
+                CARD8 crt07, crt09;
+
+                PutReg(CRTX(vgaIOBase), 0x11U, 0x20U);
+                /* Make CRTC[16-17] readable */
+                PutReg(CRTX(vgaIOBase), 0x03U, tmp | 0x80U);
+                /* Make vertical synch pulse as wide as possible */
+                crt07 = GetReg(CRTX(vgaIOBase), 0x07U);
+                crt09 = GetReg(CRTX(vgaIOBase), 0x09U);
+                VBlankStart = (((crt09 & 0x20U) << 4) |
+                    ((crt07 & 0x08U) << 5) |
+                    GetReg(CRTX(vgaIOBase), 0x15U)) + 1;
+                VBlankEnd = (VBlankStart & 0x300U) |
+                    GetReg(CRTX(vgaIOBase), 0x16U);
+                if (VBlankEnd <= VBlankStart)
+                    VBlankEnd += 0x0100U;
+                VSyncEnd = (((crt07 & 0x80U) << 2) | ((crt07 & 0x04U) << 6) |
+                    GetReg(CRTX(vgaIOBase), 0x10U)) + 0x0FU;
+                if (VSyncEnd >= VBlankEnd)
+                    VSyncEnd = VBlankEnd - 1;
+                PutReg(CRTX(vgaIOBase), 0x11U, (VSyncEnd & 0x0FU) | 0x20U);
+            }
         }
     }
     else
     {
-        ATISetVGAIOBase(inb(R_GENMO));
-
-        /* Protect CRTC[0-7] */
-        tmp = GetReg(CRTX(vgaIOBase), 0x11U);
-        outb(CRTD(vgaIOBase), tmp | 0x80U);
-
-        if (ATIChipHasVGAWonder)
+        if (ATIVGAAdapter != ATI_ADAPTER_NONE)
         {
-            /*
-             * Restore emulation and protection bits in ATI extended VGA
-             * registers.
-             */
-            ATIModifyExtReg(0xB1U, -1, 0xFCU, saved_b1);
-            ATIModifyExtReg(0xB4U, -1, 0x00U, saved_b4);
-            ATIModifyExtReg(0xB5U, -1, 0xBFU, saved_b5);
-            ATIModifyExtReg(0xB6U, -1, 0xDDU, saved_b6);
-            ATIModifyExtReg(0xB8U, -1, 0xC0U, saved_b8 & 0x03U);
-            ATIModifyExtReg(0xB9U, -1, 0x7FU, saved_b9);
-            if (ATIChip > ATI_CHIP_18800)
+            ATISetVGAIOBase(inb(R_GENMO));
+
+            /* Protect CRTC[0-7] */
+            tmp = GetReg(CRTX(vgaIOBase), 0x11U);
+            outb(CRTD(vgaIOBase), tmp | 0x80U);
+
+            if (ATIChipHasVGAWonder)
             {
-                ATIModifyExtReg(0xBEU, -1, 0xFAU, saved_be);
-                if (ATIChip >= ATI_CHIP_28800_2)
+                /*
+                 * Restore emulation and protection bits in ATI extended VGA
+                 * registers.
+                 */
+                ATIModifyExtReg(0xB1U, -1, 0xFCU, saved_b1);
+                ATIModifyExtReg(0xB4U, -1, 0x00U, saved_b4);
+                ATIModifyExtReg(0xB5U, -1, 0xBFU, saved_b5);
+                ATIModifyExtReg(0xB6U, -1, 0xDDU, saved_b6);
+                ATIModifyExtReg(0xB8U, -1, 0xC0U, saved_b8 & 0x03U);
+                ATIModifyExtReg(0xB9U, -1, 0x7FU, saved_b9);
+                if (ATIChip > ATI_CHIP_18800)
                 {
-                    ATIModifyExtReg(0xA6U, -1, 0x7FU, saved_a6);
-                    ATIModifyExtReg(0xABU, -1, 0xE7U, saved_ab);
+                    ATIModifyExtReg(0xBEU, -1, 0xFAU, saved_be);
+                    if (ATIChip >= ATI_CHIP_28800_2)
+                    {
+                        ATIModifyExtReg(0xA6U, -1, 0x7FU, saved_a6);
+                        ATIModifyExtReg(0xABU, -1, 0xE7U, saved_ab);
+                    }
                 }
             }
         }

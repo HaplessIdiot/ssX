@@ -30,27 +30,28 @@ from the X Consortium.
 */
 
 
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>		/* for exit() and abs() */
+#endif
+#include <stdio.h>
+
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/Paned.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Label.h>
 #include <X11/Shell.h>
+#include <X11/cursorfont.h>
+#include <X11/Xmu/Error.h>
 #include "RootWin.h"
 #include "Scale.h"
-#include <X11/cursorfont.h>
-
-#include <stdio.h>
-#include <X11/Xmu/Error.h>
-
-#ifndef X_NOT_STDC_ENV
-#include <stdlib.h>		/* for exit() and abs() */
-#endif
 
 #define SRCWIDTH  64
 #define SRCHEIGHT 64
 
-#define min(a, b) a < b ? a : b
+#ifndef min
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#endif
 
 extern void SWGrabSelection();
 extern void SWRequestSelection();
@@ -95,6 +96,41 @@ static unsigned int srcWidth, srcHeight;
 
 /* forward declarations */
 
+#if NeedFunctionPrototypes
+/* xmag.c */
+static int Error(Display *, XErrorEvent *);
+static void CloseAP(Widget, XEvent *, String *, Cardinal *);
+static void SetCmapPropsAP(Widget, XEvent *, String *, Cardinal *);
+static void UnsetCmapPropsAP(Widget, XEvent *, String *, Cardinal *);
+static void NewAP(Widget, XEvent *, String *, Cardinal *);
+static void ReplaceAP(Widget, XEvent *, String *, Cardinal *);
+static void PopupPixelAP(Widget, XEvent *, String *, Cardinal *);
+static void UpdatePixelAP(Widget, XEvent *, String *, Cardinal *);
+static void PopdownPixelAP(Widget, XEvent *, String *, Cardinal *);
+static void SelectRegionAP(Widget, XEvent *, String *, Cardinal *);
+static void CheckPoints(Position *, Position *, Position *, Position *);
+static void HighlightTO(XtPointer, XtIntervalId *);
+static void CloseCB(Widget, XtPointer, XtPointer);
+static void ReplaceCB(Widget, XtPointer, XtPointer);
+static void NewCB(Widget, XtPointer, XtPointer);
+static void SelectCB(Widget, XtPointer, XtPointer);
+static void PasteCB(Widget, XtPointer, XtPointer);
+static void SetupGC(void);
+static Window FindWindow(int, int);
+static void ResizeEH(Widget, XtPointer, XEvent *, Boolean *);
+static void DragEH(Widget, XtPointer, XEvent *, Boolean *);
+static void StartRootPtrGrab(Boolean, hlPtr);
+static void CreateRoot(void);
+static void GetImageAndAttributes(Window, int, int, int, int, hlPtr);
+static int Get_XColors(XWindowAttributes *, XColor **);
+static Pixel GetMaxIntensity(hlPtr);
+static Pixel GetMinIntensity(hlPtr);
+static void PopupNewScale(hlPtr);
+static void RedoOldScale(hlPtr);
+static void InitCursors(void);
+static void ParseSourceGeom(void);
+extern void main(int, char **);
+#else
 static void 
   CloseAP(), 
   SetCmapPropsAP(),
@@ -132,6 +168,7 @@ static int
 static Pixel
   GetMaxIntensity(),
   GetMinIntensity();
+#endif
 
 
 
@@ -350,7 +387,7 @@ PopupPixelAP(w, event, params, num_params)
     XtSetArg(wargs[n], XtNy, label_y); n++;
     XtSetValues(data->pixShell, wargs, n);
     
-    UpdatePixelAP(w, event);
+    UpdatePixelAP(w, event, 0, 0);
 }
 
 
@@ -382,7 +419,7 @@ UpdatePixelAP(w, event, params, num_params)
     else {
 	color.pixel = pixel;
 	XQueryColor(dpy, data->win_info.colormap, &color);
-	sprintf(string, "Pixel %d at (%d,%d) colored (%x,%x,%x).", 
+	sprintf(string, "Pixel %ld at (%d,%d) colored (%x,%x,%x).", 
 		pixel, x + data->x, y + data->y,
 		color.red, color.green, color.blue);
 	n = 0;

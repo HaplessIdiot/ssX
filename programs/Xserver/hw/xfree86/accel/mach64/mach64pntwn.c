@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pntwn.c,v 3.3 1996/12/23 06:39:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pntwn.c,v 3.4 1998/01/24 16:56:53 hohndel Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -144,7 +144,6 @@ mach64FillBoxTile (pDrawable, pRegion, pPixmap)
 {
     ScreenPtr   pScreen = pDrawable->pScreen;
     GCPtr       pGC;
-    cfbPrivGC  *devPriv;
     BoxPtr      pBox;
     BoxRec      box;
     int         n, nInit;
@@ -176,12 +175,11 @@ mach64FillBoxTile (pDrawable, pRegion, pPixmap)
     box.y2 = mach64VirtY;
     REGION_INIT(pGC->pScreen, &NullClip, &box, 1);
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
-    oldpCompositeClip = devPriv->pCompositeClip;
+    oldpCompositeClip = pGC->pCompositeClip;
     old_fillStyle = pGC->fillStyle;
     old_tile = pGC->tile;
 
-    devPriv->pCompositeClip = &NullClip;
+    pGC->pCompositeClip = &NullClip;
     pGC->fillStyle = FillTiled;
     pGC->tile.pixmap = pPixmap;
 
@@ -195,7 +193,7 @@ mach64FillBoxTile (pDrawable, pRegion, pPixmap)
 
     mach64PolyFillRect (pDrawable, pGC, nInit, pRectInit);
 
-    devPriv->pCompositeClip = oldpCompositeClip;
+    pGC->pCompositeClip = oldpCompositeClip;
     pGC->fillStyle = old_fillStyle;
     pGC->tile = old_tile;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Color.c,v 1.4 94/03/31 17:48:44 dpw Exp $ */
+/* $XConsortium: Color.c /main/8 1996/12/02 10:20:51 lehors $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -20,19 +20,15 @@ is" without express or implied warranty.
 #include "colormapst.h"
 #include "resource.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
+
 
 #include "Display.h"
 #include "Screen.h"
 #include "Color.h"
 #include "Visual.h"
-#include "Window.h"
+#include "XNWindow.h"
 #include "Args.h"
-
-#define lowbit(x) ((x) & (~(x) + 1))
 
 static ColormapPtr InstalledMaps[MAXSCREENS];
 
@@ -191,6 +187,7 @@ void xnestSetInstalledColormapWindows(pScreen)
      ScreenPtr pScreen;
 {
   xnestInstalledColormapWindows icws;
+  int numWindows;
   
   icws.cmapIDs = (Colormap *)xalloc(pScreen->maxInstalledCmaps *
 				    sizeof(Colormap));
@@ -198,21 +195,38 @@ void xnestSetInstalledColormapWindows(pScreen)
   icws.numWindows = 0;
   WalkTree(pScreen, xnestCountInstalledColormapWindows, (pointer)&icws);
   if (icws.numWindows) {
-    icws.windows = (Window *)xalloc(icws.numWindows * sizeof(Window));
+    icws.windows = (Window *)xalloc((icws.numWindows + 1) * sizeof(Window));
     icws.index = 0;
     WalkTree(pScreen, xnestGetInstalledColormapWindows, (pointer)&icws);
+    icws.windows[icws.numWindows] = xnestDefaultWindows[pScreen->myNum];
+    numWindows = icws.numWindows + 1;
   }
-  else
+  else {
     icws.windows = NULL;
+    numWindows = 0;
+  }
   
   xfree(icws.cmapIDs);
   
   if (!xnestSameInstalledColormapWindows(icws.windows, icws.numWindows)) {
     if (xnestOldInstalledColormapWindows)
       xfree(xnestOldInstalledColormapWindows);
-    
+
+#ifdef _XSERVER64
+    {
+      int i;
+      Window64 *windows = (Window64 *)xalloc(numWindows * sizeof(Window64));
+
+      for(i = 0; i < numWindows; ++i)
+	  windows[i] = icws.windows[i];
+      XSetWMColormapWindows(xnestDisplay, xnestDefaultWindows[pScreen->myNum],
+			    windows, numWindows);
+      xfree(windows);
+    }
+#else
     XSetWMColormapWindows(xnestDisplay, xnestDefaultWindows[pScreen->myNum],
-			  icws.windows, icws.numWindows);
+			  icws.windows, numWindows);
+#endif
 
     xnestOldInstalledColormapWindows = icws.windows;
     xnestNumOldInstalledColormapWindows = icws.numWindows;
@@ -253,9 +267,20 @@ void xnestSetScreenSaverColormapWindow(pScreen)
 {
   if (xnestOldInstalledColormapWindows)
     xfree(xnestOldInstalledColormapWindows);
-   
+  
+#ifdef _XSERVER64
+  {
+    Window64 window;
+
+    window = xnestScreenSaverWindows[pScreen->myNum];
+    XSetWMColormapWindows(xnestDisplay, xnestDefaultWindows[pScreen->myNum],
+			  &window, 1);
+    xnestScreenSaverWindows[pScreen->myNum] = window;
+  }
+#else
   XSetWMColormapWindows(xnestDisplay, xnestDefaultWindows[pScreen->myNum],
 			&xnestScreenSaverWindows[pScreen->myNum], 1);
+#endif /* _XSERVER64 */
   
   xnestOldInstalledColormapWindows = NULL;
   xnestNumOldInstalledColormapWindows = 0;
@@ -366,8 +391,26 @@ void xnestStoreColors(pCmap, nColors, pColors)
      xColorItem *pColors;
 {
   if (pCmap->pVisual->class & DynamicClass)
+#ifdef _XSERVER64
+  {
+    int i;
+    XColor *pColors64 = (XColor *)xalloc(nColors * sizeof(XColor) );
+
+    for(i = 0; i < nColors; ++i)
+    {
+      pColors64[i].pixel = pColors[i].pixel;
+      pColors64[i].red = pColors[i].red;
+      pColors64[i].green = pColors[i].green;
+      pColors64[i].blue = pColors[i].blue;
+      pColors64[i].flags = pColors[i].flags;
+    }
+    XStoreColors(xnestDisplay, xnestColormap(pCmap), pColors64, nColors);
+    xfree(pColors64);
+  }
+#else
     XStoreColors(xnestDisplay, xnestColormap(pCmap),
 		 (XColor *)pColors, nColors);
+#endif
 }
 
 void xnestResolveColor(pRed, pGreen, pBlue, pVisual)

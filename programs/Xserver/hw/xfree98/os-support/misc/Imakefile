@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/os-support/misc/Imakefile,v 3.6 1997/04/08 14:56:07 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/os-support/misc/Imakefile,v 3.7 1998/03/20 19:08:12 hohndel Exp $
 
 
 
@@ -16,8 +16,8 @@ SRCS = xf86_Util.c xf86_IlHack.c $(DSRC)
 
 OBJS = xf86_Util.o xf86_IlHack.o $(DOBJ)
 
-INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86SRC)/config -I. \
-	   -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
+           -I$(XINCLUDESRC)
 
 DEFINES = -DPC98
 

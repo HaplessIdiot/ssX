@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/mfb/mfbfillrct.c,v 1.0tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -98,8 +99,8 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     priv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
     alu = priv->ropFillArea;
     pfn = priv->FillArea;
-    ppix = priv->pRotatedPixmap;
-    prgnClip = priv->pCompositeClip;
+    ppix = pGC->pRotatedPixmap;
+    prgnClip = pGC->pCompositeClip;
 
     prect = prectInit;
     xorg = pDrawable->x;

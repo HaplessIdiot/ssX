@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8plypt.c,v 3.0 1996/11/18 13:09:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8plypt.c,v 3.1 1996/12/23 06:40:08 dawes Exp $ */
 
 /************************************************************
 
@@ -72,7 +72,6 @@ mach8PolyPoint(pDrawable, pGC, mode, npt, pptInit)
     register int    i;
     register BoxPtr pbox;
     int		    off;
-    cfbPrivGCPtr    devPriv;
     xPoint	    *pptPrev;
 
 /* 11-jun-93 TCG : is VT visible */
@@ -82,10 +81,9 @@ mach8PolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	return;
     }
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
     if (pGC->alu == GXnoop)
 	return;
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     if ((mode == CoordModePrevious) && (npt > 1))
     {
 	for (pptPrev = pptInit + 1, i = npt - 1; --i >= 0; pptPrev++)

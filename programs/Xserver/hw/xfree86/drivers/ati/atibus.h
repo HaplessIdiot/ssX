@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.h,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.h,v 1.1tsi Exp $ */
 /*
- * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -37,6 +37,7 @@
 #define ATI_BUS_DXLB    5
 #define ATI_BUS_VLB     6
 #define ATI_BUS_PCI     7
+#define ATI_BUS_AGP     8
 extern CARD8 ATIBusType;
 extern const char *ATIBusNames[];
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.16 1996/12/23 06:41:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.17 1997/01/08 20:33:43 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -139,7 +139,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
    if (pSrcDrawable->type == DRAWABLE_PIXMAP) {
       if ((pSrcDrawable == pDstDrawable) &&
 	  (pGC->clientClipType == CT_NONE)) {
-	 prgnSrcClip = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	 prgnSrcClip = pGC->pCompositeClip;
       } else {
 	 fastClip = 1;
       }
@@ -154,7 +154,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	    fastClip = 1;
 	 } else if ((pSrcDrawable == pDstDrawable) &&
 		    (pGC->clientClipType == CT_NONE)) {
-	    prgnSrcClip = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	    prgnSrcClip = pGC->pCompositeClip;
 	 } else {
 	    prgnSrcClip = NotClippedByChildren((WindowPtr) pSrcDrawable);
 	    freeSrcClip = TRUE;
@@ -236,7 +236,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
      * gc
      */
 
-      cclip = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+      cclip = pGC->pCompositeClip;
       if (REGION_NUM_RECTS(cclip) == 1) {
 	 BoxPtr pBox = REGION_RECTS(cclip);
 
@@ -268,9 +268,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
    }
 
    if (!fastClip) {
-      (*pGC->pScreen->Intersect) (&rgnDst,
-				  &rgnDst,
-				  ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+      (*pGC->pScreen->Intersect) (&rgnDst, &rgnDst, pGC->pCompositeClip);
    }
  /* Do bit blitting */
    numRects = REGION_NUM_RECTS(&rgnDst);
@@ -386,7 +384,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
      */
    }
    prgnExposed = NULL;
-   if (((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose) {
+   if (pGC->fExpose) {
       extern RegionPtr miHandleExposures();
 
     /* Pixmap sources generate a NoExposed (we return NULL to do this) */
@@ -643,7 +641,7 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
    if (pSrcDrawable->type == DRAWABLE_PIXMAP) {
       if ((pSrcDrawable == pDstDrawable) &&
 	  (pGC->clientClipType == CT_NONE)) {
-	 prgnSrcClip = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	 prgnSrcClip = pGC->pCompositeClip;
       } else {
 	 fastClip = 1;
       }
@@ -658,7 +656,7 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	    fastClip = 1;
 	 } else if ((pSrcDrawable == pDstDrawable) &&
 		    (pGC->clientClipType == CT_NONE)) {
-	    prgnSrcClip = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	    prgnSrcClip = pGC->pCompositeClip;
 	 } else {
 	    prgnSrcClip = NotClippedByChildren((WindowPtr) pSrcDrawable);
 	    freeSrcClip = TRUE;
@@ -734,7 +732,7 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
        * directly.  Otherwise we have to create a full blown region and call
        * intersect
        */
-      cclip = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+      cclip = pGC->pCompositeClip;
       if (REGION_NUM_RECTS(cclip) == 1) {
 	 BoxPtr pBox = REGION_RECTS(cclip);
 
@@ -765,9 +763,7 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
    }
 
    if (!fastClip) {
-      (*pGC->pScreen->Intersect) (&rgnDst,
-				  &rgnDst,
-				  ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+      (*pGC->pScreen->Intersect) (&rgnDst, &rgnDst, pGC->pCompositeClip);
    }
 
    /* Do bit blitting */
@@ -889,7 +885,7 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
       }
    }
    prgnExposed = NULL;
-   if (((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose) {
+   if (pGC->fExpose) {
       extern RegionPtr miHandleExposures();
 
       /* Pixmap sources generate a NoExposed (we return NULL to do this) */

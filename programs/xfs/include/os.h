@@ -1,5 +1,5 @@
 /* $XConsortium: os.h /main/11 1995/10/04 07:51:34 dpw $ */
-/* $XFree86: xc/programs/xfs/include/os.h,v 3.1 1995/06/14 07:54:56 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/include/os.h,v 3.2 1996/01/05 13:21:30 dawes Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -79,8 +79,23 @@ void        Error();
 void        InitErrors();
 void        CloseErrors();
 void        NoticeF();
+#if defined(MetroLink)
+extern void ErrorF(
+#if NeedVarargsPrototypes
+    char* /*f*/,
+    ...
+#endif
+);
+extern void FatalError(
+#if NeedVarargsPrototypes
+    char* /*f*/,
+    ...
+#endif
+);
+#else
 void        ErrorF();
 void        FatalError();
+#endif
 void        SetConfigValues();
 
 typedef pointer FID;

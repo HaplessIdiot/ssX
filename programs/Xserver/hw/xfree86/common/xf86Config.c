@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.138 1998/01/24 16:57:22 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.139 1998/02/07 08:58:14 hohndel Exp $
  *
  * Loosely based on code bearing the following copyright:
  *
@@ -1195,7 +1195,7 @@ XF86OptionPtr	options;
     xf86issvgatype = 0;
   if (xf86xaaloaded)
     xf86xaaloaded = 0;
-  if ((ptr = (ScrnInfoPtr (*)(void))LoaderSymbolHandle("ServerInit", handle))) {
+  if ((ptr = (ScrnInfoPtr (*)(void))LoaderSymbol("ServerInit"))) {
     screenp= (ptr)();
   }
 

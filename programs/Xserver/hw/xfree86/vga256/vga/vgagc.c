@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgagc.c,v 3.7 1996/12/23 06:59:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgagc.c,v 3.8 1998/01/24 16:58:48 hohndel Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -226,9 +226,9 @@ vga256CreateGC(pGC)
     pPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
     pPriv->rop = pGC->alu;
     pPriv->oneRect = FALSE;
-    pPriv->fExpose = TRUE;
-    pPriv->freeCompClip = FALSE;
-    pPriv->pRotatedPixmap = (PixmapPtr) NULL;
+    pGC->fExpose = TRUE;
+    pGC->freeCompClip = FALSE;
+    pGC->pRotatedPixmap = (PixmapPtr) NULL;
     return TRUE;
 }
 
@@ -285,7 +285,7 @@ vga256ValidateGC(pGC, changes, pDrawable)
 #ifdef NO_ONE_RECT
 	devPriv->oneRect = FALSE;
 #else
-	oneRect = REGION_NUM_RECTS(devPriv->pCompositeClip) == 1;
+	oneRect = REGION_NUM_RECTS(pGC->pCompositeClip) == 1;
 	if (oneRect != devPriv->oneRect)
 	    new_line = TRUE;
 	devPriv->oneRect = oneRect;
@@ -411,7 +411,7 @@ vga256ValidateGC(pGC, changes, pDrawable)
 		if ((width <= PGSZ) && !(width & (width - 1)))
 		{
 		    cfbCopyRotatePixmap(pGC->tile.pixmap,
-					&devPriv->pRotatedPixmap,
+					&pGC->pRotatedPixmap,
 					xrot, yrot);
 		    new_pix = TRUE;
 		}
@@ -425,16 +425,16 @@ vga256ValidateGC(pGC, changes, pDrawable)
 		if ((width <= PGSZ) && !(width & (width - 1)))
 		{
 		    mfbCopyRotatePixmap(pGC->stipple,
-					&devPriv->pRotatedPixmap, xrot, yrot);
+					&pGC->pRotatedPixmap, xrot, yrot);
 		    new_pix = TRUE;
 		}
 	    }
 	    break;
 	}
-	if (!new_pix && devPriv->pRotatedPixmap)
+	if (!new_pix && pGC->pRotatedPixmap)
 	{
-	    (*pGC->pScreen->DestroyPixmap)(devPriv->pRotatedPixmap);
-	    devPriv->pRotatedPixmap = (PixmapPtr) NULL;
+	    (*pGC->pScreen->DestroyPixmap)(pGC->pRotatedPixmap);
+	    pGC->pRotatedPixmap = (PixmapPtr) NULL;
 	}
     }
 
@@ -607,7 +607,7 @@ vga256ValidateGC(pGC, changes, pDrawable)
 	    }
 	    break;
 	case FillTiled:
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 	    {
 		if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
 		    pGC->ops->FillSpans = vga256Tile32FSCopy;
@@ -618,13 +618,13 @@ vga256ValidateGC(pGC, changes, pDrawable)
 		pGC->ops->FillSpans = vga256UnnaturalTileFS;
 	    break;
 	case FillStippled:
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 		pGC->ops->FillSpans = vga2568Stipple32FS;
 	    else
 		pGC->ops->FillSpans = vga256UnnaturalStippleFS;
 	    break;
 	case FillOpaqueStippled:
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 		pGC->ops->FillSpans = vga2568OpaqueStipple32FS;
 	    else
 		pGC->ops->FillSpans = vga256UnnaturalStippleFS;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3ss.c,v 3.5 1997/01/14 22:17:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3ss.c,v 3.6 1997/06/03 14:11:41 hohndel Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -151,7 +151,7 @@ s3SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
       return;
    }
    alu = pGC->alu;
-   prgnDst = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+   prgnDst = pGC->pCompositeClip;
 
    pptLast = ppt + nspans;
 

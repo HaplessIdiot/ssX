@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbimage.c,v 3.0 1996/08/18 01:45:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbimage.c,v 3.1 1997/06/03 14:11:07 hohndel Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -32,7 +32,7 @@ afbPutImage(pDraw, pGC, depth, x, y, width, height, leftPad, format, pImage)
 		if (!pPixmap)
 			return;
 
-			afbGetGCPrivate(pGC)->fExpose = FALSE;
+		pGC->fExpose = FALSE;
 		if (format == XYBitmap)
 			(void)(*pGC->ops->CopyPlane)((DrawablePtr)pPixmap, pDraw, pGC, leftPad,
 												  0, width, height, x, y, 1);
@@ -72,7 +72,7 @@ afbPutImage(pDraw, pGC, depth, x, y, width, height, leftPad, format, pImage)
 #endif
 		}
 
-		afbGetGCPrivate(pGC)->fExpose = TRUE;
+		pGC->fExpose = TRUE;
 		FreeScratchPixmapHeader(pPixmap);
 	} else {
 		/* Chunky to planar conversion required */
@@ -141,10 +141,10 @@ afbPutImage(pDraw, pGC, depth, x, y, width, height, leftPad, format, pImage)
 			}
 		} /* for (d = ...) */
 
-		afbGetGCPrivate(pGC)->fExpose = FALSE;
+		pGC->fExpose = FALSE;
 		(void)(*pGC->ops->CopyArea)((DrawablePtr)pPixmap, pDraw, pGC, leftPad, 0,
 											 width, height, x, y);
-		afbGetGCPrivate(pGC)->fExpose = TRUE;
+		pGC->fExpose = TRUE;
 		(*pScreen->DestroyPixmap)(pPixmap);
 	}
 }

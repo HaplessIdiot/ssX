@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.8 1996/08/20 12:27:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.9 1996/12/23 06:42:01 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -79,7 +79,6 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
    register int i;
    register BoxPtr pbox;
    int   off;
-   cfbPrivGCPtr devPriv;
    xPoint *pptPrev;
 
 
@@ -102,10 +101,9 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
       return;
    }
 
-   devPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
    if (pGC->alu == GXnoop)
       return;
-   cclip = devPriv->pCompositeClip;
+   cclip = pGC->pCompositeClip;
    if ((mode == CoordModePrevious) && (npt > 1)) {
       for (pptPrev = pptInit + 1, i = npt - 1; --i >= 0; pptPrev++) {
 	 pptPrev->x += (pptPrev - 1)->x;

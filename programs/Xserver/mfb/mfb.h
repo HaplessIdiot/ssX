@@ -51,7 +51,7 @@ SOFTWARE.
 
 
 
-/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.4 1997/10/25 13:51:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.5 1997/11/16 11:51:17 dawes Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -1022,20 +1022,13 @@ displayable screen (e.g. the early vsII, which displayed 960 pixels
 across, but was 1024 in the hardware.)
 
    private field of GC 
-	Freeing pCompositeClip is done based on the value of
-freeCompClip; if freeCompClip is not carefully maintained, we will end
-up losing storage or freeing something that isn't ours.
 */
 
 typedef struct {
     unsigned char	rop;		/* reduction of rasterop to 1 of 3 */
     unsigned char	ropOpStip;	/* rop for opaque stipple */
     unsigned char	ropFillArea;	/*  == alu, rop, or ropOpStip */
-    unsigned	fExpose:1;		/* callexposure handling ? */
-    unsigned	freeCompClip:1;
-    PixmapPtr	pRotatedPixmap;		/* tile/stipple rotated to align */
-    RegionPtr	pCompositeClip;		/* free this based on freeCompClip
-					   flag rather than NULLness */
+    unsigned char	unused1[sizeof(long) - 3];	/* Alignment */
     void 	(* FillArea)(		/* fills regions; look at the code */
 #if NeedNestedPrototypes
 		DrawablePtr /*pDraw*/,
@@ -1066,10 +1059,10 @@ typedef struct {
 
 /* Common macros for extracting drawing information */
 
-#define mfbGetTypedWidth(pDrawable,type) (\
+#define mfbGetTypedWidth(pDrawable,wtype) (\
     (((pDrawable)->type == DRAWABLE_WINDOW) ? \
      (int) (((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devKind) : \
-     (int)(((PixmapPtr)pDrawable)->devKind)) / sizeof (type))
+     (int)(((PixmapPtr)pDrawable)->devKind)) / sizeof (wtype))
 
 #define mfbGetByteWidth(pDrawable) mfbGetTypedWidth(pDrawable, unsigned char)
 

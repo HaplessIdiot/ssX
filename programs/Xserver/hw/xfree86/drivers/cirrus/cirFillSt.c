@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirFillSt.c,v 1.4 1997/10/25 13:50:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirFillSt.c,v 1.5 1998/01/24 16:57:56 hohndel Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -59,12 +59,10 @@ void CirrusFillRectOpaqueStippled32(pDrawable, pGC, nBox, pBox)
 {
 	unsigned long *src;
 	int stippleHeight;
-	cfbPrivGCPtr devPriv;
 	PixmapPtr stipple;
 	int destPitch;
 
-	devPriv = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr);
-	stipple = devPriv->pRotatedPixmap;
+	stipple = pGC->pRotatedPixmap;
 
 	destPitch = (int)
 		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind);
@@ -109,12 +107,10 @@ void CirrusFillRectTransparentStippled32(pDrawable, pGC, nBox, pBox)
 {
 	unsigned long *src;
 	int stippleHeight;
-	cfbPrivGCPtr devPriv;
 	PixmapPtr stipple;
 	int destPitch;
 
-	devPriv = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr);
-	stipple = devPriv->pRotatedPixmap;
+	stipple = pGC->pRotatedPixmap;
 
 	destPitch = (int)
 		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind);

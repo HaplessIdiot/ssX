@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcWinFS.c,v 3.4 1997/03/13 15:11:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcWinFS.c,v 3.5 1998/01/24 16:58:40 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -109,7 +109,7 @@ ppcSolidWindowFS( pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted )
     if ( ( alu = ( (ppcPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr )->colorRrop.alu ) == GXnoop )
 	return ;
 
-    n = nInit * miFindMaxBand( ( (ppcPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr )->pCompositeClip ) ;
+    n = nInit * miFindMaxBand( pGC->pCompositeClip ) ;
     if ( !( pwidth = (int *) ALLOCATE_LOCAL( n * sizeof( int ) ) ) )
 	return ;
     pwidthFree = pwidth ;
@@ -121,8 +121,8 @@ ppcSolidWindowFS( pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted )
     }
     pptFree = ppt ;
 
-    n = miClipSpans( ( (ppcPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr )->pCompositeClip,
-		     pptInit, pwidthInit, nInit, ppt, pwidth, fSorted ) ;
+    n = miClipSpans( pGC->pCompositeClip, pptInit, pwidthInit, nInit,
+	ppt, pwidth, fSorted ) ;
 
     pm = ( (ppcPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr )->colorRrop.planemask ;
     fg = ( (ppcPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr )->colorRrop.fgPixel ;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbline.c,v 3.3 1996/12/23 06:52:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbline.c,v 3.4 1997/03/13 15:10:59 hohndel Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -181,7 +181,7 @@ DoV16LineSS (pDrawable, pGC, mode, npt, pptInit)
     if (!(pGC->planemask & 0x0F))
 	return;
 
-    cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     alu = pGC->alu; /* GJA */
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
@@ -582,7 +582,7 @@ DoV16LineSD( pDrawable, pGC, mode, npt, pptInit)
     if (!(pGC->planemask & 0x0F))
 	return;
 
-    cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     fgink = pGC->fgPixel;	/* GJA */
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);

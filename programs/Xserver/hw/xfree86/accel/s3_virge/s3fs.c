@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fs.c,v 3.5 1997/01/14 22:17:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fs.c,v 3.6 1997/06/03 14:11:38 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -150,7 +150,7 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    if (!(pGC->planemask))
       return;
 
-   n = nInit * miFindMaxBand(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+   n = nInit * miFindMaxBand(pGC->pCompositeClip);
 
    if (n <= 0) return;
 
@@ -164,8 +164,7 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	 DEALLOCATE_LOCAL(pwidth);
       return;
    }
-   n = miClipSpans(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
-		   pptInit, pwidthInit, nInit,
+   n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
 		   ppt, pwidth, fSorted);
    if (n > 0) {
      BLOCK_CURSOR;
@@ -253,7 +252,7 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    if (!(pGC->planemask))
       return;
 
-   n = nInit * miFindMaxBand(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+   n = nInit * miFindMaxBand(pGC->pCompositeClip);
 
    if (n <= 0) return;
 
@@ -267,8 +266,7 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	 DEALLOCATE_LOCAL(pwidth);
       return;
    }
-   n = miClipSpans(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
-		   pptInit, pwidthInit, nInit,
+   n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
 		   ppt, pwidth, fSorted);
    if (n > 0) {
      xrot = pDrawable->x + pGC->patOrg.x;
@@ -358,7 +356,7 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    if (!(pGC->planemask))
       return;
 
-   n = nInit * miFindMaxBand(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+   n = nInit * miFindMaxBand(pGC->pCompositeClip);
 
    if (n <= 0) return;
 
@@ -372,8 +370,7 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	 DEALLOCATE_LOCAL(pwidth);
       return;
    }
-   n = miClipSpans(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
-		   pptInit, pwidthInit, nInit,
+   n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
 		   ppt, pwidth, fSorted);
 
    if (n > 0) {
@@ -464,7 +461,7 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    if (!(pGC->planemask))
       return;
 
-   n = nInit * miFindMaxBand(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+   n = nInit * miFindMaxBand(pGC->pCompositeClip);
 
    if (n <= 0) return;
 
@@ -478,8 +475,7 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	 DEALLOCATE_LOCAL(pwidth);
       return;
    }
-   n = miClipSpans(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
-		   pptInit, pwidthInit, nInit,
+   n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
 		   ppt, pwidth, fSorted);
 
    if (n > 0) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32frect.c,v 3.9 1996/02/04 09:02:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32frect.c,v 3.10 1996/12/23 06:38:33 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -556,7 +556,6 @@ mach32PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     BoxPtr	    pboxClippedBase;
     BoxPtr	    pextent;
     BoxRec	    stackRects[NUM_STACK_RECTS];
-    cfbPrivGC	    *priv;
     int		    numRects;
     int		    n;
     int		    xorg, yorg;
@@ -573,8 +572,7 @@ mach32PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	return;
     }
 
-    priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
-    prgnClip = priv->pCompositeClip;
+    prgnClip = pGC->pCompositeClip;
 
     prect = prectInit;
     xorg = pDrawable->x;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgasolid.c,v 3.3 1996/12/09 11:55:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgasolid.c,v 3.4 1996/12/23 07:00:00 dawes Exp $ */
 /*
  *
 Copyright (c) 1990  X Consortium
@@ -122,7 +122,7 @@ RROP_NAME(vga256SolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted
 
     devPriv = cfbGetGCPrivate(pGC);
     RROP_FETCH_GCPRIV(devPriv)
-    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -133,8 +133,7 @@ RROP_NAME(vga256SolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(devPriv->pCompositeClip,
-		     pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
     cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)

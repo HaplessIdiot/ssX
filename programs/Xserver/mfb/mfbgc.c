@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/mfb/mfbgc.c,v 1.0tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -443,9 +444,9 @@ mfbCreateGC(pGC)
 
     pPriv = (mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr);
     pPriv->rop = mfbReduceRop(pGC->alu, pGC->fgPixel);
-    pPriv->fExpose = TRUE;
-    pPriv->pRotatedPixmap = NullPixmap;
-    pPriv->freeCompClip = FALSE;
+    pGC->fExpose = TRUE;
+    pGC->pRotatedPixmap = NullPixmap;
+    pGC->freeCompClip = FALSE;
     pPriv->FillArea = mfbSolidInvertArea;
     return TRUE;
 }
@@ -617,7 +618,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 		!(pGC->tile.pixmap->drawable.width & (pGC->tile.pixmap->drawable.width - 1)))
 	    {
 		mfbCopyRotatePixmap(pGC->tile.pixmap,
-				    &devPriv->pRotatedPixmap, xrot, yrot);
+				    &pGC->pRotatedPixmap, xrot, yrot);
 		new_pix = TRUE;
 	    }
 	    break;
@@ -627,15 +628,15 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    	!(pGC->stipple->drawable.width & (pGC->stipple->drawable.width - 1)))
 	    {
 		mfbCopyRotatePixmap(pGC->stipple,
-				    &devPriv->pRotatedPixmap, xrot, yrot);
+				    &pGC->pRotatedPixmap, xrot, yrot);
 		new_pix = TRUE;
 	    }
 	}
 	/* destroy any previously rotated tile or stipple */
-	if (!new_pix && devPriv->pRotatedPixmap)
+	if (!new_pix && pGC->pRotatedPixmap)
 	{
-	    (*pDrawable->pScreen->DestroyPixmap)(devPriv->pRotatedPixmap);
-	    devPriv->pRotatedPixmap = (PixmapPtr)NULL;
+	    (*pDrawable->pScreen->DestroyPixmap)(pGC->pRotatedPixmap);
+	    pGC->pRotatedPixmap = (PixmapPtr)NULL;
 	}
     }
 
@@ -844,11 +845,11 @@ mfbValidateGC(pGC, changes, pDrawable)
 	/* beyond this point, opaqueStippled ==> fg != bg */
 	else if (((pGC->fillStyle == FillTiled) ||
 		  (pGC->fillStyle == FillOpaqueStippled)) &&
-		 !devPriv->pRotatedPixmap)
+		 !pGC->pRotatedPixmap)
 	{
 	    pGC->ops->FillSpans = mfbUnnaturalTileFS;
 	}
-	else if ((pGC->fillStyle == FillStippled) && !devPriv->pRotatedPixmap)
+	else if ((pGC->fillStyle == FillStippled) && !pGC->pRotatedPixmap)
 	{
 	    pGC->ops->FillSpans = mfbUnnaturalStippleFS;
 	}
@@ -883,7 +884,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 	 */
 	if ((((pGC->fillStyle == FillTiled) ||
 	      (pGC->fillStyle == FillStippled)) &&
-	     !devPriv->pRotatedPixmap) ||
+	     !pGC->pRotatedPixmap) ||
 	    ((pGC->fillStyle == FillOpaqueStippled) &&
 	     ((pGC->fgPixel & 1) != (pGC->bgPixel & 1)))
 	   )

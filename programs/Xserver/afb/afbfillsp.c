@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afbfillsp.c,v 3.0 1996/08/18 01:45:33 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -105,7 +105,7 @@ afbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	int		d;
 	unsigned char *rrops;
 
-	n = nInit * miFindMaxBand(((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip);
+	n = nInit * miFindMaxBand(pGC->pCompositeClip);
 	pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
 	pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
 	if(!pptFree || !pwidthFree) {
@@ -115,8 +115,7 @@ afbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	}
 	pwidth = pwidthFree;
 	ppt = pptFree;
-	n = miClipSpans(((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip,
-					pptInit, pwidthInit, nInit,
+	n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
 					ppt, pwidth, fSorted);
 
 	afbGetPixelWidthSizeDepthAndPointer(pDrawable, nlwidth, sizeDst, depthDst,
@@ -216,7 +215,7 @@ afbStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	int sizeDst;
 	unsigned char *rrops;
 
-	n = nInit * miFindMaxBand(((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip);
+	n = nInit * miFindMaxBand(pGC->pCompositeClip);
 	pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
 	pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
 	if(!pptFree || !pwidthFree) {
@@ -226,14 +225,13 @@ afbStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	}
 	pwidth = pwidthFree;
 	ppt = pptFree;
-	n = miClipSpans(((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip,
-					pptInit, pwidthInit, nInit, 
+	n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit, 
 					ppt, pwidth, fSorted);
 
 	afbGetPixelWidthSizeDepthAndPointer(pDrawable, nlwidth, sizeDst, depthDst,
 													 pBase);
 
-	pStipple = ((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pRotatedPixmap;
+	pStipple = pGC->pRotatedPixmap;
 	tileHeight = pStipple->drawable.height;
 	psrc = (PixelType *)(pStipple->devPrivate.ptr);
 
@@ -331,7 +329,7 @@ afbTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	int depthDst;
 	int d;
 
-	n = nInit * miFindMaxBand(((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip);
+	n = nInit * miFindMaxBand(pGC->pCompositeClip);
 	pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
 	pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
 	if(!pptFree || !pwidthFree) {
@@ -341,14 +339,13 @@ afbTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	}
 	pwidth = pwidthFree;
 	ppt = pptFree;
-	n = miClipSpans(((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip,
-					pptInit, pwidthInit, nInit, 
+	n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit, 
 					ppt, pwidth, fSorted);
 
 	afbGetPixelWidthSizeDepthAndPointer(pDrawable, nlwidth, sizeDst, depthDst,
 													 pBase);
 
-	pTile = ((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pRotatedPixmap;
+	pTile = pGC->pRotatedPixmap;
 	tileHeight = pTile->drawable.height;
 	psrc = (PixelType *)(pTile->devPrivate.ptr);
 	rop = pGC->alu;
@@ -464,7 +461,7 @@ afbOpaqueStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	int depthDst;
 	int d;
 
-	n = nInit * miFindMaxBand(((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip);
+	n = nInit * miFindMaxBand(pGC->pCompositeClip);
 	pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
 	pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
 	if(!pptFree || !pwidthFree) {
@@ -474,14 +471,13 @@ afbOpaqueStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	}
 	pwidth = pwidthFree;
 	ppt = pptFree;
-	n = miClipSpans(((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip,
-					pptInit, pwidthInit, nInit, 
+	n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit, 
 					ppt, pwidth, fSorted);
 
 	afbGetPixelWidthSizeDepthAndPointer(pDrawable, nlwidth, sizeDst, depthDst,
 													 pBase);
 
-	pTile = ((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pRotatedPixmap;
+	pTile = pGC->pRotatedPixmap;
 	tileHeight = pTile->drawable.height;
 	psrc = (PixelType *)(pTile->devPrivate.ptr);
 	rop = pGC->alu;
@@ -627,7 +623,7 @@ afbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	int depthDst;
 	register int d;
 
-	n = nInit * miFindMaxBand(((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip);
+	n = nInit * miFindMaxBand(pGC->pCompositeClip);
 	pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
 	pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
 	if(!pptFree || !pwidthFree) {
@@ -637,8 +633,7 @@ afbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	}
 	pwidth = pwidthFree;
 	ppt = pptFree;
-	n = miClipSpans(((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip,
-					pptInit, pwidthInit, nInit, 
+	n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit, 
 					ppt, pwidth, fSorted);
 
 	pTile = pGC->tile.pixmap;
@@ -774,7 +769,7 @@ afbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	int sizeDst;
 	int depthDst;
 
-	n = nInit * miFindMaxBand(((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip);
+	n = nInit * miFindMaxBand(pGC->pCompositeClip);
 	pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
 	pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
 	if(!pptFree || !pwidthFree) {
@@ -784,8 +779,7 @@ afbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	}
 	pwidth = pwidthFree;
 	ppt = pptFree;
-	n = miClipSpans(((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip,
-					pptInit, pwidthInit, nInit, 
+	n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit, 
 					ppt, pwidth, fSorted);
 
 	pTile = pGC->stipple;
@@ -922,7 +916,7 @@ afbUnnaturalOpaqueStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	int sizeTile;
 	int depthDst;
 
-	n = nInit * miFindMaxBand(((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip);
+	n = nInit * miFindMaxBand(pGC->pCompositeClip);
 	pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
 	pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
 	if(!pptFree || !pwidthFree) {
@@ -932,8 +926,7 @@ afbUnnaturalOpaqueStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	}
 	pwidth = pwidthFree;
 	ppt = pptFree;
-	n = miClipSpans(((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip,
-					pptInit, pwidthInit, nInit, 
+	n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit, 
 					ppt, pwidth, fSorted);
 
 	pTile = pGC->stipple;

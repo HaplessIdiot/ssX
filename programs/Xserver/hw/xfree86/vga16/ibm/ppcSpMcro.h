@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcSpMcro.h,v 3.0 1996/11/18 13:13:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcSpMcro.h,v 3.1 1996/12/23 06:53:18 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -51,7 +51,7 @@ SOFTWARE.
 
 #define SETSPANPTRS(IN,N,IPW,PW,IPPT,PPT,FPW,FPPT,FSORT)		\
 	{								\
-	N = IN * miFindMaxBand(((ppcPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);\
+	N = IN * miFindMaxBand(pGC->pCompositeClip);			\
 	if(!(PW = (int *)ALLOCATE_LOCAL(N * sizeof(int))))		\
 		return;							\
 	if(!(PPT = (DDXPointRec *)ALLOCATE_LOCAL(N * sizeof(DDXPointRec)))) \
@@ -61,8 +61,7 @@ SOFTWARE.
     		}							\
 	FPW = PW;							\
 	FPPT = PPT;							\
-	N = miClipSpans(((ppcPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip,	\
-		IPPT, IPW, IN,						\
+	N = miClipSpans(pGC->pCompositeClip, IPPT, IPW, IN,		\
 		PPT, PW, FSORT);					\
 	}
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.29 1998/01/24 16:58:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.30 1998/01/25 08:28:20 dawes Exp $ */
 
 
 
@@ -81,6 +81,7 @@ extern int LoaderCheckUnresolved();
 #ifdef DPMSExtension
 extern void DPMSSet(CARD16);
 #endif
+extern Bool (*GlxInitVisualsPtr)();
 
 #if defined (PowerMAX_OS)
 #undef inb
@@ -97,6 +98,24 @@ extern unsigned char  inb(unsigned int a);
 extern unsigned short inw(unsigned int a);
 extern unsigned long  inl(unsigned int a);
 
+#endif
+
+#if defined(__powerpc__) && defined(Lynx)
+void eieio();
+void _restf23();
+void _restf24();
+void _restf25();
+void _restf26();
+void _restf27();
+void _restf28();
+void _restf29();
+void _savef23();
+void _savef24();
+void _savef25();
+void _savef26();
+void _savef27();
+void _savef28();
+void _savef29();
 #endif
 
 /* XFree86 things */
@@ -140,11 +159,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86PostButtonEvent)
    SYMFUNC(xf86GetMotionEvents)
    SYMFUNC(xf86MotionHistoryAllocate)
-#if 0
-   SYMFUNC(xf86AddLocalDevice)
-#endif
-   SYMFUNC(AddEnabledDevice)
-   SYMFUNC(RemoveEnabledDevice)
 #endif
 #ifdef DPMSExtension
    SYMFUNC(DPMSSet)
@@ -392,6 +406,43 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(outb)
    SYMFUNC(outw)
    SYMFUNC(outl)
+#if defined(NO_INLINE)
+   SYMFUNC(mem_barrier)
+   SYMFUNC(ldl_u)
+   SYMFUNC(eieio)
+   SYMFUNC(ldl_brx)
+   SYMFUNC(ldw_brx)
+   SYMFUNC(stl_brx)
+   SYMFUNC(stw_brx)
+   SYMFUNC(ldq_u)
+   SYMFUNC(ldw_u)
+   SYMFUNC(stl_u)
+   SYMFUNC(stq_u)
+   SYMFUNC(stw_u)
+   SYMFUNC(write_mem_barrier)
+#endif
+   SYMFUNC(rdinx)
+   SYMFUNC(wrinx)
+   SYMFUNC(modinx)
+   SYMFUNC(testrg)
+   SYMFUNC(testinx2)
+   SYMFUNC(testinx)
+#if defined(Lynx)
+   SYMFUNC(_restf23)
+   SYMFUNC(_restf24)
+   SYMFUNC(_restf25)
+   SYMFUNC(_restf26)
+   SYMFUNC(_restf27)
+   SYMFUNC(_restf28)
+   SYMFUNC(_restf29)
+   SYMFUNC(_savef23)
+   SYMFUNC(_savef24)
+   SYMFUNC(_savef25)
+   SYMFUNC(_savef26)
+   SYMFUNC(_savef27)
+   SYMFUNC(_savef28)
+   SYMFUNC(_savef29)
+#endif	   
 #if PPCIO_DEBUG   
    SYMFUNC(debug_inb)
    SYMFUNC(debug_inw)

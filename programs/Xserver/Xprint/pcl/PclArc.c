@@ -45,6 +45,8 @@ dealings in this Software without prior written authorization from said
 copyright holders.
 */
 
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclArc.c,v 1.0tsi Exp $ */
+
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -150,9 +152,7 @@ PclDoArc( pDrawable, pGC, nArcs, pArcs, DoIt )
 	   */
 	  region = miRegionCreate( NULL, 0 );
     	  transClip = miRegionCreate( NULL, 0 );
-	  miRegionCopy( transClip,
-		       ((PclGCPrivPtr)pGC->devPrivates[PclGCPrivateIndex].ptr)
-		       ->pCompositeClip );
+	  miRegionCopy( transClip, pGC->pCompositeClip );
 	  miTranslateRegion( transClip, -(xoffset + Arc.x + Arc.width / 2),
 			    -(yoffset + Arc.y + Arc.height / 2) );
 	  miIntersect( region, drawRegion, transClip );

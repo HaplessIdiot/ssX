@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86fpoly.c,v 3.6 1997/10/25 13:51:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86fpoly.c,v 3.7 1998/01/11 03:48:28 dawes Exp $ */
 /*
  * Copyright 1996  The XFree86 Project
  *
@@ -110,7 +110,6 @@ xf86FillPolygonSolid1Rect(pDrawable, pGC, shape, mode, count, ptsIn)
     int		count;
     DDXPointPtr	ptsIn;
 {
-    cfbPrivGCPtr    devPriv;
     int		    maxy;
     int		    origin;
     register int    vertex1, vertex2;
@@ -142,9 +141,8 @@ xf86FillPolygonSolid1Rect(pDrawable, pGC, shape, mode, count, ptsIn)
         mode = CoordModeOrigin;
     }
     
-    devPriv = cfbGetGCPrivate(pGC);
 #ifdef NO_ONE_RECT
-    if (REGION_NUM_RECTS(devPriv->pCompositeClip) != 1)
+    if (REGION_NUM_RECTS(pGC->pCompositeClip) != 1)
     {
 	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
 	return;
@@ -152,7 +150,7 @@ xf86FillPolygonSolid1Rect(pDrawable, pGC, shape, mode, count, ptsIn)
 #endif
     origin = *((int *) &pDrawable->x);
     origin -= (origin & 0x8000) << 1;
-    extents = &devPriv->pCompositeClip->extents;
+    extents = &pGC->pCompositeClip->extents;
     vertex1 = *((int *) &extents->x1) - origin;
     vertex2 = *((int *) &extents->x2) - origin - 0x00010001;
     clip = 0;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aout.h,v 1.1 1997/02/17 16:07:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aout.h,v 1.2 1997/02/20 10:01:20 hohndel Exp $ */
 
 
 
@@ -38,11 +38,23 @@
 #ifndef _AOUT_H
 #define _AOUT_H
 
-#ifdef ISC
-#include <sys/bsdtypes.h>
+#include "Xos.h"
+
+/* Get prototype for ntohl. */
+#include <ctype.h>
+#if 0
+#if defined(SVR4) || defined(Mips)
+#include <sys/endian.h>
+#elif defined(CSRG_BASED)
+#include <machine/endian.h>
+#elif defined(linux)
+#include <asm/byteorder.h>
+#elif defined(Lynx)
+#include <bsd/in.h>
+#endif
 #endif
 
-#define __LDPGSZ        4096
+#define __LDPGSZ        4096U
 #ifndef AOUT_PAGSIZ
 #define AOUT_PAGSIZ(ex)    (__LDPGSZ)
 #endif
@@ -117,17 +129,17 @@ typedef struct AOUT_exec {
  * The macros below will set/get the needed fields.
  */
 #define AOUT_GETMAGIC(ex) \
-    ( (((ex)->a_midmag)&0xffff0000) ? (ntohl(((ex)->a_midmag))&0xffff) : ((ex)->a_midmag))
+    ( (((ex)->a_midmag)&0xffff0000U) ? (ntohl(((ex)->a_midmag))&0xffffU) : ((ex)->a_midmag))
 #define AOUT_GETMAGIC2(ex) \
-    ( (((ex)->a_midmag)&0xffff0000) ? (ntohl(((ex)->a_midmag))&0xffff) : \
+    ( (((ex)->a_midmag)&0xffff0000U) ? (ntohl(((ex)->a_midmag))&0xffffU) : \
     (((ex)->a_midmag) | 0x10000) )
 #define AOUT_GETMID(ex) \
-    ( (((ex)->a_midmag)&0xffff0000) ? ((ntohl(((ex)->a_midmag))>>16)&0x03ff) : MID_ZERO )
+    ( (((ex)->a_midmag)&0xffff0000U) ? ((ntohl(((ex)->a_midmag))>>16)&0x03ffU) : MID_ZERO )
 #define AOUT_GETFLAG(ex) \
-    ( (((ex)->a_midmag)&0xffff0000) ? ((ntohl(((ex)->a_midmag))>>26)&0x3f) : 0 )
+    ( (((ex)->a_midmag)&0xffff0000U) ? ((ntohl(((ex)->a_midmag))>>26)&0x3fU) : 0 )
 #define AOUT_SETMAGIC(ex,mag,mid,flag) \
-    ( (ex)->a_midmag = htonl( (((flag)&0x3f)<<26) | (((mid)&0x03ff)<<16) | \
-    (((mag)&0xffff)) ) )
+    ( (ex)->a_midmag = htonl( (((flag)&0x3fU)<<26) | (((mid)&0x03ffU)<<16) | \
+    (((mag)&0xffffU)) ) )
 
 #define AOUT_ALIGN(ex,x) \
         (AOUT_GETMAGIC(ex) == ZMAGIC || AOUT_GETMAGIC(ex) == QMAGIC ? \

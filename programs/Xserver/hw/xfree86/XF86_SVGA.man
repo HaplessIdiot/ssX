@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.47 1997/11/16 06:18:43 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.48 1997/12/05 22:01:22 hohndel Exp $ 
 .TH XF86_SVGA 1 "Version 3.2A"  "XFree86"
 .SH NAME
 XF86_SVGA - SVGA X Window System servers for UNIX on 
@@ -31,13 +31,14 @@ Trident chips are supported at 16bpp. Some Chips & Technologies chipset also
 support 16bpp and 24bpp (truecolor) modes. The ET6000 and some ET4000W32i or
 ET4000W32p chips supports all color depths. Generic VGA cards are also
 supported at 8bpp 320x200 only. The Matrox Millennium supports all color
-depths.
+depths. The ATI 264xT series of adapters also support all colour depths.
 .RS .5i
 .TP 4
 ATI:
 18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3, 68800-6, 68800AX,
-68800LX, 88800GX-C, 88800GX_D, 88800GX-E, 88800GX-F, 88800CX, 264CT, 264ET,
-264VT, 264VT-B, 264VT3, 264GT, 264GT-B, 264GT3
+68800LX, 88800GX-C, 88800GX-D, 88800GX-E, 88800GX-F, 88800CX, 264CT, 264ET,
+264VT, 264GT (a.k.a. 3D Rage), 264VT-B, 264VT3, 264GT-B (a.k.a. 3D Rage II), 
+264GT3 (a.k.a. 3D Rage III)
 .TP 4
 Tseng Labs:
 ET3000, ET4000, ET4000/W32, ET4000/W32i, ET4000/W32p, ET6000
@@ -81,7 +82,8 @@ Chips & Technologies:
 .ig
 82C451, 82C452, 82C453, 82C455, 82C456, 82C457,
 ..
-65520, 65530, 65540, 65545, 65546, 65548, 65550, 65554
+65520, 65525, 65530, 65535, 65540, 65545, 65546, 65548, 
+65550, 65554, 65555, 68554, 69000, 64200, 64300
 
 .TP 4
 SiS:
@@ -183,7 +185,8 @@ Avance Logic:
 al2101, ali2301, ali2302, ali2308, ali2401
 .TP 4
 Chips & Technologies:
-ct65520, ct65530, ct65540, ct65545, ct65546, ct65548, ct65550, ct65554
+ct65520, ct65525, ct65530, ct65535, ct65540, ct65545, ct65546, ct65548, 
+ct65550, ct65554, ct65555, ct68554, ct69000, ct64200, ct64300
 .TP 4
 SiS:
 sis86c201, sis86c202, sis86c205

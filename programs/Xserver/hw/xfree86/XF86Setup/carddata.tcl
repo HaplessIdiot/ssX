@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.18 1997/12/05 22:01:27 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.19 1997/12/14 10:03:55 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -45,6 +45,8 @@ set CardChipSets(SVGA-cirrus)	{ clgd5420 clgd5422 clgd5424 clgd5426 \
 #set CardChipSets(SVGA-compaq)	cpq_avga
 set CardChipSets(SVGA-chips)	{ ct65520 ct65530 ct65540 ct65545 \
 				  ct65546 ct65548 ct65550 ct65554 \
+				  ct65555 ct68554 ct69000 \
+				  ct64200 ct64300 \
 				  ct451 ct452 ct453 ct455 ct456 ct457 }
 set CardChipSets(SVGA-et3000)	et3000
 set CardChipSets(SVGA-et4000)	{ et4000 et4000w32 et4000w32i et4000w32i_rev_b \

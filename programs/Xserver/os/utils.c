@@ -51,7 +51,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.34 1997/11/22 06:50:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.35 1998/01/25 04:00:12 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -75,7 +75,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #undef _POSIX_SOURCE
 #endif
 #endif
-#if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX) && !defined(WIN32) && !defined(Lynx)
+#if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX) && !defined(WIN32) && !defined(Lynx) && !defined(QNX)
 #include <sys/resource.h>
 #endif
 #include <time.h>
@@ -156,6 +156,8 @@ void ddxUseMsg();
 void VErrorF(char*, va_list);
 #endif
 
+Bool Must_have_memory = FALSE;
+
 #ifdef AIXV3
 FILE *aixfd;
 int SyncOn  = 0;
@@ -179,8 +181,6 @@ long Memory_fail = 0;
 #ifdef sgi
 int userdefinedfontpath = 0;
 #endif /* sgi */
-
-Bool Must_have_memory = FALSE;
 
 char *dev_tty_from_init = NULL;		/* since we need to parse it anyway */
 
@@ -1406,7 +1406,19 @@ VErrorF(f, args)
     vfprintf(stderr, f, args);
 #endif /* AIXV3 */
 }
+
+void
+VFatalError(const char *msg, va_list args)
+{
+    vfprintf(stderr, msg, args);
+    ErrorF("\n");
+#ifdef DDXOSFATALERROR
+    OsVendorFatalError();
 #endif
+    AbortServer();
+    /*NOTREACHED*/
+}
+#endif /* NeedVarargsPrototypes */
 
 /*VARARGS1*/
 void

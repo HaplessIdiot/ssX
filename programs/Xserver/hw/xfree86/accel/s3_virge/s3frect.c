@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3frect.c,v 3.8 1997/03/10 10:11:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3frect.c,v 3.9 1997/06/03 14:11:37 hohndel Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -468,7 +468,6 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
    BoxPtr pboxClippedBase;
    BoxPtr pextent;
    BoxRec stackRects[NUM_STACK_RECTS];
-   cfbPrivGC *priv;
    int   numRects;
    int   n;
    int   xorg, yorg;
@@ -499,8 +498,7 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
       return;
    }
 
-   priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
-   prgnClip = priv->pCompositeClip;
+   prgnClip = pGC->pCompositeClip;
 
    prect = prectInit;
    xorg = pDrawable->x;

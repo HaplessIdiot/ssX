@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.106 1997/11/01 15:04:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.107 1998/01/24 16:58:42 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1997 Metro Link Incorporated ("Metro Link")
@@ -193,6 +193,10 @@ ScrnInfoRec vga256InfoRec = {
   0,                    /* unsigned long physBase */
   0,                    /* int physSize */
 #endif
+#ifdef XF86SETUP
+  NULL,			/* void *device */
+#endif
+  FALSE                 /* hasDirectColor */
 };
 
 #ifdef XFree86LOADER
@@ -284,6 +288,13 @@ pointer vgaLinearBase = NULL;
 pointer vgaLinearOrig = NULL;
 vgaPCIInformation *vgaPCIInfo = NULL;
 Bool vgaDAC8BitComponents = FALSE;
+
+Bool (*vgaCloseScreenFunc)(
+#if NeedFunctionPrototypes
+    int,
+    ScreenPtr
+#endif
+);
 
 void (* vgaEnterLeaveFunc)(
 #if NeedFunctionPrototypes
@@ -782,14 +793,16 @@ vgaProbe()
 	      (*vgaEnterLeaveFunc)(LEAVE);
 	      return(FALSE);
 	    }
-	    if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY > 8*vgaSegmentSize)
+	    if (((vga256InfoRec.displayWidth * (vga256InfoRec.virtualY - 1)) +
+                 vga256InfoRec.virtualX) > 8*vgaSegmentSize)
 	      if (vga256InfoRec.virtualX <= 1024)
 		vga256InfoRec.displayWidth = 1024;
 	      else
 		vga256InfoRec.displayWidth = 2048;
 	  }
 #endif
-	  if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY > needmem) {
+	  if (((vga256InfoRec.displayWidth * (vga256InfoRec.virtualY - 1)) +
+               vga256InfoRec.virtualX) > needmem) {
 	    /* Tell user what the display width is before complaining */
 	    if (vga256InfoRec.virtualX < vga256InfoRec.displayWidth)
 	      ErrorF("%s %s: Display width set to %d\n", XCONFIG_PROBED,
@@ -912,7 +925,8 @@ vgaProbe()
 	      (*vgaEnterLeaveFunc)(LEAVE);
 	      return(FALSE);
 	    }
-	    if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY > 8*vgaSegmentSize)
+	    if (((vga256InfoRec.displayWidth * (vga256InfoRec.virtualY - 1)) +
+                 vga256InfoRec.virtualX) > 8*vgaSegmentSize)
 	      if (vga256InfoRec.virtualX <= 1024)
 		vga256InfoRec.displayWidth = 1024;
 	      else
@@ -923,7 +937,8 @@ vgaProbe()
 	  if (vga256InfoRec.virtualX < vga256InfoRec.displayWidth)
 	    ErrorF("%s %s: Display width set to %d\n", XCONFIG_PROBED,
 	      vga256InfoRec.name, vga256InfoRec.displayWidth);
-	  if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY > needmem) {
+	  if (((vga256InfoRec.displayWidth * (vga256InfoRec.virtualY - 1)) +
+               vga256InfoRec.virtualX) > needmem) {
 	    if ((vga256InfoRec.virtualX == maxX) &&
 		(vga256InfoRec.virtualY == maxY) && (pmaxX != pmaxY))
 	      ErrorF("%s: Too little memory to accomodate modes %s and %s\n",
@@ -1149,8 +1164,9 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
         vgaLinearOrig = vgaLinearBase; /* save copy of original base */
     }
     if (xf86bpp == 1) {
-      if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY >= vgaSegmentSize * 8)
-      {                                                     /* ^ mfb bug */
+      if (((vga256InfoRec.displayWidth * (vga256InfoRec.virtualY - 1)) +
+           vga256InfoRec.virtualX) >= vgaSegmentSize * 8)
+      {                          /* ^ mfb bug */
         ErrorF("%s %s: Using banked mono vga mode\n", 
             XCONFIG_PROBED, vga256InfoRec.name);
         vgaVirtBase = (pointer)VGABASE;
@@ -1349,6 +1365,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     miDCInitialize (pScreen, &xf86PointerScreenFuncs);
   }
 
+  vgaCloseScreenFunc = pScreen->CloseScreen;
   pScreen->CloseScreen = vgaCloseScreen;
   pScreen->SaveScreen = vgaSaveScreen;
 
@@ -1797,7 +1814,9 @@ vgaCloseScreen(screen_idx, pScreen)
     (savepScreen->DestroyPixmap)(ppix);
     ppix = NULL;
   }
-  return(TRUE);
+
+  pScreen->CloseScreen = vgaCloseScreenFunc;
+  return (*vgaCloseScreenFunc)(screen_idx, pScreen); 
 }
 
 /*

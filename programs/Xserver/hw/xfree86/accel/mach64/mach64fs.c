@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fs.c,v 3.3 1996/12/23 06:39:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fs.c,v 3.4 1998/01/24 16:56:52 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -101,13 +101,9 @@ mach64SolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register int *pwidth;       /* pointer to list of n widths */
     DDXPointPtr initPpt;
     int *initPwidth;
-    cfbPrivGCPtr devPriv;
-
 
     if (!(pGC->planemask))
         return;
-
-    devPriv = cfbGetGCPrivate(pGC);
 
     if (!xf86VTSema)
     {
@@ -132,7 +128,7 @@ mach64SolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	return;
     }
 
-    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -141,7 +137,7 @@ mach64SolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
                      ppt, pwidth, fSorted);
 
     WaitQueue(5);
@@ -182,13 +178,9 @@ mach64TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register int *pwidth;       /* pointer to list of n widths */
     DDXPointPtr initPpt;
     int *initPwidth;
-    cfbPrivGCPtr devPriv;
-
 
     if (!(pGC->planemask))
         return;
-
-    devPriv = cfbGetGCPrivate(pGC);
 
     if ((!xf86VTSema) || (nInit <= MIN_SPANS))
     {
@@ -213,7 +205,7 @@ mach64TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	return;
     }
 
-    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -222,7 +214,7 @@ mach64TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
                     ppt, pwidth, fSorted);
 
     DoPatternedFillSpans (pDrawable, pGC, n, ppt, pwidth);
@@ -245,20 +237,16 @@ mach64StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register int *pwidth;       /* pointer to list of n widths */
     DDXPointPtr initPpt;
     int *initPwidth;
-    cfbPrivGCPtr devPriv;
-
 
     if (!(pGC->planemask))
         return;
-
-    devPriv = cfbGetGCPrivate(pGC);
 
     if ((!xf86VTSema) || ((nInit <= MIN_SPANS) && (pDrawable->depth == 8)))
     {
 	switch (pDrawable->bitsPerPixel)
 	{
 	    case 8:
-		if (devPriv->pRotatedPixmap)
+		if (pGC->pRotatedPixmap)
 		    cfb8Stipple32FS(pDrawable, pGC, nInit, pptInit,
 				    pwidthInit, fSorted);
 		else
@@ -280,7 +268,7 @@ mach64StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	return;
     }
 
-    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -289,7 +277,7 @@ mach64StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
                     ppt, pwidth, fSorted);
 
     DoPatternedFillSpans (pDrawable, pGC, n, ppt, pwidth);
@@ -312,20 +300,16 @@ mach64OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register int *pwidth;       /* pointer to list of n widths */
     DDXPointPtr initPpt;
     int *initPwidth;
-    cfbPrivGCPtr devPriv;
-
 
     if (!(pGC->planemask))
         return;
-
-    devPriv = cfbGetGCPrivate(pGC);
 
     if ((!xf86VTSema) || ((nInit <= MIN_SPANS) && (pDrawable->depth == 8)))
     {
 	switch (pDrawable->bitsPerPixel)
 	{
 	    case 8:
-		if (devPriv->pRotatedPixmap)
+		if (pGC->pRotatedPixmap)
 		    cfb8OpaqueStipple32FS(pDrawable, pGC, nInit, pptInit,
 					  pwidthInit, fSorted);
 		else
@@ -347,7 +331,7 @@ mach64OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	return;
     }
 
-    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -356,7 +340,7 @@ mach64OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
                     ppt, pwidth, fSorted);
 
     DoPatternedFillSpans (pDrawable, pGC, n, ppt, pwidth);
@@ -382,14 +366,11 @@ DoPatternedFillSpans (pDrawable, pGC, nInit, pptInit, pwidthInit)
     BoxRec               nullBox;
     RegionPtr            oldpCompositeClip;
     RegionRec            nullClip;
-    cfbPrivGC           *devPriv;
 
     /*
      * Basically, spin up the spans into a list of 1 pixel high 
      * rectangles and let PolyFillRect handle the tiling.
      */
-    devPriv = cfbGetGCPrivate(pGC);
-
     pSpanPt = pptInit;
     pSpanWidth = pwidthInit;
 
@@ -414,12 +395,12 @@ DoPatternedFillSpans (pDrawable, pGC, nInit, pptInit, pwidthInit)
 
     REGION_INIT(pGC->pScreen, &nullClip, &nullBox, 1); 
 
-    oldpCompositeClip = devPriv->pCompositeClip;
-    devPriv->pCompositeClip = &nullClip;
+    oldpCompositeClip = pGC->pCompositeClip;
+    pGC->pCompositeClip = &nullClip;
     
     mach64PolyFillRect (pDrawable, pGC, nInit, pRectInit);
 
-    devPriv->pCompositeClip = oldpCompositeClip;
+    pGC->pCompositeClip = oldpCompositeClip;
 
     REGION_UNINIT(pGC->pScreen, &nullClip);
     DEALLOCATE_LOCAL(pRectInit);

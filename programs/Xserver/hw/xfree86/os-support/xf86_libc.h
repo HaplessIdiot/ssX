@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.15 1997/11/16 11:51:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.16 1997/11/22 06:50:30 dawes Exp $ */
 
 
 
@@ -24,6 +24,7 @@
 
 #if defined(XFree86LOADER) || defined(NEED_XF86_TYPES)
 
+#include "misc.h" /* pointer */
 /*
  * First, the new data types
  *

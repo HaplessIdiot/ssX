@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ss.c,v 3.0 1996/11/18 13:09:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ss.c,v 3.1 1996/12/23 06:38:06 dawes Exp $ */
 
 /*
 
@@ -119,7 +119,7 @@ ibm8514SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     }
 
     alu = pGC->alu;
-    prgnDst = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    prgnDst = pGC->pCompositeClip;
 
     pptLast = ppt + nspans;
 

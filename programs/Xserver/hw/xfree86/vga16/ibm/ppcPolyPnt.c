@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPolyPnt.c,v 3.4 1996/12/23 06:53:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPolyPnt.c,v 3.5 1997/03/13 15:11:20 hohndel Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -136,7 +136,7 @@ if ( pGC->miTranslate ) {
 
 {
 	register int (* PointInRegion)() = pDrawable->pScreen->PointInRegion ;
-	register RegionPtr pRegion = devPriv->pCompositeClip ;
+	register RegionPtr pRegion = pGC->pCompositeClip ;
 	register unsigned long int fg = devPriv->colorRrop.fgPixel ;
 	register unsigned long int pm = devPriv->colorRrop.planemask ;
 	BoxRec box ; /* Scratch Space */

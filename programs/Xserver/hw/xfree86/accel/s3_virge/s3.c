@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.35 1997/10/25 13:50:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.36 1998/01/24 16:57:14 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -189,13 +189,17 @@ ScrnInfoRec s3InfoRec =
    0,				/* int textClockFreq */
    NULL,                        /* char* DCConfig */
    NULL,                        /* char* DCOptions */
-   0				/* int MemClk */
+   0,				/* int MemClk */
 #ifdef XFreeXDGA
-   ,0,				/* int directMode */
+   0,				/* int directMode */
    s3SetVidPage,		/* Set Vid Page */
    0,				/* unsigned long physBase */
-   0				/* int physSize */
+   0,				/* int physSize */
 #endif
+#ifdef XF86SETUP
+   NULL,			/* void *device */
+#endif
+   FALSE			/*  hasDirectColor */
 };
 
 #if defined(XFree86LOADER)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.8 1997/12/14 10:03:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.9 1998/01/24 16:58:06 hohndel Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -23,7 +23,7 @@
 #define INREG(addr) xf86ReadSparse32(MGAMMIOBase, (addr))
 #define OUTREG8(addr,val) do { xf86WriteSparse8((val),MGAMMIOBase,(addr)); \
 				mem_barrier();} while(0)
-#define OUTEG16(addr,val) do { xf86WriteSparse16((val),MGAMMIOBase,(addr)); \
+#define OUTREG16(addr,val) do { xf86WriteSparse16((val),MGAMMIOBase,(addr)); \
 				mem_barrier();} while(0)
 #define OUTREG(addr, val) do { xf86WriteSparse32((val),MGAMMIOBase,(addr)); \
 				mem_barrier();} while(0)
@@ -91,11 +91,16 @@ extern unsigned char *MGAMMIOBase;
 extern unsigned char *MGAMMIOBaseDENSE;
 #endif
 
-/*
- * ROPs
- *
- * for some silly reason, the bits in the ROPs are just the other way round
- */
+
+extern void Mga8AccelInit();
+extern void Mga16AccelInit();
+extern void Mga24AccelInit();
+extern void Mga32AccelInit();
+extern void MGAStormAccelInit();
+extern void MGAStormSync();
+extern void MGAStormEngineInit();
+extern void MGA3026RamdacInit();
+extern void MGA1064RamdacInit();
 
 /*
  * definitions for the new acceleration interface

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c /main/33 1996/12/01 23:47:10 swick $
- *	$XFree86: xc/programs/xterm/util.c,v 3.23 1998/01/11 03:48:42 dawes Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.24 1998/01/24 01:53:41 hohndel Exp $
  */
 
 /*
@@ -1455,12 +1455,16 @@ updatedXtermGC(screen, flags, fg_bg, hilite)
 			gc = ReverseGC(screen);
 
 #if OPT_HIGHLIGHT_COLOR
-		XSetForeground(screen->display, gc, hi_pix ? fg_pix : bg_pix);
-		XSetBackground(screen->display, gc, hi_pix ? hi_pix : fg_pix);
-#else
+		if (hi_pix != screen->foreground
+		 && hi_pix != fg_pix
+		 && hi_pix != bg_pix
+		 && hi_pix != 0) {	/* FIXME: need a reliable undef-Pixel */
+			bg_pix = fg_pix;
+			fg_pix = hi_pix;
+		}
+#endif
 		XSetForeground(screen->display, gc, bg_pix);
 		XSetBackground(screen->display, gc, fg_pix);
-#endif
 	} else {
 		if (flags & (BOLD|BLINK))
 			gc = NormalBoldGC(screen);

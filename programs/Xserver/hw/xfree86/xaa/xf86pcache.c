@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.26 1997/12/28 21:28:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.27 1998/01/24 16:58:55 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -740,6 +740,45 @@ static void WriteRotatedMonoPatterns(x, y, pattern)
     DEALLOCATE_LOCAL(buf);
 }
 
+static void WriteNotLinearMonoPatterns(x, y, pattern)
+    int x, y;
+    unsigned char *pattern;
+{
+    /* The only really portable way to do this is to make a bitmap
+	and send it through the bitmap code so that's what we do */
+    static CARD32 bitpat[2 * 15];
+    unsigned char *pntr;
+    int line, byte;
+    void (*WriteBitmapFunc)() = NULL;
+
+    for(line = 0; line < 8; line++, pattern++) {
+	pntr = (unsigned char*)(bitpat + (line << 1));
+    	for(byte = 0; byte < 8; byte++) {
+	   pntr[0] = *pattern;
+	   pntr[1] = (*pattern >> 1) | (*pattern << 7);
+	   pntr[2] = (*pattern >> 2) | (*pattern << 6);
+	   pntr[3] = (*pattern >> 3) | (*pattern << 5);
+	   pntr[4] = (*pattern >> 4) | (*pattern << 4);
+	   pntr[5] = (*pattern >> 5) | (*pattern << 3);
+	   pntr[6] = (*pattern >> 6) | (*pattern << 2);
+	   pntr[7] = (*pattern >> 7) | (*pattern << 1);
+	}
+    }
+    for(line = 0; line < 14; line+=2) {
+	bitpat[line + 16] = bitpat[line];
+	bitpat[line + 17] = bitpat[line + 1];
+    }
+
+    if (xf86AccelInfoRec.WriteBitmap)
+        WriteBitmapFunc = xf86AccelInfoRec.WriteBitmap;
+    else if (xf86AccelInfoRec.WriteBitmapFallBack)
+        WriteBitmapFunc = xf86AccelInfoRec.WriteBitmapFallBack;
+
+    /* background is always 0, foreground is always 1 */
+    if (WriteBitmapFunc)
+        (*WriteBitmapFunc)(x, y, 64, 15, bitpat, 8, 0, 0, 0, 1, GXcopy, ~0);
+}
+
 static void WriteStippleAs8x8MonoPattern(x, y, w, h, pSrc, srcwidth)
     int x, y, w, h;
     unsigned char *pSrc;
@@ -748,7 +787,10 @@ static void WriteStippleAs8x8MonoPattern(x, y, w, h, pSrc, srcwidth)
     unsigned char pattern[8];
 
     ExpandStippleTo8x8MonoPattern(w, h, pSrc, srcwidth, pattern);
-    WriteRotatedMonoPatterns(x, y, pattern);
+    if (xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_NOT_LINEAR) 
+   	WriteNotLinearMonoPatterns(x, y, pattern);
+    else
+   	WriteRotatedMonoPatterns(x, y, pattern);
 }
 
 /*
@@ -825,7 +867,10 @@ static void WriteTileAs8x8MonoPattern(pci, w, h, pSrc, srcwidth)
     ConvertTileTo8x8MonoPattern(w, h, pSrc, srcwidth, pattern, &bg, &fg);
     pci->bg_color = bg;
     pci->fg_color = fg;
-    WriteRotatedMonoPatterns(pci->x, pci->y, pattern);
+    if (xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_NOT_LINEAR) 
+   	WriteNotLinearMonoPatterns(pci->x, pci->y, pattern);
+    else
+   	WriteRotatedMonoPatterns(pci->x, pci->y, pattern);
 }
 
 /*
@@ -1223,15 +1268,9 @@ static int DoCacheStipple(slot, pDrawable, pGC)
                 pci->flags = 3;  /* Need to swap slots */
 	    }
 	    else {
-#if 0
-	        ErrorF("Writing rotated mono patterns (%dx%d).\n",
-	            pci->pix_w, pci->pix_h);
-#endif
-                WriteStippleAs8x8MonoPattern(pci->x, pci->y, pix->drawable.width,
-                    pix->drawable.height, pix->devPrivate.ptr, pix->devKind);
-#if 0
-                ErrorF("Finished writing mono patterns.\n");
-#endif
+                WriteStippleAs8x8MonoPattern(pci->x, pci->y, 
+			pix->drawable.width, pix->drawable.height, 
+			pix->devPrivate.ptr, pix->devKind);
                 pci->flags = 2;
             }
             *realpci = *pci;
@@ -1350,44 +1389,36 @@ static void DoCacheExpandPixmap(pci)
 {
     int cur_w = pci->pix_w;
     int cur_h = pci->pix_h;
-    int width = pci->w;
-    int height = pci->h;
-
+ 
     xf86AccelInfoRec.SetupForScreenToScreenCopy(1, 1, GXcopy, 0xFFFFFFFF, -1);
 
-    if((xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_NOT_LINEAR) &&
-            pci->flags == 1) {
-        width = 15;
-        height = 15;
-    }
-
     /* Expand in the x direction */
-    while (cur_w * 2 <= width) 
+    while (cur_w * 2 <= pci->w) 
     {
         xf86AccelInfoRec.SubsequentScreenToScreenCopy(pci->x, pci->y,
             pci->x + cur_w, pci->y, cur_w, cur_h);
 	cur_w *= 2;
     }
 
-    if (cur_w != width) 
+    if (cur_w != pci->w) 
     {
         xf86AccelInfoRec.SubsequentScreenToScreenCopy((pci->x), (pci->y),
-            (pci->x + cur_w), pci->y, (width - cur_w), cur_h);
-	cur_w = width;
+            (pci->x + cur_w), pci->y, (pci->w - cur_w), cur_h);
+	cur_w = pci->w;
     }
 
     /* Expand in the y direction */
-    while (cur_h * 2 <= height) 
+    while (cur_h * 2 <= pci->h) 
     {
         xf86AccelInfoRec.SubsequentScreenToScreenCopy((pci->x), (pci->y),
             (pci->x), (pci->y + cur_h), cur_w, cur_h);
 	cur_h *= 2;
     }
 
-    if (cur_h != height) 
+    if (cur_h != pci->h) 
     {
         xf86AccelInfoRec.SubsequentScreenToScreenCopy((pci->x), (pci->y),
-            (pci->x), (pci->y + cur_h), cur_w, (height - cur_h));
+            (pci->x), (pci->y + cur_h), cur_w, (pci->h - cur_h));
     }
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)

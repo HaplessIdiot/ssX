@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h /main/70 1996/11/15 16:00:41 kaleb $
- * $XFree86: xc/include/Xos.h,v 3.21 1997/01/18 06:51:16 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.22 1997/11/22 06:50:07 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -188,19 +188,12 @@ struct timezone {
 
 #else /* not SYSV */
 
-#if defined(_ANSI_SOURCE) && defined(__bsdi__)
-#undef _ANSI_SOURCE
-#include <sys/time.h>
-#define _ANSI_SOURCE
-#endif
-
 #if defined(_POSIX_SOURCE) && defined(SVR4)
 /* need to omit _POSIX_SOURCE in order to get what we want in SVR4 */
 #undef _POSIX_SOURCE
 #include <sys/time.h>
 #define _POSIX_SOURCE
-#else /* defined(_POSIX_SOURCE) && defined(SVR4) */
-#ifdef WIN32
+#elif defined(WIN32)
 #include <time.h>
 #if !defined(_WINSOCKAPI_) && !defined(_WILLWINSOCK_)
 struct timeval {
@@ -216,26 +209,13 @@ struct timeval {
     (t)->tv_sec = _gtodtmp.time; \
     (t)->tv_usec = _gtodtmp.millitm * 1000; \
 }
-#else /* WIN32 */
-#ifdef _SEQUENT_
-#include <time.h>
-#else /* _SEQUENT_ */
-#ifdef AMOEBA
+#elif defined(AMOEBA)
 #include <time.h>
 #include <sys/time.h>
-#else /* AMOEBA */
-#ifdef MINIX
+#elif defined(MINIX) || defined(_SEQUENT_) || defined(Lynx)
 #include <time.h>
-#else /* !MINIX */
-#ifndef Lynx
-#include <sys/time.h>
 #else
-#include <time.h>
-#endif /* Lynx */
-#endif /* MINIX */
-#endif /* AMOEBA */
-#endif /* _SEQUENT_ */
-#endif /* WIN32 else */
+#include <sys/time.h>
 #endif /* defined(_POSIX_SOURCE) && defined(SVR4) */
 
 #endif /* SYSV */
@@ -313,5 +293,7 @@ struct sockaddr_un {
 	char	sun_path[108];
 };
 #endif
+
+#include <X11/Xarch.h>
 
 #endif /* _XOS_H_ */

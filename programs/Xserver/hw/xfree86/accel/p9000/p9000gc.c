@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000gc.c,v 3.5 1996/02/04 09:04:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000gc.c,v 3.6 1996/12/23 06:40:41 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -421,9 +421,9 @@ p9000CreateGC(pGC)
     pPriv = cfbGetGCPrivate(pGC);
     pPriv->rop = pGC->alu;
     pPriv->oneRect = FALSE;
-    pPriv->fExpose = TRUE;
-    pPriv->freeCompClip = FALSE;
-    pPriv->pRotatedPixmap = (PixmapPtr) NULL;
+    pGC->fExpose = TRUE;
+    pGC->freeCompClip = FALSE;
+    pGC->pRotatedPixmap = (PixmapPtr) NULL;
     return TRUE;
 }
 
@@ -480,7 +480,7 @@ p9000ValidateGC(pGC, changes, pDrawable)
 #ifdef NO_ONE_RECT
 	devPriv->oneRect = FALSE;
 #else
-	oneRect = REGION_NUM_RECTS(devPriv->pCompositeClip) == 1;
+	oneRect = REGION_NUM_RECTS(pGC->pCompositeClip) == 1;
 	if (oneRect != devPriv->oneRect)
 	    new_line = TRUE;
 	devPriv->oneRect = oneRect;
@@ -606,7 +606,7 @@ p9000ValidateGC(pGC, changes, pDrawable)
 		if ((width <= PGSZ) && !(width & (width - 1)))
 		{
 		    cfbCopyRotatePixmap(pGC->tile.pixmap,
-					&devPriv->pRotatedPixmap,
+					&pGC->pRotatedPixmap,
 					xrot, yrot);
 		    new_pix = TRUE;
 		}
@@ -621,17 +621,17 @@ p9000ValidateGC(pGC, changes, pDrawable)
 		if ((width <= PGSZ) && !(width & (width - 1)))
 		{
 		    mfbCopyRotatePixmap(pGC->stipple,
-					&devPriv->pRotatedPixmap, xrot, yrot);
+					&pGC->pRotatedPixmap, xrot, yrot);
 		    new_pix = TRUE;
 		}
 	    }
 	    break;
 #endif
 	}
-	if (!new_pix && devPriv->pRotatedPixmap)
+	if (!new_pix && pGC->pRotatedPixmap)
 	{
-	    (*pGC->pScreen->DestroyPixmap)(devPriv->pRotatedPixmap);
-	    devPriv->pRotatedPixmap = (PixmapPtr) NULL;
+	    (*pGC->pScreen->DestroyPixmap)(pGC->pRotatedPixmap);
+	    pGC->pRotatedPixmap = (PixmapPtr) NULL;
 	}
     }
 
@@ -848,7 +848,7 @@ p9000ValidateGC(pGC, changes, pDrawable)
 	    }
 	    break;
 	case FillTiled:
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 	    {
 		if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
 		    pGC->ops->FillSpans = cfbTile32FSCopy;
@@ -860,7 +860,7 @@ p9000ValidateGC(pGC, changes, pDrawable)
 	    break;
 	case FillStippled:
 #ifdef FOUR_BIT_CODE
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 		pGC->ops->FillSpans = cfb8Stipple32FS;
 	    else
 #endif
@@ -868,7 +868,7 @@ p9000ValidateGC(pGC, changes, pDrawable)
 	    break;
 	case FillOpaqueStippled:
 #ifdef FOUR_BIT_CODE
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 		pGC->ops->FillSpans = cfb8OpaqueStipple32FS;
 	    else
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000text.c,v 3.2 1996/02/04 09:04:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000text.c,v 3.3 1996/12/23 06:40:55 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -219,8 +219,7 @@ p9000NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
    maxAscent = FONTMAXBOUNDS(pfont, ascent);
    maxDescent = FONTMAXBOUNDS(pfont, descent);
    minLeftBearing = FONTMINBOUNDS(pfont, leftSideBearing);
-   pRegion = ((cfbPrivGC *) 
-              (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+   pRegion = pGC->pCompositeClip;
 
    pBox = REGION_RECTS(pRegion);
    numRects = REGION_NUM_RECTS(pRegion);
@@ -359,7 +358,7 @@ p9000NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
    maxAscent = FONTMAXBOUNDS(pfont, ascent);
    maxDescent = FONTMAXBOUNDS(pfont, descent);
    minLeftBearing = FONTMINBOUNDS(pfont, leftSideBearing);
-   pRegion = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+   pRegion = pGC->pCompositeClip;
 
    pBox = REGION_RECTS(pRegion);
    numRects = REGION_NUM_RECTS(pRegion);

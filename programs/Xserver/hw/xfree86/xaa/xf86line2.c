@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.5 1997/07/29 12:08:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.6 1997/12/28 21:28:37 hohndel Exp $ */
 
 /***********************************************************
 
@@ -48,7 +48,6 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.24 94/07/28 14:33:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.5 1997/07/29 12:08:10 hohndel Exp $ */
 
 /*
  * Accelerated general lines for chips that cannot hardware accelerate
@@ -182,7 +181,7 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
     int		    alu;
 
     devPriv = cfbGetGCPrivate(pGC);
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 
@@ -193,7 +192,7 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
      * sloped lines.
      */
     UseTwoPointLine = FALSE;
-    if (xf86AccelInfoRec.SubsequentTwoPointLine) {
+    if (xf86AccelInfoRec.Flags & USE_TWO_POINT_LINE) {
 #ifdef POLYSEGMENT
         if (xf86AccelInfoRec.Flags & TWO_POINT_LINE_NOT_LAST ||
         pGC->capStyle != CapNotLast)

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afbgc.c,v 3.0 1996/08/18 01:45:36 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -123,15 +123,14 @@ afbCreateGC(pGC)
 	/* afb wants to translate before scan convesion */
 	pGC->miTranslate = 1;
 
-	pPriv = (afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr);
 	afbReduceRop(pGC->alu, pGC->fgPixel, pGC->planemask, pGC->depth,
-					  pPriv->rrops);
+		pPriv->rrops);
 	afbReduceOpaqueStipple(pGC->fgPixel, pGC->bgPixel, pGC->planemask,
-									pGC->depth, pPriv->rropOS);
+		pGC->depth, pPriv->rropOS);
 
-	pPriv->fExpose = TRUE;
-	pPriv->pRotatedPixmap = NullPixmap;
-	pPriv->freeCompClip = FALSE;
+	pGC->fExpose = TRUE;
+	pGC->pRotatedPixmap = NullPixmap;
+	pGC->freeCompClip = FALSE;
 	return TRUE;
 }
 
@@ -153,13 +152,13 @@ afbValidateGC(pGC, changes, pDrawable)
 	DrawablePtr 		pDrawable;
 {
 	register afbPrivGCPtr devPriv;
-	int mask;						/* stateChanges */
-	int index;						/* used for stepping through bitfields */
-	int xrot, yrot;				/* rotations for tile and stipple pattern */
-	int rrop;						/* reduced rasterop */
-										/* flags for changing the proc vector
-										   and updating things in devPriv
-										*/
+	int mask;		/* stateChanges */
+	int index;		/* used for stepping through bitfields */
+	int xrot, yrot;		/* rotations for tile and stipple pattern */
+	int rrop;		/* reduced rasterop */
+				/* flags for changing the proc vector
+				   and updating things in devPriv
+				*/
 	int new_rotate, new_rrop,  new_line, new_text, new_fill;
 	DDXPointRec		oldOrg;				/* origin of thing GC was last used with */
 
@@ -296,7 +295,7 @@ afbValidateGC(pGC, changes, pDrawable)
 					 (pGC->tile.pixmap->drawable.width <= PPW) &&
 					 !(pGC->tile.pixmap->drawable.width &
 						(pGC->tile.pixmap->drawable.width - 1))) {
-					afbCopyRotatePixmap(pGC->tile.pixmap, &devPriv->pRotatedPixmap,
+					afbCopyRotatePixmap(pGC->tile.pixmap, &pGC->pRotatedPixmap,
 												xrot, yrot);
 					new_pix = TRUE;
 				}
@@ -306,15 +305,15 @@ afbValidateGC(pGC, changes, pDrawable)
 				if (pGC->stipple && (pGC->stipple->drawable.width <= PPW) &&
 					 !(pGC->stipple->drawable.width &
 						(pGC->stipple->drawable.width - 1))) {
-					afbCopyRotatePixmap(pGC->stipple, &devPriv->pRotatedPixmap,
+					afbCopyRotatePixmap(pGC->stipple, &pGC->pRotatedPixmap,
 												xrot, yrot);
 					new_pix = TRUE;
 				}
 		}
 		/* destroy any previously rotated tile or stipple */
-		if (!new_pix && devPriv->pRotatedPixmap) {
-			(*pDrawable->pScreen->DestroyPixmap)(devPriv->pRotatedPixmap);
-			devPriv->pRotatedPixmap = (PixmapPtr)NULL;
+		if (!new_pix && pGC->pRotatedPixmap) {
+			(*pDrawable->pScreen->DestroyPixmap)(pGC->pRotatedPixmap);
+			pGC->pRotatedPixmap = (PixmapPtr)NULL;
 		}
 	}
 
@@ -412,20 +411,20 @@ afbValidateGC(pGC, changes, pDrawable)
 				pGC->ops->PolyFillArc = afbPolyFillArcSolid;
 				break;
 			case FillTiled:
-				if (devPriv->pRotatedPixmap)
+				if (pGC->pRotatedPixmap)
 					pGC->ops->FillSpans = afbTileFS;
 				else
 					pGC->ops->FillSpans = afbUnnaturalTileFS;
 				break;
 			case FillOpaqueStippled:
-				if (devPriv->pRotatedPixmap)
+				if (pGC->pRotatedPixmap)
 					pGC->ops->FillSpans = afbOpaqueStippleFS;
 				else
 					pGC->ops->FillSpans = afbUnnaturalOpaqueStippleFS;
 				break;
 
 			case FillStippled:
-				if (devPriv->pRotatedPixmap)
+				if (pGC->pRotatedPixmap)
 					pGC->ops->FillSpans = afbStippleFS;
 				else
 					pGC->ops->FillSpans = afbUnnaturalStippleFS;
@@ -438,13 +437,10 @@ void
 afbDestroyGC(pGC)
 	GCPtr pGC;
 {
-	afbPrivGC *pPriv;
-
-	pPriv = (afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr);
-	if (pPriv->pRotatedPixmap)
-		(*pGC->pScreen->DestroyPixmap)(pPriv->pRotatedPixmap);
-	if (pPriv->freeCompClip)
-		REGION_DESTROY(pGC->pScreen, pPriv->pCompositeClip);
+	if (pGC->pRotatedPixmap)
+		(*pGC->pScreen->DestroyPixmap)(pGC->pRotatedPixmap);
+	if (pGC->freeCompClip)
+		REGION_DESTROY(pGC->pScreen, pGC->pCompositeClip);
 	miDestroyGCOps(pGC->ops);
 }
 
@@ -625,7 +621,6 @@ afbComputeCompositeClip(pGC, pDrawable)
 	DrawablePtr pDrawable;
 {
 	ScreenPtr pScreen = pGC->pScreen;
-	afbPrivGC *devPriv = (afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr);
 
 	if (pDrawable->type == DRAWABLE_WINDOW) {
 		WindowPtr pWin = (WindowPtr) pDrawable;
@@ -639,7 +634,7 @@ afbComputeCompositeClip(pGC, pDrawable)
 		pregWin = &pWin->clipList;
 		freeTmpClip = FALSE;
 	}
-	freeCompClip = devPriv->freeCompClip;
+	freeCompClip = pGC->freeCompClip;
 
 	/*
 	 * if there is no client clip, we can get by with just keeping the
@@ -650,9 +645,9 @@ afbComputeCompositeClip(pGC, pDrawable)
 	 */
 	if (pGC->clientClipType == CT_NONE) {
 		if (freeCompClip)
-			REGION_DESTROY(pScreen, devPriv->pCompositeClip);
-			devPriv->pCompositeClip = pregWin;
-			devPriv->freeCompClip = freeTmpClip;
+			REGION_DESTROY(pScreen, pGC->pCompositeClip);
+			pGC->pCompositeClip = pregWin;
+			pGC->freeCompClip = freeTmpClip;
 		} else {
 			/*
 			 * we need one 'real' region to put into the composite clip. if
@@ -668,19 +663,19 @@ afbComputeCompositeClip(pGC, pDrawable)
 			pDrawable->y + pGC->clipOrg.y);
 
 			if (freeCompClip) {
-				REGION_INTERSECT(pGC->pScreen, devPriv->pCompositeClip, pregWin,
+				REGION_INTERSECT(pGC->pScreen, pGC->pCompositeClip, pregWin,
 									  pGC->clientClip);
 				if (freeTmpClip)
 					REGION_DESTROY(pScreen, pregWin);
 			} else if (freeTmpClip) {
 				REGION_INTERSECT(pScreen, pregWin, pregWin, pGC->clientClip);
-				devPriv->pCompositeClip = pregWin;
+				pGC->pCompositeClip = pregWin;
 			} else {
-				devPriv->pCompositeClip = REGION_CREATE(pScreen, NullBox, 0);
-				REGION_INTERSECT(pScreen, devPriv->pCompositeClip,
+				pGC->pCompositeClip = REGION_CREATE(pScreen, NullBox, 0);
+				REGION_INTERSECT(pScreen, pGC->pCompositeClip,
 				pregWin, pGC->clientClip);
 			}
-			devPriv->freeCompClip = TRUE;
+			pGC->freeCompClip = TRUE;
 			REGION_TRANSLATE(pScreen, pGC->clientClip,
 			-(pDrawable->x + pGC->clipOrg.x),
 			-(pDrawable->y + pGC->clipOrg.y));
@@ -695,19 +690,19 @@ afbComputeCompositeClip(pGC, pDrawable)
 		pixbounds.x2 = pDrawable->width;
 		pixbounds.y2 = pDrawable->height;
 
-		if (devPriv->freeCompClip) {
-			REGION_RESET(pScreen, devPriv->pCompositeClip, &pixbounds);
+		if (pGC->freeCompClip) {
+			REGION_RESET(pScreen, pGC->pCompositeClip, &pixbounds);
 		} else {
-			devPriv->freeCompClip = TRUE;
-			devPriv->pCompositeClip = REGION_CREATE(pScreen, &pixbounds, 1);
+			pGC->freeCompClip = TRUE;
+			pGC->pCompositeClip = REGION_CREATE(pScreen, &pixbounds, 1);
 		}
 
 		if (pGC->clientClipType == CT_REGION) {
-			REGION_TRANSLATE(pScreen, devPriv->pCompositeClip, -pGC->clipOrg.x,
+			REGION_TRANSLATE(pScreen, pGC->pCompositeClip, -pGC->clipOrg.x,
 								  -pGC->clipOrg.y);
-			REGION_INTERSECT(pScreen, devPriv->pCompositeClip,
-								  devPriv->pCompositeClip, pGC->clientClip);
-			REGION_TRANSLATE(pScreen, devPriv->pCompositeClip, pGC->clipOrg.x,
+			REGION_INTERSECT(pScreen, pGC->pCompositeClip,
+								  pGC->pCompositeClip, pGC->clientClip);
+			REGION_TRANSLATE(pScreen, pGC->pCompositeClip, pGC->clipOrg.x,
 								  pGC->clipOrg.y);
 		}
 	}	/* end of composite clip for pixmap */

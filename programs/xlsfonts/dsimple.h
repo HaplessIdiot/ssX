@@ -42,16 +42,28 @@ from the X Consortium.
 
     /* Global variables used by routines in just_display.c */
 
-char *program_name = "unknown_program";       /* Name of this program */
-Display *dpy;                                 /* The current display */
-int screen;                                   /* The current screen */
+extern char *program_name;                   /* Name of this program */
+extern Display *dpy;                         /* The current display */
+extern int screen;                           /* The current screen */
 
 #define INIT_NAME program_name=argv[0]        /* use this in main to setup
                                                  program_name */
 
     /* Declaritions for functions in just_display.c */
 
-void Fatal_Error();
+#if NeedFunctionPrototypes
+char *Malloc(unsigned);
+char *Realloc(char *, int);
+char *Get_Display_Name(int *, char **);
+Display *Open_Display(char *);
+void Setup_Display_And_Screen(int *, char **);
+XFontStruct *Open_Font(char *);
+void Beep(void);
+Pixmap ReadBitmapFile(Drawable, char *, int *, int *, int *, int *);
+void WriteBitmapFile(char *, Pixmap, int, int, int, int);
+Window Select_Window_Args(int *, char **);
+void usage(void);
+#else
 char *Malloc();
 char *Realloc();
 char *Get_Display_Name();
@@ -62,10 +74,11 @@ void Beep();
 Pixmap ReadBitmapFile();
 void WriteBitmapFile();
 Window Select_Window_Args();
+void usage();
+#endif
 
 #define X_USAGE "[host:display]"              /* X arguments handled by
 						 Get_Display_Name */
-#define SELECT_USAGE "[{-root|-id <id>|-font <font>|-name <name>}]"
 
 /*
  * Other_stuff.h: Definitions of routines in other_stuff.
@@ -75,9 +88,27 @@ Window Select_Window_Args();
  * Send bugs, etc. to chariot@athena.mit.edu.
  */
 
+#if NeedFunctionPrototypes
+unsigned long Resolve_Color(Window, char *);
+Pixmap Bitmap_To_Pixmap(Display *, Drawable, GC, Pixmap, int, int);
+Window Select_Window(Display *);
+void blip(void);
+Window Window_With_Name(Display *, Window, char *);
+#else
 unsigned long Resolve_Color();
 Pixmap Bitmap_To_Pixmap();
 Window Select_Window();
-void out();
 void blip();
 Window Window_With_Name();
+#endif
+#if NeedVarargsPrototypes
+#if __GNUC__
+void Fatal_Error(char *, ...) __attribute__((__noreturn__));
+#else
+void Fatal_Error(char *, ...);
+#endif
+void outl(char *, ...);
+#else
+void Fatal_Error();
+void outl();
+#endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDSeg.c,v 3.6 1996/02/04 08:57:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDSeg.c,v 3.7 1996/12/23 06:32:36 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -142,7 +142,6 @@ agxDSegment(pDrawable, pGC, nseg, pSeg)
    register int y1, y2;
    register int x1, x2;
    RegionPtr cclip;
-   cfbPrivGCPtr devPriv;
    short fix;
 
    if (!xf86VTSema)
@@ -163,8 +162,7 @@ agxDSegment(pDrawable, pGC, nseg, pSeg)
       return;
    }
 
-   devPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
-   cclip = devPriv->pCompositeClip;
+   cclip = pGC->pCompositeClip;
    pboxInit = REGION_RECTS(cclip);
    nboxInit = REGION_NUM_RECTS(cclip);
 

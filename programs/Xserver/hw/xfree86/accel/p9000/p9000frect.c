@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000frect.c,v 3.1 1996/02/04 09:04:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000frect.c,v 3.2 1996/12/23 06:40:40 dawes Exp $ */
 /*
  * Fill rectangles.
  */
@@ -67,7 +67,6 @@ p9000PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
    BoxPtr pboxClippedBase;
    BoxPtr pextent;
    BoxRec stackRects[NUM_STACK_RECTS];
-   cfbPrivGC *priv;
    int   numRects;
    int   n;
    int   xorg, yorg;
@@ -88,8 +87,7 @@ p9000PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
   ErrorF("Accel 8 frect  PM: 0x%x ALU: %d\n", pGC->planemask, pGC->alu);
 #endif
 
-   priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
-   prgnClip = priv->pCompositeClip;
+   prgnClip = pGC->pCompositeClip;
 
    prect = prectInit;
    xorg = pDrawable->x;
@@ -343,7 +341,6 @@ p900016PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
    BoxPtr pboxClippedBase;
    BoxPtr pextent;
    BoxRec stackRects[NUM_STACK_RECTS];
-   cfbPrivGC *priv;
    int   numRects;
    int   n, i;
    int   xorg, yorg;
@@ -365,8 +362,7 @@ p900016PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 #endif
 
 
-   priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
-   prgnClip = priv->pCompositeClip;
+   prgnClip = pGC->pCompositeClip;
 
    prect = prectInit;
    xorg = pDrawable->x;
@@ -536,7 +532,6 @@ p900032PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
    BoxPtr pboxClippedBase;
    BoxPtr pextent;
    BoxRec stackRects[NUM_STACK_RECTS];
-   cfbPrivGC *priv;
    int   numRects;
    int   n, i;
    int   xorg, yorg;
@@ -558,9 +553,7 @@ p900032PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
   ErrorF("Accel 16 frect  PM: 0x%x ALU: %d\n", pGC->planemask, pGC->alu);
 #endif
 
-
-   priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
-   prgnClip = priv->pCompositeClip;
+   prgnClip = pGC->pCompositeClip;
 
    prect = prectInit;
    xorg = pDrawable->x;

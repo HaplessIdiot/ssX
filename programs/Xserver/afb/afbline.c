@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afbline.c,v 3.0 1996/08/18 01:45:43 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -141,7 +141,7 @@ afbLineSS(pDrawable, pGC, mode, npt, pptInit)
 	register int x1, x2;
 	RegionPtr cclip;
 
-	cclip = ((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip;
+	cclip = pGC->pCompositeClip;
 	rrops = ((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->rrops;
 	pboxInit = REGION_RECTS(cclip);
 	nboxInit = REGION_NUM_RECTS(cclip);
@@ -479,7 +479,7 @@ afbLineSD(pDrawable, pGC, mode, npt, pptInit)
 	int					unclippedlen;
 	int					d;
 
-	cclip = ((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip;
+	cclip = pGC->pCompositeClip;
 	rrops = ((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->rrops;
 	pboxInit = REGION_RECTS(cclip);
 	nboxInit = REGION_NUM_RECTS(cclip);

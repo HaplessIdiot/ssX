@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64frect.c,v 3.4 1996/12/23 06:39:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64frect.c,v 3.5 1998/01/24 16:56:51 hohndel Exp $ */
 /*
  * Copyright 1989 by the Massachusetts Institute of Technology
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -104,14 +104,12 @@ mach64PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
         int    clipYMax;       /* Lower right corner of clip rect */
         int    drawableXOrg;   /* Drawables x origin */
         int    drawableYOrg;   /* Drawables y origin */
-	cfbPrivGC *priv;
 
         drawableXOrg = pDrawable->x;
         drawableYOrg = pDrawable->y;
 
-        priv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
-        nClipRects = REGION_NUM_RECTS(priv->pCompositeClip);
-	pClipRects = REGION_RECTS(priv->pCompositeClip);
+        nClipRects = REGION_NUM_RECTS(pGC->pCompositeClip);
+	pClipRects = REGION_RECTS(pGC->pCompositeClip);
 
         WaitQueue(5);
         regw(DP_FRGD_CLR, pGC->fgPixel);
@@ -244,7 +242,6 @@ mach64TileFillRect(pDrawable, pGC, nRectInit, pRectInit)
     int		 nRectInit;
     xRectangle	*pRectInit;
 {
-    cfbPrivGC           *pGCPriv;        /* Pointer to private GC */
     int  		 nClipRects;     /* Number of clipping rectangles */
     BoxPtr 		 pClipRects;     /* Current clipping box */
     PixmapPtr    	 pPixmap;        /* Pixmap of the area to draw */
@@ -295,12 +292,11 @@ mach64TileFillRect(pDrawable, pGC, nRectInit, pRectInit)
     drawableXOrg = pDrawable->x;
     drawableYOrg = pDrawable->y;
 
-    pGCPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
-    nClipRects = REGION_NUM_RECTS(pGCPriv->pCompositeClip);
+    nClipRects = REGION_NUM_RECTS(pGC->pCompositeClip);
     if (nClipRects < 1)
         return;
 
-    pClipRects = REGION_RECTS(pGCPriv->pCompositeClip);
+    pClipRects = REGION_RECTS(pGC->pCompositeClip);
 
     fgalu = mach64alu[pGC->alu];
 

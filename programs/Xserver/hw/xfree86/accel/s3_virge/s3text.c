@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.11 1996/12/27 07:02:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.12 1997/06/03 14:11:41 hohndel Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -285,7 +285,7 @@ s3NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
    maxAscent = FONTMAXBOUNDS(pfont, ascent);
    maxDescent = FONTMAXBOUNDS(pfont, descent);
    minLeftBearing = FONTMINBOUNDS(pfont, leftSideBearing);
-   pRegion = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+   pRegion = pGC->pCompositeClip;
 
    pBox = REGION_RECTS(pRegion);
    numRects = REGION_NUM_RECTS(pRegion);
@@ -417,7 +417,7 @@ s3NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
    maxAscent = FONTMAXBOUNDS(pfont, ascent);
    maxDescent = FONTMAXBOUNDS(pfont, descent);
    minLeftBearing = FONTMINBOUNDS(pfont, leftSideBearing);
-   pRegion = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+   pRegion = pGC->pCompositeClip;
 
    pBox = REGION_RECTS(pRegion);
    numRects = REGION_NUM_RECTS(pRegion);

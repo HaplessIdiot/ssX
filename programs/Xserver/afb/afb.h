@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.0 1996/08/18 01:45:22 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -982,17 +982,9 @@ displayable screen (e.g. the early vsII, which displayed 960 pixels
 across, but was 1024 in the hardware.)
 
 	private field of GC
-	Freeing pCompositeClip is done based on the value of
-freeCompClip; if freeCompClip is not carefully maintained, we will end
-up losing storage or freeing something that isn't ours.
 */
 
 typedef struct {
-	PixmapPtr pRotatedPixmap;					/* tile/stipple rotated to align */
-	RegionPtr pCompositeClip;					/* free this based on freeCompClip
-															flag rather than NULLness */
-	unsigned fExpose:1;							/* callexposure handling ? */
-	unsigned freeCompClip:1;
 	unsigned char rrops[AFB_MAX_DEPTH];		/* reduction of rasterop to 1 of 3 */
 	unsigned char rropOS[AFB_MAX_DEPTH];	/* rop for opaque stipple */
 } afbPrivGC;
@@ -1019,10 +1011,10 @@ typedef struct {
 
 /* Common macros for extracting drawing information */
 
-#define afbGetTypedWidth(pDrawable,type)( \
+#define afbGetTypedWidth(pDrawable,wtype)( \
 	(((pDrawable)->type == DRAWABLE_WINDOW) ? \
 	 (int)(((PixmapPtr)((pDrawable)->pScreen->devPrivates[afbScreenPrivateIndex].ptr))->devKind) : \
-	 (int)(((PixmapPtr)pDrawable)->devKind)) / sizeof (type))
+	 (int)(((PixmapPtr)pDrawable)->devKind)) / sizeof (wtype))
 
 #define afbGetByteWidth(pDrawable) afbGetTypedWidth(pDrawable, unsigned char)
 

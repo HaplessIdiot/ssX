@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.18 1998/01/11 03:48:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.19 1998/01/24 16:58:53 hohndel Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,6 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.18 1998/01/11 03:48:28 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -102,7 +101,6 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     BoxPtr	    pboxClippedBase;
     BoxPtr	    pextent;
     BoxRec	    stackRects[NUM_STACK_RECTS];
-    cfbPrivGC	    *priv;
     int		    numRects;
     void	    (*BoxFill)();
     int		    n;
@@ -130,16 +128,7 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
         return;
     }
 
-    /*
-     * cfb does "priv = cfbGetGCPrivate(pGC);" here. But since we compile
-     * this function only once shared for all depths, I am not sure it
-     * is safe to use it. What confuses me is that cfbGCPrivateIndex seems
-     * to be declared globally seperately in cfb8, cfb16 etc. with the same
-     * name.
-     */
-    priv = cfbGetGCPrivate(pGC);
-    prgnClip = priv->pCompositeClip;
-
+    prgnClip = pGC->pCompositeClip;
     prect = prectInit;
     xorg = pDrawable->x;
     yorg = pDrawable->y;
@@ -594,7 +583,6 @@ xf86FillRectTileCached(pDrawable, pGC, nBoxInit, pBoxInit)
     int		nBoxInit;	/* number of rectangles to fill */
     BoxPtr	pBoxInit;  	/* Pointer to first rectangle to fill */
 {
-    cfbPrivGC           *pGCPriv;        /* Pointer to private GC */
     PixmapPtr    	 pPixmap;        /* Pixmap of the area to draw */
     register int  	 rectX1, rectX2; /* points used to find the width */
     register int  	 rectY1, rectY2; /* points used to find the height */
@@ -650,10 +638,6 @@ xf86FillRectTileCached(pDrawable, pGC, nBoxInit, pBoxInit)
 	{
 	    int i, patternx, patterny;
 
-#if 0 /* this doesn't seem to be right */
-if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
-	goto no8x8;
-#endif
             adjLeftX = ((pGC->patOrg.x + drawableXOrg) & 0x07);
             adjTopY = ((pGC->patOrg.y + drawableYOrg) & 0x07);
 
@@ -719,14 +703,6 @@ if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
 		            patternx, patterny, rectX1, rectY1, rectWidth,
 		            rectHeight);
 		    else
-		    if (xf86AccelInfoRec.PatternFlags
-		    & HARDWARE_PATTERN_NOT_LINEAR)
-		        xf86AccelInfoRec.SubsequentFill8x8Pattern(
-		            patternx + ((- adjLeftX) & 7),
-			    patterny + ((- adjTopY) & 7), 
-			    rectX1, rectY1, rectWidth,
-		            rectHeight);
-		    else
 		        xf86AccelInfoRec.SubsequentFill8x8Pattern(
 		            patternx + ((rectY1 - adjTopY) & 7) * 8,
 		            patterny + ((rectX1 - adjLeftX) & 7),
@@ -783,8 +759,11 @@ if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
 	                patterny = pattern[1];
 	            }
 	            /* Otherwise, rotate every time. */
-	    }
-            else {
+	    } else if (xf86AccelInfoRec.PatternFlags
+	        & HARDWARE_PATTERN_NOT_LINEAR) {
+			patternx = pci->x + (((-adjLeftX) & 7) << 3);
+			patterny = pci->y + ((-adjTopY) & 7);
+  	    } else {
                 /*
                  * Video memory location of pattern data.
                  * Note that the x-coordinate is defined in "bit" or

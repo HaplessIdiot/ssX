@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86spans.c,v 3.4 1998/01/11 03:48:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86spans.c,v 3.5 1998/01/24 16:58:56 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -193,14 +193,11 @@ xf86FillSpansTiled(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register int *pwidth;       /* pointer to list of n widths */
     DDXPointPtr initPpt;
     int *initPwidth;
-    cfbPrivGCPtr devPriv;
 
     if (nInit <= 0)
         return;
     if (!(pGC->planemask))
         return;
-
-    devPriv = cfbGetGCPrivate(pGC);
 
     if (nInit <= MIN_SPANS) {
         xf86GCInfoRec.FillSpansFallBack(
@@ -208,7 +205,7 @@ xf86FillSpansTiled(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	return;
     }
 
-    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -217,7 +214,7 @@ xf86FillSpansTiled(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
                     ppt, pwidth, fSorted);
 
     if (n > 0)
@@ -243,14 +240,11 @@ xf86FillSpansStippled(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register int *pwidth;       /* pointer to list of n widths */
     DDXPointPtr initPpt;
     int *initPwidth;
-    cfbPrivGCPtr devPriv;
 
     if (nInit <= 0)
         return;
     if (!(pGC->planemask))
         return;
-
-    devPriv = cfbGetGCPrivate(pGC);
 
     if ((nInit <= MIN_SPANS) && (pDrawable->depth == 8)) {
         xf86GCInfoRec.FillSpansFallBack(
@@ -258,7 +252,7 @@ xf86FillSpansStippled(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	return;
     }
 
-    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -267,7 +261,7 @@ xf86FillSpansStippled(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
                     ppt, pwidth, fSorted);
 
     if (n > 0)
@@ -293,14 +287,11 @@ DoPatternedFillSpans (pDrawable, pGC, nInit, pptInit, pwidthInit)
     BoxRec               nullBox;
     RegionPtr            oldpCompositeClip;
     RegionRec            nullClip;
-    cfbPrivGC           *devPriv;
 
     /*
      * Basically, spin up the spans into a list of 1 pixel high 
      * rectangles and let PolyFillRect handle the tiling.
      */
-    devPriv = cfbGetGCPrivate(pGC);
-
     pSpanPt = pptInit;
     pSpanWidth = pwidthInit;
 
@@ -325,12 +316,12 @@ DoPatternedFillSpans (pDrawable, pGC, nInit, pptInit, pwidthInit)
 
     REGION_INIT(pGC->pScreen, &nullClip, &nullBox, 1); 
 
-    oldpCompositeClip = devPriv->pCompositeClip;
-    devPriv->pCompositeClip = &nullClip;
+    oldpCompositeClip = pGC->pCompositeClip;
+    pGC->pCompositeClip = &nullClip;
     
     xf86PolyFillRect (pDrawable, pGC, nInit, pRectInit);
 
-    devPriv->pCompositeClip = oldpCompositeClip;
+    pGC->pCompositeClip = oldpCompositeClip;
 
     REGION_UNINIT(pGC->pScreen, &nullClip);
     DEALLOCATE_LOCAL(pRectInit);

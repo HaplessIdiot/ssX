@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapolypnt.c,v 3.7 1997/02/24 17:47:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapolypnt.c,v 3.8 1998/01/24 16:58:48 hohndel Exp $ */
 
 #include "vga256.h"
 
@@ -83,7 +83,7 @@ vga256PolyPoint(pDrawable, pGC, mode, npt, pptInit)
     rop = devPriv->rop;
     if (rop == GXnoop)
 	return;
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     xor = devPriv->xor;
     if ((mode == CoordModePrevious) && (npt > 1))
     {

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmtegblt.c,v 3.0 1996/08/18 01:54:11 dawes Exp $ */
 /* $XConsortium: ilbmtegblt.c,v 5.14 94/04/17 20:28:35 dpw Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
@@ -269,9 +269,7 @@ ilbmTEGlyphBlt (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	bbox.y1 = ypos;
 	bbox.y2 = ypos + h;
 
-	switch (RECT_IN_REGION(pGC->pScreen,
-			((ilbmPrivGC *)(pGC->devPrivates[ilbmGCPrivateIndex].ptr))->pCompositeClip,
-								 &bbox)) {
+	switch (RECT_IN_REGION(pGC->pScreen, pGC->pCompositeClip, &bbox)) {
 		case rgnPART:
 		/* this is the WRONG thing to do, but it works.
 		   calling the non-terminal text is easy, but slow, given

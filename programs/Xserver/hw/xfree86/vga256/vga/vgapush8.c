@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapush8.c,v 3.3 1996/12/09 11:54:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapush8.c,v 3.4 1996/12/23 06:59:55 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -62,7 +62,7 @@ vga256PushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     bbox.y2 = bbox.y1 + dy;
     devPriv = cfbGetGCPrivate(pGC);
     
-    switch (RECT_IN_REGION(pGC->pScreen, devPriv->pCompositeClip, &bbox))
+    switch (RECT_IN_REGION(pGC->pScreen, pGC->pCompositeClip, &bbox))
     {
       case rgnPART:
 	mfbPushPixels(pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg);

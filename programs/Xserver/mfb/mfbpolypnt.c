@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/mfb/mfbpolypnt.c,v 1.0tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -100,8 +101,8 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	}
     }
 
-    nbox = REGION_NUM_RECTS(pGCPriv->pCompositeClip);
-    pbox = REGION_RECTS(pGCPriv->pCompositeClip);
+    nbox = REGION_NUM_RECTS(pGC->pCompositeClip);
+    pbox = REGION_RECTS(pGC->pCompositeClip);
     for (; --nbox >= 0; pbox++)
     {
 	if (rop == RROP_BLACK)

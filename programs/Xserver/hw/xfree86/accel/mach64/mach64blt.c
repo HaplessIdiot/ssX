@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64blt.c,v 3.9 1997/02/24 17:46:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64blt.c,v 3.10 1998/01/24 16:56:50 hohndel Exp $ */
 /*
  * Copyright 1989 by the Massachusetts Institute of Technology
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -299,7 +299,6 @@ mach64BitBlt (pSrc, pDst, pGC, srcX, srcY, copyWidth, copyHeight,
     register int    clipXMax;	  /* max X value */
     register int    clipYMin;	  /* min Y value */
     register int    clipYMax;	  /* max Y value */
-    cfbPrivGCPtr    pGCPriv;	  /* pointer to GC's dev private struct */
     Bool            fastClip;	  /* for fast clipping with pixmap source */
     Bool            fastExpose;	  /* for fast exposures with pixmap source */
 
@@ -308,8 +307,7 @@ mach64BitBlt (pSrc, pDst, pGC, srcX, srcY, copyWidth, copyHeight,
     fastClip = FALSE;
     fastExpose = FALSE;
 
-    pGCPriv = (cfbPrivGCPtr)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
-    pRgnDstClip = pGCPriv->pCompositeClip; 
+    pRgnDstClip = pGC->pCompositeClip; 
 
     if (pDst->type == DRAWABLE_WINDOW) 
     {
@@ -338,7 +336,7 @@ mach64BitBlt (pSrc, pDst, pGC, srcX, srcY, copyWidth, copyHeight,
 	    }
 	    else if ((pSrc == pDst) && (pGC->clientClipType == CT_NONE))
 	    {
-	        pRgnSrcClip = pGCPriv->pCompositeClip;
+	        pRgnSrcClip = pGC->pCompositeClip;
 	    }
 	    else
 	    {
@@ -355,7 +353,7 @@ mach64BitBlt (pSrc, pDst, pGC, srcX, srcY, copyWidth, copyHeight,
     {
 	if ((pSrc == pDst) && (pGC->clientClipType == CT_NONE))
 	{
-	    pRgnSrcClip = pGCPriv->pCompositeClip;
+	    pRgnSrcClip = pGC->pCompositeClip;
 	}
 	else
 	{
@@ -534,7 +532,7 @@ mach64BitBlt (pSrc, pDst, pGC, srcX, srcY, copyWidth, copyHeight,
 
 
     pRgnExposed = NULL;
-    if ((!fastExpose) && (pGCPriv->fExpose))
+    if ((!fastExpose) && (pGC->fExpose))
     {
         /*
          * Pixmap sources generate a NoExposed. (we return NULL to do this) 

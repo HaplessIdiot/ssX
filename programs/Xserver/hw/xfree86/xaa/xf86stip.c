@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86stip.c,v 3.9 1997/09/19 08:30:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86stip.c,v 3.10 1998/01/24 16:58:57 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -41,9 +41,6 @@
 #include "xf86local.h"
 #include "xf86expblt.h"
 
-#if !defined(MetroLink)
-extern unsigned char byte_reversed[256];
-#endif
 extern unsigned int stipplemask[33];
 
 #if defined(__GNUC__) && defined(__i386__) && defined(__OPTIMIZE__)

@@ -1,6 +1,81 @@
-XFree86 3.9Ae (xx February 1998)
+XFree86 3.9Ae (20 March 1998)
+1619. SVGA/chips. include support for the new 69000 chipset. Fix up the
+      memory probing for the 65554, 65555 and 68554 chips. Add probing for
+      the 64200, 64300 and 69000 chips to SuperProbe. Fix  the memory probing
+      for the 65554, etc in SuperProbe. Some docs updates (#1603,1604,
+      David Bateman).
+1618. Fix Mach32 text restoration (#1601, Marc La France).
+1618. Add Rendition V2x00 to vgaPCI.h (#1598, Marc Langenbach).
+1617. xterm patches. improve test for highlightColor so that xterm does not
+      attempt to use that unless it is different from the foreground and
+      background colors. remove ich and ich1 from xterm and xterm-8bit
+      terminfo descriptions. restore 1-pixel overlap of scrollbar border with
+      left edge of window. add a configure option, --enable-logfile-exec.
+      make the ALLOWLOGFILEEXEC code compile & run, if configured. minor
+      documentation nits. correct the problem in xterm with utmp by removing
+      the reset of setuid/setgid before the main event loop (#1525,1571,1599,
+      Thomas Dickey).
+1616. Change s3/svga from using 8x8 pattern fills to 8x8 color expand fills. 
+      Add support for S3's type planar 8x8 pattern fills to XAA. Add support
+      for S3's planar 8x8 fills to the XAA stippled trapezoid stuff
+      (#1594,1595,1596,1597, Mark Vojkovich).
+1615. Ensure the correct message for lines at startup (#1591, Alan Hourihane).
+1614. Fix XAA to allow vertical lines using TwoPointLine (#1590, 
+      Alan Hourihane).
+1613. Change the xf86orect.c code to always use a hardware filled rect rather
+      than a software one when drawing vertical lines (#1589, Mark Vojkovich).
+1612. Add MICROSOFT_ZERO_LINE_BIAS flag to xaa to indicate that the hardware
+      uses MicroSoft's line bias rules rather than X's. Fix the end point
+      sematics for two point lines. Add TiledFilled Rects via image write.
+      Fix a problem with the CopyArea wrapper syncing when it shouldn't. Fix
+      twopoint line problems with XAA dashed lines. Make sure we alway check
+      for one rect situations when using XAA polygon code (#1575,1576,1577,
+      1578,1579,1580,1581, Mark Vojkovich).
+1611. Add new MGA acceleration, including image writes and 8x8 pattern trap 
+      fills. Go back to two point lines. Add solid filled span replacement. 
+      Make PCI retries off for mga by default (need Option "pci_retry" to turn 
+      them on).  Make hardware cursor work better in doublescan modes.  And 
+      turn hw cursor on by default (#1582,1583,1592 Mark Vojkovich).
+1610. Removes assumption that we have a Trapezoid function (#1573,
+      Alan Hourihane).
+1609. Fix ImageWrite code at 15bpp by fixing xaa not to rely on xf86bpp, but
+      use the accel structure (#1572, Alan Hourihane).
+1608. Fix problem building resize on BSDI, update manpages, add log
+      xterm.log.html (#1490, Thomas Dickey).
+1607. Small patch to xterm's 8-bit terminal description (#1481, Thomas Dickey).
+1606. Move framebuffer ModuleInit functions to separate C source files.
+      Another fixup to mono's ScrnInfoRec (#1474. Marc La France).
+1605. Loader updates (#1467, Stuart Anderson).
+1604. Ensure window and GC privates are aligned on a sizeof(long) boundary.
+      Minor bug fix to mfb and afb framebuffers. Reinstate building of Xibm
+      server. Move pRotatedPixmap, pCompositeClip, fExpose, freeCompClip from
+      GC privates to the GC structure proper (in preparation for the banking
+      mi wrapper) (#1442,1443,1444,1445,1588 Marc La France).
+1603. xterm fixes for configuration (#1437, Bjorn Helgaas).
+1602. Lots of SVGA/ATI updates. Enforce architectural limits on panning &
+      scrolling. Duplicate recent XF86_Mach64 changes (Bus detection, Chipset
+      detection adjustments, Support for 16MB linear apertures, maxClock
+      settings). First swipe at supporting adapters whose VGA has been
+      disabled. Save and restore more registers on mode
+      entries/switches/exits. Colour map initialization changes to make use
+      of uninitialized entries more obvious. Bug fix to DSP register
+      calculation. Support 15, 16, 24 and 32bpp on integrated controllers.
+      Remove dependence on TimingTab. Include VGA DAC registers in verbose
+      output. Skip sparse I/O probes when PCI configuration space indicates a
+      device has registered a block I/O base. Virtual X rounding adjustments
+      for planar modes. Documentation updates (#1430, Marc La France). 
+1601. Clean up ScrnInfo, make vgaCloseScreen call the framebuffer's
+      CloseScreen() function, determine more pricely whether the virtual
+      resolution fits in video memory, minor optimization of cfb's 
+      ImageGlyphBlt entry (#1428,1429, Marc La France).
+1600. Fix typo in mga.h (#1418, Tim Rowley).
+1599. Fix some baserom/_baserom confusion (#1407, Gary Barton/Concurrent).
+1598. More fixes from Metro Link and some updates for clients. Remove
+      all but one copy of sdimple.c (#1405,1406, Craig Groeschel).
+1597. Remove unnecessary byte_reversed arrays (#1400, Craig Groeschel).
+1596. Add missing Xarch.h (#1399, Craig Groeschel).
 1595. Add no-listen keyword to xfs (#1397, Topi Miettinen).
-1594. Build fixes for PC98 static build (#1391, Takaaki Nomura).
+1594. Build fixes for PC98 static build (#1391,1396 Takaaki Nomura).
 1593. Build fixes to loader directory (#1388, Alan Hourihane).
 1592. Some Link Kit fixes (#1384, David Bateman).
 1591. Add zoom initialization and fix blits on T2R (Robin Cutshaw).
@@ -5953,4 +6028,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.571 1998/02/10 22:42:19 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.572 1998/03/20 19:07:47 hohndel Exp $

@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclLine.c,v 1.2 1996/12/30 13:59:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclLine.c,v 1.3 1996/12/31 07:05:58 dawes Exp $ */
 
 #include "Pcl.h"
 #include "gcstruct.h"
@@ -88,7 +88,7 @@ PclPolyLine( pDrawable, pGC, mode, nPoints, pPoints )
      int nPoints;
      xPoint *pPoints;
 {
-    char t[80], window[80];
+    char t[80];
     FILE *outFile;
     int xoffset, yoffset;
     int nbox;
@@ -175,9 +175,7 @@ PclPolyLine( pDrawable, pGC, mode, nPoints, pPoints )
     drawRegion = miRectsToRegion( nPoints - 1, drawRects, CT_UNSORTED );
     if( mode == CoordModePrevious )
       miTranslateRegion( drawRegion, pPoints[0].x, pPoints[0].y );
-    miIntersect( region, drawRegion,
-		((PclGCPrivPtr)pGC->devPrivates[PclGCPrivateIndex].ptr)
-		->pCompositeClip );
+    miIntersect( region, drawRegion, pGC->pCompositeClip );
     
     /*
      * For each rectangle in the clip region, set the HP-GL/2 "input
@@ -281,9 +279,7 @@ PclPolySegment( pDrawable, pGC, nSegments, pSegments )
      * intersect it with the clip region.
      */
     drawRegion = miRectsToRegion( nSegments, drawRects, CT_UNSORTED );
-    miIntersect( region, drawRegion, 
-		((PclGCPrivPtr)pGC->devPrivates[PclGCPrivateIndex].ptr)
-		->pCompositeClip );
+    miIntersect( region, drawRegion, pGC->pCompositeClip );
     
     /*
      * For each rectangle in the clip region, set the HP-GL/2 "input

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.1 1997/07/29 13:25:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.2tsi Exp $ */
 /*
- * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -23,34 +23,34 @@
 
 #include "atiadapter.h"
 #include "atichip.h"
+#include "atidac.h"
 #include "atidepth.h"
 #include "atiio.h"
 #include "atiprint.h"
 #include "atividmem.h"
-#include "vga.h"
-#include "xf86_Config.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 
 /*
  * Define a table to map mode flag values to XF86Config tokens.
  */
 typedef struct
 {
-      int flag, token;
+    int flag;
+    char * token;
 } TokenTabRec, *TokenTabPtr;
 
 static TokenTabRec TokenTab[] =
 {
-    {V_PHSYNC,    TT_PHSYNC},
-    {V_NHSYNC,    TT_NHSYNC},
-    {V_PVSYNC,    TT_PVSYNC},
-    {V_NVSYNC,    TT_NVSYNC},
-    {V_PCSYNC,    TT_PCSYNC},
-    {V_NCSYNC,    TT_NCSYNC},
-    {V_INTERLACE, TT_INTERLACE},
-    {V_DBLSCAN,   TT_DBLSCAN},
-    {V_CSYNC,     TT_CSYNC},
-    {0,           0}
+    {V_PHSYNC,    "+hsync"},
+    {V_NHSYNC,    "-hsync"},
+    {V_PVSYNC,    "+vsync"},
+    {V_NVSYNC,    "-vsync"},
+    {V_PCSYNC,    "+csync"},
+    {V_NCSYNC,    "-csync"},
+    {V_INTERLACE, "interlace"},
+    {V_DBLSCAN,   "doublescan"},
+    {V_CSYNC,     "composite"},
+    {0,           NULL}
 };
 
 /*
@@ -127,6 +127,9 @@ ATIPrintRegisters(void)
 {
     int Index, Step, Limit;
     CARD8 misc = inb(R_GENMO);
+    CARD8 dac_read, dac_mask;
+    CARD8 crtc = ATI_CRTC_VGA;
+    CARD32 IO_Value;
 
     ErrorF("\n Miscellaneous output register value: 0x%02X.", misc);
 
@@ -189,7 +192,15 @@ ATIPrintRegisters(void)
                     inb(ATIIOPortDAC_REGS + 3), inb(ATIIOPortDAC_REGS + 2),
                     inb(ATIIOPortDAC_REGS + 1), inb(ATIIOPortDAC_REGS));
             else
-                ErrorF(" %08X", inl(Index));
+            {
+                IO_Value = inl(Index);
+
+                if ((Index == ATIIOPortCRTC_GEN_CNTL) &
+                    (IO_Value & CRTC_EXT_DISP_EN))
+                    crtc = ATI_CRTC_MACH64;
+
+                ErrorF(" %08X", IO_Value);
+            }
         }
 
         if (ATIChip >= ATI_CHIP_264CT)
@@ -211,6 +222,35 @@ ATIPrintRegisters(void)
             }
         }
     }
+
+    ATISetDACIOPorts(crtc);
+
+    ErrorF("\n\n"
+           " DAC read index:  0x%02X\n"
+           " DAC write index: 0x%02X\n"
+           " DAC mask:        0x%02X\n\n"
+           " DAC colour lookup table:",
+           dac_read = inb(ATIIOPortDAC_READ),
+           inb(ATIIOPortDAC_WRITE),
+           dac_mask = inb(ATIIOPortDAC_MASK));
+
+    outb(ATIIOPortDAC_MASK, 0xFFU);
+    outb(ATIIOPortDAC_READ, 0x00U);
+
+    for (Index = 0;  Index < 256;  Index++)
+    {
+        if (!(Index & 3))
+            ErrorF("\n 0x%02X:", Index);
+        ErrorF("  %02X", inb(ATIIOPortDAC_DATA));
+        DACDelay;
+        ErrorF(" %02X", inb(ATIIOPortDAC_DATA));
+        DACDelay;
+        ErrorF(" %02X", inb(ATIIOPortDAC_DATA));
+        DACDelay;
+    }
+
+    outb(ATIIOPortDAC_MASK, dac_mask);
+    outb(ATIIOPortDAC_READ, dac_read);
 
     ErrorF("\n\n");
 }
@@ -244,12 +284,10 @@ ATIPrintMode(DisplayModePtr mode)
     for (TokenEntry = TokenTab;  TokenEntry->flag;  TokenEntry++)
         if (mode_flags & TokenEntry->flag)
         {
-/*** build fix, can't resolve TimingTab (dhh)
-            ErrorF(" %s", xf86TokenToString(TimingTab, TokenEntry->token));
-***/
+            ErrorF(" %s", TokenEntry->token);
             mode_flags &= ~TokenEntry->flag;
             if (!mode_flags)
-                        break;
+                break;
         }
 
     ErrorF("\n");

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3gc.c,v 3.1 1996/10/03 08:33:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3gc.c,v 3.2 1996/12/27 07:02:33 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -304,9 +304,9 @@ s3CreateGC(pGC)
    pPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
    pPriv->rop = pGC->alu;
    pPriv->oneRect = FALSE;
-   pPriv->fExpose = TRUE;
-   pPriv->freeCompClip = FALSE;
-   pPriv->pRotatedPixmap = (PixmapPtr) NULL;
+   pGC->fExpose = TRUE;
+   pGC->freeCompClip = FALSE;
+   pGC->pRotatedPixmap = (PixmapPtr) NULL;
    return TRUE;
 }
 
@@ -399,7 +399,7 @@ s3ValidateGC(pGC, changes, pDrawable)
 	    pregWin = &pWin->clipList;
 	    freeTmpClip = FALSE;
 	 }
-	 freeCompClip = devPriv->freeCompClip;
+	 freeCompClip = pGC->freeCompClip;
 
        /*
         * if there is no client clip, we can get by with just keeping the
@@ -410,9 +410,9 @@ s3ValidateGC(pGC, changes, pDrawable)
         */
 	 if (pGC->clientClipType == CT_NONE) {
 	    if (freeCompClip)
-	       (*pScreen->RegionDestroy) (devPriv->pCompositeClip);
-	    devPriv->pCompositeClip = pregWin;
-	    devPriv->freeCompClip = freeTmpClip;
+	       (*pScreen->RegionDestroy) (pGC->pCompositeClip);
+	    pGC->pCompositeClip = pregWin;
+	    pGC->freeCompClip = freeTmpClip;
 	 } else {
 
 	  /*
@@ -429,20 +429,19 @@ s3ValidateGC(pGC, changes, pDrawable)
 					 pDrawable->y + pGC->clipOrg.y);
 
 	    if (freeCompClip) {
-	       (*pGC->pScreen->Intersect) (devPriv->pCompositeClip,
+	       (*pGC->pScreen->Intersect) (pGC->pCompositeClip,
 					   pregWin, pGC->clientClip);
 	       if (freeTmpClip)
 		  (*pScreen->RegionDestroy) (pregWin);
 	    } else if (freeTmpClip) {
 	       (*pScreen->Intersect) (pregWin, pregWin, pGC->clientClip);
-	       devPriv->pCompositeClip = pregWin;
+	       pGC->pCompositeClip = pregWin;
 	    } else {
-	       devPriv->pCompositeClip = (*pScreen->RegionCreate) (NullBox,
-								   0);
-	       (*pScreen->Intersect) (devPriv->pCompositeClip,
+	       pGC->pCompositeClip = (*pScreen->RegionCreate) (NullBox, 0);
+	       (*pScreen->Intersect) (pGC->pCompositeClip,
 				      pregWin, pGC->clientClip);
 	    }
-	    devPriv->freeCompClip = TRUE;
+	    pGC->freeCompClip = TRUE;
 	    (*pScreen->TranslateRegion) (pGC->clientClip,
 					 -(pDrawable->x + pGC->clipOrg.x),
 					 -(pDrawable->y + pGC->clipOrg.y));
@@ -459,25 +458,24 @@ s3ValidateGC(pGC, changes, pDrawable)
 	 pixbounds.x2 = pDrawable->width;
 	 pixbounds.y2 = pDrawable->height;
 
-	 if (devPriv->freeCompClip)
-	    (*pScreen->RegionReset) (devPriv->pCompositeClip, &pixbounds);
+	 if (pGC->freeCompClip)
+	    (*pScreen->RegionReset) (pGC->pCompositeClip, &pixbounds);
 	 else {
-	    devPriv->freeCompClip = TRUE;
-	    devPriv->pCompositeClip = (*pScreen->RegionCreate) (&pixbounds,
-								1);
+	    pGC->freeCompClip = TRUE;
+	    pGC->pCompositeClip = (*pScreen->RegionCreate) (&pixbounds, 1);
 	 }
 
 	 if (pGC->clientClipType == CT_REGION) {
-	    (*pScreen->TranslateRegion) (devPriv->pCompositeClip,
+	    (*pScreen->TranslateRegion) (pGC->pCompositeClip,
 					 -pGC->clipOrg.x, -pGC->clipOrg.y);
-	    (*pScreen->Intersect) (devPriv->pCompositeClip,
-				   devPriv->pCompositeClip,
+	    (*pScreen->Intersect) (pGC->pCompositeClip,
+				   pGC->pCompositeClip,
 				   pGC->clientClip);
-	    (*pScreen->TranslateRegion) (devPriv->pCompositeClip,
+	    (*pScreen->TranslateRegion) (pGC->pCompositeClip,
 					 pGC->clipOrg.x, pGC->clipOrg.y);
 	 }
       }				/* end of composute clip for pixmap */
-      oneRect = REGION_NUM_RECTS(devPriv->pCompositeClip) == 1;
+      oneRect = REGION_NUM_RECTS(pGC->pCompositeClip) == 1;
       if (oneRect != devPriv->oneRect)
 	 new_line = TRUE;
       devPriv->oneRect = oneRect;
@@ -594,7 +592,7 @@ s3ValidateGC(pGC, changes, pDrawable)
 
 	      if ((width <= PPW*PSZ) && !(width & (width - 1))) {
 		 cfbCopyRotatePixmap(pGC->tile.pixmap,
-				     &devPriv->pRotatedPixmap,
+				     &pGC->pRotatedPixmap,
 				     xrot, yrot);
 		 new_pix = TRUE;
 	      }
@@ -608,16 +606,16 @@ s3ValidateGC(pGC, changes, pDrawable)
 
 	      if ((width <= 32) && !(width & (width - 1))) {
 		 mfbCopyRotatePixmap(pGC->stipple,
-				     &devPriv->pRotatedPixmap, xrot, yrot);
+				     &pGC->pRotatedPixmap, xrot, yrot);
 		 new_pix = TRUE;
 	      }
 	   }
 	   break;
 #endif
       }
-      if (!new_pix && devPriv->pRotatedPixmap) {
-	 cfbDestroyPixmap(devPriv->pRotatedPixmap);
-	 devPriv->pRotatedPixmap = (PixmapPtr) NULL;
+      if (!new_pix && pGC->pRotatedPixmap) {
+	 cfbDestroyPixmap(pGC->pRotatedPixmap);
+	 pGC->pRotatedPixmap = (PixmapPtr) NULL;
       }
    }
    if (new_rrop) {
@@ -837,7 +835,7 @@ s3ValidateGC(pGC, changes, pDrawable)
 	      break;
 
 	   case FillTiled:
-	      if (devPriv->pRotatedPixmap) {
+	      if (pGC->pRotatedPixmap) {
 		 if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
 		    pGC->ops->FillSpans = cfbTile32FSCopy;
 		 else
@@ -848,7 +846,7 @@ s3ValidateGC(pGC, changes, pDrawable)
 	   case FillStippled:
 
 #if PPW == 4
-	      if (devPriv->pRotatedPixmap)
+	      if (pGC->pRotatedPixmap)
 		 pGC->ops->FillSpans = cfb8Stipple32FS;
 	      else
 #endif
@@ -856,7 +854,7 @@ s3ValidateGC(pGC, changes, pDrawable)
 	      break;
 	   case FillOpaqueStippled:
 #if PPW == 4
-	      if (devPriv->pRotatedPixmap)
+	      if (pGC->pRotatedPixmap)
 		 pGC->ops->FillSpans = cfb8OpaqueStipple32FS;
 	      else
 #endif

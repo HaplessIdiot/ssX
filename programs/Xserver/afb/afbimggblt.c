@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afbimggblt.c,v 3.0 1996/08/18 01:45:42 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -177,8 +177,7 @@ afbImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
 	/* the faint-hearted can open their eyes now */
 
-	switch (RECT_IN_REGION(pGC->pScreen,
-		((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip, &bbox)) {
+	switch (RECT_IN_REGION(pGC->pScreen, pGC->pCompositeClip, &bbox)) {
 		case rgnOUT:
 			break;
 		case rgnIN:
@@ -325,7 +324,7 @@ afbImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 					}
 				}
 
-				cclip = ((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip;
+				cclip = pGC->pCompositeClip;
 				pbox = REGION_RECTS(cclip);
 				nbox = REGION_NUM_RECTS(cclip);
 

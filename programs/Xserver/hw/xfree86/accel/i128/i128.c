@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.39 1997/12/05 22:01:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.40 1998/01/24 16:56:34 hohndel Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -154,6 +154,10 @@ ScrnInfoRec i128InfoRec =
    0,				/* unsigned long physBase */
    0,				/* int physSize */
 #endif
+#ifdef XF86SETUP
+   NULL,			/* void *device */
+#endif
+   FALSE			/* hasDirectColor */
 };
 
 static SymTabRec i128DacTable[] = {

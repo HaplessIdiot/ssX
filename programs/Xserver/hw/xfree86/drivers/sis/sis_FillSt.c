@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_FillSt.c,v 1.1 1997/03/06 23:16:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_FillSt.c,v 1.2 1998/01/24 16:58:21 hohndel Exp $ */
 
 /*
  *
@@ -61,12 +61,10 @@ void siscfbFillRectOpaqueStippled32(pDrawable, pGC, nBox, pBox)
 {
 	unsigned long *src;
 	int stippleHeight;
-	cfbPrivGCPtr devPriv;
 	PixmapPtr stipple;
 	int destPitch;
 
-	devPriv = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr);
-	stipple = devPriv->pRotatedPixmap;
+	stipple = pGC->pRotatedPixmap;
 
 	destPitch = (int)
 		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind);
@@ -106,12 +104,10 @@ void siscfbFillRectTransparentStippled32(pDrawable, pGC, nBox, pBox)
 {
 	unsigned long *src;
 	int stippleHeight;
-	cfbPrivGCPtr devPriv;
 	PixmapPtr stipple;
 	int destPitch;
 
-	devPriv = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr);
-	stipple = devPriv->pRotatedPixmap;
+	stipple = pGC->pRotatedPixmap;
 
 	destPitch = (int)
 		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind);
@@ -223,8 +219,7 @@ siscfbFillRectTile(pDrawable, pGC, nBox, pBox)
 #endif
     switch (vgaBitsPerPixel) {
     case 8:
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-	    pRotatedPixmap) {
+	if (!pGC->pRotatedPixmap) {
 	    vga256FillRectTileOdd(pDrawable, pGC, nBox, pBox);
 	} else {
 	    if (pGC->alu == GXcopy && (pGC->planemask & 0xFF)
@@ -236,8 +231,7 @@ siscfbFillRectTile(pDrawable, pGC, nBox, pBox)
 	}
 	break;
     case 16:
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-	    pRotatedPixmap) {
+	if (!pGC->pRotatedPixmap) {
 	    cfb16FillRectTileOdd(pDrawable, pGC, nBox, pBox);
 	} else {
 	    if (pGC->alu == GXcopy && (pGC->planemask & 0xFFFF)
@@ -249,8 +243,7 @@ siscfbFillRectTile(pDrawable, pGC, nBox, pBox)
 	}
 	break;
     case 24:
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-	    pRotatedPixmap) {
+	if (!pGC->pRotatedPixmap) {
 	    cfb24FillRectTileOdd(pDrawable, pGC, nBox, pBox);
 	} else {
 	    if (pGC->alu == GXcopy && (pGC->planemask & 0xFFFFFF)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFPoly.c,v 3.3 1996/12/23 06:32:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFPoly.c,v 3.4 1998/01/24 16:56:24 hohndel Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -102,10 +102,7 @@ static int getPolyYBounds();
 #define DRAWSPANS() \
     if( clip ) { \
        int j; \
-       n = miClipSpans( ((cfbPrivGC *) \
-                           (pGC->devPrivates[cfbGCPrivateIndex].ptr)) \
-                               ->pCompositeClip, \
-                        &point, &width, 1, \
+       n = miClipSpans(pGC->pCompositeClip, &point, &width, 1, \
                         points, widths, TRUE ); \
        pts = points; \
        wids = widths; \
@@ -151,15 +148,12 @@ agxFillConvexPoly(pDraw, pGC, count, ptsIn)
     int *wids; 
     RegionPtr prgnClip;
     BoxPtr clipbox;
-    cfbPrivGC *priv;
     Bool clip;                  /* do we need to clip              */
     Bool solid;                 /* solid fill                      */
 
     solid = pGC->fillStyle == FillSolid;
     if( solid ) {
-       n = miFindMaxBand( ((cfbPrivGC *)
-                             (pGC->devPrivates[cfbGCPrivateIndex].ptr))
-                                ->pCompositeClip);
+       n = miFindMaxBand(pGC->pCompositeClip);
        points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * n);
        if (!points)
           return;
@@ -182,8 +176,7 @@ agxFillConvexPoly(pDraw, pGC, count, ptsIn)
      * bounding box requires clipping.
      */
     clip = TRUE;
-    priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
-    prgnClip = priv->pCompositeClip;
+    prgnClip = pGC->pCompositeClip;
     n = REGION_NUM_RECTS(prgnClip);
     clipbox = REGION_RECTS(prgnClip);
     while( clip && n-- ) {
@@ -386,15 +379,12 @@ agxFillGeneralPoly( pDraw, pGC, count, ptsIn)
     int ymax;
     RegionPtr prgnClip;
     BoxPtr clipbox;
-    cfbPrivGC *priv;
     Bool solid;                 /* solid fill                      */
     Bool clip;                  /* do we need to clip              */
 
     solid = pGC->fillStyle == FillSolid;
     if( solid ) {
-       n = miFindMaxBand( ((cfbPrivGC *)
-                             (pGC->devPrivates[cfbGCPrivateIndex].ptr))
-                                ->pCompositeClip);
+       n = miFindMaxBand(pGC->pCompositeClip);
        points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * n);
        if (!points)
           return;
@@ -422,8 +412,7 @@ agxFillGeneralPoly( pDraw, pGC, count, ptsIn)
      */    
     getPolyYBounds(ptsIn, count, &xmin, &xmax, &ymin, &ymax);
     clip = TRUE;
-    priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
-    prgnClip = priv->pCompositeClip;
+    prgnClip = pGC->pCompositeClip;
     n = REGION_NUM_RECTS(prgnClip);
     clipbox = REGION_RECTS(prgnClip);
     while( clip && n-- ) {

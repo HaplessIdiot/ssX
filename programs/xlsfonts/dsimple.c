@@ -1,5 +1,5 @@
 /* $XConsortium: dsimple.c,v 1.16 94/04/17 20:24:36 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xlsfonts/dsimple.c,v 3.0 1996/06/10 11:03:07 dawes Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -35,25 +35,21 @@ from the X Consortium.
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 #include <stdio.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern char *malloc(), *realloc();
+#endif
+#if NeedVarargsPrototypes
+#include <stdarg.h>
+#endif
 /*
  * Other_stuff.h: Definitions of routines in other_stuff.
  *
  * Written by Mark Lillibridge.   Last updated 7/1/87
  */
 
-#ifdef X_NOT_STDC_ENV
-char *malloc(), realloc();
-#else
-#include <stdlib.h>
-#endif
-
-unsigned long Resolve_Color();
-Pixmap Bitmap_To_Pixmap();
-Window Select_Window();
-void out();
-void blip();
-Window Window_With_Name();
-void Fatal_Error();
+#include "dsimple.h"
 
 /*
  * Just_display: A group of routines designed to make the writting of simple
@@ -67,10 +63,13 @@ void Fatal_Error();
 
 
 /* This stuff is defined in the calling program by just_display.h */
-extern char *program_name;
-extern Display *dpy;
-extern int screen;
+char *program_name = "unknown_program";
+Display *dpy;
+int screen;
 
+#if NeedFunctionPrototypes
+static void _bitmap_error(int, char *);
+#endif
 
 /*
  * Malloc: like malloc but handles out of memory using Fatal_Error.
@@ -411,7 +410,9 @@ Pixmap Bitmap_To_Pixmap(dpy, d, gc, bitmap, width, height)
  */
 void blip()
 {
-  outl("blip!");
+    fflush(stdout);
+    fprintf(stderr, "blip!\n");
+    fflush(stderr);
 }
 
 
@@ -503,12 +504,27 @@ Window Window_With_Name(dpy, top, name)
  *       printf with up to 7 arguments.
  */
 /* VARARGS1 */
-outl(msg, arg0,arg1,arg2,arg3,arg4,arg5,arg6)
-     char *msg;
-     char *arg0, *arg1, *arg2, *arg3, *arg4, *arg5, *arg6;
+void
+outl(
+#if NeedVarargsPrototypes
+    char *msg, ...)
+#else
+msg, arg0,arg1,arg2,arg3,arg4,arg5,arg6)
+char *msg;
+char *arg0, *arg1, *arg2, *arg3, *arg4, *arg5, *arg6;
+#endif
 {
+#if NeedVarargsPrototypes
+	va_list args;
+#endif
 	fflush(stdout);
+#if NeedVarargsPrototypes
+	va_start(args, msg);
+	vfprintf(stderr, msg, args);
+	va_end(args);
+#else
 	fprintf(stderr, msg, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+#endif
 	fprintf(stderr, "\n");
 	fflush(stderr);
 }
@@ -519,14 +535,28 @@ outl(msg, arg0,arg1,arg2,arg3,arg4,arg5,arg6)
  * Does not require dpy or screen defined.
  */
 /* VARARGS1 */
-void Fatal_Error(msg, arg0,arg1,arg2,arg3,arg4,arg5,arg6)
+void Fatal_Error(
+#if NeedVarargsPrototypes
+    char *msg, ...)
+#else
+msg, arg0,arg1,arg2,arg3,arg4,arg5,arg6)
 char *msg;
 char *arg0, *arg1, *arg2, *arg3, *arg4, *arg5, *arg6;
+#endif
 {
+#if NeedVarargsPrototypes
+	va_list args;
+#endif
 	fflush(stdout);
 	fflush(stderr);
 	fprintf(stderr, "%s: error: ", program_name);
+#if NeedVarargsPrototypes
+	va_start(args, msg);
+	vfprintf(stderr, msg, args);
+	va_end(args);
+#else
 	fprintf(stderr, msg, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+#endif
 	fprintf(stderr, "\n");
 	exit(1);
 }

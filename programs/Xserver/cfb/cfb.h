@@ -1,5 +1,5 @@
 /* $XConsortium: cfb.h,v 5.37 94/04/17 20:28:38 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.8 1997/10/25 13:49:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.9 1997/11/16 11:51:08 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -60,10 +60,6 @@ typedef struct {
     unsigned char       ropOpStip;      /* rop for opaque stipple */
     /* this value is ropFillArea in mfb, usurped for cfb */
     unsigned char       oneRect;	/*  drawable has one clip rect */
-    unsigned		fExpose:1;	/* callexposure handling ? */
-    unsigned		freeCompClip:1;
-    PixmapPtr		pRotatedPixmap;
-    RegionPtr		pCompositeClip; /* FREE_CC or REPLACE_CC */
     unsigned long	xor, and;	/* reduced rop values */
     } cfbPrivGC;
 
@@ -72,8 +68,7 @@ typedef cfbPrivGC	*cfbPrivGCPtr;
 #define cfbGetGCPrivate(pGC)	((cfbPrivGCPtr)\
 	(pGC)->devPrivates[cfbGCPrivateIndex].ptr)
 
-#define cfbGetCompositeClip(pGC) (((cfbPrivGCPtr)\
-	(pGC)->devPrivates[cfbGCPrivateIndex].ptr)->pCompositeClip)
+#define cfbGetCompositeClip(pGC) ((pGC)->pCompositeClip)
 
 /* way to carry RROP info around */
 typedef struct {

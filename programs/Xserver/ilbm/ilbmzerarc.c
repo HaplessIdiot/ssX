@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmzerarc.c,v 3.0 1996/08/18 01:54:15 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -193,7 +193,7 @@ ilbmZeroPolyArcSS(pDraw, pGC, narcs, parcs)
 	BoxRec box;
 	RegionPtr cclip;
 
-	cclip = ((ilbmPrivGC *)(pGC->devPrivates[ilbmGCPrivateIndex].ptr))->pCompositeClip;
+	cclip = pGC->pCompositeClip;
 	for (arc = parcs, i = narcs; --i >= 0; arc++) {
 		if (miCanZeroArc(arc)) {
 			box.x1 = arc->x + pDraw->x;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgarctstp8.c,v 3.5 1997/07/10 08:17:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgarctstp8.c,v 3.6 1997/10/25 13:50:56 hohndel Exp $ */
 /*
  * Fill 32 bit stippled rectangles for 8 bit frame buffers
  */
@@ -66,15 +66,13 @@ vga2568FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
     register unsigned long bits;	/* bits from stipple */
     int	rot;
     register unsigned long  xor;
-    cfbPrivGCPtr	    devPriv;
     PixmapPtr		    stipple;
 #ifdef SPEEDUP
     unsigned long *dstTmp;
     int	    wEnd;
 #endif
 
-    devPriv = cfbGetGCPrivate(pGC);
-    stipple = devPriv->pRotatedPixmap;
+    stipple = pGC->pRotatedPixmap;
 
     cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel, pGC->planemask);
 
@@ -282,7 +280,7 @@ vga2568FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
 #endif
     
     devPriv = cfbGetGCPrivate(pGC);
-    stipple = devPriv->pRotatedPixmap;
+    stipple = pGC->pRotatedPixmap;
     src = (unsigned long *)stipple->devPrivate.ptr;
     stippleHeight = stipple->drawable.height;
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.15 1997/12/05 22:01:33 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.16 1998/01/24 16:56:45 hohndel Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -475,7 +475,7 @@ mach32WarpCursor(pScr, x, y)
      int       x, y;
 {
   miPointerWarpCursor(pScr, x, y);
-  xf86Info.currentScreen = pScr;
+  xf86SetCurrentScreen(pScr);
 }
 
 

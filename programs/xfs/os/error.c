@@ -170,6 +170,35 @@ NoticeF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)	/* limit of 10 args */
  * used for non-fatal error messages
  */
 /* VARARGS1 */
+#if defined(MetroLink)
+void
+ErrorF(
+#if NeedVarargsPrototypes
+    char * f, ...)
+#else
+ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
+    char *f;
+    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+#endif
+{
+#if NeedVarargsPrototypes
+    va_list args;
+    va_start(args, f);
+    fprintf(stderr, "%s error: ", progname);
+    vfprintf(stderr, f, args);
+    va_end(args);
+#else
+#ifdef USE_SYSLOG
+    if (UseSyslog) {
+	syslog(LOG_ERR, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+	return;
+    }
+#endif
+    fprintf(stderr, "%s error: ", progname);
+    fprintf(stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+#endif
+}
+#else
 void
 ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)	/* limit of 10 args */
     char       *f;
@@ -195,8 +224,34 @@ ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)	/* limit of 10 args */
     fprintf(stderr, "%s error: ", progname);
     fprintf(stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 }
+#endif
 
 /* VARARGS1 */
+#if defined(MetroLink)
+void
+FatalError(
+#if NeedVarargsPrototypes
+    char * f, ...)
+#else
+ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
+    char *f;
+    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+#endif
+{
+#if NeedVarargsPrototypes
+    va_list args;
+    va_start(args, f);
+    fprintf(stderr, "%s error: ", progname);
+    vfprintf(stderr, f, args);
+    va_end(args);
+#else
+    ErrorF("Fatal font server error:\n");
+    ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+    abort_server();
+    /* NOTREACHED */
+#endif
+}
+#else
 void
 FatalError(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)	/* limit of 10 args */
     char       *f;
@@ -216,3 +271,4 @@ FatalError(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)	/* limit of 10 args */
     abort_server();
     /* NOTREACHED */
 }
+#endif

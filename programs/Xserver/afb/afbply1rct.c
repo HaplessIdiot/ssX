@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afbply1rct.c,v 3.0 1996/08/18 01:45:46 dawes Exp $ */
 /*
  * $XConsortium: afbply1rct.c,v 1.9 94/04/17 20:28:28 dpw Exp $
  *
@@ -99,13 +99,13 @@ afbFillPolygonSolid (pDrawable, pGC, shape, mode, count, ptsIn)
 	devPriv = (afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr);
 
 	if (mode == CoordModePrevious || shape != Convex ||
-		REGION_NUM_RECTS(devPriv->pCompositeClip) != 1) {
+		REGION_NUM_RECTS(pGC->pCompositeClip) != 1) {
 		miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
 		return;
 	}
 	origin = *((int *) &pDrawable->x);
 	origin -= (origin & 0x8000) << 1;
-	extents = &devPriv->pCompositeClip->extents;
+	extents = &pGC->pCompositeClip->extents;
 	vertex1 = *((int *) &extents->x1) - origin;
 	vertex2 = *((int *) &extents->x2) - origin - 0x00010001;
 	clip = 0;

@@ -23,6 +23,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/* $XFree86: xc/programs/Xserver/hw/svga/svgaBank.c,v 1.0tsi Exp $ */
+
 #include "svga.h"
 #include "cfb.h"
 #include "cfbmskbits.h"
@@ -172,8 +174,7 @@ static GCOps   svgaBankGCOps;
 #define OP_INIT(pGC)							\
     svgaBankScreenPtr pScreenPriv = BANK_SCRPRIVATE((pGC)->pScreen);	\
     svgaBankGCPtr     pGCPriv = BANK_GCPRIVATE(pGC);			\
-    cfbPrivGCPtr      pOrigGCPriv = cfbGetGCPrivate(pGC);		\
-    RegionPtr         pOrigCompositeClip = pOrigGCPriv->pCompositeClip;	\
+    RegionPtr         pOrigCompositeClip = pGC->pCompositeClip;		\
     int i;
 
 #define OP_PROLOGUE(pGC)						\
@@ -184,13 +185,13 @@ static GCOps   svgaBankGCOps;
 
 #define OP_TOP_PART(pGC)						\
     for (i = 0; i < pScreenPriv->numBanks; i++)				\
-      if ((pOrigGCPriv->pCompositeClip = pGCPriv->pBankedClips[i]) != NULL) \
+      if ((pGC->pCompositeClip = pGCPriv->pBankedClips[i]) != NULL)	\
         {								\
 	  SET_SINGLE_BANK(pDrawable, i);
 
 #define OP_BOTTOM_PART(pGC)						\
 	}								\
-    pOrigGCPriv->pCompositeClip = pOrigCompositeClip;
+    pGC->pCompositeClip = pOrigCompositeClip;
 
 
 #define OP_SIMPLE(pDrawable, pGC, statement)				\
@@ -592,7 +593,7 @@ svgaBankValidateGC(
     {
       ScreenPtr         pScreen        = pGC->pScreen;
       svgaBankScreenPtr pScreenPriv    = BANK_SCRPRIVATE(pScreen);
-      RegionPtr         pCompositeClip = cfbGetGCPrivate(pGC)->pCompositeClip;
+      RegionPtr         pCompositeClip = pGC->pCompositeClip;
       RegionPtr         prgnClip;
       int               i;
 
@@ -853,7 +854,7 @@ svgaBankCopyArea(
 
   if (ON_HARDWARE(pSrc) && ON_HARDWARE(pDst)) {
 
-    fExpose = pOrigGCPriv->fExpose;
+    fExpose = pGC->fExpose;
 
     fastBox.x1 = srcx + pSrc->x;
     fastBox.y1 = srcy + pSrc->y;
@@ -906,7 +907,7 @@ svgaBankCopyArea(
 	  }
 	else if ((pSrc == pDst) && (pGC->clientClipType == CT_NONE))
 	  {
-	    prgnSrcClip = pOrigGCPriv->pCompositeClip;
+	    prgnSrcClip = pGC->pCompositeClip;
 	  }
 	else
 	  {
@@ -1071,7 +1072,7 @@ svgaBankCopyArea(
 	
 	if (pQueue->srcBankNo == pQueue->dstBankNo) {
 
-	  pOrigGCPriv->fExpose = FALSE;
+	  pGC->fExpose = FALSE;
 
 	  OP_PROLOGUE(pGC);
 
@@ -1090,7 +1091,7 @@ svgaBankCopyArea(
 	}
 	else if (fastBlit) {
 
-	  pOrigGCPriv->fExpose = FALSE;
+	  pGC->fExpose = FALSE;
 
 	  OP_PROLOGUE(pGC);
 
@@ -1135,7 +1136,7 @@ svgaBankCopyArea(
 
     case BANK_DOUBLE:
 
-      pOrigGCPriv->fExpose = FALSE;
+      pGC->fExpose = FALSE;
       
       while(nQueue--) {
 
@@ -1177,7 +1178,7 @@ svgaBankCopyArea(
       break;
     }
 
-    pOrigGCPriv->fExpose = fExpose;
+    pGC->fExpose = fExpose;
 
     pSrcShadow->drawable.class = 0; /* ### */
 
@@ -1197,8 +1198,8 @@ svgaBankCopyArea(
 
   else if (ON_HARDWARE(pSrc)) {
 
-    fExpose = pOrigGCPriv->fExpose;
-    pOrigGCPriv->fExpose = FALSE;
+    fExpose = pGC->fExpose;
+    pGC->fExpose = FALSE;
 
     xorg = pSrc->x;
     yorg = pSrc->y;
@@ -1240,11 +1241,11 @@ svgaBankCopyArea(
       }
     }
 
-    pOrigGCPriv->fExpose = fExpose;
+    pGC->fExpose = fExpose;
 
     OP_EPILOGUE(pGC);
 
-    if (pOrigGCPriv->fExpose)
+    if (pGC->fExpose)
       ret = miHandleExposures (pSrc, pDst, pGC,
 			       srcx - xorg,
 			       srcy - yorg,
@@ -1331,7 +1332,7 @@ svgaBankPolyPoint(
     ppt = (xPoint*)ALLOCATE_LOCAL(npt * sizeof(xPoint));
   
     for (i = 0; i < pScreenPriv->numBanks; i++)
-      if ((pOrigGCPriv->pCompositeClip = pGCPriv->pBankedClips[i]) != NULL)
+      if ((pGC->pCompositeClip = pGCPriv->pBankedClips[i]) != NULL)
         {
 	  OP_PROLOGUE(pGC);
 
@@ -1342,7 +1343,7 @@ svgaBankPolyPoint(
 	  (*pGC->ops->PolyPoint)(pDrawable, pGC, mode, npt, ppt);
 	}
 
-    pOrigGCPriv->pCompositeClip = pOrigCompositeClip;
+    pGC->pCompositeClip = pOrigCompositeClip;
 
     DEALLOCATE_LOCAL(ppt);
   }
@@ -1385,7 +1386,7 @@ svgaBankPolylines(
 	ppt = (DDXPointPtr)ALLOCATE_LOCAL(npt * sizeof(DDXPointRec));
 
 	for (i = 0; i < pScreenPriv->numBanks; i++)
-	  if ((pOrigGCPriv->pCompositeClip = pGCPriv->pBankedClips[i]) != NULL)
+	  if ((pGC->pCompositeClip = pGCPriv->pBankedClips[i]) != NULL)
 	    {
 	      OP_PROLOGUE(pGC);
 
@@ -1396,7 +1397,7 @@ svgaBankPolylines(
 	      (*pGC->ops->Polylines)(pDrawable, pGC, mode, npt, ppt);
 	    }
 
-	pOrigGCPriv->pCompositeClip = pOrigCompositeClip;
+	pGC->pCompositeClip = pOrigCompositeClip;
 
 	DEALLOCATE_LOCAL(ppt);
       }
@@ -1429,7 +1430,7 @@ svgaBankPolyFillRect(
     prect = (xRectangle*)ALLOCATE_LOCAL(nrectFill * sizeof(xRectangle));
 
     for (i = 0; i < pScreenPriv->numBanks; i++)
-      if ((pOrigGCPriv->pCompositeClip = pGCPriv->pBankedClips[i]) != NULL)
+      if ((pGC->pCompositeClip = pGCPriv->pBankedClips[i]) != NULL)
         {
 	  OP_PROLOGUE(pGC);
 
@@ -1440,7 +1441,7 @@ svgaBankPolyFillRect(
 	  (*pGC->ops->PolyFillRect)(pDrawable, pGC, nrectFill, prect);
 	}
 
-    pOrigGCPriv->pCompositeClip = pOrigCompositeClip;
+    pGC->pCompositeClip = pOrigCompositeClip;
 
     DEALLOCATE_LOCAL(prect);
   }

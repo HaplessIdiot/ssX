@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbimggblt.c,v 3.1 1996/12/23 06:52:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbimggblt.c,v 3.2 1997/03/13 15:10:58 hohndel Exp $ */
 
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
@@ -288,8 +288,7 @@ doImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase,infop)
        but that is usually not a cheap thing to do.
     */
 
-    switch ((*pGC->pScreen->RectIn)(
-		  ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
+    switch ((*pGC->pScreen->RectIn)(pGC->pCompositeClip, &bbox))
     {
       case rgnOUT:
 	break;
@@ -418,7 +417,7 @@ doImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase,infop)
 	    }
 	}
 
-	cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+	cclip = pGC->pCompositeClip;
 	pbox = REGION_RECTS(cclip);
 	nbox = REGION_NUM_RECTS(cclip);
 

@@ -49,6 +49,8 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
 
+/* $XFree86: xc/programs/Xserver/hw/ibm/skyway/skyFillRct.c,v 1.0tsi Exp $ */
+
 /*
  * Fill rectangles. Based on cfbfillrct.c.
  */
@@ -128,7 +130,7 @@ skyPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int		    xorg, yorg;
 
     priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
-    prgnClip = priv->pCompositeClip;
+    prgnClip = pGC->pCompositeClip;
 
     BoxFill = 0;
 
@@ -172,8 +174,7 @@ skyPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	}
 	break;
     case FillTiled:
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-							pRotatedPixmap)
+	if (!pGC->pRotatedPixmap)
 	    BoxFill = cfbFillRectTileOdd;
 	else
 	{
@@ -185,15 +186,13 @@ skyPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	break;
 #if (PSZ == 8)
     case FillStippled:
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-							pRotatedPixmap)
+	if (!pGC->pRotatedPixmap)
 	    BoxFill = cfb8FillRectStippledUnnatural;
 	else
 	    BoxFill = cfb8FillRectTransparentStippled32;
 	break;
     case FillOpaqueStippled:
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-							pRotatedPixmap)
+	if (!pGC->pRotatedPixmap)
 	    BoxFill = cfb8FillRectStippledUnnatural;
 	else
 	    BoxFill = cfb8FillRectOpaqueStippled32;
@@ -478,10 +477,7 @@ skyPolyFillRectSolid_1Rect(pDrawable, pGC, nrect, prect)
 
         if (lastDrawable != pDrawable)
 	{
-	    cfbPrivGCPtr devPriv =
-		((cfbPrivGCPtr) (pGC->devPrivates[cfbGCPrivateIndex].ptr));
-
-	    BoxPtr pClipBox=REGION_RECTS(devPriv->pCompositeClip);
+	    BoxPtr pClipBox=REGION_RECTS(pGC->pCompositeClip);
 
 	    lastDrawable = pDrawable;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86orect.c,v 3.2 1997/03/27 08:31:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86orect.c,v 3.3 1997/04/18 09:12:53 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -59,7 +59,6 @@ xf86PolyRectangleSolidZeroWidth(pDrawable, pGC, nRectsInit, pRectsInit)
     BoxPtr      pClipRects;     /* points to the list of clip rects */
     int         xOrigin;        /* Drawables x origin */
     int         yOrigin;        /* Drawables x origin */
-    cfbPrivGC  *pGCPriv;        /* pointer to private GC */
     xRectangle *pRect;          /* list of rects */
     int         nRects;         /* running count of number of rects */
     int         origX1, origY1; /* original rectangle's U/L corner */
@@ -76,8 +75,6 @@ xf86PolyRectangleSolidZeroWidth(pDrawable, pGC, nRectsInit, pRectsInit)
     int		usevline;
     unsigned long *addrl;
     int		nlwidth;
-
-    pGCPriv = cfbGetGCPrivate(pGC);
 
     xOrigin = pDrawable->x;
     yOrigin = pDrawable->y;
@@ -109,8 +106,8 @@ xf86PolyRectangleSolidZeroWidth(pDrawable, pGC, nRectsInit, pRectsInit)
             usevline = 0;
     }
 
-    for ( nClipRects = REGION_NUM_RECTS(pGCPriv->pCompositeClip),
-          pClipRects = REGION_RECTS(pGCPriv->pCompositeClip);
+    for ( nClipRects = REGION_NUM_RECTS(pGC->pCompositeClip),
+          pClipRects = REGION_RECTS(pGC->pCompositeClip);
 	  nClipRects > 0; 
 	  nClipRects--, pClipRects++ )
     {
@@ -185,6 +182,7 @@ xf86PolyRectangleSolidZeroWidth(pDrawable, pGC, nRectsInit, pRectsInit)
 	                0,					 /* INC */
 	                - (2 * (clippedY2 - clippedY1)), 	 /* DEC */
 	                length);
+#if 0
 	        else
 		/*
 		 * Vertical lines via solid filled rectangles are pretty
@@ -204,6 +202,7 @@ xf86PolyRectangleSolidZeroWidth(pDrawable, pGC, nRectsInit, pRectsInit)
 		     * Maybe in some cases a chip needs a new SetUp here.
 		     */
 		}
+#endif
 		else
 	            xf86AccelInfoRec.SubsequentFillRectSolid(
 	                clippedX1, clippedY1, 1, length);
@@ -223,6 +222,7 @@ xf86PolyRectangleSolidZeroWidth(pDrawable, pGC, nRectsInit, pRectsInit)
 	        if (usevline == VLINE_TWOPOINTLINE)
 	            xf86AccelInfoRec.SubsequentTwoPointLine(
 	                clippedX2, clippedY1, clippedX2, clippedY2, 0);
+#if 0
 	        else
 		if ((usevline == VLINE_FRAMEBUFFER) && length > 30) {
 		    if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY)
@@ -232,6 +232,7 @@ xf86PolyRectangleSolidZeroWidth(pDrawable, pGC, nRectsInit, pRectsInit)
 		        pGC->alu, 0, pGC->fgPixel, addrl, nlwidth,
 		        clippedX2, clippedY1, length);
 		}
+#endif
 		else
 	            xf86AccelInfoRec.SubsequentFillRectSolid(
 	                clippedX2, clippedY1, 1, length);

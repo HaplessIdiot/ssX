@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplsolid.c,v 3.0 1996/08/18 01:55:08 dawes Exp $ */
 /*
  * $XConsortium: iplsolid.c,v 1.9 94/04/17 20:29:02 dpw Exp $
  *
@@ -78,9 +78,6 @@ INTER_RROP_NAME(iplFillRectSolid) (pDrawable, pGC, nBox, pBox)
     int		    h;
     int		    w;
     int		    widthDst;
-    iplPrivGCPtr    devPriv;
-
-    devPriv = iplGetGCPrivate(pGC);
 
     iplGetGroupWidthAndPointer (pDrawable, widthDst, pdstBase)
 
@@ -167,7 +164,7 @@ INTER_RROP_NAME(iplSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSor
 
     devPriv = iplGetGCPrivate(pGC);
     INTER_RROP_FETCH_GCPRIV(devPriv)
-    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -178,8 +175,7 @@ INTER_RROP_NAME(iplSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSor
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(devPriv->pCompositeClip,
-		     pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
     iplGetGroupWidthAndPointer (pDrawable, widthDst, pdstBase)

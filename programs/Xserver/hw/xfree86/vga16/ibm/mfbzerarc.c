@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbzerarc.c,v 3.1 1996/12/23 06:52:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbzerarc.c,v 3.2 1997/03/13 15:11:00 hohndel Exp $ */
 
 /************************************************************
 
@@ -236,7 +236,7 @@ v16ZeroPolyArcSS(pDraw, pGC, narcs, parcs)
 
     if (!pGC->planemask & 0x0F)
 	return;
-    cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
 	if (miCanZeroArc(arc))

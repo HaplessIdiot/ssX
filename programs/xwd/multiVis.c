@@ -1,4 +1,4 @@
-/* $XConsortium: multiVis.c /main/3 1995/12/21 10:00:58 dpw $ */
+/* $XConsortium: multiVis.c /main/4 1996/10/14 15:04:08 swick $ */
 /** ------------------------------------------------------------------------
 	This file contains functions to create a list of regions which
 	tile a specified window.  Each region contains all visible 
@@ -8,17 +8,33 @@
 	to correctly pull an image of the window using XGetImage or the
 	Image Library.
 
-       (c)Copyright 1994 Hewlett-Packard Co.
-       
-                                RESTRICTED RIGHTS LEGEND
-       Use, duplication, or disclosure by the U.S. Government is subject to
-       restrictions as set forth in sub-paragraph (c)(1)(ii) of the Rights in
-       Technical Data and Computer Software clause in DFARS 252.227-7013.
-                                Hewlett-Packard Company
-                                3000 Hanover Street
-                                Palo Alto, CA 94304 U.S.A.
-       Rights for non-DOD U.S. Government Departments and Agencies are as set
-       forth in FAR 52.227-19(c)(1,2).
+Copyright (c) 1994 Hewlett-Packard Co.
+Copyright (c) 1996  X Consortium
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of the X Consortium shall
+not be used in advertising or otherwise to promote the sale, use or
+other dealings in this Software without prior written authorization
+from the X Consortium.
+
     ------------------------------------------------------------------------ **/
 #include <stdlib.h>
 #include <X11/Xlib.h>
@@ -28,8 +44,6 @@
 #include "list.h"
 #include "wsutils.h"
 #include "multiVis.h"
-static char *vis_class_str[] = { "StaticGray" , "GrayScale" , "StaticColor",
-				 "PseudoColor","TrueColor","DirectColor" } ;
 /* These structures are copied from X11/region.h.  For some reason
  * they're invisible from the outside.
  */
@@ -168,6 +182,17 @@ static int src_in_overlay(
     image_region_type *, int, OverlayInfo *, int*, int*
 #endif 
     );
+static void make_src_list(
+#if NeedFunctionPrototypes
+    Display *, list_ptr, XRectangle *, Window,
+    int, int, XWindowAttributes *, XRectangle *
+#endif 
+);
+static void destroy_image_region(
+#if NeedFunctionPrototypes
+    image_region_type *
+#endif
+);
 
 /* End of Prototype Declarations */
 
@@ -192,7 +217,7 @@ XColor **src_colors ;
 int *rShift, *gShift, *bShift;
 {
      int ncolors,i ;
-     unsigned long       redMask, greenMask, blueMask, pixel;
+     unsigned long       redMask, greenMask, blueMask;
      int                 redShift, greenShift, blueShift;
      XColor *colors ;
 
@@ -312,7 +337,7 @@ XImage *reg_image,*target_image ;
 image_region_type	*reg;
 int srcw,srch,dst_x , dst_y ;
 {
-    int *indexMap,ncolors ;
+    int ncolors;
     int i,j,old_pixel,new_pixel,red_ind,green_ind,blue_ind ;
     XColor *colors;
     int rShift,gShift,bShift;
@@ -404,10 +429,7 @@ list_ptr regions;/* list of regions to read from */
     image_region_type	*reg;
     int			dst_x, dst_y;	/* where in pixmap to write (UL) */
     int			diff;
-    int			hasNonDefault;
 
-    int			allImage = 0;
-    int			transparentColor, transparentType;
     XImage		*reg_image,*ximage ;
     int			srcRect_x,srcRect_y,srcRect_width,srcRect_height ;
     int                 rem ;  
@@ -865,7 +887,7 @@ static list_ptr make_region_list( disp, win, bbox, hasNonDefault,
 /** ------------------------------------------------------------------------
 	Destructor called from destroy_region_list().
     ------------------------------------------------------------------------ **/
-void destroy_image_region( image_region)
+static void destroy_image_region(image_region)
     image_region_type *image_region;
 {
     XDestroyRegion( image_region->visible_region);
@@ -1117,7 +1139,7 @@ int GetXVisualInfo(display, screen, transparentOverlays,
     XVisualInfo	*pVis, **pIVis;		/* Faster, local copies */
     OverlayInfo	*pOVis;
     OverlayVisualPropertyRec	*pOOldVis;
-    int		nVisuals, nOVisuals, nIVisuals;
+    int		nVisuals, nOVisuals;
     Atom	overlayVisualsAtom;	/* Parameters for XGetWindowProperty */
     Atom	actualType;
     unsigned long numLongs, bytesAfter;

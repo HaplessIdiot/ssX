@@ -49,7 +49,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.2 1997/01/14 22:16:17 dawes Exp $ */
 
 #ifndef _PS_H_
 #define _PS_H_
@@ -106,7 +106,6 @@ extern int PsScreenPrivateIndex;
 extern int PsWindowPrivateIndex;
 extern int PsContextPrivateIndex;
 extern int PsPixmapPrivateIndex;
-extern int PsGCPrivateIndex;
 
 /*
  *  Display list structures
@@ -251,12 +250,6 @@ typedef struct
   int          validContext;
   XpContextPtr context;
 } PsWindowPrivRec, *PsWindowPrivPtr;
-
-typedef struct
-{
-  unsigned  freeCompClip;
-  RegionPtr pCompositeClip;
-} PsGCPrivRec, *PsGCPrivPtr;
 
 typedef struct
 {

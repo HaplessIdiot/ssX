@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/mfb/mfbsetsp.c,v 1.0tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -169,7 +170,7 @@ mfbSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
     int			yMax;
 
     alu = pGC->alu;
-    prgnDst = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+    prgnDst = pGC->pCompositeClip;
 
     pptLast = ppt + nspans;
 

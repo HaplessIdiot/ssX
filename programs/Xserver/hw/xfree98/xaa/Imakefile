@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/xaa/Imakefile,v 3.16 1998/01/24 01:53:24 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/xaa/Imakefile,v 3.17 1998/03/20 19:08:14 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -41,7 +41,7 @@ SUBDIRS = xaavga256 xaa8 xaa16 xaa24 xaa32
 DONES = xaavga256/DONE xaa8/DONE xaa16/DONE xaa24/DONE xaa32/DONE
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
-	   -I$(XF86SRC)/vga256/vga -I$(XF86SRC)/config -I$(XF86SRC) \
+	   -I$(XF86SRC)/vga256/vga -I$(XF86SRC) \
            -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
 	   -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(FONTINCSRC)
 

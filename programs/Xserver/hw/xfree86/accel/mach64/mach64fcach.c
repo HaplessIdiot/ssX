@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fcach.c,v 3.8 1996/12/23 06:39:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fcach.c,v 3.9 1997/07/29 12:07:35 hohndel Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -355,10 +355,8 @@ mach64DrawText(pDraw, pGC, x, y, count, chars, slot, texttype)
     x += pDraw->x;
     y += pDraw->y;
 
-    nClipRectsInit = REGION_NUM_RECTS(((cfbPrivGC *)
-                (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-    pClipRectsInit = REGION_RECTS(((cfbPrivGC *)
-                (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    nClipRectsInit = REGION_NUM_RECTS(pGC->pCompositeClip);
+    pClipRectsInit = REGION_RECTS(pGC->pCompositeClip);
 
     fontAscent  = y - pfont->info.fontAscent;
     fontDescent = y + pfont->info.fontDescent;

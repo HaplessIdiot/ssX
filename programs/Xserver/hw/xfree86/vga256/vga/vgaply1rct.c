@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaply1rct.c,v 3.4 1996/02/09 08:21:31 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaply1rct.c,v 3.5 1996/12/23 06:59:52 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -70,7 +70,7 @@ RROP_NAME(vga256FillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
 #ifdef NO_ONE_RECT
-    if (REGION_NUM_RECTS(devPriv->pCompositeClip) != 1)
+    if (REGION_NUM_RECTS(pGC->pCompositeClip) != 1)
     {
 	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
 	return;
@@ -82,7 +82,7 @@ RROP_NAME(vga256FillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 #else
     origin -= (origin & 0x8000) << 1;
 #endif
-    extents = &devPriv->pCompositeClip->extents;
+    extents = &pGC->pCompositeClip->extents;
     RROP_FETCH_GCPRIV(devPriv);
     vertex1 = *((int *) &extents->x1) - origin;
     vertex2 = *((int *) &extents->x2) - origin - 0x00010001;

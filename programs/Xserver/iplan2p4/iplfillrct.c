@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplfillrct.c,v 3.0 1996/08/18 01:54:42 dawes Exp $ */
 /*
  * Fill rectangles.
  */
@@ -118,7 +118,7 @@ iplPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int		    xorg, yorg;
 
     priv = iplGetGCPrivate(pGC);
-    prgnClip = priv->pCompositeClip;
+    prgnClip = pGC->pCompositeClip;
 
     BoxFill = 0;
     switch (pGC->fillStyle)
@@ -137,7 +137,7 @@ iplPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	}
 	break;
     case FillTiled:
-	if (!iplGetGCPrivate(pGC)->pRotatedPixmap)
+	if (!pGC->pRotatedPixmap)
 	    BoxFill = iplFillRectTileOdd;
 	else
 	{

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgalined.c,v 3.3 1996/12/23 06:59:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgalined.c,v 3.4 1997/11/08 16:24:33 hohndel Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -118,7 +118,7 @@ vga256LineSD( pDrawable, pGC, mode, npt, pptInit)
 	}
 
     devPriv = cfbGetGCPrivate(pGC);
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     rrops[0].rop = devPriv->rop;
     rrops[0].and = devPriv->and;
     rrops[0].xor = devPriv->xor;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.30 1997/07/29 12:07:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.31 1998/01/24 16:56:25 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -58,6 +58,7 @@
 #include "xf86_Config.h"
 
 #if defined(CSRG_BASED) || defined(MACH386)
+#include <sys/time.h>
 #include <sys/resource.h>
 #endif
 

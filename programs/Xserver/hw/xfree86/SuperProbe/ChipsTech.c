@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.11 1997/06/06 06:07:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.12 1997/07/19 05:43:10 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -97,6 +97,12 @@ int *Chipset;
 		case 0x9:
 			*Chipset = CHIP_CTF65510;
 			break;
+		case 0xa:
+			*Chipset = CHIP_CTF64200;
+			break;
+		case 0xb:
+			*Chipset = CHIP_CTF64300;
+			break;
 		case 0xd:
 			switch (vers & 0xf)
 			{
@@ -148,6 +154,9 @@ int *Chipset;
 			}
 			if (vers == 0xf4) {
 			  *Chipset = CHIP_CTF68554;
+			}
+			if (vers == 0xC0) {
+			  *Chipset = CHIP_CTF69000;
 			}
 		}
 	}
@@ -231,10 +240,25 @@ int Chipset;
 			break;
 		}
 		break;
+	case CHIP_CTF64200:
+	case CHIP_CTF64300:
+		switch (rdinx(0x3D6, 0x0F) & 0x03)
+		{
+		case 0x00:
+			Mem = 256;
+			break;
+		case 0x01:
+			Mem = 512;
+			break;
+		case 0x02:	
+			Mem = 1024;
+			break;
+		case 0x03:
+			Mem = 2048;
+			break;
+		}
+		break;
 	case CHIP_CTF65550:
-	case CHIP_CTF65554:
-	case CHIP_CTF65555:
-	case CHIP_CTF68554:
 		switch ((rdinx(0x3D6, 0x43) & 0x06) >> 1)
 		{
 		case 0x00:
@@ -248,6 +272,31 @@ int Chipset;
 			Mem = 4096;
 			break;
 		}
+		break;	
+	case CHIP_CTF65554:
+	case CHIP_CTF65555:
+	case CHIP_CTF68554:
+		switch (rdinx(0x3D6, 0xE0) & 0x0F)
+		{
+		case 0x00:
+			Mem = 512;
+			break;
+		case 0x01:
+			Mem = 1024;
+			break;
+		case 0x02:
+			Mem = 1536;
+			break;
+		case 0x03:
+			Mem = 2048;
+			break;
+		case 0x07:
+			Mem = 4096;
+			break;
+		}
+		break;	
+	case CHIP_CTF69000:
+		Mem = 2048;
 		break;
 	}
 

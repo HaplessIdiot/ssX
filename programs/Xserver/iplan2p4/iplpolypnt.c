@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplpolypnt.c,v 3.0 1996/08/18 01:55:02 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -94,7 +94,7 @@ iplPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     rop = devPriv->rop;
     if (rop == GXnoop)
 	return;
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     xor = devPriv->xorg;
     and = devPriv->andg;
     if ((mode == CoordModePrevious) && (npt > 1))

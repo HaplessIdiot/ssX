@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.30 1997/11/16 11:51:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.31 1998/01/24 16:57:28 hohndel Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -1515,7 +1515,6 @@ xf86WcmProc(DeviceIntPtr       pWcm,
     CARD8                 map[(32 << 4) + 1];
     int                   nbaxes;
     int                   nbbuttons;
-    KeySymsRec            keysyms;
     int                   loop;
     LocalDevicePtr        local = (LocalDevicePtr)pWcm->public.devicePrivate;
     WacomDevicePtr        priv = (WacomDevicePtr)PRIVATE(pWcm);

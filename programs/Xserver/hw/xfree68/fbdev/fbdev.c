@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.9 1997/06/11 12:24:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.10 1997/07/29 12:07:18 hohndel Exp $ */
 /*
  *
  *  Author: Martin Schaller. Taken from hga2.c
@@ -226,16 +226,15 @@ ScrnInfoRec fbdevInfoRec = {
     NULL			/* char *DCOptions */
     0,				/* int MemClk */
 #ifdef XFreeXDGA
-    ,0,				/* int directMode */
-    0,			/* void (*setBank)() */
+    0,				/* int directMode */
+    0,				/* void (*setBank)() */
     0,				/* unsigned long physBase */
-    0				/* int physSize */
+    0,				/* int physSize */
 #endif
 #ifdef XF86SETUP
-    ,NULL,			/* void *device */
+    NULL,			/* void *device */
 #endif
-
-
+    FALSE			/* hasDirectColor */
 };
 
 #if defined(XFree86LOADER)

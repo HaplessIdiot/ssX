@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Pci.h,v 3.3 1998/01/24 23:58:36 hohndel Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -72,9 +72,7 @@
 
 #ifndef _PCI_H
 #define _PCI_H 1
-/*** this file doesn't exist (dhh)
 #include "Xarch.h"
-***/
 #include "Xfuncproto.h"
 
 /*
@@ -425,7 +423,7 @@ typedef struct pci_cfg_regs {
     } bc;
     CARD32 rsvd1;	/* Offset 0x28 - 0x2b */
     CARD32 rsvd2;	/* Offset 0x2c - 0x2f */
-    CARD32 _baserom;	/* Offset 0x30 - 0x33 */
+    CARD32 baserom;	/* Offset 0x30 - 0x33 */
     CARD32 rsvd3;	/* Offset 0x34 - 0x37 */
     CARD32 rsvd4;	/* Offset 0x38 - 0x3b */
     union {	/* Offset 0x3c - 0x3f */
@@ -490,7 +488,7 @@ typedef struct pci_device {
 #define	_base3			   cfgspc.regs.bc.dv.dv_base3
 #define	_base4			   cfgspc.regs.bc.dv.dv_base4
 #define	_base5			   cfgspc.regs.bc.dv.dv_base5
-#define	_baserom		   cfgspc.regs._baserom
+#define	_baserom		   cfgspc.regs.baserom
 #define	_primary_bus_number	   cfgspc.regs.bc.bg.primary_bus_number
 #define	_secondary_bus_number	   cfgspc.regs.bc.bg.secondary_bus_number
 #define	_subordinate_bus_number	   cfgspc.regs.bc.bg.subordinate_bus_number
@@ -536,6 +534,8 @@ ADDRESS       pciBusAddrToHostAddr(PCITAG tag, ADDRESS addr);
 ADDRESS       pciHostAddrToBusAddr(PCITAG tag, ADDRESS addr);
 PCITAG        pciTag(int busnum, int devnum, int funcnum);
 pointer       xf86MapPciMem(int ScreenNum, int Region, PCITAG Tag, pointer Base, unsigned long Size);
+int           xf86ReadPciBIOS(unsigned long Base, unsigned long Offset, PCITAG Tag, 
+			      unsigned char *Buf, int Len);
 
 /* Old sytle PCI access functions (for compatibility) */
 pciConfigPtr *xf86scanpci(int);

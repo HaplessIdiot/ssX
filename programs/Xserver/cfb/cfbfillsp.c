@@ -76,7 +76,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: cfbfillsp.c,v 5.24 94/04/17 20:28:48 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillsp.c,v 3.0 1996/06/29 09:05:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillsp.c,v 3.1 1996/12/09 11:50:54 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -639,7 +639,7 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
     devPriv = cfbGetGCPrivate(pGC);
     cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
-    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     if ( n == 0 )
 	return;
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
@@ -652,11 +652,10 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(devPriv->pCompositeClip,
-		     pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
-    stipple = devPriv->pRotatedPixmap;
+    stipple = pGC->pRotatedPixmap;
     src = (unsigned long *)stipple->devPrivate.ptr;
     stippleHeight = stipple->drawable.height;
 
@@ -855,7 +854,7 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
     cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel, pGC->planemask);
 
-    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     if ( n == 0 )
 	return;
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
@@ -868,11 +867,10 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(devPriv->pCompositeClip,
-		     pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
-    stipple = devPriv->pRotatedPixmap;
+    stipple = pGC->pRotatedPixmap;
     src = (unsigned long *)stipple->devPrivate.ptr;
     stippleHeight = stipple->drawable.height;
 

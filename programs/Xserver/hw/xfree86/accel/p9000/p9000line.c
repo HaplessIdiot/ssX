@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000line.c,v 3.2 1996/02/04 09:04:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000line.c,v 3.3 1996/12/23 06:40:47 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -107,12 +107,10 @@ p9000Line(pDrawable, pGC, mode, npt, pptInit)
     register int y1,  y2;
     register int x1,  x2;
     RegionPtr    cclip;
-    cfbPrivGCPtr    devPriv;
     int 	    old_w_min, old_w_max ; /* prev values of clipping regs */
     int 	    oldpixel ;        /* saves last point for line capping */
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
 
     /* if the drawable is off screen, let the cfb code do it */
     if (!OnScreenDrawable(pDrawable->type) || !xf86VTSema) {
@@ -248,7 +246,6 @@ p9000Line1Rect (pDrawable, pGC, mode, npt, pptInit)
     int old_w_min, old_w_max ; /* previous values of clipping regs */
 
     RegionPtr cclip;
-    cfbPrivGCPtr    devPriv;
 
     /* if the drawable is off screen, let the cfb code do it */
     if (!OnScreenDrawable(pDrawable->type) || !xf86VTSema) {
@@ -256,8 +253,7 @@ p9000Line1Rect (pDrawable, pGC, mode, npt, pptInit)
         return ;
     }
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
 
     if (REGION_NUM_RECTS(cclip) != 1) {
         p9000Line(pDrawable, pGC, mode, npt, pptInit);

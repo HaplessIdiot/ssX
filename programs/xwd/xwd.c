@@ -1,5 +1,5 @@
 /* $XConsortium: xwd.c /main/64 1996/01/14 16:53:13 kaleb $ */
-/* $XFree86: xc/programs/xwd/xwd.c,v 3.1 1996/06/29 09:11:00 dawes Exp $ */
+/* $XFree86: xc/programs/xwd/xwd.c,v 3.2 1996/07/08 10:37:37 dawes Exp $ */
 
 /*
 
@@ -111,6 +111,33 @@ long add_pixel_value = 0;
 extern int (*_XErrorFunction)();
 extern int _XDefaultError();
 
+#if NeedFunctionPrototypes
+extern int main(int, char **);
+extern void Window_Dump(Window, FILE *);
+extern int Image_Size(XImage *);
+extern int Get_XColors(XWindowAttributes *, XColor **);
+extern void _swapshort(register char *, register unsigned);
+extern void _swaplong(register char *, register unsigned);
+extern int Image_Size(XImage *);
+extern int Get_XColors(XWindowAttributes *, XColor **);
+static long parse_long(char *);
+static int Get24bitDirectColors(XColor **);
+static int ReadColors(Visual *, Colormap, XColor **);
+#else
+extern int main();
+extern void Window_Dump();
+extern int Image_Size();
+extern int Get_XColors();
+extern void _swapshort();
+extern void _swaplong();
+extern int Image_Size();
+extern int Get_XColors();
+static long parse_long();
+static int Get24bitDirectColors();
+static int ReadColors();
+#endif
+
+
 static long parse_long (s)
     char *s;
 {
@@ -127,6 +154,7 @@ static long parse_long (s)
     return (thesign * retval);
 }
 
+int
 main(argc, argv)
     int argc;
     char **argv;
@@ -157,7 +185,7 @@ main(argc, argv)
 	if (!strcmp(argv[i], "-out")) {
 	    if (++i >= argc) usage();
 	    if (!(out_file = fopen(argv[i], "wb")))
-	      Error("Can't open output file as specified.");
+	      Fatal_Error("Can't open output file as specified.");
 	    standard_out = False;
 	    continue;
 	}
@@ -248,6 +276,7 @@ XColor **colors ;
  *              writting.
  */
 
+void
 Window_Dump(window, out)
      Window window;
      FILE *out;
@@ -279,7 +308,6 @@ Window_Dump(window, out)
     XVisualInfo         **pImageVisuals;
     list_ptr            vis_regions;    /* list of regions to read from */
     list_ptr            vis_image_regions ;
-    Colormap 		cmap ; 
     Visual		vis_h,*vis ;
     int			allImage = 0 ;
 
@@ -524,30 +552,14 @@ Window_Dump(window, out)
 /*
  * Report the syntax for calling xwd.
  */
+void
 usage()
 {
     fprintf (stderr,
 "usage: %s [-display host:dpy] [-debug] [-help] %s [-nobdrs] [-out <file>]",
-	   program_name, SELECT_USAGE);
+	   program_name, "[{-root|-id <id>|-name <name>}]");
     fprintf (stderr, " [-xy] [-add value] [-frame]\n");
     exit(1);
-}
-
-
-/*
- * Error - Fatal xwd error.
- */
-
-Error(string)
-	char *string;	/* Error description string. */
-{
-	outl("\nxwd: Error => %s\n", string);
-	if (errno != 0) {
-		perror("xwd");
-		outl("\n");
-	}
-
-	exit(1);
 }
 
 
@@ -631,6 +643,7 @@ int Get_XColors(win_info, colors)
     return ncolors ;
 }
 
+void
 _swapshort (bp, n)
     register char *bp;
     register unsigned n;
@@ -646,6 +659,7 @@ _swapshort (bp, n)
     }
 }
 
+void
 _swaplong (bp, n)
     register char *bp;
     register unsigned n;

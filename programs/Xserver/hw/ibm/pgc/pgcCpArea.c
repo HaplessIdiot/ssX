@@ -24,6 +24,8 @@
  *
 */
 
+/* $XFree86: xc/programs/Xserver/hw/ibm/pgc/pgcCpArea.c,v 1.0tsi Exp $ */
+
 #include "X.h"
 #include "servermd.h"
 #include "misc.h"
@@ -39,8 +41,6 @@
 #include "cfb.h"
 #include "pgc.h"
 extern pgcScreenRec pgcScreenInfo[] ;
-
-extern int cfbGCPrivateIndex;
 
 RegionPtr
 pgcCopyArea( pSrcDrawable, pDstDrawable,
@@ -64,7 +64,6 @@ int dstx, dsty ;
 	/* temporaries for shuffling rectangles */
 	xRectangle *origSource ;
 	DDXPointRec *origDest ;
-	cfbPrivGC *pPriv ;
 
         TRACE(("pgcCopyArea\n"));
 
@@ -89,9 +88,8 @@ int dstx, dsty ;
 				      pGC, srcx, srcy, width,
 				      height, dstx, dsty ) ;
 
-	pPriv = (cfbPrivGC *) ( pGC->devPrivates[cfbGCPrivateIndex].ptr ) ;
 	/* BY HERE, You know you are going from a Window to a Window */
-	if ( pPriv->fExpose ) {
+	if ( pGC->fExpose ) {
 		if ( !( origSource = (xRectangle *)
 		    ALLOCATE_LOCAL( sizeof( xRectangle ) ) ) )
 			return NULL ;
@@ -156,7 +154,7 @@ int dstx, dsty ;
 
 	/* clip the shape of the dst to the destination composite clip */
 	REGION_TRANSLATE(pScreen,  prgnDst, -dx, -dy ) ;
-	REGION_INTERSECT(pScreen,  prgnDst, prgnDst, pPriv->pCompositeClip ) ;
+	REGION_INTERSECT(pScreen,  prgnDst, prgnDst, pGC->pCompositeClip ) ;
 
 	/* nbox != 0 destination region is visable */
 	if ( nbox = REGION_NUM_RECTS(prgnDst) ) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.13 1998/01/11 03:48:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.14 1998/01/24 16:58:55 hohndel Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -639,6 +639,15 @@ xf86WideLineSolid1Rect (
 #endif
 );
 
+void
+xf86FillRectTiledImageWrite(
+#if NeedFunctionPrototypes
+    DrawablePtr pDrawable,
+    register GCPtr pGC,
+    int         nBoxInit,      
+    BoxPtr      pBoxInit     
+#endif
+);
 
 void
 xf86Bench(void);

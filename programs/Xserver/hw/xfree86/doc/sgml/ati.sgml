@@ -5,7 +5,7 @@
 
 <title>ATI Adapters README file
 <author>Marc Aurele La France
-<date>1997 July 17
+<date>1998 January 28
 <abstract>
 This is the README for the XFree86 ATI driver included in this release.
 </abstract>
@@ -68,10 +68,14 @@ of the following ATI graphics controller chips is present:
 VGAWonder series:  18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6
    Mach32 series:  68800-3, 68800-6, 68800AX, 68800LX
    Mach64 series:  88800GX-C, 88800GX-D, 88800GX-E, 88800GX-F, 88800CX,
-                   264CT, 264ET, 264VT, 264GT, 264VT-B, 264VT3, 264GT-B,
-                   264GT3</verb>
+                   264CT, 264ET, 264VT, 264GT (a.k.a. 3D Rage), 264VT-B,
+                   264VT3, 264GT-B (a.k.a. 3D Rage II), 264GT3 (a.k.a.
+                   3D Rage III)</verb>
 There is some support for the 264LT (ATI's recent entry into the laptop
 world), but it is untested.<p>
+The driver also supports 32K, 64K and 16M-colour modes on the 264xT series of
+adapters using the accelerator CRTC (but not the VGA CRTC).
+This support is as yet unaccelerated.<p>
 Adapters based on the above chips have been marketed under a rather large
 number of names over the years.  Among them are:
 <verb>
@@ -108,11 +112,12 @@ Most Mach32 adapters provide both accelerated function and VGA functionality,
 but the driver currently only uses the VGA.<p>
 The driver *does* however support the accelerator CRTC present in all ATI
 Mach64 adapters.
-For 256-colour modes, this support will be used by default, although an
-XF86Config option can be specified to use the SuperVGA CRTC instead.
-A linear video memory aperture is also available in 256-colour modes and
-enabled by default if a 264xT controller is detected or, on 88800 controllers,
-if the accelerator CRTC is used.
+For 256-colour, and higher depth modes, this support will be used by default,
+although an XF86Config option can be specified to use the SuperVGA CRTC
+instead.
+A linear video memory aperture is also available in 256-colour and higher depth
+modes and enabled by default if a 264xT controller is detected or, on 88800
+controllers, if the accelerator CRTC is used.
 XF86Config options are available to disable this aperture, or (on non-PCI
 adapters) enable it or move it to some other address.<p>
 <sect>Current implementation of generic VGA support for non-ATI adapters<p>
@@ -164,7 +169,7 @@ can skip ahead to the "Clocks for non-ATI adapters" section below.
 Those <it>not</it> trying to configure the driver for a Mach64 adapter, can
 skip ahead to the "Clocks for fixed clock generators on ATI adapters" section
 below.<p>
-The very earliest Mach64 adapters also use fixed (i.e. non-programmable) clock
+The very earliest Mach64 adapters use fixed (i.e. non-programmable) clock
 generators.
 Very few of these (mostly prototypes) are known to exist, but if you have one
 of these, you can also skip ahead to the "Clocks for fixed clock generators on
@@ -277,8 +282,8 @@ actual values used by the adapter.
 Any more will be ignored.<p>
 <sect1>Option "nolinear"<p>
 By default, the driver will enable a linear video memory aperture for
-256-colour modes if it is also using a Mach64 accelerator CRTC or an integrated
-Mach64 graphics chip.
+256-colour and higher depth modes if it is also using a Mach64 accelerator CRTC
+or an integrated Mach64 graphics chip.
 This option disables this linear aperture.<p>
 <sect1>MemBase address<p>
 This specification is only effective for non-PCI Mach64 adapters, and is used
@@ -303,6 +308,28 @@ There are several known problems or limitations related to the XFree86 ATI
 driver.
 They include:<p>
 <itemize>
+<item>A number of system lockups and blank screens have been reported when
+using PCI Mach64 adapters.
+The great majority of these problems have been found to be due to system
+aspects that are unrelated to this driver.
+As of this writing, these problems can be divided into three general areas:<p>
+Improper mouse protocol specification with some recent mice.
+Try different protocol specifications or another mouse.<p>
+A system conflict with APM.
+This problem is Linux-specific.
+There is a bug in kernels 2.0.31 or earlier that prevents proper APM operation.
+Upgrade to a more recent kernel or disable APM support.<p>
+The TV port on some Mach64 adapters needs to be disabled using an ATI utility
+that might or might not be supplied with the adapter.
+This problem is currently under investigation.
+<item>The driver can become confused if it detects a 264xT controller whose VGA
+functionality has been disabled (either by the BIOS or a strap on the adapter).
+One example of this situation occurs when the system's VGA is provided by
+another adapter.
+If the driver attempts to control the disabled VGA CRTC, results are
+unpredictable.
+This is a high-priority problem as it severely limits the system's multi-head
+capability.
 <item>When using a Mach64's accelerator CRTC, the virtual resolution must be
 less than 8192 pixels wide.
 The VGA CRTC further limits the virtual resolution width to less than 4096
@@ -354,8 +381,8 @@ In the second case, xrefresh(1) will usually clean up the image.
 No solution to this problem is currently known.
 <item>There is some controversy over what the maximum allowed clock frequency
 should be on 264xT adapters.
-For now, clocks will, by default, be limited to 135MHz for the 264GT and
-earlier adapters, or 170MHz for 264VT-B and later adapters.
+For now, clocks will, by default, be limited to 135MHz, 170MHz, 200MHz or
+230MHz, depending on the specific controller.
 This limit can only be increased (up to a driver-calculated absolute maximum)
 through the DACSpeed specification in XF86Config.
 Be aware however that doing so is untested and might damage the adapter.
@@ -388,8 +415,13 @@ url="ftp://ftp.xfree86.org/pub/XFree86"> if you are uncertain.<p>
 Secondly, please check XFree86's doc directory for additional information.<p>
 Thirdly, do not forget to read <htmlurl name="http://www.xfree86.org/FAQ"
 url="http://www.xfree86.org/FAQ">.<p>
+Fourth, a scan through the comp.windows.x.i386unix and comp.os.linux.x
+newsgroups using your favorite archiving service can also prove useful in
+resolving problems.<p>
 If you are still experiencing problems, you can send me e-mail at
-<it>tsi@ualberta.ca</it>.<p>
+<it>tsi@ualberta.ca</it>.
+Please be as specific as possible when describing the problem(s), and include
+an unedited copy of the server's stderr and the XF86Config file used.<p>
 <sect>Driver history<p>
 The complete history of the driver is rather cloudy.
 The following is more than likely to be incomplete and inaccurate.<p>
@@ -421,14 +453,14 @@ Version 3 represents my second rewrite (although a rather lame one as rewrites
 go).
 Into version 3, I introduced clock programming for Mach64 adapters and merged
 in the old ati_test debugging tool.
-This is the version found in XFree86 3.2.<p>
+This is the version found in XFree86 3.2, 3.3 and 3.3.1.<p>
 Version 4 is a rather major restructuring of version 3, which became larger
 than I could comfortably handle in one source file.
 This version will make it quite a bit easier to introduce new function such as
 acceleration, additional colour depths, and so on.
 This is the version found in XFree86 4.0.<p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.17 1997/07/29 12:07:54 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.18 1997/10/25 13:50:18 hohndel Exp $
 
 
 

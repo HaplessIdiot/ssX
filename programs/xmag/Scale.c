@@ -1,5 +1,5 @@
 /* $XConsortium: Scale.c,v 1.20 95/01/05 19:49:01 kaleb Exp $ */
-/* $XFree86: xc/programs/xmag/Scale.c,v 3.1 1994/11/30 21:32:27 dawes Exp $ */
+/* $XFree86: xc/programs/xmag/Scale.c,v 3.2 1995/01/28 16:17:27 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -34,6 +34,16 @@ from the X Consortium.
  * Author:  Davor Matic, MIT X Consortium
  */
 
+#include <stdio.h>
+#include <ctype.h>
+#include <math.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
+#if defined(ISC) && __STDC__ && !defined(ISC30)
+extern double atof(char *);
+#endif
+
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Xos.h>
@@ -41,23 +51,18 @@ from the X Consortium.
 
 #include "ScaleP.h"
 
-#include <stdio.h>
-#include <ctype.h>
-#include <math.h>
-
 #define myrint(x) floor(x + 0.5)
 
-#ifndef X_NOT_STDC_ENV
-#include <stdlib.h>
+#define streq(a,b) (strcmp( (a), (b) ) == 0)
+#ifndef min
+#define min(x, y) ((x) > (y) ? (y) : (x))
 #endif
-
+#ifndef max
+#define max(x, y) ((x) < (y) ? (y) : (x))
+#endif
 #if defined(ISC) && __STDC__ && !defined(ISC30)
 extern double atof(char *);
 #endif
-
-#define streq(a,b) (strcmp( (a), (b) ) == 0)
-#define min(x, y) (x > y ? y : x)
-#define max(x, y) (x < y ? y : x)
 
 #define DefaultBufferSize 1024
 #define DefaultScaleFactor NULL

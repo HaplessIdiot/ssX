@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64orect.c,v 3.4 1996/12/23 06:39:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64orect.c,v 3.5 1998/01/24 16:56:53 hohndel Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -49,7 +49,6 @@ mach64PolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
     BoxPtr      pClipRects;     /* points to the list of clip rects */
     int         xOrigin;        /* Drawables x origin */
     int         yOrigin;        /* Drawables x origin */
-    cfbPrivGC  *pGCPriv;        /* pointer to private GC */
     xRectangle *pRect;          /* list of rects */
     int         nRects;         /* running count of number of rects */
     int         origX1, origY1; /* original rectangle's U/L corner */
@@ -72,8 +71,6 @@ mach64PolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
 	return;
     }
 
-    pGCPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
-
     xOrigin = pDrawable->x;
     yOrigin = pDrawable->y;
 
@@ -83,8 +80,8 @@ mach64PolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
     regw(DP_WRITE_MASK, pGC->planemask);
     regw(DP_SRC, FRGD_SRC_FRGD_CLR);
 
-    for ( nClipRects = REGION_NUM_RECTS(pGCPriv->pCompositeClip),
-          pClipRects = REGION_RECTS(pGCPriv->pCompositeClip);
+    for ( nClipRects = REGION_NUM_RECTS(pGC->pCompositeClip),
+          pClipRects = REGION_RECTS(pGC->pCompositeClip);
 	  nClipRects > 0; 
 	  nClipRects--, pClipRects++ )
     {

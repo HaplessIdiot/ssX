@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wrapper.c,v 3.10 1998/01/24 01:53:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wrapper.c,v 3.11 1998/01/24 16:58:57 hohndel Exp $ */
 
 
 #include "gcstruct.h"
@@ -222,7 +222,7 @@ xf86FillSpansWrapper(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	}
 	break;
     case FillTiled:
-	if (devPriv->pRotatedPixmap) {
+	if (pGC->pRotatedPixmap) {
 	    if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
 		FillSpansFunc = cfbTile32FSCopy;
 	    else
@@ -232,7 +232,7 @@ xf86FillSpansWrapper(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	break;
     case FillStippled:
 #ifdef FOUR_BIT_CODE
-	if (devPriv->pRotatedPixmap)
+	if (pGC->pRotatedPixmap)
 	    FillSpansFunc = cfb8Stipple32FS;
 	else
 #endif
@@ -240,7 +240,7 @@ xf86FillSpansWrapper(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	break;
     case FillOpaqueStippled:
 #ifdef FOUR_BIT_CODE
-	if (devPriv->pRotatedPixmap)
+	if (pGC->pRotatedPixmap)
 	    FillSpansFunc = cfb8OpaqueStipple32FS;
 	else
 #endif
@@ -296,7 +296,11 @@ xf86CopyAreaWrapper(pSrcDrawable, pDstDrawable,
     int width, height;
     int dstx, dsty;
 {
-    SYNC_CHECK;     
+
+    if(xf86VTSema && ((pSrcDrawable->type == DRAWABLE_WINDOW) ||
+	(pDstDrawable->type == DRAWABLE_WINDOW))) {
+    	SYNC_CHECK;     
+    }
 
     return cfbCopyArea(pSrcDrawable, pDstDrawable,
 		       pGC, srcx, srcy, width, height, dstx, dsty);

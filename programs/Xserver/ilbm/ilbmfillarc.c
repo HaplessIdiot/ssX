@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmfillarc.c,v 3.0 1996/08/18 01:53:48 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -336,7 +336,7 @@ ilbmPolyFillArcSolid(pDraw, pGC, narcs, parcs)
 
 	priv = (ilbmPrivGC *) pGC->devPrivates[ilbmGCPrivateIndex].ptr;
 	rrops = priv->rrops;
-	cclip = priv->pCompositeClip;
+	cclip = pGC->pCompositeClip;
 	for (arc = parcs, i = narcs; --i >= 0; arc++) {
 		if (miFillArcEmpty(arc))
 			continue;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPushPxl.c,v 3.6 1997/04/12 13:46:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPushPxl.c,v 3.7 1998/01/24 16:58:40 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -249,8 +249,8 @@ if ( ( alu = gcPriv->colorRrop.alu ) == GXnoop )
 	dstBox.y2 = ( dstBox.y1 = yOrg ) + dy ;
 
 	prgnDst = (* pScrn->RegionCreate )( &dstBox,
-					    REGION_NUM_RECTS(gcPriv->pCompositeClip));
-	(* pScrn->Intersect)( prgnDst, prgnDst, gcPriv->pCompositeClip ) ;
+					    REGION_NUM_RECTS(pGC->pCompositeClip));
+	(* pScrn->Intersect)( prgnDst, prgnDst, pGC->pCompositeClip ) ;
 	if ( !( nbox = REGION_NUM_RECTS(prgnDst))) {
 	   (* pScrn->RegionDestroy)( prgnDst ) ;
 	   return;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFS.c,v 3.10 1996/12/23 06:32:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFS.c,v 3.11 1998/01/24 16:56:24 hohndel Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -167,9 +167,7 @@ agxSolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (!(pGC->planemask))
         return;
 
-    n = nInit * miFindMaxBand( ((cfbPrivGC *)
-                                   (pGC->devPrivates[cfbGCPrivateIndex].ptr))
-                                      ->pCompositeClip );
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -178,9 +176,7 @@ agxSolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans( ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))
-                        ->pCompositeClip,
-                     pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
                      ppt, pwidth, fSorted);
 
     GE_WAIT_IDLE();
@@ -275,9 +271,7 @@ agxTiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (!(pGC->planemask))
         return;
 
-    n = nInit * miFindMaxBand( ((cfbPrivGC *)
-                                   (pGC->devPrivates[cfbGCPrivateIndex].ptr))
-                                      ->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -286,9 +280,7 @@ agxTiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans( ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))
-                        ->pCompositeClip,
-                     pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
                      ppt, pwidth, fSorted );
 
     xrot = pDrawable->x + pGC->patOrg.x;
@@ -365,9 +357,7 @@ agxStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (!(pGC->planemask))
         return;
 
-    n = nInit * miFindMaxBand( ((cfbPrivGC *)
-                                   (pGC->devPrivates[cfbGCPrivateIndex].ptr))
-                                       ->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -376,9 +366,7 @@ agxStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans( ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))
-                        ->pCompositeClip,
-                     pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
                      ppt, pwidth, fSorted );
 
     xrot = pDrawable->x + pGC->patOrg.x;
@@ -457,9 +445,7 @@ agxOStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (!(pGC->planemask))
         return;
 
-    n = nInit * miFindMaxBand( ((cfbPrivGC *)(pGC
-                                    ->devPrivates[cfbGCPrivateIndex].ptr))
-                                        ->pCompositeClip );
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -468,10 +454,7 @@ agxOStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans( ((cfbPrivGC *)
-                        (pGC->devPrivates[cfbGCPrivateIndex].ptr))
-                           ->pCompositeClip,
-                     pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
                      ppt, pwidth, fSorted );
 
     xrot = pDrawable->x + pGC->patOrg.x;

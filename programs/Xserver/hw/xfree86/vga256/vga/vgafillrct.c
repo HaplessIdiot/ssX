@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgafillrct.c,v 3.3 1996/12/09 11:54:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgafillrct.c,v 3.4 1996/12/23 06:59:40 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -105,7 +105,7 @@ vga256PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     RROP_DECLARE
 
     priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
-    prgnClip = priv->pCompositeClip;
+    prgnClip = pGC->pCompositeClip;
 
     BoxFill = 0;
     switch (pGC->fillStyle)
@@ -133,8 +133,7 @@ vga256PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	}
 	break;
     case FillTiled:
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-							pRotatedPixmap)
+	if (!pGC->pRotatedPixmap)
 	    BoxFill = vga256FillRectTileOdd;
 	else
 	{
@@ -146,15 +145,13 @@ vga256PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	break;
 #if PSZ == 8
     case FillStippled:
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-							pRotatedPixmap)
+	if (!pGC->pRotatedPixmap)
 	    BoxFill = vga2568FillRectStippledUnnatural;
 	else
 	    BoxFill = vga256LowlevFuncs.fillRectTransparentStippled32;
 	break;
     case FillOpaqueStippled:
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-							pRotatedPixmap)
+	if (!pGC->pRotatedPixmap)
 	    BoxFill = vga2568FillRectStippledUnnatural;
 	else
 	    BoxFill = vga256LowlevFuncs.fillRectOpaqueStippled32;

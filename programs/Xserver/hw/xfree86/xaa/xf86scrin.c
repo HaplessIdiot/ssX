@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.21 1998/01/11 03:48:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.22 1998/01/24 16:58:56 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -68,6 +68,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #endif
 #include "mi.h"
 #include "mistruct.h"
+#include "miline.h"
 #include "regionstr.h"
 #include "dix.h"
 #include "mibstore.h"
@@ -323,6 +324,10 @@ vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     xf86AccelInfoRec.FillRectOpaqueStippledFallBack =
         xf86FillRectOpaqueStippledFallBack;
     xf86AccelInfoRec.xf86GetLongWidthAndPointer = xf86cfbGetLongWidthAndPointer;
+
+    /* this has to be done after miScreenInit */
+    if(xf86AccelInfoRec.Flags & MICROSOFT_ZERO_LINE_BIAS)
+	miSetZeroLineBias(pScreen, OCTANT1 | OCTANT2 | OCTANT3 | OCTANT4);
 
     return TRUE;
 }

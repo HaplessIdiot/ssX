@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_map.c,v 1.2 1998/01/24 23:58:39 hohndel Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -166,6 +166,36 @@ int ScreenNum;
 int Region;
 {
 	return;
+}
+
+/*
+ * Read BIOS via mmap()ing /dev/iomem.
+ */
+/*ARGSUSED*/
+int
+xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf, int Len)
+{
+	ErrorF("%s: Not supported on this OS. Drivers should use xf86ReadPciBIOS() instead\n",
+	       "xf86ReadBIOS");
+	FatalError("%s: Cannot read BIOS [base=0x%x,offset=0x%x,size=%d]\n", "xf86ReadBIOS", Base, Offset, Len);
+}
+
+int
+xf86ReadPciBIOS(unsigned long Base, unsigned long Offset, PCITAG Tag, unsigned char *Buf, int Len)
+{
+	pointer hostbase = pciBusAddrToHostAddr(Tag, (void *)Base);
+	char   *base;
+
+	base = pmax_iomap((unsigned long)hostbase, 0x8000);
+	if (base == MAP_FAILED)	{
+		ErrorF("%s: WARNING: Could not mmap PCI memory [base=0x%x,hostbase=0x%x,size=%x] (%s)\n",
+			   "xf86MapPciMem", Base, hostbase, 0x8000, strerror(errno));
+		return(0);
+	}
+	
+	(void)memcpy(Buf, base + Offset, Len);
+	(void)munmap(base, 0x8000);
+	return(Len);
 }
 
 /***************************************************************************/

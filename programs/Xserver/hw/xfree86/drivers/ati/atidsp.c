@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.1tsi Exp $ */
 /*
- * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -23,6 +23,7 @@
 
 #include "atichip.h"
 #include "aticlock.h"
+#include "atidepth.h"
 #include "atidsp.h"
 #include "atiio.h"
 #include "atividmem.h"
@@ -182,8 +183,9 @@ ATIDSPInit(void)
     /* Compute a memory-to-screen bandwidth ratio */
     Multiplier = ATINewHWPtr->ReferenceDivider * ATIXCLKFeedbackDivider *
         ATIClockDescriptor->PostDividers[ATINewHWPtr->PostDivider];
-    Divider = ATIDivide(vga256InfoRec.depth, 4, 0, 1) *
-        ATINewHWPtr->FeedbackDivider * ATIXCLKReferenceDivider;
+    Divider = ATINewHWPtr->FeedbackDivider * ATIXCLKReferenceDivider;
+    if (!ATIUsingPlanarModes)
+        Divider *= vga256InfoRec.bitsPerPixel / 4;
     /* Start by assuming a display FIFO width of 32 bits */
     vshift = (5 - 2) - ATIXCLKPostDivider;
     if (ATINewHWPtr->crtc != ATI_CRTC_VGA)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgafillarc.c,v 3.2 1996/02/04 09:15:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgafillarc.c,v 3.3 1996/12/23 06:59:39 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -258,7 +258,7 @@ RROP_NAME(vga256PolyFillArcSolid) (pDraw, pGC, narcs, parcs)
     BoxRec box;
     RegionPtr cclip;
 
-    cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
 	if (miFillArcEmpty(arc))

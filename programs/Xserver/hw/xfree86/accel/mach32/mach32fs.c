@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fs.c,v 3.9 1996/12/23 06:38:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fs.c,v 3.10 1998/01/24 16:56:46 hohndel Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -141,7 +141,7 @@ mach32SolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (!(pGC->planemask))
         return;
 
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -150,8 +150,7 @@ mach32SolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
-                     pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
                      ppt, pwidth, fSorted);
 
     WaitQueue(3);
@@ -217,7 +216,7 @@ mach32TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (!(pGC->planemask))
         return;
 
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -226,8 +225,7 @@ mach32TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
-                     pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
                      ppt, pwidth, fSorted);
 
     xrot = pDrawable->x + pGC->patOrg.x;
@@ -293,7 +291,7 @@ mach32StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (!(pGC->planemask))
         return;
 
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -302,8 +300,7 @@ mach32StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
-                     pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
                      ppt, pwidth, fSorted);
 
     xrot = pDrawable->x + pGC->patOrg.x;
@@ -369,7 +366,7 @@ mach32OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (!(pGC->planemask))
         return;
 
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -378,8 +375,7 @@ mach32OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
-                     pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
                      ppt, pwidth, fSorted);
 
     xrot = pDrawable->x + pGC->patOrg.x;

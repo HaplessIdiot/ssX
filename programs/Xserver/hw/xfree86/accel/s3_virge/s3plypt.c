@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3plypt.c,v 3.8 1997/06/03 14:11:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3plypt.c,v 3.9 1997/06/20 09:24:43 hohndel Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -78,14 +78,12 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
    register int i;
    register BoxPtr pbox;
    int   off;
-   cfbPrivGCPtr devPriv;
    xPoint *pptPrev;
    int s3_clr, s3_rop = -1;
 
    if (!pGC->planemask || pGC->alu == GXnoop)  /* for xgc "benchmarks" ;-) */
       return;
 
-   devPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
    s3_rop = s3ConvertPlanemask(pGC, &s3_clr);
 
    if (!xf86VTSema || (s3_rop == -1)) {
@@ -108,7 +106,7 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
       return;
    }
 
-   cclip = devPriv->pCompositeClip;
+   cclip = pGC->pCompositeClip;
    if ((mode == CoordModePrevious) && (npt > 1)) {
       for (pptPrev = pptInit + 1, i = npt - 1; --i >= 0; pptPrev++) {
 	 pptPrev->x += (pptPrev - 1)->x;

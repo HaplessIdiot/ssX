@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32blt.c,v 3.8 1996/02/04 09:02:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32blt.c,v 3.9 1996/12/23 06:38:23 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -125,7 +125,7 @@ mach32CopyArea(pSrcDrawable, pDstDrawable,
 	if ((pSrcDrawable == pDstDrawable) &&
 	    (pGC->clientClipType == CT_NONE))
 	{
-	    prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	    prgnSrcClip = pGC->pCompositeClip;
 	}
 	else
 	{
@@ -147,7 +147,7 @@ mach32CopyArea(pSrcDrawable, pDstDrawable,
 	    else if ((pSrcDrawable == pDstDrawable) &&
 		(pGC->clientClipType == CT_NONE))
 	    {
-		prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+		prgnSrcClip = pGC->pCompositeClip;
 	    }
 	    else
 	    {
@@ -264,10 +264,10 @@ mach32CopyArea(pSrcDrawable, pDstDrawable,
             }
 	    cclip = pPixClip;
 	} else {
-	    cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	    cclip = pGC->pCompositeClip;
 	}
 #else
-	cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	cclip = pGC->pCompositeClip;
 #endif
 
         if (REGION_NUM_RECTS(cclip) == 1)
@@ -328,14 +328,10 @@ mach32CopyArea(pSrcDrawable, pDstDrawable,
 
 	    (*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, pPixClip);
 	} else {
-	    (*pGC->pScreen->Intersect)(&rgnDst,
-				       &rgnDst,
-				       ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+	    (*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, pGC->pCompositeClip);
 	}
 #else
-	(*pGC->pScreen->Intersect)(&rgnDst,
-				   &rgnDst,
-				   ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, pGC->pCompositeClip);
 #endif
     }
 
@@ -457,7 +453,7 @@ mach32CopyArea(pSrcDrawable, pDstDrawable,
     WaitIdleEmpty(); /* Make sure that all commands have finished */
 
     prgnExposed = NULL;
-    if (((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose)
+    if (pGC->fExpose)
     {
 	extern RegionPtr    miHandleExposures();
 
@@ -670,7 +666,7 @@ mach32CopyPlane(pSrcDrawable, pDstDrawable,
    if (pSrcDrawable->type == DRAWABLE_PIXMAP) {
       if ((pSrcDrawable == pDstDrawable) &&
           (pGC->clientClipType == CT_NONE)) {
-         prgnSrcClip = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+         prgnSrcClip = pGC->pCompositeClip;
       } else {
          fastClip = 1;
       }
@@ -685,7 +681,7 @@ mach32CopyPlane(pSrcDrawable, pDstDrawable,
             fastClip = 1;
          } else if ((pSrcDrawable == pDstDrawable) &&
                     (pGC->clientClipType == CT_NONE)) {
-            prgnSrcClip = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+            prgnSrcClip = pGC->pCompositeClip;
          } else {
             prgnSrcClip = NotClippedByChildren((WindowPtr) pSrcDrawable);
             freeSrcClip = TRUE;
@@ -761,7 +757,7 @@ mach32CopyPlane(pSrcDrawable, pDstDrawable,
        * directly.  Otherwise we have to create a full blown region and call
        * intersect
        */
-      cclip = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+      cclip = pGC->pCompositeClip;
       if (REGION_NUM_RECTS(cclip) == 1) {
          BoxPtr pBox = REGION_RECTS(cclip);
 
@@ -792,9 +788,7 @@ mach32CopyPlane(pSrcDrawable, pDstDrawable,
    }
 
    if (!fastClip) {
-      (*pGC->pScreen->Intersect) (&rgnDst,
-                                  &rgnDst,
-                                  ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+      (*pGC->pScreen->Intersect) (&rgnDst, &rgnDst, pGC->pCompositeClip);
    }
 
    /* Do bit blitting */
@@ -929,7 +923,7 @@ mach32CopyPlane(pSrcDrawable, pDstDrawable,
       }
    }
    prgnExposed = NULL;
-   if (((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose) {
+   if (pGC->fExpose) {
       extern RegionPtr miHandleExposures();
 
       /* Pixmap sources generate a NoExposed (we return NULL to do this) */

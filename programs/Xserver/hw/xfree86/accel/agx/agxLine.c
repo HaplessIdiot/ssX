@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxLine.c,v 3.8 1996/02/04 08:58:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxLine.c,v 3.9 1996/12/23 06:32:53 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -124,7 +124,6 @@ agxLine(pDrawable, pGC, mode, npt, pptInit)
     register int y1, y2;
     register int x1, x2;
     RegionPtr cclip;
-    cfbPrivGCPtr    devPriv;
 
     if (!xf86VTSema)
     {
@@ -144,8 +143,7 @@ agxLine(pDrawable, pGC, mode, npt, pptInit)
       return;
     }
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 

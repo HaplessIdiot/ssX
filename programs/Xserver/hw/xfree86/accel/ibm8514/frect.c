@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/frect.c,v 3.3 1996/02/04 09:01:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/frect.c,v 3.4 1996/12/23 06:37:47 dawes Exp $ */
 /*
  * Fill rectangles.
  */
@@ -552,7 +552,6 @@ ibm8514PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     BoxPtr	    pboxClippedBase;
     BoxPtr	    pextent;
     BoxRec	    stackRects[NUM_STACK_RECTS];
-    cfbPrivGC	    *priv;
     int		    numRects;
     int		    n;
     int		    xorg, yorg;
@@ -569,8 +568,7 @@ ibm8514PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	return;
     }
 
-    priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
-    prgnClip = priv->pCompositeClip;
+    prgnClip = pGC->pCompositeClip;
 
     prect = prectInit;
     xorg = pDrawable->x;

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.1tsi Exp $ */
 /*
- * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -122,6 +122,10 @@ ATIDACSave(ATIHWPtr save)
 
     ATISetDACIOPorts(save->crtc);
 
+    save->dac_read = inb(ATIIOPortDAC_READ);
+    save->dac_write = inb(ATIIOPortDAC_WRITE);
+    save->dac_mask = inb(ATIIOPortDAC_MASK);
+
     /* Save DAC's colour lookup table */
     outb(ATIIOPortDAC_MASK, 0xFFU);
     outb(ATIIOPortDAC_READ, 0x00U);
@@ -145,6 +149,9 @@ ATIDACInit(DisplayModePtr mode)
 
     if (!mode)
     {
+        ATINewHWPtr->dac_read = ATINewHWPtr->dac_write = 0x00U;
+        ATINewHWPtr->dac_mask = 0xFFU;
+
         /*
          * Set colour lookup table.  The first entry has already been zeroed
          * out.
@@ -161,8 +168,22 @@ ATIDACInit(DisplayModePtr mode)
             }
         else
         {
-            for (Index = 3;  Index < NumberOf(ATINewHWPtr->std.DAC);  Index++)
-                ATINewHWPtr->std.DAC[Index] = 0x3FU;
+            /*
+             * Initialize hardware colour map so that use of uninitialized
+             * software colour map entries can easily be seen.
+             */
+            ATINewHWPtr->std.DAC[3] =
+                ATINewHWPtr->std.DAC[4] =
+                ATINewHWPtr->std.DAC[5] = 0xFFU;
+            for (Index = 2;
+                Index < NumberOf(ATINewHWPtr->std.DAC) / 3;
+                Index++)
+            {
+                Index2 = Index * 3;
+                ATINewHWPtr->std.DAC[Index2 + 0] = 0xFFU;
+                ATINewHWPtr->std.DAC[Index2 + 1] = 0x00U;
+                ATINewHWPtr->std.DAC[Index2 + 2] = 0xFFU;
+            }
             if (ATIUsing1bppModes)
             {
                 ATINewHWPtr->std.DAC[(MONO_BLACK * 3) + 0] =
@@ -177,9 +198,15 @@ ATIDACInit(DisplayModePtr mode)
                     vga256InfoRec.whiteColour.green;
                 ATINewHWPtr->std.DAC[(MONO_WHITE * 3) + 2] =
                     vga256InfoRec.whiteColour.blue;
-                ATINewHWPtr->std.DAC[(MONO_OVERSCAN * 3) + 0] =
-                    ATINewHWPtr->std.DAC[(MONO_OVERSCAN * 3) + 1] =
-                    ATINewHWPtr->std.DAC[(MONO_OVERSCAN * 3) + 2] = 0x00U;
+            }
+
+            if (ATICRTC == ATI_CRTC_VGA)
+            {
+                /* Initialize overscan to black */
+                Index = ATINewHWPtr->std.Attribute[17] * 3;
+                ATINewHWPtr->std.DAC[Index + 0] =
+                    ATINewHWPtr->std.DAC[Index + 1] =
+                    ATINewHWPtr->std.DAC[Index + 2] = 0x00U;
             }
         }
     }
@@ -206,4 +233,7 @@ ATIDACRestore(ATIHWPtr restore)
         outb(ATIIOPortDAC_DATA, restore->std.DAC[Index]);
         DACDelay;
     }
+
+    outb(ATIIOPortDAC_READ, restore->dac_read);
+    outb(ATIIOPortDAC_WRITE, restore->dac_write);
 }

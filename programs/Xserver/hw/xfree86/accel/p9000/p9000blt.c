@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000blt.c,v 3.9 1996/02/04 09:04:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000blt.c,v 3.10 1996/12/23 06:40:36 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -167,7 +167,7 @@ p9000CopyArea(pSrcDrawable, pDstDrawable,
 	if ((pSrcDrawable == pDstDrawable) &&
 	    (pGC->clientClipType == CT_NONE))
 	{
-	    prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	    prgnSrcClip = pGC->pCompositeClip;
 	}
 	else
 	{
@@ -189,7 +189,7 @@ p9000CopyArea(pSrcDrawable, pDstDrawable,
 	    else if ((pSrcDrawable == pDstDrawable) &&
 		(pGC->clientClipType == CT_NONE))
 	    {
-		prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+		prgnSrcClip = pGC->pCompositeClip;
 	    }
 	    else
 	    {
@@ -285,7 +285,7 @@ p9000CopyArea(pSrcDrawable, pDstDrawable,
 	 * composite clip from an mfb gc
 	 */
 
-	cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	cclip = pGC->pCompositeClip;
         if (REGION_NUM_RECTS(cclip) == 1)
         {
 	    BoxPtr pBox = REGION_RECTS(cclip);
@@ -317,9 +317,7 @@ p9000CopyArea(pSrcDrawable, pDstDrawable,
 
     if (!fastClip)
     {
-	(*pGC->pScreen->Intersect)(&rgnDst,
-				   &rgnDst,
-				 ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, pGC->pCompositeClip);
     }
 
     /* Do bit blitting */
@@ -431,7 +429,7 @@ p9000CopyArea(pSrcDrawable, pDstDrawable,
     }
 
     prgnExposed = NULL;
-    if (((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose)
+    if (pGC->fExpose)
     {
 	extern RegionPtr    miHandleExposures();
 
@@ -527,7 +525,7 @@ p9000CopyArea16(pSrcDrawable, pDstDrawable,
 	if ((pSrcDrawable == pDstDrawable) &&
 	    (pGC->clientClipType == CT_NONE))
 	{
-	    prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	    prgnSrcClip = pGC->pCompositeClip;
 	}
 	else
 	{
@@ -549,7 +547,7 @@ p9000CopyArea16(pSrcDrawable, pDstDrawable,
 	    else if ((pSrcDrawable == pDstDrawable) &&
 		(pGC->clientClipType == CT_NONE))
 	    {
-		prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+		prgnSrcClip = pGC->pCompositeClip;
 	    }
 	    else
 	    {
@@ -645,7 +643,7 @@ p9000CopyArea16(pSrcDrawable, pDstDrawable,
 	 * composite clip from an mfb gc
 	 */
 
-	cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	cclip = pGC->pCompositeClip;
         if (REGION_NUM_RECTS(cclip) == 1)
         {
 	    BoxPtr pBox = REGION_RECTS(cclip);
@@ -677,9 +675,7 @@ p9000CopyArea16(pSrcDrawable, pDstDrawable,
 
     if (!fastClip)
     {
-	(*pGC->pScreen->Intersect)(&rgnDst,
-				   &rgnDst,
-				 ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, pGC->pCompositeClip);
     }
 
     /* Do bit blitting */
@@ -795,7 +791,7 @@ p9000CopyArea16(pSrcDrawable, pDstDrawable,
     }
 
     prgnExposed = NULL;
-    if (((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose)
+    if (pGC->fExpose)
     {
 	extern RegionPtr    miHandleExposures();
 
@@ -891,7 +887,7 @@ p9000CopyArea32(pSrcDrawable, pDstDrawable,
 	if ((pSrcDrawable == pDstDrawable) &&
 	    (pGC->clientClipType == CT_NONE))
 	{
-	    prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	    prgnSrcClip = pGC->pCompositeClip;
 	}
 	else
 	{
@@ -913,7 +909,7 @@ p9000CopyArea32(pSrcDrawable, pDstDrawable,
 	    else if ((pSrcDrawable == pDstDrawable) &&
 		(pGC->clientClipType == CT_NONE))
 	    {
-		prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+		prgnSrcClip = pGC->pCompositeClip;
 	    }
 	    else
 	    {
@@ -1009,7 +1005,7 @@ p9000CopyArea32(pSrcDrawable, pDstDrawable,
 	 * composite clip from an mfb gc
 	 */
 
-	cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	cclip = pGC->pCompositeClip;
         if (REGION_NUM_RECTS(cclip) == 1)
         {
 	    BoxPtr pBox = REGION_RECTS(cclip);
@@ -1041,9 +1037,7 @@ p9000CopyArea32(pSrcDrawable, pDstDrawable,
 
     if (!fastClip)
     {
-	(*pGC->pScreen->Intersect)(&rgnDst,
-				   &rgnDst,
-				 ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, pGC->pCompositeClip);
     }
 
     /* Do bit blitting */
@@ -1159,7 +1153,7 @@ p9000CopyArea32(pSrcDrawable, pDstDrawable,
     }
 
     prgnExposed = NULL;
-    if (((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose)
+    if (pGC->fExpose)
     {
 	extern RegionPtr    miHandleExposures();
 
@@ -1367,7 +1361,7 @@ p9000CopyPlane(pSrcDrawable, pDstDrawable,
    if (pSrcDrawable->type == DRAWABLE_PIXMAP) {
       if ((pSrcDrawable == pDstDrawable) &&
           (pGC->clientClipType == CT_NONE)) {
-         prgnSrcClip = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+         prgnSrcClip = pGC->pCompositeClip;
       } else {
          fastClip = 1;
       }
@@ -1382,7 +1376,7 @@ p9000CopyPlane(pSrcDrawable, pDstDrawable,
             fastClip = 1;
          } else if ((pSrcDrawable == pDstDrawable) &&
                     (pGC->clientClipType == CT_NONE)) {
-            prgnSrcClip = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+            prgnSrcClip = pGC->pCompositeClip;
          } else {
             prgnSrcClip = NotClippedByChildren((WindowPtr) pSrcDrawable);
             freeSrcClip = TRUE;
@@ -1458,7 +1452,7 @@ p9000CopyPlane(pSrcDrawable, pDstDrawable,
        * directly.  Otherwise we have to create a full blown region and call
        * intersect
        */
-      cclip = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+      cclip = pGC->pCompositeClip;
       if (REGION_NUM_RECTS(cclip) == 1) {
          BoxPtr pBox = REGION_RECTS(cclip);
 
@@ -1489,9 +1483,7 @@ p9000CopyPlane(pSrcDrawable, pDstDrawable,
    }
 
    if (!fastClip) {
-      (*pGC->pScreen->Intersect) (&rgnDst,
-                                  &rgnDst,
-                                  ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+      (*pGC->pScreen->Intersect) (&rgnDst, &rgnDst, pGC->pCompositeClip);
    }
 
    /* Do bit blitting */
@@ -1582,7 +1574,7 @@ p9000CopyPlane(pSrcDrawable, pDstDrawable,
       }
    }
    prgnExposed = NULL;
-   if (((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose) {
+   if (pGC->fExpose) {
       extern RegionPtr miHandleExposures();
 
       /* Pixmap sources generate a NoExposed (we return NULL to do this) */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.37 1997/07/29 12:08:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.38 1998/01/24 16:58:31 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -29,6 +29,7 @@
 #include "compiler.h"
 
 #include "xf86.h"
+#include "xf86Version.h"
 #include "xf86Priv.h"
 #include "xf86_ansic.h"
 #include "xf86_Config.h"
@@ -94,10 +95,10 @@ int monoValidMode(
 /*   ScrnInfoPtr xf86Screens[] defined in xf86Conf.c */
 /*   Each entry there is a possibly configured device */
 ScrnInfoRec monoInfoRec = {
+  monoProbe,		/* Bool (* Probe)() */
   FALSE,		/* Bool configured */
   -1,			/* int tmpIndex */
   -1,			/* int scrnIndex */
-  monoProbe,		/* Bool (* Probe)() */
   monoScreenInit,	/* Bool (* Init)() */
   monoValidMode,	/* int (* ValidMode)() */
   monoEnterLeaveVT,	/* void (* EnterLeaveVT)(int,int) */
@@ -156,13 +157,17 @@ ScrnInfoRec monoInfoRec = {
   0,			/* int textClockFreq */
   NULL,			/* char* DDConfig */
   NULL,			/* char* DDOptions */
-  0			/* int MemClk */
+  0,			/* int MemClk */
 #ifdef XFreeXDGA
-  ,0,			/* int directMode */
+  0,			/* int directMode */
   NULL,			/* Set Vid Page */
   0,			/* unsigned long physBase */
-  0			/* int physSize */
+  0,			/* int physSize */
 #endif
+#ifdef XF86SETUP
+  NULL,			/* void *device */
+#endif
+  FALSE			/* hasDirectColor */
 };
 
 unsigned char *monoBase = NULL;
@@ -714,6 +719,17 @@ ServerInit()
 return &monoInfoRec;
 }
 
+static XF86ModuleVersionInfo VersRec =
+{
+        "libmono.a",
+        MODULEVENDORSTRING,
+        MODINFOSTRING1,
+        MODINFOSTRING2,
+        XF86_VERSION_CURRENT,
+        0x00010001,
+        {0,0,0,0}       /* signature, to be patched into the file by a tool */
+};
+
 /*
  * this function is automagically executed when loading this module
  *
@@ -721,18 +737,22 @@ return &monoInfoRec;
  */
 void
 ModuleInit(data,magic)
-    int  * data;
-    int  * magic;
+    pointer   * data;
+    INT32     * magic;
 {
     static int cnt = 0;
 
     switch(cnt++)
     {
+        /* MAGIC_VERSION must be first in ModuleInit */
+    case 0:
+        * data = (pointer) &VersRec;
+        * magic= MAGIC_VERSION;
+        break;
     default:
-      * magic= MAGIC_DONE;
-      break;
+        * magic= MAGIC_DONE;
+        break;
     }
-
     return;
 }
 #endif

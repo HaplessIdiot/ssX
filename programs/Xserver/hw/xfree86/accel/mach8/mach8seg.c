@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8seg.c,v 3.4 1996/02/04 09:03:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8seg.c,v 3.5 1996/12/23 06:40:10 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -117,7 +117,6 @@ mach8Segment(pDrawable, pGC, nseg, pSeg)
     register int y1, y2;
     register int x1, x2;
     RegionPtr cclip;
-    cfbPrivGCPtr    devPriv;
 
 /* 11-jun-93 TCG : is VT visible */
     if (!xf86VTSema)
@@ -126,8 +125,7 @@ mach8Segment(pDrawable, pGC, nseg, pSeg)
         return;
     }
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbfillarc.c,v 3.1 1996/12/23 06:52:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbfillarc.c,v 3.2 1997/03/13 15:10:54 hohndel Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -267,7 +267,7 @@ v16PolyFillArcSolid(pDraw, pGC, narcs, parcs)
     if ( !(pGC->planemask & 0x0F))
 #endif
 	return;
-    cclip = priv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
 	if (miFillArcEmpty(arc))

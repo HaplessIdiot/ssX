@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.24 94/07/28 14:33:33 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbline.c,v 3.0 1996/06/29 09:05:38 dawes Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -140,7 +140,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     int		    alu;
 
     devPriv = cfbGetGCPrivate(pGC);
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 
@@ -509,7 +509,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     cfbPrivGCPtr    devPriv;
 
     devPriv = cfbGetGCPrivate(pGC);
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     rrops[0].rop = devPriv->rop;
     rrops[0].and = devPriv->and;
     rrops[0].xor = devPriv->xor;

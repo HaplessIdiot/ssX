@@ -2,6 +2,8 @@
  * Push Pixels for 8 bit displays.
  */
 
+/* $XFree86: xc/programs/Xserver/cfb/cfbpush8.c,v 1.0tsi Exp $ */
+
 /*
 
 Copyright (c) 1989  X Consortium
@@ -72,7 +74,7 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     bbox.y2 = bbox.y1 + dy;
     devPriv = cfbGetGCPrivate(pGC);
     
-    switch (RECT_IN_REGION(pGC->pScreen, devPriv->pCompositeClip, &bbox))
+    switch (RECT_IN_REGION(pGC->pScreen, pGC->pCompositeClip, &bbox))
     {
       case rgnPART:
 	mfbPushPixels(pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg);

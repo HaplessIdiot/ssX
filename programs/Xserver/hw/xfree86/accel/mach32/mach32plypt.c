@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32plypt.c,v 3.5 1996/02/04 09:02:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32plypt.c,v 3.6 1996/12/23 06:38:44 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -76,13 +76,11 @@ mach32PolyPoint(pDrawable, pGC, mode, npt, pptInit)
     register int    i;
     register BoxPtr pbox;
     int		    off;
-    cfbPrivGCPtr    devPriv;
     xPoint	    *pptPrev;
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
     if (pGC->alu == GXnoop)
 	return;
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     if ((mode == CoordModePrevious) && (npt > 1))
     {
 	for (pptPrev = pptInit + 1, i = npt - 1; --i >= 0; pptPrev++)

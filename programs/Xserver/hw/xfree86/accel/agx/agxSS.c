@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSS.c,v 3.4 1996/02/04 08:58:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSS.c,v 3.5 1996/12/23 06:32:56 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -129,7 +129,7 @@ agxSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     }
 
     alu = pGC->alu;
-    prgnDst = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    prgnDst = pGC->pCompositeClip;
 
     pptLast = ppt + nspans;
 

@@ -23,7 +23,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.24 1997/07/29 12:07:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.25 1998/01/24 16:57:17 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -130,13 +130,17 @@ ScrnInfoRec tgaInfoRec = {
     0,			/* int textClockFreq */
     NULL,               /* char* DCConfig */
     NULL,               /* char* DCOptions */
-    0			/* int MemClk */
+    0,			/* int MemClk */
 #ifdef XFreeXDGA
-    ,0,			/* int directMode */
+    0,			/* int directMode */
     NULL,		/* Set Vid Page */
     0,			/* unsigned long physBase */
-    0			/* int physSize */
+    0,			/* int physSize */
 #endif
+#ifdef XF86SETUP
+    NULL,		/* void *device */
+#endif
+    FALSE		/* hasDirectColor */
 };
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;

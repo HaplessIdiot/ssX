@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclText.c,v 1.2 1996/12/30 13:59:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclText.c,v 1.3 1996/12/31 07:06:04 dawes Exp $ */
 
 #ifdef DO_TWO_BYTE_PCL
 #include "iconv.h"
@@ -231,9 +231,7 @@ char font_type;
 
     drawRegion = miRegionCreate( &box, 0 );
     region = miRegionCreate( NULL, 0 );
-    miIntersect( region, drawRegion,
-		((PclGCPrivPtr)pGC->devPrivates[PclGCPrivateIndex].ptr)
-		->pCompositeClip );
+    miIntersect( region, drawRegion, pGC->pCompositeClip );
 
     /*
      * For each rectangle in the clip region, set the HP-GL/2 "input
@@ -431,9 +429,7 @@ char font_type;
 
     drawRegion = miRegionCreate( &box, 0 );
     region = miRegionCreate( NULL, 0 );
-    miIntersect( region, drawRegion,
-		((PclGCPrivPtr)pGC->devPrivates[PclGCPrivateIndex].ptr)
-		->pCompositeClip );
+    miIntersect( region, drawRegion, pGC->pCompositeClip );
 
     /*
      * For each rectangle in the clip region, set the HP-GL/2 "input

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.8 1998/01/24 01:53:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.9 1998/01/24 16:58:52 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -477,7 +477,7 @@ xf86DoImageWrite(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
     int x,w,h;
     unsigned char* psrcBase;			/* start of image */
     register unsigned char* srcPntr;		/* index into the image */
-    int Bpp = xf86bpp >> 3; 
+    int Bpp = xf86AccelInfoRec.BitsPerPixel >> 3; 
     BoxPtr pbox = REGION_RECTS(prgnDst);
     int nbox = REGION_NUM_RECTS(prgnDst);
     Bool be_careful;
@@ -622,7 +622,7 @@ xf86ScanlineDoImageWrite(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
     int x,y,w,h;
     unsigned char* psrcBase;			/* start of image */
     register unsigned char* srcPntr;		/* index into the image */
-    int Bpp = xf86bpp >> 3;
+    int Bpp = xf86AccelInfoRec.BitsPerPixel >> 3;
     BoxPtr pbox = REGION_RECTS(prgnDst);
     int nbox = REGION_NUM_RECTS(prgnDst);
     Bool PlusOne;

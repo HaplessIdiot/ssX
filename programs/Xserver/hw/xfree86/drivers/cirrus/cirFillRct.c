@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirFillRct.c,v 1.1 1997/03/06 23:15:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirFillRct.c,v 1.2 1998/01/24 16:57:55 hohndel Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -117,7 +117,7 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     }
 
     priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
-    prgnClip = priv->pCompositeClip;
+    prgnClip = pGC->pCompositeClip;
 
     BoxFill = 0;
     switch (pGC->fillStyle)
@@ -159,8 +159,7 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     case FillTiled:
     	/* Hmm, it seems FillRectTileOdd always gets called. --HH */
 #if 0    
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-	pRotatedPixmap)
+	if (!pGC->pRotatedPixmap)
             BoxFill = cfbFillRectTileOdd;
 	else
 #endif
@@ -181,15 +180,13 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	break;
 #if (PPW == 4)
     case FillStippled:
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-							pRotatedPixmap)
+	if (!pGC->pRotatedPixmap)
 	    BoxFill = vga2568FillRectStippledUnnatural;
 	else
 	    BoxFill = CirrusFillRectTransparentStippled32;
 	break;
     case FillOpaqueStippled:
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-							pRotatedPixmap)
+	if (!pGC->pRotatedPixmap)
 	    BoxFill = vga2568FillRectStippledUnnatural;
 	else
 	    BoxFill = CirrusFillRectOpaqueStippled32;

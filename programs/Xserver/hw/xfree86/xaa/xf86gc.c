@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.12 1997/12/14 10:04:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.13 1998/01/24 16:58:53 hohndel Exp $ */
 
 /***********************************************************
 
@@ -157,9 +157,9 @@ xf86CreateGC(pGC)
     pPriv = cfbGetGCPrivate(pGC);
     pPriv->rop = pGC->alu;
     pPriv->oneRect = FALSE;
-    pPriv->fExpose = TRUE;
-    pPriv->freeCompClip = FALSE;
-    pPriv->pRotatedPixmap = (PixmapPtr) NULL;
+    pGC->fExpose = TRUE;
+    pGC->freeCompClip = FALSE;
+    pGC->pRotatedPixmap = (PixmapPtr) NULL;
     return TRUE;
 }
 
@@ -295,7 +295,7 @@ xf86ValidateGC(pGC, changes, pDrawable)
 #ifdef NO_ONE_RECT
 	devPriv->oneRect = FALSE;
 #else
-	oneRect = REGION_NUM_RECTS(devPriv->pCompositeClip) == 1;
+	oneRect = REGION_NUM_RECTS(pGC->pCompositeClip) == 1;
 	if (oneRect != devPriv->oneRect)
 	    new_line = TRUE;
 	devPriv->oneRect = oneRect;
@@ -428,7 +428,7 @@ xf86ValidateGC(pGC, changes, pDrawable)
 		if ((width <= PGSZ) && !(width & (width - 1)))
 		{
 		    cfbCopyRotatePixmap(pGC->tile.pixmap,
-					&devPriv->pRotatedPixmap,
+					&pGC->pRotatedPixmap,
 					xrot, yrot);
 		    new_pix = TRUE;
 		}
@@ -443,17 +443,17 @@ xf86ValidateGC(pGC, changes, pDrawable)
 		if ((width <= PGSZ) && !(width & (width - 1)))
 		{
 		    mfbCopyRotatePixmap(pGC->stipple,
-					&devPriv->pRotatedPixmap, xrot, yrot);
+					&pGC->pRotatedPixmap, xrot, yrot);
 		    new_pix = TRUE;
 		}
 	    }
 	    break;
 #endif
 	}
-	if (!new_pix && devPriv->pRotatedPixmap)
+	if (!new_pix && pGC->pRotatedPixmap)
 	{
-	    (*pGC->pScreen->DestroyPixmap)(devPriv->pRotatedPixmap);
-	    devPriv->pRotatedPixmap = (PixmapPtr) NULL;
+	    (*pGC->pScreen->DestroyPixmap)(pGC->pRotatedPixmap);
+	    pGC->pRotatedPixmap = (PixmapPtr) NULL;
 	}
     }
 

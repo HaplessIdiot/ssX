@@ -4,10 +4,16 @@ XCOMM $XConsortium: Imakefile /main/6 1996/10/19 18:08:57 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb/Imakefile,v 3.6tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb/Imakefile,v 3.7 1997/04/12 13:46:23 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
+
+#if DoLoadableServer
+XF86INCL = -I$(XF86COMSRC) -I$(XF86SRC)
+XFMODSRC = mfbmodule.c
+XFMODOBJ = mfbmodule.o
+#endif
 
 #if XF86Vga2Banked
 BANKEDSRCS = mfbbltTBC.c mfbbltTBCI.c
@@ -22,7 +28,7 @@ SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
          mfbfillsp.c mfbsetsp.c mfbscrinit.c mfbscrclse.c mfbclip.c \
          mfbbitbltB.c mfbgetsp.c mfbpolypnt.c \
 	 mfbbltC.c mfbbltX.c mfbbltCI.c mfbbltO.c mfbbltG.c \
-	 mfbcmap.c mfbtileC.c mfbtileG.c mfbmisc.c mfbbstore.c
+	 mfbcmap.c mfbtileC.c mfbtileG.c mfbmisc.c mfbbstore.c $(XFMODSRC)
 
 SRCS =	 $(SRCS1) mfbseg.c mfbpgbwht.c mfbpgbblak.c mfbpgbinv.c mfbigbwht.c \
 	 mfbigbblak.c mfbpawhite.c mfbpablack.c mfbpainv.c mfbtewhite.c \
@@ -41,11 +47,7 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbigbwht.o mfbigbblak.o mfbcmap.o \
 	 mfbpawhite.o mfbpablack.o mfbpainv.o mfbtileC.o mfbtileG.o \
          mfbtewhite.o mfbteblack.o mfbmisc.o mfbbstore.o \
-         mfbplywhite.o mfbplyblack.o mfbplyinv.o $(BANKEDOBJS)
-
-#if DoLoadableServer
-XF86INCL = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) -I$(XF86SRC)
-#endif
+         mfbplywhite.o mfbplyblack.o mfbplyinv.o $(BANKEDOBJS) $(XFMODOBJ)
 
 INCLUDES = -I. -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
            -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(FONTINCSRC) $(XF86INCL)

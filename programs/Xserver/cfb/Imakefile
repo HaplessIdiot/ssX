@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/67 1996/12/02 10:19:53 lehors $
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.14 1997/03/11 13:05:05 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.15 1997/04/10 10:06:09 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -36,6 +36,13 @@ STIPPLEDEF = -DHAS_STIPPLE_CODE
 #endif
 #endif
 
+#ifdef XFree86Version
+#if DoLoadableServer
+XFMODSRC = cfbmodule.c
+XFMODOBJ = cfbmodule.o
+#endif
+#endif
+
 #if !(DoLoadableServer && defined(LinkDirectory))
 CFBCMAP = cfbcmap.o
 #endif
@@ -54,7 +61,7 @@ SRCS =	 cfbgc.c cfbrrop.c cfbwindow.c \
 	 cfbbres.c cfbline.c cfbhrzvert.c cfbbresd.c cfbimage.c cfbseg.c \
 	 cfb8lineCO.c cfb8lineX.c cfb8lineG.c cfb8lineCP.c \
 	 cfb8segC.c cfb8segX.c cfb8segG.c cfb8segCS.c \
-	 cfbply1rctC.c cfbply1rctG.c $(PSZSRCS)
+	 cfbply1rctC.c cfbply1rctG.c $(PSZSRCS) $(XFMODSRC)
 
 OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
 	 cfbgetsp.o cfbfillrct.o \
@@ -70,7 +77,7 @@ OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
 	 cfb8lineCO.o cfb8lineX.o cfb8lineG.o cfb8lineCP.o \
 	 cfb8segCS.o cfb8segX.o cfb8segG.o cfb8segC.o \
 	 cfbbitblt.o cfbbltC.o cfbbltX.o cfbbltO.o cfbbltG.o \
-	 cfbply1rctC.o cfbply1rctG.o $(PSZOBJS) $(STIPPLEOBJ)
+	 cfbply1rctC.o cfbply1rctG.o $(PSZOBJS) $(STIPPLEOBJ) $(XFMODOBJ)
 
 #ifdef XFree86Version
 #if DoLoadableServer

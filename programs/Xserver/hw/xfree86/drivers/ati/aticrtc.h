@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.h,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.h,v 1.1tsi Exp $ */
 /*
- * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -43,6 +43,9 @@ typedef struct
         /* Generic VGA registers */
         vgaHWRec std;
 
+        /* Other generic DAC registers */
+        CARD8 dac_read, dac_write, dac_mask;
+
         /* VGA Wonder registers */
         CARD8             a3,         a6, a7,             ab, ac, ad, ae,
               b0, b1, b2, b3,     b5, b6,     b8, b9, ba,         bd, be, bf;
@@ -52,7 +55,8 @@ typedef struct
                crtc_v_total_disp, crtc_v_sync_strt_wid,
                crtc_off_pitch, crtc_gen_cntl, dsp_config, dsp_on_off,
                ovr_clr, ovr_wid_left_right, ovr_wid_top_bottom,
-               clock_cntl, config_cntl;
+               clock_cntl, bus_cntl, mem_vga_wp_sel, mem_vga_rp_sel,
+               dac_cntl, config_cntl;
 
         /*
          * Various things needed by ATISwap:  the function to be called by

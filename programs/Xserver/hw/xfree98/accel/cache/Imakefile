@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/10/25 15:39:42 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/cache/Imakefile,v 3.7 1997/07/29 12:08:15 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/cache/Imakefile,v 3.8 1998/03/20 19:07:54 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -16,8 +16,7 @@ DEFINES = -DPSZ=8
 
 INCLUDES = -I$(XF86SRC) -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) -I. \
 	   -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
-           -I$(SERVERSRC)/cfb -I$(XINCLUDESRC) -I$(FONTINCSRC) \
-	   -I$(XF86SRC)/config
+           -I$(SERVERSRC)/cfb -I$(XINCLUDESRC) -I$(FONTINCSRC)
 
 NormalLibraryObjectRule()
 

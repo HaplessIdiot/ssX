@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/sym.h,v $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/sym.h,v 1.1 1997/02/14 12:17:43 hohndel Exp $ */
 
 
 
@@ -26,6 +26,8 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef _SYM_H
+#define _SYM_H
 
 /*
  * This structure is used to pass in symbol information that is being
@@ -39,3 +41,5 @@ typedef struct {
 
 #define SYMFUNC( func ) { #func, (void (*)())&func },
 #define SYMVAR( var ) { #var, (void (*)())&var },
+
+#endif /* _SYM_H */

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmline.c,v 3.0 1996/08/18 01:53:58 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -144,7 +144,7 @@ ilbmLineSS(pDrawable, pGC, mode, npt, pptInit)
 	register int x1, x2;
 	RegionPtr cclip;
 
-	cclip = ((ilbmPrivGC *)(pGC->devPrivates[ilbmGCPrivateIndex].ptr))->pCompositeClip;
+	cclip = pGC->pCompositeClip;
 	rrops = ((ilbmPrivGC *)(pGC->devPrivates[ilbmGCPrivateIndex].ptr))->rrops;
 	pboxInit = REGION_RECTS(cclip);
 	nboxInit = REGION_NUM_RECTS(cclip);
@@ -482,7 +482,7 @@ ilbmLineSD(pDrawable, pGC, mode, npt, pptInit)
 	int					unclippedlen;
 	int					d;
 
-	cclip = ((ilbmPrivGC *)(pGC->devPrivates[ilbmGCPrivateIndex].ptr))->pCompositeClip;
+	cclip = pGC->pCompositeClip;
 	rrops = ((ilbmPrivGC *)(pGC->devPrivates[ilbmGCPrivateIndex].ptr))->rrops;
 	pboxInit = REGION_RECTS(cclip);
 	nboxInit = REGION_NUM_RECTS(cclip);

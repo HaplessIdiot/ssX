@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabitblt.c,v 3.4 1996/12/23 06:59:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabitblt.c,v 3.5 1997/01/12 10:45:32 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -282,7 +282,7 @@ unsigned long
     }
 
     prgnExposed = NULL;
-    if (cfbGetGCPrivate(pGC)->fExpose)
+    if (pGC->fExpose)
     {
         /* Pixmap sources generate a NoExposed (we return NULL to do this) */
         if (!fastExpose)

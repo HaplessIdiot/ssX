@@ -29,7 +29,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillrct.c,v 3.1 1996/06/29 09:05:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillrct.c,v 3.2 1997/03/10 10:11:14 hohndel Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -131,7 +131,7 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 #endif
 
     priv = cfbGetGCPrivate(pGC);
-    prgnClip = priv->pCompositeClip;
+    prgnClip = pGC->pCompositeClip;
 
     BoxFill = 0;
     switch (pGC->fillStyle)
@@ -150,7 +150,7 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	}
 	break;
     case FillTiled:
-	if (!cfbGetGCPrivate(pGC)->pRotatedPixmap)
+	if (!pGC->pRotatedPixmap)
 	    BoxFill = cfbFillRectTileOdd;
 	else
 	{
@@ -162,13 +162,13 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	break;
 #if PSZ == 8
     case FillStippled:
-	if (!cfbGetGCPrivate(pGC)->pRotatedPixmap)
+	if (!pGC->pRotatedPixmap)
 	    BoxFill = cfb8FillRectStippledUnnatural;
 	else
 	    BoxFill = cfb8FillRectTransparentStippled32;
 	break;
     case FillOpaqueStippled:
-	if (!cfbGetGCPrivate(pGC)->pRotatedPixmap)
+	if (!pGC->pRotatedPixmap)
 	    BoxFill = cfb8FillRectStippledUnnatural;
 	else
 	    BoxFill = cfb8FillRectOpaqueStippled32;

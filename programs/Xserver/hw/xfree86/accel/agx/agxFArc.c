@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFArc.c,v 3.4 1996/12/23 06:32:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFArc.c,v 3.5 1998/01/24 16:56:23 hohndel Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -69,10 +69,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 #define DRAWSPANS() \
     if( clip ) { \
-       n = miClipSpans( ((cfbPrivGC *) \
-                           (pGC->devPrivates[cfbGCPrivateIndex].ptr)) \
-                               ->pCompositeClip, \
-                        &point, &width, 1, \
+       n = miClipSpans( pGC->pCompositeClip, &point, &width, 1, \
                         points, widths, TRUE ); \
        pts = points; \
        wids = widths; \
@@ -102,13 +99,12 @@ Author:  Bob Scheifler, MIT X Consortium
 
 
 static void
-agxFillEllipseI(pDraw, pGC, arc, points, widths, priv)
+agxFillEllipseI(pDraw, pGC, arc, points, widths)
     DrawablePtr pDraw;
     GCPtr pGC;
     xArc *arc;
     DDXPointPtr points;
     int *widths;
-    cfbPrivGC *priv;
 {
     int x, y, e;
     int yk, xk, ym, xm, dx, dy, xorg, yorg;
@@ -139,7 +135,7 @@ agxFillEllipseI(pDraw, pGC, arc, points, widths, priv)
      * bounding box requires clipping.
      */
     clip = TRUE;
-    prgnClip = priv->pCompositeClip;
+    prgnClip = pGC->pCompositeClip;
     n = REGION_NUM_RECTS(prgnClip);
     clipbox = REGION_RECTS(prgnClip);
     halfWidth =  (arc->width + 1) >> 1;      
@@ -164,13 +160,12 @@ agxFillEllipseI(pDraw, pGC, arc, points, widths, priv)
 }
 
 static void
-agxFillEllipseD(pDraw, pGC, arc, points, widths, priv)
+agxFillEllipseD(pDraw, pGC, arc, points, widths)
     DrawablePtr pDraw;
     GCPtr pGC;
     xArc *arc;
     DDXPointPtr points;
     int *widths;
-    cfbPrivGC *priv;
 {
     int x, y, i;
     int xorg, yorg, dx, dy, slw, n;
@@ -201,7 +196,7 @@ agxFillEllipseD(pDraw, pGC, arc, points, widths, priv)
      * bounding box requires clipping.
      */
     clip = TRUE;
-    prgnClip = priv->pCompositeClip;
+    prgnClip = pGC->pCompositeClip;
     n = REGION_NUM_RECTS(prgnClip);
     clipbox = REGION_RECTS(prgnClip);
     halfWidth =  (arc->width + 1) >> 1;      
@@ -245,13 +240,12 @@ agxFillEllipseD(pDraw, pGC, arc, points, widths, priv)
     }
 
 static void
-agxFillArcSliceI(pDraw, pGC, arc, points, widths, priv)
+agxFillArcSliceI(pDraw, pGC, arc, points, widths)
     DrawablePtr pDraw;
     GCPtr pGC;
     xArc *arc;
     DDXPointPtr points;
     int *widths;
-    cfbPrivGC *priv;
 {
     int yk, xk, ym, xm, dx, dy, xorg, yorg, slw, w;
     int x, y, e, i, n;
@@ -290,7 +284,7 @@ agxFillArcSliceI(pDraw, pGC, arc, points, widths, priv)
      * bounding box requires clipping.
      */
     clip = TRUE;
-    prgnClip = priv->pCompositeClip;
+    prgnClip = pGC->pCompositeClip;
     n = REGION_NUM_RECTS(prgnClip);
     clipbox = REGION_RECTS(prgnClip);
     halfWidth =  (arc->width + 1) >> 1;      
@@ -328,13 +322,12 @@ agxFillArcSliceI(pDraw, pGC, arc, points, widths, priv)
 }
 
 static void
-agxFillArcSliceD(pDraw, pGC, arc, points, widths, priv)
+agxFillArcSliceD(pDraw, pGC, arc, points, widths)
     DrawablePtr pDraw;
     GCPtr pGC;
     xArc *arc;
     DDXPointPtr points;
     int *widths;
-    cfbPrivGC *priv;
 {
     int x, y, i;
     int dx, dy, xorg, yorg, slw, w;
@@ -374,7 +367,7 @@ agxFillArcSliceD(pDraw, pGC, arc, points, widths, priv)
      * bounding box requires clipping.
      */
     clip = TRUE;
-    prgnClip = priv->pCompositeClip;
+    prgnClip = pGC->pCompositeClip;
     n = REGION_NUM_RECTS(prgnClip);
     clipbox = REGION_RECTS(prgnClip);
     halfWidth =  (arc->width + 1) >> 1;      
@@ -427,7 +420,6 @@ agxPolyFillArc(pDraw, pGC, narcs, parcs)
     xArc	*parcs;
 {
     int i, n;
-    cfbPrivGC *priv;
     xArc *arc;
 
     if( !xf86VTSema
@@ -442,9 +434,7 @@ agxPolyFillArc(pDraw, pGC, narcs, parcs)
        int *widths;
        Bool clip;
 
-       n = miFindMaxBand( ((cfbPrivGC *)
-                              (pGC->devPrivates[cfbGCPrivateIndex].ptr))
-                                 ->pCompositeClip);
+       n = miFindMaxBand(pGC->pCompositeClip);
        points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * n);
        if (!points)
            return;
@@ -455,8 +445,6 @@ agxPolyFillArc(pDraw, pGC, narcs, parcs)
            return;
        }
 
-       priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
-
        AGXFILLSETUP();
 
        for(i = narcs, arc = parcs; --i >= 0; arc++) {
@@ -465,15 +453,15 @@ agxPolyFillArc(pDraw, pGC, narcs, parcs)
 
           if ((arc->angle2 >= FULLCIRCLE) || (arc->angle2 <= -FULLCIRCLE)) {
              if (miCanFillArc(arc))
-                agxFillEllipseI(pDraw, pGC, arc, points, widths, priv);
+                agxFillEllipseI(pDraw, pGC, arc, points, widths);
              else
-                agxFillEllipseD(pDraw, pGC, arc, points, widths, priv);
+                agxFillEllipseD(pDraw, pGC, arc, points, widths);
           }
           else {
              if (miCanFillArc(arc))
-                agxFillArcSliceI(pDraw, pGC, arc, points, widths, priv);
+                agxFillArcSliceI(pDraw, pGC, arc, points, widths);
              else
-                agxFillArcSliceD(pDraw, pGC, arc, points, widths, priv);
+                agxFillArcSliceD(pDraw, pGC, arc, points, widths);
           }
        }
        DEALLOCATE_LOCAL(widths);

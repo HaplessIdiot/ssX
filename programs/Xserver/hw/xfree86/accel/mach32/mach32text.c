@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32text.c,v 3.10 1996/10/10 14:01:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32text.c,v 3.11 1996/12/23 06:38:49 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -204,7 +204,7 @@ mach32NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
    maxAscent = FONTMAXBOUNDS(pfont, ascent);
    maxDescent = FONTMAXBOUNDS(pfont, descent);
    minLeftBearing = FONTMINBOUNDS(pfont, leftSideBearing);
-   pRegion = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+   pRegion = pGC->pCompositeClip;
 
    pBox = REGION_RECTS(pRegion);
    numRects = REGION_NUM_RECTS(pRegion);
@@ -346,7 +346,7 @@ mach32NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
    maxAscent = FONTMAXBOUNDS(pfont, ascent);
    maxDescent = FONTMAXBOUNDS(pfont, descent);
    minLeftBearing = FONTMINBOUNDS(pfont, leftSideBearing);
-   pRegion = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+   pRegion = pGC->pCompositeClip;
 
    pBox = REGION_RECTS(pRegion);
    numRects = REGION_NUM_RECTS(pRegion);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.21 1998/01/11 03:48:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.22 1998/01/24 16:58:57 hohndel Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -23,6 +23,7 @@
 #define DELAYED_SYNC			0x04000000
 #define LINE_PATTERN_ONLY_TRANSPARENCY	0x08000000
 #define DO_NOT_BLIT_STIPPLES		0x10000000
+#define MICROSOFT_ZERO_LINE_BIAS	0x20000000
 
 /* AccelInfoRec hardware pattern flags */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/blt.c,v 3.2 1996/02/04 09:01:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/blt.c,v 3.3 1996/12/23 06:37:40 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -118,7 +118,7 @@ ibm8514CopyArea(pSrcDrawable, pDstDrawable,
 	if ((pSrcDrawable == pDstDrawable) &&
 	    (pGC->clientClipType == CT_NONE))
 	{
-	    prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	    prgnSrcClip = pGC->pCompositeClip;
 	}
 	else
 	{
@@ -140,7 +140,7 @@ ibm8514CopyArea(pSrcDrawable, pDstDrawable,
 	    else if ((pSrcDrawable == pDstDrawable) &&
 		(pGC->clientClipType == CT_NONE))
 	    {
-		prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+		prgnSrcClip = pGC->pCompositeClip;
 	    }
 	    else
 	    {
@@ -232,7 +232,7 @@ ibm8514CopyArea(pSrcDrawable, pDstDrawable,
 	 * composite clip from an mfb gc
 	 */
 
-	cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	cclip = pGC->pCompositeClip;
         if (REGION_NUM_RECTS(cclip) == 1)
         {
 	    BoxPtr pBox = REGION_RECTS(cclip);
@@ -264,9 +264,7 @@ ibm8514CopyArea(pSrcDrawable, pDstDrawable,
 
     if (!fastClip)
     {
-	(*pGC->pScreen->Intersect)(&rgnDst,
-				   &rgnDst,
-				 ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, pGC->pCompositeClip);
     }
 
     /* Do bit blitting */
@@ -386,7 +384,7 @@ ibm8514CopyArea(pSrcDrawable, pDstDrawable,
     }
 
     prgnExposed = NULL;
-    if (((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose)
+    if (pGC->fExpose)
     {
 	extern RegionPtr    miHandleExposures();
 
@@ -592,7 +590,7 @@ ibm8514CopyPlane(pSrcDrawable, pDstDrawable,
    if (pSrcDrawable->type == DRAWABLE_PIXMAP) {
       if ((pSrcDrawable == pDstDrawable) &&
           (pGC->clientClipType == CT_NONE)) {
-         prgnSrcClip = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr)) ->pCompositeClip;
+         prgnSrcClip = pGC->pCompositeClip;
       } else {
          fastClip = 1;
       }
@@ -607,7 +605,7 @@ ibm8514CopyPlane(pSrcDrawable, pDstDrawable,
             fastClip = 1;
          } else if ((pSrcDrawable == pDstDrawable) &&
                     (pGC->clientClipType == CT_NONE)) {
-            prgnSrcClip = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+            prgnSrcClip = pGC->pCompositeClip;
          } else {
             prgnSrcClip = NotClippedByChildren((WindowPtr) pSrcDrawable);
             freeSrcClip = TRUE;
@@ -683,7 +681,7 @@ ibm8514CopyPlane(pSrcDrawable, pDstDrawable,
        * directly.  Otherwise we have to create a full blown region and call
        * intersect
        */
-      cclip = ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+      cclip = pGC->pCompositeClip;
       if (REGION_NUM_RECTS(cclip) == 1) {
          BoxPtr pBox = REGION_RECTS(cclip);
 
@@ -714,9 +712,7 @@ ibm8514CopyPlane(pSrcDrawable, pDstDrawable,
    }
 
    if (!fastClip) {
-      (*pGC->pScreen->Intersect) (&rgnDst,
-                                  &rgnDst,
-                                  ((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+      (*pGC->pScreen->Intersect) (&rgnDst, &rgnDst, pGC->pCompositeClip);
    }
 
    /* Do bit blitting */
@@ -848,7 +844,7 @@ ibm8514CopyPlane(pSrcDrawable, pDstDrawable,
       }
    }
    prgnExposed = NULL;
-   if (((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose) {
+   if (pGC->fExpose) {
       extern RegionPtr miHandleExposures();
 
       /* Pixmap sources generate a NoExposed (we return NULL to do this) */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.18 1996/02/04 08:57:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.19 1996/12/23 06:32:38 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -427,8 +427,7 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
    if (fentry->fblock[block] == NULL)
       agxloadFontBlock(fentry, block);
 
-   pRegion = ((cfbPrivGC *) 
-                 (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+   pRegion = pGC->pCompositeClip;
 
    pBox = REGION_RECTS(pRegion);
    numRects = REGION_NUM_RECTS(pRegion);

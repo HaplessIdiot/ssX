@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000seg.c,v 3.2 1996/02/04 09:04:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000seg.c,v 3.3 1996/12/23 06:40:54 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -106,7 +106,6 @@ p9000Segment(pDrawable, pGC, nseg, pSeg)
     register int y1, y2;
     register int x1, x2;
     RegionPtr cclip;
-    cfbPrivGCPtr    devPriv;
     int old_w_min, old_w_max ;  /* saves previous clipping regs    */
     register int oldpixel ;	/* saves last pixel for capnotlast */
 
@@ -116,8 +115,7 @@ p9000Segment(pDrawable, pGC, nseg, pSeg)
         return ;
     }
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
 
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);

@@ -1,5 +1,5 @@
 /* $XConsortium: bmtoa.c,v 1.6 94/04/17 20:23:49 rws Exp $ */
-/* $XFree86: xc/programs/bitmap/bmtoa.c,v 3.0 1996/06/10 09:17:37 dawes Exp $ */
+/* $XFree86: xc/programs/bitmap/bmtoa.c,v 3.1 1997/05/12 13:28:07 hohndel Exp $ */
 /*
 
 Copyright (c) 1988, 1993  X Consortium
@@ -42,8 +42,9 @@ from the X Consortium.
 
 #include <X11/Xmu/Drawing.h>
 
-#ifdef X_NOT_STDC_ENV
-extern char *malloc();
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#include <unistd.h>
 #else
 #include <stdlib.h>
 #endif

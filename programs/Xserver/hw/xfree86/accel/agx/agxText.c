@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxText.c,v 3.6 1996/02/04 08:58:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxText.c,v 3.7 1996/12/23 06:33:02 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -274,8 +274,7 @@ agxNoCPolyText(pDraw, pGC, x, y, count, chars, is8bit, opaque)
       backCoOrd = backrect.y << 16 | backrect.x;
    }
 
-   pRegion = ((cfbPrivGC *) 
-                 (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+   pRegion = pGC->pCompositeClip;
 
    pBox = REGION_RECTS(pRegion);
    numRects = REGION_NUM_RECTS(pRegion);

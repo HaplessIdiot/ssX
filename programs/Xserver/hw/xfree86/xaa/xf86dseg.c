@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dseg.c,v 3.7 1997/11/22 06:50:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dseg.c,v 3.8 1997/12/05 22:01:52 hohndel Exp $ */
 
 /***********************************************************
 
@@ -48,7 +48,6 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.24 94/07/28 14:33:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dseg.c,v 3.7 1997/11/22 06:50:31 dawes Exp $ */
 
 /*
  * Accelerated dashed lines.
@@ -126,7 +125,6 @@ xf86PolyDashedLine(pDrawable, pGC, mode, npt, pptInit)
     register int y1, y2;
     register int x1, x2;
     RegionPtr cclip;
-    cfbPrivGCPtr    devPriv;
     int PatternOffset;
     int PatternLength;
     Bool UseTwoPointLine = (xf86AccelInfoRec.Flags & USE_TWO_POINT_LINE);
@@ -145,8 +143,7 @@ xf86PolyDashedLine(pDrawable, pGC, mode, npt, pptInit)
     PatternOffset = pGC->dashOffset % PatternLength;
     
 
-    devPriv = cfbGetGCPrivate(pGC);
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 
@@ -232,7 +229,7 @@ xf86PolyDashedLine(pDrawable, pGC, mode, npt, pptInit)
 			    PatternOffset);
 #else
 		        xf86AccelInfoRec.SubsequentDashedTwoPointLine(
-		            x1, y1, x2, y2, bias, PatternOffset);
+		            x1, y1, x2, y2, bias | 0x100, PatternOffset);
 #endif
 		        break;
 		    }
@@ -270,7 +267,7 @@ xf86PolyDashedLine(pDrawable, pGC, mode, npt, pptInit)
 			    PatternOffset);
 #else
 		        xf86AccelInfoRec.SubsequentDashedTwoPointLine(
-		            x1, y1, x2, y2, bias, PatternOffset);
+		            x1, y1, x2, y2, bias | 0x100, PatternOffset);
 #endif
 		    } else {
 		        if (!(octant & YMAJOR))
@@ -378,7 +375,7 @@ xf86PolyDashedLine(pDrawable, pGC, mode, npt, pptInit)
           } /* while (nbox--) */
 
 #ifndef POLYSEGMENT
-	  PatternOffset += (octant & YMAJOR) ? ady : adx;
+	  PatternOffset += (ady > adx) ? ady : adx;
 	  PatternOffset %= PatternLength;
 #endif
 

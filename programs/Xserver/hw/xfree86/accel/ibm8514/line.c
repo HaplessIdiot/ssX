@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/line.c,v 3.3 1996/02/04 09:01:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/line.c,v 3.4 1996/12/23 06:37:59 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -106,7 +106,6 @@ ibm8514Line(pDrawable, pGC, mode, npt, pptInit)
     register int y1, y2;
     register int x1, x2;
     RegionPtr cclip;
-    cfbPrivGCPtr    devPriv;
 
 /* 4-5-93 TCG : is VT visible */
     if (!xf86VTSema)
@@ -115,8 +114,7 @@ ibm8514Line(pDrawable, pGC, mode, npt, pptInit)
 	return;
     }
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 

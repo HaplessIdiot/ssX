@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Keith Packard, MIT X Consortium
  *
- * $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.5 1997/07/19 05:43:07 dawes Exp $
+ * $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.6 1997/10/25 13:50:00 hohndel Exp $
  * Jeff Anton'x fixes: cfb8line.c   97/02/07
  */
 
@@ -349,7 +349,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 #ifndef REARRANGE
     RROP_FETCH_GCPRIV(devPriv);
 #endif
-    extents = &devPriv->pCompositeClip->extents;
+    extents = &pGC->pCompositeClip->extents;
 #ifndef PREVIOUS
     c2 = *((int *) &pDrawable->x);
     c2 -= (c2 & 0x8000) << 1;
@@ -1098,7 +1098,7 @@ cfb8SegmentSS1Rect (pDrawable, pGC, nseg, pSegInit)
 
     devPriv = cfbGetGCPrivate(pGC);
 #ifdef NO_ONE_RECT
-    if (REGION_NUM_RECTS(devPriv->pCompositeClip) != 1)
+    if (REGION_NUM_RECTS(pGC->pCompositeClip) != 1)
     {
        cfbSegmentSS(pDrawable, pGC, nseg, pSegInit);
        return;
@@ -1131,7 +1131,7 @@ cfb8SegmentSS1Rect (pDrawable, pGC, nseg, pSegInit)
 	(*clip) (pDrawable, pGC,
 			 pSegInit[drawn-1].x1, pSegInit[drawn-1].y1,
 			 pSegInit[drawn-1].x2, pSegInit[drawn-1].y2,
-			 &devPriv->pCompositeClip->extents,
+			 &pGC->pCompositeClip->extents,
 			 pGC->capStyle == CapNotLast);
 	pSegInit += drawn;
 	nseg -= drawn;
@@ -1164,7 +1164,7 @@ cfb8LineSS1Rect (pDrawable, pGC, mode, npt, pptInit)
 
     devPriv = cfbGetGCPrivate(pGC);
 #ifdef NO_ONE_RECT
-    if (REGION_NUM_RECTS(devPriv->pCompositeClip) != 1)
+    if (REGION_NUM_RECTS(pGC->pCompositeClip) != 1)
     {
        cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
        return;
@@ -1198,7 +1198,7 @@ cfb8LineSS1Rect (pDrawable, pGC, mode, npt, pptInit)
 	    if (drawn == -1)
 		break;
 	    (*clip) (pDrawable, pGC, x1, y1, x2, y2,
-		     &devPriv->pCompositeClip->extents,
+		     &pGC->pCompositeClip->extents,
 		     drawn != npt - 1 || pGC->capStyle == CapNotLast);
 	    pptInit += drawn;
 	    npt -= drawn;
@@ -1217,7 +1217,7 @@ cfb8LineSS1Rect (pDrawable, pGC, mode, npt, pptInit)
 	    (*clip) (pDrawable, pGC,
 		     pptInit[drawn-1].x, pptInit[drawn-1].y,
 		     pptInit[drawn].x, pptInit[drawn].y,
-		     &devPriv->pCompositeClip->extents,
+		     &pGC->pCompositeClip->extents,
 		     drawn != npt - 1 || pGC->capStyle == CapNotLast);
 	    pptInit += drawn;
 	    npt -= drawn;
