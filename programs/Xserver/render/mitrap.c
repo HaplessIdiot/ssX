@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mitrap.c,v 1.7 2002/08/12 04:03:21 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mitrap.c,v 1.8 2002/09/03 19:28:28 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -102,7 +102,7 @@ miTrapezoidBounds (int ntrap, xTrapezoid *traps, BoxPtr box)
     {
 	INT16 x1, y1, x2, y2;
 
-	if ((int) (traps->top - traps->bottom) >= 0)
+	if (!xTrapezoidValid(traps))
 	    continue;
 	y1 = xFixedToInt (traps->top);
 	if (y1 < box->y1)
@@ -157,7 +157,7 @@ miTrapezoids (CARD8	    op,
     }
     for (; ntrap; ntrap--, traps++)
     {
-	if ((int) (traps->top - traps->bottom) >= 0)
+	if (!xTrapezoidValid(traps))
 	    continue;
 	if (!maskFormat)
 	{
