@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl6420/cl_driver.c,v 3.3 1994/08/31 04:44:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl6420/cl_driver.c,v 3.4 1994/09/07 15:55:16 dawes Exp $ */
 /*
  * Stubs Driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -162,6 +162,8 @@ vgaVideoChipRec CL6420 = {
 	0,
 	FALSE,
 	FALSE,
+	NULL,
+	1,
 };
 
 /*

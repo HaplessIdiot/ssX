@@ -1,6 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.2 94/03/28 21:52:30 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.7 1994/08/31 04:48:06 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.8 1994/09/07 15:55:45 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -137,6 +137,8 @@ vgaVideoChipRec PVGA1 = {
   0,
   FALSE,
   FALSE,
+  NULL,
+  1,
 };
 
 #define new ((vgaPVGA1Ptr)vgaNewVideoState)
