@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/PEX5/pexmodule.c,v 1.4 1999/01/17 10:53:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/pexmodule.c,v 1.5 1999/01/26 05:53:47 dawes Exp $ */
 
 #include "xf86Module.h"
 #include "PEX.h"
@@ -10,6 +10,7 @@ extern void PexExtensionInit(INITARGS);
 static ExtensionModule pex5Ext = {
     PexExtensionInit,
     PEX_NAME_STRING,
+    NULL,
     NULL,
     NULL
 };
@@ -33,7 +34,7 @@ XF86ModuleData pex5ModuleData = { &VersRec, pex5Setup, NULL };
 static pointer
 pex5Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
-    LoadExtension(&pex5Ext);
+    LoadExtension(&pex5Ext, FALSE);
 
     /* Need a non-NULL return value to indicate success */
     return (pointer)1;

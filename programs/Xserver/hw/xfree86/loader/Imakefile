@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.18 1999/09/25 14:37:39 dawes Exp $ */
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.19 1999/12/28 13:47:43 robin Exp $ */
 
 
 
@@ -42,11 +42,11 @@ OBJS1 = os2funcs.o
 #endif
 
 SRCS = aoutloader.c coffloader.c $(DLSRC) elfloader.c hash.c loader.c \
-	loadmod.c loadfont.c os.c dixsym.c misym.c xf86sym.c fontsym.c \
-	extsym.c $(SRCS1)
+	loadmod.c loadfont.c loadext.c os.c dixsym.c misym.c xf86sym.c \
+	fontsym.c extsym.c $(SRCS1)
 OBJS = aoutloader.o coffloader.o $(DLOBJ) elfloader.o hash.o loader.o \
-	loadmod.o loadfont.o os.o dixsym.o misym.o xf86sym.o fontsym.o \
-	extsym.o $(OBJS1)
+	loadmod.o loadfont.o loadext.o os.o dixsym.o misym.o xf86sym.o \
+	fontsym.o extsym.o $(OBJS1)
 
 NormalAsmObjectRule()
 

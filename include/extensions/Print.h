@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/include/extensions/Print.h,v 1.3 1999/12/16 02:26:31 robin Exp $ */
 
 /* $XConsortium: Print.h /main/3 1996/12/10 14:59:02 rws $ */
 /******************************************************************************
@@ -265,16 +265,20 @@ typedef void (*XPFinishProc)( Display *display,
  */
 typedef char * (*XPHinterProc)(void);
 
+#if 0
 /*******************************************************************
  *
  * Extension version structures.
  *
+ **** this structure is now defined localy in the one file that uses it
+ **** in order to avoid clashes with its definition in XI.h
  */
 typedef struct {
         int     present;
         short   major_version;
         short   minor_version;
 } XExtensionVersion;
+#endif
 
 /********************************************************************
  *

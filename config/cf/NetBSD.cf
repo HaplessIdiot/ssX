@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.75 1999/11/19 13:53:21 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.76 1999/12/14 02:40:07 robin Exp $
 
 
 #ifndef OSName
@@ -333,8 +333,8 @@ install.man:: 								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
 	for i in list; do \                                             @@\
-	  (set -x; \							@@\
-	   MNAME=`echo $$i | cut -f1 -d.`; \				@@\
+	  (MNAME=`echo $$i | cut -f1 -d.`; \				@@\
+	  set -x; \							@@\
 	  cat $$i | $(NEQN) | $(TBL) | $(NROFF) $(MANMACROS) \		@@\
 		| $(COL) > $${MNAME}.0; \				@@\
 	  $(INSTALL) -c $(INSTMANFLAGS) $${MNAME}.0 \			@@\

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.10 1999/05/03 14:22:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.11 1999/05/09 10:51:49 dawes Exp $ */
 
 /*
  *
@@ -139,6 +139,7 @@ ExtensionModule extensionModules[] = {
 	ShapeExtensionInit,
 	SHAPENAME,
 	NULL,
+	NULL,
 	NULL
     },
 #endif
@@ -146,6 +147,7 @@ ExtensionModule extensionModules[] = {
     {
 	MultibufferExtensionInit,
 	MULTIBUFFER_PROTOCOL_NAME,
+	NULL,
 	NULL,
 	NULL
     },
@@ -155,6 +157,7 @@ ExtensionModule extensionModules[] = {
 	MITMiscExtensionInit,
 	MITMISCNAME,
 	NULL,
+	NULL,
 	NULL
     },
 #endif
@@ -163,6 +166,7 @@ ExtensionModule extensionModules[] = {
 	XTestExtensionInit,
 	XTestExtensionName,
 	&noTestExtensions,
+	NULL,
 	NULL
     },
 #endif
@@ -170,6 +174,7 @@ ExtensionModule extensionModules[] = {
      {
 	BigReqExtensionInit,
 	XBigReqExtensionName,
+	NULL,
 	NULL,
 	NULL
      },
@@ -179,6 +184,7 @@ ExtensionModule extensionModules[] = {
 	SyncExtensionInit,
 	SYNC_NAME,
 	NULL,
+	NULL,
 	NULL
     },
 #endif
@@ -186,6 +192,7 @@ ExtensionModule extensionModules[] = {
     {
 	ScreenSaverExtensionInit,
 	ScreenSaverName,
+	NULL,
 	NULL,
 	NULL
     },
@@ -195,6 +202,7 @@ ExtensionModule extensionModules[] = {
 	XCMiscExtensionInit,
 	XCMiscExtensionName,
 	NULL,
+	NULL,
 	NULL
     },
 #endif
@@ -202,6 +210,7 @@ ExtensionModule extensionModules[] = {
     {
 	XFree86VidModeExtensionInit,
 	XF86VIDMODENAME,
+	NULL,
 	NULL,
 	NULL
     },
@@ -211,6 +220,7 @@ ExtensionModule extensionModules[] = {
 	XFree86MiscExtensionInit,
 	XF86MISCNAME,
 	NULL,
+	NULL,
 	NULL
     },
 #endif
@@ -219,13 +229,15 @@ ExtensionModule extensionModules[] = {
 	XFree86DGAExtensionInit,
 	XF86DGANAME,
 	NULL,
-	XFree86DGARegister
+	XFree86DGARegister,
+	NULL
     },
 #endif
 #ifdef DPMSExtension
     {
 	DPMSExtensionInit,
 	DPMSExtensionName,
+	NULL,
 	NULL,
 	NULL
     },
@@ -235,6 +247,7 @@ ExtensionModule extensionModules[] = {
 	XcupExtensionInit,
 	XCUPNAME,
 	NULL,
+	NULL,
 	NULL
     },
 #endif
@@ -242,6 +255,7 @@ ExtensionModule extensionModules[] = {
     {
 	EVIExtensionInit,
 	EVINAME,
+	NULL,
 	NULL,
 	NULL
     },
@@ -251,7 +265,8 @@ ExtensionModule extensionModules[] = {
 	XvExtensionInit,
 	XvName,
 	NULL,
-	XvRegister
+	XvRegister,
+	NULL
     },
 #endif
 #ifdef XANTI
@@ -259,10 +274,12 @@ ExtensionModule extensionModules[] = {
 	XAntiExtensionInit,
 	XAntiName,
 	NULL,
+	NULL,
 	NULL
     },
 #endif
     {				/* DON'T delete this entry ! */
+	NULL,
 	NULL,
 	NULL,
 	NULL,
@@ -312,7 +329,7 @@ extmodSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 		}
 	    }
 	}
-	LoadExtension(&extensionModules[i]);
+	LoadExtension(&extensionModules[i], FALSE);
     }
     /* Need a non-NULL return */
     return (pointer)1;

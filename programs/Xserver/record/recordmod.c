@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/record/recordmod.c,v 1.4 1999/01/17 10:54:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/record/recordmod.c,v 1.5 1999/01/26 05:54:21 dawes Exp $ */
 
 #include "xf86Module.h"
 
@@ -12,6 +12,7 @@ ExtensionModule recordExt = {
     RecordExtensionInit,
     "RECORD",
     &noTestExtensions,
+    NULL,
     NULL
 };
 
@@ -33,7 +34,7 @@ XF86ModuleData recordModuleData = { &VersRec, recordSetup, NULL };
 static pointer
 recordSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
-    LoadExtension(&recordExt);
+    LoadExtension(&recordExt, FALSE);
 
     /* Need a non-NULL return value to indicate success */
     return (pointer)1;

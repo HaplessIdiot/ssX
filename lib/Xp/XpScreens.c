@@ -34,6 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
+/* $XFree86$ */
 
 #define NEED_REPLIES
 
@@ -59,7 +60,6 @@ XpQueryScreens (
     Screen *checkScr;
     int    i,j;
 
-    XExtensionVersion *ext;
     XExtDisplayInfo *info = (XExtDisplayInfo *) xp_find_display (dpy);
 
 

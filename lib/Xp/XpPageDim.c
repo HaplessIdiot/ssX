@@ -34,6 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
+/* $XFree86$ */
 
 
 #define NEED_REPLIES
@@ -54,7 +55,6 @@ XpGetPageDimensions (
 {
     xPrintGetPageDimensionsReq     *req;
     xPrintGetPageDimensionsReply   rep;
-    XExtensionVersion              *ext;
     XExtDisplayInfo *info = (XExtDisplayInfo *) xp_find_display (dpy);
 
     if (XpCheckExtInit(dpy, XP_DONT_CHECK) == -1)

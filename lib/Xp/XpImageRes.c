@@ -34,6 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
+/* $XFree86$ */
 
 
 #define NEED_REPLIES
@@ -53,7 +54,6 @@ XpSetImageResolution (
 {
     xPrintSetImageResolutionReq    *req;
     xPrintSetImageResolutionReply  rep;
-    XExtensionVersion              *ext;
     XExtDisplayInfo *info = (XExtDisplayInfo *) xp_find_display (dpy);
 
     if (image_res < 0 || image_res > 65535)
@@ -91,7 +91,6 @@ XpGetImageResolution (
 {
     xPrintGetImageResolutionReq    *req;
     xPrintGetImageResolutionReply  rep;
-    XExtensionVersion              *ext;
     XExtDisplayInfo *info = (XExtDisplayInfo *) xp_find_display (dpy);
 
     if (XpCheckExtInit(dpy, XP_DONT_CHECK) == -1)

@@ -34,6 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
+/* $XFree86$ */
 
 #define NEED_REPLIES
 
@@ -76,7 +77,6 @@ XpInputSelected (
 {
     xPrintInputSelectedReq     *req;
     xPrintInputSelectedReply   rep;
-    XExtensionVersion          *ext;
     XExtDisplayInfo *info = (XExtDisplayInfo *) xp_find_display (dpy);
 
     if (XpCheckExtInit(dpy, XP_DONT_CHECK) == -1)

@@ -34,6 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
+/* $XFree86$ */
 
 #define NEED_REPLIES
 
@@ -50,7 +51,6 @@ XpCreateContext (
 )
 {
     xPrintCreateContextReq     *req;
-    XExtensionVersion           *ext;
     char                        *locale;
     int                         locale_len;
     XExtDisplayInfo *info = (XExtDisplayInfo *) xp_find_display (dpy);
@@ -109,7 +109,6 @@ XpSetContext (
 )
 {
     xPrintSetContextReq     *req;
-    XExtensionVersion       *ext;
     XExtDisplayInfo *info = (XExtDisplayInfo *) xp_find_display (dpy);
 
 
@@ -138,7 +137,6 @@ XpGetContext (
 {
     xPrintGetContextReq     *req;
     xPrintGetContextReply   rep;
-    XExtensionVersion       *ext;
     XExtDisplayInfo *info = (XExtDisplayInfo *) xp_find_display (dpy);
 
 
@@ -171,7 +169,6 @@ XpDestroyContext (
 )
 {
     xPrintDestroyContextReq   *req;
-    XExtensionVersion       *ext;
     XExtDisplayInfo *info = (XExtDisplayInfo *) xp_find_display (dpy);
 
 
@@ -201,7 +198,6 @@ XpGetScreenOfContext (
 {
     xPrintGetContextScreenReq     *req;
     xPrintGetContextScreenReply   rep;
-    XExtensionVersion             *ext;
     XExtDisplayInfo *info = (XExtDisplayInfo *) xp_find_display (dpy);
 
     int    i;

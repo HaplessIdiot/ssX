@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.30 1999/07/21 08:44:38 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.31 1999/12/08 06:10:01 dawes Exp $
 
 
 #ifndef OSName
@@ -312,8 +312,8 @@ install.man:: list                                                      @@\
 	MakeDir($(DESTDIR)dest)						@@\
 	@case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
 	for i in list; do \						@@\
-		(set -x; \						@@\
-		MNAME=`echo $$i | cut -f1 -d.`; \			@@\
+		(MNAME=`echo $$i | cut -f1 -d.`; \			@@\
+		set -x; \						@@\
 		$(RM) $(DESTDIR)dest/$${MNAME}*; \			@@\
 		groff -e -t -man -Tascii $$i >/tmp/$$i; \		@@\
 		$(INSTALL) -c $(INSTMANFLAGS) /tmp/$$i $(DESTDIR)dest/$${MNAME}.$(MANSUFFIX); \      @@\

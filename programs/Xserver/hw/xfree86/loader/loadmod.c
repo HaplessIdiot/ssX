@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.48 2000/01/24 22:21:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.49 2000/01/24 23:45:34 dawes Exp $ */
 
 /*
  *
@@ -721,6 +721,7 @@ LoadSubModule(ModuleDescPtr parent, const char *module,
 	return submod;
 }
 
+#if 0
 void
 LoadExtension (ExtensionModule *e)
 {
@@ -747,6 +748,7 @@ LoadExtension (ExtensionModule *e)
 			"Extension \"%s\" is not recognised\n", e->name);
 	}
 }
+#endif
 
 ModuleDescPtr
 DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent)

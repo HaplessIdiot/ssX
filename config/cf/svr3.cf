@@ -2,7 +2,7 @@ XCOMM $XConsortium: svr3.cf /main/1 1996/10/31 14:47:37 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.9 1996/12/27 06:50:29 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.10 1997/05/24 13:46:28 dawes Exp $
 
 #ifndef HasGcc
 #define HasGcc      YES
@@ -285,8 +285,8 @@ install.man:: list                                                      @@\
 	MakeDir($(DESTDIR)dest)						@@\
         @case '${MFLAGS}' in *[i]*) set +e;; esac; \                    @@\
         for i in list; do \                                             @@\
-                (set -x; \                                              @@\
-                MNAME=`echo $$i | cut -f1 -d.`; \			@@\
+                (MNAME=`echo $$i | cut -f1 -d.`; \			@@\
+		set -x; \						@@\
                 $(RM) $(DESTDIR)dest/$${MNAME}*; \                      @@\
                 $(RMDSDEMACCMD) $$i | neqn | nroff -man >/tmp/$$i; \    @@\
                 $(INSTALL) -c $(INSTMANFLAGS) /tmp/$$i $(DESTDIR)dest/$${MNAME}.$(MANSUFFIX); \      @@\

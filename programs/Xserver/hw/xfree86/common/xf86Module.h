@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.16 1999/06/27 09:20:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.17 1999/07/06 11:38:14 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -149,12 +149,13 @@ typedef void (*InitExtension)(INITARGS);
 
 typedef struct {
     InitExtension	initFunc;
-    char *		name;
+    const char *	name;
     Bool		*disablePtr;
     InitExtension	setupFunc;	
+    const char **	dependencies;
 } ExtensionModule;
 
-extern ExtensionModule extension[];
+extern ExtensionModule *ExtensionModuleList;
 
 /* Prototypes for Loader functions that are exported to modules */
 #ifndef IN_LOADER
@@ -169,7 +170,7 @@ pointer LoaderSymbol(const char *);
 char **LoaderListDirs(const char **, const char **);
 void LoaderFreeDirList(char **);
 void LoaderErrorMsg(const char *, const char *, int, int);
-void LoadExtension(ExtensionModule *);
+void LoadExtension(ExtensionModule *, Bool);
 void LoaderRefSymLists(const char **, ...);
 void LoaderRefSymbols(const char *, ...);
 void LoaderReqSymLists(const char **, ...);

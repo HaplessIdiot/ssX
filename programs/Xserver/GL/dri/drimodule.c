@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/GL/dri/drimodule.c,v 1.1 1999/06/14 07:31:20 dawes Exp $ */
 
 /*
  * Authors:
@@ -61,6 +61,7 @@ ExtensionModule XF86DRIExt =
     XFree86DRIExtensionInit,
     XF86DRINAME,
     NULL,
+    NULL,
     NULL
 };
 
@@ -71,7 +72,7 @@ driSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     pointer drm = NULL;
 
-    LoadExtension(&XF86DRIExt);
+    LoadExtension(&XF86DRIExt, FALSE);
     
     drm = LoadSubModule(module, "drm", NULL, NULL, NULL, NULL, errmaj, errmin);
     if (!drm)
