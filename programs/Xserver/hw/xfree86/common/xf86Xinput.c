@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.14 1996/07/08 10:26:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.15 1996/08/13 11:30:10 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -575,7 +575,7 @@ typedef struct _Event {
 } EventRec, *EventPtr;
 
 typedef struct _EventQueue {
-    long	head, tail;	    /* long for SetInputCheck */
+    HWEventQueueType head, tail;
     CARD32	lastEventTime;	    /* to avoid time running backwards */
     Bool	lastMotion;
     EventRec	events[QUEUE_SIZE]; /* static allocation for signals */

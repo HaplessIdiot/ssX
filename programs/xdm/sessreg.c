@@ -1,6 +1,6 @@
 /*
  * $XConsortium: sessreg.c /main/18 1996/01/25 18:45:57 kaleb $
- * $XFree86: xc/programs/xdm/sessreg.c,v 3.6 1995/07/15 15:12:39 dawes Exp $
+ * $XFree86: xc/programs/xdm/sessreg.c,v 3.7 1996/01/26 09:20:42 dawes Exp $
  *
  * Copyright (c) 1990  X Consortium
  * 
@@ -285,7 +285,7 @@ char	**argv;
 	}
 #endif
 	if (!lflag) {
-		sysnerr ((int) (line_tmp = ttyname (0)), "ttyname");
+		sysnerr ((line_tmp = ttyname (0)) != NULL, "ttyname");
 		line = strrchr(line_tmp, '/');
 		if (line)
 			line = line + 1;

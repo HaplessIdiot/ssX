@@ -2,7 +2,7 @@
  * xrdb - X resource manager database utility
  *
  * $XConsortium: xrdb.c,v 11.76 95/05/12 18:36:46 mor Exp $
- * $XFree86: xc/programs/xrdb/xrdb.c,v 3.2 1995/10/21 11:53:22 dawes Exp $
+ * $XFree86: xc/programs/xrdb/xrdb.c,v 3.3 1996/01/05 13:22:55 dawes Exp $
  */
 
 /*
@@ -48,6 +48,13 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *malloc();
+char *realloc();
+#endif
 
 #if !defined(X_NOT_STDC_ENV) && !defined(__EMX__)
 extern int errno;

@@ -3,16 +3,15 @@
 <article>
  
 <title> Information for Linux Users
-<author> Orest Zborowski
-<date> 13 November 1994
+<author> Orest Zborowski, Dirk Hohndel
+<date> 24 August, 1996
 <toc>
 
 <sect> Linux versions on which XFree86 has been tested <p>
-XFree86 has been tested with Linux version 1.1.49. It should work
+XFree86 has been tested with Linux version 2.0.13. It should work
 with any version since 1.0 without change. The binaries and libraries are
-based on the 4.5.26 DLL C libraries, and the 1.4.4 dynamic linker
-<tt>ld.so</tt> (libc-4.5.26 or newer is *REQUIRED* !).
-The DLL X libraries are produced with the 2.16 DLL-tools by Eric Youngdale.
+based on the 5.2.18 Elf C libraries, and the 1.7.14 dynamic linker
+<tt>ld.so</tt>. 
 
 <sect> Backwards Compatibility <p>
 X11R6 is considered a major update from X11R5, so the shared
@@ -21,6 +20,10 @@ and older libraries. To continue to run X11R5 applications, you must keep
 the old libraries somewhere on your machine. They can be moved from
 <tt>/usr/X386/lib</tt> elsewhere, but <tt>/etc/ld.so.conf</tt> must be updated.
 All X11R5 applications should work with the X11R6 servers without problems.
+
+X11R6.1 is yet another update to X11R6. While the minor number for some
+libraries has been increased to '1' it is believed to be fully
+compatible with X11R6 based applications.
 
 Very old binaries (linked to XFree86-1.2, XFree86-1.3 or
 XFree86-2.0 libraries) will continue to work, but may need an explicit
@@ -56,7 +59,8 @@ Also, a faster graphics card, bus or RAM, will improve server performance.
 After unpacking the tar files, you need to include <tt>/usr/X11R6/lib</tt>
 in <tt>/etc/ld.so.conf</tt> (where it should already be by default) or in your
 <tt>LD_LIBRARY_PATH</tt> environment variable. Also, the configuration file
-<tt>/usr/X11R6/lib/X11/XF86Config</tt> <em>must</em> be properly filled out
+<tt>/etc/XF86Config</tt> or <tt>/usr/X11R6/lib/X11/XF86Config</tt> 
+<em>must</em> be properly filled out
 based on the host
 setup using <tt>XF86Config.eg</tt> as a starting point and
 <tt>README.Config</tt> as
@@ -64,6 +68,11 @@ guideline.  You may damage your hardware if you use a wrong
 <tt>XF86Config</tt> file, so <em>read the docs</em>,
 especially the man pages and the other <tt>README</tt> files in
 <tt>/usr/X11R6/lib/X11/doc</tt>.
+
+Starting with XFree86-3.1.2F a new interactive setup utility
+<tt>XF86Setup</tt> has been included in the distribution. We recommend
+using this tool to setup the <tt>XF86Config</tt> file. Please read the
+corresponing documentation.
 
 XFree86 has the ability to perform VT switching to and from the X
 server. When first started, XFree86 will automatically locate the first
@@ -128,11 +137,14 @@ be setuid root to perform console redirection, so <tt>xterm</tt> and
 with running setuid root in mind, this opens a big security problem.
 
 <sect> Compiling XFree86 <p>
+Only the sources for full releases of XFree86 are freely available. The
+last full release of XFree86 was 3.1.2 which is still based on X11R6. So
+the following is only adequate if you want to build this release.
+
 There are no special instructions required for compiling XFree86.
-This version was compiled with gcc-2.5.8, the 4.5.26 DLL libraries and the
-1.4.4 shared, dynamic linker ld.so. The tools-2.16 DLL package was used to
-generate the shared libraries, and the server sources have been updated to
-use the new (<tt>/usr/bin</tt>) location of the tools. The server has been
+This version was compiled with gcc-2.7.2, the 5.2.18 Elf libraries and the
+1.7.14 shared, dynamic linker ld.so. 
+The server has been
 compiled with <tt>-m486</tt>, which optimizes it for the 486 processor, but
 the binary will run on the 386 processor (there is a slight increase in
 binary size over using <tt>-m386</tt>, but no loss of performance).
@@ -153,7 +165,8 @@ space.  Having
 100mb available makes compiling XFree86 a lot easier. You will need about
 10mb of virtual memory to compile the entire server.
 
-If patches are applied which significantly change the libraries,
+If an aout version of XFree86 is to be built and patches are applied which 
+significantly change the libraries,
 modified jump_xxx files will be needed. Those can be generated according to
 instructions given in the DLL tools package, and will be made available as
 XFree86 patches.
@@ -175,7 +188,7 @@ about Linux support or the Linux distribution should be made to
 <it>orestz@eskimo.com.</it>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.5 1995/01/28 16:01:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.6 1996/02/04 09:08:11 dawes Exp $
 
 
 

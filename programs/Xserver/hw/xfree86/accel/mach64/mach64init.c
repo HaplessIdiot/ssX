@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.18 1996/05/13 06:38:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.19 1996/06/29 09:06:42 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -1437,9 +1437,9 @@ void mach64InitAperture(screen_idx)
     int screen_idx;
 {
     int i;
-    unsigned int apaddr;
-    unsigned int regpage, regoffset;
-    int memsize;
+    unsigned long apaddr;
+    unsigned long regpage, regoffset;
+    long memsize;
 
     if (!mach64VideoMem) {
 	old_CONFIG_CNTL = inw(ioCONFIG_CNTL);

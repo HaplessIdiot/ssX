@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64blt.c,v 3.5 1996/05/10 06:57:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64blt.c,v 3.6 1996/05/13 06:38:47 dawes Exp $ */
 /*
  * Copyright 1989 by the Massachusetts Institute of Technology
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -47,6 +47,7 @@
 #include	"cfb8bit.h"
 #include	"fastblt.h"
 #include	"mach64.h"
+#include	"mi.h"
 
 
 static RegionPtr mach64BitBlt();
@@ -127,9 +128,9 @@ mach64CopyPlane(pSrcDrawable, pDstDrawable,
 	}
 	else
 	{
-            ret = (RegionPtr)miHandleExposures(pSrcDrawable, pDstDrawable, 
-					       pGC, srcx, srcy, width, height,
-					       dstx, dsty, bitPlane);
+            ret = miHandleExposures(pSrcDrawable, pDstDrawable, 
+				    pGC, srcx, srcy, width, height,
+				    dstx, dsty, bitPlane);
 	}
     }
     else if (pDstDrawable->bitsPerPixel == 1) /* N to 1 copy */
@@ -187,9 +188,9 @@ mach64CopyPlane(pSrcDrawable, pDstDrawable,
         (*pScreen->DestroyPixmap) (pBitmap);
 
         /* compute resultant exposures */
-        ret = (RegionPtr)miHandleExposures (pSrcDrawable, pDstDrawable, pGC,
-                                            srcx, srcy, width, height,
-                                            dstx, dsty, bitPlane);
+        ret = miHandleExposures (pSrcDrawable, pDstDrawable, pGC,
+                                 srcx, srcy, width, height,
+                                 dstx, dsty, bitPlane);
     }
     return (ret);
 }
@@ -537,11 +538,9 @@ mach64BitBlt (pSrc, pDst, pGC, srcX, srcY, copyWidth, copyHeight,
         /*
          * Pixmap sources generate a NoExposed. (we return NULL to do this) 
          */
-	pRgnExposed = (RegionPtr)miHandleExposures(pSrc, pDst, pGC,
-				  		   srcX, srcY, 
-						   copyWidth, copyHeight,
-				  		   dstX, dstY, 
-						   (unsigned long)0);
+	pRgnExposed = miHandleExposures(pSrc, pDst, pGC, srcX, srcY, 
+					copyWidth, copyHeight,
+				  	dstX, dstY, (unsigned long)0);
     }
 
     if (freeSrcClip)

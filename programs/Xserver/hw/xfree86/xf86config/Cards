@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.33 1996/08/16 12:33:40 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.34 1996/08/24 12:54:26 dawes Exp $
 
 #Chips & Technologies
 
@@ -422,15 +422,18 @@ NAME Actix GE64
 CLOCKCHIP icd2061a
 SEE S3-864 (generic)
 
-NAME Elsa Winner 1000 PRO with S3-SDAC
+NAME ELSA Winner 1000PRO with S3-SDAC
 SEE S3-864 with SDAC (86C716)
 
-NAME Elsa Winner 1000 PRO with STG1700 or AT&T RAMDAC
+NAME ELSA Winner 1000PRO with STG1700 or AT&T RAMDAC
 CHIPSET S3-864
 SERVER S3
 CLOCKCHIP icd2061a
 
-NAME Elsa Winner 1000 ISA
+NAME ELSA Winner 1000PRO/X
+SEE S3-868 with SDAC (86C716)
+
+NAME ELSA Winner 1000ISA
 CHIPSET S3-805i
 SERVER S3
 CLOCKCHIP icd2061a
@@ -464,10 +467,10 @@ SEE S3-864 with SDAC (86C716)
 NAME Miro Crystal 20SD PCI with S3-SDAC
 SEE S3-868 with SDAC (86C716)
 
-NAME Elsa Winner 1000AVI (SDAC version)
+NAME ELSA Winner 1000AVI (SDAC version)
 SEE S3-868 with SDAC (86C716)
 
-NAME Elsa Winner 1000AVI (AT&T 20C409 version)
+NAME ELSA Winner 1000AVI (AT&T 20C409 version)
 SEE S3-868 with ATT 20C409
 
 NAME Diamond Stealth Video DRAM
@@ -572,6 +575,12 @@ SEE S3-Trio64V+ (generic)
 NAME STB Powergraph 64
 SEE S3-Trio64 (generic)
 
+NAME ELSA Winner 1000TRIO
+SEE S3-Trio64 (generic)
+
+NAME ELSA Winner 1000TRIO/V
+SEE S3-Trio64V+ (generic)
+
 NAME Hercules Graphite Terminator 64
 LINE     Option "slow_vram"
 LINE    #s3RefClk  50
@@ -582,7 +591,7 @@ NAME Hercules Terminator 64/Video
 SEE S3-Trio64V+ (generic)
 
 NAME Hercules Graphite Terminator 64/DRAM
-SEE S3-Trio64
+SEE S3-Trio64 (generic)
 
 NAME Hercules Graphite Terminator Pro 64
 LINE    #s3RefClk  16
@@ -619,13 +628,43 @@ SERVER S3
 CLOCKCHIP ics9161a
 LINE     #Option "spea_mercury"
 
-NAME Elsa Winner 2000 Pro 4Mb
+NAME ELSA Winner 2000PRO-2
 CHIPSET S3-964
 SERVER S3
-LINE     #Option "elsa_w2000pro"
+LINE     #Option "ELSA_w2000pro"
 NOCLOCKPROBE
 
-NAME Elsa Winner 2000PRO/X
+NAME ELSA Winner 2000PRO-4
+CHIPSET S3-964
+SERVER S3
+LINE     #Option "ELSA_w2000pro"
+NOCLOCKPROBE
+
+NAME ELSA Winner 2000PRO/X-2
+CHIPSET S3-968
+SERVER S3
+LINE     #Option "sync_on_green"
+NOCLOCKPROBE
+
+NAME ELSA Winner 2000PRO/X-4
+CHIPSET S3-968
+SERVER S3
+LINE     #Option "sync_on_green"
+NOCLOCKPROBE
+
+NAME ELSA Winner 2000AVI
+CHIPSET S3-968
+SERVER S3
+LINE     #Option "sync_on_green"
+NOCLOCKPROBE
+
+NAME ELSA Gloria-4
+CHIPSET S3-968
+SERVER S3
+LINE     #Option "sync_on_green"
+NOCLOCKPROBE
+
+NAME ELSA Gloria-8
 CHIPSET S3-968
 SERVER S3
 LINE     #Option "sync_on_green"
@@ -655,7 +694,7 @@ CLOCKCHIP icd2061a
 LINE     #Ramdac "att20c490" # The Diamond RAMDAC is reportedly compatible for 15bpp
 LINE     #Option "no_linear" # Some VLB machines may require this
 
-NAME Elsa Winner 1000 VL
+NAME ELSA Winner 1000VL
 CHIPSET S3-928
 SERVER S3
 LINE     # the following settings should be detected and set automatically by XF86_S3
@@ -663,10 +702,10 @@ LINE     # if the serial number of the ELSA card is printed correctly:
 LINE     #ClockChip "icd2061a"
 LINE     #Membase 0xf8000000
 
-NAME Elsa Winner 1000 TwinBus
-SEE Elsa Winner 1000 VL
+NAME ELSA Winner 1000TwinBus
+SEE ELSA Winner 1000VL
 
-NAME Elsa Winner 2000
+NAME ELSA Winner 2000
 SEE S3-928 (generic)
 
 NAME Miro Crystal 16S
@@ -1176,7 +1215,7 @@ SERVER VGA16
 
 # Number 9 I128
 
-NAME Number Nine Imagine I-128 (2-4MB)
+NAME Number Nine Imagine I-128 (2-8MB)
 CHIPSET I128
 SERVER I128
 

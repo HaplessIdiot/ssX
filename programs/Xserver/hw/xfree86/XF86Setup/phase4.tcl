@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase4.tcl,v 3.3 1996/08/20 13:09:27 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase4.tcl,v 3.5 1996/08/24 12:50:54 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -39,10 +39,11 @@ proc Phase4_run_xvidtune { win } {
 }
 
 proc Phase4_nextphase { win } {
-	global Confname StartServer ConfigFile
+	global Confname StartServer
 
 	set w [winpathprefix $win]
 	set saveto [$w.saveto.entry get]
+	writeXF86Config $Confname-3 -displayof $w -realdevice
 	set backupmsg ""
 	if [file exists $saveto] {
 	    if {[catch {exec mv $saveto $saveto.bak} ret] != 0} {
@@ -56,11 +57,11 @@ proc Phase4_nextphase { win } {
 	    set backupmsg "A backup of the previous configuration has\n\
 		been saved to the file $saveto.bak"
 	}
-	if {[catch {exec cp $Confname-3 $ConfigFile} ret] != 0} {
+	if {[catch {exec cp $Confname-3 $saveto} ret] != 0} {
 	    bell
             $w.mesg configure -text \
 		"Unable to save the configuration to\n\
-		the file $ConfigFile.\n\n\
+		the file $saveto.\n\n\
 		Try again, with a different file name"
 	    return
 	}
@@ -75,9 +76,10 @@ proc Phase4_nextphase { win } {
 	}
 	button $w.okay -text "Okay"  -command $cmd
 	pack   $w.text $w.okay -side top
+	focus  $w.okay
 }
 
-writeXF86Config $Confname-3 -displayof $w -realdevice
+#writeXF86Config $Confname-3 -displayof $w -realdevice
 label  $w.text -text " $msg\
 	You can now run xvidtune to adjust your display settings,\n\
 	if you want to change the size or placement of the screen image\n\n\

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/15 1996/01/30 15:20:13 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.16 1996/02/24 10:20:22 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.17 1996/05/13 06:39:53 dawes Exp $
 #include <Server.tmpl>
 
 #if SystemV
@@ -51,15 +51,14 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.16 1996/02/24 1
 #endif
 #endif
 
-#if 0
 #if XFree86Version % 10
+PREINST = preinst.sh
 POSTINST = postinst.sh
-#endif
 #endif
 
        FILES = $(CONFIGFILES) $(TERMFILES) \
                $(PATCHFILES) $(XDMCONF) \
-               et4000clock.c xmodmap.std $(MISCFILES) $(POSTINST)
+               et4000clock.c xmodmap.std $(MISCFILES) $(POSTINST) $(PREINST)
     INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
 	       -I$(SERVERSRC)/include -I$(INCLUDESRC)
 

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.5 1996/08/20 12:26:19 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.6 1996/08/24 12:50:42 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -40,6 +40,8 @@ proc Card_create_widgets { win } {
 		-repeatdelay 1200 -repeatinterval 800
 	listbox   $w.card.list.lb -yscroll [list $w.card.list.sb set] \
 		-setgrid true -height 20
+	bind  $w.card.list.lb <Return> \
+		[list Card_selected $win $w.card.list.lb]
 	bind  $w.card.list.lb <ButtonRelease-1> \
 		[list Card_selected $win $w.card.list.lb]
 	eval  $w.card.list.lb insert 0 [xf86cards_getlist]
@@ -261,7 +263,7 @@ proc Card_dacspeed { win } {
 
 proc Card_clockprobe { win } {
 	global cardServer Xwinhome Confname cardClocks cardDevNum
-	global cardDetail cardReadmeWasSeen
+	global cardDetail cardReadmeWasSeen TmpDir
 
 	set w [winpathprefix $win]
 
@@ -533,7 +535,7 @@ proc Card_display_readme { win } {
 
 	set w [winpathprefix $win]
 	catch {destroy .cardreadme}
-        toplevel .cardreadme
+        toplevel .cardreadme -bd 5 -relief ridge
 	wm title .cardreadme "Chipset Specific README"
 	wm geometry .cardreadme +30+30
 	frame .cardreadme.file
@@ -547,9 +549,11 @@ proc Card_display_readme { win } {
 	}
 	frame .cardreadme.horz
 	scrollbar .cardreadme.horz.hsb -orient horizontal \
-		-command ".cardreadme.file.text xview"
+		-command ".cardreadme.file.text xview" \
+		-repeatdelay 1200 -repeatinterval 800
 	scrollbar .cardreadme.file.vsb \
-		-command ".cardreadme.file.text yview"
+		-command ".cardreadme.file.text yview" \
+		-repeatdelay 1200 -repeatinterval 800
         button .cardreadme.ok -text "Okay" -command "destroy .cardreadme"
 	focus .cardreadme.ok
         pack .cardreadme.file -side top -fill both

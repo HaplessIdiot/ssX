@@ -1,5 +1,5 @@
 /* $XConsortium: xkbevd.c /main/5 1996/05/24 15:03:20 kaleb $ */
-/* $XFree86: xc/programs/xkbevd/xkbevd.c,v 3.2 1996/05/06 06:01:15 dawes Exp $ */
+/* $XFree86: xc/programs/xkbevd/xkbevd.c,v 3.3 1996/08/13 11:36:31 dawes Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -32,6 +32,8 @@
 #include <stdlib.h>
 #endif
 #include "xkbevd.h"
+
+extern char *getenv();
 
 #define	lowbit(x)	((x) & (-(x)))
 

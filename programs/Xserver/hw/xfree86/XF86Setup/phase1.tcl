@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.5 1996/08/20 12:26:25 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.7 1996/08/24 12:50:51 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -72,6 +72,7 @@ proc check_for_files { xwinhome } {
 proc set_xf86config_defaults {} {
     global Xwinhome ConfigFile
     global Files Server Keyboard Pointer MonitorIDs DeviceIDs
+    global Pointer_realdevice
 
     if {![catch {xf86config_readfile $Xwinhome files server \
 		keyboard mouse monitor device screen} tmp]} {
@@ -230,7 +231,7 @@ if { [string length $ConfigFile] > 0 } {
 		set_xf86config_defaults
 	}
 } else {
-	set ConfigFile $Xwinhome/lib/X11/XF86Config
+	set ConfigFile /etc/XF86Config
 	if { [getuid] != 0 } {
 	    mesg "You need to be root to run this program" okay
 	    exit 1

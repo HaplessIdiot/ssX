@@ -1,6 +1,6 @@
 XCOMM $XConsortium: Imakefile /main/1 1995/11/30 19:17:12 kaleb $
 
-     DATAFILES = basic nocancel complete default mousekeys iso9995 pc
+     DATAFILES = basic cancel nocancel complete default mousekeys iso9995 pc
 
 all::
 

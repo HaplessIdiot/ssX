@@ -1,5 +1,5 @@
 /* $XConsortium: cfgscan.c /main/2 1995/12/07 21:27:36 kaleb $ */
-/* $XFree86: xc/programs/xkbevd/cfgscan.c,v 3.1 1996/05/06 06:01:14 dawes Exp $ */
+/* $XFree86: xc/programs/xkbevd/cfgscan.c,v 3.2 1996/08/13 11:36:29 dawes Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -33,6 +33,7 @@
 #include <X11/extensions/XKB.h>
 
 #include "tokens.h"
+#include "utils.h"
 
 #ifndef Lynx
 FILE	*yyin = stdin;
@@ -177,7 +178,7 @@ int ch;
 	buf[nInBuf++] = '\0';
 	if  ( scanStr )
 	    free( scanStr );
-	scanStr = (char *)uStringDup(buf);
+	scanStr = uStringDup(buf);
 	scanStrLine = lineNum;
 	return STRING;
     }
@@ -239,7 +240,7 @@ int ch;
 	buf[nInBuf++] = '\0';
 	if  ( scanStr )
 	    free( scanStr );
-	scanStr = (char *)uStringDup(buf);
+	scanStr = uStringDup(buf);
 	scanStrLine = lineNum;
 	return KEYNAME;
     }
@@ -286,7 +287,7 @@ int	rtrn;
     if (!found) {
 	if  ( scanStr )
 	    free( scanStr );
-	scanStr = (char *)uStringDup(buf);
+	scanStr = uStringDup(buf);
 	scanStrLine = lineNum;
 	rtrn = IDENT;
     }

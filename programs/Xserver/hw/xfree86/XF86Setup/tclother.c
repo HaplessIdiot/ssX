@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclother.c,v 3.5 1996/08/18 01:47:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclother.c,v 3.6 1996/08/24 12:51:01 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -180,7 +180,7 @@ XF86Other_Init(interp)
 		(void (*)()) NULL);
 
 	Tcl_CreateCommand(interp, "rmdir",
-		TCL_XF86MkDir, (ClientData) NULL,
+		TCL_XF86RmDir, (ClientData) NULL,
 		(void (*)()) NULL);
 
 	Tcl_CreateCommand(interp, "sleep",

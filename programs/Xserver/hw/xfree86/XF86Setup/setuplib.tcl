@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.5 1996/08/20 12:26:27 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.6 1996/08/24 12:50:56 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -112,7 +112,7 @@ proc initconfig {xwinhome} {
 # Write a XF86Config file to the given fd
 
 proc writeXF86Config {filename args} {
-	global Files ServerFlags Keyboard Pointer
+	global Files ServerFlags Keyboard Pointer Pointer_realdevice
 	global MonitorIDs DeviceIDs MonitorStdModes
 	global Scrn_Accel Scrn_Mono Scrn_VGA2 Scrn_VGA16 Scrn_SVGA
 
@@ -497,6 +497,7 @@ proc save_state {} {
 	set fd [open $StateFileName w]
 
 	global Dialog Confname ConfigFile UseConfigFile StartServer
+	global Pointer_realdevice
 	puts $fd [list set Dialog $Dialog]
 	puts $fd [list set Confname $Confname]
 	puts $fd [list set ConfigFile $ConfigFile]
@@ -505,6 +506,7 @@ proc save_state {} {
 	puts $fd [list set XF86SetupDir $XF86SetupDir]
 	puts $fd [list set TmpDir $TmpDir]
 	puts $fd [list set PID $PID]
+	puts $fd [list set Pointer_realdevice $Pointer_realdevice]
 	global DeviceIDs MonitorIDs
 	puts $fd [list set DeviceIDs $DeviceIDs]
 	puts $fd [list set MonitorIDs $MonitorIDs]

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.7 1996/08/20 12:26:24 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.8 1996/08/24 12:50:50 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -13,7 +13,7 @@
 set mseTypeList { Microsoft MouseSystems MMSeries Logitech BusMouse
 		MouseMan PS/2 MMHitTab GlidePoint Xqueue OSMouse }
 
-set msePatterns { tty[0-9A-Za-o]* cua* *bm *mse* *mouse* ps*x psm* m320 }
+set msePatterns { tty[0-9A-Za-o]* cua* *bm *mse* *mouse* ps*x psm* m320 pms* }
 set mseDevices ""
 foreach pat $msePatterns {
 	if ![catch {glob /dev/$pat}] {
@@ -284,10 +284,10 @@ proc Mouse_popup_help { win } {
 	wm geometry .mousehelp +30+30
         text .mousehelp.text -takefocus 0 -width 90 -height 27
         .mousehelp.text insert end \
-{ First select the protocol for your mouse using 'p', then if needed, change the device name.
- If applicable, also set the baud rate (1200 should work).  Press 'a' to apply the changes
- and try moving your mouse around.  If the mouse pointer does not move properly, try a
- different protocol or device name.
+{ First select the protocol for your mouse using 'p', then if needed, change the device
+ name.  If applicable, also set the baud rate (1200 should work).  Press 'a' to apply
+ the changes and try moving your mouse around.  If the mouse pointer does not move
+ properly, try a different protocol or device name.
 
    Once the mouse is moving properly, test that the various buttons also work correctly.
  If you have a three button mouse and the middle button does not work, try the buttons
@@ -306,7 +306,7 @@ proc Mouse_popup_help { win } {
         s  -  Increase the sample rate
         t  -  Increase the 3-button emulation timeout
      ------------------------------------------------------
- You can also use Tab, and Ctrl-Tab to move around and then use Enter to activate
+ You can also use Tab, and Shift-Tab to move around and then use Enter to activate
  the selected button.
  
  See the documentation for more information
@@ -556,11 +556,14 @@ proc Mouse_defaultdevice { mousetype } {
 	global mseDevices
 
 	switch $mousetype {
-		PS/2	 { set idx [lsearch $mseDevices /dev/ps*x] }
-		BusMouse { set idx [lsearch $mseDevices /dev/*bm]  }
+		PS/2	 { set idx [lsearch -regexp $mseDevices \
+					/dev/p[ms].*] }
+		BusMouse { set idx [lsearch -regexp $mseDevices \
+					/dev/.*bm|/dev/mse.*]  }
 		OsMouse  -
 		Xqueue	 { return "" }
-		default	 { set idx [lsearch $mseDevices /dev/tty*] }
+		default	 { set idx [lsearch -regexp $mseDevices \
+					/dev/cua*|/dev/tty*] }
 	}
 	if { $idx == -1 } {
 		set idx 0

@@ -1,11 +1,14 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.1 1996/03/03 03:57:23 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.2 1996/08/24 12:52:29 dawes Exp $
 #
 # preinst.sh  (for XFree86 3.1.2F)
 #
 # This script should be run before installing a beta version.
-# It removes symbolic links to old beta versions.
+#
+# It removes parts of an existing installation that can cause problems
+# when extracting the new version.  This includes symbolic links to old
+# beta versions, shared lib symlinks, and old files.
 #
 
 OLDBETADIR_1=/usr/XFree86-3.1.2A
@@ -36,6 +39,12 @@ LIBLIST=" \
 	libXt.so.6 \
 	libXtst.so.6 \
 	liboldX.so.6 \
+	"
+
+OLDFILES=" \
+	lib/X11/doc/LbxproxyOnly \
+	lib/X11/xkb/keycodes/sgi \
+	lib/X11/xkb/symbols/de_nodead \
 	"
 
 if [ ! -d $RUNDIR/. ]; then
@@ -85,5 +94,14 @@ for i in $LIBLIST; do
 		rm -f $RUNDIR/lib/$i
 	fi
 done
+
+for i in $OLDFILES; do
+	if [ -f $RUNDIR/$i ]; then
+		echo Removing old file $RUNDIR/$i
+		rm -f $RUNDIR/$i
+	fi
+done
+
+echo Done
 
 exit 0

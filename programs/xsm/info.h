@@ -1,4 +1,5 @@
 /* $XConsortium: info.h,v 1.1 94/07/07 16:47:38 mor Exp $ */
+/* $XFree86$ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -28,3 +29,4 @@ in this Software without prior written authorization from the X Consortium.
 extern void create_client_info_popup ();
 extern void UpdateClientList ();
 extern void ClientInfoXtProc ();
+extern char *GetProgramName ();

@@ -1,6 +1,6 @@
 /* 
  * $XConsortium: xset.c,v 1.70 95/05/12 17:22:03 mor Exp $ 
- * $XFree86: xc/programs/xset/xset.c,v 3.1 1996/01/24 22:04:52 dawes Exp $ 
+ * $XFree86: xc/programs/xset/xset.c,v 3.2 1996/06/10 09:18:41 dawes Exp $ 
  */
 
 /*
@@ -32,6 +32,12 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <stdio.h>
 #include <ctype.h>
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *malloc();
+#endif
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>

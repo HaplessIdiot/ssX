@@ -1,4 +1,5 @@
-/* $XConsortium: save.c /main/18 1995/12/07 18:02:35 mor $ */
+/* $XConsortium: save.c /main/19 1996/01/14 16:52:16 kaleb $ */
+/* $XFree86$ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -29,6 +30,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "save.h"
 #include "saveutil.h"
 #include "popup.h"
+#include "info.h"
 
 #include <X11/Shell.h>
 #include <X11/Xaw/Form.h>
@@ -445,7 +447,11 @@ XtPointer 	callData;
 
     if ((status = GetSaveName (&name)) != NAME_OK)
     {
+#ifdef XKB
+	XkbStdBell(XtDisplay(topLevel),XtWindow(topLevel),0,XkbBI_BadValue);
+#else
 	XBell (XtDisplay (topLevel), 0);
+#endif
 
 	if (status == NAME_EXISTS || status == NAME_LOCKED)
 	{
@@ -1356,7 +1362,7 @@ PopupBadSave ()
 
 	    if (strcmp (pprop->name, SmProgram) == 0)
 	    {
-		progName = (char *) GetProgramName ((char *) pval->value);
+		progName = GetProgramName ((char *) pval->value);
 
 		if ((int) strlen (progName) > maxlen1)
 		    maxlen1 = strlen (progName);
@@ -1408,7 +1414,7 @@ PopupBadSave ()
 
 	    if (strcmp (pprop->name, SmProgram) == 0)
 	    {
-		progName = (char *) GetProgramName ((char *) pval->value);
+		progName = GetProgramName ((char *) pval->value);
 	    }
 	    else if (strcmp (pprop->name, "_XC_RestartService") == 0)
 	    {

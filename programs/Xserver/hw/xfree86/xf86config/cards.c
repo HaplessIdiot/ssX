@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.8 1996/02/09 08:21:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.9 1996/02/18 03:43:51 dawes Exp $ */
 
 /*
  *  Functions to manipulate card database.
@@ -174,6 +174,8 @@ int parse_database() {
 			if (i == -1) {
 				printf("Error in database, invalid reference: %s.\n",
 					buf + 4);
+				free(card[lastcard].name);
+				lastcard--;
 				continue;
 			}
 			if (card[lastcard].chipset == NULL)

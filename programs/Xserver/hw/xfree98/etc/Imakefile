@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/etc/Imakefile,v 3.9 1996/05/06 05:59:12 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/etc/Imakefile,v 3.10 1996/08/14 14:37:20 dawes Exp $
 
 
 
@@ -51,15 +51,14 @@ XCOMM $XConsortium: Imakefile /main/5 1996/01/11 12:23:36 kaleb $
 #endif
 #endif
 
-#if 0
 #if XFree86Version % 10
 POSTINST = postinst.sh
-#endif
+PREINST = preinst.sh
 #endif
 
        FILES = $(CONFIGFILES) $(TERMFILES) \
                $(PATCHFILES) $(XDMCONF) \
-               et4000clock.c xmodmap.std $(MISCFILES) $(POSTINST)
+               et4000clock.c xmodmap.std $(MISCFILES) $(POSTINST) $(PREINST)
     INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
 	       -I$(SERVERSRC)/include -I$(INCLUDESRC)
 
@@ -147,6 +146,7 @@ LinkSourceFile(ld-wrapper.c,$(XF86SRC)/etc)
 LinkSourceFile(ldterm.sdevice,$(XF86SRC)/etc)
 LinkSourceFile(mmapSVR3.shar,$(XF86SRC)/etc)
 LinkSourceFile(postinst.sh,$(XF86SRC)/etc)
+LinkSourceFile(preinst.sh,$(XF86SRC)/etc)
 LinkSourceFile(ptem.sdevice,$(XF86SRC)/etc)
 LinkSourceFile(ptm.sdevice,$(XF86SRC)/etc)
 LinkSourceFile(pts.node,$(XF86SRC)/etc)

@@ -1,5 +1,5 @@
 /* $XConsortium: xhost.c,v 11.63 95/04/03 20:56:49 mor Exp $ */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.2 1995/06/20 14:33:28 dawes Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.3 1996/02/09 08:22:49 dawes Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -50,6 +50,12 @@ from the X Consortium.
 #include <ctype.h>
 #include <X11/Xauth.h>
 #include <X11/Xmu/Error.h>
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *malloc();
+#endif
 
 #ifdef NEEDSOCKETS
 #ifdef att
