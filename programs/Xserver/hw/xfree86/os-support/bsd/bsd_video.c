@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.38 2000/11/19 16:38:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.39 2000/12/05 21:18:38 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -111,6 +111,16 @@ struct memAccess ioMemInfo = { CONSOLE_GET_IO_INFO, NULL, NULL,
 
 #ifndef MAP_FAILED
 #define MAP_FAILED ((caddr_t)-1)
+#endif
+
+#ifdef __OpenBSD__
+#define SYSCTL_MSG "\tCheck that you have set 'machdep.allowaperture=1'\n"\
+		   "\tin /etc/sysctl.conf and reboot your machine\n" \
+		   "\trefer to xf86(4) for details\n"
+#define SECURELEVEL_MSG \
+                "A card in your system needs more than the aperture driver\n" \
+                "\tYou need to rebuild a kernel with \"Option INSECURE\"\n" \
+                "\tand set securelevel=-1 in /etc/rc.securelevel\n"
 #endif
 
 #ifdef __alpha__
@@ -258,8 +268,14 @@ checkDevMem(Bool warn)
 	} else {
 	    if (warn)
 	    {
+#ifndef __OpenBSD__
 		xf86Msg(X_WARNING, "checkDevMem: failed to open %s and %s\n"
 			"\t(%s)\n", DEV_MEM, DEV_APERTURE, strerror(errno));
+#else /* __OpenBSD__ */
+		xf86Msg(X_WARNING, "checkDevMem: failed to open %s and %s\n"
+			"\t(%s)\n%s", DEV_MEM, DEV_APERTURE, strerror(errno),
+			SYSCTL_MSG);
+#endif /* __OpenBSD__ */
 	    }
 	}
 	
@@ -403,6 +419,11 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 		xf86Msg(X_WARNING, 
 			"xf86ReadBIOS: %s mmap[s=%x,a=%x,o=%x] failed (%s)\n",
 			DEV_MEM, Len, Base, Offset, strerror(errno));
+#ifdef __OpenBSD__
+		if (Base < 0xa0000) {
+		    xf86Msg(X_WARNING, SECURELEVEL_MSG);
+		} 
+#endif
 		return(-1);
 	}
 #ifdef DEBUG
@@ -667,8 +688,13 @@ xf86EnableIO()
 
 	if (i386_iopl(TRUE) < 0)
 	{
+#ifndef __OpenBSD__
 		FatalError("%s: Failed to set IOPL for extended I/O\n",
 			   "xf86EnableIO");
+#else
+		FatalError("%s: Failed to set IOPL for extended I/O\n%s",
+			   "xf86EnableIO", SYSCTL_MSG);
+#endif
 	}
 	ExtendedEnabled = TRUE;
 
@@ -815,23 +841,6 @@ xf86EnableInterrupts()
 
 	return;
 }
-
-/************************************************************************/
-/*  This is required for the loader                                     */
-/************************************************************************/
-#if defined(__powerpc__)
-void
-ppc_flush_icache(char *addr)
-{
-	__asm__ volatile (
-		"dcbf 0,%0;" 
-		"sync;" 
-		"icbi 0,%0;" 
-		"sync;" 
-		"isync;" 
-		: : "r"(addr) : "memory");
-}
-#endif
 
 
 #ifdef __NetBSD__
