@@ -37,7 +37,7 @@
 *
 ****************************************************************************/
 
-/* $XFree86: xc/extras/x86emu/src/x86emu/decode.c,v 1.9 2001/01/06 20:19:03 tsi Exp $ */
+/* $XFree86: xc/extras/x86emu/src/x86emu/decode.c,v 1.10 2002/07/15 16:49:10 dawes Exp $ */
 
 #include "x86emu/x86emui.h"
 
@@ -459,7 +459,7 @@ the current 'default' segment, which may have been overridden.
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
 void store_data_long(
-	u32 offset,
+	uint offset,
 	u32 val)
 {
 #ifdef DEBUG
