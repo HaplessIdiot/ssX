@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.28tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.29tsi Exp $ */
 
 #include "radeon.h"
 #include "radeon_macros.h"
@@ -525,7 +525,7 @@ RADEONSetupImageVideo(ScreenPtr pScreen)
     adapt->QueryImageAttributes = RADEONQueryImageAttributes;
 
     pPriv = (RADEONPortPrivPtr)(adapt->pPortPrivates[0].ptr);
-    REGION_INIT(pScreen, &(pPriv->clip), NullBox, 0);
+    REGION_NULL(pScreen, &(pPriv->clip));
     
     xvBrightness   = MAKE_ATOM("XV_BRIGHTNESS");
     xvSaturation   = MAKE_ATOM("XV_SATURATION");

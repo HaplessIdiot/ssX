@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/iplbitblt.c,v 3.0 1996/08/18 01:54:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplbitblt.c,v 3.1tsi Exp $ */
 /*
  * ipl copy area
  */
@@ -231,7 +231,7 @@ iplBitBlt (pSrcDrawable, pDstDrawable,
 	    /* Check to see if the region is empty */
 	    if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2)
 	    {
-		REGION_INIT(pGC->pScreen, &rgnDst, NullBox, 0);
+		REGION_NULL(pGC->pScreen, &rgnDst);
 	    }
 	    else
 	    {
@@ -244,7 +244,7 @@ iplBitBlt (pSrcDrawable, pDstDrawable,
 	       a full blown region.  It is intersected with the
 	       composite clip below. */
 	    fastClip = 0;
-	    REGION_INIT(pGC->pScreen, &rgnDst, &fastBox,1);
+	    REGION_INIT(pGC->pScreen, &rgnDst, &fastBox, 1);
 	}
     }
     else

@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winvideo.c,v 1.1tsi Exp $ */
 
 #include "win.h"
 #include "Xv.h"
@@ -181,7 +181,7 @@ winSetupImageVideo (ScreenPtr pScreen)
 
 #if 0
     /* gotta uninit this someplace */
-    REGION_INIT(pScreen, &pPriv->clip, NullBox, 0); 
+    REGION_NULL(pScreen, &pPriv->clip);
 #endif
 
 #if 0

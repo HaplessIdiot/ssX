@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.28tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.29tsi Exp $ */
 
 #include "r128.h"
 #include "r128_reg.h"
@@ -245,7 +245,7 @@ R128SetupImageVideo(ScreenPtr pScreen)
     info->adaptor = adapt;
 
     pPriv = (R128PortPrivPtr)(adapt->pPortPrivates[0].ptr);
-    REGION_INIT(pScreen, &(pPriv->clip), NullBox, 0);
+    REGION_NULL(pScreen, &(pPriv->clip));
 
     R128ResetVideo(pScrn);
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/layer/layerinit.c,v 1.5 2002/10/03 22:50:21 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/layer/layerinit.c,v 1.6tsi Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -273,7 +273,7 @@ LayerCreate (ScreenPtr		pScreen,
 	if (pPixmap)
 	    pPixmap->refcnt++;
     }
-    REGION_INIT (pScreen, &pLay->region, NullBox, 0);
+    REGION_NULL(pScreen, &pLay->region);
     /*
      * Hook the layer at the end of the list
      */

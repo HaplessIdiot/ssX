@@ -68,7 +68,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.30 2003/07/04 16:24:24 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.31tsi Exp $ */
 
 #ifdef PANORAMIX_DEBUG
 #include <stdio.h>
@@ -2226,7 +2226,7 @@ DoGetImage(client, format, drawable, x, y, width, height, planemask, im_return)
 	pVisibleRegion = NotClippedByChildren((WindowPtr)pDraw);
 	if (pVisibleRegion)
 	{
-	    REGION_TRANSLATE(pScreen, pVisibleRegion, -pDraw->x, -pDraw->y);
+	    REGION_TRANSLATE(pDraw->pScreen, pVisibleRegion, -pDraw->x, -pDraw->y);
 	}
     }
 #endif
@@ -2320,7 +2320,7 @@ DoGetImage(client, format, drawable, x, y, width, height, planemask, im_return)
     }
 #ifdef XCSECURITY
     if (pVisibleRegion)
-	REGION_DESTROY(pScreen, pVisibleRegion);
+	REGION_DESTROY(pDraw->pScreen, pVisibleRegion);
 #endif
     if (!im_return)
 	DEALLOCATE_LOCAL(pBuf);

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis6326_video.c,v 1.12tsi Exp $ */
 /*
  * Xv driver for SiS 5597/5598, 6236 and 530/620.
  *
@@ -576,7 +576,11 @@ SIS6326SetupImageVideo(ScreenPtr pScreen)
     SIS6326SetPortDefaults(pScrn, pPriv);
 
     /* gotta uninit this someplace */
-    REGION_INIT(pScreen, &pPriv->clip, NullBox, 0); 
+#if defined(REGION_NULL)
+    REGION_NULL(pScreen, &pPriv->clip);
+#else
+    REGION_INIT(pScreen, &pPriv->clip, NullBox, 0);
+#endif
 
     pSiS->adaptor = adapt;
 

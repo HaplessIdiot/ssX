@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miwindow.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miwindow.c,v 1.9tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -196,7 +196,7 @@ miCheckSubSaveUnder(
 		{
 		    if (!subInited)
 		    {
-			REGION_INIT(pScreen, &SubRegion, NullBox, 0);
+			REGION_NULL(pScreen, &SubRegion);
 			subInited = TRUE;
 		    }
 		    REGION_COPY(pScreen, &SubRegion, pRegion);
@@ -279,7 +279,7 @@ miChangeSaveUnder(pWin, first)
     numSaveUndersViewable += deltaSaveUndersViewable;
     deltaSaveUndersViewable = 0;
     pScreen = pWin->drawable.pScreen;
-    REGION_INIT(pScreen, &rgn, NullBox, 1);
+    REGION_NULL(pScreen, &rgn);
     res = miCheckSubSaveUnder (pWin->parent,
 			       pWin->saveUnder ? first : pWin->nextSib,
 			       &rgn);

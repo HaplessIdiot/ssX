@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.37tsi Exp $ */
 /*
  * Xv driver for SiS 300, 315 and 330 series.
  *
@@ -1221,7 +1221,11 @@ SISSetupImageVideo(ScreenPtr pScreen)
     pPriv->PrevOverlay = FALSE;
 
     /* gotta uninit this someplace */
-    REGION_INIT(pScreen, &pPriv->clip, NullBox, 0); 
+#if defined(REGION_NULL)
+    REGION_NULL(pScreen, &pPriv->clip);
+#else
+    REGION_INIT(pScreen, &pPriv->clip, NullBox, 0);
+#endif
 
     pSiS->adaptor = adapt;
 

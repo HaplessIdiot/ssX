@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbbitblt.c,v 3.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbbitblt.c,v 3.5tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -301,7 +301,7 @@ afbBitBlt(pSrcDrawable, pDstDrawable, pGC, srcx, srcy, width, height,
 
 			/* Check to see if the region is empty */
 			if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2) {
-				REGION_INIT(pGC->pScreen, &rgnDst, NullBox, 0);
+				REGION_NULL(pGC->pScreen, &rgnDst);
 			} else {
 				REGION_INIT(pGC->pScreen, &rgnDst, &fastBox, 1);
 			}

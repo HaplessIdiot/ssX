@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.10 2003/10/10 15:37:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.11tsi Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -631,7 +631,7 @@ I830SetupImageVideo(ScreenPtr pScreen)
    }
 
    /* gotta uninit this someplace */
-   REGION_INIT(pScreen, &pPriv->clip, NullBox, 0);
+   REGION_NULL(pScreen, &pPriv->clip);
 
    pI830->adaptor = adapt;
 

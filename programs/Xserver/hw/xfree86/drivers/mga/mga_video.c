@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.31tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.32tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -268,7 +268,7 @@ MGASetupImageVideoOverlay(ScreenPtr pScreen)
     adapt->QueryImageAttributes = MGAQueryImageAttributes;
 
     /* gotta uninit this someplace */
-    REGION_INIT(pScreen, &(pMga->portPrivate->clip), NullBox, 0); 
+    REGION_NULL(pScreen, &(pMga->portPrivate->clip));
 
     MGAResetVideoOverlay(pScrn);
 

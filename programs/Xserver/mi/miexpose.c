@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.8 2001/08/06 20:51:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.9tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -164,7 +164,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	    if ((RECT_IN_REGION(pscr, &pSrcWin->clipList, &TsrcBox)) == rgnIN)
 		return NULL;
 	    prgnSrcClip = &rgnSrcRec;
-	    REGION_INIT(pscr, prgnSrcClip, NullBox, 0);
+	    REGION_NULL(pscr, prgnSrcClip);
 	    REGION_COPY(pscr, prgnSrcClip, &pSrcWin->clipList);
 	}
 	REGION_TRANSLATE(pscr, prgnSrcClip,
@@ -201,7 +201,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	else
 	{
 	    prgnDstClip = &rgnDstRec;
-	    REGION_INIT(pscr, prgnDstClip, NullBox, 0);
+	    REGION_NULL(pscr, prgnDstClip);
 	    REGION_COPY(pscr, prgnDstClip,
 				&((WindowPtr)pDstDrawable)->clipList);
 	}

@@ -70,7 +70,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.33tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.34tsi Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -98,13 +98,6 @@ SOFTWARE.
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
 #include "security.h"
-#endif
-
-#if defined(NEED_SCREEN_REGIONS)
-#define REGION_PTR(pScreen,pWin) \
-    register ScreenPtr pScreen = pWin->drawable.pScreen;
-#else
-#define REGION_PTR(pScreen,pWin) /* nothing */
 #endif
 
 /******
@@ -500,9 +493,8 @@ void
 InitRootWindow(pWin)
     WindowPtr pWin;
 {
-    ScreenPtr pScreen;
+    ScreenPtr pScreen = pWin->drawable.pScreen;
 
-    pScreen = pWin->drawable.pScreen;
     if (!(*pScreen->CreateWindow)(pWin))
 	return; /* XXX */
     (*pScreen->PositionWindow)(pWin, 0, 0);
@@ -532,7 +524,7 @@ ClippedRegionFromBox(pWin, Rgn, x, y, w, h)
     register int x, y;
     int w, h;
 {
-    REGION_PTR(pScreen, pWin)
+    ScreenPtr pScreen = pWin->drawable.pScreen;
     BoxRec box;
 
     box = *(REGION_EXTENTS(pScreen, &pWin->winSize));
@@ -744,10 +736,10 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     pWin->drawable.y = pParent->drawable.y + y + (int)bw;
 
 	/* set up clip list correctly for unobscured WindowPtr */
-    REGION_INIT(pScreen, &pWin->clipList, NullBox, 1);
-    REGION_INIT(pScreen, &pWin->borderClip, NullBox, 1);
-    REGION_INIT(pScreen, &pWin->winSize, NullBox, 1);
-    REGION_INIT(pScreen, &pWin->borderSize, NullBox, 1);
+    REGION_NULL(pScreen, &pWin->clipList);
+    REGION_NULL(pScreen, &pWin->borderClip);
+    REGION_NULL(pScreen, &pWin->winSize);
+    REGION_NULL(pScreen, &pWin->borderSize);
 
     pHead = RealChildHead(pParent);
     if (pHead)
@@ -1513,7 +1505,7 @@ PatchUp:
     {
 	RegionRec exposed;
 
-	REGION_INIT(pScreen, &exposed, NullBox, 0);
+	REGION_NULL(pScreen, &exposed);
 	REGION_SUBTRACT(pScreen, &exposed, &pWin->borderClip, &pWin->winSize);
 	(*pWin->drawable.pScreen->PaintWindowBorder)(pWin, &exposed, PW_BORDER);
 	REGION_UNINIT(pScreen, &exposed);
@@ -1654,7 +1646,7 @@ CreateUnclippedWinSize (pWin)
     pRgn = REGION_CREATE(pWin->drawable.pScreen, &box, 1);
 #ifdef SHAPE
     if (wBoundingShape (pWin) || wClipShape (pWin)) {
-	REGION_PTR(pScreen, pWin)
+	ScreenPtr pScreen = pWin->drawable.pScreen;
 
 	REGION_TRANSLATE(pScreen, pRgn, - pWin->drawable.x,
 			 - pWin->drawable.y);
@@ -1678,7 +1670,7 @@ SetWinSize (pWin)
 			 (int)pWin->drawable.height);
 #ifdef SHAPE
     if (wBoundingShape (pWin) || wClipShape (pWin)) {
-	REGION_PTR(pScreen, pWin)
+	ScreenPtr pScreen = pWin->drawable.pScreen;
 
 	REGION_TRANSLATE(pScreen, &pWin->winSize, - pWin->drawable.x,
 			 - pWin->drawable.y);
@@ -1708,7 +1700,7 @@ SetBorderSize (pWin)
 		(int)(pWin->drawable.height + (bw<<1)));
 #ifdef SHAPE
 	if (wBoundingShape (pWin)) {
-	    REGION_PTR(pScreen, pWin)
+	    ScreenPtr pScreen = pWin->drawable.pScreen;
 
 	    REGION_TRANSLATE(pScreen, &pWin->borderSize, - pWin->drawable.x,
 			     - pWin->drawable.y);
@@ -1934,7 +1926,7 @@ MakeBoundingRegion (pWin, pBox)
 #endif
 {
     RegionPtr	pRgn;
-    REGION_PTR(pScreen, pWin)
+    ScreenPtr   pScreen = pWin->drawable.pScreen;
 
     pRgn = REGION_CREATE(pScreen, pBox, 1);
     if (wBoundingShape (pWin)) {
@@ -2861,7 +2853,7 @@ MapWindow(pWin, client)
 	    (*pScreen->ClipNotify) (pWin, 0, 0);
 	if (pScreen->PostValidateTree)
 	    (*pScreen->PostValidateTree)(NullWindow, pWin, VTMap);
-	REGION_INIT(pScreen, &temp, NullBox, 0);
+	REGION_NULL(pScreen, &temp);
 	REGION_COPY(pScreen, &temp, &pWin->clipList);
 	(*pScreen->WindowExposures) (pWin, &temp, NullRegion);
 	REGION_UNINIT(pScreen, &temp);

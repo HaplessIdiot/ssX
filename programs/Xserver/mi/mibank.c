@@ -44,7 +44,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/mi/mibank.c,v 1.12 2002/01/16 16:22:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibank.c,v 1.13tsi Exp $ */
 
 /*
  * This thing originated from an idea of Edwin Goei and his bank switching
@@ -1911,7 +1911,7 @@ miBankPaintWindow(
     }
     else
     {
-        REGION_INIT(pScreen, &tmpReg, NullBox, 0);
+        REGION_NULL(pScreen, &tmpReg);
 
         for (i = 0;  i < pScreenPriv->nBanks;  i++)
         {
@@ -2082,7 +2082,7 @@ miBankSaveAreas(
     }
     else
     {
-        REGION_INIT(pScreen, &rgnClipped, NullBox, 0);
+        REGION_NULL(pScreen, &rgnClipped);
         REGION_TRANSLATE(pScreen, prgnSave, xorg, yorg);
 
         for (i = 0;  i < pScreenPriv->nBanks;  i++)
@@ -2136,7 +2136,7 @@ miBankRestoreAreas(
     }
     else
     {
-        REGION_INIT(pScreen, &rgnClipped, NullBox, 0);
+        REGION_NULL(pScreen, &rgnClipped);
 
         for (i = 0;  i < pScreenPriv->nBanks;  i++)
         {

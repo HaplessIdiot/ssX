@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/kdrive/mach64/mach64video.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/kdrive/mach64/mach64video.c,v 1.10tsi Exp $ */
 #include "mach64.h"
 
 #include "Xv.h"
@@ -951,7 +951,7 @@ mach64SetupImageVideo(ScreenPtr pScreen)
     pPortPriv->currentBuf = 0;
 
     /* gotta uninit this someplace */
-    REGION_INIT(pScreen, &pPortPriv->clip, NullBox, 0); 
+    REGION_NULL(pScreen, &pPortPriv->clip);
 
     mach64s->pAdaptor = adapt;
 

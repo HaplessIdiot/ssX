@@ -28,7 +28,7 @@
  * Authors:	Kensuke Matsuzaki
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwindow.c,v 1.5 2002/11/07 10:31:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winmultiwindowshape.c,v 1.1tsi Exp $ */
 
 #ifdef SHAPE
 
@@ -117,7 +117,7 @@ winReshapeMultiWindow (WindowPtr pWin)
   if (!wBoundingShape (pWin))
     return;
 
-  REGION_INIT(pScreen, &rrNewShape, NullBox, 0);
+  REGION_NULL(pScreen, &rrNewShape);
   REGION_COPY(pScreen, &rrNewShape, wBoundingShape(pWin));
   REGION_TRANSLATE(pScreen,
 		   &rrNewShape,

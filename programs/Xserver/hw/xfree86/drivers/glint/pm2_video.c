@@ -21,7 +21,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.24tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.25tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -982,6 +982,7 @@ static void
 BlackOut(PortPrivPtr pPPriv, RegionPtr pRegion)
 {
     ScrnInfoPtr pScrn = pPPriv->pAdaptor->pScrn;
+    ScreenPtr pScreen = pScrn->pScreen;
     GLINTPtr pGlint = GLINTPTR(pScrn);
     RegionRec DRegion;
     BoxRec DBox;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_xv.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_xv.c,v 1.10tsi Exp $ */
 /*
 Copyright (C) 2000 The XFree86 Project, Inc.  All Rights Reserved.
 
@@ -458,7 +458,7 @@ S3VSetupImageVideoOverlay(ScreenPtr pScreen)
     adapt->QueryImageAttributes = S3VQueryImageAttributes;
 
     /* gotta uninit this someplace */
-    REGION_INIT(pScreen, &(ps3v->portPrivate->clip), NullBox, 0); 
+    REGION_NULL(pScreen, &(ps3v->portPrivate->clip));
 
     S3VResetVideoOverlay(pScrn);
 

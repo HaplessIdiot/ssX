@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.35 2003/09/24 02:43:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.36tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -1928,8 +1928,8 @@ GLINTDRIMoveBuffers(
      * and stencil, they just get redrawn for the next frame(s).
      */
 
-    REGION_INIT(pScreen, &rgnSubWindow, NullBox, 0);
-    REGION_INIT(pScreen, &rgnTranslateSrc, NullBox, 0);
+    REGION_NULL(pScreen, &rgnSubWindow);
+    REGION_NULL(pScreen, &rgnTranslateSrc);
     REGION_COPY(pScreen, &rgnTranslateSrc, prgnSrc);
     dx = ptOldOrg.x - pParent->drawable.x;
     dy = ptOldOrg.y - pParent->drawable.y;

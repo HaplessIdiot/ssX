@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.20tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -432,7 +432,7 @@ NVSetupOverlayVideo (ScreenPtr pScreen)
     NVSetPortDefaults (pScrnInfo, pPriv);
     
     /* gotta uninit this someplace */
-    REGION_INIT(pScreen, &pPriv->clip, NullBox, 0); 
+    REGION_NULL(pScreen, &pPriv->clip);
     
     pNv->overlayAdaptor		= adapt;
     

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.37 2002/11/04 21:43:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.38tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -1557,7 +1557,7 @@ DRICopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
     if(pDRIPriv->nrWindows > 0) {
        RegionRec reg;
 
-       REGION_INIT(pScreen, &reg, NullBox, 0);
+       REGION_NULL(pScreen, &reg);
        TraverseTree(pWin, DRITreeTraversal, (pointer)(&reg));
 
        if(REGION_NOTEMPTY(pScreen, &reg)) {

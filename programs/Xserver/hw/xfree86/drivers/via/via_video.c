@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.10 2003/11/03 05:11:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.11tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -519,7 +519,7 @@ viaSetupImageVideoG(ScreenPtr pScreen)
         gviaPortPriv[i]->xv_portnum = i;
 
         /* gotta uninit this someplace */
-        REGION_INIT(pScreen, &gviaPortPriv[i]->clip, NullBox, 0);
+        REGION_NULL(pScreen, &gviaPortPriv[i]->clip);
     } /* End of for */
 
 
@@ -1166,7 +1166,7 @@ viaPutImageG(
 
                 /*  BitBlt: Draw the colorkey rectangle */
                 if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
-                    REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
+                    REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
                     
                     xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
 #if 0                    
@@ -1285,7 +1285,7 @@ viaPutVideo(ScrnInfoPtr pScrn,
 
     /*  BitBlt: Color fill */
     if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
-        REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
+        REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
         XAAFillSolidRects(pScrn,pPriv->colorKey,GXcopy, ~0,
                           REGION_NUM_RECTS(clipBoxes),
                           REGION_RECTS(clipBoxes));

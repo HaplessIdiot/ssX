@@ -22,7 +22,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/kdrive/savage/s3draw.c,v 1.6 2001/05/29 04:54:11 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/kdrive/savage/s3draw.c,v 1.7tsi Exp $ */
 
 #include	"s3.h"
 #include	"s3draw.h"
@@ -2425,7 +2425,7 @@ s3CopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 
     REGION_TRANSLATE(pWin->drawable.pScreen, prgnSrc, -dx, -dy);
 
-    REGION_INIT (pWin->drawable.pScreen, &rgnDst, NullBox, 0);
+    REGION_NULL(pWin->drawable.pScreen, &rgnDst);
 
     REGION_INTERSECT(pWin->drawable.pScreen, &rgnDst,
 		     &pWin->borderClip, prgnSrc);
