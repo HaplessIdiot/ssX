@@ -1,3 +1,6 @@
+XFree86 3.2i (20 December 1996)
+ 118. Some general cleanups (Stuart Anderson, Dirk Hohndel).
+
 XFree86 3.2h (20 December 1996)
  117. Fix a "void * used in arithmetic" warning in lnx_video.c.
  116. Allow the XInput "AlwaysCore" feature to be controlled dynamically
