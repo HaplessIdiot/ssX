@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.22 2003/10/08 14:58:25 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.23 2003/11/12 03:29:33 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
@@ -63,8 +63,8 @@ environment variable, and
 .I <hostname>
 is the machine's hostname as reported by gethostname(3).
 .PP
-When the X server is started by the "root" user, the config file search
-locations are as follows:
+When the XFree86 server is started by the "root" user, the config file
+search locations are as follows:
 .PP
 .RS 4
 .nf
@@ -285,14 +285,14 @@ section is optional, as are all of the entries that may appear in it.
 The entries that can appear in this section are:
 .TP 7
 .BI "FontPath \*q" path \*q
-sets the search path for fonts.  This path is a comma separated
-list of font path elements which the X server searches for font databases.
+sets the search path for fonts.  This path is a comma separated list of
+font path elements which the XFree86 server searches for font databases.
 Multiple
 .B FontPath
-entries may be specified, and they will be
-concatenated to build up the fontpath used by the server.
-Font path elements may be either absolute directory paths, or
-a font server identifier.  Font server identifiers have the form:
+entries may be specified, and they will be concatenated to build up the
+fontpath used by the server.  Font path elements may be either absolute
+directory paths, or a font server identifier.  Font server identifiers
+have the form:
 .PP
 .RS 11
 .IR <trans> / <hostname> : <port-number>
@@ -361,9 +361,9 @@ is added to this path if the server was compiled to use text rather than
 binary format RGB color databases.
 .TP 7
 .BI "ModulePath \*q" path \*q
-sets the search path for loadable X server modules.  This path is a
-comma separated list of directories which the X server searches for
-loadable modules loading in the order specified.  Multiple
+sets the search path for loadable XFree86 server modules.  This path is
+a comma separated list of directories which the XFree86 server searches
+for loadable modules loading in the order specified.  Multiple
 .B ModulePath
 entries may be specified, and they will be concatenated to build the
 module search path used by the server.
@@ -371,7 +371,8 @@ module search path used by the server.
 .ig
 .TP 7
 .BI "LogFile \*q" path \*q
-sets the name of the X server log file.  The default log file name is
+sets the name of the XFree86 server log file.  The default log file name
+is
 .PP
 .RS 11
 .RI __logdir__/XFree86. <n> .log
@@ -380,13 +381,13 @@ sets the name of the X server log file.  The default log file name is
 .RS 7
 where
 .I <n>
-is the display number for the X server.
+is the display number for the XFree86 server.
 ..
 .SH SERVERFLAGS SECTION
 The
 .B ServerFlags
 section is used to specify some global
-X server options.  All of the entries in this section are
+XFree86 server options.  All of the entries in this section are
 .BR Options ,
 although for compatibility purposes some of the old style entries are
 still recognised.  Those old style entries are not documented here, and
@@ -414,12 +415,12 @@ section to use in the absence of the
 command line option.
 .TP 7
 .BI "Option \*qNoTrapSignals\*q  \*q" boolean \*q
-This prevents the X server from trapping a range of unexpected
-fatal signals and exiting cleanly.  Instead, the X server will die
+This prevents the XFree86 server from trapping a range of unexpected
+fatal signals and exiting cleanly.  Instead, the XFree86 server will die
 and drop core where the fault occurred.  The default behaviour is
-for the X server to exit cleanly, but still drop a core file.  In
+for the XFree86 server to exit cleanly, but still drop a core file.  In
 general you never want to use this option unless you are debugging
-an X server problem and know how to deal with the consequences.
+an XFree86 server problem and know how to deal with the consequences.
 .TP 7
 .BI "Option \*qDontVTSwitch\*q  \*q" boolean \*q
 This disallows the use of the
@@ -434,7 +435,7 @@ no special meaning and is passed to clients.  Default: off.
 .BI "Option \*qDontZap\*q  \*q" boolean \*q
 This disallows the use of the
 .B Ctrl+Alt+Backspace
-sequence.  That sequence is normally used to terminate the X server.
+sequence.  That sequence is normally used to terminate the XFree86 server.
 When this option is enabled, that key sequence has no special meaning
 and is passed to clients.  Default: off.
 .TP 7
@@ -485,7 +486,7 @@ which support VT switching.  This sequence is
 followed
 by a function key
 .RB ( Fn ).
-This prevents the X server trapping the
+This prevents the XFree86 server trapping the
 keys used for the default VT switch sequence, which means that clients can
 access them.  Default: off.
 .TP 7
@@ -511,48 +512,46 @@ Force the use PCI config type 2.  Default: not set.
 .BI "Option \*qBlankTime\*q  \*q" time \*q
 sets the inactivity timeout for the blanking phase of the screensaver.
 .I time
-is in minutes.  This is equivalent to the Xserver's `-s' flag, and the
-value can be changed at run-time with xset(1).  Default: 10 minutes.
+is in minutes.  This is equivalent to the XFree86 server's `-s' flag,
+and the value can be changed at run-time with xset(1).  Default: 10
+minutes.
 .TP 7
 .BI "Option \*qStandbyTime\*q  \*q" time \*q
 sets the inactivity timeout for the "standby" phase of DPMS mode.
 .I time
 is in minutes, and the value can be changed at run-time with xset(1).
-Default: 20 minutes.
-This is only suitable for VESA DPMS compatible monitors, and may not be
-supported by all video drivers.  It is only enabled for screens that
-have the
+Default: 20 minutes.  This is only suitable for VESA DPMS compatible
+monitors, and may not be supported by all video drivers.  It is only
+enabled for screens that have the
 .B \*qDPMS\*q
-option set (see the MONITOR section below). 
+option set (see the MONITOR section below).
 .TP 7
 .BI "Option \*qSuspendTime\*q  \*q" time \*q
 sets the inactivity timeout for the "suspend" phase of DPMS mode.
 .I time
 is in minutes, and the value can be changed at run-time with xset(1).
-Default: 30 minutes.
-This is only suitable for VESA DPMS compatible monitors, and may not be
-supported by all video drivers.  It is only enabled for screens that
-have the
+Default: 30 minutes.  This is only suitable for VESA DPMS compatible
+monitors, and may not be supported by all video drivers.  It is only
+enabled for screens that have the
 .B \*qDPMS\*q
-option set (see the MONITOR section below). 
+option set (see the MONITOR section below).
 .TP 7
 .BI "Option \*qOffTime\*q  \*q" time \*q
 sets the inactivity timeout for the "off" phase of DPMS mode.
 .I time
 is in minutes, and the value can be changed at run-time with xset(1).
-Default: 40 minutes.
-This is only suitable for VESA DPMS compatible monitors, and may not be
-supported by all video drivers.  It is only enabled for screens that
-have the
+Default: 40 minutes.  This is only suitable for VESA DPMS compatible
+monitors, and may not be supported by all video drivers.  It is only
+enabled for screens that have the
 .B \*qDPMS\*q
-option set (see the MONITOR section below). 
+option set (see the MONITOR section below).
 .TP 7
 .BI "Option \*qPixmap\*q  \*q" bpp \*q
 This sets the pixmap format to use for depth 24.  Allowed values for
 .I bpp
 are 24 and 32.  Default: 32 unless driver constraints don't allow this
-(which is rare).  Note: some clients don't behave well when
-this value is set to 24.
+(which is rare).  Note: some clients don't behave well when this value
+is set to 24.
 .TP 7
 .BI "Option \*qPC98\*q  \*q" boolean \*q
 Specify that the machine is a Japanese PC-98 machine.  This should not
@@ -562,68 +561,68 @@ architecture.  Default: auto-detected.
 .ig
 .TP 7
 .BI "Option \*qEstimateSizesAggressively\*q  \*q" value \*q
-This option affects the way that bus resource sizes are estimated.  Default: 0.
+This option affects the way that bus resource sizes are estimated.
+Default: 0.
 ..
 .TP 7
 .BI "Option \*qNoPM\*q  \*q" boolean \*q
-Disables something to do with power management events.  Default: PM enabled
-on platforms that support it.
+Disables something to do with power management events.  Default: PM
+enabled on platforms that support it.
 .TP 7
 .BI "Option \*qXinerama\*q  \*q" boolean \*q
-enable or disable XINERAMA extension. Default is disabled. 
+enable or disable XINERAMA extension. Default is disabled.
 .TP 7
 .BI "Option \*qAllowDeactivateGrabs\*q \*q" boolean \*q
 This option enables the use of the
 .B Ctrl+Alt+Keypad-Divide
-key sequence to deactivate any active keyboard and mouse grabs.
-Default: off.
+key sequence to deactivate any active keyboard and mouse grabs.  Default:
+off.
 .TP 7
 .BI "Option \*qAllowClosedownGrabs\*q \*q" boolean \*q
 This option enables the use of the
 .B Ctrl+Alt+Keypad-Multiply
-key sequence to kill clients with an active keyboard or mouse grab as well
-as killing any application that may have locked the server,
-normally using the XGrabServer(__libmansuffix__) Xlib function.
-Default: off.
+key sequence to kill clients with an active keyboard or mouse grab as
+well as killing any application that may have locked the server, normally
+using the XGrabServer(__libmansuffix__) Xlib function.  Default: off.
 .br
 Note that the options
 .BI AllowDeactivateGrabs
 and
 .BI AllowClosedownGrabs
 will allow users to remove the grab used by screen saver/locker programs.
-An API was written to such cases. If you enable this option, make sure your
-screen saver/locker is updated.
+An API was written to such cases. If you enable this option, make sure
+your screen saver/locker is updated.
 .TP 7
 .BI "Option \*qHandleSpecialKeys\*q \*q" when \*q
-This option controls when the server uses the builtin handler
-to process special key combinations (such as
+This option controls when the server uses the builtin handler to process
+special key combinations (such as
 .BR Ctrl+Alt+Backspace ).
-Normally the XKEYBOARD extension keymaps will provide mappings
-for each of the special key combinations, so the builtin handler
-is not needed unless the XKEYBOARD extension is disabled.
-The value of
+Normally the XKEYBOARD extension keymaps will provide mappings for each
+of the special key combinations, so the builtin handler is not needed
+unless the XKEYBOARD extension is disabled.  The value of
 .I when
 can be
 .BR Always ,
 .BR Never ,
 or
 .BR WhenNeeded .
-Default: Use the builtin handler only if needed.  The server will
-scan the keymap for a mapping to the
+Default: Use the builtin handler only if needed.  The server will scan
+the keymap for a mapping to the
 .B Terminate
 action and, if found, use XKEYBOARD for processing actions, otherwise
 the builtin handler will be used.
 .SH MODULE SECTION
 The
 .B Module
-section is used to specify which X server modules should be loaded.
-This section is ignored when the X server is built in static form.
-The types of modules normally loaded in this section are X server
+section is used to specify which XFree86 server modules should be loaded.
+This section is ignored when the XFree86 server is built in static form.
+The types of modules normally loaded in this section are XFree86 server
 extension modules, and font rasteriser modules.  Most other module types
 are loaded automatically when they are needed via other mechanisms.
 The
 .B Module
-section is optional, as are all of the entries that may be specified in it.
+section is optional, as are all of the entries that may be specified in
+it.
 .PP
 Entries in this section may be in two forms.   The first and most commonly
 used form is an entry that uses the
@@ -863,7 +862,7 @@ the primary graphics card.  In multi-head configurations, or when using
 a secondary graphics card in a single-head configuration, this entry is
 mandatory.  Its main purpose is to make an unambiguous connection between
 the device section and the hardware it is representing.  This information
-can usually be found by running the X server with the
+can usually be found by running the XFree86 server with the
 .B \-scanpci
 command line option.
 .TP 7
@@ -920,22 +919,22 @@ boards with non-programmable clocks.  Don't specify this entry unless
 the driver-specific documentation explicitly recommends that you do.
 .TP
 .BI "ClockChip  \*q" clockchip-type \*q
-This optional entry is used to specify the clock chip type on
-graphics boards which have a programmable clock generator.  Only
-a few X servers support programmable clock chips.  For details,
-see the appropriate X server manual page.
+This optional entry is used to specify the clock chip type on graphics
+boards which have a programmable clock generator.  Only a few XFree86
+drivers support programmable clock chips.  For details, see the appropriate
+driver manual page.
 .TP 7
 .BI "VideoRam  " "mem"
 This optional entry specifies the amount of video ram that is installed
 on the graphics board. This is measured in kBytes.  In most cases this
-is not required because the X server probes the graphics board to
+is not required because the XFree86 server probes the graphics board to
 determine this quantity.  The driver-specific documentation should
 indicate when it might be needed.
 .TP 7
 .BI "BiosBase  " "baseaddress"
-This optional entry specifies the base address of the video BIOS
-for the VGA board.  This address is normally auto-detected, and should
-only be specified if the driver-specific documentation recommends it.
+This optional entry specifies the base address of the video BIOS for
+the VGA board.  This address is normally auto-detected, and should only
+be specified if the driver-specific documentation recommends it.
 .TP 7
 .BI "MemBase  " "baseaddress"
 This optional entry specifies the memory base address of a graphics
@@ -1044,10 +1043,11 @@ the values are in units of kHz.  They may be specified in MHz or Hz if
 .B MHz
 or
 .B Hz
-is added to the end of the line.  The data given here is used by the X
-server to determine if video modes are within the specifications of the
-monitor.  This information should be available in the monitor's handbook.
-If this entry is omitted, a default range of 28\-33kHz is used.
+is added to the end of the line.  The data given here is used by the
+XFree86 server to determine if video modes are within the specifications
+of the monitor.  This information should be available in the monitor's
+handbook.  If this entry is omitted, a default range of 28\-33kHz is
+used.
 .TP 7
 .BI "VertRefresh  " "vertrefresh-range"
 gives the range(s) of vertical refresh frequencies supported by the
@@ -1059,10 +1059,10 @@ the values are in units of Hz.  They may be specified in MHz or kHz if
 .B MHz
 or
 .B kHz
-is added to the end of the line.  The data given here is used by the X
-server to determine if video modes are within the specifications of the
-monitor.  This information should be available in the monitor's handbook.
-If this entry is omitted, a default range of 43-72Hz is used.
+is added to the end of the line.  The data given here is used by the
+XFree86 server to determine if video modes are within the specifications
+of the monitor.  This information should be available in the monitor's
+handbook.  If this entry is omitted, a default range of 43-72Hz is used.
 .TP 7
 .BI "DisplaySize  " "width height"
 This optional entry gives the width and height, in millimetres, of the
@@ -1072,19 +1072,19 @@ horizontal and vertical pitch (DPI) of the screen.
 .BI "Gamma  " "gamma-value"
 .TP 7
 .BI "Gamma  " "red-gamma green-gamma blue-gamma"
-This is an optional entry that can be used to specify the gamma
-correction for the monitor.  It may be specified as either a single
-value or as three separate RGB values.  The values should be in the range
-0.1 to 10.0, and the default is 1.0.  Not all drivers are capable
-of using this information.
+This is an optional entry that can be used to specify the gamma correction
+for the monitor.  It may be specified as either a single value or as
+three separate RGB values.  The values should be in the range 0.1 to
+10.0, and the default is 1.0.  Not all drivers are capable of using this
+information.
 .TP 7
 .BI "UseModes  \*q" modesection-id \*q
 Include the set of modes listed in the
 .B Modes
 section called
 .IR modesection-id.
-This make all of the modes defined in that section available for use
-by this monitor.
+This make all of the modes defined in that section available for use by
+this monitor.
 .TP 7
 .BI "Mode  \*q" name \*q
 This is an optional multi-line entry that can be used to provide
@@ -1362,30 +1362,28 @@ described here.
 .TP 7
 .BI "Option \*qAccel\*q"
 Enables XAA (X Acceleration Architecture), a mechanism that makes video
-cards' 2D hardware acceleration available to the X server.  This option is
-on by default, but it may be necessary to turn it off if there are bugs in
-the driver.  There are many options to disable specific accelerated
-operations, listed below.  Note that disabling an operation will have no
-effect if the operation is not accelerated (whether due to lack of support
-in the hardware or in the driver).
+cards' 2D hardware acceleration available to the XFree86 server.  This
+option is on by default, but it may be necessary to turn it off if there
+are bugs in the driver.  There are many options to disable specific
+accelerated operations, listed below.  Note that disabling an operation
+will have no effect if the operation is not accelerated (whether due to
+lack of support in the hardware or in the driver).
 .TP 7
 .BI "Option \*qBiosLocation\*q \*q" address \*q
-Set the location of the
-BIOS for the Int10 module. One may select a BIOS of another card for
-posting or the legacy V_BIOS range located at 0xc0000 or an
-alternative address (BUS_ISA).
-This is only useful under very special circumstances and should
-be used with extreme care.
+Set the location of the BIOS for the Int10 module. One may select a BIOS
+of another card for posting or the legacy V_BIOS range located at 0xc0000
+or an alternative address (BUS_ISA).  This is only useful under very
+special circumstances and should be used with extreme care.
 .TP 7
 .BI "Option \*qInitPrimary\*q \*q" boolean \*q
-Use the Int10 module to initialize the primary graphics
-card. Normally, only secondary cards are soft-booted using the Int10
-module, as the primary card has already been initialized by the BIOS 
-at boot time. Default: false.
+Use the Int10 module to initialize the primary graphics card. Normally,
+only secondary cards are soft-booted using the Int10 module, as the
+primary card has already been initialized by the BIOS at boot time.
+Default: false.
 .TP 7
 .BI "Option \*qNoInt10\*q \*q" boolean \*q
-Disables the Int10 module, a module that uses the int10 call to the
-BIOS of the graphics card to initialize it. Default: false.
+Disables the Int10 module, a module that uses the int10 call to the BIOS
+of the graphics card to initialize it. Default: false.
 .TP 7
 .BI "Option \*qNoMTRR\*q"
 Disables MTRR (Memory Type Range Register) support, a feature of modern
@@ -1442,8 +1440,8 @@ Disables accelerated rectangular expansion blits from source patterns
 stored in offscreen video memory.
 .TP 7
 .BI "Option \*qXaaNoScreenToScreenCopy\*q"
-Disables accelerated copies of rectangular regions from one part of video
-memory to another part of video memory.
+Disables accelerated copies of rectangular regions from one part of
+video memory to another part of video memory.
 .TP 7
 .BI "Option \*qXaaNoSolidBresenhamLine\*q"
 Disables accelerated solid Bresenham line draws.

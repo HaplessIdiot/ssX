@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.63 2003/11/12 02:58:20 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.64 2003/11/12 03:29:33 dawes Exp $
 .TH XFree86 1 __vendorversion__
 .SH NAME
 XFree86 - X11R6 X server
@@ -16,10 +16,12 @@ on a wider range of hardware and OS platforms.
 This work was originally derived from
 .I "X386\ 1.2"
 by Thomas Roell which was contributed to X11R5 by Snitily Graphics
-Consulting Service.  The XFree86 X server architecture was redesigned
-for the 4.0 release, and it includes among many other things a loadable
-module system derived from code donated by Metro Link, Inc.  The current
-XFree86 release is compatible with X11R6.6.
+Consulting Service.  The
+.B XFree86
+server architecture was redesigned for the 4.0 release, and it includes
+among many other things a loadable module system derived from code
+donated by Metro Link, Inc.  The current XFree86 release is compatible
+with X11R6.6.
 .SH PLATFORMS
 .PP
 .B XFree86
@@ -185,13 +187,14 @@ if you really need to force a non-default framebuffer (hardware) pixel
 format.
 .TP
 .B \-configure
-When this option is specified, the X server loads all video driver
-modules, probes for available hardware, and writes out an initial
-XF86Config(__filemansuffix__) file based on what was detected.  This
-option currently has some problems on some platforms, but in most cases
-it is a good way to bootstrap the configuration process.  This option
-is only available when the server is run as root (i.e, with real-uid
-0).
+When this option is specified, the
+.B XFree86
+server loads all video driver modules, probes for available hardware,
+and writes out an initial XF86Config(__filemansuffix__) file based on
+what was detected.  This option currently has some problems on some
+platforms, but in most cases it is a good way to bootstrap the
+configuration process.  This option is only available when the server
+is run as root (i.e, with real-uid 0).
 .TP 8
 .BI "\-crt /dev/tty" XX
 SCO only.  This is the same as the
@@ -252,9 +255,11 @@ and
 options.
 .TP 8
 .B \-ignoreABI
-The X server checks the ABI revision levels of each module that it loads.
-It will normally refuse to load modules with ABI revisions that are
-newer than the server's.  This is because such modules might use interfaces
+The
+.B XFree86
+server checks the ABI revision levels of each module that it loads.  It
+will normally refuse to load modules with ABI revisions that are newer
+than the server's.  This is because such modules might use interfaces
 that the server does not have.  When this option is specified, mismatches
 like this are downgraded from fatal errors to warnings.  This option
 should be used with care.
@@ -288,17 +293,22 @@ section is used.
 .BI \-logfile " filename"
 Use the file called
 .I filename
-as the X server log file.  The default log file is
+as the
+.B XFree86
+server log file.  The default log file is
 .BI __logdir__/XFree86. n .log
 on most platforms, where
 .I n
-is the display number of the X server.  The default may be in a different
-directory on some platforms.  This option is only available when the
-server is run as root (i.e, with real-uid 0).
+is the display number of the
+.B XFree86
+server.  The default may be in a different directory on some platforms.
+This option is only available when the server is run as root (i.e, with
+real-uid 0).
 .TP 8
 .BR \-logverbose " [\fIn\fP]"
-Sets the verbosity level for information printed to the X server log
-file.  If the
+Sets the verbosity level for information printed to the
+.B XFree86
+server log file.  If the
 .I n
 value isn't supplied, each occurrence of this option increments the log
 file verbosity level.  When the
@@ -310,9 +320,10 @@ The default log file verbosity level is 3.
 Set the module search path to
 .IR searchpath .
 .I searchpath
-is a comma separated list of directories to search for X server modules.
-This option is only available when the server is run as root (i.e, with
-real-uid 0).
+is a comma separated list of directories to search for
+.B XFree86
+server modules.  This option is only available when the server is run
+as root (i.e, with real-uid 0).
 .TP 8
 .B \-nosilk
 Disable Silken Mouse support.
@@ -365,9 +376,10 @@ and
 options.
 .TP 8
 .B \-scanpci
-When this option is specified, the X server scans the PCI bus, and prints
-out some information about each device that was detected.  See also
-scanpci(1) and pcitweak(1).
+When this option is specified, the
+.B XFree86
+server scans the PCI bus, and prints out some information about each
+device that was detected.  See also scanpci(1) and pcitweak(1).
 .TP 8
 .BI \-screen " screen-name"
 Use the XF86Config(__filemansuffix__) file
@@ -416,15 +428,16 @@ with real-uid 0), or for files relative to a directory in the config
 search path for all other users.
 .SH "KEYBOARD"
 .PP
-The XFree86 server is normally configured to recognize various
-special combinations of key presses that instruct the server to
-perform some action, rather than just sending the key press event
-to a client application.
-The default XKEYBOARD keymap defines the key combinations listed below.
-The server also has these key combinations builtin to its event
-handler for cases where the XKEYBOARD extension is not being used.
-When using the XKEYBOARD extension, which key combinations
-perform which actions is completely configurable.
+The
+.B XFree86
+server is normally configured to recognize various special combinations
+of key presses that instruct the server to perform some action, rather
+than just sending the key press event to a client application.  The
+default XKEYBOARD keymap defines the key combinations listed below.
+The server also has these key combinations builtin to its event handler
+for cases where the XKEYBOARD extension is not being used.  When using
+the XKEYBOARD extension, which key combinations perform which actions
+is completely configurable.
 .PP
 For more information about when the builtin event handler
 is used to recognize the special key combinations, see
@@ -515,9 +528,11 @@ The automatic configuration support for XFree86 is work in progress.
 It is currently aimed at the most popular hardware and software platforms
 supported by XFree86.  Enhancements are planned for future releases.
 .SH FILES
-The X server config file can be found in a range of locations.  These
-are documented fully in the XF86Config(__filemansuffix__) manual page.
-The most commonly used locations are shown here.
+The
+.B XFree86
+server config file can be found in a range of locations.  These are
+documented fully in the XF86Config(__filemansuffix__) manual page.  The
+most commonly used locations are shown here.
 .TP 30
 .B /etc/X11/XF86Config
 Server configuration file.
@@ -536,7 +551,7 @@ Server configuration file.
 .TP 30
 .BI __logdir__/XFree86. n .log
 Server log file for display
-.IR n . 
+.IR n .
 .TP 30
 .B __projectroot__/bin/\(**
 Client binaries.
