@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.49tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.50 2003/11/03 05:11:16 tsi Exp $ */
 
 /*
  * Authors:
@@ -217,7 +217,9 @@ static const char *vgahwSymbols[] = {
     "vgaHWFreeHWRec",
     "vgaHWSaveScreen",
     "vgaHWHandleColormaps",
-    0
+    "vgaHWHBlankKGA",
+    "vgaHWVBlankKGA",
+    NULL
 };
 
 #ifdef XFree86LOADER
