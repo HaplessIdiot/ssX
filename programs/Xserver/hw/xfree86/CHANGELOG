@@ -1,4 +1,12 @@
 XFree86 3.9Ad (25 January 1998)
+1596. Fix two buffer overflow problems in the X server.
+1595. Fix some libXt VSW5 failures (#1347, 1359-1363, 1365, Kaleb Keithley,
+      Arthur Barstow).
+1594. Change server's default vendor string and release (#1342,
+      Kaleb Keithley).
+1593. Fix problem entering mode_shifted characters with xdm and XKB
+      (#1340, Kaleb Keithley).
+1592. Bump SunOS 4.x libXext rev (#1339, Kaleb Keithley).
 1591. Pick up PCI multimedia/video devices and display devices of all
       subclasses (not just VGA) in vgaGetPCIInfo().
 1590. Reinstate Xserver/hw/ibm for reference purposes.
@@ -5934,4 +5942,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.566 1998/01/24 19:15:08 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.568 1998/01/25 01:22:56 dawes Exp $

@@ -1,4 +1,4 @@
-/* $TOG: Geometry.c /main/66 1997/12/31 08:53:03 kaleb $ CHECKEDOUT */
+/* $TOG: Geometry.c /main/68 1998/01/14 15:06:11 kaleb $ CHECKEDOUT */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -526,7 +526,7 @@ XtMakeResizeRequest (widget, width, height, replyWidth, replyHeight)
 	else
 	    *replyHeight = height;
     UNLOCK_APP(app);
-    return r;
+    return ((r == XtGeometryDone) ? XtGeometryYes : r);
 } /* XtMakeResizeRequest */
 
 void XtResizeWindow(w)
@@ -821,7 +821,7 @@ XtGeometryResult XtQueryGeometry(widget, intended, reply)
     CALLGEOTAT(_XtGeoTab(-1));
 #undef FillIn
 
-    if (!reply->request_mode & CWStackMode) 
+    if (!(reply->request_mode & CWStackMode)) 
 	reply->stack_mode = XtSMDontChange;
     UNLOCK_APP(app);
     return result;

@@ -1,5 +1,4 @@
-/* $XConsortium: greet.c,v 1.41 94/09/12 21:32:49 converse Exp $ */
-/* $XFree86$ */
+/* $TOG: greet.c /main/43 1997/12/12 18:36:15 kaleb $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -29,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.1 1995/10/21 12:52:36 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -41,6 +41,7 @@ from the X Consortium.
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#include <X11/XKBlib.h>
 
 #include "dm.h"
 #include "greet.h"
@@ -169,6 +170,15 @@ InitGreet (d)
 
     if (!dpy)
 	return 0;
+
+    {
+    int opcode, evbase, errbase, majret, minret;
+    unsigned int value = XkbPCF_GrabsUseXKBStateMask;
+    if (XkbQueryExtension (dpy, &opcode, &evbase, &errbase, &majret, &minret)) {
+	if (XkbSetPerClientControls (dpy, XkbPCF_GrabsUseXKBStateMask, &value))
+	    LogError ("%s\n", "SetPerClientControls failed");
+    }
+    }
 
     RegisterCloseOnFork (ConnectionNumber (dpy));
 
