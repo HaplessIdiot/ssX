@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.77 2002/12/16 22:48:27 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.78 2003/01/12 16:42:29 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -727,15 +727,27 @@ install:: fonts.alias							@@\
 # define BuildXF86MiscExt	NO
 # define BuildMITMiscExt	NO
 
-# ifndef Xsun24Server
-#  define Xsun24Server		YES
-# endif
-# ifndef XsunServer
-#  define XsunServer		YES
-# endif
-# ifndef XsunMonoServer
-#  define XsunMonoServer	YES
-# endif
+# if OSMajorVersion == 2 || OSMajorVersion == 3 && OSMinorVersion < 2
+#  ifndef Xsun24Server
+#   define Xsun24Server		YES
+#  endif
+#  ifndef XsunServer
+#   define XsunServer		YES
+#  endif
+#  ifndef XsunMonoServer
+#   define XsunMonoServer	YES
+#  endif
+# else 
+#  ifndef Xsun24Server
+#   define Xsun24Server		NO
+#  endif
+#  ifndef XsunServer
+#   define XsunServer		NO
+#  endif
+#  ifndef XsunMonoServer
+#   define XsunMonoServer	NO
+#  endif
+#endif
 
 # define XkbServerDefines	-DXKB_ALWAYS_USES_SOFT_REPEAT
 
