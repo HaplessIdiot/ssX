@@ -9,7 +9,7 @@
 <date>4 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.21 2000/12/04 19:31:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.22 2000/12/12 17:01:59 dawes Exp $
 </ident>
 
 <abstract>
@@ -455,11 +455,12 @@ dependencies/limitations, other architectures known to work on
 	server.
 
 <tag>&relvers;:</tag>
-	No native support for these chipsets, because the old driver
-	has not been ported.
+	Support (accelerated) for the Imagine 128, Ticket 2 Ride,
+	Revolution 3D and Revolution IV is provided by the XF86_I128
+	server.
 
 <tag>Summary:</tag>
-	No Number Nine chips are supported in &relvers;.
+	All Number Nine I128 chips are supported in &legacyvers; and &relvers;.
 
 </descrip>
 

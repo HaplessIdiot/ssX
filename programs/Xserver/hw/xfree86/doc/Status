@@ -373,11 +373,11 @@ architectures known to work on (e.g., Alpha, PPC), etc.
             tion 3D and Revolution IV is provided by the XF86_I128 server.
 
       4.0.2:
-            No native support for these chipsets, because the old driver has
-            not been ported.
+            Support (accelerated) for the Imagine 128, Ticket 2 Ride, Revolu-
+            tion 3D and Revolution IV is provided by the XF86_I128 server.
 
       Summary:
-            No Number Nine chips are supported in 4.0.2.
+            All Number Nine I128 chips are supported in 3.3.6 and 4.0.2.
 
 23.  Oak Technologies Inc
 
@@ -572,4 +572,4 @@ architectures known to work on (e.g., Alpha, PPC), etc.
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.22 2000/12/12 17:01:59 dawes Exp $
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/Status,v 1.17 2000/12/12 17:20:16 dawes Exp $
