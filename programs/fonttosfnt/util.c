@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/fonttosfnt/util.c,v 1.8 2003/11/21 05:22:09 dawes Exp $ */
+/* $XFree86: xc/programs/fonttosfnt/util.c,v 1.9 2003/12/10 02:58:07 dawes Exp $ */
 
 #include <time.h>
 #include <string.h>
@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include FT_FREETYPE_H
 #include FT_INTERNAL_OBJECTS_H
 #include FT_BDF_H
+#include "X11/Xos.h"
 #include "fonttosfnt.h"
 
 #ifdef NEED_SNPRINTF

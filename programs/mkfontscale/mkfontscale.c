@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.20 2003/12/08 15:46:27 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.21 2003/12/10 02:58:07 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include <X11/Xos.h>
 #include <X11/fonts/fontenc.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H

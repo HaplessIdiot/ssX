@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.13 2003/07/07 15:34:20 eich Exp $
+XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.14 2003/12/18 16:38:34 dawes Exp $
 
 /*
  * This is for SCO Open Server 5.0.6A or later. You must have the
@@ -94,7 +94,7 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.13 2003/07/07 15:34:20 eich Exp $
 #endif
 
 #define AsmDefines		-D__ELF__ -D__PIC__
-#define XawI18nDefines          -DHAS_WCHAR_H -DHAS_ISW_FUNCS
+#define XawI18nDefines          -DHAS_WCHAR_H -DHAS_WCTYPE_H -DHAS_ISW_FUNCS
 #define ServerExtraSysLibs      $(CBRT) -lm -levent SCODynamicFlags
 #define ExtraLibraries          -lsocket
 #define NeedWidePrototypes      NO
@@ -107,6 +107,7 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.13 2003/07/07 15:34:20 eich Exp $
 #define HasPutenv               YES
 #define HasSnprintf             YES
 #define HasSetenv		NO
+#define HasMkstemp		YES
 #define ExecableScripts         YES
 #define HasShadowPasswd         YES
 #define ManSourcePath           $(MANPATH)/man

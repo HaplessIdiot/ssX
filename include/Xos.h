@@ -27,7 +27,7 @@ in this Software without prior written authorization from The Open Group.
  * The X Window System is a Trademark of The Open Group.
  *
  */
-/* $XFree86: xc/include/Xos.h,v 3.39 2003/03/25 04:18:07 dawes Exp $ */
+/* $XFree86: xc/include/Xos.h,v 3.40 2003/12/18 16:38:34 dawes Exp $ */
 
 /* This is a collection of things to try and minimize system dependencies
  * in a "signficant" number of source files.
@@ -89,6 +89,9 @@ in this Software without prior written authorization from The Open Group.
 #ifndef X_NOT_STDC_ENV
 
 #include <string.h>
+#ifdef SCO325
+#include <strings.h>
+#else
 #ifdef __STDC__
 #ifndef index
 #define index(s,c) (strchr((s),(c)))
@@ -102,6 +105,7 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #ifndef rindex
 #define rindex strrchr
+#endif
 #endif
 #endif
 

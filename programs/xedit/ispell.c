@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/ispell.c,v 1.18 2002/02/10 02:50:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/ispell.c,v 1.19 2002/10/19 20:04:20 herrb Exp $ */
 
 #include "xedit.h"
 #include <stdlib.h>
@@ -42,6 +42,7 @@
 #include <X11/Xaw/MenuButton.h>
 #include <X11/Xaw/SmeBSB.h>
 #include <X11/Xaw/SimpleMenu.h>
+#include <X11/Xos.h>
 
 #define RECEIVE		1
 #define SEND		2
