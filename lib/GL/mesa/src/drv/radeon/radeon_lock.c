@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_lock.c,v 1.2 2001/03/21 16:14:24 dawes Exp $ */
+/* $XFree86$ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -37,6 +37,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_context.h"
 #include "radeon_lock.h"
 #include "radeon_tex.h"
+#include "radeon_state.h"
 
 #if DEBUG_LOCKING
 char *prevLockFile = NULL;
@@ -54,12 +55,12 @@ int prevLockLine = 0;
  */
 void radeonGetLock( radeonContextPtr rmesa, GLuint flags )
 {
-   __DRIdrawablePrivate *dPriv = rmesa->driDrawable;
-   __DRIscreenPrivate *sPriv = rmesa->driScreen;
+   __DRIdrawablePrivate *dPriv = rmesa->dri.drawable;
+   __DRIscreenPrivate *sPriv = rmesa->dri.screen;
    RADEONSAREAPrivPtr sarea = rmesa->sarea;
    int i;
 
-   drmGetLock( rmesa->driFd, rmesa->hHWContext, flags );
+   drmGetLock( rmesa->dri.fd, rmesa->dri.hwContext, flags );
 
    /* The window might have moved, so we might need to get new clip
     * rects.
@@ -69,27 +70,37 @@ void radeonGetLock( radeonContextPtr rmesa, GLuint flags )
     * Since the hardware state depends on having the latest drawable
     * clip rects, all state checking must be done _after_ this call.
     */
-   XMESA_VALIDATE_DRAWABLE_INFO( rmesa->display, sPriv, dPriv );
+   DRI_VALIDATE_DRAWABLE_INFO( rmesa->dri.display, sPriv, dPriv );
 
-   if ( rmesa->lastStamp != *(dPriv->pStamp) ) {
-      rmesa->lastStamp = *(dPriv->pStamp);
-      rmesa->new_state |= RADEON_NEW_WINDOW | RADEON_NEW_CLIP;
-      rmesa->SetupDone = 0;
+   if ( rmesa->lastStamp != dPriv->lastStamp ) {
+      radeonSetCliprects( rmesa, rmesa->glCtx->Color.DriverDrawBuffer );
+      radeonUpdateViewportOffset( rmesa->glCtx );
+      rmesa->lastStamp = dPriv->lastStamp;
    }
 
-   rmesa->dirty |= RADEON_UPLOAD_CONTEXT | RADEON_UPLOAD_CLIPRECTS;
+   if ( sarea->ctxOwner != rmesa->dri.hwContext ) {
+      sarea->ctxOwner = rmesa->dri.hwContext;
 
-   rmesa->numClipRects = dPriv->numClipRects;
-   rmesa->pClipRects = dPriv->pClipRects;
+      rmesa->upload_cliprects = 1;
+      if ( rmesa->store.statenr ) {
+	 rmesa->store.state[0].dirty = RADEON_UPLOAD_CONTEXT_ALL;
+	 if ( rmesa->store.texture[0][0] )
+	    rmesa->store.state[0].dirty |= RADEON_UPLOAD_TEX0;
+	 if ( rmesa->store.texture[1][0] )
+	    rmesa->store.state[0].dirty |= RADEON_UPLOAD_TEX1;
+      }
+      else {
+	 rmesa->state.hw.dirty = RADEON_UPLOAD_CONTEXT_ALL;
+	 if ( rmesa->state.texture.unit[0].texobj )
+	    rmesa->state.hw.dirty |= RADEON_UPLOAD_TEX0;
+	 if ( rmesa->state.texture.unit[1].texobj )
+	    rmesa->state.hw.dirty |= RADEON_UPLOAD_TEX1;
+      }
 
-   if ( sarea->ctxOwner != rmesa->hHWContext ) {
-      sarea->ctxOwner = rmesa->hHWContext;
-      rmesa->dirty = RADEON_UPLOAD_ALL;
-   }
-
-   for ( i = 0 ; i < rmesa->lastTexHeap ; i++ ) {
-      if ( sarea->texAge[i] != rmesa->lastTexAge[i] ) {
-	 radeonAgeTextures( rmesa, i );
+      for ( i = 0 ; i < rmesa->texture.numHeaps ; i++ ) {
+	 if ( sarea->texAge[i] != rmesa->texture.age[i] ) {
+	    radeonAgeTextures( rmesa, i );
+	 }
       }
    }
 }

@@ -1,0 +1,36 @@
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.8 2000/08/01 20:28:40 dawes Exp $
+
+#define IHaveModules
+#include <Server.tmpl>
+
+
+LinkSourceFile(ac_context.c, $(MESASRCDIR)/src/array_cache)
+LinkSourceFile(ac_context.h, $(MESASRCDIR)/src/array_cache)
+LinkSourceFile(ac_import.c, $(MESASRCDIR)/src/array_cache)
+LinkSourceFile(acache.h, $(MESASRCDIR)/src/array_cache)
+
+         SRCS = ac_context.c ac_import.c
+         OBJS = ac_context.o ac_import.o
+
+     INCLUDES = -I$(MESASRCDIR)/src \
+		-I$(MESASRCDIR)/src/math \
+		-I$(MESASRCDIR)/include \
+                -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
+                -I../../../include -I../../../glx \
+                -I$(LIBSRC)/GL/include \
+                -I$(XF86SRC) -I$(XTOP)/include
+
+      DEFINES = $(GLX_DEFINES) /*-DUSE_X86_ASM*/ /*-DUSE_SPARC_ASM*/
+
+#if DoLoadableServer
+ModuleObjectRule()
+#else
+NormalLibraryObjectRule()
+#endif
+
+SubdirLibraryRule($(OBJS))
+
+LintLibraryTarget(dri,$(SRCS))
+NormalLintTarget($(SRCS))
+
+DependTarget()

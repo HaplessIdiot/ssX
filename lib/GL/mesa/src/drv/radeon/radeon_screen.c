@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.c,v 1.2 2001/03/21 16:14:25 dawes Exp $ */
+/* $XFree86$ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -34,13 +34,9 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
-#include "radeon_dri.h"
-
+#include "radeon_screen.h"
 #include "radeon_context.h"
 #include "radeon_ioctl.h"
-#include "radeon_tris.h"
-#include "radeon_vb.h"
-#include "radeon_pipeline.h"
 
 #include "mem.h"
 
@@ -51,7 +47,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define PCI_CHIP_RADEON_QE	0x5145
 #define PCI_CHIP_RADEON_QF	0x5146
 #define PCI_CHIP_RADEON_QG	0x5147
-#define PCI_CHIP_RADEON_VE     0x5159
 #endif
 
 
@@ -62,9 +57,37 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
    radeonScreenPtr radeonScreen;
    RADEONDRIPtr radeonDRIPriv = (RADEONDRIPtr)sPriv->pDevPriv;
 
+   /* Check the DRI version */
+   {
+      int major, minor, patch;
+      if ( XF86DRIQueryVersion( sPriv->display, &major, &minor, &patch ) ) {
+         if ( major != 4 || minor < 0 ) {
+            __driUtilMessage( "Radeon DRI driver expected DRI version 4.0.x but got version %d.%d.%d", major, minor, patch );
+            return NULL;
+         }
+      }
+   }
+
+   /* Check that the DDX driver version is compatible */
+   if ( sPriv->ddxMajor != 4 ||
+	sPriv->ddxMinor < 0 ) {
+      __driUtilMessage( "Radeon DRI driver expected DDX driver version 4.0.x but got version %d.%d.%d", sPriv->ddxMajor, sPriv->ddxMinor, sPriv->ddxPatch );
+      return NULL;
+   }
+
+   /* Check that the DRM driver version is compatible */
+   if ( sPriv->drmMajor != 1 ||
+	sPriv->drmMinor < 2 ) {
+      __driUtilMessage( "Radeon DRI driver expected DRM driver version 1.2.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch );
+      return NULL;
+   }
+
    /* Allocate the private area */
    radeonScreen = (radeonScreenPtr) CALLOC( sizeof(*radeonScreen) );
-   if ( !radeonScreen ) return NULL;
+   if ( !radeonScreen ) {
+      __driUtilMessage("radeonCreateScreen(): CALLOC radeonScreen struct failed");
+      return NULL;
+   }
 
    /* This is first since which regions we map depends on whether or
     * not we are using a PCI card.
@@ -78,6 +101,7 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
 		radeonScreen->mmio.size,
 		&radeonScreen->mmio.map ) ) {
       FREE( radeonScreen );
+      __driUtilMessage("radeonCreateScreen(): drmMap failed\n");
       return NULL;
    }
 
@@ -89,6 +113,7 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
 		&radeonScreen->status.map ) ) {
       drmUnmap( radeonScreen->mmio.map, radeonScreen->mmio.size );
       FREE( radeonScreen );
+      __driUtilMessage("radeonCreateScreen(): drmMap (2) failed\n");
       return NULL;
    }
    radeonScreen->scratch = (__volatile__ CARD32 *)
@@ -99,6 +124,7 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
       drmUnmap( radeonScreen->status.map, radeonScreen->status.size );
       drmUnmap( radeonScreen->mmio.map, radeonScreen->mmio.size );
       FREE( radeonScreen );
+      __driUtilMessage("radeonCreateScreen(): drmMapBufs failed\n");
       return NULL;
    }
 
@@ -113,6 +139,7 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
 	 drmUnmap( radeonScreen->status.map, radeonScreen->status.size );
 	 drmUnmap( radeonScreen->mmio.map, radeonScreen->mmio.size );
 	 FREE( radeonScreen );
+         __driUtilMessage("radeonCreateScreen(): IsPCI failed\n");
 	 return NULL;
       }
    }
@@ -123,7 +150,6 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
    case PCI_CHIP_RADEON_QE:
    case PCI_CHIP_RADEON_QF:
    case PCI_CHIP_RADEON_QG:
-   case PCI_CHIP_RADEON_VE:
       radeonScreen->chipset = RADEON_CARD_TYPE_RADEON;
       break;
    default:
@@ -162,16 +188,6 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
 
    radeonScreen->driScreen = sPriv;
    radeonScreen->sarea_priv_offset = radeonDRIPriv->sarea_priv_offset;
-
-#ifdef PER_CONTEXT_SAREA
-   radeonScreen->perctx_sarea_size = radeonDRIPriv->perctx_sarea_size;
-#endif
-
-   radeonDDSetupInit();
-   radeonDDTriangleFuncsInit();
-   radeonDDFastPathInit();
-   radeonDDEltPathInit();
-
    return radeonScreen;
 }
 
@@ -180,6 +196,9 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
 void radeonDestroyScreen( __DRIscreenPrivate *sPriv )
 {
    radeonScreenPtr radeonScreen = (radeonScreenPtr)sPriv->private;
+
+   if (!radeonScreen)
+      return;
 
    if ( !radeonScreen->IsPCI ) {
       drmUnmap( radeonScreen->agpTextures.map,

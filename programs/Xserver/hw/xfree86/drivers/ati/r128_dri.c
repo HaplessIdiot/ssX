@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.21 2001/11/26 21:46:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.22 2001/12/28 15:49:11 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -300,14 +300,16 @@ static void R128LeaveServer(ScreenPtr pScreen)
     unsigned char *R128MMIO = info->MMIO;
 
     if (!info->directRenderingEnabled) {
-	if (!info->CCEInUse) {
-	    /* Save all hardware scissors */
-	    info->sc_left     = INREG(R128_SC_LEFT);
-	    info->sc_right    = INREG(R128_SC_RIGHT);
-	    info->sc_top      = INREG(R128_SC_TOP);
-	    info->sc_bottom   = INREG(R128_SC_BOTTOM);
-	    info->aux_sc_cntl = INREG(R128_SC_BOTTOM);
-	}
+	/* Save all hardware scissors */
+	info->sc_left     = INREG(R128_SC_LEFT);
+	info->sc_right    = INREG(R128_SC_RIGHT);
+	info->sc_top      = INREG(R128_SC_TOP);
+	info->sc_bottom   = INREG(R128_SC_BOTTOM);
+	info->aux_sc_cntl = INREG(R128_SC_BOTTOM);
+    } else if (info->CCEInUse) {
+	R128CCEReleaseIndirect(pScrn);
+
+	info->CCEInUse = FALSE;
     }
 }
 

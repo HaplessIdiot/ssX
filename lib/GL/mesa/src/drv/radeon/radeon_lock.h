@@ -91,8 +91,8 @@ extern int prevLockLine;
    do {									\
       char __ret = 0;							\
       DEBUG_CHECK_LOCK();						\
-      DRM_CAS( rmesa->driHwLock, rmesa->hHWContext,			\
-	       (DRM_LOCK_HELD | rmesa->hHWContext), __ret );		\
+      DRM_CAS( rmesa->dri.hwLock, rmesa->dri.hwContext,			\
+	       (DRM_LOCK_HELD | rmesa->dri.hwContext), __ret );		\
       if ( __ret )							\
 	 radeonGetLock( rmesa, 0 );					\
       DEBUG_LOCK();							\
@@ -102,9 +102,9 @@ extern int prevLockLine;
  */
 #define UNLOCK_HARDWARE( rmesa )					\
    do {									\
-      DRM_UNLOCK( rmesa->driFd,						\
-		  rmesa->driHwLock,					\
-		  rmesa->hHWContext );					\
+      DRM_UNLOCK( rmesa->dri.fd,					\
+		  rmesa->dri.hwLock,					\
+		  rmesa->dri.hwContext );				\
       DEBUG_RESET();							\
    } while (0)
 

@@ -1,0 +1,40 @@
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.8 2000/08/01 20:28:40 dawes Exp $
+
+#define IHaveModules
+#include <Server.tmpl>
+
+LinkSourceFile(ss_context.c, $(MESASRCDIR)/src/swrast_setup)
+LinkSourceFile(ss_context.h, $(MESASRCDIR)/src/swrast_setup)
+LinkSourceFile(ss_triangle.c, $(MESASRCDIR)/src/swrast_setup)
+LinkSourceFile(ss_triangle.h, $(MESASRCDIR)/src/swrast_setup)
+LinkSourceFile(ss_tritmp.h, $(MESASRCDIR)/src/swrast_setup)
+LinkSourceFile(ss_vb.c, $(MESASRCDIR)/src/swrast_setup)
+LinkSourceFile(ss_vb.h, $(MESASRCDIR)/src/swrast_setup)
+LinkSourceFile(ss_vbtmp.h, $(MESASRCDIR)/src/swrast_setup)
+LinkSourceFile(swrast_setup.h, $(MESASRCDIR)/src/swrast_setup)
+
+         SRCS = ss_context.c ss_triangle.c ss_vb.c
+         OBJS = ss_context.o ss_triangle.o ss_vb.o
+
+     INCLUDES = -I$(MESASRCDIR)/src \
+		-I$(MESASRCDIR)/src/swrast_setup \
+		-I$(MESASRCDIR)/include \
+                -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
+                -I../../../include -I../../../glx \
+                -I$(LIBSRC)/GL/include \
+                -I$(XF86SRC) -I$(XTOP)/include
+
+      DEFINES = $(GLX_DEFINES) /*-DUSE_X86_ASM*/ /*-DUSE_SPARC_ASM*/
+
+#if DoLoadableServer
+ModuleObjectRule()
+#else
+NormalLibraryObjectRule()
+#endif
+
+SubdirLibraryRule($(OBJS))
+
+LintLibraryTarget(dri,$(SRCS))
+NormalLintTarget($(SRCS))
+
+DependTarget()

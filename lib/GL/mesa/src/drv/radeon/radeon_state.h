@@ -41,15 +41,23 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "radeon_context.h"
 
-extern void radeonDDInitState( radeonContextPtr rmesa );
-extern void radeonDDInitStateFuncs( GLcontext *ctx );
-
-extern void radeonDDUpdateState( GLcontext *ctx );
-extern void radeonDDUpdateHWState( GLcontext *ctx );
+extern void radeonInitState( radeonContextPtr rmesa );
+extern void radeonInitStateFuncs( GLcontext *ctx );
 
 extern void radeonUpdateWindow( GLcontext *ctx );
+extern void radeonSetCliprects( radeonContextPtr rmesa, GLenum mode );
+extern void radeonUpdateViewportOffset( GLcontext *ctx );
 
-extern void radeonEmitHwStateLocked( radeonContextPtr rmesa );
+extern void radeonPrintDirty( const char *msg, GLuint state );
+
+
+extern void radeonFallback( GLcontext *ctx, GLuint bit, GLboolean mode );
+#define FALLBACK( rmesa, bit, mode ) do {				\
+   if ( 0 ) fprintf( stderr, "FALLBACK in "__FUNCTION__": #%d=%d\n",	\
+		     bit, mode );					\
+   radeonFallback( rmesa->glCtx, bit, mode );				\
+} while (0)
+
 
 #endif
 #endif

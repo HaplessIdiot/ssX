@@ -50,46 +50,22 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 extern drmBufPtr r128GetBufferLocked( r128ContextPtr rmesa );
 extern void r128FlushVerticesLocked( r128ContextPtr rmesa );
 
-extern void r128GetEltBufLocked( r128ContextPtr rmesa );
-extern void r128FlushEltsLocked( r128ContextPtr rmesa );
-extern void r128FireEltsLocked( r128ContextPtr rmesa,
-				GLuint start, GLuint end,
-				GLuint discard );
-extern void r128ReleaseBufLocked( r128ContextPtr rmesa, drmBufPtr buffer );
-
-/* Make this available as both a regular and an inline function.
- */
-extern CARD32 *r128AllocVertices( r128ContextPtr rmesa, int count );
-
-static __inline CARD32 *r128AllocVerticesInline( r128ContextPtr rmesa,
-						 int count )
+static __inline void *r128AllocDmaLow( r128ContextPtr rmesa, int bytes )
 {
-   int bytes = count * rmesa->vertsize * sizeof(CARD32);
    CARD32 *head;
 
    if ( !rmesa->vert_buf ) {
       LOCK_HARDWARE( rmesa );
-
-      if ( rmesa->first_elt != rmesa->next_elt ) {
-	 r128FlushEltsLocked( rmesa );
-      }
-
       rmesa->vert_buf = r128GetBufferLocked( rmesa );
-
       UNLOCK_HARDWARE( rmesa );
    } else if ( rmesa->vert_buf->used + bytes > rmesa->vert_buf->total ) {
       LOCK_HARDWARE( rmesa );
-
       r128FlushVerticesLocked( rmesa );
       rmesa->vert_buf = r128GetBufferLocked( rmesa );
-
       UNLOCK_HARDWARE( rmesa );
    }
 
-   head = (CARD32 *)((char *)rmesa->vert_buf->address +
-		     rmesa->vert_buf->used);
-
-   rmesa->num_verts += count;
+   head = (CARD32 *)((char *)rmesa->vert_buf->address + rmesa->vert_buf->used);
    rmesa->vert_buf->used += bytes;
    return head;
 }
@@ -111,8 +87,8 @@ extern void r128ReadDepthSpanLocked( r128ContextPtr rmesa,
 extern void r128ReadDepthPixelsLocked( r128ContextPtr rmesa, GLuint n,
 				       const GLint x[], const GLint y[] );
 
-extern void r128SwapBuffers( r128ContextPtr rmesa );
-extern void r128PageFlip( r128ContextPtr rmesa );
+extern void r128CopyBuffer( const __DRIdrawablePrivate *dPriv );
+extern void r128PageFlip( const __DRIdrawablePrivate *dPriv );
 
 extern void r128WaitForIdleLocked( r128ContextPtr rmesa );
 
@@ -130,8 +106,6 @@ do {									\
       fprintf( stderr, "FLUSH_BATCH in %s\n", __FUNCTION__ );		\
    if ( rmesa->vert_buf ) {						\
       r128FlushVertices( rmesa );					\
-   } else if ( rmesa->next_elt != rmesa->first_elt ) {			\
-      r128FlushElts( rmesa );						\
    }									\
 } while (0)
 
@@ -141,7 +115,7 @@ do {									\
 #define ALIGN_NEXT_ELT( rmesa )						\
 do {									\
    rmesa->next_elt = (GLushort *)					\
-      (((unsigned long)rmesa->next_elt + 7) & ~0x7);			\
+      (((GLuint)rmesa->next_elt + 7) & ~0x7);				\
    rmesa->next_elt = (GLushort *)					\
       ((GLubyte *)rmesa->next_elt + R128_INDEX_PRIM_OFFSET);		\
 } while (0)

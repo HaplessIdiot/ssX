@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.24 2001/09/27 08:25:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.25 2001/12/21 21:04:36 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -343,7 +343,7 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
             /* incompatible drm version */
             xf86DrvMsg(pScreen->myNum, X_ERROR,
                        "[dri] I810DRIScreenInit failed because of a version mismatch.\n"
-                       "[dri] i810.o kernel module version is %d.%d.%d but version 1.2 or greater is needed.\n"
+                       "[dri] i810.o kernel module version is %d.%d.%d but version 1.2.0 or greater is needed.\n"
                        "[dri] Disabling DRI.\n",
                        version->version_major,
                        version->version_minor,

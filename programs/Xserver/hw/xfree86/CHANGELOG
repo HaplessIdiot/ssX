@@ -1,4 +1,15 @@
 XFree86 4.2.99.1 (XX February 2002)
+  47. Import Mesa-4.0.1, and resync with the DRI trunk which is now based
+      on this (Keith Whitwell, Brian Paul, Alan Hourihane, David Dawes).
+  46. Mga driver updates:
+       - Don't try dual-head mode with the G400 unless the mga_hal module
+         is loaded.
+       - Distinguish between the G400 and G450 when showing the chipset in
+         the log.
+       - Update the mga man page for supported hardware and dual-head
+         support.  Futher updates are needed to document all of the
+         drivers's options.
+      (David Dawes).
   45. Add -Wundef when compiling the tree with GCC >= 2.8 (Marc La France).
   44. Macintosh flat panel fix in the "nv" driver (Mark Vojkovich).
   43. XDarwin fixes and improvements for full screen Quartz mode:
@@ -14646,4 +14657,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2176 2002/02/21 21:06:51 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2177 2002/02/21 21:24:25 tsi Exp $

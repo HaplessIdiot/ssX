@@ -1,0 +1,78 @@
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.8 2000/08/01 20:28:40 dawes Exp $
+
+#define IHaveModules
+#include <Server.tmpl>
+
+
+
+LinkSourceFile(m_clip_tmp.h, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_copy_tmp.h, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_debug_clip.c, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_debug_norm.c, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_debug_vertex.c, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_debug_xform.c, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_dotprod_tmp.h, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_debug.h, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_debug_util.h, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_eval.c, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_eval.h, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_matrix.c, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_matrix.h, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_norm_tmp.h, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_trans_tmp.h, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_translate.c, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_translate.h, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_vector.c, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_vector.h, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_vertices.c, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_vertices.h, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_xform.c, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_xform.h, $(MESASRCDIR)/src/math)
+LinkSourceFile(m_xform_tmp.h, $(MESASRCDIR)/src/math)
+LinkSourceFile(mathmod.h, $(MESASRCDIR)/src/math)
+
+         SRCS = m_debug_clip.c \
+		m_debug_norm.c \
+		m_debug_vertex.c \
+		m_debug_xform.c \
+		m_eval.c \
+		m_matrix.c \
+		m_translate.c \
+		m_vector.c \
+		m_vertices.c \
+		m_xform.c
+
+         OBJS = m_debug_clip.o \
+		m_debug_norm.o \
+		m_debug_vertex.o \
+		m_debug_xform.o \
+		m_eval.o \
+		m_matrix.o \
+		m_translate.o \
+		m_vector.o \
+		m_vertices.o \
+		m_xform.o 
+
+
+     INCLUDES = -I$(MESASRCDIR)/src \
+		-I$(MESASRCDIR)/src/math \
+		-I$(MESASRCDIR)/include \
+                -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
+                -I../../../include -I../../../glx \
+                -I$(LIBSRC)/GL/include \
+                -I$(XF86SRC) -I$(XTOP)/include
+
+      DEFINES = $(GLX_DEFINES) /*-DUSE_X86_ASM*/ /*-DUSE_SPARC_ASM*/
+
+#if DoLoadableServer
+ModuleObjectRule()
+#else
+NormalLibraryObjectRule()
+#endif
+
+SubdirLibraryRule($(OBJS))
+
+LintLibraryTarget(dri,$(SRCS))
+NormalLintTarget($(SRCS))
+
+DependTarget()

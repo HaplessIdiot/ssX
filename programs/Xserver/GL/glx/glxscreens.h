@@ -1,7 +1,7 @@
 #ifndef _GLX_screens_h_
 #define _GLX_screens_h_
 
-/* $XFree86: xc/programs/Xserver/GL/glx/glxscreens.h,v 1.3 2001/02/16 13:24:05 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/glxscreens.h,v 1.4 2001/03/21 16:29:37 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -37,9 +37,10 @@
 **
 */
 
+/* XXX: should be defined somewhere globally */
+#define CAPI
+
 #include "GL/internal/glcore.h"
-
-
 
 /*
 ** Screen dependent data.  These methods are the interface between the DIX

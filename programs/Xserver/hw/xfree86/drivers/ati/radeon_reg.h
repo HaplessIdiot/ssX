@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.12 2001/09/25 14:58:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.13 2001/09/26 12:49:25 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1179,6 +1179,12 @@
 #       define RADEON_MIN_FILTER_ANISO_NEAREST_MIP_NEAREST (10 <<  1)
 #       define RADEON_MIN_FILTER_ANISO_NEAREST_MIP_LINEAR  (11 <<  1)
 #       define RADEON_MIN_FILTER_MASK                      (15 <<  1)
+#       define RADEON_MAX_ANISO_1_TO_1                     (0  <<  5)
+#       define RADEON_MAX_ANISO_2_TO_1                     (1  <<  5)
+#       define RADEON_MAX_ANISO_4_TO_1                     (2  <<  5)
+#       define RADEON_MAX_ANISO_8_TO_1                     (3  <<  5)
+#       define RADEON_MAX_ANISO_16_TO_1                    (4  <<  5)
+#       define RADEON_MAX_ANISO_MASK                       (7  <<  5)
 #       define RADEON_LOD_BIAS_MASK                        (0xffff <<  8)
 #       define RADEON_LOD_BIAS_SHIFT                       8
 #       define RADEON_MAX_MIP_LEVEL_MASK                   (0x0f << 16)
@@ -1376,6 +1382,7 @@
 #define RADEON_PP_TFACTOR_2                 0x1c98
 
 #define RADEON_RB3D_BLENDCNTL               0x1c20
+#	define RADEON_COMB_FCN_MASK                    (3  << 12)
 #       define RADEON_COMB_FCN_ADD_CLAMP               (0  << 12)
 #       define RADEON_COMB_FCN_ADD_NOCLAMP             (1  << 12)
 #       define RADEON_COMB_FCN_SUB_CLAMP               (2  << 12)
@@ -1444,10 +1451,30 @@
 #       define RADEON_DEPTH_ENDIAN_DWORD_SWAP (2 << 18)
 #define RADEON_RB3D_PLANEMASK               0x1d84
 #define RADEON_RB3D_ROPCNTL                 0x1d80
+#	define RADEON_ROP_MASK			(15 << 8)
+#	define RADEON_ROP_CLEAR			(0  << 8)
+#	define RADEON_ROP_NOR			(1  << 8)
+#	define RADEON_ROP_AND_INVERTED		(2  << 8)
+#	define RADEON_ROP_COPY_INVERTED		(3  << 8)
+#	define RADEON_ROP_AND_REVERSE		(4  << 8)
+#	define RADEON_ROP_INVERT		(5  << 8)
+#	define RADEON_ROP_XOR			(6  << 8)
+#	define RADEON_ROP_NAND			(7  << 8)
+#	define RADEON_ROP_AND			(8  << 8)
+#	define RADEON_ROP_EQUIV			(9  << 8)
+#	define RADEON_ROP_NOOP			(10 << 8)
+#	define RADEON_ROP_OR_INVERTED		(11 << 8)
+#	define RADEON_ROP_COPY			(12 << 8)
+#	define RADEON_ROP_OR_REVERSE		(13 << 8)
+#	define RADEON_ROP_OR			(14 << 8)
+#	define RADEON_ROP_SET			(15 << 8)
 #define RADEON_RB3D_STENCILREFMASK          0x1d7c
 #       define RADEON_STENCIL_REF_SHIFT       0
+#       define RADEON_STENCIL_REF_MASK        (0xff << 0)
 #       define RADEON_STENCIL_MASK_SHIFT      16
+#       define RADEON_STENCIL_VALUE_MASK      (0xff << 16)
 #       define RADEON_STENCIL_WRITEMASK_SHIFT 24
+#       define RADEON_STENCIL_WRITE_MASK      (0xff << 24)
 #define RADEON_RB3D_ZSTENCILCNTL            0x1c2c
 #       define RADEON_DEPTH_FORMAT_MASK          (0xf << 0)
 #       define RADEON_DEPTH_FORMAT_16BIT_INT_Z   (0  <<  0)
@@ -1476,24 +1503,28 @@
 #       define RADEON_STENCIL_TEST_GREATER       (5  << 12)
 #       define RADEON_STENCIL_TEST_NEQUAL        (6  << 12)
 #       define RADEON_STENCIL_TEST_ALWAYS        (7  << 12)
-#       define RADEON_STENCIL_S_FAIL_KEEP        (0  << 16)
-#       define RADEON_STENCIL_S_FAIL_ZERO        (1  << 16)
-#       define RADEON_STENCIL_S_FAIL_REPLACE     (2  << 16)
-#       define RADEON_STENCIL_S_FAIL_INC         (3  << 16)
-#       define RADEON_STENCIL_S_FAIL_DEC         (4  << 16)
-#       define RADEON_STENCIL_S_FAIL_INVERT      (5  << 16)
+#       define RADEON_STENCIL_TEST_MASK          (0x7 << 12)
+#       define RADEON_STENCIL_FAIL_KEEP          (0  << 16)
+#       define RADEON_STENCIL_FAIL_ZERO          (1  << 16)
+#       define RADEON_STENCIL_FAIL_REPLACE       (2  << 16)
+#       define RADEON_STENCIL_FAIL_INC           (3  << 16)
+#       define RADEON_STENCIL_FAIL_DEC           (4  << 16)
+#       define RADEON_STENCIL_FAIL_INVERT        (5  << 16)
+#       define RADEON_STENCIL_FAIL_MASK          (0x7 << 16)
 #       define RADEON_STENCIL_ZPASS_KEEP         (0  << 20)
 #       define RADEON_STENCIL_ZPASS_ZERO         (1  << 20)
 #       define RADEON_STENCIL_ZPASS_REPLACE      (2  << 20)
 #       define RADEON_STENCIL_ZPASS_INC          (3  << 20)
 #       define RADEON_STENCIL_ZPASS_DEC          (4  << 20)
 #       define RADEON_STENCIL_ZPASS_INVERT       (5  << 20)
-#       define RADEON_STENCIL_ZFAIL_KEEP         (0  << 20)
-#       define RADEON_STENCIL_ZFAIL_ZERO         (1  << 20)
-#       define RADEON_STENCIL_ZFAIL_REPLACE      (2  << 20)
-#       define RADEON_STENCIL_ZFAIL_INC          (3  << 20)
-#       define RADEON_STENCIL_ZFAIL_DEC          (4  << 20)
-#       define RADEON_STENCIL_ZFAIL_INVERT       (5  << 20)
+#       define RADEON_STENCIL_ZPASS_MASK         (0x7 << 20)
+#       define RADEON_STENCIL_ZFAIL_KEEP         (0  << 24)
+#       define RADEON_STENCIL_ZFAIL_ZERO         (1  << 24)
+#       define RADEON_STENCIL_ZFAIL_REPLACE      (2  << 24)
+#       define RADEON_STENCIL_ZFAIL_INC          (3  << 24)
+#       define RADEON_STENCIL_ZFAIL_DEC          (4  << 24)
+#       define RADEON_STENCIL_ZFAIL_INVERT       (5  << 24)
+#       define RADEON_STENCIL_ZFAIL_MASK         (0x7 << 24)
 #       define RADEON_Z_COMPRESSION_ENABLE       (1  << 28)
 #       define RADEON_FORCE_Z_DIRTY              (1  << 29)
 #       define RADEON_Z_WRITE_ENABLE             (1  << 30)
@@ -1626,6 +1657,8 @@
 #define RADEON_SE_VPORT_YOFFSET             0x1da4
 #define RADEON_SE_VPORT_ZSCALE              0x1da8
 #define RADEON_SE_VPORT_ZOFFSET             0x1dac
+#define RADEON_SE_ZBIAS_FACTOR              0x1db0
+#define RADEON_SE_ZBIAS_CONSTANT            0x1db4
 
 				/* Registers for CP and Microcode Engine */
 #define RADEON_CP_ME_RAM_ADDR               0x07d4
@@ -1743,7 +1776,7 @@
 #define RADEON_CP_VC_CNTL_PRIM_TYPE_TRI_LIST        0x00000004
 #define RADEON_CP_VC_CNTL_PRIM_TYPE_TRI_FAN         0x00000005
 #define RADEON_CP_VC_CNTL_PRIM_TYPE_TRI_STRIP       0x00000006
-#define RADEON_CP_VC_CNTL_PRIM_TYPE_TRI_TYPE2       0x00000007
+#define RADEON_CP_VC_CNTL_PRIM_TYPE_TRI_TYPE_2      0x00000007
 #define RADEON_CP_VC_CNTL_PRIM_TYPE_RECT_LIST       0x00000008
 #define RADEON_CP_VC_CNTL_PRIM_TYPE_3VRT_POINT_LIST 0x00000009
 #define RADEON_CP_VC_CNTL_PRIM_TYPE_3VRT_LINE_LIST  0x0000000a

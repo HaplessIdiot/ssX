@@ -79,8 +79,5 @@ typedef struct {
 } r128ScreenRec, *r128ScreenPtr;
 
 
-extern r128ScreenPtr r128CreateScreen( __DRIscreenPrivate *sPriv );
-extern void r128DestroyScreen( __DRIscreenPrivate *sPriv );
-
 #endif
 #endif /* __R128_SCREEN_H__ */

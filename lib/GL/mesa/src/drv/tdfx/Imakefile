@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.27 2001/06/01 07:40:45 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.25.2.1 2001/06/01 07:42:23 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -22,13 +22,14 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.27 2001/06/01 07:40:45
 #ifdef i386Architecture
 #include "../../X86/Imakefile.inc"
 #endif
+#ifdef SparcArchitecture
+#include "../../SPARC/Imakefile.inc"
+#endif
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(MESA_ASM_DEFINES)
-     INCLUDES = $(X_INCLUDES) $(MESA_INCLUDES) $(DRI_INCLUDES) \
-		-I$(GLIDE3INCDIR)
+     INCLUDES = $(X_INCLUDES) $(MESA_INCLUDES) $(DRI_INCLUDES)
 
-      DRIOBJS = $(GLXLIBSRC)/mesa/dri/dri_mesa.o \
-		$(GLXLIBSRC)/dri/dri_tmm.o
+      DRIOBJS = $(GLXLIBSRC)/dri/dri_util.o
 
       DRMOBJS = $(GLXLIBSRC)/dri/drm/xf86drm.o \
 		$(GLXLIBSRC)/dri/drm/xf86drmHash.o \

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_tris.c,v 1.1 2001/01/08 01:07:28 martin Exp $ */
+/* $XFree86$ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -29,197 +29,543 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <martin@valinux.com>
- *   Gareth Hughes <gareth@valinux.com>
+ *   Keith Whitwell <keithw@valinux.com>
  *
  */
 
-#include "radeon_context.h"
-#include "radeon_ioctl.h"
-#include "radeon_vb.h"
+#include <stdio.h>
+#include <math.h>
+
+#include "glheader.h"
+#include "mtypes.h"
+#include "macros.h"
+#include "colormac.h"
+
+#include "swrast/swrast.h"
+#include "swrast_setup/swrast_setup.h"
+#include "tnl/tnl.h"
+#include "tnl/t_context.h"
+#include "tnl/t_pipeline.h"
+
 #include "radeon_tris.h"
 #include "radeon_state.h"
+#include "radeon_tex.h"
+#include "radeon_vb.h"
+#include "radeon_ioctl.h"
 
-#include "pipeline.h"
-#include "vbindirect.h"
+static const GLuint hw_prim[GL_POLYGON+1] = {
+   RADEON_CP_VC_CNTL_PRIM_TYPE_POINT,
+   RADEON_CP_VC_CNTL_PRIM_TYPE_LINE,
+   RADEON_CP_VC_CNTL_PRIM_TYPE_LINE,
+   RADEON_CP_VC_CNTL_PRIM_TYPE_LINE,
+   RADEON_CP_VC_CNTL_PRIM_TYPE_TRI_LIST,
+   RADEON_CP_VC_CNTL_PRIM_TYPE_TRI_LIST,
+   RADEON_CP_VC_CNTL_PRIM_TYPE_TRI_LIST,
+   RADEON_CP_VC_CNTL_PRIM_TYPE_TRI_LIST,
+   RADEON_CP_VC_CNTL_PRIM_TYPE_TRI_LIST,
+   RADEON_CP_VC_CNTL_PRIM_TYPE_TRI_LIST
+};
+
+static void radeonRasterPrimitive( GLcontext *ctx, GLuint hwprim );
+static void radeonRenderPrimitive( GLcontext *ctx, GLenum prim );
+static void radeonResetLineStipple( GLcontext *ctx );
+
+
+/***********************************************************************
+ *                    Emit primitives as inline vertices               *
+ ***********************************************************************/
+
+
+#if defined(USE_X86_ASM)
+#define COPY_DWORDS( j, vb, vertsize, v )				\
+do {									\
+	int __tmp;							\
+	__asm__ __volatile__( "rep ; movsl"				\
+			      : "=%c" (j), "=D" (vb), "=S" (__tmp)	\
+			      : "0" (vertsize),				\
+			        "D" ((long)vb),				\
+			        "S" ((long)v) );			\
+} while (0)
+#else
+#define COPY_DWORDS( j, vb, vertsize, v )				\
+do {									\
+   for ( j = 0 ; j < vertsize ; j++ )					\
+      vb[j] = ((GLuint *)v)[j];						\
+   vb += vertsize;							\
+} while (0)
+#endif
+
+static __inline void radeon_draw_quad( radeonContextPtr rmesa,
+				       radeonVertexPtr v0,
+				       radeonVertexPtr v1,
+				       radeonVertexPtr v2,
+				       radeonVertexPtr v3 )
+{
+   GLuint vertsize = rmesa->vertex_size;
+   GLuint *vb = (GLuint *)radeonAllocDmaLow( rmesa, 6 * vertsize * 4,
+					     __FUNCTION__);
+   GLuint j;
+
+   rmesa->num_verts += 6;
+   COPY_DWORDS( j, vb, vertsize, v0 );
+   COPY_DWORDS( j, vb, vertsize, v1 );
+   COPY_DWORDS( j, vb, vertsize, v3 );
+   COPY_DWORDS( j, vb, vertsize, v1 );
+   COPY_DWORDS( j, vb, vertsize, v2 );
+   COPY_DWORDS( j, vb, vertsize, v3 );
+}
+
+
+static __inline void radeon_draw_triangle( radeonContextPtr rmesa,
+					   radeonVertexPtr v0,
+					   radeonVertexPtr v1,
+					   radeonVertexPtr v2 )
+{
+   GLuint vertsize = rmesa->vertex_size;
+   GLuint *vb = (GLuint *)radeonAllocDmaLow( rmesa, 3 * vertsize * 4,
+					     __FUNCTION__);
+   GLuint j;
+
+   /*
+   printf("radeon_draw_triangle\n");
+   radeon_print_vertex(rmesa->glCtx, v0);
+   radeon_print_vertex(rmesa->glCtx, v1);
+   radeon_print_vertex(rmesa->glCtx, v2);
+   */
+   rmesa->num_verts += 3;
+   COPY_DWORDS( j, vb, vertsize, v0 );
+   COPY_DWORDS( j, vb, vertsize, v1 );
+   COPY_DWORDS( j, vb, vertsize, v2 );
+}
+
+static __inline void radeon_draw_line( radeonContextPtr rmesa,
+				       radeonVertexPtr v0,
+				       radeonVertexPtr v1 )
+{
+   GLuint vertsize = rmesa->vertex_size;
+   GLuint *vb = (GLuint *)radeonAllocDmaLow( rmesa, 2 * vertsize * 4,
+					     __FUNCTION__);
+   GLuint j;
+
+   rmesa->num_verts += 2;
+   COPY_DWORDS( j, vb, vertsize, v0 );
+   COPY_DWORDS( j, vb, vertsize, v1 );
+}
+
+static __inline void radeon_draw_point( radeonContextPtr rmesa,
+					radeonVertexPtr v0 )
+{
+   int vertsize = rmesa->vertex_size;
+   GLuint *vb = (GLuint *)radeonAllocDmaLow( rmesa, vertsize * 4,
+					     __FUNCTION__);
+   int j;
+
+   /*
+   printf("radeon_draw_point\n");
+   radeon_print_vertex(rmesa->glCtx, v0);
+   */
+   rmesa->num_verts += 1;
+   COPY_DWORDS( j, vb, vertsize, v0 );
+}
+
+/***********************************************************************
+ *          Macros for t_dd_tritmp.h to draw basic primitives          *
+ ***********************************************************************/
+
+#define QUAD( a, b, c, d ) radeon_draw_quad( rmesa, a, b, c, d )
+#define TRI( a, b, c )     radeon_draw_triangle( rmesa, a, b, c )
+#define LINE( a, b )       radeon_draw_line( rmesa, a, b )
+#define POINT( a )         radeon_draw_point( rmesa, a )
+
+/***********************************************************************
+ *              Build render functions from dd templates               *
+ ***********************************************************************/
+
+#define RADEON_TWOSIDE_BIT	0x01
+#define RADEON_UNFILLED_BIT	0x02
+#define RADEON_MAX_TRIFUNC	0x04
+
 
 static struct {
-   points_func		points;
+   points_func	        points;
    line_func		line;
    triangle_func	triangle;
    quad_func		quad;
 } rast_tab[RADEON_MAX_TRIFUNC];
 
-#define RADEON_COLOR( to, from )					\
-do {									\
-   *(GLuint *)(to) = *(GLuint *)(from);					\
-} while (0)
 
-#define RADEON_COLOR3( to, from )		\
-do {						\
-  (to)[0] = (from)[2];				\
-  (to)[1] = (from)[1];				\
-  (to)[2] = (from)[0];				\
-} while (0)
+#define DO_FALLBACK  0
+#define DO_OFFSET    0
+#define DO_UNFILLED (IND & RADEON_UNFILLED_BIT)
+#define DO_TWOSIDE  (IND & RADEON_TWOSIDE_BIT)
+#define DO_FLAT      0
+#define DO_TRI       1
+#define DO_QUAD      1
+#define DO_LINE      1
+#define DO_POINTS    1
+#define DO_FULL_QUAD 1
+
+#define HAVE_RGBA   1
+#define HAVE_SPEC   1
+#define HAVE_INDEX  0
+#define HAVE_BACK_COLORS  0
+#define HAVE_HW_FLATSHADE 1
+#define VERTEX radeonVertex
+#define TAB rast_tab
+
+#define DEPTH_SCALE 1.0
+#define UNFILLED_TRI unfilled_tri
+#define UNFILLED_QUAD unfilled_quad
+#define VERT_X(_v) _v->v.x
+#define VERT_Y(_v) _v->v.y
+#define VERT_Z(_v) _v->v.z
+#define AREA_IS_CCW( a ) (a < 0)
+#define GET_VERTEX(e) (rmesa->verts + (e<<rmesa->vertex_stride_shift))
 
 
-static void radeon_null_quad( GLcontext *ctx, GLuint v0,
-			      GLuint v1, GLuint v2, GLuint v3, GLuint pv )
-{
-}
-static void radeon_null_triangle( GLcontext *ctx, GLuint v0,
-				  GLuint v1, GLuint v2, GLuint pv )
-{
-}
-static void radeon_null_line( GLcontext *ctx,
-			      GLuint v1, GLuint v2, GLuint pv )
-{
-}
-static void radeon_null_points( GLcontext *ctx, GLuint first, GLuint last )
-{
-}
+#define VERT_SET_RGBA( v, c )    v->ui[coloroffset] = *(GLuint *)c
+#define VERT_COPY_RGBA( v0, v1 ) v0->ui[coloroffset] = v1->ui[coloroffset]
+#define VERT_SAVE_RGBA( idx )    color[idx] = v[idx]->ui[coloroffset]
+#define VERT_RESTORE_RGBA( idx ) v[idx]->ui[coloroffset] = color[idx]
 
-static void radeonPrintRenderState( const char *msg, GLuint state )
-{
-   fprintf( stderr, "%s: (0x%x) %s%s%s%s%s\n",
-	    msg, state,
-	    (state & RADEON_FLAT_BIT)       ? "flat, "       : "",
-	    (state & RADEON_OFFSET_BIT)     ? "offset, "     : "",
-	    (state & RADEON_TWOSIDE_BIT)    ? "twoside, "    : "",
-	    (state & RADEON_NODRAW_BIT)     ? "no-draw, "    : "",
-	    (state & RADEON_FALLBACK_BIT)   ? "fallback"     : "" );
-}
+#define VERT_SET_SPEC( v, c )    if (havespec) COPY_3V(v->ub4[5], c )
+#define VERT_COPY_SPEC( v0, v1 ) if (havespec) COPY_3V(v0->ub4[5], v1->ub4[5])
+#define VERT_SAVE_SPEC( idx )    if (havespec) spec[idx] = v[idx]->ui[5]
+#define VERT_RESTORE_SPEC( idx ) if (havespec) v[idx]->ui[5] = spec[idx]
+
+#define LOCAL_VARS(n)							\
+   radeonContextPtr rmesa = RADEON_CONTEXT(ctx);			\
+   GLuint color[n], spec[n];						\
+   GLuint coloroffset = (rmesa->vertex_size == 4 ? 3 : 4);		\
+   GLboolean havespec = (rmesa->vertex_size > 4);			\
+   (void) color; (void) spec; (void) coloroffset; (void) havespec;
+
+/***********************************************************************
+ *                Helpers for rendering unfilled primitives            *
+ ***********************************************************************/
+
+#define RASTERIZE(x) if (rmesa->hw_primitive != hw_prim[x]) \
+                        radeonRasterPrimitive( ctx, hw_prim[x] )
+#define RENDER_PRIMITIVE rmesa->render_primitive
+#define TAG(x) x
+#include "tnl_dd/t_dd_unfilled.h"
+#undef IND
+
+
+/***********************************************************************
+ *                      Generate GL render functions                   *
+ ***********************************************************************/
+
 
 #define IND (0)
 #define TAG(x) x
-#include "radeon_tritmp.h"
-
-#define IND (RADEON_FLAT_BIT)
-#define TAG(x) x##_flat
-#include "radeon_tritmp.h"
-
-#define IND (RADEON_OFFSET_BIT)
-#define TAG(x) x##_offset
-#include "radeon_tritmp.h"
-
-#define IND (RADEON_OFFSET_BIT | RADEON_FLAT_BIT)
-#define TAG(x) x##_offset_flat
-#include "radeon_tritmp.h"
+#include "tnl_dd/t_dd_tritmp.h"
 
 #define IND (RADEON_TWOSIDE_BIT)
 #define TAG(x) x##_twoside
-#include "radeon_tritmp.h"
+#include "tnl_dd/t_dd_tritmp.h"
 
-#define IND (RADEON_TWOSIDE_BIT | RADEON_FLAT_BIT)
-#define TAG(x) x##_twoside_flat
-#include "radeon_tritmp.h"
+#define IND (RADEON_UNFILLED_BIT)
+#define TAG(x) x##_unfilled
+#include "tnl_dd/t_dd_tritmp.h"
 
-#define IND (RADEON_TWOSIDE_BIT | RADEON_OFFSET_BIT)
-#define TAG(x) x##_twoside_offset
-#include "radeon_tritmp.h"
-
-#define IND (RADEON_TWOSIDE_BIT | RADEON_OFFSET_BIT | RADEON_FLAT_BIT)
-#define TAG(x) x##_twoside_offset_flat
-#include "radeon_tritmp.h"
+#define IND (RADEON_TWOSIDE_BIT|RADEON_UNFILLED_BIT)
+#define TAG(x) x##_twoside_unfilled
+#include "tnl_dd/t_dd_tritmp.h"
 
 
-void radeonDDTriangleFuncsInit( void )
+static void init_rast_tab( void )
 {
-   GLint i;
-
    init();
-   init_flat();
-   init_offset();
-   init_offset_flat();
    init_twoside();
-   init_twoside_flat();
-   init_twoside_offset();
-   init_twoside_offset_flat();
+   init_unfilled();
+   init_twoside_unfilled();
+}
 
-   for ( i = 0 ; i < RADEON_MAX_TRIFUNC ; i++ ) {
-      if ( i & RADEON_NODRAW_BIT ) {
-	 rast_tab[i].points	= radeon_null_points;
-	 rast_tab[i].line	= radeon_null_line;
-	 rast_tab[i].triangle	= radeon_null_triangle;
-	 rast_tab[i].quad	= radeon_null_quad;
+
+
+/**********************************************************************/
+/*               Render unclipped begin/end objects                   */
+/**********************************************************************/
+
+#define VERT(x) (radeonVertex *)(radeonverts + (x << shift))
+#define RENDER_POINTS( start, count )		\
+   for ( ; start < count ; start++)		\
+      radeon_draw_point( rmesa, VERT(start) )
+#define RENDER_LINE( v0, v1 ) \
+   radeon_draw_line( rmesa, VERT(v0), VERT(v1) )
+#define RENDER_TRI( v0, v1, v2 )  \
+   radeon_draw_triangle( rmesa, VERT(v0), VERT(v1), VERT(v2) )
+#define RENDER_QUAD( v0, v1, v2, v3 ) \
+   radeon_draw_quad( rmesa, VERT(v0), VERT(v1), VERT(v2), VERT(v3) )
+#define INIT(x) do {					\
+   if (0) fprintf(stderr, "%s\n", __FUNCTION__);	\
+   radeonRenderPrimitive( ctx, x );			\
+} while (0)
+#undef LOCAL_VARS
+#define LOCAL_VARS						\
+   radeonContextPtr rmesa = RADEON_CONTEXT(ctx);		\
+   const GLuint shift = rmesa->vertex_stride_shift;		\
+   const char *radeonverts = (char *)rmesa->verts;		\
+   const GLuint * const elt = TNL_CONTEXT(ctx)->vb.Elts;	\
+   const GLboolean stipple = ctx->Line.StippleFlag;		\
+   (void) elt; (void) stipple;
+#define RESET_STIPPLE	if ( stipple ) radeonResetLineStipple( ctx );
+#define RESET_OCCLUSION
+#define PRESERVE_VB_DEFS
+#define ELT(x) (x)
+#define TAG(x) radeon_##x##_verts
+#include "tnl/t_vb_rendertmp.h"
+#undef ELT
+#undef TAG
+#define TAG(x) radeon_##x##_elts
+#define ELT(x) elt[x]
+#include "tnl/t_vb_rendertmp.h"
+
+
+/**********************************************************************/
+/*                    Render clipped primitives                       */
+/**********************************************************************/
+
+static void radeonRenderClippedPoly( GLcontext *ctx, const GLuint *elts,
+				     GLuint n )
+{
+   TNLcontext *tnl = TNL_CONTEXT(ctx);
+   struct vertex_buffer *VB = &tnl->vb;
+
+   /* Render the new vertices as an unclipped polygon.
+    */
+   {
+      GLuint *tmp = VB->Elts;
+      VB->Elts = (GLuint *)elts;
+      tnl->Driver.Render.PrimTabElts[GL_POLYGON]( ctx, 0, n, PRIM_BEGIN|PRIM_END );
+      VB->Elts = tmp;
+   }
+}
+
+static void radeonFastRenderClippedPoly( GLcontext *ctx, const GLuint *elts,
+					 GLuint n )
+{
+   radeonContextPtr rmesa = RADEON_CONTEXT( ctx );
+   GLuint vertsize = rmesa->vertex_size;
+   GLuint *vb = radeonAllocDmaLow( rmesa, (n-2) * 3 * 4 * vertsize,
+				   __FUNCTION__);
+   GLubyte *radeonverts = (GLubyte *)rmesa->verts;
+   const GLuint shift = rmesa->vertex_stride_shift;
+   const GLuint *start = (const GLuint *)VERT(elts[0]);
+   int i,j;
+
+   rmesa->num_verts += (n-2) * 3;
+
+   for (i = 2 ; i < n ; i++) {
+      COPY_DWORDS( j, vb, vertsize, start );
+      COPY_DWORDS( j, vb, vertsize, VERT(elts[i-1]) );
+      COPY_DWORDS( j, vb, vertsize, VERT(elts[i]) );
+   }
+}
+
+
+
+
+/**********************************************************************/
+/*                    Choose render functions                         */
+/**********************************************************************/
+
+#define _RADEON_NEW_RENDER_STATE (_DD_NEW_TRI_LIGHT_TWOSIDE |		\
+			          _DD_NEW_TRI_UNFILLED)
+
+#define ANY_RASTER_FLAGS (DD_TRI_LIGHT_TWOSIDE|DD_TRI_UNFILLED)
+
+
+static void radeonChooseRenderState(GLcontext *ctx)
+{
+   TNLcontext *tnl = TNL_CONTEXT(ctx);
+   radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
+   GLuint flags = ctx->_TriangleCaps;
+   GLuint index = 0;
+
+   if (flags & DD_TRI_LIGHT_TWOSIDE) index |= RADEON_TWOSIDE_BIT;
+   if (flags & DD_TRI_UNFILLED)      index |= RADEON_UNFILLED_BIT;
+
+   if (index != rmesa->RenderIndex) {
+      tnl->Driver.Render.Points = rast_tab[index].points;
+      tnl->Driver.Render.Line = rast_tab[index].line;
+      tnl->Driver.Render.ClippedLine = rast_tab[index].line;
+      tnl->Driver.Render.Triangle = rast_tab[index].triangle;
+      tnl->Driver.Render.Quad = rast_tab[index].quad;
+
+      if (index == 0) {
+	 tnl->Driver.Render.PrimTabVerts = radeon_render_tab_verts;
+	 tnl->Driver.Render.PrimTabElts = radeon_render_tab_elts;
+	 tnl->Driver.Render.ClippedPolygon = radeonFastRenderClippedPoly;
+      } else {
+	 tnl->Driver.Render.PrimTabVerts = _tnl_render_tab_verts;
+	 tnl->Driver.Render.PrimTabElts = _tnl_render_tab_elts;
+	 tnl->Driver.Render.ClippedPolygon = radeonRenderClippedPoly;
+      }
+
+      rmesa->RenderIndex = index;
+   }
+}
+
+/**********************************************************************/
+/*                 Validate state at pipeline start                   */
+/**********************************************************************/
+
+static void radeonWrapRunPipeline( GLcontext *ctx )
+{
+   radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
+
+   /* Validate state:
+    */
+   if (rmesa->NewGLState) {
+      if (rmesa->NewGLState & _NEW_TEXTURE)
+	 radeonUpdateTextureState( ctx );
+
+      if (!rmesa->Fallback) {
+	 if (rmesa->NewGLState & _RADEON_NEW_VERTEX_STATE)
+	    radeonChooseVertexState( ctx );
+
+	 if (rmesa->NewGLState & _RADEON_NEW_RENDER_STATE)
+	    radeonChooseRenderState( ctx );
+      }
+
+      rmesa->NewGLState = 0;
+   }
+
+   /* Run the pipeline.
+    */ 
+   _tnl_run_pipeline( ctx );
+
+   /* Nothing left to do.
+    */
+}
+
+/**********************************************************************/
+/*                 High level hooks for t_vb_render.c                 */
+/**********************************************************************/
+
+
+static void radeonRasterPrimitive( GLcontext *ctx, GLuint hwprim )
+{
+   radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
+   if (rmesa->hw_primitive != hwprim) {
+      RADEON_STATECHANGE( rmesa, 0 );
+      rmesa->hw_primitive = hwprim;
+   }
+}
+
+static void radeonRenderPrimitive( GLcontext *ctx, GLenum prim )
+{
+   radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
+   GLuint hw = hw_prim[prim];
+   rmesa->render_primitive = prim;
+   if (prim >= GL_TRIANGLES && (ctx->_TriangleCaps & DD_TRI_UNFILLED))
+      return;
+   radeonRasterPrimitive( ctx, hw );
+}
+
+static void radeonRenderFinish( GLcontext *ctx )
+{
+}
+
+static void radeonResetLineStipple( GLcontext *ctx )
+{
+   radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
+
+   /* Reset the hardware stipple counter.
+    */
+   fprintf(stderr, "%s\n", __FUNCTION__);
+   RADEON_STATECHANGE( rmesa, RADEON_UPLOAD_LINE );
+}
+
+
+/**********************************************************************/
+/*           Transition to/from hardware rasterization.               */
+/**********************************************************************/
+
+static char *fallbackStrings[] = {
+   "Texture mode",
+   "glDrawBuffer(GL_FRONT_AND_BACK)",
+   "glEnable(GL_STENCIL) without hw stencil buffer",
+   "glRenderMode(selection or feedback)",
+   "glBlendEquation",
+   "glBlendFunc(mode != ADD)"
+};
+
+
+static char *getFallbackString(GLuint bit)
+{
+   int i = 0;
+   while (bit > 1) {
+      i++;
+      bit >>= 1;
+   }
+   return fallbackStrings[i];
+}
+
+
+void radeonFallback( GLcontext *ctx, GLuint bit, GLboolean mode )
+{
+   radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
+   TNLcontext *tnl = TNL_CONTEXT(ctx);
+   GLuint oldfallback = rmesa->Fallback;
+
+   if (mode) {
+      rmesa->Fallback |= bit;
+      if (oldfallback == 0) {
+	 RADEON_FIREVERTICES( rmesa );
+	 _swsetup_Wakeup( ctx );
+	 _tnl_need_projected_coords( ctx, GL_TRUE );
+	 rmesa->RenderIndex = ~0;
+         if (rmesa->debugFallbacks) {
+            fprintf(stderr, "Radeon begin software fallback: 0x%x %s\n",
+                    bit, getFallbackString(bit));
+         }
+      }
+   }
+   else {
+      rmesa->Fallback &= ~bit;
+      if (oldfallback == bit) {
+         /*printf("End fallback 0x%x\n", bit);*/
+	 _swrast_flush( ctx );
+	 tnl->Driver.Render.Start = radeonCheckTexSizes;
+	 tnl->Driver.Render.PrimitiveNotify = radeonRenderPrimitive;
+	 tnl->Driver.Render.Finish = radeonRenderFinish;
+	 tnl->Driver.Render.BuildVertices = radeonBuildVertices;
+	 tnl->Driver.Render.ResetLineStipple = radeonResetLineStipple;
+	 rmesa->NewGLState |= (_RADEON_NEW_RENDER_STATE|
+			       _RADEON_NEW_VERTEX_STATE);
+         if (rmesa->debugFallbacks) {
+            fprintf(stderr, "Radeon end software fallback: 0x%x %s\n",
+                    bit, getFallbackString(bit));
+         }
       }
    }
 }
 
 
-/* FIXME: Only enable software fallback for stencil in 16 bpp mode after
- * we have hardware stencil support.
- */
-#define ALL_FALLBACK	(DD_SELECT | DD_FEEDBACK | DD_STENCIL)
-#define POINT_FALLBACK	(ALL_FALLBACK | DD_POINT_SMOOTH | DD_POINT_ATTEN)
-#define LINE_FALLBACK	(ALL_FALLBACK | DD_LINE_SMOOTH | DD_LINE_STIPPLE)
-#define TRI_FALLBACK	(ALL_FALLBACK | DD_TRI_SMOOTH | DD_TRI_UNFILLED)
-#define ANY_FALLBACK	(POINT_FALLBACK | LINE_FALLBACK | TRI_FALLBACK)
-#define ANY_RASTER_FLAGS (DD_TRI_LIGHT_TWOSIDE | DD_TRI_OFFSET | DD_Z_NEVER)
+/**********************************************************************/
+/*                            Initialization.                         */
+/**********************************************************************/
 
-/* Setup the Point, Line, Triangle and Quad functions based on the
- * current rendering state.  Wherever possible, use the hardware to
- * render the primitive.  Otherwise, fallback to software rendering.
- */
-void radeonDDChooseRenderState( GLcontext *ctx )
+void radeonInitTriFuncs( GLcontext *ctx )
 {
-   radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
-   GLuint flags = ctx->TriangleCaps;
-   GLuint index = 0;
+   TNLcontext *tnl = TNL_CONTEXT(ctx);
 
-   if ( rmesa->Fallback ) {
-      rmesa->RenderIndex = RADEON_FALLBACK_BIT;
-      /* fixes vorder.c failure: */
-      if (flags & DD_TRI_LIGHT_TWOSIDE) {
-         rmesa->IndirectTriangles = DD_TRI_LIGHT_TWOSIDE;
-      }
-      return;
+   static int firsttime = 1;
+
+   if (firsttime) {
+      init_rast_tab();
+      firsttime = 0;
    }
 
-   if ( flags & ANY_RASTER_FLAGS ) {
-      if ( flags & DD_FLATSHADE )		index |= RADEON_FLAT_BIT;
-      if ( flags & DD_TRI_LIGHT_TWOSIDE )	index |= RADEON_TWOSIDE_BIT;
-      if ( flags & DD_TRI_OFFSET )		index |= RADEON_OFFSET_BIT;
-      if ( flags & DD_Z_NEVER )			index |= RADEON_NODRAW_BIT;
-   }
+   tnl->Driver.RunPipeline = radeonWrapRunPipeline;
+   tnl->Driver.Render.Start = radeonCheckTexSizes;
+   tnl->Driver.Render.Finish = radeonRenderFinish;
+   tnl->Driver.Render.PrimitiveNotify = radeonRenderPrimitive;
+   tnl->Driver.Render.ResetLineStipple = radeonResetLineStipple;
+   tnl->Driver.Render.BuildVertices = radeonBuildVertices;
 
-   rmesa->PointsFunc = rast_tab[index].points;
-   rmesa->LineFunc = rast_tab[index].line;
-   rmesa->TriangleFunc = rast_tab[index].triangle;
-   rmesa->QuadFunc = rast_tab[index].quad;
-
-   rmesa->RenderIndex = index;
-   rmesa->IndirectTriangles = 0;
-
-   if ( flags & ANY_FALLBACK ) {
-      if ( flags & POINT_FALLBACK ) {
-	 rmesa->RenderIndex |= RADEON_FALLBACK_BIT;
-	 rmesa->PointsFunc = 0;
-	 rmesa->IndirectTriangles |= DD_POINT_SW_RASTERIZE;
-      }
-
-      if ( flags & LINE_FALLBACK ) {
-	 rmesa->RenderIndex |= RADEON_FALLBACK_BIT;
-	 rmesa->LineFunc = 0;
-	 rmesa->IndirectTriangles |= DD_LINE_SW_RASTERIZE;
-      }
-
-      if ( flags & TRI_FALLBACK ) {
-	 rmesa->RenderIndex |= RADEON_FALLBACK_BIT;
-	 rmesa->TriangleFunc = 0;
-	 rmesa->QuadFunc = 0;
-	 rmesa->IndirectTriangles |= (DD_TRI_SW_RASTERIZE |
-				      DD_QUAD_SW_RASTERIZE);
-      }
-
-      /* fixes vorder.c failure: */
-      if (flags & DD_TRI_LIGHT_TWOSIDE) {
-         rmesa->IndirectTriangles |= DD_TRI_LIGHT_TWOSIDE;
-      }
-   }
-
-   if ( 0 ) {
-      gl_print_tri_caps( "tricaps", ctx->TriangleCaps );
-      radeonPrintRenderState( "radeon render state", rmesa->RenderIndex );
-   }
+/*     radeonFallback( ctx, 0x100000, 1 ); */
 }

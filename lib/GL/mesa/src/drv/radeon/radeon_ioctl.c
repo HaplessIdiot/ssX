@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.c,v 1.3 2001/04/01 14:00:00 tsi Exp $ */
+/* $XFree86$ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -39,9 +39,10 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_ioctl.h"
 
 #include "mem.h"
+#include "macros.h"
+#include "swrast/swrast.h"
 
-#define RADEON_TIMEOUT             2048
-#define USE_IN_MEMORY_SCRATCH_REGS 0
+#define RADEON_TIMEOUT             512
 
 
 /* =============================================================
@@ -52,7 +53,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 drmBufPtr radeonGetBufferLocked( radeonContextPtr rmesa )
 {
-   int fd = rmesa->radeonScreen->driScreen->fd;
+   int fd = rmesa->dri.fd;
    int index = 0;
    int size = 0;
    drmDMAReq dma;
@@ -60,7 +61,7 @@ drmBufPtr radeonGetBufferLocked( radeonContextPtr rmesa )
    int to = 0;
    int ret;
 
-   dma.context = rmesa->hHWContext;
+   dma.context = rmesa->dri.hwContext;
    dma.send_count = 0;
    dma.send_list = NULL;
    dma.send_sizes = NULL;
@@ -77,16 +78,13 @@ drmBufPtr radeonGetBufferLocked( radeonContextPtr rmesa )
       if ( ret == 0 ) {
 	 buf = &rmesa->radeonScreen->buffers->list[index];
 	 buf->used = 0;
-#if ENABLE_PERF_BOXES
 	 /* Bump the performance counter */
 	 rmesa->c_vertexBuffers++;
-#endif
 	 return buf;
       }
    }
 
    if ( !buf ) {
-      drmRadeonEngineReset( fd );
       UNLOCK_HARDWARE( rmesa );
       fprintf( stderr, "Error: Could not get new VB... exiting\n" );
       exit( -1 );
@@ -94,6 +92,7 @@ drmBufPtr radeonGetBufferLocked( radeonContextPtr rmesa )
 
    return buf;
 }
+
 
 static GLboolean intersect_rect( XF86DRIClipRectPtr out,
 				 XF86DRIClipRectPtr a,
@@ -109,156 +108,254 @@ static GLboolean intersect_rect( XF86DRIClipRectPtr out,
    return GL_TRUE;
 }
 
-void radeonFlushVerticesLocked( radeonContextPtr rmesa )
+static void emit_state( radeonContextPtr rmesa,
+			drmRadeonState *dest,
+			int dirty )
 {
-   XF86DRIClipRectPtr pbox = rmesa->pClipRects;
-   int nbox = rmesa->numClipRects;
-   drmBufPtr buffer = rmesa->vert_buf;
-   int count = rmesa->num_verts;
-   int prim = RADEON_TRIANGLES;
-   int fd = rmesa->driScreen->fd;
+   struct radeon_state *state = &rmesa->state;
+
+   if ( dirty & RADEON_UPLOAD_CONTEXT )
+      memcpy( &dest->context, &state->hw.context, sizeof(dest->context) );
+
+   if ( dirty & RADEON_UPLOAD_VERTFMT )
+      memcpy( &dest->vertex, &state->hw.vertex, sizeof(dest->vertex) );
+
+   if ( dirty & RADEON_UPLOAD_LINE )
+      memcpy( &dest->line, &state->hw.line, sizeof(dest->line) );
+
+   if ( dirty & RADEON_UPLOAD_BUMPMAP )
+      memcpy( &dest->bumpmap, &state->hw.bumpmap, sizeof(dest->bumpmap) );
+
+   if ( dirty & RADEON_UPLOAD_MASKS )
+      memcpy( &dest->mask, &state->hw.mask, sizeof(dest->mask) );
+
+   if ( dirty & RADEON_UPLOAD_VIEWPORT )
+      memcpy( &dest->viewport, &state->hw.viewport, sizeof(dest->viewport) );
+
+   if ( dirty & RADEON_UPLOAD_SETUP ) {
+      memcpy( &dest->setup1, &state->hw.setup1, sizeof(dest->setup1) );
+      memcpy( &dest->setup2, &state->hw.setup2, sizeof(dest->setup2) );
+   }
+
+   if ( dirty & RADEON_UPLOAD_MISC )
+      memcpy( &dest->misc, &state->hw.misc, sizeof(dest->misc) );
+
+   if ( dirty & RADEON_UPLOAD_ZBIAS )
+      memcpy( &dest->zbias, &state->hw.zbias, sizeof(dest->zbias) );
+
+   /* Assemble the texture state, combining the texture object and
+    * texture environment state into the hardware texture unit state.
+    */
+   if ( dirty & RADEON_UPLOAD_TEX0 ) {
+      radeonTexObjPtr t0 = state->texture.unit[0].texobj;
+
+      dest->texture[0].pp_txfilter = t0->pp_txfilter | state->hw.texture[0].pp_txfilter;
+      dest->texture[0].pp_txformat = t0->pp_txformat | RADEON_TXFORMAT_ST_ROUTE_STQ0;
+      dest->texture[0].pp_txoffset = t0->pp_txoffset;
+      dest->texture[0].pp_border_color = t0->pp_border_color;
+      dest->texture[0].pp_txcblend = state->hw.texture[0].pp_txcblend;
+      dest->texture[0].pp_txablend = state->hw.texture[0].pp_txablend;
+      dest->texture[0].pp_tfactor = state->hw.texture[0].pp_tfactor;
+   }
+
+   if ( dirty & RADEON_UPLOAD_TEX1 ) {
+      radeonTexObjPtr t1 = state->texture.unit[1].texobj;
+
+      dest->texture[1].pp_txfilter = t1->pp_txfilter | state->hw.texture[1].pp_txfilter;
+      dest->texture[1].pp_txformat = t1->pp_txformat | RADEON_TXFORMAT_ST_ROUTE_STQ1;
+      dest->texture[1].pp_txoffset = t1->pp_txoffset;
+      dest->texture[1].pp_border_color = t1->pp_border_color;
+      dest->texture[1].pp_txcblend = state->hw.texture[1].pp_txcblend;
+      dest->texture[1].pp_txablend = state->hw.texture[1].pp_txablend;
+      dest->texture[1].pp_tfactor = state->hw.texture[1].pp_tfactor;
+   }
+}
+
+
+static void print_values( const char *name, const void *vals, int sz )
+{
+   const int *ivals = (const int *)vals;
    int i;
 
-   rmesa->vert_buf = NULL;
+   for (i = 0; i < sz/4 ; i++)
+      fprintf(stderr, "%s %d: 0x%x\n", name, i, ivals[i]);
+}
+
+static void print_state( drmRadeonState *state )
+{
+   int dirty = state->dirty;
+
+   if ( dirty & RADEON_UPLOAD_CONTEXT ) 
+      print_values( "CONTEXT", &state->context, sizeof(state->context) );
+
+   if ( dirty & RADEON_UPLOAD_VERTFMT )
+      print_values( "VERTFMT", &state->vertex, sizeof(state->vertex) );
+
+   if ( dirty & RADEON_UPLOAD_LINE )
+      print_values( "LINE", &state->line, sizeof(state->line) );
+
+   if ( dirty & RADEON_UPLOAD_BUMPMAP )
+      print_values( "BUMPMAP", &state->bumpmap, sizeof(state->bumpmap) );
+
+   if ( dirty & RADEON_UPLOAD_MASKS )
+      print_values( "MASKS", &state->mask, sizeof(state->mask) );
+
+   if ( dirty & RADEON_UPLOAD_VIEWPORT )
+      print_values( "VIEWPORT", &state->viewport, sizeof(state->viewport) );
+
+   if ( dirty & RADEON_UPLOAD_SETUP ) {
+      print_values( "SETUP", &state->setup1, sizeof(state->setup1) );
+      print_values( "SETUP2", &state->setup2, sizeof(state->setup2) );
+   }
+
+   if ( dirty & RADEON_UPLOAD_MISC )
+      print_values( "MISC", &state->misc, sizeof(state->misc) );
+
+   if ( dirty & RADEON_UPLOAD_ZBIAS )
+      print_values( "ZBIAS", &state->zbias, sizeof(state->zbias) );
+
+   if ( dirty & RADEON_UPLOAD_TEX0 ) 
+      print_values( "TEX0", &state->texture[0], sizeof(state->texture[0]) );
+
+   if ( dirty & RADEON_UPLOAD_TEX1 ) 
+      print_values( "TEX1", &state->texture[1], sizeof(state->texture[1]) );
+}
+
+
+static void emit_prim( radeonContextPtr rmesa )
+{
+   GLuint prim = rmesa->store.primnr++;
+   GLuint dirty = rmesa->state.hw.dirty;
+
+   rmesa->store.prim[prim].prim = rmesa->hw_primitive;
+   rmesa->store.prim[prim].start = rmesa->dma.last;
+   rmesa->store.prim[prim].finish = rmesa->dma.low;
+   rmesa->store.prim[prim].vc_format = rmesa->vertex_format;
+
+   if (rmesa->hw_primitive & RADEON_CP_VC_CNTL_PRIM_WALK_IND)
+      rmesa->store.prim[prim].numverts = rmesa->dma.offset / 64;
+   else
+      rmesa->store.prim[prim].numverts = rmesa->num_verts;
+
    rmesa->num_verts = 0;
+   rmesa->dma.last = rmesa->dma.low;
 
-   if ( !buffer )
-      return;
 
-   if ( rmesa->dirty & ~RADEON_UPLOAD_CLIPRECTS )
-      radeonEmitHwStateLocked( rmesa );
 
-   if ( !nbox )
-      count = 0;
 
-   if ( nbox >= RADEON_NR_SAREA_CLIPRECTS )
-      rmesa->dirty |= RADEON_UPLOAD_CLIPRECTS;
-
-   if ( !count || !(rmesa->dirty & RADEON_UPLOAD_CLIPRECTS) )
-   {
-      if ( nbox == 1 ) {
-	 rmesa->sarea->nbox = 0;
-      } else {
-	 rmesa->sarea->nbox = nbox;
-      }
-
-      drmRadeonFlushVertexBuffer( fd, prim, buffer->idx, count, 1 );
-   }
-   else
-   {
-      for ( i = 0 ; i < nbox ; ) {
-	 int nr = MIN2( i + RADEON_NR_SAREA_CLIPRECTS, nbox );
-	 XF86DRIClipRectPtr b = rmesa->sarea->boxes;
-	 int discard = 0;
-
-	 if ( rmesa->scissor ) {
-	    rmesa->sarea->nbox = 0;
-
-	    for ( ; i < nr ; i++ ) {
-	       *b = pbox[i];
-	       if ( intersect_rect( b, b, &rmesa->scissor_rect ) ) {
-		  rmesa->sarea->nbox++;
-		  b++;
-	       }
-	    }
-
-	    /* Culled?
-	     */
-	    if ( !rmesa->sarea->nbox ) {
-	       if ( nr < nbox ) continue;
-	       count = 0;
-	    }
-	 } else {
-	    rmesa->sarea->nbox = nr - i;
-	    for ( ; i < nr ; i++) {
-	       *b++ = pbox[i];
-	    }
-	 }
-
-	 /* Finished with the buffer?
-	  */
-	 if ( nr == nbox ) {
-	    discard = 1;
-	 }
-
-	 rmesa->sarea->dirty |= RADEON_UPLOAD_CLIPRECTS;
-	 drmRadeonFlushVertexBuffer( fd, prim, buffer->idx, count, discard );
-      }
+   /* Make sure we keep a copy of the initial state.
+    */
+   if (prim == 0) {
+      dirty = RADEON_UPLOAD_CONTEXT_ALL;
+      if (rmesa->state.texture.unit[0].texobj) dirty |= RADEON_UPLOAD_TEX0;
+      if (rmesa->state.texture.unit[1].texobj) dirty |= RADEON_UPLOAD_TEX1;
    }
 
-   rmesa->dirty &= ~RADEON_UPLOAD_CLIPRECTS;
+
+   if (dirty)
+   {
+      GLuint state = rmesa->store.statenr++;
+
+      emit_state( rmesa, &rmesa->store.state[state], dirty );
+/*        fprintf(stderr, "emit state %d, dirty %x rmesa->dirty %x\n", */
+/*  	      state, dirty, rmesa->state.hw.dirty ); */
+      rmesa->store.state[state].dirty = rmesa->state.hw.dirty;	/* override */
+      rmesa->store.texture[0][state] = rmesa->state.texture.unit[0].texobj;
+      rmesa->store.texture[1][state] = rmesa->state.texture.unit[1].texobj;
+      rmesa->state.hw.dirty = 0;
+/*        print_state( &rmesa->store.state[state] ); */
+   }
+
+   rmesa->store.prim[prim].stateidx = rmesa->store.statenr - 1;
+
+/*     fprintf(stderr, "emit_prim %d hwprim 0x%x vfmt 0x%x %d..%d %d verts stateidx %x\n", */
+/*  	   prim, */
+/*  	   rmesa->store.prim[prim].prim, */
+/*  	   rmesa->store.prim[prim].vc_format, */
+/*  	   rmesa->store.prim[prim].start, */
+/*  	   rmesa->store.prim[prim].finish, */
+/*  	   rmesa->store.prim[prim].numverts, */
+/*  	   rmesa->store.prim[prim].stateidx); */
 }
 
 
-
-/* ================================================================
- * Indexed vertex buffer handling
- */
-
-void radeonGetEltBufLocked( radeonContextPtr rmesa )
+void radeonFlushPrimsLocked( radeonContextPtr rmesa )
 {
-   rmesa->elt_buf = radeonGetBufferLocked( rmesa );
-}
-
-void radeonFireEltsLocked( radeonContextPtr rmesa,
-			   GLuint start, GLuint end,
-			   GLuint discard )
-{
-   XF86DRIClipRectPtr pbox = rmesa->pClipRects;
+   XF86DRIClipRectPtr pbox = (XF86DRIClipRectPtr)rmesa->pClipRects;
    int nbox = rmesa->numClipRects;
-   drmBufPtr buffer = rmesa->elt_buf;
-   int prim = RADEON_TRIANGLES;
-   int fd = rmesa->driScreen->fd;
+   drmBufPtr buffer = rmesa->dma.buffer;
+   RADEONSAREAPrivPtr sarea = rmesa->sarea;
+   int fd = rmesa->dri.fd;
+   int discard_sz = rmesa->dma.high - rmesa->dma.low < 4096;
+   int discard = (rmesa->dma.retained != rmesa->dma.buffer &&
+		  discard_sz);
    int i;
 
-   if ( !buffer )
-      return;
-
-   if ( rmesa->dirty & ~RADEON_UPLOAD_CLIPRECTS )
-      radeonEmitHwStateLocked( rmesa );
-
    if ( !nbox )
-      end = start;
+      rmesa->store.primnr = 0;
+   else if ( nbox >= RADEON_NR_SAREA_CLIPRECTS ) {
+      rmesa->upload_cliprects = 1;
+      for ( i = 0 ; i < rmesa->store.statenr ; i++ )
+	 rmesa->store.state[0].dirty |= rmesa->store.state[i].dirty;
+      if ( !rmesa->store.texture[0][0] )
+	 rmesa->store.state[0].dirty &= ~RADEON_UPLOAD_TEX0;
+      if ( !rmesa->store.texture[1][0] )
+	 rmesa->store.state[0].dirty &= ~RADEON_UPLOAD_TEX1;
+   }
 
-   if ( nbox >= RADEON_NR_SAREA_CLIPRECTS )
-      rmesa->dirty |= RADEON_UPLOAD_CLIPRECTS;
 
-   if ( start == end || !(rmesa->dirty & RADEON_UPLOAD_CLIPRECTS) )
+/*     fprintf(stderr, "%s: boxes: %d prims: %d states: %d vertexstore: 0x%x\n", */
+/*  	   __FUNCTION__, */
+/*  	   sarea->nbox, rmesa->store.primnr, rmesa->store.statenr, */
+/*  	   rmesa->dma.low - rmesa->store.prim[0].start); */
+
+   if ( !rmesa->upload_cliprects || !rmesa->store.primnr )
    {
       if ( nbox == 1 ) {
-	 rmesa->sarea->nbox = 0;
+	 sarea->nbox = 0;
       } else {
-	 rmesa->sarea->nbox = nbox;
+	 sarea->nbox = nbox;
       }
 
-      drmRadeonFlushIndices( fd, prim, buffer->idx, start, end, discard );
+/*        fprintf(stderr, "case a %d boxes %d prims %d states\n", */
+/*  	      sarea->nbox, rmesa->store.primnr, rmesa->store.statenr); */
+      if (discard || rmesa->store.primnr)
+	 drmRadeonFlushPrims( fd, 
+			       buffer->idx,
+			       discard,
+			       rmesa->store.statenr,
+			       rmesa->store.state,
+			       rmesa->store.primnr,
+			       rmesa->store.prim);
    }
    else
    {
       for ( i = 0 ; i < nbox ; ) {
 	 int nr = MIN2( i + RADEON_NR_SAREA_CLIPRECTS, nbox );
-	 XF86DRIClipRectPtr b = rmesa->sarea->boxes;
-	 int d = 0;
+	 XF86DRIClipRectPtr b = sarea->boxes;
+	 int discard_now = 0;
 
-	 if ( rmesa->scissor ) {
-	    rmesa->sarea->nbox = 0;
+	 /* TODO: Precalculate this intersection:
+	  */
+	 if ( rmesa->state.scissor.enabled ) {
+	    sarea->nbox = 0;
 
 	    for ( ; i < nr ; i++ ) {
 	       *b = pbox[i];
-	       if ( intersect_rect( b, b, &rmesa->scissor_rect ) ) {
-		  rmesa->sarea->nbox++;
+	       if ( intersect_rect( b, b, &rmesa->state.scissor.rect ) ) {
+		  sarea->nbox++;
 		  b++;
 	       }
 	    }
 
 	    /* Culled?
 	     */
-	    if ( !rmesa->sarea->nbox ) {
+	    if ( !sarea->nbox ) {
 	       if ( nr < nbox ) continue;
-	       end = start;
+	       rmesa->store.primnr = 0;
 	    }
 	 } else {
-	    rmesa->sarea->nbox = nr - i;
+	    sarea->nbox = nr - i;
 	    for ( ; i < nr ; i++) {
 	       *b++ = pbox[i];
 	    }
@@ -267,49 +364,88 @@ void radeonFireEltsLocked( radeonContextPtr rmesa,
 	 /* Finished with the buffer?
 	  */
 	 if ( nr == nbox ) {
-	    d = discard;
+	    discard_now = discard;
 	 }
 
-	 rmesa->sarea->dirty |= RADEON_UPLOAD_CLIPRECTS;
-	 drmRadeonFlushIndices( fd, prim, buffer->idx, start, end, d );
+/*  	 fprintf(stderr, "case a %d boxes %d prims %d states, discard: %d\n", */
+/*  		 sarea->nbox, rmesa->store.primnr, rmesa->store.statenr, discard); */
+	 drmRadeonFlushPrims( fd, 
+			       buffer->idx,
+			       discard_now,
+			       rmesa->store.statenr,
+			       rmesa->store.state,
+			       rmesa->store.primnr,
+			       rmesa->store.prim);
       }
    }
 
-   rmesa->dirty &= ~RADEON_UPLOAD_CLIPRECTS;
+   if (discard_sz) {
+      rmesa->dma.buffer = 0;
+      rmesa->dma.address = 0;
+      rmesa->dma.low = 0;
+      rmesa->dma.high = 0;
+   }
+   else {
+      rmesa->dma.low = (rmesa->dma.low + 0x7) & ~0x7;  /* alignment */
+   }
+   rmesa->dma.last = rmesa->dma.low;
+   rmesa->store.primnr = 0;
+   rmesa->store.statenr = 0;
+   rmesa->upload_cliprects = 0;
+   rmesa->num_verts = 0;
 }
 
-void radeonFlushEltsLocked( radeonContextPtr rmesa )
+void radeonFlushPrimsGetBuffer( radeonContextPtr rmesa )
 {
-   if ( rmesa->first_elt != rmesa->next_elt ) {
-      radeonFireEltsLocked( rmesa,
-			    ((char *)rmesa->first_elt -
-			     (char *)rmesa->elt_buf->address),
-			    ((char *)rmesa->next_elt -
-			     (char *)rmesa->elt_buf->address),
-			    0 );
+   if (rmesa->dma.low != rmesa->dma.last)
+      emit_prim( rmesa );
 
-      ALIGN_NEXT_ELT( rmesa );
-      rmesa->first_elt = rmesa->next_elt;
+   LOCK_HARDWARE(rmesa);
+
+   if (rmesa->dma.buffer) {
+      rmesa->dma.low = rmesa->dma.high; /* force discard */
+      rmesa->dma.last = rmesa->dma.low;
+      radeonFlushPrimsLocked( rmesa );
+   }
+
+   rmesa->dma.buffer = radeonGetBufferLocked( rmesa );
+   rmesa->dma.high = rmesa->dma.buffer->total;
+   rmesa->dma.address = (GLubyte *)rmesa->dma.buffer->address;
+   rmesa->dma.low = 0;
+   rmesa->num_verts = 0;
+   rmesa->dma.last = rmesa->dma.low;
+   UNLOCK_HARDWARE(rmesa);
+}
+
+
+void radeonFlushPrims( radeonContextPtr rmesa )
+{
+   if (rmesa->dma.buffer) {
+      if (rmesa->dma.low != rmesa->dma.last)
+	 emit_prim( rmesa );
+
+      LOCK_HARDWARE( rmesa );
+      radeonFlushPrimsLocked( rmesa );
+      UNLOCK_HARDWARE( rmesa );
    }
 }
 
-void radeonReleaseBufLocked( radeonContextPtr rmesa, drmBufPtr buffer )
+void radeonEmitPrim( radeonContextPtr rmesa )
 {
-   int fd = rmesa->driScreen->fd;
+   ASSERT(rmesa->dma.buffer);
+   emit_prim( rmesa );
 
-   if ( !buffer )
-      return;
-
-   drmRadeonFlushVertexBuffer( fd, RADEON_TRIANGLES, buffer->idx, 0, 1 );
-}
-
-
-/* Allocate some space in the current vertex buffer.  If the current
- * buffer is full, flush it and grab another one.
- */
-CARD32 *radeonAllocVertices( radeonContextPtr rmesa, GLuint count )
-{
-   return radeonAllocVerticesInline( rmesa, count );
+   if (rmesa->store.primnr == RADEON_MAX_PRIMS ||
+       rmesa->store.statenr == RADEON_MAX_STATES) {
+      LOCK_HARDWARE(rmesa);
+      radeonFlushPrimsLocked(rmesa);
+      UNLOCK_HARDWARE(rmesa);
+   }
+   else {
+      rmesa->dma.low = (rmesa->dma.low + 0x7) & ~0x7;  /* alignment */
+      rmesa->dma.last = rmesa->dma.low;
+      rmesa->num_verts = 0;
+   }
 }
 
 
@@ -324,7 +460,7 @@ void radeonFireBlitLocked( radeonContextPtr rmesa, drmBufPtr buffer,
 #if 0
    GLint ret;
 
-   ret = drmRadeonTextureBlit( rmesa->driFd, buffer->idx,
+   ret = drmRadeonTextureBlit( rmesa->dri.fd, buffer->idx,
 			       offset, pitch, format,
 			       x, y, width, height );
 
@@ -343,36 +479,6 @@ void radeonFireBlitLocked( radeonContextPtr rmesa, drmBufPtr buffer,
 
 #define RADEON_MAX_OUTSTANDING	2
 
-/* Throttle the frame rate -- only allow one pending swap buffers
- * request at a time.
- * GH: We probably don't want a timeout here, as we can wait as
- * long as we want for a frame to complete.  If it never does, then
- * the card has locked.
- */
-#if USE_IN_MEMORY_SCRATCH_REGS
-static int radeonWaitForFrameCompletion( radeonContextPtr rmesa )
-{
-   RADEONSAREAPrivPtr sarea = rmesa->sarea;
-   __volatile__ CARD32 *scratch = rmesa->radeonScreen->scratch;
-   CARD32 frame;
-   int wait = 0;
-
-   while ( 1 ) {
-      /* Read the frame counter from the in-memory copy of the scratch
-       * register.  Nifty, eh?  Should significantly reduce the bus
-       * traffic for SwapBuffers-limited apps (generally pretty trivial
-       * ones, but anyway).
-       */
-      frame = scratch[0];
-      if ( sarea->last_frame - frame <= RADEON_MAX_OUTSTANDING ) {
-	 break;
-      }
-      wait++;
-   }
-
-   return wait;
-}
-#else
 static void delay( void ) {
 /* Prevent an optimizing compiler from removing a spin loop */
 }
@@ -386,14 +492,7 @@ static int radeonWaitForFrameCompletion( radeonContextPtr rmesa )
    int i;
 
    while ( 1 ) {
-#if defined(__alpha__)
-      /* necessary to preserve the Alpha paradigm */
-      /* NOTE: this will not work on SPARSE machines */
-      mem_barrier();
-      frame = *(volatile CARD32 *)(void *)(RADEONMMIO + RADEON_LAST_FRAME_REG);
-#else
       frame = INREG( RADEON_LAST_FRAME_REG );
-#endif
       if ( sarea->last_frame - frame <= RADEON_MAX_OUTSTANDING ) {
 	 break;
       }
@@ -406,25 +505,29 @@ static int radeonWaitForFrameCompletion( radeonContextPtr rmesa )
 
    return wait;
 }
-#endif
 
 /* Copy the back color buffer to the front color buffer.
  */
-void radeonSwapBuffers( radeonContextPtr rmesa )
+void radeonCopyBuffer( const __DRIdrawablePrivate *dPriv )
 {
-   GLint nbox;
-   GLint i;
-   GLint ret;
+   radeonContextPtr rmesa;
+   GLint nbox, i, ret;
+
+   assert(dPriv);
+   assert(dPriv->driContextPriv);
+   assert(dPriv->driContextPriv->driverPrivate);
+
+   rmesa = (radeonContextPtr) dPriv->driContextPriv->driverPrivate;
 
    if ( RADEON_DEBUG & DEBUG_VERBOSE_API ) {
       fprintf( stderr, "\n%s( %p )\n\n", __FUNCTION__, rmesa->glCtx );
    }
 
-   FLUSH_BATCH( rmesa );
+   RADEON_FIREVERTICES( rmesa );
 
    LOCK_HARDWARE( rmesa );
 
-   nbox = rmesa->numClipRects;	/* must be in locked region */
+   nbox = rmesa->dri.drawable->numClipRects; /* must be in locked region */
 
    /* Throttle the frame rate -- only allow one pending swap buffers
     * request at a time.
@@ -435,19 +538,21 @@ void radeonSwapBuffers( radeonContextPtr rmesa )
       rmesa->hardwareWentIdle = 0;
    }
 
+   nbox = dPriv->numClipRects;
+
    for ( i = 0 ; i < nbox ; ) {
       GLint nr = MIN2( i + RADEON_NR_SAREA_CLIPRECTS , nbox );
-      XF86DRIClipRectPtr box = rmesa->pClipRects;
+      XF86DRIClipRectPtr box = rmesa->dri.drawable->pClipRects;
       XF86DRIClipRectPtr b = rmesa->sarea->boxes;
       GLint n = 0;
 
       for ( ; i < nr ; i++ ) {
-	 *b++ = *(XF86DRIClipRectPtr)&box[i];
+	 *b++ = box[i];
 	 n++;
       }
       rmesa->sarea->nbox = n;
 
-      ret = drmRadeonSwapBuffers( rmesa->driFd );
+      ret = drmRadeonSwapBuffers( rmesa->dri.fd );
 
       if ( ret ) {
 	 fprintf( stderr, "drmRadeonSwapBuffers: return = %d\n", ret );
@@ -458,27 +563,36 @@ void radeonSwapBuffers( radeonContextPtr rmesa )
 
    UNLOCK_HARDWARE( rmesa );
 
-   rmesa->new_state |= RADEON_NEW_CONTEXT;
-   rmesa->dirty |= (RADEON_UPLOAD_CONTEXT |
-		    RADEON_UPLOAD_MASKS |
-		    RADEON_UPLOAD_CLIPRECTS);
+   RADEON_STATECHANGE( rmesa, RADEON_UPLOAD_CONTEXT_ALL );
+   if ( rmesa->state.texture.unit[0].texobj )
+      RADEON_STATECHANGE( rmesa, RADEON_UPLOAD_TEX0 );
+   if ( rmesa->state.texture.unit[1].texobj )
+      RADEON_STATECHANGE( rmesa, RADEON_UPLOAD_TEX1 );
 
-#if ENABLE_PERF_BOXES
+
+   rmesa->upload_cliprects = 1;
+
    /* Log the performance counters if necessary */
    radeonPerformanceCounters( rmesa );
-#endif
 }
 
-void radeonPageFlip( radeonContextPtr rmesa )
+void radeonPageFlip( const __DRIdrawablePrivate *dPriv )
 {
+   radeonContextPtr rmesa;
    GLint ret;
+
+   assert(dPriv);
+   assert(dPriv->driContextPriv);
+   assert(dPriv->driContextPriv->driverPrivate);
+
+   rmesa = (radeonContextPtr) dPriv->driContextPriv->driverPrivate;
 
    if ( RADEON_DEBUG & DEBUG_VERBOSE_API ) {
       fprintf( stderr, "\n%s( %p ): page=%d\n\n",
 	       __FUNCTION__, rmesa->glCtx, rmesa->currentPage );
    }
 
-   FLUSH_BATCH( rmesa );
+   RADEON_FIREVERTICES( rmesa );
 
    LOCK_HARDWARE( rmesa );
 
@@ -494,7 +608,7 @@ void radeonPageFlip( radeonContextPtr rmesa )
    /* The kernel will have been initialized to perform page flipping
     * on a swapbuffers ioctl.
     */
-   ret = drmRadeonSwapBuffers( rmesa->driFd );
+   ret = drmRadeonSwapBuffers( rmesa->dri.fd );
 
    UNLOCK_HARDWARE( rmesa );
 
@@ -504,54 +618,47 @@ void radeonPageFlip( radeonContextPtr rmesa )
    }
 
    if ( rmesa->currentPage == 0 ) {
-	 rmesa->drawOffset = rmesa->radeonScreen->frontOffset;
-	 rmesa->drawPitch  = rmesa->radeonScreen->frontPitch;
+	 rmesa->state.color.drawOffset = rmesa->radeonScreen->frontOffset;
+	 rmesa->state.color.drawPitch  = rmesa->radeonScreen->frontPitch;
 	 rmesa->currentPage = 1;
    } else {
-	 rmesa->drawOffset = rmesa->radeonScreen->backOffset;
-	 rmesa->drawPitch  = rmesa->radeonScreen->backPitch;
+	 rmesa->state.color.drawOffset = rmesa->radeonScreen->backOffset;
+	 rmesa->state.color.drawPitch  = rmesa->radeonScreen->backPitch;
 	 rmesa->currentPage = 0;
    }
 
-   rmesa->setup.rb3d_coloroffset = rmesa->drawOffset;
-   rmesa->setup.rb3d_colorpitch = rmesa->drawPitch;
+   RADEON_STATECHANGE( rmesa, RADEON_UPLOAD_CONTEXT );
+   rmesa->state.hw.context.rb3d_coloroffset = rmesa->state.color.drawOffset;
+   rmesa->state.hw.context.rb3d_colorpitch  = rmesa->state.color.drawPitch;
 
-   rmesa->new_state |= RADEON_NEW_WINDOW;
-
-   /* FIXME: Do we need this anymore? */
-   rmesa->new_state |= RADEON_NEW_CONTEXT;
-   rmesa->dirty |= (RADEON_UPLOAD_CONTEXT |
-		    RADEON_UPLOAD_MASKS |
-		    RADEON_UPLOAD_CLIPRECTS);
-
-#if ENABLE_PERF_BOXES
    /* Log the performance counters if necessary */
    radeonPerformanceCounters( rmesa );
-#endif
 }
 
+void radeonPerformanceCounters( radeonContextPtr rmesa )
+{
+}
+
+void radeonPerformanceBoxesLocked( radeonContextPtr rmesa )
+{
+}
 
 /* ================================================================
  * Buffer clear
  */
 #define RADEON_MAX_CLEARS	256
 
-static GLbitfield radeonDDClear( GLcontext *ctx, GLbitfield mask,
-				 GLboolean all,
-				 GLint cx, GLint cy, GLint cw, GLint ch )
+static void radeonClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
+			 GLint cx, GLint cy, GLint cw, GLint ch )
 {
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
-   __DRIdrawablePrivate *dPriv = rmesa->driDrawable;
+   __DRIdrawablePrivate *dPriv = rmesa->dri.drawable;
    RADEONSAREAPrivPtr sarea = rmesa->sarea;
-#if USE_IN_MEMORY_SCRATCH_REGS
-   __volatile__ CARD32 *scratch = rmesa->radeonScreen->scratch;
-#else
    unsigned char *RADEONMMIO = rmesa->radeonScreen->mmio.map;
-#endif
    CARD32 clear;
    GLuint flags = 0;
    GLuint color_mask = 0;
-   GLuint depth_mask = 0;
+/*     GLuint depth_mask = 0; */
    GLint ret, i;
 
    if ( RADEON_DEBUG & DEBUG_VERBOSE_API ) {
@@ -559,149 +666,137 @@ static GLbitfield radeonDDClear( GLcontext *ctx, GLbitfield mask,
 	       __FUNCTION__, all, cx, cy, cw, ch );
    }
 
-   FLUSH_BATCH( rmesa );
-
-   /* Update and emit any new state.  We need to do this here to catch
-    * changes to the masks.
-    * FIXME: Just update the masks?
-    */
-   if ( rmesa->new_state )
-      radeonDDUpdateHWState( ctx );
+   RADEON_FIREVERTICES( rmesa );
 
    if ( mask & DD_FRONT_LEFT_BIT ) {
-      flags |= DRM_RADEON_FRONT;
-      color_mask = rmesa->setup.rb3d_planemask;
+      flags |= RADEON_FRONT;
+      color_mask = rmesa->state.hw.mask.rb3d_planemask;
       mask &= ~DD_FRONT_LEFT_BIT;
    }
 
    if ( mask & DD_BACK_LEFT_BIT ) {
-      flags |= DRM_RADEON_BACK;
-      color_mask = rmesa->setup.rb3d_planemask;
+      flags |= RADEON_BACK;
+      color_mask = rmesa->state.hw.mask.rb3d_planemask;
       mask &= ~DD_BACK_LEFT_BIT;
    }
 
    if ( mask & DD_DEPTH_BIT ) {
-      if ( ctx->Depth.Mask ) {
-	 flags |= DRM_RADEON_DEPTH;
-	 depth_mask |= rmesa->DepthMask;
-      }
+      if ( ctx->Depth.Mask ) flags |= RADEON_DEPTH; /* FIXME: ??? */
       mask &= ~DD_DEPTH_BIT;
    }
-#if 0
-   /* FIXME: Add stencil support */
-   if ( mask & DD_STENCIL_BIT ) {
-      flags |= DRM_RADEON_DEPTH;
-      depth_mask |= rmesa->StencilMask;
+
+   if ( (mask & DD_STENCIL_BIT) && rmesa->state.stencil.hwBuffer ) {
+      flags |= RADEON_STENCIL;
       mask &= ~DD_STENCIL_BIT;
    }
-#endif
 
-   if ( !flags )
-      return mask;
+   if ( flags ) {
+      /* Flip top to bottom */
+      cx += dPriv->x;
+      cy  = dPriv->y + dPriv->h - cy - ch;
 
-   /* Flip top to bottom */
-   cx += dPriv->x;
-   cy  = dPriv->y + dPriv->h - cy - ch;
+      LOCK_HARDWARE( rmesa );
 
-   LOCK_HARDWARE( rmesa );
-
-   /* Throttle the number of clear ioctls we do.
-    */
-#if USE_IN_MEMORY_SCRATCH_REGS
-   while ( 1 ) {
-      clear = scratch[2];
-      if ( sarea->last_clear - clear <= RADEON_MAX_CLEARS ) {
-	 break;
-      }
-   }
-#else
-   while ( 1 ) {
-#if defined(__alpha__)
-     /* necessary to preserve the Alpha paradigm */
-     /* NOTE: this will not work on SPARSE machines */
-     mem_barrier();
-     clear = *(volatile CARD32 *)(void *)(RADEONMMIO + RADEON_LAST_CLEAR_REG);
-#else
-      clear = INREG( RADEON_LAST_CLEAR_REG );
-#endif
-      if ( sarea->last_clear - clear <= RADEON_MAX_CLEARS ) {
-	 break;
-      }
-      /* Spin in place a bit so we aren't hammering the bus */
-      for ( i = 0 ; i < 1024 ; i++ ) {
-	 delay();
-      }
-   }
-#endif
-
-   for ( i = 0 ; i < rmesa->numClipRects ; ) {
-      GLint nr = MIN2( i + RADEON_NR_SAREA_CLIPRECTS, rmesa->numClipRects );
-      XF86DRIClipRectPtr box = rmesa->pClipRects;
-      XF86DRIClipRectPtr b = rmesa->sarea->boxes;
-      GLint n = 0;
-
-      if ( !all ) {
-	 for ( ; i < nr ; i++ ) {
-	    GLint x = box[i].x1;
-	    GLint y = box[i].y1;
-	    GLint w = box[i].x2 - x;
-	    GLint h = box[i].y2 - y;
-
-	    if ( x < cx ) w -= cx - x, x = cx;
-	    if ( y < cy ) h -= cy - y, y = cy;
-	    if ( x + w > cx + cw ) w = cx + cw - x;
-	    if ( y + h > cy + ch ) h = cy + ch - y;
-	    if ( w <= 0 ) continue;
-	    if ( h <= 0 ) continue;
-
-	    b->x1 = x;
-	    b->y1 = y;
-	    b->x2 = x + w;
-	    b->y2 = y + h;
-	    b++;
-	    n++;
+      /* Throttle the number of clear ioctls we do.
+       */
+      while ( 1 ) {
+	 clear = INREG( RADEON_LAST_CLEAR_REG );
+	 if ( sarea->last_clear - clear <= RADEON_MAX_CLEARS ) {
+	    break;
 	 }
-      } else {
-	 for ( ; i < nr ; i++ ) {
-	    *b++ = *(XF86DRIClipRectPtr)&box[i];
-	    n++;
+	 /* Spin in place a bit so we aren't hammering the bus */
+	 for ( i = 0 ; i < 1024 ; i++ ) {
+	    delay();
 	 }
       }
 
-      rmesa->sarea->nbox = n;
-
-      if ( RADEON_DEBUG & DEBUG_VERBOSE_IOCTL ) {
-	 fprintf( stderr,
-		  "drmRadeonClear: flag 0x%x color %x depth %x nbox %d\n",
-		  flags,
-		  (GLuint)rmesa->ClearColor,
-		  (GLuint)rmesa->ClearDepth,
-		  rmesa->sarea->nbox );
+      /* Emit any new MASKS state.  This ioctl uses the old
+       * sarea-based state mechanism, which is why I'm not using
+       * emit_state() above.  Time for a new ioctl?  
+       */
+      if ( rmesa->state.hw.dirty ) {
+	 memcpy( &sarea->ContextState, &rmesa->state.hw, 
+		 sizeof(sarea->ContextState));
+	 sarea->dirty |= RADEON_UPLOAD_CONTEXT_ALL;
       }
 
-      ret = drmRadeonClear( rmesa->driFd, flags,
-			    rmesa->ClearColor, rmesa->ClearDepth,
-			    color_mask, depth_mask,
-			    rmesa->sarea->boxes, rmesa->sarea->nbox );
 
-      if ( ret ) {
-	 UNLOCK_HARDWARE( rmesa );
-	 fprintf( stderr, "drmRadeonClear: return = %d\n", ret );
-	 exit( 1 );
+      for ( i = 0 ; i < dPriv->numClipRects ; ) {
+	 GLint nr = MIN2( i + RADEON_NR_SAREA_CLIPRECTS, dPriv->numClipRects );
+	 XF86DRIClipRectPtr box = dPriv->pClipRects;
+	 XF86DRIClipRectPtr b = rmesa->sarea->boxes;
+	 GLint n = 0;
+
+	 if ( !all ) {
+	    for ( ; i < nr ; i++ ) {
+	       GLint x = box[i].x1;
+	       GLint y = box[i].y1;
+	       GLint w = box[i].x2 - x;
+	       GLint h = box[i].y2 - y;
+
+	       if ( x < cx ) w -= cx - x, x = cx;
+	       if ( y < cy ) h -= cy - y, y = cy;
+	       if ( x + w > cx + cw ) w = cx + cw - x;
+	       if ( y + h > cy + ch ) h = cy + ch - y;
+	       if ( w <= 0 ) continue;
+	       if ( h <= 0 ) continue;
+
+	       b->x1 = x;
+	       b->y1 = y;
+	       b->x2 = x + w;
+	       b->y2 = y + h;
+	       b++;
+	       n++;
+	    }
+	 } else {
+	    for ( ; i < nr ; i++ ) {
+	       *b++ = box[i];
+	       n++;
+	    }
+	 }
+
+	 rmesa->sarea->nbox = n;
+
+/*  	    fprintf( stderr, */
+/*  		     "drmRadeonClear: flag 0x%x color %x depth %x sten %x nbox %d\n", */
+/*  		     flags, */
+/*  		     rmesa->state.color.clear, */
+/*  		     rmesa->state.depth.clear, */
+/*  		     rmesa->state.stencil.clear, */
+/*  		     rmesa->sarea->nbox ); */
+
+	 ret = drmRadeonClear( rmesa->dri.fd, flags,
+			       rmesa->state.color.clear,
+			       rmesa->state.depth.clear,
+			       rmesa->state.hw.mask.rb3d_planemask,
+			       rmesa->state.stencil.clear,
+			       rmesa->sarea->boxes, rmesa->sarea->nbox );
+
+	 if ( ret ) {
+	    UNLOCK_HARDWARE( rmesa );
+	    fprintf( stderr, "drmRadeonClear: return = %d\n", ret );
+	    exit( 1 );
+	 }
       }
+
+      UNLOCK_HARDWARE( rmesa );
+
+      RADEON_STATECHANGE( rmesa, RADEON_UPLOAD_CONTEXT_ALL );
+      if ( rmesa->state.texture.unit[0].texobj )
+	 RADEON_STATECHANGE( rmesa, RADEON_UPLOAD_TEX0 );
+      if ( rmesa->state.texture.unit[1].texobj )
+	 RADEON_STATECHANGE( rmesa, RADEON_UPLOAD_TEX1 );
+      rmesa->upload_cliprects = 1;
    }
 
-   UNLOCK_HARDWARE( rmesa );
-
-   rmesa->dirty |= RADEON_UPLOAD_CLIPRECTS;
-
-   return mask;
+   if ( mask )
+      _swrast_Clear( ctx, mask, all, cx, cy, cw, ch );
 }
 
 
 void radeonWaitForIdleLocked( radeonContextPtr rmesa )
 {
-    int fd = rmesa->radeonScreen->driScreen->fd;
+    int fd = rmesa->dri.fd;
     int to = 0;
     int ret;
 
@@ -710,7 +805,6 @@ void radeonWaitForIdleLocked( radeonContextPtr rmesa )
     } while ( ( ret == -EBUSY ) && ( to++ < RADEON_TIMEOUT ) );
 
     if ( ret < 0 ) {
-	drmRadeonEngineReset( fd );
 	UNLOCK_HARDWARE( rmesa );
 	fprintf( stderr, "Error: Radeon timed out... exiting\n" );
 	exit( -1 );
@@ -718,7 +812,32 @@ void radeonWaitForIdleLocked( radeonContextPtr rmesa )
 }
 
 
-void radeonDDInitIoctlFuncs( GLcontext *ctx )
+void radeonInitIoctlFuncs( GLcontext *ctx )
 {
-    ctx->Driver.Clear = radeonDDClear;
+    ctx->Driver.Clear = radeonClear;
+}
+
+
+
+void radeonReleaseRetainedBuffer( radeonContextPtr rmesa )
+{
+   ASSERT(rmesa->dma.retained);
+
+   if (rmesa->dma.retained &&
+       rmesa->dma.retained != rmesa->dma.buffer) {
+      RADEON_FIREVERTICES(rmesa); /* FIX ME: dependency tracking for retained */
+
+/*        fprintf(stderr, "releaseRetained: retained %p current %p\n", */
+/*  	      rmesa->dma.retained, rmesa->dma.buffer); */
+      
+      LOCK_HARDWARE(rmesa);
+      drmRadeonFlushPrims( rmesa->dri.fd,
+			   rmesa->dma.retained->idx, 
+			   1,
+			   0, rmesa->store.state,
+			   0, rmesa->store.prim);
+      UNLOCK_HARDWARE(rmesa);
+   }
+
+   rmesa->dma.retained = 0;
 }

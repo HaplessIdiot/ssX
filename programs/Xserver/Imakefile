@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.254 2002/01/07 20:38:21 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.255 2002/02/14 23:10:07 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -88,7 +88,6 @@ INSTPGMFLAGS =
                GL/mesa/src/ModuleLibraryTargetName(GLcore)
 #else
       GLXLIB = GL/glx/ModuleLibraryTargetName(glx) \
-               GL/mesa/src/X/ModuleLibraryTargetName(GLcoreX) \
                GL/mesa/src/ModuleLibraryTargetName(GLcore) \
                $(DRILIB)
 #endif
