@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.5 2001/04/02 05:39:36 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.6 2001/08/01 05:34:05 torrey Exp $ */
 
 #ifndef _DARWIN_H
 #define _DARWIN_H
@@ -30,9 +30,15 @@ typedef struct {
 } DarwinInputRec;
 
 
-void DarwinKeyboardInit(DeviceIntPtr pDev);
-int DarwinModifierKeycode(int modifier, int side);
 void xf86SetRootClip (ScreenPtr pScreen, BOOL enable);
+
+// From darwinKeyboard.c
+int DarwinModifierNXKeyToNXKeycode(int key, int side);
+void DarwinKeyboardInit(DeviceIntPtr pDev);
+int DarwinModifierNXKeycodeToNXKey(unsigned char keycode, int *outSide);
+int DarwinModifierNXKeyToNXMask(int key);
+int DarwinModifierNXMaskToNXKey(int mask);
+int DarwinModifierStringToNXKey(const char *string);
 
 #undef assert
 #define assert(x) { if ((x) == 0) \
