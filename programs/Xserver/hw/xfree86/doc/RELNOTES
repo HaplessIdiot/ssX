@@ -121,7 +121,7 @@ enough space to cover them all here.
 
      Server implementation:
 
-        o Implmented remaining code for client clip lists.
+        o Implemented remaining code for client clip lists.
 
         o Fixed plenty of bugs related to text rendering.
 
@@ -692,7 +692,7 @@ use of the XAA module.
 
 4.5  Multi-head
 
-Some multi-head configurations are supported in this release, primarily with
+Some multi-head configurations are supported in XFree86 4.x, primarily with
 multiple PCI/AGP cards.  However, this is an area that is still being worked
 on, and we expect that the range of configurations for which it works well
 will increase in future releases.  A configuration that is known to work well
@@ -718,15 +718,15 @@ with a 16-bit screen in Xinerama mode.
 Xinerama is not enabled by default, and can be enabled with the +xinerama
 command line option for the X server.
 
-Xinerama was included with X11R6.4.  The version included in this release was
+Xinerama was included with X11R6.4.  The version included in XFree86 4.x was
 completely rewritten for improved performance and correctness.
 
 Known problems:
 
-   o Most (all?) window managers are not Xinerama-aware, and so some opera-
-     tions like window placement and resizing might not behave in an ideal
-     way.  This is an issue that needs to be dealt with in the individual
-     window managers, and isn't specifically an XFree86 problem.
+   o Most window managers are not Xinerama-aware, and so some operations like
+     window placement and resizing might not behave in an ideal way.  This is
+     an issue that needs to be dealt with in the individual window managers,
+     and isn't specifically an XFree86 problem.
 
 4.7  DGA version 2
 
@@ -1078,7 +1078,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.55 2000/12/15 21:56:47 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.56 2000/12/15 22:01:09 dawes Exp $
 
 
 $XFree86$
