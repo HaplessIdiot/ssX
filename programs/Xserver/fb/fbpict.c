@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.5 2000/11/29 08:43:08 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.6 2001/01/21 21:19:09 tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -126,6 +126,8 @@ fbCompositeSolidMask_nx8x8888 (CARD8      op,
 	src = *(CARD16 *) srcBits;
 	src = cvt0565to8888(src);
 	break;
+    default:
+	return;
     }
     /* manage missing src alpha */
     if (pSrc->pFormat->direct.alphaMask == 0)
@@ -712,6 +714,114 @@ fbCompositeSrcAdd_8000x8000 (CARD8	op,
     }
 }
 
+void
+fbCompositeSrcAdd_1000x1000 (CARD8	op,
+			     PicturePtr pSrc,
+			     PicturePtr pMask,
+			     PicturePtr pDst,
+			     INT16      xSrc,
+			     INT16      ySrc,
+			     INT16      xMask,
+			     INT16      yMask,
+			     INT16      xDst,
+			     INT16      yDst,
+			     CARD16     width,
+			     CARD16     height)
+{
+    FbBits	*dstBits, *srcBits;
+    FbStride	dstStride, srcStride;
+    int		dstBpp, srcBpp;
+    
+    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp);
+
+    fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
+
+    fbBlt (srcBits + srcStride * ySrc,
+	   srcStride,
+	   xSrc,
+
+	   dstBits + dstStride * yDst,
+	   dstStride,
+	   xDst,
+
+	   width,
+	   height,
+
+	   GXor,
+	   FB_ALLONES,
+	   srcBpp,
+
+	   FALSE,
+	   FALSE);
+}
+
+void
+fbCompositeSolidMask_nx1xn (CARD8      op,
+			    PicturePtr pSrc,
+			    PicturePtr pMask,
+			    PicturePtr pDst,
+			    INT16      xSrc,
+			    INT16      ySrc,
+			    INT16      xMask,
+			    INT16      yMask,
+			    INT16      xDst,
+			    INT16      yDst,
+			    CARD16     width,
+			    CARD16     height)
+{
+    FbBits	*dstBits, *srcBits;
+    FbStip	*maskBits;
+    FbStride	dstStride, maskStride, srcStride;
+    int		dstBpp, maskBpp, srcBpp;
+    FbBits	src;
+    
+    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp);
+    switch (srcBpp) {
+    case 32:
+	src = *(CARD32 *) srcBits;
+	break;
+    case 24:
+	src = Fetch24 ((CARD8 *) srcBits);
+	break;
+    case 16:
+	src = *(CARD16 *) srcBits;
+	src = cvt0565to8888(src);
+	break;
+    }
+
+    fbGetStipDrawable (pMask->pDrawable, maskBits, maskStride, maskBpp);
+    fbGetDrawable (pDst->pDrawable, dstBits, dstStride, dstBpp);
+
+    switch (dstBpp) {
+    case 32:
+	break;
+    case 24:
+	break;
+    case 16:
+	src = cvt8888to0565(src);
+	break;
+    }
+
+    src = fbReplicatePixel (src, dstBpp);
+
+    fbBltOne (maskBits + maskStride * yMask,
+	      maskStride,
+	      xMask,
+
+	      dstBits + dstStride * yDst,
+	      dstStride,
+	      xDst * dstBpp,
+	      dstBpp,
+
+	      width * dstBpp,
+	      height,
+
+	      0x0,
+	      src,
+	      FB_ALLONES,
+	      0x0);
+}
+
 # define mod(a,b)	((b) == 1 ? 0 : (a) >= 0 ? (a) % (b) : (b) - (-a) % (b))
 
 void
@@ -812,6 +922,19 @@ fbComposite (CARD8      op,
 			    }
 			}
 			break;
+		    case PICT_a1:
+			switch (pDst->format) {
+			case PICT_r5g6b5:
+			case PICT_b5g6r5:
+			case PICT_r8g8b8:
+			case PICT_b8g8r8:
+			case PICT_a8r8g8b8:
+			case PICT_x8r8g8b8:
+			case PICT_a8b8g8r8:
+			case PICT_x8b8g8r8:
+			    func = fbCompositeSolidMask_nx1xn;
+			    break;
+			}
 		    }
 		}
 	    }
@@ -874,6 +997,12 @@ fbComposite (CARD8      op,
 		switch (pDst->format) {
 		case PICT_a8:
 		    func = fbCompositeSrcAdd_8000x8000;
+		    break;
+		}
+	    case PICT_a1:
+		switch (pDst->format) {
+		case PICT_a1:
+		    func = fbCompositeSrcAdd_1000x1000;
 		    break;
 		}
 	    }
