@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.62 2002/11/19 15:25:30 tsi Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.63tsi Exp $ */
 
 
 /* 
@@ -307,9 +307,13 @@ in this Software without prior written authorization from The Open Group.
 #define DEFAULT_CPP "/usr/X11R6/bin/cpp"
 #endif
 #endif
-#if defined(__GNUC__) && !defined(DEFAULT_CC) && !defined(SVR4)
+#if defined(__GNUC__) && !defined(DEFAULT_CC)
+#if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || \
+    defined(__FreeBSD__) || defined(MACH) || defined(linux) || \
+    defined(__GNU__) || defined(__bsdi__)
 #define DEFAULT_CC "gcc"
 #define USE_CC_E
+#endif
 #endif
 
 #endif /* !defined (CROSSCOMPILE) || defined (CROSSCOMPILE_CPP) */
@@ -340,7 +344,9 @@ char *cpp_argv[ARGUMENTS] = {
 	"-Uunix",	/* remove unix symbol so that filename unix.c okay */
 #endif
 #endif
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(MACH) || defined(linux) || defined(__GNU__) || defined(__bsdi__)
+#if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || \
+    defined(__FreeBSD__) || defined(MACH) || defined(linux) || \
+    defined(__GNU__) || defined(__bsdi__)
 # ifdef __i386__
 	"-D__i386__",
 #  if defined (__GNUC__) && __GNUC__ > 3 || \
