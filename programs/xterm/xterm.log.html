@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.91 2003/02/06 23:09:44 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.92 2003/02/25 23:36:55 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -43,6 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_175">Patch #175 - 2003/3/9 - XFree86 4.3.0</A>
 <LI><A HREF="#xterm_174">Patch #174 - 2003/2/25 - XFree86 4.2.99.903</A>
 <LI><A HREF="#xterm_173">Patch #173 - 2003/2/6 - XFree86 4.2.99.902</A>
 <LI><A HREF="#xterm_172">Patch #172 - 2002/12/27 - XFree86 4.2.99.3</A>
@@ -219,6 +220,66 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_175">Patch #175 - 2003/3/9 - XFree86 4.3.0</A></H1>
+<ul>
+	<li>fix a SIGSEGV which could occur if xterm is connecting to XIM
+	    server, and the XIM server is destroyed (patch by Nam SungHyun).
+
+	<li>modify to use built-in line-drawing characters for Xft fonts
+	    (patch by Andrew Tipton &lt;andrew@cadre5.com&gt;).
+
+	<li>make menu reflect the state of the <code>tekInhibit</code>
+	    resource.
+
+	<li>make <code>signalInhibit</code> resource work, i.e., disable the
+	    menu entries that would send signals to, or exit xterm.  This was
+	    probably broken in X11R5 when logging was disabled (report by Sven
+	    Mascheck).
+
+	<li>changed classes of <code>colorBDMode</code> and similar
+	    resources that override colors when a video attribute is
+	    set to <code>ColorAttrMode</code>, to make them distinct
+	    from <code>ColorMode</code>.  This avoids an unexpected
+	    rendering of reverse video, for example (report by Paul Fox). 
+
+	<li>changed class of <code>veryBoldColors</code> to
+	    <code>VeryBoldColors</code>, since 
+	    <code>ColorMode</code> is associated with boolean resources.
+
+	<li>add option <code>-k8</code> and resource
+	    <code>allowC1Printable</code> to allow users of non-VTxxx
+	    character sets such as KOI-8 to treat the C1 control area
+	    (character codes 128-159) as printable rather than control
+	    characters.
+
+	<li>add a null-pointer check for return-value of <code>ptsname()</code>
+	    in HPUX-specific code (report by David Ellement).
+
+	<li>revise the ifdef's used for <code>XKB</code> bell support.  The
+	    code was using a nonstandard call <code>XkbStdBell()</code>.
+	    Changed to use <code>XkbBell()</code> (based on patch by
+	    &lt;derek@signalmarketing.com&gt;).
+
+	<li>add a null-pointer check in <code>xtermLoadFont()</code> in case
+	    there is no wide-bold font (Nam SungHyun).
+
+	<li>change <code>Makefile.in</code> to use autoconf's
+	    <code>bindir</code>, <code>libdir</code> and <code>mandir</code>
+	    variables (report by Nam SungHyun).
+
+	<li>add <code>le</code> to termcap <code>xterm-basic</code> entry.
+	    Though missing from older termcaps for xterm, some applications
+	    check for it (report by Matthias Buelow).
+
+	<li>modify <code>uxterm</code> script to strip modifiers such as "@euro"
+	    from the locale setting before adding ".UTF-8" (Debian #179929).
+
+	<li>modify the remaining places where tek4014 emulation uses 
+	    <code>XDefineCursor()</code>, to make it work as originally
+	    implemented, e.g., when switching back to alpha mode.
+	    Added test-screen in vttest to test this feature properly.
+</ul>
 
 <H1><A NAME="xterm_174">Patch #174 - 2003/2/25 - XFree86 4.2.99.903</A></H1>
 <ul>
