@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: io.c,v 1.88 94/04/17 20:27:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.0 1994/04/28 12:42:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.1 1994/05/08 05:25:29 dawes Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -361,13 +361,26 @@ ReadRequestFromClient(client)
 #endif
 	if (result <= 0)
 	{
-#if !defined(SVR4) && !defined(i386)
 	    if ((result < 0) && ETEST(errno))
 	    {
-		YieldControlNoInput();
-		return 0;
-	    }
+#if defined(SVR4) && defined(i386) && !defined(sun)
+#ifdef LBX
+		/*
+		 * For LBX connections, we can get a valid EWOULDBLOCK
+		 * There is probably a better way of distinguishing LBX
+		 * connections, but this works. (DHD)
+		 */
+		extern int LbxRead();
+		if (oc->Read == LbxRead)
+#else
+		if (0)
 #endif
+#endif
+		{
+		    YieldControlNoInput();
+		    return 0;
+		}
+	    }
 	    YieldControlDeath();
 	    return -1;
 	}
