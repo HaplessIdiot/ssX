@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.85 2003/05/27 21:56:39 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.86 2003/06/01 13:46:51 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -60,7 +60,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # else
    /* Kerberos IV was removed after OpenBSD 3.3 */
 #  define HasKrbIV		NO
-# endidf
+# endif
 #endif
 #define HasUsableFileMmap	YES
 #define HasShadowPasswd		NO
