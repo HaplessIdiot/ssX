@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.8 2001/04/07 17:48:31 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.9 2001/04/07 22:06:06 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -23,6 +23,7 @@
 extern int argcGlobal;
 extern char **argvGlobal;
 extern char **envpGlobal;
+extern int main(int argc, char *argv[], char *envp[]);
 
 @implementation Xserver
 
@@ -30,39 +31,52 @@ extern char **envpGlobal;
     self=[super init];
 
     serverLock = [[NSLock alloc] init];
+    clientTask = nil;
     serverVisible = NO;
     appQuitting = NO;
     mouseState = 0;
     eventWriteFD = quartzEventWriteFD;
 
+    // set up a port to safely send messages to main thread from server thread
+    signalPort = [[NSPort port] retain];
+    signalMessage = [[NSPortMessage alloc] initWithSendPort:signalPort receivePort:signalPort components:nil];
+
+    // set up receiving end
+    [signalPort setDelegate:self];
+    [[NSRunLoop currentRunLoop] addPort:signalPort forMode:NSDefaultRunLoopMode];
+    [[NSRunLoop currentRunLoop] addPort:signalPort forMode:NSModalPanelRunLoopMode];
+
     return self;
 }
 
-- (BOOL)applicationShouldTerminate:(NSApplication *)sender {
-    int but;
-
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+    // Quit if the X server is not running
     if ([serverLock tryLock])
-        return YES;
-    if (serverVisible)
+        return NSTerminateNow;
+
+    if ([clientTask isRunning]) {
+        int but;
+
         [self hide];
+        but = NSRunAlertPanel(NSLocalizedString(@"Quit X server?",@""),
+                              NSLocalizedString(@"Quitting the X server will terminate any running X Window programs.",@""),
+                              NSLocalizedString(@"Quit",@""),
+                              NSLocalizedString(@"Cancel",@""),
+                              nil);
 
-    but = NSRunAlertPanel(NSLocalizedString(@"Quit X server?",@""),
-                          NSLocalizedString(@"Quitting the X server will terminate any running X Window programs.",@""),
-                          NSLocalizedString(@"Quit",@""),
-                          NSLocalizedString(@"Cancel",@""),
-                          nil);
-
-    switch (but) {
-        case NSAlertDefaultReturn:		// quit
-            appQuitting = YES;
-            [self kill];
-            // Try to wait until the X server shuts down
-            [serverLock lockBeforeDate:[NSDate dateWithTimeIntervalSinceNow:10]];
-            return YES;
-        case NSAlertAlternateReturn:		// cancel
-            break;
+        switch (but) {
+            case NSAlertDefaultReturn:		// quit
+                break;
+            case NSAlertAlternateReturn:	// cancel
+                return NSTerminateCancel;
+        }
     }
-    return NO;
+
+    appQuitting = YES;
+    [self killServer];
+
+    // Wait until the X server shuts down
+    return NSTerminateLater;
 }
 
 // returns YES when event was handled
@@ -89,6 +103,7 @@ extern char **envpGlobal;
             break;
         case NSLeftMouseDragged:
         case NSRightMouseDragged:
+        case 27:			// undocumented high button MouseDragged event
             ev.type=NSMouseMoved;
             break;
         case NSSystemDefined:
@@ -137,9 +152,33 @@ extern char **envpGlobal;
     // Start the X server thread
     [NSThread detachNewThreadSelector:@selector(run) toTarget:self withObject:nil];
 
+    // If we are going to display a splash screen, hide the X11 screen immediately
+    if ([Preferences startupHelp])
+        [self sendShowHide:NO];
+
     // Start the X clients if started from GUI
-    if (quartzStartClients)
-        [NSThread detachNewThreadSelector:@selector(startClients) toTarget:self withObject:nil];
+    if (quartzStartClients) {
+        char *home;
+        NSString *path = [NSString stringWithCString:XPATH(startx)];
+        NSArray *args = [NSArray arrayWithObjects:@"--", @"-idle", nil];
+
+        // Register to receive notification when the client task finishes
+        [[NSNotificationCenter defaultCenter] addObserver:self 
+                selector:@selector(clientTaskDone:) 
+                name:NSTaskDidTerminateNotification 
+                object:nil];
+
+        // Change to user's home directory (so xterms etc. start there)
+        home = getenv("HOME");
+        if (home) chdir(home);
+
+        // Add X binary directory to path
+        [Xserver append:@":" toEnv:@"PATH"];
+        [Xserver append:@XSTRPATH(XBINDIR) toEnv:@"PATH"];
+
+        // Launch a new task to run start X clients
+        clientTask = [NSTask launchedTaskWithLaunchPath:path arguments:args];
+    }
 
     // Make sure the menu bar gets drawn
     [NSApp setWindowsNeedUpdate:YES];
@@ -162,24 +201,7 @@ extern char **envpGlobal;
     serverVisible = NO;
     [serverLock unlock];
     [pool release];
-    if (!appQuitting)
-        [NSApp terminate:nil];	// quit if we aren't already
-}
-
-// Start the X clients in a separate thread
-- (void)startClients {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    char *home;
-
-    // Change to user's home directory (so xterms etc. start there)
-    home = getenv("HOME");
-    if (home) chdir(home);
-
-    [Xserver append:@":" toEnv:@"PATH"];
-    [Xserver append:@XSTRPATH(XBINDIR) toEnv:@"PATH"];
-    system(XPATH(startx -- -idle &));
-    // FIXME: quit when startx dies
-    [pool release];
+    [signalMessage sendBeforeDate:[NSDate distantPast]];
 }
 
 // Close the help splash screen and show the X server
@@ -219,8 +241,8 @@ extern char **envpGlobal;
     }
 }
 
-// Kill the Xserver process
-- (void)kill {
+// Kill the Xserver thread
+- (void)killServer {
     NXEvent ev;
 
     if (serverVisible)
@@ -286,10 +308,38 @@ extern char **envpGlobal;
 - (void)sendNXEvent:(NXEvent*)ev {
     if (write(eventWriteFD, ev, sizeof(*ev)) == sizeof(*ev))
         return;
-    ErrorF("Bad write to event pipe.\n");
+    NSLog(@"Bad write to event pipe.");
     // FIXME: handle bad writes better?
 }
 
+// Handle message that X server thread is finished
+- (void)handlePortMessage:(NSPortMessage *)portMessage {
+    if (appQuitting) {
+        // If we quit before the clients start, they may sit and wait
+        // for the X server to start. Kill them instead.
+        if ([clientTask isRunning])
+            [clientTask terminate];
+        [NSApp replyToApplicationShouldTerminate:YES];
+    } else {
+        [NSApp terminate:nil];	// quit if we aren't already
+    }
+}
+
+// Quit the X server when the X client task finishes
+- (void)clientTaskDone:(NSNotification *)aNotification {
+    // Make sure it was the client task that finished
+    if (![clientTask isRunning]) {
+        int status = [[aNotification object] terminationStatus];
+
+        if (status != 0)
+            NSLog(@"X client task terminated abnormally.");
+
+        if (!appQuitting)
+            [NSApp terminate:nil];	// quit if we aren't already
+    }
+}
+
+// Called when the user clicks the application icon, but not when Cmd-Tab is used
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag {
     [self show];
     return NO;

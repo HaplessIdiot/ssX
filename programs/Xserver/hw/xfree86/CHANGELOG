@@ -1,9 +1,15 @@
 XFree86 4.0.99.x (xx April 2001)
+ 368. Fixes to the XDarwin application:
+       - X clients are now started correctly.
+       - Shuts down cleanly.
+       - Removed erroneous NSString releases in quartzCocoa.m.
+       - Dragging with mouse button 3 or higher depressed produces events.
+      (Christoph Pfisterer and Torrey Lyons)
  367. Make the ramdac module for the IBM RGB640 DAC work at depth 15
       (Alan Hourihane).
  366. Fix interference between acceleration and hardware cursors on Mach64
       variants (Marc La France).
- 365. Fix xload so it is functional on XDarwin (Rob Braun).
+ 365. Fix xload so it is functional on Darwin OS (Rob Braun).
  364. Mac OS X specific fixes:
        - Fix typo in XDarwin startup program that could cause crash with
          many command line options.
@@ -12917,4 +12923,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1677 2001/04/08 23:19:26 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1678 2001/04/09 00:04:09 alanh Exp $
