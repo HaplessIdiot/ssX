@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.10 1999/02/13 08:00:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.11 1999/05/03 12:16:07 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -46,6 +46,9 @@ XAAFillSpans(
 
     if((nInit <= 0) || !pGC->planemask)
         return;
+
+    if(!REGION_NUM_RECTS(pGC->pCompositeClip))
+	return;
 
     switch(pGC->fillStyle) {
     case FillSolid:

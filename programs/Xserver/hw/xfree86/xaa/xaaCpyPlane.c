@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.5 1998/12/20 11:57:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.6 1999/01/14 13:05:24 dawes Exp $ */
 
 /*
    A CopyPlane function that handles bitmap->screen copies and
@@ -165,6 +165,9 @@ XAAPushPixelsSolidColorExpansion(
    xRectangle TheRect;
    unsigned char *src = pBitMap->devPrivate.ptr;
    int srcwidth = pBitMap->devKind;
+
+   if(!REGION_NUM_RECTS(pGC->pCompositeClip))
+	return;
 
    TheRect.x = xOrg;
    TheRect.y = yOrg;

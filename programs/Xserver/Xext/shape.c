@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.7 1998/10/04 09:36:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.8 1999/01/31 12:21:38 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -303,42 +303,8 @@ ProcShapeQueryVersion (client)
  * ProcShapeRectangles
  *
  *****************/
-#ifdef PANORAMIX
+
 static int
-ProcPanoramiXShapeRectangles (client)
-    register ClientPtr client;
-{
-    WindowPtr		pWin;
-    ScreenPtr		pScreen;
-    REQUEST(xShapeRectanglesReq);
-    xRectangle		*prects;
-    int		        nrects, ctype;
-    RegionPtr		srcRgn;
-    RegionPtr		*destRgn;
-    RegionPtr		(*createDefault)();
-    int			destBounding;
-
-    register int        result;
-    int			j;
-    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
-
-    REQUEST_AT_LEAST_SIZE (xShapeRectanglesReq);
-    PANORAMIXFIND_ID(pPanoramiXWin,stuff->dest); 
-    IF_RETURN(!pPanoramiXWin, BadRequest); 
-    FOR_NSCREENS_OR_ONCE(pPanoramiXWin , j) {
-	stuff->dest = pPanoramiXWin->info[j].id;
-	result = ProcShapeRectangles (client);
-	BREAK_IF(result != Success);
-    }
-    return (result);
-}
-#endif
-
-#ifdef PANORAMIX
-int 
-#else
-static int
-#endif
 ProcShapeRectangles (client)
     register ClientPtr client;
 {
@@ -399,49 +365,34 @@ ProcShapeRectangles (client)
 			  stuff->xOff, stuff->yOff, createDefault);
 }
 
-/**************
- * ProcShapeMask
- **************/
-
 #ifdef PANORAMIX
 static int
-ProcPanoramiXShapeMask (client)
+ProcPanoramiXShapeRectangles (client)
     register ClientPtr client;
 {
-    WindowPtr		pWin;
-    ScreenPtr		pScreen;
-    REQUEST(xShapeMaskReq);
-    RegionPtr		srcRgn;
-    RegionPtr		*destRgn;
-    PixmapPtr		pPixmap;
-    RegionPtr		(*createDefault)();
-    int			destBounding;
-
-    register int        result;
-    int			j;
+    REQUEST(xShapeRectanglesReq);
     PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
-    PanoramiXPmap       *pPmap = PanoramiXPmapRoot;
+    int        		j, result;
 
-    REQUEST_SIZE_MATCH (xShapeMaskReq);
+    REQUEST_AT_LEAST_SIZE (xShapeRectanglesReq);
     PANORAMIXFIND_ID(pPanoramiXWin,stuff->dest); 
     IF_RETURN(!pPanoramiXWin, BadRequest); 
-    PANORAMIXFIND_ID(pPmap, stuff->src);
-    IF_RETURN(!pPmap, BadRequest);
     FOR_NSCREENS_OR_ONCE(pPanoramiXWin , j) {
 	stuff->dest = pPanoramiXWin->info[j].id;
-	stuff->src =  pPmap->info[j].id;
-	result = ProcShapeMask (client);
+	result = ProcShapeRectangles (client);
 	BREAK_IF(result != Success);
     }
     return (result);
 }
 #endif
 
-#ifdef PANORAMIX
-int 
-#else
+
+/**************
+ * ProcShapeMask
+ **************/
+
+
 static int
-#endif
 ProcShapeMask (client)
     register ClientPtr client;
 {
@@ -500,45 +451,37 @@ ProcShapeMask (client)
 			  stuff->xOff, stuff->yOff, createDefault);
 }
 
-/************
- * ProcShapeCombine
- ************/
 #ifdef PANORAMIX
 static int
-ProcPanoramiXShapeCombine (client)
+ProcPanoramiXShapeMask (client)
     register ClientPtr client;
 {
-    WindowPtr		pSrcWin, pDestWin;
-    ScreenPtr		pScreen;
-    REQUEST(xShapeCombineReq);
-    RegionPtr		srcRgn;
-    RegionPtr		*destRgn;
-    RegionPtr		(*createDefault)();
-    RegionPtr		(*createSrc)();
-    RegionPtr		tmp;
-    int			destBounding;
-
-    register int        result;
-    int			j;
+    REQUEST(xShapeMaskReq);
     PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+    PanoramiXPmap       *pPmap = PanoramiXPmapRoot;
+    int 		j, result;
 
-    REQUEST_AT_LEAST_SIZE (xShapeCombineReq);
+    REQUEST_SIZE_MATCH (xShapeMaskReq);
     PANORAMIXFIND_ID(pPanoramiXWin,stuff->dest); 
     IF_RETURN(!pPanoramiXWin, BadRequest); 
+    PANORAMIXFIND_ID(pPmap, stuff->src);
+    IF_RETURN(!pPmap, BadRequest);
     FOR_NSCREENS_OR_ONCE(pPanoramiXWin , j) {
 	stuff->dest = pPanoramiXWin->info[j].id;
-	result = ProcShapeCombine (client);
+	stuff->src =  pPmap->info[j].id;
+	result = ProcShapeMask (client);
 	BREAK_IF(result != Success);
     }
     return (result);
 }
 #endif
 
-#ifdef PANORAMIX
-int 
-#else
+
+/************
+ * ProcShapeCombine
+ ************/
+
 static int
-#endif
 ProcShapeCombine (client)
     register ClientPtr client;
 {
@@ -614,40 +557,37 @@ ProcShapeCombine (client)
 			  stuff->xOff, stuff->yOff, createDefault);
 }
 
-/*************
- * ProcShapeOffset
- *************/
+
 #ifdef PANORAMIX
 static int
-ProcPanoramiXShapeOffset (client)
+ProcPanoramiXShapeCombine (client)
     register ClientPtr client;
 {
-    WindowPtr		pWin;
-    ScreenPtr		pScreen;
-    REQUEST(xShapeOffsetReq);
-    RegionPtr		srcRgn;
-
-    register int        result;
-    int			j;
+    REQUEST(xShapeCombineReq);
     PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+    PanoramiXWindow     *pPanoramiXWin2 = PanoramiXWinRoot;
+    int 		j, result;
 
-    REQUEST_AT_LEAST_SIZE (xShapeOffsetReq);
+    REQUEST_AT_LEAST_SIZE (xShapeCombineReq);
     PANORAMIXFIND_ID(pPanoramiXWin,stuff->dest); 
     IF_RETURN(!pPanoramiXWin, BadRequest); 
+    PANORAMIXFIND_ID(pPanoramiXWin2, stuff->src);
+    IF_RETURN(!pPanoramiXWin2, BadRequest);
     FOR_NSCREENS_OR_ONCE(pPanoramiXWin , j) {
 	stuff->dest = pPanoramiXWin->info[j].id;
-	result = ProcShapeOffset (client);
+	stuff->src =  pPanoramiXWin2->info[j].id;
+	result = ProcShapeCombine (client);
 	BREAK_IF(result != Success);
     }
     return (result);
 }
 #endif
 
-#ifdef PANORAMIX
-int 
-#else
+/*************
+ * ProcShapeOffset
+ *************/
+
 static int
-#endif
 ProcShapeOffset (client)
     register ClientPtr client;
 {
@@ -681,6 +621,29 @@ ProcShapeOffset (client)
     SendShapeNotify (pWin, (int)stuff->destKind);
     return Success;
 }
+
+
+#ifdef PANORAMIX
+static int
+ProcPanoramiXShapeOffset (client)
+    register ClientPtr client;
+{
+    REQUEST(xShapeOffsetReq);
+    PanoramiXWindow *pPanoramiXWin = PanoramiXWinRoot;
+    int j, result;
+
+    REQUEST_AT_LEAST_SIZE (xShapeOffsetReq);
+    PANORAMIXFIND_ID(pPanoramiXWin,stuff->dest); 
+    IF_RETURN(!pPanoramiXWin, BadRequest); 
+    FOR_NSCREENS_OR_ONCE(pPanoramiXWin , j) {
+	stuff->dest = pPanoramiXWin->info[j].id;
+	result = ProcShapeOffset (client);
+	BREAK_IF(result != Success);
+    }
+    return (result);
+}
+#endif
+
 
 static int
 ProcShapeQueryExtents (client)

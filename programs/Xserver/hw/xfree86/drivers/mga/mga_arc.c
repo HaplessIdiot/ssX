@@ -19,7 +19,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_arc.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_arc.c,v 1.5 1999/03/14 03:21:59 dawes Exp $ */
 
 
 #include "X.h"
@@ -192,6 +192,10 @@ MGAPolyArcThinSolid (
     RegionPtr cclip;
 
     cclip = pGC->pCompositeClip;
+
+    if(!REGION_NUM_RECTS(cclip))
+	return;
+
     for (arc = parcs, i = narcs; --i >= 0; arc++) {
 	if (miCanZeroArc(arc)) {
 	    box.x1 = arc->x + pDraw->x;

@@ -1,4 +1,6 @@
 XFree86 3.9Pp (30 May 1999)
+2692. Fix Xinerama bugs related to the Shape extension (#2832, Mark Vojkovich).
+2691. Separate the pitch and virtual X increments (#2829, Marc La France).
 2690. Add some large encoding files for the `fontenc' layer (#2827,
       Juliusz Chroboczek).
 2689. A rewrite of the way Xinerama handles visuals (#2824, Mark Vojkovich).
@@ -8068,4 +8070,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.758 1999/05/29 14:41:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.759 1999/05/30 02:28:07 dawes Exp $

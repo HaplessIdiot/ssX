@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFallback.c,v 1.3 1998/10/25 07:12:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFallback.c,v 1.4 1999/03/14 11:18:09 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -25,7 +25,7 @@ XAAFillSpansFallback(
     int *pwidthInit,		
     int fSorted )
 {
-    XAA_GC_OP_PROLOGUE(pGC);
+    XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC);
     SYNC_CHECK(pGC);
     (*pGC->ops->FillSpans)(pDraw, pGC, nInit, pptInit, pwidthInit, fSorted);
     XAA_GC_OP_EPILOGUE(pGC);
@@ -41,7 +41,7 @@ XAASetSpansFallback(
     int			nspans,
     int			fSorted )
 {
-    XAA_GC_OP_PROLOGUE(pGC);
+    XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC);
     SYNC_CHECK(pGC);
     (*pGC->ops->SetSpans)(pDraw, pGC, pcharsrc, ppt, pwidth, nspans, fSorted);
     XAA_GC_OP_EPILOGUE(pGC);
@@ -57,7 +57,7 @@ XAAPutImageFallback(
     int		format,
     char 	*pImage )
 {
-    XAA_GC_OP_PROLOGUE(pGC);
+    XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC);
     SYNC_CHECK(pGC);
     (*pGC->ops->PutImage)(pDraw, pGC, depth, x, y, w, h, 
 		leftPad, format, pImage);
@@ -117,7 +117,7 @@ XAAPolyPointFallback(
     int npt,
     xPoint *pptInit )
 {
-    XAA_GC_OP_PROLOGUE(pGC);
+    XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC);
     SYNC_CHECK(pGC);
     (*pGC->ops->PolyPoint)(pDraw, pGC, mode, npt, pptInit);
     XAA_GC_OP_EPILOGUE(pGC);
@@ -132,7 +132,7 @@ XAAPolylinesFallback(
     int		npt,		
     DDXPointPtr pptInit )
 {
-    XAA_GC_OP_PROLOGUE(pGC);
+    XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC);
     SYNC_CHECK(pGC);
     (*pGC->ops->Polylines)(pDraw, pGC, mode, npt, pptInit);
     XAA_GC_OP_EPILOGUE(pGC);
@@ -145,7 +145,7 @@ XAAPolySegmentFallback(
     int		nseg,
     xSegment	*pSeg )
 {
-    XAA_GC_OP_PROLOGUE(pGC);
+    XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC);
     SYNC_CHECK(pGC);
     (*pGC->ops->PolySegment)(pDraw, pGC, nseg, pSeg);
     XAA_GC_OP_EPILOGUE(pGC);
@@ -158,7 +158,7 @@ XAAPolyRectangleFallback(
     int	         nRectsInit,
     xRectangle  *pRectsInit )
 {
-    XAA_GC_OP_PROLOGUE(pGC);
+    XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC);
     SYNC_CHECK(pGC);
     (*pGC->ops->PolyRectangle)(pDraw, pGC, nRectsInit, pRectsInit);
     XAA_GC_OP_EPILOGUE(pGC);
@@ -171,7 +171,7 @@ XAAPolyArcFallback(
     int		narcs,
     xArc	*parcs )
 {
-    XAA_GC_OP_PROLOGUE(pGC);
+    XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC);
     SYNC_CHECK(pGC);
     (*pGC->ops->PolyArc)(pDraw, pGC, narcs, parcs);
     XAA_GC_OP_EPILOGUE(pGC);
@@ -186,7 +186,7 @@ XAAFillPolygonFallback(
     int		count,
     DDXPointPtr	ptsIn )
 {
-    XAA_GC_OP_PROLOGUE(pGC);
+    XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC);
     SYNC_CHECK(pGC);
     (*pGC->ops->FillPolygon)(pDraw, pGC, shape, mode, count, ptsIn);
     XAA_GC_OP_EPILOGUE(pGC);
@@ -200,7 +200,7 @@ XAAPolyFillRectFallback(
     int		nrectFill, 
     xRectangle	*prectInit )  
 {
-    XAA_GC_OP_PROLOGUE(pGC);
+    XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC);
     SYNC_CHECK(pGC);
     (*pGC->ops->PolyFillRect)(pDraw, pGC, nrectFill, prectInit);
     XAA_GC_OP_EPILOGUE(pGC);
@@ -214,7 +214,7 @@ XAAPolyFillArcFallback(
     int		narcs,
     xArc	*parcs )
 {
-    XAA_GC_OP_PROLOGUE(pGC);
+    XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC);
     SYNC_CHECK(pGC);
     (*pGC->ops->PolyFillArc)(pDraw, pGC, narcs, parcs);
     XAA_GC_OP_EPILOGUE(pGC);
@@ -265,7 +265,7 @@ XAAImageText8Fallback(
     int 	count,
     char	*chars )
 {
-    XAA_GC_OP_PROLOGUE(pGC);
+    XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC);
     SYNC_CHECK(pGC);
     (*pGC->ops->ImageText8)(pDraw, pGC, x, y, count, chars);
     XAA_GC_OP_EPILOGUE(pGC);
@@ -280,7 +280,7 @@ XAAImageText16Fallback(
     int 	count,
     unsigned short *chars )
 {
-    XAA_GC_OP_PROLOGUE(pGC);
+    XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC);
     SYNC_CHECK(pGC);
     (*pGC->ops->ImageText16)(pDraw, pGC, x, y, count, chars);
     XAA_GC_OP_EPILOGUE(pGC);
@@ -296,7 +296,7 @@ XAAImageGlyphBltFallback(
     CharInfoPtr *ppci,
     pointer pglyphBase )
 {
-    XAA_GC_OP_PROLOGUE(pGC);
+    XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC);
     SYNC_CHECK(pGC);
     (*pGC->ops->ImageGlyphBlt)(pDraw, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
     XAA_GC_OP_EPILOGUE(pGC);
@@ -311,7 +311,7 @@ XAAPolyGlyphBltFallback(
     CharInfoPtr *ppci,
     pointer pglyphBase )
 {
-    XAA_GC_OP_PROLOGUE(pGC);
+    XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC);
     SYNC_CHECK(pGC);
     (*pGC->ops->PolyGlyphBlt)(pDraw, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
     XAA_GC_OP_EPILOGUE(pGC);
@@ -324,7 +324,7 @@ XAAPushPixelsFallback(
     DrawablePtr pDraw,
     int	dx, int dy, int xOrg, int yOrg )
 {
-    XAA_GC_OP_PROLOGUE(pGC);
+    XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC);
     SYNC_CHECK(pGC);
     (*pGC->ops->PushPixels)(pGC, pBitMap, pDraw, dx, dy, xOrg, yOrg);
     XAA_GC_OP_EPILOGUE(pGC);

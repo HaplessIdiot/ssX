@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.26 1999/05/16 10:12:49 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.27 1999/05/23 06:33:27 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -3446,9 +3446,9 @@ _XawTextExecuteUpdate(TextWidget ctx)
 
   FlushUpdate(ctx);
   InsertCursor((Widget)ctx, XawisOn);
-  _XawTextSetLineAndColumnNumber(ctx, False);
   ctx->text.old_insert = -1;
   ctx->text.clear_to_eol = True;
+  _XawTextSetLineAndColumnNumber(ctx, False);
 }
 
 static void
@@ -3581,12 +3581,12 @@ XawTextSetValues(Widget current, Widget request, Widget cnew,
     if (newtw->text.right_column < 0)
 	newtw->text.right_column = 0;
 
-  if (show_lc)
-      _XawTextSetLineAndColumnNumber(newtw, True);
-
   _XawTextExecuteUpdate(newtw);
   if (redisplay)
     _XawTextSetScrollBars(newtw);
+
+  if (show_lc)
+      _XawTextSetLineAndColumnNumber(newtw, True);
 
   return (redisplay);
 }
@@ -3718,9 +3718,9 @@ _XawTextSetSource(Widget w, Widget source,
   ctx->text.source_changed = SRC_CHANGE_OVERLAP;
   _XawTextBuildLineTable(ctx, top, True);
 
+  _XawTextExecuteUpdate(ctx);
   if (resolve)
       _XawTextSetLineAndColumnNumber(ctx, True);
-  _XawTextExecuteUpdate(ctx);
 }
 
 void

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaawrap.h,v 1.2 1998/07/25 16:58:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaawrap.h,v 1.3 1998/10/25 07:12:14 dawes Exp $ */
 
 #define XAA_SCREEN_PROLOGUE(pScreen, field)\
   ((pScreen)->field = \
@@ -27,6 +27,13 @@
 #define XAA_GC_OP_PROLOGUE(pGC)\
     XAAGCPtr pGCPriv = (XAAGCPtr)(pGC->devPrivates[XAAGCIndex].ptr);\
     GCFuncs *oldFuncs = pGC->funcs;\
+    pGC->funcs = pGCPriv->wrapFuncs;\
+    pGC->ops = pGCPriv->wrapOps
+
+#define XAA_GC_OP_PROLOGUE_WITH_RETURN(pGC)\
+    XAAGCPtr pGCPriv = (XAAGCPtr)(pGC->devPrivates[XAAGCIndex].ptr);\
+    GCFuncs *oldFuncs = pGC->funcs;\
+    if(!REGION_NUM_RECTS(pGC->pCompositeClip)) return; \
     pGC->funcs = pGCPriv->wrapFuncs;\
     pGC->ops = pGCPriv->wrapOps
 

@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit.ad,v 1.10 1999/05/09 10:52:01 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit.ad,v 1.11 1999/05/16 10:13:07 dawes Exp $
 
 *geometry:				590x440
 *input:					TRUE
@@ -207,6 +207,7 @@ m<Key>I:	no-op(r)
 !l <Key>u:	insert-char()\n\
 !@Num_Lock<Key>u:insert-char()\n\
 !<Key>u:	insert-char()\n\
+~s <Key>Insert:	toggle-overwrite()\n\
 c l @Num_Lock<Btn1Down>:xedit-focus() popup-menu(fileMenu)\n\
 c @Num_Lock<Btn1Down>:xedit-focus() popup-menu(fileMenu)\n\
 c l<Btn1Down>:	xedit-focus() popup-menu(fileMenu)\n\
@@ -239,7 +240,7 @@ c<Key>G:	cancel-find-file()\n\
 
 *ispell.geometry:			0x0
 *ispell.minWidth:			320
-*ispell.minHeight:			224
+*ispell.minHeight:			250
 !*ispell.wordChars:			·ÈÌÛ˙Á¡…Õ”⁄«‡¿‚ÍÙ¬ ‘¸‹„ı√’-
 !*ispell.ispellCommand:			/usr/local/bin/ispell -d br -B -m
 !*ispell.skipLines:			.#
@@ -253,6 +254,8 @@ c<Key>G:	cancel-find-file()\n\
 *ispell*Label.bottom:			chainTop
 *ispell*mispelled.label:		Misspelled word:
 *ispell*mispelled.internalWidth:	0
+*ispell*repeated.label:			Repeated words:
+*ispell*repeated.internalWidth:		0
 *ispell*replacement.label:		Replace with:
 *ispell*word.fromHoriz:			mispelled
 *ispell*word.justify:			left
@@ -280,7 +283,7 @@ c<Key>G:	cancel-find-file()\n\
 *ispell*viewport.fromHoriz:		suggestions
 *ispell*viewport.fromVert:		text
 *ispell*viewport.width:			194
-*ispell*viewport.height:		169
+*ispell*viewport.height:		171
 *ispell*viewport.top:			chainTop
 *ispell*viewport.bottom:		chainBottom
 *ispell*viewport.left:			chainLeft
@@ -294,8 +297,10 @@ c<Key>G:	cancel-find-file()\n\
 *ispell*commands.bottom:		chainBottom
 *ispell*commands.right:			chainLeft
 *ispell*commands.left:			chainLeft
+*ispell*commands.Command.width:		98
+*ispell*check.label:			Check
+*ispell*undo.fromVert:			check
 *ispell*undo.label:			Undo
-*ispell*undo.width:			98
 *ispell*replace.fromVert:		undo
 *ispell*replace.label:			Replace
 *ispell*replaceAll.fromVert:		undo
@@ -312,15 +317,24 @@ c<Key>G:	cancel-find-file()\n\
 *ispell*suspend.label:			Suspend
 *ispell*cancel.fromVert:		suspend
 *ispell*cancel.label:			Close
-*ispell*replace.width:			63
-*ispell*ignore.width:			63
-*ispell*replaceAll.width:		33
+*ispell*commands.replace.width:		63
+*ispell*commands.ignore.width:		63
+*ispell*commands.replaceAll.width:	33
 *ispell*replaceAll.horizDistance:	0
-*ispell*ignoreAll.width:		33
+*ispell*commands.ignoreAll.width:	33
 *ispell*ignoreAll.horizDistance:	0
-*ispell*add.width:			98
-*ispell*suspend.width:			98
-*ispell*cancel.width:			98
+*ispell*status.fromVert:		viewport
+*ispell*status.fromHoriz:		commands
+*ispell*status.top:			chainBottom
+*ispell*status.bottom:			chainBottom
+*ispell*status.left:			chainLeft
+*ispell*status.right:			chainRight
+*ispell*status.width:			194
+*ispell*status.borderWidth:		1
+*ispell*status.justify:			left
+*ispell*status.internalHeight:		2
+*ispell*status.horizDistance:		6
+*ispell*status.vertDistance:		2
 
 *columns.minWidth:			140
 *columns.minHeight:			76

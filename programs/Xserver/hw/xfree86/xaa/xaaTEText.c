@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEText.c,v 1.5 1998/12/13 05:32:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEText.c,v 1.6 1998/12/20 11:57:52 dawes Exp $ */
 
 /********************************************************************
 
@@ -108,6 +108,9 @@ XAAImageText8TEColorExpansion(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     unsigned long n;
 
+    if(!REGION_NUM_RECTS(pGC->pCompositeClip))
+	return;
+
     (*pGC->font->get_glyphs)(pGC->font, (unsigned long)count, 
 		(unsigned char *)chars, Linear8Bit, &n, infoRec->CharInfo);
 
@@ -128,6 +131,9 @@ XAAImageText16TEColorExpansion(
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     unsigned long n;
+
+    if(!REGION_NUM_RECTS(pGC->pCompositeClip))
+	return;
 
     (*pGC->font->get_glyphs)(
 	      pGC->font, (unsigned long)count, (unsigned char *)chars,
@@ -161,6 +167,9 @@ XAAImageGlyphBltTEColorExpansion(
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
 
+    if(!REGION_NUM_RECTS(pGC->pCompositeClip))
+	return;
+
     XAAGlyphBltTEColorExpansion(
 	infoRec->pScrn, xInit + pDrawable->x, yInit + pDrawable->y,
 	pGC->font, pGC->fgPixel, pGC->bgPixel, GXcopy, pGC->planemask, 
@@ -177,6 +186,9 @@ XAAPolyGlyphBltTEColorExpansion(
     pointer pglyphBase )
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+
+    if(!REGION_NUM_RECTS(pGC->pCompositeClip))
+	return;
 
     XAAGlyphBltTEColorExpansion(
 	infoRec->pScrn, xInit + pDrawable->x, yInit + pDrawable->y,

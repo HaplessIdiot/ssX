@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.11 1998/10/03 08:41:30 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.12 1999/05/09 10:50:27 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -1379,6 +1379,10 @@ static void GetDatabase(db, str, filename, doall)
 		len = -len;
 		while (len)
 		    *ptr++ = str[len++];
+		if (*str == '\0') {
+		    bits = EOS;
+		    break;
+		}
 		bits = next_mbchar(c, len, str);
 	    }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.9 1999/03/21 07:35:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.10 1999/04/25 10:02:45 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -209,6 +209,9 @@ XAAFillPolygonSolid(
     int		    step1, step2, sign1, sign2;
     int		    c, y, maxy, h, yoffset;
     DDXPointPtr	    topPoint;
+
+    if(!REGION_NUM_RECTS(pGC->pCompositeClip))
+	return;
 
     if (mode == CoordModePrevious) {
 	register DDXPointPtr ppt = ptsIn + 1;
@@ -668,6 +671,9 @@ XAAFillPolygonStippled(
     RectFuncPtr	    RectFunc = NULL;
     TrapFuncPtr	    TrapFunc = NULL;
 
+    if(!REGION_NUM_RECTS(pGC->pCompositeClip))
+	return;
+
     if (mode == CoordModePrevious) {
 	register DDXPointPtr ppt = ptsIn + 1;
 
@@ -821,6 +827,9 @@ XAAFillPolygonTiled(
     XAACacheInfoPtr pCache = NULL;
     RectFuncPtr	    RectFunc = NULL;
     TrapFuncPtr	    TrapFunc = NULL;
+
+    if(!REGION_NUM_RECTS(pGC->pCompositeClip))
+	return;
 
     if (mode == CoordModePrevious) {
 	register DDXPointPtr ppt = ptsIn + 1;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.13 1999/03/06 13:12:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.14 1999/03/21 07:35:30 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -401,6 +401,9 @@ XAAPutImage(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     int bpp = BitsPerPixel(depth);
     if(!w || !h) return;
+
+    if(!REGION_NUM_RECTS(pGC->pCompositeClip))
+	return;
 
     if(((format == ZPixmap) && infoRec->WritePixmap &&
 	     ((pDraw->bitsPerPixel == bpp) ||

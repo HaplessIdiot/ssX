@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.34 1999/05/09 06:06:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.35 1999/05/15 12:10:21 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -518,9 +518,10 @@ typedef struct _ScrnInfoRec {
     Gamma		gamma;			/* Gamma of the monitor */
     int			defaultVisual;		/* default visual class */
     int			maxHValue;		/* max horizontal timing */
-    int			maxVValue;		/* max vertical timing  value */
+    int			maxVValue;		/* max vertical timing value */
     int			virtualX;		/* Virtual width */
     int			virtualY; 		/* Virtual height */
+    int			xInc;			/* Horizontal timing increment */
     MessageType		virtualFrom;		/* set from config? */
     int			displayWidth;		/* memory pitch */
     int			frameX0;		/* viewport position */

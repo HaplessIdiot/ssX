@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.9 1998/12/13 05:32:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.10 1998/12/20 11:57:52 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -37,6 +37,9 @@ XAAPolyFillRect(
 
     if((nrectFill <= 0) || !pGC->planemask)
         return;
+
+    if(!REGION_NUM_RECTS(pGC->pCompositeClip))
+	return;
 
     switch(pGC->fillStyle) {
     case FillSolid:

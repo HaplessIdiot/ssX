@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaWideLine.c,v 1.4 1999/02/13 08:00:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaWideLine.c,v 1.5 1999/03/29 12:17:58 dawes Exp $ */
 
 /*
 
@@ -820,6 +820,9 @@ XAAPolylinesWideSolid (
     int		    xorg = pDrawable->x;
     int		    yorg = pDrawable->y;
     Bool	    hardClip = FALSE;
+
+    if(!REGION_NUM_RECTS(pGC->pCompositeClip))
+	return;
 
     if(REGION_NUM_RECTS(pGC->pCompositeClip) != 1) {
 	miWideLine(pDrawable, pGC, mode, npt, pPts);

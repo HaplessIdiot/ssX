@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaLine.c,v 1.2 1998/09/27 04:43:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaLine.c,v 1.3 1999/01/31 12:22:11 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -42,6 +42,9 @@ XAAPolyLines(
     DDXPointPtr ppt;
 #endif
     int x1, x2, y1, y2, tmp, len;
+
+    if(!nboxInit)
+	return;
 
     (*infoRec->SetupForSolidLine)(infoRec->pScrn, pGC->fgPixel,
 					pGC->alu, pGC->planemask);

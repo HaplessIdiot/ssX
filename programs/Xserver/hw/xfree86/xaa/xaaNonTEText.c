@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.4 1998/09/13 05:23:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.5 1998/09/27 04:43:45 dawes Exp $ */
 
 /********************************************************************
 
@@ -118,10 +118,13 @@ XAAImageText8NonTEColorExpansion(
     int		x, 
     int		y,
     int		count,
-    char	*chars )
-{
+    char	*chars 
+){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     unsigned long n;
+
+    if(!REGION_NUM_RECTS(pGC->pCompositeClip))
+	return;
 
     (*pGC->font->get_glyphs)(pGC->font, (unsigned long)count, 
 		(unsigned char *)chars, Linear8Bit, &n, infoRec->CharInfo);
@@ -140,10 +143,13 @@ XAAImageText16NonTEColorExpansion(
     int		x, 
     int		y,
     int		count,
-    unsigned short *chars )
-{
+    unsigned short *chars 
+){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     unsigned long n;
+
+    if(!REGION_NUM_RECTS(pGC->pCompositeClip))
+	return;
 
     (*pGC->font->get_glyphs)(
 		pGC->font, (unsigned long)count, (unsigned char *)chars,
@@ -174,9 +180,11 @@ XAAImageGlyphBltNonTEColorExpansion(
     unsigned int nglyph,
     CharInfoPtr *ppci,      /* array of character info */
     pointer pglyphBase	       /* start of array of glyphs */
-)
-{
+){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+
+    if(!REGION_NUM_RECTS(pGC->pCompositeClip))
+	return;
 
     ImageGlyphBltNonTEColorExpansion(
 	infoRec->pScrn, xInit + pDraw->x, yInit + pDraw->y,
@@ -192,9 +200,11 @@ XAAPolyGlyphBltNonTEColorExpansion(
     unsigned int nglyph,
     CharInfoPtr *ppci,      /* array of character info */
     pointer pglyphBase	       /* start of array of glyphs */
-)
-{
+){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+
+    if(!REGION_NUM_RECTS(pGC->pCompositeClip))
+	return;
 
     PolyGlyphBltNonTEColorExpansion(
 	infoRec->pScrn, xInit + pDraw->x, yInit + pDraw->y,

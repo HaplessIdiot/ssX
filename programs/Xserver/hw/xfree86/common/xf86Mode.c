@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.16 1999/05/22 14:52:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.17 1999/05/29 14:41:48 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -693,6 +693,7 @@ xf86CheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode, int flags)
  *    videoRam     video memory size
  *    maxHValue    maximum horizontal timing value
  *    maxVValue    maximum vertical timing value
+ *    xInc         horizontal timing increment (defaults to 8 pixels)
  *
  * The function fills in the following ScrnInfoRec fields:
  *    modePool     A subset of the modes available to the monitor which
@@ -741,6 +742,10 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	ErrorF("xf86ValidateModes: called with invalid linePitches\n");
 	return -1;
     }
+    if (pitchInc <= 0) {
+	ErrorF("xf86ValidateModes: called with invalid pitchInc\n");
+	return -1;
+    }
     if (clockRanges == NULL) {
 	ErrorF("xf86ValidateModes: called with invalid clockRanges\n");
 	return -1;
@@ -761,9 +766,10 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     if (scrp->depth == 4)
 	pixmapPad *= 4;		/* 4 planes */
 
-#define _VIRTUALX(x) \
-    ((((((x) * BankFormat->bitsPerPixel) + pitchInc - 1) / pitchInc) * \
-      pitchInc) / BankFormat->bitsPerPixel)
+    if (scrp->xInc <= 0)
+        scrp->xInc = 8;		/* Suitable for VGA and others */
+
+#define _VIRTUALX(x) ((((x) + scrp->xInc - 1) / scrp->xInc) * scrp->xInc)
 #define _VIDEOSIZE(w, x, y) \
     ((((((w) * bitsPerPixel) + pixmapPad - 1) / pixmapPad) * pixmapPad * \
      ((y) - 1)) + ((x) * bitsPerPixel))

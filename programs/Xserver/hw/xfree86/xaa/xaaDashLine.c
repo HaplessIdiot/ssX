@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaDashLine.c,v 1.1 1998/09/05 06:37:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaDashLine.c,v 1.2 1999/01/31 12:22:10 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -45,8 +45,13 @@ XAAPolyLinesDashed(
     unsigned int oc1, oc2;
     int dmin, dmaj, e, octant;
     int x1, x2, y1, y2, tmp, len, offset;
-    int PatternLength = pGCPriv->DashLength; 
-    int PatternOffset = pGC->dashOffset % PatternLength;
+    int PatternLength, PatternOffset;
+
+    if(!nboxInit)
+	return;
+
+    PatternLength = pGCPriv->DashLength; 
+    PatternOffset = pGC->dashOffset % PatternLength;
 
     (*infoRec->SetupForDashedLine)(infoRec->pScrn, pGC->fgPixel,
 		(pGC->lineStyle == LineDoubleDash) ? pGC->bgPixel : -1,

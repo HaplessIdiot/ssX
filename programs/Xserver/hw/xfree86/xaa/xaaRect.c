@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaRect.c,v 1.1.2.1 1998/06/21 08:03:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaRect.c,v 1.2 1998/07/25 16:58:51 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -44,6 +44,11 @@ XAAPolyRectangleThinSolid(
     int         clipYMax;       /* lower right corner of clip rect */
     int         width, height;  /* width and height of rect */
 
+    nClipRects = REGION_NUM_RECTS(pGC->pCompositeClip);
+    pClipRects = REGION_RECTS(pGC->pCompositeClip);
+
+    if(!nClipRects) return;
+
     xOrigin = pDrawable->x;
     yOrigin = pDrawable->y;
 
@@ -52,9 +57,7 @@ XAAPolyRectangleThinSolid(
 			pGC->fgPixel, pGC->alu, pGC->planemask);
 
 
-    for ( nClipRects = REGION_NUM_RECTS(pGC->pCompositeClip),
-          pClipRects = REGION_RECTS(pGC->pCompositeClip);
-	  nClipRects > 0; 
+    for ( ; nClipRects > 0; 
 	  nClipRects--, pClipRects++ )
     {
         clipYMin = pClipRects->y1;
