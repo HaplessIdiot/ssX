@@ -1,6 +1,6 @@
 %{
 /*
- * $XFree86: xc/lib/Xft/xftlex.l,v 1.4 2001/01/02 02:46:51 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftlex.l,v 1.5 2001/03/31 01:57:20 keithp Exp $
  *
  * Copyright (c) 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -250,6 +250,7 @@ _XftConfigPopInput (void)
 	if (c >= 0)
 	    return c;
 	fclose (XftConfigInput);
+	XftConfigInput = 0;
 	if (XftConfigInpt == XftConfigInStack + XFT_CONFIG_IN_DEEP)
 	    return EOF;
 	XftConfigInput = *XftConfigInpt++;
@@ -258,4 +259,12 @@ _XftConfigPopInput (void)
 	XftConfigFile = *XftConfigFileNamePt++;
 	--XftConfigFiledeep;
     }
+}
+
+void
+XftConfigLexDone (void)
+{
+#ifdef FLEX_SCANNER
+    XftConfig_delete_buffer (XftConfig_current_buffer);
+#endif
 }

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.11 2001/03/30 18:50:18 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.12 2001/04/01 14:00:01 tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -106,9 +106,11 @@ XftFreeTypeQuery (const char *file, int id, int *count)
     if (!XftPatternAddInteger (pat, XFT_INDEX, id))
 	goto bail1;
     
+#if 0
     if ((face->face_flags & FT_FACE_FLAG_FIXED_WIDTH) != 0)
 	if (!XftPatternAddInteger (pat, XFT_SPACING, XFT_MONO))
 	    goto bail1;
+#endif
     
     if (!(face->face_flags & FT_FACE_FLAG_SCALABLE))
     {

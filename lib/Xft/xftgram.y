@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftgram.y,v 1.3 2001/01/02 02:46:51 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftgram.y,v 1.4 2001/03/31 01:57:20 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -258,7 +258,7 @@ XftTestCreate (XftQual qual, const char *field, XftOp compare, XftValue value)
     {
 	test->next = 0;
 	test->qual = qual;
-	test->field = _XftSaveString (field);
+	test->field = field;	/* already saved in grammar */
 	test->op = compare;
 	if (value.type == XftTypeString)
 	    value.u.s = _XftSaveString (value.u.s);
@@ -428,7 +428,7 @@ XftEditCreate (const char *field, XftOp op, XftExpr *expr)
     if (e)
     {
 	e->next = 0;
-	e->field = _XftSaveString (field);
+	e->field = field;   /* already saved in grammar */
 	e->op = op;
 	e->expr = expr;
     }

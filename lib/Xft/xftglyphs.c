@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.11 2001/03/31 01:57:20 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.12 2001/04/01 14:00:01 tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -112,6 +112,7 @@ XftGlyphLoad (Display		*dpy,
 	if (font->charmap != -1)
 	{
 	    glyphindex = FT_Get_Char_Index (font->face, charcode);
+#if 0	    
 	    if (!glyphindex)
 	    {
 		if (_XftFontDebug() & XFT_DBG_GLYPH)
@@ -119,6 +120,7 @@ XftGlyphLoad (Display		*dpy,
 			    (int) charcode, (int) charcode);
 		continue;
 	    }
+#endif
 	}
 	else
 	    glyphindex = (FT_UInt) charcode;
@@ -415,6 +417,23 @@ XftGlyphLoad (Display		*dpy,
 
 #define STEP	    256
 
+/*
+ * Return whether the given glyph generates any image on the screen,
+ * this means it exists or a default glyph exists
+ */
+static Bool
+XftGlyphDrawable (Display	*dpy,
+		  XftFontStruct	*font,
+		  XftChar32	glyph)
+{
+    if (font->charmap != -1)
+    {
+	FT_Set_Charmap (font->face, font->face->charmaps[font->charmap]);
+	glyph = (XftChar32) FT_Get_Char_Index (font->face, (FT_ULong) glyph);
+    }
+    return glyph <= font->face->num_glyphs;
+}
+	    
 void
 XftGlyphCheck (Display		*dpy,
 	       XftFontStruct	*font,
@@ -445,7 +464,7 @@ XftGlyphCheck (Display		*dpy,
     }
     if (font->realized[glyph] == _UntestedGlyph)
     {
-	if (XftFreeTypeGlyphExists (dpy, font, glyph))
+	if (XftGlyphDrawable (dpy, font, glyph))
 	{
 	    font->realized[glyph] = (XGlyphInfo *) malloc (sizeof (XGlyphInfo));
 	    n = *nmissing;
