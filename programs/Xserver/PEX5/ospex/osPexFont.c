@@ -1,5 +1,5 @@
 /* $XConsortium: osPexFont.c,v 5.8 94/04/17 20:36:01 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.1 1996/02/09 08:19:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.2 1996/02/19 09:49:44 dawes Exp $ */
 
 /*
 
@@ -589,7 +589,9 @@ LoadPEXFontFile(length, fontname, pFont)
 disaster:
     (void) ClosePEXFontFile(fp);
     if (table) xfree(table);
+#if 0
     if (pFont == defaultPEXFont) defaultPEXFont = 0;	/* force free */
+#endif
     FreePEXFont((diFontHandle) pFont, pFont->id);
     return (err);
     

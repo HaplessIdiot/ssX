@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: gc.c,v 5.28 95/02/27 16:42:14 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/dix/gc.c,v 3.1 1996/05/06 05:56:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/gc.c,v 3.2 1996/05/13 07:28:06 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -116,25 +116,9 @@ NOTE:
 32 bits long
 */
 
-/* The following macros produce the same result, but the second one doesn't
- * yield a warning message from gcc (the generated object code is different).
- */
-#if 0
 #define NEXTVAL(_type, _var) \
-    { if (fPointer) _var = (_type)*pPtr++; else _var = (_type)*pval++; }
-#else
-#ifdef __alpha__  /* alignment check */
-#define NEXTVAL(_type, _var) \
-    { void *__p = (fPointer ? pPtr++ : pval++);			   \
-      _var = (sizeof(_type) == 2 ? ldw_u((unsigned short *)__p) :  \
-              sizeof(_type) == 4 ? ldl_u((unsigned int   *)__p) :  \
-              sizeof(_type) == 8 ? ldq_u((unsigned long  *)__p) :  \
-              *((_type*)__p)); }
-#else
-#define NEXTVAL(_type, _var) \
-    { if (fPointer) _var = *((_type*)pPtr++); else _var = *((_type*)pval++); }
-#endif
-#endif
+    { if (fPointer) _var = (_type)((long)*pPtr++); \
+               else _var = (_type)((long)*pval++); }
 
 int
 DoChangeGC(pGC, mask, pval, fPointer)

@@ -1,3 +1,37 @@
+XFree86 3.1.2Ee (11 August 1996)
+638. Implement ech and ech1 terminal capabilities for xterm (Thomas E. Dickey).
+637. Add blinking cursor support for xterm (disabled for now)
+     (Thomas E. Dickey).
+636. Fix a PEX font struct being freed twice (Richard Henderson).
+635. Make xterm tolerant of applications that allocate the whole colour map
+     (by disabling colour mode if the ANSI colours are set with non fg/bg
+     values) (Thomas E. Dickey).
+634. Allow ISO colour support to be #ifdef'd out in xterm.  This allows
+     xterm's memory usage to be significantly reduced when colorMode is not
+     enabled (Thomas E. Dickey).
+633. Reduce flickering during resize for ReverseVideo in xterm
+     (Thomas E. Dickey).
+632. Fix xterm core dump problem on IRIX 5.2 (Thomas E. Dickey). 
+631. Update scanpci to detect the #9 I128 series II (Robin Cutshaw).
+630. Preliminary Mach32 ramdac support updates (Bryan Feir).
+629. Document new xterm contorl sequences (Thomas E. Dickey).
+628. Fix problem introduced in 3.1.2E with software cursor on some non-i386
+     platforms (Thomas E. Dickey and Thomas Mueller).
+627. Support for SCO Open Server 5 (J. Kean Johnston).
+626. Add detection of the S3 ViRGE chip to SuperProbe (and scanpci), and
+     use PCI probing for S3 chipset detection in SuperProbe where appropriate
+     (Harald Koenig).
+625. Add detection of newly supported C&T chips to SuperProbe.
+624. Add a TextClock keyword for the XF86Config to fix problems restoring
+     the text clock with the chips & tech driver (Egbert Eich).
+623. Updates for the LinkKit (Egbert Eich).
+622. Significantly improved driver for Chips and Technologies chipsets.
+     Includes linear addressing (65530 and above), 16/24bpp (65540 and above),
+     programmable clock support (65540 and above), HW cursor support (65545
+     and above), BitBLT acceleration (65545/46 and 48), support for the
+     65546, 65548, 65550 and 65554 (Nozomi Ytow, Egbert Eich, Ken Raeburn,
+     Xavier Ducoin and David Bateman).
+
 XFree86 3.1.2Ed (10 August 1996)
 621. Fix xterm colour translation problem (Michael Rohleder and
      Thomas E. Dickey).

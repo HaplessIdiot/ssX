@@ -1,7 +1,7 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
 .\" $XConsortium: ctlseqs.ms,v 1.16 94/12/28 20:45:48 gildea Exp $
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.1 1996/03/10 11:51:11 dawes Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.2 1996/07/08 10:18:14 dawes Exp $
 .\"
 .\" Copyright 1991, 1994 X Consortium
 .\"
@@ -34,6 +34,7 @@
 .\" Originally written by Edward Moy, University of California,
 .\" Berkeley, edmoy@violet.berkeley.edu, for the X.V10R4 xterm.
 .\" The X Consortium staff has since updated it for X11.
+.\" Updated by Thomas Dickey <dickey@clark.net> for XFree86 3.2.
 .\"
 .\" Run this file through troff and use the -ms macro package.
 .\"
@@ -359,7 +360,7 @@ Tab Clear (TBC)
 Set Mode (SM)
   \*(Ps = \*4 \(-> Insert Mode (IRM)
   \*(Ps = \*2\*0 \(-> Automatic Newline (LNM)
-.IP \\*(Es\\*([[\\*(Pm\\*s\\*j
+.IP \\*(Es\\*([[\\*(Pm\\*s\\*`
 Character Position Absolute  [column] (default = [row,1]) (HPA)
 .IP \\*(Es\\*([[\\*(Pm\\*s\\*l
 Reset Mode (RM)
@@ -402,6 +403,30 @@ Device Status Report (DSR)
 \*(Es\*([[\*(Ir\*s\*;\*(Ic\*s\*R
 .IP \\*(Es\\*([[\\*(Ps\\*s\\*;\\*(Ps\\*s\\*r
 Set Scrolling Region [top;bottom] (default = full size of window) (DECSTBM)
+.IP \\*(Es\\*([[\\*(Ps\\*s\\*;\\*s\\*(Ps\\*s\\*;\\*(Ps\\*s\\*t
+Window manipulation (from \fIdtterm\fP).
+Valid values for the first (and any additional parameters) are:
+  \*(Ps = \*1 \(-> Restore (de-iconify) window.
+  \*(Ps = \*2 \(-> Minimize (iconify) window.
+  \*(Ps = \*3 ; \fIx ; y\fP \(-> Move window to [x, y].
+  \*(Ps = \*4 ; \fIheight ; width\fP \(-> Resize the xterm window to height and width in pixels.
+  \*(Ps = \*5 \(-> Raise the xterm window to the front of the stacking order.
+  \*(Ps = \*6 \(-> Lower the xterm window to the bottom of the stacking order.
+  \*(Ps = \*7 \(-> Refresh the xterm window.
+  \*(Ps = \*8 ; \fIheight ; width\fP \(-> Resize the text area to [height;width] in characters.
+  \*(Ps = \*1\*1 \(-> Report xterm window state.
+If the xterm window is open (non-iconified), it returns \*(Es\*([[\*1\*t.
+If the xterm window is iconified, it returns \*(Es\*([[\*2\*t.
+  \*(Ps = \*1\*3 \(-> Report xterm window position as
+\*(Es\*([[\*3\*;\*(Ix\*;\*(Iy\*t
+  \*(Ps = \*1\*4 \(-> Report xterm window in pixels as
+\*(Es\*s\*([[\*s\*4\*s\*;\*s\fIheight\fP\*s\*;\*s\fIwidth\fP\*s\*t
+  \*(Ps = \*1\*8 \(-> Report the size of the text area in characters as
+\*(Es\*s\*([[\*s\*8\*s\*;\*s\fIheight\fP\*s\*;\*s\fIwidth\fP\*t
+  \*(Ps = \*2\*0 \(-> Report xterm window's icon label as
+\*(Es\*s\*]\*s\*L\*s\fIlabel\fP\*s\*(Es\*s\*(bS
+  \*(Ps = \*2\*1 \(-> Report xterm window's title as
+\*(Es\*s\*]\*s\*l\*s\fItitle\fP\*s\*(Es\*s\*(bS
 .IP \\*(Es\\*([[\\*(Ps\\*s\\*x
 Request Terminal Parameters (DECREQTPARM)
 .IP \\*(Es\\*([[\\*?\\*(Pm\\*s\\*h
