@@ -16,7 +16,7 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
      source interpretation added September 24, 1996
 	renamed PolyglotMan due to lawsuit by Rosetta, Inc. August 8, 1997
 */
-/* $XFree86: xc/extras/rman/rman.c,v 1.2 2000/03/21 17:29:53 dawes Exp $ */
+/* $XFree86: xc/extras/rman/rman.c,v 1.3 2000/03/21 21:29:47 dawes Exp $ */
 
 
 /* TO DO ****
@@ -169,7 +169,9 @@ int fSubsections=0;	/* extract subsection titles too? */
 int fChangeleft=0;	/* move change bars to left? (-1 => delete them) */
 int fReflow=0;
 int fURL=0;		/* scan for URLs too? */
-/*int fMan=1;		/* invoke agressive man page filtering? */
+#if 0
+int fMan=1;		/* invoke agressive man page filtering? */
+#endif
 int fQS=0;		/* squeeze out spaces (scnt and interword)? */
 int fIQS=0;		/* squeeze out initial spaces (controlled separately from fQS) */
 int fILQS=0;		/* squeeze out spaces for usual indent */
@@ -2922,7 +2924,9 @@ la_gets(char *buf) {
 		while (lookahead && (c=getchartab())!='\n' && i<MAXBUF) { *p++=c; i++; }
 		assert(i<MAXBUF);
 
-		/*lookahead=ungetc(getchar(), stdin);	/* only looking ahead one character for now */
+#if 0
+		lookahead=ungetc(getchar(), stdin);	/* only looking ahead one character for now */
+#endif
 
 		/* very special case: if in SEE ALSO section, re-linebreak so references aren't linebroken
 		   (also do this if fNOHY flag is set) -- doesn't affect lookahead */
@@ -3631,7 +3635,6 @@ preformatted_filter(void) {
  */
 
 /* macros */
-/*
 /* put as much in here, as opposed to in code, as possible.
    less expensive and here they can be overridden by other macros */
 /*const int macromax=100; -- dumb compiler */
@@ -3641,25 +3644,25 @@ struct { char *key; char *subst; } macro[MACROMAX] = {
   {"NA", ".SH NAME"},
   {"SB", "\\s-2\\fB\\$1\\fR\\s0"},
   /* HP-UX */
-/*
+#if 0
   {"SM", "\\s-2\\$1\\s0"},
   {"C", "\\f3\\$1\\fR"},
   {"CR", "\\f3\\$1\\fR\\$2"},
   {"CI", "\\f3\\$1\\fI\\$2\\fR"},
   {"RC", "\\fR\\$1\\f3\\$2\\fR"},
-*/
+#endif
   /* SGI -- doesn't ship man page source */
 
   /* 4.4BSD  -  http://intergate.sonyinteractive.com/cgi-bin/manlink/7/mdoc */
   /* scads more, but for them definition in -mandoc is sufficient */
-  /*
+#if 0
   {"Dt", ".TH \\$1 \\$2 \\$3"},
   {"Sh", ".SH \\$1 \\$2 \\$3 \\$4 \\$5 \\$6 \\$7 \\$8 \\$9"},
   {"Ss", ".SS \\$1 \\$2 \\$3 \\$4 \\$5 \\$6 \\$7 \\$8 \\$9"},
   {"Pp", ".P"},
-  {"Nm", ".BR \\$1 \\$2 \\$3 \\$4 \\$5 \\$6 \\$7 \\$8 \\$9"},	/* name * /
+  {"Nm", ".BR \\$1 \\$2 \\$3 \\$4 \\$5 \\$6 \\$7 \\$8 \\$9"},	/* name */
   {"Ar", ".IR \\$1 \\$2 \\$3 \\$4 \\$5 \\$6 \\$7 \\$8 \\$9"},
-  */
+#endif
   { NULL, NULL }
 };
 /* what all can be represented as a macro? */
@@ -3802,7 +3805,9 @@ source_gets(void) {
     /* close off buf */
     *q='\0';
 
-    /*if (q>buf && q[-1]=='\\' && *in=='.') { /* append next line * /} else break;*/
+#if 0
+    if (q>buf && q[-1]=='\\' && *in=='.') { /* append next line * /} else break;*/
+#endif
     break;
   }
 
@@ -3998,12 +4003,14 @@ source_out0(char *p, char end) {
 		}
 	   }
 	   break;
-	   /*------------------
+#if 0
 	 } else if (*p=='|') {
-	   stagadd(CHARNBSP);	/* nonbreaking space * /
-	   /*sputchar(' ');* /
+	   stagadd(CHARNBSP);	/* nonbreaking space */
+#if 0
+	   sputchar(' ');
+#endif
 	   p++;
-	   -------------------*/
+#endif
 	 case 'e':		/* escape */
 	   sputchar('\\');
 	   p++;
@@ -4018,11 +4025,11 @@ source_out0(char *p, char end) {
 	   sputchar(CHARDASH);
 	   p++;
 	   break;
-	   /*-----------------------
+#if 0
 	 } else if (*p=='^') {
-	   /* end stylings? (found in Solaris) * /
+	   /* end stylings? (found in Solaris) */
 	   p++;
-	   -------------------*/
+#endif
 	 case 'N':
 	   p++;
 	   if (*p == '\'') {
@@ -4297,15 +4304,15 @@ source_command(char *p) {
     if (indent) indent--;
     pop(ENDINDENT);
     source_struct(ENDINDENT);
-/*
+#if 0
   } else if (checkcmd("Xr")) {
-    /* 4.4BSD man ref * /
+    /* 4.4BSD man ref */
     supresseol=0;
     p=source_out_word(p);
     source_out("(");
     p=source_out_word(p);
     source_out(")");
-*/
+#endif
 
   } else if (checkcmd("nf")) {
     source_struct(SHORTLINE); 
@@ -4755,13 +4762,14 @@ source_command(char *p) {
     source_out("\t");
   } else if (fTclTk && checkcmd("AS")) {	/* arguments */
 
-/* let these be defined as macros.  if they're not, they're just caught as unrecognized macros
+#if 0
+/* let these be defined as macros.  if they're not, they're just caught as unrecognized macros */
   } else if (checkcmd("ll") || checkcmd("IX") ||
-		   checkcmd("nh")||checkcmd("hy")||checkcmd("hc")||checkcmd("hw")	/* hyphenation * /
-	) {	/* unsupported macros -- usually roff specific * /
+		   checkcmd("nh")||checkcmd("hy")||checkcmd("hc")||checkcmd("hw")	/* hyphenation */
+	) {	/* unsupported macros -- usually roff specific */
 
     fprintf(stderr, "macro \"%s\" not supported -- ignoring\n", cmd);
-*/
+#endif
 
   } else {		/* could be a macro definition */
     supresseol=0;
@@ -5309,7 +5317,7 @@ main(int argc, char *argv[]) {
 			exit(0);
 
 		   case 'v': /*case '?':*/
-			printf("PolyglotMan v" POLYGLOTMANVERSION " of $Date: 2000/03/21 21:29:47 $\n");
+			printf("PolyglotMan v" POLYGLOTMANVERSION " of $Date: 2000/03/21 21:48:35 $\n");
 			exit(0);
 
 		   default:
