@@ -54,21 +54,22 @@
 #define VB_SIS301BLV302BLV      (VB_SIS301B|VB_SIS301C|VB_SIS302B|VB_SIS301LV|VB_SIS302LV)
 #define VB_SIS301B302B          (VB_SIS301B|VB_SIS301C|VB_SIS302B)
 #define VB_SIS301LV302LV        (VB_SIS301LV|VB_SIS302LV)
+#define VB_SISVB		(VB_SIS301 | VB_SIS301BLV302BLV)
 
-#define IS_SIS330		(HwDeviceExtension->jChipType == SIS_330)
-#define IS_SIS550		(HwDeviceExtension->jChipType == SIS_550)
-#define IS_SIS650		(HwDeviceExtension->jChipType == SIS_650)
-#define IS_SIS740		(HwDeviceExtension->jChipType == SIS_740)
+#define IS_SIS330		(HwInfo->jChipType == SIS_330)
+#define IS_SIS550		(HwInfo->jChipType == SIS_550)
+#define IS_SIS650		(HwInfo->jChipType == SIS_650)
+#define IS_SIS740		(HwInfo->jChipType == SIS_740)
 #define IS_SIS651	        (SiS_Pr->SiS_SysFlags & (SF_Is651 | SF_Is652))
 #define IS_SISM650	        (SiS_Pr->SiS_SysFlags & (SF_IsM650 | SF_IsM652 | SF_IsM653))
 #define IS_SIS661		(SiS_Pr->SiS_SysFlags & (SF_Is661 | SF_IsM651))
 #define IS_SIS741		(SiS_Pr->SiS_SysFlags & SF_IsM741)
 #define IS_SIS65x               (IS_SIS651 || IS_SISM650)
 #define IS_SIS661741	        (SiS_Pr->SiS_SysFlags & (SF_Is661 | SF_IsM661 | SF_Is741))
-#define IS_SIS660		(HwDeviceExtension->jChipType == SIS_660)
-#define IS_SIS760		(HwDeviceExtension->jChipType == SIS_760)
+#define IS_SIS660		(HwInfo->jChipType == SIS_660)
+#define IS_SIS760		(HwInfo->jChipType == SIS_760)
 #define IS_SIS650660            (IS_SIS650 || IS_SIS660)
-#define IS_SIS650740            ((HwDeviceExtension->jChipType >= SIS_650) && (HwDeviceExtension->jChipType < SIS_330))
+#define IS_SIS650740            ((HwInfo->jChipType >= SIS_650) && (HwInfo->jChipType < SIS_330))
 #define IS_SIS650740660         (IS_SIS650 || IS_SIS660 || IS_SIS740 || IS_SIS760)
 #define IS_SIS550650740660      (IS_SIS550 || IS_SIS650 || IS_SIS660 || IS_SIS740 || IS_SIS760)
 
@@ -126,7 +127,7 @@
 
 /* VBInfo */
 #define SetSimuScanMode         0x0001   /* CR 30 */
-#define SwitchToCRT2            0x0002
+#define SwitchCRT2              0x0002
 #define SetCRT2ToAVIDEO         0x0004
 #define SetCRT2ToSVIDEO         0x0008
 #define SetCRT2ToSCART          0x0010
@@ -229,7 +230,7 @@
 
 /* CR38 (315 series) */
 #define EnableDualEdge 		0x01   
-#define SetToLCDA		0x02   /* LCD channel A (302B/LV and 650+LVDS only) */
+#define SetToLCDA		0x02   /* LCD channel A (302B/30xLV and 650+LVDS only) */
 #define EnableSiSHiVision       0x04   /* HiVision (HDTV) on SiS bridge */
 #define EnableLVDSScart         0x04   /* Scart on Ch7019 (unofficial definition - TW) */
 #define EnableLVDSHiVision      0x08   /* YPbPr color format (480i HDTV); only on 650/Ch7019 systems */

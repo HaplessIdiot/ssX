@@ -53,11 +53,11 @@ extern unsigned char SiS6326GetXXReg(ScrnInfoPtr pScrn, CARD8 index);
 
 extern int      SiSCalcVRate(DisplayModePtr mode);
 
-/* TW: Functions from init.c & init301.c */
-extern void     SiS_UnLockCRT2(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO,USHORT BaseAddr);
-extern void     SiS_LockCRT2(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO,USHORT BaseAddr);
-extern void     SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO,USHORT  BaseAddr);
-extern void     SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO,USHORT BaseAddr);
+/* Functions from init.c and init301.c */
+extern void     SiS_UnLockCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO);
+extern void     SiS_LockCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO);
+extern void     SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO);
+extern void     SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO);
 extern USHORT 	SiS_GetCH700x(SiS_Private *SiS_Pr, USHORT tempbx);
 extern void 	SiS_SetCH700x(SiS_Private *SiS_Pr, USHORT tempbx);
 extern USHORT 	SiS_GetCH701x(SiS_Private *SiS_Pr, USHORT tempbx);
@@ -73,13 +73,8 @@ extern void     SiS_DisplayOn(SiS_Private *SiS_Pr);
 extern unsigned char SiS_GetSetModeID(ScrnInfoPtr pScrn, unsigned char id);
 extern void     SiS_SetEnableDstn(SiS_Private *SiS_Pr, int enable);
 extern void     SiS_SetEnableFstn(SiS_Private *SiS_Pr, int enable);
-#if 0
-extern void     SiS_SetSwitchDDC2(SiS_Private *SiS_Pr);
-extern USHORT   SiS_I2C_GetByte(SiS_Private *SiS_Pr);
-extern Bool     SiS_I2C_PutByte(SiS_Private *SiS_Pr, USHORT data);
-extern Bool     SiS_I2C_Address(SiS_Private *SiS_Pr, USHORT addr);
-extern void     SiS_I2C_Stop(SiS_Private *SiS_Pr);
-#endif
+
+
 
 
 

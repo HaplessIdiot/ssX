@@ -39,6 +39,6 @@ void SISLCDPreInit(ScrnInfoPtr pScrn);
 void SISTVPreInit(ScrnInfoPtr pScrn);
 void SISCRT2PreInit(ScrnInfoPtr pScrn);
 
-extern BOOLEAN SiS_GetPanelID(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension);
+extern BOOLEAN SiS_GetPanelID(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension);
 extern USHORT SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS);
 extern USHORT SiS_SenseVGA2DDC(SiS_Private *SiS_Pr, SISPtr pSiS);
