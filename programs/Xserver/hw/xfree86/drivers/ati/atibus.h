@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.h,v 1.8 2001/01/06 20:58:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.h,v 1.9 2002/01/16 16:22:25 tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -53,7 +53,7 @@ typedef enum
 
 extern const char *ATIBusNames[];
 
-extern int  ATIClaimBusSlot    FunctionPrototype((DriverPtr, int, GDevPtr,
-                                                  Bool, ATIPtr));
+extern int ATIClaimBusSlot FunctionPrototype((DriverPtr, int, GDevPtr, Bool,
+                                              ATIPtr));
 
 #endif /* ___ATIBUS_H___ */
