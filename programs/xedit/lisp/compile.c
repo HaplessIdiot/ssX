@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.9 2002/11/23 21:41:51 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.10 2002/11/26 04:06:27 paulo Exp $ */
 
 #define VARIABLE_USED		0x0001
 #define VARIABLE_ARGUMENT	0x0002
@@ -1717,7 +1717,7 @@ aux_label:
     count = alist->auxs.num_symbols;
     symbols = alist->auxs.symbols;
     defaults = alist->auxs.initials;
-    if (!builtin && !compile && eval) {
+    if (!builtin && !compile) {
 	int lex = com->lex;
 
 	com->lex = base;
@@ -1729,13 +1729,6 @@ aux_label:
 	    ++lisp__data.env.head;
 	}
 	com->lex = lex;
-    }
-    else {
-	for (; i < count; i++) {
-	    ComPush(com, symbols[i], defaults[i], eval, builtin, compile);
-	    if (!builtin && !com->macro)
-		COM_VARIABLE_ARGUMENT(symbols[i]->data.atom);
-	}
     }
 
 done_label:

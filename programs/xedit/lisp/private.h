@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.36 2002/11/23 08:26:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.37 2002/11/26 04:06:28 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -53,6 +53,7 @@
  */
 #define	STRTBLSZ		23
 #define MULTIPLE_VALUES_LIMIT	127
+#define MAX_STACK_DEPTH		16384
 
 #define FEATURES						\
     lisp__data.features->data.atom->a_object ?			\
@@ -457,6 +458,8 @@ void LispBlockUnwind(LispBlock*);
 void LispUpdateResults(LispObj*, LispObj*);
 void LispTopLevel(void);
 
+#define STRHASH(string)		LispDoHashString(string)
+int LispDoHashString(char*);
 LispAtom *LispDoGetAtom(char *str, int);
 	/* get value from atom's property list */
 LispObj *LispGetAtomProperty(LispAtom*, LispObj*);

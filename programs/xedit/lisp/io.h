@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.5 2002/11/10 16:29:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.6 2002/11/20 07:44:41 paulo Exp $ */
 
 #ifndef Lisp_io_h
 #define Lisp_io_h
@@ -45,6 +45,8 @@
 /*
  * Types
  */
+typedef ssize_t (*io_write_fn)(int, const void*, size_t);
+
 struct _LispFile {
     char *buffer;
     int line;			/* input line number */
@@ -60,6 +62,7 @@ struct _LispFile {
     int available : 1;		/* unget field holds a char */
     int nonblock : 1;		/* in nonblock mode */
     int binary : 1;		/* if set, don't calculate column/line-number */
+    io_write_fn io_write;
 };
 
 struct _LispString {
@@ -96,7 +99,10 @@ int LispFputs(LispFile*, char*);
 int LispFread(LispFile*, void*, int);
 int LispFwrite(LispFile*, void*, int);
 
-	/* functions that readwrite using the LispString structure */
+	/* io wrappers */
+io_write_fn LispSetFileWrite(LispFile*, io_write_fn);
+
+	/* functions that read/write using the LispString structure */
 int LispSgetc(LispString*);
 int LispSputc(LispString*, int);
 int LispSputs(LispString*, char*);

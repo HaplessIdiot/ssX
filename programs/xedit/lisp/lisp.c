@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.78 2002/11/25 12:42:24 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.79 2002/11/26 04:06:28 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -464,7 +464,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_PackageUsedByList, "package-used-by-list package"},
     {LispFunction, Lisp_Pairlis, "pairlis key data &optional alist"},
     {LispFunction, Lisp_ParseInteger, "parse-integer string &key start end radix junk-allowed", 1},
-    {LispFunction, Lisp_ParseNamestring, "parse-namestring object &optional host defaults &key start end junk-allowed"},
+    {LispFunction, Lisp_ParseNamestring, "parse-namestring object &optional host defaults &key start end junk-allowed", 1},
     {LispFunction, Lisp_PathnameHost, "pathname-host pathname"},
     {LispFunction, Lisp_PathnameDevice, "pathname-device pathname"},
     {LispFunction, Lisp_PathnameDirectory, "pathname-directory pathname"},
@@ -1279,14 +1279,8 @@ int
 LispRegisterOpaqueType(char *desc)
 {
     LispOpaque *opaque;
-    int ii = 0;
-    char *pp = desc;
+    int ii = STRHASH(desc);
 
-    while (*pp)
-	ii = (ii << 1) ^ *pp++;
-    if (ii < 0)
-	ii = -ii;
-    ii %= STRTBLSZ;
     for (opaque = lisp__data.opqs[ii]; opaque; opaque = opaque->next)
 	if (strcmp(opaque->desc, desc) == 0)
 	    return (opaque->type);
@@ -1321,18 +1315,25 @@ LispIntToOpaqueType(int type)
     return (Snil);
 }
 
+int
+LispDoHashString(char *string)
+{
+    char *pp;
+    int ii, count;
+
+    for (pp = string, ii = count = 0; *pp && count < 32; pp++, count++)
+	ii = (ii << 1) ^ *pp;
+    if (ii < 0)
+	ii = -ii;
+
+    return (ii % STRTBLSZ);
+}
+
 char *
 LispGetAtomString(char *string, int perm)
 {
     LispStringHash *entry;
-    int ii = 0;
-    char *pp = string;
-
-    while (*pp)
-	ii = (ii << 1) ^ *pp++;
-    if (ii < 0)
-	ii = -ii;
-    ii %= STRTBLSZ;
+    int ii = STRHASH(string);
 
     for (entry = lisp__data.strings[ii]; entry != NULL; entry = entry->next)
 	if (strcmp(entry->string, string) == 0)
@@ -1356,14 +1357,8 @@ LispAtom *
 LispDoGetAtom(char *str, int perm)
 {
     LispAtom *atom;
-    int ii = 0;
-    char *pp = str;
+    int ii = STRHASH(str);
 
-    while (*pp)
-	ii = (ii << 1) ^ *pp++;
-    if (ii < 0)
-	ii = -ii;
-    ii %= STRTBLSZ;
     for (atom = lisp__data.pack->atoms[ii]; atom; atom = atom->next)
 	if (strcmp(atom->string, str) == 0)
 	    return (atom);
@@ -3174,28 +3169,21 @@ LispSymbolFunction(LispObj *symbol)
 static INLINE LispObj *
 LispGetVarPack(LispObj *symbol)
 {
-    int i;
+    int ii;
     char *string;
     LispAtom *atom;
     LispProperty *property;
 
     string = ATOMID(symbol);
     property = symbol->data.atom->property;
+    ii = STRHASH(string);
 
-    for (i = 0; i < STRTBLSZ; i++) {
-	atom = lisp__data.pack->atoms[i];
-	while (atom) {
+    atom = lisp__data.pack->atoms[ii];
+    while (atom) {
+	if (strcmp(atom->string, string) == 0)
+	    return (atom->object);
 
-	    if (property != NOPROPERTY && atom->property == property)
-		/* Symbol already in the current package */
-		return (atom->object);
-
-	    else if (strcmp(atom->string, string) == 0)
-		/* Different symbol with the same name found */
-		return (atom->object);
-
-	    atom = atom->next;
-	}
+	atom = atom->next;
     }
 
     /* Symbol not found, just import it */
@@ -3824,15 +3812,23 @@ LispBeginBlock(LispObj *tag, LispBlockType type)
     unsigned blevel = lisp__data.block.block_level + 1;
 
     if (blevel > lisp__data.block.block_size) {
-	LispBlock **blk = realloc(lisp__data.block.block,
-				  sizeof(LispBlock*) * (blevel + 1));
+	LispBlock **blk;
+
+	if (blevel > MAX_STACK_DEPTH)
+	    LispDestroy("stack overflow");
+
+	DISABLE_INTERRUPTS();
+	blk = realloc(lisp__data.block.block, sizeof(LispBlock*) * (blevel + 1));
 
 	block = NULL;
-	if (blk == NULL || (block = malloc(sizeof(LispBlock))) == NULL)
+	if (blk == NULL || (block = malloc(sizeof(LispBlock))) == NULL) {
+	    ENABLE_INTERRUPTS();
 	    LispDestroy("out of memory");
+	}
 	lisp__data.block.block = blk;
 	lisp__data.block.block[lisp__data.block.block_size] = block;
 	lisp__data.block.block_size = blevel;
+	ENABLE_INTERRUPTS();
     }
     block = lisp__data.block.block[lisp__data.block.block_level];
     if (type == LispBlockCatch && !CONSTANTP(tag)) {
@@ -4601,7 +4597,7 @@ aux_label:
     count = alist->auxs.num_symbols;
     defaults = alist->auxs.initials;
     symbols = alist->auxs.symbols;
-    if (eval) {
+    {
 	int lex = lisp__data.env.lex;
 
 	lisp__data.env.lex = base;
@@ -4611,11 +4607,6 @@ aux_label:
 	    ++lisp__data.env.head;
 	}
 	lisp__data.env.lex = lex;
-    }
-    else {
-	for (; i < count; i++) {
-	    NORMAL_ARGUMENT(symbols[i], defaults[i]);
-	}
     }
 
 done_label:

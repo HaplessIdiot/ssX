@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/lisp.lsp,v 1.6 2002/11/25 02:35:31 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/lisp.lsp,v 1.7 2002/11/26 04:06:30 paulo Exp $
 ;;
 (provide "lisp")
 
@@ -54,7 +54,7 @@
 ;; pathnames
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun pathname (filename)
-    (parse-namestring filename))
+    (values (parse-namestring filename)))
 
 (defun merge-pathnames (pathname &optional defaults default-version)
     (if (null default-version)

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.16 2002/11/15 07:01:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.17 2002/11/23 08:26:50 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -65,9 +65,9 @@ extern char **environ;
 
 LispObj *Oopen, *Oclose, *Kif_does_not_exist;
 
-Atom_id Sprobe, Sinput, Soutput, Sio, Snew_version, Srename,
-	Srename_and_delete, Soverwrite, Sappend, Ssupersede,
-	Screate;
+LispObj *Kprobe, *Kinput, *Koutput, *Kio, *Knew_version, *Krename,
+	 *Krename_and_delete, *Koverwrite, *Kappend, *Ksupersede,
+	 *Kcreate;
 
 /*
  * Implementation
@@ -79,17 +79,17 @@ LispStreamInit(void)
     Oclose		= STATIC_ATOM("CLOSE");
     Kif_does_not_exist	= KEYWORD("IF-DOES-NOT-EXIST");
 
-    Sprobe		= GETATOMID("PROBE");
-    Sinput		= GETATOMID("INPUT");
-    Soutput		= GETATOMID("OUTPUT");
-    Sio			= GETATOMID("IO");
-    Snew_version	= GETATOMID("NEW-VERSION");
-    Srename		= GETATOMID("RENAME");
-    Srename_and_delete	= GETATOMID("RENAME-AND-DELETE");
-    Soverwrite		= GETATOMID("OVERWRITE");
-    Sappend		= GETATOMID("APPEND");
-    Ssupersede		= GETATOMID("SUPERSEDE");
-    Screate		= GETATOMID("CREATE");
+    Kprobe		= KEYWORD("PROBE");
+    Kinput		= KEYWORD("INPUT");
+    Koutput		= KEYWORD("OUTPUT");
+    Kio			= KEYWORD("IO");
+    Knew_version	= KEYWORD("NEW-VERSION");
+    Krename		= KEYWORD("RENAME");
+    Krename_and_delete	= KEYWORD("RENAME-AND-DELETE");
+    Koverwrite		= KEYWORD("OVERWRITE");
+    Kappend		= KEYWORD("APPEND");
+    Ksupersede		= KEYWORD("SUPERSEDE");
+    Kcreate		= KEYWORD("CREATE");
 }
 
 LispObj *
@@ -161,7 +161,6 @@ Lisp_Open(LispBuiltin *builtin)
     char *string;
     LispObj *stream = NIL;
     int mode, flags, direction, exist, noexist;
-    Atom_id atom;
     LispFile *file;
 
     LispObj *filename, *odirection, *element_type, *if_exists,
@@ -190,15 +189,13 @@ Lisp_Open(LispBuiltin *builtin)
     if (odirection != UNSPEC) {
 	direction = -1;
 	if (KEYWORDP(odirection)) {
-	    atom = ATOMID(odirection);
-
-	    if (atom == Sprobe)
+	    if (odirection == Kprobe)
 		direction = DIR_PROBE;
-	    else if (atom == Sinput)
+	    else if (odirection == Kinput)
 		direction = DIR_INPUT;
-	    else if (atom == Soutput)
+	    else if (odirection == Koutput)
 		direction = DIR_OUTPUT;
-	    else if (atom == Sio)
+	    else if (odirection == Kio)
 		direction = DIR_IO;
 	}
 	if (direction == -1)
@@ -224,21 +221,19 @@ Lisp_Open(LispBuiltin *builtin)
     if (if_exists != UNSPEC) {
 	exist = -1;
 	if (KEYWORDP(if_exists)) {
-	    atom = ATOMID(if_exists);
-
-	    if (atom == Serror)
+	    if (if_exists == Kerror)
 		exist = EXT_ERROR;
-	    else if (atom == Snew_version)
+	    else if (if_exists == Knew_version)
 		exist = EXT_NEW_VERSION;
-	    else if (atom == Srename)
+	    else if (if_exists == Krename)
 		exist = EXT_RENAME;
-	    else if (atom == Srename_and_delete)
+	    else if (if_exists == Krename_and_delete)
 		exist = EXT_RENAME_DELETE;
-	    else if (atom == Soverwrite)
+	    else if (if_exists == Koverwrite)
 		exist = EXT_OVERWRITE;
-	    else if (atom == Sappend)
+	    else if (if_exists == Kappend)
 		exist = EXT_APPEND;
-	    else if (atom == Ssupersede)
+	    else if (if_exists == Ksupersede)
 		exist = EXT_SUPERSEDE;
 	}
 	if (exist == -1)
@@ -251,11 +246,9 @@ Lisp_Open(LispBuiltin *builtin)
     if (if_does_not_exist != UNSPEC) {
 	noexist = -1;
 	if (KEYWORDP(if_does_not_exist)) {
-	    atom = ATOMID(if_does_not_exist);
-
-	    if (atom == Serror)
+	    if (if_does_not_exist == Kerror)
 		noexist = NOEXT_ERROR;
-	    else if (atom == Screate)
+	    else if (if_does_not_exist == Kcreate)
 		noexist = NOEXT_CREATE;
 	}
 	if (noexist == -1)
@@ -606,7 +599,6 @@ Lisp_MakePipe(LispBuiltin *builtin)
  */
 {
     char *string;
-    Atom_id atom;
     LispObj *stream = NIL;
     int flags, direction;
     LispFile *error_file;
@@ -632,15 +624,13 @@ Lisp_MakePipe(LispBuiltin *builtin)
     if (odirection != UNSPEC) {
 	direction = -1;
 	if (KEYWORDP(odirection)) {
-	    atom = ATOMID(odirection);
-
-	    if (atom == Sprobe)
+	    if (odirection == Kprobe)
 		direction = DIR_PROBE;
-	    else if (atom == Sinput)
+	    else if (odirection == Kinput)
 		direction = DIR_INPUT;
-	    else if (atom == Soutput)
+	    else if (odirection == Koutput)
 		direction = DIR_OUTPUT;
-	    else if (atom == Sio)
+	    else if (odirection == Kio)
 		direction = DIR_IO;
 	}
 	if (direction == -1)
