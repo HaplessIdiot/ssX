@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.13 1999/06/21 10:06:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.14 1999/07/04 06:39:00 dawes Exp $ */
 
 /*
  * glint register file 
@@ -16,6 +16,8 @@
 
 #ifndef _GLINTREG_H_
 #define _GLINTREG_H_
+
+#include "compiler.h"
 
 /**********************************************
 *  GLINT 500TX Configuration Region Registers *
@@ -1147,15 +1149,18 @@
 #define GLINT_WRITE_REG(v,r)					\
 do{								\
 	*(volatile CARD32 *)((char *)pGlint->IOBase+(r))=v;	\
+	mem_barrier();						\
 }while(0)
 #define GLINT_READ_REG(r)					\
 	(*(volatile CARD32 *)((char *)pGlint->IOBase+(r)))
-#endif
+#endif                                        
 
 #define GLINT_WAIT(n)						\
 do{								\
 	if(!pGlint->UsePCIRetry)				\
-		while(GLINT_READ_REG(InFIFOSpace)<(n));		\
+		while(GLINT_READ_REG(InFIFOSpace)<(n)){		\
+			mem_barrier();				\
+		}						\
 }while(0)
 
 #define GLINT_MASK_WRITE_REG(v,m,r)				\

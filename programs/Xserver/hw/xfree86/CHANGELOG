@@ -1,4 +1,20 @@
 XFree86 3.9.18Za (6 March 2000)
+3958. Update the -misc-fixed-* BDF fonts.  New glyphs have been added and
+      some old ones fixed.  10x20.bdf and 9x15.bdf now also cover the
+      ISO 8859-6 characters (Arabic), and 18x18ja.bdf covers now all
+      characters necessary to display the full ISO-2022-JP-2 repertoire
+      (#3799, Markus Kuhn).
+3957. Make sure the fbdevhw module is loaded by the glint driver when it
+      is needed, and add some memory barriers to some register access macros
+      (#3804, Michel Dänzer).
+3956. Update the glint driver man page and release notes (#3804,
+      Michel Dänzer).
+3955. Remove some noisy messages from the mga driver (#3803, Mark Vojkovich).
+3954. The last segment in any zero-width polysegment drawing request to
+      a window with more than one clipping rectangle gets dropped in the
+      fb code (#3802, Keith Packard).
+3953. Fix the versions for which HasMTRRSupport is enabled for OpenBSD
+      (#3800, Matthieu Herrb).
 3952. Fix some "ambiguous" else statements in some of the driver Probe()
       functions (David Dawes).
 3951. Don't make the VBEInit call in the chips driver dependent on the loader
@@ -10001,4 +10017,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1069 2000/03/06 23:17:38 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1070 2000/03/06 23:54:01 dawes Exp $

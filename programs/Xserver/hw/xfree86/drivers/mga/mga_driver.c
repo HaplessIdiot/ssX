@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.147 2000/03/01 20:14:40 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.148 2000/03/06 23:54:10 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -771,8 +771,6 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	      ErrorF("Pins[0x%02x] is 0x%02x\n", i,
 			((unsigned char *)pBios2)[i]);
 #endif
-	   ErrorF("0x20 of Pins[0x34] is %s\n",
-		  (pBios2->VidCtrl & 0x20) ?  "set" : "cleared");
 	   return;
 	} else {
 	  /* Set default MCLK values (scaled by 10 kHz) */
@@ -972,7 +970,6 @@ MGAdoDDC(ScrnInfoPtr pScrn)
   /* Initialize I2C bus - used by DDC if available */
   if (pMga->i2cInit) {
     pMga->i2cInit(pScrn);
-    ErrorF("I2C initialized on %p\n",pMga->I2C);
   }
   /* Read and output monitor info using DDC2 over I2C bus */
   if (pMga->I2C) {

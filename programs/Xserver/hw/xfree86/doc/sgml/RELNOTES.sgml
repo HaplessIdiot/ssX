@@ -9,7 +9,7 @@
 <date>1 March 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.32 2000/03/03 21:28:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.33 2000/03/06 22:59:24 dawes Exp $
 </ident>
 
 <abstract>
@@ -641,21 +641,25 @@ Gamma 1.0 1.0 1.0
 
 <url name="Precision Insight" url="http://www.precisioninsight.com">
 has been provided with funding and support from <url name="Red Hat"
-url="http://www.redhat.com"> and <url name="SGI" url="http://www.sgi.com">
-to integrate the GLX extension for 3D rendering in an X11 window.  The
-3D core rendering component is the <url name="Mesa"
-url="http://www.mesa3d.org"> library.  SGI has released the sources to
-the extension framework under an open license, which essentially provides
-the glue between the 3D library and this windowing system.  Precision
-Insight has integrated these components into this XFree86 X Server and
-added a Direct Rendering Infrastructure.  Direct Rendering provides a
-highly optimized path for sending 3D data directly to the graphics
-hardware.  This release <url name="demonstrates a sample implementation
-of direct rendering" url="http://www.precisioninsight.com/demo.html">
-by providing a single path of 3D hardware accelerated rendering for
-the GMX2000 and 3dfx voodoo graphics cards.  Future releases will support
-much broader implementations of hardware accelerated direct rendering on
-a wide range of 3D capable graphics devices.
+url="http://www.redhat.com">, <url name="SGI" url="http://www.sgi.com">,
+<url name="3Dfx" url="http://www.3dfx.com">, <url name="Intel"
+url="http://www.intel.com">, <url name="ATI" url="http://www.ati.com">,
+and <url name="Matrox" url="http://www.matrox.com"> to integrate the GLX
+extension for 3D rendering in an X11 window.  The 3D core rendering
+component is the <url name="Mesa" url="http://www.mesa3d.org"> library.
+SGI has released the sources to the GLX extension framework under an
+open license, which essentially provides the glue between the 3D
+library and this windowing system.  Precision Insight has integrated
+these components into the XFree86 X Server and added a Direct Rendering
+Infrastructure (DRI).  Direct Rendering provides a highly optimized
+path for sending 3D data directly to the graphics hardware.  This
+release provides a complete implementation of direct rendering support
+for the 3Dfx Banshee and Voodoo3 graphics cards.  Additional direct
+rendering drivers will be available for 3Dfx, Intel, ATI and Matrox
+boards during the second quarter of 2000.  Updated information on DRI
+compatible drivers can be found at the <url name="DRI Project"
+url="http://dri.sourceforge.net"> on <url name="SourceForge"
+url="http://www.sourceforge.net">.
 
 <sect1>X-Video Extension (Xv)
 <p>
@@ -699,7 +703,7 @@ XFree86 &relvers; includes the following drivers:
    <tabrow><tt>cyrix</tt> (*)<colsep>Cyrix MediaGX</tabrow>
    <tabrow><tt>fbdev</tt><colsep>Linux fbdev</tabrow>
    <tabrow><tt>glide</tt><colsep>Glide2x (3Dfx)</tabrow>
-   <tabrow><tt>glint</tt><colsep>3Dlabs</tabrow>
+   <tabrow><tt>glint</tt><colsep>3Dlabs, TI</tabrow>
    <tabrow><tt>i740</tt><colsep>Intel i740</tabrow>
    <tabrow><tt>i810</tt><colsep>Intel i810</tabrow>
    <tabrow><tt>mga</tt><colsep>Matrox</tabrow>
@@ -851,6 +855,18 @@ reading this man page.
 
 For Voodoo Banshee and Voodoo 3 boards or later: Please use the tdfx
 driver which talks directly to the hardware and is much faster.
+
+<sect2>GLINT <label id="glint">
+<p>
+
+The "glint" driver supports most 3Dlabs/Texas Instruments GLINT/Permedia
+chips. There is a rather complete support (better than in 3.3.x) for
+acceleration at 8, 15, 16, and 24 bit depths (limited by some chips at
+some depths). 8+24 overlay is supported. The Xv extension is supported
+for some boards.
+
+Further information about this driver can be found in the 'glint' driver
+man page.
 
 <sect>X libraries and clients
 <p>

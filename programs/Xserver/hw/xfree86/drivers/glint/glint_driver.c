@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.69 2000/02/27 02:45:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.70 2000/03/01 16:01:09 tsi Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -121,7 +121,7 @@ static Bool	GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
  * choice made in the first PreInit.
  */
 static int pix24bpp = 0;
-static Bool FBDev = FALSE;
+static Bool FBDevProbed = FALSE;
  
 #define VERSION 4000
 #define GLINT_NAME "GLINT"
@@ -674,7 +674,7 @@ GLINTProbe(DriverPtr drv, int flags)
 			return TRUE;
 		    }
 
-		    foundScreen = FBDev = TRUE;
+		    foundScreen = FBDevProbed = TRUE;
 		    pScrn = xf86AllocateScreen(drv, 0);
 		    xf86LoadSubModule(pScrn, "fbdevhw");
 		    xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
@@ -996,8 +996,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
     pGlint = GLINTPTR(pScrn);
-    /* If the FBDev stuff was needed for probing, keep using it until the options are checked */
-    pGlint->FBDev = FBDev;
 
     /* Get the entities, and make sure they are PCI. */
     pGlint->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
@@ -1065,7 +1063,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
      * Our default depth is 8, so pass it to the helper function.
      * We support both 24bpp and 32bpp layouts, so indicate that.
      */
-    if (pGlint->FBDev) {
+    if (FBDevProbed) {
 	int default_depth;
 	
 	if (!fbdevHWInit(pScrn,NULL,xf86FindOptionValue(pGlint->pEnt->device->options,"fbdev"))) {
@@ -1192,6 +1190,20 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Check whether to use the FBDev stuff and fill in the rest of pScrn */
     if (xf86ReturnOptValBool(GLINTOptions, OPTION_FBDEV, FALSE)) {
+    	if (!FBDevProbed && !xf86LoadSubModule(pScrn, "fbdevhw"))
+    	{
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "couldn't load fbdevHW module!\n");	
+		return FALSE;
+	}
+
+	xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
+
+	if (!fbdevHWInit(pScrn,NULL,xf86FindOptionValue(pGlint->pEnt->device->options,"fbdev")))
+	{
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "fbdevHWInit failed!\n");
+		return FALSE;
+	}
+
 	pGlint->FBDev = TRUE;
         from = X_CONFIG;
 	
@@ -1245,8 +1257,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
      * Set the Chipset and ChipRev, allowing config file entries to
      * override.
      */
-    if (pGlint->FBDev) {	/* pm2fb AFAIK only supports the Permedia2 */
-    	pScrn->chipset = "pm2";
+    if (FBDevProbed) {	/* pm2fb so far only supports the Permedia2 */
+    	pScrn->chipset = "ti_pm2";
         pGlint->Chipset = xf86StringToToken(GLINTChipsets, pScrn->chipset);
 	from = X_PROBED;
     } else {
@@ -1313,7 +1325,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     	}
     }
 
-    if (!pGlint->FBDev) {
+    if (!FBDevProbed) {
     if (pGlint->pEnt->device->MemBase != 0) {
 	/*
          * XXX Should check that the config file value matches one of the
@@ -1356,6 +1368,9 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	else
 	    pGlint->IOAddress = pGlint->PciInfo->memBase[0] & 0xFFFFC000;
     }
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    pGlint->IOAddress += 0x10000;
+#endif
 
     xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX\n",
 	       (unsigned long)pGlint->IOAddress);
@@ -1396,7 +1411,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     pGlint->HwBpp = pScrn->bitsPerPixel;
 
     pGlint->FbBase = NULL;
-    if (!pGlint->FBDev) {
+    if (!FBDevProbed) {
     	if (pGlint->pEnt->device->videoRam != 0) {
 		pScrn->videoRam = pGlint->pEnt->device->videoRam;
 		from = X_CONFIG;
@@ -1644,7 +1659,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
     }
 
-    if (pGlint->FBDev)
+    if (pGlint->FBDev || FBDevProbed)
     	pGlint->VGAcore = FALSE;
 
     if (pGlint->VGAcore) {

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.28 2000/02/29 03:08:55 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.29 2000/03/02 17:52:49 dawes Exp $
 XCOMM
 XCOMM $OpenBSD: OpenBSD.cf,v 1.33 1998/09/27 04:52:48 rahnds Exp $
 XCOMM
@@ -335,7 +335,7 @@ install:: fonts.alias							@@\
 
 /* 2.7 and later will have support for setting MTRRs */
 #ifndef HasMTRRSupport
-#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 6)
+#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion > 6)
 #define HasMTRRSupport		YES
 #else
 #define HasMTRRSupport		NO

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.65 1999/11/19 13:54:10 hohndel Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.66 2000/02/10 18:57:24 dawes Exp $
 .TH XF86Config 4/5 "Version 4.0"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.44 1999/11/19 13:54:10 hohndel Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.45 2000/02/10 18:57:25 dawes Exp $ 
 .TH XFree86 1 "Version 4.0"  "XFree86"
 .SH NAME
 XFree86 - X11R6 X server

@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbline.c,v 1.4 2000/02/23 20:29:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbline.c,v 1.5 2000/03/01 00:25:14 dawes Exp $ */
 
 #include "fb.h"
 
@@ -79,7 +79,7 @@ fbZeroSegment (DrawablePtr  pDrawable,
     
     x = pDrawable->x;
     y = pDrawable->y;
-    while (--nseg)
+    while (nseg--)
     {
 	dashOffset = 0;
 	fbSegment (pDrawable, pGC, 
