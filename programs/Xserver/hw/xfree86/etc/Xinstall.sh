@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.71 2004/02/24 03:41:41 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.72 2004/02/26 16:58:51 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -694,6 +694,20 @@ FindDistName()
 				;;
 			esac
 			;;
+		x86_64|amd64)
+			case "$OsLibcMajor.$OsLibcMinor" in
+			6.2)
+				DistName="Linux-amd64-glibc22"
+				;;
+			6.[3-9]*)
+				Message="No dist available for glibc 2.$OsLibcMinor.  Try Linux-amd64-glibc22"
+				;;
+			*)
+				Message="No Linux/AMD64 binaries for this libc version"
+				;;
+			esac
+			;;
+		
 		*)
 			Message="No Linux binaries available for this architecture"
 			;;
