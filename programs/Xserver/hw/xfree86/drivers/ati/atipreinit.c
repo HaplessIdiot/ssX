@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.79tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.80tsi Exp $ */
 /*
  * Copyright 1999 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1808,7 +1808,7 @@ ATIPreInit
                 if (((pATIHW->crtc_h_sync_strt_wid ^
                       pATIHW->shadow_h_sync_strt_wid) &
                      (CRTC_H_SYNC_STRT | CRTC_H_SYNC_STRT_HI |
-                      CRTC_H_SYNC_WID)))
+                      CRTC_H_SYNC_END_VGA)))
                 {
                     xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_NOTICE, 0,
                         "Invalid horizontal sync pulse timing detected in mode"
@@ -1868,7 +1868,7 @@ ATIPreInit
 
                 /*
                  * Decipher input timing.  This is complicated by the fact that
-                 * the full width of all timing parameters, except for the
+                 * the full width of most timing parameters, except for the
                  * blanking pulses, is only available through the accelerator
                  * registers, not the VGA ones.  Blanking pulse boundaries must
                  * then be interpolated.
@@ -1882,10 +1882,10 @@ ATIPreInit
                         CRTC_H_SYNC_STRT_HI) *
                      (MaxBits(CRTC_H_SYNC_STRT) + 1)) |
                     GetBits(pATIHW->crtc_h_sync_strt_wid, CRTC_H_SYNC_STRT);
-                HSyncEnd = (HSyncStart & ~MaxBits(CRTC_H_SYNC_WID)) |
-                    GetBits(pATIHW->crtc_h_sync_strt_wid, CRTC_H_SYNC_WID);
+                HSyncEnd = (HSyncStart & ~MaxBits(CRTC_H_SYNC_END_VGA)) |
+                    GetBits(pATIHW->crtc_h_sync_strt_wid, CRTC_H_SYNC_END_VGA);
                 if (HSyncStart >= HSyncEnd)
-                    HSyncEnd += MaxBits(CRTC_H_SYNC_WID) + 1;
+                    HSyncEnd += MaxBits(CRTC_H_SYNC_END_VGA) + 1;
                 HTotal = GetBits(pATIHW->crtc_h_total_disp, CRTC_H_TOTAL);
 
                 HBlankStart = (HDisplay & ~0xFFU) | pATIHW->crt[2];
