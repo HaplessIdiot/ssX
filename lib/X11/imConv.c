@@ -33,7 +33,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ******************************************************************/
 /* 2000 Modifier: Ivan Pascal	The XFree86 Project.
  */
-/* $XFree86: xc/lib/X11/imConv.c,v 1.28 2000/11/28 18:49:32 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imConv.c,v 1.29 2000/12/02 01:16:03 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <stdio.h>
@@ -217,9 +217,9 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
         if (!ucs4)
             return 0;
 
-	if ((count = _XlcConvert(private->ucs_conv,
-                                 &from, &from_len, &to, &to_len,
-                                 args, 1 )) != 0) {
+	if (_XlcConvert(private->ucstoc_conv,
+                        &from, &from_len, &to, &to_len,
+                        args, 1 ) != 0) {
 	    count = 0;
 	} else {
             from = (XPointer) look;
@@ -286,9 +286,9 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
         if (!ucs4)
             return 0;
 
-	if ((count = _XlcConvert(private->ucs_conv,
-                                 &from, &from_len, &to, &to_len,
-                                 args, 1 )) != 0) {
+	if (_XlcConvert(private->ucstoc_conv,
+                        &from, &from_len, &to, &to_len,
+                        args, 1 ) != 0) {
 	    count = 0;
 	} else {
             from = (XPointer) look;
@@ -350,33 +350,20 @@ _XimLookupUTF8Text(ic, event, buffer, nbytes, keysym, status)
 	       (count == 1 && (symbol > 0x7f && symbol < 0xff00))) {
 
         XPointer from = (XPointer) &ucs4;
-        XPointer to =   (XPointer) look;
         int from_len = 1;
-        int to_len = BUF_SIZE;
-        XPointer args[1];
-        XlcCharSet charset;
-        args[0] = (XPointer) &charset;
+        XPointer to = (XPointer) buffer;
+        int to_len = nbytes;
+
         ucs4 = (ucs4_t) KeySymToUcs4(symbol);
         if (!ucs4)
             return 0;
 
-	if ((count = _XlcConvert(private->ucs_conv,
-                                 &from, &from_len, &to, &to_len,
-                                 args, 1 )) != 0) {
+	if (_XlcConvert(private->ucstoutf8_conv,
+                        &from, &from_len, &to, &to_len,
+                        NULL, 0) != 0) {
 	    count = 0;
 	} else {
-            from = (XPointer) look;
-            to =   (XPointer) buffer;
-            from_len = BUF_SIZE - to_len;
-            to_len = nbytes;
-            args[0] = (XPointer) charset;
-	    if (_XlcConvert(private->cstoutf8_conv,
-                            &from, &from_len, &to, &to_len,
-			    args, 1 ) != 0) {
-		count = 0;
-	    } else {
-                count = nbytes - to_len;
-	    }
+            count = nbytes - to_len;
 	}
     }
     /* FIXME:

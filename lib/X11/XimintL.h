@@ -32,7 +32,7 @@ THIS SOFTWARE.
 	                          frankyling@hgrd01.enet.dec.com
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/XimintL.h,v 1.4 2000/11/28 17:25:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XimintL.h,v 1.5 2000/11/28 18:49:25 dawes Exp $ */
 
 #ifndef _XIMINTL_H
 #define _XIMINTL_H
@@ -63,7 +63,8 @@ typedef struct _XimLocalPrivateRec {
 	XlcConv		 cstomb_conv;
 	XlcConv		 cstowc_conv;
 	XlcConv		 cstoutf8_conv;
-	XlcConv		 ucs_conv;
+	XlcConv		 ucstoc_conv;
+	XlcConv		 ucstoutf8_conv;
 
 	XIC		 current_ic;
 	DefTree		*top;

@@ -29,7 +29,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imLcLkup.c,v 3.2 1999/05/09 10:50:36 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imLcLkup.c,v 3.3 2000/11/28 18:49:37 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xatom.h>
@@ -57,7 +57,7 @@ _XimLocalMbLookupString(xic, ev, buffer, bytes, keysym, status)
 	if(status) *status = XLookupNone;
 	return(0);
     }
-    if(ev->keycode == 0) { /* Composed Event */
+    if(ev->keycode == 0 && ic->private.local.composed != NULL) { /* Composed Event */
 	ret = strlen(ic->private.local.composed->mb);
 	if(ret > bytes) {
 	    if(status) *status = XBufferOverflow;

@@ -11,7 +11,7 @@ lib/libPEX5.so
 lib/libSM.so.6.0
 lib/libSM.so.6
 lib/libSM.so
-lib/libX11.so.6.1
+lib/libX11.so.6.2
 lib/libX11.so.6
 lib/libX11.so
 lib/libXIE.so.6.0
@@ -31,7 +31,7 @@ lib/libXfont.so
 lib/libXi.so.6.0
 lib/libXi.so.6
 lib/libXi.so
-lib/libXmu.so.6.1
+lib/libXmu.so.6.2
 lib/libXmu.so.6
 lib/libXmu.so
 lib/libXp.so.6.2

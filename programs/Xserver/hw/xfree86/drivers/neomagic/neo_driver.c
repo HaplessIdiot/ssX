@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.42 2000/12/01 19:47:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.43 2000/12/02 15:30:45 tsi Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -2403,11 +2403,17 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	(NeoNew->PanelDispCntlReg1 & 0x02)) {
 	if (mode->HDisplay == nPtr->NeoPanelWidth) {
 	    /*
+	     * Don't disable the flag.  It will be needed if another mode
+	     * is selected.
+	     */
+#if 0
+	    /*
 	     * No stretching required when the requested display width
 	     * equals the panel width.
 	     */
 	    xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Stretching disabled\n");
 	    nPtr->noLcdStretch = TRUE;
+#endif
 	} else {
 
 	    switch (mode->HDisplay) {

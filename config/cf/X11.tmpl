@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.84 2000/11/30 23:29:54 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.85 2000/12/03 05:20:50 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1253,7 +1253,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
           XLIBSRC = $(LIBSRC)/X11
 #if SharedLibX11
 #ifndef SharedX11Rev
-#define SharedX11Rev 6.1
+#define SharedX11Rev 6.2
 #endif
 SharedLibReferences(XONLY,X11,$(XLIBSRC),SOXLIBREV,SharedX11Rev)
 #else
@@ -1774,7 +1774,7 @@ ProjectUnsharedLibReferences(XDMCP,Xdmcp,$(XDMCPLIBSRC),XBuildLibDir)
            XMUSRC = $(LIBSRC)/Xmu
 #if SharedLibXmu
 #ifndef SharedXmuRev
-#define SharedXmuRev 6.1
+#define SharedXmuRev 6.2
 #endif
 SharedDSLibReferences(XMU,Xmu,$(XMUSRC),SOXMUREV,SharedXmuRev)
 #else

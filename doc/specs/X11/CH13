@@ -41,7 +41,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/specs/X11/CH13,v 1.4 2000/11/28 18:49:17 dawes Exp $
 .\" 
 \&
 .sp 1
@@ -771,7 +771,11 @@ function presents a variable argument list programming interface
 for setting properties or features of the specified output method.
 This function returns NULL if it succeeds;
 otherwise,
-it returns the name of the first argument that could not be obtained.
+it returns the name of the first argument that could not be set.
+Xlib does not attempt to set arguments from the supplied list that
+follow the failed argument;
+all arguments in the list preceding the failed argument have been set
+correctly.
 .LP
 No standard arguments are currently defined by Xlib.
 .LP

@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/XlcPubI.h,v 3.5 2000/02/12 02:54:07 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlcPubI.h,v 3.6 2000/11/28 18:49:26 dawes Exp $ */
 
 #ifndef _XLCPUBLICI_H_
 #define _XLCPUBLICI_H_
@@ -115,18 +115,22 @@ extern void _XlcDestroyLC(
     XLCd		lcd
 );
 
+/* Fills into a freshly created XlcCharSet the fields that can be inferred
+   from the ESC sequence. These are side, char_size, set_size. */
 extern Bool _XlcParseCharSet(
     XlcCharSet		charset
 );
 
+/* Creates a new XlcCharSet, given its name (including side suffix) and
+   Compound Text ESC sequence (normally at most 4 bytes). */
 extern XlcCharSet _XlcCreateDefaultCharSet(
     const char*		name,
-    const char*		control_sequence
+    const char*		ct_sequence
 );
 
 extern XlcCharSet _XlcAddCT(
     const char*		name,
-    const char*		control_sequence
+    const char*		ct_sequence
 );
 
 extern Bool _XlcInitCTInfo (void);
