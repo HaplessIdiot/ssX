@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.36 2000/10/24 18:07:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.37 2000/12/02 01:16:24 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -502,6 +502,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     pMse->protocolID = protocolID;
     pMse->oldProtocolID = protocolID;  /* hack */
     pMse->origProtocolID = protocolID;
+    pMse->origProtocol = protocol;
     pMse->class = ProtocolIDToClass(protocolID);
 
     /* Collect the options, and process the common options. */

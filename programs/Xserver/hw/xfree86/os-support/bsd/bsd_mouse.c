@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.15 2000/02/12 20:45:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.16 2000/12/14 19:56:53 dawes Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -161,16 +161,23 @@ static void
 SetSysMouseRes(InputInfoPtr pInfo, const char *protocol, int rate, int res)
 {
     mousemode_t mode;
+    MouseDevPtr pMse;
+
+    pMse = pInfo->private;
 
     mode.rate = rate > 0 ? rate : -1;
     mode.resolution = res > 0 ? res : -1;
     mode.accelfactor = -1;
 #if defined(__FreeBSD__)
-    /*
-     * As the FreeBSD sysmouse driver defaults to protocol level 0 everytime
-     * it is opened we enforce protocol level 1 again at this point.
-     */
-    mode.level = 1;
+    if (xf86NameCmp(pMse->origProtocol, "Auto") == 0) {
+	/*
+	 * As the FreeBSD sysmouse driver defaults to protocol level 0
+	 * everytime it is opened we enforce protocol level 1 again at
+	 * this point.
+	 */
+	mode.level = 1;
+    } else
+	mode.level = -1;
 #else
     mode.level = -1;
 #endif
