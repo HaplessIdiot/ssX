@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.77 2001/05/22 07:54:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.78 2001/05/23 13:30:35 alanh Exp $ */
 
 /*
  * Authors:
@@ -1784,10 +1784,14 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
   }
   /* Give the cmd fifo at least             */
   /* CMDFIFO_PAGES pages, but no more than  */
-  /* 255. We give 4096 bytes to the cursor  */
-  fifoSize = ((255 <= CMDFIFO_PAGES) ? 255 : CMDFIFO_PAGES) << 12;
+  /* 64. NOTE: Don't go higher than 64, as  */
+  /* there is suspect code in Glide3 !      */
+  fifoSize = ((64 <= CMDFIFO_PAGES) ? 64 : CMDFIFO_PAGES) << 12;
+
+  /* We give 4096 bytes to the cursor  */
   cursorSize = 4096;
   pTDFX->cursorOffset = 0;
+
   pTDFX->fifoOffset = pTDFX->cursorOffset + cursorSize;
   pTDFX->fifoSize = fifoSize;
   /* Now, place the front buffer, forcing   */

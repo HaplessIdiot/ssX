@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx June 2001)
+  79. Fix FIFO reset trouble in tdfx driver by lowering the FIFO size due to
+      suspect code in Glide3. (Alan Hourihane).
   78. Fix Xvideo in tdfx driver when using YUY2 or UYVY data (Alan Hourihane).
   77. Add two missing symbols to loader reference for the glint driver
       (#4740, Mike Harris).
@@ -13450,4 +13452,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1828 2001/06/05 10:19:40 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1829 2001/06/05 12:52:37 alanh Exp $
