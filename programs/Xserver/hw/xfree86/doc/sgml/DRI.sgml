@@ -15,7 +15,7 @@
       <date>24 October 2000
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.8 2000/09/24 13:51:26 alanh Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.9 2000/11/08 05:03:03 dawes Exp $
     </ident>
 
     <toc>
@@ -75,15 +75,86 @@
         to brianp@valinux.com.
 
 
-    <sect>Supported Hardware
-<p>
-        3D acceleration is currently only available for systems with
-        Intel-compatible CPUs.
-        Support for Alpha, and perhaps other CPUs, should be available in the
-        future.
-      <p>
-        XFree86 4.0 (or later versions) includes 3D acceleration for the
-        following graphics hardware:
+
+3.1   Architectures
+
+The Architectures currently supported by the DRI have grown from the initial
+Intel i386 based machines to now include, the Alpha Processor and the Sun
+SPARC machines.
+
+The build environment for both of these new architectures have a pre-build
+environment that will correctly build the DRI drivers and Mesa meaning no
+extra configuration is necessary to build the DRI for these architectures.
+
+3.1.1    Alpha Features
+
+On newer Alpha processors, it should be noted that a sigificant performance
+increase can be seen with the addition of the -mcpu= command that should be
+passed to GCC upon compilation. Dependent of the architecture of the 
+processor, for example -mcpu=ev6 will build specifically for the EV6 based
+AXP's, giving both byte and word alignment access to the DRI/Mesa drivers.
+
+Use this as an example of compiling with this extra speed. In your host.def
+file that should reside in the xc/config directory, add the line.
+
+#define DefaultCCOptions -ansi GccWarningOptions -pipe -mcpu=ev6
+
+Additional speed improvements to 3D rendering can be achieved by installing
+Compaq's Math Libraries (CPML) which can be obtained from the following URL.
+
+http://www.support.compaq.com/alpha-tools/software/index.html
+
+Once installed, you can set this option in your host.def to build against
+the CPML libraries.
+
+#define UseCompaqMathLibrary YES
+
+    <sect>Supported Architectures & Hardware
+
+      <sect1>Architectures
+
+          The Architectures currently supported by the DRI have grown
+          from the initial Intel i386 based machines to now include, 
+          the Alpha Processor and the Sun SPARC machines.
+
+          The build environment for both of these new architectures 
+          have a pre-build environment that will correctly build the 
+          DRI drivers and Mesa meaning no extra configuration is necessary
+          to build the DRI for these architectures.
+
+        <sect2>Alpha Features
+
+            On newer Alpha processors, it should be noted that a
+            significant performance increase can be seen with the 
+            addition of the -mcpu= command that should be passed to
+            GCC upon compilation. Dependent of the architecture of the 
+            processor, for example -mcpu=ev6 will build specifically
+            for the EV6 based AXP's, giving both byte and word alignment 
+            access to the DRI/Mesa drivers.
+
+            Use this as an example of compiling with this extra speed.
+            In your host.def file that should reside in the xc/config 
+            directory, add the line.
+
+            #define DefaultCCOptions -ansi GccWarningOptions -pipe -mcpu=ev6
+
+            Additional speed improvements to 3D rendering can be achieved
+            by installing Compaq's Math Libraries (CPML) which can be 
+            obtained from the following URL.
+
+            http://www.support.compaq.com/alpha-tools/software/index.html
+
+            Once installed, you can set this option in your host.def
+            to build against the CPML libraries.
+
+            #define UseCompaqMathLibrary YES
+
+      <sect1> Graphics Hardware
+          XFree86 4.0 (or later versions) includes 3D acceleration for the
+          following graphics hardware:
+
+          NOTE: This is a complete list of graphics hardware supported. It
+          may not be supported on your platform.
 
         <itemize>
           <item>3dfx:
@@ -755,7 +826,7 @@
             The Voodoo5 supports 3D rendering in 16 and 32 bpp modes.
             When running in 32bpp mode an 8-bit stencil buffer and 24-bit
             Z (depth) buffer are offered.
-            When running in 32bpp mode only a 16-bit Z (depth) buffer is
+            When running in 16bpp mode only a 16-bit Z (depth) buffer is
             offered and stencil is implemented in software.
           <p>
             A software-based accumulation buffer is available in both
