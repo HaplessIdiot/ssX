@@ -34,7 +34,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/programs/texteroids/texteroids.c,v 1.1 2001/03/01 01:23:59 dawes Exp $ */
+/* $XFree86: xc/programs/texteroids/texteroids.c,v 1.2 2001/03/03 23:03:46 tsi Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -47,6 +47,7 @@
 int CheckForAHit(), ExplodeString();
 void PrepareSubject(), DrawSubject(), UpdatePosition();
 
+#undef PI
 #define PI 3.14159
 #define COLORINCR (1.0/200.0)
 #define EPSILON 0.001
