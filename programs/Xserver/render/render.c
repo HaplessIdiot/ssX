@@ -345,8 +345,10 @@ ProcRenderQueryPictFormats (ClientPtr client)
 	swapl (&reply->length, n);
 	swapl (&reply->numFormats, n);
 	swapl (&reply->numScreens, n);
+	swapl (&reply->numDepths, n);
+	swapl (&reply->numVisuals, n);
     }
-    WriteReplyToClient(client, rlength, reply);
+    WriteToClient(client, rlength, (char *) reply);
     xfree (reply);
     return client->noClientException;
 }
@@ -994,7 +996,10 @@ SProcRenderQueryVersion (ClientPtr client)
 static int
 SProcRenderQueryPictFormats (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    REQUEST(xRenderQueryPictFormatsReq);
+    swaps(&stuff->length, n);
+    return ProcRenderQueryPictFormats (client);
 }
 
 static int
@@ -1012,37 +1017,87 @@ SProcRenderQueryDithers (ClientPtr client)
 static int
 SProcRenderCreatePicture (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    REQUEST(xRenderCreatePictureReq);
+    swaps(&stuff->length, n);
+    swapl(&stuff->pid, n);
+    swapl(&stuff->drawable, n);
+    swapl(&stuff->format, n);
+    swapl(&stuff->mask, n);
+    SwapRestL(stuff);
+    return ProcRenderCreatePicture (client);
 }
 
 static int
 SProcRenderChangePicture (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    REQUEST(xRenderChangePictureReq);
+    swaps(&stuff->length, n);
+    swapl(&stuff->picture, n);
+    swapl(&stuff->mask, n);
+    SwapRestL(stuff);
+    return ProcRenderChangePicture (client);
 }
 
 static int
 SProcRenderSetPictureClipRectangles (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    REQUEST(xRenderSetPictureClipRectanglesReq);
+    swaps(&stuff->length, n);
+    swapl(&stuff->picture, n);
+    SwapRestS(stuff);
+    return ProcRenderSetPictureClipRectangles (client);
 }
 
 static int
 SProcRenderFreePicture (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    REQUEST(xRenderFreePictureReq);
+    swaps(&stuff->length, n);
+    swapl(&stuff->picture, n);
+    return ProcRenderFreePicture (client);
 }
 
 static int
 SProcRenderComposite (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    REQUEST(xRenderCompositeReq);
+    swaps(&stuff->length, n);
+    swapl(&stuff->src, n);
+    swapl(&stuff->mask, n);
+    swapl(&stuff->dst, n);
+    swaps(&stuff->xSrc, n);
+    swaps(&stuff->ySrc, n);
+    swaps(&stuff->xMask, n);
+    swaps(&stuff->yMask, n);
+    swaps(&stuff->xDst, n);
+    swaps(&stuff->yDst, n);
+    swaps(&stuff->width, n);
+    swaps(&stuff->height, n);
+    return ProcRenderComposite (client);
 }
 
 static int
 SProcRenderScale (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    REQUEST(xRenderScaleReq);
+    swaps(&stuff->length, n);
+    swapl(&stuff->src, n);
+    swapl(&stuff->dst, n);
+    swapl(&stuff->colorScale, n);
+    swapl(&stuff->alphaScale, n);
+    swaps(&stuff->xSrc, n);
+    swaps(&stuff->ySrc, n);
+    swaps(&stuff->xDst, n);
+    swaps(&stuff->yDst, n);
+    swaps(&stuff->width, n);
+    swaps(&stuff->height, n);
+    return ProcRenderScale (client);
 }
 
 static int
@@ -1090,25 +1145,67 @@ SProcRenderTransform (ClientPtr client)
 static int
 SProcRenderCreateGlyphSet (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    REQUEST(xRenderCreateGlyphSetReq);
+    swaps(&stuff->length, n);
+    swapl(&stuff->gsid, n);
+    swapl(&stuff->format, n);
+    return ProcRenderCreateGlyphSet (client);
 }
 
 static int
 SProcRenderReferenceGlyphSet (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    REQUEST(xRenderReferenceGlyphSetReq);
+    swaps(&stuff->length, n);
+    swapl(&stuff->gsid, n);
+    swapl(&stuff->existing, n);
+    return ProcRenderReferenceGlyphSet  (client);
 }
 
 static int
 SProcRenderFreeGlyphSet (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    REQUEST(xRenderFreeGlyphSetReq);
+    swaps(&stuff->length, n);
+    swapl(&stuff->glyphset, n);
+    return ProcRenderFreeGlyphSet (client);
 }
 
 static int
 SProcRenderAddGlyphs (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    register int i;
+    CARD32  *gids;
+    void    *end;
+    xGlyphInfo *gi;
+    REQUEST(xRenderAddGlyphsReq);
+    swaps(&stuff->length, n);
+    swapl(&stuff->glyphset, n);
+    swapl(&stuff->nglyphs, n);
+    if (stuff->nglyphs & 0xe0000000)
+	return BadLength;
+    end = (CARD8 *) stuff + (stuff->length << 2);
+    gids = (CARD32 *) (stuff + 1);
+    gi = (xGlyphInfo *) (gids + stuff->nglyphs);
+    if ((char *) end - (char *) (gids + stuff->nglyphs) < 0)
+	return BadLength;
+    if ((char *) end - (char *) (gi + stuff->nglyphs) < 0)
+	return BadLength;
+    for (i = 0; i < stuff->nglyphs; i++)
+    {
+	swapl (&gids[i], n);
+	swaps (&gi[i].width, n);
+	swaps (&gi[i].height, n);
+	swaps (&gi[i].x, n);
+	swaps (&gi[i].y, n);
+	swaps (&gi[i].xOff, n);
+	swaps (&gi[i].yOff, n);
+    }
+    return ProcRenderAddGlyphs (client);
 }
 
 static int
@@ -1120,25 +1217,54 @@ SProcRenderAddGlyphsFromPicture (ClientPtr client)
 static int
 SProcRenderFreeGlyphs (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    REQUEST(xRenderFreeGlyphsReq);
+    swaps(&stuff->length, n);
+    swapl(&stuff->glyphset, n);
+    SwapRestL(stuff);
+    return ProcRenderFreeGlyphs (client);
 }
 
 static int
-SProcRenderCompositeGlyphs8 (ClientPtr client)
+SProcRenderCompositeGlyphs (ClientPtr client, int size)
 {
-    return BadImplementation;
-}
-
-static int
-SProcRenderCompositeGlyphs16 (ClientPtr client)
-{
-    return BadImplementation;
-}
-
-static int
-SProcRenderCompositeGlyphs32 (ClientPtr client)
-{
-    return BadImplementation;
+    register int n;
+    xGlyphElt	*elt;
+    CARD8	*buffer;
+    CARD8	*end;
+    int		space;
+    
+    REQUEST(xRenderCompositeGlyphsReq);
+    swaps(&stuff->length, n);
+    swapl(&stuff->src, n);
+    swapl(&stuff->dst, n);
+    swapl(&stuff->maskFormat, n);
+    swapl(&stuff->glyphset, n);
+    swaps(&stuff->xSrc, n);
+    swaps(&stuff->ySrc, n);
+    buffer = (CARD8 *) (stuff + 1);
+    end = (CARD8 *) stuff + (stuff->length << 2);
+    while (buffer + sizeof (xGlyphElt) < end)
+    {
+	elt = (xGlyphElt *) buffer;
+	buffer += sizeof (xGlyphElt);
+	
+	swaps (&elt->deltax, n);
+	swaps (&elt->deltay, n);
+	
+	if (elt->len == 0xff)
+	{
+	    buffer += 4;
+	}
+	else
+	{
+	    space = size * elt->len;
+	    if (space & 3)
+		space += 4 - (space & 3);
+	    buffer += space;
+	}
+    }
+    return ProcRenderCompositeGlyphs (client, size);
 }
 
 static int
@@ -1194,11 +1320,11 @@ SProcRenderDispatch (ClientPtr client)
     case X_RenderFreeGlyphs:
 	return SProcRenderFreeGlyphs(client);
     case X_RenderCompositeGlyphs8:
-	return SProcRenderCompositeGlyphs8(client);
+	return SProcRenderCompositeGlyphs(client, 1);
     case X_RenderCompositeGlyphs16:
-	return SProcRenderCompositeGlyphs16(client);
+	return SProcRenderCompositeGlyphs(client, 2);
     case X_RenderCompositeGlyphs32:
-	return SProcRenderCompositeGlyphs32(client);
+	return SProcRenderCompositeGlyphs(client, 4);
     default:
 	return BadRequest;
     }
