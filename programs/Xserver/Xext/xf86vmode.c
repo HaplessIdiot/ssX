@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.53 2001/08/06 20:51:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.54 2002/12/22 00:46:51 dawes Exp $ */
 
 /*
 
@@ -742,6 +742,7 @@ ProcXF86VidModeAddModeLine(ClientPtr client)
     if (mode == NULL)
 	return BadValue;
 
+    VidModeSetModeValue(mode, VIDMODE_CLOCK, stuff->dotclock);
     VidModeSetModeValue(mode, VIDMODE_H_DISPLAY, stuff->hdisplay);
     VidModeSetModeValue(mode, VIDMODE_H_SYNCSTART, stuff->hsyncstart); 
     VidModeSetModeValue(mode, VIDMODE_H_SYNCEND, stuff->hsyncend);
@@ -989,18 +990,23 @@ ProcXF86VidModeModModeLine(ClientPtr client)
 	    break;
 	case MODE_HSYNC:
 	case MODE_H_ILLEGAL:
+	    xfree(modetmp);
 	    return VidModeErrorBase + XF86VidModeBadHTimings;
 	case MODE_VSYNC:
 	case MODE_V_ILLEGAL:
+	    xfree(modetmp);
 	    return VidModeErrorBase + XF86VidModeBadVTimings;
 	default:
+	    xfree(modetmp);
 	    return VidModeErrorBase + XF86VidModeModeUnsuitable;
     }
 
     /* Check that the driver is happy with the mode */
     if (VidModeCheckModeForDriver(stuff->screen, modetmp) != MODE_OK) {
+	xfree(modetmp);
 	return VidModeErrorBase + XF86VidModeModeUnsuitable;
     }
+    xfree(modetmp);
 
     VidModeSetModeValue(mode, VIDMODE_H_DISPLAY, stuff->hdisplay);
     VidModeSetModeValue(mode, VIDMODE_H_SYNCSTART, stuff->hsyncstart); 
@@ -1029,7 +1035,7 @@ ProcXF86VidModeValidateModeLine(ClientPtr client)
 		(xXF86OldVidModeValidateModeLineReq *)client->requestBuffer;
     xXF86VidModeValidateModeLineReq newstuff;
     xXF86VidModeValidateModeLineReply rep;
-    pointer mode, modetmp;
+    pointer mode, modetmp = NULL;
     int len, status, dotClock;
     int ver;
 
@@ -1119,6 +1125,9 @@ ProcXF86VidModeValidateModeLine(ClientPtr client)
     status = VidModeCheckModeForDriver(stuff->screen, modetmp);
 
 status_reply:
+    if(modetmp)
+      xfree(modetmp);
+
     rep.type = X_Reply;
     rep.length = (SIZEOF(xXF86VidModeValidateModeLineReply)
    			 - SIZEOF(xGenericReply)) >> 2;

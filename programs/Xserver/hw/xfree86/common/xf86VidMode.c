@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.13 2002/05/02 15:20:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.14 2003/01/28 20:52:28 tsi Exp $ */
 
 /*
  * This file contains the VidMode functions required by the extension.
@@ -440,10 +440,13 @@ VidModeAddModeline(int scrnIndex, pointer mode)
 
     pScrn = xf86Screens[scrnIndex];
 
+    ((DisplayModePtr)mode)->name         = strdup(""); /* freed by deletemode */
+    ((DisplayModePtr)mode)->status       = MODE_OK;
     ((DisplayModePtr)mode)->next         = pScrn->modes->next;
     ((DisplayModePtr)mode)->prev         = pScrn->modes;
     pScrn->modes->next                   = (DisplayModePtr)mode;
-    ((DisplayModePtr)mode)->next->prev   = (DisplayModePtr)mode;
+    if( ((DisplayModePtr)mode)->next != NULL )
+      ((DisplayModePtr)mode)->next->prev   = (DisplayModePtr)mode;
 
     return TRUE;
 }
@@ -547,6 +550,7 @@ VidModeCreateMode(void)
     mode = xalloc(sizeof(DisplayModeRec));
     if (mode != NULL) {
 	mode->name          = "";
+	mode->VScan         = 1;    /* divides refresh rate. default = 1 */
 	mode->Private       = NULL;
 	mode->next          = mode;
 	mode->prev          = mode;
