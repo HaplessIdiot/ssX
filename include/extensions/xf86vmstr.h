@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.24 2001/01/17 17:53:23 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.25 2001/05/06 00:47:35 mvojkovi Exp $ */
 /*
 
 Copyright 1995  Kaleb S. KEITHLEY
@@ -40,7 +40,7 @@ from Kaleb S. KEITHLEY
 #define XF86VIDMODENAME "XFree86-VidModeExtension"
 
 #define XF86VIDMODE_MAJOR_VERSION	2	/* current version numbers */
-#define XF86VIDMODE_MINOR_VERSION	0
+#define XF86VIDMODE_MINOR_VERSION	1
 /*
  * major version 0 == uses parameter-to-wire functions in XFree86 libXxf86vm.
  * major version 1 == uses parameter-to-wire functions hard-coded in xvidtune
