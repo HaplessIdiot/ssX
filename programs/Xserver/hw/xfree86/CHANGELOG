@@ -1,4 +1,6 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 274. Bump the video and input driver ABI minor numbers.
+ 273. Add xf86SetRealOption() (Huver).
  272. Change Xdarwin do that it processes all pending events instead of 
       just the oldest one on ProcessInputEvents() call ,
       Quit Xdarwin cleanly, wether from the Xserve or from Cocoa front end,
@@ -12712,4 +12714,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1627 2001/03/08 21:34:35 anderson Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1628 2001/03/11 14:52:02 herrb Exp $
