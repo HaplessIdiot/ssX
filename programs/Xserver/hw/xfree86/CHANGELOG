@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx February 2004)
+ 803. X server on OS/2 doesn't respect AutoRepeat on/off unless XKB is disabled
+      (Bugzilla #1174, Frank Giessler).
  802. Licence update.
  801. Optimise SlowBcopy() for ia64 architecture (Marc La France).
  800. Simplify vgaHWSaveFonts() and vgaHWRestoreFonts() to fix hangs seen with
@@ -18637,7 +18639,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3140 2004/02/11 22:06:18 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3141 2004/02/13 23:58:31 dawes Exp $
 
 
 
