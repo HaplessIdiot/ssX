@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.18 2002/11/22 22:56:04 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.19 2002/11/23 08:26:50 paulo Exp $ */
 
 #include "helper.h"
 #include "read.h"
@@ -51,11 +51,20 @@
 #define CHAR_LOWERP		7
 #define CHAR_GRAPHICP		8
 
+#ifndef MIN
+#define MIN(a, b)		((a) < (b) ? (a) : (b))
+#endif
+
 /*
  * Prototypes
  */
 static LispObj *LispCharCompare(LispBuiltin*, int, int);
+static LispObj *LispStringCompare(LispBuiltin*, int, int);
 static LispObj *LispCharOp(LispBuiltin*, int);
+static LispObj *LispStringTrim(LispBuiltin*, int, int, int);
+static LispObj *LispStringUpcase(LispBuiltin*, int);
+static LispObj *LispStringDowncase(LispBuiltin*, int);
+static LispObj *LispStringCapitalize(LispBuiltin*, int);
 
 /*
  * Implementation
@@ -757,13 +766,124 @@ Lisp_ReadFromString(LispBuiltin *builtin)
     return (result);
 }
 
+static LispObj *
+LispStringTrim(LispBuiltin *builtin, int left, int right, int inplace)
+/*
+ string-{,left-,right-}trim character-bag string
+*/
+{
+    char *string;
+    long start, end, length;
+
+    LispObj *ochars, *ostring;
+
+    ostring = ARGUMENT(1);
+    ochars = ARGUMENT(0);
+
+    if (!POINTERP(ochars) || !(XSTRINGP(ochars) || XCONSP(ochars))) {
+	if (ARRAYP(ochars) && ochars->data.array.rank == 1)
+	    ochars = ochars->data.array.list;
+	else
+	    LispDestroy("%s: %s is not a sequence",
+			STRFUN(builtin), STROBJ(ochars));
+    }
+    CHECK_STRING(ostring);
+
+    string = THESTR(ostring);
+    length = STRLEN(ostring);
+
+    start = 0;
+    end = length;
+
+    if (XSTRINGP(ochars)) {
+	char *chars = THESTR(ochars);
+	long i, clength = STRLEN(ochars);
+
+	if (left) {
+	    for (; start < end; start++) {
+		for (i = 0; i < clength; i++)
+		    if (string[start] == chars[i])
+			break;
+		if (i >= clength)
+		    break;
+	    }
+	}
+	if (right) {
+	    for (--end; end >= 0; end--) {
+		for (i = 0; i < clength; i++)
+		    if (string[end] == chars[i])
+			break;
+		if (i >= clength)
+		    break;
+	    }
+	    ++end;
+	}
+    }
+    else {
+	LispObj *ochar, *list;
+
+	if (left) {
+	    for (; start < end; start++) {
+		for (list = ochars; CONSP(list); list = CDR(list)) {
+		    ochar = CAR(list);
+		    if (SCHARP(ochar) && string[start] == SCHAR_VALUE(ochar))
+			break;
+		}
+		if (!CONSP(list))
+		    break;
+	    }
+	}
+	if (right) {
+	    for (--end; end >= 0; end--) {
+		for (list = ochars; CONSP(list); list = CDR(list)) {
+		    ochar = CAR(list);
+		    if (SCHARP(ochar) && string[end] == SCHAR_VALUE(ochar))
+			break;
+		}
+		if (!CONSP(list))
+		    break;
+	    }
+	    ++end;
+	}
+    }
+
+    if (start == 0 && end == length)
+	return (ostring);
+
+    length = end - start;
+
+    if (inplace) {
+	CHECK_STRING_WRITABLE(ostring);
+	memmove(string, string + start, length);
+	string[length] = '\0';
+	STRLEN(ostring) = length;
+    }
+    else {
+	string = LispMalloc(length + 1);
+	memcpy(string, THESTR(ostring) + start, length);
+	string[length] = '\0';
+	ostring = LSTRING2(string, length);
+    }
+
+    return (ostring);
+}
+
 LispObj *
 Lisp_StringTrim(LispBuiltin *builtin)
 /*
  string-trim character-bag string
  */
 {
-    return (LispStringTrim(builtin, 1, 1));
+    return (LispStringTrim(builtin, 1, 1, 0));
+}
+
+LispObj *
+Lisp_NstringTrim(LispBuiltin *builtin)
+/*
+ ext::nstring-trim character-bag string
+ */
+{
+    return (LispStringTrim(builtin, 1, 1, 1));
 }
 
 LispObj *
@@ -772,7 +892,16 @@ Lisp_StringLeftTrim(LispBuiltin *builtin)
  string-left-trim character-bag string
  */
 {
-    return (LispStringTrim(builtin, 1, 0));
+    return (LispStringTrim(builtin, 1, 0, 0));
+}
+
+LispObj *
+Lisp_NstringLeftTrim(LispBuiltin *builtin)
+/*
+ ext::nstring-left-trim character-bag string
+ */
+{
+    return (LispStringTrim(builtin, 1, 0, 1));
 }
 
 LispObj *
@@ -781,7 +910,91 @@ Lisp_StringRightTrim(LispBuiltin *builtin)
  string-right-trim character-bag string
  */
 {
-    return (LispStringTrim(builtin, 0, 1));
+    return (LispStringTrim(builtin, 0, 1, 0));
+}
+
+LispObj *
+Lisp_NstringRightTrim(LispBuiltin *builtin)
+/*
+ ext::nstring-right-trim character-bag string
+ */
+{
+    return (LispStringTrim(builtin, 0, 1, 1));
+}
+
+static LispObj *
+LispStringCompare(LispBuiltin *builtin, int function, int ignore_case)
+{
+    int cmp1, cmp2;
+    LispObj *fixnum;
+    unsigned char *string1, *string2;
+    long start1, end1, start2, end2, offset, length;
+
+    LispGetStringArgs(builtin, (char**)&string1, (char**)&string2,
+		      &start1, &end1, &start2, &end2);
+
+    string1 += start1;
+    string2 += start2;
+
+    if (function == CHAR_EQUAL) {
+	length = end1 - start1;
+
+	if (length != (end2 - start2))
+	    return (NIL);
+
+	if (!ignore_case)
+	    return (memcmp(string1, string2, length) ? NIL : T);
+
+	for (; length; length--, string1++, string2++)
+	    if (toupper(*string1) != toupper(*string2))
+		return (NIL);
+	return (T);
+    }
+
+    end1 -= start1;
+    end2 -= start2;
+    length = MIN(end1, end2);
+    for (offset = 0;
+	 offset < length;
+	 string1++, string2++, offset++, start1++, start2++) {
+	cmp1 = *string1;
+	cmp2 = *string2;
+	if (ignore_case) {
+	    cmp1 = toupper(cmp1);
+	    cmp2 = toupper(cmp2);
+	}
+	if (cmp1 != cmp2) {
+	    fixnum = FIXNUM(start1);
+	    switch (function) {
+		case CHAR_LESS:
+		    return ((cmp1 < cmp2) ? fixnum : NIL);
+		case CHAR_LESS_EQUAL:
+		    return ((cmp1 <= cmp2) ? fixnum : NIL);
+		case CHAR_NOT_EQUAL:
+		    return (fixnum);
+		case CHAR_GREATER_EQUAL:
+		    return ((cmp1 >= cmp2) ? fixnum : NIL);
+		case CHAR_GREATER:
+		    return ((cmp1 > cmp2) ? fixnum : NIL);
+	    }
+	}
+    }
+
+    fixnum = FIXNUM(start1);
+    switch (function) {
+	case CHAR_LESS:
+	    return (start1 >= end1 && start2 < end2 ? fixnum : NIL);
+	case CHAR_LESS_EQUAL:
+	    return (start1 >= end1 ? fixnum : NIL);
+	case CHAR_NOT_EQUAL:
+	    return (start1 >= end1 && start2 >= end2 ? NIL : fixnum);
+	case CHAR_GREATER_EQUAL:
+	    return (start2 >= end2 ? fixnum : NIL);
+	case CHAR_GREATER:
+	    return (start2 >= end2 && start1 < end1 ? fixnum : NIL);
+    }
+
+    return (NIL);
 }
 
 LispObj *
@@ -790,45 +1003,16 @@ Lisp_StringEqual_(LispBuiltin *builtin)
  string= string1 string2 &key start1 end1 start2 end2
  */
 {
-    char *string1, *string2;
-    long start1, end1, start2, end2, length;
-
-    LispGetStringArgs(builtin, &string1, &string2,
-		      &start1, &end1, &start2, &end2);
-
-    length = end1 - start1;
-    if (length != (end2 - start2) ||
-	strncmp(string1 + start1, string2 + start2, length))
-	return (NIL);
-
-    return (T);
+    return (LispStringCompare(builtin, CHAR_EQUAL, 0));
 }
 
-/* Note, most functions bellow also compare with the ending '\0'.
- * This is expected, to avoid an extra if */
 LispObj *
 Lisp_StringLess(LispBuiltin *builtin)
 /*
  string< string1 string2 &key start1 end1 start2 end2
  */
 {
-    char *string1, *string2;
-    long start1, end1, start2, end2, offset1, offset2;
-
-    LispGetStringArgs(builtin, &string1, &string2,
-		      &start1, &end1, &start2, &end2);
-
-    string1 += start1;
-    string2 += start2;
-
-    for (offset1 = start1, offset2 = start2; offset1 <= end1 && offset2 <= end2;
-	 offset1++, offset2++, string1++, string2++)
-	if (*string1 < *string2)
-	    return (FIXNUM(offset1));
-	else if (*string1 != *string2)
-	    break;
-
-    return (NIL);
+    return (LispStringCompare(builtin, CHAR_LESS, 0));
 }
 
 LispObj *
@@ -837,23 +1021,7 @@ Lisp_StringGreater(LispBuiltin *builtin)
  string> string1 string2 &key start1 end1 start2 end2
  */
 {
-    char *string1, *string2;
-    long start1, end1, start2, end2, offset1, offset2;
-
-    LispGetStringArgs(builtin, &string1, &string2,
-		      &start1, &end1, &start2, &end2);
-
-    string1 += start1;
-    string2 += start2;
-
-    for (offset1 = start1, offset2 = start2; offset1 <= end1 && offset2 <= end2;
-	 offset1++, offset2++, string1++, string2++)
-	if (*string1 > *string2)
-	    return (FIXNUM(offset1));
-	else if (*string1 != *string2)
-	    break;
-
-    return (NIL);
+    return (LispStringCompare(builtin, CHAR_GREATER, 0));
 }
 
 LispObj *
@@ -862,25 +1030,7 @@ Lisp_StringLessEqual(LispBuiltin *builtin)
  string<= string1 string2 &key start1 end1 start2 end2
  */
 {
-    char *string1, *string2;
-    long start1, end1, start2, end2, offset1, offset2;
-
-    LispGetStringArgs(builtin, &string1, &string2,
-		      &start1, &end1, &start2, &end2);
-
-    string1 += start1;
-    string2 += start2;
-
-    for (offset1 = start1, offset2 = start2; offset1 <= end1 && offset2 <= end2;
-	 offset1++, offset2++, string1++, string2++)
-	if (*string1 < *string2)
-	    return (FIXNUM(offset1));
-	else if (*string1 != *string2)
-	    return (NIL);
-	else if (!*string1)
-	    break;
-
-    return (FIXNUM(offset1));
+    return (LispStringCompare(builtin, CHAR_LESS_EQUAL, 0));
 }
 
 LispObj *
@@ -889,25 +1039,7 @@ Lisp_StringGreaterEqual(LispBuiltin *builtin)
  string>= string1 string2 &key start1 end1 start2 end2
  */
 {
-    char *string1, *string2;
-    long start1, end1, start2, end2, offset1, offset2;
-
-    LispGetStringArgs(builtin, &string1, &string2,
-		      &start1, &end1, &start2, &end2);
-
-    string1 += start1;
-    string2 += start2;
-
-    for (offset1 = start1, offset2 = start2; offset1 <= end1 && offset2 <= end2;
-	 offset1++, offset2++, string1++, string2++)
-	if (*string1 > *string2)
-	    return (FIXNUM(offset1));
-	else if (*string1 != *string2)
-	    return (NIL);
-	else if (!*string1)
-	    break;
-
-    return (FIXNUM(offset1));
+    return (LispStringCompare(builtin, CHAR_GREATER_EQUAL, 0));
 }
 
 LispObj *
@@ -916,21 +1048,7 @@ Lisp_StringNotEqual_(LispBuiltin *builtin)
  string/= string1 string2 &key start1 end1 start2 end2
  */
 {
-    char *string1, *string2;
-    long start1, end1, start2, end2, offset1, offset2;
-
-    LispGetStringArgs(builtin, &string1, &string2,
-		      &start1, &end1, &start2, &end2);
-
-    string1 += start1;
-    string2 += start2;
-
-    for (offset1 = start1, offset2 = start2; offset1 <= end1 && offset2 <= end2;
-	 offset1++, offset2++, string1++, string2++)
-	if (*string1 != *string2)
-	    return (FIXNUM(offset1));
-
-    return (NIL);
+    return (LispStringCompare(builtin, CHAR_NOT_EQUAL, 0));
 }
 
 LispObj *
@@ -939,19 +1057,7 @@ Lisp_StringEqual(LispBuiltin *builtin)
  string-equal string1 string2 &key start1 end1 start2 end2
  */
 {
-    char *string1, *string2;
-    long start1, end1, start2, end2, length;
-
-    LispGetStringArgs(builtin, &string1, &string2,
-		      &start1, &end1, &start2, &end2);
-
-    length = end1 - start1;
-
-    if (length != (end2 - start2) ||
-	strncasecmp(string1 + start1, string2 + start2, length))
-	return (NIL);
-
-    return (T);
+    return (LispStringCompare(builtin, CHAR_EQUAL, 1));
 }
 
 LispObj *
@@ -960,26 +1066,7 @@ Lisp_StringLessp(LispBuiltin *builtin)
  string-lessp string1 string2 &key start1 end1 start2 end2
  */
 {
-    char *string1, *string2;
-    long start1, end1, start2, end2, offset1, offset2, char1, char2;
-
-    LispGetStringArgs(builtin, &string1, &string2,
-		      &start1, &end1, &start2, &end2);
-
-    string1 += start1;
-    string2 += start2;
-
-    for (offset1 = start1, offset2 = start2; offset1 <= end1 && offset2 <= end2;
-	 offset1++, offset2++, string1++, string2++) {
-	char1 = toupper(*string1);
-	char2 = toupper(*string2);
-	if (char1 < char2)
-	    return (FIXNUM(offset1));
-	else if (char1 != char2)
-	    break;
-    }
-
-    return (NIL);
+    return (LispStringCompare(builtin, CHAR_LESS, 1));
 }
 
 LispObj *
@@ -988,26 +1075,7 @@ Lisp_StringGreaterp(LispBuiltin *builtin)
  string-greaterp string1 string2 &key start1 end1 start2 end2
  */
 {
-    char *string1, *string2;
-    long  start1, end1, start2, end2, offset1, offset2, char1, char2;
-
-    LispGetStringArgs(builtin, &string1, &string2,
-		       &start1, &end1, &start2, &end2);
-
-    string1 += start1;
-    string2 += start2;
-
-    for (offset1 = start1, offset2 = start2; offset1 <= end1 && offset2 <= end2;
-	 offset1++, offset2++, string1++, string2++) {
-	char1 = toupper(*string1);
-	char2 = toupper(*string2);
-	if (char1 > char2)
-	    return (FIXNUM(offset1));
-	else if (char1 != char2)
-	    break;
-    }
-
-    return (NIL);
+    return (LispStringCompare(builtin, CHAR_GREATER, 1));
 }
 
 LispObj *
@@ -1016,28 +1084,7 @@ Lisp_StringNotGreaterp(LispBuiltin *builtin)
  string-not-greaterp string1 string2 &key start1 end1 start2 end2
  */
 {
-    char *string1, *string2;
-    long start1, end1, start2, end2, offset1, offset2, char1, char2;
-
-    LispGetStringArgs(builtin, &string1, &string2,
-		      &start1, &end1, &start2, &end2);
-
-    string1 += start1;
-    string2 += start2;
-
-    for (offset1 = start1, offset2 = start2; offset1 <= end1 && offset2 <= end2;
-	 offset1++, offset2++, string1++, string2++) {
-	char1 = toupper(*string1);
-	char2 = toupper(*string2);
-	if (char1 < char2)
-	    return (FIXNUM(offset1));
-	else if (char1 != char2)
-	    return (NIL);
-	else if (!*string1)
-	    break;
-    }
-
-    return (FIXNUM(offset1));
+    return (LispStringCompare(builtin, CHAR_LESS_EQUAL, 1));
 }
 
 LispObj *
@@ -1046,28 +1093,7 @@ Lisp_StringNotLessp(LispBuiltin *builtin)
  string-not-lessp string1 string2 &key start1 end1 start2 end2
  */
 {
-    char *string1, *string2;
-    long start1, end1, start2, end2, offset1, offset2, char1, char2;
-
-    LispGetStringArgs(builtin, &string1, &string2,
-		      &start1, &end1, &start2, &end2);
-
-    string1 += start1;
-    string2 += start2;
-
-    for (offset1 = start1, offset2 = start2; offset1 <= end1 && offset2 <= end2;
-	 offset1++, offset2++, string1++, string2++) {
-	char1 = toupper(*string1);
-	char2 = toupper(*string2);
-	if (char1 > char2)
-	    return (FIXNUM(offset1));
-	else if (char1 != char2)
-	    return (NIL);
-	else if (!*string1)
-	    break;
-    }
-
-    return (FIXNUM(offset1));
+    return (LispStringCompare(builtin, CHAR_GREATER_EQUAL, 1));
 }
 
 LispObj *
@@ -1076,32 +1102,19 @@ Lisp_StringNotEqual(LispBuiltin *builtin)
  string-not-equal string1 string2 &key start1 end1 start2 end2
  */
 {
-    char *string1, *string2;
-    long start1, end1, start2, end2, offset1, offset2;
-
-    LispGetStringArgs(builtin, &string1, &string2,
-		       &start1, &end1, &start2, &end2);
-
-    string1 += start1;
-    string2 += start2;
-
-    for (offset1 = start1, offset2 = start2; offset1 <= end1 && offset2 <= end2;
-	 offset1++, offset2++, string1++, string2++)
-	if (toupper(*string1) != toupper(*string2))
-	    return (FIXNUM(offset1));
-
-    return (NIL);
+    return (LispStringCompare(builtin, CHAR_NOT_EQUAL, 1));
 }
 
 LispObj *
-Lisp_StringUpcase(LispBuiltin *builtin)
+LispStringUpcase(LispBuiltin *builtin, int inplace)
 /*
  string-upcase string &key start end
+ nstring-upcase string &key start end
  */
 {
     LispObj *result;
     char *string, *newstring;
-    long start, end, offset, done;
+    long start, end, length, offset;
 
     LispObj *ostring, *ostart, *oend;
 
@@ -1113,23 +1126,106 @@ Lisp_StringUpcase(LispBuiltin *builtin)
 			      &start, &end, &offset);
     result = ostring;
     string = THESTR(ostring);
+    length = STRLEN(ostring);
 
     /* first check if something need to be done */
-    for (done = 1, offset = start; offset < end; offset++)
-	if (string[offset] != toupper(string[offset])) {
-	    done = 0;
+    for (offset = start; offset < end; offset++)
+	if (string[offset] != toupper(string[offset]))
 	    break;
-	}
 
-    if (done)
+    if (offset >= end)
 	return (result);
 
-    /* upcase a copy of argument */
-    newstring = LispStrdup(string);
-    for (offset = start; offset < end; offset++)
-	newstring[offset] = toupper(newstring[offset]);
+    if (inplace) {
+	CHECK_STRING_WRITABLE(ostring);
+	newstring = string;
+    }
+    else {
+	/* upcase a copy of argument */
+	newstring = LispMalloc(length + 1);
+	if (offset)
+	    memcpy(newstring, string, offset);
+	if (length > end)
+	    memcpy(newstring + end, string + end, length - end);
+	newstring[length] = '\0';
+    }
 
-    result = STRING2(newstring);
+    for (; offset < end; offset++)
+	newstring[offset] = toupper(string[offset]);
+
+    if (!inplace)
+	result = LSTRING2(newstring, length);
+
+    return (result);
+}
+
+LispObj *
+Lisp_StringUpcase(LispBuiltin *builtin)
+/*
+ string-upcase string &key start end
+ */
+{
+    return (LispStringUpcase(builtin, 0));
+}
+
+LispObj *
+Lisp_NstringUpcase(LispBuiltin *builtin)
+/*
+ nstring-upcase string &key start end
+ */
+{
+    return (LispStringUpcase(builtin, 1));
+}
+
+LispObj *
+LispStringDowncase(LispBuiltin *builtin, int inplace)
+/*
+ string-downcase string &key start end
+ nstring-downcase string &key start end
+ */
+{
+    LispObj *result;
+    char *string, *newstring;
+    long start, end, length, offset;
+
+    LispObj *ostring, *ostart, *oend;
+
+    oend = ARGUMENT(2);
+    ostart = ARGUMENT(1);
+    ostring = ARGUMENT(0);
+    CHECK_STRING(ostring);
+    LispCheckSequenceStartEnd(builtin, ostring, ostart, oend,
+			      &start, &end, &offset);
+    result = ostring;
+    string = THESTR(ostring);
+    length = STRLEN(ostring);
+
+    /* first check if something need to be done */
+    for (offset = start; offset < end; offset++)
+	if (string[offset] != tolower(string[offset]))
+	    break;
+
+    if (offset >= end)
+	return (result);
+
+    if (inplace) {
+	CHECK_STRING_WRITABLE(ostring);
+	newstring = string;
+    }
+    else {
+	/* downcase a copy of argument */
+	newstring = LispMalloc(length + 1);
+	if (offset)
+	    memcpy(newstring, string, offset);
+	if (length > end)
+	    memcpy(newstring + end, string + end, length - end);
+	newstring[length] = '\0';
+    }
+    for (; offset < end; offset++)
+	newstring[offset] = tolower(string[offset]);
+
+    if (!inplace)
+	result = LSTRING2(newstring, length);
 
     return (result);
 }
@@ -1140,9 +1236,28 @@ Lisp_StringDowncase(LispBuiltin *builtin)
  string-downcase string &key start end
  */
 {
+    return (LispStringDowncase(builtin, 0));
+}
+
+LispObj *
+Lisp_NstringDowncase(LispBuiltin *builtin)
+/*
+ nstring-downcase string &key start end
+ */
+{
+    return (LispStringDowncase(builtin, 1));
+}
+
+LispObj *
+LispStringCapitalize(LispBuiltin *builtin, int inplace)
+/*
+ string-capitalize string &key start end
+ nstring-capitalize string &key start end
+ */
+{
     LispObj *result;
     char *string, *newstring;
-    long start, end, offset, done;
+    long start, end, length, offset, upcase;
 
     LispObj *ostring, *ostart, *oend;
 
@@ -1154,23 +1269,57 @@ Lisp_StringDowncase(LispBuiltin *builtin)
 			      &start, &end, &offset);
     result = ostring;
     string = THESTR(ostring);
+    length = STRLEN(ostring);
 
     /* first check if something need to be done */
-    for (done = 1, offset = start; offset < end; offset++)
-	if (string[offset] != tolower(string[offset])) {
-	    done = 0;
-	    break;
+    for (upcase = 1, offset = start; offset < end; offset++) {
+	if (upcase) {
+	    if (!isalnum(string[offset]))
+		continue;
+	    if (string[offset] != toupper(string[offset]))
+		break;
+	    upcase = 0;
 	}
+	else {
+	    if (isalnum(string[offset])) {
+		if (string[offset] != tolower(string[offset]))
+		    break;
+	    }
+	    else
+		upcase = 1;
+	}
+    }
 
-    if (done)
+    if (offset >= end)
 	return (result);
 
-    /* downcase a copy of argument */
-    newstring = LispStrdup(string);
-    for (offset = start; offset < end; offset++)
-	newstring[offset] = tolower(newstring[offset]);
+    if (inplace) {
+	CHECK_STRING_WRITABLE(ostring);
+	newstring = string;
+    }
+    else {
+	/* capitalize a copy of argument */
+	newstring = LispMalloc(length + 1);
+	memcpy(newstring, string, length);
+	newstring[length] = '\0';
+    }
+    for (; offset < end; offset++) {
+	if (upcase) {
+	    if (!isalnum(string[offset]))
+		continue;
+	    newstring[offset] = toupper(string[offset]);
+	    upcase = 0;
+	}
+	else {
+	    if (isalnum(newstring[offset]))
+		newstring[offset] = tolower(string[offset]);
+	    else
+		upcase = 1;
+	}
+    }
 
-    result = STRING2(newstring);
+    if (!inplace)
+	result = LSTRING2(newstring, length);
 
     return (result);
 }
@@ -1181,67 +1330,16 @@ Lisp_StringCapitalize(LispBuiltin *builtin)
  string-capitalize string &key start end
  */
 {
-    LispObj *result;
-    char *string, *newstring;
-    long start, end, offset, done, upcase;
+    return (LispStringCapitalize(builtin, 0));
+}
 
-    LispObj *ostring, *ostart, *oend;
-
-    oend = ARGUMENT(2);
-    ostart = ARGUMENT(1);
-    ostring = ARGUMENT(0);
-    CHECK_STRING(ostring);
-    LispCheckSequenceStartEnd(builtin, ostring, ostart, oend,
-			      &start, &end, &offset);
-    result = ostring;
-    string = THESTR(ostring);
-
-    /* first check if something need to be done */
-    for (done = upcase = 1, offset = start; offset < end; offset++) {
-	if (upcase) {
-	    if (!isalpha(string[offset]))
-		continue;
-	    if (string[offset] != toupper(string[offset])) {
-		done = 0;
-		break;
-	    }
-	    upcase = 0;
-	}
-	else {
-	    if (isalpha(string[offset])) {
-		if (string[offset] != tolower(string[offset])) {
-		    done = 0;
-		    break;
-		}
-	    }
-	    else
-		upcase = 1;
-	}
-    }
-
-    if (done)
-	return (result);
-
-    /* capitalize a copy of argument */
-    newstring = LispStrdup(string);
-    for (upcase = 1, offset = start; offset < end; offset++) {
-	if (upcase) {
-	    if (!isalpha(newstring[offset]))
-		continue;
-	    newstring[offset] = toupper(newstring[offset]);
-	    upcase = 0;
-	}
-	else {
-	    if (isalpha(newstring[offset]))
-		newstring[offset] = tolower(newstring[offset]);
-	    else
-		upcase = 1;
-	}
-    }
-
-    result = STRING2(newstring);
-
-    return (result);
+LispObj *
+Lisp_NstringCapitalize(LispBuiltin *builtin)
+/*
+ nstring-capitalize string &key start end
+ */
+{
+    return (LispStringCapitalize(builtin, 1));
 }
 
 LispObj *

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.75 2002/11/23 08:26:49 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.76 2002/11/23 21:41:51 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -227,7 +227,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_AssocIf, "assoc-if predicate list &key key"},
     {LispFunction, Lisp_AssocIfNot, "assoc-if-not predicate list &key key"},
     {LispFunction, Lisp_Atom, "atom object"},
-    {LispMacro, Lisp_Block, "block name &rest body", 0, 0, Com_Block},
+    {LispMacro, Lisp_Block, "block name &rest body", 1, 0, Com_Block},
     {LispFunction, Lisp_BothCaseP, "both-case-p character"},
     {LispFunction, Lisp_Boundp, "boundp symbol"},
     {LispFunction, Lisp_Butlast, "butlast list &optional count"},
@@ -309,6 +309,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_Defstruct, "defstruct name &rest description"},
     {LispMacro, Lisp_Defun, "defun name lambda-list &rest body"},
     {LispMacro, Lisp_Defsetf, "defsetf function lambda-list &rest body"},
+    {LispMacro, Lisp_Defparameter, "defparameter name initial-value &optional documentation"},
     {LispMacro, Lisp_Defvar, "defvar name &optional initial-value documentation"},
     {LispFunction, Lisp_Delete, "delete item sequence &key from-end test test-not start end count key"},
     {LispFunction, Lisp_DeleteDuplicates, "delete-duplicates sequence &key from-end test test-not start end key"},
@@ -480,8 +481,8 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Proclaim, "proclaim declaration"},
     {LispMacro, Lisp_Prog1, "prog1 first &rest body"},
     {LispMacro, Lisp_Prog2, "prog2 first second &rest body"},
-    {LispMacro, Lisp_Progn, "progn &rest body", 0, 0, Com_Progn},
-    {LispMacro, Lisp_Progv, "progv symbols values &rest body"},
+    {LispMacro, Lisp_Progn, "progn &rest body", 1, 0, Com_Progn},
+    {LispMacro, Lisp_Progv, "progv symbols values &rest body", 1},
     {LispFunction, Lisp_Provide, "provide module"},
     {LispMacro, Lisp_Push, "push item place"},
     {LispMacro, Lisp_Pushnew, "pushnew item place &key key test test-not"},
@@ -503,8 +504,8 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_RemoveDuplicates, "remove-duplicates sequence &key from-end test test-not start end key"},
     {LispFunction, Lisp_RemoveIf, "remove-if predicate sequence &key from-end start end count key"},
     {LispFunction, Lisp_RemoveIfNot, "remove-if-not predicate sequence &key from-end start end count key"},
-    {LispMacro, Lisp_Return, "return &optional result", 0, 0, Com_Return},
-    {LispMacro, Lisp_ReturnFrom, "return-from name &optional result", 0, 0, Com_ReturnFrom},
+    {LispMacro, Lisp_Return, "return &optional result", 1, 0, Com_Return},
+    {LispMacro, Lisp_ReturnFrom, "return-from name &optional result", 1, 0, Com_ReturnFrom},
     {LispFunction, Lisp_Reverse, "reverse sequence"},
     {LispFunction, Lisp_Round, "round number &optional divisor", 1},
     {LispFunction, Lisp_Fround, "fround number &optional divisor", 1},
@@ -514,8 +515,11 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Set, "set symbol value"},
     {LispFunction, Lisp_SetDifference, "set-difference list1 list2 &key test test-not key"},
     {LispFunction, Lisp_SetExclusiveOr, "set-exclusive-or list1 list2 &key test test-not key"},
+    {LispFunction, Lisp_NsetExclusiveOr, "nset-exclusive-or list1 list2 &key test test-not key"},
     {LispMacro, Lisp_Setf, "setf &rest form"},
+    {LispMacro, Lisp_Psetf, "psetf &rest form"},
     {LispMacro, Lisp_SetQ, "setq &rest form", 0, 0, Com_Setq},
+    {LispMacro, Lisp_Psetq, "psetq &rest form"},
     {LispFunction, Lisp_Sleep, "sleep seconds"},
     {LispFunction, Lisp_Sort, "sort sequence predicate &key key"},
     {LispFunction, Lisp_Sqrt, "sqrt number"},
@@ -541,8 +545,11 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_StringLeftTrim, "string-left-trim character-bag string"},
     {LispFunction, Lisp_StringRightTrim, "string-right-trim character-bag string"},
     {LispFunction, Lisp_StringUpcase, "string-upcase string &key start end"},
+    {LispFunction, Lisp_NstringUpcase, "nstring-upcase string &key start end"},
     {LispFunction, Lisp_StringDowncase, "string-downcase string &key start end"},
+    {LispFunction, Lisp_NstringDowncase, "nstring-downcase string &key start end"},
     {LispFunction, Lisp_StringCapitalize, "string-capitalize string &key start end"},
+    {LispFunction, Lisp_NstringCapitalize, "nstring-capitalize string &key start end"},
     {LispFunction, Lisp_Subseq, "subseq sequence start &optional end"},
     {LispFunction, Lisp_Subsetp, "subsetp list1 list2 &key test test-not key"},
     {LispFunction, Lisp_Substitute, "substitute newitem olditem sequence &key from-end test test-not start end count key"},
@@ -583,7 +590,6 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_XeditMakeStruct, "lisp::make-struct atom &rest init", 0, 1},
     {LispFunction, Lisp_XeditPut, " lisp::put symbol indicator value", 0, 1},
     {LispFunction, Lisp_XeditPuthash, "lisp::puthash key hash-table value", 0, 1},
-    {LispFunction, Lisp_XeditSetSymbolValue, "lisp::set-symbol-value symbol value", 0, 1},
     {LispFunction, Lisp_XeditStructAccess, "lisp::struct-access atom struct", 0, 1},
     {LispFunction, Lisp_XeditStructType, "lisp::struct-type atom struct", 0, 1},
     {LispFunction, Lisp_XeditStructStore, "lisp::struct-store atom struct value", 0, 1},
@@ -603,6 +609,9 @@ static LispBuiltin extbuiltins[] = {
     {LispFunction, Lisp_Rep, "re-p object"},
     {LispFunction, Lisp_Setenv, "setenv name value &optional overwrite"},
     {LispFunction, Lisp_Unsetenv, "unsetenv name"},
+    {LispFunction, Lisp_NstringTrim, "nstring-trim character-bag string"},
+    {LispFunction, Lisp_NstringLeftTrim, "nstring-left-trim character-bag string"},
+    {LispFunction, Lisp_NstringRightTrim, "nstring-right-trim character-bag string"},
     {LispMacro, Lisp_Until, "until test &rest body", 0, 0, Com_Until},
     {LispMacro, Lisp_While, "while test &rest body", 0, 0, Com_While},
 };
@@ -2295,6 +2304,9 @@ mark_stream:
 	    LispHashEntry *entry = object->data.hash.table->entries,
 			  *last = entry + object->data.hash.table->num_entries;
 
+	    if (object->mark)
+		return;
+	    object->mark = 1;
 	    for (; entry < last; entry++) {
 		for (i = 0; i < entry->count; i++) {
 		    switch (OBJECT_TYPE(entry->keys[i])) {
@@ -2341,7 +2353,7 @@ mark_stream:
 		    }
 		}
 	    }
-	}   break;
+	}   return;
 	default:
 	    break;
     }
@@ -2445,6 +2457,9 @@ prot_stream:
 	    LispHashEntry *entry = object->data.hash.table->entries,
 			  *last = entry + object->data.hash.table->num_entries;
 
+	    if (object->prot)
+		return;
+	    object->prot = 1;
 	    for (; entry < last; entry++) {
 		for (i = 0; i < entry->count; i++) {
 		    switch (OBJECT_TYPE(entry->keys[i])) {
@@ -2491,7 +2506,7 @@ prot_stream:
 		    }
 		}
 	    }
-	}   break;
+	}   return;
 	default:
 	    break;
     }
@@ -3381,25 +3396,28 @@ LispGetVarAddr(LispObj *atom)
 void
 LispUnsetVar(LispObj *atom)
 {
-    int i;
     LispAtom *name = atom->data.atom;
-    LispPackage *pack = name->package->data.package.package;
 
-    LispRemDocumentation(atom, LispDocVariable);
+    if (name->package) {
+	int i;
+	LispPackage *pack = name->package->data.package.package;
 
-    for (i = pack->glb.length - 1; i > 0; i--)
-	if (pack->glb.pairs[i] == atom) {
-	    LispRemAtomObjectProperty(name);
-	    --pack->glb.length;
-	    if (i < pack->glb.length)
-		memmove(pack->glb.pairs + i, pack->glb.pairs + i + 1,
-			sizeof(LispObj*) * (pack->glb.length - i));
+	LispRemDocumentation(atom, LispDocVariable);
 
-	    /* unset hint about dynamically binded variable */
-	    if (name->dyn)
-		name->dyn = 0;
-	    break;
-	}
+	for (i = pack->glb.length - 1; i > 0; i--)
+	    if (pack->glb.pairs[i] == atom) {
+		LispRemAtomObjectProperty(name);
+		--pack->glb.length;
+		if (i < pack->glb.length)
+		    memmove(pack->glb.pairs + i, pack->glb.pairs + i + 1,
+			    sizeof(LispObj*) * (pack->glb.length - i));
+
+		/* unset hint about dynamically binded variable */
+		if (name->dyn)
+		    name->dyn = 0;
+		break;
+	    }
+    }
 }
 
 LispObj *
@@ -4569,7 +4587,7 @@ LispFuncall(LispObj *function, LispObj *arguments, int eval)
     LispArgList *alist;
     LispBuiltin *builtin;
     LispObj *lambda, *result;
-    int multiple_values, macro, base;
+    int macro, base;
 
 #ifdef DEBUGGER
     if (lisp__data.debugging)
@@ -4587,8 +4605,14 @@ LispFuncall(LispObj *function, LispObj *arguments, int eval)
 		    eval = builtin->type != LispMacro;
 		base = LispMakeEnvironment(atom->property->alist,
 					   arguments, function, eval, 1);
-		multiple_values = builtin->multiple_values;
-		result = builtin->function(builtin);
+		if (builtin->multiple_values) {
+		    RETURN_COUNT = 0;
+		    result = builtin->function(builtin);
+		}
+		else {
+		    result = builtin->function(builtin);
+		    RETURN_COUNT = 0;
+		}
 		lisp__data.stack.base = lisp__data.stack.length = base;
 	    }
 	    else if (atom->a_compiled) {
@@ -4597,7 +4621,6 @@ LispFuncall(LispObj *function, LispObj *arguments, int eval)
 		alist = atom->property->alist;
 
 		base = LispMakeEnvironment(alist, arguments, function, eval, 0);
-		multiple_values = 1;
 		lisp__data.env.lex = base;
 		result = LispExecuteBytecode(lambda);
 		lisp__data.env.lex = lex;
@@ -4612,7 +4635,6 @@ LispFuncall(LispObj *function, LispObj *arguments, int eval)
 		if (eval)
 		    eval = !macro;
 		base = LispMakeEnvironment(alist, arguments, function, eval, 0);
-		multiple_values = 1;
 		result = LispRunFunMac(function, lambda, macro, base);
 	    }
 	    else if (atom->a_defstruct &&
@@ -4643,15 +4665,14 @@ LispFuncall(LispObj *function, LispObj *arguments, int eval)
 		    base = LispMakeEnvironment(atom->property->alist,
 					       &cons, function, 0, 1);
 		}
-		multiple_values = 0;
 		result = builtin->function(builtin);
+		RETURN_COUNT = 0;
 		lisp__data.stack.length = base;
 	    }
 	    else {
 		LispDestroy("EVAL: the function %s is not defined",
 			    STROBJ(function));
 		/*NOTREACHED*/
-		multiple_values = 0;
 		result = NIL;
 	    }
 	    break;
@@ -4659,7 +4680,6 @@ LispFuncall(LispObj *function, LispObj *arguments, int eval)
 	    lambda = function->data.lambda.code;
 	    alist = (LispArgList*)function->data.lambda.name->data.opaque.data;
 	    base = LispMakeEnvironment(alist, arguments, function, eval, 0);
-	    multiple_values = 1;
 	    result = LispRunFunMac(function, lambda, 0, base);
 	    break;
 	case LispCons_t:
@@ -4672,7 +4692,6 @@ LispFuncall(LispObj *function, LispObj *arguments, int eval)
 		    lambda = function->data.lambda.code;
 		    alist = (LispArgList*)function->data.lambda.name->data.opaque.data;
 		    base = LispMakeEnvironment(alist, arguments, NIL, eval, 0);
-		    multiple_values = 1;
 		    result = LispRunFunMac(NIL, lambda, 0, base);
 		    GC_LEAVE();
 		    break;
@@ -4682,7 +4701,6 @@ LispFuncall(LispObj *function, LispObj *arguments, int eval)
 	    LispDestroy("EVAL: %s is invalid as a function",
 			STROBJ(function));
 	    /*NOTREACHED*/
-	    multiple_values = 0;
 	    result = NIL;
 	    break;
     }
@@ -4691,9 +4709,6 @@ LispFuncall(LispObj *function, LispObj *arguments, int eval)
     if (lisp__data.debugging)
 	LispDebugger(LispDebugCallEnd, function, result);
 #endif
-
-    if (!multiple_values)
-	RETURN_COUNT = 0;
 
     return (result);
 }
@@ -4814,7 +4829,6 @@ LispRunSetf(LispArgList *alist, LispObj *setf, LispObj *place, LispObj *value)
     code = setf->data.lambda.code;
     store = setf->data.lambda.data;
 
-    value = EVAL(value);
     quote.type = LispQuote_t;
     quote.data.quote = value;
     LispDoAddVar(CAR(store), &quote);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/rep.h,v 1.1 2002/09/08 02:29:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/rep.h,v 1.2 2002/11/15 07:01:33 paulo Exp $ */
 
 #include "re.h"
 
@@ -144,7 +144,7 @@ typedef enum {
     /* Matching */
     Re_Any,			/* . */
     Re_Odigit,			/* \o */
-    Re_OdigitNot,		/* \o */
+    Re_OdigitNot,		/* \O */
     Re_Digit,			/* \d */
     Re_DigitNot,		/* \D */
     Re_Xdigit,			/* \x */

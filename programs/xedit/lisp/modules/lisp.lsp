@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/lisp.lsp,v 1.4 2002/11/13 04:35:49 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/lisp.lsp,v 1.5 2002/11/23 08:26:52 paulo Exp $
 ;;
 (provide "lisp")
 
@@ -158,7 +158,7 @@
 (defsetf elt lisp::elt-store)
 (defsetf svref lisp::elt-store)
 
-(defsetf symbol-value lisp::set-symbol-value)
+(defsetf symbol-value set)
 
 (defsetf subseq (sequence start &optional end) (value)
     `(progn (replace ,sequence ,value :start1 ,start :end1 ,end) ,value))

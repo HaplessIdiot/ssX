@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.30 2002/11/23 08:26:48 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.31 2002/11/23 21:41:51 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -67,6 +67,7 @@ LispObj *Lisp_Defconstant(LispBuiltin*);
 LispObj *Lisp_Defmacro(LispBuiltin*);
 LispObj *Lisp_Defun(LispBuiltin*);
 LispObj *Lisp_Defsetf(LispBuiltin*);
+LispObj *Lisp_Defparameter(LispBuiltin*);
 LispObj *Lisp_Defvar(LispBuiltin*);
 LispObj *Lisp_Delete(LispBuiltin*);
 LispObj *Lisp_DeleteDuplicates(LispBuiltin*);
@@ -175,8 +176,11 @@ LispObj *Lisp_Setenv(LispBuiltin*);
 LispObj *Lisp_Set(LispBuiltin*);
 LispObj *Lisp_SetDifference(LispBuiltin*);
 LispObj *Lisp_SetExclusiveOr(LispBuiltin*);
+LispObj *Lisp_NsetExclusiveOr(LispBuiltin*);
 LispObj *Lisp_Setf(LispBuiltin*);
+LispObj *Lisp_Psetf(LispBuiltin*);
 LispObj *Lisp_SetQ(LispBuiltin*);
+LispObj *Lisp_Psetq(LispBuiltin*);
 LispObj *Lisp_Sleep(LispBuiltin*);
 LispObj *Lisp_Sort(LispBuiltin*);
 LispObj *Lisp_Subseq(LispBuiltin*);
@@ -208,7 +212,6 @@ LispObj *Lisp_When(LispBuiltin*);
 LispObj *Lisp_While(LispBuiltin*);
 LispObj *Lisp_XeditEltStore(LispBuiltin*);
 LispObj *Lisp_XeditPut(LispBuiltin*);
-LispObj *Lisp_XeditSetSymbolValue(LispBuiltin*);
 LispObj *Lisp_XeditVectorStore(LispBuiltin*);
 
 #endif

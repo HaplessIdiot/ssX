@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/test/list.lsp,v 1.2 2002/11/23 08:26:53 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/test/list.lsp,v 1.3 2002/11/23 21:41:53 paulo Exp $
 ;;
 
 ;; basic lisp function tests
@@ -1116,3 +1116,402 @@
 (eq-test nil #'position 595 '())
 (eq-test 4 #'position-if-not #'integerp '(1 2 3 4 5.0))
 (eql-test 1 #'position (char-int #\1) "0123" :key #'char-int)
+
+;; prog					- macro
+(eq-eval nil '(prog () :error))
+(eq-eval 'ok
+    '(prog ((a 0))
+	l1 (if (< a 10) (go l3) (go l2))
+	(return 'failed)
+	l2 (return 'ok)
+	(return 'failed)
+	l3 (incf a) (go l1)
+	(return 'failed)
+    ))
+(setq a 1)
+(eq-eval '/= '(prog ((a 2) (b a)) (return (if (= a b) '= '/=))))
+
+;; prog*				- macro
+(setq a 1)
+(eq-eval nil '(prog* () :error))
+(eq-eval 'ok
+    '(prog* ((a 0) (b 0))
+	l1 (if (< a 10) (go l3) (go l2))
+	(return 'failed)
+	l2 (if (< b 10) (go l4) (return 'ok))
+	(return 'failed)
+	l3 (incf a) (go l1)
+	(return 'failed)
+	l4 (incf b) (setq a 0) (go l1)
+	(return 'failed)
+    ))
+(eq-eval '= '(prog* ((a 2) (b a)) (return (if (= a b) '= '/=))))
+
+;; prog1				- macro
+(setq temp 1)
+(eql-eval 1 '(prog1 temp (incf temp) (eql-eval 2 'temp) temp))
+(eql-eval 2 'temp)
+(eql-eval 2 '(prog1 temp (setq temp nil) (eql-eval nil 'temp) temp))
+(eq-eval nil 'temp)
+(eql-eval 1 '(prog1 (values 1 2 3) 4))
+(setq temp (list 'a 'b 'c))
+(eq-eval 'a '(prog1 (car temp) (setf (car temp) 'alpha)))
+(equal-eval '(alpha b c) 'temp)
+(equal-eval '(1)
+    '(multiple-value-list (prog1 (values 1 2) (values 4 5)))) 
+
+;; prog2				- macro
+(setq temp 1)
+(eql-eval 3 '(prog2 (incf temp) (incf temp) (incf temp)))
+(eql-eval 4 'temp)
+(eql-eval 2 '(prog2 1 (values 2 3 4) 5))
+(equal-eval '(3)
+    '(multiple-value-list (prog2 (values 1 2) (values 3 4) (values 5 6))))
+
+;; progn				- special operator
+(eq-eval nil '(progn))
+(eql-eval 3 '(progn 1 2 3))
+(equal-eval '(1 2 3) '(multiple-value-list (progn (values 1 2 3))))
+(setq a 1)
+(eq-eval 'here '(if a (progn (setq a nil) 'here) (progn (setq a t) 'there)))
+(eq-eval nil 'a)
+
+;; progv				- special operator
+(makunbound '*x*)	;; make sure it is not bound
+(setq *x* 1)
+(eql-eval 2 '(progv '(*x*) '(2) *x*))
+(eql-eval 1 '*x*)
+(equal-eval '(3 4)
+    '(let ((*x* 3)) (progv '(*x*) '(4) (list *x* (symbol-value '*x*)))))
+(makunbound '*x*)
+(defvar *x* 1)
+(equal-eval '(4 4)
+    '(let ((*x* 3)) (progv '(*x*) '(4) (list *x* (symbol-value '*x*)))))
+(equal-eval '(4 4)
+    '(multiple-value-list
+	(let ((*x* 3))
+	     (progv '(*x*) '(4) (values-list (list *x* (symbol-value '*x*)))))))
+
+;; push					- macro
+(setq llst '(nil))
+(equal-eval '(1) '(push 1 (car llst)))
+(equal-eval '((1)) 'llst)
+(equal-eval '(1 1) '(push 1 (car llst)))
+(equal-eval '((1 1)) 'llst)
+(setq x '(a (b c) d))
+(equal-eval '(5 B C) '(push 5 (cadr x)))
+(equal-eval '(a (5 b c) d) 'x)
+
+;; pushnew				- macro
+(setq x '(a (b c) d))
+(equal-eval '(5 b c) '(pushnew 5 (cadr x)))
+(equal-eval '(a (5 b c) d) 'x)
+(equal-eval '(5 b c) '(pushnew 'b (cadr x)))
+(equal-eval '(a (5 b c) d) 'x)
+(setq lst '((1) (1 2) (1 2 3)))
+(equal-eval '((2) (1) (1 2) (1 2 3)) '(pushnew '(2) lst))
+(equal-eval '((1) (2) (1) (1 2) (1 2 3)) '(pushnew '(1) lst))
+(equal-eval '((1) (2) (1) (1 2) (1 2 3)) '(pushnew '(1) lst :test 'equal))
+(equal-eval '((1) (2) (1) (1 2) (1 2 3)) '(pushnew '(1) lst :key #'car))
+
+;; remove-duplicates			- function
+(equal-test "aBcD" #'remove-duplicates "aBcDAbCd" :test #'char-equal :from-end t)
+(equal-test '(a c b d e) #'remove-duplicates '(a b c b d d e))
+(equal-test '(a b c d e) #'remove-duplicates '(a b c b d d e) :from-end t)
+(equal-test '((bar #\%) (baz #\A))
+    #'remove-duplicates '((foo #\a) (bar #\%) (baz #\A))
+     :test #'char-equal :key #'cadr)
+(equal-test '((foo #\a) (bar #\%))
+    #'remove-duplicates '((foo #\a) (bar #\%) (baz #\A)) 
+     :test #'char-equal :key #'cadr :from-end t)
+(setq tester (list 0 1 2 3 4 5 6))
+(equal-test '(0 4 5 6) #'delete-duplicates tester :key #'oddp :start 1 :end 6)
+
+;; replace				- function
+(equal-test "abcd456hij"
+    #'replace (copy-seq "abcdefghij") "0123456789" :start1 4 :end1 7 :start2 4) 
+(setq lst "012345678")
+;(equal-test "010123456" #'replace lst lst :start1 2 :start2 0)
+(equal-test "010123456" #'replace lst lst :start1 2 :start2 0)
+(equal-eval "010123456" 'lst)
+
+;; rest					- accessor
+(equal-eval '(2) '(rest '(1 2)))
+(eql-eval 2 '(rest '(1 . 2)))
+(eq-eval nil '(rest '(1)))
+(setq *cons* '(1 . 2))
+(equal-eval "two" '(setf (rest *cons*) "two"))
+(equal-eval '(1 . "two") '*cons*)
+
+;; return				- macro
+(eq-eval nil '(block nil (return) 1))
+(eql-eval 1 '(block nil (return 1) 2))
+(equal-eval '(1 2) '(multiple-value-list (block nil (return (values 1 2)) 3)))
+(eql-eval 1 '(block nil (block alpha (return 1) 2)))
+(eql-eval 2 '(block alpha (block nil (return 1)) 2))
+(eql-eval 1 '(block nil (block nil (return 1) 2)))
+
+;; return-from				- special operator
+(eq-eval nil '(block alpha (return-from alpha) 1))
+(eql-eval 1 '(block alpha (return-from alpha 1) 2))
+(equal-eval '(1 2)
+    '(multiple-value-list (block alpha (return-from alpha (values 1 2)) 3)))
+(eql-eval 2
+    '(let ((a 0)) (dotimes (i 10) (incf a) (when (oddp i) (return))) a))
+(eq-eval 'temp '(defun temp (x) (if x (return-from temp ''dummy)) 44))
+(eql-eval 44 '(temp nil))
+(eq-eval 'dummy (temp t))
+(eql-eval 2 (block nil (unwind-protect (return-from nil 1) (return-from nil 2))))
+(error-eval '(funcall (block nil #'(lambda () (return-from nil)))))
+
+;; reverse				- function
+(setq str "abc" test str)
+(equal-test "cba" #'reverse str)
+(eq-eval test 'str)
+(equal-eval "cba" '(setq test (nreverse str)))
+(equal-eval "cba" 'test)
+(setq l (list 1 2 3) test l)
+(equal-eval '(3 2 1) '(setq test (nreverse l)))
+(equal-eval '(3 2 1) 'test)
+
+;; rplac?				- function
+(eql-eval '*some-list*
+    '(defparameter *some-list* (list* 'one 'two 'three 'four)))
+(equal-eval '(one two three . four) '*some-list*)
+(equal-test '(uno two three . four) #'rplaca *some-list* 'uno)
+(equal-eval '(uno two three . four) '*some-list*)
+(equal-test '(three iv) #'rplacd (last *some-list*) (list 'iv))
+(equal-eval '(uno two three iv) '*some-list*)
+
+;; search				- function
+(eql-test 7 #'search "dog" "it's a dog's life")
+(eql-test 2 #'search '(0 1) '(2 4 6 1 3 5) :key #'oddp)
+(eql-test 8 #'search "foo" "foooobarfooooobarfo" :from-end t)
+(eql-test 5
+    #'search "123"
+	(mapcar #'(lambda (x) (+ x (char-code #\0)))
+	'(1 2 34 3 2 1 2 3 4 3 2 1)) :from-end t
+	:key #'(lambda (x) (if (integerp x) (code-char x) x)))
+
+;; set					- function
+(eql-eval 1 '(setf (symbol-value 'n) 1))
+(eql-test 2 #'set 'n 2)
+(eql-test 2 #'symbol-value 'n)
+(eql-eval 4
+   '(let ((n 3))
+	(setq n (+ n 1))
+	(setf (symbol-value 'n) (* n 10))
+	(set 'n (+ (symbol-value 'n) n))
+	n))
+(eql-eval 44 'n)
+(defvar *n* 2)
+(eql-eval 80
+   '(let ((*n* 3))
+	(setq *n* (+ *n* 1))
+	(setf (symbol-value '*n*) (* *n* 10))
+	(set '*n* (+ (symbol-value '*n*) *n*))
+	*n*))
+(eql-eval 2 '*n*)
+(eq-eval '*even-count* '(defvar *even-count* 0))
+(eq-eval '*odd-count* '(defvar *odd-count* 0))
+(eql-eval 'tally-list
+   '(defun tally-list (list)
+      (dolist (element list)
+	(set (if (evenp element) '*even-count* '*odd-count*)
+	     (+ element (if (evenp element) *even-count* *odd-count*))))))
+(eq-eval nil '(tally-list '(1 9 4 3 2 7)))
+(eql-eval 6 '*even-count*)
+(eql-eval 20 '*odd-count*)
+
+;; set-difference			- function
+(setq lst1 (list "A" "b" "C" "d") lst2 (list "a" "B" "C" "d"))
+(equal-test '("A" "b" "C" "d") #'set-difference lst1 lst2)
+(equal-test '("A" "b") #'set-difference lst1 lst2 :test 'equal)
+(eq-test nil #'set-difference lst1 lst2 :test #'equalp)
+(equal-test '("A" "b") #'nset-difference lst1 lst2 :test #'string=)
+(setq lst1 '(("a" . "b") ("c" . "d") ("e" . "f"))
+      lst2 '(("c" . "a") ("e" . "b") ("d" . "a")))
+(equal-test '(("c" . "d") ("e" . "f"))
+    #'nset-difference lst1 lst2 :test #'string= :key #'cdr)
+(equal-eval '(("c" . "a") ("e" . "b") ("d" . "a")) 'lst2)
+(equal-test '("banana" "lemon" "rhubarb")
+   #'set-difference
+	'("strawberry" "chocolate" "banana" "lemon" "pistachio" "rhubarb")
+	'(#\c #\w) :test #'(lambda (s c) (find c s)))
+
+;; set-exclusive-or			- function
+(setq lst1 (list 1 "a" "b") lst2 (list 1 "A" "b"))
+(equal-test '("a" "b" "A" "b") #'set-exclusive-or lst1 lst2)
+(equal-test '("a" "A") #'set-exclusive-or lst1 lst2 :test #'equal)
+(eq-test nil #'set-exclusive-or lst1 lst2 :test 'equalp)
+(equal-test '("a" "b" "A" "b") #'nset-exclusive-or lst1 lst2)
+(setq lst1 '(("a" . "b") ("c" . "d") ("e" . "f"))
+      lst2 '(("c" . "a") ("e" . "b") ("d" . "a")))
+(equal-test '(("c" . "d") ("e" . "f") ("c" . "a") ("d" . "a"))
+    #'nset-exclusive-or lst1 lst2 :test #'string= :key #'cdr)
+
+;; setf					- macro
+(setq x (cons 'a 'b) y (list 1 2 3))
+(equal-eval '(1 x 3) '(setf (car x) 'x (cadr y) (car x) (cdr x) y))
+(equal-eval '(x 1 x 3) 'x)
+(equal-eval '(1 x 3) 'y)
+(setq x (cons 'a 'b) y (list 1 2 3))
+(eq-eval nil '(psetf (car x) 'x (cadr y) (car x) (cdr x) y))
+(equal-eval '(x 1 a 3) 'x)
+(equal-eval '(1 a 3) 'y)
+(error-eval '(setf x))
+(error-eval '(psetf x))
+
+;; setq					- special form
+(eql-eval 3 '(setq a 1 b 2 c 3))
+(eql-eval 1 'a)
+(eql-eval 2 'b)
+(eql-eval 3 'c)
+(eql-eval 7 '(setq a (1+ b) b (1+ a) c (+ a b)))
+(eql-eval 3 'a)
+(eql-eval 4 'b)
+(eql-eval 7 'c)
+(eq-eval nil '(psetq a 1 b 2 c 3))
+(eql-eval 1 'a)
+(eql-eval 2 'b)
+(eql-eval 3 'c)
+(equal-eval '(2 1)
+    '(multiple-value-list (let ((a 1) (b 2)) (psetq a b  b a) (values a b))))
+(error-eval '(setq x))
+(error-eval '(setq x 1 y))
+
+;; some					- function
+(eq-test t #'some #'= '(1 2 3 4 5) '(5 4 3 2 1))
+
+;; sort					- function
+(setq tester (copy-seq "lkjashd"))
+(equal-test "adhjkls" #'sort tester #'char-lessp)
+(setq tester (list '(1 2 3) '(4 5 6) '(7 8 9)))
+(equal-test '((7 8 9) (4 5 6) (1 2 3)) #'sort tester #'> :key #'car)
+(setq tester (list 1 2 3 4 5 6 7 8 9 0))
+(equal-test '(1 3 5 7 9 2 4 6 8 0)
+    #'stable-sort tester #'(lambda (x y) (and (oddp x) (evenp y))))
+(equalp-test
+  #((("Kathy" "Chapman") "Editorial")
+    (("Dick" "Gabriel") "Objects")
+    (("Gregor" "Kiczales") "Objects")
+    (("Sandra" "Loosemore") "Compiler")
+    (("Larry" "Masinter") "Cleanup")
+    (("David" "Moon") "Objects")
+    (("Kent" "Pitman") "Conditions")
+    (("Dick" "Waters") "Iteration")
+    (("JonL" "White") "Iteration"))
+   #'sort (setq committee-data
+	    (vector (list (list "JonL" "White") "Iteration")
+		    (list (list "Dick" "Waters") "Iteration")
+		    (list (list "Dick" "Gabriel") "Objects")
+		    (list (list "Kent" "Pitman") "Conditions")
+		    (list (list "Gregor" "Kiczales") "Objects")
+		    (list (list "David" "Moon") "Objects")
+		    (list (list "Kathy" "Chapman") "Editorial")
+		    (list (list "Larry" "Masinter") "Cleanup")
+		    (list (list "Sandra" "Loosemore") "Compiler")))
+      #'string-lessp :key #'cadar)
+(equalp-eval
+  #((("Larry" "Masinter") "Cleanup")
+    (("Sandra" "Loosemore") "Compiler")
+    (("Kent" "Pitman") "Conditions")
+    (("Kathy" "Chapman") "Editorial")
+    (("Dick" "Waters") "Iteration")
+    (("JonL" "White") "Iteration")
+    (("Dick" "Gabriel") "Objects")
+    (("Gregor" "Kiczales") "Objects")
+    (("David" "Moon") "Objects"))
+    '(setq committee-data
+	(stable-sort committee-data #'string-lessp :key #'cadr)))
+(error-test #'sort #c(1 2))
+
+;; string				- function
+(setq a "already a string")
+(eq-test a #'string a)
+(equal-test "ELM" #'string 'elm)
+(equal-test "c" #'string #\c)
+
+;; string-*				- function
+(eq-test t #'string= "foo" "foo")
+(eq-test nil #'string= "foo" "Foo")
+(eq-test nil #'string= "foo" "bar")
+(eq-test t #'string= "together" "frog" :start1 1 :end1 3 :start2 2)
+(eq-test t #'string-equal "foo" "Foo")
+(eq-test t #'string= "abcd" "01234abcd9012" :start2 5 :end2 9)
+(eql-test 3 #'string< "aaaa" "aaab")
+(eql-test 4 #'string>= "aaaaa" "aaaa")
+(eql-test 5 #'string-not-greaterp "Abcde" "abcdE")
+(eql-test 6 #'string-lessp "012AAAA789" "01aaab6" :start1 3 :end1 7
+						  :start2 2 :end2 6)
+(eq-test nil #'string-not-equal "AAAA" "aaaA")
+(error-test #'string= #(1 2 3) '(1 2 3))
+(eql-test 0 #'string< "abcd" "efg")
+(eql-test 1 #'string< "abcd" "afg")
+(eql-test 0 #'string/= "foo" "baar")
+(eql-test nil #'string/= "foobar" "foobar")
+
+;; string-{upcase,downcase,capitalize}	- function
+(equal-test "ABCDE" #'string-upcase "abcde")
+(equal-test "aBCDe" #'string-upcase "abcde" :start 1 :end 4)
+(equal-test "aBCDe" #'nstring-upcase "abcde" :start 1 :end 4)
+(equal-test "DR. LIVINGSTON, I PRESUME?"
+    #'string-upcase "Dr. Livingston, I presume?")
+(equal-test "Dr. LIVINGSTON, I Presume?"
+    #'string-upcase "Dr. Livingston, I presume?" :start 4 :end 19)
+(equal-test "Dr. LIVINGSTON, I Presume?"
+    #'nstring-upcase "Dr. Livingston, I presume?" :start 4 :end 19)
+(equal-test "Dr. LiVINGston, I presume?"
+    #'string-upcase "Dr. Livingston, I presume?" :start 6 :end 10)
+(equal-test "Dr. LiVINGston, I presume?"
+    #'nstring-upcase "Dr. Livingston, I presume?" :start 6 :end 10)
+(equal-test "dr. livingston, i presume?"
+    #'string-downcase "Dr. Livingston, I presume?")
+(equal-test "Dr. livingston, i Presume?"
+    #'string-downcase "Dr. Livingston, I Presume?" :start 1 :end 17)
+(equal-test "Dr. livingston, i Presume?"
+    #'nstring-downcase "Dr. Livingston, I Presume?" :start 1 :end 17)
+(equal-test "Elm 13c Arthur;Fig Don'T"
+    #'string-capitalize "elm 13c arthur;fig don't")
+(equal-test "elm 13C Arthur;Fig Don't"
+    #'string-capitalize "elm 13c arthur;fig don't" :start 6 :end 21)
+(equal-test "elm 13C Arthur;Fig Don't"
+    #'nstring-capitalize "elm 13c arthur;fig don't" :start 6 :end 21)
+(equal-test " Hello " #'string-capitalize " hello ")
+(equal-test " Hello " #'nstring-capitalize " hello ")
+(equal-test "Occluded Casements Forestall Inadvertent Defenestration"
+   #'string-capitalize "occlUDeD cASEmenTs FOreSTAll iNADVertent DEFenestraTION")
+(equal-test "Don'T!" #'string-capitalize "DON'T!")
+(equal-test "Pipe 13a, Foo16c" #'string-capitalize "pipe 13a, foo16c")
+(setq str (copy-seq "0123ABCD890a"))
+(equal-test "0123AbcD890a" #'nstring-downcase str :start 5 :end 7)
+(equal-eval "0123AbcD890a" 'str)
+(error-test #'nstring-capitalize 1)
+(error-test #'string-capitalize "foobar" :start 4 :end 2)
+(equal-test "foobar" #'string-capitalize "foobar" :start 0 :end 0)
+
+;; string-{,left-,right-}trim		- function
+(equal-test "kaaak" #'string-trim "abc" "abcaakaaakabcaaa")
+#+xedit (equal-test "kaaak" #'nstring-trim "abc" "abcaakaaakabcaaa")
+(equal-test "garbanzo beans"
+    #'string-trim '(#\Space #\Tab #\Newline) " garbanzo beans
+        ")
+#+xedit (equal-test "garbanzo beans"
+    #'nstring-trim '(#\Space #\Tab #\Newline) " garbanzo beans
+        ")
+(equal-test "three (silly) words"
+    #'string-trim " (*)" " ( *three (silly) words* ) ")
+#+xedit (equal-test "three (silly) words"
+    #'nstring-trim " (*)" " ( *three (silly) words* ) ")
+(equal-test "labcabcabc" #'string-left-trim "abc" "labcabcabc")
+#+xedit (equal-test "labcabcabc" #'nstring-left-trim "abc" "labcabcabc")
+(equal-test "three (silly) words* ) "
+    #'string-left-trim " (*)" " ( *three (silly) words* ) ")
+#+xedit (equal-test "three (silly) words* ) "
+    #'nstring-left-trim " (*)" " ( *three (silly) words* ) ")
+(equal-test " ( *three (silly) words"
+    #'string-right-trim " (*)" " ( *three (silly) words* ) ")
+#+xedit (equal-test " ( *three (silly) words"
+    #'nstring-right-trim " (*)" " ( *three (silly) words* ) ")
+(error-test #'string-trim 123 "123")
+(error-test #'string-left-trim 123 "123")

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.44 2002/11/21 07:25:09 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.45 2002/11/23 08:26:49 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -366,7 +366,7 @@ LispStringCoerce(LispBuiltin *builtin, LispObj *object)
     if (STRINGP(object))
 	return (object);
     else if (SYMBOLP(object))
-	return (STRING(ATOMID(object)));
+	return (LispSymbolName(object));
     else if (SCHARP(object)) {
 	char string[1];
 
@@ -972,98 +972,6 @@ LispGetStringArgs(LispBuiltin *builtin,
     if (*end2 > length2)
 	LispDestroy("%s: :END2 %ld larger than string length %ld",
 		    STRFUN(builtin), *end2, length2);
-}
-
-LispObj *
-LispStringTrim(LispBuiltin *builtin, int left, int right)
-/*
- string-trim character-bag string
- string-left-trim character-bag string
- string-right-trim character-bag string
-*/
-{
-    char *str;
-    int start, end, sstart, send, length;
-
-    LispObj *chars, *string;
-
-    string = ARGUMENT(1);
-    chars = ARGUMENT(0);
-
-    if (!STRINGP(chars) && !CONSP(chars)) {
-	if (ARRAYP(chars) && chars->data.array.rank == 1)
-	    chars = chars->data.array.list;
-	else
-	    LispDestroy("%s: %s is not a sequence",
-			STRFUN(builtin), STROBJ(chars));
-    }
-    CHECK_STRING(string);
-
-    sstart = start = 0;
-    send = end = STRLEN(string);
-
-    if (STRINGP(chars)) {
-	char *cmp;
-
-	if (left) {
-	    for (str = THESTR(string); *str; str++) {
-		for (cmp = THESTR(chars); *cmp; cmp++)
-		    if (*str == *cmp)
-			break;
-		if (*cmp == '\0')
-		    break;
-		++start;
-	    }
-	}
-	if (right) {
-	    for (str = THESTR(string) + end - 1; end > 0; str--) {
-		for (cmp = THESTR(chars); *cmp; cmp++)
-		    if (*str == *cmp)
-			break;
-		if (*cmp == '\0')
-		    break;
-		--end;
-	    }
-	}
-    }
-    else {
-	LispObj *obj;
-
-	if (left) {
-	    for (str = THESTR(string); *str; str++) {
-		for (obj = chars; obj != NIL; obj = CDR(obj))
-		    /* Should really ignore non character input ? */
-		    if (SCHARP(CAR(obj)) && *str == SCHAR_VALUE(CAR(obj)))
-			break;
-		if (obj == NIL)
-		    break;
-		++start;
-	    }
-	}
-	if (right) {
-	    for (str = THESTR(string) + end - 1; end > 0; str--) {
-		for (obj = chars; obj != NIL; obj = CDR(obj))
-		    /* Should really ignore non character input ? */
-		    if (SCHARP(CAR(obj)) && *str == SCHAR_VALUE(CAR(obj)))
-			break;
-		if (obj == NIL)
-		    break;
-		--end;
-	    }
-	}
-    }
-
-    if (sstart == start && send == end)
-	return (string);
-
-    length = end - start;
-    str = LispMalloc(length + 1);
-    memcpy(str, THESTR(string) + start, length);
-    str[length] = '\0';
-
-    string = LSTRING2(str, length);
-
-    return (string);
 }
 
 LispObj *

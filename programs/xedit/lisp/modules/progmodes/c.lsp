@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.19 2002/11/21 08:04:08 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.20 2002/11/23 08:26:53 paulo Exp $
 ;;
 
 (require "syntax")
@@ -413,6 +413,11 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Labels
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; XXX this frequently doesn't do what is expected, should redefine
+    ;; some rules, as it frequently will dedent while typing something
+    ;; like  test ? exp1 : exp2
+    ;;                   ^ dedents here because it reduces everything
+    ;;			   before ':' to a single :expression token.
     (indreduce :label
 	t
 	((:indent :expression :collon :eol))
