@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.160 1997/04/28 11:13:11 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.161 1997/05/03 09:14:42 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -313,52 +313,108 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 # define XF86TGADir		/**/
 #endif
 
+#ifndef BuildPC98Servers
+#define BuidlPC98Servers	NO
+#endif
+
+#ifndef XF98LoaderServer
+#define XF98LoaderServer	(BuildPC98Servers && DoLoadableServer)
+#endif
+
 #ifndef XF98GANBWAPServer
-# define XF98GANBWAPServer	NO	
+# define XF98GANBWAPServer	(BuildPC98Servers && !DoLoadableServer)
 #endif
 
 #ifndef XF98PEGCServer
-# define XF98PEGCServer	NO
+# define XF98PEGCServer		(BuildPC98Servers && !DoLoadableServer)
 #endif
 
 #ifndef XF98NKVNECServer
-# define XF98NKVNECServer	NO
+# define XF98NKVNECServer	(BuildPC98Servers && !DoLoadableServer)
 #endif
 
 #ifndef XF98WABSServer
-# define XF98WABSServer		NO	
+# define XF98WABSServer		(BuildPC98Servers && !DoLoadableServer)
 #endif
 
 #ifndef XF98WABEPServer
-# define XF98WABEPServer	NO	
+# define XF98WABEPServer	(BuildPC98Servers && !DoLoadableServer)
 #endif
 
 #ifndef XF98WSNAServer
-# define XF98WSNAServer		NO	
+# define XF98WSNAServer		(BuildPC98Servers && !DoLoadableServer)
 #endif
 
 #ifndef XF98TGUIServer
-# define XF98TGUIServer		NO
+# define XF98TGUIServer		(BuildPC98Servers && !DoLoadableServer)
 #endif
 
 #ifndef XF98EGCServer
-# define XF98EGCServer		NO
+# define XF98EGCServer		(BuildPC98Servers && !DoLoadableServer)
 #endif
 
 #ifndef XF98NECS3Server
-# define XF98NECS3Server	NO	
+# define XF98NECS3Server	(BuildPC98Servers && !DoLoadableServer)
 #endif
 
 #ifndef XF98PWSKBServer
-# define XF98PWSKBServer	NO
+# define XF98PWSKBServer	(BuildPC98Servers && !DoLoadableServer)
 #endif
 
 #ifndef XF98PWLBServer
-#define XF98PWLBServer		NO
+#define XF98PWLBServer		(BuildPC98Servers && !DoLoadableServer)
 #endif
 
 #ifndef XF98GA968Server
-#define XF98GA968Server		NO
+#define XF98GA968Server		(BuildPC98Servers && !DoLoadableServer)
+#endif
+
+#ifndef XF98NECS3Module
+#define XF98NECS3Module		(BuildPC98Servers && DoLoadableServer)
+#endif
+
+#ifndef XF98PWSKBModule
+#define XF98PWSKBModule		(BuildPC98Servers && DoLoadableServer)
+#endif
+
+#ifndef XF98PWLBModule
+#define XF98PWLBModule		(BuildPC98Servers && DoLoadableServer)
+#endif
+
+#ifndef XF98GA968Module
+#define XF98GA968Module		(BuildPC98Servers && DoLoadableServer)
+#endif
+
+#ifndef XF98GANBWAPModule
+#define XF98GANBWAPModule	(BuildPC98Servers && DoLoadableServer)
+#endif
+
+#ifndef XF98PEGCModule
+#define XF98PEGCModule		(BuildPC98Servers && DoLoadableServer)
+#endif
+
+#ifndef XF98NKVNECModule
+#define XF98NKVNECModule	(BuildPC98Servers && DoLoadableServer)
+#endif
+
+#ifndef XF98WABSModule
+#define XF98WABSModule		(BuildPC98Servers && DoLoadableServer)
+#endif
+
+#ifndef XF98WABEPModule
+#define XF98WABEPModule		(BuildPC98Servers && DoLoadableServer)
+#endif
+
+#ifndef XF98WSNAModule
+#define XF98WSNAModule		(BuildPC98Servers && DoLoadableServer)
+#endif
+
+#ifndef XF98TGUIModule
+#define XF98TGUIModule		(BuildPC98Servers && DoLoadableServer)
+#endif
+
+#ifndef XF98EGCModule
+#define XF98EGCModule		(BuildPC98Servers && DoLoadableServer)
 #endif
 
 #if XF98NECS3Server || XF98NECS3Module
@@ -567,7 +623,7 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #endif
 
 #ifndef XVirtualFramebufferServer
-#define XVirtualFramebufferServer NO
+#define XVirtualFramebufferServer YES
 #endif
 
 /*

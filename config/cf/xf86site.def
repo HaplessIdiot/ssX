@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.113 1997/04/17 12:55:33 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.114 1997/05/03 09:14:40 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -189,7 +189,15 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.113 1997/04/17 12:55:33 dawes Exp 
  */
 
 /*
- * PC98 X servers
+ * PC98 X servers and modules
+ *
+ * Uncommenting the following automatically enables all PC98 servers/modules
+ *
+#define BuildPC98Servers	YES
+ */
+
+/*
+ * To enable/disable individual PC98 servers/modules, use these
  *
 #define XF98LoaderServer        YES
 #define XF98EGCModule		YES
@@ -232,16 +240,15 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.113 1997/04/17 12:55:33 dawes Exp 
  */
 
 /*
+ * To disable building Xvfb, uncomment this.
+ *
+#define XVirtualFramebufferServer	NO
+ */
+
+/*
  * Set the default server (ie the one that gets the sym-link to "X")
  *
 #define ServerToInstall		XF86_S3
- */
-
-
-/*
- * To build Xvfb, uncomment this.
- *
-#define XVirtualFramebufferServer	YES
  */
 
 

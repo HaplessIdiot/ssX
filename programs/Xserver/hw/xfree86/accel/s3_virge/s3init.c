@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.18 1997/03/27 08:30:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.19 1997/05/03 09:17:07 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -831,7 +831,7 @@ s3Init(mode)
    /* XXX m/n calculation should be adopted to EDO-DRAMs */
    n = 255;
    outb(vgaCRIndex, 0x54);
-   if (S3_ViRGE__VX_SERIES(s3ChipId)) 
+   if (S3_ViRGE_VX_SERIES(s3ChipId)) 
       m = 0;
    else {
       int clock,mclk;

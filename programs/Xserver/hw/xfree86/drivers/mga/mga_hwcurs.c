@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_hwcurs.c,v 1.1 1997/05/03 09:18:13 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -207,7 +207,7 @@ MGALoadCursor(pScr, pCurs, x, y)
  * miPointerSpriteFuncRec with additional functions that we need to provide.
  * It is called by the SVGA server.
  */
-static void
+static Bool
 MGACursorInit(pm, pScr)
     char *pm;
     ScreenPtr pScr;
@@ -218,11 +218,12 @@ MGACursorInit(pm, pScr)
     if (MGACursorGeneration != serverGeneration) {
 	if (!(miPointerInitialize(pScr, &MGAPointerSpriteFuncs,
 				 &xf86PointerScreenFuncs, FALSE)))
-	    return;
+	    return FALSE;
        
 	pScr->RecolorCursor = MGARecolorCursor;
 	MGACursorGeneration = serverGeneration;
     }
+    return TRUE;
 }
 
 /*

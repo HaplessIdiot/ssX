@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_cursor.h,v 3.2 1996/12/23 06:56:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_cursor.h,v 1.1 1997/03/06 23:14:40 hohndel Exp $ */
 
 
 
@@ -15,7 +15,7 @@ extern int arkCursorHeight;
 
 /* Functions defined in ark_cursor.c. */
 
-extern void ArkCursorInit();
+extern Bool ArkCursorInit();
 extern void ArkRestoreCursor();
 extern void ArkWarpCursor();
 extern void ArkQueryBestSize();

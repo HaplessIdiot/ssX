@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_drv.h,v 3.3 1996/12/23 06:58:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_drv.h,v 1.1 1997/03/06 23:17:03 hohndel Exp $ */
 /*
  * Copyright 1995 by Alan Hourihane, Wigan, England.
  *
@@ -33,7 +33,7 @@ extern int TridentCursorHeight;
 
 /* Functions defined in tgui_cursor.c. */
 
-extern void TridentCursorInit();
+extern Bool TridentCursorInit();
 extern void TridentRestoreCursor();
 extern void TridentWarpCursor();
 extern void TridentQueryBestSize();
