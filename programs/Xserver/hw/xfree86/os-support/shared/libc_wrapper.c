@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.33 1998/12/05 14:40:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.34 1999/01/14 13:05:10 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -142,6 +142,20 @@ xf86strcmp(const char* s1, const char* s2)
 	return strcmp(s1,s2);
 }
 
+/* Just like the BSD version.  It assumes that tolower() is ANSI-compliant */
+int
+xf86strcasecmp(const char* s1, const char* s2)
+{
+	const unsigned char *us1 = (const unsigned char *)s1;
+	const unsigned char *us2 = (const unsigned char *)s2;
+
+	while (tolower(*us1) == tolower(*us2++))
+		if (*us1++ == '\0')
+			return 0;
+
+	return tolower(*us1) - tolower(*--us2);
+}
+
 char*
 xf86strcpy(char* dest, const char* src)
 {
@@ -170,6 +184,24 @@ int
 xf86strncmp(const char* s1, const char* s2, INT32 n)
 {
 	return strncmp(s1,s2,n);
+}
+
+/* Just like the BSD version.  It assumes that tolower() is ANSI-compliant */
+int
+xf86strncasecmp(const char* s1, const char* s2, INT32 n)
+{
+	if (n != 0) {
+		const unsigned char *us1 = (const unsigned char *)s1;
+		const unsigned char *us2 = (const unsigned char *)s2;
+
+		do {
+			if (tolower(*us1) != tolower(*us2++))
+				return tolower(*us1) - tolower(*--us2);
+			if (*us1++ == '\0')
+				break;
+		} while (--n != 0);
+	}
+	return 0;
 }
 
 char*

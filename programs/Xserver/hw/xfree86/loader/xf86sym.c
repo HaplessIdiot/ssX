@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.58 1999/01/23 09:56:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.59 1999/01/24 03:13:57 dawes Exp $ */
 
 /*
  *
@@ -554,11 +554,13 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86sscanf)
    SYMFUNC(xf86strcat)
    SYMFUNC(xf86strcmp)
+   SYMFUNC(xf86strcasecmp)
    SYMFUNC(xf86strcpy)
    SYMFUNC(xf86strcspn)
    SYMFUNC(xf86strerror)
    SYMFUNC(xf86strlen)
    SYMFUNC(xf86strncmp)
+   SYMFUNC(xf86strncasecmp)
    SYMFUNC(xf86strncpy)
    SYMFUNC(xf86strpbrk)
    SYMFUNC(xf86strchr)

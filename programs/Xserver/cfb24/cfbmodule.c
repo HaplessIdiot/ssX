@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb24/cfbmodule.c,v 1.5 1999/01/03 03:58:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb24/cfbmodule.c,v 1.6 1999/01/17 10:53:49 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -67,7 +67,7 @@ static pointer
 cfb24Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     /* This modules requires cfb, so load it */
-    return LoadSubModule(module, "cfb", NULL, NULL, NULL, NULL, NULL,
+    return LoadSubModule(module, "cfb", NULL, NULL, NULL, NULL,
 			 errmaj, errmin);
 }
 

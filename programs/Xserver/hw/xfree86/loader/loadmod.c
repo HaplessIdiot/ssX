@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.36 1999/01/17 10:54:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.37 1999/01/23 09:56:01 dawes Exp $ */
 
 /*
  *
@@ -405,8 +405,7 @@ FindModule (const char *module, const char *dir, const char **subdirlist,
 }
 
 char **
-LoaderListDirs(const char *path, const char **subdirlist,
-				const char **patternlist)
+LoaderListDirs(const char **subdirlist, const char **patternlist)
 {
 	char buf[PATH_MAX + 1];
 	char **pathlist;
@@ -425,7 +424,7 @@ LoaderListDirs(const char *path, const char **subdirlist,
 	char **save;
 	int n = 0;
 
-	if (!(pathlist = InitPathList(path)))
+	if (!(pathlist = InitPathList(NULL)))
 		return NULL;
 	if (!(subdirs = InitSubdirs(subdirlist))) {
 		FreePathList(pathlist);
@@ -677,7 +676,7 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data,
 }
 
 ModuleDescPtr
-LoadSubModule(ModuleDescPtr parent, const char *module, const char *path,
+LoadSubModule(ModuleDescPtr parent, const char *module,
 	      const char **subdirlist, const char **patternlist,
 	      pointer options, const XF86ModReqInfo *modreq,
 	      int *errmaj, int *errmin)
@@ -686,10 +685,24 @@ LoadSubModule(ModuleDescPtr parent, const char *module, const char *path,
 
 	xf86MsgVerb(X_INFO, 3, "Loading sub module \"%s\"\n", module);
 
-	if (path == NULL)
-		path = parent->path;
+	/* Absolute module paths are not allowed here */
+#ifndef __EMX__
+	if (module[0] == '/')
+#else
+	if (isalpha (module[0]) && module[1] == ':' && module[2] == '/')
+#endif
+	{
+		xf86Msg(X_ERROR,
+				"LoadSubModule: Absolute module path not permitted: \"%s\"\n",
+				module);
+		if (errmaj)
+			*errmaj = LDR_BADUSAGE;
+		if (errmin)
+			*errmin = 0;
+		return NULL;
+	}
 
-	submod = LoadModule (module, path, subdirlist, patternlist, options,
+	submod = LoadModule (module, NULL, subdirlist, patternlist, options,
 						 modreq, errmaj, errmin);
 	if (submod) {
 		parent->child = AddSibling (parent->child, submod);
@@ -762,8 +775,7 @@ DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent)
  * module       The module name.  Normally this is not a filename but the
  *              module's "canonical name.  A full pathname is, however,
  *              also accepted.
- * path         A comma separated list of module directories.  This argument
- *              is mandatory.
+ * path         A comma separated list of module directories.
  * subdirlist   A NULL terminated list of subdirectories to search.  When
  *              NULL, the default "stdSubdirs" list is used.  The default
  *              list is also substituted for entries with value DEFAULT_LIST.
@@ -771,7 +783,7 @@ DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent)
  *              module filenames.  Each regex should contain exactly one
  *              subexpression that corresponds to the canonical module name.
  *              When NULL, the default "stdPatterns" list is used.  The
- *              default list ia slo substituted for entries with value
+ *              default list is also substituted for entries with value
  *              DEFAULT_LIST.
  * options      A NULL terminated list of Options that are passed to the
  *              module's SetupProc function.
