@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.c,v 1.3 2002/04/04 18:29:24 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.c,v 1.4 2002/04/05 00:03:18 torrey Exp $ */
 
 #include "rootlessCommon.h"
 
@@ -43,18 +43,6 @@ Bool IsFramedWindow(WindowPtr pWin)
 
 
 /*
- * SetPixmapBaseToScreen
- *  Move the given pixmap's base address to where pixel (0, 0)
- *  would be if the pixmap's actual data started at (x, y)
- */
-void SetPixmapBaseToScreen(PixmapPtr pix, int x, int y)
-{
-    pix->devPrivate.ptr = (char *)(pix->devPrivate.ptr) -
-        (x*pix->drawable.bitsPerPixel/8 + y*pix->devKind);
-}
-
-
-/*
  * RootlessStartDrawing
  *  Prepare a window for direct access to its backing buffer.
  *  Each top-level parent has a Pixmap representing its backing buffer,
@@ -72,7 +60,7 @@ void RootlessStartDrawing(WindowPtr pWindow)
 
     // Make sure the window's top-level parent is prepared for drawing.
     if (!winRec->drawing) {
-        int bw = wBorderWidth(pWindow);
+        int bw = wBorderWidth(top);
 
         CallFrameProc(pScreen, StartDrawing, (pScreen, &winRec->frame));
         winRec->pixmap =
@@ -132,7 +120,6 @@ void UpdatePixmap(WindowPtr pWindow)
     RootlessWindowRec *winRec;
     ScreenPtr pScreen = pWindow->drawable.pScreen;
     PixmapPtr pix;
-    int bw = wBorderWidth(pWin);
 
     RL_DEBUG_MSG("update pixmap (win 0x%x)", pWindow);
 
@@ -150,6 +137,8 @@ void UpdatePixmap(WindowPtr pWindow)
 
     if (pWindow == top) {
         // This is the top window. Update its pixmap.
+        int bw = wBorderWidth(pWindow);
+
         if (winRec->pixmap == NULL) {
             // Allocate a new pixmap.
             pix = GetScratchPixmapHeader(pScreen,
@@ -165,6 +154,8 @@ void UpdatePixmap(WindowPtr pWindow)
         } else {
             // Update existing pixmap. Update in place so we don't have to
             // change the children's pixmaps.
+            int bw = wBorderWidth(top);
+
             pix = winRec->pixmap;
             pScreen->ModifyPixmapHeader(pix,
                                         winRec->frame.w, winRec->frame.h,

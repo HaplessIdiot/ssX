@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.h,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.h,v 1.2 2002/04/03 00:06:32 torrey Exp $ */
 
 #ifndef _ROOTLESSCOMMON_H
 #define _ROOTLESSCOMMON_H
@@ -184,6 +184,19 @@ extern RegionRec rootlessHugeRoot;
 #define IsRoot(pWin) \
     ((pWin) == WindowTable[(pWin)->drawable.pScreen->myNum])
 
+
+/*
+ * SetPixmapBaseToScreen
+ *  Move the given pixmap's base address to where pixel (0, 0)
+ *  would be if the pixmap's actual data started at (x, y).
+ */
+#define SetPixmapBaseToScreen(pix, x, y) { \
+    PixmapPtr   _pPix = (PixmapPtr) (pix); \
+    _pPix->devPrivate.ptr = (char *) (_pPix->devPrivate.ptr) - \
+        ((x) * _pPix->drawable.bitsPerPixel/8 + (y) * _pPix->devKind); \
+}
+
+
 // Returns the top-level parent of pWindow.
 // The root is the top-level parent of itself, even though the root is
 // not otherwise considered to be a top-level window.
@@ -192,10 +205,6 @@ WindowPtr TopLevelParent(WindowPtr pWindow);
 // Returns TRUE if this window is visible inside a frame
 // (e.g. it is visible and has a top-level or root parent)
 Bool IsFramedWindow(WindowPtr pWin);
-
-// Move the given pixmap's base address to where pixel (0, 0)
-// would be if the pixmap's actual data started at (x, y).
-void SetPixmapBaseToScreen(PixmapPtr pix, int x, int y);
 
 // Prepare a window for direct access to its backing buffer.
 void RootlessStartDrawing(WindowPtr pWindow);

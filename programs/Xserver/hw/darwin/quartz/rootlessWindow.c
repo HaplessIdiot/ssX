@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.3 2002/04/04 18:29:24 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.4 2002/04/05 00:03:18 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -105,27 +105,34 @@ RootlessChangeWindowAttributes(WindowPtr pWin, unsigned long vmask)
 
 /* RootlessPositionWindow
  *  This is a hook for when DIX moves or resizes a window.
- *  Update the frame position now. (x, y) are *inside* position!
+ *  Update the frame position now. (x, y) are *inside* position.
  *  After this, mi and fb are expecting the pixmap to be at the new location.
  */
 Bool
 RootlessPositionWindow(WindowPtr pWin, int x, int y)
 {
-//    RootlessWindowRec *winRec = WINREC(pWin);
     ScreenPtr pScreen = pWin->drawable.pScreen;
+    RootlessWindowRec *winRec = WINREC(pWin);
     Bool result;
 
     RL_DEBUG_MSG("positionwindow start (win 0x%x)\n", pWin);
-#if 0
-    if (winRec) {
-        winRec->frame.x = x - pWin->borderWidth;
-        winRec->frame.y = y - pWin->borderWidth;
-    }
-#endif
 
-    // FIXME: This is overkill and causes all descendants of this window's
-    // top-level ancestor to have their Pixmaps recalculated.
-    RootlessStopDrawing(pWin);
+    if (winRec) {
+        if (winRec->drawing) {
+            // Reset frame's pixmap and move it to the new position.
+            int bw = wBorderWidth(pWin);
+
+            winRec->pixmap->devPrivate.ptr = winRec->frame.pixelData;
+            SetPixmapBaseToScreen(winRec->pixmap, x - bw, y - bw);
+
+            // Move damaged region to correspond to new window position
+            if (REGION_NOTEMPTY(pScreen, &winRec->damage)) {
+                REGION_TRANSLATE(pScreen, &winRec->damage,
+                                 x - bw - winRec->frame.x,
+                                 y - bw - winRec->frame.y);
+            }
+        }
+    }
 
     SCREEN_UNWRAP(pScreen, PositionWindow);
     result = pScreen->PositionWindow(pWin, x, y);
@@ -462,8 +469,8 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
         DrawablePtr src = &gResizeDeathPix->drawable;
         DrawablePtr dst = &pScreen->GetWindowPixmap(pWin)->drawable;
        // These vars are needed because implicit unsigned->signed fails
-       int oldX2 = (int)(oldX + oldW - 1), newX2 = (int)(newX + newW - 1);
-       int oldY2 = (int)(oldY + oldH - 1), newY2 = (int)(newY + newH - 1);
+       int oldX2 = (int)(oldX + oldW), newX2 = (int)(newX + newW);
+       int oldY2 = (int)(oldY + oldH), newY2 = (int)(newY + newH);
 
         rect.x1 = max(oldX, newX);
         rect.y1 = max(oldY, newY);
