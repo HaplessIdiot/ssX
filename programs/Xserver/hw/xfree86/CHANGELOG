@@ -1,4 +1,6 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 395. Include uname(2)nformation in the server's banner messages
+      Marc La France). 
  394. Fix bug in detection of multi-function PCI devices (Marc La France, in
       partial resolution of Bugzilla #574).
  393. Change the XFree86 server's global default depth to 16, and change most
@@ -17592,7 +17594,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2817 2003/08/23 15:02:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2818 2003/08/23 23:10:58 tsi Exp $
 
 
 

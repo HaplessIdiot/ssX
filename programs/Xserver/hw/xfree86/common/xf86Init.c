@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.200 2003/08/10 16:39:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.201 2003/08/24 17:36:52 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -33,6 +33,15 @@
  */
 
 #include <stdlib.h>
+
+#undef HAS_UTSNAME
+#if (defined(_POSIX_SOURCE) && !defined(__QNX__) && !defined(AIXV3)) || \
+    defined(hpux) || defined(USG) || defined(SCO) || \
+    (defined(SVR4) && !defined(_SEQUENT_)) || \
+    (defined(SYSV) && defined(i386))
+#define HAS_UTSNAME 1
+#include <sys/utsname.h>
+#endif
 
 #define NEED_EVENTS
 #ifdef __UNIXOS2__
@@ -1686,6 +1695,16 @@ xf86PrintBanner()
   ErrorF("X Protocol Version %d, Revision %d, %s\n",
          X_PROTOCOL, X_PROTOCOL_REVISION, XORG_RELEASE );
   ErrorF("Build Operating System:%s%s\n", OSNAME, OSVENDOR);
+#ifdef HAS_UTSNAME
+  {
+    struct utsname name;
+
+    if (uname(&name) == 0) {
+      ErrorF("Current Operating System: %s %s %s %s %s\n",
+	name.sysname, name.nodename, name.release, name.version, name.machine);
+    }
+  }
+#endif
 #if defined(BUILD_DATE) && (BUILD_DATE > 19000000)
   {
     struct tm t;
