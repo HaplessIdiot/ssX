@@ -1,5 +1,5 @@
 /*
- * $Id: fballpriv.c,v 1.1 1999/11/19 13:53:40 hohndel Exp $
+ * $Id: fballpriv.c,v 1.2 1999/12/30 02:33:58 robin Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,12 +21,16 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fballpriv.c,v 1.1 1999/11/19 13:53:40 hohndel Exp $ */
 
 #include "fb.h"
 
 int fbGCPrivateIndex;
 int fbGeneration;
+
+#ifdef FB_OLD_SCREEN
+#define miAllocateGCPrivateIndex()  AllocateGCPrivateIndex()
+#endif
 
 Bool
 fbAllocatePrivates(ScreenPtr pScreen, int *pGCIndex)

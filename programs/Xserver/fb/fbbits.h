@@ -1,5 +1,5 @@
 /*
- * $Id: fbbits.h,v 1.1 1999/11/19 13:53:41 hohndel Exp $
+ * $Id: fbbits.h,v 1.2 1999/12/30 02:33:58 robin Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.1 1999/11/19 13:53:41 hohndel Exp $ */
 
 /*
  * This file defines functions for drawing some primitives using
@@ -374,16 +374,26 @@ ARC (FbBits	*dst,
     }
 }
 
-#define WRITE1(d,n,fg)	    d[n] = (BITS) fg
+#if BITMAP_BIT_ORDER == LSBFirst
+# define WRITE_ADDR1(n)	    (n)
+# define WRITE_ADDR2(n)	    (n)
+# define WRITE_ADDR4(n)	    (n)
+#else
+# define WRITE_ADDR1(n)	    ((n) ^ 3)
+# define WRITE_ADDR2(n)	    ((n) ^ 2)
+# define WRITE_ADDR4(n)	    ((n))
+#endif
+
+#define WRITE1(d,n,fg)	    d[WRITE_ADDR1(n)] = (BITS) fg
 
 #ifdef BITS2
-# define WRITE2(d,n,fg)	    *((BITS2 *) &(d[n])) = (BITS2) fg
+# define WRITE2(d,n,fg)	    *((BITS2 *) &(d[WRITE_ADDR2(n)])) = (BITS2) fg
 #else
 # define WRITE2(d,n,fg)	    WRITE1(d,n+1,WRITE1(d,n,fg))
 #endif
 
 #ifdef BITS4
-# define WRITE4(d,n,fg)	    *((BITS4 *) &(d[n])) = (BITS4) fg
+# define WRITE4(d,n,fg)	    *((BITS4 *) &(d[WRITE_ADDR4(n)])) = (BITS4) fg
 #else
 # define WRITE4(d,n,fg)	    WRITE2(d,n+2,WRITE2(d,n,fg))
 #endif
@@ -416,7 +426,7 @@ GLYPH (FbBits	*dstBits,
 	n = lshift;
 	while (bits)
 	{
-	    switch (FbStipRight (FbLeftStipBits (bits, n), 4-n)) {
+	    switch (FbStipMoveLsb (FbLeftStipBits (bits, n), 4, n)) {
 	    case 0:
 		break;
 	    case 1:

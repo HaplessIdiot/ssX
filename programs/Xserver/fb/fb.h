@@ -1,5 +1,5 @@
 /*
- * $Id: fb.h,v 1.2 1999/12/27 01:26:21 robin Exp $
+ * $Id: fb.h,v 1.3 1999/12/30 02:33:58 robin Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.1 1999/11/19 13:53:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.2 1999/12/27 01:26:21 robin Exp $ */
 
 #ifndef _FB_H_
 #define _FB_H_
@@ -44,12 +44,22 @@
  * This single define controls the basic size of data manipulated
  * by this software; it must be log2(sizeof (FbBits) * 8)
  */
+#ifdef VXWORKS
+#define FB_SHIFT    5
+#else
 #define FB_SHIFT    6
+#endif
 #define FB_UNIT	    (1 << FB_SHIFT)
 #define FB_HALFUNIT (1 << (FB_SHIFT-1))
 #define FB_MASK	    (FB_UNIT - 1)
 #define FB_ALLONES  ((FbBits) -1)
     
+#if GLYPHPADBYTES != 4
+#error "GLYPHPADBYTES must be 4"
+#endif
+#if GETLEFTBITS_ALIGNMENT != 1
+#error "GETLEFTBITS_ALIGNMENT must be 1"
+#endif
 /* whether to bother to include 24bpp support */
 #ifndef FBNO24BIT
 #define FB_24BIT
@@ -98,13 +108,15 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
 #if BITMAP_BIT_ORDER == LSBFirst
 #define FbScrLeft(x,n)	((x) >> (n))
 #define FbScrRight(x,n)	((x) << (n))
-/* #define FbLeftBits(x,n)	((x) & ((((FbBits) 1) << n) - 1)) */
-#define FbLeftStipBits(x,n) ((x) & ((((FbStip) 1) << n) - 1))
+/* #define FbLeftBits(x,n)	((x) & ((((FbBits) 1) << (n)) - 1)) */
+#define FbLeftStipBits(x,n) ((x) & ((((FbStip) 1) << (n)) - 1))
+#define FbStipMoveLsb(x,s,n)	(FbStipRight (x,(s)-(n)))
 #else
-#define FbScrLeft(x,n)	((x) >> (n))
-#define FbScrRight(x,n)	((x) << (n))
-/* #define FbLeftBits(x,n)	((x) >> (FB_UNIT - n)) */
-#define FbLeftStipBits(x,n) ((x) >> (FB_STIP_UNIT - n))
+#define FbScrLeft(x,n)	((x) << (n))
+#define FbScrRight(x,n)	((x) >> (n))
+/* #define FbLeftBits(x,n)	((x) >> (FB_UNIT - (n))) */
+#define FbLeftStipBits(x,n) ((x) >> (FB_STIP_UNIT - (n)))
+#define FbStipMoveLsb(x,s,n)	(x)
 #endif
 
 #define GetHighWord(x) (((int) (x)) >> 16)
@@ -183,8 +195,22 @@ extern int	fbGCPrivateIndex;
 extern const GCOps	fbGCOps;
 extern const GCFuncs	fbGCFuncs;
 
+#ifdef TEKX11
+#define FB_OLD_GC
+#define FB_OLD_SCREEN
+#endif
+
 /* private field of GC */
 typedef struct {
+#ifdef FB_OLD_GC
+    unsigned char       pad1;
+    unsigned char       pad2;
+    unsigned char       pad3;
+    unsigned		fExpose:1;
+    unsigned		freeCompClip:1;
+    PixmapPtr		pRotatedPixmap;
+    RegionPtr		pCompositeClip;
+#endif    
     FbBits		and, xor;	/* reduced rop values */
     FbBits		bgand, bgxor;	/* for stipples */
     FbBits		fg, bg, pm;	/* expanded and filled */
@@ -195,7 +221,17 @@ typedef struct {
 #define fbGetGCPrivate(pGC)	((FbGCPrivPtr)\
 	(pGC)->devPrivates[fbGCPrivateIndex].ptr)
 
+#ifdef FB_OLD_GC
+#define fbGetCompositeClip(pGC) (fbGetGCPrivate(pGC)->pCompositeClip)
+#define fbGetExpose(pGC)	(fbGetGCPrivate(pGC)->fExpose)
+#define fbGetFreeCompClip(pGC)	(fbGetGCPrivate(pGC)->freeCompClip)
+#define fbGetRotatedPixmap(pGC)	(fbGetGCPrivate(pGC)->pRotatedPixmap)
+#else
 #define fbGetCompositeClip(pGC) ((pGC)->pCompositeClip)
+#define fbGetExpose(pGC)	((pGC)->fExpose)
+#define fbGetFreeCompClip(pGC)	((pGC)->freeCompClip)
+#define fbGetRotatedPixmap(pGC)	((pGC)->pRotatedPixmap)
+#endif
 
 #define fbGetScreenPixmap(s)	((PixmapPtr) (s)->devPrivate)
 #define fbGetWindowPixmap(d)	fbGetScreenPixmap((d)->pScreen)
@@ -222,10 +258,8 @@ typedef struct {
     (bpp) = _pPix->drawable.bitsPerPixel; \
 }
 
-#if 0
+#ifdef FB_OLD_SCREEN
 #define BitsPerPixel(d) (\
-    PixmapWidthPaddingInfo[d].notPower2 ? \
-    (PixmapWidthPaddingInfo[d].bytesPerPixel * 8) : \
     ((1 << PixmapWidthPaddingInfo[d].padBytesLog2) * 8 / \
     (PixmapWidthPaddingInfo[d].padRoundUp+1)))
 #endif
@@ -994,6 +1028,9 @@ fbScreenInit(ScreenPtr	pScreen,
 	     int	width,
 	     int	bpp);
 
+void
+fbInitializeBackingStore (ScreenPtr pScreen);
+    
 /*
  * fbseg.c
  */
