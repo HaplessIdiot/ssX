@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_cursor.c,v 3.7 1996/12/27 07:05:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_cursor.c,v 3.8 1997/01/22 11:08:46 dawes Exp $ */
 
 /*
  * Hardware cursor handling. Adapted from cirrus/cir_cursor.c and
@@ -433,7 +433,7 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
 	ErrorF("CHIPSLoadCursorToCard: memcpy to 0x%X\n",
 	    (unsigned char *)vgaLinearBase + ctCursorAddress);
 #endif
-	memcpy((unsigned char *)vgaLinearBase + ctCursorAddress,
+	xf86memcpy((unsigned char *)vgaLinearBase + ctCursorAddress,
 	    cursor_image, 256);
 #ifdef DEBUG1
 	for(i=0;i<256;i++){
@@ -449,7 +449,7 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
 	vgaSaveBank();
 	if (ctisHiQV32) {
 	    CHIPSHiQVSetWrite(ctCursorAddress >> 16);
-	    memcpy((unsigned char *)vgaBase + (ctCursorAddress & 0xFFFF),
+	    xf86memcpy((unsigned char *)vgaBase + (ctCursorAddress & 0xFFFF),
 		cursor_image, 256);
 	    outb(0x3D6, 0xA2);
 	    outb(0x3D7, ((unsigned int)((ctCursorAddress & 0xFFFF) +
@@ -459,7 +459,7 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
 			(unsigned char *)vgaBase) >> 16) & 0x3F);
 	} else {
 	    CHIPSSetWrite(ctCursorAddress >> 16);
-	    memcpy((unsigned char *)vgaBase + (ctCursorAddress & 0xFFFF),
+	    xf86memcpy((unsigned char *)vgaBase + (ctCursorAddress & 0xFFFF),
 		cursor_image, 256);
 	    if(!ctUseMMIO) {
 	      HW_DEBUG(0xC);

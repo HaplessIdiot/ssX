@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/Imakefile,v 3.3 1996/02/04 09:10:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/Imakefile,v 3.4 1996/12/23 06:51:16 dawes Exp $
 
 
 
@@ -18,11 +18,11 @@ PROWORKS_INOUT_OBJ = solx86_iout.o
 
 SRCS = solx86_init.c solx86_vid.c IO_utils.c sysv_io.c $(BIOS_MOD).c \
 	VTsw_usl.c sysv_kbd.c std_kbdEv.c sysv_tty.c std_mouse.c \
-	std_mseEv.c $(PROWORKS_INOUT_SRC)
+	libc_wrapper.c std_mseEv.c $(PROWORKS_INOUT_SRC)
 
 OBJS = solx86_init.o solx86_vid.o IO_utils.o sysv_io.o $(BIOS_MOD).o \
 	VTsw_usl.o sysv_kbd.o std_kbdEv.o sysv_tty.o std_mouse.o \
-	std_mseEv.o $(PROWORKS_INOUT_OBJ)
+	libc_wrapper.o std_mseEv.o $(PROWORKS_INOUT_OBJ)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC)
@@ -43,5 +43,6 @@ ObjectFromSpecialSource(std_mouse,../shared/std_mouse,/**/)
 ObjectFromSpecialSource(std_mseEv,../shared/std_mseEv,/**/)
 ObjectFromSpecialSource(std_kbdEv,../shared/std_kbdEv,/**/)
 ObjectFromSpecialSource(sysv_io,../sysv/sysv_io,/**/)
+ObjectFromSpecialSource(libc_wrapper,../shared/libc_wrapper,/**/)
 
 DependTarget()

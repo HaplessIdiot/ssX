@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.14 1997/01/20 12:35:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.19 1997/02/16 12:12:59 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -352,7 +352,7 @@ s3PrintIdent()
       {
         ErrorF(",");
         c++;
-        if (c + 1 + strlen(id) < 70)
+        if (c + 1 + xf86strlen(id) < 70)
         {
           ErrorF(" ");
           c++;
@@ -364,7 +364,7 @@ s3PrintIdent()
         }
       }
       ErrorF("%s", id);
-      c += strlen(id);
+      c += xf86strlen(id);
     }
   ErrorF("\n");
 #ifdef PC98

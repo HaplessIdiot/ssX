@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgainit.c,v 3.7 1996/10/18 15:02:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgainit.c,v 3.8 1996/12/27 07:03:52 dawes Exp $ */
 
 #include "tga.h"
 #include "tga_presets.h"
@@ -168,8 +168,8 @@ tgaCleanUp()
 		return;
 
 	restoreTGAstate();
-	memcpy(tgaVideoMemSave, (unsigned char *)tgaVideoMem, 0x200000L);
-	memset(tgaVideoMem, 0, 0x200000L);
+	xf86memcpy(tgaVideoMemSave, (unsigned char *)tgaVideoMem, 0x200000L);
+	xf86memset(tgaVideoMem, 0, 0x200000L);
 }
 
 
@@ -187,7 +187,7 @@ tgaInit(mode)
 	if (!tgaInitialized)
 		saveTGAstate();
 
-	memcpy((unsigned char *)tgaVideoMem, tgaVideoMemSave, 0x200000L);
+	xf86memcpy((unsigned char *)tgaVideoMem, tgaVideoMemSave, 0x200000L);
 
 	tgaInitialized = 1;
 	tgaInitCursorFlag = TRUE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/sigma/sigmadriv.c,v 3.4 1996/09/14 13:10:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/sigma/sigmadriv.c,v 3.5 1996/12/23 06:48:30 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -172,7 +172,7 @@ SIGMAProbe()
 
   if (monoInfoRec.chipset) {
 	/* Chipset preset */
-	if (strcmp(monoInfoRec.chipset, SIGMAIdent(0)))
+	if (xf86strcmp(monoInfoRec.chipset, SIGMAIdent(0)))
 		/* desired chipset != this one */
 		return (FALSE);
 	else {
@@ -490,14 +490,14 @@ void SIGMAClearScreen()
 	BANK_A(i);
 	/* Don't touch the gap at the end of the line */
 	for (j=0; j<lines_per_bank; j++) {
-	    memset(monoBankABottom + j*(SIGMA_SCAN_LINE_WIDTH/8),
+	    xf86memset(monoBankABottom + j*(SIGMA_SCAN_LINE_WIDTH/8),
 		   0, (unsigned int)(SIGMA_HDISPLAY/8));
 	}
     }
     /* the sigma is not done with this */
     BANK_A(i);
     for (j=0; j<(SIGMA_VDISPLAY%lines_per_bank); j++) {
-	memset(monoBankABottom + j*(SIGMA_SCAN_LINE_WIDTH/8),
+	xf86memset(monoBankABottom + j*(SIGMA_SCAN_LINE_WIDTH/8),
 		0, (unsigned int)(SIGMA_HDISPLAY/8));
     }
 }

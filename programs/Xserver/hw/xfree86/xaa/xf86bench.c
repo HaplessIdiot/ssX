@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.4 1997/01/14 22:22:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.5 1997/01/18 06:57:15 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -57,21 +57,15 @@ static struct timeval timetaken;
 #endif
 
 static void start_timer() {
-    struct timeval tv;
-    struct timezone tz;
-    tz.tz_minuteswest = 0;
-    tz.tz_dsttime = DST_NONE;
-    gettimeofday(&tv, &tz);
-    startclock.tv_sec  = tv.tv_sec;
-    startclock.tv_usec = tv.tv_usec;
+    xf86getsecs(&startclock.tv_sec, &startclock.tv_usec);
 }
 
 static void stop_timer() {
-    struct timeval tv;
-    struct timezone tz;
-    gettimeofday(&tv, &tz);
-    timetaken.tv_sec  = tv.tv_sec  - startclock.tv_sec;
-    timetaken.tv_usec = tv.tv_usec - startclock.tv_usec;
+    INT32 secs,usecs;
+
+    xf86getsecs(&secs, &usecs);
+    timetaken.tv_sec  = secs  - startclock.tv_sec;
+    timetaken.tv_usec = usecs - startclock.tv_usec;
 }
 
 #define BENCH_START(n) { int bench_index; start_timer(); \

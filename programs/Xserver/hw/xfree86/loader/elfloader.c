@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.2 1997/02/16 10:27:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.3 1997/02/16 12:54:13 hohndel Exp $ */
 
 
 
@@ -99,7 +99,7 @@ typedef	struct {
  * to try later after more odules have been loaded.
  */
 typedef struct _elf_reloc {
-#if defined(i386)
+#if defined(i386) || defined(__alpha__)
 	Elf32_Rel	*rel;
 #endif
 #if defined(__powerpc__)
@@ -179,7 +179,7 @@ static void
 ElfDelayRelocation(elffile,secp,rel)
 ELFModulePtr	elffile;
 char		*secp;
-#if defined(i386)
+#if defined(i386) || defined(__alpha__)
 Elf32_Rel	*rel;
 #endif
 #if defined(__powerpc__)
@@ -530,7 +530,7 @@ static void
 Elf_RelocateEntry(elffile,secp,rel)
 ELFModulePtr	elffile;
 unsigned char *secp;	/* Begining of the target section */
-#if defined(i386)
+#if defined(i386) || defined(__alpha__)
 Elf32_Rel	*rel;
 #endif
 #if defined(__powerpc__)
@@ -544,7 +544,7 @@ unsigned short *dest16;	/* address of the 16 bit place being modified */
 Elf32_Addr symval;	/* value of the indicated symbol */
 
 #ifdef ELFDEBUG
-#if defined(i386)
+#if defined(i386) || defined(__alpha__)
 	ELFDEBUG( "%x %d %d\n", rel->r_offset,
 		ELF32_R_SYM(rel->r_info),ELF32_R_TYPE(rel->r_info) );
 #endif
@@ -557,7 +557,7 @@ Elf32_Addr symval;	/* value of the indicated symbol */
 
 switch( ELF32_R_TYPE(rel->r_info) )
 	{
-#if defined(i386)
+#if defined(i386) || defined(__alpha__)
 	case R_386_32:
 		dest32=(unsigned long *)(secp+rel->r_offset);
 		symval=ElfGetSymbolValue(elffile,ELF32_R_SYM(rel->r_info));
@@ -605,7 +605,7 @@ ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
 #endif
 
 		break;
-#endif /* i386 */
+#endif /* i386/alpha */
 #if defined(__powerpc__)
 	case R_PPC_DISP24: /* 11 */
 		dest32=(unsigned long *)(secp+rel->r_offset);
@@ -987,7 +987,7 @@ int	index; /* The section to use as relocation data */
 {
 int	i, numrel;
 Elf32_Shdr	*sect=&(elffile->sections[index]);
-#if defined(i386)
+#if defined(i386) || defined(__alpha__)
 Elf32_Rel	*rel=(Elf32_Rel *)elffile->saddr[index];
 #endif
 #if defined(__powerpc__)
@@ -1220,7 +1220,7 @@ ELFDEBUG(".strtab starts at %x\n", elffile->straddr );
 #endif
 		continue;
 		}
-#if defined(i386)
+#if defined(i386) || defined(__alpha__)
 	/* .rel.text */
 	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
 							".rel.text" ) == 0 ) {
@@ -1260,7 +1260,7 @@ ELFDEBUG(".rel.rodata starts at %x\n", elffile->relrodata );
 #endif
 		continue;
 		}
-#endif /* i386 */
+#endif /* i386/alpha */
 #if defined(__powerpc__)
 	/* .rela.text */
 	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),

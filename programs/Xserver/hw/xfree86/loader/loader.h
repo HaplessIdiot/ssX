@@ -46,6 +46,7 @@
 #define LD_ELFOBJECT	1
 #define LD_COFFOBJECT	2
 #define LD_XCOFFOBJECT	3
+#define LD_AOUTOBJECT   4
 
 #define LD_PROCESSED_ARCHIVE -1
 
@@ -186,6 +187,13 @@ int		/* size */
 #endif
 );
 
+char *
+_LoaderHandleToName(
+#if NeedFunctionPrototypes
+int            /* handle */
+#endif
+);
+
 /*
  * Entry points for the different loader types
  */
@@ -249,4 +257,31 @@ void ELFUnloadModule(
 void *
 #endif
 );
+
+
+/* LD_AOUTOBJECT */
+void *AOUTLoadModule(
+#if NeedFunctionPrototypes
+int,
+char *,
+int,
+int
+#endif
+);
+void AOUTResolveSymbols(
+#if NeedFunctionPrototypes
+void
+#endif
+);
+int AOUTCheckForUnresolved(
+#if NeedFunctionPrototypes
+void
+#endif
+);
+void AOUTUnloadModule(
+#if NeedFunctionPrototypes
+void *
+#endif
+);
+
 

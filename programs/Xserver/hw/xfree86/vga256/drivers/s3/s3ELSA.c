@@ -225,9 +225,9 @@ static int check_ELSA_bios(int BIOSbase)
    if ((bios[0] != 0x55) || (bios[1] != 0xaa))
       return -2;
 
-   l = strlen(match);
+   l = xf86strlen(match);
    for (i=0; i<BIOS_BSIZE-l; i++) 
-      if (bios[i] == match[0] && !memcmp(&bios[i],match,l))
+      if (bios[i] == match[0] && !xf86memcmp(&bios[i],match,l))
 	 return 1;
    return 0;
 }

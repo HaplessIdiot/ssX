@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.73 1997/02/14 12:19:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.74 1997/02/15 11:12:48 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -418,7 +418,7 @@ vgaPrintIdent()
       {
         ErrorF(",");
         c++;
-        if (c + 1 + strlen(id) < 70)
+        if (c + 1 + xf86strlen(id) < 70)
         {
           ErrorF(" ");
           c++;
@@ -430,7 +430,7 @@ vgaPrintIdent()
         }
       }
       ErrorF("%s", id);
-      c += strlen(id);
+      c += xf86strlen(id);
     }
   ErrorF("\n");
 #ifdef PC98
@@ -1438,13 +1438,13 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		outb(0xae, 0x00);
 		for(i=0;i<10;i++) {
 			*(vramwindow+2) = i;
-			memset(vgaBase, 0xff, 0x8000);
+			xf86memset(vgaBase, 0xff, 0x8000);
 		}
 		*(vramwindow+2) = 0;
 	}
 #else /* PC98_NEC480 */
 #if (defined(MONOVGA) && !defined (BANKEDMONOVGA)) /* || defined(XF86VGA16) */
-    memset(vgaBase,pScreen->blackPixel,vgaSegmentSize);
+    xf86memset(vgaBase,pScreen->blackPixel,vgaSegmentSize);
 #else
 #ifdef PC98_EGC
 #if 1
@@ -1452,7 +1452,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
       outw(EGC_PLANE, 0);
       outw(EGC_MODE, EGC_COPY_MODE);
       outw(EGC_FGC, pScreen->blackPixel);
-      memset(vgaBase, 0xff, 0x8000);
+      xf86memset(vgaBase, 0xff, 0x8000);
     }
 #else
     vgaFillSolid( pScreen->blackPixel, GXcopy, 0x0F /* planes */, 0, 0,
@@ -1466,7 +1466,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     if (vgaBitsPerPixel > 8){
         /* Currently 16/32bpp uses linear addressing. */
         /* use original linear base from MapVidMem() */
-        memset(vgaLinearOrig, 0, vga256InfoRec.videoRam * 1024);
+        xf86memset(vgaLinearOrig, 0, vga256InfoRec.videoRam * 1024);
       }
     else /* 8bpp: */
 #endif
@@ -1491,7 +1491,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
                 /* Set the bank, then clear it */
                 vgaPhysPtr=vgaSetWrite(vgaVirtPtr);
             }
-            memset(vgaPhysPtr,pScreen->blackPixel,vgaSegmentSize);
+            xf86memset(vgaPhysPtr,pScreen->blackPixel,vgaSegmentSize);
         }
 #endif /* !PC98_EGC */
 #endif /* MONOVGA */
@@ -1802,7 +1802,7 @@ vgaCloseScreen(screen_idx, pScreen)
     outw(EGC_PLANE, 0);
     outw(EGC_MODE, EGC_COPY_MODE);
     outw(EGC_FGC, 0);
-    memset(vgaBase, 0xff, 0x8000);
+    xf86memset(vgaBase, 0xff, 0x8000);
   }
   outb(0x6a, 0x07);
   outb(0x6a, 0x04);
@@ -1820,7 +1820,7 @@ vgaCloseScreen(screen_idx, pScreen)
 		outb(0xae, 0x00);
 		for(i=0;i<10;i++) {
 			*(vramwindow+2) = i;
-			memset(vgaBase, 0xff, 0x8000);
+			xf86memset(vgaBase, 0xff, 0x8000);
 		}
 		*(vramwindow+2) = 0;
 	}

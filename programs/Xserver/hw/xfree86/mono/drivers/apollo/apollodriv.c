@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/apollo/apollodriv.c,v 3.4 1996/02/20 14:34:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/apollo/apollodriv.c,v 3.5 1996/12/23 06:47:55 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -196,7 +196,7 @@ ApolloProbe()
 
   if (monoInfoRec.chipset) {
 	/* Chipset preset */
-	if (strcmp(monoInfoRec.chipset, ApolloIdent(0)))
+	if (xf86strcmp(monoInfoRec.chipset, ApolloIdent(0)))
 		/* desired chipset != this one */
 		return (FALSE);
 	else {
@@ -400,7 +400,7 @@ ApolloClearScreen()
 
     lines = AP_SEGMENT_SIZE / ( AP_SCAN_LINE_WIDTH/8 /*Pixels/Byte*/ );
     for (i=0;i<lines;i++) {
-	memset((unsigned char *)monoBase + i*(AP_SCAN_LINE_WIDTH/8),
+	xf86memset((unsigned char *)monoBase + i*(AP_SCAN_LINE_WIDTH/8),
 		0, (unsigned int)(AP_HDISPLAY/8));
     }
     /* ... */

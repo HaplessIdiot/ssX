@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_cursor.c,v 3.1 1996/09/25 14:18:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_cursor.c,v 3.2 1996/12/27 07:04:46 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -136,7 +136,7 @@ static Bool ApmRealizeCursor(pScr, pCurs)
 
    if (!ram)
       return FALSE;
-   memset(ram, 0xaa, 64 * 64 / 4);
+   xf86memset(ram, 0xaa, 64 * 64 / 4);
 
    pServSrc = (unsigned char *)bits->source;
    pServMsk = (unsigned char *)bits->mask;
@@ -206,7 +206,7 @@ static void ApmLoadCursorToCard(pScr, pCurs, x, y)
 	cursor_image = pCurs->bits->devPriv[index];
 
 	if (vgaUseLinearAddressing)
-		memcpy((unsigned char *)vgaLinearBase + apmCursorAddress,
+		xf86memcpy((unsigned char *)vgaLinearBase + apmCursorAddress,
 			cursor_image, 1024);
 	else {
 		/*
@@ -215,7 +215,7 @@ static void ApmLoadCursorToCard(pScr, pCurs, x, y)
 		 */
 		vgaSaveBank();
 		ApmSetWrite(apmCursorAddress >> 16);
-		memcpy((unsigned char *)vgaBase + (apmCursorAddress & 0xFFFF),
+		xf86memcpy((unsigned char *)vgaBase + (apmCursorAddress & 0xFFFF),
 			cursor_image, 1024);
 		vgaRestoreBank();
 	}

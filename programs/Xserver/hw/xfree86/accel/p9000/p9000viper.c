@@ -159,7 +159,7 @@ p9000ViperVlbProbe()
     return FALSE; /* This OS can't probe the BIOS */
   bios_sig[VPR_VLB_BIOS_LENGTH] = '\0';
   if (0 == strncmp(bios_sig, VPR_VLB_BIOS_SIGNATURE,
-		   strlen(VPR_VLB_BIOS_SIGNATURE)))
+		   xf86strlen(VPR_VLB_BIOS_SIGNATURE)))
     {
       if (xf86Verbose)
 	ErrorF("%s BIOS signature for Diamond Viper VLB found:\n\t<%s>\n",
@@ -347,7 +347,7 @@ p9000ViperPciProbe()
     return FALSE; /* This OS can't probe the BIOS */
   bios_sig[VPR_PCI_BIOS_LENGTH] = '\0';
   if (0 == strncmp(bios_sig, VPR_PCI_BIOS_SIGNATURE,
-		   strlen(VPR_PCI_BIOS_SIGNATURE)))
+		   xf86strlen(VPR_PCI_BIOS_SIGNATURE)))
     {
       if (xf86Verbose)
 	ErrorF("%s BIOS signature for Diamond Viper PCI found:\n\t<%s>\n",

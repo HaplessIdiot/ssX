@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000orchid.c,v 3.7 1996/03/10 12:03:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000orchid.c,v 3.8 1996/12/23 06:40:48 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -116,7 +116,7 @@ p9000OrchidProbe()
     return FALSE; /* This OS can't probe the BIOS */
   bios_sig[ORCHID_BIOS_LENGTH] = '\0';
   if (0 == strncmp(bios_sig, VPR_VLB_BIOS_SIGNATURE,
-		   strlen(VPR_VLB_BIOS_SIGNATURE)))
+		   xf86strlen(VPR_VLB_BIOS_SIGNATURE)))
     {
       if (xf86Verbose)
 	ErrorF("%s BIOS signature for Orchid P9000 found:\n\t<%s>\n",

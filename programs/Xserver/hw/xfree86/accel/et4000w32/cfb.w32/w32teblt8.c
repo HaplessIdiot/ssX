@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32teblt8.c,v 3.6 1996/09/14 13:07:05 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32teblt8.c,v 3.7 1996/12/23 06:35:05 dawes Exp $ */ 
 /*
  * TEGblt - ImageText expanded glyph fonts only.  For
  * 8 bit displays, in Copy mode with no clipping.
@@ -142,7 +142,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		*ACL_MIX_ADDRESS = MixDstPing;
 		*MBP0 = W32Mix;
 	    }
-	    memcpy(W32Buffer, char1, h<<2); /* is well-optimized in most OSses */
+	    xf86memcpy(W32Buffer, char1, h<<2); /* is well-optimized in most OSses */
 	    *ACL_DESTINATION_ADDRESS = dst;
 	    dst += widthGlyph;
 	}

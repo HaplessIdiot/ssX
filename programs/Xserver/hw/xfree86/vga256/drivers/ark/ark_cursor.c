@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_cursor.c,v 3.7 1996/09/29 13:38:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_cursor.c,v 3.8 1996/12/23 06:56:00 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -259,7 +259,7 @@ static void ArkLoadCursorToCard(pScr, pCurs, x, y)
 	cursor_image = pCurs->bits->devPriv[index];
 
 	if (vgaUseLinearAddressing)
-		memcpy((unsigned char *)vgaLinearBase + arkCursorAddress,
+		xf86memcpy((unsigned char *)vgaLinearBase + arkCursorAddress,
 			cursor_image, 256);
 	else {
 		/*
@@ -268,7 +268,7 @@ static void ArkLoadCursorToCard(pScr, pCurs, x, y)
 		 */
 		vgaSaveBank();
 		ArkSetWrite(arkCursorAddress >> 16);
-		memcpy((unsigned char *)vgaBase + (arkCursorAddress & 0xFFFF),
+		xf86memcpy((unsigned char *)vgaBase + (arkCursorAddress & 0xFFFF),
 			cursor_image, 256);
 		vgaRestoreBank();
 	}

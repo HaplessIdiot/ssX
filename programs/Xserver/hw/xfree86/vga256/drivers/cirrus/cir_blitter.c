@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.14 1996/12/18 03:12:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.15 1996/12/23 06:56:33 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -472,10 +472,10 @@ destpitch, rop)
 #endif
 
     if (patternpitch == 8)
-	memcpy(base + srcaddr, pattern, 64);
+	xf86memcpy(base + srcaddr, pattern, 64);
     else
 	for (i = 0; i < 8; i++)
-            memcpy(base + srcaddr + i * 8, (unsigned char *)pattern +
+            xf86memcpy(base + srcaddr + i * 8, (unsigned char *)pattern +
                 patternpitch * i, 8);
 
     /* Set up the BitBLT parameters. */
@@ -550,7 +550,7 @@ destpitch, rop)
 
 	do { BLTBUSY(busy); } while (busy);
         for (i = 0; i < 8; i++)
-            memcpy(base + srcaddr + i * 16, (unsigned char *)pattern +
+            xf86memcpy(base + srcaddr + i * 16, (unsigned char *)pattern +
                patternpitch * (i * 2 + k), 16);
         SETDESTADDR(destaddr);
         SETSRCADDR(cirrusBLTPatternAddress);
@@ -645,7 +645,7 @@ destpitch, rop)
 	if (chip_supports_32byte_fill) {
 	    do { BLTBUSY(busy); } while (busy);
             for (i = 0; i < 8; i++)
-                memcpy(base + srcaddr + i * 32, (unsigned char *)pattern +
+                xf86memcpy(base + srcaddr + i * 32, (unsigned char *)pattern +
                     patternpitch * (i * 4 + k), 32);
             SETDESTADDR(destaddr);
             SETSRCADDR(cirrusBLTPatternAddress);
@@ -682,10 +682,10 @@ destpitch, rop)
              * It helps if this gets expanded into unrolled inline
              * loads/stores. gcc -O2 does this.
              */
-            memcpy(base + srcaddr + i * 16,
+            xf86memcpy(base + srcaddr + i * 16,
 	        pattern + patternpitch * (i * 4 + k), 16);
 	    if (!halves_identical)
-                memcpy(base + srcaddr + i * 16 + 128,
+                xf86memcpy(base + srcaddr + i * 16 + 128,
                     pattern + patternpitch * (i * 4 + k) + 16, 16);
 	}
 

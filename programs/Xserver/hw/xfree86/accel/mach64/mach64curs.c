@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.15 1996/10/18 15:00:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.16 1996/12/23 06:39:12 dawes Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -223,7 +223,7 @@ mach64RealizeCursor(pScr, pCurs)
       for(; j < MACH64_CURSMAX / 8; j++)
 	  *ram++ = 0xaaaa;
   }
-  memset(ram, 0xaa, (MACH64_CURSMAX-h)*16);
+  xf86memset(ram, 0xaa, (MACH64_CURSMAX-h)*16);
 
   cursPriv->yExtra = MACH64_CURSMAX - h;
   return(TRUE);

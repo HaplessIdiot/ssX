@@ -269,12 +269,12 @@ static void TridentLoadCursorToCard(pScr, pCurs, x, y)
 	cursor_image = pCurs->bits->devPriv[index];
 
 	if (vgaUseLinearAddressing)
-		memcpy((unsigned char *)vgaLinearBase + TridentCursorAddress,
+		xf86memcpy((unsigned char *)vgaLinearBase + TridentCursorAddress,
 			cursor_image, (IsCyber ? 4096 : 1024));
 	else {
 		vgaSaveBank();
 		TGUISetWrite(TridentCursorAddress >> 16);
-		memcpy((unsigned char *)vgaBase + (TridentCursorAddress & 0xFFFF),
+		xf86memcpy((unsigned char *)vgaBase + (TridentCursorAddress & 0xFFFF),
 			cursor_image, (IsCyber ? 4096 : 1024));
 		vgaRestoreBank();
 	}

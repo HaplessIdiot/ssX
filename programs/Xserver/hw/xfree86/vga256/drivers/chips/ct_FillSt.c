@@ -27,7 +27,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_FillSt.c,v 3.1 1996/09/29 13:39:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_FillSt.c,v 3.2 1996/12/27 07:05:04 dawes Exp $ */
 
 /*
  * These are the functions for tiles, which call low-level functions.
@@ -346,12 +346,12 @@ ctcfbFillRectTile(pDrawable, pGC, nBox, pBox)
 		vgaBytesPerPixel);
 	    for (i = 0; i < 8; i++) {
 		for (j = 8 - xrot; j < 8; j++)
-		    memcpy(pattern + i * 8 * vgaBytesPerPixel,
+		    xf86memcpy(pattern + i * 8 * vgaBytesPerPixel,
 			(unsigned char *)src + i * pixWidth *
 			vgaBytesPerPixel + 8 - xrot, xrot *
 			vgaBytesPerPixel);
 		for (j = 0; j < 8 - xrot; j++)
-		    memcpy(pattern + i * 8 * vgaBytesPerPixel + xrot,
+		    xf86memcpy(pattern + i * 8 * vgaBytesPerPixel + xrot,
 			(unsigned char *)src + i * pixWidth *
 			vgaBytesPerPixel, (8 - xrot) * vgaBytesPerPixel);
 	    }
@@ -416,18 +416,18 @@ ctcfbFillRectTile(pDrawable, pGC, nBox, pBox)
 		vgaBytesPerPixel);
 	    for (i = 0; i < 16; i++) {
 		for (j = 16 - xrot; j < 16; j++)
-		    memcpy(pattern + i * 16 * vgaBytesPerPixel,
+		    xf86memcpy(pattern + i * 16 * vgaBytesPerPixel,
 			(unsigned char *)src + i * pixWidth *
 			vgaBytesPerPixel + 16 - xrot, xrot *
 			vgaBytesPerPixel);
 		for (j = 0; j < 16 - xrot; j++)
-		    memcpy(pattern + i * 16 * vgaBytesPerPixel + xrot,
+		    xf86memcpy(pattern + i * 16 * vgaBytesPerPixel + xrot,
 			(unsigned char *)src + i * pixWidth *
 			vgaBytesPerPixel, (16 - xrot) * vgaBytesPerPixel);
 	    }
 	    for (i = 0; i < 16; i++) {
 		for (j = 0; j < 16; j++) {
-		    memcpy(pattern + (i + 16) * 16 * vgaBytesPerPixel,
+		    xf86memcpy(pattern + (i + 16) * 16 * vgaBytesPerPixel,
 			(unsigned char *)pattern + i * 16 *
 			vgaBytesPerPixel, 16 * vgaBytesPerPixel);
 		}
@@ -489,15 +489,15 @@ ctcfbFillRectTile(pDrawable, pGC, nBox, pBox)
 	    pattern = (unsigned char *)ALLOCATE_LOCAL(32 * 64);
 	    for (i = 0; i < 32; i++) {
 		for (j = 32 - xrot; j < 32; j++)
-		    memcpy(pattern + i * 32, (unsigned char *)src +
+		    xf86memcpy(pattern + i * 32, (unsigned char *)src +
 			i * pixWidth + 32 - xrot, xrot);
 		for (j = 0; j < 32 - xrot; j++)
-		    memcpy(pattern + i * 32 + xrot, (unsigned char *)src +
+		    xf86memcpy(pattern + i * 32 + xrot, (unsigned char *)src +
 			i * pixWidth, 32 - xrot);
 	    }
 	    for (i = 0; i < 32; i++) {
 		for (j = 0; j < 32; j++)
-		    memcpy(pattern + (i + 32) * 32, (unsigned char *)pattern +
+		    xf86memcpy(pattern + (i + 32) * 32, (unsigned char *)pattern +
 			i * 32, 32);
 	    }
 	}

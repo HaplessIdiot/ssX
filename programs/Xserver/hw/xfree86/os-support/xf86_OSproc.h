@@ -31,7 +31,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.0 1996/12/19 10:02:15 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -381,6 +381,30 @@ extern void xf86OsMouseOption(
 	pointer /* gets cast to LexPtr later, saves include file hassles */
 #endif
 );
+
+/*
+ * at this point I don't think we support any non-ANSI compilers...
+ */
+
+extern void * xf86memmove(void *, const void *, INT32);
+
+extern void * xf86memset(void *, int, INT32);
+
+extern void * xf86memcpy(void *, const void *, INT32);
+
+extern int xf86memcmp(const void *, const void *, INT32);
+
+extern char * xf86strcat(char *, const char *);
+
+extern char * xf86strcpy(char *, const char *);
+
+extern int xf86strcmp(const char *, const char *);
+
+extern int xf86strncmp(const char *, const char *, INT32);
+
+extern size_t xf86strlen(const char *);
+
+extern void xf86getsecs(INT32 *, INT32 *);
 
 _XFUNCPROTOEND
 #endif /* NO_OSLIB_PROTOTYPES */

@@ -26,7 +26,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_curs.c,v 3.3 1996/12/27 07:05:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_curs.c,v 3.4 1997/01/12 10:43:09 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -170,7 +170,7 @@ static Bool SISRealizeCursor(pScr, pCurs)
 
    ram = (unsigned char *)xalloc(16384);
 
-   memset (ram, 0xAA, 16384);
+   xf86memset (ram, 0xAA, 16384);
 
    *pPriv = (pointer) ram;
 
@@ -261,12 +261,12 @@ static void SISLoadCursorToCard(pScr, pCurs, x, y)
 	cursor_image = pCurs->bits->devPriv[index];
 
 	if (vgaUseLinearAddressing)
-		memcpy((unsigned char *)vgaLinearBase + SISCursorAddress,
+		xf86memcpy((unsigned char *)vgaLinearBase + SISCursorAddress,
 			cursor_image, 16384);
 	else {
 		vgaSaveBank();
 		SISSetWrite(SISCursorAddress >> 16);
-		memcpy((unsigned char *)vgaBase + (SISCursorAddress & 0xFFFF),
+		xf86memcpy((unsigned char *)vgaBase + (SISCursorAddress & 0xFFFF),
 			cursor_image, 16384);
 		vgaRestoreBank();
 	}

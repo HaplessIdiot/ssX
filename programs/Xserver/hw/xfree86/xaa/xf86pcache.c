@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.8 1997/01/20 12:38:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.9 1997/01/24 01:04:49 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -411,10 +411,10 @@ static void Write8x8Pattern(pci, w, h, pSrc, srcwidth)
     /* Write and expand horizontally. */
     for (i = 0; i < h; i++) {
          int nw;
-         memcpy(bufp, pSrc, w * bytespp);
+         xf86memcpy(bufp, pSrc, w * bytespp);
          nw = w;
          while (nw != 8) {
-            memcpy(bufp + nw * bytespp, bufp, nw * bytespp);
+            xf86memcpy(bufp + nw * bytespp, bufp, nw * bytespp);
             nw *= 2;
          }
          pSrc += srcwidth;
@@ -423,7 +423,7 @@ static void Write8x8Pattern(pci, w, h, pSrc, srcwidth)
     nh = h;
     /* Expand vertically. */
     while (nh != 8) {
-        memcpy(buf + nh * 8 * bytespp, buf, nh * 8 * bytespp);
+        xf86memcpy(buf + nh * 8 * bytespp, buf, nh * 8 * bytespp);
         nh *= 2;
     }
     if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
@@ -451,7 +451,7 @@ static void Write8x8Pattern(pci, w, h, pSrc, srcwidth)
         return;
     }
     /* Make it two copies. */
-    memcpy(buf + 64 * bytespp, buf, 64 * bytespp);
+    xf86memcpy(buf + 64 * bytespp, buf, 64 * bytespp);
     /* Write to video memory. */
     xf86AccelInfoRec.ImageWrite(x, y, 128, 1, buf, 128 * bytespp,
         GXcopy, 0xFFFFFFFF);
@@ -459,12 +459,12 @@ static void Write8x8Pattern(pci, w, h, pSrc, srcwidth)
     for (i = 1; i < 8; i++) {
         int j;
         for (j = 0; j < 8; j++) {
-            memcpy(buf2 + (j * 8) * bytespp, buf + (j * 8 + i) * bytespp,
+            xf86memcpy(buf2 + (j * 8) * bytespp, buf + (j * 8 + i) * bytespp,
                 (8 - i) * bytespp);
-            memcpy(buf2 + (j * 8 + 8 - i) * bytespp, buf + j * 8 * bytespp,
+            xf86memcpy(buf2 + (j * 8 + 8 - i) * bytespp, buf + j * 8 * bytespp,
                 i * bytespp);
         }
-        memcpy(buf2 + 64 * bytespp, buf2, 64 * bytespp);
+        xf86memcpy(buf2 + 64 * bytespp, buf2, 64 * bytespp);
         xf86AccelInfoRec.ImageWrite(x, y + i, 128, 1, buf2,
             128 * bytespp, GXcopy, 0xFFFFFFFF);
     }
@@ -590,7 +590,7 @@ static void WriteRotatedMonoPatterns(x, y, pattern)
                 buf[k] = byte_reversed[pattern[k]];
         }
         else
-            memcpy(buf, pattern, 8);
+            xf86memcpy(buf, pattern, 8);
         if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
             /* Special case; we need just one copy. */
             xf86AccelInfoRec.ImageWrite(x, y,
@@ -601,8 +601,8 @@ static void WriteRotatedMonoPatterns(x, y, pattern)
             return;
         }
         for (j = 1; j < 8; j++) {
-            memcpy(buf + j * 8, buf + j, 8 - j);
-            memcpy(buf + j * 8 + 8 - j, buf, j);
+            xf86memcpy(buf + j * 8, buf + j, 8 - j);
+            xf86memcpy(buf + j * 8 + 8 - j, buf, j);
         }
         xf86AccelInfoRec.ImageWrite(x, y + i,
             64 / (xf86AccelInfoRec.BitsPerPixel / 8) + 1, 1, buf,

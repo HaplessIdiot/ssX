@@ -1,7 +1,7 @@
 /*
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaBltFillc.c,v 3.0 1996/12/09 11:54:28 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -30,13 +30,13 @@ void fastBitBltCopy(
 {
   if (xdir <= 0) {
     while (h--) {
-      memmove(pdst-w, psrc-w, w);
+      xf86memmove(pdst-w, psrc-w, w);
       pdst += dstPitch - w;
       psrc += srcPitch - w;
     }
   } else {
     while (h--) {
-      memcpy(pdst, psrc, w);
+      xf86memcpy(pdst, psrc, w);
       pdst += dstPitch + w;
       psrc += srcPitch + w;
     }

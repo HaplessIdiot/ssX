@@ -23,7 +23,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_blitter.c,v 3.4 1996/12/27 07:05:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_blitter.c,v 3.5 1997/01/18 06:56:21 dawes Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -306,11 +306,11 @@ _ctcfbBLT8x8PatternFill(destaddr, w, h, pattern, yrot, patternpitch,
 #endif
     }
     if (patternpitch == 8)
-	memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress,
+	xf86memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress,
 	    pattern, 64 * vgaBytesPerPixel);
     else
 	for (i = 0; i < 8; i++)
-	    memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress +
+	    xf86memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress +
 		i * 8 * vgaBytesPerPixel, (unsigned char *)pattern +
 		patternpitch * i * vgaBytesPerPixel, 8 * vgaBytesPerPixel);
 
@@ -409,7 +409,7 @@ _ctcfbBLT16x16PatternFill(destaddr, x, w, h, pattern, yrot, patternpitch,
 
 	    ctBLTWAIT;
 	    for (i = 0; i < 8; i++)
-		memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress +
+		xf86memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress +
 		    i * 16, (unsigned char *)pattern + patternpitch *
 		    (i * 2 + k + yrot), 16);
 	    ctSETROP(ctPATCOPY | ctTOP2BOTTOM | ctLEFT2RIGHT);
@@ -471,12 +471,12 @@ _ctcfbBLT16x16PatternFill(destaddr, x, w, h, pattern, yrot, patternpitch,
 		 * It helps if this gets expanded into unrolled inline
 		 * loads/stores. gcc -O2 does this.
 		 */
-		memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress +
+		xf86memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress +
 		    i * 8 * vgaBytesPerPixel, pattern + patternpitch *
 		    vgaBytesPerPixel * (i * 2 + k + yrot), 8 *
 		    vgaBytesPerPixel);
 		if (!halves_identical)
-		    memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress +
+		    xf86memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress +
 			(i * 8 + 64) * vgaBytesPerPixel, pattern +
 			vgaBytesPerPixel * (patternpitch * (i * 2 + k + yrot)
 			    + 8), 8 * vgaBytesPerPixel);
@@ -697,10 +697,10 @@ _ctcfbBLT32x32PatternFill(destaddr, x, w, h, pattern, yrot, patternpitch,
 	     * It helps if this gets expanded into unrolled inline
 	     * loads/stores. gcc -O2 does this.
 	     */
-	    memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress +
+	    xf86memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress +
 		i * 16, pattern + patternpitch * (i * 4 + k + yrot), 16);
 	    if (!halves_identical)
-		memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress +
+		xf86memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress +
 		    i * 16 + 128, pattern + patternpitch * (i * 4 + k + yrot)
 		    + 16, 16);
 	}

@@ -2492,7 +2492,11 @@ configDynamicModuleSection()
     LoaderFixups();
 
     ptr=(ScrnInfoRec *(*)())LoaderSymbol("ModuleInit");
-    xf86Screens[0]=(ptr)();
+    if (ptr == NULL) {
+	FatalError("Can't find ModuleInit entry\n");
+    } else {
+	xf86Screens[0]=(ptr)();
+    }
 #endif
 
 #ifdef NEED_RETURN_VALUE

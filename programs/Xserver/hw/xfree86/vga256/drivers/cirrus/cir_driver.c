@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.80 1997/01/20 12:37:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.83 1997/02/16 12:13:28 hohndel Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -1553,7 +1553,7 @@ cirrusProbe()
      }
 
      if (vgaBitsPerPixel == 16) {
-         memcpy(cirrusClockLimit, cirrusClockLimit16bpp,
+         xf86memcpy(cirrusClockLimit, cirrusClockLimit16bpp,
              LASTCLGD * sizeof(int));
          if (cirrusChip >= CLGD5422 && cirrusChip <= CLGD5429
          && vga256InfoRec.videoRam <= 512)
@@ -1572,7 +1572,7 @@ cirrusProbe()
      }
 
      if (vgaBitsPerPixel == 24) {
-         memcpy(cirrusClockLimit, cirrusClockLimit24bpp,
+         xf86memcpy(cirrusClockLimit, cirrusClockLimit24bpp,
              LASTCLGD * sizeof(int));
          if (vga256InfoRec.videoRam <= 512)
                  cirrusClockLimit[cirrusChip] = 0;
@@ -1583,7 +1583,7 @@ cirrusProbe()
      }
 
      if (vgaBitsPerPixel == 32) {
-         memcpy(cirrusClockLimit, cirrusClockLimit32bpp,
+         xf86memcpy(cirrusClockLimit, cirrusClockLimit32bpp,
              LASTCLGD * sizeof(int));
          if (vga256InfoRec.videoRam <= 1024)
              cirrusClockLimit[cirrusChip] = 0;

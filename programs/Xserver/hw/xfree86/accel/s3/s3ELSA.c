@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.19 1997/01/08 20:33:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.20 1997/01/14 22:16:52 dawes Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -226,9 +226,9 @@ static int check_ELSA_bios(int BIOSbase)
    if ((bios[0] != 0x55) || (bios[1] != 0xaa))
       return -2;
 
-   l = strlen(match);
+   l = xf86strlen(match);
    for (i=0; i<BIOS_BSIZE-l; i++) 
-      if (bios[i] == match[0] && !memcmp(&bios[i],match,l))
+      if (bios[i] == match[0] && !xf86memcmp(&bios[i],match,l))
 	 return 1;
    return 0;
 }
@@ -392,7 +392,7 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
 		    ,ELSA_TIM_yres(*eetim)+ELSA_TIM_vfp(*eetim)+ELSA_TIM_vsw(*eetim)
 		    ,ELSA_TIM_vtot(*eetim)
 		    );
-	 p += strlen(p);
+	 p += xf86strlen(p);
       }   
    }
 

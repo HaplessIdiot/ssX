@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_colexp.c,v 1.1 1997/01/12 10:43:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_colexp.c,v 1.2 1997/01/12 10:52:28 dawes Exp $ */
 
 /*
  *
@@ -294,7 +294,7 @@ sisBitmapTransfer(w, h, srcpitch, srcaddr, base)
         for(i = 0; i < (((w + 3) & ~3) >> 2); i++)
             *(unsigned int *)base=*(unsigned int *)(data + 4 * i);
 #else
-	memcpy(base, data, ((w + 3) & ~3));	/* Multiple of Double-Word */
+	xf86memcpy(base, data, ((w + 3) & ~3));	/* Multiple of Double-Word */
 #endif
 	srcaddr += srcpitch;
 	line++;

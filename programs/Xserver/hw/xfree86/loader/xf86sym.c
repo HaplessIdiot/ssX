@@ -38,6 +38,7 @@
 #include "xf86_HWlib.h"
 #include "xf86_OSlib.h"
 #include "xf86_PCI.h"
+#include "CirrusClk.h"
 #include "vga.h"
 
 extern Bool xf86Resetting;
@@ -110,6 +111,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(dacOutTi3026IndReg)
    SYMFUNC(dacInTi3026IndReg)
    SYMFUNC(s3OutIBMRGBIndReg)
+   SYMFUNC(CirrusFindClock)
+   SYMFUNC(CirrusSetClock)
 
    SYMFUNC(pciWriteWord)
    SYMFUNC(pcibusWrite)

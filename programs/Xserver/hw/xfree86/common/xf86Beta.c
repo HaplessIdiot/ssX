@@ -1,6 +1,6 @@
 /* Copyright 1996, The XFree86 Project, Inc */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Beta.c,v 3.2 1996/10/16 14:40:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Beta.c,v 3.3 1997/01/18 06:55:29 dawes Exp $ */
 
 /*
  * This is for publicly released beta server binaries.
@@ -93,11 +93,12 @@ xf86CheckBeta(int extraDays, char *key)
     home = "/";
   {
     char homebuf[PATH_MAX];
-    strcpy(homebuf,home); /* getenv might return R/O memory, as with OS/2 */
+    xf86strcpy(homebuf,home); /* getenv might return R/O memory, as with OS/2 */
     home = homebuf;
 
     if (!(filename =
-	  (char *)ALLOCATE_LOCAL(strlen(home) + strlen(xf86ServerName) + 3)))
+	  (char *)ALLOCATE_LOCAL(xf86strlen(home) + 
+	  			 xf86strlen(xf86ServerName) + 3)))
       showmessage = TRUE;
     else {
       if (home[0] == '/' && home[1] == '\0')
@@ -118,7 +119,7 @@ xf86CheckBeta(int extraDays, char *key)
 #endif
 #ifdef EXPIRE_SERVER
   if (expirytime != 0) {
-    if (extraDays > 0 && key != NULL && strlen(key) == KEY_LENGTH) {
+    if (extraDays > 0 && key != NULL && xf86strlen(key) == KEY_LENGTH) {
 #ifndef X_NOT_STDC_ENV
       time_t newExpiry;
 #else

@@ -27,7 +27,7 @@
  * Modified for use with Chips by David Bateman <dbateman@ee.uts.edu.au>
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_colexp.c,v 3.1 1996/10/17 15:20:42 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -303,7 +303,12 @@ ctBitmapTransfer(w, h, srcpitch, srcaddr, base)
 	    *(data + i) = byte_reversed[*(srcaddr + i)];
 	    i++;
 	}
-	memcpy(base, data, ((w + 3) & ~3));	/* Multiple of Double-Word */
+#if 1
+        for(i = 0; i < (((w + 3) & ~3) >> 2); i++)
+            *(unsigned int *)base=*(unsigned int *)(data + 4 * i);
+#else
+	xf86memcpy(base, data, ((w + 3) & ~3));	/* Multiple of Double-Word */
+#endif
 	srcaddr += srcpitch;
 	line++;
     }

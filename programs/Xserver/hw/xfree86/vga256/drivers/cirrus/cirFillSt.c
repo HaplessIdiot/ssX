@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillSt.c,v 3.13 1996/09/29 13:39:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillSt.c,v 3.14 1996/12/23 06:56:29 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -257,13 +257,13 @@ tile8x8:
 			 */
 			pattern = (unsigned char *)ALLOCATE_LOCAL(16 * 16);
 			for (i = 0; i < 8; i++) {
-			    	memcpy(pattern + i * 16,
+			    	xf86memcpy(pattern + i * 16,
 				       (unsigned char *)src + i * pixWidth, 8);
-			    	memcpy(pattern + i * 16 + 8,
+			    	xf86memcpy(pattern + i * 16 + 8,
 				       (unsigned char *)src + i * pixWidth, 8);
-			    	memcpy(pattern + (i + 8) * 16,
+			    	xf86memcpy(pattern + (i + 8) * 16,
 				       (unsigned char *)src + i * pixWidth, 8);
-			    	memcpy(pattern + (i + 8) * 16 + 8,
+			    	xf86memcpy(pattern + (i + 8) * 16 + 8,
 				       (unsigned char *)src + i * pixWidth, 8);
 			}
 		}
@@ -304,13 +304,13 @@ tile16x16:
 			 */
 			pattern = (unsigned char *)ALLOCATE_LOCAL(32 * 32);
 			for (i = 0; i < 16; i++) {
-			    	memcpy(pattern + i * 32,
+			    	xf86memcpy(pattern + i * 32,
 				       (unsigned char *)src + i * pixWidth, 16);
-			    	memcpy(pattern + i * 32 + 16,
+			    	xf86memcpy(pattern + i * 32 + 16,
 				       (unsigned char *)src + i * pixWidth, 16);
-			    	memcpy(pattern + (i + 16) * 32,
+			    	xf86memcpy(pattern + (i + 16) * 32,
 				       (unsigned char *)src + i * pixWidth, 16);
-			    	memcpy(pattern + (i + 16) * 32 + 16,
+			    	xf86memcpy(pattern + (i + 16) * 32 + 16,
 				       (unsigned char *)src + i * pixWidth, 16);
 			}
 		}
@@ -355,13 +355,13 @@ tile32x32:
 			 */
 			pattern = (unsigned char *)ALLOCATE_LOCAL(64 * 64);
 			for (i = 0; i < 32; i++) {
-			    	memcpy(pattern + i * 64,
+			    	xf86memcpy(pattern + i * 64,
 				       (unsigned char *)src + i * pixWidth, 32);
-			    	memcpy(pattern + i * 64 + 32,
+			    	xf86memcpy(pattern + i * 64 + 32,
 				       (unsigned char *)src + i * pixWidth, 32);
-			    	memcpy(pattern + (i + 32) * 64,
+			    	xf86memcpy(pattern + (i + 32) * 64,
 				       (unsigned char *)src + i * pixWidth, 32);
-			    	memcpy(pattern + (i + 32) * 64 + 32,
+			    	xf86memcpy(pattern + (i + 32) * 64 + 32,
 				       (unsigned char *)src + i * pixWidth, 32);
 			}
 		}

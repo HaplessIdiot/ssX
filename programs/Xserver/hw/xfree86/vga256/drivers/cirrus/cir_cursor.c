@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.19 1996/10/06 13:17:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.20 1996/12/23 06:56:42 dawes Exp $ */
 /*
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -166,7 +166,7 @@ cirrusRealizeCursor(pScr, pCurs)
    /* Clear out enough memory for the entire cursor.  There are 
       width*height*2 bits (plane 0, plan 1), and thus width*height*2/8
       or width*height>>2 bytes */
-   memset (ram, 0, (cirrusCur.width>>2)*cirrusCur.height);
+   xf86memset (ram, 0, (cirrusCur.width>>2)*cirrusCur.height);
 
    curp = (unsigned short *)ram;
    if (HAVE546X()) {

@@ -300,7 +300,7 @@ monoPrintIdent()
 	    if (n) {
 		ErrorF(",");
 		c++;
-		if (c + 1 + strlen(id) < 70) {
+		if (c + 1 + xf86strlen(id) < 70) {
 		    ErrorF(" ");
 		    c++;
 		} else {
@@ -309,7 +309,7 @@ monoPrintIdent()
 		}
 	    }
 	    ErrorF("%s",id);
-	    c += strlen(id);
+	    c += xf86strlen(id);
 	}
     ErrorF("\n");
 }
