@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.90 2002/11/25 14:04:56 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.91 2003/04/03 16:15:57 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -1025,7 +1025,8 @@ typedef enum {
     ACTION_CLOSECLIENT,			/* Kill client holding grab */
     ACTION_SWITCHSCREEN		= 100,	/* VT switch */
     ACTION_SWITCHSCREEN_NEXT,
-    ACTION_SWITCHSCREEN_PREV
+    ACTION_SWITCHSCREEN_PREV,
+    ACTION_MESSAGE		= 9999  /* Generic message passing */
 } ActionEvent;
 
 #endif /* _XF86STR_H */

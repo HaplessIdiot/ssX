@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.147 2003/03/06 17:39:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.148 2003/03/25 04:18:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -349,6 +349,30 @@ xf86ProcessActionEvent(ActionEvent action, void *arg)
 	}
 	break;
 #endif
+    case ACTION_MESSAGE:
+        {
+            char *retstr, *message = (char *) arg;
+	    ScrnInfoPtr pScr = XF86SCRNINFO(xf86Info.currentScreen);
+
+#ifdef DEBUG
+            ErrorF("ActionMessage: '%s'\n", message);
+#endif
+	    /* Okay the message made it to the ddx.  The common layer */
+	    /* can check for relevant messages here and react to any  */
+	    /* that have a global effect.  For example:               */ 
+	    /*                                                        */
+	    /* if (!strcmp(message, "foo") {                          */
+	    /*      do_foo(); break                                   */
+	    /* }                                                      */
+	    /*                                                        */
+	    /* otherwise fallback to sending a key event message to   */
+	    /* the current screen's driver:                           */
+	    if (*pScr->HandleMessage) {
+		(void) (*pScr->HandleMessage)(pScr->scrnIndex,
+			"KeyEventMessage", message, &retstr);
+	    }
+        }
+	break;
     default:
 	break;
     }
