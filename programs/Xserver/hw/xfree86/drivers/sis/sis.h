@@ -435,6 +435,7 @@ typedef struct {
     DisplayModePtr	CRT1DMode;		/* Current display mode for CRT1 */
     int 		CRT2ModeNo;		/* Current display mode for CRT2 */
     DisplayModePtr	CRT2DMode;		/* Current display mode for CRT2 */
+    Bool		CRT2ModeSet;		/* CRT2 mode has been set */
     Bool		CRT2IsCustom;
     unsigned char	CRT2CR30, CRT2CR31, CRT2CR35, CRT2CR38;
     int			refCount;
@@ -510,6 +511,8 @@ typedef struct {
     BOOLEAN		enablesisctrl;
     unsigned long	cmdQ_SharedWritePort_2D;
     unsigned char       *RenderAccelArray;
+    unsigned char *	FbBase1;
+    unsigned long	OnScreenSize1;
 #ifdef SIS_CP
     SIS_CP_H_ENT
 #endif

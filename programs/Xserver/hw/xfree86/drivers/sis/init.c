@@ -3673,11 +3673,10 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,USHORT ModeNo)
 
    /* Set mode on CRT2 */
    if(SiS_Pr->SiS_VBInfo & (SetSimuScanMode | SwitchCRT2 | SetCRT2ToLCDA)) {
-      if(SiS_Pr->SiS_VBType & VB_SISVB) {
-         SiS_SetCRT2Group(SiS_Pr, HwInfo, ModeNo);
-      } else if(SiS_Pr->SiS_IF_DEF_LVDS     == 1 ||
-	        SiS_Pr->SiS_IF_DEF_CH70xx   != 0 ||
-	        SiS_Pr->SiS_IF_DEF_TRUMPION != 0) {
+      if( (SiS_Pr->SiS_VBType & VB_SISVB)    ||
+          (SiS_Pr->SiS_IF_DEF_LVDS     == 1) ||
+          (SiS_Pr->SiS_IF_DEF_CH70xx   != 0) ||
+          (SiS_Pr->SiS_IF_DEF_TRUMPION != 0) ) {
          SiS_SetCRT2Group(SiS_Pr, HwInfo, ModeNo);
       }
    }
@@ -3811,7 +3810,7 @@ SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
 
    /* Remember: Custom modes for CRT2 are ONLY supported
     * 		-) on 315/330 series,
-    *           -) on the 301 and 30xB, and
+    *           -) on the 30x/B/C, and
     *           -) if CRT2 is LCD or VGA
     */
 
@@ -3834,25 +3833,6 @@ SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
 
    SiSRegInit(SiS_Pr, BaseAddr);
 
-   /* Save mode info so we can set it from within SetMode for CRT1 */
-#ifdef SISDUALHEAD
-   if(pSiS->DualHeadMode) {
-      pSiSEnt->CRT2ModeNo = ModeNo;
-      pSiSEnt->CRT2DMode = mode;
-      pSiSEnt->CRT2IsCustom = IsCustom;
-      pSiSEnt->CRT2CR30 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x30);
-      pSiSEnt->CRT2CR31 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x31);
-      pSiSEnt->CRT2CR35 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x35);
-      pSiSEnt->CRT2CR38 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x38);
-      /* We can't set CRT2 mode before CRT1 mode is set */
-      if(pSiSEnt->CRT1ModeNo == -1) {
-    	 xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-		"Setting CRT2 mode delayed until after setting CRT1 mode\n");
-   	 return TRUE;
-      }
-   }
-#endif
-
    SiSInitPtr(SiS_Pr, HwInfo);
 
    SiS_GetSysFlags(SiS_Pr, HwInfo);
@@ -3864,6 +3844,28 @@ SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
    SiSSetLVDSetc(SiS_Pr, HwInfo);
 
    SiSDetermineROMUsage(SiS_Pr, HwInfo);
+
+   /* Save mode info so we can set it from within SetMode for CRT1 */
+#ifdef SISDUALHEAD
+   if(pSiS->DualHeadMode) {
+      pSiSEnt->CRT2ModeNo = ModeNo;
+      pSiSEnt->CRT2DMode = mode;
+      pSiSEnt->CRT2IsCustom = IsCustom;
+      pSiSEnt->CRT2CR30 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x30);
+      pSiSEnt->CRT2CR31 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x31);
+      pSiSEnt->CRT2CR35 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x35);
+      pSiSEnt->CRT2CR38 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x38);
+#if 0
+      /* We can't set CRT2 mode before CRT1 mode is set */
+      if(pSiSEnt->CRT1ModeNo == -1) {
+    	 xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+		"Setting CRT2 mode delayed until after setting CRT1 mode\n");
+   	 return TRUE;
+      }
+#endif      
+      pSiSEnt->CRT2ModeSet = TRUE;
+   }
+#endif
 
    /* We don't clear the buffer under X */
    SiS_Pr->SiS_flag_clearbuffer=0;
@@ -3930,24 +3932,11 @@ SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
    SiS_GetLCDResInfo(SiS_Pr, ModeNo, ModeIdIndex, HwInfo);
    SiS_SetLowModeTest(SiS_Pr, ModeNo, HwInfo);
 
-#if 0
-   if(HwInfo->jChipType >= SIS_315H) {
-      if(SiS_GetReg(SiS_Pr->SiS_P3c4,0x17) & 0x08)  {
-         if(SiS_Pr->SiS_IF_DEF_LVDS == 1) {
-            if(ModeNo != 0x10)  SiS_Pr->SiS_SetFlag |= SetDOSMode;
-         } else if((IS_SIS651) && (SiS_Pr->SiS_VBType & VB_NoLCD)) {
-            SiS_Pr->SiS_SetFlag |= SetDOSMode;
-         }
-      }
-   }
-#endif
-
    /* Set mode on CRT2 */
-   if(SiS_Pr->SiS_VBType & VB_SISVB) {
-      SiS_SetCRT2Group(SiS_Pr, HwInfo, ModeNo);
-   } else if(SiS_Pr->SiS_IF_DEF_LVDS     == 1 ||
-	     SiS_Pr->SiS_IF_DEF_CH70xx   != 0 ||
-	     SiS_Pr->SiS_IF_DEF_TRUMPION != 0) {
+   if( (SiS_Pr->SiS_VBType & VB_SISVB)    ||
+       (SiS_Pr->SiS_IF_DEF_LVDS     == 1) ||
+       (SiS_Pr->SiS_IF_DEF_CH70xx   != 0) ||
+       (SiS_Pr->SiS_IF_DEF_TRUMPION != 0) ) {
       SiS_SetCRT2Group(SiS_Pr, HwInfo, ModeNo);
    }
 
@@ -4068,7 +4057,7 @@ SiSBIOSSetModeCRT1(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
       ModeIdIndex = 0;
    }
 
-   /* Determine VBType (301, 301B, 301C, 301LV, 302B, 302LV) */
+   /* Determine VBType */
    SiS_GetVBType(SiS_Pr, HwInfo);
 
    if(SiS_Pr->SiS_VBType & VB_SIS301BLV302BLV) {
@@ -4144,7 +4133,9 @@ SiSBIOSSetModeCRT1(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
 	 backupcr38 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x38);
 	 if(SiS_Pr->SiS_VBType & VB_SISVB) {
 	    /* Backup LUT-enable */
-	    backupp40d = SiS_GetReg(SiS_Pr->SiS_Part4Port,0x0d) & 0x08;
+	    if(pSiSEnt->CRT2ModeSet) {
+	       backupp40d = SiS_GetReg(SiS_Pr->SiS_Part4Port,0x0d) & 0x08;
+	    }
 	 }
 	 if(SiS_Pr->SiS_VBInfo & SetCRT2ToLCDA) {
 	    SiS_SetReg(SiS_Pr->SiS_P3d4,0x30,pSiSEnt->CRT2CR30);
