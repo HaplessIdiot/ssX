@@ -1,4 +1,12 @@
 XFree86 4.X.Ya (?? January 2001)
+  77. Nv driver update to fix the cursor for double scan modes, and to
+      improve double scan mode handling in general (#4408, Csaba Halasz,
+      Jarno Paananen).
+  76. Fix a twm segfault if it gets events for buttons > 5 (#4407,
+      Nathan Hand).
+  75. Update the module subdirectory search list to include "multimedia/"
+      (#4405, Vladimir Dergachev).
+  74. Small R6.5.1 merge update in Xlib (based on #4403, Bruno Haible).
   73. Updates to the xprop utility, including:
        - Move to ANSI C, use const where possible.
        - Print WM_NAME and WM_ICON_NAME properties in the locale encoding.
@@ -12293,4 +12301,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1531 2001/01/22 20:12:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1532 2001/01/22 21:09:29 dawes Exp $

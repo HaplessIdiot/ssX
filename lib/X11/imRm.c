@@ -30,7 +30,7 @@ PERFORMANCE OF THIS SOFTWARE.
 			       makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imRm.c,v 3.9 2000/09/26 15:56:51 tsi Exp $ */
+/* $XFree86: xc/lib/X11/imRm.c,v 3.10 2001/01/17 19:41:52 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xlib.h>
@@ -38,13 +38,6 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "Xlcint.h"
 #include "Ximint.h"
 #include "Xresource.h"
-
-#ifndef	isalnum
-#define	isalnum(c)	\
-    (('0' <= (c) && (c) <= '9')  || \
-     ('A' <= (c) && (c) <= 'Z')  || \
-     ('a' <= (c) && (c) <= 'z'))
-#endif
 
 typedef struct _XimValueOffsetInfo {
     char		*name;
