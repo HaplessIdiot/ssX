@@ -28,6 +28,120 @@ in this Software without prior written authorization from The Open Group.
 
 #include "Xlibint.h"
 
+#ifdef USE_DYNAMIC_XCURSOR
+
+#include <stdio.h>
+#include <string.h>
+#if defined(hpux)
+#include <dl.h>
+#else
+#include <dlfcn.h>
+#endif
+
+#if defined(hpux)
+typedef shl_dt	XModuleType;
+#else
+typedef void *XModuleType;
+#endif
+
+#ifndef LIBXCURSOR
+#define LIBXCURSOR "libXcursor.so"
+#endif
+
+static char libraryName[] = LIBXCURSOR;
+
+static XModuleType
+open_library (void)
+{
+    char	*library = libraryName;
+    char	*dot;
+    XModuleType	module;
+    for (;;)
+    {
+#if defined(hpux)
+	module = shl_load(library, BIND_DEFERRED, 0L);
+#else
+	module =  dlopen(library, RTLD_LAZY);
+#endif
+	if (module)
+	    return module;
+	dot = strrchr (library, '.');
+	if (!dot)
+	    break;
+	*dot = '\0';
+    }
+    return 0;
+}
+
+static void *
+fetch_symbol (XModuleType module, char *under_symbol)
+{
+    void *result = NULL;
+    char *symbol = under_symbol + 1;
+#if defined(hpux)
+    int getsyms_cnt, i;
+    struct shl_symbol *symbols;
+    
+    getsyms_cnt = shl_getsymbols(module, TYPE_PROCEDURE,
+				 EXPORT_SYMBOLS, malloc, &symbols);
+
+    for(i=0; i<getsyms_cnt; i++) {
+        if(!strcmp(symbols[i].name, symbol)) {
+	    result = symbols[i].value;
+	    break;
+         }
+    }
+
+    if(getsyms_cnt > 0) {
+        free(symbols);
+    }
+#else
+    result = dlsym (module, symbol);
+    if (!result)
+	result = dlsym (module, under_symbol);
+#endif
+    return result;
+}
+
+typedef Cursor	(*TryShapeCursorFunc) (Display	    *dpy,
+				       Font	    source_font,
+				       Font	    mask_font,
+				       unsigned int source_char,
+				       unsigned int mask_char,
+				       XColor _Xconst *foreground,
+				       XColor _Xconst *background);
+
+static Cursor
+try_xcursor (Display	    *dpy,
+	     Font	    source_font,
+	     Font	    mask_font,
+	     unsigned int   source_char,
+	     unsigned int   mask_char,
+	     XColor _Xconst *foreground,
+	     XColor _Xconst *background)
+{
+    static  TryShapeCursorFunc	staticFunc;
+    TryShapeCursorFunc		func;
+    static  Bool		been_here;
+    XModuleType			module;
+
+    _XLockMutex (_Xglobal_lock);
+    if (!been_here)
+    {
+	been_here = True;
+	module = open_library ();
+	if (module)
+	    staticFunc = (TryShapeCursorFunc) fetch_symbol (module, "_XcursorTryShapeCursor");
+    }
+    func = staticFunc;
+    _XUnlockMutex (_Xglobal_lock);
+    if (func)
+	return (*func) (dpy, source_font, mask_font, source_char, mask_char,
+			foreground, background);
+    return None;
+}
+#endif
+
 Cursor XCreateGlyphCursor(dpy, source_font, mask_font,
 		   source_char, mask_char,
 		   foreground, background)
@@ -40,6 +154,12 @@ Cursor XCreateGlyphCursor(dpy, source_font, mask_font,
     Cursor cid;
     register xCreateGlyphCursorReq *req;
 
+#ifdef USE_DYNAMIC_XCURSOR
+    cid = try_xcursor (dpy, source_font, mask_font, 
+		       source_char, mask_char, foreground, background);
+    if (cid)
+	return cid;
+#endif
     LockDisplay(dpy);
     GetReq(CreateGlyphCursor, req);
     cid = req->cid = XAllocID(dpy);
