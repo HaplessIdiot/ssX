@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.78 2001/12/04 23:12:20 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.79 2001/12/07 00:09:56 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1898,12 +1898,10 @@ NVSave(ScrnInfoPtr pScrn)
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVSave\n"));
 #if defined(__powerpc__)
-    /* temporary hack to get around PowerMac's inability to save
-     * vga fonts and cmap, will find a better solution later
-     */
-    vgaHWSave(pScrn, vgaReg, VGA_SR_MODE);
+    /* The console driver will have to save the fonts, we can't */
+    vgaHWSave(pScrn, vgaReg, VGA_SR_CMAP | VGA_SR_MODE);
 #else
-    vgaHWSave(pScrn, vgaReg, VGA_SR_CMAP|VGA_SR_MODE|VGA_SR_FONTS);
+    vgaHWSave(pScrn, vgaReg, VGA_SR_CMAP | VGA_SR_MODE | VGA_SR_FONTS);
 #endif
     pNv->riva.UnloadStateExt(&pNv->riva, nvReg);
 }
