@@ -1,7 +1,11 @@
+/* $XFree86$ */
+
 /* (c) Itai Nahshon */
 
 #ifndef CIR_H
 #define CIR_H
+
+#include "xf86Cursor.h"
 
 #define CIR_DEBUG
 

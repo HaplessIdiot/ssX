@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.11 1996/12/23 06:44:05 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/CirrusClk.c,v 1.1 1998/08/29 05:43:10 dawes Exp $ */ 
 
 /*
  * Programming of the built-in Cirrus clock generator.
@@ -9,7 +9,6 @@
  *
  * Minor changes and celanup Itai Nahshon.
  */
-/* $XConsortium: CirrusClk.c /main/10 1996/10/25 10:25:12 kaleb $ */
  
 #include "compiler.h"
 #include "xf86.h"
@@ -20,7 +19,6 @@
 #include "xf86Pci.h"
 
 #include "xaa.h"
-#include "xaacursor.h"
 
 #include "cir.h"
 
