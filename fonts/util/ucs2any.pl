@@ -2,6 +2,8 @@
 #
 # ucs2any.pl -- Markus Kuhn <mkuhn@acm.org>
 #
+# $XFree86$
+#
 # This Perl script allows you to generate from an ISO10646-1 encoded
 # BDF font other BDF fonts in any possible encoding. This way, you can
 # derive from a single ISO10646-1 master font a whole set of 8-bit

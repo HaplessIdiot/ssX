@@ -1,4 +1,5 @@
 // $TOG: sgi.lst /main/3 1997/06/13 06:28:54 kaleb $
+// $XFree86$
 
 ! model
   indy			SGI O2, Indigo^2 or Indy
