@@ -1,5 +1,5 @@
 /* $Xorg: ddxBeep.c,v 1.3 2000/08/17 19:53:45 cpqbld Exp $ */
-#pragma ident "@(#)ddxBeep.c	1.4	02/10/10 SMI"
+/* #pragma ident "@(#)ddxBeep.c	1.4	02/10/10 SMI" */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,7 +25,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxBeep.c,v 3.5 2002/10/16 21:13:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxBeep.c,v 3.6tsi Exp $ */
 
 #include <stdio.h>
 #define	NEED_EVENTS 1
