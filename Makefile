@@ -2,7 +2,7 @@
 
 
 
-# $XFree86: xc/Makefile,v 3.19 2001/01/22 22:23:29 dawes Exp $
+# $XFree86: xc/Makefile,v 3.20 2001/01/24 17:28:53 tsi Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -184,7 +184,7 @@ dangerous_strip_clean:
 	    $(MAKE_CMD) $@
 distclean:
 	    $(MAKE_CMD) $@
-	    $(RM) xmakefile
+	    $(RM) xmakefile $(IRULESRC)/version.def
 depend:
 	    $(MAKE_CMD) $@
 Everything:
