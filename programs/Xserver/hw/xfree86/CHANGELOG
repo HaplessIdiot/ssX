@@ -1,4 +1,7 @@
-XFree86 3.1.0a (19 October 1994)
+XFree86 3.1.0a (21 October 1994)
+ 28. Fix for TCPCONN code's checking for an existing server.
+ 27. Support for building ELF dynamic libs on Linux (Michael Riepe).
+ 26. Fix gcc local label usage in vgaFasm.h (Adam Richter).
  25. OS/2 client support (Holger Veit).
  24. Fix some data initialisation problems in libX11 and libXt
      (Christos Zoulas).

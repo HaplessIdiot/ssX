@@ -1,5 +1,5 @@
 /* $XConsortium: vgaFasm.h,v 1.1 94/03/28 21:55:05 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaFasm.h,v 3.1 1994/10/20 07:26:33 dawes Exp $ */
 /* Copyright 1992 by James Tsillas, Arlignton, Massachusetts.
 
 		All Rights Reserved
@@ -252,7 +252,7 @@ PERFORMANCE OF THIS SOFTWARE.
   RROP_SOLID_L_X((pdst),(nl),(fill),"repz\n")
 #endif
 #define RROP_SPAN_STD(pdst, nlm, dummy)                         \
-{                                                               \
+({                                                              \
   __label__ label1;                                             \
   if (!vgaWriteFlag) goto label1;                               \
   nl = min(nlm, (unsigned long *) vgaWriteTop -                 \
@@ -264,12 +264,12 @@ PERFORMANCE OF THIS SOFTWARE.
   label1:                                                       \
     RROP_SOLID_L (pdst, nlm, rrop_xor);                         \
   }                                                             \
-}
+})
 #elif !defined(MROP)
 #define RROP_SOLID_L(pdst, nlm, label)                          \
   DuffL(nlm, label, RROP_SOLID(pdst); pdst++;)
 #define RROP_SPAN_STD(pdst, nlm, dummy)                         \
-{                                                               \
+({                                                              \
   __label__ label1, label2, label3;                             \
   if (!vgaWriteFlag) goto label1;                               \
   nl = min(nlm, (unsigned long *) vgaWriteTop -                 \
@@ -281,7 +281,7 @@ PERFORMANCE OF THIS SOFTWARE.
   label1:                                                       \
     RROP_SOLID_L(pdst, nlm, label3);                            \
   }                                                             \
-}
+})
 #endif
 
 #else /* __GNUC__ > 1 */

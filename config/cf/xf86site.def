@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.15 1994/09/19 13:36:24 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.16 1994/09/25 12:20:24 dawes Exp $
 /******************************************************************************/
 /*
  * This file is provide a quick method for most people to change the
@@ -233,6 +233,15 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.15 1994/09/19 13:36:24 dawes Exp $
  * uncomment this.
  *
 #define ForceNormalLib		YES
+ */
+
+/*
+ * To use ELF format shared libraries for Linux, uncomment this.
+ * Note: gcc-2.6.0-941008 and gas-941008 (or later) is required for this.
+ * Check linux.cf if you have problems regarding the location of elf-aware
+ * gcc and gas binaries.
+ *
+#define UseElfFormat		YES
  */
 
 /*

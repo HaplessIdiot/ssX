@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.5 1994/09/22 15:47:35 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.6 1994/09/26 15:30:19 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -44,10 +44,10 @@ XCOMM as well as specifying multiple comma-separated entries in one FontPath
 XCOMM command (or a combination of both methods)
 
     FontPath	MISCFONTPATH
-    USE_T1FONTS	T1FONTPATH
-    USE_SPFONTS	SPFONTPATH
-    USE_75FONTS	DPI75FONTPATH
-    USE_100FONTS	DPI100FONTPATH
+USE_T1FONTS	T1FONTPATH
+USE_SPFONTS	SPFONTPATH
+USE_75FONTS	DPI75FONTPATH
+USE_100FONTS	DPI100FONTPATH
 
 EndSection
 

@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c,v 1.29 94/06/02 10:51:53 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.3 1994/08/31 03:24:58 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.4 1994/10/20 06:06:52 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -519,6 +519,11 @@ char 	   *port;
 	return NULL;
     }
 
+    /*
+     * Using this prevents the bind() check for an existing server listening
+     * on the same port
+     */
+#if 0
 #ifdef SO_REUSEADDR
 
     /*
@@ -531,6 +536,7 @@ char 	   *port;
 	setsockopt (ciptr->fd, SOL_SOCKET, SO_REUSEADDR,
 		    (char *) &one, sizeof (int));
     }
+#endif
 #endif
 
     /* Save the index for later use */

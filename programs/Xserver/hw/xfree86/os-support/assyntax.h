@@ -1,4 +1,5 @@
 /* $XConsortium: assyntax.h,v 1.1 94/03/28 21:26:59 dpw Exp $ */
+/* $XFree86$ */
 #ifndef __ASSYNTAX_H__
 #define	__ASSYNTAX_H__
 
@@ -211,7 +212,7 @@
 #endif /* ACK_ASSEMBLER */
 
 
-#if (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER)
+#if (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER) || defined(linux) && defined(__ELF__)
 #define GLNAME(a)       a
 #else
 #define GLNAME(a)       CONCAT(_,a)
