@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xauth/process.c,v 3.9 2001/04/23 20:31:09 dawes Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.10 2001/07/25 15:05:17 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -618,7 +618,7 @@ static _signal_t
 die(int sig)
 {
     dieing = True;
-    exit (auth_finalize ());
+    _exit (auth_finalize ());
     /* NOTREACHED */
 #ifdef SIGNALRETURNSINT
     return -1;				/* for picky compilers */
