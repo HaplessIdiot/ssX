@@ -1,4 +1,6 @@
 XFree86 3.1.2a (23 September 1995)
+ 22. Fix snow problems with WD90C24 when for clocks higher than MCLK
+     (Brad Bosch).
  21. Add XNLS support for KOI8-R (Andrey Chernov).
  20. Fix problem with IBM ramdac and clockchip handling in xf86config.
  19. Change XF86Config parsing to ignore '_' characters in keywords, and

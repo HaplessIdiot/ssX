@@ -1,6 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.5 95/01/16 13:18:21 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.18 1995/07/07 15:45:00 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.19 1995/07/13 14:15:55 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1103,18 +1103,20 @@ PVGA1Init(mode)
 
   if (IS_WD90C3X(WDchipset))
     {
+      new->MemoryInterface = 0xC1;
       if (wd90c24_use_1meg)
         {
-	  new->MemoryInterface = 0xC1;
 	  new->MemorySize = 0xc8;
+	  if (vga256InfoRec.clock[new->std.NoClock] > MClk) {
+	      new->MemoryInterface = 0x41;
+	  }
         }
       else
         {
 	  if (vga256InfoRec.clock[new->std.NoClock] > MClk) {
 	      new->MemoryInterface = 0x41;
 	      new->MiscCtrl1 |= 0x40;
-	  } else
-	      new->MemoryInterface = 0xC1;
+	  }
         }
       if (WDchipset == WD90C31 || WDchipset == WD90C33 || WDchipset == WD90C24)
 	{
