@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.16 2001/07/25 15:05:20 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.17 2001/08/31 15:00:12 paulo Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>		/* for realpath() */
@@ -241,6 +241,10 @@ KillTextSource(xedit_flist_item *item)
     if (idx >= flist.num_itens)
 	return (False);
 
+    flist.current = nitem;
+    if (item == flist.other)
+	flist.other = NULL;
+
     if (nitem->file_access == READ_OK)
 	XmuSnprintf(label_buf, sizeof(label_buf), "%s       READ ONLY",
 		    nitem->name);
@@ -326,6 +330,10 @@ SwitchTextSource(xedit_flist_item *item)
     xedit_flist_item *old_item =
 	FindTextSource(XawTextGetSource(textwindow), NULL);
     int i;
+
+    if (old_item != item)
+	flist.other = old_item;
+    flist.current = item;
 
     XawTextDisableRedisplay(textwindow);
     if (item->file_access == READ_OK)
@@ -434,6 +442,14 @@ ChangeTextWindow(Widget w)
     Arg args[1];
 
     if (textwindow != w) {
+	xedit_flist_item *other, *current;
+
+	other = FindTextSource(XawTextGetSource(textwindow), NULL);
+	current = FindTextSource(XawTextGetSource(w), NULL);
+	if (other != current)
+	    flist.other = other;
+	if (current)
+	    flist.current = current;
 	XtSetArg(args[0], XtNdisplayCaret, False);
 	XtSetValues(textwindow, args, 1);
 	XtSetArg(args[0], XtNdisplayCaret, True);

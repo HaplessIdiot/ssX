@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.c,v 1.11 2001/07/25 15:05:20 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.c,v 1.12 2001/08/31 15:00:12 paulo Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include "xedit.h"
@@ -388,6 +388,7 @@ makeButtonsAndBoxes(Widget parent)
     XtAddCallback(item->source, XtNcallback, SourceChanged,
 		  (XtPointer)item);
     ResetSourceChanged(item);
+    flist.current = item;
 
     for (num_args = 0; num_args < 3; num_args++)
 	XtAddCallback(texts[num_args], XtNpositionCallback, PositionChanged, NULL);

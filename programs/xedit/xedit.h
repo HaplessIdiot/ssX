@@ -26,7 +26,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.h,v 1.11 1999/08/15 13:00:57 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.h,v 1.12 2001/08/31 15:00:12 paulo Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -79,6 +79,7 @@ extern struct _xedit_flist {
     Widget popup;
     Pixmap pixmap;
     xedit_flist_item **itens;
+    xedit_flist_item *current, *other;
     Cardinal num_itens;
 } flist;
 
@@ -158,6 +159,11 @@ void XeditLispEval(Widget, XEvent*, String*, Cardinal*);
 void XeditPrintLispEval(Widget, XEvent*, String*, Cardinal*);
 void XeditKeyboardReset(Widget, XEvent*, String*, Cardinal*);
 void XeditLispCleanUp(void);
+
+/*	externs in proto.c	*/
+#define PROTOPREFFIX	'\033'
+#define PROTOMAXSIZE	1024
+Bool XeditProto(char*, char**);
 
 /*	externs for system replacement functions */
 #ifdef NEED_STRCASECMP

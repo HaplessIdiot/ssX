@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.1 2001/09/09 23:03:47 paulo Exp $ */
 
 #include "format.h"
 #include <ctype.h>
@@ -76,9 +76,10 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 	if (*fmt == '~') {
 	    char *end;
 	    int radix = 10, mincol = 0, minpad = 0, colinc = 1, padchar = ' ';
-	    int argc, nargs[7], defs[7], padidx, isradix, isprinc;
+	    int argc, nargs[7], defs[7], padidx, isradix, isprinc, ise;
 	    int atsign = 0, collon = 0;
-	    int w = 0, d = 0, k = 0, overidx, overflowchar = 0;
+	    int w = 0, d = 0, e = 1, k = 0, overidx, overflowchar = 0,
+		expidx, exponentchar = 'e';
 					/* float parameters */
 
 	    if (len) {
@@ -88,7 +89,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 	    }
 	    ++fmt;
 	    argc = 0;
-	    padidx = overidx = -1;		/* minimal error check */
+	    padidx = overidx = expidx = -1;	/* minimal error check */
 	    while (1) {
 		if (*fmt == ',') {	/* use default value */
 		    ++fmt;
@@ -104,8 +105,12 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		}
 		else if (*fmt == '\'') {	/* use default value */
 		    ++fmt;
-		    overidx = padidx;
-		    padidx = argc;
+		    if (overidx != 1)
+			expidx = argc;
+		    else {
+			overidx = padidx;
+			padidx = argc;
+		    }
 		    nargs[argc] = *fmt++;
 		    defs[argc] = 0;
 		    if (*fmt == ',')	/* more args */
@@ -180,8 +185,12 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    break;
 		case 'f':	/* Floating-point */
 		case 'F':
+		    ise = 0;
 		    goto print_float_number;
-		    break;
+		case 'e':	/* Exponential floating-point */
+		case 'E':
+		    ise = 1;
+		    goto print_float_number;
 		case '&':
 		    if (mac->newline)
 			len = -1;
@@ -550,19 +559,32 @@ print_float_number:
 	    else {
 		double num = CAR(arg)->data.real;
 		char sprint[64];
-		int l;
+		int l, sign, expt = 0, elen = 1;
 
 		/* get print arguments */
-		if (argc && !defs[0])
-		    w = nargs[0];
-		if (argc > 1 && !defs[1])
-		    d = nargs[1];
-		if (argc > 2 && !defs[2])
-		    k = nargs[2];
-		if (argc > 3 && !defs[3])
-		    overflowchar = nargs[3];
-		if (argc > 4 && !defs[4])
-		    padchar = nargs[4];
+		l = 0;
+		if (argc && !defs[l])
+		    w = nargs[l];
+		++l;
+		if (argc > l && !defs[l])
+		    d = nargs[l];
+		++l;
+		if (ise) {
+		    if (argc > l && !defs[l])
+			e = nargs[l];
+		    ++l;
+		}
+		if (argc > l && !defs[l])
+		    k = nargs[l];
+		++l;
+		if (argc > l && !defs[l])
+		    overflowchar = nargs[l];
+		++l;
+		if (argc > l && !defs[l])
+		    padchar = nargs[l];
+		++l;
+		if (argc > l && !defs[l])
+		    exponentchar = nargs[l];
 
 		if (overidx == -1 && padidx != -1) {
 		    overidx = padidx;
@@ -570,24 +592,81 @@ print_float_number:
 		}
 		if (k >= 64 || k <= -64 || (argc > 2 && !defs[2] && w < 2) ||
 		    (argc > 1 && !defs[1] && d < 0) ||
-		    (overidx != -1 && overidx != 3) ||
-		    (padidx != -1 && padidx != 4))
+		    (overidx != -1 && (overidx != 3 + ise)) ||
+		    (padidx != -1 && (padidx != 4 + ise)))
 		    LispDestroy(mac, BadArgument, fname);
 
+		if (ise) {
+		    if (k > 0 && d) {
+			if ((d -= (k - 1)) < 0)
+			    d = 0;	/* XXX this is an error */
+		    }
+		    else if (k < 0 && -k > d)
+			k = 0;		/* XXX this is an error */
+		}
+
+		sign = num < 0.0;
+		if (sign)
+		    num = -num;
 		len = 0;
-		if (num < 0)
+		if (sign)
 		    stk[len++] = '-';
 		else if (atsign)
 		    stk[len++] = '+';
 
-		while (k > 0) {
-		    --k;
+		/* adjust scale factor/exponent */
+		l = k;
+		while (l > 0) {
+		    --l;
+		    --expt;
 		    num *= 10.0;
 		}
-		while (k < 0) {
-		    ++k;
+		while (l < 0) {
+		    ++l;
+		    ++expt;
 		    num /= 10.0;
 		}
+		if (ise) {
+		    if (!k)
+			k = 1;
+		    if (num > 1.0) {
+			l = sprintf(sprint, "%1.1f", num);
+			while (l > 1 && sprint[--l] != '.')
+			    ;
+		    }
+		    else {
+			int pos;
+			char sprint2[64];
+
+			if (d) {
+			    sprintf(sprint2, "%%1.%df", d);
+			    l = sprintf(sprint, sprint2, num);
+			}
+			else
+			    l = sprintf(sprint, "%f", num);
+			for (pos = 0; sprint[pos] && sprint[pos] != '.'; pos++)
+			    ;
+			if (sprint[pos]) {
+			    for (l = 0, pos++; sprint[pos] == '0'; pos++, l--)
+				;
+			    if (!sprint[pos])
+				l = k;
+			}
+			else
+			    l = k;
+		    }
+		    while (l > k) {
+			--l;
+			num /= 10.0;
+			++expt;
+		    }
+		    while (l < k) {
+			++l;
+			num *= 10.0;
+			--expt;
+		    }
+		}
+
 		if (!d) {
 		    int left = 20;
 		    double integral, fractional;
@@ -595,28 +674,45 @@ print_float_number:
 		    fractional = modf(num, &integral);
 		    if (w) {
 			l = sprintf(sprint, "%f", integral);
-			while (l && sprint[l - 1] == '0')
+			while (l > 1 && sprint[l - 1] == '0')
 			    --l;
 			if (l && sprint[l - 1] == '.')
 			    --l;
-			left = w - l - 1 - (num < 0);
+			left = w - l - 1 - sign;
 		    }
 		    l = sprintf(sprint, "%f", fractional);
 		    while (l && sprint[l - 1] == '0')
 			--l;
-		    l -= 2 + (num < 0);
+		    l -= 2 + (w && sign);
 		    if (l > left)
 			l = left;
 		    sprintf(sprint, "%%1.%df", l > 0 ? l : 0);
 		}
 		else
 		    sprintf(sprint, "%%1.%df", d);
-		if (num < 0)
-		    num = -num;
 		l = sprintf(stk + len, sprint, num);
+
 		len += l;
+		if (ise) {
+		    l = sprintf(stk + len, "%c%c", exponentchar,
+				expt < 0 ? '-' : '+');
+		    len += l;
+		    if (e)
+			sprintf(sprint, "%%0%dd", e);
+		    else
+			strcpy(sprint, "%d");
+		    l = sprintf(stk + len, sprint, expt < 0 ? -expt : expt);
+		    len += l;
+		    elen = l + 2;	/* sign and exponentchar */
+		}
 		if (w && len > w) {
+		    int tmp;
+
+		    /* cut fractional part to fit in width */
+		    l = len;
 		    --len;
+		    if (ise)
+			len -= elen;
 		    while (len > w) {
 			if (stk[len] == '.')
 			    break;
@@ -624,13 +720,29 @@ print_float_number:
 			    --len;
 		    }
 		    if (d) {
+			int gotdigit = 0;
+
 			/* check for overflow in fractional part */
 			while (len && stk[len] != '.')
 			    --len;
-			for (l = 0, ++len; l < d && stk[len]; l++, len++)
-			    ;
+			for (tmp = 0, ++len; (!gotdigit || tmp < d) && len < l;
+			     tmp++, len++)
+			    if (stk[len] != '0')
+				gotdigit = 1;
 		    }
-		    if (len > w && overflowchar) {
+		    if (ise) {
+			if (l > len + elen)
+			    memmove(stk + len, stk + l - elen, elen);
+			len += elen;
+		    }
+		    if (len > w && num < 1) {
+			int inc = sign || atsign;
+
+			/* cut the leading '0' */
+			memmove(stk + inc, stk + inc + 1, len - inc - 1);
+			--len;
+		    }
+		    if (((ise && elen - 2 > e) || len > w) && overflowchar) {
 			for (len = 0; len < w; len++)
 			    stk[len] = overflowchar;
 		    }
