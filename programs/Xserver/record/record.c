@@ -1,5 +1,9 @@
 /* $TOG: record.c /main/8 1997/04/06 10:52:30 kaleb $ */
 
+
+
+/* $XFree86: $ */
+
 /*
 
 Copyright (c) 1995  X Consortium
