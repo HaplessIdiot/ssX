@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.h,v 1.6 2001/04/19 14:14:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.h,v 1.7 2001/05/18 20:22:31 tsi Exp $ */
 
 #ifndef _XF86CURSOR_H
 #define _XF86CURSOR_H
@@ -18,6 +18,11 @@ typedef struct _xf86CursorInfoRec {
     void (*ShowCursor)(ScrnInfoPtr pScrn);
     unsigned char* (*RealizeCursor)(struct _xf86CursorInfoRec *, CursorPtr);
     Bool (*UseHWCursor)(ScreenPtr, CursorPtr);
+
+#ifdef ARGB_CURSOR
+    Bool (*UseHWCursorARGB) (ScreenPtr, CursorPtr);
+    void (*LoadCursorARGB) (ScrnInfoPtr, CursorPtr);
+#endif
 
 } xf86CursorInfoRec, *xf86CursorInfoPtr;
 
