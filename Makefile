@@ -1,4 +1,5 @@
 # $XConsortium: Makefile /main/30 1995/12/12 16:43:32 gildea $
+# $XFree86$
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
