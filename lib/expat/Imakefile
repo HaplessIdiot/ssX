@@ -34,7 +34,7 @@ HEADERS = expat.h
 SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
 #endif
 
-cleandir::
+clean::
 	$(RM) expat.h
 
 depend:: expat.h
@@ -51,4 +51,4 @@ LinkSourceFile(xmltok.c,$(EXPATSRC))
 LinkSourceFile(xmlrole.c,$(EXPATSRC))
 LinkSourceFile(expat.h.in,$(EXPATINC))
 
-	    
+
