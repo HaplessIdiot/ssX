@@ -27,6 +27,10 @@ XF4BPPDIR = xf4bpp
 # endif
 #endif
 
+#if XF8_32Wid
+XF8_32WIDDIR = xf8_32wid
+#endif
+
 #if XF8_32Bpp
 XF8_32BPPDIR = xf8_32bpp
 #endif
@@ -94,7 +98,7 @@ SUBDIRS = os-support common $(XAADIR) $(XF1BPPDIR) $(XF4BPPDIR) \
 	  drivers $(LOADERDIR) $(VGAHWDIR) $(FBDEVHWDIR) $(RAMDACDIR) \
 	  $(RACDIR) $(I2CDIR) $(DDCDIR) $(INPUTDIR) $(INT10DIR) parser \
           scanpci doc xf86config $(XF86CFGDIR) $(XF86SETUPDIR) dummylib etc \
-          $(SUPERPROBE) $(DRIVERSDK)
+          $(SUPERPROBE) $(DRIVERSDK) $(XF8_32WIDDIR)
 
 #ifndef OS2Architecture
 XF86CONFIG = XF86Config
