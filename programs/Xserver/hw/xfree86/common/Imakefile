@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/18 1996/01/16 16:08:36 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.37 1996/06/29 14:11:05 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.38 1996/07/08 10:26:07 dawes Exp $
 
 
 
@@ -219,7 +219,7 @@ all:: XF86_VGA16.o
 SpecialObjectRule(XF86_Mono.o,XF86_Mono.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
 all:: XF86_Mono.o
 #endif
-#if XF86S3Server
+#if XF86S3Server || XF86S3VServer
 SpecialObjectRule(XF86_S3.o,XF86_S3.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
 all:: XF86_S3.o
 #endif

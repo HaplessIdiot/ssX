@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/r61_main/5 1996/02/02 18:44:52 gildea $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.61 1996/08/21 13:04:59 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.62 1996/09/22 04:59:26 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -418,6 +418,9 @@ XF86MONO = XF86_Mono
 #if XF86S3Server
 XF86S3 = XF86_S3
 #endif
+#if XF86S3VServer
+XF86S3V = XF86_S3V
+#endif
 #if XF86I8514Server
 XF868514 = XF86_8514
 #endif
@@ -487,8 +490,8 @@ XNEST = Xnest
 #if XVirtualFramebufferServer
 XVFB = Xvfb
 #endif
-#if defined(XF86SVGAServer) || defined(XF98GANBWAPServer) || defined(XF98NEC480Server) || defined(XF98NKVNECServer) || defined(XF98WABSServer) || defined(XF98WABEPServer) || defined(XF98WSNAServer) || defined(XF98TGUIServer) || defined(XF86VGA16Server) || defined(XF98EGCServer) || defined(XF86W32Server) || defined(XF86MonoServer) || defined(XF86S3Server) || defined(XF98NECS3Server) || defined(XF98PWSKBServer) || defined(XF98PWLBServer) || defined(XF98GA968Server) || defined(XF86I8514Server) || defined(XF86Mach8Server) || defined(XF86Mach32Server) || defined(XF86Mach64Server) || defined(XF86P9000Server) || defined(XF86AGXServer) || defined(XF86I128Server) || defined(XF86TGAServer) || defined(XF68FBDevServer) || defined(XnestServer) || defined(XVirtualFramebufferServer)
-MakeMutex($(XF86SVGA) $(XF98GANBWAP) $(XF98NEC480) $(XF98NKVNEC) $(XF98WABS) $(XF98WABEP) $(XF98WSNA) $(XF98TGUI) $(XF86VGA16) $(XF98EGC) $(XF86W32) $(XF86MONO) $(XF86S3) $(XF98NECS3) $(XF98PWSKB) $(XF98PWLB) $(XF98GA968) $(XF868514) $(XF86MACH8) $(XF86MACH32) $(XF86MACH64) $(XF86P9000) $(XF86AGX) $(XF86I128) $(XF86TGA) $(XF68FBDEV) $(XNEST) $(XVFB))
+#if defined(XF86SVGAServer) || defined(XF98GANBWAPServer) || defined(XF98NEC480Server) || defined(XF98NKVNECServer) || defined(XF98WABSServer) || defined(XF98WABEPServer) || defined(XF98WSNAServer) || defined(XF98TGUIServer) || defined(XF86VGA16Server) || defined(XF98EGCServer) || defined(XF86W32Server) || defined(XF86MonoServer) || defined(XF86S3Server) || defined(XF86S3VServer) || defined(XF98NECS3Server) || defined(XF98PWSKBServer) || defined(XF98PWLBServer) || defined(XF98GA968Server) || defined(XF86I8514Server) || defined(XF86Mach8Server) || defined(XF86Mach32Server) || defined(XF86Mach64Server) || defined(XF86P9000Server) || defined(XF86AGXServer) || defined(XF86I128Server) || defined(XF86TGAServer) || defined(XF68FBDevServer) || defined(XnestServer) || defined(XVirtualFramebufferServer)
+MakeMutex($(XF86SVGA) $(XF98GANBWAP) $(XF98NEC480) $(XF98NKVNEC) $(XF98WABS) $(XF98WABEP) $(XF98WSNA) $(XF98TGUI) $(XF86VGA16) $(XF98EGC) $(XF86W32) $(XF86MONO) $(XF86S3) $(XF86S3V) $(XF98NECS3) $(XF98PWSKB) $(XF98PWLB) $(XF98GA968) $(XF868514) $(XF86MACH8) $(XF86MACH32) $(XF86MACH64) $(XF86P9000) $(XF86AGX) $(XF86I128) $(XF86TGA) $(XF68FBDEV) $(XNEST) $(XVFB))
 #endif
 MakeMutex($(STDDIRS) mfb cfb cfb16 cfb32)
 #endif
@@ -646,6 +649,38 @@ LinkFile(XF86_S3.def,S3.def)
 #endif	/* XF86S3Server */
 
 
+#if XF86S3VServer
+XCOMM
+XCOMM XFree86 S3 ViRGE Server
+XCOMM
+MFBDIR   = mfb
+CFB8DIR  = cfb
+CFB16DIR = cfb16
+CFB24DIR = cfb24
+CFB32DIR = cfb32
+DDXDIR1 = hw/xfree86
+XF86SVSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) \
+		$(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
+XF86S3VOBJS = $(XF86COMSRC)/XF86_S3.o $(XF86ACCELSRC)/s3_virge/s3Conf.o \
+             $(S3VDRIVERSRC)/s3_generic/s3_generic.o
+XF86S3VLIBS = $(XF86ACCELSRC)/s3_virge/LibraryTargetName(s3) \
+             $(XF86LIBS) \
+             CFBLibs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache) \
+             $(XF86OSLIB)
+XF86S3VSYSLIBS = $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XF86S3VSUBDIRS) $(XF86S3VOBJS) $(XF86S3VLIBS) $(XF86S3VSYSLIBS))
+#endif
+SetUIDServerTarget(XF86_S3V,$(XF86S3VSUBDIRS),$(XF86S3VOBJS),$(XF86S3VLIBS),$(XF86S3VSYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF86_S3V
+#endif
+#ifdef OS2Architecture
+LinkFile(XF86_S3V.def,S3V.def)
+#endif
+#endif	/* XF86S3VServer */
+ 
+ 
 #if XF86I8514Server
 XCOMM
 XCOMM XFree86 8514 Server

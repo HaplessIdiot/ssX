@@ -1,4 +1,6 @@
 XFree86 3.1.2Gc (22 September 1996)
+823. XKB data file updates for jp106/jp (Takaaki Nomura).
+822. S3 Virge server (preliminary version) (Harald Koenig).
 821. ARK driver updates, including basic BitBlt acceleration, improved
      ramdac support, experimental 24bpp support, and max dot clocks take
      the memory clock into consideration (Harm Hanemaayer).
