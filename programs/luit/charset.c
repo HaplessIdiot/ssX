@@ -274,7 +274,7 @@ getFontencCharset(unsigned char final, int type, char *name)
 }
 
 CharsetPtr 
-getUnknownCharset(type)
+getUnknownCharset(int type)
 {
     switch(type) {
     case T_94: return &Unknown94Charset;
@@ -377,7 +377,7 @@ getLocaleState(char *locale, char *charset,
                CharsetPtr *g0_return, CharsetPtr *g1_return,
                CharsetPtr *g2_return, CharsetPtr *g3_return)
 {
-    char *resolved;
+    char *resolved = 0;
     LocaleCharsetPtr p;
 
     if(!charset) {
@@ -397,7 +397,8 @@ getLocaleState(char *locale, char *charset,
     }
 
     if(p->name == NULL) {
-        free(resolved);
+	if (resolved != 0)
+	    free(resolved);
         return -1;
     }
 

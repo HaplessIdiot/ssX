@@ -70,10 +70,10 @@ interesting results.
 .B \-k7
 Generate seven-bit characters for keyboard input.
 .TP
-.B \+kss
+.B +kss
 Disable generation of single-shifts for keyboard input.
 .TP
-.B \+kssgr
+.B +kssgr
 Use GL codes after a single shift for keyboard input.  By default, GR
 codes are generated after a single shift when generating eight-bit
 keyboard input.

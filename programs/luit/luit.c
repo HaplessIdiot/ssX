@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/luit.c,v 1.6 2002/06/04 21:05:51 dawes Exp $ */
+/* $XFree86: xc/programs/luit/luit.c,v 1.7 2002/06/05 08:52:06 alanh Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,7 +99,7 @@ help(void)
 }
             
 
-int
+static int
 parseOptions(int argc, char **argv)
 {
     int i = 1;
@@ -289,7 +289,7 @@ parseOptions(int argc, char **argv)
     return i;
 }
 
-int
+static int
 parseArgs(int argc, char **argv, char *argv0,
           char **path_return, char ***argv_return)
 {
@@ -403,7 +403,7 @@ main(int argc, char **argv)
 }
 
 static int
-convert(ifd, ofd)
+convert(int ifd, int ofd)
 {
     int rc, i;
     unsigned char buf[BUFFER_SIZE];

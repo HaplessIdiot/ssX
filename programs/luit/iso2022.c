@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/iso2022.c,v 1.4 2002/06/03 22:51:14 dawes Exp $ */
+/* $XFree86: xc/programs/luit/iso2022.c,v 1.5 2002/06/04 21:05:51 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -296,7 +296,7 @@ mergeIso2022(Iso2022Ptr d, Iso2022Ptr s)
     return 0;
 }
 
-int
+static int
 utf8Count(unsigned char c)
 {
     /* All return values must be less than BUFFERED_INPUT_SIZE */
@@ -604,7 +604,7 @@ copyOut(Iso2022Ptr is, int fd, unsigned char *buf, int count)
                     s++;
                 } else {
                     CharsetPtr charset;
-                    unsigned char code;
+                    unsigned char code = 0;
                     if(*s <= 0x7F) {
                         switch(is->shiftState) {
                         case S_NORMAL: charset = GL(is); break;
@@ -654,7 +654,7 @@ copyOut(Iso2022Ptr is, int fd, unsigned char *buf, int count)
             } else {        /* buffered_ku */
                 CharsetPtr charset;
                 unsigned char ku_code;
-                int code;
+                unsigned code = 0;
                 if(is->buffered_ku <= 0x7F) {
                     switch(is->shiftState) {
                     case S_NORMAL: charset = GL(is); break;
@@ -665,8 +665,6 @@ copyOut(Iso2022Ptr is, int fd, unsigned char *buf, int count)
                     ku_code = is->buffered_ku;
                     if(*s < 0x80)
                         code = *s;
-                    else
-                        code = -1;
                 } else {
                     switch(is->shiftState) {
                     case S_NORMAL: charset = GR(is); break;
@@ -677,8 +675,6 @@ copyOut(Iso2022Ptr is, int fd, unsigned char *buf, int count)
                     ku_code = is->buffered_ku - 0x80;
                     if(*s >= 0x80)
                         code = *s - 0x80;
-                    else
-                        code = -1;
                 }
                 switch(charset->type) {
                 case T_94:
