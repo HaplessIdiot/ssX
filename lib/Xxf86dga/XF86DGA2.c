@@ -46,9 +46,9 @@ unsigned char* XDGAGetMappedMemory(int);
  *                                                                           *
  *****************************************************************************/
 
-static int xdga_close_display();
-static Bool xdga_wire_to_event();
-static Status xdga_event_to_wire();
+static int xdga_close_display(Display *dpy, XExtCodes *codes);
+static Bool xdga_wire_to_event(Display *dpy, XEvent *event, xEvent *wire_ev);
+static Status xdga_event_to_wire(Display *dpy, XEvent *event, xEvent *wire_ev);
 
 static XExtensionHooks xdga_extension_hooks = {
     NULL,				/* create_gc */
@@ -70,14 +70,14 @@ static XEXT_GENERATE_CLOSE_DISPLAY (xdga_close_display, xdga_info)
 XEXT_GENERATE_FIND_DISPLAY (xdga_find_display, xdga_info, 
 				   "XFree86-DGA", 
 				   &xdga_extension_hooks, 
-				   XF86DGANumberEvents, NULL)
+				   0, NULL)
 
 
 static Status
 xdga_event_to_wire(
   Display *dpy,
   XEvent *event,
-  dgaEvent *wire
+  xEvent *wire_ev
 ){
     return True;
 }
@@ -86,8 +86,9 @@ static Bool
 xdga_wire_to_event(
   Display *dpy,
   XEvent *event,
-  dgaEvent *wire
+  xEvent *wire_ev
 ){
+  dgaEvent *wire = (dgaEvent *) wire_ev;
   XDGAButtonEvent *bevent;
   XDGAKeyEvent *kevent;
   XDGAMotionEvent *mevent;
@@ -177,7 +178,18 @@ Bool XDGAQueryVersion(
     UnlockDisplay(dpy);
     SyncHandle();
     if (*majorVersion >= 2)
+    {
+	int i, j;
+
+	for (i = 0, j = info->codes->first_event;
+	     i < XF86DGANumberEvents;
+	     i++, j++) 
+	{
+	    XESetWireToEvent (dpy, j, xdga_wire_to_event);
+	    XESetEventToWire (dpy, j, xdga_event_to_wire);
+	}
 	XDGASetClientVersion(dpy);
+    }
     return True;
 }
 

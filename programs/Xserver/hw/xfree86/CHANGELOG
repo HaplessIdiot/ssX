@@ -1,4 +1,5 @@
 XFree86 4.0.1d (xx September 2000)
+ 724. Fix DGA library to only swap events for DGA 2.0 X servers
  723. Fix locale parsing code in Xlib and Xt (Matthieu Herrb)
  722. Fix X Test Suite to work on 800x600 screens (Keith Packard)
  721. PCI chip ID updates to ATI driver (Marc La France).
@@ -11184,4 +11185,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1325 2000/09/28 14:50:59 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1326 2000/09/28 20:17:06 tsi Exp $
