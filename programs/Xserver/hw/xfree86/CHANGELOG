@@ -1,4 +1,6 @@
 XFree86 4.4.99.9 (xx June 2004)
+ 142. Add support for dynamic screen configuration changes in rootless XDarwin
+      (John Harper and Torrey T. Lyons).
  141. Add Distributed Multihead X (DMX) support (Kevin Martin and
       Rik Faith).
 
@@ -19020,7 +19022,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3287 2004/06/27 11:02:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3288 2004/06/30 20:21:45 martin Exp $
 
 
 

@@ -30,7 +30,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.h,v 1.7 2003/11/12 20:21:51 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.h,v 1.8 2003/11/27 01:59:53 torrey Exp $ */
 
 #ifndef _QUARTZ_H
 #define _QUARTZ_H
@@ -65,6 +65,12 @@ typedef void (*SuspendScreenProc)(ScreenPtr pScreen);
 typedef void (*ResumeScreenProc)(ScreenPtr pScreen, int x, int y);
 typedef void (*CaptureScreensProc)(void);
 typedef void (*ReleaseScreensProc)(void);
+
+/*
+ * Screen state change support
+ */
+typedef void (*AddPseudoramiXScreensProc)(int *x, int *y, int *width, int *height);
+typedef void (*UpdateScreenProc)(ScreenPtr pScreen);
 
 /*
  * Rootless helper functions
@@ -102,6 +108,9 @@ typedef struct _QuartzModeProcs {
     ResumeScreenProc ResumeScreen;
     CaptureScreensProc CaptureScreens;	// Only called in fullscreen
     ReleaseScreensProc ReleaseScreens;	// Only called in fullscreen
+
+    AddPseudoramiXScreensProc AddPseudoramiXScreens;
+    UpdateScreenProc UpdateScreen;
 
     IsX11WindowProc IsX11Window;
     HideWindowsProc HideWindows;
