@@ -1,5 +1,5 @@
 /* $XConsortium: maprules.c /main/11 1996/12/05 10:21:52 kaleb $ */
-/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.6 1996/12/23 06:04:02 dawes Exp $ */
+/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.7 1996/12/24 02:23:18 dawes Exp $ */
 /************************************************************
  Copyright (c) 1996 by Silicon Graphics Computer Systems, Inc.
 
@@ -1245,14 +1245,14 @@ XkbRF_GetNamesProp(Display *dpy,char **rf_rtrn,XkbRF_VarDefsPtr vd_rtrn)
 #else
 XkbRF_GetNamesProp(dpy,rf_rtrn,vd_rtrn)
    Display *		dpy;
-   char **		rf_rtrn;
+   char **	rf_rtrn;
    XkbRF_VarDefsPtr	vd_rtrn;
 #endif
 {
 Atom		rules_atom,actual_type;
 int		fmt,len;
 unsigned long	nitems,bytes_after;
-unsigned char *	data,*out;
+char *		data,*out;
 Status		rtrn;
 
     rules_atom= XInternAtom(dpy,_XKB_RF_NAMES_PROP_ATOM,True);
@@ -1261,7 +1261,8 @@ Status		rtrn;
     rtrn= XGetWindowProperty(dpy,DefaultRootWindow(dpy),rules_atom,
 				0L,_XKB_RF_NAMES_PROP_MAXLEN,False,
 				XA_STRING,&actual_type,
-				&fmt,&nitems,&bytes_after,&data);
+				&fmt,&nitems,&bytes_after,
+				(unsigned char **)&data);
     if (rtrn!=Success)
 	return False;
     if (rf_rtrn)
@@ -1334,7 +1335,7 @@ char *	pval;
 	_XkbLibError(_XkbErrXReqFailure,"XkbRF_SetNamesProp",X_InternAtom);
         return False;
     }
-    pval= (char *)malloc(len);
+    pval= (char *)_XkbAlloc(len);
     if (!pval) {
 	_XkbLibError(_XkbErrBadAlloc,"XkbRF_SetNamesProp",len);
         return False;
@@ -1367,13 +1368,13 @@ char *	pval;
     pval[out++]= '\0';
     if (out!=len) {
 	_XkbLibError(_XkbErrBadLength,"XkbRF_SetNamesProp",out);
-	free(pval);
+	_XkbFree(pval);
 	return False;
     }
 
     XChangeProperty(dpy,DefaultRootWindow(dpy),name,XA_STRING,8,PropModeReplace,
-                                                		pval,len);
-    free(pval);
+                                      (unsigned char *)pval,len);
+    _XkbFree(pval);
     return True;
 }
 

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.20 1996/12/20 06:44:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.21 1996/12/23 06:43:41 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -160,7 +160,7 @@ ReadInput(pointer	block_data,
     local_dev = localDevices[i];
     if (local_dev->read_input &&
 	(local_dev->fd >= 0) &&
-        (FD_ISSET(((fd_set *) read_mask), local_dev->fd) != 0)) {
+        (FD_ISSET(local_dev->fd, ((fd_set *) read_mask)) != 0)) {
       (*local_dev->read_input)(local_dev);
       break;
     }

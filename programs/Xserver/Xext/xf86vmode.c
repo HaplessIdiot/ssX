@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.26 1996/12/09 11:50:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.27 1996/12/23 06:29:04 dawes Exp $ */
 
 /*
 
@@ -70,7 +70,6 @@ static void XF86VidModeResetProc(
 #endif
 );
 
-static DISPATCH_PROC(LocalClient);
 static DISPATCH_PROC(ProcXF86VidModeDispatch);
 static DISPATCH_PROC(ProcXF86VidModeGetAllModeLines);
 static DISPATCH_PROC(ProcXF86VidModeGetModeLine);
@@ -1164,27 +1163,6 @@ ProcXF86VidModeSetViewPort(client)
     return (client->noClientException);
 }
 
-/* 
- * lifted from xc/programs/Xserver/os/access.c.
- */
-static int
-LocalClient(client)
-    ClientPtr client;
-{
-    int    		alen, notused;
-    struct sockaddr	*from = NULL;
-
-    if (!_XSERVTransGetPeerAddr (((OsCommPtr)client->osPrivate)->trans_conn,
-	&notused, &alen, (Xtransaddr*)&from)) {
-	if (alen == 0 || 
-	    from->sa_family == AF_UNSPEC || from->sa_family == AF_UNIX) {
-	    xfree ((char *) from);
-	    return TRUE;
-	}
-	xfree ((char *) from);
-    }
-    return FALSE;
-}
 
 static int
 ProcXF86VidModeDispatch (client)

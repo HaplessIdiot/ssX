@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: property.c /main/40 1996/11/12 09:29:03 rws $ */
-/* $XFree86: xc/programs/Xserver/dix/property.c,v 3.2 1996/05/06 05:56:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/property.c,v 3.3 1996/12/23 06:29:49 dawes Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -621,12 +621,12 @@ ProcGetProperty(client)
     if (len)
     {
 	switch (reply.format) {
-	case 32: client->pSwapReplyFunc = CopySwap32Write; break;
-	case 16: client->pSwapReplyFunc = CopySwap16Write; break;
+	case 32: client->pSwapReplyFunc = (ReplySwapPtr)CopySwap32Write; break;
+	case 16: client->pSwapReplyFunc = (ReplySwapPtr)CopySwap16Write; break;
 #ifdef LBX
-	default: client->pSwapReplyFunc = (void (*) ())fWriteToClient; break;
+	default: client->pSwapReplyFunc = (ReplySwapPtr)fWriteToClient; break;
 #else
-	default: client->pSwapReplyFunc = (void (*) ())WriteToClient; break;
+	default: client->pSwapReplyFunc = (ReplySwapPtr)WriteToClient; break;
 #endif
 	}
 	WriteSwappedDataToClient(client, len,

@@ -85,6 +85,13 @@ static void VErrorF(char*, va_list);
 #include "atomcache.h"
 #include "proxyopts.h"
 
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern char *malloc();
+extern char *realloc();
+#endif
+
 extern char *display_name;
 extern char *display;
 
@@ -499,7 +506,6 @@ unsigned long *
 Xalloc (amount)
     unsigned long amount;
 {
-    char		*malloc();
     register pointer  ptr;
 	
     if ((long)amount <= 0)
@@ -543,8 +549,6 @@ Xrealloc (ptr, amount)
     register pointer ptr;
     unsigned long amount;
 {
-    char *malloc();
-    char *realloc();
 
 #ifdef MEMBUG
     if (!Must_have_memory && Memory_fail &&

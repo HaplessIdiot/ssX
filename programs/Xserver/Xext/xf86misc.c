@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.18 1996/08/21 08:38:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.19 1996/12/17 20:59:16 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -46,7 +46,6 @@ static void XF86MiscResetProc(
 #endif
 );
 
-static DISPATCH_PROC(LocalClient);
 static DISPATCH_PROC(ProcXF86MiscDispatch);
 static DISPATCH_PROC(ProcXF86MiscGetKbdSettings);
 static DISPATCH_PROC(ProcXF86MiscGetMouseSettings);
@@ -446,28 +445,6 @@ ProcXF86MiscSetKbdSettings(client)
     if (xf86Verbose)
 	ErrorF("SetKbdSettings - Succeeded\n");
     return (client->noClientException);
-}
-
-/* 
- * lifted from xc/programs/Xserver/os/access.c.
- */
-static int
-LocalClient(client)
-    ClientPtr client;
-{
-    int                 alen, notused;
-    struct sockaddr     *from = NULL;
-
-    if (!_XSERVTransGetPeerAddr (((OsCommPtr)client->osPrivate)->trans_conn,
-        &notused, &alen, (Xtransaddr*)&from)) {
-        if (alen == 0 || 
-            from->sa_family == AF_UNSPEC || from->sa_family == AF_UNIX) {
-            xfree ((char *) from);
-            return TRUE;
-        }
-        xfree ((char *) from);
-    }
-    return FALSE;
 }
 
 static int

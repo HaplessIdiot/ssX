@@ -379,7 +379,8 @@ XkbUIWinEventProc(clientData, eventPtr)
 	if (xkbuiPtr->updatePending) {
 	    Tk_CancelIdleCall(XkbUIWinDisplay, (ClientData) xkbuiPtr);
 	}
-	Tk_EventuallyFree((ClientData) xkbuiPtr, XkbUIWinDestroy);
+	Tk_EventuallyFree((ClientData) xkbuiPtr,
+			  (Tcl_FreeProc *)XkbUIWinDestroy);
     }
 }
 

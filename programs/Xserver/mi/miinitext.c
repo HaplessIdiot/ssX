@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c /main/41 1996/09/28 17:15:08 rws $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.12 1996/10/03 08:49:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.13 1996/12/23 07:09:45 dawes Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -253,10 +253,10 @@ InitExtensions(argc, argv)
 #if defined(XF86VIDMODE) && !defined(PRINT_ONLY_SERVER)
     XFree86VidModeExtensionInit();
 #endif
-#ifdef XF86MISC
+#if defined(XF86MISC) && !defined(PRINT_ONLY_SERVER)
     XFree86MiscExtensionInit();
 #endif
-#ifdef XFreeXDGA
+#if defined(XFreeXDGA) && !defined(PRINT_ONLY_SERVER)
     XFree86DGAExtensionInit();
 #endif
 }

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: ErrDes.c /main/41 1996/10/22 14:18:04 kaleb $
- * $XFree86: xc/lib/X11/ErrDes.c,v 3.2 1996/12/23 05:59:30 dawes Exp $
+ * $XFree86: xc/lib/X11/ErrDes.c,v 3.3 1996/12/24 02:22:43 dawes Exp $
  */
 
 /***********************************************************
@@ -178,7 +178,7 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
     if (db)
     {
 	if (strlen(name) + 1 + strlen(type) + 1 <= BUFSIZ) {
-	    sprintf(temp, sizeof(temp), "%s.%s", name, type);
+	    sprintf(temp, "%s.%s", name, type);
 	} else {
 	    strncpy(temp, name, BUFSIZ);
 	    temp[BUFSIZ - 1] = '\0';

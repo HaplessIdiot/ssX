@@ -30,6 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+/* $XFree86$ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -178,10 +179,10 @@ InitInput(argc, argv)
      int	argc;
      char **argv;
 {
-    DevicePtr ptr, kbd;
+    DeviceIntPtr ptr, kbd;
 
-    ptr = AddInputDevice((DeviceProc)PointerProc, TRUE);
-    kbd = AddInputDevice((DeviceProc)KeyboardProc, TRUE);
+    ptr = AddInputDevice(PointerProc, TRUE);
+    kbd = AddInputDevice(KeyboardProc, TRUE);
     RegisterPointerDevice(ptr);
     RegisterKeyboardDevice(kbd);
     return;
@@ -204,6 +205,13 @@ ProcessInputEvents()
 #ifdef DDXOSINIT
 void
 OsVendorInit()
+{
+}
+#endif
+
+#ifdef DDXOSFATALERROR
+void
+OsVendorFatalError()
 {
 }
 #endif
