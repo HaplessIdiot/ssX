@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.23 2002/11/09 03:36:31 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.24 2002/11/23 02:38:15 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -1072,7 +1072,7 @@ ProcRenderAddGlyphs (ClientPtr client)
 	    return BadAlloc;
     }
 
-    remain = (stuff->length << 2) - sizeof (xRenderAddGlyphsReq);
+    remain = (client->req_len << 2) - sizeof (xRenderAddGlyphsReq);
 
     glyphs = glyphsBase;
 
@@ -1241,7 +1241,7 @@ ProcRenderCompositeGlyphs (ClientPtr client)
     }
 
     buffer = (CARD8 *) (stuff + 1);
-    end = (CARD8 *) stuff + (stuff->length << 2);
+    end = (CARD8 *) stuff + (client->req_len << 2);
     nglyph = 0;
     nlist = 0;
     while (buffer + sizeof (xGlyphElt) < end)
@@ -1752,7 +1752,7 @@ ProcRenderSetPictureFilter (ClientPtr client)
 		    RenderErrBase + BadPicture);
     name = (char *) (stuff + 1);
     params = (xFixed *) (name + ((stuff->nbytes + 3) & ~3));
-    nparams = ((xFixed *) stuff + stuff->length) - params;
+    nparams = ((xFixed *) stuff + client->req_len) - params;
     result = SetPictureFilter (pPicture, name, stuff->nbytes, params, nparams);
     return result;
 }
@@ -1771,9 +1771,9 @@ ProcRenderCreateAnimCursor (ClientPtr client)
 
     REQUEST_AT_LEAST_SIZE(xRenderCreateAnimCursorReq);
     LEGAL_NEW_RESOURCE(stuff->cid, client);
-    if (stuff->length & 1)
+    if (client->req_len & 1)
 	return BadLength;
-    ncursor = (stuff->length - (SIZEOF(xRenderCreateAnimCursorReq) >> 2)) >> 1;
+    ncursor = (client->req_len - (SIZEOF(xRenderCreateAnimCursorReq) >> 2)) >> 1;
     cursors = xalloc (ncursor * (sizeof (CursorPtr) + sizeof (CARD32)));
     if (!cursors)
 	return BadAlloc;
@@ -2068,7 +2068,7 @@ SProcRenderAddGlyphs (ClientPtr client)
     swapl(&stuff->nglyphs, n);
     if (stuff->nglyphs & 0xe0000000)
 	return BadLength;
-    end = (CARD8 *) stuff + (stuff->length << 2);
+    end = (CARD8 *) stuff + (client->req_len << 2);
     gids = (CARD32 *) (stuff + 1);
     gi = (xGlyphInfo *) (gids + stuff->nglyphs);
     if ((char *) end - (char *) (gids + stuff->nglyphs) < 0)
@@ -2132,7 +2132,7 @@ SProcRenderCompositeGlyphs (ClientPtr client)
     swaps(&stuff->xSrc, n);
     swaps(&stuff->ySrc, n);
     buffer = (CARD8 *) (stuff + 1);
-    end = (CARD8 *) stuff + (stuff->length << 2);
+    end = (CARD8 *) stuff + (client->req_len << 2);
     while (buffer + sizeof (xGlyphElt) < end)
     {
 	elt = (xGlyphElt *) buffer;
@@ -2476,8 +2476,8 @@ PanoramiXRenderCompositeGlyphs (ClientPtr client)
     VERIFY_XIN_PICTURE (dst, stuff->dst, client, SecurityWriteAccess,
 			RenderErrBase + BadPicture);
 
-    if (stuff->length << 2 >= (sizeof (xRenderCompositeGlyphsReq) +
-			       sizeof (xGlyphElt)))
+    if (client->req_len << 2 >= (sizeof (xRenderCompositeGlyphsReq) +
+				 sizeof (xGlyphElt)))
     {
 	elt = (xGlyphElt *) (stuff + 1);
 	origElt = *elt;
@@ -2516,7 +2516,7 @@ PanoramiXRenderFillRectangles (ClientPtr client)
     REQUEST_AT_LEAST_SIZE (xRenderFillRectanglesReq);
     VERIFY_XIN_PICTURE (dst, stuff->dst, client, SecurityWriteAccess, 
 			RenderErrBase + BadPicture);
-    extra_len = (stuff->length << 2) - sizeof (xRenderFillRectanglesReq);
+    extra_len = (client->req_len << 2) - sizeof (xRenderFillRectanglesReq);
     if (extra_len &&
 	(extra = (char *) ALLOCATE_LOCAL (extra_len)))
     {
