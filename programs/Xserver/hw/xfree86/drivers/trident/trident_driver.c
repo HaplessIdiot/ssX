@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.117 2000/12/07 18:51:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.118 2000/12/07 19:03:40 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -207,7 +207,8 @@ typedef enum {
     OPTION_MMIO_ONLY,
     OPTION_VIDEO_KEY,
     OPTION_NOMMIO,
-    OPTION_NOPCIBURST
+    OPTION_NOPCIBURST,
+    OPTION_CYBER_SHADOW
 } TRIDENTOpts;
 
 static OptionInfoRec TRIDENTOptions[] = {
@@ -222,6 +223,7 @@ static OptionInfoRec TRIDENTOptions[] = {
     { OPTION_NOMMIO,		"NoMMIO",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOPCIBURST,	"NoPciBurst",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_MMIO_ONLY,		"MMIOonly",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_CYBER_SHADOW,	"CyberShadow",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1208,6 +1210,10 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->MMIOonly = TRUE;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MMIO Disabled\n");
 	}
+    }
+    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_CYBER_SHADOW, FALSE)) {
+	pTrident->CyberShadow = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Cyber Shadow enabled\n");
     }
 
     pTrident->MUXThreshold = 160000; /* 160MHz */

@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.34 2000/12/07 16:48:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.35 2000/12/07 19:03:40 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -309,7 +309,13 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    pReg->tridentRegs3CE[CyberControl] &= 0x7E;
 	    xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"Shadow off\n");
 	}
+
+	if (pTrident->CyberShadow) {
+	    pReg->tridentRegs3CE[CyberControl] &= 0x7E;
+	    xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"Forcing Shadow off\n");
+	}
     }
+
     /* Enable Chipset specific options */
     switch (pTrident->Chipset) {
 	case CYBERBLADEI7:

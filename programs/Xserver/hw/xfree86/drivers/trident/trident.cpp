@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.cpp,v 1.4 2000/06/14 02:13:15 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.cpp,v 1.5 2000/12/07 16:48:04 alanh Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH TRIDENT __drivermansuffix__ "Version 4.0.1"  "XFree86"
@@ -57,6 +57,9 @@ Disable or enable acceleration.  Default: acceleration is enabled.
 .TP
 .BI "Option \*qPciRetry\*q \*q" boolean \*q
 Enable or disable PCI retries.  Default: off.
+.TP
+.BI "Option \*qCyberShadow\*q \*q" boolean \*q
+For Cyber chipsets only, turn off shadow registers. Default: on.
 .TP
 .BI "Option \*qShadowFB\*q \*q" boolean \*q
 Enable or disable use of the shadow framebuffer layer.  See

@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.31 2000/11/30 11:53:25 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.32 2000/12/07 16:48:04 alanh Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -77,10 +77,6 @@ typedef struct {
     Bool		HasSGRAM;
     Bool		MUX;
     Bool		IsCyber;
-#if 0
-    /* obsolete */
-    Bool		CyberShadowSet;
-#endif
     Bool		CyberShadow;
     Bool		NoMMIO;
     Bool                MMIOonly;
