@@ -1,4 +1,5 @@
 /* $XConsortium: et3_driver.c,v 1.1 94/03/28 21:50:45 dpw Exp $ */
+/* $XFree86$ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -390,17 +391,17 @@ ET3000Adjust(x, y)
 {
 #ifdef USE_PAN
 #ifdef MONOVGA
-  int Base = (y * vga256InfoRec.virtualX + x + 3) >> 4;
-  int wants_pan = (y * vga256InfoRec.virtualX + x + 3) & 8;
+  int Base = (y * vga256InfoRec.displayWidth + x + 3) >> 4;
+  int wants_pan = (y * vga256InfoRec.displayWidth + x + 3) & 8;
 #else
-  int Base = (y * vga256InfoRec.virtualX + x + 1) >> 3;
-  int wants_pan = (y * vga256InfoRec.virtualX + x + 1) & 4;
+  int Base = (y * vga256InfoRec.displayWidth + x + 1) >> 3;
+  int wants_pan = (y * vga256InfoRec.displayWidth + x + 1) & 4;
 #endif
 #else
 #ifdef MONOVGA
-  int Base = (y * vga256InfoRec.virtualX + x + 7) >> 4;
+  int Base = (y * vga256InfoRec.displayWidth + x + 7) >> 4;
 #else
-  int Base = (y * vga256InfoRec.virtualX + x + 3) >> 3;
+  int Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 #endif
 #endif
 
@@ -425,6 +426,3 @@ ET3000Adjust(x, y)
   outb(0x3C0, wants_pan ? 3 : 0);
 #endif
 }
-
-
-

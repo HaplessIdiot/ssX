@@ -1,6 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.2 94/03/28 21:52:30 dpw Exp $
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.0 1994/04/29 14:10:28 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -866,9 +866,9 @@ PVGA1Adjust(x, y)
      int x, y;
 {
 #ifdef MONOVGA
-  int           Base = (y * vga256InfoRec.virtualX + x + 3) >> 3;
+  int           Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 #else
-  int           Base = (y * vga256InfoRec.virtualX + x + 1) >> 2;
+  int           Base = (y * vga256InfoRec.displayWidth + x + 1) >> 2;
 #endif
   unsigned char temp;
 

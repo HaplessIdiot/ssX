@@ -1,4 +1,5 @@
 /* $XConsortium: gvg_driver.c,v 1.1 94/03/28 21:51:24 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -317,9 +318,8 @@ static void
 GVGAAdjust(x, y)
      int x, y;
 {
-  int Base =(y * vga256InfoRec.virtualX + x + 3) >> 3;
+  int Base =(y * vga256InfoRec.displayWidth + x + 3) >> 3;
 
   outw(vgaIOBase + 4, (Base & 0x00FF00)      | 0x0C);
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
 }
-
