@@ -2077,6 +2077,7 @@ _XimProtoOpenIM(
 	    _XimRegisterServerFilter(im);
 	    return True;
 	}
+	_XimShutdown(im);
 #ifdef XIM_CONNECTABLE
     } else if (IS_DELAYBINDABLE(im)) {
 	if (_XimDelayModeSetAttr(im))

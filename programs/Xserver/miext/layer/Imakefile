@@ -12,15 +12,20 @@ XFMODOBJ = laymodule.o
 #endif
 #endif
 
+#if BuildRender
+RENDERSRC = layerpict.c
+RENDEROBJ = layerpict.o
+#endif
+
 SRCS = layergc.c \
        layerinit.c \
-       layerpict.c \
+       $(RENDERSRC) \
        layerwin.c \
        $(XFMODSRC)
 
 OBJS = layergc.o \
        layerinit.o \
-       layerpict.o \
+       $(RENDEROBJ) \
        layerwin.o \
        $(XFMODOBJ)
 

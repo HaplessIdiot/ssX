@@ -1,4 +1,21 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 392. Fixed a crash when _XIMProtoOpenIM(), hich is called through XOpenIM() 
+      API when protocol IM is being set up,  fails (Bugzilla #618, 
+      Hisashi MIYASHITA).
+ 391. Fixed a possible source of Sig11 in Jamstudio driver (BugzillaR #617,
+      Jonathan Hough, Egbert Eich).
+ 390. Fixed building without RENDER support (BugzillaR #306, Mattieu Herrb, 
+      Egbert Eich).
+ 389. Pass pointer obtained by Xalloc() to Xfree() not the one that may be
+      manipulated in the mean time (Bugzilla #614, Alan Coopersmith).
+ 388. Added reverse mapping of keysyms to keycodes (XKeysymToKeycode())
+      to xev to detect situations where this maps to a different keycode than
+      the one of the key pressed (Egbert Eich).
+ 387. Made xauth called by startx quiet (Bugzilla #597, Stas Sergeev).
+ 386. Added missing operand size override handling to PUSH imm8 in x86emu
+      (Bugzilla #590, Boris Weissman).
+ 385. Fixed compile glitch with NetBSD in xdm/genauth.c (Bugzilla #587, 
+      Nicolas JOLY)
  384. Fix bugs in Xlib's EUC string converters that cause incorrect work of
       _Xmblen.  Fix _Xmblen usage in imCallbk.c when Xlib is built with
       X_LOCALE (Etsushi Kato).
@@ -664,7 +681,7 @@ XFree86 4.3.99.4 (10 May 2003)
       (Jim Radford).
  150. Updated Wacom driver to support ntuos 2 2D mouse and a few styli,
       TabletPC with ISD V4 protocol, intiq 15X and Cintiq 18SX 
-      (Frederic Lepied).
+      (Wacom).
  149. Fix programming error in ix86 motherboard chipset determination
       (Marc La France).
  148. Ansi prototypes cleanup in Xserver/include and Xserver/os 
@@ -17570,7 +17587,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2814 2003/08/22 03:24:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2815 2003/08/22 13:32:29 pascal Exp $
 
 
 
