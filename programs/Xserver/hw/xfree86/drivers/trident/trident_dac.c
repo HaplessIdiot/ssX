@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.50 2001/09/23 18:03:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.51 2001/09/24 11:19:10 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -400,17 +400,37 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pTrident->hsync = (HTotal - HSyncStart) + 23 + h_off;
 	pTrident->vsync = (VTotal - VSyncStart) - 2 + v_off;
 
-	/* These values need tweaking, maybe worth doing them as options ! */
-
-	/* a little more skew for the Blade series */
-	/* 9 seems to work well for CyberBlade/i7 and Cyber 9540 */
-	if (pTrident->Chipset >= BLADE3D) 
-	    pTrident->hsync -= 6;
-
-	/* Needs furthur adjustment yet ! */
-	if (pTrident->Chipset < CYBER9397) { 
-	    pTrident->hsync -= (mode->CrtcHTotal / 16);
-	    pTrident->vsync += 2;
+	/* HACK !!! - maybe worth doing them as options ! */
+	/* As awful as this is, it appears to be the only way....Sigh! */
+	switch (pTrident->Chipset) {
+	    case TGUI9680:
+	        /* Furthur tweaking needed */
+	        pTrident->hsync -= (mode->CrtcHTotal / 16);
+	        pTrident->vsync += 2;
+		break;
+	    case PROVIDIA9685:
+		/* Spot on */
+		break;
+	    case CYBERBLADEXPm8:
+	    case CYBERBLADEXPm16:
+		pTrident->hsync -= 15;
+		pTrident->vsync += 2;
+		break;
+	    case BLADE3D:
+		if (pScrn->depth == 24)
+		    pTrident->hsync -= 8;
+		else
+		    pTrident->hsync -= 6;
+		break;
+	    case CYBERBLADEI7:
+	    case CYBERBLADEI7D:
+	    case CYBERBLADEI1:
+	    case CYBERBLADEI1D:
+	    case CYBERBLADEAI1:
+	    case CYBERBLADEAI1D:
+	    case CYBERBLADEE4:
+		pTrident->hsync -= 8;
+		break;
 	}
     }
     

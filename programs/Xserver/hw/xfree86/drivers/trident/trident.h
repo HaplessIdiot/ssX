@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.44 2001/09/21 15:22:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.45 2001/09/24 11:19:10 alanh Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -243,9 +243,9 @@ typedef enum {
     TGUI9660,
     TGUI9680,
     PROVIDIA9682,
-    PROVIDIA9685,
     CYBER9382,
     CYBER9385,
+    PROVIDIA9685,
     CYBER9388,
     CYBER9397,
     CYBER9397DVD,
