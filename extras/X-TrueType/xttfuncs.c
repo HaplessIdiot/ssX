@@ -31,7 +31,7 @@
 
 Notice===
 */
-/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.12 2002/09/16 18:05:17 eich Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.13 2002/12/09 17:29:58 dawes Exp $ */
 
 #include "xttversion.h"
 
@@ -898,6 +898,7 @@ FreeTypeGetGlyphs (FontPtr pFont,
     CharInfoPtr *glyphsBase = glyphs;
 
     int spacing = 0;
+    int i,nullbits;
 
     dprintf((stderr, "FreeTypeGetGlyphs: %p %d\n", pFont, count));
 
@@ -947,6 +948,42 @@ FreeTypeGetGlyphs (FontPtr pFont,
     }
 
     *pCount = glyphs - glyphsBase;
+
+    /*
+      (pci)->bits == NULL crashes the Server when gHeight is not zero.
+      So we must check each value of (pci)->bits.  Since operation of
+      cash intervenes,  this "for () loop"  *MUST*  be independent of
+      the upper "while () loop".
+                                        Dec.26,2002  Chisato Yamauchi
+     */
+    dprintf((stderr, "AddressCheckBegin\n"));
+    nullbits=0;
+    for ( i=0 ; i<*pCount ; i++ ) {
+        dprintf((stderr,"[%d]:%x\n",i,glyphsBase[i]->bits));
+        if ( glyphsBase[i]->bits == NULL ) {
+            glyphsBase[i]->metrics.ascent=0;
+            glyphsBase[i]->metrics.descent=0;
+            nullbits++;
+        }
+        /*
+          The XFree86 sometimes allocates memory with the value of maxbounds.ascent
+          and maxbounds.descent. 
+          So (*glyphs)->ascent must not become larger than maxbounds.ascent.
+          This is the same also about descent.
+         */
+        if ( pFont->info.maxbounds.ascent < glyphsBase[i]->metrics.ascent ) {
+            dprintf((stderr, " Invalid ascent : maxbounds.ascent=%d metrics.ascent=%d [corrected]\n",
+                     pFont->info.maxbounds.ascent,glyphsBase[i]->metrics.ascent));
+            glyphsBase[i]->metrics.ascent = pFont->info.maxbounds.ascent;
+        }
+        if ( pFont->info.maxbounds.descent < glyphsBase[i]->metrics.descent ) {
+            dprintf((stderr, " Invalid descent : maxbounds.descent=%d metrics.descent=%d [corrected]\n",
+                     pFont->info.maxbounds.descent,glyphsBase[i]->metrics.descent));
+            glyphsBase[i]->metrics.descent = pFont->info.maxbounds.descent;
+        }
+    }
+    dprintf((stderr, "AddressCheckEnd i=%d nullbits=%d\n",i,nullbits));
+
     return Successful;
 }
 
@@ -961,6 +998,7 @@ FreeTypeGetMetrics (FontPtr pFont,
     FreeTypeFont *ft = (FreeTypeFont*) pFont->fontPrivate;
     xCharInfo **glyphsBase = glyphs;
     unsigned int c;
+    int i;
 
     /*dprintf((stderr, "FreeTypeGetMetrics: %d\n", count));*/
     if (ft->spacing == 'm' || ft->spacing == 'p') {
@@ -999,6 +1037,24 @@ FreeTypeGetMetrics (FontPtr pFont,
             break;
         }
         *pCount = glyphs - glyphsBase;
+        /*
+          The XFree86 sometimes allocates memory with the value of maxbounds.ascent
+          and maxbounds.descent. 
+          So (*glyphs)->ascent must not become larger than maxbounds.ascent.
+          This is the same also about descent.
+         */
+        for ( i=0 ; i<*pCount ; i++ ) {
+            if ( pFont->info.maxbounds.ascent < glyphsBase[i]->ascent ) {
+                dprintf((stderr, " Invalid ascent : maxbounds.ascent=%d metrics.ascent=%d [corrected]\n",
+                         pFont->info.maxbounds.ascent,glyphsBase[i]->ascent));
+                glyphsBase[i]->ascent = pFont->info.maxbounds.ascent;
+            }
+            if ( pFont->info.maxbounds.descent < glyphsBase[i]->descent ) {
+                dprintf((stderr, " Invalid descent : maxbounds.descent=%d metrics.descent=%d [corrected]\n",
+                         pFont->info.maxbounds.descent,glyphsBase[i]->descent));
+                glyphsBase[i]->descent = pFont->info.maxbounds.descent;
+            }
+        }
     } else {                                    /* -c- */
         switch (encoding) {
         case Linear8Bit:
