@@ -1,7 +1,7 @@
 XFree86 4.2.99.1 (XX January 2002)
   26. Localize XDarwin credits in French (Olivier Verdier) and Portuguese
       (Fabr’cio L. de Castro).
-  25. Turn off compiling broken XFree86-Misc extension for XDarwin
+  25. Turn off XFree86-Misc and VidMode extensions for XDarwin
       (Torrey T. Lyons).
   24. Localize a few missing strings in XDarwin preferences (Torrey T. Lyons).
   23. GeForce4 support (Mark Vojkovich).
@@ -14609,4 +14609,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2161 2002/02/01 02:05:36 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2162 2002/02/01 02:59:31 torrey Exp $
