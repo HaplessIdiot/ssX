@@ -55,6 +55,7 @@ FontFileFreeEntry (FontEntryPtr entry)
 
     if (entry->name.name)
 	xfree(entry->name.name);
+    entry->name.name = NULL;
 
     switch (entry->type)
     {
@@ -69,9 +70,11 @@ FontFileFreeEntry (FontEntryPtr entry)
 	break;
     case FONT_ENTRY_BITMAP:
 	xfree (entry->u.bitmap.fileName);
+	entry->u.bitmap.fileName = NULL;
 	break;
     case FONT_ENTRY_ALIAS:
 	xfree (entry->u.alias.resolved);
+	entry->u.alias.resolved = NULL;
 	break;
 #ifdef NOTYET
     case FONT_ENTRY_BC:

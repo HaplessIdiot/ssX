@@ -124,6 +124,7 @@ extern int screenPrivateCount;
 
 extern void InitProcVectors();
 extern void InitEvents();
+extern void CloseDownEvents(void);
 extern void DefineInitialRootWindow();
 extern Bool CreateGCperDepthArray();
 
@@ -465,9 +466,13 @@ main(argc, argv, envp)
 	    FreeScreen(screenInfo.screens[i]);
 	    screenInfo.numScreens = i;
 	}
+  	CloseDownEvents();
 	xfree(WindowTable);
+	WindowTable = NULL;
 	FreeFonts ();
+
 	xfree(serverClient->devPrivates);
+	serverClient->devPrivates = NULL;
 
 	if (dispatchException & DE_TERMINATE)
 	{
@@ -478,6 +483,7 @@ main(argc, argv, envp)
 	}
 
 	xfree(ConnectionInfo);
+	ConnectionInfo = NULL;
     }
     return(0);
 }

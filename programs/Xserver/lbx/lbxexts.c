@@ -238,10 +238,12 @@ LbxQueryExtension(ClientPtr   client,
 void
 LbxCloseDownExtensions(void)
 {
-    int         i;
+    int         i,j;
 
     for (i = 0; i < num_exts; i++) {
 	xfree(lbx_extensions[i]->name);
+	for (j = 0; j < lbx_extensions[i]->num_aliases; j++)
+	  xfree(lbx_extensions[i]->aliases[j]);
 	xfree(lbx_extensions[i]->aliases);
 	xfree(lbx_extensions[i]->rep_mask);
 	xfree(lbx_extensions[i]->ev_mask);
@@ -250,6 +252,7 @@ LbxCloseDownExtensions(void)
     xfree(lbx_extensions);
     lbx_extensions = NULL;
     num_exts = 0;
+
 }
 
 void

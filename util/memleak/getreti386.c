@@ -17,7 +17,7 @@
 #define CRT0_ADDRESS            0x109a
 #endif
 #ifdef linux
-#define CRT0_ADDRESS		0x804a3d0
+#define CRT0_ADDRESS		0x80482fc
 #endif
 
 static unsigned long

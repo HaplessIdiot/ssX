@@ -733,6 +733,7 @@ FreeClientResources(client)
 	}
     }
     xfree(clientTable[client->index].resources);
+    clientTable[client->index].resources = NULL;
     clientTable[client->index].buckets = 0;
 }
 

@@ -71,5 +71,6 @@ typedef struct {
 
 
 extern void __glXScreenInit(GLint);
+extern void __glXScreenReset(void);
 
 #endif /* !__GLX_screens_h__ */
