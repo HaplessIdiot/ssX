@@ -1,5 +1,5 @@
 /*
- * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
+ * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.19 2000/12/29 16:48:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.20 2001/01/30 10:18:49 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -38,40 +38,6 @@
 
 #include "glint_regs.h"
 #include "glint.h"
-
-static int
-Shiftbpp(ScrnInfoPtr pScrn, int value)
-{
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-    /* shift horizontal timings for 64bit VRAM's or 32bit SGRAMs */
-    int logbytesperaccess = 2;
-	
-    switch (pScrn->bitsPerPixel) {
-    case 8:
-	value >>= logbytesperaccess;
-	pGlint->BppShift = logbytesperaccess;
-	break;
-    case 16:
-	if (pGlint->DoubleBuffer) {
-	    value >>= (logbytesperaccess-2);
-	    pGlint->BppShift = logbytesperaccess-2;
-	} else {
-	    value >>= (logbytesperaccess-1);
-	    pGlint->BppShift = logbytesperaccess-1;
-	}
-	break;
-    case 24:
-	value *= 3;
-	value >>= logbytesperaccess;
-	pGlint->BppShift = logbytesperaccess;
-	break;
-    case 32:
-	value >>= (logbytesperaccess-2);
-	pGlint->BppShift = logbytesperaccess-2;
-	break;
-    }
-    return (value);
-}
 
 static unsigned long
 PM2VDAC_CalculateClock
@@ -113,9 +79,7 @@ Permedia2VPreInit(ScrnInfoPtr pScrn)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
-    if ((pGlint->PciInfo->subsysVendor == 0x1097) &&
-	(pGlint->PciInfo->subsysCard == 0x3db3)) {
-
+    if (IS_JPRO) {
 	/* Appian Jeronimo Pro 4x8mb (pm2v version) */
 	/* BIOS doesn't initialize the secondary heads, so we need to */
 
@@ -154,13 +118,8 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->glintRegs[PMFramebufferWriteMask >> 3] = 0xFFFFFFFF;
     pReg->glintRegs[PMBypassWriteMask >> 3] = 0xFFFFFFFF;
 
-    if (pGlint->UsePCIRetry) {
-	pReg->glintRegs[DFIFODis >> 3] = 1;
-	pReg->glintRegs[FIFODis >> 3] = 3;
-    } else {
-	pReg->glintRegs[DFIFODis >> 3] = 0;
-	pReg->glintRegs[FIFODis >> 3] = 1;
-    }
+    pReg->glintRegs[DFIFODis >> 3] = 0;
+    pReg->glintRegs[FIFODis >> 3] = 1;
 
     if (pGlint->UseBlockWrite)
 	pReg->glintRegs[PMMemConfig >> 3] = GLINT_READ_REG(PMMemConfig) | 1<<21;
@@ -267,6 +226,11 @@ Permedia2VSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int i;
 
+    /* We can't rely on the vgahw layer copying the font information
+     * back properly, due to problems with MMIO access to VGA space
+     * so we memcpy the information */
+    memcpy((CARD8*)pGlint->VGAdata,(CARD8*)pGlint->FbBase, 65536); 
+
     glintReg->glintRegs[ChipConfig >> 3] = GLINT_READ_REG(ChipConfig);
     glintReg->glintRegs[Aperture0 >> 3]  = GLINT_READ_REG(Aperture0);
     glintReg->glintRegs[Aperture1 >> 3]  = GLINT_READ_REG(Aperture1);
@@ -325,12 +289,10 @@ Permedia2VRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     CARD32 temp;
     int i;
 
-#if 0
-    GLINT_SLOW_WRITE_REG(0, ResetStatus);
-    while(GLINT_READ_REG(ResetStatus) != 0) {
-	xf86MsgVerb(X_INFO, 2, "Resetting Engine - Please Wait.\n");
-    };
-#endif
+    /* We can't rely on the vgahw layer copying the font information
+     * back properly, due to problems with MMIO access to VGA space
+     * so we memcpy the information */
+    memcpy((CARD8*)pGlint->FbBase,(CARD8*)pGlint->VGAdata, 65536); 
 
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[ChipConfig >> 3], ChipConfig);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[Aperture0 >> 3], Aperture0);
@@ -405,15 +367,33 @@ Permedia2vHideCursor(ScrnInfoPtr pScrn)
 }
 
 static void
+Permedia2vLoadCursorCallback(
+    ScrnInfoPtr pScrn
+)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    int i;
+       
+    for (i=0; i<1024; i++) 
+    	Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPattern+i, 0x00, 
+					pGlint->HardwareCursorPattern[i]);
+
+    pGlint->LoadCursorCallback = NULL;
+}
+
+static void
 Permedia2vLoadCursorImage(
     ScrnInfoPtr pScrn, 
     unsigned char *src
 )
 {
+    GLINTPtr pGlint = GLINTPTR(pScrn);
     int i;
        
     for (i=0; i<1024; i++) 
-    	Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPattern+i, 0x00, *(src++));
+	pGlint->HardwareCursorPattern[i] = *(src++);
+
+    pGlint->LoadCursorCallback = Permedia2vLoadCursorCallback;
 }
 
 static void
@@ -436,14 +416,17 @@ Permedia2vSetCursorPosition(
 }
 
 static void
-Permedia2vSetCursorColors(
-   ScrnInfoPtr pScrn, 
-   int bg, int fg
+Permedia2vCursorColorCallback(
+   ScrnInfoPtr pScrn
 )
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
+    int fg = pGlint->FGCursor;
+    int bg = pGlint->BGCursor;
 
-    if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) {
+    if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) ||
+	((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) &&
+	 (pGlint->MultiChip == PCI_CHIP_PERMEDIA3)) ) {
     /* PM3 uses last 2 indexes into hardware cursor palette fg first...*/
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+39, 0x00, (fg>>16)&0xff);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+40, 0x00, (fg>>8)&0xff);
@@ -462,6 +445,21 @@ Permedia2vSetCursorColors(
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+4, 0x00, (fg>>8)&0xff);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+5, 0x00, fg & 0xff);
     }
+    pGlint->CursorColorCallback = NULL;
+}
+
+static void
+Permedia2vSetCursorColors(
+   ScrnInfoPtr pScrn, 
+   int bg, int fg
+)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+
+    pGlint->FGCursor = fg;
+    pGlint->BGCursor = bg;
+
+    pGlint->CursorColorCallback = Permedia2vCursorColorCallback;
 }
 
 static Bool 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_regs.h,v 1.2 2000/09/19 14:39:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_regs.h,v 1.3 2000/10/17 09:07:05 alanh Exp $ */
 
 /*
  * glint register file 
@@ -698,7 +698,7 @@
 #define PM3LUT							0x8e80
 #define PM3LUTAddress						0x84d0
 #define PM3LUTData						0x84c8
-#define PM3LUTIndex						0x64c0
+#define PM3LUTIndex						0x84c0
 #define PM3LUTMode						0xb378
 #define PM3LUTModeAnd						0xad70
 #define PM3LUTModeOr						0xad78
@@ -955,11 +955,6 @@
 	#define PM3FillRectanglePosition_XOffset(x)            ((x)&0xffff)
 	#define PM3FillRectanglePosition_YOffset(y)            (((y)&0xffff)<<16)
 
-/**********************************************
-*  GLINT Permedia3 Tags and other stuff       *
-***********************************************/
-#define PM3SyncTag						0x0188
-
 #if 0
 
 /**********************************************
@@ -985,16 +980,6 @@
 	temp = READ_REG(base,offset);				\
 	WRITE_REG(base,offset,temp&(~(val)));			\
     }
-
-#if 0 /* Old Xfree code ... */
-#define WAIT(n)                                           	\
-do{                                                             \
-	if(!pGlint->UsePCIRetry)                                \
-		while(READ_REG(InFIFOSpace)<(n)){         \
-			mem_barrier();                          \
-		}                                               \
-}while(0)
-#endif
 
 #define RAMDAC_DELAY(b,x) do {					\
 	int delay = x;						\

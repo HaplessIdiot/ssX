@@ -1,5 +1,5 @@
 /*
- * Copyright 1997,1998 by Alan Hourihane, Wigan, England.
+ * Copyright 1997-2001 by Alan Hourihane, Wigan, England.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -28,7 +28,7 @@
  * 
  * Permedia accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.19 2000/06/21 13:35:52 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.20 2001/01/30 17:31:07 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -73,10 +73,6 @@ static void PermediaSubsequentScanlineCPUToScreenColorExpandFill(
 				ScrnInfoPtr pScrn, int x,
 				int y, int w, int h, int skipleft);
 static void PermediaSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
-static void PermediaSetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
-				int fg, int bg, int rop,unsigned int planemask);
-static void PermediaSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
-				int x, int y, int w, int h, int skipleft);
 static void PermediaWriteBitmap(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     				unsigned char *src, int srcwidth, int skipleft,
     				int fg, int bg, int rop,unsigned int planemask);
@@ -237,43 +233,28 @@ PermediaAccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentMono8x8PatternFillRect = 
 				PermediaSubsequentMono8x8PatternFillRect;
 
-    if (!pGlint->UsePCIRetry) {
-        infoPtr->ScanlineCPUToScreenColorExpandFillFlags = 
+    infoPtr->ScanlineCPUToScreenColorExpandFillFlags = 
 #if 0
 					       LEFT_EDGE_CLIPPING |
 					       LEFT_EDGE_CLIPPING_NEGATIVE_X |
 #endif
 					       BIT_ORDER_IN_BYTE_LSBFIRST;
 
-        pGlint->XAAScanlineColorExpandBuffers[0] =
+    pGlint->XAAScanlineColorExpandBuffers[0] =
 	    xnfalloc(((pScrn->virtualX + 63)/32) *4* (pScrn->bitsPerPixel / 8));
-        pGlint->XAAScanlineColorExpandBuffers[1] =
+    pGlint->XAAScanlineColorExpandBuffers[1] =
 	    xnfalloc(((pScrn->virtualX + 63)/32) *4* (pScrn->bitsPerPixel / 8));
 
-        infoPtr->NumScanlineColorExpandBuffers = 2;
-        infoPtr->ScanlineColorExpandBuffers = 
+    infoPtr->NumScanlineColorExpandBuffers = 2;
+    infoPtr->ScanlineColorExpandBuffers = 
 					pGlint->XAAScanlineColorExpandBuffers;
 
-    	infoPtr->SetupForScanlineCPUToScreenColorExpandFill =
+    infoPtr->SetupForScanlineCPUToScreenColorExpandFill =
 			PermediaSetupForScanlineCPUToScreenColorExpandFill;
-    	infoPtr->SubsequentScanlineCPUToScreenColorExpandFill = 
+    infoPtr->SubsequentScanlineCPUToScreenColorExpandFill = 
 			PermediaSubsequentScanlineCPUToScreenColorExpandFill;
-    	infoPtr->SubsequentColorExpandScanline = 
+    infoPtr->SubsequentColorExpandScanline = 
 			PermediaSubsequentColorExpandScanline;
-    } else {
-        infoPtr->CPUToScreenColorExpandFillFlags = CPU_TRANSFER_PAD_DWORD |
-#if 0
-					       LEFT_EDGE_CLIPPING |
-					       LEFT_EDGE_CLIPPING_NEGATIVE_X |
-#endif
-      					       BIT_ORDER_IN_BYTE_LSBFIRST;
-
-        infoPtr->ColorExpandBase = pGlint->IOBase + OutputFIFO + 4;
-        infoPtr->SetupForCPUToScreenColorExpandFill =
-				PermediaSetupForCPUToScreenColorExpandFill;
-        infoPtr->SubsequentCPUToScreenColorExpandFill = 
-				PermediaSubsequentCPUToScreenColorExpandFill;
-    }
 
     infoPtr->ColorExpandRange = MAX_FIFO_ENTRIES;
 
@@ -299,62 +280,6 @@ PermediaAccelInit(ScreenPtr pScreen)
     xf86InitFBManager(pScreen, &AvailFBArea);
 
     return (XAAInit(pScreen, infoPtr));
-}
-
-static void MoveBYTE(
-   register CARD32* dest,
-   register unsigned char* src,
-   register int dwords
-)
-{
-     while(dwords) {
-	*dest = *src;
-	src += 1;
-	dest += 1;
-	dwords -= 1;
-     }	
-}
-
-static void MoveWORDS(
-   register CARD32* dest,
-   register unsigned short* src,
-   register int dwords
-)
-{
-     while(dwords & ~0x01) {
-	*dest = *src;
-	*(dest + 1) = *(src + 1);
-	src += 2;
-	dest += 2;
-	dwords -= 2;
-     }	
-     switch(dwords) {
-	case 0:	return;
-	case 1: *dest = *src;
-		return;
-    }
-}
-
-static void MoveDWORDS(
-   register CARD32* dest,
-   register CARD32* src,
-   register int dwords )
-{
-     while(dwords & ~0x03) {
-	*dest = *src;
-	*(dest + 1) = *(src + 1);
-	*(dest + 2) = *(src + 2);
-	*(dest + 3) = *(src + 3);
-	src += 4;
-	dest += 4;
-	dwords -= 4;
-     }	
-     if (!dwords) return;
-     *dest = *src;
-     if (dwords == 1) return;
-     *(dest + 1) = *(src + 1);
-     if (dwords == 2) return;
-     *(dest + 2) = *(src + 2);
 }
 
 static void PermediaLoadCoord(
@@ -404,7 +329,6 @@ PermediaSync(ScrnInfoPtr pScrn)
 	GLINT_WRITE_REG(0, GlintSync);
 	do {
     		while(GLINT_READ_REG(OutFIFOWords) == 0);
-#define Sync_tag 0x188
 	} while (GLINT_READ_REG(OutputFIFO) != Sync_tag);
 }
 
@@ -780,79 +704,22 @@ PermediaSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     while (dwords >= infoRec->ColorExpandRange) {
     	GLINT_WAIT(infoRec->ColorExpandRange);
     	GLINT_WRITE_REG((infoRec->ColorExpandRange - 2)<<16 | 0x0D, OutputFIFO);
-    	MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4), src,
-		infoRec->ColorExpandRange - 1);
+    	GLINT_MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+		src, infoRec->ColorExpandRange - 1);
     	dwords -= (infoRec->ColorExpandRange - 1);
 	src += (infoRec->ColorExpandRange - 1);
     }
     if (dwords) {
     	GLINT_WAIT(dwords);
     	GLINT_WRITE_REG((dwords - 1)<<16 | 0x0D, OutputFIFO);
-    	MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4), src,dwords);
+    	GLINT_MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+		src,dwords);
     }
     pGlint->cpucount += 1;
 #if 0
     if (pGlint->cpucount == (pGlint->cpuheight + 1))
 	CHECKCLIPPING;
 #endif
-}
-
-static void
-PermediaSetupForCPUToScreenColorExpandFill(
-	ScrnInfoPtr pScrn,
-	int fg, int bg, 
-	int rop, 
-	unsigned int planemask
-){
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-    int dobackground = 0;
-
-    if (bg != -1) dobackground |= ForceBackgroundColor;
-
-    DO_PLANEMASK(planemask);
-    if (rop == GXcopy) {
-        GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
-    } else {
-        GLINT_WRITE_REG(pGlint->pprod | FBRM_DstEnable, FBReadMode);
-    }
-
-    pGlint->ForeGroundColor = fg;
-    pGlint->BackGroundColor = bg;
-    REPLICATE(fg);
-    REPLICATE(bg);
-
-    if ((rop == GXcopy) && (pGlint->BackGroundColor == -1)) {
-        GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
-	GLINT_WRITE_REG(fg, FBBlockColor);
-	GLINT_WRITE_REG(0, RasterizerMode);
-        pGlint->FrameBufferReadMode = FastFillEnable;
-    } else {
-        GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
-	GLINT_WRITE_REG(BitMaskPackingEachScanline|dobackground,RasterizerMode);
-        GLINT_WRITE_REG(fg, ConstantColor);
-	if (dobackground) {
-	    GLINT_WRITE_REG(bg, Texel0);
-	    pGlint->FrameBufferReadMode = TextureEnable;
-	} else
-            pGlint->FrameBufferReadMode = 0;
-    }
-    LOADROP(rop);
-}
-
-static void
-PermediaSubsequentCPUToScreenColorExpandFill(
-	ScrnInfoPtr pScrn,
-	int x, int y, int w, int h,
-	int skipleft
-){
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-    int dwords = ((w + 31) >> 5) * h;
-
-    PermediaLoadCoord(pScrn, x<<16, y<<16, (x+w)<<16, h, 0, 1<<16);
-
-    GLINT_WRITE_REG(PrimitiveTrapezoid | pGlint->FrameBufferReadMode | 
-							SyncOnBitMask, Render);
-    GLINT_WRITE_REG((dwords - 1)<<16 | 0x0D, OutputFIFO);
 }
 
 static void
@@ -916,7 +783,8 @@ PermediaWritePixmap8bpp(
 		/* (0x11 << 4) | 0x0D is the TAG for TextureData */
         	GLINT_WRITE_REG(((infoRec->ColorExpandRange - 2) << 16)
 					| (0x11 << 4) |	0x0D, OutputFIFO);
-		MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+		GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)srcp, infoRec->ColorExpandRange - 1);
 		count -= infoRec->ColorExpandRange - 1;
 		address += infoRec->ColorExpandRange - 1;
@@ -927,7 +795,8 @@ PermediaWritePixmap8bpp(
 		/* (0x11 << 4) | 0x0D is the TAG for TextureData */
         	GLINT_WRITE_REG(((count - 1) << 16) | (0x11 << 4) | 0x0D,
 					 OutputFIFO);
-		MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+		GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)srcp, count);
 	      }
 	      src += srcwidth;
@@ -956,7 +825,8 @@ PermediaWritePixmap8bpp(
 		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
         	GLINT_WRITE_REG(((infoRec->ColorExpandRange - 2) << 16) | 
 				(0x15 << 4) | 0x05, OutputFIFO);
-		MoveBYTE((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+		GLINT_MoveBYTE(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(unsigned char *)srcpbyte, infoRec->ColorExpandRange-1);
 		count -= infoRec->ColorExpandRange - 1;
 		srcpbyte += infoRec->ColorExpandRange - 1;
@@ -966,7 +836,8 @@ PermediaWritePixmap8bpp(
 		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
         	GLINT_WRITE_REG(((count - 1) << 16) | (0x15 << 4) | 
 					0x05, OutputFIFO);
-		MoveBYTE((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+		GLINT_MoveBYTE(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(unsigned char *)srcpbyte, count);
 	      }
 	      src += srcwidth;
@@ -1039,7 +910,8 @@ PermediaWritePixmap16bpp(
 		/* (0x11 << 4) | 0x0D is the TAG for TextureData */
         	GLINT_WRITE_REG(((infoRec->ColorExpandRange - 2) << 16) |
 					(0x11 << 4) | 0x0D, OutputFIFO);
-		MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+		GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)srcp, infoRec->ColorExpandRange - 1);
 		count -= infoRec->ColorExpandRange - 1;
 		address += infoRec->ColorExpandRange - 1;
@@ -1050,7 +922,8 @@ PermediaWritePixmap16bpp(
 		/* (0x11 << 4) | 0x0D is the TAG for TextureData */
         	GLINT_WRITE_REG(((count - 1) << 16) | (0x11 << 4) | 0x0D,
 					 OutputFIFO);
-		MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+		GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)srcp, count);
 	      }
 	      src += srcwidth;
@@ -1079,7 +952,8 @@ PermediaWritePixmap16bpp(
 		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
         	GLINT_WRITE_REG(((infoRec->ColorExpandRange - 2) << 16) | 
 				(0x15 << 4) | 0x05, OutputFIFO);
-		MoveWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+		GLINT_MoveWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(unsigned short *)srcpword,infoRec->ColorExpandRange-1);
 		count -= infoRec->ColorExpandRange - 1;
 		srcpword += infoRec->ColorExpandRange - 1;
@@ -1089,7 +963,8 @@ PermediaWritePixmap16bpp(
 		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
         	GLINT_WRITE_REG(((count - 1) << 16) | (0x15 << 4) | 
 					0x05, OutputFIFO);
-		MoveWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+		GLINT_MoveWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(unsigned short *)srcpword, count);
 	      }
 	      src += srcwidth;
@@ -1163,7 +1038,8 @@ PermediaWritePixmap32bpp(
 		/* (0x11 << 4) | 0x0D is the TAG for TextureData */
         	GLINT_WRITE_REG(((infoRec->ColorExpandRange - 2) << 16) |
 					(0x11 << 4) | 0x0D, OutputFIFO);
-		MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+		GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)srcp, infoRec->ColorExpandRange - 1);
 		count -= infoRec->ColorExpandRange - 1;
 		address += infoRec->ColorExpandRange - 1;
@@ -1174,7 +1050,8 @@ PermediaWritePixmap32bpp(
 		/* (0x11 << 4) | 0x0D is the TAG for TextureData */
         	GLINT_WRITE_REG(((count - 1) << 16) | (0x11 << 4) | 0x0D,
 					 OutputFIFO);
-		MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+		GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)srcp, count);
 	      }
 	      src += srcwidth;
@@ -1197,7 +1074,8 @@ PermediaWritePixmap32bpp(
 		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
         	GLINT_WRITE_REG(((infoRec->ColorExpandRange - 2) << 16) |
 				(0x15 << 4) | 0x05, OutputFIFO);
-		MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+		GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)srcp, infoRec->ColorExpandRange - 1);
 		count -= infoRec->ColorExpandRange - 1;
 		srcp += infoRec->ColorExpandRange - 1;
@@ -1207,7 +1085,8 @@ PermediaWritePixmap32bpp(
 		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
         	GLINT_WRITE_REG(((count - 1) << 16) | (0x15 << 4) | 
 					0x05, OutputFIFO);
-		MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+		GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)srcp, count);
 	      }
 	      src += srcwidth;

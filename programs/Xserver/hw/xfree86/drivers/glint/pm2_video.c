@@ -21,7 +21,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.16 2000/06/16 01:50:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.17 2000/06/19 15:01:01 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -841,7 +841,7 @@ PutYUV(PortPrivPtr pPPriv, int BufferBase,
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 5, "PutYUV %08x %08x\n",
 	BufferBase, format));
 
-    if (!nCookies || (!pGlint->UsePCIRetry && GLINT_READ_REG(InFIFOSpace) < 200))
+    if (!nCookies || (GLINT_READ_REG(InFIFOSpace) < 200))
 	return; /* Denial of service fix, N/A for scaler */
 
     CHECKCLIPPING;
@@ -990,7 +990,6 @@ static void
 BlackOut(PortPrivPtr pPPriv, RegionPtr pRegion)
 {
     ScrnInfoPtr pScrn = pPPriv->pAdaptor->pScrn;
-    ScreenPtr pScreen = pScrn->pScreen;
     GLINTPtr pGlint = GLINTPTR(pScrn);
     RegionRec DRegion;
     BoxRec DBox;
@@ -1123,7 +1122,7 @@ GetYUV(PortPrivPtr pPPriv)
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 5, "GetYUV\n"));
 
-    if (!nCookies || (!pGlint->UsePCIRetry && GLINT_READ_REG(InFIFOSpace) < 200))
+    if (!nCookies || (GLINT_READ_REG(InFIFOSpace) < 200))
 	return;
     
     GLINT_WAIT(25);
