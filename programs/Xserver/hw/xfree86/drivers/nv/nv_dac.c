@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.37 2003/09/08 20:00:27 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.38 2004/01/06 22:47:06 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -58,7 +58,6 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     int vertBlankStart  =  mode->CrtcVDisplay      - 1;
     int vertBlankEnd    =  mode->CrtcVTotal        - 1;
    
-
     NVPtr pNv = NVPTR(pScrn);
     NVRegPtr nvReg = &pNv->ModeReg;
     NVFBLayout *pLayout = &pNv->CurrentLayout;
@@ -215,26 +214,25 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if(mode->Flags & V_DBLSCAN)
        nvReg->cursorConfig |= (1 << 4);
     if(pNv->alphaCursor) {
-        nvReg->cursorConfig |= 0x04011000;
+        if((pNv->Chipset & 0x0ff0) != 0x0110) 
+           nvReg->cursorConfig |= 0x04011000;
+        else
+           nvReg->cursorConfig |= 0x14011000;
         nvReg->general |= (1 << 29);
-
-        if((pNv->Chipset & 0x0ff0) == 0x0110) {
-            nvReg->dither = pNv->PRAMDAC[0x0528/4] & ~0x00010000;
-            if(pNv->FPDither)
-               nvReg->dither |= 0x00010000;
-            else
-               nvReg->cursorConfig |= (1 << 28);
-        } else 
-        if((pNv->Chipset & 0x0ff0) >= 0x0170) {
-           nvReg->dither = pNv->PRAMDAC[0x083C/4] & ~1;
-           nvReg->cursorConfig |= (1 << 28);
-           if(pNv->FPDither)
-              nvReg->dither |= 1;
-        } else {
-           nvReg->cursorConfig |= (1 << 28);
-        }
     } else
        nvReg->cursorConfig |= 0x02000000;
+
+    if(pNv->twoHeads) {
+        if((pNv->Chipset & 0x0ff0) == 0x0110) {
+           nvReg->dither = pNv->PRAMDAC[0x0528/4] & ~0x00010000;
+           if(pNv->FPDither)
+              nvReg->dither |= 0x00010000;
+        } else {
+           nvReg->dither = pNv->PRAMDAC[0x083C/4] & ~1;
+           if(pNv->FPDither)
+              nvReg->dither |= 1;
+        } 
+    }
 
     nvReg->timingH = 0;
     nvReg->timingV = 0;
@@ -250,8 +248,6 @@ NVDACRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, NVRegPtr nvReg,
     int restore = VGA_SR_MODE;
 
     if(primary) restore |= VGA_SR_CMAP | VGA_SR_FONTS;
-    else if((pNv->Chipset & 0xffff) == 0x0018) 
-	restore |= VGA_SR_CMAP;
     NVLoadStateExt(pNv, nvReg);
 #if defined(__powerpc__)
     restore &= ~VGA_SR_FONTS;

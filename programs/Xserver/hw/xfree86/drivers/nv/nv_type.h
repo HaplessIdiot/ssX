@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.44 2003/09/08 20:00:27 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.45 2004/01/06 22:47:07 mvojkovi Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -13,6 +13,7 @@
 #define NV_ARCH_10  0x10
 #define NV_ARCH_20  0x20
 #define NV_ARCH_30  0x30
+#define NV_ARCH_40  0x40
 
 
 #define BITMASK(t,b) (((unsigned)(1U << (((t)-(b)+1)))-1)  << (b))
@@ -153,6 +154,7 @@ typedef struct {
     Bool                fpScaler;
     int                 fpWidth;
     int                 fpHeight;
+    CARD32              fpSyncs;
 
     CARD32              dmaPut;
     CARD32              dmaCurrent;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.21 2003/11/10 18:22:24 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -285,7 +285,10 @@ void NVInitVideo (ScreenPtr pScreen)
     NVPtr         	pNv   = NVPTR(pScrn);
     int 		num_adaptors;
 
-    if((pScrn->bitsPerPixel != 8) && (pNv->Architecture >= NV_ARCH_10)) {
+    if((pScrn->bitsPerPixel != 8) && (pNv->Architecture >= NV_ARCH_10) &&
+         ((pNv->Architecture <= NV_ARCH_30) || 
+            ((pNv->Chipset & 0xfff0) == 0x0040)))
+    {
 	overlayAdaptor = NVSetupOverlayVideo(pScreen);
   
 	if(overlayAdaptor)
@@ -571,8 +574,9 @@ NVPutBlitImage (
         NVDmaNext (pNv, SURFACE_FORMAT_DEPTH15);
     }
 
-    NVDmaStart(pNv, STRETCH_BLIT_FORMAT, 1);
+    NVDmaStart(pNv, STRETCH_BLIT_FORMAT, 2);
     NVDmaNext (pNv, format);
+    NVDmaNext (pNv, STRETCH_BLIT_OPERATION_COPY);
 
     while(nbox--) {
        NVDmaStart(pNv, RECT_SOLID_COLOR, 1);

@@ -38,7 +38,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dma.h,v 1.1 2003/07/31 20:24:29 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dma.h,v 1.2 2003/07/31 21:41:26 mvojkovi Exp $ */
 
 #define SURFACE_FORMAT                                              0x00000300
 #define SURFACE_FORMAT_DEPTH8                                       0x00000001
@@ -148,6 +148,10 @@
 #define STRETCH_BLIT_FORMAT_X8R8G8B8                                0x00000004
 #define STRETCH_BLIT_FORMAT_YUYV                                    0x00000005
 #define STRETCH_BLIT_FORMAT_UYVY                                    0x00000006
+#define STRETCH_BLIT_OPERATION                                      0x0000E304
+#define STRETCH_BLIT_OPERATION_ROP                                  0x00000001
+#define STRETCH_BLIT_OPERATION_COPY                                 0x00000003
+#define STRETCH_BLIT_OPERATION_BLEND                                0x00000005
 #define STRETCH_BLIT_CLIP_POINT                                     0x0000E308
 #define STRETCH_BLIT_CLIP_POINT_X                                   15:0 
 #define STRETCH_BLIT_CLIP_POINT_Y                                   31:16

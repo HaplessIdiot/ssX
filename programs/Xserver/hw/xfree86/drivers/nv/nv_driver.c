@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.122 2004/01/10 22:31:53 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.123 2004/01/13 19:03:28 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -173,6 +173,8 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE0323, "GeForce FX 5200SE" },
   { 0x10DE0324, "GeForce FX Go5200" },
   { 0x10DE0325, "GeForce FX Go5250" },
+  { 0x10DE0326, "GeForce FX 5500" },
+  { 0x10DE0327, "GeForce FX 5100" },
   { 0x10DE0328, "GeForce FX Go5200 32M/64M" },
 #if defined(__powerpc__)
   { 0x10DE0329, "GeForce FX 5200 (Mac)" },
@@ -180,14 +182,15 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE0329, "0x0329" },
 #endif
   { 0x10DE032A, "Quadro NVS 280 PCI" },
-  { 0x10DE032B, "Quadro FX 500" },
-  { 0x10DE032C, "GeForce FX Go5300" },
+  { 0x10DE032B, "Quadro FX 500/600 PCI" },
+  { 0x10DE032C, "GeForce FX Go53xx Series" },
   { 0x10DE032D, "GeForce FX Go5100" },
   { 0x10DE032F, "0x032F" },
   { 0x10DE0330, "GeForce FX 5900 Ultra" },
   { 0x10DE0331, "GeForce FX 5900" },
   { 0x10DE0332, "GeForce FX 5900XT" },
   { 0x10DE0333, "GeForce FX 5950 Ultra" },
+  { 0x10DE033F, "Quadro FX 700" },
   { 0x10DE0334, "0x0334" },
   { 0x10DE0338, "Quadro FX 3000" },
   { 0x10DE0341, "GeForce FX 5700 Ultra" },
@@ -202,6 +205,11 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE034C, "Quadro FX Go1000" },
   { 0x10DE034E, "Quadro FX 1100" },
   { 0x10DE034F, "0x034F" },
+  { 0x10DE0040, "0x0040" },
+  { 0x10DE0041, "0x0041" },
+  { 0x10DE0042, "0x0042" },
+  { 0x10DE0043, "0x0043" },
+  { 0x10DE004E, "0x004E" },
   {-1, NULL}
 };
 
@@ -493,6 +501,36 @@ NVGetScrnInfoRec(PciChipsets *chips, int chip)
 
 #define MAX_CHIPS MAXSCREENS
 
+
+static CARD32 
+NVGetPCIXpressChip (pciVideoPtr pVideo)
+{
+    volatile CARD32 *regs;
+    CARD32 pciid, pcicmd;
+    PCITAG Tag = ((pciConfigPtr)(pVideo->thisCard))->tag;
+
+    pcicmd = pciReadLong(Tag, PCI_CMD_STAT_REG);
+    pciWriteLong(Tag, PCI_CMD_STAT_REG, pcicmd | PCI_CMD_MEM_ENABLE);
+    
+    regs = xf86MapPciMem(-1, VIDMEM_MMIO, Tag, pVideo->memBase[0], 0x2000);
+
+    pciid = regs[0x1800/4];
+
+    xf86UnMapVidMem(-1, (pointer)regs, 0x2000);
+
+    pciWriteLong(Tag, PCI_CMD_STAT_REG, pcicmd);
+
+    if((pciid & 0x0000ffff) == 0x000010DE) 
+       pciid = 0x10DE0000 | (pciid >> 16);
+    else 
+    if((pciid & 0xffff0000) == 0xDE100000) /* wrong endian */
+       pciid = 0x10DE0000 | ((pciid << 8) & 0x0000ff00) |
+                            ((pciid >> 8) & 0x000000ff);
+
+    return pciid;
+}
+
+
 /* Mandatory */
 static Bool
 NVProbe(DriverPtr drv, int flags)
@@ -522,7 +560,11 @@ NVProbe(DriverPtr drv, int flags)
            ((*ppPci)->vendor == PCI_VENDOR_NVIDIA)) 
         {
             SymTabRec *nvchips = NVKnownChipsets;
-            int token = ((*ppPci)->vendor << 16) | (*ppPci)->chipType;
+            int pciid = ((*ppPci)->vendor << 16) | (*ppPci)->chipType;
+            int token = pciid;
+
+            if((token & 0xfff0) == 0x00F0) 
+                token = NVGetPCIXpressChip(*ppPci);
 
             while(nvchips->name) {
                if(token == nvchips->token)
@@ -531,10 +573,10 @@ NVProbe(DriverPtr drv, int flags)
             }
 
             if(nvchips->name) { /* found one */
-               NVChipsets[numUsed].token = nvchips->token;
+               NVChipsets[numUsed].token = pciid;
                NVChipsets[numUsed].name = nvchips->name;
-               NVPciChipsets[numUsed].numChipset = nvchips->token;
-               NVPciChipsets[numUsed].PCIid = nvchips->token;
+               NVPciChipsets[numUsed].numChipset = pciid; 
+               NVPciChipsets[numUsed].PCIid = pciid;
                NVPciChipsets[numUsed].resList = RES_SHARED_VGA;
                numUsed++;
             } else if ((*ppPci)->vendor == PCI_VENDOR_NVIDIA) {
@@ -550,10 +592,17 @@ NVProbe(DriverPtr drv, int flags)
                case 0x0320:
                case 0x0330:
                case 0x0340:
-                   NVChipsets[numUsed].token = token;
+               case 0x0040:
+               case 0x00C0:
+               case 0x0120:
+               case 0x0130:
+               case 0x0160:
+               case 0x01D0:
+               case 0x0090:
+                   NVChipsets[numUsed].token = pciid;
                    NVChipsets[numUsed].name = "Unknown NVIDIA chip";
-                   NVPciChipsets[numUsed].numChipset = token;
-                   NVPciChipsets[numUsed].PCIid = token;
+                   NVPciChipsets[numUsed].numChipset = pciid;
+                   NVPciChipsets[numUsed].PCIid = pciid;
                    NVPciChipsets[numUsed].resList = RES_SHARED_VGA;
                    numUsed++;
                    break;
@@ -886,11 +935,16 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     } else {
 	from = X_PROBED;
 	pNv->Chipset = (pNv->PciInfo->vendor << 16) | pNv->PciInfo->chipType;
+
+        if((pNv->Chipset & 0xfff0) == 0x00F0)
+            pNv->Chipset = NVGetPCIXpressChip(pNv->PciInfo);
+
 	pScrn->chipset = (char *)xf86TokenToString(NVKnownChipsets, 
                                                    pNv->Chipset);
         if(!pScrn->chipset)
           pScrn->chipset = "Unknown NVIDIA chipset";
     }
+
     if (pNv->pEnt->device->chipRev >= 0) {
 	pNv->ChipRev = pNv->pEnt->device->chipRev;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
@@ -1177,12 +1231,44 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
-    pNv->alphaCursor = ((pNv->Chipset & 0x0ff0) >= 0x0110);
+    switch (pNv->Chipset & 0x0ff0) {
+    case 0x0100:   /* GeForce 256 */
+    case 0x0110:   /* GeForce2 MX */
+    case 0x0150:   /* GeForce2 */
+    case 0x0170:   /* GeForce4 MX */
+    case 0x0180:   /* GeForce4 MX (8x AGP) */
+    case 0x01A0:   /* nForce */
+    case 0x01F0:   /* nForce2 */
+         pNv->Architecture =  NV_ARCH_10;
+         break;
+    case 0x0200:   /* GeForce3 */
+    case 0x0250:   /* GeForce4 Ti */
+    case 0x0280:   /* GeForce4 Ti (8x AGP) */
+         pNv->Architecture =  NV_ARCH_20;
+         break;
+    case 0x0300:   /* GeForceFX 5800 */
+    case 0x0310:   /* GeForceFX 5600 */
+    case 0x0320:   /* GeForceFX 5200 */
+    case 0x0330:   /* GeForceFX 5900 */
+    case 0x0340:   /* GeForceFX 5700 */
+         pNv->Architecture =  NV_ARCH_30;
+         break;
+    case 0x0040:
+    case 0x00C0:
+    case 0x0120:
+    case 0x0130:
+    case 0x0160:
+    case 0x01D0:
+    case 0x0090:
+         pNv->Architecture =  NV_ARCH_40;
+         break;
+    default:
+         pNv->Architecture =  NV_ARCH_04;
+         break;
+    }
 
-    pNv->Architecture = (pNv->Chipset & 0x0f00) >> 4;
-
-    if(pNv->Architecture < NV_ARCH_10)
-        pNv->Architecture = NV_ARCH_04;
+    pNv->alphaCursor = (pNv->Architecture >= NV_ARCH_10) &&
+                       ((pNv->Chipset & 0x0ff0) != 0x0100);
 
     NVCommonSetup(pScrn);
 
@@ -1224,17 +1310,17 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     clockRanges->minClock = pNv->MinVClockFreqKHz;
     clockRanges->maxClock = pNv->MaxVClockFreqKHz;
     clockRanges->clockIndex = -1;		/* programmable */
-    if(((pNv->Chipset & 0x0ff0) <= 0x0100) ||
-       ((pNv->Chipset & 0x0ff0) == 0x0150) ||
-       ((pNv->Chipset & 0x0ff0) >= 0x0300))
-    {
-       clockRanges->interlaceAllowed = TRUE;
-    } else {
-        /* No NV2x chips support interlaced modes and the only
-           NV1x chips that do are NV10 and NV15 */
-       clockRanges->interlaceAllowed = FALSE;
-    }
     clockRanges->doubleScanAllowed = TRUE;
+    if((pNv->Architecture == NV_ARCH_20) ||
+         ((pNv->Architecture == NV_ARCH_10) && 
+           ((pNv->Chipset & 0x0ff0) != 0x0100) &&
+           ((pNv->Chipset & 0x0ff0) != 0x0150)))
+    {
+       /* HW is broken */
+       clockRanges->interlaceAllowed = FALSE;
+    } else {
+       clockRanges->interlaceAllowed = TRUE;
+    }
 
     if(pNv->FlatPanel == 1) {
        clockRanges->interlaceAllowed = FALSE;
@@ -1503,6 +1589,8 @@ NVRestore(ScrnInfoPtr pScrn)
 
 static void NVBacklightEnable(NVPtr pNv,  Bool on)
 {
+    CARD32 fpcontrol = pNv->PRAMDAC[0x0848/4] & 0xCfffffCC;
+
     /* This is done differently on each laptop.  Here we
        define the ones we know for sure. */
 
@@ -1523,6 +1611,12 @@ static void NVBacklightEnable(NVPtr pNv,  Bool on)
       pNv->PCRTC0[0x081C/4] = tmp_pcrt;
     }
 #endif
+    
+    /* cut the TMDS output */
+    if(on) fpcontrol |= pNv->fpSyncs;
+    else fpcontrol |= 0x20000022;
+
+    pNv->PRAMDAC[0x0848/4] = fpcontrol;
 }
 
 static void
