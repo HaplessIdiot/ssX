@@ -1,4 +1,7 @@
 XFree86 4.4.99.23 (xx January 2005)
+ 305. Fix a DRI initialization problem which occurred when people continued
+      to use the i830 DRM kernel driver and not the newer i915 kernel driver.
+      (Alan Hourihane)
  304. Fix xf86cfg to handle drivers (like 'ati') with no options
       (Bugzilla #1539, David Laight).
  303. Assorted XFree86 driver man page updates (Bugzilla #1538, Nicolas Joly).
@@ -19342,7 +19345,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3413 2005/02/01 00:01:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3414 2005/02/01 02:25:06 dawes Exp $
 
 
 
