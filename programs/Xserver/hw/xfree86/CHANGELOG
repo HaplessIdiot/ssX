@@ -1,4 +1,6 @@
 XFree86 3.9.16d (xx November 1999)
+3339. Faster clocks for the G400 (Mark Vojkovich).
+3338. Fix bug in FB manager's ResizeArea function (Mark Vojkovich).
 3337. Pass positioning information for the obsolete ServerLayout format
       to the common layer, and update the DESIGN doc for the newer ServerLayout
       formats (David Dawes).
