@@ -18,7 +18,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/include/Xos_r.h,v 1.8 2001/01/17 17:53:11 dawes Exp $ */
+/* $XFree86: xc/include/Xos_r.h,v 1.9 2001/03/02 23:01:28 dawes Exp $ */
 
 /* 
  * Various and sundry Thread-Safe functions used by X11, Motif, and CDE.
@@ -146,7 +146,7 @@ extern void (*_XUnlockMutex_fn)(
 #   endif
 #  endif
 # elif defined(XOS_USE_XT_LOCKING)
-extern void (*_XtProcessLock)();
+extern void (*_XtProcessLock)(void);
 #  ifndef _XtintrinsicP_h
 #   include <X11/Xfuncproto.h>	/* for NeedFunctionPrototypes */
 extern void XtProcessLock(
@@ -248,7 +248,7 @@ typedef struct {
  * fields.
  */
    
-#if defined(__NetBSD__) || defined(__FreeBSD__)
+#if defined(__NetBSD__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 __inline__ void _Xpw_copyPasswd(_Xgetpwparams p)
 {
    memcpy(&(p).pws, (p).pwp, sizeof(struct passwd));

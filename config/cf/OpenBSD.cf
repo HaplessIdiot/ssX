@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.50 2001/02/20 20:41:32 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.51 2001/02/26 18:27:56 dawes Exp $
 XCOMM
 
 #ifndef OSName
@@ -103,9 +103,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # endif
 #endif
 
-#if OSMajorVersion == 2 && OSMinorVersion > 6 || OSMajorVersion >= 3
-# define HasThreadSafeAPI      YES
-#endif
+/* Set this to YES when getpwuid_r is added to libc_r */
+# define HasThreadSafeAPI      NO
 
 /*
  * Compiler Features

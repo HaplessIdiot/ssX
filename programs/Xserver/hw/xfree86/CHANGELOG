@@ -1,4 +1,8 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 233. fix a problem with multi-thread support on OpenBSD (released OpenBSD 
+      versions don't have getpwuid_r) (Matthieu Herrb)
+ 232. allow to compile on OpenBSD-current which has completly removed PCVT
+      from its installation. (Matthieu Herrb)
  231. Support for ThreadedX on FreeBSD (FreeBSD ports patch-xthread).
  230. Updates for console-related FreeBSD system header changes as of 4.1-REL
       (FreeBSD ports patch-r, patch-s).
@@ -12641,4 +12645,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1601 2001/03/02 19:38:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1602 2001/03/02 23:01:29 dawes Exp $

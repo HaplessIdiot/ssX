@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.17 2000/06/23 22:42:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.18 2001/03/02 23:01:32 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Dawes <dawes@xfree86.org>
  *
@@ -78,7 +78,11 @@
      /* NetBSD's wscons has a PCVT compatibility module. */
 #    include <dev/wscons/wsdisplay_usl_io.h>
 #   else
-#    include <machine/pcvt_ioctl.h>
+#    if defined(__OpenBSD__) && defined(WSCONS_SUPPORT)
+#     include <dev/wscons/wsdisplay_usl_io.h>
+#    else
+#     include <machine/pcvt_ioctl.h>
+#    endif
 #   endif
 #  endif
 #  ifdef SYSCONS_SUPPORT
