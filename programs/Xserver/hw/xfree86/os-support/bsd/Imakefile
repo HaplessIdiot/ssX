@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.24 1999/04/18 12:59:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.25 1999/05/09 06:06:29 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -39,7 +39,7 @@ IOPERM_SRC = ioperm_noop.c
 IOPERM_OBJ = ioperm_noop.o
 #endif
 
-#ifdef NewInput
+#if NewInput
 MOUSESRC = bsd_mouse.c
 MOUSEOBJ = bsd_mouse.o
 #else
@@ -88,8 +88,10 @@ LinkSourceFile(bios_mmap.c,../shared)
 LinkSourceFile(ioperm_noop.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
+#if !NewInput
 LinkSourceFile(std_mouse.c,../shared)
 LinkSourceFile(std_mseEv.c,../shared)
+#endif
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(vidmem.c,../shared)

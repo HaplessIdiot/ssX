@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_io.c,v 1.3 1999/03/07 14:05:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_io.c,v 1.4 1999/03/12 02:36:26 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -70,6 +70,7 @@ typedef struct {
 #define MOUSE_MOTION	4		/* mouse motion */
 #define KEYBD_EVENT	5		/* key up/down */
 
+#ifndef NEW_INPUT
 /*
  * xf86OsMouseProc --
  *      Handle the initialization, etc. of a mouse
@@ -202,6 +203,7 @@ xf86MouseOn( MouseDevPtr mouse)
 
     return mouse->mseFd;
 }
+#endif
 
 /***********************************************************************
  * Keyboard

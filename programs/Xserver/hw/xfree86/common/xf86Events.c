@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.67 1999/05/18 04:24:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.68 1999/05/19 00:47:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1150,6 +1150,7 @@ xf86PostMseEvent(DeviceIntPtr device, int buttons, int dx, int dy)
 
 
 
+#ifndef NEW_INPUT
 /*
  * xf86Block --
  *      Os block handler.
@@ -1174,6 +1175,7 @@ xf86Block(pointer blockData, OSTimePtr pTimeout, pointer pReadmask)
 	xf86XqueRequest();
 #endif
 }
+#endif
 
 
 #ifndef AMOEBA
@@ -1201,48 +1203,46 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 
     if (err >= 0) {
 
-    XFD_ANDSET(&devicesWithInput, LastSelectMask, &EnabledDevices);
-#ifdef	__OSF__
-   /*
-     * Until the two devices are made nonblock on read, we have to do this.
-     */
-
-    MASKANDSETBITS(devicesWithInput, pReadmask, EnabledDevices);
-
-    CLEARBITS(kbdDevices);
-    BITSET(kbdDevices, xf86Info.consoleFd);
-    MASKANDSETBITS(kbdDevices, kbdDevices, devicesWithInput);
-
-    CLEARBITS(mseDevices);
-    BITSET(mseDevices, xf86Info.mouseDev->mseFd);
-    MASKANDSETBITS(mseDevices, mseDevices, devicesWithInput);
-
-    if (ANYSET(kbdDevices) || xf86Info.kbdRate)
-        (xf86Info.kbdEvents)(ANYSET(kbdDevices));
-    if (ANYSET(mseDevices))
-        (xf86Info.mouseDev->mseEvents)(1);
-
-#else
-    if (XFD_ANYSET(&devicesWithInput)) {
-	(xf86Info.kbdEvents)();
+	XFD_ANDSET(&devicesWithInput, LastSelectMask, &EnabledDevices);
+#ifndef __OSF__
+	if (XFD_ANYSET(&devicesWithInput)) {
+	    (xf86Info.kbdEvents)();
 #ifndef NEW_INPUT
-	(xf86Info.mouseDev->mseEvents)(xf86Info.mouseDev);
+	    (xf86Info.mouseDev->mseEvents)(xf86Info.mouseDev);
 #else
-	pInfo = xf86InputDevs;
-	while (pInfo) {
-	    if (pInfo->read_input && pInfo->fd >= 0 &&
-		(FD_ISSET(pInfo->fd, ((fd_set *)pReadmask)) != 0)) {
-		pInfo->read_input(pInfo);
-		/*
-		 * Must break here because more than one device may share
-		 * the same file descriptor.
-		 */
-		break;
+	    pInfo = xf86InputDevs;
+	    while (pInfo) {
+		if (pInfo->read_input && pInfo->fd >= 0 &&
+		    (FD_ISSET(pInfo->fd, ((fd_set *)pReadmask)) != 0)) {
+		    pInfo->read_input(pInfo);
+		    /*
+		     * Must break here because more than one device may share
+		     * the same file descriptor.
+		     */
+		    break;
+		}
+		pInfo = pInfo->next;
 	    }
-	    pInfo = pInfo->next;
+#endif /* NEW_INPUT */
 	}
-#endif
-    }
+#else /* __OSF__ */
+	/*
+	 * Until the two devices are made nonblock on read, we have to do this.
+	 */
+	MASKANDSETBITS(devicesWithInput, pReadmask, EnabledDevices);
+
+	CLEARBITS(kbdDevices);
+	BITSET(kbdDevices, xf86Info.consoleFd);
+	MASKANDSETBITS(kbdDevices, kbdDevices, devicesWithInput);
+
+	CLEARBITS(mseDevices);
+	BITSET(mseDevices, xf86Info.mouseDev->mseFd);
+	MASKANDSETBITS(mseDevices, mseDevices, devicesWithInput);
+
+	if (ANYSET(kbdDevices) || xf86Info.kbdRate)
+            (xf86Info.kbdEvents)(ANYSET(kbdDevices));
+	if (ANYSET(mseDevices))
+        (xf86Info.mouseDev->mseEvents)(1);
 #endif	/* __OSF__ */
     }
 #else   /* __EMX__ */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.13 1998/12/06 12:17:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.14 1999/01/26 10:40:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  *
@@ -29,6 +29,9 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+#ifdef NEW_INPUT
+#include "xqueue.h"
+#endif
 
 #ifdef XQUEUE
 
@@ -46,13 +49,18 @@ static int xquePipe[2];
 extern Bool noXkbExtension;
 #endif
 
-#ifdef XINPUT
-#include "xf86Config.h"
 #include "xf86Xinput.h"
+#include "mipointer.h"
+
+#ifdef NEW_INPUT
+typedef struct {
+	int		xquePending;	/* XXX not needed? */
+	int		xqueSema;
+} XqInfoRec, *XqInfoPtr;
+
+InputInfoPtr XqMouse = NULL;
+InputInfoPtr XqKeyboard = NULL;
 #endif
-extern int miPointerGetMotionEvents(DeviceIntPtr pPtr, xTimecoord *coords,
-				unsigned long start, unsigned long stop,
-				ScreenPtr pScreen);
 
 #ifndef XQUEUE_ASYNC
 /*
@@ -64,13 +72,18 @@ extern int miPointerGetMotionEvents(DeviceIntPtr pPtr, xTimecoord *coords,
 static void
 xf86XqueSignal(int signum)
 {
+#ifndef NEW_INPUT
   xf86Info.mouseDev->xquePending = 1;
+#endif
   /*
    * This is a hack, but it is the only reliable way I can find of letting
    * the main select() loop know that there is more input waiting.  Receiving
    * a signal will interrupt select(), but there is no way I can find of
    * dealing with events that come in between the end of processing the
    * last set and when select() gets called.
+   *
+   * XXX Maybe the XqBlock() handler will take care of that.  If we remove
+   * the pipe, we need a Wakeup handler too (and need to put back xquePending).
    *
    * Suggestions for better ways of dealing with this without going back to
    * asynchronous event processing are welcome.
@@ -81,6 +94,7 @@ xf86XqueSignal(int signum)
 #endif
   
 
+#ifndef NEW_INPUT
 /*
  * xf86XqueRequest --
  *      Notice an i/o request from the xqueue.
@@ -176,7 +190,7 @@ xf86XqueEnable()
   if (!was_here) {
     if ((xqueFd = open("/dev/mouse", O_RDONLY|O_NDELAY)) < 0)
       {
-	if (xf86Info.allowMouseOpenFail) {
+	if (xf86GetAllowMouseOpenFail()) {
 	  xf86Msg(X_WARNING, "Cannot open /dev/mouse (%s) - Continuing...\n",
 		  strerror(errno));
 	  return (Success);
@@ -322,6 +336,7 @@ xf86XqueMseProc(DeviceIntPtr pPointer, int what)
   
   return Success;
 }
+#endif /* !NEW_INPUT */
 
 
 
@@ -429,5 +444,302 @@ void
 xf86XqueEvents()
 {
 }
+
+#ifdef NEW_INPUT
+
+static void XqDoInput(int signum);
+
+void
+XqReadInput(InputInfoPtr pInfo)
+{
+    MouseDevPtr pMse;
+    xqEvent *XqueEvents;
+    int XqueHead;
+    char buf[100];
+    signed char dx, dy;
+
+    if (xqueFd < 0)
+	return;
+
+    pMse = pInfo->private;
+
+    XqueEvents = XqueQaddr->xq_events;
+    XqueHead = XqueQaddr->xq_head;
+
+    while (XqueHead != XqueQaddr->xq_tail) {
+	switch (XqueEvents[XqueHead].xq_type) {
+	case XQ_BUTTON:
+	    pMse->PostEvent(pInfo, ~(XqueEvents[XqueHead].xq_code) & 0x07,
+			    0, 0);
+	    break;
+
+	case XQ_MOTION:
+	    dx = (signed char)XqueEvents[XqueHead].xq_x;
+	    dy = (signed char)XqueEvents[XqueHead].xq_y;
+	    pMse->PostEvent(pInfo, ~(XqueEvents[XqueHead].xq_code) & 0x07,
+			    (int)dx, (int)dy);
+	    break;
+
+	case XQ_KEY:
+	    /* XXX Need to deal with the keyboard part nicely. */
+	    xf86PostKbdEvent(XqueEvents[XqueHead].xq_code);
+	    break;
+	default:
+	    xf86Msg(X_WARNING, "Unknown Xque Event: 0x%02x\n",
+		    XqueEvents[XqueHead].xq_type);
+	}
+      
+	if ((++XqueHead) == XqueQaddr->xq_size) XqueHead = 0;
+    }
+
+    /* reenable the signal-processing */
+    xf86Info.inputPending = TRUE;
+#ifdef XQUEUE_ASYNC
+    signal(SIGUSR2, XqDoInput);
+#endif
+
+#ifndef XQUEUE_ASYNC
+    {
+	int rval;
+
+	while ((rval = read(xquePipe[0], buf, sizeof(buf))) > 0)
+#ifdef DEBUG
+	    ErrorF("Read %d bytes from xquePipe[0]\n", rval);
+#else
+	    ;
+#endif
+    }
+#endif
+
+    XqueQaddr->xq_head = XqueQaddr->xq_tail;
+    XqueQaddr->xq_sigenable = 1; /* UNLOCK */
+}
+
+static void
+XqDoInput(int signum)
+{
+    if (XqMouse)
+	XqReadInput(XqMouse);
+}
+
+static void
+XqBlock(pointer blockData, OSTimePtr pTimeout, pointer pReadmask)
+{
+    /*
+     * On MP SVR4 boxes, a race condition exists because the XQUEUE does
+     * not have anyway to lock it for exclusive access. This results in one
+     * processor putting something on the queue at the same time the other
+     * processor is taking it something off. The count of items in the queue
+     * can get off by 1. This just goes and checks to see if an extra event
+     * was put in the queue a during this period. The signal for this event
+     * was ignored while processing the previous event.
+     */
+
+    XqReadInput((InputInfoPtr)blockData);
+}
+
+/*
+ * XqEnable --
+ *      Enable the handling of the Xque
+ */
+
+static int
+XqEnable(InputInfoPtr pInfo)
+{
+    MouseDevPtr pMse;
+    XqInfoPtr pXq;
+    static struct kd_quemode xqueMode;
+    static Bool was_here = FALSE;
+
+    pMse = pInfo->private;
+    pXq = pMse->mousePriv;
+
+    if (xqueFd < 0) {
+	if ((xqueFd = open("/dev/mouse", O_RDONLY | O_NDELAY)) < 0) {
+	    if (xf86GetAllowMouseOpenFail()) {
+		xf86Msg(X_WARNING,
+		    "%s: Cannot open /dev/mouse (%s) - Continuing...\n",
+		    pInfo->name, strerror(errno));
+		return Success;
+	    } else {
+		xf86Msg(X_ERROR, "%s: Cannot open /dev/mouse", pInfo->name);
+		return !Success;
+	    }
+	}
+    }
+#ifndef XQUEUE_ASYNC
+    if (!was_here) {
+	pipe(xquePipe);
+	fcntl(xquePipe[0], F_SETFL, fcntl(xquePipe[0], F_GETFL, 0) | O_NDELAY);
+	fcntl(xquePipe[1], F_SETFL, fcntl(xquePipe[1], F_GETFL, 0) | O_NDELAY);
+	was_here = TRUE;
+    }
+#endif
+
+    if (pXq->xqueSema++ == 0) {
+#ifdef XQUEUE_ASYNC
+	(void) signal(SIGUSR2, XqDoInput);
+#else
+	(void) signal(SIGUSR2, xf86XqueSignal);
+#endif
+	xqueMode.qsize = 64;    /* max events */
+	xqueMode.signo = SIGUSR2;
+	ioctl(xf86Info.consoleFd, KDQUEMODE, NULL);
+
+	if (ioctl(xf86Info.consoleFd, KDQUEMODE, &xqueMode) < 0) {
+	    xf86Msg(X_ERROR, "%s: Cannot set KDQUEMODE", pInfo->name);
+	    return !Success;
+	}
+	XqueQaddr = (xqEventQueue *)xqueMode.qaddr;
+	XqueQaddr->xq_sigenable = 1; /* UNLOCK */
+    }
+
+    return Success;
+}
+
+
+
+/*
+ * xf86XqueDisable --
+ *      disable the handling of the Xque
+ */
+
+static int
+XqDisable(InputInfoPtr pInfo)
+{
+    MouseDevPtr pMse;
+    XqInfoPtr pXq;
+
+    pMse = pInfo->private;
+    pXq = pMse->mousePriv;
+
+    if (pXq->xqueSema-- == 1)
+    {
+	XqueQaddr->xq_sigenable = 0; /* LOCK */
+      
+	if (ioctl(xf86Info.consoleFd, KDQUEMODE, NULL) < 0) {
+	    xf86Msg(X_ERROR, "%s: Cannot unset KDQUEMODE", pInfo->name);
+	    return !Success;
+    }
+
+    if (xqueFd >= 0) {
+	fclose(xqueFd);
+	xqueFd = -1;
+    }
+
+    return Success;
+}
+
+/*
+ * XqMouseProc --
+ *      Handle the initialization, etc. of a mouse
+ */
+
+static int
+XqMouseProc(DeviceIntPtr pPointer, int what)
+{
+    InputInfoPtr pInfo;
+    MouseDevPtr pMse;
+    unchar        map[4];
+    int ret;
+ 
+    pInfo = pPointer->public.devicePrivate;
+    pMse = pInfo->private;
+    pMse->device = pPointer;
+
+    switch (what) {
+    case DEVICE_INIT: 
+	pPointer->public.on = FALSE;
+
+	map[1] = 1;
+	map[2] = 2;
+	map[3] = 3;
+
+	InitPointerDeviceStruct((DevicePtr)pPointer, 
+				map, 
+				3, 
+				miPointerGetMotionEvents, 
+				pMse->Ctrl,
+				miPointerGetMotionBufferSize());
+	/* X valuator */
+	xf86InitValuatorAxisStruct(device, 0, 0, -1, 1, 0, 1);
+	xf86InitValuatorDefaults(device, 0);
+	/* Y valuator */
+	xf86InitValuatorAxisStruct(device, 1, 0, -1, 1, 0, 1);
+	xf86InitValuatorDefaults(device, 1);
+	xf86MotionHistoryAllocate(pInfo);
+	RegisterBlockAndWakeupHandlers(XqBlock, (WakeupHandlerProcPtr)NoopDDA,
+					pInfo);
+	break;
+      
+    case DEVICE_ON:
+	pMse->lastButtons = 0;
+	pMse->emulateState = 0;
+	pPointer->public.on = TRUE;
+	ret = XqEnable(pInfo);
+#ifndef XQUEUE_ASYNC
+	if (xquePipe[0] != -1) {
+	    pInfo->fd = xquePipe[0];
+	    AddEnabledDevice(xquePipe[0]);
+	}
+#endif
+	return ret;
+      
+    case DEVICE_CLOSE:
+    case DEVICE_OFF:
+	pPointer->public.on = FALSE;
+	ret = XqDisable(pInfo);
+#ifndef XQUEUE_ASYNC
+	if (xquePipe[0] != -1) {
+	    RemoveEnabledDevice(xquePipe[0]);
+	    pInfo->fd = -1;
+	}
+#endif
+	return ret;
+    }
+    return Success;
+}
+
+Bool
+XqueueMousePreInit(InputInfoPtr pInfo, const char *protocol, int flags)
+{
+    MouseDevPtr pMse;
+    XqInfoPtr pXq;
+
+    pMse->protocol = protocol;
+    pXq = pMse->mousePriv = xnfcalloc(sizeof(XqInfoRec));
+
+    /* Collect the options, and process the common options. */
+    xf86CollectInputOptions(pInfo, NULL, NULL);
+    xf86ProcessCommonOptions(pInfo, pInfo->options);
+
+    /* Check if the device can be opened. */
+    pMse->buttons = 3;	/* XXX ignore the "Buttons" option? */
+    xf86Msg(X_DEFAULT, "%s: Buttons: %d\n", pInfo->name, pMse->buttons);
+
+    pMse->emulate3Buttons = xf86SetBoolOption(pInfo->options,
+					      "Emulate3Buttons", FALSE);
+    pMse->emulate3Timeout = xf86SetIntOption(pInfo->options, "Emulate3Timeout",
+					     50);
+    if (pMse->emulate3Buttons) {
+	xf86Msg(X_CONFIG, "%s: Emulate3Buttons, Emulate3Timeout: %d\n",
+		pInfo->name, pMse->emulate3Timeout);
+    }
+
+    /* Setup the local procs. */
+    pInfo->device_control = XqMouseProc;
+#ifdef XQUEUE_ASYNC
+    pInfo->read_input = NULL;
+#else
+    pInfo->read_input = XqReadInput();
+#endif
+    pInfo->fd = -1;
+
+    XqMouse = pInfo;
+
+    pInfo->flags |= XI86_CONFIGURED;
+    return TRUE;
+}
+#endif
 
 #endif /* XQUEUE */

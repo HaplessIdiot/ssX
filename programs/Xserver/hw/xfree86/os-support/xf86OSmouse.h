@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.2 1999/05/14 14:11:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.3 1999/05/16 06:55:54 dawes Exp $ */
 
 /* Public interface to OS-specific mouse support. */
 
@@ -13,21 +13,11 @@
 					 * specific protocol names that are
 					 * supported for this class. */
 
-typedef void (*PostEventProc)(InputInfoPtr pInfo, int buttons, int dx, int dy);
-
-/*
- * MouseInfoRec is used to pass information from the OS-independent mouse
- * driver to the OSMouse layer.
- */
-typedef struct {
-	PostEventProc		PostEvent;
-} MouseInfoRec, *MouseInfoPtr;
-
 typedef int (*GetInterfaceTypesProc)(void);
 typedef const char **(*BuiltinNamesProc)(void);
 typedef Bool (*CheckProtocolProc)(const char *protocol);
 typedef Bool (*BuiltinPreInitProc)(InputInfoPtr pInfo, const char *protocol,
-				   MouseInfoPtr pMInfo, int flags);
+				   int flags);
 typedef const char *(*DefaultProtocolProc)(void);
 typedef const char *(*SetupAutoProc)(InputInfoPtr pInfo, int *protoPara);
 typedef void (*SetResProc)(InputInfoPtr pInfo, const char* protocol, int rate,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.118 1999/05/16 06:55:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.119 1999/05/17 13:17:14 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -685,7 +685,12 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
   xf86Initialising = FALSE;
 
 #ifndef AMOEBA
+#ifdef NEW_INPUT
+  RegisterBlockAndWakeupHandlers((BlockHandlerProcPtr)NoopDDA, xf86Wakeup,
+				 NULL);
+#else
   RegisterBlockAndWakeupHandlers(xf86Block, xf86Wakeup, NULL);
+#endif
 #endif
 }
 

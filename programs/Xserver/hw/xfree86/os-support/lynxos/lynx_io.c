@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_io.c,v 3.5 1998/07/25 16:56:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_io.c,v 3.6 1999/01/26 10:40:42 dawes Exp $ */
 
 #include "X.h"
 
@@ -153,6 +153,7 @@ xf86KbdOff()
 	return(xf86Info.consoleFd);
 }
 
+#ifndef NEW_INPUT
 void
 xf86MouseInit(MouseDevPtr mouse)
 {
@@ -180,3 +181,4 @@ xf86MouseOn(MouseDevPtr mouse)
 
 	return(mouse->mseFd);
 }
+#endif

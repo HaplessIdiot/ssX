@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.222 1999/05/09 06:06:12 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.223 1999/05/14 14:11:07 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -690,9 +690,13 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #endif
 #endif
 
+#ifndef NewInput
+#define NewInput NO
+#endif
+
 /* A temporary addition for testing the new input device code. */
 #ifndef NewInputDefines
-#ifdef NewInput
+#if NewInput
 #define NewInputDefines -DNEW_INPUT
 #else
 #define NewInputDefines /**/

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.42 1999/05/09 06:06:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.43 1999/05/17 13:17:15 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -123,7 +123,9 @@ void* xf86LoadModule(const char *file, const char *path);
 
 void xf86PostKbdEvent(unsigned key);
 void xf86PostMseEvent(DeviceIntPtr device, int buttons, int dx, int dy);
+#ifndef NEW_INPUT
 void xf86Block(pointer blockData, OSTimePtr pTimeout, pointer pReadmask);
+#endif
 void xf86Wakeup(pointer blockData, int err, pointer pReadmask);
 void xf86SigHandler(int signo);
 

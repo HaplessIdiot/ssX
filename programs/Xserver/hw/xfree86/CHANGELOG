@@ -1,4 +1,6 @@
 XFree86 3.9Po (23 May 1999)
+2665. Some preliminary support for the "new" mouse driver for most OSs
+      (David Dawes).
 2664. Prevent xf86LogInit() being called for subsequent server generations.
 
 XFree86 3.9Pn (16 May 1999)
@@ -8022,4 +8024,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.753 1999/05/16 15:16:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.754 1999/05/17 13:17:07 dawes Exp $

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/10 1996/10/19 18:06:19 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.18 1999/04/18 12:59:47 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.19 1999/05/17 13:17:18 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -25,7 +25,7 @@ SHARED_CFLAGS = PositionIndependentCFlags
 MTRRDEFINES = -DHAS_MTRR_SUPPORT
 #endif
 
-#ifdef NewInput
+#if NewInput
 MOUSESRC = lnx_mouse.c
 MOUSEOBJ = lnx_mouse.o
 #else
@@ -42,7 +42,7 @@ OBJS = lnx_init.o lnx_video.o lnx_io.o libc_wrapper.o bios_mmap.o \
        stdResource.o vidmem.o $(JOYSTICK_OBJ)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(XINCLUDESRC)
+           -I$(XINCLUDESRC) -I$(EXTINCSRC)
 
 RESDEFINES = -DUSESTDRES
 
@@ -65,8 +65,10 @@ LinkSourceFile(mapVT_noop.c,../shared)
 LinkSourceFile(VTsw_usl.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
+#if !NewInput
 LinkSourceFile(std_mouse.c,../shared)
 LinkSourceFile(std_mseEv.c,../shared)
+#endif
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(vidmem.c,../shared)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.5 1999/05/16 14:24:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.6 1999/05/17 13:17:17 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -76,6 +76,8 @@ static void MouseReadInput(InputInfoPtr pInfo);
 static Bool MouseConvert(LocalDevicePtr local, int first, int num, int v0,
 		 	     int v1, int v2, int v3, int v4, int v5, int *x,
 		 	     int *y);
+
+static void MouseCtrl(DeviceIntPtr device, PtrCtrl *ctrl);
 static void MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy);
 
 #undef MOUSE
@@ -341,6 +343,13 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     pInfo->always_core_feedback = 0;
     pInfo->conf_idev = dev;
 
+    /* Allocate the MouseDevRec and initialise it. */
+    if (!(pMse = xcalloc(sizeof(MouseDevRec), 1)))
+	return pInfo;
+    pInfo->private = pMse;
+    pMse->Ctrl = MouseCtrl;
+    pMse->PostEvent = MousePostEvent;
+
     /* Find the protocol type. */
     protocol = xf86SetStrOption(dev->commonOptions, "Protocol", NULL);
     if (protocol) {
@@ -359,9 +368,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	/* Check for a builtin OS-specific protocol, and call its PreInit. */
 	if (osInfo->CheckProtocol && osInfo->CheckProtocol(protocol)) {
 	    if (osInfo->PreInit) {
-		MouseInfoPtr pMInfo = xnfalloc(sizeof(MouseInfoRec));
-		pMInfo->PostEvent = MousePostEvent;
-		osInfo->PreInit(pInfo, protocol, pMInfo, 0);
+		osInfo->PreInit(pInfo, protocol, 0);
 	    }
 	    return pInfo;
 	}
@@ -382,19 +389,14 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     if (!(pProto = GetProtocol(protocolID)))
 	return pInfo;
 
-    /* Collect the options, and process the common options. */
-    xf86CollectInputOptions(pInfo, pProto->defaults, NULL);
-    xf86ProcessCommonOptions(pInfo, pInfo->options);
-
-    /* Allocate the MouseDevRec and initialise it. */
-    if (!(pMse = xcalloc(sizeof(MouseDevRec), 1)))
-	return pInfo;
-
-    pInfo->private = pMse;
     pMse->protocol = protocol;
     pMse->protocolID = protocolID;
     pMse->class = ProtocolIDToClass(protocolID);
     pMse->automatic = (protocolID == PROT_AUTO);
+
+    /* Collect the options, and process the common options. */
+    xf86CollectInputOptions(pInfo, pProto->defaults, NULL);
+    xf86ProcessCommonOptions(pInfo, pInfo->options);
 
     /* Check if the device can be opened. */
     pInfo->fd = xf86OpenSerial(pInfo->options);
@@ -1289,7 +1291,7 @@ post_event:
 #endif
 
 	/* post an event */
-	MousePostEvent(pInfo, buttons, dx, dy);
+	pMse->PostEvent(pInfo, buttons, dx, dy);
 
 	/* 
 	 * If dz has been mapped to a button `down' event, we need to cook
@@ -1298,7 +1300,7 @@ post_event:
 	if ((pMse->negativeZ > 0) &&
 		(buttons & (pMse->negativeZ | pMse->positiveZ))) {
 	    buttons &= ~(pMse->negativeZ | pMse->positiveZ);
-	    MousePostEvent(pInfo, buttons, 0, 0);
+	    pMse->PostEvent(pInfo, buttons, 0, 0);
 	}
 
 	/* 
@@ -1325,7 +1327,7 @@ MouseCtrl(DeviceIntPtr device, PtrCtrl *ctrl)
     pMse = pInfo->private;
 
 #ifdef EXTMOUSEDEBUG
-    ErrorF("xf86MouseCtrl pMse=%p\n", pMse);
+    ErrorF("MouseCtrl pMse=%p\n", pMse);
 #endif
     
     pMse->num       = ctrl->num;
@@ -1365,7 +1367,7 @@ MouseProc(DeviceIntPtr device, int what)
 
 	InitPointerDeviceStruct((DevicePtr)device, map,
 				min(pMse->buttons, MSE_MAXBUTTONS),
-				miPointerGetMotionEvents, MouseCtrl,
+				miPointerGetMotionEvents, pMse->Ctrl,
 				miPointerGetMotionBufferSize());
 
 	/* X valuator */
@@ -1453,7 +1455,7 @@ buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg)
     pInfo = arg;
     pMse = pInfo->private;
 
-    MousePostEvent(pInfo, pMse->truebuttons, 0, 0);
+    pMse->PostEvent(pInfo, pMse->truebuttons, 0, 0);
     return 0;
 }
 
