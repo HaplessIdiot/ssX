@@ -1,4 +1,7 @@
-.\" $XConsortium: icccm.ms,v 1.19 94/04/16 19:05:49 rws Exp $
+.\" $TOG: icccm.ms /main/27 1997/11/04 18:06:31 kaleb $
+.\"
+.\" $XFree86$
+.\"
 .\" Use tbl, eqn, -ms, and macros.t
 .\" @(#)icccm.ms	1.50	16 Apr 1994	14:13:55
 .EH ''''
@@ -39,11 +42,19 @@
 .B
 \s+2Inter-Client Communication Conventions Manual\s0
 
+Version 2.0.xf86.1
+
+XFree86 4.0.2
+
+XFree86, Inc.
+
+.I "based on"
+
 Version 2.0
 
 X Consortium Standard
 
-X Version 11, Release 6
+X Version 11, Release 6.4
 .R
 .ce 0
 .sp 6
@@ -152,7 +163,7 @@ December 1993
 David Rosenthal had overall architectural responsibility 
 for the conventions defined in this document;
 he wrote most of the text and edited the document, 
-but its the development has been a communal effort.
+but its development has been a communal effort.
 The details were thrashed out in meetings at the January 1988 MIT X Conference
 and at the 1988 Summer Usenix conference,
 and through months (and megabytes) of argument
@@ -175,7 +186,7 @@ Bob Scheifler
 For the Cut-Buffer section:
 .LP
 .Ds
-Andrew Palay.
+Andrew Palay
 .De
 .LP
 For the Window and Session Manager sections:
@@ -193,7 +204,7 @@ Audrey Ishizaki
 .LP
 For the Device Color Characterization section:
 .Ds
-Keith Packard.
+Keith Packard
 .De
 .LP
 In addition, thanks are due to those who contributed to the public review:
@@ -214,8 +225,8 @@ John Interrante	John Thomas
 .De
 .bp 1
 .af PN 1
-.EH '\fBInter-Client Communication Conventions\fP''\fBX11, Release 6\fP'
-.OH '\fBInter-Client Communication Conventions\fP''\fBX11, Release 6\fP'
+.EH '\fBInter-Client Communication Conventions\fP''\fBX11, Release 6.4\fP'
+.OH '\fBInter-Client Communication Conventions\fP''\fBX11, Release 6.4\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
 .nH 1 Introduction
@@ -261,7 +272,7 @@ based on the experiences of the X Consortium.
 .LP
 As far as possible,
 these conventions are upwardly compatible with those in the February 25, 1988,
-draft that was distributed with the X Version 11, Release 2 of the software.
+draft that was distributed with the X Version 11, Release 2, of the software.
 In some areas,
 semantic problems were discovered with those conventions,
 and, thus, complete upward compatibility could not be assured.
@@ -282,7 +293,7 @@ when communicating with an older server.
 It is expected that these revisions will ensure that clients using 
 the conventions appropriate to protocol minor revision \fIn\fP 
 will interoperate correctly with those that use the conventions 
-appropriate to protocol minor revision \fIn\fP+1 if the server supports both.
+appropriate to protocol minor revision \fIn\fP + 1 if the server supports both.
 .nH 2 Atoms
 .LP
 Many of the conventions use atoms.
@@ -402,17 +413,17 @@ _
 .TE
 .nH 3 "Discriminated Names"
 .LP
-Sometimes a protocol requires there to be an arbitrary number of similar
-objects which need unique names (usually because the objects are created
+Sometimes a protocol requires an arbitrary number of similar
+objects that need unique names (usually because the objects are created
 dynamically, so that names cannot be invented in advance). For example, a
 colormap-generating program might use the selection mechanism to offer
-colormaps for each screen, and so needs a selection name for each screen.
+colormaps for each screen and so needs a selection name for each screen.
 Such names are called \*Qdiscriminated names\*U and are discriminated by
 some entity. This entity can be:
 .DS
-    a screen
-    an X resource (a window, a colormap, a visual, etc.)
-    a client
+    A screen
+    An X resource (a window, a colormap, a visual, etc.)
+    A client
 .DE
 .LP
 If it is only necessary to generate a fixed set of names for each value
@@ -430,7 +441,7 @@ lB lB lB
 l l l .
 _
 .sp 6p
-Name Discriminated By	Form	Example
+Name Discriminated by	Form	Example
 .sp 6p
 _
 .sp 6p
@@ -448,19 +459,19 @@ example, for the properties on a window used by a MULTIPLE selection).
 These names should have the form:
 .DS
 .ta 2i
-U\fId\fP	(e.g.  U0  U1  U2  U3  .\^.\^.)
+U\fId\fP	(e.g.,  U0  U1  U2  U3  .\^.\^.)
 .DE
 .LP
 if the names stand totally alone, and the form:
 .DS
 .ta 2i
-\fIname\fP_U\fId\fP	(e.g.  FOO_U0  BAR_U0  FOO_U1  BAR_U1  .\^.\^.)
+\fIname\fP_U\fId\fP	(e.g.,  FOO_U0  BAR_U0  FOO_U1  BAR_U1  .\^.\^.)
 .DE
 .LP
 if they come in sets (here there are two sets, named \*QFOO\*U and
-\*QBAR\*U).  The stand-alone U\fId\fP form should only be used if it is
+\*QBAR\*U).  The stand-alone U\fId\fP form should be used only if it is
 clear that the module using it has complete control over the relevant
-namespace, or has the active cooperation of all other entities which might
+namespace or has the active cooperation of all other entities that might
 also use these names. (Naming properties on a window created specifically
 for a particular selection is such a use; naming properties on the root
 window is almost certainly not.)
@@ -524,7 +535,7 @@ The other client may be talking to the server by means of
 a completely different networking mechanism (for example,  one client might
 be DECnet and the other TCP/IP).
 Thus, passing indirect references to data 
-(such as file names,  host names and port numbers, and so on) 
+(such as, file names, host names, and port numbers) 
 is permitted only if both clients specifically agree.
 .nH 2 "Acquiring Selection Ownership"
 .LP
@@ -536,8 +547,7 @@ which is defined as follows:
 .sM
 .IN "SetSelectionOwner" "" "@DEF@"
 .PN SetSelectionOwner
-.in +.2i
-.LP
+.IP "" .2i
 \fIselection\fP\^: ATOM
 .br
 \fIowner\fP\^: WINDOW or
@@ -545,7 +555,7 @@ which is defined as follows:
 .br
 \fItime\fP\^: TIMESTAMP or
 .PN CurrentTime
-.in -.2i
+.LP
 .eM
 .LP
 The client should set the specified selection to the atom that represents 
@@ -607,17 +617,14 @@ which is defined as follows:
 .sM
 .IN "GetSelectionOwner" "" "@DEF@"
 .PN GetSelectionOwner
-.in +.2i
-.LP
+.IP "" .2i
 \fIselection\fP\^: ATOM
-.in -.2i
 .LP
 \(->
-.in +.2i
-.LP
+.IP "" .2i
 owner: WINDOW or
 .PN None
-.in -.2i
+.LP
 .eM
 .NT Convention
 Clients are expected to provide some visible confirmation
@@ -647,8 +654,7 @@ event, which is defined as follows:
 .sM
 .IN "SelectionRequest" "" "@DEF@"
 .PN SelectionRequest
-.in +.2i
-.LP
+.IP "" .2i
 \fIowner\fP\^: WINDOW
 .br
 \fIselection\fP\^: ATOM
@@ -662,7 +668,7 @@ event, which is defined as follows:
 .br
 \fItime\fP\^: TIMESTAMP or
 .PN CurrentTime
-.in -.2i
+.LP
 .eM
 .LP
 The specified owner and selection will be the values that were specified in
@@ -740,8 +746,7 @@ is defined as follows:
 .sM
 .IN "SelectionNotify" "" "@DEF@"
 .PN SelectionNotify
-.in +.2i
-.LP
+.IP "" .2i
 \fIrequestor\fP\^: WINDOW
 .br
 \fIselection\fP, \fItarget\fP\^: ATOM
@@ -751,7 +756,7 @@ is defined as follows:
 .br
 \fItime\fP\^: TIMESTAMP or
 .PN CurrentTime
-.in -.2i
+.LP
 .eM
 .LP
 The owner should set the specified selection, target, time, 
@@ -771,7 +776,7 @@ event.
 .LP
 If the owner receives more than one
 .PN Selection\%Request
-event with the same requestor, selection, target, and timestamp, it must
+event with the same requestor, selection, target, and timestamp it must
 respond to them in the same order in which they were received.
 .NT Rationale
 It is possible for a requestor to have multiple outstanding requests that
@@ -820,14 +825,13 @@ event, which is defined as follows:
 .sM
 .IN "SelectionClear" "" "@DEF@"
 .PN SelectionClear
-.in +.2i
-.LP
+.IP "" .2i
 \fIowner\fP\^: WINDOW
 .br
 \fIselection\fP\^: ATOM
 .br
 \fItime\fP\^: TIMESTAMP
-.in -.2i
+.LP
 .eM
 .LP
 The timestamp argument is the time at which the ownership changed hands,
@@ -847,7 +851,7 @@ providing a new timestamp. If the selection value is modified, but
 can still reasonably be viewed as the same selected object,\** the
 owner should take no action.
 .FS
-The division between these two cases is a matter of judgement
+The division between these two cases is a matter of judgment
 on the part of the software developer.
 .FE
 .nH 2 "Giving Up Selection Ownership"
@@ -897,8 +901,7 @@ request, which is defined as follows:
 .sM
 .IN "ConvertSelection" "" "@DEF@"
 .PN ConvertSelection
-.in +.2i
-.LP
+.IP "" .2i
 \fIselection\fP, \fItarget\fP\^: ATOM
 .br
 \fIproperty\fP\^: ATOM or
@@ -908,7 +911,7 @@ request, which is defined as follows:
 .br
 \fItime\fP\^: TIMESTAMP or
 .PN CurrentTime
-.in -.2i
+.LP
 .eM
 .LP
 The selection argument specifies the particular selection involved,
@@ -937,7 +940,7 @@ Requestors should ensure that the named property does not exist
 on the window before issuing the
 .PN Convert\%Selection
 request.\** The exception to this rule is when the requestor intends to pass
-parameters with the request; see below.
+parameters with the request (see below).
 .NT Rationale
 It is necessary for requestors to delete the property before issuing the
 request so that the target can later be extended to take parameters without
@@ -946,7 +949,7 @@ need not know the client that owns the selection nor the window on which
 the selection was acquired.
 .NE
 .FS
-This requirement is new in version 2.0, and in general, existing
+This requirement is new in version 2.0, and, in general, existing
 clients do not conform to this requirement.  To prevent these clients
 from breaking, no existing targets should be extended to take
 parameters until sufficient time has passed for clients to be updated.
@@ -1022,8 +1025,7 @@ request, which is defined as follows:
 .sM
 .IN "GetProperty" "" "@DEF@"
 .PN GetProperty
-.in +.2i
-.LP
+.IP "" .2i
 \fIwindow\fP\^: WINDOW
 .br
 \fIproperty\fP\^: ATOM
@@ -1034,11 +1036,9 @@ request, which is defined as follows:
 \fIlong-offset\fP, \fIlong-length\fP\^: CARD32
 .br
 \fIdelete\fP\^: BOOL
-.in -.2i
 .LP
 \(->
-.in +.2i
-.LP
+.IP "" .2i
 type: ATOM or
 .PN None
 .br
@@ -1047,7 +1047,7 @@ format: {0, 8, 16, 32}
 bytes-after: CARD32
 .br
 value: LISTofINT8 or LISTofINT16 or LISTofINT32
-.in -.2i
+.LP
 .eM
 .LP
 When using 
@@ -1196,7 +1196,8 @@ and the user does not want to disturb it
 .LP
 The selection named by the atom CLIPBOARD is used to hold data
 that is being transferred between clients, 
-that is, data that usually is being cut or copied, and then pasted.
+that is, data that usually is being cut and then pasted
+or copied and then pasted.
 Whenever a client wants to transfer data to the clipboard:
 .bP
 It should assert ownership of the CLIPBOARD.
@@ -1263,7 +1264,7 @@ thus reducing the chance of race conditions causing problems.
 .LP
 The reasons not to run the clipboard client include:
 .bP
-Performance \- Data is only transferred if it is actually required 
+Performance \- Data is transferred only if it is actually required 
 (that is, when some client actually wants the data).
 .bP
 Flexibility \- The clipboard data may be available as more than one target.
@@ -1399,10 +1400,16 @@ T}
 USER	TEXT	T{
 The name of the user running the owner
 T}
+UTF8_STRING	TEXT	T{
+UTF-8 text
+T}
 .sp 6p
 _
 .TE
-.nr * \n*-3		\" decrement by the number of footnotes in the table
+.\" Conditionalized on groff because
+.\" groff keeps track of footnotes and fn references separately,
+.\" so resetting isn't necessary (and referencing \n* gives a warning).
+.if !\n(GS .nr * \n*-3	\" decrement by the number of footnotes in the table
 .if 0 \{\
 HACK!  There are several footnotes in the table above, each marked with the
 construct "\**".  The actual footnote text is here, because I haven't found
@@ -1416,14 +1423,17 @@ Also note that footnotes must appear within the T{ T} construct in tables.
 If they don't, strange numbering problems will result, probably as a result
 of multiple evaluation.
 \}
-.nr * \n*+1
+.\" These footnotes are in the wrong order because Sun tbl numbers the
+.\" footnote references wrong in the above table.  Thus this doesn't
+.\" do the right thing with gtbl, which gets the order right.
+.if !\n(GS .nr * +1
 .FS
 Earlier versions of this document erroneously specified that conversion of
-the PIXMAP target return a property of type DRAWABLE instead of PIXMAP.
+the PIXMAP target returns a property of type DRAWABLE instead of PIXMAP.
 Implementors should be aware of this and may want to support the DRAWABLE
 type as well to allow for compatibility with older clients.
 .FE
-.nr * \n*+1
+.if !\n(GS .nr * +1
 .FS
 The targets ENCAPSULATED_POSTSCRIPT and ENCAPSULATED_POSTSCRIPT_INTERCHANGE
 are equivalent to the targets _ADOBE_EPS and _ADOBE_EPSI (respectively) that
@@ -1431,10 +1441,10 @@ appear in the selection targets registry.  The _ADOBE_ targets are
 deprecated, but clients are encouraged to continue to support them for
 backward compatibility.
 .FE
-.nr * \n*+1
+.if !\n(GS .nr * +1
 .FS
 This definition is ambiguous, as the selection may be converted into any of
-several targets which may return differing amounts of data.  The requestor
+several targets that may return differing amounts of data.  The requestor
 has no way of knowing which, if any, of these targets corresponds to the
 result of LENGTH.  Clients are advised that no guarantees can be made about
 the result of a conversion to LENGTH; its use is thus deprecated.
@@ -1446,7 +1456,7 @@ Adobe Systems, Incorporated.
 .I
 Portable Document Format Reference Manual.
 .R
-Addison-Wesley, ISBN 0-201-62628-4.
+Reading, MA, Addison-Wesley, ISBN 0-201-62628-4.
 .IP [2] 5
 Apple Computer, Incorporated.
 .I
@@ -1459,7 +1469,7 @@ Adobe Systems, Incorporated.
 .I
 PostScript Language Reference Manual.
 .R
-Addison-Wesley, ISBN 0-201-18127-4.
+Reading, MA, Addison-Wesley, ISBN 0-201-18127-4.
 .LP
 It is expected that this table will grow over time.
 .LP
@@ -1543,7 +1553,7 @@ that they appear in the property.
 .LP
 In general,
 targets with side effects will return no information,
-that is, they will return a zero-length property of type NULL.
+that is, they will return a zero length property of type NULL.
 (Type NULL means the result of
 .PN InternAtom
 on the string \*QNULL\*U, not the value zero.)
@@ -1568,7 +1578,7 @@ request until a further conversion has succeeded poses problems
 for the Intrinsics interface that need to be addressed.
 .NE
 .LP
-These side effect targets are used to implement operations such as
+These side-effect targets are used to implement operations such as
 \*Qexchange PRIMARY and SECONDARY selections.\*U
 .nH 4 "DELETE"
 .LP
@@ -1669,6 +1679,7 @@ T}
 PIXMAP	32	Fixed-size
 SPAN	32	Fixed-size
 STRING	8	Zero
+UTF8_STRING	8	Zero
 WINDOW	32	Fixed-size
 .sp 6p
 _
@@ -1703,13 +1714,16 @@ The type would not actually be TEXT;
 it would be STRING or some other ATOM naming the encoding chosen by the owner.
 .LP
 STRING as a type or a target specifies the ISO Latin-1 character set plus the
-control characters TAB (octal 11) and NEWLINE (octal 12).
+control characters TAB (hex 09) and NEWLINE (hex 0A).
 The spacing interpretation of TAB is context dependent.
 Other ASCII control characters are explicitly not included in STRING 
 at the present time.
 .LP
 COMPOUND_TEXT as a type or a target specifies the Compound Text interchange
 format; see the \fICompound Text Encoding\fP.
+.LP
+UTF8_STRING as a type or a target specifies an UTF-8 encoded string, with
+NEWLINE (U+000A, hex 0A) as end-of-line marker.
 .LP
 There are some text objects where the source or intended user, as the
 case may be, does not have a specific character set for the text, but
@@ -1728,14 +1742,14 @@ An example of the need for C_STRING is to transmit the names of
 files; many operating systems do not interpret filenames as having
 a character set. For example, the same character string uses a
 different sequence of bytes in ASCII and EBCDIC, and so most
-operating systems see these as different filenames, and offer no
+operating systems see these as different filenames and offer no
 way to treat them as the same. Thus no character-set based
 property type is suitable.
 .NE
 .LP
-Type STRING, COMPOUND_TEXT, and C_STRING properties will consist of a list
-of elements separated by null characters; other encodings will need to
-specify an appropriate list format.
+Type STRING, COMPOUND_TEXT, UTF8_STRING, and C_STRING properties will
+consist of a list of elements separated by null characters; other encodings
+will need to specify an appropriate list format.
 .nH 3 "INCR Properties"
 .LP
 Requestors may receive a property of type INCR\**
@@ -1859,7 +1873,7 @@ Before a manager takes ownership of a manager selection, it
 should use the
 .PN GetSelection\%Owner
 request to check whether the selection is already owned by another client,
-and where appropriate, it should ask the user if the new manager should
+and, where appropriate, it should ask the user if the new manager should
 replace the old one.  If so, it may then take ownership of the selection.
 Managers should acquire the selection using a window created expressly for
 this purpose.  Managers must conform to the rules for selection owners
@@ -1868,7 +1882,7 @@ targets listed in section 2.6.2.
 .LP
 If a manager loses ownership of a manager selection, this
 means that a new manager is taking over its responsibilities.
-The old manager must release all resources it has managed,
+The old manager must release all resources it has managed
 and must then destroy the window that owned the selection.
 For example, a window manager losing ownership of WM_S2
 must deselect from
@@ -1885,11 +1899,11 @@ the window itself or killing the old manager.
 .LP
 If a manager wants to give up, on its own, management of a shared
 resource controlled by a selection, it must do so by releasing
-the resources it is managing, and then by destroying the
+the resources it is managing and then by destroying the
 window that owns the selection.  It should not first disown
 the selection, since this introduces a race condition.
 .LP
-Clients who are interesting in knowing when the owner of a
+Clients who are interested in knowing when the owner of a
 manager selection is no longer managing the corresponding shared
 resource should select for
 .PN StructureNotify
@@ -1957,7 +1971,7 @@ The list is indexed from zero.
 Clients that wish to know when a specific manager has started should
 select for
 .PN Structure\%Notify
-on the appropriate root window, and should watch for the appropriate MANAGER
+on the appropriate root window and should watch for the appropriate MANAGER
 .PN Client\%Message .
 .nH 1 "Peer-to-Peer Communication by Means of Cut Buffers"
 .LP
@@ -2003,7 +2017,7 @@ Data should be stored to the cut buffers
 and the ring rotated only when requested by explicit user action.
 Users depend on their mental model of cut buffer operation
 and need to be able to identify operations that transfer data to and fro.
-.nH 1 "Client to Window Manager Communication"
+.nH 1 "Client-to-Window-Manager Communication"
 .LP
 To permit window managers to perform their role of mediating the competing
 demands for resources such as screen space,
@@ -2172,7 +2186,7 @@ Private additional communication between clients and window managers
 should take place using separate properties.
 The only exception to this rule is the WM_PROTOCOLS property, which may be
 of arbitrary length and which may contain atoms representing private
-protocols; see section 4.1.2.7.
+protocols (see section 4.1.2.7).
 .LP
 The next sections describe each of the properties the clients
 need to set, in turn.
@@ -2380,7 +2394,7 @@ minimum size that the window can be for the client to be useful.
 The max_width and max_height elements specify the maximum size.
 The base_width and base_height elements in conjunction with width_inc
 and height_inc define an arithmetic progression of preferred window
-widths and heights for nonnegative integers \fIi\fP and \fIj\fP:
+widths and heights for non-negative integers \fIi\fP and \fIj\fP:
 .LP
 .Ds
 .EQ C
@@ -2535,10 +2549,10 @@ _
 .R
 T{
 .PN NormalState
-T}	1	The window is visible
+T}	1	The window is visible.
 T{
 .PN IconicState
-T}	3	The icon is visible
+T}	3	The icon is visible.
 .sp 6p
 _
 .TE
@@ -2564,7 +2578,7 @@ Those that do not are likely to have a user interface in which small
 windows that behave like icons are completely inappropriate.
 Clients should not attempt to remedy the omission by working around it.
 .LP
-Clients that need more capabilities from the icons than a simple two-color
+Clients that need more capabilities from the icons than a simple 2-color
 bitmap should use icon windows.
 Rules for clients that do are set out in section 4.1.9.
 .LP
@@ -2595,10 +2609,10 @@ The messages bit, if set in the flags field, indicates that the
 client is using an obsolete window manager communication protocol,\**
 rather than the WM_PROTOCOLS mechanism of section 4.1.2.7.
 .FS
-This obsolete protocol was described in the July 27, 1988
+This obsolete protocol was described in the July 27, 1988,
 draft of the ICCCM.
 Windows using it can also be detected because their WM_HINTS properties are
-four bytes longer than expected.
+4 bytes longer than expected.
 Window managers are free to support clients using the obsolete protocol
 in a backwards compatibility mode.
 .FE
@@ -2621,7 +2635,7 @@ either mitigate the actual condition that made the window urgent, or it can
 merely shut off the alarm.
 .NT Rationale
 This mechanism is useful for alarm dialog boxes or reminder windows, in
-cases where mapping the window is not enough (e.g. in the presence of
+cases where mapping the window is not enough (e.g., in the presence of
 multi-workspace or virtual desktop window managers), and where using an
 override-redirect window is too intrusive.  For example, the window manager
 may attract attention to an urgent window by adding an indicator to its
@@ -2830,7 +2844,7 @@ _
 .LP
 Adding other fields to this property is reserved to the X Consortium.
 Values for the state field other than those defined in the above
-table are reserved for use by X Consortium.
+table are reserved for use by the X Consortium.
 .LP
 The state field describes the window manager's idea of the state 
 the window is in, which may not match the client's idea as expressed 
@@ -3033,7 +3047,7 @@ on a window for which they have not yet received a real
 When a client withdraws a window,
 the window manager will then update or remove the WM_STATE
 property as described in section 4.1.3.1.
-Clients that want to re-use a client window (e.g. by mapping it again or
+Clients that want to re-use a client window (e.g., by mapping it again or
 reparenting it elsewhere) after withdrawing it must wait for the
 withdrawal to be complete before proceeding.  The preferred method for
 doing this is for clients to wait for the window manager to update or
@@ -3098,7 +3112,7 @@ event when it becomes even partly viewable.
 .NE
 .NT "Advice to Implementors"
 When a window makes a transition from the Normal state to either the Iconic
-or to the Withdrawn state, clients should be aware that the window manager
+or the Withdrawn state, clients should be aware that the window manager
 may make transients for this window inaccessible.  Clients should not rely
 on transient windows being available to the user when the transient owner
 window is not in the Normal state.  When withdrawing a window, clients are
@@ -3136,7 +3150,7 @@ If the window manager decides to respond to a
 request by:
 .bP
 Not changing the size, location, border width, or stacking order
-of the window at all
+of the window at all.
 .IP
 A client will receive a synthetic 
 .PN ConfigureNotify
@@ -3150,7 +3164,7 @@ The client will not receive a real
 event because no change has actually taken place.
 .bP
 Moving or restacking the window without resizing it or
-changing its border width
+changing its border width.
 .IP
 A client will receive a synthetic 
 .PN ConfigureNotify 
@@ -3166,7 +3180,7 @@ If the client does receive a real event,
 the synthetic event will follow the real one.
 .bP
 Resizing the window or changing its border width (regardless of whether the
-window was also moved or restacked)
+window was also moved or restacked).
 .IP
 A client that has selected for 
 .PN StructureNotify
@@ -3309,7 +3323,7 @@ The attributes that may be supplied when a window is created may be
 changed by using the 
 .PN ChangeWindowAttributes
 request.
-The window attributes are listed in the following table.
+The window attributes are listed in the following table:
 .br
 .ne 6
 .TS H
@@ -3503,7 +3517,7 @@ may receive a
 .PN ClientMessage 
 event from the window manager (as described in section 4.2.8)
 with WM_TAKE_FOCUS in its data[0] field and a valid timestamp
-(i.e. not
+(i.e., not
 .PN CurrentTime )
 in its data[1] field.
 If they want the focus,
@@ -3622,8 +3636,8 @@ the WM_COLORMAP_WINDOWS property to reflect the new ordering.  If the
 top-level window does not appear in the list, the window manager will assume
 it to be of higher priority than any window in the list.
 .LP
-WM_TRANSIENT_FOR windows either can have their own WM_COLORMAP_WINDOWS
-property or can appear in the property of the window they are transient for,
+WM_TRANSIENT_FOR windows can either have their own WM_COLORMAP_WINDOWS
+property or appear in the property of the window they are transient for,
 as appropriate.
 .NT Rationale
 An alternative design was considered for how clients should hint to the
@@ -3731,7 +3745,7 @@ the client still has the pointer grabbed and before the client has issued
 the \*Qfinished\*U message, the client may reinstall the desired colormaps.
 .NT "Advice to Implementors"
 Clients are expected to use this mechanism for things such as
-popup windows and for animations that use override-redirect windows.
+pop-up windows and for animations that use override-redirect windows.
 .\" Avoid .LP within a .NT, because it resets the margins.  The .NT
 .\" macro should probably be fixed.
 .br
@@ -3746,7 +3760,7 @@ colormap installation policy in response to a command from the user.
 A client can hint to the window manager about the desired appearance 
 of its icon by setting:
 .bP
-A string in WM_ICON_NAME
+A string in WM_ICON_NAME.
 .IP
 All clients should do this  
 because it provides a fallback for window managers whose ideas 
@@ -3755,7 +3769,7 @@ about icons differ widely from those of the client.
 A 
 .PN Pixmap 
 into the icon_pixmap field of the WM_HINTS property
-and possibly another into the icon_mask field 
+and possibly another into the icon_mask field.
 .IP
 The window manager is expected to display the pixmap masked by the mask.
 The pixmap should be one of the sizes found in the WM_ICON_SIZE property
@@ -3765,7 +3779,7 @@ the window manager is unlikely to display icon pixmaps.
 Window managers usually will clip or tile pixmaps that do not match
 WM_ICON_SIZE.
 .bP
-A window into the icon_window field of the WM_HINTS property
+A window into the icon_window field of the WM_HINTS property.
 .IP
 The window manager is expected to map that window whenever the client is
 in the Iconic state.
@@ -3856,7 +3870,7 @@ An example of an appropriate use is a pop-up menu.
 The user will not be able to move, resize, restack, or transfer the input
 focus to override-redirect windows, since the window manager is not managing
 them.  If it is necessary for a client to receive keystrokes on an
-override-redirect window, either the client must grab the keyboard, or the
+override-redirect window, either the client must grab the keyboard or the
 client must have another top-level window that is not override-redirect and
 that has selected the Locally Active or Globally Active focus model.  The
 client may set the focus to the override-redirect window when the other
@@ -4044,7 +4058,7 @@ event indicating that the window is visible.
 This technique does not guarantee correct operation.  The user may have
 iconified the window by the time the
 .PN SetInput\%Focus
-request reaches the server, still causing an error.  Or, the window manager
+request reaches the server, still causing an error.  Or the window manager
 may decide to map the window into Iconic state, in which case the window
 will not be visible.  This will delay the generation of the
 .PN Visibility\%Notify
@@ -4201,8 +4215,7 @@ request, which is defined as follows:
 .sM
 .IN "SetInputFocus" "" "@DEF@"
 .PN SetInputFocus
-.in +.2i
-.LP
+.IP "" .2i
 \fIfocus\fP\^: WINDOW or
 .PN PointerRoot
 or
@@ -4215,7 +4228,7 @@ or
 .br
 \fItime\fP\^: TIMESTAMP or
 .PN CurrentTime
-.in -.2i
+.LP
 .eM
 .NT Conventions
 .IP 1. 5
@@ -4304,9 +4317,9 @@ They should perform any confirmation dialog with the user
 and, if they decide to complete the deletion, should do the following:
 .bP
 Either change the window's state to Withdrawn (as described in section 4.1.4)
-or destroy the window
+or destroy the window.
 .bP
-Destroy any internal state associated with the window
+Destroy any internal state associated with the window.
 .LP
 If the user aborts the deletion during the confirmation dialog,
 the client should ignore the message.
@@ -4452,7 +4465,7 @@ WM_TRANSIENT_FOR	WINDOW	32	4.1.2.6
 .sp 6p
 _
 .TE
-.nH 1 "Session Management"
+.nH 1 "Session Management and Additional Inter-Client Exchanges"
 .LP
 This section contains some conventions for clients that participate in
 session management.  See
@@ -4460,40 +4473,40 @@ session management.  See
 X Session Management Protocol
 .R
 for further details.  Clients that do not support this protocol cannot
-expect their window state (e.g. WM_STATE, position, size and stacking order)
+expect their window state (e.g., WM_STATE, position, size, and stacking order)
 to be preserved across sessions.
 .nH 2 "Client Support for Session Management"
 .LP
 Each session participant will obtain a unique client identifier (client-ID)
-from the session manager.  The client must identify one top level window as
+from the session manager.  The client must identify one top-level window as
 the \*Qclient leader.\*U This window must be created by the client.  It may
 be in any state, including the Withdrawn state.  The client leader window
 must have a SM_CLIENT_ID property, which contains the client-ID obtained
 from the session management protocol.  That property must:
 .bP
-be of type STRING;
+Be of type STRING
 .bP
-be of format 8; and
+Be of format 8
 .bP
-contain the client-ID as a string of XPCS characters encoded using ISO
-8859-1.
+Contain the client-ID as a string of XPCS characters encoded using ISO
+8859-1
 .LP
-All top-level, non-transient windows created by a client on the same display
+All top-level, nontransient windows created by a client on the same display
 as the client leader must have a WM_CLIENT_LEADER property. This property
 contains a window ID that identifies the client leader window.  The client
 leader window must have a WM_CLIENT_LEADER property containing its own
-window ID (i.e. the client leader window is pointing to itself).  Transient
+window ID (i.e., the client leader window is pointing to itself).  Transient
 windows need not have a WM_CLIENT_LEADER property if the client leader can
 be determined using the information in the WM_TRANSIENT_FOR property.  The
 WM_CLIENT_LEADER property must:
 .bP
-be of type WINDOW;
+Be of type WINDOW
 .bP
-be of format 32; and
+Be of format 32
 .bP
-contain the window ID of the client leader window.
+Contain the window ID of the client leader window
 .LP
-A client must withdraw all of its top level windows on the same display
+A client must withdraw all of its top-level windows on the same display
 before modifiying either the WM_CLIENT_LEADER or the SM_CLIENT_ID property
 of its client leader window.
 .LP
@@ -4507,7 +4520,7 @@ window within the scope specified above.  The combination of SM_CLIENT_ID
 and WM_WINDOW_ROLE can be used by other clients to uniquely identify a
 window across sessions.
 .LP
-If the WM_WINDOW_ROLE property is not specified on a top level window, a
+If the WM_WINDOW_ROLE property is not specified on a top-level window, a
 client that needs to uniquely identify that window will try to use instead
 the values of WM_CLASS and WM_NAME.  If a client has multiple windows with
 identical WM_CLASS and WM_NAME properties, then it should provide a
@@ -4517,22 +4530,36 @@ The client must set the WM_WINDOW_ROLE property to a string that uniquely
 identifies that window among all windows that have the same client leader
 window.  The property must:
 .bP
-be of type STRING;
+Be of type STRING
 .bP
-be of format 8; and
+Be of format 8
 .bP
-contain a string restricted to the XPCS characters, encoded in ISO 8859-1.
+Contain a string restricted to the XPCS characters, encoded in ISO 8859-1
 .nH 2 "Window Manager Support for Session Management"
 .LP
 A window manager supporting session management must register with the
 session manager and obtain its own client-ID.  The window manager should
 save and restore information such as the WM_STATE, the layout of windows on
-the screen, and their stacking order, for every client window that has a
+the screen, and their stacking order for every client window that has a
 valid SM_CLIENT_ID property (on itself, or on the window named by
 WM_CLIENT_LEADER) and that can be uniquely identified.
 Clients are allowed to change this state during the first phase of the
 session checkpoint process.  Therefore, window managers should request a
 second checkpoint phase and save clients' state only during that phase.
+.nH 2 "Support for ICE Client Rendezvous"
+.IN "ICE Rendezvous"
+.LP
+The Inter-Client Exchange protocol (ICE) defined as of X11R6 
+specifies a generic communication framework, independent of the X
+server, for data exchange between arbitrary clients.  ICE also defines 
+a protocol for any two ICE clients who also have X connections 
+to the same X server to locate (rendezvous with) each other.  
+.LP
+This protocol, called the "ICE X Rendezvous" protocol, is defined in
+the ICE specification, Appendix B,
+and uses the property ICE_PROTOCOLS plus
+.PN ClientMessage
+events.  Refer to that specification for complete details.
 .nH 1 "Manipulation of Shared Resources"
 .LP
 X Version 11 permits clients to manipulate a number of shared resources,
@@ -4622,7 +4649,7 @@ they own.
 .LP
 In particular, this convention means that a window manager that wishes 
 to establish a grab over the client's top-level window should either establish 
-the grab on the root, or reparent the window and establish the grab 
+the grab on the root or reparent the window and establish the grab 
 on a proper ancestor.
 In some cases,
 a window manager may want to consume the event received,
@@ -4637,7 +4664,7 @@ Clicking in a buried window to raise it, again, with the click not offered
 to the client
 .LP
 More typically,
-a window manager should add to rather than replace the client's semantics 
+a window manager should add to, rather than replace, the client's semantics 
 for key+button combinations by allowing the event to be used by the client 
 after the window manager is done with it.
 To ensure this,
@@ -4809,7 +4836,7 @@ events should update any internal keycode translation tables they are using.
 .NE
 .nH 2 "The Modifier Mapping"
 .LP
-X Version 11 supports eight modifier bits of which three are preassigned 
+X Version 11 supports 8 modifier bits of which 3 are preassigned 
 to Shift, Lock, and Control.
 Each modifier bit is controlled by the state of a set of keys,
 and these sets are specified in a table accessed by
@@ -4903,7 +4930,7 @@ delim @@
 define oc % "\\fR{\\fP" %
 define cc % "\\fR}\\fP" %
 .EN
-The X protocol provides explicit RGB values,
+The X protocol provides explicit Red, Green, and Blue (RGB) values,
 which are used to directly drive a monitor, and color names.  RGB values
 provide a mechanism for accessing the full capabilities of the display
 device, but at the expense of having the color perceived by the user remain
@@ -4956,7 +4983,7 @@ XYZ ~ = ~ M sup -1 ~ times ~ RGB sub intensity
 .EN
 .IP \(bu 5
 A way of mapping between RGB intensity and RGB protocol value.  XDCCC
-supports three mechanisms which will be outlined below.
+supports three mechanisms which will be outlined later.
 .LP
 If other device types are eventually necessary, additional
 properties will be required to describe them.
@@ -5027,7 +5054,7 @@ desired value.  This allows the server to perform gamma correction
 itself and encode that fact in a short two-element correction table.  The
 intensity will be encoded as an unsigned number to be interpreted as a value
 between 0 and 1 (inclusive).  The precision of this value will depend on the
-format of the property in which it is stored (8, 16 or 32 bits).  For 16-bit
+format of the property in which it is stored (8, 16, or 32 bits).  For 16-bit
 and 32-bit formats, the RGB value will simply be the value stored in the
 property.  When stored in 8-bit format, the RGB value can be computed from
 the value in the property by:
@@ -5060,11 +5087,11 @@ Field	Type	Comments
 .sp 6p
 _
 .sp 6p
-VisualID0	CARD	Most-significant portion of VisualID
+VisualID0	CARD	Most significant portion of VisualID
 VisualID1	CARD	Exists if and only if the property format is 8
 VisualID2	CARD	Exists if and only if the property format is 8
 VisualID3	CARD	T{
-Least-significant portion, exists if and only if the property format
+Least significant portion, exists if and only if the property format
 is 8 or 16
 T}
 type	CARD	0 for this type of correction
@@ -5093,7 +5120,7 @@ _
 .LP
 The VisualID is stored in 4, 2, or 1 pieces, depending on whether
 the property format is 8, 16, or 32, respectively.  The VisualID is always
-stored most-significant piece first.
+stored most significant piece first.
 Note that the length fields are stored as one less than the actual length,
 so 256 entries can be stored in format 8.
 .LP
@@ -5128,11 +5155,11 @@ Field	Type	Comments
 .sp 6p
 _
 .sp 6p
-VisualID0	CARD	Most-significant portion of VisualID
+VisualID0	CARD	Most significant portion of VisualID
 VisualID1	CARD	Exists if and only if the property format is 8
 VisualID2	CARD	Exists if and only if the property format is 8
 VisualID3	CARD	T{
-Least-significant portion, exists if and only if
+Least significant portion, exists if and only if
 the property format is 8 or 16
 T}
 type	CARD	1 for this type of correction
@@ -5176,7 +5203,7 @@ for information on general-purpose communication among clients.
 .IN "X Registry"
 .LP
 The X Consortium maintains a registry of certain X-related items, to aid in
-avoiding conflicts and to aid in sharing of such items.  Readers are
+avoiding conflicts and in sharing of such items.  Readers are
 encouraged to use the registry.  The classes of items kept in the registry
 that are relevant to the ICCCM include property names, property types,
 selection names, selection targets, WM_PROTOCOLS protocols,
@@ -5193,16 +5220,16 @@ or to
 .DS
 	Registry
 	X Consortium
-	1 Memorial Dr
-	Cambridge MA 02142-1301
+	201 Broadway
+	Cambridge, MA 02139-1955
 	USA
 .DE
-Electronic mail will be acknowledged upon receipt.  Please allow up to four
+Electronic mail will be acknowledged upon receipt.  Please allow up to 4
 weeks for a formal response to registration and inquiries.
 .LP
 The registry is published as part of the X software distribution from the X
 Consortium.  All registered items must have the postal address of someone
-responsible for the item, or a reference to a document describing the item
+responsible for the item or a reference to a document describing the item
 and the postal address of where to write to obtain the document.
 .bp
 .\" Set registers to number the appendixes A.1, B.1, C.1, ...
@@ -5215,15 +5242,15 @@ This appendix describes the revision history of this document and
 summarizes the incompatibilities between this and earlier versions.
 .nH 2 "The X11R2 Draft"
 .LP
-The February 25, 1988 draft that was distributed as part of X Version 11,
-Release 2 was clearly labeled as such,
+The February 25, 1988, draft that was distributed as part of X Version 11,
+Release 2, was clearly labeled as such,
 and many areas were explicitly labeled as liable to change.
-Nevertheless, in the revision work since then,
+Nevertheless, in the revision work done since then,
 we have been very careful not to introduce gratuitous incompatibility.
 As far as possible,
 we have tried to ensure that clients obeying the conventions
 in the X11R2 draft would still work.
-.nH 2 "The July 27, 1988 Draft"
+.nH 2 "The July 27, 1988, Draft"
 .LP
 The Consortium review was based on a draft dated July 27, 1988.  This draft
 included several areas in which incompatibilities with the X11R2 draft were
@@ -5279,7 +5306,7 @@ and difficult to evolve.
 It has been replaced by the WM_PROTOCOLS property,
 but clients that use the earlier mechanism can be detected 
 because they set the messages bit in the flags field of the WM_HINTS property,
-and window managers can provide a backwards-compatibility mode.
+and window managers can provide a backwards compatibility mode.
 .bP
 The mechanism described in the earlier draft by which clients installed
 their own subwindow colormaps could not be made to work reliably
@@ -5310,12 +5337,12 @@ that multi-window clients may be terminated unexpectedly)
 has meant some changes in the WM_SAVE_YOURSELF protocol,
 to ensure that the two protocols are orthogonal.
 Clients using the earlier protocol can be detected (see WM_PROTOCOLS above)
-and supported in a backwards-compatibility mode.
+and supported in a backwards compatibility mode.
 .bP
 The conventions in Section 14.3.1. of \fIXlib \- C Language X Interface\fP
 regarding properties of type RGB_COLOR_MAP have been changed,  
 but clients that use the earlier conventions can be detected 
-because their properties are four bytes shorter.
+because their properties are 4 bytes shorter.
 These clients will work correctly if the server supports only a single Visual
 or if they use only the Visual of the root.
 These are the only cases in which they would have worked, anyway.
@@ -5371,7 +5398,7 @@ RGB_COLOR_MAP properties,
 and the cases that would have worked will still work.
 .nH 2 "Version 1.1"
 .LP
-Version 1.1 was released with X11R5 in September, 1991.  In addition to some
+Version 1.1 was released with X11R5 in September 1991.  In addition to some
 minor editorial changes, there were a few semantic changes since Version
 1.0:
 .bP
@@ -5388,7 +5415,7 @@ for Version 2.0.
 [P01] Addition of advice to clients on how to keep track of a top-level
 window's absolute position on the screen.
 .bP
-[P03] A technique for clients to detect when it is safe to re-use a
+[P03] A technique for clients to detect when it is safe to reuse a
 top-level window has been added.
 .bP
 [P06] Section 4.1.8, on colormaps, has been rewritten.  A new feature that
@@ -5438,7 +5465,7 @@ selection mechanism has been added.
 .bP
 [P32] The definition of the CLIENT_WINDOW target has been clarified.
 .bP
-[P33] A rule about requiring the selection owner to re-acquire the
+[P33] A rule about requiring the selection owner to reacquire the
 selection under certain circumstances has been added.
 .bP
 [P42] Added several new selection targets.
@@ -5500,7 +5527,7 @@ During the development of these conventions,
 a number of inadequacies have been discovered in the
 core X11 protocol.
 They are summarized here as input to an eventual protocol revision
-design process.
+design process:
 .bP
 There is no way for anyone to find out the last-change time of
 a selection.
@@ -5536,7 +5563,7 @@ reason for restricting colormap installation to the window manager.
 The protocol needs to be changed to provide some way of identifying
 the Visual and the Screen of a colormap.
 .bP
-There should be some way to reclaim assignments to the five non-preassigned
+There should be some way to reclaim assignments to the five nonpreassigned
 modifiers when they are no longer needed.  The manual method is unpleasantly
 low-tech.
 .bp
@@ -5544,7 +5571,7 @@ low-tech.
 .nH 1 "Obsolete Session Manager Conventions"
 .LP
 This appendix contains obsolete conventions for session management using X
-properties and messages.  The conventions described here are deprecated, and
+properties and messages.  The conventions described here are deprecated and
 are described only for historical interest.  For further information on
 session management, see
 .I
@@ -5565,7 +5592,7 @@ that need to be able to identify top-level client windows and their state.
 The WM_COMMAND property represents the command used to start or restart the
 client.  By updating this property, clients should ensure that it always
 reflects a command that will restart them in their current state.  The
-content and type of the property depends on the operating system of the
+content and type of the property depend on the operating system of the
 machine running the client.  On POSIX-conformant systems using ISO Latin-1
 characters for their command lines, the property should:
 .bP
