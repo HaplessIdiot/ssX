@@ -1,5 +1,15 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/cfb24/Imakefile,v 3.0 1996/06/29 09:06:07 dawes Exp $
+
+#if !BuildModuleInSubdir
+#define IHaveModules
+#else
+#if DoLoadableServer
+#define IHaveSubdirs
+SUBDIRS = module
+#endif
+#endif
+
 #define PixelSize	24
 #define LinkDirectory ../cfb
 
-#include "../cfb/Imakefile"
+#include "../cfb/Imakefile.inc"
