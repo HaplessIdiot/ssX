@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.51 1999/05/14 14:11:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.53 1999/11/19 13:55:11 hohndel Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -1566,12 +1566,12 @@ SmartScheduleInit (void)
     if (SmartScheduleDisable)
 	return TRUE;
     
+    bzero ((char *) &act, sizeof(struct sigaction));
+
     /* Set up the timer signal function */
     act.sa_handler = SmartScheduleTimer;
     sigemptyset (&act.sa_mask);
     sigaddset (&act.sa_mask, SMART_SCHEDULE_SIGNAL);
-    act.sa_flags = 0;
-    act.sa_restorer = 0;
     if (sigaction (SMART_SCHEDULE_SIGNAL, &act, 0) < 0)
     {
 	perror ("sigaction for smart scheduler");
