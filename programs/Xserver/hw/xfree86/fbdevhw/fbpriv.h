@@ -2,7 +2,7 @@
  * copyed from from linux kernel 2.2.4
  * removed internal stuff (#ifdef __KERNEL__)
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fb.h,v 1.2 1999/04/05 12:43:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbpriv.h,v 1.1 2000/01/19 23:02:01 dawes Exp $ */
 
 #ifndef _LINUX_FB_H
 #define _LINUX_FB_H
@@ -77,6 +77,13 @@
 #define FB_ACCEL_SUN_BWTWO	23	/* Sun bwtwo			 */
 #define FB_ACCEL_SUN_CGTHREE	24	/* Sun cgthree			 */
 #define FB_ACCEL_SUN_TCX	25	/* Sun tcx			 */
+#define FB_ACCEL_MATROX_MGAG400	26	/* Matrox G400			*/
+#define FB_ACCEL_NV3		27	/* nVidia RIVA 128              */
+#define FB_ACCEL_NV4		28	/* nVidia RIVA TNT		*/
+#define FB_ACCEL_NV5		29	/* nVidia RIVA TNT2		*/
+#define FB_ACCEL_CT_6555x	30	/* C&T 6555x			*/
+#define FB_ACCEL_3DFX_BANSHEE	31	/* 3Dfx Banshee			*/
+#define FB_ACCEL_ATI_RAGE128	32	/* ATI Rage128 family		*/
 
 struct fb_fix_screeninfo {
 	char id[16];			/* identification string eg "TT Builtin" */

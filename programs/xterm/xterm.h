@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.49 1999/11/19 13:55:24 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.50 1999/12/30 02:05:59 robin Exp $ */
 
 /************************************************************
 
@@ -92,7 +92,7 @@ authorization.
 #define UTMPX_FOR_UTMP 1
 #endif
 
-#ifndef ISC
+#if !defined(ISC) && !defined(__QNX__)
 #define HAVE_UTMP_UT_HOST 1
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elf.h,v 1.6 1999/03/14 03:22:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elf.h,v 1.7 1999/03/21 07:35:20 dawes Exp $ */
 
 
 typedef unsigned long	Elf32_Addr;
@@ -115,7 +115,9 @@ typedef struct dynamic64 {
   } d_un;
 } Elf64_Dyn;
 
+#ifndef QNX4
 extern Elf32_Dyn _DYNAMIC [];
+#endif
 
 /* The following are used with relocations */
 #define ELF32_R_SYM(x) ((x) >> 8)

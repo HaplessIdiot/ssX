@@ -17,7 +17,7 @@ XCOMM $TOG: Imake.cf /main/30 1998/04/28 13:55:25 barstow $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.50 1999/02/28 11:19:13 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.51 1999/12/27 00:39:15 robin Exp $
 
 #if defined(clipper) || defined(__clipper__)
 # undef clipper
@@ -722,6 +722,26 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.50 1999/02/28 11:19:13 dawes Exp $
 #define QNX4Architecture
 #define i386Architecture
 #endif /* QNX4 */
+
+#ifdef __QNXNTO__
+#define MacroIncludeFile <nto.cf>
+#define MacroFile nto.cf
+#define NTOArchitecture
+#ifdef PPC
+# define PPCArchitecture
+# undef PPC
+#else
+#ifdef MIPS
+# define mipsArchitecture
+# undef MIPS
+#else
+#ifdef i386
+# define i386Architecture
+# undef i386
+#endif
+#endif
+#endif
+#endif /* QNX/Neutrino */
 
 #ifndef MacroIncludeFile
 XCOMM WARNING:  Imake.cf not configured; guessing at definitions!!!

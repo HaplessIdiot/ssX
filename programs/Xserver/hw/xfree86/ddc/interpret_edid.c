@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/interpret_edid.c,v 1.2 1999/01/14 13:04:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/interpret_edid.c,v 1.5 1999/12/03 19:17:26 eich Exp $ */
 
 /* interpret_edid.c: interpret a primary EDID block
  * 
@@ -116,7 +116,7 @@ get_dt_md_section(Uchar *c, struct edid_version *ver,
   int i;
  
   for (i=0;i<DET_TIMINGS;i++) {  
-    if (ver->version == 1 && ver->revision > 1 && IS_MONITOR_DESC) {
+    if (ver->version == 1 && ver->revision >= 1 && IS_MONITOR_DESC) {
 
       switch (MONITOR_DESC_TYPE) {
       case SERIAL_NUMBER:

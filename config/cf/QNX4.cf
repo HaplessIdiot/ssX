@@ -1,6 +1,5 @@
-XCOMM platform:  $XFree86: xc/config/cf/QNX.cf,v 1.1.2.4 1999/07/29 09:22:24 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/QNX4.cf,v 1.1 1999/12/27 00:45:43 robin Exp $
 
-#define NewInput		NO
 #define StripInstalledPrograms	NO
 #define BuildServer 		YES
 #define DoLoadableServer	NO     /* sorry, are u listenning QSSL? */

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_i2c.c,v 1.1 1999/08/21 13:48:39 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -29,9 +29,8 @@ static void
 s3v_I2CGetBits(I2CBusPtr b, int *clock, int *data)
 {
     S3VPtr ps3v = S3VPTR(xf86Screens[b->scrnIndex]);
-    unsigned int reg = 0x13;
+    unsigned int reg;
 
-    OUTREG(DDC_REG,reg);
     reg = (INREG(DDC_REG));
 
     *clock = reg & 0x4;
