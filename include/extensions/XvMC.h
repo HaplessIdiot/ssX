@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/XvMC.h,v 1.6 2001/10/25 00:27:44 mvojkovi Exp $ */
+/* $XFree86: xc/include/extensions/XvMC.h,v 1.7 2001/11/14 21:54:37 mvojkovi Exp $ */
 
 #ifndef _XVMC_H_
 #define _XVMC_H_
@@ -9,8 +9,8 @@
 #define XvMCName "XVideo-MotionCompensation"
 #define XvMCNumEvents 0
 #define XvMCNumErrors 3
-#define XvMCVersion 0
-#define XvMCRevision 1
+#define XvMCVersion 1
+#define XvMCRevision 0
 
 #define XvMCBadContext          0
 #define XvMCBadSurface          1
