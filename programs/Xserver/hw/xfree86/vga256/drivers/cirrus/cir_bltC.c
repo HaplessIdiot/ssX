@@ -1,4 +1,5 @@
 /* $XConsortium: cir_bltC.c,v 1.2 94/04/17 20:32:32 dpw Exp $ */
+/* $XFree86$ */
 /*
  
 
@@ -34,6 +35,8 @@ Author: Keith Packard
  * Author:  Bill Reynolds, bill@goshawk.lanl.gov
  *
  * Reworked by: Simon P. Cooper, <scooper@vizlab.rutgers.edu>
+ * Modified: H. Hanemaayer, <hhanemaa@cs.ruu.nl>
+ *	Added CirrusCopyPlane1to8.
  *
  * Id: cir_bltC.c,v 0.7 1993/09/16 01:07:25 scooper Exp
  */
@@ -143,7 +146,7 @@ CirrusDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	    }
        else			/* Screen -> Mem */
 	    {
-	    if(NoCirrus || !HAVEBITBLTENGINE())
+	    if(NoCirrus || !HAVEBITBLTENGINE() || HAVE543X())
 		 {
 		 fnp = vgaImageRead;
 		 }
@@ -286,3 +289,70 @@ CirrusDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 }
 
 
+#ifdef CIRRUS_INCLUDE_COPYPLANE1TO8
+
+extern void cfbCopyPlane1to8();
+
+void CirrusCopyPlane1to8(pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
+planemask)
+	DrawablePtr pSrcDrawable;
+	DrawablePtr pDstDrawable;
+	int rop;
+	unsigned long planemask;
+	RegionPtr prgnDst;
+	DDXPointPtr pptSrc;
+{
+    unsigned long *psrcBase, *pdstBase;
+    int	widthSrc, widthDst;
+    int pixwidth;
+    int nbox;
+    BoxPtr  pbox;
+
+    cfbGetLongWidthAndPointer (pSrcDrawable, widthSrc, psrcBase)
+
+    cfbGetLongWidthAndPointer (pDstDrawable, widthDst, pdstBase)
+
+    if (!CHECKSCREEN(pdstBase) || cfb8StippleRRop != GXcopy) {
+    	cfbCopyPlane1to8(pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
+    		planemask);
+    	return;
+    }
+
+    nbox = REGION_NUM_RECTS(prgnDst);
+    pbox = REGION_RECTS(prgnDst);
+
+    /* The planemask is understood to be 1 for all cases in which */
+    /* this function is called. */
+
+    while (nbox--)
+    {
+	int srcx, srcy, dstx, dsty, width, height;
+	int bg, fg;
+	dstx = pbox->x1;
+	dsty = pbox->y1;
+	srcx = pptSrc->x;
+	srcy = pptSrc->y;
+	width = pbox->x2 - pbox->x1;
+	height = pbox->y2 - pbox->y1;
+	pbox++;
+	pptSrc++;
+
+	fg = cfb8StippleFg;
+	bg = cfb8StippleBg;
+
+	if (width >= 32)
+		CirrusBLTWriteBitmap(dstx, dsty, width, height,
+			psrcBase, widthSrc * 4, srcx, srcy, bg, fg,
+			widthDst * 4);
+	else {
+		/* Create singular region. */
+		RegionRec reg;
+		(*pDstDrawable->pScreen->RegionInit)(&reg, pbox - 1, 1);
+		cfbCopyPlane1to8(pSrcDrawable, pDstDrawable, rop,
+			&reg, pptSrc - 1, planemask);
+		(*pDstDrawable->pScreen->RegionUninit)(&reg);
+	}
+    }
+}
+
+#endif

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_fill.c,v 1.1 94/03/28 21:49:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fill.c,v 3.0 1994/04/29 14:10:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fill.c,v 3.1 1994/05/14 07:01:57 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
@@ -152,7 +152,7 @@ CirrusFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
        	              &bits, 1, 0, 0, pixel1, pixel1, widthDst);
        	          continue;
        	      }
-	
+
 	      /* We use the color expansion function for solid fills in the
 	       * following cases:
 	       * - If the chip has no bitblt engine (i.e. 5420/2/4).

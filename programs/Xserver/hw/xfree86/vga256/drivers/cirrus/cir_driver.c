@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.1 1994/05/14 07:01:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.2 1994/05/31 08:14:16 dawes Exp $ */
 /*
  * Header: /usr/local/src/Xaccel/cirrus/RCS/driver.c,v 1.6 1993/04/04 17:57:44 bill Exp
  *
@@ -154,8 +154,6 @@ extern void     cirrusSetReadWrite();
 extern void     cirrusSetRead2MB();
 extern void     cirrusSetWrite2MB();
 extern void     cirrusSetReadWrite2MB();
-
-extern void *CirrusCopyPlane();
 
 int	CirrusMemTop;
 
@@ -689,25 +687,24 @@ cirrusProbe()
 	       }
 	  else 
 	  if (HAVE543X()) {
-	  	/* The scratch register method may not work on the 543x. */
+	  	/* The scratch register method does not work on the 543x. */
 	  	/* Use the DRAM bandwidth bit and the DRAM bank switching */
 	  	/* bit to figure out the amount of memory. */
 	  	unsigned char SRF;
-	  	vga256InfoRec.videoRam = 1024;
+	  	vga256InfoRec.videoRam = 512;
 	  	outb(0x3c4, 0x0f);
 	  	SRF = inb(0x3c5);
-	  	if ((SRF & 0x16) == 0x03)
-	  		/* 64-bit DRAM data bus width; assume 2MB. */
+	  	if (SRF & 0x10)
+	  		/* 32-bit DRAM bus. */
 	  		vga256InfoRec.videoRam *= 2;
-	  	/* The 5430 is a problem; the docs say that the DRAM bank */
-	  	/* switching bit is always enabled, and appears to indicate */
-	  	/* that it always has 2MB. I have no idea of how to detect */
-	  	/* a 5430 with 1MB if it exists (2MB seems like a waste */
-	  	/* because it still has a 32-bit DRAM bus width like 542x). */
-	  	if (SRF & 0x80)
+	  	if ((SRF & 0x18) == 0x18)
+	  		/* 64-bit DRAM data bus width; assume 2MB. */
+	  		/* Also indicates 2MB memory on the 5430. */
+	  		vga256InfoRec.videoRam *= 2;
+	  	if (cirrusChip != CLGD5430 && (SRF & 0x80))
 	  		/* If DRAM bank switching is enabled, there */
-	  		/* must be twice as much memory installed */
-	  		/* (2MB or 4MB, depending on DRAM data bus width). */
+	  		/* must be twice as much memory installed. */
+	  		/* (4MB on the 5434) */
 	  		vga256InfoRec.videoRam *= 2;
 	  }
 	  else
@@ -835,9 +832,13 @@ cirrusFbInit()
       cirrusChip == CLGD5428 || cirrusChip == CLGD5429 ||
       HAVE543X())
       {
+      unsigned char SRF;
+      outb(0x3c4, 0x0f);
+      SRF = inb(0x3c5);
       outb(0x3c4, 0x1f);
-      ErrorF("%s %s: Internal memory clock register value is 0x%02x\n",
-        XCONFIG_PROBED, cirrusIdent(cirrusChip), inb(0x3c5));
+      ErrorF("%s %s: Internal memory clock register value is 0x%02x (%s RAS)\n",
+        XCONFIG_PROBED, cirrusIdent(cirrusChip), inb(0x3c5),
+        (SRF & 4) ? "Standard" : "Extended");
       
       if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
           {
@@ -918,6 +919,9 @@ cirrusFbInit()
     if (HAVEBITBLTENGINE()) {
         ErrorF ("%s %s: Using BitBLT engine\n",
 	    XCONFIG_PROBED, cirrusIdent (cirrusChip) );
+#ifdef CIRRUS_INCLUDE_COPYPLANE1TO8	    
+	cfbLowlevFuncs.CopyPlane1to8 = CirrusCopyPlane1to8;
+#endif	
     }
   }
 
@@ -1291,6 +1295,10 @@ cirrusInit(mode)
 				/* Enable Dual Banking */
      new->GRB = 0x01;
 
+     /* Initialize the read and write bank such a way that we initially */
+     /* have an effective 64K window at the start of video memory. */
+     new->GR9 = 0x00;
+     new->GRA = (CIRRUS.ChipSetRead != cirrusSetRead) ? 0x02 : 0x08;
 
      outb(0x3C4,0x0F);
      new->SRF = inb(0x3C5);
@@ -1361,7 +1369,7 @@ cirrusInit(mode)
      if (cirrusChip == CLGD5430
      && !OFLG_ISSET(OPTION_NO_2MB_BANKSEL, &vga256InfoRec.options))
      	  /* The 5430 always uses DRAM 'bank switching' bit. */
-          new->SRF == 0x80;
+          new->SRF |= 0x80;
 
      if (CIRRUS.ChipSetRead != cirrusSetRead)
 	  {

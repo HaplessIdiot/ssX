@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.h,v 1.1 94/03/28 21:48:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.0 1994/04/29 14:10:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.1 1994/05/14 07:01:55 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -61,6 +61,9 @@ extern void CirrusFillSpans();
 
 /* In cir_blt.c: */
 extern void CirrusBitBlt();
+#ifdef CIRRUS_INCLUDE_COPYPLANE1TO8
+extern void CirrusCopyPlane1to8();
+#endif
 
 /* In cir_imageblt.s:  */
 #if NeedFunctionPrototypes
@@ -68,9 +71,13 @@ extern void CirrusImageWriteTransfer( int w, int h, void *srcaddr,
 	int srcwidth, void *vaddr );
 extern void CirrusImageReadTransfer( int w, int h, void *srcaddr,
 	int srcwidth, void *vaddr );
+extern void CirrusBitmapTransfer( int bytewidth, int h, int bwidth,
+	void *srcaddr, void *vaddr );
 #else
 extern void CirrusImageWriteTransfer();
 extern void CirrusImageReadTransfer();
+extern void CirrusAlignedBitmapTransfer();
+extern void CirrusBitmapTransfer();
 #endif
 
 /* In cir_colorexp.c: */
@@ -120,13 +127,8 @@ extern void CirrusBLTWaitUntilFinished();
 /* In cir_im.c: */
 extern void CirrusImageWrite();
 extern void CirrusImageRead();
-#if NeedPrototypes
-extern void CirrusWriteBitmap( int x, int y, int w, int h,
-	unsigned char *srcp, int bwidth, int bw, int bh, int box, int boy,
-	int bg, int fg, int destpitch, int alu );
-#else
-extern void CirrusWriteBitmap();
-#endif
+extern void CirrusColorExpandWriteBitmap();
+extern void CirrusBLTWriteBitmap();
 
 _XFUNCPROTOEND
 
@@ -186,6 +188,8 @@ extern unsigned char byte_reversed[];
 #define HAVE543X() (cirrusChip == CLGD5434 || cirrusChip == CLGD5430)
 
 #define HAVEBITBLTENGINE() (cirrusUseBLTEngine)
+
+#define HAVEBLTWRITEMASK() (cirrusChip == CLGD5429 || cirrusChip == CLGD5430)
 
 #define SETWRITEMODE(n) \
 	{ \

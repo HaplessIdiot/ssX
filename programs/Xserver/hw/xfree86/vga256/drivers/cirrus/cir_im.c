@@ -1,5 +1,5 @@
 /* $XConsortium: cir_im.c,v 1.1 94/03/28 21:49:31 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_im.c,v 3.1 1994/05/15 03:02:49 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
@@ -63,158 +63,43 @@
 #include "cir_blitter.h"
 
 
-/* #if __GNUC__ > 1 */
-#if 0	/* Broken. */
+#if 0	/* Replaced by assembler routine in cir_im.s */
 
-/*
- * This another piece of critical code which is very difficult to do
- * efficiently in C. Transfers 16-bit words, reversing the per-byte
- * bit order. 
- */
-
-static __inline__ transferwords( unsigned char *base, unsigned char *srcp,
-int count ) {
-	int dummy, temp;
-	asm(
-	"cmpl $4,%3\n\t"
-	"jb 2f\n\t"
-
-	"1:\n\t"
-	"movzbl 2(%1),%2\n\t"
-	"movb _byte_reversed(%2),%%al\n\t"
-	"movzbl 3(%1),%2\n\t"
-	"movb _byte_reversed(%2),%%ah\n\t"
-	"shll $16,%%eax\n\t"
-	"movzbl (%1),%2\n\t"
-	"movb _byte_reversed(%2),%%al\n\t"
-	"movzbl 1(%1),%2\n\t"
-	"movb _byte_reversed(%2),%%ah\n\t"
-	/* We now have per-byte bit order reversed word of data in eax. */
-	"movl %%eax,(%0)\n\t"
-
-	/* Now do the second word. */
-	"movzbl 6(%1),%2\n\t"
-	"movb _byte_reversed(%2),%%al\n\t"
-	"movzbl 7(%1),%2\n\t"
-	"movb _byte_reversed(%2),%%ah\n\t"
-	"shll $16,%%eax\n\t"
-	"movzbl 4(%1),%2\n\t"
-	"movb _byte_reversed(%2),%%al\n\t"
-	"movzbl 5(%1),%2\n\t"
-	"movb _byte_reversed(%2),%%ah\n\t"
-	"movl %%eax,(%0)\n\t"
-
-	"addl $8,%1\n\t"
-	"subl $4,%3\n\t"
-	"cmpl $4,%3\n\t"
-	"jae 1b\n\t"
-
-	"2:\n\t"
-	"andl %3,%3\n\t"
-	"jz 4f\n\t"
-
-	"3:\n\t"
-	"movzbl (%1),%2\n\t"
-	"movb _byte_reversed(%2),%%al\n\t"
-	"movzbl 1(%1),%2\n\t"
-	"movb _byte_reversed(%2),%%ah\n\t"
-	"movw %%ax,(%0)\n\t"
-	"addl $2,%1\n\t"
-	"decl %3\n\t"
-	"jnz 3b\n\t"
-
-	"4:\n\t"
-	:
-	: "r" (base), "r" (srcp), "r" (temp), "r" (count), "ax" (dummy)
-	: "ax", "1", "2", "3"
-	);
-}
-
-#else
-
-static __inline__ transferwords( unsigned char *base, unsigned char *srcp, int count ) {
-	while (count > 4) {
+static void transferdwords( unsigned char *base, unsigned char *srcp, int count ) {
+	while (count >= 4) {
 		unsigned long bits;
-		unsigned short data;
-		bits = *(unsigned short *)srcp;
+		unsigned long data;
+		bits = *(unsigned *)srcp;
 		data = byte_reversed[(unsigned char)bits] +
-			(byte_reversed[(unsigned char)(bits >> 8)] << 8);
-		*(unsigned short *)base = data;
-		bits = *(unsigned short *)(srcp + 2);
+			(byte_reversed[(unsigned char)(bits >> 8)] << 8) + 
+			(byte_reversed[(unsigned char)(bits >> 16)] << 16) +
+			(byte_reversed[(unsigned char)(bits >> 24)] << 24);
+		*(unsigned *)base = data;
+		bits = *(unsigned *)(srcp + 4);
 		data = byte_reversed[(unsigned char)bits] +
-			(byte_reversed[(unsigned char)(bits >> 8)] << 8);
-		*(unsigned short *)base = data;
-		bits = *(unsigned short *)(srcp + 4);
-		data = byte_reversed[(unsigned char)bits] +
-			(byte_reversed[(unsigned char)(bits >> 8)] << 8);
-		*(unsigned short *)base = data;
-		bits = *(unsigned short *)(srcp + 6);
-		data = byte_reversed[(unsigned char)bits] +
-			(byte_reversed[(unsigned char)(bits >> 8)] << 8);
-		*(unsigned short *)base = data;
+			(byte_reversed[(unsigned char)(bits >> 8)] << 8) + 
+			(byte_reversed[(unsigned char)(bits >> 16)] << 16) +
+			(byte_reversed[(unsigned char)(bits >> 24)] << 24);
+		*(unsigned *)base = data;
 		srcp += 8;
-		count -= 4;
+		count -= 2;
 	}
 	while (count > 0) {
 		unsigned long bits;
-		unsigned short data;
-		bits = *(unsigned short *)srcp;
+		unsigned long data;
+		bits = *(unsigned *)srcp;
 		data = byte_reversed[(unsigned char)bits] +
-			(byte_reversed[(unsigned char)(bits >> 8)] << 8);
-		*(unsigned short *)base = data;
-		srcp += 2;
+			(byte_reversed[(unsigned char)(bits >> 8)] << 8) +
+			(byte_reversed[(unsigned char)(bits >> 16)] << 16) +
+			(byte_reversed[(unsigned char)(bits >> 24)] << 24);
+		*(unsigned *)base = data;
+		srcp += 4;
 		count--;
 	}
 }
 
 #endif
 
-
-
-/*
- * This should replace the assembler CirrusImageReadTransfer routine,
- * which may make wrong assumptions.
- *
- * We need to read a multiple of 4 bytes in total. We must not pad scanlines.
- * We may only read words.
- *
- * According to the 542x databook, this is the way to go. However, it
- * doesn't work; we must pad scanlines to multiples of 4.
- * The 543x book says something similar, but on that chip it appears the
- * scanline MUST be padded (at least the function that worked on the 5426
- * doesn't work on the 543x apparently).
- *
- */
-
-static void CirrusImageReadTransfer543x( int w, int h, void *destp,
-int destpitch, void *base ) {
-	unsigned char *buffer, *bufferp;
-	int i;
-	int size;
-	int nbytes;
-	size = w * h;
-	/* Number of bytes, rounded up to multiple of 4. */
-	nbytes = (size + 3) & ~3;
-	buffer = ALLOCATE_LOCAL(nbytes);
-
-	/* Read raw data into buffer. */
-	bufferp = buffer;
-	while (nbytes > 0) {
-		int chunk;
-		chunk = min(65536, nbytes);
-		memcpy(bufferp, vgaBase, chunk);
-		bufferp += chunk;
-		nbytes -= chunk;
-	}
-
-	/* Copy raw data to destination pixmap. */
-	bufferp = buffer;
-	for (i = 0; i < h; i++) {
-		memcpy((unsigned char *)destp + i * destpitch, bufferp, w);
-		bufferp += w;
-	}
-	DEALLOCATE_LOCAL(buffer);
-}
 
 
 void
@@ -276,6 +161,9 @@ CirrusImageWrite (pdstBase, psrcBase, widthSrc, widthDst, x, y,
 }
 
 
+/* The following function is not used on the 543x; it doesn't support */
+/* video-to-system-memory BLTs */
+
 void
 CirrusImageRead (pdstBase, psrcBase, widthSrc, widthDst, x, y,
 		 x1, y1, w, h, xdir, ydir, alu, planemask)
@@ -328,15 +216,11 @@ CirrusImageRead (pdstBase, psrcBase, widthSrc, widthDst, x, y,
        * 4 bytes in total. We must not pad scanlines.
        * See 542x databook D8-6.
        *
-       * The databook appears to have been wrong. The 543x databook says
-       * the same thing, but it may be right. Sigh.
+       * The databook appears to have been wrong. We must pad scanlines.
        *
        */
 
-      if (HAVE543X())
-          CirrusImageReadTransfer543x(w, h, pdst, widthDst, vgaBase);
-      else
-	  CirrusImageReadTransfer(w, h, pdst, widthDst, vgaBase);
+      CirrusImageReadTransfer(w, h, pdst, widthDst, vgaBase);
 
       WAITUNTILFINISHED();
     }
@@ -348,73 +232,159 @@ CirrusImageRead (pdstBase, psrcBase, widthSrc, widthDst, x, y,
 }
 
 
-#if 0
+#ifdef CIRRUS_INCLUDE_COPYPLANE1TO8
 
 /*
- * Cirrus two-color bitmap write function (used by CopyPlane).
+ * CirrusBLTWriteBitmap(x, y, w, h, src, bwidth, srcx, srcy, bg, fg,
+ * destpitch)
+ *
+ * Cirrus two-color bitmap write function (used by CopyPlane1to8).
  * We use the BitBLT engine with color expansion system memory source,
  * reversing the per-byte bit order as we go.
  *
- * Currently doesn't handle origin offset and tiling (i.e. box and boy should
- * correspond to top-left corner of area, and bw == w, bh == h).
+ * On the most chips, we draw the left edge seperately,
+ * with the rest being done with an efficient transfer routine.
+ * On the 5430/5429, we use the writemask register to do it all at once.
  *
  * bwidth is the 'pitch' of the bitmap in bytes.
  */
 
-#ifdef __STDC__
-void CirrusWriteBitmap( int x, int y, int w, int h,
-unsigned char *srcp, int bwidth, int bw, int bh, int box, int boy, int bg,
-int fg, int destpitch, int alu )
-#else
-void CirrusWriteBitmap( x, y, w, h, srcp, bwidth, bw, bh, box, boy, bg,
-fg, destpitch, alu )
+/*
+ * Auxilliary function for the left edge; width is contained within one
+ * byte of the source bitmap.
+ * Assumes that some of the BLT registers are already initialized.
+ */
+
+static __inline__ void CirrusBLTWriteBitmapLeftEdge(x, y, w, h, src, bwidth,
+srcx, srcy, bg, fg, destpitch)
 	int x, y, w, h;
-	unsigned char *srcp;
-	int bwidth, bw, bh, box, boy, bg, fg, destpitch, alu;
-#endif
+	unsigned char *src;
+	int bwidth, srcx, srcy, bg, fg, destpitch;
 {
-	int destaddr;
-	int i;
-	int bytewidth;	/* Area width in bytes. */
-
-#if 0
-	ErrorF("CirrusWriteBitmap size (%d, %d), pixwidth = %d, bw = %d\n",
-		w, h, bwidth, bw);
-#endif		
-
-	if (w != bw || h != bh) {
-		ErrorF("Bitmap not same size as area.\n");
-		return;
-	}
-
-	if (!HAVE543X() && h > 1024) {
-		/* Split into two. */
-		CirrusWriteBitmap(x, y, w, 1024, srcp, bwidth, bw, 1024, box,
-			boy, bg, fg, destpitch, alu);
-		CirrusWriteBitmap(x, y + 1024, w, h - 1024, srcp + bwidth *
-			1024, bwidth, bw, h - 1024, box, boy, bg, fg,
-			destpitch, alu);
-		return;
-	}
-
-	/* Bug: need to handle origin. */
+	int destaddr, i, shift, bytecount;
+	unsigned long dworddata;
+	unsigned char *srcp;
 
 	destaddr = y * destpitch + x;
 
-	/* Number of bytes in area line. */
-	bytewidth = (w + 7) / 8;
-
-	SETDESTADDR(destaddr);
-	SETDESTPITCH(destpitch);
 	SETSRCADDR(0);
 	SETSRCPITCH(0);
+	SETDESTADDR(destaddr);
 	SETWIDTH(w);
 	SETHEIGHT(h);
 	SETBLTMODE(SYSTEMSRC | COLOREXPAND);
-	SETROP(cirrus_rop[alu]);
 
+	STARTBLT();
+
+	/* Calculate pointer to origin in bitmap. */
+	srcp = bwidth * srcy + (srcx >> 3) + src;
+
+	shift = (srcx & 7);
+
+	/* We must make sure that a multiple of four bytes is transfered */
+	/* in total. */
+
+	bytecount = 0;
+	dworddata = 0;
+
+	for (i = 0; i < h; i++) {
+		dworddata += (byte_reversed[*srcp] << shift)
+			     << (bytecount * 8);
+		srcp += bwidth;
+		bytecount++;
+		if (bytecount == 4) {
+			bytecount = 0;
+			*(unsigned long *)vgaBase = dworddata;
+			dworddata = 0;
+		}
+	}
+	if (bytecount)
+		*(unsigned long *)vgaBase = dworddata;
+
+	WAITUNTILFINISHED();
+}
+
+void CirrusBLTWriteBitmap(x, y, w, h, src, bwidth, srcx, srcy, bg,
+fg, destpitch)
+	int x, y, w, h;
+	unsigned char *src;
+	int bwidth, srcx, srcy, bg, fg, destpitch;
+{
+	int destaddr;
+	int skipleft;
+	int bytewidth;	/* Area width in bytes. */
+	unsigned char *srcp;
+
+	if (!HAVE543X() && h > 1024) {
+		/* Split into two. */
+		CirrusBLTWriteBitmap(x, y, w, 1024, src, bwidth, srcx,
+			srcy, bg, fg, destpitch);
+		CirrusBLTWriteBitmap(x, y + 1024, w, h - 1024, src, bwidth,
+			srcx, srcy + 1024, bg, fg, destpitch);
+		return;
+	}
+
+	SETROP(CROP_SRC);
 	SETBACKGROUNDCOLOR(bg);
 	SETFOREGROUNDCOLOR(fg);
+	SETDESTPITCH(destpitch);
+
+#if 0	/* Untested. */
+	if (HAVEBLTWRITEMASK()) {
+		/* On the 5430/29, use the writemask register which makes */
+		/* it possible to read the bitmap aligned from the start at */
+		/* all times. */
+		skipleft = (srcx & 7);
+		srcx = srcx & (~7);	/* Aligned. */
+		x -= skipleft;
+		w += skipleft;
+		goto skipleftedge;
+	}
+#endif
+
+	/* Handle of the left edge (skipleft pixels wide). */ 
+	skipleft = 8 - (srcx & 7);
+	if (skipleft == 8)
+		skipleft = 0;
+	if (skipleft) {
+		/* Draw left edge. */
+		int done;
+		done = 0;
+		if (skipleft >= w) {
+			skipleft = w;
+			done = 1;
+		}
+		CirrusBLTWriteBitmapLeftEdge(x, y, skipleft, h, src, bwidth,
+			srcx, srcy, bg, fg, destpitch);
+		if (done)
+			return;
+	}
+
+	x += skipleft;
+	srcx += skipleft;
+	w -= skipleft;
+
+skipleftedge:
+
+	/* Do the rest with a color-expand BitBLT transfer. */
+	destaddr = y * destpitch + x;
+
+	/* Calculate pointer to origin in bitmap. */
+	srcp = bwidth * srcy + (srcx >> 3) + src;
+
+	/* Number of bytes to be written for each bitmap scanline. */
+	bytewidth = (w + 7) / 8;
+
+	SETSRCADDR(0);
+	SETSRCPITCH(0);
+	SETDESTADDR(destaddr);
+	SETWIDTH(w);
+	SETHEIGHT(h);
+#if 0	/* Untested. */
+	if (HAVEBLTWRITEMASK())
+		SETBLTWRITEMASK(skipleft);
+#endif		
+	SETBLTMODE(SYSTEMSRC | COLOREXPAND);
 
 	STARTBLT();
 
@@ -424,36 +394,17 @@ fg, destpitch, alu )
 	 * to do this locks the machine.
 	 */
 
-	{
-		unsigned char *buffer;
-		int size;
-		size = bytewidth * h;
-		buffer = (unsigned char *)ALLOCATE_LOCAL(size + 3);
-		for (i = 0; i < h; i++) {
-			memcpy(buffer + i * bytewidth, srcp + i * bwidth,
-				bytewidth);
-		}
-		/* Make sure we transfer a multiple of four bytes. */
-		switch (size & 3)  {
-		case 0 :
-			/* Transfer (size / 2) 16-bit words. */
-			transferwords(vgaBase, buffer, size / 2);
-			break;
-		case 1 :
-			transferwords(vgaBase, buffer, (size + 3) / 2);
-			break;
-		case 2 :
-			transferwords(vgaBase, buffer, (size + 2) / 2);
-			break;
-		case 3 :
-			transferwords(vgaBase, buffer, (size + 1) / 2);
-			break;
-		}
-		DEALLOCATE_LOCAL(buffer);
-	}
+	if (bytewidth == bwidth)
+		CirrusAlignedBitmapTransfer(bytewidth * h / 4, srcp, vgaBase);
+	else
+		CirrusBitmapTransfer(bytewidth, h, bwidth, srcp, vgaBase);
 
 	WAITUNTILFINISHED();
 
+#if 0	/* Untested. */
+	if (HAVEBLTWRITEMASK())
+		SETBLTWRITEMASK(0x80);
+#endif		
 	SETBACKGROUNDCOLOR(0x0f);
 	SETFOREGROUNDCOLOR(0);
 }

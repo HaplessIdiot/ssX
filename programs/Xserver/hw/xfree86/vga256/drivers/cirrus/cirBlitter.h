@@ -1,5 +1,5 @@
 /* $XConsortium: cir_blitter.h,v 1.1 94/03/28 21:48:17 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.h,v 3.1 1994/05/15 03:02:47 dawes Exp $ */
 
 /* Definitions for BitBLT engine communication. */
 
@@ -51,6 +51,8 @@
   outw (0x3CE, (((fillHeight) - 1) & 0x00000700) | 0x23);
 
 #define SETBLTMODE(m) outw(0x3CE, ((m) << 8) | 0x30);
+
+#define SETBLTWRITEMASK(m) outw(0x3ce, ((m) << 8) | 0x2f);
 
 #define SETTRANSPARENCYCOLOR(c) outw(0x3ce, ((c) << 8) | 0x34);
 

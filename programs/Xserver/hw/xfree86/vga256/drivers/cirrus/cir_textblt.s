@@ -1,4 +1,5 @@
 /* $XConsortium: cir_textblt.s,v 1.2 94/03/29 11:07:42 dpw Exp $ */
+/* $XFree86$ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -46,7 +47,8 @@
  *     word per line)
  * glyphwidth is the width of the font in pixels.
  * vaddr is a video memory address (doesn't really matter).
- * 
+ *
+ * Optimized for 486 pipeline.
  */
 
 #include "assyntax.h"
@@ -100,11 +102,11 @@ GLNAME(CirrusTransferText):
 	JGE 	(.line_finished)
 
 	MOV_L	(REGIND(EDI),EBX)	/* glyphp[chari] */
+	ADD_L	(CONST(4),EDI)		/* glyphp += 4 */
 	MOV_L	(REGBISD(EBX,EDX,4,0),EBX) /* data = glyphp[chari][line] */
 	SHL_L	(CL,EBX)
 	ADD_L	(EBX,EAX)		/* dworddata += data << shift */
 	ADD_B	(CH,CL)			/* shift += glyphwidth */
-	ADD_L	(CONST(4),EDI)		/* glyphp += 4 */
 	CMP_B	(CONST(16),CL)		/* shift < 16? */
 	JL	(.char_loop)
 
@@ -115,8 +117,8 @@ GLNAME(CirrusTransferText):
 	MOV_B	(AH,BL)
 	MOV_B	(REGOFF(BYTE_REVERSED,EBX),AH)
 	MOV_L	(vaddr_arg,EBX)
+	SUB_B	(CONST(16),CL)		/* shift -= 16 (blended in) */
 	MOV_W	(AX,REGIND(EBX))	/* *(short)vaddr = dworddata */
-	SUB_B	(CONST(16),CL)		/* shift -= 16 */
 	SHR_L	(CONST(16),EAX)		/* dworddata >>= 16 */
 	JMP	(.char_loop)
 
@@ -138,8 +140,8 @@ GLNAME(CirrusTransferText):
 	MOV_B	(AH,BL)
 	MOV_B	(REGOFF(BYTE_REVERSED,EBX),AH)
 	MOV_L	(vaddr_arg,EBX)
-	MOV_W	(AX,REGIND(EBX))	/* *(short)vaddr = dworddata */
 	SUB_B	(CONST(16),CL)		/* shift -= 16 */
+	MOV_W	(AX,REGIND(EBX))	/* *(short)vaddr = dworddata */
 	SHR_L	(CONST(16),EAX)		/* dworddata >>= 16 */
 	JMP	(.line_loop)
 

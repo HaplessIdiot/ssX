@@ -1,5 +1,5 @@
 /* $XConsortium: cir_fillst.c,v 1.1 94/03/28 21:49:18 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillst.c,v 3.1 1994/05/15 03:02:48 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -227,9 +227,11 @@ void CirrusFillRectTile(pDrawable, pGC, nBox, pBox)
 		if (width == 16 && height == 16 && (vga256InfoRec.virtualX
 		< 2048 || (HAVE543X() && vga256InfoRec.virtualX < 4096)))
 			goto tile16x16;
+#ifdef CIRRUS_INTERLEAVED32x32FILL_543X
 		if (width == 32 && height == 32 && HAVE543X() &&
 		vga256InfoRec.virtualX < 2048)
 			goto tile32x32;
+#endif			
 #if 0	/* broken. */
 		if (width * height >= 500 && (width != 32 || height > 32 ||
 		cirrusBusType == CIRRUS_SLOWBUS || HAVE543X()))
@@ -287,6 +289,7 @@ tile16x16:
 	DEALLOCATE_LOCAL(pattern);
 	return;
 
+#ifdef CIRRUS_INTERLEAVED32x32FILL_543X
 tile32x32:
 	/* 32x32 BitBLT tile fill (for 5434). */
 	pattern = ALLOCATE_LOCAL(32 * 32);
@@ -306,6 +309,7 @@ tile32x32:
 	}
 	DEALLOCATE_LOCAL(pattern);
 	return;
+#endif
 
 #if 0
 tileblit:

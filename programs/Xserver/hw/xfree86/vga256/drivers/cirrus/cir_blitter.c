@@ -1,5 +1,5 @@
 /* $XConsortium: cir_blitter.c,v 1.1 94/03/28 21:48:10 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.0 1994/04/29 14:10:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.1 1994/05/14 07:01:50 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -40,6 +40,7 @@
 
 #include "cir_driver.h"
 #include "cir_blitter.h"
+#include "cir_inline.h"
 
 
 /* Cirrus raster operations. */
@@ -370,6 +371,53 @@ void CirrusBLTBitBlt(dstAddr, srcAddr, dstPitch, srcPitch, w, h, dir)
   STARTBLT();
   WAITUNTILFINISHED();
 }
+
+
+#if 0	/* Experimental, not used. */
+
+void CirrusBLTColorExpandImageWriteFill(dstAddr, fgcolor, fillWidth,
+fillHeight, dstPitch)
+     unsigned int dstAddr;
+     int fgcolor;
+     int fillHeight, fillWidth, dstPitch;
+{
+  int size, i;
+
+  if (!HAVE543X() && fillHeight > 1024) {
+      /* Split into two for 5426, 5428 & 5429. */
+      CirrusBLTColorExpandImageWriteFill(dstAddr, fgcolor, fillWidth, 1024,
+          dstPitch);
+      CirrusBLTColorExpandImageWriteFill(dstAddr + dstPitch * 1024, fgcolor,
+          fillWidth, fillHeight - 1024, dstPitch);
+      return;
+  }
+
+  /* System-to-video memory blit with color expansion. */
+
+  SETDESTADDR(dstAddr);
+  SETSRCADDR(0);
+  SETDESTPITCH(dstPitch);
+  SETWIDTH(fillWidth);
+  SETHEIGHT(fillHeight);
+
+  SETBLTMODE(SYSTEMSRC | COLOREXPAND);
+  SETROP(CROP_SRC);
+  SETFOREGROUNDCOLOR(fgcolor);
+
+  /* Do it. */
+  STARTBLT();
+
+  /* Calculate number of dwords to transfer. */
+  size = ((((fillWidth + 7) / 8) * fillHeight) + 3) / 4;
+
+  CirrusWordTransfer(size, 0xffffffff, vgaBase);
+
+  WAITUNTILFINISHED();
+
+  SETFOREGROUNDCOLOR(0);
+}
+
+#endif
 
 
 void CirrusBLTWaitUntilFinished() {
