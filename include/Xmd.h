@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/Xmd.h,v 3.8 2000/08/23 22:10:01 tsi Exp $ */
+/* $XFree86: xc/include/Xmd.h,v 3.9 2001/01/17 17:53:11 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -146,26 +146,17 @@ typedef unsigned char  CARD8;
 typedef CARD32		BITS32;
 typedef CARD16		BITS16;
 
-#ifndef __CYGWIN__
 #ifndef __EMX__
 typedef CARD8		BYTE;
 typedef CARD8           BOOL;
-#else
+#else /* __EMX__ */
 /*
  * This is bad style, but the central include file <os2.h> declares them
  * as well
  */
 #define BYTE		CARD8
 #define BOOL		CARD8
-#endif
-#endif
-
-#ifdef __CYGWIN__
-#undef BYTE
-#undef BOOL
-#define BYTE CARD8
-#define BOOL CARD8
-#endif
+#endif /* __EMX__ */
 
 /*
  * definitions for sign-extending bitfields on 64-bit architectures
