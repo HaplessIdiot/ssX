@@ -1,11 +1,12 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/XTrap/module/Imakefile,v 1.1 2001/11/02 23:29:29 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
 
        SRCS = xtrapddmi.c xtrapdi.c xtrapdiswp.c xtrapditbl.c xf86XTrapModule.c
        OBJS = xtrapddmi.o xtrapdi.o xtrapdiswp.o xtrapditbl.o xf86XTrapModule.o
-     INCLUDES = -I.. -I../../include -I$(EXTINCSRC) -I$(XINCLUDESRC)
+   INCLUDES = -I.. -I../../include -I$(EXTINCSRC) -I$(XINCLUDESRC)
+    DEFINES = -DEXTMODULE
 
 LinkSourceFile(xf86XTrapModule.c,..)
 LinkSourceFile(xtrapddmi.c,..)
