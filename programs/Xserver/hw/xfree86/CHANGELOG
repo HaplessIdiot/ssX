@@ -1,4 +1,5 @@
 XFree86 4.0.1d (xx September 2000)
+ 737. Add missing symbols for Solaris (incomplete) (Marc La France).
  736. Add primitive support in xterm for Xft based fonts (Keith Packard)
  735. Add new Xft library to hook FreeType 2 to Render (Keith Packard)
  734. Added support for Number Nine I128 chipsets (Robin Cutshaw).
@@ -11204,7 +11205,7 @@ XFree86 3.0 (26 April 1994)
 
 
 <<<<<<< CHANGELOG
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1329 2000/10/05 02:13:02 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1330 2000/10/05 18:15:08 keithp Exp $
 =======
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1329 2000/10/05 02:13:02 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1330 2000/10/05 18:15:08 keithp Exp $
 >>>>>>> 3.1327

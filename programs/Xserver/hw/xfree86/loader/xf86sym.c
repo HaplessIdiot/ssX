@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.163 2000/09/19 12:46:21 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.165 2000/09/29 08:59:49 eich Exp $ */
 
 /*
  *
@@ -62,7 +62,7 @@ int sysctlbyname(const char*, void *, size_t *, void *, size_t);
 #endif
 
 /* XXX Should get all of these from elsewhere */
-#if defined (PowerMAX_OS)
+#if defined(PowerMAX_OS) || (defined(sun) && defined(SVR4))
 # undef inb
 # undef inw
 # undef inl
@@ -944,6 +944,14 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86WriteMmioNB16)
    SYMFUNC(xf86WriteMmioNB8)
    SYMFUNC(memcpy)
+#endif
+#if defined(sun) || defined(SVR4)
+   SYMFUNC(inb)
+   SYMFUNC(inw)
+   SYMFUNC(inl)
+   SYMFUNC(outb)
+   SYMFUNC(outw)
+   SYMFUNC(outl)
 #endif
 #if defined(__powerpc__)
    SYMFUNC(inb)
