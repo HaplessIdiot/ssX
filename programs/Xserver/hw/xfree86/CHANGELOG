@@ -1,4 +1,10 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 575. XDarwin fixes/cleanups:
+       - Handle X11 executables opened from the Finder.
+       - Use xcodebuild instead of pbxbuild on Panther.
+       - Clean up Darwin specific imake #defines.
+       - Fix compiler warnings on Panther.
+      (Torrey T. Lyons).
  574. A workaround for platforms (like *BSD) where IPv6 sockets don't accept
       IPv4 connections: disable IPv6 XDMCP code by default.  This allows IPv4
       XDMCP to work on such platforms (David Dawes).
@@ -18150,7 +18156,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2949 2003/11/10 18:22:09 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2950 2003/11/11 00:27:10 dawes Exp $
 
 
 
