@@ -427,6 +427,7 @@ xf86cfgCheckModule(void)
 		++error_level;
 	    }
 	}
+	XtFree(p);
     }
 
     nfonts = numFontModules;
