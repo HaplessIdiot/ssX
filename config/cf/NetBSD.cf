@@ -4,7 +4,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/14 1996/01/28 07:42:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.36 1996/04/15 11:13:49 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.37 1996/08/10 13:02:03 dawes Exp $
 
 #ifndef OpenBSDArchitecture
 
@@ -41,6 +41,7 @@ XCOMM operating system:  OSName
 
 #define HasNdbm         	YES
 #define HasPutenv       	YES
+#define HasSnprintf		YES
 #define HasBSD44Sockets 	YES
 #define Malloc0ReturnsNull	NO
 #define SetTtyGroup     	YES
