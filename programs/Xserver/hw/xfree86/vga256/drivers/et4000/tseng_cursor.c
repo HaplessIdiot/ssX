@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 /*
  * Hardware cursor handling. Adapted mainly from apm/apm_cursor.c
  * and whatever piece of code in XFree86 that could provide me with
