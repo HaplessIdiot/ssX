@@ -1,4 +1,10 @@
-XFree86 3.9Aj (04 Jul 1998)
+XFree86 3.9Ak (11 July 1998)
+1700. Close some sockets that xdm was leaving open when running new
+      sessions (#1704, Matthieu Herrb).
+1699. Fix usleep problems with static servers on SVR4.
+1698. Fix a problem parsing "ModeLine" entries (#1779, Keldon Jones).
+
+XFree86 3.9Aj (04 July 1998)
 1697. PC98 fix for VT switching, VideoBoard98 update (#1766, Takaaki Nomura).
 1696. xterm patches 79 and 80.  Fix for F1-F4 key handling, fg/bg pixel
       value with -flipPixels, scrollbar color, keypad handling, and
@@ -6185,4 +6191,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.599 1998/06/29 13:41:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.600 1998/07/04 14:48:17 robin Exp $
