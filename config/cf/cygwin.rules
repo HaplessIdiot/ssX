@@ -1,13 +1,9 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.9 2001/06/15 08:09:20 alanh Exp $
-
-#define CPPOnlyAsm(basename,options) RemoveFile(basename.i)		@@\
-	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) options  basename.S | grep -v '^\#' > basename.i
-	
-
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.10 2001/06/20 12:55:21 alanh Exp $
 
 /*
  * Cygwin shared library rules (DLL versions)
  */
+
 #define HasSharedLibraries	YES
 #define NeedLibInsideFlag	YES
 #define ForceNormalLib		NO
@@ -73,6 +69,11 @@ XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.9 2001/06/15 08:09:20 alanh Exp $
 #  endif
 # endif /* UseInstalled */
 
+
+/*
+ * SharedDepLibraryTarget
+ */
+
 #define SharedDepLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
 AllTarget(Concat3(lib,libname,.dll))                                    @@\
 									@@\
@@ -137,14 +138,15 @@ clean::									@@\
 #endif /* InstallSharedLibraryData */
 
 
-
-BASE_COUNTER=/tmp/DLL_BASE_COUNTER
+/*
+ * MakeDll
+ */
 
 #define MakeDLL(libname,solist)						@@\
 	if [ -f $(BASE_COUNTER) ]; then true; \				@@\
 	else echo 0x67000000 > $(BASE_COUNTER); fi			@@\
-	dllwrap -s --def libname.def --output-lib Concat3(lib,libname,.a) -o Concat3(lib,libname,.dll) solist junk.o $(REQUIREDLIBS) -image-base `cat $(BASE_COUNTER)` 	@@\
-	IMAGE_LENGTH=`objdump -x Concat3(lib,libname,.dll) |awk '/SizeOfImage/ {print "0x"$$2}'`; \ @@\
+	$(DLLWRAP) -s --def libname.def --output-lib Concat3(lib,libname,.a) -o Concat3(lib,libname,.dll) solist junk.o $(REQUIREDLIBS) -image-base `cat $(BASE_COUNTER)`	@@\
+	IMAGE_LENGTH=`$(OBJDUMP) -x Concat3(lib,libname,.dll) |awk '/SizeOfImage/ {print "0x"$$2}'`; \ @@\
 	export IMAGE_LENGTH=`expr '(' \`printf %u $$IMAGE_LENGTH\` / 65536 + 1 ')' '*' 65536` ; \ @@\
 	export IMAGE_BASE=`cat $(BASE_COUNTER)`; \			@@\
 	printf 0x%x `expr \`printf %u $$IMAGE_BASE\` + $$IMAGE_LENGTH` > $(BASE_COUNTER)
@@ -160,7 +162,7 @@ AllTarget(Concat3(lib,libname,.dll))                                    @@\
 CppFileTarget(libname.def,libname-def.cpp,-DLIBRARY_VERSION=rev,$(ICONFIGFILES)) @@\
 									@@\
                                                                         @@\
-junk.c:                                                                                 @@\
+junk.c:                                                                 @@\
 	echo "#include <cygwin/cygwin_dll.h>"		>junk.c		@@\
 	echo "DECLARE_CYGWIN_DLL(dll_main)"		>>junk.c	@@\
 	echo "int WINAPI dll_main(HINSTANCE a, DWORD reason, void *q)" >>junk.c  @@\
@@ -189,14 +191,37 @@ InstallTarget(install,Concat3(lib,libname,.dll),$(INSTLIBFLAGS),$(BINDIR))
 
 
 /*
- * ProgramTargetName
+ * ProgramTargetName - This can be simply 'target' or 'target.exe' when
+ * building on Cygwin proper, as Cygwin automatically appends .exe to compiled
+ * executables and make, rm, ln, etc. will automatically search for a file
+ * with .exe appended if the raw file name cannot be found.  However,
+ * building with a cross compiler requires 'target.exe', as the cross
+ * compiler doesn't know to append .exe, nor do the cross compiler tools
+ * know to search for files with .exe appended if the raw file name cannot
+ * be found.
  */
 
-#define ProgramTargetName(target) target.exe
+#define ProgramTargetName(target) Concat(target,.exe)
 
 
 /*
- * LinkBuildDLL - export a .dll to exports/bin.
+ * HostProgramTargetName - Don't add .exe if cross-compiling.
+ */
+
+#ifndef HostProgramTargetName
+# if CrossCompiling
+#  define HostProgramTargetName(target) target
+# else
+#  define HostProgramTargetName(target) ProgramTargetName(target)
+# endif
+#endif
+
+
+/*
+ * LinkBuildDLL - Cygwin only rule, similar to LinkBuildModule.
+ * Unfortunately, we have to create a copy of each DLL in xc/exports/bin;
+ * linking doesn't work, the executables (e.g. xkbcomp) will report 
+ * that they cannot find DLLs (e.g. libX11.dll).
  */
 
 #ifdef UseInstalled
@@ -209,74 +234,26 @@ InstallTarget(install,Concat3(lib,libname,.dll),$(INSTLIBFLAGS),$(BINDIR))
 
 
 /*
- * LinkBuildBinary - export an .exe to exports/bin.
+ * LinkBuildBinary - This rule normally creates a link in xc/exports/bin
+ * to a program executable, but we create an actual copy of the executable.
+ * Creating a link causes the DLLs that the executables depend on, such as
+ * libX11.dll, not to be found.  Copying the executable causes the runtime
+ * directory to be xc/exports/bin, which is the location of the DLLs, thus,
+ * the DLLs can now be found by the executable.  Phew...
  */
 
 #ifndef LinkBuildBinary
 #define LinkBuildBinary(program)					@@\
-all:: program  								@@\
+all:: ProgramTargetName(program)					@@\
 	MakeDir($(BUILDBINDIR))						@@\
 	RemoveFile($(BUILDBINDIR)/program)				@@\
-	$(CP) $(BUILDBINTOP)/$(CURRENT_DIR)/program $(BUILDBINDIR)
+	$(CP) $(BUILDBINTOP)/$(CURRENT_DIR)/ProgramTargetName(program) $(BUILDBINDIR)
 #endif /* LinkBuildBinary */
 
 
 /*
- * LinkBuildModule
- */
-
-#ifndef LinkBuildModule
-#ifdef UseInstalled
-#define LinkBuildModule(module,subdir) $(_NULLCMD_)
-#else
-#define LinkBuildModule(module,subdir) 					@@\
-	MakeDir($(BUILDMODULEDIR)/subdir) 			 	@@\
-	RemoveFile($(BUILDMODULEDIR)/subdir/module)                     @@\
-	$(LN) $(BUILDMODULETOP)/$(CURRENT_DIR)/module $(BUILDMODULEDIR)/subdir/module
-#endif
-#endif /* LinkBuildModule */
-
-
-/*
- * LinkBuildNamedModule
- */
-
-#ifndef LinkBuildNamedModule
-#define LinkBuildNamedModule(module,name) MakeDir($(BUILDMODULEDIR))    @@\
-	RemoveFile($(BUILDMODULEDIR)/module)                            @@\
-	$(BUILDMODULEDIR) $(BUILDMODULETOP)/$(CURRENT_DIR)/module name
-#endif /* LinkBuildNamedModule */
-
-
-/*
- * NormalProgramTarget
- */
-
-#define NormalProgramTarget(program,objects,deplibs,locallibs,syslibs)  @@\
-AllTarget(ProgramTargetName(program))					@@\
-ProgramTargetName(program): objects deplibs				@@\
-	RemoveTargetProgram($@)						@@\
-	LinkRule($@,$(LDOPTIONS),objects,locallibs $(LDLIBS) syslibs)	@@\
-									@@\
-clean::									@@\
-	RemoveFile(ProgramTargetName(program))
-
-
-/*
- * ProgramTargetHelper
- */
-
-#define ProgramTargetHelper(program,srcs,objs,deplib,locallib,syslib)	@@\
-ProgramTargetName(program): $(objs) $(deplib)				@@\
-	RemoveTargetProgram($@)						@@\
-	LinkRule($@,$(LDOPTIONS),$(objs),locallib $(LDLIBS) syslib)	@@\
-									@@\
-	InstallProgram(program,$(BINDIR))				@@\
-	InstallManPage(program,$(MANDIR))
-
-
-/*
- * ComplexProgramTarget
+ * ComplexProgramTarget - Imake.rules doesn't wrap the program name
+ * with ProgramTargetName(), so we need this rule for Cygwin.
  */
 
 #define ComplexProgramTarget(program)					@@\
@@ -287,6 +264,29 @@ ProgramTargetName(program): $(objs) $(deplib)				@@\
 									@@\
 clean::									@@\
 	RemoveFile(ProgramTargetName(program))
+
+
+/*
+ * ComplexProgramTarget_X, where 1 <= X <= 10, are all broken.
+ * 1 is broken because 2 and 3 are not built during the make World pass,
+ * 2 and 3 are only built later, during the make install pass.
+ * 1 is also broken because there are now 10 ComplexProgramTargets instead
+ * of 3.
+ * 
+ * 1's problem is that PROGRAM2 and PROGRAM3 are not defined at the time
+ * that 1 is processed, so the AllTarget(), DependTarget(), and LintTarget()
+ * only apply to PROGRAM1, not to PROGRAM2 and PROGRAM3.  However, we can't
+ * simply set the AllTarget() to PROGRAMS, as Imake.rules does, as the
+ * executable names in PROGRAMS are not wrapped in ProgramTargetName().
+ * 
+ * Fixing the ComplexProgramTargets will require some way of pulling out
+ * each exectuable name from PROGRAMS, wrapping it in ProgramTargetName(),
+ * then concatenating the resulting list back into PROGRAMS.  We would
+ * then only have to define ComplexProgramTarget_1, letting 2 through 10
+ * be defined by Imake.rules.
+ *
+ * Good luck.  For now I am inclined to leave these rules slightly broken.
+ */
 
 
 /*
@@ -330,37 +330,9 @@ ProgramTargetHelper(program,SRCS3,OBJS3,DEPLIBS3,locallib,syslib)
 
 
 /*
- * ServerTargetWithFlags
- */
-
-#define ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,flags) @@\
-AllTarget(ProgramTargetName(server))					@@\
-ProgramTargetName(server): subdirs objects libs				@@\
-	MoveToBakFile($@)						@@\
-	LinkRule($@,$(LDOPTIONS),objects,libs $(LDLIBS) syslibs)	@@\
-									@@\
-Concat(load,server):							@@\
-	MoveToBakFile(ProgramTargetName(server))			@@\
-	LinkRule(ProgramTargetName(server),$(LDOPTIONS),objects,libs $(LDLIBS) syslibs) @@\
-									@@\
-loadX:: Concat(load,server)						@@\
-									@@\
-SentinelProgramTarget(server,subdirs objects libs,objects libs $(LDLIBS) syslibs) @@\
-SentinelLinkTarget(Concat(load,server),server,objects libs $(LDLIBS) syslibs) @@\
-PurifyProgramTarget(server,subdirs objects libs,objects libs $(LDLIBS) syslibs) @@\
-PurifyLinkTarget(Concat(load,server),server,objects libs $(LDLIBS) syslibs) @@\
-ProofProgramTarget(server,subdirs objects libs,objects libs $(LDLIBS) syslibs) @@\
-ProofLinkTarget(Concat(load,server),server,objects libs $(LDLIBS) syslibs) @@\
-									@@\
-InstallProgramWithFlags(server,$(BINDIR),flags)				@@\
-									@@\
-clean::									@@\
-	RemoveFile(ProgramTargetName(server))
-
-
-/*
  * ProfiledRelocatableTarget - generate rules to produce a  profiled
- * relocatable object file instead of a library.
+ * relocatable object file instead of a library.  Differs from Imake.rules
+ * by passing '--oformat pe-i386' to ld.
  */
 
 #ifndef ProfiledRelocatableTarget
@@ -376,7 +348,8 @@ Concat(objname,_p.Osuf): objlist $(EXTRALIBRARYDEPS)			@@\
 
 /*
  * DebuggedRelocatableTarget - generate rules to produce a debuggable 
- * relocatable object file instead of a library.
+ * relocatable object file instead of a library.  Differs from Imake.rules
+ * by passing '--oformat pe-i386' to ld.
  */
 
 #ifndef DebuggedRelocatableTarget
@@ -390,3 +363,70 @@ Concat(objname,_d.Osuf): objlist $(EXTRALIBRARYDEPS)			@@\
 #endif /* DebuggedRelocatableTarget */
 
 
+/*
+ * DependDependencyStatement - Imake.rules wraps $(DEPEND) in
+ * ProgramTargetName(), which causes cross compiling to think that
+ * $(DEPEND) hasn't been built, as $(DEPEND) is a host tool, and should
+ * not be wrapped with ProgramTargetName().  Perhaps there should be
+ * a HostProgramTargetName()...
+ */
+
+#ifndef DependDependencyStatement
+#if HasMakefileSafeInclude
+#define DependDependencyStatement()					@@\
+DependFileName:: $(DEPEND)
+#else
+#define DependDependencyStatement()					@@\
+depend:: $(DEPEND)
+#endif
+#endif
+
+
+/*
+ * DependDependency - Imake.rules wraps $(DEPEND) in ProgramTargetName().
+ * This doesn't work when cross compiling, see the locally defined
+ * DependDependencyStatement comment (above) for more information.
+ */
+
+#ifndef DependDependency
+#ifdef UseInstalled
+#define DependDependency() /**/
+#else
+#define DependDependency() 						@@\
+DependDependencyStatement()						@@\
+									@@\
+NoCmpScript($(DEPEND))							@@\
+									@@\
+$(DEPEND):								@@\
+	@echo "checking $@ over in $(DEPENDSRC) first..."; \		@@\
+	cd $(DEPENDSRC) && $(MAKE); \					@@\
+	echo "okay, continuing in $(CURRENT_DIR)"
+
+#endif /* UseInstalled */
+#endif /* DependDependency */
+
+
+/*
+ * ImakeDependency - Imake.rules wraps $(IMAKE) in ProgramTargetName(),
+ * which doesn't work when cross compiling, as imake is supposed to be a
+ * host program.  See the locally defined DependDependencyStatement
+ * comment (above) for more information.
+ */
+
+#ifndef ImakeDependency
+#ifdef UseInstalled
+#define ImakeDependency(target) /**/
+#else
+#define ImakeDependency(target)						@@\
+target:: $(IMAKE)							@@\
+									@@\
+NoCmpScript($(IMAKE) $(IMAKE).Osuf)					@@\
+									@@\
+$(IMAKE) $(IMAKE).Osuf:							@@\
+	-@(cd $(IMAKESRC) && if [ -f Makefile ]; then \			@@\
+	echo "checking $@ in $(IMAKESRC) first..."; $(MAKE) all; else \	@@\
+	echo "bootstrapping $@ from Makefile.ini in $(IMAKESRC) first..."; \	@@\
+	$(MAKE) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"; fi; \	@@\
+	echo "okay, continuing in $(CURRENT_DIR)")
+#endif /* UseInstalled */
+#endif /* ImakeDependency */

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.94 2001/04/26 21:27:48 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.95 2001/06/08 06:08:27 herrb Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -25,6 +25,7 @@ XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.94 2001/04/26 21:27:48 dawe
  * _MUse			(a,b)
  * _MUseCat			(a,b,c)
  * ProgramTargetName		(target)
+ * HostProgramTargetName	(target)
  * RunProgram			(progvar,options)
  * RunProgramWithSetup		(setup,progvar,options)
  * RemoveFile			(file)
@@ -309,6 +310,10 @@ XCOMM special target for clearmake					@@\
 
 #ifndef ProgramTargetName
 #define ProgramTargetName(target)target
+#endif
+
+#ifndef HostProgramTargetName
+#define HostProgramTargetName(target)target
 #endif
 
 #ifndef RunProgram

@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/cross.rules,v 1.2 2000/12/09 03:33:18 dawes Exp $
 
 #define HostLinkRule(target, flags, src, libs)  cc -I$(BUILDINCDIR) -o target src
 
@@ -13,9 +13,9 @@ XCOMM $XFree86$
 EXTRA_LOAD_FLAGS=							@@\
         PROGRAM = program						@@\
 									@@\
-AllTarget(program)							@@\
+AllTarget(HostProgramTargetName(program))				@@\
 									@@\
-program: $(OBJS) $(DEPLIBS)						@@\
+HostProgramTargetName(program): $(OBJS) $(DEPLIBS)			@@\
 	RemoveTargetProgram($@)						@@\
 	HostLinkRule($@,$(_NOOP_),$(OBJS),$(DEPLIBS) $(LOCAL_LIBRARIES)) @@\
 									@@\
@@ -24,7 +24,7 @@ DependTarget()								@@\
 LintTarget()								@@\
 									@@\
 clean::									@@\
-	RemoveFile(ProgramTargetName(program))
+	RemoveFile(HostProgramTargetName(program))
 #endif /* ComplexHostProgramTarget */
 
 #ifndef SimpleHostProgramTarget
@@ -37,9 +37,9 @@ clean::									@@\
 EXTRA_LOAD_FLAGS=							@@\
         PROGRAM = program						@@\
 									@@\
-AllTarget(program)							@@\
+AllTarget(HostProgramTargetName(program))				@@\
 									@@\
-program: program.o $(DEPLIBS)						@@\
+HostProgramTargetName(program): program.o $(DEPLIBS)			@@\
 	RemoveTargetProgram($@)						@@\
 	HostLinkRule($@,$(_NOOP_),program.o,$(DEPLIBS) $(LOCAL_LIBRARIES)) @@\
 									@@\
@@ -48,5 +48,5 @@ DependTarget()								@@\
 LintTarget()								@@\
 									@@\
 clean::									@@\
-	RemoveFile(ProgramTargetName(program))
+	RemoveFile(HostProgramTargetName(program))
 #endif /* SimpleHostProgramTarget */

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.5 2001/05/14 16:52:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.6 2001/06/05 10:10:28 alanh Exp $ */
 
 #include "win.h"
 
@@ -176,13 +176,13 @@ winAllocateFBPrimaryDD (ScreenPtr pScreen)
     FatalError ("winAllocateFBPrimaryDD () - Color format other than RGB\n");
 
   /* Grab the pitch, and memory pointer from the surface desc */
-  pScreenInfo->dwStrideBytes = pddsdPrimary->u.lPitch;
+  pScreenInfo->dwStrideBytes = pddsdPrimary->u1.lPitch;
   pScreenInfo->dwStride = (pScreenInfo->dwStrideBytes * 8)
     / pScreenInfo->dwDepth;
   pScreenInfo->pfb = pddsdPrimary->lpSurface;
   
   /* Grab the color depth and masks from the surface description */
-  pScreenInfo->dwDepth = pddsdPrimary->ddpfPixelFormat.u.dwRGBBitCount;
+  pScreenInfo->dwDepth = pddsdPrimary->ddpfPixelFormat.u1.dwRGBBitCount;
   pScreenPriv->dwRedMask = pddsdPrimary->ddpfPixelFormat.u2.dwRBitMask;
   pScreenPriv->dwGreenMask = pddsdPrimary->ddpfPixelFormat.u3.dwGBitMask;
   pScreenPriv->dwBlueMask = pddsdPrimary->ddpfPixelFormat.u4.dwBBitMask;
@@ -499,8 +499,6 @@ winSetEngineFunctionsPrimaryDD (ScreenPtr pScreen)
   pScreenPriv->pwinAllocateFB = winAllocateFBPrimaryDD;
   pScreenPriv->pwinShadowUpdate
     = (winShadowUpdateProcPtr) (void (*)())NoopDDA;
-  pScreenPriv->pwinShadowWindow
-    = (winShadowWindowProcPtr) (void (*)())NoopDDA;
   pScreenPriv->pwinCloseScreen = winCloseScreenPrimaryDD;
   pScreenPriv->pwinInitVisuals = winInitVisualsPrimaryDD;
   pScreenPriv->pwinAdjustVideoMode = winAdjustVideoModePrimaryDD;

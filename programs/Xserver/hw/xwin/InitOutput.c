@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.11 2001/06/12 09:45:53 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.12 2001/06/12 14:06:01 alanh Exp $ */
 
 #include "win.h"
 
@@ -56,6 +56,7 @@ winInitializeDefaultScreens (void)
       g_ScreenInfo[i].dwWidth  = WIN_DEFAULT_WIDTH;
       g_ScreenInfo[i].dwHeight = WIN_DEFAULT_HEIGHT;
       g_ScreenInfo[i].dwDepth  = WIN_DEFAULT_DEPTH;
+      g_ScreenInfo[i].dwRefreshRate = 0; /* Use current refresh rate */
       g_ScreenInfo[i].pfb = NULL;
       g_ScreenInfo[i].fFullScreen = FALSE;
       g_ScreenInfo[i].iE3BTimeout = WIN_E3B_OFF;
@@ -126,7 +127,10 @@ ddxUseMsg (void)
   ErrorF ("-fullscreen\n"
 	  "\tRun the server in fullscreen mode\n");
   ErrorF ("-depth bits_per_pixel\n"
-	  "\tSpecify a bitdepth to use when running in fullscreen\n"
+	  "\tSpecify an optional bitdepth to use in fullscreen mode\n"
+	  "\twith a DirectDraw engine.\n");
+  ErrorF ("-refresh rate_in_Hz\n"
+	  "\tSpecify an optional refresh rate to use in fullscreen mode\n"
 	  "\twith a DirectDraw engine.\n");
   ErrorF ("-emulate3buttons [timeout]\n"
 	  "\tEmulate 3 button mouse with an optional timeout in "
@@ -134,6 +138,23 @@ ddxUseMsg (void)
 }
 
 /* See Porting Layer Definition - p. 57 */
+/*
+ * INPUT
+ * argv: pointer to an array of null-terminated strings, one for
+ *   each token in the X Server command line; the first token
+ *   is 'XWin.exe', or similar.
+ * argc: a count of the number of tokens stored in argv.
+ * i: a zero-based index into argv indicating the current token being
+ *   processed.
+ *
+ * OUTPUT
+ * return: return the number of tokens processed correctly.
+ *
+ * NOTE
+ * When looking for n tokens, check that i + n is less than argc.  Or,
+ *   you may check if i is greater than or equal to argc, in which case
+ *   you should display the UseMsg () and return 0.
+ */
 int
 ddxProcessArgument (int argc, char *argv[], int i)
 {
@@ -147,32 +168,57 @@ ddxProcessArgument (int argc, char *argv[], int i)
     }
   
   /*
-   * Look for the '-screen scr_num width height' arugment
+   * Look for the '-screen scr_num width height' argument
    */
   if (strcmp (argv[i], "-screen") == 0)
     {
+      int		iArgsProcessed = 1;
       int		nScreenNum;
 
+      ErrorF ("ddxProcessArgument () - screen - argc: %d i: %d\n",
+	      argc, i);
+
       /* Display the usage message if the argument is malformed */
-      if (i + 3 >= argc)
+      if (i + 2 >= argc)
 	{
-	  UseMsg ();
 	  return 0;
 	}
-
+      
+      /* Grab screen number */
       nScreenNum = atoi (argv[i + 1]);
 
       /* Validate the specified screen number */
       if (nScreenNum < 0 || nScreenNum >= MAXSCREENS)
         {
-          ErrorF ("Invalid screen number %d\n", nScreenNum);
+          ErrorF ("ddxProcessArgument () - Invalid screen number %d\n",
+		  nScreenNum);
           UseMsg ();
 	  return 0;
         }
-      
-      /* Grab the width and height args */
-      g_ScreenInfo[nScreenNum].dwWidth = atoi (argv[i + 2]);
-      g_ScreenInfo[nScreenNum].dwHeight = atoi (argv[i + 3]);
+
+      /* Look for 'WxD' or 'W D' */
+      if (2 == sscanf (argv[i + 2], "%dx%d",
+		       (int *) &g_ScreenInfo[nScreenNum].dwWidth,
+		       (int *) &g_ScreenInfo[nScreenNum].dwHeight))
+	{
+	  iArgsProcessed = 3;
+	}
+      else if (i + 3 < argc
+	       && 1 == sscanf (argv[i + 2], "%d",
+			       (int *) &g_ScreenInfo[nScreenNum].dwWidth)
+	       && 1 == sscanf (argv[i + 3], "%d",
+			       (int *) &g_ScreenInfo[nScreenNum].dwHeight))
+	{
+	  iArgsProcessed = 4;
+	}
+      else
+	{
+	  /* I see no height and width here */
+          ErrorF ("ddxProcessArgument () - Invalid screen width and "
+		  "height: %s\n",
+		  argv[i + 2]);
+	  return 0;
+	}
 
       /*
        * FIXME: This logic is surely broken.  I have no idea what it
@@ -188,7 +234,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
        */
       g_iLastScreen = nScreenNum;
 
-      return 4;
+      return iArgsProcessed;
     }
 
   /*
@@ -346,6 +392,44 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	{
 	  /* Parameter is for a single screen */
 	  g_ScreenInfo[g_iLastScreen].dwDepth = dwDepth;
+	}
+      
+      /* Indicate that we have processed the argument */
+      return 2;
+    }
+
+  /*
+   * Look for the '-refresh n' argument
+   */
+  if (strcmp (argv[i], "-refresh") == 0)
+    {
+      DWORD		dwRefreshRate = 0;
+      
+      /* Display the usage message if the argument is malformed */
+      if (++i >= argc)
+	{
+	  UseMsg ();
+	  return 0;
+	}
+
+      /* Grab the argument */
+      dwRefreshRate = atoi (argv[i]);
+
+      /* Is this parameter attached to a screen or global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int		j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].dwRefreshRate = dwRefreshRate;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_ScreenInfo[g_iLastScreen].dwRefreshRate = dwRefreshRate;
 	}
       
       /* Indicate that we have processed the argument */

@@ -3,7 +3,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/makedepend/Imakefile,v 3.8 2001/01/17 16:38:57 dawes Exp $
+XCOMM $XFree86: xc/config/makedepend/Imakefile,v 3.9 2001/06/07 18:30:41 alanh Exp $
 
     SRCS = include.c main.c parse.c pr.c cppsetup.c ifparser.c 
     OBJS = include.o main.o parse.o pr.o cppsetup.o ifparser.o 
@@ -46,7 +46,7 @@ INCLUDES = -I$(IMAKESRC) -I$(TOP)/include $(TOP_X_INCLUDES)/X11
  XBSDLIB = /**/
 #endif
 
-AllTarget(ProgramTargetName(makedepend))
+AllTarget(HostProgramTargetName(makedepend))
 
 /*
  * bootstrapping: want to build the real makedepend

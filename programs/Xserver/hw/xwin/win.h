@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.9 2001/06/05 10:10:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.10 2001/06/15 08:09:20 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -41,6 +41,9 @@
 #ifndef YES
 #define YES			1
 #endif
+
+/* Temporary toggle for experimental PseudoColor support */
+#define WIN_PSEUDO_SUPPORT	NO
 
 /* Turn debug messages on or off */
 #define CYGDEBUG		NO
@@ -87,6 +90,9 @@
 #define WIN_DEFAULT_BLACKPIXEL	0
 #define WIN_DEFAULT_LINEBIAS	0
 #define WIN_DEFAULT_E3B_TIME	50 /* milliseconds */
+
+#define WIN_DIB_MAXIMUM_SIZE	0x08000000 /* 16 MB on Windows 95, 98, Me */
+#define WIN_DIB_MAXIMUM_SIZE_MB (WIN_DIB_MAXIMUM_SIZE / 8 / 1024 / 1024)
 
 /*
  * Build a supported display depths mask by shifting one to the left
@@ -187,10 +193,6 @@ typedef Bool (*winAllocateFBProcPtr)(ScreenPtr);
 
 typedef void (*winShadowUpdateProcPtr)(ScreenPtr, shadowBufPtr);
 
-typedef void *(*winShadowWindowProcPtr)(ScreenPtr,
-					CARD32, CARD32,
-					int, CARD32*, void*);
-
 typedef Bool (*winCloseScreenProcPtr)(int, ScreenPtr);
 
 typedef Bool (*winInitVisualsProcPtr)(ScreenPtr);
@@ -225,6 +227,7 @@ typedef struct
   DWORD			dwPaddedWidth;
   DWORD			dwHeight;
   DWORD			dwDepth;
+  DWORD			dwRefreshRate;
   DWORD			dwDPIx;
   DWORD			dwDPIy;
   DWORD			dwStrideBytes;
@@ -260,6 +263,9 @@ typedef struct
 
   DWORD			dwModeKeyStates;
 
+  /* Palette management */
+  ColormapPtr		pcmapInstalledColormap;
+
   /* 3 button emulation variables */
   int			iE3BCachedPress;
   Bool			fE3BFakeButton2Sent;
@@ -272,14 +278,15 @@ typedef struct
   
   /* Privates used by shadow fb and primary fb DirectDraw servers */
   LPDIRECTDRAW		pdd;
-  LPDIRECTDRAWSURFACE	pddsPrimary;
+  LPDIRECTDRAWSURFACE2	pddsPrimary;
+  LPDIRECTDRAW2		pdd2;
 
   /* Privates used by shadow fb DirectDraw server */
-  LPDIRECTDRAWSURFACE	pddsShadow;
+  LPDIRECTDRAWSURFACE2	pddsShadow;
   LPDDSURFACEDESC	pddsdShadow;
 
   /* Privates used by primary fb DirectDraw server */
-  LPDIRECTDRAWSURFACE	pddsOffscreen;
+  LPDIRECTDRAWSURFACE2	pddsOffscreen;
   LPDDSURFACEDESC	pddsdOffscreen;
   LPDDSURFACEDESC	pddsdPrimary;
 
@@ -294,7 +301,6 @@ typedef struct
   /* Engine specific functions */
   winAllocateFBProcPtr			pwinAllocateFB;
   winShadowUpdateProcPtr		pwinShadowUpdate;
-  winShadowWindowProcPtr		pwinShadowWindow;
   winCloseScreenProcPtr			pwinCloseScreen;
   winInitVisualsProcPtr			pwinInitVisuals;
   winAdjustVideoModeProcPtr		pwinAdjustVideoMode;
@@ -380,32 +386,35 @@ winPixmapToRegionNativeGDI (PixmapPtr pPix);
  */
 
 int
-winListInstalledColormapsNativeGDI (ScreenPtr pScreen, Colormap *pmaps);
+winListInstalledColormaps (ScreenPtr pScreen, Colormap *pmaps);
 
 Bool
 winInitVisualsNativeGDI (ScreenPtr pScreen);
 
 void
-winStoreColorsNativeGDI (ColormapPtr pmap, int ndef, xColorItem *pdefs);
+winStoreColors (ColormapPtr pmap, int ndef, xColorItem *pdefs);
 
 void
-winInstallColormapNativeGDI (ColormapPtr pmap);
+winInstallColormap (ColormapPtr pmap);
 
 void
-winUninstallColormapNativeGDI (ColormapPtr pmap);
+winUninstallColormap (ColormapPtr pmap);
 
 void
-winResolveColorNativeGDI (unsigned short *pred,
-			  unsigned short *pgreen,
-			  unsigned short *pblue,
-			  VisualPtr	pVisual);
+winResolveColor (unsigned short *pred,
+		 unsigned short *pgreen,
+		 unsigned short *pblue,
+		 VisualPtr	pVisual);
 
 Bool
-winInitializeColormapNativeGDI (ColormapPtr pmap);
+winCreateColormap (ColormapPtr pmap);
+
+void
+winDestroyColormap (ColormapPtr pmap);
 
 int
-winExpandDirectColorsNativeGDI (ColormapPtr pmap, int ndef,
-				xColorItem *indefs, xColorItem *outdefs);
+winExpandDirectColors (ColormapPtr pmap, int ndef,
+		       xColorItem *indefs, xColorItem *outdefs);
 
 Bool
 winCreateDefColormap (ScreenPtr pScreen);
@@ -687,21 +696,6 @@ void
 winShadowUpdateDD (ScreenPtr pScreen, 
 		   shadowBufPtr pBuf);
 
-void *
-winShadowSetWindowLinearDD (ScreenPtr	pScreen,
-			    CARD32	dwRow,
-			    CARD32	dwOffset,
-			    int		mode,
-			    CARD32	*pdwSize);
-
-void *
-winShadowWindowDD (ScreenPtr	pScreen,
-		   CARD32	row,
-		   CARD32	offset,
-		   int		mode,
-		   CARD32	*size,
-		   void		*closure);
-
 Bool
 winCloseScreenShadowDD (int nIndex, ScreenPtr pScreen);
 
@@ -731,21 +725,6 @@ void
 winShadowUpdateDDNL (ScreenPtr pScreen, 
 		     shadowBufPtr pBuf);
 
-void *
-winShadowSetWindowLinearDDNL (ScreenPtr	pScreen,
-			      CARD32	dwRow,
-			      CARD32	dwOffset,
-			      int	mode,
-			      CARD32	*pdwSize);
-
-void *
-winShadowWindowDDNL (ScreenPtr	pScreen,
-		     CARD32	row,
-		     CARD32	offset,
-		     int	mode,
-		     CARD32	*size,
-		     void	*closure);
-
 Bool
 winCloseScreenShadowDDNL (int nIndex, ScreenPtr pScreen);
 
@@ -774,21 +753,6 @@ winAllocateFBShadowGDI (ScreenPtr pScreen);
 void
 winShadowUpdateGDI (ScreenPtr pScreen, 
 		    shadowBufPtr pBuf);
-
-void *
-winShadowSetWindowLinearGDI (ScreenPtr	pScreen,
-			     CARD32	dwRow,
-			     CARD32	dwOffset,
-			     int	mode,
-			     CARD32	*pdwSize);
-
-void *
-winShadowWindowGDI (ScreenPtr	pScreen,
-		    CARD32	row,
-		    CARD32	offset,
-		    int		mode,
-		    CARD32	*size,
-		    void	*closure);
 
 Bool
 winCloseScreenShadowGDI (int nIndex, ScreenPtr pScreen);

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.6 2001/06/08 08:06:53 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.7 2001/06/15 08:09:20 alanh Exp $ */
 
 #include "win.h"
 
@@ -53,6 +53,7 @@ winWindowProc (HWND hWnd, UINT message,
   HRESULT			ddrval;
   RECT				rcClient, rcSrc;
   int				iScanCode;
+  int				i;
 
   /* Watch for server regeneration */
   if (g_ulServerGeneration != ulServerGeneration)
@@ -267,21 +268,78 @@ winWindowProc (HWND hWnd, UINT message,
 
     case WM_SYSKEYDOWN:
     case WM_KEYDOWN:
+      /*
+       * FIXME: Catching Alt-F4 like this is really terrible.  This should
+       * be generalized to handle other Windows keyboard signals.  Actually,
+       * the list keys to catch and the actions to perform when caught should
+       * be configurable; that way user's can customize the keys that they
+       * need to have passed through to their window manager or apps, or they
+       * can remap certain actions to new key codes that do not conflict
+       * with the X apps that they are using.  Yeah, that'll take awhile.
+       */
+      if (wParam == VK_F4
+	  && (GetKeyState (VK_MENU) & 0x8000))
+	{
+	  /*
+	   * Better leave this message here, just in case some unsuspecting
+	   * user enters Alt + F4 and is surprised when the application
+	   * quits.
+	   */
+	  ErrorF ("winWindowProc () - Got VK_F4 && VK_MENU, quitting\n");
+	  
+	  /* Tell our message queue to give up */
+	  PostMessage (hWnd, WM_CLOSE, 0, 0);
+	  return 0;
+	}
+      
+      /*
+       * Don't do anything for the Windows keys, as focus will soon
+       * be returned to Windows.  We may be able to trap the Windows keys,
+       * but we should determine if that is desirable before doing so.
+       */
+      if (wParam == VK_LWIN
+	  || wParam == VK_RWIN)
+	{
+	  break;
+	}
+
+      /* Discard fake Ctrl_L presses that precede AltGR on non-US keyboards */
       if (winIsFakeCtrl_L (message, wParam, lParam))
 	return 0;
+      
+      /* Handle normal keyboard keys */
       ZeroMemory (&xCurrentEvent, sizeof (xCurrentEvent));
       winTranslateKey (wParam, lParam, &iScanCode);
       xCurrentEvent.u.u.type = KeyPress;
       xCurrentEvent.u.u.detail = iScanCode;
-      xCurrentEvent.u.keyButtonPointer.time
-	= g_c32LastInputEventTime = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
+
+      /* Handle the Windows keypress repeat count */
+      for (i = 0; i < LOWORD(lParam); ++i)
+	{
+	  xCurrentEvent.u.keyButtonPointer.time
+	    = g_c32LastInputEventTime = GetTickCount ();
+	  mieqEnqueue (&xCurrentEvent);
+	}
       return 0;
 
     case WM_SYSKEYUP:
     case WM_KEYUP:
+      /*
+       * Don't do anything for the Windows keys, as focus will soon
+       * be returned to Windows.  We may be able to trap the Windows keys,
+       * but we should determine if that is desirable before doing so.
+       */
+      if (wParam == VK_LWIN
+	  || wParam == VK_RWIN)
+	{
+	  break;
+	}
+
+      /* Ignore the fake Ctrl_L that follows an AltGr release */
       if (winIsFakeCtrl_L (message, wParam, lParam))
 	return 0;
+
+      /* Enqueue a keyup event */
       ZeroMemory (&xCurrentEvent, sizeof (xCurrentEvent));
       winTranslateKey (wParam, lParam, &iScanCode);
       xCurrentEvent.u.u.type = KeyRelease;

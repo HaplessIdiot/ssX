@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/10 1996/12/02 10:20:33 lehors $
-XCOMM $XFree86: xc/programs/Xserver/hw/xwin/Imakefile,v 1.7 2001/06/04 13:04:41 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xwin/Imakefile,v 1.8 2001/06/12 09:45:53 alanh Exp $
 
 #include <Server.tmpl>
 
@@ -35,7 +35,8 @@ SRCS =	InitInput.c \
 	winshadddnl.c \
 	winpfbdd.c \
 	winkeybd.c \
-	winmouse.c
+	winmouse.c \
+	wincutpaste.c
 
 OBJS =	InitInput.o \
 	InitOutput.o \
@@ -63,7 +64,8 @@ OBJS =	InitInput.o \
 	winshadddnl.o \
 	winpfbdd.o \
 	winkeybd.o \
-	winmouse.o
+	winmouse.o \
+	wincutpaste.o
 
 INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
 	   -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi \
