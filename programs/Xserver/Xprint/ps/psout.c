@@ -1,4 +1,4 @@
-/* $Xorg: psout.c,v 1.7 2001/02/09 02:04:36 xorgcvs Exp $ */
+/* $Xorg: psout.c,v 1.9 2001/03/26 15:25:12 coskrey Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -73,7 +73,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.8 2001/11/21 22:40:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.9 2001/12/14 19:59:17 dawes Exp $ */
 
 /*      
  * For XFree86 3.3.3:  
@@ -776,7 +776,6 @@ PsOut_Clip(PsOutPtr self, int clpTyp, PsClipPtr clpinf)
       }
     }
   }
-  if( !changed ) return;
 
   if( self->Clip.rects )       xfree(self->Clip.rects);
   if( self->Clip.outterClips ) xfree(self->Clip.outterClips);
