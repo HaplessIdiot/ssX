@@ -31,7 +31,7 @@
  * Converted to common header format:
  *   Jens Owen <jens@tungstengraphics.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmRadeon.h,v 1.6 2001/04/16 15:02:13 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_common.h,v 1.1 2002/10/30 12:52:13 alanh Exp $
  *
  */
 
@@ -70,6 +70,7 @@
 #define DRM_RADEON_INIT_HEAP              0x15
 #define DRM_RADEON_IRQ_EMIT               0x16
 #define DRM_RADEON_IRQ_WAIT               0x17
+#define DRM_RADEON_CP_RESUME              0x18
 #define DRM_RADEON_MAX_DRM_COMMAND_INDEX  0x39
 
 

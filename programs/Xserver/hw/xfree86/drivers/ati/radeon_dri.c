@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.32 2003/02/19 09:17:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.33 2003/04/03 12:46:27 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -1555,6 +1555,86 @@ Bool RADEONDRIFinishScreenInit(ScreenPtr pScreen)
     }
 
     return TRUE;
+}
+
+/**
+ * This function will attempt to get the Radeon hardware back into shape
+ * after a resume from disc.  Basically, it's an extract of all hardware-
+ * affecting code from RADEONDRIAgpInit() (which is normally called by
+ * RADEONDRIScreenInit()) and RADEONDRIFinishScreenInit()
+ * including a new ioctl in the radeon DRM that in its turn is an extraction
+ * of the hardware-affecting bits from radeon_do_init_cp() (see radeon_cp.c)
+ *
+ * Charl P. Botha <http://cpbotha.net>
+ */
+void RADEONDRIResume(ScreenPtr pScreen)
+{
+    unsigned long mode;
+    int _ret;
+    ScrnInfoPtr   pScrn   = xf86Screens[pScreen->myNum];
+    RADEONInfoPtr info    = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO = info->MMIO;
+
+    xf86DrvMsg(pScreen->myNum, X_INFO,
+	       "[RESUME] Attempting to re-init Radeon hardware.\n");
+    
+    
+    /* Following bits from RADEONDRIAgpInit() */
+    /* -------------------------------------- */
+
+    mode   = drmAgpGetMode(info->drmFD);	/* Default mode */
+
+    mode &= ~RADEON_AGP_MODE_MASK;
+    switch (info->agpMode) {
+    case 4:          mode |= RADEON_AGP_4X_MODE;
+    case 2:          mode |= RADEON_AGP_2X_MODE;
+    case 1: default: mode |= RADEON_AGP_1X_MODE;
+    }
+
+    xf86DrvMsg(pScreen->myNum, X_INFO,
+		"[agp] Mode 0x%08lx [Card 0x%04x/0x%04x]\n",
+		mode,
+		info->PciInfo->vendor,
+		info->PciInfo->chipType);
+
+    if (drmAgpEnable(info->drmFD, mode) < 0) {
+	xf86DrvMsg(pScreen->myNum, X_ERROR, "[agp] AGP not enabled\n");
+	drmAgpRelease(info->drmFD);
+	return;
+    }
+
+    /* Ring buffer is at AGP offset 0 - from RADEONAgpInit() */
+    OUTREG(RADEON_AGP_BASE, info->ringHandle);
+
+    /* enable bus-mastering - we do this here bacause RADEONAgpInit() does it.
+     * The bus-mastering fix does this in RADEONEnterVT() as well, leave that!
+     */
+    /* xf86EnablePciBusMaster(info->PciInfo, TRUE); */
+    /* NB: it seems the root of this problem has been solved: X now
+     * explicitly enables bus-mastering after a VT switch */
+
+    /* Following bits from RADEONDRIFinishScreenInit() */
+    /* ----------------------------------------------- */
+    
+    /* this will make the IOCTL call we've added to try and re-tickle the 
+     * radeon chip in all the right places - similar to what the 
+     * DRM_RADEON_CP_INIT ioctl does in RADEONDRIKernelInit()
+     */
+    _ret = drmCommandNone(info->drmFD, DRM_RADEON_CP_RESUME); 
+    if (_ret) {      
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,  
+		   "%s: CP resume %d\n", __FUNCTION__, _ret); 
+    }       
+
+
+    /* DRM_RADEON_CP_RESUME does an engine reset, which resets some engine
+       registers back to their default values, so we need to restore
+       those engine register here. - from RADEONDRIKernelInit() that's called by
+       RADEONDRIFinishScreenInit() */
+    RADEONEngineRestore(pScrn);
+
+    /* Initialize and start the CP if required - from RADEONDRIFinishScreenInit() */
+    RADEONDRICPInit(pScrn);
 }
 
 /* The screen is being closed, so clean up any state and free any

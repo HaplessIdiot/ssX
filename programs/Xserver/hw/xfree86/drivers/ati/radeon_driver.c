@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.92 2003/04/03 16:16:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.93 2003/04/06 20:07:33 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -6346,6 +6346,23 @@ Bool RADEONEnterVT(int scrnIndex, int flags)
 	RADEONRestoreFBDevRegisters(pScrn, &info->ModeReg);
     } else
 	if (!RADEONModeInit(pScrn, pScrn->currentMode)) return FALSE;
+
+    /* BEGIN RESUME CODE */
+    /*********************/
+
+#ifdef XF86DRI
+    if (info->directRenderingEnabled) {
+	/* get the Radeon back into shape after resume */
+	RADEONDRIResume(pScrn->pScreen);
+    }
+#endif
+    /* this will get XVideo going again, but only if XVideo was initialised 
+       during server startup (hence the info->adaptor if). */
+    if(info->adaptor)
+	RADEONResetVideo(pScrn);
+
+    /* END RESUME CODE */
+    /*******************/
 
     if (info->accelOn)
 	RADEONEngineRestore(pScrn);

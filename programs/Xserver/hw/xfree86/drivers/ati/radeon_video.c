@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.24 2003/02/19 01:19:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.25 2003/04/06 20:07:34 martin Exp $ */
 
 #include "radeon.h"
 #include "radeon_macros.h"
@@ -24,6 +24,7 @@ extern int gRADEONEntityIndex;
 
 #ifndef XvExtension
 void RADEONInitVideo(ScreenPtr pScreen) {}
+void RADEONResetVideo(ScrnInfoPtr Pscrn) {}
 #else
 
 static void RADEONInitOffscreenImages(ScreenPtr);
@@ -39,9 +40,6 @@ static int  RADEONPutImage(ScrnInfoPtr, short, short, short, short, short,
 			short, Bool, RegionPtr, pointer);
 static int  RADEONQueryImageAttributes(ScrnInfoPtr, int, unsigned short *,
 			unsigned short *,  int *, int *);
-
-
-static void RADEONResetVideo(ScrnInfoPtr);
 
 static void RADEONVideoTimerCallback(ScrnInfoPtr pScrn, Time now);
 
@@ -380,7 +378,7 @@ static void RADEONSetColorKey(ScrnInfoPtr pScrn, CARD32 colorKey)
     OUTREG(RADEON_OV0_GRAPHICS_KEY_CLR_LOW, min);
 }
 
-static void
+void
 RADEONResetVideo(ScrnInfoPtr pScrn)
 {
     RADEONInfoPtr   info      = RADEONPTR(pScrn);
