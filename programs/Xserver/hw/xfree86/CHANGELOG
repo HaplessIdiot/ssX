@@ -1,4 +1,6 @@
 XFree86 4.0.1g (xx November 2000)
+ 978. Rename Trident Cyber9540 to CyberBlade/e4 and make appropriate 
+      changes in driver (Alan Hourihane).
  977. Fix Trident Cyber series to only detect SDRAM (Alan Hourihane).
  976. Make xf86SoundKbdBell() available to modules (for citron driver)
       (Marc La France).
@@ -11619,4 +11621,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1406 2000/11/21 23:10:28 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1407 2000/11/22 08:41:15 alanh Exp $

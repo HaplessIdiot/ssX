@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.26 2000/09/26 15:57:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.28 2000/11/03 18:46:13 eich Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -240,7 +240,7 @@ typedef enum {
     CYBER9397DVD,
     CYBER9520,
     CYBER9525DVD,
-    CYBER9540,
+    CYBERBLADEE4,
     IMAGE975,
     IMAGE985,
     BLADE3D,
@@ -265,6 +265,7 @@ typedef enum {
 			 (pTrident->Chipset == CYBER9397DVD) || \
 			 (pTrident->Chipset == CYBER9520) || \
 			 (pTrident->Chipset == CYBER9525DVD) || \
+			 (pTrident->Chipset == CYBERBLADEE4)  || \
 			 (pTrident->Chipset == IMAGE975)  || \
 			 (pTrident->Chipset == IMAGE985)  || \
 			 (pTrident->Chipset == CYBERBLADEI7)  || \

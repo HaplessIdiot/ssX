@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.109 2000/11/16 19:45:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.110 2000/11/22 08:41:18 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -143,7 +143,7 @@ static SymTabRec TRIDENTChipsets[] = {
     { CYBER9397DVD,		"cyber9397dvd" },
     { CYBER9520,		"cyber9520" },
     { CYBER9525DVD,		"cyber9525dvd" },
-    { CYBER9540,		"cyber9540" },
+    { CYBERBLADEE4,		"cyberblade/e4" },
     { TGUI9420DGi,		"tgui9420dgi" },
     { TGUI9440AGi,		"tgui9440agi" },
     { TGUI9660,			"tgui9660" },
@@ -174,7 +174,7 @@ static PciChipsets TRIDENTPciChipsets[] = {
     { CYBER9397DVD,	PCI_CHIP_939A,	RES_SHARED_VGA },
     { CYBER9520,	PCI_CHIP_9520,	RES_SHARED_VGA },
     { CYBER9525DVD,	PCI_CHIP_9525,	RES_SHARED_VGA },
-    { CYBER9540,	PCI_CHIP_9540,	RES_SHARED_VGA },
+    { CYBERBLADEE4,	PCI_CHIP_9540,	RES_SHARED_VGA },
     { TGUI9420DGi,	PCI_CHIP_9420,	RES_SHARED_VGA },
     { TGUI9440AGi,	PCI_CHIP_9440,	RES_SHARED_VGA },
     { TGUI9660,		PCI_CHIP_9660,	RES_SHARED_VGA },
@@ -1584,12 +1584,12 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    chipset = "Cyber 9525/DVD";
 	    pTrident->NewClockCode = TRUE;
 	    break;
-	case CYBER9540:
+	case CYBERBLADEE4:
     	    pTrident->ddc1Read = Tridentddc1Read;
 	    ramtype = "SDRAM";
 	    pTrident->IsCyber = TRUE;
 	    Support24bpp = TRUE;
-	    chipset = "Cyber 9540";
+	    chipset = "CyberBlade e4/128";
 	    pTrident->NewClockCode = TRUE;
 	    break;
 	case IMAGE975:
@@ -2179,7 +2179,7 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case CYBERBLADEI1D:
 	case CYBER9520:
 	case CYBER9525DVD:
-	case CYBER9540:
+	case CYBERBLADEE4:
 	case CYBER9397:
 	case CYBER9397DVD:
 	    /* Get ready for MUX mode */
@@ -2476,6 +2476,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	        (pTrident->Chipset == CYBERBLADEI7D) ||
 	        (pTrident->Chipset == CYBERBLADEI1) ||
 	        (pTrident->Chipset == CYBERBLADEI1D) ||
+	        (pTrident->Chipset == CYBERBLADEE4) ||
 	        (pTrident->Chipset == BLADE3D))
 		BladeAccelInit(pScreen);
 	    else
