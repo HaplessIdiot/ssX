@@ -1,4 +1,12 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 884. Remove Xcms.txt entries that have server-side equivalents.  It looks
+      like the slightly different resulting colour definitions from the
+      Xcms.txt entries were responsible for an xtest failure.
+ 883. Fix some problems with using pre-existing version of fontconfig,
+      freetype2 and expat (#A.1600, Keith Packard).
+ 882. Add missing zero-sized check to one of Xft's core rendering routines
+      (#A.1599, Keith Packard).
+ 881. Add a missing symbol reference to the radeon driver (#5618, Mike Harris).
  880. Fix the Xcursor include path in the man page (#5617, Kevin Brosius).
  879. Update ViRGE documentation (#5617, Kevin Brosius).
  878. Fix mkfontscale so that it doesn't include characters forbidden in XLFD
@@ -16340,4 +16348,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2545 2003/02/12 15:55:29 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2546 2003/02/13 03:21:26 dawes Exp $
