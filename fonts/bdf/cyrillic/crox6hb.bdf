@@ -1,15 +1,16 @@
 STARTFONT 2.1
 COMMENT Copyright (C) 1990-1991 EWT Consulting
 COMMENT Portions Copyright (C) 1994-1995 Cronyx Ltd.
+COMMENT Changes Copyright (C) 1996 by Andrey A. Chernov, Moscow, Russia.
 COMMENT Modified by Serge Vakulenko, <vak@cronyx.ru>
 COMMENT This software may be used, modified, copied, distributed, and sold,
 COMMENT in both source and binary form provided that the copyright
 COMMENT and these terms are retained. Under no circumstances is the author
 COMMENT responsible for the proper functioning of this software, nor does
 COMMENT the author assume any responsibility for damages incurred with its use.
-COMMENT $XFree86: xc/fonts/bdf/cyrillic/crox6hb.bdf,v 3.0 1995/07/22 04:14:46 dawes Exp $
-FONT -Cronyx-Helvetica-Bold-R-Normal--30-300-75-75-P-130-KOI8-R
-SIZE 30 96 96
+COMMENT $XFree86: xc/fonts/bdf/cyrillic/crox6hb.bdf,v 3.1 1996/08/16 12:26:45 dawes Exp $
+FONT -Cronyx-Helvetica-Bold-R-Normal--34-240-100-100-P-130-KOI8-R
+SIZE 24 96 96
 FONTBOUNDINGBOX 33 37 0 -8
 STARTPROPERTIES 19
 DEFAULT_CHAR 32
@@ -26,11 +27,11 @@ ADD_STYLE_NAME ""
 AVERAGE_WIDTH 130
 CHARSET_REGISTRY "KOI8"
 CHARSET_ENCODING "R"
-PIXEL_SIZE 30
-POINT_SIZE 300
-RESOLUTION_X 75
-RESOLUTION_Y 75
-COPYRIGHT "Copyright (C) 1990, 1991 EWT Consulting, Portions Copyright (C) 1994 Cronyx Ltd."
+PIXEL_SIZE 34
+POINT_SIZE 240
+RESOLUTION_X 100
+RESOLUTION_Y 100
+COPYRIGHT "Copyright (C) 1990, 1991 EWT Consulting, Portions Copyright (C) 1994 Cronyx Ltd., Portions Copyright (C) 1996 by Andrey A. Chernov, Moscow, Russia."
 ENDPROPERTIES
 CHARS 224
 STARTCHAR space
@@ -5490,7 +5491,7 @@ BITMAP
 0000
 ENDCHAR
 STARTCHAR C234
-ENCODING -1
+ENCODING 176
 SWIDTH 324 0
 DWIDTH 12 0
 BBX 12 37 0 -8
@@ -5534,7 +5535,7 @@ BITMAP
 0000
 ENDCHAR
 STARTCHAR C235
-ENCODING -1
+ENCODING 178
 SWIDTH 324 0
 DWIDTH 12 0
 BBX 12 37 0 -8
@@ -6062,7 +6063,7 @@ BITMAP
 0000
 ENDCHAR
 STARTCHAR copyright
-ENCODING 169
+ENCODING 191
 SWIDTH 675 0
 DWIDTH 25 0
 BBX 25 37 0 -8
@@ -6370,7 +6371,7 @@ FFFF80
 000000
 ENDCHAR
 STARTCHAR degree
-ENCODING 176
+ENCODING 156
 SWIDTH 324 0
 DWIDTH 12 0
 BBX 12 37 0 -8
@@ -6458,7 +6459,7 @@ BITMAP
 000000
 ENDCHAR
 STARTCHAR twosuperior
-ENCODING 178
+ENCODING 157
 SWIDTH 270 0
 DWIDTH 10 0
 BBX 10 37 0 -8
@@ -7030,7 +7031,7 @@ BITMAP
 000000
 ENDCHAR
 STARTCHAR questiondown
-ENCODING 191
+ENCODING 169
 SWIDTH 486 0
 DWIDTH 18 0
 BBX 18 37 0 -8
