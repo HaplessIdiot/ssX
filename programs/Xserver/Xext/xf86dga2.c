@@ -218,8 +218,12 @@ ProcXDGAQueryModes(ClientPtr client)
     rep.number = 0;
     rep.sequenceNumber = client->sequence;
 
-    if (!DGAAvailable(stuff->screen)) 
-        return DGAErrorBase + XF86DGANoDirectVideoMode;
+    if (!DGAAvailable(stuff->screen)) {
+	rep.number = 0;
+	rep.length = 0;
+	WriteToClient(client, sz_xXDGAQueryModesReply, (char*)&rep);
+	return (client->noClientException);
+    }
 
     if(!(num = DGAGetModes(stuff->screen))) {
 	WriteToClient(client, sz_xXDGAQueryModesReply, (char*)&rep);
