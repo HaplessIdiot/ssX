@@ -1,4 +1,45 @@
-XFree86 4.2.99.5 (XX January 2003)
+XFree86 4.2.99.901 (4 February 2003)
+ 831. Resync with DRI mesa-4-0-4 branch:
+       - Don't inflate relative vblank sequence numbers on repeated calls
+         (e.g., when interrupted by a signal) (Michel Dänzer).
+       - Fix size of VERTEX2 ioctl struct (Egbert Eich).
+ 830. SiS driver fixes:
+       - Mode restoration fix.
+       - Xv Hue and Saturation property fixes (310/325 series).
+       - Built-in mode fixes.
+       - Revert wrong bus width assumptions from previous patch.
+      (Thomas Winischhofer).
+ 829. R128 build fix on big endian platforms (#A.1565, George Staikos).
+ 828. Updated whiteglass cursor icons that fix the resizing glitches in the
+      existing ones (#A.1563, Kevin Puetz).
+ 827. Include server control definitions in some XKB maps that were missing
+      them (based on #A.1562, Jens Petersen).
+ 826. Define Alt/Meta modifiers for the jp106 XKB layout, and include
+      server control definitions (#A.1562, Jens Petersen).
+ 825. Add some locales required for the OpenI18N compliance test (#A.1550,
+      Leon Ho).
+ 824. s3virge driver updates:
+       - 320x240 doublescan support with mouse adjust.
+       - Power management printouts, DAC error printout fix.
+       - Log XVideo status based on chipset, and preliminary support for
+         disabling XV when a mode doesn't support it.
+      (#A.1550, Kevin Brosius).
+ 823. Add an Ethiopic TTF and OTF font (#A.1549, Daniel Yacob).
+ 822. Add a phonetic layout to the Bengali XKB map (#5606, Taneem Ahmed).
+ 821. Work around an AGP bug in the AlphaServer ES45 by padding each ring
+      buffer packet in the radeon drm with NOPs to cache line boundaries.
+      This is only done for Alpha platforms (#5605, Jeff Wiedemeier).
+ 820. Add missing domain decoding to DRM(irq_busid) for Alpha (#5604,
+      Jeff Wiedemeier).
+ 819. Build fix for the DRM on FreeBSD 5.0-current (#5603, Eric Anholt).
+ 818. xaaStateChange.c was not calling RestoreAccelState before doing
+      CPUToScreenTexture and CPUToScreenAlphaTexture, which seems to be the
+      reason why RENDER acceleration was broken on some dual-monitor MGA cards
+      (#5602, Nolan Leake).
+ 817. Make the vmware driver a little more conservative about supporting
+      HW RGBA cursors in 8-bit modes (#5606, Nolan Leake).
+ 816. Work around a problem with the vmware driver's interaction with the
+      offscreen memory manager (#5606, Nolan Leake).
  815. Fix fb's rotation of tiles and stipples when using non-zero PixOrigin
       macros (Torrey T. Lyons).
  814. Fix Radeon native FP mode initializion (Hui Yu@ATI).
@@ -16185,4 +16226,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2512 2003/01/30 16:22:16 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2513 2003/01/31 00:01:42 torrey Exp $
