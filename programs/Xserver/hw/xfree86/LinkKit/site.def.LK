@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.14 1995/01/07 05:43:48 dawes Exp $
 
 /* Configuration file for Server Link Kit */
 
@@ -24,7 +24,7 @@ XCOMM $XFree86$
 /* #define HasGcc2		NO */
 
 /*
- * If the link kit you are using was built with gcc2, and you are using
+ * If the LinkKit you are using was built with gcc2, and you are using
  * a different compiler:
  *   1. Install libgcc.a in a directory searched by your 'ld'
  *   2. Set NeedLibGcc to YES
@@ -32,19 +32,34 @@ XCOMM $XFree86$
 #define NeedLibGcc		NO
 
 /*
+ * If you want to use the GNU malloc library, uncomment this
+ *
+#define UseGnuMalloc		YES
+ */
+
+/*
+ * Set this to whatever is required to access the GNU malloc library.
+ * The default is '-lgmalloc'.
+ *
+#define GnuMallocLibrary	-L/usr/local/lib -lgmalloc
+ */
+
+/*
  * Server configuration parameters
  */
 
-#define XF86Vga256Drivers      et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
-                               ncr77c22 compaq oak s3_svga mx al2101 cl6420 \
-                               video7 generic
+#define XF86SvgaDrivers        et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
+                               ncr77c22 compaq oak mx al2101 ali cl64xx \
+                               video7 chips generic
 
-#define XF86Vga16Drivers       et4000 ncr77c22 tvga8900 oak cl6420 generic
+#define XF86Vga16Drivers       et4000 ncr77c22 ati tvga8900 oak cl64xx generic
 
-#define XF86Vga2Drivers        et4000 et3000 pvga1 gvga tvga8900 cirrus \
-                               ncr77c22 compaq oak cl6420 generic
+#define XF86Vga2Drivers        et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
+                               ncr77c22 compaq oak cl64xx generic
 
 #define XF86MonoDrivers        hgc1280 sigma apollo hercules
+
+#define XF86W32Drivers         et4000w32
 
 
 /* The SVGA colour server */
@@ -74,26 +89,61 @@ XCOMM $XFree86$
 /* The Mach32 server */
 #define XF86Mach32Server	YES
 
+/* The Mach64 server */
+#define XF86Mach64Server	YES
+
 /* The P9000 server */
 #define XF86P9000Server		YES
+
+/* The AGX server */
+#define XF86AGXServer		YES
+
+/* The W32 server */
+#define XF86W32Server		YES
+
+/* Xnest server */
+#define XnestServer		YES
 
 /*
  * Set the default server (ie the one that gets the sym-link to "X")
  *
 #define ServerToInstall	XF86_S3
-*/
+ */
 
 /*
- * If you want PEX (and this link kit was built with PEX support), set
+ * If you only run the X server under xdm the X servers don't need to be
+ * installed SetUID, and you may comment out the lines below.  If you run
+ * the servers by hand (with xinit or startx), then they do need to be
+ * installed SetUID on most OSs.
+ * Consult your system administrator before making the X server setuid.
+ */
+#if !defined(i386MachArchitecture)
+#define InstallXserverSetUID	YES
+#endif
+
+/*
+ * If you want PEX (and this LinkKit was built with PEX support), set
  * the following to YES
  */
 #define BuildPexExt		NO
 
 /*
- * If you want XIE (and this link kit was built with XIE support), set
+ * If you want XIE (and this LinkKit was built with XIE support), set
  * the following to YES
  */
 #define BuildXIE		NO
+
+/*
+ * If you want LBX (and this LinkKit was built with LBX support), set
+ * the following to YES
+ */
+#define BuildLBX		NO
+
+/*
+ * If you want to disable the ScreenSaver extension that may be included
+ * in the LinkKit, set the following to NO
+ */
+#define BuildScreenSaverExt	YES
 
 #endif /* BeforeVendorCF */
 

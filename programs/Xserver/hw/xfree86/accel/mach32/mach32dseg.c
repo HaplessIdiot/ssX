@@ -1,5 +1,5 @@
 /* $XConsortium: mach32dseg.c,v 1.3 94/10/12 19:59:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32dseg.c,v 3.6 1995/01/28 16:58:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32dseg.c,v 3.7 1995/02/12 02:37:43 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -268,6 +268,7 @@ mach32Dsegment (pDrawable, pGC, nseg, pSeg)
 	       outw(MAJ_AXIS_PCNT, (short)len);
 	       outw(CMD, CMD_LINE | DRAW | LASTPIX | direction |
 		       PCDATA | _16BIT | WRTDATA);
+	       WaitQueue(16);
 	       for (tmp = 0 ; tmp < len; tmp+=2) {
 			FillDashPat;
 			outw(PIX_TRANS, dashPat);
@@ -373,6 +374,7 @@ mach32Dsegment (pDrawable, pGC, nseg, pSeg)
 		     outw(MAJ_AXIS_PCNT, (short)len);
 		     outw(CMD, CMD_LINE | DRAW | LASTPIX | direction |
 			  PCDATA | _16BIT | WRTDATA);
+		     WaitQueue(16);
 		     for (tmp = 0 ; tmp < len; tmp+=2) {
 		        FillDashPat;			
 			outw(PIX_TRANS, dashPat);
