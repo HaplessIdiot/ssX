@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.14.2.4 1998/06/05 16:23:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.16 1998/07/25 16:56:43 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -32,6 +32,8 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+
+#include "compiler.h"
 
 static Bool ExtendedEnabled = FALSE;
 
@@ -316,6 +318,13 @@ xf86WriteSparse8(int Value, pointer Base, unsigned long Offset)
     *(vuip) ((unsigned long)Base + (Offset << xf86SparseShift)) = b * 0x01010101;
     if (msb)
       sethae(0);
+
+#if defined(__alpha__)
+    /* CAUTION: if you make changes inside this block you need to */
+    /* make them to the other two identical blocks in this file   */
+    mem_barrier();
+#endif
+
 }
 
 void
@@ -337,6 +346,13 @@ xf86WriteSparse16(int Value, pointer Base, unsigned long Offset)
       w * 0x00010001;
     if (msb)
       sethae(0);
+
+#if defined(__alpha__)
+    /* CAUTION: if you make changes inside this block you need to */
+    /* make them to the other two identical blocks in this file   */
+    mem_barrier();
+#endif
+
 }
 
 void
@@ -356,5 +372,11 @@ xf86WriteSparse32(int Value, pointer Base, unsigned long Offset)
     *(vuip)((unsigned long)Base+(Offset<<xf86SparseShift)+(3<<(xf86SparseShift-2))) = Value;
     if (msb)
       sethae(0);
+
+#if defined(__alpha__)
+    /* CAUTION: if you make changes inside this block you need to */
+    /* make them to the other two identical blocks in this file   */
+    mem_barrier();
+#endif
 }
 #endif /* __alpha__ */
