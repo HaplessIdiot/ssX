@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.1 2003/04/15 15:35:48 alanh Exp $ */
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86Resources.h"
@@ -72,8 +72,8 @@
 #define	 PAL_60_SVIDEO	   7
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
-#define	 IN_FLIP     ( ((vmmtr)viaVidEng)->ramtab & 0x00000003)
-#define	 IN_DISPLAY  ( ((vmmtr)viaVidEng)->interruptflag & 0x00000200)
+#define	 IN_FLIP     ( viaVidEng->ramtab & 0x00000003)
+#define	 IN_DISPLAY  ( viaVidEng->interruptflag & 0x00000200)
 #define	 IN_VBLANK   ( !IN_DISPLAY )
 
 /*
@@ -268,18 +268,18 @@ MODEINFO UnSupportDDR133[DDR133UNSUPPORTMODECOUNT]=
 /*
  *  F U N C T I O N
  */
-static __inline void waitVBLANK(int viaVidEng)
+static __inline void waitVBLANK(vmmtr viaVidEng)
 {
    while (IN_DISPLAY);
 }
 
-static __inline void waitIfFlip(int viaVidEng)
+static __inline void waitIfFlip(vmmtr viaVidEng)
 {
   while( IN_FLIP );
 }
 
 
-static __inline void waitDISPLAYBEGIN(int viaVidEng)
+static __inline void waitDISPLAYBEGIN(vmmtr viaVidEng)
 {
     while (IN_VBLANK);
 }
@@ -339,15 +339,15 @@ BOOL DecideOverlaySupport(VIAPtr pVia)
 void viaResetVideo(ScrnInfoPtr pScrn)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    viaVidEng = (int) pVia->VidMapBase;
+    vmmtr viaVidEng = (vmmtr)pVia->VidMapBase;
 
     DBG_DD(ErrorF(" via_video.c : viaResetVideo: \n"));
 
      waitVBLANK(viaVidEng);
 
-     ((vmmtr)viaVidEng)->compose    = 0;
-     ((vmmtr)viaVidEng)->video1_ctl = 0;
-     ((vmmtr)viaVidEng)->video3_ctl = 0;
+     viaVidEng->compose    = 0;
+     viaVidEng->video1_ctl = 0;
+     viaVidEng->video3_ctl = 0;
 
 }
 
@@ -355,27 +355,27 @@ static unsigned long dwV1;
 void viaSaveVideo(ScrnInfoPtr pScrn)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    viaVidEng = (int) pVia->VidMapBase;
+    vmmtr viaVidEng = (vmmtr)pVia->VidMapBase;
 
-    dwV1 = ((vmmtr)viaVidEng)->video1_ctl;
+    dwV1 = viaVidEng->video1_ctl;
     waitVBLANK(viaVidEng);
-    ((vmmtr)viaVidEng)->video1_ctl = 0;
-    ((vmmtr)viaVidEng)->video3_ctl = 0;
+    viaVidEng->video1_ctl = 0;
+    viaVidEng->video3_ctl = 0;
 }
 
 void viaRestoreVideo(ScrnInfoPtr pScrn)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    viaVidEng = (int) pVia->VidMapBase;
+    vmmtr viaVidEng = (vmmtr)pVia->VidMapBase;
 
     waitVBLANK(viaVidEng);
-    ((vmmtr)viaVidEng)->video1_ctl = dwV1 ;
+    viaVidEng->video1_ctl = dwV1 ;
 }
 
 void viaExitVideo(ScrnInfoPtr pScrn)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    viaVidEng = (int) pVia->VidMapBase;
+    vmmtr viaVidEng = (vmmtr)pVia->VidMapBase;
 
     viaPortPrivPtr pPriv = viaVideoPort;
 
@@ -387,8 +387,8 @@ void viaExitVideo(ScrnInfoPtr pScrn)
     }
 
      waitVBLANK(viaVidEng);
-    ((vmmtr)viaVidEng)->video1_ctl = 0;
-    ((vmmtr)viaVidEng)->video3_ctl = 0;
+    viaVidEng->video1_ctl = 0;
+    viaVidEng->video3_ctl = 0;
     FreePortPriv();
 
 }
@@ -663,7 +663,7 @@ viaSetPortAttributeG(
     pointer data
 ){
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    viaVidEng = (int) pVia->VidMapBase;
+    vmmtr viaVidEng = (vmmtr) pVia->VidMapBase;
     viaPortPrivPtr pPriv = (viaPortPrivPtr)data;
     LPVIAAUDCTRL lpAudCtrl = &(pPriv->AudCtrl);
     LPVIASETPORTATTR lpParam =	(LPVIASETPORTATTR)xalloc(sizeof(VIASETPORTATTR));
@@ -679,8 +679,8 @@ viaSetPortAttributeG(
 	    pPriv->colorKey = value;
 	    /* All assume color depth is 16 */
 	    value &= 0x00FFFFFF;
-	    ((vmmtr)viaVidEng)->color_key = value;
-	    ((vmmtr)viaVidEng)->snd_color_key = value;
+	    viaVidEng->color_key = value;
+	    viaVidEng->snd_color_key = value;
 	    REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
 
     /* Color Control */
@@ -869,7 +869,7 @@ viaPutImageG(
 ){
     viaPortPrivPtr pPriv = (viaPortPrivPtr)data;
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    viaVidEng = (int) pVia->VidMapBase;
+    vmmtr viaVidEng = (vmmtr) pVia->VidMapBase;
     int i;
     BoxPtr pbox;
 
@@ -908,7 +908,7 @@ viaPutImageG(
 		}
 
 		/* If there is bandwidth issue, block the H/W overlay */
-		if ((((vmmtr)viaVidEng)->video3_ctl & 0x00000001) && !gdwOverlaySupportFlag)
+		if ((viaVidEng->video3_ctl & 0x00000001) && !gdwOverlaySupportFlag)
 		     return BadAlloc;
 
 		/* CreateSurface */
@@ -1095,7 +1095,7 @@ viaBlockHandler (
     ScreenPtr	pScreen = screenInfo.screens[i];
     ScrnInfoPtr pScrn = xf86Screens[i];
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    viaVidEng = (int) pVia->VidMapBase;
+    vmmtr viaVidEng = (vmmtr) pVia->VidMapBase;
     viaPortPrivPtr pPriv = viaVideoPort;
 
     DBG_DD(ErrorF(" via_video.c : viaBlockHandler : \n"));
@@ -1111,8 +1111,8 @@ viaBlockHandler (
 	if(lpVideoControl->VideoStatus & OFF_TIMER) {
 	    if(pPriv->offTime < currentTime.milliseconds) {
 
-		((vmmtr)viaVidEng)->video1_ctl = 0;
-		((vmmtr)viaVidEng)->video3_ctl = 0;
+		viaVidEng->video1_ctl = 0;
+		viaVidEng->video3_ctl = 0;
 
 		lpVideoControl->VideoStatus = FREE_TIMER;
 		pPriv->freeTime = currentTime.milliseconds + FREE_DELAY;
