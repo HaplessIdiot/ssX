@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.51 2004/07/25 20:17:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.52tsi Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -232,6 +232,7 @@ static const char *vgaHWSymbols[] = {
     "vgaHWSetStdFuncs",
     "vgaHWUnmapMem",
     "vgaHWddc1SetSpeed",
+    "vgaHWHBlankKGA",
 #if 0
     "vgaHWFreeHWRec",
     "vgaHWMapMem",
@@ -2529,8 +2530,12 @@ static Bool SavageModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     psav->HorizScaleFactor = 1;
 
+    hwp->Flags |= VGA_FIX_SYNC_PULSES;
     if (!vgaHWInit(pScrn, mode))
 	return FALSE;
+
+    /* We have horizontal blank end extension bits, so undo KGA workaround */
+    vgaHWHBlankKGA(mode, vganew, 0, 0);
 
     new->mode = 0;
 
@@ -2724,33 +2729,19 @@ static Bool SavageModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	new->CR34 = 0x10;
 
-	i = ((((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8) |
-	    ((((mode->CrtcHDisplay >> 3) - 1) & 0x100) >> 7) |
-	    ((((mode->CrtcHSyncStart >> 3) - 1) & 0x100) >> 6) |
-	    ((mode->CrtcHSyncStart & 0x800) >> 7);
-
-	if ((mode->CrtcHSyncEnd >> 3) - (mode->CrtcHSyncStart >> 3) > 64)
-	    i |= 0x08;
-	if ((mode->CrtcHSyncEnd >> 3) - (mode->CrtcHSyncStart >> 3) > 32)
-	    i |= 0x20;
-	j = (vganew->CRTC[0] + ((i & 0x01) << 8) +
-	     vganew->CRTC[4] + ((i & 0x10) << 4) + 1) / 2;
-	if (j - (vganew->CRTC[4] + ((i & 0x10) << 4)) < 4) {
-	    if (vganew->CRTC[4] + ((i & 0x10) << 4) + 4 <= 
-	        vganew->CRTC[0] + ((i & 0x01) << 8))
-		j = vganew->CRTC[4] + ((i & 0x10) << 4) + 4;
-	    else
-		j = vganew->CRTC[0] + ((i & 0x01) << 8) + 1;
-	}
-
-	new->CR3B = j & 0xff;
-	i |= (j & 0x100) >> 2;
-	new->CR3C = (vganew->CRTC[0] + ((i & 0x01) << 8)) / 2;
-	new->CR5D = i;
+	new->CR3B = (mode->CrtcHTotal >> 3) - 10;
+	new->CR3C = ((mode->CrtcHTotal >> 3) - 5) >> 1;
+	new->CR5D = ((((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8) |
+		    ((((mode->CrtcHDisplay >> 3) - 1) & 0x100) >> 7) |
+		    ((((mode->CrtcHBlankStart >> 3) - 1) & 0x100) >> 6) |
+		    ((((mode->CrtcHBlankEnd >> 3) - 1) & 0x040) >> 3) |
+		    ((((mode->CrtcHSyncStart >> 3) - 1) & 0x100) >> 4) |
+		    ((((mode->CrtcHSyncEnd >> 3) - 1) & 0x040) >> 1);
 	new->CR5E = (((mode->CrtcVTotal - 2) & 0x400) >> 10) |
 		    (((mode->CrtcVDisplay - 1) & 0x400) >> 9) |
-		    (((mode->CrtcVSyncStart) & 0x400) >> 8) |
-		    (((mode->CrtcVSyncStart) & 0x400) >> 6) | 0x40;
+		    (((mode->CrtcVBlankStart - 1) & 0x400) >> 8) |
+		    (((mode->CrtcVSyncStart - 1) & 0x400) >> 6) | 0x40;
+
 	width = (pScrn->displayWidth * (pScrn->bitsPerPixel / 8)) >> 3;
 	new->CR91 = vganew->CRTC[19] = 0xff & width;
 	new->CR51 = (0x300 & width) >> 4;

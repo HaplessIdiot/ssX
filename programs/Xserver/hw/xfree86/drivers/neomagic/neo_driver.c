@@ -30,7 +30,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Copyright 2002 Shigehiro Nomura
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.75 2004/02/18 04:20:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.76tsi Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -2658,6 +2658,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
      * generic VGA registers.
      */
 
+    hwp->Flags |= VGA_FIX_SYNC_PULSES;
     if (!vgaHWInit(pScrn, mode))
 	return(FALSE);
 
@@ -2701,10 +2702,11 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     NeoNew->ExtCRTDispAddr = 0x10;
 
     /* Vertical Extension */
-    NeoNew->VerticalExt = (((mode->CrtcVTotal -2) & 0x400) >> 10 )
-      | (((mode->CrtcVDisplay -1) & 0x400) >> 9 )
-        | (((mode->CrtcVSyncStart) & 0x400) >> 8 )
-          | (((mode->CrtcVSyncStart) & 0x400) >> 7 );
+    /* XXX Are Sync & Blank flipped here? */
+    NeoNew->VerticalExt = (((mode->CrtcVTotal - 2) & 0x400) >> 10)
+      | (((mode->CrtcVDisplay - 1) & 0x400) >> 9)
+        | (((mode->CrtcVSyncStart - 1) & 0x400) >> 8)
+          | (((mode->CrtcVBlankStart - 1) & 0x400) >> 7);
 
     /* Fast write bursts on unless disabled. */
     if (nPtr->onPciBurst) {

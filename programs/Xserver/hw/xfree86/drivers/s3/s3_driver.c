@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.22 2004/11/26 12:08:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.23tsi Exp $ */
 
 
 #include "xf86.h"
@@ -193,6 +193,7 @@ static const char *vgaHWSymbols[] = {
         "vgaHWLock",
 	"vgaHWInit",
 	"vgaHWDPMSSet",
+	"vgaHWHBlankKGA",
         NULL
 };
 
@@ -1114,10 +1115,12 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		mode->CrtcVAdjusted = TRUE;
 	}
 
-        if (!vgaHWInit(pScrn, mode))
-                return FALSE;
+	hwp->Flags |= VGA_FIX_SYNC_PULSES;
+	if (!vgaHWInit(pScrn, mode))
+		return FALSE;
 
-
+	/* We have horizontal blank end extension bits, so undo KGA workaround */
+	vgaHWHBlankKGA(mode, pVga, 0, 0);
 
 	pVga->MiscOutReg |= 0x0c;
 	pVga->Sequencer[0] = 0x03;
@@ -1133,7 +1136,6 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* ok i give up also, i'm writing in here */
 
 	vgaHWProtect(pScrn, TRUE);
-
 
 	if (pS3->RamDac->RamDacType == TI3025_RAMDAC) {
 		outb(vgaCRIndex, 0x5c);
@@ -1151,7 +1153,6 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		outw(0x3c4, (pVga->Sequencer[r] << 8) | r);
 	}
 
-	/* We need to set this first - S3 *is* broken */
 	outw(vgaCRIndex, (pVga->CRTC[17] << 8) | 17);
 	for(r=0; r<25; r++)
 		outw(vgaCRIndex, (pVga->CRTC[r] << 8) | r);
@@ -1198,13 +1199,7 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	outb(vgaCRIndex, 0x3a);
 	outb(vgaCRReg, new->cr3a);
 
-	if (pS3->Chipset != PCI_CHIP_AURORA64VP) {
-		new->cr3b = (pVga->CRTC[0] + pVga->CRTC[4] + 1) / 2;
-		outb(vgaCRIndex, 0x3b);
-		outb(vgaCRReg, new->cr3b);
-	}
-
-	new->cr3c = pVga->CRTC[0] / 2;
+	new->cr3c = ((mode->CrtcHTotal >> 3) - 5) >> 1;
 	outb(vgaCRIndex, 0x3c);
 	outb(vgaCRReg, new->cr3c);
 
@@ -1327,53 +1322,36 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	new->cr55 = (inb(vgaCRReg) & 0x08) | 0x40;
 	outb(vgaCRReg, new->cr55);
 
-	outb(vgaCRIndex, 0x5e);
-	new->cr5e = (((mode->CrtcVTotal - 2) & 0x400) >> 10)	|
-		    (((mode->CrtcVDisplay - 1) & 0x400) >> 9)	|
-		    (((mode->CrtcVSyncStart) & 0x400) >> 8)	|
-		    (((mode->CrtcVSyncStart) & 0x400) >> 6)	| 0x40;
-	outb(vgaCRReg, new->cr5e);
+	outb(vgaCRIndex, 0x5d);
+	new->cr5d = (inb(vgaCRReg) & 0x80) |
+		    ((((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8) |
+		    ((((mode->CrtcHDisplay >> 3) - 1) & 0x100) >> 7) |
+		    ((((mode->CrtcHBlankStart >> 3) - 1) & 0x100) >> 6) |
+		    ((((mode->CrtcHBlankEnd >> 3) - 1) & 0x040) >> 3) |
+		    ((((mode->CrtcHSyncStart >> 3) - 1) & 0x100) >> 4) |
+		    ((((mode->CrtcHSyncEnd >> 3) - 1) & 0x040) >> 1);
 
-	{
-		int i;
-		unsigned int j;
+	if (pS3->Chipset == PCI_CHIP_AURORA64VP) {
+		new->cr3b = 0;
+	} else {
+		unsigned i = (mode->CrtcHTotal >> 3) - 10;
 
-		i = ((((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8) 	|
-		    ((((mode->CrtcHDisplay >> 3) - 1) & 0x100) >> 7) 	|
-		    ((((mode->CrtcHSyncStart >> 3) - 1) & 0x100) >> 6)	|
-		    ((mode->CrtcHSyncStart & 0x800) >> 7);
-		if ((mode->CrtcHSyncEnd >> 3) - (mode->CrtcHSyncStart >> 3) > 64)
-			i |= 0x08;
-		if ((mode->CrtcHSyncEnd >> 3) - (mode->CrtcHSyncStart >> 3) > 32)
-			i |= 0x20;
-
-		outb(vgaCRIndex, 0x3b);
-		j = ((pVga->CRTC[0] + ((i & 0x01) << 8) +
-		      pVga->CRTC[4] + ((i & 0x10) << 4) + 1) / 2);
-	
-            	if (j - (pVga->CRTC[4] + ((i & 0x10) << 4)) < 4) {
-                	if (pVga->CRTC[4] + ((i & 0x10) << 4) + 4 <= pVga->CRTC[0] + ((i & 0x01) << 8))
-                    		j = pVga->CRTC[4] + ((i & 0x10) << 4) + 4;
-                	else
-                    		j = pVga->CRTC[0] + ((i & 0x01) << 8) + 1;
-		}
-		if (pS3->Chipset == PCI_CHIP_AURORA64VP) {
-			outb(vgaCRReg, 0x00);
-			i &= ~0x40;
-		} else {
-			new->cr3b = j & 0xff;
-			outb(vgaCRReg, new->cr3b);
-			i |= (j & 0x100) >> 2;
-		}
-
-		outb(vgaCRIndex, 0x3c);
-		new->cr3c = (pVga->CRTC[0] + ((i & 0x01) << 8)) / 2;
-		outb(vgaCRReg, new->cr3c);
-
-		outb(vgaCRIndex, 0x5d);
-		new->cr5d = (inb(vgaCRReg) & 0x80) | i;	
-		outb(vgaCRReg, new->cr5d);
+		new->cr3b = i & 0x0ff;
+		new->cr5d |= (i & 0x100) >> 2;
 	}
+
+	outb(vgaCRReg, new->cr5d);
+
+	outb(vgaCRIndex, 0x3b);
+	outb(vgaCRReg, new->cr3b);
+
+	outb(vgaCRIndex, 0x5e);
+	new->cr5e = (inb(vgaCRReg) & 0xa8) |
+		    (((mode->CrtcVTotal - 2) & 0x400) >> 10) |
+		    (((mode->CrtcVDisplay - 1) & 0x400) >> 9) |
+		    (((mode->CrtcVBlankStart - 1) & 0x400) >> 8) |
+		    (((mode->CrtcVSyncStart - 1) & 0x400) >> 6)	| 0x40;
+	outb(vgaCRReg, new->cr5e);
 
 	{
 		int i;
@@ -1429,7 +1407,7 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		outb(vgaCRIndex, 0x6d);
 		outb(vgaCRReg, 0x00);
 	}
-
+	else
 	if ((pS3->Chipset == PCI_CHIP_964_0) ||
 	    (pS3->Chipset == PCI_CHIP_964_1)) {
 		unsigned char bdelay;
