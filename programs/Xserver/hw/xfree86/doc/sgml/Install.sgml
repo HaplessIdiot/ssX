@@ -6,10 +6,10 @@
 
 <title>Installation Details for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>29 February 2000
+<date>30 June 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.4 2000/02/29 18:01:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.5 2000/07/01 04:18:49 dawes Exp $
 </ident>
 
 <abstract>
@@ -27,8 +27,8 @@ as provided by The XFree86 Project.
 
 <p>
 The XFree86 binaries that we provide for UNIX-like OS's (Linux, the BSDs
-and Solaris) are packaged in a platform-specific gzipped format (aka
-"tarballs" identified by the <tt>.tgz</tt> suffix.  Along with the
+and Solaris) are packaged in a platform-independent gzipped format (aka
+"tarballs" identified by the <tt>.tgz</tt> suffix).  Along with the
 binaries we provide a customized version of the GNU tar utility called
 "extract" and an installation script.  We recommend that these be
 used to install the binaries.
@@ -47,7 +47,7 @@ url="ftp://ftp.xfree86.org/pub/XFree86/snapshots/&relvers/binaries/">.
 url="ftp://ftp.xfree86.org/pub/XFree86/&relvers/binaries/">.
 ]]>
 Often during releases, our ftp site is heavily loaded.  Instead of
-downloading directly from us we recommend that instead you use on of
+downloading directly from us we recommend that instead you use one of
 our mirror sites.  Another advantage of using our mirror sites is that
 some of them support http access (ours does not).
 
@@ -233,20 +233,23 @@ that the newly installed shared libraries are accessible.  Then
 the <tt>fonts.dir</tt> files in some directories are updated so that
 the fonts can be accessed correctly.  Next, the installer checks to
 see if your system has a termcap file or terminfo files.  If it finds
-the former, it tells you how my may update the entries in that file.
+the former, it tells you how you may update the entries in that file.
 If it finds the latter, it asks you if you want it to update them
 for you.
 
 You may be asked if you want to create links for the GL libraries and
 header files.  The OpenGL standard on some platforms (Linux in particular)
-says that these should be installed in the standard system locations,
-so the installer offers to create the appropriate links.  If you're running
-Linux, you should probably answer yes.  For other platforms it is your
-choice.  If you already have another version of libGL in /usr/lib, answering
-"yes. will remove it and replace it with a link to the version we supply.
+says that these should be installed in the standard system locations
+(<tt>/usr/lib</tt> and <tt>/usr/include</tt>), so the installer offers
+to create the appropriate links.  If you're running Linux, you should
+probably answer yes.  For other platforms it is your choice.  If you
+already have another version of libGL in /usr/lib, answering "yes" will
+remove it and replace it with a link to the version we supply.  The
+installer will show you a listing of any existing versions before asking
+if they should be replaced.
 
 Finally, the installer asks you if you want a link created for the
-<tt>rstart</tt> utility.  On most modern systems, the link isn't essential,
+<tt>rstart</tt> utility.  On most modern systems the link isn't essential,
 so the default answer is "no".  Answer "yes" if you know that you need
 it.  If you find later that you need it, you can create it easily by
 running:

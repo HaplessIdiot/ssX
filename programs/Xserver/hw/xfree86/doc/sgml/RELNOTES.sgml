@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>7 June 30 2000
+<date>30 June 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.39 2000/07/01 04:18:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.40 2000/07/01 06:04:28 dawes Exp $
 </ident>
 
 <abstract>
@@ -77,7 +77,8 @@ don't have enough space to cover it all here.
 <p>
 <itemize>
   <item>New DRI drivers for Intel i810, Matrox G400 and G200 (AGP only) and 
-	the ATI Rage 128, and updates to the 3Dfx DRI driver.
+	the ATI Rage 128, and updates to the 3Dfx DRI driver, including
+	Voodoo5 support.
 
   <item>The X server now runs on Linux/Sparc including drivers for many
 	video cards used on SUN hardware.
@@ -86,6 +87,8 @@ don't have enough space to cover it all here.
 	rendering with Creator3D cards.
 
   <item>Fixed recently publicized security issues.
+
+  <item>Update Mesa to the latest version.
 
   <item>Xinerama updates and fixes.
 
@@ -98,6 +101,10 @@ don't have enough space to cover it all here.
 
   <item>Some XKEYBOARD extension problems have been fixed, including
 	improvements to the MouseKeys support.
+
+  <item>Add generic DGA support to the sis, neomagic and i810 drivers.
+
+  <item><tt>xf86cfg</tt>, a new graphical configuration tool.
 
 </itemize>
 </sect1>
@@ -114,24 +121,52 @@ don't have enough space to cover it all here.
 
   <item>Fixed recently publicized security issues in some of the X libraries.
 
+  <item>Updates and bug fixes for some clients, including xedit, xman,
+	xcalc, fstobdf, xdm.
+
+  <item>Fix some xfs problems.
+
   <item>XTerm updates.  These include:
 	<itemize>
 	  <item>Improve logfile security.
 
 	  <item>Workaround for fixed fonts which are generated from
-		Unicode fonts.
+		Unicode fonts:  they omit glyphs for some xterm's
+		less-used line-drawing characters, which caused xterm
+		to set a flag telling it to use only its internal
+		line-drawing characters.
 
 	  <item>Limit numeric parameters of control sequences to 65535
 		to simplify checks for numeric overflow.
 
-	  <item>Correct potential out-of-bounds indexing.
+	  <item>Change index into UDK list to unsigned to guard against
+		numeric overflow making the index negative.
 
-	  <item>Change Sun function keys to workaround redefinition of
-		the token sun by xrdb on Solaris.
+	  <item>Add limit checks to ClearInLine(), ScrnInsertChar(),
+		ScrnDeleteChar() to correct potential out-of-bounds
+		indexing.
+
+	  <item>Add a resource (limitResize) limiting resizing via the
+		<tt>CSI 4 t</tt> and <tt>CSI 8 t</tt> sequences.
+
+	  <item>Ignore out-of-bounds resize requests, i.e., where
+		sign-extension or truncation of the parameters would
+		occur.
+
+	  <item>Change Sun function-keys resource name to sunFunctionKeys
+		to work around redefinition of the token sun by xrdb on
+		Solaris.  Similarly, renamed resource sun keyboard to
+		sunKeyboard.  Change similar resource names for HP and
+		SCO to avoid potential conflict with xrdb symbols on
+		other systems, as well as for consistency.
 
 	  <item>Change line speed from 9600bd to 38400bd to accommodate
-		users who mistakenly use $TERM set to vt100 and reduce
-		padding.
+		users who mistakenly use $TERM set to vt100, to reduce
+		the effect of padding associated with this terminal
+		type.
+
+	  <item>Fix a problem that caused the right scrollbar to be
+		positioned incorrectly when re-enabling it.
 
 	  <item>Fix a problem with color support that showed up on some
 		platforms.
@@ -158,7 +193,7 @@ don't have enough space to cover it all here.
 	a wider range of ISO-8859 subsets have been added.  Oblique/italic
 	versions of some of them have also been added.
 
-  <item>The converters in Xlib have been imrpoved and reworked.  UTF-8
+  <item>The converters in Xlib have been improved and reworked.  UTF-8
 	support has been added.
 
   <item>Support for ISO-8859-13 has been added to Xlib and to the UTF-8
@@ -178,15 +213,12 @@ don't have enough space to cover it all here.
 <itemize>
   <item>Preliminary support for Linux/mips (no X servers yet).
 
-</itemize>
-</sect1>
+  <item>Update support for BSD/OS.
 
-<sect1>a sample section heading copy and item your bullets and proper heading
-<p>
-<itemize>
-  <item>
-  <item>
-  <item>
+  <item>Update Linux/IA64 support.
+
+  <item>Support for LynxOS 3.1.0.
+
 </itemize>
 </sect1>
 

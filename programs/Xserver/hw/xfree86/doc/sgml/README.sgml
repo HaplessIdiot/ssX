@@ -13,14 +13,14 @@
 <date>30 June 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.104 2000/06/30 22:09:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.105 2000/06/30 22:21:26 dawes Exp $
 </ident>
 
 <abstract>
 
 XFree86 is the Open Source port of X.Org's X11R6.4 release that supports
-several UNIX(R) and UNIX-like (such as Linux, the BSDs and Solaris x86
-series) operating systems on Intel and other platforms.
+several UNIX(R) and UNIX-like (such as Linux, the BSDs and Solaris x86)
+operating systems on Intel and other platforms.
 
 </abstract>
 
@@ -57,43 +57,42 @@ XFree86 &relvers; is <![ %firstrel; [the first]]>
 <![ %laterrel; [a]]> the upgrade to the first full release in the <![ %earlyrel; [new]]> XFree86 4
 series.  Release 4 is a major re-design of the basic architectural
 underpinnings of XFree86's implementation of the original X Consortium's
-X Server.  This re-design allows for a modular process of how the hardware
-drivers interact with the XFree86 core (the main process which loads
-the X server).  With 4.0, upgrades to the X server with new and unsupported
-hardware can be easily done and installed without undergoing the previous
-process of rebuilding a X server, but just updating the configuration
-(bootstrap) files (assuming of course that driver has been written and
-donated to the code base ).
+X Server.  This re-design allows for a modular interaction between the
+hardware drivers and the XFree86 core X server.  With 4.0, upgrades to
+the X server with new and unsupported hardware can be easily done and
+installed without undergoing the previous process of rebuilding a X
+server.  All that is required is installing the new driver module and
+updating the configuration file.
 
 The road to XFree86 Release 4 began as an architectural concept in mid
 1997, with the serious framework being implemented in code the beginning
-of early 1998.  There were several snapshots on the Road to 4.0 which
-are now part of the 4.0 base Release.  The &relvers; is an upgrade to
-the 4.0 which include more hardware ports, code enhancements and bug
-fixes.
+of 1998.  There were several snapshots on the road to 4.0 which are now
+part of the 4.0 base release.  The &relvers; version is an upgrade to
+&prevrelvers;, which include more hardware ports, code enhancements and
+bug fixes.
 
 Release 4 also included the long-awaited integration of the DRI (Direct
 Rendering Infrastructure).  This upgrade into the code base  gives XFree86
 the abilities of direct 3-D graphics rendering, used widely in games
 and other visualization programs.
 
-Many drivers used in the old 3.3.X series have not be converted over to
+Many drivers used in the old 3.3.x series have not be converted over to
 the 4.0 design and so check first whether your hardware is supported
-before upgrading to the 4.0 series at <htmlurl name="Driver Status
+before upgrading to the 4.0 series in the <htmlurl name="Driver Status
 document" url="Status.html">.
 
 ]]>
 
-Specific release enhancements can be viewed at
+Specific release enhancements can be viewed in the
 <htmlurl name="Release Notes" url="RELNOTES.html">.
 
-Binary distributions and the attendant installation instructions 
-can be found 
-at <htmlurl name="Installation Document"
+Information about binary distributions and the attendant installation
+instructions can be found in the <htmlurl name="Installation Document"
 url="Install.html">.
 
-Copyright and Licensing information for this release and all XFree86 releases can be found at
-<htmlurl name="License Document" url="LICENSE.html">.
+Copyright and Licensing information for this release and all XFree86
+releases can be found in the <htmlurl name="License Document"
+url="LICENSE.html">.
 
 <![ %snapshot [
 <sect>Redistribution of the Snapshots
@@ -129,14 +128,13 @@ If instead your interests are on the Documentation side of the Project,
 or you want to contribute and are not ready for plunging into the code,
 you can join the Documentation Team (those hardy souls responsible for
 the content you are reading :-).  Amongst the Doc Team's activities are
-converting our SGML based documentation into an XML based and
- updating and creating technical documentation used by staff and public.
-If this sounds interesting then please send a request to <url name="join
-the XFree86 documentation team"
-url="http://www.xfree86.org:/developer.html">.  Include in your note,
-you name, email address, reason for joining (what you will work on) and
-level of expertise and whether you are interested in the tools or content
-side of the group.
+converting our SGML based documentation into an XML based one and updating
+and creating technical documentation used by staff and public.  If this
+sounds interesting then please send a request to <url name="join the
+XFree86 documentation team" url="mailto:signup@xfree86.org">.
+Include in your note, you name, email address, reason for joining (what
+you will work on) and level of expertise and whether you are interested
+in the tools or content side of the group.
 
 </sect1>
 </sect> 
@@ -144,16 +142,16 @@ side of the group.
 <sect> The Public Mailing Lists
 <sect1>  Newbie
 <p> 
-For those new to XFree86  and want to learn more about our Project
- we recommend that you join our Newbie list, located at <url name =
-"Public Mailing Lists" url = "http://www.xfree86.org/mailman/listinfo"> where
-this and other discussions occur with our senior all-volunteer staff.
-This is great forum to get introduced to XFree86 and ask for help on
-how to set up the XServer or whether your hardware is supported, and
-why not?,  and make suggestions for future releases of XFree86.  This
-list is supported by our volunteer staff who needs to know how you are
-using and interacting with XFree86 and what is wrong and could be better.
-Tell them, they want to know!
+For those who are new to XFree86  and want to learn more about our
+Project we recommend that you join our Newbie list, located at <url name
+= "Public Mailing Lists" url = "http://www.xfree86.org/mailman/listinfo">,
+where this and other discussions occur with our senior all-volunteer
+staff.  This is great forum to get introduced to XFree86 and ask for
+help on how to set up the XServer or whether your hardware is supported,
+and why not?,  and make suggestions for future releases of XFree86.
+This list is supported by our volunteer staff who needs to know how you
+are using and interacting with XFree86 and what is wrong and could be
+better.  Tell them, they want to know!
 
 </sect1>
 
@@ -171,11 +169,11 @@ the commit happens.
 
 <p>
 A followup to the commit list is the soon to be public, patch archives.
-This archive will be available on our web-site and will tell what patches
+This archive will be available on our web-site and will show what patches
 have been submitted and will soon be committed.  This is helpful for
-people who are interested in a specific area and what to know what work
-is happening there.  When this go es public we will announce it first
-on our web site so keep watching.
+people who are interested in a specific area and want to know what work
+is happening there.  When this goes public we will announce it
+on our web site and our Announce mailing list, so keep watching.
 
 
 <sect1>  Xpert
@@ -268,7 +266,7 @@ gunzip &lt; &prevrelvers;-&relvers;.diff3.gz | patch -p0 -E
 </verb></tscreen>
 ]]>
 
-The contrib part of the distribution has now been folded into the main
+The contrib part of the distribution has been folded into the main
 source tree, so a separate contrib tarball is no longer required.
 
 To format the XFree86 documentation use the latest version of our doctools

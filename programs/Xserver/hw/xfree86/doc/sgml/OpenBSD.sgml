@@ -6,10 +6,10 @@
 <title>README for XFree86 &relvers; on OpenBSD
 <author>
 Matthieu Herrb
-<Date>Last modified on: 20 February 2000
+<Date>Last modified on: 1 July 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.9 2000/03/03 20:02:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.10 2000/03/03 21:28:10 dawes Exp $
 </ident>
 
 <toc>
@@ -56,6 +56,22 @@ this file and we'll revise it.
 <p>
 See the <htmlurl url="RELNOTES.html" name="Release Notes"> for
 non-OS dependent new features in XFree86 &relvers;.
+
+<sect1>New OS dependent features in 4.0.1
+<p>
+<itemize>
+<item>Several features from the OpenBSD X11 tree were merged into xdm:
+<itemize>
+<item> support for Kerberos IV authentication 
+<item>use the arc4random(4) random number generator
+<item>add a new resource "allowRootLogin", which can be used to disable
+         root logins through xdm
+<item>log failed logins to syslogd
+<item>verify that the shell is valid using /etc/shell
+<item>verify that the account hasn't expired
+</itemize>
+<item>The Xsun server can be built again on OpenBSD/sparc.
+</itemize>
 
 <sect1>New OS dependent features in 4.0
 <p>
