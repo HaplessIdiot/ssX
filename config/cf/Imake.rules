@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules /main/208 1996/01/17 11:08:27 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.22 1996/01/12 14:32:46 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.23 1996/01/21 01:47:14 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2277,7 +2277,7 @@ clean::									@@\
 #ifndef MakeDirectories
 #define MakeDirectories(step,dirs)					@@\
 step::									@@\
-	@MakeFlagsToShellFlags(i,set +e); \				@@\
+	@MakeFlagsToShellFlags(i,set +e); 				@@\
 	DirFailPrefix@for i in dirs; do if [ -d $(DESTDIR)$$i ]; then \	@@\
 		set +x; else (set -x; $(MKDIRHIER) $(DESTDIR)$$i); fi \	@@\
 	done

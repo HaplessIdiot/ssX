@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf /main/10 1996/01/22 17:35:30 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.45 1996/03/10 11:46:55 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.46 1996/05/12 12:59:11 dawes Exp $
 
 #ifndef OSName
 #define OSName			FreeBSD 2.1
@@ -99,10 +99,6 @@ XCOMM operating system:  OSName
 #else
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DXNO_SYSCONF
 #define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
-#endif
-
-#if OSMajorVersion < 2 || (OSMajorVersion == 2 && OSMinorVersion < 1)
-#define DontUsePosixTermiosForXterm
 #endif
 
 #ifdef i386Architecture
