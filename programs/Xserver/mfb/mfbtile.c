@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -219,7 +220,7 @@ mfbTileAreaPPW (pDraw, nbox, pbox, alu, ptile)
     int alu;
     PixmapPtr ptile;
 {
-    void    (*f)(), mfbTileAreaPPWCopy(), mfbTileAreaPPWGeneral();
+    void    (*f)();
     
     if (alu == GXcopy)
 	f = mfbTileAreaPPWCopy;

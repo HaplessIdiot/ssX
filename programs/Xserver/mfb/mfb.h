@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.17 2001/01/17 22:37:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.18tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -1040,21 +1040,22 @@ across, but was 1024 in the hardware.)
 
    private field of GC 
 */
+typedef void (*mfbFillAreaProcPtr)(
+#if NeedNestedPrototypes
+	      DrawablePtr /*pDraw*/,
+	      int /*nbox*/,
+	      BoxPtr /*pbox*/,
+	      int /*alu*/,
+	      PixmapPtr /*nop*/
+#endif
+	      );
 
 typedef struct {
     unsigned char	rop;		/* reduction of rasterop to 1 of 3 */
     unsigned char	ropOpStip;	/* rop for opaque stipple */
     unsigned char	ropFillArea;	/*  == alu, rop, or ropOpStip */
     unsigned char	unused1[sizeof(long) - 3];	/* Alignment */
-    void 	(* FillArea)(		/* fills regions; look at the code */
-#if NeedNestedPrototypes
-		DrawablePtr /*pDraw*/,
-		int /*nbox*/,
-		BoxPtr /*pbox*/,
-		int /*alu*/,
-		PixmapPtr /*nop*/
-#endif
-		);
+    mfbFillAreaProcPtr 	FillArea;	/* fills regions; look at the code */
     } mfbPrivGC;
 typedef mfbPrivGC	*mfbPrivGCPtr;
 #endif

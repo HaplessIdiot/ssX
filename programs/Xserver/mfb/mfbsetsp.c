@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbsetsp.c,v 1.5 2001/01/17 22:37:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbsetsp.c,v 1.6tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -159,7 +159,7 @@ mfbSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
     int			nspans;
     int			fSorted;
 {
-    PixelType		*psrc = (PixelType *)pcharsrc;
+    PixelType		*psrc = (PixelType *)(pointer)pcharsrc;
     PixelType 		*pdstBase;	/* start of dst bitmap */
     int 		widthDst;	/* width of bitmap in words */
     register BoxPtr 	pbox, pboxLast, pboxTest;

@@ -45,8 +45,9 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbscrclse.c,v 1.3tsi Exp $ */
 
+#include "mfb.h"
 #include "scrnintstr.h"
 
 /*ARGSUSED*/

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbfillrct.c,v 1.4 2001/01/17 22:37:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbfillrct.c,v 1.5tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -60,7 +60,6 @@ SOFTWARE.
 #include "maskbits.h"
 
 #define MODEQ(a, b) ((a) %= (b))
-void mfbPaintOddSize();
 
 /* 
     filled rectangles.
@@ -89,7 +88,7 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int		    xorg, yorg;
     mfbPrivGC	*priv;
     int alu;
-    void (* pfn) ();
+    mfbFillAreaProcPtr pfn;
     PixmapPtr ppix;
 
     if (!(pGC->planemask & 1))

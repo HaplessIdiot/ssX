@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbpushpxl.c,v 1.5 2001/12/14 20:00:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbpushpxl.c,v 1.6tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -179,7 +179,7 @@ mfbPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     for(h = 0; h < dy; h++)
     {
 
-	pw = (PixelType *)
+	pw = (PixelType *)(pointer)
 	     (((char *)(pBitMap->devPrivate.ptr))+(h * pBitMap->devKind));
 	pwLineStart = pw;
 	/* Process all words which are fully in the pixmap */
