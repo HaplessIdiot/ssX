@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxSbus.c,v 1.2 2000/05/23 04:47:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxSbus.c,v 1.3 2000/06/30 17:15:18 dawes Exp $ */
     
 #include <fcntl.h>
 #include <stdio.h>
@@ -550,8 +550,8 @@ xf86SbusHideOsHwCursor(sbusDevicePtr psdp)
     fbcursor.cmap.red = zeros;
     fbcursor.cmap.green = zeros;
     fbcursor.cmap.blue = zeros;
-    fbcursor.image = zeros;
-    fbcursor.mask = zeros;
+    fbcursor.image = (char *)zeros;
+    fbcursor.mask = (char *)zeros;
     fbcursor.size.x = 32;
     fbcursor.size.y = 1;
     fbcursor.set = FB_CUR_SETALL;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_colexp.c,v 1.9 1999/03/14 03:22:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_colexp.c,v 1.12 2000/08/08 08:58:06 eich Exp $ */
 
 
 
@@ -260,9 +260,6 @@ static int ce_skipleft;
 static int colexp_width_dwords;
 static int colexp_width_bytes;
 
-extern long MMioBase;
-
-
 
 void
 TsengSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
@@ -326,7 +323,7 @@ TsengSubsequentColorExpandScanline(ScrnInfoPtr pScrn,
 void TsengSubsequentColorExpandScanline_8bpp(ScrnInfoPtr pScrn, int bufno)
 {
     TsengPtr pTseng = TsengPTR(pScrn);
-    memType dest = pTseng->tsengCPU2ACLBase;
+    pointer dest = pTseng->tsengCPU2ACLBase;
     int i,j;
     CARD8 *bufptr;
 
@@ -357,7 +354,7 @@ void TsengSubsequentColorExpandScanline_8bpp(ScrnInfoPtr pScrn, int bufno)
 void TsengSubsequentColorExpandScanline_16bpp(ScrnInfoPtr pScrn, int bufno)
 {
     TsengPtr pTseng = TsengPTR(pScrn);
-    memType dest = pTseng->tsengCPU2ACLBase;
+    pointer dest = pTseng->tsengCPU2ACLBase;
     int i,j;
     CARD8 *bufptr;
     register CARD32 bits16;
@@ -388,7 +385,7 @@ void TsengSubsequentColorExpandScanline_16bpp(ScrnInfoPtr pScrn, int bufno)
 void TsengSubsequentColorExpandScanline_24bpp(ScrnInfoPtr pScrn, int bufno)
 {
     TsengPtr pTseng = TsengPTR(pScrn);
-    memType dest =  pTseng->tsengCPU2ACLBase;
+    pointer dest = pTseng->tsengCPU2ACLBase;
     int i, k, j = -1;
     CARD8 *bufptr;
     register CARD32 bits24;
@@ -424,7 +421,7 @@ void TsengSubsequentColorExpandScanline_24bpp(ScrnInfoPtr pScrn, int bufno)
 void TsengSubsequentColorExpandScanline_32bpp(ScrnInfoPtr pScrn, int bufno)
 {
     TsengPtr pTseng = TsengPTR(pScrn);
-    memType dest = pTseng->tsengCPU2ACLBase;
+    pointer dest = pTseng->tsengCPU2ACLBase;
     int i,j;
     CARD8 *bufptr;
     register CARD32 bits32;

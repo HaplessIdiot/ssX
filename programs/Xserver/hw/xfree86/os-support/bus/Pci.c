@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.32 2000/06/20 19:40:31 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.34 2000/09/19 12:46:21 eich Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -1006,6 +1006,13 @@ ErrorF("xf86scanpci: tag = pciFindNext = 0x%lx\n", tag);
     return pci_devp;
 }
 
+CARD32
+pciCheckForBrokenBase(PCITAG Tag,int basereg)
+{
+    pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), 0xffffffff);
+    return pciReadLong(Tag, PCI_MAP_REG_START + (basereg << 2));
+}
+
 #if defined(INCLUDE_XF86_MAP_PCI_MEM)
 
 pointer
@@ -1040,13 +1047,6 @@ xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, ADDRESS Base,
 		pciWriteLong(Tag, PCI_CMD_STAT_REG, save);
 	}
 	return((pointer)base);
-}
-
-CARD32
-pciCheckForBrokenBase(PCITAG Tag,int basereg)
-{
-    pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), 0xffffffff);
-    return pciReadLong(Tag, PCI_MAP_REG_START + (basereg << 2));
 }
 
 static int
@@ -1142,24 +1142,6 @@ xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
   ((WriteProcPtr)(pciLongFunc(Tag,WRITE)))(Tag,PCI_CMD_STAT_REG,Acc1);
   return size;
 }  
-
-#elif defined(__sparc__)
-
-pointer
-xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, unsigned long Base,
-		unsigned long Size)
-{
-    FatalError("xf86MapPciMem: Unsupported on SPARC\n");
-    return((pointer)-1);
-}
-
-int
-xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
-		unsigned char *Buf, int Len)
-{
-    FatalError("xf86ReadPciBIOS: Unsupported on SPARC\n");
-    return -1;
-}
 
 #endif /* INCLUDE_XF86_MAP_PCI_MEM */
 

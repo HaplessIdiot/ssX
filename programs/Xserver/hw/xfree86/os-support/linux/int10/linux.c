@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.13 2000/07/13 21:31:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.14 2000/07/21 21:04:05 tsi Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -12,7 +12,11 @@
 #define _INT10_PRIVATE
 #include "xf86int10.h"
 #include "int10Defines.h"
+#ifdef __sparc__
+#define DEV_MEM "/dev/fb"
+#else
 #define DEV_MEM "/dev/mem"
+#endif
 #ifndef XFree86LOADER
 #include <sys/mman.h>
 #ifndef MAP_FAILED

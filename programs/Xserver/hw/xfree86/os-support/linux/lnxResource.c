@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnxResource.c,v 3.8 2000/04/04 19:25:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnxResource.c,v 3.10 2000/09/19 12:46:22 eich Exp $ */
 
 /* Resource information code */
 
@@ -156,7 +156,11 @@ xf86AccResFromOS(resPtr ret)
   * for now until we get something better.
   */
   
+#ifdef __sparc__
+resRange PciAvoid[] = {_END};
+#else
 resRange PciAvoid[] = {_PCI_AVOID_PC_STYLE, _END};
+#endif
 
 resPtr
 xf86BusAccWindowsFromOS(void)
@@ -167,7 +171,11 @@ xf86BusAccWindowsFromOS(void)
     RANGE(range,0,0xffffffff,ResExcMemBlock);
     ret = xf86AddResToList(ret, &range, -1);
 
+#ifdef __sparc__
+    RANGE(range,0,0x00ffffff,ResExcIoBlock);
+#else
     RANGE(range,0,0x0000ffff,ResExcIoBlock);
+#endif
     ret = xf86AddResToList(ret, &range, -1);
     return ret;
 }
@@ -181,7 +189,11 @@ xf86PciBusAccWindowsFromOS(void)
     RANGE(range,0,0xffffffff,ResExcMemBlock);
     ret = xf86AddResToList(ret, &range, -1);
 
+#ifdef __sparc__
+    RANGE(range,0,0x00ffffff,ResExcIoBlock);
+#else
     RANGE(range,0,0x0000ffff,ResExcIoBlock);
+#endif
     ret = xf86AddResToList(ret, &range, -1);
     return ret;
 }
@@ -195,7 +207,11 @@ xf86IsaBusAccWindowsFromOS(void)
     RANGE(range,0,0xffffffff,ResExcMemBlock);
     ret = xf86AddResToList(ret, &range, -1);
 
+#ifdef __sparc__
+    RANGE(range,0,0x00ffffff,ResExcIoBlock);
+#else
     RANGE(range,0,0x0000ffff,ResExcIoBlock);
+#endif
     ret = xf86AddResToList(ret, &range, -1);
     return ret;
 }

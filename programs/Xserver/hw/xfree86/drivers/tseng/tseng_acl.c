@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.20 1998/08/29 05:43:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.23 2000/08/08 08:58:06 eich Exp $ */
 
 
 
@@ -123,14 +123,14 @@ tseng_init_acl(ScreenPtr pScreen)
      */
 
     if (pTseng->UseLinMem) {
-	pTseng->scratchMemBase = (long)pTseng->FbBase + pTseng->AccelColorBufferOffset;
+	pTseng->scratchMemBase = pTseng->FbBase + pTseng->AccelColorBufferOffset;
 	/* 
 	 * we won't be using tsengCPU2ACLBase in linear memory mode anyway, since
 	 * using the MMU apertures restricts the amount of useable video memory
 	 * to only 2MB, supposing we ONLY redirect MMU aperture 2 to the CPU.
 	 * (see data book W32p, page 207)
 	 */
-	pTseng->tsengCPU2ACLBase = (memType)((long)pTseng->FbBase + 0x200000);	/* MMU aperture 2 */
+	pTseng->tsengCPU2ACLBase = pTseng->FbBase + 0x200000;	/* MMU aperture 2 */
     } else {
 	/*
 	 * MMU 0 is used for the scratchpad (i.e. FG and BG colors).
@@ -140,13 +140,13 @@ tseng_init_acl(ScreenPtr pScreen)
 	 * being the first, and don't exceed 8kb (aperture size) in total
 	 * length.
 	 */
-	pTseng->scratchMemBase = (long)pTseng->FbBase + 0x18000L;
-	MMIO_IN32(pTseng->MMioBase, 0x00<<0) = pTseng->AccelColorBufferOffset;
-	MMIO_IN32(pTseng->MMioBase, 0x04<<0) = pTseng->AccelImageWriteBufferOffsets[0];
+	pTseng->scratchMemBase = pTseng->FbBase + 0x18000L;
+	MMIO_OUT32(pTseng->MMioBase, 0x00<<0, pTseng->AccelColorBufferOffset);
+	MMIO_OUT32(pTseng->MMioBase, 0x04<<0, pTseng->AccelImageWriteBufferOffsets[0]);
 	/*
 	 * tsengCPU2ACLBase is used for CPUtoSCreen...() operations on < ET6000 devices
 	 */
-	pTseng->tsengCPU2ACLBase = (memType) ((long)pTseng->FbBase + 0x1C000L);	/* MMU aperture 2 */
+	pTseng->tsengCPU2ACLBase = pTseng->FbBase + 0x1C000L;	/* MMU aperture 2 */
 	/*      MMIO_IN32(pTseng->MMioBase, 0x08<<0) = 200000; *//* TEST */
     }
 #ifdef DEBUG    

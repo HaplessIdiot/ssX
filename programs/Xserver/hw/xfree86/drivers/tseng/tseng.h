@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.26 1999/04/27 12:05:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.30 2000/08/08 08:58:06 eich Exp $ */
 
 
 
@@ -240,9 +240,9 @@ typedef struct {
     unsigned char * XAAScanlineColorExpandBuffers[1];
     CARD32* ColExpLUT;
     EntityInfoPtr       pEnt;
-    memType   MMioBase;
-    memType scratchMemBase;
-    memType tsengCPU2ACLBase;
+    char * MMioBase;
+    pointer scratchMemBase;
+    pointer tsengCPU2ACLBase;
     /* These will hold the ping-pong registers. */
     int tsengFg;
     int tsengBg;

@@ -1,4 +1,24 @@
 XFree86 4.0.1d (xx October 2000)
+ 767. On IA-64's, build DRI and drm's if they would be built on IA-32's
+      (David Mosberger).
+ 766. Fix xf8_32wid build on Sparc's (Marc La France).
+ 765. Fix MMIO macros for Sparc's (David S. Miller, Jakub Jelinek,
+      Marc La France).
+ 764. Sparc warning fixes (Marc La France).
+ 763. Fix for decoded I/O and memory ranges of certain Sun PCI-to-PCI bridges
+      (David S. Miller, Jakub Jelinek).
+ 762. Force ATIAvoidCPIO to YES on Sparc's (Marc La France).
+ 761. Minor fix for the ATI driver's printing of MMIO registers
+      (Marc La France).
+ 760. Minor fix for sunffb DGA support (Marc La France).
+ 759. Remove unnecessary pointer<->long casts in tseng driver (Marc La France).
+ 758. Re-align Sparc PCI support with that of other architectures
+      (Marc La France).
+ 757. mmap() /dev/fb instead of /dev/mem on Linux/Sparc (Marc La France).
+ 756. Fix OS-reported PCI ranges on Linux/Sparc (David S. Miller,
+      Jakub Jelinek).
+ 755. Remove a dependency on word size in the determination of PCI resource
+      sizes on Linux (Marc La France).
  754. Permedia3 updates (#4177, #4183 Sven Luther).
  753. Add Xv support to the r128 driver (Stuart Anderson/Vladmir Dergacheb)
  752. Make VBE module log a message when the BIOS doesn't support any VESA
@@ -11216,4 +11236,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1342 2000/10/13 05:23:28 anderson Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1343 2000/10/17 09:07:00 alanh Exp $
