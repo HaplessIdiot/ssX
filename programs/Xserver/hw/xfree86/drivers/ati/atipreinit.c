@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.61 2002/07/24 01:47:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.62tsi Exp $ */
 /*
  * Copyright 1999 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -2939,6 +2939,68 @@ ATIPreInit
         }
 
         pScreenInfo->monitor->Last = pMode;
+
+        /*
+         * Defeat Xconfigurator brain damage.  Ignore all HorizSync and
+         * VertRefresh specifications.  For now, this does not take
+         * SYNC_TOLERANCE into account.
+         */
+        if (pScreenInfo->monitor->nHsync > 0)
+        {
+            double hsync = (double)pMode->Clock /
+                           (pATI->LCDHorizontal + pATI->LCDHBlankWidth);
+
+            for (i = 0;  ;  i++)
+            {
+                if (i >= pScreenInfo->monitor->nHsync)
+                {
+                    xf86DrvMsg(pScreenInfo->scrnIndex, X_NOTICE,
+                        "Conflicting XF86Config HorizSync specification(s)"
+                        " ignored.\n");
+                    break;
+                }
+
+                if ((hsync >= pScreenInfo->monitor->hsync[i].lo) &&
+                    (hsync <= pScreenInfo->monitor->hsync[i].hi))
+                {
+                    xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                        "Extraneous XF86Config HorizSync specification(s)"
+                        " ignored.\n");
+                    break;
+                }
+            }
+
+            pScreenInfo->monitor->nHsync = 0;
+        }
+
+        if (pScreenInfo->monitor->nVrefresh > 0)
+        {
+            double vrefresh = ((double)pMode->Clock * 1000.0) /
+                              ((pATI->LCDHorizontal + pATI->LCDHBlankWidth) *
+                               (pATI->LCDVertical + pATI->LCDVBlankWidth));
+
+            for (i = 0;  ;  i++)
+            {
+                if (i >= pScreenInfo->monitor->nVrefresh)
+                {
+                    xf86DrvMsg(pScreenInfo->scrnIndex, X_NOTICE,
+                        "Conflicting XF86Config VertRefresh specification(s)"
+                        " ignored.\n");
+                    break;
+                }
+
+                if ((vrefresh >= pScreenInfo->monitor->vrefresh[i].lo) &&
+                    (vrefresh <= pScreenInfo->monitor->vrefresh[i].hi))
+                {
+                    xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                        "Extraneous XF86Config VertRefresh specification(s)"
+                        " ignored.\n");
+                    break;
+                }
+            }
+
+            pScreenInfo->monitor->nVrefresh = 0;
+        }
     }
 
     i = xf86ValidateModes(pScreenInfo,
