@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_video.c,v 1.5 2000/02/22 02:00:49 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_video.c,v 1.6 2000/02/29 03:09:18 dawes Exp $ */
 
 #if PSZ != 24
 #include "dixstruct.h"
@@ -382,8 +382,8 @@ ApmClipVideo(BoxPtr dst, INT32 *x1, INT32 *x2, INT32 *y1, INT32 *y2,
     if (dst->y2 - dst->y1 < *y2 - *y1)
 	dst->y2 = dst->y1 + *y2 - *y1;
 
-    *x1 <<= 16; *x2 <<= 16;
-    *y1 <<= 16; *y2 <<= 16;
+    *x1 <<= 12; *x2 <<= 16;
+    *y1 <<= 12; *y2 <<= 16;
 
     hscale = (*x2 - *x1) / (dst->x2 - dst->x1);
     vscale = (*y2 - *y1) / (dst->y2 - dst->y1);
@@ -412,11 +412,11 @@ ApmClipVideo(BoxPtr dst, INT32 *x1, INT32 *x2, INT32 *y1, INT32 *y2,
     if (*x2 - *x1 == 0x10000 * (dst->x2 - dst->x1))	/* Shrinking */
 	*scalex = 0;
     else
-	*scalex = ((*x2 - *x1 - 0x1000) / (dst->x2 - dst->x1 - 1)) >> 4;
+	*scalex = ((*x2 - *x1) / (dst->x2 - dst->x1)) >> 4;
     if (*y2 - *y1 == 0x10000 * (dst->y2 - dst->y1))	/* Shrinking */
 	*scaley = 0;
     else
-	*scaley = ((*y2 - *y1 - 0x1000) / (dst->y2 - dst->y1 - 1)) >> 4;
+	*scaley = ((*y2 - *y1) / (dst->y2 - dst->y1)) >> 4;
 }
 #endif
 
@@ -570,8 +570,8 @@ A(ReputImage)(ScrnInfoPtr pScrn, short drw_x, short drw_y,
     pPriv->drw_x = drw_x;
     pPriv->drw_y = drw_y;
     A(WaitForFifo)(pApm, 2);
-    WRXW(pPriv->reg + 0x06, 0xFFF - (((pPriv->scalex * pPriv->x10) & 0xFFF000) >> 12));
-    WRXW(pPriv->reg + 0x0A, 0xFFF - (((pPriv->scaley * pPriv->y1) & 0xFFF000) >> 12));
+    WRXW(pPriv->reg + 0x06, 0xFFF - ((pPriv->scalex * pPriv->x10) & 0xFFF));
+    WRXW(pPriv->reg + 0x0A, 0xFFF - ((pPriv->scaley * pPriv->y1) & 0xFFF));
     pPriv0 = (ApmPortPrivPtr)pApm->adaptor->pPortPrivates[0].ptr;
     pPriv1 = (ApmPortPrivPtr)pApm->adaptor->pPortPrivates[1].ptr;
     reg0 = &pPriv0->clip;

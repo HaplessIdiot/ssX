@@ -24,7 +24,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.3 2000/06/23 19:50:59 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.4 2000/06/26 23:00:31 dawes Exp $ */
 
 /*
  * This file contains:
@@ -1176,10 +1176,11 @@ cstowcs(conv, from, from_left, to, to_left, args, num_args)
 	return -1;
 
     charset = (XlcCharSet) args[0];
-    name = charset->name;
+    name = charset->encoding_name;
+    /* not charset->name because the latter has a ":GL"/":GR" suffix */
 
     for (convptr = all_charsets, i = all_charsets_count-1; i > 0; convptr++, i--)
-	if (!strcmp(convptr->name, name)) /* FIXME: charset->side */
+	if (!strcmp(convptr->name, name))
 	    break;
     if (i == 0)
 	return -1;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.13 2000/02/29 03:09:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.14 2000/04/04 19:25:03 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -44,6 +44,7 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#include "cfb24_32.h"
 
 /* Drivers using the XAA interface ... */
 #include "xaa.h"
