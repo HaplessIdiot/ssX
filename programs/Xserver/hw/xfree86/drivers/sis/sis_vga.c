@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vga.c,v 1.35 2003/11/03 17:02:53 twini Exp $ */
 /*
  * Mode setup and basic video bridge detection
  *
@@ -884,9 +884,6 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     SISRegPtr      pReg = &pSiS->ModeReg;
     unsigned short temp;
     DisplayModePtr realmode = mode;
-#ifdef SISMERGED
-    DisplayModePtr realmode2 = NULL;
-#endif
 
     PDEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4, "SIS300Init()\n"));
 
@@ -898,7 +895,6 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #ifdef SISMERGED
     if(pSiS->MergedFB) {
        realmode = ((SiSMergedDisplayModePtr)mode->Private)->CRT1;
-       realmode2 = ((SiSMergedDisplayModePtr)mode->Private)->CRT2;
     }
 #endif
 
