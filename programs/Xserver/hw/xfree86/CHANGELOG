@@ -116,7 +116,8 @@ XFree86 4.1.99.2 (xx September 2001)
       support for Aurora64V+ (#4953, Ani Joshi).
  293. Fix USB Keyboard access when no PS/2 controller present 
       (#4948, Pontus Lidman).
- 292. Add i810 XvMC (Motion Compensation) driver (#4946, Matthew Sottek, Intel).
+ 292. Add i810 XvMC (Motion Compensation) driver (#4946, #4964, #4966, 
+      Matthew Sottek, Intel).
  291. When using XKB and LEDs are switched on/off by external application
       the keyboard module doesn't change phisycal LEDs state immediately
       (#4951, Ivan Pascal).
@@ -13955,4 +13956,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1961 2001/09/30 17:36:30 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1963 2001/10/01 13:43:59 eich Exp $
