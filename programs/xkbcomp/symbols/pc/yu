@@ -4,7 +4,7 @@
 // Source: the keyboard pictures on MS-DOS 6.22 manual
 // Pablo Saratxaga <srtxg@f2219.n293.z2.fidonet.org>
 //
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/pc/yu,v 1.2 2002/11/22 04:03:28 dawes Exp $
 
 default partial alphanumeric_keys
 xkb_symbols "basic" {
@@ -30,7 +30,7 @@ xkb_symbols "basic" {
     key <AD11>	{ [    scaron,     Scaron,     division, dead_abovering ] };
     key <AD12>	{ [   dstroke,    Dstroke,     multiply,  dead_macron ]	};
 
-    key <AC09>	{ [         l,          l,      Lstroke,      Lstroke ]	};
+    key <AC09>	{ [         l,          L,      Lstroke,      Lstroke ]	};
     key <AC10>	{ [    ccaron,     Ccaron,   dead_acute, dead_doubleacute ] };
     key <AC11>	{ [    cacute,     Cacute,       ssharp,   dead_caron ]	};
     key <TLDE>	{ [dead_diaeresis, dead_cedilla, notsign,     notsign ]	};
