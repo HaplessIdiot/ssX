@@ -6,7 +6,7 @@
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.30 2001/06/16 21:57:42 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.31 2001/08/16 14:33:52 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -665,8 +665,7 @@ xf86XVRegetVideo(XvPortRecPrivatePtr portPriv)
   int ret = Success;
   Bool clippedAway = FALSE;
 
-  /* Hack to avoid "unused variable `pScreen'" warnings. */
-  portPriv->pDraw->pScreen = pScreen = portPriv->pDraw->pScreen;
+  pScreen = portPriv->pDraw->pScreen;
   xf86XVUpdateCompositeClip(portPriv);
 
   /* translate the video region to the screen */
@@ -729,8 +728,7 @@ xf86XVReputVideo(XvPortRecPrivatePtr portPriv)
   int ret = Success;
   Bool clippedAway = FALSE;
 
-  /* Hack to avoid "unused variable `pScreen'" warnings. */
-  portPriv->pDraw->pScreen = pScreen = portPriv->pDraw->pScreen;
+  pScreen = portPriv->pDraw->pScreen;
 
   xf86XVUpdateCompositeClip(portPriv);
 
@@ -819,8 +817,7 @@ xf86XVReputImage(XvPortRecPrivatePtr portPriv)
   int ret = Success;
   Bool clippedAway = FALSE;
 
-  /* Hack to avoid "unused variable `pScreen'" warnings. */
-  portPriv->pDraw->pScreen = pScreen = portPriv->pDraw->pScreen;
+  pScreen = portPriv->pDraw->pScreen;
 
   xf86XVUpdateCompositeClip(portPriv);
 
@@ -1388,8 +1385,7 @@ xf86XVPutStill(
 
   if(!portPriv->pScrn->vtSema) return Success; /* Success ? */
 
-  /* Hack to avoid "unused variable `pScreen'" warnings. */
-  pDraw->pScreen = pScreen = pDraw->pScreen;
+  pScreen = pDraw->pScreen;
 
   WinBox.x1 = pDraw->x + drw_x;
   WinBox.y1 = pDraw->y + drw_y;
@@ -1542,8 +1538,7 @@ xf86XVGetStill(
 
   if(!portPriv->pScrn->vtSema) return Success; /* Success ? */
 
-  /* Hack to avoid "unused variable `pScreen'" warnings. */
-  pDraw->pScreen = pScreen = pDraw->pScreen;
+  pScreen = pDraw->pScreen;
 
   WinBox.x1 = pDraw->x + drw_x;
   WinBox.y1 = pDraw->y + drw_y;
@@ -1690,8 +1685,7 @@ xf86XVPutImage(
 
   if(!portPriv->pScrn->vtSema) return Success; /* Success ? */
 
-  /* Hack to avoid "unused variable `pScreen'" warnings. */
-  pDraw->pScreen = pScreen = pDraw->pScreen;
+  pScreen = pDraw->pScreen;
 
   WinBox.x1 = pDraw->x + drw_x;
   WinBox.y1 = pDraw->y + drw_y;
