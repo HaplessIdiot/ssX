@@ -6,7 +6,7 @@
 char rcsId_vmwarecurs[] =
     "Id: vmwarecurs.c,v 1.5 2001/01/30 23:33:02 bennett Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarecurs.c,v 1.5 2002/10/16 22:12:53 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarecurs.c,v 1.6 2002/11/05 17:19:43 alanh Exp $ */
 
 #include "vmware.h"
 #include "bits2pixels.h"
@@ -115,6 +115,38 @@ vmwareLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src )
            src + imageSize * sizeof(uint32), imageSize * sizeof(uint32));
     RedefineCursor(pVMWARE);
 }
+
+#ifdef ARGB_CURSOR
+#include "cursorstr.h"
+
+static Bool
+vmwareUseHWCursorARGB(ScreenPtr pScreen, CursorPtr pCurs)
+{
+    return pCurs->bits->height <= MAX_CURS &&
+           pCurs->bits->width <= MAX_CURS;
+}
+
+static void
+vmwareLoadCursorARGB(ScrnInfoPtr pScrn, CursorPtr pCurs)
+{
+    VMWAREPtr pVMWARE = VMWAREPTR(pScrn);
+    CARD32 width = pCurs->bits->width;
+    CARD32 height = pCurs->bits->height;
+    CARD32* image = pCurs->bits->argb;
+    CARD32* imageEnd = image + (width * height);
+
+    vmwareWriteWordToFIFO(pVMWARE, SVGA_CMD_DEFINE_ALPHA_CURSOR);
+    vmwareWriteWordToFIFO(pVMWARE, MOUSE_ID);
+    vmwareWriteWordToFIFO(pVMWARE, 0);
+    vmwareWriteWordToFIFO(pVMWARE, 0);
+    vmwareWriteWordToFIFO(pVMWARE, width);
+    vmwareWriteWordToFIFO(pVMWARE, height);
+
+    while (image != imageEnd) {
+        vmwareWriteWordToFIFO(pVMWARE, *image++);
+    }
+}
+#endif
 
 void
 vmwareWriteCursorRegs(VMWAREPtr pVMWARE, Bool visible, Bool force)
@@ -236,6 +268,12 @@ vmwareCursorInit(ScreenPtr pScreen)
     infoPtr->HideCursor = vmwareHideCursor;
     infoPtr->ShowCursor = vmwareShowCursor;
 
+#ifdef ARGB_CURSOR
+    if (pVMWARE->vmwareCapability & SVGA_CAP_ALPHA_CURSOR) {
+        infoPtr->UseHWCursorARGB = vmwareUseHWCursorARGB;
+        infoPtr->LoadCursorARGB = vmwareLoadCursorARGB;
+    }
+#endif
 
     pVMWARE->ScrnFuncs.GetImage = pScreen->GetImage;
     pVMWARE->ScrnFuncs.CopyWindow = pScreen->CopyWindow;

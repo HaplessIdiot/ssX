@@ -1,7 +1,6 @@
-/* Id: glxinfo.c,v 1.12 2001/03/23 21:41:44 brianp Exp $ */
 
 /*
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -20,7 +19,8 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/glxinfo/glxinfo.c,v 1.7 2001/08/17 13:27:57 dawes Exp $ */
+
+/* $XFree86: xc/programs/glxinfo/glxinfo.c,v 1.7 2001/08/17 13:27:57 dawes Exp$ */
 
 /*
  * This program is a work-alike of the IRIX glxinfo program.
@@ -35,7 +35,7 @@
  * Brian Paul  26 January 2000
  */
 
-#define DO_GLU
+#define DO_GLU  /* may want to remove this for easier XFree86 building? */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -53,6 +53,9 @@
 #define GLX_NONE_EXT  0x8000
 #endif
 
+#ifndef GLX_TRANSPARENT_RGB
+#define GLX_TRANSPARENT_RGB 0x8008
+#endif
 
 typedef enum
 {
@@ -74,7 +77,12 @@ struct visual_attribs
 
    /* GL visual attribs */
    int supportsGL;
-   int transparent;
+   int transparentType;
+   int transparentRedValue;
+   int transparentGreenValue;
+   int transparentBlueValue;
+   int transparentAlphaValue;
+   int transparentIndexValue;
    int bufferSize;
    int level;
    int rgba;
@@ -162,8 +170,6 @@ print_limits(void)
       { 1, GL_MAX_CLIENT_ATTRIB_STACK_DEPTH, "GL_MAX_CLIENT_ATTRIB_STACK_DEPTH" },
       { 1, GL_MAX_CLIP_PLANES, "GL_MAX_CLIP_PLANES" },
       { 1, GL_MAX_COLOR_MATRIX_STACK_DEPTH, "GL_MAX_COLOR_MATRIX_STACK_DEPTH" },
-      { 1, GL_MAX_CONVOLUTION_WIDTH_EXT, "GL_MAX_CONVOLUTION_WIDTH_EXT" },
-      { 1, GL_MAX_CONVOLUTION_HEIGHT_EXT, "GL_MAX_CONVOLUTION_HEIGHT_EXT" },
       { 1, GL_MAX_ELEMENTS_VERTICES, "GL_MAX_ELEMENTS_VERTICES" },
       { 1, GL_MAX_ELEMENTS_INDICES, "GL_MAX_ELEMENTS_INDICES" },
       { 1, GL_MAX_EVAL_ORDER, "GL_MAX_EVAL_ORDER" },
@@ -404,12 +410,29 @@ get_visual_attribs(Display *dpy, XVisualInfo *vInfo,
    glXGetConfig(dpy, vInfo, GLX_ACCUM_BLUE_SIZE, &attribs->accumBlueSize);
    glXGetConfig(dpy, vInfo, GLX_ACCUM_ALPHA_SIZE, &attribs->accumAlphaSize);
 
-   /* transparent pixel value not implemented yet */
-   attribs->transparent = 0;
+   /* get transparent pixel stuff */
+   glXGetConfig(dpy, vInfo,GLX_TRANSPARENT_TYPE, &attribs->transparentType);
+   if (attribs->transparentType == GLX_TRANSPARENT_RGB) {
+     glXGetConfig(dpy, vInfo, GLX_TRANSPARENT_RED_VALUE, &attribs->transparentRedValue);
+     glXGetConfig(dpy, vInfo, GLX_TRANSPARENT_GREEN_VALUE, &attribs->transparentGreenValue);
+     glXGetConfig(dpy, vInfo, GLX_TRANSPARENT_BLUE_VALUE, &attribs->transparentBlueValue);
+     glXGetConfig(dpy, vInfo, GLX_TRANSPARENT_ALPHA_VALUE, &attribs->transparentAlphaValue);
+   }
+   else if (attribs->transparentType == GLX_TRANSPARENT_INDEX) {
+     glXGetConfig(dpy, vInfo, GLX_TRANSPARENT_INDEX_VALUE, &attribs->transparentIndexValue);
+   }
 
-   /* multisample tests not implemented yet */
-   attribs->numSamples = 0;
-   attribs->numMultisample = 0;
+   /* multisample attribs */
+#ifdef GLX_ARB_multisample
+   if (strstr("GLX_ARB_multisample", ext) == 0) {
+      glXGetConfig(dpy, vInfo, GLX_SAMPLE_BUFFERS_ARB, &attribs->numMultisample);
+      glXGetConfig(dpy, vInfo, GLX_SAMPLES_ARB, &attribs->numSamples);
+   }
+#endif
+   else {
+      attribs->numSamples = 0;
+      attribs->numMultisample = 0;
+   }
 
 #if defined(GLX_EXT_visual_rating)
    if (ext && strstr(ext, "GLX_EXT_visual_rating")) {
@@ -450,7 +473,15 @@ print_visual_attribs_verbose(const struct visual_attribs *attribs)
    else if (attribs->visualCaveat == GLX_NON_CONFORMANT_VISUAL_EXT)
       printf("    visualCaveat=Nonconformant\n");
 #endif
-   printf("    %s\n", attribs->transparent ? "Transparent." : "Opaque.");
+   if (attribs->transparentType == GLX_NONE) {
+     printf("    Opaque.\n");
+   }
+   else if (attribs->transparentType == GLX_TRANSPARENT_RGB) {
+     printf("    Transparent RGB: Red=%d Green=%d Blue=%d Alpha=%d\n",attribs->transparentRedValue,attribs->transparentGreenValue,attribs->transparentBlueValue,attribs->transparentAlphaValue);
+   }
+   else if (attribs->transparentType == GLX_TRANSPARENT_INDEX) {
+     printf("    Transparent index=%d\n",attribs->transparentIndexValue);
+   }
 }
 
 
@@ -484,7 +515,7 @@ print_visual_attribs_short(const struct visual_attribs *attribs)
           attribs->id,
           attribs->depth,
           visual_class_abbrev(attribs->klass),
-          attribs->transparent,
+          attribs->transparentType != GLX_NONE,
           attribs->bufferSize,
           attribs->level,
           attribs->rgba ? "r" : "c",
@@ -522,7 +553,7 @@ print_visual_attribs_long(const struct visual_attribs *attribs)
           attribs->id,
           attribs->depth,
           visual_class_name(attribs->klass),
-          attribs->transparent,
+          attribs->transparentType != GLX_NONE,
           attribs->bufferSize,
           attribs->level,
           attribs->rgba ? "rgba" : "ci  ",
@@ -687,7 +718,7 @@ usage(void)
    printf("\t-h: This information.\n");
    printf("\t-i: Force an indirect rendering context.\n");
    printf("\t-b: Find the 'best' visual and print it's number.\n");
-   printf("\t-l: Print interesting OpenGLl imits.\n");
+   printf("\t-l: Print interesting OpenGL limits.\n");
 }
 
 
