@@ -1,5 +1,15 @@
-XCOMM $XConsortium: Imakefile,v 1.1 91/12/28 13:32:27 rws Exp $
+XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:48:16 cpqbld Exp $
+
+#if !BuildModuleInSubdir
+#define IHaveModules
+#else
+#if DoLoadableServer
+#define IHaveSubdirs
+SUBDIRS = module
+#endif
+#endif
+
 #define PixelSize	16
 #define LinkDirectory ../cfb
 
-#include "../cfb/Imakefile"
+#include "../cfb/Imakefile.inc"

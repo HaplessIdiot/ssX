@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.396 2002/04/06 18:28:05 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.397 2002/05/22 21:38:20 herrb Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -126,6 +126,15 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 #define BuildXKBlib		YES
 #define BuildXKBfilelib		YES
 #define BuildXKBuilib		YES
+#endif
+
+/*
+ * When this is set, modules are always built separately from the libraries
+ * that statically link into an Xserver.  This is for platforms where the
+ * module and native object formats are different (e.g., OS/2).
+ */
+#ifndef BuildModuleInSubdir
+#define BuildModuleInSubdir	NO
 #endif
 
 /*
