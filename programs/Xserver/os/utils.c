@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c /main/127 1996/12/02 10:23:20 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.26 1997/01/14 22:22:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.27 1997/01/18 06:58:03 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -1056,6 +1056,12 @@ ExpandCommandLine(pargc, pargv)
     }
 } /* end ExpandCommandLine */
 
+#if defined(TCPCONN) || defined(STREAMSCONN)
+#ifndef WIN32
+#include <netdb.h>
+#endif
+#endif
+
 /* Implement a simple-minded font authorization scheme.  The authorization
    name is "hp-hostname-1", the contents are simply the host name. */
 int
@@ -1066,9 +1072,6 @@ pointer client;
 {
 #define AUTHORIZATION_NAME "hp-hostname-1"
 #if defined(TCPCONN) || defined(STREAMSCONN)
-#ifndef WIN32
-#include <netdb.h>
-#endif
     static char result[1024];
     static char *p = NULL;
 

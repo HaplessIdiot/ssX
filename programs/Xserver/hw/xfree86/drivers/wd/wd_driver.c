@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/wd/wd_driver.c,v 1.4 1997/05/26 15:35:02 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/wd/wd_driver.c,v 1.5 1997/06/03 14:12:26 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -943,7 +943,8 @@ PVGA1EnterLeave(enter)
 	  freq = 28300;
 	AltICD2061SetClock(50500*1000, 3);	/* restore MCLK default */
 	AltICD2061SetClock(freq*1000, 2);
-	outb(0x3c2, inb(0x3cc)|0xC);
+	temp = inb(0x3cc);
+	outb(0x3c2, temp|0xC);
       }
       xf86DisableIOPorts(vga256InfoRec.scrnIndex);
     }

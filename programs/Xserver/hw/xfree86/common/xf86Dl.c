@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.9 1996/12/20 06:44:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.10 1996/12/29 13:50:59 dawes Exp $ */
 
 /*    
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>
@@ -71,6 +71,12 @@ xf86LoadModule(const char *	file,
     /* absolute path */
     if (file[0] == '/') {
 	module = dlopen((char *)file, DLOPEN_FLAGS);
+	if (!module) {
+	    const char *err = dlerror();
+	    
+	    ErrorF("%s: %s\n", file, err ? err : 
+		   "Unknown error loading module");
+	}	
     } else { /* look for file in path */
 	struct stat	stat_buf;
 
@@ -93,6 +99,12 @@ xf86LoadModule(const char *	file,
 		if ((stat(path_elem, &stat_buf) == 0) &&
 		    ((S_IFMT & stat_buf.st_mode) == S_IFREG)) {
 		    module = dlopen(path_elem, DLOPEN_FLAGS);
+		    if (!module) {
+			const char *err = dlerror();
+
+			ErrorF("%s: %s\n", file, err ? err : 
+			       "Unknown error loading module");
+		    }	
 		}
 		xfree(path_elem);
 	    }
@@ -100,13 +112,12 @@ xf86LoadModule(const char *	file,
 		dir_elem = strtok(NULL, ",");
 	    }
 	}
+	if (!module) {
+	    ErrorF("%s: File not found in %s\n", file, path);
+	}
     }
     
-    if (!module) {
-	const char *err = dlerror();
-
-	ErrorF("%s: %s\n", file, err ? err : "Unknown error loading module");
-    } else {
+    if (module) {
 #ifdef PREPEND_UNDERSCORE
 #ifndef DLSYM_BUG
 	InitModule init_module = (InitModule)dlsym(module, "_init_module");

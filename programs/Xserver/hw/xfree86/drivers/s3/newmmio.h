@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/newmmio.h,v 3.6 1996/11/24 09:54:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/newmmio.h,v 1.1 1997/03/06 23:16:27 hohndel Exp $ */
 
 /*
  *
@@ -171,7 +171,7 @@ typedef struct {
 } lpbus_regs; 
 
 typedef struct {
-        unsigned char img[0x8000];
+        int32 img[0x8000/4];
         union { pci_conf_regs regs; 
                 char dummy[0x100]; 
         } pci_regs;
@@ -206,6 +206,7 @@ typedef struct {
 
 #define mmtr	volatile mm_trio_regs *
 
+#define IMG_TRANS		(((mmtr)s3MmioMem)->img)
 
 #define SET_WRT_MASK(msk)	((mmtr)s3MmioMem)->pk_enh_regs.regs.wrt_mask = (msk)
 #define SET_RD_MASK(msk)	((mmtr)s3MmioMem)->pk_enh_regs.regs.rd_mask  = (msk)
@@ -240,7 +241,29 @@ typedef struct {
 #define INB_GP_STAT() 	inb(GP_STAT)
 #define INW_GP_STAT() 	inw(GP_STAT)
 #endif
+
+#define SET_PIX_TRANS_L(val)	((mmtr)s3MmioMem)->img[0] = (val)
+#define SET_MIX(b,f)	((mmtr)s3MmioMem)->pk_enh_regs.regs.col_mix = ((b) << 16) | (f)
+
 	
+#define WaitQueue(v)					\
+	if(!s3PCIRetry) {				\
+	   mem_barrier();				\
+	   while(inb(GP_STAT) & (0x0100 >> (v)));	\
+	}
+
+#define CMD_REG_WIDTH  0x200  	/* select 32bit command register */
+
+#define WaitQueue16_32(n16,n32) 		\
+	if(s3Bpp <= 2) { WaitQueue(n16); }	\
+	else if (n32 < 8) { 			\
+	       WaitQueue(n32+1); 		\
+	       SET_MULT_MISC(CMD_REG_WIDTH); 	\
+	} else { 				\
+	       WaitQueue(1); 			\
+	       SET_MULT_MISC(CMD_REG_WIDTH); 	\
+	       WaitQueue(n32); 			\
+	}
 
 
 #endif /* _NEWMMIO_H_ */

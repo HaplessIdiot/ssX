@@ -1,4 +1,26 @@
-XFree86 3.9d (xx June 1997)
+XFree86 3.9d (10 June 1997)
+ 987. Fix "xaa_no_color_exp" option for scanline-screen-to-screen color
+      expansion (#629, Koen Gadeyne).
+ 986. Add hint how to disable building Xprt to xf86site.def (#627, Koen
+      Gadeyne).
+ 985. Change Linux to use -DREENTRANT (#644, Wolfram Gloger).
+ 984. Fix C&T driver to be more strict about DClk and MClk limits for HiQV
+      chips (#645, David Bateman).
+ 983. Fix I128 server (#635, Robin Cutshaw).
+ 982. Fix VT switching problems in mga driver (#634, Guy Desbief).
+ 981. Fixes for xterm (missing part of install-rule, incorrect assignment for
+      --enable-color-mode option, unexpected cursor color change while
+      scrolling) (#632,633, Thomas Dickey).
+ 980. Fix a problem where the Tseng memory mapped registers get cleared in
+      vgaScreenInit() when it is clearing the screen as startup.  This only
+      happened for 8bpp with linear mode enabled (#630, OEyvind Aabling).
+ 979. Avoid nested asm calls for SVR4.0 (#631, Takaaki Nomura).
+ 978. Fix error messages when loading modules in the static server (#626,
+      Matthieu Herrb).
+ 977. Change svga/s3 into two seperate modules s3_pio and s3_newmmio. This
+      doesn't work with the static server at this point. Add linear
+      addressing and 16/24(packed)/32bpp. Add pci_retry option. (#625,
+      Mark Vojkovich).
  976. Allow the ChipId and ChipRev values to be overriden from the XF86Config
       for the Mach64 server.
  975. Fix some 1bpp and 4bpp problems (#609, Marc Aurele La France).
@@ -4864,4 +4886,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.484 1997/06/06 06:07:08 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.485 1997/06/08 15:31:48 dawes Exp $

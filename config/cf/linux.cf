@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/27 1996/12/26 08:52:44 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.64 1997/05/24 13:46:27 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.65 1997/06/03 14:11:03 hohndel Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -62,7 +62,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 				-D_POSIX_SOURCE \
 				-D_BSD_SOURCE -D_SVID_SOURCE
 #else
-#define SourceDefines		-D_POSIX_SOURCE \
+#define SourceDefines		-D_POSIX_SOURCE -D_REENTRANT \
 				-D_BSD_SOURCE -D_SVID_SOURCE
 #endif
 

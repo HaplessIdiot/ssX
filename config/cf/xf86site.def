@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.118 1997/05/12 13:27:50 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.119 1997/05/24 13:46:29 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -275,6 +275,12 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.118 1997/05/12 13:27:50 hohndel Ex
  * To disable building Xvfb, uncomment this.
  *
 #define XVirtualFramebufferServer	NO
+ */
+
+/*
+ * To disable building Xprt, uncomment this.
+ *
+#define XprtServer NO
  */
 
 /*

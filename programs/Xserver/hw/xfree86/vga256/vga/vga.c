@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.93 1997/06/03 14:12:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.94 1997/06/08 15:31:57 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1384,12 +1384,12 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     pointer    vgaVirtPtr;
     pointer    vgaPhysPtr;
 
-    if (vgaBitsPerPixel > 8){
-        /* Currently 16/32bpp uses linear addressing. */
+    if (vgaUseLinearAddressing){
         /* use original linear base from MapVidMem() */
-        xf86memset(vgaLinearOrig, 0, vga256InfoRec.videoRam * 1024);
+        xf86memset(vgaLinearOrig, pScreen->blackPixel,
+             vga256InfoRec.videoRam * 1024);
       }
-    else /* 8bpp: */
+    else /* banked */
     {
       int factor;
       if (xf86bpp < 8)

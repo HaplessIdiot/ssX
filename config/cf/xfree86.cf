@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.162 1997/05/04 05:26:14 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.163 1997/06/03 14:11:03 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -481,7 +481,8 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 # else
 #  define XF86CardDrivers	nv tseng et3000 wd gvga ati sis trident \
 				cirrus ncr compaq mga oak al2101 ali \
-				cl64xx video7 chips ark mx realtek apm s3 s3v \
+				cl64xx video7 chips ark mx realtek apm \
+				s3_pio s3_newmmio s3v \
 				apollo hercules hgc1280 sigma \
 				vga
 # endif
@@ -504,7 +505,8 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 # else
 #  define XF86SvgaDrivers	nv tseng et3000 wd gvga ati sis trident \
 				cirrus ncr compaq mga oak al2101 ali \
-				cl64xx video7 chips ark mx realtek apm s3 s3v \
+				cl64xx video7 chips ark mx realtek apm \
+				s3_pio s3_newmmio s3v \
 				apollo hercules hgc1280 sigma \
 				vga
 # endif

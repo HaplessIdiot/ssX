@@ -1,0 +1,9 @@
+XCOMM $XConsortium: Imakefile,v 1.1 91/12/28 13:32:27 rws Exp $
+#ifdef S3_NEWMMIO
+  #undef S3_NEWMMIO
+#endif
+
+#define S3_GENERIC
+#define LinkDirectory ../s3
+
+#include "../s3/Imakefile"

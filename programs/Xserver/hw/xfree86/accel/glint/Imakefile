@@ -1,6 +1,31 @@
+#include <Server.tmpl>
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Imakefile,v 3.25 1997/03/27 08:30:06 hohndel Exp $
+SRCS = 	glint.c glint_init.c glint_accel.c glintcmap.c IBMRGB.c glintcur.c \
+	glintIBMCurs.c
 
+OBJS = 	glint.o glint_init.o glint_accel.o glintcmap.o IBMRGB.o glintcur.o \
+	glintIBMCurs.o
 
+INCLUDES = -I$(XF86SRC) -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+	   -I$(SERVERSRC)/include -I$(SERVERSRC)/cfb -I$(XINCLUDESRC) \
+	   -I$(FONTSRC)/include -I$(XF86SRC)/vga256/vga -I$(XF86COMSRC) \
+	   -I$(XF86HWSRC) -I$(FONTINCSRC) -I$(XF86OSSRC) \
+	   -I$(XF86SRC)/xaa
 
+DEFINES = -DPSZ=8
 
+NormalLibraryObjectRule()
+
+NormalAsmObjectRule()
+
+NormalLibraryTarget(glint,$(OBJS))
+
+InstallLinkKitLibrary(glint_Drv,$(LINKKITDIR)/drivers)
+
+#if DoLoadableServer
+InstallDynamicModule(LibraryTargetName(glint),$(MODULEDIR))
+#endif
+
+#ifndef OS2Architecture
+DependTarget()
+#endif

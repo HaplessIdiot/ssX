@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.17 1997/05/03 09:19:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.18 1997/05/06 09:46:42 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -151,7 +151,9 @@ xf86InitializeAcceleration(pScreen)
 #endif
     }
     if (xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand &&
-    xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand) {
+    xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand &&
+    !OFLG_ISSET(OPTION_XAA_NO_COL_EXP,
+    &(xf86AccelInfoRec.ServerInfoRec->options))) {
         ScanlineScreenToScreenColorExpand = TRUE;
 #if 0
         if (xf86Verbose)

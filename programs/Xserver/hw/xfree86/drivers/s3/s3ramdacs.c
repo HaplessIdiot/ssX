@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3ramdacs.c,v 1.3 1997/03/27 08:30:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3ramdacs.c,v 1.4 1997/06/03 14:12:15 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1180,8 +1180,7 @@ static int TI3020_3025_Init(DisplayModePtr mode)
             }
 	    if (vga256InfoRec.bitsPerPixel == 32) {           /* 24bpp */
                rclock = TI_OCLK_R2;
-            } else if ((vga256InfoRec.bitsPerPixel == 16) ||
-                       (vga256InfoRec.bitsPerPixel == 15)) {  /* 15/16bpp */
+            } else if (vga256InfoRec.bitsPerPixel == 16) { /* 15/16bpp */
                rclock = TI_OCLK_R4;
             } else {
                rclock = TI_OCLK_R8;
@@ -1622,7 +1621,7 @@ static int ATT409_498_Init(DisplayModePtr mode)
 	       xf86setdaccomm(tmp | 0x00);  /* set mode 0 */
 	       break;
 	    case 16: 
-	       if (s3Weight == RGB16_555) {
+	       if (xf86weight.green == 5) {
 		  outb(vgaCRReg, 0x30 | invert_vclk); /* set Mode 9:
 						15-bit color, 1 VCLK/pixel */
 		  xf86setdaccomm(tmp | 0x10);  /* set mode 1 */
@@ -1777,7 +1776,7 @@ static int SC15025_Init(DisplayModePtr mode)
 	 comm = 0;  /* repack mode 0, color mode 0 */
 	 break;
       case 16:
-	 if (s3Weight == RGB16_555) {
+	 if (xf86weight.green == 5) {
 	    comm = 0x80;  /* repack mode 1a using both clock edges */
 	 }
 	 else {  /* RGB16_565 */
@@ -2072,7 +2071,7 @@ static int STG17xx_Init(DisplayModePtr mode)
 	          break;
 
        	       case 16: 
-	          if (s3Weight == RGB16_555) 
+	          if (xf86weight.green == 5) 
                   {  /* set Mode 2: 15-bit direct color */
 	             daccomm |= 0xa8;
                      pixmode  = 0x02;
@@ -2374,7 +2373,7 @@ static int S3_SDAC_Init(DisplayModePtr mode)
                break;
 
             case 16: /* 15/16-bit color, 1VCLK/pixel */
-               if (s3Weight == RGB16_555)
+               if (xf86weight.green == 5)
                   pixmux = 0x30;
                else
                   pixmux = 0x50;
@@ -2423,7 +2422,7 @@ static int S3_GENDAC_Init(DisplayModePtr mode)
             break;
 
          case 16: /* 15/16-bit color, 2VCLK/pixel */
-            if (s3Weight == RGB16_555)
+            if (xf86weight.green == 5)
                daccomm = 0x20;
             else
                daccomm = 0x60;
@@ -2765,7 +2764,7 @@ static int S3_TRIO_Init(DisplayModePtr mode)
 
             case 16: /* 15/16-bit color, 1VCLK/pixel */
 	       cr33 |= 0x08;
-               if (s3Weight == RGB16_555)
+               if (xf86weight.green == 5)
                   pixmux = 0x30;
                else
                   pixmux = 0x50;
@@ -3632,16 +3631,21 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
 	 outb(vgaCRIndex, 0x55);
 	 outb(vgaCRReg, 0x00);
 
-	 if (vga256InfoRec.depth == 24 || vga256InfoRec.depth == 32) { /* 24 bpp */
+	 if (vga256InfoRec.bitsPerPixel == 32) { 	/* 32 bpp */
 	    s3OutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 6);
-	    s3OutIBMRGBIndReg(IBMRGB_32bpp, 0, 0);
-	 } else if (vga256InfoRec.depth == 16) {             /* 16 bpp */
-	    s3OutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 4);
-	    s3OutIBMRGBIndReg(IBMRGB_16bpp, 0, 0x02);
-	 } else if (vga256InfoRec.depth == 15) {             /* 15 bpp */
-	    s3OutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 4);
-	    s3OutIBMRGBIndReg(IBMRGB_16bpp, 0, 0x00);
-	 } else {                                        /*  8 bpp */
+	    s3OutIBMRGBIndReg(IBMRGB_32bpp, 0, 0x03);
+	 } else if (vga256InfoRec.bitsPerPixel == 24) {	/* 24 bpp */
+	    s3OutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 5);
+	    s3OutIBMRGBIndReg(IBMRGB_24bpp, 0, 0x01);
+	 } else if (vga256InfoRec.bitsPerPixel == 16) { 
+	    if(xf86weight.green == 5) {			/* 15 bpp */
+	    	s3OutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 4);
+	    	s3OutIBMRGBIndReg(IBMRGB_16bpp, 0, 0xC0);
+	    } else {					/* 16 bpp */
+	    	s3OutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 4);
+	    	s3OutIBMRGBIndReg(IBMRGB_16bpp, 0, 0xC2);
+	    }
+	 } else {					/*  8 bpp */
 	    s3OutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 3);
 	    s3OutIBMRGBIndReg(IBMRGB_8bpp, 0, 0);
 	 }

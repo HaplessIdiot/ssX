@@ -5,52 +5,7 @@
  *
  */
 /* You only build one driver at a time.  Which one depends on which is
-	defined: S3_GENERIC, S3_MMIO, S3_NEWMMIO or S3_VIRGE
-
-
-   Perhaps S3_VIRGE isn't necessary and support for it can be worked
-into the S3_NEWMMIO driver.  I've got alot of comments in here. Most
-of the ones that I think are worth noting are marked with "MArk". 
-Please read the comments. Some of the things that I marked NEED attention.
-There are probably way too many comments in here.  I'll delete most of
-them after a little while.
-
-  Here are some misc. ramblings:
-
-	I left some PC98 stuff in here.  I removed the stuff that I was
-sure was broken by my new design.  If it really is going to be put back
-in here it should be rethought from the ground up anyhow.
-
-	I'm a little perplexed by all of the locking and unlocking.
-It seems that everytime somebody wrote something that needed access
-to the system regs, they unlock the chip and then lock it again.
-But the LOCK_SYS_REGS macro doesn't even do anything! and why would
-it be locked anyhow.  I unlock the chip on ENTER in the EnterLeave function.
-You should assume the chipset is unlocked and only lock it when it needs
-it.  I think the macros should be removed for the sake of cleanliness and
-simplicity.  
-
-	It would be good if the more experienced S3 programmers (like
-you Harald) would go through and rethink alot of the old code.
-I'm quite certain that not all of the code is necessary. Some, probably
-an old kludge that isn't even needed anymore.  
-
-   	Comments are a good thing.  I label each piece of code explaining
-what it does when I am able to identify it.  Unfortunately, I don't know
-what half of it does!  So, if you know what something does and it isn't
-labeled... label it.
-
- 	Modularity is good.  If you need to make additions, please
-consider sticking it in another function (eg. some of the ones in 
-s3misc.c).  No big monolithic monster functions please!
-
-	I've been working on acceleration.  Where this driver really
-needs some work is linear addressing and MMIO.  I'm a little intimidated by
-that so I will leave that to someone else.
-
-	If you are doing a big change somewhere, please let me know so
-that I can stay out of your way and we don't end up patching over each others
-stuff.
+   defined: S3_GENERIC or S3_NEWMMIO.
 
 PROBLEMS:
 	Since the SVGA server doesn't Init on the return from
@@ -58,12 +13,8 @@ a virtual console switch (it merely restores. and our restore is
 non-functional).  I save the last operating DisplayModePtr and
 pass it to Init in the EnterLeave function upon entering.  This
 seems to work fine except the color map isn't being restored because
-the server usually handles that an not Init?  We could probably
-get whatever colormap info that the server saved just before the
-switch to the virtual console (and whatever else we need that isn't
-being taken care of by Init) and init that in the EnterLeave?
-
-
+the server usually handles that and not Init.  I don't know what
+the correct solution is.
 
 			Mark Vojkovich (mvojkovi@ucsd.edu)
 
@@ -115,17 +66,16 @@ int   s3hotY;
 int   s3numClocks;
 int   s3ScissB;
 int   s3ScissR;
-int   s3BankSize;
 int   s3HDisplay;
 int   s3DisplayWidth = 0;
 unsigned short s3ChipRev;
 unsigned short s3ChipId;
 short s3BiosVendor = UNKNOWN_BIOS;
 short s3RamdacType = UNKNOWN_DAC;
-short s3Weight = RGB8_PSEUDO;
 short s3Bpp = 1;
 char  s3Mbanks;
 char *s3ClockChipProbed = XCONFIG_GIVEN;
+Bool  s3PCIRetry = FALSE;
 Bool  s3Localbus = FALSE;
 Bool  s3VLB = FALSE;
 Bool  s3DAC8Bit = FALSE;
@@ -134,20 +84,17 @@ Bool  s3PixelMultiplexing = FALSE;
 Bool  s3Bt485PixMux = FALSE;
 Bool  s3ATT498PixMux = FALSE;
 Bool  s3PowerSaver = FALSE;
-Bool  s3LinearAperature = FALSE;
 Bool  s3BlockCursor;
 Bool  s3ReloadCursor;
 Bool  s3InitCursorFlag = TRUE;
 Bool  s3Initialized = FALSE;
 Bool  s3clockDoublingPossible = FALSE;
-unsigned char 	s3Port31 = 0x8d;
-unsigned char   s3Port40;
+unsigned char 	s3Port31;
 unsigned char   s3Port51;
-unsigned char   s3Port54;
 unsigned char 	s3Port59 = 0x00;
 unsigned char 	s3Port5A = 0x00;
-unsigned char 	s3LinApOpt;
-unsigned char   s3SAM256;
+unsigned char 	s3LinApOpt;	/* bottom of CR58 */
+unsigned char   s3SAM256;	/* top of CR58 */
 unsigned char 	s3SwapBits[256];
 unsigned char 	s3DACBoarder = 0xff;
 ScreenPtr 	s3savepScreen;
@@ -196,10 +143,14 @@ vgaVideoChipRec s3InfoRec = {
   FALSE,	/* 1bpp */
   FALSE,	/* 4bpp */
   TRUE,		/* 8bpp */
-  FALSE,	/* 15bpp */
-  FALSE,	/* 16bpp */
+  TRUE,		/* 15bpp */
+  TRUE,		/* 16bpp */
+#ifdef S3_NEWMMIO
+  TRUE,		/* 24bpp */
+#else
   FALSE,	/* 24bpp */
-  FALSE,	/* 32bpp */
+#endif
+  TRUE,		/* 32bpp */
   NULL,			/* DisplayModePtr ChipBuiltinModes */
   1,			/* int ChipClockMulFactor */
   1			/* int ChipClockDivFactor */
@@ -284,14 +235,10 @@ ModuleInit(data,magic)
 char * S3Ident(int n)
 {
 	char *chipset = 
-#if defined(S3_MMIO)
-		"s3_mmio";
-#else 
-   #if defined(S3_NEWMMIO)
+#ifdef S3_NEWMMIO
 		"s3_newmmio";
-   #else /* S3_GENERIC */
-		"s3_generic";
-   #endif
+#else /* S3_GENERIC */
+		"s3_pio";
 #endif
 
 	if(n == 0) return(chipset);
@@ -317,12 +264,6 @@ void S3EnterLeave(Bool enter)
    if (enter) {
       xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 
-#ifdef S3_MMIO
-      if(s3MmioMem) {
-	 xf86MapDisplay(vga256InfoRec.scrnIndex,MMIO_REGION);
-      }
-#endif
-
       vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
       vgaCRIndex = vgaIOBase + 4;
       vgaCRReg = vgaIOBase + 5;
@@ -340,22 +281,17 @@ void S3EnterLeave(Bool enter)
 	s3Initialized = FALSE;
 	if(!S3Init(s3CurrentMode)) {
 	  /* what *should* we do here?  MArk */
-	   ErrorF("Server Panic!!  Please hit <ctrl><alt><backspace>\n");
-	   S3CleanUp(); 
-	}
+	   FatalError("Whoops!\n");
+	} 
       }
 
    } else { 
+
 	if(s3Initialized) { 
 	    S3CleanUp(); 
 	    s3Initialized = FALSE;
        	}	
 
-#ifdef S3_MMIO
-	if(s3MmioMem) {
-	  xf86UnMapDisplay(vga256InfoRec.scrnIndex,MMIO_REGION);
-        }
-#endif
 
 	/* Protect CRTC[0-7] */
 	outb(vgaIOBase + 4, 0x11); 
