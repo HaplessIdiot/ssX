@@ -1,7 +1,7 @@
   Information for W32 Chipset Users
   Glenn G. Lai <glenn@cs.utexas.edu>, Dirk H. Hohndel <hohn-
   del@XFree86.Org>
-  October 20, 1995
+  November 13, 1995
 
   1.  Information for W32 Chipset Users
 
@@ -86,9 +86,11 @@
 
 
   line, but the RAMDAC should be auto-probed correctly.  Even though the
-  server currently accepts dot clocks up to 135MHz with the ICS5341 GEN-
-  DAC, most boards won't work for clocks higher than 86MHz, where pixel
-  multiplexing is required. I'm working on it. (DHH)
+  server currently accepts any dot clock up to 135MHz with the ICS5341
+  GENDAC, most boards show a small band of clock values in the area
+  between 86MHz and about 100MHz that don't work. This are usually is
+  just a few MHz wide, higher clocks as well as lower clocks work just
+  fine. I'm working on it. (DHH)
 
   3.  Acknowledgments
 
@@ -104,7 +106,8 @@
   used by DHH to extend the server.
 
   Koen Gadeyne (kmg@barco.be) wrote a patchkit for XFree86-3.1.1 that
-  was partly integrated in this server.
+  was partly integrated in this server and he continues to help develop
+  it.
 
   Numerous testers have given me feedback for X_W32 and later XF86_W32.
   I apologize for my failure to keep track of the people who tested
@@ -125,6 +128,7 @@
         jdooley@dbp.caltech.edu (James Dooley)
 
         thumper@hitchcock.eng.uiowa.edu (Timothy Paul Schlie)
+
 
         klatta@pkdla5.syntex.com (Ken Latta)
 
@@ -147,11 +151,7 @@
 
 
   $XConsortium: W32.sgml,v 1.2 95/01/23 15:34:55 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.6 1995/10/21 11:43:29 dawes Exp $
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.7 1995/11/16 11:05:56 dawes Exp $
 
 
 

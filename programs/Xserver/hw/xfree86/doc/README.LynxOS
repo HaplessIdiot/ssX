@@ -1,6 +1,6 @@
   README for XFree86 3.1.2 on LynxOS
   Thomas Mueller
-  12 July 1995
+  14 November 1995
 
   1.  What and Where is XFree86?
 
@@ -18,9 +18,8 @@
   ftp.XFree86.org:/pub/XFree86/current
   <ftp://ftp.XFree86.org/pub/XFree86/current>
 
-  The XFree86 LynxOS port was developed using the `LynxOS AT 2.3 Beta
-  4-10 1995 Integration'. There shouldn't be significant differences
-  when using the final 2.3 release to build the system.
+  The XFree86 LynxOS port was developed using `LynxOS AT 2.3.0 080695-A
+  FCS'.
 
   XFree86 currently supports only LynxOS on the AT platform. The library
   and client part of XFree86 could although compile without problems on
@@ -48,11 +47,12 @@
 
      LynxOS AT 2.3
 
-        o  Use the CYGNUS GNU-C Compiler to build XFree86. With the 2.3
-           BETA you must execute the shell script /CYGNUS.bash to apply
+        o  Use the CYGNUS GNU-C Compiler to build XFree86. With LynxOS
+           2.3.0 you must execute the shell script /CYGNUS.bash to apply
            the necessary changes to your environment.
 
         o  Create a shell script named /lib/cpp as follows:
+
 
                  #!/bin/sh
                  /cygnus/94q4-lynxos-x86/lib/gcc-lib/i386-lynx/2.6-94q4/cpp \
@@ -61,18 +61,24 @@
 
 
 
-        It is possible that the final release uses a different path for
-        the CYGNUS compiler support programs. You may use
 
-                gcc -v
+        It is possible that future releases use a different path for the
+
+        CYGNUS compiler support programs. You may use
+
+
+                     gcc -v
+
 
 
 
 
         to find out the correct path. Set the file mode of /lib/cpp with
 
+
                      # chown root /lib/cpp
                      # chmod 755 /lib/cpp
+
 
 
 
@@ -81,8 +87,10 @@
 
         o  Create a shell script named /lib/cpp as follows:
 
+
                  #!/bin/sh
                  /usr/local/lib/gcc-cpp -traditional "$@"
+
 
 
 
@@ -92,6 +100,7 @@
            around this problem you must install a small wrapper program
            which replaces the original /bin/ld program. Use the
            following steps to install it:
+
 
                    # cd xc/programs/Xserver/hw/xfree/etc
                    # cc -o ld ld-wrapper.c
@@ -103,10 +112,12 @@
 
 
 
+
         o  Modify system header files as follows:
 
            /usr/include/uio.h
               surrounded by
+
 
                           #ifndef _UIO_H
                           #define _UIO_H
@@ -116,8 +127,12 @@
 
 
 
+
+
+
            /usr/include/utmp.h
               surrounded by
+
 
                           #ifndef _UTMP_H
                           #define _UTMP_H
@@ -127,10 +142,13 @@
 
 
 
+
            /usr/include/unistd.h
               add
 
-                     extern int read();
+
+                          extern int read();
+
 
 
 
@@ -141,17 +159,18 @@
   match your operating system version. Change the definitions of
   OSMajorVersion, OSMinorVersion and OSTeenyVersion accordingly.
 
-  For LynxOS 2.3 the OptimizedCDebugFlags is set to `-O -m486'. Higher
-  optimization levels are not enabled by defaults since the CYGNUS
-  compiler of the BETA version had still some problems even with -O2.
-  You might try enabling -O2 for the final release 2.3 LynxOS, but if
-  the session manager xsm hangs on startup it would be a good idea to
-  switch back to -O.
+  For LynxOS 2.3.0 the OptimizedCDebugFlags is set to `-O -m486'. Higher
+  optimization levels are not enabled by default to work around a bug in
+  -O2 for GCC v2.6.x.  You might try enabling -O2 if your compiler does
+  not have this bug, but if the session manager xsm hangs on startup it
+  would be a good idea to switch back to -O.
 
   You may now issue a
 
 
+
             make World
+
 
 
 
@@ -160,18 +179,25 @@
   build of the XFree86 system) you can install the software using
 
 
+
             make install
+
 
 
 
 
   You must be logged in as super-user (root) when you invoke `make
   install'.  Be sure to set your environment to use the same compiler
-  (LynxOS 2.3, CYGNUS GNU-C) as you did during the `make World'. To
+  (LynxOS 2.3.0, CYGNUS GNU-C) as you did during the `make World'. To
   install the LinkKit use
 
 
-            make install.linkkit
+
+
+
+
+       make install.linkkit
+
 
 
 
@@ -196,13 +222,16 @@
 
   To run XFree86 reasonably you must adjust a few system parameters in
   /usr/include/param.h:
+
+
     Tunable                                               Old     New
     USR_NFDS      number of open files per process         20      64
     NPROC         number of tasks                          50     150
     NFILES        number of open files in system          100     250
     NINODES       number of incore inodes                 (same value as NFILES)
-    QUANTUM       clock ticks until preemption             64      10
-    CACHEBLKS     number of cache memory blocks           202      > 4096
+    QUANTUM       clock ticks until preemption             64      20
+    CACHEBLKS     number of cache memory blocks           202      >= 4096
+
 
 
   The new values are those suggested by the LynxOS documentation for
@@ -221,9 +250,14 @@
   now:
 
 
+
             # cd /sys/lynx.os
             # make install
             # reboot -N
+
+
+
+
 
 
 
@@ -235,8 +269,10 @@
   drivers for those devices. To install the drivers unpack the tar
 
 
+
            # cd /
            # bash /usr/X11R6/lib/X11/etc/BM-Lynx.shar
+
 
 
 
@@ -257,13 +293,16 @@
 
 
        change
+
               /dev/atc3:1:default:vt100at:/bin/login
+
 
 
        to
 
-         /dev/atc3:0:default:vt100at:/bin/login
-                   ^
+              /dev/atc3:0:default:vt100at:/bin/login
+                        ^
+
 
 
 
@@ -284,13 +323,13 @@
 
   LynxOS uses cat-able manual pages, and because a doc preparation
   system is definitely not a vital component of a real-time operating
-  system you must first install groff-1.09. With LynxOS 2.3 it compiles
-  right out of the box (or better tar archive).
+  system you must first install groff-1.09. With LynxOS 2.3.0 it
+  compiles right out of the box (or better tar archive).
 
   XFree86 manual pages may be installed using
 
-
             make install.man
+
 
 
 
@@ -299,6 +338,7 @@
   created automatically. If you have already a whatis database or index
   file in the destination directories you should perform a sort/uniq
   operation to remove duplicate entries:
+
 
 
             for i in 1 3 5
@@ -313,7 +353,8 @@
 
 
 
-  With LynxOS 2.3 you should include /usr/X11R6/man in the MANPATH
+
+  With LynxOS 2.3.0 you should include /usr/X11R6/man in the MANPATH
   environment variable.
 
 
@@ -327,24 +368,119 @@
 
 
 
-
-        for i in 1 3 5
-        do
-          ln -s /usr/X11R6/man/cat$i/*.* /usr/man/cat$i
-          cat /usr/X11R6/man/cat$i/LIST$i >> /usr/man/cat$i/LIST$i
-          sort -o /usr/man/cat$i/LIST$i /usr/man/cat$i/LIST$i
-          cat /usr/X11R6/man/cat$i/whatis$i >> /usr/man/whatis
-        done
-
-
-
-
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.2 1995/07/15 16:06:28 dawes Exp $
+             for i in 1 3 5
+             do
+               ln -s /usr/X11R6/man/cat$i/*.* /usr/man/cat$i
+               cat /usr/X11R6/man/cat$i/LIST$i >> /usr/man/cat$i/LIST$i
+               sort -o /usr/man/cat$i/LIST$i /usr/man/cat$i/LIST$i
+               cat /usr/X11R6/man/cat$i/whatis$i >> /usr/man/whatis
+             done
 
 
 
 
 
+  6.  Using XFree86 with Motif
+
+  The Motif libraries shipped with LynxOS AT 2.3.0 can be used with the
+  XFree86 libraries. Follow the steps outlined below after you have
+  installed XFree86 and LynxOS Motif on your system.
+
+  6.1.  Copy Motif files
+
+  You must create symbolic links for the Motif libraries and utilites in
+  the /usr/X11R6 directory tree.
+
+
+
+
+        ln -s /usr/bin/X11/uil /usr/X11R6/bin
+        ln -s /usr/lib/libUil.a /usr/X11R6/lib
+        ln -s /usr/lib/libMrm.a /usr/X11R6/lib
+        ln -s /usr/lib/X11/uid /usr/X11R6/lib/X11
+        ln -s /usr/include/Xm /usr/X11R6/include
+        ln -s /usr/include/Mrm /usr/X11R6/include
+        ln -s /usr/include/uil /usr/X11R6/include
+
+
+
+
+
+  The Motif imake-configuration files are part of the LynxOS X Window
+  package. They must be copied to the /usr/X11R6 directory tree.
+
+
+             cp /usr/lib/X11/config/Motif.* /usr/X11R6/lib/X11/config
+
+
+
+
+
+  6.2.  Motif library patch
+
+  The XFree86 libraries are compiled with the -mposix compiler option
+  while the Motif libraries shipped with LynxOS AT 2.3.0 are not. This
+  incompatibility will cause Motif XmFileSelection widgets to be linked
+  with the wrong (i.e. POSIX) directory routines. To circumvent this
+  problem apply the following patch to the library:
+
+
+             cp /usr/lib/libXm.a /usr/X11R6/lib
+             ar x /usr/X11R6/lib/libXm.a Xmos.o
+             ar x /lib/libc.a directory.s.o
+             ld -r -o x.o Xmos.o directory.s.o
+             mv x.o Xmos.o
+             ar r /usr/X11R6/lib/libXm.a Xmos.o
+
+
+
+
+
+  6.3.  X11R6 config file patch
+
+  Edit /usr/X11R6/lib/X11/config/lynx.cf and change the definition of
+  HasMotif
+
+       from
+
+              #define HasMotif    NO
+
+
+
+       to
+
+              #define HasMotif    YES
+
+
+
+
+
+  6.4.  Motif config file patch
+
+  The file Motif.tmpl shipped with LynxOS Motif must be modified to work
+  with XFree86. In every reference to UnsharedLibReferences the first
+
+  argument must be changed
+
+       from
+
+              UnsharedLibReferences(<Something>LIB, Arg2, Arg3)
+
+
+
+       to
+
+              UnsharedLibReferences(<Something>, Arg2, Arg3)
+
+
+
+
+
+  Be sure to apply the change to the file copied to
+  /usr/X11R6/lib/X11/config.
+
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.3 1995/11/16 11:05:53 dawes Exp $
 
 
 
@@ -390,9 +526,4 @@
 
 
 
-
-
-
-
-
-$XFree86$
+\n$XFree86$

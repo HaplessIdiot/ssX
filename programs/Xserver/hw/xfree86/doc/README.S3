@@ -429,6 +429,16 @@
 
         8/15/16/24 bpp
 
+     S3 868, AT&T 20C409 RAMDAC and Clockchip
+
+        o  ELSA Winner 1000AVI
+
+        8/15/16/24 bpp
+
+        Note: pixelmultiplexing is not supported yet, therefore limited
+        maximum dot clock for 8bpp (currently 67.5MHz, should be changed
+        to 100MHz if pixmux isn't fixed prior to release)
+
      S3 968, Ti3026 RAMDAC, Ti3026 Clockchip
 
         o  Elsa Winner 2000PRO/X
@@ -445,9 +455,14 @@
 
 
 
-           s3RefClk   50
-           DACspeed  170
-           Option  "slow_vram"
+
+
+
+
+
+      s3RefClk   50
+      DACspeed  170
+      Option  "slow_vram"
 
 
 
@@ -458,10 +473,8 @@
         o  Genoa Genoa VideoBlitz III AV
 
 
-
-
-         s3RefClk   50
-         DACspeed  170
+              s3RefClk   50
+              DACspeed  170
 
 
 
@@ -511,7 +524,9 @@
         This card may require the line:
 
 
-                     Invert_VCLK "*" 0
+
+
+                Invert_VCLK "*" 0
 
 
 
@@ -525,7 +540,6 @@
 
   On 801/805 + AT&T490 Cards (like the Fahrenheit 1280+ VLB) only 15 and
   16bpp are supported. 32bpp isn't available on this type of card.
-
   (There is a 24 bit mode under MS Windows, but it's not a 32bpp sparse
   mode but a real 3 bytes/pixel mode).
 
@@ -552,6 +566,9 @@
 
        Chrontel 8391                           ==> ClockChip "ch8391"
 
+       AT&T 20C409                             ==> ClockChip "att20c409"
+       AT&T 20C499 (untested)          ==> ClockChip "att20c499"
+
 
 
 
@@ -575,8 +592,6 @@
              <lot number><other funny numbers>
 
 
-
-
   For example:
 
 
@@ -587,7 +602,6 @@
                ATT20C490-11
                 9339S ES
                  9869874
-
 
 
 
@@ -644,7 +658,6 @@
 
 
 
-
   and check the output for the probed clock chip which might look like
   this:
 
@@ -653,7 +666,6 @@
        (--) S3: Using IBM RGB52x programmable clock (MCLK 66.000 MHz)
        (--) S3: with refclock 16.000 MHz (probed 15.952 & 16.041)
                               ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^
-
 
 
 
@@ -711,6 +723,7 @@
   the S3 chip operates. For most clock chips this value can't be read
   (only the S3 SDAC allows reading the MCLK value so far), so this value
   has to be estimated and specified by the user (the default is 60
+
   [MHz]).
 
   With the new `s3MCLK' entry for your XF86Config file, now you can
@@ -749,19 +762,6 @@
   determine the MLCK value, which is printed in MHz. Up to 4 tests are
   run, so you'll get up to 4 estimates (where the first might be the
   most accurate one).
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -833,7 +833,7 @@
 
 
   $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.28 1995/08/13 09:45:10 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.29 1995/11/16 11:05:55 dawes Exp $
 
 
 
