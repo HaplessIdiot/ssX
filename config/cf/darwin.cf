@@ -1,10 +1,13 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.31 2002/08/20 05:30:03 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.32 2002/08/28 06:41:23 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
 /* imake determines the default values by parsing uname */
 #ifndef OSName
 #define OSName                  DefaultOSName
+#endif
+#ifndef OSVendor
+#define OSVendor                Apple Computer, Inc.
 #endif
 #ifndef OSMajorVersion
 #define OSMajorVersion          DefaultOSMajorVersion
@@ -24,6 +27,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasSnprintf             YES
 #define HasPutenv               YES
 #define HasBSD44Sockets         YES
+#define Malloc0ReturnsNull      NO
+#define HasShadowPasswd         NO
 #define HasUsableFileMmap       YES
 #define HasZlib                 YES
 #ifndef HasShm
@@ -102,6 +107,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define MathLibrary             /**/
 
 #define TermcapLibrary          -lcurses
+#define SetTtyGroup             YES             /* for xterm */
 
 /* we don't have a dbm library */
 #define DBMLibrary              /**/
