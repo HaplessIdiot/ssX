@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.11 2002/12/06 02:44:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.12 2003/10/30 17:37:12 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -73,7 +73,7 @@ void FFBSync(ScrnInfoPtr pScrn);
 #define FFB_MINOR_VERSION 0
 #define FFB_PATCHLEVEL 0
 
-/* 
+/*
  * This contains the functions needed by the server after loading the driver
  * module.  It must be supplied, and gets passed back by the SetupProc
  * function in the dynamic case.  In the static case, a reference to this
@@ -245,7 +245,7 @@ FFBProbe(DriverPtr drv, int flags)
     numUsed = xf86MatchSbusInstances(FFB_NAME, SBUS_DEVICE_FFB,
 		   devSections, numDevSections,
 		   drv, &usedChips);
-				    
+
     xfree(devSections);
     if (numUsed <= 0)
 	return FALSE;
@@ -260,7 +260,7 @@ FFBProbe(DriverPtr drv, int flags)
 	 */
 	if(pEnt->active) {
 	    ScrnInfoPtr pScrn;
-	    
+
 	    /* Allocate a ScrnInfoRec and claim the slot */
 	    pScrn = xf86AllocateScreen(drv, 0);
 
@@ -271,8 +271,8 @@ FFBProbe(DriverPtr drv, int flags)
 	    pScrn->Probe	 = FFBProbe;
 	    pScrn->PreInit	 = FFBPreInit;
 	    pScrn->ScreenInit	 = FFBScreenInit;
-  	    pScrn->SwitchMode	 = FFBSwitchMode;
-  	    pScrn->AdjustFrame	 = FFBAdjustFrame;
+	    pScrn->SwitchMode	 = FFBSwitchMode;
+	    pScrn->AdjustFrame	 = FFBAdjustFrame;
 	    pScrn->EnterVT	 = FFBEnterVT;
 	    pScrn->LeaveVT	 = FFBLeaveVT;
 	    pScrn->FreeScreen	 = FFBFreeScreen;
@@ -302,7 +302,7 @@ FFBPreInit(ScrnInfoPtr pScrn, int flags)
      * not at the start of each server generation.  This means that
      * only things that are persistent across server generations can
      * be initialised here.  xf86Screens[] is (pScrn is a pointer to one
-     * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()  
+     * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()
      * are too, and should be used for data that must persist across
      * server generations.
      *
@@ -315,7 +315,7 @@ FFBPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
 
     pFfb = GET_FFB_FROM_SCRN(pScrn);
-    
+
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
 
@@ -337,7 +337,7 @@ FFBPreInit(ScrnInfoPtr pScrn, int flags)
     /*********************
     deal with depth
     *********************/
-    
+
     if (!xf86SetDepthBpp(pScrn, 24, 0, 32, Support32bppFb)) {
 	return FALSE;
     } else {
@@ -361,7 +361,7 @@ FFBPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     memcpy(pFfb->Options, FFBOptions, sizeof(FFBOptions));
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pFfb->Options);
-    
+
     /*
      * This must happen after pScrn->display has been set because
      * xf86SetWeight references it.
@@ -394,7 +394,7 @@ FFBPreInit(ScrnInfoPtr pScrn, int flags)
     from = X_DEFAULT;
 
     /* determine whether we use hardware or software cursor */
-    
+
     pFfb->HWCursor = TRUE;
     if (xf86GetOptValBool(pFfb->Options, OPTION_HW_CURSOR, &pFfb->HWCursor))
 	from = X_CONFIG;
@@ -402,7 +402,7 @@ FFBPreInit(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
 	pFfb->HWCursor = FALSE;
     }
-    
+
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pFfb->HWCursor ? "HW" : "SW");
 
@@ -410,7 +410,7 @@ FFBPreInit(ScrnInfoPtr pScrn, int flags)
 	pFfb->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
-        
+
     if (xf86LoadSubModule(pScrn, "xf8_32wid") == NULL) {
 	FFBFreeRec(pScrn);
 	return FALSE;
@@ -456,7 +456,7 @@ FFBPreInit(ScrnInfoPtr pScrn, int flags)
     /*********************
     set up clock and mode stuff
     *********************/
-    
+
     pScrn->progClock = TRUE;
 
     if(pScrn->display->virtualX || pScrn->display->virtualY) {
@@ -678,7 +678,7 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!FFBDbePreInit(pScreen))
 	return FALSE;
 
-    /* 
+    /*
      * First get the ScrnInfoRec
      */
     pScrn = xf86Screens[pScreen->myNum];
@@ -891,12 +891,12 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Initialise cursor functions */
     miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
 
-    /* Initialize HW cursor layer. 
+    /* Initialize HW cursor layer.
      * Must follow software cursor initialization.
      */
-    if (pFfb->HWCursor) { 
+    if (pFfb->HWCursor) {
 	if(!FFBHWCursorInit(pScreen)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		       "Hardware cursor initialization failed\n");
 	    return(FALSE);
 	}
@@ -925,7 +925,7 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef XF86DRI
     if (pFfb->dri_enabled) {
-	    /* Now that mi, cfb, drm and others have done their thing, 
+	    /* Now that mi, cfb, drm and others have done their thing,
 	     * complete the DRI setup.
 	     */
 	    pFfb->dri_enabled = FFBDRIFinishScreenInit(pScreen);
@@ -970,7 +970,7 @@ FFBSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
  * displayed location in the video memory.
  */
 /* Usually mandatory */
-static void 
+static void
 FFBAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     /* we don't support virtual desktops */

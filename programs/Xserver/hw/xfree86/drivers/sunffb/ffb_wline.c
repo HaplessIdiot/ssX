@@ -23,7 +23,7 @@
  * IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_wline.c,v 1.2 2000/05/23 04:47:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_wline.c,v 1.3 2001/03/03 22:41:34 tsi Exp $ */
 
 #define PSZ 32
 
@@ -79,7 +79,7 @@ static void CreatorFillRectHelper(FFBPtr pFfb,
 	ffb_fbcPtr ffb = pFfb->regs;
 	int x2 = x + dx - 1;
 	int y2 = y + dy - 1;
-	
+
 	if(x < LeftClip)
 		x = LeftClip;
 	if(x2 > RightClip)
@@ -111,7 +111,7 @@ static void CreatorSpanHelper(FFBPtr pFfb,
 		x1 = LeftClip;
 	if(x2 > RightClip)
 		x2 = RightClip;
-	width = x2 - x1 + 1;	
+	width = x2 - x1 + 1;
 
 	if(width > 0) {
 		FFB_WRITE_DRAWOP(pFfb, ffb, FFB_DRAWOP_RECTANGLE);
@@ -131,13 +131,13 @@ static void CreatorSpanHelper(FFBPtr pFfb,
 			x += sign;			\
 			e -= dy;			\
 		}					\
-	} 	 					\
+	}						\
 }
 
 static void
 CreatorFillPolyHelper (DrawablePtr pDrawable, GCPtr pGC,
 		       int y, int overall_height,
-		       PolyEdgePtr left, PolyEdgePtr right, 
+		       PolyEdgePtr left, PolyEdgePtr right,
 		       int left_count, int right_count)
 {
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN(pDrawable->pScreen);
@@ -146,34 +146,34 @@ CreatorFillPolyHelper (DrawablePtr pDrawable, GCPtr pGC,
 	int left_height = 0;
 	int right_height = 0;
 	int xorg = 0;
-    
+
 	if (pGC->miTranslate) {
 		y += pDrawable->y;
 		xorg = pDrawable->x;
 	}
 
 	while ((left_count || left_height) && (right_count || right_height)) {
-		if (!left_height && left_count) { 
-			left_height = left->height; 
-			left_x = left->x + xorg; 
-			left_stepx = left->stepx; 
-			left_signdx = left->signdx; 
-			left_e = left->e; 
-			left_dy = left->dy; 
-			left_dx = left->dx; 
-			left_count--; 
+		if (!left_height && left_count) {
+			left_height = left->height;
+			left_x = left->x + xorg;
+			left_stepx = left->stepx;
+			left_signdx = left->signdx;
+			left_e = left->e;
+			left_dy = left->dy;
+			left_dx = left->dx;
+			left_count--;
 			left++;
 		}
-		if (!right_height && right_count) { 
-			right_height = right->height; 
-			right_x = right->x + xorg + 1; 
-			right_stepx = right->stepx; 
-			right_signdx = right->signdx; 
-			right_e = right->e; 
-			right_dy = right->dy; 
-			right_dx = right->dx; 
-			right_count--; 
-			right++; 
+		if (!right_height && right_count) {
+			right_height = right->height;
+			right_x = right->x + xorg + 1;
+			right_stepx = right->stepx;
+			right_signdx = right->signdx;
+			right_e = right->e;
+			right_dy = right->dy;
+			right_dx = right->dx;
+			right_count--;
+			right++;
 		}
 
 		height = (left_height > right_height) ? right_height : left_height;
@@ -185,18 +185,18 @@ CreatorFillPolyHelper (DrawablePtr pDrawable, GCPtr pGC,
 				CreatorSpanHelper(pFfb, left_x, y, right_x - left_x);
 
 			y++;
-    	
-			left_x += left_stepx; 
-			left_e += left_dx; 
-			if (left_e > 0) { 
-				left_x += left_signdx; 
-				left_e -= left_dy; 
+
+			left_x += left_stepx;
+			left_e += left_dx;
+			if (left_e > 0) {
+				left_x += left_signdx;
+				left_e -= left_dy;
 			}
-			right_x += right_stepx; 
-			right_e += right_dx; 
-			if (right_e > 0) { 
-				right_x += right_signdx; 
-				right_e -= right_dy; 
+			right_x += right_stepx;
+			right_e += right_dx;
+			if (right_e > 0) {
+				right_x += right_signdx;
+				right_e -= right_dy;
 			}
 		}
 	}
@@ -204,7 +204,7 @@ CreatorFillPolyHelper (DrawablePtr pDrawable, GCPtr pGC,
 
 static void
 CreatorWideSegment (DrawablePtr pDrawable, GCPtr pGC,
-		    int x1, int y1, int x2, int y2, 
+		    int x1, int y1, int x2, int y2,
 		    Bool projectLeft, Bool projectRight,
 		    LineFacePtr leftFace, LineFacePtr rightFace)
 {
@@ -270,7 +270,7 @@ CreatorWideSegment (DrawablePtr pDrawable, GCPtr pGC,
 			x += pDrawable->x;
 			y += pDrawable->y;
 		}
-		CreatorFillRectHelper(pFfb, x, y, dx, dy);	
+		CreatorFillRectHelper(pFfb, x, y, dx, dy);
 	} else if (!dx) {
 		leftFace->xa =  (double) lw / 2.0;
 		leftFace->ya = 0;
@@ -361,7 +361,7 @@ CreatorWideSegment (DrawablePtr pDrawable, GCPtr pGC,
 						-dy, dx, x1, y1, dx > 0, top);
 		}
 		else
-			topy = miPolyBuildEdge(xa, ya, 0.0, 
+			topy = miPolyBuildEdge(xa, ya, 0.0,
 					       -dy, dx, x1, y1, dx > 0, top);
 
 		/* coord of bottom face at integral y */
@@ -389,7 +389,7 @@ CreatorWideSegment (DrawablePtr pDrawable, GCPtr pGC,
 			top->height = lefty - topy;
 		}
 		bottom->height = finaly - bottomy;
-		CreatorFillPolyHelper (pDrawable, pGC, topy, 
+		CreatorFillPolyHelper (pDrawable, pGC, topy,
 				       bottom->height + bottomy - topy, lefts, rights, 2, 2);
 	}
 }
@@ -428,11 +428,11 @@ CreatorLineArcI (DrawablePtr pDraw, GCPtr pGC, int xorg, int yorg)
 		slw = (x << 1) + 1;
 		if ((e == ex) && (slw > 1))
 			slw--;
-	    
+
 		if(Y_IN_BOX(yorg - y))
 			CreatorSpanHelper(pFfb, xorg - x, yorg - y, slw);
 
-		if ((y != 0) && ((slw > 1) || (e != ex)) && Y_IN_BOX(yorg + y))	
+		if ((y != 0) && ((slw > 1) || (e != ex)) && Y_IN_BOX(yorg + y))
 			CreatorSpanHelper(pFfb, xorg - x, yorg + y, slw);
 	}
 }
@@ -530,7 +530,7 @@ CreatorLineArcD (DrawablePtr pDraw, GCPtr pGC,
 		xcr = xr + xbase;
 		CLIPSTEPEDGE(edgey1, edge1, edgeleft1);
 		CLIPSTEPEDGE(edgey2, edge2, edgeleft2);
-		if((xcr >= xcl) && Y_IN_BOX(ybase)) 
+		if((xcr >= xcl) && Y_IN_BOX(ybase))
 			CreatorSpanHelper(pFfb, xcl, ybase, xcr - xcl + 1);
 	}
 	er = xrk - (xr << 1) - er;
@@ -558,7 +558,7 @@ CreatorLineArcD (DrawablePtr pDraw, GCPtr pGC,
 		xcr = xr + xbase;
 		CLIPSTEPEDGE(edgey1, edge1, edgeleft1);
 		CLIPSTEPEDGE(edgey2, edge2, edgeleft2);
-		if((xcr >= xcl) && Y_IN_BOX(ybase)) 
+		if((xcr >= xcl) && Y_IN_BOX(ybase))
 			CreatorSpanHelper(pFfb, xcl, ybase, xcr - xcl + 1);
 	}
 }
@@ -598,7 +598,7 @@ CreatorLineArc (DrawablePtr pDraw, GCPtr pGC,
 		if (leftFace && rightFace) {
 			miRoundJoinClip (leftFace, rightFace, &edge1, &edge2,
 					 &edgey1, &edgey2, &edgeleft1, &edgeleft2);
-		} else if (leftFace) { 
+		} else if (leftFace) {
 			edgey1 = miRoundCapClip (leftFace, isInt, &edge1, &edgeleft1);
 		} else if (rightFace) {
 			edgey2 = miRoundCapClip (rightFace, isInt, &edge2, &edgeleft2);
@@ -610,7 +610,7 @@ CreatorLineArc (DrawablePtr pDraw, GCPtr pGC,
 	if (isInt)
 		CreatorLineArcI(pDraw, pGC, xorgi, yorgi);
 	else
-		CreatorLineArcD(pDraw, pGC, xorg, yorg, 
+		CreatorLineArcD(pDraw, pGC, xorg, yorg,
 				&edge1, edgey1, edgeleft1,
 				&edge2, edgey2, edgeleft2);
 }
@@ -643,7 +643,7 @@ CreatorLineJoin (DrawablePtr pDrawable, GCPtr pGC, LineFacePtr pLeft, LineFacePt
 						   pLeft->x + pDrawable->x,
 						   pLeft->y + pDrawable->y);
 			else
-				CreatorPointHelper(pFfb, pLeft->x, pLeft->y);	
+				CreatorPointHelper(pFfb, pLeft->x, pLeft->y);
 			return;
 		}
 	} else {
@@ -652,7 +652,7 @@ CreatorLineJoin (DrawablePtr pDrawable, GCPtr pGC, LineFacePtr pLeft, LineFacePt
 				       (double)0.0, (double)0.0, TRUE);
 			return;
 		}
-		denom = - pLeft->dx * (double)pRight->dy + pRight->dx * 
+		denom = - pLeft->dx * (double)pRight->dy + pRight->dx *
 			(double)pLeft->dy;
 		if (denom == 0.0)
 			return;	/* no join to draw */
@@ -691,13 +691,13 @@ CreatorLineJoin (DrawablePtr pDrawable, GCPtr pGC, LineFacePtr pLeft, LineFacePt
 		my = (pLeft->dy  * (pRight->xa * pRight->dy - pRight->ya * pRight->dx) -
 		      pRight->dy * (pLeft->xa  * pLeft->dy  - pLeft->ya  * pLeft->dx ))/
 			denom;
-		if (pLeft->dy != 0) 
+		if (pLeft->dy != 0)
 			mx = pLeft->xa + (my - pLeft->ya) *
 				(double) pLeft->dx / (double) pLeft->dy;
 		else
 			mx = pRight->xa + (my - pRight->ya) *
 				(double) pRight->dx / (double) pRight->dy;
-    	
+
 		/* check miter limit */
 		if ((mx * mx + my * my) * 4 > SQSECANT * lw * lw)
 			joinStyle = JoinBevel;
@@ -795,7 +795,7 @@ CreatorWideLineSolid (DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPo
 		if (mode == CoordModePrevious) {
 			int nptTmp;
 			register DDXPointPtr pPtsTmp;
-    
+
 			x1 = x2;
 			y1 = y2;
 			nptTmp = npt;
@@ -807,7 +807,7 @@ CreatorWideLineSolid (DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPo
 			}
 			if ((x2 == x1) && (y2 == y1))
 				selfJoin = TRUE;
-		} else if ((x2 == pPts[npt-1].x) && (y2 == pPts[npt-1].y)) 
+		} else if ((x2 == pPts[npt-1].x) && (y2 == pPts[npt-1].y))
 			selfJoin = TRUE;
 	}
 
@@ -835,9 +835,9 @@ CreatorWideLineSolid (DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPo
 					firstFace = leftFace;
 				else if (pGC->capStyle == CapRound) {
 					if (pGC->lineWidth == 1) {
-						if(pGC->miTranslate) 
+						if(pGC->miTranslate)
 							CreatorPointHelper(pFfb,
-									   x1 + pDrawable->x, 
+									   x1 + pDrawable->x,
 									   y1 + pDrawable->y);
 						else
 							CreatorPointHelper(pFfb, x1, y1);
@@ -847,7 +847,7 @@ CreatorWideLineSolid (DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPo
 							       (double)0.0, (double)0.0,
 							       TRUE);
 				}
-			} else 
+			} else
 				CreatorLineJoin (pDrawable, pGC, &leftFace, &prevRightFace);
 
 			prevRightFace = rightFace;
@@ -859,14 +859,14 @@ CreatorWideLineSolid (DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPo
 				CreatorLineJoin (pDrawable, pGC, &firstFace, &rightFace);
 			else if (pGC->capStyle == CapRound) {
 				if (pGC->lineWidth == 1) {
-					if(pGC->miTranslate) 
+					if(pGC->miTranslate)
 						CreatorPointHelper(pFfb,
-								   x2 + pDrawable->x, 
+								   x2 + pDrawable->x,
 								   y2 + pDrawable->y);
 					else
 						CreatorPointHelper(pFfb, x2, y2);
 				} else
-					CreatorLineArc (pDrawable, pGC, 
+					CreatorLineArc (pDrawable, pGC,
 							(LineFacePtr) NULL, &rightFace,
 							(double)0.0, (double)0.0,
 							TRUE);
@@ -881,7 +881,7 @@ CreatorWideLineSolid (DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPo
 				    x2, y2, x2, y2, projectLeft, projectLeft,
 				    &leftFace, &rightFace);
 		if (pGC->capStyle == CapRound) {
-			CreatorLineArc (pDrawable, pGC, 
+			CreatorLineArc (pDrawable, pGC,
 					&leftFace, (LineFacePtr) NULL,
 					(double)0.0, (double)0.0,
 					TRUE);

@@ -22,7 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_cplane.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_cplane.c,v 1.3 2003/07/19 13:22:29 tsi Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
@@ -65,7 +65,7 @@
 }
 
 static void
-CreatorCopyPlane32to1 (DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, int rop, RegionPtr prgnDst, 
+CreatorCopyPlane32to1 (DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, int rop, RegionPtr prgnDst,
 		       DDXPointPtr pptSrc, unsigned long planemask, unsigned long bitPlane)
 {
 	int			srcx, srcy, dstx, dsty, width, height;
@@ -140,12 +140,12 @@ CreatorCopyPlane32to1 (DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, int r
 					i = niStart;
 					curBit = bitStart;
 					GetBits (psrc, i, curBit, bitPos, bits);
-				
+
 					*pdst = (*pdst & ~startmask) | bits;
 					pdst++;
 				}
 				nl = nlMiddle;
-				
+
 				while (nl--) {
 					i = 32;
 					curBit = LeftMost;
@@ -171,7 +171,7 @@ CreatorCopyPlane32to1 (DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, int r
 					curBit = bitStart;
 					GetBits (psrc, i, curBit, bitPos, bits);
 					DoRop (result, rop, bits, *pdst);
-				
+
 					*pdst = (*pdst & ~startmask) | (result & startmask);
 					pdst++;
 				}
@@ -189,7 +189,7 @@ CreatorCopyPlane32to1 (DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, int r
 					curBit = bitEnd;
 					GetBits (psrc, i, curBit, bitPos, bits);
 					DoRop (result, rop, bits, *pdst);
-				
+
 					*pdst = (*pdst & ~endmask) | (result & endmask);
 				}
 			}

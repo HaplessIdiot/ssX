@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.9 2004/05/04 16:21:42 tsi Exp $ */
 
 #ifndef FFB_H
 #define FFB_H
@@ -80,7 +80,7 @@
 #define	FFB_DAC_VOFF		0x0bc06000
 #define	FFB_PROM_VOFF		0x0bc08000
 #define	FFB_EXP_VOFF		0x0bc18000
- 
+
 #if defined(__GNUC__) && defined(USE_VIS)
 #define FFB_ALIGN64	__attribute__((aligned(8)))
 #else
@@ -289,8 +289,8 @@ extern int  CreatorWindowPrivateIndex;
 
 #define CreatorGetWindowPrivate(w)					\
 ((CreatorPrivWinPtr) (w)->devPrivates[CreatorWindowPrivateIndex].ptr)
-                            
-#define CreatorSetWindowPrivate(w,p) 					\
+
+#define CreatorSetWindowPrivate(w,p)					\
 ((w)->devPrivates[CreatorWindowPrivateIndex].ptr = (pointer) p)
 
 #undef DEBUG_FFB
@@ -304,8 +304,8 @@ static __inline__ void FFB_DEBUG_init(void)
 	FDEBUG_FD = fopen("/tmp/FFB.DEBUG", "a");
 }
 #define FDEBUG(__x)				\
-do {	fprintf __x; 				\
-	fflush(FDEBUG_FD); 			\
+do {	fprintf __x;				\
+	fflush(FDEBUG_FD);			\
 } while(0)
 #else
 #define FFB_DEBUG_init()	do { } while(0)
