@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_vb.c,v 1.5 2002/02/22 21:45:01 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -128,7 +128,7 @@ static struct {
 #define GET_VIEWPORT_MAT() 0
 #define GET_TEXSOURCE(n)  n
 #define GET_VERTEX_FORMAT() RADEON_CONTEXT(ctx)->vertex_format
-#define GET_VERTEX_STORE() RADEON_CONTEXT(ctx)->verts
+#define GET_VERTEX_STORE() (GLubyte *)(RADEON_CONTEXT(ctx)->verts)
 #define GET_VERTEX_STRIDE_SHIFT() RADEON_CONTEXT(ctx)->vertex_stride_shift
 #define GET_UBYTE_COLOR_STORE() &RADEON_CONTEXT(ctx)->UbyteColor
 #define GET_UBYTE_SPEC_COLOR_STORE() &RADEON_CONTEXT(ctx)->UbyteSecondaryColor

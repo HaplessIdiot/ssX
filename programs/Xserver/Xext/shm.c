@@ -1,4 +1,4 @@
-/* $XFree86: shm.c,v 3.33 2001/12/14 19:58:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.34 2002/02/24 20:37:17 herrb Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -365,7 +365,7 @@ ProcShmQueryVersion(client)
 /*
  * Simulate the access() system call for a shared memory segement,
  * using the real user and group id of the process
- * /
+ */
 static int
 shm_access(uid_t uid, gid_t gid, struct ipc_perm *perm, int readonly)
 {

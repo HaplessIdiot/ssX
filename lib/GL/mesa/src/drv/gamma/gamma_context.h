@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 2001 by Alan Hourihane.
  *
@@ -174,10 +175,12 @@ struct gamma_texture_object_t {
 
 void gammaUpdateTextureState( GLcontext *ctx );
 
-void gammaDestroyTexObj( gammaContextPtr gmesa, gammaTextureObjectPtr t);
+void gammaDestroyTexObj( gammaContextPtr gmesa, gammaTextureObjectPtr t );
+void gammaSwapOutTexObj( gammaContextPtr gmesa, gammaTextureObjectPtr t );
 void gammaUploadTexImages( gammaContextPtr gmesa, gammaTextureObjectPtr t );
 
 void gammaResetGlobalLRU( gammaContextPtr gmesa );
+void gammaUpdateTexLRU( gammaContextPtr gmesa, gammaTextureObjectPtr t );
 void gammaTexturesGone( gammaContextPtr gmesa, 
 		       GLuint start, GLuint end, 
 		       GLuint in_use ); 

@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keithw@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgavb.c,v 1.11 2001/10/31 22:50:24 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgavb.c,v 1.12 2002/02/22 21:44:56 dawes Exp $ */
 
 #include "mgacontext.h"
 #include "mgavb.h"
@@ -92,7 +92,7 @@ static struct {
 #define GET_VIEWPORT_MAT() mmesa->hw_viewport
 #define GET_TEXSOURCE(n)  mmesa->tmu_source[n]
 #define GET_VERTEX_FORMAT() mmesa->vertex_format
-#define GET_VERTEX_STORE() mmesa->verts
+#define GET_VERTEX_STORE() (GLubyte *)(mmesa->verts)
 #define GET_VERTEX_STRIDE_SHIFT() mmesa->vertex_stride_shift
 #define GET_UBYTE_COLOR_STORE() &mmesa->UbyteColor
 #define GET_UBYTE_SPEC_COLOR_STORE() &mmesa->UbyteSecondaryColor
@@ -124,8 +124,8 @@ static struct {
 #define IMPORT_FLOAT_COLORS mga_import_float_colors
 #define IMPORT_FLOAT_SPEC_COLORS mga_import_float_spec_colors
 
-#define INTERP_VERTEX setup_tab[MGA_CONTEXT(ctx)->SetupIndex].interp
-#define COPY_PV_VERTEX setup_tab[MGA_CONTEXT(ctx)->SetupIndex].copy_pv
+#define INTERP_VERTEX setup_tab[mmesa->SetupIndex].interp
+#define COPY_PV_VERTEX setup_tab[mmesa->SetupIndex].copy_pv
 
 
 /***********************************************************************

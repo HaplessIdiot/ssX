@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_tex.c,v 1.4 2002/02/22 21:45:04 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -565,12 +565,12 @@ tdfxDDTexturePalette(GLcontext * ctx, struct gl_texture_object *tObj)
 /**** NEW TEXTURE IMAGE FUNCTIONS                                  ****/
 /**********************************************************************/
 
-static FxBool TexusFatalError = FXFALSE;
-static FxBool TexusError = FXFALSE;
-
 #define TX_DITHER_NONE                                  0x00000000
 
 #if 000
+static FxBool TexusFatalError = FXFALSE;
+static FxBool TexusError = FXFALSE;
+
 static void
 fxTexusError(const char *string, FxBool fatal)
 {

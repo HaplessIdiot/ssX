@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 2001 by Alan Hourihane.
  *
@@ -847,6 +848,7 @@ static void gammaDDColorMask( GLcontext *ctx, GLboolean r, GLboolean g,
  * sense to break them out of the core texture state update routines.
  */
 
+#if ENABLELIGHTING
 static void gammaDDLightfv(GLcontext *ctx, GLenum light, GLenum pname, 
 				const GLfloat *params, GLint nParams)
 {
@@ -971,6 +973,7 @@ static void gammaDDLightModelfv( GLcontext *ctx, GLenum pname,
 	break;
     }
 }
+#endif
 
 static void gammaDDShadeModel( GLcontext *ctx, GLenum mode )
 {
@@ -1123,6 +1126,7 @@ void gammaUpdateViewportOffset( GLcontext *ctx )
    gmesa->new_state |= GAMMA_NEW_CLIP;
 }
 
+#if 0
 /* 
  * Matrix 
  */
@@ -1217,6 +1221,7 @@ static void gammaLoadHWMatrix(GLcontext *ctx)
 
     gmesa->dirty |= GAMMA_UPLOAD_TRANSFORM;
 }
+#endif
 
 /* =============================================================
  * State enable/disable

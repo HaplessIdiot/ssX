@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "gamma_context.h"
 #include "gamma_lock.h"
 
@@ -154,7 +156,7 @@ do {									\
 
 
 
-
+#if 0	/* unused */
 /* 32 bit depthbuffer functions.
  */
 #define WRITE_DEPTH( _x, _y, d )	\
@@ -165,7 +167,7 @@ do {									\
 
 #define TAG(x) gamma##x##_32
 #include "depthtmp.h"
-
+#endif
 
 
 /* 24/8 bit interleaved depth/stencil functions
@@ -184,6 +186,7 @@ do {									\
 #define TAG(x) gamma##x##_24_8
 #include "depthtmp.h"
 
+#if 0
 #define WRITE_STENCIL( _x, _y, d ) {			\
    GLuint tmp = *(GLuint *)(buf + _x*4 + _y*pitch);	\
    tmp &= 0xffffff00;					\
@@ -197,7 +200,6 @@ do {									\
 #define TAG(x) gamma##x##_24_8
 #include "stenciltmp.h"
 
-#if 0
 static void gammaReadRGBASpan8888( const GLcontext *ctx,
 			       GLuint n, GLint x, GLint y,
 			       GLubyte rgba[][4])

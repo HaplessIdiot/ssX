@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -73,7 +75,9 @@ static void gammaUploadTexLevel( gammaContextPtr gmesa, gammaTextureObjectPtr t,
    const struct gl_texture_image *image = t->image[level].image;
    int i,j;
    int l2d;
+#if 0
    int offset = 0;
+#endif
    int words, depthLog2;
 
    /* fprintf(stderr, "%s\n", __FUNCTION__);  */

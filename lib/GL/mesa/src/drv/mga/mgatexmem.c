@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keithw@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatexmem.c,v 1.4 2001/04/10 16:07:51 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatexmem.c,v 1.5 2002/02/14 23:10:06 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -38,6 +38,8 @@
 
 #include "mem.h"
 #include "simple_list.h"
+
+#include "xf86drmMga.h"
 
 static void
 mgaSwapOutTexObj(mgaContextPtr mmesa, mgaTextureObjectPtr t)

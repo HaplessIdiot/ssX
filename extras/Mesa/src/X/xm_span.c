@@ -1,4 +1,4 @@
-/* $Id: xm_span.c,v 1.1 2002/02/22 17:14:07 dawes Exp $ */
+/* $Id: xm_span.c,v 1.2 2002/02/26 23:37:32 tsi Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -23,7 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+/* $XFree86$ */
 
 #include "glxheader.h"
 #include "context.h"
@@ -186,6 +186,9 @@ static void write_span_TRUECOLOR_pixmap( RGBA_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc;
    register GLuint i;
+
+   (void)DitherValues;		/* Muffle compiler */
+
    y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {

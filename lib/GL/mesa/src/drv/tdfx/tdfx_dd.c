@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_dd.c,v 1.6 2002/02/14 23:10:07 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_dd.c,v 1.7 2002/02/22 21:45:03 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -129,7 +129,7 @@ static const GLubyte *tdfxDDGetString( GLcontext *ctx, GLenum name )
       return (const GLubyte *) buffer;
    }
    case GL_VENDOR:
-      return "VA Linux Systems, Inc.";
+      return (const GLubyte *)"VA Linux Systems, Inc.";
    default:
       return NULL;
    }

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -13,7 +15,7 @@
 static void gammaSetTexImages( gammaContextPtr gmesa, 
 			      struct gl_texture_object *tObj )
 {
-   GLuint height, width, pitch, i, textureFormat, log_pitch;
+   GLuint height, width, pitch, i, log_pitch;
    gammaTextureObjectPtr t = (gammaTextureObjectPtr) tObj->DriverData;
    const struct gl_texture_image *baseImage = tObj->Image[tObj->BaseLevel];
    GLint firstLevel, lastLevel, numLevels;
@@ -81,7 +83,6 @@ static void gammaSetTexImages( gammaContextPtr gmesa,
 
 static void gammaUpdateTexEnv( GLcontext *ctx, GLuint unit )
 {
-   gammaContextPtr gmesa = GAMMA_CONTEXT(ctx);
    const struct gl_texture_unit *texUnit = &ctx->Texture.Unit[unit];
    const struct gl_texture_object *tObj = texUnit->_Current;
    const GLuint format = tObj->Image[tObj->BaseLevel]->Format;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.13 2002/02/14 23:10:06 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.14 2002/02/22 21:33:05 dawes Exp $ */
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -197,7 +197,7 @@ mgaInitDriver(__DRIscreenPrivate *sPriv)
    {
       Xfree(mgaScreen);
       sPriv->private = NULL;
-      __driMesaMessage("Couldn't map agptexture region");
+      __driUtilMessage("Couldn't map agptexture region");
       return GL_FALSE;
    }
 
@@ -301,7 +301,7 @@ mgaCreateContext( Display *dpy, const __GLcontextModes *mesaVis,
 
    mmesa->mgaScreen = mgaScreen;
    mmesa->driScreen = sPriv;
-   mmesa->sarea = saPriv;
+   mmesa->sarea = (void *)saPriv;
    mmesa->glBuffer = NULL;
 
    make_empty_list(&mmesa->SwappedOut);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.11 2001/10/31 22:50:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.12 2002/02/22 21:45:08 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -49,6 +49,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xf86glxint.h"
 #include "xmesaP.h"
 #include <GL/xf86glx.h>
+#include "context.h"
 
 /*
  * This define is for the glcore.h header file.
