@@ -1,4 +1,6 @@
 XFree86 4.3.99.904 (xx February 2004)
+ 814. Fix missing ';' in via_driver.c hidden by an empty macro (Bugzilla #813,
+      Luc Verhaegen).
  813. Add FT_Get_Postscript_Name() to the freetype2 export list for OS/2.
       This is needed for the recent PostScript fontname property fix
       (Bugzilla #1189, Frank Giessler).
@@ -18661,7 +18663,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3150 2004/02/20 16:59:45 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3151 2004/02/20 21:41:45 dawes Exp $
 
 
 
