@@ -19,56 +19,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/lib/font/fontfile/fontencc.c,v 1.1 2001/08/13 21:46:47 dawes Exp $ */
+/* $XFree86$ */
 
-/* Binary compatibility code. */
+/* Binary compatibility entry points. */
 
 /* This file includes code to make modules compiled for earlier
    versions of the fontenc interfaces link with this one.  It does
    *not* provide source compatibility, as many of the data structures
    now have different names. */
 
-#include "fontenc.h"
-#include "fontencc.h"
+extern char *font_encoding_from_xlfd(const char*, int);
+extern unsigned font_encoding_recode(unsigned, FontEncPtr, FontMapPtr);
+extern FontEncPtr font_encoding_find(const char*, const char*);
+extern char *font_encoding_name(unsigned, FontEncPtr, FontMapPtr);
+extern char **identifyEncodingFile(const char *fileName);
 
-extern void ErrorF(const char *f, ...);
-
-char *
-font_encoding_from_xlfd(const char * name, int length)
-{
-    return FontEncFromXLFD(name, length);
-}
-
-FontEncPtr
-font_encoding_find(const char *encoding_name, const char *filename)
-{
-    return FontEncFind(encoding_name, filename);
-}
-
-unsigned
-font_encoding_recode(unsigned code, 
-                     FontEncPtr encoding, FontMapPtr mapping)
-{
-    if(encoding != mapping->encoding) {
-        ErrorF("Inconsistent mapping/encoding\n");
-        return 0;
-    }
-    return FontEncRecode(code, mapping);
-}
-
-char *
-font_encoding_name(unsigned code,
-                     FontEncPtr encoding, FontMapPtr mapping)
-{
-    if(encoding != mapping->encoding) {
-        ErrorF("Inconsistent mapping/encoding\n");
-        return 0;
-    }
-    return FontEncName(code, mapping);
-}
-
-char **
-identifyEncodingFile(const char *filename)
-{
-    return FontEncIdentify(filename);
-}

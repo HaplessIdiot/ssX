@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.135 2001/05/28 02:42:29 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.136 2001/08/01 00:44:51 tsi Exp $
 
 
 
@@ -45,8 +45,8 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.135 2001/05/
 #endif
 
 #if BuildXInputExt
- XF86_XINPUT_SRC = xf86Xinput.c xf86Switch.c xisb.c
- XF86_XINPUT_OBJ = xf86Xinput.o xf86Switch.o xisb.o
+ XF86_XINPUT_SRC = xf86Xinput.c xisb.c
+ XF86_XINPUT_OBJ = xf86Xinput.o xisb.o
 #endif
 
 MODPATHDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"

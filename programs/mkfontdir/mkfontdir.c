@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.13 2001/07/25 15:05:15 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.14 2001/08/13 21:46:51 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1988  X Consortium
@@ -170,7 +170,6 @@ static Bool LoadDirectory ( char *dirName, FontTablePtr table );
 int LoadScalable ( char *dirName, FontTablePtr table );
 static Bool DoDirectory(char *dirName, 
                         EncodingBucketPtr *encodings, int count);
-int GetDefaultPointSize ( void );
 void ErrorF ( void );
 
 static Bool
@@ -639,7 +638,7 @@ DoDirectory(char *dirName, EncodingBucketPtr *encodings, int count)
     FontTableRec	table;
     Bool		status;
 
-    status = TRUE;
+    status = FALSE;
 
     if(processFonts) {
         if (!FontFileInitTable (&table, 100))
