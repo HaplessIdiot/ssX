@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.13 2002/07/28 21:34:04 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.14 2002/08/05 03:56:24 paulo Exp $ */
 
 #include "struct.h"
 
@@ -293,7 +293,7 @@ LispStructAccessOrStore(LispMac *mac, LispBuiltin *builtin, int store)
     LispAtom *atom;
     LispObj *definition, *list;
 
-    LispObj *name, *struc, *value;
+    LispObj *name, *struc, *value = NIL;
 
     if (store)
 	value = ARGUMENT(2);
