@@ -7,7 +7,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.56 2002/05/31 16:31:20 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.57 2002/08/01 21:50:29 torrey Exp $ */
 
 /*
  * 
@@ -1227,8 +1227,11 @@ get_gcc_version(FILE *inFile, char *name)
 #ifdef CROSSCOMPILE
     if (CrossCompiling)
     {
-	if (gnu_c > 1)
+	if (gnu_c > 1) {
 	    fprintf (inFile, "#define HasGcc2 1\n");
+	    if (gnu_c > 2)
+		fprintf (inFile, "#define HasGcc3 1\n");
+	}
 	fprintf (inFile, "#define GccMajorVersion %d\n", gnu_c);
 	fprintf (inFile, "#define GccMinorVersion %d\n", gnu_c_minor);
     } else
@@ -1236,6 +1239,9 @@ get_gcc_version(FILE *inFile, char *name)
     {
 #if __GNUC__ > 1
 	fprintf (inFile, "#define HasGcc2 1\n");
+# if __GNUC__ > 2
+	fprintf (inFile, "#define HasGcc3 1\n");
+# endif
 #endif
 	fprintf (inFile, "#define GccMajorVersion %d\n", __GNUC__);
 	fprintf (inFile, "#define GccMinorVersion %d\n", __GNUC_MINOR__);

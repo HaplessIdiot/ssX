@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.399 2002/06/07 21:03:24 alanh Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.400 2002/07/01 03:42:40 tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1674,8 +1674,11 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 /*
  * GNU Compiler stuff
  */
+#ifndef HasGcc3
+# define HasGcc3 NO
+#endif
 #ifndef HasGcc2
-# define HasGcc2 NO
+# define HasGcc2 HasGcc3
 #endif
 #ifndef HasGcc
 # define HasGcc HasGcc2

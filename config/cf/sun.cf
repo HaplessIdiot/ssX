@@ -3,7 +3,7 @@ XCOMM platform:  $Xorg: sun.cf,v 1.4 2000/08/17 19:41:48 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.61 2002/01/03 16:33:49 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.62 2002/08/06 13:32:08 herrb Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -29,7 +29,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  *
  * For SunPro C, define HasSunC to YES in site.def.  
  * For CenterLine C, define HasCenterLineC to YES in site.def
- * For gcc or gcc2, define HasGcc or HasGcc2 to YES in site.def
+ * For gcc, gcc2 or gcc3, define HasGcc, HasGcc2 or HasGcc3 to YES in site.def
  * For other compilers, define HasSunC to NO in site.def, then 
  *    provide appropriate values for the various compiler related
  *    configuration varibles used here.
@@ -55,15 +55,18 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  *
  */
 
+#ifndef HasGcc3
+#define HasGcc3 NO
+#endif
 #ifndef HasGcc2
-#define HasGcc2 NO
+#define HasGcc2 HasGcc3
 #endif
 #ifndef HasGcc
 #define HasGcc HasGcc2
 #endif
 
 #ifndef HasSunC
-# if (HasCenterLineC || HasGcc || HasGcc2 || OSMajorVersion < 5)
+# if HasCenterLineC || HasGcc || HasGcc2 || HasGcc3 || (OSMajorVersion < 5)
 #  define HasSunC NO
 # else
 #  define HasSunC YES
