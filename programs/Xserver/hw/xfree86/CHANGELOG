@@ -1,4 +1,10 @@
 XFree86 4.1.99.1 (xx June 2001)
+  95. Darwin build configuration changes:
+       - Turn on building Xv and GLX extensions.
+       - Make GLX and GLU build successfully.
+       - Use Darwin's libz instead of building one for XFree86.
+       - Use XFree86's standard compiler optimization flags per CPU type.
+      (Torrey T. Lyons).
   94. Fix Xserver/Imakefile typo which broke XDarwin build (Torrey T. Lyons).
   93. Fix Darwin bindist files so that dynamic shared libraries are put in
       Xbin.tgz instead of Xprog.tgz (Torrey T. Lyons).
@@ -13479,4 +13485,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1842 2001/06/09 15:48:26 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1843 2001/06/09 16:37:41 torrey Exp $
