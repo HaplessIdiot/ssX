@@ -1,4 +1,6 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 364. Add Microsoft Pro OEM model to XKB inet map (Bugzilla #458,
+      maxim@wzzrd.com)
  363. Extract the CHANGELOG's commit date and include it in the XFree86
       server log/version information (David Dawes).
  362. Change the way xf86Build.h is created so that it doesn't cause its
@@ -17509,7 +17511,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2800 2003/08/10 11:07:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2801 2003/08/10 16:39:23 dawes Exp $
 
 
 
