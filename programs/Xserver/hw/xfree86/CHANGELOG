@@ -3,7 +3,7 @@ XFree86 4.3.99.14 (xx October 2003)
       allocation routines. These still fallback to XY area allocation if
       no (or the lack of) linear space is available. It assumes the driver
       has already called one of the init routines to the FBManager for Areas
-      before this new setup can be used.
+      before this new setup can be used (Alan Hourihane).
  496. Added USB keyboard support for Solaris/x86 platform (Bugzilla #352,
       Daniel Rock).
  495. i830/i810 driver:
@@ -17934,7 +17934,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2877 2003/10/09 11:43:57 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2878 2003/10/09 12:40:45 alanh Exp $
 
 
 
