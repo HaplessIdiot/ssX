@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.111 1997/01/05 11:58:04 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.112 1997/01/18 06:55:31 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2895,8 +2895,11 @@ configScreenSection()
       }
       /* Now copy the info across to the screen rec */
       dispp = dispList + dispIndex;
-      if (dispp->depth > 0) screen->depth = dispp->depth;
-      if (dispp->weight.red > 0) screen->weight = dispp->weight;
+      if (xf86bpp > 0) screen->depth = xf86bpp;
+      else if (dispp->depth > 0) screen->depth = dispp->depth;
+      if (xf86weight.red || xf86weight.green || xf86weight.blue)
+	 screen->weight = xf86weight;
+      else if (dispp->weight.red > 0) screen->weight = dispp->weight;
       screen->frameX0 = dispp->frameX0;
       screen->frameY0 = dispp->frameY0;
       screen->virtualX = dispp->virtualX;

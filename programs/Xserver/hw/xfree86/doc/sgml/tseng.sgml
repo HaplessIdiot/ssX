@@ -4,22 +4,41 @@
  
 <title> Information for Tseng Chipset Users
 <author> The XFree86 Project, Inc.
-<date> 14 October 1996 
+<date> 22 January 1997
 <toc>
  
 <sect> Supported chipsets <p>
 
 The Tseng chipsets supported by XFree86 are ET3000, ET4000, ET4000/W32 and
 ET6000. Accelerated features of the ET4000/W32p and ET6000 are supported by
-the SVGA driver. For details about the separate accelerated 8bpp ET4000/W32
-and ET6000 server, refer to
-<url name="README.W32" url="W32.html">.
+the SVGA driver. For details about the separate accelerated 8bpp (=256
+color) ET4000/W32 and ET6000 server, refer to
+<htmlurl name="README.W32" url="W32.html">.
 
 
 <sect> ET4000 driver features <p>
 
 The SVGA driver for ET4000 chipsets only supports 8bpp mode (256 colors).
-hi- and truecolor modes are not supported. This is being worked on.
+hi- and truecolor modes are not supported.
+
+As opposed to the separate XF86_W32 server, there is no support for special
+RAMDACs in the SVGA server yet. This means that W32 cards with 16-bit
+RAMDAC/clockchip combinations (most ET4000W32p-based cards fall in that
+category) will not be able to use the features that allow higher pixel
+clocks and higher color depths.
+
+As such, those cards will be limited in a similar manner as the older cards,
+i.e. to a maximum pixel clock of 90 MHz, whilst they actually are able to go
+up to 135 MHz. As a result, 1280x1024 modes will only be possible when using
+interlacing, and non-interlaced modes are limited to about 1024x768 at 75 Hz
+refresh.
+
+Similarly, cards with a fully programmable clockchip will not allow you to
+use the clockchip. Only the standard set of fixed clocks is available.
+
+Most of the limitations outlined above will be addressed in a future
+release.
+
 
 Linear memory mode (especially important for some DGA clients) is supported
 on the ET4000W32p rev C and D. Work is underway to support it on some of the
@@ -62,8 +81,8 @@ supports all possible color depths in the SVGA server: 8bpp, 16bpp (both at
 
 In order to be able to run at a depth of 16bpp, 24bpp, or 32bpp, and to
 improve performance at 8bpp, linear addressing must be enabled. On some
-systems, you may have to specify MemBase in addition to telling the server
-is has to run in "linear" mode.
+systems (mostly non-PCI), you may have to specify MemBase in addition to
+telling the server is has to run in "linear" mode.
 
 Linear memory mode (as opposed to the default, banked memory layout) is
 supported. It is required for the 16/24/32 bpp modes. The server will exit
@@ -216,9 +235,11 @@ Clockchip &dquot;et6000&dquot;  (et6000)
 Option &dquot;linear&dquot;  (ET4000W32p, ET6000)
 </tag>
         This enables linear addressing, which is the mapping of the entire
-        framebuffer to a high address beyond system memory, so that (slow)
-        SVGA bank switching is not necessary. It enhances performance at 256
-        colors, and is currently required for 16bpp, 24bpp, and 32bpp.
+        framebuffer to a high address beyond system memory, making the full
+        length of the framebuffer directly accessible. In this way, slow
+        SVGA bank switching (where only a small fraction of the framebuffer
+        is visible at one time) is not necessary. It enhances performance at
+        256 colors, and is currently required for 16bpp, 24bpp, and 32bpp.
 <tag>
 Membase 0xE0000000. (or a different address) (ET4000W32p, ET6000)
 </tag>
@@ -274,6 +295,24 @@ DRAM. Some 4 MB systems, with 4 MDRAM chips will also do interleaving, which
 should give virtually unlimited memory bandwidth: theoretically >1GB/sec,
 comparing to the already neat 90MB/sec on a 1MB ET4000W32i/p card). Most 4MB
 models have only 2 MDRAM chips (as do the 2MB models).
+
+<sect> Acceleration issues <p>
+
+The XFree Acceleration Architecture makes extensive use of the unused video
+memory on the VGA card. If there is not enough free video memory, some
+acceleration features will be disabled or crippled, resulting in less
+performance.
+
+To avoid this from happening, try to keep an absolute minimum of 16 kb of
+free memory, in addition to the 1kb already reserved by the accelerator.
+
+In practice, this small amount of memory should not be a problem. Most cards
+nowadays have 2 MB of video memory, and running 1280x1024 still leaves
+plenty of memory unused. Even a 1600x1200 desktop will leave over 170kb
+unused, which will then be used by the accelerator to enhance performance.
+
+Most 1MB cards cannot display modes larger than 1024x768 with a decent
+refresh rate, leaving 256kb unused.
 
 <sect> Linear addressing and 16bpp/24bpp/32bpp modes <p>
 
@@ -413,7 +452,12 @@ Textmode is not properly restored
         <tt>runx</tt>, <tt>restorefont</tt> on Linux).
 </descrip>
 For other screen drawing related problems, try the <tt>"noaccel"</tt>
-option (if <tt>"no_bitblt"</tt> doesn't help).
+option.
+
+As a final fallback, consider trying the separate accelerated W32 server. It
+is more mature, and has been tested more extensively as a result. See
+<htmlurl name="README.W32" url="W32.html">.
+
 
 If are having driver-related problems that are not addressed by this document,
 or if you have found bugs in accelerated functions, you can try contacting
@@ -427,7 +471,7 @@ keep an eye on forthcoming beta releases at <it>www.xfree86.org</it>.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.10 1997/01/20 12:36:41 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.11 1997/01/22 11:06:23 dawes Exp $ 
 
 
 

@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.8 1996/12/27 06:54:10 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.9 1996/12/28 08:13:03 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -18,12 +18,6 @@
 set_resource_defaults
 
 wm withdraw .
-
-puts "return = [xf86vid_addmodeline [list 44.9 1024 1048 1208 1264 768 776 784 817 interlace]]"
-#puts "return = [xf86vid_deletemodeline [list 36.0 800 824 896 1024 600 601 603 625]]"
-#puts "return = [xf86vid_checkmodeline [list 36.0 800 824 896 1024 600 601 603 625]]"
-#puts "return = [xf86vid_switchtomode [list 25.175 640 664 760 800 480 491 493 525]]"
-#exit 0
 
 create_main_window [set w .xf86setup]
 

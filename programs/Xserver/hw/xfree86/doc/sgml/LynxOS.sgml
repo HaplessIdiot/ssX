@@ -2,17 +2,27 @@
 
 <article>
 
-<title> README for XFree86 3.2 on LynxOS
+<title> README for XFree86 3.2A on LynxOS
 <author>Thomas Mueller
-<date>Last modified on: 21 October 1996
+<date>Last modified on: 22 January 1997
 <toc>
 
+<!--
+<p>
+<bf>BETA  Notice</bf>
+<p>
+The XFree86 3.2A beta is only distributed in binary form, all
+comments about rebuilding the distribution from source in this
+document are worthless. They are left there  for reference purpose
+only. 
+-->
+
 <sect>What and Where is XFree86?<p>
-XFree86 is a port of X11R6.1 that supports several versions of
+XFree86 is a port of X11R6.3 that supports several versions of
 Intel-based Unix.  It is derived from X386 1.2, which was the X server
 distributed with X11R5.  This release consists of many new features
 and performance improvements as well as many bug fixes.  The release
-is available as source patches against the X Consortium X11R6.1 code, as
+is available as source patches against the X Consortium X11R6.3 code, as
 well as binary distributions for many architectures.
 
 See the Copyright Notice in <url url="COPYRIGHT.html" name="Copyright Notice">.
@@ -22,21 +32,25 @@ The sources for XFree86 are available by anonymous ftp from:
 <url name="ftp.XFree86.org:/pub/XFree86/current"
 url="ftp://ftp.XFree86.org/pub/XFree86/current">
 
-Binaries for the 3.2 release on LynxOS AT are available from:
+Binaries for the 3.2A BETA release on LynxOS AT are available from:
 
-<url name="ftp.XFree86.org:/pub/XFree86/current/binaries/LynxOS"
-url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/LynxOS">
+<url name="ftp.XFree86.org:/pub/XFree86/beta/binaries/LynxOS"
+url="ftp://ftp.XFree86.org/pub/XFree86/beta/binaries/LynxOS">
  
 The XFree86 LynxOS port was developed using `LynxOS AT 2.3.0 080695-A FCS'
 and later `LynxOS AT 2.4.0 042696'. XFree86 versions later than 3.1.2
 have not been tested on LynxOS versions earlier than 2.3.0. The binaries 
-are built on `LynxOS AT 2.4.0 042696'.
+are built on `LynxOS AT 2.4.0 042696' (but work on 2.3.0 as well).
 
 XFree86 supports LynxOS on the AT, on the microSPARC and
 on the PowerPC platform. X servers are currently available on
 the AT and microSPARC platform. Refer to section <ref id="others"
 name="Building on microSPARC and PowerPC"> for details on XFree86
 on the non-AT platforms.
+
+If you need binaries for other platforms than the one on the
+XFree FTP server contact me (<htmlurl name="tm@systrix.de"
+url="mailto:tm@systrix.de">).
 
 Send email to <it>tm@systrix.de</it> (Thomas Mueller) or
 <it>XFree86@XFree86.org</it> if you have comments or suggestions about
@@ -49,7 +63,7 @@ which are the executables, servers, fonts, libraries, include files,
 man pages, config files, and the server link kit.  The full distribution
 takes over 80MB of disk space.  
 
-At a minimum you need to unpack the 'required' <tt/X32*.tgz/ archives
+At a minimum you need to unpack the 'required' <tt/X32A*.tgz/ archives
 plus at least one server that matches your vga card. If you will be
 using the new <tt/XF86Setup/ utility you will also need the VGA16
 server.  You'll need about 40Mb for the minimum required run-time
@@ -58,50 +72,56 @@ binaries only.
 <descrip>
 <tag/REQUIRED:/
     <descrip>
-    <tag/X32bin/	Clients, run-time libs, and app-defaults files
-    <tag/X32doc/	Documentation
-    <tag/X32fnts/	75dpi and misc fonts
-    <tag/X32lib/	Data files required at run-time
-    <tag/X32cfg/	sample config files for xinit, xdm
-    <tag/X32set/	XF86Setup utility
-    <tag/X32VG16/	16 colour VGA server (XF86Setup needs this server)
+    <tag/X32Abin/	Clients, run-time libs, and app-defaults files
+    <tag/X32Adoc/	Documentation
+    <tag/X32Afnts/	75dpi and misc fonts
+    <tag/X32Alib/	Data files required at run-time
+    <tag/X32Acfg/	sample config files for xinit, xdm
+    <tag/X32Aset/	XF86Setup utility
+    <tag/X32AVG16/	16 colour VGA server (XF86Setup needs this server)
     </descrip>
 
     Choose at least one of the following server to match your hardware:
 
     <descrip>
-    <tag/X328514/	8514/A server
-    <tag/X32AGX/	AGX server
-    <tag/X32I128/	I128 server
-    <tag/X32Ma64/	Mach 64 server
-    <tag/X32Ma32/	Mach 32 server
-    <tag/X32Ma8/	Mach 8 server
-    <tag/X32Mono/	Monochrome server
-    <tag/X32P9K/	P9000 server
-    <tag/X32S3/		S3 server
-    <tag/X32S3V/	S3 ViRGE server
-    <tag/X32SVGA/	SVGA server
-    <tag/X32VG16/	16 colour VGA server
-    <tag/X32W32/	ET4000/W32, ET6000 server
+    <tag/X32A8514/	8514/A server
+    <tag/X32AAGX/	AGX server
+    <tag/X32AI128/	I128 server
+    <tag/X32AMa64/	Mach 64 server
+    <tag/X32AMa32/	Mach 32 server
+    <tag/X32AMa8/	Mach 8 server
+    <tag/X32AMono/	Monochrome server
+    <tag/X32AP9K/	P9000 server
+    <tag/X32AS3/	S3 server
+    <tag/X32AS3V/	S3 ViRGE server
+    <tag/X32ASVGA/	SVGA server
+    <tag/X32AVG16/	16 colour VGA server
+    <tag/X32AW32/	ET4000/W32, ET6000 server
     </descrip>
 
 <tag/OPTIONAL:/
 
     <descrip>
-    <tag/X32f100/ 100dpi fonts
-    <tag/X32fcyr/ Cyrillic fonts
-    <tag/X32fnon/ Other fonts (Chinese, Japanese, Korean, Hebrew)
-    <tag/X32fscl/ Scalable fonts (Speedo and Type1)
-    <tag/X32fsrv/ Font server and config files
-    <tag/X32prog/ X header files, config files and compile-time libs
-    <tag/X32man/  Manual pages
-    <tag/X32nest/ Nested X server
+    <tag/X32Af100/ 100dpi fonts
+    <tag/X32Afcyr/ Cyrillic fonts
+    <tag/X32Afnon/ Other fonts (Chinese, Japanese, Korean, Hebrew)
+    <tag/X32Afscl/ Scalable fonts (Speedo and Type1)
+    <tag/X32Afsrv/ Font server and config files
+    <tag/X32Aprog/ X header files, config files and compile-time libs
+    <tag/X32Aman/  Manual pages
+    <tag/X32Anest/ Nested X server
     </descrip>
 </descrip>
 
 If this is your first time, then you can safely install all of the
 packages.  As a minimal install, you'll need doc, bin, fonts lib,
 config, and one X server.
+
+If you plan to install XF86Setup you'll have to install
+<tt/X32Aprog/ as well since XF86Setup checks for the existance of
+a certain file name pattern which is satisfied only if you install
+the library files from <tt/X32Aprog/. This restriction will be
+fixed in future releases for LynxOS.
 
 <sect1>Full Install
 <p>
@@ -127,7 +147,7 @@ config, and one X server.
 
 <tscreen><verb>
  # cd /usr/X11R6
- # for i in X32*.tgz; do
+ # for i in X32A*.tgz; do
  #   gnutar -xzpPf $i
  # done
 </verb></tscreen>
@@ -135,7 +155,7 @@ config, and one X server.
      Else, if you are using csh:
 <tscreen><verb>
  % cd /usr/X11R6
- % foreach i (X32*.tgz)
+ % foreach i (X32A*.tgz)
  %   gnutar -xzpPf $i
  % end
 </verb></tscreen>
@@ -157,7 +177,7 @@ First do numbers 1 and 2 above. Then unpack the required archives:
 <tscreen><verb>
  # cd /usr/X11R6
  # for i in bin fnts lib xicf; do
- #   gnutar -xzpPf  X32$i.tgz
+ #   gnutar -xzpPf  X32A$i.tgz
  # done
 </verb></tscreen>
 
@@ -167,12 +187,18 @@ sets supported by each server.  For example, if you have an ET4000
 based card you will use the XF86_SVGA server:
 
 <tscreen><verb>
- # gnutar -xzpPf X32SVGA.tgz
+ # gnutar -xzpPf X32ASVGA.tgz
  # cd /usr/X11R6/bin; rm -f X; ln -s XF86_SVGA X
 </verb></tscreen>
 
 <sect1>After either Full or Minimal Install above
 <p>
+
+Be sure to include <tt>/usr/X11R6/bin</tt> in your PATH environment
+variable. If you plan to use clients of the MetroLink X package with 
+the XFree86 X server make sure to remove <tt>/usr/bin/X11/X</tt>
+file or put <tt>/usr/bin/X11</tt> after <tt>/usr/X11R6/bin</tt> in 
+your PATH environment variable.
 
 If you had already configured <tt>X11R6/lib/X11/xinit/xinitrc</tt> or
 <tt>X11R6/lib/X11/xdm/*</tt> omit the <tt/xinit-config/ or
@@ -353,9 +379,11 @@ few little adjustments to your system:
 <sect1>Bus mouse drivers<p>
 
   Starting with LynxOS AT 2.4.4 LynxOS includes a PS/2 mouse driver.
-  Currently this driver is not supported by XFree86.
-  <tt>/usr/X11R6/lib/X11/etc/BM-Lynx.shar</tt> contains a port 
-  of the Linux drivers for those devices. To install the drivers
+  Currently this driver is not fully supported by XFree86 (you'll
+  probably have to specify a mouse type which doesn't match the
+  real mouse type and in some cases lose mouse buttons).
+  <tt>/usr/X11R6/lib/X11/etc/BM-Lynx.shar</tt> contains a LynxOS port 
+  of the Linux bus mouse drivers. To install the drivers
   unpack the shar archive
 
   <tscreen><verb>
@@ -368,7 +396,9 @@ few little adjustments to your system:
 
   The XFree86 PS/2 mouse driver works also with MetroLink X 2.3.3.1 as
   shipped with LynxOS AT 2.4.0 unless you have the LynxOS patch
-  000055-00 installed.  <sect1> ATC console driver and VT switching<p>
+  000055-00 installed.
+
+<sect1> ATC console driver and VT switching<p>
 
   The XFree86 servers will only run with the default LynxOS console
   driver, sorry for those of you who use the alternative vdt console
@@ -581,7 +611,7 @@ few little adjustments to your system:
   <tt>lynx.cf</tt> but it has never been tested.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.10 1996/10/23 13:09:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.11 1996/12/23 06:46:00 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.4 1997/01/20 12:38:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.5 1997/01/22 11:17:16 dawes Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -565,4 +565,5 @@ extern unsigned int byte_expand3[256], byte_reversed_expand3[256];
     & 0xFF0000) >> 16)))
 /* Check for rops that don't access the source */
 #define CHECKSOURCEROP() \
-    (pGC->alu != GXinvert)
+    (pGC->alu != GXclear && pGC->alu != GXnoop && pGC->alu != GXinvert && \
+    pGC->alu != GXset)

@@ -476,6 +476,46 @@ chances are good it might work for you, too.
 
 	8/15/16/24 bpp
 
+<tag>ELSA Winner 2000PRO/X-8 (S3 968, 8MB VRAM, 220MHz for 32bpp)</tag>
+
+ The server has only been tested for "revision C" of this card
+ (guess the serial number should start with C, but not sure since
+ mine says  Ser.No. A-0000.000.000;)  which have an IBM RGB528A
+ note the A;  can't be probed though)
+
+ depending on the mode line etc there may be some display distortions like:
+ <enum>
+    <item>many long horizontal lines/stripes
+    <item>pixel jitter or short horizontal stripes like snow all over the
+	  screen
+    <item>Like 2., but only when doing graphics ops (like opaque move of
+	  windows).
+    <item>additional pixel at the left display edge and some missing pixels
+	  at the right edge.
+ </enum>
+ All of these problems can be fixed by small adjustments to the mode line
+ (best to run `xvidtune' and make these adjustments interactively).  E.g.,
+ for the first three problems, shift the display left or right a few steps.
+ For the last problem, increasing HSyncEnd (making the hsync pulse longer)
+ solves the problem.  In some cases, a significant increase in the sync
+ pulse width is needed, and rarely, it needs to be shortened (by decreasing
+ HSyncEnd).
+
+ In rare cases, InvertVCLK and/or EarlySC may need to be adjusted, followed
+ by an adjustment of BlankDelay (see the bottom line of xvidtune).
+
+ If you see any of these problems, please contact
+ <htmlurl url="mailto:koenig@XFree86.org" name="koenig@XFree86.org">, and
+ send details of:
+ <itemize>
+    <item>Original mode showing the problem,
+    <item>Tuned/fixed mode, including all flags from the bottom line of
+	  xvidtune,
+    <item>Colour depth used for this tuned mode line,
+    <item>Full server startup output.
+ </itemize>
+
+
 </descrip>
 
 <sect> 16bpp and 32bpp
@@ -789,7 +829,7 @@ exit
 </code>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.33 1996/02/04 09:08:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.34 1996/12/23 06:46:11 dawes Exp $
 
 
 

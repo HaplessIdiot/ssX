@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: main.c /main/82 1996/09/28 17:12:09 rws $ */
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.8 1996/12/23 06:29:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.9 1997/01/12 10:40:54 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -637,7 +637,7 @@ AddScreen(pfnInit, argc, argv)
 #ifdef PIXPRIV
     pScreen->PixmapPrivateLen = 0;
     pScreen->PixmapPrivateSizes = (unsigned *)NULL;
-    pScreen->totalPixmapSize = sizeof(PixmapRec);
+    pScreen->totalPixmapSize = BitmapBytePad(sizeof(PixmapRec)*8);
 #endif
     pScreen->ClipNotify = 0;	/* for R4 ddx compatibility */
     pScreen->CreateScreenResources = 0;

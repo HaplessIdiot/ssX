@@ -137,7 +137,7 @@ At this time, XFree86 3.2A supports the following accelerated chipsets:
     <tag/Matrox/
 	MGA2064W
     <tag/Number Nine/
-	I128 (not accelerated yet)
+	I128
  </DESCRIP>
 
 The Cirrus, Western Digital, Oak, ARK, Chips &amp; Technologies and 
@@ -365,6 +365,11 @@ XFree86 support was integrated into the base X11R6 distribution by:
 <itemize>
        <item> Thomas Mueller <it>&lt;tm@systrix.de&gt</it>
 </itemize>
+<tag>OS/2 support by:  </tag>
+<itemize>
+       <item> Holger Veit <it>&lt;Holger.Veit@gmd.de&gt;</it>
+       <item> Sebastien Marineau <it>&lt;s521936@aix1.uottawa.ca&gt;</it>
+</itemize>
 <tag/Linux shared libraries by:  /
 <itemize>
        <item> Orest Zborowski <it>&lt;orestz@eskimo.com&gt;</it>,
@@ -409,6 +414,10 @@ XFree86 support was integrated into the base X11R6 distribution by:
        <item> Rik Faith <it>&lt;faith@cs.unc.edu&gt;</it>,
        <item> Jon Tombs <it>&lt;tombs@XFree86.org&gt;</it>
 </itemize>
+<tag/XFree86 Acceleration Architecture (XAA) by: /
+<itemize>
+       <item> Harm Hanemaayer <it>&lt;H.Hanemaayer@inter.nl.net&gt;</it>,
+</itemize>
 <tag/S3 accelerated code by:  /
 <itemize>
        <item> Jon Tombs <it>&lt;tombs@XFree86.org&gt;</it>,
@@ -419,13 +428,14 @@ XFree86 support was integrated into the base X11R6 distribution by:
        <item> Amancio Hasty <it>&lt;hasty@netcom.com&gt;</it>,
        <item> Norbert Distler <it>&lt;Norbert.Distler@physik.tu-muenchen.de&gt;</it>,
        <item> Leonard N. Zubkoff <it>&lt;lnz@dandelion.com&gt;</it>,
-       <item> Bernhard Bender <it>&lt;br@elsa.mhs.compuserve.com&gt;</it>
-       <item> Dirk Hohndel <it>&lt;hohndel@XFree86.org&gt;</it>
+       <item> Bernhard Bender <it>&lt;br@elsa.mhs.compuserve.com&gt;</it>,
+       <item> Dirk Hohndel <it>&lt;hohndel@XFree86.org&gt;</it>,
        <item> Joe Moss <it>&lt;joe@XFree86.org&gt;</it>
 </itemize>
 <tag/S3V accelerated code by:  /
 <itemize>
        <item> Harald Koenig <it>&lt;koenig@tat.physik.uni-tuebingen.de&gt;</it>,
+       <item> Kevin Brosius <it>&lt;Cobra@compuserve.com&gt;</it>
 </itemize>
 <tag/Mach32 accelerated code by:  /
 <itemize>
@@ -516,6 +526,7 @@ XFree86 support was integrated into the base X11R6 distribution by:
 <tag/SiS SVGA driver by:  /
 <itemize>
        <item> Alan Hourihane <it>&lt;alanh@fairlite.demon.co.uk&gt;</it>
+       <item> Xavier Ducoin <it>&lt;xavier@rd.lectra.fr&gt;</it>
 </itemize>
 <tag/DEC 21030 (TGA) server by:  /
 <itemize>
@@ -1006,7 +1017,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.69 1997/01/20 12:36:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.70 1997/01/22 11:06:18 dawes Exp $
 
 
 

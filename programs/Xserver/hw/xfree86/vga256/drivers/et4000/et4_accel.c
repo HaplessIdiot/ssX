@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.6 1997/01/20 12:37:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.7 1997/01/22 11:10:49 dawes Exp $ */
 
 
 /*
@@ -190,7 +190,7 @@ void TsengAccelInit() {
      */
 
     xf86AccelInfoRec.ColorExpandFlags =
-        BIT_ORDER_IN_BYTE_LSBFIRST | VIDEO_SOURCE_GRANULARITY_PIXEL;
+        BIT_ORDER_IN_BYTE_LSBFIRST | VIDEO_SOURCE_GRANULARITY_PIXEL | NO_PLANEMASK;
 
 #if 1
     /* new and untested */

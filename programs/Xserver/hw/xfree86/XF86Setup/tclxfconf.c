@@ -5,7 +5,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.13 1996/12/27 06:54:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.14 1997/01/18 06:53:50 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -226,6 +226,7 @@ ScrnInfoRec	monoInfoRec, vga2InfoRec, vga16InfoRec,
 
 Bool		xf86AllowMouseOpenFail;
 int		xf86bpp, defaultColorVisualClass, xf86Verbose = 2;
+xrgb		xf86weight;
 
 /* Note that the order is important. They must be ordered numerically */
 int		xf86MaxScreens, xf86ScreenNames[] = {
@@ -275,6 +276,7 @@ init_config_vars(xwinhome)
 	xf86fpFlag = xf86coFlag = xf86sFlag       = FALSE;
 	xf86BestRefresh = FALSE;
 	xf86MaxScreens = XF86MAXSCREENS;
+	xf86weight.red = xf86weight.green = xf86weight.blue = 0;
 
 	pathlen = strlen(xwinhome);
 	if (rgbPath == NULL)

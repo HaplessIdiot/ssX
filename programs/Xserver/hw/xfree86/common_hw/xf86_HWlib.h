@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.28 1996/10/21 05:27:40 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.29 1996/12/23 06:44:25 dawes Exp $ */ 
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -223,6 +223,13 @@ extern int S3ViRGE_VXSetClock(
 #endif
 );
 
+extern int S3AuroraSetClock(
+#if NeedFunctionPrototypes
+	long,
+	int
+#endif
+);
+
 /* Ti3025clk.c */
 extern void Ti3025SetClock(
 #if NeedFunctionPrototypes
@@ -353,7 +360,7 @@ extern void s3IBMRGB_Init(
 extern int commonCalcClock(
 #if NeedFunctionPrototypes
    long,
-   int, int, int, int,
+   int, int, int, int, int,
    long, long,
    unsigned char *,
    unsigned char *

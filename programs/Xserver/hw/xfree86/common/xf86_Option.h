@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.63 1997/01/14 22:17:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.64 1997/01/18 06:55:36 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -240,6 +240,7 @@ typedef struct {
 #define CLOCK_OPTION_GLORIA8    18 /* use ELSA Gloria-8 TVP3030/ICS9161 clock */
 #define CLOCK_OPTION_ET6000     19 /* use ET6000 built-in programmable clock */
 #define CLOCK_OPTION_ICS1562    20 /* used for TGA server */
+#define CLOCK_OPTION_S3AURORA   21 /* use S3 Aurora64V+ programmable clocks */
 
 /*
  * Table to map option strings to tokens.
@@ -421,6 +422,7 @@ OptFlagRec xf86_ClockOptionTab [] = {
   { "s3_trio",		CLOCK_OPTION_S3TRIO },    /* S3 Trio32/64 */
   { "s3_trio32",	CLOCK_OPTION_S3TRIO },    /* S3 Trio32/64 */
   { "s3_trio64",	CLOCK_OPTION_S3TRIO },    /* S3 Trio32/64 */
+  { "s3_aurora64",	CLOCK_OPTION_S3AURORA },  /* S3 Aurora64V+ */
   { "ti3025",		CLOCK_OPTION_TI3025 },    /* TI3025 */
   { "ti3026",		CLOCK_OPTION_TI3026 },    /* TI3026 */
   { "ti3030",		CLOCK_OPTION_TI3026 },    /* TI3030 is TI3026 compatible */

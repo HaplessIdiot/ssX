@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_accel.c,v 3.3 1997/01/18 06:56:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_accel.c,v 3.4 1997/01/22 11:08:45 dawes Exp $ */
 
 
 #include "vga256.h"
@@ -159,13 +159,6 @@ void _ctAccelInit() {
     if (vga256InfoRec.bitsPerPixel == 24)
 	xf86AccelInfoRec.ColorExpandFlags |= TRIPLE_BITS_24BPP |
 	    RGB_EQUAL;
-#if 1
-    /* Colour expansion seems to crash with GXor ROP and large fonts.
-     * This might apply to other ROP's as well, and might be a 65545
-     * specific bug!! I'd love someone to check. Trace this down after
-     * XFree 3.2A */
-    xf86AccelInfoRec.ColorExpandFlags |= GXCOPY_ONLY;
-#endif
 #endif
 
     xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_accel.c,v 3.3 1997/01/12 10:45:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_accel.c,v 3.4 1997/01/14 22:21:50 dawes Exp $ */
 
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
@@ -88,8 +88,7 @@ void TGUIAccelInit() {
 				HARDWARE_PATTERN_TRANSPARENCY |
 				HARDWARE_PATTERN_ALIGN_64 |
 				HARDWARE_PATTERN_MONO_TRANSPARENCY |
-				/* We Sync() ourselves */
-				NO_SYNC_AFTER_CPU_COLOR_EXPAND |
+				HARDWARE_PATTERN_SCREEN_ORIGIN |
 				PIXMAP_CACHE;
 
     xf86AccelInfoRec.Sync = TGUISync;
@@ -122,7 +121,7 @@ void TGUIAccelInit() {
 #endif
 
     /* Color Expansion */
-    xf86AccelInfoRec.ColorExpandFlags = VIDEO_SOURCE_GRANULARITY_PIXEL |
+    xf86AccelInfoRec.ColorExpandFlags = VIDEO_SOURCE_GRANULARITY_DWORD |
 					BIT_ORDER_IN_BYTE_MSBFIRST |
 					SCANLINE_PAD_DWORD |
 					CPU_TRANSFER_PAD_DWORD |
@@ -222,6 +221,7 @@ transparency_color)
     if (transparency_color != -1)
     {
 	TGUI_FCOLOUR(transparency_color);
+	TGUI_BCOLOUR(transparency_color);
 	direction |= TRANS_ENABLE;
     }
     TGUI_DRAWFLAG(direction | SCR2SCR);
@@ -308,13 +308,13 @@ transparency_color)
 	}
 	TGUI_FMIX(TGUIRops_Pixalu[rop]); /* ROP */
 	TGUI_DRAWFLAG(drawflag | PAT2SCR);
+	TGUI_PATLOC(patterny * vga256InfoRec.displayWidth + patternx);
 }
 
 void TGUISubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
     int patternx, patterny;
     int x, y, w, h;
 {
-	TGUI_PATLOC(patterny * vga256InfoRec.displayWidth + patternx);
 	TGUI_DEST_XY(x,y);
 	TGUI_DIM_XY(w,h);
 	TGUI_COMMAND(GE_BLT);
@@ -357,12 +357,12 @@ planemask)
 		TGUI_BCOLOUR(bg);
 	TGUI_FMIX(TGUIRops_Pixalu[rop]); /* ROP */
 	TGUI_DRAWFLAG(drawflag | PATMONO |PAT2SCR);
+	TGUI_PATLOC(patterny * vga256InfoRec.displayWidth + patternx);
 }
 
 void TGUISubsequent8x8PatternColorExpand(patternx, patterny, x, y, w, h)
 	int patternx, patterny, x, y, w, h;
 {
-	TGUI_PATLOC(patterny * vga256InfoRec.displayWidth + patternx);
 	TGUI_DEST_XY(x,y);
 	TGUI_DIM_XY(w,h);
 	TGUI_COMMAND(GE_BLT);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.61 1997/01/18 06:56:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.62 1997/01/22 11:16:35 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -1052,6 +1052,23 @@ TVGA8900Probe()
 	}
 	else
 	{
+#ifdef PC98_TGUI
+		switch (vgaBitsPerPixel) {
+			case 8:
+				vga256InfoRec.maxClock = 
+					pc98TGUi->Bpp_Clocks[0];
+				break;
+			case 16:
+				vga256InfoRec.maxClock = 
+					pc98TGUi->Bpp_Clocks[1];
+				break;
+			case 24:
+			case 32:
+				vga256InfoRec.maxClock = 
+					pc98TGUi->Bpp_Clocks[3];
+				break;
+		}
+#else
 		switch (vgaBitsPerPixel) {
 			case 8:
 				vga256InfoRec.maxClock = 
@@ -1067,6 +1084,7 @@ TVGA8900Probe()
 					tridentClockLimit32bpp[TVGAchipset];
 				break;
 		}
+#endif /* PC98_TGUI */
 	}
 
     	return(TRUE);

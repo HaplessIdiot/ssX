@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.127 1997/01/12 10:38:09 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.128 1997/01/18 06:45:52 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -92,8 +92,10 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #ifndef XF86P9000Server
 #define XF86P9000Server		YES
 #endif
+#if 0
 #ifndef XF86I128Server
 #define XF86I128Server		YES
+#endif
 #endif
 #ifndef XF86TGAServer
 #define XF86TGAServer		YES

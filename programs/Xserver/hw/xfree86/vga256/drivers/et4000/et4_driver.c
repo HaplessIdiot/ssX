@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.42 1997/01/20 12:37:50 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.43 1997/01/22 11:10:51 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1706,7 +1706,7 @@ ET4000Init(mode)
 
        if (mode->Flags & V_PIXMUX)
        {
-         commonCalcClock(mode->SynthClock,1,1,2,3,100000,vga256InfoRec.dacSpeed*2+1, 
+         commonCalcClock(mode->SynthClock,1,1,31,2,3,100000,vga256InfoRec.dacSpeed*2+1, 
          		 &(new->gendac.PLL_f2_M), &(new->gendac.PLL_f2_N));
          if( W32RamdacType == STG1703_DAC ) {
             new->gendac.cmd_reg |= 8;
@@ -1737,7 +1737,7 @@ ET4000Init(mode)
        }
        else
        {
-         commonCalcClock(mode->SynthClock,1,1,0,3,100000,vga256InfoRec.dacSpeed*2+1, 
+         commonCalcClock(mode->SynthClock,1,1,31,0,3,100000,vga256InfoRec.dacSpeed*2+1, 
          		 &(new->gendac.PLL_f2_M), &(new->gendac.PLL_f2_N));
          if( W32RamdacType == STG1703_DAC ) {
             new->gendac.cmd_reg |= 8;
@@ -1778,7 +1778,7 @@ ET4000Init(mode)
     if (et4000_type>=TYPE_ET6000)
     {
        /* setting min_n2 to "1" will ensure a more stable clock ("0" is allowed though) */
-       commonCalcClock(vga256InfoRec.clock[new->std.NoClock],1,1,1,3,
+       commonCalcClock(vga256InfoRec.clock[new->std.NoClock],1,1,31,1,3,
                  100000,vga256InfoRec.dacSpeed*2, 
        		 &(new->gendac.PLL_f2_M), &(new->gendac.PLL_f2_N));
 

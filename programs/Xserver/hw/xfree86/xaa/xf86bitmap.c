@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bitmap.c,v 3.5 1997/01/14 22:22:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bitmap.c,v 3.6 1997/01/18 06:57:16 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -40,7 +40,7 @@
 #include "xf86local.h"
 #include "xf86expblt.h"
 
-extern unsigned char *byte_reversed;
+extern unsigned char byte_reversed[256];
 
 
 /*

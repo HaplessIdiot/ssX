@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.8 1997/01/20 12:38:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.9 1997/01/22 11:17:14 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -587,7 +587,8 @@ do_not_touch_xf86AccelInfoRec:
      * If there is a replacement for screen-to-screen BitBlt, then we
      * want to use it for CopyWindow.
      */
-    if (SimpleScreenToScreenCopy) {
+    if (xf86AccelInfoRec.SetupForScreenToScreenCopy &&
+    xf86AccelInfoRec.SubsequentScreenToScreenCopy) {
         pScreen->CopyWindow = xf86CopyWindow;
     }
     /*
