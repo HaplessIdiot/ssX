@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.20 1998/09/19 12:14:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.19 1998/09/13 05:23:38 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -30,12 +30,27 @@
 #define OUTREG(addr, val) do { xf86WriteSparse32((val),pMga->IOBase,(addr)); \
 				mb();} while(0)
 #else /* __alpha__ */
+#if defined(EXTRADEBUG)
+CARD8 dbg_inreg8(ScrnInfoPtr,int,int);
+CARD16 dbg_inreg16(ScrnInfoPtr,int,int);
+CARD32 dbg_inreg32(ScrnInfoPtr,int,int);
+void dbg_outreg8(ScrnInfoPtr,int,int);
+void dbg_outreg16(ScrnInfoPtr,int,int);
+void dbg_outreg32(ScrnInfoPtr,int,int);
+#define INREG8(addr) dbg_inreg8(pScrn,addr,1)
+#define INREG16(addr) dbg_inreg16(pScrn,addr,1)
+#define INREG(addr) dbg_inreg32(pScrn,addr,1)
+#define OUTREG8(addr,val) dbg_outreg8(pScrn,addr,val)
+#define OUTREG16(addr,val) dbg_outreg16(pScrn,addr,val)
+#define OUTREG(addr,val) dbg_outreg32(pScrn,addr,val)
+#else /* EXTRADEBUG */
 #define INREG8(addr) *(volatile CARD8 *)(pMga->IOBase + (addr))
 #define INREG16(addr) *(volatile CARD16 *)(pMga->IOBase + (addr))
 #define INREG(addr) *(volatile CARD32 *)(pMga->IOBase + (addr))
 #define OUTREG8(addr, val) *(volatile CARD8 *)(pMga->IOBase + (addr)) = (val)
 #define OUTREG16(addr, val) *(volatile CARD16 *)(pMga->IOBase + (addr)) = (val)
 #define OUTREG(addr, val) *(volatile CARD32 *)(pMga->IOBase + (addr)) = (val)
+#endif /* EXTRADEBUG */
 #endif /* __alpha__ */
 
 #define PORT_OFFSET 	(0x1F00 - 0x300)
@@ -45,6 +60,7 @@ typedef struct {
     unsigned char 	DacClk[6];
     unsigned char *     DacRegs;
     CARD32		Option;
+    CARD32		Option2;
     Bool		VgaEnable;
 } MGARegRec, *MGARegPtr;
 

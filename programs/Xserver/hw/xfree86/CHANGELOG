@@ -1,4 +1,5 @@
 XFree86 3.9Nf (20 September 1998)
+1850. More attempts towards a working G100 server (1982, Dirk Hohndel).
 1849. Update the mga driver for use with the resource management code.
 1848. Fix some bugs and typos in the resource management code.
 1847. Rework the vgahw module, abstracting the register accesses and splitting
@@ -6529,4 +6530,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.625 1998/09/19 12:14:44 dawes Exp $
+$XFree86: $

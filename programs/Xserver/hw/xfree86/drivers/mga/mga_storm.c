@@ -351,6 +351,8 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
 {
     long maccess = 0;
     MGAPtr pMga = MGAPTR(pScrn);
+    if (pMga->Chipset == PCI_CHIP_MGAG100)
+    	maccess = 1 << 14;
     
     switch( pScrn->bitsPerPixel )
     {
@@ -358,13 +360,13 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
         break;
     case 16:
 	/* set 16 bpp, turn off dithering, turn on 5:5:5 pixels */
-        maccess = 1 + (1 << 30) + (1 << 31);
+        maccess |= 1 + (1 << 30) + (1 << 31);
         break;
     case 24:
-        maccess = 3;
+        maccess |= 3;
         break;
     case 32:
-        maccess = 2;
+        maccess |= 2;
         break;
     }
     
@@ -373,7 +375,8 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
     OUTREG(MGAREG_YDSTORG, pMga->YDstOrg);
     OUTREG(MGAREG_MACCESS, maccess);
     pMga->PlaneMask = ~0;
-    OUTREG(MGAREG_PLNWT, pMga->PlaneMask);
+    if (pMga->Chipset != PCI_CHIP_MGAG100)
+	OUTREG(MGAREG_PLNWT, pMga->PlaneMask);
     pMga->FgColor = 1;
     OUTREG(MGAREG_FCOL, pMga->FgColor);
     pMga->BgColor = 0;
