@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.55 1998/01/11 16:42:00 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.56 1998/02/27 17:09:37 robin Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -1249,7 +1249,8 @@ main(int argc, unsigned char *argv[])
     pcr._ioaddr = 0xFFFF;
 
     pcr._pcibuses[0] = 0;
-    pcr._pcinumbus = 1;
+    pcr._pcibuses[1] = 1;
+    pcr._pcinumbus = 2;
     pcr._pcibusidx = 0;
     idx = 0;
 
@@ -1370,7 +1371,8 @@ main(int argc, unsigned char *argv[])
     printf("\nPCI probing configuration type 2\n");
 
     pcr._pcibuses[0] = 0;
-    pcr._pcinumbus = 1;
+    pcr._pcibuses[1] = 1;
+    pcr._pcinumbus = 2;
     pcr._pcibusidx = 0;
     idx = 0;
 
