@@ -36,7 +36,7 @@
 #include "drmP.h"
 #include "i830_drv.h"
 #include <linux/interrupt.h>	/* For task queue support */
-
+#include <linux/delay.h>
 /* in case we don't have a 2.3.99-pre6 kernel or later: */
 #ifndef VM_DONTCOPY
 #define VM_DONTCOPY 0
@@ -60,7 +60,7 @@ do {								\
    do { 							\
       _head = I830_READ(LP_RING + RING_HEAD) & HEAD_ADDR;	\
       _tail = I830_READ(LP_RING + RING_TAIL) & TAIL_ADDR;	\
-      for(_i = 0; _i < 65535; _i++);				\
+      udelay(10);						\
    } while(_head != _tail);					\
 } while(0)
 
@@ -375,13 +375,13 @@ static int i830_wait_ring(drm_device_t *dev, int n)
 		}
 	  
 	   	iters++;
-		if((signed)(end - jiffies) <= 0) {
+		if(time_before(end,jiffies)) {
 		   	DRM_ERROR("space: %d wanted %d\n", ring->space, n);
 		   	DRM_ERROR("lockup\n");
 		   	goto out_wait_ring;
 		}
 
-	   	for (i = 0 ; i < 2000 ; i++) ;
+	   	udelay(1);
 	}
 
 out_wait_ring:   
@@ -1136,7 +1136,7 @@ void i830_dma_quiescent(drm_device_t *dev)
 		current->state = TASK_INTERRUPTIBLE;
 	      	i830_dma_quiescent_emit(dev);
 	   	if (atomic_read(&dev_priv->flush_done) == 1) break;
-		if((signed)(end - jiffies) <= 0) {
+		if(time_before(end, jiffies)) {
 		   	DRM_ERROR("lockup\n");
 		   	break;
 		}	   
@@ -1170,7 +1170,7 @@ static int i830_flush_queue(drm_device_t *dev)
 		current->state = TASK_INTERRUPTIBLE;
 	      	i830_dma_emit_flush(dev);
 	   	if (atomic_read(&dev_priv->flush_done) == 1) break;
-		if((signed)(end - jiffies) <= 0) {
+		if(time_before(end, jiffies)) {
 		   	DRM_ERROR("lockup\n");
 		   	break;
 		}	   
