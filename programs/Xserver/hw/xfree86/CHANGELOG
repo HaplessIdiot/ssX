@@ -1,4 +1,6 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 609. Fix 'constype' for modern framebuffers on Solaris (Bugzilla #890,
+      Alan Coopersmith).
  608. Fix a thread deadlock problem in libXp (Bugzilla #887, Roland Mainz).
  607. Fix event buffer overrun in the wacom driver (Bugzilla #882, David Dawes,
       reported by Jonathan Hough).
@@ -18226,7 +18228,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2979 2003/11/21 05:09:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2980 2003/11/21 05:13:22 dawes Exp $
 
 
 
