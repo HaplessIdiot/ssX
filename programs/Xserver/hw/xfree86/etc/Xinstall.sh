@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.73 2004/02/29 00:09:28 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.74 2004/06/02 22:43:04 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -1406,8 +1406,12 @@ rm -fr .etctmp
 mkdir .etctmp
 (cd .etctmp; "$EXTRACT" "$WDIR"/$ETCDIST)
 for i in $ETCDLINKS; do
-	DoCopy=YES
-	if [ -d $RUNDIR/lib/X11/$i ]; then
+	if [ -d .etctmp/X11/$i ]; then
+		DoCopy=YES
+	else
+		DoCopy=NO
+	fi
+	if [ $DoCopy = YES -a -d $RUNDIR/lib/X11/$i ]; then
 		Echo "Do you want to overwrite the $i config files? (y/n) [n] "
 		read response
 		case "$response" in
@@ -1438,8 +1442,12 @@ for i in $ETCDLINKS; do
 	fi
 done
 for i in $ETCFLINKS; do
-	DoCopy=YES
-	if [ -f $RUNDIR/lib/X11/$i ]; then
+	if [ -f .etctmp/X11/$i ]; then
+		DoCopy=YES
+	else
+		DoCopy=NO
+	fi
+	if [ $DoCopy = YES -a -f $RUNDIR/lib/X11/$i ]; then
 		Echo "Do you want to overwrite the $i config file? (y/n) [n] "
 		read response
 		case "$response" in
@@ -1474,8 +1482,12 @@ if [ X"$XKBDIR" != X ]; then
 	fi
 fi
 for i in $ETCFONTFILES; do
-	DoCopy=YES
-	if [ -f $ETCDIR/fonts/$i ]; then
+	if [ -f .etctmp/fonts/$i ]; then
+		DoCopy=YES
+	else
+		DoCopy=NO
+	fi
+	if [ $DoCopy = YES -a -f $ETCDIR/fonts/$i ]; then
 		Echo "Do you want to overwrite the $i config file? (y/n) [n] "
 		read response
 		case "$response" in
