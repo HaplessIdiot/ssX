@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.26 2001/10/28 03:33:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.27 2003/02/15 03:47:05 dawes Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -998,7 +998,11 @@ doListFontsWithInfo(client, c)
 		c->saved = c->current;
 		c->haveSaved = TRUE;
 		c->savedNumFonts = numFonts;
-		c->savedName = (char *) pFontInfo;
+		if (c->savedName)
+		  xfree(c->savedName);
+		c->savedName = (char *)xalloc(namelen + 1);
+		if (c->savedName)
+		  memmove(c->savedName, name, namelen + 1);
 		aliascount = 20;
 	    }
 	    memmove(c->current.pattern, name, namelen);
@@ -1105,6 +1109,7 @@ bail:
 	FreeFPE(c->fpe_list[i]);
     xfree(c->reply);
     xfree(c->fpe_list);
+    if (c->savedName) xfree(c->savedName);
     xfree(c);
     return TRUE;
 }
@@ -1155,6 +1160,7 @@ StartListFontsWithInfo(client, length, pattern, max_names)
     c->savedNumFonts = 0;
     c->haveSaved = FALSE;
     c->slept = FALSE;
+    c->savedName = 0;
     doListFontsWithInfo(client, c);
     return Success;
 badAlloc:
