@@ -1,4 +1,4 @@
-/* $TOG: registry /main/120 1997/11/02 08:06:38 kaleb $ */
+/* $TOG: registry /main/121 1998/06/26 15:34:21 kaleb $ */
 
 				  X Registry
 
@@ -708,6 +708,14 @@ Name						Reference
 	ISO Latin/Hebrew alphabet
 "ISO8859-9"					[15],[12]
 	ISO Latin alphabet No. 5
+"ISO8859-10"					[15],[12]
+	ISO Latin alphabet No. 6
+"FCD8859-15"					[7]
+	ISO Latin alphabet No. 9, Final Committee Draft
+"ISO10646-1"					[133]
+	Unicode Universal Multiple-Octet Coded Character Set
+"ISO10646-MES"					[133]
+	Unicode Minimum European Subset
 "JISX0201.1976-0"				[38],[12]
 	8-Bit Alphanumeric-Katakana Code
 "JISX0208.1983-0"				[40],[12]
@@ -724,6 +732,7 @@ Name						Reference
 	Supplementary Japanese Graphic Character Set,
 	GL encoding
 "KOI8-R"					[119]
+	Cyrillic alphabet
 "KSC5601.1987-0"				[41],[12]
 	Korean Graphic Character Set,
 	GL encoding
@@ -1061,7 +1070,7 @@ REFERENCES
 	Todd Brunhoff, Tektronix
 
 [15]	ISO 8859, Information processing - 8-bit single-byte coded graphic
-	character sets, parts 1 through 9
+	character sets, parts 1 through 10
 
 [16]	Inter-Client Communication Conventions Manual
 	The Open Group X Project Team
@@ -1643,6 +1652,11 @@ REFERENCES
 	11 Cambridge Center
 	Cambridge MA 02142
 
-[132]	The Open Group X Project Team
-	11 Cambridge Center
-	Cambridge MA 02142
+[133]	ISO10646 Information technology -- Universal Multiple-Octet Coded 
+	Character Set (UCS), part 1
+	Markus G. Kuhn
+	University of Cambridge
+	Computer Laboratory
+	New Museums Site, Pembroke Street
+	Cambridge CB2 3QG
+	United Kingdom
