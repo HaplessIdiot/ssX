@@ -1,4 +1,6 @@
-XFree86 4.4.99.15 (xx September 2004)
+XFree86 4.4.99.16 (xx October 2004)
+
+XFree86 4.4.99.15 (12 October 2004)
  194. Fix cut and paste error in the radeon driver (Bugzilla #1489,
       Nicolas Joly).
  193. Add some missing Imakefile changes for new encodings (David Dawes).
@@ -19119,7 +19121,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3323 2004/09/28 15:17:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3324 2004/10/08 17:29:28 dawes Exp $
 
 
 
