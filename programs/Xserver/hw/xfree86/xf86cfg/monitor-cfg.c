@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/monitor-cfg.c,v 1.5 2001/01/31 20:52:19 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/monitor-cfg.c,v 1.6 2001/02/21 23:37:03 paulo Exp $
  */
 
 #include "xf86config.h"
@@ -166,9 +166,9 @@ MonitorConfig(XtPointer conf)
 	    monitor = (XF86ConfMonitorPtr)(monitor->list.next);
 	}
 	do {
-	    ++nmonitors;
 	    XmuSnprintf(monitor_name, sizeof(monitor_name),
 			"Monitor%d", nmonitors);
+	    ++nmonitors;
 	} while (xf86findMonitor(monitor_name,
 		 XF86Config->conf_monitor_lst));
 

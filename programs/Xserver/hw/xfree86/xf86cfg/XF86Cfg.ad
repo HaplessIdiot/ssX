@@ -195,6 +195,10 @@ lines		-1,0,0,0,0,-1
 *commands.keyboard*configure.label:	Configure keyboard(s)
 *commands.card*configure.label:		Configure video card(s)
 *commands.monitor*configure.label:	Configure monitor(s)
+*commands.mouse*SimpleMenu*newMouse.label:	New mouse
+*commands.keyboard*SimpleMenu*newKeyboard.label:New keyboard
+*commands.card*SimpleMenu*newcard.label:	New card
+*commands.monitor*SimpleMenu*newMonitor.label:	New monitor
 
 *commands.MenuButton.translations: \
 <Enter>:	highlight()\n\

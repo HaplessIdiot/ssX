@@ -1294,6 +1294,20 @@ SmeConfigureDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 		    ConfigureDeviceCallback(w, NULL, NULL);
 		}
 	    break;
+
+	/* hack for newly added devices */
+	case -(MOUSE + 100):
+	case -(KEYBOARD + 100):
+	case -(CARD + 100):
+	case -(MONITOR + 100):
+	    for (i = 0; i < computer.num_devices; i++)
+		if (-(computer.devices[i]->type + 100) == (int)user_data &&
+		    computer.devices[i]->config == NULL) {
+		    config = computer.devices[i]->widget;
+		    ConfigureDeviceCallback(w, NULL, NULL);
+		}
+	    break;
+
 	default:
 	    for (i = 0; i < computer.num_devices; i++)
 		if (computer.devices[i]->config == user_data) {
@@ -1689,7 +1703,7 @@ UpdateMenuDeviceList(int type)
 		*cardM = "cardM", *monitorM = "monitorM";
 
     for (i = count = 0; i < computer.num_devices; i++)
-	if (computer.devices[i]->type == type && computer.devices[i]->config)
+	if (computer.devices[i]->type == type)
 	    ++count;
 
     switch (type) {
@@ -1753,27 +1767,47 @@ UpdateMenuDeviceList(int type)
 
     for (i = 0; i < computer.num_devices; i++)
 	
-	if (computer.devices[i]->config && computer.devices[i]->type == type) {
+	if (computer.devices[i]->type == type) {
 	    char *label = NULL;
 
-	    switch (type) {
-		case MOUSE:
-		case KEYBOARD:
-		    label = ((XF86ConfInputPtr)computer.devices[i]->config)
-			->inp_identifier;
-		    break;
-		case CARD:
-		    label = ((XF86ConfDevicePtr)computer.devices[i]->config)
-			->dev_identifier;
-		    break;
-		case MONITOR:
-		    label = ((XF86ConfMonitorPtr)computer.devices[i]->config)
-			->mon_identifier;
-		    break;
+	    if (computer.devices[i]->config) {
+		switch (type) {
+		    case MOUSE:
+		    case KEYBOARD:
+			label = ((XF86ConfInputPtr)computer.devices[i]->config)
+			    ->inp_identifier;
+			break;
+		    case CARD:
+			label = ((XF86ConfDevicePtr)computer.devices[i]->config)
+			    ->dev_identifier;
+			break;
+		    case MONITOR:
+			label = ((XF86ConfMonitorPtr)computer.devices[i]->config)
+			    ->mon_identifier;
+			break;
+		}
 	    }
+	    else {
+		switch (type) {
+		    case MOUSE:
+			label = "newMouse";
+			break;
+		    case KEYBOARD:
+			label = "newKeyboard";
+			break;
+		    case CARD:
+			label = "newCard";
+			break;
+		    case MONITOR:
+			label = "newMonitor";
+			break;
+		}
+	    }
+
 	    sme = XtCreateManagedWidget(label, smeBSBObjectClass, menu, NULL, 0);
 	    XtAddCallback(sme, XtNcallback, SmeConfigureDeviceCallback,
-			  computer.devices[i]->config);
+			  computer.devices[i]->config ?
+			  computer.devices[i]->config : - (type + 100));
 	}
 }
 
