@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.241dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.242 2004/01/02 18:48:20 tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1591,7 +1591,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 # if !CrossCompiling
             FONTC = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/bdftopcf
       MKFONTSCALE = $(CLIENTENVSETUP) $(PRELOADFREETYPESETUP) $(XBUILDBINDIR)/mkfontscale
-        MKFONTDIR = $(MKFONTSCALE) -b -s
+        MKFONTDIR = $(MKFONTSCALE) -b -s -l
        XCURSORGEN = $(CLIENTENVSETUP) $(PRELOADSETUP) $(XBUILDBINDIR)/xcursorgen
 # elif UseInstalledOnCrossCompile
         MKFONTDIR = $(BINDIR)/mkfontdir
