@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.12 2001/05/02 05:49:30 torrey Exp $
+XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.13 2001/05/16 06:10:05 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -118,7 +118,6 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.12 2001/05/02 05:49:30 torrey Exp $
 #define BuildDPMSExt            NO
 
 #define BuildXvExt              NO
-#define BuildRender             NO
 
 /* no OpenGL libraries */
 #ifndef BuildGLXLibrary	

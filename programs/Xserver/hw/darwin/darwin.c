@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.21 2001/04/25 02:23:47 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.22 2001/04/30 16:26:01 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -12,10 +12,11 @@
 #include "servermd.h"
 #include "inputstr.h"
 #include "scrnintstr.h"
-#include "mi.h"
-#include "mibstore.h"
-#include "mipointer.h"
-#include "micmap.h"
+//#include "mi.h"
+#include "mibstore.h"		// mi backing store implementation
+#include "mipointer.h"		// mi software cursor
+#include "micmap.h"		// mi colormap code
+#include "fb.h"			// fb framebuffer code
 #include "site.h"
 #include "globals.h"
 #include "xf86Version.h"
@@ -171,12 +172,27 @@ static Bool DarwinAddScreen(
         return FALSE;
     }
 
+    miSetPixmapDepths();
+
     // machine independent screen init
     // setup _Screen structure in pScreen
     if (monitorResolution)
         dpi = monitorResolution;
     else
         dpi = 75;
+
+    // initialize fb
+    if (! fbScreenInit(pScreen,
+                dfb.framebuffer,                // pointer to screen bitmap
+                dfb.width, dfb.height,          // screen size in pixels
+                dpi, dpi,                       // dots per inch
+                dfb.pitch/(dfb.bitsPerPixel/8), // pixel width of framebuffer
+                dfb.bitsPerPixel))              // bits per pixel for screen
+    {
+        return FALSE;
+    }
+
+#if 0
     if ( dfb.bitsPerPixel == 32 ) {
         if (!cfb32ScreenInit(pScreen,
                 dfb.framebuffer,
@@ -204,6 +220,7 @@ static Bool DarwinAddScreen(
     } else {
         return FALSE;
     }
+#endif
 
     // set the RGB order correctly for TrueColor
     if (dfb.bitsPerPixel > 8) {
@@ -225,6 +242,10 @@ static Bool DarwinAddScreen(
             }
         }
     }
+
+#ifdef RENDER
+    fbPictureInit(pScreen, 0, 0);
+#endif
 
 #ifdef MITSHM
     ShmRegisterFbFuncs(pScreen);

@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.227 2001/04/27 22:33:21 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.228 2001/05/15 02:53:00 torrey Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1168,18 +1168,12 @@ ServerTarget(XWin,$(XWINDIRS),$(XWINOBJS), \
 XCOMM
 XCOMM X Darwin server for Mac OS X / Darwin
 XCOMM
-MFBDIR   = mfb
-CFB8DIR  = cfb
-CFB16DIR = cfb16
-CFB32DIR = cfb32
+FBDIR    = fb
 DDXDIR1  = hw/darwin
 DDXDIR2  = hw/darwin/bundle
-DARWINDIRS = $(STDDIRS) $(MFBDIR) \
-	     $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) \
-	     $(DDXDIR1) $(DEPDIRS)
+DARWINDIRS = $(STDDIRS) $(FBDIR) $(DDXDIR1) $(DEPDIRS)
 DARWINOBJS = $(DDXDIR1)/xfIOKitStartup.o
-DARWINLIBS = PreFbLibs $(DDXDIR1)/LibraryTargetName(darwin) \
-	     $(CFB16) $(CFB32) $(CFB8) PostFbLibs
+DARWINLIBS = PreFbLibs $(DDXDIR1)/LibraryTargetName(darwin) FbPostFbLibs
 DARWINSYSLIBS = $(FONTLIBS) $(SYSLIBS) -framework IOKit
 
 /*
