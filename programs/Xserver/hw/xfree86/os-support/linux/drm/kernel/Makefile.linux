@@ -11,7 +11,7 @@
 # everything required for in-kernel source builds.  It is included into
 # this file, so none of that should be duplicated here.
 #
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.33 2003/04/12 17:18:17 dawes Exp $
 #
 
 #
@@ -144,6 +144,8 @@ endif
 # especially 2.5.52 and later, explicitly references the Makefile by the
 # name "Makefile".  For builds prior to 2.5.52, the name GNUmakefile could
 # have been used.
+
+all: modules
 
 modules: includes
 	@if test -f Makefile && cmp -s Makefile Makefile.linux; then : ; \
