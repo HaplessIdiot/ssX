@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.85 2000/12/02 01:16:01 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.86 2000/12/12 17:05:30 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1185,6 +1185,7 @@ InstallTarget(install.ln,Concat(llib-l,libname.ln),$(INSTLIBFLAGS),dest)
 #endif /* InstallLintLibrary */
 
 
+#if !CompressManPages
 /*
  * InstallManPageLong - generate rules to install the indicated manual page,
  * giving it an alternate name.  This is used for installing man pages whose
@@ -1198,15 +1199,6 @@ BuildInstallHtmlManPage(file,dest,$(MANSUFFIX))				@@\
 									@@\
 InstallNamedTarget(install.man,file.man,$(INSTMANFLAGS),destdir,dest.$(MANSUFFIX))
 #endif /* InstallManPageLong */
-
-
-/*
- * InstallManPage - generate rules to install the indicated manual page.
- */
-#ifndef InstallManPage
-#define	InstallManPage(file,destdir)					@@\
-InstallManPageLong(file,destdir,file)
-#endif /* InstallManPage */
 
 
 /*
@@ -1242,15 +1234,6 @@ install.man:: file.man							@@\
 
 
 /*
- * InstallGenManPage - general equivalent of InstallManPage
- */
-#ifndef InstallGenManPage
-#define	InstallGenManPage(file,destdir,suffix)				@@\
-InstallGenManPageLong(file,destdir,file,suffix)
-#endif /* InstallGenManPage */
-
-
-/*
  * InstallGenManPageAliases - general equivalent of InstallManPageAliases
  */
 #ifndef InstallGenManPageAliases
@@ -1266,6 +1249,99 @@ install.man::								@@\
 	done; \								@@\
 	RemoveFile($${TMP}))
 #endif /* InstallGenManPageAliases */
+
+#else /* CompressManPages */
+
+#ifndef InstallManPageLong
+#define InstallManPageLong(file,destdir,dest)				@@\
+BuildInstallHtmlManPage(file,dest,$(MANSUFFIX))				@@\
+									@@\
+install.man:: file.man							@@\
+	MakeDir($(DESTDIR)destdir)					@@\
+	$(RM) $(DESTDIR)destdir/dest.$(MANSUFFIX)*			@@\
+	$(INSTALL) -c $(INSTMANFLAGS) file.man \			@@\
+	  $(DESTDIR)destdir/dest.$(MANSUFFIX)				@@\
+	-$(COMPRESSMANCMD) $(DESTDIR)destdir/dest.$(MANSUFFIX)
+#endif
+
+#ifndef InstallGenManPageLong
+#define InstallGenManPageLong(file,destdir,dest,suffix)			@@\
+BuildInstallHtmlManPage(file,dest,suffix)				@@\
+									@@\
+install.man:: file.man							@@\
+	MakeDir($(DESTDIR)destdir)					@@\
+	$(RM) $(DESTDIR)destdir/dest.suffix*				@@\
+	$(INSTALL) -c $(INSTMANFLAGS) file.man \			@@\
+	  $(DESTDIR)destdir/dest.suffix					@@\
+	-$(COMPRESSMANCMD) $(DESTDIR)destdir/dest.suffix
+#endif
+
+#ifndef InstallMultipleMan
+#define InstallMultipleMan(list,dest)					@@\
+install.man:: list							@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	@case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
+	for i in list; do \						@@\
+		(MNAME=`echo $$i | cut -f1 -d.`; \			@@\
+		set -x;	\						@@\
+		$(RM) $(DESTDIR)dest/$${MNAME}*; \			@@\
+		$(INSTALL) -c $(INSTMANFLAGS) $$i \			@@\
+		  $(DESTDIR)dest/$${MNAME}.$(MANSUFFIX); \		@@\
+		$(COMPRESSMANCMD) $(DESTDIR)dest/$${MNAME}.$(MANSUFFIX)); \ @@\
+	done
+#endif
+
+/*
+ * InstallManPageAliases - install soft links for aliases.
+ */
+#ifndef InstallManPageAliasesBase
+#define InstallManPageAliasesBase(file,destdir,aliases)			@@\
+install.man::								@@\
+	@(SUFFIX=`echo $(DESTDIR)destdir/file.* | sed -e 's,.*/[^\.]*.,,'`; \ @@\
+	for i in aliases; do (set -x; \					@@\
+	$(RM) $(DESTDIR)destdir/$$i.*; \				@@\
+	(cd $(DESTDIR)destdir; $(LN) file.$${SUFFIX} \			@@\
+	$$i.$${SUFFIX})); \						@@\
+	done)
+#endif
+
+#ifndef InstallManPageAliases
+#define InstallManPageAliases(file,destdir,aliases)			@@\
+InstallHtmlManPageAliases(file,aliases,$(MANSUFFIX))			@@\
+									@@\
+InstallManPageAliasesBase(file,destdir,aliases)
+#endif
+
+
+/*
+ * InstallGenManPageAliases - install soft links for aliases.
+ */
+#ifndef InstallGenManPageAliases
+#define InstallGenManPageAliases(file,destdir,suffix,aliases)		@@\
+InstallHtmlManPageAliases(file,aliases,suffix)				@@\
+									@@\
+InstallManPageAliasesBase(file,destdir,aliases)
+#endif
+
+#endif /* CompressManPages */
+
+
+/*
+ * InstallManPage - generate rules to install the indicated manual page.
+ */
+#ifndef InstallManPage
+#define	InstallManPage(file,destdir)					@@\
+InstallManPageLong(file,destdir,file)
+#endif /* InstallManPage */
+
+
+/*
+ * InstallGenManPage - general equivalent of InstallManPage
+ */
+#ifndef InstallGenManPage
+#define	InstallGenManPage(file,destdir,suffix)				@@\
+InstallGenManPageLong(file,destdir,file,suffix)
+#endif /* InstallGenManPage */
 
 
 /*

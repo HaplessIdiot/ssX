@@ -35,6 +35,9 @@ XCOMM operating system: OSName (OSMajorVersion.OSMinorVersion)
 #define ShLibDir		/usr/shlib
 #define SharedLibPex		NO  /* losing, no shared -lm */
 #endif
+
+#define InstallXloadSetGID	NO
+
 #define ThreadedX		ModernOSF1
 
 #if ThreadedX
