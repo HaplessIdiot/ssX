@@ -1,12 +1,12 @@
 /* C code produced by gperf version 2.7.2 */
 /* Command-line: gperf -T -n -a -c -p -j1 -g -o -t -D -N xtFindFun xttable.gperf  */
 
-#define TOTAL_KEYWORDS 8
-#define MIN_WORD_LENGTH 13
+#define TOTAL_KEYWORDS 11
+#define MIN_WORD_LENGTH 8
 #define MAX_WORD_LENGTH 24
 #define MIN_HASH_VALUE 0
-#define MAX_HASH_VALUE 4
-/* maximum key range = 5, duplicates = 3 */
+#define MAX_HASH_VALUE 6
+/* maximum key range = 7, duplicates = 4 */
 
 #ifdef __GNUC__
 __inline
@@ -22,32 +22,32 @@ hash (str, len)
 {
   static unsigned char asso_values[] =
     {
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 3,
-      5, 5, 5, 5, 5, 2, 5, 5, 5, 5,
-      4, 5, 5, 1, 0, 5, 5, 5, 0, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-      5, 5, 5, 5, 5, 5
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 6,
+      7, 7, 7, 7, 7, 5, 3, 7, 4, 7,
+      1, 7, 7, 2, 0, 7, 7, 7, 0, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 7, 7, 7
     };
   return asso_values[(unsigned char)str[len - 1]] + asso_values[(unsigned char)str[0]];
 }
@@ -65,16 +65,20 @@ xtFindFun (str, len)
       {"XT-CREATE-MANAGED-WIDGET",Lisp_XtCreateManagedWidget,1,3,4},
       {"XT-REALIZE-WIDGET",Lisp_XtRealizeWidget,1,1,1},
       {"XT-CREATE-WIDGET",Lisp_XtCreateWidget,1,3,4},
+      {"XT-APP-MAIN-LOOP",Lisp_XtAppMainLoop,1,1,1},
+      {"XT-POPUP",Lisp_XtPopup,1,2,2},
       {"XT-GET-VALUES",Lisp_XtGetValues,1,2,2},
       {"XT-SET-VALUES",Lisp_XtSetValues,1,2,2},
+      {"XT-CREATE-POPUP-SHELL",Lisp_XtCreatePopupShell,1,3,4},
+      {"XT-POPDOWN",Lisp_XtPopdown,1,1,1},
       {"XT-ADD-CALLBACK",Lisp_XtAddCallback,1,3,4},
-      {"XT-APP-INITIALIZE",Lisp_XtAppInitialize,1,2,3},
-      {"XT-APP-MAIN-LOOP",Lisp_XtAppMainLoop,1,1,1}
+      {"XT-APP-INITIALIZE",Lisp_XtAppInitialize,1,2,3}
     };
 
   static short lookup[] =
     {
-      -16, -14,   5,   6,   7,  -5,  -2,  -8,  -3
+      -23, -21, -19,   7,   8,   9,  10,  -6,  -2,  -8,
+       -2, -11,  -3
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)

@@ -1,12 +1,12 @@
 /* C code produced by gperf version 2.7.2 */
 /* Command-line: gperf -T -n -a -c -p -j1 -g -o -t -D -N xawFindFun xawtable.gperf  */
 
-#define TOTAL_KEYWORDS 4
+#define TOTAL_KEYWORDS 7
 #define MIN_WORD_LENGTH 18
 #define MAX_WORD_LENGTH 32
 #define MIN_HASH_VALUE 0
-#define MAX_HASH_VALUE 1
-/* maximum key range = 2, duplicates = 2 */
+#define MAX_HASH_VALUE 2
+/* maximum key range = 3, duplicates = 4 */
 
 #ifdef __GNUC__
 __inline
@@ -22,32 +22,32 @@ hash (str, len)
 {
   static unsigned char asso_values[] =
     {
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 1,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 0, 2, 2, 2, 0, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 1,
+      3, 3, 3, 3, 3, 3, 3, 3, 2, 3,
+      3, 3, 3, 3, 0, 3, 3, 3, 0, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3
     };
   return asso_values[(unsigned char)str[len - 1]] + asso_values[(unsigned char)str[0]];
 }
@@ -63,14 +63,17 @@ xawFindFun (str, len)
   static struct _LispBuiltin wordlist[] =
     {
       {"XAW-COERCE-TO-LIST-RETURN-STRUCT",Lisp_XawCoerceToListReturnStruct,1,1,1},
+      {"XAW-TEXT-SET-INSERTION-POINT",Lisp_XawTextSetInsertionPoint,1,2,2},
+      {"XAW-TEXT-GET-INSERTION-POINT",Lisp_XawTextGetInsertionPoint,1,1,1},
       {"XAW-LIST-UNHIGHLIGHT",Lisp_XawListUnhighlight,1,1,1},
       {"XAW-LIST-HIGHLIGHT",Lisp_XawListHighlight,1,2,2},
-      {"XAW-TEXT-GET-SOURCE",Lisp_XawTextGetSource,1,1,1}
+      {"XAW-TEXT-GET-SOURCE",Lisp_XawTextGetSource,1,1,1},
+      {"XAW-TEXT-LAST-POSITION",Lisp_XawTextLastPosition,1,1,1}
     };
 
   static short lookup[] =
     {
-      -7,  3, -4, -3
+      -11,   5,   6,  -7,  -5
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)

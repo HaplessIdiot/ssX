@@ -74,7 +74,9 @@ LispObj *Lisp_XawCoerceToListReturnStruct(LispMac*, LispObj*, char*);
 LispObj *Lisp_XawListHighlight(LispMac*, LispObj*, char*);
 LispObj *Lisp_XawListUnhighlight(LispMac*, LispObj*, char*);
 LispObj *Lisp_XawTextGetSource(LispMac*, LispObj*, char*);
-
+LispObj *Lisp_XawTextLastPosition(LispMac*, LispObj*, char*);
+LispObj *Lisp_XawTextGetInsertionPoint(LispMac*, LispObj*, char*);
+LispObj *Lisp_XawTextSetInsertionPoint(LispMac*, LispObj*, char*);
 
 /*
  * Initialization
@@ -104,100 +106,100 @@ xawLoadModule(LispMac *mac)
     LispExecute(mac, "(DEFSTRUCT XAW-LIST-RETURN-STRUCT STRING INDEX)\n");
 
     GCPRO();
-    (void)LispSetVariable(mac, ATOM2("asciiSinkObjectClass"),
+    (void)LispSetVariable(mac, ATOM2("ASCII-SINK-OBJECT-CLASS"),
 			  OPAQUE(asciiSinkObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("asciiSrcObjectClass"),
+    (void)LispSetVariable(mac, ATOM2("ASCII-SRC-OBJECT-CLASS"),
 			  OPAQUE(asciiSinkObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("asciiTextWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("ASCII-TEXT-WIDGET-CLASS"),
 			  OPAQUE(asciiTextWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("boxWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("BOX-WIDGET-CLASS"),
 			  OPAQUE(boxWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("commandWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("COMMAND-WIDGET-CLASS"),
 			  OPAQUE(commandWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("dialogWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("DIALOG-WIDGET-CLASS"),
 			  OPAQUE(dialogWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("formWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("FORM-WIDGET-CLASS"),
 			  OPAQUE(formWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("gripWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("GRIP-WIDGET-CLASS"),
 			  OPAQUE(gripWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("labelWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("LABEL-WIDGET-CLASS"),
 			  OPAQUE(labelWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("listWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("LIST-WIDGET-CLASS"),
 			  OPAQUE(listWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("menuButtonWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("MENU-BUTTON-WIDGET-CLASS"),
 			  OPAQUE(menuButtonWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("multiSinkObjectClass"),
+    (void)LispSetVariable(mac, ATOM2("MULTI-SINK-OBJEC-TCLASS"),
 			  OPAQUE(multiSinkObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("multiSrcObjectClass"),
+    (void)LispSetVariable(mac, ATOM2("MULTI-SRC-OBJECT-CLASS"),
 			  OPAQUE(multiSrcObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("panedWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("PANED-WIDGET-CLASS"),
 			  OPAQUE(panedWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("pannerWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("PANNER-WIDGET-CLASS"),
 			  OPAQUE(pannerWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("portholeWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("PORTHOLE-WIDGET-CLASS"),
 			  OPAQUE(portholeWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("repeaterWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("REPEATER-WIDGET-CLASS"),
 			  OPAQUE(repeaterWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("scrollbarWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("SCROLLBAR-WIDGET-CLASS"),
 			  OPAQUE(scrollbarWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("simpleMenuWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("SIMPLE-MENU-WIDGET-CLASS"),
 			  OPAQUE(simpleMenuWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("simpleWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("SIMPLE-WIDGET-CLASS"),
 			  OPAQUE(simpleWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("smeBSBObjectClass"),
+    (void)LispSetVariable(mac, ATOM2("SME-BSB-OBJECT-CLASS"),
 			  OPAQUE(smeBSBObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("smeLineObjectClass"),
+    (void)LispSetVariable(mac, ATOM2("SME-LINE-OBJECT-CLASS"),
 			  OPAQUE(smeLineObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("smeObjectClass"),
+    (void)LispSetVariable(mac, ATOM2("SME-OBJECT-CLASS"),
 			  OPAQUE(smeObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("stripChartWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("STRIP-CHART-WIDGET-CLASS"),
 			  OPAQUE(stripChartWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("textWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("TEXT-WIDGET-CLASS"),
 			  OPAQUE(textWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("textSinkObjectClass"),
+    (void)LispSetVariable(mac, ATOM2("TEXT-SINKOBJECT-CLASS"),
 			  OPAQUE(textSinkObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("textSrcObjectClass"),
+    (void)LispSetVariable(mac, ATOM2("TEXT-SRC-OBJECT-CLASS"),
 			  OPAQUE(textSrcObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("tipWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("TIP-WIDGET-CLASS"),
 			  OPAQUE(tipWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("toggleWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("TOGGLE-WIDGET-CLASS"),
 			  OPAQUE(toggleWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("treeWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("TREE-WIDGET-CLASS"),
 			  OPAQUE(treeWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("viewportWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("VIEWPORT-WIDGET-CLASS"),
 			  OPAQUE(viewportWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("vendorShellWidgetClass"),
+    (void)LispSetVariable(mac, ATOM2("VENDOR-SHELL-WIDGET-CLASS"),
 			  OPAQUE(vendorShellWidgetClass, xawWidgetClass_t),
 			  fname, 0);
     GCUPRO();
@@ -232,6 +234,42 @@ Lisp_XawTextGetSource(LispMac *mac, LispObj *list, char *fname)
 
     return (OPAQUE(XawTextGetSource((Widget)(CAR(list)->data.opaque.data)),
 		   xawWidget_t));
+}
+
+LispObj *
+Lisp_XawTextLastPosition(LispMac *mac, LispObj *list, char *fname)
+{
+    if (!CHECKO(CAR(list), xawWidget_t))
+	LispDestroy(mac, "cannot convert %s to Widget, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+
+    return (REAL(XawTextLastPosition((Widget)(CAR(list)->data.opaque.data))));
+}
+
+LispObj *
+Lisp_XawTextGetInsertionPoint(LispMac *mac, LispObj *list, char *fname)
+{
+    if (!CHECKO(CAR(list), xawWidget_t))
+	LispDestroy(mac, "cannot convert %s to Widget, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+
+    return (REAL(XawTextGetInsertionPoint((Widget)(CAR(list)->data.opaque.data))));
+}
+
+LispObj *
+Lisp_XawTextSetInsertionPoint(LispMac *mac, LispObj *list, char *fname)
+{
+    if (!CHECKO(CAR(list), xawWidget_t))
+	LispDestroy(mac, "cannot convert %s to Widget, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+    if (CAR(CDR(list))->type != LispReal_t)
+	LispDestroy(mac, "cannot convert %s to XawTextPosition, at %s",
+		    LispStrObj(mac, CAR(CDR(list))), fname);
+
+    XawTextSetInsertionPoint((Widget)(CAR(list)->data.opaque.data),
+			     (XawTextPosition)(CAR(CDR(list))->data.real));
+
+    return (NIL);
 }
 
 LispObj *
