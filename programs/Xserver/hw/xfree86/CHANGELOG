@@ -1,4 +1,50 @@
 XFree86 4.2.99.4 (xx January 2003)
+ 730. Fixes from the DRI CVS:
+       - Don't segfault when spec or fog stride is 0.
+       - Don't set RADEON_SURF_TRANSLATION_DIS for framebuffer aperture
+         byte swapping on big endian machines; doesn't work with R200 and
+         later chips.
+       - Improve AGP workaround for pre-R200 chips.
+      (Michel Dänzer).
+ 729. Remove inappropriate __linux__ ifdef in the tdfx client-side DRI driver
+      (#5579, Eric Anholt).
+ 728. Allow makedepend handle whitespace in front of the '#' in preprocessor
+      directives (ISO C permits this) (#A.1516, Alexander Stohr).
+ 727. Add zh_TW.UTF-8 locale support (#A.1514, Leon Ho).
+ 726. Add recognition of wacom "XD-xxxx" models to the wacom input driver,
+      and treat them the same as "GD-xxxx" models (#A.1505, Rene Rask).
+ 725. Fix some missing render extension big-req compatibility (#A.1493,
+      Keith Packard).
+ 724. Fix a missing initialisation in the calcomp input driver that makes
+      the driver unusable and crashes the X server at startup (#A.1492,
+      Martin Kroeker).
+ 723. Work around for a bug in the i740 driver's XVideo support where the
+      video output would sometimes stop updating (#5578, Stephen Blackheath).
+ 722. Make DRM signal-on-vblank request return EINVAL on BSD since it's
+      not been ported yet (#5576, Eric Anholt).
+ 721. Remove the no longer used bsd/drm/kernel/r128/*.[ch] files (#5576,
+      Eric Anholt).
+ 720. drmFreeBufs was missing from the r128 driver's referenced symbols list
+      (#5574, Eric Anholt).
+ 719. Allow all of the extended mouse button bits for the "sysmouse" protocol
+      to be passed through (#5573, Eric Anholt).
+ 718. Update the XFree86 server special key handling so that by default
+      there is a fallback to the the hard-coded keys when there is no
+      Terminate action binding in the XKB map.  A new global option is
+      added to allow the fallback mechanism to be used never, when needed,
+      or always, with "when needed" the default (#5572, Joe Moss).
+ 717. Update the README.fonts document (#5570, Juliusz Chroboczek).
+ 716. Build the loader's libc wrapper with -DHAVE_SYSV_IPC on FreeBSD
+      since NVIDIA's binary driver uses it (#5569, Eric Anholt).
+ 715. Reduce the stack usage from 64k to 8k in imLcPrs.c, which fixes
+      a problem with Java for FreeBSD (#5568, Eric Anholt).
+ 714. Gcc 3 deprecated the #pragma weak method for weak links (#5567,
+      Motoyuki Konno).
+ 713. FreeBSD.cf updates:
+       - Sparc64 support
+       - Recent 5.0-current doesn't need libXThrStub
+       - Disable SharedLibXdmGreet, fixing xdm on alpha
+      (#5566, Eric Anholt).
  712. XDarwin now loads GLX support dynamically. Current options are Apple's
       OpenGL framework or Mesa (Torrey T. Lyons).
  711. GeForceFX support in the nv driver (Mark Vojkovich).
@@ -15978,4 +16024,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2473 2003/01/13 02:27:27 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2474 2003/01/15 02:34:08 torrey Exp $
