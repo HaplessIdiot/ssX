@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.426 2002/11/26 02:34:20 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.427 2002/11/26 15:29:24 tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1328,6 +1328,10 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #  undef  BuildXF86DRIDriverSupport
 #  define BuildXF86DRIDriverSupport NO
 
+#endif
+
+#if !BuildXF86DRI
+# define GlxUseBuiltInDRIDriver NO	/* For libOSmesa */
 #endif
 
 # ifndef UseX86Emu
