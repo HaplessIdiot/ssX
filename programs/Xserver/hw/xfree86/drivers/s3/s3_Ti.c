@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Ti.c,v 1.1 2001/07/02 10:46:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Ti.c,v 1.2 2001/09/27 08:34:28 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -122,8 +122,7 @@ Bool S3TiDACProbe(ScrnInfoPtr pScrn)
 	unsigned char cr55, cr45, cr43, cr5c;
 	unsigned char TIndx, TIndx2, TIdata;
 
-	if ((pS3->Chipset != PCI_CHIP_964_0) &&
-	    (pS3->Chipset != PCI_CHIP_964_1))
+	if (!S3_964_SERIES())
 		return FALSE;
 
 	outb(vgaCRIndex, 0x43);
