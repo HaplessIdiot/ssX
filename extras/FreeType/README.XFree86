@@ -14,3 +14,7 @@ When importing version A.B of FreeType, use:
 
  cvs import -m "FreeType version A.B" xc/extras/FreeType FreeType FreeType-A_B
 
+
+Files that are modified relative to the most recent import should have
+the ident text: $XFree86$ added in a comment.
+

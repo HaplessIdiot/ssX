@@ -21,7 +21,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE. */
 
-/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.4 1998/06/28 03:52:36 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.5 1998/09/06 04:30:56 dawes Exp $ */
 
 #include <string.h>
 
@@ -658,14 +658,41 @@ ttf_find_cmap(int pid, int eid, TT_Face face, TT_CharMap *cmap)
 
   n=TT_Get_CharMap_Count(face);
 
-  for(i = 0; i < n; i++) {
-    if(!TT_Get_CharMap_ID(face, i, &p, &e) &&
-       (pid!=0?
-        (p==pid && e==eid):
-        (p==3 && e==1 || p==0 || p==2 && e==1)))
-      if(!TT_Get_CharMap(face, i, cmap)) {
-        return 0;
+  if(pid!=0) {                  /* specific cmap */
+    for(i=0; i<n; i++) {
+      if(!TT_Get_CharMap_ID(face, i, &p, &e) && p==pid && e==eid) {
+        if(!TT_Get_CharMap(face, i, cmap))
+          return 0;
       }
+    }
+  } else {                      /* any Unicode cmap */
+    /* prefer Microsoft Unicode */
+    for(i=0; i<n; i++) {
+      if(!TT_Get_CharMap_ID(face, i, &p, &e) && p==3 && e==1) {
+        if(!TT_Get_CharMap(face, i, cmap))
+          return 0;
+        else
+          break;
+      }
+    }
+    /* Try Apple Unicode */
+    for(i=0; i<n; i++) {
+      if(!TT_Get_CharMap_ID(face, i, &p, &e) && p==0) {
+        if(!TT_Get_CharMap(face, i, cmap))
+          return 0;
+        /* but don't give up yet -- there may be more than one cmaps
+         * with pid=0 */
+      }
+    }
+    /* ISO Unicode? */
+    for(i=0; i<n; i++) {
+      if(!TT_Get_CharMap_ID(face, i, &p, &e) && p==2 && e==1) {
+        if(!TT_Get_CharMap(face, i, cmap))
+          return 0;
+        else
+          break;
+      }
+    }
   }
   return 1;
 }
@@ -676,7 +703,6 @@ ttf_find_cmap(int pid, int eid, TT_Face face, TT_CharMap *cmap)
 int
 ttf_pick_cmap(char *name, int length, TT_Face face, 
               struct ttf_encoding *cinfo)
-
 {
   char *p,*q;
   char charset[256];

@@ -15,6 +15,7 @@
  *
  *
  ******************************************************************/
+/* $XFree86$ */
 
 #include "ftxcmap.h"
 
@@ -219,6 +220,10 @@ static Long  charmap_next4( PCMap4   cmap4,
     return -1;
 
   seg4 = cmap4->segments[i];
+
+  /* Protect against broken fonts */
+  if( seg4.startCount == 0xFFFF )
+    return -1;
 
   if ( charCode < seg4.startCount )
     nextCode = seg4.startCount;

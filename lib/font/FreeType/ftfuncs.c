@@ -21,7 +21,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE. */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.2 1998/04/28 13:48:42 robin Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.3 1998/09/06 04:30:56 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -224,7 +224,7 @@ FreeTypeAddProperties(FontScalablePtr vals, FontInfoPtr info,
     info->props[i].value = info->fontAscent;
     i++;
 
-    info->props[i].name = MakeAtom("RAW_FONT_ASCENT", 15, TRUE);
+    info->props[i].name = MakeAtom("RAW_ASCENT", 15, TRUE);
     info->props[i].value = 
       ((double)properties.horizontal->Ascender/(double)upm*1000.0);
     i++;
@@ -233,7 +233,7 @@ FreeTypeAddProperties(FontScalablePtr vals, FontInfoPtr info,
     info->props[i].value = info->fontDescent;
     i++;
 
-    info->props[i].name = MakeAtom("RAW_FONT_DESCENT", 16, TRUE);
+    info->props[i].name = MakeAtom("RAW_DESCENT", 16, TRUE);
     info->props[i].value = 
       -((double)properties.horizontal->Descender/(double)upm*1000.0);
     i++;
@@ -648,7 +648,7 @@ FreeTypeLoadFont(char *fileName,
     }
 
 
-    if((xrc=FreeTypeLoadGlyph(info, glyph, &trans, tgp, bmfmt,
+    if((xrc=FreeTypeLoadGlyph(vals, info, glyph, &trans, tgp, bmfmt,
                               &totalWidth, &rawTotalWidth))
        !=Successful) {
       MUMBLE1("%d doubleplusunloaded\n", idx);
@@ -746,7 +746,7 @@ FreeTypeLoadFont(char *fileName,
   /* Use the new XLFD name to generate the properties for the new font. */
   if((xrc = FreeTypeAddProperties(vals, info, entry->name.name, 
                                   face, instance, &trans, 
-                                  (int)((rawTotalWidth+used/2)/used)))
+                                  (int)((rawTotalWidth*10+used/2)/used)))
      != Successful) {
     MUMBLE1("Couldn't add properties: %d\n", xrc);
     if(xf)
@@ -762,7 +762,7 @@ FreeTypeLoadFont(char *fileName,
 /* Do the work for one glyph */
 /* If tgp is 0, we're only interested in updating info */
 static int
-FreeTypeLoadGlyph(FontInfoPtr info, 
+FreeTypeLoadGlyph(FontScalablePtr vals, FontInfoPtr info, 
                   TT_Glyph glyph, NormalisedTransformation *trans,
                   CharInfoPtr tgp, FontBitmapFormat *bmfmt,
                   long *totalWidth, long *rawTotalWidth)
@@ -783,12 +783,15 @@ FreeTypeLoadGlyph(FontInfoPtr info,
   /* Macros for transforming F26.6 values into pixels. */
 
 #define TRANSFORM_X(x_value) \
-  ((int)((((double)x_value*(double)trans->matrix.xx)/\
+  ((int)((((double)(x_value)*(double)trans->matrix.xx)/\
           (TWO_SIXTEENTH*TWO_SIXTH))+0.5))
     
 #define TRANSFORM_Y(y_value) \
-  ((int)((((double)y_value*(double)trans->matrix.yy)/\
+  ((int)((((double)(y_value)*(double)trans->matrix.yy)/\
            (TWO_SIXTEENTH*TWO_SIXTH))+0.5))
+
+#define TRANSFORM_RAW(value) \
+  ((int)((double)(value)/trans->scale/TWO_SIXTH/(vals->y/72.0)*1000.0+0.5))
     
   TT_Get_Glyph_Metrics(glyph, &metrics);
 
@@ -874,8 +877,7 @@ FreeTypeLoadGlyph(FontInfoPtr info,
   rightSideBearing = wd - xoff_pixels;
            
   characterWidth = TRANSFORM_X(metrics.advance);
-  rawCharacterWidth = 
-    (int)(((double)metrics.advance)/trans->scale/TWO_SIXTH*1000.0*10.0+0.5);
+  rawCharacterWidth = TRANSFORM_RAW(metrics.advance);
   ascent = ht - yoff_pixels;
   descent = yoff_pixels;
 
@@ -919,9 +921,10 @@ FreeTypeLoadGlyph(FontInfoPtr info,
     tgp->metrics.descent = descent;
   }
 
-    return Successful;
+  return Successful;
 #undef TRANSFORM_X
 #undef TRANSFORM_Y
+#undef TRANSFORM_RAW
 }
 
 

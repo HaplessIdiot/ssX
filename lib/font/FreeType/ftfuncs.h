@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.h,v 1.2 1998/04/28 13:48:43 robin Exp $ */
 
 /* Types */
 
@@ -56,7 +56,8 @@ static int FreeTypePrepareRasteriser(char *, TT_Face *, TT_Instance *,
 
 static int FreeTypeLoadFont(char *, FontScalablePtr, FontPtr, FontInfoPtr,
                             FontBitmapFormat *, FontEntryPtr);
-static int FreeTypeLoadGlyph(FontInfoPtr, TT_Glyph, NormalisedTransformation*,
+static int FreeTypeLoadGlyph(FontScalablePtr, FontInfoPtr, 
+                             TT_Glyph, NormalisedTransformation*,
                              CharInfoPtr, FontBitmapFormat *, long *, long *);
 static int FreeTypeFindCode(unsigned, ttfont_t);
 static int FreeTypeGetMetrics(FontPtr pFont, unsigned long, unsigned char *,
