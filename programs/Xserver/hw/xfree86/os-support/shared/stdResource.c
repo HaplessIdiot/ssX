@@ -1,4 +1,4 @@
-/* $XFree86: /X11R6/x-cvs/xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.10 1999/09/25 14:38:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.14 2000/02/08 13:13:31 eich Exp $ */
 
 /* Standard resource information code */
 
@@ -85,6 +85,9 @@ xf86StdAccResFromOS(resPtr ret)
      * 0xffe00000 - 0xffffffff	high BIOS area (should this be included?)
      *
      * reference: Intel 440BX AGP specs
+     *
+     * The two APIC spaces appear to be BX-specific and should be dealt with
+     * elsewhere.
      */
 
     /* Fallback is to claim 0x0 - 0x9ffff and 0x100000 - 0x7fffffff */
@@ -96,10 +99,12 @@ xf86StdAccResFromOS(resPtr ret)
     ret = xf86AddResToList(ret, &range, -1);
     RANGE(range,0x100000,0x3fffffff,ResExcMemBlock | ResBios | ResEstimated);
     ret = xf86AddResToList(ret, &range, -1);
+#if 0
     RANGE(range,0xfec00000,0xfecfffff,ResExcMemBlock | ResBios);
     ret = xf86AddResToList(ret, &range, -1);
     RANGE(range,0xfee00000,0xfeefffff,ResExcMemBlock | ResBios);
     ret = xf86AddResToList(ret, &range, -1);
+#endif
     RANGE(range,0xffe00000,0xffffffff,ResExcMemBlock | ResBios);
     ret = xf86AddResToList(ret, &range, -1);
 
@@ -111,4 +116,3 @@ xf86StdAccResFromOS(resPtr ret)
     /* XXX add others */
     return ret;
 }
-

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.138 2000/04/17 16:30:12 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.139 2000/04/20 21:28:48 tsi Exp $ */
 
 /*
  *
@@ -258,6 +258,10 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86IsPrimaryIsa)
    SYMFUNC(xf86CheckPciGAType)
    SYMFUNC(xf86PrintResList)
+   SYMFUNC(xf86AddResToList)
+   SYMFUNC(xf86JoinResLists)
+   SYMFUNC(xf86DupResList)
+   SYMFUNC(xf86FreeResList)
    SYMFUNC(xf86ClaimFixedResources)
    SYMFUNC(xf86AddEntityToScreen)
    SYMFUNC(xf86RemoveEntityFromScreen)

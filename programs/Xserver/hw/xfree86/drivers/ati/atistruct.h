@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.14 2000/03/30 15:41:21 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.15 2000/04/07 03:57:49 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -27,6 +27,7 @@
 #include "atibank.h"
 #include "aticlock.h"
 #include "atiregs.h"
+#include "xf86Resources.h"
 #include "xaa.h"
 
 #define CacheSlotOf(____Register) ((____Register) / UnitOf(DWORD_SELECT))
@@ -180,6 +181,7 @@ typedef struct _ATIRec
      * Definitions related to system bus interface.
      */
     pciVideoPtr PCIInfo;
+    resRange VGAWonderResources[2];
     CARD8 BusType;
     CARD8 SharedVGA, SharedAccelerator;
 

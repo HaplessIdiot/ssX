@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.c,v 1.5 1999/08/21 13:48:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.c,v 1.6 2000/02/18 12:19:14 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -21,13 +21,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ati.h"
 #include "atiadapter.h"
 #include "atibus.h"
 #include "atichip.h"
 #include "atiio.h"
 #include "ativersion.h"
-#include "xf86Resources.h"
-#include "xf86.h"
 
 /*
  * Definitions related to an adapter's system bus interface.
@@ -93,6 +92,8 @@ ATIClaimResources
                 Resources[0].rMask = 0xF3FEU;
 
             xf86ClaimFixedResources(Resources, pATI->iEntity);
+
+            memcpy(pATI->VGAWonderResources, Resources, SizeOf(Resources));
         }
     }
 

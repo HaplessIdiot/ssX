@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.44 2000/03/05 23:47:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.46 2000/04/17 16:29:51 eich Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -1203,6 +1203,22 @@ xf86PrintResList(int verb, resPtr list)
 		    xf86ErrorFVerb(verb, "t");
 		if (list->res_type & ResBios)
 		    xf86ErrorFVerb(verb, "(B)");
+		if (list->res_type & ResBus)
+		    xf86ErrorFVerb(verb, "(b)");
+		if (list->res_type & ResOprMask) {
+		    switch (list->res_type & ResOprMask) {
+		    case ResUnusedOpr:
+			s = "(OprU)";
+			break;
+		    case ResDisableOpr:
+			s = "(OprD)";
+			break;
+		    default:
+			s = "(Opr?)";
+			break;
+		    }
+		    xf86ErrorFVerb(verb, "%s", s);
+		}
 		xf86ErrorFVerb(verb, "\n");
 		i++;
 	    }
@@ -2454,15 +2470,11 @@ xf86PostScreenInit(void)
 	    flags = 0;
 	    if (needRACforMem) {
 		flags |= xf86Screens[i]->racMemFlags;
-#ifdef DEBUG
-		ErrorF("Screen %d is using RAC for mem\n", i);
-#endif
+		xf86ErrorFVerb(3, "Screen %d is using RAC for mem\n", i);
 	    }
 	    if (needRACforIo) {
 		flags |= xf86Screens[i]->racIoFlags;
-#ifdef DEBUG
-		ErrorF("Screen %d is using RAC for io\n", i);
-#endif
+		xf86ErrorFVerb(3, "Screen %d is using RAC for io\n", i);
 	    }
 	    
 #ifdef XFree86LOADER

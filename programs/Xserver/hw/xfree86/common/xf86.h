@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.135 2000/04/17 16:29:51 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.136 2000/04/20 21:28:25 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -84,6 +84,10 @@ Bool xf86IsPrimaryPci(pciVideoPtr pPci);
 Bool xf86IsPrimaryIsa(void);
 int xf86CheckPciGAType(pciVideoPtr pPci);
 /* new RAC */
+resPtr xf86AddResToList(resPtr rlist, resRange *Range, int entityIndex);
+resPtr xf86JoinResLists(resPtr rlist1, resPtr rlist2);
+resPtr xf86DupResList(const resPtr rlist);
+void xf86FreeResList(resPtr rlist);
 void xf86ClaimFixedResources(resList list, int entityIndex);
 Bool xf86DriverHasEntities(DriverPtr drvp);
 void xf86AddEntityToScreen(ScrnInfoPtr pScrn, int entityIndex);

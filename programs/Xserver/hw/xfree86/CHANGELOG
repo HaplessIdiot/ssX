@@ -1,4 +1,12 @@
 XFree86 4.0b (?? April 2000)
+ 131. Remove Intel 440BX-specific resources from os-support layer
+      (Marc La France).
+ 130. Change ATI driver to mark VGA resources as unused in operating state when
+      appropriate (Marc La France).
+ 129. Fix bug in the generation of default screen layout (Marc La France).
+ 128. Include all resource attributes when printing them (Marc La France).
+ 127. Fix compiled-in input driver list (Marc La France).
+ 126. Allow driver access to resource manipulation functions (Marc La France).
  125. Fix a DGA 2.0 crash that happened when bogus mode numbers were sent
       by the client (Lionel Ulmer).
  124. Make a recent shm pixmap fix Xinerama aware (Mark Vojkovich).
@@ -10265,4 +10273,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1131 2000/04/20 21:28:16 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1134 2000/04/22 21:49:38 mvojkovi Exp $

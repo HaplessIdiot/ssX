@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Resources.h,v 1.5 1999/08/01 07:57:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Resources.h,v 1.8 2000/02/08 13:13:06 eich Exp $ */
 
 #ifndef _XF86_RESOURCES_H
 
@@ -23,9 +23,9 @@
 		{ResShrIoBlock  | ResBios | ResBus,     0x03C0,     0x03DF}
 
 #define _VGA_SHARED_MEM \
-                {ResShrMemBlock | ResBios | ResBus,     0xA0000,    0xAFFFF},\
-		{ResShrMemBlock | ResBios | ResBus,     0xB0000,    0xB7FFF},\
- 		{ResShrMemBlock | ResBios | ResBus,     0xB8000,    0xBFFFF}
+		{ResShrMemBlock | ResBios | ResBus, 0x000A0000, 0x000AFFFF},\
+		{ResShrMemBlock | ResBios | ResBus, 0x000B0000, 0x000B7FFF},\
+ 		{ResShrMemBlock | ResBios | ResBus, 0x000B8000, 0x000BFFFF}
 
 #define _VGA_SHARED_IO \
 		{ResShrIoBlock  | ResBios | ResBus,     0x03B0,     0x03BB},\
@@ -40,7 +40,7 @@
 	{ResExcUusdMemBlock | ResBios | ResBus, 0x000B0000, 0x000B7FFF},\
 	{ResExcUusdMemBlock | ResBios | ResBus, 0x000B8000, 0x000BFFFF},\
 	{ResExcUusdIoBlock  | ResBios | ResBus,     0x03B0,     0x03BB},\
-	{ResExcUusdIoBlock  | ResBios | ResBus,      0x3C0,      0x3DF}
+	{ResExcUusdIoBlock  | ResBios | ResBus,     0x03C0,     0x03DF}
 
 /*
  * Shared unused VGA:  resources unneeded but cannot be disabled
@@ -90,6 +90,10 @@ extern resRange resVgaSparseExclusive[];
 extern resRange resVgaSparseShared[];
 extern resRange res8514Exclusive[];
 extern resRange res8514Shared[];
+
+/* Less misleading aliases for xf86SetOpratingState() */
+#define resVgaMem resVgaMemShared
+#define resVgaIo  resVgaIoShared
 
 /* old style names */
 #define RES_EXCLUSIVE_VGA   resVgaExclusive

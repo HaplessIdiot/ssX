@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.64 2000/02/08 13:13:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.65 2000/03/08 05:38:37 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -120,10 +120,6 @@ void xf86AccessLeaveState(void);
 
 void xf86FindPrimaryDevice(void);
 /* new RAC */
-resPtr xf86AddResToList(resPtr rlist, resRange *range, int entityIndex);
-resPtr xf86JoinResLists(resPtr rlist1, resPtr rlist2);
-resPtr xf86DupResList(const resPtr rlist);
-void xf86FreeResList(resPtr rlist);
 void xf86ResourceBrokerInit(void);
 void xf86PostProbe(void);
 void xf86ClearEntityListForScreen(int scrnIndex);

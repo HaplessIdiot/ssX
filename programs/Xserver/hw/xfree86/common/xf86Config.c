@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.217 2000/04/05 18:13:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.219 2000/04/17 16:29:52 eich Exp $ */
 
 
 /*
@@ -1494,7 +1494,7 @@ configImpliedLayout(serverLayoutPtr servlayoutp, XF86ConfScreenPtr conf_screen)
 	return FALSE;
     servlayoutp->id = "(implicit)";
     servlayoutp->screens = slp;
-    servlayoutp->inactives = NULL;
+    servlayoutp->inactives = xnfcalloc(1, sizeof(GDevRec));
     servlayoutp->options = NULL;
     /* Set up an empty input device list, then look for some core devices. */
     indp = xnfalloc(sizeof(IDevRec));
