@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.11 1998/11/15 10:22:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.12 1998/11/28 10:43:19 dawes Exp $ */
 
 /*
  *
@@ -1270,7 +1270,7 @@ vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
 
         regp->Attribute[16] = 0x01;  /* -VGA2- */ /* wrong for the ET4000 */
 	if (!hwp->ShowOverscan)
-            regp->Attribute[17] = OVERSCAN_VALUE;  /* -VGA2- */
+            regp->Attribute[OVERSCAN] = OVERSCAN_VALUE;  /* -VGA2- */
     } else {
         regp->Attribute[0]  = 0x00; /* standard colormap translation */
         regp->Attribute[1]  = 0x01;
@@ -1368,7 +1368,7 @@ vgaHWGetHWRec(ScrnInfoPtr scrp)
 	/* Set all colours to black */
         for (i=0; i<768; i++) regp->DAC[i] = 0x00;
         /* ... and the overscan */
-        if (scrp->depth == 8)
+        if (scrp->depth >= 4)
             regp->Attribute[17] = 0xFF;
     }
     if (xf86FindOption(scrp->confScreen->options, "ShowOverscan")) {
@@ -1496,6 +1496,34 @@ vgaHWLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
     hwp->disablePalette(hwp);
 }
 
+static void
+vgaHWSetOverscan(ScrnInfoPtr pScrn, int overscan)
+{
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+
+    if (overscan < 0 || overscan > 255)
+	return;
+
+    hwp->enablePalette(hwp);
+    hwp->writeAttr(hwp, OVERSCAN, overscan);
+
+#ifdef DEBUGOVERSCAN
+    {
+	int ov = hwp->readAttr(hwp, OVERSCAN);
+	int red, green, blue;
+
+	hwp->writeDacReadAddr(hwp, ov);
+	red = hwp->readDacData(hwp);
+	green = hwp->readDacData(hwp);
+	blue = hwp->readDacData(hwp);
+	ErrorF("Overscan index is 0x%02x, colours are #%02x%02x%02x\n",
+		ov, red, green, blue);
+    }
+#endif
+
+    hwp->disablePalette(hwp);
+}
+
 Bool
 vgaHWHandleColormaps(ScreenPtr pScreen)
 {
@@ -1504,6 +1532,7 @@ vgaHWHandleColormaps(ScreenPtr pScreen)
     if (pScrn->depth > 1 && pScrn->depth <= 8) {
 	return xf86HandleColormaps(pScreen, 1 << pScrn->depth,
 				   pScrn->rgbBits, vgaHWLoadPalette,
+				   pScrn->depth > 4 ? vgaHWSetOverscan : NULL,
 				   CMAP_RELOAD_ON_MODE_SWITCH);
     }
     return TRUE;

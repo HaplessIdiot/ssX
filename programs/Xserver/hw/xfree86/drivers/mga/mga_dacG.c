@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.11 1998/10/25 07:12:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.12 1998/11/15 04:30:29 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -508,7 +508,7 @@ MGAGStoreColors(ScrnInfoPtr pScrn, xColorItem* pdef, int ndef)
 void MGAGLoadPalette(
     ScrnInfoPtr pScrn, 
     int numColors, 
-    int *indicies,
+    int *indices,
     LOCO *colors,
     short visualClass
 ){
@@ -516,7 +516,7 @@ void MGAGLoadPalette(
     int i, index;
 
     for(i = 0; i < numColors; i++) {
-	index = indicies[i];
+	index = indices[i];
         outMGAdreg(MGA1064_WADR_PAL, index);
         outMGAdreg(MGA1064_COL_PAL, colors[index].red);
         outMGAdreg(MGA1064_COL_PAL, colors[index].green);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.4 1998/08/29 05:43:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.5 1998/10/05 13:23:11 dawes Exp $ */
 
 #ifndef _MGA_MACROS_H_
 #define _MGA_MACROS_H_
@@ -24,7 +24,7 @@
 
 #define MAKEDMAINDEX(index)  ((((index) >> 2) & 0x7f) | (((index) >> 6) & 0x80))
 
-#define DMAINDICIES(one,two,three,four)	\
+#define DMAINDICES(one,two,three,four)	\
 	( MAKEDMAINDEX(one) | \
 	 (MAKEDMAINDEX(two) << 8) | \
 	 (MAKEDMAINDEX(three) << 16) | \

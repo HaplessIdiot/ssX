@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.3 1998/11/22 10:37:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.4 1998/11/28 10:43:15 dawes Exp $ */
 
 /*
  *
@@ -63,7 +63,8 @@ static void S3VLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO
  */
 extern void S3VEnableMmio(ScrnInfoPtr pScrn);
 extern void S3VDisableMmio(ScrnInfoPtr pScrn);
-extern void commonCalcClock(long freq, int min_m, int min_n1, int max_n1, int min_n2, int max_n2, 
+extern void commonCalcClock(long freq, int min_m, int min_n1, 
+		int max_n1, int min_n2, int max_n2, 
 		long freq_min, long freq_max,
 		unsigned char * mdiv, unsigned char * ndiv);
 
@@ -74,13 +75,12 @@ extern Bool S3VAccelInit(ScreenPtr pScreen);
 extern Bool S3VAccelInit32(ScreenPtr pScreen);
 
 
-#define VERSION 4000
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-				/* Version 0.1 */
-				/* upper word is Major, lower is minor */
-				/* 0000 0001 == 0.1 */
-#define S3VIRGE_DRIVER_VERSION 0x00000001
+#define S3VIRGE_VERSION_NAME "0.2"
+#define S3VIRGE_VERSION_MAJOR   0
+#define S3VIRGE_VERSION_MINOR   2
+#define S3VIRGE_DRIVER_VERSION ((S3VIRGE_VERSION_MAJOR << 16) | S3VIRGE_VERSION_MINOR)
 
 /* 
  * This contains the functions needed by the server after loading the
@@ -92,8 +92,8 @@ extern Bool S3VAccelInit32(ScreenPtr pScreen);
 
 DriverRec S3VIRGE =
 {
-    VERSION,
-    "driver for S3 ViRGE based cards, including /DX, /GX(2), /VX, & /MX",
+    S3VIRGE_DRIVER_VERSION,
+    "driver for S3 ViRGE based cards, including DX, GX, GX2, VX, MX & MX+",
     S3VIdentify,
     S3VProbe,
     NULL,
@@ -105,16 +105,23 @@ DriverRec S3VIRGE =
 static SymTabRec S3VChipsets[] = {
 				  	/* base (86C325) */
   { PCI_ViRGE,		"ViRGE" },
+  { PCI_ViRGE,		"86C325" },
   					/* VX (86C988) */
   { PCI_ViRGE_VX,	"ViRGE/VX" },
+  { PCI_ViRGE_VX,	"86C988" },
   					/* DX (86C375) GX (86C385) */
-  { PCI_ViRGE_DXGX,	"ViRGE/DX/GX" },
+  { PCI_ViRGE_DXGX,	"ViRGE/DXGX" },
+  { PCI_ViRGE_DXGX,	"86C375" },
+  { PCI_ViRGE_DXGX,	"86C385" },
   					/* GX2 (86C357) */
   { PCI_ViRGE_GX2,	"ViRGE/GX2" },
+  { PCI_ViRGE_GX2,	"86C357" },
   					/* MX (86C260) */
   { PCI_ViRGE_MX,	"ViRGE/MX" },
+  { PCI_ViRGE_MX,	"86C260" },
   					/* MX+ (86C280) */
-  /* { PCI_ViRGE_MX+,	"ViRGE/ MX+" },  not yet, check 3.3.3 for PCI id */
+  { PCI_ViRGE_MXP,	"ViRGE/MX+" },
+  { PCI_ViRGE_MXP,	"86C280" },
   {-1,			NULL }
 };
 
@@ -124,7 +131,7 @@ static PciChipsets S3VPciChipsets[] = {
   { PCI_ViRGE_DXGX, PCI_ViRGE_DXGX, RES_SHARED_VGA },
   { PCI_ViRGE_GX2,  PCI_ViRGE_GX2,  RES_SHARED_VGA },
   { PCI_ViRGE_MX,   PCI_ViRGE_MX,   RES_SHARED_VGA },
-  /* add MX+ */
+  { PCI_ViRGE_MXP,  PCI_ViRGE_MXP,  RES_SHARED_VGA },
   { -1,                       -1,   RES_UNDEFINED }
 };
 
@@ -142,7 +149,10 @@ typedef enum {
    OPTION_HW_CURSOR, 		
    */
    OPTION_EARLY_RAS_PRECHARGE, 	
-   OPTION_LATE_RAS_PRECHARGE
+   OPTION_LATE_RAS_PRECHARGE,
+   OPTION_LCD_CENTER,
+   OPTION_LCDCLOCK,
+   OPTION_MCLK
 } S3VOpts;
 
 static OptionInfoRec S3VOptions[] =
@@ -163,6 +173,9 @@ static OptionInfoRec S3VOptions[] =
   */ 
    { OPTION_EARLY_RAS_PRECHARGE, "early_ras_precharge",	OPTV_BOOLEAN, {0}, FALSE },
    { OPTION_LATE_RAS_PRECHARGE, "late_ras_precharge", OPTV_BOOLEAN, {0}, FALSE },
+   { OPTION_LCD_CENTER, 	"lcd_center", 	OPTV_BOOLEAN, 	{0}, FALSE },
+   { OPTION_LCDCLOCK, 		"set_lcdclk", 	OPTV_INTEGER, 	{0}, FALSE },
+   { OPTION_MCLK, 		"set_mclk", 	OPTV_INTEGER, 	{0}, FALSE },
    {-1, NULL, OPTV_NONE,
 	{0}, FALSE}
 };
@@ -171,6 +184,12 @@ static OptionInfoRec S3VOptions[] =
 /*
  * Lists of symbols that may/may not be required by this driver.
  * This allows the loader to know which ones to issue warnings for.
+ *
+ * Note that vgahwSymbols and xaaSymbols are referenced outside the
+ * XFree86LOADER define in later code, so are defined outside of that
+ * define here also.
+ * cfbSymbols and ramdacSymbols are only referenced from within the
+ * ...LOADER define.
  */
 
 static const char *vgahwSymbols[] = {
@@ -193,14 +212,6 @@ static const char *vgahwSymbols[] = {
     NULL
 };
 
-static const char *cfbSymbols[] = {
-    "cfbScreenInit",
-    "cfb16ScreenInit",
-    "cfb24ScreenInit",
-    "cfb32ScreenInit",
-    NULL
-};
-
 static const char *xaaSymbols[] = {
     "XAADestroyInfoRec",
     "XAACreateInfoRec",
@@ -209,6 +220,16 @@ static const char *xaaSymbols[] = {
     "XAAStippleScanlineFuncLSBFirst",
     "XAAOverlayFBfuncs",
     */
+    NULL
+};
+
+#ifdef XFree86LOADER
+
+static const char *cfbSymbols[] = {
+    "cfbScreenInit",
+    "cfb16ScreenInit",
+    "cfb24ScreenInit",
+    "cfb32ScreenInit",
     NULL
 };
 
@@ -223,7 +244,6 @@ static const char *ramdacSymbols[] = {
 };
 
 
-#ifdef XFree86LOADER
 
 MODULEINITPROTO(s3virgeModuleInit);
 static MODULESETUPPROTO(s3virgeSetup);
@@ -324,7 +344,8 @@ static void
 S3VIdentify(int flags)
 {
     PVERB5("	S3VIdentify\n");
-    xf86PrintChipsets(S3VIRGE_NAME, "driver for S3 ViRGE chipsets",
+    xf86PrintChipsets(S3VIRGE_NAME, 
+	"driver (version " S3VIRGE_VERSION_NAME ") for S3 ViRGE chipsets",
 	S3VChipsets);
 }
 
@@ -431,7 +452,7 @@ S3VProbe(DriverPtr drv, int flags)
 		FatalError("someone claimed the free slot!\n");
 	    }
 	    /* Fill in what we can of the ScrnInfoRec */
-	    pScrn->driverVersion = VERSION;
+	    pScrn->driverVersion = S3VIRGE_DRIVER_VERSION;
 	    pScrn->driverName	 = S3VIRGE_DRIVER_NAME;
 	    pScrn->name		 = S3VIRGE_NAME;
 	    pScrn->Probe	 = S3VProbe;
@@ -561,7 +582,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     /*
      * If the driver can do gamma correction, it should call xf86SetGamma()
      * here. (from MGA, no ViRGE gamma support yet, but needed for 
-     * xf86HandleColormaps support. )
+     * xf86HandleColormaps support.)
      */
 
     {
@@ -665,7 +686,32 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: late_ras_precharge set\n");
     } else
    	ps3v->late_ras_precharge = FALSE;
-	       
+	       	   
+    if (xf86IsOptionSet(S3VOptions, OPTION_LCD_CENTER)) {
+	ps3v->lcd_center = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: lcd_center set\n");
+    } else
+   	ps3v->lcd_center = FALSE;
+
+    if (xf86GetOptValInteger(S3VOptions, OPTION_LCDCLOCK, &ps3v->LCDClk)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: lcd_setclk set to %1.3f Mhz\n",
+		ps3v->LCDClk / 1000.0 );
+    } else
+   	ps3v->LCDClk = 0;
+	
+    if (xf86GetOptValInteger(S3VOptions, OPTION_MCLK, &ps3v->MCLK)) {
+    	if (ps3v->MCLK <= 100000) {
+	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: set_mclk set to %1.3f Mhz\n",
+		ps3v->MCLK / 1000.0 );
+	} else {
+	  xf86DrvMsg(pScrn->scrnIndex, X_WARNING
+	  	, "Memory Clock value of %1.3f MHz is larger than limit of 100 MHz\n"
+		, ps3v->MCLK/1000.0);
+	  ps3v->MCLK = 0;
+	}
+    } else
+   	ps3v->MCLK = 0;
+	
     /* Find the PCI slot for this screen */
     /*
      * XXX Ignoring the Type list for now.  It might be needed when
@@ -833,6 +879,16 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
          }
          ps3v->videoRamKbytes -= ps3v->MemOffScreen;
       }
+      else if (S3_ViRGE_GX2_SERIES(ps3v->Chipset) || S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
+         switch((config1 & 0xC0) >> 6) {
+         case 1:
+            ps3v->videoRamKbytes = 4 * 1024;
+            break;
+         case 3:
+            ps3v->videoRamKbytes = 2 * 1024;
+            break;
+         }
+      }
       else {
          switch((config1 & 0xE0) >> 5) {
          case 0:
@@ -912,11 +968,17 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
       if (pScrn->clock[2] <= 0) pScrn->clock[2] = 135000;
       if (pScrn->clock[3] <= 0) pScrn->clock[3] = 135000;
    }
-   else if (ps3v->Chipset == S3_ViRGE_DXGX || ps3v->Chipset == S3_ViRGE_GX2) {
+   else if (ps3v->Chipset == S3_ViRGE_DXGX || S3_ViRGE_GX2_SERIES(ps3v->Chipset)) {
       if (pScrn->clock[0] <= 0) pScrn->clock[0] = 170000;
       if (pScrn->clock[1] <= 0) pScrn->clock[1] = 170000;
       if (pScrn->clock[2] <= 0) pScrn->clock[2] = 135000;
       if (pScrn->clock[3] <= 0) pScrn->clock[3] = 135000;
+   }
+   else if (S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
+      if (pScrn->clock[0] <= 0) pScrn->clock[0] = 135000;
+      if (pScrn->clock[1] <= 0) pScrn->clock[1] = 135000;
+      if (pScrn->clock[2] <= 0) pScrn->clock[2] = 100000;
+      if (pScrn->clock[3] <= 0) pScrn->clock[3] = 100000;
    }
    else {
       if (pScrn->clock[0] <= 0) pScrn->clock[0] = 135000;
@@ -971,32 +1033,48 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected current MCLK value of %1.3f MHz\n",
 	     mclk / 1000.0);
 
-  S3VDisableMmio(pScrn);
-  
-  xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->IOBase, S3V_MMIO_REGSIZE);
+   if (S3_ViRGE_MX_SERIES(ps3v->Chipset) && xf86GetVerbosity()) {
+       int lcdclk, h_lcd, v_lcd;
+       if (ps3v->LCDClk) {
+	  lcdclk = ps3v->LCDClk;
+       } else {
+	  int n1, n2, sr12, sr13, sr29;
+          OUTREG8(0x3c4, 0x12);
+          sr12 = INREG8(0x3c5);
+          OUTREG8(0x3c4, 0x13);
+          sr13 = INREG8(0x3c5) & 0x7f;
+          OUTREG8(0x3c4, 0x29);
+          sr29 = INREG8(0x3c5);
+    	  n1 = sr12 & 0x1f;
+    	  n2 = ((sr12>>6) & 0x03) | ((sr29 & 0x01) << 2);
+          lcdclk = ((2 * 1431818 * (sr13+2)) / (n1+2) / (1 << n2) + 50) / 100;
+       }
+       OUTREG8(0x3c4, 0x61);
+       h_lcd = INREG8(0x3c5);
+       OUTREG8(0x3c4, 0x66);
+       h_lcd |= ((INREG8(0x3c5) & 0x02) << 7);
+       h_lcd = (h_lcd+1) * 8;
+       OUTREG8(0x3c4, 0x69);
+       v_lcd = INREG8(0x3c5);
+       OUTREG8(0x3c4, 0x6e);
+       v_lcd |= ((INREG8(0x3c5) & 0x70) << 4);
+       v_lcd++;
+       xf86DrvMsg(pScrn->scrnIndex
+	      , ps3v->LCDClk ? X_CONFIG : X_PROBED
+       	      , "LCD size %dx%d, clock %1.3f MHz\n"
+	      , h_lcd, v_lcd
+	      , lcdclk / 1000.0);
+   }
 
-#if 0
-   /* Now check if the user has specified "set_memclk" value in XConfig */
-   if (vga256InfoRec.MemClk > 0) {
-      if(vga256InfoRec.MemClk <= 100000) {
-         ErrorF("%s %s: Using Memory Clock value of %1.3f MHz\n",
-		OFLG_ISSET(XCONFIG_DACSPEED, &vga256InfoRec.xconfigFlag) ?
-		XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name, 
-		vga256InfoRec.MemClk/1000.0);
-         s3vPriv.MCLK = vga256InfoRec.MemClk;
-         }
-      else {
-         ErrorF("%s %s: Memory Clock value of %1.3f MHz is larger than limit of 100 MHz\n",
-              XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.MemClk/1000.0);
-         s3vPriv.MCLK = 0;
-         }
-      }
-   else s3vPriv.MCLK = 0;
-#endif
+   S3VDisableMmio(pScrn);
+  
+   xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->IOBase, S3V_MMIO_REGSIZE);
+   
 
    /* Set scale factors for mode timings */
 
-   if (ps3v->Chipset == S3_ViRGE_VX){
+   if (ps3v->Chipset == S3_ViRGE_VX || S3_ViRGE_GX2_SERIES(ps3v->Chipset) || 
+       S3_ViRGE_MX_SERIES(ps3v->Chipset)){
       ps3v->HorizScaleFactor = 1;
       }
    else if (pScrn->bitsPerPixel == 8){
@@ -1025,11 +1103,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	/* find BIOS base?  See above, do MELCO bios detect */
 	
 	
-
-/* s3v_driver.c.old above */   
-/****************************************************/
-/* converted mgastuff */
-
   #if 0
   if (ps3v->Chipset == S3_ViRGE_VX ) {
     ps3v->minClock = 220000;
@@ -1277,19 +1350,17 @@ S3VLeaveVT(int scrnIndex, int flags)
 static void
 S3VSave (ScrnInfoPtr pScrn)
 {
-  unsigned char cr3a, /*cr53,*/ cr66;
+  unsigned char cr3a, cr66;
   vgaHWPtr hwp = VGAHWPTR(pScrn);
   vgaRegPtr vgaSavePtr = &hwp->SavedReg;
   S3VPtr ps3v = S3VPTR(pScrn);
   S3VRegPtr save = &ps3v->SavedReg;
   void *s3vMmioMem = ps3v->MapBase;
   int vgaCRIndex, vgaCRReg, vgaIOBase;
-  /*vgaIOBase = VGAHW_GET_IOBASE();*/
   vgaIOBase = hwp->IOBase;
   vgaCRIndex = vgaIOBase + 4;
   vgaCRReg = vgaIOBase + 5;
 
-/*vgaS3VPtr save;  pre-4.0 version saved to passed struct */
 
     PVERB5("	S3VSave\n");
 
@@ -1298,19 +1369,13 @@ S3VSave (ScrnInfoPtr pScrn)
     * in the generic VGA portion.
     */
 	 
-    /* Hmmm, memory settings might not be needed for 4.0... */
-    /* If not, remove resetting at end also. */
-   #if 1
    OUTREG8(vgaCRIndex, 0x66);
    cr66 = INREG8(vgaCRReg);
    OUTREG8(vgaCRReg, cr66 | 0x80);
    OUTREG8(vgaCRIndex, 0x3a);
    cr3a = INREG8(vgaCRReg);
    OUTREG8(vgaCRReg, cr3a | 0x80);
-   #endif
 
-   /* save = (vgaS3VPtr)vgaHWSave((vgaHWPtr)save, sizeof(vgaS3VRec));*/
-   /* Save VGA info, False indicates no fontinfo save */
    /* VGA_SR_MODE saves mode info only, no fonts, no colormap */
 					/* Save all for primary, anything */
 					/* for secondary cards?, do MODE */
@@ -1320,7 +1385,6 @@ S3VSave (ScrnInfoPtr pScrn)
    else
    	vgaHWSave(pScrn, vgaSavePtr, VGA_SR_MODE);
    
-   #if 1
    OUTREG8(vgaCRIndex, 0x66);
    OUTREG8(vgaCRReg, cr66);
    OUTREG8(vgaCRIndex, 0x3a);             
@@ -1328,8 +1392,8 @@ S3VSave (ScrnInfoPtr pScrn)
 
    /* First unlock extended sequencer regs */
    OUTREG8(0x3c4, 0x08);
+   save->SR8 = INREG8(0x3c5);
    OUTREG8(0x3c5, 0x06); 
-   #endif
 
    /* Now we save all the s3 extended regs we need */
    OUTREG8(vgaCRIndex, 0x31);             
@@ -1340,8 +1404,12 @@ S3VSave (ScrnInfoPtr pScrn)
    save->CR36 = INREG8(vgaCRReg);
    OUTREG8(vgaCRIndex, 0x3a);             
    save->CR3A = INREG8(vgaCRReg);
+   OUTREG8(vgaCRIndex, 0x40);
+   save->CR40 = INREG8(vgaCRReg);
    OUTREG8(vgaCRIndex, 0x42);             
    save->CR42 = INREG8(vgaCRReg);
+   OUTREG8(vgaCRIndex, 0x45);
+   save->CR45 = INREG8(vgaCRReg);
    OUTREG8(vgaCRIndex, 0x51);             
    save->CR51 = INREG8(vgaCRReg);
    OUTREG8(vgaCRIndex, 0x53);             
@@ -1363,9 +1431,12 @@ S3VSave (ScrnInfoPtr pScrn)
 
    OUTREG8(vgaCRIndex, 0x33);             
    save->CR33 = INREG8(vgaCRReg);
-   if (ps3v->Chipset == S3_ViRGE_DXGX || ps3v->Chipset == S3_ViRGE_GX2) {
+   if (ps3v->Chipset == S3_ViRGE_DXGX) {
       OUTREG8(vgaCRIndex, 0x86);
       save->CR86 = INREG8(vgaCRReg);
+   }
+   if (ps3v->Chipset == S3_ViRGE_DXGX || S3_ViRGE_GX2_SERIES(ps3v->Chipset) || 
+       S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
       OUTREG8(vgaCRIndex, 0x90);
       save->CR90 = INREG8(vgaCRReg);
    }
@@ -1399,36 +1470,38 @@ S3VSave (ScrnInfoPtr pScrn)
    save->SR12 = INREG8(0x3c5);
    OUTREG8(0x3c4, 0x13);
    save->SR13 = INREG8(0x3c5);
+   if (S3_ViRGE_GX2_SERIES(ps3v->Chipset) || S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
+     OUTREG8(0x3c4, 0x29);
+     save->SR29 = INREG8(0x3c5);
+     OUTREG8(0x3c4, 0x54);
+     save->SR54 = INREG8(0x3c5);
+     OUTREG8(0x3c4, 0x55);
+     save->SR55 = INREG8(0x3c5);
+     OUTREG8(0x3c4, 0x56);
+     save->SR56 = INREG8(0x3c5);
+     OUTREG8(0x3c4, 0x57);
+     save->SR57 = INREG8(0x3c5);
+   }
 
    OUTREG8(0x3c4, 0x15);
    save->SR15 = INREG8(0x3c5);
    OUTREG8(0x3c4, 0x18);
    save->SR18 = INREG8(0x3c5);
 
-
-   /* And if streams is to be used, save that as well */
-						      
- #if 0	/* should be using mmio already for 4.0 server */
-   /*I hope I solved it {KF}*/
-      OUTREG8(vgaCRIndex, 0x53);
-   cr53 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRReg, cr53 | 0x08);  /* Enable NEWMMIO to save MIU context */
- #endif
- #if 1
    OUTREG8(vgaCRIndex, 0x66);
    cr66 = INREG8(vgaCRReg);
    OUTREG8(vgaCRReg, cr66 | 0x80);
    OUTREG8(vgaCRIndex, 0x3a);
    cr3a = INREG8(vgaCRReg);
    OUTREG8(vgaCRReg, cr3a | 0x80);
- #endif
+
+   /* And if streams is to be used, save that as well */
 
    if(ps3v->NeedSTREAMS) {
       S3VSaveSTREAMS(pScrn, save->STREAMS);
       }
 
-   /* Now save Memory Interface Unit registers, enable MMIO for this */
-   /* 4.0 note: mmio should be enabled for this entire function */
+   /* Now save Memory Interface Unit registers */
    save->MMPR0 = ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control;
    save->MMPR1 = ((mmtr)s3vMmioMem)->memport_regs.regs.miu_control;
    save->MMPR2 = ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout;
@@ -1444,17 +1517,11 @@ S3VSave (ScrnInfoPtr pScrn)
 
       PVERB5("\n\nViRGE driver: saved current video mode. Register dump:\n\n");
    }
- #if 0
-   OUTREG8(vgaCRIndex, 0x53);
-   OUTREG8(vgaCRReg, cr53);   /* Restore CR53 to original for MMIO */
- #endif
- #if 1
+
    OUTREG8(vgaCRIndex, 0x3a);
    OUTREG8(vgaCRReg, cr3a);
    OUTREG8(vgaCRIndex, 0x66);
    OUTREG8(vgaCRReg, cr66);
- #endif
-
    				/* Dup the VGA & S3V state to the */
 				/* new mode state, but only first time. */
    if( !ps3v->ModeStructInit ) {
@@ -1516,9 +1583,8 @@ S3VSaveSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams)
 
 static void
 S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
-/* vgaS3VPtr restore; */
 {
-  unsigned char tmp, cr3a, /*cr53,*/ cr66, cr67;
+  unsigned char tmp, cr3a, cr66, cr67;
   
   vgaHWPtr hwp = VGAHWPTR(pScrn);
   S3VPtr ps3v = S3VPTR(pScrn);
@@ -1538,11 +1604,11 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    /* First reset GE to make sure nothing is going on */
    if(ps3v->Chipset == S3_ViRGE_VX) {
       OUTREG8(vgaCRIndex, 0x63);
-      if(INREG8(vgaCRReg) & 0x01) S3VGEReset(pScrn);
+      if(INREG8(vgaCRReg) & 0x01) S3VGEReset(pScrn,0,__LINE__,__FILE__);
       }
    else {
       OUTREG8(vgaCRIndex, 0x66);
-      if(INREG8(vgaCRReg) & 0x01) S3VGEReset(pScrn);
+      if(INREG8(vgaCRReg) & 0x01) S3VGEReset(pScrn,0,__LINE__,__FILE__);
       }
 
    /* As per databook, always disable STREAMS before changing modes */
@@ -1595,8 +1661,12 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    /* Other mode timing and extended regs */
    OUTREG8(vgaCRIndex, 0x34);             
    OUTREG8(vgaCRReg, restore->CR34);
+   OUTREG8(vgaCRIndex, 0x40);             
+   OUTREG8(vgaCRReg, restore->CR40);
    OUTREG8(vgaCRIndex, 0x42);             
    OUTREG8(vgaCRReg, restore->CR42);
+   OUTREG8(vgaCRIndex, 0x45);
+   OUTREG8(vgaCRReg, restore->CR45);
    OUTREG8(vgaCRIndex, 0x51);             
    OUTREG8(vgaCRReg, restore->CR51);
    OUTREG8(vgaCRIndex, 0x54);             
@@ -1612,18 +1682,19 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
 
    OUTREG8(vgaCRIndex, 0x33);
    OUTREG8(vgaCRReg, restore->CR33);
-   if (ps3v->Chipset == S3_ViRGE_DXGX || ps3v->Chipset == S3_ViRGE_GX2) {
+   if (ps3v->Chipset == S3_ViRGE_DXGX) {
       OUTREG8(vgaCRIndex, 0x86);
       OUTREG8(vgaCRReg, restore->CR86);
+   }
+   if (ps3v->Chipset == S3_ViRGE_DXGX || S3_ViRGE_GX2_SERIES(ps3v->Chipset) ||
+       S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
       OUTREG8(vgaCRIndex, 0x90);
       OUTREG8(vgaCRReg, restore->CR90);
    }
 
- #if 1		/* not for MMIO ? */
    /* Unlock extended sequencer regs */
    OUTREG8(0x3c4, 0x08);
    OUTREG8(0x3c5, 0x06); 
- #endif
 
 
    /* Restore extended sequencer regs for MCLK. SR10 == 255 indicates that 
@@ -1642,6 +1713,18 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    OUTREG8(0x3c5, restore->SR12);
    OUTREG8(0x3c4, 0x13);
    OUTREG8(0x3c5, restore->SR13);
+   if (S3_ViRGE_GX2_SERIES(ps3v->Chipset) || S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
+     OUTREG8(0x3c4, 0x29);
+     OUTREG8(0x3c5, restore->SR29);
+     OUTREG8(0x3c4, 0x54);
+     OUTREG8(0x3c5, restore->SR54);
+     OUTREG8(0x3c4, 0x55);
+     OUTREG8(0x3c5, restore->SR55);
+     OUTREG8(0x3c4, 0x56);
+     OUTREG8(0x3c5, restore->SR56);
+     OUTREG8(0x3c4, 0x57);
+     OUTREG8(0x3c5, restore->SR57);
+   }
 
    OUTREG8(0x3c4, 0x18);
    OUTREG8(0x3c5, restore->SR18); 
@@ -1655,6 +1738,10 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    OUTREG8(0x3c5, tmp | 0x03);
    OUTREG8(0x3c5, restore->SR15);
 
+   OUTREG8(0x3c4, 0x08);
+   OUTREG8(0x3c5, restore->SR8); 
+
+
    /* Now write out CR67 in full, possibly starting STREAMS */
 
    VerticalRetraceWait();
@@ -1664,25 +1751,17 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    OUTREG8(vgaCRIndex, 0x67);
    OUTREG8(vgaCRReg, restore->CR67); 
 
-
-   /* And finally, we init the STREAMS processor if we have CR67 indicate 24bpp
-    * We also restore FIFO and TIMEOUT memory controller registers.
-    */
-	 
- #if 0		/* not for MMIO version */
-      OUTREG8(vgaCRIndex, 0x53);
-   cr53 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRReg, cr53 | 0x08);  /* Enable NEWMMIO temporarily */
- #endif
- #if 1
    OUTREG8(vgaCRIndex, 0x66);
    cr66 = INREG8(vgaCRReg);
    OUTREG8(vgaCRReg, cr66 | 0x80);
    OUTREG8(vgaCRIndex, 0x3a);
    cr3a = INREG8(vgaCRReg);
    OUTREG8(vgaCRReg, cr3a | 0x80);
- #endif
 
+   /* And finally, we init the STREAMS processor if we have CR67 indicate 24bpp
+    * We also restore FIFO and TIMEOUT memory controller registers. (later...)
+    */
+	 
    if (ps3v->NeedSTREAMS) {
       if(ps3v->STREAMSRunning) S3VRestoreSTREAMS(pScrn, restore->STREAMS);
       }
@@ -1695,13 +1774,13 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
 
 #ifndef MetroLink
    if(ps3v->Chipset == S3_ViRGE_VX) {
-      if(restore->CR63 & 0x01) S3VGEReset(pScrn);
+      if(restore->CR63 & 0x01) S3VGEReset(pScrn,0,__LINE__,__FILE__);
       }
    else {
-      if(restore->CR66 & 0x01) S3VGEReset(pScrn);
+      if(restore->CR66 & 0x01) S3VGEReset(pScrn,0,__LINE__,__FILE__);
       }
 #else
-   S3VGEReset(pScrn);
+   S3VGEReset(pScrn,0,__LINE__,__FILE__);
 #endif
 
    VerticalRetraceWait();
@@ -1713,26 +1792,7 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    WaitIdle();
    ((mmtr)s3vMmioMem)->memport_regs.regs.misc_timeout = restore->MMPR3;
 
- #if 0
-   OUTREG8(vgaCRIndex, 0x53);
-   OUTREG8(vgaCRReg, cr53);   /* Restore CR53 to original for MMIO */
- #endif
- #if 0
-   OUTREG8(vgaCRIndex, 0x66);             
-   OUTREG8(vgaCRReg, cr66);
-   OUTREG8(vgaCRIndex, 0x3a);             
-   OUTREG8(vgaCRReg, cr3a);
- #endif
-
-   OUTREG8(0x3c4, 0x08);
-   OUTREG8(0x3c5, 0x06); 
-   OUTREG8(0x3c4, 0x12);
-   OUTREG8(0x3c5, restore->SR12);
-   OUTREG8(0x3c4, 0x13);
-   OUTREG8(0x3c5, restore->SR13);
-   OUTREG8(0x3c4, 0x15);
-   OUTREG8(0x3c5, restore->SR15); 
-
+ 
    /* Restore the standard VGA registers */
    /* False indicates no fontinfo restore. */
    /* VGA_SR_MODE restores mode info only, no font, no colormap */
@@ -1743,12 +1803,11 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    else
      vgaHWRestore(pScrn, vgaSavePtr, VGA_SR_MODE);
 
- #if 1		/* moved from before vgaHWRestore, to prevent segfault? */
+ 		/* moved from before vgaHWRestore, to prevent segfault? */
    OUTREG8(vgaCRIndex, 0x66);             
    OUTREG8(vgaCRReg, cr66);
    OUTREG8(vgaCRIndex, 0x3a);             
    OUTREG8(vgaCRReg, cr3a);
- #endif
 
    if (xf86GetVerbosity() > 1) {
       ErrorF("\n\nViRGE driver: done restoring mode, dumping CR registers:\n\n");
@@ -2052,8 +2111,11 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
   	      				/* Initialize acceleration layer */
   if (!ps3v->NoAccel) {
     if(pScrn->bitsPerPixel == 32) {
+      /* 32 bit Accel currently broken 
       if (!S3VAccelInit32(pScreen))
         return FALSE;
+	*/
+	;
     } else 
       if (!S3VAccelInit(pScreen))
         return FALSE;
@@ -2073,7 +2135,7 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 					/* And SetGamma call, else it 	*/
 					/* will load palette with solid */
 					/* white. */
-  if(!xf86HandleColormaps(pScreen, 256, 6, S3VLoadPalette, 
+  if(!xf86HandleColormaps(pScreen, 256, 6, S3VLoadPalette, NULL,
 			CMAP_RELOAD_ON_MODE_SWITCH ))
 	return FALSE;
 				    	/* All the ugly stuff is done, 	*/
@@ -2194,11 +2256,15 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    new->SR15 = 0x03 | 0x80; 
    new->SR18 = 0x00;
    new->CR43 = 0x00;
+   new->CR45 = 0x00;
    /*new->CR65 = 0x00;*/
    				/* Enable MMIO to RAMDAC registers */
    new->CR65 = 0x04;
    /*new->CR65 = 0x02;  3.9Nm */
    new->CR54 = 0x00;
+   
+   OUTREG8(vgaCRIndex, 0x40);
+   new->CR40 = INREG8(vgaCRReg) & ~0x01;
    
     /*cep*/  
     xf86ErrorFVerb(VERBLEV, "	S3VModeInit dclk=%i \n", 
@@ -2223,9 +2289,8 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
          new->MMPR3 = 0x08081810; /* And let the GE hold the bus for a while */
       }
 
-  #if 0
    /* And setup here the new value for MCLK. We use the XConfig 
-    * option "set_mclk", whose value gets stored in vga256InfoRec.s3MClk.
+    * option "set_mclk", whose value gets stored in ps3v->MCLK.
     * I'm not sure what the maximum "permitted" value should be, probably
     * 100 MHz is more than enough for now.  
     */
@@ -2238,7 +2303,6 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
        new->SR10 = 255; /* This is a reserved value, so we use as flag */
        new->SR11 = 255; 
        }
-  #endif
 
    					/* most modes don't need STREAMS */
 					/* processor, preset FALSE */
@@ -2268,6 +2332,81 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	   220000, 440000, &new->SR13, &new->SR12);
 
       }
+   else if (S3_ViRGE_GX2_SERIES(ps3v->Chipset) || S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
+       if (pScrn->bitsPerPixel == 8)
+	  new->CR67 = 0x00;
+       else if (pScrn->bitsPerPixel == 16) {
+	  if (pScrn->weight.green == 5)
+	     new->CR67 = 0x30;                  /* 15bpp */
+	  else
+	     new->CR67 = 0x50;                  /* 16bpp */
+          }
+       else if ((pScrn->bitsPerPixel == 24) /* || (pScrn->bitsPerPixel == 32) */ ) {
+          new->CR67 = 0x74;              /* 24bpp, STREAMS */
+	  					/* Flag STREAMS proc. required */
+          ps3v->NeedSTREAMS = TRUE;
+          S3VInitSTREAMS(pScrn, new->STREAMS, mode);
+          new->MMPR0 = 0xc098;            /* Adjust FIFO slots */
+          }
+       else if (pScrn->bitsPerPixel == 32) {
+          new->CR67 = 0xd0;              /* 32bpp */
+	  	/* Missing STREAMs and other stuff here? KJB */
+          /* new->MMPR0 = 0xc098;            / Adjust FIFO slots */
+          }
+       {
+         unsigned char ndiv;
+	 if (S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
+	   unsigned char sr8;
+	   OUTREG8(0x3c4, 0x08);  /* unlock extended SEQ regs */
+	   sr8 = INREG8(0x3c5);
+	   OUTREG8(0x3c5, 0x06);
+	   OUTREG8(0x3c4, 0x31);
+	   if (INREG8(0x3c5) & 0x10) { /* LCD on */
+	     if (!ps3v->LCDClk) {  /* entered only once for first mode */
+	       int h_lcd, v_lcd;
+	       OUTREG8(0x3c4, 0x61);
+	       h_lcd = INREG8(0x3c5);
+	       OUTREG8(0x3c4, 0x66);
+	       h_lcd |= ((INREG8(0x3c5) & 0x02) << 7);
+	       h_lcd = (h_lcd+1) * 8;
+	       OUTREG8(0x3c4, 0x69);
+	       v_lcd = INREG8(0x3c5);
+	       OUTREG8(0x3c4, 0x6e);
+	       v_lcd |= ((INREG8(0x3c5) & 0x70) << 4);
+	       v_lcd++;
+	       
+	       /* check if first mode has physical LCD resolution */
+	       if (pScrn->modes->HDisplay == h_lcd && pScrn->modes->VDisplay == v_lcd)
+		 ps3v->LCDClk = pScrn->clock[pScrn->modes->Clock];
+	       else {
+		 int n1, n2, sr12, sr13, sr29;
+		 OUTREG8(0x3c4, 0x12);
+		 sr12 = INREG8(0x3c5);
+		 OUTREG8(0x3c4, 0x13);
+		 sr13 = INREG8(0x3c5) & 0x7f;
+		 OUTREG8(0x3c4, 0x29);
+		 sr29 = INREG8(0x3c5);
+		 n1 = sr12 & 0x1f;
+		 n2 = ((sr12>>6) & 0x03) | ((sr29 & 0x01) << 2);
+		 ps3v->LCDClk = ((2 * 1431818 * (sr13+2)) / (n1+2) / (1 << n2) + 50) / 100;
+	       }
+	     }
+	     commonCalcClock(ps3v->LCDClk/2, 1, 1, 31, 0, 4,
+			     170000, 340000, &new->SR13, &ndiv);
+	   }
+	   else
+	     commonCalcClock(dclk/2, 1, 1, 31, 0, 4,
+			     170000, 340000, &new->SR13, &ndiv);
+	   OUTREG8(0x3c4, 0x08);
+	   OUTREG8(0x3c5, sr8);
+	 }
+	 else  /* S3_ViRGE_GX2 */
+	   commonCalcClock(dclk, 1, 1, 31, 0, 4,
+			   170000, 340000, &new->SR13, &ndiv);
+         new->SR29 = ndiv >> 7;
+         new->SR12 = (ndiv & 0x1f) | ((ndiv & 0x60) << 1);
+       }
+   }
    else {           /* Is this correct for DX/GX as well? */
       if (pScrn->bitsPerPixel == 8) {
          if(dclk > 80000) {                     /* We need pixmux */
@@ -2370,18 +2509,20 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 
    new->CR33 = 0x20;
-   if (ps3v->Chipset == S3_ViRGE_DXGX || ps3v->Chipset == S3_ViRGE_GX2) {
+   if (ps3v->Chipset == S3_ViRGE_DXGX) {
       new->CR86 = 0x80;  /* disable DAC power saving to avoid bright left edge */
+   }
+   if (ps3v->Chipset == S3_ViRGE_DXGX || S3_ViRGE_GX2_SERIES(ps3v->Chipset)) {
       new->CR90 = 0x00;  /* disable the stream display fetch length control */
    }
 	 
 
    /* Now we handle various XConfig memory options and others */
    
+   OUTREG8(vgaCRIndex, 0x36);
+   new->CR36 = INREG8(vgaCRReg);
    /* option "slow_edodram" sets EDO to 2 cycle mode on ViRGE */
    if (ps3v->Chipset == S3_ViRGE) {
-      OUTREG8(vgaCRIndex, 0x36);
-      new->CR36 = INREG8(vgaCRReg);
       if( ps3v->slow_edodram )
          new->CR36 = (new->CR36 & 0xf3) | 0x08;
       else  
@@ -2390,48 +2531,83 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    
    /* Option "fpm_vram" for ViRGE_VX sets memory in fast page mode */
    if (ps3v->Chipset == S3_ViRGE_VX) {
-      OUTREG8(vgaCRIndex, 0x36);
-      new->CR36 = INREG8(vgaCRReg);
       if( ps3v->fpm_vram )
          new->CR36 |=  0x0c;
       else 
          new->CR36 &= ~0x0c;
-      }
+   }
       
-  #if 0
-   if (mode->Private) {
+   				/* S3_INVERT_VCLK was defaulted to 0 	*/
+				/* in 3.3.3 and never changed. 		*/
+				/* Also, bit 0 is never set in 3.9Nm,	*/
+				/* so I left this out for 4.0.			*/
+   #if 0
       if (mode->Private[0] & (1 << S3_INVERT_VCLK)) {
 	 if (mode->Private[S3_INVERT_VCLK])
 	    new->CR67 |= 1;
 	 else
 	    new->CR67 &= ~1;
       }
-      if (mode->Private[0] & (1 << S3_BLANK_DELAY)) {
-	 if (s3vPriv.chip == S3_ViRGE_VX)
-	    new->CR6D = mode->Private[S3_BLANK_DELAY];
-	 else {
+   #endif
+      				/* S3_BLANK_DELAY settings based on 	*/
+				/* defaults only. From 3.3.3 		*/
+   {
+      int blank_delay;
+      
+      if(ps3v->Chipset == S3_ViRGE_VX)
+	    /* these values need to be changed once CR67_1 is set
+	       for gamma correction (see S3V server) ! */
+	    if (pScrn->bitsPerPixel == 8)
+	       blank_delay = 0x00;
+	    else if (pScrn->bitsPerPixel == 16)
+	       blank_delay = 0x00;
+	    else
+	       blank_delay = 0x51;
+      else
+	    if (pScrn->bitsPerPixel == 8)
+	       blank_delay = 0x00;
+	    else if (pScrn->bitsPerPixel == 16)
+	       blank_delay = 0x02;
+	    else
+	       blank_delay = 0x04;
+				
+      if (ps3v->Chipset == S3_ViRGE_VX)
+	    new->CR6D = blank_delay;
+      else {
 	    new->CR65 = (new->CR65 & ~0x38) 
-	       | (mode->Private[S3_BLANK_DELAY] & 0x07) << 3;
+	       | (blank_delay & 0x07) << 3;
 	    OUTREG8(vgaCRIndex, 0x6d);
 	    new->CR6D = INREG8(vgaCRReg);
-	 }
       }
+   }
+   				/* S3_EARLY_SC was defaulted to 0 	*/
+				/* in 3.3.3 and never changed. 		*/
+				/* Also, bit 1 is never set in 3.9Nm,	*/
+				/* so I left this out for 4.0.			*/
+   #if 0
       if (mode->Private[0] & (1 << S3_EARLY_SC)) {
 	 if (mode->Private[S3_EARLY_SC])
 	    new->CR65 |= 2;
 	 else
 	    new->CR65 &= ~2;
       }
-   }
-   else {
-      OUTREG8(vgaCRIndex, 0x6d);
-      new->CR6D = INREG8(vgaCRReg);
-   }
-  #endif
+   #endif
   
    OUTREG8(vgaCRIndex, 0x68);
    new->CR68 = INREG8(vgaCRReg);
    new->CR69 = 0;
+   
+   if (S3_ViRGE_MX_SERIES(ps3v->Chipset) && (ps3v->lcd_center)) {
+     new->SR54 = 0x10 ;
+     new->SR55 = 0x80 ;
+     new->SR56 = 0x10 ;
+     new->SR57 = 0x80 ;
+   } else {
+     new->SR54 = 0x1f ;
+     new->SR55 = 0x9f ;
+     new->SR56 = 0x1f ;
+     new->SR57 = 0xff ;
+   }
    
    pScrn->vtSema = TRUE;
    			    
@@ -2468,10 +2644,7 @@ S3VCloseScreen(int scrnIndex, ScreenPtr pScreen)
   S3VUnmapMem(pScrn);
   if (ps3v->AccelInfoRec)
     XAADestroyInfoRec(ps3v->AccelInfoRec);
-  #if 0  /* from MGA */
-    if (pMga->CursorInfoRec)
-    	xf86DestroyCursorInfoRec(pMga->CursorInfoRec);
-  #endif
+
   pScrn->vtSema = FALSE;
 
   pScreen->CloseScreen = ps3v->CloseScreen;
@@ -2587,13 +2760,12 @@ S3VAdjustFrame(int scrnIndex, int x, int y, int flags)
    vgaCRIndex = vgaIOBase + 4;
    vgaCRReg = vgaIOBase + 5;
 
-   if(ps3v->STREAMSRunning == FALSE) {
-      /*
-      Base = ((y * vga256InfoRec.displayWidth + x)
-		* (vgaBitsPerPixel / 8)) >> 2;
-	*/
+   if( (ps3v->STREAMSRunning == FALSE) ||
+      S3_ViRGE_GX2_SERIES(ps3v->Chipset) || S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
       Base = ((y * pScrn->displayWidth + x)
 		* (pScrn->bitsPerPixel / 8)) >> 2;
+      if (pScrn->bitsPerPixel == 24) 
+	Base = Base+2 - (Base+2) % 3;
 
       /* Now program the start address registers */
       OUTREG16(vgaCRIndex, (Base & 0x00FF00) | 0x0C);

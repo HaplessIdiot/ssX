@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.38 1998/11/01 12:35:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.39 1998/11/28 10:43:08 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -2211,6 +2211,14 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
+    /* The gamma fields must be initialised when using the new cmap code */
+    if (pScrn->depth > 1) {
+	Gamma zeros = {0.0, 0.0, 0.0};
+
+	if (!xf86SetGamma(pScrn, zeros))
+	    return FALSE;
+    }
+
     /* Store register values that might be messed up by a suspend resume */
     /* Do this early as some of the other code in PreInit relies on it   */
     outb(0x3D6, 0x02);
@@ -2937,10 +2945,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
-    if (pScrn->pixmapBPP == 8) {	/* Both xf4bpp & cfb */
-	/* Another VGA dependency to remove */
-	vgaHandleColormaps(pScreen, pScrn);
-    } else if (pScrn->depth > 8) {
+    if (pScrn->depth > 8) {
         /* Fixup RGB ordering */
         visual = pScreen->visuals + pScreen->numVisuals;
         while (--visual >= pScreen->visuals) {
@@ -3171,6 +3176,11 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
 	return FALSE;
+
+    if (pScrn->pixmapBPP == 8) {	/* Both xf4bpp & cfb */
+	/* Another VGA dependency to remove */
+	vgaHWHandleColormaps(pScreen);
+    }
 
     if (pScrn->bitsPerPixel <= 8)
         racflag = RAC_COLORMAP;
