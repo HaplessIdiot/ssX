@@ -1,3 +1,4 @@
+3904. Add SERVER_OVERLAY_VISUALS root window property (Mark Vojkovich).
 3903. Remove unnecessary VGA CRTC unlock/relock in cyrix driver
       (Marc La France).
 3902. Fix ATI driver's 8514/A probe delay when one isn't present
