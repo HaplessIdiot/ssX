@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hgc1280/hgc1280driv.c,v 3.0 1994/05/04 15:01:11 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -555,8 +555,8 @@ if (HGC_Primary) {
 		outb(HGC_SEC_PORT_INDEX,HGC_REG_BANK1); \
 		outb(HGC_SEC_PORT_DATA,_bank);
 #define BANK_SEC_B(_bank) \
-		outb(HGC_PRIM_PORT_INDEX,HGC_REG_BANK2); \
-		outb(HGC_PRIM_PORT_DATA,_bank);
+		outb(HGC_SEC_PORT_INDEX,HGC_REG_BANK2); \
+		outb(HGC_SEC_PORT_DATA,_bank);
 
 void HGC1280ClearScreen()
 {
@@ -580,137 +580,137 @@ PixelType * HGC1280pScanlineOffsetA(p, offset)
     PixelType *p;
     int offset;
 {
-register /*signed*/ int delta;
-register /*signed*/ int deltabank;
-  if ((unsigned int)(p)>=MONOBASE) {
+register /*signed*/ long delta;
+register /*signed*/ long deltabank;
+  if ((unsigned long)p >= MONOBASE) {
      /* virtual framebuffer address */
      /* p - MONOBASE is not necessarily a valid pointer within the bank */
      /* -> do absolute banking */
      p += offset;
-     p = (PixelType *)((unsigned int)(p) - (unsigned int)MONOBASE);
-     deltabank = (signed int)p >> HGC_SEGMENT_SHIFT;
+     p = (PixelType *)((unsigned long)p - (unsigned long)MONOBASE);
+     deltabank = (/*signed*/ long)p >> HGC_SEGMENT_SHIFT;
      hgcBankAseg = deltabank;
      BANK_PRIM_A(hgcBankAseg);
-     p = (PixelType *)( (unsigned int)p + monoBankABottom
+     p = (PixelType *)( (unsigned long)p + monoBankABottom
                         - (deltabank << HGC_SEGMENT_SHIFT) );
      return(p);
   }
   /* At least on Linux, the mapped Area is at 0x40000000, so test >= first */
-  if ((unsigned int)(p)>=(unsigned int)monoBankABottom) {
-     if ((unsigned int)(p)<(unsigned int)monoBankATop) {
+  if ((unsigned long)p >= (unsigned long)monoBankABottom) {
+     if ((unsigned long)p < (unsigned long)monoBankATop) {
         /* within the framebuffer */
-        (p) += (offset);
+        p += offset;
         /* outside of the bank now ? */
-        delta = (signed int)p - (signed int)monoBankABottom;
+        delta = (/*signed*/ long)p - (/*signed*/ long)monoBankABottom;
         deltabank = delta >> HGC_SEGMENT_SHIFT;
         if (0!=deltabank) {
                 hgcBankAseg += deltabank;
                 BANK_PRIM_A(hgcBankAseg);
-                p = (PixelType *)( (unsigned int)p
+                p = (PixelType *)( (unsigned long)p
                                    - (deltabank << HGC_SEGMENT_SHIFT) );
         }
         return(p);
      }
   }
   /* no framebuffer address */
-  return((p)+(offset));
+  return(p+offset);
 }
 
 PixelType * HGC1280pScanlineOffsetB(p, offset)
     PixelType *p;
     int offset;
 {
-register /*signed*/ int delta;
-register /*signed*/ int deltabank;
-  if ((unsigned int)(p)>=MONOBASE) {
+register /*signed*/ long delta;
+register /*signed*/ long deltabank;
+  if ((unsigned long)p >= MONOBASE) {
      p += offset;
-     p = (PixelType *)((unsigned int)(p) - (unsigned int)MONOBASE);
-     deltabank = (signed int)p >> HGC_SEGMENT_SHIFT;
+     p = (PixelType *)((unsigned long)p - (unsigned long)MONOBASE);
+     deltabank = (/*signed*/ long)p >> HGC_SEGMENT_SHIFT;
      hgcBankBseg = deltabank;
      BANK_PRIM_B(hgcBankBseg);
-     p = (PixelType *)( (unsigned int)p + monoBankBBottom
+     p = (PixelType *)( (unsigned long)p + monoBankBBottom
                         - (deltabank << HGC_SEGMENT_SHIFT) );
      return(p);
   }
-  if ((unsigned int)(p)>=(unsigned int)monoBankBBottom) {
-     if ((unsigned int)(p)<(unsigned int)monoBankBTop) {
-        (p) += (offset);
-        delta = (signed int)p - (signed int)monoBankBBottom;
+  if ((unsigned long)p >= (unsigned long)monoBankBBottom) {
+     if ((unsigned long)p < (unsigned long)monoBankBTop) {
+        p += offset;
+        delta = (/*signed*/ long)p - (/*signed*/ long)monoBankBBottom;
         deltabank = delta >> HGC_SEGMENT_SHIFT;
         if (0!=deltabank) {
                 hgcBankBseg += deltabank;
                 BANK_PRIM_B(hgcBankBseg);
-                p = (PixelType *)( (unsigned int)p
+                p = (PixelType *)( (unsigned long)p
                                    - (deltabank << HGC_SEGMENT_SHIFT) );
         }
         return(p);
      }
   }
-  return((p)+(offset));
+  return(p+offset);
 }
 
 PixelType * HGC1280sScanlineOffsetA(p, offset)
     PixelType *p;
     int offset;
 {
-register /*signed*/ int delta;
-register /*signed*/ int deltabank;
-  if ((unsigned int)(p)>=MONOBASE) {
+register /*signed*/ long delta;
+register /*signed*/ long deltabank;
+  if ((unsigned long)p >= MONOBASE) {
      p += offset;
-     p = (PixelType *)((unsigned int)(p) - (unsigned int)MONOBASE);
-     deltabank = (signed int)p >> HGC_SEGMENT_SHIFT;
+     p = (PixelType *)((unsigned long)p - (unsigned long)MONOBASE);
+     deltabank = (/*signed*/ long)p >> HGC_SEGMENT_SHIFT;
      hgcBankAseg = deltabank;
      BANK_SEC_A(hgcBankAseg);
-     p = (PixelType *)( (unsigned int)p + monoBankABottom
+     p = (PixelType *)( (unsigned long)p + monoBankABottom
                         - (deltabank << HGC_SEGMENT_SHIFT) );
      return(p);
   }
-  if ((unsigned int)(p)>=(unsigned int)monoBankABottom) {
-     if ((unsigned int)(p)<(unsigned int)monoBankATop) {
-        (p) += (offset);
-        delta = (signed int)p - (signed int)monoBankABottom;
+  if ((unsigned long)p >= (unsigned long)monoBankABottom) {
+     if ((unsigned long)p < (unsigned long)monoBankATop) {
+        p += offset;
+        delta = (/*signed*/ long)p - (/*signed*/ long)monoBankABottom;
         deltabank = delta >> HGC_SEGMENT_SHIFT;
         if (0!=deltabank) {
                 hgcBankAseg += deltabank;
                 BANK_SEC_A(hgcBankAseg);
-                p = (PixelType *)( (unsigned int)p
+                p = (PixelType *)( (unsigned long)p
                                    - (deltabank << HGC_SEGMENT_SHIFT) );
         }
         return(p);
      }
   }
-  return((p)+(offset));
+  return(p+offset);
 }
 
 PixelType * HGC1280sScanlineOffsetB(p, offset)
     PixelType *p;
     int offset;
 {
-register /*signed*/ int delta;
-register /*signed*/ int deltabank;
-  if ((unsigned int)(p)>=MONOBASE) {
+register /*signed*/ long delta;
+register /*signed*/ long deltabank;
+  if ((unsigned long)p >= MONOBASE) {
      p += offset;
-     p = (PixelType *)((unsigned int)(p) - (unsigned int)MONOBASE);
-     deltabank = (signed int)p >> HGC_SEGMENT_SHIFT;
+     p = (PixelType *)((unsigned long)p - (unsigned long)MONOBASE);
+     deltabank = (/*signed*/ long)p >> HGC_SEGMENT_SHIFT;
      hgcBankBseg = deltabank;
      BANK_SEC_B(hgcBankBseg);
-     p = (PixelType *)( (unsigned int)p + monoBankBBottom
+     p = (PixelType *)( (unsigned long)p + monoBankBBottom
                         - (deltabank << HGC_SEGMENT_SHIFT) );
      return(p);
   }
-  if ((unsigned int)(p)>=(unsigned int)monoBankBBottom) {
-     if ((unsigned int)(p)<(unsigned int)monoBankBTop) {
-        (p) += (offset);
-        delta = (signed int)p - (signed int)monoBankBBottom;
+  if ((unsigned long)p >= (unsigned long)monoBankBBottom) {
+     if ((unsigned long)p < (unsigned long)monoBankBTop) {
+        p += offset;
+        delta = (/*signed*/ long)p - (/*signed*/ long)monoBankBBottom;
         deltabank = delta >> HGC_SEGMENT_SHIFT;
         if (0!=deltabank) {
                 hgcBankBseg += deltabank;
                 BANK_SEC_B(hgcBankBseg);
-                p = (PixelType *)( (unsigned int)p
+                p = (PixelType *)( (unsigned long)p
                                    - (deltabank << HGC_SEGMENT_SHIFT) );
         }
         return(p);
      }
   }
-  return((p)+(offset));
+  return(p+offset);
 }

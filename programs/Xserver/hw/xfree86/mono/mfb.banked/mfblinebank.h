@@ -1,5 +1,5 @@
-/* $XFree86$ */
-/* mfb_bank.h */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mfb.banked/mfblinebank.h,v 3.0 1994/05/04 15:01:29 dawes Exp $ */
+/* mfblinebank.h */
 /* included from mfb.h if MFB_LINE_BANK is defined */
 
 extern PixelType *(* monoScanlineOffsetFuncA)(
