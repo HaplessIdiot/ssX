@@ -1,10 +1,10 @@
-/* $Id: xmesa1.c,v 1.12 2001/03/21 02:48:54 dawes Exp $ */
+/* $Id: xmesa1.c,v 1.13 2001/05/18 17:00:05 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.4
+ * Version:  3.4.2
  *
- * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -2513,7 +2513,7 @@ const char *XMesaGetString( XMesaContext c, int name )
 {
    (void) c;
    if (name==XMESA_VERSION) {
-      return "3.4.1";
+      return "3.4.2";
    }
    else if (name==XMESA_EXTENSIONS) {
       return "";

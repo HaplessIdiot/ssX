@@ -169,7 +169,7 @@ void gl_reset_vb( struct vertex_buffer *VB )
    }
 
    if (clipor & CLIP_USER_BIT) 
-      MEMSET(VB->UserClipMask + VB->Start, 0, VB->Count);
+      MEMSET(VB->UserClipMask + VB->Start, 0, VB->Count - VB->Start);
 
    VB->NormCullStart = 0;
    VB->Parity = (VB->LastPrimitive^VB->Count)&1;
@@ -890,6 +890,7 @@ void gl_execute_cassette( GLcontext *ctx, struct immediate *IM )
    VB->ColorPtr = &IM->v.Color;
    VB->Color[0] = VB->Color[1] = VB->ColorPtr;
    VB->IndexPtr = &IM->v.Index;
+   VB->Index[0] = VB->Index[1] = VB->IndexPtr;
    VB->EdgeFlagPtr = &IM->v.EdgeFlag;
    VB->TexCoordPtr[0] = &IM->v.TexCoord[0];
    VB->TexCoordPtr[1] = &IM->v.TexCoord[1];

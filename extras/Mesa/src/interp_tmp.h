@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/interp_tmp.h,v 1.5 2001/04/01 13:59:57 tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.1
@@ -23,7 +23,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#undef	INTERP_UBYTE
+#undef INTERP_UBYTE
 #define INTERP_UBYTE( out, t, a, b ) {			\
       GLfloat fa = UBYTE_COLOR_TO_FLOAT_COLOR(a);	\
       GLfloat fb = UBYTE_COLOR_TO_FLOAT_COLOR(b);	\
@@ -33,7 +33,7 @@
 
 #if 1
 
-#undef	INTERP_RGBA
+#undef INTERP_RGBA
 #define INTERP_RGBA(nr, t, out, a, b) {			\
    int i;						\
    for (i = 0; i < nr; i++) {				\
@@ -45,7 +45,7 @@
 }
 #else
 
-#undef	INTERP_RGBA
+#undef INTERP_RGBA
 #define INTERP_RGBA(nr, t, out, a, b) {				\
    int n;							\
    const GLuint ti = FloatToInt(t*256.0F);			\

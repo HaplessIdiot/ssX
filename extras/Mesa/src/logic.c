@@ -297,7 +297,7 @@ static void rgba_logicop( const GLcontext *ctx, GLuint n,
       case GL_NAND:
          for (i=0;i<n;i++) {
             if (mask[i]) {
-               src[i] = ~(src[i] & src[i]);
+               src[i] = ~(src[i] & dest[i]);
             }
          }
          break;

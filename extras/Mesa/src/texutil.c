@@ -1244,7 +1244,7 @@ void _mesa_unconvert_teximage3d( GLint mesaFormat, GLenum format,
  * all aspect ratios).  This can be made a lot faster, but I don't
  * really care enough...
  */
-void _mesa_rescale_teximage2d( const struct gl_texture_format *texFormat,
+void _mesa_rescale_teximage2d( GLint texelBytes,
 			       GLint srcWidth, GLint srcHeight,
 			       GLint dstWidth, GLint dstHeight,
 			       const GLvoid *srcImage, GLvoid *dstImage )
@@ -1289,7 +1289,7 @@ do {									\
    }									\
 } while (0)
 
-   switch ( texFormat->TexelBytes ) {
+   switch ( texelBytes ) {
    case 4:
       RESCALE_IMAGE( GLuint );
       break;

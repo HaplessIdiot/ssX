@@ -79,7 +79,7 @@ _mesa_unconvert_teximage3d( GLint mesaFormat, GLenum format,
  * all aspect ratios).  FIXME: Make this a subimage update as well...
  */
 extern void
-_mesa_rescale_teximage2d( const struct gl_texture_format *texFormat,
+_mesa_rescale_teximage2d( GLint texelBytes,
 			  GLint srcWidth, GLint srcHeight,
 			  GLint dstWidth, GLint dstHeight,
 			  const GLvoid *srcImage, GLvoid *dstImage );
