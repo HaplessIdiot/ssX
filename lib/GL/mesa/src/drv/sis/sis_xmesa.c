@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include <unistd.h>
 #include <sys/mman.h>
 #include "sis_dri.h"

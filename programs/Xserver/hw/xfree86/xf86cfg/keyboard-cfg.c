@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.5 2000/06/20 05:08:50 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.6 2000/08/01 20:05:43 dawes Exp $
  */
 
 #include "xf86config.h"
@@ -326,7 +326,7 @@ InitializeKeyboard(void)
 	exit(1);
     }
 
-    xkb_info = XtCalloc(1, sizeof(XkbInfo));
+    xkb_info = (XkbInfo *)XtCalloc(1, sizeof(XkbInfo));
     xkb_info->conf = NULL;
     xkb_infos = (XkbInfo**)XtCalloc(1, sizeof(XkbInfo*));
     num_xkb_infos = 1;

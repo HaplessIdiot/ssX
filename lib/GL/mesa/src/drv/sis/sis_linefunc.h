@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #define SIS_TRI_FUNC 0
 
 #define SIS_MMIO_WRITE_VERTEX(v, i) \

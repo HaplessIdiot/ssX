@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "sis_ctx.h"
 #include "sis_mesa.h"
 

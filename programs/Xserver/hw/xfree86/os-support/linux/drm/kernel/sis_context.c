@@ -27,6 +27,7 @@
  *    Rickard E. (Rik) Faith <faith@precisioninsight.com>
  *
  */
+/* $XFree86$ */
 
 #include <linux/sched.h>
 

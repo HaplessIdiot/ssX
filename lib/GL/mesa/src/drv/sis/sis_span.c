@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "sis_ctx.h"
 #include "sis_mesa.h"
 
@@ -12,7 +14,7 @@
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;  \
    __GLSiScontext *hwcx = (__GLSiScontext *) xmesa->private; \
    GLuint pitch = hwcx->swRenderPitch;			\
-   char *buf = hwcx->swRenderBase			
+   char *buf = (char *)hwcx->swRenderBase			
 
 #define CLIPPIXEL(_x,_y) (_x >= minx && _x < maxx && \
 			  _y >= miny && _y < maxy)

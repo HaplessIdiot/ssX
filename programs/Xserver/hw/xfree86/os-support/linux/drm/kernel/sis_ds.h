@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef _sis_ds_h_
 #define _sis_ds_h_
 

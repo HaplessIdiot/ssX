@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "sis_ctx.h"
 #include "sis_mesa.h"
 
@@ -151,7 +153,7 @@ sis_TexImage (GLcontext * ctx, GLenum target,
   if (area->Format == GL_RGB8)
     {
       int i;
-      GLbyte *src = image->Data;
+      GLbyte *src = (GLbyte *)image->Data;
       GLbyte *dst = area->Data;
 
       for (i = 0; i < area->Size / 4; i++)
@@ -201,7 +203,7 @@ sis_TexSubImage (GLcontext * ctx, GLenum target,
 
   if (area->Format == GL_RGB8)
     {
-      src = image->Data + (xoffset + yoffset * image->Width) * 3;
+      src = (GLbyte *)image->Data + (xoffset + yoffset * image->Width) * 3;
       dst = area->Data + (xoffset + yoffset * image->Width) * 4;
       soffset = (image->Width - width) * 3;
       doffset = (image->Width - width) * 4;
@@ -222,7 +224,7 @@ sis_TexSubImage (GLcontext * ctx, GLenum target,
       GLuint texelSize = area->texelSize;
       GLuint copySize = texelSize * width;
 
-      src = image->Data + (xoffset + yoffset * image->Width) * texelSize;
+      src = (GLbyte *)image->Data + (xoffset + yoffset * image->Width) * texelSize;
       dst = area->Data + (xoffset + yoffset * image->Width) * texelSize;
       soffset = image->Width * texelSize;
 

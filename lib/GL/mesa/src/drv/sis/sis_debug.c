@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 /* 
  * dump HW states, set environment variable SIS_DEBUG
  * to enable these functions 

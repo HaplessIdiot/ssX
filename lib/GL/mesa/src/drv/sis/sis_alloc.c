@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include <assert.h>
 
 #include "sis_ctx.h"
@@ -314,7 +316,7 @@ sis_alloc_back_image (GLcontext * ctx, XMesaImage *image, void **free,
 
   addr = (GLbyte *) ALIGNMENT ((GLuint) addr, DRAW_BUFFER_HW_ALIGNMENT);
 
-  image->data = addr;
+  image->data = (char *)addr;
 
   image->bytes_per_line = width2 * depth;
   image->bits_per_pixel = depth * 8;
