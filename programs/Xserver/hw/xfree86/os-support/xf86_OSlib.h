@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.42 1997/07/19 05:43:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.43 1997/10/25 13:50:43 hohndel Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -88,10 +88,6 @@
 #  ifndef _NO_STATIC
 #   define _NO_STATIC
 #  endif
-# endif
-# if defined(sun) && defined(i386) && defined(SVR4)
-#  /* Fix for Solaris ANSI compilation */
-#  define __EXTENSIONS__
 # endif
 # include <sys/ioctl.h>
 # include <signal.h>
