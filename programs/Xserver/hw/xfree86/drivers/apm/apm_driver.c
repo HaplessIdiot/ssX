@@ -495,6 +495,8 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     xf86MonPtr		MonInfo = NULL;
     double		real;
 
+    if (flags & PROBE_DETECT) return FALSE;
+
     /*
      * Note: This function is only called once at server startup, and
      * not at the start of each server generation.  This means that

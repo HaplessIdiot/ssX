@@ -457,6 +457,8 @@ GLIDEPreInit(ScrnInfoPtr pScrn, int flags)
   const char *reqSym = NULL;
   int sst;
 
+  if (flags & PROBE_DETECT) return FALSE;
+
   /* Check the number of entities, and fail if it isn't one. */
   if (pScrn->numEntities != 1)
     return FALSE;

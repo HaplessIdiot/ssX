@@ -989,7 +989,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (flags & PROBE_DETECT) {
 	TRIDENTProbeDDC(pScrn, pTrident->pEnt->index);
-	return;
+	return TRUE;
     }
 
     /* Set pScrn->monitor */

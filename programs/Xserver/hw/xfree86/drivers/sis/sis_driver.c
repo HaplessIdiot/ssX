@@ -488,6 +488,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     const char *Sym = NULL;
     int	pix24flags;
 
+    if (flags & PROBE_DETECT) return FALSE;
+
     /*
      * Note: This function is only called once at server startup, and
      * not at the start of each server generation.  This means that

@@ -991,6 +991,8 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     const char *reqSym = NULL;
     Bool res = FALSE;
 
+    if (flags & PROBE_DETECT) return FALSE;
+
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;

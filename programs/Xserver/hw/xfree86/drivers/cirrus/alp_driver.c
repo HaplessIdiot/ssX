@@ -511,6 +511,8 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	ClockRangePtr clockRanges;
 	char *mod = NULL;
 	char *s;
+
+	if (flags & PROBE_DETECT) return FALSE;
 	
 #ifdef ALP_DEBUG
 	ErrorF("AlpPreInit\n");

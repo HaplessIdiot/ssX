@@ -574,6 +574,8 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     int w;
     int apertureSize;
     char *s;
+
+    if (flags & PROBE_DETECT) return FALSE;
     
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))

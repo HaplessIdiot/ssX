@@ -336,6 +336,8 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 	const char *reqSym = NULL;
 	Gamma zeros = {0.0, 0.0, 0.0};
 
+	if (flags & PROBE_DETECT) return FALSE;
+
 	TRACE_ENTER("PreInit");
 
 	/* Check the number of entities, and fail if it isn't one. */

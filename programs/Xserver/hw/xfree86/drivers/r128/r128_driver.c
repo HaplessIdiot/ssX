@@ -1052,6 +1052,8 @@ static Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 {
     R128InfoPtr   info;
 
+    if (flags & PROBE_DETECT) return FALSE;
+
     R128TRACE(("R128PreInit\n"));
     if (pScrn->numEntities != 1) return FALSE;
 

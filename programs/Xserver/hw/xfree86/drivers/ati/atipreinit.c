@@ -349,6 +349,8 @@ ATIPreInit
     int             minPitch, maxPitch = 0xFFU, pitchInc;
     LookupModeFlags Strategy = LOOKUP_CLOSEST_CLOCK;
 
+    if (flags & PROBE_DETECT) return FALSE;
+
     if (pScreenInfo->numEntities != 1)
     {
         xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
