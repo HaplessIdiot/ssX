@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.9 2002/12/10 01:27:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.10 2002/12/18 15:49:01 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -159,6 +159,24 @@ I830InitDma(ScrnInfoPtr pScrn)
 		       &info, sizeof(drmI830Init))) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		 "I830 Dma Initialization Failed\n");
+      return FALSE;
+   }
+
+   return TRUE;
+}
+
+static Bool
+I830SetParam(ScrnInfoPtr pScrn, int param, int value)
+{
+   I830Ptr pI830 = I830PTR(pScrn);
+   drmI830SetParam sp;
+
+   memset(&sp, 0, sizeof(sp));
+   sp.param = param;
+   sp.value = value;
+
+   if (drmCommandWrite(pI830->drmSubFD, DRM_I830_SETPARAM, &sp, sizeof(sp))) {
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "I830 SetParam Failed\n");
       return FALSE;
    }
 
@@ -667,6 +685,11 @@ I830DRIDoMappings(ScreenPtr pScreen)
 	      "[drm] added %d %d byte DMA buffers\n", bufs, I830_DMA_BUF_SZ);
 
    I830InitDma(pScrn);
+
+   if (pI830->PciInfo->chipType != PCI_CHIP_845_G &&
+       pI830->PciInfo->chipType != PCI_CHIP_I830_M) {
+      I830SetParam(pScrn, I830_SETPARAM_USE_MI_BATCHBUFFER_START, 1 );
+   }
 
    /* Okay now initialize the dma engine */
    if (!pI830DRI->irq) {

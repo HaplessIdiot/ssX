@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.23 2002/12/12 17:58:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.24 2002/12/21 17:14:58 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -105,6 +105,10 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 /*
  *    07/2002 David Dawes
+ *        - Add Intel(R) 855GM/852GM support.
+ */
+/*
+ *    07/2002 David Dawes
  *        - Cleanup code formatting.
  *        - Improve VESA mode selection, and fix refresh rate selection.
  *        - Don't duplicate functions provided in 4.2 vbe modules.
@@ -166,12 +170,14 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 static SymTabRec I830BIOSChipsets[] = {
    {PCI_CHIP_I830_M,		"i830"},
    {PCI_CHIP_845_G,		"845G"},
+   {PCI_CHIP_I855_GM,		"855GM"},
    {-1,				NULL}
 };
 
 static PciChipsets I830BIOSPciChipsets[] = {
    {PCI_CHIP_I830_M,		PCI_CHIP_I830_M,	RES_SHARED_VGA},
    {PCI_CHIP_845_G,		PCI_CHIP_845_G,		RES_SHARED_VGA},
+   {PCI_CHIP_I855_GM,		PCI_CHIP_I855_GM,	RES_SHARED_VGA},
    {-1,				-1,			RES_UNDEFINED}
 };
 
@@ -829,6 +835,7 @@ I830DetectDisplayDevice(ScrnInfoPtr pScrn)
 static int
 I830DetectMemory(ScrnInfoPtr pScrn)
 {
+   I830Ptr pI830 = I830PTR(pScrn);
    PCITAG bridge;
    CARD16 gmch_ctrl;
    int memsize = 0;
@@ -836,6 +843,26 @@ I830DetectMemory(ScrnInfoPtr pScrn)
    bridge = pciTag(0, 0, 0);		/* This is always the host bridge */
    gmch_ctrl = pciReadWord(bridge, I830_GMCH_CTRL);
 
+   if (IS_I85X(pI830))
+   {
+      switch (gmch_ctrl & I830_GMCH_GMS_MASK) {
+      case I855_GMCH_GMS_STOLEN_1M:
+	 memsize = MB(1) - KB(132);
+	 break;
+      case I855_GMCH_GMS_STOLEN_4M:
+	 memsize = MB(4) - KB(132);
+	 break;
+      case I855_GMCH_GMS_STOLEN_8M:
+	 memsize = MB(8) - KB(132);
+	 break;
+      case I855_GMCH_GMS_STOLEN_16M:
+	 memsize = MB(16) - KB(132);
+	 break;
+      case I855_GMCH_GMS_STOLEN_32M:
+	 memsize = MB(32) - KB(132);
+	 break;
+      }
+   } else
    {
       switch (gmch_ctrl & I830_GMCH_GMS_MASK) {
       case I830_GMCH_GMS_STOLEN_512:
@@ -1240,11 +1267,36 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    case PCI_CHIP_845_G:
       chipname = "845G";
       break;
+   case PCI_CHIP_I855_GM:
+      /* Check capid register to find the chipset variant */
+      pI830->variant = (pciReadLong(pI830->PciTag, I85X_CAPID)
+				>> I85X_VARIANT_SHIFT) & I85X_VARIANT_MASK;
+      switch (pI830->variant) {
+      case I855_GM:
+	 chipname = "855GM";
+	 break;
+      case I855_GME:
+	 chipname = "855GME";
+	 break;
+      case I852_GM:
+	 chipname = "852GM";
+	 break;
+      case I852_GME:
+	 chipname = "852GME";
+	 break;
+      default:
+	 xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		    "Unknown 852GM/855GM variant: 0x%x)\n", pI830->variant);
+	 chipname = "852GM/855GM (unknown variant)";
+	 break;
+      }
+      break;
    default:
       chipname = "unknown chipset";
       break;
    }
-   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Chipset: Intel(R) %s\n", chipname);
+   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	      "Integrated Graphics Chipset: Intel(R) %s\n", chipname);
 
    pVbe = pI830->pVbe;
 
@@ -1338,6 +1390,10 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
       } else {
 	 pI830->FbMapSize = 0x4000000;
       }
+   }
+   else {
+      /* 128MB aperture for later chips */
+      pI830->FbMapSize = 0x8000000;
    }
 
    /*

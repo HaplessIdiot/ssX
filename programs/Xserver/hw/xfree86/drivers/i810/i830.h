@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.5 2002/11/05 02:43:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.6 2002/12/10 01:27:05 dawes Exp $ */
 
 /*
  * Authors:
@@ -200,6 +200,7 @@ typedef struct _I830Rec {
    EntityInfoPtr pEnt;
    pciVideoPtr PciInfo;
    PCITAG PciTag;
+   CARD8 variant;
 
    unsigned int BR[20];
 

@@ -24,7 +24,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.c,v 1.6 2002/12/18 15:49:00 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.c,v 1.7 2002/12/21 17:14:57 dawes Exp $ */
 
 /*
  * Authors:
@@ -93,6 +93,16 @@ static const GLubyte *i830DDGetString( GLcontext *ctx, GLenum name )
 	 return (GLubyte *)"VA Linux, Inc";
       case GL_RENDERER:
 	 return (GLubyte *)"Mesa DRI Intel(R) 830M " DRIVER_DATE;
+      default:
+	 return 0;
+      }
+      break;
+   case PCI_CHIP_I855_GM:
+      switch (name) {
+      case GL_VENDOR:
+	 return (GLubyte *)"Tungsten Graphics, Inc";
+      case GL_RENDERER:
+	 return (GLubyte *)"Mesa DRI Intel(R) 852GM/855GM " DRIVER_DATE;
       default:
 	 return 0;
       }
