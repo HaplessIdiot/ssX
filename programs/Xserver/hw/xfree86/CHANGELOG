@@ -1,4 +1,7 @@
 XFree86 4.2.99.1 (XX May 2002)
+ 146. Build libXt as a flat namespace image on Darwin (Torrey T. Lyons).
+ 145. Install the bitmap file xc/programs/bitmap/Stipple as Stippler on file
+      systems that are not case sensitive (Torrey T. Lyons).
  144. Fix enabling of MMIO window on BladeXP desktop chips (Alan Hourihane).
  143. Due to bugs in the CyberBladei7/i1 series that cause offset problems,
       we're disabling the hardware cursor (for now) (Alan Hourihane).
@@ -14806,4 +14809,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2223 2002/05/25 17:35:12 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2224 2002/05/28 10:39:36 alanh Exp $
