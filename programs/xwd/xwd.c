@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xwd/xwd.c,v 3.9 2001/08/29 11:09:44 alanh Exp $ */
+/* $XFree86: xc/programs/xwd/xwd.c,v 3.11 2002/09/16 18:06:21 eich Exp $ */
 
 /*
  * xwd.c MIT Project Athena, X Window system window raster image dumper.
@@ -201,17 +201,19 @@ main(argc, argv)
      */
     if (!target_win) {
 	target_win = Select_Window(dpy);
-	if (target_win != None && !frame_only) {
-	    Window root;
-	    int dummyi;
-	    unsigned int dummy;
+    }
+    
+    if (target_win != None && !frame_only) {
+        Window root;
+        int dummyi;
+        unsigned int dummy;
 
-	    if (XGetGeometry (dpy, target_win, &root, &dummyi, &dummyi,
+        if (XGetGeometry (dpy, target_win, &root, &dummyi, &dummyi,
 			      &dummy, &dummy, &dummy, &dummy) &&
-		target_win != root)
+                              target_win != root) {
 	      target_win = XmuClientWindow (dpy, target_win);
 	}
-  }
+    }
 
 
     /*
