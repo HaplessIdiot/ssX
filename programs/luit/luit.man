@@ -66,6 +66,11 @@ Generate seven-bit characters for keyboard input.
 .B \+kss
 Disable generation of single-shifts for keyboard input.
 .TP
+.B \+kssgr
+Use GL codes after a single shift for keyboard input.  By default, GR
+codes are generated after a single shift when generating eight-bit
+keyboard input.
+.TP
 .B \-kls
 Generate locking shifts (SO/SI) for keyboard input.
 .TP

@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/iso2022.c,v 1.2 2001/11/08 04:00:14 tsi Exp $ */
+/* $XFree86: xc/programs/luit/iso2022.c,v 1.3 2001/12/19 21:29:02 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -182,7 +182,7 @@ allocIso2022(void)
     is->parserState = P_NORMAL;
     is->shiftState = S_NORMAL;
 
-    is->inputFlags = IF_EIGHTBIT | IF_SS;
+    is->inputFlags = IF_EIGHTBIT | IF_SS | IF_SSGR;
     is->outputFlags = OF_SS | OF_LS | OF_SELECT;
 
     is->buffered = NULL;
@@ -477,12 +477,28 @@ copyIn(Iso2022Ptr is, int fd, unsigned char *buf, int count)
                 if(i >= 0) {
                     switch(GR(is)->type) {
                     case T_94: case T_96: case T_128:
-                        if(i >= 0x20)
+                        if(i >= 0x20) {
+                            if((is->inputFlags & IF_EIGHTBIT) &&
+                               (is->inputFlags & IF_SSGR))
+                                i |= 0x80;
                             WRITE_1_P(SS2, i);
+                        }
                         break;
-                    case T_9494: case T_9696: case T_94192:
-                        if(i >= 0x2020)
+                    case T_9494: case T_9696:
+                        if(i >= 0x2020) {
+                            if((is->inputFlags & IF_EIGHTBIT) &&
+                               (is->inputFlags & IF_SSGR))
+                                i |= 0x8080;
                             WRITE_2_P(SS2, i);
+                        }
+                        break;
+                    case T_94192:
+                        if(i >= 0x2020) {
+                            if((is->inputFlags & IF_EIGHTBIT) &&
+                               (is->inputFlags & IF_SSGR))
+                                i |= 0x8000;
+                            WRITE_2_P(SS2, i);
+                        }
                         break;
                     default:
                         abort();
@@ -492,21 +508,35 @@ copyIn(Iso2022Ptr is, int fd, unsigned char *buf, int count)
             }
             if(is->inputFlags & IF_SS) {
                 i = G3(is)->reverse(codepoint, G3(is));
-                if(i > 0) {
                     switch(GR(is)->type) {
                     case T_94: case T_96: case T_128:
-                        if(i >= 0x20)
+                        if(i >= 0x20) {
+                            if((is->inputFlags & IF_EIGHTBIT) &&
+                               (is->inputFlags & IF_SSGR))
+                                i |= 0x80;
                             WRITE_1_P(SS3, i);
+                        }
                         break;
-                    case T_9494: case T_9696: case T_94192:
-                        if(i >= 0x2020)
+                    case T_9494: case T_9696:
+                        if(i >= 0x2020) {
+                            if((is->inputFlags & IF_EIGHTBIT) &&
+                               (is->inputFlags & IF_SSGR))
+                                i |= 0x8080;
                             WRITE_2_P(SS3, i);
+                        }
+                        break;
+                    case T_94192:
+                        if(i >= 0x2020) {
+                            if((is->inputFlags & IF_EIGHTBIT) &&
+                               (is->inputFlags & IF_SSGR))
+                                i |= 0x8000;
+                            WRITE_2_P(SS3, i);
+                        }
                         break;
                     default:
                         abort();
                     }
                     continue;
-                }
             }
             if(is->inputFlags & IF_LS)  {
                 i = GR(is)->reverse(codepoint, GR(is));
@@ -579,7 +609,12 @@ copyOut(Iso2022Ptr is, int fd, unsigned char *buf, int count)
                         }
                         code = *s;
                     } else {
-                        charset = GR(is);
+                        switch(is->shiftState) {
+                        case S_NORMAL: charset = GR(is); break;
+                        case S_SS2: charset = G2(is); break;
+                        case S_SS3: charset = G3(is); break;
+                        default: abort();
+                        }
                         code = *s - 0x80;
                     }
 
@@ -628,7 +663,12 @@ copyOut(Iso2022Ptr is, int fd, unsigned char *buf, int count)
                     else
                         code = -1;
                 } else {
-                    charset = GR(is);
+                    switch(is->shiftState) {
+                    case S_NORMAL: charset = GR(is); break;
+                    case S_SS2: charset = G2(is); break;
+                    case S_SS3: charset = G3(is); break;
+                    default: abort();
+                    }
                     ku_code = is->buffered_ku - 0x80;
                     if(*s >= 0x80)
                         code = *s - 0x80;
