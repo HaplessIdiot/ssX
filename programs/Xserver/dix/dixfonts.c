@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.15 1998/10/04 09:38:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.16 1998/11/15 05:53:23 dawes Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -39,6 +39,10 @@ SOFTWARE.
 
 #ifdef DEBUG
 #include	<stdio.h>
+#endif
+
+#ifdef PANORAMIX
+#include "panoramiX.h"
 #endif
 
 #define QUERYCHARINFO(pci, pr)  *(pr) = (pci)->metrics
@@ -547,8 +551,8 @@ QueryFont(pFont, pReply, nProtoCCIStructs)
 	    chars[i++] = r;
 	    chars[i++] = c;
 	}
-	(*pFont->get_metrics) (pFont, ncols, chars, TwoD16Bit,
-			       &count, charInfos);
+	(*pFont->get_metrics) (pFont, ncols, chars, 
+				TwoD16Bit, &count, charInfos);
 	i = 0;
 	for (i = 0; i < (int) count && ninfos < nProtoCCIStructs; i++) {
 	    *prCI = *charInfos[i];
@@ -1398,7 +1402,10 @@ bail:
 
     if (c->err != Success) err = c->err;
     if (err != Success && c->client != serverClient) {
-	SendErrorToClient(c->client, c->reqType, 0, 0, err);
+#ifdef PANORAMIX
+        if (noPanoramiXExtension)
+#endif
+	    SendErrorToClient(c->client, c->reqType, 0, 0, err);
     }
     if (c->slept)
     {

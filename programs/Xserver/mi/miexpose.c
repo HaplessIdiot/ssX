@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.1 1996/12/23 07:09:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.2 1998/10/04 09:39:26 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -61,7 +61,13 @@ SOFTWARE.
 #include "mi.h"
 #include "Xmd.h"
 
+#include "globals.h"
+
 extern WindowPtr *WindowTable;
+
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#endif
 
 /*
     machine-independent graphics exposure code.  any device that uses
@@ -384,6 +390,29 @@ miSendGraphicsExpose (client, pRgn, drawable, major, minor)
 	    (Mask)0, NoEventMask, NullGrab);
     }
 }
+#ifdef PANORAMIX
+Bool
+PanoramiXBoxOffScreen(pWin, pBox)
+    register WindowPtr pWin;
+    RegionPtr pBox;
+{
+    register ScreenPtr pScreen = pWin->drawable.pScreen;
+    BoxRec box;
+
+    box = *(REGION_EXTENTS(pScreen, &pWin->winSize));
+
+    if ((pBox->extents.x2 < box.x1) && (pBox->extents.x1 < box.x1))
+       return TRUE;
+    if ((pBox->extents.x1 > box.x2) && (pBox->extents.x2 > box.x2))
+       return TRUE;
+    if ((pBox->extents.y2 < box.y1) && (pBox->extents.y1 < box.y1))
+       return TRUE;
+    if ((pBox->extents.y1 > box.y2) && (pBox->extents.y2 > box.y2))
+       return TRUE;
+
+    return FALSE; 
+}
+#endif
 
 void
 miSendExposures(pWin, pRgn, dx, dy)
@@ -411,7 +440,29 @@ miSendExposures(pWin, pRgn, dx, dy)
 	pe->u.expose.height = pBox->y2 - pBox->y1;
 	pe->u.expose.count = i;
     }
+#ifdef PANORAMIX
+	/* In the case where a window is split between one
+	   or more screen, an expose event will be written
+	   to the client describing the section of the window
+	   which is exposed per screen. This causes a failure
+	   in the vsw test  CH07/grbbtn because the test is
+	   poorly written and expects 1 expose event and fails
+	   when it reads more than 1 expose event when the 
+	   window is split. The server is in fact doing the
+	   expected and correct behavior. -mad 08/29/96
+	 */
+    if (!noPanoramiXExtension){
+	if (PanoramiXMapped){
+	    if (!PanoramiXBoxOffScreen(pWin,pRgn))
+		DeliverEvents(pWin, pEvent, numRects, NullWindow);
+	}else
+            DeliverEvents(pWin, pEvent, numRects, NullWindow);
+    } else 
+        DeliverEvents(pWin, pEvent, numRects, NullWindow);
+#else
     DeliverEvents(pWin, pEvent, numRects, NullWindow);
+#endif
+
     DEALLOCATE_LOCAL(pEvent);
 }
 

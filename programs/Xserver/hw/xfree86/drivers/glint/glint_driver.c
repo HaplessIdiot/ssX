@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.18 1998/12/13 10:33:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.19 1998/12/20 11:57:46 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -59,7 +59,7 @@
 #endif
 
 #ifdef DPMSExtension
-#include "opaque.h"
+#include "globals.h"
 #include "extensions/dpms.h"
 #endif
 

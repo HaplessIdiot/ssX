@@ -65,7 +65,7 @@ SOFTWARE.
  *      1, and an otherwise arbitrary ID in the low 22 bits, we can create a
  *      resource "owned" by the client.
  */
-/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.2 1997/11/16 06:17:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.3 1998/10/04 09:38:13 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -75,21 +75,32 @@ SOFTWARE.
 #include "dixstruct.h" 
 #include "opaque.h"
 #include "windowstr.h"
-#include "inputstr.h"
 #include "dixfont.h"
+#include "colormap.h"
+#include "inputstr.h"
 #include "dixevents.h"
 #include "dixgrabs.h"
-#include "colormap.h"
 #include "cursor.h"
-#include <assert.h>
-
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#include "panoramiXsrv.h"
+#endif
 extern WindowPtr *WindowTable;
+#include <assert.h>
 
 static void RebuildTable(
 #if NeedFunctionPrototypes
     int /*client*/
 #endif
 );
+
+#if 0
+/* These should be in a header */
+extern int DeleteWindow(), dixDestroyPixmap(), FreeGC();
+extern int CloseFont(), FreeCursor();
+extern int FreeColormap(), FreeClientPixels();
+extern int OtherClientGone(), DeletePassiveGrab();
+#endif
 
 #define SERVER_MINID 32
 
@@ -472,7 +483,19 @@ FreeResource(id, skipDeleteFuncType)
     register	int *eltptr;
     int		elements;
     Bool	gotOne = FALSE;
+#ifdef PANORAMIX
+    PanoramiXGC           *pPanoramiXGC;
+    PanoramiXGC           *pPanoramiXGCback = NULL;
+    PanoramiXWindow       *pPanoramiXWin;
+    PanoramiXWindow       *pPanoramiXWinback = NULL;
+    PanoramiXCmap         *pPanoramiXCmap;
+    PanoramiXCmap         *pPanoramiXCmapback = NULL;
+    PanoramiXPmap         *pPanoramiXPmap;
+    PanoramiXPmap         *pPanoramiXPmapback = NULL;
+    XID                  FreeID, FoundID ;
+    RESTYPE		 PanoramiXType;
 
+#endif
     if (((cid = CLIENT_ID(id)) < MAXCLIENTS) && clientTable[cid].buckets)
     {
 	head = &clientTable[cid].resources[Hash(cid, id)];
@@ -490,6 +513,14 @@ FreeResource(id, skipDeleteFuncType)
 		    FlushClientCaches(res->id);
 		if (rtype != skipDeleteFuncType)
 		    (*DeleteFuncs[rtype & TypeMask])(res->value, res->id);
+#ifdef PANORAMIX
+                if (!noPanoramiXExtension) {
+	           FoundID = 0;
+	           FreeID = res->id;
+	 	   PanoramiXType = res->type;
+                   PANORAMIX_MARKFREE(FreeID,PanoramiXType);
+	        }
+#endif
 		xfree(res);
 		if (*eltptr != elements)
 		    prev = head; /* prev may no longer be valid */
@@ -518,7 +549,19 @@ FreeResourceByType(id, type, skipFree)
     int		cid;
     register    ResourcePtr res;
     register	ResourcePtr *prev, *head;
+#ifdef PANORAMIX
+    PanoramiXGC           *pPanoramiXGC;
+    PanoramiXGC           *pPanoramiXGCback = NULL;
+    PanoramiXWindow       *pPanoramiXWin;
+    PanoramiXWindow       *pPanoramiXWinback = NULL;
+    PanoramiXCmap         *pPanoramiXCmap;
+    PanoramiXCmap         *pPanoramiXCmapback = NULL;
+    PanoramiXPmap         *pPanoramiXPmap;
+    PanoramiXPmap         *pPanoramiXPmapback = NULL;
+    XID                  FreeID, FoundID;
+    RESTYPE		 PanoramiXType;
 
+#endif
     if (((cid = CLIENT_ID(id)) < MAXCLIENTS) && clientTable[cid].buckets)
     {
 	head = &clientTable[cid].resources[Hash(cid, id)];
@@ -533,6 +576,14 @@ FreeResourceByType(id, type, skipFree)
 		    FlushClientCaches(res->id);
 		if (!skipFree)
 		    (*DeleteFuncs[type & TypeMask])(res->value, res->id);
+#ifdef PANORAMIX
+                if (!noPanoramiXExtension) {
+	           FoundID = 0;
+	           FreeID = res->id;
+		   PanoramiXType = res->type;
+                   PANORAMIX_MARKFREE(FreeID,PanoramiXType);
+	        }
+#endif
 		xfree(res);
 		break;
 	    }
@@ -625,6 +676,19 @@ FreeClientNeverRetainResources(client)
     ResourcePtr *prev;
     int j;
 
+#ifdef PANORAMIX
+    PanoramiXGC           *pPanoramiXGC;
+    PanoramiXGC           *pPanoramiXGCback = NULL;
+    PanoramiXWindow       *pPanoramiXWin;
+    PanoramiXWindow       *pPanoramiXWinback = NULL;
+    PanoramiXCmap         *pPanoramiXCmap;
+    PanoramiXCmap         *pPanoramiXCmapback = NULL;
+    PanoramiXPmap         *pPanoramiXPmap;
+    PanoramiXPmap         *pPanoramiXPmapback = NULL;
+    XID                  FreeID, FoundID;
+    RESTYPE		 PanoramiXType;
+#endif
+
     if (!client)
 	return;
 
@@ -641,6 +705,14 @@ FreeClientNeverRetainResources(client)
 		if (rtype & RC_CACHED)
 		    FlushClientCaches(this->id);
 		(*DeleteFuncs[rtype & TypeMask])(this->value, this->id);
+#ifdef PANORAMIX
+                if (!noPanoramiXExtension) {
+	           FoundID = 0;
+	           FreeID = this->id;
+		   PanoramiXType = this->type;
+                   PANORAMIX_MARKFREE(FreeID,PanoramiXType);
+	        }
+#endif
 		xfree(this);	    
 	    }
 	    else
@@ -656,6 +728,18 @@ FreeClientResources(client)
     register ResourcePtr *resources;
     register ResourcePtr this;
     int j;
+#ifdef PANORAMIX
+    PanoramiXGC		*pPanoramiXGC;   
+    PanoramiXGC		*pPanoramiXGCback = NULL;   
+    PanoramiXWindow       *pPanoramiXWin; 
+    PanoramiXWindow       *pPanoramiXWinback = NULL;
+    PanoramiXCmap         *pPanoramiXCmap; 
+    PanoramiXCmap         *pPanoramiXCmapback = NULL; 
+    PanoramiXPmap         *pPanoramiXPmap; 
+    PanoramiXPmap         *pPanoramiXPmapback = NULL; 
+    XID	 		 FreeID, FoundID = 0;
+    RESTYPE		 PanoramiXType;
+#endif    
 
     /* This routine shouldn't be called with a null client, but just in
 	case ... */
@@ -688,6 +772,14 @@ FreeClientResources(client)
 	    if (rtype & RC_CACHED)
 		FlushClientCaches(this->id);
 	    (*DeleteFuncs[rtype & TypeMask])(this->value, this->id);
+#ifdef PANORAMIX
+            if (!noPanoramiXExtension) {
+	        FoundID = 0;
+	        FreeID = this->id;
+		PanoramiXType = this->type;
+                PANORAMIX_MARKFREE(FreeID,PanoramiXType);
+	    }
+#endif
 	    xfree(this);	    
 	}
     }
@@ -712,7 +804,19 @@ LegalNewID(id, client)
     XID id;
     register ClientPtr client;
 {
-    return ((client->clientAsMask == (id & ~RESOURCE_ID_MASK)) &&
+
+#ifdef PANORAMIX
+    XID 	minid, maxid;
+
+	if (!noPanoramiXExtension) { 
+	    minid = client->clientAsMask | (client->index ? 
+			                    SERVER_BIT : SERVER_MINID);
+	    maxid = (clientTable[client->index].fakeID | RESOURCE_ID_MASK) + 1;
+            if ((id >= minid) && (id <= maxid))
+	        return TRUE;
+	}
+#endif /* PANORAMIX */
+	return ((client->clientAsMask == (id & ~RESOURCE_ID_MASK)) &&
 	    ((clientTable[client->index].expectID <= id) ||
 	     !LookupIDByClass(id, RC_ANY)));
 }

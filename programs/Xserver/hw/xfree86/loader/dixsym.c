@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.14 1998/11/15 05:53:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.15 1998/11/15 06:20:59 dawes Exp $ */
 
 
 /*
@@ -32,7 +32,7 @@
 #include "dixfont.h"
 #include "dixstruct.h"
 #include "misc.h"
-#include "opaque.h"
+#include "globals.h"
 #include "os.h"
 #include "resource.h"
 #include "servermd.h"
@@ -151,6 +151,9 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(DPMSPowerLevel)
   SYMVAR(DPMSStandbyTime)
   SYMVAR(DPMSSuspendTime)
+  SYMVAR(DPMSEnabledSwitch)
+  SYMVAR(DPMSDisabledSwitch)
+  SYMVAR(defaultDPMSEnabled)
 #endif
 #ifdef XV
   SYMVAR(XvScreenInitProc)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.21 1998/10/04 09:38:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.22 1998/12/20 11:57:32 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -55,7 +55,9 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "gcstruct.h"
 #include "extension.h"
+#ifndef PANORAMIX
 #include "extnsionst.h"
+#endif
 #include "colormap.h"
 #include "colormapst.h"
 #include "cursorstr.h"
@@ -64,13 +66,10 @@ SOFTWARE.
 #include "servermd.h"
 #include "site.h"
 #include "dixfont.h"
+#ifndef PANORAMIX
 #include "dixevents.h"		/* InitEvents() */
 #include "dispatch.h"		/* InitProcVectors() */
-
-extern CARD32 defaultScreenSaverTime;
-extern CARD32 defaultScreenSaverInterval;
-extern int defaultScreenSaverBlanking;
-extern int defaultScreenSaverAllowExposures;
+#endif
 
 #ifdef DPMSExtension
 #include "dpms.h"
@@ -98,17 +97,17 @@ extern WindowPtr *WindowTable;
 extern FontPtr defaultFont;
 extern int screenPrivateCount;
 
-static Bool CreateConnectionBlock(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void InitProcVectors();
+extern void InitEvents();
+extern void DefineInitialRootWindow();
+extern Bool CreateGCperDepthArray();
 
-static void FreeScreen(
-#if NeedFunctionPrototypes
-    ScreenPtr /*pScreen*/
+#ifndef PANORAMIX
+static
 #endif
-);
+Bool CreateConnectionBlock(void);
+
+static void FreeScreen(ScreenPtr);
 
 PaddingInfo PixmapWidthPaddingInfo[33];
 
@@ -398,13 +397,32 @@ main(argc, argv)
 	if (!DPMSCapableFlag)
      	    DPMSEnabled = FALSE;
 #endif
+
+#ifdef PANORAMIX
+	/*
+	 * Consolidate window and colourmap information for each screen
+	 */
+	if (!noPanoramiXExtension)
+	    PanoramiXConsolidate();
+#endif
+
 	for (i = 0; i < screenInfo.numScreens; i++)
 	    InitRootWindow(WindowTable[i]);
         DefineInitialRootWindow(WindowTable[0]);
 	SaveScreens(SCREEN_SAVER_FORCER, ScreenSaverReset);
 
-	if (!CreateConnectionBlock())
-	    FatalError("could not create connection block info");
+#ifdef PANORAMIX
+	if (!noPanoramiXExtension) {
+	    if (!PanoramiXCreateConnectionBlock())
+		FatalError("could not create connection block info");
+	    if (!PanoramiXCreateScreenRegion(WindowTable[0]))
+		FatalError("could not create PanoramiX Screen Region");
+	} else
+#endif
+	{
+	    if (!CreateConnectionBlock())
+	    	FatalError("could not create connection block info");
+	}
 
 	Dispatch();
 
@@ -412,7 +430,18 @@ main(argc, argv)
 	if (screenIsSaved == SCREEN_SAVER_ON)
 	    SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
 	CloseDownExtensions();
+
+#ifdef PANORAMIX
+	{
+	    Bool remember_it = noPanoramiXExtension;
+	    noPanoramiXExtension = TRUE;
+	    FreeAllResources();
+	    noPanoramiXExtension = remember_it;
+	}
+#else
 	FreeAllResources();
+#endif
+
 	CloseDownDevices();
 	for (i = screenInfo.numScreens - 1; i >= 0; i--)
 	{
@@ -442,7 +471,10 @@ main(argc, argv)
 
 static int padlength[4] = {0, 3, 2, 1};
 
-static Bool
+#ifndef PANORAMIX
+static
+#endif
+Bool
 CreateConnectionBlock()
 {
     xConnSetup setup;

@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.8 1998/12/06 06:08:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.9 1998/12/13 10:33:44 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -50,7 +50,7 @@
 #endif
 
 #ifdef DPMSExtension
-#include "opaque.h"
+#include "globals.h"
 #include "extensions/dpms.h"
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.13 1998/10/04 09:38:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.14 1998/12/20 11:57:32 dawes Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -57,6 +57,11 @@ SOFTWARE.
 #include "cursorstr.h"
 
 #include "dixstruct.h"
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#include "panoramiXsrv.h"
+#endif
+#include "globals.h"
 
 #ifdef XKB
 #include "XKBsrv.h"
@@ -69,7 +74,7 @@ extern Bool XkbFilterEvents();
 
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
-#include "extensions/security.h"
+#include "security.h"
 #endif
 
 #include "XIproto.h"
@@ -81,6 +86,8 @@ extern Bool XkbFilterEvents();
 #include "dispatch.h"
 
 extern WindowPtr *WindowTable;
+
+extern void (* EventSwapVector[128]) ();
 
 #define EXTENSION_EVENT_BASE  64
 
@@ -179,6 +186,17 @@ static WindowPtr XYToWindow(
     int /*y*/
 #endif
 );
+
+void DeliverFocusedEvent();
+int DeliverDeviceEvents();
+void DoFocusEvents();
+Mask EventMaskForClient();
+Bool CheckDeviceGrabs();
+void EnqueueEvent();
+
+extern Bool GrabMatchesSecond();
+extern Bool DeletePassiveGrabFromList();
+extern int AddPassiveGrabToList();
 
 extern Bool permitOldBugs;
 extern Bool Must_have_memory;
@@ -722,22 +740,68 @@ ComputeFreezes()
     syncEvents.playingEvents = TRUE;
     if (replayDev)
     {
+#ifdef PANORAMIX
+        int j;
+	WindowPtr tempw;
+	PanoramiXWindow *pPanoramiXWin = PanoramiXWinRoot;
+#endif
 	xE = replayDev->sync.event;
 	count = replayDev->sync.evcount;
 	syncEvents.replayDev = (DeviceIntPtr)NULL;
-	w = XYToWindow(
-	    xE->u.keyButtonPointer.rootX, xE->u.keyButtonPointer.rootY);
-	for (i = 0; i < spriteTraceGood; i++)
-	    if (syncEvents.replayWin == spriteTrace[i])
-	    {
-		if (!CheckDeviceGrabs(replayDev, xE, i+1, count))
-		    if (replayDev->focus)
-			DeliverFocusedEvent(replayDev, xE, w, count);
-		    else
-			DeliverDeviceEvents(w, xE, NullGrab, NullWindow,
-					    replayDev, count);
-		goto playmore;
-	    }
+#ifdef PANORAMIX
+        if (!noPanoramiXExtension) {
+           for (j = PanoramiXNumScreens - 1; j>=0; j--)
+                if (XE_PTR.rootX >= panoramiXdataPtr[j].x
+                    && XE_PTR.rootX < (panoramiXdataPtr[j].x + panoramiXdataPtr[j].width)
+                    && XE_PTR.rootY >= panoramiXdataPtr[j].y
+                    && XE_PTR.rootY < (panoramiXdataPtr[j].y +panoramiXdataPtr[j].height))
+                break;
+           XE_PTR.rootX -= panoramiXdataPtr[j].x;
+           XE_PTR.rootY -= panoramiXdataPtr[j].y;
+           XE_PTR.eventX -= panoramiXdataPtr[j].x;
+           XE_PTR.eventY -= panoramiXdataPtr[j].y;
+           w = XYToWindow(XE_PTR.rootX, XE_PTR.rootY);	
+        }else
+#endif
+	   w = XYToWindow(
+	       xE->u.keyButtonPointer.rootX, xE->u.keyButtonPointer.rootY);
+#ifdef PANORAMIX
+        if (!noPanoramiXExtension) {
+           for (i = 0; i < spriteTraceGood; i++) {
+               tempw = spriteTrace[i];
+               j = (tempw->drawable.pScreen)->myNum;
+               PANORAMIXFIND_ID_BY_SCRNUM(pPanoramiXWin, tempw->drawable.id, j);
+               j = ((syncEvents.replayWin)->drawable.pScreen)->myNum;
+               if (pPanoramiXWin)
+                   tempw = (WindowPtr)
+		 	    LookupIDByType(pPanoramiXWin->info[0].id, RT_WINDOW);
+
+               if (syncEvents.replayWin == tempw) {
+                  if (!CheckDeviceGrabs(replayDev, xE, i+1, count))
+                      if (replayDev->focus)
+                          DeliverFocusedEvent(replayDev, xE, w, count);
+                      else
+                          DeliverDeviceEvents(w, xE, NullGrab, NullWindow,
+					      replayDev, count);
+                  goto playmore;
+               }
+           } /* for */
+        } else { /* if !noPanoramiXExtension */
+#endif
+	   for (i = 0; i < spriteTraceGood; i++)
+	        if (syncEvents.replayWin == spriteTrace[i])
+	        {
+		    if (!CheckDeviceGrabs(replayDev, xE, i+1, count))
+		        if (replayDev->focus)
+			    DeliverFocusedEvent(replayDev, xE, w, count);
+		        else
+			    DeliverDeviceEvents(w, xE, NullGrab, NullWindow,
+					        replayDev, count);
+		    goto playmore;
+                }
+#ifdef PANORAMIX
+        }
+#endif
 	/* must not still be in the same stack */
 	if (replayDev->focus)
 	    DeliverFocusedEvent(replayDev, xE, w, count);
@@ -817,6 +881,14 @@ ActivatePointerGrab(mouse, grab, time, autoGrab)
     {
 	if (grab->confineTo->drawable.pScreen != sprite.hotPhys.pScreen)
 	    sprite.hotPhys.x = sprite.hotPhys.y = 0;
+#ifdef PANORAMIX
+        if ((!noPanoramiXExtension) &&
+            ( grab->confineTo->drawable.x + grab->confineTo->drawable.width >
+              (grab->confineTo->drawable.pScreen)->width ||
+	      grab->confineTo->drawable.x < 0) )
+                ConfineCursorToWindow(grab->confineTo, FALSE, FALSE);
+        else
+#endif
 	ConfineCursorToWindow(grab->confineTo, FALSE, TRUE);
     }
     DoEnterLeaveEvents(oldWin, grab->window, NotifyGrab);
@@ -1130,6 +1202,7 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 		{
 #ifdef DEBUG
 		    if (debug_events) ErrorF("\n");
+	    fprintf(stderr,"motionHintWindow == keyButtonPointer.event\n");
 #endif
 		    return 1; /* don't send, but pretend we did */
 		}
@@ -1323,10 +1396,23 @@ FixUpEventFromWindow(xE, pWin, child, calcChild)
     Bool calcChild;
 #endif
 {
+#ifdef PANORAMIX
+    int j;
+    int k = (pWin->drawable.pScreen)->myNum;
+    PanoramiXWindow *pPanoramiXWin = PanoramiXWinRoot;
+#endif
+
     if (calcChild)
     {
         WindowPtr w=spriteTrace[spriteTraceGood-1];
-
+#ifdef PANORAMIX
+	if (!noPanoramiXExtension){
+	    j = (w->drawable.pScreen)->myNum;
+	    PANORAMIXFIND_ID_BY_SCRNUM(pPanoramiXWin, w->drawable.id, j);
+	    if (pPanoramiXWin)
+		w = (WindowPtr)LookupIDByType(pPanoramiXWin->info[k].id, RT_WINDOW);
+	}
+#endif
 	/* If the search ends up past the root should the child field be 
 	 	set to none or should the value in the argument be passed 
 		through. It probably doesn't matter since everyone calls 
@@ -1352,23 +1438,47 @@ FixUpEventFromWindow(xE, pWin, child, calcChild)
         } 	    
     }
     xE->u.keyButtonPointer.root = ROOT->drawable.id;
-    xE->u.keyButtonPointer.event = pWin->drawable.id;
-    if (sprite.hot.pScreen == pWin->drawable.pScreen)
-    {
-	xE->u.keyButtonPointer.sameScreen = xTrue;
-	xE->u.keyButtonPointer.child = child;
-	xE->u.keyButtonPointer.eventX =
-	    xE->u.keyButtonPointer.rootX - pWin->drawable.x;
-	xE->u.keyButtonPointer.eventY =
-	    xE->u.keyButtonPointer.rootY - pWin->drawable.y;
-    }
-    else
-    {
-	xE->u.keyButtonPointer.sameScreen = xFalse;
-	xE->u.keyButtonPointer.child = None;
-	xE->u.keyButtonPointer.eventX = 0;
-	xE->u.keyButtonPointer.eventY = 0;
-    }
+#ifdef PANORAMIX
+    if (!noPanoramiXExtension){
+        pPanoramiXWin=PanoramiXWinRoot;
+    	PANORAMIXFIND_ID_BY_SCRNUM(pPanoramiXWin, pWin->drawable.id, k);
+    	if (pPanoramiXWin)
+            pWin = (WindowPtr)LookupIDByType(pPanoramiXWin->info[0].id, RT_WINDOW);
+    	if (pWin) {
+            xE->u.keyButtonPointer.event = pWin->drawable.id;
+            xE->u.keyButtonPointer.eventX = xE->u.keyButtonPointer.rootX -
+                                pWin->drawable.x +
+                              panoramiXdataPtr[sprite.hot.pScreen->myNum].x;
+            xE->u.keyButtonPointer.eventY = xE->u.keyButtonPointer.rootY -
+                                pWin->drawable.y +
+                              panoramiXdataPtr[sprite.hot.pScreen->myNum].y;
+    	}else if (pPanoramiXWin)
+            xE->u.keyButtonPointer.event = pPanoramiXWin->info[0].id;
+        xE->u.keyButtonPointer.sameScreen = xTrue;
+        xE->u.keyButtonPointer.child = child;
+    } 
+     else {
+#endif
+    	xE->u.keyButtonPointer.event = pWin->drawable.id;
+    	if (sprite.hot.pScreen == pWin->drawable.pScreen)
+    	{
+		xE->u.keyButtonPointer.sameScreen = xTrue;
+		xE->u.keyButtonPointer.child = child;
+		xE->u.keyButtonPointer.eventX =
+	    	xE->u.keyButtonPointer.rootX - pWin->drawable.x;
+		xE->u.keyButtonPointer.eventY =
+	    	xE->u.keyButtonPointer.rootY - pWin->drawable.y;
+    	}
+    	else
+    	{
+		xE->u.keyButtonPointer.sameScreen = xFalse;
+		xE->u.keyButtonPointer.child = None;
+		xE->u.keyButtonPointer.eventX = 0;
+		xE->u.keyButtonPointer.eventY = 0;
+    	}
+#ifdef PANORAMIX
+     }
+#endif
 }
 
 int
@@ -1652,6 +1762,12 @@ ProcWarpPointer(client)
     WindowPtr	dest = NULL;
     int		x, y;
     ScreenPtr	newScreen;
+#ifdef PANORAMIX
+    int 	i, softx, softy;
+    WindowPtr   sWin = NULL;
+    ScreenPtr   sftScreen;
+    PanoramiXWindow  *pPanoramiXWin = PanoramiXWinRoot;
+#endif
 
     REQUEST(xWarpPointerReq);
 
@@ -1688,11 +1804,50 @@ ProcWarpPointer(client)
 	x = dest->drawable.x;
 	y = dest->drawable.y;
 	newScreen = dest->drawable.pScreen;
+#ifdef PANORAMIX
+        if ( !noPanoramiXExtension )
+            PANORAMIXFIND_ID(pPanoramiXWin, stuff->dstWid);
+#endif
     }
     else
 	newScreen = sprite.hotPhys.pScreen;
     x += stuff->dstX;
     y += stuff->dstY;
+#ifdef PANORAMIX
+    if ( !noPanoramiXExtension ) {
+    if (pPanoramiXWin) {
+        for ( i = 0 ; i < PanoramiXNumScreens; i++) {
+            sWin = SecurityLookupWindow(pPanoramiXWin->info[i].id, client,
+					SecurityReadAccess);
+            sftScreen = sWin->drawable.pScreen;
+            softx =  sftScreen->width + panoramiXdataPtr[i].x;
+            softy =  sftScreen->height + panoramiXdataPtr[i].y;
+    /* Figure out which screen the cursor is on. The destination (x,y)
+       values are coming from the client, so it believes we have a screen
+       size of (sizeofScreen * NumberOfScreens )*/
+             if (x < 0)
+                 x = 0;
+             if (y < 0)
+                 y = 0;
+             if ((x > softx) || (y > softy))
+                  continue;
+             else
+                  break;
+         }
+         newScreen = sftScreen;
+    }
+    if (x < 0)
+        x = 0;
+    else if (x >= newScreen->width + panoramiXdataPtr[newScreen->myNum].x )
+          x = newScreen->width + panoramiXdataPtr[newScreen->myNum].x - 1;
+      if (y < 0)
+          y = 0;
+      else if (y >= newScreen->height + panoramiXdataPtr[newScreen->myNum].y )
+          y = newScreen->height + panoramiXdataPtr[newScreen->myNum].y - 1;
+    x -= panoramiXdataPtr[newScreen->myNum].x;
+    y -= panoramiXdataPtr[newScreen->myNum].y;
+    }else {
+#endif
     if (x < 0)
 	x = 0;
     else if (x >= newScreen->width)
@@ -1701,7 +1856,9 @@ ProcWarpPointer(client)
 	y = 0;
     else if (y >= newScreen->height)
 	y = newScreen->height - 1;
-
+#if PANORAMIX
+    }
+#endif
     if (newScreen == sprite.hotPhys.pScreen)
     {
 	if (x < sprite.physLimits.x1)
@@ -1851,6 +2008,10 @@ CheckDeviceGrabs(device, xE, checkFirst, count)
     int count;
 {
     register int i;
+#ifdef PANORAMIX
+    register int j,k;
+    PanoramiXWindow          *pPanoramiXWin = NULL;
+#endif
     register WindowPtr pWin;
     register FocusClassPtr focus = device->focus;
 
@@ -1865,6 +2026,24 @@ CheckDeviceGrabs(device, xE, checkFirst, count)
 
     if (focus)
     {
+#ifdef PANORAMIX
+        if (!noPanoramiXExtension) {
+        k = (ROOT->drawable.pScreen)->myNum;
+	for (; i < focus->traceGood; i++)
+	{
+	    pWin = focus->trace[i];
+            pPanoramiXWin = PanoramiXWinRoot;
+            PANORAMIXFIND_ID(pPanoramiXWin, pWin->drawable.id);
+            if (pPanoramiXWin) {
+                pWin = (WindowPtr)
+                    LookupIDByType(pPanoramiXWin->info[k].id, RT_WINDOW);
+	    }
+	    if ( pWin && pWin->optional &&
+		 CheckPassiveGrabsOnWindow(pWin, device, xE, count))
+		 return TRUE;
+	 } 
+        }else {
+#endif
 	for (; i < focus->traceGood; i++)
 	{
 	    pWin = focus->trace[i];
@@ -1872,13 +2051,35 @@ CheckDeviceGrabs(device, xE, checkFirst, count)
 		CheckPassiveGrabsOnWindow(pWin, device, xE, count))
 		return TRUE;
 	}
+#ifdef PANORAMIX
+    }
+#endif
   
 	if ((focus->win == NoneWin) ||
 	    (i >= spriteTraceGood) ||
 	    ((i > checkFirst) && (pWin != spriteTrace[i-1])))
 	    return FALSE;
     }
-        
+#ifdef PANORAMIX
+    if (!noPanoramiXExtension) {
+        k = (ROOT->drawable.pScreen)->myNum;;
+        for (; i < spriteTraceGood; i++) {
+             pWin = spriteTrace[i];
+             pPanoramiXWin = PanoramiXWinRoot;
+             PANORAMIXFIND_ID_BY_SCRNUM(pPanoramiXWin, pWin->drawable.id, k);
+             if (pPanoramiXWin) {
+                for ( j= PanoramiXNumScreens - 1; j>=0; j--) {
+                pWin = (WindowPtr)
+                    LookupIDByType(pPanoramiXWin->info[j].id, RT_WINDOW);
+                if ( pWin && pWin->optional &&
+                    CheckPassiveGrabsOnWindow(pWin, device, xE, count))
+                return TRUE;
+                }
+             }
+        }
+        return FALSE;
+    }else {
+#endif
     for (; i < spriteTraceGood; i++)
     {
 	pWin = spriteTrace[i];
@@ -1888,6 +2089,9 @@ CheckDeviceGrabs(device, xE, checkFirst, count)
     }
 
     return FALSE;
+#ifdef PANORAMIX
+    }
+#endif
 }
 
 void
@@ -1899,6 +2103,11 @@ DeliverFocusedEvent(keybd, xE, window, count)
 {
     WindowPtr focus = keybd->focus->win;
     int mskidx = 0;
+#ifdef PANORAMIX
+    register int 	k;
+    WindowPtr 		orig_focus;
+    PanoramiXWindow	*pPanoramiXWin = PanoramiXWinRoot;
+#endif
 
     if (focus == FollowKeyboardWin)
 	focus = inputInfo.keyboard->focus->win;
@@ -1909,12 +2118,27 @@ DeliverFocusedEvent(keybd, xE, window, count)
 	DeliverDeviceEvents(window, xE, NullGrab, NullWindow, keybd, count);
 	return;
     }
+#ifdef PANORAMIX
+    if (!noPanoramiXExtension) {
+        k = (ROOT->drawable.pScreen)->myNum;
+	orig_focus = focus;
+        PANORAMIXFIND_ID(pPanoramiXWin, focus->drawable.id);
+        if (pPanoramiXWin) {
+            focus = (WindowPtr) LookupIDByType(pPanoramiXWin->info[k].id, RT_WINDOW);
+	}
+    }
+#endif
     if ((focus == window) || IsParent(focus, window))
     {
 	if (DeliverDeviceEvents(window, xE, NullGrab, focus, keybd, count))
 	    return;
     }
     /* just deliver it to the focus window */
+#ifdef PANORAMIX
+    if (!noPanoramiXExtension) {
+	focus = orig_focus;
+    }
+#endif
     FixUpEventFromWindow(xE, focus, None, FALSE);
     if (xE->u.u.type & EXTENSION_EVENT_BASE)
 	mskidx = keybd->id;
@@ -2164,9 +2388,53 @@ ProcessPointerEvent (xE, mouse, count)
 	register int  key;
 	register BYTE *kptr;
 	int           bit;
+#ifdef PANORAMIX
+        int	      j;
+        PanoramiXWindow   *pPanoramiXWin = PanoramiXWinRoot;
+        int             x_off = 0, y_off = 0;
+#endif
 
-	xE->u.keyButtonPointer.rootX = sprite.hot.x;
-	xE->u.keyButtonPointer.rootY = sprite.hot.y;
+#ifdef PANORAMIX
+        if ( !noPanoramiXExtension ) {
+           for (j = PanoramiXNumScreens - 1; j; j--) {
+                if (xE->u.keyButtonPointer.root == PanoramiXWinRoot->info[j].id)
+                    break;
+	   }
+           if (j) {
+               xE->u.keyButtonPointer.root = PanoramiXWinRoot->info[0].id;
+               xE->u.keyButtonPointer.sameScreen = xTrue;
+           }
+	
+           PANORAMIXFIND_ID(pPanoramiXWin, xE->u.keyButtonPointer.event);
+	   if (pPanoramiXWin) {
+               for (j = PanoramiXNumScreens - 1; j; j--) {
+		  if (pPanoramiXWin->info[j].id == xE->u.keyButtonPointer.event)
+		      break;
+	       }
+	   }
+	   if (j && pPanoramiXWin) {
+	       xE->u.keyButtonPointer.event = pPanoramiXWin->info[0].id;
+           }
+	   pPanoramiXWin = PanoramiXWinRoot;
+           PANORAMIXFIND_ID(pPanoramiXWin, xE->u.keyButtonPointer.child); 
+	   if (pPanoramiXWin) {
+               for (j = PanoramiXNumScreens - 1; j; j--) {
+                  if (pPanoramiXWin->info[j].id == xE->u.keyButtonPointer.child)
+                      break;
+	       }
+	   }
+           if (j && pPanoramiXWin) 
+               xE->u.keyButtonPointer.child = pPanoramiXWin->info[0].id;
+
+	   xE->u.keyButtonPointer.rootX = sprite.hot.x; 
+	   xE->u.keyButtonPointer.rootY = sprite.hot.y; 
+        }else {
+#endif
+	   xE->u.keyButtonPointer.rootX = sprite.hot.x;
+	   xE->u.keyButtonPointer.rootY = sprite.hot.y;
+#ifdef PANORAMIX
+        }
+#endif
 	key = xE->u.u.detail;
 	kptr = &butc->down[key >> 3];
 	bit = 1 << (key & 7);
@@ -2739,8 +3007,18 @@ DoFocusEvents(dev, fromWin, toWin, mode)
 		FocusOutEvents(dev, sprite.win, ROOT, mode, NotifyPointer,
 			       TRUE);
 	    /* Notify all the roots */
+#ifdef PANORAMIX
+ 	    if ( !noPanoramiXExtension )
+	        FocusEvent(dev, FocusOut, mode, out, 
+			   WindowTable[sprite.hotPhys.pScreen->myNum]);
+	    else { 
+	        for (i=0; i<screenInfo.numScreens; i++)
+	            FocusEvent(dev, FocusOut, mode, out, WindowTable[i]);
+	    }
+#else
 	    for (i=0; i<screenInfo.numScreens; i++)
 	        FocusEvent(dev, FocusOut, mode, out, WindowTable[i]);
+#endif
 	}
 	else
 	{
@@ -2753,8 +3031,18 @@ DoFocusEvents(dev, fromWin, toWin, mode)
 			   NotifyNonlinearVirtual, FALSE);
 	}
 	/* Notify all the roots */
+#ifdef PANORAMIX
+	if ( !noPanoramiXExtension )
+	    FocusEvent(dev, FocusIn, mode, in, 
+		       WindowTable[sprite.hotPhys.pScreen->myNum]);
+	else { 
+	    for (i=0; i<screenInfo.numScreens; i++)
+	        FocusEvent(dev, FocusIn, mode, in, WindowTable[i]);
+	}
+#else
 	for (i=0; i<screenInfo.numScreens; i++)
 	    FocusEvent(dev, FocusIn, mode, in, WindowTable[i]);
+#endif
 	if (toWin == PointerRootWin)
 	    (void)FocusInEvents(dev, ROOT, sprite.win, NullWindow, mode,
 				NotifyPointer, TRUE);
@@ -2766,8 +3054,18 @@ DoFocusEvents(dev, fromWin, toWin, mode)
 	    if (fromWin == PointerRootWin)
 		FocusOutEvents(dev, sprite.win, ROOT, mode, NotifyPointer,
 			       TRUE);
+#ifdef PANORAMIX
+ 	    if ( !noPanoramiXExtension )
+	        FocusEvent(dev, FocusOut, mode, out, 
+			   WindowTable[sprite.hotPhys.pScreen->myNum]);
+	    else { 
+	        for (i=0; i<screenInfo.numScreens; i++)
+	            FocusEvent(dev, FocusOut, mode, out, WindowTable[i]);
+	    }
+#else
 	    for (i=0; i<screenInfo.numScreens; i++)
 	      FocusEvent(dev, FocusOut, mode, out, WindowTable[i]);
+#endif
 	    if (toWin->parent != NullWindow)
 	      (void)FocusInEvents(dev, ROOT, toWin, toWin, mode,
 				  NotifyNonlinearVirtual, TRUE);
@@ -2917,6 +3215,24 @@ SetInputFocus(client, dev, focusID, revertTo, ctime, followOK)
     return Success;
 }
 
+#ifdef PANORAMIX
+int PanoramiXSetInputFocus(ClientPtr client)
+{
+    REQUEST(xSetInputFocusReq);
+    int           j, result;
+    Window        winID;
+    PanoramiXWindow *pPanoramiXWin = PanoramiXWinRoot;
+
+    REQUEST_SIZE_MATCH(xSetInputFocusReq);
+    j = (sprite.hotPhys.pScreen)->myNum;
+    PANORAMIXFIND_ID(pPanoramiXWin, stuff->focus);
+    winID = pPanoramiXWin ? pPanoramiXWin->info[j].id : stuff->focus;
+    result =  SetInputFocus(client, inputInfo.keyboard, winID, stuff->revertTo,
+                         stuff->time, FALSE);
+    return(result);
+}
+#endif
+
 int
 ProcSetInputFocus(client)
     ClientPtr client;
@@ -2924,6 +3240,10 @@ ProcSetInputFocus(client)
     REQUEST(xSetInputFocusReq);
 
     REQUEST_SIZE_MATCH(xSetInputFocusReq);
+#ifdef PANORAMIX
+    if ( !noPanoramiXExtension )
+	return PanoramiXSetInputFocus(client);
+#endif
 #ifdef XCSECURITY
     if (!SecurityCheckDeviceAccess(client, inputInfo.keyboard, TRUE))
 	return Success;
@@ -2932,14 +3252,49 @@ ProcSetInputFocus(client)
 			 stuff->revertTo, stuff->time, FALSE);
 }
 
+#ifdef PANORAMIX
+int PanoramiXGetInputFocus(ClientPtr client)
+{
+    xGetInputFocusReply rep;
+    REQUEST(xReq);
+    int           j;
+    FocusClassPtr focus = inputInfo.keyboard->focus;
+    PanoramiXWindow *pPanoramiXWin = PanoramiXWinRoot;
+
+    REQUEST_SIZE_MATCH(xReq);
+    j = (sprite.hotPhys.pScreen)->myNum;
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    if (focus->win == NoneWin)
+        rep.focus = None;
+    else if (focus->win == PointerRootWin)
+        rep.focus = PointerRoot;
+    else{
+        rep.focus = focus->win->drawable.id;
+        PANORAMIXFIND_ID_BY_SCRNUM(pPanoramiXWin, focus->win->drawable.id, j);
+        if (pPanoramiXWin)
+            rep.focus = pPanoramiXWin->info[0].id;
+    }
+    rep.revertTo = focus->revert;
+    WriteReplyToClient(client, sizeof(xGetInputFocusReply), &rep);
+    return Success;
+}
+#endif
+
 int
 ProcGetInputFocus(client)
     ClientPtr client;
 {
     xGetInputFocusReply rep;
+    REQUEST(xReq);
     FocusClassPtr focus = inputInfo.keyboard->focus;
 
     REQUEST_SIZE_MATCH(xReq);
+#ifdef PANORAMIX
+    if ( !noPanoramiXExtension )
+	return PanoramiXGetInputFocus(client);
+#endif
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
@@ -2964,9 +3319,20 @@ ProcGrabPointer(client)
     CursorPtr cursor, oldCursor;
     REQUEST(xGrabPointerReq);
     TimeStamp time;
+#ifdef PANORAMIX
+    int                 j,i, PanoramiXNum;
+    Bool                NotViewable, NotRealized;
+    PanoramiXWindow       *pPanoramiXWin = PanoramiXWinRoot;
+#endif
 
     REQUEST_SIZE_MATCH(xGrabPointerReq);
     UpdateCurrentTime();
+#ifdef PANORAMIX
+    if ( !noPanoramiXExtension ) {
+        PanoramiXNum = (sprite.hotPhys.pScreen)->myNum;
+        NotViewable = FALSE;
+    }
+#endif
     if ((stuff->pointerMode != GrabModeSync) &&
 	(stuff->pointerMode != GrabModeAsync))
     {
@@ -2992,10 +3358,45 @@ ProcGrabPointer(client)
     pWin = SecurityLookupWindow(stuff->grabWindow, client, SecurityReadAccess);
     if (!pWin)
 	return BadWindow;
+#ifdef PANORAMIX
+    if ( !noPanoramiXExtension ) {
+	pPanoramiXWin = PanoramiXWinRoot;
+	PANORAMIXFIND_ID(pPanoramiXWin, stuff->grabWindow);
+	if (pPanoramiXWin) {
+            pWin = SecurityLookupWindow(pPanoramiXWin->info[PanoramiXNum].id, client,
+					SecurityReadAccess);
+	    if (!pWin)
+		return BadWindow;
+	}
+	if (stuff->confineTo == PanoramiXWinRoot->info[0].id)
+	    stuff->confineTo = None;
+    }
+#endif
     if (stuff->confineTo == None)
 	confineTo = NullWindow;
-    else
+#ifdef PANORAMIX
+    else if ( !noPanoramiXExtension ) {
+	if (stuff->confineTo) {
+	    pPanoramiXWin = PanoramiXWinRoot;
+            PANORAMIXFIND_ID(pPanoramiXWin, stuff->confineTo);
+            if (pPanoramiXWin) {
+                stuff->confineTo = pPanoramiXWin->info[sprite.hotPhys.pScreen->
+myNum].id;
+	  	confineTo = SecurityLookupWindow(stuff->confineTo, client,
+						   SecurityReadAccess);
+                if (!confineTo)
+                    return BadWindow;
+            }
+            if ((confineTo && !(confineTo->realized &&
+              REGION_NOTEMPTY(confineTo->drawable.pScreen, &confineTo->
+borderSize))))
+              NotViewable = TRUE;
+        }
+    } else {
+#else
+    else 
     {
+#endif
 	confineTo = SecurityLookupWindow(stuff->confineTo, client,
 					 SecurityReadAccess);
 	if (!confineTo)
@@ -3021,11 +3422,22 @@ ProcGrabPointer(client)
     grab = device->grab;
     if ((grab) && !SameClient(grab, client))
 	rep.status = AlreadyGrabbed;
-    else if ((!pWin->realized) ||
+#ifdef PANORAMIX
+    else if ((!noPanoramiXExtension ) &&
+	     (!(pWin->realized) || NotViewable))
+	       rep.status = GrabNotViewable;
+    else if ((noPanoramiXExtension) && (!pWin->realized) ||
 	     (confineTo &&
 		!(confineTo->realized &&
 		  REGION_NOTEMPTY( confineTo->drawable.pScreen, 
 			&confineTo->borderSize))))
+#else
+    else if ((!pWin->realized) ||
+             (confineTo &&
+                !(confineTo->realized &&
+                  REGION_NOTEMPTY( confineTo->drawable.pScreen,
+                        &confineTo->borderSize))))
+#endif
 	rep.status = GrabNotViewable;
     else if (device->sync.frozen &&
 	     device->sync.other && !SameClient(device->sync.other, client))
@@ -3201,6 +3613,11 @@ ProcGrabKeyboard(client)
     xGrabKeyboardReply rep;
     REQUEST(xGrabKeyboardReq);
     int result;
+#ifdef PANORAMIX
+    int                 PanoramiXNum;
+    Window              winID;
+    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+#endif
 
     REQUEST_SIZE_MATCH(xGrabKeyboardReq);
 #ifdef XCSECURITY
@@ -3210,6 +3627,14 @@ ProcGrabKeyboard(client)
 	rep.status = AlreadyGrabbed;
     }
     else
+#endif
+#ifdef PANORAMIX
+    if (!noPanoramiXExtension) {
+	PanoramiXNum = (sprite.hotPhys.pScreen)->myNum;
+	winID = stuff->grabWindow;
+	PANORAMIXFIND_ID(pPanoramiXWin, stuff->grabWindow);
+	stuff->grabWindow = pPanoramiXWin ? pPanoramiXWin->info[PanoramiXNum].id : winID;
+    }
 #endif
     result = GrabDevice(client, inputInfo.keyboard, stuff->keyboardMode,
 			stuff->pointerMode, stuff->grabWindow,
@@ -3252,21 +3677,66 @@ ProcQueryPointer(client)
     WindowPtr pWin, t;
     REQUEST(xResourceReq);
     DeviceIntPtr mouse = inputInfo.pointer;
+#ifdef PANORAMIX
+    int                 PanoramiXNum;
+    Window              winID;
+    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+#endif
 
     REQUEST_SIZE_MATCH(xResourceReq);
     pWin = SecurityLookupWindow(stuff->id, client, SecurityReadAccess);
     if (!pWin)
 	return BadWindow;
+#ifdef PANORAMIX
+    if ( !noPanoramiXExtension ){
+    	t = sprite.win;
+    	PanoramiXNum = (sprite.hotPhys.pScreen)->myNum;
+    	if (t == pWin) {
+       	   /* we probably want pWin of some Fake Window */
+       	   PANORAMIXFIND_ID(pPanoramiXWin, stuff->id);
+       	   winID = pPanoramiXWin ? pPanoramiXWin->info[PanoramiXNum].id : stuff->id;
+       	   pWin = SecurityLookupWindow(winID, client, SecurityReadAccess);
+    	}
+    }
+#endif
     if (mouse->valuator->motionHintWindow)
 	MaybeStopHint(mouse, client);
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
     rep.mask = mouse->button->state | inputInfo.keyboard->key->state;
     rep.length = 0;
-    rep.root = (ROOT)->drawable.id;
-    rep.rootX = sprite.hot.x;
-    rep.rootY = sprite.hot.y;
+#ifdef PANORAMIX
+    if ( !noPanoramiXExtension ){
+    	rep.root = PanoramiXWinRoot->info[0].id;
+    	rep.rootX = sprite.hot.x + panoramiXdataPtr[PanoramiXNum].x;
+    	rep.rootY = sprite.hot.y + panoramiXdataPtr[PanoramiXNum].y;
+    } else {
+#endif
+    	rep.root = (ROOT)->drawable.id;
+    	rep.rootX = sprite.hot.x;
+    	rep.rootY = sprite.hot.y;
+#ifdef PANORAMIX
+    }
+#endif
     rep.child = None;
+#ifdef PANORAMIX
+    if ( !noPanoramiXExtension ){
+    	rep.sameScreen = xTrue;
+    	rep.winX = sprite.hot.x - pWin->drawable.x + panoramiXdataPtr[PanoramiXNum].x;
+    	rep.winY = sprite.hot.y - pWin->drawable.y + panoramiXdataPtr[PanoramiXNum].y;
+    	for (; pPanoramiXWin && 
+	       ((unsigned long)LookupIDByType(pPanoramiXWin->info[PanoramiXNum].id, 
+		RT_WINDOW) != (unsigned long) t); pPanoramiXWin = pPanoramiXWin->next);
+    	if (pPanoramiXWin)
+        	t = (WindowPtr)LookupIDByType(pPanoramiXWin->info[0].id, RT_WINDOW);
+    	for (; t; t = t->parent) {
+       	    if (t->parent == pWin) {
+                rep.child = t->drawable.id;
+                break;
+            }
+    	}
+    } else {
+#endif
     if (sprite.hot.pScreen == pWin->drawable.pScreen)
     {
 	rep.sameScreen = xTrue;
@@ -3285,6 +3755,10 @@ ProcQueryPointer(client)
 	rep.winX = 0;
 	rep.winY = 0;
     }
+#ifdef PANORAMIX
+    }
+#endif
+
     WriteReplyToClient(client, sizeof(xQueryPointerReply), &rep);
 
     return(Success);    
@@ -3411,6 +3885,9 @@ ProcSendEvent(client)
     stuff->event.u.u.type |= 0x80;
     if (stuff->propagate)
     {
+#ifdef PANORAMIX
+      if (noPanoramiXExtension){
+#endif
 	for (;pWin; pWin = pWin->parent)
 	{
 	    if (DeliverEventsToWindow(pWin, &stuff->event, 1, stuff->eventMask,
@@ -3422,8 +3899,14 @@ ProcSendEvent(client)
 	    if (!stuff->eventMask)
 		break;
 	}
+#ifdef PANORAMIX
+      }
+#endif
     }
     else
+#ifdef PANORAMIX
+    if (noPanoramiXExtension) 
+#endif
 	(void)DeliverEventsToWindow(pWin, &stuff->event, 1, stuff->eventMask,
 				    NullGrab, 0);
     return Success;
@@ -3437,11 +3920,19 @@ ProcUngrabKey(client)
     WindowPtr pWin;
     GrabRec tempGrab;
     DeviceIntPtr keybd = inputInfo.keyboard;
+#ifdef PANORAMIX
+    int                 i;
+    Bool                result, anyTrue;
+    Window              GrabWinID;
+    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+    register GrabPtr    grab;
+#endif
 
     REQUEST_SIZE_MATCH(xUngrabKeyReq);
     pWin = SecurityLookupWindow(stuff->grabWindow, client, SecurityReadAccess);
     if (!pWin)
 	return BadWindow;
+
     if (((stuff->key > keybd->key->curKeySyms.maxKeyCode) ||
 	 (stuff->key < keybd->key->curKeySyms.minKeyCode))
 	&& (stuff->key != AnyKey))
@@ -3455,7 +3946,6 @@ ProcUngrabKey(client)
 	client->errorValue = stuff->modifiers;
 	return BadValue;
     }
-
     tempGrab.resource = client->clientAsMask;
     tempGrab.device = keybd;
     tempGrab.window = pWin;
@@ -3466,9 +3956,28 @@ ProcUngrabKey(client)
     tempGrab.detail.exact = stuff->key;
     tempGrab.detail.pMask = NULL;
 
+#ifdef PANORAMIX
+    if ( !noPanoramiXExtension ){
+	anyTrue = FALSE;
+	PANORAMIXFIND_ID(pPanoramiXWin, stuff->grabWindow);
+	FOR_NSCREENS_OR_ONCE(pPanoramiXWin, i) {
+	  GrabWinID = pPanoramiXWin ? 
+	              pPanoramiXWin->info[i].id : stuff->grabWindow;
+	  pWin = SecurityLookupWindow(GrabWinID, client, SecurityReadAccess);
+	  tempGrab.window = pWin;
+	  result = DeletePassiveGrabFromList(&tempGrab);
+	  if (result == TRUE)
+	     anyTrue = result;
+	}
+	return (anyTrue);
+    }else {
+#endif
     if (!DeletePassiveGrabFromList(&tempGrab))
 	return(BadAlloc);
     return(Success);
+#ifdef PANORAMIX
+    }
+#endif
 }
 
 int
@@ -3479,6 +3988,11 @@ ProcGrabKey(client)
     REQUEST(xGrabKeyReq);
     GrabPtr grab;
     DeviceIntPtr keybd = inputInfo.keyboard;
+#ifdef PANORAMIX
+    int                 i, result, anySuccess;
+    Window              GrabWinID;
+    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+#endif
 
     REQUEST_SIZE_MATCH(xGrabKeyReq);
     if ((stuff->ownerEvents != xTrue) && (stuff->ownerEvents != xFalse))
@@ -3514,7 +4028,30 @@ ProcGrabKey(client)
     pWin = SecurityLookupWindow(stuff->grabWindow, client, SecurityReadAccess);
     if (!pWin)
 	return BadWindow;
-
+#ifdef PANORAMIX
+    if ( !noPanoramiXExtension ){
+	anySuccess = BadAccess; 
+	PANORAMIXFIND_ID(pPanoramiXWin, stuff->grabWindow);
+	FOR_NSCREENS_OR_ONCE(pPanoramiXWin, i) {
+	  GrabWinID = pPanoramiXWin ? 
+	              pPanoramiXWin->info[i].id : stuff->grabWindow;
+	  pWin = SecurityLookupWindow(GrabWinID, client, SecurityReadAccess);
+	  grab = CreateGrab(client->index, keybd, pWin, 
+			    (Mask)(KeyPressMask | KeyReleaseMask), 
+			    (Bool)stuff->ownerEvents,
+			    (Bool)stuff->keyboardMode, 
+			    (Bool)stuff->pointerMode,
+			    keybd, stuff->modifiers, KeyPress, 
+			    stuff->key, NullWindow, NullCursor);
+	  if (!grab)
+	    return BadAlloc;
+	  result = AddPassiveGrabToList(grab);
+	  if (result == Success)
+	     anySuccess = result;
+	}
+	return (anySuccess);
+    }else {
+#endif
     grab = CreateGrab(client->index, keybd, pWin, 
 	(Mask)(KeyPressMask | KeyReleaseMask), (Bool)stuff->ownerEvents,
 	(Bool)stuff->keyboardMode, (Bool)stuff->pointerMode,
@@ -3522,7 +4059,11 @@ ProcGrabKey(client)
     if (!grab)
 	return BadAlloc;
     return AddPassiveGrabToList(grab);
+#ifdef PANORAMIX
+    }
+#endif
 }
+
 
 int
 ProcGrabButton(client)
@@ -3532,8 +4073,19 @@ ProcGrabButton(client)
     REQUEST(xGrabButtonReq);
     CursorPtr cursor;
     GrabPtr grab;
+#ifdef PANORAMIX
+    int                 i, result, anySuccess;
+    Bool                NotViewable, NotRealized;
+    Window              GrabWinID;
+    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+#endif
 
     REQUEST_SIZE_MATCH(xGrabButtonReq);
+#ifdef PANORAMIX
+    if ( !noPanoramiXExtension ) {
+        NotViewable = FALSE;
+    }
+#endif
     if ((stuff->pointerMode != GrabModeSync) &&
 	(stuff->pointerMode != GrabModeAsync))
     {
@@ -3565,10 +4117,44 @@ ProcGrabButton(client)
     pWin = SecurityLookupWindow(stuff->grabWindow, client, SecurityReadAccess);
     if (!pWin)
 	return BadWindow;
+#ifdef PANORAMIX
+    if ( !noPanoramiXExtension ){
+	if (stuff->confineTo == PanoramiXWinRoot->info[0].id)
+	    stuff->confineTo = None;
+    }
+#endif
     if (stuff->confineTo == None)
-	confineTo = NullWindow;
-    else
-    {
+       confineTo = NullWindow;
+#ifdef PANORAMIX
+    else if ( !noPanoramiXExtension ) {
+         if (stuff->confineTo) {
+	    pPanoramiXWin = PanoramiXWinRoot;
+            PANORAMIXFIND_ID(pPanoramiXWin, stuff->confineTo);
+            if (pPanoramiXWin) {
+             for ( i = PanoramiXNumScreens - 1; i >=0 ; i--) {
+                  stuff->confineTo = pPanoramiXWin->info[i].id;
+                  confineTo = SecurityLookupWindow(stuff->confineTo, client,
+						   SecurityReadAccess);
+                  if (!confineTo)
+                      return BadWindow;
+            /* find where confined windows top-left corner lies
+               and based on its coordinates choose the window
+               which is truly seen. Then check realized/empty
+               and pass this window to activate grab. */
+                  if ((confineTo->drawable.x >= 0) &&
+                     (confineTo->drawable.x <= panoramiXdataPtr[i].x))
+                     break;
+             }
+           } else
+		confineTo = SecurityLookupWindow(stuff->confineTo, client,
+						 SecurityReadAccess);
+		if (!confineTo)
+		     return BadWindow;
+        }
+    } else {
+#else
+    else {
+#endif
 	confineTo = SecurityLookupWindow(stuff->confineTo, client,
 					 SecurityReadAccess);
 	if (!confineTo)
@@ -3587,16 +4173,45 @@ ProcGrabButton(client)
 	}
     }
 
-    grab = CreateGrab(client->index, inputInfo.pointer, pWin, 
+#ifdef PANORAMIX
+    if (!noPanoramiXExtension) {
+	anySuccess = BadAccess;  
+	PANORAMIXFIND_ID(pPanoramiXWin, stuff->grabWindow);
+	FOR_NSCREENS_OR_ONCE(pPanoramiXWin, i) {
+	    GrabWinID = pPanoramiXWin ? 
+		    pPanoramiXWin->info[i].id : stuff->grabWindow;
+	    pWin = SecurityLookupWindow(GrabWinID, client, SecurityReadAccess);
+	    grab = CreateGrab(client->index, inputInfo.pointer, pWin, 
+			      permitOldBugs ? (Mask)(stuff->eventMask |
+			       ButtonPressMask | ButtonReleaseMask) :
+			      (Mask)stuff->eventMask,
+			      (Bool)stuff->ownerEvents, 
+			      (Bool) stuff->keyboardMode,
+			      (Bool)stuff->pointerMode, 
+			      inputInfo.keyboard, stuff->modifiers,
+			      ButtonPress, stuff->button, confineTo, cursor);
+	    if (!grab)
+	      return BadAlloc;
+	    result = AddPassiveGrabToList(grab);
+	    if (result == Success)
+		anySuccess = result;
+	}
+	return (anySuccess);
+    }else {
+#endif
+      grab = CreateGrab(client->index, inputInfo.pointer, pWin, 
 	permitOldBugs ? (Mask)(stuff->eventMask |
 			       ButtonPressMask | ButtonReleaseMask) :
 			(Mask)stuff->eventMask,
 	(Bool)stuff->ownerEvents, (Bool) stuff->keyboardMode,
 	(Bool)stuff->pointerMode, inputInfo.keyboard, stuff->modifiers,
 	ButtonPress, stuff->button, confineTo, cursor);
-    if (!grab)
+      if (!grab)
 	return BadAlloc;
-    return AddPassiveGrabToList(grab);
+      return AddPassiveGrabToList(grab);
+#ifdef PANORAMIX
+    }
+#endif
 }
 
 int
@@ -3606,6 +4221,13 @@ ProcUngrabButton(client)
     REQUEST(xUngrabButtonReq);
     WindowPtr pWin;
     GrabRec tempGrab;
+#ifdef PANORAMIX
+    int                 i;
+    Bool                result, anyTrue;
+    Window              GrabWinID;
+    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+    register GrabPtr    grab;
+#endif
 
     REQUEST_SIZE_MATCH(xUngrabButtonReq);
     if ((stuff->modifiers != AnyModifier) &&
@@ -3617,7 +4239,6 @@ ProcUngrabButton(client)
     pWin = SecurityLookupWindow(stuff->grabWindow, client, SecurityReadAccess);
     if (!pWin)
 	return BadWindow;
-
     tempGrab.resource = client->clientAsMask;
     tempGrab.device = inputInfo.pointer;
     tempGrab.window = pWin;
@@ -3628,9 +4249,27 @@ ProcUngrabButton(client)
     tempGrab.detail.exact = stuff->button;
     tempGrab.detail.pMask = NULL;
 
-    if (!DeletePassiveGrabFromList(&tempGrab))
+#ifdef PANORAMIX
+    if ( !noPanoramiXExtension ){
+	PANORAMIXFIND_ID(pPanoramiXWin, stuff->grabWindow);
+	FOR_NSCREENS_OR_ONCE(pPanoramiXWin, i) {
+	  GrabWinID = pPanoramiXWin ? 
+	              pPanoramiXWin->info[i].id : stuff->grabWindow;
+	  pWin = SecurityLookupWindow(GrabWinID, client, SecurityReadAccess);
+	  tempGrab.window = pWin;
+	  result = DeletePassiveGrabFromList(&tempGrab);
+	  if (result == TRUE)
+	     anyTrue = result;
+	}
+	return (anyTrue);
+    }else {
+#endif
+      if (!DeletePassiveGrabFromList(&tempGrab))
 	return(BadAlloc);
-    return(Success);
+      return(Success);
+#ifdef PANORAMIX
+    }
+#endif
 }
 
 void
@@ -3804,6 +4443,164 @@ WriteEventsToClient(pClient, count, events)
 {
     xEvent    eventTo, *eventFrom;
     int       i;
+#ifdef PANORAMIX
+    PanoramiXWindow   *pPanoramiXWin = PanoramiXWinRoot;
+    int             x_off = 0, y_off = 0;
+    int             j,NewId,OrigId;
+#endif
+
+#ifdef PANORAMIX
+    if (!noPanoramiXExtension) {
+      switch (events->u.u.type) {
+        case ButtonPress : case ButtonRelease :
+        case MotionNotify : case KeyPress :
+             FORCE_ROOT(events->u.keyButtonPointer, j);
+             events->u.keyButtonPointer.sameScreen = xTrue;
+             for (i = 0; i < count; i++) {
+                 FORCE_WIN(events[i].u.keyButtonPointer.event, j);
+                 if (events[i].u.keyButtonPointer.child) {
+                    pPanoramiXWin = PanoramiXWinRoot;
+                    FORCE_WIN(events[i].u.keyButtonPointer.child, j);
+                 }
+             }
+            break;
+        case EnterNotify : case LeaveNotify :
+             FORCE_ROOT(events->u.enterLeave, j);
+             for (i = 0; i < count; i++) {
+               FORCE_WIN(events[i].u.enterLeave.event, j);
+               if (events[i].u.enterLeave.child) {
+                  pPanoramiXWin = PanoramiXWinRoot;
+                  FORCE_WIN(events[i].u.enterLeave.child, j);
+                }
+             }
+            break;
+        case Expose :
+            /* Need to do this count time, ensure no fake
+               window ideas are send to client */
+	    for (i = 0; i < count; i++)
+	     FORCE_WIN(events[i].u.expose.window, j);
+            break;
+        case FocusOut :
+            FORCE_WIN(events->u.focus.window, j);
+            break;
+        case FocusIn :
+            FORCE_WIN(events->u.focus.window, j);
+            break;
+        case VisibilityNotify :
+            FORCE_WIN(events->u.visibility.window, j);
+            break;
+        case GraphicsExpose :
+            FORCE_WIN(events->u.graphicsExposure.drawable, j);
+            break;
+	case NoExpose :
+            SKIP_FAKE_WINDOW(events->u.noExposure.drawable, j);
+            break;
+        case CreateNotify :
+            FORCE_WIN(events->u.createNotify.parent, j);
+            pPanoramiXWin = PanoramiXWinRoot;
+            FORCE_WIN(events->u.createNotify.window, j);
+            break;
+        case ColormapNotify :
+            FORCE_WIN(events->u.colormap.window, j);
+            pPanoramiXWin = PanoramiXWinRoot;
+            FORCE_WIN(events->u.colormap.colormap, j);
+            break;
+        case MapNotify : 
+            SKIP_FAKE_WINDOW(events->u.mapNotify.event, j);
+            pPanoramiXWin = PanoramiXWinRoot;
+            SKIP_FAKE_WINDOW(events->u.mapNotify.window, j);
+            break;
+	case UnmapNotify :
+            SKIP_FAKE_WINDOW(events->u.unmapNotify.event, j);
+            pPanoramiXWin = PanoramiXWinRoot;
+            SKIP_FAKE_WINDOW(events->u.unmapNotify.window, j);
+            break;
+        case DestroyNotify : 
+            SKIP_FAKE_WINDOW(events->u.destroyNotify.event, j);
+            pPanoramiXWin = PanoramiXWinRoot;
+            SKIP_FAKE_WINDOW(events->u.destroyNotify.window, j);
+            break;
+	case GravityNotify :
+            FORCE_WIN(events->u.gravity.event, j);
+            pPanoramiXWin = PanoramiXWinRoot;
+            FORCE_WIN(events->u.gravity.window, j);
+            break;
+        case MapRequest :
+            SKIP_FAKE_WINDOW(events->u.mapRequest.parent, j);
+            pPanoramiXWin = PanoramiXWinRoot;
+            SKIP_FAKE_WINDOW(events->u.mapRequest.window, j);
+            break;
+        case ConfigureNotify :
+            FORCE_WIN(events->u.configureNotify.event, j);
+            pPanoramiXWin = PanoramiXWinRoot;
+            FORCE_WIN(events->u.configureNotify.window, j);
+            pPanoramiXWin = PanoramiXWinRoot;
+            FORCE_WIN(events->u.configureNotify.aboveSibling, j);
+            break;
+        case ConfigureRequest :
+            SKIP_FAKE_WINDOW(events->u.configureRequest.parent, j);
+            pPanoramiXWin = PanoramiXWinRoot;
+            SKIP_FAKE_WINDOW(events->u.configureRequest.window, j);
+            pPanoramiXWin = PanoramiXWinRoot;
+            SKIP_FAKE_WINDOW(events->u.configureRequest.sibling, j);
+            break;
+        case ResizeRequest :
+            FORCE_WIN(events->u.resizeRequest.window, j);
+            break;
+        case CirculateNotify : case CirculateRequest :
+        case ReparentNotify :
+            FORCE_WIN(events->u.circulate.event, j);
+            pPanoramiXWin = PanoramiXWinRoot;
+            FORCE_WIN(events->u.circulate.window, j);
+            pPanoramiXWin = PanoramiXWinRoot;
+            FORCE_WIN(events->u.circulate.parent, j);
+            break;
+        case PropertyNotify :
+            SKIP_FAKE_WINDOW(events->u.property.window, j);
+            break;
+        case ClientMessage :
+            SKIP_FAKE_WINDOW(events->u.clientMessage.window, j);
+            break;
+        default :
+            switch (events->u.u.type & ~0x80) {
+		case VisibilityNotify :
+ 		   FORCE_WIN(events->u.visibility.window, j);
+		   break;
+		case MapNotify : 
+		   SKIP_FAKE_WINDOW(events->u.mapNotify.event, j);
+		   pPanoramiXWin = PanoramiXWinRoot;
+		   SKIP_FAKE_WINDOW(events->u.mapNotify.window, j);
+		   break;
+		case UnmapNotify :
+		   SKIP_FAKE_WINDOW(events->u.unmapNotify.event, j);
+		   pPanoramiXWin = PanoramiXWinRoot;
+		   SKIP_FAKE_WINDOW(events->u.unmapNotify.window, j);
+		case MapRequest :
+		   SKIP_FAKE_WINDOW(events->u.mapRequest.parent, j);
+		   pPanoramiXWin = PanoramiXWinRoot;
+		   SKIP_FAKE_WINDOW(events->u.mapRequest.window, j);
+		   break;
+		case ConfigureNotify :
+		   FORCE_WIN(events->u.configureNotify.event, j);
+		   pPanoramiXWin = PanoramiXWinRoot;
+		   FORCE_WIN(events->u.configureNotify.window, j);
+		   pPanoramiXWin = PanoramiXWinRoot;
+		   FORCE_WIN(events->u.configureNotify.aboveSibling, j);
+		   break;
+		case ConfigureRequest :
+		   SKIP_FAKE_WINDOW(events->u.configureRequest.parent, j);
+		   pPanoramiXWin = PanoramiXWinRoot;
+		   SKIP_FAKE_WINDOW(events->u.configureRequest.window, j);
+		   pPanoramiXWin = PanoramiXWinRoot;
+		   SKIP_FAKE_WINDOW(events->u.configureRequest.sibling, j);
+		   break;
+        	default :
+		   break;
+	    } /* default case */
+            break;
+      } /* case */
+    }
+#endif
 
 #ifdef XKB
     if ((!noXkbExtension)&&(!XkbFilterEvents(pClient, count, events)))

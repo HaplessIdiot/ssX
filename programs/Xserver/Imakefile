@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.143 1999/01/11 05:13:23 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.144 1999/01/11 05:37:47 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -147,11 +147,7 @@ XPDDXFBLIBS = $(MFB) $(CFB32)
       XPDDXDIR = Xprint
 #endif
 #if !BuildXprint || PrintOnlyServer
-#if BuildXinerama
-XPFBLIBS = pandix/LibraryTargetName(xpstubs)
-#else
 XPFBLIBS = dix/LibraryTargetName(xpstubs)
-#endif
 #endif
 
 #if DoLoadableServer
@@ -202,15 +198,9 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 #if BuildLowMem
          LMFCFB = lmfcfb/LibraryTargetName(cfb)
 #endif
-#if BuildXinerama
-             MI = panmi/LibraryTargetName(mi)
-   MIINITEXTOBJ = panmi/miinitext.o
-            DIX = pandix/LibraryTargetName(dix)
-#else
              MI = mi/LibraryTargetName(mi)
    MIINITEXTOBJ = mi/miinitext.o
             DIX = dix/LibraryTargetName(dix)
-#endif
        FONTBASE = $(FONTLIBSRC)/fontfile/module/fontbase.o \
 		  $(FONTLIBSRC)/LibraryTargetName(fontbase)
            FONT = $(XFONTLIB) $(XPFBLIBS)
@@ -223,13 +213,8 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 #else
         SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries DBMLibrary $(EXTRASYSLIBS)
 #endif
-#if BuildXinerama
-           CBRT = panmi/LibraryTargetName(cbrt)
-        STDDIRS = include pandix os panmi $(XPDDXDIR) $(EXTDIRS)
-#else
            CBRT = mi/LibraryTargetName(cbrt)
         STDDIRS = include dix os mi $(XPDDXDIR) $(EXTDIRS)
-#endif
 
 XCOMM
 XCOMM This turns off the default rule for compiling .c files because

@@ -1,5 +1,5 @@
-XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.19.2.2 1998/07/19 13:22:15 dawes Exp $
 XCOMM $XConsortium: Imakefile /main/44 1996/12/02 10:22:16 lehors $
+XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.22 1998/07/26 02:33:05 dawes Exp $
 #include <Server.tmpl>
 
 #if ! HasCbrt
@@ -48,7 +48,7 @@ EXT_DEFINES = ExtensionDefines
 #endif
 
 INCLUDES = -I. -I../include -I../../../include/fonts \
-           -I$(XINCLUDESRC) -I$(FONTINCSRC)
+           -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(EXTINCSRC)
 LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
 
 NormalLibraryObjectRule()

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.36 1998/12/20 11:57:22 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.37 1999/01/12 08:52:36 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -757,6 +757,27 @@ int 		arg;
 }
 
 
+static int
+set_sun_path(const char *port, const char *upath, char **path)
+{
+    struct sockaddr_un s;
+    int maxlen = sizeof(s.sun_path) - 1;
+
+    if (!port || !*port || !path)
+	return -1;
+
+    if (*port == '/') { /* a full pathname */
+	if (strlen(port) > maxlen)
+	    return -1;
+	sprintf(*path, "%s", port);
+    } else {
+	if (strlen(port) + strlen(upath) > maxlen)
+	    return -1;
+	sprintf(*path, "%s%s", upath, port);
+    }
+    return 0;
+}
+
 #ifdef TRANS_SERVER
 
 static int
@@ -927,27 +948,6 @@ char 		*port;
 
 
 #ifdef UNIXCONN
-
-static int
-set_sun_path(const char *port, const char *upath, char **path)
-{
-    struct sockaddr_un s;
-    int maxlen = sizeof(s.sun_path) - 1;
-
-    if (!port || !*port || !path)
-	return -1;
-
-    if (*port == '/') { /* a full pathname */
-	if (strlen(port) > maxlen)
-	    return -1;
-	sprintf(*path, "%s", port);
-    } else {
-	if (strlen(port) + strlen(upath) > maxlen)
-	    return -1;
-	sprintf(*path, "%s%s", upath, port);
-    }
-    return 0;
-}
 
 static
 TRANS(SocketUNIXCreateListener) (ciptr, port)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/extension.c,v 3.5 1996/12/23 06:29:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/extension.c,v 3.6 1998/10/04 09:38:07 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -55,7 +55,7 @@ SOFTWARE.
 #include "dispatch.h"
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
-#include "extensions/security.h"
+#include "security.h"
 #endif
 
 #define EXTENSION_BASE  128
