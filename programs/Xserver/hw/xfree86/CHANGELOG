@@ -1,4 +1,5 @@
 XFree86 4.0.1g (xx November 2000)
+ 970. Ignore various ".stab.*" sections for Solaris (Marc La France).
  969. Fix ENXIO errors on Linux BIOS retrievals by removing restriction on
       several OSes that xf86ReadBIOS()'s Base be page-aligned (Marc La France).
  968. Disable change 873.  It causes device/monitor mismatches
@@ -11607,4 +11608,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1402 2000/11/18 19:37:06 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1403 2000/11/19 16:38:03 tsi Exp $
