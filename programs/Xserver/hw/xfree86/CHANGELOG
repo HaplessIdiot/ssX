@@ -1,4 +1,9 @@
 XFree86 4.5.99.1 (xx March 2005)
+   3. Some changes to the default behaviour of BSD's xf86OpenConsole:
+       - Don't detach the controlling tty when it isn't a console device.
+       - Enable the initial switch to VT 1 workaround only when it is known
+         to be needed.
+      (David Dawes).
    2. Improve the default setting for BuildModuleInSubdir to handle more
       cases that need it set (David Dawes).
    1. Fix i830 bug where the DDC-probed parameters are not applied before
@@ -19461,7 +19466,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3472 2005/03/19 01:28:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3473 2005/03/20 01:34:57 dawes Exp $
 
 
 
