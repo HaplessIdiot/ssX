@@ -1,7 +1,8 @@
-/* $XFree86: xc/lib/GL/dri/xf86dri.h,v 1.5 2000/02/23 04:46:34 martin Exp $ */
+/* $XFree86: xc/lib/GL/dri/xf86dri.h,v 1.6 2000/06/17 00:02:48 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
+Copyright 2000 VA Linux Systems, Inc.
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,9 +29,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <kevin@precisioninsight.com>
- *   Jens Owen <jens@precisioninsight.com>
- *   Rickard E. Faith <faith@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Jens Owen <jens@valinux.com>
+ *   Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
 
@@ -52,6 +53,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define X_XF86DRIGetDrawableInfo		9
 #define X_XF86DRIGetDeviceInfo			10
 #define X_XF86DRIAuthConnection                 11
+#define X_XF86DRIOpenFullScreen                 12
+#define X_XF86DRICloseFullScreen                13
 
 #define XF86DRINumberEvents		0
 
@@ -197,6 +200,22 @@ Bool XF86DRIGetDeviceInfo(
     int*		/* fbStride */,
     int*		/* devPrivateSize */,
     void**		/* pDevPrivate */
+#endif
+);
+
+Bool XF86DRIOpenFullScreen(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int                 /* screen */,
+    Drawable 		/* drawable */
+#endif
+);
+
+Bool XF86DRICloseFullScreen(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int                 /* screen */,
+    Drawable 		/* drawable */
 #endif
 );
 

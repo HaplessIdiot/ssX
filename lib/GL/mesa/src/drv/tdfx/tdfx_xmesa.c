@@ -1,6 +1,7 @@
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
+Copyright 2000 VA Linux Systems, Inc.
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_xmesa.c,v 1.8 2000/09/26 15:56:50 tsi Exp $ */
 
 /*
  * Authors:
@@ -333,6 +334,20 @@ XMesaUnbindContext(__DRIcontextPrivate * driContextPriv)
         fxMesaContext fxMesa = FX_CONTEXT(ctx);
         FX_grGlideGetState(fxMesa, (GrState *) fxMesa->state);
     }
+    return GL_TRUE;
+}
+
+GLboolean
+XMesaOpenFullScreen(__DRIcontextPrivate *driContextPriv)
+{
+    fprintf(stderr,"XMesaOpenFullScreen\n");
+    return GL_TRUE;
+}
+
+GLboolean
+XMesaCloseFullScreen(__DRIcontextPrivate *driContextPriv)
+{
+    fprintf(stderr,"XMesaCloseFullScreen\n");
     return GL_TRUE;
 }
 

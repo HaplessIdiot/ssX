@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/main.c,v 3.3 1999/03/07 11:40:54 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/main.c,v 3.4 2000/11/30 23:30:08 dawes Exp $ */
 
 #include	"FS.h"
 #include	"FSproto.h"
@@ -91,7 +91,6 @@ main(int argc, char *argv[])
     ProcessCmdLine(argc, argv);
     InitErrors();
 
-    SetUserId();
     /*
      * do this first thing, to get any options that only take effect at
      * startup time.  it is read again each time the server resets
@@ -106,6 +105,7 @@ main(int argc, char *argv[])
 	(void)umask(oldumask);
 
     SetDaemonState();
+    SetUserId();
 
     while (1) {
 	serverGeneration++;

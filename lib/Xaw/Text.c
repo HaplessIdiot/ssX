@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.38 2000/09/19 12:46:05 eich Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.39 2000/09/26 15:56:54 tsi Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -1958,26 +1958,25 @@ TextConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
 	if (SrcCvtSel(src, selection, target, type, value, length, format))
 	    return (True);
 
+	XtSetArg(args[0], XtNeditType, &edit_mode);
+	XtGetValues(src, args, ONE);
+
 	XmuConvertStandardSelection(w, ctx->text.time, selection,
 				    target, type, (XPointer*)&std_targets,
 				    &std_length, format);
 
-	*value = XtMalloc((unsigned)sizeof(Atom)*(std_length + 7));
+	*length = 7 + (edit_mode == XawtextEdit) + std_length;
+	*value = XtMalloc((unsigned)sizeof(Atom)*(*length));
 	targetP = *(Atom**)value;
-	*length = std_length + 6;
 	*targetP++ = XA_STRING;
 	*targetP++ = XA_TEXT(d);
+	*targetP++ = XA_UTF8_STRING(d);
 	*targetP++ = XA_COMPOUND_TEXT(d);
 	*targetP++ = XA_LENGTH(d);
 	*targetP++ = XA_LIST_LENGTH(d);
 	*targetP++ = XA_CHARACTER_POSITION(d);
-
-	XtSetArg(args[0], XtNeditType, &edit_mode);
-	XtGetValues(src, args, ONE);
-
 	if (edit_mode == XawtextEdit) {
 	    *targetP++ = XA_DELETE(d);
-	    (*length)++;
 	}
 	(void)memmove((char*)targetP, (char*)std_targets,
 		      sizeof(Atom) * std_length);
@@ -2000,7 +1999,9 @@ TextConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
 	    return (False);
 	s = &salt->s;
     }
-    if (*target == XA_STRING || *target == XA_TEXT(d)
+    if (*target == XA_STRING
+	|| *target == XA_TEXT(d)
+	|| *target == XA_UTF8_STRING(d)
 	|| *target == XA_COMPOUND_TEXT(d)) {
 	if (*target == XA_TEXT(d)) {
 	    if (XawTextFormat(ctx, XawFmtWide))
@@ -2039,6 +2040,7 @@ TextConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
 	    strcpy ((char *)*value, salt->contents);
 	    *length = salt->length;
 	}
+	/* Got *value,*length, now in COMPOUND_TEXT format. */
 	if (XawTextFormat(ctx, XawFmtWide) && *type == XA_STRING) {
 	    XTextProperty textprop;
 	    wchar_t **wlist;
@@ -2048,20 +2050,40 @@ TextConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
 	    textprop.value = (unsigned char *)*value;
 	    textprop.nitems = strlen(*value);
 	    textprop.format = 8;
-	    if (XwcTextPropertyToTextList(d, &textprop, (wchar_t ***)&wlist,
-					  &count) < Success) {
+	    if (XwcTextPropertyToTextList(d, &textprop, &wlist, &count)
+		 < Success
+		|| count < 1) {
 		XtFree((char *)*value);
 		return (False);
 	    }
 	    XtFree((char *)*value);
-	    if (XwcTextListToTextProperty(d, (wchar_t **)wlist, 1,
-					  XStringStyle, &textprop) < Success) {
+	    if (XwcTextListToTextProperty(d, wlist, 1, XStringStyle, &textprop)
+		 < Success) {
 		XwcFreeStringList((wchar_t**) wlist);
 		return (False);
 	    }
 	    *value = (XtPointer)textprop.value;
 	    *length = textprop.nitems;
-	    XwcFreeStringList((wchar_t**)wlist);
+	    XwcFreeStringList(wlist);
+	} else if (*type == XA_UTF8_STRING(d)) {
+	    XTextProperty textprop;
+	    char **list;
+	    int count;
+
+	    textprop.encoding = XA_COMPOUND_TEXT(d);
+	    textprop.value = (unsigned char *)*value;
+	    textprop.nitems = strlen(*value);
+	    textprop.format = 8;
+	    if (Xutf8TextPropertyToTextList(d, &textprop, &list, &count)
+		 < Success
+		|| count < 1) {
+		XtFree((char *)*value);
+		return (False);
+	    }
+	    XtFree((char *)*value);
+	    *value = *list;
+	    *length = strlen(*list);
+	    XFree(list);
 	}
 	*format = 8;
 	return (True);

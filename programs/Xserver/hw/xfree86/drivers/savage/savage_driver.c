@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.3 2000/12/04 18:49:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.4 2000/12/06 22:00:46 dawes Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -14,6 +14,12 @@
 
 #include "xf86RAC.h"
 #include "shadowfb.h"
+
+#ifdef DPMSExtension
+#include "globals.h"
+#define DPMS_SERVER
+#include "extensions/dpms.h"
+#endif /* DPMSExtension */
 
 #include "savage_driver.h"
 #include "savage_bci.h"
@@ -43,7 +49,8 @@ static int SavageInternalScreenInit(int scrnIndex, ScreenPtr pScreen);
 static ModeStatus SavageValidMode(int index, DisplayModePtr mode,
 				  Bool verbose, int flags);
 
-static Bool SavageMapMem(ScrnInfoPtr pScrn);
+static Bool SavageMapMMIO(ScrnInfoPtr pScrn);
+static Bool SavageMapFB(ScrnInfoPtr pScrn);
 static void SavageUnmapMem(ScrnInfoPtr pScrn);
 static Bool SavageModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static Bool SavageCloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -57,6 +64,9 @@ static void SavageCalcClock(long freq, int min_m, int min_n1, int max_n1,
 			   unsigned int *ndiv, unsigned int *r);
 void SavageGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file);
 void SavagePrintRegs(ScrnInfoPtr pScrn);
+#ifdef DPMSExtension
+static void SavageDPMS(ScrnInfoPtr pScrn, int mode, int flags);
+#endif
 
 static int pix24bpp = 0;
 
@@ -794,16 +804,17 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     }
     psav->EntityIndex = pEnt->index;
 
-    if (xf86LoadSubModule(pScrn, "int10")) {
- 	xf86LoaderReqSymLists(int10Symbols, NULL);
-	psav->pInt10 = xf86InitInt10(pEnt->index);
-    }
+    if (psav->UseBIOS) {
+        if (xf86LoadSubModule(pScrn, "int10")) {
+   	    xf86LoaderReqSymLists(int10Symbols, NULL);
+	    psav->pInt10 = xf86InitInt10(pEnt->index);
+        }
 
-    if (xf86LoadSubModule(pScrn, "vbe")) {
-	xf86LoaderReqSymLists(vbeSymbols, NULL);
-	psav->pVbe = VBEInit(psav->pInt10, pEnt->index);
+        if (xf86LoadSubModule(pScrn, "vbe")) {
+	    xf86LoaderReqSymLists(vbeSymbols, NULL);
+	    psav->pVbe = VBEInit(psav->pInt10, pEnt->index);
+        }
     }
-
 
     psav->PciInfo = xf86GetPciInfoForEntity(pEnt->index);
     xf86RegisterResources(pEnt->index, NULL, ResNone);
@@ -848,6 +859,10 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 			  psav->PciInfo->func);
 
     hwp = VGAHWPTR(pScrn);
+
+    if (!SavageMapMMIO(pScrn))
+	return FALSE;
+
     vgaHWGetIOBase(hwp);
     vgaIOBase = hwp->IOBase;
     vgaCRIndex = vgaIOBase + 4;
@@ -1052,10 +1067,6 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected current MCLK value of %1.3f MHz\n",
 	       mclk / 1000.0);
 
-#if 0
-    SavageUnmapMem(pScrn);
-#endif
-
     psav->minClock = 20000;
 
     pScrn->maxHValue = 2048;
@@ -1195,9 +1206,6 @@ static Bool SavageEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 
-#if 0
-    SavageMapMem(pScrn);
-#endif
     SavageSave(pScrn);
     return SavageModeInit(pScrn, pScrn->currentMode);
 }
@@ -1212,10 +1220,6 @@ static void SavageLeaveVT(int scrnIndex, int flags)
     SavageRegPtr SavageSavePtr = &psav->SavedReg;
 
     SavageWriteMode(pScrn, vgaSavePtr, SavageSavePtr);
-
-#if 0
-    SavageUnmapMem(pScrn);
-#endif
 }
 
 
@@ -1791,7 +1795,7 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
 }
 
 
-static Bool SavageMapMem(ScrnInfoPtr pScrn)
+static Bool SavageMapMMIO(ScrnInfoPtr pScrn)
 {
     SavagePtr psav;
     vgaHWPtr hwp;
@@ -1828,6 +1832,19 @@ static Bool SavageMapMem(ScrnInfoPtr pScrn)
 
     psav->BciMem = psav->MapBase + 0x10000;
 
+    SavageEnableMMIO(pScrn);
+    hwp = VGAHWPTR(pScrn);
+    vgaHWGetIOBase(hwp);
+
+    return TRUE;
+}
+
+
+
+static Bool SavageMapFB(ScrnInfoPtr pScrn)
+{
+    SavagePtr psav = SAVPTR(pScrn);
+
     xf86DrvMsg( pScrn->scrnIndex, X_PROBED,
 	"mapping framebuffer @ 0x%x with size 0x%x\n", 
 	psav->FrameBufferBase, psav->videoRambytes);
@@ -1846,19 +1863,6 @@ static Bool SavageMapMem(ScrnInfoPtr pScrn)
     pScrn->memPhysBase = psav->PciInfo->memBase[0];
     pScrn->fbOffset = 0;
 /*	psav->FBCursorOffset = psav->videoRambytes - 1024; */
-    SavageEnableMMIO(pScrn);
-    hwp = VGAHWPTR(pScrn);
-/*	vgaHWSetMmioFuncs(hwp, psav->MapBase, SAVAGE_NEWMMIO_REGSIZE); */
-    vgaHWGetIOBase(hwp);
-
-#if 0
-    if (xf86IsPrimaryPci(psav->PciInfo)) {
-	hwp->MapSize = 0x10000;
-	if (!vgaHWMapMem(pScrn))
-	    return FALSE;
-	psav->PrimaryVidMapped = TRUE;
-    }
-#endif
 
     return TRUE;
 }
@@ -1901,7 +1905,7 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
     pScrn = xf86Screens[pScreen->myNum];
     psav = SAVPTR(pScrn);
 
-    if (!SavageMapMem(pScrn))
+    if (!SavageMapFB(pScrn))
 	return FALSE;
 
     SavageSave(pScrn);
@@ -1997,6 +2001,11 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
     psav->CloseScreen = pScreen->CloseScreen;
     pScreen->SaveScreen = SavageSaveScreen;
     pScreen->CloseScreen = SavageCloseScreen;
+
+#ifdef DPMSExtension
+    if (xf86DPMSInit(pScreen, SavageDPMS, 0) == FALSE)
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "DPMS initialization failed\n");
+#endif
 
     if (serverGeneration == 1)
 	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
@@ -2460,15 +2469,15 @@ Bool SavageSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 void SavageEnableMMIO(ScrnInfoPtr pScrn)
 {
     vgaHWPtr hwp = VGAHWPTR(pScrn);
-    /*SavagePtr psav = SAVPTR(pScrn); */
+    SavagePtr psav = SAVPTR(pScrn);
     int vgaCRIndex, vgaCRReg;
     unsigned char val;
 
-    vgaHWSetStdFuncs(hwp);
+    vgaHWSetMmioFuncs(hwp, psav->MapBase, 0x8000);
     val = VGAIN8(0x3c3);
     VGAOUT8(0x3c3, val | 0x01);
     val = VGAIN8(VGA_MISC_OUT_R);
-    outb(VGA_MISC_OUT_W, val | 0x01);
+    VGAOUT8(VGA_MISC_OUT_W, val | 0x01);
     vgaHWGetIOBase(hwp);
     vgaCRIndex = hwp->IOBase + 4;
     vgaCRReg = hwp->IOBase + 5;
@@ -2484,7 +2493,7 @@ void SavageEnableMMIO(ScrnInfoPtr pScrn)
 void SavageDisableMMIO(ScrnInfoPtr pScrn)
 {
     vgaHWPtr hwp = VGAHWPTR(pScrn);
-    /*SavagePtr psav = SAVPTR(pScrn);*/
+    SavagePtr psav = SAVPTR(pScrn);
     int vgaCRIndex, vgaCRReg;
     unsigned char val;
 
@@ -2503,6 +2512,7 @@ void SavageDisableMMIO(ScrnInfoPtr pScrn)
 void SavageLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies,
 		       LOCO *colors, VisualPtr pVisual)
 {
+    SavagePtr psav = SAVPTR(pScrn);
     int i, index;
 
     for (i=0; i<numColors; i++) {
@@ -2663,6 +2673,7 @@ void SavageGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
 void
 SavagePrintRegs(ScrnInfoPtr pScrn)
 {
+    SavagePtr psav = SAVPTR(pScrn);
     unsigned char i;
     int vgaCRIndex = 0x3d4;
     int vgaCRReg = 0x3d5;
@@ -2672,8 +2683,8 @@ SavagePrintRegs(ScrnInfoPtr pScrn)
     for( i = 0; i < 0x70; i++ ) {
 	if( !(i % 16) )
 	    ErrorF( "\nSR%xx ", i >> 4 );
-	outb( 0x3c4, i );
-	ErrorF( " %02x", inb(0x3c5) );
+	VGAOUT8( 0x3c4, i );
+	ErrorF( " %02x", VGAIN8(0x3c5) );
     }
 
     ErrorF( "\n\nCR    x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 xA xB xC xD xE xF" );
@@ -2681,9 +2692,50 @@ SavagePrintRegs(ScrnInfoPtr pScrn)
     for( i = 0; i < 0xB7; i++ ) {
 	if( !(i % 16) )
 	    ErrorF( "\nCR%xx ", i >> 4 );
-	outb( vgaCRIndex, i );
-	ErrorF( " %02x", inb(vgaCRReg) );
+	VGAOUT8( vgaCRIndex, i );
+	ErrorF( " %02x", VGAIN8(vgaCRReg) );
     }
 
     ErrorF("\n\n");
 }
+
+
+#ifdef DPMSExtension
+static void SavageDPMS(ScrnInfoPtr pScrn, int mode, int flags)
+{
+    SavagePtr psav = SAVPTR(pScrn);
+    unsigned char sr8 = 0x00, srd = 0x00;
+
+    VGAOUT8(0x3c4, 0x08);
+    sr8 = VGAIN8(0x3c5);
+    sr8 |= 0x06;
+    VGAOUT8(0x3c5, sr8);
+
+    VGAOUT8(0x3c4, 0x0d);
+    srd = VGAIN8(0x3c5);
+
+    srd &= 0x03;
+
+    switch (mode) {
+	case DPMSModeOn:
+	    break;
+	case DPMSModeStandby:
+	    srd |= 0x10;
+	    break;
+	case DPMSModeSuspend:
+	    srd |= 0x40;
+	    break;
+	case DPMSModeOff:
+	    srd |= 0x50;
+	    break;
+	default:
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Invalid DPMS mode %d\n", mode);
+	    break;
+    }
+
+    VGAOUT8(0x3c4, 0x0d);
+    VGAOUT8(0x3c5, srd);
+
+    return;
+}
+#endif /* DPMSExtension */

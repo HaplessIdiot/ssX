@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.22 2000/12/05 05:14:41 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.23 2000/12/06 20:39:52 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -310,6 +310,7 @@ typedef struct _WacomCommonRec
     int			wcmInitNumber;  /* magic number for the init phasis */
     unsigned int	wcmLinkSpeed;   /* serial link speed */
     Bool		(*wcmOpen)(LocalDevicePtr /*local*/); /* function used to open the line (serial or USB) */
+    unsigned int	wcmLastSerial;	/* last device (used by the USB part) */
 } WacomCommonRec, *WacomCommonPtr;
 
 /******************************************************************************
@@ -554,7 +555,6 @@ static LocalDevicePtr xf86WcmAllocateEraser(void);
 #endif
 
 #ifndef XFREE86_V4
-#if !defined(sun) || defined(i386)
 /*
  ***************************************************************************
  *
@@ -842,7 +842,6 @@ xf86WcmConfig(LocalDevicePtr    *array,
     
     return Success;
 }
-#endif
 #endif /* Pre 3.9 stuff */
 
 #if 0
@@ -2095,16 +2094,15 @@ xf86WcmReadUSBInput(LocalDevicePtr         local)
 {
     WacomDevicePtr	priv = (WacomDevicePtr) local->private;
     WacomCommonPtr	common = priv->common;
-    int device = common->wcmIndex;
-    int serial;
-    int is_proximity;
-    int x;
-    int y;
-    int pressure;
-    int buttons;
-    int tilt_x;
-    int tilt_y;
-    int wheel;
+    int serial = common->wcmLastSerial;
+    int is_proximity = priv->oldProximity;
+    int x = priv->oldX;
+    int y = priv->oldY;
+    int pressure = priv->oldZ;
+    int buttons = priv->oldButtons;
+    int tilt_x = priv->oldTiltX;
+    int tilt_y = priv->oldTiltY;
+    int wheel = priv->oldWheel;
 
     ssize_t              len;
     int                  idx;
@@ -2126,6 +2124,7 @@ xf86WcmReadUSBInput(LocalDevicePtr         local)
 	
 	switch (event->type) {
 	case EV_ABS:
+	    DBG(10, ErrorF("event->code=%d\n", event->code));
 	    switch (event->code) {
 	    case ABS_X:
 		x = event->value;
@@ -2158,23 +2157,26 @@ xf86WcmReadUSBInput(LocalDevicePtr         local)
 	    case REL_WHEEL:
 		/* FIXME */
 		break;
+	    default:
+		ErrorF("wacom: relative event received (%d)!!!\n", event->code);
+		break;
 	    }
 	    break; /* EV_REL */
 
 	case EV_KEY:
 	    switch (event->code) {
 	    case BTN_TOOL_PEN:
-		device = STYLUS_ID;
+		common->wcmIndex = STYLUS_ID;
 		is_proximity = (event->value != 0);
 		break;
 
 	    case BTN_TOOL_RUBBER:
-		device = ERASER_ID;
+		common->wcmIndex = ERASER_ID;
 		is_proximity = (event->value != 0);
 		break;
 
 	    case BTN_TOOL_MOUSE:
-		device = CURSOR_ID;
+		common->wcmIndex = CURSOR_ID;
 		is_proximity = (event->value != 0);
 		break;
 
@@ -2205,31 +2207,29 @@ xf86WcmReadUSBInput(LocalDevicePtr         local)
 	    break; /* EV_KEY */
 	} 
 
-#if 0
-    if ((priv->oldX !=  -1) &&
-	(ABS(x - priv->oldX) <= common->wcmSuppress) &&
-	(ABS(y - priv->oldY) <= common->wcmSuppress) &&
-	(ABS(pressure - priv->oldZ) < 3) &&
-	(ABS(tilt_x - priv->oldTiltX) < 3) &&
-	(ABS(tilt_y - priv->oldTiltY) < 3)) {
-	DBG(10, ErrorF("filtered\n"));
-	continue;
-    }
-#endif
+	if ((is_proximity == priv->oldProximity) &&
+	    (buttons == priv->oldButtons) &&
+	    (ABS(x - priv->oldX) <= common->wcmSuppress) &&
+	    (ABS(y - priv->oldY) <= common->wcmSuppress) &&
+	    (ABS(pressure - priv->oldZ) < 3) &&
+	    (ABS(tilt_x - priv->oldTiltX) < 3) &&
+	    (ABS(tilt_y - priv->oldTiltY) < 3)) {
+	    DBG(10, ErrorF("filtered\n"));
+	    continue;
+	}
     
     for (idx=0; idx<common->wcmNumDevices; idx++) {
-	WacomDevicePtr dev;
-	int            id;
-	
-	dev = common->wcmDevices[idx]->private;
+	WacomDevicePtr	dev = common->wcmDevices[idx]->private;
+	int		id;
+
 	id  = DEVICE_ID (dev->flags);
 
 	/* Find the device the current events are meant for */
-	if (id == device) {
+	if (id == common->wcmIndex) {
 	    xf86WcmSendEvents(common->wcmDevices[idx],
-			device,
+			common->wcmIndex,
 			serial,
-			(device == STYLUS_ID || device == ERASER_ID),
+			(common->wcmIndex == STYLUS_ID || common->wcmIndex == ERASER_ID),
 			!!(buttons),
 			is_proximity,
 			x, y, pressure, buttons,
@@ -2242,7 +2242,11 @@ xf86WcmReadUSBInput(LocalDevicePtr         local)
     priv->oldZ = pressure;
     priv->oldTiltX = tilt_x;
     priv->oldTiltY = tilt_y;
-    } 
+    priv->oldProximity = is_proximity;
+    priv->oldButtons = buttons;
+    priv->oldWheel = wheel;
+    common->wcmLastSerial = serial;
+    }
 }
 
 /*
@@ -3183,16 +3187,9 @@ static LocalDevicePtr
 xf86WcmAllocate(char *  name,
                 int     flag)
 {
-#ifdef XFREE86_V4
-    LocalDevicePtr        local = xf86AllocateInput(wcmDrv, 0);
-#else
-    LocalDevicePtr        local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
-#endif
-    WacomDevicePtr        priv = (WacomDevicePtr) xalloc(sizeof(WacomDeviceRec));
-    WacomCommonPtr        common = (WacomCommonPtr) xalloc(sizeof(WacomCommonRec));
-#if defined(sun) && !defined(i386)
-    char			*dev_name = (char *) getenv("WACOM_DEV");  
-#endif
+    LocalDevicePtr        local;
+    WacomDevicePtr        priv;
+    WacomCommonPtr        common;
 
     priv = (WacomDevicePtr) xalloc(sizeof(WacomDeviceRec));
     if (!priv)
@@ -3217,11 +3214,6 @@ xf86WcmAllocate(char *  name,
 
     local->name = name;
     local->flags = 0;
-#ifndef XFREE86_V4
-#if !defined(sun) || defined(i386)
-    local->device_config = xf86WcmConfig;
-#endif
-#endif
     local->device_control = xf86WcmProc;
     local->read_input = xf86WcmReadInput;
     local->control_proc = xf86WcmChangeControl;
@@ -3258,13 +3250,6 @@ xf86WcmAllocate(char *  name,
     priv->initNumber = 0;	        /* magic number for the init phasis */
     
     common->wcmDevice = "";		/* device file name */
-#if defined(sun) && !defined(i386)
-    if (dev_name) {
-	common->wcmDevice = (char*) xalloc(strlen(dev_name)+1);
-	strcpy(common->wcmDevice, dev_name);
-	ErrorF("xf86WcmOpen port changed to '%s'\n", common->wcmDevice);
-    }
-#endif
     common->wcmSuppress = -1;		/* transmit position if increment is superior */
     common->wcmFlags = 0;		/* various flags */
     common->wcmDevices = (LocalDevicePtr*) xalloc(sizeof(LocalDevicePtr));
@@ -3285,7 +3270,8 @@ xf86WcmAllocate(char *  name,
     common->wcmThreshold = INVALID_THRESHOLD; /* button 1 threshold for some tablet models */
     common->wcmInitNumber = 0;	        /* magic number for the init phasis */
     common->wcmLinkSpeed = 9600;        /* serial link speed */
-    common->wcmOpen = xf86WcmOpen;		/* function used to open the line (serial or USB) */
+    common->wcmOpen = xf86WcmOpen;	/* function used to open the line (serial or USB) */
+    common->wcmLastSerial = 0;		/* last device (used by the USB part) */
     return local;
 }
 

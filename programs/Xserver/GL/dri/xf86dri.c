@@ -1,7 +1,8 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.8 2000/06/25 16:03:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.9 2000/09/24 13:51:22 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
+Copyright 2000 VA Linux Systems, Inc.
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,8 +29,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <kevin@precisioninsight.com>
- *   Jens Owen <jens@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Jens Owen <jens@valinux.com>
+ *   Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
 
@@ -73,6 +75,8 @@ static DISPATCH_PROC(ProcXF86DRIGetDrawableInfo);
 static DISPATCH_PROC(ProcXF86DRIGetDeviceInfo);
 static DISPATCH_PROC(ProcXF86DRIDispatch);
 static DISPATCH_PROC(ProcXF86DRIAuthConnection);
+static DISPATCH_PROC(ProcXF86DRIOpenFullScreen);
+static DISPATCH_PROC(ProcXF86DRICloseFullScreen);
 
 static DISPATCH_PROC(SProcXF86DRIQueryVersion);
 static DISPATCH_PROC(SProcXF86DRIDispatch);
@@ -515,6 +519,57 @@ ProcXF86DRIGetDeviceInfo(
 }
 
 static int
+ProcXF86DRIOpenFullScreen (
+    register ClientPtr client
+)
+{
+    REQUEST(xXF86DRIOpenFullScreenReq);
+    xXF86DRIOpenFullScreenReply rep;
+    DrawablePtr                 pDrawable;
+
+    REQUEST_SIZE_MATCH(xXF86DRIOpenFullScreenReq);
+    rep.type           = X_Reply;
+    rep.length         = 0;
+    rep.sequenceNumber = client->sequence;
+
+    if (!(pDrawable = SecurityLookupDrawable(stuff->drawable,
+					     client, 
+					     SecurityReadAccess)))
+	return BadValue;
+
+    rep.isFullScreen = DRIOpenFullScreen(screenInfo.screens[stuff->screen],
+					 pDrawable);
+    
+    WriteToClient(client, sizeof(xXF86DRIOpenFullScreenReply), (char *)&rep);
+    return client->noClientException;
+}
+
+static int
+ProcXF86DRICloseFullScreen (
+    register ClientPtr client
+)
+{
+    REQUEST(xXF86DRICloseFullScreenReq);
+    xXF86DRICloseFullScreenReply rep;
+    DrawablePtr                  pDrawable;
+
+    REQUEST_SIZE_MATCH(xXF86DRICloseFullScreenReq);
+    rep.type           = X_Reply;
+    rep.length         = 0;
+    rep.sequenceNumber = client->sequence;
+
+    if (!(pDrawable = SecurityLookupDrawable(stuff->drawable,
+					     client, 
+					     SecurityReadAccess)))
+	return BadValue;
+    
+    DRICloseFullScreen(screenInfo.screens[stuff->screen], pDrawable);
+    
+    WriteToClient(client, sizeof(xXF86DRICloseFullScreenReply), (char *)&rep);
+    return (client->noClientException);
+}
+
+static int
 ProcXF86DRIDispatch (
     register ClientPtr	client
 )
@@ -554,6 +609,10 @@ ProcXF86DRIDispatch (
 	return ProcXF86DRIGetDeviceInfo(client);
     case X_XF86DRIAuthConnection:
 	return ProcXF86DRIAuthConnection(client);
+    case X_XF86DRIOpenFullScreen:
+	return ProcXF86DRIOpenFullScreen(client);
+    case X_XF86DRICloseFullScreen:
+	return ProcXF86DRICloseFullScreen(client);
     default:
 	return BadRequest;
     }

@@ -1,7 +1,8 @@
-/* $XFree86: xc/lib/GL/dri/xf86dristr.h,v 1.5 2000/02/23 04:46:34 martin Exp $ */
+/* $XFree86: xc/lib/GL/dri/xf86dristr.h,v 1.6 2000/06/17 00:02:48 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
+Copyright 2000 VA Linux Systems, Inc.
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,8 +29,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <kevin@precisioninsight.com>
- *   Jens Owen <jens@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Jens Owen <jens@valinux.com>
+ *   Rickard E. (Rik) Fiath <faith@valinux.com>
  *
  */
 
@@ -282,5 +284,51 @@ typedef struct {
 } xXF86DRIGetDeviceInfoReply;
 #define sz_xXF86DRIGetDeviceInfoReply	32
 
-#endif /* _XF86DRISTR_H_ */
+typedef struct _XF86DRIOpenFullScreen {
+    CARD8       reqType;	/* always DRIReqCode */
+    CARD8       driReqType;	/* always X_DRIOpenFullScreen */
+    CARD16      length B16;
+    CARD32      screen B32;
+    CARD32      drawable B32;
+} xXF86DRIOpenFullScreenReq;
+#define sz_xXF86DRIOpenFullScreenReq    12
 
+typedef struct {
+    BYTE        type;
+    BOOL        pad1;
+    CARD16      sequenceNumber B16;
+    CARD32      length B32;
+    CARD32      isFullScreen B32;
+    CARD32      pad2 B32;
+    CARD32      pad3 B32;
+    CARD32      pad4 B32;
+    CARD32      pad5 B32;
+    CARD32      pad6 B32;
+} xXF86DRIOpenFullScreenReply;
+#define sz_xXF86DRIOpenFullScreenReply  32
+
+typedef struct _XF86DRICloseFullScreen {
+    CARD8       reqType;	/* always DRIReqCode */
+    CARD8       driReqType;	/* always X_DRICloseFullScreen */
+    CARD16      length B16;
+    CARD32      screen B32;
+    CARD32      drawable B32;
+} xXF86DRICloseFullScreenReq;
+#define sz_xXF86DRICloseFullScreenReq   12
+
+typedef struct {
+    BYTE        type;
+    BOOL        pad1;
+    CARD16      sequenceNumber B16;
+    CARD32      length B32;
+    CARD32      pad2 B32;
+    CARD32      pad3 B32;
+    CARD32      pad4 B32;
+    CARD32      pad5 B32;
+    CARD32      pad6 B32;
+    CARD32      pad7 B32;
+} xXF86DRICloseFullScreenReply;
+#define sz_xXF86DRICloseFullScreenReply  32
+
+
+#endif /* _XF86DRISTR_H_ */

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_eltpath.c,v 1.1 2000/12/04 19:21:46 dawes Exp $ */
 /*
  * GLX Hardware Device Driver for Matrox G400
  * Copyright (C) 1999 Keith Whitwell
@@ -118,6 +118,14 @@ static void fire_elts( r128ContextPtr r128ctx )
 	       r128ctx->elt_buf, r128ctx->elt_buf->idx,
 	       r128ctx->elt_buf->total,
 	       r128ctx->next_vert, r128ctx->next_vert_index );
+
+   {
+      GLint space = (GLint)((GLuint)r128ctx->next_vert -
+			    (GLuint)r128ctx->next_elt);
+      if ( DEBUG_ELTPATH )
+	 fprintf( stderr, "   new nv=%p ne=%p space=%d\n",
+		  r128ctx->next_vert, r128ctx->next_elt, space );
+   }
 }
 
 
@@ -217,7 +225,7 @@ static void r128_tri_clip( r128ContextPtr r128ctx,
 {
    struct r128_elt_tab *tab = r128ctx->elt_tab;
    r128_interp_func interp = tab->interp;
-   int vertsize = r128ctx->vertsize;
+   GLint vertsize = r128ctx->vertsize;
    GLuint inlist[2][VB_MAX_CLIPPED_VERTS];
    GLuint in = 0;
    GLuint n = 3, next_vert = 3;
@@ -249,10 +257,13 @@ static void r128_tri_clip( r128ContextPtr r128ctx,
       if ( DEBUG_ELTPATH )
 	 fprintf( stderr, "  clip nv=%p ne=%p space=%d thresh=%d %d\n",
 		  r128ctx->next_vert, r128ctx->next_elt,
-		  space, n * (vertsize + 2) * sizeof(GLuint),
-		  space < n * (vertsize + 2) * sizeof(GLuint) );
+		  space, (GLint)n * (vertsize + 2) * (GLint)sizeof(GLuint),
+		  space < (GLint)n * (vertsize + 2) * (GLint)sizeof(GLuint) );
 
-      if ( space < n * (vertsize + 2) * sizeof(GLuint) ) {
+      /* GH: Why the hell do we explicitly have to test the sign of the
+       * available space here?
+       */
+      if ( space < (GLint)n * (vertsize + 2) * (GLint)sizeof(GLuint) ) {
 	 fire_elts( r128ctx );
       }
 
@@ -271,6 +282,8 @@ static void r128_tri_clip( r128ContextPtr r128ctx,
 	 r128ctx->next_elt += 3;
       }
    }
+   if ( DEBUG_ELTPATH )
+      fflush( stderr );
 }
 
 
@@ -311,6 +324,8 @@ do {									\
 	       e2, e1, e0, r128ctx->next_elt[0],			\
 	       r128ctx->next_elt[1], r128ctx->next_elt[2]);		\
    r128ctx->next_elt += 3;						\
+   if ( DEBUG_ELTPATH )							\
+      fflush( stderr );							\
 } while (0)
 
 #define CLIP_TRIANGLE( e2, e1, e0 )					\
@@ -464,7 +479,7 @@ void r128DDEltPath( struct vertex_buffer *VB )
    GLint space;
 
    if ( DEBUG_ELTPATH )
-      fprintf( stderr, "\n%s: count=%d space=%d\n",
+      fprintf( stderr, "\n\n\n%s: count=%d space=%d\n",
 	       __FUNCTION__, VB->Count,
 	       (GLint)((GLuint)r128ctx->next_vert -
 		       (GLuint)r128ctx->next_elt) );
@@ -504,15 +519,15 @@ void r128DDEltPath( struct vertex_buffer *VB )
    if ( DEBUG_ELTPATH )
       fprintf( stderr, "   top nv=%p ne=%p space=%d reqd=%d count=%d   clip=0x%x\n\n",
 	       r128ctx->next_vert, r128ctx->next_elt, space,
-	       VB->Count * vertsize * sizeof(GLuint),
+	       (GLint)VB->Count * vertsize * sizeof(GLuint),
 	       VB->Count, VB->ClipOrMask );
 
    /* Because we need to adjust the next_elt pointer to accomodate the
     * CCE packet header, we can sometimes go past the next_vert pointer
     * and thus have negative space.
     */
-   if ( space < VB->Count * vertsize * sizeof(GLuint) ||
-	space < 0 || r128ctx->vertsize != r128ctx->elt_vertsize ) {
+   if ( space < (GLint)VB->Count * vertsize * (GLint)sizeof(GLuint) ||
+	r128ctx->vertsize != r128ctx->elt_vertsize ) {
       fire_elts( r128ctx );
    }
 
@@ -540,7 +555,7 @@ void r128DDEltPath( struct vertex_buffer *VB )
    VB->pipeline->data_valid = 0;
    VB->pipeline->new_state = 0;
 
-   if ( 0 ) {
+   if ( DEBUG_ELTPATH ) {
       FLUSH_BATCH( r128ctx );
 
       LOCK_HARDWARE( r128ctx );

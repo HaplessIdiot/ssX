@@ -1,7 +1,8 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.22 2000/11/08 05:02:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.23 2000/12/05 21:18:34 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
+Copyright 2000 VA Linux Systems, Inc.
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,7 +29,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Jens Owen <jens@precisioninsight.com>
+ *   Jens Owen <jens@valinux.com>
+ *   Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
 
@@ -62,6 +64,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xf86drm.h"
 #include "glxserver.h"
 #include "mi.h"
+#include "mipointer.h"
 #include "xf86Priv.h"
 
 static int DRIScreenPrivIndex = -1;
@@ -69,6 +72,12 @@ static int DRIWindowPrivIndex = -1;
 static unsigned long DRIGeneration = 0;
 static unsigned int DRIDrawableValidationStamp = 0;
 static int lockRefCount=0;
+
+				/* Support cleanup for fullscreen mode,
+                                   independent of the DRICreateDrawable
+                                   resource management. */
+static Bool    _DRICloseFullScreen(pointer pResource, XID id);
+static RESTYPE DRIFullScreenResType;
 
 static RESTYPE DRIDrawablePrivResType;
 static RESTYPE DRIContextPrivResType;
@@ -134,6 +143,7 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
     pDRIPriv->directRenderingSupport = TRUE;
     pDRIPriv->pDriverInfo = pDRIInfo;
     pDRIPriv->nrWindows = 0;
+    pDRIPriv->fullscreen = NULL;
 
     if (drmSetBusid(pDRIPriv->drmFD, pDRIPriv->pDriverInfo->busIdString) < 0) {
 	pDRIPriv->directRenderingSupport = FALSE;
@@ -181,6 +191,7 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
                   "[drm] drmMap failed\n");
 	return FALSE;
     }
+    memset(pDRIPriv->pSAREA, 0, pDRIPriv->pDriverInfo->SAREASize);
     DRIDrvMsg(pScreen->myNum, X_INFO, "[drm] mapped SAREA 0x%08lx to %p\n",
 	      pDRIPriv->hSAREA, pDRIPriv->pSAREA);
     
@@ -360,6 +371,12 @@ DRIFinishScreenInit(ScreenPtr pScreen)
     }
     if (pDRIInfo->wrap.ClipNotify)
        miClipNotify(pDRIInfo->wrap.ClipNotify);
+
+    if (pDRIInfo->wrap.AdjustFrame) {
+	ScrnInfoPtr pScrn          = xf86Screens[pScreen->myNum];
+	pDRIPriv->wrap.AdjustFrame = pScrn->AdjustFrame;
+	pScrn->AdjustFrame         = pDRIInfo->wrap.AdjustFrame;
+    }
    
     DRIDrvMsg(pScreen->myNum, X_INFO, "[DRI] installation complete\n");
 
@@ -374,6 +391,12 @@ DRICloseScreen(ScreenPtr pScreen)
     int              reserved_count;
 
     if (pDRIPriv && pDRIPriv->directRenderingSupport) {
+
+	if (pDRIPriv->wrap.AdjustFrame) {
+	    ScrnInfoPtr pScrn          = xf86Screens[pScreen->myNum];
+	    pScrn->AdjustFrame         = pDRIPriv->wrap.AdjustFrame;
+	    pDRIPriv->wrap.AdjustFrame = NULL;
+	}
 
 	if (pDRIPriv->pDriverInfo->driverSwapMethod != DRI_KERNEL_SWAP) {
 	    if (!drmRemoveSIGIOHandler(pDRIPriv->drmFD)) {
@@ -443,6 +466,7 @@ DRIExtensionInit(void)
 
     DRIDrawablePrivResType = CreateNewResourceType(DRIDrawablePrivDelete);
     DRIContextPrivResType = CreateNewResourceType(DRIContextPrivDelete);
+    DRIFullScreenResType = CreateNewResourceType(_DRICloseFullScreen);
 
     for (i = 0; i < screenInfo.numScreens; i++)
     {
@@ -893,7 +917,7 @@ DRIGetDrawableInfo(ScreenPtr pScreen,
                    int* numBackClipRects,
                    XF86DRIClipRectPtr* pBackClipRects)
 {
-    DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
+    DRIScreenPrivPtr    pDRIPriv = DRI_SCREEN_PRIV(pScreen);
     DRIDrawablePrivPtr	pDRIDrawablePriv, pOldDrawPriv;
     WindowPtr		pWin, pOldWin;
     int			i;
@@ -988,6 +1012,17 @@ DRIGetDrawableInfo(ScreenPtr pScreen,
 	    *H = (int)(pWin->drawable.height);
 	    *numClipRects = REGION_NUM_RECTS(&pWin->clipList);
 	    *pClipRects = (XF86DRIClipRectPtr)REGION_RECTS(&pWin->clipList);
+
+	    if (!*numClipRects && pDRIPriv->fullscreen) {
+				/* use fake full-screen clip rect */
+		pDRIPriv->fullscreen_rect.x1 = *X;
+		pDRIPriv->fullscreen_rect.y1 = *Y;
+		pDRIPriv->fullscreen_rect.x2 = *X + *W;
+		pDRIPriv->fullscreen_rect.y2 = *Y + *H;
+
+		*numClipRects = 1;
+		*pClipRects   = &pDRIPriv->fullscreen_rect;
+	    }
 	    
 	    *backX = *X;
 	    *backY = *Y;
@@ -1070,6 +1105,7 @@ DRICreateInfoRec(void)
     inforec->wrap.ValidateTree          = DRIValidateTree;
     inforec->wrap.PostValidateTree      = DRIPostValidateTree;
     inforec->wrap.ClipNotify            = DRIClipNotify;
+    inforec->wrap.AdjustFrame           = DRIAdjustFrame;
 
     inforec->TransitionTo2d = 0;
     inforec->TransitionTo3d = 0;
@@ -1660,4 +1696,146 @@ DRIQueryVersion(int *majorVersion,
    *majorVersion = XF86DRI_MAJOR_VERSION;
    *minorVersion = XF86DRI_MINOR_VERSION;
    *patchVersion = XF86DRI_PATCH_VERSION;
+}
+
+static void
+_DRIAdjustFrame(ScrnInfoPtr pScrn, DRIScreenPrivPtr pDRIPriv, int x, int y)
+{
+    pDRIPriv->pSAREA->frame.x      = x;
+    pDRIPriv->pSAREA->frame.y      = y;
+    pDRIPriv->pSAREA->frame.width  = pScrn->frameX1 - x + 1;
+    pDRIPriv->pSAREA->frame.height = pScrn->frameY1 - y + 1;
+}
+
+void
+DRIAdjustFrame(int scrnIndex, int x, int y, int flags)
+{
+    ScreenPtr        pScreen  = screenInfo.screens[scrnIndex];
+    DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
+    ScrnInfoPtr      pScrn    = xf86Screens[pScreen->myNum];
+    int              px, py;
+
+    if (!pDRIPriv || !pDRIPriv->pSAREA) {
+	DRIDrvMsg(scrnIndex, X_ERROR, "[DRI] No SAREA (%p %p)\n",
+		  pDRIPriv, pDRIPriv ? pDRIPriv->pSAREA : NULL);
+	return;
+    }
+
+    if (pDRIPriv->fullscreen) {
+				/* Fix up frame */
+	pScrn->frameX0 = pDRIPriv->pSAREA->frame.x;
+	pScrn->frameY0 = pDRIPriv->pSAREA->frame.y;
+	pScrn->frameX1 = pScrn->frameX0 + pDRIPriv->pSAREA->frame.width - 1;
+	pScrn->frameY1 = pScrn->frameY0 + pDRIPriv->pSAREA->frame.height - 1;
+
+				/* Fix up cursor */
+	miPointerPosition(&px, &py);
+	if (px < pScrn->frameX0) px = pScrn->frameX0;
+	if (px > pScrn->frameX1) px = pScrn->frameX1;
+	if (py < pScrn->frameY0) py = pScrn->frameY0;
+	if (py > pScrn->frameY1) py = pScrn->frameY1;
+	pScreen->SetCursorPosition(pScreen, px, py, TRUE);
+	return;
+    }
+
+    if (pDRIPriv->wrap.AdjustFrame) {
+	/* unwrap */
+	pScrn->AdjustFrame = pDRIPriv->wrap.AdjustFrame;
+	/* call lower layers */
+	(*pScrn->AdjustFrame)(scrnIndex, x, y, flags);
+	/* rewrap */
+	pDRIPriv->wrap.AdjustFrame = pScrn->AdjustFrame;
+	pScrn->AdjustFrame         = DRIAdjustFrame;
+    }
+
+    _DRIAdjustFrame(pScrn, pDRIPriv, x, y);
+}
+
+/* WARNING WARNING WARNING: Just like every other function call in this
+   file, the DRIOpenFullScreen and DRICloseFullScreen calls are for
+   internal use only!  They should be used only by GLX internals and
+   should NEVER be called from a GL application.
+
+   Some time in the future, there will be a (proposed) standard GLX
+   extension that performs expanded functionality, that is designed for
+   used by application-level programs, and that should be portable
+   across multiple GLX implementations. */
+Bool
+DRIOpenFullScreen(ScreenPtr pScreen, DrawablePtr pDrawable)
+{
+    DRIScreenPrivPtr   pDRIPriv    = DRI_SCREEN_PRIV(pScreen);
+    ScrnInfoPtr        pScrn       = xf86Screens[pScreen->myNum];
+    WindowPtr	       pWin        = (WindowPtr)pDrawable;
+    XF86DRIClipRectPtr pClipRects  = (void *)REGION_RECTS(&pWin->clipList);
+    
+    _DRIAdjustFrame(pScrn, pDRIPriv, pScrn->frameX0, pScrn->frameY0);
+
+    if (pDrawable->type != DRAWABLE_WINDOW) return FALSE;
+
+    if (!pScrn->vtSema) return FALSE; /* switched away */
+
+    if (pDrawable->x != pScrn->frameX0
+	|| pDrawable->y != pScrn->frameY0
+	|| pDrawable->width != pScrn->frameX1 - pScrn->frameX0 + 1
+	|| pDrawable->height != pScrn->frameY1 - pScrn->frameY0 + 1) {
+	return FALSE;
+    }
+
+    if (REGION_NUM_RECTS(&pWin->clipList) != 1) return FALSE;
+    if (pDrawable->x != pClipRects[0].x1
+	|| pDrawable->y != pClipRects[0].y1
+	|| pDrawable->width != pClipRects[0].x2 - pClipRects[0].x1
+	|| pDrawable->height != pClipRects[0].y2 - pClipRects[0].y1) {
+	return FALSE;
+    }
+
+    AddResource(pDrawable->id, DRIFullScreenResType, (pointer)pWin);
+
+    xf86EnableVTSwitch(FALSE);
+    pScrn->EnableDisableFBAccess(pScreen->myNum, FALSE);
+    pScrn->vtSema        = FALSE;
+    pDRIPriv->fullscreen = pDrawable;
+    DRIClipNotify(pWin, 0, 0);
+		  
+    if (pDRIPriv->pDriverInfo->OpenFullScreen)
+	pDRIPriv->pDriverInfo->OpenFullScreen(pScreen);
+
+    pDRIPriv->pSAREA->frame.fullscreen = 1;
+    return TRUE;
+}
+
+static Bool
+_DRICloseFullScreen(pointer pResource, XID id)
+{
+    DrawablePtr      pDrawable = (DrawablePtr)pResource;
+    ScreenPtr        pScreen   = pDrawable->pScreen;
+    DRIScreenPrivPtr pDRIPriv  = DRI_SCREEN_PRIV(pScreen);
+    ScrnInfoPtr      pScrn     = xf86Screens[pScreen->myNum];
+    WindowPtr	     pWin      = (WindowPtr)pDrawable;
+    WindowOptPtr     optional  = pWin->optional;
+    Mask             mask      = pWin->eventMask;
+
+    if (pDRIPriv->pDriverInfo->CloseFullScreen)
+	pDRIPriv->pDriverInfo->CloseFullScreen(pScreen);
+
+    pDRIPriv->fullscreen = NULL;
+    pScrn->vtSema        = TRUE;
+
+				/* Turn off expose events for the top window */
+    pWin->eventMask &= ~ExposureMask;
+    pWin->optional   = NULL;
+    pScrn->EnableDisableFBAccess(pScreen->myNum, TRUE);
+    pWin->eventMask  = mask;
+    pWin->optional   = optional;
+    
+    xf86EnableVTSwitch(TRUE);
+    pDRIPriv->pSAREA->frame.fullscreen = 0;
+    return TRUE;
+}
+
+Bool
+DRICloseFullScreen(ScreenPtr pScreen, DrawablePtr pDrawable)
+{
+    FreeResourceByType(pDrawable->id, DRIFullScreenResType, FALSE);
+    return TRUE;
 }

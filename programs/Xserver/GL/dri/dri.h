@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.13 2000/11/02 16:33:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.14 2000/11/18 19:37:05 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -74,6 +74,7 @@ typedef int DRIWindowRequests;
 
 
 typedef void (*ClipNotifyPtr)( WindowPtr, int, int );
+typedef void (*AdjustFramePtr)(int scrnIndex, int x, int y, int flags);
 
 
 /*
@@ -90,6 +91,7 @@ typedef struct {
     ValidateTreeProcPtr          ValidateTree;
     PostValidateTreeProcPtr      PostValidateTree;
     ClipNotifyPtr                ClipNotify;
+    AdjustFramePtr               AdjustFrame;
 } DRIWrappedFuncsRec, *DRIWrappedFuncsPtr;
 
 
@@ -121,6 +123,8 @@ typedef struct {
     void        (*TransitionTo3d)(ScreenPtr pScreen);
     void        (*TransitionTo2d)(ScreenPtr pScreen);
     void	(*SetDrawableIndex)(WindowPtr pWin, CARD32 indx);
+    Bool        (*OpenFullScreen)(ScreenPtr pScreen);
+    Bool        (*CloseFullScreen)(ScreenPtr pScreen);
 
     /* wrapped functions */
     DRIWrappedFuncsRec  wrap;
@@ -297,6 +301,11 @@ extern drmContext DRIGetContext(ScreenPtr pScreen);
 extern void DRIQueryVersion(int *majorVersion,
                             int *minorVersion,
                             int *patchVersion);
+
+extern void DRIAdjustFrame(int scrnIndex, int x, int y, int flags);
+
+extern int  DRIOpenFullScreen(ScreenPtr pScreen, DrawablePtr pDrawable);
+extern int  DRICloseFullScreen(ScreenPtr pScreen, DrawablePtr pDrawable);
 
 #define _DRI_H_
 

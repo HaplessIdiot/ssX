@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.7 2000/09/24 13:51:01 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.8 2000/09/26 15:56:46 tsi Exp $ */
 
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
@@ -818,10 +818,13 @@ Bool glXMakeCurrent(Display *dpy, GLXDrawable draw, GLXContext gc)
     /* Unbind the old direct rendering context */
     if (oldGC->isDirect) {
 	if (oldGC->driContext.private) {
+	    int will_rebind = (gc && gc->isDirect
+			       && draw == oldGC->currentDrawable);
 	    if (!(*oldGC->driContext.unbindContext)(oldGC->currentDpy,
 						    oldGC->screen,
 						    oldGC->currentDrawable,
-						    oldGC)) {
+						    oldGC,
+						    will_rebind)) {
 		/* The make current failed.  Just return GL_FALSE. */
 		return GL_FALSE;
 	    }

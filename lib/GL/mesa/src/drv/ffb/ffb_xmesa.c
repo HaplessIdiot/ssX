@@ -1,4 +1,4 @@
-/* $XFree86$
+/* $XFree86: xc/lib/GL/mesa/src/drv/ffb/ffb_xmesa.c,v 1.1 2000/06/20 05:08:40 dawes Exp $
  *
  * GLX Hardware Device Driver for Sun Creator/Creator3D
  * Copyright (C) 2000 David S. Miller
@@ -515,6 +515,18 @@ GLboolean XMesaMakeCurrent(__DRIcontextPrivate *driContextPriv,
 GLboolean XMesaUnbindContext(__DRIcontextPrivate *driContextPriv)
 {
 	return GL_TRUE;
+}
+
+GLboolean
+XMesaOpenFullScreen(__DRIcontextPrivate *driContextPriv)
+{
+    return GL_TRUE;
+}
+
+GLboolean
+XMesaCloseFullScreen(__DRIcontextPrivate *driContextPriv)
+{
+    return GL_TRUE;
 }
 
 void ffbXMesaUpdateState(ffbContextPtr fmesa)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_regs.h,v 1.2 2000/12/02 15:30:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_regs.h,v 1.3 2000/12/04 18:50:00 dawes Exp $ */
 
 #ifndef _SAVAGE_REGS_H
 #define _SAVAGE_REGS_H
@@ -97,11 +97,11 @@ enum S3CHIPTAGS {
 
 #define VerticalRetraceWait() \
 { \
-	outb(vgaCRIndex, 0x17); \
-	if (inb(vgaCRReg) & 0x80) { \
-		while ((inb(vgaIOBase + 0x0a) & 0x08) == 0x00) ; \
-		while ((inb(vgaIOBase + 0x0a) & 0x08) == 0x08) ; \
-		while ((inb(vgaIOBase + 0x0a) & 0x08) == 0x00) ; \
+	VGAOUT8(vgaCRIndex, 0x17); \
+	if (VGAIN8(vgaCRReg) & 0x80) { \
+		while ((VGAIN8(vgaIOBase + 0x0a) & 0x08) == 0x00) ; \
+		while ((VGAIN8(vgaIOBase + 0x0a) & 0x08) == 0x08) ; \
+		while ((VGAIN8(vgaIOBase + 0x0a) & 0x08) == 0x00) ; \
 	} \
 }
 

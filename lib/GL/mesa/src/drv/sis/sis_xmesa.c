@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_xmesa.c,v 1.5 2000/09/26 15:56:49 tsi Exp $ */
 
 /*
  * Authors:
@@ -398,6 +398,18 @@ GLboolean XMesaUnbindContext(__DRIcontextPrivate *driContextPriv)
 {
   /* TODO */
   return GL_TRUE;
+}
+
+GLboolean
+XMesaOpenFullScreen(__DRIcontextPrivate *driContextPriv)
+{
+    return GL_TRUE;
+}
+
+GLboolean
+XMesaCloseFullScreen(__DRIcontextPrivate *driContextPriv)
+{
+    return GL_TRUE;
 }
 
 GLboolean XMesaMakeCurrent(__DRIcontextPrivate *driContextPriv,

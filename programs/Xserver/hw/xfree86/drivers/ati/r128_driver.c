@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.10 2000/12/06 18:08:54 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.11 2000/12/07 15:43:42 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1332,7 +1332,7 @@ Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
                                 info->videoKey);
     } else {
-        info->videoKey = 0x1E; 
+        info->videoKey = 0x1E;
     }
 
     if (xf86ReturnOptValBool(R128Options, OPTION_SHOW_CACHE, FALSE)) {
@@ -1456,14 +1456,14 @@ static void R128LoadPalette(ScrnInfoPtr pScrn, int numColors,
 static void
 R128BlockHandler(int i, pointer blockData, pointer pTimeout, pointer pReadmask)
 {
-    ScreenPtr   pScreen = screenInfo.screens[i]; 
+    ScreenPtr   pScreen = screenInfo.screens[i];
     ScrnInfoPtr pScrn   = xf86Screens[i];
     R128InfoPtr info    = R128PTR(pScrn);
-    
+
     pScreen->BlockHandler = info->BlockHandler;
     (*pScreen->BlockHandler) (i, blockData, pTimeout, pReadmask);
     pScreen->BlockHandler = R128BlockHandler;
-    
+
     if(info->VideoTimerCallback) {
         (*info->VideoTimerCallback)(pScrn, currentTime.milliseconds);
     }
@@ -1530,12 +1530,12 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    xf86DrvMsg(scrnIndex, X_WARNING,
 		       "Acceleration disabled, not initializing the DRI\n");
 	    info->directRenderingEnabled = FALSE;
-	} else if (maxy <= pScrn->virtualY * 4) {
+	} else if (maxy <= pScrn->virtualY * 3) {
 	    xf86DrvMsg(scrnIndex, X_WARNING,
 		       "Static buffer allocation failed -- "
 		       "need at least %d kB video memory\n",
 		       (pScrn->displayWidth * pScrn->virtualY *
-			info->CurrentLayout.pixel_bytes * 4 + 1023) / 1024);
+			info->CurrentLayout.pixel_bytes * 3 + 1023) / 1024);
 	    info->directRenderingEnabled = FALSE;
 	} else {
 	    info->directRenderingEnabled = R128DRIScreenInit(pScreen);
@@ -1659,16 +1659,19 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
        if ( info->textureSize < (int)info->FbMapSize / 2 ) {
 	  info->textureSize = info->FbMapSize - 4 * bufferSize;
        }
+       if ( info->textureSize > 0 ) {
+	  l = R128MinBits((info->textureSize-1) / R128_NR_TEX_REGIONS);
+	  if (l < R128_LOG_TEX_GRANULARITY) l = R128_LOG_TEX_GRANULARITY;
 
-       l = R128MinBits((info->textureSize-1) / R128_NR_TEX_REGIONS);
-       if (l < R128_LOG_TEX_GRANULARITY) l = R128_LOG_TEX_GRANULARITY;
-
-       /* Round the texture size up to the nearest whole number of
-	* texture regions.  Again, be greedy about this, don't round
-	* down.
-	*/
-       info->log2TexGran = l;
-       info->textureSize = ((info->textureSize >> l) + 1) << l;
+	  /* Round the texture size up to the nearest whole number of
+	   * texture regions.  Again, be greedy about this, don't
+	   * round down.
+	   */
+	  info->log2TexGran = l;
+	  info->textureSize = ((info->textureSize >> l) + 1) << l;
+       } else {
+	  info->textureSize = 0;
+       }
 
        total = info->FbMapSize - info->textureSize;
        scanlines = total / width_bytes;
@@ -1680,6 +1683,14 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	*/
        info->textureOffset = scanlines * width_bytes;
        info->textureSize = info->FbMapSize - info->textureOffset;
+
+       /* Set a minimum usable local texture heap size.  This will fit
+	* two 256x256x32bpp textures.
+	*/
+       if ( info->textureSize < 512 * 1024 ) {
+	  info->textureOffset = 0;
+	  info->textureSize = 0;
+       }
 
        MemBox.x1 = 0;
        MemBox.y1 = 0;
@@ -2884,7 +2895,7 @@ static Bool R128CloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     if (info->DGAModes)          xfree(info->DGAModes);
     info->DGAModes               = NULL;
-    
+
     if (info->adaptor) {
         xfree(info->adaptor->pPortPrivates[0].ptr);
 	xf86XVFreeVideoAdaptorRec(info->adaptor);

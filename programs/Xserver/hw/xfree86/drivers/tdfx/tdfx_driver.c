@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.47 2000/12/02 15:30:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.49 2000/12/06 15:35:23 eich Exp $ */
 
 /*
  * Authors:
@@ -206,6 +206,20 @@ static const char *vgahwSymbols[] = {
     0
 };
 
+static const char *ramdacSymbols[] = {
+    "xf86InitCursor",
+    "xf86CreateCursorInfoRec",
+    "xf86DestroyCursorInfoRec",
+    NULL
+};
+
+static const char *ddcSymbols[] = {
+    "xf86PrintEDID",
+    "xf86DoEDID_DDC1",
+    NULL
+};
+
+#ifdef XFree86LOADER
 static const char *fbSymbols[] = {
     "fbScreenInit",
 #ifdef RENDER
@@ -228,19 +242,6 @@ static const char *xaaSymbols[] = {
     "XAACachePlanarMonoStipple",
     "XAAScreenIndex",
     "XAAReverseBitOrder",
-    NULL
-};
-
-static const char *ramdacSymbols[] = {
-    "xf86InitCursor",
-    "xf86CreateCursorInfoRec",
-    "xf86DestroyCursorInfoRec",
-    NULL
-};
-
-static const char *ddcSymbols[] = {
-    "xf86PrintEDID",
-    "xf86DoEDID_DDC1",
     NULL
 };
 
@@ -288,8 +289,6 @@ static const char *driSymbols[] = {
 };
 
 #endif
-
-#ifdef XFree86LOADER
 
 static MODULESETUPPROTO(tdfxSetup);
 

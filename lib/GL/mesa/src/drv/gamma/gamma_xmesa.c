@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_xmesa.c,v 1.6 2000/06/17 00:02:56 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_xmesa.c,v 1.7 2000/11/27 10:59:37 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -526,6 +526,18 @@ GLboolean XMesaUnbindContext( __DRIcontextPrivate *driContextPriv )
 {
    /* XXX not 100% sure what's supposed to be done here */
    return GL_TRUE;
+}
+
+GLboolean
+XMesaOpenFullScreen(__DRIcontextPrivate *driContextPriv)
+{
+    return GL_TRUE;
+}
+
+GLboolean
+XMesaCloseFullScreen(__DRIcontextPrivate *driContextPriv)
+{
+    return GL_TRUE;
 }
 
 

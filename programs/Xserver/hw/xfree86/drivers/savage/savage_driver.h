@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.h,v 1.1 2000/12/02 01:16:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.h,v 1.2 2000/12/02 15:30:49 tsi Exp $ */
 
 #ifndef SAVAGE_VGAHWMMIO_H
 #define SAVAGE_VGAHWMMIO_H
@@ -23,13 +23,13 @@
 
 #include "savage_regs.h"
 
-#define VGAIN8(addr) inb(addr)
-#define VGAIN16(addr) inw(addr)
-#define VGAIN(addr) inl(addr)
+#define VGAIN8(addr) MMIO_IN8(psav->MapBase+0x8000, addr)
+#define VGAIN16(addr) MMIO_IN16(psav->MapBase+0x8000, addr)
+#define VGAIN(addr) MMIO_IN32(psav->MapBase+0x8000, addr)
 
-#define VGAOUT8(addr,val) outb(addr,val)
-#define VGAOUT16(addr,val) outw(addr,val)
-#define VGAOUT(addr,val) outl(addr,val)
+#define VGAOUT8(addr,val) MMIO_OUT8(psav->MapBase+0x8000, addr, val)
+#define VGAOUT16(addr,val) MMIO_OUT16(psav->MapBase+0x8000, addr, val)
+#define VGAOUT(addr,val) MMIO_OUT32(psav->MapBase+0x8000, addr, val)
 
 #define INREG(addr) MMIO_IN32(psav->MapBase, addr)
 #define OUTREG(addr,val) MMIO_OUT32(psav->MapBase, addr, val)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.12 2000/09/26 15:57:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.13 2000/12/01 14:28:59 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -373,6 +373,8 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   pDRIInfo->SwapContext = TDFXDRISwapContext;
   pDRIInfo->InitBuffers = TDFXDRIInitBuffers;
   pDRIInfo->MoveBuffers = TDFXDRIMoveBuffers;
+  pDRIInfo->OpenFullScreen = TDFXDRIOpenFullScreen;
+  pDRIInfo->CloseFullScreen = TDFXDRICloseFullScreen;
   pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
 
   if (!DRIScreenInit(pScreen, pDRIInfo, &pTDFX->drmSubFD)) {
