@@ -26,7 +26,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/aqua.h,v 1.2 2002/07/24 05:58:33 torrey Exp $ */
 
 #ifndef _AQUA_H
 #define _AQUA_H
@@ -45,9 +45,10 @@ AquaComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 
 /*
  * AquaAlphaMask
- *  Bit mask for alpha channel with a particular number of bits per pixel (bpp)
+ *  Bit mask for alpha channel with a particular number of bits per pixel.
+ *  Note that we only care for 32bpp data. Mac OS X uses planar alpha for
+ *  16bpp.
  */
-#define AquaAlphaMask(bpp) ((((Pixel) 1 << (bpp >> 2))-1) << \
-                            (bpp - (bpp >> 2)))
+#define AquaAlphaMask(bpp) ((bpp) == 32 ? 0xFF000000 : 0)
 
 #endif /* _AQUA_H */
