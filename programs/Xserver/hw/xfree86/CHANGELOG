@@ -1,4 +1,5 @@
 XFree86 4.0.99.x (xx May 2001)
+ 477. More Xv updates for the Permedia3 (#4625, Sven Luther).
  476. Build Cygwin/XFree86 with -ansi -pedantic (Alan Hourihane).
  475. Limit the number of PCI buses to 128 on ix86 (Marc La France).
  474. More fixes for the handling of unassigned PCI bases (Marc La France).
@@ -13148,4 +13149,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1743 2001/05/06 02:09:11 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1744 2001/05/06 06:28:46 alanh Exp $
