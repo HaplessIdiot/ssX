@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.22 2002/01/30 01:35:03 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.23 2002/02/05 05:24:18 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1377,10 +1377,11 @@ static void LoadStateExt
             break;
         case NV_ARCH_10:
         case NV_ARCH_20:
-            VGA_WR08(chip->PCIO, 0x03D4, 0x44);
-            VGA_WR08(chip->PCIO, 0x03D5, state->crtcOwner);
-
-            chip->LockUnlock(chip, 0);
+            if(chip->twoHeads) {
+               VGA_WR08(chip->PCIO, 0x03D4, 0x44);
+               VGA_WR08(chip->PCIO, 0x03D5, state->crtcOwner);
+               chip->LockUnlock(chip, 0);
+            }
 
             LOAD_FIXED_STATE(nv10,PFIFO);
             LOAD_FIXED_STATE(nv10,PRAMIN);
@@ -1431,8 +1432,10 @@ static void LoadStateExt
                 chip->PGRAPH[0x000009A4/4] = chip->PFB[0x00000200/4]; 
                 chip->PGRAPH[0x000009A8/4] = chip->PFB[0x00000204/4];
 	    }
-            chip->PCRTC0[0x00000860/4] = state->head;
-            chip->PCRTC0[0x00002860/4] = state->head2;
+            if(chip->twoHeads) {
+               chip->PCRTC0[0x00000860/4] = state->head;
+               chip->PCRTC0[0x00002860/4] = state->head2;
+            }
             chip->PRAMDAC[0x00000404/4] |= (1 << 25);
 
 	    chip->PMC[0x00008704/4] = 1;
@@ -1572,9 +1575,9 @@ static void LoadStateExt
        chip->PRAMDAC0[0x00000508/4] = state->vpll;
        chip->PRAMDAC0[0x00000520/4] = state->vpll2;
        chip->PRAMDAC0[0x0000050C/4] = state->pllsel;
+       chip->PRAMDAC[0x00000848/4]  = state->scale;
     }
     chip->PRAMDAC[0x00000600/4]  = state->general;
-    chip->PRAMDAC[0x00000848/4]  = state->scale;
 
     /*
      * Turn off VBlank enable and reset.
@@ -1669,10 +1672,12 @@ static void UnloadStateExt
             state->pitch1   = chip->PGRAPH[0x00000674/4];
             state->pitch2   = chip->PGRAPH[0x00000678/4];
             state->pitch3   = chip->PGRAPH[0x0000067C/4];
-            state->head     = chip->PCRTC0[0x00000860/4];
-            state->head2    = chip->PCRTC0[0x00002860/4];
-            VGA_WR08(chip->PCIO, 0x03D4, 0x44);
-            state->crtcOwner = VGA_RD08(chip->PCIO, 0x03D5);
+            if(chip->twoHeads) {
+               state->head     = chip->PCRTC0[0x00000860/4];
+               state->head2    = chip->PCRTC0[0x00002860/4];
+               VGA_WR08(chip->PCIO, 0x03D4, 0x44);
+               state->crtcOwner = VGA_RD08(chip->PCIO, 0x03D5);
+            }
 
             break;
     }
@@ -1924,6 +1929,17 @@ static void nv10GetConfig
     chip->UnloadStateExt  = UnloadStateExt;
     chip->SetStartAddress = SetStartAddress;
     chip->LockUnlock      = nv4LockUnlock;
+
+    switch(pNv->Chipset & 0x0ff0) {
+    case 0x0110:
+    case 0x0170:
+    case 0x0250:
+        chip->twoHeads = TRUE;
+        break;
+    default:
+        chip->twoHeads = TRUE;
+        break;
+    }
 }
 int RivaGetConfig
 (
