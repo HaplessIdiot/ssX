@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.101 1999/06/27 14:08:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.102 1999/07/04 06:39:09 dawes Exp $ */
 
 /*
  *
@@ -292,6 +292,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(DGAGetModes)
    SYMFUNC(DGAGetOldDGAMode)
    SYMFUNC(DGAGetModeInfo)
+   SYMFUNC(DGAChangePixmapMode)
    SYMFUNC(DGAOpenFramebuffer)
    SYMFUNC(DGACloseFramebuffer)
 

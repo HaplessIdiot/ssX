@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.13 1999/03/21 07:35:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.14 1999/03/28 15:33:06 dawes Exp $ */
 
 /*
  *  Functions to manipulate card database.
@@ -48,12 +48,9 @@ int lastcard;
 
 Card card[MAX_CARDS];
 
-void sort_database();
 
-
-static int getnextline(f, l)
-FILE *f;
-char *l;
+static int
+getnextline(FILE *f, char *l)
 {
 	if (fgets(l, 128, f) == NULL)
 		return -1;
@@ -69,9 +66,8 @@ char *l;
 	return 0;
 }
 
-static void appendstring(destp, src)
-	char **destp;
-	char *src;
+static void
+appendstring(char **destp, char *src)
 {
 	char *newstr;
 	newstr = malloc(strlen(*destp) + strlen(src) + 1);
@@ -82,7 +78,8 @@ static void appendstring(destp, src)
 	*destp = newstr;
 }
 
-int lookupcard( char *name ) {
+int
+lookupcard(char *name) {
 	int i;
 	for (i = 0; i <= lastcard; i++)
 		if (strcmp(name, card[i].name) == 0)
@@ -134,7 +131,6 @@ int parse_database() {
 			break;
 		if (strncmp(buf, "LINE", 4) == 0 && lastcard>=0) {
 			/* Line of Device comment. */
-			char *lines;
 			/* Append to existing lines. */
 			appendstring(&card[lastcard].lines, buf + 5);
 			continue;
@@ -283,14 +279,14 @@ int parse_database() {
 #define CONST
 #endif
 
-static int compare_card(e1, e2)
-	CONST void *e1;
-	CONST void *e2;
+static int
+compare_card(CONST void *e1, CONST void *e2)
 {
 	return strcmp(((Card *)e1)->name, ((Card *)e2)->name);
 }
 
-void sort_database() {
+void
+sort_database() {
 	/* Each element is a bunch of words, but nothing too bad. */
 	qsort(card, lastcard + 1, sizeof(Card), compare_card);
 }

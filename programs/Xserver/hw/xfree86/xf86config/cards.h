@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.h,v 3.3 1996/12/23 07:04:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.h,v 3.4 1999/03/28 15:33:07 dawes Exp $ */
 
 
 
@@ -32,6 +32,7 @@ extern int lastcard;
 
 extern Card card[MAX_CARDS];
 
-
-int parse_database();
-
+extern int lookupcard ( char *name );
+extern int parse_database ( void );
+extern void sort_database ( void );
+extern void keypress ( void );

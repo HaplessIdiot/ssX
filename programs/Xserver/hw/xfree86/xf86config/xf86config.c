@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.45 1998/09/05 06:37:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.46 1999/03/28 15:33:07 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -90,7 +90,7 @@
  * have been added since XFree86 3.1 (e.g. DoubleScan modes).
  * or to 311 to remove certain new modelines
  */
-#define XFREE86_VERSION 330
+#define XFREE86_VERSION 399
 
 /*
  * This is the filename of the temporary XF86Config file that is written
@@ -98,7 +98,8 @@
  * root).
  */
 #ifndef __EMX__
-#define TEMPORARY_XF86CONFIG_FILENAME "/tmp/XF86Config.tmp"
+#define TEMPORARY_XF86CONFIG_DIR_PREFIX "/tmp/.xf86config"
+#define TEMPORARY_XF86CONFIG_FILENAME "XF86Config.tmp"
 #else
 /* put in root dir, would have to find TMP dir first else */
 #define TEMPORARY_XF86CONFIG_FILENAME "\\XConfig.tmp"
@@ -113,8 +114,8 @@
 /*
  * Define this to force the user to go through XKB configuration section.
  *
-#define FORCE_XKB_DIALOG
  */
+#define FORCE_XKB_DIALOG
 
 /*
  * Configuration variables.
@@ -129,8 +130,8 @@
 #define DUMBCONFIG2 "\\dconfig.2"
 #define DUMBCONFIG3 "\\dconfig.3"
 #else
-#define DUMBCONFIG2 "/tmp/dumbconfig.2"
-#define DUMBCONFIG3 "/tmp/dumbconfig.3"
+#define DUMBCONFIG2 "dumbconfig.2"
+#define DUMBCONFIG3 "dumbconfig.3"
 #endif
 
 /* some more vars to make path names in texts more flexible. OS/2 users
@@ -139,14 +140,15 @@
 #ifndef __EMX__
 #define TREEROOT "/usr/X11R6"
 #define TREEROOTLX "/usr/X11R6/lib/X11"
+#define TREEROOTCFG "/usr/X11R6/etc/X11"
 #define MODULEPATH "/usr/X11R6/lib/modules"
-#define CONFIGNAME "XF86Config"
 #else
 #define TREEROOT "/XFree86"
 #define TREEROOTLX "/XFree86/lib/X11"
+#define TREEROOTCFG "/XFree86/lib/X11"
 #define MODULEPATH "/XFree86/lib/modules"
-#define CONFIGNAME "XConfig"
 #endif
+#define CONFIGNAME "XF86Config"
 
 int config_mousetype;		/* Mouse. */
 int config_emulate3buttons;
@@ -158,37 +160,27 @@ int config_monitortype;		/* Monitor. */
 char *config_hsyncrange;
 char *config_vsyncrange;
 char *config_monitoridentifier;
-char *config_monitorvendorname;
-char *config_monitormodelname;
 int config_videomemory;		/* Video card. */
 int config_screentype;		/* mono, vga16, svga, accel */
 char *config_deviceidentifier;
-char *config_devicevendorname;
-char *config_deviceboardname;
 int config_numberofclockslines;
 char *config_clocksline[MAX_CLOCKS_LINES];
 char *config_modesline8bpp;
 char *config_modesline16bpp;
 char *config_modesline24bpp;
-char *config_modesline32bpp;
 int config_virtual;		/* 1 (yes) or 0 (no) */
 int config_virtualx8bpp, config_virtualy8bpp;
 int config_virtualx16bpp, config_virtualy16bpp;
 int config_virtualx24bpp, config_virtualy24bpp;
-int config_virtualx32bpp, config_virtualy32bpp;
 char *config_ramdac;
 char *config_dacspeed;
 char *config_clockchip;
-int config_xkbdisable;
-char *config_xkbkeymap;
-char *config_xkbkeycodes;
-char *config_xkbtypes;
-char *config_xkbcompat;
-char *config_xkbsymbols;
-char *config_xkbgeometry;
+int config_xkbdisable = 0;
+char *config_xkbrules;
+char *config_xkbmodel;
+char *config_xkblayout;
 
-
-
+char *temp_dir = "";
 
 /*
  * These are from the selected card definition. Parameters from the
@@ -198,7 +190,7 @@ char *config_xkbgeometry;
 int card_selected;	/* Card selected from database. */
 
 
-void write_XF86Config();
+static void write_XF86Config(char *filename);
 
 
 /*
@@ -210,14 +202,16 @@ static char *intro_text =
 "This program will create a basic " CONFIGNAME " file, based on menu selections you\n"
 "make.\n"
 "\n"
-"The " CONFIGNAME " file usually resides in " TREEROOTLX " or /etc. A sample\n"
+"The " CONFIGNAME " file usually resides in " TREEROOTCFG " or /etc/X11. A sample\n"
 CONFIGNAME " file is supplied with XFree86; it is configured for a standard\n"
 "VGA card and monitor with 640x480 resolution. This program will ask for a\n"
 "pathname when it is ready to write the file.\n"
 "\n"
 "You can either take the sample " CONFIGNAME " as a base and edit it for your\n"
 "configuration, or let this program produce a base " CONFIGNAME " file for your\n"
-"configuration and fine-tune it. Refer to " TREEROOTLX "/doc/README.Config\n"
+"configuration and fine-tune it.\n"
+#if 0
+" Refer to " TREEROOTLX "/doc/README.Config\n"
 "for a detailed overview of the configuration process.\n"
 "\n"
 "(what should we change this section to?)\n"
@@ -225,16 +219,18 @@ CONFIGNAME " file is supplied with XFree86; it is configured for a standard\n"
 "there are many chipset and card-specific options and settings. This program\n"
 "does not know about these. On some configurations some of these settings must\n"
 "be specified. Refer to the server man pages and chipset-specific READMEs.\n"
+#endif
 "\n"
-"Before continuing with this program, make sure you know the chipset and\n"
-"amount of video memory on your video card. SuperProbe can help with this.\n"
+"Before continuing with this program, make sure you know what video card\n"
+"you have, and preferably also the chipset it uses and the amount of video\n"
+"memory on your video card. SuperProbe may be able to help with this.\n"
 "\n"
 ;
 
 static char *finalcomment_text =
 "File has been written. Take a look at it before running 'startx'. Note that\n"
 "the " CONFIGNAME " file must be in one of the directories searched by the server\n"
-"(e.g. " TREEROOTLX ") in order to be used. Within the server press\n"
+"(e.g. /etc/X11) in order to be used. Within the server press\n"
 "ctrl, alt and '+' simultaneously to cycle video resolutions. Pressing ctrl,\n"
 "alt and backspace simultaneously immediately exits the server (use if\n"
 "the monitor doesn't sync for a particular mode).\n"
@@ -242,21 +238,50 @@ static char *finalcomment_text =
 "For further configuration, refer to " TREEROOTLX "/doc/README.Config.\n"
 "\n";
 
+static void *
+Malloc(int i) {
+       void *p;
 
-void keypress() {
+       p = malloc(i);
+       if (p == NULL) {
+               printf("Fatal malloc error\n");
+               exit(-1);
+       }
+       return p;
+}
+
+static void 
+createtmpdir(void) {
+#ifndef __EMX__
+       /* length of prefix + 20 (digits in 2**64) + 1 (slash) + 1 */
+       temp_dir = Malloc(strlen(TEMPORARY_XF86CONFIG_DIR_PREFIX) + 22);
+       sprintf(temp_dir, "%s%d", TEMPORARY_XF86CONFIG_DIR_PREFIX, getpid());
+       if (mkdir(temp_dir, 0700) != 0) {
+               printf("Cannot create directory %s\n", temp_dir);
+               exit(-1);
+       }
+       /* append a slash */
+       strcat(temp_dir, "/");
+#endif
+}
+
+
+void 
+keypress(void) {
 	printf("Press enter to continue, or ctrl-c to abort.");
 	getchar();
 	printf("\n");
 }
 
-void emptylines() {
+static void 
+emptylines(void) {
 	int i;
 	for (i = 0; i < 50; i++)
 		printf("\n");
 }
 
-int answerisyes(s)
-	char *s;
+static int 
+answerisyes(char *s)
 {
 	if (s[0] == '\'')	/* For fools that type the ' literally. */
 		return tolower(s[1]) == 'y';
@@ -268,8 +293,8 @@ int answerisyes(s)
  * The 386BSD descendants scream about using gets(), for good reason.
  */
 
-void getstring(s)
-	char *s;
+static void 
+getstring(char *s)
 {
 	char *cp;
 	fgets(s, 80, stdin);
@@ -285,7 +310,7 @@ void getstring(s)
  * the server will enable a third button automatically if there is one
  */
 
-static char *mousetype_identifier[10] = {
+static char *mousetype_identifier[] = {
 	"Microsoft",
 	"MouseSystems",
 	"Busmouse",
@@ -305,7 +330,7 @@ static char *mouseintro_text =
 "First specify a mouse protocol type. Choose one from the following list:\n"
 "\n";
 
-static char *mousetype_name[10] = {
+static char *mousetype_name[] = {
 	"Microsoft compatible (2-button protocol)",
 	"Mouse Systems (3-button protocol)",
 	"Bus Mouse",
@@ -363,7 +388,8 @@ static char *mousemancomment_text =
 
 #endif /* !__EMX__ */
 
-void mouse_configuration() {
+static void 
+mouse_configuration(void) {
 
 #ifndef __EMX__
 	int i;
@@ -380,6 +406,8 @@ void mouse_configuration() {
 	printf("Enter a protocol number: ");
 	getstring(s);
 	config_mousetype = atoi(s) - 1;
+	if (config_mousetype < 0)
+		config_mousetype = 0;
 
 	printf("\n");
 
@@ -457,7 +485,7 @@ void mouse_configuration() {
 	if (strlen(s) == 0)
 		config_pointerdevice = "/dev/mouse";
 	else {
-		config_pointerdevice = malloc(strlen(s) + 1);
+		config_pointerdevice = Malloc(strlen(s) + 1);
 		strcpy(config_pointerdevice, s);
        }
        printf("\n");
@@ -477,302 +505,138 @@ void mouse_configuration() {
  * Keyboard configuration.
  */
 
-/* XXXX Does this make sense? */
-
-static char *keyboardalt_text =
-"If you want your keyboard to generate non-ASCII characters in X, because\n"
-"you want to be able to enter language-specific characters, you can\n"
-"set the left Alt key to Meta, and the right Alt key to ModeShift.\n"
-"\n";
-
-void keyboard_configuration() {
-	char s[80];
-
-	printf("%s", keyboardalt_text);
-
-	printf("Please answer the following question with either 'y' or 'n'.\n");
-	printf("Do you want to enable these bindings for the Alt keys? ");
-	getstring(s);
-	config_altmeta = 0;
-	if (answerisyes(s))
-		config_altmeta = 1;
-	printf("\n");
-}
 
 /*
  * Configuration of XKB 
  */
+static char *xkbmodeltext = 
+"Please select one of the following keyboard types that is the better\n"
+"description of your keyboard. If nothing really matches,\n"
+"choose 1 (Generic 101-key PC)\n\n";
 
-static char* xkbcompose1 =
-"You did not select one of the preconfigured keymaps. We will now try to\n"
-"compose a suitable XKB setting. This setting is untested.\n"
-"Please select one of the following standard keyboards. Use DEFAULT if\n"
-"nothing really fits (101-key, tune manually)\n\n";
-
-static char* xkbcompose2 =
-"Please choose one of the following countries. Use DEFAULT if nothing\n"
-"really fits (US encoding, tune manually)\n";
-
-static char* noncompatible_text = 
-"You have chosen the combination:\n"
-"         keyboard %s\n"
-"         country %s\n"
-"This configuration might be incompatible and not supported yet. The\n"
-"requested entry will be made, but the server might fail to map the\n"
-"keyboard properly.\n";
-
-/* 
- * Add here combinations of symbols and geometry for keyboards
- * This will be annotated with "en_US" and "+..." later
- */
-
-static struct symlist1 {
-	int usonly;	/* 0=us or us_EN, 1=us */
-	char *symname;
-	char *geoname;
-	char *desc;
-} sympart1[] = {
-{0,	"pc101",		"pc",	"Standard 101-key keyboard"},
-{0,	"pc102",		"pc",	"Standard 102-key keyboard"},
-{1,	"pc101euro",		"pc",	"101-key with ALT_R = Multi_key"},
-{1,	"pc102euro",		"pc",	"102-key with ALT_R = Multi_key"},
-{1,	"microsoft",		"microsoft",   "Microsoft Natural keyboard"},
-{1,	"pc101",		"keytronic(FlexPro)", "KeyTronic FlexPro keyboard"},
-{0,	"pc101",		"pc",	"DEFAULT"}
+static struct xkb_model_str {
+    char *model;
+    char *desc;
+} xkb_model_list[] = {
+    { "pc101",         "Generic 101-key PC" },
+    { "pc102",         "Generic 102-key (Intl) PC" },
+    { "pc104",         "Generic 104-key PC" },
+    { "pc105",         "Generic 105-key (Intl) PC" },
+    { "dell101",       "Dell 101-key PC" },
+    { "everex",        "Everex STEPnote" },
+    { "flexpro",       "Keytronic FlexPro" },
+    { "microsoft",     "Microsoft Natural" },
+    { "omnikey101",    "Northgate OmniKey 101" },
+    { "winbook",       "Winbook Model XP5" },
+    { "jp106",         "Japanese 106-key" },
+    { "pc98",          "PC-98xx Series" },
 };
+static int nmodels = sizeof(xkb_model_list)/sizeof(struct xkb_model_str);
 
-static int nsym1 = sizeof(sympart1)/sizeof(struct symlist1);
+static char *xkblayouttext = 
+"Please select the layout corresponding to your keyboard\n";
 
-static struct symlist2 {
-	char *prefix;	/* us or us_en */
-	char *extend;	/* +de, +fr, ... */
-	char *desc;	/* description */
-} sympart2[] = {
-{	"en_US",	"+be",	"Belgium"},
-{	"en_US",	"+bg",	"Bulgaria"},
-{	"en_US",	"+ca",	"Canada"},
-{	"en_US",	"+cs",	"Czechoslovakia"},
-{	"en_US",	"+dk",	"Denmark"},
-{	"en_US",	"+fi",	"Finland"},
-{	"en_US",	"+fr",	"France"},
-{	"en_US",	"+de",	"Germany"},
-{	"en_US",	"+it",	"Italy"},
-{	"en_US",	"+no",	"Norway"},
-{	"en_US",	"+pl",	"Poland"},
-{	"en_US",	"+pt",	"Portugal"},
-{	"en_US",	"+ru",	"Russia"},
-{	"en_US",	"+es",	"Spain"},
-{	"en_US",	"+se",	"Sweden"},
-{	"en_US",	"+th",	"Thailand"},
-{	"en_US",	"+fr_CH",	"Switzerland/French layout"},
-{	"en_US",	"+de_CH",	"Switzerland/German layout"},
-{	"en_US",	"+gb",	"United Kingdom"},
-{	"us",		"",	"USA"},
-{	"en_US",	"",	"DEFAULT"}
+static struct xkb_layout_str {
+    char *layout;
+    char *desc;
+} xkb_layout_list[] = {
+    { "us",            "U.S. English" },
+    { "en_US",         "U.S. English w/ISO9995-3" },
+    { "be",            "Belgian" },
+    { "bg",            "Bulgarian" },
+    { "ca",            "Canadian" },
+    { "cs",            "Czechoslovakian" },
+    { "de",            "German" },
+    { "de_CH",         "Swiss German" },
+    { "dk",            "Danish" },
+    { "es",            "Spanish" },
+    { "fi",            "Finnish" },
+    { "fr",            "French" },
+    { "fr_CH",         "Swiss French" },
+    { "gb",            "United Kingdom" },
+    { "hu",            "Hungarian" },
+    { "it",            "Italian" },
+    { "jp",            "Japanese" },
+    { "no",            "Norwegian" },
+    { "pl",            "Polish" },
+    { "pt",            "Portugese" },
+    { "ru",            "Russian" },
+    { "se",            "Swedish" },
+    { "th",            "Thai" },
+    { "nec/jp",        "PC-98xx Series" },
 };
+static int nlayouts = sizeof(xkb_layout_list)/sizeof(struct xkb_layout_str);
 
-static int nsym2 = sizeof(sympart2)/sizeof(struct symlist2);
-
-void xkb_composekeymaps()
+static void 
+keyboard_configuration(void)
 {
 	int i;
 	char s[80];
-	int xkbsym1,xkbsym2;
+	int xkbmodel,xkblayout;
 
 	/* this is entered when the user did not find a preconfigured 
 	 * XkbKeymap 
 	 */
 	emptylines();
-	printf(xkbcompose1);
-	for (i=0; i<nsym1; i++) {
-		printf("%3d  %-50s\n",i+1,sympart1[i].desc);
+	printf(xkbmodeltext);
+	for (i=0; i<nmodels; i++) {
+	    printf("%3d  %-50s\n",i+1,xkb_model_list[i].desc);
 	}
-
+	
 	printf("\nEnter a number to choose the keyboard.\n\n");
 	getstring(s);
 	if (strlen(s) == 0)
-		xkbsym1 = 0;
+	    xkbmodel = 0;
 	else {
-		i = atoi(s)-1;
-		xkbsym1 = (i < 0 || i > nsym1) ? 0 : i;
+	    i = atoi(s)-1;
+	    xkbmodel = (i < 0 || i > nmodels) ? 0 : i;
 	}
 	emptylines();
-	printf(xkbcompose2);
-	keypress();
+	printf(xkblayouttext);
 
-	xkbsym2 = -1;
+	xkblayout = -1;
 	for (i=0;;) {
-		int j;
-		emptylines();
-		for (j = i; j < i + 18 && j < nsym2; j++)
+	    	int j;
+	    	emptylines();
+		for (j = i; j < i + 18 && j < nlayouts; j++)
 			printf("%3d  %-50s\n", j+1,
-				sympart2[j].desc);
+				xkb_layout_list[j].desc);
 		printf("\n");
 		printf("Enter a number to choose the country.\n");
-		if (nsym2 >= 18)
+		if (nlayouts >= 18)
 			printf("Press enter for the next page\n");
 		printf("\n");
 		getstring(s);
 		if (strlen(s) == 0) {
 			i += 18;
-			if (i > nsym2)
+			if (i > nlayouts)
 				i = 0;
 			continue;
 		}
-		xkbsym2 = atoi(s) - 1;
-		if (xkbsym2 >= 0 && xkbsym2 < nsym2)
+		xkblayout = atoi(s) - 1;
+		if (xkblayout >= 0 && xkblayout < nlayouts)
 			break;
 	}
 
-	/* XXX check consistency: currently en_US supports only pc101 and 102,
-	 * which is IMHO wrong, because I have seen German MS-Keyboards at
-	 * least (hv)
-	 */
-	if (sympart1[xkbsym1].usonly &&
-	    strcmp(sympart2[xkbsym2].prefix,"us") != 0) {
-		emptylines();
-		printf(noncompatible_text,
-			sympart1[xkbsym1].desc,
-			sympart2[xkbsym2].desc);
-		keypress();
-	}		
 
 	/* compose the lines */
-	config_xkbdisable = 0;
-	config_xkbkeymap = 0;
 #ifdef XFREE98_XKB
-	config_xkbkeycodes = "xfree98";	/* static */
+	config_xkbrules = "xfree98";	/* static */
 #else
-	config_xkbkeycodes = "xfree86";	/* static */
+	config_xkbrules = "xfree86";	/* static */
 #endif
-	config_xkbtypes = "default";		/* static */
-	config_xkbcompat = "default";		/* static */
 
-	i = strlen(sympart2[xkbsym2].prefix)
-	      + strlen(sympart1[xkbsym1].symname)
-	      + strlen(sympart2[xkbsym2].extend)
-	      + 1;
-	config_xkbsymbols = malloc(i);
-	sprintf(config_xkbsymbols,"%s(%s)%s",
-		sympart2[xkbsym2].prefix,
-		sympart1[xkbsym1].symname,
-		sympart2[xkbsym2].extend);
+	i = strlen(xkb_model_list[xkbmodel].model) + 1;
+	config_xkbmodel = Malloc(i);
+	sprintf(config_xkbmodel,"%s", xkb_model_list[xkbmodel].model);
 
-	config_xkbgeometry = malloc(strlen(sympart1[xkbsym1].geoname)+1);
-	sprintf(config_xkbgeometry,"%s",sympart1[xkbsym1].geoname);
+	config_xkblayout = Malloc(strlen(xkb_layout_list[xkblayout].layout)+1);
+	sprintf(config_xkblayout,"%s", xkb_layout_list[xkblayout].layout);
 
 	return;
 }
 
-#ifndef FORCE_XKB_DIALOG
-static char *xkb_intro1 =
-"Beginning with XFree86 3.1.2D, you can use the new X11R6.1 XKEYBOARD\n"
-"extension to manage the keyboard layout. If you answer 'n' to the following\n"
-"question, the server will use the old method, and you have to adjust\n"
-"your keyboard layout with xmodmap.\n\n";
-#endif
 
-static char *xkb_intro2 =
-#ifdef FORCE_XKB_DIALOG
-"Beginning with XFree86 3.1.2D, the X server uses the new X11R6.1 XKEYBOARD\n"
-"extension to manage the keyboard layout. This requires you to answer a\n"
-"number of questions to add certain entries to the " CONFIGNAME " file.\n\n"
-#endif
-"The following dialogue will allow you to select from a list of already\n"
-"preconfigured keymaps. If you don't find a suitable keymap in the list,\n"
-"the program will try to combine a keymap from additional information you\n"
-"are asked then. Such a keymap is by default untested and may require\n"
-"manual tuning. Please report success or required changes for such a\n"
-"keymap to XFREE86@XFREE86.ORG for addition to the list of preconfigured\n"
-"keymaps in the future.\n\n";
-
-/*
- *  Add new standard keymaps here
- */
-static struct kmlist {
-	char *name;	/* the string to be added to XkbKeymap */
-	char *desc;	/* the string that is shown to the user */
-} keymaps[] = {
-{"xfree86(us)",		"Standard 101-key, US encoding"},
-{"xfree86(us_microsoft)",	"Microsoft Natural, US encoding"},
-{"xfree86(us_flexpro)",	"KeyTronic FlexPro, US encoding"},
-{"xfree86(en_US)",	"Standard 101-key, US encoding with ISO9995-3 extensions"},
-{"xfree86(de)",		"Standard 101-key, German encoding"},
-{"xfree86(fr)",		"Standard 101-key, French encoding"},
-{"xfree86(th)",		"Standard 101-key, Thai encoding"},
-{"xfree86(de_CH)",	"Standard 101-key, Swiss/German encoding"},
-{"xfree86(fr_CH)",	"Standard 101-key, Swiss/French encoding"},
-#ifdef XFREE98_XKB
-{"xfree98(jp)",		"NEC PC98, Japanese encoding"},
-#endif
-{0,			"None of the above"},	/* must be last one */
-};
-
-static int nkeymaps = sizeof(keymaps)/sizeof(struct kmlist);
-
-static char *keymap_default = "xfree86(us)";
-
-void xkb_keyboard_configuration()
-{
-	char s[80];
-	int i;
-	int map_selected;
-
-	/* preset the config variables */
-	config_xkbdisable = 0;
-	config_xkbkeymap = keymap_default;
-
-#ifndef FORCE_XKB_DIALOG
-	printf("%s", xkb_intro1);
-
-	printf("Please answer the following question with either 'y' or 'n'.\n");
-	printf("Do you want to use XKB? ");
-	getstring(s);
-	printf("\n");
-	config_xkbdisable = 0;
-	if (!answerisyes(s)) {
-		config_xkbdisable = 1;
-		return;
-	}
-#endif
-
-	emptylines();
-	printf("%s", xkb_intro2);
-	keypress();
-
-	i = 0;
-	map_selected = -1;
-	for (;;) {
-		int j;
-		emptylines();
-		printf("List of preconfigured keymaps:\n\n");
-		for (j = i; j < i + 18 && j < nkeymaps; j++)
-			printf("%3d  %-50s\n", j+1,
-				keymaps[j].desc);
-		printf("\n");
-		printf("Enter a number to choose the keymap.\n");
-		if (nkeymaps >= 18)
-			printf("Press enter for the next page\n");
-		printf("\n");
-		getstring(s);
-		if (strlen(s) == 0) {
-			i += 18;
-			if (i > nkeymaps)
-				i = 0;
-			continue;
-		}
-		map_selected = atoi(s);
-		if (map_selected >= 0 && map_selected <= nkeymaps)
-			break;
-	}
-
-	if (map_selected==nkeymaps) {	/* none of the above */
-		xkb_composekeymaps();
-	} else {
-		config_xkbkeymap = keymaps[map_selected-1].name;
-	}
-	return;
-}
 
 /*
  * Monitor configuration.
@@ -851,7 +715,8 @@ static char *monitortype_name[NU_MONITORTYPES] = {
 	"Monitor that can do 1280x1024 @ 76 Hz"
 };
 
-void monitor_configuration() {
+static void 
+monitor_configuration(void) {
 	int i;
 	char s[80];
 	printf("%s", monitorintro_text);
@@ -873,6 +738,8 @@ void monitor_configuration() {
 	printf("Enter your choice (1-%d): ", NU_MONITORTYPES + 1);
 	getstring(s);
 	config_monitortype = atoi(s) - 1;
+	if (config_monitortype < 0)
+		config_monitortype = 0;
 
 	printf("\n");
 
@@ -883,7 +750,7 @@ void monitor_configuration() {
 		printf("%s", customhsync_text);
 		printf("Horizontal sync range: ");
 		getstring(s);
-		config_hsyncrange = malloc(strlen(s) + 1);
+		config_hsyncrange = Malloc(strlen(s) + 1);
 		strcpy(config_hsyncrange, s);
 		printf("\n");
 	}
@@ -895,6 +762,7 @@ void monitor_configuration() {
 	getstring(s);
 	printf("\n");
 	switch (atoi(s)) {
+	case 0 :
 	case 1 :
 		config_vsyncrange = "50-70";
 		break;
@@ -911,7 +779,7 @@ void monitor_configuration() {
 		/* Custom vsync range option selected. */
 		printf("Vertical sync range: ");
 		getstring(s);
-		config_vsyncrange = malloc(strlen(s) + 1);
+		config_vsyncrange = Malloc(strlen(s) + 1);
 		strcpy(config_vsyncrange, s);
 		printf("\n");
 		break;
@@ -923,24 +791,8 @@ void monitor_configuration() {
 	if (strlen(s) == 0)
 		config_monitoridentifier = "My Monitor";
 	else {
-		config_monitoridentifier = malloc(strlen(s) + 1);
+		config_monitoridentifier = Malloc(strlen(s) + 1);
 		strcpy(config_monitoridentifier, s);
-	}
-	printf("Enter the vendor name of your monitor: ");
-	getstring(s);
-	if (strlen(s) == 0)
-		config_monitorvendorname = "Unknown";
-	else {
-		config_monitorvendorname = malloc(strlen(s) + 1);
-		strcpy(config_monitorvendorname, s);
-	}
-	printf("Enter the model name of your monitor: ");
-	getstring(s);
-	if (strlen(s) == 0)
-		config_monitormodelname = "Unknown";
-	else {
-		config_monitormodelname = malloc(strlen(s) + 1);
-		strcpy(config_monitormodelname, s);
 	}
 }
 
@@ -976,7 +828,8 @@ static char *cardunsupported_text =
 "this card definition was based on, there's a chance that it is now\n"
 "supported.\n";
 
-void carddb_configuration() {
+static void 
+carddb_configuration(void) {
 	int i;
 	char s[80];
 	card_selected = -1;
@@ -1030,7 +883,10 @@ void carddb_configuration() {
 		printf("\nYour selected card definition:\n\n");
 		printf("Identifier: %s\n", card[card_selected].name);
 		printf("Chipset:    %s\n", card[card_selected].chipset);
+		if (!card[card_selected].driver)
+			card[card_selected].driver = "unknown";
 		printf("Driver:     %s\n", card[card_selected].driver);
+
 		if (card[card_selected].ramdac != NULL)
 			printf("Ramdac:     %s\n", card[card_selected].ramdac);
 		if (card[card_selected].dacspeed != NULL)
@@ -1078,10 +934,7 @@ static char *carddescintro_text =
 "in default names (possibly from a card definition).\n"
 "\n";
 
-static char *devicevendornamecomment_text =
-"You can simply press enter here if you have a generic card, or want to\n"
-"describe your card with one string.\n";
-
+#if 0
 static char *devicesettingscomment_text =
 "Especially for accelerated drivers, Ramdac, Dacspeed and ClockChip settings\n"
 "or special options may be required in the Device section.\n"
@@ -1168,23 +1021,22 @@ static char *clockchip_id[] = {
 };
 
 static char *deviceclockscomment_text =
-"For most configurations, a Clocks line is useful since it prevents the slow\n"
-"and nasty sounding clock probing at server start-up. Probed clocks are\n"
-"displayed at server startup, along with other server and hardware\n"
-"configuration info. You can save this information in a file by running\n"
-"'X -probeonly 2>output_file'. Be warned that clock probing is inherently\n"
-"imprecise; some clocks may be slightly too high (varies per run).\n"
+"For most modern configurations, a Clocks line is neither required or\n"
+"desirable.  However for some older hardware it can be useful since it\n"
+"prevents the slow and nasty sounding clock probing at server start-up.\n"
+"Probed clocks are displayed at server startup, along with other server\n"
+"and hardware configuration info. You can save this information in a file\n"
+"by running 'X -probeonly 2>output_file'. Be warned that clock probing is\n"
+"inherently imprecise; some clocks may be slightly too high (varies per run).\n"
 "\n";
 
 static char *deviceclocksquestion_text =
 "At this point I can run X -probeonly, and try to extract the clock information\n"
-"from the output. It is recommended that you do this yourself and add a clocks\n"
-"line (note that the list of clocks may be split over multiple Clocks lines) to\n"
-"your Device section afterwards. Be aware that a clocks line is not\n"
-"appropriate for drivers that have a fixed set of clocks and don't probe by\n"
-"default (e.g. Cirrus). Also, for the P9000 server you must simply specify\n"
-"clocks line that matches the modes you want to use.  For the S3 server with\n"
-"a programmable clock chip you need a 'ClockChip' line and no Clocks line.\n"
+"from the output. It is recommended that you do this yourself and if a set of\n"
+"clocks is shown then you add a clocks line (note that the list of clocks may\n"
+"be split over multiple Clocks lines) to your Device section afterwards. Be\n"
+"aware that a clocks line is not appropriate for most modern hardware that\n"
+"has programmable clocks.\n"
 "\n"
 "You must be root to be able to run X -probeonly now.\n"
 "\n";
@@ -1196,6 +1048,7 @@ static char *probeonlywarning_text =
 "Ramdac, ClockChip or special option (e.g. \"nolinear\" for S3) to probe\n"
 "and start-up correctly.\n"
 "\n";
+#endif
 
 static char *modesorderintro_text =
 "For each depth, a list of modes (resolutions) is defined. The default\n"
@@ -1205,15 +1058,13 @@ static char *modesorderintro_text =
 "\n";
 
 static char *modesorder_text2 =
-"Note that 16, 24 and 32bpp are only supported on a few configurations.\n"
 "Modes that cannot be supported due to monitor or clock constraints will\n"
 "be automatically skipped by the server.\n"
 "\n"
-" 1  Change the modes for 8pp (256 colors)\n"
-" 2  Change the modes for 16bpp (32K/64K colors)\n"
-" 3  Change the modes for 24bpp (24-bit color, packed pixel)\n"
-" 4  Change the modes for 32bpp (24-bit color)\n"
-" 5  The modes are OK, continue.\n"
+" 1  Change the modes for 8-bit (256 colors)\n"
+" 2  Change the modes for 16-bit (32K/64K colors)\n"
+" 3  Change the modes for 24-bit (24-bit color)\n"
+" 4  The modes are OK, continue.\n"
 "\n";
 
 static char *modeslist_text =
@@ -1265,7 +1116,8 @@ static char *modestring[NU_MODESTRINGS] = {
 
 #ifdef __EMX__
 /* yet another instance of this code, sigh! */
-char *__XOS2RedirRoot(char *path, char sep)
+static char *
+__XOS2RedirRoot(char *path, char sep)
 {
 	static char pn[300];
 	char *root;
@@ -1300,8 +1152,9 @@ static int exists_dir(char *name) {
 	return S_ISDIR(sbuf.st_mode) ? 1 : 0;
 }
 
-void screen_configuration() {
-	int i, c, np;
+static void 
+screen_configuration(void) {
+	int i, c/*, np*/;
 	char s[80];
 
 	/*
@@ -1321,6 +1174,8 @@ void screen_configuration() {
 	printf("\n");
 
 	c = atoi(s) - 1;
+	if (c < 0)
+		c = 0;
 	if (c < 5)
 		config_videomemory = videomemory[c];
 	else {
@@ -1343,26 +1198,8 @@ void screen_configuration() {
 		else
 			config_deviceidentifier = "My Video Card";
 	else {
-		config_deviceidentifier = malloc(strlen(s) + 1);
+		config_deviceidentifier = Malloc(strlen(s) + 1);
 		strcpy(config_deviceidentifier, s);
-	}
-	printf("%s", devicevendornamecomment_text);
-	
-	printf("Enter the vendor name of your video card: ");
-	getstring(s);
-	if (strlen(s) == 0)
-		config_devicevendorname = "Unknown";
-	else {
-		config_devicevendorname = malloc(strlen(s) + 1);
-		strcpy(config_devicevendorname, s);
-	}
-	printf("Enter the model (board) name of your video card: ");
-	getstring(s);
-	if (strlen(s) == 0)
-		config_deviceboardname = "Unknown";
-	else {
-		config_deviceboardname = malloc(strlen(s) + 1);
-                strcpy(config_deviceboardname, s);
 	}
 	printf("\n");
 
@@ -1376,12 +1213,9 @@ void screen_configuration() {
 	 */
 	config_modesline8bpp =
 	config_modesline16bpp =
-	config_modesline24bpp =
-	config_modesline32bpp = "\"640x480\"";
+	config_modesline24bpp = "\"640x480\"";
 	config_virtualx8bpp = config_virtualx16bpp = config_virtualx24bpp =
-	config_virtualx32bpp =
-	config_virtualy8bpp = config_virtualy16bpp = config_virtualy24bpp =
-	config_virtualy32bpp = 0;
+	config_virtualy8bpp = config_virtualy16bpp = config_virtualy24bpp = 0;
 	if (config_videomemory >= 4096) {
 		config_virtualx8bpp = 1600;
 		config_virtualy8bpp = 1280;
@@ -1400,20 +1234,15 @@ void screen_configuration() {
 		if (card_selected != -1 && !(card[card_selected].flags & UNSUPPORTED)) {
 			config_virtualx24bpp = 1152;
 			config_virtualy24bpp = 900;
-			config_virtualx32bpp = 1024;
-			config_virtualy32bpp = 768;
 		}
 		else {
 			config_virtualx24bpp = 1280;
 			config_virtualy24bpp = 1024;
-			config_virtualx32bpp = 1152;
-			config_virtualy32bpp = 900;
 		}
 		/* Add 1600x1280 */
 		config_modesline8bpp = "\"640x480\" \"800x600\" \"1024x768\" \"1280x1024\"";
 		config_modesline16bpp = "\"640x480\" \"800x600\" \"1024x768\" \"1280x1024\"";
 		config_modesline24bpp = "\"640x480\" \"800x600\" \"1024x768\" \"1280x1024\"";
-		config_modesline32bpp = "\"640x480\" \"800x600\" \"1024x768\"";
 	}
 	else
 	if (config_videomemory >= 2048) {
@@ -1444,15 +1273,12 @@ void screen_configuration() {
 			config_virtualx24bpp = 1024;
 			config_virtualy24bpp = 768;
 		}
-		config_virtualx32bpp = 800;
-		config_virtualy32bpp = 600;
 		config_modesline8bpp = "\"640x480\" \"800x600\" \"1024x768\" \"1280x1024\"";
 		config_modesline16bpp = "\"640x480\" \"800x600\" \"1024x768\"";
 		if (config_videomemory >= 2048 + 256)
 			config_modesline24bpp = "\"640x480\" \"800x600\" \"1024x768\"";
 		else
 			config_modesline24bpp = "\"640x480\" \"800x600\"";
-		config_modesline32bpp = "\"640x480\" \"800x600\"";
 	}
 	else
 	if (config_videomemory >= 1024) {
@@ -1472,12 +1298,9 @@ void screen_configuration() {
 		config_virtualy16bpp = 600; /* it's small enough as it is. */
 		config_virtualx24bpp = 640;
 		config_virtualy24bpp = 480;
-		config_virtualx32bpp = 640;
-		config_virtualy32bpp = 400;
 		config_modesline8bpp = "\"640x480\" \"800x600\" \"1024x768\"";
 		config_modesline16bpp = "\"640x480\" \"800x600\"";
 		config_modesline24bpp = "\"640x480\"";
-		config_modesline32bpp = "\"640x400\"";
 	}
 	else
 	if (config_videomemory >= 512) {
@@ -1488,7 +1311,7 @@ void screen_configuration() {
 	}
 	else
 	if (config_videomemory >= 256) {
-		config_modesline8bpp = "640x400";
+		config_modesline8bpp = "\"640x400\"";
 		config_virtualx8bpp = 640;
 		config_virtualy8bpp = 400;
 	}
@@ -1497,6 +1320,7 @@ void screen_configuration() {
 		exit(-1);
 	}
 
+#if 0
 	/*
 	 * Handle the Ramdac/Clockchip setting.
 	 */
@@ -1582,7 +1406,13 @@ skipramdacselection:
 	printf("%s", deviceclockscomment_text);
 
 	printf("%s", deviceclocksquestion_text);
+#endif
 
+#if 0
+	/*
+	 * XXX Change this to check for a CLOCKPROBE flag rather than an
+	 * NOCLOCKPROBE.
+	 */
 	if (card_selected != -1)
 		if (card[card_selected].flags & NOCLOCKPROBE)
 			printf("The card definition says to NOT probe clocks.\n");
@@ -1605,6 +1435,9 @@ skipramdacselection:
 		FILE *f;
 		char *buf;
 		char syscmdline[2*256+100]; /* enough */
+                char *fname = NULL;
+                char *d2name = NULL;
+                char *d3name = NULL;
 
 		if (getuid() != 0) {
 			printf("Sorry, you must be root to do this.\n\n");
@@ -1612,22 +1445,28 @@ skipramdacselection:
 		}
 		printf("%s", probeonlywarning_text);
 		keypress();
-		printf("Running X -probeonly -pn -xf86config "
-			TEMPORARY_XF86CONFIG_FILENAME ".\n");
-		write_XF86Config(TEMPORARY_XF86CONFIG_FILENAME);
+		fname = Malloc(strlen(temp_dir) +
+                               strlen(TEMPORARY_XF86CONFIG_FILENAME) + 1);
+		sprintf(fname, "%s%s", temp_dir,
+                       TEMPORARY_XF86CONFIG_FILENAME);
+		d2name = Malloc(strlen(temp_dir) + strlen(DUMBCONFIG2) + 1);
+		sprintf(d2name, "%s%s", temp_dir, DUMBCONFIG2);
+		d3name = Malloc(strlen(temp_dir) + strlen(DUMBCONFIG3) + 1);
+		sprintf(d3name, "%s%s", temp_dir, DUMBCONFIG3);
+		printf("Running X -probeonly -pn -xf86config %s.\n", fname);
+		write_XF86Config(fname);
 #ifndef __EMX__
 		sync();
 #endif
 		/* compose a line with the real path */
 #ifndef __EMX__
-		sprintf(syscmdline,
-		       "X -probeonly -pn -xf86config "
-		       TEMPORARY_XF86CONFIG_FILENAME " 2>" DUMBCONFIG2);
+                sprintf(syscmdline, "X -probeonly -pn -xf86config %s 2> %s",
+                        fname, d2name);
 #else
 		/* OS/2 does not have symlinks, so "X" does not exist,
 		 * call the real X server
 		 */
-		sprintf(syscmdline,"%s/XF86_%s -probeonly -pn -xf86config "
+		sprintf(syscmdline,"%s/XFree86 -probeonly -pn -xf86config "
 		       TEMPORARY_XF86CONFIG_FILENAME " 2>" DUMBCONFIG2,
 		       __XOS2RedirRoot("/XFree86/bin",'\\'),
 		       card[card_selected].server);
@@ -1639,13 +1478,14 @@ skipramdacselection:
 			goto clocksprobefailed;
 		}
 		/* Look for 'clocks:' (case sensitive). */		
-		if (system("grep clocks\\: " DUMBCONFIG2 " >" DUMBCONFIG3)) {
+                sprintf(syscmdline, "grep clocks\\: %s > %s", d2name, d3name);
+                if (system(syscmdline)) {
 			printf("grep failed.\n");
 			printf("Cannot find clocks in server output.\n");
 			goto clocksprobefailed;
 		}
-		f = fopen(DUMBCONFIG3, "r");
-		buf = malloc(8192);
+                f = fopen(d3name, "r");
+		buf = Malloc(8192);
 		/* Parse lines. */
 		while (fgets(buf, 8192, f) != NULL) {
 			char *clks;
@@ -1658,7 +1498,7 @@ skipramdacselection:
 				continue;
 			clks[strlen(clks) - 1] = '\0';	/* Remove '\n'. */
 			config_clocksline[config_numberofclockslines] =
-				malloc(strlen(clks) + 1);
+				Malloc(strlen(clks) + 1);
 			strcpy(config_clocksline[config_numberofclockslines],
 				clks);
 			printf("Clocks %s\n", clks);
@@ -1666,15 +1506,16 @@ skipramdacselection:
 		}
 		fclose(f);
 clocksprobefailed:
-		unlink(DUMBCONFIG3);
-		unlink(DUMBCONFIG2);
-		unlink(TEMPORARY_XF86CONFIG_FILENAME);
+                unlink(d3name);
+                unlink(d2name);
+                unlink(fname);
 		printf("\n");
 
 endofprobeonly:
 		keypress();
 	}
 skipclockprobing:
+#endif
 
 	/*
 	 * For vga driver, no further configuration is required.
@@ -1692,10 +1533,9 @@ skipclockprobing:
 		emptylines();
 
 		printf("%s", modesorderintro_text);
-		printf("%s for 8bpp\n", config_modesline8bpp);
-		printf("%s for 16bpp\n", config_modesline16bpp);
-		printf("%s for 24bpp\n", config_modesline24bpp);
-		printf("%s for 32bpp\n", config_modesline32bpp);
+		printf("%s for 8-bit\n", config_modesline8bpp);
+		printf("%s for 16-bit\n", config_modesline16bpp);
+		printf("%s for 24-bit\n", config_modesline24bpp);
 		printf("\n");
 		printf("%s", modesorder_text2);
 
@@ -1710,7 +1550,9 @@ skipclockprobing:
 		printf("Select modes from the following list:\n\n");
 
 		for (i = 0; i < NU_MODESTRINGS; i++)
-			printf("%2d  %s\n", i + 1, modestring[i]);
+                        printf(" %c  %s\n", i < 9 ? '1' + i :
+                                                    'a' + i - 9, 
+                                            modestring[i]);
 		printf("\n");
 
 		printf("%s", modeslist_text);
@@ -1721,30 +1563,36 @@ skipclockprobing:
 
 		modes[0] = '\0';
 		for (i = 0; i < strlen(s); i++) {
-			if (s[i] < '1' || s[i] > '0' + NU_MODESTRINGS) {
+                        if ( NU_MODESTRINGS > 9 ) {
+                          if ((s[i] < '1' || s[i] > '9') &&
+                              (s[i] < 'a' || s[i] > 'a' + NU_MODESTRINGS - 10)) {
+                                printf("Invalid mode skipped.\n");
+                                continue;
+                            }
+                        }
+                        else {
+                          if (s[i] < '1' || s[i] > '0' + NU_MODESTRINGS) {
 				printf("Invalid mode skipped.\n");
 				continue;
+			  }
 			}
 			if (i > 0)
 				strcat(modes, " ");
-			strcat(modes, modestring[s[i] - '1']);
+                        strcat(modes, modestring[s[i] <= '9' ? s[i] - '1' :
+                                                               s[i] - 'a' + 9]);
 		}
 		switch (c) {
 		case 0 :
-			config_modesline8bpp = malloc(strlen(modes) + 1);
+			config_modesline8bpp = Malloc(strlen(modes) + 1);
 			strcpy(config_modesline8bpp, modes);
 			break;
 		case 1 :
-			config_modesline16bpp = malloc(strlen(modes) + 1);
+			config_modesline16bpp = Malloc(strlen(modes) + 1);
 			strcpy(config_modesline16bpp, modes);
 			break;
 		case 2 :
-			config_modesline24bpp = malloc(strlen(modes) + 1);
+			config_modesline24bpp = Malloc(strlen(modes) + 1);
 			strcpy(config_modesline24bpp, modes);
-			break;
-		case 3 :
-			config_modesline32bpp = malloc(strlen(modes) + 1);
-			strcpy(config_modesline32bpp, modes);
 			break;
 		}
 
@@ -1799,6 +1647,32 @@ static char *XF86Config_firstchunk_text =
 "# **********************************************************************\n"
 "\n"
 "# **********************************************************************\n"
+"# Module section -- this  section  is used to specify\n"
+"# which dynamically loadable modules to load.\n"
+"# **********************************************************************\n"
+"#\n"
+"Section \"Module\"\n"
+"\n"
+"# This loads the DBE extension module.\n"
+"\n"
+"    Load        \"dbe\"  	# Double buffer extension\n"
+"\n"
+"# This loads the miscellaneous extensions module, and disables\n"
+"# initialisation of the XFree86-DGA extension within that module.\n"
+"    SubSection  \"extmod\"\n"
+"      Option    \"omit xfree86-dga\"   # don't initialise the DGA extension\n"
+"    EndSubSection\n"
+"\n"
+"# This loads the Type1 and FreeType font modules\n"
+"    Load        \"type1\"\n"
+"    Load        \"freetype\"\n"
+"\n"
+"# This loads the GLX module\n"
+"#    Load       \"glx\"\n"
+"\n"
+"EndSection\n"
+"\n"
+"# **********************************************************************\n"
 "# Files section.  This allows default font and rgb paths to be set\n"
 "# **********************************************************************\n"
 "\n"
@@ -1823,6 +1697,7 @@ static char *XF86Config_firstchunk_text =
 static char *XF86Config_fontpaths[] = 
 {
 /*	"    FontPath	\"" TREEROOTLX "/fonts/75dpi/\"\n"*/
+    "/fonts/local/",
 	"/fonts/misc/",
 	"/fonts/75dpi/:unscaled",
 	"/fonts/100dpi/:unscaled",
@@ -1836,30 +1711,11 @@ static char *XF86Config_fontpaths[] =
 static char *XF86Config_fontpathchunk_text =
 
 "\n"
-"# For OSs that support Dynamically loaded modules, ModulePath can be\n"
-"# used to set a search path for the modules.  This is currently supported\n"
-"# for Linux ELF, FreeBSD 2.x and NetBSD 1.x.  The default path is shown\n"
-"# here.\n"
+"# The module search path.  The default path is shown here.\n"
 "\n"
 "#    ModulePath \"" MODULEPATH "\"\n"
 "\n"
 "EndSection\n"
-"\n"
-"# **********************************************************************\n"
-"# Module section -- this is an optional section which is used to specify\n"
-"# which dynamically loadable modules to load.  Dynamically loadable\n"
-"# modules are currently supported only for Linux ELF, FreeBSD 2.x\n"
-"# and NetBSD 1.x.  Currently, dynamically loadable modules are used\n"
-"# only for some extended input (XInput) device drivers.\n"
-"# **********************************************************************\n"
-"#\n"
-"# Section \"Module\"\n"
-"#\n"
-"# This loads the module for the Joystick driver\n"
-"#\n"
-"# Load \"xf86Jstk.so\"\n"
-"# \n"
-"# EndSection\n"
 "\n"
 "# **********************************************************************\n"
 "# Server flags section.\n"
@@ -1911,65 +1767,53 @@ static char *XF86Config_fontpathchunk_text =
 "# **********************************************************************\n"
 "\n"
 "# **********************************************************************\n"
-"# Keyboard section\n"
+"# Core keyboard's InputDevice section\n"
 "# **********************************************************************\n"
 "\n"
-"Section \"Keyboard\"\n"
+"Section \"InputDevice\"\n"
 "\n"
-"    Protocol	\"Standard\"\n"
+"    Identifier	\"Keyboard1\"\n"
+"    Driver	\"Keyboard\"\n"
+"# For most OSs the protocol can be omitted (it defaults to \"Standard\").\n"
+"# When using XQUEUE (only for SVR3 and SVR4, but not Solaris),\n"
+"# uncomment the following line.\n"
 "\n"
-"# when using XQUEUE, comment out the above line, and uncomment the\n"
-"# following line\n"
+"#    Option     \"Protocol\"      \"Xqueue\"\n"
 "\n"
-"#    Protocol	\"Xqueue\"\n"
-"\n"
-"    Option \"AutoRepeat\" \"500\" \"5\"\n"
-"# Let the server do the NumLock processing.  This should only be required\n"
-"# when using pre-R6 clients\n"
-"#    ServerNumLock\n"
+"    Option \"AutoRepeat\" \"500 5\"\n"
 "\n"
 "# Specify which keyboard LEDs can be user-controlled (eg, with xset(1))\n"
-"#    Xleds      1 2 3\n"
-"\n"
-"# To set the LeftAlt to Meta, RightAlt key to ModeShift, \n"
-"# RightCtl key to Compose, and ScrollLock key to ModeLock:\n"
+"#    Option	\"Xleds\"      \"1 2 3\"\n"
 "\n";
 
 static char *keyboardchunk2_text =
-"#    RightCtl    Compose\n"
-"#    ScrollLock  ModeLock\n"
-"\n"
-"# To disable the XKEYBOARD extension, uncomment XkbDisable.\n"
 "\n";
 
 static char *keyboardchunk3_text =
 "# To customise the XKB settings to suit your keyboard, modify the\n"
 "# lines below (which are the defaults).  For example, for a non-U.S.\n"
 "# keyboard, you will probably want to use:\n"
-"#    XkbModel    \"pc102\"\n"
+"#    Option \"XkbModel\"    \"pc102\"\n"
 "# If you have a US Microsoft Natural keyboard, you can use:\n"
-"#    XkbModel    \"microsoft\"\n"
+"#    Option \"XkbModel\"    \"microsoft\"\n"
 "#\n"
 "# Then to change the language, change the Layout setting.\n"
 "# For example, a german layout can be obtained with:\n"
-"#    XkbLayout   \"de\"\n"
+"#    Option \"XkbLayout\"   \"de\"\n"
 "# or:\n"
-"#    XkbLayout   \"de\"\n"
-"#    XkbVariant  \"nodeadkeys\"\n"
+"#    Option \"XkbLayout\"   \"de\"\n"
+"#    Option \"XkbVariant\"  \"nodeadkeys\"\n"
 "#\n"
 "# If you'd like to switch the positions of your capslock and\n"
 "# control keys, use:\n"
-"#    XkbOptions  \"ctrl:swapcaps\"\n"
+"#    Option \"XkbOptions\"  \"ctrl:swapcaps\"\n"
 "\n"
 "# These are the default XKB settings for XFree86\n"
-"#    XkbRules    \"xfree86\"\n"
-"#    XkbModel    \"pc101\"\n"
-"#    XkbLayout   \"us\"\n"
-"#    XkbVariant  \"\"\n"
-"#    XkbOptions  \"\"\n"
-"\n";
-
-static char *keyboardchunk4_text =
+"#    Option \"XkbRules\"    \"xfree86\"\n"
+"#    Option \"XkbModel\"    \"pc101\"\n"
+"#    Option \"XkbLayout\"   \"us\"\n"
+"#    Option \"XkbVariant\"  \"\"\n"
+"#    Option \"XkbOptions\"  \"\"\n"
 "\n";
 
 static char *keyboardlastchunk_text =
@@ -1980,22 +1824,29 @@ static char *keyboardlastchunk_text =
 
 static char *pointersection_text1 = 
 "# **********************************************************************\n"
-"# Pointer section\n"
+"# Core Pointer's InputDevice section\n"
 "# **********************************************************************\n"
 "\n"
-"Section \"Pointer\"\n";
+"Section \"InputDevice\"\n"
+"\n"
+"# Identifier and driver\n"
+"\n"
+"    Identifier	\"Mouse1\"\n"
+"    Driver	\"mouse\"\n"
+;
 
 static char *pointersection_text2 =
 "\n"
 "# When using XQUEUE, comment out the above two lines, and uncomment\n"
 "# the following line.\n"
 "\n"
-"#    Protocol	\"Xqueue\"\n"
+"#    Option \"Protocol\"	\"Xqueue\"\n"
 "\n"
-"# Baudrate and SampleRate are only for some Logitech mice\n"
+"# Baudrate and SampleRate are only for some Logitech mice. In\n"
+"# almost every case these lines should be omitted.\n"
 "\n"
-"#    BaudRate	9600\n"
-"#    SampleRate	150\n"
+"#    Option \"BaudRate\"	\"9600\"\n"
+"#    Option \"SampleRate\"	\"150\"\n"
 "\n"
 "# Emulate3Buttons is an option for 2-button Microsoft mice\n"
 "# Emulate3Timeout is the timeout in milliseconds (default is 50ms)\n"
@@ -2003,58 +1854,15 @@ static char *pointersection_text2 =
 
 static char *xinputsection_text =
 "# **********************************************************************\n"
-"# Xinput section -- this is optional and is required only if you\n"
+"# Other input device sections \n"
+"# this is optional and is required only if you\n"
 "# are using extended input devices.  This is for example only.  Refer\n"
 "# to the XF86Config man page for a description of the options.\n"
 "# **********************************************************************\n"
 "#\n"
-"# Section \"Xinput\" \n"
-"#    SubSection \"WacomStylus\"\n"
-"#        Port \"/dev/ttyS1\"\n"
-"#        DeviceName \"Wacom\"\n"
+"# Section \"InputDevice\" \n"
+"#        To be written !\n"
 "#    EndSubSection\n"
-"#    SubSection \"WacomCursor\"\n"
-"#        Port \"/dev/ttyS1\"\n"
-"#    EndSubSection\n"
-"#    SubSection \"WacomEraser\"\n"
-"#        Port \"/dev/ttyS1\"\n"
-"#    EndSubSection\n"
-"#\n"
-"#    SubSection \"Elographics\"\n"
-"#        Port \"/dev/ttyS1\"\n"
-"#        DeviceName \"Elo\"\n"
-"#        MinimumXPosition 300\n"
-"#        MaximumXPosition 3500\n"
-"#        MinimumYPosition 300\n"
-"#        MaximumYPosition 3500\n"
-"#        Screen 0\n"
-"#        UntouchDelay 10\n"
-"#        ReportDelay 10\n"
-"#    EndSubSection\n"
-"#\n"
-"#    SubSection \"Joystick\"\n"
-"#        Port \"/dev/joy0\"\n"
-"#        DeviceName \"Joystick\"\n"
-"#        TimeOut 10\n"
-"#        MinimumXPosition 100\n"
-"#        MaximumXPosition 1300\n"
-"#        MinimumYPosition 100\n"
-"#        MaximumYPosition 1100\n"
-"#        # CenterX 700\n"
-"#        # CenterY 600\n"
-"#        Delta 20\n"
-"#    EndSubSection\n"
-"#\n"
-"# The Mouse Subsection contains the same type of entries as the\n"
-"# standard Pointer Section (see above), with the addition of the\n"
-"# DeviceName entry.\n"
-"#\n"
-"#    SubSection \"Mouse\" \n"
-"#        Port \"/dev/mouse2\"\n"
-"#        DeviceName \"Second Mouse\"\n"
-"#        Protocol \"Logitech\"\n"
-"#    EndSubSection\n"
-"# EndSection\n"
 "\n";
 
 static char *monitorsection_text1 =
@@ -2087,6 +1895,7 @@ static char *monitorsection_text3 =
 "# USER MANUAL FOR THE CORRECT NUMBERS.\n"
 "\n";
 
+#if 0
 static char *monitorsection_text4 =
 "# Modes can be specified in two formats.  A compact one-line format, or\n"
 "# a multi-line format.\n"
@@ -2232,6 +2041,7 @@ static char *modelines_text =
 "\n"
 #endif
 ;
+#endif
 
 static char *devicesection_text =
 "# **********************************************************************\n"
@@ -2244,10 +2054,28 @@ static char *devicesection_text =
 "\n"
 "Section \"Device\"\n"
 "    Identifier	\"Standard VGA\"\n"
-"    Driver     \"vga\"\n"
 "    VendorName	\"Unknown\"\n"
 "    BoardName	\"Unknown\"\n"
-"#   Chipset	\"generic\"\n"
+"\n"
+"# The chipset line is optional in most cases.  It can be used to override\n"
+"# the driver's chipset detection, and should not normally be specified.\n"
+"\n"
+"#    Chipset	\"generic\"\n"
+"\n"
+"# The Driver line must be present.  When using run-time loadable driver\n"
+"# modules, this line instructs the server to load the specified driver\n"
+"# module.  Even when not using loadable driver modules, this line\n"
+"# indicates which driver should interpret the information in this section.\n"
+"\n"
+"    Driver     \"vga\"\n"
+"# The BusID line is used to specify which of possibly multiple devices\n"
+"# this section is intended for.  When this line isn't present, a device\n"
+"# section can only match up with the primary video device.  For PCI\n"
+"# devices a line like the following could be used.  This line should not\n"
+"# normally be included unless there is more than one video device\n"
+"# intalled.\n"
+"\n"
+"#    BusID      \"PCI:0:10:0\"\n"
 "\n"
 "#    VideoRam	256\n"
 "\n"
@@ -2262,10 +2090,51 @@ static char *screensection_text1 =
 "# **********************************************************************\n"
 "# Screen sections\n"
 "# **********************************************************************\n"
+"\n"
+"# Any number of screen sections may be present.  Each describes\n"
+"# the configuration of a single screen.  A single specific screen section\n"
+"# may be specified from the X server command line with the \"-screen\"\n"
+"# option.\n";
+
+static char *serverlayout_section_text1 = 
+"# **********************************************************************\n"
+"# ServerLayout sections.\n"
+"# **********************************************************************\n"
+"\n"
+"# Any number of ServerLayout sections may be present.  Each describes\n"
+"# the way multiple screens are organised.  A specific ServerLayout\n"
+"# section may be specified from the X server command line with the\n"
+"# \"-layout\" option.  In the absence of this, the first section is used.\n"
+"# When now ServerLayout section is present, the first Screen section\n"
+"# is used alone.\n"
+"\n"
+"Section \"ServerLayout\"\n"
+"\n"
+"# The Identifier line must be present\n"
+"    Identifier  \"Simple Layout\"\n"
+"\n"
+"# Each Screen line specifies a Screen section name, and optionally\n"
+"# the relative position of other screens.  The four names after\n"
+"# primary screen name are the screens to the top, bottom, left and right\n"
+"# of the primary screen.  In this example, screen 2 is located to the\n"
+"# right of screen 1.\n"
 "\n";
 
-void write_fontpath_section(f)
-	FILE *f;
+static char *serverlayout_section_text2 =
+"\n"
+"# Each InputDevice line specifies an InputDevice section name and\n"
+"# optionally some options to specify the way the device is to be\n"
+"# used.  Those options include \"CorePointer\", \"CoreKeyboard\" and\n"
+"# \"SendCoreEvents\".\n"
+"\n"
+"    InputDevice \"Mouse1\" \"CorePointer\"\n"
+"    InputDevice \"Keyboard1\" \"CoreKeyboard\"\n"
+"\n"
+"EndSection\n"
+"\n";
+
+static void 
+write_fontpath_section(FILE *f)
 {
 	/* this will create the Fontpath lines, but only after checking,
 	 * that the corresponding dir exists (was THE absolute problem
@@ -2288,8 +2157,8 @@ void write_fontpath_section(f)
 	}
 }
 
-void write_XF86Config(filename)
-	char *filename;
+static void 
+write_XF86Config(char *filename)
 {
 	FILE *f;
 
@@ -2315,56 +2184,53 @@ void write_XF86Config(filename)
 	 * Write keyboard section.
 	 */
 	if (config_altmeta) {
-		fprintf(f, "    LeftAlt     Meta\n");
-		fprintf(f, "    RightAlt    ModeShift\n");
+		fprintf(f, "    Option \"LeftAlt\"     \"Meta\"\n");
+		fprintf(f, "    Option \"RightAlt\"    \"ModeShift\"\n");
 	}
 	else {
-		fprintf(f, "#    LeftAlt     Meta\n");
-		fprintf(f, "#    RightAlt    ModeShift\n");
+		fprintf(f, "#    Option \"LeftAlt\"     \"Meta\"\n");
+		fprintf(f, "#    Option \"RightAlt\"    \"ModeShift\"\n");
 	}
 	fprintf(f, "%s", keyboardchunk2_text);
 
-	if (config_xkbdisable) {
-		fprintf(f, "    XkbDisable\n\n");
-	} else {
-		fprintf(f, "#    XkbDisable\n\n");
-	}
 	fprintf(f, "%s", keyboardchunk3_text);
-	if (config_xkbkeymap) {
-		fprintf(f, "    XkbKeymap   \"%s\"\n",config_xkbkeymap);
-		fprintf(f, "%s", keyboardchunk4_text);
+	if (config_xkbdisable) {
+		fprintf(f, "    Option \"XkbDisable\"\n\n");
 	} else {
-		fprintf(f, "    Xkbkeycodes \"%s\"\n",config_xkbkeycodes);
-		fprintf(f, "    XkbTypes    \"%s\"\n",config_xkbtypes);
-		fprintf(f, "    XkbCompat   \"%s\"\n",config_xkbcompat);
-		fprintf(f, "    XkbSymbols  \"%s\"\n",config_xkbsymbols);
-		fprintf(f, "    XkbGeometry \"%s\"\n",config_xkbgeometry);
+		fprintf(f, "#    Option \"XkbDisable\"\n\n");
 	}
+	fprintf(f, "    Option \"XkbRules\"	\"%s\"\n",
+		config_xkbrules);
+	fprintf(f, "    Option \"XkbModel\"	\"%s\"\n",
+		config_xkbmodel);
+	fprintf(f, "    Option \"XkbLayout\"	\"%s\"\n",
+		config_xkblayout);
+
 	fprintf(f, "%s",keyboardlastchunk_text);
 
 	/*
 	 * Write pointer section.
 	 */
 	fprintf(f, "%s", pointersection_text1);
-	fprintf(f, "    Protocol    \"%s\"\n",
+	fprintf(f, "    Option \"Protocol\"    \"%s\"\n",
 		mousetype_identifier[config_mousetype]);
 #ifndef __EMX__
-	fprintf(f, "    Device      \"%s\"\n", config_pointerdevice);
+	fprintf(f, "    Option \"Device\"      \"%s\"\n", config_pointerdevice);
 #endif
 	fprintf(f, "%s", pointersection_text2);
 	if (!config_emulate3buttons)
 		fprintf(f, "#");
-	fprintf(f, "    Emulate3Buttons\n");
+	fprintf(f, "    Option \"Emulate3Buttons\"\n");
 	if (!config_emulate3buttons)
 		fprintf(f, "#");
-	fprintf(f, "    Emulate3Timeout    50\n\n");
+	fprintf(f, "    Option \"Emulate3Timeout\"    50\n\n");
 	fprintf(f, "# ChordMiddle is an option for some 3-button Logitech mice\n\n");
 	if (!config_chordmiddle)
 		fprintf(f, "#");
-	fprintf(f, "    ChordMiddle\n\n");
+	fprintf(f, "    Option \"ChordMiddle\"\n\n");
 	if (config_cleardtrrts) {
-		fprintf(f, "    ClearDTR\n");
-		fprintf(f, "    ClearRTS\n\n");
+		fprintf(f, "    Option \"ClearDTR\"\n");
+		fprintf(f, "    Option \"ClearRTS\"\n\n");
 	}
 	fprintf(f, "EndSection\n\n\n");
 
@@ -2378,8 +2244,6 @@ void write_XF86Config(filename)
 	 */
 	fprintf(f, "%s", monitorsection_text1);
 	fprintf(f, "    Identifier  \"%s\"\n", config_monitoridentifier);
-	fprintf(f, "    VendorName  \"%s\"\n", config_monitorvendorname);
-	fprintf(f, "    ModelName   \"%s\"\n", config_monitormodelname);
 	fprintf(f, "\n");
 	fprintf(f, "%s", monitorsection_text2);
 	fprintf(f, "    HorizSync   %s\n", config_hsyncrange);
@@ -2387,8 +2251,10 @@ void write_XF86Config(filename)
 	fprintf(f, "%s", monitorsection_text3);
 	fprintf(f, "    VertRefresh %s\n", config_vsyncrange);
 	fprintf(f, "\n");
+#if 0
 	fprintf(f, "%s", monitorsection_text4);
 	fprintf(f, "%s", modelines_text);
+#endif
 	fprintf(f, "EndSection\n\n\n");
 
 	/*
@@ -2407,8 +2273,6 @@ void write_XF86Config(filename)
 	        fprintf(f, "    Driver      \"vga\"\n"
 			"	# unsupported card\n");
 	}
-        fprintf(f, "    VendorName  \"%s\"\n", config_devicevendorname);
-	fprintf(f, "    BoardName   \"%s\"\n", config_deviceboardname);
 	/* Rely on server to detect video memory. */
 	fprintf(f, "    #VideoRam    %d\n", config_videomemory);
 	if (card_selected != -1)
@@ -2475,16 +2339,6 @@ void write_XF86Config(filename)
 			config_virtualx24bpp, config_virtualy24bpp);
 	fprintf(f, 
 		"    EndSubsection\n"
-		"    Subsection \"Display\"\n"
-		"        Depth       32\n"
-		"        Modes       %s\n"
-		"        ViewPort    0 0\n",
-		config_modesline32bpp);
-	if (config_virtual)
-		fprintf(f, "        Virtual     %d %d\n",
-			config_virtualx32bpp, config_virtualy32bpp);
-	fprintf(f, 
-		"    EndSubsection\n"
 		"EndSection\n"
 		"\n");
 
@@ -2492,13 +2346,12 @@ void write_XF86Config(filename)
 	 * ServerLayout section
 	 */
    
-        fprintf(f,
-		"Section \"ServerLayout\"\n"
-		"	Identifier \"Main Layout\"\n"
-		"	Screen \"Screen 1\"\n"
-		"EndSection\n"
-		"\n");
-   
+        fprintf(f, serverlayout_section_text1);
+	/* replace with  screen config */
+	fprintf(f, "    Screen \"Screen 1\"\n");
+
+	fprintf(f, serverlayout_section_text2);
+
         fclose(f);
 }
 
@@ -2507,7 +2360,8 @@ void write_XF86Config(filename)
  * Ask where to write XF86Config to. Returns filename.
  */
 
-char *ask_XF86Config_location() {
+static char *
+ask_XF86Config_location(void) {
 	char s[80];
 	char *filename;
 
@@ -2518,26 +2372,26 @@ char *ask_XF86Config_location() {
 #ifndef __EMX__
 	if (getuid() == 0) {
 #ifdef PREFER_XF86CONFIG_IN_ETC
-		printf("Shall I write it to /etc/XF86Config? ");
+		printf("Shall I write it to /etc/X11/XF86Config? ");
 		getstring(s);
 		printf("\n");
 		if (answerisyes(s))
-			return "/etc/XF86Config";
+			return "/etc/X11/XF86Config";
 #endif
 
 		printf("Please answer the following question with either 'y' or 'n'.\n");
-		printf("Shall I write it to the default location, /usr/X11R6/lib/X11/XF86Config? ");
+		printf("Shall I write it to the default location, /usr/X11R6/etc/X11/XF86Config? ");
 		getstring(s);
 		printf("\n");
 		if (answerisyes(s))
-			return "/usr/X11R6/lib/X11/XF86Config";
+			return "/usr/X11R6/etc/X11/XF86Config";
 
 #ifndef PREFER_XF86CONFIG_IN_ETC
-		printf("Shall I write it to /etc/XF86Config? ");
+		printf("Shall I write it to /etc/X11/XF86Config? ");
 		getstring(s);
 		printf("\n");
 		if (answerisyes(s))
-			return "/etc/XF86Config";
+			return "/etc/X11/XF86Config";
 #endif
 #else /* __EMX__ */
 	{
@@ -2564,7 +2418,7 @@ char *ask_XF86Config_location() {
 	printf("Please give a filename to write to: ");
 	getstring(s);
 	printf("\n");
-	filename = malloc(strlen(s) + 1);
+	filename = Malloc(strlen(s) + 1);
 	strcpy(filename, s);
 	return filename;
 }
@@ -2606,7 +2460,8 @@ static char *pathnote_text =
 "Make sure the path is OK before continuing.\n";
 #endif
 
-void path_check() {
+static void 
+path_check(void) {
 	char s[80];
 	int ok;
 
@@ -2638,7 +2493,11 @@ void path_check() {
  * Program entry point.
  */
 
-int main() {
+int 
+main(int argc, char *argv[]) {
+    
+	createtmpdir();
+
 	emptylines();
 
 	printf("%s", intro_text);
@@ -2654,19 +2513,9 @@ int main() {
 
 	emptylines();
 
-	xkb_keyboard_configuration();
+	keyboard_configuration();
 
 	emptylines();
-
-	/* XXX hv: if you have XKB, you might not need to make these
-	 * settings; they are left in the config file though
-	 */
-	if (!config_xkbdisable) {
-		config_altmeta = 0;
-	} else {
-		keyboard_configuration();
-		emptylines();
-	}
 
 	monitor_configuration();
 
