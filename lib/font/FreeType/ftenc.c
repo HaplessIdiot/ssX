@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.21 2002/10/01 00:02:10 alanh Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.22 2003/06/08 15:41:13 herrb Exp $ */
 
 #ifndef FONTMODULE
 #include <string.h>
@@ -28,6 +28,10 @@ THE SOFTWARE.
 #include "Xdefs.h"
 #include "xf86_ansic.h"
 #endif
+
+#include "fntfilst.h"
+#include "fontutil.h"
+#include "FSproto.h"
 
 #include "fontmisc.h"
 #include "fontenc.h"
@@ -91,7 +95,7 @@ FTPickMapping(char *xlfd, int length, char *filename, FT_Face face,
         if(strcasecmp(buf, "iso10646-1") != 0) {
             if(strcasecmp(buf, encoding_name) == 0)
                 goto native;
-            return -1;
+            return BadFontFormat;
         }
     } else if(symbol) {
         ftrc = FT_Select_Charmap(face, ft_encoding_adobe_custom);
@@ -103,12 +107,9 @@ FTPickMapping(char *xlfd, int length, char *filename, FT_Face face,
     if(symbol && encoding == NULL)
         encoding = FontEncFind("microsoft-symbol", filename);
     if(encoding == NULL) {
-        ErrorF("FreeType: couldn't find encoding %s\n", encoding_name);
-        encoding = FontEncFind("iso8859-1", filename);
-    }
-    if(encoding == NULL) {
-        ErrorF("FreeType: couldn't find encoding iso8859-1.\n");
-        return -1;
+        ErrorF("FreeType: couldn't find encoding '%s' for '%s'\n",
+               encoding_name, filename);
+        return BadFontName;
     }
 
     if(FT_Has_PS_Glyph_Names(face)) {
@@ -117,7 +118,7 @@ FTPickMapping(char *xlfd, int length, char *filename, FT_Face face,
                 tm->named = 1;
                 tm->base = 0;
                 tm->mapping = mapping;
-                return 0;
+                return Successful;
             }
         }
     }
@@ -139,18 +140,18 @@ FTPickMapping(char *xlfd, int length, char *filename, FT_Face face,
             } else
                 tm->base = 0;
             tm->mapping = mapping;
-            return 0;
+            return Successful;
         }
     }
     
-    return -1;
+    return BadFontFormat;
 
   native:
     tm->named = 0;
     tm->cmap = face->charmap;
     tm->base = 0;
     tm->mapping = NULL;
-    return 0;
+    return Successful;
 }
 
 static int 

@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.10 2003/07/04 16:24:30 eich Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.11 2003/07/07 15:34:29 eich Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -641,7 +641,7 @@ makeXLFD(char *filename, FT_Face face, int isBitmap)
                              "-%s-%s-%s-%s-%s-%s-%d-%d-%d-%d-%s-%d",
                              foundry, family,
                              weight, slant, sWidth, adstyle,
-                             h, ((int)(h / (double)yres + 0.5)) * 10,
+                             h, (int)(h / (double)yres * 72.27 * 10 + 0.5),
                              xres, yres,
                              spacing, 60);
         }

@@ -721,7 +721,9 @@ static void S3TiLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
 
 static Bool S3TiUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 {
-        return TRUE;
+	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+	S3Ptr pS3 = S3PTR(pScrn);
+	return (pS3->hwCursor);
 }       
 
 

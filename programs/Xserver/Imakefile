@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.285 2003/06/30 01:45:09 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.286 2003/07/01 03:49:09 torrey Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -461,31 +461,6 @@ ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS), \
 #define ServerToInstall XsunMono
 #endif
 #endif /* XsunLynxMonoServer */
-
-
-#if defined(XhpServer) && XhpServer
-XCOMM
-XCOMM Hewlett Packard CFB Server
-XCOMM
-MFBDIR  = mfb
-CFB8DIR = cfb
-CFB32DIR = cfb32
-HPDDXDIR = hw/hp
-HPOBJS = hw/hp/hp.o
-#if BuildLowMem
-HPSUBDIRS = $(STDDIRS) $(LMFCFBDIR) $(HPDDXDIR) $(DEPDIRS)
-HPLIBS = LMFCFBLibs
-#else
-HPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) $(HPDDXDIR) $(DEPDIRS)
-HPLIBS = CFB32Libs
-#endif
-HPSYSLIBS = $(FONTLIBS) $(CBRT) $(SYSLIBS)
-ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS), \
-	$(HPLIBS),$(HPSYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall Xhp
-#endif
-#endif	/* XhpServer */
 
 
 #if HasParallelMake

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.99 2003/07/08 15:39:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.100 2003/07/14 23:07:25 daenzer Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -6548,10 +6548,6 @@ static Bool RADEONCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     if (info->DGAModes) xfree(info->DGAModes);
     info->DGAModes = NULL;
-
-    if (info->CloneModes)
-	while (info->CloneModes)
-	    xf86DeleteMode(&info->CloneModes, info->CloneModes);
 
     pScrn->vtSema = FALSE;
 

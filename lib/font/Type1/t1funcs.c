@@ -616,6 +616,9 @@ Type1OpenScalable (FontPathElementPtr fpe,
            no_mapping=1;        /* font's native encoding vector */
        }
 
+       pFont->info.firstCol = 255;
+       pFont->info.lastCol  = 0;
+
        if(!no_mapping) {
            mapping = FontEncMapFind(p, 
                                     FONT_ENCODING_POSTSCRIPT, -1, -1,
@@ -625,13 +628,10 @@ Type1OpenScalable (FontPathElementPtr fpe,
                                         FONT_ENCODING_UNICODE, -1, -1,
                                         fileName);
            if(!mapping)
-               no_mapping=2;
+	       goto NoEncoding;
            else
                no_mapping=0;
        }
-
-       pFont->info.firstCol = 255;
-       pFont->info.lastCol  = 0;
 
        for (i=0; i < 256; i++) {
                long h,w;
@@ -756,7 +756,8 @@ Type1OpenScalable (FontPathElementPtr fpe,
  
                Destroy(area);
        }
- 
+ NoEncoding:
+       
        delmemory();
        xfree(pool);
  

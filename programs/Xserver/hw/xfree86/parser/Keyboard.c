@@ -101,8 +101,8 @@ xf86parseKeyboardSection (void)
 			if (xf86getSubToken (&(ptr->inp_comment)) != STRING)
 				Error (QUOTE_MSG, "Protocol");
 			ptr->inp_option_lst = xf86addNewOption(ptr->inp_option_lst,
-												xf86configStrdup("Protocol"),
-												val.str);
+							       xf86configStrdup("Protocol"),
+							       val.str);
 			break;
 		case AUTOREPEAT:
 			if (xf86getSubToken (&(ptr->inp_comment)) != NUMBER)
@@ -117,7 +117,7 @@ xf86parseKeyboardSection (void)
 			xf86conffree(s1);
 			xf86conffree(s2);
 			ptr->inp_option_lst = xf86addNewOption(ptr->inp_option_lst,
-												xf86configStrdup("AutoRepeat"), s);
+							       xf86configStrdup("AutoRepeat"), s);
 			break;
 		case XLEDS:
 			if (xf86getSubToken (&(ptr->inp_comment)) != NUMBER)
