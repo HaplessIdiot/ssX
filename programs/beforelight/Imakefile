@@ -1,8 +1,15 @@
 XCOMM $XConsortium: Imakefile,v 1.2 93/09/18 16:23:30 rws Exp $
+XCOMM $XFree86$
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
            SRCS = b4light.c
            OBJS = b4light.o
 
-ComplexProgramTarget(beforelight)
+ComplexProgramTargetNoMan(beforelight)
 InstallAppDefaultsLong(B4light,Beforelight)
+
+#if ExpandManNames
+InstallManPageLong(b4light,$(MANDIR),beforelight)
+#else
+InstallManPage(b4light,$(MANDIR))
+#endif
