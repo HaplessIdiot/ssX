@@ -1,0 +1,17 @@
+XCOMM $XConsortium: Imakefile,v 1.3 94/02/17 15:19:37 dpw Exp $
+#include <Server.tmpl>
+
+#define	IHaveSubdirs
+
+SUBDIRS = lzw delta
+OBJS = lzw/?*.o delta/?*.o
+DONES = lzw/DONE delta/DONE
+
+#undef _LinkBuildLibrary
+#define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)
+
+NormalDepLibraryTarget(lbxutil,$(SUBDIRS) $(DONES),$(OBJS))
+
+ForceSubdirs($(SUBDIRS))
+
+DependSubdirs($(SUBDIRS))
