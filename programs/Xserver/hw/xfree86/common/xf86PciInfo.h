@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.110 2001/10/24 09:28:44 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.111 2001/10/28 03:33:19 tsi Exp $ */
 /*
  * PCI Probe
  *
@@ -518,11 +518,23 @@
 #define PCI_CHIP_GEFORCE2GTS_1  0x0151
 #define PCI_CHIP_GEFORCE2ULTRA  0x0152
 #define PCI_CHIP_QUADRO2PRO     0x0153
+#define PCI_CHIP_0x0170         0x0170
+#define PCI_CHIP_0x0171         0x0171
+#define PCI_CHIP_0x0172         0x0172
+#define PCI_CHIP_0x0173         0x0173
+#define PCI_CHIP_0x0174         0x0174
+#define PCI_CHIP_0x0175         0x0175
+#define PCI_CHIP_0x0178         0x0178
+#define PCI_CHIP_0x017A         0x017A
+#define PCI_CHIP_0x017B         0x017B
+#define PCI_CHIP_0x017C         0x017C
 #define PCI_CHIP_IGEFORCE2      0x01A0
 #define PCI_CHIP_GEFORCE3	0x0200
 #define PCI_CHIP_GEFORCE3_1	0x0201
 #define PCI_CHIP_GEFORCE3_2	0x0202
 #define PCI_CHIP_QUADRO_DDC	0x0203
+#define PCI_CHIP_0x0250         0x0250
+#define PCI_CHIP_0x0258         0x0258
 
 /* NVIDIA & SGS */
 #define PCI_CHIP_RIVA128	0x0018
@@ -1301,11 +1313,23 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_GEFORCE2GTS_1,"GeForce2 Ti",0},
 				{PCI_CHIP_GEFORCE2ULTRA,"GeForce2 Ultra",0},
 				{PCI_CHIP_QUADRO2PRO,	"Quadro2 Pro",0},
+				{PCI_CHIP_0x0170,	"0x0170",0},
+				{PCI_CHIP_0x0171,	"0x0171",0},
+				{PCI_CHIP_0x0172,	"0x0172",0},
+				{PCI_CHIP_0x0173,	"0x0173",0},
+				{PCI_CHIP_0x0174,	"0x0174",0},
+				{PCI_CHIP_0x0175,	"0x0175",0},
+				{PCI_CHIP_0x0178,	"0x0178",0},
+				{PCI_CHIP_0x017A,	"0x017A",0},
+				{PCI_CHIP_0x017B,	"0x017B",0},
+				{PCI_CHIP_0x017C,	"0x017C",0},
 				{PCI_CHIP_IGEFORCE2,	"GeForce2 Integrated",0},
 				{PCI_CHIP_GEFORCE3,	"GeForce3",0},
 				{PCI_CHIP_GEFORCE3_1,	"GeForce3 Ti 200",0},
 				{PCI_CHIP_GEFORCE3_2,	"GeForce3 Ti 500",0},
 				{PCI_CHIP_QUADRO_DDC,	"Quadro DDC",0},
+				{PCI_CHIP_0x0250,	"0x0250",0},
+				{PCI_CHIP_0x0258,	"0x0258",0},
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_IMS, {
 				{PCI_CHIP_IMSTT128,	"TwinTurbo 128", 0},
