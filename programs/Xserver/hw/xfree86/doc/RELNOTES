@@ -52,6 +52,9 @@
 
      o  The built-in X server malloc is used by default.
 
+     o  Fix a problem that can cause the X server to crash when running
+        xvidtune.
+
      o  A new pointer keyword RepeatMiddle has been added to support
         dual-protocol 3-button mice which repeat the previous button
         event when the middle button is pressed in Microsoft-compatible
@@ -60,9 +63,8 @@
 
      o  Bitmap fontpath elements can have ":unscaled" appended to
         prevent the fonts from being treated as scalable.  This works
+
         with the fontserver (xfs) too.
-
-
 
   2.2.  Trident driver (SVGA server)
 
@@ -128,8 +130,6 @@
 
 
 
-
-
   2.7.  Mach32 server
 
 
@@ -179,7 +179,13 @@
 
      o  Incorrect handling of IBM RGB Ramdacs has been fixed.
 
-  2.13.  Client/Library changes
+  2.13.  SuperProbe
+
+
+     o  Added detection for C&T 65548, Cirrus CL-GD7543/1, AT&T 20C409,
+        AT&T20C499, and fixed an incorrect ET4000/W32 probe problem.
+
+  2.14.  Client/Library changes
 
 
      o  The xdm security fix from the X Consortium's fix-13 is included.
@@ -188,26 +194,20 @@
 
      o  Colour support has been added to xterm.
 
+
+
      o  XNLS support has been added for KOI8-R.
 
      o  xrdb dynamically allocates string space to avoid overruns.
 
      o  A memory overrun problem in xterm has been fixed.
 
-
-
      o  An "AllowNullPasswd" resource has been added to xdm.
 
-
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.2 1995/11/18 02:31:16 dawes Exp $
-
+     o  libXt bug fix from the X Consortium's fix-13.
 
 
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.3 1995/11/18 23:49:15 dawes Exp $
 
 
 
