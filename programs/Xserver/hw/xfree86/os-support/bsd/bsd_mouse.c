@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.33 2005/02/03 04:24:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.34 2005/02/04 02:55:49 dawes Exp $ */
 
 /*
  * Copyright (c) 1999-2005 by The XFree86 Project, Inc.
@@ -89,7 +89,7 @@ static void usbSigioReadInput (int fd, void *closure);
 #endif
 
 #define DEFAULT_MOUSE_DEV		"/dev/mouse"
-#if !defined(__OpenBSD__)
+#if defined(__NetBSD__)
 #define DEFAULT_PS2_DEV			"/dev/pms0"
 #else
 #define DEFAULT_PS2_DEV			"/dev/psm0"
