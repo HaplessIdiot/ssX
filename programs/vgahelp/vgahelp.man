@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/vgahelp/vgahelp.man,v 3.0 1995/02/12 02:42:30 dawes Exp $
+.\" $XFree86: xc/programs/vgahelp/vgahelp.man,v 3.1 1995/02/12 09:57:24 dawes Exp $
 .\"
 .\" Copyright (c) 1995  Kaleb S. KEITHLEY
 .\"
@@ -31,10 +31,20 @@
 vgahelp \- mode tuner for XFree86
 .SH SYNOPSIS
 .B vgahelp
+[-prev] [-next]
 [
 .I \-toolkitoption
 \&.\|.\|. ]
 .SH DESCRIPTION
 Vgahelp is an interactive video mode tuner for XFree86 X servers.
+.SH OPTIONS
+\fIvgahelp\fP accepts the standard X Toolkit command line options as well
+as the following:
+.TP 8
+.B \-prev
+Switch the Xserver to the previous video mode.
+.TP 8
+.B \-next
+Switch the Xserver to the next video mode.
 .SH AUTHORS
 Kaleb S. Keithley, X Consortium.
