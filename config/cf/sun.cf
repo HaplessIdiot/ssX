@@ -3,7 +3,7 @@ XCOMM platform:  $TOG: sun.cf /main/176 1997/12/09 17:27:51 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.50 1999/03/28 02:34:19 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.51 2000/05/18 23:21:30 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -238,7 +238,7 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 #  endif
 # endif 		/* OSMinorVersion > 1 */
 # ifndef UseExportLists
-#  if OSMinorVersion > 4
+#  if (OSMinorVersion > 4) && !HasGcc2
 #   define UseExportLists YES
 #  else
 #   define UseExportLists NO
