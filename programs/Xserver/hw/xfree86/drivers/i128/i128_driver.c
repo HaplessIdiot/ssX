@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.5 2000/10/23 14:11:39 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.6 2000/10/23 21:16:48 tsi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -158,6 +158,8 @@ static XF86ModuleVersionInfo i128VersRec =
 
 XF86ModuleData i128ModuleData = { &i128VersRec, i128Setup, NULL };
 
+#endif
+
 
 /*
  * List of symbols from other modules that this module references.  This
@@ -217,6 +219,8 @@ static const char *int10Symbols[] = {
     NULL
 };
 
+
+#ifdef XFree86LOADER
 
 /* Mandatory
  *
@@ -798,9 +802,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     /* This gives us DDC1 */
     if (pI128->ddc1Read || pI128->i2cInit) {
         if (xf86LoadSubModule(pScrn, "ddc")) {
-#ifdef XFree86LOADER
           xf86LoaderReqSymLists(ddcSymbols, NULL);
-#endif
         } else {
           /* ddc module not found, we can do without it */
           pI128->ddc1Read = NULL;
@@ -813,9 +815,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     /* Load I2C if we have the code to use it */
     if (pI128->i2cInit) {
       if ( xf86LoadSubModule(pScrn, "i2c") ) {
-#ifdef XFree86LOADER
         xf86LoaderReqSymLists(i2cSymbols,NULL);
-#endif
       } else {
         /* i2c module not found, we can do without it */
         pI128->i2cInit = NULL;
@@ -832,7 +832,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
 	int i;
         for (i=0; i<4; i++)
     	    if (mon->det_mon[i].type == DS_NAME) {
-		if (xf86strncmp((char *)mon->det_mon[i].section.name,
+		if (strncmp((char *)mon->det_mon[i].section.name,
 			    "SGI 1600SW FP", 13) == 0) {
 			pI128->FlatPanel = TRUE;
     			xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
@@ -1119,7 +1119,6 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     /* Set display resolution */
     xf86SetDpi(pScrn, 0, 0);
 
-#ifdef XFree86LOADER
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
 	I128FreeRec(pScrn);
 	return FALSE;
@@ -1148,7 +1147,6 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
-#endif
 
     I128UnmapMem(pScrn);
 
@@ -2315,13 +2313,13 @@ I128DumpIBMDACRegisters(ScrnInfoPtr pScrn, volatile unsigned long *vrbg)
 			buf[0] = '\0';
 		}
 		if (ibm52Xmask[i] == 0x00) {
-			xf86strcat(buf, " ..");
+			strcat(buf, " ..");
 		} else {
 			vrbg[IDXL_I] = i;
 			ibmr[i] = vrbg[DATA_I] & 0xFF;
 			ibmr[i] &= ibm52Xmask[i];
-			xf86sprintf(tbuf, " %02x", ibmr[i]);
-			xf86strcat(buf, tbuf);
+			sprintf(tbuf, " %02x", ibmr[i]);
+			strcat(buf, tbuf);
 		}
 	}
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "%s\n", buf);
