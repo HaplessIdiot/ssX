@@ -26,6 +26,9 @@
 void
 xf86SlowBcopy(unsigned char *src, unsigned char *dst, int len)
 {
+#if defined(__ia64__)
+    outb(0x80, 0x00);
+#endif
     while(len--)
     {
 	*dst++ = *src++;

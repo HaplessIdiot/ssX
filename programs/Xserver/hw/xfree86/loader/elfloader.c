@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.49 2003/01/24 17:26:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.50 2003/03/25 04:18:22 dawes Exp $ */
 
 /*
  *
@@ -2439,7 +2439,8 @@ unsigned short  **psecttable;
 	       || !strcmp(lookup[i].symName, ".comment")
 	       || !strcmp(lookup[i].symName, ".note")
 	       ) {
-	    memmove(&(lookup[i]), &(lookup[i+1]), (l-- - i) * sizeof (LOOKUP));
+	    memmove(&(lookup[i]), &(lookup[i+1]), (l - i) * sizeof (LOOKUP));
+	    memmove(&(secttable[i]), &(secttable[i+1]), (l-- - i) * sizeof (unsigned short));
 	}
     }
     return lookup;

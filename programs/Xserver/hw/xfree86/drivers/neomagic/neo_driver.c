@@ -30,7 +30,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Copyright 2002 Shigehiro Nomura
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.65 2002/11/25 14:04:59 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.66 2002/12/09 11:32:48 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -2605,7 +2605,9 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
 	    VGAwGR(i, restore->reg->GR[i]);
 	}
     }
-
+    
+    VGAwGR (0x93, 0xc0); /* Gives faster framebuffer writes */
+    
     /* Program vertical extension register */
     if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2230
 	|| nPtr->NeoChipset == NM2360 || nPtr->NeoChipset == NM2380) {

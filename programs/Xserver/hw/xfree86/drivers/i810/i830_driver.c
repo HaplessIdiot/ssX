@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.26 2003/02/06 04:18:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.27 2003/02/14 17:12:42 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -1678,7 +1678,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
       pI830->CursorNeedsPhysical = FALSE;
 
    /* Force ring buffer to be in low memory for the 845G. */
-   if (IS_845G(pI830))
+   if (IS_845G(pI830) || IS_I85X(pI830) || IS_I865G(pI830))
       pI830->NeedRingBufferLow = TRUE;
 
    /*
@@ -3254,6 +3254,8 @@ I830BIOSLeaveVT(int scrnIndex, int flags)
 #endif
 
    ResetState(pScrn, TRUE);
+   /* NeedToSync is set TRUE in RefreshRing called from ResetState() */
+   pI830->AccelInfoRec->NeedToSync = FALSE;
    RestoreHWState(pScrn);
    RestoreBIOSMemSize(pScrn);
    I830UnbindGARTMemory(pScrn);
@@ -3379,43 +3381,44 @@ I830BIOSSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 static Bool
 I830BIOSSaveScreen(ScreenPtr pScreen, int mode)
 {
-   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-   I830Ptr pI830 = I830PTR(pScrn);
-   Bool on = xf86IsUnblank(mode);
-   CARD32 temp, ctrl, base, i;
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    I830Ptr pI830 = I830PTR(pScrn);
+    Bool on = xf86IsUnblank(mode);
+    CARD32 temp, ctrl, base, i;
 
-   DPRINTF(PFX, "I830BIOSSaveScreen: %d, on is %s\n", mode, BOOLTOSTRING(on));
+    DPRINTF(PFX, "I830BIOSSaveScreen: %d, on is %s\n", mode, BOOLTOSTRING(on));
 
-   for (i = 0; i < MAX_DISPLAY_PIPES; i++) {
-      if (i == 0) {
-	 ctrl = DSPACNTR;
-	 base = DSPABASE;
-      } else {
-	 ctrl = DSPBCNTR;
-	 base = DSPBADDR;
-      }
-      if (pI830->planeEnabled[i]) {
-	 temp = INREG(ctrl);
-	 if (on)
-	    temp |= DISPLAY_PLANE_ENABLE;
-	 else
-	    temp &= ~DISPLAY_PLANE_ENABLE;
-	 OUTREG(ctrl, temp);
-	 /* Flush changes */
-	 temp = INREG(base);
-	 OUTREG(base, temp);
-      }
-   }
+    if (pScrn->vtSema) {
+	for (i = 0; i < MAX_DISPLAY_PIPES; i++) {
+	    if (i == 0) {
+		ctrl = DSPACNTR;
+		base = DSPABASE;
+	    } else {
+		ctrl = DSPBCNTR;
+		base = DSPBADDR;
+	    }
+	    if (pI830->planeEnabled[i]) {
+		temp = INREG(ctrl);
+		if (on)
+		    temp |= DISPLAY_PLANE_ENABLE;
+		else
+		    temp &= ~DISPLAY_PLANE_ENABLE;
+		OUTREG(ctrl, temp);
+		/* Flush changes */
+		temp = INREG(base);
+		OUTREG(base, temp);
+	    }
+	}
 
-   if (pI830->CursorInfoRec && !pI830->SWCursor && pI830->cursorOn) {
-      if (on)
-	 pI830->CursorInfoRec->ShowCursor(pScrn);
-      else
-	 pI830->CursorInfoRec->HideCursor(pScrn);
-      pI830->cursorOn = TRUE;
-   }
-
-   return TRUE;
+	if (pI830->CursorInfoRec && !pI830->SWCursor && pI830->cursorOn) {
+	    if (on)
+		pI830->CursorInfoRec->ShowCursor(pScrn);
+	    else
+		pI830->CursorInfoRec->HideCursor(pScrn);
+	    pI830->cursorOn = TRUE;
+	}
+    }
+    return TRUE;
 }
 
 /* Use the VBE version when available. */

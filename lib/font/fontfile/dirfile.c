@@ -90,6 +90,8 @@ FontFileReadDirectory (char *directory, FontDirectoryPtr *pdir)
     strcat(dir_file, FontDirFile);
     file = fopen(dir_file, "r");
     if (file) {
+	Bool found_font = FALSE;
+	
 	if (fstat (fileno(file), &statb) == -1)
 	    return BadFontPath;
 	count = fscanf(file, "%d\n", &i);
@@ -106,6 +108,7 @@ FontFileReadDirectory (char *directory, FontDirectoryPtr *pdir)
 	if (format[0] == '\0')
 	    sprintf(format, "%%%ds %%%d[^\n]\n",
 		MAXFONTFILENAMELEN-1, MAXFONTNAMELEN-1);
+
 	while ((count = fscanf(file, format, file_name, font_name)) != EOF) {
 #ifdef __UNIXOS2__
 	    /* strip any existing trailing CR */
@@ -118,14 +121,16 @@ FontFileReadDirectory (char *directory, FontDirectoryPtr *pdir)
 		fclose(file);
 		return BadFontPath;
 	    }
-	    if (!FontFileAddFontFile (dir, font_name, file_name))
-	    {
-		FontFileFreeDir (dir);
-		fclose(file);
-		return BadFontPath;
-	    }
+	    if (FontFileAddFontFile (dir, font_name, file_name))
+		found_font = TRUE;
+	}
+	if (!found_font) {
+	    FontFileFreeDir (dir);
+	    fclose(file);
+	    return BadFontPath;
 	}
 	fclose(file);
+	
     } else if (errno != ENOENT) {
 	return BadFontPath;
     }
