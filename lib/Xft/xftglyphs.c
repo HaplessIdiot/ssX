@@ -53,6 +53,7 @@ XftGlyphLoad (Display		*dpy,
 #ifdef FREETYPE2
     FT_Error	    error;
     FT_ULong	    charcode;
+    FT_UInt	    glyphindex;
     FT_GlyphSlot    glyph;
     XGlyphInfo	    *gi;
     Glyph	    g;
@@ -83,7 +84,15 @@ XftGlyphLoad (Display		*dpy,
     while (nglyph--)
     {
 	charcode = (FT_ULong) *glyphs++;
-	error = FT_Load_Char (font->face, charcode, 0/*|FT_LOAD_NO_HINTING */);
+	if (font->encoded)
+	{
+	    glyphindex = FT_Get_Char_Index (font->face, charcode);
+	    if (!glyphindex)
+		continue;
+	}
+	else
+	    glyphindex = (FT_UInt) charcode;
+	error = FT_Load_Glyph (font->face, glyphindex, 0/*|FT_LOAD_NO_HINTING */);
 	if (error)
 	    continue;
 
@@ -328,5 +337,20 @@ XftGlyphCheck (Display		*dpy,
 	}
 	*nmissing = n;
     }
+#endif
+}
+
+Bool
+XftFreeTypeGlyphExists (Display		*dpy,
+			XftFontStruct	*font,
+			unsigned int	glyph)
+{
+#ifdef FREETYPE2
+    if (font->encoded)
+	return FT_Get_Char_Index (font->face, (FT_ULong) glyph) != 0;
+    else
+	return glyph && glyph <= font->face->num_glyphs;
+#else
+    return False;
 #endif
 }

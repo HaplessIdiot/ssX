@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.7 2000/12/01 03:27:57 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.8 2000/12/01 21:32:01 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -288,6 +288,9 @@ XftFontOpenXlfd (Display *dpy, int screen, const char *xlfd);
 void
 XftFontClose (Display *dpy, XftFont *font);
 
+Bool
+XftGlyphExists (Display *dpy, XftFont *font, unsigned int glyph);
+    
 /* xftfreetype.c */
 /* xftfs.c */
 

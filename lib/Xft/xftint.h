@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.6 2000/12/01 03:27:57 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.7 2000/12/01 21:32:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -177,6 +177,11 @@ XftCoreExtents32 (Display	    *dpy,
 		  unsigned int	    *string, 
 		  int		    len,
 		  XGlyphInfo	    *extents);
+
+Bool
+XftCoreGlyphExists (Display	    *dpy,
+		    XFontStruct	    *fs,
+		    unsigned int    glyph);
 
 /* xftdbg.c */
 void

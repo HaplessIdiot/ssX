@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftname.c,v 1.1 2000/11/29 08:39:23 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftname.c,v 1.2 2000/12/01 00:41:48 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -136,6 +136,20 @@ _XftNameConvert (XftType type, char *string)
     return v;
 }
 
+static const char *
+_XftNameFindNext (const char *cur, const char *delim, char *save, char *last)
+{
+    while (*cur && !strchr (delim, *cur))
+    {
+	*save++ = *cur++;
+    }
+    *save = 0;
+    *last = *cur;
+    if (*cur)
+	cur++;
+    return cur;
+}
+
 XftPattern *
 XftNameParse (const char *name)
 {
@@ -143,6 +157,7 @@ XftNameParse (const char *name)
     XftPattern		*pat;
     double		d;
     char		*e;
+    char		delim;
     XftValue		v;
     const XftObjectType	*t;
 
@@ -155,42 +170,50 @@ XftNameParse (const char *name)
 
     for (;;)
     {
-	name = _XftSplitValue (name, save);
-	if (!XftPatternAddString (pat, XFT_FAMILY, save))
-	    goto bail2;
-	if (*name != ',')
-	    break;
-    }
-    if (*name)
-    {
-	_XftSplitStr (name, save);
-	d = strtod (save, &e);
-	if (e != save)
+	name = _XftNameFindNext (name, "-,:", save, &delim);
+	if (save[0])
 	{
-	    if (!XftPatternAddDouble (pat, XFT_SIZE, d))
+	    if (!XftPatternAddString (pat, XFT_FAMILY, save))
 		goto bail2;
 	}
-	name = strchr (name, '-');
-	if (name)
-	    ++name;
-	while (name && *name)
+	if (delim != ',')
+	    break;
+    }
+    if (delim == '-')
+    {
+	for (;;)
 	{
-	    name = _XftSplitField (name, save);
-	    t = XftNameGetType (save);
-	    if (*name != '=')
-		goto bail2;
+	    name = _XftNameFindNext (name, "-,:", save, &delim);
+	    d = strtod (save, &e);
+	    if (e != save)
 	    {
-		do
+		if (!XftPatternAddDouble (pat, XFT_SIZE, d))
+		    goto bail2;
+	    }
+	    if (delim != ',')
+		break;
+	}
+    }
+    while (delim == ':')
+    {
+	name = _XftNameFindNext (name, "=:", save, &delim);
+	if (save[0])
+	{
+	    if (delim == '=')
+	    {
+		t = XftNameGetType (save);
+		for (;;)
 		{
-		    name++;
-		    name = _XftSplitValue (name, save);
-		    if (t)
+		    name = _XftNameFindNext (name, "=:,", save, &delim);
+		    if (save[0] && t)
 		    {
 			v = _XftNameConvert (t->type, save);
-			XftPatternAdd (pat, t->object, v, True);
+			if (!XftPatternAdd (pat, t->object, v, True))
+			    goto bail2;
 		    }
+		    if (delim != ',')
+			break;
 		}
-		while (*name == ',');
 	    }
 	}
     }

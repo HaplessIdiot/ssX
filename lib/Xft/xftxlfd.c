@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/xftxlfd.c,v 1.2 2000/12/01 03:27:57 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -64,6 +64,7 @@ XftXlfdParse (const char *xlfd_orig, Bool ignore_scalable, Bool complete)
     int		resx;
     int		resy;
     int		slant_value, weight_value;
+    double	dpixel;
 
     if (*xlfd != '-')
 	return 0;
@@ -117,6 +118,8 @@ XftXlfdParse (const char *xlfd_orig, Bool ignore_scalable, Bool complete)
     if (!XftPatternAddInteger (pat, XFT_SLANT, slant_value)) 
 	goto bail;
     
+    dpixel = (double) pixel;
+    
     if (complete)
     {
 	/*
@@ -148,11 +151,17 @@ XftXlfdParse (const char *xlfd_orig, Bool ignore_scalable, Bool complete)
     else
     {
 	if (point > 0)
+	{
 	    if (!XftPatternAddDouble (pat, XFT_SIZE, ((double) point) / 10.0)) goto bail;
+	    if (pixel <= 0 && resy > 0)
+	    {
+		dpixel = (double) point * (double) resy / 720.0;
+	    }
+	}
     }
     
-    if (pixel > 0)
-	if (!XftPatternAddDouble (pat, XFT_PIXEL_SIZE, (double) pixel)) goto bail;
+    if (dpixel > 0)
+	if (!XftPatternAddDouble (pat, XFT_PIXEL_SIZE, dpixel)) goto bail;
     
     _XftDownStr (registry, save);
     if (registry[0] && !strchr (registry, '*'))

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.2 2000/11/30 06:59:45 keithp Exp $
+ * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.3 2000/12/01 21:32:01 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -45,6 +45,7 @@ struct _XftFontStruct {
     Bool		monospace;
     int			rgba;
     Bool		antialias;
+    Bool		encoded;    /* use charmap */
     XRenderPictFormat	*format;
     XGlyphInfo		**realized;
     int			nrealized;
@@ -63,6 +64,11 @@ XftGlyphCheck (Display		*dpy,
 	       unsigned long	glyph,
 	       unsigned long	*missing,
 	       int		*nmissing);
+
+Bool
+XftFreeTypeGlyphExists (Display		*dpy,
+			XftFontStruct	*font,
+			unsigned int	glyph);
 
 /* xftrender.c */
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/xftfont.c,v 1.2 2000/12/01 03:27:57 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -198,4 +198,13 @@ XftFontClose (Display *dpy, XftFont *font)
     if (font->pattern)
 	XftPatternDestroy (font->pattern);
     free (font);
+}
+
+Bool
+XftGlyphExists (Display *dpy, XftFont *font, unsigned int glyph)
+{
+    if (font->core)
+	return XftCoreGlyphExists (dpy, font->u.core.font, glyph);
+    else
+	return XftFreeTypeGlyphExists (dpy, font->u.ft.font, glyph);
 }
