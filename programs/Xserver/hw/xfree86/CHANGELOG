@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 354. Support for 24bpp, fix screen blanking and bug fixes for newport driver
+      (#5329, #5349, Guido Guenther).
  353. Add RandR support to XFree86 DDX. (Keith Packard)
  352. Update RandR extension to 1.0.  Eliminate depth switching 
       (Keith Packard, Jim Gettys)
@@ -15224,4 +15226,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2314 2002/09/29 23:39:41 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2315 2002/09/29 23:54:31 keithp Exp $

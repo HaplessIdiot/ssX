@@ -1,7 +1,7 @@
 /* 
  * Id: newport.h,v 1.4 2000/11/29 20:58:10 agx Exp $
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport.h,v 1.7 2001/12/19 15:59:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport.h,v 1.8 2001/12/19 21:31:21 dawes Exp $ */
 
 #ifndef __NEWPORT_H__
 #define __NEWPORT_H__
@@ -51,7 +51,7 @@ typedef struct {
 	npireg_t drawmode1;		/* REX3 drawmode1 common to all drawing operations */
 
 	/* ShadowFB stuff: */
-	pointer ShadowPtr;
+	CARD32* ShadowPtr;
 	unsigned long int ShadowPitch;
 	unsigned int Bpp;		/* Bytes per pixel */
 
