@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.43 1999/07/04 06:39:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.44 1999/07/18 03:26:57 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -87,6 +87,15 @@ typedef struct {
 } MGARamdacRec, *MGARamdacPtr;
 
 
+typedef struct {
+    int bitsPerPixel;
+    int depth;
+    int displayWidth;
+    rgb weight;
+    Bool Overlay8Plus24;
+} MGAFBLayout;
+
+
 /* Card-specific driver information */
 
 #define MGAPTR(p) ((MGAPtr)((p)->driverPrivate))
@@ -110,8 +119,8 @@ typedef struct {
     Bool		Primary;
     Bool		Interleave;
     int			HwBpp;
-    int			Rounding;
-    int			BppShift;
+    int			Roundings[4];
+    int			BppShifts[4];
     Bool		HasFBitBlt;
     Bool		OverclockMem;
     int			YDstOrg;
@@ -182,6 +191,7 @@ typedef struct {
     Bool		FBDev;
     int			colorKey;
     int			fifoCount;
+    MGAFBLayout		CurrentLayout;
 } MGARec, *MGAPtr;
 
 extern CARD32 MGAAtype[16];

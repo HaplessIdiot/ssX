@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.44 1999/06/06 08:48:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.45 1999/07/18 03:26:58 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -60,7 +60,7 @@
  * Only change these bits in the Option register.  Make sure that the
  * vgaioen bit is never in this mask because it is controlled elsewhere
  */
-#define OPTION_MASK 0x201F1000	/* pci_retry | interleave */
+#define OPTION_MASK 0xFFEFFEFF	/* ~(eepromwt | vgaioen) */
 
 static void MGA3026LoadPalette(ScrnInfoPtr, int, int*, LOCO*, VisualPtr);
 static void MGA3026SavePalette(ScrnInfoPtr, unsigned char*);
@@ -392,7 +392,7 @@ MGATi3026SetPCLK( ScrnInfoPtr pScrn, long f_out, int bpp )
 	 * First we figure out lm, ln, and z.
 	 * Things are different in packed pixel mode (24bpp) though.
 	 */
-	 if ( pScrn->bitsPerPixel == 24 ) {
+	 if ( pMga->CurrentLayout.bitsPerPixel == 24 ) {
 
 		/* ln:lm = ln:3 */
 		lm = 65 - 3;
@@ -442,7 +442,7 @@ MGATi3026SetPCLK( ScrnInfoPtr pScrn, long f_out, int bpp )
 	}
  
 	/* Values for the loop clock PLL registers */
-	if ( pScrn->bitsPerPixel == 24 ) {
+	if ( pMga->CurrentLayout.bitsPerPixel == 24 ) {
 		/* Packed pixel mode values */
 		pReg->DacClk[ 3 ] = ( ln & 0x3f ) | 0x80;
 		pReg->DacClk[ 4 ] = ( lm & 0x3f ) | 0x80;
@@ -473,15 +473,17 @@ static Bool
 MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
 	int hd, hs, he, ht, vd, vs, ve, vt, wd;
-	int i, index_1d = 0;
+	int i, BppShift, index_1d = 0;
 	const unsigned char* initDAC;
 	MGAPtr pMga = MGAPTR(pScrn);
 	MGARamdacPtr MGAdac = &pMga->Dac;
+	MGAFBLayout *pLayout = &pMga->CurrentLayout;
 	MGARegPtr pReg = &pMga->ModeReg;
 	vgaRegPtr pVga = &VGAHWPTR(pScrn)->ModeReg;
 
+	BppShift = pMga->BppShifts[(pLayout->bitsPerPixel >> 3) - 1];
 
-	switch(pScrn->bitsPerPixel)
+	switch(pLayout->bitsPerPixel)
 	{
 	case 8:
 		initDAC = MGADACbpp8;
@@ -493,13 +495,13 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		initDAC = MGADACbpp24;
 		break;
 	case 32:
-		if(pMga->Overlay8Plus24)
+		if(pLayout->Overlay8Plus24)
 		    initDAC = MGADACbpp8plus24;
 		else
 		    initDAC = MGADACbpp32;
 		break;
 	default:
-		FatalError("MGA: unsupported depth\n");
+		FatalError("MGA: unsupported bits per pixel\n");
 	}
 	
 	/* Allocate the DacRegs space if not done already */
@@ -512,13 +514,13 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		index_1d = i;
 	}
 
-        if((pScrn->bitsPerPixel == 32) && pMga->Overlay8Plus24) {
+        if((pLayout->bitsPerPixel == 32) && pLayout->Overlay8Plus24) {
 	    pReg->DacRegs[9] = pMga->colorKey;
 	    pReg->DacRegs[10] = pMga->colorKey;
 	}
 
-	if ( (pScrn->bitsPerPixel == 16) && (pScrn->weight.red == 5)
-		&& (pScrn->weight.green == 5) && (pScrn->weight.blue == 5) ) {
+	if ( (pLayout->bitsPerPixel == 16) && (pLayout->weight.red == 5)
+	    && (pLayout->weight.green == 5) && (pLayout->weight.blue == 5) ) {
 	    pReg->DacRegs[1] &= ~0x01;
 	}
 	pReg->DacRegs[2] |= pMga->Interleave? 0x04 : 0x03;	
@@ -547,10 +549,10 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
         if((ht & 0x07) == 0x06 || (ht & 0x07) == 0x04)
                 ht++;
 
-        if (pScrn->bitsPerPixel == 24)
-		wd = (pScrn->displayWidth * 3) >> (4 - pMga->BppShift);
+        if (pLayout->bitsPerPixel == 24)
+		wd = (pLayout->displayWidth * 3) >> (4 - BppShift);
 	else
-		wd = pScrn->displayWidth >> (4 - pMga->BppShift);
+		wd = pLayout->displayWidth >> (4 - BppShift);
 
 	pReg->ExtVga[0] = 0;
 	pReg->ExtVga[5] = 0;
@@ -575,10 +577,10 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 				((vd & 0x400) >> 8) |
 				((vd & 0xc00) >> 7) |
 				((vs & 0xc00) >> 5);
-	if (pScrn->bitsPerPixel == 24)
-		pReg->ExtVga[3]	= (((1 << pMga->BppShift) * 3) - 1) | 0x80;
+	if (pLayout->bitsPerPixel == 24)
+		pReg->ExtVga[3]	= (((1 << BppShift) * 3) - 1) | 0x80;
 	else
-		pReg->ExtVga[3]	= ((1 << pMga->BppShift) - 1) | 0x80;
+		pReg->ExtVga[3]	= ((1 << BppShift) - 1) | 0x80;
 
 	/* Set viddelay (CRTCEXT3 Bits 3-4). */
 	pReg->ExtVga[3] |= (pScrn->videoRam == 8192 ? 0x10
@@ -643,7 +645,19 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	if (pMga->SyncOnGreen)
 	    pReg->DacRegs[index_1d] |= 0x20;
 
-	pReg->Option = pMga->Interleave << 12;
+	switch(pMga->Chipset) {
+	case PCI_CHIP_MGA2064:
+	  pReg->Option = 0x402C0100;
+	  break;
+	default:
+	  xf86DrvMsg(pScrn->scrnIndex, X_WARNING ,"No default option for Chipset 0x%x\n", pMga->Chipset);
+	  break;
+	}
+
+	if (pMga->Interleave)
+	  pReg->Option |= 0x1000;
+	else
+	  pReg->Option &= ~0x1000;
 
         if(pMga->UsePCIRetry)
 	    pReg->Option &= ~0x20000000;
@@ -663,7 +677,7 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	pVga->MiscOutReg |= 0x0C; 
 	/* XXX Need to check the first argument */
-	MGATi3026SetPCLK( pScrn, mode->Clock, 1 << pMga->BppShift );
+	MGATi3026SetPCLK( pScrn, mode->Clock, 1 << BppShift );
 
 	/* this one writes registers rather than writing to the 
 	   mgaReg->ModeReg and letting Restore write to the hardware
@@ -1117,10 +1131,17 @@ MGA3026RamdacInit(ScrnInfoPtr pScrn)
         pMga->Interleave = TRUE;
     else {
         pMga->Interleave = FALSE;
-        pMga->BppShift++;
+        pMga->BppShifts[0]++;
+        pMga->BppShifts[1]++;
+        pMga->BppShifts[2]++;
+        pMga->BppShifts[3]++;
     }
-    pMga->Rounding = 128 >> pMga->BppShift;
-    
+
+    pMga->Roundings[0] = 128 >> pMga->BppShifts[0];
+    pMga->Roundings[1] = 128 >> pMga->BppShifts[1];
+    pMga->Roundings[2] = 128 >> pMga->BppShifts[2];
+    pMga->Roundings[3] = 128 >> pMga->BppShifts[3];
+
     /* Set Fast bitblt flag */
     pMga->HasFBitBlt = !(pMga->Bios.FeatFlag & 0x00000001);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.h,v 1.3 1999/07/06 11:38:29 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -30,7 +30,8 @@
 
 extern Bool ATIDSPPreInit   FunctionPrototype((ScrnInfoPtr, ATIPtr));
 extern void ATIDSPSave      FunctionPrototype((ATIPtr, ATIHWPtr));
-extern void ATIDSPCalculate FunctionPrototype((ScrnInfoPtr, ATIPtr, ATIHWPtr));
+extern void ATIDSPCalculate FunctionPrototype((ScrnInfoPtr, ATIPtr, ATIHWPtr,
+                                               DisplayModePtr));
 extern void ATIDSPSet       FunctionPrototype((ATIPtr, ATIHWPtr));
 
 #endif /* ___ATIDSP_H___ */

@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/bitmap.h,v 1.5 1998/10/03 09:07:29 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/bitmap.h,v 1.6 1999/07/17 05:30:46 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -43,6 +43,9 @@ from The Open Group.
  * Internal format used to store bitmap fonts
  */
 
+/* number of encoding entries in one segment */
+#define BITMAP_FONT_SEGMENT_SIZE 128
+
 typedef struct _BitmapExtra {
     Atom       *glyphNames;
     int        *sWidths;
@@ -57,10 +60,22 @@ typedef struct _BitmapFont {
     CharInfoPtr metrics;	/* font metrics, including glyph pointers */
     xCharInfo  *ink_metrics;	/* ink metrics */
     char       *bitmaps;	/* base of bitmaps, useful only to free */
-    CharInfoPtr *encoding;	/* array of char info pointers */
+    CharInfoPtr **encoding;	/* array of arrays of char info pointers */
     CharInfoPtr pDefault;	/* default character */
     BitmapExtraPtr bitmapExtra;	/* stuff not used by X server */
 }           BitmapFontRec, *BitmapFontPtr;
+
+#define ACCESSENCODING(enc,i) \
+(enc[(i)/BITMAP_FONT_SEGMENT_SIZE]?\
+(enc[(i)/BITMAP_FONT_SEGMENT_SIZE][(i)%BITMAP_FONT_SEGMENT_SIZE]):\
+NULL)
+#define ACCESSENCODINGL(enc,i) \
+(enc[(i)/BITMAP_FONT_SEGMENT_SIZE][(i)%BITMAP_FONT_SEGMENT_SIZE])
+
+#define SEGMENT_MAJOR(n) ((n)/BITMAP_FONT_SEGMENT_SIZE)
+#define SEGMENT_MINOR(n) ((n)%BITMAP_FONT_SEGMENT_SIZE)
+#define NUM_SEGMENTS(n) \
+  (((n)+BITMAP_FONT_SEGMENT_SIZE-1)/BITMAP_FONT_SEGMENT_SIZE)
 
 extern int bitmapGetGlyphs ( FontPtr pFont, unsigned long count, 
 			     unsigned char *chars, FontEncoding charEncoding, 

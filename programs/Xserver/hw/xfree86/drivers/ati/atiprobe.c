@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.8 1999/07/06 11:38:35 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -24,6 +24,7 @@
 #include "ati.h"
 #include "atiadapter.h"
 #include "atiadjust.h"
+#include "atibios.h"
 #include "atibus.h"
 #include "atichip.h"
 #include "aticonsole.h"
@@ -204,7 +205,7 @@ ATIVGAProbe
     ATIPtr pVGA
 )
 {
-    CARD8 IOValue, IOValue2;
+    CARD8 IOValue1, IOValue2, IOValue3;
 
     if (!pVGA)
         pVGA = (ATIPtr)xnfcalloc(1, SizeOf(ATIRec));
@@ -216,11 +217,15 @@ ATIVGAProbe
      */
     ATISetVGAIOBase(pVGA, inb(R_GENMO));
     (void) inb(GENS1(pVGA->CPIO_VGABase));
-    IOValue = GetReg(ATTRX, 0x14U | 0x20U);
-    outb(ATTRX, IOValue ^ 0x0FU);
+    IOValue1 = inb(ATTRX);
+    (void) inb(GENS1(pVGA->CPIO_VGABase));
     IOValue2 = GetReg(ATTRX, 0x14U | 0x20U);
-    outb(ATTRX, IOValue);
-    if (IOValue2 == (IOValue ^ 0x0FU))
+    outb(ATTRX, IOValue2 ^ 0x0FU);
+    IOValue3 = GetReg(ATTRX, 0x14U | 0x20U);
+    outb(ATTRX, IOValue2);
+    outb(ATTRX, IOValue1);
+    (void) inb(GENS1(pVGA->CPIO_VGABase));
+    if (IOValue3 == (IOValue2 ^ 0x0FU))
     {
         /* VGA device detected */
         if (pVGA->Chip == ATI_CHIP_NONE)
@@ -237,6 +242,81 @@ ATIVGAProbe
 }
 
 /*
+ * ATIVGAWonderProbe --
+ *
+ * This function determines if ATI extended VGA registers can be accessed
+ * through the I/O port specified by pATI->CPIO_VGAWonder.  If not, the
+ * function resets pATI->CPIO_VGAWonder to zero.
+ */
+static void
+ATIVGAWonderProbe
+(
+    ATIPtr pATI,
+    ATIPtr p8514,
+    CARD8  *ProbeFlags
+)
+{
+    CARD8 IOValue1, IOValue2, IOValue3, IOValue4, IOValue5, IOValue6;
+
+    switch (ATICheckSparseIOBases(ProbeFlags, pATI->CPIO_VGAWonder, 2, TRUE))
+    {
+        case 0:
+            xf86Msg(X_WARNING,
+                ATI_NAME ":  Expected VGA Wonder capability could not be"
+                " detected at I/O port 0x%04X because it would conflict with"
+                " a non-video PCI device." ATI_README, pATI->CPIO_VGAWonder);
+            pATI->CPIO_VGAWonder = 0;
+            break;
+
+        case Detected8514A:
+            xf86Msg(X_WARNING,
+                ATI_NAME ":  Expected VGA Wonder capability could not be"
+                " detected at I/O port 0x%04X because it would conflict with"
+                " a %s %s." ATI_README, pATI->CPIO_VGAWonder,
+                ATIBusNames[p8514->BusType], ATIAdapterNames[p8514->Adapter]);
+            pATI->CPIO_VGAWonder = 0;
+            break;
+
+        case DetectedMach64:
+            xf86Msg(X_WARNING,
+                ATI_NAME ":  Expected VGA Wonder capability could not be"
+                " detected at I/O port 0x%04X because it would conflict with"
+                " a Mach64." ATI_README, pATI->CPIO_VGAWonder);
+            pATI->CPIO_VGAWonder = 0;
+            break;
+
+        case DetectedVGA:
+        default:                /* Must be DoProbe */
+            /*
+             * Register 0xBB is used by the BIOS to keep track of various
+             * things (monitor type, etc.).  Register 0xBC must be zero and
+             * causes the adapter to enter a test mode when written to with a
+             * non-zero value.
+             */
+            IOValue1 = inb(pATI->CPIO_VGAWonder);
+            IOValue2 = ATIGetExtReg(IOValue1);
+            IOValue3 = ATIGetExtReg(0xBBU);
+            ATIPutExtReg(0xBBU, IOValue3 ^ 0xAAU);
+            IOValue4 = ATIGetExtReg(0xBBU);
+            ATIPutExtReg(0xBBU, IOValue3 ^ 0x55U);
+            IOValue5 = ATIGetExtReg(0xBBU);
+            ATIPutExtReg(0xBBU, IOValue3);
+            IOValue6 = ATIGetExtReg(0xBCU);
+            ATIPutExtReg(IOValue1, IOValue2);
+            if ((IOValue4 == (IOValue3 ^ 0xAAU)) &&
+                (IOValue5 == (IOValue3 ^ 0x55U)) &&
+                (IOValue6 == 0))
+                break;
+
+            xf86Msg(X_WARNING,
+                ATI_NAME ":  Expected VGA Wonder capability at I/O port 0x%04X"
+                " was not detected." ATI_README);
+            pATI->CPIO_VGAWonder = 0;
+            break;
+    }
+}
+
+/*
  * ATI8514Probe --
  *
  * This function looks for an 8514/A compatible and returns an ATIRec if one is
@@ -247,19 +327,19 @@ ATIVGAProbe
 static ATIPtr
 ATI8514Probe
 (
-    void
+    pciVideoPtr pVideo
 )
 {
     ATIPtr pATI = NULL;
-    CARD16 IOValue, IOValue2;
+    CARD16 IOValue1, IOValue2;
 
     /*
      * Save register value to be modified, just in case there is no 8514/A
      * compatible accelerator.  Note that, in more ways than one,
      * SUBSYS_STAT == SUBSYS_CNTL.
      */
-    IOValue = inw(SUBSYS_STAT);
-    IOValue2 = IOValue & _8PLANE;
+    IOValue1 = inw(SUBSYS_STAT);
+    IOValue2 = IOValue1 & _8PLANE;
 
     /* Reset any 8514/A compatible adapter that might be present */
     outw(SUBSYS_CNTL, IOValue2 | (GPCTRL_RESET | CHPTEST_NORMAL));
@@ -278,6 +358,7 @@ ATI8514Probe
             pATI = (ATIPtr)xnfcalloc(1, SizeOf(ATIRec));
             pATI->Adapter = ATI_ADAPTER_8514A;
             pATI->ChipHasSUBSYS_CNTL = TRUE;
+            pATI->PCIInfo = pVideo;
         }
     }
     outw(ERR_TERM, IOValue2);
@@ -285,16 +366,16 @@ ATI8514Probe
     /* Restore register value clobbered by 8514/A reset attempt */
     if (!pATI)
     {
-        outw(SUBSYS_CNTL, IOValue);
+        outw(SUBSYS_CNTL, IOValue1);
         return NULL;
     }
 
     /* Ensure and Mach8 or Mach32 is not in 8514/A emulation mode */
-    IOValue = inw(CLOCK_SEL);
-    outw(CLOCK_SEL, IOValue);
+    IOValue1 = inw(CLOCK_SEL);
+    outw(CLOCK_SEL, IOValue1);
     ProbeWaitIdleEmpty();
 
-    IOValue = IOValue2 = inw(ROM_ADDR_1);
+    IOValue1 = IOValue2 = inw(ROM_ADDR_1);
     outw(ROM_ADDR_1, 0x5555U);
     ProbeWaitIdleEmpty();
     if (inw(ROM_ADDR_1) == 0x5555U)
@@ -304,12 +385,12 @@ ATI8514Probe
         if (inw(ROM_ADDR_1) == 0x2A2AU)
             pATI->Adapter = ATI_ADAPTER_MACH8;
     }
-    outw(ROM_ADDR_1, IOValue);
+    outw(ROM_ADDR_1, IOValue1);
 
     if (pATI->Adapter == ATI_ADAPTER_MACH8)
     {
         /* A Mach8 or Mach32 has been detected */
-        IOValue = inw(READ_SRC_X);
+        IOValue1 = inw(READ_SRC_X);
         outw(DESTX_DIASTP, 0xAAAAU);
         ProbeWaitIdleEmpty();
         if (inw(READ_SRC_X) == 0x02AAU)
@@ -327,22 +408,22 @@ ATI8514Probe
             if (pATI->Adapter != ATI_ADAPTER_MACH8)
                 pATI->Adapter = ATI_ADAPTER_8514A;
         }
-        outw(DESTX_DIASTP, IOValue);
+        outw(DESTX_DIASTP, IOValue1);
     }
 
     switch (pATI->Adapter)
     {
         case ATI_ADAPTER_8514A:
             pATI->Coprocessor = ATI_CHIP_8514A;
-            IOValue = inb(EXT_CONFIG_3);
-            outb(EXT_CONFIG_3, IOValue & 0x0FU);
+            IOValue1 = inb(EXT_CONFIG_3);
+            outb(EXT_CONFIG_3, IOValue1 & 0x0FU);
             if (!(inb(EXT_CONFIG_3) & 0xF0U))
             {
-                outb(EXT_CONFIG_3, IOValue | 0xF0U);
-                if ((inb(EXT_CONFIG_3) & 0xF0U) == 0xF0)
+                outb(EXT_CONFIG_3, IOValue1 | 0xF0U);
+                if ((inb(EXT_CONFIG_3) & 0xF0U) == 0xF0U)
                     pATI->Coprocessor = ATI_CHIP_CT480;
             }
-            outb(EXT_CONFIG_3, IOValue);
+            outb(EXT_CONFIG_3, IOValue1);
             break;
 
         case ATI_ADAPTER_MACH8:
@@ -352,16 +433,20 @@ ATI8514Probe
             break;
 
         case ATI_ADAPTER_MACH32:
-            IOValue = inw(CONFIG_STATUS_1);
-            if (!(IOValue & (_8514_ONLY | CHIP_DIS)))
+            IOValue1 = inw(CONFIG_STATUS_1);
+            pATI->BusType = GetBits(IOValue1, BUS_TYPE);
+            pATI->BIOSBase = 0x000C0000U +
+                (GetBits(IOValue2, BIOS_BASE_SEGMENT) << 11);
+            if (!(IOValue1 & (_8514_ONLY | CHIP_DIS)))
             {
                 pATI->VGAAdapter = ATI_ADAPTER_MACH32;
-                pATI->CPIO_VGAWonder = 0x01CEU;
+                if ((ATIReadBIOS(pATI, &pATI->CPIO_VGAWonder, 0x10U,
+                         SizeOf(pATI->CPIO_VGAWonder)) <
+                         SizeOf(pATI->CPIO_VGAWonder)) ||
+                    !(pATI->CPIO_VGAWonder &= SPARSE_IO_PORT))
+                    pATI->CPIO_VGAWonder = 0x01CEU;
                 pATI->VGAOffset = 0x80U;
             }
-            pATI->BusType = GetBits(IOValue, BUS_TYPE);
-            pATI->BIOSBase = 0x000C0000UL +
-                (GetBits(IOValue2, BIOS_BASE_SEGMENT) << 11);
 
             ATIMach32ChipID(pATI);
             break;
@@ -420,12 +505,12 @@ ATIMach64Probe
     IOValue = inl(IOPort);
 
     /* Test odd bits */
-    outl(IOPort, 0x55555555UL);
-    if (inl(IOPort) == 0x55555555UL)
+    outl(IOPort, 0x55555555U);
+    if (inl(IOPort) == 0x55555555U)
     {
         /* Test even bits */
-        outl(IOPort, 0xAAAAAAAAUL);
-        if (inl(IOPort) == 0xAAAAAAAAUL)
+        outl(IOPort, 0xAAAAAAAAU);
+        if (inl(IOPort) == 0xAAAAAAAAU)
         {
             /*
              * *Something* has a R/W 32-bit register at this I/O address.  Try
@@ -452,7 +537,7 @@ ATIMach64Probe
     }
 
     /* Determine legacy BIOS address */
-    pATI->BIOSBase = 0x000C0000UL +
+    pATI->BIOSBase = 0x000C0000U +
         (GetBits(inl(ATIIOPort(SCRATCH_REG1)), BIOS_BASE_SEGMENT) << 11);
 
     /* Determine VGA capability */
@@ -468,14 +553,6 @@ ATIMach64Probe
             pATI->VGAAdapter = ATI_ADAPTER_MACH64;
             pATI->CPIO_VGAWonder = 0x01CEU;
             pATI->VGAOffset = 0x80U;
-
-            /*
-             * Apparently, 0x01CEU cannot be used for ATI's extended VGA
-             * registers when using block I/O decoding.  Instead, these
-             * registers are tacked on to VGA's Graphics register bank.
-             */
-            if (IODecoding == BLOCK_IO)
-                pATI->CPIO_VGAWonder = GRAX;
         }
     }
     else
@@ -500,7 +577,9 @@ static void
 ATIAssignVGA
 (
     ATIPtr *ppVGA,
-    ATIPtr pATI
+    ATIPtr pATI,
+    ATIPtr p8514,
+    CARD8  *ProbeFlags
 )
 {
     ATIPtr pVGA = *ppVGA;
@@ -620,7 +699,24 @@ ATIAssignVGA
     }
 
     if (pATI->VGAAdapter == ATI_ADAPTER_NONE)
+    {
+        pATI->CPIO_VGAWonder = 0;
         return;
+    }
+
+    if (pATI->CPIO_VGAWonder)
+    {
+        ATIVGAWonderProbe(pATI, p8514, ProbeFlags);
+        if (!pATI->CPIO_VGAWonder)
+        {
+            /*
+             * Some adapters are reputed to append ATI extended VGA registers
+             * to the VGA Graphics controller registers.
+             */
+            pATI->CPIO_VGAWonder = GRAX;
+            ATIVGAWonderProbe(pATI, p8514, ProbeFlags);
+        }
+    }
 
     if (pATI == pVGA)
     {
@@ -634,27 +730,55 @@ ATIAssignVGA
 }
 
 /*
+ * ATIClaimVGA --
+ *
+ * Attempt to assign a non-shareable VGA to an accelerator.  If successful,
+ * update ProbeFlags array.
+ */
+static void
+ATIClaimVGA
+(
+    ATIPtr *ppVGA,
+    ATIPtr pATI,
+    ATIPtr p8514,
+    CARD8  *ProbeFlags,
+    int    Detected
+)
+{
+    ATIAssignVGA(ppVGA, pATI, p8514, ProbeFlags);
+    if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
+    {
+        ATIClaimSparseIOBases(ProbeFlags, MonochromeIOBase, 48, Detected);
+        if (pATI->CPIO_VGAWonder)
+            ATIClaimSparseIOBases(ProbeFlags, pATI->CPIO_VGAWonder, 2,
+                Detected);
+    }
+}
+
+/*
  * ATIFindVGA --
  *
  * This function determines if a VGA associated with an ATI PCI adapter is
- * sharable.
+ * shareable.
  */
 static void
 ATIFindVGA
 (
     ATIPtr *ppVGA,
-    ATIPtr *ppATI
+    ATIPtr *ppATI,
+    ATIPtr p8514,
+    CARD8  *ProbeFlags
 )
 {
     ATIPtr pATI = *ppATI;
 
     if (*ppVGA)
-        ATIAssignVGA(ppVGA, pATI);
+        ATIAssignVGA(ppVGA, pATI, p8514, ProbeFlags);
     else
     {
         pATI = ATIVGAProbe(pATI);
         if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
-            ATIAssignVGA(ppATI, pATI);
+            ATIAssignVGA(ppATI, pATI, p8514, ProbeFlags);
     }
 }
 
@@ -676,16 +800,15 @@ ATIProbe
     GDevPtr             *GDevs, pGDev;
     pciVideoPtr         pVideo, *xf86PciVideoInfo = xf86GetPciVideoInfo();
     pciConfigPtr        pPCI,   *xf86PciInfo      = xf86GetPciConfigInfo();
-    pciVideoPtr         pVGAPCI = NULL;
     ATIGDev             *ATIGDevs, *pATIGDev;
     ScrnInfoPtr         pScreenInfo;
     PortPtr             PCIPorts = NULL;
     CARD32              PciReg;
     int                 i, j, k;
     int                 nGDev, nATIGDev = 0, nATIPtr = 0, nPCIPort = 0;
-    int                 nScreen = 0, iEntity;
-    int                 Chipset, nChipsets[ATI_CHIPSET_MAX];
-    Bool                Configured;
+    int                 nScreen = 0;
+    int                 Chipset;
+    CARD8               fChipsets[ATI_CHIPSET_MAX];
     ATIChipType         Chip;
     static const CARD16 Mach64SparseIOBases[] = {0x02ECU, 0x01CCU, 0x01C8U};
     CARD8               ProbeFlags[LongPort(SPARSE_IO_BASE) + 1];
@@ -704,23 +827,7 @@ ATIProbe
         nATIPtr++;                                                         \
         ATIPtrs = (ATIPtr *)xnfrealloc(ATIPtrs, SizeOf(ATIPtr) * nATIPtr); \
         ATIPtrs[nATIPtr - 1] = (_p);                                       \
-    } while(0)
-
-#   define              EnableAdapter(_p)                                  \
-    do                                                                     \
-    {                                                                      \
-        pPCI = (pciConfigPtr)((_p)->thisCard);                             \
-        PciReg = pciReadLong(pPCI->tag, PCI_CMD_STAT_REG);                 \
-        if (!(PciReg & PCI_CMD_IO_ENABLE))                                 \
-            pciWriteLong(pPCI->tag, PCI_CMD_STAT_REG,                      \
-                PciReg | PCI_CMD_IO_ENABLE);                               \
-    } while(0)
-
-#   define              DisableAdapter                                     \
-    do                                                                     \
-    {                                                                      \
-        if (!(PciReg & PCI_CMD_IO_ENABLE))                                 \
-            pciWriteLong(pPCI->tag, PCI_CMD_STAT_REG, PciReg);             \
+        (_p)->iEntity = -2;                                                \
     } while(0)
 
     /*
@@ -734,7 +841,7 @@ ATIProbe
         return FALSE;
 
     ATIGDevs = (ATIGDevPtr)xnfcalloc(nGDev, SizeOf(ATIGDev));
-    memset(nChipsets, 0, SizeOf(nChipsets));
+    memset(fChipsets, FALSE, SizeOf(fChipsets));
 
     for (i = 0, pATIGDev = ATIGDevs;  i < nGDev;  i++)
     {
@@ -762,7 +869,7 @@ ATIProbe
         pATIGDev->Chipset = Chipset;
         nATIGDev++;
         pATIGDev++;
-        nChipsets[Chipset]++;
+        fChipsets[Chipset] = TRUE;
     }
 
     xfree(GDevs);
@@ -806,15 +913,6 @@ ATIProbe
 
             if (pVideo->vendor == PCI_VENDOR_ATI)
             {
-                /*
-                 * Normalize PCI configuration space by disabling I/O and
-                 * and memory response.
-                 */
-                PciReg = pciReadLong(pPCI->tag, PCI_CMD_STAT_REG);
-                if (PciReg & PCI_CMD_ENABLE)
-                    pciWriteLong(pPCI->tag, PCI_CMD_STAT_REG,
-                        PciReg & ~PCI_CMD_ENABLE);
-
                 if (pVideo->chipType == PCI_CHIP_MACH32)
                     continue;
 
@@ -826,27 +924,19 @@ ATIProbe
                 if (IsATIBlockIOBase(pVideo->ioBase[1]))
                 {
                     /* This is block I/O */
-                    if (!(PciReg & 0x04UL))
+                    if (!(PciReg & 0x00000004U))
                         pciWriteLong(pPCI->tag, PCI_REG_USERCONFIG,
-                            PciReg | 0x04UL);
+                            PciReg | 0x00000004U);
                 }
                 else
                 {
                     /* This is sparse I/O */
-                    if (PciReg & 0x04U)
+                    if (PciReg & 0x00000004U)
                         pciWriteLong(pPCI->tag, PCI_REG_USERCONFIG,
-                            PciReg & ~0x04UL);
+                            PciReg & ~0x00000004U);
                 }
                 continue;
             }
-
-            if ((pPCI->pci_command & PCI_CMD_IO_ENABLE) &&
-                (pPCI->pci_prog_if == 0) &&
-                (((pPCI->pci_base_class == PCI_CLASS_PREHISTORIC) &&
-                  (pPCI->pci_sub_class == PCI_SUBCLASS_PREHISTORIC_VGA)) ||
-                 ((pPCI->pci_base_class == PCI_CLASS_DISPLAY) &&
-                  (pPCI->pci_sub_class == PCI_SUBCLASS_DISPLAY_VGA))))
-                pVGAPCI = pVideo;       /* There better be only one */
 
             ATIScanPCIBases(&PCIPorts, &nPCIPort,
                 &pPCI->pci_base0, pVideo->size,
@@ -908,7 +998,7 @@ ATIProbe
      * failed to be detected the first time around.  Each such device is probed
      * for again, this time with I/O temporarily enabled through PCI.
      */
-    if (ATICheckSparseIOBases(ProbeFlags, ATTRX, 16, 1) == DoProbe)
+    if (ATICheckSparseIOBases(ProbeFlags, ATTRX, 16, TRUE) == DoProbe)
     {
         pVGA = ATIVGAProbe(NULL);
         if (pVGA->Adapter == ATI_ADAPTER_NONE)
@@ -918,45 +1008,46 @@ ATIProbe
         }
         else
         {
-            /* Any PCI VGA is non-sharable at this point */
-            pVGAPCI = NULL;
-
             /*
-             * Claim all VGA I/O ports.  This might need to be more selective.
+             * Claim all MDA/HGA/CGA/EGA/VGA I/O ports.  This might need to be
+             * more selective.
              */
-            ATIClaimSparseIOBases(ProbeFlags, 0x03B0, 48, DetectedVGA);
+            ATIClaimSparseIOBases(ProbeFlags, MonochromeIOBase, 48,
+                DetectedVGA);
         }
     }
 
     if ((ATICheckSparseIOBases(ProbeFlags, 0x02E8U, 8,
-            nChipsets[ATI_CHIPSET_IBM8514] ||
-            nChipsets[ATI_CHIPSET_MACH8] ||
-            nChipsets[ATI_CHIPSET_MACH32]) == DoProbe) &&
-        (pATI = ATI8514Probe()))
+            fChipsets[ATI_CHIPSET_IBM8514] ||
+            fChipsets[ATI_CHIPSET_MACH8] ||
+            fChipsets[ATI_CHIPSET_MACH32]) == DoProbe) &&
+        (pATI = ATI8514Probe(NULL)))
     {
-        ATIClaimSparseIOBases(ProbeFlags, 0x02E8U, 8, Detected8514A);
         AddAdapter(p8514 = pATI);
 
         if ((pATI->VGAAdapter != ATI_ADAPTER_NONE) ||
             (pATI->Coprocessor != ATI_CHIP_NONE))
-            ATIAssignVGA(&pVGA, pATI);
+            ATIClaimVGA(&pVGA, pATI, p8514, ProbeFlags, Detected8514A);
+
+        ATIClaimSparseIOBases(ProbeFlags, 0x02E8U, 8, Detected8514A);
     }
 
     for (i = 0;  i < NumberOf(Mach64SparseIOBases);  i++)
     {
         if (ATICheckSparseIOBases(ProbeFlags, Mach64SparseIOBases[i], 4,
-                nChipsets[ATI_CHIPSET_MACH64]) != DoProbe)
+                fChipsets[ATI_CHIPSET_MACH64]) != DoProbe)
             continue;
 
         if (!(pATI = ATIMach64Probe(Mach64SparseIOBases[i], SPARSE_IO, 0, 0)))
             continue;
 
-        ATIClaimSparseIOBases(ProbeFlags, Mach64SparseIOBases[i], 4,
-            DetectedMach64);
         AddAdapter(pMach64[i] = pATI);
 
         if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
-            ATIAssignVGA(&pVGA, pATI);
+            ATIClaimVGA(&pVGA, pATI, p8514, ProbeFlags, DetectedMach64);
+
+        ATIClaimSparseIOBases(ProbeFlags, Mach64SparseIOBases[i], 4,
+            DetectedMach64);
     }
 
     if (xf86PciVideoInfo)
@@ -978,7 +1069,7 @@ ATIProbe
 
             /* This is probably not necessary */
             if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
-                ATIAssignVGA(&pVGA, pATI);
+                ATIClaimVGA(&pVGA, pATI, p8514, ProbeFlags, DetectedMach64);
         }
 
         /*
@@ -986,30 +1077,44 @@ ATIProbe
          * this is verbiage to deal with potential situations that are very
          * unlikely to occur in practice.
          *
-         * First, look for a non-static VGA.
+         * First, look for non-ATI shareable VGA's.  For now, these must have
+         * been previously initialized by their BIOS.
          */
-        if (pVGAPCI)
+        if (ATICheckSparseIOBases(ProbeFlags, ATTRX, 16, TRUE) == DoProbe)
         {
-            EnableAdapter(pVGAPCI);
-
-            pATI = ATIVGAProbe(NULL);
-            if (pATI->Adapter == ATI_ADAPTER_NONE)
+            for (i = 0;  (pVideo = xf86PciVideoInfo[i++]);  )
             {
-                xfree(pATI);
-                xf86Msg(X_WARNING,
-                        ATI_NAME ":  PCI VGA-compatible in slot %d:%d:%d could"
-                        " not be detected!" ATI_README,
-                        pVGAPCI->bus, pVGAPCI->device, pVGAPCI->func);
-            }
-            else
-            {
-                AddAdapter(pATI);
-                pATI->SharedVGA = TRUE;
-                pATI->BusType = ATI_BUS_PCI;
-                pATI->PCIInfo = pVGAPCI;
-            }
+                if ((pVideo->vendor == PCI_VENDOR_ATI) ||
+                    !(((pciConfigPtr)(pVideo->thisCard))->pci_command &
+                      PCI_CMD_IO_ENABLE) ||
+                    (pVideo->interface != 0) ||
+                    (((pVideo->class != PCI_CLASS_PREHISTORIC) ||
+                      (pVideo->subclass != PCI_SUBCLASS_PREHISTORIC_VGA)) &&
+                     ((pVideo->class != PCI_CLASS_DISPLAY) ||
+                      (pVideo->subclass != PCI_SUBCLASS_DISPLAY_VGA))))
+                    continue;
 
-            DisableAdapter;
+                xf86SetPciVideo(pVideo, IO);
+
+                pATI = ATIVGAProbe(NULL);
+                if (pATI->Adapter == ATI_ADAPTER_NONE)
+                {
+                    xfree(pATI);
+                    xf86Msg(X_WARNING,
+                            ATI_NAME ":  PCI VGA-compatible in slot %d:%d:%d"
+                            " could not be detected!" ATI_README,
+                            pVideo->bus, pVideo->device, pVideo->func);
+                }
+                else
+                {
+                    AddAdapter(pATI);
+                    pATI->SharedVGA = TRUE;
+                    pATI->BusType = ATI_BUS_PCI;
+                    pATI->PCIInfo = pVideo;
+                }
+
+                xf86SetPciVideo(NULL, NONE);
+            }
         }
 
         /* Next, look for PCI Mach32's */
@@ -1019,12 +1124,12 @@ ATIProbe
                 (pVideo->chipType != PCI_CHIP_MACH32))
                 continue;
 
-            switch (ATICheckSparseIOBases(ProbeFlags, 0x02E8U, 8, 1))
+            switch (ATICheckSparseIOBases(ProbeFlags, 0x02E8U, 8, TRUE))
             {
                 case 0:
                     xf86Msg(X_WARNING,
                             ATI_NAME ":  PCI Mach32 in slot %d:%d:%d will not"
-                            " be enabled\n because it conflicts with another"
+                            " be enabled\n because it conflicts with a"
                             " non-video PCI device." ATI_README,
                             pVideo->bus, pVideo->device, pVideo->func);
                     break;
@@ -1046,15 +1151,15 @@ ATIProbe
                     xf86Msg(X_WARNING,
                             ATI_NAME ":  PCI Mach32 in slot %d:%d:%d will not"
                             " be enabled\n because it conflicts with a"
-                            " Mach64 at I/O base 0x02ECU."
+                            " Mach64 at I/O base 0x02EC."
                             ATI_README,
                             pVideo->bus, pVideo->device, pVideo->func);
                     break;
 
                 default:        /* Must be DoProbe */
-                    EnableAdapter(pVideo);
+                    xf86SetPciVideo(pVideo, IO);
 
-                    if (!(pATI = ATI8514Probe()))
+                    if (!(pATI = ATI8514Probe(pVideo)))
                         xf86Msg(X_WARNING,
                                 ATI_NAME ":  PCI Mach32 in slot %d:%d:%d could"
                                 " not be detected!" ATI_README,
@@ -1071,14 +1176,13 @@ ATIProbe
 
                         AddAdapter(pATI);
                         pATI->SharedAccelerator = TRUE;
-                        pATI->PCIInfo = pVideo;
 
                         if ((pATI->VGAAdapter != ATI_ADAPTER_NONE) ||
                             (pATI->Coprocessor != ATI_CHIP_NONE))
-                            ATIFindVGA(&pVGA, &pATI);
+                            ATIFindVGA(&pVGA, &pATI, p8514, ProbeFlags);
                     }
 
-                    DisableAdapter;
+                    xf86SetPciVideo(NULL, NONE);
                     break;
             }
         }
@@ -1101,7 +1205,7 @@ ATIProbe
                         " sparse, I/O base." ATI_README,
                         pVideo->bus, pVideo->device, pVideo->func);
             else switch(ATICheckSparseIOBases(ProbeFlags,
-                Mach64SparseIOBases[j], 4, 1))
+                Mach64SparseIOBases[j], 4, TRUE))
             {
                 case 0:
                     xf86Msg(X_WARNING,
@@ -1136,7 +1240,7 @@ ATIProbe
                     break;
 
                 default:    /* Must be DoProbe */
-                    EnableAdapter(pVideo);
+                    xf86SetPciVideo(pVideo, IO);
 
                     pATI = ATIMach64Probe(Mach64SparseIOBases[j], SPARSE_IO,
                         pVideo->chipType,
@@ -1153,10 +1257,10 @@ ATIProbe
                         pATI->PCIInfo = pVideo;
 
                         if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
-                            ATIFindVGA(&pVGA, &pATI);
+                            ATIFindVGA(&pVGA, &pATI, p8514, ProbeFlags);
                     }
 
-                    DisableAdapter;
+                    xf86SetPciVideo(NULL, NONE);
                     break;
             }
         }
@@ -1178,7 +1282,7 @@ ATIProbe
             }
 
             /* Probe for it */
-            EnableAdapter(pVideo);
+            xf86SetPciVideo(pVideo, IO);
 
             pATI = ATIMach64Probe(pVideo->ioBase[1], BLOCK_IO,
                 pVideo->chipType,
@@ -1189,10 +1293,10 @@ ATIProbe
                 pATI->SharedAccelerator = TRUE;
 
                 if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
-                    ATIFindVGA(&pVGA, &pATI);
+                    ATIFindVGA(&pVGA, &pATI, p8514, ProbeFlags);
             }
 
-            DisableAdapter;
+            xf86SetPciVideo(NULL, NONE);
 
             if (!pATI)
             {
@@ -1209,8 +1313,8 @@ ATIProbe
     }
 
     /*
-     * At this point, if there's a static VGA with its own framebuffer, find
-     * out if it's an ATI VGA Wonder.
+     * At this point, if there's a non-shareable VGA with its own framebuffer,
+     * find out if it's an ATI VGA Wonder.
      */
     do
     {
@@ -1251,7 +1355,7 @@ ATIProbe
                 (BIOS[0x22U] == 'I'))
                 break;
 
-    SkipBiosSegment: ;
+    SkipBiosSegment:  ;
         }
 
         pVGA->BIOSBase = BIOSBase;
@@ -1321,10 +1425,11 @@ ATIProbe
                     break;
 
                 /* Set VGA Wonder I/O port */
-                if (!BIOSWord(0x10U) || (BIOSWord(0x10U) & ~SPARSE_IO_PORT))
+                pVGA->CPIO_VGAWonder = BIOSWord(0x10U) & SPARSE_IO_PORT;
+                if (!pVGA->CPIO_VGAWonder)
                     pVGA->CPIO_VGAWonder = 0x01CEU;
-                else
-                    pVGA->CPIO_VGAWonder = BIOSWord(0x10U);
+
+                ATIVGAWonderProbe(pVGA, p8514, ProbeFlags);
                 break;
 #if 0
             case '2':
@@ -1538,34 +1643,22 @@ NoVGAWonder:;
 
         pATI = ATIPtrs[j - 1];
 
-        /* Claim XF86Config Device section */
-        if ((pVideo = pATI->PCIInfo))
-            iEntity =
-                xf86ClaimPciSlot(pVideo->bus, pVideo->device, pVideo->func, 
-                    pDriver, pATIGDev->Chipset, pGDev, pGDev->active);
-        else
-            iEntity = xf86ClaimIsaSlot(pDriver, pATIGDev->Chipset, pGDev,
-                pGDev->active);
+        /*
+         * Attach adapter to XF86Config Device section and register its
+         * resources.
+         */
+        if (ATIClaimBusSlot(pDriver, pATIGDev->Chipset,
+                            pGDev, pGDev->active, pATI) < 0)
+            continue;
 
-        if ((iEntity < 0) || !pGDev->active)
+        if (!pGDev->active)
             continue;
 
         /* Allocate screen */
         pScreenInfo = xf86AllocateScreen(pDriver, 0);
 
         /* Attach device to screen */
-        if (pVideo)
-            Configured = xf86ConfigActivePciEntity(pScreenInfo, iEntity,
-                NULL, NULL, NULL, NULL, NULL, NULL);
-        else
-            Configured = xf86ConfigActiveIsaEntity(pScreenInfo, iEntity,
-                NULL, NULL, NULL, NULL, NULL, NULL);
-
-        if (!Configured)
-        {
-            xf86DeleteScreen(pScreenInfo->scrnIndex, 0);
-            continue;
-        }
+        xf86AddEntityToScreen(pScreenInfo, pATI->iEntity);
 
         ATIPtrs[j - 1] = NULL;
 
@@ -1586,14 +1679,20 @@ NoVGAWonder:;
         pScreenInfo->driverPrivate = pATI;
 
         pATI->Chipset = pATIGDev->Chipset;
-        pATI->pGDev   = pGDev;
-        pATI->iEntity = iEntity;
 
         nScreen++;
     }
 
+    /* Deal with unassigned adapters */
     for (i = 0;  i < nATIPtr;  i++)
-        xfree(ATIPtrs[i]);
+    {
+        if (!(pATI = ATIPtrs[i]))
+            continue;
+
+        if ((pATI->Adapter > ATI_ADAPTER_VGA) && (pATI->iEntity < 0))
+            (void)ATIClaimBusSlot(pDriver, 0, NULL, FALSE, pATI);
+        xfree(pATI);
+    }
     xfree(ATIPtrs);
     xfree(ATIGDevs);
 

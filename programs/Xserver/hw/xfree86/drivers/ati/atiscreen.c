@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.1 1999/07/06 11:38:37 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -27,7 +27,6 @@
 #include "atiscreen.h"
 
 #include "xf86cmap.h"
-#include "xf86RAC.h"
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -59,20 +58,7 @@ ATIScreenInit
 {
     ScrnInfoPtr  pScreenInfo = xf86Screens[iScreen];
     ATIPtr       pATI        = ATIPTR(pScreenInfo);
-    pciVideoPtr  pVideo;
-    pciConfigPtr pPCI;
-    CARD32       IOValue;
     int          VisualMask;
-
-    /* Ensure adapter is enabled */
-    if ((pVideo = pATI->PCIInfo))
-    {
-        pPCI = (pciConfigPtr)(pVideo->thisCard);
-        IOValue = pciReadLong(pPCI->tag, PCI_CMD_STAT_REG);
-        if ((IOValue & PCI_CMD_ENABLE) != PCI_CMD_ENABLE)
-            pciWriteLong(pPCI->tag, PCI_CMD_STAT_REG,
-                IOValue | PCI_CMD_ENABLE);
-    }
 
     /* Set video hardware state */
     if (!ATIEnterGraphics(pScreen, pScreenInfo, pATI))
@@ -182,9 +168,10 @@ ATIScreenInit
     if (!miCreateDefColormap(pScreen))
         return FALSE;
 
-    if ((pScreenInfo->depth > 1) && (pScreenInfo->depth <= 8))
-        if (!xf86HandleColormaps(pScreen, 1 << pScreenInfo->depth,
+    if (pScreenInfo->depth > 1)
+        if (!xf86HandleColormaps(pScreen, (pScreenInfo->depth == 4) ? 16 : 256,
                                  pScreenInfo->rgbBits, ATILoadPalette, NULL,
+                                 CMAP_PALETTED_TRUECOLOR |
                                  CMAP_LOAD_EVEN_IF_OFFSCREEN))
             return FALSE;
 
@@ -192,9 +179,6 @@ ATIScreenInit
     pScreen->SaveScreen = ATISaveScreen;
     pATI->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = ATICloseScreen;
-
-    pScreenInfo->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_VIEWPORT;
-    pScreenInfo->racMemFlags = RAC_FB;
 
     if (serverGeneration == 1)
         xf86ShowUnusedOptions(pScreenInfo->scrnIndex, pScreenInfo->options);

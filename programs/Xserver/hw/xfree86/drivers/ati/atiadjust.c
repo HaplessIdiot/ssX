@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.c,v 1.3 1999/07/06 11:38:23 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -86,9 +86,9 @@ ATIAdjustPreInit
             else if (!pATI->CPIO_VGAWonder)
                 MaxBase = 0xFFFFU << 3;
             else if (pATI->Chip <= ATI_CHIP_28800_6)
-                MaxBase = 0x3FFFFU << 3;
+                MaxBase = 0x03FFFFU << 3;
             else /* Mach32 & Mach64 */
-                MaxBase = 0xFFFFFU << 3;
+                MaxBase = 0x0FFFFFU << 3;
             break;
 
         case ATI_CRTC_MACH64:

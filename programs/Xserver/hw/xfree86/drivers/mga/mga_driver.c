@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.107 1999/07/11 10:27:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.108 1999/07/11 11:10:31 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1468,20 +1468,10 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     pMga->FbMapSize = pScrn->videoRam * 1024;
 
     /* Set the bpp shift value */
-    switch (pScrn->bitsPerPixel) {
-    case 8:
-	pMga->BppShift = 0;
-	break;
-    case 16:
-	pMga->BppShift = 1;
-	break;
-    case 24:
-	pMga->BppShift = 0;
-	break;
-    case 32:
-	pMga->BppShift = 2;
-	break;
-    }
+    pMga->BppShifts[0] = 0;
+    pMga->BppShifts[1] = 1;
+    pMga->BppShifts[2] = 0;
+    pMga->BppShifts[3] = 2;
 
     /*
      * fill MGAdac struct
@@ -1641,7 +1631,8 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			      pScrn->display->modes, clockRanges,
 			      linePitches, minPitch, maxPitch,
-			      pMga->Rounding * pScrn->bitsPerPixel, 128, 2048,
+			      pMga->Roundings[(pScrn->bitsPerPixel >> 3) - 1] * 
+					pScrn->bitsPerPixel, 128, 2048,
 			      pScrn->display->virtualX,
 			      pScrn->display->virtualY,
 			      pMga->FbMapSize,
@@ -1823,6 +1814,14 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	xf86LoaderReqSymLists(shadowSymbols, NULL);
     }
+
+    pMga->CurrentLayout.bitsPerPixel = pScrn->bitsPerPixel;
+    pMga->CurrentLayout.depth = pScrn->depth;
+    pMga->CurrentLayout.displayWidth = pScrn->displayWidth;
+    pMga->CurrentLayout.weight.red = pScrn->weight.red;
+    pMga->CurrentLayout.weight.green = pScrn->weight.green;
+    pMga->CurrentLayout.weight.blue = pScrn->weight.blue;
+    pMga->CurrentLayout.Overlay8Plus24 = pMga->Overlay8Plus24;
 
     return TRUE;
 }
@@ -2354,10 +2353,12 @@ MGAAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     ScrnInfoPtr pScrn;
     int Base, tmp, count;
+    MGAFBLayout *pLayout;
     MGAPtr pMga;
 
     pScrn = xf86Screens[scrnIndex];
     pMga = MGAPTR(pScrn);
+    pLayout = &pMga->CurrentLayout;
 
     if(pMga->ShowCache && y && pScrn->vtSema) {
 	int lastline = pMga->FbUsableSize / 
@@ -2368,10 +2369,10 @@ MGAAdjustFrame(int scrnIndex, int x, int y, int flags)
         if(y > lastline) y = lastline;
     }
 
-    Base = (y * pScrn->displayWidth + x + pMga->YDstOrg) >>
-			(3 - pMga->BppShift);
+    Base = (y * pLayout->displayWidth + x + pMga->YDstOrg) >>
+		(3 - pMga->BppShifts[(pLayout->bitsPerPixel >> 3) - 1]);
 
-    if (pScrn->bitsPerPixel == 24) {
+    if (pLayout->bitsPerPixel == 24) {
 	if (pMga->Chipset == PCI_CHIP_MGAG400)
 	   Base &= ~1;  /* Not sure why */
 	Base *= 3;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.15 1999/07/11 08:49:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.16 1999/07/17 06:30:59 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -529,7 +529,7 @@ static unsigned char proto[PROT_NUMPROTOS][8] = {
   /* --header--  ---data--- packet -4th-byte-  mouse   */
   /* mask   id   mask   id  bytes  mask   id   flags   */
 							    /* Serial mice */
-  {  0x40, 0x40, 0x40, 0x00,  3,  ~0x23U, 0x00, MPF_NONE },  /* MicroSoft */
+  {  0x40, 0x40, 0x40, 0x00,  3,  ~0x23, 0x00, MPF_NONE },  /* MicroSoft */
   {  0xf8, 0x80, 0x00, 0x00,  5,   0x00, 0xff, MPF_SAFE },  /* MouseSystems */
   {  0xe0, 0x80, 0x80, 0x00,  3,   0x00, 0xff, MPF_NONE },  /* MMSeries */
   {  0xe0, 0x80, 0x80, 0x00,  3,   0x00, 0xff, MPF_NONE },  /* Logitech */

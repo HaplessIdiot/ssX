@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.h,v 1.3 1999/07/06 11:38:22 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -26,8 +26,6 @@
 
 #include "xf86Pci.h"
 #include "xf86PciInfo.h"
-
-#define  PCI_CMD_ENABLE ((CARD32)(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE))
 
 #include "xf86.h"
 

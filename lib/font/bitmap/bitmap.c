@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitmap.c,v 1.3 1999/03/14 14:39:39 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitmap.c,v 1.4 1999/07/17 05:30:30 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -45,7 +45,7 @@ bitmapGetGlyphs(FontPtr pFont, unsigned long count, unsigned char *chars,
     register unsigned int c;
     register CharInfoPtr pci;
     unsigned int r;
-    CharInfoPtr *encoding;
+    CharInfoPtr **encoding;
     CharInfoPtr pDefault;
 
     bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
@@ -64,14 +64,14 @@ bitmapGetGlyphs(FontPtr pFont, unsigned long count, unsigned char *chars,
 	    while (count--) {
 		c = (*chars++) - firstCol;
 		if (c < numCols)
-		    *glyphs++ = encoding[c];
+		    *glyphs++ = ACCESSENCODING(encoding,c);
 		else
 		    *glyphs++ = pDefault;
 	    }
 	} else {
 	    while (count--) {
 		c = (*chars++) - firstCol;
-		if (c < numCols && (pci = encoding[c]))
+		if (c < numCols && (pci = ACCESSENCODING(encoding,c)))
 		    *glyphs++ = pci;
 		else if (pDefault)
 		    *glyphs++ = pDefault;
@@ -84,7 +84,7 @@ bitmapGetGlyphs(FontPtr pFont, unsigned long count, unsigned char *chars,
 		c = *chars++ << 8;
 		c = (c | *chars++) - firstCol;
 		if (c < numCols)
-		    *glyphs++ = encoding[c];
+		    *glyphs++ = ACCESSENCODING(encoding,c);
 		else
 		    *glyphs++ = pDefault;
 	    }
@@ -92,7 +92,7 @@ bitmapGetGlyphs(FontPtr pFont, unsigned long count, unsigned char *chars,
 	    while (count--) {
 		c = *chars++ << 8;
 		c = (c | *chars++) - firstCol;
-		if (c < numCols && (pci = encoding[c]))
+		if (c < numCols && (pci = ACCESSENCODING(encoding,c)))
 		    *glyphs++ = pci;
 		else if (pDefault)
 		    *glyphs++ = pDefault;
@@ -107,7 +107,7 @@ bitmapGetGlyphs(FontPtr pFont, unsigned long count, unsigned char *chars,
 	    r = (*chars++) - firstRow;
 	    c = (*chars++) - firstCol;
 	    if (r < numRows && c < numCols &&
-		    (pci = encoding[r * numCols + c]))
+		    (pci = ACCESSENCODING(encoding, r * numCols + c)))
 		*glyphs++ = pci;
 	    else if (pDefault)
 		*glyphs++ = pDefault;

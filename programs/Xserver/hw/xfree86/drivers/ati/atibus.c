@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.c,v 1.3 1999/07/06 11:38:24 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -21,7 +21,13 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "atiadapter.h"
 #include "atibus.h"
+#include "atichip.h"
+#include "atiio.h"
+#include "ativersion.h"
+#include "xf86Resources.h"
+#include "xf86.h"
 
 /*
  * Definitions related to an adapter's system bus interface.
@@ -39,3 +45,122 @@ const char *ATIBusNames[] =
     "PCI",
     "AGP"
 };
+
+/*
+ * ATIClaimResources --
+ *
+ * This function registers most of the bus resources used by an adapter.  The
+ * only exceptions are non-PCI non-AGP linear apertures, which are registered
+ * by ATIPreInit().  This function also attempts to register unshareable
+ * resources for inactive PCI adapters, whether or not they are relocatable.
+ */
+static void
+ATIClaimResources
+(
+    ATIPtr pATI,
+    Bool   Active
+)
+{
+    resPtr   pResources;
+    resRange Resources[2] = {{0, 0, 0}, _END};
+
+    /* Claim VGA and VGAWonder resources */
+    if ((pATI->VGAAdapter != ATI_ADAPTER_NONE) && (Active || !pATI->SharedVGA))
+    {
+        /*
+         * 18800-x's are the only ATI controllers that decode all ISA aliases
+         * of VGA and VGA Wonder I/O ports.  Other x8800's do not decode >any<
+         * VGA aliases, but do decode VGA Wonder aliases whose most significant
+         * nibble is zero.
+         */
+        xf86ClaimFixedResources(
+            (pATI->Chip <= ATI_CHIP_18800_1) ?
+            (pATI->SharedVGA ? resVgaSparseShared : resVgaSparseExclusive) :
+            (pATI->SharedVGA ? resVgaShared : resVgaExclusive),
+            pATI->iEntity);
+
+        if (pATI->CPIO_VGAWonder)
+        {
+            if (pATI->SharedVGA)
+                Resources[0].type = ResShrIoSparse;
+            else
+                Resources[0].type = ResExcIoSparse;
+            Resources[0].rBase = pATI->CPIO_VGAWonder;
+            if (pATI->Chip <= ATI_CHIP_18800_1)
+                Resources[0].rMask = 0x03FEU;
+            else
+                Resources[0].rMask = 0xF3FEU;
+
+            xf86ClaimFixedResources(Resources, pATI->iEntity);
+        }
+    }
+
+    if (Active || !pATI->SharedAccelerator)
+    {
+        /* Claim 8514/A resources */
+        if (pATI->ChipHasSUBSYS_CNTL)
+            xf86ClaimFixedResources(
+                pATI->SharedAccelerator ? res8514Shared : res8514Exclusive,
+                pATI->iEntity);
+
+        /* Claim Mach64 sparse I/O resources */
+        if ((pATI->Adapter == ATI_ADAPTER_MACH64) &&
+            (pATI->CPIODecoding == SPARSE_IO))
+        {
+            if (pATI->SharedAccelerator)
+                Resources[0].type = ResShrIoSparse;
+            else
+                Resources[0].type = ResExcIoSparse;
+            Resources[0].rBase = pATI->CPIOBase;
+            Resources[0].rMask = 0x03FCU;
+
+            xf86ClaimFixedResources(Resources, pATI->iEntity);
+        }
+
+        /* Register relocatable resources for inactive adapters */
+        if (!Active)
+        {
+            pResources =
+                xf86RegisterResources(pATI->iEntity, NULL, ResExclusive);
+            pResources =
+                xf86ReallocatePciResources(pATI->iEntity, pResources);
+            if (pResources)
+            {
+                xf86Msg(X_WARNING,
+                    ATI_NAME ":  Unable to register the following resources"
+                    " for inactive adapter:\n");
+                xf86PrintResList(1, pResources);
+            }
+        }
+    }
+}
+
+/*
+ * ATIClaimBusSlot --
+ *
+ * Claim an adapter and register its resources.
+ */
+int
+ATIClaimBusSlot
+(
+    DriverPtr pDriver,
+    int       Chipset,
+    GDevPtr   pGDev,
+    Bool      Active,
+    ATIPtr    pATI
+)
+{
+    pciVideoPtr pVideo = pATI->PCIInfo;
+
+    if (pVideo)
+        pATI->iEntity =
+            xf86ClaimPciSlot(pVideo->bus, pVideo->device, pVideo->func,
+                pDriver, Chipset, pGDev, Active);
+    else
+        pATI->iEntity = xf86ClaimIsaSlot(pDriver, Chipset, pGDev, Active);
+
+    if (pATI->iEntity >= 0)
+        ATIClaimResources(pATI, Active);
+
+    return pATI->iEntity;
+}

@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.12 1999/06/13 13:47:32 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.13 1999/07/17 05:30:31 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -991,7 +991,9 @@ ScaleFont(FontPtr opf,            /* originating font */
     bitmapFont->metrics = (CharInfoPtr) xalloc(nchars * sizeof(CharInfoRec));
     if (!bitmapFont->metrics)
 	goto bail;
-    bitmapFont->encoding = (CharInfoPtr *) xalloc(nchars * sizeof(CharInfoPtr));
+    bitmapFont->encoding = 
+        (CharInfoPtr **) xcalloc(NUM_SEGMENTS(nchars),
+                                 sizeof(CharInfoPtr*));
     if (!bitmapFont->encoding)
 	goto bail;
 
@@ -1033,7 +1035,8 @@ ScaleFont(FontPtr opf,            /* originating font */
     pci = bitmapFont->metrics;
     for (i = 0; i < nchars; i++)
     {
-	if ((opci = obitmapFont->encoding[inkindex2 = OLDINDEX(i)]))
+        inkindex2 = OLDINDEX(i);
+	if ((opci = ACCESSENCODING(obitmapFont->encoding,OLDINDEX(i))))
 	{
 	    double newlsb, newrsb, newdesc, newasc, point[2];
 
@@ -1052,7 +1055,6 @@ ScaleFont(FontPtr opf,            /* originating font */
 			break;
 		if (j == vals->nranges)
 		{
-		    bitmapFont->encoding[i] = 0;
 		    continue;
 		}
 	    }
@@ -1063,11 +1065,17 @@ ScaleFont(FontPtr opf,            /* originating font */
 		opci->metrics.descent == 0 &&
 		opci->metrics.characterWidth == 0)
 	    {
-		bitmapFont->encoding[i] = 0;
 		continue;
 	    }
 
-	    bitmapFont->encoding[i] = pci;
+            if(!bitmapFont->encoding[SEGMENT_MAJOR(i)]) {
+                bitmapFont->encoding[SEGMENT_MAJOR(i)]=
+                  (CharInfoPtr*)xcalloc(BITMAP_FONT_SEGMENT_SIZE,
+                                        sizeof(CharInfoPtr));
+                if(!bitmapFont->encoding[SEGMENT_MAJOR(i)])
+                    goto bail;
+            }
+	    ACCESSENCODINGL(bitmapFont->encoding, i) = pci;
 
 	    /* Compute new extents for this glyph */
 	    TRANSFORM_POINT(xform,
@@ -1120,8 +1128,6 @@ ScaleFont(FontPtr opf,            /* originating font */
     
 	    pci++;
 	}
-	else
-	    bitmapFont->encoding[i] = 0;
     }
 
 
@@ -1133,10 +1139,9 @@ ScaleFont(FontPtr opf,            /* originating font */
     pci = bitmapFont->metrics;
     for (i = 0; i < nchars; i++)
     {
-	if ((pci = bitmapFont->encoding[i]) &&
-	    (opci = obitmapFont->encoding[OLDINDEX(i)]))
+	if ((pci = ACCESSENCODING(bitmapFont->encoding,i)) &&
+	    (opci = ACCESSENCODING(obitmapFont->encoding,OLDINDEX(i))))
 	{
-	    pci = bitmapFont->encoding[i];
 	    totalchars++;
 	    *sWidth += abs((int)(INT16)pci->metrics.attributes);
 #define MINMAX(field) \
@@ -1198,7 +1203,8 @@ ScaleFont(FontPtr opf,            /* originating font */
 	    cols = pfi->lastCol - pfi->firstCol + 1;
 	    r = r - pfi->firstRow;
 	    c = c - pfi->firstCol;
-	    bitmapFont->pDefault = bitmapFont->encoding[r * cols + c];
+	    bitmapFont->pDefault = 
+                ACCESSENCODING(bitmapFont->encoding, r * cols + c);
 	}
     }
 
@@ -1212,6 +1218,9 @@ bail:
 	xfree(bitmapFont->metrics);
 	xfree(bitmapFont->ink_metrics);
 	xfree(bitmapFont->bitmaps);
+        if(bitmapFont->encoding)
+            for(i=0; i<NUM_SEGMENTS(nchars); i++)
+                xfree(bitmapFont->encoding[i]);
 	xfree(bitmapFont->encoding);
     }
     return NULL;
@@ -1597,7 +1606,7 @@ BitmapScaleBitmaps(FontPtr pf,          /* scaled font */
     glyph = pf->glyph;
     for (i = 0; i < nchars; i++)
     {
-	if ((pci = bitmapFont->encoding[i]))
+	if ((pci = ACCESSENCODING(bitmapFont->encoding, i)))
 	    bytestoalloc += BYTES_FOR_GLYPH(pci, glyph);
     }
 
@@ -1613,8 +1622,8 @@ BitmapScaleBitmaps(FontPtr pf,          /* scaled font */
     glyphBytes = bitmapFont->bitmaps;
     for (i = 0; i < nchars; i++)
     {
-	if ((pci = bitmapFont->encoding[i]) &&
-	    (opci = obitmapFont->encoding[OLDINDEX(i)]))
+	if ((pci = ACCESSENCODING(bitmapFont->encoding, i)) &&
+	    (opci = ACCESSENCODING(obitmapFont->encoding, OLDINDEX(i))))
 	{
 	    pci->bits = glyphBytes;
 	    ScaleBitmap (pf, opci, pci, inv_xform,
@@ -1631,6 +1640,9 @@ bail:
 	xfree(bitmapFont->metrics);
 	xfree(bitmapFont->ink_metrics);
 	xfree(bitmapFont->bitmaps);
+        if(bitmapFont->encoding)
+            for(i=0; i<NUM_SEGMENTS(nchars); i++)
+                xfree(bitmapFont->encoding[i]);
 	xfree(bitmapFont->encoding);
     }
     return NULL;
@@ -1675,7 +1687,7 @@ PrinterScaleBitmaps(FontPtr pf,         /* scaled font */
     glyph = pf->glyph;
     for (i = 0; i < nchars; i++)
     {
-	if ((pci = bitmapFont->encoding[i]))
+	if ((pci = ACCESSENCODING(bitmapFont->encoding, i)))
 	    bytestoalloc = MAX(bytestoalloc,BYTES_FOR_GLYPH(pci, glyph));
     }
 
@@ -1691,8 +1703,8 @@ PrinterScaleBitmaps(FontPtr pf,         /* scaled font */
     glyphBytes = bitmapFont->bitmaps;
     for (i = 0; i < nchars; i++)
     {
-	if ((pci = bitmapFont->encoding[i]) &&
-	    (opci = obitmapFont->encoding[OLDINDEX(i)]))
+	if ((pci = ACCESSENCODING(bitmapFont->encoding, i)) &&
+	    (opci = ACCESSENCODING(obitmapFont->encoding, OLDINDEX(i))))
 	{
 	    pci->bits = glyphBytes;
 	}
@@ -1706,6 +1718,9 @@ bail:
 	xfree(bitmapFont->metrics);
 	xfree(bitmapFont->ink_metrics);
 	xfree(bitmapFont->bitmaps);
+        if(bitmapFont->encoding)
+            for(i=0; i<NUM_SEGMENTS(nchars); i++)
+                xfree(bitmapFont->encoding[i]);
 	xfree(bitmapFont->encoding);
     }
     return NULL;
@@ -1884,11 +1899,18 @@ bitmapUnloadScalable (FontPtr pFont)
 {
     BitmapFontPtr   bitmapFont;
     FontInfoPtr	    pfi;
+    int             i, nencoding;
 
     bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
     pfi = &pFont->info;
     xfree (pfi->props);
     xfree (pfi->isStringProp);
+    if(bitmapFont->encoding) {
+        nencoding = (pFont->info.lastCol - pFont->info.firstCol + 1) *
+	    (pFont->info.lastRow - pFont->info.firstRow + 1);
+        for(i=0; i<nencoding; i++)
+            xfree(bitmapFont->encoding[i]);
+    }
     xfree (bitmapFont->encoding);
     xfree (bitmapFont->bitmaps);
     xfree (bitmapFont->ink_metrics);

@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/bitmap/pcfwrite.c,v 1.2 1999/07/17 05:30:32 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -422,8 +422,10 @@ pcfWriteFont(FontPtr pFont, FontFilePtr file)
 	    pcfPutINT16(file, format, pFont->info.lastRow);
 	    pcfPutINT16(file, format, pFont->info.defaultCh);
 	    for (i = 0; i < nencodings; i++) {
-		if (bitmapFont->encoding[i])
-		    pcfPutINT16(file, format, bitmapFont->encoding[i] - bitmapFont->metrics);
+		if (ACCESSENCODING(bitmapFont->encoding,i))
+		    pcfPutINT16(file, format, 
+                                ACCESSENCODING(bitmapFont->encoding, i) - 
+                                  bitmapFont->metrics);
 		else
 		    pcfPutINT16(file, format, 0xFFFF);
 	    }

@@ -31,7 +31,7 @@ OF THIS SOFTWARE.
                                makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/imDefIm.c,v 1.2 1999/05/09 10:50:32 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #define NEED_EVENTS
@@ -302,8 +302,8 @@ _XimPreConnectionIM(im, selection)
     _XGetLCValues(lcd, XlcNLanguage, &language, XlcNTerritory, &territory,
                     XlcNCodeset, &codeset, NULL);
     llen = strlen( language );
-    tlen = strlen( territory );
-    clen = strlen( codeset );
+    tlen = territory ? strlen( territory ): 0;
+    clen = codeset ? strlen( codeset ): 0;
 
     if( tlen != 0  &&  clen != 0 ) {
 	if( (locale_name[0] = Xmalloc(llen+tlen+clen+3)) != NULL )

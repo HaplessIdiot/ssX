@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.h,v 1.3 1999/07/06 11:38:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibios.c,v 1.0tsi Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,32 +21,35 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATIBUS_H___
-#define ___ATIBUS_H___ 1
-
-#include "atipriv.h"
-#include "atiproto.h"
-#include "xf86str.h"
+#include "ati.h"
+#include "atibios.h"
+#include "atistruct.h"
 
 /*
- * Definitions related to an adapter's system bus interface.
+ * ATIReadBIOS --
+ *
+ * This function is called to read in an adapter's BIOS, or parts thereof.
  */
-typedef enum
+int
+ATIReadBIOS
+(
+    ATIPtr        pATI,
+    pointer       Buffer,
+    unsigned long Offset,
+    int           Length
+)
 {
-    ATI_BUS_ISA = 0,
-    ATI_BUS_EISA,
-    ATI_BUS_MCA16,
-    ATI_BUS_MCA32,
-    ATI_BUS_SXLB,
-    ATI_BUS_DXLB,
-    ATI_BUS_VLB,
-    ATI_BUS_PCI,
-    ATI_BUS_AGP
-} ATIBusType;
+    pciVideoPtr  pVideo;
+    pciConfigPtr pPCI;
 
-extern const char *ATIBusNames[];
+    /* Read PCI adapter expansion ROM */
+    if ((pVideo = pATI->PCIInfo))
+    {
+        pPCI = (pciConfigPtr)(pVideo->thisCard);
+        pATI->BIOSBase = PCIGETROM(pciReadLong(pPCI->tag, PCI_MAP_ROM_REG));
+        return xf86ReadPciBIOS(Offset, pPCI->tag, 0, Buffer, Length);
+    }
 
-extern int ATIClaimBusSlot FunctionPrototype((DriverPtr, int, GDevPtr, Bool,
-                                              ATIPtr));
-
-#endif /* ___ATIBUS_H___ */
+    /* Read legacy ROM */
+    return xf86ReadBIOS(pATI->BIOSBase, Offset, Buffer, Length);
+}
