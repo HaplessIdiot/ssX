@@ -43,7 +43,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/include/extensions/Printstr.h,v 1.4 2001/01/17 17:53:16 dawes Exp $ */
+/* $XFree86: xc/include/extensions/Printstr.h,v 1.5 2001/08/01 00:44:35 tsi Exp $ */
 
 
 #ifndef _XpPrintstr_H_
@@ -774,7 +774,6 @@ extern int XpAllocateContextPrivateIndex(void);
 extern int XpRehashPrinterList(void);
 extern void XpSetFontResFunc(ClientPtr);
 extern void XpUnsetFontResFunc(ClientPtr);
-extern XpContextPtr XpContextOfClient(ClientPtr);
 extern void XpRegisterInitFunc(ScreenPtr, char *, int (*)(struct _XpContext *));
 
 #endif /* _XP_PRINT_SERVER_ */
