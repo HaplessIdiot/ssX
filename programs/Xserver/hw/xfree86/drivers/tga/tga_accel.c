@@ -24,7 +24,7 @@
  * DEC TGA accelerated options.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel.c,v 1.4 1999/01/24 13:32:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel.c,v 1.5 1999/02/07 11:11:15 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -121,8 +121,7 @@ DEC21030AccelInit(ScreenPtr pScreen)
     TGASubsequentScreenToScreenCopy;
 
   TGA_AccelInfoRec->Mono8x8PatternFillFlags =
-    HARDWARE_PATTERN_PROGRAMMED_BITS | BIT_ORDER_IN_BYTE_LSBFIRST |
-    HARDWARE_PATTERN_SCREEN_ORIGIN;
+    HARDWARE_PATTERN_PROGRAMMED_BITS | BIT_ORDER_IN_BYTE_LSBFIRST;
   TGA_AccelInfoRec->SetupForMono8x8PatternFill =
     TGASetupForMono8x8PatternFill;
   TGA_AccelInfoRec->SubsequentMono8x8PatternFillRect =

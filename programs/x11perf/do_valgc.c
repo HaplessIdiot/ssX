@@ -31,10 +31,8 @@ SOFTWARE.
 
 static Window win[2];
 
-int InitGC(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitGC(XParms xp, Parms p, int reps)
 {
     win[0] = XCreateSimpleWindow(
 	xp->d, xp->w, 10, 10, 10, 10, 1, xp->foreground, xp->background);
@@ -44,10 +42,8 @@ int InitGC(xp, p, reps)
     return reps;
 }
 
-void DoChangeGC(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoChangeGC(XParms xp, Parms p, int reps)
 {
     int		i;
     XGCValues   gcv;
@@ -71,9 +67,8 @@ void DoChangeGC(xp, p, reps)
     }
 }
 
-void EndGC(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndGC(XParms xp, Parms p)
 {
     XDestroyWindow(xp->d, win[0]);
     XDestroyWindow(xp->d, win[1]);

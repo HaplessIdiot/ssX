@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbscrinit.c,v 1.1 1999/01/23 09:56:15 dawes Exp $ */
 
 
 #include "X.h"
@@ -26,8 +26,8 @@
 	compiled with CFB_NEED_SCREEN_PRIVATE */
 
 static BSFuncRec cfb24_32BSFuncRec = {
-    cfb24_32SaveAreas,
-    cfb24_32RestoreAreas,
+    cfb24SaveAreas,
+    cfb24RestoreAreas,
     (BackingStoreSetClipmaskRgnProcPtr) 0,
     (BackingStoreGetImagePixmapProcPtr) 0,
     (BackingStoreGetSpansPixmapProcPtr) 0,
@@ -98,7 +98,7 @@ cfb24_32SetupScreen(
     pScreen->UnrealizeWindow = cfb24UnmapWindow;		/* OK */
     pScreen->PaintWindowBackground = cfb24PaintWindow;		/* OK */
     pScreen->PaintWindowBorder = cfb24PaintWindow;		/* OK */
-    pScreen->CopyWindow = cfb24CopyWindow;			/* OK */
+    pScreen->CopyWindow = cfb24_32CopyWindow;
     pScreen->CreatePixmap = cfb24_32CreatePixmap;
     pScreen->DestroyPixmap = cfb24_32DestroyPixmap;
     pScreen->RealizeFont = mfbRealizeFont;
@@ -131,7 +131,7 @@ cfb24_32CreateScreenResources(ScreenPtr pScreen)
 
     /* get the pitch before mi destroys it */
     pScrInitParms = (miScreenInitParmsPtr)pScreen->devPrivate;
-    pitch = pScrInitParms->width * 3; /* this should already be padded */
+    pitch = PixmapBytePad(pScrInitParms->width, 24);
 
     if((retval = miCreateScreenResources(pScreen))) {
 	/* fix the screen pixmap */

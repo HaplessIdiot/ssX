@@ -29,10 +29,8 @@ SOFTWARE.
 static XPoint *points;
 static GC      pgc;
 
-int InitTrapezoids(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitTrapezoids(XParms xp, Parms p, int reps)
 {
     int     i, numPoints;
     int     rows;
@@ -80,10 +78,8 @@ int InitTrapezoids(xp, p, reps)
     return reps;
 }
 
-void DoTrapezoids(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoTrapezoids(XParms xp, Parms p, int reps)
 {
     int     i, j;
     XPoint  *curPoint;
@@ -102,9 +98,8 @@ void DoTrapezoids(xp, p, reps)
     }
 }
 
-void EndTrapezoids(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndTrapezoids(XParms xp, Parms p)
 {
     free(points);
 }

@@ -10,7 +10,7 @@
  *  Inspired by cir.h
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg.h,v 1.3 1998/11/22 10:37:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg.h,v 1.4 1998/12/06 06:08:30 dawes Exp $ */
 
 #ifndef LG_H
 #define LG_H
@@ -75,7 +75,9 @@ typedef struct {
     Bool		UseMMIO;
     XAAInfoRecPtr       AccelInfoRec;
     xf86CursorInfoPtr   CursorInfoRec;
+#if 0
     DGAInfoPtr          DGAInfo;
+#endif    
     I2CBusPtr		I2CPtr1;
     I2CBusPtr		I2CPtr2;
     CloseScreenProcPtr  CloseScreen;

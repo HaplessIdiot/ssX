@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.7 1999/02/05 04:49:56 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.8 1999/02/25 06:01:07 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -548,7 +548,6 @@ ResetSourceChanged(xedit_flist_item *item)
 void
 KillFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-    int i;
     xedit_flist_item *item = FindTextSource(XawTextGetSource(textwindow), NULL);
 
     if (item->source == scratch) {
@@ -769,7 +768,7 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
     if ((dir = opendir(dir_name)) != NULL) {
 	char path[BUFSIZ], *pptr;
 	struct dirent *ent;
-	int isdir, first = 1, bytes;
+	int isdir = 0, first = 1, bytes;
 
 	XmuSnprintf(path, sizeof(path), "%s/", dir_name);
 	pptr = path + strlen(path);

@@ -41,23 +41,23 @@ static GC     pgc;
 #define PI  3.14159265357989
 #endif
 
-double Area(p1, p2, p3)
-    XPoint  p1, p2, p3;
+static double 
+Area(XPoint p1, XPoint p2, XPoint p3)
 {
     return
       (p1.x*p2.y - p1.x*p3.y + p2.x*p3.y - p2.x*p1.y + p3.x*p1.y - p3.x*p2.y)/2;
 }
 
-double Distance(p1, p2)
-    XPoint p1, p2;
+/*
+static double 
+Distance(XPoint p1, XPoint p2)
 {
     return sqrt((float) ((p1.x-p2.x)*(p1.x-p2.x) + (p1.y-p2.y)*(p1.y-p2.y)));
 }
+*/
     
-int InitTriangles(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitTriangles(XParms xp, Parms p, int reps)
 {
     int     i, j, numPoints;
     int     rows;
@@ -132,10 +132,8 @@ int InitTriangles(xp, p, reps)
 
 #ifndef POLYTRIANGLE_HACK
 
-void DoTriangles(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoTriangles(XParms xp, Parms p, int reps)
 {
     int     i, j;
     XPoint  *curPoint;
@@ -155,36 +153,15 @@ void DoTriangles(xp, p, reps)
 }
 
 #else
-void DoTriangles(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-{
-    int     i, j;
-    XPoint  *curPoint;
-
-    for (i = 0; i != reps; i++) {
-        XPolyTriangle (xp->d, xp->w, pgc, points, p->objects, Convex, 
-			 CoordModeOrigin);
-        if (pgc == xp->bggc)
-            pgc = xp->fggc;
-        else
-            pgc = xp->bggc;
-    }
-}
 
 static xReq _dummy_request = {
 	0, 0, 0
 };
 
-XPolyTriangle(dpy, d, gc, points, n_triangles, shape, mode)
-register Display *dpy;
-Drawable d;
-GC gc;
-XPoint *points;
-int n_triangles;
-int shape;
-int mode;
+static void
+XPolyTriangle(register Display *dpy, 
+	      Drawable d, GC gc, XPoint *points, 
+	      int n_triangles, int shape, int mode)
 {
     register xFillPolyReq *req;
     register long nbytes;
@@ -228,11 +205,26 @@ int mode;
     UnlockDisplay(dpy);
     SyncHandle();
 }
+
+void 
+DoTriangles(XParms xp, Parms p, int reps)
+{
+    int     i, j;
+    XPoint  *curPoint;
+
+    for (i = 0; i != reps; i++) {
+        XPolyTriangle (xp->d, xp->w, pgc, points, p->objects, Convex, 
+			 CoordModeOrigin);
+        if (pgc == xp->bggc)
+            pgc = xp->fggc;
+        else
+            pgc = xp->bggc;
+    }
+}
 #endif
 
-void EndTriangles(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndTriangles(XParms xp, Parms p)
 {
     free(points);
 }

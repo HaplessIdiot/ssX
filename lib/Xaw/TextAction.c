@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.15 1998/12/06 06:08:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.16 1999/01/11 05:13:12 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2608,6 +2608,7 @@ FormParagraph(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	tw->text.clear_to_eol = True;
     }
     XawStackFree(pos, buf);
+    ctx->text.showposition = True;
 
     EndAction(ctx);
 }

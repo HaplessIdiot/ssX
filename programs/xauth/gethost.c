@@ -23,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xauth/gethost.c,v 3.9 1998/09/05 06:37:08 dawes Exp $ */
+/* $XFree86: xc/programs/xauth/gethost.c,v 3.10 1998/10/04 09:40:44 dawes Exp $ */
 
 /* sorry, streams support does not really work yet */
 #if defined(STREAMSCONN) && defined(SVR4)
@@ -71,6 +71,7 @@ in this Software without prior written authorization from The Open Group.
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
+#include "xauth.h"
 
 #ifdef MINIX
 #ifdef MNX_TCPCONN
@@ -101,7 +102,7 @@ int
 #else
 void
 #endif
-nameserver_lost(sig)
+nameserver_lost(int sig)
 {
   nameserver_timedout = True;
   longjmp (env, -1);
@@ -112,11 +113,12 @@ nameserver_lost(sig)
 }
 #endif
 
-char *get_hostname (auth)
+char *
+get_hostname (auth)
     Xauth *auth;
 {
     struct hostent *hp = NULL;
-#ifndef WIN32
+#if !defined(WIN32) && defined(X_NOT_STDC_ENV)
     char *inet_ntoa();
 #endif
 #ifdef DNETCONN
@@ -171,9 +173,8 @@ char *get_hostname (auth)
 /*
  * cribbed from lib/X/XConnDis.c
  */
-static Bool get_inet_address (name, resultp)
-    char *name;
-    unsigned int *resultp;		/* return */
+static Bool 
+get_inet_address(char *name, unsigned int *resultp)
 {
     unsigned int hostinetaddr = inet_addr (name);
     struct hostent *host_ptr;
@@ -236,7 +237,6 @@ char *get_address_info (family, fulldpyname, prefix, host, lenp)
     char *src = NULL;
 #ifdef TCPCONN
     unsigned int hostinetaddr;
-    struct sockaddr_in inaddr;		/* dummy variable for size calcs */
 #endif
 #ifdef DNETCONN
     struct dn_naddr dnaddr;
@@ -252,7 +252,6 @@ char *get_address_info (family, fulldpyname, prefix, host, lenp)
 					/* handle unix:0 and :0 specially */
 	if (prefix == 0 && (strncmp (fulldpyname, "unix:", 5) == 0 ||
 			    fulldpyname[0] == ':')) {
-	    extern char *get_local_hostname();
 
 	    if (!get_local_hostname (buf, sizeof buf)) {
 		len = 0;

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greet.h,v 1.2 1998/10/10 15:25:35 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greet.h,v 1.3 1999/02/25 06:01:06 dawes Exp $ */
 
 /*
  * greet.h - interface to xdm's dynamically-loadable modular greeter
@@ -43,7 +43,7 @@ from The Open Group.
 #define GETPWNAM_ARGS /*unknown*/
 #endif
 
-#if defined(CSRG_BASED) || defined(__osf__)
+#if defined(__FreeBSD__) || defined(__bsdi__) || defined(__osf__)
 #define SETGRENT_TYPE int
 #else
 #define SETGRENT_TYPE void

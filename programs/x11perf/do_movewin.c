@@ -28,16 +28,14 @@ static Window *children;
 static XPoint *positions;
 static Window cover;
 static int rows;
-static x_offset, y_offset;  /* Private global data for DoMoveWindows */
+static int x_offset, y_offset;  /* Private global data for DoMoveWindows */
 static int xmax, ymax;
-static delta1;		    /* Private global data for DoResizeWindows */
+static int delta1;		/* Private global data for DoResizeWindows */
 
 #define STACK (4*(HEIGHT-10)/CHILDSIZE)
 
-int InitMoveWindows(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitMoveWindows(XParms xp, Parms p, int reps)
 {
     int     i = 0;
 
@@ -65,12 +63,10 @@ int InitMoveWindows(xp, p, reps)
     return reps;
 }
 
-void DoMoveWindows(xp, p, reps)
-    XParms  xp;
-    Parms p;
-    int     reps;
+void 
+DoMoveWindows(XParms xp, Parms p, int reps)
 {
-    int     i, j, x, y;
+    int     i, j;
 
     for (i = 0; i != reps; i++) {
 	x_offset += 1;
@@ -86,18 +82,15 @@ void DoMoveWindows(xp, p, reps)
     }
 }
 
-void EndMoveWindows(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndMoveWindows(XParms xp, Parms p)
 {
     free(children);
     free(positions);
 }
 
-void DoResizeWindows(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoResizeWindows(XParms xp, Parms p, int reps)
 {
     int     i, j, delta2;
 
@@ -112,10 +105,8 @@ void DoResizeWindows(xp, p, reps)
     }
 }
 
-int InitCircWindows(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int
+InitCircWindows(XParms xp, Parms p, int reps)
 {
     int     i;
     int     pos;
@@ -134,10 +125,8 @@ int InitCircWindows(xp, p, reps)
     return reps;
 }
 
-void DoCircWindows(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoCircWindows(XParms xp, Parms p, int reps)
 {
     int     i, j;
 
@@ -146,18 +135,15 @@ void DoCircWindows(xp, p, reps)
 	    XCirculateSubwindows (xp->d, xp->w, RaiseLowest);
 }
 
-void EndCircWindows(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndCircWindows(XParms xp, Parms p)
 {
     free(children);
 }
 
 
-int InitMoveTree(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitMoveTree(XParms xp, Parms p, int reps)
 {
     int     i = 0;
 
@@ -189,12 +175,10 @@ int InitMoveTree(xp, p, reps)
     return reps;
 }
 
-void DoMoveTree(xp, p, reps)
-    XParms  xp;
-    Parms p;
-    int     reps;
+void 
+DoMoveTree(XParms xp, Parms p, int reps)
 {
-    int     i, j;
+    int     i;
 
     for (i = 0; i != reps; i++) {
 	x_offset += 1;
@@ -207,9 +191,8 @@ void DoMoveTree(xp, p, reps)
     }
 }
 
-void EndMoveTree(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndMoveTree(XParms xp, Parms p)
 {
     XDestroyWindow(xp->d, cover);
     free(children);

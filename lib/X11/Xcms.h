@@ -253,7 +253,8 @@ typedef void (*XcmsScreenFreeProc)(
      * Function List Pointer -- pointer to an array of function pointers.
      *    The end of list is indicated by a NULL pointer.
      */
-typedef Status (*XcmsConversionProc)();
+typedef Status (*XcmsConversionProc)(XcmsCCC, XcmsColor *, XcmsColor *, 
+				     unsigned int);
 typedef XcmsConversionProc *XcmsFuncListPtr;
 
 typedef int (*XcmsParseStringProc)(	/* Color String Parsing Proc */

@@ -23,8 +23,9 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xclock/xclock.c,v 1.2 1998/12/20 11:58:13 dawes Exp $ */
 
+#include <stdio.h>
 #include <X11/Xatom.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -38,7 +39,9 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/extensions/XKBbells.h>
 #endif
 
+#ifdef X_NOT_STDC_ENV
 extern void exit();
+#endif
 
 /* Command line options table.  Only resources are entered here...there is a
    pass over the remaining options after XtParseCommand is let loose. */
@@ -56,7 +59,9 @@ static XrmOptionDescRec options[] = {
 {"-analog",	"*clock.analog",	XrmoptionNoArg,		"TRUE"},
 };
 
-static void quit();
+static void quit ( Widget w, XEvent *event, String *params, 
+		   Cardinal *num_params );
+
 static XtActionsRec xclock_actions[] = {
     { "quit",	quit },
 };
@@ -66,8 +71,8 @@ static Atom wm_delete_window;
 /*
  * Report the syntax for calling xclock.
  */
-Syntax(call)
-	char *call;
+static void
+Syntax(char *call)
 {
 	(void) printf ("Usage: %s [-analog] [-bw <pixels>] [-digital]\n", call);
 	(void) printf ("       [-fg <color>] [-bg <color>] [-hd <color>]\n");
@@ -78,20 +83,15 @@ Syntax(call)
 	exit(1);
 }
 
-static void die(w, client_data, call_data)
-    Widget	w;
-    XtPointer	client_data;
-    XtPointer	call_data;
+static void 
+die(Widget w, XtPointer client_data, XtPointer call_data)
 {
     XCloseDisplay(XtDisplayOfObject(w));
     exit(0);
 }
 
-static void quit (w, event, params, num_params)
-    Widget w;		/* ApplicationShellWidget */
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+static void 
+quit(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     Arg arg;
 
@@ -110,18 +110,16 @@ static void quit (w, event, params, num_params)
     }
 }
 
-static void save(w, client_data, call_data)
-    Widget w;
-    XtPointer client_data, call_data;
+static void 
+save(Widget w, XtPointer client_data, XtPointer call_data)
 {
     XtCheckpointToken token = (XtCheckpointToken) call_data;
     /* we have nothing to save */
     token->save_success = True;
 }
 
-int main(argc, argv)
-    int argc;
-    char **argv;
+int 
+main(int argc, char *argv[])
 {
     Widget toplevel;
     Arg arg;
@@ -169,4 +167,5 @@ int main(argc, argv)
     (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
 			    &wm_delete_window, 1);
     XtAppMainLoop (app_con);
+    exit(0);
 }

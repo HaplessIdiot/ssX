@@ -1,6 +1,6 @@
 /* (c) Itai Nahshon */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_i2c.c,v 1.4 1998/11/15 04:30:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_i2c.c,v 1.5 1998/12/06 06:08:30 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -80,6 +80,15 @@ CIRI2CInit(ScreenPtr pScreen)
 #ifdef CIR_DEBUG
     ErrorF("CIRI2CInit\n");
 #endif
+
+    switch(pCir->Chipset) {
+    case PCI_CHIP_GD5446:
+    case PCI_CHIP_GD5480:
+        break;
+    default:
+        return FALSE;
+    }
+
 
     I2CPtr = xf86CreateI2CBusRec();
     if(!I2CPtr) return FALSE;

@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.6 1999/01/14 13:04:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.7 1999/01/26 10:40:25 dawes Exp $ */
  
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -92,6 +92,12 @@ int	LgValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
 static void LgRestoreLgRegs(ScrnInfoPtr pScrn, LgRegPtr lgReg);
 static int LgFindLineData(int displayWidth, int bpp);
 
+#ifdef DPMSExtension
+static void	LgDisplayPowerManagementSet(ScrnInfoPtr pScrn,
+					    int PowerManagementMode,
+					    int flags);
+#endif
+
 /*
  * This is intentionally screen-independent.  It indicates the binding
  * choice made in the first PreInit.
@@ -150,6 +156,84 @@ static int LgLinePitches[4][11] = {
   /* 24 */ { 213,  341,  426,  554,  682,  853, 1109, 1365, 1706, 2218, 0 },
   /* 32 */ { 160,  256,  320,  416,  512,  640,  832, 1024, 1280, 1664, 0 } };
 	      
+/*
+ * List of symbols from other modules that this module references.  This
+ * list is used to tell the loader that it is OK for symbols here to be
+ * unresolved providing that it hasn't been told that they haven't been
+ * told that they are essential via a call to xf86LoaderReqSymbols() or
+ * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
+ * unresolved symbols that are not required.
+ */
+
+static const char *vgahwSymbols[] = {
+    "vgaHWGetHWRec",
+    "vgaHWUnlock",
+    "vgaHWInit",
+    "vgaHWProtect",
+    "vgaHWSetMmioFuncs",
+    "vgaHWGetIOBase",
+    "vgaHWMapMem",
+    "vgaHWLock",
+    "vgaHWFreeHWRec",
+    "vgaHWSaveScreen",
+    "vgaHWddc1SetSpeed",
+    NULL
+};
+
+static const char *cfbSymbols[] = {
+    "cfbScreenInit",
+    "cfb16ScreenInit",
+    "cfb24ScreenInit",
+    "cfb32ScreenInit",
+    "cfb8_32ScreenInit",
+    "cfb24_32ScreenInit",
+    NULL
+};
+
+static const char *xf8_32bppSymbols[] = {
+    "xf86Overlay8Plus32Init",
+    NULL
+};
+
+static const char *xaaSymbols[] = {
+    "XAADestroyInfoRec",
+    "XAACreateInfoRec",
+    "XAAInit",
+    "XAAStippleScanlineFuncLSBFirst",
+    "XAAOverlayFBfuncs",
+    "XAACachePlanarMonoStipple",
+    "XAAScreenIndex",
+    NULL
+};
+
+static const char *ramdacSymbols[] = {
+    "xf86InitCursor",
+    "xf86CreateCursorInfoRec",
+    "xf86DestroyCursorInfoRec",
+    NULL
+};
+
+#define LGuseI2C 0
+
+static const char *ddcSymbols[] = {
+    "xf86PrintEDID",
+    "xf86DoEDID_DDC1",
+#if LGuseI2C
+    "xf86DoEDID_DDC2",
+#endif
+    NULL
+};
+
+static const char *i2cSymbols[] = {
+    "xf86CreateI2CBusRec",
+    "xf86I2CBusInit",
+    NULL
+};
+
+static const char *shadowSymbols[] = {
+    "ShadowFBInit",
+    NULL
+};
 
 
 static Bool
@@ -237,18 +321,17 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
      * AllocateScreenPrivateIndex() from the ScreenInit() function.
      */
 
-
-#if 1 /* XXX */
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;
+
+    xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     /*
      * Allocate a vgaHWRec
      */
     if (!vgaHWGetHWRec(pScrn))
 	return FALSE;
-#endif
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -652,28 +735,34 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* Load XAA if needed */
-    if (!pLg->NoAccel)
+    if (!pLg->NoAccel) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    LgFreeRec(pScrn);
 	    return FALSE;
 	}
+	xf86LoaderReqSymLists(xaaSymbols, NULL);
+    }
 
     /* Load ramdac if needed */
-    if (pLg->HWCursor)
+    if (pLg->HWCursor) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) {
 	    LgFreeRec(pScrn);
 	    return FALSE;
 	}
+	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+    }
 
     if (!xf86LoadSubModule(pScrn, "i2c")) {
         LgFreeRec(pScrn);
         return FALSE;
     }
+    xf86LoaderReqSymLists(i2cSymbols, NULL);
 
     if (!xf86LoadSubModule(pScrn, "ddc")) {
         LgFreeRec(pScrn);
         return FALSE;
     }
+    xf86LoaderReqSymLists(ddcSymbols, NULL);
 
     return TRUE;
 }
@@ -1288,14 +1377,14 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
     xf86SetBlackWhitePixels(pScreen);
 
-    /* Initialise cursor functions */
-    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
-
     if(!pLg->NoAccel) { /* Initialize XAA functions */
        if(!LgXAAInit(pScreen))
           xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
               "Could not initialize XAA\n");
     }
+
+    /* Initialise cursor functions */
+    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
     if (pLg->HWCursor) { /* Initialize HW cursor layer */
         if(!LgHWCursorInit(pScreen))
@@ -1317,6 +1406,10 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (pScrn->bitsPerPixel > 1 &&
             pScrn->bitsPerPixel <= 8)
         vgaHWHandleColormaps(pScreen);
+
+#ifdef DPMSExtension
+    xf86DPMSInit(pScreen, LgDisplayPowerManagementSet, 0);
+#endif
 
     /*
      * Wrap the CloseScreen vector and set SaveScreen.
@@ -1580,3 +1673,68 @@ LgSaveScreen(ScreenPtr pScreen, Bool unblank)
 
     return vgaHWSaveScreen(pScreen, unblank);
 }
+
+/*
+ * CIRDisplayPowerManagementSet --
+ *
+ * Sets VESA Display Power Management Signaling (DPMS) Mode.
+ */
+#ifdef DPMSExtension
+static void
+LgDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
+			     int flags)
+{
+	unsigned char sr01, cr1a;
+	vgaHWPtr hwp;
+
+#ifdef CIR_DEBUG
+	ErrorF("LgDisplayPowerManagementSet\n");
+#endif
+
+	hwp = VGAHWPTR(pScrn);
+
+#ifdef CIR_DEBUG
+	ErrorF("LgDisplayPowerManagementSet: %d\n", PowerManagementMode);
+#endif
+
+	switch (PowerManagementMode)
+	{
+	case DPMSModeOn:
+	    /* Screen: On; HSync: On, VSync: On */
+	    sr01 = 0x00;
+	    cr1a = 0x00;
+	    break;
+	case DPMSModeStandby:
+	    /* Screen: Off; HSync: Off, VSync: On */
+	    sr01 = 0x20;
+	    cr1a = 0x08;
+	    break;
+	case DPMSModeSuspend:
+	    /* Screen: Off; HSync: On, VSync: Off */
+	    sr01 = 0x20;
+	    cr1a = 0x04;
+	    break;
+	case DPMSModeOff:
+	    /* Screen: Off; HSync: Off, VSync: Off */
+	    sr01 = 0x20;
+	    cr1a = 0x0c;
+	    break;
+	default:
+	    return;
+	}
+
+#if 0
+        sr01 |= hwp->readSeq(hwp, 0x01) & ~0x20;
+	hwp->writeSeq(hwp, 0x01, sr01);
+        cr1a |= hwp->readCrtc(hwp, 0x1A) & ~0x0C;
+	hwp->writeCrtc(hwp, 0x1A, cr1a);
+#else
+	outb(0x3c4, 0x01);
+	sr01 |= inb(0x3c5) & ~0x20;
+	outb(0x3C5, sr01);
+	outb(hwp->IOBase + 4, 0x1A);
+	cr1a |= inb(hwp->IOBase + 5) & ~0x0C;
+	outb(hwp->IOBase + 5, cr1a);
+#endif
+}
+#endif

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/x11perf/do_complex.c,v 1.2 1998/12/20 11:58:11 dawes Exp $ */
 
 #include "x11perf.h"
 
@@ -30,16 +30,19 @@ SOFTWARE.
 static XPoint   *points;
 static GC       pgc;
 
+#ifndef X_NOT_STDC_ENV
+#include <math.h>
+#define PI M_PI
+#else
 extern double sin();
 extern double cos();
 extern double tan();
 extern double sqrt();
 #define PI  3.14159265357989
+#endif
 
-int InitComplexPoly(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitComplexPoly(XParms xp, Parms p, int reps)
 {
     int     i, j, numPoints;
     int     x, y;
@@ -98,10 +101,8 @@ int InitComplexPoly(xp, p, reps)
     return reps;
 }
 
-void DoComplexPoly(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoComplexPoly(XParms xp, Parms p, int reps)
 {
     int     i, j;
     XPoint  *curPoint;
@@ -120,17 +121,14 @@ void DoComplexPoly(xp, p, reps)
     }
 }
 
-void EndComplexPoly(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndComplexPoly(XParms xp, Parms p)
 {
     free(points);
 }
 
-int InitGeneralPoly (xp,p,reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitGeneralPoly(XParms xp, Parms p, int reps)
 {
     int     i, j, numPoints;
     int	    nsides;
@@ -175,10 +173,8 @@ int InitGeneralPoly (xp,p,reps)
     return reps;
 }
 
-void DoGeneralPoly(xp,p,reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoGeneralPoly(XParms xp, Parms p, int reps)
 {
     int     i, j;
     int	    nsides;

@@ -1,15 +1,9 @@
-/* $XConsortium: xfindproxy.c /main/9 1996/12/02 10:10:34 swick $ */
+/* $TOG: xfindproxy.c /main/10 1998/02/09 13:57:41 kaleb $ */
 
 /*
-Copyright (c) 1996  X Consortium
+Copyright 1996, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,15 +11,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 */
 
 
@@ -47,9 +41,17 @@ from the X Consortium.
 #else
 extern char *getenv();
 #endif
+#include <ctype.h>
 
-
-void PMprocessMessages ();
+static void PMprocessMessages(IceConn iceConn, IcePointer clientData, 
+			      int opcode, unsigned long length, Bool swap, 
+			      IceReplyWaitInfo *replyWait, 
+			      Bool *replyReadyRet);
+static void _XtProcessIceMsgProc(XtPointer client_data, int *source, 
+				 XtInputId *id);
+static void _XtIceWatchProc(IceConn ice_conn, IcePointer client_data, 
+			    Bool opening, IcePointer *watch_data);
+static Status InitWatchProcs(XtAppContext appContext);
 
 int PMopcode;
 
@@ -66,9 +68,8 @@ typedef struct {
 } GetProxyAddrReply;
 
 
-static int cvthexkey (hexstr, ptrp)	/* turn hex key string into octets */
-    char *hexstr;
-    char **ptrp;
+static int 
+cvthexkey(char *hexstr, char **ptrp)	/* turn hex key string into octets */
 {
     int i;
     int len = 0;
@@ -115,12 +116,8 @@ static int cvthexkey (hexstr, ptrp)	/* turn hex key string into octets */
     return len;
 }
 
-
-main (argc, argv)
-
-int  argc;
-char **argv;
-
+int
+main(int argc, char *argv[])
 {
     IceConn			iceConn;
     IceProtocolSetupStatus	setupstat;
@@ -338,22 +335,15 @@ char **argv;
 	    }
 	}
     }
+    exit(0);
 }
 
 
 
-void
-PMprocessMessages (iceConn, clientData, opcode,
-    length, swap, replyWait, replyReadyRet)
-
-IceConn		 iceConn;
-IcePointer       clientData;
-int		 opcode;
-unsigned long	 length;
-Bool		 swap;
-IceReplyWaitInfo *replyWait;
-Bool		 *replyReadyRet;
-
+static void
+PMprocessMessages(IceConn iceConn, IcePointer clientData, int opcode,
+		  unsigned long length, Bool swap, 
+		  IceReplyWaitInfo *replyWait, Bool *replyReadyRet)
 {
     if (replyWait)
 	*replyReadyRet = False;
@@ -420,13 +410,8 @@ Bool		 *replyReadyRet;
 }
 
 
-void
-_XtProcessIceMsgProc (client_data, source, id)
-
-XtPointer	client_data;
-int 		*source;
-XtInputId	*id;
-
+static void
+_XtProcessIceMsgProc(XtPointer client_data, int *source, XtInputId *id)
 {
     IceConn			ice_conn = (IceConn) client_data;
     IceProcessMessagesStatus	status;
@@ -441,19 +426,13 @@ XtInputId	*id;
 }
 
 
-void
-_XtIceWatchProc (ice_conn, client_data, opening, watch_data)
-
-IceConn 	ice_conn;
-IcePointer	client_data;
-Bool		opening;
-IcePointer	*watch_data;
-
+static void
+_XtIceWatchProc(IceConn ice_conn, IcePointer client_data, 
+		Bool opening, IcePointer *watch_data)
 {
     if (opening)
     {
 	XtAppContext appContext = (XtAppContext) client_data;
-	void _XtProcessIceMsgProc ();
 
 	*watch_data = (IcePointer) XtAppAddInput (
 	    appContext,
@@ -469,11 +448,8 @@ IcePointer	*watch_data;
 }
 
 
-Status
-InitWatchProcs (appContext)
-
-XtAppContext appContext;
-
+static Status
+InitWatchProcs(XtAppContext appContext)
 {
     return (IceAddConnectionWatch (_XtIceWatchProc, (IcePointer) appContext));
 }

@@ -1,15 +1,10 @@
 /*
- * $XConsortium: xfd.c,v 1.33 94/04/17 20:24:15 rws Exp $
+ * $TOG: xfd.c /main/34 1998/02/09 13:57:31 kaleb $
  *
  * 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +12,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
@@ -53,10 +48,20 @@ static XrmOptionDescRec xfd_options[] = {
 {"-columns",	"*grid.cellColumns", XrmoptionSepArg,	(caddr_t) NULL },
 };
 
-static void do_quit(), do_next(), do_prev();
-static void change_page (), set_button_state ();
-static char *get_font_name();
-static void SelectChar();
+static void usage(void);
+static void SelectChar(Widget w, XtPointer closure, XtPointer data);
+static void do_quit(Widget w, XEvent *event, String *params, 
+		    Cardinal *num_params);
+static void change_page(int page);
+static void set_button_state(void);
+static void do_prev(Widget w, XEvent *event, String *params, 
+		    Cardinal *num_params);
+static void do_next(Widget w, XEvent *event, String *params, 
+		    Cardinal *num_params);
+static char *get_font_name(Display *dpy, XFontStruct *fs);
+static void CatchFontConversionWarning(String name, String type, String class, 
+				       String defaultp, String *params, 
+				       Cardinal *np);
 
 static XtActionsRec xfd_actions[] = {
   { "Quit", do_quit },
@@ -100,7 +105,8 @@ static XtResource Resources[] = {
 
 #undef Offset
 
-usage()
+static void
+usage(void)
 {
     fprintf (stderr, "usage:  %s [-options ...] -fn font\n\n", ProgramName);
     fprintf (stderr, "where options include:\n");
@@ -126,12 +132,10 @@ usage()
 static Widget selectLabel, metricsLabel, rangeLabel, startLabel, fontGrid;
 
 static Boolean fontConversionFailed = False;
-static void (*oldWarningHandler)();
-static void CatchFontConversionWarning();
+static XtErrorMsgHandler oldWarningHandler;
 
-main (argc, argv) 
-    int argc;
-    char **argv;
+int
+main(int argc, char *argv[]) 
 {
     XtAppContext xtcontext;
     Widget toplevel, pane, toplabel, box, form;
@@ -237,12 +241,12 @@ main (argc, argv)
 
     change_page (0);
     XtAppMainLoop (xtcontext);
+    exit(0);
 }
 
 /*ARGSUSED*/
-static void SelectChar (w, closure, data)
-    Widget w;
-    XtPointer closure, data;
+static void 
+SelectChar(Widget w, XtPointer closure, XtPointer data)
 {
     FontGridCharRec *p = (FontGridCharRec *) data;
     XFontStruct *fs = p->thefont;
@@ -288,17 +292,14 @@ static void SelectChar (w, closure, data)
 
 
 /*ARGSUSED*/
-static void do_quit (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+static void 
+do_quit (Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     exit (0);
 }
 
-static void change_page (page)
-    int page;
+static void 
+change_page(int page)
 {
     Dimension oldstart, newstart;
     int ncols, nrows;
@@ -336,7 +337,8 @@ static void change_page (page)
 }
 
 
-static void set_button_state ()
+static void 
+set_button_state(void)
 {
     Bool prevvalid, nextvalid;
     Arg arg;
@@ -351,30 +353,23 @@ static void set_button_state ()
 
 
 /* ARGSUSED */
-static void do_prev (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+static void 
+do_prev(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     change_page (-1);
 }
 
 
 /* ARGSUSED */
-static void do_next (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+static void 
+do_next(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     change_page (1);
 }
 
 
-static char *get_font_name (dpy, fs)
-    Display *dpy;
-    XFontStruct *fs;
+static char *
+get_font_name(Display *dpy, XFontStruct *fs)
 {
     register XFontProp *fp;
     register int i;
@@ -389,11 +384,11 @@ static char *get_font_name (dpy, fs)
 }
 
 
-static void CatchFontConversionWarning(name, type, class, defaultp, params, np)
-    String name, type, class, defaultp, *params;
-    Cardinal *np;
+static void 
+CatchFontConversionWarning(String name, String type, String class, 
+			   String defaultp, String *params, Cardinal *np)
 {
-    if (np && *np > 1 &
+    if (np && *np > 1 &&
 	strcmp(name, "conversionError") == 0 &&
 	strcmp(type, "string") == 0 &&
 	strcmp(class, "XtToolkitError") == 0 &&

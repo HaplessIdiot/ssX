@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.66 1999/02/15 18:47:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.67 1999/02/19 21:27:04 hohndel Exp $ */
 
 /*
  *
@@ -221,23 +221,21 @@ LOOKUP xfree86LookupTab[] = {
 
    /* xf86DGA.c */
    /* For drivers */
-   SYMFUNC(DGACreateInfoRec)
-   SYMFUNC(DGADestroyInfoRec)
    SYMFUNC(DGAInit)
    /* For extmod */
    SYMFUNC(DGAAvailable)
-   SYMFUNC(DGAGetParameters)
-   SYMFUNC(DGAScreenActive)
-   SYMFUNC(DGASetViewPort)
-   SYMFUNC(DGAEnableDirectMode)
-   SYMFUNC(DGADisableDirectMode)
-   SYMFUNC(DGAGetViewPortSize)
-   SYMFUNC(DGAGetDirectMode)
-   SYMFUNC(DGAGetVidPage)
-   SYMFUNC(DGASetVidPage)
-   SYMFUNC(DGAGetFlags)
-   SYMFUNC(DGASetFlags)
-   SYMFUNC(DGAViewPortChanged)
+   SYMFUNC(DGASetMode)
+   SYMFUNC(DGASelectInput)
+   SYMFUNC(DGAGetViewportStatus)
+   SYMFUNC(DGASetViewport)
+   SYMFUNC(DGAInstallColormap)
+   SYMFUNC(DGAFlush)
+   SYMFUNC(DGAFillRect)
+   SYMFUNC(DGABlitRect)
+   SYMFUNC(DGABlitTransRect)
+   SYMFUNC(DGAGetModes)
+   SYMFUNC(DGAGetDeviceInfo)
+   SYMFUNC(DGAGetOldDGAMode)
 
    /* xf86DPMS.c */
    SYMFUNC(xf86DPMSInit)
@@ -338,6 +336,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ShowUnusedOptions)
    SYMFUNC(xf86ProcessOptions)
    SYMFUNC(xf86TokenToOptinfo)
+   SYMFUNC(xf86TokenToOptName)
    SYMFUNC(xf86IsOptionSet)
    SYMFUNC(xf86GetOptValString)
    SYMFUNC(xf86GetOptValInteger)
@@ -540,6 +539,11 @@ LOOKUP xfree86LookupTab[] = {
     * way to map the name of the call to the correct function.
     */
    SYMFUNC(memcpy)
+   /*
+    * The LynxOS compilers generates calls to memset to handle 
+    * aggregate initializations.
+    */
+   SYMFUNC(memset)
 #endif
    SYMFUNC(xf86memmove)
    SYMFUNC(xf86memset)

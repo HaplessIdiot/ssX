@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbwindow.c,v 1.1 1999/01/23 09:56:15 dawes Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -77,3 +77,48 @@ cfb24_32ChangeWindowAttributes(
     return TRUE;
 }
 
+extern WindowPtr *WindowTable;
+
+void 
+cfb24_32CopyWindow(
+    WindowPtr pWin,
+    DDXPointRec ptOldOrg,
+    RegionPtr prgnSrc
+){
+    DDXPointPtr pptSrc, ppt;
+    RegionRec rgnDst;
+    BoxPtr pbox;
+    int i, nbox, dx, dy;
+    WindowPtr pwinRoot;
+
+    pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
+
+    REGION_INIT(pWin->drawable.pScreen, &rgnDst, NullBox, 0);
+
+    dx = ptOldOrg.x - pWin->drawable.x;
+    dy = ptOldOrg.y - pWin->drawable.y;
+    REGION_TRANSLATE(pWin->drawable.pScreen, prgnSrc, -dx, -dy);
+    REGION_INTERSECT(pWin->drawable.pScreen, &rgnDst, 
+			&pWin->borderClip, prgnSrc);
+
+    pbox = REGION_RECTS(&rgnDst);
+    nbox = REGION_NUM_RECTS(&rgnDst);
+    if(!nbox || 
+	!(pptSrc = (DDXPointPtr )ALLOCATE_LOCAL(nbox * sizeof(DDXPointRec))))
+    {
+	REGION_UNINIT(pWin->drawable.pScreen, &rgnDst);
+	return;
+    }
+    ppt = pptSrc;
+
+    for (i = nbox; --i >= 0; ppt++, pbox++)
+    {
+	ppt->x = pbox->x1 + dx;
+	ppt->y = pbox->y1 + dy;
+    }
+
+    cfb24_32DoBitblt24To24GXcopy((DrawablePtr)pwinRoot, (DrawablePtr)pwinRoot,
+		GXcopy, &rgnDst, pptSrc, ~0L, 0);
+    DEALLOCATE_LOCAL(pptSrc);
+    REGION_UNINIT(pWin->drawable.pScreen, &rgnDst);
+}
