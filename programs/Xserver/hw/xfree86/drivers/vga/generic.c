@@ -588,6 +588,11 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     }
 #endif
 
+    /* Deal with options */
+    xf86CollectOptions(pScreenInfo, NULL);
+    xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options, 
+		       GenericOptions);
+
     /*
      * Determine clocks.  Limit them to the first four because that's all that
      * can be addressed.
@@ -667,11 +672,6 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
     /* Set display resolution */
     xf86SetDpi(pScreenInfo, 0, 0);
-
-    /* Deal with options */
-    xf86CollectOptions(pScreenInfo, NULL);
-    xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options, 
-		       GenericOptions);
 
     if (xf86ReturnOptValBool(GenericOptions,OPTION_SHADOW_FB,FALSE)) {
         pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
