@@ -9,7 +9,7 @@
 <date>9 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.8 2000/02/11 22:35:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.9 2000/02/13 03:06:35 dawes Exp $
 </ident>
 
 <abstract>
@@ -581,12 +581,13 @@ dependencies/limitations, other architectures known to work on
 	by the XF86_SVGA server with the sis driver.
 
 <tag>&relvers;:</tag>
-	Support (accelerated) for the SiS 86C205, 86C215, 86C225,
-	5597, 5598, 530 and 6326 is provided by the "sis" driver.
+	Support (accelerated) for the SiS <!-- 86C205, 86C215, 86C225, -->
+	5597, 5598, 530, 6326, 630, 300, and 540 is provided by the
+	"sis" driver.
 
 <tag>Summary:</tag>
 	Support for the older (CHECK: are they all older than the
-	supported chips?) chips: 86C201, 86C202, 620, 300, 630 and 540
+	supported chips?) chips: 86C201, 86C202 and 620,
 	is only available in &legacyvers;.
 
 </descrip>
