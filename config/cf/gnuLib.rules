@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/gnuLib.rules,v 1.1 1998/08/16 10:24:02 dawes Exp $
 
 /*
  * GNU/Hurd shared library rules
@@ -119,3 +119,70 @@ clean::									@@\
 #ifndef SharedLibraryDataTarget
 #define SharedLibraryDataTarget(libname,rev,salist)
 #endif /* SharedLibraryTarget */
+
+/*
+ * SharedDepLibraryTarget - generate rules to create a shared library.
+ */
+#ifndef SharedDepLibraryTarget
+#define SharedDepLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
+AllTarget(Concat(lib,libname.so.rev))					@@\
+									@@\
+Concat(lib,libname.so.rev):  deplist $(EXTRALIBRARYDEPS)		@@\
+	$(RM) $@~							@@\
+	(cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) solist $(REQUIREDLIBS)) @@\
+	$(RM) $@							@@\
+	$(MV) $@~ $@							@@\
+	LinkBuildLibrary($@)						@@\
+									@@\
+clean::									@@\
+	$(RM) Concat(lib,libname.so.rev)
+
+#endif /* SharedDepLibraryTarget */
+
+#ifndef SharedDepModuleTarget
+#define SharedDepModuleTarget(name,deps,solist)				@@\
+AllTarget(name)								@@\
+									@@\
+name: deps								@@\
+	$(RM) $@~							@@\
+	$(LD) -o $@~ $(SHLIBLDFLAGS) solist $(REQUIREDLIBS)		@@\
+	$(RM) $@							@@\
+	$(MV) $@~ $@							@@\
+									@@\
+clean::									@@\
+	$(RM) name
+
+#endif /* SharedDepModuleTarget */
+
+/*
+ * SharedLibraryDataTarget - generate rules to create shlib data file;
+ */
+#ifndef SharedLibraryDataTarget
+#define SharedLibraryDataTarget(libname,rev,salist)
+#endif /* SharedLibraryDataTarget */
+
+#ifndef InstallSharedLibraryData
+#define InstallSharedLibraryData(libname,rev,dest)
+#endif /* InstallSharedLibraryData */
+
+/*
+ * SharedLibReferences - variables for shared libraries
+ */
+#ifndef SharedLibReferences
+#define SharedLibReferences(varname,libname,libsource,revname,rev)	@@\
+revname = rev								@@\
+Concat3(DEP,varname,LIB) = SharedLibDependencies(libname,libsource,revname) @@\
+Concat(varname,LIB) = LoaderLibPrefix Concat(-l,libname)		@@\
+LintLibReferences(varname,libname,libsource)
+#endif
+
+/*
+ * SharedDSLibReferences - variables for shared libraries
+ */
+#ifndef SharedDSLibReferences
+#define SharedDSLibReferences(varname,libname,libsource,revname,rev)	@@\
+revname = rev								@@\
+Concat3(DEP,varname,LIB) = SharedDSLibDependencies(libname,libsource,revname) @@\
+Concat(varname,LIB) = LoaderLibPrefix Concat(-l,libname) Concat3(Shared,libname,Reqs)		@@\
+LintLibReferences(varname,libname,libsource)
+#endif

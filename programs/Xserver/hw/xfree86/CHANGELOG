@@ -1,4 +1,7 @@
 XFree86 3.9Pd (9 March 1999)
+2330. Updates for Hurd port (#2528, UCHIYAMA Yasushi).
+2329. Fix some Solaris 7 build problems (#2530, Nicholas Brealey).
+2328. Add some more PCI entries (#2529, Nicholas Brealey).
 2327. Preliminary DGA support for the mga driver (#2527, Mark Vojkovich).
 2326. Fix some DGA bugs and turn on events in the DGA compatibility code
       (#2526, Mark Vojkovich).
@@ -7418,4 +7421,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.699 1999/03/07 08:29:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.700 1999/03/07 11:40:28 dawes Exp $

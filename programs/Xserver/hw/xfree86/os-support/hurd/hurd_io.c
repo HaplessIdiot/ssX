@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_io.c,v 1.1 1998/08/16 10:25:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_io.c,v 1.2 1999/02/28 11:19:46 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -41,10 +41,8 @@
 #include <sys/file.h>
 #include <assert.h>
 #include <mach.h>
-#include <ioctls.h>
-/***********************************************************************
- * Mouse 
- **********************************************************************/
+#include <sys/ioctl.h>
+
 typedef unsigned short kev_type;		/* kd event type */
 typedef unsigned char Scancode;
 
@@ -79,6 +77,9 @@ typedef struct {
 int
 xf86OsMouseProc( DeviceIntPtr pPointer , int what )
 {
+    extern int miPointerGetMotionEvents(DeviceIntPtr pPtr, xTimecoord *coords,
+					unsigned long start, unsigned long stop,
+					ScreenPtr pScreen);
     unsigned char map[MSE_MAXBUTTONS + 1];
     int nbuttons;
     int mousefd;
@@ -98,29 +99,29 @@ xf86OsMouseProc( DeviceIntPtr pPointer , int what )
 				(PtrCtrlProcPtr)xf86MseCtrl, 
 				0);
 #ifdef XINPUT
-      InitValuatorAxisStruct(pPointer,
-			     0,
-			     0, /* min val */
-			     screenInfo.screens[0]->width, /* max val */
-			     1, /* resolution */
-			     0, /* min_res */
-			     1); /* max_res */
-      InitValuatorAxisStruct(pPointer,
-			     1,
-			     0, /* min val */
-			     screenInfo.screens[0]->height, /* max val */
-			     1, /* resolution */
-			     0, /* min_res */
-			     1); /* max_res */
-      /* Initialize valuator values in synch
-       * with dix/event.c DefineInitialRootWindow
-       */
-      *pPointer->valuator->axisVal = screenInfo.screens[0]->width / 2;
-      *(pPointer->valuator->axisVal+1) = screenInfo.screens[0]->height / 2;
+	InitValuatorAxisStruct(pPointer,
+			       0,
+			       0, /* min val */
+			       screenInfo.screens[0]->width, /* max val */
+			       1, /* resolution */
+			       0, /* min_res */
+			       1); /* max_res */
+	InitValuatorAxisStruct(pPointer,
+			       1,
+			       0, /* min val */
+			       screenInfo.screens[0]->height, /* max val */
+			       1, /* resolution */
+			       0, /* min_res */
+			       1); /* max_res */
+	/* Initialize valuator values in synch
+	 * with dix/event.c DefineInitialRootWindow
+	 */
+	*pPointer->valuator->axisVal = screenInfo.screens[0]->width / 2;
+	*(pPointer->valuator->axisVal+1) = screenInfo.screens[0]->height / 2;
 #endif
 	break;
     case DEVICE_ON:
-	if ( (xf86Info.mouseDev->mseFd = open("/dev/mouse",O_RDONLY|O_NONBLOCK) ) == -1 )
+	if ( (xf86Info.mouseDev->mseFd = open(xf86Info.mouseDev->mseDevice,O_RDONLY|O_NONBLOCK) ) == -1 )
 	    return !Success;
 	AddEnabledDevice( xf86Info.mouseDev->mseFd );
 	xf86Info.mouseDev->lastButtons = 0;
@@ -147,6 +148,7 @@ xf86OsMouseEvents()
     static kd_event eventList[64];
     int n; 
     kd_event *event = eventList;
+
     if( (n =  read( xf86Info.mouseDev->mseFd , eventList, sizeof eventList )) <= 0 )
 	return;
     n /= sizeof( kd_event );
@@ -176,22 +178,31 @@ xf86OsMouseEvents()
 	xf86PostMseEvent(xf86Info.pMouse,buttons, dx, dy );
 	++event;
     }
+    return;
 }
+
 void 
 xf86MouseInit( MouseDevPtr mouse )
 {
 }
 int 
-xf86MouseOn(MouseDevPtr mouse)
+xf86MouseOn( MouseDevPtr mouse)
 {
-    mouse->mseFd = open("/dev/mouse",O_RDONLY|O_NONBLOCK);
+    if ((mouse->mseFd = open(mouse->mseDevice, O_RDWR | O_NONBLOCK)) < 0)
+    {
+	if (xf86AllowMouseOpenFail) {
+	    ErrorF("Cannot open mouse (%s) - Continuing...\n",
+		   strerror(errno));
+	    return(-2);
+	}
+	FatalError("Cannot open mouse (%s)\n", strerror(errno));
+    }
+
     xf86SetupMouse(mouse);
-    return mouse->mseFd;
-}
-int 
-xf86MouseOff(MouseDevPtr mouse,Bool doclose)
-{
-    close( mouse->mseFd );
+
+    /* Flush any pending input */
+    tcflush(mouse->mseFd, TCIFLUSH);
+
     return mouse->mseFd;
 }
 
@@ -213,7 +224,7 @@ xf86SetKbdLeds(int leds)
 int 
 xf86GetKbdLeds()
 {
-    return(0);
+    return 0;
 }
 
 void 
@@ -227,25 +238,18 @@ xf86KbdInit()
 {
     return;
 }
-void
-xf86KbdEvents()
-{
-    kd_event ke;
-    while( read(xf86Info.kbdFd, &ke, sizeof(ke)) == sizeof(ke) )
-	xf86PostKbdEvent(ke.value.sc);
-}
 int
 xf86KbdOn()
 {
     int data = 1;
-    if( ioctl( xf86Info.kbdFd, _IOW('k', 1, int),&data) < 0)
+    if( ioctl( xf86Info.consoleFd, _IOW('k', 1, int),&data) < 0)
 	FatalError("Cannot set event mode on keyboard (%s)\n",strerror(errno));
-    return xf86Info.kbdFd;
+    return xf86Info.consoleFd;
 }
 int
 xf86KbdOff()
 {
     int data = 2;
-    if( ioctl( xf86Info.kbdFd, _IOW('k', 1, int),&data) < 0)
+    if( ioctl( xf86Info.consoleFd, _IOW('k', 1, int),&data) < 0)
 	FatalError("can't reset keyboard mode (%s)\n",strerror(errno));
 }
