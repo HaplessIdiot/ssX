@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/XShm.h,v 1.9 2002/10/16 01:10:09 dawes Exp $ */
+/* $XFree86: xc/include/extensions/XShm.h,v 1.10 2002/11/08 00:46:27 alanh Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -72,12 +72,6 @@ typedef struct {
 _XFUNCPROTOBEGIN
 
 Bool XShmQueryExtension(
-#if NeedFunctionPrototypes
-    Display*		/* dpy */
-#endif
-);
-
-int XShmGetEventBase(
 #if NeedFunctionPrototypes
     Display*		/* dpy */
 #endif
