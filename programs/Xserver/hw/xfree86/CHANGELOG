@@ -1,3 +1,6 @@
+1212. Rewrite DRI back buffer handling to minimize the impact on 2D
+      performance (Mark Vojkovich).
+
 XFree86 4.0.2 (18 December 2000)
 1211. Fix a problem introduced recently when using the "ps/2" protocol for
       mice on FreeBSD (David Dawes).
@@ -12114,4 +12117,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1484 2000/12/18 05:55:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1485 2000/12/18 15:55:33 dawes Exp $
