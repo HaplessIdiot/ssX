@@ -1,3 +1,4 @@
+/* $XFree86$ */
 #ifndef __FT_EXCEPT_H__
 #define __FT_EXCEPT_H__
 

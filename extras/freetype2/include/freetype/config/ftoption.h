@@ -1,4 +1,3 @@
-/* $XFree86: xc/extras/freetype2/include/freetype/config/ftoption.h,v 1.5 2002/06/20 08:25:26 keithp Exp $ */
 /***************************************************************************/
 /*                                                                         */
 /*  ftoption.h                                                             */
