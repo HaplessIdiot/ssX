@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.9 2002/06/03 21:22:03 dawes Exp $
+XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.10 2002/11/20 23:00:34 dawes Exp $
 
 /*
  * This is for SCO Open Server 5.0.6A or later. You must have the
@@ -120,7 +120,6 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.9 2002/06/03 21:22:03 dawes Exp $
 # define ForceNormalLib         NO 
 #endif
 
-#define HasLibxml2		YES
 #define HasExpat		YES
 #define HasFreetype2		YES
 #define HasLibpng		YES

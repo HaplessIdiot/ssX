@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.189 2002/12/09 17:18:59 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.190 2003/01/04 01:00:37 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -579,12 +579,6 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef UseFreetype2
 #define UseFreetype2		(BuildXftLibrary || BuildXft1Library || UseFontconfig)
-#endif
-#ifndef UseLibxml2
-#define UseLibxml2		NO
-#endif
-#ifndef BuildLibxml2Library
-#define BuildLibxml2Library	(UseLibxml2 && !HasLibxml2)
 #endif
 #ifndef HasExpat
 #define HasExpat		NO
@@ -3023,74 +3017,6 @@ FREETYPE2DEFINES = -DFREETYPE2
 #endif
 
 #endif /* UseFreetype2 */
-
-#ifndef SharedLibLibxml2
-#define SharedLibLibxml2 HasSharedLibraries
-#endif
-#ifndef NormalLibLibxml2
-#define NormalLibLibxml2 (!SharedLibLibxml2 | ForceNormalLib)
-#endif
-#ifndef DebugLibLibxml2
-#define DebugLibLibxml2		NO
-#endif
-#ifndef ProfileLibLibxml2
-#define ProfileLibLibxml2		NO
-#endif
-          LIBXML2LIBSRC = $(LIBSRC)/libxml2
-
-/* Libxml2 2.4.14, version_info 6:4 */
-#ifndef Libxml2Version
-#define Libxml2Version 2.4.14
-#endif
-
-#if SharedLibLibxml2
-#ifndef SharedLibxml2Rev
-#if LibtoolMinorVersions
-#define SharedLibxml2Rev 2.4
-#else
-#define SharedLibxml2Rev 6.0
-#endif
-#endif
-SharedLibReferences(LIBXML2,xml2,$(LIBXML2LIBSRC),SOLIBXML2REV,SharedLibxml2Rev)
-#else
-ProjectUnsharedLibReferences(LIBXML2,xml2,$(LIBXML2LIBSRC),XBuildLibDir)
-#endif
-
-#if UseLibxml2
-
-#if BuildLibxml2Library
-LIBXML2INCLUDES=$(TOP_X_INCLUDES)/libxml2
-LIBXML2DEFINES=-DLIBXML2
-#else	/* BuildLibxml2Library */
-
-#if HasLibxml2
-
-#ifndef Libxml2Dir
-#define Libxml2Dir /usr
-#endif
-
-#ifndef Libxml2LibDir
-#define Libxml2LibDir Libxml2Dir/LibDirName
-#endif
-
-#ifndef Libxml2IncDir
-#define Libxml2IncDir Libxml2Dir/include/libxml2
-#endif
-
-LIBXML2DIR = Libxml2Dir
-LIBXML2LIBDIR = Libxml2LibDir
-LIBXML2INCDIR = Libxml2IncDir
-LIBXML2INCLUDES = -I$(LIBXML2INCDIR)
-LIBXML2LIB = -L$(LIBXML2LIBDIR) -lxml2
-LIBXML2DEFINES = -DLIBXML2
-#endif /* HasLibxml2 */
-
-#endif /* else BuildLibxml2Library */
-
-#define Libxml2ClientLibs $(LIBXML2LIB) GzipLibrary MathLibrary
-#define Libxml2ClientDepLibs $(DEPLIBXML2LIB)
-
-#endif /* UseLibxml2 */
 
 #ifndef SharedLibExpat
 #define SharedLibExpat HasSharedLibraries
