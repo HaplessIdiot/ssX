@@ -454,7 +454,7 @@ OptionInfoPtr
 NEOAvailableOptions(int chipid, int busid)
 {
     int vendor = ((chipid & 0xffff0000) >> 16);
-    int chip = (chip & 0x0000ffff);
+    int chip = (chipid & 0x0000ffff);
 
     if (chip == PCI_CHIP_NM2070)
 	return NEO_2070_Options;
