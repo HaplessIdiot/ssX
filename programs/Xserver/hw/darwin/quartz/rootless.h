@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu     March 3, 2001
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootless.h,v 1.3 2001/08/01 05:34:06 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootless.h,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
 
 #ifndef _ROOTLESS_H
 #define _ROOTLESS_H
@@ -129,5 +129,8 @@ typedef struct RootlessFrameProcs {
 
 // Initialize rootless mode on the given screen.
 Bool RootlessInit(ScreenPtr pScreen, RootlessFrameProcs *procs);
+
+// Return the rootless frame for the given window or NULL if it's not framed
+RootlessFramePtr RootlessFrameForWindow(WindowPtr pWin);
 
 #endif /* _ROOTLESS_H */

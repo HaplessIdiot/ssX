@@ -27,26 +27,18 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaImp.m,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaImp.m,v 1.2 2002/07/15 19:58:31 torrey Exp $ */
 
 #include "rootlessAquaImp.h"
 #include "fakeBoxRec.h"
 #include "quartzCommon.h"
+#include "aquaCommon.h"
 #include "pseudoramiX.h"
 #import <Cocoa/Cocoa.h>
 #include <ApplicationServices/ApplicationServices.h>
 #import "XView.h"
 
 extern void ErrorF(const char *, ...);
-
-typedef struct {
-    NSWindow *window;
-    XView *view;
-    GrafPtr port;
-    GWorldPtr rootGWorld;
-} AquaWindowRec;
-
-#define AQUA_WINREC(rw) ((AquaWindowRec *)rw)
 
 
 /*
@@ -223,6 +215,8 @@ void *AquaNewWindow(void *upperw, int x, int y, int w, int h, int isRoot)
         // Fill the window with white to make sure alpha channel is set
         NSEraseRect(frame);
         winRec->port = [theView qdPort];
+        winRec->context = [[NSGraphicsContext currentContext] graphicsPort];
+        // CreateCGContextForPort(winRec->port, &winRec->context);
         [theView unlockFocus];
     } else {
         // Allocate the offscreen graphics world for root window drawing
