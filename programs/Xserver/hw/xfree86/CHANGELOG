@@ -1,4 +1,6 @@
 XFree86 4.1.99.4 (xx December 2001)
+ 603. Disable pixmap24 option for Permedia3/4/R4 as the chip doesn't support
+      this (Alan Hourihane).
  602. Add French localization of XDarwin help file (Olivier Verdier).
 
 XFree86 4.1.99.3 (19 December 2001)
@@ -14392,4 +14394,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2097 2001/12/19 21:56:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2098 2001/12/20 06:42:18 torrey Exp $
