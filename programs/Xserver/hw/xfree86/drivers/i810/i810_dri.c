@@ -932,6 +932,12 @@ I810DRICloseScreen(ScreenPtr pScreen)
 {
    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
    I810Ptr pI810 = I810PTR(pScrn);
+   I810DRIPtr pI810DRI = (I810DRIPtr) pI810->pDRIInfo->devPrivate;
+
+   if (pI810DRI->irq) {
+       drmCtlUninstHandler(pI810->drmSubFD);
+       pI810DRI->irq = 0;
+   }
 
    I810CleanupDma(pScrn);
 
