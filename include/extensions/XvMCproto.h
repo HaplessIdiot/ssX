@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/XvMCproto.h,v 1.3 2001/04/01 13:59:59 tsi Exp $ */
 
 #ifndef _XVMCPROTO_H_
 #define _XVMCPROTO_H_
@@ -197,7 +197,6 @@ typedef struct {
   CARD32 padl4 B32;
   CARD32 padl5 B32;
   CARD32 padl6 B32;
-  CARD32 padl7 B32;
 } xvmcListSubpictureTypesReply;
 #define sz_xvmcListSubpictureTypesReply 32
 
