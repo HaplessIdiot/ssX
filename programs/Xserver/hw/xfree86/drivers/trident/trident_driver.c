@@ -1106,7 +1106,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, TRIDENTOptions);
 
     /* Set the bits per RGB for 8bpp mode */
-    if (pScrn->depth == 8) {
+    if (pScrn->depth <= 8) {
 	/* XXX This is here just to test options. */
 	/* Default to 8 */
 	pScrn->rgbBits = 6;
