@@ -1,4 +1,4 @@
-
+3389. Fix a problem with no Xv encodings being reported (Mark Vojkovich).
 3388. Update Xv driver interface docs (Mark Vojkovich).
 
 XFree86 3.9.16f (15 December 1999)
