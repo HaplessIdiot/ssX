@@ -2,7 +2,7 @@
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.129 2002/03/26 01:46:39 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.130 2002/04/28 19:04:19 dickey Exp $ */
 
 /*
 
@@ -134,6 +134,7 @@ in this Software without prior written authorization from The Open Group.
 #include <fontutils.h>
 #include <xcharmouse.h>
 #include <charclass.h>
+#include <xstrings.h>
 
 #if OPT_ZICONBEEP || OPT_TOOLBAR
 #define HANDLE_STRUCT_NOTIFY 1
@@ -285,7 +286,8 @@ static XtActionsRec actionsList[] = {
     { "interpret",		HandleInterpret },
     { "keymap",			HandleKeymapChange },
     { "popup-menu",		HandlePopupMenu },
-    { "print",			HandlePrint },
+    { "print",			HandlePrintScreen },
+    { "print-redir",		HandlePrintControlMode },
     { "quit",			HandleQuit },
     { "redraw",			HandleRedraw },
     { "delete-is-del",		HandleDeleteIsDEL },
@@ -4341,14 +4343,14 @@ VTClassInit(void)
 	TRACE(("init " #name " = %d\n", \
 		wnew->name = request->name))
 #define init_Sres(name) \
-	TRACE(("init " #name " = %s\n", \
-		(wnew->name = request->name) != NULL \
+	TRACE(("init " #name " = \"%s\"\n", \
+		(wnew->name = x_strtrim(request->name)) != NULL \
 			? wnew->name : "<null>"))
 #else
 #define init_Bres(name) wnew->name = request->name
 #define init_Cres(name) wnew->name = request->name
 #define init_Ires(name) wnew->name = request->name
-#define init_Sres(name) wnew->name = request->name
+#define init_Sres(name) wnew->name = x_strtrim(request->name)
 #endif
 
 /* ARGSUSED */

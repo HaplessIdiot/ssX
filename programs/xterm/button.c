@@ -50,7 +50,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/button.c,v 3.66 2002/03/26 01:46:39 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.67 2002/04/28 19:04:19 dickey Exp $ */
 
 /*
 button.c	Handles button events in the terminal emulator.
@@ -1958,14 +1958,8 @@ ComputeSelect(int startRow,
 	break;
     }
 
-    if (startSRow < 0)
-	startSRow = 0;
-    if (startSCol < 0)
-	startSCol = 0;
-    if (endSRow < 0)
-	endSRow = 0;
-    if (endSCol < 0)
-	endSCol = 0;
+    /* check boundaries */
+    ScrollSelection(screen, 0);
 
     TrackText(startSRow, startSCol, endSRow, endSCol);
     return;

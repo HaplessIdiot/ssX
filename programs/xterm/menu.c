@@ -45,7 +45,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.45 2002/03/26 01:46:40 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.46 2002/04/28 19:04:21 dickey Exp $ */
 
 #include <xterm.h>
 #include <data.h>
@@ -117,6 +117,7 @@ static void do_kill            PROTO_XT_CALLBACK_ARGS;
 static void do_marginbell      PROTO_XT_CALLBACK_ARGS;
 static void do_old_fkeys       PROTO_XT_CALLBACK_ARGS;
 static void do_print           PROTO_XT_CALLBACK_ARGS;
+static void do_print_redir     PROTO_XT_CALLBACK_ARGS;
 static void do_quit            PROTO_XT_CALLBACK_ARGS;
 static void do_redraw          PROTO_XT_CALLBACK_ARGS;
 static void do_reversevideo    PROTO_XT_CALLBACK_ARGS;
@@ -201,13 +202,15 @@ static void handle_vtshow      (Widget gw, Bool allowswitch);
 MenuEntry mainMenuEntries[] = {
     { "securekbd",	do_securekbd,	NULL },
     { "allowsends",	do_allowsends,	NULL },
+    { "redraw",		do_redraw,	NULL },
+    { "line1",		NULL,		NULL },
 #ifdef ALLOWLOGGING
     { "logging",	do_logging,	NULL },
 #endif
     { "print",		do_print,	NULL },
-    { "redraw",		do_redraw,	NULL },
-    { "line1",		NULL,		NULL },
-    { "8-bit control",	do_8bit_control, NULL },
+    { "print-redirect",	do_print_redir,	NULL },
+    { "line2",		NULL,		NULL },
+    { "8-bit control",	do_8bit_control,NULL },
     { "backarrow key",	do_backarrow,	NULL },
 #if OPT_NUM_LOCK
     { "num-lock",	do_num_lock,	NULL },
@@ -225,14 +228,14 @@ MenuEntry mainMenuEntries[] = {
 #if OPT_SUNPC_KBD
     { "sunKeyboard",	do_sun_kbd,	NULL },
 #endif
-    { "line2",		NULL,		NULL },
+    { "line3",		NULL,		NULL },
     { "suspend",	do_suspend,	NULL },
     { "continue",	do_continue,	NULL },
     { "interrupt",	do_interrupt,	NULL },
     { "hangup",		do_hangup,	NULL },
     { "terminate",	do_terminate,	NULL },
     { "kill",		do_kill,	NULL },
-    { "line3",		NULL,		NULL },
+    { "line4",		NULL,		NULL },
     { "quit",		do_quit,	NULL }};
 
 MenuEntry vtMenuEntries[] = {
@@ -512,6 +515,7 @@ domenu(Widget w GCC_UNUSED,
 	    update_securekbd();
 	    update_allowsends();
 	    update_logging();
+	    update_print_redir();
 	    update_8bit_control();
 	    update_decbkm();
 	    update_num_lock();
@@ -746,6 +750,14 @@ do_print(Widget gw GCC_UNUSED,
 	 XtPointer data GCC_UNUSED)
 {
     xtermPrintScreen(TRUE);
+}
+
+static void
+do_print_redir(Widget gw GCC_UNUSED,
+	       XtPointer closure GCC_UNUSED,
+	       XtPointer data GCC_UNUSED)
+{
+    setPrinterControlMode(term->screen.printer_controlmode ? 0 : 2);
 }
 
 static void
@@ -1474,12 +1486,22 @@ HandleLogging(Widget w,
 
 /* ARGSUSED */
 void
-HandlePrint(Widget w,
-	    XEvent * event GCC_UNUSED,
-	    String * params GCC_UNUSED,
-	    Cardinal * param_count GCC_UNUSED)
+HandlePrintScreen(Widget w,
+		  XEvent * event GCC_UNUSED,
+		  String * params GCC_UNUSED,
+		  Cardinal * param_count GCC_UNUSED)
 {
     do_print(w, (XtPointer) 0, (XtPointer) 0);
+}
+
+/* ARGSUSED */
+void
+HandlePrintControlMode(Widget w,
+		  XEvent * event GCC_UNUSED,
+		  String * params GCC_UNUSED,
+		  Cardinal * param_count GCC_UNUSED)
+{
+    do_print_redir(w, (XtPointer) 0, (XtPointer) 0);
 }
 
 /* ARGSUSED */
