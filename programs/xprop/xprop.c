@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xprop/xprop.c,v 1.8 2001/01/17 23:46:21 dawes Exp $ */
+/* $XFree86: xc/programs/xprop/xprop.c,v 1.9 2001/01/22 21:09:46 dawes Exp $ */
 
 
 #include <X11/Xlib.h>
@@ -33,9 +33,17 @@ from The Open Group.
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#ifdef HAS_WCHAR_H
 #include <wchar.h>
+#endif
+#ifdef HAS_WCTYPE_H
 #include <wctype.h>
+#endif
 #include <locale.h>
+
+#ifndef HAS_WCTYPE_H
+#define iswprint(x) isprint(x)
+#endif
 
 #include <X11/Xatom.h>
 #include <X11/Xmu/WinUtil.h>
