@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_dd.c,v 1.1 2001/03/21 16:14:27 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -66,7 +66,7 @@ static const GLubyte *tdfxDDGetString( GLcontext *ctx, GLenum name )
 
    switch ( name ) {
    case GL_VENDOR:
-      return "VA Linux Systems, Inc.";
+      return (GLubyte *)"VA Linux Systems, Inc.";
 
    case GL_RENDERER: {
       static char buffer[128];
@@ -119,7 +119,7 @@ static const GLubyte *tdfxDDGetString( GLcontext *ctx, GLenum name )
 	 strncat( buffer, "/SSE", 4 );
       }
 #endif
-      return buffer;
+      return (GLubyte *)buffer;
    }
 
    default:

@@ -28,20 +28,16 @@ in this Software without prior written authorization from The Open Group.
  *  Author:	Mark Lillibridge, MIT Project Athena
  *		11-Jun-87
  */
-/* $XFree86: xc/programs/xsetroot/xsetroot.c,v 1.5 1999/03/07 11:41:20 dawes Exp $ */
+/* $XFree86: xc/programs/xsetroot/xsetroot.c,v 1.6 2001/01/17 23:46:27 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <X11/Xmu/CurUtil.h>
 #include <stdio.h>
-#include "X11/bitmaps/gray"
-
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-extern int atoi(char *);
-#endif
+#include <string.h>
+#include "X11/bitmaps/gray"
 
 #define Dynamic 1
 

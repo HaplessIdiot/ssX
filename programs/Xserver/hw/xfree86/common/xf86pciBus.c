@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.37 2001/03/21 20:24:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.38 2001/03/25 05:32:07 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -211,6 +211,7 @@ FindPCIVideoInfo(void)
 		if (PCINONSYSTEMCLASSES(baseclass, subclass)) {
 		    info->size[j] =
 			pciGetBaseSize(pcrp->tag, j, TRUE, &info->validSize);
+		    pcrp->minBasesize = info->validSize;
 		} else {
 		    info->size[j] = pcrp->basesize[j];
 		    info->validSize = pcrp->minBasesize;
@@ -844,7 +845,9 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
     for (pcrpp = xf86PciInfo, pcrp = *pcrpp; pcrp; pcrp = *++(pcrpp)) {
 	resPtr *res;
 	
-	if (PCIINFOCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class))
+	if (PCIINFOCLASSES((pcrp->listed_class & 0xffff) ?
+			   ((pcrp->listed_class >> 8) & 0x0ff) :
+			   pcrp->pci_base_class, pcrp->pci_sub_class))
 	    continue;
 	
 	/* Only process devices with type 0 headers */

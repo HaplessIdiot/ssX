@@ -34,7 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpPrinter.c,v 1.6 2000/09/26 15:56:58 tsi Exp $ */
+/* $XFree86: xc/lib/Xp/XpPrinter.c,v 1.7 2001/01/17 19:43:02 dawes Exp $ */
 
 #define NEED_REPLIES
 
@@ -58,7 +58,7 @@ XpGetPrinterList (
     char        *locale;
 
     /* For decoding the variable portion of Reply */
-    CARD32	dataLenVR;
+    long	dataLenVR;
     CARD8	*dataVR;	/* aka STRING8 */
 
     XPPrinterList ptr_list;
@@ -146,7 +146,7 @@ XpGetPrinterList (
 	    /*
 	     * Pull printer length and then name.
 	     */
-	    _XRead32 (dpy, (long *) &dataLenVR, (long) sizeof(dataLenVR) );
+	    _XRead32 (dpy, &dataLenVR, (long) sizeof(CARD32) );
 
 	    if (dataLenVR) {
 		dataVR = (CARD8 *) Xmalloc( (unsigned) dataLenVR + 1 );
@@ -168,7 +168,7 @@ XpGetPrinterList (
 	    /*
 	     * Pull localized description length and then description.
 	     */
-	    _XRead32 (dpy, (long *) &dataLenVR, (long) sizeof(dataLenVR) );
+	    _XRead32 (dpy, &dataLenVR, (long) sizeof(CARD32) );
 
 	    if (dataLenVR) {
 		dataVR = (CARD8 *) Xmalloc( (unsigned) dataLenVR + 1 );

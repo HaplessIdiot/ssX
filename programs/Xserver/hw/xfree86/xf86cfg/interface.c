@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.17 2001/03/24 01:17:20 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.20 2001/03/29 16:54:30 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -1299,13 +1299,13 @@ SmeConfigureDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     int i;
 
-    switch ((int)user_data) {
+    switch ((long)user_data) {
 	case MOUSE:
 	case KEYBOARD:
 	case CARD:
 	case MONITOR:
 	    for (i = 0; i < computer.num_devices; i++)
-		if (computer.devices[i]->type == (int)user_data) {
+		if (computer.devices[i]->type == (long)user_data) {
 		    config = computer.devices[i]->widget;
 		    ConfigureDeviceCallback(w, NULL, NULL);
 		}
@@ -1317,7 +1317,7 @@ SmeConfigureDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	case -(CARD + 100):
 	case -(MONITOR + 100):
 	    for (i = 0; i < computer.num_devices; i++)
-		if (-(computer.devices[i]->type + 100) == (int)user_data &&
+		if (-(computer.devices[i]->type + 100) == (long)user_data &&
 		    computer.devices[i]->config == NULL) {
 		    config = computer.devices[i]->widget;
 		    ConfigureDeviceCallback(w, NULL, NULL);
@@ -1829,7 +1829,7 @@ UpdateMenuDeviceList(int type)
 	    XtAddCallback(sme, XtNcallback, SmeConfigureDeviceCallback,
 			  computer.devices[i]->config ?
 			  computer.devices[i]->config :
-			  (XtPointer) (-(type + 100)));
+			  (XtPointer) (-((long)type + 100)));
 	}
 }
 

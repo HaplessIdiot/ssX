@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -31,10 +32,10 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
-** $Date: 2001/01/15 21:49:06 $ $Revision: 1.1 $
+** $Date: 2001/04/01 13:59:58 $ $Revision: 1.2 $
 */
 /*
-** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/nurbtess/sampleMonoPoly.cc,v 1.1 2001/01/15 21:49:06 dawes Exp $
+** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/nurbtess/sampleMonoPoly.cc,v 1.2 2001/04/01 13:59:58 tsi Exp $
 */
 
 #include "gluos.h"
@@ -517,7 +518,7 @@ rightChain->print();
        *either this vertex or the botvertex can be used as the right corner
        */
 
-      Real tempI;
+      int tempI;
       //skip those points which are equal to v. (avoid degeneratcy)
       for(tempI = index1; tempI <= leftChainEndIndex; tempI++)
 	if(leftChain->getVertex(tempI)[1] < v) 
@@ -527,7 +528,7 @@ rightChain->print();
       else
 	{
 	  Real tempMax = leftChain->getVertex(tempI)[0];
-	  for(i=(int)tempI; i<= leftChainEndIndex; i++)
+	  for(i=tempI; i<= leftChainEndIndex; i++)
 	    if(leftChain->getVertex(i)[0] > tempMax)
 	      {
 		tempI = i;
@@ -552,7 +553,7 @@ rightChain->print();
 	  else
 	    {
 	      ret_rightCornerWhere = 0;
-	      ret_rightCornerIndex = (int)tempI;
+	      ret_rightCornerIndex = tempI;
 	    }
 	}
       

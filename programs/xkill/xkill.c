@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xkill/xkill.c,v 1.3 1999/03/02 11:50:03 dawes Exp $ */
+/* $XFree86: xc/programs/xkill/xkill.c,v 1.4 2001/01/17 23:46:15 dawes Exp $ */
 
 /*
  * xkill - simple program for destroying unwanted clients
@@ -34,6 +34,7 @@ from The Open Group.
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 
 #include <X11/Xos.h>

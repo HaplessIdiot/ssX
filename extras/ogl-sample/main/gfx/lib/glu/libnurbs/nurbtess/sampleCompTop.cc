@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -31,10 +32,10 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
-** $Date: 2001/01/15 21:49:04 $ $Revision: 1.1 $
+** $Date: 2001/04/01 13:59:57 $ $Revision: 1.2 $
 */
 /*
-** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/nurbtess/sampleCompTop.cc,v 1.1 2001/01/15 21:49:04 dawes Exp $
+** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/nurbtess/sampleCompTop.cc,v 1.2 2001/04/01 13:59:57 tsi Exp $
 */
 
 #include <stdlib.h>
@@ -826,7 +827,7 @@ static void sampleCompTopSimpleOpt(gridWrap* grid,
          //find l in [j, k-1] so that dec_chain[l][0] 0 is closest to
          // inc_chain[i]
          int l;
-         Real tempI = j;
+         int tempI = j;
          Real tempMin = fabs(inc_chain->getVertex(i)[0] - dec_chain->getVertex(j)[0]);
          for(l=j+1; l<= k-1; l++)
 	   {
@@ -841,14 +842,14 @@ static void sampleCompTopSimpleOpt(gridWrap* grid,
 	 monoTriangulationRecGenOpt(dec_chain->getVertex(tempI),
 				    botVertex,
 				    inc_chain, i, inc_end,
-				    dec_chain, (int)(tempI+1), dec_end,
+				    dec_chain, tempI + 1, dec_end,
 				    pStream);
 	 //recursively do the rest
 	 sampleCompTopSimpleOpt(grid,
 				gridV+1,
 				topVertex, inc_chain->getVertex(i),
 				inc_chain, inc_current, i-1,
-				dec_chain, dec_current, (int)tempI,
+				dec_chain, dec_current, tempI,
 				pStream);
        }
       else

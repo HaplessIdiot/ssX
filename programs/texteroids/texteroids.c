@@ -34,7 +34,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/programs/texteroids/texteroids.c,v 1.2 2001/03/03 23:03:46 tsi Exp $ */
+/* $XFree86: xc/programs/texteroids/texteroids.c,v 1.3 2001/03/06 16:37:18 tsi Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -42,6 +42,7 @@
 #include <DPS/dpsXclient.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "twraps.h"
 
 int CheckForAHit(), ExplodeString();

@@ -1,3 +1,8 @@
+/* $XFree86$ */
+
+#ifndef _XVMC_H_
+#define _XVMC_H_
+
 #include <X11/X.h>
 #include <X11/extensions/Xv.h>
 
@@ -109,3 +114,4 @@ typedef struct {
   void *privData;    /* private to the library */
 } XvMCSubpicture;
 
+#endif

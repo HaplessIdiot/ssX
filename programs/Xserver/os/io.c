@@ -48,7 +48,7 @@ SOFTWARE.
  *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.23 2000/08/10 17:40:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.24 2001/01/17 22:37:10 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -71,8 +71,8 @@ extern int errno;
 #define NEED_REPLIES
 #include "Xproto.h"
 #include "os.h"
-#include "Xpoll.h"
 #include "osdep.h"
+#include "Xpoll.h"
 #include "opaque.h"
 #include "dixstruct.h"
 #include "misc.h"

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xwininfo/xwininfo.c,v 1.5 1999/03/02 11:50:04 dawes Exp $ */
+/* $XFree86: xc/programs/xwininfo/xwininfo.c,v 1.6 2001/01/17 23:46:42 dawes Exp $ */
 
 
 /*
@@ -44,6 +44,7 @@ from The Open Group.
 #include <X11/extensions/shape.h>
 #include <X11/Xmu/WinUtil.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /* Include routines to handle parsing defaults */
 #include "dsimple.h"

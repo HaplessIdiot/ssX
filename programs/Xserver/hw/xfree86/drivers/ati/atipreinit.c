@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.42 2001/02/12 03:53:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.43 2001/03/25 05:32:09 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -2077,7 +2077,7 @@ ATIPreInit
                 if (pATI->Cursor > ATI_CURSOR_SOFTWARE)
                 {
                     /*
-                     * Allocate a 1 kB cursor image area at the top of
+                     * Allocate a 1 kB cursor image area at the top of the
                      * little-endian aperture, just before any MMIO area that
                      * might also be there.
                      */

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef _XF86XVMC_H
 #define _XF86XVMC_H
 

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/fsinfo/fsinfo.c,v 3.3 1999/02/19 21:27:07 hohndel Exp $ */
+/* $XFree86: xc/programs/xfsinfo/xfsinfo.c,v 1.1 2001/01/06 21:58:28 herrb Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -55,6 +55,7 @@ from The Open Group.
  */
 
 #include	<stdio.h>
+#include	<stdlib.h>
 #include	<X11/Xos.h>
 #include	"FSlib.h"
 

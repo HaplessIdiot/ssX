@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.1
@@ -27,7 +27,7 @@
  * New (3.1) transformation code written by Keith Whitwell.
  */
 
-
+#undef	COPY_FUNC
 #define COPY_FUNC( BITS )						\
 static void TAG2(copy, BITS)(GLvector4f *to, const GLvector4f *f,	\
 			     const GLubyte mask[] )			\

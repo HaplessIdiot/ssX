@@ -27,7 +27,7 @@
  *
  * Authors: Paulo CÅÈsar Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.13 2001/03/22 03:10:58 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.14 2001/03/22 03:57:30 dawes Exp $
  */
 
 #include "vesa.h"
@@ -856,7 +856,7 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	pVesa->mapOff = 0;
     }
 
-    if ((void*)pVesa->mapPhys == NULL) {
+    if (pVesa->mapPhys == 0) {
 	pVesa->mapPhys = 0xa0000;
 	pVesa->mapSize = 0x10000;
     }
@@ -1646,7 +1646,7 @@ VESADGAOpenFramebuffer(ScrnInfoPtr pScrn, char **DeviceName,
     VESAPtr pVesa = VESAGetRec(pScrn);
 
     *DeviceName = NULL;		/* No special device */
-    *ApertureBase = (unsigned char *)(pVesa->mapPhys);
+    *ApertureBase = (unsigned char *)(long)(pVesa->mapPhys);
     *ApertureSize = pVesa->mapSize;
     *ApertureOffset = pVesa->mapOff;
     *flags = DGA_NEED_ROOT;

@@ -24,8 +24,9 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbutils/xkbwatch.c,v 3.3 1999/03/02 10:42:32 dawes Exp $ */
+/* $XFree86: xc/programs/xkbutils/xkbwatch.c,v 3.4 2001/01/17 23:46:14 dawes Exp $ */
 
+#include <stdlib.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>

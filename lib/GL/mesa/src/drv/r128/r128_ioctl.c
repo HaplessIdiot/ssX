@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_ioctl.c,v 1.3 2001/01/08 01:07:21 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_ioctl.c,v 1.4 2001/03/21 16:14:23 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -231,10 +231,10 @@ void r128FlushEltsLocked( r128ContextPtr rmesa )
 {
    if ( rmesa->first_elt != rmesa->next_elt ) {
       r128FireEltsLocked( rmesa,
-			  ((GLuint)rmesa->first_elt -
-			   (GLuint)rmesa->elt_buf->address),
-			  ((GLuint)rmesa->next_elt -
-			   (GLuint)rmesa->elt_buf->address),
+			  ((char *)rmesa->first_elt -
+			   (char *)rmesa->elt_buf->address),
+			  ((char *)rmesa->next_elt -
+			   (char *)rmesa->elt_buf->address),
 			  0 );
 
       ALIGN_NEXT_ELT( rmesa );

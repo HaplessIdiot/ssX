@@ -22,7 +22,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/util/lndir.c,v 3.11 2001/01/17 16:39:01 dawes Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.12 2001/02/11 22:04:07 herrb Exp $ */
 
 /* From the original /bin/sh script:
 
@@ -42,6 +42,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xos.h>
 #include <X11/Xfuncproto.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #if !defined(MINIX) && !defined(Lynx)
 #include <sys/param.h>

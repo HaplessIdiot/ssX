@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.24 2000/12/07 20:26:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.25 2001/02/13 19:19:16 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -58,7 +58,7 @@
 
 static const char identification[] = "$Identification: 20 $";
 
-#include <xf86Version.h>
+#include "xf86Version.h"
 
 #if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(3,9,0,0,0)
 #define XFREE86_V4 1
@@ -85,21 +85,21 @@ static const char identification[] = "$Identification: 20 $";
 #include <errno.h>
 #endif
 
-#include <misc.h>
-#include <xf86.h>
+#include "misc.h"
+#include "xf86.h"
 #define NEED_XF86_TYPES
 #if !defined(DGUX)
-#include <xf86_ansic.h>
-#include <xisb.h>
+#include "xf86_ansic.h"
+#include "xisb.h"
 #endif
-#include <xf86_OSproc.h>
-#include <xf86Xinput.h>
-#include <exevents.h>		/* Needed for InitValuator/Proximity stuff */
-#include <keysym.h>
-#include <mipointer.h>
+#include "xf86_OSproc.h"
+#include "xf86Xinput.h"
+#include "exevents.h"		/* Needed for InitValuator/Proximity stuff */
+#include "keysym.h"
+#include "mipointer.h"
 
 #ifdef XFree86LOADER
-#include <xf86Module.h>
+#include "xf86Module.h"
 #endif
 
 #undef sleep
@@ -170,7 +170,6 @@ static InputDriverPtr wcmDrv;
 #include "xf86_Config.h"
 #include "xf86Xinput.h"
 #include "atKeynames.h"
-#include "xf86Version.h"
 #endif
 
 #if !defined(sun) || defined(i386)

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/glx/packvendpriv.h,v 1.4 2001/03/21 16:04:39 dawes Exp $ */
 #ifndef __GLX_packvendpriv_h__
 #define __GLX_packvendpriv_h__
 
@@ -100,7 +100,7 @@
     *((FLOAT32 *) (pc + offset)) = a
 
 #else
-#define __GLX_VENDPRIV_PUT_SHORT(offset,a) \     
+#define __GLX_VENDPRIV_PUT_SHORT(offset,a) \
     { GLubyte *cp = (pc+offset); \
       int shift = (64-16) - ((int)(cp) >> (64-6)); \
       *(int *)cp = (*(int *)cp & ~(0xffff << shift)) | ((a & 0xffff) << shift); }

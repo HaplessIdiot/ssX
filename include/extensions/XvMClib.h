@@ -1,3 +1,8 @@
+/* $XFree86$ */
+
+#ifndef _XVMCLIB_H_
+#define _XVMCLIB_H_
+
 #include <X11/extensions/Xvlib.h>
 #include <X11/extensions/XvMC.h>
 
@@ -137,15 +142,4 @@ Status XvMCFlushSubpicture (Display *display, XvMCSubpicture *subpicture);
 Status
 XvMCGetSubpictureStatus (Display *display, XvMCSubpicture *subpic, int *stat);
 
-
-
-
-
-
-
-
-
-
-
-
-
+#endif

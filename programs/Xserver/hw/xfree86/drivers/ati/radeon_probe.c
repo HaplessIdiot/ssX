@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.5 2000/12/13 02:45:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.6 2001/01/06 20:19:11 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -46,6 +46,32 @@
 #include "xf86.h"
 #include "xf86_ansic.h"
 #include "xf86Resources.h"
+
+#ifdef XFree86LOADER
+
+/*
+ * The following exists to prevent the compiler from considering entry points
+ * defined in a separate module from being constants.
+ */
+static xf86PreInitProc     * const volatile PreInitProc     = RADEONPreInit;
+static xf86ScreenInitProc  * const volatile ScreenInitProc  = RADEONScreenInit;
+static xf86SwitchModeProc  * const volatile SwitchModeProc  = RADEONSwitchMode;
+static xf86AdjustFrameProc * const volatile AdjustFrameProc = RADEONAdjustFrame;
+static xf86EnterVTProc     * const volatile EnterVTProc     = RADEONEnterVT;
+static xf86LeaveVTProc     * const volatile LeaveVTProc     = RADEONLeaveVT;
+static xf86FreeScreenProc  * const volatile FreeScreenProc  = RADEONFreeScreen;
+static xf86ValidModeProc   * const volatile ValidModeProc   = RADEONValidMode;
+
+#define RADEONPreInit     PreInitProc
+#define RADEONScreenInit  ScreenInitProc
+#define RADEONSwitchMode  SwitchModeProc
+#define RADEONAdjustFrame AdjustFrameProc
+#define RADEONEnterVT     EnterVTProc
+#define RADEONLeaveVT     LeaveVTProc
+#define RADEONFreeScreen  FreeScreenProc
+#define RADEONValidMode   ValidModeProc
+
+#endif
 
 SymTabRec RADEONChipsets[] = {
     { PCI_CHIP_RADEON_QD, "ATI Radeon QD (AGP)" },
@@ -151,6 +177,7 @@ RADEONProbe(DriverPtr drv, int flags)
 	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv, 0);
 
 #ifdef XFree86LOADER
+
 	    if (!xf86LoadSubModule(pScrn, "radeon")) {
 		xf86Msg(X_ERROR,
 		    RADEON_NAME ":  Failed to load \"radeon\" module.\n");
@@ -159,26 +186,6 @@ RADEONProbe(DriverPtr drv, int flags)
 	    }
 
 	    xf86LoaderReqSymLists(RADEONSymbols, NULL);
-
-#ifndef ELFDEBUG
-	    /* Workaround for possible loader bug */
-#	    define RADEONPreInit     \
-		(xf86PreInitProc*)    LoaderSymbol("RADEONPreInit")
-#	    define RADEONScreenInit  \
-		(xf86ScreenInitProc*) LoaderSymbol("RADEONScreenInit")
-#	    define RADEONSwitchMode  \
-		(xf86SwitchModeProc*) LoaderSymbol("RADEONSwitchMode")
-#	    define RADEONAdjustFrame \
-		(xf86AdjustFrameProc*)LoaderSymbol("RADEONAdjustFrame")
-#	    define RADEONEnterVT     \
-		(xf86EnterVTProc*)    LoaderSymbol("RADEONEnterVT")
-#	    define RADEONLeaveVT     \
-		(xf86LeaveVTProc*)    LoaderSymbol("RADEONLeaveVT")
-#	    define RADEONFreeScreen  \
-		(xf86FreeScreenProc*) LoaderSymbol("RADEONFreeScreen")
-#	    define RADEONValidMode   \
-		(xf86ValidModeProc*)  LoaderSymbol("RADEONValidMode")
-#endif
 
 #endif
 

@@ -23,7 +23,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgadd.c,v 1.7 2001/01/08 01:07:18 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgadd.c,v 1.8 2001/03/21 16:14:22 dawes Exp $ */
 
 
 
@@ -63,14 +63,14 @@
 static const GLubyte *mgaDDGetString( GLcontext *ctx, GLenum name )
 {
    mgaContextPtr mmesa = MGA_CONTEXT( ctx );
-   static GLubyte buffer[128];
+   static char buffer[128];
 
    switch ( name ) {
    case GL_VENDOR:
       return (GLubyte *) "VA Linux Systems Inc.";
 
    case GL_RENDERER:
-      sprintf( (void *)buffer, "Mesa DRI %s " MGA_DATE,
+      sprintf( buffer, "Mesa DRI %s " MGA_DATE,
 	       MGA_IS_G400(mmesa) ? "G400" :
 	       MGA_IS_G200(mmesa) ? "G200" : "MGA" );
 
@@ -110,7 +110,7 @@ static const GLubyte *mgaDDGetString( GLcontext *ctx, GLenum name )
 	 strncat( buffer, "/SSE", 4 );
       }
 #endif
-      return buffer;
+      return (GLubyte *)buffer;
 
    default:
       return NULL;

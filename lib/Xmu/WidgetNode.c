@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xmu/WidgetNode.c,v 1.7 1999/12/27 00:39:24 robin Exp $ */
+/* $XFree86: xc/lib/Xmu/WidgetNode.c,v 1.8 2001/01/17 19:42:57 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -31,6 +31,7 @@ in this Software without prior written authorization from The Open Group.
 
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Xos.h>
 #include <X11/IntrinsicP.h>
 #include <X11/Xaw/Cardinals.h>

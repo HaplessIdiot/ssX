@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.17 2000/12/11 01:53:01 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.18 2001/01/21 21:19:26 tsi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -2105,7 +2105,7 @@ I128DumpActiveRegisters(ScrnInfoPtr pScrn)
     unsigned short iobase;
     unsigned long rbase_g, rbase_w, rbase_a, rbase_b, rbase_i, rbase_e;
     unsigned long id, config1, config2, sgram, soft_sw, ddc, vga_ctl;
-    volatile unsigned long *vrba, *vrbg, *vrbw;
+    volatile CARD32 *vrba, *vrbg, *vrbw;
 
     vrba = pI128->mem.rbase_a;
     vrbg = pI128->mem.rbase_g;
@@ -2343,7 +2343,7 @@ static unsigned char ibm52Xmask[0xA0] = {
 };
 
 void
-I128DumpIBMDACRegisters(ScrnInfoPtr pScrn, volatile unsigned long *vrbg)
+I128DumpIBMDACRegisters(ScrnInfoPtr pScrn, volatile CARD32 *vrbg)
 {
 	unsigned char ibmr[0x100];
 	char buf[128], tbuf[10];

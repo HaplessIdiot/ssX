@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.58 2001/01/26 10:35:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.60 2001/02/15 20:31:44 eich Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -1413,23 +1413,21 @@ RemoveOverlaps(resPtr target, resPtr list, Bool pow2Alignment, Bool useEstimated
 	    /* Possibly ignore estimated resources */
 	    if (!useEstimated && (pRes->res_type & ResEstimated)) continue;
 	    /*
-	     * target should be a larger region than pRes.  If pRes fully
+	     * Target should be a larger region than pRes.  If pRes fully
 	     * contains target, don't do anything.
 	     */
 	    if (pRes->block_begin <= target->block_begin &&
 		pRes->block_end >= target->block_end)
 		continue;
 	    /*
-	     * cases where the target and pRes have the same starting address
-	     * cannot be resolved, so skip them (with a warning).
+	     * In cases where the target and pRes have the same starting
+	     * address, reduce the size of the target (given it's an estimate).
 	     */
 	    if (pRes->block_begin == target->block_begin) {
-		xf86MsgVerb(X_WARNING, 3, "Unresolvable overlap at 0x%08x\n",
-			    pRes->block_begin);
-		continue;
+		target->block_end = pRes->block_end;
 	    }
 	    /* Otherwise, trim target to remove the overlap */
-	    if (pRes->block_begin <= target->block_end) {
+	    else if (pRes->block_begin <= target->block_end) {
 		target->block_end = pRes->block_begin - 1;
 	    } else if (!pow2Alignment &&
 		       pRes->block_end >= target->block_begin) {

@@ -23,9 +23,10 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/programs/xclock/xclock.c,v 1.5 2000/11/02 02:51:24 dawes Exp $ */
+/* $XFree86: xc/programs/xclock/xclock.c,v 1.6 2001/01/17 23:45:18 dawes Exp $ */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Xatom.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>

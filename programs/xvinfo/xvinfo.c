@@ -1,9 +1,10 @@
-/* $XFree86: xc/programs/xvinfo/xvinfo.c,v 1.4 2000/10/24 22:45:17 dawes Exp $ */
+/* $XFree86: xc/programs/xvinfo/xvinfo.c,v 1.5 2001/02/20 17:18:40 dawes Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/Xvlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 

@@ -43,13 +43,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.9 2000/01/21 02:29:37 dawes Exp $ */
+/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.10 2001/01/17 17:33:08 dawes Exp $ */
 
 
 #define YYMAXDEPTH 10000
 
 #include <X11/Xos.h>
 #include <stdio.h>
+#include <stdlib.h>
 #ifndef L_SET
 #define L_SET SEEK_SET
 #endif

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 #define NEED_REPLIES
 

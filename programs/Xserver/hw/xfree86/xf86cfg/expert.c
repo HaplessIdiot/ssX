@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.6 2000/12/27 23:37:37 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.7 2001/03/27 20:25:30 paulo Exp $
  */
 
 #include "config.h"
@@ -3822,7 +3822,7 @@ AdjacencyToggleCallback(Widget w, XtPointer user_data, XtPointer call_data)
     XF86ConfAdjacencyPtr adj = node->data->adjacency.adjacency;
     char *x, *y;
 
-    if ((Bool)call_data == False)
+    if ((Bool)(long)call_data == False)
 	return;
 
     XtVaGetValues(node->data->adjacency.adjx, XtNstring, &x, NULL, 0);
@@ -4556,7 +4556,7 @@ ToggleCallback(Widget w, XtPointer user_data, XtPointer call_data)
     if (nodeParent->child) {
 	if (XtIsRealized(tree))
 	    XtUnmapWidget(tree);
-	ToggleNode(nodeParent->child, (Bool)call_data);
+	ToggleNode(nodeParent->child, (Bool)(long)call_data);
 	RelayoutTree();
 	if (XtIsRealized(tree))
 	    XtMapWidget(tree);

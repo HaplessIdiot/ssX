@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Error.c,v 3.9 1998/10/03 09:06:51 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Error.c,v 3.10 2001/01/17 19:43:04 dawes Exp $ */
 
 /*
 
@@ -58,6 +58,7 @@ in this Software without prior written authorization from The Open Group.
 
 #include "IntrinsicI.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 /* The error handlers in the application context aren't used since we can't
    come up with a uniform way of using them.  If you can, define

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 /* WARNING: If you change any of these defines, make sure to change
  * the kernel include file as well (i810_drm.h)

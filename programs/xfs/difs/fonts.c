@@ -42,11 +42,12 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.7 2000/12/14 16:52:50 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.8 2001/01/17 23:45:29 dawes Exp $ */
 
 #include        "FS.h"
 #include        "FSproto.h"
 #include	<stdio.h>
+#include	<stdlib.h>
 #include	<X11/Xos.h>
 #include	"clientstr.h"
 #include	"fsresource.h"

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef _XVMC_H
 #define _XVMC_H
 #include "Xv.h"

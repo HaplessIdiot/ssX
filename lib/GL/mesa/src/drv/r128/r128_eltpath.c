@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_eltpath.c,v 1.2 2000/12/07 20:26:08 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_eltpath.c,v 1.3 2001/01/08 01:07:20 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -70,10 +70,10 @@ static void fire_elts( r128ContextPtr rmesa )
 
       if ( rmesa->first_elt != rmesa->next_elt ) {
 	 r128FireEltsLocked( rmesa,
-			     ((GLuint)rmesa->first_elt -
-			      (GLuint)rmesa->elt_buf->address),
-			     ((GLuint)rmesa->next_elt -
-			      (GLuint)rmesa->elt_buf->address),
+			     ((char *)rmesa->first_elt -
+			      (char *)rmesa->elt_buf->address),
+			     ((char *)rmesa->next_elt -
+			      (char *)rmesa->elt_buf->address),
 			     !retain );
       } else if ( !retain ) {
 	 r128ReleaseBufLocked( rmesa, rmesa->elt_buf );
@@ -98,7 +98,7 @@ static void fire_elts( r128ContextPtr rmesa )
 	 (((rmesa->elt_buf->idx + 1) *
 	   R128_BUFFER_SIZE / (8 * sizeof(GLuint))) - 1);
       rmesa->next_vert = (GLfloat *)
-	 ((GLuint)rmesa->vert_heap +
+	 ((char *)rmesa->vert_heap +
 	  rmesa->next_vert_index * 8 * sizeof(GLfloat));
       break;
 
@@ -107,7 +107,7 @@ static void fire_elts( r128ContextPtr rmesa )
 	 (((rmesa->elt_buf->idx + 1) *
 	   R128_BUFFER_SIZE / (10 * sizeof(GLuint))) - 1);
       rmesa->next_vert = (GLfloat *)
-	 ((GLuint)rmesa->vert_heap +
+	 ((char *)rmesa->vert_heap +
 	  rmesa->next_vert_index * 10 * sizeof(GLfloat));
       break;
    }
@@ -126,10 +126,10 @@ static void release_bufs( r128ContextPtr rmesa )
       LOCK_HARDWARE( rmesa );
       if ( rmesa->first_elt != rmesa->next_elt ) {
 	 r128FireEltsLocked( rmesa,
-			     ((GLuint)rmesa->first_elt -
-			      (GLuint)rmesa->elt_buf->address),
-			     ((GLuint)rmesa->next_elt -
-			      (GLuint)rmesa->elt_buf->address),
+			     ((char *)rmesa->first_elt -
+			      (char *)rmesa->elt_buf->address),
+			     ((char *)rmesa->next_elt -
+			      (char *)rmesa->elt_buf->address),
 			     0 );
 
 	 ALIGN_NEXT_ELT( rmesa );
@@ -236,8 +236,8 @@ static void r128_tri_clip( r128ContextPtr rmesa,
 
    {
       GLuint *out = inlist[in];
-      GLint space = (GLint)((GLuint)rmesa->next_vert -
-			    (GLuint)rmesa->next_elt);
+      GLint space = (GLint)((char *)rmesa->next_vert -
+			    (char *)rmesa->next_elt);
 
       if ( space < (GLint)(n * (vertsize + 2) * sizeof(GLuint)) ) {
 	 fire_elts( rmesa );
@@ -277,8 +277,8 @@ static void r128_tri_clip( r128ContextPtr rmesa,
 
 #define TRIANGLE( e2, e1, e0 )						\
 do {									\
-   if ( (GLint)((GLuint)rmesa->next_vert -				\
-		(GLuint)rmesa->next_elt) < TRI_THRESHOLD ) {		\
+   if ( (GLint)((char *)rmesa->next_vert -				\
+		(char *)rmesa->next_elt) < TRI_THRESHOLD ) {		\
       fire_elts( rmesa );						\
    }									\
    rmesa->next_elt[0] = UNCLIPPED_VERT( e2 );				\
@@ -462,8 +462,8 @@ void r128DDEltPath( struct vertex_buffer *VB )
    if ( rmesa->new_state )
       r128DDUpdateHWState( ctx );
 
-   space = (GLint)((GLuint)rmesa->next_vert -
-		   (GLuint)rmesa->next_elt);
+   space = (GLint)((char *)rmesa->next_vert -
+		   (char *)rmesa->next_elt);
 
    /* Allocate a single buffer to hold unclipped vertices.  All
     * unclipped vertices must be contiguous.

@@ -1,3 +1,7 @@
+/* $XFree86$ */
+
+#ifndef _XVMCPROTO_H_
+#define _XVMCPROTO_H_
 
 #define xvmc_QueryVersion		0
 #define xvmc_ListSurfaceTypes		1
@@ -197,3 +201,4 @@ typedef struct {
 } xvmcListSubpictureTypesReply;
 #define sz_xvmcListSubpictureTypesReply 32
 
+#endif

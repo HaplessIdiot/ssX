@@ -30,7 +30,7 @@
  *     Xlib DBE code
  *
  *****************************************************************************/
-/* $XFree86: xc/lib/Xext/Xdbe.c,v 3.2 2000/09/26 15:56:56 tsi Exp $ */
+/* $XFree86: xc/lib/Xext/Xdbe.c,v 3.3 2001/01/17 19:42:46 dawes Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -430,7 +430,7 @@ XdbeScreenVisualInfo *XdbeGetVisualInfo (dpy, screen_specifiers, num_screens)
         int j;
         long c;
 
-        _XRead32 (dpy, (long *)&c, sizeof(CARD32));
+        _XRead32 (dpy, &c, sizeof(CARD32));
         scrVisInfo[i].count = c;
 
         nbytes = scrVisInfo[i].count * sizeof(XdbeVisualInfo);
