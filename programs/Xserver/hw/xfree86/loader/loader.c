@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.36 1999/03/28 15:32:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.37 1999/07/06 11:38:47 dawes Exp $ */
 
 /*
  *
@@ -52,6 +52,7 @@ extern LOOKUP miLookupTab[];
 extern LOOKUP xfree86LookupTab[];
 extern LOOKUP dixLookupTab[];
 extern LOOKUP fontLookupTab[];
+extern LOOKUP extLookupTab[];
 
 /*
 #define DEBUG
@@ -220,6 +221,7 @@ LoaderInit(void)
     LoaderAddSymbols(-1, -1, xfree86LookupTab ) ;
     LoaderAddSymbols(-1, -1, dixLookupTab ) ;
     LoaderAddSymbols(-1, -1, fontLookupTab ) ;
+    LoaderAddSymbols(-1, -1, extLookupTab );
 #ifdef __sparc__
 #ifdef linux
     if (sparcUseHWMulDiv())
