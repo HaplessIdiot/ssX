@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.33 2001/02/04 03:19:28 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.34 2001/04/15 23:16:01 mvojkovi Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -97,6 +97,7 @@ typedef struct _XAAPixmap {
     int fg;
     int bg;    
     FBAreaPtr offscreenArea;
+    Bool freeData;
 } XAAPixmapRec, *XAAPixmapPtr;
 
 
