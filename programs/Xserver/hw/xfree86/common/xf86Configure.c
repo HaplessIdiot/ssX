@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.71 2002/05/22 21:38:26 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.72 2002/05/31 18:45:58 dawes Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -304,9 +304,9 @@ configureInputSection (void)
 	}
 #endif
 #ifdef WSCONS_SUPPORT
-	fd = open("/dev/wsmouse0", 0);
+	fd = open("/dev/wsmouse", 0);
 	if (fd > 0) {
-	    DFLT_MOUSE_DEV = "/dev/wsmouse0";
+	    DFLT_MOUSE_DEV = "/dev/wsmouse";
 	    DFLT_MOUSE_PROTO = "wsmouse";
 	    close(fd);
 	}
