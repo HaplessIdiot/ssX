@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/XShm.h,v 1.4 1999/04/29 09:13:26 dawes Exp $ */
+/* $XFree86: xc/include/extensions/XShm.h,v 1.5 2001/01/17 17:53:19 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -70,6 +70,12 @@ _XFUNCPROTOBEGIN
 Bool XShmQueryExtension(
 #if NeedFunctionPrototypes
     Display*            /* dpy */
+#endif
+);
+
+int XShmGetEventBase(
+#if NeedFunctionPrototypes
+    Display* 		/* dpy */
 #endif
 );
 
