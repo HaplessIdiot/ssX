@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.16 2004/06/10 13:08:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.17 2005/01/09 20:47:19 alanh Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -1382,12 +1382,8 @@ I830AllocateMemory(ScrnInfoPtr pScrn, FBLinearPtr linear, int size)
 {
    ScreenPtr pScreen;
    FBLinearPtr new_linear;
-   int bytespp = pScrn->bitsPerPixel >> 3;
 
    DPRINTF(PFX, "I830AllocateMemory\n");
-
-   /* convert size in bytes into number of pixels */
-   size = (size + bytespp - 1) / bytespp;
 
    if (linear) {
       if (linear->size >= size)
