@@ -1,15 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.h,v 1.7 1999/06/05 15:55:27 dawes Exp $ */
+#ifndef MOUSE_H_
+#define MOUSE_H_
 
-/*
- * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
- */
-
-#ifndef _X_MOUSE_H
-#define _X_MOUSE_H
-
-/* Private interface for the mouse driver. */
-
-/* Protocol IDs.  These are for internal use only. */
+/* Mouse Protocol IDs. */
 typedef enum {
     PROT_UNKNOWN = -2,
     PROT_UNSUP = -1,		/* protocol is not supported */
@@ -35,20 +27,9 @@ typedef enum {
     PROT_AUTO,
     PROT_SYSMOUSE,
     PROT_NUMPROTOS	/* This must always be last. */
-} ProtocolID;
+} MouseProtocolID;
 
-typedef struct {
-    const char *	name;
-    int			class;
-    const char **	defaults;
-    ProtocolID		id;
-} MouseProtocolRec, *MouseProtocolPtr;
+const char * xf86MouseProtocolIDToName(MouseProtocolID id);
+MouseProtocolID xf86MouseProtocolNameToID(const char *name);
 
-/* mouse proto flags */
-#define MPF_NONE		0x00
-#define MPF_SAFE		0x01
-
-/* pnp.c */
-int MouseGetPnpProtocol(InputInfoPtr pInfo);
-
-#endif /* _X_MOUSE_H */
+#endif

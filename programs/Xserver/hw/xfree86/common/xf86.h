@@ -85,19 +85,19 @@ Bool xf86IsPrimaryIsa(void);
 int xf86CheckPciGAType(pciVideoPtr pPci);
 /* new RAC */
 void xf86ClaimFixedResources(resList list, int entityIndex);
+Bool xf86DriverHasEntities(DriverPtr drvp);
 void xf86AddEntityToScreen(ScrnInfoPtr pScrn, int entityIndex);
 void xf86RemoveEntityFromScreen(ScrnInfoPtr pScrn, int entityIndex);
 EntityInfoPtr xf86GetEntityInfo(int entityIndex);
 pciVideoPtr xf86GetPciInfoForEntity(int entityIndex);
-int xf86GetEntityForPciInfo(pciVideoPtr pvp);
+int xf86GetPciEntity(int bus, int dev, int func);
 Bool xf86SetEntityFuncs(int entityIndex, EntityProc init,
 			EntityProc enter, EntityProc leave, pointer);
 void xf86DeallocateResourcesForEntity(int entityIndex, long type);
 resPtr xf86RegisterResources(int entityIndex, resList list, int access);
 Bool xf86CheckPciMemBase(pciVideoPtr pPci, memType base);
-void xf86SetAccessFuncs(EntityInfoPtr pEnt, xf86AccessPtr p_io,
-			xf86AccessPtr p_mem, xf86AccessPtr p_io_mem,
-			xf86AccessPtr *ppAccessOld);
+void xf86SetAccessFuncs(EntityInfoPtr pEnt, xf86SetAccessFuncPtr funcs,
+			xf86SetAccessFuncPtr oldFuncs);
 Bool xf86IsEntityPrimary(int entityIndex);
 Bool xf86FixPciResource(int entityIndex, int prt, memType alignment,
 			 long type);
@@ -220,6 +220,7 @@ Bool xf86GetModInDevAllowNonLocal(void);
 Bool xf86GetModInDevEnabled(void);
 Bool xf86GetAllowMouseOpenFail(void);
 Bool xf86IsPc98(void);
+pointer xf86LoadDrvSubModule(DriverPtr drv, const char *name);
 pointer xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name);
 void xf86UnloadSubModule(pointer mod);
 Bool xf86LoaderCheckSymbol(const char *name);
@@ -248,14 +249,28 @@ int xf86NewSerialNumber(WindowPtr p, pointer unused);
 pointer xf86FindXvOptions(int scrnIndex, int adapt_index, char *port_name,
 			  char **adaptor_name, pointer *adaptor_options);
 void xf86GetOS(const char **name, int *major, int *minor, int *teeny);
-Bool xf86ConfigActivePciEntity(ScrnInfoPtr pScrn, int entityIndex,
-			       PciChipsets *p_chip, resList res,
-			       EntityProc init, EntityProc enter,
-			       EntityProc leave, pointer private);
-Bool xf86ConfigActiveIsaEntity(ScrnInfoPtr pScrn, int entityIndex,
-			       IsaChipsets *i_chip, resList res,
-			       EntityProc init, EntityProc enter,
-			       EntityProc leave, pointer private); 
+ScrnInfoPtr xf86ConfigPciEntity(ScrnInfoPtr pScrn, int scrnFlag,
+				int entityIndex,PciChipsets *p_chip,
+				resList res, EntityProc init,
+				EntityProc enter, EntityProc leave,
+				pointer private);
+ScrnInfoPtr xf86ConfigIsaEntity(ScrnInfoPtr pScrn, int scrnFlag,
+				int entityIndex, IsaChipsets *i_chip,
+				resList res, EntityProc init,
+				EntityProc enter, EntityProc leave,
+				pointer private); 
+/* Obsolete! don't use */
+Bool xf86ConfigActivePciEntity(ScrnInfoPtr pScrn,
+				int entityIndex,PciChipsets *p_chip,
+				resList res, EntityProc init,
+				EntityProc enter, EntityProc leave,
+				pointer private);
+/* Obsolete! don't use */
+Bool xf86ConfigActiveIsaEntity(ScrnInfoPtr pScrn,
+				int entityIndex, IsaChipsets *i_chip,
+				resList res, EntityProc init,
+				EntityProc enter, EntityProc leave,
+				pointer private); 
 void xf86ConfigPciEntityInactive(EntityInfoPtr pEnt, PciChipsets *p_chip,
 				 resList res, EntityProc init,
 				 EntityProc enter, EntityProc leave,

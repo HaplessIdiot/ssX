@@ -422,27 +422,31 @@ CYRIXProbe(DriverPtr drv, int flags)
     /* Free it since we don't need that list after this */
     xfree(devSections);
 
-	for (i=0; i < numUsed; i++) {
+    for (i=0; i < numUsed; i++) {
 
 
     /* Fill in what we can of the ScrnInfoRec */
-	    pScrn = xf86AllocateScreen(drv,0);
-	    pScrn->driverVersion = VERSION;
-	    pScrn->ioBase	 = vgaIOBase;
-	    pScrn->driverName    = CYRIX_DRIVER_NAME;
-	    pScrn->name          = CYRIX_NAME;
-	    pScrn->Probe         = CYRIXProbe;
-	    pScrn->PreInit       = CYRIXPreInit;
-	    pScrn->ScreenInit    = CYRIXScreenInit;
-	    pScrn->SwitchMode    = CYRIXSwitchMode;
-	    pScrn->AdjustFrame   = CYRIXAdjustFrame;
-	    pScrn->LeaveVT       = CYRIXLeaveVT;
-	    pScrn->EnterVT       = CYRIXEnterVT;
-	    pScrn->FreeScreen    = CYRIXFreeScreen;
-	    pScrn->ValidMode     = CYRIXValidMode;
-	    xf86ConfigActiveIsaEntity(pScrn, usedChips[i], CYRIXISAChipsets,
-					NULL, NULL, NULL, NULL, NULL);
-	}
+	    pScrn = NULL;
+	    if ((pScrn = xf86ConfigIsaEntity(pScrn, 0, usedChips[i],
+						   CYRIXISAChipsets, NULL,
+						   NULL, NULL, NULL, NULL))){
+		pScrn->driverVersion = VERSION;
+		pScrn->ioBase	 = vgaIOBase;
+		pScrn->driverName    = CYRIX_DRIVER_NAME;
+		pScrn->name          = CYRIX_NAME;
+		pScrn->Probe         = CYRIXProbe;
+		pScrn->PreInit       = CYRIXPreInit;
+		pScrn->ScreenInit    = CYRIXScreenInit;
+		pScrn->SwitchMode    = CYRIXSwitchMode;
+		pScrn->AdjustFrame   = CYRIXAdjustFrame;
+		pScrn->LeaveVT       = CYRIXLeaveVT;
+		pScrn->EnterVT       = CYRIXEnterVT;
+		pScrn->FreeScreen    = CYRIXFreeScreen;
+		pScrn->ValidMode     = CYRIXValidMode;
+		return (TRUE);
+	    }
+	    xfree(usedChips);
+    }
     return (TRUE);
 }
 

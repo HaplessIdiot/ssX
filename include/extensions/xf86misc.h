@@ -30,6 +30,7 @@
 #define XF86MiscBadKbdType		4
 #define XF86MiscModInDevDisabled	5
 #define XF86MiscModInDevClientNotLocal	6
+#define XF86MiscNoModule                7
 #define XF86MiscNumberErrors		(XF86MiscModInDevClientNotLocal + 1)
 
 /* Never renumber these */
@@ -53,6 +54,7 @@
 #define MTYPE_SYSMOUSE		17
 #define MTYPE_AUTOMOUSE		18
 #define MTYPE_ACECAD		19
+#define MTYPE_EXPPS2            20
 
 #define MTYPE_XQUEUE		127
 #define MTYPE_OSMOUSE		126
@@ -93,47 +95,35 @@ typedef struct {
 } XF86MiscKbdSettings;
 
 Bool XF86MiscQueryVersion(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int*		/* majorVersion */,
     int*		/* minorVersion */
-#endif
 );
 
 Bool XF86MiscQueryExtension(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int*		/* event_base */,
     int*		/* error_base */
-#endif
 );
 
 Status XF86MiscGetMouseSettings(
-#if NeedFunctionPrototypes
     Display*			/* dpy */,
     XF86MiscMouseSettings*	/* mouse info */
-#endif
 );
 
 Status XF86MiscGetKbdSettings(
-#if NeedFunctionPrototypes
     Display*			/* dpy */,
     XF86MiscKbdSettings*	/* keyboard info */
-#endif
 );
 
 Status XF86MiscSetMouseSettings(
-#if NeedFunctionPrototypes
     Display*			/* dpy */,
     XF86MiscMouseSettings*	/* mouse info */
-#endif
 );
 
 Status XF86MiscSetKbdSettings(
-#if NeedFunctionPrototypes
     Display*			/* dpy */,
     XF86MiscKbdSettings*	/* keyboard info */
-#endif
 );
 
 _XFUNCPROTOEND

@@ -603,6 +603,7 @@ XProtoError.XFree86-Misc.3: XF86MiscBadMouseCombo
 XProtoError.XFree86-Misc.4: XF86MiscBadKbdType
 XProtoError.XFree86-Misc.5: XF86MiscModInDevDisabled
 XProtoError.XFree86-Misc.6: XF86MiscModInDevClientNotLocal
+XProtoError.XFree86-Misc.7: XF86MiscNoModule
 ! XFree86-DGA  -- not an X Consortium standard
 XRequest.XFree86-DGA.0: XDGAQueryVersion
 XRequest.XFree86-DGA.1: XF86DGAGetVideoLL

@@ -388,7 +388,6 @@ I810Probe(DriverPtr drv, int flags) {
    int i, numUsed, numDevSections, *usedChips;
    GDevPtr *devSections;
    Bool foundScreen = 0;
-   EntityInfoPtr pEnt;
     
    /*
      Find the config file Device sections that match this
@@ -411,32 +410,24 @@ I810Probe(DriverPtr drv, int flags) {
 				   drv, &usedChips);
 
    for (i=0; i<numUsed; i++) {
-      pEnt = xf86GetEntityInfo(usedChips[i]);
-
-      if (pEnt->active) {
-	 ScrnInfoPtr pScrn;
-
-	 /* Allocate new ScrnInfoRec and claim the slot */
-	 pScrn = xf86AllocateScreen(drv, 0);
-
-	 pScrn->driverVersion = VERSION;
-	 pScrn->driverName = I810_DRIVER_NAME;
-	 pScrn->name = I810_NAME;
-	 pScrn->Probe = I810Probe;
-	 pScrn->PreInit = I810PreInit;
-	 pScrn->ScreenInit = I810ScreenInit;
-	 pScrn->SwitchMode = I810SwitchMode;
-	 pScrn->AdjustFrame = I810AdjustFrame;
-	 pScrn->EnterVT = I810EnterVT;
-	 pScrn->LeaveVT = I810LeaveVT;
-	 pScrn->FreeScreen = I810FreeScreen;
-	 pScrn->ValidMode = I810ValidMode;
-	 foundScreen = TRUE;
-
-	 xf86ConfigActivePciEntity(pScrn, usedChips[i], I810PciChipsets, 
-				   0, 0, 0, 0, 0);
+       ScrnInfoPtr pScrn = NULL;
+       /* Allocate new ScrnInfoRec and claim the slot */
+       if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
+					      I810PciChipsets, 0, 0, 0, 0, 0))){
+	   pScrn->driverVersion = VERSION;
+	   pScrn->driverName = I810_DRIVER_NAME;
+	   pScrn->name = I810_NAME;
+	   pScrn->Probe = I810Probe;
+	   pScrn->PreInit = I810PreInit;
+	   pScrn->ScreenInit = I810ScreenInit;
+	   pScrn->SwitchMode = I810SwitchMode;
+	   pScrn->AdjustFrame = I810AdjustFrame;
+	   pScrn->EnterVT = I810EnterVT;
+	   pScrn->LeaveVT = I810LeaveVT;
+	   pScrn->FreeScreen = I810FreeScreen;
+	   pScrn->ValidMode = I810ValidMode;
+	   foundScreen = TRUE;
       }
-      xfree(pEnt);
    }
    if (numUsed) xfree(usedChips);
 
@@ -1852,11 +1843,9 @@ I810AdjustFrame(int scrnIndex, int x, int y, int flags) {
 static Bool
 I810EnterVT(int scrnIndex, int flags) {
    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-   I810Ptr pI810 = I810PTR(pScrn);
-
 
    if (I810_DEBUG & DEBUG_VERBOSE_DRI)
-      ErrorF("\n\n\ENTER VT\n");
+      ErrorF("\n\nENTER VT\n");
 
 #ifdef XF86DRI
    if (pI810->directRenderingEnabled) {
@@ -1950,7 +1939,8 @@ I810CloseScreen(int scrnIndex, ScreenPtr pScreen)
 static void
 I810FreeScreen(int scrnIndex, int flags) {
    I810FreeRec(xf86Screens[scrnIndex]);
-   vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+   if (vgaHWFreeHWRec)
+       vgaHWFreeHWRec(xf86Screens[scrnIndex]);
 }
 
 static int

@@ -1089,7 +1089,7 @@ xf86usleep(usec)
 }
 
 void
-xf86getsecs(CARD32 * secs, CARD32 * usecs)
+xf86getsecs(long * secs, long * usecs)
 {
 	struct timeval tv;
 

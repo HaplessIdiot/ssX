@@ -165,6 +165,8 @@ int setup_system_bios(unsigned long base_addr);
 void reset_int_vect(xf86Int10InfoPtr pInt);
 void set_return_trap(xf86Int10InfoPtr pInt);
 Bool int10skip(ScrnInfoPtr pScrn, int entityIndex);
+Bool int10_read_bios(int scrnIndex, int codeSeg, unsigned char* vbiosMem);
+
 #ifdef DEBUG
 void dprint(unsigned long start, unsigned long size);
 #endif

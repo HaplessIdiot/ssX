@@ -31,7 +31,8 @@ typedef enum {
     MISC_RET_BADBAUDRATE,
     MISC_RET_BADFLAGS,
     MISC_RET_BADCOMBO,
-    MISC_RET_BADKBDTYPE
+    MISC_RET_BADKBDTYPE,
+    MISC_RET_NOMODULE
 } MiscExtReturn;
 
 typedef enum {

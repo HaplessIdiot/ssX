@@ -272,7 +272,7 @@ static struct fb2pci_entry {
 
 /* try to find the framebuffer device for a given PCI device */
 static int
-fbdev_open_pci(pciVideoPtr pPci)
+fbdev_open_pci(pciVideoPtr pPci, char **namep)
 {
 	struct	fb_fix_screeninfo fix;
 	char	filename[16];
@@ -299,45 +299,60 @@ fbdev_open_pci(pciVideoPtr pPci)
 			close(fd);
 			continue;
 		}
+		if (namep) {
+		    *namep = xnfalloc(16);
+		    xf86strncpy(*namep,fix.id,16);
+		}
 		return fd;
 	}
+	if (namep)
+	    *namep = NULL;
 	return -1;
 }
 
 static int
-fbdev_open(char *dev)
+fbdev_open(char *dev, char** namep)
 {
 	struct fb_con2fbmap c2m;
+	struct	fb_fix_screeninfo fix;
 	char   fbdev[16];
 	int    fd;
 
 	/* try argument (from XF86Config) first */
-	if (NULL != dev)
-		return open(dev,O_RDWR,0);
-
-	/* second: environment variable */
-	dev = getenv("FRAMEBUFFER");
-	if (NULL != dev)
-		return open(dev,O_RDWR,0);
-
-	/* last try: default device */
-	if (-1 == (fd = open("/dev/fb0",O_RDWR,0)))
+	if ((NULL == dev) || ((fd = open(dev,O_RDWR,0)) == -1)) {
+	    /* second: environment variable */
+	    dev = getenv("FRAMEBUFFER");
+	    if ((NULL == dev) || ((fd = open(dev,O_RDWR,0)) == -1)) {
+		/* last try: default device */
+		if (-1 == (fd = open("/dev/fb0",O_RDWR,0)))
+		    return -1;
+	    }
+	}
+	if (namep) {
+	    if (-1 == ioctl(fd,FBIOGET_FSCREENINFO,(void*)(&fix))) {
+		*namep = NULL;
 		return -1;
-
+	    } else {
+		if (namep) {
+		    *namep = xnfalloc(16);
+		    xf86strncpy(*namep,fix.id,16);
+		}
+	    }
+	}
 	return fd;
 }
 
 /* -------------------------------------------------------------------- */
 
 Bool
-fbdevHWProbe(pciVideoPtr pPci, char *device)
+fbdevHWProbe(pciVideoPtr pPci, char *device,char **namep)
 {
 	int fd;
 
 	if (pPci)
-		fd = fbdev_open_pci(pPci);
+		fd = fbdev_open_pci(pPci,namep);
 	else
-		fd = fbdev_open(device);
+		fd = fbdev_open(device,namep);
 
 	if (-1 == fd)
 		return FALSE;
@@ -357,9 +372,9 @@ fbdevHWInit(ScrnInfoPtr pScrn, pciVideoPtr pPci, char *device)
 
 	/* open device */
 	if (pPci)
-		fPtr->fd = fbdev_open_pci(pPci);
+		fPtr->fd = fbdev_open_pci(pPci,NULL);
 	else
-		fPtr->fd = fbdev_open(device);
+		fPtr->fd = fbdev_open(device,NULL);
 	if (-1 == fPtr->fd)
 		return FALSE;
 

@@ -240,6 +240,17 @@ xf86SetEntityFuncs(int entityIndex, EntityProc init, EntityProc enter,
     return TRUE;
 }
 
+Bool
+xf86DriverHasEntities(DriverPtr drvp)
+{
+    int i;
+    for (i = 0; i < xf86NumEntities; i++) {
+	if (xf86Entities[i]->driver == drvp) 
+	    return TRUE;
+    }
+    return FALSE;
+}
+
 void
 xf86AddEntityToScreen(ScrnInfoPtr pScrn, int entityIndex)
 {
@@ -375,6 +386,7 @@ xf86GetEntityInfo(int entityIndex)
     pEnt->chipset = xf86Entities[entityIndex]->chipset;
     pEnt->resources = xf86Entities[entityIndex]->resources;
     pEnt->device = xf86Entities[entityIndex]->device;
+    pEnt->driver = xf86Entities[entityIndex]->driver;
     
     return pEnt;
 }
@@ -723,8 +735,8 @@ xf86SetCurrentAccess(Bool Enable, ScrnInfoPtr pScrn)
 }
 
 void
-xf86SetAccessFuncs(EntityInfoPtr pEnt, xf86AccessPtr p_io, xf86AccessPtr p_mem,
-		   xf86AccessPtr p_io_mem, xf86AccessPtr *ppAccessOld)
+xf86SetAccessFuncs(EntityInfoPtr pEnt, xf86SetAccessFuncPtr funcs,
+		   xf86SetAccessFuncPtr oldFuncs)
 {
     AccessFuncPtr rac;
 
@@ -733,16 +745,16 @@ xf86SetAccessFuncs(EntityInfoPtr pEnt, xf86AccessPtr p_io, xf86AccessPtr p_mem,
 
     rac = xf86Entities[pEnt->index]->rac;
 
-    if (p_mem == p_io_mem && p_mem && p_io)
+    if (funcs->mem == funcs->io_mem && funcs->mem && funcs->io)
 	xf86Entities[pEnt->index]->entityProp |= NO_SEPARATE_MEM_FROM_IO;
-    if (p_io == p_io_mem && p_mem && p_io)
+    if (funcs->io == funcs->io_mem && funcs->mem && funcs->io)
 	xf86Entities[pEnt->index]->entityProp |= NO_SEPARATE_IO_FROM_MEM;
     
-    rac->mem_new = p_mem;
-    rac->io_new = p_io;
-    rac->io_mem_new = p_io_mem;
+    rac->mem_new = funcs->mem;
+    rac->io_new = funcs->io;
+    rac->io_mem_new = funcs->io_mem;
     
-    rac->old = ppAccessOld;
+    rac->old = oldFuncs;
 }
 
 /*
@@ -971,7 +983,8 @@ needCheck(resPtr pRes, long type, int entityIndex, xf86State state)
  * function call.
  */
 static memType
-checkConflict(resRange *rgp, resPtr pRes, int entityIndex, xf86State state)
+checkConflict(resRange *rgp, resPtr pRes, int entityIndex,
+	      xf86State state, Bool ignoreIdentical)
 {
     memType ret;
     
@@ -987,9 +1000,12 @@ checkConflict(resRange *rgp, resPtr pRes, int entityIndex, xf86State state)
 			rgp->rEnd,rgp->rBegin);
 		return 0;
 	    }
-	    if ((ret = checkConflictBlock(rgp, pRes)))
-		return ret;
-	    break;
+	    if ((ret = checkConflictBlock(rgp, pRes))) {
+		if (!ignoreIdentical || (rgp->rBegin != pRes->block_begin)
+		    || (rgp->rEnd != pRes->block_end))
+		    return ret;
+	    }
+    break;
 	case ResSparse:
 	    if ((rgp->rBase & rgp->rMask) != rgp->rBase) {
 		xf86Msg(X_ERROR,"sparse io range (base: 0x%lx  mask: 0x%lx)"
@@ -997,8 +1013,11 @@ checkConflict(resRange *rgp, resPtr pRes, int entityIndex, xf86State state)
 			rgp->rBase, rgp->rMask);
 		return 0;
 	    }
-	    if ((ret = checkConflictSparse(rgp, pRes)))
-		return ret;
+	    if ((ret = checkConflictSparse(rgp, pRes))) {
+		if (!ignoreIdentical || (rgp->rBase != pRes->sparse_base)
+		    || (rgp->rMask != pRes->sparse_mask))
+		    return ret;
+	    }
 	    break;
 	}
 	pRes = pRes->next;
@@ -1012,7 +1031,7 @@ checkConflict(resRange *rgp, resPtr pRes, int entityIndex, xf86State state)
 memType
 ChkConflict(resRange *rgp, resPtr res, xf86State state)
 {
-    return checkConflict(rgp, res, -2, state);
+    return checkConflict(rgp, res, -2, state,FALSE);
 }
 
 /*
@@ -1023,7 +1042,7 @@ ChkConflict(resRange *rgp, resPtr res, xf86State state)
 memType
 xf86ChkConflict(resRange *rgp, int entityIndex)
 {
-    return checkConflict(rgp, Acc, entityIndex, SETUP);
+    return checkConflict(rgp, Acc, entityIndex, SETUP,FALSE);
 }
 
 /*
@@ -1548,6 +1567,7 @@ convertRange2Host(int entityIndex, resRange *pRange)
  * If list is NULL it tries to obtain resources implicitly. Function
  * returns a resPtr listing all resources not successfully registered.
  */
+
 resPtr
 xf86RegisterResources(int entityIndex, resList list, int access)
 {
@@ -1570,7 +1590,7 @@ xf86RegisterResources(int entityIndex, resList list, int access)
 	    range.type = (range.type & ~ResAccMask) | (access & ResAccMask);
 	}
  	range.type &= ~ResEstimated;	/* Not allowed for drivers */
-	if(xf86ChkConflict(&range,entityIndex)) 
+	if (checkConflict(&range, Acc, entityIndex, SETUP,TRUE)) 
 	    res = xf86AddResToList(res,&range,entityIndex);
 	else {
 	    Acc = xf86AddResToList(Acc,&range,entityIndex);
@@ -1830,48 +1850,47 @@ setAccess(EntityPtr pEnt, xf86State state)
     switch(pEnt->access->rt) {
     case IO:
 	pEnt->access->pAccess = acc_io;
-	if (org_io) {
-	    /* does the driver want the old access func? */
-	    if (pEnt->rac->old) {
-		/* give it to the driver, leave state disabled */
-		(*pEnt->rac->old) = org_io;
-	    } else if (org_io->AccessEnable) {
-		/* driver doesn't want it - enable generic access */
-		org_io->AccessEnable(org_io->arg);
-	    }
-	}
 	break;
     case MEM:
 	pEnt->access->pAccess = acc_mem;
-	if (org_mem) {
-	    /* does the driver want the old access func? */
-	    if (pEnt->rac->old) {
-		/* give it to the driver, leave state disabled */
-		(*pEnt->rac->old) = org_mem;
-	    } else if (org_mem->AccessEnable) {
-		/* driver doesn't want it - enable generic access */
-		org_mem->AccessEnable(org_mem->arg);
-	    }
-	}
 	break;
     case MEM_IO:
 	pEnt->access->pAccess = acc_mem_io;
-	if (org_mem_io) {
-	    /* does the driver want the old access func? */
-	    if (pEnt->rac->old) {
-		/* give it to the driver, leave state disabled */
-		(*pEnt->rac->old) = org_mem_io;
-	    } else if (org_mem_io->AccessEnable) {
-		/* driver doesn't want it - enable generic access */
-		org_mem_io->AccessEnable(org_mem_io->arg);
-	    }
-	}
 	break;
     default: /* no conflicts at all */
 	pEnt->access->pAccess =  NULL; /* remove from RAC */
-	if (pEnt->rac && pEnt->rac->old)
-	    (*pEnt->rac->old) = NULL;
 	break;
+    }
+
+    if (org_io) {
+	/* does the driver want the old access func? */
+	if (pEnt->rac->old) {
+	    /* give it to the driver, leave state disabled */
+	    pEnt->rac->old->io = org_io;
+	} else if (org_io->AccessEnable) {
+	    /* driver doesn't want it - enable generic access */
+	    org_io->AccessEnable(org_io->arg);
+	}
+    }
+    if (org_mem_io) {
+	/* does the driver want the old access func? */
+	if (pEnt->rac->old) {
+	    /* give it to the driver, leave state disabled */
+	    pEnt->rac->old->io_mem = org_mem_io;
+	} else if (org_mem_io->AccessEnable) {
+	    /* driver doesn't want it - enable generic access */
+	    org_mem_io->AccessEnable(org_mem_io->arg);
+	}
+    }
+    if (org_mem) {
+	/* does the driver want the old access func? */
+	if (pEnt->rac->old) {
+	    /* give it to the driver, leave state disabled */
+	    pEnt->rac->old->mem = org_mem;
+	} else if (org_mem->AccessEnable) {
+	    /* driver doesn't want it - enable generic access */
+	    org_mem->AccessEnable(org_mem->arg);
+	}
     }
 
     if (!(prop & NEED_MEM_SHARED)){
@@ -2115,7 +2134,8 @@ xf86ClaimFixedResources(resList list, int entityIndex)
 	    } else {
  		range.type |= ResEstimated;
  		if (!xf86ChkConflict(&range, entityIndex) &&
- 		    !checkConflict(&range, AccReducers, entityIndex, SETUP)) {
+ 		    !checkConflict(&range, AccReducers, entityIndex,
+				   SETUP, FALSE)) {
  		    range.type &= ~(ResEstimated | ResBios);
  		    AccReducers =
  			xf86AddResToList(AccReducers, &range, entityIndex);
@@ -2192,7 +2212,7 @@ checkRoutingForScreens(xf86State state)
 	    while (pAcc) {
 		if (pAcc->entityIndex == entityIndex)
 		    if (checkConflict(&pAcc->val,pResVGA,
-				      entityIndex,state)) {
+				      entityIndex,state,FALSE)) {
 			if (vga && vga != pEnt->busAcc) {
 			    xf86Msg(X_ERROR, "Screen %i needs vga routed to"
 				    "different buses - deleting\n",i);
@@ -2241,7 +2261,7 @@ xf86PostProbe(void)
 	xf86Entities[i]->resources = NULL;
 	resp_x = NULL;
 	while (resp) {
-	    if (! (val = checkConflict(&resp->val,acc,i,SETUP)))  {
+	    if (! (val = checkConflict(&resp->val,acc,i,SETUP,FALSE)))  {
  	        resp->res_type &= ~(ResBios); /* just used for chkConflict() */
 		tmp = resp_x;
 		resp_x = resp;
@@ -2250,7 +2270,7 @@ xf86PostProbe(void)
 #ifdef REDUCER
 	    } else {
 		resp->res_type |= ResEstimated;
- 		if (!checkConflict(&resp->val, acc, i, SETUP)) {
+ 		if (!checkConflict(&resp->val, acc, i, SETUP, FALSE)) {
  		    resp->res_type &= ~(ResEstimated | ResBios);
  		    tmp = AccReducers;
  		    AccReducers = resp;
@@ -2303,7 +2323,7 @@ checkRequiredResources(int entityIndex)
 	    range = pAcc->val;
 	    /*  ResAny to find conflicts with anything. */
 	    range.type = (range.type & ~ResAccMask) | ResAny | ResBios;
-	    if (checkConflict(&range,Acc,entityIndex,OPERATING))
+	    if (checkConflict(&range,Acc,entityIndex,OPERATING,FALSE))
 		switch (pAcc->res_type & ResPhysMask) {
 		case ResMem:
 		    pEnt->entityProp |= NEED_MEM_SHARED;

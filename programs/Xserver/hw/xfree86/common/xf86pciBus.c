@@ -37,6 +37,8 @@ pciConfigPtr *xf86PciInfo = NULL;		/* Full PCI probe info */
 pciVideoPtr *xf86PciVideoInfo = NULL;		/* PCI probe for video hw */
 pciAccPtr * xf86PciAccInfo = NULL;              /* PCI access related */
 
+static resPtr pciAvoidRes = NULL;
+
 /* PCI buses */
 static PciBusPtr xf86PciBus = NULL;
 /* Bus-specific probe/sorting functions */
@@ -949,7 +951,7 @@ ResourceBrokerInitPci(resPtr *osRes)
      * Adjust OS-reported resource ranges based on the assumption that there
      * are no overlaps with the PCI base allocations.  This should be a good
      * assumption because writes to PCI address space won't be routed directly
-     * host memory.
+     * to host memory.
      */
 
     for (tmp = *osRes; tmp; tmp = tmp->next) 
@@ -959,6 +961,12 @@ ResourceBrokerInitPci(resPtr *osRes)
 		" overlaps with PCI:\n");
     xf86PrintResList(3, *osRes);
 
+    pciAvoidRes = xf86AddRangesToList(pciAvoidRes,PciAvoid,-1);
+    for (tmp = pciAvoidRes; tmp; tmp = tmp->next) 
+	RemoveOverlaps(tmp, activeRes, FALSE);
+    tmp = xf86DupResList(*osRes);
+    pciAvoidRes = xf86JoinResLists(pciAvoidRes,tmp);
+    
     return (xf86JoinResLists(activeRes,inactiveRes));
 }
 
@@ -1022,7 +1030,7 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
     type |= ResBlock;
     
     /* setup avoid: PciAvoid is bus range: convert later */
-    avoid = xf86AddRangesToList(avoid,PciAvoid,-1);
+    avoid = xf86DupResList(pciAvoidRes);
 
     while (pbp) {
 	if (pbp->secondary == pvp->bus) {
@@ -1064,7 +1072,8 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
     }
     
     /* convert bus based entries in avoid list to host base */
-    xf86ConvertListToHost(xf86GetEntityForPciInfo(pvp),avoid);
+    xf86ConvertListToHost(
+	xf86GetPciEntity(pvp->bus,pvp->device,pvp->func), avoid);
     
     if (!w)
 	w = xf86DupResList(ResRange);
@@ -1323,7 +1332,7 @@ getValidBIOSBase(PCITAG tag, int num)
     alignment = (1 << biosSize) - 1;
     if (biosSize > 24)
 	biosSize = 24;
-    avoid = NULL;
+    avoid = xf86DupResList(pciAvoidRes);
 
     pbp = pbp1 = xf86PciBus;
     while (pbp) {
@@ -1349,6 +1358,8 @@ getValidBIOSBase(PCITAG tag, int num)
 	}	
 	pbp = pbp->next;
     }	
+    xf86ConvertListToHost(
+	xf86GetPciEntity(pvp->bus,pvp->device,pvp->func), avoid);
 
     if (pvp->biosBase) { /* try biosBase first */
 	P_M_RANGE(range, TAG(pvp),pvp->biosBase,biosSize,ResExcMemBlock);
@@ -1725,8 +1736,9 @@ ValidatePci(void)
 	resPtr res_mp = NULL, res_m_io = NULL;
 	resPtr NonSys = NULL;
 	resPtr tmp, avoid = NULL;
-    
+
 	if (!pvp->validate) continue;
+	avoid = xf86DupResList(pciAvoidRes);    
 	NonSys = xf86DupResList(Sys);
 	m = n;
 	while ((pvp1 = xf86PciVideoInfo[m++])) {
@@ -1775,6 +1787,10 @@ ValidatePci(void)
 	}
 	if (res_m_io == NULL)
 	   res_m_io = xf86DupResList(ResRange);
+
+	xf86ConvertListToHost(
+	    xf86GetPciEntity(pvp->bus,pvp->device,pvp->func), avoid);
+
 #ifdef DEBUG
 	xf86MsgVerb(X_INFO, 3,"avoid:\n");
 	xf86PrintResList(3,avoid);
@@ -2475,7 +2491,7 @@ xf86GetPciInfoForEntity(int entityIndex)
 }
 
 int
-xf86GetEntityForPciInfo(pciVideoPtr pvp)
+xf86GetPciEntity(int bus, int dev, int func)
 {
     int i;
     
@@ -2483,9 +2499,9 @@ xf86GetEntityForPciInfo(pciVideoPtr pvp)
 	EntityPtr p = xf86Entities[i];
 	if (p->busType != BUS_PCI) continue;
 	
-	if (p->pciBusId.bus == pvp->bus &&
-	    p->pciBusId.device == pvp->device &&
-	    p->pciBusId.func == pvp->func) 
+	if (p->pciBusId.bus == bus &&
+	    p->pciBusId.device == dev &&
+	    p->pciBusId.func == func) 
 	    return i;
     }
     return -1;
@@ -2614,13 +2630,13 @@ xf86FindPciClass(CARD8 intf, CARD8 subClass, CARD16 class,
 }
 
 /*
- * This attempts to detect a multi-device card and set up a list
+ * This attempts to detect a multi-device card and sets up a list
  * of pci tags of the devices of this card. On some of these
  * cards the BIOS is not visible from all chipsets. We therefore
- * need to us the bios from a chipset where it is visible.
+ * need to use the BIOS from a chipset where it is visible.
  * We do the following heuristics:
  * If we detect only identical pci devices on a bus we assume it's
- * a multi-device card. This assumption isn't true alwaus, however.
+ * a multi-device card. This assumption isn't true always, however.
  * One might just use identical cards on a bus. We therefore don't
  * detect this situation when we set up the PCI video info. Instead
  * we wait until an attempt to read the BIOS fails.
@@ -2654,23 +2670,23 @@ pciTestMultiDeviceCard(int bus, int dev, int func, PCITAG** pTag)
     }
 
     if (!pcrp) return 0;
+
     /* 
      * we check all functions here: since multifunc devices need
      * to implement func 0 we catch all devices on the bus when
      * i = 0
      */
-    if (pcrp->pci_header_type &0x80)
-      multifunc = TRUE;
-
-    ppcrp = xf86PciInfo;    
-
+    if (pcrp->pci_header_type &0x80) 
+	multifunc = TRUE;
+    
+    j = 0;
+    
     while (ppcrp[j]) {
       if (ppcrp[j]->busnum == bus && ppcrp[j]->funcnum == i
 	  && ppcrp[j]->devnum != pcrp->devnum) {
 	/* don't test subsys ID here. It might be set by POST 
-	   - however some cars might not have been POSTed */
+	   - however some cards might not have been POSTed */
 	if (ppcrp[j]->pci_device_vendor != pcrp->pci_device_vendor 
-	    || ppcrp[j]->pci_class_revision != pcrp->pci_class_revision 
 	    || ppcrp[j]->pci_header_type != pcrp->pci_header_type ) 
 	  return 0;
 	else

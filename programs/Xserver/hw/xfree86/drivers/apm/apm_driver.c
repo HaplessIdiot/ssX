@@ -370,7 +370,6 @@ ApmProbe(DriverPtr drv, int flags)
     int			numDevSections, numUsed, i;
     GDevPtr		*DevSections = NULL;
     int			*usedChips;
-    EntityInfoPtr	pEnt;
     int			foundScreen = FALSE;
 
     /*
@@ -397,25 +396,22 @@ ApmProbe(DriverPtr drv, int flags)
 	if (flags & PROBE_DETECT)
 	    foundScreen = TRUE;
 	else for (i = 0; i < numUsed; i++) {
-	    pEnt = xf86GetEntityInfo(usedChips[i]);
-
-	    if (pEnt && pEnt->active) {
-		ScrnInfoPtr	pScrn;
-
-		/*
-		 * Allocate a ScrnInfoRec and claim the slot
-		 */
-		pScrn = xf86AllocateScreen(drv, 0);
-
+	    ScrnInfoPtr	pScrn;
+	    
+	    /*
+	     * Allocate a ScrnInfoRec and claim the slot
+	     */
+	    pScrn = NULL;
+	    if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
+						   ApmPciChipsets, NULL,
+						   NULL,NULL,NULL,NULL))){
+		
 		/*
 		 * Fill in what we can of the ScrnInfoRec
 		 */
 		ApmAssignFPtr(pScrn);
-		xf86ConfigActivePciEntity(pScrn, usedChips[i], ApmPciChipsets,
-					  NULL, NULL, NULL, NULL, NULL);
 		foundScreen = TRUE;
 	    }
-	    xfree(pEnt);
 	}
     }
 
@@ -434,7 +430,7 @@ ApmProbe(DriverPtr drv, int flags)
 	     */
 	    ApmAssignFPtr(pScrn);
 	    foundScreen = TRUE;
-	    xf86ConfigActiveIsaEntity(pScrn, usedChips[i], ApmIsaChipsets,
+	    xf86ConfigIsaEntity(pScrn, 0, usedChips[i], ApmIsaChipsets,
 				      NULL, NULL, NULL, NULL, NULL);
 	}
     }

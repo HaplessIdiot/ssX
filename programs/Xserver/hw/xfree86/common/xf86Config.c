@@ -271,6 +271,7 @@ char **
 xf86DriverlistFromConfig()
 {
     int count = 0;
+    int j;
     char **modulearray;
     screenLayoutPtr slp;
     
@@ -288,8 +289,6 @@ xf86DriverlistFromConfig()
      * Walk the list of driver lines in active "Device" sections to
      * determine now many implicitly loaded modules there are.
      *
-     * XXX The set of inactive "Device" sections needs to be handled too,
-     * when the rest of the supporting code is done.
      */
     if (xf86ConfigLayout.screens) {
         slp = xf86ConfigLayout.screens;
@@ -297,6 +296,13 @@ xf86DriverlistFromConfig()
 	    count++;
         }
     }
+
+    /*
+     * Handle the set of inactive "Device" sections.
+     */
+    j = 0;
+    while (xf86ConfigLayout.inactives[j++].identifier)
+	count++;
 
     if (count == 0)
 	return NULL;
@@ -312,6 +318,10 @@ xf86DriverlistFromConfig()
 	count++;
 	slp++;
     }
+    j = 0;
+    while (xf86ConfigLayout.inactives[j].identifier) 
+	modulearray[count++] = xf86ConfigLayout.inactives[j++].driver;
+
     modulearray[count] = NULL;
 
     /* Remove duplicates */

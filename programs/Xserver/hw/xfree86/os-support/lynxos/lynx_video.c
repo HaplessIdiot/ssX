@@ -34,6 +34,8 @@
 
 #if defined(__powerpc__)
 #include <machine/absolute.h>
+
+void ppcPciIoMap(int bus);
 #endif
 
 #ifdef HAS_MTRR_SUPPORT
@@ -71,7 +73,7 @@ static _SMEMS	smems[MAX_SMEMS];
 #endif
 
 static void
-smemCleanup()
+smemCleanup(void)
 {
 	int i;
 
@@ -225,10 +227,13 @@ xf86EnableInterrupts()
 #if defined(__powerpc__)
 
 volatile unsigned char *ioBase = MAP_FAILED;
+volatile unsigned char *pciConfBase = MAP_FAILED;
+
 static int IOEnabled;
 
+
 static void
-removeIOSmem()
+removeIOSmem(void)
 {
 	smem_create(NULL, (char *) ioBase, 0, SM_DETACH);
 	smem_remove("IOBASE");
@@ -239,7 +244,7 @@ void
 xf86EnableIO()
 {
 	if (IOEnabled++ == 0) {
-       		ioBase = (unsigned char *) smem_create("IOBASE",
+	    ioBase = (unsigned char *) smem_create("IOBASE",
        			(char *)0x80000000, 64*1024, SM_READ|SM_WRITE);
 	       	if (ioBase == MAP_FAILED) {
        			--IOEnabled;
@@ -256,19 +261,19 @@ xf86DisableIO()
 	if (!IOEnabled)
 		return;
 
-        if (--IOEnabled == 0) {
+        if (--IOEnabled == 0) 
         	removeIOSmem();
-        }
 	return;
 }
 
+#if 0
 void
-xf86DisableIOPrivs()
+xf86DisableIOPrivs(void)
 {
 	return;
 }
-
-void *
+#endif
+void
 ppcPciIoMap(int bus)
 {
 	xf86EnableIO();
@@ -280,7 +285,9 @@ ppcPciIoMap(int bus)
 #ifdef HAS_MTRR_SUPPORT
 /* memory range (MTRR) support for LynxOS (taken from BSD MTRR support) */
 
-/* #define DEBUG	/* */
+#if 0
+#define DEBUG	
+#endif
 
 /*
  * This code is experimental.  Some parts may be overkill, and other parts

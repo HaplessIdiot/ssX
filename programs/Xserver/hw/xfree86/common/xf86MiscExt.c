@@ -34,8 +34,7 @@
 
 #include "xf86OSmouse.h"
 #include "../input/mouse/mouse.h"
-const char * xf86ProtocolIDToName(ProtocolID id);
-
+#define DEBUG
 #ifdef DEBUG
 # define DEBUG_P(x) ErrorF(x"\n");
 #else
@@ -83,17 +82,18 @@ MapMseProto(int proto, MseProtoMapDirection mapping)
 	MTYPE_LOGITECH,		MTYPE_LOGIMAN,		MTYPE_MMHIT,
 	MTYPE_GLIDEPOINT,	MTYPE_IMSERIAL,		MTYPE_THINKING,
 	MTYPE_ACECAD,		MTYPE_PS_2,		MTYPE_IMPS2,
-	MTYPE_THINKINGPS2,	MTYPE_MMANPLUSPS2,	MTYPE_GLIDEPOINTPS2,
-	MTYPE_NETPS2,		MTYPE_NETSCROLLPS2,	MTYPE_BUSMOUSE,
-	MTYPE_AUTOMOUSE,	MTYPE_SYSMOUSE
+	MTYPE_EXPPS2,           MTYPE_THINKINGPS2,	MTYPE_MMANPLUSPS2,
+	MTYPE_GLIDEPOINTPS2,	MTYPE_NETPS2,		MTYPE_NETSCROLLPS2,
+	MTYPE_BUSMOUSE, 	MTYPE_AUTOMOUSE,	MTYPE_SYSMOUSE
     };
 
-    static ProtocolID MapProto_FromMisc[] = {
+    static MouseProtocolID MapProto_FromMisc[] = {
 	PROT_MS,	PROT_MSC,	PROT_MM,	PROT_LOGI,
 	PROT_BM,	PROT_LOGIMAN,	PROT_PS2,	PROT_MMHIT,
 	PROT_GLIDE,	PROT_IMSERIAL,	PROT_THINKING,	PROT_IMPS2,
 	PROT_THINKPS2,	PROT_MMPS2,	PROT_GLIDEPS2,	PROT_NETPS2,
-	PROT_NETSCPS2,	PROT_SYSMOUSE,	PROT_AUTO,	PROT_ACECAD
+	PROT_NETSCPS2,	PROT_SYSMOUSE,	PROT_AUTO,	PROT_ACECAD,
+	PROT_EXPPS2
     };
 #define PROT_DEFAULT  -2 /* PROT_UNKNOWN */
 
@@ -116,22 +116,13 @@ MiscExtGetMouseSettings(pointer *mouse, char **devname)
 
     DEBUG_P("MiscExtGetMouseSettings");
 
-    mseptr = MiscExtCreateStruct(MISC_KEYBOARD);
+    mseptr = MiscExtCreateStruct(MISC_POINTER);
     if (!mseptr)
 	return FALSE;
 
     {
-	InputInfoPtr pInfo;
+	InputInfoPtr pInfo = mseptr->private;
 	MouseDevPtr pMse;
-
-	pInfo = xf86InputDevs;
-	while (pInfo) {
-	    if (xf86IsCorePointer(pInfo->dev))
-		break;
-	    pInfo = pInfo->next;
-	}
-	if (!pInfo)
-	    return FALSE;
 
 	*devname = xf86FindOptionValue(pInfo->options, "Device");
 	pMse = pInfo->private;
@@ -145,7 +136,6 @@ MiscExtGetMouseSettings(pointer *mouse, char **devname)
 	mseptr->em3timeout =	pMse->emulate3Timeout;
 	mseptr->chordmiddle =	pMse->chordMiddle;
 	mseptr->flags =		pMse->mouseFlags;
-	mseptr->private =	pInfo;
     }
     *mouse = mseptr;
     return TRUE;
@@ -181,7 +171,7 @@ MiscExtSetMouseValue(pointer mouse, MiscExtMseValType valtype, int value)
 
     switch (valtype) {
 	case MISC_MSE_PROTO:
-		mse->type = value;
+	    mse->type = value;
 		return TRUE;
 	case MISC_MSE_BAUDRATE:
 		mse->baudrate = value;
@@ -269,12 +259,28 @@ pointer
 MiscExtCreateStruct(MiscExtStructType mse_or_kbd)
 {
     DEBUG_P("MiscExtCreateStruct");
-
+    
     switch (mse_or_kbd) {
-	case MISC_POINTER:
-		return xcalloc(sizeof(mseParamsRec),1);
-	case MISC_KEYBOARD:
-		return xcalloc(sizeof(kbdParamsRec),1);
+    case MISC_POINTER:
+    {
+	mseParamsPtr mseptr;
+	InputInfoPtr pInfo = xf86InputDevs;
+	
+	while (pInfo) {
+	    if (xf86IsCorePointer(pInfo->dev))
+		break;
+	    pInfo = pInfo->next;
+	}
+	if (!pInfo)
+	    return NULL;
+	
+	mseptr = xcalloc(sizeof(mseParamsRec),1);
+	if (mseptr)
+	    mseptr->private = pInfo;
+	return mseptr;
+    }
+    case MISC_KEYBOARD:
+	return xcalloc(sizeof(kbdParamsRec),1);
     }
     return 0;
 }
@@ -301,9 +307,12 @@ MiscExtApply(pointer structure, MiscExtStructType mse_or_kbd)
 	mseParamsPtr mse = structure;
 	InputInfoPtr pInfo;
 	MouseDevPtr pMse;
-	MouseProtocolPtr protocol;
-	char tmpbuf[128];
-
+#ifdef XFree86LOADER
+	pointer xf86MouseProtocolIDToName
+	    = LoaderSymbol("xf86MouseProtocolIDToName");
+	if (!xf86MouseProtocolIDToName)
+	    return MISC_RET_NOMODULE;
+#endif
 	if (mse->type < MTYPE_MICROSOFT
 		|| ( mse->type > MTYPE_ACECAD
 		    && (mse->type!=MTYPE_OSMOUSE && mse->type!=MTYPE_XQUEUE)))
@@ -393,7 +402,12 @@ MiscExtApply(pointer structure, MiscExtStructType mse_or_kbd)
 	pMse->chordMiddle     = mse->chordmiddle;
 	pMse->mouseFlags      = mse->flags;
 
-	pMse->protocol = xf86ProtocolIDToName(pMse->protocolID);
+#ifdef XFree86LOADER
+	pMse->protocol = ((const char *(*)(MouseProtocolID))
+			  xf86MouseProtocolIDToName)(pMse->protocolID);
+#else
+	pMse->protocol = xf86MouseProtocolIDToName(pMse->protocolID);
+#endif
 	if (reopen)
 	    (pMse->device->deviceProc)(pMse->device, DEVICE_ON);
 	/* Set pInfo->options too */

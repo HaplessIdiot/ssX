@@ -457,27 +457,28 @@ NVProbe(DriverPtr drv, int flags)
     if (flags & PROBE_DETECT)
 	foundScreen = TRUE;
     else for (i = 0; i < numUsed; i++) {
-        ScrnInfoPtr pScrn;
+        ScrnInfoPtr pScrn = NULL;
         
         /* Allocate a ScrnInfoRec and claim the slot */
-        pScrn = xf86AllocateScreen(drv, 0);
+        if ((pScrn = xf86ConfigPciEntity(pScrn, 0,usedChips[i],
+					       NVPciChipsets, NULL, NULL, NULL,
+					       NULL, NULL))) {
         
-        /* Fill in what we can of the ScrnInfoRec */
-        pScrn->driverVersion    = VERSION;
-        pScrn->driverName       = NV_DRIVER_NAME;
-        pScrn->name             = NV_NAME;
-        pScrn->Probe            = NVProbe;
-        pScrn->PreInit          = NVPreInit;
-        pScrn->ScreenInit       = NVScreenInit;
-        pScrn->SwitchMode       = NVSwitchMode;
-        pScrn->AdjustFrame      = NVAdjustFrame;
-        pScrn->EnterVT          = NVEnterVT;
-        pScrn->LeaveVT          = NVLeaveVT;
-        pScrn->FreeScreen       = NVFreeScreen;
-        pScrn->ValidMode        = NVValidMode;
-        foundScreen = TRUE;
-        xf86ConfigActivePciEntity(pScrn, usedChips[i], NVPciChipsets, NULL,
-                                  NULL, NULL, NULL, NULL);
+	    /* Fill in what we can of the ScrnInfoRec */
+	    pScrn->driverVersion    = VERSION;
+	    pScrn->driverName       = NV_DRIVER_NAME;
+	    pScrn->name             = NV_NAME;
+	    pScrn->Probe            = NVProbe;
+	    pScrn->PreInit          = NVPreInit;
+	    pScrn->ScreenInit       = NVScreenInit;
+	    pScrn->SwitchMode       = NVSwitchMode;
+	    pScrn->AdjustFrame      = NVAdjustFrame;
+	    pScrn->EnterVT          = NVEnterVT;
+	    pScrn->LeaveVT          = NVLeaveVT;
+	    pScrn->FreeScreen       = NVFreeScreen;
+	    pScrn->ValidMode        = NVValidMode;
+	    foundScreen = TRUE;
+	}    
     }
     xfree(usedChips);
     return foundScreen;

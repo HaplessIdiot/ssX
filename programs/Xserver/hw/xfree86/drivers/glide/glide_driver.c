@@ -408,38 +408,40 @@ GLIDEProbe(DriverPtr drv, int flags)
       {
         int entity;
         /* Match */
-        /* Allocate a ScrnInfoRec and claim the slot */
-        pScrn = xf86AllocateScreen(drv, 0);
-        
-        /* I'm not going to "claim" the glide device since no other driver than this can drive it */
-        /* (A glide device is not a PCI device) */
-        /* XXX Need to see how this fits in with the new RAC */
-
-        /* Fill in what we can of the ScrnInfoRec */
-        pScrn->driverVersion = VERSION;
-        pScrn->driverName    = GLIDE_DRIVER_NAME;
-        pScrn->name	     = GLIDE_NAME;
-        pScrn->Probe	     = GLIDEProbe;
-        pScrn->PreInit	     = GLIDEPreInit;
-        pScrn->ScreenInit    = GLIDEScreenInit;
-        pScrn->EnterVT	     = GLIDEEnterVT;
-        pScrn->LeaveVT	     = GLIDELeaveVT;
-        pScrn->FreeScreen    = GLIDEFreeScreen;
-        pScrn->driverPrivate = (void*)sst;
-        /*
-         * XXX This is a hack because don't have the PCI info.  Set it as
-         * an ISA entity with no resources.
-         */
         entity = xf86ClaimIsaSlot(drv, 0, dev, TRUE);
-        xf86ConfigActiveIsaEntity(pScrn, entity, NULL, NULL, NULL, NULL, NULL,
-                                  NULL);
-        foundScreen = TRUE;
+        pScrn = NULL;
+
+        /* Allocate a ScrnInfoRec and claim the slot */
+        if ((pScrn = xf86ConfigIsaEntity(pScrn, 0, entity, NULL, NULL,
+					       NULL, NULL, NULL, NULL))) {
+	    
+	    /* I'm not going to "claim" the glide device since no other driver than this can drive it */
+	    /* (A glide device is not a PCI device) */
+	    /* XXX Need to see how this fits in with the new RAC */
+	    
+	    /* Fill in what we can of the ScrnInfoRec */
+	    pScrn->driverVersion = VERSION;
+	    pScrn->driverName    = GLIDE_DRIVER_NAME;
+	    pScrn->name          = GLIDE_NAME;
+	    pScrn->Probe	 = GLIDEProbe;
+	    pScrn->PreInit	 = GLIDEPreInit;
+	    pScrn->ScreenInit    = GLIDEScreenInit;
+	    pScrn->EnterVT	 = GLIDEEnterVT;
+	    pScrn->LeaveVT	 = GLIDELeaveVT;
+	    pScrn->FreeScreen    = GLIDEFreeScreen;
+	    pScrn->driverPrivate = (void*)sst;
+	    /*
+	     * XXX This is a hack because don't have the PCI info.  Set it as
+	     * an ISA entity with no resources.
+	     */
+	    foundScreen = TRUE;
+	}
         break;
       }
     }
   }
 
-cleanup:
+ cleanup:
   if (devList) xfree(devList);
   return foundScreen;
 }

@@ -691,7 +691,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  * Build the XFree86-Misc extension
  */
 #ifndef BuildXF86MiscExt
-# define BuildXF86MiscExt		NO
+# define BuildXF86MiscExt		YES
 #endif
 
 /*

@@ -86,7 +86,7 @@ typedef struct {
 typedef struct {
    int tail_mask;
    I810MemRange mem;
-   char *virtual_start;
+   unsigned char *virtual_start;
    int head;
    int tail;
    int space;
@@ -276,7 +276,7 @@ extern void I810EmitInvarientState(ScrnInfoPtr pScrn);
 
 #define BEGIN_LP_RING(n)						\
    unsigned int outring, ringmask;					\
-   volatile char *virt;							\
+   volatile unsigned char *virt;							\
    if (n>2 && (I810_DEBUG&DEBUG_ALWAYS_SYNC)) I810Sync( pScrn );	\
    if (pI810->LpRing.space < n*4) I810WaitLpRing( pScrn, n*4, 0);	\
    pI810->LpRing.space -= n*4;						\

@@ -361,7 +361,6 @@ I740Probe(DriverPtr drv, int flags) {
   int i, numUsed, numDevSections, *usedChips;
   GDevPtr *devSections = NULL;
   Bool foundScreen = FALSE;
-  EntityInfoPtr pEnt;
 
   /*
    Find the config file Device sections that match this
@@ -384,37 +383,31 @@ I740Probe(DriverPtr drv, int flags) {
 				  drv, &usedChips);
 
   if (numUsed > 0) {
-   if (flags & PROBE_DETECT)
-    foundScreen = TRUE;
-   else for (i=0; i<numUsed; i++) {
-    pEnt = xf86GetEntityInfo(usedChips[i]);
-
-    if (pEnt->active) {
-      ScrnInfoPtr pScrn;
-
-      /* Allocate new ScrnInfoRec and claim the slot */
-      pScrn = xf86AllocateScreen(drv, 0);
-
-      pScrn->driverVersion = VERSION;
-      pScrn->driverName = I740_DRIVER_NAME;
-      pScrn->name = I740_NAME;
-      pScrn->Probe = I740Probe;
-      pScrn->PreInit = I740PreInit;
-      pScrn->ScreenInit = I740ScreenInit;
-      pScrn->SwitchMode = I740SwitchMode;
-      pScrn->AdjustFrame = I740AdjustFrame;
-      pScrn->EnterVT = I740EnterVT;
-      pScrn->LeaveVT = I740LeaveVT;
-      pScrn->FreeScreen = I740FreeScreen;
-      pScrn->ValidMode = I740ValidMode;
-      foundScreen = TRUE;
-
-      xf86ConfigActivePciEntity(pScrn, usedChips[i], I740PciChipsets, 0, 0, 0, 0, 0);
-    }
-    xfree(pEnt);
-   }
-   xfree(usedChips);
+      if (flags & PROBE_DETECT)
+	  foundScreen = TRUE;
+      else for (i=0; i<numUsed; i++) {
+	  ScrnInfoPtr pScrn = NULL;
+	  /* Allocate new ScrnInfoRec and claim the slot */
+	  if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
+						 I740PciChipsets, 0, 0, 0, 0, 0))) {
+	      pScrn->driverVersion = VERSION;
+	      pScrn->driverName = I740_DRIVER_NAME;
+	      pScrn->name = I740_NAME;
+	      pScrn->Probe = I740Probe;
+	      pScrn->PreInit = I740PreInit;
+	      pScrn->ScreenInit = I740ScreenInit;
+	      pScrn->SwitchMode = I740SwitchMode;
+	      pScrn->AdjustFrame = I740AdjustFrame;
+	      pScrn->EnterVT = I740EnterVT;
+	      pScrn->LeaveVT = I740LeaveVT;
+	      pScrn->FreeScreen = I740FreeScreen;
+	      pScrn->ValidMode = I740ValidMode;
+	      foundScreen = TRUE;
+	      
+	  }
+      }
   }
+  
 
   /* Look for Real3D based chips */
   numUsed = xf86MatchPciInstances(I740_NAME, PCI_VENDOR_REAL3D,
@@ -423,41 +416,32 @@ I740Probe(DriverPtr drv, int flags) {
 				  drv, &usedChips);
 
   if (numUsed > 0) {
-   if (flags & PROBE_DETECT)
-    foundScreen = TRUE;
-   else for (i=0; i<numUsed; i++) {
-    pEnt = xf86GetEntityInfo(usedChips[i]);
-
-    if (pEnt->active) {
-      ScrnInfoPtr pScrn;
-
-      /* Allocate new ScrnInfoRec and claim the slot */
-      pScrn = xf86AllocateScreen(drv, 0);
-	
-      pScrn->driverVersion = VERSION;
-      pScrn->driverName = I740_DRIVER_NAME;
-      pScrn->name = I740_NAME;
-      pScrn->Probe = I740Probe;
-      pScrn->PreInit = I740PreInit;
-      pScrn->ScreenInit = I740ScreenInit;
-      pScrn->SwitchMode = I740SwitchMode;
-      pScrn->AdjustFrame = I740AdjustFrame;
-      pScrn->EnterVT = I740EnterVT;
-      pScrn->LeaveVT = I740LeaveVT;
-      pScrn->FreeScreen = I740FreeScreen;
-      pScrn->ValidMode = I740ValidMode;
-      foundScreen = TRUE;
-	
-      xf86ConfigActivePciEntity(pScrn, usedChips[i], I740PciChipsets, 0, 0, 0, 0, 0);
-    }
-    xfree(pEnt);
-   }
-   xfree(usedChips);
+      if (flags & PROBE_DETECT)
+	  foundScreen = TRUE;
+      else for (i=0; i<numUsed; i++) {
+	  ScrnInfoPtr pScrn = NULL;
+	  if ((pScrn  = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
+						  I740PciChipsets, 0, 0, 0, 0, 0))) {
+	      pScrn->driverVersion = VERSION;
+	      pScrn->driverName = I740_DRIVER_NAME;
+	      pScrn->name = I740_NAME;
+	      pScrn->Probe = I740Probe;
+	      pScrn->PreInit = I740PreInit;
+	      pScrn->ScreenInit = I740ScreenInit;
+	      pScrn->SwitchMode = I740SwitchMode;
+	      pScrn->AdjustFrame = I740AdjustFrame;
+	      pScrn->EnterVT = I740EnterVT;
+	      pScrn->LeaveVT = I740LeaveVT;
+	      pScrn->FreeScreen = I740FreeScreen;
+	      pScrn->ValidMode = I740ValidMode;
+	      foundScreen = TRUE;
+	  }
+      }
   }
-
+  
   if (devSections)
-    xfree(devSections);
-
+      xfree(devSections);
+  
   return foundScreen;
 }
 

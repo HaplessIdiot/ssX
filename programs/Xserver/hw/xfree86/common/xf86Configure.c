@@ -281,7 +281,7 @@ configureDeviceSection (int screennum)
     /* Move device info to parser structure */
     sprintf(identifier, "Card%d", screennum);
     ptr->dev_identifier = strdup(identifier);
-/*    ptr->dev_identifier = DevToConfig[screennum].GDev.identifier;*/
+    ptr->dev_identifier = DevToConfig[screennum].GDev.identifier;
     ptr->dev_vendor = DevToConfig[screennum].GDev.vendor;
     ptr->dev_board = DevToConfig[screennum].GDev.board;
     ptr->dev_chipset = DevToConfig[screennum].GDev.chipset;
@@ -605,7 +605,7 @@ DoConfigure()
     xf86config->conf_videoadaptor_lst = configureVideoAdaptorSection();
     xf86config->conf_modes_lst = configureModesSection();
     xf86config->conf_vendor_lst = configureVendorSection();
-    xf86config->conf_dri = configureDRISection();
+/*    xf86config->conf_dri = configureDRISection();*/
     xf86config->conf_input_lst = configureInputSection();
     xf86config->conf_layout_lst = configureLayoutSection();
 

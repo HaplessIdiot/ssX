@@ -3904,11 +3904,14 @@ void x86emuOp_push_SP(u8 X86EMU_UNUSED(op1))
         DECODE_PRINTF("PUSH\tSP\n");
     }
     TRACE_AND_STEP();
-    /* Always push SP-2, since this *IS* how a 8088 does this */
-    if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-        push_long(M.x86.R_ESP - 2);
-    } else {
-        push_word((u16)(M.x86.R_SP - 2));
+	/* Always push (E)SP, since we are emulating an i386 and above
+	 * processor. This is necessary as some BIOS'es use this to check
+	 * what type of processor is in the system.
+	 */
+	if (M.x86.mode & SYSMODE_PREFIX_DATA) {
+		push_long(M.x86.R_ESP);
+	} else {
+		push_word((u16)(M.x86.R_SP));
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -6559,7 +6562,7 @@ void x86emuOp_lea_word_R_M(u8 X86EMU_UNUSED(op1))
  *
  * lea  eax,[eax+ebx*2] ??
  */
-
+    
     START_OF_INSTR();
     DECODE_PRINTF("LEA\t");
     FETCH_DECODE_MODRM(mod, rh, rl);
@@ -11006,7 +11009,7 @@ Handles opcode 0xff
 void x86emuOp_opcFF_word_RM(u8 X86EMU_UNUSED(op1))
 {
     int mod, rh, rl;
-    uint destoffset;
+    uint destoffset = 0;
 	u16 *destreg;
 	u16 destval,destval2;
 

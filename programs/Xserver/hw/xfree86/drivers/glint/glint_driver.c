@@ -598,7 +598,6 @@ static Bool
 GLINTProbe(DriverPtr drv, int flags)
 {
     int i;
-    ScrnInfoPtr pScrn0;
     pciVideoPtr *checkusedPci;
     GDevPtr *devSections = NULL;
     int numDevSections;
@@ -606,78 +605,105 @@ GLINTProbe(DriverPtr drv, int flags)
     char *dev;
     int *usedChips = NULL;
     Bool foundScreen = FALSE;
+    char *name;   
 
     TRACE_ENTER("GLINTProbe");
 
+  
     if ((numDevSections = xf86MatchDevice(GLINT_DRIVER_NAME,
-					  &devSections)) <= 0) {
-	return FALSE;
+  					  &devSections)) <= 0) {
+  	return FALSE;
     }
-
+  
     checkusedPci = xf86GetPciVideoInfo();
-
+     
     if (checkusedPci == NULL) {
-	/*
-	 * Changed the behaviour to try probing using the FBDev support when 
-	 * no PCI cards have been found. This is for systems without (proper)
-	 * PCI support. (Michel)
-	 */
-
-    	pScrn0 = xf86AllocateScreen(drv, 0);
+  	/*
+ 	 * Changed the behaviour to try probing using the FBDev support
+ 	 * when no PCI cards have been found. This is for systems without
+ 	 * (proper) PCI support. (Michel)
+  	 */
+ 	if (!xf86LoadDrvSubModule(drv, "fbdevhw"))
+	    return FALSE;
 	
-    	pScrn0->name = GLINT_NAME;
-
-    	if (xf86LoadSubModule(pScrn0, "fbdevhw")) {
-	    xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
-	
-	    for (i = 0; i < numDevSections; i++) {
-		dev = xf86FindOptionValue(devSections[i]->options,"fbdev");
-		if (devSections[i]->busID) {
-		    xf86ParsePciBusString(devSections[i]->busID,&bus,&device,&func);
-		    if (!xf86CheckPciSlot(bus,device,func))
-			continue;
+ 	xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
+  	
+ 	for (i = 0; i < numDevSections; i++) {
+ 	    dev = xf86FindOptionValue(devSections[i]->options,"fbdev");
+ 	    if (devSections[i]->busID) {
+ 		xf86ParsePciBusString(devSections[i]->busID,&bus,&device,&func);
+ 		if (!xf86CheckPciSlot(bus,device,func))
+ 		    continue;
+ 	    }
+ 	    if (fbdevHWProbe(NULL,dev,&name)) {
+ 		ScrnInfoPtr pScrn;
+ 		
+  				/* Check for pm2fb */
+ 		if (strcmp(name,"Permedia2")) continue;
+ 		foundScreen = TRUE;
+ 		pScrn = NULL;
+ 		
+ 		if (devSections[i]->busID) {
+ 		    /* XXX what about when there's no busID set? */
+ 		    int entity;
+ 		    entity = xf86ClaimPciSlot(bus,device,func,drv,
+ 					      0,devSections[i],
+ 					      TRUE);
+ 		    pScrn = xf86ConfigPciEntity(pScrn,0,entity,
+ 						      NULL,RES_SHARED_VGA,
+ 						      NULL,NULL,NULL,NULL);
+ 		    if (pScrn)
+  			xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+  				   "claimed PCI slot %d:%d:%d\n",bus,device,func);
+ 		} else {
+ 		    /* XXX This is a quick hack */
+ 		    int entity;
+ 		    
+ 		    entity = xf86ClaimIsaSlot(drv, 0,
+ 					      devSections[i], TRUE);
+ 		    xf86ConfigIsaEntity(pScrn,0,entity,
+ 					      NULL,RES_SHARED_VGA,
+ 					      NULL,NULL,NULL,NULL);
+ 		}
+ 		if (pScrn) {
+  		    /* Fill in what we can of the ScrnInfoRec */
+ 		    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+ 			       "%s successfully probed\n", dev ? dev : "default framebuffer device");
+  		    pScrn->driverVersion = VERSION;
+  		    pScrn->driverName	 = GLINT_DRIVER_NAME;
+		    pScrn->name		 = GLINT_NAME;
+		    pScrn->Probe	 = GLINTProbe;
+		    pScrn->PreInit	 = GLINTPreInit;
+		    pScrn->ScreenInit	 = GLINTScreenInit;
+		    pScrn->SwitchMode	 = GLINTSwitchMode;
+		    pScrn->FreeScreen	 = GLINTFreeScreen;
+		    pScrn->EnterVT	 = GLINTEnterVT;
 		}
-		if (fbdevHWProbe(NULL,dev)) {
-		    ScrnInfoPtr pScrn;
-		    fbdevHWInit(pScrn0, NULL, dev);
-			
-				/* Check for pm2fb */
-		    if (strcmp(fbdevHWGetName(pScrn0),"Permedia2")) continue;
+	    }
+	}
+	
+    	xfree(devSections);
+	
+    } else {
+	
+	numUsed = xf86MatchPciInstances(GLINT_NAME, 0,
+					GLINTChipsets, GLINTPciChipsets, devSections,
+					numDevSections, drv, &usedChips);
+	if (devSections)
+	    xfree(devSections);
+	devSections = NULL;
+	if (numUsed <= 0)
+	    return FALSE;
+	foundScreen = TRUE;
 
-		    if (flags & PROBE_DETECT) {
-			xf86AddDeviceToConfigure(GLINT_NAME, NULL, -1);
-			return TRUE;
-		    }
-
-		    foundScreen = FBDevProbed = TRUE;
-		    pScrn = xf86AllocateScreen(drv, 0);
-		    xf86LoadSubModule(pScrn, "fbdevhw");
-		    xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
-
-		    xf86DrvMsg(pScrn0->scrnIndex, X_INFO,
-			       "%s successfully probed\n", dev ? dev : "default framebuffer device");
-		    if (devSections[i]->busID) {
-			/* XXX what about when there's no busID set? */
-			int entity;
-
-			xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-				   "claimed PCI slot %d:%d:%d\n",bus,device,func);
-			entity = xf86ClaimPciSlot(bus,device,func,drv,
-						  0,devSections[i],
-						  TRUE);
-			xf86ConfigActivePciEntity(pScrn,entity,
-						  NULL,RES_SHARED_VGA,
-						  NULL,NULL,NULL,NULL);
-		    } else {
-			/* XXX This is a quick hack */
-			int entity;
-
-			entity = xf86ClaimIsaSlot(drv, 0,
-						  devSections[i], TRUE);
-			xf86ConfigActiveIsaEntity(pScrn,entity,
-						  NULL,RES_SHARED_VGA,
-						  NULL,NULL,NULL,NULL);
-		    }
+	if (!(flags & PROBE_DETECT))
+	    for (i = 0; i < numUsed; i++) {
+		ScrnInfoPtr pScrn = NULL;
+	
+		/* Allocate a ScrnInfoRec and claim the slot */
+		if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
+					       GLINTPciChipsets, NULL,
+					       NULL, NULL, NULL, NULL))) {
 		    /* Fill in what we can of the ScrnInfoRec */
 		    pScrn->driverVersion = VERSION;
 		    pScrn->driverName	 = GLINT_DRIVER_NAME;
@@ -689,46 +715,8 @@ GLINTProbe(DriverPtr drv, int flags)
 		    pScrn->FreeScreen	 = GLINTFreeScreen;
 		    pScrn->EnterVT	 = GLINTEnterVT;
 		}
+	    
 	    }
-    	}
-	
-    	xf86DeleteScreen(pScrn0->scrnIndex,0);
-    	xfree(devSections);
-	
-    } else {
-
-	numUsed = xf86MatchPciInstances(GLINT_NAME, 0,
-				GLINTChipsets, GLINTPciChipsets, devSections,
-				numDevSections, drv, &usedChips);
-	if (devSections)
-	    xfree(devSections);
-	devSections = NULL;
-	if (numUsed <= 0)
-	    return FALSE;
-	foundScreen = TRUE;
-
-	if (!(flags & PROBE_DETECT))
-	for (i = 0; i < numUsed; i++) {
-	    ScrnInfoPtr pScrn;
-	
-	    /* Allocate a ScrnInfoRec and claim the slot */
-	    pScrn = xf86AllocateScreen(drv, 0);
-
-	    xf86ConfigActivePciEntity(pScrn, usedChips[i], GLINTPciChipsets,
-				      NULL, NULL, NULL, NULL, NULL);
-
-	    /* Fill in what we can of the ScrnInfoRec */
-	    pScrn->driverVersion = VERSION;
-	    pScrn->driverName	 = GLINT_DRIVER_NAME;
-	    pScrn->name		 = GLINT_NAME;
-	    pScrn->Probe	 = GLINTProbe;
-	    pScrn->PreInit	 = GLINTPreInit;
-	    pScrn->ScreenInit	 = GLINTScreenInit;
-	    pScrn->SwitchMode	 = GLINTSwitchMode;
-	    pScrn->FreeScreen	 = GLINTFreeScreen;
-	    pScrn->EnterVT	 = GLINTEnterVT;
-	}
-
     }
 
     if (usedChips) xfree(usedChips);

@@ -811,33 +811,31 @@ TRIDENTProbe(DriverPtr drv, int flags)
 		   numDevSections, drv, &usedChips);
 
 	if (numUsed > 0) {
-	  if (flags & PROBE_DETECT)
-	    foundScreen = TRUE;
-    	  else for (i = 0; i < numUsed; i++) {
-	    ScrnInfoPtr pScrn;
-
-	    /* Allocate a ScrnInfoRec and claim the slot */
-	    pScrn = xf86AllocateScreen(drv, 0);
-	
-	    /* Fill in what we can of the ScrnInfoRec */
-	    pScrn->driverVersion = VERSION;
-	    pScrn->driverName	 = TRIDENT_DRIVER_NAME;
-	    pScrn->name		 = TRIDENT_NAME;
-	    pScrn->Probe	 = TRIDENTProbe;
-	    pScrn->PreInit	 = TRIDENTPreInit;
-	    pScrn->ScreenInit	 = TRIDENTScreenInit;
-	    pScrn->SwitchMode	 = TRIDENTSwitchMode;
-	    pScrn->AdjustFrame	 = TRIDENTAdjustFrame;
-	    pScrn->EnterVT	 = TRIDENTEnterVT;
-	    pScrn->LeaveVT	 = TRIDENTLeaveVT;
-	    pScrn->FreeScreen	 = TRIDENTFreeScreen;
-	    pScrn->ValidMode	 = TRIDENTValidMode;
-	    foundScreen = TRUE;
-	    xf86ConfigActivePciEntity(pScrn, usedChips[i], TRIDENTPciChipsets,
-				  NULL, NULL, NULL, NULL, NULL);
-	  }
-	  xfree(usedChips);
-    	}
+	    if (flags & PROBE_DETECT)
+		foundScreen = TRUE;
+	    else for (i = 0; i < numUsed; i++) {
+		ScrnInfoPtr pScrn = NULL;
+		
+		if ((pScrn = xf86ConfigPciEntity(pScrn, 0,usedChips[i],
+						       TRIDENTPciChipsets, NULL,
+						       NULL, NULL, NULL, NULL))) {
+		    /* Fill in what we can of the ScrnInfoRec */
+		    pScrn->driverVersion = VERSION;
+		    pScrn->driverName	 = TRIDENT_DRIVER_NAME;
+		    pScrn->name		 = TRIDENT_NAME;
+		    pScrn->Probe	 = TRIDENTProbe;
+		    pScrn->PreInit	 = TRIDENTPreInit;
+		    pScrn->ScreenInit	 = TRIDENTScreenInit;
+		    pScrn->SwitchMode	 = TRIDENTSwitchMode;
+		    pScrn->AdjustFrame	 = TRIDENTAdjustFrame;
+		    pScrn->EnterVT	 = TRIDENTEnterVT;
+		    pScrn->LeaveVT	 = TRIDENTLeaveVT;
+		    pScrn->FreeScreen	 = TRIDENTFreeScreen;
+		    pScrn->ValidMode	 = TRIDENTValidMode;
+		    foundScreen = TRUE;
+		}
+	    }
+	}
     }
 
     /* Isa Bus */
@@ -848,27 +846,29 @@ TRIDENTProbe(DriverPtr drv, int flags)
     if (numUsed > 0) {
 	if (flags & PROBE_DETECT)
 	    foundScreen = TRUE;
-	else for (i = 0; i < numUsed; i++) {
-	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
-	    
-	    pScrn->driverVersion = VERSION;
-	    pScrn->driverName    = TRIDENT_DRIVER_NAME;
-	    pScrn->name          = TRIDENT_NAME;
-	    pScrn->Probe         = TRIDENTProbe;
-	    pScrn->PreInit       = TRIDENTPreInit;
-	    pScrn->ScreenInit    = TRIDENTScreenInit;
-	    pScrn->SwitchMode    = TRIDENTSwitchMode;
-	    pScrn->AdjustFrame   = TRIDENTAdjustFrame;
-	    pScrn->EnterVT       = TRIDENTEnterVT;
-	    pScrn->LeaveVT       = TRIDENTLeaveVT;
-	    pScrn->FreeScreen    = TRIDENTFreeScreen;
-	    pScrn->ValidMode     = TRIDENTValidMode;
-	    foundScreen = TRUE;
-	    xf86ConfigActiveIsaEntity(pScrn,usedChips[i],TRIDENTISAchipsets,
-				      NULL,NULL,NULL,NULL,NULL);
+	else 	for (i = 0; i < numUsed; i++) {
+	    ScrnInfoPtr pScrn = NULL;
+	    if ((pScrn = xf86ConfigIsaEntity(pScrn,0,usedChips[i],
+						  TRIDENTISAchipsets,NULL,
+						  NULL,NULL,NULL,NULL))) {
+		pScrn->driverVersion = VERSION;
+		pScrn->driverName    = TRIDENT_DRIVER_NAME;
+		pScrn->name          = TRIDENT_NAME;
+		pScrn->Probe         = TRIDENTProbe;
+		pScrn->PreInit       = TRIDENTPreInit;
+		pScrn->ScreenInit    = TRIDENTScreenInit;
+		pScrn->SwitchMode    = TRIDENTSwitchMode;
+		pScrn->AdjustFrame   = TRIDENTAdjustFrame;
+		pScrn->EnterVT       = TRIDENTEnterVT;
+		pScrn->LeaveVT       = TRIDENTLeaveVT;
+		pScrn->FreeScreen    = TRIDENTFreeScreen;
+		pScrn->ValidMode     = TRIDENTValidMode;
+		foundScreen = TRUE;
+	    }
 	}
 	xfree(usedChips);
     }
+    
     if (devSections)
 	xfree(devSections);
     return foundScreen;

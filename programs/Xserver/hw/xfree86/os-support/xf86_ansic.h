@@ -49,11 +49,6 @@
 # endif /* __OS2ELF__ */
 #endif /* IN_MODULE */
 
-#ifndef FONTMODULE
-#include "misc.h"
-#endif
-#include "xf86_libc.h"
-
 /*
  * The first set of definitions are required both for modules and
  * libc_wrapper.c.
@@ -86,6 +81,11 @@
 #ifndef SHRT_MIN
 #define SHRT_MIN ((short)(1 << (x_SHORTBITS - 1)))
 #endif
+
+#ifndef FONTMODULE
+#include "misc.h"
+#endif
+#include "xf86_libc.h"
 #ifndef SHRT_MAX
 #define SHRT_MAX ((short)~SHRT_MIN)
 #endif
@@ -316,7 +316,7 @@ extern int xf86shmctl(int id, int xf86cmd, pointer *buf);
 
 extern int xf86getpagesize(void);
 extern void xf86usleep(unsigned long);
-extern void xf86getsecs(CARD32 *, CARD32 *);
+extern void xf86getsecs(long *, long *);
 #ifndef DONT_DEFINE_WRAPPERS
 #undef getpagesize
 #define getpagesize()		xf86getpagesize()

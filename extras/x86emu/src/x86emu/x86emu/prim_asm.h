@@ -890,7 +890,7 @@ void    mul_long_asm(u32 *flags,u32 *eax,u32 *edx,u32 d,u32 s);
 	"pop	[edi]"            		\
 	"mov	[esi],eax"				\
 	"mov	[ecx],edx"				\
-	parm [edi] [esi] [edi] [eax] [ebx] \
+	parm [edi] [esi] [ecx] [eax] [ebx] \
 	modify exact [esi edi eax ebx edx];
 
 void	idiv_byte_asm(u32 *flags,u8 *al,u8 *ah,u16 d,u8 s);

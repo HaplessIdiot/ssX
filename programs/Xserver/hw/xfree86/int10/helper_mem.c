@@ -6,6 +6,7 @@
  */
 #include "xf86.h"
 #include "xf86str.h"
+#include "xf86_OSproc.h"
 #include "xf86_ansic.h"
 #include "compiler.h"
 #include "xf86Pci.h"
@@ -159,3 +160,34 @@ int10skip(ScrnInfoPtr pScrn, int entityIndex)
 
     return noint10;
 }
+
+
+Bool
+int10_read_bios(int scrnIndex, int codeSeg, unsigned char* vbiosMem)
+{
+    int size;
+    if (xf86ReadBIOS(codeSeg << 4,0,(unsigned char *)vbiosMem, 0x10) < 0) {
+	xf86DrvMsg(scrnIndex,X_WARNING,"Cannot read V_BIOS (1)\n");
+	return FALSE;
+    }
+    
+    if (!((*(CARD8*)vbiosMem == 0x55) && (*((CARD8*)vbiosMem+1) == 0xAA)))
+	return FALSE;
+
+    size = *((CARD8*)vbiosMem + 2) * 512;
+
+    if ((size + (codeSeg << 4)) > SYS_BIOS)
+	return FALSE;
+    
+    if (xf86ReadBIOS(codeSeg << 4,0,vbiosMem, size) < 0) {
+	xf86DrvMsg(scrnIndex,X_ERROR,"Cannot read V_BIOS (2)\n");
+	return FALSE;
+    }
+    if (bios_checksum(vbiosMem,size)) {
+	xf86DrvMsg(scrnIndex,X_ERROR,"Bad checksum of V_BIOS \n");
+	return FALSE;
+    }
+    return TRUE;
+}
+	
+

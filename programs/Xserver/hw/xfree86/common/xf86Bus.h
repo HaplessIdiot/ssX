@@ -18,7 +18,7 @@ typedef struct racInfo {
     xf86AccessPtr mem_new;
     xf86AccessPtr io_new;
     xf86AccessPtr io_mem_new;
-    xf86AccessPtr *old;
+    xf86SetAccessFuncPtr old;
 } AccessFuncRec, *AccessFuncPtr;
 
 

@@ -63,11 +63,13 @@ xf86AddDriver(DriverPtr driver, pointer module, int flags)
 void
 xf86DeleteDriver(int drvIndex)
 {
-    if (xf86DriverList[drvIndex] && xf86DriverList[drvIndex]->module)
-	UnloadModule(xf86DriverList[drvIndex]->module);
-    xf86DriverList[drvIndex] = NULL;
+    if (xf86DriverList[drvIndex]
+	&& (!xf86DriverHasEntities(xf86DriverList[drvIndex]))) {
+	if (xf86DriverList[drvIndex]->module)
+	    UnloadModule(xf86DriverList[drvIndex]->module);
+	xf86DriverList[drvIndex] = NULL;
+    }
 }
-
 
 /* Add a pointer to a new InputDriverRec to xf86InputDriverList */
 
@@ -1449,6 +1451,7 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
     static char *     drivernames[MAXDRIVERS];
     static GDevPtr *  devices[MAXDRIVERS];
     static int	      count[MAXDRIVERS];
+    GDevPtr           gdp;
     confScreenPtr screensecptr;
     int i,j;
 
@@ -1523,6 +1526,23 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
             devices[i][count[i]++] = screensecptr->device;
         }
     }
+    /* Then handle the inactive devices */
+    j = 0;
+    while (xf86ConfigLayout.inactives[j].identifier) {
+	gdp = &xf86ConfigLayout.inactives[j];
+	if (gdp->driver != NULL && (xf86NameCmp(gdp->driver,drivername) == 0)
+	    && (! gdp->claimed)) {
+            /*
+             * we have a matching driver that wasn't claimed, yet
+             */
+            gdp->claimed = TRUE;
+            devices[i] = xnfrealloc(devices[i],
+                                    (count[i] + 2) * sizeof(GDevPtr));
+            devices[i][count[i]++] = gdp;
+        }
+	j++;
+    }
+    
 #if 0
     /*
      * XXX The parser won't let devices with no Driver name through, so
@@ -2209,20 +2229,31 @@ xf86IsPc98()
 #endif
 }
 
-
 pointer
-xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name)
+xf86LoadDrvSubModule(DriverPtr drv, const char *name)
 {
 #ifdef XFree86LOADER
     pointer ret;
     int errmaj = 0, errmin = 0;
 
-    if (pScrn)
-	ret = LoadSubModule(pScrn->module, name, NULL, NULL, NULL, NULL,
-			    &errmaj, &errmin);
-    else
-	ret = LoadModule(name, NULL, NULL, NULL, NULL, NULL, &errmaj, &errmin);
+    ret = LoadSubModule(drv->module, name, NULL, NULL, NULL, NULL,
+			&errmaj, &errmin);
+    if (!ret)
+	LoaderErrorMsg(NULL, name, errmaj, errmin);
+    return ret;
+#else
+    return (pointer)1;
+#endif
+}
 
+pointer
+xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name)
+{
+    pointer ret;
+    int errmaj = 0, errmin = 0;
+
+    ret = LoadSubModule(pScrn->module, name, NULL, NULL, NULL, NULL,
+			&errmaj, &errmin);
     if (!ret)
 	LoaderErrorMsg(pScrn->name, name, errmaj, errmin);
     return ret;
@@ -2440,24 +2471,32 @@ xf86FindXvOptions(int scrnIndex, int adaptor_index, char *port_name,
 
 /* new RAC */
 /*
- * xf86ConfigActiveIsa/PciEntity() -- These helper functions assign an
+ * xf86ConfigIsa/PciEntity() -- These helper functions assign an
  * active entity to a screen, registers its fixed resources, assign
  * special enter/leave functions and their private scratch area to
  * this entity, take the dog for a walk...
  */
-Bool
-xf86ConfigActiveIsaEntity(ScrnInfoPtr pScrn, int entityIndex,
+ScrnInfoPtr
+xf86ConfigIsaEntity(ScrnInfoPtr pScrn, int scrnFlag, int entityIndex,
 			  IsaChipsets *i_chip, resList res, EntityProc init,
 			  EntityProc enter, EntityProc leave, pointer private)
 {
     IsaChipsets *i_id;
     EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
     
-    if (!pEnt->active || !(pEnt->location.type == BUS_ISA)) {
+    if (!(pEnt->location.type == BUS_ISA)) {
 	xfree(pEnt);
-	return FALSE;
+	return pScrn;
     }
-    
+
+    if (!pEnt->active) {
+	xf86ConfigIsaEntityInactive(pEnt, i_chip, res, init,  enter,
+				    leave,  private);
+	return pScrn;
+    }
+
+    if (!pScrn)
+	pScrn = xf86AllocateScreen(pEnt->driver,scrnFlag); 
     xf86AddEntityToScreen(pScrn,entityIndex);
 
     if (i_chip) {
@@ -2468,24 +2507,31 @@ xf86ConfigActiveIsaEntity(ScrnInfoPtr pScrn, int entityIndex,
     }
     xfree(pEnt);
     xf86ClaimFixedResources(res,entityIndex);
-    if (!xf86SetEntityFuncs(entityIndex,init,enter,leave,private)) 
-	return FALSE;
+    xf86SetEntityFuncs(entityIndex,init,enter,leave,private);
 
-    return TRUE;
+    return pScrn;
 }
 
-Bool
-xf86ConfigActivePciEntity(ScrnInfoPtr pScrn, int entityIndex,
+ScrnInfoPtr
+xf86ConfigPciEntity(ScrnInfoPtr pScrn, int scrnFlag, int entityIndex,
 			  PciChipsets *p_chip, resList res, EntityProc init,
 			  EntityProc enter, EntityProc leave, pointer private)
 {
     PciChipsets *p_id;
     EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
 
-    if (!pEnt->active || !(pEnt->location.type == BUS_PCI)) {
+    if (!(pEnt->location.type == BUS_PCI)) {
 	xfree(pEnt);
-	return FALSE;
+	return pScrn;
     }
+    if (!pEnt->active) {
+	xf86ConfigPciEntityInactive(pEnt, p_chip, res, init,  enter,
+				    leave,  private);
+	return pScrn;
+    }
+
+    if (!pScrn)
+	pScrn = xf86AllocateScreen(pEnt->driver,scrnFlag); 
     xf86AddEntityToScreen(pScrn,entityIndex);
     
     if (p_chip) {
@@ -2497,9 +2543,72 @@ xf86ConfigActivePciEntity(ScrnInfoPtr pScrn, int entityIndex,
     xfree(pEnt);
 
     xf86ClaimFixedResources(res,entityIndex);
-    if (!xf86SetEntityFuncs(entityIndex,init,enter,leave,private))
-	return FALSE;
+    xf86SetEntityFuncs(entityIndex,init,enter,leave,private);
 
+    return pScrn;
+}
+
+/*
+ *
+ *  OBSOLETE ! xf86ConfigActiveIsaEntity() and xf86ConfigActivePciEntity()
+ *             are obsolete functions. They the are likely to be removed
+ *             Don't use!
+ */
+Bool
+xf86ConfigActiveIsaEntity(ScrnInfoPtr pScrn, int entityIndex,
+                          IsaChipsets *i_chip, resList res, EntityProc init,
+                          EntityProc enter, EntityProc leave, pointer private)
+{
+    IsaChipsets *i_id;
+    EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
+ 
+    if (!pEnt->active || !(pEnt->location.type == BUS_ISA)) {
+        xfree(pEnt);
+        return FALSE;
+    }
+ 
+    xf86AddEntityToScreen(pScrn,entityIndex);
+ 
+    if (i_chip) {
+        for (i_id = i_chip; i_id->numChipset != -1; i_id++) {
+            if (pEnt->chipset == i_id->numChipset) break;
+        }
+        xf86ClaimFixedResources(i_id->resList,entityIndex);
+    }
+    xfree(pEnt);
+    xf86ClaimFixedResources(res,entityIndex);
+    if (!xf86SetEntityFuncs(entityIndex,init,enter,leave,private))
+        return FALSE;
+ 
+    return TRUE;
+}
+ 
+Bool
+xf86ConfigActivePciEntity(ScrnInfoPtr pScrn, int entityIndex,
+                          PciChipsets *p_chip, resList res, EntityProc init,
+                          EntityProc enter, EntityProc leave, pointer private)
+{
+    PciChipsets *p_id;
+    EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
+ 
+    if (!pEnt->active || !(pEnt->location.type == BUS_PCI)) {
+        xfree(pEnt);
+        return FALSE;
+    }
+    xf86AddEntityToScreen(pScrn,entityIndex);
+ 
+    if (p_chip) {
+        for (p_id = p_chip; p_id->numChipset != -1; p_id++) {
+            if (pEnt->chipset == p_id->numChipset) break;
+        }
+        xf86ClaimFixedResources(p_id->resList,entityIndex);
+    }
+    xfree(pEnt);
+ 
+    xf86ClaimFixedResources(res,entityIndex);
+    if (!xf86SetEntityFuncs(entityIndex,init,enter,leave,private))
+        return FALSE;
+ 
     return TRUE;
 }
 

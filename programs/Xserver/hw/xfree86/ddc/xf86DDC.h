@@ -24,6 +24,14 @@ typedef enum {
   DDC_FAST
 } xf86ddcSpeed;
 
+typedef enum {
+    DDCOPT_NODDC1,
+    DDCOPT_NODDC2,
+    DDCOPT_NODDC
+} DDCOpts;
+
+extern OptionInfoRec DDCOptions[];
+
 extern xf86MonPtr xf86DoEDID_DDC1(
     int scrnIndex, 
     void (*DDC1SetSpeed)(ScrnInfoPtr, xf86ddcSpeed),
@@ -36,11 +44,11 @@ extern xf86MonPtr xf86DoEDID_DDC2(
 );
 
 extern xf86MonPtr xf86PrintEDID(
-    xf86MonPtr 
+    xf86MonPtr monPtr
 );
 
 extern xf86MonPtr xf86InterpretEDID(
-    Uchar *block
+    int screenIndex, Uchar *block
 );
 
 extern xf86vdifPtr xf86InterpretVdif(

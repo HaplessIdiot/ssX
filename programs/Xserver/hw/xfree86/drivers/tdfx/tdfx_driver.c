@@ -431,23 +431,24 @@ TDFXProbe(DriverPtr drv, int flags) {
     ScrnInfoPtr pScrn;
 
     /* Allocate new ScrnInfoRec and claim the slot */
-    pScrn = xf86AllocateScreen(drv, 0);
+    pScrn = NULL;
+    if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
+					   TDFXPciChipsets, 0, 0, 0, 0, 0))) {
 
-    pScrn->driverVersion = VERSION;
-    pScrn->driverName = TDFX_DRIVER_NAME;
-    pScrn->name = TDFX_NAME;
-    pScrn->Probe = TDFXProbe;
-    pScrn->PreInit = TDFXPreInit;
-    pScrn->ScreenInit = TDFXScreenInit;
-    pScrn->SwitchMode = TDFXSwitchMode;
-    pScrn->AdjustFrame = TDFXAdjustFrame;
-    pScrn->EnterVT = TDFXEnterVT;
-    pScrn->LeaveVT = TDFXLeaveVT;
-    pScrn->FreeScreen = TDFXFreeScreen;
-    pScrn->ValidMode = TDFXValidMode;
-    foundScreen = TRUE;
-
-    xf86ConfigActivePciEntity(pScrn, usedChips[i], TDFXPciChipsets, 0, 0, 0, 0, 0);
+	pScrn->driverVersion = VERSION;
+	pScrn->driverName = TDFX_DRIVER_NAME;
+	pScrn->name = TDFX_NAME;
+	pScrn->Probe = TDFXProbe;
+	pScrn->PreInit = TDFXPreInit;
+	pScrn->ScreenInit = TDFXScreenInit;
+	pScrn->SwitchMode = TDFXSwitchMode;
+	pScrn->AdjustFrame = TDFXAdjustFrame;
+	pScrn->EnterVT = TDFXEnterVT;
+	pScrn->LeaveVT = TDFXLeaveVT;
+	pScrn->FreeScreen = TDFXFreeScreen;
+	pScrn->ValidMode = TDFXValidMode;
+	foundScreen = TRUE;
+    }
   }
   xfree(usedChips);
 

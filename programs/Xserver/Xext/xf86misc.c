@@ -24,6 +24,7 @@
 #include "Xfuncproto.h"
 #include "xf86miscproc.h"
 
+#if 0
 #include <X11/Xtrans.h>
 #include "../os/osdep.h"
 #include <X11/Xauth.h>
@@ -38,6 +39,7 @@
 #include <lan/socket.h>
 #endif
 #endif /* USL */
+#endif
 
 #ifdef EXTMODULE
 #include "xf86_ansic.h"
@@ -249,6 +251,8 @@ ProcXF86MiscGetMouseSettings(client)
     	swapl(&rep.flags, n);
     }
     WriteToClient(client, SIZEOF(xXF86MiscGetMouseSettingsReply), (char *)&rep);
+    MiscExtDestroyStruct(mouse, MISC_POINTER);
+    
     if (rep.devnamelen)
         WriteToClient(client, rep.devnamelen, devname);
     return (client->noClientException);
@@ -321,13 +325,14 @@ ProcXF86MiscSetMouseSettings(client)
     MiscExtSetMouseValue(mouse, MISC_MSE_FLAGS,		stuff->flags);
 
     switch ((ret = MiscExtApply(mouse, MISC_POINTER))) {
-	case MISC_RET_SUCCESS:      break;
+        case MISC_RET_SUCCESS:      break;
 	case MISC_RET_BADVAL:       return BadValue;
 	case MISC_RET_BADMSEPROTO:  return MISCERR(XF86MiscBadMouseProtocol);
 	case MISC_RET_BADBAUDRATE:  return MISCERR(XF86MiscBadMouseBaudRate);
 	case MISC_RET_BADFLAGS:     return MISCERR(XF86MiscBadMouseFlags);
-	case MISC_RET_BADCOMBO:     return MISCERR(XF86MiscBadMouseCombo);
-	default:
+        case MISC_RET_BADCOMBO:     return MISCERR(XF86MiscBadMouseCombo);
+        case MISC_RET_NOMODULE:     return MISCERR(XF86MiscNoModule);
+        default:
 	    ErrorF("Unexpected return from MiscExtApply(POINTER) = %d\n", ret);
 	    return BadImplementation;
     }

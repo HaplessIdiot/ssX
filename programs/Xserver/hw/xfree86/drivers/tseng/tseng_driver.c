@@ -96,7 +96,7 @@ static ModeStatus TsengValidMode(int scrnIndex, DisplayModePtr mode,
 static Bool TsengMapMem(ScrnInfoPtr pScrn);
 static Bool TsengUnmapMem(ScrnInfoPtr pScrn);
 static void TsengSave(ScrnInfoPtr pScrn);
-static void TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg);
+static void TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg, int flags);
 static Bool TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void TsengUnlock(void);
 static void TsengLock(void);
@@ -516,13 +516,15 @@ TsengProbe(DriverPtr drv, int flags)
 		foundScreen = TRUE;
 	    else for (i = 0; i < numUsed; i++) {
 		/* Allocate a ScrnInfoRec  */
-		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
-		TsengAssignFPtr(pScrn);
-		xf86ConfigActivePciEntity(pScrn,usedChips[i],TsengPciChipsets,
-					  NULL,NULL,NULL,NULL,NULL);
-		foundScreen = TRUE;
+		ScrnInfoPtr pScrn = NULL;
+		if ((pScrn = xf86ConfigPciEntity(pScrn,0,usedChips[i],
+						       TsengPciChipsets,NULL,
+						       NULL,NULL,NULL,NULL))) {
+		    TsengAssignFPtr(pScrn);
+		    foundScreen = TRUE;
+		}
+		xfree(usedChips);
 	    }
-	    xfree(usedChips);
 	}
     }
     
@@ -534,11 +536,13 @@ TsengProbe(DriverPtr drv, int flags)
 	if (flags & PROBE_DETECT)
 	    foundScreen = TRUE;
 	else for (i = 0; i < numUsed; i++) {
-	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
-	    TsengAssignFPtr(pScrn);
-	    foundScreen = TRUE;
-	    xf86ConfigActiveIsaEntity(pScrn,usedChips[i],TsengIsaChipsets,
-				      NULL,NULL,NULL,NULL,NULL);
+		ScrnInfoPtr pScrn = NULL;
+		if ((pScrn = xf86ConfigIsaEntity(pScrn,0,usedChips[i],
+						       TsengIsaChipsets,NULL,
+						       NULL,NULL,NULL,NULL))) {
+		    TsengAssignFPtr(pScrn);
+		    foundScreen = TRUE;
+		}
 	}
 	xfree(usedChips);
     }
@@ -1458,6 +1462,7 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     if (flags & PROBE_DETECT) return FALSE;
 
     PDEBUG("	TsengPreInit\n");
+    
     /*
      * Note: This function is only called once at server startup, and
      * not at the start of each server generation.  This means that
@@ -2193,7 +2198,8 @@ TsengLeaveVT(int scrnIndex, int flags)
 #endif
 
     PDEBUG("	TsengLeaveVT\n");
-    TsengRestore(pScrn, &(VGAHWPTR(pScrn)->SavedReg), &pTseng->SavedReg);
+    TsengRestore(pScrn, &(VGAHWPTR(pScrn)->SavedReg),
+		 &pTseng->SavedReg,VGA_SR_ALL);
 
     TsengLock();
     vgaHWLock(VGAHWPTR(pScrn));
@@ -2208,7 +2214,8 @@ TsengCloseScreen(int scrnIndex, ScreenPtr pScreen)
     PDEBUG("	TsengCloseScreen\n");
 
     if (pScrn->vtSema) {
-    TsengRestore(pScrn, &(VGAHWPTR(pScrn)->SavedReg), &(pTseng->SavedReg));
+    TsengRestore(pScrn, &(VGAHWPTR(pScrn)->SavedReg),
+		 &(pTseng->SavedReg),VGA_SR_ALL);
     TsengUnmapMem(pScrn);
     }
     if (pTseng->AccelInfoRec)
@@ -2656,7 +2663,7 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
     vgaHWUnlock(hwp);		       /* TODO: is this needed (tsengEnterVT does this) */
     /* Program the registers */
-    TsengRestore(pScrn, &hwp->ModeReg, new);
+    TsengRestore(pScrn, &hwp->ModeReg, new, VGA_SR_MODE);
     return TRUE;
 }
 
@@ -2916,7 +2923,8 @@ TsengSave(ScrnInfoPtr pScrn)
  */
 
 static void
-TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
+TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg,
+	     int flags)
 {
     vgaHWPtr hwp;
     TsengPtr pTseng;
@@ -3053,7 +3061,7 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
     outw(iobase + 4, (tsengReg->ExtCRTC[0x3F] << 8) | 0x3F);
     outw(iobase + 4, (tsengReg->ExtCRTC[0x30] << 8) | 0x30);
     outw(iobase + 4, (tsengReg->ExtCRTC[0x31] << 8) | 0x31);
-    vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL); /* TODO: does this belong HERE, in the middle? */
+    vgaHWRestore(pScrn, vgaReg, flags); /* TODO: does this belong HERE, in the middle? */
     outw(0x3C4, (tsengReg->ExtTS[6] << 8) | 0x06);
     outw(0x3C4, (tsengReg->ExtTS[7] << 8) | 0x07);
     tmp = inb(iobase + 0x0A);	       /* reset flip-flop */

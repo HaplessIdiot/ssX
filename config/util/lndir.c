@@ -199,7 +199,8 @@ dodir (char *fn,		/* name of "from" directory, either absolute or
     }
 
     p = buf + strlen (buf);
-    *p++ = '/';
+    if (*(p - 1) != '/')
+	*p++ = '/';
     n_dirs = fs->st_nlink;
     while ((dp = readdir (df))) {
 	if (dp->d_name[strlen(dp->d_name) - 1] == '~')

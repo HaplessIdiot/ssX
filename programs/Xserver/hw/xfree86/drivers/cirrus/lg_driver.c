@@ -80,7 +80,7 @@
  * Forward definitions for the functions that make up the driver.
  */
 
-Bool LgProbe(int entity, ScrnInfoPtr pScrn);
+ScrnInfoPtr LgProbe(int entity);
 
 /* Mandatory functions */
 Bool LgPreInit(ScrnInfoPtr pScrn, int flags);
@@ -304,22 +304,22 @@ LgAvailableOptions(int chipid)
     return LgOptions;
 }
 
-Bool
-LgProbe(int entity, ScrnInfoPtr pScrn)
+ScrnInfoPtr
+LgProbe(int entity)
 {
-    pScrn->PreInit		= LgPreInit;
-    pScrn->ScreenInit	= LgScreenInit;
-    pScrn->SwitchMode	= LgSwitchMode;
-    pScrn->AdjustFrame	= LgAdjustFrame;
-    pScrn->EnterVT		= LgEnterVT;
-    pScrn->LeaveVT		= LgLeaveVT;
-    pScrn->FreeScreen	= LgFreeScreen;
-    pScrn->ValidMode	= LgValidMode;
-    
-    xf86ConfigActivePciEntity(pScrn, entity, CIRPciChipsets, NULL,
-			      NULL, NULL, NULL, NULL);
-    
-    return TRUE;
+    ScrnInfoPtr pScrn = NULL;
+    if ((pScrn = xf86ConfigPciEntity(pScrn, 0, entity, CIRPciChipsets,
+					   NULL, NULL, NULL, NULL, NULL))) {
+	pScrn->PreInit		= LgPreInit;
+	pScrn->ScreenInit	= LgScreenInit;
+	pScrn->SwitchMode	= LgSwitchMode;
+	pScrn->AdjustFrame	= LgAdjustFrame;
+	pScrn->EnterVT		= LgEnterVT;
+	pScrn->LeaveVT		= LgLeaveVT;
+	pScrn->FreeScreen	= LgFreeScreen;
+	pScrn->ValidMode	= LgValidMode;
+    }
+    return pScrn;
 }
 
 

@@ -407,6 +407,7 @@ struct detailed_monitor_section {
 };
 
 typedef struct {
+    int scrnIndex;
   struct vendor vendor;
   struct edid_version ver;
   struct disp_features features;
