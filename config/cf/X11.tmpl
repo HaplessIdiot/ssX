@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.85 2000/12/03 05:20:50 keithp Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.86 2000/12/04 18:49:11 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2381,6 +2381,11 @@ InstallFontObjs($(OBJS),dest)
 #define InstallFontAliases(dest)					@@\
 InstallTarget(install,fonts.alias,$(INSTDATFLAGS),dest)
 #endif /* InstallFontAliases */
+
+#ifndef InstallNamedFontAliases
+#define InstallNamedFontAliases(src,dest)				@@\
+InstallNamedTarget(install,src,$(INSTDATFLAGS),dest,fonts.alias)
+#endif /* InstallNamedFontAliases */
 
 #ifndef FontSrc
 #define FontSrc(basename) basename.bdf
