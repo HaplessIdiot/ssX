@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.68 2002/10/30 12:52:13 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.69 2002/10/30 15:57:41 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -2096,6 +2096,31 @@ static int RADEONValidateDDCModes(ScrnInfoPtr pScrn, char **ppModeName,
 		}
 	    }
 
+	    /* 
+	     * Add remaining DDC modes if they're smaller than the user
+	     * specified modes
+	     */
+	     
+	    for (p = ddcModes; p; p = next) {
+		next = p->next;
+		if (p->HDisplay <= maxVirtX && p->VDisplay <= maxVirtY) {
+		    /* Unhook from DDC modes */
+		    if (p->prev) p->prev->next = p->next;
+		    if (p->next) p->next->prev = p->prev;
+		    if (p == ddcModes) ddcModes = p->next;
+
+		    /* Add to used modes */
+		    if (last) {
+			last->next = p;
+			p->prev = last;
+		    } else {
+			first = p;
+			p->prev = NULL;
+		    }
+		    p->next = NULL;
+		    last = p;
+		}
+	    }
 	    /* Delete unused modes */
 	    while (ddcModes)
 		xf86DeleteMode(&ddcModes, ddcModes);
