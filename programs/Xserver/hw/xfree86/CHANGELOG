@@ -1,3 +1,23 @@
+XFree86 3.1.2Dd (17 March 1996)
+452. Fix incorrect type in SuperProbe/PCI.c (Thomas E. Dickey).
+451. Fix a memory leak in xterm when switching fonts (Thomas E. Dickey).
+450. Fixes for mouse problems introduced in 3.1.2Dc (Joe Moss,
+     Michael Rohleder, Takaaki Nomura).
+449. Man page for the VidMode extension (Joe Moss).
+448. Modify xterm to work properly with Xaw3d's arror scrollbars (based on
+     Kaleb Keithley's R5 patch).
+447. Add tilt report for the Wacom device (Frederic Lepied).
+446. Deal with DAC/clock discrepancy for Mach64 in the ati driver
+     (Marc Aurele La France).
+445. Reduce warnings in the ati driver when compiling with 'gcc -Wall'
+     (Marc Aurele La France).
+444. Fix recognition of ATI extended VGA regsiter I/O port number on some
+     Mach32 Mach64 PCI adapters in the ati driver (Marc Aurele La France).
+443. Add nested prototypes to xf86_HWlib.h (Marc Aurele La France).
+442. Fix typo in IBM RGB514 programming for the Mach64 (Marc Aurele La France).
+441. Fix a problem with the Mach64 server incorrectly using Block I/O mode
+     on some cards.
+
 XFree86 3.1.2Dc (11 March 1996)
 440. XKB updates from recent XC fix-tracker.
 439. Fix freeing a random pointer in the module code when an absolute
