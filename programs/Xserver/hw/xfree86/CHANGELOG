@@ -1,4 +1,6 @@
 XFree86 4.4.99.903 (xx February 2005)
+ 344. Set default monitor parameters to match the display size for the i830
+      when they are not available from another source (Nicolas Joly).
  343. Separate the addition of EDID modes out from mode validation
       (David Dawes).
  342. Handle screen blanking in the vesa driver for non-VGA compatible modes
@@ -19415,7 +19417,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3451 2005/02/26 03:18:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3452 2005/02/26 18:31:46 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.61 2005/01/10 17:09:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.62 2005/02/18 02:55:08 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2642,6 +2642,19 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
       memsize = pScrn->videoRam;
    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 	      "Maximum space available for video modes: %d kByte\n", memsize);
+
+   if (!pScrn->monitor->DDC) {
+	int n = pI830->pipe;
+        /*
+         * If the monitor parameters are not specified explicitly, set them
+         * so that 60Hz modes up to the panel size are allowed.
+         */
+        xf86SetMonitorParameters(pScrn, pScrn->monitor,
+                                 pI830->pipeDisplaySize[n].x2,
+                                 pI830->pipeDisplaySize[n].y2,
+                                 60);
+
+   }
 
    /* By now, we should have had some monitor settings, but if not, we
     * need to setup some defaults. These are used in common/xf86Modes.c
