@@ -47,7 +47,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDXorg: @(#)osglue.c,v 4.6 1991/07/09 14:07:30 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.16 2002/05/31 18:46:12 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.17 2002/06/03 22:16:17 dawes Exp $ */
 
 /*
  * this is miscellaneous OS specific stuff.
@@ -295,7 +295,7 @@ CloneMyself(void)
 	return -1;
 
 #ifdef __UNIXOS2__
-    NoticeF("Cloning of font server not supported under OS/2!\n");
+    NoticeF("cloning of font server not supported under OS/2!\n");
     return(-1);
 #endif
 
@@ -319,7 +319,7 @@ CloneMyself(void)
     child = fork();
     if (child == -1) {
 	/* failed to fork */
-	ErrorF("Clone failed to fork()\n");
+	ErrorF("clone failed to fork()\n");
 	return -1;
     }
     /*
@@ -329,11 +329,11 @@ CloneMyself(void)
      */
     if (child == 0) {
 	StopListening();
-	NoticeF("Clone: child becoming drone\n");
+	NoticeF("clone: child becoming drone\n");
 	drone_server = TRUE;
 	return 1;
     } else {			/* parent */
-	NoticeF("Clone: parent revitalizing as %s\n", progname);
+	NoticeF("clone: parent revitalizing as %s\n", progname);
 	CloseErrors();
 	/* XXX should we close stdio as well? */
 	for (i = 3; i < lastfdesc; i++)
@@ -376,8 +376,8 @@ CloneMyself(void)
 
 	InitErrors();		/* reopen errors, since we don't want to lose
 				 * this */
-	Error("Clone failed");
-	FatalError("Failed to clone self\n");
+	Error("clone failed");
+	FatalError("failed to clone self\n");
     }
     /* NOTREACHED */
     return 0;
