@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX March 2002)
+  58. Fix RGB/BGR inversion problem on Permedia3 chips (Alan Hourihane).
   57. Fix server link problem that shows up on ppc (#5205, Guido Guenther).
   56. Restore effect of option "NoSilkenMouse" (Marc La France).
   55. Fix some nForce graphics regressions caused by recent flat panel and
@@ -14673,4 +14674,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2188 2002/03/19 17:58:54 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2189 2002/03/19 18:09:18 tsi Exp $
