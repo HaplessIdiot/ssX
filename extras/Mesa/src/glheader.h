@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/glheader.h,v 1.18tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/glheader.h,v 1.19 2002/11/05 17:46:06 tsi Exp $ */
 
 
 #ifndef GLHEADER_H
@@ -61,7 +61,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 #if defined(__linux__) && defined(__i386__)
 #include <fpu_control.h>
 #endif
