@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.17 2000/04/19 16:57:43 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.18 2000/06/20 05:08:45 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -1207,10 +1207,8 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
 	(*p_size)++;
     (*p_base) = H2B(tag,range.rBegin,type);
     
-#ifdef DEBUG
     ErrorF("New PCI res %i base: 0x%lx, size: 0x%lx, type %s\n",
 	   res_n,(*p_base),(1 << (*p_size)),type | ResMem ? "Mem" : "Io");
-#endif
 
     if (res_n != 0xff) {
 	pciWriteLong(tag,PCI_CMD_BASE_REG + res_n * sizeof(CARD32),
@@ -1724,7 +1722,6 @@ ValidatePci(void)
 	resPtr tmp, avoid = NULL;
 
 	if (!pvp->validate) continue;
-	avoid = xf86DupResList(pciAvoidRes);    
 	NonSys = xf86DupResList(Sys);
 	m = n;
 	while ((pvp1 = xf86PciVideoInfo[m++])) {

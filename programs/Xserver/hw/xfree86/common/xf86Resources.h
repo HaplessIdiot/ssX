@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Resources.h,v 1.9 2000/04/23 19:26:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Resources.h,v 1.10 2000/07/11 01:46:35 tsi Exp $ */
 
 #ifndef _XF86_RESOURCES_H
 
@@ -102,8 +102,8 @@ extern resRange res8514Shared[];
 #define RES_SHARED_8514     res8514Shared
 
 #define _PCI_AVOID_PC_STYLE \
-	{ResExcIoSparse | ResBus, 0x0100, 0x0100},\
-	{ResExcIoSparse | ResBus, 0x0280, 0x0280},\
+	{ResExcIoSparse | ResBus, 0x0100, 0x0300},\
+	{ResExcIoSparse | ResBus, 0x0200, 0x0200},\
         {ResExcMemBlock | ResBus, 0xA0000,0xFFFFF}
 
 extern resRange PciAvoid[];
