@@ -5,7 +5,7 @@
  *
  * Author: David Dawes <dawes@xfree86.org>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.8 1999/07/06 14:51:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.9 1999/07/18 08:14:33 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -13,6 +13,7 @@
 #include "xf86Priv.h"
 #include "xf86_OSproc.h"
 #include "xf86Pci.h"
+int xf86getpagesize(void);
 
 #include <stdarg.h>
 #include <stdlib.h>
@@ -403,16 +404,15 @@ xf86ServerIsInitialising()
     return FALSE;
 }
 
+int
+xf86getpagesize(void)
+{
+    return 4096;	/* not used */
+}
+
 memType
 getValidBIOSBase(PCITAG tag, int num)
 {
     return 0;
-}
-
-int
-xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
-	     int Len)
-{
-    return -1;
 }
 

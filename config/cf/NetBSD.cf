@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.72 1999/03/21 07:34:23 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.73 1999/04/17 09:08:04 dawes Exp $
 
 
 #ifndef OSName
@@ -207,7 +207,18 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define ExtraLibraries		/**/
 #endif
 #ifndef UseGnuMalloc
+/*
+ * There is no way to map 1.4J correctly to OS*Version, so 'J' is mapped
+ * to OSTeenyVersion == 9. That should be safe, since there will never
+ * be a release for 1.4.9.
+ */
+# if ((OSMajorVersion > 1) || \
+     (OSMajorVersion == 1 && OSMinorVersion > 4) || \
+     (OSMajorVersion == 1 && OSMinorVersion == 4 && OSTeenyVersion > 9))
+#  define UseGnuMalloc		NO
+# else
 #  define UseGnuMalloc		YES
+#endif
 #endif
 #ifndef GnuMallocLibrary
 #define GnuMallocLibrary	-lgnumalloc

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.26 1999/04/18 04:08:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.27 1999/04/18 12:59:46 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -290,6 +290,43 @@ static void
 unmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
 	munmap((caddr_t)Base, Size);
+}
+
+/*
+ * Read BIOS via mmap()ing DEV_MEM
+ */
+
+int
+xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
+	     int Len)
+{
+	unsigned char *ptr;
+	int psize;
+	int mlen;
+
+	checkDevMem(TRUE);
+	if (devMemFd == -1) {
+	    return(-1);
+	}
+
+	psize = xf86getpagesize();
+	mlen = (Offset + Len + psize - 1) & ~psize;
+	/* Base is assumed to be page-aligned. */
+	ptr = (unsigned char *)mmap((caddr_t)0, mlen, PROT_READ,
+					MAP_SHARED, devMemFd, (off_t)Base);
+	if ((int)ptr == -1)
+	{
+		xf86Msg(X_WARNING, "xf86ReadBIOS: %s mmap failed (%s)\n",
+			DEV_MEM, strerror(errno));
+		return(-1);
+	}
+#ifdef DEBUG
+	ErrorF("xf86ReadBIOS: BIOS at 0x%08x has signature 0x%04x\n",
+		Base, ptr[0] | (ptr[1] << 8));
+#endif
+	(void)memcpy(Buf, (void *)(ptr + Offset), Len);
+	(void)munmap((caddr_t)ptr, mlen);
+	return(Len);
 }
 
 #ifdef __arm32__
