@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.13 2001/10/15 07:05:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.14 2001/10/18 03:15:22 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -127,7 +127,16 @@ struct _LispOpaque {
     LispOpaque *next;
 };
 
+typedef enum _LispBlockType {
+    LispBlockTag,	/* may become "invisible" */
+    LispBlockCatch,	/* can be used to jump across function calls */
+    LispBlockClosure,	/* hides blocks of type LispBlockTag bellow it */
+    LispBlockProtect,	/* used by unwind-protect */
+    LispBlockBody	/* used by tagbody and go */
+} LispBlockType;
+
 struct _LispBlock {
+    LispBlockType type;
     LispObj tag;
     jmp_buf jmp;
     int level;
@@ -198,6 +207,7 @@ struct _LispMac {
     void (*sigfpe)(int);
 #endif
 
+    int destroyed;		/* reached LispDestroy, used by unwind-protect */
     int running;		/* there is somewhere to siglongjmp */
 
     int debugging;		/* debugger enabled? */
@@ -231,8 +241,10 @@ extern struct _LispBuiltin *LispFindBuiltin(const char*, unsigned int);
 /* (print) */
 void LispPrint(LispMac*, LispObj*, LispObj*, int);
 
-LispBlock *LispBeginBlock(LispMac*, LispObj*, int);
+LispBlock *LispBeginBlock(LispMac*, LispObj*, LispBlockType);
 void LispEndBlock(LispMac*, LispBlock*);
+	/* if unwind-protect active, jump to cleanup code, else do nothing */
+void LispBlockUnwind(LispMac*);
 
 void LispUpdateResults(LispMac*, LispObj*, LispObj*);
 void LispTopLevel(LispMac*);

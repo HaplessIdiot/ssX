@@ -27,9 +27,10 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.13 2001/10/15 15:36:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.14 2001/10/18 03:15:21 paulo Exp $ */
 
 #include "core.h"
+#include "format.h"
 #include "helper.h"
 #include "private.h"
 
@@ -355,7 +356,7 @@ Lisp_Block(LispMac *mac, LispObj *list, char *fname)
 
     *pres = NIL;
     *pdid_jump = 1;
-    block = LispBeginBlock(mac, CAR(list), 0);
+    block = LispBeginBlock(mac, CAR(list), LispBlockTag);
     if (setjmp(block->jmp) == 0) {
 	*pres = Lisp_Progn(mac, CDR(list), fname);
 	*pdid_jump = 0;
@@ -499,7 +500,7 @@ Lisp_Catch(LispMac *mac, LispObj *list, char *fname)
 
     *pres = NIL;
     *pdid_jump = 1;
-    block = LispBeginBlock(mac, CAR(list), 1);
+    block = LispBeginBlock(mac, CAR(list), LispBlockCatch);
     if (setjmp(block->jmp) == 0) {
 	*pres = Lisp_Progn(mac, CDR(list), fname);
 	*pdid_jump = 0;
@@ -767,6 +768,18 @@ Lisp_Equal(LispMac *mac, LispObj *list, char *fname)
 }
 
 LispObj *
+Lisp_Error(LispMac *mac, LispObj *list, char *fname)
+{
+    LispObj *str;
+
+    str = Lisp_Format(mac, CONS(NIL, list), fname);
+    LispDestroy(mac, "%s", STRPTR(str));
+    /*NOTREACHED*/
+
+    return (NIL);
+}
+
+LispObj *
 Lisp_Eval(LispMac *mac, LispObj *list, char *fname)
 {
     return (EVAL(CAR(list)));
@@ -844,6 +857,35 @@ Lisp_Gc(LispMac *mac, LispObj *list, char *fname)
     LispGC(mac, NIL, NIL);
 
     return (list == NIL || CAR(list)->type == LispNil_t ? NIL : T);
+}
+
+LispObj *
+Lisp_Go(LispMac *mac, LispObj *list, char *fname)
+{
+    unsigned blevel = mac->block.block_level;
+    LispObj *tag = CAR(list);
+
+    if (tag != NIL && tag != T && !SYMBOL_P(tag) && !NUMBER_P(tag))
+	goto cannot_go;
+
+    while (blevel) {
+	LispBlock *block = mac->block.block[--blevel];
+
+	if (block->type == LispBlockClosure)
+	    /* if reached a function call */
+	    break;
+	if (block->type == LispBlockBody) {
+	    mac->block.block_ret = tag;
+	    LispBlockUnwind(mac);
+	    longjmp(block->jmp, 1);
+	}
+     }
+
+cannot_go:
+    LispDestroy(mac, "cannot go to %s, at %s", LispStrObj(mac, tag), fname);
+
+    /*NOTREACHED*/
+    return (NIL);
 }
 
 LispObj *
@@ -1047,7 +1089,7 @@ Lisp_Loop(LispMac *mac, LispObj *list, char *fname)
     LispBlock *block;
 
     res = NIL;
-    block = LispBeginBlock(mac, NIL, 0);
+    block = LispBeginBlock(mac, NIL, LispBlockTag);
     if (setjmp(block->jmp) == 0) {
 	for (;;)
 	    for (obj = list; obj != NIL; obj = CDR(obj))
@@ -1562,6 +1604,66 @@ Lisp_Progn(LispMac *mac, LispObj *list, char *fname)
 }
 
 LispObj *
+Lisp_Progv(LispMac *mac, LispObj *list, char *fname)
+{
+    LispObj *old_frm, *old_env, *res, *cons, *valist = NIL;
+    LispObj *syms, *values, *body;
+
+    old_frm = FRM;
+
+    /* get symbol names */
+    syms = EVAL(CAR(list));
+    GCProtect();
+    FRM = CONS(syms, FRM);
+    GCUProtect();
+
+    /* get symbol values */
+    list = CDR(list);
+    values = EVAL(CAR(list));
+    GCProtect();
+    FRM = CONS(values, FRM);
+    GCUProtect();
+    list = CDR(list);
+
+    /* the body to be executed */
+    body = list;
+
+    /* fill variable list */
+    for (; syms->type == LispCons_t; syms = CDR(syms)) {
+	if (values->type != LispCons_t)
+	    break;
+	if (!SYMBOL_P(CAR(syms)))
+	    LispDestroy(mac, "%s is not a symbol, at %s",
+			LispStrObj(mac, CAR(syms)), fname);
+	if (valist == NIL) {
+	    GCProtect();
+	    valist = cons = CONS(CONS(CAR(syms), CAR(values)), NIL);
+	    FRM = CONS(valist, FRM);
+	    GCUProtect();
+	}
+	else {
+	    CDR(cons) = CONS(CONS(CAR(syms), CAR(values)), NIL);
+	    cons = CDR(cons);
+	}
+	values = CDR(values);
+    }
+
+    /* add variables */
+    old_env = ENV;
+    for (; valist != NIL; valist = CDR(valist)) {
+	cons = CAR(valist);
+	LispAddVar(mac, CAR(cons), CDR(cons));
+    }
+
+    res = Lisp_Progn(mac, body, fname);
+
+    ENV = old_env;
+    FRM = old_frm;
+
+    return (res);
+}
+
+LispObj *
 Lisp_Provide(LispMac *mac, LispObj *list, char *fname)
 {
     LispObj *feat = CAR(list), *obj;
@@ -1728,12 +1830,16 @@ Lisp_Return(LispMac *mac, LispObj *list, char *fname)
     while (blevel) {
 	LispBlock *block = mac->block.block[--blevel];
 
-	if (block->tag.type == LispNil_t) {
+	if (block->type == LispBlockClosure)
+	    /* if reached a function call */
+	    break;
+	if (block->type == LispBlockTag && block->tag.type == LispNil_t) {
 	    mac->block.block_ret = list == NIL ? NIL : EVAL(CAR(list));
+	    LispBlockUnwind(mac);
 	    longjmp(block->jmp, 1);
 	}
     }
-    LispDestroy(mac, "no NIL block, at %s", fname);
+    LispDestroy(mac, "no visible NIL block, at %s", fname);
     /*NOTREACHED*/
 
     return (NIL);
@@ -1764,15 +1870,23 @@ Lisp_ReturnFrom(LispMac *mac, LispObj *list, char *fname)
 		    break;
 		default:
 		    /* only atom, nil or t can be used */
+		    jmp = 0;
 		    break;
 	    }
 	}
+	if (block->type != LispBlockTag && block->type != LispBlockClosure)
+	    break;
 	if (jmp) {
 	    mac->block.block_ret = list == NIL ? NIL : EVAL(CAR(list));
+	    LispBlockUnwind(mac);
 	    longjmp(block->jmp, 1);
 	}
+	if (block->type != LispBlockTag)
+	    /* can use return-from only in the current function */
+	    break;
     }
-    LispDestroy(mac, "no block named %s, at %s", LispStrObj(mac, tag), fname);
+    LispDestroy(mac, "no visible block named %s, at %s",
+		LispStrObj(mac, tag), fname);
     /*NOTREACHED*/
 
     return (NIL);
@@ -2074,6 +2188,101 @@ Lisp_SymbolPlist(LispMac *mac, LispObj *list, char *fname)
 }
 
 LispObj *
+Lisp_Tagbody(LispMac *mac, LispObj *list, char *fname)
+{
+    int did_jump, *pdid_jump = &did_jump, body_jump, *pbody_jump = &body_jump;
+    LispObj *body, *res, **pres = &res;
+    LispBlock *block, *body_block;
+
+    for (body = list; body != NIL; body = CDR(body))
+	if (body->type == LispCons_t)
+	    break;
+
+    if (body == NIL)
+	return (NIL);
+
+    *pdid_jump = 1;
+    *pres = NIL;
+    block = LispBeginBlock(mac, NIL, LispBlockTag);
+    if (setjmp(block->jmp) == 0) {
+	body = list;
+	while (1) {
+	    *pbody_jump = 1;
+	    body_block = LispBeginBlock(mac, NIL, LispBlockBody);
+	    if (setjmp(body_block->jmp) == 0) {
+		for (; body != NIL; body = CDR(body)) {
+		    if (CAR(body)->type == LispCons_t)
+			*pres = EVAL(CAR(body));
+		}
+		*pbody_jump = 0;
+	    }
+	    LispEndBlock(mac, body_block);
+	    if (*pbody_jump) {
+		int found = 0;
+		LispObj *ptr, *tag;
+
+		tag = mac->block.block_ret;
+		for (ptr = body; ptr != NIL; ptr = CDR(ptr)) {
+		    if (CAR(ptr)->type == tag->type &&
+			((CAR(ptr) == NIL && tag->type == LispNil_t) ||
+			 (CAR(ptr) == T && tag->type == LispTrue_t) ||
+			 (NUMBER_P(ptr) && NUMBER_P(tag) &&
+			  NUMBER_VALUE(ptr) == NUMBER_VALUE(tag)) ||
+			 (SYMBOL_P(CAR(ptr)) && SYMBOL_P(tag) &&
+			  CAR(ptr)->data.atom == tag->data.atom))) {
+			found = 1;
+			break;
+		    }
+		}
+		if (ptr == NIL) {
+		    for (ptr = list; ptr != body; ptr = CDR(ptr)) {
+			if (CAR(ptr)->type == tag->type &&
+			    ((CAR(ptr) == NIL && tag->type == LispNil_t) ||
+			     (CAR(ptr) == T && tag->type == LispTrue_t) ||
+			     (NUMBER_P(ptr) && NUMBER_P(tag) &&
+			      NUMBER_VALUE(ptr) == NUMBER_VALUE(tag)) ||
+			     (SYMBOL_P(CAR(ptr)) && SYMBOL_P(tag) &&
+			      CAR(ptr)->data.atom == tag->data.atom))) {
+			    found = 1;
+			    break;
+			}
+		    }
+		}
+		/* XXX no search for duplicated tags, if there are
+		 * duplicated tags, will just search the body for the tag,
+		 * if the end of the list is reached, search again from
+		 * beginning. This is (I believe) allowable for an interpreter,
+		 * but if (byte) compiled code is to be generated, duplicated
+		 * tags must not be allowed. */
+		if ((body = ptr) == NIL)
+		    LispDestroy(mac, "no such tag %s, at %s",
+				LispStrObj(mac, tag), fname);
+
+		/* search for start of code */
+		for (body = CDR(body); body != NIL; body = CDR(body)) {
+		    if (CAR(body)->type == LispCons_t)
+			break;
+		}
+
+		/* just jumped to the bottom of the code body */
+		if (body == NIL)
+		    break;
+	    }
+	    else
+		/* 'go' not called */
+		break;
+	    *pdid_jump = 1;
+	}
+	*pdid_jump = 0;
+    }
+    LispEndBlock(mac, block);
+    if (*pdid_jump)
+	*pres = mac->block.block_ret;
+
+    return (*pres);
+}
+
+LispObj *
 Lisp_Terpri(LispMac *mac, LispObj *list, char *fname)
 {
     LispObj *stream;
@@ -2106,7 +2315,7 @@ Lisp_Throw(LispMac *mac, LispObj *list, char *fname)
 	int jmp = 1;
 	LispBlock *block = mac->block.block[--blevel];
 
-	if (tag->type == block->tag.type) {
+	if (block->type == LispBlockCatch && tag->type == block->tag.type) {
 	    switch(tag->type) {
 		case LispNil_t:
 		case LispTrue_t:
@@ -2128,6 +2337,7 @@ Lisp_Throw(LispMac *mac, LispObj *list, char *fname)
 	    }
 	    if (jmp) {
 		mac->block.block_ret = EVAL(CAR(CDR(list)));
+		LispBlockUnwind(mac);
 		longjmp(block->jmp, 1);
 	    }
 	}
@@ -2178,6 +2388,35 @@ LispObj *
 Lisp_Unless(LispMac *mac, LispObj *list, char *fname)
 {
     return (_LispWhenUnless(mac, list, 0));
+}
+
+LispObj *
+Lisp_UnwindProtect(LispMac *mac, LispObj *list, char *fname)
+{
+    LispObj *prot = CAR(list), *res, **pres = &res;
+    int did_jump, *pdid_jump = &did_jump;
+    LispBlock *block;
+
+    /* run protected code */
+    *pres = NIL;
+    *pdid_jump = 1;
+    block = LispBeginBlock(mac, NIL, LispBlockProtect);
+    if (setjmp(block->jmp) == 0) {
+	*pres = EVAL(prot);
+	*pdid_jump = 0;
+    }
+    LispEndBlock(mac, block);
+    if (!mac->destroyed && *pdid_jump)
+	*pres = mac->block.block_ret;
+
+    /* run cleanup, unprotected code */
+    if (CDR(list) != NIL)
+	res = Lisp_Progn(mac, CDR(list), fname);
+    else if (mac->destroyed)
+	/* no cleanup code */
+	LispDestroy(mac, NULL);	/* special handling if mac->destroyed */
+
+    return (res);
 }
 
 LispObj *

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.9 2001/10/15 07:05:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.10 2001/10/18 03:15:22 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -38,11 +38,11 @@
 /*
  * Defines
  */
-#define	CAR(list)		(list->data.cons.car)
-#define	CAAR(list)		(list->data.cons.car->data.cons.car)
-#define	CADR(list)		(list->data.cons.cdr->data.cons.car)
-#define CDR(list)		(list->data.cons.cdr)
-#define CDAR(list)		(list->data.cons.car->data.cons.cdr)
+#define	CAR(list)		((list)->data.cons.car)
+#define	CAAR(list)		((list)->data.cons.car->data.cons.car)
+#define	CADR(list)		((list)->data.cons.cdr->data.cons.car)
+#define CDR(list)		((list)->data.cons.cdr)
+#define CDAR(list)		((list)->data.cons.car->data.cons.cdr)
 #define CONS(car, cdr)		LispNewCons(mac, car, cdr)
 #define EVAL(list)		LispEval(mac, list)
 #define ATOM(atom)		LispNewAtom(mac, atom)
@@ -56,8 +56,8 @@
 #define INTEGER(i)		LispNewInteger(mac, i)
 #define OPAQUE(data, type)	LispNewOpaque(mac, (void*)((long)data), type)
 #define CHECKO(obj, typ)						\
-	obj->type == LispOpaque_t && 					\
-	(obj->data.opaque.type == typ || obj->data.opaque.type == 0)
+	(obj)->type == LispOpaque_t && 					\
+	 ((obj)->data.opaque.type == typ || (obj)->data.opaque.type == 0)
 #define PROTECT(key, list)	LispProtect(mac, key, list)
 #define UPROTECT(key, list)	LispUProtect(mac, key, list)
 
@@ -67,21 +67,21 @@
 #define	STRPTR(obj)		(obj)->data.atom->string
 
 #define NUMBER_P(obj)			\
-	(obj->type == LispReal_t || obj->type == LispInteger_t)
+	((obj)->type == LispReal_t || (obj)->type == LispInteger_t)
 
 /* assumes NUMBER_P is true */
 #define NUMBER_VALUE(obj)		\
 	(obj->type == LispReal_t ? obj->data.real : obj->data.integer)
 
 #define INTEGER_P(obj)			\
-	(obj->type == LispInteger_t ||	\
-	 (obj->type == LispReal_t && (long)obj->data.real == obj->data.real))
+	((obj)->type == LispInteger_t ||	\
+	 ((obj)->type == LispReal_t && (long)(obj)->data.real == (obj)->data.real))
 
 /* positive integer */
 #define INDEX_P(obj)		(INTEGER_P(obj) && NUMBER_VALUE(obj) >= 0)
 
-#define SYMBOL_P(obj)		obj->type == LispAtom_t
-#define STRING_P(obj)		obj->type == LispString_t
+#define SYMBOL_P(obj)		((obj)->type == LispAtom_t)
+#define STRING_P(obj)		((obj)->type == LispString_t)
 
 /*
  * Types

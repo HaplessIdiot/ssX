@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.8 2001/10/15 15:36:51 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.9 2001/10/18 03:15:25 paulo Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -75,6 +75,8 @@ LispObj *Lisp_XtCoerceToWidgetList(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtAddCallback(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtAppInitialize(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtAppMainLoop(LispMac*, LispObj*, char*);
+LispObj *Lisp_XtAppPending(LispMac*, LispObj*, char*);
+LispObj *Lisp_XtAppProcessEvent(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtCreateWidget(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtCreateManagedWidget(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtCreatePopupShell(LispMac*, LispObj*, char*);
@@ -86,6 +88,7 @@ LispObj *Lisp_XtPopdown(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtRealizeWidget(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtSetSensitive(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtSetValues(LispMac*, LispObj*, char*);
+LispObj *Lisp_XtWidgetToApplicationContext(LispMac*, LispObj*, char*);
 
 LispObj *_LispXtCreateWidget(LispMac*, LispObj*, char*, int);
 
@@ -114,7 +117,9 @@ static LispBuiltin lispbuiltins[] = {
     {"XT-COERCE-TO-WIDGET-LIST",	Lisp_XtCoerceToWidgetList,	1,2,2,},
     {"XT-ADD-CALLBACK",			Lisp_XtAddCallback,		1,3,4,},
     {"XT-APP-INITIALIZE",		Lisp_XtAppInitialize,		1,2,4,},
+    {"XT-APP-PENDING",			Lisp_XtAppPending,		1,1,1,},
     {"XT-APP-MAIN-LOOP",		Lisp_XtAppMainLoop,		1,1,1,},
+    {"XT-APP-PROCESS-EVENT",		Lisp_XtAppProcessEvent,		1,1,2,},
     {"XT-CREATE-MANAGED-WIDGET",	Lisp_XtCreateManagedWidget,	1,3,4,},
     {"XT-CREATE-WIDGET",		Lisp_XtCreateWidget,		1,3,4,},
     {"XT-CREATE-POPUP-SHELL",		Lisp_XtCreatePopupShell,	1,3,4,},
@@ -126,6 +131,7 @@ static LispBuiltin lispbuiltins[] = {
     {"XT-REALIZE-WIDGET",		Lisp_XtRealizeWidget,		1,1,1,},
     {"XT-SET-SENSITIVE",		Lisp_XtSetSensitive,		1,2,2,},
     {"XT-SET-VALUES",			Lisp_XtSetValues,		1,2,2,},
+    {"XT-WIDGET-TO-APPLICATION-CONTEXT",Lisp_XtWidgetToApplicationContext,1,1,1,},
 };
 
 LispModuleData xtLispModuleData = {
@@ -178,6 +184,17 @@ xtLoadModule(LispMac *mac)
     (void)LispSetVariable(mac, ATOM2("XT-GRAB-NONE-EXCLUSIVE"),
 			  REAL(XtGrabNonexclusive), fname, 0);
 
+    /* parameters for XtAppProcessEvent */
+    (void)LispSetVariable(mac, ATOM2("XT-IM-XEVENT"),
+			  REAL(XtIMXEvent), fname, 0);
+    (void)LispSetVariable(mac, ATOM2("XT-IM-TIMER"),
+			  REAL(XtIMTimer), fname, 0);
+    (void)LispSetVariable(mac, ATOM2("XT-IM-ALTERNATE-INPUT"),
+			  REAL(XtIMAlternateInput), fname, 0);
+    (void)LispSetVariable(mac, ATOM2("XT-IM-SIGNAL"),
+			  REAL(XtIMSignal), fname, 0);
+    (void)LispSetVariable(mac, ATOM2("XT-IM-ALL"),
+			  REAL(XtIMSignal), fname, 0);
     GCUProtect();
 
     qCardinal = XrmPermStringToQuark(XtRCardinal);
@@ -385,6 +402,53 @@ Lisp_XtAppMainLoop(LispMac *mac, LispObj *list, char *fname)
 		    LispStrObj(mac, CAR(list)), fname);
 
     XtAppMainLoop((XtAppContext)(CAR(list)->data.opaque.data));
+
+    return (NIL);
+}
+
+LispObj *
+Lisp_XtAppPending(LispMac *mac, LispObj *list, char *fname)
+{
+    if (!CHECKO(CAR(list), xtAppContext_t))
+	LispDestroy(mac,
+		    "cannot convert %s to XtAppContext, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+
+    return (REAL(XtAppPending((XtAppContext)(CAR(list)->data.opaque.data))));
+}
+
+LispObj *
+Lisp_XtAppProcessEvent(LispMac *mac, LispObj *list, char *fname)
+{
+    XtInputMask mask;
+    XtAppContext appcon;
+
+    if (!CHECKO(CAR(list), xtAppContext_t))
+	LispDestroy(mac,
+		    "cannot convert %s to XtAppContext, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+
+    appcon = (XtAppContext)(CAR(list)->data.opaque.data);
+    list = CDR(list);
+    if (list == NIL)
+	mask = XtIMAll;
+    else if (!INTEGER_P(CAR(list)))
+	LispDestroy(mac, "expecting XtInputMask, at %s", fname);
+    mask = NUMBER_VALUE(CAR(list));
+    switch (mask) {
+	case 0:
+	    break;
+	case XtIMXEvent:
+	case XtIMTimer:
+	case XtIMAlternateInput:
+	case XtIMSignal:
+	case XtIMAll:
+	    XtAppProcessEvent(appcon, mask);
+	    break;
+	default:
+	    LispDestroy(mac, "bad XtInputMask, at %s", mask, fname);
+	    break;
+    }
 
     return (NIL);
 }
@@ -701,6 +765,21 @@ Lisp_XtSetValues(LispMac *mac, LispObj *list, char *fname)
     LispFreeResources(resources);
 
     return (NIL);
+}
+
+LispObj *
+Lisp_XtWidgetToApplicationContext(LispMac *mac, LispObj *list, char *fname)
+{
+    Widget widget;
+    XtAppContext appcon;
+
+    if (!CHECKO(CAR(list), xtWidget_t))
+	LispDestroy(mac, "cannot convert %s to Widget, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+    widget = (Widget)(CAR(list)->data.opaque.data);
+    appcon = XtWidgetToApplicationContext(widget);
+
+    return (OPAQUE(appcon, xtAppContext_t));
 }
 
 static Resources *
