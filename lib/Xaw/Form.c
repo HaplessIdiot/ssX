@@ -43,7 +43,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Form.c,v 1.10 1999/04/04 10:05:24 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Form.c,v 1.11 1999/04/11 13:10:31 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -1014,7 +1014,13 @@ XawFormQueryGeometry(Widget widget, XtWidgetGeometry *request,
  * Set or reset figuring (ignored if not realized)
  */
 void
-XawFormDoLayout(Widget w, Bool force)
+XawFormDoLayout(Widget w,
+#if NeedWidePrototypes
+		Bool force
+#else
+		Boolean force
+#endif
+)
 {
     Widget *childP;
     FormWidget fw = (FormWidget)w;

@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/fonts/encodings/Imakefile,v 1.1 1999/01/31 05:28:09 dawes Exp $
 
 OBJS = EncObjComp(adobe-dingbats) EncObjComp(adobe-standard) \
 	EncObjComp(adobe-symbol) \
@@ -12,7 +12,7 @@ OBJS = EncObjComp(adobe-dingbats) EncObjComp(adobe-standard) \
 	EncObj(mulearabic-2) EncObj(mulelao-1) EncObj(tcvn-0) \
 	EncObjComp(viscii1.1-1)
 
-MakeEncodings($(ENCODINGSDIR))
+MakeEncodings($(ENCODINGSDIR),.)
 
 CompEncodingTarget(adobe-dingbats)
 CompEncodingTarget(adobe-standard)

@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.22 1999/03/21 07:34:28 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.23 1999/04/25 10:01:27 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -854,6 +854,7 @@ CreateHScrollBar(TextWidget ctx)
 
   PositionHScrollBar(ctx);
   TextSinkResize(ctx->text.sink);
+
   if (XtIsRealized((Widget)ctx))
     {
       XtRealizeWidget(hbar);
@@ -1342,68 +1343,42 @@ _BuildLineTable(TextWidget ctx, XawTextPosition position, int line)
       ctx->text.lt.base_line = base_line;
   }
 
-  /* CONSTCOND */
-  while (True)
-    {
-      XawTextSinkFindPosition(ctx->text.sink, position, ctx->text.left_margin,
-			      wwidth, ctx->text.wrap == XawtextWrapWord,
-			      &end, &width, &height);
+    /* CONSTCOND */
+    while (True) {
+	XawTextSinkFindPosition(ctx->text.sink, position, ctx->text.left_margin,
+				wwidth, ctx->text.wrap == XawtextWrapWord,
+				&end, &width, &height);
 
-      if (lt->position != position)
-	_XawTextNeedsUpdating(ctx, position,
-			      end <= position ? position + 1 : end);
+	if (lt->position != position)
+	    _XawTextNeedsUpdating(ctx, position,
+				  end <= position ? position + 1 : end);
 
-      lt->y = y;
-      lt->position = position;
-      lt->textWidth = width;
-      y += height;
+	lt->y = y;
+	lt->position = position;
+	lt->textWidth = width;
+	y += height;
 
-      if (ctx->text.wrap == XawtextWrapNever) {
-	  XawTextPosition pos = end;
-
-	  end = SrcScan(src, position, XawstEOL, XawsdRight, 1, True);
-	  if (end != pos && end < ctx->text.lastPos) {
-	      char msg[128];
-
-	      XmuSnprintf(msg, sizeof(msg), "Xaw Text Widget %s:\n %s.",
-			  ctx->core.name,
-			  "Text line too large, changing wrap mode to LINE");
-	      XtAppWarning(XtWidgetToApplicationContext((Widget)ctx), msg);
-	      ctx->text.wrap = XawtextWrapLine;
-	      return (_BuildLineTable(ctx, ctx->text.lt.top, 0));
-	  }
-      }
-
-      if (end == ctx->text.lastPos
-	  && SrcScan(src, position, XawstEOL, XawsdRight, 1, False) == end)
-	{
-	  Boolean first = True;
-
-	  position = end;
-	  while (line++ < ctx->text.lt.lines)
-	    {
-	      end = lt->position;
-	      ++lt;
-	      lt->y = y;
-	      ++position;
-	      if (!first && lt->position - end != 1)
-		_XawTextNeedsUpdating(ctx, position - 1, position);
-	      lt->position = position;
-	      lt->textWidth = 0;
-	      y += height;
-	      first = False;
+	if (end > ctx->text.lastPos) {
+	    position = end;
+	    _XawTextNeedsUpdating(ctx, end, end + ctx->text.lt.lines - line);
+	    while (line++ < ctx->text.lt.lines) {
+		++lt;
+		lt->y = y;
+		lt->position = ++position;
+		lt->textWidth = 0;
+		y += height;
 	    }
-	  return (end);
+	    return (ctx->text.lastPos);
 	}
 
-      ++lt;
-      ++line;
-      position = end;
+	++lt;
+	++line;
+	position = end;
 
-      if (line > ctx->text.lt.lines)
-	return (position);
+	if (line > ctx->text.lt.lines)
+	    return (position);
     }
-  /*NOTREACHED*/
+    /*NOTREACHED*/
 }
 
 /*
@@ -1536,6 +1511,8 @@ XawTextScroll(TextWidget ctx, int vlines, int hpixels)
    */
   if (hpixels < 0 && ctx->text.left_margin - hpixels > ctx->text.r_margin.left)
     hpixels = ctx->text.left_margin - ctx->text.r_margin.left;
+  if (hpixels > 0)
+    ctx->text.clear_to_eol = True;
   ctx->text.left_margin -= hpixels;
 
   /*
@@ -1858,7 +1835,7 @@ VJump(Widget w, XtPointer closure, XtPointer callData)
       if (scroll)
   XawTextScroll(ctx, vlines, 0);
       else
-	_XawTextBuildLineTable(ctx, top, True);
+	_BuildLineTable(ctx, top, 0);
   _XawTextExecuteUpdate(ctx);
     }
 }
@@ -2236,8 +2213,10 @@ _SetSelection(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 
     for (i = 0; i < src->textSrc.num_text; i++) {
 	TextWidget tw = (TextWidget)src->textSrc.text[i];
+	Bool update = ctx->text.old_insert < 0;
 
-	_XawTextPrepareToUpdate(tw);
+	if (update)
+	    _XawTextPrepareToUpdate(tw);
 	if (left < tw->text.s.left) {
 	    pos = Min(right, tw->text.s.left);
 	    _XawTextNeedsUpdating(tw, left, pos);
@@ -2257,7 +2236,7 @@ _SetSelection(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 
 	tw->text.s.left = left;
 	tw->text.s.right = right;
-	if (tw->text.old_insert >= 0) /* Update in progress. */
+	if (update)
 	    _XawTextExecuteUpdate(tw);
     }
 
@@ -3821,7 +3800,13 @@ XawTextGetSource(Widget w)
 }
 
 void
-XawTextDisplayCaret(Widget w, Bool display_caret)
+XawTextDisplayCaret(Widget w,
+#if NeedWidePrototypes
+	int display_caret
+#else
+	Boolean display_caret
+#endif
+)
 {
   TextWidget ctx = (TextWidget)w;
 
@@ -3851,7 +3836,13 @@ XawTextDisplayCaret(Widget w, Bool display_caret)
  *	The position of the text found, or XawTextSearchError on an error
  */
 XawTextPosition
-XawTextSearch(Widget w, XawTextScanDirection dir, XawTextBlock *text)
+XawTextSearch(Widget w,
+#if NeedWidePrototypes
+	int dir,
+#else
+	XawTextScanDirection dir,
+#endif
+	XawTextBlock *text)
 {
   TextWidget ctx = (TextWidget)w;
 

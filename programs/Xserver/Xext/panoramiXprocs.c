@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.7 1999/02/01 11:55:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.8 1999/03/06 13:12:21 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -1865,8 +1865,8 @@ sizeof(xRectangle));
 	for (i = nrects; i; i--) {
 	    modPtr->x = origPtr->x - x_off;
 	    modPtr->y = origPtr->y - y_off;
-	    modPtr->width = origPtr->width - x_off;
-	    modPtr++->height = origPtr++->height - y_off;
+	    modPtr->width = origPtr->width;
+	    modPtr++->height = origPtr++->height;
 	}
 	stuff->drawable = pPanoramiXWin->info[j].id;
 	stuff->gc = pPanoramiXGC->info[j].id;
@@ -2340,6 +2340,8 @@ int PanoramiXGetImage(register ClientPtr client)
         while (height - linesDone > 0) {
 	  nlines = min(linesPerBuf, height - linesDone);
 	  if (pDraw->type == DRAWABLE_WINDOW) {
+	    int Bpp = BitsPerPixel(pDraw->depth) >> 3;
+
 	    SrcBox.x1 = pDraw->x + stuff->x;
 	    SrcBox.y1 = pDraw->y + stuff->y + linesDone;
 	    SrcBox.x2 = SrcBox.x1 + stuff->width;
@@ -2363,6 +2365,7 @@ int PanoramiXGetImage(register ClientPtr client)
 		srcParts.y2 = min(SrcBox.y2 - panoramiXdataPtr[j].y,
 						    panoramiXdataPtr[j].height);
 		srcParts.width = srcParts.x2 - srcParts.x1;
+
 		srcParts.ByteWidth = PixmapBytePad(srcParts.width,pDraw->depth);
 		srcParts.buf = (char *) Xalloc(nlines * srcParts.ByteWidth);
 		locDraw = (DrawablePtr) SecurityLookupIDByClass(client,
@@ -2377,13 +2380,15 @@ int PanoramiXGetImage(register ClientPtr client)
 					   stuff->format,
 					   (unsigned long)stuff->planeMask,
 					   srcParts.buf);
+
 		BufPtr = pBuf
-		    + srcParts.x1 - stuff->x - (pDraw->x - panoramiXdataPtr[j].x)
+		    + (Bpp * (srcParts.x1 - stuff->x - (pDraw->x - panoramiXdataPtr[j].x)))
 		    + widthBytesLine * (srcParts.y1 - stuff->y
 				- (pDraw->y + linesDone - panoramiXdataPtr[j].y));
-		PartPtr = srcParts.buf;
+		PartPtr = srcParts.buf; 
+
 		for (k = (srcParts.y2 - srcParts.y1); k; k--) {
-		    memmove(BufPtr, PartPtr, srcParts.width);
+		    memmove(BufPtr, PartPtr, srcParts.width * Bpp);
 		    BufPtr += widthBytesLine;
 		    PartPtr += srcParts.ByteWidth;
 		}

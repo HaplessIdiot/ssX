@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.3 1999/04/17 07:05:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.4 1999/04/25 10:01:44 dawes Exp $ */
 
 
 #define NEED_REPLIES
@@ -19,6 +19,7 @@
 #include "scrnintstr.h"
 #include "servermd.h"
 #define _XF86DGA_SERVER_
+#include "xf86dga.h"
 #include "xf86dgastr.h"
 #include "swaprep.h"
 #include "dgaproc.h"

@@ -3,12 +3,13 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.13 1999/04/11 13:10:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.14 1999/04/17 07:06:00 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
 #include "xf86Priv.h"
 #include "dgaproc.h"
+#include "xf86dgastr.h"
 #include "colormapst.h"
 #include "pixmapstr.h"
 #include "inputstr.h"
@@ -518,6 +519,23 @@ DGAStealKeyEvent(int index, xEvent *e)
 
    if(pScreenPriv->client && (pScreenPriv->input & e->u.u.type)){ 
 	/* steal this event */
+	DeviceIntPtr keybd = (DeviceIntPtr)xf86Info.pKeyboard;
+	KeyClassPtr keyc = keybd->key;
+	int keycode = e->u.u.detail;
+	BYTE *kptr;
+
+	kptr = &keyc->down[keycode >> 3];
+
+	e->u.keyButtonPointer.eventX =  0;
+	e->u.keyButtonPointer.eventY =  0;
+	e->u.keyButtonPointer.rootX =   0;
+	e->u.keyButtonPointer.rootY =   0;
+
+	/* clear the keypress state */
+	if (e->u.u.type == KeyPress) 
+	    *kptr &= ~(1 << (keycode & 7));
+
+	WriteEventsToClient(pScreenPriv->client, 1, e);
 	return TRUE;
    } 
 
@@ -557,6 +575,7 @@ Bool
 DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
 {
    DGAScreenPtr pScreenPriv;
+   Bool GrabEvent;
 
    if(DGAScreenIndex < 0) /* no DGA */
 	return FALSE;
@@ -576,17 +595,42 @@ DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
 	e->u.keyButtonPointer.time = GetTimeInMillis();
    }
 
-   if(pScreenPriv->client && (pScreenPriv->input & e->u.u.type)){ 
-	/* steal this event */
+  
+   GrabEvent = FALSE;
+   if(pScreenPriv->client & !pScreenPriv->client->clientGone) {
+	switch(e->u.u.type) {
+	case MotionNotify:
+	     if(pScreenPriv->input & PointerMotionMask) 
+		GrabEvent = TRUE;
+	     break;
+	case ButtonPress:
+	     if(pScreenPriv->input & ButtonPressMask) 
+		GrabEvent = TRUE;
+	     break;
+	case ButtonRelease:
+	     if(pScreenPriv->input & ButtonReleaseMask) 
+		GrabEvent = TRUE;
+	     break;
+	}
 
-	e->u.keyButtonPointer.eventX =  dx;
-	e->u.keyButtonPointer.eventY =  dy;
-	e->u.keyButtonPointer.rootX =   dx;
-	e->u.keyButtonPointer.rootY =   dy;
+	if(GrabEvent){ /* steal this event */
+	    dgaEvent de;
+	    
+	    de.u.u.type = e->u.u.type + DGAEventBase;
+            de.u.u.sequenceNumber = pScreenPriv->client->sequence;
+	    de.u.event.dx = dx;
+	    de.u.event.dy = dy;
+	    de.u.event.time = e->u.keyButtonPointer.time;
+	    de.u.event.screen = index;
+	    de.u.event.state = e->u.keyButtonPointer.state;
 
-	WriteEventsToClient(pScreenPriv->client, 1, e);
+ErrorF("%i!\n", sizeof(xEvent));
+
+	    WriteEventsToClient(pScreenPriv->client, 1, (xEvent*)&de);
+	}
 	return TRUE;
-   } 
+   }
+	
 
    /* Not sure how best to handle this stuff. It's only for
       DGA 1.0 compatibility.  Hopefully, we can remove this

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.5 1999/04/11 13:10:29 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.6 1999/04/17 07:05:41 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -9,7 +9,6 @@ Copyright (c) 1995  XFree86 Inc.
 #ifndef _XF86DGASTR_H_
 #define _XF86DGASTR_H_
 
-#include "xf86dga.h"
 #include "xf86dga1str.h"
 
 #define XF86DGANAME "XFree86-DGA"
@@ -265,6 +264,29 @@ typedef struct {
     CARD32	pad7 B32;
 } xXDGAFlushReply;
 #define sz_xXDGAFlushReply	32
+
+typedef struct {
+  union {
+    struct {
+      BYTE type;
+      BYTE detail;
+      CARD16 sequenceNumber B16;
+    } u;
+    struct {
+      CARD32 pad0 B32;
+      Time time B32;
+      INT16 dx B16;
+      INT16 dy B16;
+      INT16 screen B16;
+      KeyButMask state B16;
+      CARD32 pad1 B32;
+      CARD32 pad2 B32;
+      CARD32 pad3 B32;
+      CARD32 pad4 B32;
+    } event;
+  } u;
+} dgaEvent;
+
 
 #endif /* _XF86DGASTR_H_ */
 

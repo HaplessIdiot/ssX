@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/lib/Xaw/List.c,v 1.7 1998/10/03 08:42:07 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/List.c,v 1.8 1999/03/14 03:21:10 dawes Exp $ */
 
 /*
  * List.c - List widget
@@ -1180,7 +1180,13 @@ XawListDestroy(Widget w)
  *	If nitems is <= 0 then the list needs to be NULL terminated
  */
 void
-XawListChange(Widget w, char **list, int nitems, int longest, Bool resize_it)
+XawListChange(Widget w, char **list, int nitems, int longest,
+#if NeedWidePrototypes
+	int resize_it
+#else
+	Boolean resize_it
+#endif
+)
 {
   ListWidget lw = (ListWidget)w;
   Dimension new_width = XtWidth(w);

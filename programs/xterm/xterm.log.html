@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.21 1999/04/25 10:03:04 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.22 1999/04/29 09:14:10 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_99">Patch #99 - 1999/5/2 - XFree86 3.9Pk</A>
 <LI><A HREF="#xterm_98">Patch #98 - 1999/4/26 - XFree86 3.9Pk</A>
 <LI><A HREF="#xterm_97">Patch #97 - 1999/4/25 - XFree86 3.9Pk</A>
 <LI><A HREF="#xterm_96">Patch #96 - 1999/4/19 - XFree86 3.9Pj</A>
@@ -142,6 +143,36 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
+<H1><A NAME="xterm_99">Patch #99 - 1999/5/2 - XFree86 3.9Pk</A></H1>
+<ul>
+	<li>correct logic that computes num_ptrs count of the number of indices
+	  into the screen buffer.  This is the maximum of the colors and
+	  character-set indices; was incorrect in patch #97.
+
+	<li>correct argument type for sigsetjmp, incidental change in patch
+	  #96's Unix88 PTY patch (reported by Bram Moolenaar).
+
+	<li>correct description of secondary DA in ctlseqs.ms (reported by Bram
+	  Moolenaar).
+
+	<li>decouple the backarrowKey and ptyInitialErase resources by
+	  adding a new resource backarrowKeyIsErase, to accommodate people
+	  using applications which have hardcoded tests for characters 8 and
+	  127 rather than relying on the stty settings.
+
+	<li>modify the UTF-8 decoder so that all possible illegal UTF-8
+	  sequences are properly represented by U+FFFD.  This should be very
+	  helpful for developers of code that output UTF-8 strings for
+	  debugging.  See the file utf-8-test.txt in
+	  http://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts.tar.gz for a
+	  demonstration text that contains numerous illegal UTF-8 values. 
+	  (patch by Markus Kuhn).
+
+	<li>correct a place in ScrnRefresh where I was filling the high byte of
+	  a wide character with a space rather than a null (reported by Markus
+	  Kuhn).
+</ul>
+
 <H1><A NAME="xterm_98">Patch #98 - 1999/4/26 - XFree86 3.9Pk</A></H1>
 <ul>
 	<li>correct data manipulation in unparseputc(), broken for
@@ -191,8 +222,8 @@ xc/programs/Xserver/hw/xfree86).
 	  The more obvious -utf8 and +utf8 would conflict with xterm's
 	  -ut and +ut (utmp) options.
 
-	  The utf8 changes were requested by Markus Kuhn
-	  &lt;Markus.Kuhn@cl.cam.ac.uk&gt;.  This patch does not complete utf8
+	  The UTF-8 changes were requested by Markus Kuhn
+	  &lt;Markus.Kuhn@cl.cam.ac.uk&gt;.  This patch does not complete UTF-8
 	  implementation, but makes it usable, i.e., display and refresh work,
 	  and I am able to display the test cases which Markus provides.
 	  More work is needed to complete this feature:

@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.11 1999/04/18 04:08:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.12 1999/04/29 12:24:53 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -30,6 +30,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+#include "xf86OSpriv.h"
 
 #if defined(__powerpc__)
 #include <machine/absolute.h>
@@ -43,7 +44,7 @@ typedef struct
 {
 	char	name[16];
 	unsigned long	Base;
-	long	Size;
+	unsigned long	Size;
 	char	*ptr;
 	int	RefCnt;
 }
@@ -76,8 +77,8 @@ smemCleanup()
 	}
 }
 
-pointer
-xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
+static pointer
+MapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
 {
 	static int once;
 	int	free_slot = -1;
@@ -100,7 +101,7 @@ xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 	}
 	if (i == MAX_SMEMS && free_slot == -1)
 	{
-		FatalError("xf86MapVidMem: failed to smem_create Base %x Size %x (out of SMEMS entries)\n",
+		FatalError("MapVidMem: failed to smem_create Base %x Size %x (out of SMEMS entries)\n",
 			Base, Size);
 	}
 
@@ -109,7 +110,7 @@ xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 	smems[i].Base = Base;
 	smems[i].Size = Size;
 	
-        xf86MsgVerb(X_INFO, 3, "xf86MapVidMem: Base=0x%x Size=0x%x\n",
+        xf86MsgVerb(X_INFO, 3, "MapVidMem: Base=0x%x Size=0x%x\n",
         	Base, Size);
 
 #if defined(__powerpc__)
@@ -125,28 +126,28 @@ xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 		/* check if there is a stale segment around */
 		if (smem_remove(smems[i].name) == 0) {
 	        	xf86Msg(X_INFO,
-			    "xf86MapVidMem: removed stale smem_ segment %s\n",
+			    "MapVidMem: removed stale smem_ segment %s\n",
 		            smems[i].name);
 			smems[i].ptr = smem_create(smems[i].name, 
 						(char *)Base, Size, SM_READ|SM_WRITE);
 		}
 	        if (smems[i].ptr == NULL) {
 			*smems[i].name = '\0';
-			FatalError("xf86MapVidMem: failed to smem_create Base %x Size %x (%s)\n",
+			FatalError("MapVidMem: failed to smem_create Base %x Size %x (%s)\n",
 				Base, Size, strerror(errno));
 		}
 	}
-        xf86MsgVerb(X_INFO, 3, "xf86MapVidMem: Base=0x%x Size=0x%x Ptr=0x%x\n",
+        xf86MsgVerb(X_INFO, 3, "MapVidMem: Base=0x%x Size=0x%x Ptr=0x%x\n",
         		 Base, Size, smems[i].ptr);
 	return smems[i].ptr;
 }
 
-void
-xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
+static void
+UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
 	int	i;
 
-	xf86MsgVerb(X_INFO, 3, "xf86UnMapVidMem: Base/Ptr=0x%x Size=0x%x\n",
+	xf86MsgVerb(X_INFO, 3, "UnMapVidMem: Base/Ptr=0x%x Size=0x%x\n",
 		Base, Size);
 	for (i = 0; i < MAX_SMEMS; i++)
 	{
@@ -158,7 +159,7 @@ xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 
 			(void)smem_create(NULL, smems[i].ptr, 0, SM_DETACH);
 			xf86MsgVerb(X_INFO, 3,
-                           "xf86UnMapVidMem: smem_create(%s, 0x%08x, ... "
+                           "UnMapVidMem: smem_create(%s, 0x%08x, ... "
                            "SM_DETACH)\n", smems[i].name, smems[i].ptr);
 			(void)smem_remove(smems[i].name);
 			*smems[i].name = '\0';
@@ -167,14 +168,22 @@ xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 		}
 	}
 	xf86MsgVerb(X_WARNING, 2,
-		"xf86UnMapVidMem: no SMEM found for Base = %lx Size = %lx\n",
+		"UnMapVidMem: no SMEM found for Base = %lx Size = %lx\n",
 	       	Base, Size);
 }
 
-Bool
-xf86LinearVidMem()
+
+void
+xf86OSInitVidMem(VidMemInfoPtr pVidMem)
 {
-	return(TRUE);
+  pVidMem->linearSupported = TRUE;
+  pVidMem->mapMem = MapVidMem;
+  pVidMem->unmapMem = UnMapVidMem;
+  pVidMem->mapMemSparse = 0;
+  pVidMem->unmapMemSparse = 0;
+  pVidMem->setWC = 0;
+  pVidMem->undoWC = 0;
+  pVidMem->initialised = TRUE;
 }
 
 
@@ -251,10 +260,4 @@ ppcPciIoMap(int bus)
 }
 
 #endif
-
-void
-xf86MapReadSideEffects(int ScreenNum, int Flags, pointer Base,
-	unsigned long Size)
-{
-}
 

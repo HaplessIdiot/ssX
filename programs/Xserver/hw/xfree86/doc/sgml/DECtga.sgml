@@ -3,52 +3,66 @@
 
 <title>Information for DEC 21030 Users (aka TGA)
 <author>The XFree86 Project, Inc.
-<date>17th October 1996
+<date>April 29th, 1999
 <toc>
 
 <p>
 <sect>DEC 21030
 <p>
 <itemize>
-<item>The DEC 21030 is now supported by XFree86 in this first release of
-XFree86 3.2. This server is still experimental but seems to work well.
+<item>The DEC 21030 is supported by XFree86 4.0.  The driver is now
+partially accelerated.  The built-in graphics on the Multia is
+supported in 8-plane mode, and PCI cards with 8 or 16 MB framebuffers
+are supported in 24-plane mode.
 
 <item>Current Known Problems
 
 <enum>
-<item>Only one modeline is accepted, this will be the first viable one
-that matches other criteria.
 
-<item>Due to the above, Virtual Resolutions is not supported either.
+<item>Virtual desktops and multiple modelines do not work.  You should
+specify only one modeline.
 
-<item>VideoRam is currently limited to 2MB.
+<item>Hardware cursor is only supported on systems with the BT485
+ramdac, ie the Multia.
 
-<item>The 8plane 21030 is currently the only supported chipset. I don't
-have access to the 24plane or the 24plane3D chip.
+<item>After the server has been run using the hardware cursor, the
+Linux TGA console cursor (which also uses the hardware cursor) is
+shifted down by one pixel.
+
 </enum>
 
 <item>The following options may be specified for the 21030 driver:
 <descrip>
-<tag>Option &dquot;dac_8_bit&dquot;</tag>
-	Turn on 8Bit BT485 RamDac.
-<tag>Option &dquot;dac_6_bit&dquot;</tag>
-	Turn on 6Bit BT485 RamDac.
-<tag>MemBase &dquot;0x???????&dquot;</tag>
-	If the server does not detect the base address of the 21030, then
-	Check /proc/pci for the 21030 and look for the "Prefetchable 32 bit
-	memory at 0x???????" and enter this as your MemBase setting.
+<tag>BusID "PCI:?:??:?"</tag> Currently it is necessary to
+        specify the BusID so that the server will find the card.
+        Check /proc/pci and look for the bus, device, and function
+        numbers in the 21030 section.  On a Multia, this should be
+        &dquot;PCI:0:11:0&dquot;.
+	
+<tag>MemBase "0x???????"</tag> If the server does not
+	detect the base address of the 21030, then check /proc/pci for
+	the 21030 and look for the "Prefetchable 32 bit memory
+	at 0x???????" and enter this as your MemBase setting.
+	
+<tag>Option "NoAccel"</tag>
+        Disables acceleration.
+
+<tag>Option "swcursor"</tag>
+        Disables the hardware cursor.
 
 </descrip>
-<item>No acceleration features of the 21030 have been taken advantage of yet!
 </itemize>
 
-<sect> Additional Notes <p>
-The code for the 21030 as yet - has only been tested on DEC's UDB box, better
-known as the Multia, in a Linux environment.
-
+<sect>Authors
 <p>
+<itemize>
+<item>Matthew Grossman, <it>mattg@oz.net</it>
+<item>Alan Hourihane, <it>alanh@fairlite.demon.co.uk</it>
+<item>Tim Rowley, <it>tor@cs.brown.edu</it>
+</itemize>
+
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DECtga.sgml,v 3.5 1997/01/24 09:32:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DECtga.sgml,v 3.6 1997/01/25 03:21:51 dawes Exp $
 </verb>
 
 </article>

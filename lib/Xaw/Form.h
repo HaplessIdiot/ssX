@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Form.h,v 1.4 1998/08/20 13:58:59 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Form.h,v 1.5 1998/10/03 08:42:04 dawes Exp $ */
 
 #ifndef _XawForm_h
 #define _XawForm_h
@@ -153,7 +153,11 @@ _XFUNCPROTOBEGIN
 void XawFormDoLayout
 (
  Widget		w,
+#if NeedWidePrototypes
  Bool		do_layout
+#else
+ Boolean	do_layout
+#endif
  );
 
 _XFUNCPROTOEND

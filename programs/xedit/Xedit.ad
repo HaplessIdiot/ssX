@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit.ad,v 1.7 1999/04/11 13:11:23 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit.ad,v 1.8 1999/04/25 10:02:48 dawes Exp $
 
 *geometry:				590x440
 *input:					TRUE
@@ -23,7 +23,21 @@ Use Control-W to delete a selection, and/or jump to the selection mark.\n\
 Use Control-X,Control-F to find a file. Tab for filename completion.\n\
 Use Control-X,Control-S to save.\n\
 Use Control-X,Control-C to exit.\n\
-Use Control-C to paste the selection at CUT_BUFFER0.
+Use Control-C to paste the selection at CUT_BUFFER0.\n\
+Use Control Left-Button to popup the File Menu.\n\
+Use Control Middle-Button to popup the Edit Menu.\n\
+Use Control Right-Button to popup the Option Menu.\n\
+Use Control-X,Tab to Indent.\n\
+Use Control-X,0 to delete current splitted window.\n\
+Use Control-X,1 to delete other splitted window.\n\
+Use Control-X,2 to split the window vertically.\n\
+Use Control-X,3 to split the window horizontally.\n\
+Use Control-X,b to switch to another file.\n\
+Use Control-X,d to list directory. Control-G to Cancel.\n\
+Use Control-X,k to close file being edited.\n\
+Use Control-X,o to switch to another splitted window.\n\
+Use Control-X,u to undo. Control-G to switch between Undo and Redo.\n\
+Use Insert to toggle Overwrite mode.
 
 *formWindow*defaultDistance:		2
 *formWindow.?.borderWidth:		0
@@ -135,28 +149,60 @@ m<Key>I:	no-op(r)
 <Ctrl>X,:<Key>1:delete-window(other)\n\
 <Ctrl>X,:<Key>2:split-window(vertical)\n\
 <Ctrl>X,:<Key>3:split-window(horizontal)\n\
+<Ctrl>X,!l @Num_Lock<Key>b:switch-source()\n\
+<Ctrl>X,!l <Key>b:switch-source()\n\
+<Ctrl>X,!@Num_Lock<Key>b:switch-source()\n\
 <Ctrl>X,!<Key>b:switch-source()\n\
+<Ctrl>X,l @Num_Lock<Key>d:dir-window()\n\
+<Ctrl>X,l <Key>d:dir-window()\n\
+<Ctrl>X,!@Num_Lock<Key>d:dir-window()\n\
 <Ctrl>X,!<Key>d:dir-window()\n\
+<Ctrl>X,l @Num_Lock<Key>k:kill-file()\n\
+<Ctrl>X,l <Key>k:kill-file()\n\
+<Ctrl>X,!@Num_Lock<Key>k:kill-file()\n\
 <Ctrl>X,!<Key>k:kill-file()\n\
+<Ctrl>X,l @Num_Lock<Key>o:other-window()\n\
+<Ctrl>X,l <Key>o:other-window()\n\
+<Ctrl>X,!@Num_Lock<Key>o:other-window()\n\
 <Ctrl>X,!<Key>o:other-window()\n\
+<Ctrl>X,l @Num_Lock<Key>u:undo()\n\
+<Ctrl>X,l <Key>u:undo()\n\
+<Ctrl>X,!@Num_Lock<Key>u:undo()\n\
 <Ctrl>X,!<Key>u:undo()\n\
 <Key>Tab:	insert-char()\n\
+!l @Num_Lock<Key>b:insert-char()\n\
+!l <Key>b:	insert-char()\n\
+!@Num_Lock<Key>b:insert-char()\n\
 !<Key>b:	insert-char()\n\
+l @Num_Lock<Key>d:insert-char()\n\
+l <Key>d:	insert-char()\n\
+!@Num_Lock<Key>d:insert-char()\n\
 !<Key>d:	insert-char()\n\
+l <Key>k:	insert-char()\n\
+l @Num_Lock<Key>k:insert-char()\n\
+!@Num_Lock<Key>k:insert-char()\n\
 !<Key>k:	insert-char()\n\
+l @Num_Lock<Key>o:insert-char()\n\
+l <Key>o:	insert-char()\n\
+!@Num_Lock<Key>o:insert-char()\n\
 !<Key>o:	insert-char()\n\
+l @Num_Lock<Key>u:insert-char()\n\
+l <Key>u:	insert-char()\n\
+!@Num_Lock<Key>u:insert-char()\n\
 !<Key>u:	insert-char()\n\
+c l @Num_Lock<Btn1Down>:xedit-focus() popup-menu(fileMenu)\n\
 c @Num_Lock<Btn1Down>:xedit-focus() popup-menu(fileMenu)\n\
-c @Num_Lock<Btn2Down>:xedit-focus() popup-menu(editMenu)\n\
-c @Num_Lock<Btn3Down>:xedit-focus() popup-menu(optionsMenu)\n\
+c l<Btn1Down>:	xedit-focus() popup-menu(fileMenu)\n\
 c<Btn1Down>:	xedit-focus() popup-menu(fileMenu)\n\
+c l @Num_Lock<Btn2Down>:xedit-focus() popup-menu(editMenu)\n\
+c @Num_Lock<Btn2Down>:xedit-focus() popup-menu(editMenu)\n\
+c l<Btn2Down>:	xedit-focus() popup-menu(editMenu)\n\
 c<Btn2Down>:	xedit-focus() popup-menu(editMenu)\n\
+c l @Num_Lock<Btn3Down>:xedit-focus() popup-menu(optionsMenu)\n\
+c @Num_Lock<Btn3Down>:xedit-focus() popup-menu(optionsMenu)\n\
+c l<Btn3Down>:xedit-focus() popup-menu(optionsMenu)\n\
 c<Btn3Down>:	xedit-focus() popup-menu(optionsMenu)\n\
 <Btn1Down>:	xedit-focus() select-start()
-
-! These translations may be useful for the editWindow
-! <Ctrl>X,!<Key>i:ispell(start)\n\
-! !<Key>i:	insert-char()\n\
 
 *filename.translations: #override \
 c<Key>S:	no-op(r)\n\

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.9 1999/01/31 12:22:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.10 1999/02/13 08:00:02 hohndel Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -395,7 +395,9 @@ XAAFillSolidSpans(
 
     (*infoRec->SetupForSolidFill)(pScrn, fg, rop, planemask);
     while(n--) {
-        (*infoRec->SubsequentSolidFillRect)(pScrn, ppt->x, ppt->y, *pwidth, 1);
+	if (*pwidth > 0)
+            (*infoRec->SubsequentSolidFillRect)(pScrn, ppt->x, ppt->y, 
+								*pwidth, 1);
 	ppt++; pwidth++;
     }
 

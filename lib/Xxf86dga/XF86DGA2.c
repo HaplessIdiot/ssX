@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.2 1999/04/11 13:10:34 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.3 1999/04/17 07:05:44 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -17,6 +17,7 @@ Copyright (c) 1995,1996  The XFree86 Project, Inc
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include "Xlibint.h"
+#include "xf86dga.h"
 #include "xf86dgastr.h"
 #include "Xext.h"
 #include "extutil.h"
@@ -46,6 +47,8 @@ unsigned char* XDGAGetMappedMemory(int);
  *****************************************************************************/
 
 static int xdga_close_display();
+static int xdga_wire_to_event();
+static int xdga_event_to_wire();
 
 static XExtensionHooks xdga_extension_hooks = {
     NULL,				/* create_gc */
@@ -55,8 +58,8 @@ static XExtensionHooks xdga_extension_hooks = {
     NULL,				/* create_font */
     NULL,				/* free_font */
     xdga_close_display,			/* close_display */
-    NULL,				/* wire_to_event */
-    NULL,				/* event_to_wire */
+    xdga_wire_to_event,			/* wire_to_event */
+    xdga_event_to_wire,			/* event_to_wire */
     NULL,				/* error */
     NULL,				/* error_string */
 };
@@ -69,6 +72,73 @@ XEXT_GENERATE_FIND_DISPLAY (xdga_find_display, xdga_info,
 				   &xdga_extension_hooks, 
 				   0, NULL)
 
+
+static Bool
+xdga_event_to_wire(
+  Display *dpy,
+  XEvent *event,
+  dgaEvent *wire
+){
+fprintf(stderr, "xdga_wire_to_event!!!!!!!\n");
+    return True;
+}
+
+static Bool
+xdga_wire_to_event(
+  Display *dpy,
+  XEvent *event,
+  dgaEvent *wire
+){
+  XDGAButtonEvent *bevent;
+  XDGAKeyEvent *kevent;
+  XDGAMotionEvent *mevent;
+  XExtDisplayInfo *info = xdga_find_display (dpy);
+
+  XDGACheckExtension (dpy, info, False);
+
+fprintf(stderr, "type = %i, first_event = %i\n", wire->u.u.type, 
+		info->codes->first_event);
+  switch((wire->u.u.type & 0x7f) - info->codes->first_event) {
+  case MotionNotify:
+fprintf(stderr, "xdga_wire_to_event: MotionNotify\n");
+	mevent = (XDGAMotionEvent*)event;
+	mevent->type = wire->u.u.type & 0x7F;
+	mevent->serial = _XSetLastRequestRead(dpy, (xGenericReply *)wire);
+	mevent->display = dpy;
+	mevent->screen = wire->u.event.screen;
+	mevent->time = wire->u.event.time;
+	mevent->state = wire->u.event.state;
+	mevent->dx = wire->u.event.dx;
+	mevent->dy = wire->u.event.dy;
+	return True;
+  case ButtonPress:
+  case ButtonRelease:
+fprintf(stderr, "xdga_wire_to_event: ButtonPress\n");
+	bevent = (XDGAButtonEvent*)event;
+	bevent->type = wire->u.u.type & 0x7F;
+	bevent->serial = _XSetLastRequestRead(dpy, (xGenericReply *)wire);
+	bevent->display = dpy;
+	bevent->screen = wire->u.event.screen;
+	bevent->time = wire->u.event.time;
+	bevent->state = wire->u.event.state;
+	bevent->button = wire->u.u.detail;
+	return True;
+  case KeyPress:
+  case KeyRelease:
+fprintf(stderr, "xdga_wire_to_event: KeyPress\n");
+	kevent = (XDGAKeyEvent*)event;
+	kevent->type = wire->u.u.type & 0x7F;
+	kevent->serial = _XSetLastRequestRead(dpy, (xGenericReply *)wire);
+	kevent->display = dpy;
+	kevent->screen = wire->u.event.screen;
+	kevent->time = wire->u.event.time;
+	kevent->state = wire->u.event.state;
+	kevent->keycode = wire->u.u.detail;
+	return True;
+  }
+
+  return False;
+}
 
 
 Bool XDGAQueryExtension (

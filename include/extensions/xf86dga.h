@@ -1,7 +1,7 @@
 /*
    Copyright (c) 1999  XFree86 Inc
 */
-/* $XFree86: xc/include/extensions/xf86dga.h,v 3.8 1999/04/11 13:10:29 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga.h,v 3.9 1999/04/17 07:05:40 dawes Exp $ */
 
 #ifndef _XF86DGA_H_
 #define _XF86DGA_H_
@@ -88,12 +88,46 @@ typedef struct {
 } XDGADevice;
 
 
-
-
-
 #ifndef _XF86DGA_SERVER_
 _XFUNCPROTOBEGIN
 
+typedef struct {
+   int type;
+   unsigned long serial;
+   Display *display;
+   int screen;
+   Time time;
+   unsigned int state;
+   unsigned int button;
+} XDGAButtonEvent;
+
+typedef struct {
+   int type;
+   unsigned long serial;
+   Display *display;
+   int screen;
+   Time time;
+   unsigned int state;
+   unsigned int keycode;
+} XDGAKeyEvent;
+
+typedef struct {
+   int type;
+   unsigned long serial;
+   Display *display;
+   int screen;
+   Time time;
+   unsigned int state;
+   int dx;
+   int dy;
+} XDGAMotionEvent;
+
+typedef union {
+  int type;
+  XDGAButtonEvent xbutton;
+  XDGAKeyEvent	  xkey;
+  XDGAMotionEvent xmotion;
+} XDGAEvent;
 
 Bool XDGAQueryExtension(
     Display 	*dpy,

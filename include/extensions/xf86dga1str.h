@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.3 1996/10/18 14:57:25 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga1str.h,v 1.1 1999/03/28 15:31:33 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -8,8 +8,6 @@ Copyright (c) 1995  XFree86 Inc.
 
 #ifndef _XF86DGASTR1_H_
 #define _XF86DGASTR1_H_
-
-#include "xf86dga.h"
 
 typedef struct _XF86DGAQueryVersion {
     CARD8	reqType;		/* always DGAReqCode */

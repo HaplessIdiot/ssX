@@ -6,7 +6,7 @@
    are subject to change without notice.
 
 
-Last modified: 27 April 1999.
+Last modified: 3 May 1999.
 
 
 Preface
@@ -1859,105 +1859,240 @@ that gets called when the DPMS level is changed:
 Section 13: DGA Extension
 =========================
 
-Support code for the DGA extension is included in the XFree86 common layer.
-This code provides an interface between the main extension code, and a
-means for drivers to initialise DGA when they support it.  The functions
-used by drivers to do this initialisation are always available, even
-when the DGA extension is not supported by the core server (in which case
-they return a failure result).
+Drivers can support the XFree86 Direct Graphics Architecture (DGA) by
+filling out a structure of function pointers and a list of modes and
+passing them to DGAInit.
 
-A single public data structure is used to allow the driver to pass
-pointers to the functions:
+    Bool DGAInit(ScreenPtr pScreen, DGAFunctionPtr funcs, DGAModePtr modes,
+                 int num)
 
-    typedef Bool (*DGAGetParamsProcPtr)(int, unsigned long *, int *, int *);
-    typedef Bool (*DGASetDirectProcPtr)(int, Bool);
-    typedef Bool (*DGASetBankProcPtr)(int, int, int);
-    typedef Bool (*DGASetViewportProcPtr)(int, int, int, int);
-    typedef Bool (*DGAViewportChangedProcPtr)(int, int, int);
-    typedef struct {
-        DGAGetParamsProcPtr         GetParams;
-        DGASetDirectProcPtr         SetDirectMode;
-        DGASetBankProcPtr           SetBank;
-        DGASetViewportProcPtr       SetViewport;
-        DGAViewportChangedProcPtr   ViewportChanged;
-    } DGAInfoRec, *DGAInfoPtr;
+      /** The DGAModeRec **/
+
+       typedef struct {
+         int num;             
+         DisplayModePtr mode;
+         int flags;          
+         int imageWidth;
+         int imageHeight;
+         int pixmapWidth;
+         int pixmapHeight;   
+         int bytesPerScanline; 
+         int byteOrder;  
+         int depth;           
+         int bitsPerPixel;
+         unsigned long red_mask;
+         unsigned long green_mask;
+         unsigned long blue_mask;
+         int viewportWidth;
+         int viewportHeight;
+         int xViewportStep;   
+         int yViewportStep;
+         int maxViewportX; 
+         int maxViewportY;
+         int viewportFlags;   
+         int offset;     
+         unsigned char *address;      
+         int reserved1;
+         int reserved2;
+       } DGAModeRec, *DGAModePtr;
+
+      num - Can be ignored. The DGA DDX will assign these numbers.
+
+      mode - A pointer to the DisplayModeRec for this mode.
+
+      flags -  The following flags are defined and may be OR'd together:
+
+        DGA_CONCURRENT_ACCESS
+	
+            Indicates that the driver supports concurrent graphics
+            accelerator and linear framebuffer access.
+
+        DGA_FILL_RECT
+	DGA_BLIT_RECT
+        DGA_BLIT_RECT_TRANS
+
+	    Indicates that the driver supports the FillRect, BlitRect
+            or BlitTransRect functions in this mode.
+
+        DGA_PIXMAP_AVAILABLE
+
+	    Indicates that Xlib may be used on the framebuffer.  
+            This flag will usually be set unless the driver wishes
+            to prohibit this for some reason.
+
+        DGA_INTERLACED
+        DGA_DOUBLESCAN
+
+            Indicates that these are interlaced or double scan modes.
+           
+
+      imageWidth
+      imageHeight  - These are the dimensions of the linear framebuffer 
+                     accessible by the client.
+
+      pixmapWidth
+      pixmapHeight - These are the dimensions of the area of the
+                     framebuffer accessible by the graphics accelerator.
+
+      bytesPerScanline -  Pitch of the framebuffer in bytes.
+
+      byteOrder - Usually the same as pScrn->imageByteOrder.
+
+      depth - The depth of the framebuffer in this mode.
+    
+      bitsPerPixel -  The number of bits per pixel in this mode.
+
+      red_mask
+      green_mask
+      blue_mask   -  The RGB masks for this mode, if applicable.
+
+      viewportWidth
+      viewportHeight -  Dimensions of the visible part of the framebuffer.
+                        Usually mode->HDisplay and mode->VDisplay.
+
+      xViewportStep
+      yViewportStep  - The granularity of x and y viewport positions that 
+                       the driver supports in this mode.     
+
+      maxViewportX
+      maxViewportY  -  The maximum viewport position supported by the 
+                       driver in this mode.
+
+      viewportFlags -  The following may be OR'd together:
+
+       DGA_FLIP_IMMEDIATE - The driver supports immediate viewport changes.
+       DGA_FLIP_RETRACE - The driver supports viewport changes at retrace. 
+
+      offset -  The offset into the linear framebuffer that corresponds to
+                pixel (0,0) for this mode.     
+   
+
+      /** The DGAFunctionRec **/
+
+      typedef struct {
+        Bool (*OpenFramebuffer)(
+             ScrnInfoPtr pScrn, 
+             char **name,
+             unsigned char **mem, 
+             int *size,
+             int *offset,
+             int *extra
+        );
+        void (*CloseFramebuffer)(ScrnInfoPtr pScrn);
+        Bool (*SetMode)(ScrnInfoPtr pScrn, DGAModePtr pMode);
+        void (*SetViewport)(ScrnInfoPtr pScrn, int x, int y, int flags);
+        int  (*GetViewport)(ScrnInfoPtr pScrn);
+        void (*Flush)(ScrnInfoPtr);
+        void (*FillRect)(
+             ScrnInfoPtr pScrn, 
+             int x, int y, int w, int h, 
+             unsigned long color
+        );
+        void (*BlitRect)(
+             ScrnInfoPtr pScrn, 
+             int srcx, int srcy, 
+             int w, int h, 
+             int dstx, int dsty
+        );
+        void (*BlitTransRect)(
+             ScrnInfoPtr pScrn, 
+             int srcx, int srcy, 
+             int w, int h, 
+             int dstx, int dsty,
+             unsigned long color
+        );
+      } DGAFunctionRec, *DGAFunctionPtr;
 
 
-The following functions are provided to the driver for the purpose
-of initialising their DGA support:
+    Bool OpenFramebuffer (pScrn, name, mem, size, offset, extra)
+
+      OpenFramebuffer should pass the client everything it needs to know
+      to be able to open the framebuffer.  These parameters are OS
+      specific and their meanings are to be interpreted by an OS specific
+      client library.
+
+      name -  The name of the device to open or NULL if there is no
+              special device to open.  A NULL name tells the client
+	      that it should open whatever device one would usually
+              open to access physical memory.
+
+      mem  -  The physical address of the start of the framebuffer.
+
+      size -  The size of the framebuffer in bytes.
+
+      offset -  Any offset into the device, if applicable.
+
+      flags  - Any additional information that the client may need.
+	       Currently, only the DGA_NEED_ROOT flag is defined.
 
 
-    DGAInfoPtr DGACreateInfoRec()
+    void CloseFramebuffer (pScrn)
 
-      Returns a pointer to an allocated DGAInfoRec.  The allocated structure
-      is zero filled.  If the allocation fails, NULL is returned.
-
-
-    void DGADestroyInfoRec(DGAInfoPtr pDGAInfo)
-
-      Frees a DGAInfoRec allocated by DGACreateInfoRec().
+      CloseFramebuffer merely informs the driver (if it even cares) that
+      client no longer needs to access the framebuffer directly.  This
+      function is optional.
 
 
-    Bool DGAInit(ScreenPtr pScreen, DGAInfoPtr pDGAInfo, int flags)
+    Bool SetMode (pScrn, pMode)
+
+      SetMode tells the driver to initialize the mode passed to it.  If
+      pMode is NULL, then the driver should restore the original pre-dga
+      mode.
 
 
-      This function registers the driver's DGA support functions as
-      set in "pDGAInfo".  The GetParams and SetDirectMode fields are
-      mandatory, the others are optional.  "flags" is currently not
-      used, and should be 0.  If the initialisation fails for any reason,
-      including when there is no DPMS support in the core server, the
-      function returns FALSE.
+    void SetViewport (pScrn, x, y, flags)
+
+      SetViewport tells the driver to make the upper left-hand corner
+      of the visible screen correspond to coordinate (x,y) on the
+      framebuffer.  Flags currently defined are:
+
+       DGA_FLIP_IMMEDIATE - The viewport change should occur immediately.
+
+       DGA_FLIP_RETRACE - The viewport change should occur at the
+                          vertical retrace, but this function should
+                          return sooner if possible.
+
+      The (x,y) locations will be passed as the client specified them,
+      however, the driver is expected to round these locations down to
+      the next supported location as specified by the xViewportStep and
+      yViewportStep for the current mode.
 
 
-Drivers that implement DGA support must provide the following functions:
+    int GetViewport (pScrn)
+
+      GetViewport gets the current page flip status.  Set bits in the
+      returned int correspond to viewport change requests still pending.
+      For instance, set bit zero if the last SetViewport request is
+      still pending, bit one if the one before that is still pending,
+      etc.
 
 
-    Bool ChipDGAGetParameters(int scrnIndex, int *offset, int *banksize,
-                              int *memsize)
+    void Flush (pScrn)
 
-      Returns the basic set of DGA parameters:
-
-         *offset    - the physical framebuffer address
-         *banksize  - the size of the framebuffer memory banks
-         *memsize   - the total amount of framebuffer memory available
-
-      The framebuffer size would normally be a multiple of the bank size,
-      although this is not required.  For linear framebuffers the
-      bank size and memory size should be the same.  It is illegal for
-      the memory size to be smaller than the bank size.
-
-      The function return value is TRUE unless a problem was encountered.
+      This function should ensure that any graphics accelerator operations
+      have finished.  This function should not return until the graphics
+      accelerator is idle.
 
 
-    Bool ChipDGASetDirectMode(int scrnIndex, Bool enable)
+    void FillRect (pScrn, x, y, w, h, color)
 
-      Enable/disable direct video mode.  The return value is TRUE unless
-      a problem was encountered.
-
-
-The following functions may optionally be provided:
+      This optional function should fill a rectangle w x h located at
+      (x,y) in the given color.
 
 
-    Bool ChipDGASetBank(int scrnIndex, int bank, int flags)
+    void BlitRect (pScrn, srcx, srcy, w, h, dstx, dsty)
 
-      Select the framebuffer memory bank specified by "bank".  This
-      function should be provided when the the framebuffer is banked
-      rather than linear.  The "flags" value is not currently used and
-      its value should be ignored.
-
-
-    Bool ChipDGASetViewport(int scrnIndex, int x, int y, int flags)
-
-      Set the upper left corner of the view port to (x, y).  This allows
-      different areas of the framebuffer memory to be displayed and may
-      be used for multi buffering.  The "flags" value is not currently
-      used and its value should be ignored.
+      This optional function should copy an area w x h located at (srcx,
+      srcy) to location (dstx, dsty).  This function will need to handle
+      copy directions as appropriate.
 
 
-    Bool ChipDGAViewportChanged(int scrnIndex, int n, int flags)
+    void BlitTransRect (pScrn, srcx, srcy, w, h, dstx, dsty, color)
 
-      [XXX This needs to be checked and defined properly]
-      Report when the view port has actually changed.
+      This optional function is the same as BlitRect except that pixels
+      in the source corresponding to the color key "color" should be
+      skipped.
+
 
 
 Section 14: The XFree86 X Video Extension (Xv) Device Dependent Layer
@@ -4690,4 +4825,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.29 1999/04/25 15:30:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.30 1999/04/27 12:05:01 dawes Exp $

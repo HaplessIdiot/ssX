@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.41 1999/03/07 08:29:23 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.42 1999/05/03 05:58:41 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1074,6 +1074,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
        PROGRAMSRC = $(TOP)/programs
            LIBSRC = $(XTOP)/lib
           FONTSRC = $(XTOP)/fonts
+     ENCODINGSSRC = $(FONTSRC)/encodings
        INCLUDESRC = BuildIncDir
       XINCLUDESRC = $(INCLUDESRC)/X11
         SERVERSRC = $(XTOP)/programs/Xserver
@@ -2062,16 +2063,26 @@ EncObjComp(basename): EncObj(basename)					@@\
 #endif
 #endif
 
-/* dummy for now */
 #ifndef MakeEncDir
-#define MakeEncDir(deplist) /**/
+#define MakeEncDir(deplist,inst,dirlist )				@@\
+AllTarget(encodings.dir)						@@\
+									@@\
+encodings.dir: deplist							@@\
+	RemoveFiles(encodings.dir fonts.dir)				@@\
+	@(E=; for i in dirlist; do \					@@\
+	   E="$$E -e $$i"; done; \					@@\
+	 set -x; \							@@\
+	 RunProgram(MKFONTDIR, -r -p inst/ $$E .))			@@\
+									@@\
+clean::									@@\
+	RemoveFiles(fonts.dir encodings.dir)
 #endif
 
 #ifndef MakeEncodings
-#define MakeEncodings(inst)						@@\
+#define MakeEncodings(inst,dirlist)					@@\
 all::  $(OBJS)								@@\
 									@@\
-MakeEncDir($(OBJS))							@@\
+MakeEncDir($(OBJS),inst,dirlist)					@@\
 									@@\
 clean::									@@\
 	RemoveFiles(*.enc.Z *.enc.gz)
@@ -2082,28 +2093,16 @@ clean::									@@\
 InstallMultipleFlags(objs,dest,$(INSTDATFLAGS))				@@\
 									@@\
 InstallTarget(install,encodings.dir,$(INSTDATFLAGS),dest)
-#endif /* InstallFontObjs */
+#endif /* InstallEncObjs */
 
 #ifndef InstallEncodings
 #define InstallEncodings(dest)						@@\
 InstallEncObjs($(OBJS),dest)
-#endif /* InstallFonts */
+#endif /* InstallEncodings */
 
-/*
- * Temporary rule to install links to encoding files/dir in target font dirs.
- * It uses absolute paths in the links.
- */
-#ifndef InstallEncodingLinks
-#if HasSymLinks
-#define InstallEncodingLinks(edir,fdir)					@@\
-install::								@@\
-	$(RM) $(DESTDIR)fdir/encodings					@@\
-	$(RM) $(DESTDIR)fdir/encodings.dir				@@\
-	$(LN) edir $(DESTDIR)fdir/encodings				@@\
-	$(LN) edir/encodings.dir $(DESTDIR)fdir/encodings.dir
-#else
-#define InstallEncodingLinks(edir,fdir) /**/
-#endif
+#ifndef InstallEncodingsDir
+#define InstallEncodingsDir(edir,fdir)					@@\
+InstallTarget(install,edir/encodings.dir,$(INSTDATFLAGS,fdir)
 #endif
 
 

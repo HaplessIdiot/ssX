@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/ispell.c,v 1.2 1999/04/25 10:02:49 dawes Exp $ */
 
 #include "xedit.h"
 #include <fcntl.h>
@@ -521,7 +521,7 @@ IspellSend(void)
 	}
 	if (international) {
 	    wchar_t *wptr = (wchar_t*)block.ptr;
-	    unsigned char mb[sizeof(wchar_t)];
+	    char mb[sizeof(wchar_t)];
 
 	    for (i = 0; i < block.length; i++) {
 		wctomb(mb, wptr[i]);
@@ -534,7 +534,7 @@ IspellSend(void)
 		    nl = True;
 		else if (nl) {
 		    nl = False;
-		    if (strchr(ispell.skip, *mb)) {
+		    if (*mb && strchr(ispell.skip, *mb)) {
 			position = ispell.right =
 			    XawTextSourceScan(ispell.source, ispell.right + i,
 					      XawstEOL, XawsdRight, 1, False);
@@ -555,7 +555,7 @@ IspellSend(void)
 		    nl = True;
 		else if (nl) {
 		    nl = False;
-		    if (strchr(ispell.skip, block.ptr[i])) {
+		    if (block.ptr[i] && strchr(ispell.skip, block.ptr[i])) {
 			position = ispell.right =
 			    XawTextSourceScan(ispell.source, ispell.right + i,
 					      XawstEOL, XawsdRight, 1, False);
@@ -586,7 +586,7 @@ IspellSend(void)
 	}
 	if (international) {
 	    wchar_t *wptr = (wchar_t*)block.ptr;
-	    unsigned char mb[sizeof(wchar_t)];
+	    char mb[sizeof(wchar_t)];
 
 	    for (i = 0; i < block.length; i++) {
 		wctomb(mb, wptr[i]);
@@ -683,18 +683,14 @@ IspellAction(Widget w, XEvent *event, String *params, Cardinal *num_params)
     char **strs;
     int n_strs;
 
-    if (!XtIsSubclass(w, textWidgetClass)) {
-	Feep();
-	return;
-    }
-
     InitIspell();
 
     if (*num_params == 1 && (params[0][0] == 'e' || params[0][0] == 'E')) {
 	PopdownIspell(w, NULL, NULL);
 	return;
     }
-    if (ispell.source) {
+
+    if (!XtIsSubclass(w, textWidgetClass) || ispell.source) {
 	Feep();
 	return;
     }
@@ -828,6 +824,22 @@ PopdownIspell(Widget w, XtPointer client_data, XtPointer call_data)
 	AddList *al, *pal;
 	int i;
 
+	/* insert added words in private dictionary */
+	for (i = 0; i < STRTBLSZ; i++) {
+	    pal = al = add_list[i];
+	    while (pal) {
+		al = al->next;
+		write(ispell.ofd[1], "*", 1);
+		write(ispell.ofd[1], pal->word, strlen(pal->word));
+		write(ispell.ofd[1], "\n", 1);
+		XtFree(pal->word);
+		XtFree((char*)pal);
+		pal = al;
+	    }
+	    add_list[i] = NULL;
+	}
+	write(ispell.ofd[1], "#\n", 2);		/* save dictionary */
+
 	if (client_data) {
 	    ReplaceList *rl, *prl;
 	    IgnoreList *il, *pil;
@@ -873,22 +885,6 @@ PopdownIspell(Widget w, XtPointer client_data, XtPointer call_data)
 	        ignore_list[i] = NULL;
 	    }
 	}
-
-	/* insert added words in private dictionary */
-	for (i = 0; i < STRTBLSZ; i++) {
-	    pal = al = add_list[i];
-	    while (pal) {
-		al = al->next;
-		write(ispell.ofd[1], "*", 1);
-		write(ispell.ofd[1], pal->word, strlen(pal->word));
-		write(ispell.ofd[1], "\n", 1);
-		XtFree(pal->word);
-		XtFree((char*)pal);
-		pal = al;
-	    }
-	    add_list[i] = NULL;
-	}
-	write(ispell.ofd[1], "#\n", 2);		/* save dictionary */
 
 	undo = pundo = ispell.undo_base;
 	while (undo) {
@@ -940,11 +936,12 @@ ReplaceIspell(Widget w, XtPointer client_data, XtPointer call_data)
     replace.firstPos = 0;
     replace.length = strlen(text);
 
-    IspellCheckUndo();
-    ispell.undo_head->undo_str = NULL;
-    ispell.undo_head->undo_pos = pos;
-    ispell.undo_head->undo_count = 0;
     if (strcmp(search.ptr, replace.ptr) != 0) {
+	IspellCheckUndo();
+	ispell.undo_head->undo_str = NULL;
+	ispell.undo_head->undo_pos = pos;
+	ispell.undo_head->undo_count = 0;
+
 	XawTextReplace(ispell.ascii, pos, pos + search.length, &replace);
 	ispell.right += replace.length - search.length;
 	ispell.undo_head->undo_count = 1;
@@ -955,12 +952,23 @@ ReplaceIspell(Widget w, XtPointer client_data, XtPointer call_data)
 	    while ((pos = XawTextSourceSearch(ispell.source, pos, XawsdRight, &search))
 		!= XawTextSearchError) {
 		Bool do_replace = True;
+		char mb[sizeof(wchar_t)];
 
-		if (XawTextSourceRead(ispell.source, pos - 1, &check, 1) > 0)
-		    do_replace = !isalpha(*check.ptr) && !strchr(ispell.wchars, *check.ptr);
+		if (XawTextSourceRead(ispell.source, pos - 1, &check, 1) > 0) {
+		    if (international)
+			wctomb(mb, *(wchar_t*)check.ptr);
+		    else
+			*mb = *check.ptr;
+		    do_replace = !isalpha(*mb) && *mb && !strchr(ispell.wchars, *mb);
+		}
 		if (do_replace &&
-		    XawTextSourceRead(ispell.source, pos + search.length, &check, 1) > 0)
-		    do_replace = !isalpha(*check.ptr) && !strchr(ispell.wchars, *check.ptr);
+		    XawTextSourceRead(ispell.source, pos + search.length, &check, 1) > 0) {
+		    if (international)
+			wctomb(mb, *(wchar_t*)check.ptr);
+		    else
+			*mb = *check.ptr;
+		    do_replace = !isalpha(*mb) && *mb && !strchr(ispell.wchars, *mb);
+		}
 		if (do_replace) {
 		    XawTextReplace(ispell.ascii, pos, pos + search.length, &replace);
 		    ++ispell.undo_head->undo_count;

@@ -27,7 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
-/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.14 1998/12/06 06:08:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.15 1998/12/06 10:44:33 dawes Exp $ */
 
 /*
 
@@ -1527,18 +1527,19 @@ RemovePiece(MultiSrcObject src, MultiPiece *piece)
 static MultiPiece *
 FindPiece(MultiSrcObject src, XawTextPosition position, XawTextPosition *first)
 {
-  MultiPiece *old_piece = NULL, *piece = src->multi_src.first_piece;
-  XawTextPosition temp;
+    MultiPiece *old_piece, *piece;
+    XawTextPosition temp;
 
-  for (temp = 0 ; piece != NULL ; temp += piece->used, piece = piece->next)
-    {
-    *first = temp;
-    old_piece = piece;
+    for (old_piece = NULL, piece = src->multi_src.first_piece, temp = 0;
+         piece; old_piece = piece, piece = piece->next)
+	if ((temp += piece->used) > position) {
+	    *first = temp - piece->used;
+	    return (piece);
+	}
 
-    if ((temp + piece->used) > position) 
-	return (piece);
-  }
-  return (old_piece);	  /* if we run off the end the return the last piece */
+    *first = temp - (old_piece ? old_piece->used : 0);
+
+    return (old_piece);	  /* if we run off the end the return the last piece */
 }
     
 /*

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextP.h,v 3.11 1999/03/14 03:21:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.12 1999/04/25 10:01:29 dawes Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h
@@ -185,7 +185,8 @@ typedef struct _TextPart {
     XawTextWrapMode wrap;		     /* The type of wrapping */
     XawTextResizeMode resize;
     XawTextMargin r_margin;		     /* The real margins */
-    
+    XtCallbackList position_callbacks;
+
     /* private state */
     XawTextMargin margin;		     /* The current margins */
     XawTextLineTable lt;
@@ -198,11 +199,11 @@ typedef struct _TextPart {
     struct SearchAndReplace *search;	     /* Search and replace structure */
     Widget file_insert;			     /* The file insert popup widget */
     XmuTextUpdate *update;		     /* Position intervals to update */
-    XtCallbackList position_callbacks;
     int line_number;
     short column_number;
     unsigned char kill_ring;
     Boolean selection_state;
+    int from_left;			     /* Cursor position */
     XawTextPosition lastPos;		     /* Last position of source */
     GC gc;
     Boolean showposition;		     /* True if we need to show the position */
@@ -211,18 +212,17 @@ typedef struct _TextPart {
     Boolean clear_to_eol;		     /* Clear to eol when painting text? */
     XawTextPosition old_insert;		     /* Last insertPos for batched updates */
     short mult;				     /* Multiplier */
-#ifndef NO_NUMERIC_HACK
-    char doing_numeric_hack;
-#endif
-    char source_changed;
-    Boolean overwrite;			    /* Overwrite mode */
+    XawTextKillRing *kill_ring_ptr;
 
     /* private state, shared w/Source and Sink */
     Boolean redisplay_needed;		     /* in SetValues */
     XawTextSelectionSalt *salt2;	     /* salted away selections */
-    int from_left;			     /* Cursor position */
 
-    XawTextKillRing *kill_ring_ptr;
+#ifndef NO_NUMERIC_HACK
+    char doing_numeric_hack;
+#endif
+    char source_changed;
+    Boolean overwrite;                      /* Overwrite mode */
 
     /* new resources and states, for text edition
      * Note: a fixed width font is required for these resources/states.

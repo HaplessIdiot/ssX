@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.16 1999/03/28 15:32:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.17 1999/04/11 13:10:37 dawes Exp $ */
 
 /*
 
@@ -19,6 +19,7 @@ Copyright (c) 1995, 1996, 1999  XFree86 Inc
 #include "scrnintstr.h"
 #include "servermd.h"
 #define _XF86DGA_SERVER_
+#include "xf86dga.h"
 #include "xf86dgastr.h"
 #include "swaprep.h"
 #include "dgaproc.h"

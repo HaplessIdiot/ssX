@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.10 1999/03/21 07:34:31 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.11 1999/04/25 10:01:29 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -531,9 +531,6 @@ _XawTextSourceNewLineAtEOF(Widget w)
 /*
  * Public Functions
  */
-static String bad_subclass =
-"XawTextSourceReplace's 1st parameter must be subclass of asciiSrc.";
-
 void
 _XawSourceAddText(Widget source, Widget text)
 {
@@ -607,10 +604,6 @@ XawTextSourceRead(Widget w, XawTextPosition pos, XawTextBlock *text,
 {
   TextSrcObjectClass cclass = (TextSrcObjectClass)w->core.widget_class;
 
-  if (!XtIsSubclass(w, textSrcObjectClass))
-    XtErrorMsg("bad argument", "textSource", "XawError", bad_subclass,
-		   NULL, NULL);
-
   return ((*cclass->textSrc_class.Read)(w, pos, text, length));
 }
 
@@ -653,9 +646,6 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
     XawTextPosition start, end;
     int error, lines = 0;
 
-    if (!XtIsSubclass(w, textSrcObjectClass))
-	XtErrorMsg("bad argument", "textSource", "XawError", bad_subclass,
-		   NULL, NULL);
     if (src->textSrc.edit_mode == XawtextRead)
 	return (XawEditError);
 
@@ -1049,14 +1039,15 @@ UndoGC(XawTextUndo *undo)
  */
 XawTextPosition
 XawTextSourceScan(Widget w, XawTextPosition position,
+#if NeedWidePrototypes
+		  int type, int dir, int count, int include
+#else
 		  XawTextScanType type, XawTextScanDirection dir,
-		  int count, Bool include)
+		  int count, Boolean include
+#endif
+)
 {
   TextSrcObjectClass cclass = (TextSrcObjectClass)w->core.widget_class;
-
-  if ( !XtIsSubclass(w, textSrcObjectClass))
-    XtErrorMsg("bad argument", "textSource", "XawError", bad_subclass,
-		   NULL, NULL);
 
   return ((*cclass->textSrc_class.Scan)
 	  (w, position, type, dir, count, include));
@@ -1080,13 +1071,14 @@ XawTextSourceScan(Widget w, XawTextPosition position,
  */
 XawTextPosition 
 XawTextSourceSearch(Widget w, XawTextPosition position,
-		    XawTextScanDirection dir, XawTextBlock *text)
+#if NeedWidePrototypes
+		    int dir,
+#else
+		    XawTextScanDirection dir,
+#endif
+		    XawTextBlock *text)
 {
   TextSrcObjectClass cclass = (TextSrcObjectClass)w->core.widget_class;
-
-  if (!XtIsSubclass(w, textSrcObjectClass))
-    XtErrorMsg("bad argument", "textSource", "XawError", bad_subclass,
-		   NULL, NULL);
 
   return ((*cclass->textSrc_class.Search)(w, position, dir, text));
 }
@@ -1114,10 +1106,6 @@ XawTextSourceConvertSelection(Widget w, Atom *selection, Atom *target,
 {
   TextSrcObjectClass cclass = (TextSrcObjectClass)w->core.widget_class;
 
-  if ( !XtIsSubclass(w, textSrcObjectClass))
-    XtErrorMsg("bad argument", "textSource", "XawError", bad_subclass,
-		   NULL, NULL);
-
   return((*cclass->textSrc_class.ConvertSelection)
 	 (w, selection, target, type, value, length, format));
 }
@@ -1140,10 +1128,6 @@ XawTextSourceSetSelection(Widget w, XawTextPosition left,
 			  XawTextPosition right, Atom selection)
 {
   TextSrcObjectClass cclass = (TextSrcObjectClass)w->core.widget_class;
-
-  if (!XtIsSubclass(w, textSrcObjectClass))
-    XtErrorMsg("bad argument", "textSource", "XawError", bad_subclass,
-		   NULL, NULL);
 
   (*cclass->textSrc_class.SetSelection)(w, left, right, selection);
 }

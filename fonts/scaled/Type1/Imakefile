@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile,v 1.5 94/02/10 16:52:16 rws Exp $
 
 
 
-XCOMM $XFree86: xc/fonts/scaled/Type1/Imakefile,v 1.3 1998/11/01 07:57:44 dawes Exp $
+XCOMM $XFree86: xc/fonts/scaled/Type1/Imakefile,v 1.4 1999/01/31 04:59:20 dawes Exp $
 
 
 #if BuildLatin2Fonts
@@ -26,10 +26,11 @@ OBJS = UTRG____.pfa UTB_____.pfa UTBI____.pfa UTI_____.pfa \
 FONTINSTDIR = $(FONTDIR)/Type1
 
 MakeFontsDir(fonts.scale)
+MakeFontsAndEncodingsDir(fonts.scale, $(ENCODINGSDIR))
 
 InstallFonts($(FONTINSTDIR))
 InstallFontScale($(FONTINSTDIR))
-InstallEncodingLinks($(ENCODINGSDIR),$(FONTINSTDIR))
+InstallEncodingDir($(ENCODINGSSRC),$(FONTINSTDIR))
 
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
