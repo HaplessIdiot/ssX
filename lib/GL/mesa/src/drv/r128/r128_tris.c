@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tris.c,v 1.4 2001/01/08 01:07:24 martin Exp $ */ /* -*- c-basic-offset: 3 -*- */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tris.c,v 1.5 2001/04/10 16:07:53 dawes Exp $ */ /* -*- c-basic-offset: 3 -*- */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -50,7 +50,7 @@ static struct {
    quad_func		quad;
 } rast_tab[R128_MAX_TRIFUNC];
 
-#if __BYTE_ORDER ==  __LITTLE_ENDIAN
+#if X_BYTE_ORDER ==  X_LITTLE_ENDIAN
 #define R128_COLOR( to, from )						\
 do {									\
    (to)[0] = (from)[2];							\
