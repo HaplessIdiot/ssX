@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/lib/Xaw/List.c,v 1.12 1999/12/30 02:12:50 robin Exp $ */
+/* $XFree86: xc/lib/Xaw/List.c,v 1.13 2000/02/25 18:27:57 dawes Exp $ */
 
 /*
  * List.c - List widget
@@ -242,6 +242,7 @@ static XtResource resources[] = {
     XtRCallback,
     NULL
   },
+#ifndef OLDXAW
   {
     XtNshowCurrent,
     XtCBoolean,
@@ -251,6 +252,7 @@ static XtResource resources[] = {
     XtRImmediate,
     (XtPointer)False
   },
+#endif
 };
 #undef offset
 
@@ -980,10 +982,14 @@ Notify(Widget w, XEvent *event, String *params, Cardinal *num_params)
      */
     if ((CvtToItem(w, event->xbutton.x, event->xbutton.y, &item) == OUT_OF_RANGE)
 	|| lw->list.highlight != item) {
+#ifndef OLDXAW
 	if (!lw->list.show_current || lw->list.selected == NO_HIGHLIGHT)
 	    XawListUnhighlight(w);
 	else
 	    XawListHighlight(w, lw->list.selected);
+#else
+	XawListUnhighlight(w);
+#endif
 	return;
     }
 
@@ -992,7 +998,9 @@ Notify(Widget w, XEvent *event, String *params, Cardinal *num_params)
     if (lw->list.paste)		/* if XtNpasteBuffer set then paste it */
 	XStoreBytes(XtDisplay(w), lw->list.list[item], item_len);
 
+#ifndef OLDXAW
     lw->list.selected = item;
+#endif
     /*
      * Call Callback function
      */
@@ -1022,7 +1030,9 @@ Set(Widget w, XEvent *event, String *params, Cardinal *num_params)
     int item;
     ListWidget lw = (ListWidget)w;
 
+#ifndef OLDXAW
     lw->list.selected = lw->list.highlight;
+#endif
     if (CvtToItem(w, event->xbutton.x, event->xbutton.y, &item) == OUT_OF_RANGE)
 	XawListUnhighlight(w);			/* Unhighlight current item */
     else if (lw->list.is_highlighted != item)	/* If this item is not */
