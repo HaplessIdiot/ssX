@@ -58,7 +58,7 @@ Note: Not all systems listed here have been tested with the current release.
 	<ITEM>ISC: 4.0.3
 	<ITEM>AT&amp;T: 2.1, 4.0
 	<ITEM>NCR: MP-RAS
-	<ITEM>SunSoft: Solaris x86 2.1, 2.4, 2.5
+	<ITEM>SunSoft: Solaris x86 2.1, 2.4, 2.5, 2.5.1
 	<ITEM>PANIX 5.0 for AT
 	</itemize>	
 
@@ -80,7 +80,8 @@ Note: Not all systems listed here have been tested with the current release.
 	<itemize>	
 	<ITEM>NetBSD 1.0, 1.1, 1.2
 	<ITEM>OpenBSD 2.0
-	<ITEM>FreeBSD 2.0.5, 2.1, 2.1.5, 2.1.6, 2.2, 3.0-current
+	<ITEM>FreeBSD 2.0.5, 2.1, 2.1.5, 2.1.6, 2.1.7, 2.1.7.1, 2.2,
+		2.2.1, 2.2.2, 3.0-current
 <!--
 	<ITEM>BSD/386 1.1, BSD/OS 2.0
 	<ITEM>Mach 386
@@ -90,13 +91,14 @@ Note: Not all systems listed here have been tested with the current release.
 	<ITEM>Amoeba
 	<ITEM>Minix-386
 -->
-	<ITEM>LynxOS AT 2.2.1, 2.3.0, 2.4.0
-	<ITEM>LynxOS microSPARC 2.4.0
+	<ITEM>LynxOS AT 2.3.0, 2.4.0, 2.5.0
+	<ITEM>LynxOS microSPARC 2.4.0 2.5.0
+	<ITEM>LynxOS PowerPC 2.4.0, 2.5.0
 	</itemize>	
 
     <tag/PC98:/
 	<itemize>
-	<ITEM>FreeBSD(98) 2.0.5, 2.1, 2.1.5, 2.2
+	<ITEM>FreeBSD(98) 2.0.5, 2.1, 2.1.5, 2.2, 2.2.1
 	<ITEM>NetBSD/pc98 (based on NetBSD 1.2)
 	<ITEM>PANIX 5.0 for 98
 	</itemize>
@@ -614,6 +616,22 @@ XFree86 support was integrated into the base X11R6 distribution by:
        <item>Leonard N. Zubkoff <it>&lt;lnz@dandelion.com&gt;</it>
 </itemize>
 
+<tag/Tseng ET4000 and ET6000 SVGA driver by:  /
+<itemize>
+       <item>[Unknown authors]
+       <item>Dirk Hohndel <it>&lt;hohndel@XFree86.Org&gt;</it>
+       <item>Koen Gadeyne <it>&lt;koen.gadeyne@barco.com&gt;</it>
+       <item>... and others
+</itemize>
+
+<tag/Linux/m68k Frame Buffer Device driver by:  /
+<itemize>
+       <item>Martin Schaller
+       <item>Geert Uytterhoeven <it>&lt;Geert.Uytterhoeven@cs.kuleuven.ac.be&gt;</it>
+       <item>Andreas Schwab <it>&lt;schwab@issan.informatik.uni-dortmund.de&gt;</it>
+       <item>Guenther Kelleter <it>&lt;guenther@Pool.Informatik.RWTH-Aachen.de&gt;</it>
+</itemize>
+
 <tag/XFree86-VidModeExtension and xvidtune client by:  /
 <itemize>
        <item>Kaleb S. Keithley <it>&lt;kaleb@x.org&gt;</it>
@@ -1021,7 +1039,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.78 1997/04/16 08:34:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.79 1997/05/14 10:33:53 dawes Exp $
 
 
 

@@ -104,10 +104,12 @@
 	url="W32.html">
 <item><htmlurl name="Information for Western Digital Chipset Users"
 	url="WstDig.html">
+<item><htmlurl name="The Linux/m68k Frame Buffer Device"
+	url="fbdev.html">
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.24 1997/01/25 04:19:20 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.25 1997/02/10 06:37:56 hohndel Exp $ 
 
 
 

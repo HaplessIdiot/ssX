@@ -229,6 +229,13 @@ must be found before any
 	You also need to set HasSolx86apertureDrv to YES in 
 	<tt>~xc/config/cf/xf86site.def</tt>.<p>
 
+<item>If you don't have c++filt or if you have troubles in making
+	World with c++filt, you need to set UseExportLists to NO in
+	<tt>~xc/config/cf/host.def</tt>.<p>
+ 
+	If you use c++filt, you need to check the definition of PATH in
+	<tt>~xc/config/util/elistgen.sun</tt>.<p>
+
 </enum>
 <sect> Notes for running XFree86 on Solaris x86<p>
 
@@ -301,7 +308,7 @@ Xserver.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.11 1997/01/24 09:32:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.12 1997/01/25 03:22:13 dawes Exp $
 
 
 
