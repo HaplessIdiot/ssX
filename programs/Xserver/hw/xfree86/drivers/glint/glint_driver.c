@@ -1441,26 +1441,31 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    maxheight = 4096;
 	    maxwidth = 4096;
 	    /* Test for an TI ramdac */
-	    GLINTProbeTIramdac(pScrn);
-	    if ( (pGlint->RamDac->RamDacType == (TI3026_RAMDAC)) ||
-	         (pGlint->RamDac->RamDacType == (TI3030_RAMDAC)) )
-		pGlint->RefClock = 14318;
+	    if (!pGlint->RamDac) {
+	    	GLINTProbeTIramdac(pScrn);
+		if (pGlint->RamDac)
+	             if ( (pGlint->RamDac->RamDacType == (TI3026_RAMDAC)) ||
+	         	  (pGlint->RamDac->RamDacType == (TI3030_RAMDAC)) )
+		    	pGlint->RefClock = 14318;
+	    }
 	    /* Test for an IBM ramdac */
 	    if (!pGlint->RamDac) {
 	    	GLINTProbeIBMramdac(pScrn);
-	    	if (pGlint->RamDac->RamDacType == (IBM640_RAMDAC))
-		    pGlint->RefClock = 28322;
-	    	else
-	    	if (pGlint->RamDac->RamDacType == (IBM526DB_RAMDAC) ||
-		    pGlint->RamDac->RamDacType == (IBM526_RAMDAC))
-		    pGlint->RefClock = 40000;
-	    	else {
-    		    xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, 
+		if (pGlint->RamDac) {
+	    	    if (pGlint->RamDac->RamDacType == (IBM640_RAMDAC))
+		    	pGlint->RefClock = 28322;
+	    	    else
+	    	    if (pGlint->RamDac->RamDacType == (IBM526DB_RAMDAC) ||
+		    	pGlint->RamDac->RamDacType == (IBM526_RAMDAC))
+		    	pGlint->RefClock = 40000;
+	    	    else {
+    		    	xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, 
 							"Undefined RefClock\n");
-		    return FALSE;
-	    	}
+		        return FALSE;
+	    	    }
+		}
 	    }
-	    if (pGlint->RamDac == NULL)
+	    if (!pGlint->RamDac)
 		return FALSE;
 	    break;
 	case PCI_VENDOR_3DLABS_CHIP_GAMMA:
@@ -1477,25 +1482,32 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    maxheight = 4096;
 	    maxwidth = 4096;
 	    /* Test for an TI ramdac */
-	    GLINTProbeTIramdac(pScrn);
-	    if ( (pGlint->RamDac->RamDacType == (TI3026_RAMDAC)) ||
-	         (pGlint->RamDac->RamDacType == (TI3030_RAMDAC)) )
-		pGlint->RefClock = 14318;
+	    if (!pGlint->RamDac) {
+	    	GLINTProbeTIramdac(pScrn);
+		if (pGlint->RamDac)
+	             if ( (pGlint->RamDac->RamDacType == (TI3026_RAMDAC)) ||
+	         	  (pGlint->RamDac->RamDacType == (TI3030_RAMDAC)) )
+		    	pGlint->RefClock = 14318;
+	    }
 	    /* Test for an IBM ramdac */
 	    if (!pGlint->RamDac) {
 	    	GLINTProbeIBMramdac(pScrn);
-	    	if (pGlint->RamDac->RamDacType == (IBM640_RAMDAC))
-		    pGlint->RefClock = 28322;
-	    	else
-	    	if (pGlint->RamDac->RamDacType == (IBM526DB_RAMDAC) ||
-		    pGlint->RamDac->RamDacType == (IBM526_RAMDAC))
-		    pGlint->RefClock = 40000;
-	    	else {
-    		    xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, 
+		if (pGlint->RamDac) {
+	    	    if (pGlint->RamDac->RamDacType == (IBM640_RAMDAC))
+		    	pGlint->RefClock = 28322;
+	    	    else
+	    	    if (pGlint->RamDac->RamDacType == (IBM526DB_RAMDAC) ||
+		    	pGlint->RamDac->RamDacType == (IBM526_RAMDAC))
+		    	pGlint->RefClock = 40000;
+	    	    else {
+    		    	xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, 
 							"Undefined RefClock\n");
-		    return FALSE;
-	    	}
+		        return FALSE;
+	    	    }
+		}
 	    }
+	    if (!pGlint->RamDac)
+		return FALSE;
 	    break;
     }
 
@@ -2494,21 +2506,19 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Initialise cursor functions */
     if (pGlint->HWCursor) {
+	/* Handle VGA chipsets first */
 	if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) || 
 	    (pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA2))
 	    Permedia2HWCursorInit(pScreen);
-	
+	else
 	if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V)
 	    Permedia2vHWCursorInit(pScreen);
-
-	if ( ((pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) &&
-	      (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) &&
-	      (pGlint->Chipset != PCI_VENDOR_TI_CHIP_PERMEDIA2)) &&
-	     ((pGlint->RamDac->RamDacType == (IBM526DB_RAMDAC)) ||
+	else
+	if ( ((pGlint->RamDac->RamDacType == (IBM526DB_RAMDAC)) ||
 	      (pGlint->RamDac->RamDacType == (IBM526_RAMDAC)) ||
 	      (pGlint->RamDac->RamDacType == (IBM640_RAMDAC))) )
 	    		glintIBMHWCursorInit(pScreen);
-
+	else
 	if ( (pGlint->RamDac->RamDacType == (TI3030_RAMDAC)) ||
 	     (pGlint->RamDac->RamDacType == (TI3026_RAMDAC)) )
 	    		glintTIHWCursorInit(pScreen);
