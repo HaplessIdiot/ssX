@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.65 2000/08/11 17:27:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.66 2000/08/28 16:04:50 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1364,24 +1364,24 @@ testinx(unsigned short port, unsigned char ind)
   * with byteswapping as default, 
   * drivers that don't need byteswapping should define PPC_MMIO_IS_BE 
   */
- #define MMIO_IN8(base, offset) xf86ReadMmio8(base, offset)
- #define MMIO_OUT8(base, offset, val) xf86WriteMmio8(base, offset, val)
- #define MMIO_ONB8(base, offset, val) xf86WriteMmioNB8(base, offset, val)
- #if defined(PPC_MMIO_IS_BE) /* No byteswapping */
-  #define MMIO_IN16(base, offset) xf86ReadMmio16Be(base, offset)
-  #define MMIO_IN32(base, offset) xf86ReadMmio32Be(base, offset)
-  #define MMIO_OUT16(base, offset, val) xf86WriteMmio16Be(base, offset, val)
-  #define MMIO_OUT32(base, offset, val) xf86WriteMmio32Be(base, offset, val)
-  #define MMIO_ONB16(base, offset, val) xf86WriteMmioNB16Be(base, offset, val)
-  #define MMIO_ONB32(base, offset, val) xf86WriteMmioNB32Be(base, offset, val)
- #else /* byteswapping is the default */
-  #define MMIO_IN16(base, offset) xf86ReadMmio16Le(base, offset)
-  #define MMIO_IN32(base, offset) xf86ReadMmio32Le(base, offset)
-  #define MMIO_OUT16(base, offset, val) xf86WriteMmio16Le(base, offset, val)
-  #define MMIO_OUT32(base, offset, val) xf86WriteMmio32Le(base, offset, val)
-  #define MMIO_ONB16(base, offset, val) xf86WriteMmioNB16Le(base, offset, val)
-  #define MMIO_ONB32(base, offset, val) xf86WriteMmioNB32Le(base, offset, val)
- #endif
+# define MMIO_IN8(base, offset) xf86ReadMmio8(base, offset)
+# define MMIO_OUT8(base, offset, val) xf86WriteMmio8(base, offset, val)
+# define MMIO_ONB8(base, offset, val) xf86WriteMmioNB8(base, offset, val)
+# if defined(PPC_MMIO_IS_BE) /* No byteswapping */
+#  define MMIO_IN16(base, offset) xf86ReadMmio16Be(base, offset)
+#  define MMIO_IN32(base, offset) xf86ReadMmio32Be(base, offset)
+#  define MMIO_OUT16(base, offset, val) xf86WriteMmio16Be(base, offset, val)
+#  define MMIO_OUT32(base, offset, val) xf86WriteMmio32Be(base, offset, val)
+#  define MMIO_ONB16(base, offset, val) xf86WriteMmioNB16Be(base, offset, val)
+#  define MMIO_ONB32(base, offset, val) xf86WriteMmioNB32Be(base, offset, val)
+# else /* byteswapping is the default */
+#  define MMIO_IN16(base, offset) xf86ReadMmio16Le(base, offset)
+#  define MMIO_IN32(base, offset) xf86ReadMmio32Le(base, offset)
+#  define MMIO_OUT16(base, offset, val) xf86WriteMmio16Le(base, offset, val)
+#  define MMIO_OUT32(base, offset, val) xf86WriteMmio32Le(base, offset, val)
+#  define MMIO_ONB16(base, offset, val) xf86WriteMmioNB16Le(base, offset, val)
+#  define MMIO_ONB32(base, offset, val) xf86WriteMmioNB32Le(base, offset, val)
+# endif
 #else /* !__alpha__ && !__powerpc__ */
 #define MMIO_IN8(base, offset) *(volatile CARD8 *)(((CARD8*)(base)) + (offset))
 #define MMIO_IN16(base, offset) *(volatile CARD16 *)(((CARD8*)(base)) + (offset))
