@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.31 2003/02/08 21:26:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.32 2003/02/10 13:20:10 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -413,6 +413,7 @@ static Bool GLINTDRIKernelInit( ScreenPtr pScreen )
    init.mmio1 = pGlintDRI->registers1.handle;
    init.mmio2 = pGlintDRI->registers2.handle;
    init.mmio3 = pGlintDRI->registers3.handle;
+   init.num_rast = pGlint->numMultiDevices;
 
    if (!pGlint->PCIMode) {
        init.pcimode = 0;
