@@ -1,4 +1,39 @@
 XFree86 4.2.99.4 (xx January 2003)
+ 705. Fix the misnaming of three of the redglass cursors (#A.1491,
+      Keith Packard).
+ 704. Fix for two problems where the combination of xtt and XAA could result
+      in a crash.  The first problem was xtt returning a NULL pointer for
+      the bitmap even though the height was non-zero.  The second problem
+      was glyph ascent/descent exceeding the range of maxbounds.ascent/
+      maxbounds.descent (A.1484, Chisato Yamauchi, Masanori Shimada).
+ 703. Eliminate locale-dependent behaviour in fontconfig's setfontdirs
+      script (#A.1483, Markus Kuhn).
+ 702. Fix a bug in previous Thai XIM changes (#5563,
+      Theppitak Karoonboonyanan).
+ 701. Updates for the Israeli XKB map, including:
+       - Implement parens mirroring.
+       - Add two additional variants: "lyx", replacing shifted Hebrew
+         letters with Hebrew point marks, and "si1452", implementing the
+         Standard of Israel no. 1452 mapping.
+      (#5562, Tzafrir Cohen).
+ 700. BuildServersOnly fix when building on a system with no installed
+      X headers or libraries (#5559, ISHIKAWA Mutsumi).
+ 699. Add extended symbols for the "Logitech Cordless Desktop Navigator"
+      keyboard (#A.1480, Gilbert Fridgen).
+ 698. Fix xdm resource's font references to match actual bitmap fonts (#A.1477,
+      Göran Uddeborg).
+ 697. Update the xcursorgen man page (#A.1475, Keith Packard).
+ 696. Add a Mongolian XKB map (#5557, Sanlig Badral).
+ 695. Fixes for the Turkish XKB map (#5556, Nilgün Belma Bugüner).
+ 694. Thai XIM fixes:
+       - Fix the arguments in calling to StringConversionCallback in Thai XIM
+         filter, according to Hideki Hiura's explanation on the protocol.
+       - Add input sequence correction capability to the Thai XIM by
+         exploiting the XIMStringConversionSubstitution operation.
+      (#5553, Theppitak Karoonboonyanan).
+ 693. Resync the pc/fi XKB map with the previous map (#5552, Marko Myllynen).
+ 692. Workaround for parsing of Layout sections caused by recent changes
+      (#5558, Andrew Aitchison, Paulo César Pereira de Andrade).
  691. Fix the enabling of the Glint Gamma for use on an Appian Graphics
       Jeronimo 2000 board which uses two Permedia3's (#5448, Sven Luther).
  690. Fix a problem in the trident driver for older chipsets and using
@@ -15927,4 +15962,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2466 2003/01/05 18:08:57 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2467 2003/01/06 00:04:51 alanh Exp $
