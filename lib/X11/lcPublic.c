@@ -1,4 +1,4 @@
-/* $Xorg: lcPublic.c,v 1.3 2000/08/17 19:45:19 cpqbld Exp $ */
+/* $Xorg: lcPublic.c,v 1.4 2000/12/12 12:44:05 coskrey Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/lcPublic.c,v 1.9 2001/01/17 19:41:55 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcPublic.c,v 1.10 2001/07/25 15:04:45 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -151,10 +151,18 @@ initialize_core(
 	methods->map_modifiers = core->map_modifiers;
 
     if (methods->open_om == NULL)
+#ifdef USE_DYNAMIC_LC
+	_XInitDefaultOM(lcd);
+#else
 	_XInitOM(lcd);
+#endif
 
     if (methods->open_im == NULL)
+#ifdef USE_DYNAMIC_LC
+	_XInitDefaultIM(lcd);
+#else
 	_XInitIM(lcd);
+#endif
 
     if (methods->init_parse_info == NULL)
 	methods->init_parse_info = core->init_parse_info;

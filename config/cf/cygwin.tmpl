@@ -1,7 +1,11 @@
 XCOMM $XConsortium: WinLib.tmpl,v 1.1 94/01/08 18:32:51 rws Exp $
-XCOMM $XFree86: xc/config/cf/cygwin.tmpl,v 3.7 2001/08/19 15:24:05 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.tmpl,v 3.8 2001/09/19 15:47:00 alanh Exp $
 
-#define SharedX11Reqs
+#if UseCygIPC
+#define SharedX11Reqs -lcygipc
+#else
+#define SharedX11Reqs 
+#endif
 #define SharedOldXReqs $(LDPRELIB) $(XLIBONLY)
 #define SharedXReqs $(XTOOLLIB) $(XPLIB) $(XLIB) $(LDPOSTLIBS)
 #define SharedXtReqs $(LDPRELIB) $(SMLIB) $(ICELIB) $(XLIBONLY)
