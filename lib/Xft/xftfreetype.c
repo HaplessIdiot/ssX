@@ -35,6 +35,7 @@ XftFtEncoding	xftFtEncoding[] = {
     { "iso10646-1",	    ft_encoding_unicode, },
     { "iso8859-1",	    ft_encoding_unicode, },
     { "adobe-fontspecific", ft_encoding_symbol,  },
+    { "glyphs-fontspecific",ft_encoding_none,	 },
 };
 
 #define NUM_FT_ENCODINGS    (sizeof xftFtEncoding / sizeof xftFtEncoding[0])
@@ -127,6 +128,11 @@ XftFreeTypeQuery (const char *file, int id, int *count)
 	}
     }
 
+    if (!XftPatternAddString (pat, XFT_ENCODING, 
+			      "glyphs-fontspecific"))
+	goto bail1;
+	
+
     FT_Done_Face (face);
     return pat;
     
@@ -148,6 +154,7 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
     int		    rgba;
     int		    spacing;
     Bool	    antialias;
+    Bool	    encoded;
     char	    *encoding_name;
     FT_Face	    face;
     XftFontStruct   *font;
@@ -273,18 +280,24 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
 	    break;
 	}
     
-    for (charmap = 0; charmap < face->num_charmaps; charmap++)
-	if (face->charmaps[charmap]->encoding == encoding)
-	    break;
-    
-    if (charmap == face->num_charmaps)
-	goto bail2;
+    if (encoding == ft_encoding_none)
+	encoded = False;
+    else
+    {
+	encoded = True;
+	for (charmap = 0; charmap < face->num_charmaps; charmap++)
+	    if (face->charmaps[charmap]->encoding == encoding)
+		break;
 
-    error = FT_Set_Charmap(face,
-			   face->charmaps[charmap]);
+	if (charmap == face->num_charmaps)
+	    goto bail2;
 
-    if (error)
-	goto bail2;
+	error = FT_Set_Charmap(face,
+			       face->charmaps[charmap]);
+
+	if (error)
+	    goto bail2;
+    }
     
     height = face->height;
     ascent = face->ascender;
@@ -330,6 +343,7 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
     font->nrealized = 0;
     font->rgba = rgba;
     font->antialias = antialias;
+    font->encoded = encoded;
     font->face = face;
 
     return font;

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftcore.c,v 1.1 2000/11/29 08:39:21 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftcore.c,v 1.2 2000/12/01 21:32:01 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -154,5 +154,25 @@ XftCoreExtents32 (Display	    *dpy,
     extents->height = overall.ascent + overall.descent;
     extents->xOff = overall.width;
     extents->yOff = 0;
+}
+
+Bool
+XftCoreGlyphExists (Display	    *dpy,
+		    XFontStruct	    *fs,
+		    unsigned int    glyph)
+{
+    int		direction;
+    int		ascent, descent;
+    XCharStruct overall;
+    XChar2b	xc;
+
+    XftCoreConvert32 (&glyph, 1, &xc);
+    XTextExtents16 (fs, &xc, 1, &direction,
+		    &ascent, &descent, &overall);
+    return (overall.lbearing != 0 ||
+	    overall.rbearing != 0 ||
+	    overall.width != 0 ||
+	    overall.ascent != 0 ||
+	    overall.descent != 0);
 }
 
