@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: sun.cf,v 1.134 94/08/17 18:56:43 matt Exp $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.9 1994/10/20 06:00:16 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.10 1994/11/19 07:32:30 dawes Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -149,7 +149,7 @@ XCOMM operating system:  OSName
 #ifdef i386Architecture
 #define StandardDefines	  -Dsun -Di386 -D__i386 -DSVR4
 #else
-#define StandardDefines	  -Dsun -DSVR4
+#define StandardDefines	  -Dsun -Dsparc -DSVR4
 #endif
 #define ExtraLibraries    -lsocket -lnsl
 #if OSMinorVersion > 1

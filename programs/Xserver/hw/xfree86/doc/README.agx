@@ -152,6 +152,14 @@
                                  (see additional notes in the clock 
                                  section).
 
+                                 There has been one report of the 
+                                 "dac-8-bit" option not working with a
+                                 Graphite Pro equipped with a BT485 RAMDAC, 
+                                 puzzling since it should be identical to the
+                                 AT&T20C505 in this regard. No startup 
+                                 messages or XF86Config were submitted to
+                                 aid problem isolation.
+
                                  Not supported by the HG210 Graphite.
 
             "herc_small_dac"  -  Hercules Graphite Pro RAMDAC probe.
@@ -175,9 +183,9 @@
            Must be specified, possible values: "AGX-016", AGX-015",
            "AGX-014", "AGX-010, "XGA-2", "XGA-1". Some vendors place
            stickers over the chip, in general, if it's a VLB board
-           it's probably an AGX-015 and is it's an ISA board it may
+           it's probably an AGX-015 and if it's an ISA board it may
            be an AGX-014. The Hercules Graphite Power Pro and Spider 
-           Black Widow plus use the AGX-016 chipset. In general, 
+           Black Widow Plus use the AGX-016 chipset. In general, 
            specifying a lower revision in the AGX-0{14,15,16} series
            does not seem to causes problems (except lower performance
            from the AGX-014 non-accelerated line drawing).
@@ -258,21 +266,22 @@
 
       Virtual resolution:
 
-           The graphics engine restricts the virtual resolutions 
-           by the following rules:
+           The server now accepts any virtual width, however the
+           actual usable CRTC line width is restricted when using the
+           graphics engine and depends upon the chip revision. The
+           CRTC line width and not the virtual width determine the 
+           amount of memory used. The server currently does not make
+           use of any of the unused CRTC line's memory. CRTC line 
+           width is restricted by the following rules:
 
-               AGX-014 : width must be a power of 2 (e.g. 512 and 1024)
-               AGX-015 : width must be a power of 2, or 256 plus
-                         a power of 2 (e.g. 512, 768, 1024, 1280).
-               AGX-016 : adds adjusts of 128 and 288 to those of the -015,
-                         but these are not yet supported, and initial attempts
-                         indicate they may only be for 640 and 800 (docs are
-                         vague, but only mention their use for 640 and 800).
+               AGX-014 : 1024 and 2048. 
+               AGX-015 : 1024, 1280, and 2048. 
+               AGX-016 : 600, 800, 1024, 1280, and 2048.
 
            When panning I occasionally get streaks if the virtual 
-           resolution >> physical resolution, moving the mouse a 
-           little makes it disappear. The Hercules manual indicates 
-           this also happens with the MS-Windows drivers.
+           resolution is much greater than the physical resolution. 
+           Moving the mouse a little makes it disappear. The Hercules 
+           manual indicates this also happens with the MS-Windows drivers.
 
            The server requires at least a 64KB scratchpad. Additional
            memory is useful for font cache and a larger scratchpad.
@@ -371,6 +380,15 @@
           I need to test some more). Interlaced and +/-sync flags are
           supported but have had very little testing.
 
+          The doublescan flag is now supported, however the minimum
+          clock supported is generally 25Mhz so resolutions of less
+          than 400x300 are not likely to be supported by most monitors.
+          In creating doublescan mode timings, the vertical timings
+          will have to be for the doubled values, e.g. for 400x300
+          the timings will actually be 400x600. The common XFree86
+          config routines may eventually take care of this automatically,
+          but not yet.
+
       
        Examples:
 
@@ -419,7 +437,7 @@
           However, this is completely untested. You should be familiar 
           with XGA internals, be willing to do some debugging, and 
           be willing to risk your hardware. If you know of any vendors 
-          still producing XGA clones for the (E(ISA, VESA, or even PCI
+          still producing XGA clones for the (E)ISA, VESA, or even PCI
           bus, let me know. Some bits of crude POS probe code exist, 
           but have proved useless for AGX based boards and are currently 
           disabled. 
@@ -442,8 +460,8 @@
             COPbase     nnnnnn      - Address of the graphics engine's
                                       memory mapped control registers.
                                       Typically: 
-                                      0xC1C00 + ext_mem_addr * 0x2000
-                                        + instance * 0x80
+                                      0xC1C00 + (ext_mem_addr * 0x2000)
+                                        + (instance * 0x80)
                                       where ext_mem_address is the high
                                       order 4-bits of POS register 2
                                       (the server assumes zero).
@@ -452,8 +470,9 @@
            the XGA color table code are the most notable areas
            of XGA unique code that have had absolutely no testing in 
            any form. The XGA-1 clocks selection is a subset of the 
-           AGX mechanism and probing should work. To specify 
-           programmable clocks for the XGA-2, specify any of the 
+           AGX mechanism and but recent reports from someone trying to
+           get an XGA going indicates that probing doesn't work. To
+           specify programmable clocks for the XGA-2, specify any of the 
            programmable clock option values on the clocks line (e.g. 
            "icd2061a", doesn't matter which).  Standard XGA-1 clock 
            values, switching, and probing can also be used with the 
@@ -461,4 +480,4 @@
            
           
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.8 1994/09/23 10:18:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.9 1994/09/25 13:26:56 dawes Exp $

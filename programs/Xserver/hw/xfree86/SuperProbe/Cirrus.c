@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.1 1994/08/31 04:19:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.2 1994/09/26 15:30:55 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -292,7 +292,7 @@ int Class;
 static int MemProbe_Cirrus54(Chipset)
 int Chipset;
 {
-	Byte old;
+	Byte old, SRF;
 	int Mem = 0;
 
 	EnableIOPorts(NUMPORTS, Ports);
@@ -314,7 +314,19 @@ int Chipset;
 	case CHIP_CL6235:
 		Mem = 512;
 		break;
+	case CHIP_CL5430:
+	case CHIP_CL5434:
+		Mem = 512;
+		SRF = rdinx(SEQ_IDX, 0x0F);
+		if (SRF & 0x10)
+			Mem *= 2;
+		if ((SRF & 0x18) == 0x18)
+			Mem *= 2;
+		if (Chipset != CHIP_CL5430 && (SRF & 0x80))
+			Mem *= 2;
+		break;
 	default:
+		/* 542x, use BIOS Scratch Register value */
 		switch ((rdinx(SEQ_IDX, 0x0A) & 0x18) >> 3)
 		{
 		case 0x00:

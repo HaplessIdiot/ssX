@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.0 1994/10/20 06:12:53 dawes Exp $ */
 
 /*
  * This is a dumb configuration program that will create a base
@@ -39,12 +39,16 @@
  *           the proper +/-h/vsync flags.
  * 11Oct94 Skip 'numclocks:' and 'pixel clocks:' lines when probing for
  * 	     clocks.
+ * 18Oct94 Add check for existence of /usr/X11R6.
+ *	   Add note about ctrl-alt-backspace.
+ * 06Nov94 Add comment above standard mode timings in XF86Config.
  *
  * Possible enhancements:
  * - Add more standard mode timings (also applies to README.Config). Missing
  *   are 1024x768 @ 72 Hz, 1152x900 modes, and 1280x1024 @ ~70 Hz.
  *   I suspect there is a VESA standard for 1024x768 @ 72 Hz with 77 MHz dot
  *   clock, and 1024x768 @ 75 Hz with 78.7 MHz dot clock.
+ * - Add option for creation of clear, minimal XF86Config.
  *
  */
 
@@ -124,7 +128,9 @@ static char *finalcomment_text =
 "File has been written. Take a look at it before running 'startx'. Note that\n"
 "the XF86Config file must be in one of the directories searched by the server\n"
 "(e.g. /usr/X11R6/lib/X11) in order to be used. Within the server press\n"
-"ctrl, alt and '+' simultaneously to cycle video resolutions.\n"
+"ctrl, alt and '+' simultaneously to cycle video resolutions. Pressing ctrl,\n"
+"alt and backspace simultaneously immediately exits the server (use if\n"
+"the monitor doesn't sync for a particular mode).\n"
 "\n"
 "For further configuration, refer to /usr/X11R6/lib/X11/doc/README.Config.\n"
 "\n";
@@ -1112,6 +1118,13 @@ static char *monitorsection_text4 =
 "\n";
 
 static char *modelines_text =
+"# This is a set standard mode timings. Modes that are out of monitor spec\n"
+"# are automatically deleted by the server, so there's no immediate need to\n"
+"# delete mode timings (unless particular mode timings don't work on your\n"
+"# monitor). With these modes, the best standard mode that your monitor\n"
+"# and video card can support for a given resolution is automatically\n"
+"# used.\n"
+"\n"
 "# 640x400 @ 70 Hz, 31.5 kHz hsync\n"
 "Modeline \"640x400\"     25.175 640  664  760  800   400  409  411  450\n"
 "# 640x480 @ 60 Hz, 31.5 kHz hsync\n"
@@ -1502,6 +1515,15 @@ static char *oldxfree86_text =
 "after '/usr/X11R6/bin'.\n"
 "\n";
 
+static char *notinstalled_text =
+"The directory /usr/X11R6 does not exist. This probably means that you have\n"
+"not yet installed an X11R6-based version of XFree86. Please install\n"
+"XFree86 3.1+ before running this program, following the instructions in\n"
+"the INSTALL or README that comes with the XFree86 distribution for your OS.\n"
+"For a minimal installation it is sufficient to only install base binaries,\n"
+"libraries, configuration files and a server that you want to use.\n"
+"\n";
+
 static char *pathnote_text =	
 "Note that the X binary directory in your path may be a symbolic link.\n"
 "In that case you could modify the symbolic link to point to the new binaries.\n"
@@ -1511,7 +1533,20 @@ static char *pathnote_text =
 "Make sure the path is OK before continuing.\n";
 
 void path_check() {
+	char s[80];
 	FILE *f;
+
+	f = fopen("/usr/X11R6", "r");
+	if (f == NULL) {
+		printf("%s", notinstalled_text);
+		printf("Do you want to continue? ");
+		getstring(s);
+		if (!answerisyes(s))
+			exit(-1);
+		printf("\n");
+	}
+	fclose(f);
+
 	f = fopen("/usr/X386/bin", "r");
 	if (f == NULL)
 		return;

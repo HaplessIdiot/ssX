@@ -1,5 +1,5 @@
 /* $XConsortium: cir_bltC.c,v 1.2 94/04/17 20:32:32 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.2 1994/08/01 12:15:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.3 1994/08/20 07:36:19 dawes Exp $ */
 /*
  
 
@@ -173,7 +173,11 @@ CirrusDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 		 {
 		 fnp = vgaImageWrite;
 		 }
-	    else fnp = CirrusBLTImageWrite;
+	    else
+	        if (cirrusUseMMIO)
+	            fnp = CirrusMMIOBLTImageWrite;
+	        else
+	            fnp = CirrusBLTImageWrite;
 	    }
        else fnp = vgaPixBitBlt;	/* Don't need to change: Mem -> Mem */
        

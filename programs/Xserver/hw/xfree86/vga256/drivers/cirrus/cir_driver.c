@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.19 1994/10/23 13:00:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.20 1994/10/30 02:59:28 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -61,13 +61,13 @@
 /* Allow pixel multiplexing for the 5434 in 256 color modes to support */
 /* dot clocks up to 110 MHz (later chip versions may go up to 135 MHz). */
 
-/* #define ALLOW_8BPP_MULTIPLEXING */
+#define ALLOW_8BPP_MULTIPLEXING
 
 /* Allow optional Memory-Mapped I/O on 543x. */
 
 #if defined(__GNUC__) || defined(__STDC__)
 
-/* #define CIRRUS_SUPPORT_MMIO */
+#define CIRRUS_SUPPORT_MMIO
 
 #endif
 
@@ -1108,14 +1108,14 @@ cirrusFbInit()
 
   useSpeedUp = vga256InfoRec.speedup & SPEEDUP_ANYWIDTH;
   
-  /* There doesn't seem to be an easy way to detect the bus type. */
-  /* An we can't write to video memory yet to measure it. */
-  /* It appears color expansion works well even on a slow bus, so we */
-  /* use it with any type of bus. The busspeed is hardwired to fast. */
   cirrusBusType = CIRRUS_BUS_FAST;
-  if (HAVE543X()) {
-  	/* On the 543x, it is possible to read the configuration register */
-  	/* to find out the bus interface. */
+  if (cirrusChip >= CLGD5422) {
+  	/* It is possible to read the configuration register */
+  	/* to find out the bus interface. This is only implemented on */
+  	/* later 542x cards and on the 543x. The only function that */
+  	/* uses this is solid filling on the 5426, for which framebuffer */
+  	/* color expansion is much faster than the BitBLT engine on a */
+  	/* local bus. */
   	outb(0x3c4, 0x17);
   	switch ((inb(0x3c5) >> 3) & 7) {
   	case 2 :	/* VLB > 33 MHz */
@@ -1128,6 +1128,7 @@ cirrusFbInit()
   	case 7 :	/* ISA */
   		cirrusBusType = CIRRUS_BUS_ISA;
   		break;
+  	/* In other cases (e.g. undefined), assume 'fast' bus. */
   	}
   }
 
@@ -1165,16 +1166,15 @@ cirrusFbInit()
       if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
           {
       	  /*
-      	   * Change MCLK value. The databook is not very clear about this.
-      	   * I believe most cheap cards are misconfigured to a value that
-      	   * is too low (because they don't compensate for extended RAS
-      	   * timing).
+      	   * Change MCLK value to a more aggressive value. The official
+      	   * spec for the 542x is 50 MHz, but some cards are overclocked.
       	   *
-      	   * The BIOS default usually is 0x1c (50 MHz).
-      	   * On one card tested, with 80ns DRAM, 0x26 seems stable.
+      	   * The 5434 is specified for 50 MHz, but may be speced for
+      	   * 60 MHz in packed-pixel mode. The 5429 and 5430 are probably
+      	   * speced for 60 MHz.
       	   */
       	  outb(0x3c4, 0x1f);
-      	  outb(0x3c5, (SR1F & 0xc0) | 0x22); /* Set to 0x22 (about 62 MHz). */
+      	  outb(0x3c5, (SR1F & 0xc0) | 0x22); /* Set to 0x22 (about 60 MHz). */
 	  if (xf86Verbose)
               ErrorF("%s %s: %s: Internal memory clock register set to 0x22\n",
                 XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
@@ -1262,7 +1262,8 @@ nolinear:
         CIRRUS.ChipUseLinearAddressing = TRUE;
 #endif
 
-  CirrusMemTop = vga256InfoRec.virtualX * vga256InfoRec.virtualY;
+  CirrusMemTop = vga256InfoRec.virtualX * vga256InfoRec.virtualY
+      * (vgaBitsPerPixel / 8);
   size = CirrusInitializeAllocator(CirrusMemTop);
 
   if (xf86Verbose)
@@ -1392,6 +1393,24 @@ nolinear:
         /* mapped yet. For now we do that in the init function. */
         ErrorF("%s %s: %s: Using Memory-Mapped I/O\n",
             XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
+        if (cirrusUseBLTEngine) {
+            if (vgaBitsPerPixel == 8) {
+                vga256TEOps1Rect.PolyGlyphBlt = CirrusMMIOPolyGlyphBlt;
+                vga256TEOps.PolyGlyphBlt = CirrusMMIOPolyGlyphBlt;
+                vga256LowlevFuncs.teGlyphBlt8 = CirrusMMIOImageGlyphBlt;
+                vga256TEOps1Rect.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+                vga256TEOps.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+             }
+            else
+            if (vgaBitsPerPixel == 16) {
+		cfb16TEOps1Rect.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+	        cfb16TEOps.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+            }
+            else { /* vgaBitsPerPixel == 32 */
+		cfb32TEOps1Rect.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+	        cfb32TEOps.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+            }
+        }
     }
 #endif
 
@@ -1992,12 +2011,22 @@ cirrusInit(mode)
 		 		threshold = 10;
 		 	if (bandwidth <= 29000) /* >= 71 MHz at 8bpp */
 		 		threshold = 12;
-		 	if (bandwidth <= 26000) /* >= 74 MHz at 8bpp */
-		 		threshold = 13;
-		 	if (bandwidth <= 16000)	/* >= 84 MHz at 8bpp */
-		 		threshold = 14;
-		 	if (bandwidth <= 12000) /* >= 44 MHz at 16bpp */
-		 		threshold = 15;
+		 	if (cirrusChip < CLGD5428) {
+		 		if (bandwidth <= 26000) /* >= 74 MHz at 8bpp */
+		 			threshold = 13;
+		 		if (bandwidth <= 16000) /* >= 84 MHz at 8bpp */
+		 			threshold = 14;
+		 		if (bandwidth <= 12000) /* >= 44 MHz at 16bpp */
+					threshold = 15;
+		 	}
+		 	else {
+		 		/* Based on the observation that the 5428 */
+		 		/* BIOS 77 MHz 1024x768 mode uses 12. */
+		 		if (bandwidth <= 16000) /* >= 84 MHz at 8bpp */
+		 			threshold = 13;
+		 		if (bandwidth <= 12000) /* >= 44 MHz at 16bpp */
+					threshold = 14;
+		 	}
 		 }
 		 /* Agressive FIFO threshold setting is always 8. */
 		 new->SR16 |= threshold - fifoshift_5430;

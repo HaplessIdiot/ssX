@@ -239,7 +239,7 @@ To compile from here, follow the XFree86 README, basically after
 obtaining X11r5, applying the XFree86 patches and completing the above
 changes you should only need to run:
 
-    make BOOTSTRAPCFLAGS="-DSYSV -DSYSV386 -DSCO" World
+    make BOOTSTRAPCFLAGS="-DSYSV -Di386 -DSCO" World
 
 The install script mit/util/scripts/bsdinst.sh will not set 's' bit
 permissions when installing over the top of a previously installed
@@ -296,7 +296,7 @@ B)  Check the paragraph on site.def/xf86site.def in the compiling for
 
 G)  Add a -DSCO324 to the BOOTSTRAPCFLAGS when you do the make World.
 
-        make BOOTSTRAPCFLAGS="-DSYSV -DSYSV386 -DSCO -DSCO324" World
+        make BOOTSTRAPCFLAGS="-DSYSV -Di386 -DSCO -DSCO324" World
     
     Under 3.2.4 several different options become activated.
 
@@ -528,4 +528,4 @@ Special thanks to Jerry Whelan (guru@stasi.bradley.edu) for providing an
 ftp site for the binary distribution.
 
     
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SCO,v 3.1 1994/09/26 15:33:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SCO,v 3.2 1994/11/19 13:56:06 dawes Exp $

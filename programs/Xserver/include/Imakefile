@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/include/Imakefile,v 3.0 1994/05/30 08:28:05 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/include/Imakefile,v 3.1 1994/09/11 11:16:13 dawes Exp $
 
 all::
 
@@ -31,3 +31,4 @@ InstallLinkKitNonExecFile(window.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(windowstr.h,$(LINKKITDIR)/include)
 
 depend::
+

@@ -1,6 +1,6 @@
 %{
 /* $XConsortium: lex.l,v 5.7 94/06/04 17:03:52 rws Exp $ */
-/* $XFree86: xc/fonts/PEX/lex.l,v 3.4 1994/06/09 10:42:01 dawes Exp $ */
+/* $XFree86: xc/fonts/PEX/lex.l,v 3.5 1994/11/30 20:30:57 dawes Exp $ */
 
 /*****************************************************************
 
@@ -54,7 +54,6 @@ SOFTWARE.
 #include <ctype.h>
 #include <math.h>
 #include "to_wfont.h"
-
 #include <X11/Xosdefs.h>
 #if !defined(X_NOT_STDC_ENV) || defined(SCO)
 #include <stdlib.h>
@@ -62,10 +61,6 @@ SOFTWARE.
 #if defined(ISC) && __STDC__ && !defined(ISC30)
 extern double atof(char *);
 #endif
-#endif
-
-#ifdef linux
-int yywrap() { return 1; }
 #endif
 
 %}

@@ -1,5 +1,5 @@
 /* $XConsortium: imakemdep.h,v 1.76 94/04/17 20:10:31 gildea Exp $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.3 1994/08/31 03:20:10 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.4 1994/10/20 06:00:38 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -100,6 +100,18 @@ in this Software without prior written authorization from the X Consortium.
 # ifdef SVR4
 #  define imake_ccflags "-Xc -DSVR4"
 # else
+#  define imake_ccflags "-DSYSV"
+# endif
+#endif
+
+#ifdef SVR4
+# ifdef i386
+#  define imake_ccflags "-Xc -DSVR4"
+# endif
+#endif
+
+#ifdef SYSV
+# ifdef i386
 #  define imake_ccflags "-DSYSV"
 # endif
 #endif
@@ -336,8 +348,8 @@ char *cpp_argv[ARGUMENTS] = {
 	"-DSVR4",
 # endif
 #endif /* MOTOROLA */
-#ifdef SYSV386           /* System V/386 folks */
-	"-DSYSV386",
+#ifdef i386
+	"-Di386",
 # ifdef SVR4
 	"-DSVR4",
 # endif
@@ -371,7 +383,44 @@ char *cpp_argv[ARGUMENTS] = {
 # endif
 # ifdef DELL
 	"-DDELL",
+# endif
 #endif
+#ifdef SYSV386           /* System V/386 folks, obsolete */
+	"-Di386",
+# ifdef SVR4
+	"-DSVR4",
+# endif
+# ifdef ISC
+	"-DISC",
+#  ifdef ISC40
+	"-DISC40",       /* ISC 4.0 */
+#  else
+#   ifdef ISC202
+	"-DISC202",      /* ISC 2.0.2 */
+#   else
+#    ifdef ISC30
+	"-DISC30",       /* ISC 3.0 */
+#    else
+	"-DISC22",       /* ISC 2.2.1 */
+#    endif
+#   endif
+#  endif
+# endif
+# ifdef SCO
+	"-DSCO",
+#  ifdef SCO324
+	"-DSCO324",
+#  endif
+# endif
+# ifdef ESIX
+	"-DESIX",
+# endif
+# ifdef ATT
+	"-DATT",
+# endif
+# ifdef DELL
+	"-DDELL",
+# endif
 #endif
 #ifdef __osf__
 	"-D__osf__",

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: svr4.cf,v 1.6 94/04/08 18:56:33 rws Exp $
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.4 1994/11/19 07:32:32 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.5 1994/11/27 07:01:22 dawes Exp $
 /*
  * A default OS name
  */
@@ -27,13 +27,6 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.4 1994/11/19 07:32:32 dawes Exp $
 #endif
 #ifndef OSTeenyVersion
 #define	OSTeenyVersion	0
-#endif
-#ifndef BootstrapCFlags
-#ifdef SYSV386
-#define BootstrapCFlags         -DSVR4 -DSYSV386
-#else
-#define BootstrapCFlags         -DSVR4
-#endif
 #endif
 
 /* Some stuff that all SVR4s should have */
@@ -75,7 +68,7 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.4 1994/11/19 07:32:32 dawes Exp $
 #define	YaccCmd	/usr/ccs/bin/yacc
 #endif
 
-#if OSMinorVersion == 0
+#if (OSMinorVersion == 0)
 #ifndef XawI18nDefines
 #define XawI18nDefines		-DUSE_XWCHAR_STRING
 #endif
@@ -84,7 +77,17 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.4 1994/11/19 07:32:32 dawes Exp $
 #ifdef i386Architecture
 #ifndef StandardDefines
 #define StandardDefines		-DSVR4 -Di386
+#define BootstrapCFlags		-DSVR4 -Di386
 #endif
+
+#ifndef BootstrapCFlags
+#ifdef SYSV386			/* obsolete, use -DSVR4 -Di386 */
+#define BootstrapCFlags         -DSVR4 -DSYSV386
+#else
+#define BootstrapCFlags         -DSVR4
+#endif
+#endif
+
 #ifndef DefaultCCOptions
 #if HasGcc2
 #if UseInstalled

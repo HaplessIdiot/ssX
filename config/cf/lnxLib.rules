@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules,v 1.2 94/03/31 11:37:29 gildea Exp $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.6 1994/10/21 11:20:19 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.7 1994/10/21 11:58:40 dawes Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -140,7 +140,7 @@ clean::									@@\
  *  JUMP_GOTSIZE_Xfoo = 4096				<adjust if necessary>
  *  JUMP_STUBNAMES_Xfoo = libXfoo			<and others>
  *  JUMP_STUBS_IMPORT_Xfoo = /usr/lib/libc.sa		<and others>
- *  JUMP_LDLIBS_Xfoo = `$(CC) -print-libgcc-file-name` -lc <and others>
+ *  JUMP_LDLIBS_Xfoo = `$(CC) --print-libgcc-file-name` -lc <and others>
  *
  * To create a complex "host", you need to add
  *  JUMP_SIBARS_Xt = jump/libXbar.a~			<and others>
@@ -158,7 +158,7 @@ clean::									@@\
 #ifndef UseInstalled
 XCOMM These are only needed to build the server
 
-JUMP_LDLIBS_libc = `$(CC) -print-libgcc-file-name` -lc
+JUMP_LDLIBS_libc = `$(CC) --print-libgcc-file-name` -lc
 
 XCOMM libX11.so (X11, SM, ICE)
 JUMP_ROOT_X11 = $(XLIBSRC)
@@ -487,7 +487,7 @@ install:: $(JUMP_SA) $(JUMP_SO)						@@\
 		(T=$(DESTDIR)dest/`echo $(JUMP_SO)|sed 's/\.[^\.]*$$//'`;\
 		set -x; \
 		$(INSTALL) -s -c $(INSTSOLIBFLAGS) $(JUMP_SO) $(DESTDIR)dest; \
-		$(RM) $$T && $(LN) $(JUMP_SO) $$T); fi	                @@\
+		$(RM) $$T && $(LN) $(JUMP_SO) $$T); fi			@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) $(JUMP_SA) $(DESTDIR)dest
 #endif /* InstallSharedLibrary */
 

@@ -28,7 +28,7 @@ in this Software without prior written authorization from the X Consortium.
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
 /* $XConsortium: shm.c,v 1.23 94/04/17 20:32:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.0 1994/08/20 07:24:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.1 1994/09/17 04:05:19 dawes Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -60,7 +60,7 @@ typedef struct _ShmDesc {
     unsigned long size;
 } ShmDescRec, *ShmDescPtr;
 
-#if !(defined(sun) && defined (i386) && defined (SVR4))
+#if !(defined(sun) && defined (SVR4))
 
 #if NeedFunctionPrototypes
 
