@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftcore.c,v 1.7 2002/02/19 07:51:20 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftcore.c,v 1.8 2002/05/31 04:45:12 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -243,10 +243,15 @@ _XftSharpGlyphFind (XftDraw *draw, XftFont *public)
 
     if (!font->info.antialias)
 	return _XftSharpGlyphMono;
-    else if (font->info.rgba == FC_RGBA_NONE)
-	return _XftSharpGlyphGray;
-    else
+    else switch (font->info.rgba) {
+    case FC_RGBA_RGB:
+    case FC_RGBA_BGR:
+    case FC_RGBA_VRGB:
+    case FC_RGBA_VBGR:
 	return _XftSharpGlyphRgba;
+    default:
+	return _XftSharpGlyphGray;
+    }
 }
 
 /*
@@ -861,8 +866,13 @@ _XftSmoothGlyphFind (XftDraw *draw, XftFont *public)
 
     if (!font->info.antialias)
 	return _XftSmoothGlyphMono;
-    else if (font->info.rgba == FC_RGBA_NONE)
-    {
+    else switch (font->info.rgba) {
+    case FC_RGBA_RGB:
+    case FC_RGBA_BGR:
+    case FC_RGBA_VRGB:
+    case FC_RGBA_VBGR:
+	return _XftSmoothGlyphRgba;
+    default:
 	switch (XftDrawBitsPerPixel (draw)) {
 	case 32:
 	    if ((draw->visual->red_mask   == 0xff0000 &&
@@ -900,8 +910,6 @@ _XftSmoothGlyphFind (XftDraw *draw, XftFont *public)
 	}
 	return _XftSmoothGlyphGray;
     }
-    else
-	return _XftSmoothGlyphRgba;
 }
 
 static XftGlyph *

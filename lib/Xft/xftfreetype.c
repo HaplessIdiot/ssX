@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.26 2002/09/26 00:31:23 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.27 2002/09/26 02:55:59 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -399,7 +399,7 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
      */
     switch (FcPatternGetInteger (pattern, FC_RGBA, 0, &fi->rgba)) {
     case FcResultNoMatch:
-	fi->rgba = FC_RGBA_NONE;
+	fi->rgba = FC_RGBA_UNKNOWN;
 	break;
     case FcResultMatch:
 	break;
@@ -692,8 +692,11 @@ XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     {
 	if (antialias)
 	{
-	    if (fi->rgba)
-	    {
+	    switch (fi->rgba) {
+	    case FC_RGBA_RGB:
+	    case FC_RGBA_BGR:
+	    case FC_RGBA_VRGB:
+	    case FC_RGBA_VBGR:
 		pf.depth = 32;
 		pf.type = PictTypeDirect;
 		pf.direct.alpha = 24;
@@ -716,9 +719,8 @@ XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
 					   PictFormatBlue|
 					   PictFormatBlueMask,
 					   &pf, 0);
-	    }
-	    else
-	    {
+		break;
+	    default:
 		pf.depth = 8;
 		pf.type = PictTypeDirect;
 		pf.direct.alpha = 0;
@@ -729,6 +731,7 @@ XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
 					   PictFormatAlpha|
 					   PictFormatAlphaMask,
 					   &pf, 0);
+		break;
 	    }
 	}
 	else
