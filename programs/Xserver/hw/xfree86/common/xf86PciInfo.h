@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.150tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.151 2003/08/29 20:49:02 tsi Exp $ */
 
 /*
  * Copyright (c) 1995-2003 by The XFree86 Project, Inc.
@@ -176,6 +176,7 @@
 #define PCI_CHIP_RV250_Le		0x4C65
 #define PCI_CHIP_RV250_Lf		0x4C66
 #define PCI_CHIP_RV250_Lg		0x4C67
+#define PCI_CHIP_RV250_Ln		0x4C6E
 #define PCI_CHIP_RAGE128MF		0x4D46
 #define PCI_CHIP_RAGE128ML		0x4D4C
 #define PCI_CHIP_R300_ND		0x4E44
@@ -312,6 +313,7 @@
 #define PCI_CHIP_AMD761			0x700E
 
 /* Trident */
+#define PCI_CHIP_2100			0x2100
 #define PCI_CHIP_8400			0x8400
 #define PCI_CHIP_8420			0x8420
 #define PCI_CHIP_8500			0x8500
