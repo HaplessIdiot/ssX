@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.h,v 1.5 95/01/23 15:35:14 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.16 1995/04/09 14:14:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.17 1995/06/02 11:19:47 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -216,7 +216,8 @@ extern unsigned int cirrusForegroundColorShadow,
 #define CLGD5434    10
 #define CLGD5430    11
 #define CLGD5436    12
-#define LASTCLGD    CLGD5436
+#define CLGD7543    13
+#define LASTCLGD    CLGD7543
 
 #define CIRRUS_BUS_SLOW 0
 #define CIRRUS_BUS_FAST 1

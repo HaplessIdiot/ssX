@@ -1,4 +1,14 @@
-XFree86 3.1.2c (25 October 1995)
+XFree86 3.1.2c (5 November 1995)
+ 49. Fix problem using a LinkKit generated with BuildLBX set to YES.
+ 48. Allow a real middle button event to be passed when 3 button mouse
+     emulation is enabled (Thomas Wu).
+ 47. Fix panning and some inital clock selection problems for TGUI9440
+     cards (Alan Hourihane).
+ 46. Support for the Cirrus CL-GD7453 (Thomas Zerucha).
+ 45. Fix for instability problems with Cirrus programmable clock
+     (Koen Gadeyne).
+ 44. Fix memory overwrite problem in xterm which could be a security
+     problem.
  43. Merge in the X Consortium's public patch 13.
  42. Define X_LOCALE for LynxOS for compatibility with Metrolink's
      Motif package (Thomas Mueller).

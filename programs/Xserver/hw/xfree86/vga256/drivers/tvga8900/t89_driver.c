@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.10 1995/10/22 01:49:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.11 1995/11/02 00:29:23 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -174,6 +174,13 @@ TGUISetClock(freq)
 				continue;
 		}
 	    }
+
+	/* Prepare Address and Color Mode register for new Clock */
+	outb(0x3C4, 0x0B);
+	inb(0x3C5);
+	outw(0x3C4, 0xC20E);
+	outb(vgaIOBase + 4, 0x29); temp = inb(vgaIOBase + 5);
+	outw(vgaIOBase + 4, ((temp & 0xFC) << 8) | 0x29);
 
 	/* Program the clock synthesizer for selected clock */
 	outb(0x43C8, ((0x01 & q) << 7) | p); 
@@ -1136,11 +1143,14 @@ TVGA8900Adjust(x, y)
 	/* 
 	 * Go see the comments in the Init function.
 	 */
-	if (vga256InfoRec.videoRam < 1024) 
-		base = (y * vga256InfoRec.displayWidth + x + 1) >> 2;
+	if (TVGAchipset == TGUI9440AGi)
+		base = (y * vga256InfoRec.displayWidth + x) >> 2;
 	else
+		if (vga256InfoRec.videoRam < 1024) 
+			base = (y * vga256InfoRec.displayWidth + x + 1) >> 2;
+		else
 #endif
-		base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
+			base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 
   	outw(vgaIOBase + 4, (base & 0x00FF00) | 0x0C);
 	outw(vgaIOBase + 4, ((base & 0x00FF) << 8) | 0x0D);

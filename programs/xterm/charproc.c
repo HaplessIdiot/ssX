@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c,v 1.182 94/08/10 21:53:24 gildea Exp $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.8 1995/09/17 06:33:15 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.9 1995/09/23 07:09:25 dawes Exp $
  */
 
 /*
@@ -848,7 +848,9 @@ static void VTparse()
 
 		 case CASE_ESC_SEMI:
 			/* semicolon in csi or dec mode */
-			param[nparam++] = DEFAULT;
+			param[nparam] = DEFAULT;
+			if (nparam < NPARAM)
+				nparam++;
 			break;
 
 		 case CASE_DEC_STATE:

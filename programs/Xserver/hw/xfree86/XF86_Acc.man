@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.8 95/01/23 15:33:27 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.37 1995/10/21 11:27:38 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.38 1995/10/22 11:01:45 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -714,7 +714,7 @@ Kevin Martin,       \fImartin@cs.unc.edu\fP
 Rik Faith,          \fIfaith@cs.unc.edu\fP
 Tiago Gons,         \fItiago@comosjn.hobby.nl\fP
 Hans Nasten,        \fInasten@everyware.se\fP
-Scott Laird,        \fIlair@midway.uchicago.edu\fP
+Scott Laird,        \fIscott@laird.com\fP
 .fi
 .RS 8
 Development and improvement of the Mach8 and 8514/A specific code.

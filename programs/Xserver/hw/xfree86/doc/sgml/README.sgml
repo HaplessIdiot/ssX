@@ -452,6 +452,7 @@ XFree86 support was integrated into the base X11R6 distribution by:
        <item> Norbert Distler <it>&lt;Norbert.Distler@physik.tu-muenchen.de&gt;</it>,
        <item> Leonard N. Zubkoff <it>&lt;lnz@dandelion.com&gt;</it>,
        <item> Bernhard Bender <it>&lt;br@elsa.mhs.compuserve.com&gt;</it>
+       <item> Dirk Hohndel <it>&lt;hohndel@XFree86.org&gt;</it>
        <item> Joe Moss <it>&lt;joe@morton.rain.com&gt;</it>
 </itemize>
 <tag/Mach32 accelerated code by:  /
@@ -472,7 +473,7 @@ XFree86 support was integrated into the base X11R6 distribution by:
        <item> Rik Faith <it>&lt;faith@cs.unc.edu&gt;</it>,
        <item> Tiago Gons <it>&lt;tiago@comosjn.hobby.nl&gt;</it>,
        <item> Hans Nasten <it>&lt;nasten@everyware.se&gt;</it>,
-       <item> Scott Laird <it>&lt;lair@midway.uchicago.edu&gt;</it>
+       <item> Scott Laird <it>&lt;scott@laird.com&gt;</it>
 </itemize>
 <tag/Cirrus accelerated code by:  /
 <itemize>
@@ -923,7 +924,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.33 1995/09/17 06:31:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.34 1995/10/21 11:43:28 dawes Exp $
 </verb>
 
 </article>

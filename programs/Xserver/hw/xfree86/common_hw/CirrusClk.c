@@ -1,9 +1,11 @@
 /* $XConsortium: CirrusClk.c,v 1.4 95/01/27 14:46:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.4 1995/01/15 10:33:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.5 1995/01/28 15:58:08 dawes Exp $ */
 
 /*
  * Programming of the built-in Cirrus clock generator.
  * Harm Hanemaayer <hhanemaa@cs.ruu.nl>
+ * 
+ * VCO stability criterion code added by Koen Gadeyne (kmg@barco.be)
  */
  
 #include "compiler.h"
@@ -14,9 +16,16 @@
 /* CLOCK_FACTOR is double the osc freq in kHz (osc = 14.31818 MHz) */
 #define CLOCK_FACTOR 28636
 
+/* stability constraints for internal VCO -- MAX_VCO also determines the maximum Video pixel clock */
+#define MIN_VCO CLOCK_FACTOR
+#define MAX_VCO 111000
+
 /* clock in kHz is (numer * CLOCK_FACTOR / (denom & 0x3E)) >> (denom & 1) */
+#define VCOVAL(n, d) \
+     ((((n) & 0x7F) * CLOCK_FACTOR / ((d) & 0x3E)) )
+
 #define CLOCKVAL(n, d) \
-     ((((n) & 0x7F) * CLOCK_FACTOR / ((d) & 0x3E)) >> ((d) & 1))
+     (VCOVAL(n, d) >> ((d) & 1))
 
 #define NU_FIXED_CLOCKS 19
 
@@ -86,7 +95,7 @@ int CirrusFindClock(freq, num_out, den_out, usemclk_out)
 		for (d = 0x14; d < 0x3f; d++) {
 			int c, diff;
 			/* Avoid combinations that can be unstable. */
-			if (n < d && (d & 1) == 0)
+			if ((VCOVAL(n, d) < MIN_VCO) || (VCOVAL(n, d) > MAX_VCO))
 				continue;
 			c = CLOCKVAL(n, d);
 			diff = abs(c - freq);

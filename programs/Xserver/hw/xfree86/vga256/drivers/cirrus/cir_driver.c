@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.39 1995/07/19 13:34:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.40 1995/07/22 04:18:54 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -139,6 +139,8 @@ int cirrusReprogrammedMCLK = 0;
 #define CLGD5434_ID 0x2A	/* CL changed the ID at the last minute. */
 #define CLGD5430_ID 0x28
 #define CLGD5436_ID 0x2B
+
+#define CLGD7543_ID 0x0c
 
 #define Is_62x5(x)  ((x) >= CLGD6205 && (x) <= CLGD6235)
 
@@ -347,6 +349,7 @@ static int cirrusClockLimit[] = {
   85500,	/* 5434 */
   85500,	/* 5430 */
   85500,	/* 5434 */
+  80100,	/* 7543 */
 #else 
   /* Clock limits for 256-color mode. */
   50200,	/* 5420 */
@@ -371,7 +374,8 @@ static int cirrusClockLimit[] = {
   85500,	/* 5434 */
 #endif
   85500,	/* 5430 */
-  135100	/* 5436 */
+  135100,	/* 5436 */
+  80100,	/* 7543 */
 #endif
 };
 
@@ -416,6 +420,7 @@ static SymTabRec chipsets[] = {
   { CLGD6215,	"clgd6215" },
   { CLGD6225,	"clgd6225" },
   { CLGD6235,	"clgd6235" },
+  { CLGD7543,	"clgd7543" },
   { -1,		"" },
 };
 
@@ -683,6 +688,9 @@ cirrusProbe()
 
 	  switch( id )
 	       {
+	     case CLGD7543_ID:
+	       cirrusChip = CLGD7543;
+	       break;
 	     case CLGD5420_ID:
 #if 0	/* Conflicts with CL-GD6235. */
 	     case CLAVGA2_ID:		/* AVGA2 uses 5402 */
@@ -814,10 +822,13 @@ cirrusProbe()
       * Later versions of this driver will probably do more
       * with this info than just print it out....
       */
-     if (Is_62x5(cirrusChip)) 
+     if (Is_62x5(cirrusChip) || cirrusChip == CLGD7543 ) 
 	  {
 	  /* Unlock the LCD registers... */
-	  outb(vgaIOBase + 4, 0x1D);
+	  if( cirrusChip == CLGD7543 )
+	      outb(vgaIOBase + 4, 0x2d);
+	  else
+	      outb(vgaIOBase + 4, 0x1D);
 	  temp = inb(vgaIOBase + 5);
 	  outb(vgaIOBase + 5, (temp | 0x80));
 
@@ -845,7 +856,18 @@ cirrusProbe()
           /* What type of LCD panel do we have? */
 	  if (lcd_is_on) 
 	       {
-	       outb(vgaIOBase + 4, 0x1c);
+	       if (cirrusChip == CLGD7543 )
+		    {
+		    outb(vgaIOBase + 4, 0x2d);
+		    temp = (inb(vgaIOBase + 5) | 0x00) & 0xFE;
+		    outb(vgaIOBase + 5, temp); /* this disables centering */
+		    outb(vgaIOBase + 4, 0x2c); /* this is the 7543 register */
+	            }
+	       else
+	            outb(vgaIOBase + 4, 0x1c);
+#if 0
+	       outb(vgaIOBase+5,(inb(vgaIOBase+5)|0x20)&0xF7);
+#endif
 	       switch (inb(vgaIOBase + 5) & 0xc0) 
 		    {
 		  case 0xc0:
@@ -865,7 +887,10 @@ cirrusProbe()
 	       }
 
 	  /* Lock the LCD registers... */
-	  outb(vgaIOBase + 4, 0x1D);
+	  if(cirrusChip == CLGD7543 )
+	      outb(vgaIOBase + 4, 0x2d);
+	  else
+	      outb(vgaIOBase + 4, 0x1D);
 	  temp = inb(vgaIOBase + 5);
 	  outb(vgaIOBase + 5, (temp & 0x7f));
           }

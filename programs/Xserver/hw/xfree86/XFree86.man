@@ -1,5 +1,5 @@
 .\" $XConsortium: XFree86.man,v 1.6 95/01/23 15:33:32 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.15 1995/07/15 15:01:48 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.16 1995/07/22 09:42:09 dawes Exp $
 .TH XFree86 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -427,6 +427,9 @@ Cirrus accelerated code (based on work by Bill Reynolds).
 .TP 8
 Harm Hanemaayer,   \fIhhanemaa@cs.ruu.nl\fP
 Cirrus accelerated code, and ARK driver.
+.TP 8
+Thomas Zerucha,    \fIzerucha@shell.portal.com\fP
+Support for Cirrus CL-GD7453.
 .TP 8
 Mike Tierney,      \fIfloyd@eng.umd.edu\fP
 WD accelerated code.
