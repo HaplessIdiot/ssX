@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.52 1999/03/14 05:50:50 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.53 1999/03/21 01:44:57 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1284,7 +1284,7 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
 #endif
      STD_INCLUDES = StandardIncludes
   STD_CPP_OPTIONS = StandardCppOptions
-  STD_CPP_DEFINES = StandardCppDefines $(PROJECT_DEFINES)
+  STD_CPP_DEFINES = StandardCppOptions StandardCppDefines $(PROJECT_DEFINES)
       STD_DEFINES = StandardDefines $(PROJECT_DEFINES)
  EXTRA_LOAD_FLAGS = ExtraLoadFlags
   EXTRA_LDOPTIONS = ExtraLoadOptions
