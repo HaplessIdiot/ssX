@@ -1,4 +1,4 @@
-/* $XConsortium: keycodes.c,v 1.3 94/04/08 15:27:17 erik Exp $ */
+/* $XConsortium: keycodes.c /main/10 1996/03/01 14:32:14 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -26,29 +26,25 @@
  ********************************************************/
 
 #include "xkbcomp.h"
-#include "xkbfile.h"
 #include "tokens.h"
 #include "expr.h"
 #include "keycodes.h"
+#include "misc.h"
+#include "alias.h"
 
 char *
-keyNameText(name)
-    char *name;
-{
-static char buf[5];
-
-    memcpy(buf,name,4);
-    buf[4]= '\0';
-    return buf;
-}
-
-char *
-longText(val)
+#if NeedFunctionPrototypes
+longText(unsigned long val,unsigned format)
+#else
+longText(val,format)
     unsigned long val;
+    unsigned format;
+#endif
 {
 char buf[4];
+
     LongToKeyName(val,buf);
-    return keyNameText(buf);
+    return XkbKeyNameText(buf,format);
 }
 
 /***====================================================================***/
@@ -63,9 +59,13 @@ typedef struct _KeyNameHash {
 #define	HashKeyName(n)	(((n[0]^n[2])<<8)|(n[1]^n[3]))
 
 void
+#if NeedFunctionPrototypes
+LongToKeyName(unsigned long val,char *name)
+#else
 LongToKeyName(val,name)
     unsigned long 	val;
     char *		name;
+#endif
 {
     name[0]= ((val>>24)&0xff);
     name[1]= ((val>>16)&0xff);
@@ -75,59 +75,22 @@ LongToKeyName(val,name)
 }
 
 static int
-HashLookup(tbl,name,ndxRtrn,kcRtrn)
-    KeyNameHash *	tbl;
-    char *		name;
-    int *		ndxRtrn;
-    int *		kcRtrn;
-{
-unsigned short hval,ndx;
-unsigned long lval;
-register unsigned i;
-
-    hval= HashKeyName(name);
-    lval= KeyNameToLong(name);
-    ndx= hval/HTBL_SIZE;
-    if (ndxRtrn)
-	*ndxRtrn= ndx;
-    for (i=ndx;i<HTBL_SIZE;i++) {
-	if (tbl->codes[i]==0)
-	    return 0;
-	else if (tbl->names[i]==lval) {
-	    if (ndxRtrn)
-		*ndxRtrn= i;
-	    if (kcRtrn)
-		*kcRtrn= tbl->codes[i];
-	    return 1;
-	}
-    }
-    for (i=0;i<ndx;i++) {
-	if (tbl->codes[i]==0)
-	    return 0;
-	else if (tbl->names[i]==lval) {
-	    if (ndxRtrn)
-		*ndxRtrn= i;
-	    if (kcRtrn)
-		*kcRtrn= tbl->codes[i];
-	    return 1;
-	}
-    }
-
-    return 0;
-}
-
-static int
+#if NeedFunctionPrototypes
+HashAdd(KeyNameHash *tbl,char *name,int kc,int replace,int *kcRtrn)
+#else
 HashAdd(tbl,name,kc,replace,kcRtrn)
     KeyNameHash *	tbl;
     char *		name;
     int			kc;
     int			replace;
     int *		kcRtrn;
+#endif
 {
 unsigned short hval,ndx;
 unsigned long lval;
 register unsigned i;
 
+    *kcRtrn= 0;
     hval= HashKeyName(name);
     lval= KeyNameToLong(name);
     ndx= hval/HTBL_SIZE;
@@ -159,24 +122,37 @@ register unsigned i;
 	    return i;
 	}
     }
-    uInternalError("Couldn't add \"<%s> = %d\" to table\n",name,kc);
+    WSGO2("Couldn't add \"<%s> = %d\" to table\n",name,kc);
     return -1;
 }
 
 static int
+#if NeedFunctionPrototypes
+HashRemoveName(KeyNameHash *tbl,char *name,int *kcRtrn)
+#else
 HashRemoveName(tbl,name,kcRtrn)
     KeyNameHash *	tbl;
     char *		name;
     int *		kcRtrn;
+#endif
 {
     return HashAdd(tbl,name,0,True,kcRtrn);
 }
 
 /***====================================================================***/
 
+typedef struct _IndicatorNameInfo {
+    CommonInfo		defs;
+    int			ndx;
+    Atom		name;
+    Bool		virtual;
+} IndicatorNameInfo;
+
 typedef struct _KeyNamesInfo {
-    StringToken		name;
+    char *		name;
     int			errorCount;
+    unsigned		fileID;
+    unsigned		merge;
     int			computedMin;
     int			computedMax;
     int			explicitMin;
@@ -185,45 +161,264 @@ typedef struct _KeyNamesInfo {
     int			effectiveMax;
     KeyNameHash		hash;
     unsigned long	names[256];
+    IndicatorNameInfo *	leds;
+    AliasInfo *		aliases;
 } KeyNamesInfo;
 
 static void
+#if NeedFunctionPrototypes
+InitIndicatorNameInfo(IndicatorNameInfo *ii,KeyNamesInfo *info)
+#else
+InitIndicatorNameInfo(ii,info)
+    IndicatorNameInfo *	ii;
+    KeyNamesInfo *		info;
+#endif
+{
+    ii->defs.defined= 0;
+    ii->defs.merge= info->merge;
+    ii->defs.fileID= info->fileID;
+    ii->defs.next= NULL;
+    ii->ndx= 0;
+    ii->name= None;
+    ii->virtual= False;
+    return;
+}
+
+static void 
+#if NeedFunctionPrototypes
+ClearIndicatorNameInfo(IndicatorNameInfo *ii,KeyNamesInfo *info)
+#else
+ClearIndicatorNameInfo(ii,info)
+    IndicatorNameInfo *	ii;
+    KeyNamesInfo *		info;
+#endif
+{
+    if (ii==info->leds) {
+	ClearCommonInfo(&ii->defs);
+	info->leds= NULL;
+    }
+    return;
+}
+
+static IndicatorNameInfo *
+#if NeedFunctionPrototypes
+NextIndicatorName(KeyNamesInfo *info)
+#else
+NextIndicatorName(info)
+    KeyNamesInfo *	info;
+#endif
+{
+IndicatorNameInfo *	ii;
+
+    ii= uTypedAlloc(IndicatorNameInfo);
+    if (ii) {
+	InitIndicatorNameInfo(ii,info);
+	info->leds= (IndicatorNameInfo *)AddCommonInfo(&info->leds->defs,
+							(CommonInfo *)ii);
+    }
+    return ii;
+}
+
+static IndicatorNameInfo *
+#if NeedFunctionPrototypes
+FindIndicatorByIndex(KeyNamesInfo *info,int ndx)
+#else
+FindIndicatorByIndex(info,ndx)
+    KeyNamesInfo *	info;
+    int			ndx;
+#endif
+{
+IndicatorNameInfo *	old;
+
+    for (old= info->leds;old!=NULL;old=(IndicatorNameInfo *)old->defs.next) {
+	if (old->ndx==ndx)
+	    return old;
+    }
+    return NULL;
+}
+
+static IndicatorNameInfo *
+#if NeedFunctionPrototypes
+FindIndicatorByName(KeyNamesInfo *info,Atom name)
+#else
+FindIndicatorByName(info,name)
+    KeyNamesInfo *	info;
+    Atom		name;
+#endif
+{
+IndicatorNameInfo *	old;
+
+    for (old= info->leds;old!=NULL;old=(IndicatorNameInfo *)old->defs.next) {
+	if (old->name==name)
+	    return old;
+    }
+    return NULL;
+}
+
+static Bool
+#if NeedFunctionPrototypes
+AddIndicatorName(KeyNamesInfo *info,IndicatorNameInfo *new)
+#else
+AddIndicatorName(info,new)
+    KeyNamesInfo *	info;
+    IndicatorNameInfo *new;
+#endif
+{
+IndicatorNameInfo *old;
+Bool 		   replace;
+char *		   action;
+
+    replace= (new->defs.merge==MergeReplace)||
+		 (new->defs.merge==MergeOverride);
+    old= FindIndicatorByName(info,new->name);
+    if (old) {
+	if (((old->defs.fileID==new->defs.fileID)&&(warningLevel>0))||
+		    					(warningLevel>9)) {
+	    WARN1("Multiple indicators named %s\n",
+	    				XkbAtomText(NULL,new->name,XkbMessage));
+	    if (old->ndx==new->ndx) {
+		if (old->virtual!=new->virtual) {
+		    if (replace)
+			 old->virtual= new->virtual;
+		    action= "Using %s instead of %s\n";
+		}
+		else {
+		    action= "Identical definitions ignored\n";
+		}
+		ACTION2(action,(old->virtual?"virtual":"real"),
+				(old->virtual?"real":"virtual"));
+		return True;
+	    }
+	    else {
+		if (replace)	action= "Ignoring %d, using %d\n";
+		else		action= "Using %d, ignoring %d\n";
+		ACTION2(action,old->ndx,new->ndx);
+	    }
+	    if (replace) {
+		if (info->leds==old)
+		    info->leds= (IndicatorNameInfo *)old->defs.next;
+		else {
+		    IndicatorNameInfo *tmp;
+		    tmp= info->leds;
+		    for (;tmp!=NULL;tmp=(IndicatorNameInfo *)tmp->defs.next) {
+			if (tmp->defs.next==(CommonInfo *)old) {
+			    tmp->defs.next= old->defs.next;
+			    break;
+			}
+		    }
+		}
+		uFree(old);
+	    }
+	}
+    }
+    old= FindIndicatorByIndex(info,new->ndx);
+    if (old) {
+	if (((old->defs.fileID==new->defs.fileID)&&(warningLevel>0))||
+		    					(warningLevel>9)) {
+	    WARN1("Multiple names for indicator %d\n",new->ndx);
+	    if ((old->name==new->name)&&(old->virtual==new->virtual))
+		action= "Identical definitions ignored\n";
+	    else {
+		char   *oldType,*newType;
+		Atom	using,ignoring;
+		if (old->virtual)	oldType= "virtual indicator";
+		else			oldType= "real indicator";
+		if (new->virtual)	newType= "virtual indicator";
+		else			newType= "real indicator";
+		if (replace) {
+		    using= new->name;
+		    ignoring= old->name;
+		}
+		else {
+		    using= old->name;
+		    ignoring= new->name;
+		}
+		ACTION4("Using %s %s, ignoring %s %s\n",
+				oldType,XkbAtomText(NULL,using,XkbMessage),
+				newType,XkbAtomText(NULL,ignoring,XkbMessage));
+	    }
+	}
+	if (replace) {
+	    old->name= new->name;
+	    old->virtual= new->virtual;
+	}
+	return True;
+    }
+    old= new;
+    new= NextIndicatorName(info);
+    if (!new) {
+	WSGO1("Couldn't allocate name for indicator %d\n",new->ndx);
+	ACTION("Ignored\n");
+	return False;
+    }
+    new->name= old->name;
+    new->ndx= old->ndx;
+    new->virtual= old->virtual;
+    return True;
+}
+
+static void
+#if NeedFunctionPrototypes
+ClearKeyNamesInfo(KeyNamesInfo *info)
+#else
 ClearKeyNamesInfo(info)
     KeyNamesInfo *info;
+#endif
 {
-    info->name= NullStringToken;
+    if (info->name!=NULL)
+	uFree(info->name);
+    info->name= NULL;
     info->computedMax= info->explicitMax= info->explicitMin= -1;
     info->computedMin= 256;
     info->effectiveMin= 8;
     info->effectiveMax= 255;
     bzero((char *)&info->hash,sizeof(info->hash));
     bzero((char *)info->names,sizeof(info->names));
+    if (info->leds)
+	ClearIndicatorNameInfo(info->leds,info);
+    if (info->aliases)
+	ClearAliases(&info->aliases);
     return;
 }
 
 static void
+#if NeedFunctionPrototypes
+InitKeyNamesInfo(KeyNamesInfo *info)
+#else
 InitKeyNamesInfo(info)
     KeyNamesInfo *info;
+#endif
 {
+    info->name= NULL;
+    info->leds= NULL;
+    info->aliases= NULL;
     ClearKeyNamesInfo(info);
     info->errorCount= 0;
     return;
 }
 
 static Bool
-AddKeyName(info,code,name,mergeMode,reportCollisions)
+#if NeedFunctionPrototypes
+AddKeyName(	KeyNamesInfo *	info,
+		int		code,
+		char *		name,
+		unsigned	merge,
+		Bool		reportCollisions)
+#else
+AddKeyName(info,code,name,merge,reportCollisions)
     KeyNamesInfo *	info;
     int			code;
     char *		name;
-    unsigned		mergeMode;
+    unsigned		merge;
     Bool		reportCollisions;
+#endif
 {
 int	old,override;
 unsigned long	lval;
 
     if ((code<info->effectiveMin)||(code>info->effectiveMax)) {
-	uError("Illegal keycode %d for name <%s>\n",code,name);
-	uAction("Must be in the range %d-%d inclusive\n",info->effectiveMin,
+	ERROR2("Illegal keycode %d for name <%s>\n",code,name);
+	ACTION2("Must be in the range %d-%d inclusive\n",info->effectiveMin,
 							 info->effectiveMax);
 	return 0;
     }
@@ -237,30 +432,30 @@ unsigned long	lval;
 	buf[4]= '\0';
 	if (info->names[code]==lval) {
 	    if (reportCollisions) {
-		uWarning("Multiple identical key name defintions\n");
-		uAction("Later occurences of \"<%s> = %d\" ignored\n",buf,code);
+		WARN("Multiple identical key name defintions\n");
+		ACTION2("Later occurences of \"<%s> = %d\" ignored\n",buf,code);
 	    }
 	    return 1;
 	}
-	if (mergeMode==MergeAugment) {
+	if (merge==MergeAugment) {
 	    if (reportCollisions) {
-		uError("Multiple names for keycode %d\n",code);
-		uAction("Using <%s>, ignoring <%s>\n",buf,name);
+		ERROR1("Multiple names for keycode %d\n",code);
+		ACTION2("Using <%s>, ignoring <%s>\n",buf,name);
 	    }
 	    return 0;
 	}
 	else {
 	    int old;
 	    if (reportCollisions) {
-		uError("Multiple names for keycode %d\n",code);
-		uAction("Using <%s>, ignoring <%s>\n",name,buf);
+		ERROR1("Multiple names for keycode %d\n",code);
+		ACTION2("Using <%s>, ignoring <%s>\n",name,buf);
 	    }
 	    if (!HashRemoveName(&info->hash,buf,&old))
 		return 0;
 	    info->names[code]= 0;
 	}
     }
-    override= (mergeMode==MergeOverride);
+    override= (merge==MergeOverride);
     if (HashAdd(&info->hash,name,code,override,&old)<0)
 	return 0;
     else if ((old!=0)&&(old!=code)) {
@@ -268,14 +463,14 @@ unsigned long	lval;
 	    info->names[code]= lval;
 	    info->names[old]= 0;
 	    if (reportCollisions) {
-		uError("Key name <%s> assigned to multiple keys\n",name);
-		uAction("Using %d, ignoring %d\n",code,old);
+		ERROR1("Key name <%s> assigned to multiple keys\n",name);
+		ACTION2("Using %d, ignoring %d\n",code,old);
 		return False;
 	    }
 	}
 	else if (reportCollisions) {
-	    uError("Key name <%s> assigned to multiple keys\n",name);
-	    uAction("Using %d, ignoring %d\n",old,code);
+	    ERROR1("Key name <%s> assigned to multiple keys\n",name);
+	    ACTION2("Using %d, ignoring %d\n",old,code);
 	    return False;
 	}
     }
@@ -285,89 +480,185 @@ unsigned long	lval;
 
 /***====================================================================***/
 
-static Bool
-HandleIncludeKeycodes(stmt,xkb,info,hndlr)
-    IncludeStmt	*	  stmt;
-    XkbDescPtr		  xkb;
-    KeyNamesInfo *	  info;
-    void		(*hndlr)();
+static void
+#if NeedFunctionPrototypes
+MergeIncludedKeycodes(KeyNamesInfo *into,KeyNamesInfo *from,unsigned merge)
+#else
+MergeIncludedKeycodes(into,from,merge)
+    KeyNamesInfo *	into;
+    KeyNamesInfo *	from;
+    unsigned		merge;
+#endif
 {
-unsigned 	newMerge,tmp;
-FILE	*	file;
+register int i;
+char buf[5];
+
+    if (from->errorCount>0) {
+	into->errorCount+= from->errorCount;
+	return;
+    }
+    if (into->name==NULL) {
+	into->name= from->name;
+	from->name= NULL;
+    }
+    for (i=from->computedMin;i<=from->computedMax;i++) {
+	if (from->names[i]==0)
+	    continue;
+	LongToKeyName(from->names[i],buf);
+	buf[4]= '\0';
+	if (!AddKeyName(into,i,buf,merge,False))
+	    into->errorCount++;
+    }
+    if (from->leds) {
+	IndicatorNameInfo *led,*next;
+	for (led=from->leds;led!=NULL;led=next) {
+	    if (merge!=MergeDefault)
+		led->defs.merge= merge;
+	    if (!AddIndicatorName(into,led))
+		into->errorCount++;
+	    next= (IndicatorNameInfo *)led->defs.next;
+	}
+    }
+    if (!MergeAliases(&into->aliases,&from->aliases))
+	into->errorCount++;
+    return;
+}
+
+typedef void (*FileHandler)(
+#if NeedFunctionPrototypes
+    XkbFile *		/* rtrn */,
+    XkbDescPtr		/* xkb */,
+    unsigned		/* merge */,
+    KeyNamesInfo *	/* included */
+#endif
+);
+
+static Bool
+#if NeedFunctionPrototypes
+HandleIncludeKeycodes(	IncludeStmt *	stmt,
+			XkbDescPtr	xkb,
+			KeyNamesInfo *	info,
+			FileHandler	hndlr)
+#else
+HandleIncludeKeycodes(stmt,xkb,info,hndlr)
+    IncludeStmt	*	stmt;
+    XkbDescPtr		xkb;
+    KeyNamesInfo *	info;
+    FileHandler		hndlr;
+#endif
+{
+unsigned 	newMerge;
 XkbFile	*	rtrn;
+KeyNamesInfo 	included;
+Bool		haveSelf;
 
-    if (ProcessIncludeFile(stmt,XkmKeyNamesIndex,&rtrn,&newMerge)) {
-	KeyNamesInfo 	myInfo;
-
-	InitKeyNamesInfo(&myInfo);
-	(*hndlr)(rtrn,xkb,MergeOverride,&myInfo);
-	/* 3/14/94 (ef) -- XXX! should free rtrn and contents here */
-	if (newMerge==MergeReplace) {
-	    ClearKeyNamesInfo(info);
-	    newMerge= MergeAugment;
-	}
-	info->errorCount+= myInfo.errorCount;
-	if (myInfo.errorCount==0) {
-	    register int i,nErrs;
-	    char buf[5];
-	    if (info->name==(Atom)NullStringToken)
-		info->name= myInfo.name;
-	    for (nErrs=0,i=myInfo.computedMin;i<=myInfo.computedMax;i++) {
-		if (myInfo.names[i]==0)
-		    continue;
-		LongToKeyName(myInfo.names[i],buf);
-		buf[4]= '\0';
-		if (!AddKeyName(info,i,buf,newMerge,False))
-		    nErrs++;
-	    }
-	    info->errorCount+= nErrs;
-	}
+    haveSelf= False;
+    if ((stmt->file==NULL)&&(stmt->map==NULL)) {
+	haveSelf= True;
+	included= *info;
+	bzero(info,sizeof(KeyNamesInfo));
+    }
+    else if (strcmp(stmt->file,"computed")==0) {
+	xkb->flags|= AutoKeyNames;
+	info->explicitMin= XkbMinLegalKeyCode;
+	info->explicitMax= XkbMaxLegalKeyCode;
 	return (info->errorCount==0);
+    }
+    else if (ProcessIncludeFile(stmt,XkmKeyNamesIndex,&rtrn,&newMerge)) {
+	InitKeyNamesInfo(&included);
+	(*hndlr)(rtrn,xkb,MergeOverride,&included);
+	if (stmt->stmt!=NULL) {
+	    if (included.name!=NULL)
+		uFree(included.name);
+	    included.name= stmt->stmt;
+	    stmt->stmt= NULL;
+	}
     }
     else {
 	info->errorCount+= 10;
 	return False;
     }
+    if ((stmt->next!=NULL)&&(included.errorCount<1)) {
+	IncludeStmt *	next;
+	unsigned	op;
+	KeyNamesInfo	next_incl;
+
+        for (next=stmt->next;next!=NULL;next=next->next) {
+	    if ((next->file==NULL)&&(next->map==NULL)) {
+		haveSelf= True;
+		MergeIncludedKeycodes(&included,info,next->merge);
+		ClearKeyNamesInfo(info);
+	    }
+	    else if (ProcessIncludeFile(next,XkmKeyNamesIndex,&rtrn,&op)) {
+		InitKeyNamesInfo(&next_incl);
+		(*hndlr)(rtrn,xkb,MergeOverride,&next_incl);
+		MergeIncludedKeycodes(&included,&next_incl,op);
+		ClearKeyNamesInfo(&next_incl);
+	    }
+	    else {
+		info->errorCount+= 10;
+		return False;
+	    }
+	}
+    }
+    if (haveSelf)
+	*info= included;
+    else {
+	MergeIncludedKeycodes(info,&included,newMerge);
+	ClearKeyNamesInfo(&included);
+    }
+    return (info->errorCount==0);
 }
 
 static int
-HandleKeycodeDef(stmt,xkb,mergeMode,info)
+#if NeedFunctionPrototypes
+HandleKeycodeDef(	KeycodeDef *	stmt,
+			XkbDescPtr	xkb,
+			unsigned 	merge,
+			KeyNamesInfo *	info)
+#else
+HandleKeycodeDef(stmt,xkb,merge,info)
     KeycodeDef *	stmt;
     XkbDescPtr		xkb;
-    unsigned 		mergeMode;
+    unsigned 		merge;
     KeyNamesInfo *	info;
+#endif
 {
 int		code;
 ExprResult	result;
 
     if (!ExprResolveInteger(stmt->value,&result,NULL,NULL)) {
-	uAction("No value keycode assigned to name <%s>\n",stmt->name);
+	ACTION1("No value keycode assigned to name <%s>\n",stmt->name);
 	return 0;
     }
     code= result.ival;
     if ((code<info->effectiveMin)||(code>info->effectiveMax)) {
-	uError("Illegal keycode %d for name <%s>\n",code,stmt->name);
-	uAction("Must be in the range %d-%d inclusive\n",info->effectiveMin,
+	ERROR2("Illegal keycode %d for name <%s>\n",code,stmt->name);
+	ACTION2("Must be in the range %d-%d inclusive\n",info->effectiveMin,
 							 info->effectiveMax);
 	return 0;
     }
     if (stmt->merge!=MergeDefault) {
 	if (stmt->merge==MergeReplace)
-	     mergeMode= MergeOverride;
-	else mergeMode= stmt->merge;
+	     merge= MergeOverride;
+	else merge= stmt->merge;
     }
-    return AddKeyName(info,code,stmt->name,mergeMode,True);
+    return AddKeyName(info,code,stmt->name,merge,True);
 }
 
 #define	MIN_KEYCODE_DEF		0
 #define	MAX_KEYCODE_DEF		1
 
 static int
-HandleKeyNameVar(stmt,xkb,mergeMode,info)
+#if NeedFunctionPrototypes
+HandleKeyNameVar(VarDef *stmt,XkbDescPtr xkb,unsigned merge,KeyNamesInfo *info)
+#else
+HandleKeyNameVar(stmt,xkb,merge,info)
     VarDef *		stmt;
     XkbDescPtr		xkb;
-    unsigned 		mergeMode;
+    unsigned 		merge;
     KeyNamesInfo *	info;
+#endif
 {
 ExprResult	tmp,field;
 ExprDef	*	arrayNdx;
@@ -377,44 +668,44 @@ int		which;
 	return 0; /* internal error, already reported */
 
     if (tmp.str!=NULL) {
-	uError("Unknown element %s encountered\n",tmp.str);
-	uAction("Default for field %s ignored\n",field.str);
+	ERROR1("Unknown element %s encountered\n",tmp.str);
+	ACTION1("Default for field %s ignored\n",field.str);
 	return 0;
     }
     if (uStrCaseCmp(field.str,"minimum")==0)	 which= MIN_KEYCODE_DEF;
     else if (uStrCaseCmp(field.str,"maximum")==0) which= MAX_KEYCODE_DEF;
     else {
-	uError("Unknown field encountered\n");
-	uAction("Assigment to field %s ignored\n",field.str);
+	ERROR("Unknown field encountered\n");
+	ACTION1("Assigment to field %s ignored\n",field.str);
 	return 0;
     }
     if (arrayNdx!=NULL) {
-	uError("The %s setting is not an array\n",field.str);
-	uAction("Illegal array reference ignored\n");
+	ERROR1("The %s setting is not an array\n",field.str);
+	ACTION("Illegal array reference ignored\n");
 	return 0;
     }
 
     if (ExprResolveInteger(stmt->value,&tmp,NULL,NULL)==0) {
-	uAction("Assignment to field %s ignored\n",field.str);
+	ACTION1("Assignment to field %s ignored\n",field.str);
 	return 0;
     }
-    if ((tmp.ival<8)||(tmp.ival>255)) {
-	uError("Illegal keycode %d (must be in the range 8-255 inclusive)\n",
-								tmp.ival);
-	uAction("Value of \"%s\" not changed\n",field.str);
+    if ((tmp.ival<XkbMinLegalKeyCode)||(tmp.ival>XkbMaxLegalKeyCode)) {
+	ERROR3("Illegal keycode %d (must be in the range %d-%d inclusive)\n",
+			tmp.ival,XkbMinLegalKeyCode,XkbMaxLegalKeyCode);
+	ACTION1("Value of \"%s\" not changed\n",field.str);
 	return 0;
     }
     if (which==MIN_KEYCODE_DEF) {
 	if ((info->explicitMax>0)&&(info->explicitMax<tmp.ival)) {
-	    uError("Minimum key code (%d) must be <= maximum key code (%d)\n",
+	    ERROR2("Minimum key code (%d) must be <= maximum key code (%d)\n",
 						tmp.ival,info->explicitMax);
-	    uAction("Minimum key code value not changed\n");
+	    ACTION("Minimum key code value not changed\n");
 	    return 0;
 	}
 	if ((info->computedMax>0)&&(info->computedMin<tmp.ival)) {
-	    uError("Minimum key code (%d) must be <= lowest defined key (%d)\n",
+	    ERROR2("Minimum key code (%d) must be <= lowest defined key (%d)\n",
 						tmp.ival,info->computedMin);
-	    uAction("Minimum key code value not changed\n");
+	    ACTION("Minimum key code value not changed\n");
 	    return 0;
 	}
 	info->explicitMin= tmp.ival;
@@ -422,15 +713,15 @@ int		which;
     }
     if (which==MAX_KEYCODE_DEF) {
 	if ((info->explicitMin>0)&&(info->explicitMin>tmp.ival)) {
-	    uError("Maximum code (%d) must be >= minimum key code (%d)\n",
+	    ERROR2("Maximum code (%d) must be >= minimum key code (%d)\n",
 						tmp.ival,info->explicitMin);
-	    uAction("Maximum code value not changed\n");
+	    ACTION("Maximum code value not changed\n");
 	    return 0;
 	}
 	if ((info->computedMax>0)&&(info->computedMax>tmp.ival)) {
-	    uError("Maximum code (%d) must be >= highest defined key (%d)\n",
-						tmp.ival,info->computedMin);
-	    uAction("Minimum code value not changed\n");
+	    ERROR2("Maximum code (%d) must be >= highest defined key (%d)\n",
+						tmp.ival,info->computedMax);
+	    ACTION("Maximum code value not changed\n");
 	    return 0;
 	}
 	info->explicitMax= tmp.ival;
@@ -439,16 +730,61 @@ int		which;
     return 1;
 }
 
+static int
+#if NeedFunctionPrototypes
+HandleIndicatorNameDef(	IndicatorNameDef *	def,
+			XkbDescPtr		xkb,
+			unsigned 		merge,
+			KeyNamesInfo *		info)
+#else
+HandleIndicatorNameDef(def,xkb,merge,info)
+    IndicatorNameDef *	def;
+    XkbDescPtr		xkb;
+    unsigned 		merge;
+    KeyNamesInfo *	info;
+#endif
+{
+IndicatorNameInfo 	ii;
+ExprResult		tmp;
+
+    if ((def->ndx<1)||(def->ndx>XkbNumIndicators)) {
+	info->errorCount++;
+	ERROR1("Name specified for illegal indicator index %d\n",def->ndx);
+	ACTION("Ignored\n");
+	return False;
+    }
+    InitIndicatorNameInfo(&ii,info);
+    ii.ndx= def->ndx;
+    if (!ExprResolveString(def->name,&tmp,NULL,NULL)) {
+	char buf[20];
+	sprintf(buf,"%d",def->ndx);
+	info->errorCount++;
+	return ReportBadType("indicator","name",buf,"string");
+    }
+    ii.name= XkbInternAtom(NULL,tmp.str,False);
+    ii.virtual= def->virtual;
+    if (!AddIndicatorName(info,&ii))
+	return False;
+    return True;
+}
+
 static void
-HandleKeycodesFile(file,xkb,mergeMode,info)
+#if NeedFunctionPrototypes
+HandleKeycodesFile(	XkbFile *	file,
+			XkbDescPtr 	xkb,
+			unsigned	merge,
+			KeyNamesInfo *	info)
+#else
+HandleKeycodesFile(file,xkb,merge,info)
     XkbFile		*file;
     XkbDescPtr	 	 xkb;
-    unsigned		 mergeMode;
+    unsigned		 merge;
     KeyNamesInfo	*info;
+#endif
 {
 ParseCommon	*stmt;
 
-    info->name= file->name;
+    info->name= uStringDup(file->name);
     stmt= file->defs;
     while (stmt) {
 	switch (stmt->stmtType) {
@@ -458,32 +794,44 @@ ParseCommon	*stmt;
 		    info->errorCount++;
 		break;
 	    case StmtKeycodeDef:
-		if (!HandleKeycodeDef((KeycodeDef *)stmt,xkb,mergeMode,info))
+		if (!HandleKeycodeDef((KeycodeDef *)stmt,xkb,merge,info))
+		    info->errorCount++;
+		break;
+	    case StmtKeyAliasDef:
+		if (!HandleAliasDef((KeyAliasDef *)stmt,
+					merge,info->fileID,&info->aliases))
 		    info->errorCount++;
 		break;
 	    case StmtVarDef:
-		if (!HandleKeyNameVar((VarDef *)stmt,xkb,mergeMode,info))
+		if (!HandleKeyNameVar((VarDef *)stmt,xkb,merge,info))
 		    info->errorCount++;
+		break;
+	    case StmtIndicatorNameDef:
+		if (!HandleIndicatorNameDef((IndicatorNameDef *)stmt,xkb,
+								merge,info)) {
+		    info->errorCount++;
+		}
 		break;
 	    case StmtInterpDef:
 	    case StmtVModDef:
-		uError("Keycode files may define key names only\n");
-		uAction("Ignoring definition of %s\n",
+		ERROR("Keycode files may define key and indicator names only\n");
+		ACTION1("Ignoring definition of %s\n",
 				((stmt->stmtType==StmtInterpDef)?
 					"a symbol interpretation":
 					"virtual modifiers"));
 		info->errorCount++;
 		break;
 	    default:
-		uInternalError(
-			"Unexpected statement type %d in HandleKeycodesFile\n",
+		WSGO1("Unexpected statement type %d in HandleKeycodesFile\n",
 			stmt->stmtType);
 		break;
 	}
 	stmt= stmt->next;
 	if (info->errorCount>10) {
-	    uError("Too many errors\n");
-	    uAction("Abandoning %s\n",stText(file->name));
+#ifdef NOISY
+	    ERROR("Too many errors\n");
+#endif
+	    ACTION1("Abandoning keycodes file \"%s\"\n",file->topName);
 	    break;
 	}
     }
@@ -491,18 +839,21 @@ ParseCommon	*stmt;
 }
 
 Bool
-CompileKeycodes(file,result,mergeMode)
+#if NeedFunctionPrototypes
+CompileKeycodes(XkbFile	*file,XkbFileInfo *result,unsigned merge)
+#else
+CompileKeycodes(file,result,merge)
     XkbFile	*	file;
     XkbFileInfo *	result;
-    unsigned	 	mergeMode;
+    unsigned	 	merge;
+#endif
 {
-int		errorCount= 0;
 KeyNamesInfo	info;
 XkbDescPtr	xkb;
 
-    xkb= &result->xkb;
+    xkb= result->xkb;
     InitKeyNamesInfo(&info);
-    HandleKeycodesFile(file,xkb,mergeMode,&info);
+    HandleKeycodesFile(file,xkb,merge,&info);
 
     if (info.errorCount==0) {
 	if (info.explicitMin>0)
@@ -511,17 +862,43 @@ XkbDescPtr	xkb;
 	if (info.explicitMax>0)
 	     xkb->max_key_code= info.effectiveMax;
 	else xkb->max_key_code= info.computedMax;
-	if (XkbAllocNames(xkb,XkbKeyNamesMask)) {
+	if (XkbAllocNames(xkb,XkbKeyNamesMask|XkbIndicatorNamesMask,0,0)==Success) {
 	    register int i;
-	    xkb->names->keycodes= (Atom)info.name;
+	    xkb->names->keycodes= XkbInternAtom(xkb->dpy,info.name,False);
 	    uDEBUG2(1,"key range: %d..%d\n",xkb->min_key_code,xkb->max_key_code);
 	    for (i=info.computedMin;i<=info.computedMax;i++) {
 		LongToKeyName(info.names[i],xkb->names->keys[i].name);
-		uDEBUG2(2,"key %d = <%s>\n",i,
-				keyNameText(xkb->names->keys[i].name));
+		uDEBUG2(2,"key %d = %s\n",i,
+			XkbKeyNameText(xkb->names->keys[i].name,XkbMessage));
 	    }
-	    return True;
 	}
+	else {
+	    WSGO("Cannot create XkbNamesRec in CompileKeycodes\n");
+	    return False;
+	}
+	if (info.leds) {
+	    IndicatorNameInfo	*ii;
+	    if (XkbAllocIndicatorMaps(xkb)!=Success) {
+		WSGO("Couldn't allocate IndicatorRec in CompileKeycodes\n");
+		ACTION("Physical indicators not set\n");
+	    }
+	    for (ii=info.leds;ii!=NULL;ii=(IndicatorNameInfo *)ii->defs.next){
+		xkb->names->indicators[ii->ndx-1]= 
+			XkbInternAtom(xkb->dpy,
+					XkbAtomGetString(NULL,ii->name),False);
+		if (xkb->indicators!=NULL) {
+		    register unsigned bit;
+		    bit= 1<<(ii->ndx-1);
+		    if (ii->virtual)	
+			 xkb->indicators->phys_indicators&= ~bit;
+		    else xkb->indicators->phys_indicators|= bit;
+		}
+	    }
+	}
+	if (info.aliases)
+	    ApplyAliases(xkb,False,&info.aliases);
+	return True;
     }
+    ClearKeyNamesInfo(&info);
     return False;
 }

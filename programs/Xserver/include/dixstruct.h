@@ -20,8 +20,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h /main/33 1996/02/02 14:25:58 kaleb $ */
-/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.2 1996/01/16 15:07:13 dawes Exp $ */
+/* $XConsortium: dixstruct.h /main/34 1996/03/01 14:30:42 kaleb $ */
+/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.3 1996/02/04 09:17:26 dawes Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -100,6 +100,7 @@ typedef struct _Client {
 #ifdef XKB
     unsigned short	xkbClientFlags;
     unsigned short	mapNotifyMask;
+    unsigned short	newKeyboardNotifyMask;
     unsigned short	vMajor,vMinor;
     KeyCode		minKC,maxKC;
 #endif

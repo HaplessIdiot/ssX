@@ -1,4 +1,4 @@
-/* $XConsortium: ddxDevBtn.c /main/1 1996/01/14 16:45:48 kaleb $ */
+/* $XConsortium: ddxDevBtn.c /main/2 1996/03/01 14:30:47 kaleb $ */
 /************************************************************
 Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -48,7 +48,6 @@ XkbDDXFakeDeviceButton(dev,press,button)
     Bool		press;
     int 		button;
 #endif
-#ifdef XINPUT
 {
 int *			devVal;
 INT32 *			evVal;
@@ -103,8 +102,3 @@ int			nAxes, i, count;
     (*dev->public.processInputProc)((xEventPtr)btn, dev, count);
     return;
 }
-#else
-{
-    return;
-}
-#endif

@@ -1,4 +1,4 @@
-/* $XConsortium: expr.c,v 1.4 94/04/08 15:25:04 erik Exp $ */
+/* $XConsortium: expr.c /main/9 1996/03/01 14:32:05 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -33,8 +33,12 @@
 /***====================================================================***/
 
 char *
+#if NeedFunctionPrototypes
+exprOpText(unsigned type)
+#else
 exprOpText(type)
     unsigned type;
+#endif
 {
 static char buf[32];
 
@@ -95,8 +99,12 @@ static char buf[32];
 }
 
 char *
+#if NeedFunctionPrototypes
+exprTypeText(unsigned type)
+#else
 exprTypeText(type)
     unsigned type;
+#endif
 {
 static char buf[20];
 
@@ -127,52 +135,70 @@ static char buf[20];
 }
 
 int
+#if NeedFunctionPrototypes
+ExprResolveLhs(	ExprDef *	expr,
+		ExprResult *	elem_rtrn,
+		ExprResult *	field_rtrn,
+		ExprDef **	index_rtrn)
+#else
 ExprResolveLhs(expr,elem_rtrn,field_rtrn,index_rtrn)
     ExprDef *		expr;
     ExprResult *	elem_rtrn;
     ExprResult *	field_rtrn;
     ExprDef **		index_rtrn;
+#endif
 {
     switch (expr->op) {
 	case ExprIdent:
 	    elem_rtrn->str=  NULL;
-	    field_rtrn->str= stGetString(expr->value.str);
+	    field_rtrn->str= XkbAtomGetString(NULL,expr->value.str);
 	    *index_rtrn= NULL;
 	    return True;
 	case ExprFieldRef:
-	    elem_rtrn->str= stGetString(expr->value.field.element);
-	    field_rtrn->str= stGetString(expr->value.field.field);
+	    elem_rtrn->str= XkbAtomGetString(NULL,expr->value.field.element);
+	    field_rtrn->str= XkbAtomGetString(NULL,expr->value.field.field);
 	    *index_rtrn= NULL;
 	    return True;
 	case ExprArrayRef:
-	    elem_rtrn->str= stGetString(expr->value.array.element);
-	    field_rtrn->str= stGetString(expr->value.array.field);
+	    elem_rtrn->str= XkbAtomGetString(NULL,expr->value.array.element);
+	    field_rtrn->str= XkbAtomGetString(NULL,expr->value.array.field);
 	    *index_rtrn= expr->value.array.entry;
 	    return True;
     }
-    uInternalError("Unexpected operator %d in ResolveLhs\n",expr->op);
+    WSGO1("Unexpected operator %d in ResolveLhs\n",expr->op);
     return False;
 }
 
 Bool
+#if NeedFunctionPrototypes
+SimpleLookup(	XPointer 	priv,
+		Atom		elem,
+		Atom		field,
+		unsigned	type,
+		ExprResult *	val_rtrn)
+#else
 SimpleLookup(priv,elem,field,type,val_rtrn)
     XPointer 		priv;
-    StringToken		elem;
-    StringToken		field;
+    Atom		elem;
+    Atom		field;
     unsigned		type;
     ExprResult *	val_rtrn;
+#endif
 {
 LookupEntry *	entry;
 register char *	str;
 
     if ((priv==NULL)||
-	(field==NullStringToken)||(elem!=NullStringToken)||(type!=TypeInt)) {
+	(field==None)||(elem!=None)||
+	((type!=TypeInt)&&(type!=TypeFloat))) {
 	return False;
     }
-    str= stGetString(field);
+    str= XkbAtomGetString(NULL,field);
     for (entry=(LookupEntry *)priv;(entry!=NULL)&&(entry->name!=NULL);entry++) {
 	if (uStrCaseCmp(str,entry->name)==0) {
 	    val_rtrn->uval= entry->result;
+	    if (type==TypeFloat)
+		val_rtrn->uval*= XkbGeomPtsPerMM;
 	    return True;
 	}
     }
@@ -180,20 +206,65 @@ register char *	str;
 }
 
 Bool
-TableLookup(priv,elem,field,type,val_rtrn)
+#if NeedFunctionPrototypes
+RadioLookup(	XPointer 	priv,
+		Atom		elem,
+		Atom		field,
+		unsigned	type,
+		ExprResult *	val_rtrn)
+#else
+RadioLookup(priv,elem,field,type,val_rtrn)
     XPointer 		priv;
-    StringToken		elem;
-    StringToken		field;
+    Atom		elem;
+    Atom		field;
     unsigned		type;
     ExprResult *	val_rtrn;
+#endif
+{
+register char *	str;
+int		rg;
+
+    if ((field==None)||(elem!=None)||(type!=TypeInt))
+	return False;
+    str= XkbAtomGetString(NULL,field);
+    if (str) {
+	if (uStrCasePrefix("group",str))
+	    str+= strlen("group");
+	else if (uStrCasePrefix("radiogroup",str))
+	    str+= strlen("radiogroup");
+	else if (uStrCasePrefix("rg",str))
+	    str+= strlen("rg");
+	else if (!isdigit(str[0]))
+	    str= NULL;
+    }
+    if ((!str)||(sscanf(str,"%i",&rg)<1)||(rg<1)||(rg>XkbMaxRadioGroups))
+	return False;
+    val_rtrn->uval= rg;
+    return;
+}
+
+int
+#if NeedFunctionPrototypes
+TableLookup(	XPointer 	priv,
+		Atom		elem,
+		Atom		field,
+		unsigned	type,
+		ExprResult *	val_rtrn)
+#else
+TableLookup(priv,elem,field,type,val_rtrn)
+    XPointer 		priv;
+    Atom		elem;
+    Atom		field;
+    unsigned		type;
+    ExprResult *	val_rtrn;
+#endif
 {
 LookupTable *	tbl= (LookupTable *)priv;
-LookupEntry *	entry;
 register char *	str;
 
-    if ((priv==NULL)||(field==NullStringToken)||(type!=TypeInt))
+    if ((priv==NULL)||(field==None)||(type!=TypeInt))
 	return False;
-    str= stGetString(elem);
+    str= XkbAtomGetString(NULL,elem);
     while (tbl) {
 	if (((str==NULL)&&(tbl->element==NULL))||
 	    ((str!=NULL)&&(tbl->element!=NULL)&&
@@ -205,7 +276,7 @@ register char *	str;
     if (tbl==NULL)	/* didn't find a matching element */
 	return False;
     priv= (XPointer)tbl->entries;
-    return SimpleLookup(priv,NullStringToken,field,type,val_rtrn);
+    return SimpleLookup(priv,(Atom)None,field,type,val_rtrn);
 }
 
 static LookupEntry modIndexNames[] = {
@@ -213,8 +284,6 @@ static LookupEntry modIndexNames[] = {
 	{	"control",	ControlMapIndex	},
 	{	"lock",		LockMapIndex	},
 	{	"mod1",		Mod1MapIndex	},
-	{	"alt",		Mod1MapIndex	},
-	{	"meta",		Mod1MapIndex	},
 	{	"mod2",		Mod2MapIndex	},
 	{	"mod3",		Mod3MapIndex	},
 	{	"mod4",		Mod4MapIndex	},
@@ -223,29 +292,45 @@ static LookupEntry modIndexNames[] = {
 };
 
 int
+#if NeedFunctionPrototypes
+LookupModIndex(	XPointer 	priv,
+		Atom		elem,
+		Atom		field,
+		unsigned	type,
+		ExprResult *	val_rtrn)
+#else
 LookupModIndex(priv,elem,field,type,val_rtrn)
     XPointer 		priv;
-    StringToken		elem;
-    StringToken		field;
+    Atom		elem;
+    Atom		field;
     unsigned		type;
     ExprResult *	val_rtrn;
+#endif
 {
     return SimpleLookup((XPointer)modIndexNames,elem,field,type,val_rtrn);
 }
 
 int
+#if NeedFunctionPrototypes
+LookupModMask(	XPointer 	priv,
+		Atom		elem,
+		Atom		field,
+		unsigned	type,
+    		ExprResult *	val_rtrn)
+#else
 LookupModMask(priv,elem,field,type,val_rtrn)
     XPointer 		priv;
-    StringToken		elem;
-    StringToken		field;
+    Atom		elem;
+    Atom		field;
     unsigned		type;
     ExprResult *	val_rtrn;
+#endif
 {
 char *str;
 
-    if ((elem!=NullStringToken)||(type!=TypeInt))
+    if ((elem!=None)||(type!=TypeInt))
 	return False;
-    str= stGetString(field);
+    str= XkbAtomGetString(NULL,field);
     if (str==NULL)
 	 return False;
     if (uStrCaseCmp(str,"all")==0)
@@ -265,44 +350,49 @@ char *str;
 }
 
 int
+#if NeedFunctionPrototypes
+ExprResolveModIndex(	ExprDef *	expr,
+			ExprResult *	val_rtrn,
+			IdentLookupFunc	lookup,
+			XPointer	lookupPriv)
+#else
 ExprResolveModIndex(expr,val_rtrn,lookup,lookupPriv)
     ExprDef *		expr;
     ExprResult *	val_rtrn;
     IdentLookupFunc	lookup;
     XPointer		lookupPriv;
+#endif
 {
 int	ok= 0;
-ExprResult	leftRtrn,rightRtrn;
-ExprDef		*left,*right;
 char		*bogus= NULL;
 
     switch (expr->op) {
 	case ExprValue:
 	    if (expr->type!=TypeInt) {
-		uError("Found constant of type %s where a modifier mask was expected\n",
+		ERROR1("Found constant of type %s where a modifier mask was expected\n",
 						exprTypeText(expr->type));
 		return False;
 	    }
 	    else if ((expr->value.ival>=XkbNumModifiers)||(expr->value.ival<0)){
-		uError("Illegal modifier index (%d, must be 0..15)\n",
-							expr->value.ival);
+		ERROR2("Illegal modifier index (%d, must be 0..%d)\n",
+					expr->value.ival,XkbNumModifiers-1);
 		return False;
 	    }
 	    val_rtrn->ival= expr->value.ival;
 	    return True;
 	case ExprIdent:
-	    if (LookupModIndex(lookupPriv,NullStringToken,expr->value.str,
-				 			TypeInt,val_rtrn)) {
+	    if (LookupModIndex(lookupPriv,(Atom)None,expr->value.str,
+				 		(unsigned)TypeInt,val_rtrn)) {
 		return True;
 	    }
 	    if (lookup) {
 		ok= (*lookup)(lookupPriv,
-				 NullStringToken,expr->value.str,
+				 None,expr->value.str,
 				 TypeInt,val_rtrn);
 	    }
 	    if (!ok)
-		uError("Cannot determine modifier index for \"%s\"\n",
-						stText(expr->value.str));
+		ERROR1("Cannot determine modifier index for \"%s\"\n",
+				XkbAtomText(NULL,expr->value.str,XkbMessage));
 	    break;
 	case ExprFieldRef:
 	    bogus= "field reference";
@@ -327,22 +417,29 @@ char		*bogus= NULL;
 	    bogus= "assignment";
 	    break;
 	default:
-	    uInternalError("Unknown operator %d in ResolveInteger\n",expr->op);
+	    WSGO1("Unknown operator %d in ResolveModIndex\n",expr->op);
 	    return False;
     }
     if (bogus) {
-	uError("Modifier index must be a name or number, %s ignored\n",bogus);
+	ERROR1("Modifier index must be a name or number, %s ignored\n",bogus);
 	return False;
     }
     return ok;
 }
 
 int
+#if NeedFunctionPrototypes
+ExprResolveModMask(	ExprDef *		expr,
+			ExprResult *		val_rtrn,
+			IdentLookupFunc		lookup,
+			XPointer		lookupPriv)
+#else
 ExprResolveModMask(expr,val_rtrn,lookup,lookupPriv)
     ExprDef *		expr;
     ExprResult *	val_rtrn;
     IdentLookupFunc	lookup;
     XPointer		lookupPriv;
+#endif
 {
 LookupPriv	priv;
 
@@ -353,11 +450,18 @@ LookupPriv	priv;
 }
 
 int
+#if NeedFunctionPrototypes
+ExprResolveBoolean(	ExprDef *	expr,
+			ExprResult *	val_rtrn,
+			IdentLookupFunc	lookup,
+			XPointer	lookupPriv)
+#else
 ExprResolveBoolean(expr,val_rtrn,lookup,lookupPriv)
     ExprDef *		expr;
     ExprResult *	val_rtrn;
     IdentLookupFunc	lookup;
     XPointer		lookupPriv;
+#endif
 {
 int	ok= 0;
 char *	bogus= NULL;
@@ -365,14 +469,14 @@ char *	bogus= NULL;
     switch (expr->op) {
 	case ExprValue:
 	    if (expr->type!=TypeBoolean) {
-		uError("Found constant of type %s where boolean was expected\n",
+		ERROR1("Found constant of type %s where boolean was expected\n",
 						exprTypeText(expr->type));
 		return False;
 	    }
 	    val_rtrn->ival= expr->value.ival;
 	    return True;
 	case ExprIdent:
-	    bogus= stGetString(expr->value.str);
+	    bogus= XkbAtomGetString(NULL,expr->value.str);
 	    if (bogus) {
 		if ((uStrCaseCmp(bogus,"true")==0)||
 				(uStrCaseCmp(bogus,"yes")==0)||
@@ -389,12 +493,12 @@ char *	bogus= NULL;
 	    }
 	    if (lookup) {
 		ok= (*lookup)(lookupPriv,
-				 NullStringToken,expr->value.str,
+				 None,expr->value.str,
 				 TypeBoolean,val_rtrn);
 	    }
 	    if (!ok)
-		uError("Identifier \"%s\" of type int is unknown\n",
-						stText(expr->value.str));
+		ERROR1("Identifier \"%s\" of type int is unknown\n",
+				XkbAtomText(NULL,expr->value.str,XkbMessage));
 	    return ok;
 	case ExprFieldRef:
 	    if (lookup) {
@@ -403,9 +507,9 @@ char *	bogus= NULL;
 			 TypeBoolean,val_rtrn);
 	    }
 	    if (!ok)
-		uError("Default \"%s.%s\" of type boolean is unknown\n",
-					stText(expr->value.field.element),
-					stText(expr->value.field.field));
+		ERROR2("Default \"%s.%s\" of type boolean is unknown\n",
+			XkbAtomText(NULL,expr->value.field.element,XkbMessage),
+			XkbAtomText(NULL,expr->value.field.field,XkbMessage));
 	    return ok;
 	case OpInvert: 
 	case OpNot:
@@ -419,24 +523,31 @@ char *	bogus= NULL;
 	case OpDivide:   if (bogus==NULL)	bogus= "Division";
 	case OpAssign:   if (bogus==NULL)	bogus= "Assignment";
 	case OpNegate:	 if (bogus==NULL)	bogus= "Negation";
-	    uError("%s of boolean values not permitted\n",bogus);
+	    ERROR1("%s of boolean values not permitted\n",bogus);
 	    break;
 	case OpUnaryPlus:
-	    uError("Unary \"+\" operator not permitted for boolean values\n");
+	    ERROR("Unary \"+\" operator not permitted for boolean values\n");
 	    break;
 	default:
-	    uInternalError("Unknown operator %d in ResolveBoolean\n",expr->op);
+	    WSGO1("Unknown operator %d in ResolveBoolean\n",expr->op);
 	    break;
     }
     return False;
 }
 
 int
-ExprResolveInteger(expr,val_rtrn,lookup,lookupPriv)
+#if NeedFunctionPrototypes
+ExprResolveFloat(	ExprDef *	expr,
+			ExprResult *	val_rtrn,
+			IdentLookupFunc	lookup,
+			XPointer	lookupPriv)
+#else
+ExprResolveFloat(expr,val_rtrn,lookup,lookupPriv)
     ExprDef *		expr;
     ExprResult *	val_rtrn;
     IdentLookupFunc	lookup;
     XPointer		lookupPriv;
+#endif
 {
 int	ok= 0;
 ExprResult	leftRtrn,rightRtrn;
@@ -446,28 +557,142 @@ ExprDef		*left,*right;
 	case ExprValue:
 	    if (expr->type==TypeString) {
 		register char *str;
-		str= stGetString(expr->value.str);
-		if ((str!=NullStringToken)&&(strlen(str)==1)) {
-		    val_rtrn->uval= str[0];
+		str= XkbAtomGetString(NULL,expr->value.str);
+		if ((str!=None)&&(strlen(str)==1)) {
+		    val_rtrn->uval= str[0]*XkbGeomPtsPerMM;
 		    return True;
 		}
 	    }
-	    if (expr->type!=TypeInt) {
-		uError("Found constant of type %s where an int was expected\n",
+	    if ((expr->type!=TypeInt)&&(expr->type!=TypeFloat)) {
+		ERROR1("Found constant of type %s, expected a number\n",
 						exprTypeText(expr->type));
 		return False;
 	    }
 	    val_rtrn->ival= expr->value.ival;
+	    if (expr->type==TypeInt)
+		val_rtrn->ival*= XkbGeomPtsPerMM;
 	    return True;
 	case ExprIdent:
 	    if (lookup) {
 		ok= (*lookup)(lookupPriv,
-				 NullStringToken,expr->value.str,
+				 None,expr->value.str,
+				 TypeFloat,val_rtrn);
+	    }
+	    if (!ok)
+		ERROR1("Numeric identifier \"%s\" unknown\n",
+				XkbAtomText(NULL,expr->value.str,XkbMessage));
+	    return ok;
+	case ExprFieldRef:
+	    if (lookup) {
+		ok= (*lookup)(lookupPriv,
+			 expr->value.field.element,expr->value.field.field,
+			 TypeFloat,val_rtrn);
+	    }
+	    if (!ok)
+		ERROR2("Numeric default \"%s.%s\" unknown\n",
+			XkbAtomText(NULL,expr->value.field.element,XkbMessage),
+			XkbAtomText(NULL,expr->value.field.field,XkbMessage));
+	    return ok;
+	case OpAdd:
+	case OpSubtract:
+	case OpMultiply:
+	case OpDivide:
+	    left= expr->value.binary.left;
+	    right= expr->value.binary.right;
+	    if (ExprResolveFloat(left,&leftRtrn,lookup,lookupPriv)&&
+		ExprResolveFloat(right,&rightRtrn,lookup,lookupPriv)) {
+		switch (expr->op) {
+		    case OpAdd: 
+			val_rtrn->ival= leftRtrn.ival+rightRtrn.ival;
+			break;
+		    case OpSubtract: 
+			val_rtrn->ival= leftRtrn.ival-rightRtrn.ival;
+			break;
+		    case OpMultiply: 
+			val_rtrn->ival= leftRtrn.ival*rightRtrn.ival;
+			break;
+		    case OpDivide: 
+			val_rtrn->ival= leftRtrn.ival/rightRtrn.ival;
+			break;
+		}
+		return True;
+	    }
+	    return False;
+	case OpAssign:
+	    WSGO("Assignment operator not implemented yet\n");
+	    break;
+	case OpNot:
+	    left= expr->value.child;
+	    if (ExprResolveFloat(left,&leftRtrn,lookup,lookupPriv)) {
+		ERROR("The ! operator cannot be applied to a number\n");
+	    }
+	    return False;
+	case OpInvert:
+	case OpNegate:
+	    left= expr->value.child;
+	    if (ExprResolveFloat(left,&leftRtrn,lookup,lookupPriv)) {
+		if (expr->op==OpNegate)	
+		     val_rtrn->ival= -leftRtrn.ival;
+		else val_rtrn->ival= ~leftRtrn.ival;
+		return True;
+	    }
+	    return False;
+	case OpUnaryPlus:
+	    left= expr->value.child;
+	    return ExprResolveFloat(left,val_rtrn,lookup,lookupPriv);
+	default:
+	    WSGO1("Unknown operator %d in ResolveFloat\n",expr->op);
+	    break;
+    }
+    return False;
+}
+
+int
+#if NeedFunctionPrototypes
+ExprResolveInteger(	ExprDef *	expr,
+			ExprResult *	val_rtrn,
+			IdentLookupFunc	lookup,
+			XPointer	lookupPriv)
+#else
+ExprResolveInteger(expr,val_rtrn,lookup,lookupPriv)
+    ExprDef *		expr;
+    ExprResult *	val_rtrn;
+    IdentLookupFunc	lookup;
+    XPointer		lookupPriv;
+#endif
+{
+int	ok= 0;
+ExprResult	leftRtrn,rightRtrn;
+ExprDef		*left,*right;
+
+    switch (expr->op) {
+	case ExprValue:
+	    if (expr->type==TypeString) {
+		register char *str;
+		str= XkbAtomGetString(NULL,expr->value.str);
+		if ((str!=None)&&(strlen(str)==1)) {
+		    val_rtrn->uval= str[0];
+		    return True;
+		}
+	    }
+	    if ((expr->type!=TypeInt)&&(expr->type!=TypeFloat)) {
+		ERROR1("Found constant of type %s where an int was expected\n",
+						exprTypeText(expr->type));
+		return False;
+	    }
+	    val_rtrn->ival= expr->value.ival;
+	    if (expr->type==TypeFloat)
+		val_rtrn->ival/= XkbGeomPtsPerMM;
+	    return True;
+	case ExprIdent:
+	    if (lookup) {
+		ok= (*lookup)(lookupPriv,
+				 None,expr->value.str,
 				 TypeInt,val_rtrn);
 	    }
 	    if (!ok)
-		uError("Identifier \"%s\" of type int is unknown\n",
-						stText(expr->value.str));
+		ERROR1("Identifier \"%s\" of type int is unknown\n",
+				XkbAtomText(NULL,expr->value.str,XkbMessage));
 	    return ok;
 	case ExprFieldRef:
 	    if (lookup) {
@@ -476,9 +701,9 @@ ExprDef		*left,*right;
 			 TypeInt,val_rtrn);
 	    }
 	    if (!ok)
-		uError("Default \"%s.%s\" of type int is unknown\n",
-					stText(expr->value.field.element),
-					stText(expr->value.field.field));
+		ERROR2("Default \"%s.%s\" of type int is unknown\n",
+			XkbAtomText(NULL,expr->value.field.element,XkbMessage),
+			XkbAtomText(NULL,expr->value.field.field,XkbMessage));
 	    return ok;
 	case OpAdd:
 	case OpSubtract:
@@ -506,12 +731,12 @@ ExprDef		*left,*right;
 	    }
 	    return False;
 	case OpAssign:
-	    uInternalError("Assignment operator not implemented yet\n");
+	    WSGO("Assignment operator not implemented yet\n");
 	    break;
 	case OpNot:
 	    left= expr->value.child;
 	    if (ExprResolveInteger(left,&leftRtrn,lookup,lookupPriv)) {
-		uError("The ! operator cannot be applied to an integer\n");
+		ERROR("The ! operator cannot be applied to an integer\n");
 	    }
 	    return False;
 	case OpInvert:
@@ -528,18 +753,25 @@ ExprDef		*left,*right;
 	    left= expr->value.child;
 	    return ExprResolveInteger(left,val_rtrn,lookup,lookupPriv);
 	default:
-	    uInternalError("Unknown operator %d in ResolveInteger\n",expr->op);
+	    WSGO1("Unknown operator %d in ResolveInteger\n",expr->op);
 	    break;
     }
     return False;
 }
 
 int
+#if NeedFunctionPrototypes
+ExprResolveString(	ExprDef *	expr,
+			ExprResult *	val_rtrn,
+			IdentLookupFunc	lookup,
+			XPointer	lookupPriv)
+#else
 ExprResolveString(expr,val_rtrn,lookup,lookupPriv)
     ExprDef *		expr;
     ExprResult *	val_rtrn;
     IdentLookupFunc	lookup;
     XPointer		lookupPriv;
+#endif
 {
 int		ok= 0;
 ExprResult	leftRtrn,rightRtrn;
@@ -550,11 +782,11 @@ char *		bogus= NULL;
     switch (expr->op) {
 	case ExprValue:
 	    if (expr->type!=TypeString) {
-		uError("Found constant of type %s, expected a string\n",
+		ERROR1("Found constant of type %s, expected a string\n",
 						exprTypeText(expr->type));
 		return False;
 	    }
-	    val_rtrn->str= stGetString(expr->value.str);
+	    val_rtrn->str= XkbAtomGetString(NULL,expr->value.str);
 	    if (val_rtrn->str==NULL) {
 		static char *empty= "";
 		val_rtrn->str= empty;
@@ -563,12 +795,12 @@ char *		bogus= NULL;
 	case ExprIdent:
 	    if (lookup) {
 		ok= (*lookup)(lookupPriv,
-				 NullStringToken,expr->value.str,
+				 None,expr->value.str,
 				 TypeString,val_rtrn);
 	    }
 	    if (!ok)
-		uError("Identifier \"%s\" of type string not found\n",
-						stText(expr->value.str));
+		ERROR1("Identifier \"%s\" of type string not found\n",
+				XkbAtomText(NULL,expr->value.str,XkbMessage));
 	    return ok;
 	case ExprFieldRef:
 	    if (lookup) {
@@ -577,9 +809,9 @@ char *		bogus= NULL;
 			 TypeString,val_rtrn);
 	    }
 	    if (!ok)
-		uError("Default \"%s.%s\" of type string not found\n",
-					stText(expr->value.field.element),
-					stText(expr->value.field.field));
+		ERROR2("Default \"%s.%s\" of type string not found\n",
+			XkbAtomText(NULL,expr->value.field.element,XkbMessage),
+			XkbAtomText(NULL,expr->value.field.field,XkbMessage));
 	    return ok;
 	case OpAdd:
 	    left= expr->value.binary.left;
@@ -589,7 +821,7 @@ char *		bogus= NULL;
 		int len;
 		char *new;
 		len= strlen(leftRtrn.str)+strlen(rightRtrn.str)+1;
-		new= (char *)malloc(len);
+		new= (char *)uAlloc(len);
 		if (new) {
 		    sprintf(new,"%s%s",leftRtrn.str,rightRtrn.str);
 		    val_rtrn->str= new;
@@ -603,58 +835,147 @@ char *		bogus= NULL;
 	case OpAssign:   if (bogus==NULL)	bogus= "Assignment";
 	case OpNegate:	 if (bogus==NULL)	bogus= "Negation";
 	case OpInvert:	 if (bogus==NULL)	bogus= "Bitwise complement";
-	    uError("%s of string values not permitted\n",bogus);
+	    ERROR1("%s of string values not permitted\n",bogus);
 	    return False;
 	case OpNot:	 
 	    if (ExprResolveString(left,&leftRtrn,lookup,lookupPriv)) {
-		uError("The ! operator cannot be applied to a string\n");
+		ERROR("The ! operator cannot be applied to a string\n");
 	    }
 	    return False;
 	case OpUnaryPlus:
 	    if (ExprResolveString(left,&leftRtrn,lookup,lookupPriv)) {
-		uError("The + operator cannot be applied to a string\n");
+		ERROR("The + operator cannot be applied to a string\n");
 	    }
 	    return False;
 	default:
-	    uInternalError("Unknown operator %d in ResolveString\n",expr->op);
+	    WSGO1("Unknown operator %d in ResolveString\n",expr->op);
 	    break;
     }
     return False;
 }
+
+int
+#if NeedFunctionPrototypes
+ExprResolveKeyName(	ExprDef *	expr,
+			ExprResult *	val_rtrn,
+			IdentLookupFunc	lookup,
+			XPointer	lookupPriv)
+#else
+ExprResolveKeyName(expr,val_rtrn,lookup,lookupPriv)
+    ExprDef *		expr;
+    ExprResult *	val_rtrn;
+    IdentLookupFunc	lookup;
+    XPointer		lookupPriv;
+#endif
+{
+int		ok= 0;
+ExprDef	*	left;
+ExprResult 	leftRtrn;
+char *		bogus= NULL;
+
+    switch (expr->op) {
+	case ExprValue:
+	    if (expr->type!=TypeKeyName) {
+		ERROR1("Found constant of type %s, expected a key name\n",
+						exprTypeText(expr->type));
+		return False;
+	    }
+	    memcpy(val_rtrn->keyName.name,expr->value.keyName,XkbKeyNameLength);
+	    return True;
+	case ExprIdent:
+	    if (lookup) {
+		ok= (*lookup)(lookupPriv,
+				 None,expr->value.str,
+				 TypeString,val_rtrn);
+	    }
+	    if (!ok)
+		ERROR1("Identifier \"%s\" of type string not found\n",
+				XkbAtomText(NULL,expr->value.str,XkbMessage));
+	    return ok;
+	case ExprFieldRef:
+	    if (lookup) {
+		ok= (*lookup)(lookupPriv,
+			 expr->value.field.element,expr->value.field.field,
+			 TypeString,val_rtrn);
+	    }
+	    if (!ok)
+		ERROR2("Default \"%s.%s\" of type key name not found\n",
+			XkbAtomText(NULL,expr->value.field.element,XkbMessage),
+			XkbAtomText(NULL,expr->value.field.field,XkbMessage));
+	    return ok;
+	case OpAdd:	 if (bogus==NULL)	bogus= "Addition";
+	case OpSubtract: if (bogus==NULL)	bogus= "Subtraction";
+	case OpMultiply: if (bogus==NULL)	bogus= "Multiplication";
+	case OpDivide:   if (bogus==NULL)	bogus= "Division";
+	case OpAssign:   if (bogus==NULL)	bogus= "Assignment";
+	case OpNegate:	 if (bogus==NULL)	bogus= "Negation";
+	case OpInvert:	 if (bogus==NULL)	bogus= "Bitwise complement";
+	    ERROR1("%s of key name values not permitted\n",bogus);
+	    return False;
+	case OpNot:	 
+	    left= expr->value.binary.left;
+	    if (ExprResolveString(left,&leftRtrn,lookup,lookupPriv)) {
+		ERROR("The ! operator cannot be applied to a key name\n");
+	    }
+	    return False;
+	case OpUnaryPlus:
+	    left= expr->value.binary.left;
+	    if (ExprResolveString(left,&leftRtrn,lookup,lookupPriv)) {
+		ERROR("The + operator cannot be applied to a key name\n");
+	    }
+	    return False;
+	default:
+	    WSGO1("Unknown operator %d in ResolveKeyName\n",expr->op);
+	    break;
+    }
+    return False;
+}
+
 /***====================================================================***/
 
 int
+#if NeedFunctionPrototypes
+ExprResolveEnum(ExprDef *expr,ExprResult *val_rtrn,LookupEntry	*values)
+#else
 ExprResolveEnum(expr,val_rtrn,values)
     ExprDef *		expr;
     ExprResult *	val_rtrn;
     LookupEntry	*	values;
+#endif
 {
     if (expr->op!=ExprIdent) {
-	uError("Found a %s where an enumerated value was expected\n",
+	ERROR1("Found a %s where an enumerated value was expected\n",
 							exprOpText(expr->op));
 	return False;
     }
-    if (!SimpleLookup((XPointer)values,NullStringToken,expr->value.str,
-							TypeInt,val_rtrn)) {
+    if (!SimpleLookup((XPointer)values,(Atom)None,expr->value.str,
+						(unsigned)TypeInt,val_rtrn)) {
 	int	nOut=0;
-	uError("Illegal identifier %s (expected one of: ",
-						stText(expr->value.str));
+	ERROR1("Illegal identifier %s (expected one of: ",
+				XkbAtomText(NULL,expr->value.str,XkbMessage));
 	while (values && values->name) {
-	    if (nOut!=0)	uInformation(", %s",values->name);
-	    else		uInformation("%s",values->name);
+	    if (nOut!=0)	INFO1(", %s",values->name);
+	    else		INFO1("%s",values->name);
 	}
-	uInformation(")\n");
+	INFO(")\n");
 	return False;
     }
     return True;
 }
 
 int
+#if NeedFunctionPrototypes
+ExprResolveMask(	ExprDef *	expr,
+			ExprResult *	val_rtrn,
+			IdentLookupFunc	lookup,
+			XPointer	lookupPriv)
+#else
 ExprResolveMask(expr,val_rtrn,lookup,lookupPriv)
     ExprDef *		expr;
     ExprResult *	val_rtrn;
     IdentLookupFunc	lookup;
     XPointer		lookupPriv;
+#endif
 {
 int	ok= 0;
 ExprResult	leftRtrn,rightRtrn;
@@ -664,7 +985,7 @@ char *		bogus= NULL;
     switch (expr->op) {
 	case ExprValue:
 	    if (expr->type!=TypeInt) {
-		uError("Found constant of type %s where a mask was expected\n",
+		ERROR1("Found constant of type %s where a mask was expected\n",
 						exprTypeText(expr->type));
 		return False;
 	    }
@@ -673,12 +994,12 @@ char *		bogus= NULL;
 	case ExprIdent:
 	    if (lookup) {
 		ok= (*lookup)(lookupPriv,
-				 NullStringToken,expr->value.str,
+				 None,expr->value.str,
 				 TypeInt,val_rtrn);
 	    }
 	    if (!ok)
-		uError("Identifier \"%s\" of type int is unknown\n",
-						stText(expr->value.str));
+		ERROR1("Identifier \"%s\" of type int is unknown\n",
+				XkbAtomText(NULL,expr->value.str,XkbMessage));
 	    return ok;
 	case ExprFieldRef:
 	    if (lookup) {
@@ -687,17 +1008,17 @@ char *		bogus= NULL;
 			 TypeInt,val_rtrn);
 	    }
 	    if (!ok)
-		uError("Default \"%s.%s\" of type int is unknown\n",
-					stText(expr->value.field.element),
-					stText(expr->value.field.field));
+		ERROR2("Default \"%s.%s\" of type int is unknown\n",
+			XkbAtomText(NULL,expr->value.field.element,XkbMessage),
+			XkbAtomText(NULL,expr->value.field.field,XkbMessage));
 	    return ok;
 	case ExprArrayRef:
 	    bogus= "array reference";
 	case ExprActionDecl:
 	    if (bogus==NULL)
 		bogus= "function use";
-	    uError("Unexpected %s in mask expression\n",bogus);
-	    uAction("Expression ignored\n");
+	    ERROR1("Unexpected %s in mask expression\n",bogus);
+	    ACTION("Expression ignored\n");
 	    return False;
 	case OpAdd:
 	case OpSubtract:
@@ -716,16 +1037,16 @@ char *		bogus= NULL;
 			break;
 		    case OpMultiply: 
 		    case OpDivide: 
-			uError("Cannot %s masks\n",
+			ERROR1("Cannot %s masks\n",
 					expr->op==OpDivide?"divide":"multiply");
-			uAction("Illegal operation ignored\n");
+			ACTION("Illegal operation ignored\n");
 			return False;
 		}
 		return True;
 	    }
 	    return False;
 	case OpAssign:
-	    uInternalError("Assignment operator not implemented yet\n");
+	    WSGO("Assignment operator not implemented yet\n");
 	    break;
 	case OpInvert:
 	    left= expr->value.child;
@@ -739,34 +1060,44 @@ char *		bogus= NULL;
 	case OpNot:
 	    left= expr->value.child;
 	    if (ExprResolveInteger(left,&leftRtrn,lookup,lookupPriv)) {
-		uError("The %s operator cannot be used with a mask\n",
+		ERROR1("The %s operator cannot be used with a mask\n",
 					(expr->op==OpNegate?"-":"!"));
 	    }
 	    return False;
 	default:
-	    uInternalError("Unknown operator %d in ResolveMask\n",expr->op);
+	    WSGO1("Unknown operator %d in ResolveMask\n",expr->op);
 	    break;
     }
     return False;
 }
 
 int
+#if NeedFunctionPrototypes
+ExprResolveKeySym(	ExprDef *	expr,
+			ExprResult *	val_rtrn,
+			IdentLookupFunc	lookup,
+			XPointer	lookupPriv)
+#else
 ExprResolveKeySym(expr,val_rtrn,lookup,lookupPriv)
     ExprDef *		expr;
     ExprResult *	val_rtrn;
     IdentLookupFunc	lookup;
     XPointer		lookupPriv;
+#endif
 {
 int	ok= 0;
 KeySym	sym;
 
     if (expr->op==ExprIdent) {
 	char *str;
-	str= stGetString(expr->value.str);
+	str= XkbAtomGetString(NULL,expr->value.str);
 	if ((str!=NULL)&&((sym= XStringToKeysym(str))!=NoSymbol)) {
 	    val_rtrn->uval= sym;
 	    return True;
 	}
     }
-    return ExprResolveInteger(expr,val_rtrn,lookup,lookupPriv);
+    ok= ExprResolveInteger(expr,val_rtrn,lookup,lookupPriv);
+    if ((ok)&&(val_rtrn->uval<10))
+	val_rtrn->uval+= '0';
+    return ok;
 }

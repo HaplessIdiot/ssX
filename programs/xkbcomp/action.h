@@ -1,4 +1,4 @@
-/* $XConsortium: action.h,v 1.1 94/04/02 17:05:07 erik Exp $ */
+/* $XConsortium: action.h /main/3 1996/03/01 14:31:55 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -39,15 +39,19 @@
 #define	F_Group		8
 #define	F_X		9
 #define	F_Y		10
-#define	F_Button	11
-#define	F_Value		12
-#define	F_Controls	13
-#define	F_Type		14
-#define	F_Count		15
-#define	F_Screen	16
-#define	F_Same		17
-#define	F_Data		18
-#define	F_LastField	F_Data
+#define	F_Accel		11
+#define	F_Button	12
+#define	F_Value		13
+#define	F_Controls	14
+#define	F_Type		15
+#define	F_Count		16
+#define	F_Screen	17
+#define	F_Same		18
+#define	F_Data		19
+#define	F_Device	20
+#define	F_Keycode	21
+#define	F_ModsToClear	22
+#define	F_LastField	F_ModsToClear
 #define	F_NumFields	(F_LastField+1)
 
 #define	PrivateAction	(XkbSA_LastAction+1)

@@ -1,4 +1,4 @@
-/* $XConsortium: xkbUtils.c /main/20 1996/02/02 14:39:43 kaleb $ */
+/* $XConsortium: xkbUtils.c /main/21 1996/03/01 14:31:41 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -342,47 +342,24 @@ generate a NewKeyboard notify here?
     return;
 }
 
-#if NeedFunctionPrototypes
 void
-XkbUpdateActions(	DeviceIntPtr	 	pXDev,
+#if NeedFunctionPrototypes
+XkbUpdateDescActions(	XkbDescPtr		xkb,
 			KeyCode		 	first,
 			CARD8		 	num,
-			XkbChangesPtr	 	changes,
-			unsigned *	 	needChecksRtrn,
-			XkbEventCausePtr	cause)
+			XkbChangesPtr	 	changes)
 #else
-void
-XkbUpdateActions(pXDev,first,num,changes,needChecksRtrn,cause)
-    DeviceIntPtr 	pXDev;
+XkbUpdateDescActions(xkb,first,num,changes)
+    XkbDescPtr		xkb;
     KeyCode 		first;
     CARD8 		num;
     XkbChangesPtr 	changes;
-    unsigned *		needChecksRtrn;
-    XkbEventCausePtr	cause;
 #endif
 {
-XkbSrvInfoPtr		xkbi;
-XkbDescPtr		xkb;
 register unsigned	i,key;
-CARD8 *			repeat;
-
-    if (needChecksRtrn)
-	*needChecksRtrn= 0;
-    xkbi= pXDev->key->xkbInfo;
-    xkb= xkbi->desc;
-    repeat= xkb->ctrls->per_key_repeat;
-
-    if (pXDev->kbdfeed)
-	memcpy(repeat,pXDev->kbdfeed->ctrl.autoRepeats,32);
 
     for (key=first;key<(first+num);key++) {
 	XkbApplyCompatMapToKey(xkb,key,changes);
-    }
-
-    if ((pXDev->kbdfeed)&&
-	(changes->ctrls.enabled_ctrls_changes&XkbPerKeyRepeatMask)) {
-        memcpy(pXDev->kbdfeed->ctrl.autoRepeats,repeat, 32);
-	(*pXDev->kbdfeed->CtrlProc)(pXDev, &pXDev->kbdfeed->ctrl);
     }
 
     if (changes->map.changed&XkbVirtualModMapMask|XkbModifierMapMask) {
@@ -432,12 +409,56 @@ CARD8 *			repeat;
     return;
 }
 
+#if NeedFunctionPrototypes
+void
+XkbUpdateActions(	DeviceIntPtr	 	pXDev,
+			KeyCode		 	first,
+			CARD8		 	num,
+			XkbChangesPtr	 	changes,
+			unsigned *	 	needChecksRtrn,
+			XkbEventCausePtr	cause)
+#else
+void
+XkbUpdateActions(pXDev,first,num,changes,needChecksRtrn,cause)
+    DeviceIntPtr 	pXDev;
+    KeyCode 		first;
+    CARD8 		num;
+    XkbChangesPtr 	changes;
+    unsigned *		needChecksRtrn;
+    XkbEventCausePtr	cause;
+#endif
+{
+XkbSrvInfoPtr		xkbi;
+XkbDescPtr		xkb;
+register unsigned	i,key;
+CARD8 *			repeat;
+
+    if (needChecksRtrn)
+	*needChecksRtrn= 0;
+    xkbi= pXDev->key->xkbInfo;
+    xkb= xkbi->desc;
+    repeat= xkb->ctrls->per_key_repeat;
+
+    if (pXDev->kbdfeed)
+	memcpy(repeat,pXDev->kbdfeed->ctrl.autoRepeats,32);
+
+    XkbUpdateDescActions(xkb,first,num,changes);
+
+    if ((pXDev->kbdfeed)&&
+	(changes->ctrls.enabled_ctrls_changes&XkbPerKeyRepeatMask)) {
+        memcpy(pXDev->kbdfeed->ctrl.autoRepeats,repeat, 32);
+	(*pXDev->kbdfeed->CtrlProc)(pXDev, &pXDev->kbdfeed->ctrl);
+    }
+    return;
+}
+
 void
 #if NeedFunctionPrototypes
-XkbUpdateCoreDescription(DeviceIntPtr keybd)
+XkbUpdateCoreDescription(DeviceIntPtr keybd,Bool resize)
 #else
-XkbUpdateCoreDescription(keybd)
+XkbUpdateCoreDescription(keybd,resize)
     DeviceIntPtr keybd;
+    Bool	resize;
 #endif
 {
 register int		key,tmp;
@@ -454,21 +475,38 @@ CARD8			keysPerMod[XkbNumModifiers];
     maxSymsPerKey= maxKeysPerMod= 0;
     bzero(keysPerMod,sizeof(keysPerMod));
     memcpy(keyc->modifierMap,xkb->map->modmap,xkb->max_key_code+1);
-    if (xkb->min_key_code<keyc->curKeySyms.minKeyCode) {
-	 first= xkb->min_key_code;
-	 firstCommon= keyc->curKeySyms.minKeyCode;
+    if ((xkb->min_key_code==keyc->curKeySyms.minKeyCode)&&
+	(xkb->max_key_code==keyc->curKeySyms.maxKeyCode)) {
+	first= firstCommon= xkb->min_key_code;
+	last= lastCommon= xkb->max_key_code;
+    }
+    else if (resize) {
+	keyc->curKeySyms.minKeyCode= xkb->min_key_code;
+	keyc->curKeySyms.maxKeyCode= xkb->max_key_code;
+	tmp= keyc->curKeySyms.mapWidth*_XkbCoreNumKeys(keyc);
+	keyc->curKeySyms.map= _XkbTypedRealloc(keyc->curKeySyms.map,tmp,KeySym);
+	if (!keyc->curKeySyms.map)
+	   FatalError("Couldn't allocate keysyms\n");
+	first= firstCommon= xkb->min_key_code;
+	last= lastCommon= xkb->max_key_code;
     }
     else {
-	firstCommon= xkb->min_key_code;
-	first= keyc->curKeySyms.minKeyCode;
-    }
-    if (xkb->max_key_code>keyc->curKeySyms.maxKeyCode) {
-	 lastCommon= keyc->curKeySyms.maxKeyCode;
-	 last= xkb->max_key_code;
-    }
-    else {
-	lastCommon= xkb->max_key_code;
-	last= keyc->curKeySyms.maxKeyCode;
+	if (xkb->min_key_code<keyc->curKeySyms.minKeyCode) {
+	    first= xkb->min_key_code;
+	    firstCommon= keyc->curKeySyms.minKeyCode;
+	}
+	else {
+	    firstCommon= xkb->min_key_code;
+	    first= keyc->curKeySyms.minKeyCode;
+	}
+	if (xkb->max_key_code>keyc->curKeySyms.maxKeyCode) {
+	    lastCommon= keyc->curKeySyms.maxKeyCode;
+	    last= xkb->max_key_code;
+	}
+	else {
+	    lastCommon= xkb->max_key_code;
+	    last= keyc->curKeySyms.maxKeyCode;
+	}
     }
 
     /* determine sizes */

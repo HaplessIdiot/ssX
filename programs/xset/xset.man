@@ -1,5 +1,5 @@
 .\" $XConsortium: xset.man /main/28 1995/12/15 14:05:55 gildea $
-.\" $XFree86: xc/programs/xset/xset.man,v 3.1 1996/01/24 22:04:53 dawes Exp $
+.\" $XFree86: xc/programs/xset/xset.man,v 3.2 1996/01/28 07:34:15 dawes Exp $
 .\" Copyright (c) 1988  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -180,7 +180,8 @@ the second specifies the repeat rate.
 .PP
 .TP 8
 .B s
-The \fBs\fP option lets you set the screen saver parameters.
+The \fBs\fP option lets you set the screen saver parameters.  For XFree86,
+it also allows setting the power saver parameters.
 This option accepts up to two numerical parameters, a 'blank/noblank'
 flag, an 'expose/noexpose' flag, an 'on/off' flag, an 'activate/reset' flag,
 or the 'default' flag.

@@ -1,4 +1,4 @@
-/* $XConsortium: expr.h,v 1.2 94/04/05 15:14:19 erik Exp $ */
+/* $XConsortium: expr.h /main/6 1996/03/01 14:32:09 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -29,19 +29,34 @@
 #define EXPR_H 1
 
 typedef union _ExprResult  {
-    char *	str;
-    int		ival;
-    unsigned	uval;
+    char *		str;
+    int			ival;
+    unsigned		uval;
+    XkbKeyNameRec	keyName;
 } ExprResult;
 
+_XFUNCPROTOBEGIN
+
+typedef	Bool	(*IdentLookupFunc)(
+#if NeedFunctionPrototypes
+	XPointer	/* priv */,
+	Atom		/* elem */,
+	Atom		/* field */,
+	unsigned	/* type */,
+	ExprResult *	/* val_rtrn */
+#endif
+);
+
 extern	char *exprTypeText(
-#if NeedFunctionProtoytypes
+#if NeedFunctionPrototypes
     unsigned 		/* type */
 #endif
 );
 
+_XFUNCPROTOEND
+
 extern	int ExprResolveLhs(
-#if NeedFunctionProtoytypes
+#if NeedFunctionPrototypes
     ExprDef *		/* expr */,
     ExprResult *	/* elem_rtrn */,
     ExprResult *	/* field_rtrn */,
@@ -66,48 +81,67 @@ typedef struct _LookupTable {
     struct _LookupTable *	nextElement;
 } LookupTable;
 
-extern int SimpleLookup(
-#if NeedFunctionProtoytypes
+_XFUNCPROTOBEGIN
+
+
+extern char *exprOpText(
+#if NeedFunctionPrototypes
+    unsigned 		/* type */
+#endif
+);
+
+extern int RadioLookup(
+#if NeedFunctionPrototypes
     XPointer 		/* priv */,
-    StringToken		/* elem */,
-    StringToken		/* field */,
+    Atom		/* elem */,
+    Atom		/* field */,
+    unsigned		/* type */,
+    ExprResult *	/* val_rtrn */
+#endif
+);
+
+extern int SimpleLookup(
+#if NeedFunctionPrototypes
+    XPointer 		/* priv */,
+    Atom		/* elem */,
+    Atom		/* field */,
     unsigned		/* type */,
     ExprResult *	/* val_rtrn */
 #endif
 );
 
 extern int TableLookup(
-#if NeedFunctionProtoytypes
+#if NeedFunctionPrototypes
     XPointer 		/* priv */,
-    StringToken		/* elem */,
-    StringToken		/* field */,
+    Atom		/* elem */,
+    Atom		/* field */,
     unsigned		/* type */,
     ExprResult *	/* val_rtrn */
 #endif
 );
 
 extern int LookupModIndex(
-#if NeedFunctionProtoytypes
+#if NeedFunctionPrototypes
     XPointer 		/* priv */,
-    StringToken		/* elem */,
-    StringToken		/* field */,
+    Atom		/* elem */,
+    Atom		/* field */,
     unsigned		/* type */,
     ExprResult *	/* val_rtrn */
 #endif
 );
 
 extern int LookupModMask(
-#if NeedFunctionProtoytypes
+#if NeedFunctionPrototypes
     XPointer 		/* priv */,
-    StringToken		/* elem */,
-    StringToken		/* field */,
+    Atom		/* elem */,
+    Atom		/* field */,
     unsigned		/* type */,
     ExprResult *	/* val_rtrn */
 #endif
 );
 
 extern int ExprResolveModIndex(
-#if NeedFunctionProtoytypes
+#if NeedFunctionPrototypes
     ExprDef *		/* expr */,
     ExprResult *	/* val_rtrn */,
     IdentLookupFunc	/* lookup */,
@@ -116,7 +150,7 @@ extern int ExprResolveModIndex(
 );
 
 extern int ExprResolveModMask(
-#if NeedFunctionProtoytypes
+#if NeedFunctionPrototypes
     ExprDef *		/* expr */,
     ExprResult *	/* val_rtrn */,
     IdentLookupFunc	/* lookup */,
@@ -125,16 +159,25 @@ extern int ExprResolveModMask(
 );
 
 extern int ExprResolveBoolean(
-#if NeedFunctionProtoytypes
-    ExprDef *		expr;
-    ExprResult *	val_rtrn;
-    IdentLookupFunc	lookup;
-    XPointer		lookupPriv;
+#if NeedFunctionPrototypes
+    ExprDef *		/* expr */,
+    ExprResult *	/* val_rtrn */,
+    IdentLookupFunc	/* lookup */,
+    XPointer		/* lookupPriv */
 #endif
 );
 
 extern int ExprResolveInteger(
-#if NeedFunctionProtoytypes
+#if NeedFunctionPrototypes
+    ExprDef *		/* expr */,
+    ExprResult *	/* val_rtrn */,
+    IdentLookupFunc	/* lookup */,
+    XPointer		/* lookupPriv */
+#endif
+);
+
+extern int ExprResolveFloat(
+#if NeedFunctionPrototypes
     ExprDef *		/* expr */,
     ExprResult *	/* val_rtrn */,
     IdentLookupFunc	/* lookup */,
@@ -143,7 +186,16 @@ extern int ExprResolveInteger(
 );
 
 extern int ExprResolveString(
-#if NeedFunctionProtoytypes
+#if NeedFunctionPrototypes
+    ExprDef *		/* expr */,
+    ExprResult *	/* val_rtrn */,
+    IdentLookupFunc	/* lookup */,
+    XPointer		/* lookupPriv */
+#endif
+);
+
+extern int ExprResolveKeyName(
+#if NeedFunctionPrototypes
     ExprDef *		/* expr */,
     ExprResult *	/* val_rtrn */,
     IdentLookupFunc	/* lookup */,
@@ -152,7 +204,7 @@ extern int ExprResolveString(
 );
 
 extern int ExprResolveEnum(
-#if NeedFunctionProtoytypes
+#if NeedFunctionPrototypes
     ExprDef *		/* expr */,
     ExprResult *	/* val_rtrn */,
     LookupEntry	*	/* values */
@@ -160,7 +212,7 @@ extern int ExprResolveEnum(
 );
 
 extern int ExprResolveMask(
-#if NeedFunctionProtoytypes
+#if NeedFunctionPrototypes
     ExprDef *		/* expr */,
     ExprResult *	/* val_rtrn */,
     IdentLookupFunc	/* lookup */,
@@ -169,11 +221,14 @@ extern int ExprResolveMask(
 );
 
 extern int ExprResolveKeySym(
-#if NeedFunctionProtoytypes
+#if NeedFunctionPrototypes
     ExprDef *		/* expr */,
     ExprResult *	/* val_rtrn */,
     IdentLookupFunc	/* lookup */,
     XPointer		/* lookupPriv */
 #endif
 );
+
+_XFUNCPROTOEND
+
 #endif /* EXPR_H */

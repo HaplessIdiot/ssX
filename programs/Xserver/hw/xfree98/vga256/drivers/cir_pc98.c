@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/cir_pc98.c,v 3.1 1996/02/09 08:22:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/cir_pc98.c,v 3.2 1996/02/18 03:44:42 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -207,13 +207,13 @@ init_wsna(void)
     } data;
 
     unsigned short initdt1[] = {
-	0x0707,        /* Extended Sequencer Mode */
+	0x0107, /* Extended Sequencer Mode */
 	0x0008, /* EEPROM Control */
 	0x0009, /* Scratch Pad 0 */
 	0x000a, /* Scratch Pad 1 */
 	0x660b, /* VCLK0 Numerator */
 	0x510c, /* VCLK1 Numerator */
-	0x660d, /* VCLK2 Numerator */
+	0x6e0d, /* VCLK2 Numerator */
 	0x550e, /* VCLK3 Numerator */
 	0xb40f, /* DRAM Control */
 	0xf016, /* Performance Tuning */
@@ -221,7 +221,7 @@ init_wsna(void)
 	0x0119, /* Signature Generator Result Low-Byte */
 	0x3b1b, /* VCLK Denominator and Post-Scalar */
 	0x3a1c, /* VCLK Denominator and Post-Scalar */
-	0x261d, /* VCLK Denominator and Post-Scalar */
+	0x2a1d, /* VCLK Denominator and Post-Scalar */
 	0x361e, /* VCLK Denominator and Post-Scalar */
 	0x201f, /* MCLK Select */
 	0xffff
@@ -234,7 +234,7 @@ init_wsna(void)
     unsigned char initdt3[] = {
 	0xa1, 0x7f, 0x80, 0x85, 0x85, 0x96, 0x24, 0xfd,
 	0x00, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x08, 0x88, 0xff, 0x00, 0x00, 0x00, 0x23, 0xe3,
+	0x02, 0x08, 0xff, 0x80, 0x00, 0x00, 0x23, 0xe3,
 	0xff, 0x32, 0xe0, 0x32
     };
 
@@ -246,7 +246,7 @@ init_wsna(void)
 
     unsigned char initdt5[] = {
 	0x00, 0xff, 0x0f, 0x00, 0x00, 0x40, 0x05, 0x0f,
-	0xff, 0x02, 0x00, 0x20, 0x00
+	0xff, 0x1c, 0x00, 0x24, 0x00
     };
 
     unsigned int tmp;
@@ -259,10 +259,10 @@ init_wsna(void)
     }
 
     outb(0x3c2, 0xe3); outb(0x3da, 0x00);
-    outb(0x3c2, 0x18);
+    _outb(0x42e3, 0x18);
     inb(0x3c6); inb(0x3c6);
     inb(0x3c6); inb(0x3c6);
-    outb(0x3c6, 0x20); outw(0x3d4, 0x1206);
+    outb(0x3c6, 0x20); outw(0x3c4, 0x1206);
     outw(0x3c4, 0x0200); outw(0x3c4, 0x0300);
 
     for(tmp = 0; initdt1[tmp] != 0xffff; tmp++){
@@ -323,7 +323,7 @@ enter_wsna(void)
     outb(0x3c5,0x12); /* unlock cirrus special */
 
     if(wsn_initialized == 0){
-	outb(0x3c2, 0x18);
+	_outb(0x43e3, 0x18);
 	_outb(0x6a, 0x00);
 	vgaIOBase = 0x3D0;
                                 

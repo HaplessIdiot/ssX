@@ -1,4 +1,40 @@
-// $XConsortium: en_US,v 1.2 94/04/08 15:59:37 erik Exp $
-xkb_symbols
-include "us"
-include "iso9995-3"
+// $XConsortium: en_US /main/5 1996/03/01 14:32:27 kaleb $
+partial xkb_symbols "basic" {
+    include "us(basic)"
+    include "iso9995-3(basic)"
+};
+default xkb_symbols "pc101" {
+    key <RALT> { [ Mode_switch,  Multi_key ] };
+
+    augment "us(pc101)"
+    include "iso9995-3(basic)"
+
+    modifier_map Mod3 { Mode_switch };
+};
+xkb_symbols "pc102" {
+    key <RALT> { [ Mode_switch,  Multi_key ] };
+
+    augment "us(pc102)"
+    include "iso9995-3(basic)"
+
+    modifier_map Mod3 { Mode_switch };
+};
+
+xkb_symbols "microsoft" {
+    key <RALT> { [ Mode_switch ] };
+    key <RWIN> { [ Multi_key ] };
+
+    augment "us(microsoft)"
+    include "iso9995-3(basic)"
+
+    modifier_map Mod3 { Mode_switch };
+};
+
+xkb_symbols "sun4" {
+    include "us(sun4)"
+    include "iso9995-3(basic)"
+};
+xkb_symbols "sun5" {
+    include "us(sun5)"
+    include "iso9995-3(basic)"
+};

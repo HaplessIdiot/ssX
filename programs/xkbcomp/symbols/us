@@ -127,7 +127,10 @@ xkb_symbols "generic101" {
     key <RGHT> {	[  Right		]	};
 
     // End "Editing" section, begin "Keypad"
-    key <NMLK> {	[  Num_Lock		]	};
+    key <NMLK> {
+        type= "SHIFT+ALT",
+        symbols[Group1]= [ Num_Lock, Pointer_EnableKeys]
+    };
     key <KPDV> {	[  KP_Divide		]	};
     key <KPMU> {	[  KP_Multiply		]	};
     key <KPSU> {	[  KP_Subtract		]	};

@@ -1,4 +1,4 @@
-/* $XConsortium: compat.c,v 1.3 94/04/08 15:22:28 erik Exp $ */
+/* $XConsortium: compat.c /main/8 1996/03/01 14:32:00 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,263 +25,297 @@
 
  ********************************************************/
 
+#include <X11/Xos.h>
 #include "xkbcomp.h"
-#include "xkbfile.h"
 #include "tokens.h"
 #include "expr.h"
 #include "vmod.h"
+#include "misc.h"
 #include "indicators.h"
 #include "action.h"
 
-typedef struct _ModCompatInfo {
-    StringToken			name;
-    Bool			realMod;
-    unsigned char		ndx;
-    unsigned char		mods;
-    unsigned char		groups;
-    struct _ModCompatInfo *	next;
-} ModCompatInfo;
+typedef struct _SymInterpInfo {
+    CommonInfo		defs;
+    XkbSymInterpretRec	interp;
+} SymInterpInfo;
 
-#define	INTERP_CHUNK	32
+#define	_SI_VirtualMod		(1<<0)
+#define	_SI_Action		(1<<1)
+#define	_SI_AutoRepeat		(1<<2)
+#define	_SI_LockingKey		(1<<3)
+#define	_SI_LevelOneOnly	(1<<4)
+
+typedef struct _GroupCompatInfo {
+    unsigned char	fileID;
+    unsigned char	merge;
+    unsigned char	real_mods;
+    unsigned short	vmods;
+} GroupCompatInfo;
+
 typedef struct _CompatInfo {
-    StringToken		name;
+    char *		name;
+    unsigned 		fileID;
     int			errorCount;
-    int			szInterps;
     int			nInterps;
-    XkbSymInterpretPtr	interps;
-    XkbSymInterpretRec	dflt;
-    XkbFileLEDInfo	ledDflt;
-    ModCompatInfo *	modCompat;
-    XkbFileLEDInfo *	leds;
+    SymInterpInfo *	interps;
+    SymInterpInfo 	dflt;
+    LEDInfo		ledDflt;
+    GroupCompatInfo	groupCompat[XkbNumKbdGroups];
+    LEDInfo *		leds;
     VModInfo		vmods;
     ActionInfo *	act;
-    Display *		dpy;
+    XkbDescPtr		xkb;
 } CompatInfo;
 
+/***====================================================================***/
+
+#define	ReportSINotArray(si,f,i) \
+	ReportNotArray("symbol interpretation",(f),siText((si),(i)))
+#define	ReportSIBadType(si,f,w,i) \
+	ReportBadType("symbol interpretation",(f),siText((si),(i)),(w))
+
+/***====================================================================***/
+
+static char *
+#if NeedFunctionPrototypes
+siText(SymInterpInfo *	si,CompatInfo *	info)
+#else
+siText(si,info)
+    SymInterpInfo *	si;
+    CompatInfo *	info;
+#endif
+{
+static char buf[128];
+
+    if (si==&info->dflt) {
+	sprintf(buf,"default");
+    }
+    else {
+	sprintf(buf,"%s+%s(%s)",XkbKeysymText(si->interp.sym,XkbMessage),
+				XkbSIMatchText(si->interp.match,XkbMessage),
+				XkbModMaskText(si->interp.mods,XkbMessage));
+    }
+    return buf;
+}
+
 static void
-InitCompatInfo(dpy,info,xkb)
-    Display *		dpy;
+#if NeedFunctionPrototypes
+InitCompatInfo(CompatInfo *info,XkbDescPtr xkb)
+#else
+InitCompatInfo(info,xkb)
     CompatInfo *	info;
     XkbDescPtr		xkb;
+#endif
 {
 register int i;
 
-    info->name= NullStringToken;
+    info->xkb= xkb;
+    info->name= NULL;
+    info->fileID= 0;
     info->errorCount= 0;
-    info->szInterps= INTERP_CHUNK;
     info->nInterps= 0;
-    info->interps= uTypedCalloc(INTERP_CHUNK,XkbSymInterpretRec);
+    info->interps= NULL;
     info->act= NULL;
-    info->dflt.flags=	0;
-    info->dflt.virtual_mod= XkbNoModifier;
-    info->dflt.act.type= XkbSA_NoAction;
-    ClearIndicatorMapInfo(dpy,&info->ledDflt);
+    info->dflt.defs.fileID= info->fileID;
+    info->dflt.defs.defined= 0;
+    info->dflt.defs.merge= MergeOverride;
+    info->dflt.interp.flags=	0;
+    info->dflt.interp.virtual_mod= XkbNoModifier;
+    info->dflt.interp.act.type= XkbSA_NoAction;
     for (i=0;i<XkbAnyActionDataSize;i++) {
-	info->dflt.act.data[i]= 0;
+	info->dflt.interp.act.data[i]= 0;
     }
-    info->modCompat= NULL;
+    ClearIndicatorMapInfo(xkb->dpy,&info->ledDflt);
+    info->ledDflt.defs.fileID= info->fileID;
+    info->ledDflt.defs.defined= 0;
+    info->ledDflt.defs.merge= MergeOverride;
+    bzero((char *)&info->groupCompat[0],XkbNumKbdGroups*sizeof(GroupCompatInfo));
     info->leds= NULL;
     InitVModInfo(&info->vmods,xkb);
-    info->dpy= dpy;
     return;
 }
 
 static void
+#if NeedFunctionPrototypes
+ClearCompatInfo(CompatInfo *info,XkbDescPtr xkb)
+#else
 ClearCompatInfo(info,xkb)
     CompatInfo *	info;
     XkbDescPtr		xkb;
+#endif
 {
 register int i;
 
-    info->name= NullStringToken;
-    info->nInterps= 0;
-    info->dflt.flags= 0;
-    info->dflt.virtual_mod= XkbNoModifier;
-    info->dflt.act.type= XkbSA_NoAction;
+    if (info->name!=NULL)
+	uFree(info->name);
+    info->name= NULL;
+    info->dflt.defs.defined= 0;
+    info->dflt.defs.merge= MergeAugment;
+    info->dflt.interp.flags= 0;
+    info->dflt.interp.virtual_mod= XkbNoModifier;
+    info->dflt.interp.act.type= XkbSA_NoAction;
     for (i=0;i<XkbAnyActionDataSize;i++) {
-	info->dflt.act.data[i]= 0;
+	info->dflt.interp.act.data[i]= 0;
     }
-    ClearIndicatorMapInfo(info->dpy,&info->ledDflt);
-    if (info->modCompat!=NULL) {
-	ModCompatInfo *mc,*next;
-	for (mc=info->modCompat;mc!=NULL;mc=next) {
-	    next= mc->next;
-	    uFree(mc);
-	}
-    }
-    if (info->leds!=NULL) {
-	XkbFileLEDInfo *led,*next;
-	for (led=info->leds;led!=NULL;led=next) {
-	    next= led->next;
-	    uFree(led);
-	}
-    }
+    ClearIndicatorMapInfo(xkb->dpy,&info->ledDflt);
+    info->nInterps= 0;
+    info->interps= (SymInterpInfo *)ClearCommonInfo(&info->interps->defs);
+    bzero((char *)&info->groupCompat[0],XkbNumKbdGroups*sizeof(GroupCompatInfo));
+    info->leds= (LEDInfo *)ClearCommonInfo(&info->leds->defs);
     /* 3/30/94 (ef) -- XXX! Should free action info here */
     ClearVModInfo(&info->vmods,xkb);
     return;
 }
 
-static void
-FreeCompatInfo(info)
-    CompatInfo *	info;
-{
-
-    if (info->interps)
-	uFree(info->interps);
-    if (info->modCompat!=NULL) {
-	ModCompatInfo *mc,*next;
-
-	for (mc=info->modCompat;mc!=NULL;mc=next) {
-	    next= mc->next;
-	    uFree(mc);
-	}
-    }
-    if (info->leds!=NULL) {
-	XkbFileLEDInfo *led,*next;
-
-	for (led=info->leds;led!=NULL;led=next) {
-	    next= led->next;
-	    uFree(led);
-	}
-    }
-    bzero((char *)info,sizeof(CompatInfo));
-    /* 3/30/94 (ef) -- XXX! Should free action info here */
-    return;
-}
-
-static XkbSymInterpretPtr
+static SymInterpInfo *
+#if NeedFunctionPrototypes
+NextInterp(CompatInfo *info)
+#else
 NextInterp(info)
     CompatInfo *	info;
+#endif
 {
-    if (info->interps==NULL)
-	return NULL;
-    if (info->nInterps>=info->szInterps) {
-	info->szInterps+= INTERP_CHUNK;
-	info->interps= uTypedRealloc(info->interps,info->szInterps,
-						   XkbSymInterpretRec);
-	if (info->interps==NULL)
-	    return NULL;
+SymInterpInfo *	si;
+
+    si= uTypedAlloc(SymInterpInfo);
+    if (si) {
+	bzero((char *)si,sizeof(SymInterpInfo));
+	info->interps= (SymInterpInfo *)AddCommonInfo(&info->interps->defs,
+							(CommonInfo *)si);
+	info->nInterps++;
     }
-    bzero((char *)&info->interps[info->nInterps],sizeof(XkbSymInterpretRec));
-    return &info->interps[info->nInterps++];
+    return si;
+}
+
+static SymInterpInfo *
+#if NeedFunctionPrototypes
+FindMatchingInterp(CompatInfo *info,SymInterpInfo *new)
+#else
+FindMatchingInterp(info,new)
+    CompatInfo *	info;
+    SymInterpInfo *	new;
+#endif
+{
+SymInterpInfo *	old;
+
+    for (old= info->interps;old!=NULL;old=(SymInterpInfo *)old->defs.next) {
+	if ((old->interp.sym==new->interp.sym)&&
+				(old->interp.mods==new->interp.mods)&&
+				(old->interp.match==new->interp.match)) {
+	    return  old;
+	}
+    }
+    return NULL;
 }
 
 static Bool
-FindMatchingInterp(info,ndx_rtrn,interp)
+#if NeedFunctionPrototypes
+AddInterp(CompatInfo *info,SymInterpInfo *new)
+#else
+AddInterp(info,new)
     CompatInfo *	info;
-    unsigned *		ndx_rtrn;
-    XkbSymInterpretPtr	interp;
+    SymInterpInfo *	new;
+#endif
 {
-register int i;
+unsigned		collide;
+SymInterpInfo	*	old;
 
-    for (i=0;i<info->nInterps;i++) {
-	if ((info->interps[i].sym==interp->sym)&&
-				(info->interps[i].mods==interp->mods)&&
-				(info->interps[i].match==interp->match)) {
-	    *ndx_rtrn= i;
-	    return  True;
+    collide= 0;
+    old= FindMatchingInterp(info,new);
+    if (old!=NULL) {
+	if (new->defs.merge==MergeReplace) {
+	    SymInterpInfo *next= (SymInterpInfo *)old->defs.next;
+	    if (((old->defs.fileID==new->defs.fileID)&&(warningLevel>0))||
+		    					(warningLevel>9)) {
+		WARN1("Multiple definitions for \"%s\"\n",siText(new,info));
+		ACTION("Earlier interpretation ignored\n");
+	    }
+	    *old= *new;
+	    old->defs.next= &next->defs;
+	    return True;
 	}
-    }
-    return False;
-}
-
-static void
-DeleteInterp(info,ndx)
-    CompatInfo *	info;
-    unsigned		ndx;
-{
-register int i;
-
-    if (ndx<(info->nInterps-1)) {
-	for (i=ndx;i<(info->nInterps-1);i++) {
-	    info->interps[i]= info->interps[i+1];
+	if (UseNewField(_SI_VirtualMod,&old->defs,&new->defs,&collide)) {
+	    old->interp.virtual_mod= new->interp.virtual_mod;
+	    old->defs.defined|= _SI_VirtualMod;
 	}
-	info->nInterps--;
-    }
-    return;
-}
-
-static Bool
-AddInterp(info,interp,mergeMode,reportCollisions)
-    CompatInfo *	info;
-    XkbSymInterpretPtr	interp;
-    unsigned		mergeMode;
-    Bool		reportCollisions;
-{
-Bool			clobber,collision;
-unsigned 		ndx;
-XkbSymInterpretPtr	new;
-
-    clobber= (mergeMode==MergeOverride);
-    collision= FindMatchingInterp(info,&ndx,interp);
-    if (collision) {
-	if ((reportCollisions)&&(warningLevel>=5)) {
-	    uWarning("Multiple interpretations of \"%s+%s(%s)\"\n",
-				XkbKeysymText(interp->sym,XkbMessage),
-				SIMatchText(interp->match,XkbMessage),
-				XkbModMaskText(interp->mods,XkbMessage));
-	    uAction("Using %s definition\n",(clobber?"last":"first"));
+	if (UseNewField(_SI_Action,&old->defs,&new->defs,&collide)) {
+	    old->interp.act= new->interp.act;
+	    old->defs.defined|= _SI_Action;
 	}
-	if (clobber)	new= &info->interps[ndx];
-	else		return True;
+	if (UseNewField(_SI_AutoRepeat,&old->defs,&new->defs,&collide)) {
+	    old->interp.flags&= ~XkbSI_AutoRepeat;
+	    old->interp.flags|= (new->interp.flags&XkbSI_AutoRepeat);
+	    old->defs.defined|= _SI_AutoRepeat;
+	}
+	if (UseNewField(_SI_LockingKey,&old->defs,&new->defs,&collide)) {
+	    old->interp.flags&= ~XkbSI_LockingKey;
+	    old->interp.flags|= (new->interp.flags&XkbSI_LockingKey);
+	    old->defs.defined|= _SI_LockingKey;
+	}
+	if (UseNewField(_SI_LevelOneOnly,&old->defs,&new->defs,&collide)) {
+	    old->interp.match&= ~XkbSI_LevelOneOnly;
+	    old->interp.match|= (new->interp.match&XkbSI_LevelOneOnly);
+	    old->defs.defined|= _SI_LevelOneOnly;
+	}
+	if (collide) {
+	    WARN1("Multiple interpretations of \"%s\"\n",siText(new,info));
+	    ACTION1("Using %s definition for duplicate fields\n",
+				(new->defs.merge!=MergeAugment?"last":"first"));
+	}
+	return True;
     }
-    else new= NextInterp(info);
-    if (new==NULL)
+    old= new;
+    if ((new= NextInterp(info))==NULL)
 	return False;
-    *new= *interp;
+    *new= *old;
+    new->defs.next= NULL;
     return True;
 }
 
 static Bool
-AddModCompat(info,modCompat,mergeMode,reportCollisions)
+#if NeedFunctionPrototypes
+AddGroupCompat(CompatInfo *info,unsigned group,GroupCompatInfo *newGC)
+#else
+AddGroupCompat(info,group,newGC)
     CompatInfo *	info;
-    ModCompatInfo *	modCompat;
-    unsigned		mergeMode;
-    Bool		reportCollisions;
+    unsigned		group;
+    GroupCompatInfo *	newGC;
+#endif
 {
-ModCompatInfo *mc;
+GroupCompatInfo *	gc;
+unsigned		merge;
 
-    for (mc=info->modCompat;mc!=NULL;mc=mc->next) {
-	if ((mc->realMod==modCompat->realMod)&&(mc->ndx==modCompat->ndx)) {
-	    if ((mc->mods==modCompat->mods)&&(mc->groups==modCompat->groups))
-		return True;
-	    if ((reportCollisions)&&(warningLevel>0)) {
-		uWarning("Compatibility map for %s modifier %s redefined\n",
-						(mc->realMod?"real":"virtual"),
-						stText(mc->name));
-		uAction("Using %s definition\n",
-				(mergeMode==MergeAugment?"first":"last"));
-	    }
-	    if (mergeMode!=MergeAugment) {
-		ModCompatInfo *next= mc->next;
-		*mc= *modCompat;
-		mc->next= next;
-	    }
-	    return True;
-	}
+    merge= newGC->merge;
+    gc= &info->groupCompat[group];
+    if ((gc->fileID<1)||
+	((gc->real_mods==newGC->real_mods)&&(gc->vmods==newGC->vmods))) {
+	*gc= *newGC;
+	return True;
     }
-    mc= uTypedAlloc(ModCompatInfo);
-    if (!mc) {
-	mc= modCompat;
-	uInternalError("Couldn't allocate description of modifier map\n");
-	uAction("Modifier compatibility map for %s modifier %s incorrect\n",
-						(mc->realMod?"real":"virtual"),
-						stText(mc->name));
-	return False;
+    if (((gc->fileID==newGC->fileID)&&(warningLevel>0))||(warningLevel>9)) {
+	WARN1("Compat map for group %d redefined\n",group+1);
+	ACTION1("Using %s definition\n",(merge==MergeAugment?"old":"new"));
     }
-    *mc= *modCompat;
-    mc->next= info->modCompat;
-    info->modCompat= mc;
+    if (merge!=MergeAugment)
+	*gc= *newGC;
     return True;
 }
 
 /***====================================================================***/
 
-Bool
-ResolveStateAndPredicate(expr,pred_rtrn,mods_rtrn)
-    ExprDef *	expr;
-    unsigned *	pred_rtrn;
-    unsigned *	mods_rtrn;
+static Bool
+#if NeedFunctionPrototypes
+ResolveStateAndPredicate(	ExprDef *	expr,
+				unsigned *	pred_rtrn,
+				unsigned *	mods_rtrn,
+				CompatInfo *	info)
+#else
+ResolveStateAndPredicate(expr,pred_rtrn,mods_rtrn,info)
+    ExprDef *		expr;
+    unsigned *		pred_rtrn;
+    unsigned *		mods_rtrn;
+    CompatInfo *	info;
+#endif
 {
 ExprResult	result;
 
@@ -293,7 +327,7 @@ ExprResult	result;
 
     *pred_rtrn= XkbSI_Exactly;
     if (expr->op==ExprActionDecl) {
-	char *pred_txt= stGetString(expr->value.action.name);
+	char *pred_txt= XkbAtomText(NULL,expr->value.action.name,XkbMessage);
 	if (uStrCaseCmp(pred_txt,"noneof")==0)
 	     *pred_rtrn= XkbSI_NoneOf;
 	else if (uStrCaseCmp(pred_txt,"anyofornone")==0)
@@ -305,14 +339,14 @@ ExprResult	result;
 	else if (uStrCaseCmp(pred_txt,"exactly")==0)
 	     *pred_rtrn= XkbSI_Exactly;
 	else {
-	     uError("Illegal modifier predicate \"%s\"\n",pred_txt);
-	     uAction("Ignored\n");
+	     ERROR1("Illegal modifier predicate \"%s\"\n",pred_txt);
+	     ACTION("Ignored\n");
 	     return False;
 	}
 	expr= expr->value.action.args;
     }
     else if (expr->op==ExprIdent) {
-	char *pred_txt= stGetString(expr->value.str);
+	char *pred_txt= XkbAtomText(NULL,expr->value.str,XkbMessage);
 	if ((pred_txt)&&(uStrCaseCmp(pred_txt,"any")==0)) {
 	    *pred_rtrn= XkbSI_AnyOf;
 	    *mods_rtrn= 0xff;
@@ -329,63 +363,147 @@ ExprResult	result;
 
 /***====================================================================***/
 
-static Bool
-HandleIncludeCompatMap(stmt,xkb,info,hndlr)
-    IncludeStmt	*	  stmt;
-    XkbDescPtr		  xkb;
-    CompatInfo *	  info;
-    void		(*hndlr)();
+static void
+#if NeedFunctionPrototypes
+MergeIncludedCompatMaps(	CompatInfo *	into,
+				CompatInfo *	from,
+				unsigned	merge)
+#else
+MergeIncludedCompatMaps(into,from,merge)
+    CompatInfo *	into;
+    CompatInfo *	from;
+    unsigned		merge;
+#endif
 {
-unsigned 	newMerge,tmp;
-FILE	*	file;
-XkbFile	*	rtrn;
+SymInterpInfo * 	si;
+LEDInfo *		led,*rtrn,*next;
+GroupCompatInfo *	gcm;
+register int		i;
 
-    if (ProcessIncludeFile(stmt,XkmCompatMapIndex,&rtrn,&newMerge)) {
-	CompatInfo 	myInfo;
-
-	InitCompatInfo(info->dpy,&myInfo,xkb);
-	myInfo.dflt= info->dflt;
-	myInfo.act= info->act;
-	(*hndlr)(rtrn,xkb,MergeOverride,&myInfo);
-	/* 3/14/94 (ef) -- XXX! should free rtrn and contents here */
-	if (newMerge==MergeReplace) {
-	    ClearCompatInfo(info,xkb);
-	    newMerge= MergeAugment;
-	}
-	info->errorCount+= myInfo.errorCount;
-	if (myInfo.errorCount==0) {
-	    register int i;
-	    XkbSymInterpretPtr interp;
-
-	    if (info->name==(Atom)NullStringToken)
-		info->name= myInfo.name;
-	    for (i=0,interp=myInfo.interps;i<myInfo.nInterps;i++,interp++) {
-		if (!AddInterp(info,interp,newMerge,False))
-		    info->errorCount++;
-	    }
-	}
-	if (myInfo.modCompat!=NULL) {
-	    ModCompatInfo *mc;
-	    for (mc=myInfo.modCompat;mc!=NULL;mc=mc->next) {
-		if (!AddModCompat(info,mc,newMerge,False))
-		    info->errorCount++;
-	    }
-	}
-	if (myInfo.leds!=NULL) {
-	    XkbFileLEDInfo *led,*rtrn;
-	    for (led=myInfo.leds;led!=NULL;led=led->next) {
-		rtrn= AddIndicatorMap(led,info->leds,newMerge,False);
-		if (rtrn!=NULL) 
-		     info->leds= rtrn;
-		else info->errorCount++;
-		
-	    }
-	}
-	ClearCompatInfo(&myInfo,xkb);
-	return (info->errorCount==0);
+    if (from->errorCount>0) {
+	into->errorCount+= from->errorCount;
+	return;
     }
-    info->errorCount+= 10;
-    return False;
+    if (into->name==NULL) {
+	into->name= from->name;
+	from->name= NULL;
+    }
+    for (si=from->interps;si;si=(SymInterpInfo *)si->defs.next) {
+	if (merge!=MergeDefault)
+	    si->defs.merge= merge;
+	if (!AddInterp(into,si))
+	    into->errorCount++;
+    }
+    for (i=0,gcm=&from->groupCompat[0];i<XkbNumKbdGroups;i++,gcm++) {
+	if (merge!=MergeDefault)
+	    gcm->merge= merge;
+	if (!AddGroupCompat(into,i,gcm))
+	    into->errorCount++;
+    }
+    for (led=from->leds;led!=NULL;led=next) {
+	next= (LEDInfo *)led->defs.next;
+	if (merge!=MergeDefault)
+	    led->defs.merge= merge;
+	rtrn= AddIndicatorMap(into->leds,led);
+	if (rtrn!=NULL) 
+	     into->leds= rtrn;
+	else into->errorCount++;
+    }
+    return;
+}
+
+typedef void	(*FileHandler)(
+#if NeedFunctionPrototypes
+	XkbFile *	/* rtrn */,
+	XkbDescPtr	/* xkb */,
+	unsigned	/* merge */,
+	CompatInfo *	/* info */
+#endif
+);
+
+static Bool
+#if NeedFunctionPrototypes
+HandleIncludeCompatMap(	IncludeStmt *	  stmt,
+			XkbDescPtr	  xkb,
+			CompatInfo *	  info,
+			FileHandler	  hndlr)
+#else
+HandleIncludeCompatMap(stmt,xkb,info,hndlr)
+    IncludeStmt	*	stmt;
+    XkbDescPtr		xkb;
+    CompatInfo *	info;
+    FileHandler		hndlr;
+#endif
+{
+unsigned 	newMerge;
+XkbFile	*	rtrn;
+CompatInfo	included;
+Bool		haveSelf;
+
+    haveSelf= False;
+    if ((stmt->file==NULL)&&(stmt->map==NULL)) {
+	haveSelf= True;
+	included= *info;
+	bzero(info,sizeof(CompatInfo));
+    }
+    else if (ProcessIncludeFile(stmt,XkmCompatMapIndex,&rtrn,&newMerge)) {
+	InitCompatInfo(&included,xkb);
+	included.fileID= rtrn->id;
+	included.dflt= info->dflt;
+	included.dflt.defs.fileID= rtrn->id;
+	included.dflt.defs.merge= newMerge;
+	included.ledDflt.defs.fileID= rtrn->id;
+	included.ledDflt.defs.merge= newMerge;
+	included.act= info->act;
+	(*hndlr)(rtrn,xkb,MergeOverride,&included);
+	if (stmt->stmt!=NULL) {
+	    if (included.name!=NULL)
+		uFree(included.name);
+	    included.name= stmt->stmt;
+	    stmt->stmt= NULL;
+	}
+    }
+    else {
+	info->errorCount+= 10;
+	return False;
+    }
+    if ((stmt->next!=NULL)&&(included.errorCount<1)) {
+	IncludeStmt *	next;
+	unsigned	op;
+	CompatInfo	next_incl;
+
+	for (next=stmt->next;next!=NULL;next=next->next) {
+	    if ((next->file==NULL)&&(next->map==NULL)) {
+		haveSelf= True;
+		MergeIncludedCompatMaps(&included,info,next->merge);
+		ClearCompatInfo(info,xkb);
+	    }
+	    else if (ProcessIncludeFile(next,XkmCompatMapIndex,&rtrn,&op)) {
+		InitCompatInfo(&next_incl,xkb);
+		next_incl.fileID= rtrn->id;
+		next_incl.dflt= info->dflt;
+		next_incl.dflt.defs.fileID= rtrn->id;
+		next_incl.dflt.defs.merge= op;
+		next_incl.ledDflt.defs.fileID= rtrn->id;
+		next_incl.ledDflt.defs.merge= op;
+		next_incl.act= info->act;
+		(*hndlr)(rtrn,xkb,MergeOverride,&next_incl);
+		MergeIncludedCompatMaps(&included,&next_incl,op);
+		ClearCompatInfo(&next_incl,xkb);
+	    }
+	    else {
+		info->errorCount+= 10;
+		return False;
+	    }
+	}
+    }
+    if (haveSelf)
+	*info= included;
+    else {
+	MergeIncludedCompatMaps(info,&included,newMerge);
+	ClearCompatInfo(&included,xkb);
+    }
+    return (info->errorCount==0);
 }
 
 static LookupEntry useModMapValues[] = {
@@ -397,52 +515,80 @@ static LookupEntry useModMapValues[] = {
 };
 
 static int
-SetInterpField(interp,xkb,field,arrayNdx,value,merge,info)
-    XkbSymInterpretPtr	interp;
+#if NeedFunctionPrototypes
+SetInterpField(	SymInterpInfo *	si,
+		XkbDescPtr	xkb,
+		char *		field,
+		ExprDef *	arrayNdx,
+		ExprDef *	value,
+		CompatInfo *	info)
+#else
+SetInterpField(si,xkb,field,arrayNdx,value,info)
+    SymInterpInfo *	si;
     XkbDescPtr		xkb;
     char *		field;
     ExprDef *		arrayNdx;
     ExprDef *		value;
-    unsigned		merge;
     CompatInfo *	info;
+#endif
 {
 int 		ok= 1;
 ExprResult	tmp;
 
     if (uStrCaseCmp(field,"action")==0) {
-	ok= HandleActionDef(value,xkb,&interp->act,merge,info->act);
+	if (arrayNdx!=NULL)
+	    return ReportSINotArray(si,field,info);
+	ok= HandleActionDef(value,xkb,&si->interp.act,si->defs.merge,info->act);
+	if (ok) 
+	     si->defs.defined|= _SI_Action;
     }
-    else if (uStrCaseCmp(field,"virtualmodifier")==0) {
+    else if ((uStrCaseCmp(field,"virtualmodifier")==0)||
+	     (uStrCaseCmp(field,"virtualmod")==0)) {
+	if (arrayNdx!=NULL)
+	    return ReportSINotArray(si,field,info);
 	ok= ResolveVirtualModifier(value,&tmp,&info->vmods);
-	if (ok)
-	    interp->virtual_mod= tmp.uval;
+	if (ok) {
+	    si->interp.virtual_mod= tmp.uval;
+	    si->defs.defined|= _SI_VirtualMod;
+	}
+	else return ReportSIBadType(si,field,"virtual modifier",info);
     }
     else if (uStrCaseCmp(field,"repeat")==0) {
+	if (arrayNdx!=NULL)
+	    return ReportSINotArray(si,field,info);
 	ok= ExprResolveBoolean(value,&tmp,NULL,NULL);
 	if (ok) {
-	    if (tmp.uval)	interp->flags|= XkbSI_Autorepeat;
-	    else		interp->flags&= ~XkbSI_Autorepeat;
+	    if (tmp.uval)	si->interp.flags|= XkbSI_AutoRepeat;
+	    else		si->interp.flags&= ~XkbSI_AutoRepeat;
+	    si->defs.defined|= _SI_AutoRepeat;
 	}
+	else return ReportSIBadType(si,field,"boolean",info);
     }
     else if (uStrCaseCmp(field,"locking")==0) {
+	if (arrayNdx!=NULL)
+	    return ReportSINotArray(si,field,info);
 	ok= ExprResolveBoolean(value,&tmp,NULL,NULL);
 	if (ok) {
-	    if (tmp.uval)	interp->flags|= XkbSI_LockingKey;
-	    else		interp->flags&= ~XkbSI_LockingKey;
+	    if (tmp.uval)	si->interp.flags|= XkbSI_LockingKey;
+	    else		si->interp.flags&= ~XkbSI_LockingKey;
+	    si->defs.defined|= _SI_LockingKey;
 	}
+	else return ReportSIBadType(si,field,"boolean",info);
     }
     else if ((uStrCaseCmp(field,"usemodmap")==0)||
 	 	(uStrCaseCmp(field,"usemodmapmods")==0)) {
+	if (arrayNdx!=NULL)
+	    return ReportSINotArray(si,field,info);
 	ok= ExprResolveEnum(value,&tmp,useModMapValues);
 	if (ok) {
-	    if (tmp.uval)	interp->match|= XkbSI_LevelOneOnly;
-	    else		interp->match&= ~XkbSI_LevelOneOnly;
+	    if (tmp.uval)	si->interp.match|= XkbSI_LevelOneOnly;
+	    else		si->interp.match&= ~XkbSI_LevelOneOnly;
+	    si->defs.defined|= _SI_LevelOneOnly;
 	}
+	else return ReportSIBadType(si,field,"level specification",info);
     }
     else {
-	uError("Unknown field %s in a symbol interpretation\n",field);
-	uAction("Definition ignored\n");
-	ok= False;
+	ok= ReportBadField("symbol interpretation",field,siText(si,info));
     }
     return ok;
 }
@@ -462,55 +608,39 @@ LookupEntry groupNames[]= {
 };
 
 static int
-ReportNotArray(type,field,name)
-    char *	type;
-    char *	field;
-    char *	name;
-{
-    uError("The %s %s field is not an array\n",type,field);
-    uAction("Ignoring illegal assignment in definition of %s\n",name);
-    return False;
-}
-
-static int
-ReportBadType(type,field,name,wanted)
-{
-    uError("The %s %s field must be a %s\n",type,field,wanted);
-    uAction("Ignoring illegal assignment in definition of %s\n",name);
-    return False;
-}
-
-static int
-HandleInterpVar(stmt,xkb,mergeMode,info)
+#if NeedFunctionPrototypes
+HandleInterpVar(VarDef *stmt,XkbDescPtr xkb,CompatInfo *info)
+#else
+HandleInterpVar(stmt,xkb,info)
     VarDef *		stmt;
     XkbDescPtr		xkb;
-    unsigned 		mergeMode;
     CompatInfo *	info;
+#endif
 {
 ExprResult	elem,field;
-ExprDef *	arrayNdx;
+ExprDef *	ndx;
 
-    if (ExprResolveLhs(stmt->name,&elem,&field,&arrayNdx)==0) 
+    if (ExprResolveLhs(stmt->name,&elem,&field,&ndx)==0) 
 	return 0; /* internal error, already reported */
-    if (elem.str&&(uStrCaseCmp(elem.str,"interpret")==0)) {
-	return SetInterpField(&info->dflt,xkb,field.str,arrayNdx,stmt->value,
-							     mergeMode,info);	
-    }
+    if (elem.str&&(uStrCaseCmp(elem.str,"interpret")==0))
+	return SetInterpField(&info->dflt,xkb,field.str,ndx,stmt->value,info);	
     if (elem.str&&(uStrCaseCmp(elem.str,"indicator")==0)) {
-	return SetIndicatorMapField(&info->ledDflt,xkb,field.str,arrayNdx,
-						stmt->value,mergeMode);
+	return SetIndicatorMapField(&info->ledDflt,xkb,field.str,ndx,
+								stmt->value);
     }
-    return SetActionField(xkb,elem.str,field.str,arrayNdx,stmt->value,
-							     &info->act);
+    return SetActionField(xkb,elem.str,field.str,ndx,stmt->value,&info->act);
 }
 
 static int
-HandleInterpBody(def,xkb,interp,mergeMode,info)
+#if NeedFunctionPrototypes
+HandleInterpBody(VarDef *def,XkbDescPtr xkb,SymInterpInfo *si,CompatInfo *info)
+#else
+HandleInterpBody(def,xkb,si,info)
     VarDef *		def;
     XkbDescPtr		xkb;
-    XkbSymInterpretPtr	interp;
-    unsigned		mergeMode;
+    SymInterpInfo *	si;
     CompatInfo *	info;
+#endif
 {
 int		ok= 1;
 ExprResult	tmp,field;
@@ -518,48 +648,49 @@ ExprDef *	arrayNdx;
 
     for (;def!=NULL;def= (VarDef *)def->common.next) {
 	if ((def->name)&&(def->name->type==ExprFieldRef)) {
-	    ok= HandleInterpVar(def,xkb,mergeMode,info);
+	    ok= HandleInterpVar(def,xkb,info);
 	    continue;
 	}
 	ok= ExprResolveLhs(def->name,&tmp,&field,&arrayNdx);
 	if (ok)
-	    ok= SetInterpField(interp,xkb,field.str,arrayNdx,def->value,
-							 mergeMode,info);
+	    ok= SetInterpField(si,xkb,field.str,arrayNdx,def->value,info);
     }
     return ok;
 }
 
 static int
-HandleInterpDef(stmt,xkb,mergeMode,info)
-    InterpDef *		stmt;
+#if NeedFunctionPrototypes
+HandleInterpDef(InterpDef *def,XkbDescPtr xkb,unsigned merge,CompatInfo *info)
+#else
+HandleInterpDef(def,xkb,merge,info)
+    InterpDef *		def;
     XkbDescPtr		xkb;
-    unsigned 		mergeMode;
+    unsigned 		merge;
     CompatInfo *	info;
+#endif
 {
-unsigned		pred,mods,tmp;
-XkbSymInterpretRec	interp;
+unsigned		pred,mods;
+SymInterpInfo		si;
  
-    if (!ResolveStateAndPredicate(stmt->match,&pred,&mods)) {
-	uError("Couldn't determine matching modifiers\n");
-	uAction("Symbol interpretation ignored\n");
+    if (!ResolveStateAndPredicate(def->match,&pred,&mods,info)) {
+	ERROR("Couldn't determine matching modifiers\n");
+	ACTION("Symbol interpretation ignored\n");
 	return False;
     }
-    if (stmt->merge!=MergeDefault) {
-	if (stmt->merge==MergeReplace)
-	     mergeMode= MergeOverride;
-	else mergeMode= stmt->merge;
-    }
+    if (def->merge!=MergeDefault)
+	merge= def->merge;
 
-    interp= info->dflt;
-    interp.sym= stmt->sym;
-    interp.match= (interp.match&(~XkbSI_OpMask))|(pred&XkbSI_OpMask);
-    interp.mods= mods;
-    if (!HandleInterpBody(stmt->def,xkb,&interp,mergeMode,info)) {
+    si= info->dflt;
+    si.defs.merge= merge;
+    si.interp.sym= def->sym;
+    si.interp.match= (si.interp.match&(~XkbSI_OpMask))|(pred&XkbSI_OpMask);
+    si.interp.mods= mods;
+    if (!HandleInterpBody(def->def,xkb,&si,info)) {
 	info->errorCount++;
 	return False;
     }
 
-    if (!AddInterp(info,&interp,mergeMode,True)) {
+    if (!AddInterp(info,&si)) {
 	info->errorCount++;
 	return False;
     }
@@ -567,98 +698,60 @@ XkbSymInterpretRec	interp;
 }
 
 static int
-HandleModCompatDef(def,xkb,mergeMode,info)
-    ModCompatDef *	def;
+#if NeedFunctionPrototypes
+HandleGroupCompatDef(	GroupCompatDef *	def,
+			XkbDescPtr		xkb,
+			unsigned 		merge,
+			CompatInfo *		info)
+#else
+HandleGroupCompatDef(def,xkb,merge,info)
+    GroupCompatDef *	def;
     XkbDescPtr		xkb;
-    unsigned 		mergeMode;
+    unsigned 		merge;
     CompatInfo *	info;
+#endif
 {
-VarDef	*	body;
-ExprResult	elem,field,val;
-ExprDef *	arrayNdx;
-ModCompatInfo	tmp;
+ExprResult	val;
+GroupCompatInfo	tmp;
 
-    if (LookupVModIndex((XPointer)xkb,NullStringToken,def->modifier,TypeInt,
-								     &elem)) {
-	tmp.realMod= False;
-    }
-    else if (LookupModIndex((XPointer)xkb,NullStringToken,def->modifier,
-								TypeInt,&elem)){
-	tmp.realMod= True;
-    }
-    else {
-	uError("Illegal identifier for modifier compatibility map\n");
-	uAction("Map for non-modifier \"%s\" ignored\n",stText(def->modifier));
+    if (def->merge!=MergeDefault)
+	merge= def->merge;
+    if (!XkbIsLegalGroup(def->group-1)) {
+	ERROR1("Keyboard group must be in the range 1..%d\n",XkbNumKbdGroups+1);
+	ACTION1("Compatibility map for illegal group %d ignored\n",def->group);
 	return False;
     }
-    tmp.name= def->modifier;
-    tmp.ndx= elem.uval;
-    tmp.groups= 0;
-    if (tmp.realMod)
-	 tmp.mods= (1<<tmp.ndx);
-    else tmp.mods= 0;
-    for (body=def->def;body!=NULL;body= (VarDef *)body->common.next) {
-	if (!ExprResolveLhs(body->name,&elem,&field,&arrayNdx))
-	    return False; /* internal error already reported */
-	if (elem.str!=NULL) {
-	    uError("Unknown element in a modifier compat map definition\n");
-	    uAction("Illegal element %s ignored\n",elem.str);
-	    continue;
-	}
-	if (field.str==NULL) {
-	    uInternalError("Empty field in modifier compatibility map\n");
-	    continue;
-	}
-	if (uStrCaseCmp(field.str,"groups")==0) {
-	    if (arrayNdx!=NULL) {
-		uError("Index for groups field of a mod compat map\n");
-		uAction("Illegal array index ignored\n");
-	    }
-	    if (!ExprResolveMask(body->value,&elem,SimpleLookup,groupNames)) {
-		uError("Expected a groups mask in map for %s modifier %s\n",
-						(tmp.realMod?"real":"virtual"),
-						stText(def->modifier));
-		uAction("Ignoring illegal value for \"groups\"\n");
-		continue;
-	    }
-	    tmp.groups= elem.uval;
-	}
-	else if ((uStrCaseCmp(field.str,"mods")==0)||
-		 (uStrCaseCmp(field.str,"modifiers")==0)) {
-	    if (arrayNdx!=NULL) {
-		uError("Index for groups field of a mod compat map\n");
-		uAction("Illegal array index ignored\n");
-	    }
-	    if (!ExprResolveModMask(body->value,&elem,NULL,NULL)) {
-		uError("Expected a modifier mask in map for %s modifier %s\n",
-						(tmp.realMod?"real":"virtual"),
-						stText(def->modifier));
-		uAction("Ignoring illegal value for \"modifiers\"\n");
-		continue;
-	    }
-	    tmp.mods= elem.uval;
-	}
-	else {
-	    uError("Illegal field in compatibility map for %s modifier %s\n",
-					(tmp.realMod?"real":"virtual"),
-					stText(def->modifier));
-	    uAction("Values assigned to %s ignored\n",field.str);
-	    continue;
-	}
+    tmp.fileID= info->fileID;
+    tmp.merge= merge;
+    if (!ExprResolveModMask(def->def,&val,LookupVModMask,(XPointer)xkb)) {
+	ERROR("Expected a modifier mask in group compatibility definition\n");
+	ACTION1("Ignoring illegal compatibility map for group %d\n",def->group);
+	return False;
     }
-    return AddModCompat(info,&tmp,mergeMode,True);
+    tmp.real_mods= val.uval&0xff;
+    tmp.vmods= (val.uval>>8)&0xffff;
+    return AddGroupCompat(info,def->group-1,&tmp);
 }
 
 static void
-HandleCompatMapFile(file,xkb,mergeMode,info)
+#if NeedFunctionPrototypes
+HandleCompatMapFile(	XkbFile	*	file,
+			XkbDescPtr 	 xkb,
+			unsigned	 merge,
+			CompatInfo *	info)
+#else
+HandleCompatMapFile(file,xkb,merge,info)
     XkbFile		*file;
     XkbDescPtr	 	 xkb;
-    unsigned		 mergeMode;
+    unsigned		 merge;
     CompatInfo	*info;
+#endif
 {
 ParseCommon	*stmt;
 
-    info->name= file->name;
+    if (merge==MergeDefault)
+	merge= MergeAugment;
+    info->name= uStringDup(file->name);
     stmt= file->defs;
     while (stmt) {
 	switch (stmt->stmtType) {
@@ -668,47 +761,48 @@ ParseCommon	*stmt;
 		    info->errorCount++;
 		break;
 	    case StmtInterpDef:
-		if (!HandleInterpDef((InterpDef *)stmt,xkb,mergeMode,info))
+		if (!HandleInterpDef((InterpDef *)stmt,xkb,merge,info))
 		    info->errorCount++;
 		break;
-	    case StmtModCompatDef:
-		if (!HandleModCompatDef((ModCompatDef*)stmt,xkb,mergeMode,info))
+	    case StmtGroupCompatDef:
+		if (!HandleGroupCompatDef((GroupCompatDef*)stmt,xkb,merge,info))
 		    info->errorCount++;
 		break;
 	    case StmtIndicatorMapDef:
 		{
-		    XkbFileLEDInfo *rtrn;
+		    LEDInfo *rtrn;
 		    rtrn= HandleIndicatorMapDef((IndicatorMapDef *)stmt,xkb,
 						&info->ledDflt,info->leds,
-						mergeMode);
+						merge);
 		    if (rtrn!=NULL)
 		 	 info->leds= rtrn;
 		    else info->errorCount++;
 		}
 		break;
 	    case StmtVarDef:
-		if (!HandleInterpVar((VarDef *)stmt,xkb,mergeMode,info))
+		if (!HandleInterpVar((VarDef *)stmt,xkb,info))
 		    info->errorCount++;
 		break;
 	    case StmtVModDef:
-		if (!HandleVModDef((VModDef *)stmt,mergeMode,&info->vmods))
+		if (!HandleVModDef((VModDef *)stmt,merge,&info->vmods))
 		    info->errorCount++;
 		break;
 	    case StmtKeycodeDef:
-		uError("Interpretation files may not include other types\n");
-		uAction("Ignoring definition of key name\n");
+		ERROR("Interpretation files may not include other types\n");
+		ACTION("Ignoring definition of key name\n");
 		info->errorCount++;
 		break;
 	    default:
-		uInternalError(
-			"Unexpected statement type %d in HandleCompatMapFile\n",
-			stmt->stmtType);
+		WSGO1("Unexpected statement type %d in HandleCompatMapFile\n",
+								stmt->stmtType);
 		break;
 	}
 	stmt= stmt->next;
 	if (info->errorCount>10) {
-	    uError("Too many errors\n");
-	    uAction("Abandoning %s\n",stText(file->name));
+#ifdef NOISY
+	    ERROR("Too many errors\n");
+#endif
+	    ACTION1("Abandoning compatibility map \"%s\"\n",file->topName);
 	    break;
 	}
     }
@@ -716,58 +810,75 @@ ParseCommon	*stmt;
 }
 
 static void
+#if NeedFunctionPrototypes
+CopyInterps(	CompatInfo *	info,
+		XkbCompatMapPtr	compat,
+		Bool		needSymbol,
+		unsigned	pred)
+#else
 CopyInterps(info,compat,needSymbol,pred)
     CompatInfo *	info;
-    XkbCompatPtr	compat;
+    XkbCompatMapPtr	compat;
     Bool		needSymbol;
     unsigned		pred;
+#endif
 {
-register int 		i;
-XkbSymInterpretPtr	interp;
+SymInterpInfo *		si;
 
-    for (i=0,interp=info->interps;i<info->nInterps;i++,interp++) {
-	if (((interp->match&XkbSI_OpMask)!=pred)||
-		(needSymbol&&(interp->sym==NoSymbol))||
-		((!needSymbol)&&(interp->sym!=NoSymbol)))
+    for (si=info->interps;si;si=(SymInterpInfo *)si->defs.next) {
+	if (((si->interp.match&XkbSI_OpMask)!=pred)||
+		(needSymbol&&(si->interp.sym==NoSymbol))||
+		((!needSymbol)&&(si->interp.sym!=NoSymbol)))
 	    continue;
 	if (compat->num_si>=compat->size_si) {
-	    uInternalError("No room to merge symbol interpretations\n");
-	    uAction("Symbol interpretations lost\n");
+	    WSGO("No room to merge symbol interpretations\n");
+	    ACTION("Symbol interpretations lost\n");
 	    return;
 	}
-	compat->sym_interpret[compat->num_si++]= *interp;
+	compat->sym_interpret[compat->num_si++]= si->interp;
     }
     return;
 }
 
 Bool
-CompileCompatMap(file,result,mergeMode)
+#if NeedFunctionPrototypes
+CompileCompatMap(	XkbFile *	file,
+			XkbFileInfo *	result,
+			unsigned	merge,
+			LEDInfo **	unboundLEDs)
+#else
+CompileCompatMap(file,result,merge,unboundLEDs)
     XkbFile *		file;
     XkbFileInfo *	result;
-    unsigned	 	mergeMode;
+    unsigned	 	merge;
+    LEDInfo **		unboundLEDs;
+#endif
 {
-int		errorCount= 0;
-CompatInfo	info;
-XkbDescPtr	xkb;
+int			i;
+CompatInfo		info;
+XkbDescPtr		xkb;
+GroupCompatInfo *	gcm;
 
-    xkb= &result->xkb;
-    InitCompatInfo(result->dpy,&info,xkb);
-    HandleCompatMapFile(file,xkb,mergeMode,&info);
+    xkb= result->xkb;
+    InitCompatInfo(&info,xkb);
+    info.dflt.defs.merge= merge;
+    info.ledDflt.defs.merge= merge;
+    HandleCompatMapFile(file,xkb,merge,&info);
 
     if (info.errorCount==0) {
 	int size;
-	if (!XkbAllocCompatMap(xkb,XkbAllCompatMask,info.nInterps)) {
-	    uInternalError("Couldn't allocate compatibility map\n");
-	    uAction("Exiting\n");
+	if (XkbAllocCompatMap(xkb,XkbAllCompatMask,info.nInterps)!=Success) {
+	    WSGO("Couldn't allocate compatibility map\n");
+	    ACTION("Exiting\n");
 	    return False;
 	}
-	if (info.name!=NullStringToken) {
-	    if (XkbAllocNames(xkb,XkbSemanticsNameMask))
-		xkb->names->semantics= (Atom)info.name;
+	if (info.name!=NULL) {
+	    if (XkbAllocNames(xkb,XkbCompatNameMask,0,0)==Success)
+		xkb->names->compat= XkbInternAtom(xkb->dpy,info.name,False);
 	    else {
-		uInternalError("Couldn't allocate space for semantics name\n");
-		uAction("Name \"%s\" (from %s) NOT assigned\n",scanFile,
-							stText(info.name));
+		WSGO("Couldn't allocate space for compat name\n");
+		ACTION2("Name \"%s\" (from %s) NOT assigned\n",scanFile,
+								info.name);
 	    }
 	}
 	size= info.nInterps*sizeof(XkbSymInterpretRec);
@@ -781,21 +892,15 @@ XkbDescPtr	xkb;
 	    CopyInterps(&info,xkb->compat,False,XkbSI_AnyOf);
 	    CopyInterps(&info,xkb->compat,False,XkbSI_AnyOfOrNone);
 	}
-	if (info.modCompat!=NULL) {
-	    ModCompatInfo *	cm;
-	    for (cm= info.modCompat;cm!=NULL;cm= cm->next) {
-		if (cm->realMod) {
-		    xkb->compat->real_mod_compat[cm->ndx].mods= cm->mods;
-		    xkb->compat->real_mod_compat[cm->ndx].groups= cm->groups;
-		}
-		else {
-		    xkb->compat->vmod_compat[cm->ndx].mods= cm->mods;
-		    xkb->compat->vmod_compat[cm->ndx].groups= cm->groups;
-		}
+	for (i=0,gcm=&info.groupCompat[0];i<XkbNumKbdGroups;i++,gcm++) {
+	    if ((gcm->fileID!=0)||(gcm->real_mods!=0)||(gcm->vmods!=0)) {
+	 	xkb->compat->groups[i].mask= gcm->real_mods;
+	 	xkb->compat->groups[i].real_mods= gcm->real_mods;
+	 	xkb->compat->groups[i].vmods= gcm->vmods;
 	    }
 	}
 	if (info.leds!=NULL) {
-	    if (!CopyIndicatorMapDefs(result,info.leds))
+	    if (!CopyIndicatorMapDefs(result,info.leds,unboundLEDs))
 		info.errorCount++;
 	    info.leds= NULL;
 	}
@@ -803,6 +908,6 @@ XkbDescPtr	xkb;
 	return True;
     }
     if (info.interps!=NULL)
-	free(info.interps);
+	uFree(info.interps);
     return False;
 }
