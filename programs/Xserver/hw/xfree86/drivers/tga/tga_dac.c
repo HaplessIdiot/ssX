@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_dac.c,v 1.11 2000/10/20 12:57:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_dac.c,v 1.12 2001/02/15 11:03:58 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -488,7 +488,7 @@ struct monitor_data tga_crystal_table[] = {
 0x8                             /* REF: N=0x8 */
 },
 #endif /* ALLOW_LT_72_HZ */
-#ifdef /* ALLOW_GT_72_HZ */
+#ifdef ALLOW_GT_72_HZ
 {
 /*  Option D Monitor Info 135 Mhz                  */
 1024,                        /* rows                         */
