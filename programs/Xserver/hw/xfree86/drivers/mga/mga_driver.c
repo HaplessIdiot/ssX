@@ -1254,15 +1254,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86ReturnOptValBool(MGAOptions, OPTION_MGA_SDRAM, FALSE)) {
 	pMga->HasSDRAM = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Has SDRAM\n");
-    } else if (pMga->Primary && (pMga->Chipset != PCI_CHIP_MGA2064) && 
-		(pMga->Chipset != PCI_CHIP_MGA2164) &&
-		(pMga->Chipset != PCI_CHIP_MGA2164_AGP)) {	
-	if(!(pciReadLong(pMga->PciTag, PCI_OPTION_REG) & (1 << 14))) {
-	    pMga->HasSDRAM = TRUE;
-	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected SDRAM\n");
-	}
     }
-
     if (xf86GetOptValFreq(MGAOptions, OPTION_SET_MCLK, OPTUNITS_MHZ, &real)) {
 	pMga->MemClk = (int)(real * 1000.0);
     }
@@ -1387,12 +1379,21 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
 
-    if ((pMga->PciInfo->subsysCard == PCI_CARD_MILL_G200_SD) ||
+    if(pMga->HasSDRAM) { /* don't bother checking */ }
+    else if ((pMga->PciInfo->subsysCard == PCI_CARD_MILL_G200_SD) ||
 	(pMga->PciInfo->subsysCard == PCI_CARD_MARV_G200_SD) ||
 	(pMga->PciInfo->subsysCard == PCI_CARD_MYST_G200_SD) ||
 	(pMga->PciInfo->subsysCard == PCI_CARD_PROD_G100_SD)) {
         pMga->HasSDRAM = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Has SDRAM\n");
+    } 
+    else if (pMga->Primary && (pMga->Chipset != PCI_CHIP_MGA2064) && 
+		(pMga->Chipset != PCI_CHIP_MGA2164) &&
+		(pMga->Chipset != PCI_CHIP_MGA2164_AGP)) {	
+	if(!(pciReadLong(pMga->PciTag, PCI_OPTION_REG) & (1 << 14))) {
+	    pMga->HasSDRAM = TRUE;
+	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Has SDRAM\n");
+	}
     }
 
     switch (pMga->Chipset) {
