@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.39 2001/10/18 17:42:34 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.40 2001/11/03 21:24:19 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -134,6 +134,7 @@ typedef enum {
     OPTION_DEPTH_MOVE,
 #endif
     OPTION_CRT_SCREEN,
+    OPTION_PANEL_SIZE,
     OPTION_FBDEV
 } RADEONOpts;
 
@@ -152,8 +153,8 @@ const OptionInfoRec RADEONOptions[] = {
     { OPTION_BUFFER_SIZE,  "BufferSize",       OPTV_INTEGER, {0}, FALSE },
     { OPTION_DEPTH_MOVE,   "EnableDepthMoves", OPTV_BOOLEAN, {0}, FALSE },
 #endif
-    { OPTION_CRT_SCREEN,   "crt_screen",           OPTV_BOOLEAN, {0},
-FALSE},
+    { OPTION_CRT_SCREEN,   "crt_screen",       OPTV_BOOLEAN, {0}, FALSE},
+    { OPTION_PANEL_SIZE,   "PanelSize",        OPTV_ANYSTR,  {0}, FALSE },
     { OPTION_FBDEV,        "UseFBDev",         OPTV_BOOLEAN, {0}, FALSE },
     { -1,                  NULL,               OPTV_NONE,    {0}, FALSE }
 };
@@ -859,55 +860,36 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
         RADEONUnmapMMIO(pScrn);
 
         /* Detect connector type from BIOS, used for
-           I2C/DDC qeurying EDID*/
+           I2C/DDC qeurying EDID, Only available for VE or newer cards*/
         tmp = RADEON_BIOS16(info->FPBIOSstart + 0x50);
-        for(i=1; i<4; i++)
-        {
-            if(!RADEON_BIOS8(tmp + i*2) && i>1) break;
+        if(tmp)
+	    {
+            for(i=1; i<4; i++) {
+                if(!RADEON_BIOS8(tmp + i*2) && i>1) break;
            
-            /*Note: our Secondary port (CRT port) 
-                    actually uses primary DAC*/
-            if(RADEON_BIOS16(tmp + i*2) & 0x01)
-            {
-                if(!info->IsSecondary)
-                {
-                    info->DDCType = 
-                       (RADEON_BIOS16(tmp + i*2) & 0x0f00) >> 8;
-                    break;
+                /*Note: our Secondary port (CRT port) 
+                  actually uses primary DAC*/
+                if(RADEON_BIOS16(tmp + i*2) & 0x01) {
+                    if(!info->IsSecondary) {
+                        info->DDCType = 
+                            (RADEON_BIOS16(tmp + i*2) & 0x0f00) >> 8;
+                        break;
+                    }
+                } else {/*Primary DAC*/
+            
+                    if(info->IsSecondary || BypassSecondary || !info->HasCRTC2) {
+                        info->DDCType = 
+                            (RADEON_BIOS16(tmp + i*2) & 0x0f00) >> 8;
+                        break;
+                    }
                 }
             }
-            else /*Primary DAC*/
-            {
-                if(info->IsSecondary || !info->HasCRTC2
-                   || BypassSecondary)
-                {
-                    info->DDCType = 
-                       (RADEON_BIOS16(tmp + i*2) & 0x0f00) >> 8;
-                    break;
-                }
-            }
-        }    
-
-        /* Note: One card can have multiple output formats */
-        /* Note: TV support has not been implemented yet */
-
-        /*****
-        if(RADEON_BIOS16(info->FPBIOSstart + 0x32))
-	            xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-                   "This card supports TV output\n");
-
-        if(RADEON_BIOS16(info->FPBIOSstart + 0x34))
-        {
-	           xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-               "This card supports DFP output\n");
+        } else {
+            /* orignal radeon cards, set it to DDC_VGA, 
+               this will not work with AIW, it should be DDC_DVI,
+               let it fall back to VBE calls for AIW */
+            info->DDCType = DDC_VGA;
         }
-
-        if(RADEON_BIOS16(info->FPBIOSstart + 0x40))
-        {
-	          xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-               "This card supports LCD output\n");
-        }
-	******/
     }
 
     return TRUE;
@@ -1964,8 +1946,9 @@ RADEONProbeDDC(ScrnInfoPtr pScrn, int indx)
   trouble...*/
 static Bool RadeonGetDFPInfo(ScrnInfoPtr pScrn)
 {
-  RADEONInfoPtr info  = RADEONPTR(pScrn);
+    RADEONInfoPtr info  = RADEONPTR(pScrn);
 
+    char *s;
     unsigned long r;
     unsigned short a, b;	
     unsigned char* RADEONMMIO;
@@ -2005,32 +1988,40 @@ static Bool RadeonGetDFPInfo(ScrnInfoPtr pScrn)
     RADEONMMIO = info->MMIO;
 
     r = INREG(RADEON_FP_VERT_STRETCH);
-    r &= 0x00fff000;
-    info->PanelYRes = (unsigned short)(r >> 0x0c) + 1;
-
-    switch(info->PanelYRes)
-    {
-        case 480: info->PanelXRes = 640;
-            break;
-        case 600: info->PanelXRes = 800;
-            break;
-        case 768: info->PanelXRes = 1024;
-            break;
-        case 1024: info->PanelXRes = 1280;
-            break;
-        case 1050: info->PanelXRes = 1400;
-            break;
-        case 1200: info->PanelXRes = 1600;
-            break;
-        default:
-            xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-                "Failed to detect the panel size.\n");
-            return FALSE;
-
+    if(r & 0x08000000) {
+        r &= 0x00fff000;
+        info->PanelYRes = (unsigned short)(r >> 0x0c) + 1;
+    } else {
+        info->PanelYRes = (unsigned short)(((float)(INREG(RADEON_FP_CRTC_V_TOTAL_DISP >> 16) + 1.0) 
+                           * 4096.0 / (float) (r & 0x00000fff)) + 0.5);
     }
 
+    r = INREG(RADEON_FP_HORZ_STRETCH);
+    if(r & 0x08000000) {
+        r &= 0x01ff0000;
+        info->PanelXRes = (unsigned short)(r >> 0x10) + 1;
+		info->PanelXRes *= 8;
+    } else {
+        info->PanelXRes = (unsigned short)(((float)(INREG(RADEON_FP_CRTC_H_TOTAL_DISP >> 16) + 1.0) * 8.0
+                           * 4096.0 / (float) (r & 0x0000ffff)) + 0.5);
+    }
+    
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-        "Detected panel size: %dx%d\n", info->PanelXRes, info->PanelYRes);
+        "Detected panel size from BIOS: %dx%d\n", info->PanelXRes, info->PanelYRes);
+
+    if ((s = xf86GetOptValString(info->Options, OPTION_PANEL_SIZE))) {
+        if (sscanf(s, "%dx%d", &info->PanelXRes, &info->PanelYRes) == 2) {
+            xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+                "Panel size: %dx%d defined in config file is used\n", 
+                info->PanelXRes, info->PanelYRes);
+        }
+	}
+
+    if (info->PanelXRes == 0 || info->PanelYRes == 0) {
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                "Failed to detect the panel size.\n");
+		return FALSE;
+    }
 
     r = INREG(RADEON_FP_CRTC_H_TOTAL_DISP);
     a = (r & RADEON_FP_CRTC_H_TOTAL_MASK) + 4;
@@ -3522,7 +3513,7 @@ static void RADEONRestore(ScrnInfoPtr pScrn)
 
     /* M6 card has trouble restoring text mode for its CRT.
        Needs this workaround.*/
-    if(xf86IsEntityShared(pScrn->entityList[0])) /* && info->IsM6)*/
+    if(xf86IsEntityShared(pScrn->entityList[0]) && info->IsM6)
         OUTREG(RADEON_DAC_CNTL2, restore->dac2_cntl);
 
     RADEONRestoreMode(pScrn, restore);

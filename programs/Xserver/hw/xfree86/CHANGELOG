@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 468. Fix SIGFPE in LastLinePel for ATI Radeon, console restoring on dual CRT
+      head on VE, improved panel and ddc line detection (ATI Technologies).
  467. Fix bug that caused hardware cursors to disappear on mode switches when
       silken mouse is disabled (Marc La France).
  466. Preliminary changes to keyboard handling for SPARC SunOS
@@ -14137,4 +14139,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2031 2001/11/07 22:43:25 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2032 2001/11/08 04:15:26 tsi Exp $
