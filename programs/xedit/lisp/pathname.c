@@ -93,7 +93,7 @@ glob_match(char *cmp1, char *cmp2)
 			++sav2;
 
 		    for (; *cmp2;) {
-			if (settmp)/* repeated letters: /*?o? => /boot, /root */
+			if (settmp) /* repeated letters: *?o? => boot, root */
 			    tmp = cmp2;
 			else
 			    settmp = 1;
@@ -176,6 +176,8 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
     all = ARGUMENT(1);
     pathname = ARGUMENT(0);
     result = NIL;
+
+    cons = NIL;		/* fix gcc warning */
 
     if (if_cannot_read != NIL) {
 	if (!KEYWORD_P(if_cannot_read) ||

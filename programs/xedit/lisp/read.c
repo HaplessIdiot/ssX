@@ -468,7 +468,7 @@ LispReadObject(LispMac *mac)
 	    back = 0;
 	else if (ch == quote)
 	    break;
-	else if (!quote) {
+	else if (!quote && !esc) {
 	    if (islower(ch))
 		ch = toupper(ch);
 	    else if (isspace(ch))
@@ -1052,7 +1052,7 @@ LispReadArray(LispMac *mac, long dimensions)
 	    long length;
 	    LispObj *obj;
 
-	    for (obj = data; length < count; length++) {
+	    for (obj = data, length = 0; length < count; length++) {
 		if (!CONS_P(obj))
 		    LispDestroy(mac, "READ: bad array for given dimension");
 		obj = CAR(obj);
@@ -1095,8 +1095,22 @@ LispReadFeature(LispMac *mac, int with)
     status = LispEvalFeature(mac, feature);
 
     if (with) {
-	if (status == T)
-	    return (LispRead(mac));
+	if (status == T) {
+	    LispObj *result;
+	    int protect = mac->protect.length;
+
+	    if (mac->protect.length + 1 >= mac->protect.space)
+		LispMoreProtects(mac);
+	    result = LispRead(mac);
+	    mac->protect.objects[mac->protect.length++] = result;
+
+	    mac->discard = 1;
+	    LispRead(mac);
+	    mac->discard = 0;
+	    mac->protect.length = protect;
+
+	    return (result);
+	}
 
 	/* need to use the field discard because the following expression
 	 * may be #.FORM or #,FORM or any other form that may generate

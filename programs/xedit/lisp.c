@@ -130,7 +130,6 @@ XeditDoLispEval(Widget w, XEvent *event, String *params, Cardinal *num_params)
     Widget src;
     XawTextBlock block;
     XawTextPosition position, end;
-    XtInputMask mask;
     int gotchars = 0;
 
     XeditLispInitialize();

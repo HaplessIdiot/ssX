@@ -738,10 +738,11 @@ math_compare(LispMac *mac, LispBuiltin *builtin, LispObj *op1, LispObj *op2)
 		}
 		break;
 	    default:
-		/* never should reach here */
-		return (-1);
+		break;
 	}
     }
+    /* never should reach here */
+    return (-1);
 }
 
 static INLINE void
@@ -1814,7 +1815,7 @@ sqrt_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 static void
 sqrt_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 {
-    LispObj *imagpart;
+    LispObj *imagpart = NIL;
     double value, ratio;
     int cmp;
 
@@ -1886,7 +1887,7 @@ sqrt_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
     int cmp;
     double value;
     mpi *bigi;
-    LispObj *imagpart;
+    LispObj *imagpart = NIL;
 
     cmp = mpi_cmpi(XBI(accum), 0);
     value = mpi_getd(XBI(accum));
@@ -1954,7 +1955,7 @@ sqrt_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 {
     int cmp;
     double value;
-    LispObj *imagpart;
+    LispObj *imagpart = NIL;
 
     cmp = mpi_cmpi(XBRN(accum), 0);
     value = mpr_getd(XBR(accum));

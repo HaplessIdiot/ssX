@@ -57,6 +57,8 @@ LispGet(LispMac *mac)
     int ch;
     LispUngetInfo *unget = mac->unget[mac->iunget];
 
+    ch = EOF;	/* fix gcc warning */
+
     if (unget->offset)
 	ch = unget->buffer[--unget->offset];
     else if (SINPUT->data.stream.readable) {
@@ -426,6 +428,8 @@ LispFwrite(LispFile *file, void *data, int size)
 	int length, bytes;
 	unsigned char *buffer = (unsigned char*)data;
 
+	length = 0;	/* fix gcc warning */
+
 	if (size + file->length > pagesize) {
 	    /* fill remaining space in buffer and flush */
 	    bytes = pagesize - file->length;
@@ -494,7 +498,7 @@ LispFprintf(LispFile *file, char *fmt, ...)
 
 		    return (0);
 		}
-		ptr = tmp;
+		ptr = (unsigned char*)tmp;
 		va_start(ap, fmt);
 		n = vsnprintf((char*)ptr, size, fmt, ap);
 		if (n >= 0 && n < size)

@@ -161,6 +161,8 @@ Lisp_XeditMakeStruct(LispMac *mac, LispBuiltin *builtin)
     init = ARGUMENT(1);
     struc = ARGUMENT(0);
 
+    field = cons = NIL;		/* fix gcc warning */
+
     if (!SYMBOL_P(struc) ||
 	(atom = struc->data.atom)->property.defstruct == 0 ||
 	 atom->property.structure.function != STRUCT_CONSTRUCTOR)
@@ -331,7 +333,7 @@ Lisp_XeditStructType(LispMac *mac, LispBuiltin *builtin)
 {
     LispAtom *atom = NULL;
 
-    LispObj *definition, *struc, *name, *list;
+    LispObj *definition, *struc, *name;
 
     struc = ARGUMENT(1);
     name = ARGUMENT(0);

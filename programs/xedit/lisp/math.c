@@ -668,6 +668,8 @@ Lisp_Denominator(LispMac *mac, LispBuiltin *builtin)
 	default:
 	    LispDestroy(mac, "%s: %s is not a rational number",
 			STRFUN(builtin), STROBJ(rational));
+	    /*NOTREACHED*/
+	    result = NIL;
     }
 
     return (result);
@@ -693,6 +695,8 @@ Lisp_Evenp(LispMac *mac, LispBuiltin *builtin)
 	default:
 	    LispDestroy(mac, "%s: %s is not an integer",
 			STRFUN(builtin), STROBJ(integer));
+	    /*NOTREACHED*/
+	    result = NIL;
     }
 
     return (result);
@@ -930,7 +934,8 @@ Lisp_Isqrt(LispMac *mac, LispBuiltin *builtin)
 	default:
 	    LispDestroy(mac, "%s: %s is not a natural number",
 			STRFUN(builtin), STROBJ(natural));
-	    break;
+	    /*NOTREACHED*/
+	    result = NIL;
     }
 
     return (result);
@@ -989,7 +994,7 @@ Lisp_Logand(LispMac *mac, LispBuiltin *builtin)
  */
 {
     LispObj *integer, *integers, *operand;
-    mpi *iop = NULL, *bigi;
+    mpi *iop = NULL, *bigi = NULL;
 
     integers = ARGUMENT(0);
 
@@ -1059,7 +1064,7 @@ Lisp_Logeqv(LispMac *mac, LispBuiltin *builtin)
  */
 {
     LispObj *integer, *integers, *operand;
-    mpi *iop = NULL, *bigi;
+    mpi *iop = NULL, *bigi = NULL;
 
     integers = ARGUMENT(0);
 
@@ -1134,7 +1139,7 @@ Lisp_Logior(LispMac *mac, LispBuiltin *builtin)
  */
 {
     LispObj *integer, *integers, *operand;
-    mpi *iop = NULL, *bigi;
+    mpi *iop = NULL, *bigi = NULL;
 
     integers = ARGUMENT(0);
 
@@ -1233,7 +1238,7 @@ Lisp_Logxor(LispMac *mac, LispBuiltin *builtin)
  */
 {
     LispObj *integer, *integers, *operand;
-    mpi *iop = NULL, *bigi;
+    mpi *iop = NULL, *bigi = NULL;
 
     integers = ARGUMENT(0);
 
@@ -1315,6 +1320,8 @@ Lisp_Minusp(LispMac *mac, LispBuiltin *builtin)
 	default:
 	    LispDestroy(mac, "%s: %s is not a real number",
 			STRFUN(builtin), STROBJ(number));
+	    /*NOTREACHED*/
+	    result = NIL;
     }
 
     return (result);
@@ -1368,6 +1375,8 @@ Lisp_Numerator(LispMac *mac, LispBuiltin *builtin)
 	default:
 	    LispDestroy(mac, "%s: %s is not a rational number",
 			STRFUN(builtin), STROBJ(rational));
+	    /*NOTREACHED*/
+	    result = NIL;
     }
 
     return (result);
@@ -1393,6 +1402,8 @@ Lisp_Oddp(LispMac *mac, LispBuiltin *builtin)
 	default:
 	    LispDestroy(mac, "%s: %s is not an integer",
 			STRFUN(builtin), STROBJ(integer));
+	    /*NOTREACHED*/
+	    result = NIL;
     }
 
     return (result);
@@ -1419,6 +1430,8 @@ Lisp_Plusp(LispMac *mac, LispBuiltin *builtin)
 	default:
 	    LispDestroy(mac, "%s: %s is not a real number",
 			STRFUN(builtin), STROBJ(number));
+	    /*NOTREACHED*/
+	    result = NIL;
     }
 
     return (result);
@@ -1533,6 +1546,8 @@ Lisp_Zerop(LispMac *mac, LispBuiltin *builtin)
 	default:
 	    LispDestroy(mac, "%s: %s is not a number",
 			STRFUN(builtin), STROBJ(number));
+	    /*NOTREACHED*/
+	    result = NIL;
     }
 
     return (result);
