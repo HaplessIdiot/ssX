@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.1 1999/11/19 13:54:43 hohndel Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -223,13 +223,15 @@ static void R128SetupForSolidFill(ScrnInfoPtr pScrn,
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
-    R128WaitForFifo(pScrn, 3);
+    R128WaitForFifo(pScrn, 4);
     OUTREG(R128_DP_GUI_MASTER_CNTL, (info->dp_gui_master_cntl
 				     | R128_GMC_BRUSH_SOLID_COLOR
 				     | R128_GMC_SRC_DATATYPE_COLOR
 				     | R128_ROP[rop].pattern));
     OUTREG(R128_DP_BRUSH_FRGD_CLR,  color);
     OUTREG(R128_DP_WRITE_MASK,      planemask);
+    OUTREG(R128_DP_CNTL,            (R128_DST_X_LEFT_TO_RIGHT
+				     | R128_DST_Y_TOP_TO_BOTTOM));
 }
 
 /* Subsequent XAA SolidFillRect.
@@ -254,13 +256,15 @@ static void R128SetupForSolidLine(ScrnInfoPtr pScrn,
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
-    R128WaitForFifo(pScrn, 3);
+    R128WaitForFifo(pScrn, 4);
     OUTREG(R128_DP_GUI_MASTER_CNTL, (info->dp_gui_master_cntl
 				     | R128_GMC_BRUSH_SOLID_COLOR
 				     | R128_GMC_SRC_DATATYPE_COLOR
 				     | R128_ROP[rop].pattern));
     OUTREG(R128_DP_BRUSH_FRGD_CLR,  color);
     OUTREG(R128_DP_WRITE_MASK,      planemask);
+    OUTREG(R128_DP_CNTL,            (R128_DST_X_LEFT_TO_RIGHT
+				     | R128_DST_Y_TOP_TO_BOTTOM));
 }
 
 
@@ -996,6 +1000,7 @@ Bool R128AccelInit(ScreenPtr pScreen)
 					   | BIT_ORDER_IN_BYTE_LSBFIRST);
 
 				/* Indirect CPU-To-Screen Color Expand */
+    a->ScanlineCPUToScreenColorExpandFillFlags = 0;
     a->NumScanlineColorExpandBuffers   = 1;
     a->ScanlineColorExpandBuffers      = info->scratch_buffer;
 #if R128_IMAGEWRITE

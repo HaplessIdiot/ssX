@@ -1,4 +1,9 @@
 XFree86 3.9.17b (23 January 2000)
+3570. Initialize DST_X_DIR and DST_Y_DIR for solid filled rects and for
+      horizontal and vertical lines to fix line drawing problems, and
+      initialize ScanlineCPUToScreenColorExpandFillFlags to fix font
+      corruption problems in r128 driver (Kevin Martin and Rik Faith).
+3569. Fix BIOS reading problem with r128 driver (Kevin Martin).
 3568. Fix imake failure in Mesa Imakefile (Kevin Martin).
 3567. Change trident driver to use fb instead of cfb and make DDC1 info
       available to the primary card (Alan Hourihane).
@@ -9308,4 +9313,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.943 2000/01/22 19:51:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.944 2000/01/22 21:24:02 martin Exp $
