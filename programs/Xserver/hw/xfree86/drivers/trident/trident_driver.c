@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.169 2002/05/25 17:35:16 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.170 2002/05/25 18:39:16 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1971,7 +1971,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
 	/* Due to only 12bits of cursor location, if user has overriden
 	 * disable the cursor automatically */
-	if (pTrident->Chipset >= CYBER9397 && pTrident->Chipset < BLADE3D)
+	if (pTrident->Chipset >= CYBER9397 && pTrident->Chipset < CYBERBLADEE4)
 		if (pTrident->pEnt->device->videoRam > 4096)
 			pTrident->HWCursor = FALSE;
     } else {
@@ -2003,7 +2003,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	     * affected. XXX needs furthur investigation !
 	     */
 	    if (pTrident->HWCursor && (pTrident->Chipset != CYBER9397DVD) &&
-	      			    (pTrident->Chipset < BLADE3D)) {
+	      			    (pTrident->Chipset < CYBERBLADEE4)) {
 	    	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
 		       "Found 8MB board, using 4MB\n");
 	    	pScrn->videoRam = 4096;
