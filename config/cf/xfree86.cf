@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.145 1997/03/11 11:08:17 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.146 1997/03/11 13:04:51 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -63,16 +63,16 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #define XF86SVGAServer          YES
 #endif
 #ifndef XF86VGA16Server
-#define XF86VGA16Server         YES
+#define XF86VGA16Server         NO
 #endif
 #ifndef XF86VGA16DualServer
-#define XF86VGA16DualServer	YES
+#define XF86VGA16DualServer	NO
 #endif
 #ifndef XF86MonoServer
-#define XF86MonoServer          YES
+#define XF86MonoServer          NO
 #endif
 #ifndef XF86MonoDualServer
-#define XF86MonoDualServer	YES
+#define XF86MonoDualServer	NO
 #endif
 #ifndef XF86S3Server
 #define XF86S3Server            YES
