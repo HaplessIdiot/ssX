@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/miext/shadow/shrotpack.h,v 1.1 2000/09/08 21:46:46 keithp Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -35,6 +35,46 @@
 #include    "shadow.h"
 #include    "fb.h"
 
+#define NONE		    0
+#define CLOCKWISE	    1
+#define COUNTERCLOCKWISE    2
+#define UPSIDEDOWN	    3
+
+#define ROTATE	CLOCKWISE
+
+#if ROTATE == CLOCKWISE
+#define FIRSTSHA(x,y,w,h)   (((y) + (h) - 1) * shaStride + (x))
+#define SCRLEFT(x,y,w,h)    (pScreen->height - ((y) + (h)))
+#define SCRWIDTH(x,y,w,h)   (h)
+#define STEPDOWN(x,y,w,h)   ((w)--)
+#define SCRY(x,y,w,h)	    (x)
+#define SHASTEPX(stride)    -(stride)
+#define SHASTEPY(stride)    1
+#define NEXTY(x,y,w,h)	    ((x)++)
+#endif
+
+#if ROTATE == COUNTERCLOCKWISE
+#define FIRSTSHA(x,y,w,h)   ((y) * shaStride + (x))
+#define SCRLEFT(x,y,w,h)    (y)
+#define SCRWIDTH(x,y,w,h)   (h)
+#define STEPDOWN(x,y,w,h)   ((w)--)
+#define SCRY(x,y,w,h)	    (pScreen->width - (x) - 1)
+#define SHASTEPX(stride)    (stride)
+#define SHASTEPY(stride)    -1
+#define NEXTY(x,y,w,h)	    ((x)--)
+#endif
+
+#if ROTATE == UPSIDEDOWN
+#define FIRSTSHA(x,y,w,h)   (((y) + (h) - 1) * shaStride + (x) + (w) - 1)
+#define SCRLEFT(x,y,w,h)    (pScreen->width - ((x) + (w)))
+#define SCRWIDTH(x,y,w,h)   (w)
+#define STEPDOWN(x,y,w,h)   ((h)--)
+#define SCRY(x,y,w,h)	    (pScreen->height - (y) - 1)
+#define SHASTEPX(stride)    (-1)
+#define SHASTEPY(stride)    -(stride)
+#define NEXTY(x,y,w,h)	    ((y)--)
+#endif
+
 void
 FUNC (ScreenPtr pScreen,
       PixmapPtr pShadow,
@@ -64,14 +104,15 @@ FUNC (ScreenPtr pScreen,
 	w = (pbox->x2 - pbox->x1);
 	h = pbox->y2 - pbox->y1;
 
-	scrLine = y;
-	shaLine = shaBase + y * shaStride + x;
+
+	scrLine = SCRLEFT(x,y,w,h);
+	shaLine = shaBase + FIRSTSHA(x,y,w,h);
 				   
-	while (w--)
+	while (STEPDOWN(x,y,w,h))
 	{
 	    winSize = 0;
 	    scrBase = 0;
-	    width = h;
+	    width = SCRWIDTH(x,y,w,h);
 	    scr = scrLine;
 	    sha = shaLine;
 	    while (width) {
@@ -80,7 +121,7 @@ FUNC (ScreenPtr pScreen,
 		if (i <= 0 || scr < scrBase)
 		{
 		    winBase = (Data *) (*pScrPriv->window) (pScreen,
-							    pScreen->width - x - 1,
+							    SCRY(x,y,w,h),
 							    scr * sizeof (Data),
 							    SHADOW_WINDOW_WRITE,
 							    &winSize);
@@ -98,11 +139,11 @@ FUNC (ScreenPtr pScreen,
 		while (i--)
 		{
 		    *win++ = *sha;
-		    sha += shaStride;
+		    sha += SHASTEPX(shaStride);
 		}
 	    }
-	    shaLine++;
-	    x++;
+	    shaLine += SHASTEPY(shaStride);
+	    NEXTY(x,y,w,h);
 	}
 	pbox++;
     }
