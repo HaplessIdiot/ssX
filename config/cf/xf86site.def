@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.139 1999/04/11 13:10:25 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.140 1999/05/03 05:58:42 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -377,7 +377,8 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.139 1999/04/11 13:10:25 dawes Exp 
 /*
  * Select the XInput devices you want by uncommenting this.
  *
-#define XInputDrivers dial elographics magellan microtouch spaceorb wacom
+#define XInputDrivers dynapro elo2300 elographics magellan microtouch \
+	mutouch spaceorb wacom
  */
 
 /*

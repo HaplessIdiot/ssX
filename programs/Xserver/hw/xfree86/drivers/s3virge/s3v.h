@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.11 1999/03/29 12:17:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.12 1999/04/04 08:46:17 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -138,7 +138,7 @@ typedef struct {
    unsigned char s3DacRegs[0x101];
    unsigned char CR31, CR33, CR34, CR36, CR3A, CR3B, CR3C;
    unsigned char CR40, CR42, CR43, CR45;
-   unsigned char CR51, CR53, CR54, CR58, CR5D, CR5E;
+   unsigned char CR51, CR53, CR54, CR55, CR58, CR5D, CR5E;
    unsigned char CR63, CR65, CR66, CR67, CR68, CR69, CR6D; /* Video attrib. */
    unsigned char CR86;
    unsigned char CR90;

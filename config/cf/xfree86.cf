@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.226 1999/05/30 07:18:18 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.227 1999/06/12 14:15:24 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -18,14 +18,22 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #define XConfigDir		$(LIBDIR)
 #endif
 
+#ifndef NewInput
+#define NewInput YES
+#endif
+
 /*
  * Default settings for which X Servers to build.
  */
 
 /* XInput drivers */
 #ifndef XInputDrivers
-#define XInputDrivers		elo2300 elographics magellan microtouch \
-				mutouch spaceorb wacom
+#if NewInput
+#define XInputDrivers		dynapro wacom
+#else
+#define XInputDrivers		dynapro elo2300 elographics magellan \
+				microtouch mutouch spaceorb wacom
+#endif
 #endif
 
 /* OS.cf files may set this for OS-specific drivers */
@@ -693,10 +701,6 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #else
 #define MakeHasPosixVariableSubstitutions	YES
 #endif
-#endif
-
-#ifndef NewInput
-#define NewInput YES
 #endif
 
 /* A temporary addition for testing the new input device code. */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.25 1999/05/30 14:41:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.26 1999/06/12 07:18:55 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -209,7 +209,7 @@ static OptionInfoRec S3VOptions[] =
    { OPTION_LATE_RAS_PRECHARGE, "late_ras_precharge", OPTV_BOOLEAN, {0}, FALSE },
    { OPTION_LCD_CENTER, 	"lcd_center", 	OPTV_BOOLEAN, 	{0}, FALSE },
    { OPTION_LCDCLOCK, 		"set_lcdclk", 	OPTV_INTEGER, 	{0}, FALSE },
-   { OPTION_MCLK, 		"set_mclk", 	OPTV_INTEGER, 	{0}, FALSE },
+   { OPTION_MCLK, 		"set_mclk", 	OPTV_FREQ, 	{0}, FALSE },
    { OPTION_SHOWCACHE,		"show_cache",   OPTV_BOOLEAN,	{0}, FALSE },
    { OPTION_HWCURSOR,		"HWCursor",     OPTV_BOOLEAN,	{0}, FALSE },
    { OPTION_SWCURSOR,		"SWCursor",     OPTV_BOOLEAN,	{0}, FALSE },
@@ -1433,6 +1433,8 @@ S3VSave (ScrnInfoPtr pScrn)
    save->CR53 = VGAIN8(vgaCRReg);
    VGAOUT8(vgaCRIndex, 0x54);             
    save->CR54 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x55);
+   save->CR55 = VGAIN8(vgaCRReg);
    VGAOUT8(vgaCRIndex, 0x58);             
    save->CR58 = VGAIN8(vgaCRReg);
    VGAOUT8(vgaCRIndex, 0x63);
@@ -1646,6 +1648,8 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    VGAOUT8(vgaCRReg, restore->CR31);
    VGAOUT8(vgaCRIndex, 0x58);             
    VGAOUT8(vgaCRReg, restore->CR58);
+   VGAOUT8(vgaCRIndex, 0x55);
+   VGAOUT8(vgaCRReg, restore->CR55);
 
    /* Extended mode timings registers */  
    VGAOUT8(vgaCRIndex, 0x53);             
@@ -2314,7 +2318,11 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
       new->CR3A = (tmp & 0x7f) | 0x15; /* ENH 256, PCI burst */
    else 
       new->CR3A = tmp | 0x95;      /* ENH 256, no PCI burst! */
-	   
+
+   VGAOUT8(vgaCRIndex, 0x55);
+   new->CR55 = VGAIN8(vgaCRReg);
+   if (ps3v->hwcursor) 
+     new->CR55 |= 0x10;  /* Enables X11 hw cursor mode */
    new->CR53 = 0x08;     /* Enables MMIO */
    new->CR31 = 0x8c;     /* Dis. 64k window, en. ENH maps */    
 
@@ -2356,10 +2364,8 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    new->SR18 = 0x00;
    new->CR43 = 0x00;
    new->CR45 = 0x00;
-   /*new->CR65 = 0x00;*/
    				/* Enable MMIO to RAMDAC registers */
-   new->CR65 = 0x04;
-   /*new->CR65 = 0x02;  3.9Nm */
+   new->CR65 = 0x00;		/* CR65_2 must be zero, doc seems to be wrong */
    new->CR54 = 0x00;
    
    VGAOUT8(vgaCRIndex, 0x40);

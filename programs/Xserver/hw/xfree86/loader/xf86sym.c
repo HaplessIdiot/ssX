@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.95 1999/06/05 15:55:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.96 1999/06/12 07:19:03 dawes Exp $ */
 
 /*
  *
@@ -300,7 +300,10 @@ LOOKUP xfree86LookupTab[] = {
 
    /* xf86Helper.c */
    SYMFUNC(xf86AddDriver)
+   SYMFUNC(xf86AddInputDriver)
    SYMFUNC(xf86DeleteDriver)
+   SYMFUNC(xf86DeleteInput)
+   SYMFUNC(xf86AllocateInput)
    SYMFUNC(xf86AllocateScreen)
    SYMFUNC(xf86DeleteScreen)
    SYMFUNC(xf86AllocateScrnInfoPrivateIndex)
@@ -379,6 +382,7 @@ LOOKUP xfree86LookupTab[] = {
 
    /* xf86Option.c */
    SYMFUNC(xf86CollectOptions)
+   SYMFUNC(xf86CollectInputOptions)
    /* Merging of XInput stuff	*/
    SYMFUNC(xf86AddNewOption)
    SYMFUNC(xf86SetBoolOption)
@@ -463,6 +467,8 @@ LOOKUP xfree86LookupTab[] = {
    /* Misc */
    SYMFUNC(GetTimeInMillis)
 
+   /* xf86Xinput.c */
+   SYMFUNC(xf86ProcessCommonOptions)
 #ifdef XINPUT
    SYMFUNC(xf86IsCorePointer)
    SYMFUNC(xf86PostMotionEvent)
@@ -472,15 +478,9 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86GetMotionEvents)
    SYMFUNC(xf86MotionHistoryAllocate)
    SYMFUNC(xf86FirstLocalDevice)
-
 /* The following segment merged from Metrolink tree */
-   SYMFUNC(xf86AddLocalDevice)
-   SYMFUNC(xf86RemoveLocalDevice)
    SYMFUNC(xf86XInputSetScreen)
    SYMFUNC(xf86ScaleAxis)
-#if 0
-   SYMFUNC(xf86XInputProcessOptions)
-#endif
    SYMFUNC(xf86XInputSetSendCoreEvents)
 /* End merged segment */
 #endif

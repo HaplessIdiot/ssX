@@ -1,30 +1,28 @@
 /* $XConsortium: xf86Xinput.c /main/14 1996/10/27 11:05:25 kaleb $ */
 /*
- * Copyright 1995-1997 by Frederic Lepied, France. <Frederic.Lepied@sugix.frmug.org>
- * Copyright 1997, 1998 Metro Link Incorporated ("Metro Link")
+ * Copyright 1995-1999 by Frederic Lepied, France. <Lepied@XFree86.org>
  *                                                                            
  * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright  notice and this permission notice appear in supporting
- * documentation, and that the name of Frederic Lepied or Metro Link
- * ("copyright holders") not be used in advertising or publicity pertaining
- * to distribution of the software without specific, written prior permission.
- * The copyright holders make no representations about the suitability of this
- * software for any purpose.  It is provided "as is" without express or
- * implied warranty.                   
+ * documentation for any purpose is  hereby granted without fee, provided that
+ * the  above copyright   notice appear  in   all  copies and  that both  that
+ * copyright  notice   and   this  permission   notice  appear  in  supporting
+ * documentation, and that   the  name of  Frederic   Lepied not  be  used  in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific,  written      prior  permission.     Frederic  Lepied   makes  no
+ * representations about the suitability of this software for any purpose.  It
+ * is provided "as is" without express or implied warranty.                   
  *                                                                            
- * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * FREDERIC  LEPIED DISCLAIMS ALL   WARRANTIES WITH REGARD  TO  THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED   WARRANTIES OF MERCHANTABILITY  AND   FITNESS, IN NO
+ * EVENT  SHALL FREDERIC  LEPIED BE   LIABLE   FOR ANY  SPECIAL, INDIRECT   OR
  * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * DATA  OR PROFITS, WHETHER  IN  AN ACTION OF  CONTRACT,  NEGLIGENCE OR OTHER
+ * TORTIOUS  ACTION, ARISING    OUT OF OR   IN  CONNECTION  WITH THE USE    OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.49 1999/06/06 08:48:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.50 1999/06/12 07:18:44 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -80,8 +78,6 @@ static int      debug_level = 0;
 #define DBG(lvl, f)
 #endif
 
-
-static LocalDevicePtr	localDevices = NULL;
 
 static LocalDevicePtr	switch_device = NULL;
 extern DeviceAssocRec	switch_assoc;
@@ -190,7 +186,7 @@ ReadInput(pointer	block_data,
 	  int		select_status,
 	  pointer	read_mask)
 {
-  LocalDevicePtr	local_dev = localDevices;
+  LocalDevicePtr	local_dev = xf86FirstLocalDevice();
   fd_set*		LastSelectMask = (fd_set*) read_mask;
   fd_set		devices_with_input;
 
@@ -249,7 +245,7 @@ xf86ProcessCommonOptions(LocalDevicePtr local,
     local->history_size = xf86SetIntOption(list, "HistorySize", 0);
 
     if (local->history_size > 0) {
-	xf86Msg(X_CONFIG, "%s: has %d motions history\n", local->name,
+	xf86Msg(X_CONFIG, "%s: has a history of %d motions\n", local->name,
 		local->history_size);
     }
     
@@ -355,7 +351,7 @@ InitExtInput()
     local = switch_assoc.device_allocate();
     switch_device = local;
     switch_device->flags |= XI86_CONFIGURED; /* no configuration available */
-    switch_device->next = localDevices;
+    switch_device->next = xf86FirstLocalDevice();
 
     /* Add each device */
     while(local) {
@@ -1469,57 +1465,10 @@ xf86GetMotionEvents(DeviceIntPtr	dev,
     }
     return num;
 }
-
-/* 
- * The Option "DemandLoaded" should be set if the server is already completely
- * up and running otherwise InitExtInput will activate the device when it is
- * called during startup
- */
-void
-xf86AddLocalDevice(LocalDevicePtr	new,
-		   pointer		options)
-{
-    new->next = localDevices;
-    localDevices = new;
-
-    xf86ProcessCommonOptions(new, options);
-    
-    new->flags |= XI86_CONFIGURED;
-    
-    if (xf86FindOption (options, "DemandLoaded")) {
-	xf86ActivateDevice (new);
-	new->dev->inited = ((*new->dev->deviceProc) (new->dev, DEVICE_INIT) == Success);
-    }
-}
-
-Bool
-xf86RemoveLocalDevice(LocalDevicePtr local)
-{
-    LocalDevicePtr prev = NULL, tmp;
-    
-    tmp = localDevices;
-    while (tmp) {
-	if (local == tmp) {
-	    if (prev)
-		prev->next = tmp->next;
-	    else
-		localDevices = tmp->next;
-	    RemoveDevice (local->dev);
-	    break;
-	}
-	prev = tmp;
-	tmp = tmp->next;
-    }
-    if (tmp)
-	return (TRUE);
-    else
-	return (FALSE);
-}
-
 LocalDevicePtr
 xf86FirstLocalDevice()
 {
-    return localDevices;
+    return xf86InputDevs;
 }
 
 /* 

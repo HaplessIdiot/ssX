@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.10 1999/06/06 05:14:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.11 1999/06/06 08:48:53 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -354,8 +354,10 @@ MouseCommonOptions(InputInfoPtr pInfo)
 	} else if (sscanf(s, "%d %d", &b1, &b2) == 2 &&
 		 b1 > 0 && b1 <= MSE_MAXBUTTONS &&
 		 b2 > 0 && b2 <= MSE_MAXBUTTONS) {
-	    pMse->negativeZ = b1;
-	    pMse->positiveZ = b2;
+	    pMse->negativeZ = 1 << (b1-1);
+	    pMse->positiveZ = 1 << (b2-1);
+	    if ( b1 > pMse->buttons ) pMse->buttons = b1;
+	    if ( b2 > pMse->buttons ) pMse->buttons = b2;
 	    msg = xstrdup("buttons XX and YY");
 	    if (msg)
 		sprintf(msg, "buttons %d and %d", b1, b2);

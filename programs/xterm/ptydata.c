@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/ptydata.c,v 1.3 1999/05/15 06:25:05 dawes Exp $
+ * $XFree86: xc/programs/xterm/ptydata.c,v 1.4 1999/05/30 14:41:07 dawes Exp $
  */
 
 /************************************************************
@@ -162,6 +162,13 @@ int getPtyData(TScreen *screen, fd_set *select_mask, PtyData *data)
 		    data->ptr[i] &= 0x7f;
 		}
 	    }
+#if OPT_TRACE
+	    for (i = 0; i < data->cnt; i++) {
+		if (!(i%8)) TRACE(("%s", i ? "\n    " : "READ"))
+		TRACE((" %04X", data->ptr[i]))
+	    }
+	    TRACE(("\n"))
+#endif
 	    return (data->cnt);
 	}
     }

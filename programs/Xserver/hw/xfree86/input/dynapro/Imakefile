@@ -1,0 +1,24 @@
+XCOMM $XFree86$
+
+#define IHaveModules
+#include <Server.tmpl>
+
+SRCS = xf86Dyna.c
+OBJS = xf86Dyna.o
+
+DRIVER = dynapro
+
+INCLUDES = -I. -I$(XF86COMSRC) -I../../loader -I$(XF86OSSRC) \
+			-I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(EXTINCSRC)
+
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
+
+ModuleObjectRule()
+
+ObjectModuleTarget($(DRIVER),$(OBJS))
+
+InstallObjectModule($(DRIVER),$(MODULEDIR),input)
+
+DependTarget()

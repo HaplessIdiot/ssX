@@ -1,4 +1,26 @@
 XFree86 3.9Pr (12 June 1999)
+2740. Trap for packed 24bpp on systems with 64-bit scanlines.
+2739. Fix the type of the "set_mckl" option in the s3virge driver (#2865,
+      Harald Koenig).
+2738. Fix some s3virge palette problems in 8bpp mode (#2863, Harald Koenig).
+2737. Avoid clobbering CR55 in the s3virge HW cursor code (#2862,
+      Harald Koenig).
+2736. Xterm patch #106 (#2861, Thomas Dickey).
+2735. Fix an incorrect test in I2CWriteBytes() in the i2c module (#2875,
+      Ben Cahill).
+2734. Don't set YDSTORG for the non-WRAM Matrox cards (#2874, Mark Vojkovich).
+2733. Change the order of text-mode font restoration in the vgahw module
+      (#2872).
+2732. XInput driver for Dynapro touch screens (#2859, 2860, 2867,
+      David Woodhouse).
+2731. Enable support for extended PS/2 protocols on Solaris/x86 (#2857,
+      Nicholas Brealey).
+2730. Fix the ZAxisMapping handling in the mouse driver (#2857,
+      Nicholas Brealey).
+2729. Add a sixth valuator to the wacom driver to support the wheel of
+      the airbrush and of the lens cursor (Frederic Lepied).
+2728. Convert the wacom driver to work with the new input code
+      (Frederic Lepied).
 2727. Increase the MAXSCREENS value from 4 to 16 (Egbert Eich).
 2726. Add support to scanpci for printing out PCI-PCI bridge header
       information correctly (Egbert Eich).
@@ -8137,4 +8159,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.770 1999/06/12 07:18:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.771 1999/06/12 14:15:26 dawes Exp $

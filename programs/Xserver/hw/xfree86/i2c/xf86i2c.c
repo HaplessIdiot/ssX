@@ -6,7 +6,7 @@
  *      (c) 1998 Gerd Knorr <kraxel@cs.tu-berlin.de>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.c,v 1.4 1999/01/14 13:04:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.c,v 1.5 1999/04/11 13:11:01 dawes Exp $ */
 
 #if 1
 #include "misc.h"
@@ -519,7 +519,7 @@ xf86I2CWriteBytes(I2CDevPtr d, I2CByte subaddr,
     if (nWrite > 0) {
 	r = b->I2CAddress(d, d->SlaveAddr & ~1);
 	if (r){
-	    if (!(r = b->I2CPutByte(d, subaddr)))
+	    if ((r = b->I2CPutByte(d, subaddr)))
 		for (; nWrite > 0; WriteBuffer++, nWrite--)
 		    if (!(r = b->I2CPutByte(d, *WriteBuffer))) 
 			break;
