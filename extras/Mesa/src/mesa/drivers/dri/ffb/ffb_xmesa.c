@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/ffb/ffb_xmesa.c,v 1.4 2002/02/22 21:32:59 dawes Exp $
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/ffb/ffb_xmesa.c,v 1.1.1.3tsi Exp $
  *
  * GLX Hardware Device Driver for Sun Creator/Creator3D
  * Copyright (C) 2000, 2001 David S. Miller
@@ -38,6 +38,7 @@
 #include "tnl/tnl.h"
 #include "tnl/t_pipeline.h"
 #include "array_cache/acache.h"
+#include "drivers/common/driverfuncs.h"
 
 #include "ffb_context.h"
 #include "ffb_dd.h"
@@ -155,7 +156,7 @@ ffbDestroyScreen(__DRIscreenPrivate *sPriv)
 	Xfree(ffbScreen);
 }
 
-static const struct gl_pipeline_stage *ffb_pipeline[] = {
+static const struct tnl_pipeline_stage *ffb_pipeline[] = {
    &_tnl_vertex_transform_stage, 
    &_tnl_normal_transform_stage, 
    &_tnl_lighting_stage,
@@ -178,18 +179,22 @@ ffbCreateContext(const __GLcontextModes *mesaVis,
 	__DRIscreenPrivate *sPriv;
 	ffbScreenPrivate *ffbScreen;
 	char *debug;
+	struct dd_function_table functions;
 
         /* Allocate ffb context */
 	fmesa = (ffbContextPtr) CALLOC(sizeof(ffbContextRec));
 	if (!fmesa)
 		return GL_FALSE;
 
+	_mesa_init_driver_functions(&functions);
+
         /* Allocate Mesa context */
         if (sharedContextPrivate)
            shareCtx = ((ffbContextPtr) sharedContextPrivate)->glCtx;
         else 
            shareCtx = NULL;
-        fmesa->glCtx = _mesa_create_context(mesaVis, shareCtx, fmesa, GL_TRUE);
+        fmesa->glCtx = _mesa_create_context(mesaVis, shareCtx,
+                                            &functions, fmesa);
         if (!fmesa->glCtx) {
            FREE(fmesa);
            return GL_FALSE;
@@ -265,6 +270,9 @@ ffbCreateContext(const __GLcontextModes *mesaVis,
 	_swsetup_CreateContext( ctx );
 
 	/* All of this need only be done once for a new context. */
+	/* XXX these should be moved right after the
+	 *  _mesa_init_driver_functions() call above.
+	 */
 	ffbDDExtensionsInit(ctx);
 	ffbDDInitDriverFuncs(ctx);
 	ffbDDInitStateFuncs(ctx);
@@ -272,7 +280,7 @@ ffbCreateContext(const __GLcontextModes *mesaVis,
 	ffbDDInitDepthFuncs(ctx);
 	ffbDDInitStencilFuncs(ctx);
 	ffbDDInitRenderFuncs(ctx);
-	ffbDDInitTexFuncs(ctx);
+	/*ffbDDInitTexFuncs(ctx); not needed */
 	ffbDDInitBitmapFuncs(ctx);
 	ffbInitVB(ctx);
 

@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/main/arbparse.c,v 1.2 2004/04/26 00:23:36 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/main/arbparse.c,v 1.3tsi Exp $ */
 
 #define DEBUG_PARSING 0
 
@@ -4086,7 +4086,7 @@ static GLuint
 parse_param (GLcontext * ctx, GLubyte ** inst, struct var_cache **vc_head,
              struct arb_program *Program)
 {
-   GLuint found, specified_length, err;
+   GLuint found, specified_length;
    char *error_msg;
    struct var_cache *param_var;
 

@@ -35,7 +35,7 @@ of the copyright holder.
 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/tinyx/linux/agp.c,v 1.2 2002/12/12 18:29:05 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/linux/agp.c,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -392,7 +392,7 @@ KdEnableAGP(int screenNum, CARD32 mode)
 	if (ioctl(gartFd, AGPIOC_SETUP, &setup) != 0) {
 		fprintf(stderr, "KdEnableAGP: "
 			   "AGPIOC_SETUP with mode %ld failed (%s)\n",
-			   mode, strerror(errno));
+			   (unsigned long) mode, strerror(errno));
 		return FALSE;
 	}
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.57 2004/06/10 13:08:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.58tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -3206,7 +3206,8 @@ I830VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode)
    vbeInfoPtr pVbe = pI830->pVbe;
    VbeModeInfoData *data = (VbeModeInfoData *) pMode->Private;
    int mode, i;
-   CARD32 planeA, planeB, temp;
+   CARD32 planeA, planeB;
+   unsigned int temp;
    int refresh = 60;
 #ifdef XF86DRI
    Bool didLock = FALSE;
@@ -3421,10 +3422,10 @@ I830VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode)
     * Print out the PIPEACONF and PIPEBCONF registers.
     */
    temp = INREG(PIPEACONF);
-   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PIPEACONF is 0x%08lx\n", temp);
+   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PIPEACONF is 0x%08x\n", temp);
    if (pI830->availablePipes == 2) {
       temp = INREG(PIPEBCONF);
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PIPEBCONF is 0x%08lx\n", temp);
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PIPEBCONF is 0x%08x\n", temp);
    }
 
    if (xf86IsEntityShared(pScrn->entityList[0])) {

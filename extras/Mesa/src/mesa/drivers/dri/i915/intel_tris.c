@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /**************************************************************************
  * 
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
@@ -30,7 +31,7 @@ static void intelRasterPrimitive( GLcontext *ctx, GLenum rprim, GLuint hwprim );
  *                    Emit primitives as inline vertices               *
  ***********************************************************************/
 
-#if 1
+#if defined(i386) || defined(__i386__)
 #define COPY_DWORDS( j, vb, vertsize, v )			\
 do {								\
    int __tmp;							\

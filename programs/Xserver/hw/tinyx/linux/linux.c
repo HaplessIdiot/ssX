@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/linux/linux.c,v 1.8 2002/10/08 21:27:55 keithp Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/linux/linux.c,v 1.1tsi Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -278,12 +278,11 @@ LinuxSetSwitchMode (int mode)
 	FatalError ("LinuxInit: VT_GETMODE failed\n");
     }
 
+    (void) memset(&act, 0, sizeof(act));
+
     if (mode == VT_PROCESS)
     {
 	act.sa_handler = LinuxVTRequest;
-	sigemptyset (&act.sa_mask);
-	act.sa_flags = 0;
-	act.sa_restorer = 0;
 	sigaction (SIGUSR1, &act, 0);
     
 	VT.mode = mode;
@@ -293,9 +292,6 @@ LinuxSetSwitchMode (int mode)
     else
     {
 	act.sa_handler = SIG_IGN;
-	sigemptyset (&act.sa_mask);
-	act.sa_flags = 0;
-	act.sa_restorer = 0;
 	sigaction (SIGUSR1, &act, 0);
     
 	VT.mode = mode;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.45 2004/03/17 23:53:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.46tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -389,22 +389,32 @@ WaitForSomething(int *pClientsReady)
 #ifndef WIN32
 	for (i=0; i<howmany(XFD_SETSIZE, NFDBITS); i++)
 	{
+#ifdef XSYNC
 	    int highest_priority = 0;
+#endif
 
 	    while (clientsReadable.fds_bits[i])
 	    {
-	        int client_priority, client_index;
+	        int client_index;
+#ifdef XSYNC
+	        int client_priority;
+#endif
 
 		curclient = ffs (clientsReadable.fds_bits[i]) - 1;
 		client_index = /* raphael: modified */
 			ConnectionTranslation[curclient + (i * (sizeof(fd_mask) * 8))];
 #else
+#ifdef XSYNC
 	int highest_priority = 0;
+#endif
 	fd_set savedClientsReadable;
 	XFD_COPYSET(&clientsReadable, &savedClientsReadable);
 	for (i = 0; i < XFD_SETCOUNT(&savedClientsReadable); i++)
 	{
-	    int client_priority, client_index;
+	    int client_index;
+#ifdef XSYNC
+	    int client_priority;
+#endif
 
 	    curclient = XFD_FD(&savedClientsReadable, i);
 	    client_index = ConnectionTranslation[curclient];

@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/vga.c,v 1.4 2000/05/24 23:57:56 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/vga.c,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -161,6 +161,9 @@ VgaFetch (VgaCard *card, VGA16 reg)
 	value = map.value;
 	VGA_DEBUG ((stderr, "direct %4x -> %2x\n", reg, value));
 	break;
+    default:
+	value = 0;
+	break;
     }
     return value;
 }
@@ -277,7 +280,7 @@ VgaSet (VgaCard *card, VgaReg *reg, VGA32 value)
 	    mask <<= reg->base;
 	    new <<= reg->base;
 	    v = card->values[reg->id].cur;
-	    v = v & ~mask | new;
+	    v = (v & ~mask) | new;
 	    card->values[reg->id].cur = v;
 	    card->values[reg->id].flags |= VGA_VALUE_MODIFIED|VGA_VALUE_DIRTY;
 	}

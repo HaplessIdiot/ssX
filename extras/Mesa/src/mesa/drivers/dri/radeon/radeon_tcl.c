@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_tcl.c,v 1.1.1.3tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -282,7 +282,7 @@ static GLboolean radeon_run_tcl_render( GLcontext *ctx,
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
    TNLcontext *tnl = TNL_CONTEXT(ctx);
    struct vertex_buffer *VB = &tnl->vb;
-   GLuint i,flags = 0,length;
+   GLuint i;
 
    /* TODO: separate this from the swtnl pipeline 
     */

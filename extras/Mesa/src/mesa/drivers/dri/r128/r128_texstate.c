@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_texstate.c,v 1.1.1.2 2004/06/10 14:22:58 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_texstate.c,v 1.3tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -204,7 +204,7 @@ static GLboolean r128UpdateTextureEnv( GLcontext *ctx, int unit )
 
    if ( R128_DEBUG & DEBUG_VERBOSE_API ) {
       fprintf( stderr, "%s( %p, %d )\n",
-	       __FUNCTION__, (void *) ctx, (void *) unit );
+	       __FUNCTION__, (void *) ctx, unit );
    }
 
    if ( unit == 0 ) {
