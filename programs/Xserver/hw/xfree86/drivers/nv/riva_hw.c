@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.27 2002/03/14 20:35:53 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.28 2002/03/15 05:16:40 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1606,6 +1606,9 @@ static void LoadStateExt
                VGA_WR08(chip->PCIO, 0x03D5, 0xfa);
             }
             break;
+
+            VGA_WR08(chip->PCIO, 0x03D4, 0x41);
+            VGA_WR08(chip->PCIO, 0x03D5, state->extra);
     }
 
     LOAD_FIXED_STATE(Riva,FIFO);
@@ -1636,8 +1639,6 @@ static void LoadStateExt
     VGA_WR08(chip->PCIO, 0x03D5, state->cursor2);
     VGA_WR08(chip->PCIO, 0x03D4, 0x39);
     VGA_WR08(chip->PCIO, 0x03D5, state->interlace);
-    VGA_WR08(chip->PCIO, 0x03D4, 0x41);
-    VGA_WR08(chip->PCIO, 0x03D5, state->extra);
 
     if(!chip->flatPanel) {
        chip->PRAMDAC0[0x00000508/4] = state->vpll;
@@ -1701,8 +1702,6 @@ static void UnloadStateExt
     state->cursor2      = VGA_RD08(chip->PCIO, 0x03D5);
     VGA_WR08(chip->PCIO, 0x03D4, 0x39);
     state->interlace    = VGA_RD08(chip->PCIO, 0x03D5);
-    VGA_WR08(chip->PCIO, 0x03D4, 0x41);
-    state->extra        = VGA_RD08(chip->PCIO, 0x03D5);
     state->vpll         = chip->PRAMDAC0[0x00000508/4];
     state->vpll2        = chip->PRAMDAC0[0x00000520/4];
     state->pllsel       = chip->PRAMDAC0[0x0000050C/4];
@@ -1748,7 +1747,8 @@ static void UnloadStateExt
                VGA_WR08(chip->PCIO, 0x03D4, 0x44);
                state->crtcOwner = VGA_RD08(chip->PCIO, 0x03D5);
             }
-
+            VGA_WR08(chip->PCIO, 0x03D4, 0x41);
+            state->extra = VGA_RD08(chip->PCIO, 0x03D5);
             break;
     }
 }
