@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.47 2003/11/03 14:47:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.48 2004/01/07 03:43:19 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2544,6 +2544,22 @@ I830VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode)
       } else {
 	 xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Set VBE Mode failed!\n");
 	 return FALSE;
+      }
+   }
+
+   /*
+    * Test if the extendedRefresh BIOS function is supported.
+    */
+   if (pI830->useExtendedRefresh && !pI830->vesa->useDefaultRefresh &&
+       (mode & (1 << 11)) && data && data->data && data->block) {
+      if (!SetRefreshRate(pScrn, mode, 60)) {
+	 xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		    "BIOS call 0x5f05 not supported, "
+		    "setting refresh with VBE 3 method.\n");
+	 pI830->useExtendedRefresh = FALSE;
+	 pI830->enableDisplays = FALSE;
+	 xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		 "Not using BIOS call 0x5f64 to enable displays.\n");
       }
    }
 
