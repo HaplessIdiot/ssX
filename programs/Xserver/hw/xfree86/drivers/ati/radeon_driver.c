@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.93 2003/04/06 20:07:33 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.94tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1620,7 +1620,7 @@ static Bool RADEONProbePLLParameters(ScrnInfoPtr pScrn)
  
     xf86getsecs(&stop_secs, &stop_usecs);
  
-    total_usecs = xf86abs(stop_usecs - start_usecs);
+    total_usecs = abs(stop_usecs - start_usecs);
     hz = 1000000/total_usecs;
  
     hTotal = ((INREG(RADEON_CRTC_H_TOTAL_DISP) & 0x1ff) + 1) * 8;
@@ -3281,7 +3281,6 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
      */
     if (info->HasCRTC2) {
 	if (info->Clone) {
-	    RADEONEntPtr pRADEONEnt = RADEONEntPriv(pScrn);
 
 	    /* If we have 2 screens from the config file, we don't need
 	     * to do clone thing, let each screen handles one head.
