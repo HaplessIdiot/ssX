@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.5 1997/12/14 02:55:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.6 1998/07/25 08:48:42 dawes Exp $
 XCOMM This directory is only entered if DoLoadableServer is set
 
 #define IHaveModules
@@ -101,7 +101,7 @@ LinkSourceFile(xcmisc.c,..)
 LinkSourceFile(xprint.c,..)
 
 ModuleObjectRule()
-SpecialObjectRule(modinit.o,../modinit.c $(ICONFIGFILES),$(EXT_DEFINES))
+SpecialCObjectRule(modinit,$(ICONFIGFILES),$(EXT_DEFINES))
 LibraryModuleTarget(extmod,$(MOBJS))
 NormalLibraryTarget(exts,$(SOBJS))
 NormalLintTarget($(SRCS))

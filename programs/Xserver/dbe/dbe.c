@@ -30,7 +30,7 @@
  *     DIX DBE code
  *
  *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.3.2.5 1998/07/04 13:32:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.4 1998/07/25 09:09:07 dawes Exp $ */
 
 
 /* INCLUDES */
@@ -48,7 +48,6 @@
 
 #ifdef XFree86LOADER
 #include "xf86_ansic.h"
-#include "xf86Module.h"
 #endif
 
 /* GLOBALS */
@@ -1979,50 +1978,4 @@ DbeExtensionInit()
     dbeErrorBase = extEntry->errorBase;
 
 } /* DbeExtensionInit() */
-
-#ifdef XFree86LOADER
-
-MODULEINITPROTO(dbeModuleInit);
-static MODULESETUPPROTO(dbeSetup);
-
-ExtensionModule dbeExt = {
-    DbeExtensionInit,
-    DBE_PROTOCOL_NAME,
-    NULL};
-
-static XF86ModuleVersionInfo VersRec =
-{
-        "dbe",
-        MODULEVENDORSTRING,
-        MODINFOSTRING1,
-        MODINFOSTRING2,
-        XF86_VERSION_CURRENT,
-        0x00010001,				/* 1.1 */
-        ABI_CLASS_EXTENSION,
-        ABI_EXTENSION_VERSION,
-        {0,0,0,0}
-};
-
-/* 
- * Entry point for the loader code
- */
-void
-dbeModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-	      ModuleTearDownProc *teardown)
-{
-    *vers = &VersRec;
-    *setup = dbeSetup;
-    *teardown = NULL;
-}
-
-static pointer
-dbeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
-{
-    LoadExtension(&dbeExt);
-
-    /* Need a non-NULL return value to indicate success */
-    return (pointer)1;
-}
-
-#endif /* XFree86LOADER */
 

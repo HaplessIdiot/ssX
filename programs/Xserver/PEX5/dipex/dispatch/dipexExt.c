@@ -1,5 +1,5 @@
 /* $XConsortium: dipexExt.c,v 5.11 94/04/17 20:36:04 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.12.2.5 1998/07/04 13:32:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.13 1998/07/25 07:36:35 dawes Exp $ */
 
 /***********************************************************
 
@@ -69,7 +69,6 @@ SOFTWARE.
 
 #ifdef XFree86LOADER
 #include "xf86_ansic.h"
-#include "xf86Module.h"
 #endif
 
 unsigned long add_pad_of[] = {0, 3, 2, 1};
@@ -328,45 +327,3 @@ pexContext *cntxtPtr;
 pexReq *strmPtr;
 { }
 
-#ifdef XFree86LOADER
-
-MODULEINITPROTO(pex5ModuleInit);
-static MODULESETUPPROTO(pex5Setup);
-
-static ExtensionModule pex5Ext = {
-    PexExtensionInit,
-    PEX_NAME_STRING,
-    NULL};
-
-static XF86ModuleVersionInfo VersRec =
-{
-	"pex5",
-	MODULEVENDORSTRING,
-	MODINFOSTRING1,
-	MODINFOSTRING2,
-	XF86_VERSION_CURRENT,
-	0x00010001,				/* 1.1 */
-	ABI_CLASS_EXTENSION,
-	ABI_EXTENSION_VERSION,
-	{0,0,0,0}
-};
-
-
-void
-pex5ModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-	       ModuleTearDownProc *teardown)
-{
-    *vers = &VersRec;
-    *setup = pex5Setup;
-    *teardown = NULL;
-}
-
-static pointer
-pex5Setup(pointer module, pointer opts, int *errmaj, int *errmin)
-{
-    LoadExtension(&pex5Ext);
-
-    /* Need a non-NULL return value to indicate success */
-    return (pointer)1;
-}
-#endif /* XFree86LOADER */

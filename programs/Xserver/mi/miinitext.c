@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c /main/41 1996/09/28 17:15:08 rws $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.22.2.8 1998/07/03 13:44:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.31 1998/07/26 02:33:07 dawes Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -345,9 +345,7 @@ InitExtensions(argc, argv)
     extension[16].initFunc = XkbExtensionInit;
 #endif
     /* 17 - XCMISC */
-#ifdef XRECORD
-    extension[18].initFunc = RecordExtensionInit;
-#endif
+    /* 18 - XRECORD */
 #ifdef LBX
     extension[19].initFunc = LbxExtensionInit;
 #endif

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/record/Imakefile,v 1.3 1997/09/09 11:56:21 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/record/Imakefile,v 1.4 1997/11/22 06:50:37 dawes Exp $
 XCOMM
 XCOMM
 XCOMM $XConsortium: Imakefile /main/3 1996/09/28 17:15:43 rws $
@@ -7,23 +7,22 @@ XCOMM $XConsortium: Imakefile /main/3 1996/09/28 17:15:43 rws $
 #include <Server.tmpl>
 
 #if DoLoadableServer
-EXTRAINCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC)
+      MSRCS = recordmod.c
+      MOBJS = recordmod.o
 #endif
 
-       SRCS = record.c set.c
-       OBJS = record.o set.o
-   INCLUDES = -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC) $(EXTRAINCLUDES)
+       SRCS = record.c set.c $(MSRCS)
+       OBJS = record.o set.o $(MOBJS)
+   INCLUDES = -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC)
    LINTLIBS = ../dix/llib-ldix.ln
     DEFINES = -DNDEBUG
 
-NormalLibraryObjectRule()
-NormalLibraryTarget(record,$(OBJS))
+ModuleObjectRule()
+LibraryModuleTarget(record,$(OBJS))
 LintLibraryTarget(record,$(SRCS))
 NormalLintTarget($(SRCS))
 
 InstallLinkKitLibrary(record,$(LINKKITDIR)/lib)
-#if DoLoadableServer
-InstallDynamicModule(LibraryTargetName(record),$(MODULEDIR))
-#endif
+InstallLibraryModule(record,$(MODULEDIR))
 
 DependTarget()

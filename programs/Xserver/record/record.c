@@ -1,9 +1,5 @@
 /* $TOG: record.c /main/8 1997/04/06 10:52:30 kaleb $ */
 
-
-
-/* $XFree86: $ */
-
 /*
 
 Copyright (c) 1995  X Consortium
@@ -38,20 +34,20 @@ This work benefited from earlier work done by Martha Zimet of NCD
 and Jim Haggerty of Metheus.
 
 */
+/* $XFree86: xc/programs/Xserver/record/record.c,v 1.4 1997/09/09 11:56:21 hohndel Exp $ */
 
-#include <stdio.h>
-#include <assert.h>
 #define NEED_EVENTS
 #include "dixstruct.h"
 #include "extnsionst.h"
 #define _XRECORD_SERVER_
-#include "X11/extensions/recordstr.h"
+#include "recordstr.h"
 #include "set.h"
 
-#ifdef XFree86LOADER
-#include "xf86_libc.h"
+#ifndef XFree86LOADER
+#include <stdio.h>
+#include <assert.h>
+#else
 #include "xf86_ansic.h"
-#include "xf86_ldext.h"
 #endif
 
 static RESTYPE RTContext;   /* internal resource type for Record contexts */
@@ -3032,33 +3028,3 @@ RecordExtensionInit()
 
 } /* RecordExtensionInit */
 
-#ifdef XFree86LOADER
-extern Bool noTestExtensions;
-
-ExtensionModule recordExt = {
-    RecordExtensionInit,
-    RECORD_NAME,
-    &noTestExtensions};
-/*
- * Entry point for the new loading code that can load .a files
- */
-
-void
-librecordModuleInit(data,magic)
-    pointer	* data;
-    INT32	* magic;
-{
-    static int cnt = 0;
-
-    switch(cnt++)
-    {
-    case 0:
-	*magic = MAGIC_LOAD_EXTENSION;
-        * data = (pointer) &recordExt;
-	break;
-    default:
-        * magic= MAGIC_DONE;
-    }
-    return;
-}
-#endif /* XFree86LOADER */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.1.2.10 1998/07/18 17:53:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.2 1998/07/25 16:57:16 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -174,6 +174,7 @@ typedef enum {
     EMULATE3,
     BAUDRATE,
     SAMPLERATE,
+    PRESOLUTION,
     CLEARDTR,
     CLEARRTS,
     CHORDMIDDLE,
@@ -182,7 +183,12 @@ typedef enum {
     EM3TIMEOUT,
     DEVICE_NAME,
     ALWAYSCORE,
-    BUTTONS,
+    PBUTTONS,
+    ZAXISMAPPING,
+
+    /* Pointer Z axis mapping tokens */
+    XAXIS,
+    YAXIS,
 
     /* Display tokens */
     MODES,
