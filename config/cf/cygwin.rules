@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.15 2001/09/19 15:47:00 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.16 2001/09/20 17:04:11 alanh Exp $
 
 /*
  * Cygwin shared library rules (DLL versions)
@@ -178,9 +178,7 @@ InstallTarget(install,Concat3(lib,libname,.dll),$(INSTLIBFLAGS),$(BINDIR))
  * be found.
  */
 
-#if CrossCompiling
 #define ProgramTargetName(target) Concat(target,.exe)
-#endif
 
 
 /*
