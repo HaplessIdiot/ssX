@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.6 2001/01/27 18:20:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.7 2001/02/02 21:47:26 herrb Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -70,7 +70,7 @@ const int NUMFORMATS = sizeof(formats)/sizeof(formats[0]);
 #define OSVENDOR ""
 #endif
 #ifndef PRE_RELEASE
-#define PRE_RELEASE (XF86_VERSION_BETA || XF86_VERSION_ALPHA)
+#define PRE_RELEASE XF86_VERSION_SNAP
 #endif
 
 static void
@@ -85,9 +85,9 @@ DarwinPrintBanner()
     "(http://www.XFree86.Org/cvs)\n");
 #endif
   ErrorF("\nXFree86 Version %d.%d.%d", XF86_VERSION_MAJOR, XF86_VERSION_MINOR,
-					XF86_VERSION_SUBMINOR);
-#if XF86_VERSION_ALPHA > 0
-  ErrorF("%c", 'a' + XF86_VERSION_ALPHA - 1);
+					XF86_VERSION_PATCH);
+#if XF86_VERSION_SNAP > 0
+  ErrorF(".%d", XF86_VERSION_SNAP);
 #endif
 #ifdef XF86_CUSTOM_VERSION
   ErrorF(" (%s)", XF86_CUSTOM_VERSION);
