@@ -1,5 +1,5 @@
 /* $XConsortium: mach32dline.c,v 1.2 94/04/17 20:30:43 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32dline.c,v 3.0 1994/05/08 05:19:20 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -83,42 +83,22 @@ Modified for the mach32 by Mike Bernson    (mike@mbsun.mlb.org)
     }
 
 #define FillDashPat {\
-   int i; \
 \
-   for (i = 0; i < 16; i++) {\
-      dashPat <<= 1;\
-      if (tmp + i < len) {\
+      dashPat = 0; \
+      if (tmp < len) {\
 	 if (!(dashIndexTmp & 1))\
-	    dashPat |= 1;\
+	    dashPat |= 0x1e;\
 	 if (--thisDash == 0)\
 	    NextDash\
       }\
-   }\
+      dashPat <<= 8; \
+      if (tmp + 1 < len) {\
+	 if (!(dashIndexTmp & 1))\
+	    dashPat |= 0x1e;\
+	 if (--thisDash == 0)\
+	    NextDash\
+      }\
 }
-
-static	int low_translate[16] = 
-	{
-	  0x0000,  0x0010, 0x0008, 0x0018,
-	  0x0004,  0x0014, 0x000c, 0x001c,
-	  0x0006,  0x001c, 0x000e, 0x001e,
-	  0x0002,  0x001a, 0x000a, 0x001a
-	};
-
-static	int high_translate[16] = 
-	{
-	  0x0000,  0x1000, 0x0800, 0x1800,
-	  0x0400,  0x1400, 0x0c00, 0x1c00,
-	  0x0600,  0x1c00, 0x0e00, 0x1e00,
-	  0x0200,  0x1a00, 0x0a00, 0x1a00
-	};
-
-
-
-#define	HIGH_HIGH_NIBLE(x)	high_translate[((x) >> 12) & 0x0f]
-#define LOW_HIGH_NIBLE(x)	low_translate[((x) >> 8) & 0x0f]
-#define HIGH_LOW_NIBLE(x)	high_translate[((x) >> 4) & 0x0f]
-#define	LOW_LOW_NIBLE(x)	low_translate[(x) & 0x0f]
-
 /*
  * Dashed lines through the graphics engine.
  * Known Bugs: Jon 13/9/93
@@ -222,146 +202,6 @@ mach32Dline(pDrawable, pGC, mode, npt, pptInit)
       x2 = ppt->x + xorg;
       y2 = ppt->y + yorg;
 
-#ifdef fastaxislinesfixed
-      if (x1 == x2) {
-
-	 if (y1 > y2) {
-	    unclippedlen = y1 = y2;
-	 } else {
-	    direction |= INC_X;
-	    unclippedlen = y2 - y1;	    
-	 }
-	 
-       /* get to first band that might contain part of line */
-	 while ((nbox) && (pbox->y2 <= y1)) {
-	    pbox++;
-	    nbox--;
-	 }
-
-	 if (nbox) {
-	  /* stop when lower edge of box is beyond end of line */
-	    while ((nbox) && (y2 >= pbox->y1)) {
-	       if ((x1 >= pbox->x1) && (x1 < pbox->x2)) {
-		  int   y1t, y2t;
-
-
-		/* this box has part of the line in it */
-		  y1t = max(y1, pbox->y1);
-		  y2t = min(y2, pbox->y2);
-		  if (y1t != y2t) {
-		     /* use tmp dash index and offsets */
-		     dashIndexTmp = dashIndex;    
-		     dashOffsetTmp = dashOffset; 
-
-		     if (y1t != y1) { /* advance the dash index */
-			miStepDash (y1t - y1, &dashIndexTmp, pDash,
-				 numInDashList, &dashOffsetTmp);
-		     }
-		     dashRemaining = pDash[dashIndexTmp] - dashOffsetTmp;
-		     thisDash = dashRemaining ;
-		     
-		     WaitQueue(4);
-		     outw(CUR_X, (short)x1);
-		     outw(CUR_Y, (short)y1t);
-		     len = y2t - y1t;
-		     outw(MAJ_AXIS_PCNT, (short)(len - 1));
-		     outw(CMD, CMD_LINE | DRAW | LINETYPE | PLANAR |
-			PCDATA | _16BIT | WRTDATA | INC_Y | YMAJAXIS);
-
-		     for (tmp = 0 ; tmp < len; tmp+=16) {
-#ifdef	NEVER
-
-			FillDashPat;			
-			outw(PIX_TRANS, dashPat);
-#else
-	    outw(PIX_TRANS, HIGH_HIGH_NIBLE(dashPat) | LOW_HIGH_NIBLE(dashPat));
-	    outw(PIX_TRANS, HIGH_LOW_NIBLE(dashPat) | LOW_LOW_NIBLE(dashPat));
-#endif
-
-		     }		  
-		  }
-	       }
-	       nbox--;
-	       pbox++;
-	    }
-	 }
-	 y2 = ppt->y + yorg;
-      } else if (y1 == y2) {
-
-       /*
-        * force line from left to right, keeping endpoint semantics
-        */
-	 if (x1 > x2) {
-	    register int tmp;
-
-	    tmp = x2;
-	    x2 = x1 + 1;
-	    x1 = tmp + 1;
-	 }
-	 unclippedlen = x2 - x1;
-       /* find the correct band */
-	 while ((nbox) && (pbox->y2 <= y1)) {
-	    pbox++;
-	    nbox--;
-	 }
-
-       /* try to draw the line, if we haven't gone beyond it */
-	 if ((nbox) && (pbox->y1 <= y1)) {
-	  /* when we leave this band, we're done */
-	    tmp = pbox->y1;
-	    while ((nbox) && (pbox->y1 == tmp)) {
-	       int   x1t, x2t;
-
-	       if (pbox->x2 <= x1) {
-		/* skip boxes until one might contain start point */
-		  nbox--;
-		  pbox++;
-		  continue;
-	       }
-	     /* stop if left of box is beyond right of line */
-	       if (pbox->x1 >= x2) {
-		  nbox = 0;
-		  break;
-	       }
-	       x1t = max(x1, pbox->x1);
-	       x2t = min(x2, pbox->x2);	       
-	       if (x1t != x2t) {
-		  dashIndexTmp = dashIndex;    
-		  dashOffsetTmp = dashOffset; 
-
-		  if (x1t != x1) { /* advance the dash index */
-		     miStepDash (x1t - x1, &dashIndexTmp, pDash,
-				 numInDashList, &dashOffsetTmp);
-		  }
-		  dashRemaining = pDash[dashIndexTmp] - dashOffsetTmp;
-		  thisDash = dashRemaining ;
-		  
-		  WaitQueue(4);
-		  outw(CUR_X, (short)x1t);
-		  outw(CUR_Y, (short)y1);
-		  len = x2t - x1t;
-		  outw(MAJ_AXIS_PCNT, (short)(len - 1));
-		  outw(CMD, CMD_LINE | DRAW | LINETYPE | PLANAR |
-			PCDATA | _16BIT | WRTDATA);
-		  for (tmp = 0 ; tmp < len; tmp+=16) {
-#ifdef	NEVER
-		     FillDashPat;
-		     outw(PIX_TRANS, dashPat);
-#else
-	    outw(PIX_TRANS, HIGH_HIGH_NIBLE(dashPat) | LOW_HIGH_NIBLE(dashPat));
-	    outw(PIX_TRANS, HIGH_LOW_NIBLE(dashPat) | LOW_LOW_NIBLE(dashPat));
-
-#endif
-		  }		 
-	       }
-	       nbox--;
-	       pbox++;
-	    }
-	 }
-	 x2 = ppt->x + xorg;
-      }
-      else
-#endif
       {			/* sloped line */
 	 direction = 0x0000;
 	 signdx = 1;
@@ -430,16 +270,11 @@ mach32Dline(pDrawable, pGC, mode, npt, pptInit)
 	       outw(DESTY_AXSTP, (short)e1);
 	       outw(DESTX_DIASTP, (short)e2);
 	       outw(MAJ_AXIS_PCNT, (short)len);
-	       outw(CMD, CMD_LINE | DRAW | LASTPIX | PLANAR | direction |
+	       outw(CMD, CMD_LINE | DRAW | LASTPIX | direction |
 		       PCDATA | _16BIT | WRTDATA);
-	       for (tmp = 0 ; tmp < len; tmp+=16) {
-#ifdef	NEVER
-		  FillDashPat;
-		  outw(PIX_TRANS, dashPat);
-#else
-	    outw(PIX_TRANS, HIGH_HIGH_NIBLE(dashPat) | LOW_HIGH_NIBLE(dashPat));
-	    outw(PIX_TRANS, HIGH_LOW_NIBLE(dashPat) | LOW_LOW_NIBLE(dashPat));
-#endif
+	       for (tmp = 0 ; tmp < len; tmp+=2) {
+			FillDashPat;
+			outw(PIX_TRANS, dashPat);
 	       }
 	       break;
 	    } else if (oc1 & oc2) {
@@ -539,23 +374,16 @@ mach32Dline(pDrawable, pGC, mode, npt, pptInit)
 		     outw(DESTY_AXSTP, (short)e1);
 		     outw(DESTX_DIASTP, (short)e2);
 		     outw(MAJ_AXIS_PCNT, (short)len);
-		     outw(CMD, CMD_LINE | DRAW | LASTPIX | PLANAR |
-			     direction | PCDATA | _16BIT | WRTDATA);
-
-		     for (tmp = 0 ; tmp < len; tmp+=16) {
-#ifdef	NEVER
-
-			FillDashPat;
-			outw(PIX_TRANS, dashPat);
-#else
-	    outw(PIX_TRANS, HIGH_HIGH_NIBLE(dashPat) | LOW_HIGH_NIBLE(dashPat));
-	    outw(PIX_TRANS, HIGH_LOW_NIBLE(dashPat) | LOW_LOW_NIBLE(dashPat));
-#endif
+		     outw(CMD, CMD_LINE | DRAW | LASTPIX | direction |
+		          PCDATA | _16BIT | WRTDATA);
+		     for (tmp = 0 ; tmp < len; tmp+=2) {
+			  FillDashPat;
+			  outw(PIX_TRANS, dashPat);
 		     }
 		}
 	       pbox++;
 	    }
-	 }			/* while (nbox--) */
+	 }/* while (nbox--) */
       }/* sloped line */
       miStepDash (unclippedlen, &dashIndex, pDash,
 		  numInDashList, &dashOffset);

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32dseg.c,v 1.2 94/04/17 20:30:44 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32dseg.c,v 3.0 1994/05/08 05:19:22 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -82,18 +82,23 @@ Modified for the mach32 by Mike Bernson (mike@mbsun.mlb.org)
     }
 
 #define FillDashPat {\
-   int i; \
 \
-   for (i = 0; i < 16; i++) {\
-      dashPat <<= 1;\
-      if (tmp + i < len) {\
+      dashPat = 0; \
+      if (tmp < len) {\
 	 if (!(dashIndexTmp & 1))\
-	    dashPat |= 1;\
+	    dashPat |= 0x1e;\
 	 if (--thisDash == 0)\
 	    NextDash\
       }\
-   }\
+      dashPat <<= 8; \
+      if (tmp + 1 < len) {\
+	 if (!(dashIndexTmp & 1))\
+	    dashPat |= 0x1e;\
+	 if (--thisDash == 0)\
+	    NextDash\
+      }\
 }
+
 /*
  * Dashed lines through the graphics engine.
  * Known Bugs: Jon 13/9/93
@@ -186,137 +191,9 @@ mach32Dsegment (pDrawable, pGC, nseg, pSeg)
       x2 = pSeg->x2 + xorg;
       y2 = pSeg->y2 + yorg;
 
+ErrorF("mach32dseg: %d,%d to %d,%d\n", x1, y1, x2, y2);
+
       pSeg++;
-      /* The following code doesn't work as it can change the direction of
-       * the line in order to simplify the cliping. Dashed lines need to
-       * be drawn in the order given in order to caclulate the dash offset
-       * correctly.
-       */
-#ifdef fastaxislinesfixed
-      if (x1 == x2) {
-
-	 if (y1 > y2) {
-	    unclippedlen = y1 = y2;
-	 } else {
-	    direction |= INC_X;
-	    unclippedlen = y2 - y1;	    
-	 }
-	 
-       /* get to first band that might contain part of line */
-	 while ((nbox) && (pbox->y2 <= y1)) {
-	    pbox++;
-	    nbox--;
-	 }
-
-	 if (nbox) {
-	  /* stop when lower edge of box is beyond end of line */
-	    while ((nbox) && (y2 >= pbox->y1)) {
-	       if ((x1 >= pbox->x1) && (x1 < pbox->x2)) {
-		  int   y1t, y2t;
-
-
-		/* this box has part of the line in it */
-		  y1t = max(y1, pbox->y1);
-		  y2t = min(y2, pbox->y2);
-		  if (y1t != y2t) {
-		     /* use tmp dash index and offsets */
-		     dashIndexTmp = dashIndex;    
-		     dashOffsetTmp = dashOffset; 
-
-		     if (y1t != y1) { /* advance the dash index */
-			miStepDash (y1t - y1, &dashIndexTmp, pDash,
-				 numInDashList, &dashOffsetTmp);
-		     }
-		     dashRemaining = pDash[dashIndexTmp] - dashOffsetTmp;
-		     thisDash = dashRemaining ;
-		     
-		     WaitQueue(4);
-		     outw(CUR_X, (short)x1);
-		     outw(CUR_Y, (short)y1t);
-		     len = y2t - y1t;
-		     outw(MAJ_AXIS_PCNT, (short)(len - 1));
-		     outw(CMD, CMD_LINE | DRAW | LINETYPE | PLANAR |
-			   PCDATA | _16BIT |WRTDATA | (6 << 5));
-
-		     for (tmp = 0 ; tmp < len; tmp+=16) {
-			FillDashPat;			
-			outw(PIX_TRANS, dashPat);
-		     }		  
-		  }
-	       }
-	       nbox--;
-	       pbox++;
-	    }
-	 }
-      } else if (y1 == y2) {
-
-       /*
-        * force line from left to right, keeping endpoint semantics
-        */
-	 if (x1 > x2) {
-	    register int tmp;
-
-	    tmp = x2;
-	    x2 = x1 + 1;
-	    x1 = tmp + 1;
-	 }
-	 unclippedlen = x2 - x1;
-       /* find the correct band */
-	 while ((nbox) && (pbox->y2 <= y1)) {
-	    pbox++;
-	    nbox--;
-	 }
-
-       /* try to draw the line, if we haven't gone beyond it */
-	 if ((nbox) && (pbox->y1 <= y1)) {
-	  /* when we leave this band, we're done */
-	    tmp = pbox->y1;
-	    while ((nbox) && (pbox->y1 == tmp)) {
-	       int   x1t, x2t;
-
-	       if (pbox->x2 <= x1) {
-		/* skip boxes until one might contain start point */
-		  nbox--;
-		  pbox++;
-		  continue;
-	       }
-	     /* stop if left of box is beyond right of line */
-	       if (pbox->x1 >= x2) {
-		  nbox = 0;
-		  break;
-	       }
-	       x1t = max(x1, pbox->x1);
-	       x2t = min(x2, pbox->x2);	       
-	       if (x1t != x2t) {
-		  dashIndexTmp = dashIndex;    
-		  dashOffsetTmp = dashOffset; 
-
-		  if (x1t != x1) { /* advance the dash index */
-		     miStepDash (x1t - x1, &dashIndexTmp, pDash,
-				 numInDashList, &dashOffsetTmp);
-		  }
-		  dashRemaining = pDash[dashIndexTmp] - dashOffsetTmp;
-		  thisDash = dashRemaining ;
-		  
-		  WaitQueue(4);
-		  outw(CUR_X, (short)x1t);
-		  outw(CUR_Y, (short)y1);
-		  len = x2t - x1t;
-		  outw(MAJ_AXIS_PCNT, (short)(len - 1));
-		  outw(CMD, CMD_LINE | DRAW | LINETYPE | PLANAR |
-			PCDATA | _16BIT | WRTDATA);
-		  for (tmp = 0 ; tmp < len; tmp+=16) {
-		     FillDashPat;
-		     outw(PIX_TRANS, dashPat);
-		  }		 
-	       }
-	       nbox--;
-	       pbox++;
-	    }
-	 }
-      }
-      else
-#endif
       {			/* sloped line */
 	 direction = 0x0000;
 	 signdx = 1;
@@ -389,12 +266,13 @@ mach32Dsegment (pDrawable, pGC, nseg, pSeg)
 	       outw(ERR_TERM, (short)(e + fix));
 	       outw(DESTY_AXSTP, (short)e1);
 	       outw(DESTX_DIASTP, (short)e2);
+
 	       outw(MAJ_AXIS_PCNT, (short)len);
-	       outw(CMD, CMD_LINE | DRAW | LASTPIX | PLANAR | direction |
+	       outw(CMD, CMD_LINE | DRAW | LASTPIX | direction |
 		       PCDATA | _16BIT | WRTDATA);
-	       for (tmp = 0 ; tmp < len; tmp+=16) {
-		  FillDashPat;
-		  outw(PIX_TRANS, dashPat);
+	       for (tmp = 0 ; tmp < len; tmp+=2) {
+			FillDashPat;
+			outw(PIX_TRANS, dashPat);
 	       }
 	       break;
 	    } else if (oc1 & oc2) {
@@ -495,11 +373,10 @@ mach32Dsegment (pDrawable, pGC, nseg, pSeg)
 		     outw(DESTY_AXSTP, (short)e1);
 		     outw(DESTX_DIASTP, (short)e2);
 		     outw(MAJ_AXIS_PCNT, (short)len);
-		     outw(CMD, CMD_LINE | DRAW | LASTPIX | PLANAR |
-			     direction | PCDATA | _16BIT | WRTDATA);
-
-		     for (tmp = 0 ; tmp < len; tmp+=16) {
-			FillDashPat;
+		     outw(CMD, CMD_LINE | DRAW | LASTPIX | direction |
+			  PCDATA | _16BIT | WRTDATA);
+		     for (tmp = 0 ; tmp < len; tmp+=2) {
+		        FillDashPat;			
 			outw(PIX_TRANS, dashPat);
 		     }
 		  }

@@ -1,5 +1,5 @@
 /* $XConsortium: regmach32.h,v 1.1 94/03/28 21:09:43 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/regmach32.h,v 3.0 1994/04/29 14:07:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/regmach32.h,v 3.1 1994/05/08 05:19:50 dawes Exp $ */
 /* regmach32.h
  *
  * Written by Jake Richter
@@ -67,6 +67,7 @@
 #define	DESTX_DIASTP		0x8ee8
 #define	ERR_TERM		0x92e8
 #define	MAJ_AXIS_PCNT		0x96e8
+#define BRES_COUNT		0x96ee
 #define	GP_STAT			0x9ae8
 #define	GE_STAT			GP_STAT
 #define	CMD			0x9ae8
