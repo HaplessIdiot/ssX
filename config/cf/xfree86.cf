@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.440 2003/03/04 16:25:04 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.441 2003/04/14 20:35:51 herrb Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1189,10 +1189,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #define BuildXF86DRM	NO
 #endif
 
-#ifndef GlxStubLib
-#define GlxStubLib	NO
-#endif
-
 #ifndef GlxUseSGISI
 #define GlxUseSGISI	NO
 #endif
@@ -1337,20 +1333,15 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 
 #if BuildGlxExt
 
-#  if !defined(GlxStaticServerLib) && !GlxStubLib
-#    if BuildXF86DRI
-#      define DRIDefines -DXF86DRI -DGLX_DIRECT_RENDERING DRIDynLoadDefines
-#    else
-#      define DRIDefines /**/
-#    endif
-#    if defined(GlxUseSGISI) && GlxUseSGISI
-#      define GlxCoreLibDefines -DGLX_USE_SGI_SI
-#    else
-#      define GlxCoreLibDefines -DGLX_USE_MESA
-#    endif
+#  if BuildXF86DRI
+#    define DRIDefines -DXF86DRI -DGLX_DIRECT_RENDERING DRIDynLoadDefines
 #  else
 #    define DRIDefines /**/
-#    define GlxCoreLibDefines /**/
+#  endif
+#  if defined(GlxUseSGISI) && GlxUseSGISI
+#    define GlxCoreLibDefines -DGLX_USE_SGI_SI
+#  else
+#    define GlxCoreLibDefines -DGLX_USE_MESA
 #  endif
 
 #  if defined(SparcArchitecture)  \
