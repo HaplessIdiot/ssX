@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.21 2000/02/08 13:13:19 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.22 2000/02/08 17:19:13 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -410,14 +410,14 @@ renditionProtect(ScrnInfoPtr pScreenInfo, Bool On)
 
 
 static Bool
-renditionSaveScreen(ScreenPtr pScreen, Bool Unblank)
+renditionSaveScreen(ScreenPtr pScreen, int mode)
 {
 #ifdef DEBUG
     ErrorF("Savescreen...!!!!\n");
     sleep(1);
 #endif
 
-    return vgaHWSaveScreen(pScreen, Unblank);
+    return vgaHWSaveScreen(pScreen, mode);
 }
 
 static void
@@ -941,7 +941,7 @@ renditionEnterGraphics(ScreenPtr pScreen, ScrnInfoPtr pScreenInfo)
 
     /* Possibly blank the screen */
     if (pScreen)
-        renditionSaveScreen(pScreen, FALSE);
+        renditionSaveScreen(pScreen, SCREEN_SAVER_ON);
 
     (*pScreenInfo->AdjustFrame)(pScreenInfo->scrnIndex,
         pScreenInfo->frameX0, pScreenInfo->frameY0, 0);

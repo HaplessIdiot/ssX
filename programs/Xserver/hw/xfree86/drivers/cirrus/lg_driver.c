@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.19 2000/02/08 13:13:15 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.20 2000/02/10 22:33:39 dawes Exp $ */
 
 #define EXPERIMENTAL
 
@@ -88,7 +88,7 @@ Bool LgScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv);
 Bool LgEnterVT(int scrnIndex, int flags);
 void LgLeaveVT(int scrnIndex, int flags);
 static Bool	LgCloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool	LgSaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool	LgSaveScreen(ScreenPtr pScreen, Bool mode);
 
 /* Required if the driver supports mode switching */
 Bool LgSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
@@ -1801,9 +1801,12 @@ LgValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 
 /* Mandatory */
 static Bool
-LgSaveScreen(ScreenPtr pScreen, Bool unblank)
+LgSaveScreen(ScreenPtr pScreen, int mode)
 {
 	CirPtr pCir = CIRPTR(xf86Screens[pScreen->myNum]);
+	Bool unblank;
+
+	unblank = xf86IsUnblank(mode);
 	
 	if (unblank)
 		/* Power up the palette DAC */
@@ -1812,7 +1815,7 @@ LgSaveScreen(ScreenPtr pScreen, Bool unblank)
 		/* Power down the palette DAC */
 		memwb(0xB0,memrb(0xB0) | 0x80);
 
-	return vgaHWSaveScreen(pScreen, unblank);
+	return vgaHWSaveScreen(pScreen, mode);
 }
 
 static CARD16

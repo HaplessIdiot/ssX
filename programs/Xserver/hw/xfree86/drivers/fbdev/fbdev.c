@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.12 2000/01/27 01:05:12 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.15 2000/02/10 21:12:39 alanh Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -54,7 +54,7 @@ static Bool	FBDevPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool	FBDevScreenInit(int Index, ScreenPtr pScreen, int argc,
 				char **argv);
 static Bool	FBDevCloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool	FBDevSaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool	FBDevSaveScreen(ScreenPtr pScreen, int mode);
 
 /* -------------------------------------------------------------------- */
 
@@ -510,16 +510,19 @@ FBDevRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 }
 
 static Bool
-FBDevSaveScreen(ScreenPtr pScreen, Bool unblank)
+FBDevSaveScreen(ScreenPtr pScreen, int mode)
 {
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 	FBDevPtr fPtr = FBDEVPTR(pScrn);
 	BoxRec box;
+	Bool unblank;
 
 	TRACE_ENTER("FBDevSaveScreen");
 	if (!(fPtr->shadowFB))
 		/* Not implemented yet - alloc huge memory block and copy ? */
 		return TRUE;
+
+	unblank = xf86IsUnblank(mode);
 
 	if (unblank) {
 		box.x1 = 0;

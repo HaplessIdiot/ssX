@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.30 2000/02/13 03:06:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.31 2000/02/14 19:20:46 dawes Exp $ */
 
 
 #include "apm.h"
@@ -41,7 +41,7 @@ static Bool     ApmCloseScreen(int scrnIndex, ScreenPtr pScreen);
 static void     ApmFreeScreen(int scrnIndex, int flags);
 static int      ApmValidMode(int scrnIndex, DisplayModePtr mode,
                                  Bool verbose, int flags);
-static Bool	ApmSaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool	ApmSaveScreen(ScreenPtr pScreen, int mode);
 static void	ApmUnlock(ApmPtr pApm);
 static void	ApmLock(ApmPtr pApm);
 static void	ApmRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg,
@@ -1758,7 +1758,7 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pApm->CurrentLayout.pMode = pScrn->currentMode;
 
     /* Darken the screen for aesthetic reasons and set the viewport */
-    ApmSaveScreen(pScreen, FALSE);
+    ApmSaveScreen(pScreen, SCREEN_SAVER_ON);
     ApmAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
     /*
@@ -2217,16 +2217,19 @@ ApmDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 #endif
 
 static Bool
-ApmSaveScreen(ScreenPtr pScreen, Bool unblank)
+ApmSaveScreen(ScreenPtr pScreen, int mode)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    Bool unblank;
 
-   if (unblank)
-      SetTimeSinceLastInputEvent();
+    unblank = xf86IsUnblank(mode);
 
-   if (pScrn->vtSema)
-       vgaHWBlankScreen(pScrn, unblank);
-   return TRUE;
+    if (unblank)
+	SetTimeSinceLastInputEvent();
+
+    if (pScrn->vtSema)
+	vgaHWBlankScreen(pScrn, unblank);
+    return TRUE;
 }
 
 #ifdef APM_DEBUG

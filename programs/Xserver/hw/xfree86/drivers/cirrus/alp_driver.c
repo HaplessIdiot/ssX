@@ -9,7 +9,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.3 2000/02/08 13:13:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.4 2000/02/10 22:33:38 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -96,7 +96,7 @@ Bool AlpScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv);
 Bool AlpEnterVT(int scrnIndex, int flags);
 void AlpLeaveVT(int scrnIndex, int flags);
 static Bool	AlpCloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool	AlpSaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool	AlpSaveScreen(ScreenPtr pScreen, int mode);
 
 /* Required if the driver supports mode switching */
 Bool AlpSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
@@ -1825,9 +1825,9 @@ AlpValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 
 /* Mandatory */
 static Bool
-AlpSaveScreen(ScreenPtr pScreen, Bool unblank)
+AlpSaveScreen(ScreenPtr pScreen, int mode)
 {
-	return vgaHWSaveScreen(pScreen, unblank);
+	return vgaHWSaveScreen(pScreen, mode);
 }
 
 /*

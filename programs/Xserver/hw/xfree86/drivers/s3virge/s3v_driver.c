@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.47 2000/02/12 20:45:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.48 2000/02/14 19:20:51 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -98,7 +98,7 @@ static Bool S3VMapMem(ScrnInfoPtr pScrn);
 static void S3VUnmapMem(ScrnInfoPtr pScrn);
 static Bool S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static Bool S3VCloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool S3VSaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool S3VSaveScreen(ScreenPtr pScreen, int mode);
 static void S3VInitSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams, DisplayModePtr mode);
 /* s3v.h - static void S3VAdjustFrame(int scrnIndex, int x, int y, int flags); */
 /* s3v.h - static Bool S3VSwitchMode(int scrnIndex, DisplayModePtr mode, int flags); */
@@ -3181,18 +3181,7 @@ S3VCloseScreen(int scrnIndex, ScreenPtr pScreen)
 static Bool
 S3VSaveScreen(ScreenPtr pScreen, int mode)
 {
-  switch (mode) {
-  case SCREEN_SAVER_OFF:
-  case SCREEN_SAVER_FORCER:
-    return vgaHWSaveScreen(pScreen, TRUE);
-    break;
-  case SCREEN_SAVER_ON:
-  case SCREEN_SAVER_CYCLE:
-    return vgaHWSaveScreen(pScreen, FALSE);
-    break;
-  default:
-    return FALSE;
-  }
+  return vgaHWSaveScreen(pScreen, mode);
 }
 
 

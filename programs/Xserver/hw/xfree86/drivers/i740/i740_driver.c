@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.3 1999/09/27 06:29:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.9 2000/01/30 01:15:51 alanh Exp $ */
 
 /*
  * Authors:
@@ -118,7 +118,7 @@ static void I740LeaveVT(int scrnIndex, int flags);
 static Bool I740CloseScreen(int scrnIndex, ScreenPtr pScreen);
 
 /* Change screensaver state */
-static Bool I740SaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool I740SaveScreen(ScreenPtr pScreen, int mode);
 
 /* Allow mode switching */
 static Bool I740SwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
@@ -1453,7 +1453,7 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   I740Save(pScrn);
   if (!I740ModeInit(pScrn, pScrn->currentMode)) return FALSE;
 
-  I740SaveScreen(pScreen, FALSE);
+  I740SaveScreen(pScreen, SCREEN_SAVER_ON);
   I740AdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
   miClearVisualTypes();
@@ -1695,11 +1695,14 @@ I740ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags) {
 }
 
 static Bool
-I740SaveScreen(ScreenPtr pScreen, Bool unblack)
+I740SaveScreen(ScreenPtr pScreen, int mode)
 {
-  /* if (unblack) outw(SRX, 0x0300);
-     else outw(SRX, 0x0100); */
-  return vgaHWSaveScreen(pScreen, unblack);
+#if 0
+  Bool unblack = xf86IsUnblank(mode);
+  if (unblack) outw(SRX, 0x0300);
+  else outw(SRX, 0x0100);
+#endif
+  return vgaHWSaveScreen(pScreen, mode);
 }
 
 #ifdef DPMSExtension

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.5 1999/09/27 06:29:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.6 2000/01/21 01:12:14 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -33,18 +33,20 @@
 /*
  * ATISaveScreen --
  *
- * DIX calls this function to blank (On == FALSE) or unblank (On == TRUE) the
- * screen.
+ * DIX calls this function to blank the screen.
  */
 Bool
 ATISaveScreen
 (
     ScreenPtr pScreen,
-    int       On
+    int       Mode
 )
 {
     ScrnInfoPtr pScreenInfo;
     ATIPtr      pATI;
+    Bool	On;
+
+    On = xf86IsBlank(Mode);
 
     if (On)
         SetTimeSinceLastInputEvent();
@@ -110,7 +112,7 @@ ATIEnterGraphics
 
     /* Possibly blank the screen */
     if (pScreen)
-       (void)ATISaveScreen(pScreen, FALSE);
+       (void)ATISaveScreen(pScreen, SCREEN_SAVER_ON);
 
     /* Position the screen */
     (*pScreenInfo->AdjustFrame)(pScreenInfo->scrnIndex,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.31 1999/10/13 16:49:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.37 2000/02/10 21:14:52 alanh Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -408,9 +408,9 @@ GenericProtect(ScrnInfoPtr pScreenInfo, Bool On)
 
 
 static Bool
-GenericSaveScreen(ScreenPtr pScreen, Bool Unblank)
+GenericSaveScreen(ScreenPtr pScreen, int mode)
 {
-    return vgaHWSaveScreen(pScreen, Unblank);
+    return vgaHWSaveScreen(pScreen, mode);
 }
 
 static void
@@ -781,7 +781,7 @@ GenericEnterGraphics(ScreenPtr pScreen, ScrnInfoPtr pScreenInfo)
 
     /* Possibly blank the screen */
     if (pScreen)
-        GenericSaveScreen(pScreen, FALSE);
+        GenericSaveScreen(pScreen, SCREEN_SAVER_ON);
 
     (*pScreenInfo->AdjustFrame)(pScreenInfo->scrnIndex,
         pScreenInfo->frameX0, pScreenInfo->frameY0, 0);

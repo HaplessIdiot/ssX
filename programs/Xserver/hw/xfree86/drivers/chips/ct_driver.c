@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.77 2000/02/08 13:13:11 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.78 2000/02/12 02:54:42 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -148,7 +148,7 @@ static Bool     CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen);
 static void     CHIPSFreeScreen(int scrnIndex, int flags);
 static int      CHIPSValidMode(int scrnIndex, DisplayModePtr mode,
                                  Bool verbose, int flags);
-static Bool	CHIPSSaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool	CHIPSSaveScreen(ScreenPtr pScreen, int mode);
 
 /* Internally used functions */
 static int      chipsFindIsaDevice(GDevPtr dev);
@@ -3515,7 +3515,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     chipsSave(pScrn);
     if (!chipsModeInit(pScrn,pScrn->currentMode))
 	return FALSE;
-    CHIPSSaveScreen(pScreen,FALSE);
+    CHIPSSaveScreen(pScreen,SCREEN_SAVER_ON);
     CHIPSAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
     
     /*
@@ -4162,20 +4162,23 @@ chipsDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 #endif
 
 static Bool
-CHIPSSaveScreen(ScreenPtr pScreen, Bool unblank)
+CHIPSSaveScreen(ScreenPtr pScreen, int mode)
 {
-   ScrnInfoPtr pScrn = NULL;            /* §§§ */
+    ScrnInfoPtr pScrn = NULL;            /* §§§ */
+    Bool unblank;
 
-   if (pScreen != NULL)
-      pScrn = xf86Screens[pScreen->myNum];
+    unblank = xf86IsUnblank(mode);
 
-   if (unblank)
-      SetTimeSinceLastInputEvent();
+    if (pScreen != NULL)
+	pScrn = xf86Screens[pScreen->myNum];
 
-   if ((pScrn != NULL) && pScrn->vtSema) { /* §§§ */
-     chipsBlankScreen(pScrn, unblank);
-   }
-   return (TRUE);
+    if (unblank)
+	SetTimeSinceLastInputEvent();
+
+    if ((pScrn != NULL) && pScrn->vtSema) { /* §§§ */
+	chipsBlankScreen(pScrn, unblank);
+    }
+    return (TRUE);
 }
 
 static Bool

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.124 2000/02/08 13:13:03 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.126 2000/02/12 23:59:09 eich Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -258,9 +258,10 @@ void xf86ConfigIsaEntityInactive(EntityInfoPtr pEnt, IsaChipsets *i_chip,
 				 EntityProc enter, EntityProc leave,
 				 pointer private);
 Bool xf86IsScreenPrimary(int scrnIndex);
-extern int  xf86RegisterRootWindowProperty(int ScrnIndex, Atom	property, Atom type,
+int  xf86RegisterRootWindowProperty(int ScrnIndex, Atom	property, Atom type,
 				    int format, unsigned long len,
 				    pointer value);
+Bool xf86IsUnblank(int mode);
 
 
 /* xf86Init.c */

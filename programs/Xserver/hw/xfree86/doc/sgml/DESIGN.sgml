@@ -27,7 +27,7 @@
 
 <title>XFree86 X server ``New Design'' (DRAFT)
 <author>The XFree86 Project, Inc
-<date>Last modified 17 December 1999
+<date>Last modified 15 February 2000
 
 
 
@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.21 2000/02/08 19:43:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.22 2000/02/15 00:12:54 dawes Exp $
 </ident>
 
 
@@ -5614,6 +5614,24 @@ typedef struct {
     </quote>
   </quote>
 
+<sect1>Other helper functions
+<p>
+  <quote><p>
+    &s.code;Bool xf86IsUnblank(int mode)&e.code;
+    <quote><p>
+      Returns &s.code;FALSE&e.code; when the screen saver mode specified
+      by &s.code;mode&e.code; requires the screen be unblanked,
+      and &s.code;TRUE&e.code; otherwise.  The screen saver modes that
+      require blanking are &s.code;SCREEN_SAVER_ON&e.code; and
+      &s.code;SCREEN_SAVER_CYCLE&e.code;, and the screen saver modes that
+      require unblanking are &s.code;SCREEN_SAVER_OFF&e.code; and
+      &s.code;SCREEN_SAVER_FORCER&e.code;.  Drivers may call this helper
+      from their &s.code;SaveScreen()&e.code; function to interpret the
+      screen saver modes.
+
+    </quote>
+  </quote>
+
 <sect>The vgahw module
 <p>
 
@@ -5949,11 +5967,13 @@ programming the standard VGA registers, and for handling VGA colourmaps.
 
     </quote>
 
-    &s.code;Bool vgaHWSaveScreen(ScreenPtr pScreen, Bool on)&e.code;
+    &s.code;Bool vgaHWSaveScreen(ScreenPtr pScreen, int mode)&e.code;
     <quote><p>
       This function blanks and unblanks the screen.  It is blanked when
-      &s.code;on&e.code; is &s.code;FALSE&e.code;, and unblanked when
-      &s.code;on&e.code; is &s.code;TRUE&e.code;.
+      &s.code;mode&e.code; is &s.code;SCREEN_SAVER_ON&e.code; or
+      &s.code;SCREEN_SAVER_CYCLE&e.code;, and unblanked when
+      &s.code;mode&e.code; is &s.code;SCREEN_SAVER_OFF&e.code; or
+      &s.code;SCREEN_SAVER_FORCER&e.code;.
 
     </quote>
 
@@ -6602,7 +6622,7 @@ ZZZProbe(DriverPtr drv, int flags)
 <sect2>AvailableOptions
 <p>
 
-    Define the s.code;AvailableOptions()&e.code; function. The purpose
+    Define the &s.code;AvailableOptions()&e.code; function. The purpose
     of this is to return the available driver options back to the
     -configure option, so that an XF86Config file can be built and the
     user can see which options are available for them to use.
@@ -7245,9 +7265,9 @@ This function is mandatory.
 
     <code>
 static Bool
-ZZZSaveScreen(ScreenPtr pScreen, Bool unblank)
+ZZZSaveScreen(ScreenPtr pScreen, int mode)
 {
-    return vgaHWSaveScreen(pScreen, unblank);
+    return vgaHWSaveScreen(pScreen, mode);
 }
     </code>
 

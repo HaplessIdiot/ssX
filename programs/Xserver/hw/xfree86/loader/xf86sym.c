@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.127 2000/02/10 15:48:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.129 2000/02/13 01:28:37 eich Exp $ */
 
 /*
  *
@@ -395,6 +395,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ConfigIsaEntityInactive)
    SYMFUNC(xf86IsScreenPrimary)
    SYMFUNC(xf86RegisterRootWindowProperty)
+   SYMFUNC(xf86IsUnblank)
 
    /* xf86Init.c */
    SYMFUNC(xf86GetPixFormat)

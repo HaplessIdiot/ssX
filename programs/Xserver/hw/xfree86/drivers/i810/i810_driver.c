@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.3 1999/09/27 06:29:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.1 2000/02/11 17:25:52 dawes Exp $ */
 
 /*
  * Authors:
@@ -83,7 +83,7 @@ static Bool I810ScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv);
 static Bool I810EnterVT(int scrnIndex, int flags);
 static void I810LeaveVT(int scrnIndex, int flags);
 static Bool I810CloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool I810SaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool I810SaveScreen(ScreenPtr pScreen, int mode);
 static Bool I810SwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 static void I810AdjustFrame(int scrnIndex, int x, int y, int flags);
 static void I810FreeScreen(int scrnIndex, int flags);
@@ -1625,7 +1625,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
    I810Save(pScrn);
    if (!I810ModeInit(pScrn, pScrn->currentMode)) return FALSE;
 
-   I810SaveScreen(pScreen, FALSE);
+   I810SaveScreen(pScreen, SCREEN_SAVER_ON);
    I810AdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
 
@@ -2060,9 +2060,9 @@ I810ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags) {
 }
 
 static Bool
-I810SaveScreen(ScreenPtr pScreen, Bool unblack)
+I810SaveScreen(ScreenPtr pScreen, Bool mode)
 {
-   return vgaHWSaveScreen(pScreen, unblack);
+   return vgaHWSaveScreen(pScreen, mode);
 }
 
 #ifdef DPMSExtension

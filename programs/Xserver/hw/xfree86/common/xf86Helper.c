@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.64 1999/12/03 19:17:23 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.73 2000/02/12 23:59:09 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2587,4 +2587,20 @@ ErrorF("xf86RegisterRootWindowProperty(%d, %d, %d, %d, %d, %p)\n",
 ErrorF("xf86RegisterRootWindowProperty succeeded\n");
     return(Success);    
 }
+
+Bool
+xf86IsUnblank(int mode)
+{
+    switch(mode) {
+    case SCREEN_SAVER_OFF:
+    case SCREEN_SAVER_FORCER:
+	return TRUE;
+    case SCREEN_SAVER_ON:
+    case SCREEN_SAVER_CYCLE:
+	return FALSE;
+    default:
+	xf86MsgVerb(X_WARNING, 0, "Unexpected save screen mode: %d\n", mode);
+	return TRUE;
+}
+
 

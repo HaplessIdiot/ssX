@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.137 2000/02/13 07:27:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.138 2000/02/14 18:11:57 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -123,7 +123,7 @@ static Bool	MGAEnterVT(int scrnIndex, int flags);
 static Bool	MGAEnterVTFBDev(int scrnIndex, int flags);
 static void	MGALeaveVT(int scrnIndex, int flags);
 static Bool	MGACloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool	MGASaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool	MGASaveScreen(ScreenPtr pScreen, int mode);
 
 /* This shouldn't be needed since RAC will disable all I/O for MGA cards. */
 #ifdef DISABLE_VGA_IO
@@ -2283,7 +2283,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 
     /* Darken the screen for aesthetic reasons and set the viewport */
-    MGASaveScreen(pScreen, FALSE);
+    MGASaveScreen(pScreen, SCREEN_SAVER_ON);
     pScrn->AdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
     /*
@@ -2762,9 +2762,9 @@ MGAValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 
 /* Mandatory */
 static Bool
-MGASaveScreen(ScreenPtr pScreen, Bool unblank)
+MGASaveScreen(ScreenPtr pScreen, int mode)
 {
-    return vgaHWSaveScreen(pScreen, unblank);
+    return vgaHWSaveScreen(pScreen, mode);
 }
 
 

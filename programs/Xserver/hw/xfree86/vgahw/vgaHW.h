@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.19 1999/07/17 07:18:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.22 2000/02/08 13:13:34 eich Exp $ */
 
 
 /*
@@ -194,7 +194,7 @@ typedef struct _vgaHWRec {
 void vgaHWSetStdFuncs(vgaHWPtr hwp);
 void vgaHWSetMmioFuncs(vgaHWPtr hwp, CARD8 *base, int offset);
 void vgaHWProtect(ScrnInfoPtr pScrn, Bool on);
-Bool vgaHWSaveScreen(ScreenPtr pScreen, Bool on);
+Bool vgaHWSaveScreen(ScreenPtr pScreen, int mode);
 void vgaHWBlankScreen(ScrnInfoPtr pScrn, Bool on);
 void vgaHWSeqReset(vgaHWPtr hwp, Bool start);
 void vgaHWRestoreFonts(ScrnInfoPtr scrninfp, vgaRegPtr restore);

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.16 2000/02/08 17:19:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.17 2000/02/15 07:13:43 martin Exp $ */
 
 /*
  * Authors:
@@ -133,7 +133,7 @@ static void TDFXLeaveVT(int scrnIndex, int flags);
 static Bool TDFXCloseScreen(int scrnIndex, ScreenPtr pScreen);
 
 /* Change screensaver state */
-static Bool TDFXSaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool TDFXSaveScreen(ScreenPtr pScreen, int mode);
 
 /* Cleanup server private data */
 static void TDFXFreeScreen(int scrnIndex, int flags);
@@ -1869,11 +1869,14 @@ TDFXBlankScreen(ScrnInfoPtr pScrn, Bool unblank)
 }
 
 static Bool
-TDFXSaveScreen(ScreenPtr pScreen, Bool unblank)
+TDFXSaveScreen(ScreenPtr pScreen, int mode)
 {
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+  Bool unblank;
 
   TDFXTRACE("TDFXSaveScreen start\n");
+
+  unblank = xf86IsUnblank(mode);
 
   if (unblank)
     SetTimeSinceLastInputEvent();
