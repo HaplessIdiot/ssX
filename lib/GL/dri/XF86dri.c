@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.10 2000/09/24 13:50:59 alanh Exp $ */
+/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.11 2000/12/07 20:26:02 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -38,9 +38,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
 #define NEED_REPLIES
-#include "Xlibint.h"
+#include <X11/Xlibint.h>
 #include "xf86dristr.h"
-#include "Xext.h"
+#include <X11/extensions/Xext.h>
 #include "extutil.h"
 
 static XExtensionInfo _xf86dri_info_data;

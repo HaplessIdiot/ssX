@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xfsinfo/xfsinfo.c,v 1.1 2001/01/06 21:58:28 herrb Exp $ */
+/* $XFree86: xc/programs/xfsinfo/xfsinfo.c,v 1.2 2001/04/01 14:00:21 tsi Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -57,7 +57,7 @@ from The Open Group.
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<X11/Xos.h>
-#include	"FSlib.h"
+#include	<X11/fonts/FSlib.h>
 
 static void print_server_info(FSServer *svr);
 static void print_catalogue_info(FSServer *svr);

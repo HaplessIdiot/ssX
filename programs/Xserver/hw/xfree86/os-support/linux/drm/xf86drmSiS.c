@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmSiS.c,v 1.7 2001/05/19 18:29:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmSiS.c,v 1.8 2001/08/01 00:44:56 tsi Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
@@ -28,7 +28,7 @@
 extern int xf86InstallSIGIOHandler(int fd, void (*f)(int, void *), void *);
 extern int xf86RemoveSIGIOHandler(int fd);
 # else
-#  include <Xlibint.h>
+#  include <X11/Xlibint.h>
 #  define _DRM_MALLOC Xmalloc
 #  define _DRM_FREE   Xfree
 # endif

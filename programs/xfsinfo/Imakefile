@@ -3,7 +3,6 @@ LOCAL_LIBRARIES = $(FSLIB)
 DEPLIBS = $(DEPFSLIB)
 SRCS = xfsinfo.c
 OBJS = xfsinfo.o
-INCLUDES = -I$(XBUILDINCDIR)/fonts -I$(FONTINCSRC)
 
 ComplexProgramTarget(xfsinfo)
 
