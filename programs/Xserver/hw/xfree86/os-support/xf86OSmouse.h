@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.25 2004/02/13 23:58:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.26 2004/07/21 20:27:59 herrb Exp $ */
 /*
  * Copyright (c) 1999-2003 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -301,7 +301,7 @@ typedef struct _MouseDevRec {
 /* Generalize for other axes. */
 #define MSE_NOAXISMAP	MSE_NOZMAP
 
-#define MSE_MAXBUTTONS	12
+#define MSE_MAXBUTTONS	24
 #define MSE_DFLTBUTTONS	 3
 
 #endif /* _XF86OSMOUSE_H_ */
