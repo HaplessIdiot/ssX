@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules,v 1.193 94/04/10 17:39:55 rws Exp $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.1 1994/06/12 16:30:08 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.2 1994/07/15 06:52:17 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1755,6 +1755,15 @@ NamedTargetSubdirs(install.man,dirs,"installing man pages",DESTDIR=$(DESTDIR),in
 #ifndef InstallLinkKitLibrary
 #define InstallLinkKitLibrary(lib,dir)
 #endif /* InstallLinkKitLibrary */
+
+
+/*
+ * InstallLinkKitNamedLibrary - rule for installing link kit libraries
+ * (XFree86 only)
+ */
+#ifndef InstallLinkKitNamedLibrary
+#define InstallLinkKitNamedLibrary(lib,dlib,dir)
+#endif /* InstallLinkKitNamedLibrary */
 
 
 /*

@@ -1,5 +1,5 @@
 /* $XConsortium: FSConnServ.c,v 1.26 94/04/17 20:15:10 dpw Exp $ */
-/* $XFree86: xc/lib/FS/FSConnServ.c,v 3.1 1994/04/28 14:42:10 dawes Exp $ */
+/* $XFree86: xc/lib/FS/FSConnServ.c,v 3.2 1994/05/08 05:14:40 dawes Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -140,8 +140,10 @@ _FSDisconnectServer(trans_conn)
     (void) _FSTransClose(trans_conn);
 }
 
+#ifndef __NetBSD__
 #undef NULL
 #define NULL ((char *) 0)
+#endif
 /*
  * This is an OS dependent routine which:
  * 1) returns as soon as the connection can be written on....
@@ -167,7 +169,11 @@ _FSWaitForWritable(svr)
 #ifdef WIN32
 	    nfound = select (0, &r_mask, &w_mask, NULL, NULL);
 #else
+#ifdef FD_ZERO
+	    nfound = select(svr->fd + 1, (fd_set *) r_mask, (fd_set *) w_mask, NULL, NULL);
+#else
 	    nfound = select(svr->fd + 1, r_mask, w_mask, NULL, NULL);
+#endif
 #endif
 #else /* AMOEBA */
 	    if (_FSTransAmSelect(svr->fd, 0) > 0) {
@@ -241,7 +247,11 @@ _FSWaitForReadable(svr)
 #ifdef WIN32
 	result = select (0, &r_mask, NULL, NULL, NULL);
 #else
+#ifdef FD_ZERO
+	result = select(svr->fd + 1, (fd_set *) r_mask, NULL, NULL, NULL);
+#else
 	result = select(svr->fd + 1, r_mask, NULL, NULL, NULL);
+#endif
 #endif
 #else
 	if ((result = _FSTransAmSelect(svr->fd, 0)) > 0) {
