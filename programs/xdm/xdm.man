@@ -23,7 +23,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xdm/xdm.man,v 3.28 2004/01/09 00:25:23 dawes Exp $
+.\" $XFree86: xc/programs/xdm/xdm.man,v 3.29 2004/01/12 21:43:19 herrb Exp $
 .\"
 .TH XDM 1 __xorgversion__
 .SH NAME
@@ -305,7 +305,7 @@ uses the \fIlockf\fP library call, while on BSD it uses \fIflock.\fP
 This names a directory under which
 .I xdm
 stores authorization files while initializing the session.  The
-default value is \fI __projectroot__/lib/X11/xdm.\fP
+default value is \fI XDMAUTHDIR\fP.
 Can be overridden for specific displays by
 DisplayManager.\fIDISPLAY\fP.authFile.
 .IP \fBDisplayManager.autoRescan\fP
@@ -1358,7 +1358,7 @@ the default server
 .I __projectroot__/bin/xterm
 the default session program and failsafe client
 .TP 20
-.I __projectroot__/lib/X11/xdm/A<display>\-<suffix>
+.I XDMAUTHDIR/authdir/authfiles/A<display>\-<suffix>
 the default place for authorization files
 .TP 20
 .I /tmp/K5C<display>

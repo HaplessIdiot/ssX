@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:14 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.67tsi Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.68 2004/04/26 16:24:28 tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
@@ -263,7 +263,8 @@ LOCAL_LIBRARIES = $(GREETLIBS) $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) \
 		$(XKB_CLIENT_DEFINES) $(USER_CONTEXT_DEFINES) \
 		$(XPM_DEFINES) $(XINERAMA_DEFINES) $(PROCTITLE_DEFINES) \
 		$(IFADDRS_DEFINES) $(IPV6_DEFINES) $(MKSTEMP_DEFINES)
-   EXTRAMANDEFS = $(RANDOM_DEFINES) -DCHOOSERPATH=$(CHOOSERPATH)
+   EXTRAMANDEFS = $(RANDOM_DEFINES) -DCHOOSERPATH=$(CHOOSERPATH) \
+		-DXDMAUTHDIR=$(XDMDIR)
 
 XCOMM
 XCOMM Special definitions for compiling default resources; these parameters

@@ -1,4 +1,6 @@
 XFree86 4.4.99.7 (xx May 2004)
+ 119. Update xdm docs/config to handle authDir in a non-default location
+      (#6269, Luke Mewburn).
  118. Remove stale code for Mac OS X 10.0 support (Torrey T. Lyons).
  117. Add initial Xinput support for XDarwin (Greg Parker).
  116. Xterm patch #191 (Thomas Dickey).
@@ -18956,7 +18958,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3265 2004/06/06 22:15:24 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3266 2004/06/07 18:50:26 torrey Exp $
 
 
 
