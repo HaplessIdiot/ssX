@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.66 2002/11/26 06:46:50 torrey Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.67 2002/12/17 05:06:05 dawes Exp $ */
 
 
 /* 
@@ -348,8 +348,7 @@ char *cpp_argv[ARGUMENTS] = {
     defined(__GNU__) || defined(__bsdi__) || defined(__GNUC__)
 # ifdef __i386__
 	"-D__i386__",
-#  if defined (__GNUC__) && __GNUC__ > 3 || \
-           (__GNUC__ == 3 && __GNUC_MINOR__ >0)
+#  if defined(__GNUC__) && (__GNUC__ >= 3)
 	"-m32",
 #  endif
 # endif

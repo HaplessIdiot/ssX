@@ -27,7 +27,7 @@
    * used in advertising or publicity pertaining to distribution of the 
    * software without specific, written prior permission.
   \*/
-/* $XFree86: xc/programs/xkbcomp/utils.h,v 3.4 2001/07/25 15:05:24 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/utils.h,v 3.5 2002/06/05 00:00:37 dawes Exp $ */
 
 /***====================================================================***/
 
@@ -132,7 +132,8 @@ extern	Boolean	uSetErrorFile(
 extern	void	uInformation(
 	char * /* s */, ...
 )
-#if __GNUC__-0 > 2 || (__GNUC__-0 == 2 && __GNUC_MINOR__ >= 6)
+#if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
 __attribute__((format(printf, 1, 2)))
 #endif
 ;
@@ -148,7 +149,8 @@ __attribute__((format(printf, 1, 2)))
 extern	void	uAction(
 	char * /* s  */, ...
 )
-#if __GNUC__-0 > 2 || (__GNUC__-0 == 2 && __GNUC_MINOR__ >= 6)
+#if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
 __attribute__((format(printf, 1, 2)))
 #endif
 ;
@@ -164,7 +166,8 @@ __attribute__((format(printf, 1, 2)))
 extern	void	uWarning(
 	char * /* s  */, ...
 )
-#if __GNUC__-0 > 2 || (__GNUC__-0 == 2 && __GNUC_MINOR__ >= 6)
+#if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
 __attribute__((format(printf, 1, 2)))
 #endif
 ;
@@ -180,7 +183,8 @@ __attribute__((format(printf, 1, 2)))
 extern	void	uError(
 	char * /* s  */, ...
 )
-#if __GNUC__-0 > 2 || (__GNUC__-0 == 2 && __GNUC_MINOR__ >= 6)
+#if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
 __attribute__((format(printf, 1, 2)))
 #endif
 ;
@@ -196,7 +200,8 @@ __attribute__((format(printf, 1, 2)))
 extern	void	uFatalError(
 	char * /* s  */, ...
 )
-#if __GNUC__-0 > 2 || (__GNUC__-0 == 2 && __GNUC_MINOR__ >= 6)
+#if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
 __attribute__((format(printf, 1, 2)))
 #endif
 ;
@@ -213,7 +218,8 @@ __attribute__((format(printf, 1, 2)))
 extern	void	uInternalError(
 	char * /* s  */, ...
 )
-#if __GNUC__-0 > 2 || (__GNUC__-0 == 2 && __GNUC_MINOR__ >= 6)
+#if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
 __attribute__((format(printf, 1, 2)))
 #endif
 ;
@@ -289,7 +295,8 @@ unsigned	int	DEBUG_VAR;
 extern	void	uDebug(
 	char * /* s  */, ...
 )
-#if __GNUC__-0 > 2 || (__GNUC__-0 == 2 && __GNUC_MINOR__ >= 6)
+#if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
 __attribute__((format(printf, 1, 2)))
 #endif
 ;
@@ -297,7 +304,8 @@ __attribute__((format(printf, 1, 2)))
 extern	void	uDebugNOI(	/* no indent */
 	char * /* s  */, ...
 )
-#if __GNUC__-0 > 2 || (__GNUC__-0 == 2 && __GNUC_MINOR__ >= 6)
+#if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
 __attribute__((format(printf, 1, 2)))
 #endif
 ;
@@ -346,7 +354,8 @@ extern	void	uEntry(
 	int	/* l */,
 	char *	/* s  */, ...
 )
-#if __GNUC__-0 > 2 || (__GNUC__-0 == 2 && __GNUC_MINOR__ >= 6)
+#if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
 __attribute__((format(printf, 2, 3)))
 #endif
 ;

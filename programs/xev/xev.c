@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xev/xev.c,v 1.5 2002/01/07 20:38:30 dawes Exp $ */
+/* $XFree86: xc/programs/xev/xev.c,v 1.6 2002/11/26 02:10:51 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -638,7 +638,8 @@ set_sizehints (hintp, min_width, min_height,
 }
 
 
-#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
+#if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 7)))
 void usage () __attribute__((__noreturn__));
 #endif
 void
