@@ -3,12 +3,15 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.41 1999/08/23 06:24:54 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.42 1999/08/23 06:59:38 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
 
 SGMLDEPENDS = defs.ent
+  INDEXLIST = README.sgml RELNOTES.sgml LICENSE.sgml DESIGN.sgml \
+	      mouse.sgml fonts.sgml isc.sgml \
+              ati.sgml chips.sgml DECtga.sgml s3virge.sgml SiS.sgml
 
 #if 0
 LinuxDocReadmeTarget(Bsdi)
@@ -79,4 +82,14 @@ LinuxDocTargetLong(VidModes.sgml,VideoModes.doc,VideoModes)
 LinuxDocTargetLong(VGADriv.sgml,VGADriver.Doc,VGADriver)
 #endif
 
+index.sgml: $(INDEXLIST) indexPre.sgml indexPost.sgml add.sh Imakefile $(SGMLDEPENDS)
+	RemoveFile(index.sgml)
+	cat indexPre.sgml > index.sgml
+	echo "<!-- This file is auto-generated.  Do not edit! -->" >> index.sgml
+	for i in $(INDEXLIST); do \
+		$(SHELL) ./add.sh $$i; \
+	done
+	cat indexPost.sgml >> index.sgml
+
+LinuxDocTarget(index)
 
