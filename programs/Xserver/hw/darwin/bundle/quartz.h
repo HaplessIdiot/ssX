@@ -3,7 +3,7 @@
 
   Quartz-specific functions and definitions
 */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz.h,v 1.4 2001/03/15 22:24:26 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.h,v 1.1 2001/03/24 23:08:53 torrey Exp $ */
 
 #ifndef _QUARTZ_H
 #define _QUARTZ_H
@@ -15,6 +15,7 @@
 
 void QuartzOsVendorInit(void);
 Bool QuartzAddScreen(ScreenPtr screen);
+Bool QuartzInitCursor(ScreenPtr pScreen);
 void QuartzGiveUp(void);
 void QuartzHide(void);
 void QuartzShow(void);
