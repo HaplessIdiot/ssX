@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.c,v 1.2 2000/08/25 13:42:28 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.c,v 1.3 2000/12/04 19:21:44 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -101,7 +101,6 @@ GLboolean r128CreateContext(Display *dpy, GLvisual *glVisual,
     }
     r128ctx->lastTexHeap = r128scrn->NRTexHeaps;
 
-    r128ctx->BufferSize  = glVisual->DepthBits;
     r128ctx->DepthSize   = glVisual->DepthBits;
     r128ctx->StencilSize = glVisual->StencilBits;
 

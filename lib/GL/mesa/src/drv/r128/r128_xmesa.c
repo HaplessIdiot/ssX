@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_xmesa.c,v 1.2 2000/12/04 19:21:48 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_xmesa.c,v 1.3 2000/12/07 20:26:09 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -170,18 +170,6 @@ GLboolean XMesaMakeCurrent(__DRIcontextPrivate *driContextPriv,
     if (driContextPriv) {
 	r128ContextPtr r128ctx = (r128ContextPtr)driContextPriv->driverPrivate;
 
-#if 0
-	/* GH: This causes the driver to fail the glean makeCurrent
-	 * tests.  Leave it disabled for now...
-	 */
-	if (r128Context &&
-	    r128ctx == (void *)r128Context &&
-	    driDrawPriv == R128_DRIDRAWABLE(r128Context))
-	    return GL_TRUE;
-#endif
-
-	/* GH: Do we still need this then?
-	 */
 	r128Context = r128MakeCurrent(r128Context, r128ctx, driDrawPriv);
 
 	gl_make_current2(R128_MESACTX(r128Context),
@@ -191,6 +179,11 @@ GLboolean XMesaMakeCurrent(__DRIcontextPrivate *driContextPriv,
 	   r128Context->driDrawable = driDrawPriv;
 	   r128Context->dirty = R128_UPLOAD_ALL;
 	}
+
+	/* GH: We need this to correctly calculate the window offset
+	 * and aux scissor rects.
+	 */
+	r128Context->new_state = R128_NEW_WINDOW | R128_NEW_CLIP;
 
 	if (!R128_MESACTX(r128Context)->Viewport.Width) {
 	    gl_Viewport(R128_MESACTX(r128Context), 0, 0,

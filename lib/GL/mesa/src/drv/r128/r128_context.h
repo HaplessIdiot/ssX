@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.h,v 1.2 2000/08/25 13:42:28 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.h,v 1.3 2000/12/04 19:21:44 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -90,8 +90,8 @@ typedef struct r128_context *r128ContextPtr;
 
 /* Subpixel offsets for window coordinates:
  */
-#define SUBPIXEL_X (-0.5F)
-#define SUBPIXEL_Y (-0.5F + 0.125)
+#define SUBPIXEL_X		(-0.125F)
+#define SUBPIXEL_Y		( 0.375F)
 
 typedef void (*r128_interp_func)( GLfloat t,
 				  GLfloat *result,
@@ -195,7 +195,6 @@ struct r128_context {
 
    /* Visual, drawable, cliprect and scissor information
     */
-   GLint		BufferSize;	/* Bits in color buffer */
    GLint		DepthSize;	/* Bits in depth buffer */
    GLint		StencilSize;	/* Bits in stencil buffer */
 
