@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.1 1996/12/09 11:55:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.2 1997/01/02 04:38:42 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -83,11 +83,34 @@ static void Sync() {
 
 static void fastmemset(dest, data, nbytes) 
     unsigned char *dest;
-    int data, nbytes;
+    unsigned int data;
+    int nbytes;
 {
     unsigned char *end;
+#ifdef __alpha__
+    unsigned long data64;
+    data64 = data | (data << 32);
+#endif
     end = dest + nbytes;
     while (dest <= end - 128) {
+#ifdef __alpha__
+        *(unsigned long *)dest = data64;
+        *(unsigned long *)(dest + 8) = data64;
+        *(unsigned long *)(dest + 16) = data64;
+        *(unsigned long *)(dest + 24) = data64;
+        *(unsigned long *)(dest + 32) = data64;
+        *(unsigned long *)(dest + 40) = data64;
+        *(unsigned long *)(dest + 48) = data64;
+        *(unsigned long *)(dest + 56) = data64;
+        *(unsigned long *)(dest + 64) = data64;
+        *(unsigned long *)(dest + 72) = data64;
+        *(unsigned long *)(dest + 80) = data64;
+        *(unsigned long *)(dest + 88) = data64;
+        *(unsigned long *)(dest + 96) = data64;
+        *(unsigned long *)(dest + 104) = data64;
+        *(unsigned long *)(dest + 112) = data64;
+        *(unsigned long *)(dest + 120) = data64;
+#else
         *(unsigned int *)dest = data;
         *(unsigned int *)(dest + 4) = data;
         *(unsigned int *)(dest + 8) = data;
@@ -120,6 +143,7 @@ static void fastmemset(dest, data, nbytes)
         *(unsigned int *)(dest + 116) = data;
         *(unsigned int *)(dest + 120) = data;
         *(unsigned int *)(dest + 124) = data;
+#endif
         dest += 128;
     }
     while (dest < end) {
@@ -226,12 +250,29 @@ static void Scroll400()
             0, i + 1, 0, i, 400, 400);
 }
 
+static void PatternFill10()
+{
+    int i;
+    xf86AccelInfoRec.SetupForFill8x8Pattern(0, 400, GXcopy, ~0, -1);
+    for (i = 0; i < 400; i++)
+        xf86AccelInfoRec.SubsequentFill8x8Pattern(0, 400, i, i, 10, 10);
+}
+
 static void PatternFill400()
 {
     int i;
     xf86AccelInfoRec.SetupForFill8x8Pattern(0, 400, GXcopy, ~0, -1);
     for (i = 0; i < 10; i++)
         xf86AccelInfoRec.SubsequentFill8x8Pattern(0, 400, i, i, 400, 400);
+}
+
+static void PatternColorExpand10()
+{
+    int i;
+    xf86AccelInfoRec.SetupFor8x8PatternColorExpand(0, 400, 0, 1, GXcopy, ~0);
+    for (i = 0; i < 400; i++)
+        xf86AccelInfoRec.Subsequent8x8PatternColorExpand(
+            0, 400, 0, 0, 10, 10);
 }
 
 static void PatternColorExpand400()
@@ -251,12 +292,19 @@ static void CPUToScreenColorExpand400()
         xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(0, 0, 416, 400, 0);
         if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED) {
             int j;
-            for (j = 0; j < 416 * 400 / 32; j++)
-                *(xf86AccelInfoRec.CPUToScreenColorExpandBase) = 0xFF00FF00;
+          if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+              for (j = 0; j < 3 * 416 * 400 / 32; j++)
+                   *(xf86AccelInfoRec.CPUToScreenColorExpandBase) = 0xFF00FF00;
+           else
+              for (j = 0; j < 416 * 400 / 32; j++)
+                   *(xf86AccelInfoRec.CPUToScreenColorExpandBase) = 0xFF00FF00;
         }
         else {
             int nbytes, windowsize;
-            nbytes = 416 * 400 / 8;
+           if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+               nbytes = 3 * 416 * 400 / 8;
+            else
+               nbytes = 416 * 400 / 8;
             windowsize = xf86AccelInfoRec.CPUToScreenColorExpandRange;
             while (nbytes >= windowsize) {
                 fastmemset(xf86AccelInfoRec.CPUToScreenColorExpandBase,
@@ -287,7 +335,7 @@ static void ScreenToScreenColorExpand10()
     int i;
     xf86AccelInfoRec.SetupForScreenToScreenColorExpand(
         0, 1, GXcopy, ~0);
-    for (i = 0; i < 1000; i++) {
+    for (i = 0; i < 200; i++) {
         xf86AccelInfoRec.SubsequentScreenToScreenColorExpand(
             0, 400 + (i & 1), i & 255, i & 255, 10, 10);
     }
@@ -323,9 +371,12 @@ xf86Bench()
             Scroll400);
     }
     if (xf86AccelInfoRec.SubsequentFill8x8Pattern) {
+        DoBench("10x10 8x8 pattern fill", 10 * 10 * 400, PatternFill10);
         DoBench("400x400 8x8 pattern fill", 400 * 400 * 10, PatternFill400);
     }
     if (xf86AccelInfoRec.Subsequent8x8PatternColorExpand) {
+        DoBench("10x10 8x8 color expand pattern fill", 10 * 10 * 400,
+            PatternColorExpand10);
         DoBench("400x400 8x8 color expand pattern fill", 400 * 400 * 10,
             PatternColorExpand400);
     }
@@ -338,7 +389,7 @@ xf86Bench()
             ScanlineScreenToScreenColorExpand400);
     }
     if (xf86AccelInfoRec.SubsequentScreenToScreenColorExpand) {
-        DoBench("10x10 screen-to-screen color expand", 10 * 10 * 1000,
+        DoBench("10x10 screen-to-screen color expand", 10 * 10 * 200,
             ScreenToScreenColorExpand10);
     }
 }

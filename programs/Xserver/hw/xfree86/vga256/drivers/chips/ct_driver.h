@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.h,v 3.5 1996/12/09 11:54:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.h,v 3.6 1996/12/27 07:05:09 dawes Exp $ */
 
 /*#define DEBUG
 #define CT_HW_DEBUG */
@@ -51,6 +51,10 @@ extern int ctAluConv[];		       /* Map Alu to Chips ROP source data  */
 extern int ctAluConv2[];       	       /* Map Alu to Chips ROP pattern data */
 
 extern unsigned long ctFrameBufferSize;		/* Frame buffer size */
+extern unsigned int ctCacheEnd;			/* Pixmap Cache End */
+extern unsigned int ctColorExpandScratchAddr;	/* Ping-pong buffer */
+extern unsigned int ctColorExpandScratchSize;
+
 
 /* Byte reversal functions */
 extern unsigned char byte_reversed[];
@@ -131,6 +135,12 @@ extern void ctHiQVColorExpandStippleFill();
 extern void ctcfbBLTWriteBitmap();
 extern void ctMMIOBLTWriteBitmap();
 extern void ctHiQVBLTWriteBitmap();
+
+/* in ct_accel.c */
+extern void ctAccelInit();
+extern void ctMMIOAccelInit();
+extern void ctHiQVAccelInit();
+
 
 #define MMIOmeml(x) *(unsigned int *)(ctMMIOBase + x)
 #define MMIOmemw(x) *(unsigned short *)(ctMMIOBase + x)

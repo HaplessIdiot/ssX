@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86maploc.h,v 3.1 1996/12/09 11:55:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86maploc.h,v 3.2 1997/01/02 04:38:51 dawes Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -177,5 +177,14 @@ xf86WriteBitmapFallBack(
     int fg,
     int rop,
     unsigned planemask
+#endif
+);
+
+void
+xf86cfbGetLongWidthAndPointer(
+#if NeedFunctionPrototypes
+    DrawablePtr	pDrawable,
+    int		*nlwidth,
+    unsigned long **addrl
 #endif
 );

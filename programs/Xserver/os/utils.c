@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c /main/127 1996/12/02 10:23:20 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.23 1996/12/23 07:10:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.24 1996/12/24 02:27:37 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -526,6 +526,10 @@ void UseMsg()
     ErrorF("-config file           read options from file\n");
     ErrorF("-core                  generate core dump on fatal error\n");
     ErrorF("-dpi int               screen resolution in dots per inch\n");
+#ifdef DPMSExtension
+    ErrorF("dpms                   enables VESA DPMS monitor control\n");
+    ErrorF("-dpms                  disables VESA DPMS monitor control\n");
+#endif
     ErrorF("-deferglyphs [none|all|16] defer loading of [no|all|16-bit] glyphs\n");
     ErrorF("-f #                   bell base (0-100)\n");
     ErrorF("-fc string             cursor font\n");
@@ -709,6 +713,12 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
+#ifdef DPMSExtension
+	else if ( strcmp( argv[i], "dpms") == 0)
+	    DPMSEnabledSwitch = TRUE;
+	else if ( strcmp( argv[i], "-dpms") == 0)
+	    DPMSDisabledSwitch = TRUE;
+#endif
 	else if ( strcmp( argv[i], "-deferglyphs") == 0)
 	{
 	    if(++i >= argc || !ParseGlyphCachingMode(argv[i]))

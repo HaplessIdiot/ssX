@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_BltHiQV.h,v 3.1 1996/09/29 13:39:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_BltHiQV.h,v 3.2 1996/12/27 07:05:02 dawes Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* These are done using Memory Mapped IO, of the registers */
@@ -46,9 +46,18 @@
 #define ctEXPCOLSEL             0x8000000L
 
 /* Macros to do useful things with the C&T BitBLT engine */
+#if 0
+/* Chips and technologies released an application note saying that
+ * with certain batches of chips you couldn't read the blitter registers
+ * properly. This could cause some drawing anolomies, use XR20[0] instead
+ */
 #define ctBLTWAIT \
   while(*(volatile unsigned int *)(ctMMIOBase + BR(0x4)) & \
 	(0x80000000)){}
+#else
+#define ctBLTWAIT \
+  outb(0x3D6,0x20); while(inb(0x3D7)&0x1){}
+#endif
 
 #define ctSETROP(op) \
   *(unsigned int *)(ctMMIOBase + BR(0x4)) = op

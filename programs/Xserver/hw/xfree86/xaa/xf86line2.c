@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.0 1996/11/18 13:22:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.1 1996/12/18 03:13:30 dawes Exp $ */
 
 /***********************************************************
 
@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.24 94/07/28 14:33:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.0 1996/11/18 13:22:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.1 1996/12/18 03:13:30 dawes Exp $ */
 
 /*
  * Accelerated general lines for chips that cannot hardware accelerate
@@ -213,20 +213,7 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
             usevline = 0;
     }
 
-    switch (pDrawable->bitsPerPixel) {
-    case 8 :
-        cfb8GetLongWidthAndPointer(pDrawable, &nlwidth, &addrl);
-        break;
-    case 16 :
-        cfb16GetLongWidthAndPointer(pDrawable, &nlwidth, &addrl);
-        break;
-    case 24 :
-        cfb24GetLongWidthAndPointer(pDrawable, &nlwidth, &addrl);
-        break;
-    case 32 :
-         cfb32GetLongWidthAndPointer(pDrawable, &nlwidth, &addrl);
-        break;
-    }
+    xf86AccelInfoRec.xf86GetLongWidthAndPointer(pDrawable, &nlwidth, &addrl);
     blit = FALSE;
  
     alu = devPriv->rop;

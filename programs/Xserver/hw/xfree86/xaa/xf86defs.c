@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.0 1996/11/18 13:22:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.1 1997/01/02 04:38:44 dawes Exp $ */
 
 
 #include "windowstr.h"
@@ -76,6 +76,7 @@ xf86AccelInfoRecType xf86AccelInfoRec = {
     NULL,	/* ImageWriteFallBack() (could be moved elsewhere) */
     NULL,	/* VerticalLineGXcopyFallBack() */
     NULL,	/* BresenhamLineFallBack() */
+    NULL,	/* xf86GetLongWidthAndPointer() */
     NULL,	/* Sync() */
     0,		/* Flags */
     0,		/* ColorExpandFlags */
@@ -86,7 +87,9 @@ xf86AccelInfoRecType xf86AccelInfoRec = {
     0,		/* FramebufferWidth */
     0,		/* BitsPerPixel */
     0,		/* ScratchBufferAddr */
+    NULL,	/* ScratchBufferBase */
     0,		/* ScratchBufferSize */
+    2,		/* PingPongBuffers */
     0,		/* ErrorTermBits */
     0,		/* UsingVGA256 */
     NULL,	/* ServerInfoRec */

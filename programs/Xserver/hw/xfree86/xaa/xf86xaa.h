@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.2 1996/12/18 03:13:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.3 1997/01/02 04:38:56 dawes Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -22,6 +22,7 @@
 #define HARDWARE_PATTERN_PROGRAMMED_BITS	0x10000
 #define HARDWARE_PATTERN_PROGRAMMED_ORIGIN	0x20000
 #define HARDWARE_PATTERN_BIT_ORDER_MSBFIRST	0x40000
+#define HARDWARE_PATTERN_MONO_TRANSPARENCY	0x80000
 
 /* Graphics operation flags */
 
@@ -712,6 +713,13 @@ typedef struct {
         int len
 #endif
     );
+    void (*xf86GetLongWidthAndPointer)(
+#if NeedNestedPrototypes
+        DrawablePtr pDrawable,
+        int *nlwidth,
+        unsigned long **addrl
+#endif
+    );
     void (*Sync)();
     int Flags;
     int ColorExpandFlags;
@@ -722,7 +730,9 @@ typedef struct {
     int FramebufferWidth;
     int BitsPerPixel;
     int ScratchBufferAddr;	/* Framebuffer address in byte units. */
+    unsigned char *ScratchBufferBase;	/* Framebuffer address pointer. */
     int ScratchBufferSize;
+    int PingPongBuffers;
     int ErrorTermBits;
     int UsingVGA256;
     ScrnInfoPtr ServerInfoRec;

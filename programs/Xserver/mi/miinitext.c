@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c /main/41 1996/09/28 17:15:08 rws $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.14 1996/12/24 08:49:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.15 1996/12/27 07:08:02 dawes Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -155,6 +155,9 @@ extern void	XFree86MiscExtensionInit(INITARGS);
 #ifdef XFreeXDGA
 extern void XFree86DGAExtensionInit(INITARGS);
 #endif
+#ifdef DPMSExtension
+extern void DPMSExtensionInit(INITARGS);
+#endif
 
 /*ARGSUSED*/
 void
@@ -258,5 +261,8 @@ InitExtensions(argc, argv)
 #endif
 #if defined(XFreeXDGA) && !defined(PRINT_ONLY_SERVER)
     XFree86DGAExtensionInit();
+#endif
+#if defined(DPMSExtension) && !defined(PRINT_ONLY_SERVER)
+    DPMSExtensionInit();
 #endif
 }

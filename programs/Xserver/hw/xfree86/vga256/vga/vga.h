@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.20 1997/01/04 12:19:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.21 1997/01/08 20:51:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -197,14 +197,14 @@ typedef struct {
 /* Tables in vgatables.c */
 extern unsigned char byte_reversed[256];
 
-/* All each driver to set a display pitch other than virtualX */
+/* Allow each driver to set a display pitch other than virtualX */
 void vgaSetPitchAdjustHook(int (* ChipPitchAdjust)(
 #if NeedNestedPrototypes
 	void
 #endif
 	));
 
-/* All each driver to set an offset into the linear frame buffer */
+/* Allow each driver to set an offset into the linear frame buffer */
 void vgaSetLinearOffsetHook(int (* ChipLinearOffset)(
 #if NeedNestedPrototypes
 	void

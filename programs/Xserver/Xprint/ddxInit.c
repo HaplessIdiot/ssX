@@ -30,7 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.2 1996/12/24 08:47:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.3 1996/12/26 01:38:20 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -362,6 +362,23 @@ XTestGenerateEvent(dev, keycode, keystate, x, y)
 }
 
 #endif /* XTESTEXT1 */
+
+#ifdef DPMSExtension
+#if NeedFunctionPrototypes
+void DPMSSet(CARD16 level)
+#else
+void DPMSSet(level)
+     CARD16 level;
+#endif
+{
+    return;
+}
+
+Bool DPMSSupported()
+{
+    return FALSE;
+}
+#endif
 
 #ifdef AIXV3
 /*

@@ -1,4 +1,30 @@
-xFree86 3.2p (8 January 1997)
+XFree86 3.2q (12 January 1997)
+ 228. Make makedepend recognise #warning on all OSs (since we have it
+      in shm.h).
+ 227. Add Digital's DPMS server extension (no device-specific support yet).
+ 226. Fix some compile problems on Solaris x86 2.4 with gcc (James Hawtin).
+ 225. Add prelim support for LCD stretching with the TGUI Cyber chips
+      (Alan Hourihane).
+ 224. Add support for some blitter functions to the SiS driver (not XAA
+      yet) (Xavier Ducoin).
+ 223. Fix HW cursor problems in the SiS driver (Xavier Ducoin).
+ 222. Add 15/16/24bpp support to the SiS driver (Xavier Ducoin).
+ 221. Fix problems with linear mode in the SiS driver (Xavier Ducoin).
+ 220. Programmable clock support for the SiS 205 (Xavier Ducoin).
+ 219. TGUI acceleration udpates (Alan Hourihane).
+ 218. Add XAA support for the Chips & Technologies driver (David Bateman).
+ 217. Support for 555 weighting in the MGA driver (Xavier Ducoin).
+ 216. TGUI clock fix (Alan Houriahne and Massimiliano Ghilardi).
+ 215. VGA server compiler warning fixes (Thomas E. Dickey).
+ 214. LinkKit fixes (Takaaki Nomura).
+ 213. XAA updates (see xaa/NOTES for details) (Harm Hanemaayer).
+ 212. The item 203 fix was missing.  It is included now.
+ 211. Modify Cirrus 754x LCD size detection (Harm Hanemaayer).
+ 210  Add support for pattern offset for the Cirrus 5446 (Harm Hanemaayer).
+ 209. Fix non-MMIO operation for the Cirrus 5446 (Harm Hanemaayer).
+ 208. Fix font cache problem introduced in 3.2p (Takaaki Nomura).
+
+XFree86 3.2p (8 January 1997)
  207. XAA support for the Cirrus Laguna chips (Corin Anderson).
  206. Modify the PF1-PF4 coding in the xterm termcap/terminfo, and add an
       interim xterm-vt220 descripton to accomodate the old and new styles

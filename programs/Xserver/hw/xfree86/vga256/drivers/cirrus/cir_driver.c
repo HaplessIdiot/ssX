@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.74 1996/12/28 08:17:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.75 1997/01/08 20:35:42 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -1210,25 +1210,21 @@ cirrusProbe()
 	           outb(vgaIOBase + 4, 0x48);
 	           cirrusLCDVerticalSize |= (inb(vgaIOBase + 5) & 0x30) << 4;
 	           cirrusLCDVerticalSize += 2;
-	           switch (cirrusLCDVerticalSize) {
-	           case 480 :
-	               size = "640x480";
-	               break;
-	           case 600 :
-	               size = "800x600";
-	               break;
-	           case 768 :
+	           /* Just try to pick the likely type. */
+	           if (cirrusLCDVerticalSize > 600 + 10) {
+	               cirrusLCDVerticalSize = 768;
 	               size = "1024x768";
-	               break;
-		   default :
-		       size = "Weird-sized";
-                       ErrorF("%s %s: %s: Unknown LCD height (%d) -- "
-                           "please report\n",
-                           XCONFIG_PROBED, vga256InfoRec.name,
-                           vga256InfoRec.chipset, cirrusLCDVerticalSize);
-	               break;
-		   }
-                   ErrorF("%s %s: %s: %s %s LCD detected",
+	           }
+	           else
+	               if (cirrusLCDVerticalSize > 480 + 10) {
+	                   cirrusLCDVerticalSize = 600;
+	                   size = "800x600";
+	               }
+	               else {
+	                   cirrusLCDVerticalSize = 480;
+	                   size = "640x480";
+	               }
+                   ErrorF("%s %s: %s: %s %s LCD detected\n",
                        XCONFIG_PROBED, vga256InfoRec.name,
                        vga256InfoRec.chipset, size, type);
 	       }

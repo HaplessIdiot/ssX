@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bitmap.c,v 3.2 1996/12/09 11:55:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bitmap.c,v 3.3 1997/01/02 04:38:43 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -285,6 +285,7 @@ srcy, bg, fg, rop, planemask)
 {
     unsigned char *srcp;
     int bitmapwidth, bytewidth;
+    int offset, endoffset;
     int i;
 
     if (xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED) {
@@ -314,29 +315,31 @@ srcy, bg, fg, rop, planemask)
     /* in units of pixels. */
     bitmapwidth = ((bytewidth + 3) / 4) * 32;
 
+    endoffset = (bitmapwidth / 8) * xf86AccelInfoRec.PingPongBuffers;
+    offset = 0;
+
     for (i = 0; i < h; i++) {
-        int base;
-	base = xf86AccelInfoRec.ScratchBufferAddr;
-        if (i & 1)
-            /*
-             * There are two buffers -- while the first one is being
-             * blitted, the other one is initialized. Then the other
-             * way around, and so on.
-             */
-	    base += bitmapwidth / 8;
 	if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
 	    xf86AccelInfoRec.Sync();
 	if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
 	    xf86DrawBitmapScanlineMSBFirst((unsigned int *)
-	        (xf86AccelInfoRec.FramebufferBase + base),
+	        (xf86AccelInfoRec.ScratchBufferBase + offset),
 	        (unsigned int *)srcp, bytewidth);
 	else
 	    xf86DrawBitmapScanline((unsigned int *)
-	        (xf86AccelInfoRec.FramebufferBase + base),
+	        (xf86AccelInfoRec.ScratchBufferBase + offset),
 	        (unsigned int *)srcp, bytewidth);
 	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand(
-	    base * 8 + (srcx & 7));
+	    (xf86AccelInfoRec.ScratchBufferAddr + offset) * 8 + (srcx & 7));
 	srcp += srcwidth;
+        /*
+         * There is a number of buffers -- while the first one is being
+         * blitted, the next one is initialized, and then the next,
+         * and so on.
+         */
+	offset += bitmapwidth / 8;
+	if (offset == endoffset)
+	    offset = 0;
     }
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga256.h,v 3.4 1996/12/09 11:54:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga256.h,v 3.5 1996/12/23 06:59:25 dawes Exp $ */
 
 
 
@@ -59,6 +59,7 @@ typedef struct _Cfbfunc{
 		int,
 		RegionPtr,
 		DDXPointPtr,
+		unsigned long,
 		unsigned long
 #endif
 );
@@ -1231,6 +1232,7 @@ void vga256DoBitbltCopy(
     int ,
     RegionPtr ,
     DDXPointPtr ,
+    unsigned long ,
     unsigned long 
 #endif
 );
@@ -1242,6 +1244,7 @@ void speedupvga256DoBitbltCopy(
     int ,
     RegionPtr ,
     DDXPointPtr ,
+    unsigned long ,
     unsigned long 
 #endif
 );
@@ -1253,6 +1256,7 @@ void vga256DoBitbltXor(
     int ,
     RegionPtr ,
     DDXPointPtr ,
+    unsigned long ,
     unsigned long 
 #endif
 );
@@ -1264,6 +1268,7 @@ void vga256DoBitbltOr(
     int ,
     RegionPtr ,
     DDXPointPtr ,
+    unsigned long ,
     unsigned long 
 #endif
 );
@@ -1275,6 +1280,7 @@ void vga256DoBitbltGeneral(
     int ,
     RegionPtr ,
     DDXPointPtr ,
+    unsigned long ,
     unsigned long 
 #endif
 );

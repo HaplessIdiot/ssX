@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.0 1996/11/18 13:22:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.1 1996/11/24 09:57:22 dawes Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -160,38 +160,6 @@ xf86PolyRectangleSolidZeroWidth(
     GCPtr        pGC,
     int	         nRectsInit,
     xRectangle  *pRectsInit
-#endif
-);
-
-void cfb8GetLongWidthAndPointer(
-#if NeedFunctionPrototypes
-    DrawablePtr	pDrawable,
-    int		*nlwidth,
-    unsigned long **addrl
-#endif
-);
-
-void cfb16GetLongWidthAndPointer(
-#if NeedFunctionPrototypes
-    DrawablePtr	pDrawable,
-    int		*nlwidth,
-    unsigned long **addrl
-#endif
-);
-
-void cfb24GetLongWidthAndPointer(
-#if NeedFunctionPrototypes
-    DrawablePtr	pDrawable,
-    int		*nlwidth,
-    unsigned long **addrl
-#endif
-);
-
-void cfb32GetLongWidthAndPointer(
-#if NeedFunctionPrototypes
-    DrawablePtr	pDrawable,
-    int		*nlwidth,
-    unsigned long **addrl
 #endif
 );
 

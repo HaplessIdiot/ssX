@@ -22,7 +22,7 @@
  * Written by Harm Hanemaayer (H.Hanemaayer@inter.nl.net).
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86txtblt.s,v 3.1 1996/12/18 04:11:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86txtblt.s,v 3.2 1996/12/20 10:32:49 dawes Exp $ */
 
 /*
  * Intel Pentium-optimized versions of "terminal emulator font" text
@@ -239,6 +239,7 @@ GLNAME(DrawTextScanlineWidth6P):
 	MOV_B	(BH,DL)
 	MOV_B	(REGOFF(BYTE_REVERSED,EAX),BL)
 	MOV_B	(REGOFF(BYTE_REVERSED,EDX),BH)
+	ROL_L	(CONST(16),EBX)
 	MOV_L	(EBX,REGIND(EDI))
 	MOV_L	(line_arg,EAX)			/* restore EAX */
 #endif
@@ -288,6 +289,7 @@ GLNAME(DrawTextScanlineWidth6P):
 	MOV_B	(CH,BL)
 	MOV_B	(REGOFF(BYTE_REVERSED,EAX),CL)
 	MOV_B	(REGOFF(BYTE_REVERSED,EBX),CH)
+	ROL_L	(CONST(16),ECX)
 	MOV_L	(ECX,REGOFF(4,EDI))
 	MOV_L	(line_arg,EAX)			/* restore EAX */
 #endif
@@ -330,6 +332,7 @@ GLNAME(DrawTextScanlineWidth6P):
 	MOV_B	(DH,BL)
 	MOV_B	(REGOFF(BYTE_REVERSED,EAX),DL)
 	MOV_B	(REGOFF(BYTE_REVERSED,EBX),DH)
+	ROL_L	(CONST(16),EDX)
 	MOV_L	(EDX,REGOFF(8,EDI))
 #endif
 

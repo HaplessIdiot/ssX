@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.3 1997/01/04 12:19:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.4 1997/01/05 11:59:57 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -137,7 +137,8 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     BitsPerRGB = xf86weight.green;
 #if PSZ > 8
     /* Only TrueColor for 16/32bpp */
-    if (!cfbSetVisualTypes(vga256InfoRec.depth, 1 << TrueColor, BitsPerRGB))
+    if (!cfbSetVisualTypes(xf86AccelInfoRec.ServerInfoRec->depth,
+    1 << TrueColor, BitsPerRGB))
 	return FALSE;
 #endif
     if (!cfbInitVisuals (&visuals, &depths, &nvisuals, &ndepths, &rootdepth,
@@ -252,6 +253,7 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     xf86AccelInfoRec.FillRectStippledFallBack = xf86FillRectStippledFallBack;
     xf86AccelInfoRec.FillRectOpaqueStippledFallBack =
         xf86FillRectOpaqueStippledFallBack;
+    xf86AccelInfoRec.xf86GetLongWidthAndPointer = xf86cfbGetLongWidthAndPointer;
 
     return TRUE;
 }

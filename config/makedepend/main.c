@@ -1,5 +1,5 @@
 /* $XConsortium: main.c /main/84 1996/12/04 10:11:23 swick $ */
-/* $XFree86: xc/config/makedepend/main.c,v 3.9 1996/10/17 15:10:22 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.10 1996/12/23 05:54:57 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -76,9 +76,7 @@ char	*directives[] = {
 	"sccs",
 	"elif",
 	"eject",
-#ifdef __EMX__	/* maybe also gcc extension */
 	"warning",
-#endif
 	NULL
 };
 

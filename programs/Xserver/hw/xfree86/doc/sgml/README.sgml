@@ -480,6 +480,10 @@ XFree86 support was integrated into the base X11R6 distribution by:
 <itemize>
        <item> Henry Worth <it>&lt;henry.worth@amail.amdahl.com&gt;</it>,
 </itemize>
+<tag/Number Nine I128 driver by:  /
+<itemize>
+       <item> Robin Cutshaw <it>&lt;robin@XFree86.org&gt;</it>,
+</itemize>
 <tag>ET4000/W32 accelerated code by:  </tag>
 <itemize>
        <item> Glenn Lai <it>&lt;glenn@cs.utexas.edu&gt;</it>,
@@ -990,7 +994,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.65 1996/11/18 13:11:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.66 1996/12/23 06:46:09 dawes Exp $
 
 
 

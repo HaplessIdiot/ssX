@@ -28,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86$ */
 
 #ifndef OPAQUE_H
 #define OPAQUE_H
@@ -54,5 +55,16 @@ extern int  ScreenSaverBlanking;
 extern int  ScreenSaverAllowExposures;
 extern int argcGlobal;
 extern char **argvGlobal;
+
+#if DPMSExtension
+extern CARD32 DPMSStandbyTime;
+extern CARD32 DPMSSuspendTime;
+extern CARD32 DPMSOffTime;
+extern CARD16 DPMSPowerLevel;
+extern Bool DPMSEnabled;
+extern Bool DPMSEnabledSwitch;
+extern Bool DPMSDisabledSwitch;
+extern Bool DPMSCapableFlag;
+#endif
 
 #endif /* OPAQUE_H */

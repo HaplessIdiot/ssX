@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgablt.c,v 3.3 1996/12/09 11:54:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgablt.c,v 3.4 1996/12/23 06:59:35 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -52,20 +52,21 @@ Author: Keith Packard
 #if (MROP == Mcopy)
 #ifdef SPEEDUP
 void
-speedupvga256DoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
+speedupvga256DoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
 #else
 void
-MROP_NAME(vga256DoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
+MROP_NAME(vga256DoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
 #endif
 #else
 void
-MROP_NAME(vga256DoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
+MROP_NAME(vga256DoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
 #endif
     DrawablePtr	    pSrc, pDst;
     int		    alu;
     RegionPtr	    prgnDst;
     DDXPointPtr	    pptSrc;
     unsigned long   planemask;
+    unsigned long   bitPlane;
 {
     unsigned long *psrcBase, *pdstBase;	
 				/* start of src and dst bitmaps */

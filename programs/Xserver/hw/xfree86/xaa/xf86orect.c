@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86orect.c,v 3.0 1996/11/18 13:22:30 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -93,7 +93,7 @@ xf86PolyRectangleSolidZeroWidth(pDrawable, pGC, nRectsInit, pRectsInit)
          * preferable for vertical lines.
          */
         int mask;
-        mask = (1 << pDrawable->bitsPerPixel) - 1;
+        mask = (1 << pDrawable->depth) - 1;
         if (xf86AccelInfoRec.SubsequentBresenhamLine)
             usevline = VLINE_BRESENHAMLINE;
         else
@@ -102,20 +102,8 @@ xf86PolyRectangleSolidZeroWidth(pDrawable, pGC, nRectsInit, pRectsInit)
         else
         if ((pGC->alu == GXcopy) && (pGC->planemask & mask) == mask) {
             usevline = VLINE_FRAMEBUFFER;
-            switch (pDrawable->bitsPerPixel) {
-            case 8 :
-                cfb8GetLongWidthAndPointer(pDrawable, &nlwidth, &addrl);
-                break;
-            case 16 :
-                cfb16GetLongWidthAndPointer(pDrawable, &nlwidth, &addrl);
-                break;
-            case 24 :
-                cfb24GetLongWidthAndPointer(pDrawable, &nlwidth, &addrl);
-                break;
-            case 32 :
-                 cfb32GetLongWidthAndPointer(pDrawable, &nlwidth, &addrl);
-                break;
-            }
+            xf86AccelInfoRec.xf86GetLongWidthAndPointer(pDrawable,
+                &nlwidth, &addrl);
         }
         else
             usevline = 0;

@@ -1,5 +1,5 @@
 /* $XConsortium: def.h /main/30 1996/12/04 10:11:12 swick $ */
-/* $XFree86: xc/config/makedepend/def.h,v 3.1 1996/12/23 05:54:53 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/def.h,v 3.2 1996/12/30 13:57:54 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -66,20 +66,12 @@ in this Software without prior written authorization from the X Consortium.
 #define SCCS            12
 #define ELIF            13
 #define EJECT           14
-#ifndef __EMX__
-#define IFFALSE         15     /* pseudo value --- never matched */
-#define ELIFFALSE       16     /* pseudo value --- never matched */
-#define INCLUDEDOT      17     /* pseudo value --- never matched */
-#define IFGUESSFALSE    18     /* pseudo value --- never matched */
-#define ELIFGUESSFALSE  19     /* pseudo value --- never matched */
-#else
 #define WARNING         15
 #define IFFALSE         16     /* pseudo value --- never matched */
 #define ELIFFALSE       17     /* pseudo value --- never matched */
 #define INCLUDEDOT      18     /* pseudo value --- never matched */
 #define IFGUESSFALSE    19     /* pseudo value --- never matched */
 #define ELIFGUESSFALSE  20     /* pseudo value --- never matched */
-#endif
 
 #ifdef DEBUG
 extern int	_debugmask;

@@ -33,7 +33,11 @@ from the X Consortium.
   under contract to X Consortium, Inc.
  */
 
-/* $XFree86: xc/programs/xfwp/xfwp.c,v 1.4 1996/12/29 13:56:09 dawes Exp $ */
+/* $XFree86: xc/programs/xfwp/xfwp.c,v 1.5 1997/01/05 12:00:59 dawes Exp $ */
+
+#if defined(sun) && defined(i386) && defined(SVR4)
+#define __EXTENSIONS__
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.17 1997/01/04 12:18:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.18 1997/01/08 20:51:05 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -340,6 +340,11 @@ MGAReadBios()
 	ErrorF( "%s %s: Video BIOS info block at 0x%08lx\n",
 		XCONFIG_PROBED, vga256InfoRec.name,
 		vga256InfoRec.BIOSbase + offset );	
+
+	/* Temporary */
+	ErrorF( "ClkBase=%d Clk4MB=%d Clk8MB=%d ClkMod=%d\n",
+		MGABios.ClkBase, MGABios.Clk4MB, MGABios.Clk8MB,
+		MGABios.ClkMod);
 }
 
 /*
@@ -868,6 +873,10 @@ TestAndSetRounding(pitch)
 	{
 		MGAInitDAC = MGADACbpp16;
 		
+		if ( (xf86weight.red == 5) && (xf86weight.green == 5) 
+		     && (xf86weight.blue == 5) ) 
+		  MGAInitDAC[1] = 0x04 ;
+
 		if (((pitch % 64) && (size * 2 <= 2048)) || !size)
 		{
 			MGA.ChipRounding = 32;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86im.c,v 3.0 1996/11/18 13:22:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86im.c,v 3.1 1996/12/09 11:55:29 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -32,8 +32,9 @@
  * xf86WriteBitmapFallBack()
  *     Low-level WriteBitmap fall-back, uses cfb CopyPlane1toN.
  *     Not defined for 24bpp.
- * SharedcfbGetLongWidthAndPointer()
- *     Generic function version of cfb macro that is not depth-dependent.
+ * xf86cfbGetLongWidthAndPointer()
+ *     Function version of cfb macro (required to use different-depth
+ *     versions from a source that is only compiled once).
  *
  * This files is compiled seperately for each depth.
  */
@@ -44,6 +45,8 @@
 #include "vga.h"
 #else
 #include "cfb.h"
+#include "cfbmskbits.h"
+#include "cfb8bit.h"
 #endif
 #include "scrnintstr.h"
 #include "windowstr.h"
@@ -167,22 +170,6 @@ bg, fg, rop, planemask)
     FreeScratchPixmapHeader(pix);
 }
 
-/* Only compile one version for vga256/cfb8. */
-#if defined(VGA256) || PSZ != 8
-
-#if PSZ == 8
-#define xf86cfbGetLongWidthAndPointer cfb8GetLongWidthAndPointer
-#endif
-#if PSZ == 16
-#define xf86cfbGetLongWidthAndPointer cfb16GetLongWidthAndPointer
-#endif
-#if PSZ == 24
-#define xf86cfbGetLongWidthAndPointer cfb24GetLongWidthAndPointer
-#endif
-#if PSZ == 32
-#define xf86cfbGetLongWidthAndPointer cfb32GetLongWidthAndPointer
-#endif
-
 #ifdef VGA256
 extern Bool vgaUseLinearAddressing;
 #endif
@@ -193,7 +180,7 @@ void xf86cfbGetLongWidthAndPointer(pDrawable, nlwidth, addrl)
     unsigned long **addrl;
 {
     cfbGetLongWidthAndPointer(pDrawable, *nlwidth, *addrl);
-#if PSZ == 8
+#ifdef VGA256
     /*
      * This is a temporary hack to really use the non-bankchecking routines
      * in the fXF86 functions if linear addressing is enabled.
@@ -205,5 +192,3 @@ void xf86cfbGetLongWidthAndPointer(pDrawable, nlwidth, addrl)
              (unsigned long)((unsigned char *)(*addrl) - (unsigned long)VGABASE));
 #endif
 }
-
-#endif

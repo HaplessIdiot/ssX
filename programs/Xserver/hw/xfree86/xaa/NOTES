@@ -53,11 +53,56 @@ can confirm a problem using the lastest version, please do so.
   to screen color expansion has not been tested, nor has the FIXED_BASE
   support.
 
+- The pattern fill primitives are taken to have the same graphics operation
+  restrictions (planemask, rop etc) as ScreenToScreenCopy.
+
 When the server crashes, run 'gdb -c core XF86_SVGA' and print a
 back-trace ('backtrace').
 
 Change Log:
 
+173. Fix infinite loop in CPU_TRANSFER_BASE_FIXED color expansion
+     (Xavier Ducoin).
+172. Fix color expansion benchmark when TRIPLE_BITS_24BPP is defined
+     (David Bateman).
+171. When using the monochrome pattern, use an existing cache entry when
+     the stipple is the same but the colors are different.
+170. Fix bugs in pattern handling code.
+169. Fix a bug in the MSB-first version of the Pentium-optimized text
+     bitmap transfer functions (David Bateman).
+168. Fully implement detection of tiles that only use two colors in order
+     to use a monochrome (color-expand) hardware pattern.
+167. Potentially fix the case of rotated monochrome patterns stored video
+     memory.
+166. Change start-up messages a little.
+165. Add support for 8x8 hardware pattern with SCREEN_ORIGIN in addition
+     to PROGRAMMED_ORIGIN, and take into account the bit order when
+     PROGRAMMED_BITS is defined (Radek).
+164. Mark pixmaps that are found to be unsuitable for caching.
+163. Make caching of transparent stipples possible for chips that don't
+     have ScreenToScreenCopy with transparency but do have a color-expand
+     pattern fill that supports transparency.
+162. Add low-level benchmarks for 10x10 pattern fill.
+161. Use 64-bit access on DEC alpha in CPU-to-framebuffer bandwidth
+     benchmark.
+160. Add the HARDWARE_PATTERN_MONO_TRANSPARENCY flag to further
+     differentiate between mono pattern and regular color expansion.
+159. Use depth instead of bitsperpixel in planemask check for line
+     rectangles.
+158. Reorganize the "cfbGetLongWidthAndPointer" function.
+157. Support the HARDWARE_PATTERN_PROGRAMMED_ORIGIN for non-color
+     expanded patterns (including patterns that must be aligned on a 64
+     pixel boundary) and for color-expanded patterns that are stored
+     in video memory.
+156. Various fixes for the cfb8 (non-vga256) support.
+155. At start-up, display a message when no acceleration primitives
+     are defined.
+154. Add ScratchBufferBase field to support scanline screen-to-screen
+     color expansion without a linear framebuffer.
+153. Support multiple buffers for scanline screen-to-screen color
+     expansion. Adds the PingPongBuffers field.
+
+XFree86 3.2n
 152. Add HARDWARE_PATTERN_BIT_ORDER_MSBFIRST flag to differentiate between
      mono hardware pattern and regular color expansion.
 151. Fix missing fields in xf86defs.c.
@@ -74,15 +119,15 @@ Change Log:
      vga256.
 146. Enable fixed-base CPU-to-screen color-expansion for bitmap and TE text.
 145. Add FIXEDBASE support to color expansion functions in xf86expblt.c.
-144. Add the HARDWARE_PATTERN_PROGRAMMABLE_BITS and HARDWARE_PATTERN_
-     PROGRAMMABLE_ORIGIN flags, and implement 8x8 mono pattern code
+144. Add the HARDWARE_PATTERN_PROGRAMMED_BITS and HARDWARE_PATTERN_
+     PROGRAMMED_ORIGIN flags, and implement 8x8 mono pattern code
      used when both flags are set.
 143. Don't use scanline-byte-padded CPU to screen color expansion since
      it doesn't work.
 142. Use MSB-first versions of Pentium-optimized text transfer functions
      when required.
-141. Finally fix the flawed fall-back function schemes, potentially crashes
-     associated with some span and rectangle fills. Still not stable.
+141. Finally fix the flawed fall-back function schemes, potentially fixing
+     crashes associated with some span and rectangle fills. Still not stable.
 140. More heavily unroll the CPU to framebuffer benchmark code (mainly
      for the Cyrix 6x86).
 
@@ -439,22 +484,24 @@ Flags
 
     HARDWARE_PATTERN_SCREEN_ORIGIN
 
-    Indicates that the origin for hardware 8x8 pattern fills is always
-    the top left corner of the screen, as opposed to the top left
-    corner of the area to be filled.
+    Indicates that the baseline origin for hardware 8x8 pattern fills
+    is the top left corner of the screen, as opposed to the top left
+    corner of the area to be filled. Note that an origin offset feature
+    might still be supported.
 
     HARDWARE_PATTERN_TRANSPARENCY
 
     Indicates that the hardware 8x8 pattern fill supports transparency
-    color compare.
+    color compare (does not apply to mono pattern).
 
     HARDWARE_PATTERN_ALIGN_64
 
     Indicates that the 8x8 hardware pattern must be stored on a
     64-pixel boundary in video memory, and programmed pattern start
-    location must be the start of such a pattern. This requires a lot
-    more pre-rotated copies to be made, although they should still fit
-    within a 128x128 cache area.
+    location must be the start of such a pattern. In the absence of a
+    programmable origin, this requires a lot more pre-rotated copies to
+    be made, although they should still fit within a 128x128 cache
+    area.
 
     HARDWARE_PATTERN_MOD_64_OFFSET
 
@@ -464,21 +511,28 @@ Flags
     indicates the vertical offset into the pattern. This flag is
     mutually exclusive to HARDWARE_PATTERN_ALIGN_64.
 
-    HARDWARE_PATTERN_PROGRAMMABLE_BITS
+    HARDWARE_PATTERN_PROGRAMMED_BITS
 
     Indicates that the monochrome (color expand) 8x8 pattern data must be
     programmed into registers, rather than stored in video memory. This
     is only supported in combination with the following flag.
 
-    HARDWARE_PATTERN_PROGRAMMABLE_ORIGIN
+    HARDWARE_PATTERN_PROGRAMMED_ORIGIN
 
     Indicates that the hardware pattern supports a programmable origin
-    (x and y offsets into the pattern).
+    (x and y offsets into the pattern). This is supported for all three
+    pattern storage types (programmed monochrome, monochrome in video
+    memory and regular (pixel depth) in video memory).
 
     HARDWARE_PATTERN_BIT_ORDER_MSBFIRST
 
     Indicates that the monochrome 8x8 pattern data is in MSB-first bit
     order ("Windows-style").
+
+    HARDWARE_PATTERN_MONO_TRANSPARENCY
+
+    Indicates that the monochrome 8x8 pattern supports transparency
+    (signalled by a background color equal to -1).
 
     ONLY_TWO_BITBLT_DIRECTIONS
 
@@ -609,43 +663,50 @@ ImageWrite(x, y, w, h, src, srcwidth, rop, planemask)
 
 SetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_col)
 
-    Set up for hardware 8x8 pattern fill (non-color expanded). If the
-    flag HARDWARE_PATTERN_SCREEN_ORIGIN is not set, patternx and
-    patterny can be ignored. Otherwise, patternx and patterny just
-    indicate the video memory address where the pattern is stored. The
-    pattern is stored linearly in video memory. When the transparency
-    color is -1 there is no transparency.
+    Set up for hardware 8x8 pattern fill (non-color expanded). If
+    neither the HARDWARE_PATTERN_SCREEN_ORIGIN flag or the HARDWARE_
+    PATTERN_PROGRAMMED_ORIGIN flag is set, patternx and patterny can be
+    ignored. Otherwise, patternx and patterny just indicate the video
+    memory address where the pattern is stored. The pattern is stored
+    linearly in video memory. When the transparency color is -1 there
+    is no transparency.
 
 SubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
 
-    Perform a hardware 8x8 pattern fill. If the flag
-    HARDWARE_PATTERN_SCREEN_ORIGIN is set, patternx and patterny
-    can be ignored; otherwise, patternx and patterny indicate the
-    video memory address where the pattern is stored. Any rotation
-    issues are handled by the generic code by generating pre-rotated
-    copies of the pattern. The pattern address will always be at a
-    multiple of 8 pixels offset from the start of a scanline (x will
-    be a multiple of 8), unless the HARDWARE_PATTERN_ALIGN_64 is set.
-    At the moment, setting HARDWARE_PATTERN_ALIGN_64 will disable the
-    use of this function, but this will change in a future version.
+    Perform a hardware 8x8 pattern fill. If the flag HARDWARE_PATTERN_
+    SCREEN_ORIGIN is set, patternx and patterny can be ignored;
+    otherwise, patternx and patterny indicate the video memory address
+    where the pattern is stored. However, if HARDWARE_PATTERN_
+    PROGRAMMED_ORIGIN is set patternx and patterny define the origin
+    offset into the pattern. Any rotation issues are handled by the
+    generic code by generating pre-rotated copies of the pattern. The
+    pattern address will always be at a multiple of 8 pixels offset
+    from the start of a scanline (x will be a multiple of 8), unless
+    the HARDWARE_PATTERN_ALIGN_64 is set. At the moment, setting
+    HARDWARE_PATTERN_ALIGN_64 in the absence of HARDWARE_PATTERN_
+    PROGRAMMED_ORIGIN will disable the use of this function, but this
+    will change in a future version.
 
 SetupFor8x8PatternColorExpand(patternx, patterny, bg, fg, rop, planemask)
 
-    Set up for hardware color-expanded 8x8 pattern fill. If the
-    flag HARDWARE_PATTERN_SCREEN_ORIGIN is not set, patternx and
-    patterny can be ignored. Otherwise, patternx and patterny just
-    indicate the video memory address where the pattern is stored,
-    which will be on an 8 byte boundary relative to the start of a
-    scanline. The pattern x-coordinate will be in units of "bits".
+    Set up for hardware color-expanded 8x8 pattern fill. If the flag
+    HARDWARE_PATTERN_SCREEN_ORIGIN is set, or HARDWARE_PATTERN_
+    PROGRAMMED_ORIGIN is set in the absence of HARDWARE_PATTERN_
+    PROGRAMMED_BITS, patternx and patterny indicate the video memory
+    address where the pattern is stored, which will be on an 8 byte
+    boundary relative to the start of a scanline. Otherwise, patternx
+    and patterny can be ignored. The pattern x-coordinate will be in
+    units of "bits".
 
-    If HARDWARE_PATTERN_PROGRAMMABLE_BITS is set, patternx and patterny
+    If HARDWARE_PATTERN_PROGRAMMED_BITS is set, patternx and patterny
     are overloaded as follows: patternx holds the first 4 lines (32
-    pixels) of the pattern, with each byte in MSB-first bit order and
-    corresponding to a scanline of the pattern. patterny holds the
-    second half of the pattern. This is the so-called "Windows-format".
+    pixels) of the pattern, with each byte (MSB-first bit order if the
+    HARDWARE_PATTERN_BIT_ORDER_MSBFIRST flag is set) corresponding to a
+    scanline of the pattern. patterny holds the second half of the
+    pattern. This is the so-called "Windows-format".
 
     A background color of -1 indicates transparency (support of
-    transparency is indicated by the ColorExpandFlags).
+    transparency is indicated by HARDWARE_PATTERN_MONO_TRANSPARENCY).
 
 Subsequent8x8PatternColorExpand(patternx, patterny, x, y, w, h)
 
@@ -656,7 +717,7 @@ Subsequent8x8PatternColorExpand(patternx, patterny, x, y, w, h)
     issues are handled by the generic code by generating pre-rotated
     copies of the pattern.
 
-    If HARDWARE_PATTERN_PROGRAMMABLE_ORIGIN is set, patternx and
+    If HARDWARE_PATTERN_PROGRAMMED_ORIGIN is set, patternx and
     patterny hold the origin (x and y offsets into the pattern).
 
 ColorExpandFlags
@@ -677,7 +738,8 @@ ColorExpandFlags
 	color-expansion operations from the CPU to the screen. DWORD
         padding is preferred. These flags do not apply to screen-to-screen
         color expansion. Currently, not defining SCANLINE_PAD_DWORD will
-        result in the disabling of CPU-to-screen color expansion.
+        result in non-optimized and limited use of CPU-to-screen color
+        expansion.
 
     CPU_TRANSFER_PAD_DWORD
     CPU_TRANSFER_PAD_QWORD
@@ -691,7 +753,6 @@ ColorExpandFlags
 	Indicates that the destination address for monochrome data for
 	CPU-to-screen color-expansion is a fixed address, rather than
 	a large range starting from the ColorExpandBase address.
-	Currently defining this flag will disable most color expansion.
 
     ONLY_TRANSPARENCY_SUPPORTED
 
@@ -785,11 +846,17 @@ SubsequentScanlineScreenToScreenColorExpand(srcaddr)
 
     This performs color expansion of a scanline from the screen
     (typically a scratch buffer) to the screen. To take advantage of
-    this operation, ScratchBufferAddr and ScratchBufferSize must be defined
-    (> 0), and linear addressing must be used. Being able to support
-    COP_FRAMEBUFFER_CONCURRENCY is a win here. The srcaddr is the linear
-    framebuffer address in (non-expanded) pixel units. The real address
-    is (srcaddr / 8).
+    this operation, ScratchBufferAddr and ScratchBufferSize must be
+    defined (> 0), and either linear addressing must be used or
+    ScratchBufferBase must be defined. Being able to support
+    COP_FRAMEBUFFER_CONCURRENCY is a win here. The srcaddr is the
+    linear framebuffer address in (non-expanded) pixel units. The real
+    address is (srcaddr / 8).
+
+    In addition, PingPongBuffers defines the number of alternating
+    buffers used. The default is two. Depending on the implementation
+    and size of framebuffer and coprocessor write buffers on the chip,
+    you might need more than two.
 
 CPUToScreenColorExpandBase
 
@@ -817,12 +884,13 @@ CPUToScreenColorExpandRange
 
     At the moment, the bottom line is that you need about 256 bytes
     of transfer space to use CPU-to-screen color expansion (128 bytes
-    with a 1024 pixel screen width).
+    with a 1024 pixel screen width) with PCI-burst mode support.
+    However, "fixed-base" operation is supported.
 
 FramebufferBase
 
-    This is the address of the linear framebuffer. It is required
-    by the ScanlineScreenToScreenColorExpand, and is automatically
+    This is a pointer to the framebuffer. It is required by the
+    ScanlineScreenToScreenColorExpand, and is automatically
     initialized. It should not be set up in a chip-specific driver.
 
 BitsPerPixel
@@ -841,6 +909,24 @@ ScratchBufferSize
     This specifies the linear address in bytes and size of the scratch
     buffer used for ScanlineScreenToScreenColorExpand operations.
 
+ScratchBufferBase
+
+    This is a pointer to the mapped video memory of the scratch buffer.
+    When not defined, the scratch buffer is assumed to be at the
+    specified offset (ScratchBufferAddr) into a linear framebuffer.
+    This field should only be initialized when using
+    ScanlineScreenToScreenColorExpand with a non-linear framebuffer,
+    in which case it should be noted that it is totally independent
+    from ScratchBufferAddr.
+
+PingPongBuffers
+
+    This field defines the number of alternating buffers used in the
+    scratch buffer for ScanlineScreenToScreenColorExpand. The default
+    is two. Depending on the implementation and size of framebuffer and
+    coprocessor write buffers on the chip, you might need more than
+    two.
+
 ErrorTermBits
 
     Indicates the number of bits of precision for the Bresenham line
@@ -851,9 +937,10 @@ ErrorTermBits
 
 ServerInfoRec
 
-   This is a pointer to the XFree86 server InfoRec. It must be defined.
-   The InitPixmapCache function initializes it for compatibility with
-   earlier versions of XAA.
+    This is a pointer to the XFree86 server InfoRec. It must be defined.
+    The InitPixmapCache function initializes it for compatibility with
+    earlier versions of XAA. The SVGA server initializes it
+    automatically.
 
 PixmapCacheMemoryStart
 PixmapCacheMemoryEnd
@@ -1219,8 +1306,8 @@ xfGCInfoRec.CopyAreaFlags:
   and 32 pixel high patterns to be done using the hardware pattern. Also
   some chips support 16x8 and 32x8 pattern fill at 8bpp by using 16bpp
   or 32bpp pattern fill. Currently, support for chips that require the
-  pattern to be aligned on a 64-pixel boundary is missing, which in
-  practice means the 8x8 pattern is not usable for many chips.
+  pattern to be aligned on a 64-pixel boundary is missing in most cases,
+  which in practice means the 8x8 pattern is not usable for many chips.
 
 - Font-caching (useful for configurations where it's not possible to use
   color expansion for text, and for certain fonts). Non-"terminal emulator"
@@ -1309,13 +1396,12 @@ ARK Logic
     straightforward.
 
     Fill8x8Pattern is supported; the ARK chip requires the pattern to
-    be aligned on a 64-pixel boundary (HARDWARE_PATTERN_ALIGN_64) and
-    the address modulo 64 seems to indicate the vertical offset (y
-    origin) (HARDWARE_PATTERN_MOD_64_OFFSET). The latter means the
-    pattern can actually be used (when the framebuffer width is a
-    multiple of 64), despite the limited support for 64-pixel pattern
-    alignment in XAA. The ARK chips don't seem to have support for
-    a monochrome pattern.
+    be aligned on a 64-pixel boundary and the address modulo 64 seems
+    to indicate the vertical offset (y origin) (HARDWARE_PATTERN_MOD_
+    64_OFFSET). The latter means the pattern can actually be used (when
+    the framebuffer width is a multiple of 64), despite the limited
+    support for 64-pixel pattern alignment in XAA.  The ARK chips don't
+    seem to have support for a monochrome pattern.
 
     Color expansion is implemented using ScanlineScreenToScreen-
     ColorExpand (24bpp: RGB_EQUAL, NO_PLANEMASK), which is pretty fast
@@ -1435,28 +1521,28 @@ CPU to screen     211.11*   419.09*   416.23*      -         -
 scanl. scr-to-scr    -         -         -         -      137.97   
 10x10 scr-to-scr     -         -         -       15.26     36.79   
 
-Chip		  ARK2000PV ARK2000PV MGA-Mill  CL-GD5426 
-Memory		  2MB EDO   2MB EDO   2MB WRAM  1MB DRAM  
-CPU		  6x86P150+ 6x86P166+ 6x86P166+ DX4/100   
-Bus		  PCI 30MHz PCI 33Mhz PCI 33MHz VLB 33MHz 
-bpp, width	  8bpp 1024 8bpp 1024 8bpp 1024 8bpp 1024 
+Chip		  ARK2000PV ARK2000PV MGA-Mill  CL-GD5426 CL-GD5446
+Memory		  2MB EDO   2MB EDO   2MB WRAM  1MB DRAM  2MB DRAM
+CPU		  6x86P150+ 6x86P166+ 6x86P166+ DX4/100   P133
+Bus		  PCI 30MHz PCI 33Mhz PCI 33MHz VLB 33MHz PCI 33Mhz
+bpp, width	  8bpp 1024 8bpp 1024 8bpp 1024 8bpp 1024 8bpp 1280
 -------------------------------------------------------------------
-framebuffer	   88.84    100.45     92.18     13.22    
+framebuffer	   88.84    100.45     92.18     13.22     80.81
 solid filled rect
-10x1		   20.99     22.82     41.30      1.16    
-40x40		  157.00    157.00    458.38     28.88    
-400x400		  244.34    244.34   1961.74     41.74    
+10x1		   20.99     22.82     41.30      1.16     25.49
+40x40		  157.00    157.00    458.38     28.88    167.10
+400x400		  244.34    244.34   1961.74     41.74    218.02
 screen copy
-10x10	           33.22     33.23     35.09      5.35    
-40x40		   78.81     78.81     99.93     15.83    
-400x400		   99.13     99.02    137.87     20.98    
-400x400 scroll	  100.09    100.09    664.02     21.18    
+10x10	           33.22     33.23     35.09      5.35     34.39
+40x40		   78.81     78.81     99.93     15.83     77.71
+400x400		   99.13     99.02    137.87     20.98     97.03
+400x400 scroll	  100.09    100.09    664.02     21.18     98.55
 8x8 pattern fill
-400x400		  228.68    228.72       -       41.10    
+400x400		  228.68    228.72       -       41.10    217.91
 color expansion
-CPU to screen	     -                730.52       -      
-scanl. scr-to-scr 138.01    138.09       -       19.56    
-10x10 scr-to-scr   36.87     36.86     39.19      6.16    
+CPU to screen	     -                730.52       -      221.10
+scanl. scr-to-scr 138.01    138.09       -       19.56       -   
+10x10 scr-to-scr   36.87     36.86     39.19      6.16     66.46
 
 (*) After this benchmark was taken, the color expansion benchmark was
     changed to write a pattern including both colors instead of just the
@@ -1490,6 +1576,8 @@ vgabpp.h	Declares the new ScreenInit functions for each depth.
 
 xf86xaa.h	General public definitions, including the GCInfoRec and
 		AccelInfoRec.
+
+xf86scrin.h	XAA screen initialization functions.
 
 xf86local.h	Declares functions local to the generic acceleration code.
 

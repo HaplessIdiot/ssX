@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.4 1997/01/02 04:38:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.5 1997/01/08 20:51:24 dawes Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.4 1997/01/02 04:38:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.5 1997/01/08 20:51:24 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -587,6 +587,24 @@ xf86FillRectTileCached(pDrawable, pGC, nBoxInit, pBoxInit)
                 rectHeight = rectY2 - rectY1;
 
 		if ((rectWidth > 0) && (rectHeight > 0)) {
+	            if (xf86AccelInfoRec.Flags &
+	            HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
+	                /* Special case: origin offset is passed. */
+                        if (xf86AccelInfoRec.Flags
+                        & HARDWARE_PATTERN_SCREEN_ORIGIN)
+                             xf86AccelInfoRec.SubsequentFill8x8Pattern(
+                                 (- adjLeftX) & 7,
+                                 (- adjTopY) & 7, 
+                                 rectX1, rectY1, rectWidth,
+                                 rectHeight);
+                        else
+                            xf86AccelInfoRec.SubsequentFill8x8Pattern(
+                                (rectX1 - adjLeftX) & 7,
+                                (rectY1 - adjTopY) & 7,
+                                rectX1, rectY1, rectWidth,
+                                rectHeight);
+                    }
+		    else
 		    if (xf86AccelInfoRec.Flags
 		    & HARDWARE_PATTERN_SCREEN_ORIGIN)
 		        /* patternx, patterny are ignored in this case. */
@@ -647,7 +665,13 @@ xf86FillRectTileCached(pDrawable, pGC, nBoxInit, pBoxInit)
                     patternx, patterny, -1, pGC->fgPixel,
                     pGC->alu, pGC->planemask);
             else
-                /* Tiled and opaque stippled, no transparency. */
+            if (pGC->fillStyle == FillTiled)
+                /* Tiled. Colors from cache info. */
+                xf86AccelInfoRec.SetupFor8x8PatternColorExpand(
+                    patternx, patterny, pci->bg_color, pci->fg_color,
+                    pGC->alu, pGC->planemask);
+            else
+                /* Opaque stippled, no transparency. */
                 xf86AccelInfoRec.SetupFor8x8PatternColorExpand(
                     patternx, patterny, pGC->bgPixel, pGC->fgPixel,
                     pGC->alu, pGC->planemask);
@@ -663,10 +687,8 @@ xf86FillRectTileCached(pDrawable, pGC, nBoxInit, pBoxInit)
                 rectHeight = rectY2 - rectY1;
 
 		if ((rectWidth > 0) && (rectHeight > 0)) {
-	            if ((xf86AccelInfoRec.Flags &
-	            HARDWARE_PATTERN_PROGRAMMED_BITS)
-	            && (xf86AccelInfoRec.Flags &
-	            HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) {
+	            if (xf86AccelInfoRec.Flags &
+	            HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
 	                /* Special case: origin offset is passed. */
 	                if (xf86AccelInfoRec.Flags
 	                & HARDWARE_PATTERN_SCREEN_ORIGIN)

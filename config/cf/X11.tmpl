@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: X11.tmpl /main/290 1996/12/27 16:14:21 kaleb $
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.6 1996/12/30 13:57:35 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.7 1997/01/02 04:04:28 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -198,6 +198,13 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.6 1996/12/30 13:57:35 dawes Exp $
 #ifndef BuildXF86DGALibrary
 #define BuildXF86DGALibrary	BuildXF86DGA
 #endif
+#ifndef BuildDPMSExt
+#define BuildDPMSExt		NO
+#endif
+#ifndef BuildDPMSLibrary
+#define BuildDPMSLibrary	BuildDPMSExt
+#endif
+
 #ifndef InstallLibManPages
 #define InstallLibManPages	YES
 #endif
@@ -453,6 +460,14 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.6 1996/12/30 13:57:35 dawes Exp $
 #endif
 #endif
 
+#ifndef DPMSExtensionDefines
+#if BuildDPMSExt
+#define DPMSExtensionDefines -DDPMSExtension
+#else
+#define DPMSExtensionDefines /**/
+#endif
+#endif
+
 #ifndef RECORDDefines
 #if BuildRECORD
 #define RECORDDefines -DXRECORD
@@ -484,6 +499,7 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.6 1996/12/30 13:57:35 dawes Exp $
 #define PervasiveExtensionDefines ShapeDefines XInputDefines XkbDefines \
 				  LbxDefines AppgroupDefines \
 				  XCSecurityDefines PervasiveDBEDefines \
+				  DPMSExtensionDefines \
 				  XprintDefines SitePervasiveExtensionDefines
 #endif
 #ifndef SiteExtensionDefines
@@ -950,6 +966,21 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #endif
 #endif
 
+#if BuildDPMSLibrary
+#ifndef SharedLibXdpms
+#define SharedLibXdpms		NO
+#endif
+#ifndef NormalLibXdpms
+#define NormalLibXdpms		YES
+#endif
+#ifndef DebugLibXdpms
+#define DebugLibXdpms		NO
+#endif
+#ifndef ProfileLibXdpms
+#define ProfileLibXdpms		NO
+#endif
+#endif
+
 #ifndef SharedLibXext
 #define SharedLibXext HasSharedLibraries
 #endif
@@ -1021,6 +1052,18 @@ ProjectUnsharedLibReferences(XXF86VM,Xxf86vm,$(XXF86VMLIBSRC),XBuildLibDir)
 SharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC),SOXXF86DGAREV,SharedXxf86dgaRev)
 #else
 ProjectUnsharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC),XBuildLibDir)
+#endif
+#endif
+
+#if BuildDPMSLibrary
+    XDPMSLIBSRC = $(LIBSRC)/Xdpms
+#if SharedLibXdpms
+#ifndef SharedXdpmsRev
+#define SharedXdpmsRev 1.0
+#endif
+SharedLibReferences(XDPMS,Xdpms,$(XDPMSLIBSRC),SOXDPMSREV,SharedXdpmsRev)
+#else
+ProjectUnsharedLibReferences(XDPMS,Xdpms,$(XDPMSLIBSRC),XBuildLibDir)
 #endif
 #endif
 

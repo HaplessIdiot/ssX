@@ -1,5 +1,5 @@
 /* $XConsortium: Init.c /main/7 1996/12/02 10:21:37 lehors $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.8 1996/11/24 09:58:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.9 1996/12/23 07:09:16 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -121,6 +121,24 @@ void OsVendorFatalError()
 {
     return;
 }
+
+#ifdef DPMSExtension
+#if NeedFunctionPrototypes
+void DPMSSet(CARD16 level)
+#else
+void DPMSSet(level)
+     CARD16 level;
+#endif
+{
+    return;
+}
+
+Bool DPMSSupported()
+{
+    return FALSE;
+}
+#endif
+
 /* this is just to get the server to link on AIX */
 #ifdef AIXV3
 int SelectWaitTime = 10000; /* usec */

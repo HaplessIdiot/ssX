@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.2 1996/12/09 11:55:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.3 1997/01/02 04:38:55 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -461,7 +461,8 @@ nglyph, ppci, pglyphBase)
      * bitmap buffer in video memory.
      */
     if (glyphWidthBytes != 4 || glyphWidth > 32 || ((w + 31)
-    & ~31) / 8 * 2 > xf86AccelInfoRec.ScratchBufferSize) {
+    & ~31) / 8 * xf86AccelInfoRec.PingPongBuffers >
+    xf86AccelInfoRec.ScratchBufferSize) {
         xf86GCInfoRec.ImageGlyphBltFallBack(
             pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
 	return;
@@ -603,7 +604,8 @@ nglyph, ppci, pglyphBase)
      * bitmap buffer in video memory.
      */
     if (glyphWidthBytes != 4 || glyphWidth > 32 || ((w + 31)
-    & ~31) / 8 * 2 > xf86AccelInfoRec.ScratchBufferSize) {
+    & ~31) / 8 * xf86AccelInfoRec.PingPongBuffers >
+    xf86AccelInfoRec.ScratchBufferSize) {
         xf86GCInfoRec.PolyGlyphBltFallBack(
             pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
 	return;
@@ -807,7 +809,8 @@ nglyph, ppci, pglyphBase)
      * bitmap buffer in video memory.
      */
     if (glyphWidthBytes != 4 || glyphWidth > 32 || ((w + 31)
-    & ~31) / 8 * 2 > xf86AccelInfoRec.ScratchBufferSize) {
+    & ~31) / 8 * xf86AccelInfoRec.PingPongBuffers >
+    xf86AccelInfoRec.ScratchBufferSize) {
         xf86GCInfoRec.ImageGlyphBltFallBack(
             pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
 	return;
@@ -955,7 +958,8 @@ nglyph, ppci, pglyphBase)
      * bitmap buffer in video memory.
      */
     if (glyphWidthBytes != 4 || glyphWidth > 32 || ((w + 31)
-    & ~31) / 8 * 2 > xf86AccelInfoRec.ScratchBufferSize) {
+    & ~31) / 8 * xf86AccelInfoRec.PingPongBuffers >
+    xf86AccelInfoRec.ScratchBufferSize) {
         xf86GCInfoRec.PolyGlyphBltFallBack(
             pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
 	return;
@@ -1046,8 +1050,8 @@ static void DrawTextTECPUToScreenColorExpand(nglyph, h, glyphp, glyphwidth)
             if (base >=
             (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
                 base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
-	    line++;
 	}
+	line++;
     }
 
     if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD) {
@@ -1213,35 +1217,37 @@ static void DrawTextTEScreenToScreenColorExpand(nglyph, w, h, glyphp, glyphwidth
 {
     int bitmapwidth;
     int line;
+    int offset, endoffset;
 
     /* Calculate the non-expanded bitmap width rounded up to 32-bit words, */
     /* in units of pixels. */
     bitmapwidth = (w + 31) & ~31;
+    endoffset = (bitmapwidth / 8) * xf86AccelInfoRec.PingPongBuffers;
 
+    offset = 0;
     line = 0;
     while (line < h) {
-        int base;
-	base = xf86AccelInfoRec.ScratchBufferAddr;
-        if (line & 1)
-            /*
-             * There are two buffers -- while the first one is being
-             * blitted, the other one is initialized. Then the other
-             * way around, and so on.
-             */
-	    base += bitmapwidth / 8;
 	if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
 	    xf86AccelInfoRec.Sync();
         if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
 	    xf86DrawTextScanlineMSBFirst((unsigned int *)
-	        (xf86AccelInfoRec.FramebufferBase + base),
+	        (xf86AccelInfoRec.ScratchBufferBase + offset),
 	        glyphp, line, nglyph, glyphwidth);
         else
 	    xf86DrawTextScanline((unsigned int *)
-	        (xf86AccelInfoRec.FramebufferBase + base),
+	        (xf86AccelInfoRec.ScratchBufferBase + offset),
 	        glyphp, line, nglyph, glyphwidth);
 	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand(
-	    base * 8);
+	    (xf86AccelInfoRec.ScratchBufferAddr + offset) * 8);
 	line++;
+        /*
+         * There is a number of buffers -- while the first one is being
+         * blitted, the next one is initialized, and then the next,
+         * and so on.
+         */
+	offset += bitmapwidth / 8;
+	if (offset == endoffset)
+	    offset = 0;
     }
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
@@ -1320,35 +1326,37 @@ static void DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, glyphinfop)
 {
     int bitmapwidth;
     int line;
+    int offset, endoffset;
 
     /* Calculate the non-expanded bitmap width rounded up to 32-bit words, */
     /* in units of pixels. */
     bitmapwidth = (w + 31) & ~31;
+    endoffset = (bitmapwidth / 8) * xf86AccelInfoRec.PingPongBuffers;
 
+    offset = 0;
     line = 0;
     while (line < h) {
-        int base;
-	base = xf86AccelInfoRec.ScratchBufferAddr;
-        if (line & 1)
-            /*
-             * There are two buffers -- while the first one is being
-             * blitted, the other one is initialized. Then the other
-             * way around, and so on.
-             */
-	    base += bitmapwidth / 8;
 	if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
 	    xf86AccelInfoRec.Sync();
         if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
 	    xf86DrawNonTETextScanlineMSBFirst((unsigned int *)
-	        (xf86AccelInfoRec.FramebufferBase + base),
+	        (xf86AccelInfoRec.ScratchBufferBase + offset),
 	        glyphinfop, line, nglyph);
         else
 	    xf86DrawNonTETextScanline((unsigned int *)
-	        (xf86AccelInfoRec.FramebufferBase + base),
+	        (xf86AccelInfoRec.ScratchBufferBase + offset),
 	        glyphinfop, line, nglyph);
 	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand(
-	    base * 8);
+	    (xf86AccelInfoRec.ScratchBufferAddr + offset) * 8);
 	line++;
+        /*
+         * There is a number of buffers -- while the first one is being
+         * blitted, the next one is initialized, and then the next,
+         * and so on.
+         */
+	offset += bitmapwidth / 8;
+	if (offset == endoffset)
+	    offset = 0;
     }
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)

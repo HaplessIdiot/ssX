@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.62 1996/12/20 10:32:22 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.63 1996/12/23 06:43:26 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -54,6 +54,8 @@ extern int atoi();
 #else
 #include "inputstr.h"
 #endif
+
+#include "opaque.h"
 
 #ifdef XTESTEXT1
 #include "atKeynames.h"
@@ -444,6 +446,80 @@ OsVendorInit()
 #endif
   OsDelayInitColors = TRUE;
 }
+
+#ifdef DPMSExtension
+/*
+ * DPMSSet --
+ *	Device dependent DPMS mode setting hook.  This is called whenever
+ *	the DPMS mode is to be changed.
+ *
+ *	This should hook in to the appropriate driver-level function, which
+ *	will be added to the ScrnInfoRec.
+ */
+void
+DPMSSet(CARD16 level)
+{
+    int i;
+
+    /* For each screen, set the power saver level */
+    for (i = 0; i < screenInfo.numScreens; i++) {
+	 ;
+    }
+
+    DPMSPowerLevel = level;
+}
+
+#if 0
+/*
+ * DPMSGet --
+ *	Device dependent DPMS mode getting hook.  This returns the current
+ *	DPMS mode, or -1 if DPMS is not supported.
+ *
+ *	This should hook in to the appropriate driver-level function, which
+ *	will be added to the ScrnInfoRec.
+ *
+ *	NOTES:
+ *	 1. the calling interface should be changed to specify which
+ *	    screen to check.
+ *	 2. It isn't clear that this function is ever used.
+ */
+CARD16
+DPMSGet(CARD16 *level)
+{
+    int i;
+
+    /* For each screen, set the power saver level */
+    for (i = 0; i < screenInfo.numScreens; i++) {
+	 ;
+    }
+
+    DPMSPowerLevel = level;
+}
+#endif
+
+/*
+ * DPMSSupported --
+ *	Return TRUE if any screen supports DPMS.
+ *
+ *	This should hook in to the appropriate driver-level function, which
+ *	will be added to the ScrnInfoRec.
+ *
+ */
+Bool
+DPMSSupported(void)
+{
+    int i;
+    DPMSSupportStatus supported = DPMSSupportUnknown;
+
+    /* For each screen, check if DPMS is supported */
+    for (i = 0; i < screenInfo.numScreens; i++) {
+	supported = DPMSNotSupported;
+	if (supported != DPMSNotSupported)
+	    return TRUE;
+    }
+    return FALSE;
+}
+#endif /* DPMSExtension */
 
 /*
  * ddxGiveUp --

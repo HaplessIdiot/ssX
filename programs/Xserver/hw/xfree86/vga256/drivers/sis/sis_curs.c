@@ -26,7 +26,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_curs.c,v 3.2 1996/10/08 12:37:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_curs.c,v 3.3 1996/12/27 07:05:46 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -43,6 +43,9 @@
 #include "xf86_Option.h"
 #include "xf86_OSlib.h"
 #include "vga.h"
+
+#include "sis_driver.h"
+#include "sis_Blitter.h"
 
 extern int sisHWCursorType;
 
@@ -138,7 +141,7 @@ void SISHideCursor() {
 
 	outb(0x3C4, 0x06);
 	temp = inb(0x3C5);
-	outb(0x3C5, temp & 0xAF);
+	outb(0x3C5, temp & 0xBF);
 }
 
 /*
@@ -251,6 +254,9 @@ static void SISLoadCursorToCard(pScr, pCurs, x, y)
 
 	if (!xf86VTSema)
 		return;
+	/* Check if blitter is active. Mustn't touch the video ram till it is finished */
+	if ( sisUseMMIO )
+	    sisBLTWAIT;
 
 	cursor_image = pCurs->bits->devPriv[index];
 
@@ -305,6 +311,9 @@ static void SISLoadCursor(pScr, pCurs, x, y)
 
 	/* Position cursor */
 	SISMoveCursor(pScr, x, y);
+
+	if ( sisUseMMIO )
+	    sisBLTWAIT;
 
 	/* Turn it on. */
 	SISShowCursor();
@@ -378,6 +387,8 @@ static void SISMoveCursor(pScr, x, y)
 
 	if (XF86SCRNINFO(pScr)->modes->Flags & V_DBLSCAN)
 		y *= 2;
+	if (XF86SCRNINFO(pScr)->modes->Flags & V_INTERLACE)
+		y /= 2;
 
 	/* Program the cursor origin (offset into the cursor bitmap). */
 	wrinx(0x3C4, 0x1C, xorigin);
@@ -431,7 +442,7 @@ SISRecolorCursor(pScr, pCurs, displayed)
        return;
      }
 
-   shift = 16 - pVisual->bitsPerRGBValue;
+   shift = 10 ; 	/* vga is a 6 bit dac, cursor color too */
 
    bred   = pCurs->backRed;
    bgreen = pCurs->backGreen;
@@ -485,8 +496,9 @@ void SISQueryBestSize(class, pwidth, pheight, pScreen)
 			*pheight = SISCursorHeight;
 		}
 		else
-			(void) mfbQueryBestSize(class, pwidth, pheight, pScreen);
+		    (void) mfbQueryBestSize(class, pwidth, pheight, pScreen);
 	}
 }
+
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabitblt.c,v 3.3 1996/12/09 11:54:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabitblt.c,v 3.4 1996/12/23 06:59:34 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -313,6 +313,7 @@ DrawablePtr,
 int,
 RegionPtr,
 DDXPointPtr,
+unsigned long,
 unsigned long
 #endif
 ) = vga256DoBitbltGeneral;
@@ -329,7 +330,7 @@ unsigned long
 	    break;
 	}
     }
-    (*blt) (pSrc, pDst, alu, prgnDst, pptSrc, planemask);
+    (*blt) (pSrc, pDst, alu, prgnDst, pptSrc, planemask, ~0L);
     return;
 }
 
@@ -350,6 +351,7 @@ DrawablePtr,
 int,
 RegionPtr,
 DDXPointPtr,
+unsigned long,
 unsigned long
 #endif
 );

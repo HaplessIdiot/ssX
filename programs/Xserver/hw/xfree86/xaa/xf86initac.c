@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.3 1996/12/18 03:13:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.4 1997/01/02 04:38:50 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -77,43 +77,56 @@ xf86InitializeAcceleration(pScreen)
     if (xf86AccelInfoRec.SetupForFillRectSolid &&
     xf86AccelInfoRec.SubsequentFillRectSolid) {
         SimpleFillRectSolid = TRUE;
-        ErrorF("%s %s: accel: Solid filled rectangles\n",
+        ErrorF("%s %s: XAA: Solid filled rectangles\n",
             XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
     }
     if (xf86AccelInfoRec.SetupForScreenToScreenCopy &&
     xf86AccelInfoRec.SubsequentScreenToScreenCopy) {
         SimpleScreenToScreenCopy = TRUE;
-        ErrorF("%s %s: accel: Screen-to-screen copy\n",
+        ErrorF("%s %s: XAA: Screen-to-screen copy\n",
             XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
     }
     if (xf86AccelInfoRec.SetupForCPUToScreenColorExpand &&
     xf86AccelInfoRec.SubsequentCPUToScreenColorExpand) {
         CPUToScreenColorExpand = TRUE;
-        ErrorF("%s %s: accel: CPU-to-screen color expand\n",
+#if 0
+        /* There's a more useful message below. */
+        ErrorF("%s %s: XAA: CPU-to-screen color expand\n",
             XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
+#endif
     }
     if (xf86AccelInfoRec.SetupForScreenToScreenColorExpand &&
     xf86AccelInfoRec.SubsequentScreenToScreenColorExpand) {
         ScreenToScreenColorExpand = TRUE;
-        ErrorF("%s %s: accel: Screen-to-screen color expand\n",
+        ErrorF("%s %s: XAA: Screen-to-screen color expand\n",
             XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
     }
     if (xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand &&
     xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand) {
         ScanlineScreenToScreenColorExpand = TRUE;
-        ErrorF("%s %s: accel: Scanline screen-to-screen color expand\n",
+        ErrorF("%s %s: XAA: Scanline screen-to-screen color expand\n",
             XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
     }
     if (xf86AccelInfoRec.SetupForFill8x8Pattern &&
     xf86AccelInfoRec.SubsequentFill8x8Pattern) {
-        ErrorF("%s %s: accel: 8x8 pattern fill\n",
+        ErrorF("%s %s: XAA: 8x8 pattern fill\n",
             XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
     }
     if (xf86AccelInfoRec.SetupFor8x8PatternColorExpand &&
     xf86AccelInfoRec.Subsequent8x8PatternColorExpand) {
-        ErrorF("%s %s: accel: 8x8 color expand pattern fill\n",
+        ErrorF("%s %s: XAA: 8x8 color expand pattern fill\n",
             XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
     }
+
+    if (!SimpleFillRectSolid && !SimpleScreenToScreenCopy &&
+    !CPUToScreenColorExpand && !ScreenToScreenColorExpand &&
+    !ScanlineScreenToScreenColorExpand &&
+    !xf86AccelInfoRec.SubsequentTwoPointLine &&
+    !xf86AccelInfoRec.SubsequentBresenhamLine &&
+    !xf86AccelInfoRec.SubsequentFill8x8Pattern &&
+    !xf86AccelInfoRec.Subsequent8x8PatternColorExpand)
+        ErrorF("%s %s: XAA: No acceleration primitives defined.\n",
+            XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
 
     /*
      * Set up the higher-level accelerated functions to make use of
@@ -214,7 +227,7 @@ xf86InitializeAcceleration(pScreen)
 /*    && (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD) */
 /*    && !(xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED) */
     ) {
-        ErrorF("%s %s: accel: CPU to screen color expansion (",
+        ErrorF("%s %s: XAA: CPU to screen color expansion (",
 	    XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
         if ((!(xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED)
         || SimpleFillRectSolid)
@@ -237,7 +250,7 @@ xf86InitializeAcceleration(pScreen)
             xf86GCInfoRec.ImageGlyphBltNonTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
 #endif
-            ErrorF(", imagetext");
+            ErrorF("imagetext");
         }
         if (!xf86AccelInfoRec.PolyTextTE && !xf86GCInfoRec.PolyGlyphBltTE
         && !(xf86AccelInfoRec.ColorExpandFlags & NO_TRANSPARENCY)
@@ -260,16 +273,30 @@ xf86InitializeAcceleration(pScreen)
     else
     if (ScanlineScreenToScreenColorExpand
     && xf86AccelInfoRec.ScratchBufferAddr
-    && xf86AccelInfoRec.FramebufferBase) {
-        ErrorF("%s %s: accel: Indirect CPU to screen color expansion "
+    && (xf86AccelInfoRec.FramebufferBase
+    || xf86AccelInfoRec.ScratchBufferBase)) {
+        ErrorF("%s %s: XAA: Indirect CPU to screen color expansion "
             "(", XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
+        /*
+         * The default address of the scratch buffer is FramebufferBase
+         * (pointer to linear framebuffer) + ScratchBufferAddr (offset
+         * in bytes into framebuffer).
+         * However, if ScratchBufferBase is defined, ScratchBufferBase is
+         * taken to be the pointer to the scratch buffer.
+         * In both cases, ScratchBufferAddr is passed to the
+         * SubsequentScreenToScreenColorExpand primitive.
+         */
+        if (!xf86AccelInfoRec.ScratchBufferBase)
+            xf86AccelInfoRec.ScratchBufferBase =
+                xf86AccelInfoRec.FramebufferBase
+                + xf86AccelInfoRec.ScratchBufferAddr;
         if ((xf86AccelInfoRec.ColorExpandFlags &
         VIDEO_SOURCE_GRANULARITY_PIXEL) &&
         (!(xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED)
         || SimpleFillRectSolid)) {
             xf86AccelInfoRec.WriteBitmap =
                 xf86WriteBitmapScreenToScreenColorExpand;
-            ErrorF("bitmap");
+            ErrorF("bitmap, ");
         }
         if (!xf86AccelInfoRec.ImageTextTE && !xf86GCInfoRec.ImageGlyphBltTE &&
         (!(xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED)
@@ -284,7 +311,7 @@ xf86InitializeAcceleration(pScreen)
             xf86GCInfoRec.ImageGlyphBltNonTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
 #endif
-            ErrorF(", imagetext");
+            ErrorF("imagetext");
         }
         if (!xf86AccelInfoRec.PolyTextTE && !xf86GCInfoRec.PolyGlyphBltTE &&
         !(xf86AccelInfoRec.ColorExpandFlags & NO_TRANSPARENCY)) {
@@ -322,7 +349,7 @@ xf86InitializeAcceleration(pScreen)
     if ((xf86AccelInfoRec.Flags & PIXMAP_CACHE) && SimpleScreenToScreenCopy) {
         /* Perform the actual pixmap cache initialization/allocation. */
         xf86InitPixmapCacheSlots();
-        ErrorF("%s %s: accel: Caching tiles ",
+        ErrorF("%s %s: XAA: Caching tiles ",
 	    XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
         xf86GCInfoRec.PolyFillRectTiled = xf86PolyFillRect;
         xf86GCInfoRec.PolyFillRectTiledFlags = xf86GCInfoRec.CopyAreaFlags;
@@ -343,9 +370,12 @@ xf86InitializeAcceleration(pScreen)
             }
             /*
              * Caching of transparent stipples requires screen-to-screen
-             * copy with transparency color compare.
+             * copy with transparency color compare. However, if there
+             * is a color-expand 8x8 hardware pattern fill that supports
+             * transparency, we might hope to use it.
              */
-            if (!(xf86GCInfoRec.CopyAreaFlags & NO_TRANSPARENCY)) {
+            if (!(xf86GCInfoRec.CopyAreaFlags & NO_TRANSPARENCY) ||
+            (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_MONO_TRANSPARENCY)) {
                 xf86GCInfoRec.PolyFillRectStippled = xf86PolyFillRect;
                 xf86GCInfoRec.PolyFillRectStippledFlags =
                     xf86GCInfoRec.CopyAreaFlags;
@@ -410,7 +440,7 @@ xf86InitializeAcceleration(pScreen)
                  */
                 xf86GCInfoRec.PolySegmentSolidZeroWidthFlags |=
                     NO_CAP_NOT_LAST;
-            ErrorF("%s %s: accel: General lines and segments\n",
+            ErrorF("%s %s: XAA: General lines and segments\n",
 	        XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
         }
         else
@@ -425,10 +455,10 @@ xf86InitializeAcceleration(pScreen)
 	    xf86GCInfoRec.PolySegmentSolidZeroWidthFlags |=
 	        xf86GCInfoRec.PolyFillRectSolidFlags;
             if (xf86AccelInfoRec.SubsequentTwoPointLine)
-                ErrorF("%s %s: accel: Non-clipped general lines and segments\n",
+                ErrorF("%s %s: XAA: Non-clipped general lines and segments\n",
                     XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
             else
-                ErrorF("%s %s: accel: Horizontal and vertical lines and segments\n",
+                ErrorF("%s %s: XAA: Horizontal and vertical lines and segments\n",
                     XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
         }
 

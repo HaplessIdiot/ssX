@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirrus_acl.c,v 3.2 1997/01/02 04:38:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirrus_acl.c,v 3.3 1997/01/03 08:35:06 dawes Exp $ */
 
 /*
  * New-style acceleration for chips with BitBLT engine:
@@ -65,9 +65,13 @@
 #define CHIPHASPACKED24FILL() \
     (cirrusChip == CLGD5436 || cirrusChip == CLGD5446)
 
+#ifdef MMIO
 #define CHIPHASAUTOSTART() \
     (cirrusChip == CLGD5436 || cirrusChip == CLGD5446 || \
     cirrusChip == CLGD7548)
+#else
+#define CHIPHASAUTOSTART() (0)
+#endif
 
 #define CHIPHASPCIRETRYSUPPORT() \
     (cirrusChip == CLGD5446)
@@ -101,6 +105,9 @@
 
 #define CHIPHASFGCOLORREGISTERSIDEEFFECT() \
     (cirrusChip <= CLGD5429)	/* At least the 5426/28. */
+
+#define CHIPHASPATTERNOFFSET() \
+    (cirrusChip == CLGD5446)
 
 #define BPPADJUST(x) \
     vga256InfoRec.bitsPerPixel == 8 ? x : \
@@ -865,6 +872,8 @@ void CirrusSubsequentScanlineScreenToScreenColorExpand(srcaddr)
         vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8;
 }
 
+static int pattern_address;
+
 void CirrusSetupFor8x8PatternFill(patternx, patterny, rop, planemask,
 transparency_color)
     int patternx, patterny, rop, planemask, transparency_color;
@@ -885,13 +894,19 @@ transparency_color)
         bltmode |= TRANSPARENCYCOMPARE;
     }
     SETBLTMODEANDROP(PATTERNCOPY | bltmode, 0, cirrus_rop[rop]);
+    if (CHIPHASPATTERNOFFSET()) {
+        pattern_address = patterny * vga256InfoRec.displayWidth + patternx;
+    }
 }
 
 void CirrusSubsequent8x8PatternFill(patternx, patterny, x, y, w, h)
     int patternx, patterny, x, y, w, h;
 {
     int srcaddr, destaddr;
-    srcaddr = patterny * vga256InfoRec.displayWidth + patternx;
+    if (CHIPHASPATTERNOFFSET())
+        srcaddr = pattern_address + patterny * 8 + patternx;
+    else
+        srcaddr = patterny * vga256InfoRec.displayWidth + patternx;
     destaddr = y * vga256InfoRec.displayWidth + x;
     srcaddr = BPPADJUST(srcaddr);
     destaddr = BPPADJUST(destaddr);

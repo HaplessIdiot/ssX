@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.125 1997/01/05 11:49:43 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.126 1997/01/08 20:31:23 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -583,6 +583,9 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #ifndef BuildXF86VidModeLibrary
 #define BuildXF86VidModeLibrary	YES
 #endif
+#ifndef BuildDPMSLibrary
+#define BuildDPMSLibrary	YES
+#endif
 
 /*
  * Build the XFree86-VidMode extension
@@ -629,6 +632,14 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #ifndef BuildXF86DGA
 #define BuildXF86DGA			YES
 #endif
+
+/*
+ * Build the DPMS extension support
+ */
+#ifndef BuildDPMSExt
+#define BuildDPMSExt			YES
+#endif
+
 
 #ifndef UseInternalMalloc
 #define UseInternalMalloc	YES

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmap.h,v 3.1 1996/12/09 11:55:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmap.h,v 3.2 1997/01/02 04:38:48 dawes Exp $ */
 
 
 #ifdef VGA256
@@ -38,6 +38,7 @@
 /* xf86im.c */
 #define xf86ImageWriteFallBack XF86NAME(xf86ImageWriteFallBack)
 #define xf86WriteBitmapFallBack XF86NAME(xf86WriteBitmapFallBack)
+#define xf86cfbGetLongWidthAndPointer XF86NAME(xf86cfbGetLongWidthAndPointer)
 /* xf86cpplane.c */
 #ifdef VGA256
 #define xf86CopyPlane XF86NAME(xf86CopyPlane)

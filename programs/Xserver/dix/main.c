@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: main.c /main/82 1996/09/28 17:12:09 rws $ */
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.7 1996/08/14 14:31:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.8 1996/12/23 06:29:46 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -75,6 +75,10 @@ extern CARD32 defaultScreenSaverTime;
 extern CARD32 defaultScreenSaverInterval;
 extern int defaultScreenSaverBlanking;
 extern int defaultScreenSaverAllowExposures;
+
+#ifdef DPMSExtension
+#include "dpms.h"
+#endif
 
 void ddxGiveUp();
 
@@ -371,6 +375,12 @@ main(argc, argv)
 	if (!(rootCursor = CreateRootCursor(defaultCursorFont, 0)))
 	    FatalError("could not open default cursor font '%s'",
 		       defaultCursorFont);
+#ifdef DPMSExtension
+ 	/* check all screens, looking for DPMS Capabilities */
+ 	DPMSCapableFlag = DPMSSupported();
+	if (!DPMSCapableFlag)
+     	    DPMSEnabled = FALSE;
+#endif
 	for (i = 0; i < screenInfo.numScreens; i++)
 	    InitRootWindow(WindowTable[i]);
         DefineInitialRootWindow(WindowTable[0]);

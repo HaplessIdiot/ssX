@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.30 1996/12/23 06:56:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.31 1996/12/28 08:16:53 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -86,6 +86,13 @@ Bool ctHDepth = FALSE;		 /*Chip has 16/24bpp */
 
 /* Frame Buffer related */
 unsigned long ctFrameBufferSize = 0;
+
+/* Pixmap Cache End */
+unsigned int ctCacheEnd = 0;
+
+/* Ping-pong buffer for XAA ScreenToScreen colour expansion */
+unsigned int ctColorExpandScratchAddr = 0;
+unsigned int ctColorExpandScratchSize = 0;
 
 /* MMIO related */
 Bool ctSupportMMIO = FALSE;
@@ -3442,6 +3449,36 @@ CHIPSFbInit()
     ErrorF("%s %s: CHIPS: %d bytes off-screen memory available\n",
 	XCONFIG_PROBED, vga256InfoRec.name, size);
 
+    /*
+     * If hardware cursor is supported, the vgaHWCursor struct should
+     * be filled in here.
+     */
+    if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
+
+	/* Allocate 1kB of vram to the cursor, with 1kB alignment for
+	 * 6554x's and 4kb alignment for 65550's */
+	if (ctisHiQV32)
+	    ctCursorAddress = ctAllocate(1024, 0xFFF);
+	else if (ctisWINGINE)
+	    ctCursorAddress = 0;
+	else
+	    ctCursorAddress = ctAllocate(1024, 0x3FF);
+	if (ctCursorAddress == -1) {
+	    ErrorF("%s %s: CHIPS: Too little space for H/W cursor.\n",
+		XCONFIG_PROBED, vga256InfoRec.name);
+	} else {
+	    ErrorF("%s %s: CHIPS: H/W cursor selected\n",
+		OFLG_ISSET(XCONFIG_SPEEDUP, &vga256InfoRec.xconfigFlag) ?
+		XCONFIG_GIVEN : XCONFIG_PROBED,
+		vga256InfoRec.name);
+	    vgaHWCursor.Initialized = TRUE;
+	    vgaHWCursor.Init = CHIPSCursorInit;
+	    vgaHWCursor.Restore = CHIPSRestoreCursor;
+	    vgaHWCursor.Warp = CHIPSWarpCursor;
+	    vgaHWCursor.QueryBestSize = CHIPSQueryBestSize;
+	    ctHWCursor = TRUE;
+	}
+    }
 
 #ifndef MONOVGA
 
@@ -3459,6 +3496,49 @@ CHIPSFbInit()
 	    ctAvoidImageBLT = TRUE;
 	}
 	
+#ifndef CT_OLD_ACCL_CODE
+	/* Setup the ping-pong buffer for ScreenToScreen colour expansion */
+	ctColorExpandScratchAddr = ctAllocate(1024, 0x0);
+	if (ctColorExpandScratchAddr == -1) {
+	    ErrorF("%s %s: CHIPS: Too little space for ping-pong buffer.\n",
+		   XCONFIG_PROBED, vga256InfoRec.name);
+	    ctColorExpandScratchAddr = 0;
+	    ctColorExpandScratchSize = 0;
+	} else
+	    ctColorExpandScratchSize = 1024;
+
+	/* Use the allocation function to now get an address that
+	 * points to the top of ram. As it won't be used again in
+	 * this acceleration scheme, we really don't care of the
+	 * mess this makes of the allocation
+	 */
+	ctCacheEnd = ctAllocate(0, 0x0);
+	ErrorF("ctCacheEnd %d\n",ctCacheEnd); 
+	
+	ErrorF("%s %s: CHIPS: Initializing XAA Acceleraion.\n",
+		   XCONFIG_PROBED, vga256InfoRec.name);
+	if (!ctisHiQV32) {
+	    if (ctUseMMIO) {
+		ErrorF("%s %s: CHIPS: Memory mapped I/O selected\n",
+		       OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options) ?
+		       XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name);
+		ctMMIOAccelInit();
+	    } else	  
+	        ctAccelInit();
+	} else {
+	    if (ctUseMMIO) {
+		ErrorF("%s %s: CHIPS: Memory mapped I/O selected\n",
+		       OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options) ?
+		       XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name);
+		ctHiQVAccelInit();
+	    } else {
+		ErrorF("%s %s: CHIPS: Memory mapped I/O not available\n",
+		       XCONFIG_PROBED, vga256InfoRec.name);
+		ErrorF("%s %s: CHIPS: HiQV acceleration support disabled\n",
+		       XCONFIG_PROBED, vga256InfoRec.name); 
+	    }
+	}
+#else
 	if (!ctisHiQV32) {
 	    switch (vgaBitsPerPixel) {
 	    case 8:
@@ -3477,7 +3557,6 @@ CHIPSFbInit()
 		vga256TEOps.FillSpans = ctcfbFillSolidSpansGeneral;
 		vga256LowlevFuncs.fillSolidSpans = ctcfbFillSolidSpansGeneral;
 	    
-#ifdef CT_POST_312F_ACCL
 		if (!OFLG_ISSET(OPTION_NO_IMAGEBLT, &vga256InfoRec.options)) {
 		    vga256LowlevFuncs.copyPlane1to8 = ctcfbCopyPlane1to8;
 		     vga256TEOps1Rect.PolyGlyphBlt = ctcfbPolyGlyphBlt;
@@ -3486,7 +3565,6 @@ CHIPSFbInit()
 		     vga256TEOps1Rect.ImageGlyphBlt = ctcfbImageGlyphBlt;
 		     vga256TEOps.ImageGlyphBlt = ctcfbImageGlyphBlt;
 		}
-#endif
 
 		/* Setup the address of the tile in vram. Tile must
 		 * be aligned on a 64 bytes value. Size of the space
@@ -3517,14 +3595,12 @@ CHIPSFbInit()
 		cfb16NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
 		cfb16NonTEOps.PolyFillRect = ctcfbPolyFillRect;
 
-#ifdef CT_POST_312F_ACCL
 		if (!OFLG_ISSET(OPTION_NO_IMAGEBLT, &vga256InfoRec.options)) {
 		    cfb16TEOps1Rect.PolyGlyphBlt = ctcfbPolyGlyphBlt;
 		    cfb16TEOps.PolyGlyphBlt = ctcfbPolyGlyphBlt;
 		    cfb16TEOps1Rect.ImageGlyphBlt = ctcfbImageGlyphBlt;
 		    cfb16TEOps.ImageGlyphBlt = ctcfbImageGlyphBlt;
 		}
-#endif
 
 		/* Setup the address of the tile in vram. Tile must
 		 * be aligned on a 128 bytes value. Size of the space
@@ -3557,16 +3633,13 @@ CHIPSFbInit()
 		cfb24NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
 		cfb24NonTEOps.PolyFillRect = ctcfbPolyFillRect;
 
-#ifdef CT_POST_312F_ACCL
-#ifdef CT_24BPP_TEXT
 		if (!OFLG_ISSET(OPTION_NO_IMAGEBLT, &vga256InfoRec.options)) {
 		    cfb24TEOps1Rect.PolyGlyphBlt = ctcfbPolyGlyphBlt;
 		    cfb24TEOps.PolyGlyphBlt = ctcfbPolyGlyphBlt;
 		    cfb24TEOps1Rect.ImageGlyphBlt = ctcfbImageGlyphBlt;
 		    cfb24TEOps.ImageGlyphBlt = ctcfbImageGlyphBlt;
 		}
-#endif
-#endif
+
 		/* Setup the address of the tile in vram. Tile must
 		 * be aligned on a 256 bytes value. Size of the space
 		 * is 32x8xBytesPerPixel. 24bpp tile file only 
@@ -3598,7 +3671,6 @@ CHIPSFbInit()
 		    vga256TEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
 		    vga256LowlevFuncs.fillSolidSpans = ctMMIOFillSolidSpansGeneral;
 
-#ifdef CT_POST_312F_ACCL
 		    if (!OFLG_ISSET(OPTION_NO_IMAGEBLT,
 				   &vga256InfoRec.options)) {
 			vga256TEOps1Rect.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
@@ -3607,9 +3679,7 @@ CHIPSFbInit()
 			vga256TEOps1Rect.ImageGlyphBlt = ctMMIOImageGlyphBlt;
 			vga256TEOps.ImageGlyphBlt = ctMMIOImageGlyphBlt;
 		    }
-#endif
 
-#ifdef CT_LINE_ACCL
 		    vga256TEOps1Rect.Polylines = ctMMIOLineSS;
 		    vga256NonTEOps1Rect.Polylines = ctMMIOLineSS;
 		    vga256TEOps.Polylines = ctMMIOLineSS;
@@ -3618,7 +3688,6 @@ CHIPSFbInit()
 		    vga256NonTEOps1Rect.PolySegment = ctMMIOSegmentSS;
 		    vga256TEOps.PolySegment = ctMMIOSegmentSS;
 		    vga256TEOps.PolySegment = ctMMIOSegmentSS;
-#endif
 		    break;
 		case 16:
 		    cfb16TEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
@@ -3626,7 +3695,6 @@ CHIPSFbInit()
 		    cfb16NonTEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
 		    cfb16NonTEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
 
-#ifdef CT_POST_312F_ACCL
 		    if (!OFLG_ISSET(OPTION_NO_IMAGEBLT,
 				   &vga256InfoRec.options)) {
 			cfb16TEOps1Rect.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
@@ -3634,9 +3702,7 @@ CHIPSFbInit()
 			cfb16TEOps1Rect.ImageGlyphBlt = ctMMIOImageGlyphBlt;
 			cfb16TEOps.ImageGlyphBlt = ctMMIOImageGlyphBlt;
 		    }
-#endif
 
-#ifdef CT_LINE_ACCL
 		    /* The way of hooking to these should be looked in to.
 		     * see the files ../../../../../cfb24/cfbgc.c and
 		     * ../../../../../cfb24/cfbmskbits.h. It is possible that 
@@ -3651,7 +3717,6 @@ CHIPSFbInit()
 		    cfb16NonTEOps.Polylines = ctMMIOLineSS;
 		    cfb16TEOps.PolySegment = ctMMIOSegmentSS;
 		    cfb16TEOps.PolySegment = ctMMIOSegmentSS;
-#endif
 		    break;
 		case 24:
 		    cfb24TEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
@@ -3659,8 +3724,6 @@ CHIPSFbInit()
 		    cfb24NonTEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
 		    cfb24NonTEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
 
-#ifdef CT_POST_312F_ACCL
-#ifdef CT_24BPP_TEXT
 		    if (!OFLG_ISSET(OPTION_NO_IMAGEBLT,
 				   &vga256InfoRec.options)) {
 			cfb24TEOps1Rect.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
@@ -3668,10 +3731,7 @@ CHIPSFbInit()
 			cfb24TEOps1Rect.ImageGlyphBlt = ctMMIOImageGlyphBlt;
 			cfb24TEOps.ImageGlyphBlt = ctMMIOImageGlyphBlt;
 		    }
-#endif
-#endif
 
-#ifdef CT_LINE_ACCL
 		    /* The way of hooking to these should be looked in to.
 		     * see the files ../../../../../cfb24/cfbgc.c and
 		     * ../../../../../cfb24/cfbmskbits.h. It is possible that 
@@ -3686,12 +3746,10 @@ CHIPSFbInit()
 		    cfb24NonTEOps.Polylines = ctMMIOLineSS;
 		    cfb24TEOps.PolySegment = ctMMIOSegmentSS;
 		    cfb24TEOps.PolySegment = ctMMIOSegmentSS;
-#endif
 		    break;
 		}
 	    }
 	} else {	/* HiQV acceleration support */ 
-#ifdef CT_POST_312F_ACCL
 	    if (ctUseMMIO) {
 		ErrorF("%s %s: CHIPS: Memory mapped I/O selected\n",
 		    OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options) ?
@@ -3715,7 +3773,6 @@ CHIPSFbInit()
 		        ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
 			       XCONFIG_PROBED, vga256InfoRec.name);
 
-#ifdef CT_LINE_ACCL
 		    vga256TEOps1Rect.Polylines = ctHiQVLineSS;
 		    vga256NonTEOps1Rect.Polylines = ctHiQVLineSS;
 		    vga256TEOps.Polylines = ctHiQVLineSS;
@@ -3724,7 +3781,6 @@ CHIPSFbInit()
 		    vga256NonTEOps1Rect.PolySegment = ctHiQVSegmentSS;
 		    vga256TEOps.PolySegment = ctHiQVSegmentSS;
 		    vga256TEOps.PolySegment = ctHiQVSegmentSS;
-#endif
 
 #if 0	/* Untested with the HiQV. Need adaptation */
 
@@ -3771,7 +3827,6 @@ CHIPSFbInit()
 		    if (ctBLTPatternAddress == -1)
 		        ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
 			       XCONFIG_PROBED, vga256InfoRec.name);
-#ifdef CT_LINE_ACCL
 		    /* The way of hooking to these should be looked in to.
 		     * see the files ../../../../../cfb24/cfbgc.c and
 		     * ../../../../../cfb24/cfbmskbits.h. It is possible that 
@@ -3786,7 +3841,6 @@ CHIPSFbInit()
 		    cfb16NonTEOps.Polylines = ctHiQVLineSS;
 		    cfb16TEOps.PolySegment = ctHiQVSegmentSS;
 		    cfb16TEOps.PolySegment = ctHiQVSegmentSS;
-#endif
 
 #if 0	/* Untested with the HiQV. Need adaptation */
 		    cfb16TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
@@ -3832,7 +3886,6 @@ CHIPSFbInit()
 			       XCONFIG_PROBED, vga256InfoRec.name);
 		    break;
 
-#ifdef CT_LINE_ACCL
 		    /* The way of hooking to these should be looked in to.
 		     * see the files ../../../../../cfb24/cfbgc.c and
 		     * ../../../../../cfb24/cfbmskbits.h. It is possible that 
@@ -3847,7 +3900,6 @@ CHIPSFbInit()
 		    cfb24NonTEOps.Polylines = ctHiQVLineSS;
 		    cfb24TEOps.PolySegment = ctHiQVSegmentSS;
 		    cfb24TEOps.PolySegment = ctHiQVSegmentSS;
-#endif
 
 #if 0	/* Untested with the HiQV. Need adaptation */
 		    cfb24TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
@@ -3872,43 +3924,11 @@ CHIPSFbInit()
 		ErrorF("%s %s: CHIPS: HiQV acceleration support disabled\n",
 			XCONFIG_PROBED, vga256InfoRec.name); 
 	    }
-#else	/* CT_POST_312F_ACCL */
-	    ErrorF("%s %s: CHIPS: HiQV acceleration support disabled\n",
-		   XCONFIG_PROBED, vga256InfoRec.name); 
-#endif
 	}
+#endif /* CT_OLD_ACCL_CODE */
     }
 #endif /* MONOVGA */
 
-    /*
-     * If hardware cursor is supported, the vgaHWCursor struct should
-     * be filled in here.
-     */
-    if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
-
-	/* Allocate 1kB of vram to the cursor, with 1kB alignment for
-	 * 6554x's and 4kb alignment for 65550's */
-	if (ctisHiQV32)
-	    ctCursorAddress = ctAllocate(1024, 0xFFF);
-	else if (ctisWINGINE)
-	    ctCursorAddress = 0;
-	    ctCursorAddress = ctAllocate(1024, 0x3FF);
-	if (ctCursorAddress == -1) {
-	    ErrorF("%s %s: CHIPS: Too little space for H/W cursor.\n",
-		XCONFIG_PROBED, vga256InfoRec.name);
-	} else {
-	    ErrorF("%s %s: CHIPS: H/W cursor selected\n",
-		OFLG_ISSET(XCONFIG_SPEEDUP, &vga256InfoRec.xconfigFlag) ?
-		XCONFIG_GIVEN : XCONFIG_PROBED,
-		vga256InfoRec.name);
-	    vgaHWCursor.Initialized = TRUE;
-	    vgaHWCursor.Init = CHIPSCursorInit;
-	    vgaHWCursor.Restore = CHIPSRestoreCursor;
-	    vgaHWCursor.Warp = CHIPSWarpCursor;
-	    vgaHWCursor.QueryBestSize = CHIPSQueryBestSize;
-	    ctHWCursor = TRUE;
-	}
-    }
 #ifdef DEBUG
     ErrorF("CHIPSFbInit: exit\n");
 #endif

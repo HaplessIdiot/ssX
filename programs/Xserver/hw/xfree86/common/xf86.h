@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.44 1996/12/09 11:52:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.45 1996/12/23 06:43:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -244,6 +244,13 @@ typedef struct {
 #define MODE_HSYNC  1		/* hsync out of range */
 #define MODE_VSYNC  2		/* vsync out of range */
 #define MODE_BAD    255		/* unspecified reason */
+
+/* Indicates the level of DPMS support */
+typedef enum {
+    DPMSSupportUnknown,
+    DPMSNotSupported,
+    DPMSFullSupport
+} DPMSSupportStatus;
 
 /* flags for xf86LookupMode */
 #define LOOKUP_DEFAULT		0	/* Use default mode lookup method */

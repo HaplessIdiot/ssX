@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabltC.c,v 3.1 1996/02/04 09:15:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabltC.c,v 3.2 1996/12/23 06:59:36 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -32,12 +32,13 @@ Author: Keith Packard
 #include	"vga256.h"
 
 void
-vga256DoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
+vga256DoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
     DrawablePtr	    pSrc, pDst;
     int		    alu;
     RegionPtr	    prgnDst;
     DDXPointPtr	    pptSrc;
     unsigned long   planemask;
+    unsigned long   bitPlane;
 {
   unsigned char *psrcBase, *pdstBase;	
   /* start of src and dst bitmaps */

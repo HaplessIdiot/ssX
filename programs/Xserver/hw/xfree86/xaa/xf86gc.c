@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.3 1996/12/19 02:58:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.4 1997/01/02 04:38:48 dawes Exp $ */
 
 /***********************************************************
 
@@ -115,8 +115,8 @@ static GCFuncs xf86GCFuncs = {
 #define NonTEOps vga256NonTEOps
 #else
 #if PSZ == 8
-#define MatchCommon cfb8MatchCommon
-#define NonTEOps cfb8NonTEOps
+#define MatchCommon cfbMatchCommon
+#define NonTEOps cfbNonTEOps
 #endif
 #if PSZ == 16
 #define MatchCommon cfb16MatchCommon

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.26 1996/12/23 06:41:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.27 1997/01/08 20:33:46 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -212,11 +212,11 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
    unsigned short height = 0;
    unsigned short width = 0;
    Pixel pmsk = 0;
+   short xoff = 0;
 
    BLOCK_CURSOR;
    for (;count > 0; count--, chars++) {
       CharInfoPtr pci;
-      short xoff = 0;
 
       pci = fentry->pci[(int)*chars];
 
