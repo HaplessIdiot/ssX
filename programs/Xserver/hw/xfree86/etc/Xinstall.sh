@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.86 2005/02/21 01:11:01 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.87 2005/03/05 17:59:52 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -855,7 +855,7 @@ FindDistName()
 			2.*)
 				DistName="OpenBSD-2.8"
 				;;
-			3.4*)	# Check this
+			3.*)	# Check this
 				DistName="OpenBSD-3.4"
 				;;
 			*)
