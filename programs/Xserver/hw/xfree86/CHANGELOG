@@ -1,3 +1,7 @@
+
+ 212. Fix some multithreading related problems in the Xv client library 
+      (Mark Vojkovich).
+
 XFree86 4.0b (23 May 2000)
  211. Add support to the sunffb driver for multiple visuals on the same screen,
       overlays, double buffering and some other niceties (#3938,
@@ -10402,4 +10406,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1161 2000/05/23 04:47:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1162 2000/05/23 23:48:40 dawes Exp $
