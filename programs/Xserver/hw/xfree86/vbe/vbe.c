@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.4 2004/12/11 20:38:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.5 2005/01/28 02:11:20 dawes Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -182,6 +182,10 @@ VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags)
 	    xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE OEM Product Rev: %s\n",
 		    (CARD8*)xf86int10Addr(pInt,L_ADD(vbe->OemProductRevPtr)));
     }
+    xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE Capabilities: "
+		   "0x%02x%02x%02x%02x\n",
+		   vbe->Capabilities[3], vbe->Capabilities[2],
+		   vbe->Capabilities[1], vbe->Capabilities[0]);
     vip = (vbeInfoPtr)xnfalloc(sizeof(vbeInfoRec));
     vip->version = B_O16(vbe->VbeVersion);
     vip->pInt10 = pInt;

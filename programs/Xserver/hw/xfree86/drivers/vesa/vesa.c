@@ -28,10 +28,10 @@
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *          David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.45 2004/12/07 15:59:20 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.46 2005/02/11 19:45:57 dawes Exp $
  */
 /*
- * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 2000-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -106,7 +106,7 @@ static Bool VESACloseScreen(int scrnIndex, ScreenPtr pScreen);
 static Bool VESASaveScreen(ScreenPtr pScreen, int mode);
 
 static Bool VESASwitchMode(int scrnIndex, DisplayModePtr pMode, int flags);
-static Bool VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode);
+static Bool VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode, Bool blank);
 static void VESAAdjustFrame(int scrnIndex, int x, int y, int flags);
 static void VESAFreeScreen(int scrnIndex, int flags);
 static void VESAFreeRec(ScrnInfoPtr pScrn);
@@ -783,14 +783,15 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     VbeModeInfoBlock *mode;
     int flags;
     int init_picture = 0;
+    Bool blank = FALSE;
 
     if ((pVesa->pVbe = VBEExtendedInit(NULL, pVesa->pEnt->index,
 				       SET_BIOS_SCRATCH
 				       | RESTORE_BIOS_SCRATCH)) == NULL)
         return (FALSE);
 
+    mode = ((VbeModeInfoData*)(pScrn->currentMode->Private))->data;
     if (pVesa->mapPhys == 0) {
-	mode = ((VbeModeInfoData*)(pScrn->currentMode->Private))->data;
 	pScrn->videoRam = pVesa->mapSize;
 	pVesa->mapPhys = mode->PhysBasePtr;
 	pVesa->mapOff = 0;
@@ -826,8 +827,11 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pVesa->savedPal = VBESetGetPaletteData(pVesa->pVbe, FALSE, 0, 256,
 					    NULL, FALSE, FALSE);
 
+    if (mode->ModeAttributes & (1 << 5))
+	blank = TRUE;
+
     /* set first video mode */
-    if (!VESASetMode(pScrn, pScrn->currentMode))
+    if (!VESASetMode(pScrn, pScrn->currentMode, blank))
 	return (FALSE);
 
     /* set the viewport */
@@ -1030,7 +1034,7 @@ VESAEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 
-    if (!VESASetMode(pScrn, pScrn->currentMode))
+    if (!VESASetMode(pScrn, pScrn->currentMode, FALSE))
 	return FALSE;
     VESAAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
     return TRUE;
@@ -1076,12 +1080,12 @@ VESACloseScreen(int scrnIndex, ScreenPtr pScreen)
 static Bool
 VESASwitchMode(int scrnIndex, DisplayModePtr pMode, int flags)
 {
-    return VESASetMode(xf86Screens[scrnIndex], pMode);
+    return VESASetMode(xf86Screens[scrnIndex], pMode, FALSE);
 }
 
 /* Set a graphics mode */
 static Bool
-VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode)
+VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode, Bool blank)
 {
     VESAPtr pVesa;
     VbeModeInfoData *data;
@@ -1091,7 +1095,9 @@ VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode)
 
     data = (VbeModeInfoData*)pMode->Private;
 
-    mode = data->mode | (1 << 15);
+    mode = data->mode;
+    if (!blank)
+	mode |= (1 << 15);
 
     /* enable linear addressing */
     if (pVesa->mapPhys != 0xa0000)
@@ -1518,6 +1524,18 @@ VESASaveScreen(ScreenPtr pScreen, int mode)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     VESAPtr pVesa = VESAGetRec(pScrn);
     Bool on = xf86IsUnblank(mode);
+    VbeModeInfoBlock *vMode;
+
+    if (pScrn->currentMode) {
+	vMode = ((VbeModeInfoData*)pScrn->currentMode->Private)->data;
+	/*
+	 * Don't try to use VGA blanking for modes that are not
+	 * VGA-compatible.
+	 */
+	if (vMode->ModeAttributes & (1 << 5)) {
+	    return FALSE;
+	}
+    }
 
     if (on)
 	SetTimeSinceLastInputEvent();
