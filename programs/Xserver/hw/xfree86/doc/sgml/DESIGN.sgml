@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.13 1999/10/26 15:58:14 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.14 1999/11/02 16:16:33 tsi Exp $
 </ident>
 
 
@@ -1218,7 +1218,8 @@ This function may also modify the effective timings and clock of the passed
 mode.  These have been stored in the mode's &s.code;Crtc*&e.code; and
 &s.code;SynthClock&e.code; elements, and have already been adjusted for
 interlacing, doublescanning, multiscanning and clock multipliers and dividers.
-The function should not modify any other mode field.
+The function should not modify any other mode field, unless it wants to modify
+the mode timings reported to the user by &s.code;xf86PrintModes()&e.code;.
 
 <p>
 The function is called once for every mode in the XF86Config Monitor section
@@ -1226,10 +1227,10 @@ assigned to the screen, with &s.code;flags&e.code; set to
 &s.code;MODECHECK_INITIAL&e.code;.  It is subsequently called for every mode
 in the XF86Config Display subsection assigned to the screen, with
 &s.code;flags&e.code; set to &s.code;MODECHECK_FINAL&e.code;.  In the second
-case, each mode will have successfully passed all other tests.  In addition,
-the ScrnInfoRec's &s.code;virtualX&e.code;, &s.code;virtualY&e.code; and
-&s.code;displayWidthi&e.code; fields will have been set as if the mode to be
-validated were to be the last mode accepted.
+case, the mode will have successfully passed all other tests.  In addition,
+the &s.code;ScrnInfoRec&e.code;'s &s.code;virtualX&e.code;,
+&s.code;virtualY&e.code; and &s.code;displayWidth&e.code; fields will have been
+set as if the mode to be validated were to be the last mode accepted.
 
 <p>
 In effect, calls with MODECHECK_INITIAL are intended for checks that do not
