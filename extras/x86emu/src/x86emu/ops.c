@@ -4538,7 +4538,11 @@ static void x86emuOp_push_byte_IMM(u8 X86EMU_UNUSED(op1))
     imm = (s8)fetch_byte_imm();
     DECODE_PRINTF2("PUSH\t%d\n", imm);
     TRACE_AND_STEP();
-    push_word(imm);
+    if (M.x86.mode & SYSMODE_PREFIX_DATA) {
+	push_long((s32)imm);
+    } else {
+	push_word(imm);
+    }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }

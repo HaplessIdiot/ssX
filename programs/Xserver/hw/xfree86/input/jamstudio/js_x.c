@@ -238,9 +238,18 @@ xf86JS_XSwitchMode(ClientPtr client, DeviceIntPtr dev, int mode)
 static LocalDevicePtr
 xf86JS_XAllocate(InputDriverPtr drv)
 {
-   LocalDevicePtr local = xf86AllocateInput(drv, 0);
+   LocalDevicePtr local;
    JS_XDevPtr priv = xalloc(sizeof(JS_XDevRec));
 
+   if (!priv)
+       return NULL;
+
+   local = xf86AllocateInput(drv, 0);
+   if (!local) {
+       xfree(priv);
+       return NULL;
+   }
+	   
    memset(priv, 0, sizeof(JS_XDevRec));
    local->name = "JAMSTUDIO";
    local->flags = 0;
@@ -294,11 +303,6 @@ xf86JS_XInit(InputDriverPtr drv, IDevPtr dev, int flags)
 
    if ((local = xf86JS_XAllocate(drv)) == NULL) {
       xf86Msg(X_ERROR, "Could not allocate local device.\n");
-      return NULL;
-   }
-   if (local->private == NULL) {
-      xf86Msg(X_ERROR, "Could not allocate private structure.\n");
-      xfree(local);
       return NULL;
    }
    local->conf_idev = dev;

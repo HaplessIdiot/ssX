@@ -73,7 +73,7 @@ _XParseBaseFontNameList(
 {
     char           *plist[XMAXLIST];
     char          **list;
-    char           *ptr;
+    char           *ptr, *psave;
 
     *num = 0;
     if (!str || !*str) {
@@ -89,6 +89,7 @@ _XParseBaseFontNameList(
     }
     strcpy(ptr, str);
 
+    psave = ptr;
     /* somebody who specifies more than XMAXLIST basefontnames will lose */
     while (*num < (sizeof plist / sizeof plist[0])) {
 	char	*back;
@@ -112,7 +113,7 @@ _XParseBaseFontNameList(
 	    break;
     }
     if (!(list = (char **) Xmalloc((unsigned)sizeof(char *) * (*num + 1)))) {
-	Xfree(ptr);
+	Xfree(psave);
 	return (char **)NULL;
     }
     memcpy((char *)list, (char *)plist, sizeof(char *) * (*num));

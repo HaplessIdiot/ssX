@@ -739,9 +739,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 	  xf86LoaderReqSymLists(ddcSymbols, NULL);
 	  mon = renditionProbeDDC(pScreenInfo, pRendition->pEnt->index);
 	  xf86PrintEDID(mon);
-#if 0
 	  xf86SetDDCproperties(pScreenInfo, mon);
-#endif
       }
     }
     else {

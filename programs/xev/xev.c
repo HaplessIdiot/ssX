@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xev/xev.c,v 1.8 2003/05/24 15:49:02 herrb Exp $ */
+/* $XFree86: xc/programs/xev/xev.c,v 1.9 2003/08/22 13:30:26 pascal Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -94,6 +94,8 @@ do_KeyPress (XEvent *eventp)
 {
     XKeyEvent *e = (XKeyEvent *) eventp;
     KeySym ks;
+    KeyCode kc = 0;
+    Bool kc_set = False;
     char *ksname;
     int nbytes, nmbbytes;
     char str[256+1];
@@ -102,7 +104,7 @@ do_KeyPress (XEvent *eventp)
     Status status;
 
     if (buf == NULL)
-        buf = malloc (bsize);
+      buf = malloc (bsize);
 
     nbytes = XLookupString (e, str, 256, &ks, NULL);
 
@@ -121,13 +123,20 @@ do_KeyPress (XEvent *eventp)
 
     if (ks == NoSymbol)
 	ksname = "NoSymbol";
-    else if (!(ksname = XKeysymToString (ks)))
-	ksname = "(no name)";
+    else {
+	if (!(ksname = XKeysymToString (ks)))
+	    ksname = "(no name)";
+	kc = XKeysymToKeycode(dpy, ks);
+	kc_set = True;
+    }
+	
     printf ("    root 0x%lx, subw 0x%lx, time %lu, (%d,%d), root:(%d,%d),\n",
 	    e->root, e->subwindow, e->time, e->x, e->y, e->x_root, e->y_root);
     printf ("    state 0x%x, keycode %u (keysym 0x%lx, %s), same_screen %s,\n",
 	    e->state, e->keycode, (unsigned long) ks, ksname,
 	    e->same_screen ? Yes : No);
+    if (kc_set && e->keycode != kc)
+	printf ("    XKeysymToKeycode returns keycode: %u\n",kc);
     if (nbytes < 0) nbytes = 0;
     if (nbytes > 256) nbytes = 256;
     str[nbytes] = '\0';

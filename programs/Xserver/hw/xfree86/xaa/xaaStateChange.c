@@ -1670,8 +1670,9 @@ XAAInitStateWrap(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
    XAA_STATE_WRAP(CopyWindow);
    XAA_STATE_WRAP(SaveAreas);
    XAA_STATE_WRAP(RestoreAreas);
+#ifdef RENDER
    XAA_STATE_WRAP(SetupForCPUToScreenAlphaTexture);
    XAA_STATE_WRAP(SetupForCPUToScreenTexture);
-   
+#endif
    return TRUE;
 }

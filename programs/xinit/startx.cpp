@@ -164,7 +164,7 @@ authdisplay=${display:-:0}
 mcookie=`MK_COOKIE`
 for displayname in $authdisplay $hostname$authdisplay; do
     if ! xauth list "$displayname" | grep "$displayname " >/dev/null 2>&1; then
-        xauth << EOF 
+        xauth -q << EOF 
 add $displayname . $mcookie
 EOF
 	removelist="$displayname $removelist"
