@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.70 2003/01/10 22:05:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.71 2003/01/23 16:22:13 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -968,6 +968,10 @@ xf86scanpci(int flags)
 	/* Read config space for this device */
 	for (i = 0; i < 17; i++)  /* PCI hdr plus 1st dev spec dword */
 	    devp->cfgspc.dwords[i] = pciReadLong(tag, i * sizeof(CARD32));
+
+	/* Some broken devices don't implement this field... */
+	if (devp->pci_header_type == 0xff)
+	    devp->pci_header_type = 0;
 
 	switch (devp->pci_header_type & 0x7f) {
 	case 0:
