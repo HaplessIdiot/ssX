@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Keyboard.c,v 1.13 2002/09/17 18:54:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Keyboard.c,v 1.14 2003/01/01 19:22:20 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -254,8 +254,6 @@ xf86parseKeyboardSection (void)
 			break;
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
-			break;
-		case EOL_TOKEN:
 			break;
 		default:
 			Error (INVALID_KEYWORD_MSG, xf86tokenString ());

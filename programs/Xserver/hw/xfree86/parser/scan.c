@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.22 2002/11/18 23:04:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.23 2003/01/01 19:22:22 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -72,6 +72,7 @@ static char *configBuf, *configRBuf;	/* buffer for lines */
 static char *configPath;		/* path to config file */
 static char *configSection = NULL;	/* name of current section being parsed */
 static int pushToken = LOCK_TOKEN;
+static int eol_seen = 0;		/* private state to handle comments */
 LexRec val;
 
 #ifdef __UNIXOS2__
@@ -144,6 +145,10 @@ xf86getToken (xf86ConfigSymTabRec * tab)
 		return (EOF_TOKEN);
 	else if (pushToken == LOCK_TOKEN)
 	{
+		/*
+		 * eol_seen is only set for the first token after a newline.
+		 */
+		eol_seen = 0;
 
 		c = configBuf[configPos];
 
@@ -161,7 +166,7 @@ again:
 			}
 			configLineNo++;
 			configStart = configPos = 0;
-			return (EOL_TOKEN);
+			eol_seen = 1;
 		}
 
 		i = 0;
@@ -289,8 +294,6 @@ again:
 		if (temp == COMMA || temp == DASH)
 			return (temp);
 		if (temp == NUMBER || temp == STRING)
-			return (temp);
-		if (temp == EOL_TOKEN)
 			return (temp);
 	}
 
@@ -1035,6 +1038,7 @@ xf86addComment(char *cur, char *add)
 		curlen = strlen(cur);
 		if (curlen)
 		    hasnewline = cur[curlen - 1] == '\n';
+		eol_seen = 0;
 	}
 	else
 		curlen = 0;
@@ -1050,14 +1054,14 @@ xf86addComment(char *cur, char *add)
 
 	len = strlen(add);
 	endnewline = add[len - 1] == '\n';
-	len +=  1 + iscomment + (!hasnewline) + (!endnewline);
+	len +=  1 + iscomment + (!hasnewline) + (!endnewline) + eol_seen;
 
 	if ((str = xf86confrealloc(cur, len + curlen)) == NULL)
 		return (cur);
 
 	cur = str;
 
-	if (curlen && !hasnewline)
+	if (eol_seen || (curlen && !hasnewline))
 		cur[curlen++] = '\n';
 	if (!iscomment)
 		cur[curlen++] = '#';

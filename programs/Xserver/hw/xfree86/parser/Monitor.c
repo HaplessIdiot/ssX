@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.25 2002/12/03 17:16:21 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.26 2003/01/01 19:22:21 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -355,8 +355,6 @@ xf86parseVerboseMode (void)
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
-		case EOL_TOKEN:
-			break;
 		default:
 			Error ("Unexepcted token in verbose \"Mode\" entry\n", NULL);
 		}
@@ -550,8 +548,6 @@ VertDone:
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
-		case EOL_TOKEN:
-			break;
 		default:
 			xf86parseError (INVALID_KEYWORD_MSG, xf86tokenString ());
 			CLEANUP (ptr);
@@ -601,8 +597,6 @@ xf86parseModesSection (void)
 		case MODELINE:
 			HANDLE_LIST (mon_modeline_lst, xf86parseModeLine,
 						 XF86ConfModeLinePtr);
-			break;
-		case EOL_TOKEN:
 			break;
 		default:
 			xf86parseError (INVALID_KEYWORD_MSG, xf86tokenString ());

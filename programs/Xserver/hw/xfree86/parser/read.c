@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.21 2002/09/17 18:54:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.22 2003/01/01 19:22:22 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -170,8 +170,6 @@ xf86readConfigFile (void)
 				xf86conffree(val.str);
 				val.str = NULL;
 			}
-			break;
-		case EOL_TOKEN:
 			break;
 		default:
 			Error (INVALID_KEYWORD_MSG, xf86tokenString ());
