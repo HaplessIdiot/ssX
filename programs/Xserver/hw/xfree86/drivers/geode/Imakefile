@@ -1,0 +1,86 @@
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/Imakefile,v 1.29 2002/05/31 18:45:59 dawes Exp $
+XCOMM Imakefile for the National Semiconductor Geode driver
+XCOMM that is based on the durango code.
+XCOMM
+XCOMM (c) 2000 National Semiconductor corporation
+XCOMM (c) 2000 by Juergen Schneider, Infomatec IAS GmbH
+XCOMM
+#define IHaveModules
+#include <Server.tmpl>
+
+XCOMM Turn this off for the Set-Top-Box (STB) mode which uses 
+XCOMM the linux kernel driver interface.
+#if 1
+DEFINES = -DOS_UNIX
+DURANGOSRCS = durango.c panel.c
+DURANGOOBJS = durango.o panel.o
+EXTINCLUDES = -I./gfx -I./panel
+#else
+DEFINES = -DSTB_X
+STBSRCS = galstub.c
+STBOBJS = galstub.o
+EXTINCLUDES = -I/usr/src/nsm -I/usr/src/linux/drivers/video/geode/gfx \
+              -I/usr/src/linux/drivers/video/geode/panel
+#endif
+ 
+ 
+
+SRCS = geode_driver.c \
+		geode_accel.c \
+		geode_cursor.c \
+		$(STBSRCS) \
+		geode_dga.c \
+		geode_video.c \
+		geode_shadow.c \
+		$(DURANGOSRCS)
+
+OBJS = geode_driver.o \
+		geode_accel.o \
+		geode_cursor.o \
+		$(STBOBJS) \
+		geode_dga.o \
+		geode_video.o \
+		geode_shadow.o \
+		$(DURANGOOBJS)
+
+#if defined(XF86DriverSDK)
+INCLUDES = -I. -I../../include
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
+		-I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+		-I$(SERVERSRC)/cfb -I$(SERVERSRC)/fb -I$(XF86SRC)/xaa \
+		-I$(XF86SRC)/vgahw -I$(XF86SRC)/ramdac \
+		-I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
+		-I$(XF86SRC)/rac -I$(XF86SRC)/int10 \
+		-I$(XF86SRC)/xf24_32bpp -I$(FONTINCSRC) \
+		-I$(XF86SRC)/xf8_32bpp -I$(XF86SRC)/xf1bpp \
+		-I$(XF86SRC)/xf4bpp -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
+		-I$(XF86SRC)/ddc -I$(XF86SRC)/i2c -I$(EXTINCSRC) $(DRIINCLUDES) \
+		-I$(XF86SRC)/shadowfb -I$(XF86SRC)/fbdevhw \
+		-I$(XTOP)/include -I$(XF86OSSRC)/vbe -I$(SERVERSRC)/render \
+		$(EXTINCLUDES)
+#endif
+
+
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
+
+ModuleObjectRule()
+
+ObjectModuleTarget(geode,$(OBJS))
+
+InstallObjectModule(geode,$(MODULEDIR),drivers)
+
+#if !defined(XF86DriverSDK)
+CppManTarget(geode,)
+InstallModuleManPage(geode)
+#endif 
+
+DependTarget()
+
+InstallDriverSDKNonExecFile(Imakefile,$(DRIVERSDKDIR)/drivers/geode)
+
+InstallDriverSDKNonExecFile(geode.c,$(DRIVERSDKDIR)/drivers/geode)
+
+InstallDriverSDKObjectModule(geode,$(DRIVERSDKMODULEDIR),drivers)
