@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.23 1997/08/15 07:19:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.24 1997/09/09 10:27:54 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -301,8 +301,7 @@ xf86InitializeAcceleration(pScreen)
                     ErrorF("bitmap, ");
 	    }
 #ifdef STIPPLE_COLOR_EXPANSION
-	    if(!(xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED)) {
-	      if(!xf86AccelInfoRec.FillRectOpaqueStippled) {
+	    if(!xf86AccelInfoRec.FillRectOpaqueStippled) {
 		xf86AccelInfoRec.FillRectOpaqueStippled =
 		    xf86FillRectStippledCPUToScreenColorExpand;
 		xf86GCInfoRec.PolyFillRectOpaqueStippledFlags =
@@ -311,7 +310,6 @@ xf86InitializeAcceleration(pScreen)
 		    xf86AccelInfoRec.ColorExpandFlags;
 		if (xf86Verbose)
 		    ErrorF("stipple, ");
-	      }
 	    }
 #endif
         }
@@ -404,15 +402,13 @@ xf86InitializeAcceleration(pScreen)
 	}
 	
 #ifdef STIPPLE_COLOR_EXPANSION
-	if(!(xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED)) {
-	    if(!xf86AccelInfoRec.FillRectOpaqueStippled) {
+	if(!xf86AccelInfoRec.FillRectOpaqueStippled) {
 	        xf86AccelInfoRec.FillRectOpaqueStippled =
 		    xf86FillRectStippledScreenToScreenColorExpand;
 		xf86GCInfoRec.PolyFillRectOpaqueStippledFlags =
 		    xf86AccelInfoRec.ColorExpandFlags;
 		if (xf86Verbose)
                     ErrorF("stipple, ");
-	    }
 	}
         if (!(xf86AccelInfoRec.ColorExpandFlags & NO_TRANSPARENCY)) {
             if(!xf86AccelInfoRec.FillRectStippled) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.10 1997/09/09 10:27:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.11 1997/09/12 09:23:13 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -41,7 +41,7 @@
 #include "mga.h"
 
 /* Set to 1 if you want to set MCLK from XF86Config - AT YOUR OWN RISK! */
-#define MCLK_FROM_XCONFIG 0
+#define MCLK_FROM_XCONFIG 1
 
 /*
  * exported functions

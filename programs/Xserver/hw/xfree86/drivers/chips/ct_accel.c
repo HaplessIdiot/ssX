@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.10 1997/08/15 07:19:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.11 1997/09/09 10:27:42 hohndel Exp $ */
 
 
 #include "vga256.h"
@@ -85,6 +85,12 @@ static unsigned int CommandFlags;
 /* Define CHIPS_SCREEN2SCREEN to include screen to screen color expansion */
 /* Its not working properly for me at the moment, so disable it           */
 /* #define CHIPS_SCREEN2SCREEN */
+
+/* The ImageWrite function appears to be broken on the HiQV chips. Disable */
+/* it till I have access to a HiQV machine to debug it                     */
+#ifndef CHIPS_HIQV
+#define CHIPS_IMAGEWRITE
+#endif
 
 #ifdef CHIPS_MMIO
 #ifdef CHIPS_HIQV
@@ -281,8 +287,8 @@ void _ctAccelInit() {
             CTNAME(Subsequent8x8PatternColorExpand);
     }
 
+#ifdef CHIPS_IMAGEWRITE
     /* Setup for the Image Write functions */
-
     xf86AccelInfoRec.SetupForImageWrite = CTNAME(SetupForImageWrite);
     xf86AccelInfoRec.SubsequentImageWrite = CTNAME(SubsequentImageWrite);
     xf86AccelInfoRec.ImageWriteBase = (unsigned int *)ctBltDataWindow;
@@ -299,6 +305,7 @@ void _ctAccelInit() {
 #endif
     if (vga256InfoRec.bitsPerPixel == 24)
         xf86AccelInfoRec.ImageWriteFlags |= NO_PLANEMASK;
+#endif
 
 chips_pixmap:
     xf86InitPixmapCache(&vga256InfoRec, ctCacheStart, ctCacheEnd);
