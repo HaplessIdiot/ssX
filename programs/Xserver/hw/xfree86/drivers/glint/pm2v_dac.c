@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.18 2000/12/20 11:13:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.19 2000/12/29 16:48:28 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -441,7 +441,10 @@ Permedia2vSetCursorColors(
    int bg, int fg
 )
 {
-    /* A 2 color cursor uses last 2 indexes into hardware cursor palette */
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+
+    if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) {
+    /* PM3 uses last 2 indexes into hardware cursor palette fg first...*/
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+39, 0x00, (fg>>16)&0xff);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+40, 0x00, (fg>>8)&0xff);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+41, 0x00, fg & 0xff);
@@ -449,6 +452,16 @@ Permedia2vSetCursorColors(
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+42, 0x00, (bg>>16)&0xff);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+43, 0x00, (bg>>8)&0xff);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+44, 0x00, bg & 0xff);
+    } else {
+    /* PM2v uses first 2 indexes into hardware cursor palette bg first...*/
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+0, 0x00, (bg>>16)&0xff);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+1, 0x00, (bg>>8)&0xff);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+2, 0x00, bg & 0xff);
+
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+3, 0x00, (fg>>16)&0xff);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+4, 0x00, (fg>>8)&0xff);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+5, 0x00, fg & 0xff);
+    }
 }
 
 static Bool 
