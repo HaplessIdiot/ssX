@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:42:50 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.22 2003/11/12 04:56:57 dawes Exp $
+XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.23 2003/11/23 05:40:35 dawes Exp $
 
 /* does not include manual pages under util (not X programs)
    or any of the library function manual pages under doc/man */
@@ -80,9 +80,9 @@ XFREE86_MANUALS = \
   $(TOP)/programs/Xserver/hw/xfree86/input/wacom/wacom.man \
   $(TOP)/programs/Xserver/hw/darwin/XDarwin.man \
   $(TOP)/programs/Xserver/hw/darwin/utils/dumpkeymap.man \
-  $(TOP)/programs/Xserver/hw/kdrive/Xkdrive.man \
-  $(TOP)/programs/Xserver/hw/kdrive/vesa/Xvesa.man \
-  $(TOP)/programs/Xserver/hw/kdrive/fbdev/Xfbdev.man \
+  $(TOP)/programs/Xserver/hw/tinyx/TinyX.man \
+  $(TOP)/programs/Xserver/hw/tinyx/vesa/Xvesa.man \
+  $(TOP)/programs/Xserver/hw/tinyx/fbdev/Xfbdev.man \
   $(TOP)/lib/Xxf86dga/XDGA.man \
   $(TOP)/programs/Xserver/hw/xfree86/doc/man/XF86Misc.man \
   $(TOP)/programs/Xserver/hw/xfree86/doc/man/XF86VM.man

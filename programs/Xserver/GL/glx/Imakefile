@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/glx/Imakefile,v 1.14 2004/03/20 11:07:47 herrb Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/glx/Imakefile,v 1.15 2004/06/01 00:16:58 dawes Exp $
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -55,6 +55,11 @@ SUBDIRS = module
 # endif
 #endif
 
+#ifdef IHaveModules
+MSRCS = glxmodule.c
+MOBJS = glxmodule.o
+#endif
+
 #include <Server.tmpl>
 
          SRCS = global.c glxbuf.c glxcmds.c glxcmdsswap.c glxext.c \
@@ -92,11 +97,12 @@ XCOMM add DEBUG to the define in ../mesa/src/X/xf86glx.c
 #ifdef IHaveModules
 ModuleObjectRule()
 LibraryModuleTarget(glx,$(OBJS),extensions)
+InstallLibraryModule(glx,$(MODULEDIR),extensions)
+InstallDriverSDKLibraryModule(glx,$(DRIVERSDKMODULEDIR),extensions)
 #else
 NormalLibraryObjectRule()
 NormalLibraryTarget(glx,$(OBJS))
 #endif
-SubdirLibraryRule($(OBJS))
 
 LintLibraryTarget(glx,$(SRCS))
 NormalLintTarget($(SRCS))
@@ -117,6 +123,7 @@ LinkSourceFile(glxext.c,LinkDirectory)
 LinkSourceFile(glxfb.c,LinkDirectory)
 LinkSourceFile(glximports.c,LinkDirectory)
 LinkSourceFile(glxmem.c,LinkDirectory)
+LinkSourceFile(glxmodule.c,LinkDirectory)
 LinkSourceFile(glxpix.c,LinkDirectory)
 LinkSourceFile(glxscreens.c,LinkDirectory)
 LinkSourceFile(glxutil.c,LinkDirectory)

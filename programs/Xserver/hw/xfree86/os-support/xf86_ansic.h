@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.54 2004/02/13 23:58:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.55 2004/04/03 22:26:24 dawes Exp $ */
 /*
- * Copyright 1997-2003 by The XFree86 Project, Inc
+ * Copyright 1997-2004 by The XFree86 Project, Inc
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -76,7 +76,7 @@
  * libc_wrapper.c.
  */
 
-#if defined(XFree86LOADER) || defined(NEED_XF86_TYPES)
+#if (defined(XFree86LOADER) && defined(IN_MODULE)) || defined(NEED_XF86_TYPES)
 
 #if !defined(SYSV) && !defined(SVR4) && !defined(Lynx) || defined(__SCO__)  
 #define HAVE_VSSCANF
@@ -155,9 +155,9 @@
 #define MAXLONG LONG_MAX
 #endif
 
-#endif /* XFree86LOADER || NEED_XF86_TYPES */
+#endif /* (XFree86LOADER && IN_MODULE) || NEED_XF86_TYPES */
 
-#if defined(XFree86LOADER) || defined(NEED_XF86_PROTOTYPES)
+#if (defined(XFree86LOADER) && defined(IN_MODULE)) || defined(NEED_XF86_PROTOTYPES)
 /*
  * ANSI C compilers only.
  */
@@ -342,7 +342,7 @@ extern void xf86longjmp(xf86jmp_buf env, int val);
 	(xf86getjmptype() == 1 ? xf86setjmp1((env), xf86setjmp1_arg2()) : \
 		xf86setjmperror((env))))
 
-#else /* XFree86LOADER || NEED_XF86_PROTOTYPES */
+#else /* (XFree86LOADER && IN_MODULE) || NEED_XF86_PROTOTYPES */
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
@@ -355,7 +355,7 @@ extern void xf86longjmp(xf86jmp_buf env, int val);
 #endif
 #include <sys/stat.h>
 #define stat_t struct stat
-#endif /* XFree86LOADER || NEED_XF86_PROTOTYPES */
+#endif /* (XFree86LOADER && IN_MODULE) || NEED_XF86_PROTOTYPES */
 
 /*
  * These things are always required by drivers (but not by libc_wrapper.c),

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/Imakefile,v 1.13 2004/03/18 07:06:32 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/Imakefile,v 1.14 2004/06/01 00:16:58 dawes Exp $
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -46,7 +46,6 @@ XCOMM $XFree86: xc/programs/Xserver/GL/Imakefile,v 1.13 2004/03/18 07:06:32 dawe
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define IHaveModules
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -65,43 +64,9 @@ DRI_SUBDIR = dri
 
 SUBDIRS = glx $(DRI_SUBDIR) $(CORE_SUBDIR)
 
-#if DoLoadableServer
-MSRCS = glxmodule.c
-MOBJS = glxmodule.o
-#endif
-
-#if BuildModuleInSubdir
-SRCS = glx/module/?*.c $(MSRCS)
-OBJS = glx/module/?*.o $(MOBJS)
-#else
-SRCS = glx/?*.c $(MSRCS)
-OBJS = glx/?*.o $(MOBJS)
-#endif
-
-DONES = glx/DONE
-
-INCLUDES = -Iinclude -Idri -I$(SERVERSRC)/include -I$(SERVERSRC)/mi \
-	   -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(XF86OSSRC)
-DEPEND_DEFINES = $(EXT_DEFINES) DependDefines
-DEFINES = $(GLX_DEFINES)
-
-#if HasParallelMake
-MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
-#endif
-
-#if HasGnuMake || HasBsdMake 
-$(DONES): $(SUBDIRS)
-#endif
-
-ModuleObjectRule()
-
-DepLibraryModuleTarget(glx,$(SUBDIRS) $(DONES) $(MOBJS),$(OBJS),extensions)
-
-InstallLibraryModule(glx,$(MODULEDIR),extensions)
-ForceSubdirs($(SUBDIRS))
+MakeSubdirs($(SUBDIRS))
 
 DependSubdirs($(SUBDIRS))
 MakeLintLibSubdirs($(SUBDIRS))
 LintSubdirs($(SUBDIRS))
 
-InstallDriverSDKLibraryModule(glx,$(DRIVERSDKMODULEDIR),extensions)

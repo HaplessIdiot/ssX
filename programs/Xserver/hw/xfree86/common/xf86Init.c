@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.215 2004/04/03 22:26:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.216 2004/06/01 01:23:50 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -1245,6 +1245,24 @@ InitInput(argc, argv)
 #endif
 
 /*
+ * OsVendorPreInit --
+ *      OS/Vendor-specific initialisations.  Called early in OsInit().
+ */
+
+void
+OsVendorPreInit(void)
+{
+  static Bool beenHere = FALSE;
+
+  if (!beenHere) {
+#ifdef XFree86LOADER
+    xf86WrapperInit();
+#endif
+    beenHere = TRUE;
+  }
+}
+
+/*
  * OsVendorInit --
  *      OS/Vendor-specific initialisations.  Called from OsInit(), which
  *      is called by dix before establishing the well known sockets.
@@ -1255,7 +1273,6 @@ OsVendorInit()
 {
   static Bool beenHere = FALSE;
 
-  /* xf86WrapperInit() is called directly from OsInit() */
 #ifdef SIGCHLD
   signal(SIGCHLD, SIG_DFL);	/* Need to wait for child processes */
 #endif

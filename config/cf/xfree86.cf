@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.471 2004/05/01 01:29:49 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.472 2004/06/01 00:16:53 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -206,15 +206,6 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.471 2004/05/01 01:29:49 dawes Exp $
 #define BuildXKBlib		YES
 #define BuildXKBfilelib		YES
 #define BuildXKBuilib		YES
-#endif
-
-/*
- * When this is set, modules are always built separately from the libraries
- * that statically link into an Xserver.  This is for platforms where the
- * module and native object formats are different (e.g., OS/2).
- */
-#ifndef BuildModuleInSubdir
-#define BuildModuleInSubdir	NO
 #endif
 
 #ifndef MakeDllModules
@@ -2051,6 +2042,79 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #ifndef XF8_32Wid
 # define XF8_32Wid		NO
 #endif
+
+/* Defaults for the TinyX servers. */
+
+#ifndef XfbdevServer
+#define XfbdevServer 	NO
+#endif
+#ifndef Xi810Server
+#define Xi810Server 	NO
+#endif
+#ifndef XIgsServer
+#define XIgsServer 	NO
+#endif
+#ifndef XipaqServer
+#define XipaqServer 	NO
+#endif
+#ifndef XItsyServer
+#define XItsyServer	NO
+#endif
+#ifndef Xmach64Server
+#define Xmach64Server	NO
+#endif
+#ifndef XSavageServer
+#define XSavageServer	NO
+#endif
+#ifndef XSis530Server
+#define XSis530Server	NO
+#endif
+#ifndef XTridentServer
+#define XTridentServer	NO
+#endif
+#ifndef XTrioServer
+#define XTrioServer	NO
+#endif
+#ifndef XTS300Server
+#define XTS300Server 	NO
+#endif
+#ifndef XvesaServer
+#define XvesaServer	NO
+#endif
+
+#ifndef TinyXServer
+#if XfbdevServer || Xi810Server || XIgsServer || XipaqServer || \
+	XItsyServer || Xmach64Server || XSavageServer || XSis530Server || \
+	XTridentServer || XTrioServer || XTS300Server || XvesaServer
+#define TinyXServer	YES
+#else
+#define TinyXServer	NO
+#endif
+#endif
+
+#ifndef TouchScreen
+#define TouchScreen	NO
+#endif
+
+#if TouchScreen
+#define TouchScreenDefines -DTOUCHSCREEN
+#else
+#define TouchScreenDefines /**/
+#endif
+
+/*
+ * When this is set, modules are always built separately from the libraries
+ * that statically link into an Xserver.  This is for platforms where the
+ * module and native object formats are different (e.g., OS/2).
+ */
+#ifndef BuildModuleInSubdir
+#if TinyXServer || XVirtualFramebufferServer
+#define BuildModuleInSubdir	YES
+#else
+#define BuildModuleInSubdir	NO
+#endif
+#endif
+
 
 #if CrossCompiling
 #include <cross.def>

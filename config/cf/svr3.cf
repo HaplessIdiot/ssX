@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.17 2004/03/25 03:36:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.18 2004/06/01 00:16:53 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -177,9 +177,9 @@ XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.17 2004/03/25 03:36:21 dawes Exp $
 
 #ifndef ServerOSDefines
 # ifdef i386Architecture
-#  define ServerOSDefines -DDDXTIME XFree86ServerOSDefines
+#  define ServerOSDefines XFree86ServerOSDefines
 # else
-#  define ServerOSDefines -DDDXTIME
+#  define ServerOSDefines /**/
 # endif
 #endif
 
