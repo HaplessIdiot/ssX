@@ -37,7 +37,7 @@ IOKit driver for. If you are running Mac OS X, this typically means any card
 that has been shipped by Apple. If a card works for you with the Mac OS X
 GUI, it will work on the same machine with XFree86. If you have a pure Darwin
 installation, you may need to download additional third-party drivers from
-Apple's Darwin site . IOKit drivers are typically installed in /Sys-
+Apple's Darwin site. IOKit drivers are typically installed in /Sys-
 tem/Library/Extensions/ or /Library/Extensions/.
 
 Multi-button and scroll wheel mouse support works well with all USB mice that
@@ -53,10 +53,10 @@ Developers' Tools.
 
 If you don't feel the need to live on the cutting edge, you can save some
 time and effort by using the precompiled binaries available on the XFree86
-FTP server at <URL:ftp://ftp.xfree86.org/pub/XFree86/4.1.0/binaries/Darwin/>.
-Follow the instructions in the Install document to install it. This will cre-
-ate two new directory trees, /usr/X11R6 and /etc/X11 For Mac OS X Quartz sup-
-port, download the optional Xquartz.tgz tarball.
+FTP server at <URL:ftp://ftp.xfree86.org/pub/XFree86/4.1.0/binaries/>.  Fol-
+low the instructions in the Install document to install it. This will create
+two new directory trees, /usr/X11R6 and /etc/X11 For Mac OS X Quartz support,
+download the optional Xquartz.tgz tarball.
 
 If you get the precompiled binaries you can skip ahead to the section on run-
 ning the X window system (section 4., page 1) On the other hand, if you want
@@ -105,8 +105,8 @@ list of directories to be searched when you type a command. You will also
 want to add the man pages from XFree86 to the list of pages to be searched
 when you are looking for documentation. The way to do this depends on the
 shell you are using. With tcsh or csh add the following two lines to a file
-named Libraryinit/tcsh/path: (You may need to create this file and directory
-path if it does not exist already.)
+named ~/Library/init/tcsh/path: (You may need to create this file and direc-
+tory path if it does not exist already.)
 
      setenv PATH "${PATH}:/usr/X11R6/bin"
      setenv MANPATH "${MANPATH}:/usr/X11R6/man"
@@ -135,7 +135,7 @@ put you back at the text console login prompt. With Mac OS X, Core Graphics
 will restart and you should be given a login window.
 
 To start XFree86 in Quartz mode you can launch the XDarwin application in the
-/Applications Folder, or from the command line type ``startx -- -quartz''.
+/Applications folder, or from the command line type ``startx -- -quartz''.
 When the X window system is active, it takes over the entire screen. You can
 switch back to the Mac OS X desktop by holding down Command-Option-A. This
 key combination can be changed in the user preferences. From the Mac OS X
@@ -181,7 +181,7 @@ Things that are broken:
 
    o A screen saver is not supported.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Darwin.sgml,v 1.5 2001/05/26 04:09:34 torrey Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Darwin.sgml,v 1.6 2001/06/07 05:11:41 torrey Exp $
 
 
 $XFree86$
