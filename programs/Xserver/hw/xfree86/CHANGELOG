@@ -1,4 +1,6 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 292. Update greek keyboard layout and compose map.
+      (#4513, Katsaloulis Panagiotis)
  291. Fix problems in Xnest when MouseKeys is enabled and patched it to
       use XKB to allow clients to change keyboard description and
       configuration whithout interfering with the "real" X server
@@ -12749,4 +12751,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1641 2001/03/22 04:00:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1642 2001/03/23 01:27:09 paulo Exp $
