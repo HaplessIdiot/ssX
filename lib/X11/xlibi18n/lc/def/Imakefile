@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/X11/xlibi18n/lc/def/Imakefile,v 1.4 2004/03/23 16:25:46 dawes Exp $
+XCOMM $XFree86: xc/lib/X11/xlibi18n/lc/def/Imakefile,v 1.5tsi Exp $
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -52,7 +52,7 @@ XCOMM $XFree86: xc/lib/X11/xlibi18n/lc/def/Imakefile,v 1.4 2004/03/23 16:25:46 d
  EXTRA_INCLUDES = -I../../..
       XI18NLIBNAME = xlcDef
            SRCS = lcDefConv.c
-           OBJS = ${SRCS:.c=.o}
+           OBJS = lcDefConv.o
    REQUIREDLIBS = SharedXlibi18nReqs
 
 LinkSourceFile(lcDefConv.c, ../../..)
@@ -61,3 +61,4 @@ LinkSourceFile(lcDefConv.c, ../../..)
 
 #include "../../Xi18nLib.conf"
 
+DependTarget()
