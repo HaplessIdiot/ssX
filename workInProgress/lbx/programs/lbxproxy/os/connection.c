@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.6 94/04/17 21:17:12 dpw Exp $ */
-/* $XFree86: xc/workInProgress/lbx/programs/lbxproxy/os/connection.c,v 3.0 1994/05/22 00:07:50 dawes Exp $ */
+/* $XFree86: xc/workInProgress/lbx/programs/lbxproxy/os/connection.c,v 3.1 1994/06/13 15:01:50 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -735,12 +735,14 @@ open_isc_local()
     } else {
 	XLOCAL_MSG((0,"open_isc_local(): can't open %s\n",DEV_SPX));
 #ifndef SVR4
+#ifndef ISC
 	/*
 	 * At this point, most SVR4 versions will fail on this, so leave out the
 	 * warning
 	 */
 	Error("open_isc_local(): can't open \"%s\"",DEV_SPX);
 	return(-1);
+#endif
 #endif
     }
 
@@ -823,12 +825,14 @@ open_sco_local()
     } else {
 	XLOCAL_MSG((0,"open_sco_local(): can't open %s",DEV_SPX));
 #ifndef SVR4
+#ifndef ISC
 	/*
 	 * At this point, most SVR4 versions will fail on this, so
 	 * leave out the warning
 	 */
 	Error("open_sco_local(): can't open \"%s\"",DEV_SPX);
 	return(-1);
+#endif
 #endif
     }
 
