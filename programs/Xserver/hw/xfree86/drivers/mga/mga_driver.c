@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.225 2002/12/10 04:42:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.226 2002/12/12 04:15:09 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -303,14 +303,12 @@ static const char *drmSymbols[] = {
     "drmAgpUnbind",
     "drmAgpVendorId",
     "drmCommandNone",
-    "drmCommandRead",
     "drmCommandWrite",
-    "drmCommandWriteRead",
     "drmFreeVersion",
     "drmGetLibVersion",
     "drmGetVersion",
-    "drmMapBufs",
     "drmMap",
+    "drmMapBufs",
     "drmUnmap",
     "drmUnmapBufs",
     NULL
@@ -371,30 +369,23 @@ static const char *int10Symbols[] = {
 };
 
 static const char *fbdevHWSymbols[] = {
-	"fbdevHWInit",
-	"fbdevHWUseBuildinMode",
-
-	"fbdevHWGetVidmem",
-
-	/* colormap */
-	"fbdevHWLoadPalette",
-
-	/* ScrnInfo hooks */
-	"fbdevHWAdjustFrame",
-	"fbdevHWEnterVT",
-	"fbdevHWLeaveVT",
-	"fbdevHWModeInit",
-	"fbdevHWRestore",
-	"fbdevHWSave",
-	"fbdevHWSwitchMode",
-	"fbdevHWValidMode",
-
-	"fbdevHWMapMMIO",
-	"fbdevHWMapVidmem",
-	"fbdevHWUnmapMMIO",
-	"fbdevHWUnmapVidmem",
-
-	NULL
+    "fbdevHWAdjustFrame",
+    "fbdevHWEnterVT",
+    "fbdevHWGetVidmem",
+    "fbdevHWInit",
+    "fbdevHWLeaveVT",
+    "fbdevHWLoadPalette",
+    "fbdevHWMapMMIO",
+    "fbdevHWMapVidmem",
+    "fbdevHWModeInit",
+    "fbdevHWRestore",
+    "fbdevHWSave",
+    "fbdevHWSwitchMode",
+    "fbdevHWUnmapMMIO",
+    "fbdevHWUnmapVidmem",
+    "fbdevHWUseBuildinMode",
+    "fbdevHWValidMode",
+    NULL
 };
 
 #ifdef USEMGAHAL
