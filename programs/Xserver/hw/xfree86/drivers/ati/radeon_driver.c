@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.88 2003/02/19 01:19:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.89 2003/02/19 09:17:30 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -2369,7 +2369,10 @@ static int RADEONValidateFPModes(ScrnInfoPtr pScrn, char **ppModeName)
     }
 
     /* If all else fails, add the native mode */
-    if (!count) first = last = RADEONFPNativeMode(pScrn);
+    if (!count) {
+	first = last = RADEONFPNativeMode(pScrn);
+	if (first) count = 1;
+    }
 
     /* Close the doubly-linked mode list, if we found any usable modes */
     if (last) {
@@ -2588,6 +2591,11 @@ static int RADEONValidateCloneModes(ScrnInfoPtr pScrn)
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		   "DDC detection (type %d) for clone modes\n",
 		   info->CloneDDCType);
+
+	/* When primary head has an invalid DDC type, I2C is not
+         * initialized, so we do it here.
+	 */
+	if (!info->ddc2) info->ddc2 = xf86I2CBusInit(info->pI2CBus);
 
 	pScrn->monitor->DDC = RADEONDoDDC(pScrn, NULL);
 	if (pScrn->monitor->DDC) {
