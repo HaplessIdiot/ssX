@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb32/cfbmodule.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb32/cfbmodule.c,v 1.1.2.5 1998/07/04 13:32:22 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -27,9 +27,12 @@
 
 #ifdef XFree86LOADER
 
-#include "xf86.h"
-#include "xf86Version.h"
+#include "xf86Module.h"
 #include "cfb.h"
+
+MODULEINITPROTO(cfb32ModuleInit);
+static MODULESETUPPROTO(cfb32Setup);
+
     /*
      * this is the module init function that is executed when loading
      * libcfb as a module. Its name has to be ModuleInit.
@@ -39,41 +42,31 @@
 
 static XF86ModuleVersionInfo VersRec =
 {
-	"libcfb32.a",
+	"cfb32",
 	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
 	0x00010001,
+	ABI_CLASS_ANSIC,		/* Only need the ansic layer */
+	ABI_ANSIC_VERSION,
 	{0,0,0,0}       /* signature, to be patched into the file by a tool */
 };
 
-void libcfb32ModuleInit(data,magic)
-    pointer *	data;
-    INT32 *	magic;
+void
+cfb32ModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
+		ModuleTearDownProc *teardown)
 {
-    static int  cnt = 0;
-
-    switch(cnt++)
-    {
-    case 0:
-	* magic = MAGIC_VERSION;
-	* data = (pointer) &VersRec;
-	break;
-    case 1:
-    	* magic = MAGIC_CCD_DO_BITBLT;
-	* data  = (pointer) &cfbDoBitblt;
-	break;
-#ifdef CFB_NEED_SCREEN_PRIVATE
-    case 2:
-    	* magic = MAGIC_CCD_SCREEN_PRIV_IDX;
-	* data  = (pointer) &cfbScreenPrivateIndex;
-	break;
-#endif
-    default:
-    	* magic = MAGIC_DONE;
-	break;
-    }
-    return;
+    *vers = &VersRec;
+    *setup = cfb32Setup;
+    *teardown = NULL;
 }
+
+static pointer
+cfb32Setup(pointer module, pointer opts, int *errmaj, int *errmin)
+{
+    /* This modules requires cfb, so load it */
+    return LoadSubModule(module, "cfb", NULL, NULL, errmaj, errmin);
+}
+
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbimage.c,v 1.2 1998/03/20 21:05:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbimage.c,v 1.1.1.1.14.2 1998/05/03 08:31:38 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -53,7 +53,6 @@ SOFTWARE.
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 #include "gcstruct.h"
-#include "mi.h"
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "servermd.h"

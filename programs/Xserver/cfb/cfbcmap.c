@@ -1,4 +1,5 @@
 /* $XConsortium: cfbcmap.c,v 4.19 94/04/17 20:28:46 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbcmap.c,v 3.3.2.5 1998/07/19 13:21:43 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -27,7 +28,6 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbcmap.c,v 3.5 1998/01/25 01:22:55 dawes Exp $ */
 
 
 #include "X.h"
@@ -35,28 +35,19 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "scrnintstr.h"
 #include "colormapst.h"
 #include "resource.h"
+#include "micmap.h"
 
-#ifdef GLXEXT
-#ifdef GLX_MODULE
-Bool (*GlxInitVisualsPtr)(
-#else
+#if defined(GLXEXT) && !defined(XFree86LOADER)
 extern Bool GlxInitVisuals(
-#endif
-#if NeedFunctionPrototypes
-    VisualPtr *         /*visualp*/,
-    DepthPtr *          /*depthp*/,
-    int *               /*nvisualp*/,
-    int *               /*ndepthp*/,
-    int *               /*rootDepthp*/,
-    VisualID *          /*defaultVisp*/,
-    unsigned long       /*sizes*/,
-    int                 /*bitsPerRGB*/
-#endif
-#ifdef GLX_MODULE
-) = NULL;
-#else
+    VisualPtr *         visualp,
+    DepthPtr *          depthp,
+    int *               nvisualp,
+    int *               ndepthp,
+    int *               rootDepthp,
+    VisualID *          defaultVisp,
+    unsigned long       sizes,
+    int                 bitsPerRGB
 );
-#endif
 #endif
 
 #ifdef	STATIC_COLOR
@@ -120,297 +111,45 @@ cfbResolveColor(pred, pgreen, pblue, pVisual)
     unsigned short	*pred, *pgreen, *pblue;
     register VisualPtr	pVisual;
 {
-    int shift = 16 - pVisual->bitsPerRGBValue;
-    unsigned lim = (1 << pVisual->bitsPerRGBValue) - 1;
-
-    if ((pVisual->class == PseudoColor) || (pVisual->class == DirectColor))
-    {
-	/* rescale to rgb bits */
-	*pred = ((*pred >> shift) * 65535) / lim;
-	*pgreen = ((*pgreen >> shift) * 65535) / lim;
-	*pblue = ((*pblue >> shift) * 65535) / lim;
-    }
-    else if (pVisual->class == GrayScale)
-    {
-	/* rescale to gray then rgb bits */
-	*pred = (30L * *pred + 59L * *pgreen + 11L * *pblue) / 100;
-	*pblue = *pgreen = *pred = ((*pred >> shift) * 65535) / lim;
-    }
-    else if (pVisual->class == StaticGray)
-    {
-	unsigned limg = pVisual->ColormapEntries - 1;
-	/* rescale to gray then [0..limg] then [0..65535] then rgb bits */
-	*pred = (30L * *pred + 59L * *pgreen + 11L * *pblue) / 100;
-	*pred = ((((*pred * (limg + 1))) >> 16) * 65535) / limg;
-	*pblue = *pgreen = *pred = ((*pred >> shift) * 65535) / lim;
-    }
-    else
-    {
-	unsigned limr, limg, limb;
-
-	limr = pVisual->redMask >> pVisual->offsetRed;
-	limg = pVisual->greenMask >> pVisual->offsetGreen;
-	limb = pVisual->blueMask >> pVisual->offsetBlue;
-	/* rescale to [0..limN] then [0..65535] then rgb bits */
-	*pred = ((((((*pred * (limr + 1)) >> 16) *
-		    65535) / limr) >> shift) * 65535) / lim;
-	*pgreen = ((((((*pgreen * (limg + 1)) >> 16) *
-		      65535) / limg) >> shift) * 65535) / lim;
-	*pblue = ((((((*pblue * (limb + 1)) >> 16) *
-		     65535) / limb) >> shift) * 65535) / lim;
-    }
+    miResolveColor(pred, pgreen, pblue, pVisual);
 }
 
 Bool
 cfbInitializeColormap(pmap)
     register ColormapPtr	pmap;
 {
-    register unsigned i;
-    register VisualPtr pVisual;
-    unsigned lim, maxent, shift;
-
-    pVisual = pmap->pVisual;
-    lim = (1 << pVisual->bitsPerRGBValue) - 1;
-    shift = 16 - pVisual->bitsPerRGBValue;
-    maxent = pVisual->ColormapEntries - 1;
-    if (pVisual->class == TrueColor)
-    {
-	unsigned limr, limg, limb;
-
-	limr = pVisual->redMask >> pVisual->offsetRed;
-	limg = pVisual->greenMask >> pVisual->offsetGreen;
-	limb = pVisual->blueMask >> pVisual->offsetBlue;
-	for(i = 0; i <= maxent; i++)
-	{
-	    /* rescale to [0..65535] then rgb bits */
-	    pmap->red[i].co.local.red =
-		((((i * 65535) / limr) >> shift) * 65535) / lim;
-	    pmap->green[i].co.local.green =
-		((((i * 65535) / limg) >> shift) * 65535) / lim;
-	    pmap->blue[i].co.local.blue =
-		((((i * 65535) / limb) >> shift) * 65535) / lim;
-	}
-    }
-    else if (pVisual->class == StaticColor)
-    {
-	unsigned limr, limg, limb;
-
-	limr = pVisual->redMask >> pVisual->offsetRed;
-	limg = pVisual->greenMask >> pVisual->offsetGreen;
-	limb = pVisual->blueMask >> pVisual->offsetBlue;
-	for(i = 0; i <= maxent; i++)
-	{
-	    /* rescale to [0..65535] then rgb bits */
-	    pmap->red[i].co.local.red =
-		((((((i & pVisual->redMask) >> pVisual->offsetRed)
-		    * 65535) / limr) >> shift) * 65535) / lim;
-	    pmap->red[i].co.local.green =
-		((((((i & pVisual->greenMask) >> pVisual->offsetGreen)
-		    * 65535) / limg) >> shift) * 65535) / lim;
-	    pmap->red[i].co.local.blue =
-		((((((i & pVisual->blueMask) >> pVisual->offsetBlue)
-		    * 65535) / limb) >> shift) * 65535) / lim;
-	}
-    }
-    else if (pVisual->class == StaticGray)
-    {
-	for(i = 0; i <= maxent; i++)
-	{
-	    /* rescale to [0..65535] then rgb bits */
-	    pmap->red[i].co.local.red = ((((i * 65535) / maxent) >> shift)
-					 * 65535) / lim;
-	    pmap->red[i].co.local.green = pmap->red[i].co.local.red;
-	    pmap->red[i].co.local.blue = pmap->red[i].co.local.red;
-	}
-    }
-    return TRUE;
+    return miInitializeColormap(pmap);
 }
 
-/* When simulating DirectColor on PseudoColor hardware, multiple
-   entries of the colormap must be updated
- */
-
-#define AddElement(mask) { \
-    pixel = red | green | blue; \
-    for (i = 0; i < nresult; i++) \
-  	if (outdefs[i].pixel == pixel) \
-    	    break; \
-    if (i == nresult) \
-    { \
-   	nresult++; \
-	outdefs[i].pixel = pixel; \
-	outdefs[i].flags = 0; \
-    } \
-    outdefs[i].flags |= (mask); \
-    outdefs[i].red = pmap->red[red >> pVisual->offsetRed].co.local.red; \
-    outdefs[i].green = pmap->green[green >> pVisual->offsetGreen].co.local.green; \
-    outdefs[i].blue = pmap->blue[blue >> pVisual->offsetBlue].co.local.blue; \
-}
-
+int
 cfbExpandDirectColors (pmap, ndef, indefs, outdefs)
     ColormapPtr	pmap;
     int		ndef;
     xColorItem	*indefs, *outdefs;
 {
-    int		    minred, mingreen, minblue;
-    register int    red, green, blue;
-    int		    maxred, maxgreen, maxblue;
-    int		    stepred, stepgreen, stepblue;
-    VisualPtr	    pVisual;
-    register int    pixel;
-    register int    nresult;
-    register int    i;
-
-    pVisual = pmap->pVisual;
-
-    stepred = 1 << pVisual->offsetRed;
-    stepgreen = 1 << pVisual->offsetGreen;
-    stepblue = 1 << pVisual->offsetBlue;
-    maxred = pVisual->redMask;
-    maxgreen = pVisual->greenMask;
-    maxblue = pVisual->blueMask;
-    nresult = 0;
-    for (;ndef--; indefs++)
-    {
-	if (indefs->flags & DoRed)
-	{
-	    red = indefs->pixel & pVisual->redMask;
-    	    for (green = 0; green <= maxgreen; green += stepgreen)
-    	    {
-	    	for (blue = 0; blue <= maxblue; blue += stepblue)
-	    	{
-		    AddElement (DoRed)
-	    	}
-    	    }
-	}
-	if (indefs->flags & DoGreen)
-	{
-	    green = indefs->pixel & pVisual->greenMask;
-    	    for (red = 0; red <= maxred; red += stepred)
-    	    {
-	    	for (blue = 0; blue <= maxblue; blue += stepblue)
-	    	{
-		    AddElement (DoGreen)
-	    	}
-    	    }
-	}
-	if (indefs->flags & DoBlue)
-	{
-	    blue = indefs->pixel & pVisual->blueMask;
-    	    for (red = 0; red <= maxred; red += stepred)
-    	    {
-	    	for (green = 0; green <= maxgreen; green += stepgreen)
-	    	{
-		    AddElement (DoBlue)
-	    	}
-    	    }
-	}
-    }
-    return nresult;
+    return miExpandDirectColors(pmap, ndef, indefs, outdefs);
 }
 
 Bool
 cfbCreateDefColormap(pScreen)
     ScreenPtr pScreen;
 {
-    unsigned short	zero = 0, ones = 0xFFFF;
-    VisualPtr	pVisual;
-    ColormapPtr	cmap;
-    Pixel wp, bp;
-    
-    for (pVisual = pScreen->visuals;
-	 pVisual->vid != pScreen->rootVisual;
-	 pVisual++)
-	;
-
-    if (CreateColormap(pScreen->defColormap, pScreen, pVisual, &cmap,
-		       (pVisual->class & DynamicClass) ? AllocNone : AllocAll,
-		       0)
-	!= Success)
-	return FALSE;
-    wp = pScreen->whitePixel;
-    bp = pScreen->blackPixel;
-    if ((AllocColor(cmap, &ones, &ones, &ones, &wp, 0) !=
-       	   Success) ||
-    	(AllocColor(cmap, &zero, &zero, &zero, &bp, 0) !=
-       	   Success))
-    	return FALSE;
-    pScreen->whitePixel = wp;
-    pScreen->blackPixel = bp;
-    (*pScreen->InstallColormap)(cmap);
-    return TRUE;
+    return miCreateDefColormap(pScreen);
 }
 
-extern int defaultColorVisualClass;
-
-#define _RZ(d) ((d + 2) / 3)
-#define _RS(d) 0
-#define _RM(d) ((1 << _RZ(d)) - 1)
-#define _GZ(d) ((d - _RZ(d) + 1) / 2)
-#define _GS(d) _RZ(d)
-#define _GM(d) (((1 << _GZ(d)) - 1) << _GS(d))
-#define _BZ(d) (d - _RZ(d) - _GZ(d))
-#define _BS(d) (_RZ(d) + _GZ(d))
-#define _BM(d) (((1 << _BZ(d)) - 1) << _BS(d))
-#define _CE(d) (1 << _RZ(d))
-
-#define MAX_PSEUDO_DEPTH    10	    /* largest DAC size I know */
-
-#define StaticGrayMask	(1 << StaticGray)
-#define GrayScaleMask	(1 << GrayScale)
-#define StaticColorMask	(1 << StaticColor)
-#define PseudoColorMask	(1 << PseudoColor)
-#define TrueColorMask	(1 << TrueColor)
-#define DirectColorMask (1 << DirectColor)
-
-#define ALL_VISUALS	(StaticGrayMask|\
-			 GrayScaleMask|\
-			 StaticColorMask|\
-			 PseudoColorMask|\
-			 TrueColorMask|\
-			 DirectColorMask)
-
-#define LARGE_VISUALS	(TrueColorMask|\
-			 DirectColorMask)
-
-typedef struct _cfbVisuals {
-    struct _cfbVisuals	*next;
-    int			depth;
-    int			bitsPerRGB;
-    int			visuals;
-    int			count;
-} cfbVisualsRec, *cfbVisualsPtr;
-
-static int  cfbVisualPriority[] = {
-    PseudoColor, DirectColor, GrayScale, StaticColor, TrueColor, StaticGray
-};
-
-#define NUM_PRIORITY	6
-
-static cfbVisualsPtr	cfbVisuals;
+void
+cfbClearVisualTypes()
+{
+    miClearVisualTypes();
+}
 
 Bool
 cfbSetVisualTypes (depth, visuals, bitsPerRGB)
     int	    depth;
     int	    visuals;
+    int     bitsPerRGB;
 {
-    cfbVisualsPtr   new, *prev, v;
-    int		    count;
-
-    new = (cfbVisualsPtr) xalloc (sizeof *new);
-    if (!new)
-	return FALSE;
-    new->next = 0;
-    new->depth = depth;
-    new->visuals = visuals;
-    new->bitsPerRGB = bitsPerRGB;
-    count = (visuals >> 1) & 033333333333;
-    count = visuals - count - ((count >> 1) & 033333333333);
-    count = (((count + (count >> 3)) & 030707070707) % 077);	/* HAKMEM 169 */
-    new->count = count;
-    for (prev = &cfbVisuals; v = *prev; prev = &v->next);
-    *prev = new;
-    return TRUE;
+    return miSetVisualTypes(depth, visuals, bitsPerRGB, -1);
 }
 
 /*
@@ -429,148 +168,14 @@ cfbInitVisuals (visualp, depthp, nvisualp, ndepthp, rootDepthp, defaultVisp, siz
     unsigned long   sizes;
     int		bitsPerRGB;
 {
-    int		i, j, k;
-    VisualPtr	visual;
-    DepthPtr	depth;
-    VisualID	*vid;
-    int		d, b;
-    int		f;
-    int		ndepth, nvisual;
-    int		nvtype;
-    int		vtype;
-    VisualID	defaultVisual;
-    cfbVisualsPtr   visuals, nextVisuals;
-
-    /* none specified, we'll guess from pixmap formats */
-    if (!cfbVisuals) 
-    {
-    	for (f = 0; f < screenInfo.numPixmapFormats; f++) 
-    	{
-	    d = screenInfo.formats[f].depth;
-	    b = screenInfo.formats[f].bitsPerPixel;
-	    if (sizes & (1 << (b - 1)))
-	    {
-	    	if (d > MAX_PSEUDO_DEPTH)
-		    vtype = LARGE_VISUALS;
-	    	else if (d == 1)
-		    vtype = StaticGrayMask;
-		else
-		    vtype = ALL_VISUALS;
-	    }
-	    else
-		vtype = 0;
-	    if (!cfbSetVisualTypes (d, vtype, bitsPerRGB))
-		return FALSE;
-    	}
-    }
-    nvisual = 0;
-    ndepth = 0;
-    for (visuals = cfbVisuals; visuals; visuals = nextVisuals) 
-    {
-	nextVisuals = visuals->next;
-	ndepth++;
-	nvisual += visuals->count;
-    }
-    depth = (DepthPtr) xalloc (ndepth * sizeof (DepthRec));
-    visual = (VisualPtr) xalloc (nvisual * sizeof (VisualRec));
-    if (!depth || !visual)
-    {
-	xfree (depth);
-	xfree (visual);
+    Bool ret;
+    ret = miInitVisuals(visualp, depthp, nvisualp, ndepthp, rootDepthp,
+			defaultVisp, sizes, bitsPerRGB, -1);
+    if (!ret)
 	return FALSE;
-    }
-    *depthp = depth;
-    *visualp = visual;
-    *ndepthp = ndepth;
-    *nvisualp = nvisual;
-    for (visuals = cfbVisuals; visuals; visuals = nextVisuals) 
-    {
-	nextVisuals = visuals->next;
-	d = visuals->depth;
-	vtype = visuals->visuals;
-	nvtype = visuals->count;
-	vid = NULL;
-	if (nvtype)
-	{
-	    vid = (VisualID *) xalloc (nvtype * sizeof (VisualID));
-	    if (!vid)
-		return FALSE;
-	}
-	depth->depth = d;
-	depth->numVids = nvtype;
-	depth->vids = vid;
-	depth++;
-	for (i = 0; i < NUM_PRIORITY; i++) {
-	    if (! (vtype & (1 << cfbVisualPriority[i])))
-		continue;
-	    visual->class = cfbVisualPriority[i];
-	    visual->bitsPerRGBValue = visuals->bitsPerRGB;
-	    visual->ColormapEntries = 1 << d;
-	    visual->nplanes = d;
-	    visual->vid = *vid = FakeClientID (0);
-	    switch (visual->class) {
-	    case PseudoColor:
-	    case GrayScale:
-	    case StaticGray:
-		visual->redMask = 0;
-		visual->greenMask =  0;
-		visual->blueMask =  0;
-		visual->offsetRed  =  0;
-		visual->offsetGreen = 0;
-		visual->offsetBlue =  0;
-		break;
-	    case DirectColor:
-	    case TrueColor:
-		visual->ColormapEntries = _CE(d);
-		/* fall through */
-	    case StaticColor:
-		visual->redMask =  _RM(d);
-		visual->greenMask =  _GM(d);
-		visual->blueMask =  _BM(d);
-		visual->offsetRed  =  _RS(d);
-		visual->offsetGreen = _GS(d);
-		visual->offsetBlue =  _BS(d);
-	    }
-	    vid++;
-	    visual++;
-	}
-	xfree (visuals);
-    }
-    cfbVisuals = NULL;
-    visual = *visualp;
-    depth = *depthp;
-    for (i = 0; i < ndepth; i++)
-    {
-	if (*rootDepthp && *rootDepthp != depth[i].depth)
-	    continue;
-	for (j = 0; j < depth[i].numVids; j++)
-	{
-	    for (k = 0; k < nvisual; k++)
-		if (visual[k].vid == depth[i].vids[j])
-		    break;
-	    if (k == nvisual)
-		continue;
-	    if (defaultColorVisualClass < 0 ||
-		visual[k].class == defaultColorVisualClass)
-		break;
-	}
-	if (j != depth[i].numVids)
-	    break;
-    }
-    if (i == ndepth) {
-	i = 0;
-	j = 0;
-    }
-    *rootDepthp = depth[i].depth;
-    *defaultVisp = depth[i].vids[j];
 
-#ifdef GLXEXT
-#ifdef GLX_MODULE
-    if( GlxInitVisualsPtr != NULL ) 
-       return (*GlxInitVisualsPtr)
-#else
+#if defined(GLXEXT) && !defined(XFree86LOADER)
     return GlxInitVisuals
-#endif
 	   (
                visualp, 
                depthp,
@@ -581,6 +186,7 @@ cfbInitVisuals (visualp, depthp, nvisualp, ndepthp, rootDepthp, defaultVisp, siz
                sizes,
                bitsPerRGB
            );
-#endif
+#else
     return TRUE;
+#endif
 }
