@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/dmx/Imakefile,v 1.1tsi Exp $
+XCOMM $XFree86: xc/lib/dmx/Imakefile,v 1.2 2005/01/21 21:22:45 tsi Exp $
 
 #define DoNormalLib NormalLibDmx
 #define DoExtraLib ExtraLibDmx
@@ -9,6 +9,10 @@ XCOMM $XFree86: xc/lib/dmx/Imakefile,v 1.1tsi Exp $
 #define LibName dmx
 #define SoRev SODMXREV
 #define LibHeaders NO
+
+#ifdef SharedDmxReqs
+REQUIREDLIBS = SharedDmxReqs
+#endif
 
 #include <Threads.tmpl>
 
