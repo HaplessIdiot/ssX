@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.11 2000/06/17 00:03:12 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.12 2000/06/23 19:29:41 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -110,14 +110,14 @@ typedef struct {
 			       void* writeContextStore);
     void	(*InitBuffers)(WindowPtr pWin,
 			       RegionPtr prgn,
-			       CARD32 index);
+			       CARD32 indx);
     void	(*MoveBuffers)(WindowPtr pWin,
 			       DDXPointRec ptOldOrg,
 			       RegionPtr prgnSrc,
-			       CARD32 index);
+			       CARD32 indx);
     void        (*TransitionTo3d)(ScreenPtr pScreen);
     void        (*TransitionTo2d)(ScreenPtr pScreen);
-    void	(*SetDrawableIndex)(WindowPtr pWin, CARD32 index);
+    void	(*SetDrawableIndex)(WindowPtr pWin, CARD32 indx);
 
     /* wrapped functions */
     DRIWrappedFuncsRec  wrap;
@@ -193,7 +193,7 @@ extern Bool DRIDrawablePrivDelete(pointer pResource,
 
 extern Bool DRIGetDrawableInfo(ScreenPtr pScreen,
                                DrawablePtr pDrawable,
-                               unsigned int* index,
+                               unsigned int* indx,
                                unsigned int* stamp,
                                int* X,
                                int* Y,

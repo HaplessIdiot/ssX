@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.5 2000/10/07 05:58:18 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.6 2000/10/11 23:55:33 tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -187,9 +187,6 @@ PictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats);
 
 Bool
 miPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats);
-
-Bool
-fbPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats);
 
 
 PicturePtr
