@@ -11,7 +11,7 @@
 <date>1999 June 23
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.21 1999/07/07 12:05:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.22 1999/07/19 13:36:22 dawes Exp $
 </ident>
 
 <abstract>
@@ -362,7 +362,7 @@ driver.
 They include:<p>
 <itemize>
 <item>A number of system lockups and blank screens have been reported when
-using PCI Mach64 adapters.
+using PCI and AGP Mach64 adapters.
 The great majority of these problems have been found to be due to system
 aspects that are unrelated to this driver.
 As of this writing, these problems can be divided into three general areas:<p>
@@ -377,6 +377,9 @@ that might or might not be supplied with the adapter.
 This problem is still under investigation.
 The only known workaround is to ensure no cable is connected to the adapter's
 TV connector on bootup.
+<p>A conflict with the RAC code means that the driver does not always detect
+VGA; this can also cause system lockups and blank screens, but unlike the 3
+preceding problems, this can be fixed in a subsequent driver.
 <item>When using a Mach64's accelerator CRTC, the virtual resolution must be
 less than 8192 pixels wide.
 The VGA CRTC further limits the virtual resolution width to less than 4096
