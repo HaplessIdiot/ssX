@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "savage_driver.h"
 #include "savage_vbe.h"
 
