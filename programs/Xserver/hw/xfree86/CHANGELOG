@@ -1,4 +1,8 @@
 XFree86 4.4.99.15 (xx September 2004)
+ 193. Add some missing Imakefile changes for new encodings (David Dawes).
+ 192. Back out altwin change in Bugzilla #1341 at the request of the
+      original submitter (Bugzilla #1473, Denis Barbier).
+ 191. Build fix for FreeBSD/amd64 (Bugzilla #1480, Jung-uk Kim).
 
 XFree86 4.4.99.14 (27 September 2004)
  190. Corrections to MIT-SHM's Xineramafication
@@ -19113,7 +19117,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3321 2004/09/25 18:06:21 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3322 2004/09/27 11:02:25 dawes Exp $
 
 
 
