@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/input/magictouch/xf86MagicTouch.c,v 1.3 2003/01/12 03:55:50 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/input/magictouch/xf86MagicTouch.c,v 1.4 2004/04/26 22:26:11 dawes Exp $
  */
 
 #ifndef XFree86LOADER
@@ -435,6 +435,7 @@ xf86MagicReadInput(LocalDevicePtr	local)
 	int		cur_x, cur_y;
 	Bool		touch_now;
 	static int	n_coms = 0;
+	int		x, y;
 
 	if (!priv->e_presente) {
 		DBG(4,
@@ -481,6 +482,11 @@ xf86MagicReadInput(LocalDevicePtr	local)
 			priv->first_x = TRUE;
 			priv->first_y = TRUE;
 		}
+
+		xf86MagicConvert(local, 0, 2, cur_x, cur_y, 0, 0, 0, 0,
+				 &x, &y);
+		xf86XInputSetScreen(local, priv->screen_no, x, y);
+
 		/* Comando lo spostamento */
 		xf86PostMotionEvent(local->dev, TRUE, 0, 2, cur_x, cur_y);		
     		/* comanda la pressione del tasto */
@@ -541,13 +547,6 @@ xf86MagicConvert(LocalDevicePtr	local,
   *x = (priv->screen_width * (input_x - priv->min_x)) / width;
   *y = (priv->screen_height - (priv->screen_height * (input_y - priv->min_y)) / height);
   
-  /*
-   * Need to check if still on the correct screen.
-   * This call is here so that this work can be done after
-   * calib and before posting the event.
-   */
-  xf86XInputSetScreen(local, priv->screen_no, *x, *y);
-
   DBG(3, ErrorF("MagicConvert: x(%d), y(%d)\n",	*x, *y));
 
   return TRUE;

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.18 2004/04/26 21:28:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.19 2004/04/26 22:26:10 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -404,14 +404,6 @@ xf86EloReadInput(LocalDevicePtr	local)
   int				cur_x = 0, cur_y = 0;
   int				state = 0;
   int               post_needed = 0;
-  int first = 0; /* since convert is expecting 0 */
-  int num = 2; /* since convert is expecting 0 */
-  int v0 = 0; /* = cur_x - based on the debug output this is what v0 is */
-  int v1 = 0; /* = cur_y based on the debug output this is what v0 is */
-  int v2 = 0; /* not used in convert */
-  int v3 = 0; /* not used in convert */
-  int v4 = 0; /* not used in convert */
-  int v5 = 0; /* not used in convert */
   int x; /* output */
   int y; /* output */
 
@@ -436,29 +428,27 @@ xf86EloReadInput(LocalDevicePtr	local)
     cur_y = WORD_ASSEMBLY(priv->packet_buf[5], priv->packet_buf[6]);
     state = priv->packet_buf[2] & 0x07;
 
-  /* 
-   * MHALAS: Based on the description in xf86XInputSetScreen
-   * this code must be called from ReadInput BEFORE any events
-   * are posted but this method is called FROM xf86PostMotionEvent
-   * Therefore I have moved this method into xf86EloReadInput
-   */
-  /*
-   * Need to check if still on the correct screen.
-   * This call is here so that this work can be done after
-   * calib and before posting the event.
-   */
+    /* 
+     * MHALAS: Based on the description in xf86XInputSetScreen
+     * this code must be called from ReadInput BEFORE any events
+     * are posted but this method is called FROM xf86PostMotionEvent
+     * Therefore I have moved this method into xf86EloReadInput
+     */
+    /*
+     * Need to check if still on the correct screen.
+     * This call is here so that this work can be done after
+     * calib and before posting the event.
+     */
 
-   DBG(3, ErrorF("EloConvert Before Fix: Screen(%d) - x(%d), y(%d)\n", priv->screen_no, x, y));
-   v0 = cur_x; /* based on the debug output this is what v0 is */
-   v1 = cur_y; /* based on the debug output this is what v0 is */
-   /* 
-    * Use the conversion method to send correct coordinates
-    * since it contains all necessary logic
-    */
-   xf86EloConvert(local, first, num, v0, v1, v2, v3, v4, v5, &x, &y);
-   DBG(3, ErrorF("EloConvert During Fix: Screen(%d) - x(%d), y(%d)\n", priv->screen_no, x, y));
-   xf86XInputSetScreen(local, priv->screen_no, x, y);
-   DBG(3, ErrorF("EloConvert After Fix: Screen(%d) - x(%d), y(%d)\n", priv->screen_no, x, y));
+     DBG(3, ErrorF("EloConvert Before Fix: Screen(%d) - x(%d), y(%d)\n", priv->screen_no, x, y));
+     /* 
+      * Use the conversion method to send correct coordinates
+      * since it contains all necessary logic
+      */
+     xf86EloConvert(local, 0, 2, cur_x, cur_y, 0, 0, 0, 0, &x, &y);
+     DBG(3, ErrorF("EloConvert During Fix: Screen(%d) - x(%d), y(%d)\n", priv->screen_no, x, y));
+     xf86XInputSetScreen(local, priv->screen_no, x, y);
+     DBG(3, ErrorF("EloConvert After Fix: Screen(%d) - x(%d), y(%d)\n", priv->screen_no, x, y));
 
     /*
      * Don't drop button events.

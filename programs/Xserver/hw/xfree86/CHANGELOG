@@ -1,4 +1,7 @@
 XFree86 4.4.99.4 (xx April 2004)
+  89. Apply Miroslav Halas' multi-head input driver fix to the fpit, jamstudio,
+      magictouch and mutouch drivers.  This needs testing, and other drivers
+      likely need a similar fix (David Dawes).
   88. Fix a problem with the cursor not correctly following the touch
       in a dual-head elographics configuration (Bugzilla #1347,
       Miroslav Halas).
@@ -18882,7 +18885,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3237 2004/04/26 16:24:26 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3238 2004/04/26 21:28:44 dawes Exp $
 
 
 

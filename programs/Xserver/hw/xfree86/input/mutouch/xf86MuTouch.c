@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.14 2001/08/17 13:27:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.15 2004/04/26 22:26:11 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -255,13 +255,6 @@ xf86MuTConvert(LocalDevicePtr	local,
   *y = (priv->screen_height -
 	(priv->screen_height * (input_y - priv->min_y)) / height);
   
-  /*
-   * Need to check if still on the correct screen.
-   * This call is here so that this work can be done after
-   * calib and before posting the event.
-   */
-  xf86XInputSetScreen(local, priv->screen_no, *x, *y);
-
   return TRUE;
 }
 
@@ -300,6 +293,7 @@ xf86MuTReadInput(LocalDevicePtr	local)
   int			num_bytes;
   int			bytes_in_packet;
   unsigned char		*ptr, *start_ptr;
+  int			x, y;
   
   DBG(4, ErrorF("Entering ReadInput\n"));
   
@@ -369,6 +363,9 @@ xf86MuTReadInput(LocalDevicePtr	local)
 		    start_ptr[0], start_ptr[1], start_ptr[2], start_ptr[3], start_ptr[4]));
       start_ptr = ptr;
       bytes_in_packet = 0;
+
+      xf86MuTConvert(local, 0, 2, cur_x, cur_y, 0, 0, 0, 0, &x, &y);
+      xf86XInputSetScreen(local, priv->screen_no, x, y);
       
       /*
        * Send events.
