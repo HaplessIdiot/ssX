@@ -898,7 +898,7 @@ FreeTypeGetGlyphs (FontPtr pFont,
     CharInfoPtr *glyphsBase = glyphs;
 
     int spacing = 0;
-    int i,nullbits;
+    int i,nullbits,ncmark;
 
     dprintf((stderr, "FreeTypeGetGlyphs: %p %d\n", pFont, count));
 
@@ -972,9 +972,13 @@ FreeTypeGetGlyphs (FontPtr pFont,
      */
     dprintf((stderr, "AddressCheckBegin *pCount=%d\n",*pCount));
     nullbits=0;
+    ncmark=-1;
     for ( i=0 ; i<*pCount ; i++ ) {
-        /* Never return an address outside cache. */
-        if ( glyphsBase[i] == &nocharinfo ) break;
+      /* Marking nocharinfo */
+      if ( glyphsBase[i] == &nocharinfo ) {
+        if ( ncmark == -1 ) ncmark=i;
+      }
+      else {
         dprintf((stderr,"[%d]:%x\n",i,glyphsBase[i]->bits));
         if ( glyphsBase[i]->bits == NULL ) {
             glyphsBase[i]->metrics.ascent=0;
@@ -997,9 +1001,12 @@ FreeTypeGetGlyphs (FontPtr pFont,
                      pFont->info.maxbounds.descent,glyphsBase[i]->metrics.descent));
             glyphsBase[i]->metrics.descent = pFont->info.maxbounds.descent;
         }
+      }
     }
-    /* Be safely more. */
-    *pCount = i;
+#if 1
+    /* Never return an address outside cache(for XAA). */
+    if ( ncmark != -1 ) *pCount = ncmark;
+#endif
     dprintf((stderr, "AddressCheckEnd i=%d nullbits=%d\n",i,nullbits));
 
     return Successful;
