@@ -1,4 +1,22 @@
 XFree86 4.2.99.2 (xx October 2002)
+ 415. Trival input drivers Imakefile cleanup (#5299, Mike Harris).
+ 414. Use INSTDATFLAGS when installing X server modules (#5292,
+      Branden Robinson).
+ 413. Fix the iso8859-15 Compose map -- there is no diaeresis codepoint
+      in iso8859-15 (#5389, Wolfgang Sourdeau, Rüdiger Kuhlman).
+ 412. Acute/apostrophe fix for nodeadkeys section of XKB German symbols
+      (#5388, Andreas Metzler).
+ 411. Fix Cards file typo (#5387, Branden Robinson).
+ 410. Cleanup the XKB Macinosh US keyboard symbols, and remove those that
+      should be in other country maps (#5386, Branden Robinson).
+ 409. Add a user-configurable throttle on xconsole's number of saved lines
+      (#5379, Branden Robinson).
+ 408. Fix missing declaration of XShmGetEventBase() in XShm.h (#5375,
+      Branden Robinson).
+ 407. Remove inconsistencies in the way extension headers are referred to
+      in most extension libraries (David Dawes).
+ 406. Install extension struct/protocol headers that weren't already
+      being installed (#5369, Branden Robinson).
  405. Fix long-standing colour map bug in ATI driver (Marc La France).
  404. Enable imake.c to perform correct C library version detection on hppa
       machines (#5372, Ben Collins).
@@ -10,7 +28,8 @@ XFree86 4.2.99.2 (xx October 2002)
       Branden Robinson).
  401. Stop the drm module from creating a world-writable directory in /dev.
       Since dev nodes can only be created by root, there's no need for
-      anyone else to be able to write to /dev/dri (#5367, Brendan O'Dea).
+      anyone else to be able to write to /dev/dri (#5367, Brendan O'Dea,
+      #5380, 5422, Mike Harris).
  400. Fix a SEGV in lbxproxy because it's ResizeReverseMap() makes assumptions
       about the atom numbers that can lead to unallocated memory being
       accessed (#5366, Branden Robinson and Anthony DeRobertis).
@@ -15352,4 +15371,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2342 2002/10/15 02:38:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2343 2002/10/15 20:25:59 tsi Exp $
