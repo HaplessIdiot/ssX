@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init.c,v 1.30tsi Exp $ */
 /*
  * Mode initializing code (CRT1 section) for
  * for SiS 300/305/540/630/730 and
@@ -2553,11 +2553,13 @@ static void
 SiS_SetCRT1ModeRegs(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
                     USHORT ModeNo,USHORT ModeIdIndex,USHORT RefreshRateTableIndex)
 {
-  USHORT data,data2;
+  USHORT data,data2,data3;
   USHORT infoflag=0,modeflag;
-  USHORT resindex,xres,resinfo = 0;
+  USHORT resindex,xres;
 #ifdef SIS315H
-  USHORT data3;
+#if 0
+  USHORT resinfo = 0;
+#endif
   ULONG  longdata;
 #endif
 
@@ -2568,7 +2570,9 @@ SiS_SetCRT1ModeRegs(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
      if(ModeNo > 0x13) {
     	modeflag = SiS_Pr->SiS_EModeIDTable[ModeIdIndex].Ext_ModeFlag;
     	infoflag = SiS_Pr->SiS_RefIndex[RefreshRateTableIndex].Ext_InfoFlag;
+#if defined(SIS315H) && 0
 	resinfo = SiS_Pr->SiS_EModeIDTable[ModeIdIndex].Ext_RESINFO;
+#endif
      } else {
     	modeflag = SiS_Pr->SiS_SModeIDTable[ModeIdIndex].St_ModeFlag;
      }
@@ -3110,7 +3114,10 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,USHORT ModeNo)
 #endif
 {
    ULONG   temp;
-   USHORT  ModeIdIndex,KeepLockReg;
+   USHORT  ModeIdIndex;
+#ifndef LINUX_XF86
+   USHORT  KeepLockReg;
+#endif
    UCHAR  *ROMAddr  = HwInfo->pjVirtualRomBase;
    SISIOADDRESS BaseAddr = HwInfo->ulIOAddress;
    unsigned char backupreg=0, tempr1, tempr2;
@@ -3158,7 +3165,9 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,USHORT ModeNo)
      	SiS_Pr->SiS_flag_clearbuffer = 1;
    }
 
+#ifndef LINUX_XF86
    KeepLockReg = SiS_GetReg(SiS_Pr->SiS_P3c4,0x05);
+#endif
    SiS_SetReg(SiS_Pr->SiS_P3c4,0x05,0x86);
 
    SiS_UnLockCRT2(SiS_Pr, HwInfo);
@@ -3760,7 +3769,7 @@ SiS_GetPanelID(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
       0xc111, 0xc122, 0xc133, 0xc144, 0xc155, 0xc166, 0xc177, 0xc188,
       0xc199, 0xc0aa, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
   };
-  USHORT tempax,tempbx,tempah,temp;
+  USHORT tempax,tempbx,temp;
 
   if(HwInfo->jChipType < SIS_315H) {
 
@@ -3790,7 +3799,7 @@ SiS_GetPanelID(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 
      if(HwInfo->jChipType >= SIS_661) return 0;
 
-     tempax = tempah = SiS_GetReg(SiS_Pr->SiS_P3c4,0x1a);
+     tempax = SiS_GetReg(SiS_Pr->SiS_P3c4,0x1a);
      tempax &= 0x1e;
      tempax >>= 1;
      if(SiS_Pr->SiS_IF_DEF_LVDS == 1) {
@@ -4365,6 +4374,8 @@ SiSBuildBuiltInModeList(ScrnInfoPtr pScrn, BOOLEAN includelcdmodes, BOOLEAN isfo
 	current->name, (float)current->Clock / 1000,
 	current->HDisplay, current->HSyncStart, current->HSyncEnd, current->HTotal,
 	current->VDisplay, current->VSyncStart, current->VSyncEnd, current->VTotal);
+#else
+      (void)VBS;  (void)HBS;  (void)A;
 #endif
 
       i++;

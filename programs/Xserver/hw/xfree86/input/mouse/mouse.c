@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.77 2003/10/02 13:30:01 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.78tsi Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -201,6 +201,7 @@ typedef enum {
     OPTION_DRAGLOCKBUTTONS
 } MouseOpts;
 
+#ifdef XFree86LOADER
 static const OptionInfoRec mouseOptions[] = {
     { OPTION_ALWAYS_CORE,	"AlwaysCore",	  OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SEND_CORE_EVENTS,	"SendCoreEvents", OPTV_BOOLEAN,	{0}, FALSE },
@@ -240,6 +241,7 @@ static const OptionInfoRec mouseOptions[] = {
     /* end serial options */
     { -1,			NULL,		  OPTV_NONE,	{0}, FALSE }
 };
+#endif
 
 #define RETRY_COUNT 4
 
@@ -946,7 +948,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	case PROT_AUTO:
 	    if (osInfo->SetupAuto) {
 		if ((osProt = osInfo->SetupAuto(pInfo,NULL))) {
-		    int id = ProtocolNameToID(osProt);
+		    MouseProtocolID id = ProtocolNameToID(osProt);
 		    if (id == PROT_UNKNOWN || id == PROT_UNSUP) {
 			protocolID = id;
 			protocol = osProt;
@@ -1587,7 +1589,6 @@ MouseProc(DeviceIntPtr device, int what)
     pInfo = device->public.devicePrivate;
     pMse = pInfo->private;
     pMse->device = device;
-    mPriv = (mousePrivPtr)pMse->mousePriv;    
 
     switch (what)
     {
@@ -1635,7 +1636,7 @@ MouseProc(DeviceIntPtr device, int what)
 		    XisbFree(pMse->buffer);
 		    pMse->buffer = NULL;
 		} else {
-		    mousePrivPtr mPriv = (mousePrivPtr)pMse->mousePriv;
+		    mPriv = (mousePrivPtr)pMse->mousePriv;
 		    if (mPriv != NULL) {
 			if ( pMse->protocolID != PROT_AUTO) {
 			    pMse->inSync = TRUE; /* @@@ */
@@ -2243,8 +2244,8 @@ MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy, int dz, int dw)
  *
  ******************************************************************/
 /*
- * This array is indexed by the MouseProtocolID values, so the order of the entries
- * must match that of the MouseProtocolID enum in mouse.h.
+ * This array is indexed by the MouseProtocolID values, so the order of the
+ * entries must match that of the MouseProtocolID enum in xf86OSmouse.h.
  */
 static unsigned char proto[PROT_NUMPROTOS][8] = {
   /* --header--  ---data--- packet -4th-byte-  mouse   */
@@ -2286,14 +2287,12 @@ static Bool
 SetupMouse(InputInfoPtr pInfo)
 {
     MouseDevPtr pMse;
-    mousePrivPtr mPriv;
     int i;
     int protoPara[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
     const char *name = NULL;
     Bool automatic = FALSE;
 
     pMse = pInfo->private;
-    mPriv = (mousePrivPtr)pMse->mousePriv;
     
     /* Handle the "Auto" protocol. */
     if (pMse->protocolID == PROT_AUTO) {

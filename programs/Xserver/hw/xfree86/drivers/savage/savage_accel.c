@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.20 2003/06/30 16:52:56 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.21tsi Exp $ */
 
 /*
  *
@@ -1001,7 +1001,6 @@ SavageSetupForColor8x8PatternFill(
     SavagePtr psav = SAVPTR(pScrn);
 
     int cmd;
-    int mix;
     unsigned int bd;
     int pat_offset;
     
@@ -1013,7 +1012,7 @@ SavageSetupForColor8x8PatternFill(
     cmd = BCI_CMD_RECT | BCI_CMD_RECT_XP | BCI_CMD_RECT_YP
         | BCI_CMD_DEST_GBD | BCI_CMD_PAT_PBD_COLOR_NEW;
         
-    mix = XAAHelpSolidROP( pScrn, &trans_col, planemask, &rop );
+    (void) XAAHelpSolidROP( pScrn, &trans_col, planemask, &rop );
 
     BCI_CMD_SET_ROP(cmd, rop);
     bd = BCI_BD_BW_DISABLE;

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.48 2003/10/30 17:37:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.49tsi Exp $ */
 
 /*
  * Authors:
@@ -493,7 +493,6 @@ I740ProbeDDC(ScrnInfoPtr pScrn, int index)
  */
 static Bool
 I740PreInit(ScrnInfoPtr pScrn, int flags) {
-  vgaHWPtr hwp;
   I740Ptr pI740;
   ClockRangePtr clockRanges;
   int i;
@@ -583,7 +582,6 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
   /* We use a programamble clock */
   pScrn->progClock = TRUE;
 
-  hwp = VGAHWPTR(pScrn);
   pI740->cpp = pScrn->bitsPerPixel/8;
 
   /* Process the options */
@@ -1491,12 +1489,10 @@ I740ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode_src)
 
 static void I740LoadPalette15(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors, VisualPtr pVisual)
 {
-  I740Ptr pI740;
   vgaHWPtr hwp;
   int i, index;
   unsigned char r, g, b;
 
-  pI740 = I740PTR(pScrn);
   hwp = VGAHWPTR(pScrn);
 
   for (i=0; i<numColors; i++)
@@ -1521,12 +1517,10 @@ static void I740LoadPalette15(ScrnInfoPtr pScrn, int numColors, int *indices, LO
 
 static void I740LoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors, VisualPtr pVisual)
 {
-  I740Ptr pI740;
   vgaHWPtr hwp;
   int i, index;
   unsigned char r, g, b;
 
-  pI740 = I740PTR(pScrn);
   hwp = VGAHWPTR(pScrn);
   for (i=0; i<numColors; i++) {
     index=indices[i/2];
@@ -1551,12 +1545,10 @@ static void I740LoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices, LO
 static void
 I740LoadPalette24(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 		  VisualPtr pVisual) {
-  I740Ptr pI740;
   vgaHWPtr hwp;
   int i, index;
   unsigned char r, g, b;
 
-  pI740 = I740PTR(pScrn);
   hwp = VGAHWPTR(pScrn);
   for (i=0; i<numColors; i++) {
     index=indices[i];
@@ -1754,12 +1746,10 @@ I740SwitchMode(int scrnIndex, DisplayModePtr mode, int flags) {
 void
 I740AdjustFrame(int scrnIndex, int x, int y, int flags) {
   ScrnInfoPtr pScrn;
-  I740Ptr pI740;
   int Base;
   vgaHWPtr hwp;
 
   pScrn = xf86Screens[scrnIndex];
-  pI740 = I740PTR(pScrn);
   hwp = VGAHWPTR(pScrn);
 
   Base = (y * pScrn->displayWidth + x) >> 2;

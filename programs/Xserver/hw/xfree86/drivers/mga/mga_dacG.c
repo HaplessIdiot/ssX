@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400, MGA-G550 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.51 2002/09/16 18:05:55 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.53tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -208,16 +208,13 @@ MGAGSetPCLK( ScrnInfoPtr pScrn, long f_out )
 	/* Pixel clock values */
 	int m, n, p, s;
 
-	/* The actual frequency output by the clock */
-	double f_pll;
-
 	if(MGAISGx50(pMga)) {
 	    pReg->Clock = f_out;
 	    return;
 	}
 
 	/* Do the calculations for m, n, p and s */
-	f_pll = MGAGCalcClock( pScrn, f_out, &m, &n, &p, &s );
+	(void) MGAGCalcClock( pScrn, f_out, &m, &n, &p, &s );
 
 	/* Values for the pixel clock PLL registers */
 	pReg->DacRegs[ MGA1064_PIX_PLLC_M ] = m & 0x1F;
@@ -247,7 +244,7 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* 0x48: */	   0,    0,    0,    0,    0,    0,    0,    0
 	};
 
-	int i, weight555 = FALSE;
+	int i;
 	int hd, hs, he, ht, vd, vs, ve, vt, wd;
 	int BppShift;
 	MGAPtr pMga;
@@ -411,7 +408,6 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_16bits;
 		if ( (pLayout->weight.red == 5) && (pLayout->weight.green == 5)
 					&& (pLayout->weight.blue == 5) ) {
-		    weight555 = TRUE;
 		    pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_15bits;
 		}
 		break;

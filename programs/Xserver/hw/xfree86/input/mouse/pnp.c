@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.19 2003/08/04 10:32:30 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.20tsi Exp $ */
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
  *
@@ -58,7 +58,7 @@ typedef struct {
 /* symbol table entry */
 typedef struct {
     char *name;
-    int val;
+    MouseProtocolID val;
 } symtab_t;
 
 /* PnP EISA/product IDs */
@@ -123,7 +123,7 @@ static symtab_t pnpprod[] = {
     { "PNP0F1D",  PROT_??? },		/* Compaq LTE TrackBall serial */
     { "PNP0F1E",  PROT_??? },		/* MS Kids Trackball */
 #endif
-    { NULL,	  -1 },
+    { NULL,	  PROT_UNKNOWN },
 };
 
 static const char *pnpSerial[] = {
@@ -139,13 +139,13 @@ static const char *pnpSerial[] = {
 
 static int pnpgets(InputInfoPtr, char *, Bool *prePNP);
 static int pnpparse(InputInfoPtr, pnpid_t *, char *, int);
-static int prepnpparse(InputInfoPtr pInfo, char *buf);
+static MouseProtocolID prepnpparse(InputInfoPtr pInfo, char *buf);
 static symtab_t *pnpproto(pnpid_t *);
 static symtab_t *gettoken(symtab_t *, char *, int);
 static MouseProtocolID getPs2ProtocolPnP(InputInfoPtr pInfo);
 static MouseProtocolID probePs2ProtocolPnP(InputInfoPtr pInfo);
 
-static int
+static MouseProtocolID
 MouseGetSerialPnpProtocol(InputInfoPtr pInfo)
 {
     char buf[256];	/* PnP ID string may be up to 256 bytes long */
@@ -169,12 +169,12 @@ MouseGetSerialPnpProtocol(InputInfoPtr pInfo)
     return PROT_UNKNOWN;
 }
 
-int
+MouseProtocolID
 MouseGetPnpProtocol(InputInfoPtr pInfo)
 {
     MouseDevPtr  pMse = pInfo->private;
     mousePrivPtr mPriv = (mousePrivPtr)pMse->mousePriv;
-    int val;
+    MouseProtocolID val;
     CARD32 last;
     
     if ((val = MouseGetSerialPnpProtocol(pInfo)) != PROT_UNKNOWN) {
@@ -496,7 +496,7 @@ pnpparse(InputInfoPtr pInfo, pnpid_t *id, char *buf, int len)
 }
 
 /* We can only identify MS at the moment */
-static int
+static MouseProtocolID
 prepnpparse(InputInfoPtr pInfo, char *buf)
 {
     if (buf[0] == 'M' && buf[1] == '3')

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.92 2003/08/24 17:37:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.93tsi Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -102,7 +102,7 @@ typedef signed long xf86ssize_t;
 /* SYSV386 (SVR3, SVR4) - But not Solaris8                                */
 /**************************************************************************/
 #if (defined(SYSV) || defined(SVR4)) && \
-    !defined(DGUX) && \
+    !defined(DGUX) && !defined(sgi) && \
     !defined(__SOL8__) && \
     (!defined(sun) || defined(i386))
 # ifdef SCO325
@@ -669,6 +669,17 @@ extern char* __XOS2RedirRoot(char*);
 #define USE_OSMOUSE
 
 #endif /* __GNU__ */
+
+/**************************************************************************/
+/* IRIX                                                                   */
+/**************************************************************************/
+#if defined(sgi)
+
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#endif
 
 /**************************************************************************/
 /* Generic                                                                */

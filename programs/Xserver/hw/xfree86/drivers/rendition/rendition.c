@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.56 2003/08/23 16:09:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.57tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -912,15 +912,12 @@ static Bool
 renditionSetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
 {
     struct verite_modeinfo_t *modeinfo=&RENDITIONPTR(pScreenInfo)->mode;
-    vgaHWPtr pvgaHW;
 
 #ifdef DEBUG
     ErrorF("RENDITION: renditionSetMode() called\n");
     ErrorF("Setmode...!!!!\n");
     sleep(1);
 #endif
-
-    pvgaHW = VGAHWPTR(pScreenInfo);
 
     /* construct a modeinfo for the verite_setmode function */
     modeinfo->clock=pMode->SynthClock;

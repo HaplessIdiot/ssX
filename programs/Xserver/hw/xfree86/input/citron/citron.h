@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.h,v 1.2 2001/04/05 17:42:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.h,v 1.4tsi Exp $ */
 
 /*
  * Based, in part, on code with the following copyright notice:
@@ -115,7 +115,7 @@
 
 /* SetTransmission command parameter values */
 #define	TM_TRANSMIT		0x01		/* Enable the transmission of messages (report will be transmitted always) */
-#define	TM_NONE			0x00		/* Disable transmission of messages and disable the XON/XOFF protocol */
+/*	TM_NONE			0x00 */		/* Disable transmission of messages and disable the XON/XOFF protocol */
 #define	TM_RXDFLOW		0x10		/* Enable the XON/XOFF protocol for the transmitter (IRT will send XON/XOFF to the host) */
 #define	TM_TXDFLOW		0x20		/* Enable the XON/XOFF protocol for the receiver (host will sned XON/XOFF to the IRT) */
 

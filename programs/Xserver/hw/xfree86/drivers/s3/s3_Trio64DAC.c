@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Trio64DAC.c,v 1.6 2003/07/04 16:24:28 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Trio64DAC.c,v 1.7tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -220,7 +220,6 @@ static void S3TrioSetPLL(ScrnInfoPtr pScrn, int clk, unsigned char m,
 		  unsigned char n)
 {
 	unsigned char tmp;
-	int index2;
 
 	if (clk < 2) {
 		tmp = inb(0x3cc);
@@ -244,7 +243,6 @@ static void S3TrioSetPLL(ScrnInfoPtr pScrn, int clk, unsigned char m,
 			outb(0x3c5, tmp | 0x22);
 			outb(0x3c5, tmp | 0x02);
 		} else {
-			index2 = 0x10;
 			outb(0x3c4, 0x10);
 			outb(0x3c5, n);
 			outb(0x3c4, 0x11);
@@ -282,7 +280,7 @@ static void S3TrioSetClock(ScrnInfoPtr pScrn, long freq, int clk, int min_m,
 void S3Trio64DAC_PreInit(ScrnInfoPtr pScrn)
 {
 	S3Ptr pS3 = S3PTR(pScrn);
-	unsigned char SR8, SR27, SR28;
+	unsigned char SR8, SR27;
 	int m, n, n1, n2, mclk;
 
 	outb(0x3c4, 0x08);
@@ -302,7 +300,7 @@ void S3Trio64DAC_PreInit(ScrnInfoPtr pScrn)
 		outb(0x3c4, 0x27);
 		SR27 = inb(0x3c5);
 		outb(0x3c4, 0x28);
-		SR28 = inb(0x3c5);
+		(void) inb(0x3c5);
 		mclk /= ((SR27 >> 2) & 0x03) + 1;
 	}
 	pS3->mclk = mclk;

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mipict.c,v 1.13 2002/11/03 01:01:30 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mipict.c,v 1.14tsi Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -467,9 +467,9 @@ miRenderPixelToColor (PictFormatPtr format,
 	b = (pixel >> format->direct.blue) & format->direct.blueMask;
 	a = (pixel >> format->direct.alpha) & format->direct.alphaMask;
 	color->red = miFillColor (r, Ones (format->direct.redMask));
-	color->green = miFillColor (r, Ones (format->direct.greenMask));
-	color->blue = miFillColor (r, Ones (format->direct.blueMask));
-	color->alpha = miFillColor (r, Ones (format->direct.alphaMask));
+	color->green = miFillColor (g, Ones (format->direct.greenMask));
+	color->blue = miFillColor (b, Ones (format->direct.blueMask));
+	color->alpha = miFillColor (a, Ones (format->direct.alphaMask));
 	break;
     case PictTypeIndexed:
 	pIndexed = (miIndexedPtr) (format->index.devPrivate);

@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.14 2003/05/15 12:04:03 pascal Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.15tsi Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -866,7 +866,7 @@ XkbComputeDerivedState(xkbi)
 {
 XkbStatePtr	state= &xkbi->state;
 XkbControlsPtr	ctrls= xkbi->desc->ctrls;
-char		grp;
+unsigned char	grp;
 
     state->mods= (state->base_mods|state->latched_mods);
     state->mods|= state->locked_mods;
@@ -877,11 +877,11 @@ char		grp;
 
 
     grp= state->locked_group;
-    if ((grp>=ctrls->num_groups) || (grp<0))
+    if (grp>=ctrls->num_groups)
 	state->locked_group= XkbAdjustGroup(grp,ctrls);
 
     grp= state->locked_group+state->base_group+state->latched_group;
-    if ((grp>=ctrls->num_groups) || (grp<0))
+    if (grp>=ctrls->num_groups)
 	 state->group= XkbAdjustGroup(grp,ctrls);
     else state->group= grp;
     XkbComputeCompatState(xkbi);

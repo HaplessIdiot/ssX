@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.27 2003/04/23 21:51:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.28tsi Exp $ */
 
 #include "radeon.h"
 #include "radeon_macros.h"
@@ -1021,7 +1021,7 @@ RADEONPutImage(
    RADEONPortPrivPtr pPriv = (RADEONPortPrivPtr)data;
    INT32 xa, xb, ya, yb;
    unsigned char *dst_start;
-   int pitch, new_size, offset, s2offset, s3offset;
+   int new_size, offset, s2offset, s3offset;
    int srcPitch, srcPitch2, dstPitch;
    int top, left, npixels, nlines, bpp;
    BoxRec dstBox;
@@ -1074,7 +1074,6 @@ RADEONPutImage(
    dstBox.y2 -= pScrn->frameY0;
 
    bpp = pScrn->bitsPerPixel >> 3;
-   pitch = bpp * pScrn->displayWidth;
 
    switch(id) {
    case FOURCC_YV12:
@@ -1261,7 +1260,7 @@ RADEONAllocateSurface(
     XF86SurfacePtr surface
 ){
     FBLinearPtr linear;
-    int pitch, fbpitch, size, bpp;
+    int pitch, size, bpp;
     OffscreenPrivPtr pPriv;
     if((w > 1024) || (h > 1024))
 	return BadAlloc;
@@ -1269,7 +1268,6 @@ RADEONAllocateSurface(
     w = (w + 1) & ~1;
     pitch = ((w << 1) + 15) & ~15;
     bpp = pScrn->bitsPerPixel >> 3;
-    fbpitch = bpp * pScrn->displayWidth;
     size = ((pitch * h) + bpp - 1) / bpp;
 
     if(!(linear = RADEONAllocateMemory(pScrn, NULL, size)))

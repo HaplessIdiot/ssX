@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_local.h $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_local.h,v 1.1tsi Exp $ */
 
 #ifndef __RIVA_LOCAL_H__
 #define __RIVA_LOCAL_H__
@@ -60,12 +60,12 @@ typedef unsigned int   U032;
 /*
  * HW access macros.  These assume memory-mapped I/O, and not normal I/O space.
  */
-#define RIVA_WR08(p,i,d)  MMIO_OUT8((volatile pointer)(p), (i), (d))
-#define RIVA_RD08(p,i)    MMIO_IN8((volatile pointer)(p), (i))
-#define RIVA_WR16(p,i,d)  MMIO_OUT16((volatile pointer)(p), (i), (d))
-#define RIVA_RD16(p,i)    MMIO_IN16((volatile pointer)(p), (i))
-#define RIVA_WR32(p,i,d)  MMIO_OUT32((volatile pointer)(p), (i), (d))
-#define RIVA_RD32(p,i)    MMIO_IN32((volatile pointer)(p), (i))
+#define RIVA_WR08(p,i,d)  MMIO_OUT8((pointer)(p), (i), (d))
+#define RIVA_RD08(p,i)    MMIO_IN8((pointer)(p), (i))
+#define RIVA_WR16(p,i,d)  MMIO_OUT16((pointer)(p), (i), (d))
+#define RIVA_RD16(p,i)    MMIO_IN16((pointer)(p), (i))
+#define RIVA_WR32(p,i,d)  MMIO_OUT32((pointer)(p), (i), (d))
+#define RIVA_RD32(p,i)    MMIO_IN32((pointer)(p), (i))
 
 /* VGA I/O is now always done through MMIO */
 #define VGA_WR08(p,i,d) RIVA_WR08(p,i,d)

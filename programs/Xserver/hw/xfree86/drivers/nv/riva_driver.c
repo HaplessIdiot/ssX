@@ -23,7 +23,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_driver.c,v 1.3 2003/08/23 16:09:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_driver.c,v 1.4tsi Exp $ */
 
 #include "riva_include.h"
 
@@ -485,7 +485,6 @@ RivaPreInit(ScrnInfoPtr pScrn, int flags)
     RivaPtr pRiva;
     MessageType from;
     int i;
-    int bytesPerPixel;
     ClockRangePtr clockRanges;
     const char *s;
 
@@ -609,8 +608,6 @@ RivaPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
     }
-
-    bytesPerPixel = pScrn->bitsPerPixel / 8;
 
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw")) {

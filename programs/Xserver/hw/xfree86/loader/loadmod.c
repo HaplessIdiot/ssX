@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.71 2003/09/23 17:52:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.72tsi Exp $ */
 
 /*
  *
@@ -582,7 +582,7 @@ CheckVersion(const char *module, XF86ModuleVersionInfo * data,
     int vercode[4];
     char verstr[4];
     long ver = data->xf86version;
-    int errtype = 0;
+    MessageType errtype;
 
     xf86Msg(X_INFO, "Module %s: vendor=\"%s\"\n",
 	    data->modname ? data->modname : "UNKNOWN!",

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_accel.c,v 1.4 2003/02/06 17:46:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_accel.c,v 1.5tsi Exp $ */
 /*
  * $Workfile: nsc_gx1_accel.c $
  * $Revision$
@@ -171,7 +171,6 @@ static int Geodesrcx;
 static int Geodesrcy;
 static int Geodewidth;
 static int Geodeheight;
-static int Geodebpp;
 static int GeodeCounter;
 
 #if !defined(STB_X)
@@ -181,7 +180,9 @@ static unsigned short Geode_vector_mode = 0;
 static unsigned short Geode_buffer_width = 0;
 #endif
 static unsigned int gu1_bpp = 0;
+#if SCR2SCREXP
 static unsigned int gu1_xshift = 1;
+#endif
 static unsigned int gu1_yshift = 1;
 static unsigned short GeodebufferWidthPixels;
 static unsigned int ImgBufOffset;
@@ -189,9 +190,11 @@ static unsigned short Geodebb0Base;
 static unsigned short Geodebb1Base;
 static XAAInfoRecPtr localRecPtr;
 
+#if SCR2SCREXP
 #define CALC_FBOFFSET(_SrcX, _SrcY) \
 	(((unsigned int) (_SrcY) << gu1_yshift) |\
 		(((unsigned int) (_SrcX)) << gu1_xshift))
+#endif
 
 #define GFX_WAIT_BUSY while(READ_REG16(GP_BLIT_STATUS) & BS_BLIT_BUSY) { ; }
 #define GFX_WAIT_PENDING while(READ_REG16(GP_BLIT_STATUS) & BS_BLIT_PENDING) { ; }
@@ -473,7 +476,7 @@ GX1Subsequent8x8PatternColorExpand(ScrnInfoPtr pScreenInfo,
  *       fg		:Specifies the foreground color
  *       bg     :Specifies the background color
  *	planemask	:Specifies the value of masking from rop data
-
+ *
  * Returns		:none.
  *
  * Comments     :none.
@@ -670,7 +673,6 @@ GX1SetupForScanlineImageWrite(ScrnInfoPtr pScreenInfo,
    /* SAVE TRANSPARENCY FLAG */
    GeodeTransparent = (transparency_color == -1) ? 0 : 1;
    GeodeTransColor = transparency_color;
-   Geodebpp = bpp;
 }
 
 /*----------------------------------------------------------------------------
@@ -1369,7 +1371,6 @@ OPTGX1SetupForScanlineImageWrite(ScrnInfoPtr pScreenInfo,
 				 int rop, unsigned int planemask,
 				 int transparency_color, int bpp, int depth)
 {
-   Geodebpp = bpp;
    OPTGX1SetupForScreenToScreenCopy(pScreenInfo,
 				    0, 0, rop, planemask, transparency_color);
 }
@@ -1667,7 +1668,9 @@ GX1AccelInit(ScreenPtr pScreen)
       break;
    }
 
+#if SCR2SCREXP
    gu1_xshift = pScreenInfo->bitsPerPixel >> 4;
+#endif
 
    switch (pGeode->Pitch) {
    case 1024:

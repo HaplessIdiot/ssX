@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.1 2003/02/17 17:06:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.2tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -343,7 +343,7 @@ VBEGetVBEInfo(vbeInfoPtr pVbe)
     VbeInfoBlock *block = NULL;
     int i, pStr, pModes;
     char *str;
-    CARD16 major, minor, *modes;
+    CARD16 major, *modes;
 
     bzero(pVbe->memory, sizeof(VbeInfoBlock));
 
@@ -380,7 +380,6 @@ VBEGetVBEInfo(vbeInfoPtr pVbe)
 
     block->VESAVersion = *(CARD16*)(((char*)pVbe->memory) + 4);
     major = (unsigned)block->VESAVersion >> 8;
-    minor = block->VESAVersion & 0xff;
 
     pStr = *(CARD32*)(((char*)pVbe->memory) + 6);
     str = xf86int10Addr(pVbe->pInt10, FARP(pStr));

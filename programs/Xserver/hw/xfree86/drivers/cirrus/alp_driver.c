@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.33 2003/09/24 02:43:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.34tsi Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -1221,7 +1221,6 @@ static Bool
 AlpModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
 	vgaHWPtr hwp;
-	vgaRegPtr vgaReg;
 	CirPtr pCir;
 	int depthcode;
 	int width;
@@ -1315,8 +1314,6 @@ AlpModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* Disable DCLK pin driver, interrupts. */
 	pCir->chip.alp->ModeReg.ExtVga[GR17] |= 0x08;
 	pCir->chip.alp->ModeReg.ExtVga[GR17] &= ~0x04;
-
-	vgaReg = &hwp->ModeReg;
 
 	pCir->chip.alp->ModeReg.ExtVga[HDR] = 0;
 	/* Enable linear mode and high-res packed pixel mode */
@@ -1469,7 +1466,6 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ScrnInfoPtr pScrn;
 	vgaHWPtr hwp;
 	CirPtr pCir;
-	AlpPtr pAlp;
 	int i, ret;
 	int init_picture = 0;
 	VisualPtr visual;
@@ -1488,7 +1484,6 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 	hwp = VGAHWPTR(pScrn);
 	pCir = CIRPTR(pScrn);
-	pAlp = ALPPTR(pCir);
 	
 	/* Map the VGA memory when the primary video */
 	if (!vgaHWMapMem(pScrn))
@@ -1947,7 +1942,7 @@ AlpSaveScreen(ScreenPtr pScreen, int mode)
 static void
 AlpSetClock(CirPtr pCir, vgaHWPtr hwp, int freq)
 {
-	int num, den, ffreq, usemclk, diff, mclk;
+	int num, den, ffreq;
 	CARD8 tmp;
 
 #ifdef ALP_DEBUG
@@ -1958,22 +1953,9 @@ AlpSetClock(CirPtr pCir, vgaHWPtr hwp, int freq)
 	if (!CirrusFindClock(&ffreq, pCir->MaxClock, &num, &den))
 		return;
 
-	/* Calculate the MCLK. */
-	mclk = 14318 * (hwp->readSeq(hwp, 0x1F) & 0x3F) / 8;	/* XXX */
-	/*
-	 * Favour MCLK as VLCK if it matches as good as the found clock,
-	 * or if it is within 0.2 MHz of the request clock. A VCLK close
-	 * to MCLK can cause instability.
-	 */
-	diff = abs(freq - ffreq);
-	if (abs(mclk - ffreq) <= diff + 10 || abs(mclk - freq) <= 200)
-		usemclk = TRUE;
-	else
-		usemclk = FALSE;
-
 #ifdef ALP_DEBUG
-	ErrorF("AlpSetClock: nom=%x den=%x ffreq=%d.%03dMHz usemclk=%x\n",
-		num, den, ffreq / 1000, ffreq % 1000, usemclk);
+	ErrorF("AlpSetClock: nom=%x den=%x ffreq=%d.%03dMHz\n",
+		num, den, ffreq / 1000, ffreq % 1000);
 #endif
 	/* So - how do we use MCLK here for the VCLK ? */
 

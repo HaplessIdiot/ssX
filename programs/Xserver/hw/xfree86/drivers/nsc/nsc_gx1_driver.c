@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.9 2003/08/23 15:03:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.10tsi Exp $ */
 /*
  * $Workfile: nsc_gx1_driver.c $
  * $Revision$
@@ -474,9 +474,9 @@ GX1PreInit(ScrnInfoPtr pScreenInfo, int flags)
    MessageType from;
    int i = 0;
    GeodePtr pGeode;
+#if CFB
    char *mod = NULL;
 
-#if CFB
    char *reqSymbol = NULL;
 #endif
 
@@ -1019,10 +1019,11 @@ GX1PreInit(ScrnInfoPtr pScreenInfo, int flags)
    /* Set the display resolution */
    xf86SetDpi(pScreenInfo, 0, 0);
    GeodeDebug(("GX1PreInit(14)!\n"));
+
+#if CFB
    /* Load bpp-specific modules */
    mod = NULL;
 
-#if CFB
    /* Load bpp-specific modules */
    switch (pScreenInfo->bitsPerPixel) {
    case 8:
@@ -1086,6 +1087,7 @@ GX1PreInit(ScrnInfoPtr pScreenInfo, int flags)
    GeodeDebug(("GX1PreInit(19)!\n"));
    GeodeDebug(("GX1PreInit(20)!\n"));
    GeodeDebug(("GX1PreInit ... done successfully!\n"));
+   (void) from;
    return TRUE;
 }
 
@@ -1258,7 +1260,8 @@ GX1SetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
 #else
       /* sequence might be important */
       gfx_set_tv_display(pGeode->TvParam.wWidth, pGeode->TvParam.wHeight);
-      gfx_set_tv_format(pGeode->TvParam.wStandard, pGeode->TvParam.wType);
+      gfx_set_tv_format((TVStandardType)pGeode->TvParam.wStandard,
+			(GfxOnTVType)pGeode->TvParam.wType);
       gfx_set_tv_output(pGeode->TvParam.wOutput);
       gfx_set_tv_enable(pGeode->TvParam.bState);
 
@@ -2328,7 +2331,7 @@ GX1ValidMode(int scrnIndex, DisplayModePtr pMode, Bool Verbose, int flags)
 #else
 	 ret = gfx_is_tv_display_mode_supported(pMode->CrtcHDisplay,
 						pMode->CrtcVDisplay,
-						pGeode->TvParam.wStandard);
+			(TVStandardType)pGeode->TvParam.wStandard);
 #endif
       }
    } else {

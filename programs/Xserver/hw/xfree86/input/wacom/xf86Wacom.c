@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.35 2003/09/24 02:43:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.36tsi Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -42,7 +42,9 @@
  *
  */
 
+#if 0
 static const char identification[] = "$Identification: 33 $";
+#endif
 
 #include "xf86Version.h"
 

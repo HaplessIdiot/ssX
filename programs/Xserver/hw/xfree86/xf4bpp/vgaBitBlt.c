@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaBitBlt.c,v 1.3 1999/06/06 08:49:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaBitBlt.c,v 1.4tsi Exp $ */
 /* GJA -- span move routines */
 
 
@@ -535,12 +535,9 @@ int h;
   int pad;
   int htmp, wtmp; /* Temporaries for indices over height and width */
   volatile unsigned char tmp; /* Temporary result of the shifts */
-  int bs;
   int bytecnt;
   
   volatile unsigned char *sp, *dp;
-
-  bs = (x1 - x0) & WMASK;
 
   if ( l1 ) {
      bytecnt = (w - (WORDSZ - l1) - r1) >> WSHIFT;

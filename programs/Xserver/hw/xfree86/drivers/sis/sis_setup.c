@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_setup.c,v 1.21tsi Exp $ */
 /*
  * Basic hardware and memory detection
  *
@@ -110,7 +110,7 @@ sisOldSetup(ScrnInfoPtr pScrn)
     int     ramtype[4]  = { 5, 0, 1, 3 };
     int     config;
     int     temp, i;
-    unsigned char sr23, sr33, sr34, sr37;
+    unsigned char sr23, sr33, sr37;
 #if 0
     unsigned char newsr13, newsr28, newsr29;
 #endif
@@ -193,7 +193,6 @@ sisOldSetup(ScrnInfoPtr pScrn)
     if(pSiS->oldChipset >= OC_SIS82204) {
        inSISIDXREG(SISSR, 0x23, sr23);
        inSISIDXREG(SISSR, 0x33, sr33);
-       inSISIDXREG(SISSR, 0x34, sr34);
        if(pSiS->oldChipset >= OC_SIS530A) sr33 &= ~0x08;
        if(sr33 & 0x09) {   	  			/* 5597: Sync DRAM timing | One cycle EDO ram;   */
        		pSiS->Flags |= (sr33 & SYNCDRAM);	/* 6326: Enable SGRam timing | One cycle EDO ram */
@@ -267,7 +266,7 @@ sis300Setup(ScrnInfoPtr pScrn)
     unsigned int    config, pciconfig, sr3a, ramtype;
     unsigned char   temp;
     int		    cpubuswidth;
-    int 	    from = X_PROBED;
+    MessageType     from = X_PROBED;
 
     pSiS->MemClock = SiSMclk(pSiS);
 

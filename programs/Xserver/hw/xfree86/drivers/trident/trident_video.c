@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.42 2003/10/22 11:00:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.43tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -785,7 +785,7 @@ TRIDENTPutImage(
    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
    INT32 x1, x2, y1, y2;
    unsigned char *dst_start;
-   int pitch, new_size, offset, offset2 = 0, offset3 = 0;
+   int new_size, offset, offset2 = 0, offset3 = 0;
    int srcPitch, srcPitch2 = 0, dstPitch;
    int top, left, npixels, nlines, bpp;
    BoxRec dstBox;
@@ -812,7 +812,6 @@ TRIDENTPutImage(
    dstBox.y2 -= pScrn->frameY0;
 
    bpp = pScrn->bitsPerPixel >> 3;
-   pitch = bpp * pScrn->displayWidth;
 
    dstPitch = ((width << 1) + 15) & ~15;
    new_size = ((dstPitch * height) + bpp - 1) / bpp;
@@ -943,7 +942,7 @@ TRIDENTAllocateSurface(
     XF86SurfacePtr surface
 ){
     FBLinearPtr linear;
-    int pitch, fbpitch, size, bpp;
+    int pitch, size, bpp;
     OffscreenPrivPtr pPriv;
 
     if((w > 1024) || (h > 1024))
@@ -952,7 +951,6 @@ TRIDENTAllocateSurface(
     w = (w + 1) & ~1;
     pitch = ((w << 1) + 15) & ~15;
     bpp = pScrn->bitsPerPixel >> 3;
-    fbpitch = bpp * pScrn->displayWidth;
     size = ((pitch * h) + bpp - 1) / bpp;
 
     if(!(linear = TRIDENTAllocateMemory(pScrn, NULL, size)))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcFillRct.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcFillRct.c,v 1.5tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -82,18 +82,10 @@ xf4bppPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int		    numRects;
     int		    n;
     int		    xorg, yorg;
-    mfbPrivGC	*priv;
-/*    int alu; */
-/*    mfbFillAreaProcPtr pfn; */
-/*    PixmapPtr ppix; */
 
     if (!(pGC->planemask & 0x0F)) /* GJA */
 	return;
 
-    priv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
-/*    alu = priv->ropFillArea; */
-/*    pfn = priv->FillArea; */
-/*    ppix = pGC->pRotatedPixmap; */
     prgnClip = pGC->pCompositeClip;
 
     prect = prectInit;

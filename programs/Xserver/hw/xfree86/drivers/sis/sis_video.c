@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.34tsi Exp $ */
 /*
  * Xv driver for SiS 300, 315 and 330 series.
  *
@@ -492,7 +492,7 @@ typedef struct {
     char          brightness;
     unsigned char contrast;
     char 	  hue;
-    char          saturation;
+    short         saturation;
 
     RegionRec    clip;
     CARD32       colorKey;
@@ -1987,9 +1987,7 @@ calc_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
      pOverlay->VUSF = (srcH << 16) / dstH;
      pOverlay->IntBit |= 0x08;
   } else {
-     CARD32 realI;
-
-     I = realI = srcH / dstH;
+     I = srcH / dstH;
      pOverlay->IntBit |= 0x02;
 
      if(I < 2) {
@@ -2115,9 +2113,7 @@ calc_scale_factor_2(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
      pOverlay->VUSF2 = (srcH << 16) / dstH;
      pOverlay->IntBit2 |= 0x08;
   } else {
-     CARD32 realI;
-
-     I = realI = srcH / dstH;
+     I = srcH / dstH;
      pOverlay->IntBit2 |= 0x02;
 
      if(I < 2) {
@@ -2483,7 +2479,7 @@ set_contrast(SISPtr pSiS, CARD8 contrast)
 
 /* 315 series and later only */
 static __inline void
-set_saturation(SISPtr pSiS, char saturation)
+set_saturation(SISPtr pSiS, short saturation)
 {
     CARD8 temp = 0;
 
@@ -4127,9 +4123,7 @@ set_subpict_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
         pOverlay->SubPictVUSF = (srcH << 16) / dstH;
      /* pOverlay->SubPictIntBit |= 0x00; */
   } else {
-        CARD32 realI;
-
-        I = realI = srcH / dstH;
+        I = srcH / dstH;
         pOverlay->SubPictIntBit |= 0x02;
 
         if(I < 2) {

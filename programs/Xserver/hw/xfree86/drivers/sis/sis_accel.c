@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.32tsi Exp $ */
 /*
  * 2D acceleration for SiS5597/5598 and 6326
  *
@@ -259,6 +259,7 @@ static void SiSDisableClipping (ScrnInfoPtr pScrn)
     pSiS->ClipEnabled = FALSE;
 }
 
+#ifdef CTSCE
 static const int sisALUConv[] =
 {
     0x00,       /* dest = 0;            0,      GXclear,        0 */
@@ -298,6 +299,7 @@ static const int sisPatALUConv[] =
     0x5F,       /* dest = ~src|~dest;   DPan,   GXnand,         0xE */
     0xFF,       /* dest = 0xFF;         1,      GXset,          0xF */
 };
+#endif
 
 
 /* Screen to screen copy */

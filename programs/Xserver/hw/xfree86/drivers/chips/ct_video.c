@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_video.c,v 1.14 2003/07/04 16:24:28 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_video.c,v 1.15tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -655,7 +655,7 @@ CHIPSPutImage(
    CHIPSPtr cPtr = CHIPSPTR(pScrn);
    INT32 x1, x2, y1, y2;
    unsigned char *dst_start;
-   int pitch, new_size, offset, offset2 = 0, offset3 = 0;
+   int new_size, offset, offset2 = 0, offset3 = 0;
    int srcPitch, srcPitch2 = 0, dstPitch;
    int top, left, npixels, nlines, bpp;
    BoxRec dstBox;
@@ -684,7 +684,6 @@ CHIPSPutImage(
    dstBox.y2 -= pScrn->frameY0;
 
    bpp = pScrn->bitsPerPixel >> 3;
-   pitch = bpp * pScrn->displayWidth;
 
    dstPitch = ((width << 1) + 15) & ~15;
    new_size = ((dstPitch * height) + bpp - 1) / bpp;
@@ -851,7 +850,7 @@ CHIPSAllocateSurface(
     XF86SurfacePtr surface
 ){
     FBLinearPtr linear;
-    int pitch, fbpitch, size, bpp;
+    int pitch, size, bpp;
     OffscreenPrivPtr pPriv;
 
     if((w > 1024) || (h > 1024))
@@ -860,7 +859,6 @@ CHIPSAllocateSurface(
     w = (w + 1) & ~1;
     pitch = ((w << 1) + 15) & ~15;
     bpp = pScrn->bitsPerPixel >> 3;
-    fbpitch = bpp * pScrn->displayWidth;
     size = ((pitch * h) + bpp - 1) / bpp;
 
     if(!(linear = CHIPSAllocateMemory(pScrn, NULL, size)))

@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.77 2003/10/30 14:38:48 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.78tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -237,7 +237,6 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     int clock = pTrident->currentClock;
     CARD8 protect = 0;
     Bool fullSize = FALSE;
-    Bool isShadow = FALSE;
 
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     vgaRegPtr regp = &hwp->ModeReg;
@@ -405,7 +404,6 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 				|| (pReg->tridentRegs3CE[VertStretch] & 1));
 	    pReg->tridentRegs3CE[CyberControl] |= 0x81;
 	    xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"Shadow on\n");
-	    isShadow = TRUE;
 	} else {
 	    pReg->tridentRegs3CE[CyberControl] &= 0x7E;
 	    xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"Shadow off\n");
@@ -417,7 +415,6 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	
 	if (pTrident->CyberShadow) {
 	    pReg->tridentRegs3CE[CyberControl] &= 0x7E;
-	    isShadow = FALSE;
 	    xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"Forcing Shadow off\n");
 	}
 
@@ -745,7 +742,6 @@ void
 TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    CARD8 temp;
     int vgaIOBase;
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
@@ -760,18 +756,18 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 #endif
     /* Goto New Mode */
     OUTB(0x3C4, 0x0B);
-    temp = INB(0x3C5);
+    (void) INB(0x3C5);
 
     /* Unprotect registers */
     OUTW(0x3C4, ((0xC0 ^ 0x02) << 8) | NewMode1);
     
-    temp = INB(0x3C8);
-    temp = INB(0x3C6);
-    temp = INB(0x3C6);
-    temp = INB(0x3C6);
-    temp = INB(0x3C6);
+    (void) INB(0x3C8);
+    (void) INB(0x3C6);
+    (void) INB(0x3C6);
+    (void) INB(0x3C6);
+    (void) INB(0x3C6);
     OUTB(0x3C6, tridentReg->tridentRegsDAC[0x00]);
-    temp = INB(0x3C8);
+    (void) INB(0x3C8);
 
     OUTW_3x4(CRTCModuleTest);
     OUTW_3x4(LinearAddReg);
@@ -893,13 +889,12 @@ void
 TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    CARD8 temp;
     int vgaIOBase;
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
     /* Goto New Mode */
     OUTB(0x3C4, 0x0B);
-    temp = INB(0x3C5);
+    (void) INB(0x3C5);
 
     INB_3C4(NewMode1);
     if (pTrident->Chipset > PROVIDIA9685)
@@ -987,13 +982,13 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     INB_3CE(MiscExtFunc);
     INB_3CE(MiscIntContReg);
 
-    temp = INB(0x3C8);
-    temp = INB(0x3C6);
-    temp = INB(0x3C6);
-    temp = INB(0x3C6);
-    temp = INB(0x3C6);
+    (void) INB(0x3C8);
+    (void) INB(0x3C6);
+    (void) INB(0x3C6);
+    (void) INB(0x3C6);
+    (void) INB(0x3C6);
     tridentReg->tridentRegsDAC[0x00] = INB(0x3C6);
-    temp = INB(0x3C8);
+    (void) INB(0x3C8);
 
     tridentReg->tridentRegsClock[0x00] = INB(0x3CC);
     if (Is3Dchip) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.131 2003/10/08 15:48:39 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.132tsi Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -3248,7 +3248,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	Size->HRetraceStart = ((tmp + ((xr17 & 0x04) << 9)) + 1) << 3;
 	tmp1 = cPtr->readXR(cPtr, 0x1A);
 	tmp2 = (tmp1 & 0x1F) + ((xr17 & 0x08) << 2) - (tmp & 0x3F);
-	Size->HRetraceEnd = ((((tmp2 < 0) ? (tmp2 + 0x40) : tmp2) << 3)
+	Size->HRetraceEnd = ((((tmp2 & 0x080u) ? (tmp2 + 0x40) : tmp2) << 3)
 		+ Size->HRetraceStart);
 	tmp1 = cPtr->readXR(cPtr, 0x65);
 	tmp = cPtr->readXR(cPtr, 0x68);
@@ -5078,7 +5078,10 @@ chipsCalcClock(ScrnInfoPtr pScrn, int Clock, unsigned char *vclk)
     int M, N, P = 0, PSN = 0, PSNx = 0;
 
     int bestM = 0, bestN = 0, bestP = 0, bestPSN = 0;
-    double bestError, abest = 42, bestFout = 0;
+    double abest = 42;
+#ifdef DEBUG
+    double bestFout = 0;
+#endif
     double target;
 
     double Fvco, Fout;
@@ -5186,12 +5189,13 @@ chipsCalcClock(ScrnInfoPtr pScrn, int Clock, unsigned char *vclk)
 		    aerror = (error < 0) ? -error : error;
 		    if (aerror < abest) {
 			abest = aerror;
-			bestError = error;
 			bestM = M;
 			bestN = N;
 			bestP = P;
 			bestPSN = PSN;
+#ifdef DEBUG
 			bestFout = Fout;
+#endif
 		    }
 		}
 	    }

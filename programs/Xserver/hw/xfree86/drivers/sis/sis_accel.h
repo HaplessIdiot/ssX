@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.h,v 1.7tsi Exp $ */
 /*
  * 2D acceleration for 5597/5598 and 6326
  * Definitions for the SIS engine communication
@@ -116,6 +116,7 @@ const int sisReg32MMIO[] = {
   unsigned long temp; \
   MMIO_OUT16(pSiS->IOBase, BR(10) + 2, op); \
   temp = MMIO_IN32(pSiS->IOBase, BR(10)); \
+  (void)temp; \
   }
 
 /* set foreground color and fg ROP */

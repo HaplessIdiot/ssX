@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.22 2003/08/24 19:58:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.23tsi Exp $ */
 /*
  * Copyright (c) 1999-2003 by The XFree86 Project, Inc.
  *
@@ -43,6 +43,36 @@
 #define MSE_MISC	0x20		/* The OS layer will identify the
 					 * specific protocol names that are
 					 * supported for this class. */
+
+/* Mouse Protocol IDs. */
+typedef enum {
+    PROT_UNKNOWN = -2,
+    PROT_UNSUP = -1,		/* protocol is not supported */
+    PROT_MS = 0,
+    PROT_MSC,
+    PROT_MM,
+    PROT_LOGI,
+    PROT_LOGIMAN,
+    PROT_MMHIT,
+    PROT_GLIDE,
+    PROT_IMSERIAL,
+    PROT_THINKING,
+    PROT_ACECAD,
+    PROT_VALUMOUSESCROLL,
+    PROT_PS2,
+    PROT_GENPS2,
+    PROT_IMPS2,
+    PROT_EXPPS2,
+    PROT_THINKPS2,
+    PROT_MMPS2,
+    PROT_GLIDEPS2,
+    PROT_NETPS2,
+    PROT_NETSCPS2,
+    PROT_BM,
+    PROT_AUTO,
+    PROT_SYSMOUSE,
+    PROT_NUMPROTOS	/* This must always be last. */
+} MouseProtocolID;
 
 struct _MouseDevRec;
 
@@ -180,8 +210,8 @@ typedef struct _MouseDevRec {
     DeviceIntPtr	device;
     const char *	mseDevice;
     const char *	protocol;
-    int			protocolID;
-    int                 oldProtocolID; /* hack */
+    MouseProtocolID	protocolID;
+    MouseProtocolID	oldProtocolID; /* hack */
     int			class;
     int			mseModel;
     int			baudRate;

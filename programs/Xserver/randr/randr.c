@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.19 2003/02/08 03:52:30 dawes Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.20tsi Exp $
  *
  * Copyright © 2000, Compaq Computer Corporation, 
  * Copyright © 2002, Hewlett Packard, Inc.
@@ -73,8 +73,10 @@ static int SProcRRQueryVersion (ClientPtr pClient);
     real->mem = priv->mem; \
 }
 
+#if 0
 static CARD8	RRReqCode;
 static int	RRErrBase;
+#endif
 static int	RREventBase;
 static RESTYPE ClientType, EventType; /* resource types for event masks */
 static int	RRClientPrivateIndex;
@@ -299,8 +301,10 @@ RRExtensionInit (void)
 			     RRResetProc, StandardMinorOpcode);
     if (!extEntry)
 	return;
+#if 0
     RRReqCode = (CARD8) extEntry->base;
     RRErrBase = extEntry->errorBase;
+#endif
     RREventBase = extEntry->eventBase;
     EventSwapVector[RREventBase + RRScreenChangeNotify] = (EventSwapPtr) 
       SRRScreenChangeNotifyEvent;

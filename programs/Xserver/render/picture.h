@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.h,v 1.19 2003/06/12 14:12:39 eich Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.h,v 1.20tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -170,7 +170,8 @@ typedef __int64		xFixed_32_32;
       defined(ia64) || defined(__ia64__) || \
       defined(__sparc64__) || \
       defined(__s390x__) || \
-      defined(AMD64) || defined (__AMD64__)
+      defined(AMD64) || defined (__AMD64__) || \
+      (defined(sgi) && (_MIPS_SZLONG == 64))
 typedef long		xFixed_32_32;
 # else
 #  if defined(__GNUC__) && \

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/emulTile.c,v 1.2 1998/07/25 16:59:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/emulTile.c,v 1.3tsi Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -178,7 +178,6 @@ register int x0, y0, w, h ;
 int xSrc ;
 int ySrc ;
 {
-ScreenPtr pScreen ;
 int xOffset ;
 int yOffset ;
 int width, height;
@@ -186,7 +185,6 @@ int width, height;
 TRACE( ( "xf4bppTileRect(pTile=x%x,alu=x%x,planes=x%02x,x0=%d,y0=%d,w=%d,h=%d,xSrc=%d,ySrc=%d\n",
 		pTile, alu, planes, x0, y0, w, h, xSrc, ySrc ) ) ;
 
-     pScreen = pTile->drawable.pScreen ;
      switch ( alu ) {
 	case GXclear:		/* 0x0 Zero 0 */
 	case GXinvert:		/* 0xa NOT dst */

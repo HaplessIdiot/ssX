@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.44tsi Exp $ */
 /*
  * DAC helper functions (Save/Restore, MemClk, etc)
  *
@@ -186,7 +186,10 @@ SiSCalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD, unsigned int *vclk)
     SISPtr pSiS = SISPTR(pScrn);
     int M, N, P , PSN, VLD , PSNx ;
     int bestM=0, bestN=0, bestP=0, bestPSN=0, bestVLD=0;
-    double bestError, abest = 42.0, bestFout;
+    double abest = 42.0;
+#ifdef DEBUG
+    double bestFout;
+#endif
     double target;
     double Fvco, Fout;
     double error, aerror;
@@ -255,13 +258,14 @@ SiSCalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD, unsigned int *vclk)
          aerror = (error < 0) ? -error : error;
          if(aerror < abest) {
             abest = aerror;
-            bestError = error;
             bestM = M;
             bestN = N;
             bestP = P;
             bestPSN = PSN;
             bestVLD = VLD;
+#ifdef DEBUG
             bestFout = Fout;
+#endif
          }
      }
 
@@ -311,13 +315,14 @@ SiSCalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD, unsigned int *vclk)
                     aerror = (error < 0) ? -error : error;
                     if(aerror < abest) {
                        abest = aerror;
-                       bestError = error;
                        bestM = M;
                        bestN = N;
                        bestP = P;
                        bestPSN = PSN;
                        bestVLD = VLD;
+#ifdef DEBUG
                        bestFout = Fout;
+#endif
                     }
 #ifdef TWDEBUG
                     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,

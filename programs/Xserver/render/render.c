@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.25 2003/01/15 03:45:26 dawes Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.27tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -186,7 +186,9 @@ int	(*SProcRenderVector[RenderNumberRequests])(ClientPtr) = {
 static void
 RenderResetProc (ExtensionEntry *extEntry);
     
+#if 0
 static CARD8	RenderReqCode;
+#endif
 int	RenderErrBase;
 int	RenderClientPrivateIndex;
 
@@ -231,7 +233,9 @@ RenderExtensionInit (void)
 			     RenderResetProc, StandardMinorOpcode);
     if (!extEntry)
 	return;
+#if 0
     RenderReqCode = (CARD8) extEntry->base;
+#endif
     RenderErrBase = extEntry->errorBase;
 }
 

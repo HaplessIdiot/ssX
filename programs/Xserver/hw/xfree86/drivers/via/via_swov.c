@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_swov.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_swov.c,v 1.5tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -69,7 +69,6 @@ unsigned long VIAVidCreateSurface(ScrnInfoPtr pScrn, LPDDSURFACEDESC lpDDSurface
 {
     VIAPtr  pVia = VIAPTR(pScrn);
     unsigned long   dwWidth, dwHeight, dwPitch=0;
-    unsigned long   dwBackBufferCount;
     unsigned long   dwRet=PI_OK;
     unsigned long   dwAddr;
     unsigned long   HQVFBSIZE = 0, SWFBSIZE = 0, SWOVFBSIZE = 0;
@@ -115,7 +114,6 @@ unsigned long VIAVidCreateSurface(ScrnInfoPtr pScrn, LPDDSURFACEDESC lpDDSurface
             } 
             
 
-            dwBackBufferCount = lpDDSurfaceDesc->dwBackBufferCount;
             dwWidth  = lpDDSurfaceDesc->dwWidth;
             dwHeight = lpDDSurfaceDesc->dwHeight;
             dwPitch  = ALIGN_TO_32_BYTES(dwWidth)*2;
@@ -357,7 +355,6 @@ unsigned long VIAVidCreateSurface(ScrnInfoPtr pScrn, LPDDSURFACEDESC lpDDSurface
             } 
 
 
-            dwBackBufferCount = lpDDSurfaceDesc->dwBackBufferCount;
             dwWidth  = lpDDSurfaceDesc->dwWidth;
             dwHeight = lpDDSurfaceDesc->dwHeight;
             dwPitch  = ALIGN_TO_32_BYTES(dwWidth);
@@ -1851,7 +1848,7 @@ unsigned long VIAVidUpdateOverlay(ScrnInfoPtr pScrn, LPDDUPDATEOVERLAY lpUpdate)
     unsigned long dwVideoFlag=0;
     unsigned long dwColorKey=0, dwChromaKey=0;
     /*DDUPDATEOVERLAY UpdateOverlayTemp;*/
-    int   nDstTop, nDstBottom, nDstLeft, nDstRight, nTopBak=0;
+    int   nDstTop, nDstBottom, nDstLeft, nDstRight;
 
     DBG_DD(ErrorF("// VIAVidUpdateOverlay: %08lx\n", dwFlags));
     
@@ -1998,10 +1995,7 @@ unsigned long VIAVidUpdateOverlay(ScrnInfoPtr pScrn, LPDDUPDATEOVERLAY lpUpdate)
             lpUpdate->rSrc.right = pVia->swov.overlayRecordV1.dwV1OriWidth;
 
         if (nDstTop<0)
-        {
            lpUpdate->rSrc.top   =  (((-nDstTop) * pVia->swov.overlayRecordV1.dwV1OriHeight) + ((nDstBottom-nDstTop)>>1))/ (nDstBottom-nDstTop);
-           nTopBak = (-nDstTop);
-        }
         else
            lpUpdate->rSrc.top   = 0;
 

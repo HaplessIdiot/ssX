@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.110 2003/10/30 17:36:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.111tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1404,7 +1404,6 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 {
     RADEONInfoPtr  info            = RADEONPTR(pScrn);
     unsigned long  tmp, i;
-    unsigned char *RADEONMMIO;
 
     if (!(info->VBIOS = xalloc(RADEON_VBIOS_SIZE))) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -1446,24 +1445,25 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 
     {
 	RADEONEntPtr pRADEONEnt = RADEONEntPriv(pScrn);
-	RADEONMMIO = info->MMIO;
 
 	info->Clone = FALSE;
 	info->CloneType = MT_NONE;
 
 	if(info->HasCRTC2) {   
 	    if(info->IsSecondary) {               
-		if(!(info->DisplayType = pRADEONEnt->MonType2)) return FALSE;
+		info->DisplayType = (RADEONMonitorType)pRADEONEnt->MonType2;
+		if(info->DisplayType == MT_NONE) return FALSE;
 	    } else {
-		info->DisplayType = pRADEONEnt->MonType1; 
+		info->DisplayType = (RADEONMonitorType)pRADEONEnt->MonType1;
 
 		if(!pRADEONEnt->HasSecondary) {
-		    if ((info->CloneType = pRADEONEnt->MonType2))
+		    info->CloneType = (RADEONMonitorType)pRADEONEnt->MonType2;
+		    if (info->CloneType != MT_NONE)
 			info->Clone = TRUE;
 		} 
 	    }
 	} else {
-	    info->DisplayType = pRADEONEnt->MonType1; 
+	    info->DisplayType = (RADEONMonitorType)pRADEONEnt->MonType1;
 	}
 
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "%s Display == Type %d\n",
@@ -1615,8 +1615,6 @@ static Bool RADEONProbePLLParameters(ScrnInfoPtr pScrn)
     long start_secs, start_usecs, stop_secs, stop_usecs, total_usecs;
     int i;
 
-    tmp = INREG(RADEON_DEVICE_ID);
- 
     for(i=0; i<1000000; i++)
 	if (((INREG(RADEON_CRTC_VLINE_CRNT_VLINE) >> 16) & 0x3ff) == 0)
 	    break;
@@ -5932,24 +5930,22 @@ static Bool RADEONInitCrtcRegisters(ScrnInfoPtr pScrn, RADEONSavePtr save,
     int  hsync_wid;
     int  hsync_fudge;
     int  vsync_wid;
-    int  bytpp;
     int  hsync_fudge_default[] = { 0x00, 0x12, 0x09, 0x09, 0x06, 0x05 };
     int  hsync_fudge_fp[]      = { 0x02, 0x02, 0x00, 0x00, 0x05, 0x05 };
 
     switch (info->CurrentLayout.pixel_code) {
-    case 4:  format = 1; bytpp = 0; break;
-    case 8:  format = 2; bytpp = 1; break;
-    case 15: format = 3; bytpp = 2; break;      /*  555 */
-    case 16: format = 4; bytpp = 2; break;      /*  565 */
-    case 24: format = 5; bytpp = 3; break;      /*  RGB */
-    case 32: format = 6; bytpp = 4; break;      /* xRGB */
+    case 4:  format = 1; break;
+    case 8:  format = 2; break;
+    case 15: format = 3; break;      /*  555 */
+    case 16: format = 4; break;      /*  565 */
+    case 24: format = 5; break;      /*  RGB */
+    case 32: format = 6; break;      /* xRGB */
     default:
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "Unsupported pixel depth (%d)\n",
 		   info->CurrentLayout.bitsPerPixel);
 	return FALSE;
     }
-    RADEONTRACE(("Format = %d (%d bytes per pixel)\n", format, bytpp));
 
     if ((info->DisplayType == MT_DFP) ||
 	(info->DisplayType == MT_LCD)) {
@@ -6090,23 +6086,21 @@ static Bool RADEONInitCrtc2Registers(ScrnInfoPtr pScrn, RADEONSavePtr save,
     int  hsync_wid;
     int  hsync_fudge;
     int  vsync_wid;
-    int  bytpp;
     int  hsync_fudge_default[] = { 0x00, 0x12, 0x09, 0x09, 0x06, 0x05 };
 
     switch (info->CurrentLayout.pixel_code) {
-    case 4:  format = 1; bytpp = 0; break;
-    case 8:  format = 2; bytpp = 1; break;
-    case 15: format = 3; bytpp = 2; break;      /*  555 */
-    case 16: format = 4; bytpp = 2; break;      /*  565 */
-    case 24: format = 5; bytpp = 3; break;      /*  RGB */
-    case 32: format = 6; bytpp = 4; break;      /* xRGB */
+    case 4:  format = 1; break;
+    case 8:  format = 2; break;
+    case 15: format = 3; break;      /*  555 */
+    case 16: format = 4; break;      /*  565 */
+    case 24: format = 5; break;      /*  RGB */
+    case 32: format = 6; break;      /* xRGB */
     default:
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "Unsupported pixel depth (%d)\n",
 		   info->CurrentLayout.bitsPerPixel);
 	return FALSE;
     }
-    RADEONTRACE(("Format = %d (%d bytes per pixel)\n", format, bytpp));
 
     hsync_fudge = hsync_fudge_default[format-1];
 

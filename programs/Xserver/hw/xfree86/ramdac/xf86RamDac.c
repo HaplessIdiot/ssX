@@ -23,7 +23,7 @@
  *
  * Generic RAMDAC access routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.c,v 1.5 1999/01/14 13:05:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.c,v 1.6tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -69,8 +69,6 @@ RamDacHelperDestroyInfoRec(RamDacHelperRecPtr infoRec)
 Bool
 RamDacInit(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPriv)
 {
-    RamDacHWRecPtr ramdacHWPtr;
-    RamDacRegRecPtr ramdacReg;
     RamDacScreenRecPtr ramdacScrPtr;
 
     /*
@@ -78,10 +76,8 @@ RamDacInit(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPriv)
      */
     if (!RamDacGetRec(pScrn))
 	return FALSE;
-    ramdacHWPtr = RAMDACHWPTR(pScrn);
-    ramdacReg = &ramdacHWPtr->ModeReg;
-    ramdacScrPtr = ((RamDacScreenRecPtr)
-			(pScrn)->privates[RamDacGetScreenIndex()].ptr);
+    ramdacScrPtr =
+	((RamDacScreenRecPtr) (pScrn)->privates[RamDacGetScreenIndex()].ptr);
     ramdacScrPtr->RamDacRec = ramdacPriv;
 
     return(TRUE);
@@ -100,8 +96,6 @@ RamDacGetRecPrivate()
 Bool
 RamDacGetRec(ScrnInfoPtr scrp)
 {
-    RamDacRegRecPtr regp;
-    
     RamDacGetRecPrivate();
     /*
      * New privates are always set to NULL, so we can check if the allocation
@@ -116,8 +110,6 @@ RamDacGetRec(ScrnInfoPtr scrp)
 					xnfcalloc(sizeof(RamDacHWRec), 1);
     scrp->privates[RamDacScreenPrivateIndex].ptr = 
 					xnfcalloc(sizeof(RamDacScreenRec), 1);
-    /* Does this really belong here? */
-    regp = &((RamDacHWRecPtr)scrp->privates[RamDacHWPrivateIndex].ptr)->ModeReg;
     
     return TRUE;
 }

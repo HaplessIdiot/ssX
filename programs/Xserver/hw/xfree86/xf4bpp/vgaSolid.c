@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaSolid.c,v 1.4 2001/08/01 00:44:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaSolid.c,v 1.5tsi Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -117,7 +117,7 @@ register const unsigned int notZero = ((unsigned char)(~0x0));
 register int tmp ;
 
 #define SINGLE_STORE \
-    tmp = *( (VgaMemoryPtr) destination ) ; \
+    tmp = *( (VgaMemoryPtr) destination ) ;  (void)tmp; \
     ( *( (VgaMemoryPtr) destination ) = notZero ) ; \
     destination++; stop_count-- ;
 
@@ -282,6 +282,7 @@ if ((tmp = x0 & 07)) {
 		for ( tmp = ly;
 		      tmp-- ; ) {
 			tmp3 = *( (VgaMemoryPtr) dst ) ;
+			(void)tmp3;
 			*( (VgaMemoryPtr) dst ) = tmp2 ;
 			dst += BYTES_PER_LINE(pWin);
 		}
@@ -293,6 +294,7 @@ if ((tmp = x0 & 07)) {
 	for ( tmp = ly;
 	      tmp-- ; ) {
 		tmp3 = *( (VgaMemoryPtr) dst ) ;
+		(void)tmp3;
 		*( (VgaMemoryPtr) dst ) = tmp2 ;
 		dst += BYTES_PER_LINE(pWin);
 	}
@@ -333,6 +335,7 @@ if ((tmp = BIT_OFFSET(lx))) { /* x0 Now Is Byte Aligned */
 		for ( tmp = ly; 
 		      tmp-- ; ) {
 			tmp3 = *( (VgaMemoryPtr) dst ) ;
+			(void)tmp3;
 			*( (VgaMemoryPtr) dst ) = tmp2 ;
 			dst += BYTES_PER_LINE(pWin);
 		}
@@ -344,6 +347,7 @@ if ((tmp = BIT_OFFSET(lx))) { /* x0 Now Is Byte Aligned */
 	for ( tmp = ly; 
 	      tmp-- ; ) {
 		tmp3 = *( (VgaMemoryPtr) dst ) ;
+		(void)tmp3;
 		*( (VgaMemoryPtr) dst ) = tmp2 ;
 		dst += BYTES_PER_LINE(pWin) ;
 	}

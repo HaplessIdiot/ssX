@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.160 2003/09/24 02:43:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.161tsi Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1484,7 +1484,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
         	    int glintcopro = pciTag(pGlint->MultiPciInfo[0]->bus, 
 						pGlint->MultiPciInfo[0]->device,
 			    			pGlint->MultiPciInfo[0]->func);
-		    int temp, base3copro, offset;
+		    int base3copro, offset;
 
     		    if( (basedelta & 0x20000) ^ (basecopro & 0x20000) ) {
  			if ((pGlint->MultiChip == PCI_CHIP_PERMEDIA) ||
@@ -1509,18 +1509,18 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	 		 * read value
 	 		 * write new value
 	 		 */
-			temp = pciReadLong(glintdelta, 0x10);
+			(void) pciReadLong(glintdelta, 0x10);
 			pciWriteLong(glintdelta, 0x10, 0xffffffff);
-			temp = pciReadLong(glintdelta, 0x10);
+			(void) pciReadLong(glintdelta, 0x10);
 			pciWriteLong(glintdelta, 0x10, base3copro);
 
 			/*
 	 		 * additionally,sometimes we see the baserom which might
 	 		 * confuse the chip, so let's make sure that is disabled
 	 		 */
-			temp = pciReadLong(glintcopro, 0x30);
+			(void) pciReadLong(glintcopro, 0x30);
 			pciWriteLong(glintcopro, 0x30, 0xffffffff);
-			temp = pciReadLong(glintcopro, 0x30);
+			(void) = pciReadLong(glintcopro, 0x30);
 			pciWriteLong(glintcopro, 0x30, 0);
 
 			/*
@@ -1632,11 +1632,10 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
          (pGlint->numMultiDevices == 2) ) {
 	CARD32 chipconfig;
 	CARD32 size = 0;
-	CARD32 temp;
 
 	GLINTMapMem(pScrn);
 
-	temp = GLINT_READ_REG(GCSRAperture);
+	(void) GLINT_READ_REG(GCSRAperture);
 	GLINT_SLOW_WRITE_REG(GCSRSecondaryGLINTMapEn, GCSRAperture);
 
 	chipconfig = GLINT_READ_REG(GChipConfig);

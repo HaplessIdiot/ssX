@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/dummy/dummy_driver.c,v 1.4 2003/08/23 15:02:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/dummy/dummy_driver.c,v 1.5tsi Exp $ */
 
 /*
  * Copyright 2002, SuSE Linux AG, Author: Egbert Eich
@@ -540,7 +540,6 @@ DUMMYScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     DUMMYPtr dPtr;
     int ret;
     VisualPtr visual;
-    int height, width;
     
     /*
      * we need to get the ScrnInfoRec for this screen, so let's allocate
@@ -580,9 +579,6 @@ DUMMYScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * Call the framebuffer layer's ScreenInit function, and fill in other
      * pScreen fields.
      */
-    width = pScrn->virtualX;
-    height = pScrn->virtualY;
-    
     ret = fbScreenInit(pScreen, dPtr->FBBase,
 			    pScrn->virtualX, pScrn->virtualY,
 			    pScrn->xDpi, pScrn->yDpi,

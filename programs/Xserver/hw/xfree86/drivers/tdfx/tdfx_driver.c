@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.103 2003/10/08 15:48:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.104tsi Exp $ */
 
 /*
  * Authors:
@@ -600,7 +600,10 @@ static void
 TDFXInitChips(ScrnInfoPtr pScrn)
 {
   TDFXPtr pTDFX;
-  int i, v;
+  int i;
+#if 0
+  int v;
+#endif
   unsigned long cfgbits, initbits;
   unsigned long mem0base, mem1base, mem0size, mem0bits, mem1size, mem1bits;
 
@@ -633,8 +636,8 @@ TDFXInitChips(ScrnInfoPtr pScrn)
   for (i=0; i<pTDFX->numChips; i++) {
     initbits|=BIT(10);
     pciWriteLong(pTDFX->PciTag[i], CFG_INIT_ENABLE, initbits);
-    v=pciReadWord(pTDFX->PciTag[i], CFG_PCI_COMMAND);
 #if 0
+    v=pciReadWord(pTDFX->PciTag[i], CFG_PCI_COMMAND);
     if (!i)
       pciWriteWord(pTDFX->PciTag[i], CFG_PCI_COMMAND, v|0x3);
     else
@@ -1619,19 +1622,14 @@ TDFXSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode) {
   TDFXPtr pTDFX;
   TDFXRegPtr tdfxReg;
   vgaRegPtr pVga;
-  int hbs, hbe, vbs, vbe, hse, wd;
-  int hd, hss, ht, vss, vt, vd, vse;
+  int hbs, hbe, vbs, vbe, hse;
+  int hd, hss, ht, vt, vd;
 
   TDFXTRACE("TDFXSetMode start\n");
 
   pTDFX = TDFXPTR(pScrn);
   tdfxReg = &pTDFX->ModeReg;
   pVga = &VGAHWPTR(pScrn)->ModeReg;
-
-  if (pTDFX->cpp==4)
-    wd = pScrn->displayWidth>>1;
-  else
-    wd = pScrn->displayWidth>>(4-pTDFX->cpp);
 
   /* Tell the board we're using a programmable clock */
   pVga->MiscOutReg |= 0xC;
@@ -1645,8 +1643,6 @@ TDFXSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode) {
   hbe = (mode->CrtcHBlankEnd>>3)-1;
 
   vd = mode->CrtcVDisplay-1;
-  vss = mode->CrtcVSyncStart;
-  vse = mode->CrtcVSyncEnd;
   vt = mode->CrtcVTotal-2;
   vbs = mode->CrtcVBlankStart-1;
   vbe = mode->CrtcVBlankEnd-1;

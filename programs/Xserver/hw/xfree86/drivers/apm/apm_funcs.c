@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.16 2002/01/25 21:55:55 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.18tsi Exp $ */
 
 #define FASTER
 #ifndef PSZ
@@ -1364,7 +1364,7 @@ A(FillImageWriteRects)(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
 			PixmapPtr pPix)
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-    int x, y, phaseY, phaseX, phaseXB, height, width, blit_w;
+    int x, y, phaseY, phaseX, height, width, blit_w;
     int pHeight = pPix->drawable.height;
     int pWidth = pPix->drawable.width;
     int depth = pPix->drawable.depth;
@@ -1404,7 +1404,6 @@ A(FillImageWriteRects)(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
 	    if(!width) break;
 	    x += blit_w;
 	    phaseX = (phaseX + blit_w) % pWidth;
-	    phaseXB = phaseX * pPix->drawable.bitsPerPixel / 8;
 	}
 	pBox++;
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.37 2001/07/25 15:05:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.40tsi Exp $ */
 /*
  * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -248,8 +248,11 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 	 * then used by a CopyArea function with a complex ROP.
 	 */
 	infoPtr->SubsequentSolidFillRect = CTNAME(24SubsequentSolidFillRect);
+#if 0
+	/* How can an unsigned quantity be less than zero? */
         if (cAcl->ScratchAddress < 0)
 	    infoPtr->ScreenToScreenCopyFlags |= GXCOPY_ONLY;
+#endif
 #endif
         break;
 #ifdef CHIPS_HIQV

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbimggblt.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbimggblt.c,v 1.7tsi Exp $ */
 
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
@@ -352,7 +352,9 @@ doImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase,infop)
 	int glyphRow;		/* first row of glyph not wholly
 				   clipped out */
 	int glyphCol;		/* leftmost visible column of glyph */
+#if GETLEFTBITS_ALIGNMENT > 1
 	int getWidth;		/* bits to get from glyph */
+#endif
 
 	if(!(ppos = (TEXTPOS *)ALLOCATE_LOCAL(nglyph * sizeof(TEXTPOS))))
 	    return;
@@ -452,7 +454,9 @@ doImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase,infop)
 
 		glyphCol = (leftEdge - ppos[i].xpos) -
 			   (pci->metrics.leftSideBearing);
+#if GETLEFTBITS_ALIGNMENT > 1
 		getWidth = w + glyphCol;
+#endif
 		xoff = xchar + (leftEdge - ppos[i].xpos);
 		if (xoff > PLST)
 		{

@@ -40,7 +40,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xf86Fpit.c,v 1.2 2002/11/22 03:37:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/fpit/xf86Fpit.c,v 1.3tsi Exp $ */
 
 #include <xf86Version.h>
 
@@ -173,7 +173,7 @@ static void xf86FpitReadInput(LocalDevicePtr local)
 {
 	FpitPrivatePtr priv = (FpitPrivatePtr) local->private;
 	int len, loop, found;
-	int is_core_pointer, is_absolute;
+	int is_core_pointer;
 	int x, y, buttons, prox;
 	DeviceIntPtr device;
 	/* Read data into buffer */
@@ -251,7 +251,6 @@ static void xf86FpitReadInput(LocalDevicePtr local)
 	buttons = (priv->fpitData[loop] & BUTTON_BITS);
 	priv->fpitIndex = 0;
 	device = local->dev;
-	is_absolute = 1;
 	is_core_pointer = xf86IsCorePointer(device);
 	/* coordonates are ready we can send events */
 	if (prox) {

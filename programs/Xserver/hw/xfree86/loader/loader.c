@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.68 2003/10/02 13:30:03 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.69tsi Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -950,7 +950,6 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP ** ppLookup)
     int modtype;
     int i;
     int numsyms = 0;
-    int resetoff;
 
     /* lookup_ret = xf86loadermalloc(sizeof (LOOKUP *)); */
 
@@ -963,7 +962,6 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP ** ppLookup)
 	ErrorF("ARCHIVELoadModule: wrong magic!!\n");
 	return NULL;
     }
-    resetoff = SARMAG;
 #else
     read(arfd, &fhdr, FL_HSZ);
 
@@ -971,7 +969,6 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP ** ppLookup)
 	ErrorF("ARCHIVELoadModule: wrong magic!!\n");
 	return NULL;
     }
-    resetoff = FL_HSZ;
 #endif /* __powerpc__ && Lynx */
 
 #ifdef DEBUGAR
@@ -1353,7 +1350,7 @@ int
 LoaderCheckUnresolved(int delay_flag)
 {
     int i, ret = 0;
-    LoaderResolveOptions delayFlag = delay_flag;
+    LoaderResolveOptions delayFlag = (LoaderResolveOptions)delay_flag;
 
     LoaderResolveSymbols();
 
