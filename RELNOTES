@@ -1,4 +1,4 @@
-                  Release Notes for XFree86[tm] 4.3.99.902
+                  Release Notes for XFree86[tm] 4.3.99.903
 
                           The XFree86 Project, Inc
 
@@ -7,7 +7,7 @@
                                   Abstract
 
      This document contains some information about features present in
-     XFree86 4.3.99.902 and their status.
+     XFree86 4.3.99.903 and their status.
 
 1.  Introduction to the 4.x Release Series
 
@@ -16,8 +16,8 @@ XFree86 4 represents a significant redesign of the XFree86 X server.  Not all
 of the hardware drivers from 3.3.x have been ported to 4.x yet, but con-
 versely, 4.x has support for a lot of hardware that is not supported in
 3.3.x.  Our Driver Status document summarizes how the hardware driver support
-compares between 3.3.6 and 4.3.99.902.  Please check there first before down-
-loading 4.3.99.902.
+compares between 3.3.6 and 4.3.99.903.  Please check there first before down-
+loading 4.3.99.903.
 
 XFree86 4.4 introduces an automatic configuration mechanism for the XFree86
 server.  This makes it possible to start XFree86 in a usable way without
@@ -315,7 +315,7 @@ grams/Xserver/hw/xfree86/CHANGELOG?rev=HEAD>.
 
 3.1  Video Drivers
 
-XFree86 4.3.99.902 includes the following video drivers:
+XFree86 4.3.99.903 includes the following video drivers:
 
 +--------------+--------------------------+---------------------------------------------+
 |Driver Name   | Description              | Further Information                         |
@@ -371,7 +371,7 @@ Drivers marked with (-) are for Linux/mips only.
 Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
 listed above. Further information can be found in README.Darwin.
 
-XFree86 4.3.99.902 includes the following input drivers:
+XFree86 4.3.99.903 includes the following input drivers:
 
 3.2  Input Drivers
 
@@ -412,7 +412,7 @@ either have one or more video and input drivers linked in statically, or,
 more usually, dynamically load the video drivers, input drivers, and other
 modules that are needed.
 
-XFree86 4.3.99.902 has X server support for most UNIX® and UNIX-like operat-
+XFree86 4.3.99.903 has X server support for most UNIX® and UNIX-like operat-
 ing systems on Intel/x86 platforms, plus support for Linux and some BSD OSs
 on Alpha, PowerPC, IA-64, AMD64, Sparc, and Mips platforms, and for Darwin on
 PowerPC.  Work on support for additional architectures and operating systems
@@ -433,7 +433,7 @@ or even OS/2.
 One of the main benefits of this loader is that when modules are updated,
 they do not need to be recompiled for every different operating system.
 
-The loader in version 4.3.99.902 has support for Intel (x86), Alpha and Pow-
+The loader in version 4.3.99.903 has support for Intel (x86), Alpha and Pow-
 erPC platforms.  It also has preliminary support for Sparc platforms.
 
 The X server makes use of modules for video drivers, X server extensions,
@@ -516,7 +516,7 @@ Known problems:
 
 4.7  DGA version 2
 
-DGA 2.0 is included in 4.3.99.902.  Documentation for the client libraries
+DGA 2.0 is included in 4.3.99.903.  Documentation for the client libraries
 can be found in the XDGA(3) man page.  A good degree of backwards compatibil-
 ity with version 1.0 is provided.
 
@@ -571,7 +571,7 @@ anti-aliased text and geometric objects as well as perform translucent image
 overlays and other image operations not possible with the core X rendering
 system.
 
-XFree86 4.3.99.902 provides a partial implementation of Render sufficient for
+XFree86 4.3.99.903 provides a partial implementation of Render sufficient for
 drawing anti-aliased text and image composition.  Still to be implemented are
 geometric primitives and affine transformation of images.
 
@@ -606,12 +606,12 @@ the Xft(3) man page.
 
 4.11.2  FreeType support in Xft
 
-XFree86 4.3.99.902 includes sources for FreeType version 2.1.4, and, by
+XFree86 4.3.99.903 includes sources for FreeType version 2.1.4, and, by
 default, they are built and installed automatically.
 
 4.11.3  Application Support For Anti-Aliased Text
 
-Only three applications have been modified in XFree86 4.3.99.902 to work with
+Only three applications have been modified in XFree86 4.3.99.903 to work with
 the Render extension and the Xft and FreeType libraries to provide anti-
 aliased text.  Xterm, xditview and x11perf.  Migration of other applications
 may occur in future releases.
@@ -754,7 +754,7 @@ site <URL:http://www.urwpp.de>.
 THIS IS A SAMPLE/DRAFT OF HOW A CREDITS SECTION IN THE XFREE86 RELEASE NOTES
 MIGHT LOOK
 
-This section lists the credits for the XFree86 4.3.99.902 release.  For a
+This section lists the credits for the XFree86 4.3.99.903 release.  For a
 more detailed breakdown, refer to the CHANGELOG file in the XFree86 source
 tree, the cvs-commit archives <URL:http://www.mail-archive.com/cvs-com-
 mit@xfree86.org/maillist.html>, or the 'cvs log' information for individual
@@ -773,7 +773,7 @@ source files.
                         Thomas Winischhofer.
 
                   New VIA video driver:
-                        VIA, Alan Cox, Luc Verhaegen.
+                        VIA, Alan Cox, Luc Verhaegen, Thomas Hellström.
 
                   Intel 'i810' driver fixes and stability improvements:
                         Egbert Eich, David H. Dawes, Christian Zietz
@@ -814,58 +814,61 @@ source files.
       Patches and other submissions (in alphabetical order):
             Roi a Torkilsheyggi, Dave Airlie, Andrew Aitchison, Marco Antonio
             Alvarez, Alexandr Andreev, Jack Angel, Eric Anholt, Ani, Juuso
-            Åberg, Sergey Babkin, Alexey Baj, Uberto Barbini, Matthew W. S.
-            Bell, Vano Beridze, Hiroyuki Bessho, Andrew Bevitt, Martin
-            Birgmeier, Jakub Bogusz, Le Hong Boi, Paul Bolle, Charl Botha,
-            Stanislav Brabec, Eric Branlund, Rob Braun, Peter Breitenlohner,
-            Michael Breuer, Kevin Brosius, Frederick Bruckman, Oswald Budden-
-            hagen, Nilgün Belma Bugüner, Ping Cheng, Juliusz Chroboczek, Fred
-            Clift, Alan Coopersmith, Martin Costabel, Alan Cox, Michel
-            Dänzer, David Dawes, Leif Delgass, Richard Dengler, John Dennis,
-            Thomas Dickey, Randy Dunlap, Chris Edgington, Paul Eggert, Paul
-            Elliott, Emmanuel, Visanu Euarchukiati, Mike Fabian, Rik Faith,
-            Brian Feldman, Wu Jian Feng, Kevin P. Fleming, Jose Fonseca,
-            Hugues Fournier, Miguel Freitas, Quentin Garnier, Børre Gaup,
-            Frank Giessler, Wolfram Gloger, Alexander Gottwald, Guido Guen-
-            ther, Ralf Habacker, Bruno Haible, Lindsay Haigh, John Harper,
-            Mike Harris, Bryan W. Headley, John Heasley, Matthieu Herrb,
-            Jonathan Hough, Alan Hourihane, Joel Ray Holveck, Harold L Hunt
-            II, Ricardo Y. Igarashi, Mutsumi ISHIKAWA , Tsuyoshi ITO, Kean
-            Johnston, Nicolas JOLY, Phil Jones, Roman Kagan, Theppitak
-            Karoonboonyanan, Etsushi Kato, Koike Kazuhiko, Aidan Kehoe, Juer-
-            gen Keil, Andreas Kies, Thomas Klausner, Mario Klebsch, Egmont
-            Koblinger, Vlatko Kosturjak, Kusanagi Kouichi, Peter Kunzmann,
-            Nick Kurshev, Mashrab Kuvatov, Marc La France, maxim, Nolan
-            Leake, Michel Lespinasse, Noah Levitt, Dave Love, H.J. Lu, Lubos
-            Lunak, Sven Luther, Torrey T. Lyons, Calum Mackay, Roland Mainz,
-            Kevin Martin, Michal Maruska, Kensuke Matsuzaki, Stephen McCa-
-            mant, Ferris McCormick, Nicholas Miell, Robert Millan, Hisashi
-            MIYASHITA, Patrik Montgomery, Joe Moss, Josselin Mouette, Frank
-            Murphy, Reiko Nakajima, Dan Nelson, Bastien Nocera, Alexandre
-            Oliva, Hideki ONO, Peter Osterlund, Sergey V. Oudaltsov, Séamus Ó
-            Ciardhuáin, Bob Paauwe, Paul Pacheco, Tom Pala, Ivan Pascal, T.
-            M. Pederson, Earle F. Philhower III, Nils Philippsen, Manfred
-            Pohler, Alexander Pohoyda, Arnaud Quette, Jim Radford, Dale Rahn,
-            Lucas Correia Villa Real, René Rebe, Sebastian Rittau, Tim
-            Roberts, Alastair M. Robinson, Branden Robinson, Daniel Rock, Ian
-            Romanick, Bernhard Rosenkraenzer, Måns Rullgård, Andriy Rysin,
-            Supphachoke Santiwichaya, Pablo Saratxaga, Matthias Scheler, Jens
-            Schweikhardt, Danilo Segan, Shantonu Sen, Stas Sergeev, JungShik
-            Shin, Jungshik Shin, Nikola Smolenski, Andreas Stenglein, Paul
-            Stewart, Alexander Stohr, Alan Strohm, Will Styles, James Su,
-            Mike Sulivan, Ville Syrjala, Slava Sysoltsev, Akira TAGOH,
-            Toshimitsu Tanaka, Akira Taniguchi, Owen Taylor, Neil Terry, Adam
-            Tlalka, Linus Torvalds, Christian Tosta, Warren Turkal, Stephen
-            J. Turnbull, Ted Unangst, Mike Urban, Simon Vallet, Thuraiappah
-            Vaseeharan, Luc Verhaegen, Michail Vidiassov, Sebastiano Vigna,
-            Mark Vojkovich, Stephane Voltz, Boris Weissman, Keith Whitwell,
-            Thomas Winischhofer, Kim Woelders, Roy Wood, Jason L. Wright,
-            Joerg Wunsch, Chisato Yamauchi, Hui Yu.
+            Åberg, Sergey Babkin, Alexey Baj, Bang Jun-Young, Uberto Barbini,
+            Matthew W. S. Bell, Vano Beridze, Hiroyuki Bessho, Andrew Bevitt,
+            Martin Birgmeier, Jakub Bogusz, Le Hong Boi, Paul Bolle, Charl
+            Botha, Stanislav Brabec, Eric Branlund, Rob Braun, Peter Breiten-
+            lohner, Michael Breuer, Kevin Brosius, Frederick Bruckman, Oswald
+            Buddenhagen, Nilgün Belma Bugüner, Yukun Chen, Ping Cheng,
+            Juliusz Chroboczek, Fred Clift, Alan Coopersmith, Martin Costa-
+            bel, Alan Cox, Michel Dänzer, David Dawes, Leif Delgass, Richard
+            Dengler, John Dennis, Thomas Dickey, Randy Dunlap, Chris Edging-
+            ton, Paul Eggert, Paul Elliott, Emmanuel, Visanu Euarchukiati,
+            Mike Fabian, Rik Faith, Brian Feldman, Wu Jian Feng, Kevin P.
+            Fleming, Jose Fonseca, Hugues Fournier, Miguel Freitas, Quentin
+            Garnier, Børre Gaup, Michael Geddes, Frank Giessler, Hansruedi
+            Glauser, Wolfram Gloger, Alexander Gottwald, Guido Guenther, Ralf
+            Habacker, Bruno Haible, Lindsay Haigh, John Harper, James Harris,
+            Mike A. Harris, Bryan W. Headley, John Heasley, Thomas Hellström,
+            Matthieu Herrb, Jonathan Hough, Alan Hourihane, Joel Ray Holveck,
+            Harold L Hunt II, Ricardo Y. Igarashi, Mutsumi ISHIKAWA ,
+            Tsuyoshi ITO, Kean Johnston, Nicolas JOLY, Phil Jones, Roman
+            Kagan, Theppitak Karoonboonyanan, Etsushi Kato, Koike Kazuhiko,
+            Aidan Kehoe, Juergen Keil, Andreas Kies, Thomas Klausner, Mario
+            Klebsch, Egmont Koblinger, Vlatko Kosturjak, Kusanagi Kouichi,
+            Peter Kunzmann, Nick Kurshev, Mashrab Kuvatov, Marc La France,
+            Radics Laszlo, Zarick Lau, Nolan Leake, Michel Lespinasse, Noah
+            Levitt, Dave Love, H.J. Lu, Lubos Lunak, Sven Luther, Torrey T.
+            Lyons, Calum Mackay, Roland Mainz, Kevin Martin, Michal Maruska,
+            Kensuke Matsuzaki, maxim, Stephen McCamant, Ferris McCormick,
+            Luke Mewburn, Nicholas Miell, Robert Millan, Hisashi MIYASHITA,
+            Gregory Mokhin, Patrik Montgomery, Joe Moss, Josselin Mouette,
+            Frank Murphy, Reiko Nakajima, Paul Nasrat, Dan Nelson, Bastien
+            Nocera, Alexandre Oliva, Hideki ONO, Peter Osterlund, Sergey V.
+            Oudaltsov, Séamus Ó Ciardhuáin, Bob Paauwe, Paul Pacheco, Tom
+            Pala, Ivan Pascal, T. M. Pederson, Earle F. Philhower III, Nils
+            Philippsen, Manfred Pohler, Alexander Pohoyda, Arnaud Quette, Jim
+            Radford, Dale Rahn, Lucas Correia Villa Real, René Rebe, Sebas-
+            tian Rittau, Tim Roberts, Alastair M. Robinson, Branden Robinson,
+            Daniel Rock, Ian Romanick, Bernhard Rosenkraenzer, Måns Rullgård,
+            Andriy Rysin, Supphachoke Santiwichaya, Pablo Saratxaga, Matthias
+            Scheler, Jens Schweikhardt, Danilo Segan, Shantonu Sen, Stas
+            Sergeev, JungShik Shin, Jungshik Shin, Nikola Smolenski, Andreas
+            Stenglein, Paul Stewart, Alexander Stohr, Alan Strohm, Will
+            Styles, James Su, Mike Sulivan, Ville Syrjala, Slava Sysoltsev,
+            Akira TAGOH, Toshimitsu Tanaka, Akira Taniguchi, Owen Taylor,
+            Neil Terry, Jonathan Thambidurai, John Tillman, Adam Tlalka,
+            Linus Torvalds, Christian Tosta, Warren Turkal, Stephen J. Turn-
+            bull, Ted Unangst, Mike Urban, Simon Vallet, Thuraiappah Vaseeha-
+            ran, Luc Verhaegen, Michail Vidiassov, Sebastiano Vigna, Mark
+            Vojkovich, Stephane Voltz, Boris Weissman, Keith Whitwell, Thomas
+            Winischhofer, Eric Wittry, Kim Woelders, Roy Wood, Jason L.
+            Wright, Joerg Wunsch, Chisato Yamauchi, Hui Yu.
 
       Webmaster:
             Georgina O. Economou
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.95 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.103 dawes Exp $
 
 
 $XFree86: $
