@@ -1,4 +1,19 @@
-XFree86 4.2.99.4 (xx January 2003)
+XFree86 4.2.99.4 (20 January 2003)
+ 765. Allow UTF8 conversion to work for Japanese locales (#A.1527,
+      Etsushi Kato).
+ 764. Add a method for working around a problem that can show up when
+      running setxkbmap from a machine with a different version of XKB
+      than the X server.  The workaround method is documented in
+      the setxkbmap(1) man page (#5588, Ivan Pascal).
+ 763. Add some new keys and key combinations that can be used for switching
+      between XKB groups (#5587, Ivan Pascal).
+ 762. Fix typos in the README.fonts document (#5585, John Himpel,
+      Juliusz Chroboczek).
+ 761. Fix the pc/fi and pc/il XKB maps after recent changes made them
+      non-compliant with the multi-layout scheme (#5581, Ivan Pascal).
+ 760. Allow the mga driver to fallback to using VBE for DDC when using
+      the native method fails.  This allows DDC to work for DVI output
+      on Matrox cards (#5580, Andrew Aitchison).
  759. Add block handler for XDarwin's quartz modes to clean up any
       autoreleased objects in the server thread (Torrey T. Lyons).
  758. Fix use of uninitliazed variable in xmag/xmag.c (A.1525, Keith Packard).
@@ -16068,4 +16083,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2483 2003/01/19 04:44:43 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2484 2003/01/19 06:52:51 torrey Exp $
