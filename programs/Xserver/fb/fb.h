@@ -72,14 +72,6 @@
 #endif
 
 /*
- * 24bpp code doesn't work on BE machines yet; I need something to
- * test on.
- */
-#if BITMAP_BIT_ORDER == MSBFirst
-#undef FB_24BIT
-#endif
-
-/*
  * Unless otherwise instructed, fb includes code to advertise 24bpp
  * windows with 32bpp image format for application compatibility
  */
@@ -503,10 +495,24 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
 #if FB_UNIT == 64
 #define FbNext24Rot(r)        ((r) == 16 ? 0 : (r) + 8)
 #define FbPrev24Rot(r)        ((r) == 0 ? 16 : (r) - 8)
+
+#if IMAGE_BYTE_ORDER == MSBFirst
+#define FbFirst24Rot(x)		(((x) + 8) % 24)
+#else
+#define FbFirst24Rot(x)		((x) % 24)
 #endif
+
+#endif
+
 #if FB_UNIT == 32
 #define FbNext24Rot(r)        ((r) == 0 ? 16 : (r) - 8)
 #define FbPrev24Rot(r)        ((r) == 16 ? 0 : (r) + 8)
+
+#if IMAGE_BYTE_ORDER == MSBFirst
+#define FbFirst24Rot(x)		(((x) + 16) % 24)
+#else
+#define FbFirst24Rot(x)		((x) % 24)
+#endif
 #endif
 
 #define FbNext24RotStip(r)        ((r) == 0 ? 16 : (r) - 8)

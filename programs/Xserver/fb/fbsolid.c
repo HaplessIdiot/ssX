@@ -106,7 +106,7 @@ fbSolid24 (FbBits   *dst,
      * Rotate pixel values this far across the word to align on
      * screen pixel boundaries
      */
-    rot = dstX % 24;
+    rot = FbFirst24Rot (dstX);
     FbMaskBits (dstX, width, startmask, nmiddle, endmask);
     if (startmask)
 	dstStride--;
