@@ -1,7 +1,7 @@
   README for XFree86 3.2 on NetBSD and OpenBSD
   Rich  Murphey, David Dawes, Marc  Wandschneider, Mark  Weaver,
   Matthieu Herrb
-  Last modified on: 29 September 1996
+  Last modified on: 24 October 1996
 
   1.  What and Where is XFree86?
 
@@ -87,7 +87,7 @@
            all of the executable X client applications and shared libs
 
         X32fnts
-           the misc and 75dpi fonts
+           the misc, 75dpi and PEX fonts
 
         X32lib
            data files needed at runtime
@@ -114,6 +114,9 @@
         X32AGX
            the X server for AGX boards
 
+        X32I128
+           the X server for I128 boards
+
         X32Ma8
            the X server for ATI Mach8 graphics boards
 
@@ -126,9 +129,12 @@
         X32P9K
            the X server for P9000 based boards
 
+
         X32S3
            the X server for S3 based boards
 
+        X32S3V
+           the X server for S3 ViRGE boards
 
         X32W32
            the X server for et4000w32 and et6000 based boards
@@ -185,6 +191,14 @@
         X32man
            man pages
 
+        X32lkit
+           X server reconfiguration kit
+
+
+
+        X32lk98
+           X server reconfiguration kit for PC98 X servers
+
         X32f100
            100dpi fonts
 
@@ -193,8 +207,6 @@
 
         X32fscl
            Scalable fonts
-
-
 
         X32fnon
            Other fonts (Japanese, Chinese, etc)
@@ -250,7 +262,6 @@
 
 
 
-
      2. You must be logged in as root to unpack the archives and use a
         ``umask'' value of 022.  Typing ``umask 022'' sets it.  Caution:
         If you do not extract the files as user ``root'' with the
@@ -261,7 +272,6 @@
         Assuming that the destination directory for XFree86 3.2 is
         /usr/X11R6, run the following from wherever all the archive
         files are (replace /usr/X11R6 with wherever you wish them to go
-
         if that isn't the place):
 
 
@@ -316,6 +326,8 @@
      Also, don't forget to include these lines in your .login or .pro-
      file for permanent use.
 
+
+
      2. Create a symbolic link in ${XWINHOME}/bin named ``X'' that
         points to the server that matches your video card: See the
         XF86_* man pages for hardware details. For example, if you have
@@ -326,6 +338,9 @@
            cd $XWINHOME/bin
            rm -f X
            ln -s XF86_SVGA X
+
+
+
 
 
      3. Install support for the shared libraries: add the following
@@ -379,8 +394,6 @@
   You can start xdm automatically on bootup by disabling the console
   getty adding the following code to /etc/rc.local:
 
-
-
          if [ -x /usr/X11R6/bin/xdm ]; then
            echo -n ' xdm'; /usr/X11R6/bin/xdm
          fi
@@ -393,8 +406,7 @@
 
 
 
-
-   ttyv0  "/usr/libexec/getty Pc" pc      off secure
+        ttyv0  "/usr/libexec/getty Pc" pc      off secure
 
 
 
@@ -447,6 +459,7 @@
 
   If your serial mouse does not work try using kermit or tip to connect
   to the mouse serial port and verify that it does indeed generate
+
   characters.
 
   The NetBSD pms mouse driver handles PS/2 style mice as Busmouse.
@@ -512,6 +525,7 @@
   but in practice compilation while running X can take 5 or 10 times as
   long due to constant paging.
 
+
   The easiest way for new users to start X windows is to type: ``startx
   >& startx.log''.  Error messages are lost unless you redirect them
   because the server takes over the screen.
@@ -573,6 +587,7 @@
        > Was expecting pccons driver with X support
        > Check your kernel's console driver configuration and /dev entries
        >
+
 
 
 
@@ -642,6 +657,7 @@
   detects this support in your kernel, it will support the MIT-SHM
   extension.
 
+
   To add support for system V shared memory to your kernel add the
   lines:
 
@@ -656,6 +672,7 @@
 
 
   to your kernel config file. Then from /sys/arch/i386/config, type:
+
 
 
         # rm -f ../compile/<KERNEL-NAME>/*
@@ -705,6 +722,8 @@
 
 
 
+
+
      o  if you're using pcvt put:
 
 
@@ -724,7 +743,7 @@
      o  if you're running codrv put:
 
 
-      #define XFree86ConsoleDefines -DCODRV_SUPPORT
+           #define XFree86ConsoleDefines -DCODRV_SUPPORT
 
 
 
@@ -770,6 +789,7 @@
   taken from your installed version of the driver.
 
   The console.h file for syscons isn't distributed with XFree86 anymore.
+
   You should get it from the syscons distribution.
 
   8.4.  Support for shared libs under NetBSD 1.0 and later
@@ -835,6 +855,7 @@
   defined for *BSD systems in XFree86 3.1.1 and later.  This should be
   used to protect the inclusion of <sys/param.h>.
 
+
   For code that really is specific to a particular i386 BSD port, use
   __FreeBSD__ for FreeBSD, __NetBSD__ for NetBSD, __OpenBSD__ for
   OpenBSD, __386BSD__ for 386BSD, and __bsdi__ for BSD/386.
@@ -853,9 +874,6 @@
   Otherwise, just add ``-lXt'' to your library list in the Imakefile or
   Makefile and relink.
 
-
-
-
   10.  Thanks
 
   Many thanks to:
@@ -873,31 +891,13 @@
         machines in preparing the FreeBSD binary release.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.39 1996/10/23 13:10:01 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.40 1996/10/24 12:30:20 dawes Exp $
 
 
 
 
 
   $XConsortium: NetBSD.sgml /main/9 1996/01/28 08:05:37 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

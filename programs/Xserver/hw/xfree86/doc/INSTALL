@@ -1,6 +1,6 @@
   Installation Guide for XFree86 3.2
   David Dawes
-  23 October 1996
+  24 October 1996
 
   This document describes how to build XFree86 from the source distribu-
   tion.  It covers building from the full source distribution as well as
@@ -35,6 +35,8 @@
 
         o  R6.1pl1-3.2.diff.gz, cfont32.tgz
 
+        o  Optionally the X Consortium X11R6.1 contrib distribution.
+
         o  contrib-3.2.diff.gz (an optional patch for some of the X
            Consortium's ``contrib'' distribution)
 
@@ -61,8 +63,10 @@
 
 
         If you don't need to build the fonts, xc/fonts can be removed
+
         saving 30MB.  If you don't want to build PEX or XIE you can
         remove:
+
 
               xc/programs/Xserver/XIE       3MB
               xc/programs/Xserver/PEX5      2MB
@@ -79,12 +83,12 @@
            source tree requires about 50-55MB of disk space.
 
         o  The contrib-3.2.diff.gz patch provides patches to a small
-           part of the X Consortium's contrib distribution.  It mostly
-           covers those clients which were in the core distribution of
-           X11R5 but were moved to the contrib distribution for X11R6.
-           To use this patch, you need to have the following
-           files/directories from the final X Consortium R6 contrib
-           release (not the initial contrib-0 version):
+           part of the X Consortium's R6.1 contrib distribution.  It
+           mostly covers those clients which were in the core
+           distribution of X11R5 but were moved to the contrib
+           distribution for X11R6.  To use this patch, you need to have
+           the following files/directories from the final X Consortium
+           R6.1 contrib release.
 
 
 
@@ -102,7 +106,6 @@
                        contrib/programs/xeyes/
                        contrib/programs/xfontsel/
                        contrib/programs/xgc/
-                       contrib/programs/xload/
                        contrib/programs/xman/
                        contrib/programs/xmessage/
 
@@ -126,10 +129,10 @@
 
      If you are installing in an unmodified tree there shouldn't be any
      problems.  Check for any patch rejections and resolve them. If
+
      you've modified some files (e.g. xf86site.def, site.def) you should
      rename them, and restore the standard versions before patching. If
      you don't have backups of the originals, individual files can be
-
      easily obtained from ftp://ftp.x.org/pub/R6.1/xc.
 
      If you are patching a tree that you've previously used, make sure
@@ -192,13 +195,14 @@
      XF86SvgaDrivers parameter.  This should be a list of the driver
      directory names (in lower case).  The ordering determines the order
      in which the drivers are probed at startup.  The default is to
+
      include all supplied drivers.  Similarly the following parameters
      specify drivers for the other servers:
 
 
-      XF86Vga16Drivers            XF86_VGA16
-      XF86Vga2Drivers             XF86_Mono (vga2 drivers)
-      XF86MonoDrivers             XF86_Mono, XF86_VGA16 (other mono drivers)
+           XF86Vga16Drivers            XF86_VGA16
+           XF86Vga2Drivers             XF86_Mono (vga2 drivers)
+           XF86MonoDrivers             XF86_Mono, XF86_VGA16 (other mono drivers)
 
 
 
@@ -256,11 +260,12 @@
         -a; make''.  When that is completed, run ``make install'' and
         ``make install.man'' to install it.
 
+
+
   2.  Reconfiguring the server (source distribution)
 
   To build a different set of servers or servers with a different set of
   drivers installed:
-
 
      1. Make sure the source for any new drivers is in the correct place
         (e.g., driver source for the SVGA server should be in a
@@ -290,18 +295,13 @@
   file.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.15 1996/10/23 13:36:49 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.16 1996/10/24 12:30:18 dawes Exp $
 
 
 
 
 
   $XConsortium: INSTALL.sgml /main/6 1995/11/12 19:59:30 kaleb $
-
-
-
-
-
 
 
 

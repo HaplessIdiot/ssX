@@ -539,36 +539,36 @@
   The authors of this software wish to acknowledge the support supplied
   by Chips and Technologies during the development of this software.
 
-  8.  Authors (in no particular order)
+  8.  Authors
 
+  Major Contributors (In no particular order)
 
      o  Nozomi Ytow
 
      o  Egbert Eich
 
-     o  Ken Raeburn
+     o  David Bateman
 
      o  Xavier Ducoin
 
+  Contributors (In no particular order)
+
+     o  Ken Raeburn
+
      o  Shigehiro Nomura
 
-     o  David Bateman
+     o  Marc de Courville
+
+     o  Adam Sulmicki
+
+     o  Jens Maurer
+
+  We also thank the many people on the net who have contributed by
+  reporting bugs and extensively testing this server before its
+  inclusion in XFree 3.2
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.8 1996/10/20 13:33:25 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.9 1996/10/24 12:30:26 dawes Exp $
 
 
 

@@ -1,7 +1,7 @@
   Release Notes for XFree86[TM] 3.2
   The XFree86 Project, Inc
 
-  21 October 1996
+  24 October 1996
 
   This document describes the new features in XFree86 3.2 compared with
   the previous full release, 3.1.2.  It also includes installation
@@ -297,14 +297,15 @@
         CT chip.
 
      o  The Mach64 server supports the VT and GT chipset.  The GT is
-        also known as "Rage".  The newer Rage II is not yet supported.
+        also known as "3D Rage".  The newer 3D Rage II is not yet
+        supported.
 
      o  A problem with olvwm icons has been fixed.
 
      o  A problem with ghostview scrollbars has been fixed.  This may
         also fix some Netscape font problems that have been reported.
 
-     o  The Mach64 CT (also known as the 264CT, or 215CT22200) chip is
+     o  The Mach64 CT (also known as the 264CT or 215CT22200) chip is
         now supported.  This chip has a integrated RAMDAC and clockchip,
         and is used on some Graphics Xpression and WinBoost cards.
 
@@ -324,16 +325,33 @@
      o  Errors in detecting some RAMDACs (like the CH8398) should now be
         fixed.
 
-     o  8 bit-per-RGB mode (when running at 8bpp) is now default for
+     o  8 bit-per-RGB mode (when running at 8bpp) is now the default for
         RAMDACs that support it.
-
 
      o  Hardware cursor mask problem has been fixed.
 
      o  Support for the AT&T 20C408 RAMDAC/Clockchip has been added.
 
-     o  Arbitrary clocks can be used on most boards with supported clock
+     o  Arbitrary clocks can be used on most cards with supported clock
         chips.
+
+     o  Hardware cursor color problem on Mach64 CT, VT and GT chips at
+        16bpp and 32bpp has been fixed.
+
+     o  Doublescan mode is supported on VT and GT chipsets.  The
+        hardware cursor is not correctly displayed in doublescan modes,
+        but functions correctly.  No other Mach64 chipsets can support
+        an accelerated doublescan mode.
+
+     o  Video noise on certain CT, VT and GT chips has been eliminated
+        (on nearly all cards) or reduced as much as possible (on certain
+        CT based cards).
+
+     o  Clock chip programming accuracy has been greatly improved on CT,
+        ET, VT and GT based cards.  This may result in modes that were
+        set up for a previous release not being displayed as before.
+        With the xvidtune program, you can adjust the screen to work
+        with the now correct clock programming.
 
      o  *The reliability of the Mach64 detection code has been improved.
 
@@ -373,10 +391,13 @@
         section entries for these are:
 
 
-                  Option "pci_burst_on"
-                  Option "pci_burst_off"
-                  Option "w32_interleave_on"
-                  Option "w32_interleave_off"
+
+
+
+             Option "pci_burst_on"
+             Option "pci_burst_off"
+             Option "w32_interleave_on"
+             Option "w32_interleave_off"
 
 
 
@@ -458,8 +479,6 @@
 
      o  Known problems: ?
 
-
-
         +  There is a problem with interlaced modes with the SVGA
            driver.
 
@@ -505,6 +524,8 @@
         and 32bpp operation.  Note, this support isn't currently present
         in the W32 accelerated server.
 
+
+
   3.19.  Alliance ProMotion driver (SVGA server)
 
 
@@ -525,7 +546,6 @@
      o  *A driver for the Matrox Millennium (mga2064w) has been added.
         This is a very new driver, and is considered "beta".  It
         includes support for 8bpp, 16bpp, 24bpp and 32bpp.  The
-
         acceleration capabilities of this chipset are only used to a
         very limited extent at this stage.
 
@@ -570,6 +590,8 @@
 
      o  16bpp and 24bpp (packed) support for the 65545 an above.
 
+
+
      o  BitBLT and some other acceleration for the 65545, 65546, 65548
         and 65550.
 
@@ -589,8 +611,6 @@
 
      o  The "undoc_clocks" option has been removed.  If you had been
         using it, remove it from your XF86Config file.
-
-
 
      o  A colourmap problem with VGA Wonder V3 boards has been fixed.
 
@@ -637,6 +657,7 @@
         for libX11, libXaw, libXext, and libXtst have been incremented
         to 6.1.
 
+
      o  The client-side library code for the XFree86 extensions and the
         ScreenSaver extension has been moved into separate libraries.
         The old libXExExt has been removed.
@@ -656,7 +677,6 @@
      o  The following new clients have been added:
 
         +  dga -- a test program for the XFree86-DGA extension.
-
 
         +  xsetmode, xsetpointer -- programs for use with the XInput
            extension.
@@ -714,12 +734,11 @@
        postinst.sh     Post-installation script
        X32bin.tgz      Clients, run-time libs, and app-defaults files
        X32doc.tgz      Documentation
-       X32fnts.tgz     75dpi and misc fonts
+       X32fnts.tgz     75dpi, misc and PEX fonts
        X32lib.tgz      Data files required at run-time
        X32man.tgz      Manual pages
        X32set.tgz      XF86Setup utility
        X32VG16.tgz     16 colour VGA server (XF86Setup needs this server)
-
 
 
 
@@ -759,18 +778,30 @@
   a PC98 machine is, you don't need any of these.
 
 
-       X329NS3.tgz     PC98 NEC(S3) server
-       X329SPW.tgz     PC98 PCSKB-PowerWindow(S3) server
-       X329LPW.tgz     PC98 PowerWindowLB(S3) server
-       X329EGC.tgz     PC98 EGC(generic) server
-       X329GA9.tgz     PC98 GA-968V4/PCI(S3 968) server
-       X329GAN.tgz     PC98 GANB-WAP(cirrus) server
-       X329480.tgz     PC98 PEGC-480(generic) server
-       X329NKV.tgz     PC98 NKV-NEC(cirrus) server
-       X329WBS.tgz     PC98 WABS(cirrus) server
-       X329WEP.tgz     PC98 WAB-EP(cirrus) server
-       X329WSN.tgz     PC98 WSN-A2F(cirrus) server
-       X329TGU.tgz     PC98 TGUI server
+
+
+
+
+
+
+
+
+
+
+
+
+  X329NS3.tgz     PC98 NEC(S3) server
+  X329SPW.tgz     PC98 PCSKB-PowerWindow(S3) server
+  X329LPW.tgz     PC98 PowerWindowLB(S3) server
+  X329EGC.tgz     PC98 EGC(generic) server
+  X329GA9.tgz     PC98 GA-968V4/PCI(S3 968) server
+  X329GAN.tgz     PC98 GANB-WAP(cirrus) server
+  X329480.tgz     PC98 PEGC-480(generic) server
+  X329NKV.tgz     PC98 NKV-NEC(cirrus) server
+  X329WBS.tgz     PC98 WABS(cirrus) server
+  X329WEP.tgz     PC98 WAB-EP(cirrus) server
+  X329WSN.tgz     PC98 WSN-A2F(cirrus) server
+  X329TGU.tgz     PC98 TGUI server
 
 
 
@@ -778,31 +809,19 @@
   The following are optional.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-  X32f100.tgz    100dpi fonts
-  X32fcyr.tgz    Cyrillic fonts
-  X32fnon.tgz    Other fonts (Chinese, Japanese, Korean, Hebrew)
-  X32fscl.tgz    Scalable fonts (Speedo and Type1)
-  X32fsrv.tgz    Font server and config files
-  X32cfg.tgz     sample config files for xinit, xdm
-  X32prog.tgz    X header files, config files and compile-time libs
-  X32lkit.tgz    X server LinkKit
-  X32lk98.tgz    PC98 X server LinkKit
-  X32nest.tgz    Nested X server
-  X32vfb.tgz     Virtual framebuffer X server
-  X32ps.tgz      PostScript version of the documentation
-  X32html.tgz    HTML version of the documentation
+       X32f100.tgz    100dpi fonts
+       X32fcyr.tgz    Cyrillic fonts
+       X32fnon.tgz    Other fonts (Chinese, Japanese, Korean, Hebrew)
+       X32fscl.tgz    Scalable fonts (Speedo and Type1)
+       X32fsrv.tgz    Font server and config files
+       X32cfg.tgz     sample config files for xinit, xdm
+       X32prog.tgz    X header files, config files and compile-time libs
+       X32lkit.tgz    X server LinkKit
+       X32lk98.tgz    PC98 X server LinkKit
+       X32nest.tgz    Nested X server
+       X32vfb.tgz     Virtual framebuffer X server
+       X32ps.tgz      PostScript version of the documentation
+       X32html.tgz    HTML version of the documentation
 
 
 
@@ -835,8 +854,9 @@
   files and symbolic links from a previous installation that may cause
   problems.
 
-  Copy the preinst.sh script to /var/tmp, then run go to /usr/X11R6 and
-  run it:
+  Copy the preinst.sh script to /var/tmp, then go to /usr/X11R6 and run
+
+  it:
 
 
                cd /usr/X11R6
@@ -855,7 +875,6 @@
 
 
   On some OSs, you might get some "Broken Pipe" messages.  Providing
-
   there are no other messages associated with this, they can be safely
   ignored.  Note: You should not be running X while doing this installa-
   tion.  Doing so may cause the installation to fail, or cause your X
@@ -897,26 +916,7 @@
   line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.45 1996/10/23 13:10:04 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.46 1996/10/24 12:30:23 dawes Exp $
 
 
 

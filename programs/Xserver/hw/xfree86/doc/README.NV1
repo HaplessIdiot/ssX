@@ -31,7 +31,7 @@
      o  The driver should force Weight 555 in 16 bpp mode
 
 
-  $XFree86$
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NV1.sgml,v 3.0 1996/10/23 13:09:59 dawes Exp $
 
 
 
@@ -64,3 +64,5 @@
 
 
 
+
+$XFree86$
