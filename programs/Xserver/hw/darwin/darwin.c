@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.10 2001/03/11 14:52:00 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.11 2001/03/15 22:24:26 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -17,7 +17,6 @@
 #include "mipointer.h"
 #include "micmap.h"
 #include "site.h"
-#include "opaque.h"
 #include "xf86Version.h"
 
 #include <sys/types.h>
@@ -28,20 +27,20 @@
 #include <IOKit/IOKitLib.h>
 #include <IOKit/hidsystem/IOHIDLib.h>
 #include <IOKit/hidsystem/ev_keymap.h>
+#include <CoreFoundation/CFBundle.h>
 
 #include "darwin.h"
-#include "quartz.h"
+#include "bundle/quartz.h"
 #include "xfIOKit.h"
 
 // X server shared global variables
 DarwinFramebufferRec    dfb;
 int                     darwinEventFD = -1;
+int                     gDarwinEventWriteFD = -1;
 Bool                    quartz = FALSE;
 UInt32                  darwinDesiredWidth = 0, darwinDesiredHeight = 0;
 IOIndex                 darwinDesiredDepth = -1;
 SInt32                  darwinDesiredRefresh = -1;
-char                    **envpGlobal;   // argcGlobal and argvGlobal
-                                        // are from dix/globals.c
 
 // Quit after this many seconds if no quartz event poster is found.
 // Leave undefined for no safety quit.
@@ -110,59 +109,6 @@ DarwinPrintBanner()
 #if defined(DARWIN_WITH_QUARTZ)
   ErrorF("Mac OS X Quartz support available.\n");
 #endif
-}
-
-/*
- * DarwinHandleGUI
- *  This function is called first from main(). It determines
- *  if we are going to run in Quartz mode. If we are running in
- *  Quartz mode, we load the Quartz bundle (not yet implemented),
- *  and start the Mac OS X front end. The front end will call main()
- *  again from another thread to run the X server. On the second
- *  call or in non-Quartz mode this function is a noop.
- */
-void DarwinHandleGUI(
-    int         argc,
-    char        *argv[],
-    char        *envp[] )
-{
-    static Bool been_here = FALSE;
-    Bool        quartzMode = FALSE;
-    int         i;
-
-    if (been_here)
-        return;
-    been_here = TRUE;
-
-    // Check if we are going to run in Quartz mode.
-    // (Displaying version info quits the X server without running.)
-    for (i = 0; i < argc; i++) {
-        if (!strcmp( argv[i], "-showconfig" ) ||
-            !strcmp( argv[i], "-version" ))
-            return;
-        if (!strcmp(argv[i], "-quartz")) {
-            quartzMode = TRUE;
-        }
-    }
-
-    if (quartzMode) {
-        int main_exit;
-        int fd[2];
-
-        // Make a pipe to pass events
-        assert( pipe(fd) == 0 );
-        darwinEventFD = fd[0];
-        gDarwinEventWriteFD = fd[1];
-        fcntl(darwinEventFD, F_SETFL, O_NONBLOCK);
-
-        // Store command line arguments to pass back to main()
-        argcGlobal = argc;
-        argvGlobal = argv;
-        envpGlobal = envp;
-
-        main_exit = NSApplicationMain(argc, argv);
-        exit(main_exit);
-    }
 }
 
 
@@ -878,6 +824,11 @@ int ddxProcessArgument( int argc, char *argv[], int i )
         ErrorF( "Quitting in %d seconds if no controller is found.\n",
                 QUARTZ_SAFETY_DELAY );
 #endif
+        return 1;
+    }
+
+    // This command line arg is passed when started from the command line.
+    if ( !strncmp( argv[i], "-psn_", 5 ) ) {
         return 1;
     }
 #endif

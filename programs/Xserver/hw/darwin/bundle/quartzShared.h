@@ -2,7 +2,7 @@
  * Shared definitions between the Darwin X Server
  * and the Cocoa front end. 
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartzShared.h,v 1.2 2001/03/15 22:24:26 torrey Exp $ */
 
 #ifndef _QUARTZSHARED_H
 #define _QUARTZSHARED_H

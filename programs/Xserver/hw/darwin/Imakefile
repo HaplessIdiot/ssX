@@ -3,19 +3,15 @@ XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.8 2001/02/02 21:37:5
 #include <Server.tmpl>
 #define IHaveSubdirs
 
-XCOMM LinkSourceFile(xf86Helper.c,../xfree86/common)
-
 SRCS =	darwin.c \
         darwinKeyboard.c \
         xfIOKit.c \
-        xfIOKitCursor.c \
-        quartz.c
+        xfIOKitCursor.c
 
 OBJS =	darwin.o \
         darwinKeyboard.o \
         xfIOKit.o \
-        xfIOKitCursor.o \
-        quartz.o
+        xfIOKitCursor.o
 
 INCLUDES = -I. -I$(SERVERSRC)/mi -I$(SERVERSRC)/mfb -I$(SERVERSRC)/cfb \
            -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(SERVERSRC)/os \
@@ -39,7 +35,9 @@ EXTRAMANDEFS = $(QUARTZDEF)
 NormalLibraryObjectRule()
 NormalLibraryTarget(darwin,$(OBJS))
 
-InstallManPage(Xdarwin,$(MANDIR))
+AllTarget(xfIOKitStartup.o)
+
+InstallManPage(XDarwin,$(MANDIR))
 
 DependTarget()
 

@@ -6,8 +6,6 @@
  *
  **************************************************************/
 
-#ifdef DARWIN_WITH_QUARTZ
-
 // X headers
 #include "mi.h"
 #include "mipointer.h"
@@ -20,11 +18,8 @@
 #include <CoreGraphics/CGDirectDisplay.h>
 #include <IOKit/pwr_mgt/IOPMLib.h>
 
-#include "darwin.h"
+#include "../darwin.h"
 #include "quartz.h"
-
-// initialize quartzShared.h globals
-int gDarwinEventWriteFD = -1;
 
 #define kDarwinMaxScreens 100
 static ScreenPtr darwinScreens[kDarwinMaxScreens];
@@ -297,28 +292,3 @@ void QuartzGiveUp(void)
     QuartzRelease();
 }
 
-
-#else // not DARWIN_WITH_QUARTZ
-
-// No Quartz support. All Quartz functions are no-ops
-
-BOOL QuartzAddScreen(ScreenPtr pScreen) {
-    FatalError("QuartzAddScreen called without Quartz support compiled.\n");
-}
-
-void QuartzOsVendorInit(void) {
-    FatalError("QuartzOsVendorInit called without Quartz support compiled.\n");
-}
-
-void QuartzGiveUp(void) {
-    FatalError("QuartzGiveUp called without Quartz support compiled.\n");
-}
-
-void QuartzHide(void) {
-    FatalError("QuartzHide called without Quartz support compiled.\n");
-}
-void QuartzShow(void); {
-    FatalError("QuartzShow called without Quartz support compiled.\n");
-}
-
-#endif

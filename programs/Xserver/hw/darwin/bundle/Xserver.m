@@ -6,11 +6,11 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.3 2001/03/15 22:24:27 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
-#import "../quartzShared.h"
+#import "quartzShared.h"
 
 extern int argcGlobal;
 extern char **argvGlobal;
