@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.58 2001/02/17 23:20:17 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.59 2001/02/18 23:47:29 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1153,6 +1153,8 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
             
         case NV_CHIP_TNT:
         case NV_CHIP_TNT2:
+        case NV_CHIP_TNT2_A:
+        case NV_CHIP_TNT2_B:
         case NV_CHIP_UTNT2:
         case NV_CHIP_VTNT2:
         case NV_CHIP_UVTNT2:
@@ -1172,6 +1174,12 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
         case NV_CHIP_QUADRO2MXR:
 	case NV_CHIP_GEFORCE2GO:
             NV10Setup(pScrn);
+	    break;
+	case NV_CHIP_0200:
+	case NV_CHIP_0201:
+	case NV_CHIP_0202:
+	case NV_CHIP_0203:
+            NV20Setup(pScrn);
             break;
     }
 
@@ -1256,6 +1264,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
             break;
         case NV_ARCH_04:
         case NV_ARCH_10:
+        case NV_ARCH_20:
             pNv->FbUsableSize -= 128 * 1024;
             break;
     }
