@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/lbxproxy/include/os.h,v 1.7 2001/12/14 20:00:55 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/include/os.h,v 1.8tsi Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -96,14 +96,14 @@ extern ClientPtr AllocNewConnection(
 
 extern void SwitchConnectionFuncs(
     ClientPtr /*client*/,
-    int (* /*Read*/)(),
-    int (* /*Writev*/)()
+    int (* /*Read*/)(int fd, unsigned char *buf, int buflen),
+    int (* /*WriteV*/)(int fd, struct iovec *iov, int iovcnt)
 );
 
 extern void StartOutputCompression(
     ClientPtr /*client*/,
-    void (* /*CompressOn*/)(),
-    void (* /*CompressOff*/)()
+    void (* /*CompressOn*/)(int fd),
+    void (* /*CompressOff*/)(int fd)
 );
 
 extern Bool EstablishNewConnections(

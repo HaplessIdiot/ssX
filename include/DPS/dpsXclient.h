@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef DPSXCLIENT_H
 #define DPSXCLIENT_H
@@ -326,6 +327,11 @@ extern Bool XDPSIsDPSEvent(XEvent *event);
   /* Check if an event is a DPS event. */
 
 extern Bool XDPSDispatchEvent(XEvent *event);
+
+  /* purpose: ?,
+     this is only functional for XtSpecificationRelease >= 6 */
+
+extern void XDPSSetXtEventDispatching(Display *dpy);
 
   /* Check if an event is a DPS event; call the status or output
      handler if so. */

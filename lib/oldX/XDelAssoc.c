@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/oldX/XDelAssoc.c,v 1.3 2001/01/17 19:43:37 dawes Exp $ */
+/* $XFree86: xc/lib/oldX/XDelAssoc.c,v 1.4tsi Exp $ */
 
 #include "Xlibint.h"
 #include "X10.h"
@@ -35,10 +35,10 @@ in this Software without prior written authorization from The Open Group.
  * deletes are meaningless (but cause no problems).
  */
 int
-XDeleteAssoc(dpy, table, x_id)
-        register Display *dpy;
-	register XAssocTable *table;
-	register XID x_id;
+XDeleteAssoc(
+        register Display *dpy,
+        register XAssocTable *table,
+        register XID x_id)
 {
 	int hash;
 	register XAssoc *bucket;

@@ -1,10 +1,10 @@
-/* $XConsortium: npupp.h /main/2 1996/11/13 09:25:15 kaleb $ */
+/* $Xorg: npupp.h,v 1.3 2000/08/17 19:55:02 cpqbld Exp $ */
 /* -*- Mode: C; tab-width: 4; -*- */
 /*
  *  npupp.h Revision: 1.37
  *  function call mecahnics needed by platform specific glue code.
  */
-
+/* $XFree86$ */
 
 #ifndef _NPUPP_H_
 #define _NPUPP_H_
@@ -965,6 +965,8 @@ extern "C" {
 
 NPError WINAPI NP_GetEntryPoints(NPPluginFuncs* pFuncs);
 
+NPError WINAPI NP_GetValue(void *future, NPPVariable variable, void *value);
+
 NPError WINAPI NP_Initialize(NPNetscapeFuncs* pFuncs);
 
 NPError WINAPI NP_Shutdown();
@@ -984,6 +986,7 @@ extern "C" {
 /* plugin meta member functions */
 
 char*	NP_GetMIMEDescription(void);
+NPError NP_GetValue(void *future, NPPVariable variable, void *value);
 NPError	NP_Initialize(NPNetscapeFuncs*, NPPluginFuncs*);
 NPError	NP_Shutdown(void);
 

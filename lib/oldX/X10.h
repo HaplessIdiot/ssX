@@ -26,6 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * The X Window System is a Trademark of The Open Group.
  *
  */
+/* $XFree86$ */
 
 
 /*
@@ -83,7 +84,7 @@ typedef struct {
     int size;			/* Table size (number of buckets). */
 } XAssocTable;
 
-XAssocTable *XCreateAssocTable();
-char *XLookUpAssoc();
+XAssocTable *XCreateAssocTable(int size);
+char *XLookUpAssoc(Display *dpy, XAssocTable *table, register XID x_id);
 
 #endif /* _X10_H_ */

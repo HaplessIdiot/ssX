@@ -26,6 +26,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "RxI.h"
 #ifdef XFUNCPROTO_NOT_AVAILABLE
@@ -36,6 +37,8 @@ The Open Group.
 #ifndef XFUNCPROTO_NOT_AVAILABLE
 #include <X11/Xauth.h>
 #endif
+
+#include "XAuth.h"
 
 static void
 printhexdigit(char *ptr, unsigned int d)

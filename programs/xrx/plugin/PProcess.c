@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
-/* $XFree86: xc/programs/xrx/plugin/PProcess.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/xrx/plugin/PProcess.c,v 1.7tsi Exp $ */
 
 #include "RxPlugin.h"
 #include "XUrls.h"
@@ -336,7 +336,8 @@ ResetWMColormap(PluginInstance* This, Window win)
 /***********************************************************************
  * Event Handler to reparent client window under plugin window 
  ***********************************************************************/
-/* static */ void
+static
+void
 SubstructureRedirectHandler (
     Widget widget, 
     XtPointer client_data, 

@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/oldX/XMakeAssoc.c,v 1.3 2001/01/17 19:43:38 dawes Exp $ */
+/* $XFree86: xc/lib/oldX/XMakeAssoc.c,v 1.4tsi Exp $ */
 
 #include "Xlibint.h"
 #include "X10.h"
@@ -36,11 +36,11 @@ in this Software without prior written authorization from The Open Group.
  * bucket is sorted (lowest XId to highest XId).
  */
 int
-XMakeAssoc(dpy, table, x_id, data)
-	register Display *dpy;
-	register XAssocTable *table;
-	register XID x_id;
-	register XPointer data;
+XMakeAssoc(
+	register Display *dpy,
+	register XAssocTable *table,
+	register XID x_id,
+	register XPointer data)
 {
 	int hash;
 	register XAssoc *bucket;

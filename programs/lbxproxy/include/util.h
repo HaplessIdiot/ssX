@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
-/* $XFree86: xc/programs/lbxproxy/include/util.h,v 1.7 2001/12/14 20:00:56 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/include/util.h,v 1.8tsi Exp $ */
 
 #ifndef	_UTIL_H_
 #define	_UTIL_H_
@@ -149,14 +149,14 @@ extern void ProcessWorkQueue(
 );
 
 extern Bool QueueWorkProc(
-    Bool (* /*function*/)(),
+    Bool (* /*function*/)(ClientPtr /* pClient */, pointer /* closure */),
     ClientPtr /*client*/,
     pointer /*closure*/
 );
 
 extern Bool ClientSleep(
     ClientPtr /*client*/,
-    Bool (* /*function*/)(),
+    Bool (* /*function*/)(ClientPtr /* pClient */, pointer /* closure */),
     pointer /*closure*/
 );
 

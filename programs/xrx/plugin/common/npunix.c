@@ -1,4 +1,4 @@
-/* $XConsortium: npunix.c /main/2 1996/11/13 09:28:37 kaleb $ */
+/* $Xorg: npunix.c,v 1.3 2000/08/17 19:54:59 cpqbld Exp $ */
 /*
  * npunix.c
  *
@@ -12,6 +12,7 @@
  *	YOU WILL NOT NEED TO EDIT THIS FILE.
  *----------------------------------------------------------------------
  */
+/* $XFree86$ */
 
 #define XP_UNIX 1
 
@@ -170,6 +171,7 @@ jref NPN_GetJavaPeer(NPP instance)
  *
  ***********************************************************************/
 
+static
 NPError
 Private_New(NPMIMEType pluginType, NPP instance, uint16 mode,
 		int16 argc, char* argn[], char* argv[], NPSavedData* saved)
@@ -180,6 +182,7 @@ Private_New(NPMIMEType pluginType, NPP instance, uint16 mode,
 	return ret;	
 }
 
+static
 NPError
 Private_Destroy(NPP instance, NPSavedData** save)
 {
@@ -187,6 +190,7 @@ Private_Destroy(NPP instance, NPSavedData** save)
 	return NPP_Destroy(instance, save);
 }
 
+static
 NPError
 Private_SetWindow(NPP instance, NPWindow* window)
 {
@@ -196,6 +200,7 @@ Private_SetWindow(NPP instance, NPWindow* window)
 	return err;
 }
 
+static
 NPError
 Private_NewStream(NPP instance, NPMIMEType type, NPStream* stream,
 			NPBool seekable, uint16* stype)
@@ -206,6 +211,7 @@ Private_NewStream(NPP instance, NPMIMEType type, NPStream* stream,
 	return err;
 }
 
+static
 int32
 Private_WriteReady(NPP instance, NPStream* stream)
 {
@@ -215,6 +221,7 @@ Private_WriteReady(NPP instance, NPStream* stream)
 	return result;
 }
 
+static
 int32
 Private_Write(NPP instance, NPStream* stream, int32 offset, int32 len,
 		void* buffer)
@@ -225,6 +232,7 @@ Private_Write(NPP instance, NPStream* stream, int32 offset, int32 len,
 	return result;
 }
 
+static
 void
 Private_StreamAsFile(NPP instance, NPStream* stream, const char* fname)
 {
@@ -232,7 +240,7 @@ Private_StreamAsFile(NPP instance, NPStream* stream, const char* fname)
 	NPP_StreamAsFile(instance, stream, fname);
 }
 
-
+static
 NPError
 Private_DestroyStream(NPP instance, NPStream* stream, NPError reason)
 {
@@ -242,7 +250,7 @@ Private_DestroyStream(NPP instance, NPStream* stream, NPError reason)
 	return err;
 }
 
-
+static
 void
 Private_Print(NPP instance, NPPrint* platformPrint)
 {
@@ -250,6 +258,7 @@ Private_Print(NPP instance, NPPrint* platformPrint)
 	NPP_Print(instance, platformPrint);
 }
 
+static
 JRIGlobalRef
 Private_GetJavaClass(void)
 {

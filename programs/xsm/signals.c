@@ -23,7 +23,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/signals.c,v 3.5 2001/12/08 18:33:45 herrb Exp $ */
+/* $XFree86: xc/programs/xsm/signals.c,v 3.6tsi Exp $ */
 
 #include <stdlib.h>
 
@@ -98,15 +98,19 @@ in this Software without prior written authorization from The Open Group.
 
 #include <stddef.h>
 
+#include "xsm.h"
+
 int checkpoint_from_signal = 0;
 
 extern XtSignalId sig_term_id, sig_usr1_id;
 extern Bool wantShutdown;
 
 
-SIGVAL (*Signal (sig, handler))()
-    int sig;
-    SIGVAL (*handler)();
+static
+SIGVAL *
+Signal(
+    int sig,
+    SIGVAL (*handler)(int) )
 {
 #ifndef X_NOT_POSIX
     struct sigaction sigact, osigact;
@@ -120,10 +124,25 @@ SIGVAL (*Signal (sig, handler))()
 #endif
 }
 
+static
+SIGVAL *
+SignalChild(
+    SIGVAL (*handler)(XtPointer closure, XtSignalId id) )
+{
+#ifndef X_NOT_POSIX
+    struct sigaction sigact, osigact;
+    sigact.sa_handler = (void*)handler; /* we have to use type casting */
+    sigemptyset(&sigact.sa_mask);
+    sigact.sa_flags = 0;
+    sigaction(SIGCHLD, &sigact, &osigact);
+    return osigact.sa_handler;
+#else
+    return signal(sig, (void*)handler); /* we have to use type casting */
+#endif
+}
 
 void
 sig_child_handler (XtPointer closure, XtSignalId id)
-
 {
     int pid, olderrno = errno;
 
@@ -133,7 +152,7 @@ sig_child_handler (XtPointer closure, XtSignalId id)
 #endif
 
 #ifdef SIGNALS_RESET_WHEN_CAUGHT
-    Signal (SIGCHLD, sig_child_handler);
+    SignalChild (sig_child_handler);
 #endif
 
     /*
@@ -162,16 +181,15 @@ sig_child_handler (XtPointer closure, XtSignalId id)
     errno = olderrno;
 }
 
-
 void 
 sig_term_handler(int sig)
 {
     XtNoticeSignal(sig_term_id);
 }
 
+static
 void
 xt_sig_term_handler (XtPointer closure, XtSignalId *id)
-
 {
     wantShutdown = 1;
     checkpoint_from_signal = 1;
@@ -183,9 +201,9 @@ void sig_usr1_handler(int sig)
     XtNoticeSignal(sig_usr1_id);
 }
 
+static
 void
 xt_sig_usr1_handler (XtPointer closure, XtSignalId *id)
-
 {
     wantShutdown = 0;
     checkpoint_from_signal = 1;
@@ -196,7 +214,6 @@ xt_sig_usr1_handler (XtPointer closure, XtSignalId *id)
 
 void
 register_signals (XtAppContext appContext)
-
 {
     /*
      * Ignore SIGPIPE
@@ -209,7 +226,7 @@ register_signals (XtAppContext appContext)
      * If child process dies, call our handler
      */
 
-    Signal (SIGCHLD, sig_child_handler);
+    SignalChild (sig_child_handler);
 
 
     /*
@@ -228,13 +245,10 @@ register_signals (XtAppContext appContext)
     sig_usr1_id = XtAppAddSignal(appContext, xt_sig_usr1_handler, NULL);
 }
 
-
 
 int
-execute_system_command (s)
-
-char *s;
-
+execute_system_command (
+    char *s)
 {
     int stat;
 
@@ -258,7 +272,7 @@ char *s;
      * so do non-blocking waits until there are no signals left.
      */
 
-    Signal (SIGCHLD, sig_child_handler);
+    SignalChild (sig_child_handler);
 
 #if !(defined(USE_SYSV_SIGNALS) && (defined(CRAY) || !defined(SIGTSTP)))
     do
@@ -272,5 +286,3 @@ char *s;
 
     return (stat);
 }
-
-
