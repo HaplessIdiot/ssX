@@ -215,7 +215,7 @@ MultiSinkClassRec multiSinkClassRec = {
 WidgetClass multiSinkObjectClass = (WidgetClass)&multiSinkClassRec;
 
 /* Utilities */
-int
+static int
 CharWidth(Widget w, int x, wchar_t c)
 {
   int i, width;
@@ -282,7 +282,7 @@ CharWidth(Widget w, int x, wchar_t c)
  * NOTE:  If this string attempts to paint past the end of the window
  *        then this function will return zero.
  */
-unsigned int
+static unsigned int
 PaintText(Widget w, GC gc, int x, int y, wchar_t *buf, int len)
 {
   MultiSinkObject sink = (MultiSinkObject)w;
@@ -323,7 +323,7 @@ PaintText(Widget w, GC gc, int x, int y, wchar_t *buf, int len)
 /*
  * This function does not know about drawing more than one line of text.
  */
-void
+static void
 DisplayText(Widget w, int x, int y,
 	    XawTextPosition pos1, XawTextPosition pos2, Bool highlight)
 {
@@ -409,7 +409,7 @@ DisplayText(Widget w, int x, int y,
  * RETURNED	   rect - an X rectangle to return the cursor bounds in.
  *	Returns: none.
  */
-void
+static void
 GetCursorBounds(Widget w, XRectangle *rect)
 {
   MultiSinkObject sink = (MultiSinkObject)w;
@@ -424,7 +424,7 @@ GetCursorBounds(Widget w, XRectangle *rect)
 /*
  * The following procedure manages the "insert" cursor.
  */
-void
+static void
 InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 {
   MultiSinkObject sink = (MultiSinkObject)w;
@@ -518,7 +518,7 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 /*
  * Given two positions, find the distance between them.
  */
-void
+static void
 FindDistance(Widget w, XawTextPosition fromPos, int fromx,
 	     XawTextPosition toPos, int *resWidth,
 	     XawTextPosition *resPos, int *resHeight)
@@ -550,7 +550,7 @@ FindDistance(Widget w, XawTextPosition fromPos, int fromx,
   *resHeight = ext->max_logical_extent.height;
 }
 
-void
+static void
 FindPosition(Widget w, XawTextPosition fromPos, int fromx, int width,
 	     Bool stopAtWordBreak, XawTextPosition *resPos, int *resWidth,
 	     int *resHeight)
@@ -607,7 +607,7 @@ FindPosition(Widget w, XawTextPosition fromPos, int fromx, int width,
   *resHeight = ext->max_logical_extent.height;
 }
 
-void
+static void
 Resolve(Widget w, XawTextPosition pos, int fromx, int width,
 	XawTextPosition *pos_return)
 {
@@ -655,7 +655,7 @@ GetGC(MultiSinkObject sink)
 }
 
 /***** Public routines *****/
-void
+static void
 XawMultiSinkClassInitialize(void)
 {
   wspace[0] = _Xaw_atowc(' ');
@@ -670,7 +670,7 @@ XawMultiSinkClassInitialize(void)
  *
  */
 /* ARGSUSED */
-void
+static void
 XawMultiSinkInitialize(Widget request, Widget c_new,
 		       ArgList args, Cardinal *num_args)
 {
@@ -689,7 +689,7 @@ XawMultiSinkInitialize(Widget request, Widget c_new,
  *	Arguments: w - the MultiSink Object.
  *	Returns: none.
  */
-void
+static void
 XawMultiSinkDestroy(Widget w)
 {
   MultiSinkObject sink = (MultiSinkObject)w;
@@ -703,7 +703,7 @@ XawMultiSinkDestroy(Widget w)
     sink->multi_sink.xorgc = NULL;
 }
 
-void
+static void
 XawMultiSinkResize(Widget w)
 {
   TextWidget ctx = (TextWidget)XtParent(w);
@@ -754,7 +754,7 @@ XawMultiSinkResize(Widget w)
  *	Returns: True if redisplay is needed.
  */
 /* ARGSUSED */
-Boolean
+static Boolean
 XawMultiSinkSetValues(Widget current, Widget request, Widget c_new,
 		      ArgList args, Cardinal *num_args)
 {
@@ -798,7 +798,7 @@ XawMultiSinkSetValues(Widget current, Widget request, Widget c_new,
  *	Returns: the number of lines that will fit.
  */
 /* ARGSUSED */
-int
+static int
 MaxLines(Widget w, unsigned int height)
 {
   MultiSinkObject sink = (MultiSinkObject)w;
@@ -817,7 +817,7 @@ MaxLines(Widget w, unsigned int height)
  *	Returns: the height.
  */
 /* ARGSUSED */
-int
+static int
 MaxHeight(Widget w, int lines)
 {
   MultiSinkObject sink = (MultiSinkObject)w;
@@ -833,7 +833,7 @@ MaxHeight(Widget w, int lines)
  *		   tabs - the text positions of the tabs.
  *	Returns: none
  */
-void
+static void
 SetTabs(Widget w, int tab_count, short* tabs)
 {
   MultiSinkObject sink = (MultiSinkObject)w;

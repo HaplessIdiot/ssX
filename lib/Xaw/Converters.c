@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Converters.c,v 3.6 1998/06/28 12:32:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Converters.c,v 3.7 1998/06/28 13:04:20 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -181,7 +181,7 @@ XawInitializeDefaultConverters(void)
 }
 
 /* ARGSUSED */
-Boolean
+static Boolean
 _XawCvtBooleanToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 		       XrmValue *fromVal, XrmValue *toVal,
 		       XtPointer *converter_data)
@@ -204,7 +204,7 @@ _XawCvtBooleanToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 }
 
 /* ARGSUSED */
-Boolean
+static Boolean
 _XawCvtPositionToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 			XrmValue *fromVal, XrmValue *toVal,
 			XtPointer *converter_data)
@@ -226,7 +226,7 @@ _XawCvtPositionToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 }
 
 /* ARGSUSED */
-Boolean
+static Boolean
 _XawCvtDimensionToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 			 XrmValue *fromVal, XrmValue *toVal,
 			 XtPointer *converter_data)
@@ -248,7 +248,7 @@ _XawCvtDimensionToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 }
 
 /* ARGSUSED */
-Boolean
+static Boolean
 _XawCvtPixelToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 		     XrmValue *fromVal, XrmValue *toVal,
 		     XtPointer *converter_data)
@@ -284,7 +284,7 @@ _XawCvtPixelToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 }
 
 /* ARGSUSED */
-Boolean
+static Boolean
 _XawCvtFontStructToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 			  XrmValue *fromVal, XrmValue *toVal,
 			  XtPointer *converter_data)
@@ -330,7 +330,7 @@ _XawCvtFontStructToString(Display *dpy, XrmValue *args, Cardinal *num_args,
   return (False);
 }
 
-Boolean
+static Boolean
 _XawCvtStringToDisplayList(Display *dpy, XrmValue *args, Cardinal *num_args,
 			   XrmValue *fromVal, XrmValue *toVal,
 			   XtPointer *converter_data)
@@ -381,7 +381,7 @@ _XawCvtStringToDisplayList(Display *dpy, XrmValue *args, Cardinal *num_args,
 }
 
 /* ARGSUSED */
-Boolean
+static Boolean
 _XawCvtDisplayListToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 			   XrmValue *fromVal, XrmValue *toVal,
 			   XtPointer *converter_data)
@@ -403,7 +403,7 @@ _XawCvtDisplayListToString(Display *dpy, XrmValue *args, Cardinal *num_args,
   string_done(buffer);
 }
 
-Boolean
+static Boolean
 _XawCvtStringToPixmap(Display *dpy, XrmValue *args, Cardinal *num_args,
 		      XrmValue *fromVal, XrmValue *toVal,
 		      XtPointer *converter_data)
@@ -464,7 +464,7 @@ _XawCvtStringToPixmap(Display *dpy, XrmValue *args, Cardinal *num_args,
 }
 
 /* ARGSUSED */
-Boolean
+static Boolean
 _XawCvtPixmapToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 		      XrmValue *fromVal, XrmValue *toVal,
 		      XtPointer *converter_data)

@@ -47,7 +47,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.8 1998/06/28 12:56:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.9 1998/06/28 13:04:21 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -423,7 +423,7 @@ static XrmQuark QScrollNever, QScrollAlways, QScrollWhenNeeded,
 	  QResizeNever, QResizeWidth, QResizeHeight, QResizeBoth;
 
 /* ARGSUSED */
-void
+static void
 CvtStringToScrollMode(XrmValuePtr args, Cardinal *num_args,
 		      XrmValuePtr fromVal, XrmValuePtr toVal)
 {
@@ -448,7 +448,7 @@ CvtStringToScrollMode(XrmValuePtr args, Cardinal *num_args,
 }
 
 /* ARGSUSED */
-void
+static void
 CvtStringToWrapMode(XrmValuePtr args, Cardinal *num_args,
 		    XrmValuePtr fromVal, XrmValuePtr toVal)
 {
@@ -473,7 +473,7 @@ CvtStringToWrapMode(XrmValuePtr args, Cardinal *num_args,
 }
 
 /* ARGSUSED */
-void
+static void
 CvtStringToResizeMode(XrmValuePtr args, Cardinal *num_args,
 		      XrmValuePtr fromVal, XrmValuePtr toVal)
 {
@@ -501,7 +501,7 @@ CvtStringToResizeMode(XrmValuePtr args, Cardinal *num_args,
 
 #undef done
 
-void
+static void
 XawTextClassInitialize(void)
 {
   int len1 = strlen (_XawDefaultTextTranslations1);
@@ -552,7 +552,7 @@ XawTextClassInitialize(void)
  *	Arguments: ctx - the text widget.
  *	Returns: none
  */
-void
+static void
 PositionHScrollBar(TextWidget ctx)
 {
   Widget hbar = ctx->text.hbar, vbar = ctx->text.vbar;
@@ -603,7 +603,7 @@ PositionHScrollBar(TextWidget ctx)
  *	Arguments: ctx - the text widget.
  *	Returns: none.
  */
-void
+static void
 PositionVScrollBar(TextWidget ctx)
 {
   Widget vbar = ctx->text.vbar, hbar = ctx->text.hbar;
@@ -635,7 +635,7 @@ PositionVScrollBar(TextWidget ctx)
   XtConfigureWidget(vbar, x, y, width, height, XtBorderWidth(vbar));
 }
 
-void
+static void
 CreateVScrollBar(TextWidget ctx)
 {
   Widget vbar;
@@ -680,7 +680,7 @@ CreateVScrollBar(TextWidget ctx)
  *	Arguments: ctx - the parent text widget.
  *	Returns: none.
  */
-void
+static void
 DestroyVScrollBar(TextWidget ctx)
 {
   Widget vbar = ctx->text.vbar;
@@ -701,7 +701,7 @@ DestroyVScrollBar(TextWidget ctx)
   TextSinkResize(ctx->text.sink);
 }
 
-void
+static void
 CreateHScrollBar(TextWidget ctx)
 {
   Arg args[1];
@@ -758,7 +758,7 @@ CreateHScrollBar(TextWidget ctx)
  *	Returns: none.
  */
 
-void
+static void
 DestroyHScrollBar(TextWidget ctx)
 {
   Widget hbar = ctx->text.hbar;
@@ -780,7 +780,7 @@ DestroyHScrollBar(TextWidget ctx)
 }
 
 /* ARGSUSED */
-void 
+static void
 XawTextInitialize(Widget request, Widget c_new,
 		  ArgList args, Cardinal *num_args)
 {
@@ -841,7 +841,7 @@ XawTextInitialize(Widget request, Widget c_new,
     }
 }
 
-void
+static void
 XawTextRealize(Widget w, XtValueMask *mask, XSetWindowAttributes *attr)
 {
   TextWidget ctx = (TextWidget)w;
@@ -866,7 +866,7 @@ XawTextRealize(Widget w, XtValueMask *mask, XSetWindowAttributes *attr)
 }
 
 /*ARGSUSED*/
-void
+static void
 UnrealizeScrollbars(Widget widget, XtPointer client, XtPointer call)
 {
   TextWidget ctx = (TextWidget)widget;
@@ -878,7 +878,7 @@ UnrealizeScrollbars(Widget widget, XtPointer client, XtPointer call)
 }
 
 /* Utility routines for support of Text */
-void
+static void
 _CreateCutBuffers(Display *d)
 {
   static struct _DisplayRec {
@@ -918,7 +918,7 @@ _CreateCutBuffers(Display *d)
  * position is immediately preceded by an eol graphic, then the insert cursor
  * is displayed at the beginning of the next line.
 */
-void
+static void
 InsertCursor(Widget w, XawTextInsertState state)
 {
   TextWidget ctx = (TextWidget)w;
@@ -1088,7 +1088,7 @@ _XawTextGetSTRING(TextWidget ctx, XawTextPosition left, XawTextPosition right)
  * NOTE: it is illegal to call this routine unless there is a valid line table!
  */
 /*** figure out what line it is on ***/
-XawTextPosition
+static XawTextPosition
 PositionForXY(TextWidget ctx, int x, int y)
 {
   int fromx, line, width, height;
@@ -1125,7 +1125,7 @@ PositionForXY(TextWidget ctx, int x, int y)
  *
  * NOTE: It is illegal to call this routine unless there is a valid line table!
  */
-int
+static int
 LineForPosition(TextWidget ctx, XawTextPosition position)
 {
   int line;
@@ -1143,7 +1143,7 @@ LineForPosition(TextWidget ctx, XawTextPosition position)
  *
  * NOTE: It is illegal to call this routine unless there is a valid line table!
  */
-Bool
+static Bool
 LineAndXYForPosition(TextWidget ctx, XawTextPosition pos,
 		     int *line, int *x, int *y)
 {
@@ -1208,7 +1208,7 @@ _XawTextBuildLineTable(TextWidget ctx, XawTextPosition position,
 /*
  * This assumes that the line table does not change size.
  */
-XawTextPosition
+static XawTextPosition
 _BuildLineTable(TextWidget ctx, XawTextPosition position,
 		XawTextPosition min_pos, int line)
 {
@@ -1274,7 +1274,7 @@ _BuildLineTable(TextWidget ctx, XawTextPosition position,
  *
  * NOTE: This function requires a valid line table.
  */
-unsigned int
+static unsigned int
 GetWidestLine(TextWidget ctx)
 {
   int i;
@@ -1288,7 +1288,7 @@ GetWidestLine(TextWidget ctx)
   return (widest);
 }
 
-void
+static void
 CheckVBarScrolling(TextWidget ctx)
 {
   float first, last;
@@ -1381,7 +1381,7 @@ _XawTextSetScrollBars(TextWidget ctx)
     }
 }
 
-void
+static void
 DoCopyArea(TextWidget ctx, int src_x, int src_y,
 	   unsigned int width, unsigned int height, int dst_x, int dst_y)
 {
@@ -1414,7 +1414,7 @@ DoCopyArea(TextWidget ctx, int src_x, int src_y,
  *	vlines	- Numero de linhas a rolar na vertical
  *	hpixels	- Numero de pixels a rolar na horizontal
  */
-void
+static void
 XawTextScroll(TextWidget ctx, int vlines, int hpixels)
 {
   XawTextPosition top;
@@ -1663,7 +1663,7 @@ _XawTextVScroll(TextWidget ctx, int n)
 }
 
 /*ARGSUSED*/
-void
+static void
 HScroll(Widget w, XtPointer closure, XtPointer callData)
 {
   TextWidget ctx = (TextWidget)closure;
@@ -1689,7 +1689,7 @@ HScroll(Widget w, XtPointer closure, XtPointer callData)
 }
 
 /*ARGSUSED*/
-void
+static void
 HJump(Widget w, XtPointer closure, XtPointer callData)
 {
   TextWidget ctx = (TextWidget)closure;
@@ -1710,7 +1710,7 @@ HJump(Widget w, XtPointer closure, XtPointer callData)
  *				 area to update.
  *	Returns: none.
  */
-void
+static void
 UpdateTextInLine(TextWidget ctx, int line, int left, int right)
 {
   XawTextPosition pos1, pos2;
@@ -1759,7 +1759,7 @@ UpdateTextInLine(TextWidget ctx, int line, int left, int right)
  * positive, move up; otherwise, move down.
  */
 /*ARGSUSED*/
-void
+static void
 VScroll(Widget w, XtPointer closure, XtPointer callData)
 {
   TextWidget ctx = (TextWidget)closure;
@@ -1775,7 +1775,7 @@ VScroll(Widget w, XtPointer closure, XtPointer callData)
 }
 
 /*ARGSUSED*/
-void
+static void
 VJump(Widget w, XtPointer closure, XtPointer callData)
 {
   float percent = *(float *)callData;
@@ -1852,7 +1852,7 @@ VJump(Widget w, XtPointer closure, XtPointer callData)
   _XawTextExecuteUpdate(ctx);
 }
 
-Bool
+static Bool
 MatchSelection(Atom selection, XawTextSelection *s)
 {
   Atom *match;
@@ -1866,7 +1866,7 @@ MatchSelection(Atom selection, XawTextSelection *s)
   return (False);
 }
 
-Boolean
+static Boolean
 ConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
 		 XtPointer *value, unsigned long *length, int *format)
 {
@@ -2063,7 +2063,7 @@ ConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
  *		 NOT_A_CUT_BUFFER.
  */
 #define NOT_A_CUT_BUFFER -1
-int
+static int
 GetCutBufferNumber(Atom atom)
 {
   if (atom == XA_CUT_BUFFER0) return (0);
@@ -2077,7 +2077,7 @@ GetCutBufferNumber(Atom atom)
   return (NOT_A_CUT_BUFFER);
 }
 
-void
+static void
 LoseSelection(Widget w, Atom *selection)
 {
   TextWidget ctx = (TextWidget)w;
@@ -2215,7 +2215,7 @@ _XawTextSaltAwaySelection(TextWidget ctx, Atom *selections, int num_atoms)
   salt->s.atom_count = j;
 }
 
-void
+static void
 _SetSelection(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 	      Atom *selections, Cardinal count)
 {
@@ -2431,7 +2431,7 @@ _XawTextReplace(TextWidget ctx, XawTextPosition pos1, XawTextPosition pos2,
  * NOTE: it is illegal to call this routine unless there
  *	 is a valid line table!
  */
-void
+static void
 DisplayText(Widget w, XawTextPosition pos1, XawTextPosition pos2)
 {
   TextWidget ctx = (TextWidget)w;
@@ -2525,7 +2525,7 @@ DisplayText(Widget w, XawTextPosition pos1, XawTextPosition pos2)
  * will allows clients to implements a wide class of draw through and
  * multi-click selection user interfaces.]
  */
-void
+static void
 DoSelection(TextWidget ctx, XawTextPosition pos, Time time, Bool motion)
 {
   XawTextPosition newLeft, newRight;
@@ -2647,7 +2647,7 @@ DoSelection(TextWidget ctx, XawTextPosition pos, Time time, Bool motion)
  * cross through the "center" of the current selection (e.g. switch which
  * end you are extending!).
  */
-void
+static void
 ExtendSelection(TextWidget ctx, XawTextPosition pos, Bool motion)
 {
   XawTextScanDirection dir;
@@ -2742,7 +2742,7 @@ ExtendSelection(TextWidget ctx, XawTextPosition pos, Bool motion)
 /*
  * Clear the window to background color.
  */
-void
+static void
 ClearWindow(Widget w)
 {
   TextWidget ctx = (TextWidget)w;
@@ -2771,7 +2771,7 @@ _XawTextClearAndCenterDisplay(TextWidget ctx)
  * Internal redisplay entire window.
  * Legal to call only if widget is realized.
  */
-void
+static void
 DisplayTextWindow(Widget w)
 {
   TextWidget ctx = (TextWidget)w;
@@ -2782,7 +2782,7 @@ DisplayTextWindow(Widget w)
   _XawTextSetScrollBars(ctx);
 }
 
-void
+static void
 TextSinkResize(Widget w)
 {
   if (w && XtClass(w)->core_class.resize)
@@ -2926,7 +2926,7 @@ _XawTextSetSelection(TextWidget ctx, XawTextPosition l, XawTextPosition r,
  *  NOTE: if (ctx->text.s.left >= ctx->text.s.right) then the selection
  *        is unset.
  */
-void
+static void
 ModifySelection(TextWidget ctx, XawTextPosition left, XawTextPosition right)
 {
   if (left == right)
@@ -2973,7 +2973,7 @@ _XawTextAlterSelection(TextWidget ctx, XawTextSelectionMode mode,
  *		   rect - the rectangle to update.
  *	Returns: none.
  */
-void
+static void
 UpdateTextInRectangle(TextWidget ctx, XRectangle *rect)
 {
   XawTextLineTableEntry *info = ctx->text.lt.info;
@@ -2994,7 +2994,7 @@ UpdateTextInRectangle(TextWidget ctx, XRectangle *rect)
  * window, that it can.
  */
 /* ARGSUSED */
-void
+static void
 XawTextExpose(Widget w, XEvent *event, Region region)
 {
   TextWidget ctx = (TextWidget)w;
@@ -3044,7 +3044,7 @@ _XawTextPrepareToUpdate(TextWidget ctx)
  * processes all the outstanding update requests and merges update
  * ranges where possible.
  */
-void
+static void
 FlushUpdate(TextWidget ctx)
 {
   int i, w;
@@ -3089,7 +3089,7 @@ FlushUpdate(TextWidget ctx)
     }
 }
 
-int
+static int
 CountLines(TextWidget ctx, XawTextPosition left, XawTextPosition right)
 {
   if (ctx->text.wrap == XawtextWrapNever || left >= right)
@@ -3223,7 +3223,7 @@ _XawTextExecuteUpdate(TextWidget ctx)
   ctx->text.old_insert = -1;
 }
 
-void 
+static void
 XawTextDestroy(Widget w)
 {
   TextWidget ctx = (TextWidget)w;
@@ -3259,7 +3259,7 @@ XawTextResize(Widget w)
  * This routine allow the application program to Set attributes.
  */
 /*ARGSUSED*/
-Boolean
+static Boolean
 XawTextSetValues(Widget current, Widget request, Widget c_new,
 		 ArgList args, Cardinal *num_args)
 {
@@ -3344,7 +3344,7 @@ XawTextSetValues(Widget current, Widget request, Widget c_new,
 }
 
 /* invoked by the Simple widget's SetValues */
-Boolean
+static Boolean
 XawTextChangeSensitive(Widget w)
 {
   Arg args[1];
@@ -3369,7 +3369,7 @@ XawTextChangeSensitive(Widget w)
  *		   num_args - the number of args.
  *	Returns: none.
  */
-void
+static void
 XawTextGetValuesHook(Widget w, ArgList args, Cardinal *num_args)
 {
   XtGetValues(((TextWidget)w)->text.source, args, *num_args);
@@ -3381,7 +3381,7 @@ XawTextGetValuesHook(Widget w, ArgList args, Cardinal *num_args)
  *	Arguments: pos - any position.
  *	Returns: a position between (0 and lastPos);
  */
-XawTextPosition
+static XawTextPosition
 FindGoodPosition(TextWidget ctx, XawTextPosition pos)
 {
   if (pos < 0)

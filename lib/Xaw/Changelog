@@ -255,3 +255,17 @@ Patch 8 (#1752) 27 June 1998
     text, because the cursor will be always visible since this new patch
     does horizontal scrolling automatically.
 
+
+Patch 9 (#1755) 28 June 1998
+
+  + Removed all my RCS idents in the files.
+  + Declared functions as static in the prototype and in the definition
+    (this basically reverts a previous patch, but should help when applying
+     the patches sequentially).
+  + Changed the code in Pixmap.c to use strtok instead of strsep, that is
+    not portable.
+  + Corrected problem with previous patch that would cause trouble when
+    a text widget had more than 32K bytes, and would also cause offset
+    mismatches if a program access private structures (AsciiSinkP.h).
+
+

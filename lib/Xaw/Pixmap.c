@@ -25,14 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.5 1998/06/28 13:04:20 dawes Exp $ */
-
-#if DO_SYSLOG
-#include <sys/types.h>
-#include <unistd.h>
-#include <syslog.h>
-#include <varargs.h>
-#endif
+/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.6 1998/06/28 14:20:49 dawes Exp $ */
 
 #include <string.h>
 #include <stdio.h>
@@ -71,7 +64,6 @@ static int qcmp_long(register _Xconst void*, register _Xconst void *);
 static int bcmp_long(register _Xconst void*, register _Xconst void *);
 static int qcmp_string(register _Xconst void*, register _Xconst void *);
 static int bcmp_string(register _Xconst void*, register _Xconst void *);
-Boolean XawSecurePixmapFile(String);
 
 /*
  * Initialization
@@ -84,37 +76,6 @@ static Cardinal num_loader_info;
 /*
  * Implementation
  */
-Boolean XawSecurePixmapFile(String filename)
-{
-  struct stat sb;
-
-  if (!filename)
-    return (False);
-
-  if (stat(filename, &sb) == 0)
-    {
-      if ((S_ISREG(sb.st_mode))                    /* (is) regular file */
-	  && ((sb.st_mode & S_IRGRP) == S_IRGRP)   /* (is) group readable */
-	  && ((sb.st_mode & S_ISUID) != S_ISUID)   /* (not) set user id */
-	  && ((sb.st_mode & S_ISGID) != S_ISGID))  /* (not) set group id */
-	return (True);
-
-#if DO_SYSLOG
-      {
-	String libXaw = "libXaw";
-
-	openlog(libXaw, LOG_PID | LOG_NDELAY, LOG_LOCAL2);
-	setlogmask(LOG_UPTO(LOG_WARNING));
-	syslog(LOG_WARNING, "Attempt to read \"%s\" as backgroundPixmap "
-	       "resource.", filename);
-	closelog();
-      }
-#endif
-    }
-
-  return (False);
-}
-
 Boolean
 XawPixmapsInitialize()
 {
@@ -213,43 +174,36 @@ XawParseParamsString(String name)
       char *arg, *val;
       XawArgVal *xaw_arg;
 
-      tok = strtok(params, "&");
-      for (; tok != NULL;)
+      for (tok = strtok(params, "&"); tok; tok = strtok(NULL, "&"))
 	{
-	  if (!tok[0])
-	    ;
+	  val = strchr(tok, '=');
+	  if (val)
+	    {
+	      *val = '\0';
+	      ++val;
+	      if (*val != '\0')
+		val = XtNewString(val);
+	      else
+		val = NULL;
+	    }
+	  arg = XtNewString(tok);
+	  xaw_arg = (XawArgVal *)XtMalloc(sizeof(XawArgVal));
+	  xaw_arg->name = arg;
+	  xaw_arg->value = val;
+	  if (!xaw_params->num_args)
+	    {
+	      xaw_params->num_args = 1;
+	      xaw_params->args = (XawArgVal **)
+		XtMalloc(sizeof(XawArgVal*));
+	    }
 	  else
 	    {
-	      val = strchr(tok, '=');
-	      if (val)
-		{
-		  *val = '\0';
-		  ++val;
-		  if (*val != '\0')
-		    val = XtNewString(val);
-		  else
-		    val = NULL;
-		}
-	      arg = XtNewString(tok);
-	      xaw_arg = (XawArgVal *)XtMalloc(sizeof(XawArgVal));
-	      xaw_arg->name = arg;
-	      xaw_arg->value = val;
-	      if (!xaw_params->num_args)
-		{
-		  xaw_params->num_args = 1;
-		  xaw_params->args = (XawArgVal **)
-		    XtMalloc(sizeof(XawArgVal*));
-		}
-	      else
-		{
-		  ++xaw_params->num_args;
-		  xaw_params->args = (XawArgVal **)
-		    XtRealloc((char *)xaw_params->args,
-			      sizeof(XawArgVal*) * xaw_params->num_args);
-		}
-	      xaw_params->args[xaw_params->num_args - 1] = xaw_arg;
+	      ++xaw_params->num_args;
+	      xaw_params->args = (XawArgVal **)
+		XtRealloc((char *)xaw_params->args,
+			  sizeof(XawArgVal*) * xaw_params->num_args);
 	    }
-	  tok = strtok(NULL, "&");
+	  xaw_params->args[xaw_params->num_args - 1] = xaw_arg;
 	}
     }
 
@@ -409,7 +363,7 @@ XawAddPixmapLoader(String type, String ext, XawPixmapLoader loader)
   return (True);
 }
 
-int
+static int
 _XawFindPixmapLoaderIndex(String type, String ext)
 {
   int i;
@@ -606,7 +560,7 @@ _XawGetCache(XawCache *xaw, Screen *screen, Colormap colormap, int depth)
   return (cache);
 }
 
-XawPixmap *
+static XawPixmap *
 _XawFindPixmap(String name, Screen *screen, Colormap colormap, int depth)
 {
   XawCache *cache;
@@ -649,7 +603,7 @@ XawPixmapFromXPixmap(Pixmap pixmap,
   return (*x_pixmap);
 }
 
-void
+static void
 _XawCachePixmap(XawPixmap *pixmap,
 		Screen *screen, Colormap colormap, int depth)
 {
@@ -695,7 +649,7 @@ _XawCachePixmap(XawPixmap *pixmap,
     qsort(x_cache->elems, x_cache->num_elems, sizeof(XtPointer), qcmp_x_cache);
 }
 
-Boolean
+static Boolean
 BitmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
 	     Pixmap *pixmap_return, Pixmap *mask_return,
 	     Dimension *width_return, Dimension *height_return)
@@ -747,13 +701,6 @@ BitmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
   else
     filename = params->name;
 
-  if (!XawSecurePixmapFile(filename))
-    {
-      if (filename != params->name)
-	XtFree(filename);
-      return (FALSE);
-    }
-
   if (XReadBitmapFileData(filename, &width, &height, &data,
 			  &hotX, &hotY) == BitmapSuccess)
     {
@@ -779,7 +726,7 @@ BitmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
 
 #define VERTICAL   1
 #define HORIZONTAL 2
-Boolean
+static Boolean
 GradientLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
 	       Pixmap *pixmap_return, Pixmap *mask_return,
 	       Dimension *width_return, Dimension *height_return)

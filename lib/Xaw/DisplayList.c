@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.6 1998/06/28 12:32:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.7 1998/06/28 12:56:16 dawes Exp $ */
 
 #include <ctype.h>
 #include <string.h>
@@ -927,7 +927,7 @@ XawDisplayListInitialize()
     (void)XawDeclareDisplayListProc(lc, dl_init[i].name, dl_init[i].proc);
 }
 
-int
+static int
 bcmp_cvt_proc(register _Xconst void *string,
 	      register _Xconst void *dlinfo)
 {
@@ -981,7 +981,7 @@ read_position(char *arg, XawDLPosition *pos)
 }
 
 /* ARGSUSED */
-void *
+static void *
 _Xaw_Xlib_ArgsInitProc(String proc_name, String *params, Cardinal *num_params,
 		       Screen *screen, Colormap colormap, int depth)
 {
@@ -1067,7 +1067,7 @@ _Xaw_Xlib_ArgsInitProc(String proc_name, String *params, Cardinal *num_params,
 }
 
 /* ARGSUSED */
-void *
+static void *
 _Xaw_Xlib_DataInitProc(String class_name,
 		       Screen *screen, Colormap colormap, int depth)
 {
@@ -1090,7 +1090,7 @@ _Xaw_Xlib_DataInitProc(String class_name,
 }
 
 /* ARGSUSED */
-void
+static void
 _Xaw_Xlib_ArgsDestructor(Display *display, String proc_name, XtPointer args,
 			 String *params, Cardinal *num_params)
 {
@@ -1131,7 +1131,7 @@ _Xaw_Xlib_ArgsDestructor(Display *display, String proc_name, XtPointer args,
 }
 
 /* ARGSUSED */
-void
+static void
 _Xaw_Xlib_DataDestructor(Display *display, String class_name, XtPointer data)
 {
   if (data)
@@ -1142,7 +1142,7 @@ _Xaw_Xlib_DataDestructor(Display *display, String class_name, XtPointer data)
 }
 
 /* Start of DLInfo Management Functions */
-int
+static int
 qcmp_dlist_info(register _Xconst void *left, register _Xconst void *right)
 {
   return (strcmp((*(XawDLInfo **)left)->name, (*(XawDLInfo **)right)->name));
@@ -1187,14 +1187,14 @@ Boolean XawDeclareDisplayListProc(XawDLClass *lc, String name,
   return (True);
 }
 
-int
+static int
 bcmp_dlist_info(register _Xconst void *string,
 		register _Xconst void *dlinfo)
 {
   return (strcmp((String)string, (*(XawDLClass **)dlinfo)->name));
 }
 
-XawDLInfo *
+static XawDLInfo *
 _XawFindDLInfo(XawDLClass *lc, String name)
 {
   XawDLInfo **info;
@@ -1215,7 +1215,7 @@ XawGetDisplayListClass(String name)
   return (_XawFindDLClass(name));
 }
 
-int
+static int
 qcmp_dlist_class(register _Xconst void *left, register _Xconst void *right)
 {
   return (strcmp((*(XawDLClass **)left)->name, (*(XawDLClass **)right)->name));
@@ -1261,14 +1261,14 @@ XawCreateDisplayListClass(String name,
   return (lc);
 }
 
-int
+static int
 bcmp_dlist_class(register _Xconst void *string,
 		 register _Xconst void *dlist)
 {
   return (strcmp((String)string, (*(XawDLClass **)dlist)->name));
 }
 
-XawDLClass *
+static XawDLClass *
 _XawFindDLClass(String name)
 {
   XawDLClass **lc;
