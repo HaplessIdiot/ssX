@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.2 2000/01/21 01:11:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.3 2000/01/21 15:06:16 dawes Exp $ */
 
 #include "fb.h"
 
@@ -211,7 +211,7 @@ fbBltOne (FbStip    *src,
     transparent = FALSE;
     if (bgand == 0 && fgand == 0)
 	copy = TRUE;
-    else if (bgand == FB_ALLONES && bgxor == 0 && fgand == 0)
+    else if (bgand == FB_ALLONES && bgxor == 0)
 	transparent = TRUE;
 
     /*
@@ -251,7 +251,7 @@ fbBltOne (FbStip    *src,
 	fbBits = fbStippleTable[pixelsPerDst];
 #ifndef FBNOPIXADDR
     fbLane = 0;
-    if (transparent && dstBpp >= 8)
+    if (transparent && fgand == 0 && dstBpp >= 8)
 	fbLane = fbLaneTable[dstBpp];
 #endif
     
