@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.149 2004/06/02 22:42:53 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.150 2005/01/16 00:09:45 dawes Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -393,6 +393,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  endif
 # endif
 
+# ifndef ExtraSharedLibraryLoadFlags
+#  if !UseElfFormat
+#   define ExtraSharedLibraryLoadFlags /**/
+#  endif
+# endif
 #endif
 
 #ifndef LibraryRpathLoadFlags
