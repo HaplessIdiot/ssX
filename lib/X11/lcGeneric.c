@@ -28,7 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.8 2000/02/08 17:18:45 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.9 2000/02/25 18:27:56 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -440,8 +440,7 @@ XLCdGenericPart *gen;
             if (num > 0) {
                 _XlcDbg_printValue(name,value,num);
                 if( !_XlcNCompareISOLatin1(value[0], "none", 4) ){
-                    side =  XlcNONE ;
-                    strcat(cset_name,":none");
+                    side =  XlcGLGR ;
                 } else
                 if( !_XlcNCompareISOLatin1(value[0], "GL", 2) ){
                     side =  XlcGL ;
@@ -602,14 +601,6 @@ XLCdGenericPart *gen;
             strcpy(tmp,value[0]);
             conversion->source_encoding = tmp;
             conversion->source = srch_charset_define(tmp,&new);
-            if(new){
-                tmp = (char *)Xmalloc(strlen(conversion->source_encoding)+1);
-                if(tmp == NULL){
-                    return ;
-                }
-                strcpy(tmp,conversion->source_encoding);
-                conversion->source->name = tmp;
-            }
         }
         /* destination_encoding  */
         sprintf(name, "%s.%s", conv , "destination_encoding");
@@ -624,15 +615,6 @@ XLCdGenericPart *gen;
             strcpy(tmp,value[0]);
             conversion->destination_encoding = tmp;
             conversion->dest = srch_charset_define(tmp,&new);
-            if(new){
-                tmp = (char *)Xmalloc(
-                    strlen(conversion->destination_encoding)+1);
-                if(tmp == NULL){
-                    return ;
-                }
-                strcpy(tmp,conversion->destination_encoding);
-                conversion->dest->name = tmp;
-            }
         }
         /* range                 */
         sprintf(name, "%s.%s", conv , "range");
@@ -667,26 +649,22 @@ int num;
     if(ret == NULL){
         return NULL;
     }
+    ret->name = (char *)Xmalloc(strlen(value[0]) + 1);
+    if(ret->name == NULL){
+        Xfree (ret);
+        return NULL;
+    }
+    strcpy(ret->name,value[0]);
+    cset_name = (char*) Xmalloc (strlen(ret->name) + 1);
+    if (cset_name == NULL) {
+        Xfree (ret->name);
+        Xfree (ret);
+        return NULL;
+    }
     if(strchr(value[0],':')){
-        ret->name = (char *)Xmalloc(strlen(value[0])+1);
-        if(ret->name == NULL){
-	    Xfree (ret);
-            return NULL;
-        }
-        strcpy(ret->name,value[0]);
         ptr = strchr(ret->name,':');
         *ptr = '\0';
         ptr++;
-	cset_name = (char*) Xmalloc (strlen (ret->name) + 6);
-	if (cset_name == NULL) {
-	    Xfree (ret->name);
-	    Xfree (ret);
-	    return NULL;
-	}
-        if( !_XlcNCompareISOLatin1(ptr, "none", 4) ){
-            ret->side =  XlcNONE ;
-            sprintf(cset_name,"%s:%s",ret->name,"none");
-        } else
         if( !_XlcNCompareISOLatin1(ptr, "GL", 2) ){
             ret->side =  XlcGL ;
             sprintf(cset_name,"%s:%s",ret->name,"GL");
@@ -695,15 +673,12 @@ int num;
             sprintf(cset_name,"%s:%s",ret->name,"GR");
         }
     } else {
-        ret->name = (char *)Xmalloc(strlen(value[0])+1);
-        if(ret->name == NULL){
-	    Xfree (ret);
-            return NULL;
-        }
-        strcpy(ret->name,value[0]);
+        ret->side =  XlcGLGR;
+        strcpy(cset_name,ret->name);
     }
     ret->area = (FontScope)Xmalloc((num - 1)*sizeof(FontScopeRec));
     if(ret->area == NULL){
+	Xfree (cset_name);
 	Xfree (ret->name);
 	Xfree (ret);
         return NULL;
@@ -715,10 +690,7 @@ int num;
                 &scope[i-1].start,&scope[i-1].end);
     }
     ret->charset = srch_charset_define(cset_name,&new);
-    if (new)
-        ret->charset->name = cset_name;
-    else
-	Xfree (cset_name);
+    Xfree (cset_name);
 
     return ret;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/parse.h,v 1.4 1998/10/04 09:40:39 dawes Exp $ */
+/* $XFree86: xc/programs/twm/parse.h,v 1.5 1999/02/19 21:27:30 hohndel Exp $ */
 /*****************************************************************************/
 /*
 
@@ -72,7 +72,7 @@ extern int do_color_keyword ( int keyword, int colormode, char *s );
 void put_pixel_on_root ( Pixel pixel );
 extern void do_string_savecolor ( int colormode, char *s );
 extern void do_var_savecolor ( int key );
-extern int ParseStringList ( char **sl );
+extern int ParseStringList ( unsigned char **sl );
 extern int ParseTwmrc ( char *filename );
 extern int parse_keyword ( char *s, int *nump );
 extern void TwmOutput ( int c );

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.51 2000/08/09 02:57:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.52 2000/08/31 22:47:21 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -209,7 +209,7 @@ extern void XcupExtensionInit(INITARGS);
 #ifdef DPMSExtension
 extern void DPMSExtensionInit(INITARGS);
 #endif
-#ifdef DPS
+#ifdef DPSEXT
 extern void DPSExtensionInit(INITARGS);
 #endif
 #ifdef FONTCACHE

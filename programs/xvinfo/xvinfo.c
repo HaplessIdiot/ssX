@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvinfo/xvinfo.c,v 1.2 2000/09/18 19:03:23 mvojkovi Exp $ */
+/* $XFree86: xc/programs/xvinfo/xvinfo.c,v 1.3 2000/09/26 15:57:27 tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 		   for(n = 0; n < nencode; n++) {
 		      if(!strcmp(encodings[n].name, "XV_IMAGE")) {
 			fprintf(stdout, 
-				"    maximium XvImage size: %i x %i\n",	
+				"    maximum XvImage size: %i x %i\n",	
 				encodings[n].width, encodings[n].height);
 			break;
 		      }

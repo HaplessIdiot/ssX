@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/add_window.c,v 1.5 1998/12/20 11:58:10 dawes Exp $ */
+/* $XFree86: xc/programs/twm/add_window.c,v 1.6 1999/02/19 21:27:23 hohndel Exp $ */
 /*****************************************************************************/
 /*
 
@@ -163,9 +163,6 @@ IconMgr *iconp;
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
     int width, height;			/* tmp variable */
-    Atom actual_type;
-    int actual_format;
-    unsigned long nitems, bytesafter;
     int ask_user;		/* don't know where to put the window */
     int gravx, gravy;			/* gravity signs for positioning */
     int namelen;
@@ -201,7 +198,7 @@ IconMgr *iconp;
 
     XGetWindowAttributes(dpy, tmp_win->w, &tmp_win->attr);
 
-    XFetchName(dpy, tmp_win->w, &name);
+    I18N_FetchName(dpy, tmp_win->w, &name);
     tmp_win->class = NoClass;
     XGetClassHint(dpy, tmp_win->w, &tmp_win->class);
     FetchWmProtocols (tmp_win);
@@ -279,7 +276,7 @@ IconMgr *iconp;
 	tmp_win->name = strdup(NoName);
     else {
       tmp_win->name = strdup(name);
-      XFree(name);
+      free(name);
     }
     if (tmp_win->class.res_name == NULL)
     	tmp_win->class.res_name = NoName;
@@ -487,7 +484,7 @@ IconMgr *iconp;
 		    break;
 	    }
 
-	    width = (SIZE_HINDENT + XTextWidth (Scr->SizeFont.font,
+	    width = (SIZE_HINDENT + MyFont_TextWidth (&Scr->SizeFont,
 						tmp_win->name, namelen));
 	    height = Scr->SizeFont.height + SIZE_VINDENT * 2;
 	    
@@ -495,12 +492,13 @@ IconMgr *iconp;
 	    XMapRaised(dpy, Scr->SizeWindow);
 	    InstallRootColormap();
 
-	    FBF(Scr->DefaultC.fore, Scr->DefaultC.back,
-		Scr->SizeFont.font->fid);
-	    XDrawImageString (dpy, Scr->SizeWindow, Scr->NormalGC,
-			      SIZE_HINDENT,
-			      SIZE_VINDENT + Scr->SizeFont.font->ascent,
-			      tmp_win->name, namelen);
+	    MyFont_ChangeGC(Scr->DefaultC.fore, Scr->DefaultC.back,
+			    &Scr->SizeFont);
+	    MyFont_DrawImageString (dpy, Scr->SizeWindow, &Scr->SizeFont,
+				    Scr->NormalGC,
+				    SIZE_HINDENT,
+				    SIZE_VINDENT + Scr->SizeFont.ascent,
+				    tmp_win->name, namelen);
 
 	    AddingW = tmp_win->attr.width + bw2;
 	    AddingH = tmp_win->attr.height + tmp_win->title_height + bw2;
@@ -595,11 +593,12 @@ IconMgr *iconp;
 		int lastx, lasty;
 
 		Scr->SizeStringOffset = width +
-		  XTextWidth(Scr->SizeFont.font, ": ", 2);
+		  MyFont_TextWidth(&Scr->SizeFont, ": ", 2);
 		XResizeWindow (dpy, Scr->SizeWindow, Scr->SizeStringOffset +
 			       Scr->SizeStringWidth, height);
-		XDrawImageString (dpy, Scr->SizeWindow, Scr->NormalGC, width,
-				  SIZE_VINDENT + Scr->SizeFont.font->ascent,
+		MyFont_DrawImageString (dpy, Scr->SizeWindow, &Scr->SizeFont,
+				  Scr->NormalGC, width,
+				  SIZE_VINDENT + Scr->SizeFont.ascent,
 				  ": ", 2);
 		if (0/*Scr->AutoRelativeResize*/) {
 		    int dx = (tmp_win->attr.width / 4);
@@ -725,19 +724,17 @@ IconMgr *iconp;
 
     if (tmp_win->old_bw) XSetWindowBorderWidth (dpy, tmp_win->w, 0);
 
-    tmp_win->name_width = XTextWidth(Scr->TitleBarFont.font, tmp_win->name,
-				     namelen);
+    tmp_win->name_width = MyFont_TextWidth(&Scr->TitleBarFont, tmp_win->name,
+					    namelen);
 
-    if (XGetWindowProperty (dpy, tmp_win->w, XA_WM_ICON_NAME, 0L, 200L, False,
-			    XA_STRING, &actual_type, &actual_format, &nitems,
-			    &bytesafter,(unsigned char **)&name)) {
+    if (!I18N_GetIconName(dpy, tmp_win->w, &name)) {
 	tmp_win->icon_name = strdup(tmp_win->name);
     } else {
 	if (name == NULL) {
 	    tmp_win->icon_name = strdup(tmp_win->name);
 	} else {
 	    tmp_win->icon_name = strdup(name);
-	    XFree(name);
+	    free(name);
 	}
     }
 

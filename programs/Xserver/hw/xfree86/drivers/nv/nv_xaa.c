@@ -41,7 +41,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.14 2000/02/25 21:02:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.16 2000/08/11 06:14:10 mvojkovi Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -458,7 +458,6 @@ NVSetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop, unsigned planemask)
     NVPtr pNv = NVPTR(pScrn);
 
     NVSetRopSolid(pNv, rop);
-    RIVA_FIFO_FREE(pNv->riva, Line, 1);
     pNv->FgColor = color;
 }
 

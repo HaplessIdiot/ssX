@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/action.c,v 3.5 1997/10/26 13:25:28 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/action.c,v 3.6 1998/10/04 09:41:26 dawes Exp $ */
 
 #include "xkbcomp.h"
 #include "tokens.h"
@@ -908,7 +908,6 @@ LookupEntry	ctrlNames[]= {
 	{	"accessxkeys",		XkbAccessXKeysMask	},
 	{	"accessxtimeout",	XkbAccessXTimeoutMask	},
 	{	"accessxfeedback",	XkbAccessXFeedbackMask	},
-	{	"groupswrap",		XkbGroupsWrapMask	},
 	{	"audiblebell",		XkbAudibleBellMask	},
 	{	"overlay1",		XkbOverlay1Mask		},
 	{	"overlay2",		XkbOverlay2Mask		},

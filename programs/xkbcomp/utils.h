@@ -3,7 +3,7 @@
 
   /*\
    * $XConsortium: utils.h /main/3 1996/01/14 16:48:26 kaleb $
-   * $XFree86: xc/programs/xkbcomp/utils.h,v 3.0 1996/08/25 14:15:05 dawes Exp $
+   * $XFree86: xc/programs/xkbcomp/utils.h,v 3.1 1996/08/26 10:52:26 dawes Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -350,7 +350,8 @@ extern	void	uFinishUp(
 #define	uStringText(s)		((s)==NullString?"<NullString>":(s))
 #define	uStringEqual(s1,s2)	(uStringCompare(s1,s2)==Equal)
 #define	uStringPrefix(p,s)	(strncmp(p,s,strlen(p))==0)
-#define	uStringCompare(s1,s2)	(strcmp(s1,s2))
+#define	uStringCompare(s1,s2)	(((s1)==NullString||(s2)==NullString)?\
+                                 (s1)!=(s2):strcmp(s1,s2))
 #define	uStrCaseEqual(s1,s2)	(uStrCaseCmp(s1,s2)==0)
 #ifdef HAVE_STRCASECMP
 #define	uStrCaseCmp(s1,s2)	(strcasecmp(s1,s2))

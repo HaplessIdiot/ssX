@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.9 1999/05/30 03:03:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.11 2000/03/03 20:50:25 mvojkovi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -669,6 +669,7 @@ ProcShapeQueryExtents (client)
     xShapeQueryExtentsReply	rep;
     BoxRec		extents, *pExtents;
     register int	n;
+    RegionPtr		region;
 
     REQUEST_SIZE_MATCH (xShapeQueryExtentsReq);
     pWin = LookupWindow (stuff->window, client);
@@ -679,9 +680,9 @@ ProcShapeQueryExtents (client)
     rep.sequenceNumber = client->sequence;
     rep.boundingShaped = (wBoundingShape(pWin) != 0);
     rep.clipShaped = (wClipShape(pWin) != 0);
-    if (wBoundingShape(pWin)) {
+    if ((region = wBoundingShape(pWin))) {
      /* this is done in two steps because of a compiler bug on SunOS 4.1.3 */
-	pExtents = REGION_EXTENTS(pWin->drawable.pScreen, wBoundingShape(pWin));
+	pExtents = REGION_EXTENTS(pWin->drawable.pScreen, region);
 	extents = *pExtents;
     } else {
 	extents.x1 = -wBorderWidth (pWin);
@@ -693,9 +694,9 @@ ProcShapeQueryExtents (client)
     rep.yBoundingShape = extents.y1;
     rep.widthBoundingShape = extents.x2 - extents.x1;
     rep.heightBoundingShape = extents.y2 - extents.y1;
-    if (wClipShape(pWin)) {
+    if ((region = wClipShape(pWin))) {
      /* this is done in two steps because of a compiler bug on SunOS 4.1.3 */
-	pExtents = REGION_EXTENTS(pWin->drawable.pScreen, wClipShape(pWin));
+	pExtents = REGION_EXTENTS(pWin->drawable.pScreen, region);
 	extents = *pExtents;
     } else {
 	extents.x1 = 0;

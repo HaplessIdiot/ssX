@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.h,v 1.2 2000/10/23 21:16:51 tsi Exp $ */
 
 #ifndef _VESA_H_
 #define _VESA_H_
@@ -77,6 +77,10 @@ typedef struct _VESARec
 } VESARec, *VESAPtr;
 
 #define FARP(p)		(((unsigned)(p & 0xffff0000) >> 12) | (p & 0xffff))
+
+#ifndef __GNUC__
+#define __attribute__(a)
+#endif
 
 typedef struct _ModeInfoData {
     int mode;

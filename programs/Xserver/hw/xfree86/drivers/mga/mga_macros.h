@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.14 2000/06/17 00:03:20 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.15 2000/09/24 13:51:28 alanh Exp $ */
 
 #ifndef _MGA_MACROS_H_
 #define _MGA_MACROS_H_
@@ -84,8 +84,6 @@ while(INREG(MGAREG_DWGSYNC) != MGA_SYNC_XTAG) ; \
 	OUTREG(MGAREG_CXBNDRY, 0xFFFF0000); }
 
 #ifdef XF86DRI
-extern void mgaGetQuiescence( ScrnInfoPtr pScrn );
-
 #define CHECK_DMA_QUIESCENT(pMGA, pScrn) {	\
    if (!pMGA->have_quiescense) {		\
       pMGA->GetQuiescence( pScrn );		\

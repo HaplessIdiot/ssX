@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.40 2000/06/17 00:03:26 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.42 2000/09/19 12:46:21 eich Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -62,7 +62,11 @@
 #endif 
 
 #ifndef NULL
+#if (defined(SVR4) || defined(SYSV)) && !defined(__GNUC__)
+#define NULL 0
+#else
 #define NULL ((void *)0)
+#endif
 #endif
 #ifndef EOF
 #define EOF (-1)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.21 2000/06/20 05:08:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.22 2000/10/20 14:59:04 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -81,7 +81,8 @@ XF86ConfModuleRec, *XF86ConfModulePtr;
 #define XF86CONF_PCSYNC    0x0080
 #define XF86CONF_NCSYNC    0x0100
 #define XF86CONF_HSKEW     0x0200	/* hskew provided */
-#define XF86CONF_CUSTOM    0x0400	/* timing numbers customized by editor */
+#define XF86CONF_BCAST     0x0400
+#define XF86CONF_CUSTOM    0x0800	/* timing numbers customized by editor */
 
 typedef struct
 {

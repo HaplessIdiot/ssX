@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.45 2000/08/11 05:04:08 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.47 2000/10/06 12:31:03 eich Exp $ */
 
 #include "nv_include.h"
 
@@ -35,6 +35,10 @@
 #include "nvvga.h"
 
 #include "xf86int10.h"
+#ifdef RENDER
+#include "picturestr.h"
+#endif
+
 /*
  * Forward definitions for the functions that make up the driver.
  */
@@ -171,6 +175,9 @@ static const char *cfbSymbols[] = {
 static const char *fbSymbols[] = {
     "fbScreenInit",
     "fbBres",
+#ifdef RENDER
+    "fbPictureInit",
+#endif
     NULL
 };
 #endif
@@ -1600,6 +1607,8 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
                               miGetDefaultVisualMask(pScrn->depth),
                               pScrn->rgbBits, pScrn->defaultVisual))
             return FALSE;
+        if (!miSetPixmapDepths ())
+            return FALSE;
     }
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Visuals set up\n"));
@@ -1650,6 +1659,10 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
             ret = fbScreenInit(pScreen, FBStart, pScrn->virtualX,
                                pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
                                displayWidth, pScrn->bitsPerPixel);
+#ifdef RENDER
+            if (ret)
+                fbPictureInit (pScreen, 0, 0);
+#endif
             break;
 #endif           
         default:

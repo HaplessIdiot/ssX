@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.70 2000/05/18 23:21:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.72 2000/09/19 12:46:13 eich Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -38,6 +38,7 @@ typedef enum {
     V_PCSYNC	= 0x0080,
     V_NCSYNC	= 0x0100,
     V_HSKEW	= 0x0200,	/* hskew provided */
+    V_BCAST	= 0x0400,
     V_PIXMUX	= 0x1000,
     V_DBLCLK	= 0x2000,
     V_CLKDIV2	= 0x4000

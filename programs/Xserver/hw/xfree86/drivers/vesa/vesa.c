@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.2 2000/10/23 21:16:51 tsi Exp $ */
 
 #include "vesa.h"
 
@@ -1326,7 +1326,8 @@ VESAWindowPlanar(ScreenPtr pScreen, CARD32 row, CARD32 offset, int mode,
     VESABankSwitch(pScreen, window);
     *size = data->WinSize * 1024 - (offset - pVesa->windowAoffset);
 
-    return (pVesa->base + (offset - pVesa->windowAoffset));
+    return (void *)((unsigned long)pVesa->base +
+		    (offset - pVesa->windowAoffset));
 }
 
 static void *
@@ -1355,7 +1356,8 @@ VESAWindowWindowed(ScreenPtr pScreen, CARD32 row, CARD32 offset, int mode,
     VESABankSwitch(pScreen, window);
     *size = data->WinSize * 1024 - (offset - pVesa->windowAoffset);
 
-    return (pVesa->base + (offset - pVesa->windowAoffset));
+    return (void *)((unsigned long)pVesa->base +
+		    (offset - pVesa->windowAoffset));
 }
 
 static void

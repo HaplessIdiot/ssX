@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.13 2000/04/04 22:36:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.14 2000/10/20 14:59:02 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -74,6 +74,7 @@ static xf86ConfigSymTabRec TimingTab[] =
 	{TT_NCSYNC, "-csync"},
 	{TT_DBLSCAN, "doublescan"},
 	{TT_HSKEW, "hskew"},
+	{TT_BCAST, "bcast"},
 	{TT_VSCAN, "vscan"},
 	{TT_CUSTOM, "CUSTOM"},
 	{-1, ""},
@@ -86,6 +87,7 @@ static xf86ConfigSymTabRec ModeTab[] =
 	{VTIMINGS, "vtimings"},
 	{FLAGS, "flags"},
 	{HSKEW, "hskew"},
+	{BCAST, "bcast"},
 	{VSCAN, "vscan"},
 	{ENDMODE, "endmode"},
 	{-1, ""},
@@ -154,7 +156,7 @@ xf86parseModeLine (void)
 		   (token == TT_NVSYNC) || (token == TT_CSYNC) ||
 		   (token == TT_PCSYNC) || (token == TT_NCSYNC) ||
 		   (token == TT_DBLSCAN) || (token == TT_HSKEW) ||
-		   (token == TT_VSCAN))
+		   (token == TT_VSCAN) || (token == TT_BCAST))
 	{
 		switch (token)
 		{
@@ -191,6 +193,9 @@ xf86parseModeLine (void)
 				Error (NUMBER_MSG, "Hskew");
 			ptr->ml_hskew = val.num;
 			ptr->ml_flags |= XF86CONF_HSKEW;
+			break;
+		case TT_BCAST:
+			ptr->ml_flags |= XF86CONF_BCAST;
 			break;
 		case TT_VSCAN:
 			if (xf86getToken (NULL) != NUMBER)
@@ -700,6 +705,8 @@ xf86printMonitorSection (FILE * cf, XF86ConfMonitorPtr ptr)
 				fprintf (cf, " doublescan");
 			if (mlptr->ml_flags & XF86CONF_HSKEW)
 				fprintf (cf, " hskew %d", mlptr->ml_hskew);
+			if (mlptr->ml_flags & XF86CONF_BCAST)
+				fprintf (cf, " bcast");
 			fprintf (cf, "\n");
 		}
 		for (optr = ptr->mon_option_lst; optr; optr = optr->list.next)
@@ -753,6 +760,8 @@ xf86printModesSection (FILE * cf, XF86ConfModesPtr ptr)
 				fprintf (cf, " doublescan");
 			if (mlptr->ml_flags & XF86CONF_HSKEW)
 				fprintf (cf, " hskew %d", mlptr->ml_hskew);
+			if (mlptr->ml_flags & XF86CONF_BCAST)
+				fprintf (cf, " bcast");
 			fprintf (cf, "\n");
 		}
 		fprintf (cf, "EndSection\n\n");

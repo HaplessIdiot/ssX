@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.63 2000/09/26 15:57:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.64 2000/10/21 22:27:18 mvojkovi Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -363,6 +363,7 @@ Bool MGADRIScreenInit(ScreenPtr pScreen);
 void MGADRICloseScreen(ScreenPtr pScreen);
 Bool MGADRIFinishScreenInit(ScreenPtr pScreen);
 void MGASwapContext(ScreenPtr pScreen);
+void MGASwapContext_shared(ScreenPtr pScreen);
 Bool mgaConfigureWarp(ScrnInfoPtr pScrn);
 unsigned int mgaInstallMicrocode(ScreenPtr pScreen, int agp_offset);
 unsigned int mgaGetMicrocodeSize(ScreenPtr pScreen);

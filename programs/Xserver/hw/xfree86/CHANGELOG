@@ -1,4 +1,45 @@
 XFree86 4.0.1d (27 October 2000)
+ 811. locale.alias fix for ko_KR.utf8 (#4190, Won-kyu Park).
+ 810. Fix incorrect vtSema usage in neomagic driver DPMS code (#4184,
+      Andrew C Aitchison).
+ 809. Fix a 1-byte overflow in Xtrans.c (#4182, Aaron Campbell).
+ 808. Enable building the loadable server for BSD/OS.
+ 807. Fix the following xkbcomp bugs:
+       - 'base group' keyword added to 'whichGroup' possible values list
+       - 'groupsWrap' keyword removed from 'controls' possible values list
+       - fix crash in processing files with unnamed sections
+       - now keep 'per key group adjustment mode' in XKM file
+       - now allow an empty 'key' description to be specified in an
+         xkb_symbols file.
+      (#4170, Ivan Pascal).
+ 806. Add a "bcast" flag for mode lines, which is needed to display
+      broadcast resolutions (#4169, Michel Danzer).
+ 805. Fix compiler warnings when building the mga driver with or without
+      the Matrox HALlib, add the digital/tv-out/tvstandard/cabletype
+      options, missing files, and some cleanups (#4166, Antti Tapaninen).
+ 804. Fix spelling from xvinfo (#4166, Antti Tapaninen).
+ 803. Add support to twm for displaying multibyte strings on window titles,
+      and make the twm config file reader 8-bit clean (#4165, 4168, 4180,
+      Tomohiro Kubota).
+ 802. Fix a tseng driver problem related to the usable amount of video memory
+      (#4164, Randy McCaskill).
+ 801. Add support for the new Render extension to the nv driver, and
+      turn on fb support by default in the nv driver (#4161, Jarno Paananen).
+ 800. Fix a typo that prevents DPS from being built statically (#4160,
+      Juliusz Chroboczek).
+ 799. Fix some xkbfile bugs in the .xkb files that it writes
+      (two adjacent commas, no xkb_types section in xkb_layout) (#4159,
+      Ivan Pascal).
+ 798. Fix an xkbcomp bug that causes an infinite loop for some error
+      message output (#4158, Ivan Pascal).
+ 797. Fix XlcNONE usage in charset description (#4153, Ivan Pascal).
+ 796. Fix a bug in XKB group adjustment (#4152, Ivan Pascal).
+ 795. Fix some build problems that show up with the SVR4 C compiler
+      (based on #4139, Takaaki Nomura).
+ 794. Add two new XKB group switches (Alt+Shift and Menu key) (#4151,
+      Ivan Pascal).
+ 793. Fix HTML man page links when the man page suffix has more than one
+      character (#4150, Bruno Haible).
  792. Remove the old UTF-1 locale (it's not filesystems safe, deprecated
       for years, withdrawn from ISO standards, and nobody uses it) (#4147,
       4149, Bruno Haible).
@@ -11278,4 +11319,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1352 2000/10/23 14:11:36 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1353 2000/10/24 18:07:47 dawes Exp $

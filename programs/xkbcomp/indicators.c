@@ -1,4 +1,4 @@
-/* $XConsortium: indicators.c,v 1.1 94/04/08 15:31:39 erik Exp $ */
+/* $XConsortium: indicators.c /main/5 1996/01/14 16:47:34 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -26,113 +26,175 @@
  ********************************************************/
 
 #include "xkbcomp.h"
-#include "xkbfile.h"
+#include "misc.h"
 #include "tokens.h"
 #include "expr.h"
 #include "vmod.h"
+#include "indicators.h"
+
+/***====================================================================***/
+
+#define	ReportIndicatorBadType(d,l,f,w)	\
+		ReportBadType("indicator map",(f),\
+		      	XkbAtomText((d),(l)->name,XkbMessage),(w))
+#define	ReportIndicatorNotArray(d,l,f)	\
+		ReportNotArray("indicator map",(f),\
+			XkbAtomText((d),(l)->name,XkbMessage))
+
+/***====================================================================***/
 
 void
+#if NeedFunctionPrototypes
+ClearIndicatorMapInfo(Display *dpy,LEDInfo *info)
+#else
 ClearIndicatorMapInfo(dpy,info)
     Display *		dpy;
-    XkbFileLEDInfo *	info;
+    LEDInfo *	info;
+#endif
 {
-    bzero((char *)info,sizeof(XkbFileLEDInfo));
-    info->name= XkbInternAtom(dpy,"default",False);
-    info->indicator= XkbFileLEDNotBound;
+    info->name= 	XkbInternAtom(dpy,"default",False);
+    info->indicator=	_LED_NotBound;
+    info->flags= info->which_mods= info->real_mods= 0;
+    info->vmods= 0;
+    info->which_groups= info->groups= 0;
+    info->ctrls= 0;
     return;
 }
 
-XkbFileLEDInfo *
-AddIndicatorMap(newLED,oldLEDs,merge,report)
-    XkbFileLEDInfo *	newLED;
-    XkbFileLEDInfo *	oldLEDs;
-    unsigned		merge;
-    Bool		report;
+LEDInfo *
+#if NeedFunctionPrototypes
+AddIndicatorMap(LEDInfo *oldLEDs,LEDInfo *new)
+#else
+AddIndicatorMap(oldLEDs,new)
+    LEDInfo *	oldLEDs;
+    LEDInfo *	new;
+#endif
 {
-XkbFileLEDInfo *led,*last;
+LEDInfo *old,*last;
+unsigned collide;
 
     last= NULL;
-    for (led=oldLEDs;led!=NULL;led=led->next) {
-	if (led->name==newLED->name) {
-	    if ((led->real_mods==newLED->real_mods)&&
-		(led->vmods==newLED->vmods)&&(led->groups==newLED->groups)&&
-		(led->ctrls==newLED->ctrls)&&
-		(led->which_mods==newLED->which_mods)&&
-		(led->which_groups==newLED->which_groups))
+    for (old=oldLEDs;old!=NULL;old=(LEDInfo *)old->defs.next) {
+	if (old->name==new->name) {
+	    if ((old->real_mods==new->real_mods)&&
+		(old->vmods==new->vmods)&&
+		(old->groups==new->groups)&&
+		(old->ctrls==new->ctrls)&&
+		(old->which_mods==new->which_mods)&&
+		(old->which_groups==new->which_groups)) {
+		old->defs.defined|= new->defs.defined;
 		return oldLEDs;
-	    if ((report)&&(warningLevel>3)) {
-		uWarning("Map for indicator %s redefined\n",stText(led->name));
-		uAction("Using %s definition\n",
-					(merge==MergeAugment?"first":"last"));
 	    }
-	    if (merge!=MergeAugment) {
-		XkbFileLEDInfo *next= led->next;
-		*led= *newLED;
-		led->next= next;
+	    if (new->defs.merge==MergeReplace) {
+		CommonInfo *next= old->defs.next;
+		if (((old->defs.fileID==new->defs.fileID)&&(warningLevel>0))||
+		   					   (warningLevel>9)) {
+		    WARN1("Map for indicator %s redefined\n",
+				  XkbAtomText(NULL,old->name,XkbMessage));
+		    ACTION("Earlier definition ignored\n");
+		}
+		*old= *new;
+		old->defs.next= next;
+		return oldLEDs;
+	    }
+	    collide= 0;
+	    if (UseNewField(_LED_Index,&old->defs,&new->defs,&collide)) {
+		old->indicator= new->indicator;
+		old->defs.defined|= _LED_Index;
+	    }
+	    if (UseNewField(_LED_Mods,&old->defs,&new->defs,&collide)) {
+		old->which_mods= new->which_mods;
+		old->real_mods= new->real_mods;
+		old->vmods= new->vmods;
+		old->defs.defined|= _LED_Mods;
+	    }
+	    if (UseNewField(_LED_Groups,&old->defs,&new->defs,&collide)) {
+		old->which_groups= new->which_groups;
+		old->groups= new->groups;
+		old->defs.defined|= _LED_Groups;
+	    }
+	    if (UseNewField(_LED_Ctrls,&old->defs,&new->defs,&collide)) {
+		old->ctrls= new->ctrls;
+		old->defs.defined|= _LED_Ctrls;
+	    }
+	    if (UseNewField(_LED_Explicit,&old->defs,&new->defs,&collide)) {
+		old->flags&= ~XkbIM_NoExplicit;
+		old->flags|= (new->flags&XkbIM_NoExplicit);
+		old->defs.defined|= _LED_Explicit;
+	    }
+	    if (UseNewField(_LED_Automatic,&old->defs,&new->defs,&collide)) {
+		old->flags&= ~XkbIM_NoAutomatic;
+		old->flags|= (new->flags&XkbIM_NoAutomatic);
+		old->defs.defined|= _LED_Automatic;
+	    }
+	    if (UseNewField(_LED_DrivesKbd,&old->defs,&new->defs,&collide)) {
+		old->flags&= ~XkbIM_LEDDrivesKB;
+		old->flags|= (new->flags&XkbIM_LEDDrivesKB);
+		old->defs.defined|= _LED_DrivesKbd;
+	    }
+	    if (collide) {
+		WARN1("Map for indicator %s redefined\n",
+				XkbAtomText(NULL,old->name,XkbMessage));
+		ACTION1("Using %s definition for duplicate fields\n",
+				(new->defs.merge==MergeAugment?"first":"last"));
 	    }
 	    return oldLEDs;
 	}
-	if (led->next==NULL)
-	    last= led;
+	if (old->defs.next==NULL)
+	    last= old;
     }
     /* new definition */
-    led= uTypedAlloc(XkbFileLEDInfo);
-    if (!led) {
-	uInternalError("Couldn't allocate indicator map\n");
-	uAction("Map for indicator %s not compiled\n",stText(newLED->name));
+    old= uTypedAlloc(LEDInfo);
+    if (!old) {
+	WSGO("Couldn't allocate indicator map\n");
+	ACTION1("Map for indicator %s not compiled\n",
+				XkbAtomText(NULL,new->name,XkbMessage));
 	return False;
     }
-    *led= *newLED;
-    led->next= NULL;
+    *old= *new;
+    old->defs.next= NULL;
     if (last) {
-	last->next= led;
+	last->defs.next= &old->defs;
 	return oldLEDs;
     }
-    return led;
+    return old;
 }
 
-static int
-ReportNotArray(type,field,name)
-    char *	type;
-    char *	field;
-    char *	name;
-{
-    uError("The %s %s field is not an array\n",type,field);
-    uAction("Ignoring illegal assignment in definition of %s\n",name);
-    return False;
-}
-
-static int
-ReportBadType(type,field,name,wanted)
-    char *	type;
-    char *	field;
-    char *	name;
-    char *	wanted;
-{
-    uError("The %s %s field must be a %s\n",type,field,wanted);
-    uAction("Ignoring illegal assignment in definition of %s\n",name);
-    return False;
-}
-
-LookupEntry	stateComponentNames[] = {
+LookupEntry	modComponentNames[] = {
 	{	"base",		XkbIM_UseBase		},
 	{	"latched",	XkbIM_UseLatched	},
 	{	"locked",	XkbIM_UseLocked		},
 	{	"effective",	XkbIM_UseEffective	},
 	{	"compat",	XkbIM_UseCompat		},
-	{	"any",		XkbIM_UseAnyState	},
+	{	"any",		XkbIM_UseAnyMods	},
+	{	"none",		0			},
+	{	NULL,		0			}
+};
+LookupEntry	groupComponentNames[] = {
+	{	"base",		XkbIM_UseBase		},
+	{	"latched",	XkbIM_UseLatched	},
+	{	"locked",	XkbIM_UseLocked		},
+	{	"effective",	XkbIM_UseEffective	},
+	{	"any",		XkbIM_UseAnyGroup	},
 	{	"none",		0			},
 	{	NULL,		0			}
 };
 
 int
-SetIndicatorMapField(led,xkb,field,arrayNdx,value,merge)
-    XkbFileLEDInfo *	led;
-    XkbDescPtr		xkb;
-    char *		field;
-    ExprDef *		arrayNdx;
-    ExprDef *		value;
-    unsigned		merge;
+#if NeedFunctionPrototypes
+SetIndicatorMapField(	LEDInfo *	led,
+			XkbDescPtr 	xkb,
+			char *		field,
+			ExprDef *	arrayNdx,
+			ExprDef *	value)
+#else
+SetIndicatorMapField(led,xkb,field,arrayNdx,value)
+    LEDInfo *	led;
+    XkbDescPtr	xkb;
+    char *	field;
+    ExprDef *	arrayNdx;
+    ExprDef *	value;
+#endif
 {
 ExprResult	rtrn;
 Bool		ok;
@@ -140,204 +202,239 @@ Bool		ok;
     ok= True;
     if ((uStrCaseCmp(field,"modifiers")==0)||(uStrCaseCmp(field,"mods")==0)) {
 	if (arrayNdx!=NULL)
-	    return ReportNotArray("indicator map",field,stText(led->name));
+	    return ReportIndicatorNotArray(xkb->dpy,led,field);
 	if (!ExprResolveModMask(value,&rtrn,LookupVModMask,(XPointer)xkb))
-	    return ReportBadType("indicator map",field,stText(led->name),
-							"modifier mask");
+	    return ReportIndicatorBadType(xkb->dpy,led,field,"modifier mask");
 	led->real_mods= rtrn.uval&0xff;
 	led->vmods= (rtrn.uval>>8)&0xff;
+	led->defs.defined|= _LED_Mods;
     }
     else if (uStrCaseCmp(field,"groups")==0) {
 	extern LookupEntry	groupNames[];
 	if (arrayNdx!=NULL)
-	    return ReportNotArray("indicator map",field,stText(led->name));
-	if (!ExprResolveMask(value,&rtrn,SimpleLookup,groupNames))
-	    return ReportBadType("indicator map",field,stText(led->name),
-							"group mask");
+	    return ReportIndicatorNotArray(xkb->dpy,led,field);
+	if (!ExprResolveMask(value,&rtrn,SimpleLookup,(XPointer)groupNames))
+	    return ReportIndicatorBadType(xkb->dpy,led,field,"group mask");
 	led->groups= rtrn.uval;
+	led->defs.defined|= _LED_Groups;
     }
     else if ((uStrCaseCmp(field,"controls")==0)||
 	     (uStrCaseCmp(field,"ctrls")==0)) {
 	extern LookupEntry ctrlNames[];
 	if (arrayNdx!=NULL)
-	    return ReportNotArray("indicator map",field,stText(led->name));
+	    return ReportIndicatorNotArray(xkb->dpy,led,field);
 	if (!ExprResolveMask(value,&rtrn,SimpleLookup,(XPointer)ctrlNames))
-	    return ReportBadType("indicator map",field,stText(led->name),
-							"controls mask");
+	    return ReportIndicatorBadType(xkb->dpy,led,field,"controls mask");
 	led->ctrls= rtrn.uval;
+	led->defs.defined|= _LED_Ctrls;
     }
     else if (uStrCaseCmp(field,"allowexplicit")==0) {
 	if (arrayNdx!=NULL)
-	    return ReportNotArray("indicator map",field,stText(led->name));
+	    return ReportIndicatorNotArray(xkb->dpy,led,field);
 	if (!ExprResolveBoolean(value,&rtrn,NULL,NULL))
-	    return ReportBadType("indicator map",field,stText(led->name),
-							"boolean");
+	    return ReportIndicatorBadType(xkb->dpy,led,field,"boolean");
 	if (rtrn.uval)	led->flags&= ~XkbIM_NoExplicit;
 	else		led->flags|=  XkbIM_NoExplicit;
+	led->defs.defined|= _LED_Explicit;
     }
     else if ((uStrCaseCmp(field,"whichmodstate")==0)||
 	     (uStrCaseCmp(field,"whichmodifierstate")==0)) {
 	if (arrayNdx!=NULL)
-	    return ReportNotArray("indicator map",field,stText(led->name));
-	if (!ExprResolveMask(value,&rtrn,SimpleLookup,stateComponentNames))
-	    return ReportBadType("indicator map",field,stText(led->name),
-						"mask of state components");
+	    return ReportIndicatorNotArray(xkb->dpy,led,field);
+	if (!ExprResolveMask(value,&rtrn,SimpleLookup,
+						(XPointer)modComponentNames)) {
+	    return ReportIndicatorBadType(xkb->dpy,led,field,
+    					"mask of modifier state components");
+	}
 	led->which_mods= rtrn.uval;
     }
     else if (uStrCaseCmp(field,"whichgroupstate")==0) {
 	if (arrayNdx!=NULL)
-	    return ReportNotArray("indicator map",field,stText(led->name));
-	if (!ExprResolveMask(value,&rtrn,SimpleLookup,stateComponentNames))
-	    return ReportBadType("indicator map",field,stText(led->name),
-						"mask of state components");
-	if ((rtrn.uval&XkbIM_UseCompat)&&(warningLevel>0)) {
-	    uWarning("Cannot use the compatibilty state for groups\n");
-	    uAction("Not set in the %s field of the map for indicator %s\n",
-						field,stText(led->name));
-	    rtrn.uval&= ~XkbIM_UseCompat;
+	    return ReportIndicatorNotArray(xkb->dpy,led,field);
+	if (!ExprResolveMask(value,&rtrn,SimpleLookup,
+						(XPointer)groupComponentNames)){
+	    return ReportIndicatorBadType(xkb->dpy,led,field,
+					"mask of group state components");
 	}
 	led->which_groups= rtrn.uval;
+    } 
+    else if ((uStrCaseCmp(field,"driveskbd")==0)||
+	     (uStrCaseCmp(field,"driveskeyboard")==0)||
+	     (uStrCaseCmp(field,"leddriveskbd")==0)||
+	     (uStrCaseCmp(field,"leddriveskeyboard")==0)||
+	     (uStrCaseCmp(field,"indicatordriveskbd")==0)||
+	     (uStrCaseCmp(field,"indicatordriveskeyboard")==0)) {
+	if (arrayNdx!=NULL)
+	    return ReportIndicatorNotArray(xkb->dpy,led,field);
+	if (!ExprResolveBoolean(value,&rtrn,NULL,NULL))
+	    return ReportIndicatorBadType(xkb->dpy,led,field,"boolean");
+	if (rtrn.uval)	led->flags|=  XkbIM_LEDDrivesKB;
+	else		led->flags&= ~XkbIM_LEDDrivesKB;
+	led->defs.defined|= _LED_DrivesKbd;
     }
     else if (uStrCaseCmp(field,"index")==0) {
 	if (arrayNdx!=NULL)
-	    return ReportNotArray("indicator map",field,stText(led->name));
+	    return ReportIndicatorNotArray(xkb->dpy,led,field);
 	if (!ExprResolveInteger(value,&rtrn,NULL,NULL))
-	    return ReportBadType("indicator map",field,stText(led->name),
-						"indicator number");
+	    return ReportIndicatorBadType(xkb->dpy,led,field,"indicator index");
 	if ((rtrn.uval<1)||(rtrn.uval>32)) {
-	    uError("Illegal indicator index %d (range 1..32)\n",rtrn.uval);
-	    uAction("Index definition for %s indicator ignored\n",
-						stText(led->name));
+	    ERROR2("Illegal indicator index %d (range 1..%d)\n",rtrn.uval,
+							XkbNumIndicators);
+	    ACTION1("Index definition for %s indicator ignored\n",
+				XkbAtomText(NULL,led->name,XkbMessage));
 	    return False;
 	}
 	led->indicator= rtrn.uval;
+	led->defs.defined|= _LED_Index;
     }
     else {
-	uError("Unknown field %s in map for %s indicator\n",field,
-							stText(led->name));
-	uAction("Definition ignored\n");
+	ERROR2("Unknown field %s in map for %s indicator\n",field,
+				XkbAtomText(NULL,led->name,XkbMessage));
+	ACTION("Definition ignored\n");
 	ok= False;
     }
     return ok;
 }
 
-XkbFileLEDInfo *
-HandleIndicatorMapDef(stmt,xkb,dflt,oldLEDs,mergeMode)
-    IndicatorMapDef *	stmt;
+LEDInfo *
+#if NeedFunctionPrototypes
+HandleIndicatorMapDef(	IndicatorMapDef *	def,
+			XkbDescPtr		xkb,
+			LEDInfo *		dflt,
+			LEDInfo *		oldLEDs,
+			unsigned 		merge)
+#else
+HandleIndicatorMapDef(def,xkb,dflt,oldLEDs,merge)
+    IndicatorMapDef *	def;
     XkbDescPtr		xkb;
-    XkbFileLEDInfo *	dflt;
-    XkbFileLEDInfo *	oldLEDs;
-    unsigned 		mergeMode;
+    LEDInfo *		dflt;
+    LEDInfo *		oldLEDs;
+    unsigned 		merge;
+#endif
 {
-XkbFileLEDInfo		tmp,*rtrn;
-VarDef *		def;
+LEDInfo			led,*rtrn;
+VarDef *		var;
 Bool			ok;
  
-    if (stmt->merge!=MergeDefault) {
-	if (stmt->merge==MergeReplace)
-	     mergeMode= MergeOverride;
-	else mergeMode= stmt->merge;
-    }
+    if (def->merge!=MergeDefault)
+	merge= def->merge;
 
-    tmp= *dflt;
-    tmp.name= stmt->name;
+    led= *dflt;
+    led.defs.merge= merge;
+    led.name= def->name;
 
     ok= True;
-    for (def= stmt->body;def!=NULL;def= (VarDef *)def->common.next) {
+    for (var= def->body;var!=NULL;var= (VarDef *)var->common.next) {
 	ExprResult	elem,field;
 	ExprDef *	arrayNdx;
-	if (!ExprResolveLhs(def->name,&elem,&field,&arrayNdx)) {
+	if (!ExprResolveLhs(var->name,&elem,&field,&arrayNdx)) {
 	    ok= False;
 	    continue;
 	}
 	if (elem.str!=NULL) {
-	    uError("Cannot set defaults for \"%s\" element in indicator map\n",
+	    ERROR1("Cannot set defaults for \"%s\" element in indicator map\n",
 								elem.str);
-	    uAction("Assignment to %s.%s ignored\n",elem.str,field.str);
+	    ACTION2("Assignment to %s.%s ignored\n",elem.str,field.str);
 	    ok= False;
 	}
 	else {
-	    ok= SetIndicatorMapField(&tmp,xkb,field.str,arrayNdx,def->value,
-							 	mergeMode)&&ok;
+	    ok=SetIndicatorMapField(&led,xkb,field.str,arrayNdx,var->value)&&ok;
 	}
     }
     if (ok) {
-	rtrn= AddIndicatorMap(&tmp,oldLEDs,mergeMode,True);
+	rtrn= AddIndicatorMap(oldLEDs,&led);
 	return rtrn;
     }
     return NULL;
 }
 
-Bool
-CopyIndicatorMapDefs(result,leds)
+Bool 
+#if NeedFunctionPrototypes
+CopyIndicatorMapDefs(XkbFileInfo *result,LEDInfo *leds,LEDInfo **unboundRtrn)
+#else
+CopyIndicatorMapDefs(result,leds,unboundRtrn)
     XkbFileInfo *	result;
-    XkbFileLEDInfo *	leds;
+    LEDInfo *		leds;
+    LEDInfo **		unboundRtrn;
+#endif
 {
-XkbFileLEDInfo *led,*next,*last;
-XkbDescPtr	xkb;
+LEDInfo *		led,*next;
+LEDInfo *		unbound,*last;
+XkbDescPtr		xkb;
 
-    xkb= &result->xkb;
-    result->defined|= XkbIndicatorMapsDefined;
-    if (!XkbAllocNames(xkb,XkbIndicatorNamesMask)) {
-	uInternalError("Couldn't allocate names\n");
-	uAction("Indicator names may be incorrect\n");
+    xkb= result->xkb;
+    if (XkbAllocNames(xkb,XkbIndicatorNamesMask,0,0)!=Success) {
+	WSGO("Couldn't allocate names\n");
+	ACTION("Indicator names may be incorrect\n");
     }
-    if (xkb->indicators==NULL) {
-	xkb->indicators= uTypedAlloc(XkbIndicatorRec);
-	if (xkb->indicators==NULL) {
-	    uInternalError("Can't allocate \"indicators\"\n");
-	    uAction("Indicator map definitions may be lost\n");
-	}
-	bzero((char *)xkb->indicators,sizeof(XkbIndicatorRec));
+    if (XkbAllocIndicatorMaps(xkb)!=Success) {
+	WSGO("Can't allocate indicator maps\n");
+	ACTION("Indicator map definitions may be lost\n");
+	return False;
     }
-    for (last=result->leds;(last!=NULL)&&(last->next!=NULL);last=last->next) {
-	/* conditional does the work */;
+    last= unbound= (unboundRtrn?*unboundRtrn:NULL);
+    while ((last!=NULL) && (last->defs.next!=NULL)) {
+	last= (LEDInfo *)last->defs.next;
     }
     for (led=leds;led!=NULL;led=next) {
-	next= led->next;
+	next= (LEDInfo *)led->defs.next;
 	if ((led->groups!=0)&&(led->which_groups==0)) 
 	    led->which_groups= XkbIM_UseEffective;
-	if ((led->which_mods==0)&&((led->real_mods!=0)||(led->vmods!=0)))
+	if ((led->which_mods==0)&&((led->real_mods)||(led->vmods)))
 	    led->which_mods= XkbIM_UseEffective;
-	if ((led->indicator==XkbFileLEDNotBound)||(!xkb->indicators)) {
-	    led->next= NULL;
-	    if (last)
-		 last->next= led;
-	    else result->leds= led;
-	    last= led;
+	if ((led->indicator==_LED_NotBound)||(!xkb->indicators)) {
+	    if (unboundRtrn!=NULL) {
+		led->defs.next= NULL;
+		if (last!=NULL) 	last->defs.next= (CommonInfo *)led;
+		else			unbound= led;
+		last= led;
+	    }
+	    else uFree(led);
 	}
 	else {
-	    register XkbIndicatorMapPtr imap;
-	    imap= &xkb->indicators->maps[led->indicator-1];
-	    imap->flags= led->flags;
-	    imap->which_groups= led->which_groups;
-	    imap->groups= led->groups;
-	    imap->which_mods= led->which_mods;
-	    imap->mask= led->real_mods;
-	    imap->real_mods= led->real_mods;
-	    imap->vmods= led->vmods;
-	    imap->ctrls= led->ctrls;
+	    register XkbIndicatorMapPtr im;
+	    im= &xkb->indicators->maps[led->indicator-1];
+	    im->flags= led->flags;
+	    im->which_groups= led->which_groups;
+	    im->groups= led->groups;
+	    im->which_mods= led->which_mods;
+	    im->mods.mask= led->real_mods;
+	    im->mods.real_mods= led->real_mods;
+	    im->mods.vmods= led->vmods;
+	    im->ctrls= led->ctrls;
 	    if (xkb->names!=NULL)
 		xkb->names->indicators[led->indicator-1]= led->name;
 	    uFree(led);
 	}
     }
+    if (unboundRtrn!=NULL) {
+	*unboundRtrn= unbound;
+    }
     return True;
 }
 
 Bool
-BindIndicators(result,force)
+#if NeedFunctionPrototypes
+BindIndicators(	XkbFileInfo *	result,
+		Bool		force,
+		LEDInfo *	unbound,
+		LEDInfo **	unboundRtrn)
+#else
+BindIndicators(result,force,unbound,unboundRtrn)
     XkbFileInfo *	result;
     Bool		force;
+    LEDInfo *		unbound;
+    LEDInfo **		unboundRtrn;
+#endif
 {
-XkbDescPtr			xkb;
-register int 			i;
-register XkbFileLEDInfo *	led,*next,*last;
+XkbDescPtr		xkb;
+register int 		i;
+register LEDInfo	 *led,*next,*last;
 
-    xkb= &result->xkb;
+    xkb= result->xkb;
     if (xkb->names!=NULL) {
-	for (led=result->leds;led!=NULL;led= led->next) {
-	    if (led->indicator==XkbFileLEDNotBound) {
+	for (led=unbound;led!=NULL;led= (LEDInfo *)led->defs.next) {
+	    if (led->indicator==_LED_NotBound) {
 		for (i=0;i<XkbNumIndicators;i++) {
 		    if (xkb->names->indicators[i]==led->name) {
 			led->indicator= i+1;
@@ -345,43 +442,61 @@ register XkbFileLEDInfo *	led,*next,*last;
 		    }
 		}
 	    }
-	    if ((led->indicator==XkbFileLEDNotBound)&&force) {
-		for (i=0;i<XkbNumIndicators;i++) {
-		    if (xkb->names->indicators[i]==None) {
-			xkb->names->indicators[i]= led->name;
-			led->indicator= i+1;
-			break;
+	}
+	if (force) {
+	    for (led=unbound;led!=NULL;led= (LEDInfo *)led->defs.next) {
+		if (led->indicator==_LED_NotBound) {
+		    for (i=0;i<XkbNumIndicators;i++) {
+			if (xkb->names->indicators[i]==None) {
+			    xkb->names->indicators[i]= led->name;
+			    led->indicator= i+1;
+			    xkb->indicators->phys_indicators&= ~(1<<i);
+			    break;
+			}
 		    }
-		}
-		if (led->indicator==XkbFileLEDNotBound) {
-		    uError("Too many indicator maps\n");
-		    uAction("Some indicator maps will be lost\n");
-		    continue;
+		    if (led->indicator==_LED_NotBound) {
+			ERROR("No unnamed indicators found\n");
+			ACTION1("Virtual indicator map \"%s\" not bound\n",
+				XkbAtomGetString(xkb->dpy,led->name));
+			continue;
+		    }
 		}
 	    }
 	}
     }
-    for (last=NULL,led=result->leds;led!=NULL;led= next) {
-	next= led->next;
-	if (led->indicator==XkbFileLEDNotBound) {
-	    if (last)
-		 last->next= led;
-	    else result->leds= led;
-	    last= led;
+    for (last=NULL,led=unbound;led!=NULL;led= next) {
+	next= (LEDInfo *)led->defs.next;
+	if (led->indicator==_LED_NotBound) {
+	    if (force) {
+		unbound= next;
+		uFree(led);
+	    }
+	    else {
+		if (last)
+		     last->defs.next= &led->defs;
+		else unbound= led;
+		last= led;
+	    }
 	}
 	else {
 	    if ((xkb->names!=NULL)&&
 		(xkb->names->indicators[led->indicator-1]!=led->name)) {
 		Atom old= xkb->names->indicators[led->indicator-1];
-		uError("Multiple names bound to indicator %d\n",led->indicator);
-		uAction("Using %s, ignoring %s\n",
-				XkbAtomGetString(result->dpy,old),
-				XkbAtomGetString(result->dpy,led->name));
-		led->indicator= XkbFileLEDNotBound;
-		if (last)
-		     last->next= led;
-		else result->leds= led;
-		last= led;
+		ERROR1("Multiple names bound to indicator %d\n",(unsigned int)led->indicator);
+		ACTION2("Using %s, ignoring %s\n",
+				XkbAtomGetString(xkb->dpy,old),
+				XkbAtomGetString(xkb->dpy,led->name));
+		led->indicator= _LED_NotBound;
+		if (force) {
+		    uFree(led);
+		    unbound= next;
+		}
+		else {
+		    if (last)
+			 last->defs.next= &led->defs;
+		    else unbound= led;
+		    last= led;
+		}
 	    }
 	    else {
 		XkbIndicatorMapPtr map;
@@ -390,14 +505,24 @@ register XkbFileLEDInfo *	led,*next,*last;
 		map->which_groups= led->which_groups;
 		map->groups= led->groups;
 		map->which_mods= led->which_mods;
-		map->mask= led->real_mods;
-		map->real_mods= led->real_mods;
-		map->vmods= led->vmods;
+		map->mods.mask= led->real_mods;
+		map->mods.real_mods= led->real_mods;
+		map->mods.vmods= led->vmods;
 		map->ctrls= led->ctrls;
-		last->next= next;
-		led->next= NULL;
+		if (last)	last->defs.next= &next->defs;
+		else		unbound= next;
+		led->defs.next= NULL;
 		uFree(led);
 	    }
+	}
+    }
+    if (unboundRtrn) {
+	*unboundRtrn= unbound;
+    }
+    else if (unbound) {
+	for (led=unbound;led!=NULL;led=next) {
+	    next= (LEDInfo *)led->defs.next;
+	    uFree(led);
 	}
     }
     return True;

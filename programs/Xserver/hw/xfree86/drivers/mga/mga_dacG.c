@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.37 2000/08/21 00:36:37 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.39 2000/10/06 17:32:45 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -82,11 +82,6 @@ static Bool MGAGInit(ScrnInfoPtr, DisplayModePtr);
 static void MGAGLoadPalette(ScrnInfoPtr, int, int*, LOCO*, VisualPtr);
 static Bool MGAG_i2cInit(ScrnInfoPtr pScrn);
 
-
-/*******************/
-/* ADDED BY MATROX */
-/*******************/
-/* We don't need anymore: MGAGCalcClock and MGAGSetPCLK function */
 #ifndef USEMGAHAL
 /*
  * MGAGCalcClock - Calculate the PLL settings (m, n, p, s).
@@ -227,7 +222,6 @@ MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out,
 	return f_pll;
 }
 
-
 /*
  * MGAGSetPCLK - Set the pixel (PCLK) clock.
  */
@@ -251,9 +245,6 @@ MGAGSetPCLK( ScrnInfoPtr pScrn, long f_out )
 	pReg->DacRegs[ MGA1064_PIX_PLLC_N ] = n & 0x7F;
 	pReg->DacRegs[ MGA1064_PIX_PLLC_P ] = (p & 0x07) | ((s & 0x03) << 3);
 }
-/*******************/
-/* ADDED BY MATROX */
-/*******************/
 #endif
 
 /*
@@ -262,6 +253,7 @@ MGAGSetPCLK( ScrnInfoPtr pScrn, long f_out )
 static Bool
 MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
+#ifndef USEMGAHAL
 	/*
 	 * initial values of the DAC registers
 	 */
@@ -278,13 +270,14 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* 0x48: */	   0,    0,    0,    0,    0,    0,    0,    0
 	};
 
+	int i, weight555 = FALSE;
+#endif
 	int hd, hs, he, ht, vd, vs, ve, vt, wd;
-	int i, BppShift;
+	int BppShift;
 	MGAPtr pMga;
 	MGARegPtr pReg;
 	vgaRegPtr pVga;
 	MGAFBLayout *pLayout;
-	int weight555 = FALSE;
 	
 	pMga = MGAPTR(pScrn);
 	pReg = &pMga->ModeReg;
@@ -293,9 +286,6 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	BppShift = pMga->BppShifts[(pLayout->bitsPerPixel >> 3) - 1];
 
-/*******************/
-/* ADDED BY MATROX */
-/*******************/
 #ifndef USEMGAHAL
 	/* Allocate the DacRegs space if not done already */
 	if (pReg->DacRegs == NULL) {
@@ -437,9 +427,6 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	default:
 		FatalError("MGA: unsupported depth\n");
 	}
-/*******************/
-/* ADDED BY MATROX */
-/*******************/
 #endif
 		
 	/*
@@ -521,29 +508,17 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pVga->CRTC[21] = vd & 0xFF;
 	pVga->CRTC[22] = (vt + 1) & 0xFF;
 
-/*******************/
-/* ADDED BY MATROX */
-/*******************/
 #ifndef USEMGAHAL
 	pReg->DacRegs[ MGA1064_CURSOR_BASE_ADR_LOW ] =
 						pMga->FbCursorOffset >> 10;
 	pReg->DacRegs[ MGA1064_CURSOR_BASE_ADR_HI ]  =
 						pMga->FbCursorOffset >> 18;
-/*******************/
-/* ADDED BY MATROX */
-/*******************/
 #endif
 	
 	if (pMga->SyncOnGreen) {
-/*******************/
-/* ADDED BY MATROX */
-/*******************/
 #ifndef USEMGAHAL
 	    pReg->DacRegs[ MGA1064_GEN_CTL ] &= ~0x20;
-/*******************/
-/* ADDED BY MATROX */
-/*******************/
-#endif	    
+#endif
 	    pReg->ExtVga[3] |= 0x40;
 	}
 
@@ -553,16 +528,8 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #ifndef USEMGAHAL
 	if (mode->Flags & V_DBLSCAN)
 		pVga->CRTC[9] |= 0x80;
-#endif
 
-/*******************/
-/* ADDED BY MATROX */
-/*******************/
-#ifndef USEMGAHAL
 	MGAGSetPCLK( pScrn, mode->Clock );
-/*******************/
-/* ADDED BY MATROX */
-/*******************/
 #endif	       	
 
 	/* This disables the VGA memory aperture */
@@ -671,13 +638,10 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	       Bool restoreFonts)
 {
 	int i;
-	CARD32 optionMask;
 	MGAPtr pMga = MGAPTR(pScrn);
-
-/*******************/
-/* ADDED BY MATROX */
-/*******************/
 #ifndef USEMGAHAL
+	CARD32 optionMask;
+
 	/*
 	 * Code is needed to get things back to bank zero.
 	 */
@@ -711,10 +675,6 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	if (pMga->Chipset == PCI_CHIP_MGAG400)
 		pciSetBitsLong(pMga->PciTag, PCI_MGA_OPTION3, OPTION3_MASK,
 			       mgaReg->Option3);
-
-/*******************/
-/* ADDED BY MATROX */
-/*******************/
 #endif
 	/* restore CRTCEXT regs */
 	for (i = 0; i < 6; i++)
@@ -764,18 +724,11 @@ MGAGSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	MGAPtr pMga = MGAPTR(pScrn);
 
 	if(pMga->SecondCrtc == TRUE) return;
-
-/*******************/
-/* ADDED BY MATROX */
-/*******************/
 #ifndef USEMGAHAL
 	/* Allocate the DacRegs space if not done already */
 	if (mgaReg->DacRegs == NULL) {
 		mgaReg->DacRegs = xnfcalloc(DACREGSIZE, 1);
 	}
-/*******************/
-/* ADDED BY MATROX */
-/*******************/
 #endif
 
 	/*
@@ -790,9 +743,6 @@ MGAGSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	vgaHWSave(pScrn, vgaReg, VGA_SR_MODE | (saveFonts ? VGA_SR_FONTS : 0));
 	MGAGSavePalette(pScrn, vgaReg->DAC);
 
-/*******************/
-/* ADDED BY MATROX */
-/*******************/
 #ifndef USEMGAHAL
 	/*
 	 * The port I/O code necessary to read in the extended registers.
@@ -805,9 +755,6 @@ MGAGSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	mgaReg->Option2 = pciReadLong(pMga->PciTag, PCI_MGA_OPTION2);
 	if (pMga->Chipset == PCI_CHIP_MGAG400)
 	    mgaReg->Option3 = pciReadLong(pMga->PciTag, PCI_MGA_OPTION3);
-/*******************/
-/* ADDED BY MATROX */
-/*******************/
 #endif
 
 	for (i = 0; i < 6; i++)

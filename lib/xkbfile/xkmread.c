@@ -1,4 +1,4 @@
-/* $XConsortium: xkmread.c /main/2 1995/12/07 21:19:24 kaleb $ */
+/* $XConsortium: xkmread.c /main/4 1996/01/14 16:44:36 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -58,10 +58,14 @@
 #include "XKBgeom.h"
 
 Atom
+#if NeedFunctionPrototypes
+XkbInternAtom(Display *dpy,char *str,Bool only_if_exists)
+#else
 XkbInternAtom(dpy,str,only_if_exists)
     Display *	dpy;
     char *	str;
     Bool	only_if_exists;
+#endif
 {
     if (str==NULL)
 	return None;
@@ -75,14 +79,18 @@ XkbInternAtom(dpy,str,only_if_exists)
 #endif
 
 char *
+#if NeedFunctionPrototypes
+_XkbDupString(char *str)
+#else
 _XkbDupString(str)
    char *str;
+#endif
 {
 char *new;
    
    if (str==NULL)
 	return NULL;
-   new= (char *)calloc(strlen(str)+1,sizeof(char));
+   new= (char *)_XkbCalloc(strlen(str)+1,sizeof(char));
    if (new)
 	strcpy(new,str);
    return new;
@@ -106,10 +114,10 @@ int	newCount= *newCountRtrn;
     if (oldPtr==NULL) {
 	if (newCount==0)
 	    return NULL;
-	oldPtr= (XPointer)calloc(newCount,elemSize);
+	oldPtr= (XPointer)_XkbCalloc(newCount,elemSize);
     }
     else if (oldCount<newCount) {
-	oldPtr= (XPointer)realloc(oldPtr,newCount*elemSize);
+	oldPtr= (XPointer)_XkbRealloc(oldPtr,newCount*elemSize);
 	if (oldPtr!=NULL) {
 	    char *tmp= (char *)oldPtr;
 	    bzero(&tmp[oldCount*elemSize],(newCount-oldCount)*elemSize);
@@ -124,9 +132,13 @@ int	newCount= *newCountRtrn;
 #define	XkmInsureTypedSize(p,o,n,t) ((p)=((t *)XkmInsureSize((char *)(p),(o),(n),sizeof(t))))
 
 static CARD8
+#if NeedFunctionPrototypes
+XkmGetCARD8(FILE *file,int *pNRead)
+#else
 XkmGetCARD8(file,pNRead)
     FILE *	file;
     int *	pNRead;
+#endif
 {
 int	tmp;
     tmp= getc(file);
@@ -136,9 +148,13 @@ int	tmp;
 }
 
 static CARD16
+#if NeedFunctionPrototypes
+XkmGetCARD16(FILE *file,int *pNRead)
+#else
 XkmGetCARD16(file,pNRead)
     FILE *	file;
     int *	pNRead;
+#endif
 {
 CARD16		val;
 
@@ -182,10 +198,14 @@ register int	i,nRead=0;
 }
 
 static int
+#if NeedFunctionPrototypes
+XkmGetCountedString(FILE *file,char *str,int max_len)
+#else
 XkmGetCountedString(file,str,max_len)
     FILE *		file;
     char *		str;
     int			max_len;
+#endif
 {
 int	count,nRead=0;
 
@@ -777,13 +797,13 @@ XkbDescPtr		xkb;
 	    xkb->server->explicit[i]|= XkbExplicitAutoRepeatMask;
 	}
 	xkb->map->modmap[i]= wireMap.modifier_map;
-	if (wireMap.num_groups>0) {
+	if (XkbNumGroups(wireMap.num_groups)>0) {
 	    KeySym	*sym;
 	    int		 nSyms;
 	
-	    if (wireMap.num_groups>xkb->ctrls->num_groups)
+	    if (XkbNumGroups(wireMap.num_groups)>xkb->ctrls->num_groups)
 		xkb->ctrls->num_groups= wireMap.num_groups;
-	    nSyms= wireMap.num_groups*wireMap.width;
+	    nSyms= XkbNumGroups(wireMap.num_groups)*wireMap.width;
 	    sym= XkbResizeKeySyms(xkb,i,nSyms);
 	    if (!sym)
 		return -1;
@@ -800,7 +820,7 @@ XkbDescPtr		xkb;
 		xkb->server->explicit[i]|= XkbExplicitInterpretMask;
 	    }
 	}
-	for (g=0;g<wireMap.num_groups;g++) {
+	for (g=0;g<XkbNumGroups(wireMap.num_groups);g++) {
 	    if (((xkb->server->explicit[i]&(1<<g))==0)||(type[g]==NULL)) {
 		KeySym *tmpSyms;
 		tmpSyms= XkbKeySymsPtr(xkb,i)+(wireMap.width*g);
@@ -899,11 +919,18 @@ int		nRead=0;
 }
 
 static int
+#if NeedFunctionPrototypes
+ReadXkmGeomOverlay(	FILE *		file,
+			Display *	dpy,
+			XkbGeometryPtr	geom,
+			XkbSectionPtr	section)
+#else
 ReadXkmGeomOverlay(file,dpy,geom,section)
     FILE *		file;
     Display *		dpy;
     XkbGeometryPtr	geom;
     XkbSectionPtr	section;
+#endif
 {
 char 			buf[100];
 unsigned		tmp;
@@ -917,7 +944,7 @@ register int		r;
     nRead+= XkmGetCountedString(file,buf,100);
     tmp= fread(&olWire,SIZEOF(xkmOverlayDesc),1,file);
     nRead+= tmp*SIZEOF(xkmOverlayDesc);
-    ol= XkbAddGeomOverlay(geom,section,XkbInternAtom(dpy,buf,False),
+    ol= XkbAddGeomOverlay(section,XkbInternAtom(dpy,buf,False),
     							olWire.num_rows);
     if (!ol)
 	return nRead;
@@ -926,12 +953,11 @@ register int		r;
 	xkmOverlayKeyDesc	keyWire;
 	tmp= fread(&rowWire,SIZEOF(xkmOverlayRowDesc),1,file);
 	nRead+= tmp*SIZEOF(xkmOverlayRowDesc);
-	row= XkbAddGeomOverlayRow(geom,ol,rowWire.num_keys);
+	row= XkbAddGeomOverlayRow(ol,rowWire.row_under,rowWire.num_keys);
 	if (!row) {
 	    _XkbLibError(_XkbErrBadAlloc,"ReadXkmGeomOverlay",0);
 	   return nRead;
 	}
-	row->row_under= rowWire.row_under;
 	for (k=0;k<rowWire.num_keys;k++) {
 	    tmp= fread(&keyWire,SIZEOF(xkmOverlayKeyDesc),1,file);
 	    nRead+= tmp*SIZEOF(xkmOverlayKeyDesc);
@@ -945,10 +971,9 @@ register int		r;
 
 static int
 #if NeedFunctionPrototypes
-ReadXkmGeomSection(
-    FILE *		file,
-    Display *		dpy,
-    XkbGeometryPtr	geom)
+ReadXkmGeomSection(	FILE *		file,
+			Display *	dpy,
+			XkbGeometryPtr	geom)
 #else
 ReadXkmGeomSection(file,dpy,geom)
     FILE *		file;
@@ -991,7 +1016,7 @@ Atom		nameAtom;
 	for (i=0;i<sectionWire.num_rows;i++) {
 	    tmp= fread(&rowWire,SIZEOF(xkmRowDesc),1,file);
 	    nRead+= SIZEOF(xkmRowDesc)*tmp;
-	    row= XkbAddGeomRow(geom,section,rowWire.num_keys);
+	    row= XkbAddGeomRow(section,rowWire.num_keys);
 	    if (!row) {
 		_XkbLibError(_XkbErrBadAlloc,"ReadXkmKeycodes",0);
 		return nRead;
@@ -1002,7 +1027,7 @@ Atom		nameAtom;
 	    for (k=0;k<rowWire.num_keys;k++) {
 		tmp= fread(&keyWire,SIZEOF(xkmKeyDesc),1,file);
 		nRead+= SIZEOF(xkmKeyDesc)*tmp;
-		key= XkbAddGeomKey(geom,row);
+		key= XkbAddGeomKey(row);
 		if (!key) {
 		    _XkbLibError(_XkbErrBadAlloc,"ReadXkmGeomSection",0);
 		    return nRead;
@@ -1084,7 +1109,7 @@ XkbGeometrySizesRec	sizes;
     if (wireGeom.num_colors>0) {
 	for (i=0;i<wireGeom.num_colors;i++) {
 	    nRead+= XkmGetCountedString(file,buf,100);
-	    if (XkbAddGeomColor(geom,buf)==NULL) {
+	    if (XkbAddGeomColor(geom,buf,i)==NULL) {
 		_XkbLibError(_XkbErrBadAlloc,"ReadXkmGeometry",0);
 		return nRead;
 	    }
@@ -1114,7 +1139,7 @@ XkbGeometrySizesRec	sizes;
 		xkmPointDesc	ptWire;
 		tmp= fread(&olWire,SIZEOF(xkmOutlineDesc),1,file);
 		nRead+= tmp*SIZEOF(xkmOutlineDesc);
-		ol= XkbAddGeomOutline(geom,shape,olWire.num_points);
+		ol= XkbAddGeomOutline(shape,olWire.num_points);
 		if (!ol) {
 		    _XkbLibError(_XkbErrBadAlloc,"ReadXkmGeometry",0);
 		    return nRead;
@@ -1168,8 +1193,12 @@ XkbGeometrySizesRec	sizes;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkmProbe(FILE *file)
+#else
 XkmProbe(file)
     FILE *	file;
+#endif
 {
 unsigned hdr,tmp;
 int	 nRead=0;
@@ -1186,11 +1215,15 @@ int	 nRead=0;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkmReadTOC(FILE *file,xkmFileInfo* file_info,int max_toc,xkmSectionInfo *toc)
+#else
 XkmReadTOC(file,file_info,max_toc,toc)
     FILE *		file;
-    int			max_toc;
     xkmFileInfo *	file_info;
+    int			max_toc;
     xkmSectionInfo *	toc;
+#endif
 {
 unsigned hdr,tmp;
 int	nRead=0;
@@ -1223,10 +1256,14 @@ unsigned i,size_toc;
 }
 
 xkmSectionInfo *
+#if NeedFunctionPrototypes
+XkmFindTOCEntry(xkmFileInfo *finfo,xkmSectionInfo *toc,unsigned type)
+#else
 XkmFindTOCEntry(finfo,toc,type)
     xkmFileInfo *	finfo;
     xkmSectionInfo *	toc;
     unsigned		type;
+#endif
 {
 register int i;
 
@@ -1238,11 +1275,18 @@ register int i;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkmReadFileSection(	FILE *			file,
+			xkmSectionInfo *	toc,
+			XkbFileInfo *		result,
+			unsigned *		loaded_rtrn)
+#else
 XkmReadFileSection(file,toc,result,loaded_rtrn)
     FILE *		file;
     xkmSectionInfo *	toc;
     XkbFileInfo *	result;
     unsigned *		loaded_rtrn;
+#endif
 {
 xkmSectionInfo		tmpTOC;
 int			nRead;
@@ -1310,9 +1354,13 @@ int			nRead;
 }
 
 char *
+#if NeedFunctionPrototypes
+XkmReadFileSectionName(FILE *file,xkmSectionInfo *toc)
+#else
 XkmReadFileSectionName(file,toc)
     FILE *		file;
     xkmSectionInfo *	toc;
+#endif
 {
 xkmSectionInfo	tmpTOC;
 char 		name[100];
@@ -1350,11 +1398,15 @@ char 		name[100];
 
 #define	MAX_TOC	16
 unsigned
+#if NeedFunctionPrototypes
+XkmReadFile(FILE *file,unsigned need,unsigned want,XkbFileInfo *result)
+#else
 XkmReadFile(file,need,want,result)
     FILE *		file;
     unsigned 		need;
     unsigned		want;
     XkbFileInfo	*	result;
+#endif
 {
 register unsigned	i;
 xkmSectionInfo		toc[MAX_TOC],tmpTOC;

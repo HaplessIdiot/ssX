@@ -56,7 +56,7 @@ from The Open Group.
  * 28-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storeing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.h,v 3.3 1999/02/19 21:27:32 hohndel Exp $ */
+/* $XFree86: xc/programs/twm/twm.h,v 3.4 1999/02/25 06:01:03 dawes Exp $ */
 
 #ifndef _TWM_
 #define _TWM_
@@ -138,12 +138,6 @@ typedef SIGNAL_T (*SigProc)(int); /* type of function returned by signal() */
 /* defines for zooming/unzooming */
 #define ZOOM_NONE 0
 
-#define FBF(fix_fore, fix_back, fix_font)\
-    Gcv.foreground = fix_fore;\
-    Gcv.background = fix_back;\
-    Gcv.font = fix_font;\
-    XChangeGC(dpy, Scr->NormalGC, GCFont|GCForeground|GCBackground,&Gcv)
-
 #define FB(fix_fore, fix_back)\
     Gcv.foreground = fix_fore;\
     Gcv.background = fix_back;\
@@ -153,8 +147,11 @@ typedef struct MyFont
 {
     char *name;			/* name of the font */
     XFontStruct *font;		/* font structure */
+    XFontSet fontset;		/* fontset structure */
     int height;			/* height of the font */
     int y;			/* Y coordinate to draw characters */
+    int ascent;
+    int descent;
 } MyFont;
 
 typedef struct ColorPair
@@ -422,6 +419,8 @@ extern int doinput ( char *buf, int size );
 extern void RemoveDQuote ( char *str );
 
 extern Atom TwmAtoms[];
+
+extern Bool use_fontset;
 
 #define _XA_MIT_PRIORITY_COLORS		TwmAtoms[0]
 #define _XA_WM_CHANGE_STATE		TwmAtoms[1]

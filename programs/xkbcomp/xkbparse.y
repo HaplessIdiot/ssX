@@ -405,6 +405,7 @@ SymbolsBody	:	SymbolsBody COMMA SymbolsVarDecl
 			{ $$= (VarDef *)AppendStmt(&$1->common,&$3->common); }
 		|	SymbolsVarDecl
 			{ $$= $1; }
+		|	{ $$= NULL; }
 		;
 
 SymbolsVarDecl	:	Lhs EQUALS Expr

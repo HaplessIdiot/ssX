@@ -55,7 +55,7 @@ in this Software without prior written authorization from The Open Group.
  * 27-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.c,v 3.4 1999/02/19 21:27:31 hohndel Exp $ */
+/* $XFree86: xc/programs/twm/twm.c,v 3.5 1999/02/25 06:01:03 dawes Exp $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -78,6 +78,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/SM/SMlib.h>
 #include <X11/Xmu/Error.h>
 #include <X11/extensions/sync.h>
+#include <X11/Xlocale.h>
 
 XtAppContext appContext;	/* Xt application context */
 
@@ -139,6 +140,8 @@ unsigned long black, white;
 
 Atom TwmAtoms[11];
 
+Bool use_fontset;		/* use XFontSet-related functions or not */
+
 /* don't change the order of these strings */
 static char* atom_names[11] = {
     "_MIT_PRIORITY_COLORS",
@@ -175,6 +178,7 @@ main(int argc, char *argv[])
     int zero = 0;
     char *restore_filename = NULL;
     char *client_id = NULL;
+    char *loc;
 
     ProgramName = argv[0];
     Argc = argc;
@@ -215,6 +219,14 @@ main(int argc, char *argv[])
 		 "usage:  %s [-display dpy] [-f file] [-s] [-q] [-v] [-clientId id] [-restore file]\n",
 		 ProgramName);
 	exit (1);
+    }
+
+    loc = setlocale(LC_ALL, "");
+    if (!loc || !strcmp(loc, "C") || !strcmp(loc, "POSIX") ||
+	!XSupportsLocale()) {
+	 use_fontset = False;
+    } else {
+	 use_fontset = True;
     }
 
 #define newhandler(sig) \
@@ -564,7 +576,7 @@ main(int argc, char *argv[])
 					 (Visual *) CopyFromParent,
 					 valuemask, &attributes);
 
-	Scr->SizeStringWidth = XTextWidth (Scr->SizeFont.font,
+	Scr->SizeStringWidth = MyFont_TextWidth (&Scr->SizeFont,
 					   " 8888 x 8888 ", 13);
 	valuemask = (CWBorderPixel | CWBackPixel | CWBitGravity);
 	attributes.bit_gravity = NorthWestGravity;
@@ -734,16 +746,22 @@ InitVariables()
 #define DEFAULT_FAST_FONT "fixed"
 
     Scr->TitleBarFont.font = NULL;
+    Scr->TitleBarFont.fontset = NULL;
     Scr->TitleBarFont.name = DEFAULT_NICE_FONT;
     Scr->MenuFont.font = NULL;
+    Scr->MenuFont.fontset = NULL;
     Scr->MenuFont.name = DEFAULT_NICE_FONT;
     Scr->IconFont.font = NULL;
+    Scr->IconFont.fontset = NULL;
     Scr->IconFont.name = DEFAULT_NICE_FONT;
     Scr->SizeFont.font = NULL;
+    Scr->SizeFont.fontset = NULL;
     Scr->SizeFont.name = DEFAULT_FAST_FONT;
     Scr->IconManagerFont.font = NULL;
+    Scr->IconManagerFont.fontset = NULL;
     Scr->IconManagerFont.name = DEFAULT_NICE_FONT;
     Scr->DefaultFont.font = NULL;
+    Scr->DefaultFont.fontset = NULL;
     Scr->DefaultFont.name = DEFAULT_FAST_FONT;
 
 }

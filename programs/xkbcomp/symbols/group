@@ -82,3 +82,37 @@ xkb_symbols "ctrl_alt_toggle" {
 	symbols[Group1]= [ Control_R,	ISO_Next_Group ]
     };
 };
+
+// using the group(alt_shift_toggle) map, pressing:
+//     Shift_L+Alt_L locks the previous group
+//     Shift_R+Alt_R locks the next group
+// If you have two groups and group wrap is enabled, the effect is
+// indistinguishable.
+partial modifier_keys 
+xkb_symbols "alt_shift_toggle" {
+    virtual_modifiers Alt;
+    key <LALT> {
+	symbols[Group1]= [ Alt_L,	ISO_Prev_Group ],
+	virtualMods= Alt
+    };
+    key <RALT> {
+	symbols[Group1]= [ Alt_R,	ISO_Next_Group ],
+	virtualMods= Alt
+    };
+    key <LFSH> {
+	type="PC_SYSRQ",
+	symbols[Group1]= [ Shift_L,	ISO_Prev_Group ]
+    };
+    key <RTSH> {
+	type="PC_SYSRQ",
+	symbols[Group1]= [ Shift_R,	ISO_Next_Group ]
+    };
+};
+
+// using the group(menu_toggle) map, pressing:
+//     Menu key toggles groups
+//     Shift+Menu acts as Menu
+partial modifier_keys
+xkb_symbols "menu_toggle" {
+    key	<MENU> {	[  ISO_Next_Group,	 Menu	]	};
+};

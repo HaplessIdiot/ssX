@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.16 2000/08/21 00:36:37 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.17 2000/09/08 02:22:00 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -79,7 +79,7 @@ void MGAInitVideo(ScreenPtr pScreen)
         (pMga->Chipset == PCI_CHIP_MGAG400))) 
     {
 
-	if((pMga->Overlay8Plus24 /* || dualhead */ || pMga->TexturedVideo) &&
+	if((pMga->Overlay8Plus24 || pMga->TexturedVideo) &&
 	   (pScrn->bitsPerPixel != 24))
         {
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using texture video\n");
@@ -91,9 +91,8 @@ void MGAInitVideo(ScreenPtr pScreen)
 	    pMga->TexturedVideo = FALSE;
 	}
 
-	if(!pMga->Overlay8Plus24 /* && !dualhead */)
+	if(!pMga->Overlay8Plus24)
 	    MGAInitOffscreenImages(pScreen);
-
     }
     
 

@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/XKB.h,v 1.2 2000/08/26 15:11:23 dawes Exp $ */
 
 #ifndef _XKB_H_
 #define	_XKB_H_
@@ -678,8 +678,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkbIM_UseCompat		(1L << 4)
 
 #define	XkbIM_UseNone	  0
-#define	XkbIM_UseAnyGroup (XkbIM_UseLatched|XkbIM_UseLocked|XkbIM_UseEffective)
-#define	XkbIM_UseAnyMods  (XkbIM_UseAnyGroup|XkbIM_UseCompat|XkbIM_UseBase)
+#define	XkbIM_UseAnyGroup (XkbIM_UseBase|XkbIM_UseLatched|XkbIM_UseLocked\
+                           |XkbIM_UseEffective)
+#define	XkbIM_UseAnyMods  (XkbIM_UseAnyGroup|XkbIM_UseCompat)
 
     /*
      * Compatibility Map Compontents:

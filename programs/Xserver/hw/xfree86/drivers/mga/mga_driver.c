@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.171 2000/10/09 22:56:06 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.172 2000/10/21 22:27:18 mvojkovi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -213,7 +213,12 @@ typedef enum {
     OPTION_TEXTURED_VIDEO,
     OPTION_XAALINES,
     OPTION_CRTC2HALF,
-    OPTION_INT10
+    OPTION_INT10,
+    OPTION_DIGITAL,
+    OPTION_TV,
+    OPTION_TVSTANDARD,
+    OPTION_CABLETYPE
+
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
@@ -236,6 +241,10 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_XAALINES,		"XAALines",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_CRTC2HALF,		"Crtc2Half",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_INT10,		"Int10",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_DIGITAL,		"DigitalScreen",OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_TV,		"TV",		OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_TVSTANDARD,	"TVStandard",	OPTV_ANYSTR,	{0}, FALSE },
+    { OPTION_CABLETYPE,		"CableType",	OPTV_ANYSTR,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1131,7 +1140,11 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     MGAMODEINFO mgaModeInfo = {0};
     ULONG ulBOARDHANDLESize;
     UCHAR ucMgaBase2;
+#if 0
     ULONG ulOrgFBuffer;
+#endif
+    Bool digital = FALSE;
+    Bool tv = FALSE;
 #endif
 
     /*
@@ -1436,6 +1449,16 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86GetOptValBool(MGAOptions, OPTION_HW_CURSOR, &pMga->HWCursor)) {
 	from = X_CONFIG;
     }
+#ifdef USEMGAHAL
+    xf86GetOptValBool(MGAOptions, OPTION_TV, &tv);
+    if (tv == TRUE) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "TV Support\n");
+    }
+    xf86GetOptValBool(MGAOptions, OPTION_DIGITAL, &digital);
+    if (digital == TRUE) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Digital Screen Support\n");
+    }
+#endif
     /* For compatibility, accept this too (as an override) */
     if (xf86ReturnOptValBool(MGAOptions, OPTION_NOACCEL, FALSE)) {
 	pMga->NoAccel = TRUE;
@@ -1986,9 +2009,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	MGAFreeRec(pScrn);
 	return FALSE;
     }
-    /*******************/
-    /* ADDED BY MATROX */
-    /*******************/    
 #ifdef USEMGAHAL
     if(pMga->SecondCrtc == FALSE) {
         ulBOARDHANDLESize = MGAGetBOARDHANDLESize();
@@ -2040,8 +2060,16 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         mgaModeInfo.ulBpp = pScrn->bitsPerPixel;    
         mgaModeInfo.ulZoom = 1;
     } else { /* Second CRTC && entity is shared */
-        mgaModeInfo.flOutput = MGAMODEINFO_ANALOG2 |
-	  MGAMODEINFO_SECOND_CRTC;
+        if (digital == TRUE) {
+            mgaModeInfo.flOutput = MGAMODEINFO_DIGITAL2 |
+            			   MGAMODEINFO_SECOND_CRTC;
+        } else if (tv == TRUE) {
+            mgaModeInfo.flOutput = MGAMODEINFO_TV |
+            			   MGAMODEINFO_SECOND_CRTC;
+        } else {
+            mgaModeInfo.flOutput = MGAMODEINFO_ANALOG2 |
+            			   MGAMODEINFO_SECOND_CRTC;
+        }
 #if 1
         mgaModeInfo.ulDispWidth = pScrn->virtualX;
         mgaModeInfo.ulDispHeight = pScrn->virtualY;
@@ -2059,13 +2087,12 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
     if(MGAValidateMode(pMga->pBoard,&mgaModeInfo) != 0) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "MGAValidateMode found the mode to be invalid\n");
+		   "MGAValidateMode from HALlib found the mode to be invalid\n");
         return FALSE;
     }
 
     pScrn->displayWidth = mgaModeInfo.ulFBPitch;
-
-#endif /* USEMGAHAL */
+#endif
 
     /*
      * Set the CRTC parameters for all of the modes based on the type
@@ -2440,6 +2467,7 @@ MGASave(ScrnInfoPtr pScrn)
 /* Convert DisplayModeRec parameters in MGAMODEINFO parameters. */
 static void FillModeInfoStruct(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
+    const char *s;
     MGAPtr pMga = MGAPTR(pScrn);
     pMga->pMgaModeInfo = (LPMGAMODEINFO) xalloc (sizeof(MGAMODEINFO));
       
@@ -2451,8 +2479,38 @@ static void FillModeInfoStruct(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pMga->pMgaModeInfo->ulFBPitch = 0;
     pMga->pMgaModeInfo->ulBpp = pScrn->bitsPerPixel;    
     pMga->pMgaModeInfo->ulZoom = 1;
-    pMga->pMgaModeInfo->flSignalMode = 0;
-    pMga->pMgaModeInfo->ulRefreshRate = 0;    
+    pMga->pMgaModeInfo->flSignalMode = 0x10;
+
+    /* Set TV standard */
+    if ((s = xf86GetOptValString(MGAOptions, OPTION_TVSTANDARD))) {
+    	if (!xf86NameCmp(s, "PAL")) {
+    		pMga->pMgaModeInfo->flSignalMode = 0x00;
+    		pMga->pMgaModeInfo->ulRefreshRate = 50;
+    		pMga->pMgaModeInfo->ulTVStandard = TV_PAL;
+    	} else {
+    		pMga->pMgaModeInfo->ulRefreshRate = 60;
+    		pMga->pMgaModeInfo->ulTVStandard = TV_NTSC;
+    	}
+    } else {
+    	pMga->pMgaModeInfo->ulRefreshRate = 60;
+    	pMga->pMgaModeInfo->ulTVStandard = TV_NTSC;
+    }
+
+    /* Set Cable Type */
+    if ((s = xf86GetOptValString(MGAOptions, OPTION_CABLETYPE))) {
+    	if (!xf86NameCmp(s, "SCART_RGB")) {
+    		pMga->pMgaModeInfo->ulCableType = TV_SCART_RGB;
+    	} else if (!xf86NameCmp(s, "SCART_COMPOSITE")) {
+    		pMga->pMgaModeInfo->ulCableType = TV_SCART_COMPOSITE;
+    	} else if (!xf86NameCmp(s, "SCART_TYPE2")) {
+    		pMga->pMgaModeInfo->ulCableType = TV_SCART_TYPE2;
+    	} else {
+    		pMga->pMgaModeInfo->ulCableType = TV_YC_COMPOSITE;
+    	}
+    } else {
+    	pMga->pMgaModeInfo->ulCableType = TV_YC_COMPOSITE;
+    }
+
     pMga->pMgaModeInfo->ulHorizRate = 0;
     pMga->pMgaModeInfo->ulPixClock = mode->Clock;
     pMga->pMgaModeInfo->ulHFPorch = mode->HSyncStart - mode->HDisplay;
@@ -2468,7 +2526,7 @@ static void FillModeInfoStruct(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pMga->pMgaModeInfo->ulPanXGran = 0;
     pMga->pMgaModeInfo->ulPanYGran = 0;
 }
-#endif /* USEMGAHAL */
+#endif
 
 /*
  * Initialise a new mode.  This is currently still using the old
@@ -2483,6 +2541,16 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     vgaRegPtr vgaReg;
     MGAPtr pMga = MGAPTR(pScrn);
     MGARegPtr mgaReg;
+#ifdef USEMGAHAL
+    Bool digital = FALSE;
+    Bool tv = FALSE;
+    ULONG status;
+
+    /* Verify if user wants digital screen output */
+    xf86GetOptValBool(MGAOptions, OPTION_DIGITAL, &digital);
+    /* Verify if user wants TV output */
+    xf86GetOptValBool(MGAOptions, OPTION_TV, &tv);
+#endif
 
     vgaHWUnlock(hwp);
 
@@ -2503,26 +2571,40 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     FillModeInfoStruct(pScrn,mode);
 
     if(pMga->SecondCrtc == TRUE) {
-	pMga->pMgaModeInfo->flOutput = MGAMODEINFO_ANALOG2 |
-					MGAMODEINFO_SECOND_CRTC |
-					MGAMODEINFO_FORCE_PITCH |
-					MGAMODEINFO_FORCE_DISPLAYORG;
+	if (digital == TRUE) {
+	    pMga->pMgaModeInfo->flOutput = MGAMODEINFO_DIGITAL2 |
+	    				   MGAMODEINFO_SECOND_CRTC |
+	    				   MGAMODEINFO_FORCE_PITCH |
+	    				   MGAMODEINFO_FORCE_DISPLAYORG;
+	} else if (tv == TRUE) {
+	    pMga->pMgaModeInfo->flOutput = MGAMODEINFO_TV |
+	    				   MGAMODEINFO_SECOND_CRTC |
+	    				   MGAMODEINFO_FORCE_PITCH |
+	    				   MGAMODEINFO_FORCE_DISPLAYORG;
+	} else {
+	    pMga->pMgaModeInfo->flOutput = MGAMODEINFO_ANALOG2 |
+	    				   MGAMODEINFO_SECOND_CRTC |
+	    				   MGAMODEINFO_FORCE_PITCH |
+	    				   MGAMODEINFO_FORCE_DISPLAYORG;
+	}
     } else {
 	pMga->pMgaModeInfo->flOutput = MGAMODEINFO_ANALOG1 |
 					MGAMODEINFO_FORCE_PITCH;
     }
 
     pMga->pMgaModeInfo->ulFBPitch = pScrn->displayWidth;
-    if(MGAValidateMode(pMga->pBoard,pMga->pMgaModeInfo) != 0) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,"Invalid parameters\n");
+    /* Validate the parameters */
+    if ((status = MGAValidateMode(pMga->pBoard, pMga->pMgaModeInfo)) != 0) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "MGAValidateMode from HALlib found the mode to be invalid. Error: %lx\n", status);
 	return FALSE;
     }
 
-    if(MGAValidateVideoParameters(pMga->pBoard,pMga->pMgaModeInfo) != 0) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,"Invalid parameters\n");
+    /* Validates the Video parameters */
+    if ((status = MGAValidateVideoParameters(pMga->pBoard, pMga->pMgaModeInfo)) != 0) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "MGAValidateVideoParameters from HALlib found the mode to be invalid. Error: %lx\n", status);
 	return FALSE;
     }
-#endif /* USEMGAHAL */
+#endif
 
 #ifdef XF86DRI
    if (pMga->directRenderingEnabled) {
@@ -2531,12 +2613,14 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #endif
 
 #ifdef USEMGAHAL
+    /* Initialize the board */
     if(MGASetMode(pMga->pBoard,pMga->pMgaModeInfo) != 0) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	"MGASetMode returned an error. Make sure to validate the mode before.\n");
 	return FALSE;
     }
 
 #define outMGAdreg(reg, val) OUTREG8(RAMDAC_OFFSET + (reg), val)
-
 #define outMGAdac(reg, val) \
 	(outMGAdreg(MGA1064_INDEX, reg), outMGAdreg(MGA1064_DATA, val))
 
@@ -2544,10 +2628,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	outMGAdac(MGA1064_CURSOR_BASE_ADR_LOW, pMga->FbCursorOffset >> 10);
 	outMGAdac(MGA1064_CURSOR_BASE_ADR_HI, pMga->FbCursorOffset >> 18);
     }
-#endif /* USEMGAHAL */
-
-     
-#ifndef USEMGAHAL
+#else
     (*pMga->Restore)(pScrn, vgaReg, mgaReg, FALSE);
 #endif
 
@@ -2677,11 +2758,18 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	  pMga->pClientStruct = (LPCLIENTDATA) xalloc (sizeof(CLIENTDATA));
 	  /* Fill the client part */
 	  pMga->pClientStruct->pMga = (MGAPtr) pMga;
-	  
 	  MGAOpenLibrary(pMga->pBoard,pMga->pClientStruct,sizeof(CLIENTDATA));
-	  
 	  pMga->pMgaHwInfo = (LPMGAHWINFO) xalloc (sizeof(MGAHWINFO));
 	  MGAGetHardwareInfo(pMga->pBoard,pMga->pMgaHwInfo);
+
+	  /* Detecting for type of display */
+	  if (pMga->pMgaHwInfo->ulCapsSecondOutput & MGAHWINFOCAPS_OUTPUT_TV) {
+	  	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "TV detected\n");
+	  }
+	  if (pMga->pMgaHwInfo->ulCapsSecondOutput & MGAHWINFOCAPS_OUTPUT_DIGITAL) {
+	  	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Digital Screen detected\n");
+	  }
+
 	  /* Now copy these to the entitystructure */
 	  pMgaEnt->pClientStruct = pMga->pClientStruct;
 	  pMgaEnt->pBoard = pMga->pBoard;
@@ -2691,7 +2779,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	  pMga->pBoard = pMgaEnt->pBoard;
 	  pMga->pMgaHwInfo = pMgaEnt->pMgaHwInfo;
        }
-#endif /* USEMGAHAL */
+#endif
     } else {
 #ifdef USEMGAHAL
        	  pMga->pBoard = 
@@ -2700,14 +2788,11 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	  pMga->pClientStruct = (LPCLIENTDATA) xalloc (sizeof(CLIENTDATA));
 	  /* Fill the client part */
 	  pMga->pClientStruct->pMga = (MGAPtr) pMga;
-	  
 	  MGAOpenLibrary(pMga->pBoard,pMga->pClientStruct,sizeof(CLIENTDATA));
-	  
 	  pMga->pMgaHwInfo = (LPMGAHWINFO) xalloc (sizeof(MGAHWINFO));
 	  MGAGetHardwareInfo(pMga->pBoard,pMga->pMgaHwInfo);
-#endif /* USEMGAHAL */
+#endif
     }
-
 
     /* Initialise the MMIO vgahw functions */
     vgaHWSetMmioFuncs(hwp, pMga->IOBase, PORT_OFFSET);
@@ -3224,7 +3309,7 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
       if (pMga->pMgaHwInfo)
 	xfree(pMga->pMgaHwInfo);
    }   
-#endif /* USEMGAHAL */
+#endif
 
     if (pMga->AccelInfoRec)
 	XAADestroyInfoRec(pMga->AccelInfoRec);

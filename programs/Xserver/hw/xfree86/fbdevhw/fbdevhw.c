@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.19 2000/09/26 15:57:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.20 2000/10/20 14:59:01 alanh Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -204,7 +204,7 @@ xfree2fbdev_timing(DisplayModePtr mode, struct fb_var_screeninfo *var)
 		var->sync |= FB_SYNC_VERT_HIGH_ACT;
 	if (mode->Flags & V_PCSYNC)
 		var->sync |= FB_SYNC_COMP_HIGH_ACT;
-#if 0
+#if 1 /* Badly needed for PAL/NTSC on Amiga (amifb)!! [geert] */
 	if (mode->Flags & V_BCAST)
 		var->sync |= FB_SYNC_BROADCAST;
 #endif
@@ -232,7 +232,7 @@ fbdev2xfree_timing(struct fb_var_screeninfo *var, DisplayModePtr mode)
 	mode->Flags |= var->sync & FB_SYNC_HOR_HIGH_ACT ? V_PHSYNC : V_NHSYNC;
 	mode->Flags |= var->sync & FB_SYNC_VERT_HIGH_ACT ? V_PVSYNC : V_NVSYNC;
 	mode->Flags |= var->sync & FB_SYNC_COMP_HIGH_ACT ? V_PCSYNC : V_NCSYNC;
-#if 0
+#if 1 /* Badly needed for PAL/NTSC on Amiga (amifb)!! [geert] */
 	if (var->sync & FB_SYNC_BROADCAST)
 		mode->Flags |= V_BCAST;
 #endif

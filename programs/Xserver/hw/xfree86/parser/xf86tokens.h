@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.12 1999/09/06 11:27:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.14 2000/01/26 02:00:52 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -105,6 +105,7 @@ typedef enum {
     VTIMINGS,
     FLAGS,
     HSKEW,
+    BCAST,
     VSCAN,
     ENDMODE,
 
@@ -131,6 +132,7 @@ typedef enum {
     TT_NCSYNC,
     TT_DBLSCAN,
     TT_HSKEW,
+    TT_BCAST,
     TT_VSCAN,
     TT_CUSTOM,
 

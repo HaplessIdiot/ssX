@@ -24,6 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -1100,6 +1101,7 @@ XkbDescPtr	xkb;
     xkb= result->xkb;
     fprintf(file,"xkb_layout {\n");
     ok= XkbWriteXKBKeycodes(file,result,False,showImplicit,addOn,priv);
+    ok= ok&&XkbWriteXKBKeyTypes(file,result,False,showImplicit,addOn,priv);
     ok= ok&&XkbWriteXKBSymbols(file,result,False,showImplicit,addOn,priv);
     if (xkb->geom)
 	ok= ok&&XkbWriteXKBGeometry(file,result,False,showImplicit,addOn,priv);
