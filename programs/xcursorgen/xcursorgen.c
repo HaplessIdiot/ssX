@@ -41,6 +41,7 @@ struct flist
   int size;
   int xhot, yhot;
   char *pngfile;
+  int delay;
   struct flist *next;
 };
 
@@ -66,7 +67,7 @@ read_config_file (char *config, struct flist **list)
 {
   FILE *fp;
   char line[4096], pngfile[4000];
-  int size, xhot, yhot;
+  int size, xhot, yhot, delay;
   struct flist *start = NULL, *end = NULL, *curr;
   int count = 0;
 
@@ -87,18 +88,28 @@ read_config_file (char *config, struct flist **list)
       if (line[0] == '#')
 	continue;
 
-      if (sscanf (line, "%d %d %d %3999s", &size, &xhot, &yhot, pngfile) != 4)
+      switch (sscanf (line, "%d %d %d %3999s %d", &size, &xhot, &yhot, pngfile, &delay))
+      {
+      case 4:
+	delay = 50;
+	break;
+      case 5:
+	break;
+      default:
 	{
 	  fprintf (stderr, "Bad config file data!\n");
 	  fclose (fp);
 	  return 0;
 	}
+      }
 
       curr = malloc (sizeof (struct flist));
 
       curr->size = size;
       curr->xhot = xhot;
       curr->yhot = yhot;
+
+      curr->delay = delay;
 
       curr->pngfile = malloc (strlen (pngfile) + 1);
       strcpy (curr->pngfile, pngfile);
@@ -236,6 +247,7 @@ load_image (struct flist *list, char *prefix)
   image->size = list->size;
   image->xhot = list->xhot;
   image->yhot = list->yhot;
+  image->delay = list->delay;
 
   rows = malloc (sizeof (png_bytep) * height);
   
