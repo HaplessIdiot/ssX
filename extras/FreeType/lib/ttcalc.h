@@ -14,7 +14,7 @@
  *  understand and accept it fully.
  *
  ******************************************************************/
-/* $XFree86: xc/extras/FreeType/lib/ttcalc.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/extras/FreeType/lib/ttcalc.h,v 1.3tsi Exp $ */
 
 #ifndef TTCALC_H
 #define TTCALC_H
@@ -58,7 +58,14 @@
   typedef struct TT_Int64_  TT_Int64;
 
 #define ADD_64( x, y, z )  Add64( &x, &y, &z )
+
+#if !defined(TT_MAKE_OPTION_SINGLE_OBJECT) || \
+    !defined(TT_CONFIG_OPTION_NO_INTERPRETER)
+
 #define SUB_64( x, y, z )  Sub64( &x, &y, &z )
+
+#endif
+
 #define MUL_64( x, y, z )  MulTo64( x, y, &z )
 
 #define DIV_64( x, y )     Div64by32( &x, y )
@@ -67,7 +74,13 @@
 #define SQRT_32( x )       Sqrt32( x )
 
   LOCAL_DEF void  Add64( TT_Int64*  x, TT_Int64*  y, TT_Int64*  z );
+
+#if !defined(TT_MAKE_OPTION_SINGLE_OBJECT) || \
+    !defined(TT_CONFIG_OPTION_NO_INTERPRETER)
+
   LOCAL_DEF void  Sub64( TT_Int64*  x, TT_Int64*  y, TT_Int64*  z );
+
+#endif
 
   LOCAL_DEF void  MulTo64( TT_Int32  x, TT_Int32  y, TT_Int64*  z );
 
