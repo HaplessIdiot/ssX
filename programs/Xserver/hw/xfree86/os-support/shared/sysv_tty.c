@@ -1,6 +1,5 @@
-/* $XConsortium: sysv_tty.c,v 1.1 94/03/28 21:32:14 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_tty.c,v 3.1 1994/09/26 15:34:04 dawes Exp $ */
-/*
+/* $XConsortium: sysv_tty.c,v 1.3 95/01/05 22:40:58 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_tty.c,v 3.2 1994/10/23 13:00:06 dawes Exp $ */
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *

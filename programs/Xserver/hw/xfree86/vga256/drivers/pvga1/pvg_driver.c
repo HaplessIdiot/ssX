@@ -1,7 +1,6 @@
 /*
- * $XConsortium: pvg_driver.c,v 1.2 94/03/28 21:52:30 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.12 1995/01/10 10:32:06 dawes Exp $
- *
+ * $XConsortium: pvg_driver.c,v 1.5 95/01/16 13:18:21 kaleb Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.13 1995/01/14 10:48:56 dawes Exp $
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

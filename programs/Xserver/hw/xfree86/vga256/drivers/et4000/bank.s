@@ -1,6 +1,5 @@
-/* $XConsortium: bank.s,v 1.2 94/03/29 11:06:05 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/bank.s,v 3.1 1994/08/31 06:20:01 dawes Exp $ */
-/*
+/* $XConsortium: bank.s,v 1.4 95/01/16 13:18:13 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/bank.s,v 3.2 1995/01/10 10:31:23 dawes Exp $ */
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

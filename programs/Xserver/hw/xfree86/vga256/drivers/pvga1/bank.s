@@ -1,6 +1,5 @@
-/* $XConsortium: bank.s,v 1.2 94/03/29 11:04:18 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/bank.s,v 3.1 1994/07/24 12:23:56 dawes Exp $ */
-/*
+/* $XConsortium: bank.s,v 1.3 94/10/13 13:26:38 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/bank.s,v 3.2 1994/08/01 12:18:11 dawes Exp $ */
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

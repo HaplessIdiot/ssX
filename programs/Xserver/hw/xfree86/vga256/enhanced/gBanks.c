@@ -1,6 +1,5 @@
-/* $XConsortium: gBanks.c,v 1.1 94/03/28 21:54:19 dpw Exp $ */
-/* $XFree86$ */
-/*******************************************************************************
+/* $XConsortium: gBanks.c,v 1.2 94/10/13 13:16:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/gBanks.c,v 3.0 1994/07/24 11:58:14 dawes Exp $ */
 			Copyright 1992 by Glenn G. Lai 
 
                         All Rights Reserved

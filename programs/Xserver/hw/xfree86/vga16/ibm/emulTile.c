@@ -1,6 +1,5 @@
-/* $XConsortium: emulTile.c,v 1.1 94/03/28 21:40:37 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulTile.c,v 3.0 1994/05/04 15:03:08 dawes Exp $ */
-/*
+/* $XConsortium: emulTile.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulTile.c,v 3.1 1994/05/31 08:12:21 dawes Exp $ */
  * Copyright IBM Corporation 1987,1988,1989
  *
  * All Rights Reserved

@@ -1,5 +1,5 @@
-/* $XConsortium: Scale.c,v 1.18 94/04/17 20:24:57 gildea Exp $ */
-/* $XFree86$ */
+/* $XConsortium: Scale.c,v 1.20 95/01/05 19:49:01 kaleb Exp $ */
+/* $XFree86: xc/programs/xmag/Scale.c,v 3.1 1994/11/30 21:32:27 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

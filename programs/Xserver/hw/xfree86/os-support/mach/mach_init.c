@@ -1,6 +1,5 @@
-/* $XConsortium: mach_init.c,v 1.1 94/03/28 21:29:21 dpw Exp $ */
-/* $XFree86$ */
-/*
+/* $XConsortium: mach_init.c,v 1.2 94/10/12 20:47:13 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/mach/mach_init.c,v 3.0 1994/09/23 10:25:01 dawes Exp $ */
  * Copyright 1992 by Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *

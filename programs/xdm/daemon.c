@@ -1,5 +1,5 @@
-/* $XConsortium: daemon.c,v 1.14 94/04/17 20:03:35 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/daemon.c,v 3.3 1994/10/20 06:15:08 dawes Exp $ */
+/* $XConsortium: daemon.c,v 1.16 94/12/01 17:10:49 kaleb Exp $ */
+/* $XFree86: xc/programs/xdm/daemon.c,v 3.4 1994/11/30 20:46:55 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

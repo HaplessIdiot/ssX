@@ -1,6 +1,5 @@
-/* $XConsortium: pvgapntwin.c,v 1.2 94/04/17 20:32:39 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgapntwin.c,v 3.0 1994/07/24 11:57:06 dawes Exp $ */
-/***********************************************************
+/* $XConsortium: pvgapntwin.c,v 1.4 95/01/16 13:18:24 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgapntwin.c,v 3.1 1995/01/14 10:49:03 dawes Exp $ */
 
 Copyright (c) 1987  X Consortium
 

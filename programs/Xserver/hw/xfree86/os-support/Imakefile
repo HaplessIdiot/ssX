@@ -1,6 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:27:13 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.2 1994/05/21 23:56:59 dawes Exp $
-#include <Server.tmpl>
+XCOMM $XConsortium: Imakefile,v 1.2 94/10/12 20:43:43 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.3 1994/06/05 13:46:28 dawes Exp $
 
 #define IHaveSubdirs
 

@@ -1,6 +1,5 @@
-/* $XConsortium: fFill.s,v 1.2 94/03/29 11:19:09 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fFill.s,v 3.1 1994/08/31 06:20:25 dawes Exp $ */
-/*
+/* $XConsortium: fFill.s,v 1.4 95/01/05 20:50:47 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fFill.s,v 3.2 1994/10/21 11:24:24 dawes Exp $ */
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

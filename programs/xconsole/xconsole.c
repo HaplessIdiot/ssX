@@ -1,6 +1,6 @@
 /*
- * $XConsortium: xconsole.c,v 1.19 94/04/17 20:39:48 rws Exp $
- * $XFree86: xc/programs/xconsole/xconsole.c,v 3.2 1994/08/20 07:37:37 dawes Exp $
+ * $XConsortium: xconsole.c,v 1.21 95/01/05 21:04:06 kaleb Exp $
+ * $XFree86: xc/programs/xconsole/xconsole.c,v 3.3 1994/11/30 20:46:32 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -64,7 +64,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 
 /* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
-#if defined(__STDC__) && defined(ISC)
+#if defined(ISC) && __STDC__ && !defined(ISC30)
 extern FILE *fdopen(int, char const *);
 #endif
 

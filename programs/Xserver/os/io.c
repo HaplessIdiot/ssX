@@ -45,8 +45,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.90 94/12/02 17:33:26 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.4 1995/01/14 10:49:49 dawes Exp $ */
+/* $XConsortium: io.c,v 1.91 95/01/25 11:14:28 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.5 1995/01/25 10:56:43 dawes Exp $ */
 /*****************************************************************
  * i/o functions
  *

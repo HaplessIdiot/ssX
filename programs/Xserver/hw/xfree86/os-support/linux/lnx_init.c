@@ -1,6 +1,5 @@
-/* $XConsortium: lnx_init.c,v 1.1 94/03/28 21:28:51 dpw Exp $ */
-/* $XFree86$ */
-/*
+/* $XConsortium: lnx_init.c,v 1.2 94/10/12 20:46:43 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_init.c,v 3.0 1994/09/23 10:24:43 dawes Exp $ */
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *

@@ -1,6 +1,6 @@
 /*
- * $XConsortium: gethost.c,v 1.21 94/04/17 20:37:51 hersh Exp $
- * $XFree86: xc/programs/xauth/gethost.c,v 3.1 1994/11/30 20:45:55 dawes Exp $
+ * $XConsortium: gethost.c,v 1.22 94/11/30 16:29:52 kaleb Exp $
+ * $XFree86: xc/programs/xauth/gethost.c,v 3.2 1994/12/02 05:49:52 dawes Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

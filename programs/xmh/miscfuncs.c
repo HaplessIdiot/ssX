@@ -1,5 +1,5 @@
-/* $XConsortium: miscfuncs.c,v 1.6 91/07/13 17:52:59 gildea Exp $ */
-/* $XFree86$ */
+/* $XConsortium: miscfuncs.c,v 1.7 94/12/01 17:15:05 kaleb Exp $ */
+/* $XFree86: xc/programs/xmh/miscfuncs.c,v 3.0 1994/06/28 12:33:32 dawes Exp $ */
 
 #include <X11/Xos.h>
 

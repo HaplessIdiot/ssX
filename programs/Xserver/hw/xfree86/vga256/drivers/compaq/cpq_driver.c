@@ -1,6 +1,5 @@
-/* $XConsortium: cpq_driver.c,v 1.1 94/03/28 21:50:26 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.4 1994/12/11 10:57:06 dawes Exp $ */
-/*
+/* $XConsortium: cpq_driver.c,v 1.4 95/01/16 13:18:12 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.5 1995/01/10 10:31:10 dawes Exp $ */
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

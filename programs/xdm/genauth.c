@@ -1,5 +1,5 @@
-/* $XConsortium: genauth.c,v 1.18 94/04/17 20:03:39 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/genauth.c,v 3.0 1994/06/26 13:11:45 dawes Exp $ */
+/* $XConsortium: genauth.c,v 1.18.1.1 94/11/21 19:57:04 kaleb Exp $ */
+/* $XFree86: xc/programs/xdm/genauth.c,v 3.1 1994/11/26 12:49:28 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -86,7 +86,7 @@ long	sum[2];
     if (fd < 0)
 	return 0;
 #ifdef FRAGILE_DEV_MEM
-     if (strcmp(name, "/dev/mem") == 0) lseek(fd, (off_t) 0x100000, SEEK_SET);
+    if (strcmp(name, "/dev/mem") == 0) lseek (fd, (off_t) 0x100000, SEEK_SET);
 #endif
     reads = FILE_LIMIT;
     sum[0] = 0;
