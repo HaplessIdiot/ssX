@@ -1,4 +1,4 @@
-/* $XFree86: r128.h,v 1.18 2002/02/14 23:10:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.19 2002/02/16 21:26:35 herrb Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -378,6 +378,8 @@ typedef struct {
     CARD32            re_width_height;
 
     CARD32            aux_sc_cntl;
+
+    Bool              DMAForXv;
 #endif
 
     XF86VideoAdaptorPtr adaptor;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.12 2001/07/19 02:22:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.13 2002/04/24 16:20:41 martin Exp $ */
 
 #include "radeon.h"
 #include "radeon_reg.h"
@@ -828,9 +828,24 @@ RADEONPutImage(
 	   s3offset = tmp;
 	}
 	nlines = ((((yb + 0xffff) >> 16) + 1) & ~1) - top;
+	{
+
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+       unsigned char *RADEONMMIO = info->MMIO;
+	CARD32 surface_cntl;
+
+	surface_cntl = INREG(RADEON_SURFACE_CNTL);
+	OUTREG(RADEON_SURFACE_CNTL, (surface_cntl | 
+		RADEON_NONSURF_AP0_SWP_32BPP) & ~RADEON_NONSURF_AP0_SWP_16BPP);
+#endif
 	RADEONCopyMungedData(buf + (top * srcPitch) + left, buf + s2offset,
 			   buf + s3offset, dst_start, srcPitch, srcPitch2,
 			   dstPitch, nlines, npixels);
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+	/* restore byte swapping */
+	OUTREG(RADEON_SURFACE_CNTL, surface_cntl);
+#endif
+	}
 	break;
     case FOURCC_UYVY:
     case FOURCC_YUY2:
