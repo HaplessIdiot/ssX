@@ -1,5 +1,5 @@
 /* $XConsortium: Font.c /main/4 1996/12/02 10:21:13 lehors $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Font.c,v 3.2 1996/01/24 22:04:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Font.c,v 3.3 1996/12/23 07:09:12 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -18,11 +18,7 @@ is" without express or implied warranty.
 #include "Xproto.h"
 #include "misc.h"
 #include "miscstruct.h"
-#ifdef __EMX__
-#include "../../../include/fonts/font.h" /* name clash with Font.h */
-#else
 #include "font.h"
-#endif
 #include "fontstruct.h"
 #include "scrnintstr.h"
 
