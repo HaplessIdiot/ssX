@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.14 2002/10/09 16:38:18 tsi Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.15 2003/01/04 02:25:26 dawes Exp $ */
 
 /*
 **++ 
@@ -626,7 +626,8 @@ IC_RealGetPreviousChar(ic, pos)
         screc.text = 0;
 
         (cb->callback)((XIC)ic, cb->client_data, (XPointer)&screc);
-        if (!screc.text) { return 0; }
+        if (!screc.text)
+            return (unsigned char) *((ic)->private.local.context->mb);
         if ((screc.text->feedback &&
              *screc.text->feedback == XIMStringConversionLeftEdge) ||
             screc.text->length < 1)
