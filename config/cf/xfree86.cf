@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.432 2003/01/07 01:59:07 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.433 2003/01/08 15:55:18 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -340,7 +340,17 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 
 /* Pure PCI drivers should go first */
 # ifndef XF86CardDrivers
-#  define XF86CardDrivers	mga glint nv tga s3 s3virge sis rendition \
+#  ifdef ia64Architecture /* removed nsc driver */
+#   define XF86CardDrivers	mga glint nv tga s3 s3virge sis rendition \
+				neomagic i740 tdfx savage \
+				cirrus vmware tseng trident chips apm \
+				GlideDriver fbdev i128 \
+				ati i810 AgpGartDrivers DevelDrivers ark \
+				cyrix siliconmotion \
+				vesa vga \
+				dummy XF86OSCardDrivers XF86ExtraCardDrivers
+#  else
+#   define XF86CardDrivers	mga glint nv tga s3 s3virge sis rendition \
 				neomagic i740 tdfx savage \
 				cirrus vmware tseng trident chips apm \
 				GlideDriver fbdev i128 nsc \
@@ -348,6 +358,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 				cyrix siliconmotion \
 				vesa vga \
 				dummy XF86OSCardDrivers XF86ExtraCardDrivers
+#  endif
 # endif
 
 /*
@@ -439,7 +450,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 #  define XF86CardDrivers	mga glint nv tga s3 s3virge sis rendition \
 				neomagic tdfx savage cirrus tseng trident \
 				chips apm i128 ati ark cyrix siliconmotion \
-				vga dummy
+				vga dummy fbdev vesa
 # endif
 
 /* DRI tdfx driver needs Glide, which is not available for x86_64 */

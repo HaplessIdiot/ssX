@@ -1,4 +1,15 @@
 XFree86 4.2.99.4 (xx January 2003)
+ 738. Missing deadkeys in UTF-8 compose table (Mike Fabian).
+ 737. Build fix for SPARC (Thorsten Kukuk).
+ 736. Fixed integer address value in vesa driver to be large enough
+      to hold a 64 bit memory address (Andreas Schwab).
+ 735. Disabled RENDER accel on Matrox when used in multihead mode 
+      (Stefan Dirsch).
+ 734. Added FireGL 8700/8800 to the list of supported cards or RADEON
+      driver (Stefan Dirsch).
+ 733. Added -mcmodel=kernel to DRM Makefile for x86_64 (Stefan Dirsch). 
+ 732. Added vesa and fbdev driver to x86_64, removed nsc driver for ia64 build
+      (Stefan Dirsch).
  731. Fixing comments in th_TH.UTF-8 (Stefan Dirsch).
  730. Fixes from the DRI CVS:
        - Don't segfault when spec or fog stride is 0.
@@ -16025,4 +16036,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2475 2003/01/15 04:40:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2476 2003/01/16 10:01:30 eich Exp $

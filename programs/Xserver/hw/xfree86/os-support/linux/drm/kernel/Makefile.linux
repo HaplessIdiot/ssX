@@ -181,6 +181,10 @@ endif
 ifeq ($(MACHINE),alpha)
 MODCFLAGS+=      -ffixed-8 -mno-fp-regs -mcpu=ev56 -Wa,-mev6 
 endif
+ifeq ($(MACHINE),x86_64)
+MODCFLAGS+=      -mcmodel=kernel
+endif
+
 
 MODS += sis.o
 
