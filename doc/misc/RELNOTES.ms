@@ -1,6 +1,6 @@
-.\" $TOG: RELNOTES.ms /main/20 1998/02/05 15:30:57 kaleb $
+.\" $Xorg: RELNOTES.ms,v 1.3 2000/08/17 19:42:05 cpqbld Exp $
 .\" X11R6.4 Release Notes. Use troff -ms macros
-.\" $XFree86: xc/doc/misc/RELNOTES.ms,v 1.3 2000/12/14 21:11:46 dawes Exp $
+.\" $XFree86: xc/doc/misc/RELNOTES.ms,v 1.4 2000/12/14 21:14:07 dawes Exp $
 .ds Ts 30 January, 1998\" 
 .\"
 .ie t \{

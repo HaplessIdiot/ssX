@@ -1,4 +1,4 @@
-.\" $TOG: security.cpp /main/13 1997/10/13 14:20:52 kaleb $
+.\" $Xorg: security.cpp,v 1.3 2000/08/17 19:42:05 cpqbld Exp $
 .\" Copyright (c) 1993, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining

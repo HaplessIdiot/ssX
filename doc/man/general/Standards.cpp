@@ -1,4 +1,4 @@
-.\" $TOG: Standards.cpp /main/28 1998/02/02 16:32:53 barstow $
+.\" $Xorg: Standards.cpp,v 1.3 2000/08/17 19:42:04 cpqbld Exp $
 .\" Copyright (c) 1993, 1994, 1996  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining

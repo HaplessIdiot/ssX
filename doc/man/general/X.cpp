@@ -1,4 +1,4 @@
-.\" $TOG: X.cpp /main/72 1997/10/13 14:20:40 kaleb $
+.\" $Xorg: X.cpp,v 1.3 2000/08/17 19:42:04 cpqbld Exp $
 .\" Copyright (c) 1994  X Consortium
 .\" Copyright \(co 2000  The XFree86 Project, Inc.
 .\" 
@@ -25,7 +25,7 @@
 .\" dealing in this Software without prior written authorization from the 
 .\" X Consortium.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/general/X.cpp,v 1.4 2000/12/12 18:06:51 dawes Exp $
 .\"
 .TH X __miscmansuffix__ "XFree86 4.0.2" "X Version 11"
 .SH NAME
