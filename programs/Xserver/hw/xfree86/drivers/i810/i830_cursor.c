@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_cursor.c,v 1.3 2002/10/30 12:52:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_cursor.c,v 1.4 2002/11/05 02:43:59 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -206,10 +206,13 @@ I830SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 
    OUTREG(CURSOR_A_POSITION, temp);
 
-   if (hide)
-      pI830->CursorInfoRec->HideCursor(pScrn);
-   else if (show && pI830->cursorOn)
-      pI830->CursorInfoRec->ShowCursor(pScrn);
+   if (pI830->cursorOn) {
+      if (hide)
+	 pI830->CursorInfoRec->HideCursor(pScrn);
+      else if (show)
+	 pI830->CursorInfoRec->ShowCursor(pScrn);
+      pI830->cursorOn = TRUE;
+   }
 }
 
 static void
