@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.24 2002/01/30 00:53:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.25 2002/04/24 16:20:39 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -413,7 +413,7 @@ static void RADEONRestoreCPAccelState(ScrnInfoPtr pScrn)
 #endif
 
 /* Initialize the acceleration hardware */
-static void RADEONEngineInit(ScrnInfoPtr pScrn)
+void RADEONEngineInit(ScrnInfoPtr pScrn)
 {
     RADEONInfoPtr  info       = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO = info->MMIO;
