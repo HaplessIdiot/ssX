@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.41 2003/11/17 22:20:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.42 2004/02/13 23:58:30 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -547,7 +547,8 @@ ProcXF86MiscSetClientVersion(ClientPtr client)
 	    return BadAlloc;
 	MPRIV(client) = pPriv;
     }
-    ErrorF("SetClientVersion: %i %i\n",stuff->major,stuff->minor);
+    xf86MsgVerb(X_INFO, 4, "SetClientVersion: %i %i\n",
+	stuff->major,stuff->minor);
     pPriv->major = stuff->major;
     pPriv->minor = stuff->minor;
     
