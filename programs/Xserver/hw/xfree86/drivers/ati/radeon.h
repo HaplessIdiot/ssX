@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.37 2003/02/23 23:28:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.38 2003/04/06 20:07:33 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -574,12 +574,15 @@ extern Bool        RADEONDGAInit(ScreenPtr pScreen);
 extern int         RADEONMinBits(int val);
 
 extern void        RADEONInitVideo(ScreenPtr pScreen);
-
+/* added by cpbotha@ieee.org so that we can call this function from
+ * radeon_driver.c to get xvideo working after a resume from disc/ram */
+extern void        RADEONResetVideo(ScrnInfoPtr pScrn);
 extern void        R300CGWorkaround(ScrnInfoPtr pScrn);
 
 #ifdef XF86DRI
 extern Bool        RADEONDRIScreenInit(ScreenPtr pScreen);
 extern void        RADEONDRICloseScreen(ScreenPtr pScreen);
+extern void        RADEONDRIResume(ScreenPtr pScreen);
 extern Bool        RADEONDRIFinishScreenInit(ScreenPtr pScreen);
 
 extern drmBufPtr   RADEONCPGetBuffer(ScrnInfoPtr pScrn);
