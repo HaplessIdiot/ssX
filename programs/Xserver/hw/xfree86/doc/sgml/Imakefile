@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.35 1999/05/29 09:54:49 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.36 1999/05/30 14:27:31 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -60,17 +60,27 @@ LinuxDocReadmeTarget(fbdev)
 /* Main docs */
 LinuxDocTarget(LICENSE)
 LinuxDocTargetLong(RELNOTE.sgml,RELNOTES,RELNOTES)
+#ifdef UPTODATE
 LinuxDocReadmeTarget(Config)
 LinuxDocTarget(BUILD)
+#endif
 LinuxDocTarget(README)
+LinuxDocTarget(DESIGN)
+#ifdef UPTODATE
 LinuxDocTargetLong(QStart.sgml,QuickStart.doc,QuickStart)
+#endif
 LinuxDocTarget(DocIndex)
 
 /* Other docs */
+#if 0
 LinuxDocReadmeTarget(clkprog)
+#endif
 LinuxDocTarget(xinput)
+LinuxDocReadmeTarget(mouse)
 LinuxDocReadmeTarget(fonts)
 LinuxDocTargetLong(VidModes.sgml,VideoModes.doc,VideoModes)
+#ifdef UPTODATE
 LinuxDocTargetLong(VGADriv.sgml,VGADriver.Doc,VGADriver)
+#endif
 
 

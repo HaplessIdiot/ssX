@@ -1,0 +1,8 @@
+<!-- $XFree86$ -->
+
+<!-- shared entity definitions for the XFree86 documentation -->
+
+<!-- XFree86 version string -->
+<!ENTITY relvers CDATA "3.9.15">
+
+

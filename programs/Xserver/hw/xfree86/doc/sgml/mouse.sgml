@@ -1,25 +1,26 @@
-<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN" [
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
 
 <article>
 <title>Mouse Support in XFree86
 <author>Kazutaka Yokota
-<date>20 April 1999
+<date>4 July 1999
 <toc>
  
 <sect>Introduction <p>
 
-This document describes mouse support in XFree86 3.3.4, whose
-X servers have the revised mouse driver.
+This document describes mouse support in XFree86 &relvers;.
 
 Mouse configuration has often been mysterious task for
 novice users.
 However, once you learn several basics, it is straightforward
-to choose options in <tt>XF86Setup</tt> or write the <tt>"Pointer"</tt>
+to choose write the mouse <tt>"InputDevice"</tt>
 section in the <tt>XF86Config</tt> file by hand.
 
 <sect>Supported Hardware <p>
 
-XFree86 X servers support three classes of mice:
+The XFree86 X server supports three classes of mice:
 serial, bus and PS/2 mice.
 
 <descrip>
@@ -35,8 +36,8 @@ to the host computer.
 The modern serial mouse conforms to the PnP COM device specification
 so that the host computer can automatically detect the mouse
 and load an appropriate driver.
-The XFree86 3.3.2 X servers support this specification and can detect
-popular PnP serial mouse models.
+The XFree86 X server supports this specification and can detect
+popular PnP serial mouse models on most platforms.
 
 <tag>Bus mouse</tag>
 The bus mouse connects to a dedicated interface card in an expansion
@@ -71,10 +72,10 @@ used in such a way, even if you can find an appropriate
 adapter with which you can connect the PS/2 mouse to a serial port
 or visa versa.
 
-XFree86 now supports the mouse with a wheel, a roller or a knob.
+XFree86 supports the mouse with a wheel, a roller or a knob.
 Its action is detected as the Z (third) axis motion of the mouse.
 As the X server or clients normally do not use the Z axis movement of the 
-pointing device, a new configuration option, <tt>ZAxisMapping</tt>,
+pointing device, a configuration option, <tt>"ZAxisMapping"</tt>,
 is provided to assign the Z axis movement to another axis or a pair
 of buttons (see below).
 
@@ -99,7 +100,7 @@ NetBSD/pc98       Ok        ?         Ok        NA        NA
 OpenBSD           Ok        Ok        Ok        Ok*1      OK*1
 OS/2              SP*2      SP*2      SP*2      SP*2      SP*2
 SCO               Ok        ?         SP*1      SP*1      NA
-Solaris 2.x       Ok        NA*1      ?*1       Ok        NA
+Solaris 2.x       Ok        NA*1      ?*1       Ok        Ok
 SVR4              Ok        NA*1      SP*1      SP*1      NA
 PANIX             Ok        ?         SP*1      SP*1      NA
 
@@ -145,7 +146,7 @@ Use <tt>/dev/mouse</tt> for the <tt>"BusMouse"</tt> protocol
 and <tt>/dev/kdmouse</tt> for the <tt>"PS/2"</tt> protocol. 
 These protocols are untested but may work. 
 Please send success/failure reports to
-<it/&lt;michael.rohleder@stadt-frankfurt.de&gt;/.
+<email>michael.rohleder@stadt-frankfurt.de</email>.
 
 <sect1>Linux <p>
 All protocol types should work.
@@ -164,8 +165,8 @@ The PS/2 mouse device driver <tt>/dev/pms</tt> emulates the bus mouse.
 Therefore, you should always specify the <tt>"BusMouse"</tt> protocol for 
 any PS/2 mouse regardless of the brand of the mouse.
 <p>
-XFree86 3.3.4 supports the <tt>"wsmouse"</tt> protocol introduced in NetBSD
-1.4 along with the wscons console driver. You need to run binaries
+The <tt>"wsmouse"</tt> protocol introduced in NetBSD
+1.4 along with the wscons console driver is supported. You need to run binaries
 compiled on NetBSD 1.4 to have support 
 for it though. Use <tt>"/dev/wsmouse0"</tt> for the device. Refer to the 
 <em>wsmouse(4)</em> manual page for kernel configuration informations.
@@ -234,7 +235,7 @@ The PC-98 version of PANIX supports the bus mouse with the
 
 <sect>Configuring Your Mouse <p>
 
-Before using the <tt>XF86Setup</tt> or <tt>xf86config</tt> programs
+Before using the <tt>xf86config</tt> program
 to set up mouse configuration, you must identify the interface type,
 the device name and the protocol type of your mouse.
 Blindly trying every possible combination of mouse settings 
@@ -304,7 +305,7 @@ a suitable protocol type, the server will print the following
 error message and abort.
 
 <verb>
-xf86SetupMouse: Cannot determine the mouse protocol
+<mousename>: cannot determine the mouse protocol
 </verb>
 
 If the X server generates the above error message, you need to 
@@ -353,8 +354,8 @@ but you find that not all features of the mouse is available, that is
 because the X server does not have native support for that model of mouse
 and is using a ``compatible'' protocol according to PnP information.
 
-If you suspect this is the case with your mouse, please send report to
-<it/&lt;XFree86@XFree86.Org&gt;/.
+If you suspect this is the case with your mouse, please send a report to
+<email>XFree86@XFree86.Org</email>.
 
 <tag>Standardized protocols</tag>
 Mouse device drivers in your OS may use the standardized protocol 
@@ -368,8 +369,20 @@ Please refer to the OS support section of this file for more information.
 
 <sect>XF86Config Options <p>
 
-The following new options are available for the <tt>Pointer</tt> section
-of the <tt>XF86Config</tt> file.
+The old <tt>Pointer</tt> section has been replaced by a more general
+<tt>InputDevice</tt> section.  The following is a minimal example
+of an <tt>InputDevice</tt> section for a mouse:
+
+<code>
+Section "InputDevice"
+	Identifier	"Mouse 1"
+	Driver		"mouse"
+	Option		"Device"	"/dev/mouse"
+	Option		"Protocol"	"Auto"
+EndSection
+</code>
+
+The <tt>mouse</tt> driver supports the following config file options:
 
 <sect1>Buttons <p>
 This option tells the X server the number of buttons on the mouse.
@@ -378,12 +391,8 @@ number.
 This option is the only means for the X server to obtain it.
 The default value is three.
 
-Note that if you intend to assign Z axis movement to button events
-using the <tt>ZAxisMapping</tt> option below, you need to take account
-of those buttons into <tt>N</tt> too.
-
 <verb>
-	Buttons N
+	Option	"Buttons"	"N"
 </verb>
 
 <sect1>ZAxisMappping <p>
@@ -391,9 +400,9 @@ This option maps the Z axis (wheel) motion to a pair of buttons or to
 another axis.
 
 <verb>
-	ZAxisMapping X
-	ZAxisMapping Y
-	ZAxisMapping N M
+	Option	"ZAxisMapping"	"X"
+	Option	"ZAxisMapping"	"Y"
+	Option	"ZAxisMapping"	"N M"
 </verb>
 
 The first example will map the Z axis motion to the X axis motion.
@@ -405,59 +414,56 @@ the button <tt>M</tt>.  If this option is used and the buttons <tt>N</tt>
 or <tt>M</tt> actually exists in the mouse, 
 their actions won't be detected by the X server.
 
-Currently this option can not be set in the <tt>XF86Setup</tt> program.
-You need to edit the <tt>XF86Config</tt> file by hand to add this option.
-
 <sect1>Resolution <p>
 The following option will set the mouse device resolution to <tt>N</tt>
 counts per inch, if possible:
 
 <verb>
-	Resolution N
+	Opiton	"Resolution"	"N"
 </verb>
 
 Not all mice and OSs can support this option.
-This option can be set in the <tt>XF86Setup</tt> program.
 
 <sect>Mouse Gallery <p>
 
+In all of the examples below, it is assumed that <tt>/dev/mouse</tt> is
+a link to the appropriate serial port or PS/2 mouse device.
+
 <sect1>MS IntelliMouse  (serial, PS/2) <p>
-This mouse has been supported since XFree86 3.3.
-However, support in 3.3.2 is slightly different;
-the wheel movement is recognized as the Z axis motion.  
-This behavior is not compatible with XFree86
-3.3, but is more consistent with the support for other mice with
+The wheel movement is recognized as the Z axis motion.  
+This behavior is not compatible with XFree86 versions prior to 3.3.2,
+but is more consistent with the support for other mice with
 wheels or rollers. 
 If you want to make the wheel behave like before,
-you can use the new option <tt>"ZAxisMapping"</tt> as described above. 
+you can use the <tt>"ZAxisMapping"</tt> option as described above. 
 <p>
 IntelliMouse supports the PnP COM device specification.
 <p>
 To use this mouse as a serial device:
 <verb>
-	Protocol "Auto" or "IntelliMouse"
-	Device   "/dev/xxxx" (where xxxx is a serial port)
+	Option	"Protocol"	"Auto"
+</verb>
+or:
+<verb>
+	Option	"Protocol"	"IntelliMouse"
 </verb>
 
 To use this mouse as the PS/2 device and the OS supports PS/2 mouse 
 initialization:
 <verb>
-	Protocol "IMPS/2"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"IMPS/2"
 </verb>
 
 To use this mouse as the PS/2 device but the OS does not support PS/2 mouse 
 initialization (the wheel won't work in this case):
 <verb>
-	Protocol "PS/2"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"PS/2"
 </verb>
 
 To use this mouse as the PS/2 device and the OS supports automatic
 PS/2 mouse detection:
 <verb>
-	Protocol "Auto"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"Auto"
 </verb>
 
 <sect1>Kensington Thinking Mouse (serial, PS/2) <p>
@@ -466,30 +472,30 @@ Thinking Mouse supports the PnP COM device specification.
 <p>
 To use this mouse as a serial device:
 <verb>
-	Protocol "Auto" or "ThinkingMouse"
-	Device   "/dev/xxxx" (where xxxx is a serial port)
+	Option	"Protocol"	"Auto"
+</verb>
+or:
+<verb>
+	Option	"Protocol"	"ThinkingMouse"
 </verb>
 
 To use this mouse as the PS/2 device and the OS supports PS/2 mouse 
 initialization:
 <verb>
-	Protocol "ThinkingMousePS/2"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"ThinkingMousePS/2"
 </verb>
 
 To use this mouse as the PS/2 device but the OS does not support PS/2 mouse 
 initialization (the third and the fourth buttons act as though they
 were the first and the second buttons):
 <verb>
-	Protocol "PS/2"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"PS/2"
 </verb>
 
 To use this mouse as the PS/2 device and the OS supports automatic
 PS/2 mouse detection:
 <verb>
-	Protocol "Auto"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"Auto"
 </verb>
 
 <sect1>Genius NetScroll (PS/2) <p>
@@ -499,22 +505,19 @@ recognized as the Z axis motion.
 To use this mouse as the PS/2 device and the OS supports PS/2 mouse 
 initialization:
 <verb>
-	Protocol "NetScrollPS/2"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"NetScrollPS/2"
 </verb>
 
 To use this mouse as the PS/2 device but the OS does not support PS/2 mouse 
 initialization (the roller and the fourth button won't work):
 <verb>
-	Protocol "PS/2"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"PS/2"
 </verb>
 
 To use this mouse as the PS/2 device and the OS supports automatic
 PS/2 mouse detection:
 <verb>
-	Protocol "Auto"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"Auto"
 </verb>
 
 <sect1>Genius NetMouse and NetMouse Pro (serial, PS/2) <p>
@@ -528,29 +531,29 @@ When used as a serial mouse, they are compatible with MS IntelliMouse.
 <p>
 To use these mice as a serial device:
 <verb>
-	Protocol "Auto" or "IntelliMouse"
-	Device   "/dev/xxxx" (where xxxx is a serial port)
+	Option	"Protocol"	"Auto"
+</verb>
+or:
+<verb>
+	Option	"Protocol"	"IntelliMouse"
 </verb>
 
 To use this mouse as the PS/2 device and the OS supports PS/2 mouse 
 initialization:
 <verb>
-	Protocol "NetMousePS/2"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"NetMousePS/2"
 </verb>
 
 To use this mouse as the PS/2 device but the OS does not support PS/2 mouse 
 initialization (the "magic button" and the third button won't work):
 <verb>
-	Protocol "PS/2"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"PS/2"
 </verb>
 
 To use this mouse as the PS/2 device and the OS supports automatic
 PS/2 mouse detection:
 <verb>
-	Protocol "Auto"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"Auto"
 </verb>
 
 <sect1>ALPS GlidePoint (serial, PS/2) <p>
@@ -561,29 +564,25 @@ button in order to make this pad behave like the other pad products.)
 <p>
 To use this pad as a serial device:
 <verb>
-	Protocol "GlidePoint"
-	Device   "/dev/xxxx" (where xxxx is a serial port)
+	Option	"Protocol"	"GlidePoint"
 </verb>
 
 To use this mouse as the PS/2 device and the OS supports PS/2 mouse 
 initialization:
 <verb>
-	Protocol "GlidePointPS/2"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"GlidePointPS/2"
 </verb>
 
 To use this mouse as the PS/2 device but the OS does not support PS/2 mouse 
 initialization:
 <verb>
-	Protocol "PS/2"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"PS/2"
 </verb>
 
 To use this mouse as the PS/2 device and the OS supports automatic
 PS/2 mouse detection:
 <verb>
-	Protocol "Auto"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"Auto"
 </verb>
 
 <sect1>ASCII MieMouse (serial, PS/2) <p>
@@ -597,29 +596,29 @@ serial mouse, it is compatible with MS IntelliMouse.
 <p>
 To use this mouse as a serial device:
 <verb>
-	Protocol "Auto" or "IntelliMouse"
-	Device   "/dev/xxxx" (where xxxx is a serial port)
+	Option	"Protocol"	"Auto"
+</verb>
+or:
+<verb>
+	Option	"Protocol"	"IntelliMouse"
 </verb>
 
 To use this mouse as the PS/2 device and the OS supports PS/2 mouse 
 initialization:
 <verb>
-	Protocol "NetMousePS/2"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"NetMousePS/2"
 </verb>
 
 To use this mouse as the PS/2 device but the OS does not support PS/2 mouse 
 initialization (the knob and the third button won't work):
 <verb>
-	Protocol "PS/2"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"PS/2"
 </verb>
 
 To use this mouse as the PS/2 device and the OS supports automatic
 PS/2 mouse detection:
 <verb>
-	Protocol "Auto"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"Auto"
 </verb>
 
 <sect1>Logitech MouseMan+ and FirstMouse+ (serial, PS/2) <p>
@@ -633,34 +632,34 @@ They have MS IntelliMouse compatible mode when used as a serial mouse.
 <p>
 To use these mice as a serial device:
 <verb>
-	Protocol "Auto" or "IntelliMouse"
-	Device   "/dev/xxxx" (where xxxx is a serial port)
+	Option	"Protocol"	"Auto"
+</verb>
+or:
+<verb>
+	Option	"Protocol"	"IntelliMouse"
 </verb>
 
 To use this mouse as the PS/2 device and the OS supports PS/2 mouse 
 initialization:
 <verb>
-	Protocol "MouseManPlusPS/2"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"MouseManPlusPS/2"
 </verb>
 
 To use this mouse as the PS/2 device but the OS does not support PS/2 mouse 
 initialization (the wheel and the fourth button won't work):
 <verb>
-	Protocol "PS/2"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"PS/2"
 </verb>
 
 To use this mouse as the PS/2 device and the OS supports automatic
 PS/2 mouse detection:
 <verb>
-	Protocol "Auto"
-	Device   "/dev/xxxx"  (where xxxx is the PS/2 mouse device)
+	Option	"Protocol"	"Auto"
 </verb>
 
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.1.2.12 1999/06/30 13:00:29 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.2 1999/07/04 06:58:26 dawes Exp $
 </verb>
 </article>
