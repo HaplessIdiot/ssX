@@ -1,13 +1,12 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/dmx/Imakefile,v 1.3tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/Imakefile,v 1.4tsi Exp $
 
 #include <Server.tmpl>
 
+#if BuildGlxInDmx
 #if BuildXinerama
 PANORAMIX_SRCS = panoramiX.c
 PANORAMIX_OBJS = panoramiX.o
 #endif
-
-#if BuildGlxInDmx
 GLX_SRCS = dmx_glxvisuals.c $(PANORAMIX_SRCS)
 GLX_OBJS = dmx_glxvisuals.o $(PANORAMIX_OBJS)
 DMX_GLX_DEFINES = $(GLX_DEFINES) -DGLXPROXY
@@ -108,13 +107,9 @@ DependSubdirs($(SUBDIRS))
 LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
 SpecialCObjectRule(miinitext,$(ICONFIGFILES),-DDMXSERVER)
 
-#if BuildGlxExt
+#if BuildGlxInDmx && BuildXinerama
 LinkSourceFile(panoramiX.c,$(SERVERSRC)/Xext)
-#if HasGcc3
-SpecialCObjectRule(panoramiX,$(ICONFIGFILES),-Wno-missing-prototypes -Wno-strict-prototypes -Wno-missing-declarations -Wno-sign-compare)
-#else
 SpecialCObjectRule(panoramiX,$(ICONFIGFILES),$(_NOOP_))
-#endif
 #endif
 
 NormalLibraryObjectRule()

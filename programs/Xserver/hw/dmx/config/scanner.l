@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/config/scanner.l,v 1.1tsi Exp $ */
 /*
  * Copyright 2002 Red Hat Inc., Durham, North Carolina.
  *
@@ -45,7 +45,7 @@ static int lineno = 1;
 %}
 %s OTHER
 comment         #.*
-word            ([[:alpha:]_/:\-\+\.\*][[:alnum:]_/:\-\+\.\*]+)
+word            (([[:alpha:]]|[_/:+.*-])([[:alnum:]]|[_/:+.*-])+)
 string          \"(([^\"\n])|\"\")*\"
 badstring       \"(([^\"\n])|\"\")*
 number          [[:digit:]x]+
@@ -66,7 +66,7 @@ param           return gettoken(T_PARAM, yytext, yyleng);
 {word}          return getstring(T_STRING, yytext, yyleng);
 {string}        return getstring(T_STRING, yytext+1, yyleng-2);
 {NL}            ++lineno;
-{WS}            
+{WS}            ;
 \{              return gettoken(yytext[0], yytext, yyleng);
 \}              return gettoken(yytext[0], yytext, yyleng);
 \;              return gettoken(yytext[0], yytext, yyleng);
@@ -74,7 +74,6 @@ param           return gettoken(T_PARAM, yytext, yyleng);
 ^{comment}      return getcomment(T_LINE_COMMENT, yytext, yyleng);
 {comment}       return getcomment(T_COMMENT, yytext, yyleng);
 .               return getstring(T_STRING, yytext, yyleng);
-<<EOF>>         return 0;
 %%
 int yywrap(void)
 {
