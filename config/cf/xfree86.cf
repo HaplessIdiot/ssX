@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.424 2002/11/26 01:12:31 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.425 2002/11/26 02:32:22 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1984,6 +1984,10 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # else
 #  define StaticNeedsPicForShared NO
 # endif
+#endif
+
+#ifndef XF8_32Wid
+# define XF8_32Wid		NO
 #endif
 
 #if CrossCompiling
