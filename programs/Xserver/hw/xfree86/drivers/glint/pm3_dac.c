@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.24 2001/05/16 07:56:07 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.25 2001/08/18 11:37:31 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -419,6 +419,15 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
 	  clockused = PM3DAC_CalculateClock(mode->Clock,
 					    pGlint->RefClock, &m,&n,&p);
+	  break;
+	case PCI_VENDOR_3DLABS_CHIP_GAMMA:
+	  switch (pGlint->MultiChip) {
+	    case PCI_CHIP_PERMEDIA3:
+	  	clockused = PM3DAC_CalculateClock(mode->Clock,
+					    pGlint->RefClock, &m,&n,&p);
+		break;
+	  }
+	  break;
 	}
 	STOREDAC(PM3RD_DClk0PreScale, m);
 	STOREDAC(PM3RD_DClk0FeedbackScale, n);
