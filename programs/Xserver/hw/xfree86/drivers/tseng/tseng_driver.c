@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.95 2003/09/24 02:43:29 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.96 2003/10/30 17:37:15 tsi Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -870,7 +870,7 @@ TsengFindNonPciBusType(ScrnInfoPtr pScrn)
 	    pTseng->LinFbAddressMask = 0x3FC00000;	/* A29..A22 */
 	    break;
 	}
-	if (Is_W32p_cd && (pTseng->LinFbAddressMask = 0x3FC00000))
+	if (Is_W32p_cd && (pTseng->LinFbAddressMask == 0x3FC00000))
 	    pTseng->LinFbAddressMask |= 0xC0000000;	/* A31,A30 decoded from PCI config space */
 	break;
     case TYPE_ET6000:

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.42 2003/10/30 18:53:41 twini Exp $ */
 /*
  * Mode initializing code (CRT2 section)
  * for SiS 300/305/540/630/730 and
@@ -5745,7 +5745,7 @@ SiS_SetGroup1_301(SiS_Private *SiS_Pr, USHORT ModeNo,USHORT ModeIdIndex,
 	      p1_8 = 0x03;
 	   }
 	} else if( ((HwInfo->jChipType >= SIS_315H) &&
-	            ((ModeNo == 0x50) || (ModeNo = 0x56) || (ModeNo = 0x53))) ||
+	            ((ModeNo == 0x50) || (ModeNo == 0x56) || (ModeNo == 0x53))) ||
 	           ((HwInfo->jChipType < SIS_315H) &&
 		    (resinfo == SIS_RI_320x200 || resinfo == SIS_RI_320x240)) ) {
 	   if(!(SiS_Pr->SiS_TVMode & TVSetPAL)) {
@@ -9612,7 +9612,8 @@ SiS_SetCRT2Group(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, USHORT ModeNo)
 	   /* For 301BDH (Panel link initialization): */
 	   if((SiS_Pr->SiS_VBType & VB_NoLCD) && (SiS_Pr->SiS_VBInfo & SetCRT2ToLCD)) {
 	      if(SiS_Pr->SiS_LCDResInfo != SiS_Pr->SiS_Panel640x480) {
-		 if(!((SiS_Pr->SiS_SetFlag & SetDOSMode) && ((ModeNo == 0x03) || (ModeNo = 0x10)))) {
+		 if(!((SiS_Pr->SiS_SetFlag & SetDOSMode) &&
+		    ((ModeNo == 0x03) || (ModeNo == 0x10)))) {
 		    if(SiS_Pr->SiS_VBInfo & SetInSlaveMode) {
 		       SiS_ModCRT1CRTC(SiS_Pr,ModeNo,ModeIdIndex,
 		                       RefreshRateTableIndex,HwInfo);

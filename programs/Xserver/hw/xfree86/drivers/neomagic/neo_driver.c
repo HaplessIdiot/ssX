@@ -30,7 +30,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Copyright 2002 Shigehiro Nomura
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.71 2003/09/24 03:16:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.72 2003/10/30 17:37:07 tsi Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -3079,11 +3079,12 @@ neo_ddc1(int scrnIndex)
     reg3 = VGArCR(0x1A);
     VGAwCR(0x21,0x00);
     VGAwCR(0x1D,0x01);  /* some Voodoo */ 
-    VGAwGR(0xA1,0x2F);
+    VGAwGR(0x1A,0x2F);
     ret =  xf86DoEDID_DDC1(scrnIndex,vgaHWddc1SetSpeed,neo_ddc1Read);
     /* undo initialization */
     VGAwCR(0x21,reg1);
     VGAwCR(0x1D,reg2);
+    VGAwGR(0x1A,reg3);
     return ret;
 }
 
