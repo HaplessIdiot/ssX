@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.18 2003/11/12 00:10:25 dawes Exp $
+XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.19 2003/11/21 02:33:22 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -201,10 +201,16 @@ MANSUFFIX = $(LIBMANSUFFIX)
 InstallManPage(Freetype,$(LIBMANDIR))
 #endif
 
-BuildIncludes($(HEADERS),freetype2,..)
-InstallMultipleFlags($(HEADERS),$(INCDIR)/freetype2,$(INSTINCFLAGS))
+BuildIncludes($(HEADERS),.,.)
+InstallMultipleFlags($(HEADERS),$(INCDIR),$(INSTINCFLAGS))
 
-LinkSourceFile(ft2build.h,$(FREETYPETOP)/include)
+/* There might be an ft2build.h file in the wrong place.  If so, remove it. */
+install::
+	@if [ -f $(DESTDIR)$(INCDIR)/freetype2/ft2build.h ]; then \
+		(set -x; $(RM) -f $(DESTDIR)$(INCDIR)/freetype2/ft2build.h) \
+	fi
+
+LinkFile(ft2build.h,$(FREETYPETOP)/builds/unix/ft2unix.h)
 
 LinkSourceFile(ftapi.c,$(FREETYPESRC)/base)
 LinkSourceFile(ftbase.c,$(FREETYPESRC)/base)

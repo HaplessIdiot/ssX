@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.235 2003/11/21 04:58:54 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.236 2003/12/05 19:19:08 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -3007,6 +3007,9 @@ FREETYPE2INCDIR=$(BUILDINCDIR)
 
 #ifndef Freetype2IncDir
 #define Freetype2IncDir Freetype2Dir/include
+# if Freetype2DirStandard
+#  define Freetype2IncDirStandard YES
+# endif
 #endif
 
 FREETYPE2DIR = Freetype2Dir
@@ -3022,8 +3025,16 @@ FREETYPE2LIB = -L$(FREETYPE2LIBDIR) -lfreetype
 
 #endif /* else BuildFreetype2Library */
 
+#ifndef Freetype2IncDirStandard
+# define Freetype2IncDirStandard NO
+#endif
+
 #if BuildFreetype2Library || HasFreetype2
+#if Freetype2IncDirStandard
+FREETYPE2INCLUDES = -I$(FREETYPE2INCDIR)/freetype2
+#else
 FREETYPE2INCLUDES = -I$(FREETYPE2INCDIR) -I$(FREETYPE2INCDIR)/freetype2
+#endif
 FREETYPE2DEFINES = -DFREETYPE2
 #endif
 
