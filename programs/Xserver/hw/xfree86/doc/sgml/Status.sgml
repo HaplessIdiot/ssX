@@ -9,7 +9,7 @@
 <date>23 January 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.1 2000/01/23 18:23:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.2 2000/01/23 21:34:37 dawes Exp $
 </ident>
 
 <abstract>
@@ -158,7 +158,6 @@ dependencies/limitations, other architectures known to work on
 	the others.  The status of this support is unknown because we
 	don't have any recent test reports.
 
-<tag>&relvers;:</tag>
 <tag>&relvers;:</tag>
 	No native support for these chipsets, because the old drivers
 	have not been ported.
