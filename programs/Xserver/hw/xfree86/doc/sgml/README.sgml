@@ -13,10 +13,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>4 February 2003
+<date>17 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.125 2003/02/16 17:19:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.126 2003/02/16 17:21:11 dawes Exp $
 </ident>
 
 <abstract>
@@ -137,7 +137,7 @@ developers monitor this list.
 If you have any new work or enhancements/bug fixes for existing work,
 please submit them to <email>fixes@XFree86.org</email>.  This will ensure
 that they are included in future releases.  For new work, it's usually
-a good idea to discuss it first on the <email>XFree86@XFree86.org</email>
+a good idea to discuss it first on the <email>devel@XFree86.org</email>
 list.
 
 <sect>How to get XFree86 &relvers;
