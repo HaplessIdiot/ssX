@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.14 1996/05/06 05:57:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.15 1996/10/21 05:27:20 dawes Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -59,6 +59,7 @@ elsa_board_types_t elsa_board_types[] = {
    ELSA_WINNER_1000PRO_TRIO32,	"ELSA Winner 1000PRO Trio32",	0,
    ELSA_WINNER_1000PRO_TRIO64,	"ELSA Winner 1000PRO Trio64",	0,
    ELSA_WINNER_1000AVI,		"ELSA Winner 1000AVI",		0,
+   ELSA_WINNER_1000PRO_X,	"ELSA Winner 1000PRO/X",	0,
    ELSA_WINNER_2000PRO,		"ELSA Winner 2000PRO",		0,
    ELSA_WINNER_2000PRO_X,	"ELSA Winner 2000PRO/X",	0,
    ELSA_WINNER_2000AVI,		"ELSA Winner 2000AVI",		0,

@@ -23,8 +23,11 @@ H.Hanemaayer@inter.nl.net
 Here's a list of known problems (roughly in order of importance). If you
 can confirm a problem using the lastest version, please do so.
 
-- The pixmap cache is disabled because it causes a crash at start-up.
-  Somehow the move to xaa/* triggered this.
+- The "NonTE" text acceleration triggers core dumps (related to an invalid
+  fall-back function scheme in ValidateGC). It might also trigger lock-ups
+  (which would point towards a problem in NonTE text color expansion).
+
+- The pixmap cache has been re-enabled.
 
 - There is a memory leak that shows up running xscreensaver for a long time.
   Possibly in ValidateGC. This also shows up with x11perf -gc (Change GC test).
@@ -52,6 +55,13 @@ back-trace ('backtrace').
 
 Change Log:
 
+Version 0.4f (28 November 1996)
+126. Fix typo in xf86frect.c, pixmap-cache re-enabled (Alan).
+125. Disable Non-TE text acceleration.
+124. Add text fall-back functions in xf86gcmisc.c.
+123. Fix ImakefileBPP.
+
+Version 0.4e (XFree86 3.2c) (24 November 1996)
 122. Fix some problems with drawing of Non-TE of text strings.
 121. Fix compilation problem in xf86spans.c (Takaaki Nomura).
 120. Add sanity checks in PolyFillRect and FillSpans for <= 0 specified
@@ -352,7 +362,8 @@ Flags
     USE_TWO_POINT_LINE
 
     Use two-point lines (TwoPointLine) instead of Bresenham lines for
-    general lines. This flag is automatically set if appropriate. 
+    general lines. This flag is automatically set if appropriate. It
+    should not be set in a driver in any case.
 
     TWO_POINT_LINE_NOT_LAST
 
@@ -1236,28 +1247,28 @@ CPU to screen        -         -      116.25       -      261.03*      -
 scanl. scr-to-scr  71.75       -       80.64       -         -         -
 10x10 scr-to-scr   29.90       -       26.69       -         -         -
 
-Chip	          MGA-Mill  MGA-Mill  MGA-Mill  TGUI9680
-Memory            2MB WRAM  4MB WRAM  2MB WRAM  2MB DRAM
-CPU               DX4/133   P133      P133
-Bus		  PCI 33MHz PCI 33MHz PCI 33Mhz PCI
-bpp, dot clock    8bpp      8bpp 1024 8bpp 1152 8bpp 2048
+Chip	          MGA-Mill  MGA-Mill  MGA-Mill  TGUI9680  ARK2000PV
+Memory            2MB WRAM  4MB WRAM  2MB WRAM  2MB DRAM  2MB DRAM
+CPU               DX4/133   P133      P133                DX4/100
+Bus		  PCI 33MHz PCI 33MHz PCI 33Mhz PCI       PCI 33MHz
+bpp, dot clock    8bpp      8bpp 1024 8bpp 1152 8bpp 2048 8bpp 1024
 -------------------------------------------------------------------
-framebuffer        26.48     83.70     83.13     10.09
+framebuffer        26.48     83.70     83.13     10.09     64.44
 solid filled rect
-10x1               28.63     34.28     41.30      3.06
-40x40             385.13    316.47    453.02     55.97
-400x400          1656.93   1367.64   1942.59    145.16
+10x1               28.63     34.28     41.30      3.06      7.91
+40x40             385.13    316.47    453.02     55.97    155.76
+400x400          1656.93   1367.64   1942.59    145.16    244.35
 screen copy
-10x10		   29.18     23.47     35.09     12.61
-40x40		   81.52     74.55     99.92     35.38
-400x400		  114.81    105.83    137.60     46.48
-400x400 scroll       -         -         -       51.88
+10x10		   29.18     23.47     35.09     12.61     33.20
+40x40		   81.52     74.55     99.92     35.38     78.80
+400x400		  114.81    105.83    137.60     46.48     99.03
+400x400 scroll       -         -         -       51.88    100.08
 8x8 pattern fill
-400x400		     -         -         -       51.74
+400x400		     -         -         -       51.74    228.70
 color expansion
-CPU to screen     211.11*   419.09*   416.23*      -
-scanl. scr-to-scr    -         -         -         -
-10x10 scr-to-scr     -         -         -       15.26
+CPU to screen     211.11*   419.09*   416.23*      -         -
+scanl. scr-to-scr    -         -         -         -      137.97
+10x10 scr-to-scr     -         -         -       15.26     36.79
 
 (*) After this benchmark was taken, the color expansion benchmark was
     changed to write a pattern including both colors instead of just the

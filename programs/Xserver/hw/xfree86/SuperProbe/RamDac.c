@@ -30,7 +30,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.23 1996/09/24 13:52:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.24 1996/09/25 14:15:44 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -1049,6 +1049,18 @@ int *RamDac;
 	    {
 		DisableIOPorts(NUMPORTS, Ports);
 		return;
+	    }
+	    if (S3_STG1700Check(RamDac))
+	    {
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
+	    }
+	}
+	else if (SVGA_VENDOR(Chipset) == V_ALLIANCE)
+	{
+	    if (Chipset == CHIP_ALSC6422 || Chipset == CHIP_ALSCAT24)
+	    {
+	        *RamDac = DAC_ALSC_642x;
 	    }
 	    if (S3_STG1700Check(RamDac))
 	    {

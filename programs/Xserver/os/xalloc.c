@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.9 1996/09/22 05:14:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.10 1996/10/03 08:49:17 dawes Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -199,7 +199,7 @@ extern Bool Must_have_memory;
 			fclose(f);			\
 		  }					\
 		}
-#ifdef linux
+#if defined(linux) && defined(i386)
 #define LOG_ALLOC(_fun, _size, _ret)						\
 	{	unsigned long *from;						\
 		__asm__("movl %%ebp,%0" : /*OUT*/ "=r" (from) : /*IN*/ );	\

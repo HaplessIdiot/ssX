@@ -1,5 +1,5 @@
 /* $XConsortium: Xtrans.c,v 1.31 95/03/28 19:49:02 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.13 1996/10/03 08:29:46 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.14 1996/11/24 09:51:11 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -1346,7 +1346,7 @@ int 		iovcnt;
 
 #endif /* CRAY */
 
-#if (defined(SYSV) && defined(i386)) || defined(WIN32) || defined(__sxg__) || defined(__EMX__)
+#if (defined(SYSV) && defined(i386) && !defined(SCO325)) || defined(WIN32) || defined(__sxg__) || defined(__EMX__)
 
 /*
  * emulate readv
@@ -1382,7 +1382,7 @@ int 		iovcnt;
 
 #endif /* SYSV && i386 || WIN32 || __sxg__ */
 
-#if defined(WIN32) || defined(__sxg__) || defined(__EMX__)
+#if (defined(SYSV) && defined(i386) && !defined(SCO325)) || defined(WIN32) || defined(__sxg__) || defined(__EMX__)
 
 /*
  * emulate writev
@@ -1416,7 +1416,7 @@ int 		iovcnt;
     return total;
 }
 
-#endif /* WIN32 || __sxg__ */
+#endif /* SYSV && i386 || WIN32 || __sxg__ */
 
 
 #if (defined(_POSIX_SOURCE) && !defined(AIXV3)) || defined(hpux) || defined(USG) || defined(SVR4)

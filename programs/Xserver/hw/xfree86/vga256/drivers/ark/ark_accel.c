@@ -1,6 +1,7 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_accel.c,v 3.0 1996/11/18 13:15:38 dawes Exp $ */
 
 #include "vga256.h"
+#include "compiler.h"
 #include "xf86.h"
 #include "vga.h"
 

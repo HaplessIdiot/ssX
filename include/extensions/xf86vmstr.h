@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.15 1996/10/03 08:29:02 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.16 1996/10/16 14:28:58 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -242,11 +242,11 @@ typedef struct {
     CARD8	modelLength;
     CARD8	nhsync;
     CARD8	nvsync;
-    CARD32	bandwidth B32;
     CARD32	pad2 B32;
     CARD32	pad3 B32;
     CARD32	pad4 B32;
     CARD32	pad5 B32;
+    CARD32	pad6 B32;
 } xXF86VidModeGetMonitorReply;
 #define sz_xXF86VidModeGetMonitorReply	32
 

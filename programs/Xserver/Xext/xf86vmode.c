@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.24 1996/10/03 08:31:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.25 1996/10/16 14:37:58 dawes Exp $ */
 
 /*
 
@@ -1077,7 +1077,9 @@ ProcXF86VidModeGetMonitor(client)
     rep.sequenceNumber = client->sequence;
     rep.nhsync = mptr->n_hsync;
     rep.nvsync = mptr->n_vrefresh;
+#if 0
     rep.bandwidth = (unsigned long)(mptr->bandwidth * 1e6);
+#endif
     hsyncdata = ALLOCATE_LOCAL(mptr->n_hsync * sizeof(CARD32));
     if (!hsyncdata) {
 	return BadAlloc;
@@ -1099,7 +1101,9 @@ ProcXF86VidModeGetMonitor(client)
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
     	swapl(&rep.length, n);
+#if 0
     	swapl(&rep.bandwidth, n);
+#endif
     }
     WriteToClient(client, SIZEOF(xXF86VidModeGetMonitorReply), (char *)&rep);
     client->pSwapReplyFunc = (ReplySwapPtr) Swap32Write;

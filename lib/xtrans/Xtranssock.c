@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c /main/52 1996/01/12 15:08:49 kaleb $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.20 1996/10/03 08:29:50 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.21 1996/10/16 14:36:52 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -98,14 +98,14 @@ from the X Consortium.
 #if defined(SVR4) && !defined(SCO325)
 #include <sys/filio.h>
 #endif
-#if (defined(i386) && defined(SYSV) && !defined(sco)) || defined(_SEQUENT_)
-#if !defined(_SEQUENT_) && !defined(ESIX)
+#if (defined(i386) && defined(SYSV)) || defined(_SEQUENT_)
+#if !defined(_SEQUENT_) && !defined(ESIX) && !defined(sco)
 #include <net/errno.h>
-#endif /* _SEQUENT_  || ESIX */
+#endif /* _SEQUENT_  || ESIX  || SCO */
 #ifndef ISC
 #include <sys/stropts.h>
 #endif
-#endif /* i386 && SYSV && !SCO || _SEQUENT_ */
+#endif /* i386 && SYSV || _SEQUENT_ */
 #endif /* !WIN32 */
 
 #ifdef WIN32
@@ -832,14 +832,18 @@ char 		*port;
 #endif
 #endif
 #endif
-#ifdef sun
+#if defined(sun) || defined(__linux__)
 #ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
 #undef _POSIX_THREAD_SAFE_FUNCTIONS
 #endif
 #endif
     struct	servent sent;
 #ifndef _POSIX_THREAD_SAFE_FUNCTIONS
+#ifdef __linux__
+#define Getservbyname(s,p) (getservbyname_r((s),(p),&sent,sbuf,sizeof sbuf, &servp), servp)
+#else
 #define Getservbyname(s,p) getservbyname_r((s),(p),&sent,sbuf,sizeof sbuf)
+#endif
 #define CallFailed NULL
 #define ServPort sent.s_port
     struct	servent	*servp;
@@ -1270,7 +1274,7 @@ char 		*port;
 #endif
 #endif
 #endif
-#ifdef sun
+#if defined(sun) || defined(__linux__)
 #ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
 #undef _POSIX_THREAD_SAFE_FUNCTIONS
 #endif
@@ -1278,8 +1282,13 @@ char 		*port;
     struct hostent	hent;
     struct servent	sent;
 #ifndef _POSIX_THREAD_SAFE_FUNCTIONS
+#ifdef __linux__
+#define Gethostbyname(h) (gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&hostp,&herr),hostp)
+#define Getservbyname(s,p) (getservbyname_r((s),(p),&sent,sbuf,sizeof sbuf,&servp),servp)
+#else
 #define Gethostbyname(h) gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&herr)
 #define Getservbyname(s,p) getservbyname_r((s),(p),&sent,sbuf,sizeof sbuf)
+#endif
 #define CallFailed NULL
 #define HostAddrType hent.h_addrtype
 #define HostAddr hent.h_addr
@@ -1538,14 +1547,18 @@ char *host;
 #endif
 #endif
 #endif
-#ifdef sun
+#if defined(sun) || defined(__linux__)
 #ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
 #undef _POSIX_THREAD_SAFE_FUNCTIONS
 #endif
 #endif
 	struct hostent	hent;
 #ifndef _POSIX_THREAD_SAFE_FUNCTIONS
+#ifdef __linux__
+#define Gethostbyname(h) (gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&hostp,&herr),hostp)
+#else
 #define Gethostbyname(h) gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&herr)
+#endif
 #define HostAddrList hent.h_addr_list
 #define CallFailed NULL
 	char		hbuf[LINE_MAX];

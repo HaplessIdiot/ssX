@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgasetsp.c,v 3.1 1995/01/28 16:14:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgasetsp.c,v 3.2 1996/02/04 09:15:22 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -238,7 +238,7 @@ vga256SetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
 	    /* We've tried this line against every box; it must be outside them
 	     * all.  move on to the next point */
 	    ppt++;
-	    psrc += PixmapWidthInPadUnits(*pwidth, PSZ);
+	    psrc += PixmapWidthInPadUnits(*pwidth, pDrawable->depth);
 	    pwidth++;
 	}
     }
@@ -275,7 +275,7 @@ vga256SetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
 
 		}
 	    }
-	psrc += PixmapWidthInPadUnits(*pwidth, PSZ);
+	psrc += PixmapWidthInPadUnits(*pwidth, pDrawable->depth);
 	ppt++;
 	pwidth++;
 	}

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_config.c,v 3.0 1996/11/24 09:56:39 dawes Exp $ */
 
 #include "X.h"
 
@@ -28,15 +28,14 @@ static SymTabRec ct_tab[] = {
 
 void ctConfig()
 {
-  char *DCointer, *OPointer;
+  char *DCPointer, *OPointer;
   int lineno;
   int token;
   OFlagSet *OFlags; 
   
-  DCointer = vga256InfoRec.DCConfig;
+  DCPointer = vga256InfoRec.DCConfig;
   OPointer = vga256InfoRec.DCOptions;
-  ErrorF("testing DCointer\n");
-  while ((token = xf86DCGetToken(DCointer,ct_tab,DeviceTab)) != EOF){
+  while ((token = xf86DCGetToken(DCPointer,ct_tab,DeviceTab)) != EOF){
     switch (token) {
     case STRING:
       ErrorF("string: %s\n",DCval.str);
@@ -56,7 +55,7 @@ void ctConfig()
       break;
     case 1:
       ErrorF("valid token:  ");
-      token = xf86DCGetToken(DCointer,NULL,DeviceTab);
+      token = xf86DCGetToken(DCPointer,NULL,DeviceTab);
       if(token == NUMBER)
 	ErrorF("argument: %i, %f\n",DCval.num, DCval.realnum);
       else {
@@ -69,8 +68,9 @@ void ctConfig()
     }
  }
 
-  ErrorF("testing OPointer\n");
 OFlags = xf86DCGetOption(OPointer, tab);
+vga256InfoRec.DCConfig = NULL;
+vga256InfoRec.DCOptions = NULL;
 }
 
 

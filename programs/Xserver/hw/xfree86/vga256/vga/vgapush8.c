@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapush8.c,v 3.1 1995/01/28 16:14:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapush8.c,v 3.2 1996/02/04 09:15:18 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -90,7 +90,7 @@ vga256PushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     pixel = devPriv->xor;
     xoff = xOrg & PIM;
     nBitmapLongs = (dx + xoff) >> MFB_PWSH;
-    nPixmapLongs = (dx + 3 + xoff) >> PWSH;
+    nPixmapLongs = (dx + PGSZB + xoff) >> PWSH;
 
     rightMask = ~cfb8BitLenMasks[((dx + xoff) & MFB_PIM)];
 

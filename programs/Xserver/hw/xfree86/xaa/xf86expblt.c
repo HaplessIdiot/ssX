@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.0 1996/11/18 13:22:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.1 1996/11/24 09:57:17 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -294,33 +294,33 @@ ScanlineReturn xf86DrawBitmapScanlineMSBFirstBytePadded(base, src, bits, nbytes)
     ScanlineReturn ret;
     if (nbytes <= 2) {
         if (nbytes == 1) {
-           if (((unsigned int)base & 3) == 3)
-               *(unsigned int *)((unsigned int)base & ~3) = bits |
+           if (((unsigned long)base & 3L) == 3L)
+               *(unsigned int *)((unsigned long)base & ~3L) = bits |
                    ((unsigned int)*(unsigned char *)src << 24);
            else
                ret.bits |= *(unsigned char *)src << 
-                   (((unsigned int)base & 3) * 8);
+                   (((unsigned long)base & 3L) * 8);
         }
         else {
             /* nbytes == 2 */
-           if (((unsigned int)base & 3) == 3) {
-               *(unsigned int *)((unsigned int)base & ~3) = bits |
+           if (((unsigned long)base & 3L) == 3L) {
+               *(unsigned int *)((unsigned long)base & ~3L) = bits |
                    ((unsigned int)*(unsigned char *)src << 24);
                ret.bits = *((unsigned char *)src + 1);
            }
            else
-           if (((unsigned int)base & 3) == 2)
-               *(unsigned int *)((unsigned int)base & ~3) = bits |
+           if (((unsigned long)base & 3L) == 2L)
+               *(unsigned int *)((unsigned long)base & ~3L) = bits |
                    ((unsigned int)*(unsigned short *)src << 16);
            else
                ret.bits |= (unsigned int)*(unsigned short *)src << 
-                   (((unsigned int)base & 3) * 8);
+                   (((unsigned long)base & 3L) * 8);
         }
-        ret.base = (unsigned int *)((unsigned int)base + nbytes);
+        ret.base = (unsigned int *)((unsigned long)base + nbytes);
         return ret;
     }
     /* First combine the left over bytes with new ones to form a word. */
-    switch ((unsigned int)base & 3) {
+    switch ((unsigned long)base & 3L) {
     case 0 :
         leftedgebytes = 0;
         break;
@@ -339,7 +339,7 @@ ScanlineReturn xf86DrawBitmapScanlineMSBFirstBytePadded(base, src, bits, nbytes)
         break;
     }
     if (leftedgebytes > 0) {
-        base = (unsigned int *)((unsigned int)base & ~3);
+        base = (unsigned int *)((unsigned long)base & ~3L);
         WRITE_IN_BITORDER(base, bits);
         nbytes -= leftedgebytes;
         base++;

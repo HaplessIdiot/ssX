@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_map.h,v 3.0 1996/11/18 13:18:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_map.h,v 3.1 1996/11/24 09:56:49 dawes Exp $ */
 
 #if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CATNAME(prefix,subname) prefix##subname
@@ -16,13 +16,34 @@
 #define MGANAME(subname) CATNAME(Mga32,subname)
 #endif
 
+#ifdef __GNUC__
+/* 
+ * MGANAME_A macro helps in disabling single accel feature
+ * for example, to disable screen-copy, you need to have in 
+ * /tmp/accelswitch file following lines:
+ *    SolidFill    1
+ *    ScreenCopy   0
+ *    CPUColorExp  1
+ * 
+ * Parameters in /tmp/accelswitch file:
+ * 1 - enable feature
+ * 0 - disable feature
+ * 2 - use NoopDDA
+ */
 #define MGANAME_A(subname) \
 ( \
     ( tmp = MgaAccelSwitch(CATNAME(Str,subname)) ) == 0 ? \
         CATNAME(xf86AccelInfoRec.,subname) : \
         ( tmp == 1 ? MGANAME(subname) : (void (*)())NoopDDA ) \
 )
+#else
+#define MGANAME_A(subname) MGANAME(subname)
+#endif
 
+/*
+ * Here's aliases for functions which should be used in 
+ * /tmp/accelswitch file to disabling/enabling
+ */
 #define StrSetupForFillRectSolid   "SolidFill"
 #define StrSubsequentFillRectSolid "SolidFill"
 #define StrSetupForScreenToScreenCopy   "ScreenCopy"
@@ -31,3 +52,5 @@
 #define StrSubsequentCPUToScreenColorExpand "CPUColorExp"
 #define StrSetupForScreenToScreenColorExpand   "ScreenColorExp"
 #define StrSubsequentScreenToScreenColorExpand "ScreenColorExp"
+#define StrSubsequentTwoPointLine  "Lines"
+#define StrSetClippingRectangle    "Lines"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga.h,v 3.3 1996/10/16 14:43:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga.h,v 3.4 1996/11/18 13:18:05 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -14,18 +14,36 @@
 #ifndef MGA_H
 #define MGA_H
 
-#define MGAREG8(addr) *(volatile CARD8 *)(MGAMMIOBase + (addr))
-#define MGAREG16(addr) *(volatile CARD16 *)(MGAMMIOBase + (addr))
-#define MGAREG32(addr) *(volatile CARD32 *)(MGAMMIOBase + (addr))
-#define MGAREG(addr) MGAREG32(addr)
-#define OUTREG(addr, val) MGAREG(addr) = (val)
+#if defined(__alpha__)
+#define mb() __asm__ __volatile__("mb": : :"memory")
+#define INREG8(addr) xf86ReadSparse8(MGAMMIOBase, (addr))
+#define INREG16(addr) xf86ReadSparse16(MGAMMIOBase, (addr))
+#define OUTREG8(addr,val) do { xf86WriteSparse8((val),MGAMMIOBase,(addr)); \
+				mb();} while 0
+#define OUTREG16(addr,val) do { {xf86WriteSparse16((val),MGAMMIOBase,(addr)); \
+				mb();} while 0
+#define OUTREG(addr, val) do { xf86WriteSparse32((val),MGAMMIOBase,(addr)); \
+				mb();} while 0
+#else /* __alpha__ */
+#define INREG8(addr) *(volatile CARD8 *)(MGAMMIOBase + (addr))
+#define INREG16(addr) *(volatile CARD16 *)(MGAMMIOBase + (addr))
+#define OUTREG8(addr, val) *(volatile CARD8 *)(MGAMMIOBase + (addr)) = (val)
+#define OUTREG16(addr, val) *(volatile CARD16 *)(MGAMMIOBase + (addr)) = (val)
+#define OUTREG(addr, val) *(volatile CARD32 *)(MGAMMIOBase + (addr)) = (val)
+#endif /* __alpha__ */
 
 extern unsigned char *MGAMMIOBase;
+#ifdef __alpha__
+extern unsigned char *MGAMMIOBaseDENSE;
+#endif
 
-#define MGAWAITFIFO() while(MGAREG16(MGAREG_FIFOSTATUS) & 0x100);
-#define MGAWAITFREE() while(MGAREG8(MGAREG_Status + 2) & 0x01);
+#define MGAWAITFIFO() while(INREG16(MGAREG_FIFOSTATUS) & 0x100);
+#define MGAWAITFREE() while(INREG8(MGAREG_Status + 2) & 0x01);
 
-#define MGAWAITFIFOSLOTS(SLOTS) while ( ((MGAREG16(MGAREG_FIFOSTATUS) & 0x3f) - SLOTS) < 0 );
+#define MGAWAITFIFOSLOTS(slots) while ( ((INREG16(MGAREG_FIFOSTATUS) & 0x3f) - (slots)) < 0 );
+
+extern int MGAinterleave;
+extern int MGAusefbitblt;
 
 /*
  * ROPs
@@ -37,14 +55,15 @@ extern unsigned char *MGAMMIOBase;
  * definitions for the new acceleration interface
  */
 #define WAITUNTILFINISHED()	MGAWAITFREE()
-#define SETBACKGROUNDCOLOR(col)	MGAREG(MGAREG_BCOL) = (col)
-#define SETFOREGROUNDCOLOR(col)	MGAREG(MGAREG_FCOL) = (col)
+#define SETBACKGROUNDCOLOR(col)	OUTREG(MGAREG_BCOL, (col))
+#define SETFOREGROUNDCOLOR(col)	OUTREG(MGAREG_FCOL, (col))
 #define SETRASTEROP(rop)	mga_cmd |= (((rop & 1)==1)*8 | \
 					    ((rop & 2)==2)*4 | \
 					    ((rop & 4)==4)*2 | \
 					    ((rop & 8)==8)) << 16;
-#define SETWRITEPLANEMASK(pm)	MGAREG(MGAREG_PLNWT) = (pm)
-#define SETBLTXYDIR(x,y)	MGAREG(MGAREG_SGN) = ((-x+1)>>1)+4*((-y+1)>>1)
+#define SETWRITEPLANEMASK(pm)	OUTREG(MGAREG_PLNWT, (pm))
+#define SETBLTXYDIR(x,y)	OUTREG(MGAREG_SGN, ((-x+1)>>1)+4*((-y+1)>>1))
+
 /*
  * prototypes
  */
@@ -58,44 +77,5 @@ mgaLine (
 	 DDXPointPtr pptInit
 #endif
 );
-
-void
-mgaPolyFillRect(
-#ifdef NeedFunctionPrototypes
-	DrawablePtr pDrawable,
-	register GCPtr pGC,
-	int         nrectFill,
-	xRectangle  *prectInit
-#endif
-);                
-
-void
-mgaFillRectSolidCopy(
-#ifdef NeedFunctionPrototypes
-	DrawablePtr     pDrawable,
-	GCPtr           pGC,
-	int             nBox,
-	BoxPtr          pBox
-#endif
-);
-
-void
-mgaPaintWindow(
-#ifdef NeedFunctionPrototypes
-	WindowPtr   pWin,
-	RegionPtr   pRegion,
-	int         what
-#endif
-);
-
-void
-mgaFillBoxSolid(
-#ifdef NeedFunctionPrototypes
-	DrawablePtr     pDrawable,
-	int             nBox,
-	BoxPtr          pBox,
-	unsigned long   pixel
-#endif
-);                
 
 #endif

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.91 1996/10/19 15:12:30 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.92 1996/11/20 14:00:27 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -107,6 +107,10 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.91 1996/10/19 15:12:30 dawes Exp $
 #define XF86P9000Server		YES
 #define XF86I128Server		YES
 #define XF86TGAServer		YES
+#define XF86SVGAServer		YES
+#define XF86MonoServer		YES
+#define XF86SvgaDrivers		mga
+#define XF86Vga2Drivers		generic
 #endif
 
 #ifdef i386Architecture

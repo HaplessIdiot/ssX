@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.0 1996/11/18 13:22:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.1 1996/11/24 09:57:19 dawes Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.0 1996/11/18 13:22:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.1 1996/11/24 09:57:19 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -78,8 +78,8 @@ xf86FillRectTileCached(
 
 #define DO_CACHE_PATTERN(nBox, pBox, pPixmap)                     \
     (!(((nBox) == 1) &&                                           \
-       ((pBox)->x2 - (pbox)->x1 <= (pPixmap)->drawable.width) &&  \
-       ((pBox)->y2 - (pbox)->y1 <= (pPixmap)->drawable.height)))
+       ((pBox)->x2 - (pBox)->x1 <= (pPixmap)->drawable.width) &&  \
+       ((pBox)->y2 - (pBox)->y1 <= (pPixmap)->drawable.height)))
 
 
 static Bool UsingStippleFallBack = FALSE;

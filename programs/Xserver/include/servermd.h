@@ -48,7 +48,7 @@ SOFTWARE.
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
 /* $XConsortium: servermd.h /main/56 1996/01/04 17:19:24 gildea $ */
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.14 1996/10/03 08:48:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.15 1996/10/16 14:44:23 dawes Exp $ */
 
 /*
  * Machine dependent values:
@@ -251,19 +251,28 @@ SOFTWARE.
 
 #if defined(__alpha) || defined(__alphaCross)
 # define IMAGE_BYTE_ORDER	LSBFirst	/* Values for the Alpha only */
-# define BITMAP_BIT_ORDER	LSBFirst
+
+# if defined(XF86MONOVGA) || defined(XF86VGA16) || defined(XF86MONO)
+#  define BITMAP_BIT_ORDER      MSBFirst
+# else
+#  define BITMAP_BIT_ORDER      LSBFirst
+# endif
+
+# if defined(XF86MONOVGA) || defined(XF86VGA16)
+#  define BITMAP_SCANLINE_UNIT  8
+# else
+   /* pad scanline to a longword */
+#  define BITMAP_SCANLINE_UNIT			64
+# endif
+
+# define BITMAP_SCANLINE_PAD 			64
+# define LOG2_BITMAP_PAD			6
+# define LOG2_BYTES_PER_SCANLINE_PAD		3
 # define GLYPHPADBYTES		4
 # define GETLEFTBITS_ALIGNMENT	1
 # define FAST_CONSTANT_OFFSET_MODE
 # define LARGE_INSTRUCTION_CACHE
 # define PLENTIFUL_REGISTERS
-
-/* pad scanline to a longword */
-#define BITMAP_SCANLINE_UNIT			64
-
-#define BITMAP_SCANLINE_PAD 			64
-#define LOG2_BITMAP_PAD				6
-#define LOG2_BYTES_PER_SCANLINE_PAD		3
 
 /* Add for handling protocol XPutImage and XGetImage; see comment below */
 #define INTERNAL_VS_EXTERNAL_PADDING

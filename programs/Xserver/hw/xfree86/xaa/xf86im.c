@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86im.c,v 3.0 1996/11/18 13:22:23 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -202,7 +202,7 @@ void xf86cfbGetLongWidthAndPointer(pDrawable, nlwidth, addrl)
      */
     if (xf86AccelInfoRec.UsingVGA256 && vgaUseLinearAddressing)
          *addrl = (unsigned long *)((unsigned char *)vgaLinearBase +
-             (unsigned int)((unsigned char *)(*addrl) - (unsigned int)VGABASE));
+             (unsigned long)((unsigned char *)(*addrl) - (unsigned long)VGABASE));
 #endif
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.0 1996/11/18 13:22:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.1 1996/11/24 09:57:20 dawes Exp $ */
 
 /***********************************************************
 
@@ -573,9 +573,9 @@ xf86ValidateGC(pGC, changes, pDrawable)
          * These are set in the xf86AccelInfoRec, not pGC->ops, so we
          * must make sure that the cfb text function is initialized.
          * Same goes for FillRect and FillSpans.
+         * XXX This scheme is flawed. Fall-back function cannot be set
+         * globally, they are GC-specific.
          */
-        if (!match_common)
-            new_cfb_text = TRUE;
         new_fillspans = TRUE;
         if (!match_common)
             new_cfb_fillspans = TRUE;

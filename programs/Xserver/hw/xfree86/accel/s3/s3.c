@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.148 1996/11/18 13:10:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.149 1996/11/24 09:54:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1109,6 +1109,7 @@ s3Probe()
             }
 	 case ELSA_WINNER_1000PRO_TRIO32:
 	 case ELSA_WINNER_1000PRO_TRIO64:
+	 case ELSA_WINNER_1000PRO_X:
 	 default: 
 	    continue; /* unknown card_id, don't set ICD2061A flags */
 	 }
@@ -1564,7 +1565,6 @@ s3Probe()
 	 case ATT20C490_DAC:
 	 case SS2410_DAC:	/* GUESSING!! (based on 490)  */
 	 case SC1148x_M2_DAC:
-	 case SC1148x_M3_DAC:
 	    if (s3Bpp > 1) {
 	       s3InfoRec.clock[j] /= s3Bpp;
 	       clocksChanged = TRUE;
@@ -2280,7 +2280,6 @@ s3ValidMode(DisplayModePtr pMode, Bool verbose)
 	       }
 	    }
 	    break;
-	 case IBMRGB52x_DAC:
 	 case IBMRGB524_DAC:
 	 case IBMRGB525_DAC:
 	 case IBMRGB528_DAC:
@@ -2340,7 +2339,6 @@ s3ValidMode(DisplayModePtr pMode, Bool verbose)
 	 case ATT20C490_DAC:
  	 case SS2410_DAC:    /* just guessing ( based on 490 ) */
 	 case SC1148x_M2_DAC:
-	 case SC1148x_M3_DAC:
 	 case SC15025_DAC:
 	 case S3_GENDAC_DAC:
 	    if (s3Bpp > 1) {

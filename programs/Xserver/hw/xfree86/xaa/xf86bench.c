@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.0 1996/11/18 13:22:09 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -46,6 +46,11 @@ static struct timeval tv;
 static struct timezone tz;
 static struct timeval startclock;
 static struct timeval timetaken;
+
+#ifndef DST_NONE
+/* note: DST_NONE and struct timezone are neither ANSI-C nor POSIX! */
+#define DST_NONE 0
+#endif
 
 static void start_timer() {
     struct timeval tv;

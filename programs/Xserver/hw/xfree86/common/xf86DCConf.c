@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DCConf.c,v 3.0 1996/11/24 09:54:58 dawes Exp $ */
 
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
@@ -266,7 +266,7 @@ OptFlagRec tab[];
 	currpointer += sizeof(int);
 	addlen = sizeof(int) + strlen(currpointer) + 1;
 	i = 0;
-	while (tab[i].token != -1) 
+	while (tab && tab[i].token != -1) 
 	  {
 	    if (StrCaseCmp(currpointer, tab[i].name) == 0)
 	      {
@@ -278,9 +278,9 @@ OptFlagRec tab[];
 #ifdef DEBUG
 	ErrorF("line: %i token: %i ;%s\n",lineno,tab[i].token,currpointer);
 #endif
-	if (tab[i].token == -1)
+	if (!tab || tab[i].token == -1)
 	  ErrorF("\nConfig Error: %s:%i:\n    Unknown option string: \"%s\"\n",
-		 configPath,lineno,currpointer); 
+		 configPath,lineno,currpointer);
 	pos += addlen;
       };
     xfree(Pointer);

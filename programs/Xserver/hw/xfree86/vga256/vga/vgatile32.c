@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgatile32.c,v 3.1 1995/01/28 16:14:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgatile32.c,v 3.2 1996/02/04 09:15:27 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -115,8 +115,8 @@ MROP_NAME(vga256FillRectTile32) (pDrawable, pGC, nBox, pBox)
     int		    nBox;	/* number of boxes to fill */
     BoxPtr 	    pBox;	/* pointer to list of boxes to fill */
 {
-    register int srcpix;	
-    int *psrc;		/* pointer to bits in tile, if needed */
+    register unsigned long srcpix;	
+    unsigned long *psrc;	/* pointer to bits in tile, if needed */
     int tileHeight;	/* height of the tile */
 
     int nlwDst;		/* width in longwords of the dest pixmap */
@@ -138,7 +138,7 @@ MROP_NAME(vga256FillRectTile32) (pDrawable, pGC, nBox, pBox)
 
     tile = cfbGetGCPrivate(pGC)->pRotatedPixmap;
     tileHeight = tile->drawable.height;
-    psrc = (int *)tile->devPrivate.ptr;
+    psrc = (unsigned long *)tile->devPrivate.ptr;
 
     MROP_INITIALIZE(pGC->alu, pGC->planemask);
 

@@ -1,5 +1,5 @@
 /* $XConsortium: sm_genid.c /main/17 1996/01/12 15:08:38 kaleb $ */
-/* $XFree86: xc/lib/SM/sm_genid.c,v 3.3 1996/01/13 12:19:25 dawes Exp $ */
+/* $XFree86: xc/lib/SM/sm_genid.c,v 3.4 1996/05/06 05:53:57 dawes Exp $ */
 
 /*
 
@@ -150,7 +150,7 @@ SmsConn smsConn;
 #endif
 #endif
 #endif
-#ifdef sun
+#if defined(sun) || defined(__linux__)
 #ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
 #undef _POSIX_THREAD_SAFE_FUNCTIONS
 #endif
@@ -158,7 +158,11 @@ SmsConn smsConn;
 #define HostAddr hent.h_addr
     struct hostent hent;
 #ifndef _POSIX_THREAD_SAFE_FUNCTIONS
+#ifdef __linux__
+#define Gethostbyname(h) (gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&hostp,&herr),hostp)
+#else
 #define Gethostbyname(h) gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&herr)
+#endif
 #define CallFailed NULL
     char hbuf[LINE_MAX];
     int herr;

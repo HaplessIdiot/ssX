@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86maploc.h,v 3.0 1996/11/18 13:22:29 dawes Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -77,6 +77,32 @@ void
 xf86GCNewCopyArea(
 #if NeedFunctionPrototypes
     GCPtr	pGC
+#endif
+);
+
+void
+xf86ImageGlyphBltFallBack(
+#if NeedFunctionPrototypes
+    DrawablePtr		pDrawable,
+    GCPtr		pGC,
+    int			xInit,
+    int			yInit,
+    int			nglyph,
+    CharInfoPtr		*ppci,
+    unsigned char *	pglyphBase
+#endif
+);
+
+void
+xf86PolyGlyphBltFallBack(
+#if NeedFunctionPrototypes
+    DrawablePtr		pDrawable,
+    GCPtr		pGC,
+    int			xInit,
+    int			yInit,
+    int			nglyph,
+    CharInfoPtr		*ppci,
+    unsigned char *	pglyphBase
 #endif
 );
 

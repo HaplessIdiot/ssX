@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.19 1996/11/18 13:21:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.20 1996/11/24 09:57:01 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -111,6 +111,7 @@
 /* Alliance Semiconductor */
 #define PCI_CHIP_AP6410		0x3210
 #define PCI_CHIP_AP6422		0x6422
+#define PCI_CHIP_AT24		0x6424
 
 /* 3Dlabs */
 #define PCI_CHIP_300SX		0x0001
@@ -254,6 +255,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
     {PCI_VENDOR_ALLIANCE, "Alliance Semiconductor", {
 				{PCI_CHIP_AP6410,	"ProMotion 6410"},
 				{PCI_CHIP_AP6422,	"ProMotion 6422"},
+				{PCI_CHIP_AT24,		"ProMotion AT24"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_3DLABS, "3Dlabs", {
 				{PCI_CHIP_300SX,	"GLINT 300SX"},

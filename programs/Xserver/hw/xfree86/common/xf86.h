@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.42 1996/09/14 13:09:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.43 1996/11/24 09:54:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -92,7 +92,7 @@ typedef struct {
    char *id;
    char *vendor;
    char *model;
-   float bandwidth;
+   float EMPTY;
    int n_hsync;
    range hsync[MAX_HSYNC];       
    int n_vrefresh;                  

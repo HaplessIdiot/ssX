@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaFasm.h,v 3.6 1996/02/04 09:14:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaFasm.h,v 3.7 1996/09/29 13:41:25 dawes Exp $ */
 /* Copyright 1992 by James Tsillas, Arlington, Massachusetts.
 
 		All Rights Reserved
@@ -73,7 +73,7 @@ PERFORMANCE OF THIS SOFTWARE.
     pdst++;
 
 /* The in-line assembler here only works for gcc2 */
-#if __GNUC__ > 1 && defined(__STDC__)
+#if __GNUC__ > 1 && defined(__STDC__) && defined(i386)
 #define ESI __asm__ ("esi")
 #define EDI __asm__ ("edi")
 

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.68 95/06/02 16:51:21 gildea Exp $
- * $XFree86: xc/include/Xos.h,v 3.17 1996/06/10 08:42:53 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.18 1996/10/03 08:28:55 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -107,7 +107,7 @@ in this Software without prior written authorization from the X Consortium.
 /*
  * strerror()
  */
-#if defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII)
+#if (defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII)) && !defined(__GLIBC__)
 #ifndef strerror
 extern char *sys_errlist[];
 extern int sys_nerr;

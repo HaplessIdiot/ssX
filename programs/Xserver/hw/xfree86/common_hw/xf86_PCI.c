@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.13 1996/09/29 13:36:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.14 1996/10/17 15:18:36 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -469,6 +469,30 @@ xf86cleanpci()
 static int pciConfigType = 0;
 static int pciMaxDevice = 0;
 
+#if defined(__alpha__)
+#include <asm/unistd.h>
+#define BUS(tag) (((tag)>>16)&0xff)
+#define DFN(tag) (((tag)>>8)&0xff)
+int pciconfig_read(
+          unsigned char bus,
+          unsigned char dfn,
+          unsigned char off,
+          unsigned char len,
+          void * buf)
+{
+  return __syscall(__NR_pciconfig_read, bus, dfn, off, len, buf);
+}
+int pciconfig_write(
+          unsigned char bus,
+          unsigned char dfn,
+          unsigned char off,
+          unsigned char len,
+          void * buf)
+{
+  return __syscall(__NR_pciconfig_write, bus, dfn, off, len, buf);
+}
+#endif /* __alpha__ */
+
 static Bool
 pcibusCheck()
 {
@@ -496,6 +520,7 @@ pcibusSetup()
 
     setupDone = TRUE;
 
+#if !defined(__alpha__)
     oldVal1 = inl(PCI_MODE1_ADDRESS_REG);
 
     /* Assuming config type 1 to start with */
@@ -550,6 +575,18 @@ pcibusSetup()
 	    }
 	}
     }
+#else /* !__alpha__ */
+    pciConfigType = 1;
+    pciMaxDevice = PCI_CONFIG1_MAXDEV;
+    if (pcibusCheck()) {
+      if (xf86Verbose > 1) {
+	ErrorF("PCI: Config type is 1(axp)\n");
+      }
+      return;
+    }
+    pciConfigType = 0;
+    pciMaxDevice = 0;
+#endif /* !__alpha__ */
 
     /* No PCI found */
 
@@ -573,10 +610,13 @@ pcibusTag(CARD8 bus, CARD8 cardnum, CARD8 func)
     switch (pciConfigType) {
     case 1:
 	if (cardnum < PCI_CONFIG1_MAXDEV) {
-	    tag.cfg1 = PCI_EN
-			| ((CARD32)bus << 16)
-			| ((CARD32)cardnum << 11)
-			| ((CARD32)func << 8);
+	    tag.cfg1 = 
+#if !defined(__alpha__)
+			PCI_EN |
+#endif
+	      		((CARD32)bus << 16) |
+			((CARD32)cardnum << 11) |
+			((CARD32)func << 8);
 	}
 	break;
     case 2:
@@ -618,6 +658,7 @@ pcibusRead(pciTagRec tag, CARD32 reg)
 	return 0xffffffff;
     }
 
+#if !defined(__alpha__)
     switch (pciConfigType) {
     case 1:
 	addr = tag.cfg1 | (reg & 0xfc);
@@ -634,6 +675,9 @@ pcibusRead(pciTagRec tag, CARD32 reg)
 	outb(PCI_MODE2_FORWARD_REG, 0);
 	break;
     }
+#else /* !__alpha__ */
+    pciconfig_read(BUS(tag.cfg1), DFN(tag.cfg1), reg, 4, &data);
+#endif /* !__alpha__ */
     return data;
 }
 
@@ -647,6 +691,7 @@ pciReadWord(pciTagRec tag, CARD32 reg)
 	return 0xff;
     }
 
+#if !defined(__alpha__)
     switch (pciConfigType) {
     case 1:
 	addr = tag.cfg1 | (reg & 0xfc);
@@ -663,6 +708,9 @@ pciReadWord(pciTagRec tag, CARD32 reg)
 	outb(PCI_MODE2_FORWARD_REG, 0);
 	break;
     }
+#else /* !__alpha__ */
+    pciconfig_read(BUS(tag.cfg1), DFN(tag.cfg1), reg, 2, &data);
+#endif /* !__alpha__ */
     return data;
 }
 
@@ -676,6 +724,7 @@ pciReadByte(pciTagRec tag, CARD32 reg)
 	return 0xff;
     }
 
+#if !defined(__alpha__)
     switch (pciConfigType) {
     case 1:
 	addr = tag.cfg1 | (reg & 0xfc);
@@ -692,6 +741,9 @@ pciReadByte(pciTagRec tag, CARD32 reg)
 	outb(PCI_MODE2_FORWARD_REG, 0);
 	break;
     }
+#else /* !__alpha__ */
+    pciconfig_read(BUS(tag.cfg1), DFN(tag.cfg1), reg, 1, &data);
+#endif /* !__alpha__ */
     return data;
 }
 
@@ -704,6 +756,7 @@ pcibusWrite(pciTagRec tag, CARD32 reg, CARD32 data)
 	return;
     }
 
+#if !defined(__alpha__)
     switch (pciConfigType) {
     case 1:
 	addr = tag.cfg1 | (reg & 0xfc);
@@ -720,6 +773,10 @@ pcibusWrite(pciTagRec tag, CARD32 reg, CARD32 data)
 	outb(PCI_MODE2_FORWARD_REG, 0);
 	break;
     }
+#else /* !__alpha__ */
+    addr = data;
+    pciconfig_write(BUS(tag.cfg1), DFN(tag.cfg1), reg, 4, &addr);
+#endif /* !__alpha__ */
 }
 
 void
@@ -731,6 +788,7 @@ pciWriteWord(pciTagRec tag, CARD32 reg, CARD16 data)
 	return;
     }
 
+#if !defined(__alpha__)
     switch (pciConfigType) {
     case 1:
 	addr = tag.cfg1 | (reg & 0xfc);
@@ -747,6 +805,10 @@ pciWriteWord(pciTagRec tag, CARD32 reg, CARD16 data)
 	outb(PCI_MODE2_FORWARD_REG, 0);
 	break;
     }
+#else /* !__alpha__ */
+    addr = data;
+    pciconfig_write(BUS(tag.cfg1), DFN(tag.cfg1), reg, 2, &addr);
+#endif /* !__alpha__ */
 }
 
 void
@@ -758,6 +820,7 @@ pciWriteByte(pciTagRec tag, CARD32 reg, CARD8 data)
 	return;
     }
 
+#if !defined(__alpha__)
     switch (pciConfigType) {
     case 1:
 	addr = tag.cfg1 | (reg & 0xfc);
@@ -774,6 +837,10 @@ pciWriteByte(pciTagRec tag, CARD32 reg, CARD8 data)
 	outb(PCI_MODE2_FORWARD_REG, 0);
 	break;
     }
+#else /* !__alpha__ */
+    addr = data;
+    pciconfig_write(BUS(tag.cfg1), DFN(tag.cfg1), reg, 1, &addr);
+#endif /* !__alpha__ */
 }
 
 static void

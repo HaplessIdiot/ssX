@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.6 1996/08/20 12:26:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.7 1996/11/24 09:52:55 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by Orest Zborowski <orestz@eskimo.com>
  *
@@ -179,10 +179,12 @@ Byte *MapVGA()
 	int fd;
 	Byte *base;
 
+#ifdef __alpha__
 	if(isJensen){
 		fprintf(stderr, "%s: MemProbe not supported on Jensen\n", MyName);
 		return((Byte *)0);
 	}
+#endif
 	
 	if ((fd = open("/dev/mem", O_RDWR)) < 0)
 	{
@@ -212,6 +214,7 @@ Byte *base;
 	return;
 }
 
+#ifdef __alpha__
 SlowBCopyFromBus(src, dst, count)
      unsigned char *src, *dst;
      int count;
@@ -228,6 +231,7 @@ SlowBCopyFromBus(src, dst, count)
     count--;
   }
 }
+#endif
 
 /*
  * ReadBIOS --

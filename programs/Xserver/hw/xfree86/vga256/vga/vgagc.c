@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgagc.c,v 3.4 1996/02/04 09:15:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgagc.c,v 3.5 1996/11/18 13:21:57 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -179,7 +179,7 @@ vga256matchCommon (pGC, devPriv)
     {
 
 	if (TERMINALFONT(pGC->font)
-	    && FONTMAXBOUNDS(pGC->font,characterWidth) >= 4
+	    && FONTMAXBOUNDS(pGC->font,characterWidth) >= PGSZB
 	)
 	    if (devPriv->oneRect)
 		return &vga256TEOps1Rect;
@@ -424,7 +424,7 @@ vga256ValidateGC(pGC, changes, pDrawable)
 	    {
 		int width = pGC->stipple->drawable.width;
 
-		if ((width <= 32) && !(width & (width - 1)))
+		if ((width <= PGSZ) && !(width & (width - 1)))
 		{
 		    mfbCopyRotatePixmap(pGC->stipple,
 					&devPriv->pRotatedPixmap, xrot, yrot);

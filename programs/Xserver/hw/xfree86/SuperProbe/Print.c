@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.42 1996/10/20 13:32:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.43 1996/11/24 09:52:57 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -170,6 +170,10 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "ARK Logic ARK2000PV",
 		  "ARK Logic ARK2000MT",
 		  "ARK Logic ARK2000MI (Quadro64)" },
+/* Alliance */	{ "Alliance Semiconductor (chipset unknown)",
+		  "Alliance Semiconductor ProMotion 6410",
+		  "Alliance Semiconductor ProMotion 6422",
+		  "Alliance Semiconductor ProMotion AT24" },
 };
 
 static CONST char *Herc_Names[] = 
@@ -244,6 +248,8 @@ struct RamDac_Name RamDac_Names[] =
 	  "Tseng Labs ET6000 built-in 15/16/24-bit DAC w/pixel-mux,clock" },
 	{ "w30C516",
 	  "IC Works w30C516 ZOOMDAC 15/16/24-bit DAC or AT&T 20C498" },
+	{ "PM642x",
+	  "Alliance ProMotion built-in 15/16/24-bit DAC w/clock" },
 };
 
 static CONST char *CoProc_Names[NUM_CP_TYPES][CHPS_PER_CPTYPE] = 

@@ -32,7 +32,7 @@
  *		RAMDAC timing, and BIOS stuff
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.10 1996/10/23 13:10:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.11 1996/11/18 13:18:11 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -60,11 +60,15 @@ extern vgaPCIInformation *vgaPCIInfo;
  * Driver data structures.
  */
 MGABiosInfo MGABios;
+int MGAinterleave;
+int MGAusefbitblt;
 unsigned char* MGAMMIOBase = NULL;
+#ifdef __alpha__
+unsigned char* MGAMMIOBaseDENSE = NULL;
+#endif
 static unsigned long MGAMMIOAddr = 0;
 static pciTagRec MGAPciTag;
 static int MGABppShft;
-static int MGADAClong;
 static unsigned char* MGAInitDAC;
 
 static unsigned char MGADACregs[] = {
@@ -264,8 +268,8 @@ MGAWaitForBlitter()
 {
 	int i;
 	
-	MGAREG8(MGAREG_OPMODE) = 0; /* terminate DMA sequence */
-	for(i = 10000000; (MGAREG8(MGAREG_Status + 2) & 0x01) && (--i >= 0););
+	OUTREG8(MGAREG_OPMODE, 0); /* terminate DMA sequence */
+	for(i = 10000000; (INREG8(MGAREG_Status + 2) & 0x01) && (--i >= 0););
 	if( i >= 0 )
 		return 1;
 	FatalError("MGA: BitBlt Engine timeout\n");
@@ -326,154 +330,13 @@ MGAReadBios()
  * methods of accessing the DAC.
  */
 
-#if 0      /* RK - It doesn't work with PCI config space */
-
-void
-MGADacWriteByte(reg, val)
-	CARD8 reg;
-	CARD8 val;
-{
-	if (MGAMMIOBase)
-	{
-		*(volatile CARD8 *) (MGAMMIOBase + RAMDAC_OFFSET + reg) = val;
-	}
-	else
-	{
-/* Which is correct ?? */
-#if 0
-		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
-		pciWriteByte(MGAPciTag, PCI_MGA_DATA, val);
-#else
-		CARD8 offset = reg % 4;
-		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
-		pciWriteByte(MGAPciTag, PCI_MGA_DATA + offset, val);
-#endif
-	}
-}
-
-void
-MGADacWriteWord(reg, val)
-	CARD8 reg;
-	CARD16 val;
-{
-	if (MGAMMIOBase)
-	{
-		*(volatile CARD16 *) (MGAMMIOBase + RAMDAC_OFFSET + reg) = val;
-	}
-	else
-	{
-/* Which is correct ?? */
-#if 0
-		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
-		pciWriteWord(MGAPciTag, PCI_MGA_DATA, val);
-#else
-		CARD8 offset = reg % 4;
-		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
-		pciWriteWord(MGAPciTag, PCI_MGA_DATA + offset, val);
-#endif
-	}
-}
-
-void
-MGADacWriteLong(reg, val)
-	CARD8 reg;
-	CARD32 val;
-{
-	if (MGAMMIOBase)
-	{
-		*(volatile CARD32 *) (MGAMMIOBase + RAMDAC_OFFSET + reg) = val;
-	}
-	else
-	{
-		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
-		pciWriteLong(MGAPciTag, PCI_MGA_DATA, val);
-	}
-}
-
-CARD8
-MGADacReadByte(reg)
-	CARD8 reg;
-{
-	if (MGAMMIOBase)
-	{
-		return *(volatile CARD8 *) (MGAMMIOBase + RAMDAC_OFFSET + reg);
-	}
-	else
-	{
-/* Which is correct ?? */
-#if 0
-		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
-		return pciReadByte(MGAPciTag, PCI_MGA_DATA);
-#else
-		CARD8 offset = reg % 4;
-		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
-		return pciReadByte(MGAPciTag, PCI_MGA_DATA + offset);
-#endif
-	}
-}
-
-CARD16
-MGADacReadWord(reg)
-	CARD8 reg;
-{
-	if (MGAMMIOBase)
-	{
-		return *(volatile CARD16 *) (MGAMMIOBase + RAMDAC_OFFSET + reg);
-	}
-	else
-	{
-/* Which is correct ?? */
-#if 0
-		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
-		return pciReadWord(MGAPciTag, PCI_MGA_DATA);
-#else
-		CARD8 offset = reg % 4;
-		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
-		return pciReadWord(MGAPciTag, PCI_MGA_DATA + offset);
-#endif
-	}
-}
-
-CARD32
-MGADacReadLong(reg)
-	CARD8 reg;
-{
-	if (MGAMMIOBase)
-	{
-		return *(volatile CARD32 *) (MGAMMIOBase + RAMDAC_OFFSET + reg);
-	}
-	else
-	{
-		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
-		return pciReadLong(MGAPciTag, PCI_MGA_DATA);
-	}
-}
-
-static void
-outTi3026(reg, val)
-	CARD8 reg, val;
-{
-	MGADacWriteByte(TVP3026_INDEX, reg);
-	MGADacWriteByte(TVP3026_DATA, val);
-}
-
-static CARD8
-inTi3026(reg)
-	CARD8 reg;
-{
-	MGADacWriteByte(TVP3026_INDEX, reg);
-	return MGADacReadByte(TVP3026_DATA);
-}
-
-#endif 
-
 static void outTi3026(reg, val)
 unsigned char reg, val;
 {
 	if(MGAMMIOBase)
 	{
-		MGAREG8(RAMDAC_OFFSET + TVP3026_INDEX) = reg;
-		MGAREG8(RAMDAC_OFFSET + TVP3026_DATA) = val;
+		OUTREG8(RAMDAC_OFFSET + TVP3026_INDEX, reg);
+		OUTREG8(RAMDAC_OFFSET + TVP3026_DATA, val);
 	}
 	else
 	{
@@ -492,8 +355,8 @@ unsigned char reg;
 	
 	if(MGAMMIOBase)
 	{
-		MGAREG8(RAMDAC_OFFSET + TVP3026_INDEX) = reg;
-		val = MGAREG8(RAMDAC_OFFSET + TVP3026_DATA);
+		OUTREG8(RAMDAC_OFFSET + TVP3026_INDEX, reg);
+		val = INREG8(RAMDAC_OFFSET + TVP3026_DATA);
 	}
 	else
 	{
@@ -722,7 +585,8 @@ MGACountRam()
 		unsigned char tmp, tmp3, tmp5;
 	
 		base = xf86MapVidMem(vga256InfoRec.scrnIndex, LINEAR_REGION,
-			(pointer)MGA.ChipLinearBase, MGA.ChipLinearSize);
+			      (pointer)((unsigned long)MGA.ChipLinearBase),
+			      MGA.ChipLinearSize);
 	
 		outb(0x3DE, 3);
 		tmp = inb(0x3DF);
@@ -914,14 +778,14 @@ TestAndSetRounding(pitch)
 		{
 			MGA.ChipRounding = 16;
 			MGABppShft = 3;
-			MGADAClong = 0x5F2C0100;    /* non-interleave */
+			MGAinterleave = 0;          /* non-interleave */
 			MGAInitDAC[2] = 0x5B;       /* 32 bits */
 		}
 		else
                 {
 			MGA.ChipRounding = 32;
 			MGABppShft = 2;
-			MGADAClong = 0x5F2C1100;    /* interleave */
+			MGAinterleave = 1;          /* interleave */
 			MGAInitDAC[2] = 0x5C;       /* 64 bits */
 		}
 	}
@@ -933,14 +797,14 @@ TestAndSetRounding(pitch)
 		{
 			MGA.ChipRounding = 64;
 			MGABppShft = 1;
-			MGADAClong = 0x5F2C0100;    /* non-interleave */
+			MGAinterleave = 0;          /* non-interleave */
 			MGAInitDAC[2] = 0x5B;       /* 32 bits */
 		}
 		else
                 {
 			MGA.ChipRounding = 128;
 			MGABppShft = 0;
-			MGADAClong = 0x5F2C1100;    /* interleave */
+			MGAinterleave = 1;          /* interleave */
 			MGAInitDAC[2] = 0x5C;       /* 64 bits */
 		}
 	}
@@ -952,14 +816,14 @@ TestAndSetRounding(pitch)
 		{
 			MGA.ChipRounding = 32;
 			MGABppShft = 2;
-			MGADAClong = 0x5F2C0100;    /* non-interleave */
+			MGAinterleave = 0;          /* non-interleave */
 			MGAInitDAC[2] = 0x53;       /* 32 bits */
                 }
                 else
                 {
                 	MGA.ChipRounding = 64;
                 	MGABppShft = 1;
-                	MGADAClong = 0x5F2C1100;    /* interleave */
+                	MGAinterleave = 1;          /* interleave */
 			MGAInitDAC[2] = 0x54;       /* 64 bits */
 		}
 	}
@@ -971,14 +835,14 @@ TestAndSetRounding(pitch)
 		{
 			MGA.ChipRounding = 64;
 			MGABppShft = 1;
-			MGADAClong = 0x5F2C0100;    /* non-interleave */
+			MGAinterleave = 0;          /* non-interleave */
 			MGAInitDAC[2] = 0x4B;       /* 32 bits */
 		}
 		else
 		{
 			MGA.ChipRounding = 128;
 			MGABppShft = 0;
-			MGADAClong = 0x5F2C1100;    /* interleave */
+			MGAinterleave = 1;          /* interleave */
 			MGAInitDAC[2] = 0x4C;       /* 64 bits */
 		}
 	}
@@ -1106,12 +970,6 @@ MGAFbInit()
 					vga256InfoRec.MemBase? XCONFIG_GIVEN : XCONFIG_PROBED,
 					vga256InfoRec.name, MGA.ChipLinearBase);
 			/* Probe found the MMIO base (or else!) */
-#if 0
-			MGAMMIOBase = xf86MapVidMem(vga256InfoRec.scrnIndex,
-				EXTENDED_REGION,
-				(pointer)(MGA.ChipLinearBase + 0x00800000), 0x4000);
-			/* XXX ajv - do we still need to map the video memory ? */
-#else
 			/* I believe that this should map the registers!
 			 * therefore the base0 value that is in MGAMMIOBase
 			 * is needed...
@@ -1119,14 +977,31 @@ MGAFbInit()
 			if (MGAMMIOAddr)
 			{
 				MGAMMIOBase =
-				  xf86MapVidMem(vga256InfoRec.scrnIndex,
-					MMIO_REGION,
-					(pointer)(MGAMMIOAddr), 0x4000);
+#if defined(__alpha__)
+				  /* for Alpha, we need to map SPARSE memory,
+				     since we need byte/short access */
+				  xf86MapVidMemSparse(
+#else /* __alpha__ */
+				  xf86MapVidMem(
+#endif /* __alpha__ */
+					    vga256InfoRec.scrnIndex,
+					    MMIO_REGION,
+					    (pointer)(MGAMMIOAddr), 0x4000);
+#ifdef __alpha__
+				MGAMMIOBaseDENSE =
+				  /* for Alpha, we need to map DENSE memory
+				     as well, for setting
+				     CPUToScreenColorExpandBase
+				   */
+				  xf86MapVidMem(
+					    vga256InfoRec.scrnIndex,
+					    MMIO_REGION,
+					    (pointer)(MGAMMIOAddr), 0x4000);
+#endif /* __alpha__ */
 			}
 			else
 				MGAMMIOBase = NULL;
 
-#endif
 			if (!MGAMMIOBase)
 			{
 				ErrorF("%s %s: Can't map chip registers, "
@@ -1166,6 +1041,7 @@ MGAFbInit()
 		/*
 		 * now call the new acc interface
 		 */
+		MGAusefbitblt = !(MGABios.FeatFlag & 0x00000001);
 		MGAAccelInit();
 	}
 	
@@ -1194,12 +1070,6 @@ ScreenPtr pScreen;
 char *LinearBase;
 int virtualX, virtualY, res1, res2, width;
 {
-#if OLD_ACC_SUPPORT
-	pScreen->CopyWindow = vga256CopyWindow;
-	pScreen->PaintWindowBackground = mgaPaintWindow;
-	pScreen->PaintWindowBorder = mgaPaintWindow;
-#endif
-	
 	return(TRUE);
 }
 
@@ -1297,7 +1167,7 @@ DisplayModePtr mode;
 	for (i = 0; i < sizeof(MGADACregs); i++)
 		newVS->DACreg[i] = MGAInitDAC[i]; 
 
-	newVS->DAClong = MGADAClong;
+	newVS->DAClong = MGAinterleave << 12;
 
 	if (newVS->std.NoClock >= 2)
 	{
@@ -1355,7 +1225,8 @@ vgaMGAPtr restore;
 	for (i = 0; i < sizeof(MGADACregs); i++)
 		outTi3026(MGADACregs[i], restore->DACreg[i]);
 
-	pciWriteLong(MGAPciTag, PCI_OPTION_REG, restore->DAClong);
+	pciWriteLong(MGAPciTag, PCI_OPTION_REG, restore->DAClong |
+		(pciReadLong(MGAPciTag, PCI_OPTION_REG) & ~0x1000));
 
 	MGAWaitForBlitter();
 	MGAEngineInit();

@@ -1,9 +1,11 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/ImakefileBPP,v 3.0 1996/11/18 13:22:01 dawes Exp $
 
 XCOMM This is the Imakefile for the depth-specific subdirectories
 XCOMM (xaavga256, xaa16, xaa24, xaa32). It is included from the Imakefiles
 XCOMM in these directories. BPPDEFINES, PixelSize and BPPOBJECTNAME should
 XCOMM be correctly defined for a specific depth.
+
+#include <Server.tmpl>
 
 INCLUDES = -I.. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
            -I../../vga256/vga \
@@ -25,6 +27,12 @@ OBJS    = xf86scrin.o xf86gc.o xf86gcmisc.o xf86im.o cfbcpplane.o
 #endif
 #endif
 
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+NormalRelocatableTarget(BPPOBJECTNAME, $(OBJS))
+
 LinkSourceFile(xf86scrin.c, LinkDirectory)
 LinkSourceFile(xf86gc.c, LinkDirectory)
 LinkSourceFile(xf86gcmisc.c, LinkDirectory)
@@ -35,11 +43,5 @@ LinkSourceFile(cfbcpplane.c, LinkDirectory)
 #ifdef VGA256
 LinkSourceFile(xf86plane.c, LinkDirectory)
 #endif
-
-SubdirLibraryRule($(OBJS))
-NormalLibraryObjectRule()
-NormalAsmObjectRule()
-
-NormalRelocatableTarget(BPPOBJECTNAME, $(OBJS))
 
 DependTarget()

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaline.c,v 3.5 1996/01/14 13:41:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaline.c,v 3.6 1996/02/04 09:15:14 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -148,7 +148,7 @@ vga256LineSS (pDrawable, pGC, mode, npt, pptInit)
      */
     if (vgaUseLinearAddressing && xf86VTSema)
          addrl = (unsigned long*)((unsigned char *)vgaLinearBase +
-             (unsigned int)((unsigned char *)addrl - (unsigned int)VGABASE));
+             (unsigned long)((unsigned char *)addrl - (unsigned long)VGABASE));
 
     BANK_FLAG(addrl)
 
@@ -456,7 +456,7 @@ else
 
     if ((pGC->capStyle != CapNotLast) &&
 	((ppt->x + xorg != pptInit->x + pDrawable->x) ||
-	 (ppt->y + yorg != pptInit->y + pDrawable->x) ||
+	 (ppt->y + yorg != pptInit->y + pDrawable->y) ||
 	 (ppt == pptInit + 1)))
     {
 	nbox = nboxInit;

@@ -1,5 +1,5 @@
 /* $XConsortium: access.c /main/62 1995/12/07 17:53:09 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.14 1996/05/10 07:02:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.15 1996/10/03 08:49:15 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -243,7 +243,7 @@ AccessUsingXdmcp ()
 }
 
 
-#if ((defined(SVR4) && !defined(sun) && !defined(NCR)) || defined(ISC)) && defined(SIOCGIFCONF)
+#if ((defined(SVR4) && !defined(SCO325) && !defined(sun) && !defined(NCR)) || defined(ISC)) && defined(SIOCGIFCONF)
 
 /* Deal with different SIOCGIFCONF ioctl semantics on these OSs */
 
@@ -338,7 +338,7 @@ DefineSelf (fd)
     int	family, len;
 
     if ((fd = open ("/dev/ip", O_RDWR, 0 )) < 0)
-        Error ("Getting interface configuration");
+        Error ("Getting interface configuration (1)");
 
     /* Indicate that we want to start at the begining */
     ifnet.ib_next = (struct ipb *) 1;
@@ -353,7 +353,7 @@ DefineSelf (fd)
 	if (ioctl (fd, (int) I_STR, (char *) &str) < 0)
 	{
 	    close (fd);
-	    Error ("Getting interface configuration");
+	    Error ("Getting interface configuration (2)");
 	}
 
 	ifaddr.ia_next = (struct in_ifaddr *) ifnet.if_addrlist;
@@ -365,7 +365,7 @@ DefineSelf (fd)
 	if (ioctl (fd, (int) I_STR, (char *) &str) < 0)
 	{
 	    close (fd);
-	    Error ("Getting interface configuration");
+	    Error ("Getting interface configuration (3)");
 	}
 
 	len = sizeof(struct sockaddr_in);
@@ -598,7 +598,7 @@ DefineSelf (fd)
     ifc.ifc_len = sizeof (buf);
     ifc.ifc_buf = buf;
     if (ifioctl (fd, (int) SIOCGIFCONF, (pointer) &ifc) < 0)
-        Error ("Getting interface configuration");
+        Error ("Getting interface configuration (4)");
 
 #ifdef ISC
 #define IFC_IFC_REQ (struct ifreq *) ifc.ifc_buf

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.31 1996/10/03 08:37:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.32 1996/10/16 14:41:42 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -52,9 +52,6 @@
 /* SYSV386 (SVR3, SVR4)                                                   */
 /**************************************************************************/
 #if defined(SYSV) || defined(SVR4)
-# ifdef SCO325
-#  define _SVID3
-# endif
 # if defined(sun) && defined(i386) && defined(SVR4)
 #  /* Fix for Solaris ANSI compilation */
 #  define __EXTENSIONS__
@@ -611,6 +608,65 @@ extern void xf86UnMapVidMem(
 	unsigned long
 #endif
 );
+
+#if defined(__alpha__)
+/* entry points for SPARSE memory access routines */
+extern pointer xf86MapVidMemSparse(
+#if NeedFunctionPrototypes
+	int,
+	int,
+	pointer,
+	unsigned long
+#endif
+);
+extern void xf86UnMapVidMemSparse(
+#if NeedFunctionPrototypes
+	int,
+	int,
+	pointer,
+	unsigned long
+#endif
+);
+extern int xf86ReadSparse8(
+#if NeedFunctionPrototypes
+	pointer,
+	unsigned long
+#endif
+);
+extern int xf86ReadSparse16(
+#if NeedFunctionPrototypes
+	pointer,
+	unsigned long
+#endif
+);
+extern int xf86ReadSparse32(
+#if NeedFunctionPrototypes
+	pointer,
+	unsigned long
+#endif
+);
+extern void xf86WriteSparse8(
+#if NeedFunctionPrototypes
+	int,
+	pointer,
+	unsigned long
+#endif
+);
+extern void xf86WriteSparse16(
+#if NeedFunctionPrototypes
+	int,
+	pointer,
+	unsigned long
+#endif
+);
+extern void xf86WriteSparse32(
+#if NeedFunctionPrototypes
+	int,
+	pointer,
+	unsigned long
+#endif
+);
+#endif /* __alpha__ */
 extern void xf86MapDisplay(
 #if NeedFunctionPrototypes
 	int,

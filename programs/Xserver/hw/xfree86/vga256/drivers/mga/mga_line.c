@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_line.c,v 3.2 1996/10/16 14:43:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_line.c,v 3.3 1996/10/18 15:03:48 dawes Exp $ */
 
 /***********************************************************
 
@@ -168,7 +168,7 @@ mgaLine (pDrawable, pGC, mode, npt, pptInit)
     }
 
     MGAWAITFIFOSLOTS(1);
-    MGAREG(MGAREG_FCOL) = pixelCol;
+    OUTREG(MGAREG_FCOL, pixelCol);
 
     while(--npt)
     {

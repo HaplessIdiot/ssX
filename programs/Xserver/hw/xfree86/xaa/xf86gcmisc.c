@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.0 1996/11/18 13:22:21 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -75,6 +75,14 @@
 # else
 #  define useTEGlyphBlt	cfbTEGlyphBlt
 # endif
+#endif
+
+#ifdef WriteBitGroup
+# define useImageGlyphBlt	cfbImageGlyphBlt8
+# define usePolyGlyphBlt	cfbPolyGlyphBlt8
+#else
+# define useImageGlyphBlt	miImageGlyphBlt
+# define usePolyGlyphBlt	miPolyGlyphBlt
 #endif
 
 #define CHECKPLANEMASK(flag) \
@@ -335,8 +343,6 @@ xf86GCNewText(pGC, new_cfb_text)
 	}
     }
 no_new_cfb_text:
-    xf86GCInfoRec.ImageGlyphBltFallBack = ImageGlyphBltFunc;
-    xf86GCInfoRec.PolyGlyphBltFallBack = PolyGlyphBltFunc;
 
     /* Replace with accelerated functions if possible. */
     if (!TERMINALFONT(pGC->font)) {
@@ -617,4 +623,122 @@ xf86GCNewCopyArea(pGC)
 	CHECKROP(xf86GCInfoRec.CopyAreaFlags))
 	CopyAreaFunc = xf86GCInfoRec.CopyArea;
     pGC->ops->CopyArea = CopyAreaFunc;
+}
+
+
+void xf86ImageGlyphBltFallBack(pDrawable, pGC, xInit, yInit, nglyph, ppci,
+pglyphBase)
+    DrawablePtr pDrawable;
+    GCPtr pGC;
+    int xInit, yInit;
+    int nglyph;
+    CharInfoPtr *ppci;		       /* array of character info */
+    unsigned char *pglyphBase;	       /* start of array of glyphs */
+{
+    void (*ImageGlyphBltFunc) ();
+    cfbPrivGCPtr devPriv;
+
+    devPriv = cfbGetGCPrivate(pGC);
+
+    /* Simulate the MatchCommon logic. */
+    if (pGC->fillStyle == FillSolid && devPriv->rop == GXcopy
+    && 	FONTMAXBOUNDS(pGC->font,rightSideBearing) -
+        FONTMINBOUNDS(pGC->font,leftSideBearing) <= 32 &&
+	FONTMINBOUNDS(pGC->font,characterWidth) >= 0) {
+	if (TERMINALFONT(pGC->font)
+#ifdef FOUR_BIT_CODE
+	    && FONTMAXBOUNDS(pGC->font,characterWidth) >= PGSZB
+#endif
+	)
+	    useTEGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph,
+	        ppci, pglyphBase);
+	else
+	    useImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph,
+	        ppci, pglyphBase);
+	return;
+    }
+
+    if (FONTMAXBOUNDS(pGC->font, rightSideBearing) -
+	FONTMINBOUNDS(pGC->font, leftSideBearing) > 32 ||
+	FONTMINBOUNDS(pGC->font, characterWidth) < 0) {
+	ImageGlyphBltFunc = miImageGlyphBlt;
+    } else {
+	/* special case ImageGlyphBlt for terminal emulator fonts */
+#if !defined(WriteBitGroup) || PSZ == 8
+	if (TERMINALFONT(pGC->font) &&
+	    (pGC->planemask & PMSK) == PMSK
+#ifdef FOUR_BIT_CODE
+	    && FONTMAXBOUNDS(pGC->font, characterWidth) >= PGSZB
+#endif
+	    ) {
+	    ImageGlyphBltFunc = useTEGlyphBlt;
+	} else
+#endif
+	{
+#ifdef WriteBitGroup
+	    if (devPriv->rop == GXcopy &&
+		pGC->fillStyle == FillSolid &&
+		(pGC->planemask & PMSK) == PMSK)
+		ImageGlyphBltFunc = cfbImageGlyphBlt8;
+	    else
+#endif
+		ImageGlyphBltFunc = miImageGlyphBlt;
+	}
+    }
+
+    (*ImageGlyphBltFunc)(pDrawable, pGC, xInit, yInit, nglyph, ppci,
+        pglyphBase);
+}
+
+void xf86PolyGlyphBltFallBack(pDrawable, pGC, xInit, yInit, nglyph, ppci,
+pglyphBase)
+    DrawablePtr pDrawable;
+    GCPtr pGC;
+    int xInit, yInit;
+    int nglyph;
+    CharInfoPtr *ppci;		       /* array of character info */
+    unsigned char *pglyphBase;	       /* start of array of glyphs */
+{
+    void (*PolyGlyphBltFunc) ();
+    cfbPrivGCPtr devPriv;
+
+    devPriv = cfbGetGCPrivate(pGC);
+
+    /* Simulate the MatchCommon logic. */
+    if (pGC->fillStyle == FillSolid && devPriv->rop == GXcopy
+    && 	FONTMAXBOUNDS(pGC->font,rightSideBearing) -
+        FONTMINBOUNDS(pGC->font,leftSideBearing) <= 32 &&
+	FONTMINBOUNDS(pGC->font,characterWidth) >= 0) {
+	if (TERMINALFONT(pGC->font)
+#ifdef FOUR_BIT_CODE
+	    && FONTMAXBOUNDS(pGC->font,characterWidth) >= PGSZB
+#endif
+	)
+	   usePolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph,
+	        ppci, pglyphBase);
+	return;
+    }
+
+    if (FONTMAXBOUNDS(pGC->font, rightSideBearing) -
+	FONTMINBOUNDS(pGC->font, leftSideBearing) > 32 ||
+	FONTMINBOUNDS(pGC->font, characterWidth) < 0) {
+	PolyGlyphBltFunc = miPolyGlyphBlt;
+    } else {
+#ifdef WriteBitGroup
+	if (pGC->fillStyle == FillSolid) {
+	    if (devPriv->rop == GXcopy)
+		PolyGlyphBltFunc = cfbPolyGlyphBlt8;
+	    else
+#ifdef FOUR_BIT_CODE
+		PolyGlyphBltFunc = cfbPolyGlyphRop8;
+#else
+		PolyGlyphBltFunc = miPolyGlyphBlt;
+#endif
+	} else
+#endif
+	    PolyGlyphBltFunc = miPolyGlyphBlt;
+    }
+
+    (*PolyGlyphBltFunc)(pDrawable, pGC, xInit, yInit, nglyph, ppci,
+        pglyphBase);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.h,v 3.7 1996/02/04 09:04:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.h,v 3.8 1996/04/15 11:30:05 dawes Exp $ */
 
 
 
@@ -20,6 +20,7 @@
 #define  ELSA_WINNER_1000PRO_TRIO32 0x931
 #define  ELSA_WINNER_1000PRO_TRIO64 0x932
 #define  ELSA_WINNER_1000AVI	0x936
+#define  ELSA_WINNER_1000PRO_X	0x937
 #define  ELSA_WINNER_2000PRO	0x940   
 #define  ELSA_WINNER_2000PRO_X	0x942
 #define  ELSA_WINNER_2000AVI	0x943

@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.41 1996/10/13 11:19:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.42 1996/11/24 09:52:58 dawes Exp $ */
 
 /*
  * Includes
@@ -175,6 +175,7 @@ Bool Probe_Ahead __STDCARGS((int *));
 Bool Probe_ATI __STDCARGS((int *));
 Bool Probe_S3 __STDCARGS((int *));
 Bool Probe_AL __STDCARGS((int *));
+Bool Probe_Alliance __STDCARGS((int *));
 Bool Probe_Yamaha __STDCARGS((int *));
 Bool Probe_NCR __STDCARGS((int *));
 Bool Probe_MX __STDCARGS((int *));
@@ -214,6 +215,7 @@ extern Bool AssumeEGA;
 extern Chip_Descriptor VGA_Descriptor;
 
 extern Chip_Descriptor AL_Descriptor;
+extern Chip_Descriptor Alliance_Descriptor;
 extern Chip_Descriptor ATI_Descriptor;
 extern Chip_Descriptor Ahead_Descriptor;
 extern Chip_Descriptor CT_Descriptor;
@@ -329,8 +331,9 @@ extern Chip_Descriptor I128_Descriptor;
 #define DAC_TVP3030	48	/* TI ViewPoint TVP3030 RAMDAC */
 #define DAC_ET6K	49	/* Built-in 15/16/24-bit ET6000 RAMDAC */
 #define DAC_ZOOMDAC	50	/* IC Works w30C516 ZOOMDAC or ATT20C498 */
+#define DAC_ALSC_642x	51	/* Alliance ProMotion 642[24] integrated DAC */
 
-#define DAC_MAX		DAC_ZOOMDAC	/* UPDATE THIS! */
+#define DAC_MAX		DAC_ALSC_642x	/* UPDATE THIS! */
 
 #define DAC_6_8_PROGRAM	0x40	/* RAMDAC programmable for 6/8-bit tables */
 #define DAC_8BIT	0x80	/* RAMDAC with 8-bit wide lookup tables */
@@ -394,8 +397,9 @@ extern struct RamDac_Name RamDac_Names[];
 #define V_YAMAHA	21
 #define V_SIS		22
 #define V_ARK		23
+#define V_ALLIANCE	24
 
-#define NUM_VENDORS	23
+#define NUM_VENDORS	24
 #define CHPS_PER_VENDOR	34
 
 #define CHIP_AHEAD_UNK	SVGA_TYPE(V_AHEAD,0)	/* Ahead unknown	*/
@@ -430,6 +434,10 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_AL_UNKNOWN	SVGA_TYPE(V_AL,0)	/* Avance Logic unknown	*/
 #define CHIP_AL2101	SVGA_TYPE(V_AL,1)	/* Avance Logic 2101	*/
 #define CHIP_AL2228	SVGA_TYPE(V_AL,2)	/* Avance Logic 2228	*/
+#define CHIP_ALSC_UNK	SVGA_TYPE(V_ALLIANCE,0)	/* Alliance unknown	*/
+#define CHIP_ALSC6410	SVGA_TYPE(V_ALLIANCE,1)	/* Alliance PM6410	*/
+#define CHIP_ALSC6422	SVGA_TYPE(V_ALLIANCE,2)	/* Alliance PM6422	*/
+#define CHIP_ALSCAT24	SVGA_TYPE(V_ALLIANCE,3)	/* Alliance AT24	*/
 #define CHIP_CT_UNKNOWN	SVGA_TYPE(V_CT,0)	/* C&T unknown		*/
 #define CHIP_CT450	SVGA_TYPE(V_CT,1)	/* C&T 82c450		*/
 #define CHIP_CT451	SVGA_TYPE(V_CT,2)	/* C&T 82c451		*/

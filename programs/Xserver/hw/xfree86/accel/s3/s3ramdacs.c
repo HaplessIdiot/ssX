@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.0 1996/11/18 13:10:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1474,7 +1474,6 @@ static int TI3030_3026_PreInit()
 
 static Bool IBMRGB52x_Probe(int type)
 {
-    int found = 0;
     int ibm_id;
 	 
     if (!S3_964_SERIES(s3ChipId) && !S3_968_SERIES(s3ChipId))
@@ -1484,37 +1483,48 @@ static Bool IBMRGB52x_Probe(int type)
 	s3IBMRGB_Init();
 	switch(ibm_id >> 8) {
 	    case 1:
-	       ErrorF("%s %s: Detected an IBM RGB525 ramdac rev. %x\n",
+	       if(type == IBMRGB525_DAC) {
+	         ErrorF("%s %s: Detected an IBM RGB525 ramdac rev. %x\n",
 		      XCONFIG_PROBED, s3InfoRec.name, ibm_id&0xff);
-	       found = IBMRGB525_DAC;
+	         return TRUE;
+               }
 	       break;
 	    case 2:
 	       if ( (ibm_id & 0xff) == 0xf0) {
-	          ErrorF("%s %s: Detected an IBM RGB528 ramdac rev. %x\n",
+	         if(type == IBMRGB528_DAC) {
+	           ErrorF("%s %s: Detected an IBM RGB528 ramdac rev. %x\n",
 		      XCONFIG_PROBED, s3InfoRec.name, ibm_id&0xff);
-	          found = IBMRGB528_DAC;
+	           return TRUE;
+		 }
 	       }
 	       else if ( (ibm_id & 0xff) == 0xe0) {
-	          ErrorF("%s %s: Detected an IBM RGB528A ramdac rev. %x\n",
-		      XCONFIG_PROBED, s3InfoRec.name, ibm_id&0xff);
-	          found = IBMRGB528_DAC;
+	          if(type == IBMRGB528_DAC) {
+	            ErrorF("%s %s: Detected an IBM RGB528A ramdac rev. %x\n",
+		      XCONFIG_PROBED, s3InfoRec.name, ibm_id&0xff);	
+		    return TRUE;
+		  }
 	       }
 	       else {
-	          ErrorF("%s %s: Detected an IBM RGB524 ramdac rev. %x\n",
+	          if(type == IBMRGB524_DAC) {
+	            ErrorF("%s %s: Detected an IBM RGB524 ramdac rev. %x\n",
 		      XCONFIG_PROBED, s3InfoRec.name, ibm_id&0xff);
-	          found = IBMRGB524_DAC;
+		    return TRUE;
+		  }
 	       }
 	       break;
 	    case 0x102:
-	       ErrorF("%s %s: Detected an IBM RGB528 ramdac rev. %x\n",
+	       if(type == IBMRGB528_DAC) {
+	          ErrorF("%s %s: Detected an IBM RGB528 ramdac rev. %x\n",
 		      XCONFIG_PROBED, s3InfoRec.name, ibm_id&0xff);
-	       found = IBMRGB528_DAC;
+		  return TRUE;
+               }
 	       break;
 	    default:
 	       break;
 	}
     }
-    return (type == found);
+
+    return FALSE;
 }
 
 static Bool IBMRGB524_Probe()
@@ -1813,25 +1823,28 @@ static int MISC_HI_COLOR_PreInit()
     /* Verify that depth is supported by ramdac */
     switch(s3RamdacType) {
 	case SC1148x_M2_DAC:
-    /* {5,7,9} can do 16bpp.  What about them? (MArk) */
-    	    if ( s3InfoRec.depth > 15 ) {
-		ErrorF("Depths greater than 24bpp are not supported for "
-		   	"the Sierra 1148{2,3,4} RAMDAC.\n");
+    	    if ( s3InfoRec.depth > 16 ) {
+		ErrorF("Depths greater than 16bpp are not supported for "
+		   	"the Sierra 1148x RAMDAC.\n");
 	        return 0;
     	    }
+	    break;
 	case SS2410_DAC:
     	    if ( s3InfoRec.depth > 24 ) {
 		ErrorF("Depths greater than 24bpp are not supported for "
 		    "the Diamond SS2410 RAMDAC.\n");
 		return 0;
     	     }
+	    break;
 	case ATT20C490_DAC:
     	    if (s3Bpp > 2) {
 		ErrorF("Depths greater than 16bpp are not supported for "
 		    "the ATT20C490 RAMDAC.\n");
 		return 0;
     	     }
+	    break;
 	default:
+	    ErrorF("Internal error in MISC_HI_COLOR_PreInit().\n");
 		return 0;
      }	
 
@@ -1848,6 +1861,7 @@ static int MISC_HI_COLOR_PreInit()
 	function for external clocks*/
     OtherClocksSetup();
 
+    s3InfoRec.maxClock = s3InfoRec.dacSpeed;
     /* Halve it for 16bpp (32bpp not supported) */
     if (s3Bpp > 1) {
 	 s3InfoRec.maxClock /= 2;

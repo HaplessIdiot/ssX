@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.9 1996/11/18 13:10:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.10 1996/11/24 09:54:21 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -42,6 +42,8 @@
 #include "s3v.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
+
+void s3InitSTREAMS( void ); /* KJB */
 
 typedef struct {
    vgaHWRec std;                /* good old IBM VGA */
@@ -894,32 +896,29 @@ s3Init(mode)
       outb(vgaCRIndex, 0x68);
       tmp = inb(vgaCRReg);
       /* -RAS low timing 3.5 MCLKs, -RAS precharge timing 2.5 MCLKs */
-      outb(vgaCRReg, tmp | 0xf0);
+      outb(vgaCRReg, tmp | 0x04 | 0x08);
    }
 
    if (OFLG_ISSET(OPTION_SLOW_VRAM, &s3InfoRec.options)) {
       /*
-       * some Diamond Stealth 64 VRAM cards have a problem with VRAM timing,
        * increase -RAS low timing from 3.5 MCLKs to 4.5 MCLKs
        */
       outb(vgaCRIndex, 0x39);
       outb(vgaCRReg, 0xa5);
       outb(vgaCRIndex, 0x68);
       tmp = inb(vgaCRReg);
-      if ((tmp & 0x30) == 0x30) 		/* 3.5 MCLKs */
-	 outb(vgaCRReg, tmp & 0xef);		/* 4.5 MCLKs */
+      outb(vgaCRReg, tmp & ~0x04);
    }
 
    if (OFLG_ISSET(OPTION_SLOW_DRAM, &s3InfoRec.options)) {
       /*
-       * fixes some pixel errors for a SPEA Trio64V+ card
        * increase -RAS precharge timing from 2.5 MCLKs to 3.5 MCLKs
        */
       outb(vgaCRIndex, 0x39);
       outb(vgaCRReg, 0xa5);
       outb(vgaCRIndex, 0x68);
       tmp = inb(vgaCRReg);
-      outb(vgaCRReg, tmp & 0xf7);		/* 3.5 MCLKs */
+      outb(vgaCRReg, tmp & ~0x08);
    }
 
    if (OFLG_ISSET(OPTION_SLOW_EDODRAM, &s3InfoRec.options)) {
@@ -937,8 +936,11 @@ s3Init(mode)
 
    if (S3_ViRGE_VX_SERIES(s3ChipId)) {
       outb(vgaCRIndex, 0x36);            /* ViRGE/VX requires 1-cycle EDO */
-      tmp = inb(vgaCRReg);               /* for GE operations */
-      outb(vgaCRReg, tmp & ~0x08);
+      tmp = inb(vgaCRReg);               /* for GE operations (or FPM) */
+      if (OFLG_ISSET(OPTION_FPM_VRAM, &s3InfoRec.options))
+	 outb(vgaCRReg, tmp |  0x0c);
+      else
+	 outb(vgaCRReg, tmp & ~0x0c);
 
       outb(vgaCRIndex, 0x67);
       tmp = inb(vgaCRReg);
@@ -947,6 +949,8 @@ s3Init(mode)
       outb(vgaCRIndex, 0x67);
       outb(vgaCRReg, tmp);
    }
+
+   s3InitSTREAMS(); /* KJB */
 
    if (s3MmioMem != NULL)
       s3AdjustFrame(s3InfoRec.frameX0, s3InfoRec.frameY0);
@@ -1043,6 +1047,110 @@ InitLUT()
 }
 
 /*
+ * s3InitSTREAMS()
+ *
+ * Enables and sets up the STREAMS processor for 24/32 bpp
+ */
+void
+s3InitSTREAMS()
+{
+
+   unsigned char tmp;
+
+    /* KJB - inserted STREAMS processor enable. */
+
+    if ( ( s3InfoRec.bitsPerPixel == 32 || 
+           s3InfoRec.bitsPerPixel == 24 ) &&
+           s3MmioMem != NULL ) {
+       /* kjbMem = s3InfoRec.MemBase; */
+       #if 0
+				/* Set the STREAM source to the frame. */
+         WinSize = (s3InfoRec.frameX1 - s3InfoRec.frameX0) << 16 | (s3InfoRec.frameY1 - s3InfoRec.frameY0 + 1);
+       #endif
+ 
+       outb(vgaCRIndex, 0x67);
+       tmp = inb(vgaCRReg);
+ 				/* Enable full STREAMS processor */
+       outb( vgaCRReg, tmp | 0x0C );
+       if ( s3InfoRec.bitsPerPixel == 24 ) {
+ 				/* data format 8.8.8 (24 bpp) */
+         ((mmtr)s3MmioMem)->streams_regs.regs.prim_stream_cntl = 0x06000000;
+         } else {
+                                /* one more bit for X.8.8.8, 32 bpp */
+         ((mmtr)s3MmioMem)->streams_regs.regs.prim_stream_cntl = 0x07000000;
+         }
+ 				/* NO chroma keying... */
+       ((mmtr)s3MmioMem)->streams_regs.regs.col_chroma_key_cntl = 0x0;
+ 				/* Secondary stream format KRGB-16 */
+                                /* data book suggestion... */
+       ((mmtr)s3MmioMem)->streams_regs.regs.second_stream_cntl = 0x03000000;
+ 
+       ((mmtr)s3MmioMem)->streams_regs.regs.chroma_key_upper_bound = 0x0;
+ 
+       ((mmtr)s3MmioMem)->streams_regs.regs.second_stream_stretch = 0x0;
+				/* use 0x01000000 for primary over second. */
+				/* use 0x0 for second over prim. */ 
+       ((mmtr)s3MmioMem)->streams_regs.regs.blend_cntl = 0x01000000;
+ 
+       ((mmtr)s3MmioMem)->streams_regs.regs.prim_fbaddr0 = 0x0;
+ 
+       ((mmtr)s3MmioMem)->streams_regs.regs.prim_fbaddr1 = 0x0;
+ 
+                                /* Stride is 3 bytes for 24 bpp mode and */
+                                /* 4 bytes for 32 bpp. */
+       if ( s3InfoRec.bitsPerPixel == 24 ) {
+         ((mmtr)s3MmioMem)->streams_regs.regs.prim_stream_stride = s3InfoRec.virtualX * 3;
+         } else {
+         ((mmtr)s3MmioMem)->streams_regs.regs.prim_stream_stride = s3InfoRec.virtualX * 4;
+         }
+ 				/* Choose fbaddr0 as stream source. */
+       ((mmtr)s3MmioMem)->streams_regs.regs.double_buffer = 0x0;
+ 
+       ((mmtr)s3MmioMem)->streams_regs.regs.second_fbaddr0 = 0x0;
+ 
+       ((mmtr)s3MmioMem)->streams_regs.regs.second_fbaddr1 = 0x0;
+ 
+       ((mmtr)s3MmioMem)->streams_regs.regs.second_stream_stride = 0x1;
+ 				/* Set primary stream on top of secondary */
+ 				/* stream. */
+       ((mmtr)s3MmioMem)->streams_regs.regs.opaq_overlay_cntl = 0x40000000;
+ 				/* Vertical scale factor. */
+       ((mmtr)s3MmioMem)->streams_regs.regs.k1 = 0x0;
+ 
+       ((mmtr)s3MmioMem)->streams_regs.regs.k2 = 0x0;
+ 				/* Vertical accum. initial value. */
+       ((mmtr)s3MmioMem)->streams_regs.regs.dda_vert = 0x0;
+ 				/* X and Y start coords + 1. */
+       ((mmtr)s3MmioMem)->streams_regs.regs.prim_start_coord = /* 0x00010001; */
+         (s3InfoRec.frameX0 + 1) << 16 | (s3InfoRec.frameY0 + 1);
+ 				/* Specify window Width -1 and Height of */
+ 				/* stream. */
+ 				/* ScreenHeight ??? */
+				/* Set the STREAM source to the frame. */
+       ((mmtr)s3MmioMem)->streams_regs.regs.prim_window_size = 
+           (s3InfoRec.frameX1 - s3InfoRec.frameX0) << 16 | 
+           (s3InfoRec.frameY1 - s3InfoRec.frameY0 + 1);
+				/* Book says 0x07ff07ff. */ 
+       ((mmtr)s3MmioMem)->streams_regs.regs.second_start_coord = 0x07ff07ff;
+ 
+       ((mmtr)s3MmioMem)->streams_regs.regs.second_window_size = 0x00010001;
+ 				/* Set fifo thresh's and ratio. */
+ 				/* ??? check offset */
+       ((mmtr)s3MmioMem)->memport_regs.regs.fifo_control = 0x6088;
+ 
+       /* ((mmtr)s3MmioMem->streams_regs.regs. */
+
+                                /* STREAMS enable after? */
+				/* NO, YOU DON't want to do this! */
+       /* outb( vgaCRReg, tmp | 0x0C ); */
+ 
+       } /*if(bitsPerPix...=32)*/
+ 
+    /* KJB - end STREAMS processor. */
+ 
+} /*s3InitSTREAMS()*/
+
+/*
  * s3InitEnvironment()
  *
  * Initializes the drawing environment and clears the display.
@@ -1050,6 +1158,9 @@ InitLUT()
 void
 s3InitEnvironment()
 {
+
+  s3InitSTREAMS();
+
    /* Current mixes, src, foreground active */
 
    if (s3MmioMem != NULL) {   /* wait until s3MmioMem is initialzied */

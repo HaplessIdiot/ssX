@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.0 1996/11/18 13:22:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.1 1996/11/24 09:57:21 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -64,7 +64,7 @@ xf86InitializeAcceleration(pScreen)
     ErrorF("%s %s: Using XAA (XFree86 Acceleration Architecture)\n",
         XCONFIG_PROBED, vga256InfoRec.name);
 
-#if 1
+#if 0
     if (xf86AccelInfoRec.Flags & PIXMAP_CACHE) {
         xf86AccelInfoRec.Flags &= ~PIXMAP_CACHE;
         ErrorF("%s %s: Sorry, pixmap cache is broken (disabled)\n",
@@ -233,10 +233,12 @@ xf86InitializeAcceleration(pScreen)
                 xf86ImageTextTECPUToScreenColorExpand;
             xf86GCInfoRec.ImageGlyphBltTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
+#if 0
             xf86AccelInfoRec.ImageTextNonTE =
                 xf86ImageTextNonTECPUToScreenColorExpand;
             xf86GCInfoRec.ImageGlyphBltNonTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
+#endif
             ErrorF(", imagetext");
         }
         if (!xf86AccelInfoRec.PolyTextTE && !xf86GCInfoRec.PolyGlyphBltTE
@@ -246,10 +248,12 @@ xf86InitializeAcceleration(pScreen)
                 xf86PolyTextTECPUToScreenColorExpand;
             xf86GCInfoRec.PolyGlyphBltTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
+#if 0
             xf86AccelInfoRec.PolyTextNonTE =
                 xf86PolyTextNonTECPUToScreenColorExpand;
             xf86GCInfoRec.PolyGlyphBltNonTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
+#endif
             ErrorF(", polytext");
         }
         ErrorF(")\n");
@@ -275,10 +279,12 @@ xf86InitializeAcceleration(pScreen)
                 xf86ImageTextTEScreenToScreenColorExpand;
             xf86GCInfoRec.ImageGlyphBltTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
+#if 0
             xf86AccelInfoRec.ImageTextNonTE =
                 xf86ImageTextNonTEScreenToScreenColorExpand;
             xf86GCInfoRec.ImageGlyphBltNonTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
+#endif
             ErrorF(", imagetext");
         }
         if (!xf86AccelInfoRec.PolyTextTE && !xf86GCInfoRec.PolyGlyphBltTE &&
@@ -287,10 +293,12 @@ xf86InitializeAcceleration(pScreen)
                 xf86PolyTextTEScreenToScreenColorExpand;
             xf86GCInfoRec.PolyGlyphBltTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
+#if 0
             xf86AccelInfoRec.PolyTextNonTE =
                 xf86PolyTextNonTEScreenToScreenColorExpand;
             xf86GCInfoRec.PolyGlyphBltNonTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
+#endif
             ErrorF(", polytext");
         }
         ErrorF(")\n");

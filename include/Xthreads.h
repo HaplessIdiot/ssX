@@ -1,5 +1,6 @@
 /*
  * $XConsortium: Xthreads.h /main/30 1995/12/06 20:18:34 kaleb $
+ * $XFree86$
  *
  * 
 Copyright (c) 1993  X Consortium
@@ -229,12 +230,12 @@ typedef pthread_mutex_t xmutex_rec;
 #define xcondition_wait(c,m) pthread_cond_wait(c,m)
 #define xcondition_signal(c) pthread_cond_signal(c)
 #define xcondition_broadcast(c) pthread_cond_broadcast(c)
-#ifdef _DECTHREADS_
+#if defined(_DECTHREADS_) || defined(linux)
 static xthread_t _X_no_thread_id;
 #define xthread_have_id(id) !pthread_equal(id, _X_no_thread_id)
 #define xthread_clear_id(id) id = _X_no_thread_id
 #define xthread_equal(id1,id2) pthread_equal(id1, id2)
-#endif /* _DECTHREADS_ */
+#endif /* _DECTHREADS_ || linux */
 #if _CMA_VENDOR_ == _CMA__IBM
 #ifdef DEBUG			/* too much of a hack to enable normally */
 /* see also cma__obj_set_name() */

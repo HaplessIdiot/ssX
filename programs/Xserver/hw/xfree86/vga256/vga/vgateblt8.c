@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgateblt8.c,v 3.1 1995/01/28 16:14:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgateblt8.c,v 3.2 1996/02/04 09:15:24 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -143,7 +143,7 @@ typedef unsigned char	*glyphPointer;
 #endif
 
 #ifdef USE_LEFTBITS
-extern long endtab[];
+extern unsigned long endtab[];
 
 #define IncChar(c)  (c = (glyphPointer) (((char *) c) + glyphBytes))
 
@@ -408,8 +408,13 @@ do { \
 #define StoreBits(o)	StorePixels(o,GetPixelGroup(c));
 #define FirstStep	Step
 #else
-#define StoreBits(o)	StorePixels(o,*((unsigned long *) (((char *) cfb8Pixels) + (c & 0x3c))));
-#define FirstStep	c = BitLeft (c, 2);
+#if PGSZ == 64
+#define StoreBits(o)    StorePixels(o,cfb8Pixels[(c) & PGSZBMSK]);
+#define FirstStep       Step
+#else /* PGSZ == 32 */
+#define StoreBits(o)    StorePixels(o,*((unsigned long *) (((char *) cfb8Pixels) + (c & 0x3c))));
+#define FirstStep       c = BitLeft (c, 2);
+#endif /* PGSZ */
 #endif
 
 void
@@ -477,7 +482,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     h = FONTASCENT(pfont) + FONTDESCENT(pfont);
 
 #ifdef SPEEDUP
-if ((h | widthGlyph) == 0) return;
+    if ((h | widthGlyph) == 0) return;
 #endif
 
 #ifndef SPEEDUP
@@ -596,7 +601,7 @@ SpeedUpComputeNext((unsigned)pdstBase, h);
 	    }
 	    else
 	    {
-#if NGLYPHS == 4
+#if NGLYPHS == 4 && PGSZ == 32
 	    	ew = widthGlyph;    /* widthGlyphs >> 2 */
 #else
 	    	ew = widthGlyphs >> PWSH;

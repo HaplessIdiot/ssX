@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.20 1996/11/18 13:10:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.21 1996/11/24 09:54:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -255,9 +255,12 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 		:"r" (r5), "r" (r11));
 }
 
-#define mem_barrier() __asm__ __volatile__("mb": : :"memory")
-#define write_mem_barrier() WHAT??
-
+#define mem_barrier()        __asm__ __volatile__("mb"  : : : "memory")
+#ifdef __ELF__
+#define write_mem_barrier()  __asm__ __volatile__("wmb" : : : "memory")
+#else  /*  ECOFF gas 2.6 doesn't know "wmb" :-(  */
+#define write_mem_barrier()  mem_barrier()
+#endif
 
 #else /* defined(linux) && defined(__alpha__) */
 
@@ -1188,6 +1191,7 @@ static int inb(port)
 #define stq_u(v,p)	((unsigned long  *)(p)) = (v)
 #define stl_u(v,p)	((unsigned int   *)(p)) = (v)
 #define stw_u(v,p)	((unsigned short *)(p)) = (v)
+#define mem_barrier()   /* NOP */
 #define write_mem_barrier()   /* NOP */
 #endif /* __GNUC__ */
 

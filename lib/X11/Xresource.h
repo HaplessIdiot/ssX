@@ -1,4 +1,5 @@
 /* $XConsortium: Xresource.h,v 1.37 94/04/17 20:21:52 rws Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 
@@ -238,7 +239,7 @@ extern void XrmPutLineResource(
 #endif
 );
 
-extern  XrmQGetResource(
+extern int XrmQGetResource(
 #if NeedFunctionPrototypes
     XrmDatabase		/* database */,
     XrmNameList		/* quark_name */,

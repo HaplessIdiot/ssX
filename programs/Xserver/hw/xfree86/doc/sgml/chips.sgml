@@ -20,10 +20,12 @@ a few "<tt>Green</tt>" video cards for desktop machines. Prior to
 the release of XFree 3.2, XFree contained only limited support for
 these chipsets. The support that was introduced in XFree3.1.1 was not
 capable of linear addressing or using the programmable clocks in the
-ct65540 and later chips.
+ct65540 and later chips. In addition to these chipset the new driver
+gives limited support to the WinGine series of chips. 
 
-Support for the ct655xx has been almost completely rewritten,
-with many additional features added. These include
+The driver has been almost completely rewritten, with many additional
+features added. These include
+
 <itemize>
 <item> Linear Addressing
 <item> 16/ 24 bits per pixel
@@ -36,11 +38,19 @@ with many additional features added. These include
 <descrip>
 <tag>ct65520</tag>
 	(Max Ram: 1Mb, Max Dclk: 68MHz@5V)
+<tag>ct65525</tag>
+        This chip is basically identical to the 65530. It has the same
+	ID and is identified as a 65530 when probed. See ct65530 for
+	details.
 <tag>ct65530</tag>
 	This is a very similar chip to the 65520. However it additionally
 	has the ability for mixed 5V and 3.3V operation and linear addressing
 	of the video memory.
 	(Max Ram: 1Mb, Max Dclk: 56MHz@3.3V, 68MHz@5V)
+<tag>ct65535</tag>
+	This is the first chip of the ct655xx series to support fully
+	programmable clocks. Otherwise it has the the same properties
+	as the 65530.
 <tag>ct65540</tag>
 	This is the first version of the of the ct655xx that was capable
 	of supporting Hi-Color and True-Color. It also includes a fully
@@ -72,6 +82,19 @@ with many additional features added. These include
 	chips has only been done on Toshiba 720CDT's. There is only limited
 	support for H/W acceleration at this point.
 	(Max Ram: 4Mb, Max Dclk: 80MHz@3.3V,110MHz@5V)
+<tag>ct64200</tag>
+	This chip, also known as the WinGine, is used in video cards
+        for desktop systems. It often uses external DAC's and programmable
+	clock chips to supply additional functionally. None of these are
+	currently supported within the driver itself, so many cards will only
+	have limited support. Linear addressing is not supportted for this
+	card in the driver.
+	(Max Ram: 2Mb, Max Dclk: 80MHz)
+<tag>ct64300</tag>
+	This is a more advanced version of the WinGine chip, with specification
+	very similar to the 6554x series of chips. However there are many
+	difference at a register level.
+	(Max Ram: 2Mb, Max Dclk: 80MHz)
 </descrip>
 
 <sect> XF86Config Options <p>
@@ -126,6 +149,10 @@ MemBase 0x03b00000 (or a different address)
         This sets the physical memory base address of the linear
         framebuffer. Typically this is probed correctly, but if
 	you believe it to be mis-probed, this option might help.
+	Also for non PCI machines specifying this force the linear base
+	address to be this value, reprogramming the video processor
+	to suit. Note that for the 65530 this is required as the
+	base address can't be correctly probed.
 <tag>
 Option &dquot;sw_cursor&dquot; (Chips 65545 and later)
 </tag>
@@ -137,12 +164,6 @@ Option &dquot;STN&dquot;
 	The server is unable to differentiate between SS STN 
  	and TFT displays. This forces it to identify the display
 	as a SS STN rather than a TFT.
-<tag>
-Option &dquot;ext_fram_buf&dquot; (DSTN machines only)
-</tag>
-	In case the chipset uses a separate framebuffer (one that is
-	not part of the vram) this option makes all of the vram available
-	to video memory.
 <tag>
 Option &dquot;use_modeline&dquot;
 </tag>
@@ -243,6 +264,14 @@ Option &dquot;sync_on_green&dquot; (Chips 65550/54)
 	old workstation monitor. The 65550/54 internal RAMDAC's support
 	this mode of operation, but whether a particular machine does
 	depends on the manufacturer. 
+<tag>
+Option &dquot;fast_dram&dquot; (Chips 65550/54)
+</tag>
+	This options set the internal memory clock (MCLK) register to
+	another value. The default value programmed by the BIOS is
+	usually OK, but some machines can accept a faster Mlk to achieve
+	a better performance. One machine known to work well with this
+	option is the Toshiba 720CDT.
 </descrip>
 
 <sect> Modelines <p>
@@ -272,10 +301,8 @@ driver you'll needed to considered several points
 	The amount of ram required for the framebuffer will vary depending
 	on the size of the screen, and will reduce the amount of video
 	ram available to the modes. Typical values for the size of the
-	framebuffer will be 57600 bytes (640x480 panel), 90000 bytes
-	(800x600 panel) and 147456 bytes (1024x768 panel). For systems
-	with external framebuffers the option "<tt>ext_fram_buf</tt>" can be
-	used to make all the vram available to video memory.
+	framebuffer will be 61440 bytes (640x480 panel), 96000 bytes
+	(800x600 panel) and 157287 bytes (1024x768 panel).
 <tag> * H/W Acceleration </tag>
 		The H/W cursor, and fill operations currently allocate 2kB
 	of the video ram for there own use. If this is not available these
@@ -410,6 +437,13 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
 <tag> Chipset is not detected.</tag>
         Try forcing the chipset to a type that is most similar to what
         you have.
+<tag>The screen is blank when starting X</tag>
+	One possible cause of this problem is if the kernel has been 
+	compiled with the "APM_DISPLAY_BLANK" option. It appears that
+	this option doesn't work as specified and can cause the Xserver
+	to blank when starting X. In all cases the kernel should be compiled
+	without this option. If the problem remains a CRT/LCD or switch to
+	and from the virtual console will often fix it.
 <tag> Textmode is not properly restored</tag>
         This has been reported on some configurations. Many laptops
 	use the programmable clock of the 6554x chips at the console.
@@ -420,7 +454,9 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
 	problems. Usually this is fixed by switching between the LCD
 	and CRT. Alternatively the user can use the "<tt>TextClockFreq</tt>"
 	option described above to select a different clock for the
-	text console.
+	text console. Another possible cause of this problem is if the kernel
+	is compiled with the "APM_DISPLAY_BLANK" option. As mentioned
+	before, this option should be disabled.
 <tag> I can't display 640x480 on my 800x600 LCD</tag>
 	The problem here is that the flat panel needs timings that
 	are related to the panel size, and not the mode size. There is
@@ -430,6 +466,14 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
 	"<tt>fix_panel_size</tt>" options the panel timings are derived
 	from the mode, which can be different than the panel size. Try
 	deleting theses options	from XF86Config or using an LCD/CRT switch.
+<tag> I can't get a 320x240 mode to occupy the whole 640x480 LCD</tag>
+	There is a bug in the 6554x's H/W cursor for modes that are
+	doubled vertically. The lower half of the screen is not accessible.
+	The servers solution to this problem is not to do doubling vertically.
+	Which results in the 320x240 mode only expanded to 640x360. If this
+	is a problem, a work around is to use the "<tt>sw_cursor</tt>"
+	option. The server will then allow the mode to occupy the whole
+	640x480 LCD.
 <tag> After a suspend/resume my screen is messed up</tag>
 	During a suspend/resume, the BIOS controls what is read and 
 	written back to the registers. If the screen is using a mode
@@ -520,7 +564,7 @@ We also thank the many people on the net who have contributed by reporting
 bugs and extensively testing this server before its inclusion in XFree 3.2
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.8 1996/10/20 13:33:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.9 1996/10/24 12:30:26 dawes Exp $
 </verb>
 
 </article>

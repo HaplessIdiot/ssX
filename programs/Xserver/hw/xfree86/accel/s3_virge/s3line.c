@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.7 1996/10/18 15:01:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.8 1996/11/18 13:10:49 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -479,7 +479,10 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 	    SetYMajorOctant(octant);
 	 }
 
-	 xdelta = -((x2-x1) << 20) / (y2-y1);
+	 if (adx > 2047) /* avoid integer overflow */
+	    xdelta = -double2int((double)(x2-x1) * (1<<20) / (double)(y2-y1));
+	 else
+	    xdelta = -((x2-x1) << 20) / (y2-y1);
 	 if (axis == Y_AXIS)
 	    if (xdelta >= 0)
 	       xfixup = 0x7ffff;
@@ -570,17 +573,17 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 		  SETL_LYCNT((len+1) | xdir);
 	       }
 	       else {
-		  double xd2 = -(double)(x2-x1) / (double)(y2-y1);
+		  double xd2 = -(double)(x2-x1) * (1<<20) / (double)(y2-y1);
 
 		  for (n=0; len>0; n++, len -= LEN) {
 		     WaitQueue(5);
 		     SETL_LXEND0_END1(n==0 ? xs :
-				      (xss + double2int((n<<20) * (LEN * xd2))) >> 20,
+				      (xss + double2int(n * (LEN * xd2))) >> 20,
 				      len <= LEN ? xe : 
-				      (((xss + double2int(((n+1)<<20) * (LEN * xd2))) >> 20)
+				      (((xss + double2int((n+1) * (LEN * xd2))) >> 20)
 				       + (xdir ? -1 : 1)));
 		     SETL_LDX(xdelta);
-		     SETL_LXSTART(xss + double2int((n<<20) * (LEN * xd2)) - (axis != Y_AXIS && xd2 < 0));
+		     SETL_LXSTART(xss + double2int(n * (LEN * xd2)) - (axis != Y_AXIS && xd2 < 0));
 		     SETL_LYSTART(ys - n * LEN);
 		     if (len > LEN)
 			SETL_LYCNT((LEN+1) | xdir);
@@ -675,18 +678,18 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 		     if (0 && yofs == 0) 
 			SETL_LXSTART(xss);
 		     else {
-			double xd2 = -(double)(x2-x1) / (double)(y2-y1);
+			double xd2 = -(double)(x2-x1) * (1<<20) / (double)(y2-y1);
 			if (y1 > y2)
 			   xss = (x1 << 20) + xfixup;
 			else 
 			   xss = (x2 << 20) + xfixup;
-			SETL_LXSTART(xss + double2int((yofs<<20) * xd2) - (axis != Y_AXIS && xd2 < 0));
+			SETL_LXSTART(xss + double2int(yofs * xd2) - (axis != Y_AXIS && xd2 < 0));
 		     }
 		     SETL_LYSTART(ys);
 		     SETL_LYCNT((len+1) | xdir);
 		  }
 		  else {
-		     double xd2 = -(double)(x2-x1) / (double)(y2-y1);
+		     double xd2 = -(double)(x2-x1) * (1<<20) / (double)(y2-y1);
 
 		     if (y1 > y2)
 			xss = (x1 << 20) + xfixup;
@@ -696,12 +699,12 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 		     for (n=0; len+(new_y1 ==  new_y2) > 0; n++, len -= LEN) {
 			WaitQueue(5);
 			SETL_LXEND0_END1(n==0 ? xs :
-					 (xss + double2int(((n * LEN + yofs)<<20) * xd2)) >> 20,
+					 (xss + double2int((n * LEN + yofs) * xd2)) >> 20,
 					 len <= LEN ? xe : 
-					 ((xss + double2int((((n+1) * LEN + yofs)<<20) * xd2)) >> 20)
+					 ((xss + double2int(((n+1) * LEN + yofs) * xd2)) >> 20)
 					 + (xdir ? -1 : 1));
 			SETL_LDX(xdelta);
-			SETL_LXSTART(xss + double2int(((n * LEN + yofs)<<20) * xd2) - (axis != Y_AXIS && xd2 < 0));
+			SETL_LXSTART(xss + double2int((n * LEN + yofs) * xd2) - (axis != Y_AXIS && xd2 < 0));
 			SETL_LYSTART(ys - n * LEN);
 			if (len > LEN)
 			   SETL_LYCNT((LEN+1) | xdir);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabresd.c,v 3.1 1995/01/28 16:14:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabresd.c,v 3.2 1996/02/04 09:15:04 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -102,7 +102,7 @@ int len;		/* length of line */
 	dashRemaining -= len;
     }
     /* point to first point */
-    nlwidth <<= 2;
+    nlwidth <<= PWSH;
     addrb = (unsigned char *)(addrl) + (y1 * nlwidth) + x1;
     SETRW(addrb);
     signdy *= nlwidth;

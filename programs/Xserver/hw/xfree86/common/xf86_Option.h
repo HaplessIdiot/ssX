@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.59 1996/10/17 15:18:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.60 1996/10/18 15:02:40 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -201,6 +201,11 @@ typedef struct {
 #define OPTION_TGUI_PCI_READ_OFF 171 /* Trident TGUI PCI burst read */
 #define OPTION_TGUI_PCI_WRITE_OFF 172 /* Trident TGUI PCI burst write */
 
+/* more Memory options */
+#define OPTION_FPM_VRAM		190 /* (s3v) */
+#define OPTION_EDO_VRAM		191 /* (s3v) */
+
+
 #define CLOCK_OPTION_PROGRAMABLE 0 /* has a programable clock */
 #define CLOCK_OPTION_ICD2061A	 1 /* use ICD 2061A programable clocks      */
 #define CLOCK_OPTION_SC11412     3 /* use SC11412 programmable clocks */
@@ -271,6 +276,8 @@ OptFlagRec xf86_OptionTab[] = {
   { "s3_slow_dram_refresh",OPTION_SLOW_DRAM_REFRESH },
   { "fast_vram",	OPTION_FAST_VRAM },
   { "s3_fast_vram",	OPTION_FAST_VRAM },
+  { "fpm_vram",		OPTION_FPM_VRAM },
+  { "edo_vram",		OPTION_EDO_VRAM },
   { "pci_burst_on",	OPTION_PCI_BURST_ON },
   { "pci_burst_off",	OPTION_PCI_BURST_OFF },
   { "w32_interleave_on",OPTION_W32_INTERLEAVE_ON },

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.0 1996/11/18 13:22:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.1 1996/11/24 09:57:24 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -742,7 +742,7 @@ nglyph, ppci, pglyphBase)
 #endif
         DrawTextNonTECPUToScreenColorExpand(nglyph, h, glyphinfop);
 
-    DEALLOCATE_LOCAL(glyphinfpp);
+    DEALLOCATE_LOCAL(glyphinfop);
 }
 
 
@@ -1012,7 +1012,7 @@ static void DrawTextTECPUToScreenColorExpand(nglyph, h, glyphp, glyphwidth)
     }
 
     if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD)
-        if (((int)base - (int)xf86AccelInfoRec.CPUToScreenColorExpandBase) & 4)
+        if (((long)base - (long)xf86AccelInfoRec.CPUToScreenColorExpandBase) & 4)
             *(unsigned int *)base = 0;
 
     xf86AccelInfoRec.Sync();
@@ -1166,7 +1166,7 @@ static void DrawTextNonTECPUToScreenColorExpand(nglyph, h, glyphinfop)
     }
 
     if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD)
-        if (((int)base - (int)xf86AccelInfoRec.CPUToScreenColorExpandBase) & 4)
+        if (((long)base - (long)xf86AccelInfoRec.CPUToScreenColorExpandBase) & 4)
             *(unsigned int *)base = 0;
 
     xf86AccelInfoRec.Sync();

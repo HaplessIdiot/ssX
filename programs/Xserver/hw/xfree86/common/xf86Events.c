@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.37 1996/08/18 01:51:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.38 1996/10/03 08:34:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -684,7 +684,11 @@ xf86PostKbdEvent(key)
 	    )
         {
 	  if (down)
+#ifdef SCO325
+            ioctl(xf86Info.consoleFd, VT_ACTIVATE, specialkey - KEY_F1);
+#else
             ioctl(xf86Info.consoleFd, VT_ACTIVATE, specialkey - KEY_F1 + 1);
+#endif
           return;
         }
 	break;
@@ -697,7 +701,11 @@ xf86PostKbdEvent(key)
 	    )
         {
 	  if (down)
+#ifdef SCO325
+            ioctl(xf86Info.consoleFd, VT_ACTIVATE, specialkey - KEY_F11 + 10);
+#else
             ioctl(xf86Info.consoleFd, VT_ACTIVATE, specialkey - KEY_F11 + 11);
+#endif
           return;
         }
 	break;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.0 1996/11/18 13:22:31 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -364,8 +364,8 @@ static void Write8x8Pattern(x, y, w, h, pSrc, srcwidth)
     w = min(w, 8);
     h = min(h, 8);
     bytespp = xf86AccelInfoRec.BitsPerPixel / 8;
-    buf = ALLOCATE_LOCAL(bytespp * 128);
-    buf2 = ALLOCATE_LOCAL(bytespp * 128);
+    buf = (unsigned char *)ALLOCATE_LOCAL(bytespp * 128);
+    buf2 = (unsigned char *)ALLOCATE_LOCAL(bytespp * 128);
     bufp = buf;
     /* Write and expand horizontally. */
     for (i = 0; i < h; i++) {
@@ -500,7 +500,7 @@ static void Write8x8MonoPattern(x, y, w, h, pSrc, srcwidth)
         nh *= 2;
     }
     /* Note extra bytes to support 24bpp ImageWrite. */
-    buf = ALLOCATE_LOCAL(8 * 8 + 8);
+    buf = (unsigned char *)ALLOCATE_LOCAL(8 * 8 + 8);
     /* For each horizontal rotation position. */
     for (i = 0; i < 8; i++) {
         /* Write 8 vertically rotated versions. */
@@ -879,7 +879,8 @@ static void DoCacheStipple(pDrawable, pGC)
              */
 	    pScreen = screenInfo.screens[xf86ScreenIndex];
 	    rootWin = WindowTable[pScreen->myNum];
-	    scratchpixptr = ALLOCATE_LOCAL(PixmapBytePad(pix->drawable.width,
+	    scratchpixptr = (unsigned char *)ALLOCATE_LOCAL(
+		PixmapBytePad(pix->drawable.width,
 	        rootWin->drawable.bitsPerPixel) * pix->drawable.height);
             scratchpix = GetScratchPixmapHeader(
                 pScreen, pix->drawable.width, pix->drawable.height,

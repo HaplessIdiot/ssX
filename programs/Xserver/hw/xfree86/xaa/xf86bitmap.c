@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bitmap.c,v 3.0 1996/11/18 13:22:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bitmap.c,v 3.1 1996/11/24 09:57:16 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -110,8 +110,8 @@ srcx, srcy)
 	    base += 4;
 	}
         if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD)
-	    if ((unsigned int)((unsigned int)base -
-	    (unsigned int)xf86AccelInfoRec.CPUToScreenColorExpandBase) & 0x4)
+	    if ((unsigned long)((unsigned long)base -
+	    (unsigned long)xf86AccelInfoRec.CPUToScreenColorExpandBase) & 0x4)
 	        *(unsigned int *)base = 0;
     }
     else {
@@ -240,15 +240,15 @@ srcy, bg, fg, rop, planemask)
             if (sr.base >= xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
                 sr.base = (unsigned int *)((unsigned char *)
                     xf86AccelInfoRec.CPUToScreenColorExpandBase +
-                    ((unsigned int)sr.base & 3));
+                    ((unsigned long)sr.base & 3L));
             srcp += srcwidth;
         }
-        if ((unsigned int)sr.base & 3) {
-            *(unsigned int *)((unsigned int)sr.base & ~3) = sr.bits;
-            sr.base = (unsigned int *)(((unsigned int)base & ~3) + 4);
+        if ((unsigned long)sr.base & 3) {
+            *(unsigned int *)((unsigned long)sr.base & ~3L) = sr.bits;
+            sr.base = (unsigned int *)(((unsigned long)base & ~3L) + 4);
         }
         if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD)
-            if ((unsigned int)sr.base & 0x4)
+            if ((unsigned long)sr.base & 0x4)
 	        *(unsigned int *)base = 0;
     }
 

@@ -1,4 +1,5 @@
 /* $XConsortium: signals.c /main/4 1995/12/08 09:19:04 mor $ */
+/* $XFree86$ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -57,6 +58,10 @@ in this Software without prior written authorization from the X Consortium.
 #else
 #define _POSIX_SOURCE
 #include <signal.h>
+#ifdef SCO325
+#include <sys/procset.h>
+#include <sys/siginfo.h>
+#endif
 #include <sys/wait.h>
 #undef _POSIX_SOURCE
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.8 1996/11/18 13:10:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.9 1996/11/24 09:54:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -775,6 +775,28 @@ s3AdjustFrame(int x, int y)
    origBase = (y * s3DisplayWidth + x) * s3Bpp;
    Base = (origBase >> 2) & ~1;
 
+    /* STREAMS handler - KJB */
+    if ( s3InfoRec.bitsPerPixel == 32 || 
+         s3InfoRec.bitsPerPixel == 24 ) { 
+      if ( s3MmioMem != NULL ) {
+         #if 0
+				/* Wait for VSYNC */
+         /* while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ; */
+ 				/* X and Y start coords + 1. */
+  	   #if 1
+         ((mmtr)s3MmioMem)->streams_regs.regs.prim_start_coord = /* 0x00010001; */
+           ( (x + 1) << 16 ) | (y + 1) & 0xf800f800;
+	   #else
+         ((mmtr)s3MmioMem)->streams_regs.regs.second_start_coord = 
+           ( (0x7ff - x) << 16 ) | (0x7ff - y) & 0xf800f800;
+	   #endif
+	 #else
+         ((mmtr)s3MmioMem)->streams_regs.regs.prim_fbaddr0 = 
+		((y * s3DisplayWidth + (x & ~3)) * s3Bpp) /* & ~3 */;
+         #endif
+         }
+      } else {
+
    outb(vgaCRIndex, 0x31);
    outb(vgaCRReg, ((Base & 0x030000) >> 12) | s3Port31);
    s3Port51 &= ~0x03;
@@ -786,6 +808,7 @@ s3AdjustFrame(int x, int y)
 
    outw(vgaCRIndex, (Base & 0x00FF00) | 0x0C);
    outw(vgaCRIndex, ((Base & 0x00FF) << 8) | 0x0D);
+     } /* if!(24bpp) */
 
 #ifdef XFreeXDGA
    if (!(s3InfoRec.directMode & XF86DGADirectMouse)) {

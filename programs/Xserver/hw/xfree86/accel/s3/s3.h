@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.41 1996/09/14 13:09:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.42 1996/11/18 13:10:17 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -211,8 +211,7 @@ extern int s3_968_DashBug;
 #define	SS2410_DAC	  21
 #define SC1148x_M2_DAC    22
 
-#define SC1148x_M3_DAC    23
-#define IBMRGB52x_DAC     24
+#define SC1148x_M3_DAC    SC1148x_M2_DAC
 
 typedef struct {
     char *DacName;

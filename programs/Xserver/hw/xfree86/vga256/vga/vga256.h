@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga256.h,v 3.2 1996/02/04 09:14:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga256.h,v 3.3 1996/11/24 09:56:57 dawes Exp $ */
 
 
 
@@ -258,8 +258,8 @@ void fastBitBltCopy(
 unsigned char *fastFillSolidGXand(
 #if NeedFunctionPrototypes
     unsigned char *,
-    int ,
-    int ,
+    unsigned long ,
+    unsigned long ,
     int ,
     int ,
     int ,
@@ -272,8 +272,8 @@ unsigned char *fastFillSolidGXand(
 unsigned char *fastFillSolidGXor(
 #if NeedFunctionPrototypes
     unsigned char *,
-    int ,
-    int ,
+    unsigned long ,
+    unsigned long ,
     int ,
     int ,
     int ,
@@ -286,8 +286,8 @@ unsigned char *fastFillSolidGXor(
 unsigned char *fastFillSolidGXxor(
 #if NeedFunctionPrototypes
     unsigned char *,
-    int ,
-    int ,
+    unsigned long ,
+    unsigned long ,
     int ,
     int ,
     int ,
@@ -300,8 +300,8 @@ unsigned char *fastFillSolidGXxor(
 unsigned char *fastFillSolidGXcopy(
 #if NeedFunctionPrototypes
     unsigned char *,
-    int ,
-    int ,
+    unsigned long ,
+    unsigned long ,
     int ,
     int ,
     int ,
@@ -314,8 +314,8 @@ unsigned char *fastFillSolidGXcopy(
 unsigned char *fastFillSolidGXset(
 #if NeedFunctionPrototypes
     unsigned char *,
-    int ,
-    int ,
+    unsigned long ,
+    unsigned long ,
     int ,
     int ,
     int ,

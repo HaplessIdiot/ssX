@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgarctstp8.c,v 3.1 1995/01/28 16:14:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgarctstp8.c,v 3.2 1996/02/04 09:15:20 dawes Exp $ */
 /*
  * Fill 32 bit stippled rectangles for 8 bit frame buffers
  */
@@ -491,7 +491,7 @@ vga2568FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
     }
 }
 
-#ifdef SPEEDUP
+#if defined(SPEEDUP) || defined(__alpha__)
 void
 vga2568FillRectStippledUnnatural (pDrawable, pGC, nBox, pBox)
     DrawablePtr	    pDrawable;
@@ -578,7 +578,7 @@ vga2568FillRectStippledUnnatural (pDrawable, pGC, nBox, pBox)
 	pdstLine = pdstBase + y * nlwDst + (x >> PWSH);
 	y = (y - ySrc) % stippleHeight;
 	srcStart = psrcBase + y * stwidth;
-	xrem = ((x & ~3) - xSrc) % stippleWidth;
+	xrem = ((x & ~PIM) - xSrc) % stippleWidth;
 	if (((x & PIM) + w) < PPW)
 	{
 	    maskpartialbits (x, w, startmask);
@@ -625,5 +625,4 @@ vga2568FillRectStippledUnnatural (pDrawable, pGC, nBox, pBox)
 	}
     }
 }
-
-#endif
+#endif /* SPEEDUP || __alpha__ */

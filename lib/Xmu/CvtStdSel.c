@@ -1,5 +1,5 @@
 /* $XConsortium: CvtStdSel.c /main/37 1996/01/12 15:08:34 kaleb $ */
-/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.5 1996/01/13 12:21:02 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.6 1996/05/06 05:54:30 dawes Exp $ */
 
 /*
  
@@ -229,14 +229,18 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 #endif
 #endif
 #endif
-#ifdef sun
+#if defined(sun) || defined(__linux__)
 #ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
 #undef _POSIX_THREAD_SAFE_FUNCTIONS
 #endif
 #endif
 	struct hostent hent;
 #ifndef _POSIX_THREAD_SAFE_FUNCTIONS
+#ifdef __linux__
+#define Gethostbyname(h) (gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&hostp,&herr),hostp)
+#else
 #define Gethostbyname(h) gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&herr)
+#endif
 #define HostAddrType hent.h_addrtype
 #define HostAddr hent.h_addr
 #define HostLength hent.h_length

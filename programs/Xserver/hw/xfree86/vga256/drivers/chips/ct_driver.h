@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.h,v 3.3 1996/09/29 13:39:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.h,v 3.4 1996/10/17 15:20:47 dawes Exp $ */
 
 /*#define DEBUG
 #define CT_HW_DEBUG */
@@ -30,6 +30,7 @@
 extern Bool ctLinearSupport;	       /*linear addressing enable */
 extern Bool ctAccelSupport;	       /*acceleration enable */
 extern Bool ctisHiQV32;		       /*New architecture used in 65550 and 65554 */
+extern Bool ctisWINGINE;
 extern Bool ctHDepth;		       /*Chip has 16/24bpp */
 extern Bool ctDSTN;
 extern Bool ctLCD;
@@ -84,6 +85,8 @@ extern void ctMMIOFillRectSolid();
 extern void ctMMIOFillSolidSpansGeneral();
 extern void ctHiQVFillRectSolid();
 extern void ctHiQVFillSolidSpansGeneral();
+extern void ctcfbFillRectSolid24();
+extern void ctMMIOFillRectSolid24();
 
 /* in ct_blt16.c */
 extern RegionPtr ctcfb16CopyArea();

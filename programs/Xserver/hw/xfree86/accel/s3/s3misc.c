@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.58 1996/10/16 14:40:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.59 1996/11/18 13:10:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -209,8 +209,24 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	    }
 	    else if (s3MemBase != 0)  /* checked in s3.c */
 	       base0 = s3MemBase;
-	    else if (s3NewMmio)
-	       base0 = 0xf0000000;
+	    else if (s3NewMmio) {
+	       unsigned long orig_base0;
+	       outb(vgaCRIndex, 0x59);
+	       base0 = inb(vgaCRReg) << 24;
+	       outb(vgaCRIndex, 0x5a);
+	       base0 |= inb(vgaCRReg) << 16;
+	       orig_base0 = base0;
+	       base0 &= 0xfc000000;
+	       if (base0 == 0 || base0 != orig_base0) {
+		  /* the aligned address may clash with other devices,
+		     so use a pretty random base address... */
+		  base0 = 0xb4000000;  /* last resort */
+		  ErrorF("%s %s: PCI: base address not correctly aligned\n",
+			 XCONFIG_PROBED, s3InfoRec.name);
+		  ErrorF("\t      base address changed from 0x%08lx to 0x%08lx\n",
+			 orig_base0, base0);
+	       }
+	    }
 	    else 
 	       base0 = 0xf3000000;  /* old default, not good for newmmio */
 	 else {

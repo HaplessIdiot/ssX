@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_accel.c,v 3.0 1996/11/18 13:18:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_accel.c,v 3.1 1996/11/24 09:56:48 dawes Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -52,6 +52,7 @@ void MGANAME(SetClippingRectangle)();
 /* #include "coprocessor.h" */
 
 static int mga_cmd, mga_lastcmd, mga_linecmd, mga_rop;
+static int mga_sgn, mga_lastsgn, mga_lastcxright;
 static int mgablitxdir, mgablitydir;
 static int mga_ClipRect;
 
@@ -61,7 +62,9 @@ static int mga_ClipRect;
  */
 void MGANAME(AccelInit)() 
 {
+    int cacheStart, cacheEnd;
     int tmp;
+    int max_fastbitblt_mem = (MGAinterleave ? 4096 : 2048) * 1024;
     
     /*
      * If you to disable acceleration, just don't modify anything
@@ -81,8 +84,8 @@ void MGANAME(AccelInit)()
      * install hardware lines and clipping
      */
 
-    xf86AccelInfoRec.SubsequentTwoPointLine = MGANAME(SubsequentTwoPointLine);
-    xf86AccelInfoRec.SetClippingRectangle = MGANAME(SetClippingRectangle);
+    xf86AccelInfoRec.SubsequentTwoPointLine = MGANAME_A(SubsequentTwoPointLine);
+    xf86AccelInfoRec.SetClippingRectangle = MGANAME_A(SetClippingRectangle);
 
     /*
      * The following line installs a "Sync" function, that waits for
@@ -155,7 +158,12 @@ void MGANAME(AccelInit)()
         xf86AccelInfoRec.CPUToScreenColorExpandBase = (unsigned*)expandwin;
     }
     else
+#ifdef __alpha__
+        xf86AccelInfoRec.CPUToScreenColorExpandBase =
+	  (unsigned*)MGAMMIOBaseDENSE;
+#else /* __alpha__ */
         xf86AccelInfoRec.CPUToScreenColorExpandBase = (unsigned*)MGAMMIOBase;
+#endif /* __alpha__ */
     xf86AccelInfoRec.CPUToScreenColorExpandRange = 0x1C00;
 
     /*
@@ -163,11 +171,20 @@ void MGANAME(AccelInit)()
      * cache. In this case, all memory from the end of the virtual screen
      * to the end of video memory minus 1K, can be used.
      */
-    xf86InitPixmapCache(
-        		&vga256InfoRec,
-        		vga256InfoRec.virtualY * vga256InfoRec.displayWidth *
-            			vga256InfoRec.bitsPerPixel / 8,
-        		vga256InfoRec.videoRam * 1024 - 1024);
+    cacheStart = vga256InfoRec.virtualY * vga256InfoRec.displayWidth *
+                                    vga256InfoRec.bitsPerPixel / 8;
+    cacheEnd = vga256InfoRec.videoRam * 1024 - 1024;
+    /*
+     * we can't fast blit between first 4MB and second 4MB for interleave
+     * and between first 2MB and other memory for non-interleave
+     */
+    if( cacheStart > max_fastbitblt_mem - 4096 )
+        MGAusefbitblt = 0;
+    else
+        if( cacheEnd > max_fastbitblt_mem - 1024 )
+            cacheEnd = max_fastbitblt_mem - 1024;
+        
+    xf86InitPixmapCache(&vga256InfoRec, cacheStart, cacheEnd);
 }
 
 /*
@@ -185,9 +202,9 @@ void MGANAME(AccelInit)()
  * Disable clipping
  */
 #define DISABLECLIPPING() \
-    MGAREG(MGAREG_CXBNDRY) = 0xFFFF0000;  /* (maxX << 16) | minX */ \
-    MGAREG(MGAREG_YTOP) = 0x00000000;  /* minPixelPointer */ \
-    MGAREG(MGAREG_YBOT) = 0x007FFFFF;  /* maxPixelPointer */ \
+    OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);  /* (maxX << 16) | minX */ \
+    OUTREG(MGAREG_YTOP, 0x00000000);  /* minPixelPointer */ \
+    OUTREG(MGAREG_YBOT, 0x007FFFFF);  /* maxPixelPointer */ \
     mga_ClipRect = 0; /* one time line clipping is off */
 
 /*
@@ -267,16 +284,18 @@ void MGANAME(SetupForFillRectSolid)(color, rop, planemask)
 #endif
     SETRASTEROP(rop);
     /* mga_lastcmd is used by TwoPointLine() to restore the FillRect state */
-    MGAREG(MGAREG_DWGCTL) = mga_lastcmd = mga_cmd;
+    OUTREG(MGAREG_DWGCTL, mga_lastcmd = mga_cmd);
     DISABLECLIPPING();
 
     /* now, we construct mga_linecmd by masking the opcod and optimising */
     /* the use of gxcopy rop. opcod is clear so we can draw lines quickly */
 
+    mga_linecmd = MGADWG_NOZCMP | MGADWG_SOLID | MGADWG_SHIFTZERO | 
+                   MGADWG_BFCOL;
     if ( rop == GXcopy )
-	mga_linecmd = mga_lastcmd & 0xffffff00; /* xy, RPL atyp, clear opcod */
+	mga_linecmd |= mga_lastcmd & 0x000F0000; /* same bop, RPL atype */
     else
-	mga_linecmd = mga_lastcmd & 0xffffff70; /* xy, clear opcod */
+	mga_linecmd |= mga_lastcmd & 0x000F0070; /* same bop and atype */
 }
 
 /*
@@ -288,8 +307,8 @@ void MGANAME(SetupForFillRectSolid)(color, rop, planemask)
 void MGANAME(SubsequentFillRectSolid)(x, y, w, h)
     int x, y, w, h;
 {
-    MGAREG(MGAREG_FXBNDRY) = ((x + w) << 16) | x;
-    MGAREG(MGAREG_YDSTLEN + MGAREG_EXEC) = (y << 16) | h;
+    OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | x);
+    OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 }
 
 /*
@@ -306,7 +325,7 @@ transparency_color)
     unsigned planemask;
     int transparency_color;
 {
-    int srcpitch, mga_sgn;
+    int srcpitch;
     
     mga_rop = rop;
     mga_cmd = MGADWG_BITBLT | MGADWG_NOZCMP | MGADWG_SHIFTZERO | MGADWG_BFCOL;
@@ -330,18 +349,17 @@ transparency_color)
         mga_sgn = 4;
         srcpitch = -xf86AccelInfoRec.FramebufferWidth;
     }
-    if( xdir != 1 )
-        mga_sgn |= 1;
 
 #if PSZ != 24
     REPLICATE(planemask);
     SETWRITEPLANEMASK(planemask);
 #endif
     SETRASTEROP(rop);
-    MGAREG(MGAREG_DWGCTL) = mga_lastcmd = mga_cmd;
-    MGAREG(MGAREG_SGN) = mga_sgn;
-    MGAREG(MGAREG_AR5) = srcpitch;
+    OUTREG(MGAREG_DWGCTL, mga_lastcmd = mga_cmd);
+    OUTREG(MGAREG_AR5, srcpitch);
     DISABLECLIPPING();
+    mga_lastsgn = -1;
+    mga_lastcxright = 0xFFFF;  /* maxX */
 }
 
 /*
@@ -356,31 +374,15 @@ void MGANAME(SubsequentScreenToScreenCopy)(xsrc, ysrc, xdst, ydst, w, h)
     int xsrc, ysrc, xdst, ydst, w, h;
 {
     long srcStart, srcStop;
-    int cmd; 
-
-    if(mgablitydir == -1)    /* bottom to top */
-    {
-        ysrc += h - 1;
-        ydst += h - 1;
-    }
-
-    if(mgablitxdir == 1)    /* left to right */
-    {
-        srcStart = ysrc * xf86AccelInfoRec.FramebufferWidth + xsrc;
-        srcStop  = srcStart + w - 1;
-    }
-    else             /* right to left */
-    {
-        srcStop  = ysrc * xf86AccelInfoRec.FramebufferWidth + xsrc;
-        srcStart = srcStop + w - 1;
-    }
- 
-#if 1    /* enable on your own risk :-) */
+    int cmd;
+    int fxright = xdst + --w;
+    int cxright = 0xFFFF;  /* maxX */
+    int left_to_right = ((mgablitxdir == 1) || (ysrc != ydst));
+    
     /*
      * try to use fast bitblt
      */
     if(
-#if 1
 #if PSZ == 32
         !((xsrc ^ xdst) & 31)
 #elif PSZ == 16
@@ -388,27 +390,59 @@ void MGANAME(SubsequentScreenToScreenCopy)(xsrc, ysrc, xdst, ydst, w, h)
 #else
         !((xsrc ^ xdst) & 127)
 #endif
-
-#else  /* this doesn't work correct, too */
-        (xsrc == xdst)
-#endif 
-        && (mga_rop == GXcopy) )
+        && (mga_rop == GXcopy) && left_to_right && MGAusefbitblt)
     {
+        /* undocumented constraints */
+#if PSZ == 8
+        if( (xdst & (1 << 6)) && (((fxright >> 6) - (xdst >> 6)) & 7) == 7 )
+            cxright = fxright, fxright |= 1 << 6;
+#elif PSZ == 16
+        if( (xdst & (1 << 5)) && (((fxright >> 5) - (xdst >> 5)) & 7) == 7 )
+            cxright = fxright, fxright |= 1 << 5;
+#elif PSZ == 24
+        if( ((xdst * 3) & (1 << 6)) && 
+                 ((((fxright * 3 + 2) >> 6) - ((xdst * 3) >> 6)) & 7) == 7 )
+            cxright = fxright, fxright = ((fxright * 3 + 2) | (1 << 6)) / 3;
+#elif PSZ == 32
+        if( (xdst & (1 << 4)) && (((fxright >> 4) - (xdst >> 4)) & 7) == 7 )
+            cxright = fxright, fxright |= 1 << 4;
+#endif
         cmd = MGADWG_FBITBLT | MGADWG_RPL | MGADWG_NOZCMP | 
               MGADWG_SHIFTZERO | 0x000A0000 | MGADWG_BFCOL;
     }
     else
         cmd = mga_cmd;
         
+    if(mgablitydir != 1)    /* bottom to top */
+    {
+        ysrc += h - 1;
+        ydst += h - 1;
+    }
+    if(left_to_right)    /* left to right */
+    {
+        srcStart = ysrc * xf86AccelInfoRec.FramebufferWidth + xsrc;
+        srcStop  = srcStart + w;
+        mga_sgn &= ~1;
+    }
+    else             /* right to left */
+    {
+        srcStop  = ysrc * xf86AccelInfoRec.FramebufferWidth + xsrc;
+        srcStart = srcStop + w;
+        mga_sgn |= 1;
+    }
+ 
+    /* cmd, mga_sgn and cxright are constants for normal blits */
     if(cmd != mga_lastcmd)
-        MGAREG(MGAREG_DWGCTL) = mga_lastcmd = cmd;                                          
+        OUTREG(MGAREG_DWGCTL, mga_lastcmd = cmd);
+    if(mga_sgn != mga_lastsgn)
+        OUTREG(MGAREG_SGN, mga_lastsgn = mga_sgn);
+    if(cxright != mga_lastcxright)
+        OUTREG(MGAREG_CXRIGHT, mga_lastcxright = cxright);
 
-#endif  /* enabling */
-
-    MGAREG(MGAREG_FXBNDRY) = ((xdst + w - 1) << 16) | xdst;
-    MGAREG(MGAREG_YDSTLEN) = (ydst << 16) | h;
-    MGAREG(MGAREG_AR3) = srcStart;
-    MGAREG(MGAREG_AR0 + MGAREG_EXEC) = srcStop;
+    OUTREG(MGAREG_FXBNDRY, (fxright << 16) | xdst);
+    OUTREG(MGAREG_YDSTLEN, (ydst << 16) | h);
+    OUTREG(MGAREG_AR3, srcStart);
+    OUTREG(MGAREG_AR0 + MGAREG_EXEC, srcStop);
 }
 
 /*
@@ -442,7 +476,7 @@ void MGANAME(SetupForScreenToScreenColorExpand)(bg, fg, rop, planemask)
     SETWRITEPLANEMASK(planemask);
 #endif
     SETRASTEROP(rop);
-    MGAREG(MGAREG_DWGCTL) = mga_cmd;
+    OUTREG(MGAREG_DWGCTL, mga_cmd);
     DISABLECLIPPING();
 }
 
@@ -455,11 +489,11 @@ void MGANAME(SubsequentScreenToScreenColorExpand)(srcx, srcy, x, y, w, h)
     int srcStart = srcy * xf86AccelInfoRec.FramebufferWidth * 8 + srcx;
     int srcStop = srcStart + w - 1;
 
-    MGAREG(MGAREG_AR3) = srcStart;
-    MGAREG(MGAREG_AR0) = srcStop;
-    MGAREG(MGAREG_AR5) = (w + 31) & ~31;   /* SCANLINE_PAD_DWORD */
-    MGAREG(MGAREG_FXBNDRY) = ((x + w - 1) << 16) | x;
-    MGAREG(MGAREG_YDSTLEN + MGAREG_EXEC) = (y << 16) | h;
+    OUTREG(MGAREG_AR3, srcStart);
+    OUTREG(MGAREG_AR0, srcStop);
+    OUTREG(MGAREG_AR5, (w + 31) & ~31);   /* SCANLINE_PAD_DWORD */
+    OUTREG(MGAREG_FXBNDRY, ((x + w - 1) << 16) | x);
+    OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 }
 
 /*
@@ -493,10 +527,10 @@ void MGANAME(SetupForCPUToScreenColorExpand)(bg, fg, rop, planemask)
     SETWRITEPLANEMASK(planemask);
 #endif
     SETRASTEROP(rop);
-    MGAREG(MGAREG_DWGCTL) = mga_cmd;
-    MGAREG16(MGAREG_OPMODE) = MGAOPM_DMA_BLIT;
-    MGAREG(MGAREG_YTOP) = 0x00000000;  /* minPixelPointer */
-    MGAREG(MGAREG_YBOT) = 0x007FFFFF;  /* maxPixelPointer */
+    OUTREG(MGAREG_DWGCTL, mga_cmd);
+    OUTREG16(MGAREG_OPMODE, MGAOPM_DMA_BLIT);
+    OUTREG(MGAREG_YTOP, 0x00000000);  /* minPixelPointer */
+    OUTREG(MGAREG_YBOT, 0x007FFFFF);  /* maxPixelPointer */
 }
 
 /*
@@ -509,12 +543,12 @@ void MGANAME(SubsequentCPUToScreenColorExpand)(x, y, w, h, skipleft)
     if( !(w * h) ) return;
 #endif
        
-    MGAREG(MGAREG_CXBNDRY) = ((x + w - 1) << 16) | (x + skipleft);
+    OUTREG(MGAREG_CXBNDRY, ((x + w - 1) << 16) | (x + skipleft));
     w = (w + 31) & ~31;     /* SCANLINE_PAD_DWORD */
-    MGAREG(MGAREG_AR0) = (w * h) - 1;
-    MGAREG(MGAREG_AR3) = 0;            /* we need it here for stability */
-    MGAREG(MGAREG_FXBNDRY) = ((x + w - 1) << 16) | x;
-    MGAREG(MGAREG_YDSTLEN + MGAREG_EXEC) = (y << 16) | h;
+    OUTREG(MGAREG_AR0, (w * h) - 1);
+    OUTREG(MGAREG_AR3, 0);            /* we need it here for stability */
+    OUTREG(MGAREG_FXBNDRY, ((x + w - 1) << 16) | x);
+    OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 }
 
 /*
@@ -543,14 +577,14 @@ MGANAME(SubsequentTwoPointLine)(x1, y1, x2, y2, bias)
     register int mga_localcmd = mga_linecmd;
 
     /* draw the last pixel? */
-    if ( !(bias & 0x0100) )
+    if ( bias & 0x0100 )
         mga_localcmd |= MGADWG_AUTOLINE_OPEN; /* no */
     else
         mga_localcmd |= MGADWG_AUTOLINE_CLOSE; /* yep */
 
-    MGAREG(MGAREG_DWGCTL) = mga_localcmd;
-    MGAREG(MGAREG_XYSTRT) = ( y1 << 16 ) | x1;
-    MGAREG(MGAREG_XYEND + MGAREG_EXEC) = ( y2 << 16 ) | x2;
+    OUTREG(MGAREG_DWGCTL, mga_localcmd);
+    OUTREG(MGAREG_XYSTRT, ( y1 << 16 ) | x1);
+    OUTREG(MGAREG_XYEND + MGAREG_EXEC, ( y2 << 16 ) | x2);
 
     /* do some work whilst the chipset is busy */
 
@@ -561,7 +595,7 @@ MGANAME(SubsequentTwoPointLine)(x1, y1, x2, y2, bias)
     }
 
     /* restore FillRect state for future rects */
-    MGAREG(MGAREG_DWGCTL) = mga_lastcmd;
+    OUTREG(MGAREG_DWGCTL, mga_lastcmd);
 }
 
 void
@@ -583,9 +617,9 @@ MGANAME(SetClippingRectangle)(x1, y1, x2, y2)
                 y2 = y1;
                 y1 = tmp;
         }
-        MGAREG(MGAREG_CXBNDRY) = (x2 << 16) | x1;
-        MGAREG(MGAREG_YTOP) = y1;  /* minPixelPointer */
-        MGAREG(MGAREG_YBOT) = y2 & 0x007FFFFF;  /* maxPixelPointer */
+        OUTREG(MGAREG_CXBNDRY, (x2 << 16) | x1);
+        OUTREG(MGAREG_YTOP, y1);  /* minPixelPointer */
+        OUTREG(MGAREG_YBOT, y2 & 0x007FFFFF);  /* maxPixelPointer */
 
 	/* indicate to TwoPoint Line that one time only clipping is on */
 	mga_ClipRect = 1;

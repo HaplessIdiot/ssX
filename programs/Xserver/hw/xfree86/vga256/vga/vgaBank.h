@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.h,v 3.4 1996/01/12 14:38:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.h,v 3.5 1996/02/04 09:14:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -33,7 +33,11 @@ extern void *vgaReadTop;
 extern void *vgaWriteBottom;
 extern void *vgaWriteTop;
 extern Bool vgaReadFlag, vgaWriteFlag;
+#if defined(__alpha__)
+extern unsigned long writeseg;
+#else /* __alpha__ */
 extern void *writeseg;
+#endif /* __alpha__ */
 
 /* vgaBank.s */
 
@@ -144,7 +148,11 @@ extern unsigned SpeedUpRowsPrev[];
 #ifdef CSRG_BASED
 #define VGABASE 0xFF000000
 #else
+#if defined(__alpha__)
+#define VGABASE 0xFFFFFFFFF0000000UL
+#else /* __alpha__ */
 #define VGABASE 0xF0000000
+#endif /* __alpha__ */
 #endif
 
 /* Clear these first -- since they are defined in mfbcustom.h */
@@ -172,19 +180,20 @@ extern unsigned SpeedUpRowsPrev[];
 #undef PUSHR
 #undef POPR
 
-#define CHECKSCREEN(x) (((unsigned long)x >= VGABASE) ? TRUE : FALSE)
+#define CHECKSCREEN(x) (((unsigned long)(x) >= VGABASE) ? TRUE : FALSE)
+
 #define SETRWF(f,x) { if(f) x = vgaSetReadWrite(x); }
 #define CHECKRWOF(f,x) { if(f && ((void *)x >= vgaWriteTop)) \
 			  x = vgaReadWriteNext(x); }
 #define CHECKRWUF(f,x) { if(f && ((void *)x < vgaWriteBottom)) \
 			  x = vgaReadWritePrev(x); }
 #define BANK_FLAG(a) \
-  vgaWriteFlag = (((unsigned long)a >= VGABASE) ? TRUE : FALSE); \
+  vgaWriteFlag = CHECKSCREEN((a)); \
   vgaReadFlag = FALSE; 
 
 #define BANK_FLAG_BOTH(a,b) \
-  vgaReadFlag = (((unsigned long)a >= VGABASE) ? TRUE : FALSE); \
-  vgaWriteFlag  = (((unsigned long)b >= VGABASE) ? TRUE : FALSE); 
+  vgaReadFlag = CHECKSCREEN((a)); \
+  vgaWriteFlag  = CHECKSCREEN((b)); 
 
 #define SETR(x)  { if(vgaReadFlag) x = vgaSetRead(x); }
 #define SETW(x)  { if(vgaWriteFlag) x = vgaSetWrite(x); }

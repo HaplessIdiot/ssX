@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.32 1996/11/18 13:10:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.33 1996/11/24 09:54:10 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -321,15 +321,16 @@ s3ImageReadBanked (x, y, w, h, psrc, pwidth, px, py, planemask)
      unsigned long planemask;
 #endif
 {
-   int   j;
+   int   i,j,w0;
    int   offset;
    int   bank;
    char *videobuffer;
+   unsigned long l_planemask;
 
    if (w == 0 || h == 0)
       return;
 
-   if ((planemask & s3BppPMask) != s3BppPMask) {
+   if ((planemask & s3BppPMask) != s3BppPMask && !S3_x64_SERIES(s3ChipId)) {
       s3ImageReadNoMem(x, y, w, h, psrc, pwidth, px, py, planemask);
       return;
    }
@@ -342,11 +343,25 @@ s3ImageReadBanked (x, y, w, h, psrc, pwidth, px, py, planemask)
 #endif
  
    psrc += pwidth * py + px * s3Bpp;
-   offset = (y * s3BppDisplayWidth) + x *s3Bpp;
+   offset = (y * s3BppDisplayWidth) + x * s3Bpp;
    bank = offset / s3BankSize;
    offset %= s3BankSize;
+   if ((planemask & s3BppPMask) != s3BppPMask) {
+      w0 = w;
+      l_planemask = planemask &= s3BppPMask;
+      for (i=s3Bpp; i<sizeof(long); i+=s3Bpp)
+	 l_planemask = (l_planemask << (s3Bpp<<3)) | planemask;
+#ifdef __alpha__
+      if (s3Bpp == 3)
+	 l_planemask |= (1<<(24*(sizeof(long)/3))) - 1;
+#endif
+      planemask |= ~s3BppPMask;
+   }
+   else 
+      w0 = 0;
 
    w *= s3Bpp;
+
    BLOCK_CURSOR;
    WaitIdleEmpty ();
    s3EnableLinear();
@@ -377,6 +392,39 @@ s3ImageReadBanked (x, y, w, h, psrc, pwidth, px, py, planemask)
        /* drop through to the `normal' copy */
       }
       BusToMemBase (psrc, videobuffer, offset, w);
+      if (w0) {
+	 char *p = psrc;
+
+	 switch (s3Bpp) {
+	 case 1: 
+	    for (i=w0; i>=sizeof(long); i-=sizeof(long),p+=sizeof(long))
+	       *((long*)p) &= l_planemask;
+	    for (; i; i--)
+	       *p++ &= planemask;
+	    break;
+	 case 2: 
+	    for (i=w0; i>=sizeof(long); i-=sizeof(long),p+=sizeof(long))
+	       *((long*)p) &= l_planemask;
+	    for (; i; i--,p+=sizeof(short))
+	       *((short*)p) &= planemask;
+	    break;
+	 case 3:  /* XXX depends on byte sex! __BYTE_ORDER == 1234 assumed */
+	    i=w0;
+#ifdef __alpha__
+	    for (; i>=1; i-=2,p+=6)
+	       *((long*)p) &= l_planemask ;
+#endif
+	    for (; i; i--,p+=3) 
+	       *((int*)p) &= planemask;
+	    break;
+	 case 4:
+	    for (i=w0; i>=sizeof(long); i-=sizeof(long),p+=sizeof(long))
+	       *((long*)p) &= l_planemask;
+	    for (; i; i--,p+=sizeof(int))
+	       *((int*)p) &= planemask;
+	    break;
+	 }
+      }
    }
    old_bank = bank;
    s3DisableLinear();

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_cursor.c,v 3.4 1996/09/29 13:39:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_cursor.c,v 3.5 1996/10/17 15:20:43 dawes Exp $ */
 
 /*
  * Hardware cursor handling. Adapted from cirrus/cir_cursor.c and
@@ -111,17 +111,13 @@ CHIPSCursorInit(pm, pScr)
     ctCursorGeneration = serverGeneration;
 
     /* 1kB alignment. Note this allocation is now done in FbInit. */
-#if 0
-    ctCursorAddress = (((vga256InfoRec.videoRam << 10) - ctFrameBufferSize) 
-       - 2048 + 0x3FF) & 0xFFFFFC00;
-#endif
     /* load address to card when cursor is loaded to card */
     if (ctisHiQV32) {
 	outb(0x3D6, 0xA2);
 	outb(0x3D7, (ctCursorAddress >> 8) & 0xFF);
 	outb(0x3D6, 0xA3);
 	outb(0x3D7, (ctCursorAddress >> 16) & 0x3F);
-    } else
+    } else if (!ctisWINGINE) {
       if(!ctUseMMIO) {
 	HW_DEBUG(0xC);
 	outl(DR(0xC), ctCursorAddress);
@@ -129,6 +125,7 @@ CHIPSCursorInit(pm, pScr)
 	HW_DEBUG(0xB3D0);
 	MMIOmeml(0xB3D0) = ctCursorAddress;
       }
+    }
     return TRUE;
 }
 
@@ -215,7 +212,57 @@ CHIPSRealizeCursor(pScr, pCurs)
     wsrc = PixmapBytePad(bits->width, 1);	/* Bytes per line. */
 
     if (!ctisHiQV32) {
+      if (ctisWINGINE) {
 	for (i = 0; i < MAX_CURS; i++) {
+	    for (j = 0; j < MAX_CURS / 8; j++) {
+		unsigned char mask, source;
+
+		if (i < h && j < wsrc) {
+		    mask = *pServMsk++;
+
+		    if (j < MAX_CURS / 8) {
+			*ram++ = ~byte_reversed[mask];	/*chip depend */
+#ifdef DEBUG
+			ErrorF("m:%s\n", hex2bmp(mask, bmp));
+#endif
+		    }
+		} else {
+		    *ram++ = 0xFF;     /*chip depend */
+		}
+	    }
+	    /*
+	     * if we still have more bytes on this line (j < wsrc),
+	     * we have to ignore the rest of the line.
+	     */
+	    while (j++ < wsrc)
+		pServMsk++;
+	  }
+	 for (i = 0; i < MAX_CURS; i++) {
+	    for (j = 0; j < MAX_CURS / 8; j++) {
+		unsigned char mask, source;
+
+		if (i < h && j < wsrc) {
+		    source = *pServSrc++;
+
+		    if (j < MAX_CURS / 8) {
+		      *ram++ = byte_reversed[source];	      /*chip depend */
+#ifdef DEBUG
+			ErrorF("s:%s\n", hex2bmp(source, bmp));
+#endif
+		    }
+		} else {
+		    *ram++ = 0x00;     /*chip depend */
+		}
+	    }
+	    /*
+	     * if we still have more bytes on this line (j < wsrc),
+	     * we have to ignore the rest of the line.
+	     */
+	    while (j++ < wsrc)
+		pServSrc++;
+	  }
+    } else {
+      for (i = 0; i < MAX_CURS; i++) {
 	    for (j = 0; j < MAX_CURS / 8; j++) {
 		unsigned char mask, source;
 
@@ -242,7 +289,8 @@ CHIPSRealizeCursor(pScr, pCurs)
 	     */
 	    while (j++ < wsrc)
 		pServMsk++, pServSrc++;
-	}
+	  }
+    }
     } else {
 	for (i = 0; i < MAX_CURS; i += 2) {
 	    for (j = 0; j < 2; j++) {
@@ -313,7 +361,7 @@ CHIPSUnrealizeCursor(pScr, pCurs)
 	xfree(priv);
 	pCurs->bits->devPriv[pScr->myNum] = 0x0;
     }
-    if (--ctRealizedCursorCount == 0) {		/* count down to erase cursor when exit the server */
+    if ((--ctRealizedCursorCount == 0) && xf86VTSema) {/* count down to erase cursor when exit the server */
 	if (ctisHiQV32) {
 	    outb(0x3D6, 0x20);
 	    while (inb(0x3D7) & 0x1) {
@@ -331,6 +379,7 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
     CursorPtr pCurs;
     int x, y;
 {
+  int i;
     unsigned char *cursor_image;
     int index = pScr->myNum;
 
@@ -347,7 +396,14 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
     }
 
     cursor_image = pCurs->bits->devPriv[index];
-
+    if (ctisWINGINE) {
+      outl(DR(0x8),0x20);
+      for (i=0;i<64;i++)
+	{
+	  outl(DR(0xC),*(unsigned long *)cursor_image);
+	  (cursor_image)+= sizeof (unsigned long);
+	}
+    } else {
     if (ctLinearSupport) {
 #ifdef DEBUG
 	ErrorF("CHIPSLoadCursorToCard: memcpy to 0x%X\n",
@@ -401,6 +457,7 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
 	HW_DEBUG(0xB3D0);
 	MMIOmeml(0xB3D0) = ctCursorAddress;
       }
+  }
 }
 
 /*
@@ -574,6 +631,13 @@ CHIPSRecolorCursor(pScr, pCurs, displayed)
 	outb(0x3C9, (pCurs->foreBlue >> 10) & 0xFF);
 	outb(0x3D6, 0x80);
 	outb(0x3D7, xr80);	       /* Enable normal palette addressing */
+    } else if (ctisWINGINE) {
+	outl(DR(0x9), (((pCurs->backBlue) & 0xff00) >> 8) ||
+	     (((pCurs->backGreen) & 0xff00)) ||
+	     (((pCurs->backRed) & 0xff00) << 8));
+	outl(DR(0xA), (((pCurs->foreBlue) & 0xff00) >> 8) ||
+	     (((pCurs->foreGreen) & 0xff00)) ||
+	     (((pCurs->foreRed) & 0xff00) << 8));
     } else {
 #if 0	/* It appears that the colour is always specified in Hi-Color! */
 	if (xf86weight.green == 5) {

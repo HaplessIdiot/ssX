@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_initacc.c,v 3.0 1996/11/18 13:18:07 dawes Exp $ */
 
 #include "xf86.h"
 #include "vga.h"
@@ -65,11 +65,11 @@ void MGAEngineInit()
         break;
     }
     
-    MGAREG(MGAREG_PITCH) = vga256InfoRec.displayWidth;
-    MGAREG(MGAREG_YDSTORG) = 0;
-    MGAREG(MGAREG_MACCESS) = maccess;
-    MGAREG(MGAREG_PLNWT) = ~0;
-    MGAREG(MGAREG_OPMODE) = 0;
+    OUTREG(MGAREG_PITCH, vga256InfoRec.displayWidth);
+    OUTREG(MGAREG_YDSTORG, 0);
+    OUTREG(MGAREG_MACCESS, maccess);
+    OUTREG(MGAREG_PLNWT, ~0);
+    OUTREG(MGAREG_OPMODE, 0);
 }
 
 /*

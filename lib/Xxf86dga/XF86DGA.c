@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.8 1996/10/18 14:58:10 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.9 1996/11/20 14:00:49 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -620,4 +620,5 @@ int *width, *bank, *ram;
    signal(SIGHUP, XF86cleanup);
    signal(SIGFPE, XF86cleanup);  
 
+   return 1;
 }

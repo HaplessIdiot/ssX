@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapwinS.c,v 3.1 1995/01/28 16:14:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapwinS.c,v 3.2 1996/02/04 09:15:19 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -77,6 +77,6 @@ speedupvga256FillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
     	h = pBox->y2 - pBox->y1;
 	w = pBox->x2 - pBox->x1;
 
-        SpeedUpBox(pdstb, fill1, h, w, widthDst << 2);
+        SpeedUpBox(pdstb, fill1, h, w, widthDst << PWSH);
     }
 }

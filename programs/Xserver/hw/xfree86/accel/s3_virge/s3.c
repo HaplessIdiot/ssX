@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.7 1996/11/18 13:10:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.8 1996/11/24 09:54:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -694,6 +694,8 @@ s3Probe()
    OFLG_SET(OPTION_SLOW_VRAM, &validOptions);
    OFLG_SET(OPTION_SLOW_DRAM_REFRESH, &validOptions);
    OFLG_SET(OPTION_FAST_VRAM, &validOptions);
+   OFLG_SET(OPTION_FPM_VRAM, &validOptions);
+   OFLG_SET(OPTION_EDO_VRAM, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
 
 #ifdef PC98
@@ -877,9 +879,10 @@ s3Probe()
       if (defaultColorVisualClass < 0)
 	 defaultColorVisualClass = s3InfoRec.defaultVisual;
       break;
-#if 0
+#if 1
    case 24:
-#ifdef NOT_YET
+#if 1
+/* #ifdef NOT_YET */
       s3InfoRec.depth = 24;
       s3InfoRec.bitsPerPixel = 32; /* Use packed 24 bpp (RGB) but this
 				      should be transparant for clients */

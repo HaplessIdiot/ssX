@@ -73,7 +73,7 @@ main()
     register char c;
     int first;
     int best_max_rehash;
-    int best_z;
+    int best_z = 0;
     int num_found;
     KeySym val;
 

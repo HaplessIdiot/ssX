@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.30 1996/11/18 13:11:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.31 1996/11/24 09:55:50 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -617,6 +617,7 @@ struct pci_vendor_device {
         { 0x1142, "Alliance", {
                             { 0x3210, "ProMotion 6410", NF },
                             { 0x6422, "ProMotion 6422", NF },
+                            { 0x6424, "ProMotion AT24", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x114A, "VMIC", {
                             { 0x0000, (char *)NULL, NF } } },

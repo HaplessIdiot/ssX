@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.105 1996/11/18 13:11:02 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.106 1996/11/24 09:54:54 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1124,8 +1124,18 @@ xf86Config (vtopen)
   xf86ScreensOpen = TRUE;
   for ( i=0; i < xf86MaxScreens; i++ )
     if (xf86Screens[i] && xf86Screens[i]->configured &&
-	(xf86Screens[i]->configured = (xf86Screens[i]->Probe)()))
+	(xf86Screens[i]->configured = (xf86Screens[i]->Probe)())){
+      /* if driver doesn't report error do it here */
+      if(xf86DCGetToken(xf86Screens[i]->DCConfig,NULL,DeviceTab) != EOF){
+	xf86DCConfigError("Unknown device section keyword");
+	FatalError("\n");
+      }
+      if(xf86Screens[i]->DCOptions){
+	xf86DCGetOption(xf86Screens[i]->DCOptions,NULL);
+	FatalError("\n");
+      }
       xf86InitViewport(xf86Screens[i]);
+    }
 
   /*
    * Now sort the drivers to match the order of the ScreenNumbers
@@ -2249,8 +2259,10 @@ configMonitorSection()
       monp->Last = pNew; /* GJA */
       break;
     case BANDWIDTH:
+      /* This should be completely removed at some point */
       if ((token = xf86GetToken(NULL)) != NUMBER)
         xf86ConfigError("Bandwidth number expected");
+#if 0
       monp->bandwidth = val.realnum;
       /* Handle optional scaler */
       token = xf86GetToken(UnitTab);
@@ -2261,6 +2273,7 @@ configMonitorSection()
       default: multiplier = 1.0; pushToken = token;
       }
       monp->bandwidth *= multiplier;
+#endif
       break;
     case HORIZSYNC:
       if ((token = xf86GetToken(NULL)) != NUMBER)
@@ -3634,7 +3647,7 @@ static char *xf86DCSaveLine(DCPointer,token)
     DCerr = 0;         /* and subsequent STRING, DASH, NUMBER, COMMA */
     break;
   default:             /* set to complain if a valid token is        */
-    DCerr = 1;         /* an followed by unwanted STRING etc.        */
+    DCerr = 1;         /* followed by an unwanted STRING etc.        */
   }
   return(DCPointer);      
 }

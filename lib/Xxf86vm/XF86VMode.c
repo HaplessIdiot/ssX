@@ -1,5 +1,5 @@
 /* $XConsortium: XF86VMode.c /main/2 1995/11/14 18:17:58 kaleb $ */
-/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.18 1996/10/03 08:29:37 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.19 1996/10/16 14:30:54 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -522,7 +522,9 @@ Bool XF86VidModeGetMonitor(dpy, screen, monitor)
     }
     monitor->nhsync = rep.nhsync;
     monitor->nvsync = rep.nvsync;
+#if 0
     monitor->bandwidth = (float)rep.bandwidth / 1e6;
+#endif
     if (rep.vendorLength) {
 	if (!(monitor->vendor = (char *)Xcalloc(rep.vendorLength + 1, 1))) {
 	    _XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +

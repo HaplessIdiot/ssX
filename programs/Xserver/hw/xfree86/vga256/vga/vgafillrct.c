@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgafillrct.c,v 3.1 1995/01/28 16:14:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgafillrct.c,v 3.2 1996/02/04 09:15:07 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -144,7 +144,7 @@ vga256PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 		BoxFill = vga256FillRectTile32General;
 	}
 	break;
-#if (PPW == 4)
+#if PSZ == 8
     case FillStippled:
 	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
 							pRotatedPixmap)

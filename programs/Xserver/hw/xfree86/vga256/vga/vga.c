@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.62 1996/11/18 13:21:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.63 1996/11/24 09:56:56 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -90,9 +90,15 @@ void (*ourmfbDoBitbltCopyInverted)();
 #endif
 #else
 unsigned long useSpeedUp = 0;
+#if !defined(__alpha__)
 extern void speedupvga256TEGlyphBlt8();
 extern void speedupvga2568FillRectOpaqueStippled32();
 extern void speedupvga2568FillRectTransparentStippled32();
+#else /* !__alpha__ */
+extern void vga256TEGlyphBlt8();
+extern void vga2568FillRectOpaqueStippled32();
+extern void vga2568FillRectTransparentStippled32();
+#endif /* !__alpha__ */
 extern void OneBankvgaBitBlt();
 #endif /* MONOVGA */
 #endif /* !XF86VGA16 */
@@ -192,8 +198,8 @@ ScrnInfoRec vga256InfoRec = {
   0,			/* int offTime */
   -1,			/* int s3BlankDelay */
   0,			/* int textClockFreq */
-  NULL,                 /* char* DCConfig */
-  NULL,                 /* char* DCOptions */
+  NULL,			/* char* DCConfig */
+  NULL,			/* char* DCOptions */
 #ifdef XFreeXDGA
   0,                    /* int directMode */
   NULL,                 /* Set Vid Page */
@@ -614,10 +620,10 @@ vgaProbe()
 	vgaSegmentSize = Drivers[i]->ChipSegmentSize;
 	vgaSegmentShift = Drivers[i]->ChipSegmentShift;
 	vgaSegmentMask = Drivers[i]->ChipSegmentMask;
-	vgaReadBottom = (pointer)Drivers[i]->ChipReadBottom;
-	vgaReadTop = (pointer)Drivers[i]->ChipReadTop;
-	vgaWriteBottom = (pointer)Drivers[i]->ChipWriteBottom;
-	vgaWriteTop = (pointer)Drivers[i]->ChipWriteTop;
+	vgaReadBottom = (pointer)((unsigned long)Drivers[i]->ChipReadBottom);
+	vgaReadTop = (pointer)((unsigned long)Drivers[i]->ChipReadTop);
+	vgaWriteBottom = (pointer)((unsigned long)Drivers[i]->ChipWriteBottom);
+	vgaWriteTop = (pointer)((unsigned long)Drivers[i]->ChipWriteTop);
 	vgaUse2Banks = Drivers[i]->ChipUse2Banks;
 	vgaInterlaceType = Drivers[i]->ChipInterlaceType;
 	vgaOptionFlags = Drivers[i]->ChipOptionFlags;
@@ -960,17 +966,30 @@ vgaProbe()
         /* We deal with the generic speedups here */
 	if (useSpeedUp & SPEEDUP_TEGBLT8)
 	{
+#if !defined(__alpha__)
 	  vga256LowlevFuncs.teGlyphBlt8 = speedupvga256TEGlyphBlt8;
 	  vga256TEOps1Rect.ImageGlyphBlt = speedupvga256TEGlyphBlt8;
 	  vga256TEOps.ImageGlyphBlt = speedupvga256TEGlyphBlt8;
+#else /* !__alpha__ */
+	  vga256LowlevFuncs.teGlyphBlt8 = vga256TEGlyphBlt8;
+	  vga256TEOps1Rect.ImageGlyphBlt = vga256TEGlyphBlt8;
+	  vga256TEOps.ImageGlyphBlt = vga256TEGlyphBlt8;
+#endif /* !__alpha__ */
 	}
 
 	if (useSpeedUp & SPEEDUP_RECTSTIP)
 	{
+#if !defined(__alpha__)
 	  vga256LowlevFuncs.fillRectOpaqueStippled32 = 
 	    speedupvga2568FillRectOpaqueStippled32;
 	  vga256LowlevFuncs.fillRectTransparentStippled32 = 
 	    speedupvga2568FillRectTransparentStippled32;
+#else /* !__alpha__ */
+	  vga256LowlevFuncs.fillRectOpaqueStippled32 = 
+	    vga2568FillRectOpaqueStippled32;
+	  vga256LowlevFuncs.fillRectTransparentStippled32 = 
+	    vga2568FillRectTransparentStippled32;
+#endif /* !__alpha__ */
 	}
 
 	if (!vgaUse2Banks)
@@ -1117,7 +1136,8 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 #endif /* PC98_WAB || PC98_WABEP */
     if (vgaUseLinearAddressing)
         vgaLinearBase = xf86MapVidMem(scr_index, LINEAR_REGION,
-        			      (pointer)vgaPhysLinearBase,
+        			      (pointer)
+				       ((unsigned long)vgaPhysLinearBase),
         			      vgaLinearSize);
 
 #ifdef MONOVGA
