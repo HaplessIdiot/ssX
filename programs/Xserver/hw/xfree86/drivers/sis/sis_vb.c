@@ -533,7 +533,7 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
     }
 
     if(pSiS->VBFlags & TV_YPBPR) {
-       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected YPbPr TV (%s)\n",
+       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected YPbPr TV (by default %s)\n",
          (pSiS->VBFlags & TV_YPBPR525I) ? "480i" :
 	     ((pSiS->VBFlags & TV_YPBPR525P) ? "480p" :
 	        ((pSiS->VBFlags & TV_YPBPR750P) ? "720p" : "1080i")));

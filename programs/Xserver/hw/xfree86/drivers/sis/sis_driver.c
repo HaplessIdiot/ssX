@@ -11654,7 +11654,8 @@ SiS_GetSetModeID(ScrnInfoPtr pScrn, unsigned char id)
 unsigned char
 SiS_GetSetBIOSScratch(ScrnInfoPtr pScrn, USHORT offset, unsigned char value)
 {
-    unsigned char ret;
+    unsigned char ret = 0;
+#if (defined(i386) || defined(__i386) || defined(__i386__) || defined(__AMD64__))
     unsigned char *base;
 
     base = xf86MapVidMem(pScrn->scrnIndex, VIDMEM_MMIO, 0, 0x2000);
@@ -11670,7 +11671,7 @@ SiS_GetSetBIOSScratch(ScrnInfoPtr pScrn, USHORT offset, unsigned char value)
        *(base + offset) = value;
 
     xf86UnMapVidMem(pScrn->scrnIndex, base, 0x2000);
-
+#endif
     return ret;
 }
 
