@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.42 1998/12/13 10:33:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.43 1998/12/20 11:57:43 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -3232,7 +3232,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!miCreateDefColormap(pScreen))
 	return FALSE;
     
-    if (vgaHWHandleColormaps(pScreen))
+    if (!vgaHWHandleColormaps(pScreen))
 	return FALSE;
 
     if (pScrn->bitsPerPixel <= 8)

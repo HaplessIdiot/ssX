@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.34 1998/11/29 10:50:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.35 1998/12/13 05:32:48 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -814,8 +814,11 @@ MGA3026LoadCursorImage(
     /* reset cursor RAM load address A7..A0 */
     outTi3026dreg(TVP3026_WADR_PAL, 0x00); 
 
-    while(i--)
+    while(i--) {
+	while (INREG8(0x1FDA) & 0x01);
+	while (!(INREG8(0x1FDA) & 0x01));
         outTi3026dreg(TVP3026_CUR_RAM, *(src++));    
+    }
 }
 
 

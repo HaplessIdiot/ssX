@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.33 1998/12/06 06:08:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.34 1998/12/13 10:33:45 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -383,6 +383,12 @@ static const char *racSymbols[] = {
     NULL
 };
 
+static const char *i2cSymbols[] = {
+    "xf86I2CBusInit",
+    "xf86CreateI2CBusRec",
+    NULL
+};
+
 #ifdef XFree86LOADER
 
 MODULEINITPROTO(tridentModuleInit);
@@ -424,7 +430,8 @@ tridentSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     if (!setupDone) {
 	setupDone = TRUE;
 	xf86AddDriver(&TRIDENT, module, 0);
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, racSymbols, NULL);
+	LoaderRefSymLists(vgahwSymbols, fbSymbols, racSymbols, i2cSymbols,
+			  NULL);
 	return (pointer)TRUE;
     } 
 
@@ -676,7 +683,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     TRIDENTPtr pTrident;
     MessageType from;
     unsigned char videoram;
-    char *ramtype, *chipset;
+    char *ramtype = NULL, *chipset = NULL;
     int vgaIOBase;
     float mclk;
     int i,j;
@@ -1029,8 +1036,14 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->Chipset = IMAGE985;
 	    break;
     }
+    if (!chipset) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No support for \"%s\"\n",
+			pScrn->chipset);
+	return FALSE;
+    }
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Found %s chip\n", chipset);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "RAM type is %s\n", ramtype);
+    if (ramtype)
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "RAM type is %s\n", ramtype);
 
     pTrident->PciTag = pciTag(pTrident->PciInfo->bus, pTrident->PciInfo->device,
 			  pTrident->PciInfo->func);
@@ -1275,6 +1288,13 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     xf86LoaderReqSymLists(racSymbols, NULL);
+
+    if (!xf86LoadSubModule(pScrn, "i2c")) {
+	TRIDENTFreeRec(pScrn);
+	return FALSE;
+    }
+
+    xf86LoaderReqSymLists(i2cSymbols, NULL);
 
     /* Load XAA if needed */
     if (!pTrident->NoAccel) {
