@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.c,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.c,v 1.2 2002/04/03 00:06:32 torrey Exp $ */
 
 #include "rootlessCommon.h"
 
@@ -80,7 +80,7 @@ void RootlessStartDrawing(WindowPtr pWindow)
                                    winRec->frame.bytesPerRow,
                                    winRec->frame.pixelData);
         SetPixmapBaseToScreen(winRec->pixmap,
-                              winRec->frame.x, winRec->frame.y);
+                              top->origin.x, top->origin.y);
         winRec->drawing = TRUE;
     }
 
@@ -155,7 +155,7 @@ void UpdatePixmap(WindowPtr pWindow)
                                          winRec->frame.bitsPerPixel,
                                          winRec->frame.bytesPerRow,
                                          winRec->frame.pixelData);
-            SetPixmapBaseToScreen(pix, winRec->frame.x, winRec->frame.y);
+            SetPixmapBaseToScreen(pix, pWindow->origin.x, pWindow->origin.y);
             pScreen->SetWindowPixmap(pWindow, pix);
             winRec->pixmap = pix;
         } else {
@@ -168,7 +168,7 @@ void UpdatePixmap(WindowPtr pWindow)
                                         winRec->frame.bitsPerPixel,
                                         winRec->frame.bytesPerRow,
                                         winRec->frame.pixelData);
-            SetPixmapBaseToScreen(pix, winRec->frame.x, winRec->frame.y);
+            SetPixmapBaseToScreen(pix, top->origin.x, top->origin.y);
         }
     } else {
         // This is not the top window. Point to the parent's pixmap.

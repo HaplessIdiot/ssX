@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.2 2002/04/03 00:06:32 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -395,7 +395,7 @@ RootlessCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
  * Window resize procedures
  */
 
-// Prepare to resize a window.
+// Prepare to resize a top-level window.
 // The old window's pixels are saved and the implementation is told
 // to change the window size.
 // (x,y,w,h) is outer frame of window (outside border)
@@ -427,7 +427,7 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
         GetScratchPixmapHeader(pScreen, winRec->frame.w, winRec->frame.h,
                                winRec->frame.depth, winRec->frame.bitsPerPixel,
                                winRec->frame.bytesPerRow, gResizeDeathBits);
-    SetPixmapBaseToScreen(gResizeDeathPix, winRec->frame.x, winRec->frame.y);
+    SetPixmapBaseToScreen(gResizeDeathPix, pWin->origin.x, pWin->origin.y);
     RootlessStopDrawing(pWin);
 
     winRec->frame.x = newX;
