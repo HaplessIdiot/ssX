@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.4 2001/06/15 21:22:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.5 2001/10/01 13:44:09 eich Exp $ */
 
 #include "Xv.h"
 #include "dix.h"
@@ -115,8 +115,6 @@ static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
    {XvSettable | XvGettable, -180, 180, "XV_HUE"}
 };
 
-#define NUM_IMAGES 7
-
 #define FOURCC_RV16	0x36315652
 #define FOURCC_RV15	0x35315652
 #define FOURCC_Y211	0x31313259
@@ -132,7 +130,7 @@ static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
  */
   
 
-static XF86ImageRec Images[NUM_IMAGES] =
+static XF86ImageRec Images[] =
 {
    XVIMAGE_YUY2,
    XVIMAGE_YV12,
@@ -189,6 +187,8 @@ static XF86ImageRec Images[NUM_IMAGES] =
 	XvTopToBottom
    }
 };
+
+#define NUM_IMAGES (sizeof(Images)/sizeof(Images[0]))
 
 typedef struct {
    int		brightness;	/* -128 .. 127 */
