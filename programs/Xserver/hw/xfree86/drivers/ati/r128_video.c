@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.12 2000/12/06 21:34:49 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.13 2000/12/07 15:43:44 tsi Exp $ */
 
 #include "r128.h"
 #include "r128_reg.h"
@@ -549,20 +549,20 @@ R128AllocateMemory(
 
    pScreen = screenInfo.screens[pScrn->scrnIndex];
 
-   new_linear = xf86AllocateOffscreenLinear(pScreen, size, 8,
+   new_linear = xf86AllocateOffscreenLinear(pScreen, size, 16,
 						NULL, NULL, NULL);
 
    if(!new_linear) {
 	int max_size;
 
-	xf86QueryLargestOffscreenLinear(pScreen, &max_size, 8,
+	xf86QueryLargestOffscreenLinear(pScreen, &max_size, 16,
 						PRIORITY_EXTREME);
 
 	if(max_size < size)
 	   return NULL;
 
 	xf86PurgeUnlockedOffscreenAreas(pScreen);
-	new_linear = xf86AllocateOffscreenLinear(pScreen, size, 8,
+	new_linear = xf86AllocateOffscreenLinear(pScreen, size, 16,
 						NULL, NULL, NULL);
    }
 
