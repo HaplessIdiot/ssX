@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.4 1998/06/28 12:56:17 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.5 1998/06/28 13:04:20 dawes Exp $ */
 
 #if DO_SYSLOG
 #include <sys/types.h>
@@ -213,7 +213,8 @@ XawParseParamsString(String name)
       char *arg, *val;
       XawArgVal *xaw_arg;
 
-      for (; (tok = strsep(&params, "&")) != NULL;)
+      tok = strtok(params, "&");
+      for (; tok != NULL;)
 	{
 	  if (!tok[0])
 	    ;
@@ -248,6 +249,7 @@ XawParseParamsString(String name)
 		}
 	      xaw_params->args[xaw_params->num_args - 1] = xaw_arg;
 	    }
+	  tok = strtok(NULL, "&");
 	}
     }
 
