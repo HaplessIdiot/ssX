@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.64 2000/05/23 04:47:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.65 2000/06/17 00:03:42 martin Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -391,7 +391,7 @@ xf86open(const char *path, int flags, ...)
 
     va_start(ap, flags);
     flags = xfToOsOpenFlags(flags);
-    if (flags & XF86_O_CREAT) {
+    if (flags & O_CREAT) {
 	mode_t mode = va_arg(ap, mode_t);
 	fd = open(path, flags, mode);
     } else {
