@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
 \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.16 2002/01/30 01:35:03 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.17 2002/02/05 05:24:18 mvojkovi Exp $ */
 #ifndef __RIVA_HW_H__
 #define __RIVA_HW_H__
 #define RIVA_SW_VERSION 0x00010003
@@ -318,6 +318,7 @@ typedef struct _riva_hw_inst
     U032 FifoEmptyCount;
     U032 CursorStart;
     Bool flatPanel;
+    Bool twoHeads;
     /*
      * Non-FIFO registers.
      */

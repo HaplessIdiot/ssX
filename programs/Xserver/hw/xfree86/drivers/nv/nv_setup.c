@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.12 2002/01/30 01:35:03 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.13 2002/02/05 05:24:18 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -217,9 +217,6 @@ NVIsSecond (ScrnInfoPtr pScrn)
                    "Forcing usage of CRTC %i\n", pNv->forceCRTC);
         pNv->SecondCRTC = pNv->forceCRTC;
     }
-
-ErrorF("0x0000052C = 0x%x\n", pNv->riva.PRAMDAC0[0x0000052C/4]);
-ErrorF("0x0000252C = 0x%x\n", pNv->riva.PRAMDAC0[0x0000252C/4]);
 }
 
 static void
