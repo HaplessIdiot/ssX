@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.59 2002/05/16 14:54:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.60 2002/07/24 01:47:24 tsi Exp $ */
 
 #include "apm.h"
 #include "xf86cmap.h"
@@ -52,7 +52,7 @@ static void	ApmProbeDDC(ScrnInfoPtr pScrn, int index);
 
 
 int ApmPixmapIndex = -1;
-static int ApmGeneration = -1;
+static unsigned long ApmGeneration = 0;
 
 DriverRec APM = {
 	VERSION,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_memory.c,v 1.1 2002/09/11 00:29:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_memory.c,v 1.2 2002/09/12 04:08:25 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -1076,7 +1076,7 @@ MakeTiles(ScrnInfoPtr pScrn, const I830MemRange *pMem)
    I830Ptr pI830 = I830PTR(pScrn);
    int pitch, ntiles, i;
    static int nextTile = 0;
-   static int tileGeneration = -1;
+   static unsigned long tileGeneration = 0;
 
    DPRINTF(PFX, "MakeTiles: start 0x%08x, size %d kByte, align 0x%08x\n",
 	   pMem->Start, pMem->Size, pMem->Alignment);

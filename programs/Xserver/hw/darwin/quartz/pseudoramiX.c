@@ -32,7 +32,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/pseudoramiX.c,v 1.3 2002/01/17 02:44:26 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/pseudoramiX.c,v 1.1 2002/03/28 02:21:18 torrey Exp $ */
 
 #include "pseudoramiX.h"
 
@@ -73,7 +73,7 @@ typedef struct {
 static PseudoramiXScreenRec *pseudoramiXScreens = NULL;
 static int pseudoramiXScreensAllocated = 0;
 static int pseudoramiXNumScreens = 0;
-static int pseudoramiXGeneration = -1;
+static unsigned long pseudoramiXGeneration = 0;
 
 
 // Add a PseudoramiX screen.
