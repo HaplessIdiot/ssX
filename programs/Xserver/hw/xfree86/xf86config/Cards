@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.69 2000/03/31 20:13:40 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.70 2000/10/20 14:59:09 alanh Exp $
 
 # VGA
 
@@ -2404,35 +2404,29 @@ UNSUPPORTED
 
 # Number 9 I128
 
-NAME Number Nine Imagine I-128 (2-8MB)
+NAME Number Nine Imagine I-128
 CHIPSET I128
 SERVER I128
-DRIVER vga
-UNSUPPORTED
+DRIVER i128
+NOCLOCKPROBE
 
-NAME Number Nine Imagine I-128 Series 2 (2-4MB)
+NAME Number Nine Imagine I-128 Series 2
 CHIPSET I128
 SERVER I128
-DRIVER vga
-UNSUPPORTED
+DRIVER i128
+NOCLOCKPROBE
 
-NAME Revolution 3D (T2R)
+NAME Number Nine Revolution 3D (T2R)
 CHIPSET I128
 SERVER I128
-DRIVER vga
-UNSUPPORTED
+DRIVER i128
+NOCLOCKPROBE
 
-NAME Number Nine Revolution 3D AGP (4-8MB SGRAM)
+NAME Number Nine Imagine-128 Revolution IV (T2R4)
 CHIPSET I128
 SERVER I128
-DRIVER vga
-UNSUPPORTED
-
-NAME Number Nine Imagine-128-T2R
-CHIPSET I128
-SERVER I128
-DRIVER vga
-UNSUPPORTED
+DRIVER i128
+NOCLOCKPROBE
 
 # Matrox
 
