@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_line.c,v 3.4 1996/01/05 06:29:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_line.c,v 3.5 1996/09/29 13:39:50 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -584,11 +584,11 @@ CirrusMMIOLineSS (pDrawable, pGC, mode, npt, pptInit)
 		unsigned long mask;
 		unsigned long scrbits;
 
+		do { BLTBUSY(busy); } while (busy);
 		if (vgaUseLinearAddressing && alu == GXcopy)
 		    *((unsigned char *)vgaLinearBase + y2 * destpitch + x2) =
 		        xor;
 		else {
-		    do { BLTBUSY(busy); } while (busy);
 		    SETDESTADDR(y2 * destpitch + x2);
 		    SETWIDTH(1);
 		    SETHEIGHT(1);

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/etc/Imakefile,v 3.11 1996/08/25 14:12:55 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/etc/Imakefile,v 3.12 1996/09/15 11:37:11 dawes Exp $
 
 
 
@@ -134,6 +134,7 @@ LinkFile(xterm.terminfo,$(PROGRAMSRC)/xterm/terminfo)
 LinkSourceFile(2key.c,$(XF86SRC)/etc)
 LinkSourceFile(BM-Lynx.shar,$(XF86SRC)/etc)
 LinkSourceFile(XdmConf.svr4,$(XF86SRC)/etc)
+LinkSourceFile(apNetBSD.shar,$(XF86SRC)/etc)
 LinkSourceFile(apSolx86.shar,$(XF86SRC)/etc)
 LinkSourceFile(dmmap.shar,$(XF86SRC)/etc)
 LinkSourceFile(et4000clock.c,$(XF86SRC)/etc)

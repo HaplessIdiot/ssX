@@ -1,11 +1,11 @@
 XCOMM $XConsortium: Imakefile /main/42 1996/01/15 19:47:40 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.8 1996/01/16 15:07:31 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.9 1996/01/17 12:47:45 dawes Exp $
 #include <Server.tmpl>
 
 SRCS =  mivaltree.c mipolyseg.c mipolyrect.c \
 	mipoly.c mipolycon.c mipolygen.c mipolyutil.c \
 	mifillrct.c miwideline.c mispans.c \
- 	miarc.c mizerarc.c mifillarc.c \
+	miarc.c mizerarc.c mifillarc.c \
 	miwindow.c micursor.c miregion.c \
 	mipolytext.c mibitblt.c mipolypnt.c mipushpxl.c \
 	miexpose.c miglblt.c mizerline.c mifpolycon.c \
@@ -31,6 +31,13 @@ EXT_DEFINES = ExtensionDefines -UXINPUT -UXF86VIDMODE -UXFreeXDGA -UXF86MISC
 #else
 EXT_DEFINES = ExtensionDefines
 #endif
+#if PexDynamicModule
+PEX_MODULE_DEFINES = -DPEX_MODULE
+#endif
+#if XieDynamicModule
+XIE_MODULE_DEFINES = -DXIE_MODULE
+#endif
+EXT_MODULES_DEFINES = $(PEX_MODULE_DEFINES) $(XIE_MODULE_DEFINES)
 
 INCLUDES = -I. -I../include -I$(INCLUDESRC) -I$(FONTINCSRC)
 LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln

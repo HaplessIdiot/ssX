@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.16 1996/09/24 13:55:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.17 1996/09/29 13:38:56 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -153,6 +153,7 @@
 extern vgaHWCursorRec vgaHWCursor;
 extern GCOps cfb16TEOps1Rect, cfb16TEOps, cfb16NonTEOps1Rect, cfb16NonTEOps;
 extern GCOps cfb24TEOps1Rect, cfb24TEOps, cfb24NonTEOps1Rect, cfb24NonTEOps;
+extern GCOps cfb32TEOps1Rect, cfb32TEOps, cfb32NonTEOps1Rect, cfb32NonTEOps;
 
 
 /*
@@ -744,7 +745,6 @@ ArkProbe()
 				else	/* 110 MHz rated. */
 					maxclock16bpp = 55000;
 			maxclock24bpp = maxclock8bpp / 3;
-			maxclock32bpp = maxclock8bpp / 4;
 			break;
 		}
 		/* ARK2000PV, 16-bit path to RAMDAC. */
@@ -925,8 +925,6 @@ ArkProbe()
 			maxclock24bpp *= 3;
 		}
 		if (vgaBitsPerPixel == 32) {
-			/* This would apply to the Hercules Stingray Pro/V */
-			/* with ARK1000PV + ZoomDac. */
 			ARK.ChipClockScaleFactor = 4;
 			maxclock32bpp *= 4;
 		}
@@ -1098,7 +1096,12 @@ static void ArkChangeModeTimings() {
 						vga256InfoRec.chipset);
 					changed = TRUE;
 				}
-				new_value = mode->HDisplay + 16;
+				if (ARK.ChipClockScaleFactor == 2 &&
+				vga256InfoRec.clock[mode->Clock] > 60000)
+					new_value = mode->HDisplay + 12;
+				else
+					new_value = mode->HDisplay + 16 /
+						ARK.ChipClockScaleFactor;
 				ErrorF("%s %s: %s: HSyncStart of mode \"%s\" "
 					"modified from %d to %d\n",
 					XCONFIG_PROBED, vga256InfoRec.name,
@@ -1211,10 +1214,10 @@ ArkFbInit()
 			cfb24NonTEOps.CopyArea = Ark24CopyArea;
 		}
 		if (vgaBitsPerPixel == 32) {
-			cfb24TEOps1Rect.CopyArea = Ark32CopyArea;
-			cfb24NonTEOps1Rect.CopyArea = Ark32CopyArea;
-			cfb24TEOps.CopyArea = Ark32CopyArea;
-			cfb24NonTEOps.CopyArea = Ark32CopyArea;
+			cfb32TEOps1Rect.CopyArea = Ark32CopyArea;
+			cfb32NonTEOps1Rect.CopyArea = Ark32CopyArea;
+			cfb32TEOps.CopyArea = Ark32CopyArea;
+			cfb32NonTEOps.CopyArea = Ark32CopyArea;
 		}
 		/* CopyWindow is hooked in the "ScreenInit" hook. */
 	}
@@ -1781,15 +1784,15 @@ DisplayModePtr mode;
 		int threshold;
 		unsigned char val;
 		int bandwidthused, percentused;
-		bandwidthused = vga256InfoRec.clock[mode->Clock] *
-			vgaBitsPerPixel / 8;
+		bandwidthused = (vga256InfoRec.clock[mode->Clock] /
+			ARK.ChipClockScaleFactor) * vgaBitsPerPixel / 8;
 		percentused = bandwidthused * 100 / arkDRAMBandwidth;
 		val = rdinx(0x3C4, 0x18);
 		if (arkChip == ARK1000PV) {
 			threshold = 4;	/* A guess. */
 			if (OFLG_ISSET(OPTION_FIFO_CONSERV,
 			&vga256InfoRec.options))
-				threshold = 6;
+				threshold = 2;
 			val |= 0x08;	/* Enable full FIFO (8-deep). */
 			val &= ~0x07;
 			val |= threshold;
@@ -1797,12 +1800,12 @@ DisplayModePtr mode;
 		if (arkChip == ARK2000PV || arkChip == ARK2000MT) {
 			threshold = 12;	/* A guess. */
 			if (percentused >= 45)
-				threshold = 20;
+				threshold = 8;
 			if (percentused >= 70)
-				threshold = 24;
+				threshold = 4;
 			if (OFLG_ISSET(OPTION_FIFO_CONSERV,
 			&vga256InfoRec.options))
-				threshold = 24;
+				threshold = 4;
 			val &= 0x40;
 			val |= 0x10;	/* 32-deep FIFO. */
 			val |= (threshold & 0x0E) >> 1;
@@ -2008,6 +2011,8 @@ int x, y;
 		Base >>= 3;
 	else
 		Base >>= 2;
+	if (vgaBitsPerPixel == 24)
+		Base -= Base % 3;
 	/*
 	 * These are the generic starting address registers.
 	 */

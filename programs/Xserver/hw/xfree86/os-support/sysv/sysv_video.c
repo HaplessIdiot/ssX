@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.6 1996/02/04 09:10:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.7 1996/03/03 03:57:32 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -98,10 +98,10 @@ unsigned long Size;
 	int fd;
 
 #if defined(SVR4)
-	if ((fd = open("/dev/pmem", O_RDWR)) < 0)
+	if ((fd = open(DEV_MEM, O_RDWR)) < 0)
 	{
-		FatalError("xf86MapVidMem: failed to open /dev/pmem (%s)\n",
-			   strerror(errno));
+		FatalError("xf86MapVidMem: failed to open %s (%s)\n",
+			   DEV_MEM, strerror(errno));
 	}
 	base = (pointer)mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
 			     MAP_SHARED, fd, (off_t)Base);

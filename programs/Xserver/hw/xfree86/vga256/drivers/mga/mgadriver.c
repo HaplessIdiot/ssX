@@ -26,9 +26,13 @@
  *		David Dawes
  *			dawes@XFree86.Org
  *		some cleanups, and fixed some problems
+ *
+ *		Andrew E. Mileski
+ *			aem@ott.hookup.net
+ *		RAMDAC timing stuff
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.0 1996/09/26 14:00:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.1 1996/09/29 13:40:25 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -75,18 +79,18 @@ static unsigned char MGADACregs[] = {
 };
 
 static unsigned char MGADACbpp8[] = {
-	0x06, 0x80, 0x4C, 0x25, 0x00, 0x00, 0x00, 0x00, 0x1E, 0xFF,
-	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00
+	0x06, 0x80,    0, 0x25, 0x00, 0x00, 0x00, 0x00, 0x1E, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,    0, 0x00
 };
 
 static unsigned char MGADACbpp16[] = {
-	0x07, 0x05, 0x54, 0x15, 0x00, 0x00, 0x20, 0x00, 0x1E, 0xFF,
-	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,	0x00, 0x00
+	0x07, 0x05,    0, 0x15, 0x00, 0x00, 0x20, 0x00, 0x1E, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,	   0, 0x00
 };
 
 static unsigned char MGADACbpp32[] = {
-	0x07, 0x06, 0x5C, 0x05, 0x00, 0x00, 0x20, 0x00, 0x1E, 0xFF,
-	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,	0x00, 0x00
+	0x07, 0x06,    0, 0x05, 0x00, 0x00, 0x20, 0x00, 0x1E, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,	   0, 0x00
 };
 
 typedef struct {
@@ -399,75 +403,112 @@ inTi3026(reg)
 }
 
 /*
- * This is a Ti3026 SetClock function based on S3 driver
+ * MGATi3026SetClock - Set the pixel clock PLL.
+ *
+ * DESCRIPTION
+ *   For more information, refer to the Texas Instruments
+ *   "TVP3026 Data Manual" (document SLAS098B).
+ *     Section 2.4.1 "Pixel Clock PLL"
+ *     Appendix A "Frequency Synthesis PLL Register Settings"
+ *
+ * PARAMETERS
+ *   f_pll		IN	Pixel clock PLL frequencly in kHz.
+ *   bpp		IN	Bits per pixel.
+ *
+ * CHANGES
+ *   October 1, 1996 - [aem] Andrew E. Mileski
+ *   Optimized the m & n picking algorithm. Added DACSpeed line detection.
+ *   Low speed pixel clock fix (per the docs). Documented what I understand.
+ *
+ *   ?????, ??, ???? - [???] ????????????
+ *   Based on the TVP3026 code in the S3 driver.
  */
- 
-#define	TI_REF_FREQ	14.31818
-#define	TI_FREQ_MIN	13767		/* ~110000 / 8 */
-#define	TI_FREQ_MAX	175000		/* 220000 is not a good idea for slower dacs */
 
-/* XXX ajv - TI_FREQ_MAX should be picked up either by DACSpeed or automatically */
+/*
+ * It is _OKAY_ to have TI_MAX_VCO_FREQ > chip speed,
+ * as long as the final output clock f_pll <= chip speed.
+ * The VCO drives a divider (which can handle it), but
+ * the output clock drives most of the chip.
+ * Read the docs very carefully - and trust me :-) [aem]
+ *
+ * The following values are all in kHz
+ */
+#define TI_MAX_VCO_FREQ	250000
+#define TI_MIN_VCO_FREQ	110000
+#define TI_MAX_CLOCK	135000
+#define TI_REF_FREQ	14318.18
 
 static void 
-MGATi3026SetClock(freq, bpp)
-	long freq;
-	int bpp;
+MGATi3026SetClock( f_pll, bpp )
+	long	f_pll;
+	int	bpp;
 {
-	double ffreq;
+	/* f_vco = 8 * TI_REF_FREQ * ( 65 - m ) / ( 65 - n ) */
+	double f_vco;
 	int n, p, m;
+
+	/* These are used to pick a value for m */
+	double c, ic, m_err;
+	int best_n, best_m;
+
+	/* I have no idea what these are for [aem] */
 	int ln, lp, lm, lq, z;
-	int best_n=32, best_m=32;
-	double diff, mindiff;
 
-	ffreq = freq;
+	/* Make sure that 13.75 MHz <= f_pll <= chip max */
+	if ( f_pll < ( TI_MIN_VCO_FREQ / 8 ))
+		f_pll = TI_MIN_VCO_FREQ / 8;
+	if ( f_pll > vga256InfoRec.maxClock )
+		f_pll = vga256InfoRec.maxClock;
 
-	if (ffreq < TI_FREQ_MIN)
-		ffreq = TI_FREQ_MIN;
+	/* Assume a frequency multipler of 1.0 to start */
+	f_vco = ( double ) f_pll;
 
-	if (ffreq > TI_FREQ_MAX)
-		ffreq = TI_FREQ_MAX;
+	/*
+	 * f_pll = f_vco / 2 ^ p
+	 * Choose p so that f_vco >= TI_MIN_VCO_FREQ
+	 */
+	for ( p = 0; p <= 3 && f_vco < TI_MIN_VCO_FREQ; p++ )
+		f_vco *= 2.0;
 
-	ffreq /= 1000;
+	/*
+	 * We avoid doing multiplications by ( 65 - n ),
+	 * and add an increment instead - this keeps any error small.
+	 */
+	ic = f_vco / ( TI_REF_FREQ * 8.0 );
 
-	for (p=0; p<4 && ffreq < 110.0; p++)
-		ffreq *= 2;
+	/* Initial value of c for the loop */
+	c = ic + ic + ic;
 
-	/* now 110.0 <= ffreq <= 220.0 */
+	/* Initial amount of error for an integer - impossibly large */
+	m_err = 2.0;
 
-	ffreq /= TI_REF_FREQ;
+	/* Search for the closest INTEGER value of ( 65 - m ) */
+	for ( n = 3; n <= 25; n++, c += ic ) {
 
-	/* now 7.6825 <= ffreq <= 15.3650 */
-	/* the remaining formula is	ffreq = (65-m)*8 / (65-n) */
+		/* Ignore values of ( 65 - m ) which we can't use */
+		if ( c < 3.0 || c > 64.0 )
+			continue;
 
-	mindiff = ffreq;
-
-	for (n=63; n >= 65 - (int)(TI_REF_FREQ/0.5); n--)
-	{
-		m = 65 - (int)(ffreq * (65-n) / 8.0 + 0.5);
-
-		if (m < 1)
-			m = 1;
-		if (m > 63)
-			m = 63;
-
-		diff = ((65-m) * 8) / (65.0-n) - ffreq;
-		if (diff<0)
-			diff = -diff;
-
-		if (diff < mindiff)
-		{
-			 mindiff = diff;
-			 best_n = n;
-			 best_m = m;
-		} /* end if */
-	} /* end for */
+		/*
+		 * Pick the closest INTEGER (has smallest fractional part).
+		 * The optimizer should clean this up for us.
+		 */
+		if (( c - ( int ) c ) < m_err ) {
+			m_err = c - ( int ) c;
+			best_m = ( int ) c;
+			best_n = n;
+		}
+	}
 	
-	n = best_n;
-	m = best_m;
+	/* 65 - ( 65 - x ) = x */
+	m = 65 - best_m;
+	n = 65 - best_n;
+
+	/* The following 'if' code is a mystery to me [aem] */
 
 	ln = 65 - 32 / bpp;
 	lm = 61;
-	z = 100 * 14040.0 * 64 / bpp / freq;
+	z = 100 * 14040.0 * 64 / bpp / f_pll;
 	if (z > 1600)
 	{
 		lp = 3;
@@ -595,7 +636,7 @@ MGAProbe()
 	{
 		/* had to do this - 220 is a figure that 220 MHz RAMDAC
 			people will have to enter by themselves */
-		vga256InfoRec.maxClock = 175000;
+		vga256InfoRec.maxClock = TI_MAX_CLOCK;
 	}
 	
 	
@@ -613,7 +654,7 @@ MGAProbe()
 
 	/* Moved width checking because virtualX isn't set until after
 	   the probing.  Instead, make use of the newly added
-	   PitchAdjust hook, and move the rest to MGAFbInit(). */
+	   PitchAdjust hook. */
 
 	vgaSetPitchAdjustHook(MGAPitchAdjust);
 
@@ -630,7 +671,9 @@ static int
 MGAPitchAdjust()
 {
 	int pitch = 0;
-
+	int size;
+	int accel;
+	
 	/* XXX ajv - 512, 576, and 1536 may not be supported
 	   virtual resolutions. see sdk pp 4-59 for more
 	   details. Why anyone would want less than 640 is 
@@ -648,6 +691,8 @@ MGAPitchAdjust()
 	if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options) &&
 	    !OFLG_ISSET(OPTION_NO_BITBLT, &vga256InfoRec.options))
 	{
+		accel = TRUE;
+		
 		for (i = 0; width[i]; i++)
 		{
 			if (width[i] >= vga256InfoRec.virtualX)
@@ -660,43 +705,96 @@ MGAPitchAdjust()
 		{
 			ErrorF("%s %s: Display width set to %d\n",
 				XCONFIG_PROBED, vga256InfoRec.name, pitch);
-			return pitch;
 		}
 		else
 		{
 			/* Need to handle this better */
-			return 2048;
+			pitch = 2048;
 		}
 	}
 	else
 	{
-		switch (vgaBitsPerPixel)
-		{
-		case 8:
-			MGA.ChipRounding = 64;
-			break;
-		case 16:
-			MGA.ChipRounding = 32;
-			break;
-		case 32:
-			MGA.ChipRounding = 16;
-			break;
-		}
+		accel = FALSE;
+		pitch = vga256InfoRec.virtualX;
+	}
+	
+	if (vga256InfoRec.videoRam <= 2048)
+		size = 0;
+	else
+		size = pitch * vga256InfoRec.virtualY / 1024;
+		
+	if (vgaBitsPerPixel == 32)
+	{
+		MGAInitDAC = MGADACbpp32;
 
-		if (vga256InfoRec.virtualX % MGA.ChipRounding)
+		if (((pitch % 32) && (size * 4 <= 2048)) || !size)
 		{
-			pitch = vga256InfoRec.virtualX + MGA.ChipRounding -
-				(vga256InfoRec.virtualX % MGA.ChipRounding);
-			ErrorF("%s %s: Display width set to %d (a multiple "
-				"of %d)\n", XCONFIG_PROBED, vga256InfoRec.name,
-			pitch, MGA.ChipRounding);
-			return pitch;
+			MGA.ChipRounding = 16;
+			MGABppShft = 3;
+			MGADAClong = 0x5F2C0100;    /* non-interleave */
+			MGAInitDAC[2] = 0x5B;       /* 32 bits */
+		}
+		else
+                {
+			MGA.ChipRounding = 32;
+			MGABppShft = 2;
+			MGADAClong = 0x5F2C1100;    /* interleave */
+			MGAInitDAC[2] = 0x5C;       /* 64 bits */
+		}
+	}
+	if (vgaBitsPerPixel == 16)
+	{
+		MGAInitDAC = MGADACbpp16;
+		
+		if (((pitch % 64) && (size * 2 <= 2048)) || !size)
+		{
+			MGA.ChipRounding = 32;
+			MGABppShft = 2;
+			MGADAClong = 0x5F2C0100;    /* non-interleave */
+			MGAInitDAC[2] = 0x53;       /* 32 bits */
+                }
+                else
+                {
+                	MGA.ChipRounding = 64;
+                	MGABppShft = 1;
+                	MGADAClong = 0x5F2C1100;    /* interleave */
+			MGAInitDAC[2] = 0x54;       /* 64 bits */
+		}
+	}
+	if (vgaBitsPerPixel == 8)
+	{
+		MGAInitDAC = MGADACbpp8;
+		
+		if (((pitch % 128) && (size <= 2048)) || !size)
+		{
+			MGA.ChipRounding = 64;
+			MGABppShft = 1;
+			MGADAClong = 0x5F2C0100;    /* non-interleave */
+			MGAInitDAC[2] = 0x4B;       /* 32 bits */
 		}
 		else
 		{
-			return vga256InfoRec.virtualX;
+			MGA.ChipRounding = 128;
+			MGABppShft = 0;
+			MGADAClong = 0x5F2C1100;    /* interleave */
+			MGAInitDAC[2] = 0x4C;       /* 64 bits */
 		}
 	}
+
+	if (pitch % MGA.ChipRounding)
+	{
+		if(accel) 
+			FatalError("MGA: Can't display more than 2 MB with"
+				" this display width\n");
+				 
+		pitch = pitch + MGA.ChipRounding -
+			(pitch % MGA.ChipRounding);
+		ErrorF("%s %s: Display width set to %d (a multiple "
+			"of %d)\n", XCONFIG_PROBED, vga256InfoRec.name,
+			pitch, MGA.ChipRounding);
+	}
+
+	return pitch;
 }
 
 /*
@@ -708,55 +806,6 @@ MGAPitchAdjust()
 static void
 MGAFbInit()
 {
-	switch (vgaBitsPerPixel)
-	{
-	case 8:
-		if ((vga256InfoRec.displayWidth % 128) ||
-			(vga256InfoRec.videoRam <= 2048))
-		{
-			MGABppShft = 1;
-			MGADAClong = 0x5F2C0100;
-			MGADACbpp8[2] = 0x4B;
-		}
-		else
-		{
-			MGABppShft = 0;
-			MGADAClong = 0x5F2C1100;
-		}
-		MGAInitDAC = MGADACbpp8;
-		break;
-	case 16:
-		if ((vga256InfoRec.displayWidth % 64) ||
-			(vga256InfoRec.videoRam <= 2048))
-		{
-			MGABppShft = 2;
-			MGADAClong = 0x5F2C0100;
-			MGADACbpp16[2] = 0x53;
-		}
-		else
-		{
-			MGABppShft = 1;
-			MGADAClong = 0x5F2C1100;
-		}
-		MGAInitDAC = MGADACbpp16;
-		break;
-	case 32:
-		if ((vga256InfoRec.virtualX % 32) ||
-			(vga256InfoRec.videoRam <= 2048))
-		{
-			MGABppShft = 3;
-			MGADAClong = 0x5F2C0100;
-			MGADACbpp32[2] = 0x5B;
-		}
-		else
-		{
-			MGABppShft = 2;
-			MGADAClong = 0x5F2C1100;
-		}
-		MGAInitDAC = MGADACbpp32;
-		break;
-	}
-
 	if (xf86Verbose)
 		ErrorF("%s %s: Using TI 3026 programmable clock\n",
 			XCONFIG_PROBED, vga256InfoRec.name);

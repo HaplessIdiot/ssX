@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/iplan2p4/Imakefile,v 3.0tsi Exp $
 XCOMM $XConsortium: Imakefile,v 5.41 93/09/06 18:37:23 rws Exp $
 #include <Server.tmpl>
 
@@ -114,5 +114,19 @@ ObjectFromSpecialSource(ipltile32G,ipltile32,-DMROP=0)
 
 ObjectFromSpecialSource(iplply1rctC,iplply1rct,-DRROP=GXcopy)
 ObjectFromSpecialSource(iplply1rctG,iplply1rct,-DRROP=GXset)
+
+#if IPlanes == 2
+InstallLinkKitLibrary(ipl2p2,$(LINKKITDIR)/lib)
+#elif IPlanes == 4
+InstallLinkKitLibrary(ipl2p4,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(ipl.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(iplmap.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(iplmergeop.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(iplmskbits.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(iplpack.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(iplrrop.h,$(LINKKITDIR)/include)
+#elif IPlanes == 8
+InstallLinkKitLibrary(ipl2p8,$(LINKKITDIR)/lib)
+#endif
 
 DependTarget()

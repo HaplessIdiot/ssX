@@ -1,5 +1,5 @@
 /* $XConsortium: access.c /main/62 1995/12/07 17:53:09 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.13 1996/04/15 11:34:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.14 1996/05/10 07:02:11 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -120,7 +120,9 @@ SOFTWARE.
 #endif /* !AMOEBA */
 
 #ifdef SVR4
+#ifndef SCO
 #include <sys/sockio.h>
+#endif
 #include <sys/stropts.h>
 #endif
 

@@ -56,9 +56,8 @@ SOFTWARE.
  *   For use with Chips and Technology chipsets
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_line.c,v 3.0 1996/08/11 13:02:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_line.c,v 3.1 1996/09/29 13:39:23 dawes Exp $ */
 
-#include "site.h"		       /*for VENDOR_RELEASE */
 #include "xf86.h"
 #include "vga256.h"
 #include "vga.h"
@@ -183,6 +182,8 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
     int alu;
     int adir, xdir, ydir;
     int destpitch;
+    int octant;
+    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
     unsigned int op, mask;
 
 #ifdef DEBUG
@@ -513,37 +514,21 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
 	    x2 = ppt->x + xorg;
 #endif
 	} else {		       /* sloped line */
-	    signdx = 1;
-	    if ((adx = x2 - x1) < 0) {
-		adx = -adx;
-		signdx = -1;
-	    }
-	    signdy = 1;
-	    if ((ady = y2 - y1) < 0) {
-		ady = -ady;
-		signdy = -1;
-	    }
-	    if (adx >= ady) {
+	    CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy, 1, 1, octant);
+	    if (adx > ady) {
 		axis = X_AXIS;
-		e1 = ady << 1;
+	        e1 = ady << 1;
 		e2 = e1 - (adx << 1);
 		e = e1 - adx;
-#if (VENDOR_RELEASE >= 6100)
-		FIXUP_ERROR(e, signdx, signdy);
-#else
-		FIXUP_X_MAJOR_ERROR(e, signdx, signdy);
-#endif
 	    } else {
 		axis = Y_AXIS;
 		e1 = adx << 1;
 		e2 = e1 - (ady << 1);
 		e = e1 - ady;
-#if (VENDOR_RELEASE >= 6100)
-		FIXUP_ERROR(e, signdx, signdy);
-#else
-		FIXUP_Y_MAJOR_ERROR(e, signdx, signdy);
-#endif
+		SetYMajorOctant(octant);
 	    }
+
+	    FIXUP_ERROR(e, octant, bias);
 
 	    /* we have bresenham parameters and two points.
 	     * all we have to do now is clip and draw.
@@ -668,10 +653,11 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
 		    int err;
 
 		    if (miZeroClipLine(pbox->x1, pbox->y1, pbox->x2 - 1,
-			    pbox->y2 - 1,
-			    &new_x1, &new_y1, &new_x2, &new_y2,
-			    adx, ady, &clip1, &clip2, axis,
-			    (signdx == signdy), oc1, oc2) == -1) {
+				       pbox->y2 - 1,
+				       &new_x1, &new_y1, &new_x2, &new_y2,
+				       adx, ady, 
+				       &clip1, &clip2, 
+				       octant, bias, oc1, oc2) == -1) {
 			pbox++;
 			continue;
 		    }
@@ -809,6 +795,7 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
 	((ppt->x + xorg != pptInit->x + pDrawable->x) ||
 	    (ppt->y + yorg != pptInit->y + pDrawable->y) ||
 	    (ppt == pptInit + 1))) {
+	ctBLTWAIT;
 	nbox = nboxInit;
 	pbox = pboxInit;
 	while (nbox--) {
@@ -819,7 +806,8 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
 		unsigned long mask;
 		unsigned long scrbits;
 
-		if (vgaUseLinearAddressing && alu == GXcopy)
+		if (vgaUseLinearAddressing && alu == GXcopy &&
+			vgaBitsPerPixel == 8)
 		    *((unsigned char *)vgaLinearBase + y2 * destpitch + x2) =
 			xor;
 		else {

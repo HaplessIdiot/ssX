@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.8 1996/09/14 13:14:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.9 1996/09/22 05:14:22 dawes Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -172,7 +172,11 @@ extern Bool Must_have_memory;
 #define SIZE_STEPS		(sizeof(double))
 #define SIZE_HEADER		(2*sizeof(long)) /* = sizeof(double) for 32bit */
 #ifdef XALLOC_DEBUG
+#if defined(__sparc__)
+#define SIZE_TAIL		(2*sizeof(long)) /* = sizeof(double) for 32bit */
+#else
 #define SIZE_TAIL		(sizeof(long))
+#endif
 #endif
 
 #ifdef __alpha__
@@ -297,7 +301,8 @@ Xalloc (amount)
 	return (unsigned long *)NULL;
     }
 
-#ifdef __alpha__  /* alignment check */
+    /* alignment check */
+#if defined(__alpha__) || defined(__sparc__)
     amount = (amount + (sizeof(long)-1)) & ~(sizeof(long)-1);
 #endif
 

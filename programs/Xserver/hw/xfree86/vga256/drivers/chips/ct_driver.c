@@ -1,5 +1,5 @@
 /* $XConsortium: ct_driver.c /main/6 1996/01/12 12:16:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.21 1996/09/14 13:11:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.22 1996/09/29 13:39:21 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -1148,7 +1148,7 @@ CHIPSProbe()
 	    ErrorF("PCI Bus\n");
 	    ctPCI = TRUE;
 	    if ((CHIPSchipset == CT_545) || (CHIPSchipset == CT_546)){
-	      ErrorF("%s %s: ct65545+: 32Bit IO not supported on 65545 PCI.", 
+	      ErrorF("%s %s: ct65545+: 32Bit IO not supported on 65545 PCI.\n", 
 		     XCONFIG_PROBED, vga256InfoRec.name);
 	      ErrorF("%s %s: ct65545+: Enabling MMIO\n", 
 		     XCONFIG_PROBED, vga256InfoRec.name);

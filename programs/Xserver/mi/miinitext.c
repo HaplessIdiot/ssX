@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c /main/38 1995/12/08 13:41:44 dpw $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.10 1996/01/16 15:07:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.11 1996/03/29 22:19:38 dawes Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -65,6 +65,7 @@ extern Bool noXkbExtension;
 #else
 #define INITARGS /*nothing*/
 #endif
+typedef void (*InitExtension)(INITARGS);
 
 /* FIXME: this whole block of externs should be from the appropriate headers */
 #ifdef BEZIER
@@ -80,7 +81,10 @@ extern void ShapeExtensionInit(INITARGS);
 extern void ShmExtensionInit(INITARGS);
 #endif
 #ifdef PEXEXT
+#ifndef PEX_MODULE
 extern void PexExtensionInit(INITARGS);
+#endif
+InitExtension PexExtensionInitPtr = NULL;
 #endif
 #ifdef MULTIBUFFER
 extern void MultibufferExtensionInit(INITARGS);
@@ -110,7 +114,10 @@ extern void ScreenSaverExtensionInit (INITARGS);
 extern void XvExtensionInit(INITARGS);
 #endif
 #ifdef XIE
+#ifndef XIE_MODULE
 extern void XieInit(INITARGS);
+#endif
+InitExtension XieInitPtr = NULL;
 #endif
 #ifdef XSYNC
 extern void SyncExtensionInit(INITARGS);
@@ -165,7 +172,15 @@ InitExtensions(argc, argv)
     ShmExtensionInit();
 #endif
 #ifdef PEXEXT
+#ifndef PEX_MODULE
     PexExtensionInit();
+#else
+    if (PexExtensionInitPtr != NULL) {
+	(*PexExtensionInitPtr)();
+    } else {
+	ErrorF("PEX extension module not loaded\n");
+    }
+#endif
 #endif
 #ifdef MULTIBUFFER
     MultibufferExtensionInit();
@@ -195,7 +210,15 @@ InitExtensions(argc, argv)
     XvExtensionInit();
 #endif
 #ifdef XIE
+#ifndef XIE_MODULE
     XieInit();
+#else
+    if (XieInitPtr != NULL) {
+	(*XieInitPtr)();
+    } else {
+	ErrorF("XIE extension module not loaded\n");
+    }
+#endif
 #endif
 #ifdef XSYNC
     SyncExtensionInit();
