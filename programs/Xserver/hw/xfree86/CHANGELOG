@@ -1,4 +1,6 @@
 XFree86 4.0.99.4 (xx May 2001)
+ 535. Fix FreeType bug, use MAXFONTNAMELEN (#4652, Janusz Gorycki, 
+      Juliusz Chroboczek).
  534. Fix hw/vfb for compilation on Cygwin/XFree86 (#4655, Harold Hunt).
  533. Fix some Sparc platform issues with Pci resources and the glint
       driver (#4641-4641,4644-4648 David S. Miller).
@@ -13261,4 +13263,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1774 2001/05/16 07:56:05 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1775 2001/05/16 08:01:06 alanh Exp $
