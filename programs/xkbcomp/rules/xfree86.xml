@@ -1838,15 +1838,6 @@
     </layout>
     <layout>
       <configItem>
-        <name>ru_yawerty</name>
-        <description>Russian (cyrillic phonetic)</description>
-        <description xml:lang="bg">руска (фонетична кирилица)</description>
-        <description xml:lang="ru">Русская (кириллица, фонетическая)</description>
-      </configItem>
-      <variantList/>
-    </layout>
-    <layout>
-      <configItem>
         <name>se_FI</name>
         <description>Northern Saami (Finland)</description>
         <description xml:lang="bg">северносамска (Финландия)</description>
@@ -2716,6 +2707,18 @@
           <description>Menu is Compose</description>
           <description xml:lang="bg">Клавиша Menu фунцкионира като Compose</description>
           <description xml:lang="ru">Клавиша Menu соответствует клавише Compose</description>
+        </configItem>
+      </option>
+    </group>
+    <group allowMultipleSelection="true">
+      <configItem>
+        <name>compat</name>
+        <description>Miscellaneous compatibility options</description>
+      </configItem>
+      <option>
+        <configItem>
+          <name>numpad:microsoft</name>
+          <description>Shift with numpad keys works as in MS Windows</description>
         </configItem>
       </option>
     </group>

@@ -69,7 +69,7 @@ default xkb_geometry "model100" {
     indicator.top= 30;
     indicator.onColor= "green";
     indicator.offColor= "green30";
-    indicator "CapsLock" { left= 23; };
+    indicator "Caps Lock" { left= 23; };
 
     section "LeftAlpha" {
 	top=  34;

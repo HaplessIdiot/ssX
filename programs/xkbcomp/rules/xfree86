@@ -5,7 +5,7 @@
 //  Copyright 1996 by Joseph Moss
 //
 //  2002 Modifier: Ivan Pascal      The XFree86 Project
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.66 2003/06/21 13:01:58 pascal Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.67 2003/08/04 04:22:13 dawes Exp $
 //
 
 // Layouts that still need be composed by old rules
@@ -183,3 +183,4 @@
   caps:internal_nocancel	=	+caps(internal_nocancel)
   caps:shift			=	+caps(shift)
   caps:shift_nocancel		=	+caps(shift_nocancel)
+  numpad:microsoft		=	+numpad(microsoft)

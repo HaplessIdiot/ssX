@@ -24,7 +24,7 @@
 //other dealings in this Software without prior written authorization
 //from The Open Group.
 //
-// $XFree86: xc/programs/xkbcomp/geometry/pc,v 3.12 2003/06/21 13:01:58 pascal Exp $
+// $XFree86: xc/programs/xkbcomp/geometry/pc,v 3.13 2003/06/30 13:23:09 pascal Exp $
 
 default xkb_geometry "pc101" {
 
@@ -59,9 +59,9 @@ default xkb_geometry "pc101" {
     indicator.offColor= "green30";
     indicator.top= 67;
     indicator.shape= "LED";
-    indicator "NumLock"     { left= 382; };
-    indicator "CapsLock"    { left= 407; };
-    indicator "ScrollLock"  { left= 433; };
+    indicator "Num Lock"     { left= 382; };
+    indicator "Caps Lock"    { left= 407; };
+    indicator "Scroll Lock"  { left= 433; };
     text.top= 55;
     text.color= "black";
     text "NumLockLabel"		{ left= 378; text="Num\nLock"; };
@@ -219,9 +219,9 @@ xkb_geometry "pc102" {
     indicator.offColor= "green30";
     indicator.top= 67;
     indicator.shape= "LED";
-    indicator "NumLock"     { left= 382; };
-    indicator "CapsLock"    { left= 407; };
-    indicator "ScrollLock"  { left= 433; };
+    indicator "Num Lock"     { left= 382; };
+    indicator "Caps Lock"    { left= 407; };
+    indicator "Scroll Lock"  { left= 433; };
     text.top= 55;
     text.color= "black";
     text "NumLockLabel"		{ left= 378; text="Num\nLock"; };
@@ -378,9 +378,9 @@ xkb_geometry "pc104" {
     indicator.offColor= "green30";
     indicator.top= 67;
     indicator.shape= "LED";
-    indicator "NumLock"     { left= 382; };
-    indicator "CapsLock"    { left= 407; };
-    indicator "ScrollLock"  { left= 433; };
+    indicator "Num Lock"     { left= 382; };
+    indicator "Caps Lock"    { left= 407; };
+    indicator "Scroll Lock"  { left= 433; };
     text.top= 55;
     text.color= "black";
     text "NumLockLabel"		{ left= 378; text="Num\nLock"; };
@@ -537,9 +537,9 @@ xkb_geometry "pc105" {
     indicator.offColor= "green30";
     indicator.top= 67;
     indicator.shape= "LED";
-    indicator "NumLock"     { left= 382; };
-    indicator "CapsLock"    { left= 407; };
-    indicator "ScrollLock"  { left= 433; };
+    indicator "Num Lock"     { left= 382; };
+    indicator "Caps Lock"    { left= 407; };
+    indicator "Scroll Lock"  { left= 433; };
     text.top= 55;
     text.color= "black";
     text "NumLockLabel"		{ left= 378; text="Num\nLock"; };
@@ -700,9 +700,9 @@ xkb_geometry "jp106" {
     indicator.offColor= "green30";
     indicator.top= 40;
     indicator.shape= "LED";
-    indicator "NumLock"     { left= 379; };
-    indicator "CapsLock"    { left= 404; };
-    indicator "ScrollLock"  { left= 429; };
+    indicator "Num Lock"     { left= 379; };
+    indicator "Caps Lock"    { left= 404; };
+    indicator "Scroll Lock"  { left= 429; };
     text.top= 28;
     text.color= "black";
     text "NumLockLabel"		{ left= 378; text="Num\nLock"; };
@@ -862,9 +862,9 @@ xkb_geometry "abnt2" {
     indicator.offColor= "green30";
     indicator.top= 40;
     indicator.shape= "LED";
-    indicator "NumLock"     { left= 379; };
-    indicator "CapsLock"    { left= 404; };
-    indicator "ScrollLock"  { left= 429; };
+    indicator "Num Lock"     { left= 379; };
+    indicator "Caps Lock"    { left= 404; };
+    indicator "Scroll Lock"  { left= 429; };
     text.top= 28;
     text.color= "black";
     text "NumLockLabel"		{ left= 378; text="Num\nLock"; };
@@ -1026,9 +1026,9 @@ xkb_geometry "pc86" {
     indicator.offColor = "green30";
     indicator.top = 11;
     indicator.shape = "LED";
-    indicator "NumLock"     { left = 212 + 7; };
-    indicator "CapsLock"    { left = 212 + 23; };
-    indicator "ScrollLock"  { left = 212 + 39; };
+    indicator "Num Lock"     { left = 212 + 7; };
+    indicator "Caps Lock"    { left = 212 + 23; };
+    indicator "Scroll Lock"  { left = 212 + 39; };
     text.fontSize = 6;
     text.top = 10;
     text.color = "white";

@@ -1,4 +1,4 @@
-// $XFree86: xc/programs/xkbcomp/geometry/macintosh,v 1.1 1999/05/23 05:27:50 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/geometry/macintosh,v 1.2 2000/08/26 04:30:59 dawes Exp $
 default xkb_geometry "macintosh" {
 
     description= "Apple Extended Keyboard II";
@@ -37,9 +37,9 @@ default xkb_geometry "macintosh" {
     indicator.offColor= "green30";
     indicator.top= 67;
     indicator.shape= "LED";
-    indicator "NumLock"     { left= 379; };
-    indicator "CapsLock"    { left= 404; };
-    indicator "ScrollLock"  { left= 429; };
+    indicator "Num Lock"     { left= 379; };
+    indicator "Caps Lock"    { left= 404; };
+    indicator "Scroll Lock"  { left= 429; };
     text.top= 55;
     text.color= "black";
     text "NumLockLabel"		{ left= 378; text="Num\nLock"; };

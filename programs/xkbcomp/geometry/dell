@@ -57,9 +57,9 @@ default xkb_geometry "dell101" {
     indicator.offColor= "green30";
     indicator.top= 67;
     indicator.shape= "LED";
-    indicator "NumLock"     { left= 382; };
-    indicator "CapsLock"    { left= 407; };
-    indicator "ScrollLock"  { left= 433; };
+    indicator "Num Lock"     { left= 382; };
+    indicator "Caps Lock"    { left= 407; };
+    indicator "Scroll Lock"  { left= 433; };
     text.top= 55;
     text.color= "black";
     text "NumLockLabel"		{ left= 378; text="Num\nLock"; };

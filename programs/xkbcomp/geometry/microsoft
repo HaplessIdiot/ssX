@@ -219,9 +219,9 @@ default xkb_geometry "natural" {
     indicator.offColor= "green30";
     indicator.left= 177;
     indicator.shape= "LED";
-    indicator "NumLock"     { top= 90; };
-    indicator "CapsLock"    { top= 107; };
-    indicator "ScrollLock"  { top= 127; };
+    indicator "Num Lock"     { top= 90; };
+    indicator "Caps Lock"    { top= 107; };
+    indicator "Scroll Lock"  { top= 127; };
     
     section "Keypad" {
 	top= 47;

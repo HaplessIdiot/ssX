@@ -198,9 +198,9 @@ default xkb_geometry "FlexPro" {
     indicator.offColor= "green30";
     indicator.top= 13;
     indicator.shape= "LED";
-    indicator "NumLock"     { left= 440; };
-    indicator "CapsLock"    { left= 467; };
-    indicator "ScrollLock"  { left= 489; };
+    indicator "Num Lock"     { left= 440; };
+    indicator "Caps Lock"    { left= 467; };
+    indicator "Scroll Lock"  { left= 489; };
     text.top= 22;
     text.color= "black";
     text "NumLockLabel"		{ left= 438; text="Num\nLock"; };
