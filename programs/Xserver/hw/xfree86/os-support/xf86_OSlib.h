@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.87 2001/10/10 18:30:40 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.88 2001/11/08 04:15:32 tsi Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -348,9 +348,6 @@ extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 # endif
 
 # include <errno.h>
-#ifndef __errno_location
-extern int errno;
-#endif
 
 # include <sys/stat.h>
 

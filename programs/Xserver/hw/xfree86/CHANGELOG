@@ -1,4 +1,13 @@
 XFree86 4.1.99.4 (xx December 2001)
+ 619. Remove some more spurious entries in the KSC 5601 encoding file (#A.678,
+      Jungshik Shin).
+ 618. Fix for APM problem on devfs-based Linux systems with APM in a kernel
+      module (#A.663, Denis Zaitsev).
+ 617. Update the mga Xv double buffering to match the more recent submission
+      (#4976, Didier Gautheron).
+ 616. Fix a bug in the XKB Slovak (sk) layout (#A.621, Juraj Bednar).
+ 615. Fix a small window when a SIGIO may be received without a handler
+      installed (David Dawes, based on #A.620, Michel Lespinasse).
  614. ISO 8859-{1,7,15} Compose file updates and fixes (#5114,
       Vasilis Vasaitis).
  613. In XDarwin multi-monitor IOKit mode, read screen location from the
@@ -14410,4 +14419,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2102 2001/12/23 02:26:02 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2103 2001/12/24 17:15:12 dawes Exp $
