@@ -1,4 +1,8 @@
 XFree86 4.0.1f (xx November 2000)
+ 946. Add a dumpkeymap utility for Darwin (#4248, Eric Sunshine).
+ 945. Fix a Darwin build problem with mkcfm, and get xdm closer to building
+      (#4247, Torrey T. Lyons).
+ 944. DDX for the Xdarwin server (#4246, Torrey T. Lyons).
  943. Enable xdm/PAM support by default for FreeBSD versions with PAM.
  942. Fix a problem where the X server thinks it has acquired a VT at startup
       before it has really been released.  This is due to the ioctl()
@@ -11566,4 +11570,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1395 2000/11/14 23:58:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1396 2000/11/15 00:22:25 dawes Exp $
