@@ -1,4 +1,5 @@
 XFree86 3.0Ac (1 June 1994)
+ 75. Amoeba fixes (Kees Verstoep).
  74. Fixes for Mach32 dashed line/segment code (Mike Bernson).
  73. Preliminary 90C33 support (Bill Conn).
  72. NetBSD.cf updates, and README.NetBSD added (Matthieu Herrb).
