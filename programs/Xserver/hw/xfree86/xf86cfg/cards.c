@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/cards.c,v 1.7 2001/07/08 05:46:35 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/cards.c,v 1.8 2001/07/09 23:45:24 paulo Exp $
  */
 
 #define CARDS_PRIVATE
@@ -62,6 +62,14 @@ static char **DoFilterCardNames(char *pattern, int *result);
 
 #ifdef USE_MODULES
 extern int ErrorF(const char*, ...);
+
+typedef struct {
+    int ivendor;
+    unsigned short vendor;
+    unsigned short valid_vendor;
+    char *chipsets;
+    int num_chipsets;
+} chipset_check;
 #endif
 
 /*
@@ -91,31 +99,10 @@ InitializePciInfo(void)
 void
 CheckChipsets(xf86cfgModuleOptions *opts, int *err)
 {
-    int i, j, count;
+    int i, j, ichk, ivnd, vendor, device;
     SymTabPtr chips = opts->chipsets;
-    char *chipsets_supported;
-
-    for (i = 0; xf86PCIVendorInfoData[i].VendorID; i++)
-	if (opts->vendor == xf86PCIVendorInfoData[i].VendorID)
-	    break;
-
-    if (!xf86PCIVendorInfoData[i].VendorID) {
-	CheckMsg(CHECKER_CHIPSET_NO_VENDOR,
-		 "WARNING No such vendor 0x%x\n", opts->vendor);
-	++*err;
-	if (chips) {
-	    while (chips->name) {
-		CheckMsg(CHECKER_CANNOT_VERIFY_CHIPSET,
-			 "WARNING Cannot verify chipset \"%s\" (0x%x)\n",
-			 chips->name, chips->token);
-		++chips;
-		++*err;
-	    }
-	}
-	else
-	    *err += 10;
-	return;
-    }
+    chipset_check *check = NULL;
+    int num_check = 0;
 
     if (!chips) {
 	CheckMsg(CHECKER_NO_CHIPSETS, "WARNING No chipsets specified.\n");
@@ -123,42 +110,87 @@ CheckChipsets(xf86cfgModuleOptions *opts, int *err)
 	return;
     }
 
-    for (count = 0; xf86PCIVendorInfoData[i].Device[count].DeviceName; count++)
-	;
-    chipsets_supported = (char*)XtCalloc(1, count);
-
     while (chips->name) {
-	for (j = 0; xf86PCIVendorInfoData[i].Device[j].DeviceName; j++)
-	    if (chips->token == xf86PCIVendorInfoData[i].Device[j].DeviceID) {
-		if (strcmp(chips->name, xf86PCIVendorInfoData[i].Device[j].DeviceName)) {
+	device = chips->token & 0xffff;
+	vendor = (chips->token & 0xffff0000) >> 16;
+	if (vendor == 0)
+	    vendor = opts->vendor;
+
+	for (ichk = 0; ichk < num_check; ichk++)
+	    if (check[ichk].vendor == vendor)
+		break;
+	if (ichk >= num_check) {
+	    check = (chipset_check*)
+		XtRealloc((XtPointer)check,
+			  sizeof(chipset_check) * (num_check + 1));
+	    check[num_check].vendor = vendor;
+	    memset(&check[num_check], 0, sizeof(chipset_check));
+	    ++num_check;
+	}
+
+	/* Search for vendor in xf86PCIVendorInfoData */
+	for (ivnd = 0; xf86PCIVendorInfoData[ivnd].VendorID; ivnd++)
+	    if (vendor == xf86PCIVendorInfoData[ivnd].VendorID)
+		break;
+	if (xf86PCIVendorInfoData[ivnd].VendorID) {
+	    check[ichk].valid_vendor = 1;
+	    check[ichk].ivendor = ivnd;
+	}
+	else {
+	    CheckMsg(CHECKER_CANNOT_VERIFY_CHIPSET,
+		     "WARNING Cannot verify chipset \"%s\" (0x%x)\n",
+		      chips->name, device);
+	    ++*err;
+	    ++chips;
+	    continue;
+	}
+
+	if (check[ichk].chipsets == NULL) {
+	    for (j = 0; xf86PCIVendorInfoData[ivnd].Device[j].DeviceName; j++)
+		;
+	    check[ichk].chipsets = (char*)XtCalloc(1, j);
+	}
+	for (j = 0; xf86PCIVendorInfoData[ivnd].Device[j].DeviceName; j++) {
+	    if (device == xf86PCIVendorInfoData[ivnd].Device[j].DeviceID) {
+		if (strcmp(chips->name, xf86PCIVendorInfoData[ivnd].Device[j].DeviceName)) {
 		    CheckMsg(CHECKER_NOMATCH_CHIPSET_STRINGS,
 			     "WARNING chipset strings don't match: \"%s\" \"%s\" (0x%x)\n",
-			     chips->name, xf86PCIVendorInfoData[i].Device[j].DeviceName,
-			     chips->token);
+			     chips->name, xf86PCIVendorInfoData[ivnd].Device[j].DeviceName,
+			     device);
 		    ++*err;
 		}
 		break;
 	    }
-	if (!xf86PCIVendorInfoData[i].Device[j].DeviceName) {
+	}
+	if (!xf86PCIVendorInfoData[ivnd].Device[j].DeviceName) {
 	    CheckMsg(CHECKER_CHIPSET_NOT_LISTED,
-		     "WARNING chipset \"%s\" (0x%x) not in list.\n", chips->name, chips->token);
+		     "WARNING chipset \"%s\" (0x%x) not in list.\n", chips->name, device);
 	    ++*err;
 	}
 	else
-	    chipsets_supported[j] = 1;
+	    check[ichk].chipsets[j] = 1;
+
 	++chips;
     }
 
-    for (j = 0; j < count; j++) {
-	if (!chipsets_supported[j]) {
-	    CheckMsg(CHECKER_CHIPSET_NOT_SUPPORTED,
-		     "NOTICE chipset \"%s\" (0x%x) not listed as supported.\n",
-		     xf86PCIVendorInfoData[i].Device[j].DeviceName,
-		     xf86PCIVendorInfoData[i].Device[j].DeviceID);
+    for (i = 0; i < num_check; i++) {
+	if (!check[i].valid_vendor) {
+	    CheckMsg(CHECKER_CHIPSET_NO_VENDOR,
+		     "WARNING No such vendor 0x%x\n", vendor);
+	    ++*err;
 	}
+	for (j = 0; j < check[i].num_chipsets; j++) {
+	    if (!check[i].chipsets[j]) {
+		CheckMsg(CHECKER_CHIPSET_NOT_SUPPORTED,
+			 "NOTICE chipset \"%s\" (0x%x) not listed as supported.\n",
+			 xf86PCIVendorInfoData[check[i].ivendor].Device[j].DeviceName,
+			 xf86PCIVendorInfoData[check[i].ivendor].Device[j].DeviceID);
+	    }
+	}
+	XtFree(check[i].chipsets);
     }
 
-    XtFree(chipsets_supported);
+    XtFree((XtPointer)check);
 }
 #endif
 
@@ -167,7 +199,7 @@ ReadCardsDatabase(void)
 {
 #ifdef USE_MODULES
     if (!nomodules) {
-	int i, j;
+	int i, j, ivendor, idevice;
 	char name[256];
 	_Xconst char *vendor, *device;
 	CardsEntry *entry = NULL, *tmp;
@@ -181,19 +213,23 @@ ReadCardsDatabase(void)
 		while (chips->name) {
 		    vendor = opts->name;
 		    device = chips->name;
+		    ivendor = (chips->token & 0xffff0000) >> 16;
+		    idevice = chips->token & 0xffff0;
+		    if (ivendor == 0)
+			ivendor = opts->vendor;
 
 		    for (i = 0; xf86PCIVendorInfoData[i].VendorID; i++)
-			if (opts->vendor == xf86PCIVendorInfoData[i].VendorID)
+			if (ivendor == xf86PCIVendorInfoData[i].VendorID)
 			    break;
 		    if (xf86PCIVendorInfoData[i].VendorID) {
 			for (j = 0; xf86PCIVendorNameInfoData[j].name; j++)
-			    if (xf86PCIVendorNameInfoData[j].token == opts->vendor) {
+			    if (xf86PCIVendorNameInfoData[j].token == ivendor) {
 				vendor = xf86PCIVendorNameInfoData[j].name;
 				break;
 			    }
 
 			for (j = 0; xf86PCIVendorInfoData[i].Device[j].DeviceName; j++)
-			    if (chips->token == xf86PCIVendorInfoData[i].Device[j].DeviceID)
+			    if (idevice == xf86PCIVendorInfoData[i].Device[j].DeviceID)
 				break;
 
 			if (xf86PCIVendorInfoData[i].Device[j].DeviceName)
