@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.59 2001/12/13 18:01:50 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.60 2001/12/13 18:14:23 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -566,7 +566,8 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     OUTB(vgaIOBase+ 4, InterfaceSel);
     pReg->tridentRegs3x4[InterfaceSel] = INB(vgaIOBase + 5) | 0x40;
     OUTB(vgaIOBase+ 4, Performance);
-    pReg->tridentRegs3x4[Performance] = INB(vgaIOBase + 5) | 0x10;
+    if (pTrident->Chipset != CYBERBLADEXPAI1)
+	pReg->tridentRegs3x4[Performance] = INB(vgaIOBase + 5) | 0x10;
     OUTB(vgaIOBase+ 4, DRAMControl);
     pReg->tridentRegs3x4[DRAMControl] = INB(vgaIOBase + 5) | 0x10;
     if (pTrident->IsCyber && !pTrident->MMIOonly)
@@ -801,6 +802,8 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 	INB_3CE(VertStretch);
 	INB_3CE(HorStretch);
 	INB_3CE(BiosMode);
+	INB_3CE(BiosNewMode1);
+	INB_3CE(BiosNewMode2);
 	INB_3CE(BiosReg);	
     	INB_3CE(CyberControl);
     	INB_3CE(CyberEnhance);
