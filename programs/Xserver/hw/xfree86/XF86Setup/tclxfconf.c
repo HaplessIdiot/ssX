@@ -5,7 +5,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.21 1998/03/27 23:23:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.22 1998/04/05 16:15:53 robin Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -51,6 +51,8 @@
 #if NeedVarargsPrototypes
 #include <stdarg.h>
 #endif
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #define NO_COMPILER_H_EXTRAS
 #include "xf86Procs.h"

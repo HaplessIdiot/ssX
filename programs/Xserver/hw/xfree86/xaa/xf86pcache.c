@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.27 1998/01/24 16:58:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.28 1998/03/20 21:07:29 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -293,7 +293,9 @@ void xf86InitPixmapCacheSlots()
     }
 }
 
-void xf86InvalidatePixmapCache() {
+void
+xf86InvalidatePixmapCache()
+{
    int i;
 
    if (xf86CacheInfo != NULL)
@@ -345,6 +347,7 @@ int xf86CacheStipple(pDrawable, pGC)
     PixmapPtr pix;
     xf86PixPrivPtr devPriv;
     int slot;
+
     pix = pGC->stipple;
 #ifdef PIXPRIV
     devPriv = (xf86PixPrivPtr)(pix->devPrivates[xf86PixmapIndex].ptr);
@@ -394,6 +397,7 @@ static int FindCacheSlot(pix)
     PixmapPtr pix;
 {
     int i, j, best;
+
     if (pix->drawable.height <= MaxWideSlotHeight && 
         FirstWideSlot < FirstZeroSlot)
     	/*
@@ -516,32 +520,44 @@ static void Write8x8Pattern(pci, w, h, pSrc, srcwidth)
     int x, y;
     unsigned char *buf, *bufp, *buf2;
     int i, bytespp, nh;
+    int alignedDstWidth;
+
     x = pci->x;
     y = pci->y;
+    bytespp = xf86AccelInfoRec.BitsPerPixel / 8;
     w = min(w, 8);
     h = min(h, 8);
-    bytespp = xf86AccelInfoRec.BitsPerPixel / 8;
-    buf = (unsigned char *)ALLOCATE_LOCAL(bytespp * 128);
-    buf2 = (unsigned char *)ALLOCATE_LOCAL(bytespp * 128);
+
+    if(bytespp == 3 && (xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_ALIGN_32))
+      alignedDstWidth = (xf86AccelInfoRec.BitsPerPixel + 0xF)& ~0xF;
+    else
+      alignedDstWidth = xf86AccelInfoRec.BitsPerPixel;
+
+    buf = (unsigned char *)ALLOCATE_LOCAL(alignedDstWidth << 4);
+    buf2 = (unsigned char *)ALLOCATE_LOCAL(alignedDstWidth << 4);
+
     bufp = buf;
     /* Write and expand horizontally. */
     for (i = 0; i < h; i++) {
-         int nw;
-         memcpy(bufp, pSrc, w * bytespp);
-         nw = w;
-         while (nw != 8) {
-            memcpy(bufp + nw * bytespp, bufp, nw * bytespp);
-            nw *= 2;
-         }
-         pSrc += srcwidth;
-         bufp += 8 * bytespp;
+      int nw;
+      memcpy(bufp, pSrc, w * bytespp);
+      nw = w;
+      while (nw != 8) {
+	memcpy(bufp + nw * bytespp, bufp, nw * bytespp);
+	nw *= 2;
+      }
+      pSrc += srcwidth;
+      bufp += alignedDstWidth;
     }
     nh = h;
     /* Expand vertically. */
     while (nh != 8) {
-        memcpy(buf + nh * 8 * bytespp, buf, nh * 8 * bytespp);
-        nh *= 2;
+      memcpy(buf + nh * alignedDstWidth, buf, nh * alignedDstWidth);
+      nh *= 2;
     }
+
+    bytespp = alignedDstWidth >> 3;
+
     if (xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
     	/*
     	 * This is easy. Just one copy required. Also consider alignment
@@ -560,12 +576,14 @@ static void Write8x8Pattern(pci, w, h, pSrc, srcwidth)
     	        pci->x += 64 - mod64;
     	    }
     	}
+
         xf86ImageWrite(x, y, 64, 1, buf, 64 * bytespp,
             GXcopy, 0xFFFFFFFF);
         DEALLOCATE_LOCAL(buf2);
         DEALLOCATE_LOCAL(buf);
         return;
     }
+
     /* Make it two copies. */
     memcpy(buf + 64 * bytespp, buf, 64 * bytespp);
     /* Write to video memory. */
@@ -650,13 +668,15 @@ static void Expand8x8Pattern(x, y, w, h, pSrc, srcwidth)
  * necessary.
  */
 
-static void ExpandStippleTo8x8MonoPattern(w, h, pSrc, srcwidth, pattern)
+static void 
+ExpandStippleTo8x8MonoPattern(w, h, pSrc, srcwidth, pattern)
     int w, h;
     unsigned char *pSrc;
     int srcwidth;
     unsigned char *pattern;	/* 8 bytes of resulting pattern data */
 {
     int i, nh;
+
     w = min(w, 8);
     h = min(h, 8);
     /* Write to pattern[i] and expand horizontally. */
@@ -810,6 +830,7 @@ static void ConvertTileTo8x8MonoPattern(w, h, pSrc, srcwidth, pattern, bg, fg)
     int bytespp;
     int color1, color2;
     int y;
+
     bytespp = xf86AccelInfoRec.BitsPerPixel / 8;
     srcp = pSrc;
     /* The first pixel will be the foreground color. */
@@ -819,6 +840,11 @@ static void ConvertTileTo8x8MonoPattern(w, h, pSrc, srcwidth, pattern, bg, fg)
         break;
     case 2 :
         color1 = *((unsigned short *)srcp);
+        break;
+    case 3 :
+        color1 = (0xFF & (int)*((unsigned char *)srcp))
+	         |((0xFF & (int)*((unsigned char *)srcp + 1)) << 8)
+	         |((0xFF & (int)*((unsigned char *)srcp + 2)) << 16);
         break;
     case 4 :
         color1 = *((unsigned int *)srcp);
@@ -835,6 +861,11 @@ static void ConvertTileTo8x8MonoPattern(w, h, pSrc, srcwidth, pattern, bg, fg)
                 break;
             case 2 :
                 c = *((unsigned short *)srcp + i);
+                break;
+            case 3 :
+                c = (0xFF & (int)*((unsigned char *)srcp + i * 3))
+		    |((0xFF & (int)*((unsigned char *)srcp + i * 3 + 1)) << 8)
+		    |((0xFF & (int)*((unsigned char *)srcp + i * 3 + 2)) << 16);
                 break;
             case 4 :
                 c = *((unsigned int *)srcp + i);
@@ -864,7 +895,6 @@ static void WriteTileAs8x8MonoPattern(pci, w, h, pSrc, srcwidth)
     unsigned char pattern[8];
     int bg, fg;
 
-    ConvertTileTo8x8MonoPattern(w, h, pSrc, srcwidth, pattern, &bg, &fg);
     pci->bg_color = bg;
     pci->fg_color = fg;
     if (xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_NOT_LINEAR) 
@@ -894,6 +924,7 @@ static int ReduceTileToSize8(pci, pix, checkmono)
     int bytespp;
     Bool mono;
     int color1, color2;
+
     w = pci->pix_w;
     h = pci->pix_h;
     /* w and h must be power of 2. */
@@ -902,12 +933,15 @@ static int ReduceTileToSize8(pci, pix, checkmono)
     /* Small tiles are OK. */
     if (!checkmono && w <= 8 && h <= 8)
         return TILE_REDUCIBLE;
+#if 0
     if (pix->drawable.bitsPerPixel == 24)
         /* Reducing larger tiles is not supported for 24pp right now. */
     	return 0;
+#endif
     /* w and h must be reducible to 8. */
     if ((w > 8 && w != 16 && w != 32) || (h > 8 && h != 16 && h != 32))
         return 0;
+
     bytespp = pix->drawable.bitsPerPixel / 8;
     srcp = pix->devPrivate.ptr;
     mono = TRUE;
@@ -919,14 +953,20 @@ static int ReduceTileToSize8(pci, pix, checkmono)
         /* We can check for "mono" tiles here. */
         if (checkmono && mono) {
             int i;
+
             for (i = 0; i < w; i++) {
                 int c;
-                switch (pix->drawable.bitsPerPixel / 8) {
+                switch (bytespp /*pix->drawable.bitsPerPixel / 8*/) {
                 case 1 :
                     c = *((unsigned char *)srcp + i);
                     break;
                 case 2 :
                     c = *((unsigned short *)srcp + i);
+                    break;
+                case 3 :
+		    c = (0xFF & (int)*((unsigned char *)srcp + i * 3))
+		        |((0xFF & (int)*((unsigned char *)srcp + i * 3 + 1)) << 8)
+		        |((0xFF & (int)*((unsigned char *)srcp + i * 3 + 2)) << 16);
                     break;
                 case 4 :
                     c = *((unsigned int *)srcp + i);
@@ -946,7 +986,12 @@ static int ReduceTileToSize8(pci, pix, checkmono)
         /* Make sure that the tile is horizontally repeated. */
         if (w > 8) {
             int i, j, bytewidth8, bytewidth8_times_i;
-            bytewidth8 = bytespp * 8;
+
+	    if(bytespp == 3)
+	      bytewidth8 = (bytespp * 8 + 7) & ~0x7;
+	    else	    
+	      bytewidth8 = bytespp * 8;
+
             /* gcc seems too stupid to eliminate mul in inner loop. */
             bytewidth8_times_i = bytewidth8;
             /* For each extra horizontal repetition. */
@@ -1009,9 +1054,11 @@ static void DoCacheTile(pix)
 {
 #ifdef PIXPRIV
     int reducible_status;
+
     xf86PixPrivPtr devPriv = 
 	(xf86PixPrivPtr)(pix->devPrivates[xf86PixmapIndex].ptr);
     CacheInfoPtr pci = &xf86CacheInfo[devPriv->slot];
+
 
     pci->pix_w = pix->drawable.width;
     pci->pix_h = pix->drawable.height;
@@ -1131,6 +1178,7 @@ static Bool ReduceStippleToSize8(pci, pix)
     int y;
     unsigned char *srcp;
     unsigned int bits[8];
+
     w = pci->pix_w;
     h = pci->pix_h;
     /* w and h must be power of 2. */
@@ -1284,8 +1332,8 @@ static int DoCacheStipple(slot, pDrawable, pGC)
         && (!(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_MOD_64_OFFSET)
         || (xf86AccelInfoRec.FramebufferWidth & 63) == 0) &&
         ((xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_TRANSPARENCY)
-        || pGC->fillStyle == FillOpaqueStippled) &&
-        xf86AccelInfoRec.BitsPerPixel != 24) {
+        || pGC->fillStyle == FillOpaqueStippled) /*&&
+        xf86AccelInfoRec.BitsPerPixel != 24*/) {
         /*
          * Stipples are often 32 pixels wide. However, we are only
          * able to use the hardware pattern if the 8 pixels are
@@ -1323,7 +1371,8 @@ static int DoCacheStipple(slot, pDrawable, pGC)
 	    box.x2 = pix->drawable.width;
 	    box.y2 = pix->drawable.height;
 	    REGION_INIT(pScreen, &rgnDst, &box, 1);
-            xf86CopyPlane1toN((DrawablePtr)pix, (DrawablePtr)scratchpix,
+            (*xf86GCInfoRec.CopyPlane1toNFallBack)((DrawablePtr)pix, 
+            (DrawablePtr)scratchpix,
                 GXcopy, &rgnDst, &ptSrc, 0xFFFFFFFF, 1,
                 pci->bg_color, pci->fg_color);
             REGION_UNINIT(pScreen, &rgnDst);
@@ -1389,7 +1438,7 @@ static void DoCacheExpandPixmap(pci)
 {
     int cur_w = pci->pix_w;
     int cur_h = pci->pix_h;
- 
+
     xf86AccelInfoRec.SetupForScreenToScreenCopy(1, 1, GXcopy, 0xFFFFFFFF, -1);
 
     /* Expand in the x direction */

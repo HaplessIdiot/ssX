@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.126 1997/12/05 22:01:14 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.127 1998/01/24 16:56:16 hohndel Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -348,7 +348,8 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.126 1997/12/05 22:01:14 hohndel Ex
  *
 #define XF86SvgaDrivers		nv tseng et3000 wd gvga ati sis trident \
 				cirrus ncr mga oak al2101 ali cl64xx \
-				video7 chips ark mx realtek apm s3 vga
+				video7 chips ark mx realtek apm s3 p9x00 \
+				tritech vga
  */
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcRslvC.c,v 3.6 1996/12/23 06:53:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcRslvC.c,v 3.7 1997/03/13 15:11:26 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -88,26 +88,6 @@ static unsigned short defstaticpalette[16][3] = {
 	{ 0xFFFF, 0x0000, 0x0000 },	/* red */
 	};
 
-static unsigned short staticgraypalette[16][3] = {
-	/*   R       G       B   */
-	{ 0x0000, 0x0000, 0x0000 },
-	{ 0x1000, 0x1000, 0x1000 },
-	{ 0x2000, 0x2000, 0x2000 },
-	{ 0x3000, 0x3000, 0x3000 },
-	{ 0x4400, 0x4400, 0x4400 },
-	{ 0x5400, 0x5400, 0x5400 },
-	{ 0x6400, 0x6400, 0x6400 },
-	{ 0x7400, 0x7400, 0x7400 },
-	{ 0x8800, 0x8800, 0x8800 },
-	{ 0x9800, 0x9800, 0x9800 },
-	{ 0xA800, 0xA800, 0xA800 },
-	{ 0xB800, 0xB800, 0xB800 },
-	{ 0xCC00, 0xCC00, 0xCC00 },
-	{ 0xDC00, 0xDC00, 0xDC00 },
-	{ 0xEC00, 0xEC00, 0xEC00 },
-	{ 0xFFFF, 0xFFFF, 0xFFFF },
-	};
-
 Bool
 vga16InitializeColormap(pmap)
     register ColormapPtr	pmap;
@@ -124,10 +104,11 @@ vga16InitializeColormap(pmap)
     switch( pVisual->class )
 	{
 	case StaticGray:
-	    for ( i = 0 ; i < 16 ; i++ ) {
-		pmap->red[i].co.local.red   = (staticgraypalette[i][0]);
-		pmap->red[i].co.local.green = (staticgraypalette[i][1]);
-		pmap->red[i].co.local.blue  = (staticgraypalette[i][2]);
+	    for ( i = 0 ; i < maxent ; i++ ) {
+		pmap->red[i].co.local.red   =
+		pmap->red[i].co.local.green =
+		pmap->red[i].co.local.blue  =
+		    ((((i * 65535) / maxent) >> shift) * 65535) / lim;
 	    }
 	    break;
 	case StaticColor:
@@ -175,7 +156,8 @@ register VisualPtr const pVisual ;
 	{
 	case StaticGray:
 	    *pred = (30L * *pred + 59L * *pgreen + 11L * *pblue) / 100;
-	    *pblue = *pgreen = *pred = (((*pred >> shift) * 65535)/lim)&0xFC00;
+	    *pred = (((*pred * (maxent + 1)) >> 16) * 65535) / maxent;
+	    *pblue = *pgreen = *pred = ((*pred >> shift) * 65535) / lim;
 	    break;
 	case StaticColor:
 	    break;

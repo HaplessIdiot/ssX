@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cursor.c,v 3.9 1998/04/05 00:46:03 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cursor.c,v 3.10 1998/04/05 16:42:22 robin Exp $ */
 /*
  * Copyright 1996  The XFree86 Project
  *
@@ -489,12 +489,19 @@ static Bool Int64RealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
 	    unsigned long mask_low, source_low;
 	    unsigned long mask_high, source_high;
 
-	    if (i < h && j < wsrc/8) {
+	    if (i < h && j < wsrc/4 ) {
+	      if(j < wsrc/8 ) {
 	        mask_low = *pServMsk++;
 	        source_low = *pServSrc++;
 	        mask_high = *pServMsk++;
 	        source_high = *pServSrc++;
-
+	      }
+	      else{
+	        mask_low = *pServMsk++;
+	        source_low = *pServSrc++;
+	        mask_high = 0x00000000L;
+	        source_high = 0xFFFFFFFFL;
+	      }
                 if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_BIT_ORDER_MSBFIRST) {
 	            ((char *)&mask_low)[0] = byte_reversed[((unsigned char *)&mask_low)[0]];
 	            ((char *)&mask_low)[1] = byte_reversed[((unsigned char *)&mask_low)[1]];

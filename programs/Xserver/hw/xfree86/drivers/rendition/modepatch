@@ -1,0 +1,174 @@
+diff -u rendition.work/rendition_driver.c rendition/rendition_driver.c
+--- rendition.work/rendition_driver.c	Mon May  4 21:10:38 1998
++++ rendition/rendition_driver.c	Tue May  5 01:22:50 1998
+@@ -39,6 +39,7 @@
+ #include "vtypes.h"
+ #include "vramdac.h"
+ #include "vmodes.h"
++#include "v2kregs.h"
+ 
+ #define DEBUG
+ 
+@@ -387,6 +388,23 @@
+ }
+ 
+ 
++#define combineNMP(N, M, P) \
++    (((vu32)(M-2)<<10) | ((vu32)P<<8) | (vu32)(N-2))
++
++#define v2kcombineNMP(N, M, P) (((vu32)N<<13) | ((vu32)P<<9) | (vu32)M)
++
++#define CTL(ldbl, hsynchi, vsynchi) \
++  (((ldbl) ? CRTCCTL_LINEDOUBLE : 0) \
++  |((hsynchi) ? CRTCCTL_HSYNCHI : 0) \
++  |((vsynchi) ? CRTCCTL_VSYNCHI : 0) \
++  |(CRTCCTL_VSYNCENABLE | CRTCCTL_HSYNCENABLE))
++
++#define HORZ(fp, sy, bp, ac) \
++  (((((vu32)((fp>>3)-1))&7)<<21)|((((vu32)((sy>>3)-1))&0x1F)<<16)|((((vu32)((bp>>3)-1))&0x3f)<<9)|((((vu32)((ac>>3)-1))&0xff)))
++
++#define VERT(fp, sy, bp, ac) \
++  (((((vu32)(fp-1))&0x3f)<<20)|((((vu32)(sy-1))&0x7)<<17)|((((vu32)(bp-1))&0x3f)<<11)|((((vu32)(ac-1))&0x7ff)))
++
+ 
+ /*
+  * RENDITIONInit --
+@@ -400,13 +418,66 @@
+ RENDITIONInit(mode)
+ DisplayModePtr mode;
+ {
++  int iob=BOARD.io_base;
++  int tmp;
++  int m, n, p;
++
+   fprintf(stderr, "RENDITION: RENDITIONInit() called\n");
+ 
+   if (!vgaHWInit(mode, sizeof(vgaRenditionRec)))
+     return FALSE;
+ 
+-  v_setmode(&BOARD);
++/*  v_setmode(&BOARD);*/
++
++  /* switching to native mode */
++  v_out8(iob+MODEREG, NATIVE_MODE);
++
++  /* flipping some bytes */
++  v_out8(iob+MEMENDIAN, MEMENDIAN_HW);
+ 
++  /* try programming 1024x768@70 in highcolor */
++  tmp=v_in32(iob+DRAMCTL)&0xdfff;              /* reset bit 13 */
++  v_out32(iob+DRAMCTL, tmp|0x330000);
++  
++  /* program pixel clock */
++  if (BOARD.chip == V1000_DEVICE) {
++    fprintf(stderr, "RENDITION: v1000 clock needs to be written (Marc)\n");
++/*    set_PLL(iob, combineNMP(21, 55, 0));*/
++  } 
++  else {
++    v_out32(iob+DRAMCTL, (~0x1800) & v_in32(iob+DRAMCTL));
++    V2200CalcClock(vga256InfoRec.clock[mode->Clock]/1000.0, &m, &n, &p);
++    v_out32(iob+PCLKPLL, v2kcombineNMP(n, m, p));
++  }
++  usleep(500);
++  
++  v_initdac(&BOARD, vgaBitsPerPixel);
++  
++  v_out32(iob+CRTCHORZ, HORZ(mode->CrtcHSyncStart - mode->CrtcHDisplay, 
++			     mode->CrtcHSyncEnd - mode->CrtcHSyncStart,
++			     mode->CrtcHTotal - mode->CrtcHSyncEnd,
++			     mode->CrtcHDisplay));
++  v_out32(iob+CRTCVERT, VERT(mode->CrtcVSyncStart - mode->CrtcVDisplay, 
++			     mode->CrtcVSyncEnd - mode->CrtcVSyncStart,
++			     mode->CrtcVTotal - mode->CrtcVSyncEnd,
++			     mode->CrtcVDisplay));
++  
++  BOARD.screen_width=mode->CrtcHDisplay;
++  BOARD.virtual_width=mode->CrtcHDisplay;
++  BOARD.virtual_width=1024;
++  BOARD.bytespp=vgaBitsPerPixel>>3;
++  BOARD.fifo_size=128;
++  v_setframebase(&BOARD, 0);
++  
++  /* Need to fix up syncs */
++
++  v_out32(iob+CRTCCTL, CTL(0, 0, 0)
++	  |V_PIXFMT_565 
++	  |CRTCCTL_VIDEOFIFOSIZE128
++	  |CRTCCTL_HSYNCENABLE
++	  |CRTCCTL_VSYNCENABLE
++	  |CRTCCTL_VIDEOENABLE);
++  
+   return TRUE;
+ }
+ 
+diff -u rendition.work/vramdac.c rendition/vramdac.c
+--- rendition.work/vramdac.c	Mon May  4 09:29:35 1998
++++ rendition/vramdac.c	Tue May  5 00:51:50 1998
+@@ -91,6 +91,56 @@
+ static vu8 Bt485_read_masked(vu16 port, vu8 reg, vu8 mask);
+ static vu8 Bt485_read_cmd3_masked(vu16 port, vu8 mask);
+ 
++/* V2200CalcClock -- finds PLL parameters to match target
++ *                   frequency (in megahertz)
++ *
++ *                   Brute force, but takes less than a tenth
++ *                   of a second and the function is only called
++ *                   O(1) times during program execution.
++ */
++
++#define V2_MIN_VCO_FREQ  125
++#define V2_MAX_VCO_FREQ  250
++#define V2_REF_FREQ      14.31818
++#define V2_MIN_PCF_FREQ  1
++#define V2_MAX_PCF_FREQ  3
++
++double 
++V2200CalcClock(double target, int *m, int *n, int *p)
++{
++  double mindiff = 1e10;
++  double vco, pcf, diff, freq;
++  int mm, nn, pp;
++
++  for (pp=1; pp<=0x0f; pp++)
++    for (nn=1; nn<=0x3f; nn++)
++      for (mm=1; mm<=0xff; mm++) {
++	vco = V2_REF_FREQ*mm/nn;
++	if ((vco < V2_MIN_VCO_FREQ) || (vco > V2_MAX_VCO_FREQ))
++	  continue;
++	pcf = V2_REF_FREQ/nn;
++	if ((pcf < V2_MIN_PCF_FREQ) || (pcf > V2_MAX_PCF_FREQ))
++	  continue;
++	freq = vco/pp;
++	diff = fabs(target-freq);
++	if (diff < mindiff) {
++	  *m = mm; *n = nn; *p = pp;
++	  mindiff = diff;
++	}
++      }
++	 
++  vco = V2_REF_FREQ * *m / *n;
++  pcf = V2_REF_FREQ / *n;
++  freq = vco / *p;
++
++#ifdef DEBUG
++  fprintf(stderr,
++	  "RENDITION: target=%f freq=%f vco=%f pcf=%f n=%d m=%d p=%d\n",
++	  target, freq, vco, pcf, *n, *m, *p);
++#endif
++
++  return freq;
++}
+ 
+ 
+ /*
+diff -u rendition.work/vramdac.h rendition/vramdac.h
+--- rendition.work/vramdac.h	Mon May  4 09:29:35 1998
++++ rendition/vramdac.h	Tue May  5 00:51:04 1998
+@@ -23,6 +23,7 @@
+ 
+ int v_initdac(struct v_board_t *board, vu8 bpp);
+ 
++double V2200CalcClock(double target, int *m, int *n, int *p);
+ 
+ 
+ #endif /* #ifndef _VRAMDAC_H_ */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.28 1998/04/05 00:45:48 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.29 1998/04/26 16:04:38 robin Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -320,7 +320,7 @@ glintProbe()
   unsigned long basecopro = 0;
   unsigned long base3copro = 0;
   unsigned long basedelta = 0;
-  unsigned long *delta_pci_basep = 0;
+  unsigned int *delta_pci_basep = 0;
   int cardnum = -1;
   int offset;
 
@@ -1037,6 +1037,7 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 	int displayResolution = 75; 	/* default to 75dpi */
 	int i;
 	extern int monitorResolution;
+	Bool (*ScreenInitFunc)(register ScreenPtr,pointer,int,int,int,int,int);
 
 	/* Init the screen */
         xf86EnableIOPorts(scr_index);
@@ -1084,7 +1085,22 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 		}
 	}
 
-	if (!xf86XAAScreenInit(pScreen,
+	switch (glintInfoRec.depth) {
+		case 8:
+			ScreenInitFunc = &xf86XAAScreenInit8bpp;
+			break;
+		case 15: case 16:
+			ScreenInitFunc = &xf86XAAScreenInit16bpp;
+			break;
+		case 24:
+			ScreenInitFunc = &xf86XAAScreenInit24bpp;
+			break;
+		case 32:
+			ScreenInitFunc = &xf86XAAScreenInit32bpp;
+			break;
+	}
+
+	if (!ScreenInitFunc(pScreen,
 			(pointer) glintVideoMem,
 			glintInfoRec.virtualX, glintInfoRec.virtualY,
 			displayResolution, displayResolution,

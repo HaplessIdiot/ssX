@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGC.c,v 3.7 1997/03/13 15:11:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGC.c,v 3.8 1998/03/20 21:07:08 hohndel Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -211,7 +211,6 @@ register GCPtr pGC ;
 	
         /* Now we initialize the GC fields */
 	pGC->miTranslate = 1;
-	pGC->tileIsPixel = 1;
 	pGC->unused = 0;
 	pGC->planemask = VGA_ALLPLANES;
 	pGC->fgPixel = VGA_BLACK_PIXEL;

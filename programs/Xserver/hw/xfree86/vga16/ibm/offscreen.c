@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/offscreen.c,v 3.5 1996/12/23 06:52:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/offscreen.c,v 3.6 1997/03/13 15:11:02 hohndel Exp $ */
 /*
  * Copyright 1993 Gerrit Jan Akkerman 
  *
@@ -53,10 +53,11 @@
 #include "pixmapstr.h" /* GJA -- for pWin */
 #include "ppc.h" /* GJA -- for pWin */
 
-unsigned char *saved_screen;
+#define saved_screen(pWin) \
+        ((unsigned char *)(((PixmapPtr)((pWin)->drawable.pScreen->devPrivate))->devPrivate.ptr))
 
 #define SAVEDSCREEN(pWin, x, y) \
-	(*(saved_screen + (y) * (BYTES_PER_LINE(pWin) << 3) + (x)))
+	(*(saved_screen(pWin) + (y) * (BYTES_PER_LINE(pWin) << 3) + (x)))
 
 #define DO_ROP(src,dst,alu,planes) \
 	((dst) = do_rop((src),(dst),(alu),(planes)))
@@ -65,31 +66,6 @@ unsigned char *saved_screen;
  * The following to functions don't do anything. They're just there to
  * provide a stable interface to the rest of the system.
  */
-
-/* Save the screen pixels, and stow away a pointer to their data in
- * saved_screen.
- */
-vgaSaveScreenPix(pScreen,ppix)
-PixmapPtr ppix;
-ScreenPtr pScreen;
-{
-          vgaReadColorImage( (WindowPtr)(pScreen->devPrivate),
-			0,0,pScreen->width,pScreen->height,
-                        ppix->devPrivate.ptr,ppix->devKind);
-          saved_screen = ppix->devPrivate.ptr;
-}
-
-/* Restore the screen pixels
- */
-vgaRestoreScreenPix(pScreen,ppix)
-PixmapPtr ppix;
-ScreenPtr pScreen;
-{
-          vgaDrawColorImage( (WindowPtr)(pScreen->devPrivate),
-			0,0,pScreen->width,pScreen->height,
-                        ppix->devPrivate.ptr,ppix->devKind,GXcopy,0x0F);
-
-}
 
 int do_rop(src,dst,alu,planes)
 int src,dst,alu;

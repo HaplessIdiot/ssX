@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86maploc.h,v 3.4 1997/04/10 11:34:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86maploc.h,v 3.5 1997/08/15 07:19:25 hohndel Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -73,6 +73,66 @@ xf86GCNewCopyArea(
     GCPtr	pGC
 #endif
 );
+
+RegionPtr
+xf86CopyPlane(
+#if NeedFunctionPrototypes
+    DrawablePtr		pSrcDrawable,
+    DrawablePtr		pDstDrawable,
+    GCPtr		pGC,
+    int			srcx,
+    int			srcy,
+    int			width,
+    int			height,
+    int			dstx,
+    int			dsty,
+    unsigned long	bitPlane
+#endif
+);
+
+/*RegionPtr
+xf86CopyPlanevga256(
+#if NeedFunctionPrototypes
+    DrawablePtr		pSrcDrawable,
+    DrawablePtr		pDstDrawable,
+    GCPtr		pGC,
+    int			srcx,
+    int			srcy,
+    int			width,
+    int			height,
+    int			dstx,
+    int			dsty,
+    unsigned long	bitPlane
+#endif
+);*/
+
+void xf86CopyPlane1toN(
+#if NeedFunctionPrototypes
+    DrawablePtr		pSrcDrawable,
+    DrawablePtr		pDstDrawable,
+    int			alu,
+    RegionPtr		rgnDst,
+    DDXPointPtr		pptSrc,
+    unsigned int	planemask,
+    unsigned long	bitPlane,
+    int			bg,
+    int			fg
+#endif
+);
+
+/*void xf86CopyPlane1toNvga256(
+#if NeedFunctionPrototypes
+    DrawablePtr		pSrcDrawable,
+    DrawablePtr		pDstDrawable,
+    int			alu,
+    RegionPtr		rgnDst,
+    DDXPointPtr		pptSrc,
+    unsigned int	planemask,
+    unsigned long	bitPlane,
+    int			bg,
+    int			fg
+#endif
+);*/
 
 void
 xf86ImageGlyphBltFallBack(

@@ -486,7 +486,7 @@ static void Redisplay(gw, event, region)
     LabelWidgetClass lwclass = (LabelWidgetClass) XtClass (gw);
     GC gc;
 
-    if (*Superclass->core_class.expose)
+    if (*Superclass->core_class.expose != NULL)
       (*Superclass->core_class.expose)(gw, event, region);
 
     /*

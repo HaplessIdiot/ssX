@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.1 1998/04/19 11:10:52 dawes Exp $
 
 XCOMM Imakefile created for the Freetype TrueType renderer.
 XCOMM mleisher@crl.nmsu.edu (Mark Leisher)
@@ -6,12 +6,14 @@ XCOMM jec@dcs.ed.ac.uk (Juliusz Chroboczek)
 
 #include <Server.tmpl>
 
+#define	IHaveSubdirs
+SUBDIRS = lib
+
 INCLUDES = -I$(FONTINCSRC) -I../include  -Ilib
 
 SRCS = ftfuncs.c ftenc.c ftutil.c ftxcmap.c
 
 OBJS = ftfuncs.o ftenc.o ftutil.o ftxcmap.o
-
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
@@ -19,3 +21,6 @@ NormalLintTarget($(SRCS))
 
 DependTarget()
 
+MakeSubdirs($(SUBDIRS))
+ForceSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))

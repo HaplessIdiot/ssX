@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbbresd.c,v 3.4 1996/12/23 06:52:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbbresd.c,v 3.5 1997/03/13 15:10:53 hohndel Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -67,9 +67,11 @@ SOFTWARE.
 	if (++ dashIndex == numInDashList) \
 	    dashIndex = 0; \
 	dashRemaining = pDash[dashIndex]; \
-	ink = fgink; WM3_SET_INK(fgink); \
+	ink = fgink; \
 	if (dashIndex & 1) \
-	    ink = bgink; if ( ink != NO_INK ) WM3_SET_INK(bgink); \
+	    ink = bgink; \
+	if (isDoubleDash) \
+	    WM3_SET_INK(ink); \
     }
 
 void

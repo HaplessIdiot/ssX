@@ -51,7 +51,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.7 1997/10/26 13:24:46 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.8 1997/11/22 06:50:10 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -300,7 +300,7 @@ typedef unsigned char XrmBits;
 static XrmBits Const xrmtypes[256] = {
     EOS,0,0,0,0,0,0,0,
     0,SPACE,EOL,0,0,
-#if defined(WIN32) || defined(__EMX__) /* || defined(OS2) */
+#if defined(WIN32) || defined(__EMX__)
                     EOL,	/* treat CR the same as LF, just in case */
 #else
                     0,

@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.3 1997/10/26 13:24:52 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.4 1997/12/14 02:55:32 dawes Exp $ */
 
 /*
  * This file contains miscellaneous utility routines and is not part of the
@@ -259,8 +259,7 @@ int XmuReadBitmapData (fstream, width, height, datap, x_hot, y_hot)
     RETURN (BitmapSuccess);
 }
 
-#if defined(WIN32) || defined(__EMX__) /* || defined(OS2) */
-
+#if defined(WIN32)
 static int access_file (path, pathbuf, len_pathbuf, pathret)
     char* path;
     char* pathbuf;

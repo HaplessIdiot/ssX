@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.7 1997/11/01 15:49:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.8 1998/01/24 16:57:53 hohndel Exp $ */
 
 /*
  * Copyright 1994  The XFree86 Project
@@ -27,6 +27,7 @@
  */
 
 #include "vga.h"
+#include "compiler.h"
 #include "scrnintstr.h"
 #include "xf86_ansic.h"
 #include "xf86cursor.h"
@@ -60,7 +61,9 @@ extern void XAARestoreCursor();
 extern void XAAWarpCursor();
 extern void XAAQueryBestSize();
 
-void CHIPSShowCursor() {
+void
+CHIPSShowCursor()
+{
     unsigned char tmp;
     /* turn the cursor on */
     if (ctisHiQV32) {
@@ -99,7 +102,8 @@ CHIPSHideCursor(void)
     ctHWcursorShown = FALSE;
 }
 
-void CHIPSSetCursorPosition(x, y, xorigin, yorigin)
+void
+CHIPSSetCursorPosition(x, y, xorigin, yorigin)
 	int x, y, xorigin, yorigin;
 {
 
@@ -107,7 +111,8 @@ void CHIPSSetCursorPosition(x, y, xorigin, yorigin)
       x = ~(-xorigin-1) | 0x8000;
     if (yorigin != 0)
       y = ~(-yorigin-1) | 0x8000;
-    
+
+    outb(0x3D6, 0xA0);
     if (ctDBLSCAN)
 	y *= 2;
 
@@ -179,13 +184,12 @@ CHIPSSetCursorColors(bg, fg)
 
 void
 CHIPSLoadCursorImage(bits, xorigin, yorigin)
-	unsigned long *bits;
+	void *bits;
 	int xorigin, yorigin;
 {
-    int i;
-
     if (ctisWINGINE) {
       unsigned long *tmp;
+      int i;
 
       /* The Wingine expected the mask and source data to not be intereleaved.
        * The XAA code isn't currently setup to do this, and as far as I know
@@ -241,7 +245,8 @@ CHIPSLoadCursorImage(bits, xorigin, yorigin)
 }
 
 
-Bool CHIPSUseHWCursor(pScr)
+Bool
+CHIPSUseHWCursor(pScr)
      ScreenPtr pScr;
 {
     if (XF86SCRNINFO(pScr)->modes->Flags & V_DBLSCAN)
@@ -254,7 +259,8 @@ Bool CHIPSUseHWCursor(pScr)
     return ctHWCursor;
 }
 
-void CHIPSInitCursor() 
+Bool
+CHIPSInitCursor() 
 {
     XAACursorInfoRec.Flags = USE_HARDWARE_CURSOR |
       HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
@@ -308,4 +314,5 @@ void CHIPSInitCursor()
 	MMIOmeml(MR(0xC)) = ctCursorAddress;
       }
     }
+    return TRUE;
 }

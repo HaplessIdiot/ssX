@@ -23,7 +23,7 @@
  * SOFTWARE.
  *
 */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.12 1997/10/26 13:24:47 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.13 1997/11/22 06:50:11 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -37,7 +37,7 @@ extern char *getenv();
 /************************************************************************/
 
 #define	iscomment(ch)	((ch) == '#' || (ch) == '\0')
-#if defined(WIN32) || defined(__EMX__) /* || defined(OS2) */
+#if defined(WIN32)
 #define isreadable(f)	(_XAccessFile(f))
 #else
 #define isreadable(f)	((access((f), R_OK) != -1) ? 1 : 0)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.17 1997/10/25 13:50:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.19 1998/01/25 01:22:59 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -53,8 +53,9 @@ vgaGetPCIInfo()
 #endif
 #endif /* PC98 */
 	    found = TRUE;
+            if (info) xfree(info);
 	    if ((info = (vgaPCIInformation *)
-		 xalloc(sizeof(vgaPCIInformation))) == NULL)
+		 xcalloc(1,sizeof(vgaPCIInformation))) == NULL)
 		return NULL;
 	    info->Vendor = pcrp->_vendor;
 	    info->ChipType = pcrp->_device;
@@ -148,10 +149,6 @@ vgaGetPCIInfo()
 			membase2 = pcrp->_base5 & 0XFFFFFFF0;
 		}
 	    }
-	    break;
-	}
-	i++;
-    }
     if (found && xf86Verbose) {
 	int i = 0, j;
 	char *vendorname = NULL, *chipname = NULL;
@@ -193,6 +190,9 @@ vgaGetPCIInfo()
 	if (info->IOBase)
 	    ErrorF(", I/O @ 0x%04x", info->IOBase);
 	ErrorF("\n");
+    }
+	}
+	i++;
     }
     return info;
 }

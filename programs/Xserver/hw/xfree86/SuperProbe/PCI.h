@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.26 1997/10/25 13:50:06 hohndel Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.27 1997/11/01 15:04:27 hohndel Exp $ */ 
 /*
  * PCI Probe
  *
@@ -225,6 +225,7 @@ void xf86writepci(
 #define PCI_VENDOR_UMC		0x1060
 #define PCI_VENDOR_NVIDIA       0x10DE
 #define PCI_VENDOR_ALLIANCE	0x1142
+#define PCI_VENDOR_TRITECH	0x1292
 #define PCI_VENDOR_NVIDIA_SGS   0x12d2
 #define PCI_VENDOR_RENDITION	0x1163
 #define PCI_VENDOR_SIGMADESIGNS	0x1236
@@ -361,6 +362,9 @@ void xf86writepci(
 #define PCI_CHIP_3DLABS_500TX      0x0002
 #define PCI_CHIP_3DLABS_DELTA      0x0003
 #define PCI_CHIP_3DLABS_PERMEDIA   0x0004
+
+/* Tritech Microelectronics */
+#define PCI_CHIP_TR25202	0xfc02
 
 /* Increase this as required */
 #define MAX_DEV_PER_VENDOR 16

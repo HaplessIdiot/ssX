@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaline.c,v 3.8 1996/12/23 06:59:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaline.c,v 3.9 1998/03/20 21:07:20 hohndel Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -146,10 +146,10 @@ vga256LineSS (pDrawable, pGC, mode, npt, pptInit)
      * This is a temporary hack to really use the non-bankchecking routines
      * in the fXF86 functions if linear addressing is enabled.
      */
-    if (vgaUseLinearAddressing && xf86VTSema)
+      /*    if (vgaUseLinearAddressing && xf86VTSema)
          addrl = (unsigned long*)((unsigned char *)vgaLinearBase +
              (unsigned long)((unsigned char *)addrl - (unsigned long)VGABASE));
-
+	     */
     BANK_FLAG(addrl)
 
     alu = devPriv->rop;

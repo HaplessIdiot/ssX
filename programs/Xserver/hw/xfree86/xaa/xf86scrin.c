@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.25 1998/04/26 16:05:09 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.26 1998/04/27 13:18:45 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -84,25 +84,29 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "xf86maploc.h"
 #include "xf86local.h"
 #include "xf86pcache.h"
-#include "xf86scrin.h"
 
 #ifdef VGA256
+#define vgabppScreenInit xf86XAAScreenInitvga256
 #define xaaVersRec xaavga256VersRec
 #define xaaname "xaavga256"
 #else
 #if PSZ == 8
+#define vgabppScreenInit xf86XAAScreenInit8bpp
 #define xaaVersRec xaa8VersRec
 #define xaaname "xaa8"
 #endif
 #if PSZ == 16
+#define vgabppScreenInit xf86XAAScreenInit16bpp
 #define xaaVersRec xaa16VersRec
 #define xaaname "xaa16"
 #endif
 #if PSZ == 24
+#define vgabppScreenInit xf86XAAScreenInit24bpp
 #define xaaVersRec xaa24VersRec
 #define xaaname "xaa24"
 #endif
 #if PSZ == 32
+#define vgabppScreenInit xf86XAAScreenInit32bpp
 #define xaaVersRec xaa32VersRec
 #define xaaname "xaa32"
 #endif
@@ -333,7 +337,7 @@ xf86FinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
 Bool
-xf86XAAScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
+vgabppScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     register ScreenPtr pScreen;
     pointer pbits;		/* pointer to screen bitmap */
     int xsize, ysize;		/* in pixels */
@@ -394,7 +398,7 @@ ModuleInit( data, magic )
 	break;
     case 1:
     	* magic = MAGIC_CCD_XAA_SCREEN_INIT;
-	* data  = (pointer) &xf86XAAScreenInit;
+	* data  = (pointer) &vgabppScreenInit;
 	break;
     default:
     	* magic = MAGIC_DONE;

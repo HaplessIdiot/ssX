@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.22 1998/01/24 16:58:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.23 1998/03/20 21:07:31 hohndel Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -37,7 +37,7 @@
 #define HARDWARE_PATTERN_MONO_TRANSPARENCY	0x80
 #define HARDWARE_PATTERN_NOT_LINEAR	0x100
 #define HARDWARE_PATTERN_NO_PLANEMASK	0x200
-
+#define HARDWARE_PATTERN_ALIGN_32	0x400
 
 /* Graphics operation flags */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.41 1998/03/20 21:07:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.42 1998/04/26 18:32:01 robin Exp $ */
 /*
  * PCI Probe
  *
@@ -31,13 +31,14 @@
 #define PCI_VENDOR_UMC		0x1060
 #define PCI_VENDOR_NVIDIA	0x10DE
 #define PCI_VENDOR_ALLIANCE	0x1142
+#define PCI_VENDOR_TRITECH	0x1292
 #define PCI_VENDOR_NVIDIA_SGS	0x12d2
 #define PCI_VENDOR_SIGMADESIGNS 0x1236
 #define PCI_VENDOR_RENDITION	0x1163
 #define PCI_VENDOR_3DLABS	0x3D3D
 #define PCI_VENDOR_S3		0x5333
 #define PCI_VENDOR_ARK		0xEDD8
-
+#define PCI_VENDOR_NEOMAGIC	0x10C8
 
 /* ATI */
 #define PCI_CHIP_MACH32		0x4158
@@ -173,6 +174,15 @@
 #define PCI_CHIP_2000PV		0xA099
 #define PCI_CHIP_2000MT		0xA0A1
 #define PCI_CHIP_2000MI		0xA0A9
+
+/* Tritech Microelectronics */
+#define PCI_CHIP_TR25202	0xfc02
+
+/* Neomagic */
+#define PCI_CHIP_NM2070		0x0001
+#define PCI_CHIP_128V		0x0002
+#define PCI_CHIP_128ZV		0x0003
+#define PCI_CHIP_NM2160		0x0004
 
 /* Increase this as required */
 #define MAX_DEV_PER_VENDOR 20
@@ -352,6 +362,14 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_2000MT,	"2000MT"},
 				{PCI_CHIP_2000MI,	"2000MI"},
 				{0x0000,		NULL}}},
+    {PCI_VENDOR_TRITECH,	"Tritech Microelectronics", {
+				{PCI_CHIP_TR25202,	"Pyramid3D TR25202"},
+				{0x0000,		NULL}}},
+   {PCI_VENDOR_NEOMAGIC, "Neomagic", {
+    				{PCI_CHIP_NM2070,       "NM2070"},  
+    				{PCI_CHIP_128V,         "128V"},
+				{PCI_CHIP_128ZV,        "128ZV"},
+				{PCI_CHIP_NM2160,	"NM2160"}}},
     {0x0000,		NULL,	{
 				{0x0000,		NULL}}},
 };

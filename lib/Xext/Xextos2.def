@@ -1,5 +1,5 @@
 LIBRARY XEXT
-DESCRIPTION "X11R6 XFree86 3.2 libXEXT.dll for OS/2 EMX09C VERSION=6.1"
+DESCRIPTION "X11R6 XFree86 3.9 libXEXT.dll for OS/2 EMX09C VERSION=6.3"
 CODE
 	PRELOAD
 DATA
@@ -105,15 +105,15 @@ EXPORTS
 	XLbxQueryExtension @ 97
 	XLbxGetEventBase @ 98
 	XLbxQueryVersion @ 99
-	XcupGetReservedColormapEntries @ 100
-	XcupQueryVersion @ 101
-	XcupStoreColors @ 102
-	XPanoramiXQueryVersion @ 103
-	XPanoramiXAllocInfo @ 104
-	XPanoramiXGetScreenCount @ 105
-	XPanoramiXGetScreenSize @ 106
-	XPanoramiXGetState @ 107
-	XPanoramiXQueryExtension @ 108
+;R6.4	XcupGetReservedColormapEntries @ 100
+;R6.4	XcupQueryVersion @ 101
+;R6.4	XcupStoreColors @ 102
+;R6.4	XPanoramiXQueryVersion @ 103
+;R6.4	XPanoramiXAllocInfo @ 104
+;R6.4	XPanoramiXGetScreenCount @ 105
+;R6.4	XPanoramiXGetScreenSize @ 106
+;R6.4	XPanoramiXGetState @ 107
+;R6.4	XPanoramiXQueryExtension @ 108
 	DPMSQueryExtension @ 109
 	DPMSGetVersion @ 110
 	DPMSCapable @ 111

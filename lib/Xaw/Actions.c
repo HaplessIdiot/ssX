@@ -1,5 +1,5 @@
 /*
- * $Id: Actions.c,v 3.2 1998/04/28 13:33:32 robin Exp $
+ * $Id: Actions.c,v 3.3 1998/06/04 16:43:07 hohndel Exp $
  *
  * Copyright (c) 1996 by The XFree86 Project, Inc.
  *
@@ -27,7 +27,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: $ */
+/* $XFree86: xc/lib/Xaw/Actions.c,v 3.2 1998/04/28 13:33:32 robin Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -38,6 +38,10 @@
 #include <X11/CoreP.h>
 #include <X11/Constraint.h>
 #include "Private.h"
+
+#ifdef __EMX__
+#define strcasecmp stricmp
+#endif
 
 /*
  * Definitions

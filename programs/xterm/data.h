@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: data.h /main/13 1996/11/24 17:35:40 rws $
- *	$XFree86: xc/programs/xterm/data.h,v 3.10 1998/04/18 18:42:00 robin Exp $
+ *	$XFree86: xc/programs/xterm/data.h,v 3.11 1998/04/27 03:14:58 robin Exp $
  */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -79,7 +79,7 @@ extern Boolean sameName;
 #if OPT_SUNPC_KBD
 extern Boolean sunKeyboard;
 #endif
-extern Char buffer[];
+extern Char VTbuffer[];
 extern int am_slave;
 extern int bcnt;
 #ifdef DEBUG

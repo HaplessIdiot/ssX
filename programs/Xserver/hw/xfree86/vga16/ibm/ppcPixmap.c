@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPixmap.c,v 3.4 1997/03/13 15:11:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPixmap.c,v 3.5 1997/10/25 13:50:47 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -160,11 +160,11 @@ PixmapPtr pPix ;
 { 
 unsigned char *psrc, *pline ;
 int i, j ;
-pline = pPix->devPrivate ;
-for ( i = 0 ; i < pPix->height ; i++ )
+pline = pPix->devPrivate.ptr ;
+for ( i = 0 ; i < pPix->drawable.height ; i++ )
 	{
 	psrc = pline ;
-	for ( j = 0 ; j < pPix->width ; j++ )
+	for ( j = 0 ; j < pPix->drawable.width ; j++ )
 		{
 		ErrorF("%02x ",*psrc++) ;
 		}

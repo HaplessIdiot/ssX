@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/cfbcpplane.c,v 3.1 1997/02/24 17:47:17 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/cfbcpplane.c,v 3.2 1998/01/24 16:58:51 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -128,13 +128,13 @@ cfbCopyPlane1to24 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
     unsigned short *pdstLine;
     register unsigned short *pdst;
 #endif
-#if PSZ == 32
-    unsigned int *pdstLine;
-    register unsigned int *pdst;
-#endif
 #if PSZ == 24
     unsigned char *pdstLine;
     register unsigned char *pdst;
+#endif
+#if PSZ == 32
+    unsigned int *pdstLine;
+    register unsigned int *pdst;
 #endif
     register unsigned int  bits, tmp;
     register unsigned int  fgpixel, bgpixel;
@@ -146,6 +146,9 @@ cfbCopyPlane1to24 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
     int  result;
 #if PSZ == 16
     unsigned int doublet[4];	/* Pixel values for 16bpp expansion. */
+#endif
+#if PSZ == 24
+    unsigned char doublet[12];	/* Pixel values for 24bpp expansion. */
 #endif
 #if PSZ == 32
     unsigned int doublet[8];	/* Pixel values for 32bpp expansion */
@@ -160,6 +163,22 @@ cfbCopyPlane1to24 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
         doublet[1] = fgpixel | (bgpixel << 16);
         doublet[2] = bgpixel | (fgpixel << 16);
         doublet[3] = fgpixel | (fgpixel << 16);
+    }
+#endif
+#if PSZ == 24
+    if (rop == GXcopy && (planemask & PMSK) == PMSK) {
+        doublet[0] = bgpixel && 0xFF;
+        doublet[1] = (bgpixel >> 8)&& 0xFF;
+        doublet[2] = (bgpixel >> 16)&& 0xFF;
+        doublet[3] = fgpixel && 0xFF;
+        doublet[4] = (fgpixel >> 8)&& 0xFF;
+        doublet[5] = (fgpixel >> 16)&& 0xFF;
+        doublet[6] = bgpixel && 0xFF;
+        doublet[7] = (bgpixel >> 8)&& 0xFF;
+        doublet[8] = (bgpixel >> 16)&& 0xFF;
+        doublet[9] = fgpixel && 0xFF;
+        doublet[10] = (fgpixel >> 8)&& 0xFF;
+        doublet[11] = (fgpixel >> 16)&& 0xFF;
     }
 #endif
 #if PSZ == 32
@@ -415,6 +434,10 @@ void
 cfbCopyPlane16to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, 
 		   planemask, bitPlane)
 #endif
+#if PSZ == 24
+cfbCopyPlane24to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, 
+		   planemask, bitPlane)
+#endif
 #if PSZ == 32
 cfbCopyPlane32to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, 
 		   planemask, bitPlane)
@@ -434,12 +457,18 @@ cfbCopyPlane32to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 #if PSZ == 16
     unsigned short	    *psrcLine;
 #endif
+#if PSZ == 24
+    unsigned char	    *psrcLine;
+#endif
 #if PSZ == 32
     unsigned int	    *psrcLine;
 #endif
     unsigned int	    *pdstLine;
 #if PSZ == 16
     register unsigned short *psrc;
+#endif
+#if PSZ == 24
+    register unsigned char *psrc;
 #endif
 #if PSZ == 32
     register unsigned int   *psrc;
@@ -453,6 +482,7 @@ cfbCopyPlane32to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
     int			    niStart, niEnd;
     int			    bitStart, bitEnd;
     int			    nl, nlMiddle;
+
     int			    nbox;
     BoxPtr		    pbox;
     int result;
@@ -489,6 +519,9 @@ cfbCopyPlane32to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 	pptSrc++;
 #if PSZ == 16
 	psrcLine = (unsigned short *)psrcBase + srcy * widthSrc + srcx;
+#endif
+#if PSZ == 24
+	psrcLine = (unsigned char *)psrcBase + srcy * widthSrc + srcx;
 #endif
 #if PSZ == 32
 	psrcLine = (unsigned int *)psrcBase + srcy * widthSrc + srcx;

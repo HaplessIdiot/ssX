@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.177 1998/01/24 19:15:07 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.178 1998/03/27 23:22:56 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -565,19 +565,19 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #  define XF86CardDrivers	trident mga s3v
 # elif defined(PpcArchitecture)
 #  if defined(PmaxOSArchitecture)
-#   define XF86CardDrivers	cirrus mga s3_newmmio s3v vga
+#   define XF86CardDrivers    cirrus mga s3_newmmio s3v vga
 #  else
-#   define XF86CardDrivers	cirrus vga
+#   define XF86CardDrivers    cirrus vga
 #  endif
 # elif defined(Arm32Architecture)
-#  define XF86CardDrivers	chips igs vga
+#  define XF86CardDrivers     chips igs vga
 # else
 #  define XF86CardDrivers	nv tseng et3000 wd gvga ati sis trident \
 				cirrus ncr compaq mga oak al2101 ali \
 				cl64xx video7 chips ark mx realtek apm \
-				s3_pio s3_newmmio s3v p9x00 \
+				s3_pio s3_newmmio s3v p9x00 tritech \
 				apollo hercules hgc1280 sigma \
-				vga
+				vga 
 # endif
 #endif
 
@@ -605,7 +605,7 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #  define XF86SvgaDrivers	nv tseng et3000 wd gvga ati sis trident \
 				cirrus ncr compaq mga oak al2101 ali \
 				cl64xx video7 chips ark mx realtek apm \
-				s3_pio s3v p9x00 \
+				s3_pio s3v p9x00 tritech \
 				apollo hercules hgc1280 sigma \
 				vga
 # endif

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.144 1998/04/05 21:10:55 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.145 1998/04/26 16:04:45 robin Exp $
  *
  * Loosely based on code bearing the following copyright:
  *
@@ -367,12 +367,14 @@ void
 xf86SetErrorLog(logpath)
 char	*logpath;
 {
+#ifndef __EMX__ /* OS/2: don't save backup file */
   char	tmpname[1024];
 
   strncpy(tmpname,logpath,1019);
   strcat(tmpname,".bak");
   (void) unlink(tmpname);
   (void) link(logpath, tmpname);
+#endif
   (void) unlink(logpath);
 
   freopen(logpath,"w+",stderr);
@@ -5815,7 +5817,7 @@ xf86PruneModes(monp, allmodes, scrp, card)
 		 (xf86CheckMode(scrp, dispmp, monp, xf86Verbose) != MODE_OK))) {
 		olddispmp = dispmp;
 		dispmp = dispmp->next;
-		xfree(olddispmp->name);
+		free(olddispmp->name); /* XXXXX xf86conffree() */
 		xfree(olddispmp);
 	}
 	/* Now we either have a mode that fits, or no mode at all */
@@ -5831,7 +5833,7 @@ xf86PruneModes(monp, allmodes, scrp, card)
                       MODE_OK)) {
 			olddispmp = dispmp->next;
 			dispmp->next = dispmp->next->next;
-			xfree(olddispmp->name);
+			free(olddispmp->name); /* XXXX xf86conffree() */
 			xfree(olddispmp);
 		} else {
 			dispmp = dispmp->next;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vga16.h,v 3.8 1996/12/23 06:53:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vga16.h,v 3.9 1996/12/28 08:15:49 dawes Exp $ */
 
 
 
@@ -741,18 +741,6 @@ void vgaFillSolid(
 #endif
 );
 /* offscreen.c */
-int vgaSaveScreenPix(
-#if NeedFunctionPrototypes
-    ScreenPtr,
-    PixmapPtr 
-#endif
-);
-int vgaRestoreScreenPix(
-#if NeedFunctionPrototypes
-    ScreenPtr,
-    PixmapPtr 
-#endif
-);
 int do_rop(
 #if NeedFunctionPrototypes
     int,
