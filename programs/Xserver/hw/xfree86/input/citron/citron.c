@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.2 2000/11/02 23:36:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.3 2000/11/03 00:14:28 dawes Exp $ */
 
 /*
  * Based, in part, on code with the following copyright notice:
@@ -169,9 +169,9 @@ extern void xf86SoundKbdBell(int loudness, int pitch, int duration);
 
 static int      debug_level = 0;
 #if CITOUCH_VERSION & 0x0001
-#define DEBUG 1
+#define DEBUG
 #endif
-#if DEBUG
+#ifdef DEBUG
 #define DBG(lvl, f) {if ((lvl) <= debug_level) f;}
 #else
 #define DBG(lvl, f)
@@ -686,7 +686,7 @@ CitronPreInit (InputDriverPtr drv, IDevPtr dev, int flags)
 	debug_level = xf86SetIntOption(local->options, "DebugLevel", 0);
 	if(debug_level)
 	{
-#if DEBUG
+#ifdef DEBUG
 	    ErrorF("%sDebug level set to %d\n", CI_CONFIG, debug_level);
 #else
     	ErrorF("%sDebug not available\n", CI_INFO);
