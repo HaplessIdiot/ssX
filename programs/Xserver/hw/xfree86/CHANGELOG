@@ -1,4 +1,8 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 891. Fix a problem where two-color render cursors have extra pixels set
+      (#A.1607, Keith Packard).
+ 890. Fix for corruption when using video modes requiring more than 2MB on
+      S3 968 cards (#A.1602, Justin T. Gibbs).
  889. Fix TVoverscan problems on the NSC SC1200 chip (Sarma Kolluru).
  888. Cure cursor artifacts by setting HARDWARE_CURSOR_SHOW_TRANSPARENT and
       HARDWARE_CURSOR_UPDATE_UNHIDDEN in the r128 and radeon drivers.  The
@@ -16362,4 +16366,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2550 2003/02/13 20:28:35 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2551 2003/02/14 13:28:26 alanh Exp $
