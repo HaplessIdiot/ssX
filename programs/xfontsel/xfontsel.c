@@ -31,7 +31,7 @@ Author:	Ralph R. Swick, DEC/MIT Project Athena
 	one weekend in November, 1989
 Modified: Mark Leisher <mleisher@crl.nmsu.edu> to deal with UCS sample text.
 */
-/* $XFree86: contrib/programs/xfontsel/xfontsel.c,v 1.4 1999/09/06 11:27:33 dawes Exp $ */
+/* $XFree86: xc/programs/xfontsel/xfontsel.c,v 1.1 2000/02/13 03:26:24 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -249,8 +249,8 @@ static Choice *choiceList = NULL;
 int enabledMenuIndex;
 static Boolean patternFieldSpecified[FIELD_COUNT]; /* = 0 */
 
-
-void main(argc, argv)
+int
+main(argc, argv)
     int argc;
     char **argv;
 {
@@ -359,6 +359,8 @@ see 'xfontsel' manual page."
     (void) XSetWMProtocols (XtDisplay(topLevel), XtWindow(topLevel),
                             &wm_delete_window, 1);
     XtAppMainLoop(appCtx);
+
+    return 0;
 }
 
 

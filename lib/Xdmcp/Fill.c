@@ -23,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/lib/Xdmcp/Fill.c,v 3.4 1997/01/18 06:52:06 dawes Exp $ */
+/* $XFree86: xc/lib/Xdmcp/Fill.c,v 3.5 1998/10/03 08:42:51 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -88,7 +88,7 @@ XdmcpFill (fd, buffer, from, fromlen)
     *fromlen = dataunit.addr.len;
 #else
     buffer->count = recvfrom (fd, (char*)buffer->data, buffer->size, 0,
-			      (struct sockaddr *)from, fromlen);
+			      (struct sockaddr *)from, (void *)fromlen);
 #endif
     if (buffer->count < 6) {
 	buffer->count = 0;

@@ -35,12 +35,14 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 /***********/
 /* Imports */
 /***********/
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifdef XENVIRONMENT
 #include <X11/Xos.h>
@@ -1906,7 +1908,6 @@ static void AllocFailure()
 
 char *psw_malloc(s) int s; {
     char *temp;
-    extern char *malloc();
     if ((temp = malloc((unsigned) s)) == NULL)
         AllocFailure();
     return(temp);
@@ -1914,7 +1915,6 @@ char *psw_malloc(s) int s; {
 
 char *psw_calloc(n,s) int n,s; {
     char *temp;
-    extern char *calloc();
     if ((temp = calloc((unsigned) n, (unsigned) s)) == NULL)
         AllocFailure();
     return(temp);

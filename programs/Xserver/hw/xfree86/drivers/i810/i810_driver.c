@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.6 2000/03/01 16:01:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.8 2000/04/17 16:30:04 eich Exp $ */
 
 /*
  * Authors:
@@ -1519,7 +1519,7 @@ I810AllocateFront(ScrnInfoPtr pScrn) {
    if(pI810->DoneFrontAlloc) 
       return TRUE;
       
-   xf86memset(&(pI810->FbMemBox), 0, sizeof(BoxRec));
+   memset(&(pI810->FbMemBox), 0, sizeof(BoxRec));
    /* Alloc FrontBuffer/Ring/Accel memory */
    pI810->FbMemBox.x1=0;
    pI810->FbMemBox.x2=pScrn->displayWidth;
@@ -1542,7 +1542,7 @@ I810AllocateFront(ScrnInfoPtr pScrn) {
 		   pI810->FbMemBox.y2 * 
 		   pI810->cpp) + 4095) & ~4095);
    
-   xf86memset( &(pI810->LpRing), 0, sizeof( I810RingBuffer ) );
+   memset( &(pI810->LpRing), 0, sizeof( I810RingBuffer ) );
    if(I810AllocLow( &(pI810->LpRing.mem), &(pI810->SysMem), 16*4096 )) {
 
 	 if (I810_DEBUG & DEBUG_VERBOSE_MEMORY)
@@ -1753,7 +1753,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
       }
    }
 
-#if XF86DRI
+#ifdef XF86DRI
    if (pI810->LpRing.mem.Start == 0) {
       pI810->directRenderingEnabled = 0;
       I810DRICloseScreen(pScreen);

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.45 1999/12/27 00:39:29 robin Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.46 2000/04/05 18:13:26 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -302,7 +302,8 @@ TRANS(SocketINETGetAddr) (XtransConnInfo ciptr)
 
     PRMSG (3,"SocketINETGetAddr(%x)\n", ciptr, 0, 0);
 
-    if (getsockname (ciptr->fd,(struct sockaddr *) &sockname, &namelen) < 0)
+    if (getsockname (ciptr->fd,(struct sockaddr *) &sockname,
+		     (void *)&namelen) < 0)
     {
 	PRMSG (1,"SocketINETGetAddr: getsockname() failed: %d\n",
 	    EGET(),0, 0);
@@ -347,7 +348,8 @@ TRANS(SocketINETGetPeerAddr) (XtransConnInfo ciptr)
 
     PRMSG (3,"SocketINETGetPeerAddr(%x)\n", ciptr, 0, 0);
 
-    if (getpeername (ciptr->fd, (struct sockaddr *) &sockname, &namelen) < 0)
+    if (getpeername (ciptr->fd, (struct sockaddr *) &sockname,
+		     (void *)&namelen) < 0)
     {
 	PRMSG (1,"SocketINETGetPeerAddr: getpeername() failed: %d\n",
 	    EGET(), 0, 0);
@@ -1090,7 +1092,7 @@ TRANS(SocketINETAccept) (XtransConnInfo ciptr, int *status)
     }
 
     if ((newciptr->fd = accept (ciptr->fd,
-	(struct sockaddr *) &sockname, &namelen)) < 0)
+	(struct sockaddr *) &sockname, (void *)&namelen)) < 0)
     {
 	PRMSG (1, "SocketINETAccept: accept() failed\n", 0, 0, 0);
 	xfree (newciptr);
@@ -1170,7 +1172,7 @@ TRANS(SocketUNIXAccept) (XtransConnInfo ciptr, int *status)
     }
 
     if ((newciptr->fd = accept (ciptr->fd,
-	(struct sockaddr *) &sockname, &namelen)) < 0)
+	(struct sockaddr *) &sockname, (void *)&namelen)) < 0)
     {
 	PRMSG (1, "SocketUNIXAccept: accept() failed\n", 0, 0, 0);
 	xfree (newciptr);

@@ -32,7 +32,7 @@ authorization from The Open Group.
 X Window System is a trademark of The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfwp/io.c,v 1.6 1999/03/02 11:49:39 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -350,7 +350,7 @@ ProcessNewPMConnection (
      */
     retval = getpeername(temp_sock_fd, 
 			 (struct sockaddr*)&temp_sockaddr_in, 
-			 &addrlen);
+			 (void *)&addrlen);
     if (retval)
     {
         IceCloseConnection(new_ice_conn);
@@ -554,7 +554,7 @@ ProcessNewClientConnection (
 
     if ((temp_sock_fd = accept(accept_fd,
                                (struct sockaddr *) &temp_sockaddr_in, 
-	 		       &temp_sock_len)) < 0)
+	 		       (void *)&temp_sock_len)) < 0)
     {
 	(void) fprintf (stderr, "accept call for a client failed\n");
 	return;

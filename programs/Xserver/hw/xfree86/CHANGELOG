@@ -1,4 +1,9 @@
 XFree86 4.0b (?? May 2000)
+ 162. Fix possible SEGV in generic int10 module (Marc La France).
+ 161. Fix *BSD aperture driver to allow for int10 (Bernd Ernesti,
+      Marc La France).
+ 160. Fix vesafb restore problem in ATI driver (Marc La France).
+ 159. Fix a few more compilation glitches (Marc La France).
  158. Fix DRM for gamma for single and dual MX chips (Alan Hourihane).
  157. Fix Mesa for single and dual MX chips (Alan Hourihane).
  156. Fix Mesa for multiple screen widths (Alan Hourihane).
@@ -10317,4 +10322,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1141 2000/05/03 00:43:44 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1148 2000/05/10 20:01:28 alanh Exp $

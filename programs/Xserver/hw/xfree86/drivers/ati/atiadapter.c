@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.c,v 1.9 2000/04/12 14:44:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.c,v 1.10 2000/05/03 00:44:02 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -276,11 +276,19 @@ ATIAdapterPreInit
     if (pATI->Chip >= ATI_CHIP_88800GXC)
         ATIMach64PreInit(pScreenInfo, pATI, pATIHW);
 
-    /* Ensure proper VCLK source */
     if (pATI->Chip >= ATI_CHIP_264CT)
     {
+        /* Ensure proper VCLK source */
         pATIHW->pll_vclk_cntl = ATIGetMach64PLLReg(PLL_VCLK_CNTL) |
             (PLL_VCLK_SRC_SEL | PLL_VCLK_RESET);
+
+        /* Set provisional values for other PLL registers */
+        pATIHW->pll_vclk_post_div = ATIGetMach64PLLReg(PLL_VCLK_POST_DIV);
+        pATIHW->pll_vclk0_fb_div = ATIGetMach64PLLReg(PLL_VCLK0_FB_DIV);
+        pATIHW->pll_vclk1_fb_div = ATIGetMach64PLLReg(PLL_VCLK1_FB_DIV);
+        pATIHW->pll_vclk2_fb_div = ATIGetMach64PLLReg(PLL_VCLK2_FB_DIV);
+        pATIHW->pll_vclk3_fb_div = ATIGetMach64PLLReg(PLL_VCLK3_FB_DIV);
+        pATIHW->pll_xclk_cntl = ATIGetMach64PLLReg(PLL_XCLK_CNTL);
 
         /* For now disable extended reference and feedback dividers */
         if (pATI->Chip >= ATI_CHIP_264LT)
@@ -461,6 +469,12 @@ ATIAdapterSave
     {
         pATIHW->pll_vclk_cntl = ATIGetMach64PLLReg(PLL_VCLK_CNTL) |
             PLL_VCLK_RESET;
+        pATIHW->pll_vclk_post_div = ATIGetMach64PLLReg(PLL_VCLK_POST_DIV);
+        pATIHW->pll_vclk0_fb_div = ATIGetMach64PLLReg(PLL_VCLK0_FB_DIV);
+        pATIHW->pll_vclk1_fb_div = ATIGetMach64PLLReg(PLL_VCLK1_FB_DIV);
+        pATIHW->pll_vclk2_fb_div = ATIGetMach64PLLReg(PLL_VCLK2_FB_DIV);
+        pATIHW->pll_vclk3_fb_div = ATIGetMach64PLLReg(PLL_VCLK3_FB_DIV);
+        pATIHW->pll_xclk_cntl = ATIGetMach64PLLReg(PLL_XCLK_CNTL);
         if (pATI->Chip >= ATI_CHIP_264LT)
             pATIHW->pll_ext_vpll_cntl = ATIGetMach64PLLReg(PLL_EXT_VPLL_CNTL);
     }
@@ -831,10 +845,16 @@ ATIAdapterSet
     if (pATI->Chip >= ATI_CHIP_264CT)
     {
         ATIPutMach64PLLReg(PLL_VCLK_CNTL, pATIHW->pll_vclk_cntl);
-        ATIPutMach64PLLReg(PLL_VCLK_CNTL,
-            pATIHW->pll_vclk_cntl & ~PLL_VCLK_RESET);
+        ATIPutMach64PLLReg(PLL_VCLK_POST_DIV, pATIHW->pll_vclk_post_div);
+        ATIPutMach64PLLReg(PLL_VCLK0_FB_DIV, pATIHW->pll_vclk0_fb_div);
+        ATIPutMach64PLLReg(PLL_VCLK1_FB_DIV, pATIHW->pll_vclk1_fb_div);
+        ATIPutMach64PLLReg(PLL_VCLK2_FB_DIV, pATIHW->pll_vclk2_fb_div);
+        ATIPutMach64PLLReg(PLL_VCLK3_FB_DIV, pATIHW->pll_vclk3_fb_div);
+        ATIPutMach64PLLReg(PLL_XCLK_CNTL, pATIHW->pll_xclk_cntl);
         if (pATI->Chip >= ATI_CHIP_264LT)
             ATIPutMach64PLLReg(PLL_EXT_VPLL_CNTL, pATIHW->pll_ext_vpll_cntl);
+        ATIPutMach64PLLReg(PLL_VCLK_CNTL,
+            pATIHW->pll_vclk_cntl & ~PLL_VCLK_RESET);
     }
 
     /* Load LCD registers */

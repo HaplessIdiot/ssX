@@ -1,5 +1,5 @@
 /* $XConsortium: xload.c,v 1.37 94/04/17 20:43:44 converse Exp $ */
-/* $XFree86: contrib/programs/xload/xload.c,v 3.1 1999/09/06 11:27:36 dawes Exp $ */
+/* $XFree86: xc/programs/xload/xload.c,v 1.1 2000/02/13 03:26:32 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -138,7 +138,8 @@ void usage()
     exit(1);
 }
 
-void main(argc, argv)
+int
+main(argc, argv)
     int argc;
     char **argv;
 {
@@ -264,6 +265,8 @@ void main(argc, argv)
 			    	&wm_delete_window, 1);
     }
     XtAppMainLoop(app_con);
+
+    return 0;
 }
 
 static unsigned long	current_leds;

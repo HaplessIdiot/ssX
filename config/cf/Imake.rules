@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.71 2000/03/31 22:55:13 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.72 2000/04/05 18:13:07 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2188,6 +2188,7 @@ clean::									@@\
 #ifndef M4File
 #define M4File(file,includes)						@@\
 file: file.m4 includes							@@\
+	RemoveFile(file)						@@\
 	$(M4) $(M4FLAGS) file.m4 >file					@@\
 									@@\
 depend:: file 								@@\

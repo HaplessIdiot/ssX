@@ -22,6 +22,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "RxI.h"
 #include <sys/utsname.h>
@@ -111,7 +112,7 @@ MyBestHostname (
 
 	  if (rv != -1) {
 	    namelen = sizeof local;
-	    rv = getsockname (s, (struct sockaddr*) &local, &namelen);
+	    rv = getsockname (s, (struct sockaddr*) &local, (void *)&namelen);
 
 	    if (rv != -1) {
 	      hp = gethostbyaddr ((char*) &local.sin_addr.s_addr, 

@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdm/choose.c,v 3.6 1998/10/04 09:40:53 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/choose.c,v 3.7 1998/10/10 15:25:31 dawes Exp $ */
 
 /*
  * choose.c
@@ -530,7 +530,7 @@ ProcessChooserSocket (int fd)
     if (client_fd == -1)
     	return;
 #else /* !MINIX */
-    client_fd = accept (fd, (struct sockaddr *)buf, &len);
+    client_fd = accept (fd, (struct sockaddr *)buf, (void *)&len);
 #endif /* MINIX */
     if (client_fd == -1)
     {

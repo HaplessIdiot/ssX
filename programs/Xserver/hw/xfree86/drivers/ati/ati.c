@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.10 2000/03/22 03:08:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.11 2000/04/20 21:28:27 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -35,7 +35,7 @@
  * Thomas Roell, roell@informatik.tu-muenchen.de
  * Per Lindqvist, pgd@compuram.bbt.se
  * Doug Evans, dje@cygnus.com
- * Rik Faith, faith@cs.unc.edu
+ * Rik Faith, faith@precisioninsight.com
  * Arthur Tateishi, ruhtra@turing.toronto.edu
  * Alain Hebert, aal@broue.rot.qc.ca
  * Ton van Rosmalen, ton@stack.urc.tue.nl

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/server.c,v 3.6 1999/02/25 06:01:06 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/server.c,v 3.7 1999/02/28 11:20:12 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -292,7 +292,7 @@ GetRemoteAddress (struct display *d, int fd)
     	sinp->sin_addr.s_addr= tcpconf.nwtc_remaddr;
     }
 #else
-    getpeername (fd, (struct sockaddr *) buf, &len);
+    getpeername (fd, (struct sockaddr *) buf, (void *)&len);
 #endif
 #endif
     d->peerlen = 0;
