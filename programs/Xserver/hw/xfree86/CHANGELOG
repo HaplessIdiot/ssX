@@ -1,5 +1,6 @@
 XFree86 4.0.1b (11 August 2000)
- 498. Add GeForce2 support to the NVIDIA driver (Chas Inman).
+ 499. Accelerated line support for the NV driver (Chas Inman, Mark Vojkovich).
+ 498. Add GeForce2 support to the NV driver (Chas Inman).
  497. Integrate Cygwin support.  To compile, this requires Cygwin 1.0 or
       later with gcc 2.95.2 and Windows NT (#4073, Suhaib M. Siddiqi).
  496. Add en_GB.ISO8859-15 to locale.dir (David Dawes)
@@ -10968,4 +10969,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1262 2000/08/10 17:40:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1263 2000/08/11 05:06:17 mvojkovi Exp $
