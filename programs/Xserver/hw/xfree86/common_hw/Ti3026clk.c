@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3026clk.c,v 3.0 1995/04/09 13:47:58 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -15,15 +15,20 @@
 
 #ifdef __STDC__
 static void
-s3ProgramTi3026Clock(int clk, unsigned char n, unsigned char m,
-                          unsigned char p)
+s3ProgramTi3026Clock(int clk, unsigned char n, unsigned char m, 
+		     unsigned char p, unsigned char ln, unsigned char lm, 
+		     unsigned char lp, unsigned char lq)
 #else
 static void
-s3ProgramTi3026Clock(clk, n, m, p)
+s3ProgramTi3026Clock(clk, n, m, p, ln, lm, lp, lq)
 int clk;
 unsigned char n;
 unsigned char m;
 unsigned char p;
+unsigned char ln;
+unsigned char lm;
+unsigned char lp;
+unsigned char lq;
 #endif
 {
    int tmp;
@@ -46,19 +51,13 @@ unsigned char p;
 	 if (s3InTi3026IndReg(TI_PIXEL_CLOCK_PLL_DATA) & 0x40) 
 	    break;
 
-#if 1
       /*
        * And now set up the loop clock for RCLK
        */
-      s3OutTi3026IndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, 63 | 0x80);
-      s3OutTi3026IndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, 63);
-      s3OutTi3026IndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, (p>0 ? p : 0) | 0xb0);
-#if 0
-      s3OutTi3026IndReg(TI_MISC_CONTROL, 0x00,
-		    TI_MC_LOOP_PLL_RCLK | TI_MC_LCLK_LATCH | 
-		    TI_MC_INT_6_8_CONTROL);
-#endif
-#endif
+      s3OutTi3026IndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, (ln & 0x3f) | 0x80);
+      s3OutTi3026IndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, (lm & 0x3f));
+      s3OutTi3026IndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, (lp & 3) | 0xf0);
+      s3OutTi3026IndReg(TI_MCLK_LCLK_CONTROL, 0xf8, lq);
 
       /* select pixel clock PLL as dot clock soure */
       s3OutTi3026IndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_PLL);
@@ -85,7 +84,8 @@ unsigned char p;
       tmp = s3InTi3026IndReg(TI_PIXEL_CLOCK_PLL_DATA) & 0x40;
       s3OutTi3026IndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, (p & 3) | tmp | 0xb0);
 
-      for (tmp=0; tmp<10000; tmp++) /* wait until PLL is locked */
+      /* wait until PLL is locked */
+      for (tmp=0; tmp<10000; tmp++)
 	 if (s3InTi3026IndReg(TI_PIXEL_CLOCK_PLL_DATA) & 0x40) 
 	    break;
 
@@ -123,19 +123,21 @@ unsigned char p;
 }
 
 #ifdef __STDC__
-void Ti3026SetClock(long freq, int clk)
+void Ti3026SetClock(long freq, int clk, int bpp)
 #else
 void
-Ti3026SetClock(freq, clk)
+Ti3026SetClock(freq, clk, bpp)
 long freq;
 int clk;
+int bpp;
 #endif
 {
-volatile   double ffreq;
-volatile   int n, p, m;
-volatile   int best_n=32, best_m=32;
-volatile   double  diff, mindiff;
-
+   double ffreq;
+   int n, p, m;
+   int ln, lp, lm, lq, lk, z;
+   int best_n=32, best_m=32;
+   double  diff, mindiff;
+   
 #define FREQ_MIN   13767  /* ~110000 / 8 */
 #define FREQ_MAX  220000
 
@@ -189,5 +191,22 @@ volatile   double  diff, mindiff;
 	  best_n, best_n, best_m, best_m, p);
 #endif
 
-   s3ProgramTi3026Clock(clk, best_n, best_m, p);
+   ln = 65 - 2 * 64 / 8 / bpp;
+   lm = 63;
+   lk = 1;
+   z = (100 * 110000 * (65-ln)) / (lk * freq);
+   if (z > 1600) {
+      lp = 3;
+      lq = (z-1600) / 1600 + 1; /* smallest q greater (z-16)/16 */
+   }
+   else { /* largest p less then log2(z) */
+      for (lp=0; z > (200 << lp); lp++) ;
+      lq = 0;
+   }
+
+#ifdef DEBUG
+   ErrorF("bpp %d  ln %2d  lm %2d  lp %2d  lq %2d\n",bpp,ln,lm,lp,lq);
+#endif
+
+   s3ProgramTi3026Clock(clk, best_n, best_m, p, ln, lm, lp, lq);
 }

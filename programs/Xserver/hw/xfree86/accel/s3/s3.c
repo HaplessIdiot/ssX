@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.8 95/01/25 00:44:45 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.74 1995/03/19 10:18:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.75 1995/04/09 13:46:00 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -352,10 +352,18 @@ s3ProbeSDAC(Bool quiet)
     * for CLK0 f0 and f1 always returns 0x7f (but is documented "read only")
     */
    
-   unsigned char saveCR55, savelut[6];
+   unsigned char saveCR55, saveCR45, saveCR43, savelut[6];
    int i;
    long clock01, clock23;
    Bool found = FALSE;
+
+   outb(vgaCRIndex, 0x43);
+   saveCR43 = inb(vgaCRReg);
+   outb(vgaCRReg, saveCR43 & ~0x02);
+
+   outb(vgaCRIndex, 0x45);
+   saveCR45 = inb(vgaCRReg);
+   outb(vgaCRReg, saveCR45 & ~0x20);
 
    outb(vgaCRIndex, 0x55);
    saveCR55 = inb(vgaCRReg);
@@ -402,15 +410,26 @@ s3ProbeSDAC(Bool quiet)
 	    ErrorF("%s %s: Detected an S3 SDAC 86C716 RAMDAC and programmable clock\n",
 		   XCONFIG_PROBED, s3InfoRec.name);
 	    s3RamdacType = S3_SDAC_DAC;
+	    saveCR43 &= ~0x02;
+	    saveCR45 &= ~0x20;
 	 }
 	 else {
 	    ErrorF("%s %s: Detected an S3 GENDAC 86C708 RAMDAC and programmable clock\n",
 		   XCONFIG_PROBED, s3InfoRec.name);
 	    s3RamdacType = S3_GENDAC_DAC;
+	    saveCR43 &= ~0x02;
+	    saveCR45 &= ~0x20;
 	 }
       }
       xf86dactopel();
    }
+
+   outb(vgaCRIndex, 0x45);
+   outb(vgaCRReg, saveCR45);
+
+   outb(vgaCRIndex, 0x43);
+   outb(vgaCRReg, saveCR43);
+
    return found;
 }
 
@@ -930,7 +949,11 @@ s3Probe()
        || S3_805_I_SERIES(s3ChipId)) {
       /* First probe for Ti3026 */
       if (s3RamdacType == UNKNOWN_DAC) {
-	 unsigned char saveCR55, saveCR45, saveID, saveTIndx, saveTIdata;
+	 unsigned char saveCR55, saveCR45, saveCR43, saveID, saveTIndx, saveTIdata;
+
+	 outb(vgaCRIndex, 0x43);
+	 saveCR43 = inb(vgaCRReg);
+	 outb(vgaCRReg, saveCR43 & ~0x02);
 
 	 outb(vgaCRIndex, 0x45);
 	 saveCR45 = inb(vgaCRReg);
@@ -964,6 +987,7 @@ s3Probe()
 	       ErrorF("%s %s: Detected a TI ViewPoint 3026 RAMDAC rev. %x\n",
 		      XCONFIG_PROBED, s3InfoRec.name, rev);
 	       s3RamdacType = TI3026_DAC;
+	       saveCR43 &= ~0x02;
 	       saveCR45 &= ~0x20;
 	    }
 	 }
@@ -977,11 +1001,22 @@ s3Probe()
 
 	 outb(vgaCRIndex, 0x45);
 	 outb(vgaCRReg, saveCR45);
+
+	 outb(vgaCRIndex, 0x43);
+	 outb(vgaCRReg, saveCR43);
       }
 
       /* Then probe for Ti3020 and Ti3025 */
       if (s3RamdacType == UNKNOWN_DAC) {
-	 unsigned char saveCR55, saveCR5C, saveTIndx, saveTIndx2, saveTIdata;
+	 unsigned char saveCR55, saveCR5C, saveCR45, saveCR43, saveTIndx, saveTIndx2, saveTIdata;
+
+	 outb(vgaCRIndex, 0x43);
+	 saveCR43 = inb(vgaCRReg);
+	 outb(vgaCRReg, saveCR43 & ~0x02);
+
+	 outb(vgaCRIndex, 0x45);
+	 saveCR45 = inb(vgaCRReg);
+	 outb(vgaCRReg, saveCR45 & ~0x20);
 
 	 outb(vgaCRIndex, 0x55);
 	 saveCR55 = inb(vgaCRReg);
@@ -997,6 +1032,8 @@ s3Probe()
 	    ErrorF("%s %s: Detected a TI ViewPoint 3020 RAMDAC\n",
 	           XCONFIG_PROBED, s3InfoRec.name);
 	    s3RamdacType = TI3020_DAC;
+	    saveCR43 &= ~0x02;
+	    saveCR45 &= ~0x20;
 	 } else {
 	    outb(vgaCRIndex, 0x5C);
 	    saveCR5C = inb(vgaCRReg);
@@ -1017,6 +1054,8 @@ s3Probe()
 	       ErrorF("%s %s: Detected a TI ViewPoint 3025 RAMDAC\n",
 	              XCONFIG_PROBED, s3InfoRec.name);
 	       s3RamdacType = TI3025_DAC;
+	       saveCR43 &= ~0x02;
+	       saveCR45 &= ~0x20;
 	    }
 
 	    /* restore this mess */
@@ -1029,6 +1068,12 @@ s3Probe()
 	 outb(TI_INDEX_REG, saveTIndx);
 	 outb(vgaCRIndex, 0x55);
 	 outb(vgaCRReg, saveCR55);
+
+	 outb(vgaCRIndex, 0x45);
+	 outb(vgaCRReg, saveCR45);
+
+	 outb(vgaCRIndex, 0x43);
+	 outb(vgaCRReg, saveCR43);
       }
 
       /*
@@ -1487,7 +1532,7 @@ s3Probe()
    /* Set the pix-mux description based on the ramdac type */
    if (DAC_IS_TI3026) {
       pixMuxPossible = TRUE;
-      allowPixMuxInterlace = FALSE;
+      allowPixMuxInterlace = TRUE;
       allowPixMuxSwitching = FALSE;
       nonMuxMaxClock = 70000;
       pixMuxLimitedWidths = FALSE;
@@ -2172,8 +2217,7 @@ s3Probe()
 		  pixMuxNeeded = TRUE;
 	       }
 	    }
-	    else if ((s3InfoRec.clock[pMode->Clock] / 1000) >
-	        (nonMuxMaxClock / 1000)) {
+	    else if (s3InfoRec.clock[pMode->Clock] > nonMuxMaxClock) {
 	       pMode->Flags |= V_PIXMUX;
 	       pixMuxNeeded = TRUE;
 	    }
@@ -2809,6 +2853,7 @@ ti3025ClockSelect(freq)
    return(result);
 }
 
+
 static Bool
 ti3026ClockSelect(freq)
      int   freq;
@@ -2835,7 +2880,7 @@ ti3026ClockSelect(freq)
 	    result = FALSE;
 	    break;
 	 }
-	 (void) Ti3026SetClock(freq, 2); /* can't fail */
+	 (void) Ti3026SetClock(freq, 2, s3Bpp); /* can't fail */
 	 outb(vgaCRIndex, 0x42);/* select the clock */
 	 tmp = inb(vgaCRReg) & 0xf0;
 	 outb(vgaCRReg, tmp | 0x02);
@@ -2844,7 +2889,6 @@ ti3026ClockSelect(freq)
    LOCK_SYS_REGS;
    return(result);
 }
-
 
 static Bool
 ch8391ClockSelect(freq)

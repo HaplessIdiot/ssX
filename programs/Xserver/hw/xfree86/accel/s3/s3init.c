@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.58 1995/03/18 10:59:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.59 1995/04/09 13:46:17 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -56,7 +56,7 @@ typedef struct {
    unsigned char Ti3025[9];	/* Ti3025 N,M,P for PCLK, MCLK, LOOP PLL */
    unsigned char STG1700[5];    /* STG1700 index and command registers */
    unsigned char SDAC[6];       /* S3 SDAC command and PLL registers */
-   unsigned char Trio[8];       /* Trio32/64 ext. sequenzer (PLL) registers */
+   unsigned char Trio[14];      /* Trio32/64 ext. sequenzer (PLL) registers */
    unsigned char s3reg[10];     /* Video Atribute (CR30-34, CR38-3C) */
    unsigned char s3sysreg[46];  /* Video Atribute (CR40-6D)*/
 }
@@ -217,6 +217,19 @@ s3CleanUp(void)
       outb(0x3c4, 0x0a); outb(0x3c5, oldS3->Trio[3]);
       outb(0x3c4, 0x0b); outb(0x3c5, oldS3->Trio[4]);
       outb(0x3c4, 0x0d); outb(0x3c5, oldS3->Trio[5]);
+
+      outb(0x3c4, 0x10); outb(0x3c5, oldS3->Trio[8]); 
+      outb(0x3c4, 0x11); outb(0x3c5, oldS3->Trio[9]); 
+      outb(0x3c4, 0x12); outb(0x3c5, oldS3->Trio[10]); 
+      outb(0x3c4, 0x13); outb(0x3c5, oldS3->Trio[11]); 
+      outb(0x3c4, 0x1a); outb(0x3c5, oldS3->Trio[12]); 
+      outb(0x3c4, 0x1b); outb(0x3c5, oldS3->Trio[13]); 
+      outb(0x3c4, 0x15);
+      tmp = inb(0x3c5);
+      outb(0x3c4, tmp & ~0x20);
+      outb(0x3c4, tmp |  0x20);
+      outb(0x3c4, tmp & ~0x20);
+
       outb(0x3c4, 0x15); outb(0x3c5, oldS3->Trio[6]); 
       outb(0x3c4, 0x18); outb(0x3c5, oldS3->Trio[7]);
 
@@ -548,13 +561,20 @@ s3Init(mode)
 	 outb(0x3c4, 0x08); oldS3->Trio[1] = inb(0x3c5);
 	 outb(0x3c5, 0x06);
 
-	 outb(0x3c4, 0x09); oldS3->Trio[2] = inb(0x3c5);
-	 outb(0x3c4, 0x0a); oldS3->Trio[3] = inb(0x3c5);
-	 outb(0x3c4, 0x0b); oldS3->Trio[4] = inb(0x3c5);
-	 outb(0x3c4, 0x0d); oldS3->Trio[5] = inb(0x3c5);
-	 outb(0x3c4, 0x15); oldS3->Trio[6] = inb(0x3c5) & 0xfe; 
+	 outb(0x3c4, 0x09); oldS3->Trio[2]  = inb(0x3c5);
+	 outb(0x3c4, 0x0a); oldS3->Trio[3]  = inb(0x3c5);
+	 outb(0x3c4, 0x0b); oldS3->Trio[4]  = inb(0x3c5);
+	 outb(0x3c4, 0x0d); oldS3->Trio[5]  = inb(0x3c5);
+	 outb(0x3c4, 0x15); oldS3->Trio[6]  = inb(0x3c5) & 0xfe; 
 	 outb(0x3c5, oldS3->Trio[6]);
-	 outb(0x3c4, 0x18); oldS3->Trio[7] = inb(0x3c5);
+	 outb(0x3c4, 0x18); oldS3->Trio[7]  = inb(0x3c5);
+
+	 outb(0x3c4, 0x10); oldS3->Trio[8]  = inb(0x3c5);
+	 outb(0x3c4, 0x11); oldS3->Trio[9]  = inb(0x3c5);
+	 outb(0x3c4, 0x12); oldS3->Trio[10] = inb(0x3c5);
+	 outb(0x3c4, 0x13); oldS3->Trio[11] = inb(0x3c5);
+	 outb(0x3c4, 0x1a); oldS3->Trio[12] = inb(0x3c5);
+	 outb(0x3c4, 0x1b); oldS3->Trio[13] = inb(0x3c5);
 
 	 outb(0x3c4, 8);
 	 outb(0x3c5, 0x00);
@@ -1835,7 +1855,7 @@ s3Init(mode)
       outb(0x3C5, tmp2);        /* unblank the screen */
    }  /* DAC_IS_TI3020_SERIES */
 
-   if (DAC_IS_TI3026) {
+   if (DAC_IS_TI3026 /* yet ? */) {
       outb(0x3C4, 1);
       tmp2 = inb(0x3C5);
       outb(0x3C5, tmp2 | 0x20); /* blank the screen */
@@ -1876,8 +1896,11 @@ s3Init(mode)
 	 } else {
 	    rclock = TI_OCLK_R8;
 	 }
+#if 0  /* TI_MCLK_LCLK_CONTROL is set in the PLL code in */
 	 s3OutTi3026IndReg(TI_MCLK_LCLK_CONTROL, 0xf8, 
 			   (rclock - (vclock >> 3)) & 7);
+
+#endif
 	 outb(vgaCRIndex, 0x66);
 	 tmp = inb(vgaCRReg);
 	 outb(vgaCRReg, (tmp & 0xf8) | ((rclock - (vclock >> 3)) & 7));
@@ -1917,6 +1940,9 @@ s3Init(mode)
          } else {
 	    s3OutTi3026IndReg(TI_MISC_CONTROL , 0xF0, TI_MC_INT_6_8_CONTROL);
          }
+#if 0
+	 outb(vgaCRIndex, 0x67);
+	 outb(vgaCRReg, 0x00);
 	 outb(vgaCRIndex, 0x6D);
 	 if (s3Bpp == 1)
 	    outb(vgaCRReg, 0x75);  /* 0x50, 0x60, 0x70 */
@@ -1924,6 +1950,17 @@ s3Init(mode)
 	    outb(vgaCRReg, 0x75);  /*  0x74, 0x75, 0x76  ...  0x20, 0x30, 0x40, 0x50 */
 	 else /* (s3Bpp == 4) */
 	    outb(vgaCRReg, 0x75);  /* 0x75, 0x76  ...  0x10, 0x20 */
+#else
+	 outb(vgaCRIndex, 0x67);
+	 outb(vgaCRReg, 0x01);
+	 outb(vgaCRIndex, 0x6D);
+	 if (s3Bpp == 1)
+	    outb(vgaCRReg, 0x72);
+	 else if (s3Bpp == 2)
+	    outb(vgaCRReg, 0x73);
+	 else /* (s3Bpp == 4) */
+	    outb(vgaCRReg, 0x75);
+#endif
       } else {
          /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */
          outb(vgaCRIndex, 0x53);
@@ -1942,6 +1979,25 @@ s3Init(mode)
 
       /* for some reason the bios doesn't set this properly          */
       s3OutTi3026IndReg(TI_SENSE_TEST, 0x00, 0x00);
+
+      if (OFLG_ISSET(OPTION_TI3026_CURS, &s3InfoRec.options)) {
+	 /* enable interlaced cursor;
+	    not very useful without CR45 bit 5 set, but anyway */
+	 if (mode->Flags & V_INTERLACE) {
+	    static int already = 0;
+	    if (!already) {
+	       already++;
+	       ErrorF("%s %s: Ti3026 hardware cursor in interlaced modes "
+		      "doesn't work correctly,\n"
+		      "\tplease use Option \"no_ti3026_curs\" when using "
+		      "interlaced modes!\n"
+		      ,XCONFIG_PROBED, s3InfoRec.name);
+	    }
+	    s3OutTi3026IndReg(TI_CURS_CONTROL, ~0x60, 0x60);
+	 }
+	 else
+	    s3OutTi3026IndReg(TI_CURS_CONTROL, ~0x60, 0x00);
+      }
 
       outb(0x3C4, 1);
       outb(0x3C5, tmp2);        /* unblank the screen */

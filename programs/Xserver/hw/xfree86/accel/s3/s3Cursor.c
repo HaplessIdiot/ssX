@@ -1,6 +1,6 @@
 /*
  * $XConsortium: s3Cursor.c,v 1.5 95/01/23 15:33:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.15 1995/01/28 17:01:40 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.16 1995/04/09 13:46:11 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -293,19 +293,33 @@ s3LoadCursor(pScr, pCurs, x, y)
    if (!pCurs)
       return;
 
-   /* Load storage location.  */
-   cpos = (s3BppDisplayWidth * s3CursorStartY + s3CursorStartX) / 1024;
-   outb(vgaCRIndex, 0x4d);
-   outb(vgaCRReg, (0xff & cpos));
-   outb(vgaCRIndex, 0x4c);
-   outb(vgaCRReg, (0xff00 & cpos) >> 8);
-
    UNLOCK_SYS_REGS;
 
    /* turn cursor off */
    outb(vgaCRIndex, 0x45);
    tmp = inb(vgaCRReg);
    outb(vgaCRReg, tmp & 0xFE);
+
+   /* move cursor off-screen */
+   outb(vgaCRIndex, 0x46);
+   outb(vgaCRReg, 0xff);
+   outb(vgaCRIndex, 0x47);
+   outb(vgaCRReg, 0x7f);
+   outb(vgaCRIndex, 0x49);
+   outb(vgaCRReg, 0xff);
+   outb(vgaCRIndex, 0x4e);
+   outb(vgaCRReg, 0x3f);
+   outb(vgaCRIndex, 0x4f);
+   outb(vgaCRReg, 0x3f);
+   outb(vgaCRIndex, 0x48);
+   outb(vgaCRReg, 0x7f);
+
+   /* Load storage location.  */
+   cpos = (s3BppDisplayWidth * s3CursorStartY + s3CursorStartX) / 1024;
+   outb(vgaCRIndex, 0x4d);
+   outb(vgaCRReg, (0xff & cpos));
+   outb(vgaCRIndex, 0x4c);
+   outb(vgaCRReg, (0xff00 & cpos) >> 8);
 
    ram = (unsigned short *)pCurs->bits->devPriv[index];
 
@@ -329,7 +343,6 @@ s3LoadCursor(pScr, pCurs, x, y)
 #endif
 
    WaitIdle();
-   VerticalRetraceWait();
 
    /*
     * This form is general enough for any valid DisplayWidth.  The only
@@ -489,7 +502,9 @@ s3MoveCursor(pScr, x, y)
    y -= s3InfoRec.frameY0;
 
    if (!S3_TRIOxx_SERIES(s3ChipId)) {
-      if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId)) 
+      if (S3_968_SERIES(s3ChipId))
+	 x *= (2 * s3Bpp);
+      else if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId)) 
 	 x *= s3Bpp;
       else if (s3Bpp > 2)
 	 x *= 2;
@@ -498,7 +513,9 @@ s3MoveCursor(pScr, x, y)
    x -= s3hotX;
    y -= s3hotY;
 
-   if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId))
+   if (S3_968_SERIES(s3ChipId))
+      x -= x % (2 * s3Bpp);
+   else if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId))
       x -= x % s3Bpp;
    else if (s3Bpp > 2)
       x &= ~1;
@@ -674,10 +691,8 @@ s3QueryBestSize(class, pwidth, pheight, pScreen)
    if (*pwidth > 0) {
       switch (class) {
          case CursorShape:
-	    if (*pwidth > 64)
-	       *pwidth = 64;
-	    if (*pheight > 64)
-	       *pheight = 64;
+	    *pwidth = 64;
+	    *pheight = 64;
 	    break;
          default:
 	    mfbQueryBestSize(class, pwidth, pheight, pScreen);

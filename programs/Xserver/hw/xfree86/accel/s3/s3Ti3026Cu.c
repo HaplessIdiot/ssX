@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3026Cu.c,v 3.0 1995/04/09 13:46:14 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -358,9 +358,6 @@ s3Ti3026LoadCursor(pScr, pCurs, x, y)
 
    outb(vgaCRIndex, 0x55);
    outb(vgaCRReg, tmp | 0x00);
-
-
-   /* The hardware cursor is not supported in interlaced mode */
 
    s3OutTi3026IndReg(TI_CURS_CONTROL, 0xf3, 0x00); /* reset A9,A8 */
    outb(0x3c8, 0x00); /* reset cursor RAM load address A7..A0 */
