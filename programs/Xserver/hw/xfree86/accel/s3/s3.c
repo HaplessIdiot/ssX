@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.46 1994/10/30 02:57:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.47 1994/11/05 23:42:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -493,9 +493,6 @@ s3Probe()
                    XCONFIG_PROBED, s3InfoRec.name, s3ChipRev);
 	 } else if (S3_868_SERIES(s3ChipId)) {
 	    ErrorF("%s %s: chipset:   868 rev. %x\n",
-                   XCONFIG_PROBED, s3InfoRec.name, s3ChipRev);
-	 } else if (S3_966_SERIES(s3ChipId)) {
-	    ErrorF("%s %s: chipset:   966 rev. %x\n",
                    XCONFIG_PROBED, s3InfoRec.name, s3ChipRev);
 	 } else if (S3_968_SERIES(s3ChipId)) {
 	    ErrorF("%s %s: chipset:   968 rev. %x\n",

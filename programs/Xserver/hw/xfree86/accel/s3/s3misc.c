@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.14 1994/10/23 12:58:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.15 1994/11/05 23:43:04 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -636,20 +636,19 @@ s3AdjustFrame(int x, int y)
          y += 512;
    }
       
-   Base = ((y * s3DisplayWidth + x) * s3Bpp) >> 2;
+   /* so may S3 cards have problems with some odd base addresses, 
+    * to catch them all only even base values will be used.
+    */
 
-   /* Elsa Winner 1000 has display errors with 16bpp and (Base&0x0f) == 0x0f */
-   if (s3Bpp>1 && DAC_IS_SC15025 && S3_928_SERIES(s3ChipId)) {
-      if ((Base&0x0f) == 0x0f) Base--;
-   }
-   else if (DAC_IS_SC15025 && S3_928_SERIES(s3ChipId)) {
-      if ((Base&0x3f) == 0x3f) Base--;
-   }
-   else if (S3_805_I_SERIES(s3ChipId) && s3Bpp==1) {
-#if 0
-      if ((Base&0x1f) == 0x1f) Base--; /* horizontal stripes */
-#endif
-      if ((Base&0x01) == 0x01) Base--; /* leftmost 4 pixel are corrupt */
+   Base = (((y * s3DisplayWidth + x) * s3Bpp) >> 2) & ~1;
+
+   if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES) {
+      if ((Base & 0x3f) >= 0x3c) 
+	 Base = (Base & ~0x3f) | 0x3b;
+      else if (s3Bpp>1 && (Base & 0x3f) == 0x3a) 
+	 Base = (Base & ~0x3f) | 0x39;
+      else if (s3Bpp>2 && (Base & 0x1f) == 0x1a) 
+	 Base = (Base & ~0x1f) | 0x19;
    }
 
    outb(vgaCRIndex, 0x31);

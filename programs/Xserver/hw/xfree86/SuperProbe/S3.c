@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.1 1994/08/31 04:20:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.2 1994/11/05 23:42:19 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -186,23 +186,20 @@ int *Chipset;
 			case 0xD0:
 				*Chipset = CHIP_S3_964;
 				break;
-			case 0xE0: 
-			case 0xF0: {
+			case 0xE0: {
 			   Byte chip_id_high, chip_id_low, chip_rev;
 			   chip_id_high = rdinx(CRTC_IDX, 0x2d);
 			   chip_id_low  = rdinx(CRTC_IDX, 0x2e);
 			   chip_rev     = rdinx(CRTC_IDX, 0x2f);
-			   if      ((rev&0xf0)==0xe0 && chip_id_low==0x80)
+			   if      (chip_id_low==0x80) 
 			      *Chipset = CHIP_S3_866;
-			   else if ((rev&0xf0)==0xe0 && chip_id_low==0x90) 
+			   else if (chip_id_low==0x90) 
 			      *Chipset = CHIP_S3_868;
-			   else if ((rev&0xf0)==0xe0 && chip_id_low==0x10) 
+			   else if (chip_id_low==0x10) 
 			      *Chipset = CHIP_S3_Trio32;
-			   else if ((rev&0xf0)==0x01 && chip_id_low==0x11) 
+			   else if (chip_id_low==0x11) 
 			      *Chipset = CHIP_S3_Trio64;
-			   else if ((rev&0xf0)==0xf0 && chip_id_low==0x80)
-			      *Chipset = CHIP_S3_966;
-			   else if ((rev&0xf0)==0xf0 && chip_id_low==0x90) 
+			   else if (chip_id_low==0xb0) 
 			      *Chipset = CHIP_S3_968;
 			   else {
 			      Chip_data = rev;

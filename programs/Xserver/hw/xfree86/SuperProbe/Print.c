@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.2 1994/09/26 15:30:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.3 1994/11/05 23:42:14 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -96,7 +96,6 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "S3 Vision964",
 		  "S3 Vision866",
 		  "S3 Vision868",
-		  "S3 Vision966",
 		  "S3 Vision968",
 		  "S3 Trio32",
 		  "S3 Trio64",

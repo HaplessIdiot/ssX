@@ -1,5 +1,5 @@
 /* $XConsortium: regs3.h,v 1.1 94/03/28 21:13:30 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.8 1994/08/31 04:29:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.9 1994/11/05 23:42:51 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -84,9 +84,8 @@
 #define S3_964_SERIES(chip)     ((chip&0xf0)==0xd0)
 #define S3_866_SERIES(chip)     ((chip&0xfff0)==0x80e0)
 #define S3_868_SERIES(chip)     ((chip&0xfff0)==0x90e0)
-#define S3_966_SERIES(chip)     ((chip&0xfff0)==0x80f0)
-#define S3_968_SERIES(chip)     ((chip&0xfff0)==0x90f0)
-#define S3_x66_SERIES(chip)     ((chip&0xffe0)==0x80e0)  /* ((S3_866_SERIES(chip) || S3_966_SERIES(chip)) */
+#define S3_968_SERIES(chip)     ((chip&0xfff0)==0xb0e0)
+#define S3_x66_SERIES(chip)     S3_866_SERIES(chip)
 #define S3_x68_SERIES(chip)     ((chip&0xffe0)==0x90e0)  /* ((S3_868_SERIES(chip) || S3_968_SERIES(chip)) */
 #define S3_x6x_SERIES(chip)     ((chip&0xefe0)==0x80e0)  /* ((S3_x66_SERIES(chip) || S3_x68_SERIES(chip)) */
 #define S3_TRIO32_SERIES(chip)  ((chip&0xfff0)==0x10e0)

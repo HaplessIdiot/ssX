@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.2 1994/09/26 15:31:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.3 1994/11/05 23:42:16 dawes Exp $ */
 
 /*
  * Includes
@@ -464,10 +464,9 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_S3_964	SVGA_TYPE(V_S3,15)	/* S3 Vision964		*/
 #define CHIP_S3_866	SVGA_TYPE(V_S3,16)	/* S3 Vision866		*/
 #define CHIP_S3_868	SVGA_TYPE(V_S3,17)	/* S3 Vision868		*/
-#define CHIP_S3_966	SVGA_TYPE(V_S3,18)	/* S3 Vision966		*/
-#define CHIP_S3_968	SVGA_TYPE(V_S3,19)	/* S3 Vision968		*/
-#define CHIP_S3_Trio32	SVGA_TYPE(V_S3,20)	/* S3 Trio32		*/
-#define CHIP_S3_Trio64	SVGA_TYPE(V_S3,21)	/* S3 Trio64		*/
+#define CHIP_S3_968	SVGA_TYPE(V_S3,18)	/* S3 Vision968		*/
+#define CHIP_S3_Trio32	SVGA_TYPE(V_S3,19)	/* S3 Trio32		*/
+#define CHIP_S3_Trio64	SVGA_TYPE(V_S3,20)	/* S3 Trio64		*/
 #define CHIP_TVGA_UNK	SVGA_TYPE(V_TRIDENT,0)	/* Trident unknown	*/
 #define CHIP_TVGA8200	SVGA_TYPE(V_TRIDENT,1)	/* Trident LX8200	*/
 #define CHIP_TVGA8800BR	SVGA_TYPE(V_TRIDENT,2)	/* Trident 8800BR	*/
