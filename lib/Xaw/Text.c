@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.43 2001/05/25 21:43:15 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.45 2001/09/18 17:35:20 paulo Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -3308,6 +3308,9 @@ FlushUpdate(TextWidget ctx)
     void (*display_text)(Widget, XawTextPosition, XawTextPosition);
 
     if (XtIsRealized((Widget)ctx)) {
+	ctx->text.s.right = XawMin(ctx->text.s.right, ctx->text.lastPos);
+	ctx->text.s.left = XawMin(ctx->text.s.left, ctx->text.s.right);
+
 #ifndef OLDXAW
 	if (XawTextSinkBeginPaint(ctx->text.sink) == False)
 #endif
