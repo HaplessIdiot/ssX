@@ -390,7 +390,7 @@ typedef struct {
    (SISPortPrivPtr)((SISPTR(pScrn))->adaptor->pPortPrivates[0].ptr)
 
 static void
-SIS6326SetPortDefaults (ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
+SIS6326SetPortDefaults(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 {
     SISPtr    pSiS = SISPTR(pScrn);
     
@@ -588,6 +588,7 @@ SIS6326SetupImageVideo(ScreenPtr pScreen)
     xvDisableGfx = MAKE_ATOM("XV_DISABLE_GRAPHICS");
 
     SIS6326ResetVideo(pScrn);
+    pSiS->ResetXv = SIS6326ResetVideo;
 
     return adapt;
 }

@@ -1017,26 +1017,24 @@ SISSense30x(ScrnInfoPtr pScrn)
 
     SISDoSense(pScrn, 0, 0, 0, 0);
 
-    if((pSiS->VGAEngine == SIS_315_VGA) ||
-       (pSiS->Chipset == PCI_CHIP_SIS300)) {
-       if(pSiS->sishw_ext.UseROM) {
-          if(pSiS->VGAEngine == SIS_300_VGA) temp = 0xfe;
-          else {
-	     temp = 0xf3;
-	     if((pSiS->Chipset == PCI_CHIP_SIS330) || (pSiS->Chipset == PCI_CHIP_SIS660)) {
-	        temp = 0x11b;
+    if(pSiS->Chipset != PCI_CHIP_SIS660) {
+       if((pSiS->VGAEngine == SIS_315_VGA) ||
+          (pSiS->Chipset == PCI_CHIP_SIS300)) {
+          if(pSiS->sishw_ext.UseROM) {
+             if(pSiS->VGAEngine == SIS_300_VGA)        temp = 0xfe;
+             else if(pSiS->Chipset == PCI_CHIP_SIS330) temp = 0x11b;
+	     else temp = 0xf3;
+             if(pSiS->BIOS[temp] & 0x08) {
+	         xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	             "SiS30x: Video bridge has DVI-I TMDS/VGA combo connector\n");
+	         orSISIDXREG(SISCR, 0x32, 0x80);
+             } else {
+	         andSISIDXREG(SISCR, 0x32, 0x7f);
 	     }
-	  }
-          if(pSiS->BIOS[temp] & 0x08) {
-	      xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	          "SiS30x: Video bridge has DVI-I TMDS/VGA combo connector\n");
-	      orSISIDXREG(SISCR, 0x32, 0x80);
-          } else {
-	      andSISIDXREG(SISCR, 0x32, 0x7f);
-	  }
+          }
        }
     }
-    
+
     if(pSiS->VGAEngine == SIS_300_VGA) {
 
         if(pSiS->sishw_ext.UseROM) {
@@ -1048,7 +1046,7 @@ SISSense30x(ScrnInfoPtr pScrn)
 	   vga2_bh = 0x00; vga2_bl = 0xd1;
            svhs_bh = 0x00; svhs_bl = 0xb9;
 	   cvbs_bh = 0x00; cvbs_bl = 0xb3;
-	   biosflag = 0;
+	   biosflag = 2;
 	}
 	if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV)) {
 	   vga2_bh = 0x01; vga2_bl = 0x90;
@@ -1064,7 +1062,7 @@ SISSense30x(ScrnInfoPtr pScrn)
 	vga2_ch = 0x0e;	vga2_cl = 0x08;
 	svhs_ch = 0x04;	svhs_cl = 0x04;
 	cvbs_ch = 0x08; cvbs_cl = 0x04;
-	
+
 	if(pSiS->Chipset == PCI_CHIP_SIS300) {
 	   inSISIDXREG(SISSR,0x3b,myflag);
 	   if(!(myflag & 0x01)) {
@@ -1073,10 +1071,52 @@ SISSense30x(ScrnInfoPtr pScrn)
 	   }
 	}
 
+    } else if(pSiS->Chipset == PCI_CHIP_SIS660) {
+
+        if(pSiS->sishw_ext.UseROM) {
+	   biosflag = pSiS->BIOS[0x58];
+	   temp = pSiS->BIOS[0x254] | (pSiS->BIOS[0x255] << 8);
+	   if(pSiS->VBFlags & VB_301)         temp +=  6;
+	   else if(pSiS->VBFlags & VB_301B)   temp += 12;
+	   else if(pSiS->VBFlags & VB_301C)   temp += 18;
+	   else if(pSiS->VBFlags & VB_301LV)  temp += 12;
+	   else if(pSiS->VBFlags & VB_302LV)  temp += 12;
+	   else if(pSiS->VBFlags & VB_301LVX) temp += 18;
+	   vga2_bh = pSiS->BIOS[temp+1]; vga2_bl = pSiS->BIOS[temp];
+	   svhs_bh = pSiS->BIOS[temp+3]; svhs_bl = pSiS->BIOS[temp+2];
+	   cvbs_bh = pSiS->BIOS[temp+5]; cvbs_bl = pSiS->BIOS[temp+4];
+	} else {
+	   biosflag = 2;
+	   if(pSiS->VBFlags & (VB_301B | VB_301LV | VB_302LV)) {
+	      vga2_bh = 0x01; vga2_bl = 0x90;
+	      svhs_bh = 0x01; svhs_bl = 0x6b; /* Are these really correct for LV? */
+	      cvbs_bh = 0x01; cvbs_bl = 0x74;
+	   } else if(pSiS->VBFlags & (VB_301C | VB_301LVX)) {
+	      vga2_bh = 0x01; vga2_bl = 0x90;
+	      svhs_bh = 0x01; svhs_bl = 0x6b;
+	      cvbs_bh = 0x01; cvbs_bl = 0x10;
+	   } else {
+	      vga2_bh = 0x00; vga2_bl = 0xfd;
+	      svhs_bh = 0x00; svhs_bl = 0xdd;
+	      cvbs_bh = 0x00; cvbs_bl = 0xee;
+	   }
+	}
+
+	vga2_ch = 0x0e;	vga2_cl = 0x08;
+	svhs_ch = 0x04;	svhs_cl = 0x04;
+	cvbs_ch = 0x08; cvbs_cl = 0x04;
+
+	if(pSiS->VBFlags & (VB_301LV|VB_302LV)) {
+	   vga2_bh = 0x00; vga2_bl = 0x00;
+	   vga2_ch = 0x00; vga2_cl = 0x00;
+	   svhs_ch = 0x04; svhs_cl = 0x08;
+	   cvbs_ch = 0x08; cvbs_cl = 0x08;
+	}
+
     } else {
 
 	if(pSiS->sishw_ext.UseROM) {
-	   if((pSiS->Chipset == PCI_CHIP_SIS330) || (pSiS->Chipset == PCI_CHIP_SIS660)) {
+	   if(pSiS->Chipset == PCI_CHIP_SIS330) {
 	      vga2_bh = pSiS->BIOS[0xe6]; vga2_bl = pSiS->BIOS[0xe5];
 	      svhs_bh = pSiS->BIOS[0xe8]; svhs_bl = pSiS->BIOS[0xe7];
 	      cvbs_bh = pSiS->BIOS[0xea]; cvbs_bl = pSiS->BIOS[0xe9];
@@ -1091,12 +1131,12 @@ SISSense30x(ScrnInfoPtr pScrn)
 	   vga2_bh = 0x00; vga2_bl = 0xd1;
            svhs_bh = 0x00; svhs_bl = 0xb9;
 	   cvbs_bh = 0x00; cvbs_bl = 0xb3;
-	   biosflag = 0;
+	   biosflag = 2;
 	}
 	
 	if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV)) {
 	   if(pSiS->sishw_ext.UseROM) {
-	      if((pSiS->Chipset == PCI_CHIP_SIS330) || (pSiS->Chipset == PCI_CHIP_SIS660)) {
+	      if(pSiS->Chipset == PCI_CHIP_SIS330) {
 	         vga2_bh = pSiS->BIOS[0xec]; vga2_bl = pSiS->BIOS[0xeb];
 	         svhs_bh = pSiS->BIOS[0xee]; svhs_bl = pSiS->BIOS[0xed];
 	         cvbs_bh = pSiS->BIOS[0xf0]; cvbs_bl = pSiS->BIOS[0xef];
@@ -1186,6 +1226,10 @@ SISSense30x(ScrnInfoPtr pScrn)
 
     andSISIDXREG(SISCR, 0x32, ~0x03);
     pSiS->postVBCR32 &= ~0x03;
+
+    if(pSiS->VBFlags & (VB_301C | VB_301LVX)) {
+       orSISIDXREG(SISPART4,0x0d,0x04);
+    }
 
     haveresult = 0;
     for(j = 0; j < 10; j++) {
@@ -1302,7 +1346,7 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
     int     temp,temp1,temp2, i;
     int     upperlimitlvds, lowerlimitlvds;
     int     upperlimitch, lowerlimitch;
-    int     chronteltype, chrontelidreg;
+    int     chronteltype, chrontelidreg, upperlimitvb;
     unsigned char test[3];
 #if 0
     unsigned char sr17=0;
@@ -1355,15 +1399,24 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 	
     inSISIDXREG(SISPART4, 0x00, temp);
     temp &= 0x0F;
-    if (temp == 1) {
+    if(temp == 1) {
         inSISIDXREG(SISPART4, 0x01, temp1);
 	temp1 &= 0xff;
         if(temp1 >= 0xE0) {
-	   	pSiS->VBFlags |= VB_302LV;
-		pSiS->sishw_ext.ujVBChipID = VB_CHIP_302LV;
-    		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	        inSISIDXREG(SISPART4, 0x39, temp2);
+		if(temp2 == 0xff) {
+	   	   pSiS->VBFlags |= VB_302LV;
+		   pSiS->sishw_ext.ujVBChipID = VB_CHIP_302LV;
+    		   xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		                "Detected SiS302LV video bridge (ID 1; Revision 0x%x)\n",
 				temp1);
+		} else {
+		   pSiS->VBFlags |= VB_301LVX;
+		   pSiS->sishw_ext.ujVBChipID = VB_CHIP_301LVX;
+    		   xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		                "Detected SiS301LVX video bridge (ID 1; Revision 0x%x)\n",
+				temp1);
+		}
 	} else if(temp1 >= 0xD0) {
 	   	pSiS->VBFlags |= VB_301LV;
 		pSiS->sishw_ext.ujVBChipID = VB_CHIP_301LV;
@@ -1432,36 +1485,32 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
     } else {
 
         pSiS->sishw_ext.ujVBChipID = VB_CHIP_UNKNOWN;
-	inSISIDXREG(SISCR, 0x37, temp);
-        temp = (temp >> 1) & 0x07;
-#if 0   /* TW: This does not seem to be used on any machine */
-	if ( (temp == 0) || (temp == 1)) {
-	    pSiS->VBFlags |= VB_301;   /* TW: 301 ? */
-	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	               "Detected SiS301 video bridge (Irregular bridge type %d)\n", temp);
+	if(pSiS->Chipset == PCI_CHIP_SIS660) {
+	   inSISIDXREG(SISCR, 0x38, temp);
+           temp = (temp >> 5) & 0x07;
+	} else {
+	   inSISIDXREG(SISCR, 0x37, temp);
+           temp = (temp >> 1) & 0x07;
 	}
-#endif
         if(pSiS->VGAEngine == SIS_300_VGA) {
 	   lowerlimitlvds = 2; upperlimitlvds = 4;
 	   lowerlimitch   = 4; upperlimitch   = 5;
 	   chronteltype = 1;   chrontelidreg  = 0x25;
+	   upperlimitvb = upperlimitlvds;
         } else {
 	   lowerlimitlvds = 2; upperlimitlvds = 3;
 	   lowerlimitch   = 3; upperlimitch   = 3;
 	   chronteltype = 2;   chrontelidreg  = 0x4b;
+	   upperlimitvb = upperlimitlvds;
+	   if(pSiS->Chipset == PCI_CHIP_SIS660) {
+	      upperlimitvb = 4;
+	   }
 	}
 
 	if((temp >= lowerlimitlvds) && (temp <= upperlimitlvds)) {
                pSiS->VBFlags |= VB_LVDS;
     	       xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 	               "Detected LVDS transmitter (Bridge type %d)\n", temp);
-	       if(pSiS->Chipset == PCI_CHIP_SIS650) {
-	       	   inSISIDXREG(SISCR, 0x38, temp1);
-                   if(temp1 & 0x02) {
-		      xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		                 "[LVDS: LCD channel A]\n");
-		   }
-	       }
 	}
         if((temp >= lowerlimitch) && (temp <= upperlimitch))  {
 	    /* Set global for init301.c */
@@ -1641,11 +1690,16 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 	       SiS_SetChrontelGPIO(pSiS->SiS_Pr, 0x00);
 	    }
 	}
-	if ((pSiS->VGAEngine == SIS_300_VGA) && (temp == 3)) {
+	if((pSiS->Chipset == PCI_CHIP_SIS660) && (temp == 4)) {
+	   pSiS->VBFlags |= VB_CONEXANT;
+	   xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	               "Detected Conexant video bridge - UNSUPPORTED\n");
+	}
+	if((pSiS->VGAEngine == SIS_300_VGA) && (temp == 3)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 	               "Detected Trumpion Zurac (I/II/III) LVDS scaler - UNSUPPORTED\n");
 	}
-	if (temp > upperlimitlvds) {
+	if(temp > upperlimitvb) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	               "Detected unknown bridge type (%d)\n", temp);
 	}
@@ -1706,7 +1760,7 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
           if(pSiS->sisfblcda != 0xff) {	  
 	     if((pSiS->sisfblcda & 0x03) == 0x03) {
 	        pSiS->SiS_Pr->SiS_UseLCDA = TRUE;
-	        pSiS->VBFlags |= VB_USELCDA;
+	        pSiS->ChipFlags |= SiSCF_UseLCDA;
 	     }
 	  } else {
              inSISIDXREG(SISCR,0x34,temp);
@@ -1714,13 +1768,13 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 	        inSISIDXREG(SISCR,0x38,temp);
 	        if((temp & 0x03) == 0x03) {
 	           pSiS->SiS_Pr->SiS_UseLCDA = TRUE;
-	           pSiS->VBFlags |= VB_USELCDA;
+	           pSiS->ChipFlags |= SiSCF_UseLCDA;
 		   pSiS->SiS_Pr->Backup = TRUE;
 	        } else {
 		   inSISIDXREG(SISCR,0x35,temp);
 		   if(temp & 0x01) {
 		      pSiS->SiS_Pr->SiS_UseLCDA = TRUE;
-	              pSiS->VBFlags |= VB_USELCDA;
+	              pSiS->ChipFlags |= SiSCF_UseLCDA;
 		      pSiS->SiS_Pr->Backup = TRUE;
 		   } else {
 	              inSISIDXREG(SISCR,0x30,temp);
@@ -1729,7 +1783,7 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 		         inSISIDXREG(SISPART1,0x13,temp);
 		         if(temp & 0x04) {
 		            pSiS->SiS_Pr->SiS_UseLCDA = TRUE;
-	                    pSiS->VBFlags |= VB_USELCDA;
+	                    pSiS->ChipFlags |= SiSCF_UseLCDA;
 			    pSiS->SiS_Pr->Backup = TRUE;
 		         }
 		      } 
@@ -1737,7 +1791,7 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 	        }
 	     }
 	  }
-	  if(pSiS->VBFlags & VB_USELCDA) {
+	  if(pSiS->ChipFlags & SiSCF_UseLCDA) {
 	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		"Bridge uses LCDA for low resolution and text modes\n");
 	     if(pSiS->SiS_Pr->Backup == TRUE) {

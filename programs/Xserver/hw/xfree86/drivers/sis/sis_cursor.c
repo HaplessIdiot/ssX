@@ -143,7 +143,7 @@ SiS310HideCursor(ScrnInfoPtr pScrn)
 		sis310SetCursorPositionY(2000, 0)
         } else {
 		/* TW: Head 1 is always CRT2 */
-		if(pSiS->ChipFlags & SiSCF_XabreCore) {
+		if(pSiS->ChipFlags & SiSCF_CRT2HWCKaputt) {
 		   sis301DisableHWCursor330()
 		   sis301SetCursorPositionY330(2000, 0)
 		} else {
@@ -156,7 +156,7 @@ SiS310HideCursor(ScrnInfoPtr pScrn)
     	sis310DisableHWCursor()
 	sis310SetCursorPositionY(2000, 0)
 	if(pSiS->VBFlags & VB_VIDEOBRIDGE) {
-	   if(pSiS->ChipFlags & SiSCF_XabreCore) {
+	   if(pSiS->ChipFlags & SiSCF_CRT2HWCKaputt) {
               sis301DisableHWCursor330()
 	      sis301SetCursorPositionY330(2000, 0)
 	   } else {
@@ -269,7 +269,7 @@ SiS310ShowCursor(ScrnInfoPtr pScrn)
 		}
         } else {
 		/* TW: Head 1 is always CRT2 */
-		if(pSiS->ChipFlags & SiSCF_XabreCore) {
+		if(pSiS->ChipFlags & SiSCF_CRT2HWCKaputt) {
 		   sis301EnableHWCursor330()
 		} else {
 		   if(pSiS->UseHWARGBCursor) {
@@ -281,7 +281,7 @@ SiS310ShowCursor(ScrnInfoPtr pScrn)
 	}
     } else {
 #endif
-	if(pSiS->ChipFlags & SiSCF_XabreCore) {
+	if(pSiS->ChipFlags & SiSCF_CRT2HWCKaputt) {
 	   if(pSiS->UseHWARGBCursor) {
 	      sis310EnableHWARGBCursor()
 	   } else {
@@ -411,7 +411,7 @@ SiSSetCursorPositionMerged(ScrnInfoPtr pScrn1, int x, int y)
     } else {
        sis310SetCursorPositionX(x1, x1_preset)
        sis310SetCursorPositionY(y1, y1_preset)
-       if(pSiS->ChipFlags & SiSCF_XabreCore) {
+       if(pSiS->ChipFlags & SiSCF_CRT2HWCKaputt) {
           sis301SetCursorPositionX330(x2 + 17, x2_preset)
           sis301SetCursorPositionY330(y2, y2_preset)
        } else {
@@ -508,7 +508,7 @@ SiS310SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     		sis310SetCursorPositionY(y, y_preset)
         } else {
 		/* TW: Head 1 is always CRT2 */
-		if(pSiS->ChipFlags & SiSCF_XabreCore) {
+		if(pSiS->ChipFlags & SiSCF_CRT2HWCKaputt) {
 		   sis301SetCursorPositionX330(x + 17, x_preset)
       		   sis301SetCursorPositionY330(y, y_preset)
 		} else {
@@ -521,7 +521,7 @@ SiS310SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     	sis310SetCursorPositionX(x, x_preset)
     	sis310SetCursorPositionY(y, y_preset)
     	if(pSiS->VBFlags & CRT2_ENABLE) {
-	   if(pSiS->ChipFlags & SiSCF_XabreCore) {
+	   if(pSiS->ChipFlags & SiSCF_CRT2HWCKaputt) {
       	      sis301SetCursorPositionX330(x + 17, x_preset)
       	      sis301SetCursorPositionY330(y, y_preset)
 	   } else {
@@ -612,7 +612,7 @@ SiS310SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
     		sis310SetCursorFGColor(fg)
         } else {
 		/* TW: Head 1 is always CRT2 */
-		if(pSiS->ChipFlags & SiSCF_XabreCore) {
+		if(pSiS->ChipFlags & SiSCF_CRT2HWCKaputt) {
 		   if((fg != pSiS->CurFGCol) || (bg != pSiS->CurBGCol)) {
       		      pSiS->CurFGCol = fg;
     		      pSiS->CurBGCol = bg;
@@ -629,7 +629,7 @@ SiS310SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
     	sis310SetCursorFGColor(fg)
 
 	if(pSiS->VBFlags & CRT2_ENABLE)  {
-	   if(pSiS->ChipFlags & SiSCF_XabreCore) {
+	   if(pSiS->ChipFlags & SiSCF_CRT2HWCKaputt) {
 	      if((fg != pSiS->CurFGCol) || (bg != pSiS->CurBGCol)) {
 	         pSiS->CurFGCol = fg;
                  pSiS->CurBGCol = bg;
@@ -815,7 +815,7 @@ SiS310LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
        memcpy((unsigned char *)dest + (cursor_addr * 1024), src, 1024);
     }
 
-    if(pSiS->ChipFlags & SiSCF_XabreCore) {
+    if(pSiS->ChipFlags & SiSCF_CRT2HWCKaputt) {
 
        /* Convert Mono image to color image */
 
@@ -864,7 +864,7 @@ SiS310LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
     if(status1) sis310SetCursorStatus(status1)
 
     if(pSiS->VBFlags & CRT2_ENABLE) {
-       if(pSiS->ChipFlags & SiSCF_XabreCore) {
+       if(pSiS->ChipFlags & SiSCF_CRT2HWCKaputt) {
           sis301SetCursorAddress330(cursor_addr2)
           sis301SetCursorPatternSelect330(0)
        } else {
@@ -1286,7 +1286,7 @@ static void SiS310LoadCursorImageARGB(ScrnInfoPtr pScrn, CursorPtr pCurs)
 	   }
     }
 
-    if(pSiS->ChipFlags & SiSCF_XabreCore) {
+    if(pSiS->ChipFlags & SiSCF_CRT2HWCKaputt) {
 
        if(!pSiS->UseHWARGBCursor) {
           if(pSiS->VBFlags & DISPTYPE_CRT1) {
@@ -1322,7 +1322,7 @@ static void SiS310LoadCursorImageARGB(ScrnInfoPtr pScrn, CursorPtr pCurs)
     if(status1) sis310SetCursorStatus(status1)
     
     if(pSiS->VBFlags & CRT2_ENABLE) {
-       if(pSiS->ChipFlags & SiSCF_XabreCore) {
+       if(pSiS->ChipFlags & SiSCF_CRT2HWCKaputt) {
           sis301SetCursorAddress330(cursor_addr)
           sis301SetCursorPatternSelect330(0)
        } else {

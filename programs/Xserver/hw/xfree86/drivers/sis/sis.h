@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   10
-#define SISDRIVERVERSIONDAY     14
+#define SISDRIVERVERSIONDAY     23
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -138,7 +138,7 @@
 #define PCI_CHIP_SIS330 		0x0330
 #endif
 #ifndef PCI_CHIP_SIS660
-#define PCI_CHIP_SIS660 		0x6330	/* 660_VGA and 760_VGA (for future use) */
+#define PCI_CHIP_SIS660 		0x6330	/* 661_VGA, 741_VGA, 760_VGA */
 #endif
 
 #define SIS_NAME                "SIS"
@@ -184,9 +184,11 @@
 #define TV_SVIDEO               0x00000200
 #define TV_SCART                0x00000400
 #define TV_INTERFACE            (TV_AVIDEO | TV_SVIDEO | TV_SCART | TV_CHSCART | TV_CHHDTV)
-#define VB_USELCDA		0x00000800
+#define VB_CONEXANT		0x00000800
 #define TV_PALM                 0x00001000
 #define TV_PALN                 0x00002000
+#define TV_NTSCJ		0x00001000
+#define VB_301LVX		0x00004000
 #define TV_CHSCART              0x00008000
 #define TV_CHHDTV               0x00010000
 #define CRT1_VGA		0x00000000
@@ -203,9 +205,9 @@
 #define VB_301LV                0x04000000
 #define VB_302LV                0x08000000
 #define VB_301C			0x10000000
-#define VB_VIDEOBRIDGE		(VB_301|VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV| \
-				 VB_LVDS|VB_CHRONTEL)
-#define VB_SISBRIDGE            (VB_301|VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV)
+#define VB_VIDEOBRIDGE		(VB_301|VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV|VB_301LVX| \
+				 VB_LVDS|VB_CHRONTEL|VB_CONEXANT)
+#define VB_SISBRIDGE            (VB_301|VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV|VB_301LVX)
 #define SINGLE_MODE             0x20000000   	/* CRT1 or CRT2; determined by DISPTYPE_CRTx */
 #define VB_DISPMODE_SINGLE	SINGLE_MODE  	/* alias */
 #define MIRROR_MODE		0x40000000   	/* CRT1 + CRT2 identical (mirror mode) */
@@ -272,7 +274,7 @@ typedef unsigned char UChar;
 #define SIS_530_VGA 1
 #define SIS_OLD_VGA 2
 #define SIS_300_VGA 3
-#define SIS_315_VGA 4   /* Includes Xabre; see ChipFlags */
+#define SIS_315_VGA 4   /* Includes 330/660/661/741/760 */
 
 /* oldChipset */
 #define OC_UNKNOWN   0
@@ -295,24 +297,26 @@ typedef unsigned char UChar;
 
 /* ChipFlags */
 /* Use only lower 16 bit for chip id! (sisctrl) */
-#define SiSCF_LARGEOVERLAY 0x00000001
-#define SiSCF_Is651        0x00000002
-#define SiSCF_IsM650       0x00000004
-#define SiSCF_IsM652       0x00000008
-#define SiSCF_IsM653       0x00000010
-#define SiSCF_Is652        0x00000020
-#define SiSCF_Is661FX	   0x00000040
-#define SiSCF_IsM661FX	   0x00000080
-#define SiSCF_Is661	   (SiSCF_Is661FX | SiSCF_IsM661FX)
-#define SiSCF_Is741        0x00000100
-#define SiSCF_Is65x        (SiSCF_Is651|SiSCF_IsM650|SiSCF_IsM652|SiSCF_IsM653| \
-			    SiSCF_Is652|SiSCF_Is661FX|SiSCF_IsM661FX|SiSCF_Is741)
-#define SiSCF_IsM660       0x00000200
-#define SiSCF_IsM760       0x00000400
-#define SiSCF_Is66x        (SiSCF_IsM660 | SiSCF_IsM760)
-#define SiSCF_XabreCore    0x00010000
-#define SiSCF_Glamour3     0x40000000
-#define SiSCF_Integrated   0x80000000
+#define SiSCF_LARGEOVERLAY  0x00000001
+#define SiSCF_Is651         0x00000002
+#define SiSCF_IsM650        0x00000004
+#define SiSCF_IsM652        0x00000008
+#define SiSCF_IsM653        0x00000010
+#define SiSCF_Is652         0x00000020
+#define SiSCF_Is65x         (SiSCF_Is651|SiSCF_IsM650|SiSCF_IsM652|SiSCF_IsM653|SiSCF_Is652)
+#define SiSCF_IsM661        0x00000100
+#define SiSCF_IsM741        0x00000200
+#define SiSCF_IsM760        0x00000400
+#define SiSCF_IsM66x        (SiSCF_IsM661 | SiSCF_IsM741 | SiSCF_IsM760)
+#define SiSCF_315Core       0x00010000  /* 3D: Real 315 */
+#define SiSCF_Real256ECore  0x00020000  /* 3D: Similar to 315 core, no T&L (65x, 661, 740, 741) */
+#define SiSCF_XabreCore     0x00040000  /* 3D: Real Xabre */
+#define SiSCF_Ultra256Core  0x00080000  /* 3D: Similar to Xabre, no T&L, no P:Shader (660, 760) */
+#define SiSCF_UseLCDA       0x01000000  
+#define SiSCF_760UMA        0x10000000  /* 760: UMA active */
+#define SiSCF_CRT2HWCKaputt 0x20000000  /* CRT2 Mono HWCursor engine buggy (SiS 330) */
+#define SiSCF_Glamour3      0x40000000
+#define SiSCF_Integrated    0x80000000
 
 /* SiS Direct Xv-API */
 #define SiS_SD_IS300SERIES    0x00000001
@@ -331,6 +335,7 @@ typedef unsigned char UChar;
 #define SiS_SD_ENABLED        0x00002000   /* sisctrl is enabled (by option) */
 #define SiS_SD_PSEUDOXINERAMA 0x00004000   /* pseudo xinerama is active */
 #define SiS_SD_SUPPORTLCDA    0x00008000   /* Support LCD Channel A */
+#define SiS_SD_SUPPORTNTSCJ   0x00010000   /* tv chip supports ntsc-j */
 
 #define SIS_DIRECTKEY         0x03145792
 
@@ -465,7 +470,7 @@ typedef struct {
     int		      	tvxscale, tvyscale;
     int			ForceTVType;
     int			chtvtype;
-    int                 NonDefaultPAL;
+    int                 NonDefaultPAL, NonDefaultNTSC;
     unsigned short	tvx, tvy;
     unsigned char	p2_01, p2_02, p2_1f, p2_20;
     unsigned char	p2_44, p2_45, p2_46;
@@ -680,6 +685,7 @@ typedef struct {
     XF86VideoAdaptorPtr adaptor;
     ScreenBlockHandlerProcPtr BlockHandler;
     void                (*VideoTimerCallback)(ScrnInfoPtr, Time);
+    void		(*ResetXv)(ScrnInfoPtr);
 
     OptionInfoPtr 	Options;
     unsigned char 	LCDon;
@@ -760,7 +766,7 @@ typedef struct {
     unsigned char       postVBCR32;
     int			newFastVram;		/* Replaces FastVram */
     int			ForceTVType;
-    int                 NonDefaultPAL;
+    int                 NonDefaultPAL, NonDefaultNTSC;
     unsigned long       lockcalls;		/* Count unlock calls for debug */
     unsigned short	tvx, tvy;		/* Backup TV position registers */
     unsigned char	p2_01, p2_02, p2_1f, p2_20;    /* Backup TV position registers */

@@ -58,8 +58,8 @@ static const char *dramTypeStr[] = {
         "SDR SDRAM",
         "SGRAM",
         "ESDRAM",
-	"DDR SDRAM",  /* for 550/650 */
-	"DDR SDRAM",  /* for 550/650 */
+	"DDR SDRAM",  /* for 550/650/etc */
+	"DDR SDRAM",  /* for 550/650/etc */
 	"VCM"	      /* for 630 */
         "" };
 
@@ -459,7 +459,7 @@ sis315Setup(ScrnInfoPtr pScrn)
 	    pSiS->BusWidth);
 }
 
-/* For 550, 65x, 74x, 660, 760 */
+/* For 550, 65x, 740, 661, 741, 660, 760 */
 static  void
 sis550Setup(ScrnInfoPtr pScrn)
 {
@@ -474,27 +474,80 @@ sis550Setup(ScrnInfoPtr pScrn)
 
     if(pSiS->Chipset == PCI_CHIP_SIS660) {
 
-       /* TODO - this is entirely guessed */
+       if(pSiS->sishw_ext.jChipType >= SIS_660) {
 
-       pciconfig = pciReadByte(0x00000000, 0x64);
-       if(pciconfig & 0x80) {
-          pScrn->videoRam = (1 << (((pciconfig & 0x70) >> 4) + 22)) / 1024;
-	  pSiS->BusWidth = 64;
-	  for(i=0; i<=3; i++) {
-	     if(pciconfig & (1 << i)) {
-		temp = pciReadByte(0x00000000, 0x60 + i);
-		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		   "DIMM%d is %s SDRAM\n",
-		   i, (temp & 0x40) ? "DDR" : "SDR");
-	     } else {
-	        xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	     	   "DIMM%d is not installed\n", i);
-	     }
+          /* UMA - shared fb */
+          pSiS->ChipFlags &= ~SiSCF_760UMA;
+          pciconfig = pciReadByte(0x00000000, 0x4c);
+	  if(pciconfig & 0xe0) {
+	     pScrn->videoRam = ((1 << (pciconfig & 0xe0) >> 5) - 2) * 32768;
+	     pSiS->ChipFlags |= SiSCF_760UMA;
+	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	     	"%dK shared video RAM\n",
+		pScrn->videoRam);
+	  } else pScrn->videoRam = 0;
+
+	  /* LFB - local framebuffer */
+	  pciconfig = (pciReadByte(0x00000800, 0xcd) >> 1) & 0x03;
+	  if(pciconfig == 0x01)      pScrn->videoRam += 32768;
+	  else if(pciconfig == 0x03) pScrn->videoRam += 65536;
+	  if((pScrn->videoRam < 32768) || (pScrn->videoRam > 131072)) {
+	     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	     	"Illegal video Ram size (%d) detected, using BIOS setting\n");
+	  } else {
+	     pSiS->BusWidth = 64;
+	     ramtype = 8;
+	     alldone = TRUE;
 	  }
-	  pciconfig = pciReadByte(0x00000000, 0x7c);
-	  if(pciconfig & 0x02) ramtype = 8;
-	  else ramtype = 4;
-	  alldone = TRUE;
+
+       } else {
+
+          int dimmnum, maxmem;
+
+          if(pSiS->sishw_ext.jChipType == SIS_741) {
+	     dimmnum = 4;
+	     maxmem = 131072;
+          } else {  /* 661 */
+	     dimmnum = 3;
+	     maxmem = 65536;
+	  }
+
+	  pciconfig = pciReadByte(0x00000000, 0x64);
+          if(pciconfig & 0x80) {
+             pScrn->videoRam = (1 << (((pciconfig & 0x70) >> 4) - 1)) * 32768;
+	     if((pScrn->videoRam < 32768) || (pScrn->videoRam > maxmem)) {
+	        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			"Illegal video RAM size (%d) detected, using BIOS setting\n",
+			pScrn->videoRam);
+	     } else {
+	        pSiS->BusWidth = 64;
+	        for(i=0; i<=(dimmnum - 1); i++) {
+	           if(pciconfig & (1 << i)) {
+		      temp = pciReadByte(0x00000000, 0x60 + i);
+		      xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		         "DIMM%d is %s SDRAM\n",
+		         i, (temp & 0x40) ? "DDR" : "SDR");
+	           } else {
+	              xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	     	         "DIMM%d is not installed\n", i);
+	           }
+	        }
+	        pciconfig = pciReadByte(0x00000000, 0x7c);
+	        if(pciconfig & 0x02) ramtype = 8;
+	        else ramtype = 4;
+		if(pSiS->sishw_ext.jChipType == SIS_741) {
+		   /* Is this really correct? */
+		   ramtype = 12 - ramtype;
+		   xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		   	"SiS741 PCI RamType %d\n", ramtype);
+		   /* For now, we don't trust it */
+		   inSISIDXREG(SISSR, 0x79, config);
+		   ramtype = (config & 0x01) ? 8 : 4;
+		}
+	        alldone = TRUE;
+	     }
+          }
+
        }
 
     } else if(pSiS->Chipset == PCI_CHIP_SIS650) {
@@ -537,16 +590,24 @@ sis550Setup(ScrnInfoPtr pScrn)
     }
 
     if(!alldone) {
-       xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	   "Shared Memory Area is disabled - awaiting doom\n");
-       inSISIDXREG(SISSR, 0x14, config);
-       pScrn->videoRam = (((config & 0x3F) + 1) * 4) * 1024;
-       if(pSiS->Chipset == PCI_CHIP_SIS650) {
-          ramtype = (((config & 0x80) >> 7) << 2) + 4;
-	  pSiS->BusWidth = 64;   /* (config & 0x40) ? 128 : 64; */
+
+       if(pSiS->Chipset == PCI_CHIP_SIS660) {
+          inSISIDXREG(SISSR, 0x79, config);
+	  pScrn->videoRam = (1 << ((config & 0xf0) >> 4)) * 1024;
+	  pSiS->BusWidth = (config & 0x04) ? 128 : 64;
+          ramtype = (config & 0x01) ? 8 : 4;
        } else {
-          ramtype = 4;
-	  pSiS->BusWidth = 64;
+          xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	      "Shared Memory Area is disabled - awaiting doom\n");
+          inSISIDXREG(SISSR, 0x14, config);
+          pScrn->videoRam = (((config & 0x3F) + 1) * 4) * 1024;
+          if(pSiS->Chipset == PCI_CHIP_SIS650) {
+             ramtype = (((config & 0x80) >> 7) << 2) + 4;
+	     pSiS->BusWidth = 64;   /* (config & 0x40) ? 128 : 64; */
+          } else {
+             ramtype = 4;
+	     pSiS->BusWidth = 64;
+          }
        }
     }
 
@@ -562,7 +623,7 @@ sis550Setup(ScrnInfoPtr pScrn)
             "DRAM bus width: %d bit\n",
 	    pSiS->BusWidth);
 
-    /* TW: DDR -> Mclk * 2 - needed for bandwidth calculation */
+    /* DDR -> Mclk * 2 - needed for bandwidth calculation */
     if(ramtype == 8) pSiS->MemClock *= 2;
 }
 
@@ -588,7 +649,7 @@ SiSSetup(ScrnInfoPtr pScrn)
 	break;
     case    PCI_CHIP_SIS550:
     case    PCI_CHIP_SIS650: /* + 740 */
-    case    PCI_CHIP_SIS660: /* + 760 */
+    case    PCI_CHIP_SIS660: /* + 661,741,660,760 */
         sis550Setup(pScrn);
 	break;
     case    PCI_CHIP_SIS5597:

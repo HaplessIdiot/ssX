@@ -357,7 +357,7 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
 void SISTVPreInit(ScrnInfoPtr pScrn)
 {
     SISPtr  pSiS = SISPTR(pScrn);
-    unsigned char SR16, SR38, CR32, CR38=0, CR79;
+    unsigned char SR16, SR38, CR32, CR35=0, CR38=0, CR79;
     int temp = 0;
 
     if(!(pSiS->VBFlags & VB_VIDEOBRIDGE))
@@ -371,7 +371,7 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
        if(pSiS->Chipset == PCI_CHIP_SIS630) temp = 0x35;
        break;
     case SIS_315_VGA:
-       temp = 0x38;
+       if(pSiS->Chipset != PCI_CHIP_SIS660) temp = 0x38;
        break;
     }
     if(temp) {
@@ -421,7 +421,7 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
 	     else if(CR38 & 0x80) pSiS->VBFlags |= TV_PALN;
  	  } else
 	     pSiS->VBFlags |= TV_NTSC;
-       } else if((pSiS->Chipset == PCI_CHIP_SIS650) || (pSiS->Chipset == PCI_CHIP_SIS660)) {
+       } else if(pSiS->Chipset == PCI_CHIP_SIS650) {
 	  inSISIDXREG(SISCR, 0x79, CR79);
 	  if(CR79 & 0x20) {
              pSiS->VBFlags |= TV_PAL;
@@ -429,6 +429,15 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
 	     else if(CR38 & 0x80) pSiS->VBFlags |= TV_PALN;
  	  } else
 	     pSiS->VBFlags |= TV_NTSC;
+       } else if(pSiS->Chipset == PCI_CHIP_SIS660) {
+          inSISIDXREG(SISCR, 0x35, CR35);
+          if(SR38 & 0x01) {
+	     pSiS->VBFlags |= TV_PAL;
+	     if(CR35 & 0x04)      pSiS->VBFlags |= TV_PALM;
+	     else if(CR35 & 0x08) pSiS->VBFlags |= TV_PALN;
+	  } else
+	     pSiS->VBFlags |= TV_NTSC;
+	     if(CR35 & 0x02)      pSiS->VBFlags |= TV_NTSCJ;
        } else {	/* 315, 330 */
 	  if(SR38 & 0x01) {
              pSiS->VBFlags |= TV_PAL;
@@ -443,10 +452,11 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
        xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			"%sTV standard %s\n",
 			(pSiS->VBFlags & (TV_CHSCART | TV_CHHDTV)) ? "Using " : "Detected default ",
-			(pSiS->VBFlags & TV_NTSC) ? 
-			   ((pSiS->VBFlags & TV_CHHDTV) ? "480i HDTV" : "NTSC") :
+			(pSiS->VBFlags & TV_NTSC) ?
+			   ((pSiS->VBFlags & TV_CHHDTV) ? "480i HDTV" :
+			      ((pSiS->VBFlags & TV_NTSCJ) ? "NTSCJ" : "NTSC")) :
 			   ((pSiS->VBFlags & TV_PALM) ? "PALM" :
-			   	((pSiS->VBFlags & TV_PALN) ? "PALN" : "PAL")));
+			   	((pSiS->VBFlags & TV_PALN) ? "PALN" : "PAL")) );
     }
 }
 

@@ -119,6 +119,8 @@ typedef enum _SIS_CHIP_TYPE {
     SIS_650,
     SIS_740,
     SIS_330,
+    SIS_661,
+    SIS_741,
     SIS_660,
     SIS_760,
     MAX_SIS_CHIP
@@ -136,6 +138,7 @@ typedef enum _SIS_VB_CHIP_TYPE {
     VB_CHIP_302B,
     VB_CHIP_302LV,
     VB_CHIP_301C,
+    VB_CHIP_301LVX,
     VB_CHIP_UNKNOWN, /* other video bridge or no video bridge */
     MAX_VB_CHIP
 } SIS_VB_CHIP_TYPE;

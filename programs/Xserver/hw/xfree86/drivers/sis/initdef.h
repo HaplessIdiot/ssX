@@ -38,20 +38,20 @@
 
 #define IS_SIS330		(HwInfo->jChipType == SIS_330)
 #define IS_SIS550		(HwInfo->jChipType == SIS_550)
-#define IS_SIS650		(HwInfo->jChipType == SIS_650)
+#define IS_SIS650		(HwInfo->jChipType == SIS_650)  /* All versions, incl 651, M65x */
 #define IS_SIS740		(HwInfo->jChipType == SIS_740)
 #define IS_SIS651	        (SiS_Pr->SiS_SysFlags & (SF_Is651 | SF_Is652))
 #define IS_SISM650	        (SiS_Pr->SiS_SysFlags & (SF_IsM650 | SF_IsM652 | SF_IsM653))
-#define IS_SIS661		(SiS_Pr->SiS_SysFlags & (SF_Is661 | SF_IsM651))
-#define IS_SIS741		(SiS_Pr->SiS_SysFlags & SF_IsM741)
-#define IS_SIS65x               (IS_SIS651 || IS_SISM650)
-#define IS_SIS661741	        (SiS_Pr->SiS_SysFlags & (SF_Is661 | SF_IsM661 | SF_Is741))
+#define IS_SIS65x               (IS_SIS651 || IS_SISM650)       /* Only special versions of 65x */
+#define IS_SIS661		(HwInfo->jChipType == SIS_661)
+#define IS_SIS741		(HwInfo->jChipType == SIS_741)
 #define IS_SIS660		(HwInfo->jChipType == SIS_660)
 #define IS_SIS760		(HwInfo->jChipType == SIS_760)
-#define IS_SIS650660            (IS_SIS650 || IS_SIS660)
+#define IS_SIS661741660760	(IS_SIS661 || IS_SIS741 || IS_SIS660 || IS_SIS760)
 #define IS_SIS650740            ((HwInfo->jChipType >= SIS_650) && (HwInfo->jChipType < SIS_330))
-#define IS_SIS650740660         (IS_SIS650 || IS_SIS660 || IS_SIS740 || IS_SIS760)
-#define IS_SIS550650740660      (IS_SIS550 || IS_SIS650 || IS_SIS660 || IS_SIS740 || IS_SIS760)
+#define IS_SIS550650740         (IS_SIS550 || IS_SIS650740)
+#define IS_SIS650740660         (IS_SIS650 || IS_SIS740 || IS_SIS661741660760)
+#define IS_SIS550650740660      (IS_SIS550 || IS_SIS650740660)
 
 /* SiS_VBType */
 #define VB_SIS301	      	0x0001
@@ -59,11 +59,12 @@
 #define VB_SIS302B        	0x0004
 #define VB_SIS301LV     	0x0008
 #define VB_SIS302LV     	0x0010
-#define VB_SIS301C              0x0020
+#define VB_SIS301LVX		0x0020
+#define VB_SIS301C              0x0040
 #define VB_NoLCD        	0x8000
-#define VB_SIS301BLV302BLV      (VB_SIS301B|VB_SIS301C|VB_SIS302B|VB_SIS301LV|VB_SIS302LV)
+#define VB_SIS301BLV302BLV      (VB_SIS301B|VB_SIS301C|VB_SIS302B|VB_SIS301LV|VB_SIS302LV|VB_SIS301LVX)
 #define VB_SIS301B302B          (VB_SIS301B|VB_SIS301C|VB_SIS302B)
-#define VB_SIS301LV302LV        (VB_SIS301LV|VB_SIS302LV)
+#define VB_SIS301LV302LV        (VB_SIS301LV|VB_SIS302LV|VB_SIS301LVX)
 #define VB_SISVB		(VB_SIS301 | VB_SIS301BLV302BLV)
 
 /* VBInfo */
@@ -77,17 +78,17 @@
 #define SetCRT2ToHiVisionTV     0x0080
 #define SetCRT2ToTV             0x009C   /* alias */
 #define SetNTSCTV               0x0000   /* CR 31 */
-#define SetPALTV                0x0100
+#define SetPALTV                0x0100   /* Deprecated in VBInfo, now in TVMode */
 #define SetInSlaveMode          0x0200
 #define SetNotSimuMode          0x0400
 #define SetNotSimuTVMode        0x0400
 #define SetDispDevSwitch        0x0800
 #define LoadDACFlag             0x1000
-#define SetCHTVOverScan  	0x1000  /* TW: Re-defined (from 0x8000) */
+#define SetCHTVOverScan  	0x1000  /* Re-defined (from 0x8000) */
 #define DisableCRT2Display      0x2000
 #define CRT2DisplayFlag         0x2000
 #define DriverMode              0x4000
-#define HotKeySwitch            0x8000  /* TW: ? */
+#define HotKeySwitch            0x8000  
 #define SetCRT2ToLCDA           0x8000
 
 /* SiS_ModeType */
@@ -121,9 +122,6 @@
 #define SupportHiVisionTV       0x0010
 #define SupportLCD              0x0020
 #define SupportRAMDAC2          0x0040
-#define NoSupportTV             0x0070
-#define NoSupportHiVisionTV     0x0060
-#define NoSupportLCD            0x0058
 #define SupportCHTV 		0x0800
 #define SupportTV1024           0x0800            
 #define InterlaceMode           0x0080
@@ -139,25 +137,35 @@
 #define ECLKindex4              0x0400
 
 /* SetFlag */
-#define ProgrammingCRT2         0x01
-#define TVSimuMode              0x02
-#define RPLLDIV2XO              0x04
-#define LCDVESATiming           0x08
-#define EnableLVDSDDA           0x10
-#define SetDispDevSwitchFlag    0x20
-#define CheckWinDos             0x40
-#define SetDOSMode              0x80
+#define ProgrammingCRT2         0x0001
+#define LowModeTests		0x0002
+/* #define TVSimuMode           0x0002 - deprecated */
+/* #define RPLLDIV2XO           0x0004 - deprecated */
+#define LCDVESATiming           0x0008
+#define EnableLVDSDDA           0x0010
+#define SetDispDevSwitchFlag    0x0020
+#define CheckWinDos             0x0040
+#define SetDOSMode              0x0080
 
-/* SysFlags */
+/* TVMode flag */
+#define TVSetPAL		0x0001
+#define TVSetNTSCJ		0x0002
+#define TVSetPALM		0x0004
+#define TVSetPALN		0x0008
+#define TVSetCHOverScan		0x0010
+#define TVSetTVSimuMode		0x0800
+#define TVRPLLDIV2XO		0x1000
+#define TVSetNTSC1024		0x2000
+
+/* SysFlags (to identify special versions) */
 #define SF_Is651                0x0001
 #define SF_IsM650               0x0002
 #define SF_Is652		0x0004
 #define SF_IsM652		0x0008
 #define SF_IsM653		0x0010
-#define SF_Is661		0x0020
-#define SF_IsM661		0x0040
-#define SF_Is741		0x0080
-#define SF_Is660		0x8000
+#define SF_IsM661		0x0020
+#define SF_IsM741		0x0040
+#define SF_IsM760		0x0080
 
 /* CR32 (Newer 630, and 315 series)
 
@@ -168,12 +176,29 @@
    [4]   VB connected with CRT2 (secondary VGA)
    [5]   CRT1 monitor is connected
    [6]   VB connected with Hi-Vision TV
-   [7]   VB connected with DVI combo connector
+   [7]   <= 330: VB connected with DVI combo connector
+         >= 661: VB connected to YPbPr
 */
 
 /* CR35 (300 series only) */
 #define TVOverScan              0x10
 #define TVOverScanShift         4
+
+/* CR35 (661 series only)
+
+   [0]    1 = PAL, 0 = NTSC
+   [1]    1 = NTSC-J (if D0 = 0)
+   [2]    1 = PALM (if D0 = 1)
+   [3]    1 = PALN (if D0 = 1)
+   [4]    1 = Overscan (Chrontel only)
+   [7:5]  000  525i  (not supported yet)
+ 	  001  525p
+	  010  750p
+	  011  1080i
+
+   These bits are being translated to TVMode flag.
+
+*/
 
 /*
    CR37
@@ -186,11 +211,14 @@
 	    011   LVDS + Tumpion Zurac
 	    100   LVDS + Chrontel 7005
 	    110   Chrontel 7005
-	  315 series
+	  315/330 series
 	    001   SiS30x (never seen)
 	    010   LVDS
 	    011   LVDS + Chrontel 7019
+	  660 series [2:1] only:
+	     reserved (now in CR38)
 	  All other combinations reserved
+   [3]    661 only: Pass 1:1 data
    [4]    LVDS: 0: Panel Link expands / 1: Panel Link does not expand
           30x:  0: Bridge scales      / 1: Bridge does not scale = Panel scales (if possible)
    [5]    LCD polarity select
@@ -207,11 +235,13 @@
 /* CR37: LCDInfo */
 #define LCDRGB18Bit           0x0001
 #define LCDNonExpanding       0x0010
+#define LCDSync               0x0020
+#define LCDPass11             0x0100
+#define LCDDualLink	      0x0200
+
 #define DontExpandLCD	      LCDNonExpanding
 #define LCDNonExpandingShift       4
 #define DontExpandLCDShift    LCDNonExpandingShift
-#define LCDSync               0x0020
-#define LCDPass11             0x0100 
 #define LCDSyncBit            0x00e0
 #define LCDSyncShift               6
 
@@ -227,14 +257,22 @@
 #define EnablePALM              0x40   /* 1 = Set PALM */
 #define EnablePALN              0x80   /* 1 = Set PALN */
 
+/* CR38 (315 series)
+  D[7:5]  000 No VB
+          001 301 series VB
+	  010 LVDS
+	  011 Chrontel 7019
+	  100 Conexant
+*/
+
 #define EnablePALMN             0x40   /* Romflag: 1 = Allow PALM/PALN */
 
-/* CR39 (650) */
+/* CR39 (650 only) */
 #define LCDPass1_1		0x01   /* LVDS only; set by driver to pass 1:1 data to LVDS output  */
-#define Enable302LV_DualLink    0x04   /* 302LV only; set by mode switching function */
+#define Enable302LV_DualLink    0x04   /* 302LV only; enable dual link */
 
 
-/* CR79 (315 series only)
+/* CR79 (315/330 series only; not 661 and later)
    [3-0] Notify driver
          0001 Mode Switch event (set by BIOS)
 	 0010 Epansion On/Off event
@@ -322,7 +360,7 @@
 #define SIS_RI_856x480 19
 #define SIS_RI_1280x768 20
 #define SIS_RI_1400x1050 21
-#define SIS_RI_1152x864 22
+#define SIS_RI_1152x864 22  /* Up to this SiS conforming */
 #define SIS_RI_848x480 23
 #define SIS_RI_1360x768 24
 #define SIS_RI_1024x600 25
@@ -401,7 +439,6 @@
 #define TVDataLen               16
 
 #define LVDSDataLen             6
-#define EnableLVDSDDA           0x10
 #define LVDSDesDataLen          3
 #define ActiveNonExpanding      0x40
 #define ActiveNonExpandingShift 6

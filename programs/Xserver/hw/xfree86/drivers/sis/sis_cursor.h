@@ -432,8 +432,8 @@
 
 /* 330 series CRT2 */
 
-/* Mono cursor engine for CRt2 on 330 has bugs and cannot be
- * used!
+/* Mono cursor engine for CRT2 on SiS330 (Xabre) has bugs
+ * and cannot be used!
  */
 
 /* 80000000 = RGB(1) - MONO(0)

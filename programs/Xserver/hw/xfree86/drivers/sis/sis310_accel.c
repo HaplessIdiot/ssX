@@ -1,7 +1,7 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis310_accel.c,v 0.1 2002/04/17 12:12:00 tw Exp $ */
 /*
- * 2D Acceleration for SiS 315 and Xabre series
- * (315/550/650/740/M650/651/652/M652/330/660/M660/760/M760)
+ * 2D Acceleration for SiS 315 and 330 series
+ * (315/550/650/740/M650/651/652/M652/330/660/661/M661/741/M741/760/M760)
  *
  * Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria
  *
@@ -57,7 +57,7 @@
 			 * checking the trapezoid for such a case is very
 			 * time-intensive, it is faster to let it be done
 			 * by the generic polygon functions.
-			 * Does not work on XABRE at all, hangs the engine.
+			 * Does not work on 330 series at all, hangs the engine.
 			 * Even with correct trapezoids, this is slower than
 			 * doing it by the CPU.
                          */
@@ -65,9 +65,9 @@
 #undef CTSCE          	/* Use/Don't use CPUToScreenColorExpand. Disabled
 			 * because it is slower than doing it by the CPU.
 			 * Indirect mode does not work in VRAM queue mode.
-			 * Does not work on Xabre (even in MMIO mode).
+			 * Does not work on 330 series (even in MMIO mode).
 			 */
-#undef CTSCE_DIRECT    	/* Use direct method - This works (on both 315 and Xabre at
+#undef CTSCE_DIRECT    	/* Use direct method - This works (on both 315 and 330 at
 			 * least in VRAM queue mode) but we don't use this either,
 			 * because it's slower than doing it by the CPU. (Using it
 			 * would require defining CTSCE)
@@ -341,7 +341,7 @@ SiS315AccelInit(ScreenPtr pScreen)
 	 *
 	 * SLOW! SLOWER! SLOWEST!
 	 *
-	 * Does not work on XABRE, hangs the engine (both VRAM and MMIO).
+	 * Does not work on 330 series, hangs the engine (both VRAM and MMIO).
 	 * Does not work in VRAM queue mode.
 	 */
 #ifndef SISVRAMQ
@@ -746,7 +746,7 @@ SiSSubsequentSolidFillRect(ScrnInfoPtr pScrn,
 /* This would work better if XAA would provide us with valid trapezoids.
  * In fact, with small trapezoids the left and the right edge often cross
  * each other which causes drawing errors (filling over whole scanline).
- * DOES NOT WORK ON XABRE, HANGS THE ENGINE.
+ * DOES NOT WORK ON 330 SERIES, HANGS THE ENGINE.
  */
 #ifdef TRAP
 static void
@@ -1095,7 +1095,7 @@ SiSSubsequentMonoPatternFill(ScrnInfoPtr pScrn,
 
 /* --- Trapezoid --- */
 
-/* Does not work at all on Xabre */
+/* Does not work at all on 330 series */
 
 #ifdef TRAP
 static void
@@ -1477,7 +1477,7 @@ SiSSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
  * limit the drawing width (similar to width set by SetupRect).
  * XAA provides the pattern bitmap with scrnOffset (displayWidth * bpp/8)
  * offset, but this is not supported by the hardware.
- * DOES NOT WORK ON XABRE, HANGS ENGINE.
+ * DOES NOT WORK ON 330 SERIES, HANGS ENGINE.
  */
 
 #ifdef STSCE

@@ -325,7 +325,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->tvypos = 0;
     pSiS->tvxscale = 0;
     pSiS->tvyscale = 0;
-    pSiS->NonDefaultPAL = -1;
+    pSiS->NonDefaultPAL = pSiS->NonDefaultNTSC = -1;
     pSiS->chtvtype = -1;
     pSiS->restorebyset = TRUE;
     pSiS->nocrt2ddcdetection = FALSE;

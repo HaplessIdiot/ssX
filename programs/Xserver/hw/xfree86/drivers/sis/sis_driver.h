@@ -190,11 +190,18 @@ const customttable mycustomttable[] = {
 	  "Clevo", "D400S/D410S/D400H/D410H", CUT_CLEVO1400, "CLEVO400"
 	},
 	{ SIS_650, "", "",
-	  0,
+	  0,	/* Shift LCD in LCD-via-CRT1 mode */
 	  { 0, 0, 0, 0, 0 },
 	  { 0, 0, 0, 0, 0 },
 	  0x1734, 0x101f,
 	  "Uniwill", "N243S9", CUT_UNIWILL1024, "UNIWILL1024"
+	},
+	{ SIS_650, "1.09.2c", "",  /* Other versions, too? */
+	  0,	/* Shift LCD in LCD-via-CRT1 mode */
+	  { 0, 0, 0, 0, 0 },
+	  { 0, 0, 0, 0, 0 },
+	  0x1019, 0x0f05,
+	  "ECS", "A928", CUT_UNIWILL1024, "ECS1024"
 	},
 	{ SIS_740, "1.11.27a", "",
 	  0,

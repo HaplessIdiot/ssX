@@ -830,7 +830,9 @@ SiS315Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     for(i = 0x19; i < 0x5C; i++)  {
        outSISIDXREG(SISCR, i, sisReg->sisRegs3D4[i]);
     }
-    outSISIDXREG(SISCR, 0x79, sisReg->sisRegs3D4[0x79]);
+    if(pSiS->sishw_ext.jChipType < SIS_661) {
+       outSISIDXREG(SISCR, 0x79, sisReg->sisRegs3D4[0x79]);
+    }
     outSISIDXREG(SISCR, 0x63, sisReg->sisRegs3D4[0x63]);
 
     /* Leave PCI_IO_ENABLE on if accelerators are on (Is this required?) */
@@ -1230,31 +1232,21 @@ void
 SiSRestoreBridge(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 {
    SISPtr pSiS = SISPTR(pScrn);
-   unsigned char temp = 0;
+   int i;
 
 #ifdef UNLOCK_ALWAYS
    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
 
-   outSISIDXREG(SISCR, 0x30, sisReg->sisRegs3D4[0x30]);
-   outSISIDXREG(SISCR, 0x31, sisReg->sisRegs3D4[0x31]);
-   outSISIDXREG(SISCR, 0x33, sisReg->sisRegs3D4[0x33]);
-   outSISIDXREG(SISCR, 0x34, sisReg->sisRegs3D4[0x34]);
-   outSISIDXREG(SISCR, 0x36, sisReg->sisRegs3D4[0x36]);
-   outSISIDXREG(SISCR, 0x37, sisReg->sisRegs3D4[0x37]);
-   if(pSiS->Chipset != PCI_CHIP_SIS300) {
-      switch(pSiS->VGAEngine) {
-         case SIS_300_VGA: temp = 0x35; break;
-         case SIS_315_VGA: temp = 0x38; break;
-      }
-      if(temp) {
-         outSISIDXREG(SISCR, temp, sisReg->sisRegs3D4[temp]);
-      }
+   for(i = 0x30; i <= 0x39; i++) {
+      outSISIDXREG(SISCR, i, sisReg->sisRegs3D4[i]);
    }
+
    if(pSiS->VGAEngine == SIS_315_VGA) {
-      outSISIDXREG(SISCR, 0x39, sisReg->sisRegs3D4[0x39]);
       outSISIDXREG(SISCR, 0x63, sisReg->sisRegs3D4[0x63]);
-      outSISIDXREG(SISCR, 0x79, sisReg->sisRegs3D4[0x79]);
+      if(pSiS->sishw_ext.jChipType < SIS_661) {
+         outSISIDXREG(SISCR, 0x79, sisReg->sisRegs3D4[0x79]);
+      }
    }
 }
 
@@ -1512,8 +1504,13 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
 		    magic = magic550[bus/64];
 		    max = 680000;
 		    break;
-		case PCI_CHIP_SIS660:		/* Guessed */
-		    magic = magic550[bus/64];
+		case PCI_CHIP_SIS660:
+		    if((pSiS->sishw_ext.jChipType >= SIS_660) &&
+		       (!(pSiS->ChipFlags & SiSCF_760UMA))) {
+		       magic = magic315[bus/64];
+		    } else {
+		       magic = magic550[bus/64];
+		    }
 		    max = 680000;
                 }
 
