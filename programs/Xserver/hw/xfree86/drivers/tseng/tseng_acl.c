@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.14 1998/01/11 03:36:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.15 1998/01/24 16:58:25 hohndel Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -415,7 +415,9 @@ void tseng_init_acl()
          * this will need to be made dynamic (i.e. moved to Setup()
          * functions)
          */
-        *ACL_VIRTUAL_BUS_SIZE = 0x00;
+        *ACL_VIRTUAL_BUS_SIZE = 0x00; /* VBS = 1 byte is faster than VBS = 4 bytes, since
+                                         the ACL can start processing as
+                                         soon as the first byte arrives */
     }
     *ACL_DESTINATION_Y_OFFSET = vga256InfoRec.displayWidth * tseng_bytesperpixel - 1;
     *ACL_XY_DIRECTION = 0;

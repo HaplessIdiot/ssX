@@ -1,10 +1,8 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.11 1998/01/11 03:36:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.12 1998/03/20 21:06:58 hohndel Exp $ */
 
 #ifndef _TSENG_ACL_H
 #define _TSENG_ACL_H
-
-#include <compiler.h>
 
 /*
  * if NO_OPTIMIZE is set, some optimizations are disabled.
@@ -277,7 +275,12 @@ static __inline__ void tseng_wait(reg,name,mask)
     *(ACL_DESTINATION_ADDRESS) = dst;
 
 #define START_ACL_CPU(dst) \
-    *(ACL_DESTINATION_ADDRESS) = dst;
+    if (et4000_type < TYPE_ET4000W32P) \
+      *tsengCPU2ACLBase = dst; \
+    else \
+      *(ACL_DESTINATION_ADDRESS) = dst;
+
+/*    *(ACL_DESTINATION_ADDRESS) = dst;    should be enough for START_ACL_CPU */
 
 
 /***********************************************************************/

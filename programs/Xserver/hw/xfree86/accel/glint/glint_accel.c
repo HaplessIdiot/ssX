@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.21 1998/03/30 14:47:00 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.22 1998/04/05 00:45:48 robin Exp $ */
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
  *
@@ -45,7 +45,7 @@
 
 #include <float.h>
 
-#if DEBUG
+#if DEBUG && !defined(XFree86LOADER)
 #include <stdio.h>
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.17 1998/03/20 21:06:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.18 1998/04/05 00:45:57 robin Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -1098,6 +1098,21 @@ MGA3026LoadCursorImage(src, xorigin, yorigin)
 {
     register int i;
     register unsigned char *mask = src + 1;
+
+    /*********************************************************
+	In an attempt to fix the problem with sync-loss during
+	cursor change, we  wait until the vertical retrace to
+	do it. 
+     *********************************************************/ 
+    CARD32 count;
+
+    /* find start of retrace */
+    while (inb(vgaIOBase + 0x0A) & 0x08);
+    while (!(inb(vgaIOBase + 0xA) & 0x08)); 
+    /* wait until we're past the start (fixseg.c in the DDK) */
+    count = INREG(MGAREG_VCOUNT) + 2;
+    while(INREG(MGAREG_VCOUNT) < count);
+    /********** end changes **********************************/ 
        
     outTi3026(TVP3026_CURSOR_CTL, 0xf3, 0x00); /* reset A9,A8 */
     /* reset cursor RAM load address A7..A0 */

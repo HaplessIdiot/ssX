@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86plane.c,v 3.5 1997/03/27 08:31:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86plane.c,v 3.6 1997/06/03 14:12:33 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -52,12 +52,16 @@
 #ifdef VGA256
 #include	"vga256.h"
 #else
-/* PSZ doesn't matter. */
-#define PSZ 8
 #include	"cfb.h"
+#if PSZ == 16
 #include	"cfb16.h"
+#endif
+#if PSZ == 24
 #include	"cfb24.h"
+#endif
+#if PSZ == 32
 #include	"cfb32.h"
+#endif
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
 #endif
@@ -291,34 +295,39 @@ planemask, bitPlane)
      * when the accelerated WriteBitmap can be used).
      */
 
-
-#ifdef VGA256
-    cfb8CheckOpaqueStipple(alu, fgPixel, bgPixel, planemask);
-    vga256CopyPlane1to8(pSrcDrawable, pDstDrawable, alu, 
-		        rgnDst, pptSrc, planemask, bitPlane);
-#else
     switch (pDstDrawable->bitsPerPixel)
     {
-        case 8:
+#if PSZ == 8
+	case 8:
+#ifdef VGA256
+            cfb8CheckOpaqueStipple(alu, fgPixel, bgPixel, planemask);
+	    vga256CopyPlane1to8(pSrcDrawable, pDstDrawable, alu, 
+		             rgnDst, pptSrc, planemask, bitPlane);
+#else
             cfb8CheckOpaqueStipple(alu, fgPixel, bgPixel, planemask);
 	    cfbCopyPlane1to8(pSrcDrawable, pDstDrawable, alu, 
 		             rgnDst, pptSrc, planemask, bitPlane);
-            break;
+#endif
+	    break;
+#endif
+#if PSZ == 16
 	case 16:
 	    cfbCopyPlane1to16(pSrcDrawable, pDstDrawable, alu, 
 			      rgnDst, pptSrc, planemask, bitPlane, 
 			      bgPixel, fgPixel);
 	    break;
+#endif
+#if PSZ == 32
 	case 32:
 	    cfbCopyPlane1to32(pSrcDrawable, pDstDrawable, alu, 
 			      rgnDst, pptSrc, planemask, bitPlane, 
 			      bgPixel, fgPixel);
 	    break;
+#endif
 	default:
 	    ErrorF("xf86CopyPlane1toN: unsupported function \n");
 	    break;
     }
-#endif
 }
 
 static void
@@ -339,27 +348,33 @@ bitPlane)
     if (!(planemask & bitPlane))
         return;
 
-#ifdef VGA256
-    vga256CopyPlane8to1(pSrcDrawable, pDstDrawable, alu, 
-		     rgnDst, pptSrc, planemask, bitPlane);
-#else
     switch (pSrcDrawable->bitsPerPixel)
     {
+#if PSZ == 8
 	case 8:
+#ifdef VGA256
+	    vga256CopyPlane8to1(pSrcDrawable, pDstDrawable, alu, 
+			     rgnDst, pptSrc, planemask, bitPlane);
+#else
 	    cfbCopyPlane8to1(pSrcDrawable, pDstDrawable, alu, 
 			     rgnDst, pptSrc, planemask, bitPlane);
+#endif
 	    break;
+#endif
+#if PSZ == 16
 	case 16:
 	    cfbCopyPlane16to1(pSrcDrawable, pDstDrawable, alu, 
 			      rgnDst, pptSrc, planemask, bitPlane);
 	    break;
+#endif
+#if PSZ == 32
 	case 32:
 	    cfbCopyPlane32to1(pSrcDrawable, pDstDrawable, alu, 
 			      rgnDst, pptSrc, planemask, bitPlane);
 	    break;
+#endif
 	default:
 	    ErrorF("xf86CopyPlaneNto1: unsupported function \n");
 	    break;
     }
-#endif
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.12 1998/03/27 23:23:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.13 1998/04/05 00:45:49 robin Exp $ */
 
 /*
  * glint register file 
@@ -910,9 +910,6 @@ typedef struct {
 
 #define REPLICATE(r)						\
 {								\
-	if (glintInfoRec.bitsPerPixel == 24) {			\
-		r &= 0x00FFFFFF;				\
-	} else							\
 	if (glintInfoRec.bitsPerPixel == 16) {			\
 		r = ((r & 0xFFFF) << 16) | (r & 0xFFFF);	\
 	} else							\

@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.20 1998/03/27 23:23:05 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.21 1998/04/05 16:15:52 robin Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -117,7 +117,7 @@ proc initconfig {xwinhome} {
 		set Device_${id}(Server)	SVGA
 	} else {
 		if !$pc98_EGC {
-			set Device_${id}(Server)	NEC480
+			set Device_${id}(Server)	PEGC
 		} else {
 			set Device_${id}(Server)	EGC
 		}
@@ -410,7 +410,7 @@ proc writeXF86Config {filename args} {
 				$key [set Device_${id}($key)] ]
 		}
 	    }
-	    if { $generic_vga } {
+	    if { !$generic_vga } {
 		set chipset [set Device_${id}(Chipset)]
 		if { [string length $chipset] } {
 		    puts $fd "   Chipset         \"$chipset\""

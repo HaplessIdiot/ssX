@@ -5,7 +5,7 @@
 <title> Information for Tseng Chipset Users
 <author> The XFree86 Project, Inc.
 Dirk H. Hohndel, Koen Gadeyne and others.
-<date> 16 May 1997
+<date> 02 Feb 1998
 <toc>
  
 <sect> Supported chipsets <p>
@@ -16,9 +16,15 @@ supported by the SVGA driver. For details about the separate accelerated
 8bpp (=256 color) ET4000/W32 and ET6000 server, refer to
 <htmlurl name="README.W32" url="W32.html">.
 
+Note that you should NOT be using XF86_W32 unless XF86_SVGA doesn't work on
+your hardware. No further development is being done on the W32 server; all
+new efforts go into the SVGA server.
+
 Some ET4000W32 ISA cards are known NOT to work with the SVGA server in this
 version (XFree86 3.3.1): they hang the machine... Use the W32 server
 <tt>XF86_W32</tt> for these cards!
+
+<sect> Terminology <p>
 
 In the rest of this document, "8bpp" is short for "8 bits per pixel", which
 means a 256-color mode. Similarly, 15bpp refers to 32768 colors, 16bpp to
@@ -72,7 +78,7 @@ with the ICS5341, for a small band of frequencies around 90MHz.
 
 Linear memory mode (especially important for some DGA clients, like
 xf86quake) is supported on all ET4000W32i and ET4000W32p cards, but not on
-the ET4000W32. See the section on lienar memory for more information. There
+the ET4000W32. See the section on linear memory for more information. There
 are some important issues related to linear memory.
 
 For the higher color depths (16, 24 and 32 bpp), linear memory mode is
@@ -619,7 +625,7 @@ been several reports about ET6000 cards that were sold with (supposedly)
 2.25 MB of MDRAM, but which turned out to be standard 2MB MDRAM cards.
 People have been having trouble with these all along, since sometimes the
 X-server used to detect this as 2.25 MB (or even 2.5 MB) due to internal
-chip design and also due to faulty BIOSses. This memory detection problem
+chip design and also due to faulty BIOSs. This memory detection problem
 has been fixed now, and the server should detect the correct amount of memory.
 
 Do NOT define the amount of memory in the XF86Config yourself, unless you
@@ -910,7 +916,7 @@ Problems with DMA hardware (floppy, tape)
 	If this error occurs, the server was unable to properly initialize
 	the RAMDAC, and tries to restore a default color map. On some
 	unsupported RAMDACs, this will have the adverse effect of removing
-	all color alltogether, leaving you with a bunch of weird colors, or
+	all color altogether, leaving you with a bunch of weird colors, or
 	with a completely black screen. If that happens, add the <tt>ramdac
 	"normal"</tt> statement to the Device section in your
 	<tt>XF86Config</tt> file. In most cases, this will solve the color
@@ -1019,7 +1025,7 @@ incomplete):
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.29 1997/12/05 22:01:39 hohndel Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.30 1998/01/11 03:48:26 dawes Exp $ 
 
 
 

@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/cfb24.h,v 3.3 1997/01/08 20:34:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/cfb24.h,v 3.4 1998/04/05 16:42:17 robin Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -237,7 +237,8 @@ extern RegionPtr cfb24BitBlt(
 	int /*alu*/,
 	RegionPtr /*prgnDst*/,
 	DDXPointPtr /*pptSrc*/,
-	unsigned long /*planemask*/
+	unsigned long /*planemask*/,
+	unsigned long /*bitPlane*/
 #endif
 	),
     unsigned long /*bitPlane*/

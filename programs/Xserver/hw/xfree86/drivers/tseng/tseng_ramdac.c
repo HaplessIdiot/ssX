@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.15 1997/12/28 21:28:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.16 1998/01/24 16:58:27 hohndel Exp $ */
 
 /*
  *
@@ -13,20 +13,13 @@
  */
 
 
-#include "X.h"
-#include "Xproto.h"
-#include "compiler.h"
-
 #include "xf86.h"
-#include "xf86_HWlib.h"
 #include "xf86Procs.h"
-#include "xf86Priv.h"
 
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
 #include "tseng.h"
-#include "vga.h"
 
 SymTabRec TsengDacTable[] = {
    { NORMAL_DAC,         "normal" },
@@ -539,6 +532,7 @@ void tseng_set_dacspeed()
 
     switch (TsengRamdacType)
     {
+      case CH8398_DAC:
       case ICS5341_DAC:
       case STG1703_DAC:
       case STG1702_DAC:
@@ -601,10 +595,10 @@ void tseng_set_dacspeed()
      * threshold control bit (bit 4 of CFG 41) should be set for modes where
      * pixel_clock*(bytes/pixel) > 130 MHz . These limits are for the
      * current ET6000 chips. An upcoming revision of the ET6000 [scheduled
-     * for q3, the ET6300] will raise the pixel clock limit to 175 MHz and
+     * for q3, the ET6100] will raise the pixel clock limit to 175 MHz and
      * the pixel_clock*(bytes/pixel) FIFO breakdown limit to about 275 MHz."
      */
-      if (et4000_type > TYPE_ET6000)      /* ET6100/6300 */
+      if (et4000_type > TYPE_ET6000)      /* ET6100 */
           mem_bw = 280000; /* 275000 is _just_ not enough for 1152x864x24 @ 70Hz */
       else                                /* ET6000 */
           mem_bw = 225000;

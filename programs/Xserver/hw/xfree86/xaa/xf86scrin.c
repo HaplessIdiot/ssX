@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.23 1998/03/20 21:07:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.24 1998/04/05 16:42:22 robin Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -86,27 +86,22 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "xf86pcache.h"
 
 #ifdef VGA256
-#define vgabppScreenInit xf86XAAScreenInitvga256
 #define xaaVersRec xaavga256VersRec
 #define xaaname "xaavga256"
 #else
 #if PSZ == 8
-#define vgabppScreenInit xf86XAAScreenInit8bpp
 #define xaaVersRec xaa8VersRec
 #define xaaname "xaa8"
 #endif
 #if PSZ == 16
-#define vgabppScreenInit xf86XAAScreenInit16bpp
 #define xaaVersRec xaa16VersRec
 #define xaaname "xaa16"
 #endif
 #if PSZ == 24
-#define vgabppScreenInit xf86XAAScreenInit24bpp
 #define xaaVersRec xaa24VersRec
 #define xaaname "xaa24"
 #endif
 #if PSZ == 32
-#define vgabppScreenInit xf86XAAScreenInit32bpp
 #define xaaVersRec xaa32VersRec
 #define xaaname "xaa32"
 #endif
@@ -158,7 +153,7 @@ static BSFuncRec xf86BSFuncRec = {
 };
 
 static Bool
-vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
+xf86FinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     register ScreenPtr pScreen;
     pointer pbits;		/* pointer to screen bitmap */
     int xsize, ysize;		/* in pixels */
@@ -187,12 +182,12 @@ vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     BitsPerRGB = xf86weight.green;
 #if PSZ > 8
     if (xf86AccelInfoRec.ServerInfoRec->hasDirectColor) {
-      ErrorF("vgaFinishScreenInit hasDirectColor==TRUE\n");
+      ErrorF("xf86FinishScreenInit hasDirectColor==TRUE\n");
       if (!cfbSetVisualTypes(xf86AccelInfoRec.ServerInfoRec->depth,
 			     (1 << TrueColor) | (1 << DirectColor), BitsPerRGB) )
 	return FALSE;
     } else {
-      ErrorF("vgaFinishScreenInit hasDirectColor==FALSE\n");
+      ErrorF("xf86FinishScreenInit hasDirectColor==FALSE\n");
       if (!cfbSetVisualTypes(xf86AccelInfoRec.ServerInfoRec->depth,
 			     1 << TrueColor, BitsPerRGB) )
 	return FALSE;
@@ -337,7 +332,7 @@ vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
 Bool
-vgabppScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
+xf86XAAScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     register ScreenPtr pScreen;
     pointer pbits;		/* pointer to screen bitmap */
     int xsize, ysize;		/* in pixels */
@@ -362,7 +357,7 @@ vgabppScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->GetImage = GetImageWrapper;
     pScreen->GetSpans = GetSpansWrapper;
 
-    return vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy,
+    return xf86FinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy,
         width);
 }
 
@@ -398,7 +393,7 @@ ModuleInit( data, magic )
 	break;
     case 1:
     	* magic = MAGIC_CCD_XAA_SCREEN_INIT;
-	* data  = (pointer) &vgabppScreenInit;
+	* data  = (pointer) &xf86XAAScreenInit;
 	break;
     default:
     	* magic = MAGIC_DONE;

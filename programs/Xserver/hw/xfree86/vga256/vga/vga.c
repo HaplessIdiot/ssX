@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.110 1998/04/05 00:46:02 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.111 1998/04/05 16:42:21 robin Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1997 Metro Link Incorporated ("Metro Link")
@@ -74,7 +74,6 @@
 #if defined(PC98_TGUI)
 extern pointer pc98PvramBase;
 #endif
-
 
 extern void vga2_mfbDoBitbltCopy();
 extern void vga2_mfbDoBitbltCopyInverted();
@@ -199,7 +198,6 @@ ScrnInfoRec vga256InfoRec = {
 
 #ifdef XFree86LOADER
 
-#ifdef XF86VGA16
 int vga16ValidTokens[] =
 {
   PSEUDOCOLOR,
@@ -219,7 +217,6 @@ int vga16ValidTokens[] =
   -1
 };
 
-#else
 int vga256ValidTokens[] =
 {
   STATICGRAY,
@@ -242,7 +239,6 @@ int vga256ValidTokens[] =
   MEMBASE,
   -1
 };
-#endif
 
 ScrnInfoRec *
 ServerInit()
@@ -265,9 +261,13 @@ ModuleInit(data,magic)
     switch(cnt++)
     {
     case 0:
-      * data = (int) "libxaa";
-      * magic= MAGIC_LOAD;
-      xf86xaaloaded = TRUE;
+      if (xf86bpp >= 8) {
+      	* data = (int) "libxaa";
+      	* magic= MAGIC_LOAD;
+      	xf86xaaloaded = TRUE;
+      } else {
+        * magic= MAGIC_DONE;
+      }
       break;
     default:
       * magic= MAGIC_DONE;
@@ -380,13 +380,6 @@ vgaHWCursorRec vgaHWCursor;
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 extern int defaultColorVisualClass;
-
-/*
- * xf86 ccd functions are defined here where they are used.
- * Would be a good idea to make these static.
- */
-xf86ccdDoBitbltProcPtr xf86ccdDoBitblt = NULL;
-xf86ccdXAAScreenInitProcPtr xf86ccdXAAScreenInit = NULL;
 
 /* 
  * we now have a unified pool of drivers
@@ -1253,9 +1246,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     	break;
     default:
   	xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
-#ifdef XFree86LOADER		/* { */
-	if (vgaBitsPerPixel == 8) {
-	    if (!xf86ccdXAAScreenInit(pScreen,
+	if (!xf86XAAScreenInit(pScreen,
 		     (pointer) (vgaUseLinearAddressing ? vgaLinearBase : 
 							vgaVirtBase),
 		     vga256InfoRec.virtualX,
@@ -1263,52 +1254,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		     displayResolution, displayResolution,
 		     vga256InfoRec.displayWidth))
 	        return(FALSE);
-	}
-	if((vgaBitsPerPixel == 16) || 
-	   (vgaBitsPerPixel == 24) ||
-	   (vgaBitsPerPixel == 32))
-	    if (!xf86ccdXAAScreenInit(pScreen,
-		     vgaLinearBase,
-		     vga256InfoRec.virtualX,
-		     vga256InfoRec.virtualY,
-		     displayResolution, displayResolution,
-		     vga256InfoRec.displayWidth))
-	        return(FALSE);
-#else /* XFree86LOADER */	/* } { */
-	if (vgaBitsPerPixel == 8)
-	      if (!xf86XAAScreenInitvga256(pScreen,
-			     (pointer) vgaVirtBase,
-			     vga256InfoRec.virtualX,
-			     vga256InfoRec.virtualY,
-			     displayResolution, displayResolution,
-			     vga256InfoRec.displayWidth))
-		  return(FALSE);
-	if (vgaBitsPerPixel == 16)
-	      if (!xf86XAAScreenInit16bpp(pScreen,
-			     vgaLinearBase,
-			     vga256InfoRec.virtualX,
-			     vga256InfoRec.virtualY,
-			     displayResolution, displayResolution,
-			     vga256InfoRec.displayWidth))
-		  return(FALSE);
-	if (vgaBitsPerPixel == 24)
-	      if (!xf86XAAScreenInit24bpp(pScreen,
-			     vgaLinearBase,
-			     vga256InfoRec.virtualX,
-			     vga256InfoRec.virtualY,
-			     displayResolution, displayResolution,
-			     vga256InfoRec.displayWidth))
-		  return(FALSE);
-	if (vgaBitsPerPixel == 32)
-	      if (!xf86XAAScreenInit32bpp(pScreen,
-			     vgaLinearBase,
-			     vga256InfoRec.virtualX,
-			     vga256InfoRec.virtualY,
-			     displayResolution, displayResolution,
-			     vga256InfoRec.displayWidth))
-    		  return(FALSE);
-#endif /* XFree86LOADER */	/* } */
-       break;
+	break;
     }
 
   pScreen->whitePixel = 1;

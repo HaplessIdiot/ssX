@@ -23,7 +23,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.26 1998/03/20 21:06:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.27 1998/03/27 23:23:27 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -506,7 +506,7 @@ tgaInitialize (scr_index, pScreen, argc, argv)
 	/* Let's use the new XAA Architecture.....*/
  	TGAAccelInit();
 
-	if (!xf86XAAScreenInit8bpp(pScreen,
+	if (!xf86XAAScreenInit(pScreen,
 #else
 	if (!cfbScreenInit(pScreen,
 #endif

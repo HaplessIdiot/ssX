@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.143 1998/04/05 16:15:57 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.144 1998/04/05 21:10:55 robin Exp $
  *
  * Loosely based on code bearing the following copyright:
  *
@@ -1205,44 +1205,31 @@ XF86OptionPtr	options;
         ConfigLoadDriver("xaa8", xf86ModulePath, handle, options);
       }
     }
-    ConfigLoadDriver("extmod", xf86ModulePath, handle, options);
     break;
   case 15:
   case 16:
     if( xf86issvgatype ) {
       ConfigLoadDriver("libvga256", xf86ModulePath, handle, options);
-      if( xf86xaaloaded ) {
-        ConfigLoadDriver("xaavga256", xf86ModulePath, handle, options);
-      }
     }
     if( xf86xaaloaded ) {
       ConfigLoadDriver("xaa16", xf86ModulePath, handle, options);
     }
-    ConfigLoadDriver("extmod", xf86ModulePath, handle, options);
     break;
   case 24:
     if( xf86issvgatype ) {
       ConfigLoadDriver("libvga256", xf86ModulePath, handle, options);
-      if( xf86xaaloaded ) {
-        ConfigLoadDriver("xaavga256", xf86ModulePath, handle, options);
-      }
     }
     if( xf86xaaloaded ) {
       ConfigLoadDriver("xaa24", xf86ModulePath, handle, options);
     }
-    ConfigLoadDriver("extmod", xf86ModulePath, handle, options);
     break;
   case 32:
     if( xf86issvgatype ) {
       ConfigLoadDriver("libvga256", xf86ModulePath, handle, options);
-      if( xf86xaaloaded ) {
-        ConfigLoadDriver("xaavga256", xf86ModulePath, handle, options);
-      }
     }
     if( xf86xaaloaded ) {
       ConfigLoadDriver("xaa32", xf86ModulePath, handle, options);
     }
-    ConfigLoadDriver("extmod", xf86ModulePath, handle, options);
     break;
   default:
     FatalError("color depth of %d currently not supported by loader\n",
@@ -4310,9 +4297,6 @@ configDynamicModuleSection()
 	    case 16:
 		if( xf86issvgatype ) {
 		    ConfigLoadDriver("libvga256", xf86ModulePath, handle);
-		    if( xf86xaaloaded ) {
-			ConfigLoadDriver("xaavga256", xf86ModulePath, handle);
-		    }
 		}
 		if( xf86xaaloaded ) {
 		    ConfigLoadDriver("xaa16", xf86ModulePath, handle);
@@ -4321,9 +4305,6 @@ configDynamicModuleSection()
 	    case 24:
 		if( xf86issvgatype ) {
 		    ConfigLoadDriver("libvga256", xf86ModulePath, handle);
-		    if( xf86xaaloaded ) {
-			ConfigLoadDriver("xaavga256", xf86ModulePath, handle);
-		    }
 		}
 		if( xf86xaaloaded ) {
 		    ConfigLoadDriver("xaa24", xf86ModulePath, handle);
@@ -4332,9 +4313,6 @@ configDynamicModuleSection()
 	    case 32:
 		if( xf86issvgatype ) {
 		    ConfigLoadDriver("libvga256", xf86ModulePath, handle);
-		    if( xf86xaaloaded ) {
-			ConfigLoadDriver("xaavga256", xf86ModulePath, handle);
-		    }
 		}
 		if( xf86xaaloaded ) {
 		    ConfigLoadDriver("xaa32", xf86ModulePath, handle);

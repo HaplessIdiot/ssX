@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.46 1998/02/07 08:58:19 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.47 1998/03/21 03:40:00 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -209,6 +209,10 @@ extern int xf86_solx86usleep(unsigned long);
 #else
 # define usleep(usec) syscall(3112, (usec) / 1000 + 1)
 #endif /* sun && i386 && SVR4 */
+#else
+#if defined(ISC)
+# define usleep(usec) xf86usleep(usec) 
+#endif
 #endif
 
 # ifdef SYSV

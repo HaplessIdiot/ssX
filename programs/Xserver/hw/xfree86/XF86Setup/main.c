@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.12 1997/08/26 10:00:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.13 1997/11/22 00:00:07 hohndel Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -83,7 +83,7 @@ static char Set_InitVars[] =
 	"    set Xwinhome $env(XWINHOME)\n"
 	"} else {\n"
 	"    set xdirs [list " PROJECTROOT " /usr/X11R6 /usr/X11 "
-		"/usr/X /var/X11R6 /var/X11 /var/X /usr/X11R6.1 "
+		"/usr/X /var/X11R6 /var/X11 /var/X /usr/X11R6.3 "
 		"/usr/local/X11R6 /usr/local/X11 /usr/local/X]\n"
 	"    foreach dir $xdirs {\n"
 	"        if {[llength [glob -nocomplain $dir/bin/XF86_* $dir/bin/XF98_*]] } {\n"
@@ -423,10 +423,19 @@ main(argc, argv)
     nodialog = 1;
     Tcl_SetVar(interp, "pc98", "1", TCL_GLOBAL_ONLY);
     if (pc98_EGC) {
+#if defined(linux) || defined(SVR4)
+      fprintf(stderr, "Sorry, EGC server doesn't work on this OS.\n");
+      fprintf(stderr, "-egc option can't be used.\n");
+      exit(1);
+#endif
       Tcl_SetVar(interp, "pc98_EGC", "1", TCL_GLOBAL_ONLY);
     } else {
       Tcl_SetVar(interp, "pc98_EGC", "0", TCL_GLOBAL_ONLY);
     }
+#if defined(linux)
+    printf("\033[98;0]");   /* set euc mode */
+    fflush(stdout);
+#endif
 #else
     Tcl_SetVar(interp, "pc98", "0", TCL_GLOBAL_ONLY);
     Tcl_SetVar(interp, "pc98_EGC", "0", TCL_GLOBAL_ONLY);

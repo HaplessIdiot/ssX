@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.4 1997/08/12 12:02:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.5 1998/01/24 16:58:25 hohndel Exp $ */
 
 /*
  *
@@ -13,8 +13,6 @@
  ** The code in here is ONLY used used for clock probing!
  ** Setting the actual clock is done in ET4000Restore().
  **/
-
-#include "compiler.h"
 
 #include "xf86.h"
 #include "xf86_ansic.h"

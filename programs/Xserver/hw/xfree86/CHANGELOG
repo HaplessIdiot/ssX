@@ -1,4 +1,13 @@
 XFree86 3.9Ah (XX April 1998)
+1658. Sync loss on cursor change fix (#1650, Mark Vojkovich).
+1657. Driver line fix, unresolved symbol fix, remove loading of xaavga256
+      at depths greater than 8, glint 24bpp fix (#1645-1649 Alan Hourihane).
+1656. More XF86Setup patches, P9000 symbol fix, PC98 Imakefile sync (#1644
+      Takaaki Nomura).
+1655. Tseng doc, accel sync with 3.3.2, PIXMUX and misc fixes (#1641,1642
+      Koen Gadeyne).
+1654. ISC fix for usleep and glint probe fix for DELTA (#1639,1640 Michael
+      Rohleder).
 1653. Add FreeType code to lib/font/FreeType, but the build-related
       things haven't been done yet (David Turner, Robert Wilhelm,
       Werner Lemberg, Mark Leisher, Juliusz Chroboczek).
@@ -6097,4 +6106,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.583 1998/04/07 18:34:37 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.585 1998/04/23 00:59:24 robin Exp $

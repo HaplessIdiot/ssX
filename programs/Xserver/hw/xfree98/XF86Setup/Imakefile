@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/10/25 10:34:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF86Setup/Imakefile,v 3.17 1998/04/05 00:46:03 robin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF86Setup/Imakefile,v 3.18 1998/04/05 16:16:01 robin Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -22,10 +22,10 @@ includes::
 
 #else
             SRCS = main.c tclmisc.c tclvidmode.c tclcards.c tclother.c \
-		   tclkbd.c tclxfconf.c xf86Config.c cards.c tclxkbui.c \
+		   tclkbd.c tclxfconf.c cards.c tclxkbui.c \
 		   tkother.c
             OBJS = main.o tclmisc.o tclvidmode.o tclcards.o tclother.o \
-		   tclkbd.o tclxfconf.o xf86Config.o cards.o tclxkbui.o \
+		   tclkbd.o tclxfconf.o cards.o tclxkbui.o \
 		   tkother.o
        TCL_FILES = phase1.tcl phase2.tcl phase3.tcl phase4.tcl phase5.tcl \
 		   setuplib.tcl srvflags.tcl carddata.tcl \
@@ -77,7 +77,6 @@ includes::
 		   $(USEINSTALLEDLIB) XawClientLibs MathLibrary
          DEPLIBS = XawClientDepLibs $(DEPXXF86VMLIB)
       CARDDBFILE = $(LIBDIR)/Cards98
-      XCONFIGSRC = xf86Config
      XCONFIGFILE = XF86Config
 
  XCONFIG_DEFINES = $(EXT_DEFINES) -DXF86SETUP \
@@ -105,7 +104,6 @@ AllTarget(ProgramTargetName(XF98Setup))
 LinkSourceFile(Cards98,$(XF98SRC)/xf86config)
 LinkSourceFile(cards.h,$(XF86SRC)/xf86config)
 LinkSourceFile(cards.c,$(XF86SRC)/xf86config)
-LinkSourceFile(xf86Config.c,$(XF86SRC)/common)
 LinkSourceFile(xf86_Config.h,$(XF86SRC)/common)
 
 CppFileTarget(mseproto.tcl, mseproto.cpp, $(MSEPROTODEFS), NullParameter)

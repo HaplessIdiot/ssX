@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.23 1998/03/27 23:23:04 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.24 1998/04/05 16:15:50 robin Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -304,7 +304,7 @@ proc Mouse_create_widgets { win } {
 		    -fill x -pady 3m
 	}
 
-	label $w.mouse.bot.mesg $messages(mouse.16) \
+	label $w.mouse.bot.mesg -text $messages(mouse.16) \
 		-foreground [$w.mouse.top.title cget -foreground]
 	pack $w.mouse.bot.mesg
 

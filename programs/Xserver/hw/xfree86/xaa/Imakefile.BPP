@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile.BPP,v 3.7 1997/03/27 08:31:17 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile.BPP,v 3.8 1997/06/10 12:30:35 hohndel Exp $
 
 XCOMM This is the Imakefile for the depth-specific subdirectories
 XCOMM (xaavga256, xaa16, xaa24, xaa32). It is included from the Imakefiles
@@ -20,11 +20,13 @@ SRCS    = xf86scrin.c xf86gc.c xf86gcmisc.c xf86im.c xf86plane.c xf86wrapper.c
 OBJS    = xf86scrin.o xf86gc.o xf86gcmisc.o xf86im.o xf86plane.o xf86wrapper.o
 #else
 #if PixelSize == 8
-SRCS    = xf86scrin.c xf86gc.c xf86gcmisc.c xf86im.c xf86wrapper.c
-OBJS    = xf86scrin.o xf86gc.o xf86gcmisc.o xf86im.o xf86wrapper.o
+SRCS    = xf86scrin.c xf86gc.c xf86gcmisc.c xf86im.c xf86plane.c xf86wrapper.c
+OBJS    = xf86scrin.o xf86gc.o xf86gcmisc.o xf86im.o xf86plane.o xf86wrapper.o
 #else
-SRCS    = xf86scrin.c xf86gc.c xf86gcmisc.c xf86im.c cfbcpplane.c xf86wrapper.c
-OBJS    = xf86scrin.o xf86gc.o xf86gcmisc.o xf86im.o cfbcpplane.o xf86wrapper.o
+SRCS    = xf86scrin.c xf86gc.c xf86gcmisc.c xf86im.c cfbcpplane.c \
+	  xf86wrapper.c xf86plane.c
+OBJS    = xf86scrin.o xf86gc.o xf86gcmisc.o xf86im.o cfbcpplane.o \
+	  xf86wrapper.o xf86plane.o
 #endif
 #endif
 
@@ -46,9 +48,7 @@ LinkSourceFile(xf86wrapper.c, LinkDirectory)
 #if PixelSize != 8
 LinkSourceFile(cfbcpplane.c, LinkDirectory)
 #endif
-#ifdef VGA256
 LinkSourceFile(xf86plane.c, LinkDirectory)
-#endif
 
 InstallLinkKitNonExecFile(BPPOBJECTNAME.o,$(LINKKITDIR)/lib)
 

@@ -1,12 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_dpms.c,v 1.3 1997/11/22 08:17:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_dpms.c,v 1.4 1998/01/24 16:58:26 hohndel Exp $ */
 
 #ifdef DPMSExtension
 
-#include "compiler.h"
-
 #include "xf86.h"
 
-#include "vga.h"
 #include "tseng.h"
 
 /*
@@ -20,7 +17,7 @@
  */
 void
 TsengCrtcDPMSSet(Mode)
-     CARD16 Mode;
+     int Mode;
 {
   unsigned char seq1, crtc34;
   if (!xf86VTSema) return;
@@ -99,7 +96,7 @@ TsengCrtcDPMSSet(Mode)
  */
 void
 TsengHVSyncDPMSSet(Mode)
-     CARD16 Mode;
+     int Mode;
 {
   unsigned char seq1, tmpb;
   unsigned int HSync, VSync, HTot, VTot, tmp;

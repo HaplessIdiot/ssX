@@ -1,6 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_inline.h,v 1.2 1997/12/29 12:05:22 hohndel Exp $ */
-
-#include "compiler.h"
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_inline.h,v 1.3 1998/01/24 16:58:27 hohndel Exp $ */
 
 /*
  * Some commonly used inline functions and utility functions.

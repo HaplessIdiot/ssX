@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.16 1997/07/29 12:07:25 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.17 1998/04/05 16:15:51 robin Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -339,7 +339,11 @@ set Confname $TmpDir/Config
 
 if $StartServer {
 	# write out a temp XF86Config file
-	writeXF86Config $Confname-1 -vgamode -generic
+	if !$pc98 {
+	    writeXF86Config $Confname-1 -vgamode -generic
+	} else {
+	    writeXF86Config $Confname-1 -vgamode
+	}
 
 	mesg $messages(phase1.23) okay
 

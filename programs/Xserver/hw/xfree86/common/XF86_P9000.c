@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_P9000.c,v 3.6 1996/12/23 06:43:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_P9000.c,v 3.7 1997/02/25 14:20:56 hohndel Exp $ */
 
 
 
@@ -27,6 +27,7 @@ extern ScrnInfoRec p9000InfoRec;
 
 int p9000MaxClock = MAX_P9000_CLOCK;
 
+#if !defined(XFree86LOADER)
 ScrnInfoPtr xf86Screens[] = 
 {
   &p9000InfoRec,
@@ -39,6 +40,7 @@ int xf86ScreenNames[] =
   ACCEL,
   -1
 };
+#endif
 
 int p9000ValidTokens[] =
 {

@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase4.tcl,v 3.8 1996/12/27 06:54:11 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase4.tcl,v 3.9 1998/04/05 16:15:52 robin Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -80,11 +80,6 @@ proc Phase4_nextphase { win } {
 }
 
 label  $w.text -text " $msg$messages(phase4.7)"
-	You can now run xvidtune to adjust your display settings,\n\
-	if you want to change the size or placement of the screen image\n\n\
-	If not, go ahead and exit\n\n\n\
-	If you choose to save the configuration, a backup copy will be\n\
-	made, if the file already exists"
 frame  $w.saveto
 label  $w.saveto.title -text $messages(phase4.8)
 entry  $w.saveto.entry -bd 2 -width 40

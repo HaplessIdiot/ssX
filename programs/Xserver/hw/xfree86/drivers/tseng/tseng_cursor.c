@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.8 1997/08/26 10:01:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.9 1998/01/24 16:58:26 hohndel Exp $ */
 
 /*
  * Hardware cursor handling. Adapted mainly from apm/apm_cursor.c
@@ -8,23 +8,14 @@
  * '97 Dejan Ilic <svedja@lysator.liu.se>
  */
 
-#include "X.h"
-#include "Xproto.h"
 #include "misc.h"
-#include "input.h"
-#include "cursorstr.h"
-#include "regionstr.h"
-#include "scrnintstr.h"
-#include "servermd.h"
-#include "windowstr.h"
-#include "mfb.h"
-#include "compiler.h"
 #include "xf86.h"
+#include "servermd.h"    /* for PixmapBytePad */
+#include "cursorstr.h"
 #include "mipointer.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
 #include "xf86_ansic.h"
-#include "vga.h"
 
 #include "tseng.h"
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_ClkPr.c,v 3.8 1996/12/23 06:44:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_ClkPr.c,v 3.9 1998/01/24 16:57:38 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -42,6 +42,7 @@
 
 #include "xf86.h"
 #include "xf86Priv.h"
+#include "xf86_ansic.h"
 #include "xf86_HWlib.h"
 
 #if defined(CSRG_BASED) || defined(MACH386)
