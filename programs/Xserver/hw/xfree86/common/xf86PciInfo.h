@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.137 2002/10/18 21:40:38 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.138tsi Exp $ */
 /*
  * Copyright 1995-2002 by The XFree86 Project, Inc.
  *
@@ -46,6 +46,7 @@
 #define PCI_VENDOR_MIRO			0x1031
 #define PCI_VENDOR_NEC			0x1033
 #define PCI_VENDOR_SIS			0x1039
+#define PCI_VENDOR_HP			0x103C
 #define PCI_VENDOR_SGS			0x104A
 #define PCI_VENDOR_TI			0x104C
 #define PCI_VENDOR_SONY			0x104D
@@ -312,6 +313,10 @@
 #define PCI_CHIP_SIS650                 0x6325 
 #define PCI_CHIP_SIS730                 0x7300
 
+/* HP */
+#define PCI_CHIP_ZX1_SBA		0x1229
+#define PCI_CHIP_ZX1_IOC		0x122A
+#define PCI_CHIP_ZX1_LBA		0x122E
 
 /* SGS */
 #define PCI_CHIP_STG2000		0x0008
@@ -493,6 +498,7 @@
 #define PCI_CHIP_I815_BRIDGE		0x1130
 #define PCI_CHIP_I815			0x1132
 #define PCI_CHIP_430HX_BRIDGE		0x1250
+#define PCI_CHIP_82801_P2P		0x244E
 #define PCI_CHIP_845_G_BRIDGE		0x2560
 #define PCI_CHIP_845_G			0x2562
 #define PCI_CHIP_I830_M_BRIDGE		0x3575

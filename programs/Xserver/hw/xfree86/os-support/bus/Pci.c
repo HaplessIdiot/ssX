@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.67 2002/12/12 04:12:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.68tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -611,7 +611,7 @@ PCITAG
 pciGenFindNext(void)
 {
     CARD32 devid, tmp;
-    unsigned int sec_bus, pri_bus;
+    int sec_bus, pri_bus;
     static int previousBus = 0;
     Bool speculativeProbe = FALSE;
     unsigned char base_class, sub_class;
