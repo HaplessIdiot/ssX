@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.96 2003/09/09 03:20:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.97 2003/10/02 13:30:08 eich Exp $ */
 /*
  * Copyright 1997-2003 by The XFree86 Project, Inc.
  *
@@ -658,7 +658,7 @@ static void _xf86checkhndl(XF86FILE_priv* f,const char *func)
 {
 	if (!f || f->magic != XF86FILE_magic ||
 	    !f->filehnd || !f->fname) {
-		FatalError("libc_wrapper error: passed invalid FILE handle to %s\n",
+		FatalError("libc_wrapper error: passed invalid FILE handle to %s",
 			func);
 		exit(42);
 	}
@@ -1091,7 +1091,7 @@ xf86setvbuf(XF86FILE* f, char *buf, int mode, xf86size_t size)
 		vbufmode = _IOLBF;
 		break;
 	default:
-		FatalError("libc_wrapper error: mode in setvbuf incorrect\n");
+		FatalError("libc_wrapper error: mode in setvbuf incorrect");
 		exit(42);
 	}
 
@@ -1301,7 +1301,7 @@ static void
 _xf86checkdirhndl(XF86DIR_priv* f,const char *func)
 {
 	if (!f || f->magic != XF86DIR_magic || !f->dir || !f->dirent) {
-		FatalError("libc_wrapper error: passed invalid DIR handle to %s\n",
+		FatalError("libc_wrapper error: passed invalid DIR handle to %s",
 			func);
 		exit(42);
 	}
@@ -1817,7 +1817,7 @@ xf86getpagesize()
 		pagesize = PAGE_SIZE;
 #endif
 	if (pagesize == -1)
-		FatalError("xf86getpagesize: Cannot determine page size\n");
+		FatalError("xf86getpagesize: Cannot determine page size");
 
 	return pagesize;
 }
@@ -1979,7 +1979,7 @@ xf86setjmp(xf86jmp_buf env)
 int
 xf86setjmp0(xf86jmp_buf env)
 {
-    FatalError("setjmp: type 0 called instead of type %d\n", xf86getjmptype());
+    FatalError("setjmp: type 0 called instead of type %d", xf86getjmptype());
 }
 
 #if !defined(__GLIBC__) || (__GLIBC__ < 2)	/* libc5 */
@@ -1998,7 +1998,7 @@ xf86setjmp1(xf86jmp_buf env, int arg2)
 int
 xf86setjmp1(xf86jmp_buf env, int arg2)
 {
-    FatalError("setjmp: type 1 called instead of type %d\n", xf86getjmptype());
+    FatalError("setjmp: type 1 called instead of type %d", xf86getjmptype());
 }
 
 #endif  /* HAS_GLIBC_SIGSETJMP */
@@ -2012,7 +2012,7 @@ xf86setjmp1_arg2()
 int
 xf86setjmperror(xf86jmp_buf env)
 {
-    FatalError("setjmp: don't know how to handle setjmp() type %d\n",
+    FatalError("setjmp: don't know how to handle setjmp() type %d",
 	       xf86getjmptype());
 }
 
