@@ -32,7 +32,7 @@
 
 Notice===
 */
-/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.20tsi Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.21tsi Exp $ */
 
 #include "xttversion.h"
 
@@ -1822,7 +1822,6 @@ FreeTypeOpenScalable (
     int setwidth_value = 0;
 
     double base_width, base_height;
-    Bool orig_is_matrix_unit;
 
     dprintf((stderr,
              "\n+FreeTypeOpenScalable(%x, %x, %x, %x, %s, %x, %x, %x, %x)\n",
@@ -2206,12 +2205,9 @@ FreeTypeOpenScalable (
         }
     }
 
-    if( is_matrix_unit(ft,vals) )
-        orig_is_matrix_unit = True;
-    else {
+    if( !is_matrix_unit(ft,vals) ) {
         /* Turn off EmbeddedBitmap when original matrix is not diagonal. */
         ft->isEmbeddedBitmap = False;
-        orig_is_matrix_unit = False;
     }
 
     /* slant control */
