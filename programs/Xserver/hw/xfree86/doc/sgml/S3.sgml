@@ -288,7 +288,7 @@ chances are good it might work for you, too.
  	8, 15/16, 24(32) bpp
 
 
-<tag>S3 964, Bt9485 RAMDAC, ICS9161a Clockchip</tag>
+<tag>S3 964, Bt9485 or AT&amp;T 20C505 RAMDAC, ICS9161a Clockchip</tag>
 	<itemize>
  	<item> SPEA Mercury 64
 	</itemize>
@@ -500,7 +500,7 @@ exit
 
 <verb>
 $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.13 1995/02/04 04:50:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.14 1995/05/27 03:11:49 dawes Exp $
 </verb>
 
 </article>
