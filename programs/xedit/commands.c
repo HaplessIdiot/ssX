@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.23 2001/08/27 23:35:13 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.24 2001/08/31 15:00:11 paulo Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -342,6 +342,8 @@ DoSave(Widget w, XtPointer client_data, XtPointer call_data)
 				   XtNeditType, XawtextEdit,
 				   NULL, NULL);
 	      ResetSourceChanged(item);
+	      XtAddCallback(scratch, XtNcallback, SourceChanged,
+			    (XtPointer)item);
 
 	      item = AddTextSource(source, name, filename, EXISTS_BIT,
 				   file_access);
