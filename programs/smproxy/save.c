@@ -27,21 +27,22 @@ Author:  Ralph Mor, X Consortium
 #include <unistd.h>
 #endif
 
-typedef struct ProxyFileEntry
-{
-    struct ProxyFileEntry *next;
-    int tag;
-    char *client_id;
-    XClassHint class;
-    char *wm_name;
-    int wm_command_count;
-    char **wm_command;
-} ProxyFileEntry;
 
 ProxyFileEntry *proxyFileHead = NULL;
 
 extern WinInfo *win_head;
 
+static int write_byte ( FILE *file, unsigned char b );
+static int write_short ( FILE *file, unsigned short s );
+static int write_counted_string ( FILE *file, char *string );
+static int read_byte ( FILE *file, unsigned char *bp );
+static int read_short ( FILE *file, unsigned short *shortp );
+static int read_counted_string ( FILE *file, char **stringp );
+#ifndef HAS_MKSTEMP
+static char * unique_filename ( char *path, char *prefix );
+#else
+static char * unique_filename ( char *path, char *prefix, int *pFd );
+#endif
 
 
 static int

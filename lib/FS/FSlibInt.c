@@ -46,7 +46,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.3 1998/04/05 00:45:41 robin Exp $ */
+/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.4 1998/10/03 08:41:07 dawes Exp $ */
 
 /*
  *	FSlibInt.c - Internal support routines for the C subroutine
@@ -56,7 +56,8 @@ in this Software without prior written authorization from The Open Group.
 #include "FSlibint.h"
 #include <X11/Xos.h>
 
-static void _EatData32();
+static void _EatData32 ( FSServer *svr, unsigned long n );
+static char * _SysErrorMsg ( int n );
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
@@ -1010,8 +1011,6 @@ _FSPrintDefaultError(svr, event, fp)
     char        number[32];
     char       *mtype = "FSlibMessage";
     register _FSExtension *ext = (_FSExtension *) NULL;
-    extern int	FSGetErrorText();
-    extern int	FSGetErrorDatabaseText();
 
     (void) FSGetErrorText(svr, event->error_code, buffer, BUFSIZ);
     (void) FSGetErrorDatabaseText(svr, mtype, "FSError", "FS Error", mesg, 
@@ -1070,8 +1069,8 @@ _FSDefaultError(svr, event)
     /* NOTREACHED */
 }
 
-int         (*_FSIOErrorFunction) () = _FSDefaultIOError;
-int         (*_FSErrorFunction) () = _FSDefaultError;
+int         (*_FSIOErrorFunction) (FSServer *) = _FSDefaultIOError;
+int         (*_FSErrorFunction) (FSServer *, FSErrorEvent *) = _FSDefaultError;
 
 /*
  * This routine can be used to (cheaply) get some memory within a single

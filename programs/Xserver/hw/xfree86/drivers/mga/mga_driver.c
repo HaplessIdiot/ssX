@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.74 1999/02/01 11:55:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.75 1999/02/07 06:18:44 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1115,7 +1115,14 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
-	
+
+    if ((pMga->PciInfo->subsysCard == PCI_CARD_MILL_G200_SD) ||
+	(pMga->PciInfo->subsysCard == PCI_CARD_MARV_G200_SD) ||
+	(pMga->PciInfo->subsysCard == PCI_CARD_MYST_G200_SD) ||
+	(pMga->PciInfo->subsysCard == PCI_CARD_PROD_G100_SD)) {
+        pMga->HasSDRAM = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Has SDRAM\n");
+    }
     pMga->PciTag = pciTag(pMga->PciInfo->bus, pMga->PciInfo->device,
 			  pMga->PciInfo->func);
     

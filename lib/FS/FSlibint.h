@@ -46,12 +46,12 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSlibint.h,v 3.2 1996/12/28 11:12:16 dawes Exp $ */
+/* $XFree86: xc/lib/FS/FSlibint.h,v 3.3 1998/10/03 08:41:07 dawes Exp $ */
 
 /*
  * FSlib internal decls
  */
-
+#include <stdio.h>
 #ifdef USG
 #ifndef __TYPES__
 #include <sys/types.h>			/* forgot to protect it... */
@@ -80,22 +80,44 @@ in this Software without prior written authorization from The Open Group.
 extern int  errno;		/* Internal system error number. */
 #endif
 
-extern int	(*_FSIOErrorFunction) ();
-extern int	(*_FSErrorFunction) ();
+typedef int (* FSIOErrorHandler)(FSServer *);
+typedef int (* FSErrorHandler)(FSServer *, FSErrorEvent *);
 
-extern void	_FSEatData();
-extern void 	_FSWaitForWritable();
-extern void	_FSWaitForReadable();
-extern void	_FSFlush();
-extern void	_FSRead();
-extern void	_FSReadEvents();
-extern void	_FSReadPad();
-extern void	_FSSend();
-extern void	_FSEnq();
-extern void	_FSFreeServerStructure();
-extern int	_FSError();
-extern int	_FSTransGetConnectionNumber();
-extern Status	_FSReply();
+extern FSIOErrorHandler _FSIOErrorFunction;
+extern FSErrorHandler _FSErrorFunction;
+
+extern void _FSEatData ( FSServer *svr, unsigned long n );
+extern void _FSWaitForWritable ( FSServer *svr );
+extern void _FSWaitForReadable ( FSServer *svr );
+extern void _FSFlush ( FSServer *svr );
+extern void _FSRead ( FSServer *svr, char *data, long size );
+extern void _FSReadEvents ( FSServer *svr );
+extern void _FSReadPad ( FSServer *svr, char *data, long size );
+extern void _FSSend ( FSServer *svr, char *data, long size );
+extern void _FSEnq ( FSServer *svr, fsEvent *event );
+extern void _FSFreeServerStructure ( FSServer *svr );
+extern int _FSError ( FSServer *svr, fsError *rep );
+extern int _FSReply ( FSServer *svr, fsReply *rep, int extra, int discard );
+extern XtransConnInfo _FSConnectServer ( char *server_name );
+extern void _FSDisconnectServer ( XtransConnInfo trans_conn );
+extern void _FSSendClientPrefix ( FSServer *svr, fsConnClientPrefix *client );
+extern int _FSEventsQueued ( FSServer *svr, int mode );
+extern unsigned long _FSSetLastRequestRead ( FSServer *svr, 
+					     fsGenericReply *rep );
+extern int _FSUnknownWireEvent ( FSServer *svr, FSEvent *re, fsEvent *event );
+extern int _FSUnknownNativeEvent ( FSServer *svr, FSEvent *re, 
+				   fsEvent *event );
+extern int _FSWireToEvent ( FSServer *svr, FSEvent *re, fsEvent *event );
+extern int _FSDefaultIOError ( FSServer *svr );
+extern int _FSPrintDefaultError ( FSServer *svr, FSErrorEvent *event, 
+				  FILE *fp );
+extern int _FSDefaultError ( FSServer *svr, FSErrorEvent *event );
+extern char * _FSAllocScratch ( FSServer *svr, unsigned long nbytes );
+extern void _FSFreeQ ( void );
+extern int _FSGetHostname ( char *buf, int maxlen );
+
+extern FSErrorHandler  FSSetErrorHandler ( FSErrorHandler handler );
+extern FSIOErrorHandler FSSetIOErrorHandler ( FSIOErrorHandler handler );
 
 #ifndef BUFSIZE
 #define BUFSIZE 2048		/* FS output buffer size. */

@@ -39,7 +39,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/fslsfonts/fslsfonts.c,v 3.1 1996/05/06 06:00:36 dawes Exp $ */
+/* $XFree86: xc/programs/fslsfonts/fslsfonts.c,v 3.2 1998/10/04 09:40:04 dawes Exp $ */
 
 #include "FSlib.h"
 #include <stdio.h>
@@ -79,8 +79,17 @@ FSServer   *svr;
 
 char       *program_name;
 
+static void usage ( void );
+static void get_list ( char *pattern );
+static int compare ( const void *f1, const void *f2 );
+static void show_fonts ( void );
+static void print_font_header ( void );
+static void show_font_header ( FontList *list );
+static void copy_number ( char **pp1, char **pp2, int n1, int n2 );
+static void show_font_props ( FontList *list );
 
-usage()
+static void
+usage(void)
 {
     fprintf(stderr, "usage:  %s [-options] [-fn pattern]\n", program_name);
     fprintf(stderr, "where options include:\n");
@@ -107,9 +116,8 @@ usage()
     exit(1);
 }
 
-main(argc, argv)
-    int         argc;
-    char      **argv;
+int
+main(int argc, char *argv[])
 {
     int         argcnt = 0,
                 i;
@@ -199,8 +207,8 @@ next:	;
     exit(0);
 }
 
-get_list(pattern)
-    char       *pattern;
+static void
+get_list(char *pattern)
 {
     int         available = nnames + 1,
                 i;
@@ -265,19 +273,19 @@ get_list(pattern)
     }
 }
 
-compare(f1, f2)
-    FontList   *f1,
-               *f2;
+static int 
+compare(const void *f1, const void *f2)
 {
-    char       *p1 = f1->name,
-               *p2 = f2->name;
+    char       *p1 = ((FontList *)f1)->name,
+               *p2 = ((FontList *)f2)->name;
 
     while (*p1 && *p2 && *p1 == *p2)
 	p1++, p2++;
     return (*p1 - *p2);
 }
 
-show_fonts()
+static void
+show_fonts(void)
 {
     int         i;
 
@@ -362,7 +370,8 @@ single_column:
 	printf("%s\n", font_list[i].name);
 }
 
-print_font_header()
+static void
+print_font_header(void)
 {
     printf("DIR  ");
     printf("MIN  ");
@@ -375,8 +384,8 @@ print_font_header()
     printf("\n");
 }
 
-show_font_header(list)
-    FontList   *list;
+static void
+show_font_header(FontList *list)
 {
     char       *string;
     FSXFontInfoHeader *pfh;
@@ -445,11 +454,8 @@ show_font_header(list)
 
 #define	max(a, b)	((a) > (b) ? (a) : (b))
 
-copy_number(pp1, pp2, n1, n2)
-    char      **pp1,
-              **pp2;
-    int         n1,
-                n2;
+static void
+copy_number(char **pp1, char **pp2, int n1, int n2)
 {
     char       *p1 = *pp1;
     char       *p2 = *pp2;
@@ -466,8 +472,8 @@ copy_number(pp1, pp2, n1, n2)
     *pp2 = p2;
 }
 
-show_font_props(list)
-    FontList   *list;
+static void
+show_font_props(FontList *list)
 {
     int         i;
     char        buf[1000];
@@ -488,10 +494,10 @@ show_font_props(list)
 	    printf("%s\n", buf);
 	    break;
 	case PropTypeUnsigned:
-	    printf("%d\n", (unsigned long) po->value.position);
+	    printf("%lu\n", (unsigned long) po->value.position);
 	    break;
 	case PropTypeSigned:
-	    printf("%d\n", (long) po->value.position);
+	    printf("%lu\n", (long) po->value.position);
 	    break;
 	default:
 	    fprintf(stderr, "bogus property\n");

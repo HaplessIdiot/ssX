@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.12 1999/02/14 13:04:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.14 1999/02/16 09:46:17 hohndel Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -1355,6 +1355,7 @@ xf86FindPrimaryDevice()
 static void
 CheckGenericGA()
 {
+#ifndef __powerpc__ /* FIXME ?? */
     CARD16 GenericIOBase = VGAHW_GET_IOBASE();
     CARD8 CurrentValue, TestValue;
 
@@ -1377,6 +1378,7 @@ CheckGenericGA()
         Resources.exclusive_Vga = 1;
 	primaryBus = BUS_ISA;
     }
+#endif
 }
 
 /*

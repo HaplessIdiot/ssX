@@ -1,14 +1,9 @@
 /*****************************************************************************/
 /*
 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,13 +11,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
@@ -53,7 +48,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: util.h,v 1.11 94/04/17 20:38:27 jim Exp $
+ * $TOG: util.h /main/10 1998/02/09 13:50:00 kaleb $
  *
  * utility routines header file
  *
@@ -64,13 +59,43 @@ in this Software without prior written authorization from the X Consortium.
 #ifndef _UTIL_
 #define _UTIL_
 
-extern void	Zoom();
-extern void	MoveOutline();
-extern Pixmap	GetBitmap(), FindBitmap();
-extern void	GetUnknownIcon();
-extern char 	*ExpandFilename();
-extern int	GetColor();
+extern void MoveOutline ( Window root, int x, int y, int width, int height, 
+			  int bw, int th );
+extern void Zoom ( Window wf, Window wt );
+extern char * ExpandFilename ( char *name );
+extern void GetUnknownIcon ( char *name );
+extern Pixmap FindBitmap ( char *name, unsigned int *widthp, 
+			   unsigned int *heightp );
+extern Pixmap GetBitmap ( char *name );
+extern void InsertRGBColormap ( Atom a, XStandardColormap *maps, int nmaps, 
+			       Bool replace );
+extern void RemoveRGBColormap ( Atom a );
+extern void LocateStandardColormaps ( void );
+extern void GetColor ( int kind, Pixel *what, char *name );
+extern void GetColorValue ( int kind, XColor *what, char *name );
+extern void GetFont ( MyFont *font );
+extern void SetFocus ( TwmWindow *tmp_win, Time time );
+extern Pixmap CreateMenuIcon ( int height, int *widthp, int *heightp );
+extern void Bell ( int type, int percent, Window win );
 
 extern int HotX, HotY;
+
+#define	WM_BELL			0
+#define	MINOR_ERROR_BELL	1
+#define	MAJOR_ERROR_BELL	2
+#define	INFO_BELL		3
+#define	NUM_BELLS		4
+
+#define	QUIET_BELL		-100
+#define	MODERATE_BELL		0
+#define	LOUD_BELL		100
+
+#ifdef XKB
+#include <X11/extensions/XKBbells.h>
+#else
+#define	XkbBI_Info			0
+#define	XkbBI_MinorError		1
+#define	XkbBI_MajorError		2
+#endif
 
 #endif /* _UTIL_ */

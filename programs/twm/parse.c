@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/parse.c,v 1.3 1997/11/09 09:38:42 hohndel Exp $ */
+/* $XFree86: xc/programs/twm/parse.c,v 1.4 1998/10/04 09:40:39 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -81,16 +81,18 @@ static char buff[BUF_LEN+1];
 static char overflowbuff[20];		/* really only need one */
 static int overflowlen;
 static char **stringListSource, *currentString;
-static int ParseUsePPosition();
+
+static int doparse ( int (*ifunc)(void), char *srctypename, char *srcname );
+static int twmFileInput ( void );
+static int twmStringListInput ( void );
+static int ParseUsePPosition ( char *s );
 
 extern int yylineno;
 extern int mods;
 
 int ConstrainedMoveTime = 400;		/* milliseconds, event times */
 
-static int twmFileInput(), twmStringListInput();
-void twmUnput();
-int (*twmInputFunc)();
+int (*twmInputFunc)(void);
 
 extern char *defTwmrc[];		/* default bindings */
 
@@ -107,7 +109,7 @@ extern char *defTwmrc[];		/* default bindings */
  */
 
 static int doparse (ifunc, srctypename, srcname)
-    int (*ifunc)();
+    int (*ifunc)(void);
     char *srctypename;
     char *srcname;
 {
@@ -976,6 +978,7 @@ int do_color_keyword (keyword, colormode, s)
 /*
  * put_pixel_on_root() Save a pixel value in twm root window color property.
  */
+void
 put_pixel_on_root(pixel)                                 
     Pixel pixel;                                         
 {                                                        
@@ -1002,7 +1005,8 @@ put_pixel_on_root(pixel)
 /*
  * do_string_savecolor() save a color from a string in the twmrc file.
  */
-int do_string_savecolor(colormode, s)
+void
+do_string_savecolor(colormode, s)
      int colormode;
      char *s;
 {
@@ -1017,7 +1021,8 @@ int do_string_savecolor(colormode, s)
 typedef struct _cnode {int i; struct _cnode *next;} Cnode, *Cptr;
 Cptr chead = NULL;
 
-int do_var_savecolor(key)
+void
+do_var_savecolor(key)
 int key;
 {
   Cptr cptrav, cpnew;
@@ -1037,7 +1042,8 @@ int key;
  * assign_var_savecolor() traverse the var save color list placeing the pixels
  *                        in the root window property.
  */
-void assign_var_savecolor()
+void 
+assign_var_savecolor()
 {
   Cptr cp = chead;
   while (cp != NULL) {
@@ -1084,7 +1090,8 @@ void assign_var_savecolor()
   }
 }
 
-static int ParseUsePPosition (s)
+static int 
+ParseUsePPosition (s)
     register char *s;
 {
     XmuCopyISOLatin1Lowered (s, s);
@@ -1102,6 +1109,7 @@ static int ParseUsePPosition (s)
 }
 
 
+void
 do_squeeze_entry (list, name, justify, num, denom)
     name_list **list;			/* squeeze or dont-squeeze list */
     char *name;				/* window name */

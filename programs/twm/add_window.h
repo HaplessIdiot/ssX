@@ -1,14 +1,9 @@
 /*****************************************************************************/
 /*
 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,13 +11,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
@@ -53,7 +48,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: add_window.h,v 1.8 94/04/17 20:38:05 jim Exp $
+ * $TOG: add_window.h /main/8 1998/02/09 13:47:40 kaleb $
  *
  * AddWindow include file
  *
@@ -64,15 +59,24 @@ in this Software without prior written authorization from the X Consortium.
 #ifndef _ADD_WINDOW_
 #define _ADD_WINDOW_
 
+#include "iconmgr.h"
+
 extern char NoName[];
 
-extern TwmWindow *AddWindow();
-extern int MappedNotOverride();
-extern void GrabButtons();
-extern void GrabKeys();
-extern void UngrabButtons();
-extern void UngrabKeys();
-extern void GetWindowSizeHints();
+extern void AddDefaultBindings ( void );
+extern TwmWindow * AddWindow ( Window w, int iconm, IconMgr *iconp );
+extern void ComputeTitleLocation ( TwmWindow *tmp );
+extern void ComputeWindowTitleOffsets ( TwmWindow *tmp_win, int width, Bool squeeze );
+extern ColormapWindow * CreateColormapWindow ( Window w, Bool creating_parent, Bool property_window );
+extern TwmColormap * CreateTwmColormap ( Colormap c );
+extern void FetchWmColormapWindows ( TwmWindow *tmp );
+extern void FetchWmProtocols ( TwmWindow *tmp );
+extern void GetGravityOffsets ( TwmWindow *tmp, int *xp, int *yp );
+extern void GetWindowSizeHints ( TwmWindow *tmp );
+extern void GrabButtons ( TwmWindow *tmp_win );
+extern void GrabKeys ( TwmWindow *tmp_win );
+extern int MappedNotOverride ( Window w );
+extern void SetHighlightPixmap ( char *filename );
 extern int AddingX;	
 extern int AddingY;
 extern int AddingW;

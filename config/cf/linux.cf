@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.84 1998/11/28 10:42:47 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.85 1998/12/20 11:56:22 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -252,10 +252,12 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #endif
 #endif
 #define CppCmd			/lib/cpp
+#ifndef YaccCmd
 #if OSMajorVersion >= 2
 #define YaccCmd			yacc
 #else
 #define YaccCmd			bison -y
+#endif
 #endif
 #define LexCmd			flex -l
 #define LexLib			-lfl
@@ -293,13 +295,13 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define PositionIndependentCplusplusFlags -fpic
 #endif /* Mc68020Architecture */
 
-#ifdef PowerPCArchitecture
+#ifdef PpcArchitecture
 #define DefaultCCOptions	-fsigned-char
 #define OptimizedCDebugFlags	-O2
 #define LinuxMachineDefines	-D__powerpc__
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
 #define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
-#endif /* PowerPCArchitecture */
+#endif /* PpcArchitecture */
 
 #ifdef SparcArchitecture
 #define OptimizedCDebugFlags	-O2

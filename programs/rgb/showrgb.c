@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/rgb/showrgb.c,v 3.3 1996/10/03 08:49:26 dawes Exp $ */
+/* $XFree86: xc/programs/rgb/showrgb.c,v 3.4 1998/10/04 09:40:33 dawes Exp $ */
 
 #ifndef USE_RGB_TXT
 #ifdef NDBM
@@ -51,10 +51,10 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xfuncs.h>
 
 char *ProgramName;
+static void dumprgb(char *filename);
 
-main (argc, argv)
-    int argc;
-    char *argv[];
+int
+main (int argc, char *argv[])
 {
     char *dbname = RGB_DB;
 
@@ -67,7 +67,7 @@ main (argc, argv)
 }
 
 #ifndef USE_RGB_TXT
-
+static void
 dumprgb (filename)
     char *filename;
 {
@@ -117,7 +117,7 @@ dumprgb (filename)
 }
 
 #else /* USE_RGB_TXT */
-
+static void
 dumprgb (filename)
     char *filename;
 {

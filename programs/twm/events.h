@@ -1,14 +1,9 @@
 /*****************************************************************************/
 /*
 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,13 +11,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
@@ -53,7 +48,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: events.h,v 1.15 94/04/17 20:38:09 dave Exp $
+ * $TOG: events.h /main/14 1998/02/09 13:47:57 kaleb $
  *
  * twm event handler include file
  *
@@ -64,34 +59,49 @@ in this Software without prior written authorization from the X Consortium.
 #ifndef _EVENTS_
 #define _EVENTS_
 
-typedef void (*event_proc)();
+#include "screen.h"
+#include "twm.h"
 
-extern void InitEvents();
-extern Bool StashEventTime();
+typedef void (*event_proc)(void);
+
 extern Time lastTimestamp;
-extern void SimulateMapRequest();
-extern void AutoRaiseWindow();
 #define LastTimestamp() lastTimestamp
-extern Bool DispatchEvent();
-extern Bool DispatchEvent2();
-extern void HandleEvents();
-extern void HandleExpose();
-extern void HandleDestroyNotify();
-extern void HandleMapRequest();
-extern void HandleMapNotify();
-extern void HandleUnmapNotify();
-extern void HandleMotionNotify();
-extern void HandleButtonRelease();
-extern void HandleButtonPress();
-extern void HandleEnterNotify();
-extern void HandleLeaveNotify();
-extern void HandleConfigureRequest();
-extern void HandleClientMessage();
-extern void HandlePropertyNotify();
-extern void HandleKeyPress();
-extern void HandleColormapNotify();
-extern void HandleVisibilityNotify();
-extern void HandleUnknown();
+
+extern void AutoRaiseWindow ( TwmWindow *tmp );
+extern void SetRaiseWindow ( TwmWindow *tmp );
+extern void InitEvents ( void );
+extern Bool StashEventTime ( XEvent *ev );
+extern Window WindowOfEvent ( XEvent *e );
+extern Bool DispatchEvent2 ( void );
+extern Bool DispatchEvent ( void );
+extern void HandleEvents ( void );
+extern void HandleColormapNotify ( void );
+extern void HandleVisibilityNotify ( void );
+extern void HandleKeyPress ( void );
+extern void free_cwins ( TwmWindow *tmp );
+extern void HandlePropertyNotify ( void );
+extern void RedoIconName ( void );
+extern void HandleClientMessage ( void );
+extern void HandleExpose ( void );
+extern void HandleDestroyNotify ( void );
+extern void HandleCreateNotify ( void );
+extern void HandleMapRequest ( void );
+extern void SimulateMapRequest ( Window w );
+extern void HandleMapNotify ( void );
+extern void HandleUnmapNotify ( void );
+extern void HandleMotionNotify ( void );
+extern void HandleButtonRelease ( void );
+extern void HandleButtonPress ( void );
+extern void HandleEnterNotify ( void );
+extern void HandleLeaveNotify ( void );
+extern void HandleConfigureRequest ( void );
+extern void HandleShapeNotify ( void );
+extern void HandleUnknown ( void );
+extern int Transient ( Window w, Window *propw );
+extern ScreenInfo * FindScreenInfo ( Window w );
+extern void InstallWindowColormaps ( int type, TwmWindow *tmp );
+extern void InstallRootColormap ( void );
+extern void UninstallRootColormap ( void );
 
 extern event_proc EventHandler[];
 extern Window DragWindow;

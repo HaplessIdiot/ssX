@@ -1,15 +1,9 @@
-/* $XConsortium: pmdb.c /main/22 1996/11/30 23:55:01 swick $ */
+/* $TOG: pmdb.c /main/25 1998/03/04 11:30:12 barstow $ */
 
 /*
-Copyright (c) 1996  X Consortium
+Copyright 1996, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,25 +11,49 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 */
-
 
 #include "pmint.h"
 #include "pmdb.h"
 #include "config.h"
 #include <assert.h>
+#include <stdio.h>
+#include <signal.h>
+
+#if defined(X_NOT_POSIX) && defined(SIGNALRETURNSINT)
+#define SIGVAL int
+#else
+#define SIGVAL void
+#endif
+typedef SIGVAL (*SignalHandler)(int);
+
+void SetCloseOnExec (int fd);
 
 static proxy_service *proxyServiceList = NULL;
 
+static SignalHandler 
+Signal (int sig, SignalHandler handler)
+{
+#ifndef X_NOT_POSIX
+    struct sigaction sigact, osigact;
+    sigact.sa_handler = handler;
+    sigemptyset(&sigact.sa_mask);
+    sigact.sa_flags = 0;
+    sigaction(sig, &sigact, &osigact);
+    return osigact.sa_handler;
+#else
+    return signal(sig, handler);
+#endif
+}
 
 proxy_service *
 FindProxyService (
@@ -166,18 +184,34 @@ ConnectToProxy (
 
     {
 	int majorVersion, minorVersion;
-	char *vendor, *release, *failureReason;
+	char *vendor, *release;
 	char errorString[256];
-	IcePointer clientDataRet;
+
+	/*
+	 * IceOpenConnection will do more than one write to the proxy.
+	 * If the proxy closes the connection before the second write,
+	 * the second write may generate a SIGPIPE (empirically this
+	 * happens on at least AIX).  So, temporarily ignore this signal.
+	 */
+
+	Signal (SIGPIPE, SIG_IGN);
 
 	proxy_iceConn = IceOpenConnection( proxyAddress, NULL,
 					   False, pmOpcode,
 					   sizeof(errorString), errorString);
+
+	Signal (SIGPIPE, SIG_DFL);
+
 	if (! proxy_iceConn) {
 	    printf("unable to open connection to unmanaged proxy \"%s\" at %s\n",
 		   serviceName, proxyAddress);
 	    return NULL;
 	}
+
+        /*
+	 * Mark this fd to be closed upon exec
+	 */
+        SetCloseOnExec (IceConnectionNumber (proxy_iceConn));
 
 	/* See PMprotocolSetupProc */
 	pmConn = (PMconn *) malloc (sizeof (PMconn));

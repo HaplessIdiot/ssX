@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: mkfontdir.c /main/13 1996/09/28 17:17:17 rws $ */
-/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.5 1998/10/25 07:12:15 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.6 1998/12/20 11:58:09 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -122,6 +122,24 @@ extern int errno;
 #include <X11/keysymdef.h>
 
 char *progName;
+
+static Bool WriteFontTable ( char *dirName, FontTablePtr table );
+static char * NameForAtomOrNone ( Atom a );
+static Bool GetFontName ( char *file_name, char *font_name );
+static char * FontNameExists ( FontTablePtr table, char *font_name );
+int AddEntry ( FontTablePtr table, char *fontName, char *fileName );
+static Bool ProcessFile ( char *dirName, char *fileName, FontTablePtr table );
+
+static void Estrip ( char *ext, char *name );
+char * MakeName ( char *name );
+int Hash ( char *name );
+static Bool LoadDirectory ( char *dirName, FontTablePtr table );
+int LoadScalable ( char *dirName, FontTablePtr table );
+static Bool DoDirectory ( char *dirName );
+int GetDefaultPointSize ( void );
+FontResolutionPtr GetClientResolutions ( int *num );
+void RegisterFPEFunctions ( void );
+void ErrorF ( void );
 
 static Bool
 WriteFontTable(
@@ -312,7 +330,6 @@ LoadDirectory (char *dirName, FontTablePtr table)
     int			hash;
     char		*extension;
     NameBucketPtr	*hashTable, bucket, *prev, next;
-    Bool		status;
     
 #ifdef WIN32
     if ((dirh = FindFirstFile("*.*", &file)) == INVALID_HANDLE_VALUE)

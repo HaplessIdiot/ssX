@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/fsinfo/fsinfo.c,v 3.1 1995/07/08 10:31:42 dawes Exp $ */
+/* $XFree86: xc/programs/fsinfo/fsinfo.c,v 3.2 1998/10/04 09:40:02 dawes Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -58,23 +58,22 @@ from The Open Group.
 #include	<X11/Xos.h>
 #include	"FSlib.h"
 
-static void print_server_info();
-static void print_catalogue_info();
-static void print_extension_info();
-static void print_alternate_info();
+static void print_server_info(FSServer *svr);
+static void print_catalogue_info(FSServer *svr);
+static void print_extension_info(FSServer *svr);
+static void print_alternate_info(FSServer *svr);
 
 char       *progname;
 
 static void
-usage()
+usage(void)
 {
     fprintf(stderr, "usage:  %s [-server server_name]\n", progname);
     exit(-1);
 }
 
-main(argc, argv)
-    int         argc;
-    char      **argv;
+int
+main(int argc, char *argv[])
 {
     FSServer   *svr;
     char       *servername = NULL;
@@ -109,8 +108,7 @@ main(argc, argv)
 }
 
 static void
-print_server_info(svr)
-    FSServer   *svr;
+print_server_info(FSServer *svr)
 {
     printf("name of server:	%s\n", FSServerString(svr));
     printf("version number:	%d\n", FSProtocolVersion(svr));
@@ -124,8 +122,7 @@ print_server_info(svr)
 }
 
 static void
-print_catalogue_info(svr)
-    FSServer   *svr;
+print_catalogue_info(FSServer *svr)
 {
     int         n = 0;
     char      **cats = FSListCatalogues(svr, "*", 1000, &n);
@@ -141,8 +138,7 @@ print_catalogue_info(svr)
 }
 
 static void
-print_extension_info(svr)
-    FSServer   *svr;
+print_extension_info(FSServer *svr)
 {
     int         n = 0;
     char      **extlist = FSListExtensions(svr, &n);
@@ -158,8 +154,7 @@ print_extension_info(svr)
 }
 
 static void
-print_alternate_info(svr)
-    FSServer   *svr;
+print_alternate_info(FSServer *svr)
 {
     AlternateServer *alts;
     int         i,

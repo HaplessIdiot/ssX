@@ -1,17 +1,12 @@
 /*
- * $XConsortium: iceauth.c,v 1.2 94/04/17 20:39:54 mor Exp $
+ * $TOG: iceauth.c /main/3 1998/02/09 13:44:01 kaleb $
  *
  * xauth - manipulate authorization file
  *
  * 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -19,13 +14,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  * *
  * Original Author of "xauth" : Jim Fulton, MIT X Consortium
  * Modified into "iceauth"    : Ralph Mor, X Consortium
@@ -51,10 +46,11 @@ static char *defcmds[] = { "source", "-", NULL };  /* default command */
 static int ndefcmds = 2;
 static char *defsource = "(stdin)";
 
+
 /*
  * utility routines
  */
-static void usage ()
+static void usage (void)
 {
     static char *prefixmsg[] = {
 "",
@@ -80,7 +76,7 @@ NULL };
     for (msg = prefixmsg; *msg; msg++) {
 	fprintf (stderr, "%s\n", *msg);
     }
-    print_help (stderr, NULL, "    ");	/* match prefix indentation */
+    print_help (stderr, "    ");	/* match prefix indentation */
     fprintf (stderr, "\n");
     for (msg = suffixmsg; *msg; msg++) {
 	fprintf (stderr, "%s\n", *msg);
@@ -92,9 +88,8 @@ NULL };
 /*
  * The main routine - parses command line and calls action procedures
  */
-main (argc, argv)
-    int argc;
-    char *argv[];
+int
+main (int argc, char *argv[])
 {
     int i;
     char *sourcename = defsource;

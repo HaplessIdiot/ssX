@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.15 1999/01/03 03:58:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.16 1999/01/03 08:06:38 dawes Exp $ */
 
 /*
  *
@@ -48,6 +48,7 @@ extern PanoramiXWindow *PanoramiXWinRoot;
 extern Bool noPanoramiXExtension;
 extern int PanoramiXNumScreens;
 extern PanoramiXPmap *PanoramiXPmapRoot;
+extern PanoramiXData *panoramiXdataPtr;
 #endif
 
 LOOKUP miLookupTab[] = {
@@ -144,6 +145,7 @@ LOOKUP miLookupTab[] = {
    SYMVAR(noPanoramiXExtension)
    SYMVAR(PanoramiXNumScreens)
    SYMVAR(PanoramiXPmapRoot)
+   SYMVAR(panoramiXdataPtr)
 #endif
 
   { 0, 0 },

@@ -55,10 +55,12 @@ in this Software without prior written authorization from The Open Group.
  * 12-Nov-87 Thomas E. LaStrange		File created
  *
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/lex.l,v 3.8 1996/02/09 08:22:41 dawes Exp $ */
+/* $XFree86: xc/programs/twm/lex.l,v 3.9 1998/10/04 09:40:38 dawes Exp $ */
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
+#include "twm.h"
 #include "gram.h"
+#include "list.h"
 #include "parse.h"
 extern char *ProgramName;
 
@@ -68,8 +70,7 @@ int yylineno;
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,size) ((result) = doinput((buf),(size)))
-doinput (buf, size)
-char *buf;
+int doinput (char *buf, int size)
 {
 	int c;
 
@@ -82,6 +83,7 @@ char *buf;
 	buf[0] = c;
 	return (1);
 }
+#define YY_NO_UNPUT
 #endif
 
 %}
@@ -129,7 +131,7 @@ number				[0-9]+
 				}
 %%
 #ifndef yywrap
-yywrap() { return(1);}
+int yywrap() { return(1);}
 #endif
 
 #undef unput

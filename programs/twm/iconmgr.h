@@ -1,13 +1,8 @@
 /*
  * 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -15,18 +10,18 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  * */
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.h,v 1.12 94/04/17 20:38:13 jim Exp $
+ * $TOG: iconmgr.h /main/6 1998/02/09 13:48:19 kaleb $
  *
  * Icon Manager includes
  *
@@ -76,19 +71,18 @@ typedef struct IconMgr
 extern int iconmgr_textx;
 extern WList *DownIconManager;
 
-extern void CreateIconManagers();
-extern IconMgr *AllocateIconManager();
-extern void MoveIconManager();
-extern void JumpIconManager();
-extern WList *AddIconManager();
-extern void InsertInIconManager();
-extern void RemoveFromIconManager();
-extern void RemoveIconManager();
-extern void ActiveIconManager();
-extern void NotActiveIconManager();
-extern void DrawIconManagerBorder();
-extern void SortIconManager();
-extern void PackIconManager();
-
+extern void ActiveIconManager ( WList *active );
+extern WList *AddIconManager ( TwmWindow *tmp_win );
+extern IconMgr *AllocateIconManager ( char *name, char *icon_name, char *geom, int columns );
+extern void CreateIconManagers ( void );
+extern void DrawIconManagerBorder ( WList *tmp );
+extern void InsertInIconManager ( IconMgr *ip, WList *tmp, TwmWindow *tmp_win );
+extern void JumpIconManager ( int dir );
+extern void MoveIconManager ( int dir );
+extern void NotActiveIconManager ( WList *active );
+extern void PackIconManager ( IconMgr *ip );
+extern void RemoveFromIconManager ( IconMgr *ip, WList *tmp );
+extern void RemoveIconManager ( TwmWindow *tmp_win );
+extern void SortIconManager ( IconMgr *ip );
 
 #endif /* _ICONMGR_ */

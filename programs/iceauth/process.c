@@ -24,11 +24,13 @@ in this Software without prior written authorization from The Open Group.
  * Modified into "iceauth"    : Ralph Mor, X Consortium
  */
 
-/* $XFree86: xc/programs/iceauth/process.c,v 3.0 1995/03/11 14:20:15 dawes Exp $ */
+/* $XFree86: xc/programs/iceauth/process.c,v 3.1 1998/10/04 09:40:08 dawes Exp $ */
 
 #include "iceauth.h"
 #include <ctype.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
@@ -49,11 +51,14 @@ typedef struct _AuthList {		/* linked list of entries */
 
 #define add_to_list(h,t,e) {if (t) (t)->next = (e); else (h) = (e); (t) = (e);}
 
+typedef int (*ProcessFunc)(char *, int, int, char **);
+typedef int (*DoFunc)(char *, int, IceAuthFileEntry *, char *);
+
 typedef struct _CommandTable {		/* commands that are understood */
     char *name;				/* full name */
     int minlen;				/* unique prefix */
     int maxlen;				/* strlen(name) */
-    int (*processfunc)();		/* handler */
+    ProcessFunc processfunc;		/* handler */
     char *helptext;			/* what to print for help */
 } CommandTable;
 
@@ -78,9 +83,39 @@ static char *stdout_filename = "(stdout)";  /* for messages */
 static char *Yes = "yes";		/* for messages */
 static char *No = "no";			/* for messages */
 
-static int do_list(), do_merge(), do_extract(), do_add(), do_remove();
-static int do_help(), do_source(), do_info(), do_exit();
-static int do_quit(), do_questionmark();
+static char *copystring ( char *src );
+static int binaryEqual ( char *a, char *b, unsigned len );
+static void prefix ( char *fn, int n );
+static void badcommandline ( char *cmd );
+static char *skip_space ( char *s );
+static char *skip_nonspace ( char *s );
+static char **split_into_words ( char *src, int *argcp );
+static FILE *open_file ( char **filenamep, char *mode, Bool *usedstdp, char *srcfn, int srcln, char *cmd );
+static int read_auth_entries ( FILE *fp, AuthList **headp, AuthList **tailp );
+static int cvthexkey ( char *hexstr, char **ptrp );
+static int dispatch_command ( char *inputfilename, int lineno, int argc, char **argv, CommandTable *tab, int *statusp );
+static void die ( int sig );
+static void catchsig ( int sig );
+static void register_signals ( void );
+static int write_auth_file ( char *tmp_nam );
+static void fprintfhex ( FILE *fp, unsigned int len, char *cp );
+static int dump_entry ( char *inputfilename, int lineno, IceAuthFileEntry *auth, char *data );
+static int extract_entry ( char *inputfilename, int lineno, IceAuthFileEntry *auth, char *data );
+static int match_auth ( IceAuthFileEntry *a, IceAuthFileEntry *b, int *authDataSame );
+static int merge_entries ( AuthList **firstp, AuthList *second, int *nnewp, int *nreplp, int *ndupp );
+static int search_and_do ( char *inputfilename, int lineno, int start, int argc, char *argv[], DoFunc do_func, char *data );
+static int remove_entry ( char *inputfilename, int lineno, IceAuthFileEntry *auth, char *data );
+static int do_help ( char *inputfilename, int lineno, int argc, char **argv );
+static int do_questionmark ( char *inputfilename, int lineno, int argc, char **argv );
+static int do_list ( char *inputfilename, int lineno, int argc, char **argv );
+static int do_merge ( char *inputfilename, int lineno, int argc, char **argv );
+static int do_extract ( char *inputfilename, int lineno, int argc, char **argv );
+static int do_add ( char *inputfilename, int lineno, int argc, char **argv );
+static int do_remove ( char *inputfilename, int lineno, int argc, char **argv );
+static int do_info ( char *inputfilename, int lineno, int argc, char **argv );
+static int do_exit ( char *inputfilename, int lineno, int argc, char **argv );
+static int do_quit ( char *inputfilename, int lineno, int argc, char **argv );
+static int do_source ( char *inputfilename, int lineno, int argc, char **argv );
 
 static CommandTable command_table[] = {	/* table of known commands */
 { "add", 2, 3, do_add,
@@ -895,11 +930,11 @@ static int search_and_do (inputfilename, lineno, start,
     int start;
     int argc;
     char *argv[];
-    int (*do_func)();
+    DoFunc do_func;
     char *data;
 {
     int i;
-    int status;
+    int status = 0;
     int errors = 0;
     AuthList *l, *next;
     char *protoname, *protodata, *netid, *authname;
@@ -1235,7 +1270,7 @@ static int do_add (inputfilename, lineno, argc, argv)
     char *authdata_hex;
     char *authdata;
     int protodata_len, authdata_len;
-    IceAuthFileEntry *auth;
+    IceAuthFileEntry *auth = NULL;
     AuthList *list;
     int status = 0;
 

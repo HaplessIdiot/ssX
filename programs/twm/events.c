@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/events.c,v 1.3 1997/04/08 14:56:29 hohndel Exp $ */
+/* $XFree86: xc/programs/twm/events.c,v 1.4 1998/10/04 09:40:37 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -60,6 +60,7 @@ in this Software without prior written authorization from The Open Group.
 #include <stdio.h>
 #include "twm.h"
 #include <X11/Xatom.h>
+#include "iconmgr.h"
 #include "add_window.h"
 #include "menus.h"
 #include "events.h"
@@ -68,7 +69,7 @@ in this Software without prior written authorization from The Open Group.
 #include "gram.h"
 #include "util.h"
 #include "screen.h"
-#include "iconmgr.h"
+#include "icons.h"
 #include "version.h"
 
 extern int iconifybox_width, iconifybox_height;
@@ -107,13 +108,18 @@ static int enter_flag;
 static int ColortableThrashing;
 static TwmWindow *enter_win, *raise_win;
 
-ScreenInfo *FindScreenInfo();
+static void free_window_names ( TwmWindow *tmp, Bool nukefull, Bool nukename, Bool nukeicon );
+static void remove_window_from_ring ( TwmWindow *tmp );
+static void do_menu ( MenuRoot *menu, Window w );
+static Bool HENQueueScanner ( Display *dpy, XEvent *ev, char *args );
+static Bool HLNQueueScanner ( Display *dpy, XEvent *ev, char *args );
+static void flush_expose ( Window w );
+static Bool UninstallRootColormapQScanner ( Display *dpy, XEvent *ev, char *args );
+
 int ButtonPressed = -1;
 int Cancel = FALSE;
 
-void HandleCreateNotify();
 
-void HandleShapeNotify ();
 extern int ShapeEventBase, ShapeErrorBase;
 
 void AutoRaiseWindow (tmp)
@@ -391,7 +397,6 @@ HandleColormapNotify()
     ColormapWindow *cwin, **cwins;
     TwmColormap *cmap;
     int lost, won, n, number_cwins;
-    extern TwmColormap *CreateTwmColormap();
 
     if (XFindContext(dpy, cevent->window, ColormapContext, (caddr_t *)&cwin) == XCNOENT)
 	return;
@@ -493,7 +498,7 @@ HandleColormapNotify()
 	    **		the colormaps which are believed to be correct.
 	    */
 
-	    if (won != -1)
+	    if (won != -1) {
 		if (lost != -1)
 		{
 		    /* lower diagonal index calculation */
@@ -515,8 +520,9 @@ HandleColormapNotify()
 		    */
 		    cmap->state |= CM_INSTALLED;
 		}
-	    else if (lost != -1)
+	    } else if (lost != -1) {
 		InstallWindowColormaps(ColormapNotify, (TwmWindow *) NULL);
+	    }
 	}
     }
 
@@ -702,7 +708,8 @@ HandleKeyPress()
 
 
 
-static void free_window_names (tmp, nukefull, nukename, nukeicon)
+static void 
+free_window_names (tmp, nukefull, nukename, nukeicon)
     TwmWindow *tmp;
     Bool nukefull, nukename, nukeicon;
 {
@@ -721,7 +728,8 @@ static void free_window_names (tmp, nukefull, nukename, nukeicon)
 
 
 
-void free_cwins (tmp)
+void 
+free_cwins (tmp)
     TwmWindow *tmp;
 {
     int i;
@@ -986,7 +994,7 @@ HandlePropertyNotify()
  *
  ***********************************************************************
  */
-
+void
 RedoIconName()
 {
     int x, y;
@@ -1087,9 +1095,6 @@ HandleClientMessage()
  *
  ***********************************************************************
  */
-
-static void flush_expose();
-
 void
 HandleExpose()
 {
@@ -1741,7 +1746,8 @@ HandleButtonRelease()
 
 
 
-static do_menu (menu, w)
+static void 
+do_menu (menu, w)
     MenuRoot *menu;			/* menu to pop up */
     Window w;				/* invoking window or None */
 {
@@ -1796,12 +1802,13 @@ HandleButtonPress()
 	Cancel = TRUE;
 	CurrentDragX = origDragX;
 	CurrentDragY = origDragY;
-	if (!menuFromFrameOrWindowOrTitlebar)
+	if (!menuFromFrameOrWindowOrTitlebar) {
 	  if (Scr->OpaqueMove && DragWindow != None) {
 	    XMoveWindow (dpy, DragWindow, origDragX, origDragY);
 	  } else {
 	    MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
 	  }
+	}
 	XUnmapWindow(dpy, Scr->SizeWindow);
 	if (!Scr->OpaqueMove)
 	    UninstallRootColormap();
@@ -2590,7 +2597,7 @@ static void flush_expose (w)
  *
  ***********************************************************************
  */
-
+void
 InstallWindowColormaps (type, tmp)
     int type;
     TwmWindow *tmp;
@@ -2700,7 +2707,7 @@ InstallWindowColormaps (type, tmp)
  *	   other colormap list would potentially be loaded anyway.
  ***********************************************************************
  */
-
+void
 InstallRootColormap()
 {
     TwmWindow *tmp;
@@ -2726,20 +2733,21 @@ UninstallRootColormapQScanner(dpy, ev, args)
     XEvent *ev;
     char *args;
 {
-    if (!*args)
+    if (!*args) {
 	if (ev->type == EnterNotify) {
 	    if (ev->xcrossing.mode != NotifyGrab)
 		*args = 1;
 	} else if (ev->type == LeaveNotify) {
 	    if (ev->xcrossing.mode == NotifyNormal)
+
 		*args = 1;
 	}
-
+    }
     return (False);
 }
 
 
-
+void
 UninstallRootColormap()
 {
     char args;
@@ -2763,6 +2771,7 @@ UninstallRootColormap()
 }
 
 #ifdef TRACE
+void
 dumpevent (e)
     XEvent *e;
 {

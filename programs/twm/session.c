@@ -53,6 +53,7 @@ Author:  Ralph Mor, X Consortium
 #include <stdio.h>
 #include "twm.h"
 #include "screen.h"
+#include "session.h"
 
 SmcConn smcConn = NULL;
 XtInputId iceInputId;
@@ -63,6 +64,11 @@ Bool sent_save_done = 0;
 
 #define SAVEFILE_VERSION 2
 
+#ifndef HAS_MKSTEMP
+static char *unique_filename ( char *path, char *prefix );
+#else
+static char *unique_filename ( char *path, char *prefix, int *pFd );
+#endif
 
 
 char *
@@ -77,7 +83,6 @@ Window window;
     Atom actual_type;
     int actual_format;
     unsigned long nitems;
-    unsigned long nbytes;
     unsigned long bytes_after;
     unsigned char *prop = NULL;
 
@@ -789,7 +794,6 @@ SmPointer clientData;
     SmPropValue prop1val, prop2val, prop3val;
     char discardCommand[80];
     int numVals, i;
-    char yes = 1;
     static int first_time = 1;
 #ifdef HAS_MKSTEMP
     int fd;
@@ -984,7 +988,7 @@ SmPointer clientData;
 {
     SmcCloseConnection (smcConn, 0, NULL);
     XtRemoveInput (iceInputId);
-    Done();
+    Done(0);
 }
 
 

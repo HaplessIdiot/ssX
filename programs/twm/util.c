@@ -1,14 +1,9 @@
 /*****************************************************************************/
 /*
 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,13 +11,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
@@ -53,7 +48,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.49 94/04/17 20:38:26 rws Exp $
+ * $TOG: util.c /main/38 1998/02/09 13:49:55 kaleb $
  *
  * utility routines for twm
  *
@@ -71,9 +66,17 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xmu/Drawing.h>
 #include <X11/Xmu/CharSet.h>
 
-static Pixmap CreateXLogoPixmap(), CreateResizePixmap();
-static Pixmap CreateQuestionPixmap(), CreateMenuPixmap();
-static Pixmap CreateDotPixmap();
+static Pixmap CreateXLogoPixmap ( unsigned int *widthp, 
+				  unsigned int *heightp );
+static Pixmap CreateResizePixmap ( unsigned int *widthp, 
+				   unsigned int *heightp );
+static Pixmap CreateDotPixmap ( unsigned int *widthp, 
+				unsigned int *heightp );
+static Pixmap CreateQuestionPixmap ( unsigned int *widthp, 
+				     unsigned int *heightp );
+static Pixmap CreateMenuPixmap ( unsigned int *widthp, 
+				 unsigned int *heightp );
+
 int HotX, HotY;
 
 /***********************************************************************
@@ -334,7 +337,8 @@ char *name;
  ***********************************************************************
  */
 
-Pixmap FindBitmap (name, widthp, heightp)
+Pixmap 
+FindBitmap (name, widthp, heightp)
     char *name;
     unsigned int *widthp, *heightp;
 {
@@ -352,7 +356,7 @@ Pixmap FindBitmap (name, widthp, heightp)
 	int i;
 	static struct {
 	    char *name;
-	    Pixmap (*proc)();
+	    Pixmap (*proc)(unsigned int *, unsigned int *);
 	} pmtab[] = {
 	    { TBPM_DOT,		CreateDotPixmap },
 	    { TBPM_ICONIFY,	CreateDotPixmap },
@@ -413,13 +417,14 @@ Pixmap FindBitmap (name, widthp, heightp)
     return pm;
 }
 
-Pixmap GetBitmap (name)
+Pixmap 
+GetBitmap (name)
     char *name;
 {
     return FindBitmap (name, &JunkWidth, &JunkHeight);
 }
 
-
+void
 InsertRGBColormap (a, maps, nmaps, replace)
     Atom a;
     XStandardColormap *maps;
@@ -462,6 +467,7 @@ InsertRGBColormap (a, maps, nmaps, replace)
     return;
 }
 
+void
 RemoveRGBColormap (a)
     Atom a;
 {
@@ -482,6 +488,7 @@ RemoveRGBColormap (a)
     return;
 }
 
+void
 LocateStandardColormaps()
 {
     Atom *atoms;
@@ -502,6 +509,7 @@ LocateStandardColormaps()
     return;
 }
 
+void
 GetColor(kind, what, name)
 int kind;
 Pixel *what;
@@ -582,6 +590,7 @@ char *name;
     *what = color.pixel;
 }
 
+void
 GetColorValue(kind, what, name)
 int kind;
 XColor *what;
@@ -609,6 +618,7 @@ char *name;
     }
 }
 
+void
 GetFont(font)
 MyFont *font;
 {
@@ -639,6 +649,7 @@ MyFont *font;
  * SetFocus - separate routine to set focus to make things more understandable
  * and easier to debug
  */
+void
 SetFocus (tmp_win, time)
     TwmWindow *tmp_win;
     Time	time;
@@ -724,7 +735,8 @@ putenv(s)
 #endif /* NOPUTENV */
 
 
-static Pixmap CreateXLogoPixmap (widthp, heightp)
+static Pixmap 
+CreateXLogoPixmap (widthp, heightp)
     unsigned int *widthp, *heightp;
 {
     int h = Scr->TBInfo.width - Scr->TBInfo.border * 2;
@@ -759,7 +771,8 @@ static Pixmap CreateXLogoPixmap (widthp, heightp)
 }
 
 
-static Pixmap CreateResizePixmap (widthp, heightp)
+static Pixmap 
+CreateResizePixmap (widthp, heightp)
     unsigned int *widthp, *heightp;
 {
     int h = Scr->TBInfo.width - Scr->TBInfo.border * 2;
@@ -814,7 +827,8 @@ static Pixmap CreateResizePixmap (widthp, heightp)
 }
 
 
-static Pixmap CreateDotPixmap (widthp, heightp)
+static Pixmap 
+CreateDotPixmap (widthp, heightp)
     unsigned int *widthp, *heightp;
 {
     int h = Scr->TBInfo.width - Scr->TBInfo.border * 2;
@@ -845,7 +859,8 @@ static Pixmap CreateDotPixmap (widthp, heightp)
 static char questionmark_bits[] = {
    0x38, 0x7c, 0x64, 0x30, 0x18, 0x00, 0x18, 0x18};
 
-static Pixmap CreateQuestionPixmap (widthp, heightp)
+static Pixmap 
+CreateQuestionPixmap (widthp, heightp)
     unsigned int *widthp, *heightp;
 {
     *widthp = questionmark_width;
@@ -863,13 +878,16 @@ static Pixmap CreateQuestionPixmap (widthp, heightp)
 }
 
 
-static Pixmap CreateMenuPixmap (widthp, heightp)
-    int *widthp, *heightp;
+static Pixmap 
+CreateMenuPixmap (widthp, heightp)
+    unsigned int *widthp, *heightp;
 {
-    CreateMenuIcon (Scr->TBInfo.width - Scr->TBInfo.border * 2,widthp,heightp);
+    return CreateMenuIcon (Scr->TBInfo.width - Scr->TBInfo.border * 2,
+			   widthp,heightp);
 }
 
-Pixmap CreateMenuIcon (height, widthp, heightp)
+Pixmap 
+CreateMenuIcon (height, widthp, heightp)
     int	height;
     int	*widthp, *heightp;
 {
@@ -942,4 +960,18 @@ Pixmap CreateMenuIcon (height, widthp, heightp)
 	XFreeGC (dpy, gc);
     }
     return Scr->tbpm.menu;
+}
+
+void
+Bell(type,percent,win)
+    int		type;
+    int		percent;
+    Window 	win;
+{
+#ifdef XKB
+    XkbStdBell(dpy, win, percent, type);
+#else
+    XBell(dpy, percent);
+#endif
+    return;
 }

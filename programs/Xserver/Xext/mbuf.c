@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.5 1998/12/20 11:57:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.6 1999/01/31 12:21:37 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -24,7 +24,6 @@ in this Software without prior written authorization from The Open Group.
 /* $TOG: mbuf.c /main/27 1998/02/26 12:04:55 barstow $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include <stdio.h>
 #include "X.h"
 #include "Xproto.h"
 #include "window.h"
@@ -38,12 +37,18 @@ in this Software without prior written authorization from The Open Group.
 #include "opaque.h"
 #define _MULTIBUF_SERVER_	/* don't want Xlib structures */
 #include "multibufst.h"
-#if !defined(WIN32) && !defined(MINIX) && !defined(Lynx)
-#include <sys/time.h>
-#endif
 
 #ifdef PANORAMIX
 #include "panoramiX.h"
+#endif
+
+#ifdef EXTMODULE
+#include "xf86_ansic.h"
+#else
+#include <stdio.h>
+#if !defined(WIN32) && !defined(MINIX) && !defined(Lynx)
+#include <sys/time.h>
+#endif
 #endif
 
 /* given an OtherClientPtr obj, get the ClientPtr */

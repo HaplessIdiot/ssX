@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.20 1999/02/15 18:47:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.21 1999/02/16 04:53:52 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -271,6 +271,12 @@
 #define PCI_CHIP_IMPRESSION	0x0D10
 #define PCI_CHIP_MGAG100_PCI	0x1000
 #define PCI_CHIP_MGAG100	0x1001
+
+#define PCI_CARD_MILL_G200_SD	0xff00
+#define PCI_CARD_PROD_G100_SD	0xff01
+#define PCI_CARD_MYST_G200_SD	0xff02
+#define PCI_CARD_MILL_G200_SG	0xff03
+#define PCI_CARD_MARV_G200_SD	0xff04
 
 /* Chips & Tech */
 #define PCI_CHIP_65545		0x00D8
@@ -1333,10 +1339,11 @@ pciVendorCardInfo xf86PCICardInfoData[] = {
                         { 0x1000, "Millennium II", NF },
                         { 0x0100, "Millennium II", NF },
                         { 0x1200, "Millennium II", NF },
-                        { 0xff00, "Millennium G200 SD", NF },
-                        { 0xff03, "Millennium G200 SG", NF },
-                        { 0xff02, "Mystique G200 SD", NF },
-                        { 0xff04, "Marvel G200 SD", NF },
+                        { PCI_CARD_MILL_G200_SD, "Millennium G200 SD", NF },
+                        { PCI_CARD_PROD_G100_SD, "Produktiva G100 SD", NF },
+                        { PCI_CARD_MYST_G200_SD, "Mystique G200 SD", NF },
+                        { PCI_CARD_MILL_G200_SG, "Millennium G200 SG", NF },
+                        { PCI_CARD_MARV_G200_SD, "Marvel G200 SD", NF },
                         { 0x1001, "Productiva G100 SG", NF },
                         { 0x0000, (char *)NULL, NF } } },
 	{ PCI_VENDOR_SIS, {
@@ -1346,6 +1353,9 @@ pciVendorCardInfo xf86PCICardInfoData[] = {
 	{ PCI_VENDOR_S3, {
                         { 0x8904, "Trio3D", NF },
                         { 0x8a10, "ViRGE/GX2", NF },
+                        { 0x0000, (char *)NULL, NF } } },
+	{ PCI_VENDOR_NUMNINE, {
+                        { 0x8a10, "Reality 334", NF },
                         { 0x0000, (char *)NULL, NF } } },
 	{ PCI_VENDOR_TOSHIBA, {
                         { 0x0001, "4010CDT CT65555", NF },

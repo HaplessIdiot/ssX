@@ -56,15 +56,17 @@ in this Software without prior written authorization from The Open Group.
  *
  ***********************************************************************/
 
-/* $XFree86: xc/programs/twm/resize.c,v 1.3 1998/04/28 13:34:57 robin Exp $ */
+/* $XFree86: xc/programs/twm/resize.c,v 1.4 1998/10/04 09:40:40 dawes Exp $ */
 
 #include <stdio.h>
 #include "twm.h"
 #include "parse.h"
 #include "util.h"
 #include "resize.h"
+#include "iconmgr.h"
 #include "add_window.h"
 #include "screen.h"
+#include "events.h"
 
 #define MINHEIGHT 0     /* had been 32 */
 #define MINWIDTH 0      /* had been 60 */
@@ -90,9 +92,8 @@ static int last_width;
 static int last_height;
 
 
-static void do_auto_clamp (tmp_win, evp)
-    TwmWindow *tmp_win;
-    XEvent *evp;
+static void 
+do_auto_clamp (TwmWindow *tmp_win, XEvent *evp)
 {
     Window junkRoot;
     int x, y, h, v, junkbw;
@@ -201,8 +202,6 @@ MenuStartResize(tmp_win, x, y, w, h)
 TwmWindow *tmp_win;
 int x, y, w, h;
 {
-  Window junkRoot;
-  unsigned int junkbw, junkDepth;
     XGrabServer(dpy);
     XGrabPointer(dpy, Scr->Root, True,
         ButtonPressMask | ButtonMotionMask | PointerMotionMask,
@@ -661,7 +660,7 @@ TwmWindow *tmp_win;
  *      borrowed from uwm's CheckConsistency routine.
  * 
  ***********************************************************************/
-
+void
 ConstrainSize (tmp_win, widthp, heightp)
     TwmWindow *tmp_win;
     int *widthp, *heightp;
@@ -1080,6 +1079,7 @@ int flag;
     XUngrabServer (dpy);
 }
 
+void
 SetFrameShape (tmp)
     TwmWindow *tmp;
 {

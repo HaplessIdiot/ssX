@@ -33,8 +33,21 @@
 extern int errno;
 #endif
 #include <ctype.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
-extern char *expand();
+
+static char * Strupr ( char *s0 );
+struct auth_info * find_or_create_auth ( char *s );
+void key_auth ( int ac, char **av );
+void key_internal_auth_program ( int ac, char **av );
+void key_internal_auth_input ( int ac, char **av );
+void do_auth ( void );
+char * expand ( char *s, int ac, char **av );
+
+/* server.c */
+extern void nomem ( void );
+
 extern char myname[];
 
 struct list_of_argv {
@@ -92,6 +105,7 @@ char *s;
 	return auth;
 }
 
+void
 key_auth(ac, av)
 int ac;
 char **av;
@@ -116,6 +130,7 @@ char **av;
 	auth->data = lav;
 }
 
+void
 key_internal_auth_program(ac, av)
 int ac;
 char **av;
@@ -132,6 +147,7 @@ char **av;
 	auth->program = av + 2;
 }
 
+void
 key_internal_auth_input(ac, av)
 int ac;
 char **av;
@@ -148,11 +164,11 @@ char **av;
 	auth->input = av + 2;
 }
 
-do_auth()
+void
+do_auth(void)
 {
 	struct auth_info *auth;
 	int p[2];
-	char **av;
 	char **pp;
 	struct list_of_argv *lav;
 	char *s;

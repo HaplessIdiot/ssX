@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.37 1998/12/06 06:08:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.38 1999/01/31 12:21:48 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -407,7 +407,7 @@ static __inline__ unsigned long ldw_u(unsigned short * r11)
 #define write_mem_barrier()	/* NOP */
 #endif /* __arm32__ */
 
-#elif defined(Lynx) && defined(__powerpc__)
+#elif (defined(Lynx) || defined(linux)) && defined(__powerpc__)
 
 extern volatile unsigned char *ioBase;
 

@@ -56,7 +56,7 @@ from The Open Group.
  * 28-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storeing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.h,v 3.1 1995/01/27 04:54:22 dawes Exp $ */
+/* $XFree86: xc/programs/twm/twm.h,v 3.2 1998/10/04 09:40:41 dawes Exp $ */
 
 #ifndef _TWM_
 #define _TWM_
@@ -86,7 +86,7 @@ from The Open Group.
 #define SIGNAL_RETURN return
 #endif
 
-typedef SIGNAL_T (*SigProc)();	/* type of function returned by signal() */
+typedef SIGNAL_T (*SigProc)(int); /* type of function returned by signal() */
 
 #define BW 2			/* border width */
 #define BW2 4			/* border width  * 2 */
@@ -355,10 +355,14 @@ typedef struct TWMWinConfigEntry
 extern char *malloc(), *calloc(), *realloc(), *getenv();
 extern void free();
 #endif
-extern void Reborder();
-extern SIGNAL_T Done();
-void ComputeCommonTitleOffsets();
-void ComputeWindowTitleOffsets(), ComputeTitleLocation();
+extern void InitVariables ( void );
+extern void CreateFonts ( void );
+extern void RestoreWithdrawnLocation ( TwmWindow *tmp );
+extern void Reborder( Time time);
+extern SIGNAL_T Done( int sig );
+extern void ComputeCommonTitleOffsets ( void );
+extern void ComputeTitleLocation ( TwmWindow *tmp );
+extern void ComputeWindowTitleOffsets ( TwmWindow *tmp_win, int width, Bool squeeze );
 extern char *ProgramName;
 extern Display *dpy;
 extern XtAppContext appContext;
@@ -398,8 +402,9 @@ extern char Info[][INFO_SIZE];
 extern int Argc;
 extern char **Argv;
 extern char **Environ;
-extern void NewFontCursor();
-extern Pixmap CreateMenuIcon();
+extern void NewFontCursor ( Cursor *cp, char *str );
+extern void NewBitmapCursor ( Cursor *cp, char *source, char *mask );
+extern Pixmap CreateMenuIcon ( int height, int *widthp, int *heightp );
 
 extern Bool ErrorOccurred;
 extern XErrorEvent LastErrorEvent;
@@ -407,7 +412,15 @@ extern XErrorEvent LastErrorEvent;
 #define ResetError() (ErrorOccurred = False)
 
 extern Bool RestartPreviousState;
-extern Bool GetWMState();
+extern Bool GetWMState ( Window w, int *statep, Window *iwp );
+
+extern void twmrc_error_prefix ( void );
+
+extern int yyparse ( void );
+extern int yylex ( void ); 
+extern void yyerror ( char *s );
+extern int doinput ( char *buf, int size );
+extern void RemoveDQuote ( char *str );
 
 extern Atom TwmAtoms[];
 

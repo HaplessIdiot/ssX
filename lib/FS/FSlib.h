@@ -1,4 +1,4 @@
-/* $XConsortium: FSlib.h,v 1.9 94/04/17 20:15:20 mor Exp $ */
+/* $TOG: FSlib.h /main/10 1998/02/06 13:43:12 kaleb $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -27,14 +27,9 @@
 
 /*
 
-Copyright (c) 1987, 1994  X Consortium
+Copyright 1987, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -42,13 +37,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
 
@@ -60,6 +55,7 @@ in this Software without prior written authorization from the X Consortium.
 #define _FSLIB_H_
 
 #include	<FS.h>
+#include	<FSproto.h>
 
 #define	Bool	int
 #define	Status	int
@@ -102,7 +98,7 @@ typedef struct _alternate {
 typedef struct _FSExtData {
     int         number;		/* number returned by FSRegisterExtension */
     struct _FSExtData *next;	/* next item on list of data for structure */
-    int         (*free_private) ();	/* called to free private storage */
+    int         (*free_private) (char *); /* called to free private storage */
     char       *private_data;	/* data private to this extension. */
 }           FSExtData;
 
@@ -114,19 +110,23 @@ typedef struct {		/* public to extension, cannot be changed */
     int         first_error;	/* first error number for the extension */
 }           FSExtCodes;
 
+typedef struct _FSServer FSServer;
+typedef union _FSEvent FSEvent;
+
 typedef struct _FSExtent {
     struct _FSExtent *next;	/* next in list */
     FSExtCodes  codes;		/* public information, all extension told */
-    int         (*close_server) ();	/* routine to call when connection
+    int         (*close_server) (FSServer *, FSExtCodes *);	/* routine to call when connection
 					 * closed */
-    int         (*error) ();	/* who to call when an error occurs */
-    int         (*error_string) ();	/* routine to supply error string */
+    int         (*error) (FSServer *, fsError *, FSExtCodes *, int *);	/* who to call when an error occurs */
+    int         (*error_string) (FSServer *, int, FSExtCodes *, char *, int);	/* routine to supply error string */
     char       *name;
 }           _FSExtension;
 
+typedef int (*FSSyncHandler)(FSServer *);
 
 /* server data structure */
-typedef struct _FSServer {
+struct _FSServer {
     struct _FSServer *next;
     int         fd;
     int         proto_version;
@@ -152,14 +152,14 @@ typedef struct _FSServer {
     FSExtData  *ext_data;
     _FSExtension *ext_procs;
     int         ext_number;
-    Bool        (*event_vec[132]) ();
-                Status(*wire_vec[132]) ();
+    Bool        (*event_vec[132]) (FSServer *, FSEvent *, fsEvent *);
+    Status	(*wire_vec[132]) (FSServer *, FSEvent *, fsEvent *);
     char       *scratch_buffer;
     unsigned long scratch_length;
-    int         (*synchandler) ();
+    FSSyncHandler synchandler;
     unsigned long flags;
     struct _XtransConnInfo *trans_conn; /* transport connection object */
-}           FSServer;
+};
 
 typedef struct {
     int         type;
@@ -178,10 +178,10 @@ typedef struct {
     unsigned char minor_code;
 }           FSErrorEvent;
 
-typedef union _FSEvent {
+union _FSEvent {
     int         type;
     FSAnyEvent  fsany;
-}           FSEvent;
+};
 
 typedef struct _FSQEvent {
     struct _FSQEvent *next;
@@ -243,25 +243,72 @@ typedef struct _FSXFontInfoHeader {
 } FSXFontInfoHeader;
 
 
+
 /* function decls */
 
-FSServer   *FSOpenServer();
+extern FSServer * FSOpenServer ( char *server );
 
-extern int  (*FSSynchronize()) ();
-extern int  (*FSSetAfterFunction()) ();
+extern FSSyncHandler FSSynchronize(FSServer *, int);
+extern FSSyncHandler FSSetAfterFunction(FSServer *, FSSyncHandler);
 
-char       *FSServerName();
-char      **FSListExtensions();
-Bool        FSQueryExtension();
+extern char * FSServerName ( char *server );
+extern char ** FSListExtensions ( FSServer *svr, int *next );
+extern int FSQueryExtension ( FSServer *svr, char *name, int *major_opcode, 
+			      int *first_event, int *first_error );
 
-char      **FSListCatalogues();
-char      **FSGetCatalogues();
+extern char ** FSListCatalogues ( FSServer *svr, char *pattern, 
+				  int maxNames, int *actualCount );
+extern char ** FSGetCatalogues ( FSServer *svr, int *num );
 
-long        FSMaxRequestSize();
+extern long FSMaxRequestSize ( FSServer *svr );
 
-char      **FSListFonts();
-char      **FSListFontsWithXInfo();
+extern char ** FSListFonts ( FSServer *svr, char *pattern, int maxNames, 
+			     int *actualCount );
+extern char ** FSListFontsWithXInfo ( FSServer *svr, char *pattern, 
+				      int maxNames, int *count, 
+				      FSXFontInfoHeader ***info, 
+				      FSPropInfo ***pprops, 
+				      FSPropOffset ***offsets, 
+				      unsigned char ***prop_data );
+extern Font FSOpenBitmapFont ( FSServer *svr, FSBitmapFormat hint, 
+			       FSBitmapFormatMask fmask, char *name, 
+			       Font *otherid );
 
-Font        FSOpenBitmapFont();
+extern int FSSync ( FSServer *svr, Bool discard );
+
+extern int FSCloseServer ( FSServer *svr );
+extern int FSCloseFont ( FSServer *svr, Font fid );
+extern int FSGetErrorDatabaseText ( FSServer *svr, char *name, char *type, 
+				    char *defaultp, char *buffer, int nbytes );
+extern int FSGetErrorText ( FSServer *svr, int code, char *buffer, 
+			    
+			    int nbytes );
+extern int FSFlush ( FSServer *svr );
+extern int FSFreeFontNames ( char **list );
+extern int FSFreeCatalogues ( char **list );
+extern int FSFreeExtensionList ( char **list );
+extern int FSNextEvent ( FSServer *svr, FSEvent *event );
+extern int FSQueryXBitmaps8 ( FSServer *svr, Font fid, FSBitmapFormat format, 
+			      int range_type, unsigned char *str, 
+			      unsigned long str_len, FSOffset **offsets, 
+			      unsigned char **glyphdata );
+extern int FSQueryXBitmaps16 ( FSServer *svr, Font fid, FSBitmapFormat format,
+			       int range_type, FSChar2b *str, 
+			       unsigned long str_len, FSOffset **offsets, 
+			       unsigned char **glyphdata );
+extern int FSQueryXExtents8 ( FSServer *svr, Font fid, int range_type, 
+			      unsigned char *str, unsigned long str_len, 
+			      FSXCharInfo **extents );
+extern int FSQueryXExtents16 ( FSServer *svr, Font fid, int range_type, 
+			       FSChar2b *str, unsigned long str_len, 
+			       FSXCharInfo **extents );
+extern int FSQueryXInfo ( FSServer *svr, Font fid, FSXFontInfoHeader *info, 
+			  FSPropInfo *props, FSPropOffset **offsets,
+			  unsigned char **prop_data );
+extern int FSSetCatalogues ( FSServer *svr, int num, char **cats );
+extern int FSSync ( FSServer *svr, int discard );
+extern int FSFree ( char *data );
+extern unsigned char * FSMalloc ( unsigned size );
+
 
 #endif				/* _FSLIB_H_ */
