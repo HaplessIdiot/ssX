@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 751. Fix some rules in en_US.UTF-8 Compose file (Bugzilla #1071,
+      Matthew Fischer).
  750. Add some content (supported hardware and driver options) to the tdfx(4)
       man page (Bugzilla #1068, Nicolas Joly).
  749. Make '-pn' (partial network) the default for all X servers, and document
@@ -18525,7 +18527,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3093 2004/01/09 00:35:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3094 2004/01/09 02:55:26 dawes Exp $
 
 
 
