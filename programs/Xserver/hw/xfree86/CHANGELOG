@@ -1,4 +1,5 @@
 XFree86 3.9Ae (xx February 1998)
+1591. Add zoom initialization and fix blits on T2R (Robin Cutshaw).
 1590. Add support for several new mice, including Kensington ThinkingMouse, 
       ALPS GlidePoint, Genius NetScroll, Genius NetMouse, Genius NetMouse,
       ASCII MieMouse, Logitech MouseMan+, Logitech FirstMouse+ (#1380,
@@ -5948,4 +5949,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.570 1998/02/07 09:10:35 hohndel Exp $
