@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.374 2001/08/17 13:27:49 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.375 2001/08/18 02:46:53 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -120,11 +120,16 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 #endif
 #endif
 
-#if BuildXFree86ConfigTools
+#ifndef BuildLibrariesForConfigTools
+#define BuildLibrariesForConfigTools	BuildXFree86ConfigTools
+#endif
+
+#if BuildXFree86ConfigTools && BuildLibrariesForConfigTools
 #define BuildLibraries		YES
 #define BuildXF86MiscLibrary	YES
 #define BuildXF86VidModeLibrary	YES
 #define BuildXKBlib		YES
+#define BuildXKBfilelib		YES
 #define BuildXKBuilib		YES
 #endif
 

@@ -12,11 +12,11 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/TestExt.c,v 3.3 2001/01/17 22:36:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/TestExt.c,v 3.4 2001/08/01 00:44:57 tsi Exp $ */
 
-#include "X.h"
-#include "Xproto.h"
-#include "Xlib.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
+#include <X11/Xlib.h>
 #undef Bool
 #include "screenint.h"
 #include "input.h"

@@ -13,7 +13,7 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.16 2001/07/23 13:15:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.17 2001/08/23 15:26:05 alanh Exp $ */
 
 #ifdef WIN32
 /* avoid conflicting definitions */
@@ -65,7 +65,7 @@
 
 #ifdef XDMCP
 #undef REQUEST
-#include "Xdmcp.h"
+#include <X11/Xdmcp.h>
 
 extern char *defaultDisplayClass;
 

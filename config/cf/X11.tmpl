@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.124 2001/08/16 14:33:44 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.125 2001/08/17 22:08:09 tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -89,6 +89,9 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildLibraries
 #define BuildLibraries		(!BuildServersOnly || BuildClients)
+#endif
+#ifndef BuildLibrariesForXServers
+#define BuildLibrariesForXservers	BuildServer
 #endif
 #ifndef BuildFontServer
 #define BuildFontServer		YES
@@ -232,6 +235,18 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildXAServer
 #define BuildXAServer		(HasXAServer & HasCplusplus)
 #endif
+#ifndef BuildX11Lib
+#define BuildX11Lib		(BuildLibraries || (BuildLibrariesForXServers && XnestServer))
+#endif
+#ifndef BuildXextLib
+#define BuildXextLib		(BuildLibraries || (BuildLibrariesForXServers && XnestServer))
+#endif
+#ifndef BuildXauLib
+#define BuildXauLib		(BuildLibraries || BuildLibrariesForXServers)
+#endif
+#ifndef BuildXdmcpLib
+#define BuildXdmcpLib		(BuildLibraries || BuildLibrariesForXServers)
+#endif
 #ifndef BuildMITMiscExt
 #define BuildMITMiscExt		YES
 #endif
@@ -279,6 +294,16 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildDPMS
 #define BuildDPMS		YES
+#endif
+#ifndef BuildFontLib
+#if !defined(XF86Server) || !XF86Server
+#define BuildFontLib		(BuildLibraries || BuildServer)
+#else
+#define BuildFontLib		(BuildLibraries || \
+				 (BuildServer && !DoLoadableServer) || \
+				 XnestServer || XVirtualFramebufferServer || \
+				 XprtServer || KDriveXServer)
+#endif
 #endif
 #ifndef BuildFontCache
 #define BuildFontCache		YES
@@ -330,6 +355,9 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildXKBuilib
 #define BuildXKBuilib		(BuildXKB && !BuildServersOnly)
+#endif
+#ifndef BuildXKBfilelib
+#define BuildXKBfilelib		(BuildXKB && !BuildServersOnly)
 #endif
 	/*
 	 * WARNING: Setting UseXKBInClients to YES cause incompatibilities
@@ -1091,7 +1119,7 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #define XTrueTypeCConvIncDir $(INCROOT)/X11/fonts/codeconv
 #endif
 #ifndef XTrueTypeInstallCConvHeaders
-#define XTrueTypeInstallCConvHeaders YES
+#define XTrueTypeInstallCConvHeaders BuildLibraries
 #endif
 #ifndef XTrueTypeCConvModuleDir
 #define XTrueTypeCConvModuleDir $(USRLIBDIR)/modules
@@ -1797,7 +1825,6 @@ LINTEXTENSIONLIB = $(LINTEXTENSION)
              XLIB = $(EXTENSIONLIB) $(XONLYLIB)
          LINTXLIB = $(LINTXONLYLIB)
 
-#if BuildScreenSaverLibrary
     XSSLIBSRC = $(LIBSRC)/Xss
 #if SharedLibXss
 #ifndef SharedXssRev
@@ -1807,9 +1834,7 @@ SharedLibReferences(XSS,Xss,$(XSSLIBSRC),SOXSSREV,SharedXssRev)
 #else
 ProjectUnsharedLibReferences(XSS,Xss,$(XSSLIBSRC),XBuildLibDir)
 #endif
-#endif
 
-#if BuildXF86MiscLibrary
     XXF86MISCLIBSRC = $(LIBSRC)/Xxf86misc
 #if SharedLibXxf86misc
 #ifndef SharedXxf86miscRev
@@ -1819,9 +1844,7 @@ SharedLibReferences(XXF86MISC,Xxf86misc,$(XXF86MISCLIBSRC),SOXXF86MISCREV,Shared
 #else
 ProjectUnsharedLibReferences(XXF86MISC,Xxf86misc,$(XXF86MISCLIBSRC),XBuildLibDir)
 #endif
-#endif
 
-#if BuildXF86VidModeLibrary
     XXF86VMLIBSRC = $(LIBSRC)/Xxf86vm
 #if SharedLibXxf86vm
 #ifndef SharedXxf86vmRev
@@ -1831,9 +1854,7 @@ SharedLibReferences(XXF86VM,Xxf86vm,$(XXF86VMLIBSRC),SOXXF86VMREV,SharedXxf86vmR
 #else
 ProjectUnsharedLibReferences(XXF86VM,Xxf86vm,$(XXF86VMLIBSRC),XBuildLibDir)
 #endif
-#endif
 
-#if BuildXF86DGALibrary
     XXF86DGALIBSRC = $(LIBSRC)/Xxf86dga
 #if SharedLibXxf86dga
 #ifndef SharedXxf86dgaRev
@@ -1843,10 +1864,8 @@ SharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC),SOXXF86DGAREV,SharedXxf8
 #else
 ProjectUnsharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC),XBuildLibDir)
 #endif
-#endif
 
 
-#if BuildXF86RushLibrary
     XXF86RUSHLIBSRC = $(LIBSRC)/Xxf86rush
 #if SharedLibXxf86rush
 #ifndef SharedXxf86rushRev
@@ -1856,10 +1875,8 @@ SharedLibReferences(XXF86RUSH,Xxf86rush,$(XXF86RUSHLIBSRC),SOXXF86RUSHREV,Shared
 #else
 ProjectUnsharedLibReferences(XXF86RUSH,Xxf86rush,$(XXF86RUSHLIBSRC),XBuildLibDir)
 #endif
-#endif
 
 
-#if BuildXvLibrary
     XVLIBSRC = $(LIBSRC)/Xv
 #if SharedLibXv
 #ifndef SharedXvRev
@@ -1869,9 +1886,7 @@ SharedLibReferences(XV,Xv,$(XVLIBSRC),SOXVREV,SharedXvRev)
 #else
 ProjectUnsharedLibReferences(XV,Xv,$(XVLIBSRC),XBuildLibDir)
 #endif
-#endif
 
-#if BuildXineramaLibrary
     XINERAMALIBSRC = $(LIBSRC)/Xinerama
 #if SharedLibXinerama
 #ifndef SharedXineramaRev
@@ -1881,9 +1896,7 @@ SharedLibReferences(XINERAMA,Xinerama,$(XINERAMALIBSRC),SOXINERAMAREV,SharedXine
 #else
 ProjectUnsharedLibReferences(XINERAMA,Xinerama,$(XINERAMALIBSRC),XBuildLibDir)
 #endif
-#endif
 
-#if BuildDPSLibrary
     DPSLIBSRC = $(LIBSRC)/dps
 #if SharedLibDps
 #ifndef SharedDpsRev
@@ -1893,9 +1906,7 @@ SharedLibReferences(DPS,dps,$(DPSLIBSRC),SODPSREV,SharedDpsRev)
 #else
 ProjectUnsharedLibReferences(DPS,dps,$(DPSLIBSRC),XBuildLibDir)
 #endif
-#endif
 
-#if BuildDPSTkLibrary
     DPSTKLIBSRC = $(LIBSRC)/dpstk
 #if SharedLibDpsTk
 #ifndef SharedDpsTkRev
@@ -1905,9 +1916,7 @@ SharedLibReferences(DPSTK,dpstk,$(DPSTKLIBSRC),SODPSTKREV,SharedDpsTkRev)
 #else
 ProjectUnsharedLibReferences(DPSTK,dpstk,$(DPSTKLIBSRC),XBuildLibDir)
 #endif
-#endif
 
-#if BuildPSResLibrary
     PSRESLIBSRC = $(LIBSRC)/psres
 #if SharedLibPSRes
 #ifndef SharedPSResRev
@@ -1917,9 +1926,7 @@ SharedLibReferences(PSRES,psres,$(PSRESLIBSRC),SOPSRESREV,SharedPSResRev)
 #else
 ProjectUnsharedLibReferences(PSRES,psres,$(PSRESLIBSRC),XBuildLibDir)
 #endif
-#endif
 
-#if BuildGLULibrary
     GLULIBSRC = $(LIBSRC)/GLU
 #if SharedLibGlu
 #ifndef SharedGluRev
@@ -1929,9 +1936,7 @@ SharedLibReferences(GLU,GLU,$(GLULIBSRC),SOGLUREV,SharedGluRev)
 #else
 ProjectUnsharedLibReferences(GLU,GLU,$(GLULIBSRC),XBuildLibDir)
 #endif
-#endif
 
-#if BuildGLXLibrary
     GLXLIBSRC = $(LIBSRC)/GL
 #if SharedLibGlx
 #ifndef SharedGlxRev
@@ -1950,9 +1955,7 @@ SharedDSLibReferences(GLW,GLw,$(GLWIDGETSRC),SOGLWREV,SharedGLwRev)
 #else
 ProjectUnsharedLibReferences(GLW,GLw,$(GLWIDGETSRC),XBuildLibDir)
 #endif
-#endif /* BuildGLXLibrary */
 
-#if BuildRenderLibrary
     XRENDERLIBSRC = $(LIBSRC)/Xrender
 #if SharedLibXrender
 #ifndef SharedXrenderRev
@@ -1962,9 +1965,7 @@ SharedLibReferences(XRENDER,Xrender,$(XRENDERLIBSRC),SOXRENDERREV,SharedXrenderR
 #else
 ProjectUnsharedLibReferences(XRENDER,Xrender,$(XRENDERLIBSRC),XBuildLibDir)
 #endif
-#endif
 
-#if BuildRandRLibrary
     XRANDRRLIBSRC = $(LIBSRC)/Xrandr
 #if SharedLibXrandr
 #ifndef SharedXrandrRev
@@ -1974,9 +1975,7 @@ SharedLibReferences(XRANDR,Xrandr,$(XRANDRLIBSRC),SOXRANDRREV,SharedXrandrRev)
 #else
 ProjectUnsharedLibReferences(XRANDR,Xrandr,$(XRANDRLIBSRC),XBuildLibDir)
 #endif
-#endif
 
-#if BuildFontCacheLib
 # ifndef SharedLibXfontcache
 #  define SharedLibXfontcache	NO
 # endif
@@ -1989,6 +1988,7 @@ ProjectUnsharedLibReferences(XRANDR,Xrandr,$(XRANDRLIBSRC),XBuildLibDir)
 # ifndef ProfileLibXfontcache
 #  define ProfileLibXfontcache	NO
 # endif
+
     XFONTCACHELIBSRC = $(LIBSRC)/Xfontcache
 #if SharedLibXfontcache
 #ifndef SharedXfontcacheRev
@@ -1997,7 +1997,6 @@ ProjectUnsharedLibReferences(XRANDR,Xrandr,$(XRANDRLIBSRC),XBuildLibDir)
 SharedLibReferences(XFONTCACHE,Xfontcache,$(XFONTCACHELIBSRC),SOXFONTCACHEREV,SharedXfontcacheRev)
 #else
 ProjectUnsharedLibReferences(XFONTCACHE,Xfontcache,$(XFONTCACHELIBSRC),XBuildLibDir)
-#endif
 #endif
 
 #ifndef SharedLibXau
@@ -2632,7 +2631,6 @@ ProjectUnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC),XBuildLibDir)
 #endif
 #endif /* BuildXKBlib */
 
-#if BuildXKBuilib
     XKBUILIBSRC = $(LIBSRC)/xkbui
 ProjectUnsharedLibReferences(XKBUI,xkbui,$(XKBUILIBSRC),XBuildLibDir)
 #ifndef XkbuiLibs
@@ -2641,14 +2639,6 @@ ProjectUnsharedLibReferences(XKBUI,xkbui,$(XKBUILIBSRC),XBuildLibDir)
 #ifndef XkbuiDepLibs
 #define	XkbuiDepLibs $(DEPXKBFILELIB)
 #endif
-#else /* !BuildXKBuilib */
-#ifndef XkbuiLibs
-#define	XkbuiLibs
-#endif
-#ifndef XkbuiDepLibs
-#define	XkbuiDepLibs
-#endif
-#endif /* BuildXKBuilib */
 
 #ifndef XawClientDepLibs
 #define XawClientDepLibs $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXPMLIB) $(DEPXLIB)

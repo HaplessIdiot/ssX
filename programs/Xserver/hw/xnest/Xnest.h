@@ -1,4 +1,4 @@
-/* $XConsortium: Xnest.h,v 1.1 95/07/10 17:43:42 ray Exp $ */
+/* $Xorg: Xnest.h,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright (c) 1995  X Consortium
@@ -65,8 +65,8 @@ typedef XID KeySym64;
 #endif  /*_XSERVER64*/
 
 #define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <X11/extensions/shape.h>
 #undef GC
 

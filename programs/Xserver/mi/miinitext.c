@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.59 2001/05/31 16:11:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.60 2001/08/06 20:51:18 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -72,7 +72,7 @@ typedef void (*InitExtension)(INITARGS);
 #include "loaderProcs.h"
 #endif
 
-#include "Xlib.h"
+#include <X11/Xlib.h>
 #ifdef MITSHM
 #include "shmstr.h"
 #endif

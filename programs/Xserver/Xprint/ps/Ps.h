@@ -70,7 +70,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.6 2001/01/17 22:36:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.7 2001/08/01 00:44:46 tsi Exp $ */
 
 #ifndef _PS_H_
 #define _PS_H_
@@ -84,7 +84,7 @@ in this Software without prior written authorization from The Open Group.
 #include "scrnintstr.h"
 #include "dix.h"
 
-/*
+#if 0
 #include "X.h" 
 #include "Xproto.h"
 #include "Xatom.h"
@@ -93,7 +93,8 @@ in this Software without prior written authorization from The Open Group.
 #include "colormapst.h"
 #include "windowstr.h"
 #include "propertyst.h"
-#include "servermd.h"*/    /* needed for IMAGE_BUFSIZE */
+#include "servermd.h"    /* needed for IMAGE_BUFSIZE */
+#endif
 
 #include "PsDef.h"
 #include "psout.h"
@@ -117,8 +118,8 @@ typedef char *XPointer;
 #endif
 
 #include "misc.h"
-#include <Xfuncproto.h>
-#include "Xresource.h"
+#include <X11/Xfuncproto.h>
+#include <X11/Xresource.h>
 #include "attributes.h"
 
 /*

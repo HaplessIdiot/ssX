@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.104 2001/08/01 00:44:32 tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.105 2001/08/06 20:51:00 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1173,7 +1173,11 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef LdPreLib
 #if !defined(UseInstalled)
+#if !BuildLibraries && AlternateUsrLibDir
+#define LdPreLib -L$(BUILDLIBDIR) -L$(USRLIBDIR)
+#else
 #define LdPreLib -L$(BUILDLIBDIR)
+#endif
 #else
 #if AlternateUsrLibDir
 #define LdPreLib -L$(USRLIBDIR)
@@ -1497,6 +1501,11 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
        CXXDEFINES = $(CXXINCLUDES) $(CXXSTD_DEFINES) $(THREADS_CXXDEFINES) $(DEFINES) $(CXXEXTRA_DEFINES)
          CXXFLAGS = $(CXXDEBUGFLAGS) $(CXXOPTIONS) $(THREADS_CXXFLAGS) $(CXXDEFINES)
 #endif
+
+#if !BuildLibraries && AlternateIncRoot
+INSTALLED_INCLUDES = -I$(INCROOT)
+#endif
+
          COMPRESS = CompressCmd
           GZIPCMD = GzipCmd
               CPP = CppCmd $(STD_CPP_DEFINES)		/* simple filters */
@@ -1688,7 +1697,7 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
  * INCLUDES contains client-specific includes set in Imakefile
  * LOCAL_LDFLAGS contains client-specific ld flags flags set in Imakefile
  */
-      ALLINCLUDES = $(INCLUDES) $(EXTRA_INCLUDES) $(TOP_INCLUDES) $(STD_INCLUDES)
+      ALLINCLUDES = $(INCLUDES) $(EXTRA_INCLUDES) $(TOP_INCLUDES) $(INSTALLED_INCLUDES) $(STD_INCLUDES)
        ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(PROTO_DEFINES) $(THREADS_DEFINES) $(MODULE_DEFINES) $(DEFINES) $(EXTRA_DEFINES)
            CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(THREADS_CFLAGS) $(MODULE_CFLAGS) $(ALLDEFINES)
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES) $(DEPEND_DEFINES)

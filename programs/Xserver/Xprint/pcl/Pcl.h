@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.7 2001/01/19 17:10:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.8 2001/08/01 00:44:45 tsi Exp $ */
 
 #ifndef _PCL_H_
 #define _PCL_H_
@@ -52,7 +52,7 @@ copyright holders.
 #include <stdio.h>
 #include "scrnintstr.h"
 
-/*
+#if 0
 #include "X.h"
 #include "Xproto.h"
 #include "Xatom.h"
@@ -61,7 +61,8 @@ copyright holders.
 #include "colormapst.h"
 #include "windowstr.h"
 #include "propertyst.h"
-#include "servermd.h" */	/* needed for IMAGE_BUFSIZE */
+#include "servermd.h" 	/* needed for IMAGE_BUFSIZE */
+#endif
 
 #include "PclDef.h"
 #include "Pclmap.h"
@@ -83,8 +84,8 @@ typedef char *XPointer;
 #define True 1
 #define False 0
 #include "misc.h"
-#include <Xfuncproto.h>
-#include "Xresource.h"
+#include <X11/Xfuncproto.h>
+#include <X11/Xresource.h>
 
 /******
  * externally visible variables from PclInit.c

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/os/auth.c,v 1.5 2000/08/04 16:13:44 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/os/auth.c,v 1.6 2001/01/17 22:37:10 dawes Exp $ */
 
 /*
  * authorization hooks for the server
@@ -32,8 +32,8 @@ from The Open Group.
 #ifdef K5AUTH
 # include   <krb5/krb5.h>
 #endif
-# include   "X.h"
-# include   "Xauth.h"
+# include   <X11/X.h>
+# include   <X11/Xauth.h>
 # include   "misc.h"
 # include   "osdep.h"
 # include   "dixstruct.h"
