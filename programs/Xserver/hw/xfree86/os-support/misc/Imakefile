@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/Imakefile,v 3.12 2003/10/02 13:30:07 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/Imakefile,v 3.13 2003/12/30 15:21:06 herrb Exp $
 
 
 
@@ -25,6 +25,8 @@ SlowBcopy.o: SlowBcopy.c
 #if HasGcc || HasGcc2
 ILHACKSRCS = xf86_IlHack.c
 ILHACKOBJS = xf86_IlHack.o
+#elif defined(SunArchitecture) && defined(i386Architecture)
+ILHACKOBJS = PortIO.o
 #endif
 
 SRCS = xf86_Util.c Delay.c $(ILHACKSRCS) $(XSRCS)
@@ -42,6 +44,10 @@ NormalLibraryObjectRule()
 ObjectFromAsmSource(BUSmemcpy,NullParameter)
 ObjectFromAsmSource(IODelay,NullParameter)
 ObjectFromAsmSource(SlowBcopy,NullParameter)
+#endif
+
+#if defined(SunArchitecture) && defined(i386Architecture)
+ObjectFromAsmSource(PortIO,NullParameter)
 #endif
 
 DependTarget()
