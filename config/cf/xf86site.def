@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.151 1999/11/19 13:53:23 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.153 1999/12/03 19:17:17 eich Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -327,7 +327,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.151 1999/11/19 13:53:23 hohndel Ex
  * To disable support for TrueType fonts, uncomment these.
  *
 #define BuildFreeType		NO
-#define BuildXTT		NO
+#define BuildXTrueType		NO
  */
 
 /*
