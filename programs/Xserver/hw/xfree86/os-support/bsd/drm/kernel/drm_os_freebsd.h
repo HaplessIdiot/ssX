@@ -1,5 +1,5 @@
 /*
- * $FreeBSD: src/sys/dev/drm/drm_os_freebsd.h,v 1.9 2003/04/25 01:18:46 anholt Exp $
+ * $FreeBSD: src/sys/dev/drm/drm_os_freebsd.h,v 1.11 2003/05/31 19:31:46 phk Exp $
  */
 #include <sys/param.h>
 #include <sys/queue.h>
@@ -117,6 +117,9 @@
 #define DRM_SUSER(p)		suser(p)
 #define DRM_TASKQUEUE_ARGS	void *arg, int pending
 #define DRM_IRQ_ARGS		void *arg
+typedef void			irqreturn_t;
+#define IRQ_HANDLED		/* nothing */
+#define IRQ_NONE		/* nothing */
 #define DRM_DEVICE		drm_device_t	*dev	= kdev->si_drv1
 #define DRM_MALLOC(size)	malloc( size, DRM(M_DRM), M_NOWAIT )
 #define DRM_FREE(pt,size)		free( pt, DRM(M_DRM) )
@@ -333,8 +336,6 @@ find_first_zero_bit(volatile void *p, int max)
 }
 
 #define spldrm()		spltty()
-
-#define memset(p, v, s)		bzero(p, s)
 
 /*
  * Fake out the module macros for versions of FreeBSD where they don't

@@ -1,4 +1,24 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 379. DRM resync from the DRI trunk...
+       - Lots of misc fixes/cleanups, and some resyncs with 2.4 and 2.6
+         kernels.
+       - Fix maplist entries being used after they were freed; thanks to
+         Benjamin Herrenschmidt for tracking this down (Michel Daenzer).
+       - FreeBSD updates (Eric Anholt).
+       - Fail in DRM(agp_acquire) if the AGP aperture can't be used, such
+         that the X server falls back to PCI GART or disables the DRI
+         gracefully (Michel Daenzer).
+       - Possibly fix stanford checker complaints about sarea for radeon
+         (Keith Whitwell).
+       - Restore i830 texture age waiting when swapping in new textures
+         (Keith Whitwell).
+       - Fix texture rectangle support for r100 (Keith Whitwell).
+       - Add i810 add page flipping support to the DRM (Dave Airlie).
+       - Merged DRM documentation (Jose Fonseca). 
+       - r128 MESA_ycbcr_texture (Ian Romanick, Leif Delgass).
+ 378. Linux drm module build fixes for newish kernels from the DRI
+      repository (Michel Daenzer, Linus Torvalds, Leif Delgass).  This
+      addresses Bugzilla #603, 605 (Callum Mackay).
  377. Fix the test for 2.5.x with x < 52 Linux kernels for the drm module
       build (Bugzilla #601, Callum Mackay).
  376. Fix an XAA pixmap cache server crash that can happen in some cases
@@ -17536,7 +17556,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2809 2003/08/16 01:11:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2810 2003/08/16 17:59:15 dawes Exp $
 
 
 
