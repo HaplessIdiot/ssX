@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.12 2002/01/16 16:22:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.13 2002/01/29 03:42:27 tsi Exp $ */
 /*
  * Copyright 1999 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -108,8 +108,9 @@ ATIUnlock
                     (pATI->LockData.bus_cntl & ~BUS_FIFO_ERR_INT_EN) |
                         BUS_FIFO_ERR_INT;
         }
-        tmp = (pATI->LockData.bus_cntl & ~BUS_ROM_DIS) |
-            SetBits(15, BUS_FIFO_WS);
+        tmp = pATI->LockData.bus_cntl & ~BUS_ROM_DIS;
+        if (pATI->Chip < ATI_CHIP_264VTB)
+            tmp |= SetBits(15, BUS_FIFO_WS);
         if (pATI->Chip >= ATI_CHIP_264VT)
             tmp |= BUS_EXT_REG_EN;              /* Enable Block 1 */
         outr(BUS_CNTL, tmp);

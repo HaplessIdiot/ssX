@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.46 2001/08/01 00:44:52 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.47 2002/01/16 20:38:44 dawes Exp $
 </ident>
 
 
@@ -4846,6 +4846,9 @@ strongly encouraged to improve the consistency of driver behaviour.
 	<quote>Informational message.</quote>
       &s.code;X_NONE&e.code;
 	<quote>No prefix.</quote>
+      &s.code;X_NOT_IMPLEMENTED&e.code;
+	<quote>The message relates to functionality that is not yet
+               implemented.</quote>
       </quote>
 
 

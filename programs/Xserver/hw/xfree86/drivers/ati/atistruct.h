@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.30 2002/01/16 16:22:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.31 2002/01/29 03:42:29 tsi Exp $ */
 /*
  * Copyright 1999 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -386,7 +386,7 @@ typedef struct _ATIRec
      */
     CARD8 OptionAccel;          /* Use hardware draw engine */
     CARD8 OptionBlend;          /* Force horizontal blending */
-    CARD8 OptionCRT;            /* Prefer CRT over digital panel */
+    CARD8 OptionCRTDisplay;     /* Display on both CRT and digital panel */
     CARD8 OptionCSync;          /* Use composite sync */
     CARD8 OptionDevel;          /* Intentionally undocumented */
 
@@ -397,6 +397,7 @@ typedef struct _ATIRec
 #endif /* AVOID_CPIO */
 
     CARD8 OptionMMIOCache;      /* Cache MMIO writes */
+    CARD8 OptionPanelDisplay;   /* Prefer CRT over digital panel */
     CARD8 OptionProbeClocks;    /* Force probe for fixed clocks */
     CARD8 OptionShadowFB;       /* Use shadow frame buffer */
     CARD8 OptionSync;           /* Temporary */

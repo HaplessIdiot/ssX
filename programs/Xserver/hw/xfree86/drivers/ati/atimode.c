@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.9 2002/01/16 16:22:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.10 2002/01/29 03:42:27 tsi Exp $ */
 /*
  * Copyright 2000 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -317,7 +317,7 @@ ATIModePreInit
                       USE_SHADOWED_ROWCUR | SHADOW_EN | SHADOW_RW_EN);
                 pATIHW->lcd_gen_ctrl |= DONT_SHADOW_VPAR | LOCK_8DOT;
 
-                if (pATI->OptionCRT)
+                if (!pATI->OptionPanelDisplay)
                 {
                     /*
                      * Use primary CRTC to drive the CRT.  Turn off panel
@@ -330,6 +330,10 @@ ATIModePreInit
                 {
                     /* Use primary CRTC to drive the panel */
                     pATIHW->lcd_gen_ctrl |= LCD_ON;
+
+                    /* If requested, also force CRT on */
+                    if (pATI->OptionCRTDisplay)
+                        pATIHW->lcd_gen_ctrl |= CRT_ON;
                 }
             }
         }
@@ -553,7 +557,7 @@ ATIModeCalculate
     int Index, ECPClock, MaxScalerClock;
 
     /* Clobber mode timings */
-    if ((pATI->LCDPanelID >= 0) && !pATI->OptionCRT &&
+    if ((pATI->LCDPanelID >= 0) && pATI->OptionPanelDisplay &&
         !pMode->CrtcHAdjusted && !pMode->CrtcVAdjusted &&
         (!pATI->OptionSync || (pMode->type & M_T_BUILTIN)))
     {
@@ -712,7 +716,7 @@ ATIModeCalculate
              * Don't use vertical blending if the mode is too wide or not
              * vertically stretched.
              */
-            if (!pATI->OptionCRT &&
+            if (pATI->OptionPanelDisplay &&
                 (pMode->HDisplay <= pATI->LCDVBlendFIFOSize) &&
                 (VDisplay < pATI->LCDVertical))
                 pATIHW->ext_vert_stretch |= VERT_STRETCH_MODE;
@@ -723,7 +727,8 @@ ATIModeCalculate
         pATIHW->horz_stretching &=
             ~(HORZ_STRETCH_RATIO | HORZ_STRETCH_LOOP | AUTO_HORZ_RATIO |
               HORZ_STRETCH_MODE | HORZ_STRETCH_EN);
-        if (!pATI->OptionCRT && (pMode->HDisplay < pATI->LCDHorizontal))
+        if (pATI->OptionPanelDisplay &&
+            (pMode->HDisplay < pATI->LCDHorizontal))
         do
         {
             /*
@@ -806,7 +811,7 @@ ATIModeCalculate
                         pATI->LCDHorizontal, HORZ_STRETCH_BLEND);
         } while(0);
 
-        if (pATI->OptionCRT || (VDisplay >= pATI->LCDVertical))
+        if (!pATI->OptionPanelDisplay || (VDisplay >= pATI->LCDVertical))
             pATIHW->vert_stretching = 0;
         else
         {

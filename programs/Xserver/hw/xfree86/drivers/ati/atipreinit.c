@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.57 2002/01/18 16:56:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.58 2002/01/29 03:42:28 tsi Exp $ */
 /*
  * Copyright 1999 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -581,7 +581,7 @@ ATIPreInit
      * If there is an ix86-style BIOS, ensure its initialisation entry point
      * has been executed, and retrieve DDC and VBE information from it.
      */
-    if (!(pInt10Module = xf86LoadSubModule(pScreenInfo, "int10")))
+    if (!(pInt10Module = ATILoadModule(pScreenInfo, "int10", ATIint10Symbols)))
         xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
             "Unable to load int10 module.\n");
     else if (!(pInt10Info = xf86InitInt10(pATI->iEntity)))
@@ -589,10 +589,11 @@ ATIPreInit
              "Unable to initialise int10 interface.\n");
     else
     {
-        if (!(pDDCModule = xf86LoadSubModule(pScreenInfo, "ddc")))
+        if (!(pDDCModule = ATILoadModule(pScreenInfo, "ddc", ATIddcSymbols)))
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "Unable to load ddc module.\n");
-        else if (!(pVBEModule = xf86LoadSubModule(pScreenInfo, "vbe")))
+        else
+        if (!(pVBEModule = ATILoadModule(pScreenInfo, "vbe", ATIvbeSymbols)))
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "Unable to load vbe module.\n");
         else
@@ -938,7 +939,7 @@ ATIPreInit
                         (!pATI->LCDHorizontal || !pATI->LCDVertical))
                         pATI->LCDPanelID = -1;
                     else
-                        pATI->OptionCRT = TRUE;
+                        pATI->OptionPanelDisplay = FALSE;
                 }
             }
             else
@@ -1567,7 +1568,7 @@ ATIPreInit
      */
     if (pATI->LCDPanelID >= 0)
     {
-        if (pATI->OptionCRT)
+        if (!pATI->OptionPanelDisplay)
         {
             xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
                 "Using CRT interface and disabling digital flat panel.\n");
@@ -1906,7 +1907,9 @@ ATIPreInit
                 (double)(pATI->LCDClock) / 1000.0);
 
             xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
-                "Using digital flat panel interface.\n");
+                "Using digital flat panel interface%s.\n",
+                pATI->OptionCRTDisplay ?
+                    " to display on both CRT and panel" : "");
         }
     }
 
@@ -2872,7 +2875,7 @@ ATIPreInit
             pATI->pitchInc = pATI->XModifier * (64 * 8);
     }
 
-    if (!pATI->OptionCRT && pATI->LCDPanelID >= 0)
+    if (pATI->OptionPanelDisplay && (pATI->LCDPanelID >= 0))
     {
         /*
          * Given LCD modes are more tightly controlled than CRT modes, allow
@@ -2954,7 +2957,6 @@ ATIPreInit
     /* Set display resolution */
     xf86SetDpi(pScreenInfo, 0, 0);
 
-#ifdef XFree86LOADER
     /* Load required modules */
     if (!ATILoadModules(pScreenInfo, pATI))
     {
@@ -2963,7 +2965,6 @@ ATIPreInit
         ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
-#endif
 
     pATI->displayWidth = pScreenInfo->displayWidth;
 
