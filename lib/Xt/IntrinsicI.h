@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/IntrinsicI.h,v 3.9 2003/04/21 16:34:28 herrb Exp $ */
+/* $XFree86: xc/lib/Xt/IntrinsicI.h,v 3.10 2004/05/05 00:07:03 dickey Exp $ */
 
 #ifndef _XtintrinsicI_h
 #define _XtintrinsicI_h
@@ -117,16 +117,18 @@ SOFTWARE.
 #ifdef UNALIGNED
 
 #define XtMemmove(dst, src, size)			    \
-    if (size == sizeof(int))				    \
-	*((int *) (dst)) = *((int *) (src));		    \
-    else if (size == sizeof(char))			    \
-	*((char *) (dst)) = *((char *) (src));		    \
-    else if (size == sizeof(short))			    \
-	*((short *) (dst)) = *((short *) (src));	    \
-    else						    \
-	(void) memcpy((char *) (dst), (char *) (src), (int) (size))
+    if ((char *)(dst) != (char *)(src)) {		    \
+	if (size == sizeof(int))			    \
+	    *((int *) (dst)) = *((int *) (src));	    \
+	else if (size == sizeof(char))			    \
+	    *((char *) (dst)) = *((char *) (src));	    \
+	else if (size == sizeof(short))			    \
+	    *((short *) (dst)) = *((short *) (src));	    \
+	else						    \
+	    (void) memcpy((char *) (dst), (char *) (src), (int) (size)); \
+    }
 
-#define XtBZero(dst, size)			    \
+#define XtBZero(dst, size)				    \
     if (size == sizeof(int))				    \
 	*((int *) (dst)) = 0;				    \
     else						    \
@@ -141,7 +143,9 @@ SOFTWARE.
 #else
 
 #define XtMemmove(dst, src, size)	\
-	(void) memcpy((char *) (dst), (char *) (src), (int) (size))
+    if ((char *)(dst) != (char *)(src)) {		    \
+	(void) memcpy((char *) (dst), (char *) (src), (int) (size)); \
+    }
 
 #define XtBZero(dst, size) 	\
 	bzero((char *) (dst), (int) (size))
@@ -164,7 +168,7 @@ SOFTWARE.
     :  XtMalloc((unsigned)(size)))
 
 #define XtStackFree(pointer, stack_cache_array) \
-    if ((pointer) != ((XtPointer)(stack_cache_array))) XtFree(pointer)
+    { if ((pointer) != ((XtPointer)(stack_cache_array))) XtFree(pointer); }
 
 /***************************************************************
  *
