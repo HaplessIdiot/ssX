@@ -29,6 +29,7 @@ SUBDIRS		= modules
 
 SRCS		=\
 		core.c \
+		format.c \
 		helper.c \
 		lisp.c \
 		struct.c \
@@ -36,6 +37,7 @@ SRCS		=\
 		time.c
 OBJS		=\
 		core.o \
+		format.o \
 		helper.o \
 		lisp.o \
 		struct.o \

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/time.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
 
 #include "time.h"
 
@@ -75,7 +75,7 @@ Lisp_Time(LispMac *mac, LispObj *list, char *fname)
 	--sec;
 	usec += 1000000;
     }
-    fprintf(stderr, "Real time   : %g sec\n", sec + usec / 1000000.0);
+    fprintf(lisp_stderr, "Real time   : %g sec\n", sec + usec / 1000000.0);
 
     sec = virt.it_interval.tv_sec - virt.it_value.tv_sec;
     usec = virt.it_interval.tv_usec - virt.it_value.tv_usec + 10000;
@@ -83,7 +83,7 @@ Lisp_Time(LispMac *mac, LispObj *list, char *fname)
 	--sec;
 	usec += 1000000;
     }
-    fprintf(stderr, "Virtual time: %g sec\n", sec + usec / 1000000.0);
+    fprintf(lisp_stderr, "Virtual time: %g sec\n", sec + usec / 1000000.0);
 
     sec = prof.it_interval.tv_sec - prof.it_value.tv_sec;
     usec = prof.it_interval.tv_usec - prof.it_value.tv_usec + 10000;
@@ -91,7 +91,7 @@ Lisp_Time(LispMac *mac, LispObj *list, char *fname)
 	--sec;
 	usec += 1000000;
     }
-    fprintf(stderr, "Profile time: %g sec\n", sec + usec / 1000000.0);
+    fprintf(lisp_stderr, "Profile time: %g sec\n", sec + usec / 1000000.0);
 
     real.it_value.tv_sec =
 	virt.it_value.tv_sec =

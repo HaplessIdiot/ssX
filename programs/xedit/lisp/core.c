@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.1 2001/08/31 15:00:13 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.3 2001/09/01 18:28:12 paulo Exp $ */
 
 #include "core.h"
 #include "helper.h"
@@ -589,7 +589,7 @@ Lisp_Defstruct(LispMac *mac, LispObj *list, char *fname)
 
     for (obj = STR; obj != NIL; obj = CDR(obj)) {
 	if (CAR(CAR(obj))->data.atom == CAR(str)->data.atom) {
-	    fprintf(stderr, "*** Warning: structure %s is being redefined\n",
+	    fprintf(lisp_stderr, "*** Warning: structure %s is being redefined\n",
 		    CAR(CAR(obj))->data.atom);
 	    break;
 	}
@@ -1223,6 +1223,18 @@ Lisp_Pop(LispMac *mac, LispObj *list, char *fname)
 }
 
 LispObj *
+Lisp_Princ(LispMac *mac, LispObj *list, char *fname)
+{
+    int princ = mac->princ;
+
+    mac->princ = 1;
+    LispPrint(mac, CAR(list));
+    mac->princ = princ;
+
+    return (CAR(list));
+}
+
+LispObj *
 Lisp_Print(LispMac *mac, LispObj *list, char *fname)
 {
     LispPrint(mac, CAR(list));
@@ -1401,6 +1413,17 @@ LispObj *
 Lisp_Quote(LispMac *mac, LispObj *list, char *fname)
 {
     return (CAR(list));
+}
+
+/* XXX needs to be extended to accept parameters */
+LispObj *
+Lisp_Read(LispMac *mac, LispObj *list, char *fname)
+{
+    LispObj *obj;
+
+    obj = LispRun(mac);
+
+    return (EVAL(obj));
 }
 
 LispObj *
