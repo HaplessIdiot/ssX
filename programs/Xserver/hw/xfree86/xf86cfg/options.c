@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.c,v 1.7 2001/05/21 22:21:57 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.c,v 1.8 2001/05/25 21:43:16 paulo Exp $
  */
 
 #include "options.h"
@@ -552,6 +552,10 @@ SelectModuleCallback(Widget w, XtPointer user_data, XtPointer call_data)
 
 	XtVaSetValues(desc, XtNstring, "", NULL);
 	XawListUnhighlight(optList);
+
+	/* force relayout */
+	XtUnmanageChild(optList);
+	XtManageChild(optList);
     }
 }
 
