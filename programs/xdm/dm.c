@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.19 2001/12/14 20:01:21 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.20 2002/05/31 18:46:10 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -153,7 +153,8 @@ main (int argc, char **argv)
 
     if (nofork_session == 0) {
 	/* Clean up any old Authorization files */
-	sprintf(cmdbuf, "/bin/rm -f %s/authdir/authfiles/A*", authDir);
+	/* AUD: all good? */
+	snprintf(cmdbuf, sizeof(cmdbuf), "/bin/rm -f %s/authdir/authfiles/A*", authDir);
 	system(cmdbuf);
     }
 
