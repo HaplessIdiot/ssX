@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.28 2001/07/02 09:37:18 alanh Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.29 2001/12/28 22:41:53 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -222,7 +222,7 @@ Description()
 	Xfnon*)
 		echo "Some large fonts";;
 	Xfscl*)
-		echo "Scaled fonts (Speedo and Type1)";;
+		echo "Scaled fonts (Speedo, Type1 and TTF)";;
 	Xhtml*)
 		echo "Docs in HTML";;
 	Xjdoc*)
