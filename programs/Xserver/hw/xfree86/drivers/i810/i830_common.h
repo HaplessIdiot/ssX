@@ -26,7 +26,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_common.h,v 1.1 2002/09/11 00:29:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_common.h,v 1.3 2004/06/10 13:08:28 alanh Exp $ */
 
 #ifndef _I830_COMMON_H_
 #define _I830_COMMON_H_
@@ -50,6 +50,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define DRM_I830_ALLOC                    0x08
 #define DRM_I830_FREE                     0x09
 #define DRM_I830_INIT_HEAP                0x0a
+#define DRM_I830_CMDBUFFER                0x0b
 
 typedef struct {
    enum {
@@ -105,6 +106,14 @@ typedef struct {
         XF86DRIClipRectRec *cliprects; /* pointer to userspace cliprects */
 } drmI830BatchBuffer;
 
+typedef struct {
+   	char *buf;		/* agp offset */
+	int sz; 		/* nr bytes in use */
+	int DR1;		/* hw flags for GFX_OP_DRAWRECT_INFO */
+        int DR4;		/* window origin for GFX_OP_DRAWRECT_INFO*/
+	int num_cliprects;	/* mulitpass with multiple cliprects? */
+        XF86DRIClipRectRec *cliprects; /* pointer to userspace cliprects */
+} drmI830CmdBuffer;
 
 typedef struct {
 	int *irq_seq;
@@ -120,8 +129,7 @@ typedef struct {
 } drmI830GetParam;
 
 #define I830_PARAM_IRQ_ACTIVE     1
-#define I830_PARAM_LAST_ENQUEUE   2 
-#define I830_PARAM_LAST_DEQUEUE   3 
+#define I830_PARAM_ALLOW_BATCHBUFFER   2 
 
 typedef struct {
 	int param;
@@ -130,6 +138,7 @@ typedef struct {
 
 #define I830_SETPARAM_USE_MI_BATCHBUFFER_START  1
 #define I830_SETPARAM_TEX_LRU_LOG_GRANULARITY   2
+#define I830_SETPARAM_ALLOW_BATCHBUFFER         3
 
 
 /* A memory manager for regions of shared memory:
