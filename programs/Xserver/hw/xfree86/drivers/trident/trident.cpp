@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.cpp,v 1.5 2000/12/07 16:48:04 alanh Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.cpp,v 1.6 2000/12/08 09:05:16 alanh Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH TRIDENT __drivermansuffix__ "Version 4.0.1"  "XFree86"
@@ -27,10 +27,11 @@ driver supports PCI,AGP and ISA video cards based on the following
 Trident chips:
 .TP 12
 .B Blade
-Blade3D, CyberBlade series i1, i7 (DSTN), i1, i1 (DSTN), Ai1, Ai1 (DSTN)
+Blade3D, CyberBlade series i1, i7 (DSTN), i1, i1 (DSTN), Ai1, Ai1 (DSTN),
+CyberBlade/e4
 .TP 12
-.B 3DImage
-975, 985, Cyber9525, Cyber9397, Cyber9397DVD
+.B Image
+3DImage975, 3DImage985, Cyber9520, Cyber9525, Cyber9397, Cyber9397DVD
 .TP 12
 .B ProVidia
 9682, 9685, Cyber9382, Cyber9385, Cyber9388
@@ -38,7 +39,7 @@ Blade3D, CyberBlade series i1, i7 (DSTN), i1, i1 (DSTN), Ai1, Ai1 (DSTN)
 .B TGUI
 9440AGi, 9660, 9680
 .TP 12
-.B 8900 Series
+.B 8900
 8900D (ISA)
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration
@@ -59,7 +60,8 @@ Disable or enable acceleration.  Default: acceleration is enabled.
 Enable or disable PCI retries.  Default: off.
 .TP
 .BI "Option \*qCyberShadow\*q \*q" boolean \*q
-For Cyber chipsets only, turn off shadow registers. Default: on.
+For Cyber chipsets only, turn off shadow registers. If you only see
+a partial display - this may be the option for you. Default: on.
 .TP
 .BI "Option \*qShadowFB\*q \*q" boolean \*q
 Enable or disable use of the shadow framebuffer layer.  See
