@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.72 2001/09/20 01:06:35 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.73 2001/10/08 01:08:10 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_161">Patch #161 - 2001/10/10 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_160">Patch #160 - 2001/10/7 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_159">Patch #159 - 2001/9/19 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_158">Patch #158 - 2001/9/8 - XFree86 4.1.0</A>
@@ -204,6 +205,24 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_161">Patch #161 - 2001/10/10 - XFree86 4.1.0</A></H1>
+<ul>
+	<li>modify logic that resets keypad application mode to avoid doing
+	   this if there is no modifier associated with the Num_Lock keysym
+	   (report by John E Davis &lt;davis@space.mit.edu&gt; and Alan W Irwin
+	   &lt;irwin@beluga.phys.uvic.ca&gt;).
+
+	<li>add built-in translation for Control/KP_Separator to KP_Subtract,
+	   to accommodate users who wish to use xmodmap to reassign the top
+	   row of the numeric keypad.
+
+	<li>correct Imakefile install-rule for <code>uxname</code> script
+	   (reported by Nam SungHyun &lt;namsh@lge.com&gt;).
+
+	<li>resync with XFree86 CVS: correct typo in <code>&lt;ncurses/term.h&gt;</code> 
+	   ifdef.
+</ul>
 
 <H1><A NAME="xterm_160">Patch #160 - 2001/10/7 - XFree86 4.1.0</A></H1>
 <ul>
