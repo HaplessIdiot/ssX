@@ -633,16 +633,14 @@ XftDrawGlyphFontSpec (XftDraw		*draw,
     int		start;
 
     i = 0;
-    while (i < len);
+    while (i < len)
     {
 	start = i;
 	if (((XftFontInt *) glyphs[i].font)->format)
 	{
 	    Picture	src;
-	    while (((XftFontInt *) glyphs[i].font)->format)
-	    {
+	    while (i < len && ((XftFontInt *) glyphs[i].font)->format)
 		i++;
-	    }
 	    if (_XftDrawRenderPrepare (draw) &&
 		(src = XftDrawSrcPicture (draw, color)))
 	    {
@@ -653,10 +651,8 @@ XftDrawGlyphFontSpec (XftDraw		*draw,
 	}
 	else
 	{
-	    while (!((XftFontInt *) glyphs[i].font)->format)
-	    {
+	    while (i < len && !((XftFontInt *) glyphs[i].font)->format)
 		i++;
-	    }
 	    if (_XftDrawCorePrepare (draw, color))
 		XftGlyphFontSpecCore (draw, color, glyphs, len);
 	}

@@ -237,7 +237,7 @@ XftTextExtentsUtf8 (Display	*dpy,
 		free (glyphs);
 	    glyphs = glyphs_new;
 	}
-	glyphs[i++] = ucs4;
+	glyphs[i++] = XftCharIndex (dpy, public, ucs4);
 	string += l;
 	len -= l;
     }
