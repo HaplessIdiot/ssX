@@ -1,4 +1,5 @@
 XFree86 3.1.2c (5 November 1995)
+ 50. Add expiry date and startup message for beta versions.
  49. Fix problem using a LinkKit generated with BuildLBX set to YES.
  48. Allow a real middle button event to be passed when 3 button mouse
      emulation is enabled (Thomas Wu).
