@@ -1,6 +1,13 @@
-/* $Id: norm.S,v 1.1 2004/04/08 09:17:54 alanh Exp $ */
+/* $Id: norm.S,v 1.2 2004/04/22 13:58:37 tsi Exp $ */
+/* $XFree86$ */
 
 #include "sparc_matrix.h"
+
+#ifdef SVR4
+	/* Solaris requires this for 64-bit. */
+	.register %g2, #scratch
+	.register %g3, #scratch
+#endif
 
 	.text
 

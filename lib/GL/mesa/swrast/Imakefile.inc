@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/swrast/Imakefile.inc,v 1.1tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/swrast/Imakefile.inc,v 1.1tsi Exp $
 
 #ifndef MesaSwrastBuildDir
 #define MesaSwrastBuildDir $(GLXLIBSRC)/mesa/swrast/
@@ -124,6 +124,35 @@ LinkSourceFile(swrast.h, $(MESASRCDIR)/src/mesa/swrast)
 		     $(MESASWRASTBUILDDIR)s_texture.o \
 		     $(MESASWRASTBUILDDIR)s_triangle.o \
 		     $(MESASWRASTBUILDDIR)s_zoom.o
+
+ MESA_SWRAST_EOBJS = $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_aaline.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_aatriangle.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_accum.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_alpha.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_alphabuf.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_bitmap.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_blend.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_buffers.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_context.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_copypix.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_depth.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_drawpix.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_feedback.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_fog.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_imaging.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_lines.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_logic.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_masking.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_nvfragprog.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_pixeltex.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_points.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_readpix.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_span.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_stencil.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_texstore.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_texture.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_triangle.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_zoom.o
 
 #if defined(DoSharedLib) && DoSharedLib
  MESA_SWRAST_UOBJS = $(MESASWRASTBUILDDIR)unshared/s_aaline.o \

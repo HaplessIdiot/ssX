@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_texman.c,v 1.5 2002/02/22 21:45:04 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/tdfx/tdfx_texman.c,v 1.1.1.1tsi Exp $ */
 
 /*
  * Original rewrite:
@@ -880,7 +880,7 @@ tdfxTMMoveOutTM_NoLock( tdfxContextPtr fxMesa, struct gl_texture_object *tObj )
     tdfxTexInfo *ti = TDFX_TEXTURE_DATA(tObj);
 
     if (MESA_VERBOSE & VERBOSE_DRIVER) {
-        fprintf(stderr, "fxmesa: %s(%p (%d))\n", __FUNCTION__, tObj, tObj->Name);
+        fprintf(stderr, "fxmesa: %s(%p (%d))\n", __FUNCTION__, (void *)tObj, tObj->Name);
     }
 
     /*

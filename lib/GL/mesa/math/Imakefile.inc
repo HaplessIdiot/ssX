@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/math/Imakefile.inc,v 1.1tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/math/Imakefile.inc,v 1.1tsi Exp $
 
 #ifndef MesaMathBuildDir
 #define MesaMathBuildDir $(GLXLIBSRC)/mesa/math/
@@ -48,6 +48,15 @@ LinkSourceFile(m_xform_tmp.h, $(MESASRCDIR)/src/mesa/math)
 		   $(MESAMATHBUILDDIR)m_translate.o \
 		   $(MESAMATHBUILDDIR)m_vector.o \
 		   $(MESAMATHBUILDDIR)m_xform.o
+
+ MESA_MATH_EOBJS = $(MESAMATHBUILDDIR)$(EXTRASUBDIR)/m_debug_clip.o \
+		   $(MESAMATHBUILDDIR)$(EXTRASUBDIR)/m_debug_norm.o \
+		   $(MESAMATHBUILDDIR)$(EXTRASUBDIR)/m_debug_xform.o \
+		   $(MESAMATHBUILDDIR)$(EXTRASUBDIR)/m_eval.o \
+		   $(MESAMATHBUILDDIR)$(EXTRASUBDIR)/m_matrix.o \
+		   $(MESAMATHBUILDDIR)$(EXTRASUBDIR)/m_translate.o \
+		   $(MESAMATHBUILDDIR)$(EXTRASUBDIR)/m_vector.o \
+		   $(MESAMATHBUILDDIR)$(EXTRASUBDIR)/m_xform.o
 
 #if defined(DoSharedLib) && DoSharedLib
  MESA_MATH_UOBJS = $(MESAMATHBUILDDIR)unshared/m_debug_clip.o \

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  5.1
@@ -173,7 +174,7 @@ static int host_byte_order( void )
 /*
  * Error handling.
  */
-#ifndef XFree86Server
+#if !defined(XFree86Server) && defined(USE_XSHM)
 static volatile int mesaXErrorFlag = 0;
 
 static int mesaHandleXError( XMesaDisplay *dpy, XErrorEvent *event )
@@ -793,6 +794,8 @@ noFaultXAllocColor( int client,
 static GLboolean setup_grayscale( int client, XMesaVisual v,
                                   XMesaBuffer buffer, XMesaColormap cmap )
 {
+   (void) DitherValues;		/* Muffle compiler */
+
    if (GET_VISUAL_DEPTH(v)<4 || GET_VISUAL_DEPTH(v)>16) {
       return GL_FALSE;
    }

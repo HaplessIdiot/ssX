@@ -24,7 +24,7 @@
  * Authors:
  *    Ian Romanick <idr@us.ibm.com>
  */
-/* $XFree86:$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/utils.c,v 1.1.1.1tsi Exp $ */
 
 #include <string.h>
 #include <stdlib.h>
@@ -46,7 +46,8 @@ driParseDebugString( const char * debug,
    flag = 0;
    if ( debug != NULL ) {
       while( control->string != NULL ) {
-	 if ( strstr( debug, control->string ) != NULL ) {
+	 if ( !strcmp( debug, "all" ) ||
+	      strstr( debug, control->string ) != NULL ) {
 	    flag |= control->flag;
 	 }
 

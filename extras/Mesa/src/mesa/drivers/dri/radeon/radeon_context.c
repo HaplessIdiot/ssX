@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.c,v 1.9 2003/09/24 02:43:12 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_context.c,v 1.1.1.1tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -102,7 +102,7 @@ static const GLubyte *radeonGetString( GLcontext *ctx, GLenum name )
       offset = driGetRendererString( buffer, "Radeon", DRIVER_DATE,
 				     agp_mode );
 
-      sprintf( & buffer[ offset ], "%sTCL",
+      sprintf( & buffer[ offset ], " %sTCL",
 	       !(rmesa->TclFallback & RADEON_TCL_FALLBACK_TCL_DISABLE)
 	       ? "" : "NO-" );
 
@@ -561,7 +561,7 @@ radeonMakeCurrent( __DRIcontextPrivate *driContextPriv,
 	 (radeonContextPtr) driContextPriv->driverPrivate;
 
       if (RADEON_DEBUG & DEBUG_DRI)
-	 fprintf(stderr, "%s ctx %p\n", __FUNCTION__, newCtx->glCtx);
+	 fprintf(stderr, "%s ctx %p\n", __FUNCTION__, (void *)newCtx->glCtx);
 
       if ( newCtx->dri.drawable != driDrawPriv ) {
 	 driDrawableInitVBlank( driDrawPriv, newCtx->vblank_flags );
@@ -601,7 +601,7 @@ radeonUnbindContext( __DRIcontextPrivate *driContextPriv )
    radeonContextPtr rmesa = (radeonContextPtr) driContextPriv->driverPrivate;
 
    if (RADEON_DEBUG & DEBUG_DRI)
-      fprintf(stderr, "%s ctx %p\n", __FUNCTION__, rmesa->glCtx);
+      fprintf(stderr, "%s ctx %p\n", __FUNCTION__, (void *)rmesa->glCtx);
 
    return GL_TRUE;
 }

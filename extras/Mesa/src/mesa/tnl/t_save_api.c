@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/tnl/t_save_api.c,v 1.1.1.2tsi Exp $ */
 /**************************************************************************
 
 Copyright 2002 Tungsten Graphics Inc., Cedar Park, Texas.
@@ -1280,11 +1280,11 @@ static void GLAPIENTRY _save_OBE_Rectf( GLfloat x1, GLfloat y1, GLfloat x2, GLfl
 {
    GET_CURRENT_CONTEXT(ctx);
    _save_NotifyBegin( ctx, GL_QUADS | PRIM_WEAK );
-   glVertex2f( x1, y1 );
-   glVertex2f( x2, y1 );
-   glVertex2f( x2, y2 );
-   glVertex2f( x1, y2 );
-   glEnd();
+   _glapi_Dispatch->Vertex2f( x1, y1 );
+   _glapi_Dispatch->Vertex2f( x2, y1 );
+   _glapi_Dispatch->Vertex2f( x2, y2 );
+   _glapi_Dispatch->Vertex2f( x1, y2 );
+   _glapi_Dispatch->End();
 }
 
 
@@ -1297,9 +1297,9 @@ static void GLAPIENTRY _save_OBE_DrawArrays(GLenum mode, GLint start, GLsizei co
       return;
 
    _save_NotifyBegin( ctx, mode | PRIM_WEAK );
-   for (i = start ; i < count ; i++)
-      glArrayElement( i );
-   glEnd();
+   for (i = 0; i < count; i++)
+      _glapi_Dispatch->ArrayElement(start + i);
+   _glapi_Dispatch->End();
 }
 
 
@@ -1317,22 +1317,22 @@ static void GLAPIENTRY _save_OBE_DrawElements(GLenum mode, GLsizei count, GLenum
    switch (type) {
    case GL_UNSIGNED_BYTE:
       for (i = 0 ; i < count ; i++)
-	 glArrayElement( ((GLubyte *)indices)[i] );
+	 _glapi_Dispatch->ArrayElement( ((GLubyte *)indices)[i] );
       break;
    case GL_UNSIGNED_SHORT:
       for (i = 0 ; i < count ; i++)
-	 glArrayElement( ((GLushort *)indices)[i] );
+	 _glapi_Dispatch->ArrayElement( ((GLushort *)indices)[i] );
       break;
    case GL_UNSIGNED_INT:
       for (i = 0 ; i < count ; i++)
-	 glArrayElement( ((GLuint *)indices)[i] );
+	 _glapi_Dispatch->ArrayElement( ((GLuint *)indices)[i] );
       break;
    default:
       _mesa_error( ctx, GL_INVALID_ENUM, "glDrawElements(type)" );
       break;
    }
 
-   glEnd();
+   _glapi_Dispatch->End();
 }
 
 static void GLAPIENTRY _save_OBE_DrawRangeElements(GLenum mode,
@@ -1467,8 +1467,7 @@ void _tnl_NewList( GLcontext *ctx, GLuint list, GLenum mode )
 
 void _tnl_EndList( GLcontext *ctx )
 {
-   TNLcontext *tnl = TNL_CONTEXT(ctx);
-   assert(tnl->save.vertex_size == 0);
+   assert(TNL_CONTEXT(ctx)->save.vertex_size == 0);
 }
  
 void _tnl_BeginCallList( GLcontext *ctx, GLuint list )
@@ -1524,13 +1523,16 @@ static void _save_current_init( GLcontext *ctx )
    GLint i;
 
    for (i = 0; i < _TNL_ATTRIB_MAT_FRONT_AMBIENT; i++) {
+      ASSERT(i < VERT_ATTRIB_MAX);
       tnl->save.currentsz[i] = &ctx->ListState.ActiveAttribSize[i];
       tnl->save.current[i] = ctx->ListState.CurrentAttrib[i];
    }
 
    for (i = _TNL_ATTRIB_MAT_FRONT_AMBIENT; i < _TNL_ATTRIB_INDEX; i++) {
-      tnl->save.currentsz[i] = &ctx->ListState.ActiveMaterialSize[i];
-      tnl->save.current[i] = ctx->ListState.CurrentMaterial[i];
+      const GLuint j = i - _TNL_ATTRIB_MAT_FRONT_AMBIENT;
+      ASSERT(j < MAT_ATTRIB_MAX);
+      tnl->save.currentsz[i] = &ctx->ListState.ActiveMaterialSize[j];
+      tnl->save.current[i] = ctx->ListState.CurrentMaterial[j];
    }
 
    tnl->save.currentsz[_TNL_ATTRIB_INDEX] = &ctx->ListState.ActiveIndex;

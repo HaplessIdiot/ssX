@@ -33,7 +33,7 @@ extern "C" {
 ** not been independently verified as being compliant with the OpenGL(R)
 ** version 1.2.1 Specification.
 */
-/* $XFree86: xc/extras/Mesa/include/GL/glxext.h,v 1.7 2004/04/03 22:26:20 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/include/GL/glxext.h,v 1.8tsi Exp $ */
 
 #if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__)
 #define WIN32_LEAN_AND_MEAN 1
@@ -322,6 +322,15 @@ typedef long long int int64_t;
 #include <stdint.h>
 #endif
 
+#if defined(__UNIXOS2__) || defined(__SOL64__)
+typedef long int int32_t;
+typedef long long int int64_t;
+#endif
+
+#if defined(__SCO__) || defined(__USLC__)
+#include <stdint.h>
+#endif
+
 #ifndef GLX_VERSION_1_3
 #define GLX_VERSION_1_3 1
 #ifdef GLX_GLXEXT_PROTOTYPES
@@ -586,11 +595,6 @@ typedef Bool ( * PFNGLXSET3DFXMODEMESAPROC) (int mode);
 #define GLX_OML_swap_method 1
 #endif
 
-#if defined(__STDC_VERSION__)
-#if __STDC_VERSION__ >= 199901L
-/* Include ISO C99 integer types for OML_sync_control; need a better test */
-#include <inttypes.h>
-
 #ifndef GLX_OML_sync_control
 #define GLX_OML_sync_control 1
 #ifdef GLX_GLXEXT_PROTOTYPES
@@ -606,9 +610,6 @@ typedef int64_t ( * PFNGLXSWAPBUFFERSMSCOMLPROC) (Display *dpy, GLXDrawable draw
 typedef Bool ( * PFNGLXWAITFORMSCOMLPROC) (Display *dpy, GLXDrawable drawable, int64_t target_msc, int64_t divisor, int64_t remainder, int64_t *ust, int64_t *msc, int64_t *sbc);
 typedef Bool ( * PFNGLXWAITFORSBCOMLPROC) (Display *dpy, GLXDrawable drawable, int64_t target_sbc, int64_t *ust, int64_t *msc, int64_t *sbc);
 #endif
-
-#endif /* C99 version test */
-#endif /* STDC test */
 
 #ifdef __cplusplus
 }

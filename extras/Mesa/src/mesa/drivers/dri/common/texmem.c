@@ -28,7 +28,7 @@
  *    Kevin E. Martin <kem@users.sourceforge.net>
  *    Gareth Hughes <gareth@nvidia.com>
  */
-/* $XFree86:$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/texmem.c,v 1.1.1.1tsi Exp $ */
 
 /** \file texmem.c
  * Implements all of the device-independent texture memory management.
@@ -1083,7 +1083,7 @@ driValidateTextureHeaps( driTexHeap * const * texture_heaps,
        * the correct heap.  
        *
        * Check the texobj base address corresponds to the MemBlock
-       * range.  Check the texobj size (recalculate???) fits within
+       * range.  Check the texobj size (recalculate?) fits within
        * the MemBlock.
        *
        * Count the number of texobj's using this heap.

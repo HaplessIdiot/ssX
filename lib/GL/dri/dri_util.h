@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/dri_util.h,v 1.1 2002/02/22 21:32:52 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_util.h,v 1.5tsi Exp $ */
 /**
  * \file dri_util.h
  * DRI utility functions definitions.
@@ -54,8 +54,6 @@
 #define CAPI  /* XXX this should be globally defined somewhere */
 
 #include "glxclient.h"           /* for GLXDrawable */
-/* temporary */
-typedef Bool ( * PFNGLXGETMSCRATEOMLPROC) (Display *dpy, GLXDrawable drawable, int32_t *numerator, int32_t *denominator);
 #include "xf86dri.h"             /* for XF86DRIClipRectPtr */
 #include "sarea.h"               /* for XF86DRISAREAPtr */
 #include "GL/internal/glcore.h"  /* for __GLcontextModes */

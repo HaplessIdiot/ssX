@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_texmem.c,v 1.3 2002/12/10 01:26:53 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i830/i830_texmem.c,v 1.1.1.1tsi Exp $ */
 
 /*
  * Author:
@@ -68,6 +68,7 @@ void i830DestroyTexObj(i830ContextPtr imesa, i830TextureObjectPtr t)
    }
 }
 
+#if defined(i386) || defined(__i386__)
 /* From linux kernel i386 header files, copes with odd sizes better
  * than COPY_DWORDS would:
  */
@@ -88,7 +89,10 @@ __asm__ __volatile__(
 	: "memory");
 return (to);
 }
-
+#else
+/* Allow compilation on other architectures */
+#define __memcpy memcpy
+#endif
 
 /* Upload an image from mesa's internal copy.
  */

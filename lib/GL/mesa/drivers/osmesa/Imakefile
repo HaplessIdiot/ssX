@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/osmesa/Imakefile,v 1.2 2004/04/08 10:56:18 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/osmesa/Imakefile,v 1.3tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -8,6 +8,8 @@ XCOMM $XFree86: xc/lib/GL/mesa/drivers/osmesa/Imakefile,v 1.2 2004/04/08 10:56:1
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 
+#define LargePICTable YES
+
 #include "../../array_cache/Imakefile.inc"
 #include "../../math/Imakefile.inc"
 #include "../../main/Imakefile.inc"
@@ -16,7 +18,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/drivers/osmesa/Imakefile,v 1.2 2004/04/08 10:56:1
 #include "../../tnl/Imakefile.inc"
 #include "../../tnl_dd/Imakefile.inc"
 #include "../../Imakefile.inc"
-#if defined(i386Architecture) && !SystemV4 && MesaUseX86Asm
+#if defined(i386Architecture) && MesaUseX86Asm
 #include "../../x86/Imakefile.inc"
 #endif
 #ifdef SparcArchitecture
@@ -39,12 +41,14 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
      	 	$(DRI_INCLUDES) -I$(GLXLIBSRC)/include
 
      MESAOBJS = $(COREMESAOBJS) $(MESA_ASM_OBJS)
+    MESAEOBJS = $(COREMESAEOBJS) $(MESA_ASM_EOBJS)
     MESAUOBJS = $(COREMESAUOBJS) $(MESA_ASM_UOBJS)
     MESADOBJS = $(COREMESADOBJS) $(MESA_ASM_DOBJS)
     MESAPOBJS = $(COREMESAPOBJS) $(MESA_ASM_POBJS)
 
          SRCS = osmesa.c
          OBJS = osmesa.o $(MESAOBJS)
+        EOBJS = $(EXTRASUBDIR)/osmesa.o $(MESAEOBJS)
 #if DoSharedLib
         UOBJS = unshared/osmesa.o $(MESAUOBJS)
 #else
@@ -57,7 +61,9 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
   THREADOBJS = $(THREADS_LIBS)
 #endif
 
-#if !GlxUseBuiltInDRIDriver
+#ifdef SharedOSMesaReqs
+ REQUIREDLIBS = SharedOSMesaReqs
+#elif !GlxUseBuiltInDRIDriver
  REQUIREDLIBS = $(LDPRELIB) $(GLXLIB)
 #endif
 
@@ -65,7 +71,7 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 
 LibraryObjectRule()
 
-SubdirLibraryRule($(OBJS))
+AllTarget($(OBJS))
 NormalLintTarget($(SRCS))
 
 LIBNAME = OSMesa
@@ -84,6 +90,15 @@ InstallLibrary($(LIBNAME),$(USRLIBDIR))
 #if SharedLibGlx
 SharedLibraryTarget($(LIBNAME),$(SOREV), $(OBJS), ., .)
 InstallSharedLibrary($(LIBNAME),$(SOREV),$(SHLIBDIR))
+#endif
+
+#if ExtraLibGlx && defined(ExtraLibRules)
+all::
+	ExtraLibMkdir()
+include::
+	ExtraLibMkdir()
+ExtraDepLibraryTarget($(LIBNAME),$(SOREV),$(EOBJS),$(EOBJS) $(THREADOBJS))
+ExtraInstallLibrary($(LIBNAME),$(SOREV))
 #endif
 
 #if DoDebugLib

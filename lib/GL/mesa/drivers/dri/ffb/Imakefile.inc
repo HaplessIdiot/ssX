@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/ffb/Imakefile.inc,v 1.3 2002/02/22 21:32:58 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/ffb/Imakefile.inc,v 1.1tsi Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(MESASRCDIR)/src/mesa/drivers/dri
@@ -16,7 +16,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
 #if BuildXF86DRI
-  DRI_DEFINES = GlxDefines -DX_BYTE_ORDER=ByteOrder
+  DRI_DEFINES = GlxDefines -DX_BYTE_ORDER=$(X_BYTE_ORDER)
  DRI_INCLUDES = -I$(GLXLIBSRC)/dri \
 		-I$(XINCLUDESRC) \
 		-I$(GLXLIBSRC)/glx \
@@ -64,6 +64,21 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		$(MESADRVFFBBUILDDIR)ffb_tris.o \
 		$(MESADRVFFBBUILDDIR)ffb_vb.o \
 		$(MESADRVFFBBUILDDIR)ffb_xmesa.o
+
+   FFBEOBJS   = $(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_bitmap.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_clear.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_dd.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_depth.o \
+		/* $(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_fog.o */ \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_lines.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_points.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_span.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_state.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_stencil.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_tex.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_tris.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_vb.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_xmesa.o
 
    FFBUOBJS   = $(MESADRVFFBBUILDDIR)unshared/ffb_bitmap.o \
 		$(MESADRVFFBBUILDDIR)unshared/ffb_clear.o \

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_screen.c,v 1.4 2003/05/08 09:25:35 herrb Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_screen.c,v 1.1.1.2tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -39,6 +39,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "imports.h"
 #include "context.h"
 
+#define STANDALONE_MMIO
 #include "r200_screen.h"
 #include "r200_context.h"
 #include "r200_ioctl.h"
@@ -222,6 +223,8 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
       return NULL;
    }
 
+   RADEONMMIO = screen->mmio.map;
+
    screen->status.handle = dri_priv->statusHandle;
    screen->status.size   = dri_priv->statusSize;
    if ( drmMap( sPriv->fd,
@@ -283,6 +286,18 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
 		       &sp, sizeof( sp ) );
    }
 
+   screen->fbLocation	= ( INREG( RADEON_MC_FB_LOCATION ) & 0xffff ) << 16;
+
+   if ( sPriv->drmMinor >= 10 ) {
+      drmRadeonSetParam sp;
+
+      sp.param = RADEON_SETPARAM_FB_LOCATION;
+      sp.value = screen->fbLocation;
+
+      drmCommandWrite( sPriv->fd, DRM_RADEON_SETPARAM,
+		       &sp, sizeof( sp ) );
+   }
+
    screen->frontOffset	= dri_priv->frontOffset;
    screen->frontPitch	= dri_priv->frontPitch;
    screen->backOffset	= dri_priv->backOffset;
@@ -327,9 +342,9 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
 	 (*glx_enable_extension)( psc, "GLX_MESA_swap_frame_usage" );
 
 	 if ( driCompareGLXAPIVersion( 20030818 ) >= 0 ) {
-	    sPriv->psc->allocateMemory = r200AllocateMemoryMESA;
-	    sPriv->psc->freeMemory     = r200FreeMemoryMESA;
-	    sPriv->psc->memoryOffset   = r200GetMemoryOffsetMESA;
+	    sPriv->psc->allocateMemory = (void *) r200AllocateMemoryMESA;
+	    sPriv->psc->freeMemory     = (void *) r200FreeMemoryMESA;
+	    sPriv->psc->memoryOffset   = (void *) r200GetMemoryOffsetMESA;
 
 	    (*glx_enable_extension)( psc, "GLX_MESA_allocate_memory" );
 	 }

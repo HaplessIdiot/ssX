@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile.inc,v 1.7tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/Imakefile.inc,v 1.1tsi Exp $
 
 #ifndef MesaBuildDir
 #define MesaBuildDir $(GLXLIBSRC)/mesa/
@@ -19,6 +19,13 @@ COREMESAOBJS = $(COREMESABASEOBJS) \
 		$(MESA_SWRAST_OBJS) \
 		$(MESA_SWR_SETUP_OBJS) \
 		$(MESA_TNL_OBJS)
+
+COREMESAEOBJS = $(COREMESABASEEOBJS) \
+		$(MESA_AC_EOBJS) \
+		$(MESA_MATH_EOBJS) \
+		$(MESA_SWRAST_EOBJS) \
+		$(MESA_SWR_SETUP_EOBJS) \
+		$(MESA_TNL_EOBJS)
 
 COREMESAUOBJS = $(COREMESABASEUOBJS) \
 		$(MESA_AC_UOBJS) \

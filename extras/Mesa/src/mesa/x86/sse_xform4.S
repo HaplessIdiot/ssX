@@ -1,4 +1,5 @@
-/* $Id: sse_xform4.S,v 1.1 2004/04/08 09:18:06 alanh Exp $ */
+/* $Id: sse_xform4.S,v 1.2 2004/04/22 13:58:38 tsi Exp $ */
+/* $XFree86$ */
 
 /*
  * Mesa 3-D graphics library
@@ -24,6 +25,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifdef USE_SSE_ASM
 #include "matypes.h"
 #include "xform_args.h"
 
@@ -224,3 +226,4 @@ LLBL( sse_identity_done ):
 	POP_L( EDI )
 	POP_L( ESI )
 	RET
+#endif

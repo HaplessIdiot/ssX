@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.23 2002/07/14 17:08:16 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/x86/Imakefile,v 1.1tsi Exp $
 
 /*
  * Need both shared and unshared Mesa objects in the following cases:
@@ -10,7 +10,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.23 2002/07/14 17:08:16 alan
  * driver modules.
  */
 
-#if GlxDriverUsesMesa || GlxBuiltInXMesa || BuildOSMesaLib
+#if BuildOSMesaLib || (BuildXF86DRI && (GlxDriverUsesMesa || GlxBuiltInXMesa))
 #define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
 #define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
 #define DoExtraLib ExtraLibGlx
@@ -50,8 +50,10 @@ LibraryObjectRule()
 
 STD_CPP_DEFINES = StandardDefines $(PROJECT_DEFINES)
 
-SubdirLibraryRule($(OBJS))
+AllTarget($(OBJS))
 NormalLintTarget($(SRCS))
+
+#if 0	/* Is this needed anymore? */
 
 ObjectFromAsmSource(common_x86_asm, NullParameter)
 
@@ -78,6 +80,8 @@ ObjectFromAsmSource(sse_xform1, NullParameter)
 ObjectFromAsmSource(sse_xform2, NullParameter)
 ObjectFromAsmSource(sse_xform3, NullParameter)
 ObjectFromAsmSource(sse_xform4, NullParameter)
+#endif
+
 #endif
 
 LinkSourceFile(gen_matypes.c, $(MESASRCDIR)/src/mesa/x86)
