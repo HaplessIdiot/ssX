@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_dac.c,v 1.10 2000/05/10 18:55:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_dac.c,v 1.11 2001/01/31 16:15:05 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -72,28 +72,30 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
 			pGlint->MultiPciInfo[1]->memBase[2] & 0xFF800000);
     }
 
-    pReg->glintRegs[LBMemoryEDO >> 3] = GLINT_READ_REG(LBMemoryEDO);
-    pReg->glintRegs[LBMemoryEDO >> 3] &= ~(LBEDOMask |
+    if (IS_GMX2000) {
+    	pReg->glintRegs[LBMemoryEDO >> 3] = GLINT_READ_REG(LBMemoryEDO);
+    	pReg->glintRegs[LBMemoryEDO >> 3] &= ~(LBEDOMask |
 					   LBEDOBankSizeMask |
 					   LBTwoPageDetectorMask);
-    pReg->glintRegs[LBMemoryEDO >> 3] |= (LBEDOEnabled |
+    	pReg->glintRegs[LBMemoryEDO >> 3] |= (LBEDOEnabled |
 					  LBEDOBankSize4M |
 					  LBTwoPageDetector);
-    pReg->glintRegs[LBMemoryCtl >> 3] = GLINT_READ_REG(LBMemoryCtl);
-    pReg->glintRegs[LBMemoryCtl >> 3] &= ~(LBNumBanksMask |
+    	pReg->glintRegs[LBMemoryCtl >> 3] = GLINT_READ_REG(LBMemoryCtl);
+    	pReg->glintRegs[LBMemoryCtl >> 3] &= ~(LBNumBanksMask |
 					   LBPageSizeMask |
 					   LBRASCASLowMask |
 					   LBRASPrechargeMask |
 					   LBCASLowMask |
 					   LBPageModeMask |
 					   LBRefreshCountMask);
-    pReg->glintRegs[LBMemoryCtl >> 3] |= (LBNumBanks2 |
+    	pReg->glintRegs[LBMemoryCtl >> 3] |= (LBNumBanks2 |
 					  LBPageSize1024 |
 					  LBRASCASLow2 |
 					  LBRASPrecharge2 |
 					  LBCASLow1 |
 					  LBPageModeEnabled |
 					  (0x20 << LBRefreshCountShift));
+    }
 
     STOREREG(Aperture0, 0);
     STOREREG(Aperture1, 0);
@@ -117,43 +119,42 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
     STOREREG(VTGVSyncStart, temp2);
     STOREREG(VTGVBlankEnd, mode->CrtcVTotal - mode->CrtcVDisplay);
 
-#if 0
-    STOREREG(VTGPolarity, (((mode->Flags & V_PHSYNC ? 0:2)<<2) |
+    if (IS_GMX2000) {
+	STOREREG(VTGPolarity, 0xba);
+    } else {
+	STOREREG(VTGPolarity, (((mode->Flags & V_PHSYNC ? 0:2)<<2) |
 			   ((mode->Flags & V_PVSYNC) ? 0 : 2) | (0xb0)));
-#else
-    STOREREG(VTGPolarity, 0xba);
-#endif
+    }
 
     STOREREG(VClkCtl, 0);
     STOREREG(VTGVGateStart, mode->CrtcVTotal - mode->CrtcVDisplay - 1);
     STOREREG(VTGVGateEnd, mode->CrtcVTotal - mode->CrtcVDisplay);
 
-    /*
-     * tell DAC to use the ICD chip clock 0 as ref clock 
-     * and set up some more video timining generator registers
-     */
-    STOREREG(VTGSerialClk, 0x02); /* 0x05 */
-
     /* This is ugly */
     if (pGlint->UseFireGL3000) {
+    	STOREREG(VTGSerialClk, 0x05);
 	STOREREG(VTGHGateStart, 
 		    Shiftbpp(pScrn, mode->CrtcHTotal - mode->CrtcHDisplay - 1));
     	STOREREG(VTGHGateEnd, Shiftbpp(pScrn, mode->CrtcHTotal) - 1);
 	STOREREG(FBModeSel, 0x907);
 	STOREREG(VTGModeCtl, 0x00);
-    } else {
-	STOREREG(VTGHGateStart, 
-		    Shiftbpp(pScrn, mode->CrtcHTotal - mode->CrtcHDisplay - 2));
-    	STOREREG(VTGHGateEnd, Shiftbpp(pScrn, mode->CrtcHTotal) - 2);
-	STOREREG(FBModeSel, 0x0A07);
-	STOREREG(VTGModeCtl, 0x44);
-    }
+    } else 
+    if (IS_GMX2000) {
+    	STOREREG(VTGSerialClk, 0x02);
 	STOREREG(VTGHGateStart, 
 		    Shiftbpp(pScrn, mode->CrtcHTotal - mode->CrtcHDisplay - 1));
     	STOREREG(VTGHGateEnd, Shiftbpp(pScrn, mode->CrtcHTotal) - 1);
 	STOREREG(FBModeSel, 0x907);
 	STOREREG(VTGModeCtl, 0x04);
 	STOREREG(FBMemoryCtl, 0x0800);
+    } else {
+    	STOREREG(VTGSerialClk, 0x05);
+	STOREREG(VTGHGateStart, 
+		    Shiftbpp(pScrn, mode->CrtcHTotal - mode->CrtcHDisplay) - 2);
+    	STOREREG(VTGHGateEnd, Shiftbpp(pScrn, mode->CrtcHTotal) - 2);
+	STOREREG(FBModeSel, 0x0A07);
+	STOREREG(VTGModeCtl, 0x44);
+    }
 
     /* Override FBModeSel for 300SX chip */
     if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_300SX) {
@@ -332,9 +333,11 @@ TXSave(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
     SAVEREG(VTGHGateStart);
     SAVEREG(VTGHGateEnd);
 
-    SAVEREG(FBMemoryCtl);
-    pReg->glintRegs[LBMemoryEDO >> 3] = GLINT_READ_REG(LBMemoryEDO);
-    pReg->glintRegs[LBMemoryCtl >> 3] = GLINT_READ_REG(LBMemoryCtl);
+    if (IS_GMX2000) {
+    	SAVEREG(FBMemoryCtl);
+    	SAVEREG(LBMemoryEDO);
+    	SAVEREG(LBMemoryCtl);
+    }
 }
 
 void
@@ -379,7 +382,9 @@ TXRestore(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
     RESTOREREG(VTGHGateStart);
     RESTOREREG(VTGHGateEnd);
 
-    RESTOREREG(FBMemoryCtl);
-    GLINT_SLOW_WRITE_REG(pReg->glintRegs[LBMemoryEDO >> 3], LBMemoryEDO);
-    GLINT_SLOW_WRITE_REG(pReg->glintRegs[LBMemoryCtl >> 3], LBMemoryCtl);
+    if (IS_GMX2000) {
+    	RESTOREREG(FBMemoryCtl);
+    	RESTOREREG(LBMemoryEDO);
+    	RESTOREREG(LBMemoryCtl);
+    }
 }
