@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.133 2001/07/25 15:05:30 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.134 2001/08/21 11:13:45 alanh Exp $ */
 
 
 /* main.c */
@@ -2739,6 +2739,8 @@ spawn (void)
 		ts.ts_lines = screen->max_row + 1;
 		ts.ts_cols = screen->max_col + 1;
 	}
+	i = ioctl (screen->respond, TIOCSSIZE, &ts);
+	TRACE(("spawn TIOCSSIZE %dx%d return %d\n", ts.ts_lines, ts.ts_cols, i));
 #elif defined(TIOCSWINSZ)
 	/* tell tty how big window is */
 #if OPT_TEK4014
@@ -2755,6 +2757,8 @@ spawn (void)
 		ws.ws_xpixel = FullWidth(screen);
 		ws.ws_ypixel = FullHeight(screen);
 	}
+	i = ioctl (screen->respond, TIOCSWINSZ, (char *)&ws);
+	TRACE(("spawn TIOCSWINSZ %dx%d return %d\n", ws.ws_row, ws.ws_col, i));
 #endif	/* sun vs TIOCSWINSZ */
 
 #if defined(USE_UTEMPTER)
@@ -3710,6 +3714,7 @@ spawn (void)
 
 
 		/* need to reset after all the ioctl bashing we did above */
+#ifdef USE_HANDSHAKE
 #if defined(TIOCSSIZE) && (defined(sun) && !defined(SVR4))
 		i = ioctl (0, TIOCSSIZE, &ts);
 		TRACE(("spawn TIOCSSIZE %dx%d return %d\n", ts.ts_lines, ts.ts_cols, i));
@@ -3719,7 +3724,7 @@ spawn (void)
 #else
 		TRACE(("spawn cannot tell pty its size\n"));
 #endif	/* sun vs TIOCSWINSZ */
-
+#endif
 		signal(SIGHUP, SIG_DFL);
 		if (command_to_exec) {
 			execvp(*command_to_exec, command_to_exec);
