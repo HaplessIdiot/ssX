@@ -1,4 +1,12 @@
+//
+//  Preferences.m
+//
+//  This class keeps track of the user preferences.
+//
+/* $XFree86: $ */
+
 #import "Preferences.h"
+#import "quartzShared.h"
 
 @implementation Preferences
 
@@ -23,6 +31,7 @@
         [Preferences setDisplay:0];
         [Preferences setFakeButtons:YES];
         [Preferences setStartupHelp:YES];
+        [Preferences setSystemBeep:NO];
     }
 
     [self initSwitchKey];
@@ -36,6 +45,7 @@
     [displayNumber setIntValue:[Preferences display]];
     [fakeButton setIntValue:[Preferences fakeButtons]];
     [startupHelpButton setIntValue:[Preferences startupHelp]];
+    [systemBeepButton setIntValue:[Preferences systemBeep]];
 }
 
 - (void)awakeFromNib {
@@ -60,6 +70,12 @@
     [Preferences setDisplay:[displayNumber intValue]];
     [Preferences setFakeButtons:[fakeButton intValue]];
     [Preferences setStartupHelp:[startupHelpButton intValue]];
+    [Preferences setSystemBeep:[systemBeepButton intValue]];
+
+    // Update the settings used by the X server thread
+    quartzUseSysBeep = [Preferences systemBeep];
+    darwinFakeButtons = [Preferences fakeButton];
+
     [window orderOut:nil];
 }
 
@@ -126,6 +142,10 @@
     [[NSUserDefaults standardUserDefaults] setBool:newStartupHelp forKey:@"ShowStartupHelp"];
 }
 
++ (void)setSystemBeep:(BOOL)newSystemBeep {
+    [[NSUserDefaults standardUserDefaults] setBool:newSystemBeep forKey:@"UseSystemBeep"];
+}
+
 + (NSString*)switchString {
     return [[NSUserDefaults standardUserDefaults] stringForKey:@"SwitchString"];
 }
@@ -148,6 +168,10 @@
 
 + (BOOL)startupHelp {
     return [[NSUserDefaults standardUserDefaults] boolForKey:@"ShowStartupHelp"];
+}
+
++ (BOOL)systemBeep {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:@"UseSystemBeep"];
 }
 
 @end

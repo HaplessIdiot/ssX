@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.15 2001/04/02 05:39:36 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.16 2001/04/04 05:49:10 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -35,13 +35,15 @@
 // X server shared global variables
 DarwinFramebufferRec    dfb;
 int                     darwinEventFD = -1;
-int                     gDarwinEventWriteFD = -1;
 Bool                    quartz = FALSE;
+int                     quartzEventWriteFD = -1;
 int                     quartzStartClients = 1;
+int                     quartzUseSysBeep = 0;
+int                     darwinFakeButtons = 0;
 UInt32                  darwinDesiredWidth = 0, darwinDesiredHeight = 0;
 IOIndex                 darwinDesiredDepth = -1;
 SInt32                  darwinDesiredRefresh = -1;
-UInt32			darwinScreenNumber = 0;
+UInt32                  darwinScreenNumber = 0;
 
 // Quit after this many seconds if no quartz event poster is found.
 // Leave undefined for no safety quit.
@@ -53,7 +55,6 @@ UInt32			darwinScreenNumber = 0;
 
 static DeviceIntPtr     darwinPointer;
 static DeviceIntPtr     darwinKeyboard;
-static Bool             fake3Buttons = FALSE;
 static unsigned char    darwinKeyCommandL = 0, darwinKeyOptionL = 0;
 
 // Common pixmap formats
@@ -505,7 +506,7 @@ void ProcessInputEvents(void)
     
             case NX_LMOUSEDOWN:
                 // Mimic multi-button mouse with Command and Option
-                if (fake3Buttons && 
+                if (darwinFakeButtons && 
                     ev.flags & (NX_COMMANDMASK | NX_ALTERNATEMASK)) {
                     int button;
                     int keycode;
@@ -528,7 +529,7 @@ void ProcessInputEvents(void)
     
             case NX_LMOUSEUP:
                 // Mimic multi-button mouse with Command and Option
-                if (fake3Buttons &&
+                if (darwinFakeButtons &&
                     ev.flags & (NX_COMMANDMASK | NX_ALTERNATEMASK)) {
                     int button;
                     int keycode;
@@ -804,13 +805,13 @@ int ddxProcessArgument( int argc, char *argv[], int i )
     }
 
     if ( !strcmp( argv[i], "-fakebuttons" ) ) {
-    	fake3Buttons = TRUE;
+        darwinFakeButtons = TRUE;
         ErrorF( "Faking a three button mouse\n" );
         return 1;
     }
 
     if ( !strcmp( argv[i], "-nofakebuttons" ) ) {
-    	fake3Buttons = FALSE;
+        darwinFakeButtons = FALSE;
         ErrorF( "Not faking a three button mouse\n" );
         return 1;
     }
