@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.14 1999/12/13 02:52:51 robin Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.15 1999/12/27 00:39:26 robin Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices
@@ -116,7 +116,6 @@ static FSFpePtr fs_fpes;
 static CARD32	fs_blockState;
 
 static int _fs_restart_connection ( FSFpePtr conn );
-static void _fs_try_reconnect ( FSFpePtr conn );
 static void fs_send_query_bitmaps ( FontPathElementPtr fpe, 
 				   FSBlockDataPtr blockrec );
 static int fs_send_close_font ( FontPathElementPtr fpe, Font id );
@@ -132,7 +131,33 @@ char _fs_glyph_undefined;
 char _fs_glyph_requested;
 char _fs_glyph_zero_length;
 
+static int  generationCount;
+
 int FontServerRequestTimeout = 30 * 1000;
+
+static void
+_fs_close_server (FSFpePtr conn);
+
+static FSFpePtr
+_fs_init_conn (char *servername);
+
+static int
+_fs_wait_connect (FSFpePtr conn);
+
+static int
+_fs_send_init_packets (FSFpePtr conn);
+
+static void
+_fs_check_reconnect (FSFpePtr conn);
+
+static void
+_fs_start_reconnect (FSFpePtr conn);
+
+static void
+_fs_free_conn (FSFpePtr conn);
+
+static int
+fs_free_fpe(FontPathElementPtr fpe);
 
 /*
  * Font server access
@@ -225,142 +250,6 @@ _fs_client_resolution(FSFpePtr conn)
     }
 }
 
-/*
- * sends the stuff that's meaningful to a newly opened or reset FS
- */
-static int
-fs_send_init_packets(FSFpePtr conn)
-{
-    fsSetResolutionReq srreq;
-    fsSetCataloguesReq screq;
-    fsListCataloguesReq lcreq;
-    fsListCataloguesReply *lcreply;
-    int         num_cats,
-                clen,
-                len;
-    char       *client_cat = (char *) 0,
-               *cp,
-               *sp,
-               *end;
-    int         num_res;
-    FontResolutionPtr res;
-    int         err = Successful;
-    int		ret;
-
-#define	CATALOGUE_SEP	'+'
-
-    res = GetClientResolutions(&num_res);
-    if (num_res) {
-	srreq.reqType = FS_SetResolution;
-	srreq.num_resolutions = num_res;
-	srreq.length = (SIZEOF(fsSetResolutionReq) +
-			(num_res * SIZEOF(fsResolution)) + 3) >> 2;
-
-	_fs_add_req_log(conn, FS_SetResolution);
-	if (_fs_write(conn, (char *) &srreq, SIZEOF(fsSetResolutionReq)) == -1)
-	{
-	    err = BadFontPath;
-	    goto fail;
-	}
-	if (_fs_write_pad(conn, (char *) res, (num_res * SIZEOF(fsResolution))) == -1)
-	{
-	    err = BadFontPath;
-	    goto fail;
-	}
-    }
-    sp = strrchr(conn->servername, '/');
-
-    /* don't get tricked by a non-existant catalogue list */
-    if (sp == strchr(conn->servername, '/')) {
-	/*
-	 * try original name -- this might be an alternate with no catalogues
-	 */
-	sp = strrchr(conn->requestedname, '/');
-	if (sp == strchr(conn->requestedname, '/'))
-		sp = (char *) 0;
-    }
-    if (sp) {			/* turn cats into counted list */
-	sp++;
-	/* allocate more than enough room */
-	cp = client_cat = (char *) xalloc(strlen(conn->servername));
-	if (!cp) {
-	    err = BadAlloc;
-	    goto fail;
-	}
-	num_cats = 0;
-	while (*sp) {
-	    end = strchr(sp, CATALOGUE_SEP);
-	    if (!end)
-		end = sp + strlen(sp);
-	    *cp++ = len = end - sp;
-	    num_cats++;
-	    memmove(cp, sp, len);
-	    sp += len;
-	    if (*sp == CATALOGUE_SEP)
-		sp++;
-	    cp += len;
-	}
-	clen = cp - client_cat;
-	/* our list checked out, so send it */
-	screq.reqType = FS_SetCatalogues;
-	screq.num_catalogues = num_cats;
-	screq.length = (SIZEOF(fsSetCataloguesReq) + clen + 3) >> 2;
-
-	_fs_add_req_log(conn, FS_SetCatalogues);
-	if (_fs_write(conn, (char *) &screq, SIZEOF(fsSetCataloguesReq)) == -1)
-	{
-	    err = BadFontPath;
-	    goto fail;
-	}
-	if (_fs_write_pad(conn, (char *) client_cat, clen) == -1)
-	{
-	    err = BadFontPath;
-	    goto fail;
-	}
-
-	/*
-	 * now sync up with the font server, to see if an error was generated
-	 * by a bogus catalogue
-	 */
-	lcreq.reqType = FS_ListCatalogues;
-	lcreq.length = (SIZEOF(fsListCataloguesReq)) >> 2;
-	lcreq.maxNames = 0;
-	lcreq.nbytes = 0;
-	_fs_add_req_log(conn, FS_SetCatalogues);
-	if (_fs_write(conn, (char *) &lcreq, SIZEOF(fsListCataloguesReq)) == -1)
-	{
-	    err = BadFontPath;
-	    goto fail;
-	}
-
-	if (fs_await_reply (conn) != FSIO_READY)
-	{
-	    err = BadFontPath;
-	    goto fail;
-	}
-	
-	/*
-	 * next bit will either by the ListCats reply, or an error followed by
-	 * the reply
-	 */
-	lcreply = (fsListCataloguesReply *) fs_get_reply (conn, &ret);
-	if (!lcreply)
-	{
-	    err = BadFontPath;
-	    goto fail;
-	}
-	if (lcreply->type == FS_Error &&
-	    ((fsError *) & lcreply)->major_opcode == FS_SetCatalogues) 
-	{
-	    err = BadFontPath;
-	}
-	_fs_done_read (conn, lcreply->length << 2);
-    }
-fail:
-    xfree(client_cat);
-    return err;
-}
-
 /* 
  * close font server and remove any state associated with
  * this connection - this includes any client records.
@@ -371,15 +260,7 @@ fs_close_conn(FSFpePtr conn)
 {
     FSClientPtr	client, nclient;
 
-    /* XXX - hack.  The right fix is to remember that the font server
-       has gone away when we first discovered it. */
-    if (conn->trans_conn)
-        _FontTransClose (conn->trans_conn);
-
-    if (conn->fs_fd != -1)
-	FD_CLR(conn->fs_fd, &_fs_fd_mask);
-
-    _fs_io_reinit (conn);
+    _fs_close_server (conn);
     
     for (client = conn->clients; client; client = nclient) 
     {
@@ -401,6 +282,7 @@ fs_init_fpe(FontPathElementPtr fpe)
     FSFpePtr    conn;
     char       *name;
     int         err;
+    int		ret;
 
     /* open font server */
     /* create FS specific fpe info */
@@ -410,36 +292,33 @@ fs_init_fpe(FontPathElementPtr fpe)
     if (*name == ':')
 	name++;			/* skip ':' */
 
-    conn = _fs_open_server(name);
-    if (conn) 
-    {
-	conn->requestedname = fpe->name; /* stash this for later init use */
-	fpe->private = (pointer) conn;
-	err = fs_send_init_packets(conn);
-	if (err == Successful)
-	    err = init_fs_handlers(fpe, fs_block_handler);
-	if (err == Successful)
-	{
-	    FD_SET(conn->fs_fd, &_fs_fd_mask);
-	    conn->attemptReconnect = TRUE;
-	    /* hook into chain of all font servers */
-	    conn->next = fs_fpes;
-	    fs_fpes = conn;
-	}
-	else
-	{
-	    fs_close_conn(conn);
-	    _fs_free_conn (conn);
-	    fpe->private = 0;
-	}
-    }
+    conn = _fs_init_conn (name);
+    if (!conn)
+	err = AllocError;
     else
     {
-	if (ECHECK(ENOMEM))
+	err = init_fs_handlers (fpe, fs_block_handler);
+	if (err != Successful)
+	{
+	    _fs_free_conn (conn);
 	    err = AllocError;
+	}
 	else
-	    err = BadFontPath;
+	{
+	    fpe->private = conn;
+	    conn->next = fs_fpes;
+	    fs_fpes = conn;
+	    ret = _fs_wait_connect (conn);
+	    if (ret != FSIO_READY)
+	    {
+		fs_free_fpe (fpe);
+		err = BadFontPath;
+	    }
+	    else
+		err = Successful;
+	}
     }
+    
     if (err == Successful)
     {
 #ifdef NCD
@@ -467,7 +346,7 @@ fs_init_fpe(FontPathElementPtr fpe)
 static int
 fs_reset_fpe(FontPathElementPtr fpe)
 {
-    (void) fs_send_init_packets((FSFpePtr) fpe->private);
+    (void) _fs_send_init_packets((FSFpePtr) fpe->private);
     return Successful;
 }
 
@@ -528,6 +407,7 @@ fs_new_block_rec(FontPathElementPtr fpe, pointer client, int type)
 	size = sizeof(FSBlockedListInfoRec);
 	break;
     default:
+	size = 0;
 	break;
     }
     blockrec = (FSBlockDataPtr) xalloc(sizeof(FSBlockDataRec) + size);
@@ -535,7 +415,7 @@ fs_new_block_rec(FontPathElementPtr fpe, pointer client, int type)
 	return (FSBlockDataPtr) 0;
     blockrec->data = (pointer) (blockrec + 1);
     blockrec->client = client;
-    blockrec->sequenceNumber = conn->current_seq + 1;
+    blockrec->sequenceNumber = -1;
     blockrec->errcode = StillWorking;
     blockrec->type = type;
     blockrec->depending = 0;
@@ -547,6 +427,23 @@ fs_new_block_rec(FontPathElementPtr fpe, pointer client, int type)
     *prev = blockrec;
 
     return blockrec;
+}
+
+static void
+_fs_set_pending_reply (FSFpePtr conn)
+{
+    FSBlockDataPtr  blockrec;
+    
+    for (blockrec = conn->blockedRequests; blockrec; blockrec = blockrec->next)
+	if (blockrec->errcode == StillWorking)
+	    break;
+    if (blockrec)
+    {
+	conn->blockedReplyTime = GetTimeInMillis () + FontServerRequestTimeout;
+	_fs_mark_block (conn, FS_PENDING_REPLY);
+    }
+    else
+	_fs_unmark_block (conn, FS_PENDING_REPLY);
 }
 
 static void
@@ -567,16 +464,7 @@ _fs_remove_block_rec(FSFpePtr conn, FSBlockDataPtr blockrec)
 	    xfree(bglyph->expected_ranges);
     }
     xfree(blockrec);
-    for (blockrec = conn->blockedRequests; blockrec; blockrec = blockrec->next)
-	if (blockrec->errcode == StillWorking)
-	    break;
-    if (blockrec)
-    {
-	conn->blockedReplyTime = GetTimeInMillis () + FontServerRequestTimeout;
-	_fs_mark_block (conn, FS_PENDING_REPLY);
-    }
-    else
-	_fs_unmark_block (conn, FS_PENDING_REPLY);
+    _fs_set_pending_reply (conn);
 }
 
 static void
@@ -750,13 +638,19 @@ fs_reply_ready (FSFpePtr conn)
 }
 
 static void
-_fs_prepare_for_reply (FSFpePtr conn)
+_fs_pending_reply (FSFpePtr conn)
 {
     if (!(conn->blockState & FS_PENDING_REPLY))
     {
 	_fs_mark_block (conn, FS_PENDING_REPLY);
 	conn->blockedReplyTime = GetTimeInMillis () + FontServerRequestTimeout;
     }
+}
+
+static void
+_fs_prepare_for_reply (FSFpePtr conn)
+{
+    _fs_pending_reply (conn);
     _fs_flush (conn);
 }
 
@@ -1317,12 +1211,19 @@ fs_block_handler(pointer data, OSTimePtr wt, pointer LastSelectMask)
      */
     else if (fs_blockState & (FS_BROKEN_WRITE|
 			      FS_BROKEN_CONNECTION|
-			      FS_PENDING_REPLY))
+			      FS_PENDING_REPLY|
+			      FS_RECONNECTING))
     {
 	now = GetTimeInMillis ();
 	earliest = now + 10000000;
 	for (conn = fs_fpes; conn; conn = conn->next)
 	{
+	    if (conn->blockState & FS_RECONNECTING)
+	    {
+		wakeup = conn->blockedConnectTime;
+		if (TimeCmp (wakeup, <, earliest))
+		    earliest = wakeup;
+	    }
 	    if (conn->blockState & FS_BROKEN_CONNECTION)
 	    {
 		wakeup = conn->brokenConnectionTime;
@@ -1447,9 +1348,10 @@ fs_wakeup(FontPathElementPtr fpe, unsigned long *mask)
      * Don't continue if the fd is -1 (which will be true when the
      * font server terminates
      */
-    /* see if there's any data to be read */
-    if ((conn->blockState & FS_COMPLETE_REPLY) ||
-	(conn->fs_fd != -1 && FD_ISSET(conn->fs_fd, LastSelectMask)))
+    if ((conn->blockState & FS_RECONNECTING))
+	_fs_check_reconnect (conn);
+    else if ((conn->blockState & FS_COMPLETE_REPLY) ||
+	     (conn->fs_fd != -1 && FD_ISSET(conn->fs_fd, LastSelectMask)))
 	fs_read_reply (fpe, 0);
     if (conn->blockState & (FS_PENDING_REPLY|FS_BROKEN_CONNECTION|FS_BROKEN_WRITE))
 	_fs_do_blocked (conn);
@@ -1463,7 +1365,7 @@ fs_wakeup(FontPathElementPtr fpe, unsigned long *mask)
 
 	if (conn->blockState || conn->blockedRequests || lastState || lastBlock)
 	{
-	    fprintf (stderr, "  Block State 0x%x\n", conn->blockState);
+	    fprintf (stderr, "  Block State 0x%x\n", (int) conn->blockState);
 	    lastState = conn->blockState;
 	    lastBlock = conn->blockedRequests;
 	}
@@ -1499,32 +1401,29 @@ fs_wakeup(FontPathElementPtr fpe, unsigned long *mask)
 }
 
 /*
- * Reconnection code
+ * Notice a dead connection and prepare for reconnect
  */
 
 void
 _fs_connection_died(FSFpePtr conn)
 {
-    if (!conn->attemptReconnect)
+    if (conn->blockState & FS_BROKEN_CONNECTION)
 	return;
-    conn->attemptReconnect = FALSE;
     fs_close_conn(conn);
-    conn->fs_fd = -1;
-    conn->trans_conn = NULL;
-    conn->brokenConnectionTime = GetTimeInMillis () + FS_RECONNECT_POLL;
+    conn->brokenConnectionTime = GetTimeInMillis ();
     _fs_mark_block (conn, FS_BROKEN_CONNECTION);
-    _fs_unmark_block (conn, FS_BROKEN_WRITE|FS_PENDING_WRITE);
+    _fs_unmark_block (conn, FS_BROKEN_WRITE|FS_PENDING_WRITE|FS_RECONNECTING);
 }
 
+/*
+ * Signal clients that the connection has come back up
+ */
 static int
 _fs_restart_connection(FSFpePtr conn)
 {
     FSBlockDataPtr block;
 
-    conn->current_seq = 0;
-    FD_SET(conn->fs_fd, &_fs_fd_mask);
-    if (!fs_send_init_packets(conn))
-	return FALSE;
+    _fs_unmark_block (conn, FS_GIVE_UP);
     while ((block = (FSBlockDataPtr) conn->blockedRequests)) 
     {
 	if (block->errcode == StillWorking)
@@ -1561,23 +1460,6 @@ _fs_giveup (FSFpePtr conn)
     if (conn->fs_fd >= 0)
 	_fs_connection_died (conn);
 }
-    
-/*
- * See if the font server can be contacted now
- */
-static void
-_fs_try_reconnect (FSFpePtr conn)
-{
-    if (_fs_reopen_server(conn) && _fs_restart_connection(conn)) {
-#ifdef DEBUG
-	fprintf (stderr, "reconnected to \"%s\"\n", conn->servername);
-#endif
-	conn->attemptReconnect = TRUE;
-	_fs_unmark_block (conn, FS_BROKEN_CONNECTION|FS_GIVE_UP);
-    }
-    else
-	conn->brokenConnectionTime = GetTimeInMillis () + FS_RECONNECT_POLL;
-}
 
 static void
 _fs_do_blocked (FSFpePtr conn)
@@ -1596,7 +1478,7 @@ _fs_do_blocked (FSFpePtr conn)
 	{
 	    /* Try to reconnect broken connections */
 	    if (TimeCmp (conn->brokenConnectionTime, <=, now))
-		_fs_try_reconnect (conn);
+		_fs_start_reconnect (conn);
 	}
 	else if (conn->blockState & FS_BROKEN_WRITE)
 	{
@@ -1629,16 +1511,12 @@ fs_send_open_font(pointer client, FontPathElementPtr fpe, Mask flags,
     int			    err;
     unsigned char	    buf[1024];
 
-    conn = (FSFpePtr) fpe->private;
     if (conn->blockState & FS_GIVE_UP)
 	return BadFontName;
     
     if (namelen > sizeof (buf) - 1)
 	return BadFontName;
     
-    _fs_client_access (conn, client, (flags & FontOpenSync) != 0);
-    _fs_client_resolution(conn);
-
     /*
      * Get the font structure put together, either by reusing
      * the existing one or creating a new one
@@ -1670,7 +1548,6 @@ fs_send_open_font(pointer client, FontPathElementPtr fpe, Mask flags,
 	}
 	else
 	    namelen = strlen(name);
-	bfont->freeFont = FALSE;
     }
     else
     {
@@ -1691,6 +1568,16 @@ fs_send_open_font(pointer client, FontPathElementPtr fpe, Mask flags,
 	return AllocError;
     }
     
+    /*
+     * Must check this before generating any protocol, otherwise we'll
+     * mess up a reconnect in progress
+     */
+    if (conn->blockState & (FS_BROKEN_CONNECTION | FS_RECONNECTING))
+    {
+	_fs_pending_reply (conn);
+	return Suspended;
+    }
+	
     fsd->generation = conn->generation;
 
     bfont = (FSBlockedFontPtr) blockrec->data;
@@ -1701,6 +1588,9 @@ fs_send_open_font(pointer client, FontPathElementPtr fpe, Mask flags,
     bfont->format = fsd->format;
     bfont->clients_depending = (FSClientsDependingPtr)0;
     bfont->freeFont = (flags & FontReopen) == 0;
+
+    _fs_client_access (conn, client, (flags & FontOpenSync) != 0);
+    _fs_client_resolution(conn);
 
     /* do an FS_OpenFont, FS_QueryXInfo and FS_QueryXExtents */
     buf[0] = (unsigned char) namelen;
@@ -1715,6 +1605,8 @@ fs_send_open_font(pointer client, FontPathElementPtr fpe, Mask flags,
     _fs_write(conn, (char *) &openreq, SIZEOF(fsOpenBitmapFontReq));
     _fs_write_pad(conn, (char *) buf, namelen + 1);
 
+    blockrec->sequenceNumber = conn->current_seq;
+    
     inforeq.reqType = FS_QueryXInfo;
     inforeq.id = fsd->fontid;
     inforeq.length = SIZEOF(fsQueryXInfoReq) >> 2;
@@ -1838,6 +1730,8 @@ fs_send_close_font(FontPathElementPtr fpe, Font id)
     FSFpePtr    conn = (FSFpePtr) fpe->private;
     fsCloseReq  req;
 
+    if (conn->blockState & FS_GIVE_UP)
+	return Successful;
     /* tell the font server to close the font */
     req.reqType = FS_CloseFont;
     req.length = SIZEOF(fsCloseReq) >> 2;
@@ -1905,7 +1799,7 @@ fs_read_glyphs(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
 			    err;
     int			    nranges = 0;
     int			    ret;
-    fsRange		    *ranges, *nextrange;
+    fsRange		    *ranges, *nextrange = 0;
     unsigned long	    minchar, maxchar;
 
     rep = (fsQueryXBitmaps16Reply *) fs_get_reply (conn, &ret);
@@ -2052,6 +1946,12 @@ fs_send_load_glyphs(pointer client, FontPtr pfont,
     blockedglyph->expected_ranges = ranges;
     blockedglyph->clients_depending = (FSClientsDependingPtr)0;
 
+    if (conn->blockState & (FS_BROKEN_CONNECTION|FS_RECONNECTING))
+    {
+	_fs_pending_reply (conn);
+	return Suspended;
+    }
+    
     /* send the request */
     req.reqType = FS_QueryXBitmaps16;
     req.fid = ((FSFontDataPtr) pfont->fpePrivate)->fontid;
@@ -2066,6 +1966,8 @@ fs_send_load_glyphs(pointer client, FontPtr pfont,
     _fs_add_req_log(conn, FS_QueryXBitmaps16);
     _fs_write(conn, (char *) &req, SIZEOF(fsQueryXBitmaps16Req));
 
+    blockrec->sequenceNumber = conn->current_seq;
+    
     /* Send ranges to the server... pack into a char array by hand
        to avoid structure-packing portability problems and to
        handle swapping for version1 protocol */
@@ -2344,9 +2246,6 @@ fs_send_list_fonts(pointer client, FontPathElementPtr fpe, char *pattern,
     FSBlockedListPtr	blockedlist;
     fsListFontsReq	req;
 
-    _fs_client_access (conn, client, FALSE);
-    _fs_client_resolution(conn);
-
     if (conn->blockState & FS_GIVE_UP)
 	return BadFontName;
     
@@ -2357,6 +2256,15 @@ fs_send_list_fonts(pointer client, FontPathElementPtr fpe, char *pattern,
     blockedlist = (FSBlockedListPtr) blockrec->data;
     blockedlist->names = newnames;
 
+    if (conn->blockState & (FS_BROKEN_CONNECTION | FS_RECONNECTING))
+    {
+	_fs_pending_reply (conn);
+	return Suspended;
+    }
+	
+    _fs_client_access (conn, client, FALSE);
+    _fs_client_resolution(conn);
+
     /* send the request */
     req.reqType = FS_ListFonts;
     req.maxNames = maxnames;
@@ -2366,6 +2274,8 @@ fs_send_list_fonts(pointer client, FontPathElementPtr fpe, char *pattern,
     _fs_write(conn, (char *) &req, SIZEOF(fsListFontsReq));
     _fs_write_pad(conn, (char *) pattern, patlen);
 
+    blockrec->sequenceNumber = conn->current_seq;
+    
 #ifdef NCD
     if (configData.ExtendedFontDiags) {
 	char        buf[256];
@@ -2420,7 +2330,6 @@ fs_read_list_info(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
     FSFpePtr			conn = (FSFpePtr) fpe->private;
     fsPropInfo			*pi;
     fsPropOffset		*po;
-    char			*name;
     pointer			pd;
     int				ret;
     int				err;
@@ -2457,9 +2366,9 @@ fs_read_list_info(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
      * the spec, version 1 was respecified to match the FS.
      * Version 2 matches the original intent
      */
-    if (conn->fsMajorVersion == 1)
+    if (conn->fsMajorVersion <= 1)
     {
-	memcpy (name, buf, rep->nameLength);
+	memcpy (binfo->name, buf, rep->nameLength);
 	buf += _fs_pad_length (rep->nameLength);
     }
     pi = (fsPropInfo *) buf;
@@ -2468,7 +2377,7 @@ fs_read_list_info(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
     buf += pi->num_offsets * SIZEOF (fsPropOffset);
     pd = (pointer) buf;
     buf += pi->data_len;
-    if (conn->fsMajorVersion != 1)
+    if (conn->fsMajorVersion > 1)
     {
 	memcpy (binfo->name, buf, rep->nameLength);
 	buf += _fs_pad_length (rep->nameLength);
@@ -2507,9 +2416,6 @@ fs_start_list_with_info(pointer client, FontPathElementPtr fpe,
     FSBlockedListInfoPtr    binfo;
     fsListFontsWithXInfoReq req;
 
-    _fs_client_access (conn, client, FALSE);
-    _fs_client_resolution(conn);
-
     if (conn->blockState & FS_GIVE_UP)
 	return BadFontName;
 
@@ -2517,9 +2423,19 @@ fs_start_list_with_info(pointer client, FontPathElementPtr fpe,
     blockrec = fs_new_block_rec(fpe, client, FS_LIST_WITH_INFO);
     if (!blockrec)
 	return AllocError;
+    
     binfo = (FSBlockedListInfoPtr) blockrec->data;
     bzero((char *) binfo, sizeof(FSBlockedListInfoRec));
     binfo->status = FS_LFWI_WAITING;
+
+    if (conn->blockState & (FS_BROKEN_CONNECTION | FS_RECONNECTING))
+    {
+	_fs_pending_reply (conn);
+	return Suspended;
+    }
+    
+    _fs_client_access (conn, client, FALSE);
+    _fs_client_resolution(conn);
 
     /* send the request */
     req.reqType = FS_ListFontsWithXInfo;
@@ -2530,6 +2446,8 @@ fs_start_list_with_info(pointer client, FontPathElementPtr fpe,
     (void) _fs_write(conn, (char *) &req, SIZEOF(fsListFontsWithXInfoReq));
     (void) _fs_write_pad(conn, pattern, len);
 
+    blockrec->sequenceNumber = conn->current_seq;
+    
 #ifdef NCD
     if (configData.ExtendedFontDiags) {
 	char        buf[256];
@@ -2658,6 +2576,12 @@ _fs_client_access (FSFpePtr conn, pointer client, Bool sync)
     int			    authlen;
     Bool		    new_cur = FALSE;
 
+#ifdef DEBUG
+    if (conn->blockState & (FS_RECONNECTING|FS_BROKEN_CONNECTION))
+    {
+	fprintf (stderr, "Sending requests without a connection\n");
+    }
+#endif
     for (prev = &conn->clients; (cur = *prev); prev = &cur->next)
     {
 	if (cur->client == client)
@@ -2715,6 +2639,505 @@ _fs_client_access (FSFpePtr conn, pointer client, Bool sync)
     	_fs_write(conn, (char *) &setac, sizeof (fsSetAuthorizationReq));
 	conn->curacid = cur->acid;
     }
+}
+
+/*
+ * Poll a pending connect
+ */
+
+static int
+_fs_check_connect (FSFpePtr conn)
+{
+    int	    ret;
+    
+    ret = _fs_poll_connect (conn->trans_conn, 0);
+    switch (ret) {
+    case FSIO_READY:
+	conn->fs_fd = _FontTransGetConnectionNumber (conn->trans_conn);
+	FD_SET (conn->fs_fd, &_fs_fd_mask);
+	break;
+    case FSIO_BLOCK:
+	break;
+    }
+    return ret;
+}
+
+/*
+ * Return an FSIO status while waiting for the completed connection
+ * reply to arrive
+ */
+
+static fsConnSetup *
+_fs_get_conn_setup (FSFpePtr conn, int *error, int *setup_len)
+{
+    int			ret;
+    char		*data;
+    int			headlen;
+    int			len;
+    fsConnSetup		*setup;
+    fsConnSetupAccept	*accept;
+
+    ret = _fs_start_read (conn, SIZEOF (fsConnSetup), &data);
+    if (ret != FSIO_READY)
+    {
+	*error = ret;
+	return 0;
+    }
+    
+    setup = (fsConnSetup *) data;
+    if (setup->major_version > FS_PROTOCOL)
+    {
+	*error = FSIO_ERROR;
+	return 0;
+    }
+
+    headlen = (SIZEOF (fsConnSetup) +
+	       (setup->alternate_len << 2) +
+	       (setup->auth_len << 2));
+    /* On anything but Success, no extra data is sent */
+    if (setup->status != AuthSuccess)
+    {
+	len = headlen;
+    }
+    else
+    {
+	ret = _fs_start_read (conn, headlen + SIZEOF (fsConnSetupAccept), &data);
+	if (ret != FSIO_READY)
+	{
+	    *error = ret;
+	    return 0;
+	}
+	setup = (fsConnSetup *) data;
+	accept = (fsConnSetupAccept *) (data + headlen);
+	len = headlen + (accept->length << 2);
+    }
+    ret = _fs_start_read (conn, len, &data);
+    if (ret != FSIO_READY)
+    {
+	*error = ret;
+	return 0;
+    }
+    *setup_len = len;
+    return (fsConnSetup *) data;
+}
+
+static int
+_fs_send_conn_client_prefix (FSFpePtr conn)
+{
+    fsConnClientPrefix	req;
+    int			endian;
+    int			ret;
+
+    /* send setup prefix */
+    endian = 1;
+    if (*(char *) &endian)
+	req.byteOrder = 'l';
+    else
+	req.byteOrder = 'B';
+
+    req.major_version = FS_PROTOCOL;
+    req.minor_version = FS_PROTOCOL_MINOR;
+
+/* XXX add some auth info here */
+    req.num_auths = 0;
+    req.auth_len = 0;
+    ret = _fs_write (conn, (char *) &req, SIZEOF (fsConnClientPrefix));
+    if (ret != FSIO_READY)
+	return FSIO_ERROR;
+    conn->blockedConnectTime = GetTimeInMillis () + FontServerRequestTimeout;
+    return ret;
+}
+
+static int
+_fs_recv_conn_setup (FSFpePtr conn)
+{
+    int			ret;
+    fsConnSetup		*setup;
+    FSFpeAltPtr		alts;
+    int			i, alt_len;
+    int			setup_len;
+    char		*alt_save, *alt_names;
+    
+    setup = _fs_get_conn_setup (conn, &ret, &setup_len);
+    if (!setup)
+	return ret;
+    conn->current_seq = 0;
+    conn->fsMajorVersion = setup->major_version;
+    /*
+     * Create an alternate list from the initial server, but
+     * don't chain looking for alternates.
+     */
+    if (conn->alternate == 0)
+    {
+	/*
+	 * free any existing alternates list, allowing the list to
+	 * be updated
+	 */
+	if (conn->alts)
+	{
+	    xfree (conn->alts);
+	    conn->alts = 0;
+	    conn->numAlts = 0;
+	}
+	if (setup->num_alternates)
+	{
+	    alts = (FSFpeAltPtr) xalloc (setup->num_alternates * 
+					 sizeof (FSFpeAltRec) +
+					 (setup->alternate_len << 2));
+	    if (alts)
+	    {
+		alt_names = (char *) (setup + 1);
+		alt_save = (char *) (alts + setup->num_alternates);
+		for (i = 0; i < setup->num_alternates; i++)
+		{
+		    alts[i].subset = alt_names[0];
+		    alt_len = alt_names[1];
+		    alts[i].name = alt_save;
+		    memcpy (alt_save, alt_names + 2, alt_len);
+		    alt_save[alt_len] = '\0';
+		    alt_save += alt_len + 1;
+		    alt_names += _fs_pad_length (alt_len + 2);
+		}
+		conn->numAlts = setup->num_alternates;
+		conn->alts = alts;
+	    }
+	}
+    }
+    _fs_done_read (conn, setup_len);
+    if (setup->status != AuthSuccess)
+	return FSIO_ERROR;
+    return FSIO_READY;
+}
+
+static int
+_fs_open_server (FSFpePtr conn)
+{
+    int	    ret;
+    char    *servername;
+    
+    if (conn->alternate == 0)
+	servername = conn->servername;
+    else
+	servername = conn->alts[conn->alternate-1].name;
+    conn->trans_conn = _fs_connect (servername, &ret);
+    conn->blockedConnectTime = GetTimeInMillis () + FS_RECONNECT_WAIT;
+    return ret;
+}
+
+static char *
+_fs_catalog_name (char *servername)
+{
+    char    *sp;
+
+    sp = strchr (servername, '/');
+    if (!sp)
+	return 0;
+    return strrchr (sp + 1, '/');
+}
+
+static int
+_fs_send_init_packets (FSFpePtr conn)
+{
+    fsSetResolutionReq	    srreq;
+    fsSetCataloguesReq	    screq;
+    int			    num_cats,
+			    clen;
+    char		    *catalogues;
+    char		    *cat;
+    char		    len;
+    char		    *end;
+    int			    num_res;    
+    FontResolutionPtr	    res;
+
+#define	CATALOGUE_SEP	'+'
+
+    res = GetClientResolutions(&num_res);
+    if (num_res) 
+    {
+	srreq.reqType = FS_SetResolution;
+	srreq.num_resolutions = num_res;
+	srreq.length = (SIZEOF(fsSetResolutionReq) +
+			(num_res * SIZEOF(fsResolution)) + 3) >> 2;
+
+	_fs_add_req_log(conn, FS_SetResolution);
+	if (_fs_write(conn, (char *) &srreq, SIZEOF(fsSetResolutionReq)) != FSIO_READY)
+	    return FSIO_ERROR;
+	if (_fs_write_pad(conn, (char *) res, (num_res * SIZEOF(fsResolution))) != FSIO_READY)
+	    return FSIO_ERROR;
+    }
+
+    catalogues = 0;
+    if (conn->alternate != 0)
+	catalogues = _fs_catalog_name (conn->alts[conn->alternate-1].name);
+    if (!catalogues)
+	catalogues = _fs_catalog_name (conn->servername);
+    
+    if (!catalogues)
+    {
+	conn->has_catalogues = FALSE;
+	return FSIO_READY;
+    }
+    conn->has_catalogues = TRUE;
+    
+    /* turn cats into counted list */
+    catalogues++;
+
+    cat = catalogues;
+    num_cats = 0;
+    clen = 0;
+    while (*cat)
+    {
+	num_cats++;
+	end = strchr(cat, CATALOGUE_SEP);
+	if (!end)
+	    end = cat + strlen (cat);
+	clen += (end - cat) + 1;	/* length byte + string */
+	cat = end;
+    }
+
+    screq.reqType = FS_SetCatalogues;
+    screq.num_catalogues = num_cats;
+    screq.length = (SIZEOF(fsSetCataloguesReq) + clen + 3) >> 2;
+    
+    _fs_add_req_log(conn, FS_SetCatalogues);
+    if (_fs_write(conn, (char *) &screq, SIZEOF(fsSetCataloguesReq)) != FSIO_READY)
+	return FSIO_ERROR;
+    
+    while (*cat)
+    {
+	num_cats++;
+	end = strchr(cat, CATALOGUE_SEP);
+	if (!end)
+	    end = cat + strlen (cat);
+	len = end - cat;
+	if (_fs_write (conn, &len, 1) != FSIO_READY)
+	    return FSIO_ERROR;
+	if (_fs_write (conn, cat, (int) len) != FSIO_READY)
+	    return FSIO_ERROR;
+	cat = end;
+    }
+    
+    if (_fs_write (conn, "....", _fs_pad_length (clen) - clen) != FSIO_READY)
+	return FSIO_ERROR;
+    
+    return FSIO_READY;
+}
+
+static int
+_fs_send_cat_sync (FSFpePtr conn)
+{
+    fsListCataloguesReq	    lcreq;
+    
+    /*
+     * now sync up with the font server, to see if an error was generated
+     * by a bogus catalogue
+     */
+    lcreq.reqType = FS_ListCatalogues;
+    lcreq.length = (SIZEOF(fsListCataloguesReq)) >> 2;
+    lcreq.maxNames = 0;
+    lcreq.nbytes = 0;
+    _fs_add_req_log(conn, FS_SetCatalogues);
+    if (_fs_write(conn, (char *) &lcreq, SIZEOF(fsListCataloguesReq)) != FSIO_READY)
+	return FSIO_ERROR;
+    conn->blockedConnectTime = GetTimeInMillis () + FontServerRequestTimeout;
+    return FSIO_READY;
+}
+
+static int
+_fs_recv_cat_sync (FSFpePtr conn)
+{
+    fsGenericReply  *reply;
+    fsError	    *error;
+    int		    err;
+    int		    ret;
+
+    reply = fs_get_reply (conn, &err);
+    if (!reply)
+	return err;
+    
+    ret = FSIO_READY;
+    if (reply->type == FS_Error)
+    {
+	error = (fsError *) reply;
+	if (error->major_opcode == FS_SetCatalogues)
+	    ret = FSIO_ERROR;
+    }
+    _fs_done_read (conn, reply->length << 2);
+    return ret;
+}
+
+static void
+_fs_close_server (FSFpePtr conn)
+{
+    _fs_unmark_block (conn, FS_PENDING_WRITE|FS_BROKEN_WRITE|FS_COMPLETE_REPLY|FS_BROKEN_CONNECTION);
+    if (conn->trans_conn)
+    {
+	_FontTransClose (conn->trans_conn);
+	conn->trans_conn = 0;
+	_fs_io_reinit (conn);
+    }
+    if (conn->fs_fd >= 0)
+    {
+	FD_CLR (conn->fs_fd, &_fs_fd_mask);
+	conn->fs_fd = -1;
+    }
+    conn->fs_conn_state = FS_CONN_UNCONNECTED;
+}
+
+static int
+_fs_do_setup_connection (FSFpePtr conn)
+{
+    int	    ret;
+    
+    do
+    {
+#ifdef DEBUG
+	fprintf (stderr, "fs_do_setup_connection state %d\n", conn->fs_conn_state);
+#endif
+	switch (conn->fs_conn_state) {
+	case FS_CONN_UNCONNECTED:
+	    ret = _fs_open_server (conn);
+	    break;
+	case FS_CONN_CONNECTING:
+	    ret = _fs_check_connect (conn);
+	    break;
+	case FS_CONN_CONNECTED:
+	    ret = _fs_send_conn_client_prefix (conn);
+	    break;
+	case FS_CONN_SENT_PREFIX:
+	    ret = _fs_recv_conn_setup (conn);
+	    break;
+	case FS_CONN_RECV_INIT:
+	    ret = _fs_send_init_packets (conn);
+	    if (conn->has_catalogues)
+		ret = _fs_send_cat_sync (conn);
+	    break;
+	case FS_CONN_SENT_CAT:
+	    if (conn->has_catalogues)
+		ret = _fs_recv_cat_sync (conn);
+	    else
+		ret = FSIO_READY;
+	    break;
+	default:
+	    ret = FSIO_READY;
+	    break;
+	}
+	switch (ret) {
+	case FSIO_READY:
+	    if (conn->fs_conn_state < FS_CONN_RUNNING)
+		conn->fs_conn_state++;
+	    break;
+	case FSIO_BLOCK:
+	    if (TimeCmp (GetTimeInMillis (), <, conn->blockedConnectTime))
+		break;
+	    ret = FSIO_ERROR;
+	    /* fall through... */
+	case FSIO_ERROR:
+	    _fs_close_server (conn);
+	    /*
+	     * Try the next alternate
+	     */
+	    if (conn->alternate < conn->numAlts)
+	    {
+		conn->alternate++;
+		ret = FSIO_READY;
+	    }
+	    else
+		conn->alternate = 0;
+	    break;
+	}
+    } while (conn->fs_conn_state != FS_CONN_RUNNING && ret == FSIO_READY);
+    if (ret == FSIO_READY)
+	conn->generation = ++generationCount;
+    return ret;
+}
+
+static int
+_fs_wait_connect (FSFpePtr conn)
+{
+    int	    ret;
+
+    for (;;)
+    {
+	ret = _fs_do_setup_connection (conn);
+	if (ret != FSIO_BLOCK)
+	    break;
+	if (conn->fs_conn_state <= FS_CONN_CONNECTING)
+	    ret = _fs_poll_connect (conn->trans_conn, 1000);
+	else
+	    ret = _fs_wait_for_readable (conn, 1000);
+	if (ret == FSIO_ERROR)
+	    break;
+    }
+    return ret;
+}
+
+/*
+ * Poll a connection in the process of reconnecting
+ */
+static void
+_fs_check_reconnect (FSFpePtr conn)
+{
+    int	    ret;
+    
+    ret = _fs_do_setup_connection (conn);
+    switch (ret) {
+    case FSIO_READY:
+	_fs_unmark_block (conn, FS_RECONNECTING|FS_GIVE_UP);
+	_fs_restart_connection (conn);
+	break;
+    case FSIO_BLOCK:
+	break;
+    case FSIO_ERROR:
+	conn->brokenConnectionTime = GetTimeInMillis () + FS_RECONNECT_POLL;
+	break;
+    }
+}
+
+/*
+ * Start the reconnection process
+ */
+static void
+_fs_start_reconnect (FSFpePtr conn)
+{
+    if (conn->blockState & FS_RECONNECTING)
+	return;
+    conn->alternate = 0;
+    _fs_mark_block (conn, FS_RECONNECTING);
+    _fs_unmark_block (conn, FS_BROKEN_CONNECTION);
+    _fs_check_reconnect (conn);
+}
+
+
+static FSFpePtr
+_fs_init_conn (char *servername)
+{
+    FSFpePtr	conn;
+
+    conn = xalloc (sizeof (FSFpeRec) + strlen (servername) + 1);
+    if (!conn)
+	return 0;
+    memset (conn, '\0', sizeof (FSFpeRec));
+    if (!_fs_io_init (conn))
+    {
+	xfree (conn);
+	return 0;
+    }
+    conn->servername = (char *) (conn + 1);
+    conn->fs_conn_state = FS_CONN_UNCONNECTED;
+    conn->fs_fd = -1;
+    strcpy (conn->servername, servername);
+    return conn;
+}
+
+static void
+_fs_free_conn (FSFpePtr conn)
+{
+    _fs_close_server (conn);
+    _fs_io_fini (conn);
+    if (conn->alts)
+	xfree (conn->alts);
+    xfree (conn);
 }
 
 /*

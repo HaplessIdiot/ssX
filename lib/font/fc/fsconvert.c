@@ -22,12 +22,13 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
-/* $XFree86: xc/lib/font/fc/fsconvert.c,v 1.7 1999/08/28 09:00:32 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fsconvert.c,v 1.8 1999/12/13 02:52:51 robin Exp $ */
 /*
  * FS data conversion
  */
 
 #include        <X11/X.h>
+#include 	<X11/Xtrans.h>
 #include	<X11/Xpoll.h>
 #include	"FS.h"
 #include	"FSproto.h"

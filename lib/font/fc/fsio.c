@@ -23,7 +23,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
-/* $XFree86: xc/lib/font/fc/fsio.c,v 3.9 1999/12/13 02:52:53 robin Exp $ */
+/* $XFree86: xc/lib/font/fc/fsio.c,v 3.10 1999/12/27 00:39:27 robin Exp $ */
 /*
  * font server i/o routines
  */
@@ -79,16 +79,7 @@ _fs_resize (FSBufPtr buf, long size);
 static void
 _fs_downsize (FSBufPtr buf, long size);
     
-static void
-_fs_io_fini (FSFpePtr conn);
-
-static int
-_fs_read (FSFpePtr conn, char *buf, long size);
-
-static int
-_fs_read_pad (FSFpePtr conn, char *buf, long size);
-
-static int
+int
 _fs_poll_connect (XtransConnInfo trans_conn, int timeout)
 {
     fd_set	    w_mask;
@@ -105,23 +96,27 @@ _fs_poll_connect (XtransConnInfo trans_conn, int timeout)
 	ret = Select (fs_fd + 1, NULL, &w_mask, NULL, &tv);
     } while (ret < 0 && ECHECK(EINTR));
     if (ret == 0)
-        ret = -1;
-    return ret;
+	return FSIO_BLOCK;
+    if (ret < 0)
+	return FSIO_ERROR;
+    return FSIO_READY;
 }
 
-static XtransConnInfo
-_fs_connect(char *servername, int timeout)
+XtransConnInfo
+_fs_connect(char *servername, int *err)
 {
-    XtransConnInfo trans_conn;		/* transport connection object */
-    int         ret = -1;
+    XtransConnInfo  trans_conn;		/* transport connection object */
+    int		    ret;
+    int		    i;
 
     /*
      * Open the network connection.
      */
     if( (trans_conn=_FontTransOpenCOTSClient(servername)) == NULL )
-	{
-	return (NULL);
-	}
+    {
+	*err = FSIO_ERROR;
+	return 0;
+    }
 
     /*
      * Set the connection non-blocking since we use select() to block.
@@ -130,249 +125,27 @@ _fs_connect(char *servername, int timeout)
     _FontTransSetOption(trans_conn, TRANS_NONBLOCKING, 1);
     
     do
-	ret = _FontTransConnect(trans_conn,servername);
-    while (ret == TRANS_TRY_CONNECT_AGAIN);
+	i = _FontTransConnect(trans_conn,servername);
+    while (i == TRANS_TRY_CONNECT_AGAIN);
 
-    if (ret < 0)
+    if (i < 0)
     {
-	if (ret == TRANS_IN_PROGRESS)
-	{
-	    if (timeout == 0)
-		ret = 0;
-	    else
-		ret = _fs_poll_connect (trans_conn, timeout);
-	}
+	if (i == TRANS_IN_PROGRESS)
+	    ret = FSIO_BLOCK;
+	else
+	    ret = FSIO_ERROR;
     }
+    else
+	ret = FSIO_READY;
 
-    if (ret < 0)
+    if (ret == FSIO_ERROR)
     {
 	_FontTransClose(trans_conn);
-	return (NULL);
+	trans_conn = 0;
     }
 
+    *err = ret;
     return trans_conn;
-}
-
-static int  generationCount;
-
-/* ARGSUSED */
-static Bool
-_fs_setup_connection(FSFpePtr conn, char *servername, int timeout, 
-		     Bool copy_name_p)
-{
-    fsConnClientPrefix prefix;
-    fsConnSetup rep;
-    int         setuplength;
-    fsConnSetupAccept conn_accept;
-    int         endian;
-    int         i;
-    int         alt_len;
-    char       *auth_data = NULL,
-               *vendor_string = NULL,
-               *alt_data = NULL,
-               *alt_dst;
-    FSFpeAltPtr alts;
-    int         nalts;
-
-    if (!conn->trans_conn)
-    {
-	if ((conn->trans_conn = _fs_connect(servername, 5)) == NULL)
-	    return FALSE;
-    }
-
-    conn->fs_fd = _FontTransGetConnectionNumber (conn->trans_conn);
-
-    conn->generation = ++generationCount;
-
-    /* send setup prefix */
-    endian = 1;
-    if (*(char *) &endian)
-	prefix.byteOrder = 'l';
-    else
-	prefix.byteOrder = 'B';
-
-    prefix.major_version = FS_PROTOCOL;
-    prefix.minor_version = FS_PROTOCOL_MINOR;
-
-/* XXX add some auth info here */
-    prefix.num_auths = 0;
-    prefix.auth_len = 0;
-
-    if (_fs_write(conn, (char *) &prefix, (unsigned long) SIZEOF(fsConnClientPrefix)) == -1)
-	return FALSE;
-
-    /* read setup info */
-    if (_fs_read(conn, (char *) &rep, (unsigned long) SIZEOF(fsConnSetup)) == -1)
-	return FALSE;
-
-    conn->fsMajorVersion = rep.major_version;
-    if (rep.major_version > FS_PROTOCOL)
-	return FALSE;
-
-    alts = 0;
-    /* parse alternate list */
-    if ((nalts = rep.num_alternates)) {
-	setuplength = rep.alternate_len << 2;
-	alts = (FSFpeAltPtr) xalloc(nalts * sizeof(FSFpeAltRec) +
-				    setuplength);
-	if (!alts) {
-	    _FontTransClose(conn->trans_conn);
-	    ESET (ENOMEM);
-	    return FALSE;
-	}
-	alt_data = (char *) (alts + nalts);
-	if (_fs_read(conn, (char *) alt_data, (unsigned long) setuplength) == -1) {
-	    xfree(alts);
-	    return FALSE;
-	}
-	alt_dst = alt_data;
-	for (i = 0; i < nalts; i++) {
-	    alts[i].subset = alt_data[0];
-	    alt_len = alt_data[1];
-	    alts[i].name = alt_dst;
-	    memmove(alt_dst, alt_data + 2, alt_len);
-	    alt_dst[alt_len] = '\0';
-	    alt_dst += (alt_len + 1);
-	    alt_data += (2 + alt_len + padlength[(2 + alt_len) & 3]);
-	}
-    }
-    if (conn->alts)
-	xfree(conn->alts);
-    conn->alts = alts;
-    conn->numAlts = nalts;
-
-    setuplength = rep.auth_len << 2;
-    auth_data = 0;
-    if (setuplength)
-    {
-	auth_data = (char *) xalloc((unsigned long) setuplength);
-	if (!auth_data)
-	{
-	    _FontTransClose(conn->trans_conn);
-	    ESET (ENOMEM);
-	    return FALSE;
-	}
-	if (_fs_read(conn, (char *) auth_data, (unsigned long) setuplength) == -1) {
-	    xfree(auth_data);
-	    return FALSE;
-	}
-    }
-    if (rep.status != AuthSuccess) {
-	xfree(auth_data);
-	_FontTransClose(conn->trans_conn);
-	ESET (EPERM);
-	return FALSE;
-    }
-    /* get rest */
-    if (_fs_read(conn, (char *) &conn_accept, (unsigned long) SIZEOF(fsConnSetupAccept)) == -1) {
-	xfree(auth_data);
-	return FALSE;
-    }
-    if ((vendor_string = (char *)
-	 xalloc((unsigned) conn_accept.vendor_len + 1)) == NULL) {
-	xfree(auth_data);
-	_FontTransClose(conn->trans_conn);
-	ESET (ENOMEM);
-	return FALSE;
-    }
-    if (_fs_read_pad(conn, (char *) vendor_string, conn_accept.vendor_len) == -1) {
-	xfree(vendor_string);
-	xfree(auth_data);
-	return FALSE;
-    }
-    xfree(auth_data);
-    xfree(vendor_string);
-
-    if (copy_name_p)
-    {
-        conn->servername = (char *) xalloc(strlen(servername) + 1);
-        if (conn->servername == NULL)
-	    return FALSE;
-        strcpy(conn->servername, servername);
-    }
-    else
-        conn->servername = servername;
-
-    return TRUE;
-}
-
-static Bool
-_fs_try_alternates(FSFpePtr conn, int timeout)
-{
-    int         i;
-
-    for (i = 0; i < conn->numAlts; i++)
-	if (_fs_setup_connection(conn, conn->alts[i].name, timeout, TRUE))
-	    return TRUE;
-    return FALSE;
-}
-
-void
-_fs_free_conn (FSFpePtr conn)
-{
-    _fs_io_fini (conn);
-    if (conn->servername)
-	xfree (conn->servername);
-    if (conn->alts)
-	xfree (conn->alts);
-    xfree (conn);
-}
-
-FSFpePtr
-_fs_open_server(char *servername)
-{
-    FSFpePtr    conn;
-
-    conn = (FSFpePtr) xalloc(sizeof(FSFpeRec));
-    if (!conn) {
-	ESET (ENOMEM);
-	return (FSFpePtr) NULL;
-    }
-    bzero((char *) conn, sizeof(FSFpeRec));
-    if (!_fs_io_init (conn))
-    {
-	ESET (ENOMEM);
-	_fs_free_conn (conn);
-	return (FSFpePtr) NULL;
-    }
-    if (!_fs_setup_connection(conn, servername, FS_OPEN_TIMEOUT, TRUE)) {
-	if (!_fs_try_alternates(conn, FS_OPEN_TIMEOUT)) {
-	    _fs_free_conn (conn);
-	    return (FSFpePtr) NULL;
-	}
-    }
-    return conn;
-}
-
-Bool
-_fs_reopen_server(FSFpePtr conn)
-{
-    CARD32  now = GetTimeInMillis ();
-    
-    if (!conn->trans_conn)
-    {
-	conn->socketTime = now;
-	conn->trans_conn = _fs_connect (conn->servername, 0);
-    }
-    if (conn->trans_conn)
-    {
-	if (_fs_poll_connect (conn->trans_conn, 0) >= 0)
-	{
-	    if (_fs_setup_connection (conn, conn->servername, FS_REOPEN_TIMEOUT, FALSE))
-		return TRUE;
-	    _FontTransClose (conn->trans_conn);
-	    conn->trans_conn = 0;
-	    conn->fs_fd = -1;
-	}
-	if (conn->trans_conn &&
-	    (int) (now - conn->socketTime) > FS_RECONNECT_WAIT)
-	{
-	    _FontTransClose (conn->trans_conn);
-	    conn->trans_conn = 0;
-	    conn->fs_fd = -1;
-	}
-    }
-    return FALSE;
 }
 
 int
@@ -465,52 +238,6 @@ _fs_done_read (FSFpePtr conn, long size)
     conn->inBuf.remove += size;
     conn->inNeed -= size;
     _fs_downsize (&conn->inBuf, FS_BUF_MAX);
-}
-
-/*
- * Used to synchronously read things during connection setup
- */
-static int
-_fs_do_read (FSFpePtr conn, char *buf, long len, long size)
-{
-    char    *data;
-    int	    ret;
-
-    if (_fs_flush (conn) < 0)
-	return -1;
-    
-    if (size == 0)
-	return 0;
-    
-    for (;;)
-    {
-	ret = _fs_start_read (conn, size, &data);
-	switch (ret) {
-	case FSIO_READY:
-	    memcpy (buf, data, len);
-	    _fs_done_read (conn, size);
-	    return 0;
-	case FSIO_BLOCK:
-	    ret = _fs_wait_for_readable (conn, FS_REOPEN_TIMEOUT);
-	    if (ret != FSIO_READY)
-		return -1;
-	    break;
-	case FSIO_ERROR:
-	    return -1;
-	}
-    }
-}
-
-static int
-_fs_read (FSFpePtr conn, char *buf, long size)
-{
-    return _fs_do_read (conn, buf, size, size);
-}
-
-static int
-_fs_read_pad (FSFpePtr conn, char *buf, long size)
-{
-    return _fs_do_read (conn, buf, size, size + padlength[size&3]);
 }
 
 long
@@ -638,7 +365,7 @@ _fs_io_init (FSFpePtr conn)
     return TRUE;
 }
 
-static void
+void
 _fs_io_fini (FSFpePtr conn)
 {
     if (conn->outBuf.buf)
