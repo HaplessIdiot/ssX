@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.35 2002/01/15 23:03:21 herrb Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.36 2002/01/16 18:35:09 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -40,10 +40,26 @@ ROOTDIR=
 TESTROOT=/home1/test
 
 if [ X"$1" = "X-test" -o X"$XINST_TEST" != X ]; then
-	ROOTDIR=$TESTROOT
 	if [ X"$1" = "X-test" ]; then
 		shift
+		case "$1" in
+		/*)
+			TESTROOT="$1"
+			shift
+			;;
+		esac
+	else
+		case "$XINST_TEST" in
+		/*)
+			TESTROOT="$XINST_TEST"
+			;;
+		esac
 	fi
+	ROOTDIR=$TESTROOT
+	echo ""
+	echo "Running in test mode, with root set to $TESTROOT"
+	sleep 2
+	echo ""
 	if [ ! -d $TESTROOT ]; then
 		echo "$TESTROOT doesn't exist (for test mode)"
 		exit 1
@@ -54,8 +70,6 @@ if [ X"$1" = "X-test" -o X"$XINST_TEST" != X ]; then
 			mkdir $TESTROOT/$i
 		fi
 	done
-	echo ""
-	echo "Running in test mode"
 fi
 
 RUNDIR=$ROOTDIR/usr/X11R6
@@ -575,7 +589,7 @@ FindDistName()
 			6.0)
 				DistName="Linux-mips-glibc20"
 				;;
-			*)	
+			*)
 				Message="No Linux/Mips binaries for this libc version"
 				;;
 			esac
@@ -740,7 +754,7 @@ CheckInstallType()
 			;;
 		esac
 	fi
-		
+
 	# Auto-detect based on what files are present
 
 	if [ X"$DOUPDATE" = X ]; then
@@ -825,6 +839,8 @@ InstallUpdate()
 	FreeBSD|NetBSD|OpenBSD)
 		echo ""
 		echo "Running ldconfig"
+		# Make sure the directory isn't group-writable
+		chmod g-w $RUNDIR/lib
 		/sbin/ldconfig -m $RUNDIR/lib
 		;;
 	Linux)
@@ -844,7 +860,7 @@ InstallUpdate()
 			echo ""
 		fi
 	done
-		
+
 	echo ""
 	echo "Update installation complete."
 }
@@ -1311,31 +1327,6 @@ for i in $OPTDIST $EXTRAOPTDIST; do
 	fi
 done
 
-# Need to run ldconfig on some OSs
-case "$OsName" in
-FreeBSD|NetBSD|OpenBSD)
-	echo ""
-	echo "Running ldconfig"
-	/sbin/ldconfig -m $RUNDIR/lib
-	;;
-Linux)
-	echo ""
-	echo "Running ldconfig"
-	/sbin/ldconfig $RUNDIR/lib
-	;;
-esac
-
-# Run mkfontdir in the local and misc directories to make sure that
-# the fonts.dir files are up to date after the installation.
-echo ""
-for i in $FONTDIRS $EXTRAFONTDIRS; do
-	if [ -d $RUNDIR/lib/X11/fonts/$i ]; then
-		Echo "Updating the fonts.dir file in $RUNDIR/lib/X11/fonts/$i..."
-		$RUNDIR/bin/mkfontdir $RUNDIR/lib/X11/fonts/$i
-		echo ""
-	fi
-done
-		
 # Check if the system has a termcap file
 TERMCAP1DIR=$ROOTDIR/usr/share
 TERMCAP2=$ROOTDIR/etc/termcap
@@ -1388,7 +1379,7 @@ OLDTINFO=" \
 	x/xterm-old \
 	x/xterm-r5 \
 	v/vs100"
-	
+
 if [ -d $TINFODIR ]; then
 	echo ""
 	echo "You appear to have a terminfo directory: $TINFODIR"
@@ -1499,31 +1490,12 @@ if [ -f $RUNDIR/lib/libGL.so ]; then
 	esac
 fi
 
-if [ -f $RUNDIR/bin/rstartd ]; then
-	echo ""
-	echo "If you are going to use rstart and $RUNDIR/bin isn't in the"
-	echo "default path for commands run remotely via rsh, you will need"
-	echo "a link to rstartd installed in $ROOTDIR/usr/bin."
-	echo ""
-	Echo "Do you wish to have this link installed (y/n)? [n] "
-	read response
-	case "$response" in
-	[yY]*)
-		if [ ! -d $ROOTDIR/usr/bin ]; then
-			echo "Creating $ROOTDIR/usr/bin"
-			mkdir $ROOTDIR/usr/bin
-		fi
-		echo "Creating link from $RUNDIR/bin/rstartd to $ROOTDIR/usr/bin/rstartd"
-		rm -f $ROOTDIR/usr/bin/rstartd
-		ln -s $RUNDIR/bin/rstartd $ROOTDIR/usr/bin/rstartd
-		;;
-	esac
-fi
-
 # Create compatibility links for the freetype library on systems where the
 # major version gets incremented even though the library is compatible with
 # older versions.
 
+echo ""
+echo "Checking if compatibility links for the FreeType2 library are needed ..."
 if [ -f $RUNDIR/lib/libfreetype.so.$FreetypeCurrent ]; then
 	v=`expr $FreetypeCurrent - $FreetypeAge`
 	while [ $v != $FreetypeCurrent ]; do
@@ -1546,6 +1518,55 @@ if [ -f $RUNDIR/lib/libfreetype.so.$FreetypeCurrent.0 ]; then
 		fi
 		v=`expr $v + 1`
 	done
+fi
+
+# Need to run ldconfig on some OSs
+case "$OsName" in
+FreeBSD|NetBSD|OpenBSD)
+	echo ""
+	echo "Running ldconfig"
+	# Make sure the directory isn't group-writable
+	chmod g-w $RUNDIR/lib
+	/sbin/ldconfig -m $RUNDIR/lib
+	;;
+Linux)
+	echo ""
+	echo "Running ldconfig"
+	/sbin/ldconfig $RUNDIR/lib
+	;;
+esac
+
+# Run mkfontdir in the local and misc directories to make sure that
+# the fonts.dir files are up to date after the installation.
+echo ""
+for i in $FONTDIRS $EXTRAFONTDIRS; do
+	if [ -d $RUNDIR/lib/X11/fonts/$i ]; then
+		Echo "Updating the fonts.dir file in $RUNDIR/lib/X11/fonts/$i..."
+		$RUNDIR/bin/mkfontdir $RUNDIR/lib/X11/fonts/$i
+		echo ""
+	fi
+done
+
+
+if [ -f $RUNDIR/bin/rstartd ]; then
+	echo ""
+	echo "If you are going to use rstart and $RUNDIR/bin isn't in the"
+	echo "default path for commands run remotely via rsh, you will need"
+	echo "a link to rstartd installed in $ROOTDIR/usr/bin."
+	echo ""
+	Echo "Do you wish to have this link installed (y/n)? [n] "
+	read response
+	case "$response" in
+	[yY]*)
+		if [ ! -d $ROOTDIR/usr/bin ]; then
+			echo "Creating $ROOTDIR/usr/bin"
+			mkdir $ROOTDIR/usr/bin
+		fi
+		echo "Creating link from $RUNDIR/bin/rstartd to $ROOTDIR/usr/bin/rstartd"
+		rm -f $ROOTDIR/usr/bin/rstartd
+		ln -s $RUNDIR/bin/rstartd $ROOTDIR/usr/bin/rstartd
+		;;
+	esac
 fi
 
 
