@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.18 1999/03/21 07:35:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.19 1999/03/28 15:32:47 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -39,12 +39,6 @@ in this Software without prior written authorization from the XFree86 Project.
  *
  */
 
-/*
- * Internals
- */
-static void S3VEnableMmio(ScrnInfoPtr pScrn);
-static void S3VDisableMmio(ScrnInfoPtr pScrn);
-
 
 	/* Most xf86 commons are already in s3v.h */
 #include	"s3v.h"
@@ -55,6 +49,12 @@ static void S3VDisableMmio(ScrnInfoPtr pScrn);
 #define DPMS_SERVER
 #include "extensions/dpms.h"
 #endif /* DPMSExtension */
+
+/*
+ * Internals
+ */
+static void S3VEnableMmio(ScrnInfoPtr pScrn);
+static void S3VDisableMmio(ScrnInfoPtr pScrn);
 
 /*
  * Forward definitions for the functions that make up the driver.
@@ -93,18 +93,6 @@ static void S3VDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					 int PowerManagementMode,
 					 int flags);
 #endif
-
-/*
- * Externs needed here
- *
- * in s3v_pio.c
- */
-extern void S3VEnableMmio(ScrnInfoPtr pScrn);
-extern void S3VDisableMmio(ScrnInfoPtr pScrn);
-extern void commonCalcClock(long freq, int min_m, int min_n1, 
-		int max_n1, int min_n2, int max_n2, 
-		long freq_min, long freq_max,
-		unsigned char * mdiv, unsigned char * ndiv);
 
 /*
  * in s3v_accel.c
