@@ -29,7 +29,7 @@
  *
  ************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.8 2003/08/23 16:09:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.9 2003/08/25 18:44:37 eich Exp $ */
 #include "xf86RAC.h"
 #include "shadowfb.h"
 
@@ -1495,8 +1495,8 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
                           16 * pScrn->bitsPerPixel, /* pitch inc (bits) */
                           128,                      /* min height */
                           2048,                     /* max height */
-                          pScrn->virtualX,          /* virtual width */
-                          pScrn->virtualY,          /* virutal height */
+                          pScrn->display->virtualX, /* virtual width */
+                          pScrn->display->virtualY, /* virutal height */
                           pVia->videoRambytes,      /* size of video memory */
                           LOOKUP_BEST_REFRESH);     /* lookup mode flags */
 
