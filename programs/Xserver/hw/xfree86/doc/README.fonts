@@ -600,9 +600,9 @@ lute.  Every encoding name should agree with the encoding name defined in the
 encoding file.  For example,
 
      3
-     <p>mulearabic-0 /usr/X11R6/lib/X11/fonts/encodings/mulearabic-0.enc
-     <p>mulearabic-1 /usr/X11R6/lib/X11/fonts/encodings/mulearabic-1.enc
-     <p>mulearabic-2 /usr/X11R6/lib/X11/fonts/encodings/mulearabic-2.enc
+     mulearabic-0 /usr/X11R6/lib/X11/fonts/encodings/mulearabic-0.enc
+     mulearabic-1 /usr/X11R6/lib/X11/fonts/encodings/mulearabic-1.enc
+     mulearabic-2 /usr/X11R6/lib/X11/fonts/encodings/mulearabic-2.enc
 
 The name of an encoding must be specified in the encoding file's `STARTENCOD-
 ING' or `ALIAS' line.  It is not enough to create an `encodings.dir' entry.
@@ -1024,7 +1024,7 @@ The IANA RFC documents, available from a number of sites throughout the
 world, often provide interesting information about character set issues; my
 favourite is RFC 373.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.9 2000/12/14 22:33:03 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.10 2000/12/14 23:10:53 dawes Exp $
 
 
 $XFree86$
