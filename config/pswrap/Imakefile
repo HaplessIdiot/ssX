@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/pswrap/Imakefile,v 1.7 2001/03/01 01:23:55 dawes Exp $
+XCOMM $XFree86: xc/config/pswrap/Imakefile,v 1.8tsi Exp $
 
      FRIENDSDEF = -DFRIENDSFILE='"<DPS/dpsfriends.h>"'
         DEFINES = -DXENVIRONMENT
@@ -17,6 +17,8 @@ ComplexHostProgramTarget(pswrap)
 #else
 ComplexProgramTarget(pswrap)
 #endif
+
+pswraponly:: $(PROGRAM)
 
 SpecialObjectRule(pswfile.o,pswfile.c,$(FRIENDSDEF))
 

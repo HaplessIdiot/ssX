@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.147 2003/10/19 01:02:18 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.148tsi Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1056,10 +1056,10 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef CcCmd
 #if HasGcc2
-#define CcCmd gcc -fpcc-struct-return 
+#define CcCmd gcc -fpcc-struct-return
 #else
 #if HasGcc
-#define CcCmd gcc -fstrength-reduce -fpcc-struct-return 
+#define CcCmd gcc -fstrength-reduce -fpcc-struct-return
 #else
 #if HasCenterLineC
 #define CcCmd clcc
@@ -1095,7 +1095,7 @@ TCLIBDIR = TclLibDir
 #define CplusplusDependIncludes /**/
 #endif
 #ifndef CplusplusOptions
-#define CplusplusOptions /**/
+#define CplusplusOptions DefaultCplusplusOptions
 #endif
 #ifndef CplusplusSpecialOptions
 #define CplusplusSpecialOptions /**/
@@ -1590,7 +1590,7 @@ TCLIBDIR = TclLibDir
 #define DocFilesToClean /**/
 #endif
 #ifndef FilesToClean
-#define FilesToClean *.CKP *.ln *.BAK *.bak *.Osuf core errs ,* *~ *.a .emacs_* tags TAGS make.log MakeOut 
+#define FilesToClean *.CKP *.ln *.BAK *.bak *.Osuf core errs ,* *~ *.a .emacs_* tags TAGS make.log MakeOut
 #endif
 
 #ifdef CrossCompileDir
@@ -1691,7 +1691,7 @@ TCLIBDIR = TclLibDir
 #else
                AR = ArCmd
 #endif
-XCOMM Nice try but useless: make will inherit BOOTSTRAPCFLAGS 
+XCOMM Nice try but useless: make will inherit BOOTSTRAPCFLAGS
 XCOMM from  top Makefile
   BOOTSTRAPCFLAGS = BootstrapCFlags	/* set if cpp does not have uniq sym */
 #ifdef CrossCompileDir
@@ -1712,7 +1712,7 @@ XCOMM from  top Makefile
 #endif
 #if HasCplusplus
 
-.SUFFIXES: .CCsuf
+.SUFFIXES: Concat(.,CCsuf)
 
 #ifdef CrossCompileDir
               CXX = CrossCplusplusCmd
@@ -1727,7 +1727,7 @@ CXXDEPENDINCLUDES = CplusplusDependIncludes
 CXXEXTRA_INCLUDES = CplusplusExtraIncludes
    CXXSTD_DEFINES = CplusplusStandardDefines $(CXXPROJECT_DEFINES)
        CXXOPTIONS = CplusplusOptions
-      CXXINCLUDES = $(INCLUDES) $(TOP_INCLUDES) $(CXXEXTRA_INCLUDES) 
+      CXXINCLUDES = $(INCLUDES) $(TOP_INCLUDES) $(CXXEXTRA_INCLUDES)
        CXXDEFINES = $(CXXINCLUDES) $(CXXSTD_DEFINES) $(THREADS_CXXDEFINES) $(DEFINES) $(CXXEXTRA_DEFINES)
          CXXFLAGS = $(CXXDEBUGFLAGS) $(CXXOPTIONS) $(THREADS_CXXFLAGS) $(CXXDEFINES)
 #endif
@@ -1870,9 +1870,9 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
      SHLIBLDFLAGS = SharedLibraryLoadFlags $(SHLIBGLOBALSFLAGS)
 #endif
 /*
- * Here we set up flags needed to produce position-independent code 
+ * Here we set up flags needed to produce position-independent code
  * when doing C and C++ compilation.  The default if you specify C
- * PIC flags without also specifying C++ PIC flags is to assume that 
+ * PIC flags without also specifying C++ PIC flags is to assume that
  * the C flags work for both.  If your C++ compiler requires different
  * flags, specify them explicitly in PositionIndependentCplusplusFlags.
  */
@@ -1927,14 +1927,14 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
 #else
 #define _wideprotodef -DNARROWPROTO
 #endif
-    PROTO_DEFINES = _funcprotodef _wideprotodef 
+    PROTO_DEFINES = _funcprotodef _wideprotodef
 #undef _funcprotodef
 #undef _wideprotodef
 
 #if StripInstalledPrograms
      INSTPGMFLAGS = InstPgmFlags	/* install flags for stripping */
 #else
-     INSTPGMFLAGS = 
+     INSTPGMFLAGS =
 #endif
      INSTBINFLAGS = InstBinFlags	/* install flags for programs */
      INSTUIDFLAGS = InstUidFlags	/* install flags for setuid programs */
@@ -2092,10 +2092,18 @@ XCOMM common rules for all Makefiles - do not edit
 .c.i:
 	CPPOnlyCompile($*.c,$(_NOOP_))
 
+.SUFFIXES: .ii
+
+.cc.ii:
+	CPPOnlyCompile($*.cc,$(_NOOP_))
+
 .SUFFIXES: .s
 
 .c.s:
 	CompileCToAsm($(_NOOP_))
+
+.cc.s:
+	CompileCplusplusToAsm($(_NOOP_))
 
 /*
  * These need to be here so that rules in Imakefile occur first;  the blank

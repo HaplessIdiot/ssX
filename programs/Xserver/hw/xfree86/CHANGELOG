@@ -1,4 +1,9 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 517. Add rules to generate post-processed and assembler source from C++ files
+      (Marc La France).
+ 516. Change `make World` so that well it interrupts itself to build a utility
+      (makedepend, pswrap, etc), it only builds that utility.  Some things were
+      being built too early (Marc La France).
  515. When the i830 driver's checks for sufficient memory for tiled mode
       fail, don't later try to allocate with tiling enabled (David Dawes).
  514. Enable I845G_VBE_WORKAROUND in the i830 driver for all platforms, since
@@ -18010,7 +18015,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2895 2003/10/21 01:45:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2896 2003/10/21 04:13:37 dawes Exp $
 
 
 
