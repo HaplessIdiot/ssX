@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.40tsi Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.41 2002/11/22 22:55:57 tsi Exp $
 
 XCOMM
 XCOMM Imake tokens which are significant to building libGL:
@@ -42,8 +42,6 @@ XCOMM
 XCOMM SharedGlxRev - dynamic library version, currently defined to be "1.2"
 XCOMM
 XCOMM GlxSoProf - if defined, build dynamic libGL for profiling with soprof
-XCOMM
-XCOMM GlxStubLib - purpose???
 XCOMM
 XCOMM
 XCOMM Server-side tokens:
