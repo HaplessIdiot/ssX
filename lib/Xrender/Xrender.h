@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrender.h,v 1.15 2002/09/26 02:56:52 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Xrender.h,v 1.16 2002/09/29 23:39:44 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -159,6 +159,12 @@ typedef struct _XFilters {
     short   *alias;
 } XFilters;
 
+typedef struct _XIndexValue {
+    unsigned long    pixel;
+    unsigned short   red, green, blue, alpha;
+} XIndexValue;
+
+
 _XFUNCPROTOBEGIN
 
 Bool XRenderQueryExtension (Display *dpy, int *event_basep, int *error_basep);
@@ -192,6 +198,11 @@ XRenderFindFormat (Display			*dpy,
 XRenderPictFormat *
 XRenderFindStandardFormat (Display		*dpy,
 			   int			format);
+
+XIndexValue *
+XRenderQueryPictIndexValues(Display			*dpy,
+			    _Xconst XRenderPictFormat	*format,
+			    int				*num);
 
 Picture
 XRenderCreatePicture (Display				*dpy,

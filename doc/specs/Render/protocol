@@ -1,6 +1,6 @@
 			The X Rendering Extension
-			      Version 0.6
-			        2002-9-13
+			      Version 0.7
+			        2002-11-6
 			      Keith Packard
 			    keithp@xfree86.org
 
@@ -1137,3 +1137,6 @@ what each version before 1.0 implemented:
 		QueryFilters
 		SetPictureFilter
 		subpixels member of QueryPictFormats
+
+	0.7:
+		QueryPictIndexValues
