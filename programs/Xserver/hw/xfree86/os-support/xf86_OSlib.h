@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.58 1998/12/13 07:37:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.59 1998/12/20 11:57:51 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -437,6 +437,9 @@ extern int errno;
       };
 #    endif /* PCVT_SUPPORT && SYSCONS_SUPPORT */
 #   endif /* PCVT_SUPPORT */
+#   ifdef WSCONS_SUPPORT
+#    include <dev/wscons/wsconsio.h>
+#   endif /* WSCONS_SUPPORT */
 #   if defined(__FreeBSD__)
 #    undef MOUSE_GETINFO
 #    include <machine/mouse.h>
@@ -483,6 +486,10 @@ extern int errno;
 #  include <i386/isa/vgaioctl.h>
 # endif
 # endif /* __bsdi__ */
+
+#ifdef USE_I386_IOPL
+#include <machine/sysarch.h>
+#endif
 
 # define CLEARDTR_SUPPORT
 

@@ -1,4 +1,6 @@
 XFree86 3.9Nr (20 December 1998)
+2110. Add support for the wscons console driver for NetBSD-current (#2326,
+      Matthieu Herrb).
 2109. Remove cfbPuntCopyPlane from cfb (#2325, Mark Vojkovich).
 2108. Fix a build problem related to Xarch.h on NetBSD (#2322, Isao Ohishi).
 2107. Fix an XAA bug tha can result in a zero height when rendering TE text
@@ -7002,4 +7004,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.652 1998/12/13 11:46:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.653 1998/12/20 11:57:36 dawes Exp $
