@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_accel.c,v 1.7 2003/12/31 05:42:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_accel.c,v 1.8 2004/01/05 00:34:17 dawes Exp $ */
 
 /*************************************************************************
  *
@@ -504,6 +504,9 @@ VIAInitAccel(ScreenPtr pScreen)
     /*
      *	Old DRI has some assumptions here that we need to work through
      *  and fix
+     *  UPDATE: These assumptions are that pVia->FBFreestart should
+     *  point to a free region in the framebuffer where it can place it's
+     *  allocator.
      */
     if(cacheEnd > cacheEndDRI)
     {
@@ -520,7 +523,11 @@ VIAInitAccel(ScreenPtr pScreen)
     if (pVia->ScissB > 2047)
         pVia->ScissB = 2047;
 
-    pVia->FBFreeStart += (pVia->ScissB + 1) *pVia->Bpl;
+    /*
+     * The free start IS where the cache Ends. We should not add here.
+     */ 
+
+    pVia->FBFreeStart = (pVia->ScissB + 1) *pVia->Bpl;
 
     /*
      * Finally, we set up the video memory space available to the pixmap
@@ -550,18 +557,25 @@ void VIAInitLinear(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     VIAPtr pVia = VIAPTR(pScrn);
-    unsigned long offset = 2048 * pVia->Bpl;
-    unsigned long size = (pVia->FBFreeEnd - offset);
-
-    if(pVia->FBFreeEnd / pVia->Bpl > 2047)
-    {
 #ifdef XFREE_44	
-	int bpp = (pScrn->bitsPerPixel + 7) / 8;
-	xf86InitFBManagerLinear(pScreen, offset/bpp, size/bpp);
+    /*
+     * In the 44 path we must take care not to truncate offset and size so
+     * that we get overlaps. If there is available memory below line 2048
+     * we use it.
+     */ 
+    unsigned long offset = (pVia->FBFreeStart + pVia->Bpp - 1 ) / pVia->Bpp; 
+    unsigned long size = pVia->FBFreeEnd / pVia->Bpp - offset;
+    if (size > 0) xf86InitFBManagerLinear(pScreen, offset, size);
 #else
-	VIAInitPool(pVia, offset, size);
+    /*
+     * In the 43 path we don't have to care about truncation. just use
+     * all available memory, also below line 2048. The drm module uses 
+     * pVia->FBFreeStart as offscreen available start. We do it to. 
+     */
+    unsigned long offset = pVia->FBFreeStart; 
+    unsigned long size = pVia->FBFreeEnd - offset;
+    if (size > 0 ) VIAInitPool(pVia, offset, size);
 #endif	
-    }
 }
     
 
