@@ -1,8 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_video.c,v 1.1 2002/12/10 15:12:25 alanh Exp $ */
 /*
  * $Workfile: nsc_gx2_video.c $
- * $Revision: 1.1 $
- * $Author: alanh $
+ * $Revision: 1.2 $
+ * $Author: dawes $
  *
  * File Contents: This file consists of main Xfree video supported routines.
  *
@@ -766,28 +766,11 @@ static void
 GX2CopyData420(unsigned char *src, unsigned char *dst,
 	       int srcPitch, int dstPitch, int h, int w)
 {
-   /* calc the # of dwords to xfer */
-   int d = w >> 2;
-
-   srcPitch -= w;
-   dstPitch -= w;
-   /* Any left words, if dwords w will be even */
-   w &= 1;
-   while (h--) {			/* this is equivalent of memcpy */
-      /* copy the dwords first */
-      __asm__ __volatile__("rep\n\t" "movsl\n\t"::"S"(src), "D"(dst), "c"(d));
-
-      if (w) {				/* any words left */
-	 __asm__ __volatile__("movsw (%esi), (%edi)\n\t");
-      }
-      /* reint the counter in ecx */
-      __asm__ __volatile__("movl %0, %%ecx\n\t"::"m"(d));
-
-      /* set the ptr's for the next xfer */
+   while (h--) {
+      memcpy(dst, src, w);
       src += srcPitch;
       dst += dstPitch;
    }
-
 }
 
 /*----------------------------------------------------------------------------
@@ -813,24 +796,9 @@ static void
 GX2CopyData422(unsigned char *src, unsigned char *dst,
 	       int srcPitch, int dstPitch, int h, int w)
 {
-   /* calc the # of dwords to xfer */
-   int d = w >> 1;
-
-   srcPitch -= (w << 1);
-   dstPitch -= (w << 1);
-   /* Any left words, if dwords w will be even */
-   w &= 1;
-   while (h--) {			/* this is equivalent of memcpy */
-      /* copy the dwords first */
-      __asm__ __volatile__("rep\n\t" "movsl\n\t"::"S"(src), "D"(dst), "c"(d));
-
-      if (w) {				/* any words left */
-	 __asm__ __volatile__("movsw (%esi), (%edi)\n\t");
-      }
-      /* reint the counter in ecx */
-      __asm__ __volatile__("movl %0, %%ecx\n\t"::"m"(d));
-
-      /* set the ptr's for the next xfer */
+   w <<= 1;
+   while (h--) {
+      memcpy(dst, src, w);
       src += srcPitch;
       dst += dstPitch;
    }
