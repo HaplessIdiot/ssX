@@ -102,11 +102,12 @@
  * o Error checking.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/gtf.c,v 1.1 2002/11/12 01:31:23 dawes Exp $ */
 
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 
