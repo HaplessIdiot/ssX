@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.h,v 3.1 1994/11/26 12:46:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.h,v 3.2 1996/02/04 09:09:42 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -6,10 +6,10 @@
  * mono/mono/mono.h
  *
  * derived from:
- * hga2/*
+ * hga2/...
  * Author:  Davor Matic, dmatic@athena.mit.edu
  * and
- * vga256/*
+ * vga256/...
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * see mono/COPYRIGHT for copyright and disclaimers.

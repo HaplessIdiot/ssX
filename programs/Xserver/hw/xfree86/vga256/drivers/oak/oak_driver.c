@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.18 1996/01/12 14:38:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.19 1996/02/04 09:13:50 dawes Exp $ */
 
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
@@ -1402,7 +1402,9 @@ OAKInit(mode)
     case OTI37C:
     default:
 #ifndef MONOVGA
-      /* new->std.CRTC[19] = vga256InfoRec.virtualX >> 3; /* 3 in byte mode */
+#if 0
+      new->std.CRTC[19] = vga256InfoRec.virtualX >> 3; /* 3 in byte mode */
+#endif
       /* much clearer as 0x01 than 0x41, seems odd though... */
       new->std.Attribute[16] = 0x01; 
       if ( new->std.NoClock >= 0 ) 

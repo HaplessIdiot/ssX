@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.7 1996/02/04 09:05:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.8 1996/02/19 09:50:22 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -176,8 +176,13 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
       S3_OUTW32(BKGD_COLOR, pGC->bgPixel);
       S3_OUTW(BKGD_MIX, BSS_BKGDCOL | s3alu[pGC->alu]);      
    } else {
-      S3_OUTW32(BKGD_COLOR, 0);
-      S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_OR);
+      if (s3_968_DashBug) {
+	 S3_OUTW32(BKGD_COLOR, 0);
+	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_OR);
+      }
+      else {
+	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
+      }
    }
 
    WaitQueue16_32(3,5);
@@ -391,22 +396,26 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
 	       else 
 		  len = ady;
 
-	     if (pGC->capStyle != CapNotLast) {
-	        unclippedlen++;	
-		len++;
-	     }
-	     dashIndexTmp = dashIndex;    
-	     dashOffsetTmp = dashOffset;
-	     /* No need to adjust dash offset */
-	     /*
-	      * NOTE:  The 8514/A hardware routines for generating lines do
-	      * not match the software generated lines of mi, cfb, and mfb.
-	      * This is a problem, and if I ever get time, I'll figure out
-	      * the 8514/A algorithm and implement it in software for mi,
-	      * cfb, and mfb.
-	      * 2-sep-93 TCG: apparently only change needed is
-	      * addition of 'fix' stuff in cfbline.c
-	      */
+	       if (pGC->capStyle != CapNotLast) {
+		  unclippedlen++;	
+		  len++;
+	       }
+	       dashIndexTmp = dashIndex;    
+	       dashOffsetTmp = dashOffset;
+
+	       dashRemaining = pDash[dashIndexTmp] - dashOffsetTmp;
+	       thisDash = dashRemaining ;
+
+	       /* No need to adjust dash offset */
+	       /*
+	        * NOTE:  The 8514/A hardware routines for generating lines do
+	        * not match the software generated lines of mi, cfb, and mfb.
+	        * This is a problem, and if I ever get time, I'll figure out
+	        * the 8514/A algorithm and implement it in software for mi,
+	        * cfb, and mfb.
+	        * 2-sep-93 TCG: apparently only change needed is
+	        * addition of 'fix' stuff in cfbline.c
+	        */
 	       WaitQueue(7);
 	       S3_OUTW(CUR_X, (short)x1);
 	       S3_OUTW(CUR_Y, (short)y1);
@@ -512,6 +521,9 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
 		     }
 		     miStepDash (dlen, &dashIndexTmp, pDash,
 				 numInDashList, &dashOffsetTmp);
+		     dashRemaining = pDash[dashIndexTmp] - dashOffsetTmp;
+		     thisDash = dashRemaining ;
+
 		     WaitQueue(7);
 		     S3_OUTW(CUR_X, (short)new_x1);
 		     S3_OUTW(CUR_Y, (short)new_y1);

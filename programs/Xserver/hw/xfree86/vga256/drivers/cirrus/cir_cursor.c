@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.10 1995/04/09 13:53:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.11 1996/02/04 09:13:06 dawes Exp $ */
 /*
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Simon P. Cooper, <scooper@vizlab.rutgers.edu>
- *
+ */
 /* $XConsortium: cir_cursor.c /main/8 1995/11/13 08:20:54 kaleb $ */
 
 #define CIRRUS_DEBUG_CURSOR
@@ -80,6 +80,7 @@ cirrusCursorInit(pm, pScr)
 				&xf86PointerScreenFuncs, FALSE)))
 	return FALSE;
     }
+  pScr->RecolorCursor = cirrusRecolorCursor;
   cirrusCursGeneration = serverGeneration;
 
   return TRUE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.12 1995/05/24 12:21:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.13 1996/02/04 09:04:06 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>.
@@ -497,6 +497,14 @@ void p9000QueryBestSize(
 Bool p9000CursorInit(
 #if NeedFunctionPrototypes
    char *, ScreenPtr
+#endif
+);
+
+/*********************** p9000BtCurs.c ****************************/
+
+void p9000BtRecolorCursor(
+#if NeedFunctionPrototypes
+   ScreenPtr, CursorPtr, Bool
 #endif
 );
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.119 1996/02/18 03:42:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.120 1996/02/19 13:06:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -273,6 +273,7 @@ pointer vgaBaseLow = NULL;
 pointer vgaBaseHigh = NULL;
 pointer s3VideoMem = NULL;
 int s3Trio32FCBug = 0;
+int s3_968_DashBug = 0;
 unsigned long s3MemBase = 0;
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
@@ -871,6 +872,7 @@ s3Probe()
    OFLG_SET(OPTION_SLOW_DRAM_REFRESH, &validOptions);
    OFLG_SET(OPTION_FAST_VRAM, &validOptions);
    OFLG_SET(OPTION_TRIO32_FC_BUG, &validOptions);
+   OFLG_SET(OPTION_S3_968_DASH_BUG, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
 
 #ifdef PC98
@@ -913,6 +915,8 @@ s3Probe()
 
    if (OFLG_ISSET(OPTION_TRIO32_FC_BUG, &s3InfoRec.options))
       s3Trio32FCBug = TRUE;
+   if (OFLG_ISSET(OPTION_S3_968_DASH_BUG, &s3InfoRec.options))
+      s3_968_DashBug = TRUE;
 
    if (OFLG_ISSET(OPTION_GENOA, &s3InfoRec.options))
       s3BiosVendor = GENOA_BIOS;

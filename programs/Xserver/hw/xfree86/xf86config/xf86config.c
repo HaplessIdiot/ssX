@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.23 1996/02/18 03:43:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.24 1996/02/19 09:51:31 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -1942,23 +1942,30 @@ static char *keyboardchunk2_text =
 "\n";
 
 static char *keyboardchunk3_text =
-"# To use the default map in ProjectRoot keymap/xfree86, uncomment\n"
-"# XkbKeymap. To use one of the alternate maps in keymap/xfree86\n"
-"# uncomment and modify the XkbKeymap line, e.g.:\n"
-"#    XkbKeymap   \"keymap/xfree86(us_microsoft)\"\n"
-"# To tailor a combination not already in keymap/xfree86 modify\n"
-"# keymap/xfree86 or uncomment and modify the other lines as\n"
-"# desired. One way to get a german layout on a 101 key keyboard\n"
-"# is to modify the XkbSymbols line, e.g.:\n"
+"# To customise the XKB settings to suit your keyboard, modify the\n"
+"# lines below (which are the defaults).  For example, one way to get\n"
+"# a german layout on a 101 key keyboard is to modify the XkbSymbols\n"
+"# line:\n"
 "#    XkbSymbols  \"symbols/us(pc101)+de\"\n"
-"\n";
-
-static char *keyboardchunk4_text =
+"# If you have a US Microsoft Natural keyboard, you can use:\n"
+"#    XkbSymbols  \"symbols/us(microsoft)\"\n"
+"#    XkbGeometry \"geometry/microsoft\"\n"
+"\n"
+"# These are the default XKB settings for XFree86\n"
 "#    Xkbkeycodes \"keycodes/xfree86\"\n"
 "#    XkbTypes    \"types/default\"\n"
 "#    XkbCompat   \"compat/default\"\n"
 "#    XkbSymbols  \"symbols/us(pc101)\"\n"
-"#    XkbGeometry \"geometry/pc\"\n";
+"#    XkbGeometry \"geometry/pc\"\n"
+"\n"
+"# To specify a keymap file entry to use, use XkbKeymap.  This will\n"
+"# override the other Xkb parameters described above.\n"
+"# An example is:\n"
+"#    XkbKeymap   \"xfree86(us_microsoft)\"\n"
+"\n";
+
+static char *keyboardchunk4_text =
+"\n";
 
 static char *keyboardlastchunk_text =
 "\n"
@@ -2199,10 +2206,9 @@ void write_XF86Config(filename)
 	}
 	fprintf(f, "%s", keyboardchunk3_text);
 	if (config_xkbkeymap) {
-		fprintf(f, "    XkbKeymap   \"keymap/%s\"\n",config_xkbkeymap);
+		fprintf(f, "    XkbKeymap   \"%s\"\n",config_xkbkeymap);
 		fprintf(f, "%s", keyboardchunk4_text);
 	} else {
-		fprintf(f, "#    XkbKeymap   \"keymap/xfree86\"\n");
 		fprintf(f, "    Xkbkeycodes \"%s\"\n",config_xkbkeycodes);
 		fprintf(f, "    XkbTypes    \"%s\"\n",config_xkbtypes);
 		fprintf(f, "    XkbCompat   \"%s\"\n",config_xkbcompat);

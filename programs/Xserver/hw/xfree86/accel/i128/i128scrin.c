@@ -44,7 +44,7 @@ Modified for the I128 by Robin Cutshaw (robin@XFree86.Org)
 
 ********************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128scrin.c,v 3.1 1995/12/23 09:38:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128scrin.c,v 3.2 1996/02/04 09:01:12 dawes Exp $ */
 
 
 #include "X.h"
@@ -348,7 +348,7 @@ i128ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
   pScreen->DestroyColormap = (DestroyColormapProcPtr)NoopDDA;
   pScreen->ResolveColor = cfbResolveColor;
   pScreen->BitmapToRegion = mfbPixmapToRegion;
-#if 0  /* What's this for?!  /* *TO*DO* */
+#if 0  /* What's this for?!  *TO*DO* */
   pScreen->BlockHandler = i128BlockHandler;
 #endif
 

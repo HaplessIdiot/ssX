@@ -4,7 +4,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/14 1996/01/28 07:42:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.33 1996/02/18 03:40:42 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.34 1996/02/19 09:47:23 dawes Exp $
 
 #ifndef OSName
 #define OSName		NetBSD 1.1
@@ -241,6 +241,10 @@ install.man:: 								@@\
 
 #include <bsdLib.rules>
 
+#ifdef i386Architecture
+# include <xfree86.cf>
+#endif
+
 /*
  * Definitions for the SUN server on NetBSD/sparc
  */
@@ -254,6 +258,9 @@ install.man:: 								@@\
 #ifndef XsunMonoServer
 #define XsunMonoServer	YES
 #endif
+#ifndef BuildScreenSaverLibrary
+#define BuildScreenSaverLibrary	YES
+#endif
 /*
  * XFree86 uses its own (more portable) database routines to speed up 
  * the RGB database lookups
@@ -264,8 +271,3 @@ install.man:: 								@@\
 #define UseRgbTxt	YES
 #endif
 #endif
-
-#ifdef i386Architecture
-# include <xfree86.cf>
-#endif
-

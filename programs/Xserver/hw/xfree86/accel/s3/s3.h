@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.31 1996/01/31 11:46:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.32 1996/02/04 09:04:49 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -169,6 +169,7 @@ extern Bool s3UsingPixMux;
 extern Bool s3Bt485PixMux;
 extern Bool s3ATT498PixMux;
 extern int s3Trio32FCBug;
+extern int s3_968_DashBug;
 
 #define UNKNOWN_DAC       -1
 #define NORMAL_DAC         0
@@ -737,6 +738,14 @@ void s3WarpCursor(
     ScreenPtr,
     int,
     int 
+#endif
+);
+void
+s3RecolorCursor(
+#if NeedFunctionPrototypes
+     ScreenPtr,
+     CursorPtr,
+     Bool
 #endif
 );
 void s3QueryBestSize(

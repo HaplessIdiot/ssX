@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.22 1995/12/23 09:39:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.23 1996/02/04 09:09:41 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -6,10 +6,10 @@
  * mono/mono/mono.c
  *
  * derived from:
- * hga2/*
+ * hga2/...
  * Author:  Davor Matic, dmatic@athena.mit.edu
  * and
- * vga256/*
+ * vga256/...
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * see mono/COPYRIGHT for copyright and disclaimers.
@@ -512,7 +512,7 @@ monoEnterLeaveVT(enter, screen_idx)
     DDXPointRec pixPt;	/* Point: upper left corner */
     PixmapPtr   pspix;	/* Pointer to the pixmap of the saved screen */
     ScreenPtr   pScreen = savepScreen;	/* This is the 'old' Screen:
-				/* real screen on leave, dummy on enter */
+				real screen on leave, dummy on enter */
 
     /* Set up pointer to the saved pixmap (pspix) only if not resetting
 						and not exiting */

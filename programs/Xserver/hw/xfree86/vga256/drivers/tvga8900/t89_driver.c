@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.30 1996/02/18 03:43:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.31 1996/02/19 09:51:20 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -597,6 +597,7 @@ TVGA8900Probe()
 		break;
 	case TGUI9400CXi:
 		tridentIsTGUI = TRUE;	
+		tridentLinearOK = TRUE;
 		tridentTGUIProgrammableClocks = FALSE;	/* Not programmable */
 		tridentDACtype = TKD8001;
 		TVGA8900.ChipHas16bpp = TRUE;
@@ -610,6 +611,7 @@ TVGA8900Probe()
 	case TGUI9420:					/* CHECK ME ! */
 	case TGUI9420DGi:
 		tridentIsTGUI = TRUE;			
+		tridentLinearOK = TRUE;
 		tridentTGUIProgrammableClocks = FALSE;	/* Not programmable */
 		tridentDACtype = TKD8001;
 		TVGA8900.ChipHas16bpp = TRUE;
@@ -619,6 +621,7 @@ TVGA8900Probe()
 	case TGUI9680:
 		tridentIsTGUI = TRUE;
 		tridentTGUIProgrammableClocks = TRUE;
+		tridentLinearOK = TRUE;
 		tridentHWCursorType = 1;
 		tridentDACtype = TGUIDAC;
 		TVGA8900.ChipHas16bpp = TRUE;
@@ -686,7 +689,6 @@ TVGA8900Probe()
 			ErrorF("%s Card Type is %s\n",XCONFIG_PROBED,CardType);
 
 #ifndef MONOVGA
-		tridentLinearOK = TRUE;		/* All TGUI cards have Linear */
 		TVGA8900.ChipUse2Banks = TRUE;	/* All TGUI's have 2 Banks */
 		TVGA8900.ChipSetRead = TGUISetRead;
 		TVGA8900.ChipSetWrite = TGUISetWrite;
@@ -1028,22 +1030,22 @@ TVGA8900FbInit()
 		     (TVGAchipset == TVGA8900D) )
  		{
 		  /* This is for the 8900CL/D Linear Buffer */
-		  TVGA8900.ChipLinearBase = (16 * 1024 * 1024) -
-					(vga256InfoRec.videoRam * 1024);
+		  /* 8900CL/D only has 1MB Ram, therefore.. */
+		  TVGA8900.ChipLinearBase = (15 * 1024 * 1024);
 		}
 		else
 		{
-		  TVGA8900.ChipLinearBase = (64 * 1024 * 1024) -
-					(vga256InfoRec.videoRam * 1024);
+		  /* set a default of 60MB, must be on 2MB boundary */
+		  TVGA8900.ChipLinearBase = (60 * 1024 * 1024);
 		}
 	}
 
 	if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
  	 	tridentUseLinear = TRUE;
 
-	/* Use Membase when told to. */
+	/* Use Membase when told to, then align on 2MB boundary */
 	if (vga256InfoRec.MemBase != 0)
-		TVGA8900.ChipLinearBase = vga256InfoRec.MemBase;
+		TVGA8900.ChipLinearBase = vga256InfoRec.MemBase & 0xFE00000;
 
 	if (tridentIsTGUI)
 	  if (tridentReprogrammedMCLK > 0) 
@@ -1556,9 +1558,9 @@ TVGA8900Init(mode)
 			  ((TVGA8900.ChipLinearBase >> 24) << 6) |
 			  ((TVGA8900.ChipLinearBase >> 20) & 0x0F);
 		new->LinearAddReg |= 0x20;	/* Enable Linear */
-		if (TVGAchipset < TGUI9660XGi)
-		  if (TVGA8900.ChipLinearSize == (2048*1024))
-			new->LinearAddReg |= 0x10;
+		if (TVGAchipset < TGUI9440AGi)
+			if (TVGA8900.ChipLinearSize == (2048*1024))
+				new->LinearAddReg |= 0x10;
 	}
 
 	if (tridentReprogrammedMCLK > 0) 

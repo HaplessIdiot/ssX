@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128Cursor.c,v 3.0 1995/12/07 07:24:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128Cursor.c,v 3.1 1996/02/04 09:01:05 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -68,6 +68,7 @@ i128CursorInit(pm, pScr)
       if (!(miPointerInitialize(pScr, &i128TiPointerSpriteFuncs,
 				&xf86PointerScreenFuncs, FALSE)))
          return FALSE;
+      pScr->RecolorCursor = i128TiRecolorCursor;
       i128CursGeneration = serverGeneration;
    }
 

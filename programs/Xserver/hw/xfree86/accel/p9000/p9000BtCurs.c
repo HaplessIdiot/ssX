@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000BtCurs.c,v 3.5 1995/01/28 15:54:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000BtCurs.c,v 3.6 1996/02/04 09:04:09 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -201,13 +201,17 @@ p9000BtMoveCursor(pScr, x, y)
 }
 
 void
-p9000BtRecolorCursor(pScr, pCurs)
+p9000BtRecolorCursor(pScr, pCurs, displayed)
      ScreenPtr pScr;
      CursorPtr pCurs;
+     Bool displayed;
 {
    extern Bool p9000DAC8Bit;
 
-   if (!xf86VTSema) return;
+   if (!xf86VTSema) {
+      miRecolorCursor(pScr, pCurs, displayed);
+      return;
+   }
 
    /* Start writing at address 1 (0 is overscan color) */
    p9000StartBtData(BT_CURS_WR_ADDR, 0x01, BT_CURS_DATA);
@@ -262,7 +266,7 @@ p9000BtLoadCursor(pScr, pCurs, x, y)
       p9000BtCursorOff();
 
    /* load colormap */
-   p9000BtRecolorCursor(pScr, pCurs);
+   p9000BtRecolorCursor(pScr, pCurs, TRUE);
 
    ram = (unsigned char *)pCurs->bits->devPriv[index];
 

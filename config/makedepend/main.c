@@ -1,5 +1,5 @@
 /* $XConsortium: main.c /main/82 1995/11/07 19:47:02 gildea $ */
-/* $XFree86: xc/config/makedepend/main.c,v 3.5 1996/01/05 13:07:27 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.6 1996/01/24 21:55:45 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -570,7 +570,7 @@ char *base_name(file)
 	return(file);
 }
 
-#if defined(USG) && !defined(CRAY) && !defined(SVR4) && !defined(__EMX__)
+#if defined(USG) && !defined(CRAY) && !defined(SVR4) && !defined(__EMX__) && !defined(clipper) && !defined(__clipper__)
 int rename (from, to)
     char *from, *to;
 {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000scrin.c,v 3.9 1995/12/23 09:38:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000scrin.c,v 3.10 1996/02/04 09:04:28 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -351,7 +351,7 @@ p9000ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
   pScreen->DestroyColormap = (DestroyColormapProcPtr)NoopDDA;
   pScreen->ResolveColor = cfbResolveColor;
   pScreen->BitmapToRegion = mfbPixmapToRegion;
-#if 0  /* What's this for?!  /* *TO*DO* */
+#if 0  /* What's this for?!  *TO*DO* */
   pScreen->BlockHandler = p9000BlockHandler;
 #endif
 

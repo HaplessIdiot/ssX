@@ -33,7 +33,7 @@
 #ifdef MSTATS
  * nmalloc[i] is the difference between the number of mallocs and frees
  * for a given block size.
-#endif /* MSTATS */
+#endif
  */
 
 #define ISALLOC ((char) 0xf7)	/* magic byte that implies allocation */
@@ -208,7 +208,9 @@ morecore (nu)			/* ask system for more memory */
 		if (--nblks <= 0) break;
 		CHAIN ((struct mhead *) cp) = (struct mhead *) (cp + siz);
 		cp += siz;}
-/*	CHAIN ((struct mhead *) cp) = 0;	/* since sbrk() returns cleared core, this is already set */
+#if 0
+	CHAIN ((struct mhead *) cp) = 0;	/* since sbrk() returns cleared core, this is already set */
+#endif
 	}
 
 static
@@ -447,12 +449,12 @@ unsigned mc_size(cp)
 	return p -> mh_nbytes;
 #else
 	return (1 << (p -> mh_index + 3)) - sizeof *p;
-/**/
-/*	if (p -> mh_index >= 13)
-/*	    return (1 << (p -> mh_index + 3)) - sizeof *p;
-/*	else
-/*	    return p -> mh_size;
-/**/
+#if 0
+	if (p -> mh_index >= 13)
+	    return (1 << (p -> mh_index + 3)) - sizeof *p;
+	else
+	    return p -> mh_size;
+#endif
 #endif /* rcheck */
 	}
 

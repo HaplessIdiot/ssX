@@ -1,5 +1,5 @@
 /* $XConsortium: apolloHW.h,v 1.2 95/06/19 18:10:42 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/apollo/apolloHW.h,v 3.0 1994/05/04 15:00:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/apollo/apolloHW.h,v 3.1 1996/02/04 09:09:24 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -8,7 +8,7 @@
  * Hamish Coleman 11/93 hamish@zot.apana.org.au 
  *
  * derived from:
- * bdm2/hgc1280/*
+ * bdm2/hgc1280/...
  * Pascal Haible 8/93, haible@izfm.uni-stuttgart.de
  *
  * see mono/COPYRIGHT for copyright and disclaimers.

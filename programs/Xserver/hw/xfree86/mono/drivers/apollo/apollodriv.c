@@ -1,5 +1,5 @@
 /* $XConsortium: apollodriv.c /main/3 1995/09/04 19:45:16 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/apollo/apollodriv.c,v 3.2 1995/04/24 05:21:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/apollo/apollodriv.c,v 3.3 1996/02/04 09:09:25 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -8,12 +8,12 @@
  * Hamish Coleman 11/93 hamish@zot.apana.org.au
  *
  * derived from:
- * bdm2/hgc1280/*
+ * bdm2/hgc1280/...
  * Pascal Haible 8/93, haible@izfm.uni-stuttgart.de
- * hga2/*
+ * hga2/...
  * Author:  Davor Matic, dmatic@athena.mit.edu
  * and
- * vga256/*
+ * vga256/...
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Thanks to Herb Peyerl (hpeyerl@novatel.ca) for the information on 

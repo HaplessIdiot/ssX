@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.8 1995/12/02 05:05:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.9 1996/02/04 09:05:20 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -93,6 +93,7 @@
 #define s3RestoreCursor CUSTOMNAME(_s3RestoreCursor)
 #define s3RepositionCursor CUSTOMNAME(_s3RepositionCursor)
 #define s3WarpCursor CUSTOMNAME(_s3WarpCursor)
+#define s3RecolorCursor  CUSTOMNAME(_s3RecolorCursor)
 #define s3QueryBestSize CUSTOMNAME(_s3QueryBestSize)
 #define s3Dline CUSTOMNAME(_s3Dline)
 #define s3Dsegment CUSTOMNAME(_s3Dsegment)

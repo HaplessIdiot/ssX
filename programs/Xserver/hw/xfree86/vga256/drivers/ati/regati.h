@@ -1,5 +1,5 @@
 /* $XConsortium: regati.h /main/4 1995/09/04 19:41:42 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.6 1996/02/04 09:12:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.7 1996/02/09 08:21:13 dawes Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -679,7 +679,7 @@
 #define GEN_TEST_CNT_VALUE		0x3f000000	/* Mach64CT/ET */
 #define GEN_TEST_CC_EN			0x40000000	/* Mach64GX/CX */
 #define GEN_TEST_CC_STROBE		0x80000000	/* Mach64GX/CX */
-/*	?				0xc0000000	/* Mach64CT/ET */
+/*	?				0xc0000000 */	/* Mach64CT/ET */
 #define CONFIG_CNTL		0x6aec
 #define CFG_MEM_AP_SIZE			0x00000003
 #define CFG_MEM_VGA_AP_EN		0x00000004

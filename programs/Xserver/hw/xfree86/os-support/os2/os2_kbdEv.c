@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.3 1996/02/09 08:20:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.4 1996/02/19 09:50:59 dawes Exp $ */
 /*
  * (c) Copyright 1994,1996 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -392,6 +392,10 @@ void os2PostKbdEvent(scanCode, down)
       (xf86Info.autoRepeat != AutoRepeatModeOn || keyc->modifierMap[keycode]))
     return;
 
+#ifdef XKB
+  }
+#endif
+
   xf86Info.lastEventTime = kevent.u.keyButtonPointer.time = GetTimeInMillis();
 
   /*
@@ -440,8 +444,5 @@ void os2PostKbdEvent(scanCode, down)
 
   if (updateLeds) xf86KbdLeds();
 }
-#ifdef XKB
-  }
-#endif
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.10 1996/02/04 09:03:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.11 1996/02/05 11:20:51 dawes Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -161,6 +161,7 @@ mach64CursorInit(pm, pScr)
       if (!(miPointerInitialize(pScr, &mach64PointerSpriteFuncs,
 				&xf86PointerScreenFuncs, FALSE)))
 	  return FALSE;
+      pScr->RecolorCursor = mach64RecolorCursor;
       mach64CursGeneration = serverGeneration;
   }
 
@@ -442,6 +443,11 @@ mach64RecolorCursor(pScr, pCurs, displayed)
     xColorItem	maskColor;
     VisualPtr   pVisual;
     int old_DAC_CNTL;
+
+    if (!xf86VTSema) {
+	miRecolorCursor(pScr, pCurs, displayed);
+	return;
+    }
 
     mach64GetInstalledColormaps(pScr, &pmap);
 

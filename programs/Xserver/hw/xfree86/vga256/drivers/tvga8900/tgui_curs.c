@@ -26,7 +26,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.4 1996/01/12 14:38:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.5 1996/02/04 09:14:21 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -142,12 +142,14 @@ Bool TridentCursorInit(pm, pScr)
 	TridentCursorHotX = 0;
 	TridentCursorHotY = 0;
 
-	if (TridentCursorGeneration != serverGeneration)
+	if (TridentCursorGeneration != serverGeneration) {
 		if (!(miPointerInitialize(pScr, &TridentPointerSpriteFuncs,
 		&xf86PointerScreenFuncs, FALSE)))
 			return FALSE;
 
-	TridentCursorGeneration = serverGeneration;
+		pScr->RecolorCursor = TridentRecolorCursor;
+		TridentCursorGeneration = serverGeneration;
+	}
 
 	/*
 	 * Define the Trident cursor mode.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.39 1996/01/26 09:09:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.40 1996/02/04 09:05:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -108,8 +108,9 @@ s3Initialize(scr_index, pScreen, argc, argv)
 {
    int displayResolution = 75;	/* default to 75dpi */
    extern int monitorResolution;
-   int i;
+   int i,j,k,ok;
    unsigned char *pat;
+   unsigned short dash_test_pattern = 0xac00;
 
    s3Unlock();	  /* for restarts */
    
@@ -554,6 +555,92 @@ s3Initialize(scr_index, pScreen, argc, argv)
    /* restore read mask */
    WaitQueue16_32(1, 2);
    S3_OUTW32(RD_MASK, 0);
+
+
+
+   /* now testing S3 968 dashed line bug :-(
+    * using an 8 pixel line (0,0) to (7,0) */
+
+   pat = (unsigned char*) xcalloc(s3Bpp, 8);
+
+   /* first test original dashed line code (MIX_DST); 
+    * then workaround ( MIX_OR zero) */
+   
+   for (s3_968_DashBug = 0; s3_968_DashBug < 2; s3_968_DashBug++) {
+      
+      /* init region with backgound pattern */
+      for(i=0; i<s3Bpp*8; i++) 
+	 pat[i] = i;
+      (*s3ImageWriteFunc)(0, 0, 8, 1, (char*)pat, 8 * s3Bpp,
+			  0, 0, (short) s3alu[GXcopy], ~0);
+      
+      /* read back the destination */
+      WaitIdle();
+      (*s3ImageReadFunc)(0, 0, 8, 1, (char*)pat, 8 * s3Bpp, 0, 0, ~0);
+
+      BLOCK_CURSOR;
+      WaitQueue16_32(3,4);
+      S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_XOR);
+      if (s3_968_DashBug) {
+	 S3_OUTW32(BKGD_COLOR, 0);
+	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_OR);
+      }
+      else {
+	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
+      }      
+
+      WaitQueue16_32(3,5);
+      S3_OUTW32(WRT_MASK, ~0);
+      S3_OUTW32(FRGD_COLOR, ~0);
+      S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
+      
+      WaitQueue(7);
+      S3_OUTW(CUR_X, 0);
+      S3_OUTW(CUR_Y, 0);
+      S3_OUTW(MAJ_AXIS_PCNT, 8-1);
+      S3_OUTW(DESTX_DIASTP, 2*(0-8));
+      S3_OUTW(DESTY_AXSTP, 2*0);
+      S3_OUTW(ERR_TERM, 2*0 - 8 -1);
+      S3_OUTW(CMD, CMD_LINE | DRAW | LASTPIX | PLANAR | INC_X | INC_Y  |
+	      PCDATA | _16BIT | WRTDATA);
+      S3_OUTW(PIX_TRANS, dash_test_pattern);
+      
+      /* read back the destination */
+      WaitIdle();
+      (*s3ImageReadFunc)(0, 0, 8, 1, (char*)pat, 8 * s3Bpp, 0, 0, ~0);
+
+#ifdef DEBUG_968_DASH_TEST
+      ErrorF("%s %s: DASH968 %d  ",
+	     XCONFIG_PROBED, s3InfoRec.name,s3_968_DashBug);
+      for(i = 0; i < s3Bpp * 8; i++)
+	 ErrorF(" %02x", pat[i]&0xff);
+      ErrorF("\n");
+#endif
+
+      ok = 1;
+      for(i=k=0; i<8; i++)
+	 for(j=0; j<s3Bpp; j++,k++)
+	    if (pat[k] != (k ^ ((dash_test_pattern & (1<<(15-i))) ? 0xff : 0)))
+	       ok = 0;
+      if (ok)
+	 break;  /* dashed line worked */
+   }
+   if (s3_968_DashBug > 1) {
+      ErrorF("%s %s: WARNING: S3 968 dashed line malfunction --\n"
+	     "\tplease report to XFree86@XFree86.Org\n",
+	     XCONFIG_PROBED, s3InfoRec.name);
+   }
+   else if (s3_968_DashBug) {
+      ErrorF("%s %s: S3 968 dashed line malfunction, using workaround code\n",
+	     XCONFIG_PROBED, s3InfoRec.name);
+   }
+   xfree(pat);
+
+   WaitQueue16_32(1,2);
+   S3_OUTW32(FRGD_COLOR, 1);
+
+   WaitQueue(4);
+   S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
 
    xf86InitCache(s3CacheMoveBlock);
    s3FontCache8Init();

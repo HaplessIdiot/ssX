@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.4 1996/02/12 11:13:52 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.5 1996/02/19 12:18:18 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -131,16 +131,21 @@ XCOMM To disable the XKEYBOARD extension, uncomment XkbDisable.
 
 XCOMM XkbDisable
 
-XCOMM To tailor a combination not already in keymap/xfree98 modify
-XCOMM keymap/xfree98 or uncomment and modify the other lines as
-XCOMM desired.
+XCOMM To customise the XKB settings to suit your keyboard, modify the
+XCOMM lines below (which are the defaults).
 
-XCOMM XkbKeymap   "keymap/xfree98"
-Xkbkeycodes "keycodes/xfree98"
-XkbTypes    "types/default"
-XkbCompat   "compat/pc98"
-XkbSymbols  "symbols/nec/jp(pc98)"
-XkbGeometry "geometry/nec(pc98)"
+XCOMM These are the default XKB settings for XFree98
+XCOMM Xkbkeycodes "keycodes/xfree98"
+XCOMM XkbTypes    "types/default"
+XCOMM XkbCompat   "compat/pc98"
+XCOMM XkbSymbols  "symbols/nec/jp(pc98)"
+XCOMM XkbGeometry "geometry/nec(pc98)"
+
+XCOMM To specify a keymap file entry to use, use XkbKeymap.  This will
+XCOMM override the other Xkb parameters described above.
+XCOMM An example is:
+XCOMM    XkbKeymap   "xfree98"
+
 
 EndSection
 

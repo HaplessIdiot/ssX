@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.22 1996/02/04 08:56:05 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.23 1996/02/12 11:11:48 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -131,22 +131,27 @@ XCOMM To disable the XKEYBOARD extension, uncomment XkbDisable.
 
 XCOMM XkbDisable
 
-XCOMM To use the default map in ProjectRoot keymap/xfree86, uncomment 
-XCOMM XkbKeymap. To use one of the alternate maps in keymap/xfree86 
-XCOMM uncomment and modify the XkbKeymap line, e.g.: 
-XCOMM    XkbKeymap   "keymap/xfree86(us_microsoft)"
-XCOMM To tailor a combination not already in keymap/xfree86 modify
-XCOMM keymap/xfree86 or uncomment and modify the other lines as 
-XCOMM desired. One way to get a german layout on a 101 key keyboard 
-XCOMM is to modify the XkbSymbols line, e.g.:
+XCOMM To customise the XKB settings to suit your keyboard, modify the
+XCOMM lines below (which are the defaults).  For example, one way to get
+XCOMM a german layout on a 101 key keyboard is to modify the XkbSymbols
+XCOMM line:
 XCOMM    XkbSymbols  "symbols/us(pc101)+de"
+XCOMM If you have a US Microsoft Natural keyboard, you can use:
+XCOMM    XkbSymbols  "symbols/us(microsoft)"
+XCOMM    XkbGeometry "geometry/microsoft"
 
-XCOMM    XkbKeymap   "keymap/xfree86"
+XCOMM These are the default XKB settings for XFree86
 XCOMM    Xkbkeycodes "keycodes/xfree86"
 XCOMM    XkbTypes    "types/default"
 XCOMM    XkbCompat   "compat/default"
 XCOMM    XkbSymbols  "symbols/us(pc101)"
 XCOMM    XkbGeometry "geometry/pc"
+
+
+XCOMM To specify a keymap file entry to use, use XkbKeymap.  This will
+XCOMM override the other Xkb parameters described above.
+XCOMM An example is:
+XCOMM    XkbKeymap   "xfree86(us_microsoft)"
 
 EndSection
 

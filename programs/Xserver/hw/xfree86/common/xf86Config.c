@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.78 1996/02/18 12:01:34 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.79 1996/02/19 09:50:26 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -141,6 +141,10 @@ extern void configExtendedInputSection(
     LexPtr      pval
 #endif
 );
+#endif
+
+#ifdef XKB
+extern char *XkbInitialMap;
 #endif
 
 #define DIR_FILE	"/fonts.dir"
@@ -1190,12 +1194,13 @@ configKeyboardSection()
 #ifdef XKB
   xf86Info.xkbkeymap   = NULL;
   xf86Info.xkbtypes    = "types/default";
-  xf86Info.xkbcompat   = "compat/default";
 #ifndef PC98
+  xf86Info.xkbcompat   = "compat/default";
   xf86Info.xkbkeycodes = "keycodes/xfree86";
   xf86Info.xkbsymbols  = "symbols/us(pc101)";
   xf86Info.xkbgeometry = "geometry/pc";
 #else
+  xf86Info.xkbcompat   = "compat/pc98";
   xf86Info.xkbkeycodes = "keycodes/xfree98";
   xf86Info.xkbsymbols  = "symbols/nec/jp(pc98)";
   xf86Info.xkbgeometry = "geometry/nec(pc98)";
@@ -1293,42 +1298,43 @@ configKeyboardSection()
     case XKBKEYMAP:
       if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBKeymap string expected");
       xf86Info.xkbkeymap = val.str;
-      if (xf86Verbose)
-        ErrorF("%s XKB: keymap: \"%s\"\n", XCONFIG_GIVEN, val.str);
+      if (xf86Verbose && !XkbInitialMap)
+        ErrorF("%s XKB: keymap: \"%s\" (overrides other XKB settings)\n",
+	       XCONFIG_GIVEN, val.str);
       break;
 
     case XKBCOMPAT:
       if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBCompat string expected");
       xf86Info.xkbcompat = val.str;
-      if (xf86Verbose)
+      if (xf86Verbose && !XkbInitialMap)
         ErrorF("%s XKB: compat: \"%s\"\n", XCONFIG_GIVEN, val.str);
       break;
 
     case XKBTYPES:
       if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBTypes string expected");
       xf86Info.xkbtypes = val.str;
-      if (xf86Verbose)
+      if (xf86Verbose && !XkbInitialMap)
         ErrorF("%s XKB: types: \"%s\"\n", XCONFIG_GIVEN, val.str);
       break;
 
     case XKBKEYCODES:
       if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBKeycodes string expected");
       xf86Info.xkbkeycodes = val.str;
-      if (xf86Verbose)
+      if (xf86Verbose && !XkbInitialMap)
         ErrorF("%s XKB: keycodes: \"%s\"\n", XCONFIG_GIVEN, val.str);
       break;
 
     case XKBGEOMETRY:
       if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBGeometry string expected");
       xf86Info.xkbgeometry = val.str;
-      if (xf86Verbose)
+      if (xf86Verbose && !XkbInitialMap)
         ErrorF("%s XKB: geometry: \"%s\"\n", XCONFIG_GIVEN, val.str);
       break;
 
     case XKBSYMBOLS:
       if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBSymbols string expected");
       xf86Info.xkbsymbols = val.str;
-      if (xf86Verbose)
+      if (xf86Verbose && !XkbInitialMap)
         ErrorF("%s XKB: symbols: \"%s\"\n", XCONFIG_GIVEN, val.str);
       break;
 #endif

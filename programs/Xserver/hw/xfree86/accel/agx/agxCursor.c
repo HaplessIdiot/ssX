@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCursor.c,v 3.3 1996/01/05 06:28:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCursor.c,v 3.4 1996/02/04 08:57:54 dawes Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -190,6 +190,7 @@ agxCursorInit(pm, pScr)
 			 	 &xf86PointerScreenFuncs, 
                                  FALSE ) ) )
 	  return FALSE;
+      pScr->RecolorCursor = agxRecolorCursor;
       agxCursGeneration = serverGeneration;
   }
 
@@ -393,6 +394,11 @@ agxRecolorCursor(pScr, pCurs, displayed)
    CursorPtr pCurs;
    Bool      displayed;
 {
+   if (!xf86VTSema) {
+      miRecolorCursor(pScr, pCurs, displayed);
+      return;
+   }
+
    if (XGA_SERIES(agxChipId)) {
       outb(agxIdxReg, IR_CUR_COLOR0_RED);
       outb(agxByteData, pCurs->foreRed);

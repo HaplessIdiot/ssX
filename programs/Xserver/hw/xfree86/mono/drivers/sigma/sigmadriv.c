@@ -1,5 +1,5 @@
 /* $XConsortium: sigmadriv.c,v 1.2 95/06/19 18:14:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/sigma/sigmadriv.c,v 3.1 1994/09/23 10:21:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/sigma/sigmadriv.c,v 3.2 1996/02/04 09:09:35 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -7,10 +7,10 @@
  * mono/driver/sigma/sigmadriv.c
  *
  * Parts derived from:
- * hga2/*
+ * hga2/...
  * Author:  Davor Matic, dmatic@athena.mit.edu
  * and
- * vga256/*
+ * vga256/...
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * see mono/COPYRIGHT for copyright and disclaimers.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.15 1996/02/12 11:12:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.16 1996/02/18 03:42:50 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -307,12 +307,27 @@ xf86KbdProc (pKeyboard, what)
 #ifdef XKB
     } else {
  	XkbComponentNamesRec names;
-	names.keymap = xf86Info.xkbkeymap;
-	names.keycodes = xf86Info.xkbkeycodes;
-	names.types = xf86Info.xkbtypes;
-	names.compat = xf86Info.xkbcompat;
-	names.symbols = xf86Info.xkbsymbols;
-	names.geometry = xf86Info.xkbgeometry;
+	if (XkbInitialMap) {
+	    if ((xf86Info.xkbkeymap = strchr(XkbInitialMap, '/')) != NULL)
+		xf86Info.xkbkeymap++;
+	    else
+		xf86Info.xkbkeymap = XkbInitialMap;
+	}
+	if (xf86Info.xkbkeymap) {
+	    names.keymap = xf86Info.xkbkeymap;
+	    names.keycodes = NULL;
+	    names.types = NULL;
+	    names.compat = NULL;
+	    names.symbols = NULL;
+	    names.geometry = NULL;
+	} else {
+	    names.keymap = NULL;
+	    names.keycodes = xf86Info.xkbkeycodes;
+	    names.types = xf86Info.xkbtypes;
+	    names.compat = xf86Info.xkbcompat;
+	    names.symbols = xf86Info.xkbsymbols;
+	    names.geometry = xf86Info.xkbgeometry;
+	}
 	XkbInitKeyboardDeviceStruct(pKeyboard, 
 				    &names,
 				    &keySyms, 
@@ -332,6 +347,14 @@ xf86KbdProc (pKeyboard, what)
      */
 
     kbdFd = xf86KbdOn();
+    /*
+     * Discard any pending input after a VT switch to prevent the server
+     * passing on parts of the VT switch sequence.
+     */
+    if (kbdFd != -1) {
+	char buf[16];
+	read(kbdFd, buf, 16);
+    }
 
 #ifndef __EMX__  /* Under EMX, keyboard cannot be select()'ed */
     if (kbdFd != -1)

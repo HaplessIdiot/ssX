@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.11 1996/02/04 09:13:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.12 1996/02/09 08:21:18 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -126,7 +126,7 @@ void CirrusInvalidateShadowVariables() {
     /* For the lower byte of the 32-bit color registers, there is no safe
      * invalid value. We just set them to a specific value (making sure
      * we don't write to non-existant color registers).
-     * 
+     */ 
     cirrusBackgroundColorShadow = 0xffffffff;	/* Defeat the macros. */
     cirrusForegroundColorShadow = 0xffffffff;
     if (cirrusChip >= CLGD5422 && cirrusChip <= CLGD5430) {

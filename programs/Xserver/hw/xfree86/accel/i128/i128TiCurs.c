@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128TiCurs.c,v 3.0 1995/12/07 07:24:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128TiCurs.c,v 3.1 1996/02/04 09:01:07 dawes Exp $ */
 
 #include "servermd.h"
 
@@ -189,11 +189,17 @@ i128TiMoveCursor(pScr, x, y)
 }
 
 void
-i128TiRecolorCursor(pScr, pCurs)
+i128TiRecolorCursor(pScr, pCurs, displayed)
      ScreenPtr pScr;
      CursorPtr pCurs;
+     Bool displayed;
 {
    unsigned char tmp;
+
+   if (!xf86VTSema) {
+      miRecolorCursor(pScr, pCurs, displayed);
+      return;
+   }
 
    tmp = i128mem.rbase_g_b[INDEX_TI];
 
@@ -244,7 +250,7 @@ i128TiLoadCursor(pScr, pCurs, x, y)
       i128TiCursorOff();
 
    /* load colormap */
-   i128TiRecolorCursor(pScr, pCurs);
+   i128TiRecolorCursor(pScr, pCurs, TRUE);
 
    ram = (unsigned char *)pCurs->bits->devPriv[index];
 

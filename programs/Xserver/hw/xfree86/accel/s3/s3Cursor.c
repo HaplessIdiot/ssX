@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.21 1995/12/07 07:24:32 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.22 1996/02/04 09:04:51 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -57,7 +57,6 @@ static Bool s3RealizeCursor();
 static Bool s3UnrealizeCursor();
 static void s3SetCursor();
 static void s3MoveCursor();
-static void s3RecolorCursor();
 extern Bool s3BtRealizeCursor();
 extern void s3BtCursorOn();
 extern void s3BtCursorOff();
@@ -175,6 +174,7 @@ s3CursorInit(pm, pScr)
 				   &xf86PointerScreenFuncs, FALSE)))
             return FALSE;
       }
+      pScr->RecolorCursor = s3RecolorCursor;
       s3CursGeneration = serverGeneration;
    }
 
@@ -413,7 +413,7 @@ s3LoadCursor(pScr, pCurs, x, y)
    /* position cursor */
    s3MoveCursor(0, x, y);
 
-   s3RecolorCursor(pScr, pCurs); 
+   s3RecolorCursor(pScr, pCurs, TRUE); 
 
    /* turn cursor on */
    outb(vgaCRIndex, 0x45);
@@ -605,7 +605,7 @@ s3RenewCursorColor(pScr)
       s3RecolorCursor(pScr, s3SaveCursors[pScr->myNum], TRUE);
 }
 
-static void
+void
 s3RecolorCursor(pScr, pCurs, displayed)
      ScreenPtr pScr;
      CursorPtr pCurs;
@@ -614,6 +614,11 @@ s3RecolorCursor(pScr, pCurs, displayed)
    ColormapPtr pmap;
    unsigned short packedcolfg, packedcolbg;
    xColorItem sourceColor, maskColor;
+
+   if (!xf86VTSema) {
+      miRecolorCursor(pScr, pCurs, displayed);
+      return;
+   }
 
    if (useSWCursor) 
       return;

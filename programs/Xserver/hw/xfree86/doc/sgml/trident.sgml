@@ -45,9 +45,8 @@ although only the 9440 and 9660 have been tested with the hardware cursor.
 	cause a system hang.
 <tag>MemBase &dquot;0x???????&dquot;</tag>
 	This option may be used to specify the start address of the linear
-	frame buffer. By default for VLBus/EISA cards it is at 62MB for
-	2MB cards and 63MB for 1MB cards. For the 8900CL/D, it is at 
-	14MB for 2MB cards and 15MB for 1MB cards.
+	frame buffer. By default for VLBus/EISA cards it is at 60MB.
+	For the 8900CL/D, it is at 15MB.
 <tag>Option &dquot;fast_dram&dquot;</tag>
 	45ns DRAM
 <tag>Option &dquot;med_dram&dquot;</tag>
@@ -127,7 +126,7 @@ in the <tt>XF86Config</tt> file, these lockups are overcome. But it may
 be worth checking wait states etc. on the card and in the BIOS setup.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.8 1996/02/04 09:08:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.9 1996/02/18 03:43:06 dawes Exp $
 
 
 

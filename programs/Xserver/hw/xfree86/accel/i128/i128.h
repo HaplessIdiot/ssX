@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.h,v 3.0 1995/12/07 07:24:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.h,v 3.1 1996/02/04 09:01:04 dawes Exp $ */
 
 #ifndef _I128_H_
 #define _I128_H_
@@ -676,7 +676,8 @@ void i128TiMoveCursor(
 void i128TiRecolorCursor(
 #if NeedFunctionPrototypes
     ScreenPtr,
-    CursorPtr 
+    CursorPtr,
+    Bool
 #endif
 );
 void i128TiLoadCursor(

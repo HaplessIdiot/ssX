@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaImages.c,v 3.3 1996/01/10 05:40:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaImages.c,v 3.4 1996/02/04 09:11:36 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -26,11 +26,7 @@
 #include "X.h"
 
 #include "OScompiler.h"
-
-/* #include "ibmIOArch.h" /* GJA */
-
 #include "vgaVideo.h"
-
 #include "vgaReg.h"
 
 #include "windowstr.h" /* GJA -- for pWin */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_cursor.c,v 3.0 1995/03/11 14:16:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_cursor.c,v 3.1 1996/02/04 09:12:36 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -136,12 +136,14 @@ Bool ArkCursorInit(pm, pScr)
 	arkCursorHotX = 0;
 	arkCursorHotY = 0;
 
-	if (arkCursorGeneration != serverGeneration)
+	if (arkCursorGeneration != serverGeneration) {
 		if (!(miPointerInitialize(pScr, &arkPointerSpriteFuncs,
 		&xf86PointerScreenFuncs, FALSE)))
 			return FALSE;
 
-	arkCursorGeneration = serverGeneration;
+		pScr->RecolorCursor = ArkRecolorCursor;
+		arkCursorGeneration = serverGeneration;
+	}
 
 	/*
 	 * Define the ARK cursor mode: X style, size, correct color depth.

@@ -1,3 +1,23 @@
+XFree86 3.1.2Cg (20 February 1996)
+376. Modify the handling of the XF86Config xkb options to allow the
+     -xkbmap server flag to work (it overrides what is in the XF86Config).
+     The XKBKeyMap XF86Config setting will now work too, and it overrides
+     any other XKB settings given there.
+375. Fix for parts of a VT switch sequence getting passed to clients when
+     XKB is enabled.
+374. NetBSD.cf update (Matthieu Herrb).
+373. Fix various cases of nested comment delimiters (Thomas E. Dickey).
+372. Config additions/updates for CLIX and for HP with GCC2 (Thomas E. Dickey).
+371. Fix RecolorCursor for HW cursor in AGX, Mach32, Mach64, P9000, I128,
+     Cirrus, Ark and Trident server/drivers (untested).
+370. Fix xinit problem introduced in 3.1.2Cf.
+369. S3 dashed line fix, including an option "s3_968_dash_bug" to enable
+     a workaround for a 968 bug.  There is code to auto-detect this problem,
+     so the option shouldn't need to be specified explicitly (Harald Koenig).
+368. Fix for RecolorCursor problem with S3 HW cursors.  This problem is
+     also present in other accel servers (Harald Koenig).
+367. Trident linear mode updates (Alan Hourihane).
+
 XFree86 3.1.2Cf (19 February 1996)
 366. S3 update for ELSA Winner1000 cards with the AT&T 20C409 Ramdac
      (Dirk Hohndel).

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.7 1996/02/04 09:02:22 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.8 1996/02/05 11:20:44 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -162,6 +162,7 @@ mach32CursorInit(pm, pScr)
       if (!(miPointerInitialize(pScr, &mach32PointerSpriteFuncs,
 				&xf86PointerScreenFuncs, FALSE)))
 	  return FALSE;
+      pScr->RecolorCursor = mach32RecolorCursor;
       mach32CursGeneration = serverGeneration;
   }
 
@@ -391,6 +392,11 @@ mach32RecolorCursor(pScr, pCurs, displayed)
   xColorItem	sourceColor;
   xColorItem	maskColor;
   VisualPtr	pVisual;
+
+  if (!xf86VTSema) {
+    miRecolorCursor(pScr, pCurs, displayed);
+    return;
+  }
 
   mach32GetInstalledColormaps(pScr, &pmap);
 

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.68 95/06/02 16:51:21 gildea Exp $
- * $XFree86: xc/include/Xos.h,v 3.13 1995/08/05 11:49:40 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.14 1996/01/24 21:56:44 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -77,6 +77,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #ifndef X_NOT_STDC_ENV
 
+#if !(defined(sun) && !defined(SVR4))	/* 'index' is problem with K&R */
 #include <string.h>
 #ifndef index
 #define index(s,c) (strchr((s),(c)))
@@ -84,10 +85,14 @@ in this Software without prior written authorization from the X Consortium.
 #ifndef rindex
 #define rindex(s,c) (strrchr((s),(c)))
 #endif
+#endif
 
 #else
 
 #ifdef SYSV
+#if defined(clipper) || defined(__clipper__)
+#include <malloc.h>
+#endif
 #include <string.h>
 #define index strchr
 #define rindex strrchr
@@ -149,7 +154,7 @@ extern int sys_nerr;
 #ifdef CRAY
 #undef word
 #endif /* CRAY */
-#if defined(USG) && !defined(CRAY) && !defined(MOTOROLA) && !defined(uniosu) && !defined(__sxg__)
+#if defined(USG) && !defined(CRAY) && !defined(MOTOROLA) && !defined(uniosu) && !defined(__sxg__) && !defined(clipper) && !defined(__clipper__)
 struct timeval {
     long tv_sec;
     long tv_usec;
