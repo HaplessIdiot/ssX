@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.90tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.91tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -898,90 +898,6 @@ pciGenFindFirst(void)
   pciBusNum = -1;
 
   return pciGenFindNext();
-}
-
-#if defined (__powerpc__)
-static int buserr_detected;
-
-static
-void buserr(int sig)
-{
-	buserr_detected = 1;
-}
-#endif
-
-CARD32
-pciCfgMech1Read(PCITAG tag, int offset)
-{
-  unsigned long rv = 0xffffffff;
-#ifdef DEBUGPCI
-  ErrorF("pciCfgMech1Read(tag=%08lx,offset=%08x)\n", tag, offset);
-#endif
-
-#if defined(__powerpc__)
-  signal(SIGBUS, buserr);
-  buserr_detected = 0;
-#endif
-
-  outl(0xCF8, PCI_EN | tag | (offset & 0xfc));
-  rv = inl(0xCFC);
-
-#if defined(__powerpc__)
-  signal(SIGBUS, SIG_DFL);
-  if (buserr_detected)
-  {
-#ifdef DEBUGPCI
-    ErrorF("pciCfgMech1Read() BUS ERROR\n");
-#endif
-    return(0xffffffff);
-  }
-  else
-#endif
-    return(rv);
-}
-
-void
-pciCfgMech1Write(PCITAG tag, int offset, CARD32 val)
-{
-#ifdef DEBUGPCI
-  ErrorF("pciCfgMech1Write(tag=%08lx,offset=%08x,val=%08lx)\n",
-        tag, offset, (unsigned long)val);
-#endif
-
-#if defined(__powerpc__)
-  signal(SIGBUS, SIG_IGN);
-#endif
-
-  outl(0xCF8, PCI_EN | tag | (offset & 0xfc));
-#if defined(Lynx) && defined(__powerpc__)
-  outb(0x80, 0x00);	/* without this the next access fails
-                         * on my Powerstack system when we use
-                         * assembler inlines for outl */
-#endif
-  outl(0xCFC, val);
-
-#if defined(__powerpc__)
-  signal(SIGBUS, SIG_DFL);
-#endif
-}
-
-void
-pciCfgMech1SetBits(PCITAG tag, int offset, CARD32 mask, CARD32 val)
-{
-    unsigned long rv = 0xffffffff;
-
-#if defined(__powerpc__)
-    signal(SIGBUS, buserr);
-#endif
-
-    outl(0xCF8, PCI_EN | tag | (offset & 0xfc));
-    rv = inl(0xCFC);
-    rv = (rv & ~mask) | val;
-    outl(0xCFC, rv);
-
-#if defined(__powerpc__)
-    signal(SIGBUS, SIG_DFL);
-#endif
 }
 
 CARD32

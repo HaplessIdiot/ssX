@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.48 2004/03/21 11:27:06 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.49tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -429,10 +429,6 @@ typedef struct pci_bus_info {
 /* Generic PCI service functions and helpers */
 PCITAG        pciGenFindFirst(void);
 PCITAG        pciGenFindNext(void);
-CARD32        pciCfgMech1Read(PCITAG tag, int offset);
-void          pciCfgMech1Write(PCITAG tag, int offset, CARD32 val);
-void          pciCfgMech1SetBits(PCITAG tag, int offset, CARD32 mask,
-				 CARD32 val);
 CARD32        pciByteSwap(CARD32);
 Bool          pciMfDev(int, int);
 ADDRESS       pciAddrNOOP(PCITAG tag, PciAddrType type, ADDRESS);
