@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.25 2003/04/03 16:16:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.26 2003/04/06 20:07:33 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -91,6 +91,8 @@ SymTabRec RADEONChipsets[] = {
     { PCI_CHIP_RS100_4336, "ATI Radeon IGP320M (U1) 4336" },
     { PCI_CHIP_RS200_4137, "ATI Radeon IGP330/340/350 (A4) 4137" },
     { PCI_CHIP_RS200_4337, "ATI Radeon IGP330M/340M/350M (U2) 4337" },
+    { PCI_CHIP_RS250_4237, "ATI Radeon 7000 IGP (A4+) 4237" },
+    { PCI_CHIP_RS250_4437, "ATI Radeon Mobility 7000 IGP 4437" },
     { PCI_CHIP_R200_QH, "ATI FireGL 8700/8800 QH (AGP)" },
     { PCI_CHIP_R200_QI, "ATI Radeon 8500 QI (AGP)" },
     { PCI_CHIP_R200_QJ, "ATI Radeon 8500 QJ (AGP)" },
@@ -115,6 +117,8 @@ SymTabRec RADEONChipsets[] = {
     { PCI_CHIP_RV250_Le, "ATI Radeon Mobility M9 Le (AGP)" },
     { PCI_CHIP_RV250_Lf, "ATI Radeon Mobility M9 Lf (AGP)" },
     { PCI_CHIP_RV250_Lg, "ATI Radeon Mobility M9 Lg (AGP)" },
+    { PCI_CHIP_RS300_5834, "ATI Radeon 9000 IGP (A5) 5834" },
+    { PCI_CHIP_RS300_5835, "ATI Radeon Mobility 9000 IGP (U3) 5835" },
     { PCI_CHIP_RV280_5960, "ATI Radeon 9200 5960 (AGP)" },
     { PCI_CHIP_RV280_5961, "ATI Radeon 9200 5961 (AGP)" },
     { PCI_CHIP_RV280_5962, "ATI Radeon 9200 5962 (AGP)" },
@@ -131,6 +135,12 @@ SymTabRec RADEONChipsets[] = {
     { PCI_CHIP_R300_NE, "ATI Radeon 9700/9500Pro NE (AGP)" },
     { PCI_CHIP_R300_NF, "ATI Radeon 9700 NF (AGP)" },
     { PCI_CHIP_R300_NG, "ATI FireGL X1 NG (AGP)" },
+    { PCI_CHIP_RV350_AP, "ATI Radeon 9600 AP (AGP)" },
+    { PCI_CHIP_RV350_AR, "ATI Radeon 9600PRO AR (AGP)" },
+    { PCI_CHIP_RV350_NP, "ATI Radeon Mobility M10 NP (AGP)" },
+    { PCI_CHIP_R350_AK, "ATI FireGL (R350) AK (AGP)" },
+    { PCI_CHIP_R350_NH, "ATI Radeon 9800 NH (AGP)" },
+    { PCI_CHIP_R350_NK, "ATI FireGL (R350) NL (AGP)" },
     { -1,                 NULL }
 };
 
@@ -149,6 +159,8 @@ PciChipsets RADEONPciChipsets[] = {
     { PCI_CHIP_RS100_4336, PCI_CHIP_RS100_4336, RES_SHARED_VGA },
     { PCI_CHIP_RS200_4137, PCI_CHIP_RS200_4137, RES_SHARED_VGA },
     { PCI_CHIP_RS200_4337, PCI_CHIP_RS200_4337, RES_SHARED_VGA },
+    { PCI_CHIP_RS250_4237, PCI_CHIP_RS250_4237, RES_SHARED_VGA },
+    { PCI_CHIP_RS250_4437, PCI_CHIP_RS250_4437, RES_SHARED_VGA },
     { PCI_CHIP_R200_QH, PCI_CHIP_R200_QH, RES_SHARED_VGA },
     { PCI_CHIP_R200_QI, PCI_CHIP_R200_QI, RES_SHARED_VGA },
     { PCI_CHIP_R200_QJ, PCI_CHIP_R200_QJ, RES_SHARED_VGA },
@@ -173,6 +185,8 @@ PciChipsets RADEONPciChipsets[] = {
     { PCI_CHIP_RV250_Le, PCI_CHIP_RV250_Le, RES_SHARED_VGA },
     { PCI_CHIP_RV250_Lf, PCI_CHIP_RV250_Lf, RES_SHARED_VGA },
     { PCI_CHIP_RV250_Lg, PCI_CHIP_RV250_Lg, RES_SHARED_VGA },
+    { PCI_CHIP_RS300_5834, PCI_CHIP_RS300_5834, RES_SHARED_VGA },
+    { PCI_CHIP_RS300_5835, PCI_CHIP_RS300_5835, RES_SHARED_VGA },
     { PCI_CHIP_RV280_5960, PCI_CHIP_RV280_5960, RES_SHARED_VGA },
     { PCI_CHIP_RV280_5961, PCI_CHIP_RV280_5961, RES_SHARED_VGA },
     { PCI_CHIP_RV280_5962, PCI_CHIP_RV280_5962, RES_SHARED_VGA },
@@ -189,6 +203,12 @@ PciChipsets RADEONPciChipsets[] = {
     { PCI_CHIP_R300_NE, PCI_CHIP_R300_NE, RES_SHARED_VGA },
     { PCI_CHIP_R300_NF, PCI_CHIP_R300_NF, RES_SHARED_VGA },
     { PCI_CHIP_R300_NG, PCI_CHIP_R300_NG, RES_SHARED_VGA },
+    { PCI_CHIP_RV350_AP, PCI_CHIP_RV350_AP, RES_SHARED_VGA },
+    { PCI_CHIP_RV350_AR, PCI_CHIP_RV350_AR, RES_SHARED_VGA },
+    { PCI_CHIP_RV350_NP, PCI_CHIP_RV350_NP, RES_SHARED_VGA },
+    { PCI_CHIP_R350_AK, PCI_CHIP_R350_AK, RES_SHARED_VGA },
+    { PCI_CHIP_R350_NH, PCI_CHIP_R350_NH, RES_SHARED_VGA },
+    { PCI_CHIP_R350_NK, PCI_CHIP_R350_NK, RES_SHARED_VGA },
     { -1,                 -1,                 RES_UNDEFINED }
 };
 

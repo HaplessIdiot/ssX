@@ -1,4 +1,19 @@
 XFree86 4.3.99.8 (xx June 2003)
+ 274. Do not drop H&V sync during screen blanking for Radeon
+      (Bugzilla #320, Michael Breuer, Hui Yu@ATI).
+ 273. Let out-of-limit pixel clocks only use the frequency below pll output
+      lower limit for Radeons (Bugzilla #262, John Vickers, Hui Yu@ATI).
+ 272. Add support for Radeon cards with DAC/TMDS wire up in different ways
+      from what the driver was originally programmed to; includes support
+      for dual DVI cards (Hui Yu@ATI).
+ 271. Add Radeon DPMS handling for flat panels (Bugzilla #26, Hui Yu@ATI).
+ 270. Decreased the retry loops in DDC probing so that Radeon startup
+      time won't be too long in the worst case (Hui Yu@ATI).
+ 269. Fix Radeon Asic bug in RMX unit of IGP chips (Hui Yu@ATI).
+ 268. Fix Radeon register initialization for RGB offset to fix the
+      "milky-screen" problem (Bugzilla #351, Hui Yu@ATI).
+ 267. Add support for new Radeon chips: R350(9800), RV350(9600,M10),
+      RS250(IGP7000), RS300(IGP9000), RV280(9200) (Hui Yu@ATI).
  266. Fix a lockup with the trident driver when stopping/starting Xv
       applications (Alan Hourihane).
  265. Fix initialisation in xauth (Martin Birgmeier).
@@ -17200,7 +17215,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2763 2003/07/02 02:13:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2764 2003/07/02 10:44:31 alanh Exp $
 
 
 

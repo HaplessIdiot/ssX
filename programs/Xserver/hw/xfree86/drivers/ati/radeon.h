@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.38 2003/04/06 20:07:33 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.39 2003/04/07 01:22:09 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -142,6 +142,8 @@ typedef struct {
     CARD32            crtc_offset;
     CARD32            crtc_offset_cntl;
     CARD32            crtc_pitch;
+    CARD32            disp_merge_cntl;
+    CARD32            grph_buffer_cntl;
 
 				/* CRTC2 registers */
     CARD32            crtc2_gen_cntl;
@@ -149,6 +151,8 @@ typedef struct {
     CARD32            dac2_cntl;
     CARD32            disp_output_cntl;
     CARD32            disp_hw_debug;
+    CARD32            disp2_merge_cntl;
+    CARD32            grph2_buffer_cntl;
     CARD32            crtc2_h_total_disp;
     CARD32            crtc2_h_sync_strt_wid;
     CARD32            crtc2_v_total_disp;
@@ -246,21 +250,18 @@ typedef enum {
 typedef enum {
     CHIP_FAMILY_UNKNOW,
     CHIP_FAMILY_LEGACY,
-    CHIP_FAMILY_R128,
-    CHIP_FAMILY_M3,
     CHIP_FAMILY_RADEON,
-    CHIP_FAMILY_VE,
-    CHIP_FAMILY_M6,
+    CHIP_FAMILY_RV100,
     CHIP_FAMILY_RS100,    /* U1 (IGP320M) or A3 (IGP320)*/
     CHIP_FAMILY_RV200,
-    CHIP_FAMILY_M7,
-    CHIP_FAMILY_RS200,    /* U2 (IGP330M/340M/350M) or A4 (IGP330/340/345/350) */
+    CHIP_FAMILY_RS200,    /* U2 (IGP330M/340M/350M) or A4 (IGP330/340/345/350), RS250 (IGP 7000) */
     CHIP_FAMILY_R200,
     CHIP_FAMILY_RV250,
-    CHIP_FAMILY_M9,
+    CHIP_FAMILY_RS300,    /* Radeon 9000 IGP */
     CHIP_FAMILY_RV280,
-    CHIP_FAMILY_M9PLUS,
-    CHIP_FAMILY_R300
+    CHIP_FAMILY_R300,
+    CHIP_FAMILY_R350,
+    CHIP_FAMILY_RV350
 } RADEONChipFamily;
 
 typedef struct {
@@ -291,6 +292,7 @@ typedef struct {
     RADEONConnectorType ConnectorType;
     Bool              HasCRTC2;         /* All cards except original Radeon  */
     Bool              IsMobility;       /* Mobile chips for laptops */      
+    Bool              IsIGP;            /* IGP chips */      
     Bool              IsSecondary;      /* Second Screen                     */
     Bool              IsSwitching;      /* Flag for switching mode           */
     Bool              Clone;            /* Force second head to clone primary*/

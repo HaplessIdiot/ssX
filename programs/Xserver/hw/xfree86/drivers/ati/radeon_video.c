@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.26tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.27 2003/04/23 21:51:31 tsi Exp $ */
 
 #include "radeon.h"
 #include "radeon_macros.h"
@@ -391,8 +391,11 @@ RADEONResetVideo(ScrnInfoPtr pScrn)
     OUTREG(RADEON_CAP0_TRIG_CNTL, 0);
     RADEONSetColorKey(pScrn, pPriv->colorKey);
     
-    if (info->ChipFamily == CHIP_FAMILY_R200 ||
-	info->ChipFamily == CHIP_FAMILY_R300) {
+    if ((info->ChipFamily == CHIP_FAMILY_R300) ||
+	(info->ChipFamily == CHIP_FAMILY_R350) ||
+	(info->ChipFamily == CHIP_FAMILY_RV350) ||
+	(info->ChipFamily == CHIP_FAMILY_R200) || 
+	(info->ChipFamily == CHIP_FAMILY_RADEON)) {
 	int i;
 
 	OUTREG(RADEON_OV0_LIN_TRANS_A, 0x12a20000);
@@ -475,7 +478,9 @@ RADEONAllocAdaptor(ScrnInfoPtr pScrn)
     OUTPLL(RADEON_VCLK_ECP_CNTL, (INPLL(pScrn, RADEON_VCLK_ECP_CNTL) & 
 				  0xfffffCff) | (pPriv->ecp_div << 8));
 
-    if ((info->ChipFamily == CHIP_FAMILY_RS100) || (info->ChipFamily == CHIP_FAMILY_RS200)) {
+    if ((info->ChipFamily == CHIP_FAMILY_RS100) || 
+	(info->ChipFamily == CHIP_FAMILY_RS200) ||
+	(info->ChipFamily == CHIP_FAMILY_RS300)) {
         /* Force the overlay clock on for integrated chips
 	 */ 
         OUTPLL(RADEON_VCLK_ECP_CNTL, (INPLL(pScrn, RADEON_VCLK_ECP_CNTL) | (1<<18)));
@@ -916,8 +921,11 @@ RADEONDisplayVideo(
     if (pScrn->currentMode->Flags & V_DBLSCAN)
 	y_mult = 2;
     x_off = 8;
-    if (info->ChipFamily == CHIP_FAMILY_R200 ||
-	info->ChipFamily == CHIP_FAMILY_R300)
+
+    if ((info->ChipFamily == CHIP_FAMILY_R300) ||
+        (info->ChipFamily == CHIP_FAMILY_R350) ||
+        (info->ChipFamily == CHIP_FAMILY_RV350) ||
+        (info->ChipFamily == CHIP_FAMILY_R200))
 	x_off = 0;
 
     /* Put the hardware overlay on CRTC2:

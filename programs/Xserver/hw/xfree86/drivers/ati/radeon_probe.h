@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.h,v 1.9 2003/04/03 16:16:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.h,v 1.10 2003/04/06 20:07:34 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -60,7 +60,8 @@ typedef struct
     int MonType2; 
     xf86MonPtr MonInfo1;
     xf86MonPtr MonInfo2;   
-
+    Bool ReversedDAC;	  /* TVDAC used as primary dac */
+    Bool ReversedTMDS;    /* DDC_DVI is used for external TMDS */
 } RADEONEntRec, *RADEONEntPtr;
 
 /* radeon_probe.c */
