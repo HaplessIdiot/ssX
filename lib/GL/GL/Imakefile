@@ -1,0 +1,362 @@
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.35 2001/01/08 01:07:16 martin Exp $
+
+#include <Threads.tmpl>
+
+#define IHaveSubdirs
+
+#define PassCDebugFlags
+
+#define DoNormalLib NormalLibGlx
+#define DoSharedLib SharedLibGlx
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
+
+     LIBNAME = GL
+     SOREV   = $(SOGLREV)
+
+#ifdef SharedGLReqs
+BASEREQUIREDLIBS = SharedGLReqs
+#endif
+
+XCOMM
+XCOMM Not related to ProfileLibGlx - I dont know how that works.  KW.
+XCOMM
+#ifdef GlxSoProf
+      PROFSRC = lowpc.c highpc.c
+      PROFOBJ = lowpc.o highpc.o
+
+SubdirLibraryRule($(PROFOBJ))
+NormalLintTarget($(PROFSRC))
+#endif
+
+#if BuildXF86DRI && defined(i386Architecture)
+    GLAPI_OBJ = glx/glapi_x86.o
+#endif
+
+      GLXDIRS = glx
+      GLXOBJS = glx/?*.o
+     GLXUOBJS = glx/unshared/?*.o $(GLAPI_OBJ)
+     GLXDOBJS = glx/debugger/?*.o $(GLAPI_OBJ)
+     GLXPOBJS = glx/profiled/?*.o $(GLAPI_OBJ)
+     GLXDONES = glx/DONE
+
+#if BuildXF86DRI
+      DRIDIRS = dri
+      DRIOBJS = dri/XF86dri.o dri/dri_glx.o
+     DRIUOBJS = dri/unshared/XF86dri.o dri/unshared/dri_glx.o
+     DRIDOBJS = dri/debugger/XF86dri.o dri/debugger/dri_glx.o
+     DRIPOBJS = dri/profiled/XF86dri.o dri/profiled/dri_glx.o
+     DRIDONES = dri/DONE
+
+      DRMDIRS = dri/drm
+      DRMOBJS = dri/drm/?*.o
+     DRMUOBJS = dri/drm/unshared/?*.o
+     DRMDOBJS = dri/drm/debugger/?*.o
+     DRMPOBJS = dri/drm/profiled/?*.o
+     DRMDONES = dri/drm/DONE
+
+#ifdef i386Architecture
+ASM_BASE_OBJS = mesa/src/X86/common_x86_asm.o \
+		mesa/src/X86/x86_cliptest.o \
+		mesa/src/X86/x86_vertex.o \
+		mesa/src/X86/x86_xform_masked2.o \
+		mesa/src/X86/x86_xform_masked3.o \
+		mesa/src/X86/x86_xform_masked4.o \
+		mesa/src/X86/x86_xform_raw2.o \
+		mesa/src/X86/x86_xform_raw3.o \
+		mesa/src/X86/x86_xform_raw4.o
+
+#if MesaUseMMX
+    MMX_OBJS =	mesa/src/X86/mmx_blend.o
+#endif
+
+#if MesaUse3DNow
+   3DNOW_OBJS = mesa/src/X86/3dnow_norm_raw.o \
+		mesa/src/X86/3dnow_vertex.o \
+		mesa/src/X86/3dnow_xform_masked1.o \
+		mesa/src/X86/3dnow_xform_masked2.o \
+		mesa/src/X86/3dnow_xform_masked3.o \
+		mesa/src/X86/3dnow_xform_masked4.o \
+		mesa/src/X86/3dnow_xform_raw1.o \
+		mesa/src/X86/3dnow_xform_raw2.o \
+		mesa/src/X86/3dnow_xform_raw3.o \
+		mesa/src/X86/3dnow_xform_raw4.o
+#endif
+#if MesaUseKatmai
+  KATMAI_OBJS = mesa/src/X86/katmai_norm_raw.o \
+		mesa/src/X86/katmai_vertex.o \
+		mesa/src/X86/katmai_xform_masked1.o \
+		mesa/src/X86/katmai_xform_masked2.o \
+		mesa/src/X86/katmai_xform_masked3.o \
+		mesa/src/X86/katmai_xform_masked4.o \
+		mesa/src/X86/katmai_xform_raw1.o \
+		mesa/src/X86/katmai_xform_raw2.o \
+		mesa/src/X86/katmai_xform_raw3.o \
+		mesa/src/X86/katmai_xform_raw4.o
+#endif
+#endif
+
+    ASM_OBJS = $(ASM_BASE_OBJS) $(MMX_OBJS) $(3DNOW_OBJS) $(KATMAI_OBJS)
+
+    MESADIRS = mesa/src
+    MESAOBJS = mesa/src/?*.o $(ASM_OBJS)
+   MESAUOBJS = mesa/src/unshared/?*.o mesa/src/X86/unshared/?*.o $(ASM_OBJS)
+   MESADOBJS = mesa/src/debugger/?*.o mesa/src/X86/debugger/?*.o $(ASM_OBJS)
+   MESAPOBJS = mesa/src/profiled/?*.o mesa/src/X86/profiled/?*.o $(ASM_OBJS)
+   MESADONES = mesa/src/DONE
+
+ DRIMESADIRS = mesa/dri
+ DRIMESAOBJS = mesa/dri/?*.o
+DRIMESAUOBJS = mesa/dri/unshared/?*.o
+DRIMESADOBJS = mesa/dri/debugger/?*.o
+DRIMESAPOBJS = mesa/dri/profiled/?*.o
+DRIMESADONES = mesa/dri/DONE
+
+  COMMONDIRS = mesa/src/drv/common
+  COMMONOBJS = mesa/src/drv/common/?*.o
+ COMMONUOBJS = mesa/src/drv/common/unshared/?*.o
+ COMMONDOBJS = mesa/src/drv/common/debugger/?*.o
+ COMMONPOBJS = mesa/src/drv/common/profiled/?*.o
+ COMMONDONES = mesa/src/drv/common/DONE
+
+
+#if GlxUseSGISI
+
+XCOMM nothing
+
+#elif GlxBuiltInGamma
+
+   GAMMADIRS = mesa/src/drv/gamma
+   GAMMAOBJS = mesa/src/drv/gamma/?*.o
+  GAMMAUOBJS = mesa/src/drv/gamma/unshared/?*.o
+  GAMMADOBJS = mesa/src/drv/gamma/debugger/?*.o
+  GAMMAPOBJS = mesa/src/drv/gamma/profiled/?*.o
+  GAMMADONES = mesa/src/drv/gamma/DONE
+
+     DRVOBJS = $(GAMMAOBJS)  $(MESAOBJS)  $(DRIMESAOBJS)  $(DRMOBJS)
+    DRVUOBJS = $(GAMMAUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) $(DRMUOBJS)
+    DRVDOBJS = $(GAMMADOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
+    DRVPOBJS = $(GAMMAPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
+    DRVDONES = $(GAMMADONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
+  DRVSUBDIRS = $(GAMMADIRS)  $(MESADIRS)  $(DRIMESADIRS)  $(DRMDIRS)
+
+#elif GlxBuiltInTdfx
+
+    TDFXDIRS = mesa/src/drv/tdfx
+    TDFXOBJS = mesa/src/drv/tdfx/?*.o
+   TDFXUOBJS = mesa/src/drv/tdfx/unshared/?*.o
+   TDFXDOBJS = mesa/src/drv/tdfx/debugger/?*.o
+   TDFXPOBJS = mesa/src/drv/tdfx/profiled/?*.o
+   TDFXDONES = mesa/src/drv/tdfx/DONE
+
+     DRVOBJS = $(TDFXOBJS)  $(MESAOBJS)  $(DRIMESAOBJS)  $(DRMOBJS)
+    DRVUOBJS = $(TDFXUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) $(DRMUOBJS)
+    DRVDOBJS = $(TDFXDOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
+    DRVPOBJS = $(TDFXPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
+    DRVDONES = $(TDFXDONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
+  DRVSUBDIRS = $(TDFXDIRS)  $(MESADIRS)  $(DRIMESADIRS)  $(DRMDIRS)
+
+OTHERREQUIREDLIBS = -lglide3 -ldl
+
+#elif GlxBuiltInI810
+
+    I810DIRS = mesa/src/drv/i810
+    I810OBJS = mesa/src/drv/i810/?*.o
+   I810UOBJS = mesa/src/drv/i810/unshared/?*.o
+   I810DOBJS = mesa/src/drv/i810/debugger/?*.o
+   I810POBJS = mesa/src/drv/i810/profiled/?*.o
+   I810DONES = mesa/src/drv/i810/DONE
+
+     DRVOBJS = $(I810OBJS)  $(COMMONOBJS)  $(MESAOBJS)  $(DRIMESAOBJS) \
+		$(DRMOBJS)
+    DRVUOBJS = $(I810UOBJS) $(COMMONUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) \
+		$(DRMUOBJS)
+    DRVDOBJS = $(I810DOBJS) $(COMMONDOBJS) $(MESADOBJS) $(DRIMESADOBJS) \
+		$(DRMDOBJS)
+    DRVPOBJS = $(I810POBJS) $(COMMONPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) \
+		$(DRMPOBJS)
+    DRVDONES = $(I810DONES) $(COMMONDONES) $(MESADONES) $(DRIMESADONES) \
+		$(DRMDONES)
+  DRVSUBDIRS = $(I810DIRS)  $(COMMONDIRS)  $(MESADIRS)  $(DRIMESADIRS) \
+		$(DRMDIRS)
+
+#elif GlxBuiltInMga
+
+     MGADIRS = mesa/src/drv/mga
+     MGAOBJS = mesa/src/drv/mga/?*.o
+    MGAUOBJS = mesa/src/drv/mga/unshared/?*.o
+    MGADOBJS = mesa/src/drv/mga/debugger/?*.o
+    MGAPOBJS = mesa/src/drv/mga/profiled/?*.o
+    MGADONES = mesa/src/drv/mga/DONE
+
+     DRVOBJS = $(MGAOBJS)  $(MESAOBJS)  $(DRIMESAOBJS)  $(DRMOBJS)
+    DRVUOBJS = $(MGAUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) $(DRMUOBJS)
+    DRVDOBJS = $(MGADOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
+    DRVPOBJS = $(MGAPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
+    DRVDONES = $(MGADONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
+  DRVSUBDIRS = $(MGADIRS)  $(MESADIRS)  $(DRIMESADIRS)  $(DRMDIRS)
+
+#elif GlxBuiltInR128
+
+    R128DIRS = mesa/src/drv/r128
+    R128OBJS = mesa/src/drv/r128/?*.o
+   R128UOBJS = mesa/src/drv/r128/unshared/?*.o
+   R128DOBJS = mesa/src/drv/r128/debugger/?*.o
+   R128POBJS = mesa/src/drv/r128/profiled/?*.o
+   R128DONES = mesa/src/drv/r128/DONE
+
+     DRVOBJS = $(R128OBJS)  $(COMMONOBJS)  $(MESAOBJS)  $(DRIMESAOBJS) \
+		$(DRMOBJS)
+    DRVUOBJS = $(R128UOBJS) $(COMMONUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) \
+		$(DRMUOBJS)
+    DRVDOBJS = $(R128DOBJS) $(COMMONDOBJS) $(MESADOBJS) $(DRIMESADOBJS) \
+		$(DRMDOBJS)
+    DRVPOBJS = $(R128POBJS) $(COMMONPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) \
+		$(DRMPOBJS)
+    DRVDONES = $(R128DONES) $(COMMONDONES) $(MESADONES) $(DRIMESADONES) \
+		$(DRMDONES)
+  DRVSUBDIRS = $(R128DIRS)  $(COMMONDIRS)  $(MESADIRS)  $(DRIMESADIRS) \
+		$(DRMDONES)
+
+#elif GlxBuiltInRadeon
+
+    RADEONDIRS = mesa/src/drv/radeon
+    RADEONOBJS = mesa/src/drv/radeon/?*.o
+   RADEONUOBJS = mesa/src/drv/radeon/unshared/?*.o
+   RADEONDOBJS = mesa/src/drv/radeon/debugger/?*.o
+   RADEONPOBJS = mesa/src/drv/radeon/profiled/?*.o
+   RADEONDONES = mesa/src/drv/radeon/DONE
+
+     DRVOBJS = $(RADEONOBJS)  $(COMMONOBJS)  $(MESAOBJS)  $(DRIMESAOBJS) \
+		$(DRMOBJS)
+    DRVUOBJS = $(RADEONUOBJS) $(COMMONUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) \
+		$(DRMUOBJS)
+    DRVDOBJS = $(RADEONDOBJS) $(COMMONDOBJS) $(MESADOBJS) $(DRIMESADOBJS) \
+		$(DRMDOBJS)
+    DRVPOBJS = $(RADEONPOBJS) $(COMMONPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) \
+		$(DRMPOBJS)
+    DRVDONES = $(RADEONDONES) $(COMMONDONES) $(MESADONES) $(DRIMESADONES) \
+		$(DRMDONES)
+  DRVSUBDIRS = $(RADEONDIRS)  $(COMMONDIRS)  $(MESADIRS)  $(DRIMESADIRS) \
+		$(DRMDIRS)
+
+#elif GlxBuiltInFfb
+
+     FFBDIRS = mesa/src/drv/ffb
+     FFBOBJS = mesa/src/drv/ffb/?*.o
+    FFBUOBJS = mesa/src/drv/ffb/unshared/?*.o
+    FFBDOBJS = mesa/src/drv/ffb/debugger/?*.o
+    FFBPOBJS = mesa/src/drv/ffb/profiled/?*.o
+    FFBDONES = mesa/src/drv/ffb/DONE
+
+     DRVOBJS = $(FFBOBJS)  $(MESAOBJS)  $(DRIMESAOBJS)  $(DRMOBJS)
+    DRVUOBJS = $(FFBUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) $(DRMUOBJS)
+    DRVDOBJS = $(FFBDOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
+    DRVPOBJS = $(FFBPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
+    DRVDONES = $(FFBDONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
+  DRVSUBDIRS = $(FFBDIRS)  $(MESADIRS)  $(DRIMESADIRS)  $(DRMDIRS)
+
+#elif GlxBuiltInSIS
+
+     SISDIRS = mesa/src/drv/sis
+     SISOBJS = mesa/src/drv/sis/?*.o
+    SISUOBJS = mesa/src/drv/sis/unshared/?*.o
+    SISDOBJS = mesa/src/drv/sis/debugger/?*.o
+    SISPOBJS = mesa/src/drv/sis/profiled/?*.o
+    SISDONES = mesa/src/drv/sis/DONE
+
+     DRVOBJS = $(SISOBJS)  $(MESAOBJS)  $(DRIMESAOBJS)  $(DRMOBJS)
+    DRVUOBJS = $(SISUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) $(DRMUOBJS)
+    DRVDOBJS = $(SISDOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
+    DRVPOBJS = $(SISPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
+    DRVDONES = $(SISDONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
+  DRVSUBDIRS = $(SISDIRS)  $(MESADIRS)  $(DRIMESADIRS)  $(DRMDIRS)
+
+#elif GlxBuiltInMesa
+
+#ifndef GlxDriverUsesMesa
+
+     DRVOBJS = $(MESAOBJS)
+    DRVUOBJS = $(MESAUOBJS)
+    DRVDOBJS = $(MESADOBJS)
+    DRVPOBJS = $(MESAPOBJS)
+    DRVDONES = $(MESADONES)
+  DRVSUBDIRS = $(MESADIRS)
+
+#endif
+
+#else
+
+XCOMM No built-in drivers. This is the usual case.
+
+#endif
+
+#endif /* BuildXF86DRI */
+
+/*
+ * Note: DRIDIRS is empty for !BuildXF86DRI, and DRVSUBDIRS is empty
+ * for no built-in drivers.
+ */
+     SUBDIRS = $(GLXDIRS) $(DRIDIRS) $(DRVSUBDIRS)
+       DONES = $(GLXDONES) $(DRIDONES) $(DRVDONES)
+
+REQUIREDLIBS = $(BASEREQUIREDLIBS) $(OTHERREQUIREDLIBS)
+
+        OBJS = $(GLXOBJS) $(DRIOBJS) $(DRVOBJS) 
+#if HasSharedLibraries
+       UOBJS = $(GLXUOBJS) $(DRIUOBJS) $(DRVUOBJS)
+#else
+       UOBJS = $(OBJS)
+#endif
+       DOBJS = $(GLXDOBJS) $(DRIDOBJS) $(DRVDOBJS)
+       POBJS = $(GLXPOBJS) $(DRIPOBJS) $(DRVPOBJS)
+       DONES = $(GLXDONES) $(DRIDONES) $(DRVDONES)
+
+#if LocalThreads
+  THREADOBJS = $(THREADS_LIBS)
+#endif
+
+#if HasParallelMake
+MakeMutex($(SUBDIRS) $(DONES))
+#endif
+
+#if HasGnuMake || HasBsdMake
+$(DONES): $(SUBDIRS)
+#endif
+
+#include <Library.tmpl>
+
+#undef _LinkBuildLibrary
+#define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)
+
+
+#if NormalLibGlx
+NormalDepLibraryTarget($(LIBNAME),$(SUBDIRS) $(DONES),$(UOBJS))
+InstallLibrary($(LIBNAME),$(USRLIBDIR))
+#endif
+#if SharedLibGlx
+SharedDepLibraryTarget($(LIBNAME),$(SOREV),$(SUBDIRS) $(DONES),$(OBJS) $(THREADOBJS),.,.)
+InstallSharedLibrary($(LIBNAME),$(SOREV),$(SHLIBDIR))
+#if LinkGLToUsrLib && AlternateUsrLibDir
+install::
+	MakeDir($(DESTDIR)$(SYSTEMUSRLIBDIR))
+	$(RM) $(DESTDIR)$(SYSTEMUSRLIBDIR)/lib$(LIBNAME).so
+	$(LN) $(SHLIBDIR)/lib$(LIBNAME).so $(DESTDIR)$(SYSTEMUSRLIBDIR)/lib$(LIBNAME).so || true
+	$(RM) $(DESTDIR)$(SYSTEMUSRLIBDIR)/lib$(LIBNAME).so.1
+	$(LN) $(SHLIBDIR)/lib$(LIBNAME).so.1 $(DESTDIR)$(SYSTEMUSRLIBDIR)/lib$(LIBNAME).so.1 || true
+#endif
+#endif
+#if DebugLibGlx
+DebuggedDepLibraryTarget($(LIBNAME),$(SUBDIRS) $(DONES),$(DOBJS))
+InstallLibrary($(LIBNAME)_d,$(USRLIBDIR))
+#endif
+#if ProfileLibGlx
+ProfiledDepLibraryTarget($(LIBNAME),$(SUBDIRS) $(DONES),$(POBJS))
+InstallLibrary($(LIBNAME)_p,$(USRLIBDIR))
+#endif
+
+ForceSubdirs($(SUBDIRS))
+
+DependSubdirs($(SUBDIRS))
+

@@ -1,0 +1,41 @@
+XCOMM $XFree86$
+
+#define DoNormalLib NormalLibGlx
+#define DoSharedLib SharedLibGlx
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
+
+MESADRVSRC = $(GLXLIBSRC)/mesa/src/drv
+
+#if Malloc0ReturnsNull
+ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
+
+#if BuildXF86DRI
+  DRI_DEFINES = GlxDefines -DDRIVERTS
+ DRI_INCLUDES = 
+#endif
+
+MESA_INCLUDES = -I$(MESADRVSRC)/common
+
+
+      DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES)
+     INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES)
+      DRISRCS = hwlog.c mm.c
+      DRIOBJS = hwlog.o mm.o
+
+LinkSourceFile(hwlog.c, $(MESADRVSRC)/common)
+LinkSourceFile(mm.c, $(MESADRVSRC)/common)
+
+         SRCS = $(DRISRCS) 
+         OBJS = $(DRIOBJS) 
+
+#include <Library.tmpl>
+
+LibraryObjectRule()
+
+SubdirLibraryRule($(OBJS))
+NormalLintTarget($(SRCS))
+
+DependTarget()

@@ -1,0 +1,107 @@
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile,v 1.16 2001/03/21 16:14:21 dawes Exp $
+
+#include <Threads.tmpl>
+
+#define DoNormalLib NormalLibGlx
+#define DoSharedLib SharedLibGlx
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
+
+MESADRVSRC = $(GLXLIBSRC)/mesa/src/drv
+
+#if Malloc0ReturnsNull
+ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
+
+#ifdef i386Architecture
+#if MesaUseMMX
+     MMX_DEFS = -DUSE_MMX_ASM
+#endif
+#if MesaUse3DNow
+   3DNOW_DEFS = -DUSE_3DNOW_ASM
+#endif
+#if MesaUseKatmai
+  KATMAI_DEFS = -DUSE_KATMAI_ASM
+#endif
+  ASM_DEFINES = -DUSE_X86_ASM $(MMX_DEFS) $(3DNOW_DEFS) $(KATMAI_DEFS)
+#endif
+
+#if BuildXF86DRI
+  DRI_DEFINES = GlxDefines -DDRIVERTS
+ DRI_INCLUDES = -I$(GLXLIBSRC)/dri \
+		-I$(GLXLIBSRC)/glx \
+		-I$(INCLUDESRC) \
+		-I$(INCLUDESRC)/GL \
+		-I$(GLXLIBSRC)/mesa/dri \
+		-I$(SERVERSRC)/GL/dri \
+		-I$(XF86OSSRC) \
+		-I$(XF86DRIVERSRC)/mga \
+		-I$(GLXLIBSRC)/dri/drm
+#endif
+
+MESA_INCLUDES = -I$(MESASRCDIR)/src \
+		-I$(MESADRVSRC)/common \
+		-I$(MESADRVSRC)/mga
+
+      DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(ASM_DEFINES)
+     INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES)
+
+LinkSourceFile(mgabuffers.c, $(MESADRVSRC)/mga)
+LinkSourceFile(mgadd.c, $(MESADRVSRC)/mga)
+LinkSourceFile(mgaeltpath.c, $(MESADRVSRC)/mga)
+LinkSourceFile(mgafastpath.c, $(MESADRVSRC)/mga)
+LinkSourceFile(mgaioctl.c, $(MESADRVSRC)/mga)
+LinkSourceFile(mgapipeline.c, $(MESADRVSRC)/mga)
+LinkSourceFile(mgaspan.c, $(MESADRVSRC)/mga)
+LinkSourceFile(mgastate.c, $(MESADRVSRC)/mga)
+LinkSourceFile(mgatex.c, $(MESADRVSRC)/mga)
+LinkSourceFile(mgatexcnv.c, $(MESADRVSRC)/mga)
+LinkSourceFile(mgatexmem.c, $(MESADRVSRC)/mga)
+LinkSourceFile(mgatris.c, $(MESADRVSRC)/mga)
+LinkSourceFile(mgavb.c, $(MESADRVSRC)/mga)
+LinkSourceFile(mga_xmesa.c, $(MESADRVSRC)/mga)
+
+      MGASRCS = mgabuffers.c \
+		mgadd.c \
+		mgaeltpath.c \
+		mgafastpath.c \
+		mgaioctl.c \
+		mgapipeline.c \
+		mgaspan.c \
+		mgastate.c \
+		mgatex.c \
+		mgatexcnv.c \
+		mgatexmem.c \
+		mgatris.c \
+		mgavb.c \
+		mga_xmesa.c \
+
+      MGAOBJS = mgabuffers.o \
+		mgadd.o \
+		mgaeltpath.o \
+		mgafastpath.o \
+		mgaioctl.o \
+		mgapipeline.o \
+		mgaspan.o \
+		mgastate.o \
+		mgatex.o \
+		mgatexcnv.o \
+		mgatexmem.o \
+		mgatris.o \
+		mgavb.o \
+		mga_xmesa.o
+
+
+         SRCS = $(MGASRCS)
+         OBJS = $(MGAOBJS)
+
+#include <Library.tmpl>
+
+LibraryObjectRule()
+
+SubdirLibraryRule($(OBJS))
+NormalLintTarget($(SRCS))
+
+DependTarget()
+

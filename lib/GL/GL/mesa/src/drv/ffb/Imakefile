@@ -1,0 +1,67 @@
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/ffb/Imakefile,v 1.8 2001/03/21 16:14:20 dawes Exp $
+
+#include <Threads.tmpl>
+
+#define DoNormalLib NormalLibGlx
+#define DoSharedLib SharedLibGlx
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
+
+MESADRVSRC = $(GLXLIBSRC)/mesa/src/drv
+
+#if Malloc0ReturnsNull
+ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
+
+#if BuildXF86DRI
+  DRI_DEFINES = GlxDefines -DDRIVERTS
+ DRI_INCLUDES = -I$(GLXLIBSRC)/dri -I$(GLXLIBSRC)/glx \
+		-I$(INCLUDESRC) -I$(INCLUDESRC)/GL \
+		-I$(GLXLIBSRC)/mesa/dri \
+		-I$(SERVERSRC)/GL/dri \
+		-I$(XF86OSSRC) \
+		-I$(XF86DRIVERSRC)/sunffb \
+		-I$(GLXLIBSRC)/dri/drm
+#endif
+
+MESA_INCLUDES = -I$(MESASRCDIR)/src -I$(MESADRVSRC)/common -I$(MESADRVSRC)/ffb
+
+      DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES)
+     INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES)
+
+LinkSourceFile(ffb_dd.c, $(MESADRVSRC)/ffb)
+LinkSourceFile(ffb_span.c, $(MESADRVSRC)/ffb)
+LinkSourceFile(ffb_depth.c, $(MESADRVSRC)/ffb)
+LinkSourceFile(ffb_state.c, $(MESADRVSRC)/ffb)
+LinkSourceFile(ffb_clear.c, $(MESADRVSRC)/ffb)
+LinkSourceFile(ffb_vb.c, $(MESADRVSRC)/ffb)
+LinkSourceFile(ffb_lines.c, $(MESADRVSRC)/ffb)
+LinkSourceFile(ffb_points.c, $(MESADRVSRC)/ffb)
+LinkSourceFile(ffb_tris.c, $(MESADRVSRC)/ffb)
+LinkSourceFile(ffb_pipeline.c, $(MESADRVSRC)/ffb)
+LinkSourceFile(ffb_stencil.c, $(MESADRVSRC)/ffb)
+LinkSourceFile(ffb_xmesa.c, $(MESADRVSRC)/ffb)
+
+      FFBSRCS = ffb_dd.c ffb_span.c ffb_depth.c ffb_state.c ffb_clear.c \
+		ffb_vb.c \
+		ffb_lines.c ffb_points.c ffb_tris.c ffb_pipeline.c \
+		ffb_stencil.c ffb_xmesa.c
+
+      FFBOBJS = ffb_dd.o ffb_span.o ffb_depth.o ffb_state.o ffb_clear.o \
+		ffb_vb.o \
+		ffb_lines.o ffb_points.o ffb_tris.o ffb_pipeline.o \
+		ffb_stencil.o ffb_xmesa.o
+
+         SRCS = $(FFBSRCS)
+         OBJS = $(FFBOBJS)
+
+#include <Library.tmpl>
+
+LibraryObjectRule()
+
+SubdirLibraryRule($(OBJS))
+NormalLintTarget($(SRCS))
+
+DependTarget()
+
