@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessCommon.c,v 1.1 2001/07/01 02:13:41 torrey Exp $ */
 
 #include "rootlessCommon.h"
 
@@ -48,6 +48,10 @@ void SetPixmapBaseToScreen(PixmapPtr pix, int x, int y)
 // Update pWindow's pixmap. 
 // This needs to be called every time a window moves relative to 
 // its top-level parent, or the parent's pixmap data is reallocated.
+// Three cases:
+//  * window is top-level with no existing pixmap: make one
+//  * window is top-level with existing pixmap: update it in place
+//  * window is descendant of top-level: point to top-level's pixmap
 void UpdatePixmap(WindowPtr pWindow)
 {
     WindowPtr top = TopLevelParent(pWindow);
@@ -57,6 +61,8 @@ void UpdatePixmap(WindowPtr pWindow)
     
     RL_DEBUG_MSG("update pixmap (win 0x%x)", pWindow);
     
+    // Don't use IsFramedWindow(); window is unrealized during RealizeWindow().
+
     if (! top) {
         RL_DEBUG_MSG("no parent\n");
 	return;
@@ -67,24 +73,37 @@ void UpdatePixmap(WindowPtr pWindow)
 	return;
     }
 
-    // Destroy the old pixmap we gave to fb
-    pix = pScreen->GetWindowPixmap(pWindow);
-    if (IsRoot(pWindow)  &&  pix) {
-        RL_DEBUG_MSG("not updating root\n");
-	return;
+    if (pWindow == top) {
+        // This is the top window. Update its pixmap.
+        if (winRec->pixmap == NULL) {
+            // Allocate a new pixmap.
+            pix = GetScratchPixmapHeader(pScreen, 
+                                         winRec->frame.w, winRec->frame.h,
+                                         winRec->frame.depth, 
+                                         winRec->frame.bitsPerPixel,
+                                         winRec->frame.bytesPerRow,
+                                         winRec->frame.pixelData);
+            SetPixmapBaseToScreen(pix, winRec->frame.x, winRec->frame.y);
+            pScreen->SetWindowPixmap(pWindow, pix);
+            winRec->pixmap = pix;
+        } else {
+            // Update existing pixmap.
+            // Update in place so we don't have to change the children's pixmaps.
+            pix = winRec->pixmap;
+            pScreen->ModifyPixmapHeader(pix, 
+                                        winRec->frame.w, winRec->frame.h,
+                                        winRec->frame.depth, 
+                                        winRec->frame.bitsPerPixel,
+                                        winRec->frame.bytesPerRow,
+                                        winRec->frame.pixelData);
+            SetPixmapBaseToScreen(pix, winRec->frame.x, winRec->frame.y);
+        }
+    } else {
+        // This is not the top window. Point to the parent's pixmap.
+        pix = winRec->pixmap;
+        pScreen->SetWindowPixmap(pWindow, pix);
     }
-    if (pix) FreeScratchPixmapHeader(pix);
-    
-    // Make a new pixmap
-    pix = GetScratchPixmapHeader(pScreen, 
-				 winRec->frame.w, winRec->frame.h,
-				 winRec->frame.depth, 
-				 winRec->frame.bitsPerPixel,
-				 winRec->frame.bytesPerRow,
-				 winRec->frame.pixelData);
-    SetPixmapBaseToScreen(pix, winRec->frame.x, winRec->frame.y);
-    pScreen->SetWindowPixmap(pWindow, pix);
-    
+
     RL_DEBUG_MSG("done\n");
 }
 

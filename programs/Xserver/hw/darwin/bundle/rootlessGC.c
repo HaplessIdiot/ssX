@@ -6,7 +6,7 @@
  * February 2001  Created
  * March 3, 2001  Restructured as generic rootless mode
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessGC.c,v 1.1 2001/06/26 23:29:12 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessGC.c,v 1.2 2001/07/01 02:13:41 torrey Exp $ */
 
 #include "mi.h"
 #include "scrnintstr.h"
@@ -349,7 +349,7 @@ RootlessCopyArea(DrawablePtr pSrc, DrawablePtr dst, GCPtr pGC,
     BoxRec box;
 
     GCOP_UNWRAP(pGC);
-    RL_DEBUG_MSG("copy area start ");
+    RL_DEBUG_MSG("copy area start (src 0x%x, dst 0x%x)", pSrc, dst);
 
     result = pGC->ops->CopyArea(pSrc, dst, pGC, srcx, srcy, w, h, dstx, dsty);
 
@@ -580,7 +580,7 @@ static void RootlessPolySegment(DrawablePtr dst, GCPtr pGC,
 {
     GCOP_UNWRAP(pGC);
 
-    RL_DEBUG_MSG("poly segment start ");
+    RL_DEBUG_MSG("poly segment start (win 0x%x)", dst);
 
     pGC->ops->PolySegment(dst, pGC, nseg, pSeg);
 
@@ -827,7 +827,7 @@ static void RootlessPolyFillRect(DrawablePtr dst, GCPtr pGC,
 {
     GCOP_UNWRAP(pGC);
 
-    RL_DEBUG_MSG("fill rect start ");
+    RL_DEBUG_MSG("fill rect start (win 0x%x)", dst);
 
     if (nRectsInit <= 0) {
         pGC->ops->PolyFillRect(dst, pGC, nRectsInit, pRectsInit);

@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessWindow.c,v 1.1 2001/07/01 02:13:41 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -94,7 +94,7 @@ static void RootlessReallySetShape(WindowPtr pWin)
     }
     RL_DEBUG_MSG("reshaping...");
     RL_DEBUG_MSG("numrects %d, extents %d %d %d %d ",
-                 REGION_NUM_RECTS(rgn),
+                 REGION_NUM_RECTS(&newShape),
                  newShape.extents.x1, newShape.extents.y1,
                  newShape.extents.x2, newShape.extents.y2);
     CallFrameProc(pScreen, ReshapeFrame,(pScreen, &winRec->frame, &newShape));
@@ -206,6 +206,9 @@ RootlessRealizeWindow(WindowPtr pWin)
         REGION_INIT(pScreen, &winRec->damage, NullBox, 0);
         winRec->borderWidth = pWin->borderWidth;
 
+	winRec->pixmap = NULL;
+	// UpdatePixmap() called below
+
         WINREC(pWin) = winRec;
 
         RL_DEBUG_MSG("creating frame ");
@@ -230,10 +233,7 @@ RootlessRealizeWindow(WindowPtr pWin)
 #endif
     }
 
-    if (IsFramedWindow(pWin)) {
-      pScreen->SetWindowPixmap(pWin, NULL);
-      UpdatePixmap(pWin);
-    }
+    UpdatePixmap(pWin);
 
     if (!IsRoot(pWin)) HUGE_ROOT(pWin);
     SCREEN_UNWRAP(pScreen, RealizeWindow);
