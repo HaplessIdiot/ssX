@@ -1,3 +1,9 @@
+XFree86 3.9Ae (xx February 1998)
+1590. Add support for several new mice, including Kensington ThinkingMouse, 
+      ALPS GlidePoint, Genius NetScroll, Genius NetMouse, Genius NetMouse,
+      ASCII MieMouse, Logitech MouseMan+, Logitech FirstMouse+ (#1380,
+      Kazutaka Yokota).
+
 XFree86 3.9Ad (25 January 1998)
 1596. Fix two buffer overflow problems in the X server.
 1595. Fix some libXt VSW5 failures (#1347, 1359-1363, 1365, Kaleb Keithley,
@@ -5942,4 +5948,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.568 1998/01/25 01:22:56 dawes Exp $
+$XFree86: $
