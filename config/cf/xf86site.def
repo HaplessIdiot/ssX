@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.115 1997/05/04 05:26:12 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.116 1997/05/06 09:44:27 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -84,6 +84,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.115 1997/05/04 05:26:12 dawes Exp 
  */
 
 /*
+ * Some Linux releases don't have a libtermcap.  In this case you may need
+ * to uncomment the following
+ *
+#define TermcapLibrary		-lncurses
+ */
+
+/*
  * If you have Tk (which is required to build XF86Setup), uncomment this
  * Note: version 4.0 or 4.1 is required, and XF86Setup links it statically by
  * default.
@@ -94,6 +101,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.115 1997/05/04 05:26:12 dawes Exp 
 /*
  * Set the paths and names for your Tk library if they don't match the
  * defaults (check your OS .cf file or Imake.tmpl for the defaults).
+ *
+ * Common values for TkLibName are tk4.0, tk4.1, etc.
+ *
+ * Some Linux releases need TkIncDir set to /usr/include/tcl, and some
+ * need it set to /usr/X11R6/include.
+ *
+ * Some Linux releases need TkLibDir set to /usr/X11R6/lib
  *
 #define TkLibDir		/usr/local/lib
 #define TkIncDir		/usr/local/include
@@ -118,6 +132,10 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.115 1997/05/04 05:26:12 dawes Exp 
 /*
  * Set the paths and names for your Tcl library if they don't match the
  * defaults (check your OS .cf file or Imake.tmpl for the defaults).
+ *
+ * Common values for TclLibName are tcl7.4, tcl7.5, etc.
+ *
+ * Some Linux releases need TclIncDir set to /usr/include/tcl.
  *
 #define TclLibDir		/usr/local/lib
 #define TclIncDir		/usr/local/include
