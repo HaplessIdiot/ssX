@@ -2881,6 +2881,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        pSiS->SiS_Pr->CRT1UsesCustomMode = FALSE;
        pSiS->SiS_Pr->LVDSHL = -1;
        pSiS->SiS_Pr->HaveEMI = FALSE;
+       pSiS->SiS_Pr->HaveEMILCD = FALSE;
     }
 
     /* Get our relocated IO registers */
@@ -4440,18 +4441,20 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	        pSiS->SiS_Pr->EMI_31 = pSiS->sisfb_emi31;
 	        pSiS->SiS_Pr->EMI_32 = pSiS->sisfb_emi32;
 	        pSiS->SiS_Pr->EMI_33 = pSiS->sisfb_emi33;
-		pSiS->SiS_Pr->HaveEMI = TRUE;
+		pSiS->SiS_Pr->HaveEMI = pSiS->SiS_Pr->HaveEMILCD = TRUE;
 	     } else {
 	        inSISIDXREG(SISPART4, 0x30, pSiS->SiS_Pr->EMI_30);
 		inSISIDXREG(SISPART4, 0x31, pSiS->SiS_Pr->EMI_31);
 		inSISIDXREG(SISPART4, 0x32, pSiS->SiS_Pr->EMI_32);
 		inSISIDXREG(SISPART4, 0x33, pSiS->SiS_Pr->EMI_33);
 		pSiS->SiS_Pr->HaveEMI = TRUE;
+		if(tmp & 0x20) pSiS->SiS_Pr->HaveEMILCD = TRUE;
 	     }
 	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	     	"302LV/302ELV: EMI %02x %02x %02x %02x\n",
+	     	"302LV/302ELV: EMI 0x%02x 0x%02x 0x%02x 0x%02x%s\n",
 		pSiS->SiS_Pr->EMI_30,pSiS->SiS_Pr->EMI_31,
-		pSiS->SiS_Pr->EMI_32,pSiS->SiS_Pr->EMI_33);
+		pSiS->SiS_Pr->EMI_32,pSiS->SiS_Pr->EMI_33,
+		pSiS->SiS_Pr->HaveEMILCD ? " (LCD)" : "");
 	  }
        }
     }

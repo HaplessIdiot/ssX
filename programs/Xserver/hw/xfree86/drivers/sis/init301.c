@@ -3727,6 +3727,13 @@ SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 
 	         SiS_SetReg(SiS_Pr->SiS_P3c4,0x06,pushax);
 
+		 if(SiS_Pr->SiS_VBType & (VB_SIS302LV | VB_SIS302ELV)) {
+	            if( (SiS_IsVAMode(SiS_Pr, HwInfo)) ||
+	                (SiS_CRT2IsLCD(SiS_Pr, HwInfo)) ) {
+		       SiS_PanelDelayLoop(SiS_Pr, HwInfo, 3, 10);
+		    }
+	         }
+
   	      } else if(SiS_Pr->SiS_VBType & VB_NoLCD) {
 
 	         /* NIL */
@@ -4286,12 +4293,6 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 		     /* Clevo   1024x768: 0x05, 0x60, 0x33 (if type != 3) YES  (1.10.8y;  CR36=?2)      */
 		     /* Asus    1024x768: ?                                ?   (1.10.8o;  CR36=?2)      */
 
-		     /* EMI_30 is read at driver start; however, the BIOS sets this
-		      * only if the LCD is in use. In case we caught the machine while
-		      * on TV output, this bit is not set - hence our detection is wrong.
-		      * Work-around this by using our experience
-		      */
-
 		     if(SiS_Pr->HaveEMI) {
 		        r30 = SiS_Pr->EMI_30;
 			r31 = SiS_Pr->EMI_31;
@@ -4301,29 +4302,29 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 		        r30 = 0;
 		     }
 
-		     if((cr36 & 0x0f) == 0x02) {		/* 1024x768 */
-		        r30 |= 0x40;
-			if(SiS_Pr->SiS_CustomT == CUT_CLEVO1024) {
-			   r30 &= ~0x40;
-			}
-		     } else if((cr36 & 0x0f) == 0x03) {		/* 1280x1024 */
-		        r30 |= 0x40;
-			if(SiS_Pr->SiS_CustomT != CUT_COMPAQ1280) {
-			   r30 &= ~0x40;
-			}
-		     } else if((cr36 & 0x0f) == 0x09) {		/* 1400x1050 */
-		        r30 |= 0x40;
-#ifdef COMPAL_HACK
-			if(SiS_Pr->SiS_CustomT == CUT_COMPAL1400_2) {
-			   r30 = 0x60;
-		           SiS_Pr->EMI_31 = 0x05;
-			   SiS_Pr->EMI_32 = 0x60;
-			   SiS_Pr->EMI_33 = 0x00;
- 			}
-#endif
-		     } else if((cr36 & 0x0f) == 0x0b) {		/* 1600x1200 - unknown */
-		        r30 |= 0x40;
-		     }
+		     /* EMI_30 is read at driver start; however, the BIOS sets this
+		      * (if it is used) only if the LCD is in use. In case we caught
+		      * the machine while on TV output, this bit is not set - hence
+		      * our detection is wrong. Work-around this here:
+		      */
+
+		     if((!SiS_Pr->HaveEMI) || (!SiS_Pr->HaveEMILCD)) {
+		        if((cr36 & 0x0f) == 0x02) {			/* 1024x768 */
+		           r30 |= 0x40;
+			   if(SiS_Pr->SiS_CustomT == CUT_CLEVO1024) {
+			      r30 &= ~0x40;
+			   }
+		        } else if((cr36 & 0x0f) == 0x03) {		/* 1280x1024 */
+		           r30 |= 0x40;
+			   if(SiS_Pr->SiS_CustomT != CUT_COMPAQ1280) {
+			      r30 &= ~0x40;
+			   }
+		        } else if((cr36 & 0x0f) == 0x09) {		/* 1400x1050 */
+		           r30 |= 0x40;
+		        } else if((cr36 & 0x0f) == 0x0b) {		/* 1600x1200 - unknown */
+		           r30 |= 0x40;
+		        }
+                     }
 
 		     if(!SiS_Pr->HaveEMI) {
 		        if((cr36 & 0x0f) == 0x02) {
@@ -4340,18 +4341,22 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 			   }
 			} else if((cr36 & 0x0f) == 0x09) {
 			   if(SiS_Pr->SiS_CustomT == CUT_COMPAL1400_2) {
-#ifdef COMPAL_HACK
-			      r31 = 0x05; r32 = 0x60; r33 = 0x00;
-#else
-			      r31 = 0x0d; r32 = 0x70; r33 = 0x40;
-#endif
+			      r31 = 0x0d; r32 = 0x70; r33 = 0x40;  /* BIOS values */
 			   } else {
 			      r31 = 0x05; r32 = 0x60; r33 = 0x00;
 			   }
 			} else {
-			   r31 = 0x05; r32 = 0x60; r33 = 0x33;
+			   r31 = 0x05; r32 = 0x60; r33 = 0x00;
 			}
 		     }
+
+#ifdef COMPAL_HACK   /* BIOS values don't work so well */
+		     if(SiS_Pr->SiS_CustomT == CUT_COMPAL1400_2) {
+		        if((cr36 & 0x0f) == 0x09) {
+			   r30 = 0x60; r31 = 0x05; r32 = 0x60; r33 = 0x00;
+			}
+ 		     }
+#endif
 		     SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x30,0x20);
 		     SiS_SetReg(SiS_Pr->SiS_Part4Port,0x31,r31);
 		     SiS_SetReg(SiS_Pr->SiS_Part4Port,0x32,r32);
