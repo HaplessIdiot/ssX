@@ -1211,9 +1211,11 @@ VWrite(int verb, const char *f, va_list args)
     if ((verb < 0 || xf86Verbose >= verb) && len > 0)
 	fwrite(buffer, len, 1, stderr);
     if ((verb < 0 || xf86LogVerbose >= verb) && len > 0) {
-	if (logfile)
+	if (logfile) {
 	    fwrite(buffer, len, 1, logfile);
-	else {
+	    if (xf86Info.syncLog)
+		fsync(logfile);
+	} else {
 	    /*
 	     * Note, this code is used before OsInit() has been called, so
 	     * xalloc and friends can't be used.
@@ -1249,7 +1251,7 @@ xf86VDrvMsgVerb(int scrnIndex, MessageType type, int verb, const char *format,
 		va_list args)
 {
     char *s = X_UNKNOWN_STRING;
-
+    
     /* Ignore verbosity for X_ERROR */
     if (xf86Verbose >= verb || xf86LogVerbose >= verb || type == X_ERROR) {
 	switch (type) {
@@ -1406,6 +1408,8 @@ xf86LogInit()
     /* Flush saved log information */
     if (saveBuffer && size > 0) {
 	fwrite(saveBuffer, pos, 1, logfile);
+	if (xf86Info.syncLog)
+	    fsync(logfile);
 	free(saveBuffer);	/* Note, must be free(), not xfree() */
 	saveBuffer = 0;
 	size = 0;

@@ -2,6 +2,7 @@
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
+#include "xf86_OSproc.h"
 
 #include "sis.h"
 #include "sis_regs.h"
@@ -72,6 +73,8 @@ UShort  RefreshRate[7][8] = {
                         {60, 65, 70, 75,  85,   0,   0,   0},
                         {60, 0 , 0 , 0 , 0  , 0  , 0  , 0  },
                         {60, 0 , 0 , 0 , 0  , 0  , 0  , 0  }};
+
+#define MODEID_OFF 0x449
 
 UShort StResInfo[5][2]={{640,400},{640,350},{720,400},{720,350},{640,480}};
 UShort ModeResInfo[15][4]={{320,200,8,8},{320,240,8,8},{320,400,8,8},
@@ -246,7 +249,6 @@ static UShort CalcDelay2(ULong ROMAddr,UShort key);
 static void SetReg4(UShort port, ULong data);
 static ULong GetReg3(UShort port);
 static void SetPitch(ScrnInfoPtr pScrn, UShort BaseAddr);
-static UShort CalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static UShort CalcRefreshRate(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void WaitVertical(void);
 static Bool SetCRT2Group(UShort BaseAddr,ULong ROMAddr,UShort ModeNo, ScrnInfoPtr pScrn);
@@ -347,6 +349,9 @@ Bool SiSSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    P3da=BaseAddr+0x2A;
 
    ModeNo = CalcModeIndex(pScrn, mode);
+   if (!ModeNo) return FALSE;
+   xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Mode # 0x%2.2x\n",ModeNo);
+   
    Rate = CalcRefreshRate(pScrn, mode);
    SetReg1(P3d4, 0x33, Rate);
 
@@ -424,6 +429,8 @@ Bool SiSSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    SetPitch(pScrn, BaseAddr);                     /* 16.SetPitch */
    WaitVertical();
    DisplayOn();                                   /* 17.DisplayOn */
+   SiSGetSetModeID(pScrn,ModeNo);
+   
    return TRUE;
 }
 
@@ -1331,7 +1338,8 @@ static void SetPitch(ScrnInfoPtr pScrn, UShort BaseAddr)
 
 
 }
-static UShort CalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode)
+
+UShort CalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
    UShort i = (pScrn->bitsPerPixel+7)/8 - 1;
    UShort ModeIndex = 0;
@@ -2187,7 +2195,16 @@ static void SetCRT2ModeRegs(UShort BaseAddr,UShort ModeNo)
     if(VBInfo&CRT2DisplayFlag){
       tempah=0;
     }
+
+    /*
+     * @@@ bits 5,6,7 cause my display to go goofy. This cannot be
+     * correct. Therefore we leave it as it is. I need to get in touch
+     * with somebody at SiS who can explain to me how to set up
+     * this register.
+     */
+#if 0
     SetReg1(Part1Port,0x01,tempah);
+#endif
   }
 }
 
@@ -2265,8 +2282,10 @@ static void SetGroup1_LVDS(UShort  BaseAddr,ULong ROMAddr,UShort ModeNo,
   tempah=((tempbh<<4)&0x0FF)|(tempcx&0x0F);
   SetReg1(Part1Port,0x11,tempah);
 
-  SetRegANDOR(Part1Port,0x13,~0x03C,tempah);
-
+#if 0 /* @@@ This can't be right! For now we just leave it as it is */
+  SetRegANDOR(Part1Port,0x13,~0x03C,tempah); /* & 11000011 | tempah */
+#endif
+  
   /*lines below are newly added for LVDS  */
   tempax=LCDHDES;
   tempbx=HDE;
@@ -4562,4 +4581,20 @@ static UShort CheckACK(void)
   SetSCLKLow();
   if(tempah&0x01) return(1);
   else return(0);
+}
+
+unsigned char SiSGetSetModeID(ScrnInfoPtr pScrn, unsigned char id)
+{
+    unsigned char ret;
+    
+    unsigned char* base = xf86MapVidMem(pScrn->scrnIndex,
+					VIDMEM_MMIO, 0, 0x2000);
+    ret = *(base + MODEID_OFF);
+
+    /* id != 0xff means: set mode */
+    if (id != 0xff)
+	*(base + MODEID_OFF) = id;
+    xf86UnMapVidMem(pScrn->scrnIndex,base,0x2000);
+
+    return ret;
 }

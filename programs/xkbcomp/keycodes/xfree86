@@ -352,6 +352,7 @@ xkb_keycodes "jp106" {
 xkb_keycodes "abnt2" {
     include "xfree86(basic)"
     <BKSL> = 94;
+    <AC12> = 51;
 };
 
 

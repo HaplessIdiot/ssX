@@ -1,4 +1,33 @@
 XFree86 4.1.99.2 (xx November 2001)
+
+ 542. Fixed xkb to avoid setting of AccessXTimeout to 0 (Egbert Eich).
+ 541. Added option to sync the logfile after every line written (Egbert Eich).
+ 540. Improved APM handling: 
+      - Added disable of Input Handlers.
+      - Added support for undo on failed APM requests.
+      - Set vtSema to false (Egbert Eich).
+ 539. Improved detection of primary device especially for non-PC platforms
+      (Egbert Eich).
+ 538. Silicon Motion driver Fixes: 
+      - Removed separate loading of int10 code.
+      - Added reset of graphics engine on EnterVT (Egbert Eich).
+ 537. Set flag ROP_NEEDS_SOURCE for CPUToScreenColorExpand for all
+      S3 Savage chips (Egbert Eich).
+ 536. SiS driver: 
+      - Added fix to restore fbdev mode properly on VT switch/exit.
+      - Improved LCD handling on SiS 630.
+      - fixed screen blanking in SiS driver to properly blank LCDs 
+        (Egbert Eich).
+ 535. Trident driver: 
+      - Fixed screen centering for 640x480 Modes.
+      - Fixed video playback for BladeAi1.
+      - Fixed hotkey internal/external switching for XPm8/16.
+      - Added support for on-the-fly video recentering.
+      - Attempt to fix contrast settings for video (Egbert Eich).
+ 534. Added reset code for PS/2 mice when replug events occurs
+      (required for later Linux 2.4.x kernels) (Egbert Eich).
+ 533. xf86cfg: start AccessX controls even when started from a running server
+      (Egbert Eich).
  532. Add support in glint driver for booting secondary cards that have
       the VGA disable jumper set (so no access to the BIOS) (Jay Estabrook).
  531. Add Spanish localization of XDarwin front end (Pablo Di Noto).

@@ -121,6 +121,7 @@ typedef struct {
     Bool		pc98;
 #endif
     Bool                pmFlag;
+    Bool		syncLog;
     int                 estimateSizesAggressively;
     Bool                kbdCustomKeycodes;
     struct {

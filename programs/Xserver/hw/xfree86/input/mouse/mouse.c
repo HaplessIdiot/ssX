@@ -78,6 +78,8 @@ static void MouseCtrl(DeviceIntPtr device, PtrCtrl *ctrl);
 static void MousePostEvent(InputInfoPtr pInfo, int buttons,
 			   int dx, int dy, int dz, int dw);
 static void MouseReadInput(InputInfoPtr pInfo);
+static void initPs2(InputInfoPtr pInfo, Bool reinsert);
+static Bool ps2mouseReset(InputInfoPtr pInfo, unsigned char val);
 
 #undef MOUSE
 InputDriverRec MOUSE = {
@@ -124,7 +126,7 @@ typedef enum {
     OPTION_Y_AXIS_MAPPING
 } MouseOpts;
 
-static const OptionInfoRec MouseOptions[] = {
+static const OptionInfoRec mouseOptions[] = {
     { OPTION_ALWAYS_CORE,	"AlwaysCore",	  OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SEND_CORE_EVENTS,	"SendCoreEvents", OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_CORE_POINTER,	"CorePointer",	  OPTV_BOOLEAN,	{0}, FALSE },
@@ -272,7 +274,7 @@ static MouseProtocolRec mouseProtocols[] = {
 static const OptionInfoRec *
 MouseAvailableOptions(void *unused)
 {
-    return (MouseOptions);
+    return (mouseOptions);
 }
 
 static MouseProtocolID
@@ -697,6 +699,8 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	    xf86Msg(X_WARNING, "%s: cannot open input device\n", pInfo->name);
 	else {
 	    xf86Msg(X_ERROR, "%s: cannot open input device\n", pInfo->name);
+	    if (pMse->mousePriv)
+		xfree(pMse->mousePriv);
 	    xfree(pMse);
 	    pInfo->private = NULL;
 	    return pInfo;
@@ -825,8 +829,6 @@ SetupMouse(InputInfoPtr pInfo)
     */
 
     MouseDevPtr pMse;
-    unsigned char *param;
-    int paramlen;
     int i;
     int speed;
     int protoPara[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
@@ -919,8 +921,7 @@ SetupMouse(InputInfoPtr pInfo)
     /* Set the port parameters. */
     if (!automatic)
 	xf86SetSerial(pInfo->fd, pInfo->options);
-    param = NULL;
-    paramlen = 0;
+
     switch (pMse->protocolID) {
     case PROT_LOGI:		/* Logitech Mice */
         /* 
@@ -1073,53 +1074,19 @@ SetupMouse(InputInfoPtr pInfo)
 			     pMse->resolution);
 	break;
 
+    case PROT_PS2:
     case PROT_IMPS2:		/* IntelliMouse */
-	{
-	    static unsigned char seq[] = { 243, 200, 243, 100, 243, 80, 242 };
-
-	    param = seq;
-	    paramlen = sizeof(seq);
-	}
-	break;
-
     case PROT_EXPPS2:		/* IntelliMouse Explorer */
-	{
-	    static unsigned char seq[] = { 243, 200, 243, 100, 243, 80,
-					   243, 200, 243, 200, 243, 80, 242 };
-
-	    param = seq;
-	    paramlen = sizeof(seq);
-	}
-	break;
-
+    case PROT_THINKPS2:		/* ThinkingMouse */
+    case PROT_MMPS2:		/* MouseMan+, FirstMouse+ */
+    case PROT_GLIDEPS2:
     case PROT_NETPS2:		/* NetMouse, NetMouse Pro, Mie Mouse */
     case PROT_NETSCPS2:		/* NetScroll */
-	{
-	    static unsigned char seq[] = { 232, 3, 230, 230, 230, };
-
-	    param = seq;
-	    paramlen = sizeof(seq);
-	}
+	if ((pMse->mousePriv = 
+	     (pointer) xcalloc(sizeof(ps2PrivRec), 1)) == 0)
+	    return FALSE;
+	initPs2(pInfo,TRUE);
 	break;
-
-    case PROT_MMPS2:		/* MouseMan+, FirstMouse+ */
-	{
-	    static unsigned char seq[] = { 230, 232, 0, 232, 3, 232, 2, 232, 1,
-					 230, 232, 3, 232, 1, 232, 2, 232, 3, };
-	    param = seq;
-	    paramlen = sizeof(seq);
-	}
-	break;
-
-    case PROT_THINKPS2:		/* ThinkingMouse */
-	{
-	    static unsigned char seq[] = { 243, 10, 232,  0, 243, 20, 243, 60,
-					 243, 40, 243, 20, 243, 20, 243, 60,
-					 243, 40, 243, 20, 243, 20, };
-	    param = seq;
-	    paramlen = sizeof(seq);
-	}
-
     case PROT_SYSMOUSE:
 	if (osInfo->SetMiscRes)
 	    osInfo->SetMiscRes(pInfo, pMse->protocol, pMse->sampleRate,
@@ -1131,70 +1098,6 @@ SetupMouse(InputInfoPtr pInfo)
 	break;
     }
 
-    if (paramlen > 0) {
-#ifdef EXTMOUSEDEBUG
-	for (i = 0; i < paramlen; ++i) {
-	    if (xf86WriteSerial(pInfo->fd, &param[i], 1) != 1)
-		ErrorF("SetupMouse: Write to mouse failed (%s)\n",
-		       strerror(errno));
-	    usleep(30000);
-	    xf86ReadSerial(pInfo->fd, &c, 1);
-	    ErrorF("SetupMouse: got %02x\n", c);
-	}
-#else
-	if (xf86WriteSerial(pInfo->fd, param, paramlen) != paramlen)
-	    xf86Msg(X_ERROR, "%s: Write to mouse failed\n", pInfo->name);
-#endif
- 	usleep(30000);
- 	xf86FlushInput(pInfo->fd);
-    }
-    if (pMse->class & (MSE_PS2 | MSE_XPS2)) {
-	if (osInfo->SetPS2Res) {
-	    osInfo->SetPS2Res(pInfo, pMse->protocol, pMse->sampleRate,
-			      pMse->resolution);
-	} else {
-	    unsigned char c2[2];
-
-	    c = 230;		/* 1:1 scaling */
-	    xf86WriteSerial(pInfo->fd, &c, 1);
-	    c = 244;		/* enable mouse */
-	    xf86WriteSerial(pInfo->fd, &c, 1);
-	    c2[0] = 243;	/* set sampling rate */
-	    if (pMse->sampleRate > 0) {
- 		if (pMse->sampleRate >= 200)
- 		    c2[1] = 200;
- 		else if (pMse->sampleRate >= 100)
- 		    c2[1] = 100;
-  		else if (pMse->sampleRate >= 80)
- 		    c2[1] = 80;
-		else if (pMse->sampleRate >= 60)
- 		    c2[1] = 60;
- 		else if (pMse->sampleRate >= 40)
- 		    c2[1] = 40;
- 		else
- 		    c2[1] = 20;
-	    } else {
- 		c2[1] = 100;
-	    }
-	    xf86WriteSerial(pInfo->fd, c2, 2);
-	    c2[0] = 232;	/* set device resolution */
-	    if (pMse->resolution > 0) {
-		if (pMse->resolution >= 200)
-		    c2[1] = 3;
-		else if (pMse->resolution >= 100)
-		    c2[1] = 2;
-		else if (pMse->resolution >= 50)
-		    c2[1] = 1;
-		else
-		    c2[1] = 0;
-	    } else {
-		c2[1] = 2;
-	    }
-	    xf86WriteSerial(pInfo->fd, c2, 2);
-	    usleep(30000);
-	    xf86FlushInput(pInfo->fd);
-	}
-    }
 
     pMse->protoBufTail = 0;
     pMse->inSync = 0;
@@ -1225,6 +1128,14 @@ MouseReadInput(InputInfoPtr pInfo)
 
     while ((c = XisbRead(pMse->buffer)) >= 0) {
 	u = (unsigned char)c;
+	
+	if (pMse->class & (MSE_PS2 | MSE_XPS2)) {
+	    if (ps2mouseReset(pInfo,u)) {
+		pBufP = 0;
+		continue;
+	    }
+	}
+
 	if (pBufP >= pMse->protoPara[4]) {
 	    /*
 	     * Buffer contains a full packet, which has already been processed:
@@ -1722,6 +1633,7 @@ MouseProc(DeviceIntPtr device, int what)
 	}
 	pMse->lastButtons = 0;
 	pMse->emulateState = 0;
+	pMse->emulate3Pending = FALSE;
 	device->public.on = TRUE;
 	/*
 	 * send button up events for sanity. If no button down is pending
@@ -1746,6 +1658,9 @@ MouseProc(DeviceIntPtr device, int what)
 		XisbFree(pMse->buffer);
 		pMse->buffer = NULL;
 	    }
+	    if (pMse->mousePriv)
+		xfree(pMse->mousePriv);
+	    pMse->mousePriv = NULL;
 	    xf86CloseSerial(pInfo->fd);
 	    pInfo->fd = -1;
 	    if (pMse->emulate3Buttons)
@@ -2174,6 +2089,166 @@ MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy, int dz, int dw)
     if (zbutton) {
 	buttons &= ~zbutton;
 	MouseDoPostEvent(pInfo, buttons, 0, 0);
+    }
+}
+
+static void
+initPs2(InputInfoPtr pInfo, Bool reinsert)
+{
+    MouseDevPtr pMse = pInfo->private;
+    unsigned char *param = NULL;
+    int paramlen = 0;
+    unsigned char c;
+
+    if (reinsert) {
+	unsigned char init = 0xF4;
+	if (xf86WriteSerial(pInfo->fd, &init, 1) != 1)
+	    xf86Msg(X_ERROR, "%s: Write to mouse failed\n", pInfo->name);
+	usleep(30000);
+	xf86FlushInput(pInfo->fd);
+    }
+
+    switch (pMse->protocolID) {    
+	case PROT_IMPS2:		/* IntelliMouse */
+	{
+	    static unsigned char seq[] = { 243, 200, 243, 100, 243, 80, 242 };
+
+	    param = seq;
+	    paramlen = sizeof(seq);
+	}
+	break;
+
+    case PROT_EXPPS2:		/* IntelliMouse Explorer */
+	{
+	    static unsigned char seq[] = { 243, 200, 243, 100, 243, 80,
+					   243, 200, 243, 200, 243, 80, 242 };
+
+	    param = seq;
+	    paramlen = sizeof(seq);
+	}
+	break;
+
+    case PROT_NETPS2:		/* NetMouse, NetMouse Pro, Mie Mouse */
+    case PROT_NETSCPS2:		/* NetScroll */
+	{
+	    static unsigned char seq[] = { 232, 3, 230, 230, 230, };
+
+	    param = seq;
+	    paramlen = sizeof(seq);
+	}
+	break;
+
+    case PROT_MMPS2:		/* MouseMan+, FirstMouse+ */
+	{
+	    static unsigned char seq[] = { 230, 232, 0, 232, 3, 232, 2, 232, 1,
+					 230, 232, 3, 232, 1, 232, 2, 232, 3, };
+	    param = seq;
+	    paramlen = sizeof(seq);
+	}
+	break;
+
+    case PROT_THINKPS2:		/* ThinkingMouse */
+	{
+	    static unsigned char seq[] = { 243, 10, 232,  0, 243, 20, 243, 60,
+					 243, 40, 243, 20, 243, 20, 243, 60,
+					 243, 40, 243, 20, 243, 20, };
+	    param = seq;
+	    paramlen = sizeof(seq);
+	}
+    }
+
+    if (paramlen > 0) {
+#ifdef EXTMOUSEDEBUG
+	for (i = 0; i < paramlen; ++i) {
+	    if (xf86WriteSerial(pInfo->fd, &param[i], 1) != 1)
+		ErrorF("SetupMouse: Write to mouse failed (%s)\n",
+		       strerror(errno));
+	    usleep(30000);
+	    xf86ReadSerial(pInfo->fd, &c, 1);
+	    ErrorF("SetupMouse: got %02x\n", c);
+	}
+#else
+	if (xf86WriteSerial(pInfo->fd, param, paramlen) != paramlen)
+	    xf86Msg(X_ERROR, "%s: Write to mouse failed\n", pInfo->name);
+#endif
+ 	usleep(30000);
+ 	xf86FlushInput(pInfo->fd);
+    }
+
+    ((ps2PrivPtr)(pMse->mousePriv))->state = 0;
+    if (osInfo->SetPS2Res) {
+	osInfo->SetPS2Res(pInfo, pMse->protocol, pMse->sampleRate,
+			  pMse->resolution);
+    } else {
+	unsigned char c2[2];
+	
+	c = 230;		/* 1:1 scaling */
+	xf86WriteSerial(pInfo->fd, &c, 1);
+	c = 244;		/* enable mouse */
+	xf86WriteSerial(pInfo->fd, &c, 1);
+	c2[0] = 243;	/* set sampling rate */
+	if (pMse->sampleRate > 0) {
+	    if (pMse->sampleRate >= 200)
+		c2[1] = 200;
+	    else if (pMse->sampleRate >= 100)
+		c2[1] = 100;
+	    else if (pMse->sampleRate >= 80)
+		c2[1] = 80;
+	    else if (pMse->sampleRate >= 60)
+		c2[1] = 60;
+	    else if (pMse->sampleRate >= 40)
+		c2[1] = 40;
+	    else
+		c2[1] = 20;
+	} else {
+	    c2[1] = 100;
+	}
+	xf86WriteSerial(pInfo->fd, c2, 2);
+	c2[0] = 232;	/* set device resolution */
+	if (pMse->resolution > 0) {
+	    if (pMse->resolution >= 200)
+		c2[1] = 3;
+	    else if (pMse->resolution >= 100)
+		c2[1] = 2;
+	    else if (pMse->resolution >= 50)
+		c2[1] = 1;
+	    else
+		c2[1] = 0;
+	} else {
+	    c2[1] = 2;
+	}
+	xf86WriteSerial(pInfo->fd, c2, 2);
+	usleep(30000);
+	xf86FlushInput(pInfo->fd);
+    }
+}
+
+static Bool
+ps2mouseReset(InputInfoPtr pInfo, unsigned char val) 
+{
+    MouseDevPtr pMse = pInfo->private;
+    ps2PrivPtr ps2priv = (ps2PrivPtr)pMse->mousePriv;
+#ifdef EXTMOUSEDEBUG
+    ErrorF("Ps/2 Mouse State: %i, 0x%x\n",ps2priv->state,val);
+#endif
+    switch (ps2priv->state) {
+	case 0:
+	    if (val == 0xaa) 
+		ps2priv->state = 1;
+	    else 
+		ps2priv->state = 0;
+		return FALSE;
+	case 1:
+	    ps2priv->state = 0;
+	    if (val == 0x00) {
+		xf86MsgVerb(X_INFO,3,
+			    "Got reinsert event: reinitializing PS/2 mouse\n");
+		initPs2(pInfo, TRUE);
+		return TRUE;
+	    } else
+		return FALSE;
+	default:
+	    return FALSE;
     }
 }
 

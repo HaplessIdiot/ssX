@@ -372,6 +372,38 @@ FindPCIVideoInfo(void)
 	i++;
     }
 
+    /* If we haven't found a primary device try a different heuristic */
+    if (primaryBus.type == BUS_NONE && num) {
+	i = 0;
+	while (i < num) {
+	    k = 0;
+	    info = xf86PciVideoInfo[i];
+	    while ((pcrp = xf86PciInfo[k++])) {
+		if ( pcrp->busnum == info->bus
+		     && pcrp->devnum == info->device
+		     && pcrp->funcnum == info->func )
+		    break;
+	    }
+	    
+	    if (pcrp && (num == 1
+		 || ( info->class == PCI_CLASS_DISPLAY
+		      && info->subclass == PCI_SUBCLASS_DISPLAY_MISC))
+		&& pcrp->pci_command & PCI_CMD_MEM_ENABLE) {
+		if (primaryBus.type == BUS_NONE) {
+		    primaryBus.type = BUS_PCI;
+		    primaryBus.id.pci.bus = pcrp->busnum;
+		    primaryBus.id.pci.device = pcrp->devnum;
+		    primaryBus.id.pci.func = pcrp->funcnum;
+		} else {
+		    xf86Msg(X_NOTICE,
+			    "More than one possible primary device found\n");
+		    primaryBus.type ^= (BusType)(-1);
+		}
+	    }
+	    i++;
+	}
+    }
+    
     /* Print a summary of the video devices found */
     {
 	for (k = 0; k < num; k++) {

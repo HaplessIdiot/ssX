@@ -138,6 +138,7 @@ xf86InfoRec xf86Info = {
 	FALSE,		/* pc98 */
 #endif
 	TRUE,		/* pmFlag */
+	FALSE,          /* syncLog */
 	0,		/* estimateSizesAggressively */
 	FALSE           /* kbdCustomKeycodes */
 };

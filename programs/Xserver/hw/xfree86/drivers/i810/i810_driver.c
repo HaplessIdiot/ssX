@@ -1067,8 +1067,8 @@ I810Save(ScrnInfoPtr pScrn)
 {
    vgaHWPtr hwp;
    I810Ptr pI810;
-   unsigned temp;
-
+   CARD32 temp;
+   
    hwp = VGAHWPTR(pScrn);
    pI810 = I810PTR(pScrn);
    DoSave(pScrn, &hwp->SavedReg, &pI810->SavedReg, TRUE);

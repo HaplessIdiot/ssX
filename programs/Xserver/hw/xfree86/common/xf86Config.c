@@ -701,7 +701,8 @@ typedef enum {
     FLAG_NOPM,
     FLAG_XINERAMA,
     FLAG_ALLOW_DEACTIVATE_GRABS,
-    FLAG_ALLOW_CLOSEDOWN_GRABS
+    FLAG_ALLOW_CLOSEDOWN_GRABS,
+    FLAG_SYNCLOG
 } FlagValues;
    
 static OptionInfoRec FlagOptions[] = {
@@ -756,6 +757,8 @@ static OptionInfoRec FlagOptions[] = {
   { FLAG_ALLOW_DEACTIVATE_GRABS,"AllowDeactivateGrabs",		OPTV_BOOLEAN,
 	{0}, FALSE },
   { FLAG_ALLOW_CLOSEDOWN_GRABS, "AllowClosedownGrabs",		OPTV_BOOLEAN,
+	{0}, FALSE },
+  { FLAG_SYNCLOG,		"SyncLog",			OPTV_BOOLEAN,
 	{0}, FALSE },
   { -1,				NULL,				OPTV_NONE,
 	{0}, FALSE },
@@ -859,15 +862,15 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 	xf86Info.pciFlags = PCIForceConfig2;
     if (xf86IsOptionSet(FlagOptions, FLAG_PCIOSCONFIG))
 	xf86Info.pciFlags = PCIOsConfig;
-    /*
-     * XXX This should be handled like a proper boolean option -- see further
-     * above for examples.
-     */
-    if (xf86IsOptionSet(FlagOptions, FLAG_NOPM))
-	xf86Info.pmFlag = FALSE;
-    else
-	xf86Info.pmFlag = TRUE;
-	
+
+    xf86Info.pmFlag = TRUE;
+    if (xf86GetOptValBool(FlagOptions, FLAG_NOPM, &value)) 
+	xf86Info.pmFlag = !value;
+    if (xf86GetOptValBool(FlagOptions, FLAG_SYNCLOG, &value)) {
+	xf86Msg(X_CONFIG, "SyncLog %s\n",value?"enabled":"disabled");
+	xf86Info.syncLog = value;
+    }
+    
     i = -1;
     xf86GetOptValInteger(FlagOptions, FLAG_ESTIMATE_SIZES_AGGRESSIVELY, &i);
     if (i >= 0)

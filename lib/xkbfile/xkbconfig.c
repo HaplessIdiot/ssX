@@ -878,7 +878,8 @@ unsigned		what;
 		}
 	    }
 	    *pival= val.ival * sign;
-	    rtrn->defined|= XkbCF_AccessXTimeout;
+	    if (field->field_id == _XkbCF_AccessXTimeout)
+	        rtrn->defined|=XkbCF_AccessXTimeout;
 	    tok= XkbCFScan(file,&val,rtrn);
 	    if ((tok!=XkbCF_EOL)&&(tok!=XkbCF_Semi)&&(tok!=XkbCF_EOF)) {
 		rtrn->error= XkbCF_ExpectedEOS;
@@ -1074,7 +1075,7 @@ unsigned int	mask;
 	ctrls->mk_max_speed= rtrn->mk_max_speed;
     if (rtrn->mk_curve>0)
 	ctrls->mk_curve= rtrn->mk_curve;
-    if (rtrn->defined&XkbCF_AccessXTimeout)
+    if (rtrn->defined&XkbCF_AccessXTimeout && rtrn->ax_timeout > 0)
 	ctrls->ax_timeout= rtrn->ax_timeout;
 
     /* any value set to both off and on is reset to ignore */

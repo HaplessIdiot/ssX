@@ -17,6 +17,10 @@ typedef struct {
     MouseProtocolID	id;
 } MouseProtocolRec, *MouseProtocolPtr;
 
+typedef struct {
+    int state;
+} ps2PrivRec, *ps2PrivPtr;
+
 /* mouse proto flags */
 #define MPF_NONE		0x00
 #define MPF_SAFE		0x01

@@ -353,7 +353,7 @@ SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     SISPtr pSiS = SISPTR(pScrn);
     int vgaIOBase;
     int i,max;
-
+    
         PDEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
                         "SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)\n"));
 
@@ -457,13 +457,15 @@ SiS300Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 
     for (i = 0x06; i <= max; i++) {
         outb(VGA_SEQ_INDEX, i);
-        xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
-                    "XR%02X Contents - %02X \n", i, inb(VGA_SEQ_DATA));
         sisReg->sisRegs3C4[i] = inb(VGA_SEQ_DATA);
+          xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
+			 "XR%02X Contents - %02X \n", i,sisReg->sisRegs3C4[i]);
     }
 
     for (i=0x19; i<0x40; i++)  {
         inSISIDXREG(pSiS->RelIO+CROFFSET, i, sisReg->sisRegs3D4[i]);
+	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
+		       "3D4-%02X Contents - %02X \n", i,sisReg->sisRegs3D4[i]);
     }
 
     /*sisReg->sisRegs3C2 = inb(0x3CC);*/
@@ -472,9 +474,12 @@ SiS300Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     if ((pSiS->VBFlags & (VB_LVDS | CRT2_LCD))==(VB_LVDS|CRT2_LCD))
         (*pSiS->SiSSaveLVDS)(pScrn, sisReg);
     if ((pSiS->VBFlags & (VB_CHRONTEL | CRT2_TV))==(VB_CHRONTEL|CRT2_TV))
-    (*pSiS->SiSSaveChrontel)(pScrn,sisReg);
+	(*pSiS->SiSSaveChrontel)(pScrn,sisReg);
     if ((pSiS->VBFlags & (VB_301|VB_302|VB_303)) && (pSiS->VBFlags & (CRT2_LCD|CRT2_TV|CRT2_VGA)))
         (*pSiS->SiSSave2)(pScrn, sisReg);
+    if (pSiS->VBFlags & CRT2_LCD)
+	pSiS->BIOSModeSave = SiSGetSetModeID(pScrn,0xFF);
+    
 }
 
 static void
@@ -495,31 +500,34 @@ SiS300Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     if (temp & 0x42)  {
         while ( (MMIO_IN16(pSiS->IOBase, 0x8242) & 0xE000) != 0xE000){};
     }
-
     max=0x3D;
     for (i = 0x19; i < 0x40; i++)  {
         outSISIDXREG(pSiS->RelIO+CROFFSET, i, sisReg->sisRegs3D4[i]);
     }
     if (pSiS->Chipset != PCI_CHIP_SIS300)  {
-           outSISIDXREG(pSiS->RelIO+CROFFSET, 0x1A, sisReg->sisRegs3D4[0x19]);
+	unsigned char val;
+	inSISIDXREG(pSiS->RelIO+CROFFSET,0x1A,val);
+	if (val == sisReg->sisRegs3D4[0x19])
+	   outSISIDXREG(pSiS->RelIO+CROFFSET, 0x1A, sisReg->sisRegs3D4[0x19]);
+	inSISIDXREG(pSiS->RelIO+CROFFSET,0x19,val);
+	if (val == sisReg->sisRegs3D4[0x1A])
            outSISIDXREG(pSiS->RelIO+CROFFSET, 0x19, sisReg->sisRegs3D4[0x1A]);
     }
 
     if ((pSiS->Chipset == PCI_CHIP_SIS630) && (sisReg->sisRegs3C4[0x1e] & 0x40))
         outw(VGA_SEQ_INDEX, sisReg->sisRegs3C4[0x20] << 8 | 0x20);
 
-    for (i = 0x06; i <= max; i++) {
-        outb(VGA_SEQ_INDEX,i);
+	for (i = 0x06; i <= max; i++) {
+        outb(VGA_SEQ_INDEX,i);	
+
         xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,4,
                     "XR%X Contents - %02X ", i, inb(VGA_SEQ_DATA));
-
         outb(VGA_SEQ_DATA,sisReg->sisRegs3C4[i]);
 
         xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,4,
                         "Restore to - %02X Read after - %02X\n",
                         sisReg->sisRegs3C4[i], inb(VGA_SEQ_DATA));
     }
-
     if ((pSiS->VBFlags & (VB_LVDS | CRT2_LCD))==(VB_LVDS|CRT2_LCD))
         (*pSiS->SiSRestoreLVDS)(pScrn, sisReg);
     if ((pSiS->VBFlags & (VB_CHRONTEL | CRT2_TV))==(VB_CHRONTEL|CRT2_TV))
@@ -533,6 +541,10 @@ SiS300Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     /* MemClock needs this to take effect */
     outw(VGA_SEQ_INDEX, 0x0100);        /* Synchronous Reset */
     outw(VGA_SEQ_INDEX, 0x0300);        /* End Reset */
+
+    if (pSiS->VBFlags & CRT2_LCD)
+	SiSGetSetModeID(pScrn,pSiS->BIOSModeSave);
+
 }
 
 static void

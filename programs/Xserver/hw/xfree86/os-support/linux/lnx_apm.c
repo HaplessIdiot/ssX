@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_apm.c,v 3.9 2000/12/08 20:13:37 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_apm.c,v 3.10 2001/10/01 13:44:14 eich Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -90,12 +90,14 @@ lnxPMConfirmEventToOs(int fd, pmEvent event)
     switch (event) {
     case XF86_APM_SYS_STANDBY:
     case XF86_APM_USER_STANDBY:
-	(void) ioctl( fd, APM_IOC_STANDBY, NULL );
+        if (ioctl( fd, APM_IOC_STANDBY, NULL ))
+	    return PM_FAILED;
 	return PM_CONTINUE;
     case XF86_APM_SYS_SUSPEND:
     case XF86_APM_CRITICAL_SUSPEND:
     case XF86_APM_USER_SUSPEND:
-	ioctl( fd, APM_IOC_SUSPEND, NULL );
+	if (ioctl( fd, APM_IOC_SUSPEND, NULL ))
+	    return PM_FAILED;
 	return PM_CONTINUE;
     case XF86_APM_STANDBY_RESUME:
     case XF86_APM_NORMAL_RESUME:

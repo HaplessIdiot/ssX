@@ -791,8 +791,6 @@ nvDoDDCVBE(ScrnInfoPtr pScrn)
  	    }
  	    vbeFree(pVbe);
  	}
-	xf86FreeInt10(pNv->pInt);
- 	pNv->pInt = NULL;
      }
      return MonInfo;
 }

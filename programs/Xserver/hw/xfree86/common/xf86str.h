@@ -489,6 +489,7 @@ typedef enum {
 typedef enum {
     PM_WAIT,
     PM_CONTINUE,
+    PM_FAILED,
     PM_NONE
 } pmWait;
 
@@ -732,7 +733,7 @@ typedef void xf86EnableDisableFBAccessProc(int, Bool);
 typedef int  xf86SetDGAModeProc           (int, int, DGADevicePtr);
 typedef int  xf86ChangeGammaProc          (int, Gamma);
 typedef void xf86PointerMovedProc         (int, int, int);
-typedef Bool xf86PMEventProc              (int, pmEvent);
+typedef Bool xf86PMEventProc              (int, pmEvent, Bool);
 
 /*
  * ScrnInfoRec

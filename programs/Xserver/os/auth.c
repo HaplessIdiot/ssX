@@ -221,14 +221,16 @@ CheckAuthorization (
 	else
 	    EnableLocalHost ();
     }
-    if (name_length)
+    if (name_length) {
 	for (i = 0; i < NUM_AUTHORIZATION; i++) {
 	    if (protocols[i].name_length == name_length &&
 		memcmp (protocols[i].name, name, (int) name_length) == 0)
 	    {
 		return (*protocols[i].Check) (data_length, data, client, reason);
 	    }
+	    *reason = "Protocol not supported by server\n";
 	}
+    } else *reason = "No protocol specified\n";
     return (XID) ~0L;
 }
 

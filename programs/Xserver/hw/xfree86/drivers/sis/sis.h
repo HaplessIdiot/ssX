@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.21 2001/05/04 19:05:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.22 2001/05/16 13:43:17 alanh Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -231,7 +231,9 @@ typedef struct {
         ScreenBlockHandlerProcPtr BlockHandler;
 
     OptionInfoPtr Options;
-
+    unsigned char LCDon;
+    Bool Blank;
+    unsigned char BIOSModeSave;
 } SISRec, *SISPtr;
 
 #endif
