@@ -1,9 +1,15 @@
+/* $XFree86$ */
+
 #include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <protocols/rwhod.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#ifndef _PATH_RWHODIR
+#define _PATH_RWHODIR "/var/spool/rwho"
+#endif
 
 typedef struct _XLoadResources {
   Boolean show_label;
@@ -12,9 +18,6 @@ typedef struct _XLoadResources {
 } XLoadResources;
 
 extern XLoadResources resources ;
-
-/* extern char *rname; */
-
 
 #define WHDRSIZE        ((int)(sizeof (buf) - sizeof (buf.wd_we)))
 
@@ -32,7 +35,6 @@ void GetRLoadPoint( w, closure, call_data )
   *(double *)call_data = 0.0; /* to be on the safe side */
 
   if (fname == NULL) {
-  fprintf(stderr,"here\n");    
     if ((fname = malloc(strlen(_PATH_RWHODIR)+strlen("/whod.")+strlen(resources.remote)+1)) == NULL) {
       fprintf(stderr,"GetRLoadPoint: malloc() failed\n");
       exit(1);
@@ -41,12 +43,13 @@ void GetRLoadPoint( w, closure, call_data )
     strcat(fname,"/whod.");
     strcat(fname,resources.remote);
   }
-  if ((f = open(fname, O_RDONLY, 0)) < 0) {
+  if ((f = open(fname, O_RDONLY, 0)) < 0)
     return;
-  }
+
   cc = read(f, &buf, sizeof(buf));
   close(f);
   if (cc < WHDRSIZE)
     return;
+
   *(double *)call_data = buf.wd_loadav[0] / 100.0;
 }
