@@ -2,7 +2,7 @@ XCOMM platform:  $Xorg: FreeBSD.cf,v 1.3 2000/08/17 19:41:45 cpqbld Exp $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.107 2001/04/07 16:36:01 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.108 2001/04/19 19:54:41 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -152,9 +152,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # define CplusplusCmd		c++
 #endif
 
-#define CppCmd			/usr/bin/cpp
-#define PreProcessCmd		CppCmd
-#define StandardCppOptions	-traditional
 #define CppCmd			/usr/bin/cpp
 #define PreProcessCmd		CppCmd
 #define StandardCppOptions	-traditional
