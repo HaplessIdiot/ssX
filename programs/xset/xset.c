@@ -27,7 +27,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.27 2002/11/12 23:53:35 dawes Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.28 2002/11/20 04:04:58 dawes Exp $ */
 /* Modified by Stephen so keyboard rate is set using XKB extensions */
 
 #include <stdio.h>
@@ -1092,6 +1092,8 @@ static void
 xkbset_repeatrate(Display *dpy, int delay, int interval)
 {
   XkbDescPtr xkb = XkbGetKeyboard(dpy,XkbControlsMask,XkbUseCoreKbd);
+  if (!xkb)
+    xkb = XkbAllocKeyboard();
   XkbGetControls(dpy, XkbRepeatKeysMask, xkb);
   xkb->ctrls->repeat_delay = delay;
   xkb->ctrls->repeat_interval = interval;
