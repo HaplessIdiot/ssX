@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.11 2001/02/13 19:19:17 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.12 2001/03/06 17:31:40 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -370,7 +370,7 @@ greet_user_rtn GreetUser(
 #endif
     __xdm_crypt = dlfuncs->_crypt;
 #ifdef USE_PAM
-    __xdm_thepamh = dlfuncs->_thepamh;
+    __xdm_thepamhp = dlfuncs->_thepamhp;
 #endif
 #endif
 

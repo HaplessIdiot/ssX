@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.10 2000/11/14 21:59:25 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.11 2001/01/17 23:45:25 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -318,6 +318,8 @@ done:
 	pam_error = pam_start("xdm", p->pw_name, &PAM_conversation, pamhp);
 	PAM_BAIL;
 	pam_error = pam_set_item(*pamhp, PAM_TTY, d->name);
+	PAM_BAIL;
+	pam_error = pam_set_item(*pamhp, PAM_RHOST, "");
 	PAM_BAIL;
 	pam_error = pam_authenticate(*pamhp, 0);
 	PAM_BAIL;
