@@ -3,7 +3,7 @@
 !
 !
 !
-! $XFree86: xc/programs/xdm/config/xdm-conf.cpp,v 1.10 2002/11/30 19:11:32 herrb Exp $
+! $XFree86: xc/programs/xdm/config/xdm-conf.cpp,v 1.11 2004/01/09 00:25:25 dawes Exp $
 !
 DisplayManager.errorLogFile:	XDMLOGDIR/xdm.log
 DisplayManager.pidFile:		XDMPIDDIR/xdm.pid
@@ -11,6 +11,7 @@ DisplayManager.keyFile:		XDMDIR/xdm-keys
 DisplayManager.servers:		XDMDIR/Xservers
 DisplayManager.accessFile:	XDMDIR/Xaccess
 DisplayManager.willing:		SU nobody -c XDMDIR/Xwilling
+DisplayManager.authDir:		XDMAUTHDIR
 ! All displays should use authorization, but we cannot be sure
 ! X terminals may not be configured that way, so they will require
 ! individual resource settings.
