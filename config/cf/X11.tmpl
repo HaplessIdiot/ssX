@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.213tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.214 2003/09/01 21:20:00 tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -551,7 +551,8 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildFontconfigLibrary	(UseFontconfig && !HasFontconfig)
 #endif
 #ifndef UseFreetype2
-#define UseFreetype2		(BuildXftLibrary || BuildXft1Library || UseFontconfig)
+#define UseFreetype2		(BuildXftLibrary || BuildXft1Library || \
+				 UseFontconfig || BuildFreeType)
 #endif
 #ifndef HasExpat
 #define HasExpat		NO
