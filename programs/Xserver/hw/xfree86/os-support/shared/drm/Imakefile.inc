@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/drm/Imakefile.inc,v 1.1 2005/01/31 18:20:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/drm/Imakefile.inc,v 1.2 2005/01/31 18:23:58 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -45,6 +45,10 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/drm/Imakefile.i
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#if !MakeHasPosixVariableSubstitutions
+#error Check if your platform's 'make' has posix variable substitution
+#endif
 
 #ifndef DRMCopySubdir
 #define DRMCopySubdir kernel_source
