@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.15 2001/02/12 03:36:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.16 2001/03/25 05:32:09 tsi Exp $ */
 /*
  * Copyright 1994 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -55,7 +55,7 @@
 
 #define IOPortTag(_SparseIOSelect, _BlockIOSelect)	\
 	(SetBits(_SparseIOSelect, SPARSE_IO_SELECT) |	\
-	 SetBits(_BlockIOSelect, BLOCK_SELECT | MM_IO_SELECT))
+	 SetBits(_BlockIOSelect, DWORD_SELECT))
 #define SparseIOTag(_IOSelect)	IOPortTag(_IOSelect, 0)
 #define BlockIOTag(_IOSelect)	IOPortTag(0, _IOSelect)
 
@@ -1098,7 +1098,7 @@
 #define GEN_GIO2_WRITE			0x00000020ul	/* 264xT */
 #define GEN_CUR2_ENABLE			0x00000020ul	/* XC/XL */
 #define GEN_OVR_POLARITY		0x00000040ul	/* GX/CX */
-#define GEN_GEN_ICON_ENABLE		0x00000040ul	/* XC/XL */
+#define GEN_ICON_ENABLE			0x00000040ul	/* XC/XL */
 #define GEN_CUR_EN			0x00000080ul
 #define GEN_GUI_EN			0x00000100ul	/* GX/CX */
 #define GEN_GUI_RESETB			0x00000100ul	/* 264xT */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.3 2001/02/12 03:53:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.4 2001/03/25 05:32:08 tsi Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -897,7 +897,9 @@ ATIModeSet
                 outr(CUR_HORZ_VERT_OFF, pATIHW->cur_horz_vert_off);
                 outr(MEM_VGA_WP_SEL, pATIHW->mem_vga_wp_sel);
                 outr(MEM_VGA_RP_SEL, pATIHW->mem_vga_rp_sel);
+                outr(GEN_TEST_CNTL, pATIHW->gen_test_cntl | GEN_GUI_EN);
                 outr(GEN_TEST_CNTL, pATIHW->gen_test_cntl);
+                outr(GEN_TEST_CNTL, pATIHW->gen_test_cntl | GEN_GUI_EN);
                 outr(CONFIG_CNTL, pATIHW->config_cntl);
                 if (pATI->Chip >= ATI_CHIP_264CT)
                 {

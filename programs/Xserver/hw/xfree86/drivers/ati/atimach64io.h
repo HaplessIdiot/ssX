@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.7 2001/02/12 03:31:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.8 2001/03/25 05:32:08 tsi Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -132,7 +132,7 @@ extern void ATIMach64PollEngineStatus FunctionPrototype((ATIPtr));
 /*
  * MMIO cache definitions
  */
-#define CacheByte(___Register) pATI->MMIOCached[CacheSlotOf(___Register >> 3)]
+#define CacheByte(___Register) pATI->MMIOCached[CacheSlotOf(___Register) >> 3]
 #define CacheBit(___Register)  (0x80U >> (CacheSlotOf(___Register) & 0x07U))
 
 #define RegisterIsCached(__Register) \
@@ -164,7 +164,7 @@ extern void ATIMach64PollEngineStatus FunctionPrototype((ATIPtr));
 
 /*
  * This is no longer as critical, especially for _n == 1.  However,
- * there is still a need to ensure _n <= pATI-<nFIFOEntries.
+ * there is still a need to ensure _n <= pATI->nFIFOEntries.
  */
 #define ATIMach64WaitForFIFO(_pATI, _n)        \
     while (pATI->nAvailableFIFOEntries < (_n)) \

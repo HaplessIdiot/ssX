@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.10 2001/04/01 14:00:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.11 2001/04/10 16:07:59 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -623,12 +623,10 @@ static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 	    pboxNew2 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec)*nbox);
 	    pptNew2  = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec)*nbox);
 	    if (!pboxNew2 || !pptNew2) {
-		if (pptNew2) DEALLOCATE_LOCAL(pptNew2);
-		if (pboxNew2) DEALLOCATE_LOCAL(pboxNew2);
-		if (pboxNew1) {
-		    DEALLOCATE_LOCAL(pptNew1);
-		    DEALLOCATE_LOCAL(pboxNew1);
-		}
+		DEALLOCATE_LOCAL(pptNew2);
+		DEALLOCATE_LOCAL(pboxNew2);
+		DEALLOCATE_LOCAL(pptNew1);
+		DEALLOCATE_LOCAL(pboxNew1);
 		return;
 	    }
 	    pboxBase = pboxNext = pbox;
@@ -658,15 +656,15 @@ static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 					       (CARD32)(-1), -1);
 
     for (; nbox-- ; pbox++) {
-	int x1    = pbox->x1;
-	int y1    = pbox->y1;
-	int destx = x1 + dx;
-	int desty = y1 + dy;
-	int w     = pbox->x2 - x1 + 1;
-	int h     = pbox->y2 - y1 + 1;
+	int xa    = pbox->x1;
+	int ya    = pbox->y1;
+	int destx = xa + dx;
+	int desty = ya + dy;
+	int w     = pbox->x2 - xa + 1;
+	int h     = pbox->y2 - ya + 1;
 
-	if (destx < 0)                x1 -= destx, w += destx, destx = 0;
-	if (desty < 0)                y1 -= desty, h += desty, desty = 0;
+	if (destx < 0)                xa -= destx, w += destx, destx = 0;
+	if (desty < 0)                ya -= desty, h += desty, desty = 0;
 	if (destx + w > screenwidth)  w = screenwidth  - destx;
 	if (desty + h > screenheight) h = screenheight - desty;
 
@@ -675,28 +673,24 @@ static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 
 	RADEONSelectBuffer(pScrn, RADEON_BACK);
 	(*info->accel->SubsequentScreenToScreenCopy)(pScrn,
-						     x1, y1,
+						     xa, ya,
 						     destx, desty,
 						     w, h);
 	RADEONSelectBuffer(pScrn, RADEON_DEPTH);
 
 	if (info->depthMoves)
 	    RADEONScreenToScreenCopyDepth(pScrn,
-					  x1, y1,
+					  xa, ya,
 					  destx, desty,
 					  w, h);
     }
 
     RADEONSelectBuffer(pScrn, RADEON_FRONT);
 
-    if (pboxNew2) {
-	DEALLOCATE_LOCAL(pptNew2);
-	DEALLOCATE_LOCAL(pboxNew2);
-    }
-    if (pboxNew1) {
-	DEALLOCATE_LOCAL(pptNew1);
-	DEALLOCATE_LOCAL(pboxNew1);
-    }
+    DEALLOCATE_LOCAL(pptNew2);
+    DEALLOCATE_LOCAL(pboxNew2);
+    DEALLOCATE_LOCAL(pptNew1);
+    DEALLOCATE_LOCAL(pboxNew1);
 
     info->accel->NeedToSync = TRUE;
 }
