@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.58 2003/04/03 22:47:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.60 2003/10/02 13:30:05 eich Exp $
 
 #include <Server.tmpl>
 
@@ -41,7 +41,7 @@ SHARED_CFLAGS = PositionIndependentCFlags
 #elif defined(OpenBSDArchitecture) 
 # if defined(i386Architecture) 
   IOPERMDEFINES = -DUSE_I386_IOPL
-# elif defined(PpcArchitecture) || defined(Sparc64Architecture) 
+# else
   IOPERM_SRC = ioperm_noop.c
   IOPERM_OBJ = ioperm_noop.o
 # endif
@@ -145,7 +145,7 @@ VIDEO_OBJ = ppc_video.o
 #elif defined(Arm32Architecture)
 VIDEO_SRC = arm_video.c
 VIDEO_OBJ = arm_video.o
-#elif defined(Sparc64Architecture)
+#elif defined(SparcArchitecture) || defined(Sparc64Architecture)
 VIDEO_SRC = sparc64_video.c
 VIDEO_OBJ = sparc64_video.o
 #elif defined(x86_64Architecture)
