@@ -1,5 +1,5 @@
-/* $XConsortium: access.c,v 1.4 94/04/17 21:17:11 rws Exp $ */
-/* $XFree86$ */
+/* $XConsortium: access.c,v 1.5 95/01/27 15:05:53 kaleb Exp $ */
+/* $XFree86: xc/workInProgress/lbx/programs/lbxproxy/os/access.c,v 3.1 1994/11/30 21:32:48 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
