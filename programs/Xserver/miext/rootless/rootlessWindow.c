@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.c,v 1.6 2003/07/23 00:48:58 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.c,v 1.7 2003/10/24 00:33:14 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -890,8 +890,8 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
                                       * copy_rect_height);
 
             if (copy_rect_width * copy_rect_height >
-                        rootless_CopyWindow_threshold &&
-                SCREENREC(pScreen)->imp->CopyWindow)
+                        rootless_CopyBytes_threshold &&
+                SCREENREC(pScreen)->imp->CopyBytes)
             {
                 SCREENREC(pScreen)->imp->CopyBytes(
                     copy_rect_width * Bpp, copy_rect_height,
