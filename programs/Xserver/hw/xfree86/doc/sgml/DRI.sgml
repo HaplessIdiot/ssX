@@ -15,7 +15,7 @@
       <date>20 November 2000
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.13 2000/12/01 14:28:55 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.14 2000/12/12 17:48:09 alanh Exp $
     </ident>
 
     <toc>
@@ -653,7 +653,7 @@
 	    should be installed in /lib/modules/2.4.x/kernel/driver/char/drm/.
             It will be automatically loaded by the Xserver if needed.
           <p>
-	    The DRI 3D driver for the Voodoo3 hould be in
+	    The DRI 3D driver for the Voodoo3 should be in
 	    <tt>/usr/X11R6/lib/modules/dri/tdfx_dri.so</tt>.
             This will be automatically loaded by libGL.so.
           <p>
@@ -706,7 +706,7 @@
                   Setting <tt/GL_LIGHT_MODEL_COLOR_CONTROL/ to
                   <tt/GL_SEPARATE_SPECULAR_COLOR/.
                 <item>
-                  Enabling line stippline or polygon stippling.
+                  Enabling line stippling or polygon stippling.
                 <item>
                   Enabling point smoothing or polygon smoothing.
                 <item>
@@ -796,7 +796,7 @@
 	    should be installed in /lib/modules/2.4.x/kernel/driver/char/drm/.
             It will be automatically loaded by the Xserver if needed.
           <p>
-	    The DRI 3D driver for the Voodoo5 hould be in
+	    The DRI 3D driver for the Voodoo5 should be in
 	    <tt>/usr/X11R6/lib/modules/dri/tdfx_dri.so</tt>.
             This will be automatically loaded by libGL.so.
           <p>
@@ -1015,7 +1015,7 @@
           This is caused by the graphics card not having an interrupt assigned
           to it. 
           The current DRI trunk will attempt to detect this condition and
-          bail outgracefully.
+          bail out gracefully.
           <p>
           The solution to the above problem is to assign an interrupt to your
           graphics card.
@@ -1030,7 +1030,7 @@
           Linux to expose functionality for which they can not provide
           documentation. 
 	  (For example TV-Out requires MacroVision be enabled on the output.) 
-	  This binary library also sets the pixel/memory clocks to the optimial
+	  This binary library also sets the pixel/memory clocks to the optimal
 	  settings for your Matrox card.
           <p>
 	  Currently the MGAHAL library is required for the G450 to work.

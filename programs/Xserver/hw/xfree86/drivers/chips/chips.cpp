@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/chips.cpp,v 1.7 2000/06/14 02:13:08 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/chips.cpp,v 1.8 2000/12/11 20:18:08 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH CHIPS __drivermansuffix__ "Version 4.0.2"  "XFree86"
@@ -112,7 +112,7 @@ Disables linear addressing in cases where it is enabled by default.
 Default: off
 .TP
 .BI "Option \*qLinear\*q \*q" boolean \*q
-Enables linear addressing in cases where it isdisabled by default.
+Enables linear addressing in cases where it is disabled by default.
 Default: off
 .TP
 .BI "Option \*qHWCursor\*q \*q" boolean \*q
@@ -160,7 +160,7 @@ flat panel at a specified depth
 Force the use of memory mapped IO where it can be used. Default: off
 .TP
 .BI "Option \*qSuspendHack\*q \*q" boolean \*q
-Force driver to leave centering and stretching resgisters alone. This
+Force driver to leave centering and stretching registers alone. This
 can fix some laptop suspend/resume problems. Default: off
 .TP
 .BI "Option \*qOverlay\*q"

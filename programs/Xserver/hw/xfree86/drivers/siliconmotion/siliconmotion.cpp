@@ -1,5 +1,5 @@
 .\" Header:   //Mercury/Projects/archives/XFree86/4.0/siliconmotion.cpp-arc   1.4   29 Nov 2000 14:12:56   Frido  $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/siliconmotion.cpp,v 1.2 2000/12/05 21:18:37 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/siliconmotion.cpp,v 1.3 2000/12/11 20:12:34 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH siliconmotion __drivermansuffix__ "Version 4.0.2"  "XFree86"
@@ -52,7 +52,7 @@ SM720
 Please refer to XF86Config(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this
 driver.  All options names are case and white space insensitive when
-parsed by the server, for exmaple,  "lynxe" and "LynxE" are equivalent.
+parsed by the server, for example,  "lynxe" and "LynxE" are equivalent.
 .PP
 The driver auto-detects the chipset type, but the following
 .B ChipSet
@@ -90,7 +90,7 @@ Rotate the screen CW - clockwise or CCW - counter clockwise.
 Uses ShadowFB.  Default: no rotation.
 .TP
 .BI "Option \*qVideoKey\*q \*q" integer \*q
-Set the video colorkey.  Default: a little off full blue.
+Set the video color key.  Default: a little off full blue.
 .TP
 .BI "Option \*qByteSwap\*q \*q" boolean \*q
 Turn on byte swapping for capturing using SMI demo board.  Default: off.

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.cpp,v 1.5 2000/06/14 02:13:13 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.cpp,v 1.6 2000/12/11 20:18:23 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH RENDITION __drivermansuffix__ "Version 4.0.2"  "XFree86"
@@ -105,7 +105,7 @@ Default: no rotation.
 For the moment the driver defaults to not request write-combine for any chipset
 as there has been indications of problems with it. Use
 .B "Option \*qMTRR\*q"
-to let the driver request write-combining of memory access on the videoboard.
+to let the driver request write-combining of memory access on the video board.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHORS

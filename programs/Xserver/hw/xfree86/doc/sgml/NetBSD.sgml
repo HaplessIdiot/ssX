@@ -12,7 +12,7 @@ Matthieu Herrb
 <Date>Last modified on: 7 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.57 2000/12/02 15:27:09 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.58 2000/12/06 23:45:17 herrb Exp $
 </ident>
 <toc>
 
@@ -402,7 +402,7 @@ by adding:
  #define XFree86ConsoleDefines -DWSCONS_SUPPORT
 </verb></tscreen>
 to <tt>xc/config/host.def</tt> before rebuilding the server. 
-This has not been toroughly tested, except on the macppc. 
+This has not been thoroughly tested, except on the macppc. 
 
 <sect1>Building on other architectures<label id="sparc">
 

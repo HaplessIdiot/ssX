@@ -9,7 +9,7 @@ Matthieu Herrb
 <Date>Last modified on: 2 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.13 2000/12/05 20:50:30 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.14 2000/12/11 23:05:26 herrb Exp $
 </ident>
 
 <toc>
@@ -349,7 +349,7 @@ by adding:
  #define XFree86ConsoleDefines -DWSCONS_SUPPORT
 </verb></tscreen>
 to <tt>xc/config/host.def</tt> before rebuilding the server. 
-This has not been toroughly tested, except on the macppc. 
+This has not been thoroughly tested, except on the macppc. 
 
 
 

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.18 2000/09/15 21:46:12 mvojkovi Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.19 2000/12/11 20:18:19 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH MGA __drivermansuffix__ "Version 4.0.2"  "XFree86"
@@ -82,7 +82,7 @@ Enable or disable the HW cursor.  Default: on.
 Specify whether G100, G200 or G400 cards have SDRAM.  The driver attempts to
 auto-detect this based on the card's PCI subsystem ID.  This option may
 be used to override that auto-detection.  The mga driver is not able to 
-auto-detect the prescence of SDRAM on secondary heads in multihead configurations
+auto-detect the presence of of SDRAM on secondary heads in multihead configurations
 so this option will often need to be specified in multihead configurations.
 Default: auto-detected.
 .TP

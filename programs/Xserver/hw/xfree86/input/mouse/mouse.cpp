@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.cpp,v 1.4 2000/06/14 02:13:18 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.cpp,v 1.5 2000/12/11 20:18:52 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH MOUSE __drivermansuffix__ "Version 4.0.2"  "XFree86"
@@ -81,7 +81,7 @@ which only have two physical buttons.  The third button is emulated by
 pressing both buttons simultaneously.  Default: off
 .TP 7
 .BI "Option \*qEmulate3Timeout\*q \*q" integer \*q
-Sets the timeout (in milliseconds) that the driver waits before decicing
+Sets the timeout (in milliseconds) that the driver waits before deciding
 if two buttons where pressed "simultaneously" when 3 button emulation is
 enabled.  Default: 50.
 .TP 7

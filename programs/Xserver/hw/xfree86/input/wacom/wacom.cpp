@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/wacom.cpp,v 1.6 2000/12/09 03:31:37 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/wacom.cpp,v 1.7 2000/12/11 20:18:57 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH WACOM __drivermansuffix__ "Version 4.0.2"  "XFree86"
@@ -22,7 +22,7 @@ The
 driver functions as a pointer input device, and may be used as the
 X server's core pointer.
 .SH SUPPORTED HARDWARE
-This driver suports the Wacom IV and Wacom V protocols.
+This driver supports the Wacom IV and Wacom V protocols.
 Preliminary support is available for USB devices on some Linux platforms.
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration
@@ -88,7 +88,7 @@ Y coordinate of the bottom corner of the active zone.
 .TP 4
 .B Option \fI"KeepShape"\fP \fI"on"\fP
 When this option is enabled, the active zone  begins according to TopX
-and TopY.  The bottom corner is ajusted to keep the ratio width/heigth
+and TopY.  The bottom corner is adjusted to keep the ratio width/height
 of the active zone the same as the screen while maximizing the area
 described by TopX, TopY, BottomX, BottomY.
 .TP 4
@@ -104,7 +104,7 @@ sets the serial number associated with the physical device. This allows
 to have multiple devices of the same type (i.e. multiple pens). This
 option is only available on wacom V devices (Intuos). To see which
 serial number belongs to a device, you have to set the DebugLevel to 6 and
-whatch the output of the X server.
+watch the output of the X server.
 .TP 4
 .B Option \fI"Threshold"\fP \fI"number"\fP
 sets the pressure threshold used to generate a button 1 events of stylus
