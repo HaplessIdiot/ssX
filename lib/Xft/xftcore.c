@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftcore.c,v 1.8 2002/05/31 04:45:12 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftcore.c,v 1.10 2002/10/11 17:53:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -1197,6 +1197,7 @@ XftGlyphSpecCore (XftDraw		*draw,
 	    XftSwapImage (image);
 	XPutImage (dpy, draw->drawable, draw->core.gc, image, 0, 0, x1, y1,
 		   width, height);
+	XDestroyImage (image);
     }
     else
     {
@@ -1348,6 +1349,7 @@ XftGlyphFontSpecCore (XftDraw			*draw,
 	    XftSwapImage (image);
 	XPutImage (dpy, draw->drawable, draw->core.gc, image, 0, 0, x1, y1,
 		   width, height);
+	XDestroyImage (image);
     }
     else
     {
