@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.16 2001/02/02 11:45:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.17 2001/02/02 14:23:23 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -77,6 +77,8 @@ static void Permedia3SetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 static void Permedia3SetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask);
 static void Permedia3SubsequentFillRectSolid(ScrnInfoPtr pScrn, int x,
+				int y, int w, int h);
+static void Permedia3SubsequentFillRectSolid32bpp(ScrnInfoPtr pScrn, int x,
 				int y, int w, int h);
 /* 8x8 Mono Pattern Fills */
 static void Permedia3SetupForMono8x8PatternFill(ScrnInfoPtr pScrn, 
@@ -632,12 +634,26 @@ Permedia3SetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 	PM3Config2D_FBWriteEnable;
     GLINT_WAIT(3);
     REPLICATE(color);
-    /* Can't do block fills at 32bpp */
-    if ((rop != GXcopy) || (pScrn->bitsPerPixel == 32)) {
-	pGlint->PM3_Render2D |= PM3Render2D_SpanOperation;
-    	GLINT_WRITE_REG(color, PM3ForegroundColor);
-    } else {
+    /* We can't do block fills properly at 32bpp, so we can stick the chip
+     * into 16bpp and double the width and xcoord, but it seems that at
+     * extremely high resolutions (above 1600) it doesn't fill.
+     * so, we fall back to the slower span filling method.
+     */
+    if ((rop == GXcopy) && (pScrn->bitsPerPixel == 32) && 
+	(pScrn->displayWidth <= 1600)) {
+    	pGlint->AccelInfoRec->SubsequentSolidFillRect = 
+		Permedia3SubsequentFillRectSolid32bpp;
     	GLINT_WRITE_REG(color, PM3FBBlockColor);
+    } else {
+    	pGlint->AccelInfoRec->SubsequentSolidFillRect = 
+		Permedia3SubsequentFillRectSolid;
+    	/* Can't do block fills at 8bpp either */
+    	if ((rop == GXcopy) && (pScrn->bitsPerPixel == 16)) {
+    	    GLINT_WRITE_REG(color, PM3FBBlockColor);
+        } else {
+	    pGlint->PM3_Render2D |= PM3Render2D_SpanOperation;
+    	    GLINT_WRITE_REG(color, PM3ForegroundColor);
+    	}
     }
     if ((rop!=GXclear)&&(rop!=GXset)&&(rop!=GXcopy)&&(rop!=GXcopyInverted))
 	pGlint->PM3_Config2D |= PM3Config2D_FBDestReadEnable;
@@ -645,6 +661,7 @@ Permedia3SetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
     GLINT_WRITE_REG(pGlint->PM3_Config2D, PM3Config2D);
     TRACE_EXIT("Permedia3SetupForFillRectSolid");
 }
+
 static void
 Permedia3SubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 {
@@ -662,6 +679,39 @@ Permedia3SubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 
     TRACE_EXIT("Permedia3SubsequentFillRectSolid");
 }
+
+static void
+Permedia3SubsequentFillRectSolid32bpp(ScrnInfoPtr pScrn, int x, int y, int w, int h)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    TRACE_ENTER("Permedia3SubsequentFillRectSolid32bpp");
+
+    GLINT_WAIT(6);
+
+    /* Put the chip into 16bpp mode */
+    GLINT_WRITE_REG(1, PixelSize);
+    /* Now double the displayWidth */
+    GLINT_WRITE_REG(
+	PM3FBWriteBufferWidth_Width(pScrn->displayWidth<<1),
+	PM3FBWriteBufferWidth0);
+
+    /* and double the x,w coords */
+    GLINT_WRITE_REG(
+	PM3RectanglePosition_XOffset(x<<1) |
+	PM3RectanglePosition_YOffset(y),
+	PM3RectanglePosition);
+    GLINT_WRITE_REG(pGlint->PM3_Render2D |
+	PM3Render2D_Width(w<<1) | PM3Render2D_Height(h),
+	PM3Render2D);
+    
+    /* Now fixup */
+    GLINT_WRITE_REG(
+	PM3FBWriteBufferWidth_Width(pScrn->displayWidth),
+	PM3FBWriteBufferWidth0);
+    GLINT_WRITE_REG(0, PixelSize);
+    TRACE_EXIT("Permedia3SubsequentFillRectSolid32bpp");
+}
+
 /* 8x8 Mono Pattern Fills */
 static void 
 Permedia3SetupForMono8x8PatternFill(ScrnInfoPtr pScrn, 
