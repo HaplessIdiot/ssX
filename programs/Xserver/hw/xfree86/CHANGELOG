@@ -1,4 +1,7 @@
 XFree86 3.9.18b (29 February 2000)
+3892. Make GNU make -j workaround separately configurable (Marc La France).
+3891. Replace remaining occurrences of BuildXTT imake symbol with
+      BuildXTrueType (Marc La France).
 3890. Fix some problems using the UTF-8 -locale:
        - Add proper side (GL/GR) handling to the UTF-8 locale
        - No more need to define ISO10646-1 in en_US.UTF-8. It is already
@@ -9892,4 +9895,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1043 2000/02/29 03:09:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1044 2000/02/29 15:03:13 dawes Exp $

@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.180 2000/02/11 18:06:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.181 2000/02/25 21:02:33 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -638,7 +638,7 @@ XF86SERVERLIBS = $(XF86DRVLIBS) $(XF86IDRVLIBS) $(XF86LIBS) $(XF86LOADERLIB) \
 #if HasParallelMake
 MakeMutex($(XF86SERVERSUBDIRS) $(XF86SERVERLIBS) $(XF86SERVERSYSLIBS))
 #endif
-#if HasGnuMake
+#if ForceServerRemake
 $(XF86SERVERLIBS) $(XF86SERVERSYSLIBS):: $(XF86SERVERSUBDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
@@ -696,7 +696,7 @@ FBDEVSYSLIBS = StdKdSysLibs
 #if HasParallelMake
 MakeMutex($(FBDEVDIRS) $(FBDEVOBJS) $(FBDEVLIBS) $(FBDEVSYSLIBS))
 #endif
-#if HasGnuMake
+#if ForceServerRemake
 $(FBDEVOBJS) $(XFBDEV) $(FBDEVLIBS) $(FBDEVSYSLIBS):: $(FBDEVDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
@@ -721,7 +721,7 @@ SAVAGESYSLIBS = StdKdSysLibs
 #if HasParallelMake
 MakeMutex($(SAVAGEDIRS) $(SAVAGEOBJS) $(SAVAGELIBS) $(SAVAGESYSLIBS))
 #endif
-#if HasGnuMake
+#if ForceServerRemake
 $(SAVAGEOBJS) $(XSAVAGE) $(SAVAGELIBS) $(SAVAGESYSLIBS):: $(SAVAGEDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
@@ -748,7 +748,7 @@ TRIDENTSYSLIBS = StdKdSysLibs
 #if HasParallelMake
 MakeMutex($(TRIDENTDIRS) $(TRIDENTLIBS) $(TRIDENTSYSLIBS))
 #endif
-#if HasGnuMake
+#if ForceServerRemake
 $(TRIDENTOBJS) $(TRIDENTLIBS) $(TRIDENTSYSLIBS):: $(TRIDENTDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
@@ -773,7 +773,7 @@ SIS530SYSLIBS = StdKdSysLibs
 #if HasParallelMake
 MakeMutex($(SIS530DIRS) $(SIS530OBJS) $(SIS530LIBS) $(SIS530SYSLIBS))
 #endif
-#if HasGnuMake
+#if ForceServerRemake
 $(SIS530OBJS) $(SIS530LIBS) $(SIS530SYSLIBS):: $(SIS530DIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
@@ -798,7 +798,7 @@ TRIOSYSLIBS = StdKdSysLibs
 #if HasParallelMake
 MakeMutex($(TRIODIRS) $(TRIOOBJS) $(TRIOLIBS) $(TRIOSYSLIBS))
 #endif
-#if HasGnuMake
+#if ForceServerRemake
 $(TRIOOBJS) $(TRIOLIBS) $(TRIOSYSLIBS):: $(TRIODIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
@@ -829,7 +829,7 @@ XCOMM
 #if HasParallelMake
 MakeMutex($(TS300DIRS) $(TS300OBJS) $(TS300LIBS) $(TS300SYSLIBS))
 #endif
-#if HasGnuMake
+#if ForceServerRemake
 $(TS300OBJS) $(TS300LIBS) $(TS300SYSLIBS):: $(TS300DIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
@@ -853,7 +853,7 @@ ITSYSYSLIBS = StdKdSysLibs
 #if HasParallelMake
 MakeMutex($(ITSYDIRS) $(ITSYOBJS) $(ITSYLIBS) $(ITSYSYSLIBS))
 #endif
-#if HasGnuMake
+#if ForceServerRemake
 $(ITSYOBJS) $(ITSYLIBS) $(ITSYSYSLIBS):: $(ITSYDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
@@ -889,7 +889,7 @@ XPSYSLIBS = $(FONTLIBS) $(CBRT) $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XPSUBDIRS) $(XPOBJS) $(XPLIBS) $(XPSYSLIBS))
 #endif
-#if HasGnuMake
+#if ForceServerRemake
 $(XPOBJS) $(XPLIBS) $(XPSYSLIBS):: $(XPSUBDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
@@ -921,7 +921,7 @@ XNESTSYSLIBS = $(FONTLIBS) $(LDPRELIBS) $(XLIB) $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XNESTDIRS) $(XNESTOBJS) $(XNESTLIBS) $(XNESTSYSLIBS))
 #endif
-#if HasGnuMake
+#if ForceServerRemake
 $(XNESTOBJS) $(XNESTLIBS) $(XNESTSYSLIBS):: $(XNESTDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
@@ -978,7 +978,7 @@ XVFBSYSLIBS = $(FONTLIBS) $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XVFBDIRS) $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS))
 #endif
-#if HasGnuMake
+#if ForceServerRemake
 $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS):: $(XVFBDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
