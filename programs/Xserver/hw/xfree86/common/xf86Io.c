@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.50 2002/09/16 18:05:46 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.51 2002/10/11 01:40:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -107,7 +107,10 @@ xf86KbdLeds ()
   } else {
      leds = xf86Info.leds;
   }
+#else
+  leds = xf86Info.leds;
 #endif /* defined (__sparc__) */
+
 #ifdef LED_CAP
   if (leds & XLED1)  real_leds |= LED_CAP;
   if (leds & XLED2)  real_leds |= LED_NUM;
