@@ -1,3 +1,10 @@
+XFree86 3.2t (18 January 1997)
+ 285. Update W32 docs (Dirk Hohndel).
+ 284. Recognise "noaccel" and "slow_dram" options in the ET4000 driver
+      (Dirk Hohndel).
+ 283. Fix problem with not truncating pixel values in the MGA driver
+      (Dirk Hohndel).
+
 XFree86 3.2s (18 January 1997)
  282. Fix a problem with xdm's sessreg and utmp on Linux (Leonard N. Zubkoff).
  281. Fix a plane-enable bug for Cirrus 754x (Corin Anderson).

@@ -5,6 +5,11 @@
 
   1.  Information for W32 Chipset Users
 
+  XF86_W32 gets phased out, now that the SVGA server with XAA
+  acceleration is at least as fast as the W32 server but supports more
+  cards and for some even higher color depths. For details about using
+  the XF86_SVGA with W32 cards, look below.
+
   XF86_W32 is basically XF86_SVGA with the drawing code completely
   replaced with one based on X11R6's mi/cfb code and modified for the
   ET4000/W32 series.  Even though it accepts the same keywords as
@@ -32,6 +37,8 @@
 
   If you have problems with the server.  Try the following:
 
+     o  Put Option "slow_dram" in the Device Section.
+
      o  Put Option "pci_burst_off" in the Device Section.
 
      o  Put Option "w32_interleave_off" in the Device Section.
@@ -55,9 +62,6 @@
 
 
           Ramdac "generic"
-
-
-
 
 
   Note that the built-in power saver (for a "green" monitor) has not
@@ -126,7 +130,7 @@
   RAMDAC. So there is no need for a
 
 
-        ClockChip "et6000"
+   ClockChip "et6000"
 
 
 
@@ -145,7 +149,34 @@
   should be possible.  Tseng Labs specifies a maximum pixel clock of 135
   MHz for the ET6000 chips (with higher clocks to come).
 
-  5.  Acknowledgments
+  5.  Using XF86_SVGA with ET4000/W32 and ET6000 cards
+
+  Starting with XFree86-3.2A, the SVGA server uses the new XFree86
+  Acceleration Architecture (XAA). With this technology XF86_SVGA is at
+  least as fast if not faster than the XF86_W32 with the same hardware.
+  Additionally, it supports higher color depths with some cards. On the
+  downside, some special RAMDACs and clockchips that are supported in
+  XF86_W32 for W32 cards are not supported in the SVGA server at this
+  point.
+
+  If the SVGA server does not give a picture with your W32 card try the
+  following:
+
+
+     o  Put Option "slow_dram" in the Device Section.
+
+     o  Put Option "pci_burst_off" in the Device Section.
+
+     o  Put Option "w32_interleave_off" in the Device Section.
+
+     o  Put Option "no_accel" in the Device Section.
+
+     o  Cold-boot your machine. Sometimes it is even necessary to
+        physically turn of the power for the W32 chip to get in a sane
+        state again.  Do not run anything that messes with the video
+        hardware, including other X servers, before running XF86_SVGA.
+
+  6.  Acknowledgments
 
   Jerry J. Shekhel (jerry@msi.com) gave me (GGL) the 1-M Mirage
   ET4000/W32 VLB board on which the initial development (X_W32) was
@@ -164,6 +195,7 @@
 
   Tseng Labs Europe kindly donated (KMG) an ET6000-based board (a Jazz
   Multimedia G-Force 128), which spurred the development of the ET6000
+
   code.
 
   Numerous testers have given me feedback for X_W32 and later XF86_W32.
@@ -206,45 +238,13 @@
         ljo@ljo-slip.DIALIN.CWRU.Edu (L Jonas Olsson)
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.12 1996/12/23 06:46:19 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.13 1997/01/18 09:10:47 dawes Exp $
 
 
 
 
 
   $XConsortium: W32.sgml /main/11 1996/10/19 18:03:45 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_accel.c,v 3.5 1997/01/14 22:21:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_accel.c,v 3.6 1997/01/18 06:56:43 dawes Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -191,9 +191,11 @@ void MGANAME(AccelInit)()
  * Replicate colors and planemasks
  */ 
 #if PSZ == 8 
-#define REPLICATE(pixel) pixel |= (pixel << 24) | (pixel << 16) | (pixel << 8); 
+#define REPLICATE(pixel)                              \
+      pixel &= 0xff; pixel |= (pixel << 24) | (pixel << 16) | (pixel << 8); 
 #elif PSZ == 16 
-#define REPLICATE(pixel) pixel |= (pixel << 16);
+#define REPLICATE(pixel)                              \
+      pixel &= 0xffff; pixel |= (pixel << 16);
 #else 
 #define REPLICATE(pixel) ; 
 #endif    

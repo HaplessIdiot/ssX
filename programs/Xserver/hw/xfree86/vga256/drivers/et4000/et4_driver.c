@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.38 1996/12/28 08:17:28 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.39 1996/12/31 05:01:16 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -953,6 +953,8 @@ ET4000Probe()
     OFLG_SET(OPTION_PCI_BURST_OFF, &ET4000.ChipOptionFlags);
     OFLG_SET(OPTION_W32_INTERLEAVE_ON, &ET4000.ChipOptionFlags);
     OFLG_SET(OPTION_W32_INTERLEAVE_OFF, &ET4000.ChipOptionFlags);
+    OFLG_SET(OPTION_SLOW_DRAM, &ET4000.ChipOptionFlags);
+    OFLG_SET(OPTION_NOACCEL, &ET4000.ChipOptionFlags);
 #endif
 
 #ifdef W32_ACCEL_SUPPORT
