@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Versions.c,v 1.1 2003/08/24 19:58:03 dawes Exp $ */
 /*
  * Copyright (c) 2003 by The XFree86 Project, Inc.
  *
@@ -27,7 +27,6 @@
  */
 
 #include "xf86.h"
-#include "xf86_OSproc.h"
 #include "xf86OSmouse.h"
 #include "xf86OSKbd.h"
 
