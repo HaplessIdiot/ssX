@@ -1,3 +1,6 @@
+XFree86 4.0.1c (17 August 2000)
+ 516. Fix a problem in the fbdev driver where xf86DrvMsg() is called before
+      the necessary pScrn fields have been initialised (Martin Dalecki).
  515. Fix mga dri bug that caused some rendering corruption when the dri module
       was loaded (Mark Vojkovich).
 
@@ -10993,4 +10996,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1268 2000/08/11 21:12:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1269 2000/08/14 01:05:47 mvojkovi Exp $
