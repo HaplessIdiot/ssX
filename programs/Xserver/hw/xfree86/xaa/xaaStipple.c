@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaStipple.c,v 1.4 1998/11/28 10:43:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaStipple.c,v 1.6 2000/02/24 19:54:24 mvojkovi Exp $ */
 
 #include "xaa.h"
 #include "xaalocal.h"
@@ -37,7 +37,8 @@ StippleScanlineProcPtr stipple_scanline_func[6] = {
 #if defined(FIXEDBASE) && defined(MSBFIRST)
 
 unsigned int XAAShiftMasks[32] = {
-  SHIFT_R(0xFFFFFFFF,32), SHIFT_R(0xFFFFFFFF,31),
+  /* gcc is rather pedantic about SHIFT_R(0xFFFFFFFF,32) */
+          0x00000000    , SHIFT_R(0xFFFFFFFF,31),
   SHIFT_R(0xFFFFFFFF,30), SHIFT_R(0xFFFFFFFF,29),
   SHIFT_R(0xFFFFFFFF,28), SHIFT_R(0xFFFFFFFF,27),
   SHIFT_R(0xFFFFFFFF,26), SHIFT_R(0xFFFFFFFF,25),
