@@ -1,11 +1,13 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 619. Fix intermittent XDarwin crash when quitting (Torrey T. Lyons).
  618. Build fixes and updates for GNU/Hurd and GNU/K*BSD systems (Bugzilla
       #907, #908, Robert Millan).
  617. Xterm fixes (Bugzilla #893, #905, Thomas Dickey).
  616. XDarwin fixes:
        - Fix intermittent crash on XDarwin startup.
        - Fix failure to redraw after resizing with cr implementation.
-       - Fix install failure when DESTDIR is specified.
+       - Fix install failure when DESTDIR is specified (Reported by
+         Benjamin Reed).
       (Torrey T. Lyons).
  615. Add command line options to mkfontscale to enable/disable generation
       of iso10646-1 lines (Bugzilla #885, Roland Mainz).
@@ -18250,7 +18252,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2988 2003/11/24 00:22:16 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2989 2003/11/24 02:02:27 dawes Exp $
 
 
 

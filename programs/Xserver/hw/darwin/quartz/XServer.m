@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.17 2003/11/14 20:27:58 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.18 2003/11/23 06:04:01 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -126,6 +126,7 @@ static io_connect_t root_port;
     rootlessMenuBarVisible = YES;
     queueShowServer = YES;
     quartzServerQuitting = NO;
+    pendingAppQuitReply = NO;
     mouseState = 0;
 
     // set up a port to safely send messages to main thread from server thread
@@ -186,6 +187,7 @@ static io_connect_t root_port;
     // At this point the X server is either running or starting.
     if (serverState == server_Starting) {
         // Quit will be queued later when server is running
+        pendingAppQuitReply = YES;
         return NSTerminateLater;
     } else if (serverState == server_Running) {
         [self quitServer];
@@ -541,7 +543,7 @@ static io_connect_t root_port;
 
 // Finish starting the X server thread
 // This includes anything that must be done after the X server is
-// ready to process events.
+// ready to process events after the first or subsequent generations.
 - (void)finishStartX
 {
     sendServerEvents = YES;
@@ -555,7 +557,8 @@ static io_connect_t root_port;
 
     if (quartzServerQuitting) {
         [self quitServer];
-        [NSApp replyToApplicationShouldTerminate:YES];
+        if (pendingAppQuitReply)
+            [NSApp replyToApplicationShouldTerminate:YES];
         return;
     }
 
@@ -1004,21 +1007,6 @@ static io_connect_t root_port;
 {
     // This field should be filled in for every event
     xe->u.keyButtonPointer.time = GetTimeInMillis();
-
-#if 0
-    // FIXME: Really?
-    if (quartzRootless  &&
-        (ev->type == NSLeftMouseDown  ||  ev->type == NSLeftMouseUp  ||
-        (ev->type == NSSystemDefined && ev->data.compound.subType == 7)))
-    {
-        // mouse button event - send mouseMoved to this position too
-        // X gets confused if it gets a click that isn't at the last
-        // reported mouse position.
-        xEvent moveEvent = *ev;
-        xe.u.u.type = NSMouseMoved;
-        [self sendXEvent:&moveEvent];
-    }
-#endif
 
     DarwinEQEnqueue(xe);
 }
