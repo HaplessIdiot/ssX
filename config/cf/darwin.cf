@@ -1,13 +1,26 @@
-XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.14 2001/05/18 17:48:23 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.15 2001/06/11 07:23:11 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
 /* imake determines the default values by parsing uname */
+#ifndef OSName
 #define OSName                  DefaultOSName
+#endif
+#ifndef OSMajorVersion
 #define OSMajorVersion          DefaultOSMajorVersion
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion          DefaultOSMinorVersion
-#define OSTeenyVersion          0
+#endif
+#ifndef OSTeenyVersion
+#define OSTeenyVersion          DefaultOSTeenyVersion
+#endif
 
+XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVersion)
+
+/*
+ * Define the operating system's capabilities
+ */
 #define HasSnprintf             YES
 #define HasPutenv               YES
 #define HasBSD44Sockets         YES
@@ -16,12 +29,17 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.14 2001/05/18 17:48:23 torrey Exp $
 #ifndef HasShm
 # define HasShm                 YES
 #endif
+#define HasNdbm                 YES
+
+#ifndef HasGroff
+# define HasGroff               YES
+#endif
 
 /*
  * This enables some settings for developers.
  */
 #ifndef XFree86Devel
-# define XFree86Devel            NO
+# define XFree86Devel           NO
 #endif
 
 /*
@@ -29,7 +47,7 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.14 2001/05/18 17:48:23 torrey Exp $
  * Turn off to build on raw Darwin systems.
  */
 #ifndef DarwinQuartzSupport
-# define DarwinQuartzSupport     YES
+# define DarwinQuartzSupport    YES
 #endif
 
 /* we don't need -lm */
@@ -40,6 +58,8 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.14 2001/05/18 17:48:23 torrey Exp $
 
 /* we don't have a dbm library */
 #define DBMLibrary              /**/
+
+#define MkdirHierCmd            mkdir -p
 
 /* our cpp isn't in /lib/cpp and it doesn't like -undef */
 #define CppCmd                  /usr/bin/cpp
@@ -85,10 +105,8 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.14 2001/05/18 17:48:23 torrey Exp $
  */
 #define StandardDefines         DarwinMachineDefines -D__DARWIN__ -DNO_ALLOCA
 
-/* programs/rgb/rgb.h and others needs this */
-#define HasNdbm                 YES
-
-/* set this to NO to just build the client libs, which should work without
+/*
+ * Set this to NO to just build the client libs, which should work without
  * having to write any platform specific code.
  */
 #define BuildServer             YES
@@ -98,14 +116,8 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.14 2001/05/18 17:48:23 torrey Exp $
 
 /* Thanks to the IOKit, the X server does not have to be SetUID. */
 #ifndef InstallXserverSetUID
-# define InstallXserverSetUID	NO
+# define InstallXserverSetUID   NO
 #endif
-
-/* pex? bah.  I'm not going to bother getting the device
- * dependent part of this working.  If I get the time, i'll
- * get glx working instead.
- */
-#define BuildPexExt             NO
 
 /* no direct graphics extension */
 #define BuildXF86DGA            NO
