@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.84tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.85 2003/05/27 21:56:39 tsi Exp $
 XCOMM
 
 #ifndef OSName
@@ -33,6 +33,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define TopXInclude		-I/usr/X11R6/include
 #define ImakeCmd		imake -DPorts
 #define DocDir			/usr/local/share/doc
+#define BuildHtmlManPages	NO
 
 #endif
 
@@ -54,7 +55,12 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasSetProcTitle		YES
 #define HasZlib			YES
 #ifndef HasKrbIV
-#define HasKrbIV		YES
+# if OSMajorVersion == 2 || OSMajorVersion == 3 && OSMinorVersion < 3
+#  define HasKrbIV		YES
+# else
+   /* Kerberos IV was removed after OpenBSD 3.3 */
+#  define HasKrbIV		NO
+# endidf
 #endif
 #define HasUsableFileMmap	YES
 #define HasShadowPasswd		NO
