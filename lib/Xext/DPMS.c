@@ -26,7 +26,7 @@ dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xext/DPMS.c,v 3.4 2001/01/17 19:42:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xext/DPMS.c,v 3.5 2002/10/16 00:37:27 dawes Exp $ */
 
 /*
  * HISTORY
@@ -53,7 +53,7 @@ static char *dpms_extension_name = DPMSExtensionName;
  *                                                                           *
  *****************************************************************************/
 
-static int close_display();
+static int close_display(Display *dpy, XExtCodes *codes);
 static /* const */ XExtensionHooks dpms_extension_hooks = {
     NULL,                               /* create_gc */
     NULL,                               /* copy_gc */

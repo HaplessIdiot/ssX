@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Bob Scheifler and Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/lib/Xext/XShm.c,v 1.4 2001/12/14 19:55:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xext/XShm.c,v 1.5 2002/10/16 00:37:27 dawes Exp $ */
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD OR AN X PROJECT TEAM SPECIFICATION */
 
@@ -56,10 +56,11 @@ extern int _XGetScanlinePad();
 extern int _XGetBitsPerPixel();
 extern void _XInitImageFuncPtrs();
 
-static int close_display();
-static char *error_string();
-static Bool wire_to_event();
-static Status event_to_wire();
+static int close_display(Display *dpy, XExtCodes *codes);
+static char *error_string(Display *dpy, int code, XExtCodes *codes,
+			  char *buf, int n);
+static Bool wire_to_event (Display *dpy, XEvent *re, xEvent *event);
+static Status event_to_wire (Display *dpy, XEvent *re, xEvent *event);
 static /* const */ XExtensionHooks shm_extension_hooks = {
     NULL,				/* create_gc */
     NULL,				/* copy_gc */
@@ -87,10 +88,8 @@ static XEXT_GENERATE_ERROR_STRING (error_string, shm_extension_name,
 				   ShmNumberErrors, shm_error_list)
 
 
-static Bool wire_to_event (dpy, re, event)
-    Display *dpy;
-    XEvent  *re;
-    xEvent  *event;
+static Bool
+wire_to_event (Display *dpy, XEvent *re, xEvent *event)
 {
     XExtDisplayInfo *info = find_display (dpy);
     XShmCompletionEvent	*se;
@@ -116,10 +115,8 @@ static Bool wire_to_event (dpy, re, event)
     return False;
 }
 
-static Status event_to_wire (dpy, re, event)
-    Display *dpy;
-    XEvent  *re;
-    xEvent  *event;
+static Status
+event_to_wire (Display *dpy, XEvent *re, xEvent *event)
 {
     XExtDisplayInfo *info = find_display (dpy);
     XShmCompletionEvent	*se;

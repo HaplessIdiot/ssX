@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xext/XShape.c,v 1.3 2002/10/16 00:37:27 dawes Exp $ */
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include <X11/Xlibint.h>
@@ -51,9 +51,9 @@ static /* const */ char *shape_extension_name = SHAPENAME;
  *                                                                           *
  *****************************************************************************/
 
-static int close_display();
-static Bool wire_to_event();
-static Status event_to_wire();
+static int close_display(Display *dpy, XExtCodes *codes);
+static Bool wire_to_event (Display *dpy, XEvent *re, xEvent *event);
+static Status event_to_wire (Display *dpy, XEvent *re, xEvent *event);
 static /* const */ XExtensionHooks shape_extension_hooks = {
     NULL,				/* create_gc */
     NULL,				/* copy_gc */
@@ -76,10 +76,8 @@ static XEXT_GENERATE_FIND_DISPLAY (find_display, shape_info,
 static XEXT_GENERATE_CLOSE_DISPLAY (close_display, shape_info)
 
 
-static Bool wire_to_event (dpy, re, event)
-    Display *dpy;
-    XEvent  *re;
-    xEvent  *event;
+static Bool
+wire_to_event (Display *dpy, XEvent *re, xEvent *event)
 {
     XExtDisplayInfo *info = find_display (dpy);
     XShapeEvent		*se;
@@ -110,10 +108,8 @@ static Bool wire_to_event (dpy, re, event)
     return False;
 }
 
-static Status event_to_wire (dpy, re, event)
-    Display *dpy;
-    XEvent  *re;
-    xEvent  *event;
+static Status
+event_to_wire (Display *dpy, XEvent *re, xEvent *event)
 {
     XExtDisplayInfo *info = find_display (dpy);
     XShapeEvent		*se;

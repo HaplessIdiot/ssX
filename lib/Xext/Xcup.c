@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xext/Xcup.c,v 1.6 2001/12/14 19:55:01 dawes Exp $ */
+/* $XFree86: xc/lib/Xext/Xcup.c,v 1.7 2002/10/16 00:37:27 dawes Exp $ */
 /*
 
 Copyright 1987, 1988, 1998  The Open Group
@@ -53,7 +53,7 @@ static char *xcup_extension_name = XCUPNAME;
  *                                                                           *
  *****************************************************************************/
 
-static int close_display();
+static int close_display(Display *dpy, XExtCodes *codes);
 static /* const */ XExtensionHooks xcup_extension_hooks = {
     NULL,				/* create_gc */
     NULL,				/* copy_gc */

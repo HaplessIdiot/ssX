@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xext/XAppgroup.c,v 1.9 2001/12/14 19:54:59 dawes Exp $ */
+/* $XFree86: xc/lib/Xext/XAppgroup.c,v 1.10 2002/10/16 00:37:27 dawes Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -69,7 +69,7 @@ static char *xag_extension_name = XAGNAME;
  *                                                                           *
  *****************************************************************************/
 
-static int close_display();
+static int close_display(Display *dpy, XExtCodes *codes);
 static /* const */ XExtensionHooks xag_extension_hooks = {
     NULL,				/* create_gc */
     NULL,				/* copy_gc */
@@ -129,10 +129,7 @@ XagQueryVersion(dpy, major_version_return, minor_version_return)
 }
 
 static void
-StuffToWire (dpy, stuff, req)
-    Display* dpy;
-    struct xagstuff* stuff;
-    xXagCreateReq* req;
+StuffToWire (Display *dpy, struct xagstuff *stuff, xXagCreateReq *req)
 {
     unsigned long values[8];
     unsigned long* value = values;

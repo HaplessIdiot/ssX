@@ -22,7 +22,7 @@
  *
  * Author:  Keith Packard, Network Computing Devices
  */
-/* $XFree86: xc/lib/Xext/XLbx.c,v 1.3 2001/01/17 19:42:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xext/XLbx.c,v 1.4 2002/10/16 00:37:27 dawes Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -40,8 +40,9 @@ static /* const */ char *lbx_extension_name = LBXNAME;
 #define LbxCheckExtension(dpy,i,val) \
   XextCheckExtension (dpy, i, lbx_extension_name, val)
 
-static int close_display();
-static char *error_string();
+static int close_display(Display *dpy, XExtCodes *codes);
+static char *error_string(Display *dpy, int code, XExtCodes *codes,
+			  char *buf, int n);
 static /* const */ XExtensionHooks lbx_extension_hooks = {
     NULL,				/* create_gc */
     NULL,				/* copy_gc */
@@ -86,8 +87,7 @@ Bool XLbxQueryExtension (dpy, requestp, event_basep, error_basep)
 }
 
 
-int XLbxGetEventBase(dpy)
-    Display *dpy;
+int XLbxGetEventBase(Display *dpy)
 {
     XExtDisplayInfo *info = find_display (dpy);
 

@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xext/MITMisc.c,v 1.3 2002/10/16 00:37:27 dawes Exp $ */
 
 /* RANDOM CRUFT! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
 
@@ -48,7 +48,7 @@ static /* const */ char *mit_extension_name = MITMISCNAME;
  *                                                                           *
  *****************************************************************************/
 
-static int close_display();
+static int close_display(Display *dpy, XExtCodes *codes);
 static /* const */ XExtensionHooks mit_extension_hooks = {
     NULL,				/* create_gc */
     NULL,				/* copy_gc */
