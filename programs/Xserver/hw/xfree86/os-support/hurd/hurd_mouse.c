@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_mouse.c,v 1.2 1999/05/22 09:59:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_mouse.c,v 1.3 1999/05/23 04:26:08 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -209,6 +209,7 @@ OsMousePreInit(InputInfoPtr pInfo, const char *protocol, int flags)
     /* This is called when the protocol is "OSMouse". */
 
     pMse->protocol = protocol;
+    xf86Msg(X_CONFIG, "%s: Protocol: %s\n", pInfo->name, protocol);
 
     /* Collect the options, and process the common options. */
     xf86CollectInputOptions(pInfo, NULL, NULL);
