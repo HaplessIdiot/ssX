@@ -26,7 +26,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.h,v 1.16 2002/09/22 07:09:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.h,v 1.17 2002/10/06 17:11:39 paulo Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -147,7 +147,7 @@ void IspellCallback(Widget, XtPointer, XtPointer);
 /*	externs in options.c	*/
 void CreateEditPopup(void);
 void SetEditMenu(void);
-void UpdateTextProperties(void);
+void UpdateTextProperties(int);
 
 /*	externs in hook.c	*/
 Bool StartHooks(XtAppContext);
@@ -162,6 +162,8 @@ void XeditKeyboardReset(Widget, XEvent*, String*, Cardinal*);
 void XeditLispCleanUp(void);
 void SetTextProperties(xedit_flist_item*);
 void UnsetTextProperties(xedit_flist_item*);
+void CreateEditModePopup(Widget);
+void SetEditModeMenu(void);
 
 /*	externs for system replacement functions */
 #ifdef NEED_STRCASECMP

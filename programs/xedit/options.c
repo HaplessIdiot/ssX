@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/options.c,v 1.10 2001/08/31 15:00:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/options.c,v 1.13 2002/09/22 07:09:05 paulo Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,12 +45,6 @@ static void EditCallback(Widget, XtPointer, XtPointer);
 static void PopupColumnsCallback(Widget, XtPointer, XtPointer);
 static void CreateColumnsShell(void);
 static void ProcessColumnsCallback(Widget, XtPointer, XtPointer);
-
-/*
- * externs in c-mode.c
- */
-extern void C_ModeStart(Widget);
-extern void C_ModeEnd(Widget);
 
 /*
  * Initialization
@@ -150,6 +144,8 @@ CreateEditPopup(void)
     scrollHoriz		= XtCreateManagedWidget("horizontal", smeBSBObjectClass,
 						scroll_popup, NULL, 0);
     XtAddCallback(scrollHoriz, XtNcallback, EditCallback, (XtPointer)SCROLL_HORIZ);
+
+    CreateEditModePopup(edit_popup);
 }
 
 void
@@ -254,6 +250,8 @@ SetEditMenu(void)
 	XtSetSensitive(justifyFull, left < right);
 	XtSetSensitive(breakColumns, True);
     }
+
+    SetEditModeMenu();
 }
 
 /*ARGSUSED*/
@@ -470,7 +468,7 @@ ChangeField(Widget w, XEvent *event, String *params, Cardinal *num_params)
 }
 
 void
-UpdateTextProperties(void)
+UpdateTextProperties(int force)
 {
     Arg args[4];
     Cardinal num_args;
@@ -499,7 +497,7 @@ UpdateTextProperties(void)
 	XtSetArg(args[0], XawNtextProperties, &prop);
 	XtGetValues(sink, args, 1);
 
-	if (item == NULL || prop == item->properties)
+	if (item == NULL || (!force && prop == item->properties))
 	    continue;
 
 	XtSetArg(args[0], XawNtextProperties, item->properties);
@@ -511,8 +509,16 @@ UpdateTextProperties(void)
 	}
 	XtSetValues(sink, args, num_args);
 
+	if (text == textwindow) {
+	    XtSetArg(args[0], XtNdisplayCaret, False);
+	    XtSetValues(text, args, 1);
+	}
 	_XawTextBuildLineTable((TextWidget)text,
 			       XawTextTopPosition(text), True);
 	XawTextDisplay(text);
+	if (text == textwindow) {
+	    XtSetArg(args[0], XtNdisplayCaret, True);
+	    XtSetValues(text, args, 1);
+	}
     }
 }

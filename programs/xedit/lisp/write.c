@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.15 2002/11/08 08:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.16 2002/11/10 16:29:07 paulo Exp $ */
 
 #include "write.h"
 #include "hash.h"
@@ -223,7 +223,7 @@ LispDoWriteList(LispObj *stream, LispObj *object, int paren)
 	}
 	else {
 	    length += LispWriteChar(stream, ' ');
-	    length += LispDoWriteList(stream, cdr, !CONSP(car));
+	    length += LispDoWriteList(stream, cdr, 0);
 	}
 	if (paren)
 	    length += LispWriteChar(stream, ')');
