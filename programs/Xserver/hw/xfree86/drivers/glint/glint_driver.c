@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.161tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.162 2003/11/03 05:11:11 tsi Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1520,7 +1520,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	 		 */
 			(void) pciReadLong(glintcopro, 0x30);
 			pciWriteLong(glintcopro, 0x30, 0xffffffff);
-			(void) = pciReadLong(glintcopro, 0x30);
+			(void) pciReadLong(glintcopro, 0x30);
 			pciWriteLong(glintcopro, 0x30, 0);
 
 			/*
