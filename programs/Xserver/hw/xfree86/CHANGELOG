@@ -1,3 +1,5 @@
+ 594. Enlarge the I810 pixmap cache and have the YUV overlay use that memory 
+      rather than allocate dedicated memory for overlay data (Mark Vojkovich).
  593. Add/fix support for the Rage 128 Mobility chips (M3/M4) (Kevin Martin).
 
 XFree86 4.0.1d (8 September 2000)
@@ -11126,4 +11128,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1309 2000/09/15 20:31:34 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1310 2000/09/15 23:26:09 mvojkovi Exp $
