@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.cpp,v 1.7 2000/06/14 02:13:09 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.cpp,v 1.8 2000/09/19 14:12:31 alanh Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH GLINT __drivermansuffix__ "Version 4.0.1"  "XFree86"
@@ -18,15 +18,6 @@ is an XFree86 driver for 3Dlabs & Texas Instruments GLINT/Permedia based video
 cards. The driver is rather fully accelerated, and provides support for the
 following framebuffer depths: 8, 15 (may give bad results with FBDev support),
 16, 24 (32 bpp recommended, 24 bpp has problems), 30, and an 8+24 overlay mode.
-For the
-.B Glint Permedia 3
-, the driver supports unaccelerated modes of depth 8 (bpp 8), 15 and 16 (bpp 16)
-and 24 (bppi 32) in single headed mode.
-2D Acceleration is working, but there are some visual artifacts with the
-ScreenToScreenCopy accel.
-Dual head (on the Appian J2000 board) is working, but the console screen will
-get corrupted, blind typing still works though.
-See the README.pm3 file for more details.
 .SH SUPPORTED HARDWARE
 The
 .B glint
@@ -119,4 +110,5 @@ option.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHORS
-Authors include: Alan Hourihane, Dirk Hohndel, Stefan Dirsch, Michel Dänzer
+Authors include: Alan Hourihane, Dirk Hohndel, Stefan Dirsch, Michel Dänzer,
+Sven Luther

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.34 2000/09/19 19:19:22 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.35 2000/09/26 15:57:11 tsi Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -144,6 +144,7 @@ typedef struct {
     CARD32		RasterizerSwap;
     int			PM3_Config2D;
     int			PM3_Render2D;
+    int			PM3_AreaStippleMode;
     int			PM3_VideoControl;
 #ifdef XF86DRI
     Bool		directRenderingEnabled;
@@ -209,14 +210,16 @@ Bool Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool Permedia2vHWCursorInit(ScreenPtr pScreen);
 
 /* pm3_dac.c */
-void Permedia3PreInit(ScrnInfoPtr pScrn, GLINTPtr pGlint);
+void Permedia3PreInit(ScrnInfoPtr pScrn);
 int Permedia3MemorySizeDetect(ScrnInfoPtr pScrn);
 void Permedia3Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void Permedia3Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 Bool Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
 /* pm3_accel.c */
-Bool Permedia3AccelInit(ScreenPtr pScreen);
+/* Not needed, ... is it ever called outside of pm3_accel.c ?
 void Permedia3Sync(ScrnInfoPtr pScrn);
+*/
+Bool Permedia3AccelInit(ScreenPtr pScreen);
 void Permedia3InitializeEngine(ScrnInfoPtr pScrn);
 /* End of pm3 stuff */
 

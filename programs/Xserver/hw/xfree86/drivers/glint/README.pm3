@@ -1,51 +1,44 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/README.pm3,v 1.1 2000/06/13 23:34:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/README.pm3,v 1.2 2000/09/19 14:12:31 alanh Exp $ */
   
-STATUS as of Sat,  9 Sep 2000 11:34:31 +0200
+STATUS as of Mon, 16 Oct 2000 21:24:51 +0200
   
 Working :
   * Unaccelerated : Depth 8, 15, 16 and 24 are ok. I tested them upto
     1280x1024 only as my monitor don't support higher modes.
   * HW cursor.
-  * Partial 2D Accels.
   * ShadowFb works.
-
-Not Working (see below for more detail) :
-  * Dual head : Dual head should work, but there is still a bug in the vga
-    functions mmio vs io issue. When run in dual head mode, the console,
-    altough still there will show no output. Blind typing will work though.
-    Well ctr-alt-del will work and is especially friendly to your partitions.
-  * Full 2D Accels.
-  * Video Overlay.
-  * DRI.
-  * Initialization on non Appian J2000 boards, if not done by the BIOS will
-    cause problems.
-  
-Dual head :
-  
-  * glint_driver.c:2322-2325:
-    The problem is that the usage of mmio functions for vga graphics index &
-    port (GraphicsIndexReg : 0x63ce, GraphicsPort : 0x3cf) corrupts the
-    console font for pm3 and pm2v. Using IO functions for it solve this, but
-    breaks dualheaded as there is no more console ouput then.
-
-2D Accels [WORK IN PROGRESS] :
-
-  * Only little endian is supported right now. Big endian may work also,
-    but i don't have a big endian box to test it on.
-  * Implemented are :
-    - Screen to screen copy. 
-    - Solid fills.
+  * Full 2D Accels. (Need testing and tuning on big endian systems.)
+    - Sync.
     - Pixmap cache.
     - Offscreen pixmaps.
-    - Sync.
     - Clipping.
-  * Screen to screen copy present two problems :
-    - when doing the copy, there are temporary noise around the area getting
-      copied.
-    - when doing very small copies from left to right (as when the window
-      manager is doing opaque moves) there is corruption on the left side of
-      the window. Using ONLY_LEFT_TO_RIGHT_BITBLT solves this. But still, the
-      pm3 should be able to handle this.
+    - Screen to screen copy. 
+    - Solid fills.
+    - HorVert Solid Lines .
+    - 8x8 Mono Pattern Fills.
+    - Color Expansion Fills.
+    - Images Writes.
+  * Appian J2000 second head initialization.
+  * Dual head : The console fonts will get trashed, but dual head works.
+Not Working :
+  * 2D Accel hooks not implemented :
+    - Solid & Dashed Lines are not possible on glint hardware.
+    - 8x8 Color Pattern Fill is almost never used.
+  * Video Overlay.
+  * DRI.
+  
+Known Problem :
+
+  * Console gets broken when using dual headed mode. The culprit seems to be
+    the vga graphics index & port (GraphicsIndexReg : 0x63ce, GraphicsPort :
+    0x3cf). I had to use IO acces for both these two, because if not, console
+    fonts would get trashed even in mono headed mode.
+  * R-B inversion. Sometimes, all of a sudden, it seems as the RGB order
+    gets changed. going to console and back solves this.
+  * [TRIGGERED IN ENLIGTHENMENT ONLY] When moving a window around a lot
+    quicly, the video outputs dies. I have to switch to a console and back
+    to have it restored. Is it possible that the accel engine gets
+    overloaded or something such ?
 
 Video Overlay [NOTHING DONE YET] : 
 
@@ -53,25 +46,12 @@ Video Overlay [NOTHING DONE YET] :
 
 DRI/3D Accels [NOTHING DONE YET] :
 
-  * Current Gamma support only works with dualmx boards and the like where 
-    the gamma chip is actually doing the rendering, and the rasterizer chip
-    are slaves of the gamma chip.
-
-  * The approach taken by the current pm3 driver is to have each pm3 having
-    its own driver instance. We thus need a setup for sharing the gamma between
-    both pm3. Such a setup was already done for the G400 dual head feature.
-    Need to investigate this.
-
-  * One alternative could be to use the pm3 for 3D Accels, but as the pm3 has
-    only a Delta unit, this is not optimal. However it would be nice for
-    pm3 boards lacking gamma chip, and could maybe be shared with pm2 boards ?
-
-  * Also it could maybe be possible to share the workload between the Gamma
-    and the pm3. Don't know about this though ...
-
-Initialization [NEED TESTING ON NON J2000 BOARD] :
-
-  * Second head of Jeronimo 2000 is not initialized by the bios, So memory
-    timings need to be set. I set them only if subsysVendor & subsysCard are
-    matching J2000. Need feedback of other dual pm3 boards.
+  * First approach would be to use the gamma for one head only (most probably
+    the first head, it could be configurable though).
+  * Sharing the gamma between both driver instances would need a setup similar
+    of what was done for the Matrox dualheaded G400 (mga driver).
+  * Alternatively it could be possible to use DRI with the gamma on one head,
+    and DRI with the pm3 alone on the second head. This would need writing a 
+    pm3 drm kernel driver as well as a pm3 OpenGL driver. Could be useful for 
+    boards without gamma chips though.
 

@@ -1,35 +1,31 @@
 /*
- * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
+ * Copyright 2000 by Sven Luther <luther@dpt-info.u-strasbg.fr>.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of Alan Hourihane not be used in
+ * documentation, and that the name of Sven Luther not be used in
  * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  Alan Hourihane makes no representations
+ * specific, written prior permission. Sven Luther makes no representations
  * about the suitability of this software for any purpose.  It is provided
  * "as is" without express or implied warranty.
  *
- * ALAN HOURIHANE DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * SVEN LUTHER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
  * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL ALAN HOURIHANE BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * EVENT SHALL SVEN LUTHER BE LIABLE FOR ANY SPECIAL, INDIRECT OR
  * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
  * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
  * Authors: Sven Luther, <luther@dpt-info.u-strasbg.fr>
- *	    Thomas Witzel, <twitzel@nmr.mgh.harvard.edu>
- *
- *
- *
- *
+ *          Thomas Witzel, <twitzel@nmr.mgh.harvard.edu>
  *
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.5 2000/09/11 16:58:56 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.6 2000/09/19 14:12:32 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -54,43 +50,17 @@
 # define TRACE(str)
 #endif
 
-void
-Permedia3PreInit(ScrnInfoPtr pScrn, GLINTPtr pGlint)
-{
-    TRACE_ENTER("Permedia3PreInit");
-    if ((pGlint->PciInfo->subsysVendor == 0x1097) &&
-	(pGlint->PciInfo->subsysCard == 0x3d32)) {
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	    "Appian Jeronimo 2000 board detected and initialized.\n\t"
-	    "subsysVendor = 0x%04x, subsysCard = 0x%04x.\n",
-	    pGlint->PciInfo->subsysVendor, pGlint->PciInfo->subsysCard);
-	/* Memory timings for the Appian J2000 board.
-	 * This is needed for the second head which is left unitilialized
-	 * by the bios, thus freezing the machine.
-	 */
-	GLINT_SLOW_WRITE_REG(0x02e311B8, PM3LocalMemCaps);
-	GLINT_SLOW_WRITE_REG(0x07424905, PM3LocalMemTimings);
-	GLINT_SLOW_WRITE_REG(0x0c000003, PM3LocalMemControl);
-	GLINT_SLOW_WRITE_REG(0x00000061, PM3LocalMemRefresh);
-	GLINT_SLOW_WRITE_REG(0x00000000, PM3LocalMemPowerDown);
-    }
-    else xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	"Unknown Glint Permedia3 board detected.\n\t"
-	"subsysVendor = 0x%04x, subsysCard = 0x%04x.\n",
-	pGlint->PciInfo->subsysVendor, pGlint->PciInfo->subsysCard);
-    TRACE_EXIT("Permedia3PreInit");
-}
+int PM3QuickFillMemory(ScrnInfoPtr pScrn,int size);
 
 int
 PM3QuickFillMemory(ScrnInfoPtr pScrn,int size)
 {
-    GLINTPtr pGlint;
+    GLINTPtr pGlint = GLINTPTR (pScrn);
     unsigned int * p;
     unsigned int p_content;
     unsigned int i, j;
     long savemapsize;
 
-    pGlint = GLINTPTR (pScrn);
     savemapsize = pGlint->FbMapSize;
     pGlint->FbMapSize = size*1024*1024;
 
@@ -214,6 +184,61 @@ PM3DAC_CalculateClock
     return(actualclock);
 }
 
+void
+Permedia3PreInit(ScrnInfoPtr pScrn)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    TRACE_ENTER("Permedia3PreInit");
+    if ((pGlint->PciInfo->subsysVendor == 0x1097) &&
+	(pGlint->PciInfo->subsysCard == 0x3d32)) {
+    	unsigned char m,n,p;
+    	unsigned long clockused;
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	    "Appian Jeronimo 2000 board detected and initialized.\n\t"
+	    "subsysVendor = 0x%04x, subsysCard = 0x%04x.\n",
+	    pGlint->PciInfo->subsysVendor, pGlint->PciInfo->subsysCard);
+
+	/* Memory timings for the Appian J2000 board.
+	 * This is needed for the second head which is left unitilialized
+	 * by the bios, thus freezing the machine. */
+	GLINT_SLOW_WRITE_REG(0x02e311B8, PM3LocalMemCaps);
+	GLINT_SLOW_WRITE_REG(0x07424905, PM3LocalMemTimings);
+	GLINT_SLOW_WRITE_REG(0x0c000003, PM3LocalMemControl);
+	GLINT_SLOW_WRITE_REG(0x00000061, PM3LocalMemRefresh);
+	GLINT_SLOW_WRITE_REG(0x00000000, PM3LocalMemPowerDown);
+	
+	/* Let's program the K, M and S Clocks to the same values as the bios
+	 * does for first head :
+	 *   - KClk and MClk are 105Mhz.
+	 *   - S Clock is set to PClk.
+	 * Note 1 : pGlint->RefClock is not set yet, so use 14318 instead.
+	 * Note 2 : KClk gets internally halved, so we need to double it.
+	 */
+	clockused = PM3DAC_CalculateClock(2*105000, 14318, &m,&n,&p);
+        Permedia2vOutIndReg(pScrn, PM3RD_KClkPreScale, 0x00, m);
+        Permedia2vOutIndReg(pScrn, PM3RD_KClkFeedbackScale, 0x00, n);
+        Permedia2vOutIndReg(pScrn, PM3RD_KClkPostScale, 0x00, p);
+        Permedia2vOutIndReg(pScrn, PM3RD_KClkControl, 0x00,
+	    PM3RD_KClkControl_STATE_RUN |
+	    PM3RD_KClkControl_SOURCE_PLL |
+	    PM3RD_KClkControl_ENABLE);
+        Permedia2vOutIndReg(pScrn, PM3RD_MClkControl, 0x00,
+	    PM3RD_MClkControl_STATE_RUN |
+	    PM3RD_MClkControl_SOURCE_KCLK |
+	    PM3RD_MClkControl_ENABLE);
+        Permedia2vOutIndReg(pScrn, PM3RD_SClkControl, 0x00,
+	    PM3RD_SClkControl_STATE_RUN |
+	    PM3RD_SClkControl_SOURCE_PCLK |
+	    PM3RD_SClkControl_ENABLE);
+    }
+    else xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	"Unknown Glint Permedia3 board detected.\n\t"
+	"subsysVendor = 0x%04x, subsysCard = 0x%04x.\n\t"
+	"Let's hope that it is correctly initialized by the bios.\n",
+	pGlint->PciInfo->subsysVendor, pGlint->PciInfo->subsysCard);
+    TRACE_EXIT("Permedia3PreInit");
+}
+
 Bool
 Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
@@ -221,19 +246,6 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     GLINTRegPtr pReg = &pGlint->ModeReg;
     CARD32 temp1, temp2, temp3, temp4;
 
-    /* Memory timings for the Appian J2000 board
-     * This is not ideal, since the work here is duplicated 
-     * in the Permedia3PreInit function :(((
-     */
-    if ((pGlint->PciInfo->subsysVendor == 0x1097) &&
-	(pGlint->PciInfo->subsysCard == 0x3d32)) {
-	pReg->glintRegs[PM3LocalMemCaps >> 3] = 0x02e311B8;
-	pReg->glintRegs[PM3LocalMemTimings >> 3] = 0x07424905;
-	pReg->glintRegs[PM3LocalMemControl >> 3] = 0x0c000003;
-	pReg->glintRegs[PM3LocalMemRefresh >> 3] = 0x00000061;
-    }
-
-    pReg->glintRegs[PM3LocalMemPowerDown >> 3] = 0x00000000;
     pReg->glintRegs[PM3MemBypassWriteMask >> 3] = 0xffffffff;
     pReg->glintRegs[PM3ByAperture1Mode >> 3] = 0x00000000;
     pReg->glintRegs[PM3ByAperture2Mode >> 3] = 0x00000000;
@@ -316,25 +328,6 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	unsigned char m,n,p;
     	unsigned long clockused;
 	
-	/* Let's program the KClk to 100Mhz and set the S & M Clk too. */
-/*	clockused = PM3DAC_CalculateClock(100000,
-	    pGlint->RefClock, &m,&n,&p);
-	pReg->DacRegs[PM3RD_KClkPreScale] = m;
-	pReg->DacRegs[PM3RD_KClkFeedbackScale] = n;
-	pReg->DacRegs[PM3RD_KClkPostScale] = p;
-	pReg->DacRegs[PM3RD_KClkControl] =
-	    PM3RD_KClkControl_STATE_RUN |
-	    PM3RD_KClkControl_SOURCE_PLL |
-	    PM3RD_KClkControl_ENABLE;
-	pReg->DacRegs[PM3RD_MClkControl] =
-	    PM3RD_MClkControl_STATE_RUN |
-	    PM3RD_MClkControl_SOURCE_KCLK |
-	    PM3RD_MClkControl_ENABLE;
-	pReg->DacRegs[PM3RD_SClkControl] =
-	    PM3RD_SClkControl_STATE_RUN |
-	    PM3RD_SClkControl_SOURCE_HALF_KCLK |
-	    PM3RD_SClkControl_ENABLE;
-*/
 	/* Let's program the dot clock */
     	clockused = PM3DAC_CalculateClock(mode->Clock,
 	    pGlint->RefClock, &m,&n,&p);
@@ -395,16 +388,6 @@ Permedia3Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     /* Permedia 3 memory Timings */
     glintReg->glintRegs[PM3MemBypassWriteMask >> 3] =
 	    				GLINT_READ_REG(PM3MemBypassWriteMask);
-    glintReg->glintRegs[PM3LocalMemCaps >> 3] = 
-	    				GLINT_READ_REG(PM3LocalMemCaps);
-    glintReg->glintRegs[PM3LocalMemTimings >> 3] = 
-	    				GLINT_READ_REG(PM3LocalMemTimings);
-    glintReg->glintRegs[PM3LocalMemControl >> 3] = 
-	    				GLINT_READ_REG(PM3LocalMemControl);
-    glintReg->glintRegs[PM3LocalMemRefresh >> 3] = 
-	    				GLINT_READ_REG(PM3LocalMemRefresh);
-    glintReg->glintRegs[PM3LocalMemPowerDown >> 3] = 
-	    				GLINT_READ_REG(PM3LocalMemPowerDown);
     glintReg->glintRegs[PM3ByAperture1Mode >> 3] = 
 	    				GLINT_READ_REG(PM3ByAperture1Mode);
     glintReg->glintRegs[PM3ByAperture2Mode >> 3] = 
@@ -453,20 +436,6 @@ Permedia3Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     glintReg->DacRegs[PM2VDACRDDClk0PreScale] = Permedia2vInIndReg(pScrn, PM2VDACRDDClk0PreScale);
     glintReg->DacRegs[PM2VDACRDDClk0FeedbackScale] = Permedia2vInIndReg(pScrn, PM2VDACRDDClk0FeedbackScale);
     glintReg->DacRegs[PM2VDACRDDClk0PostScale] = Permedia2vInIndReg(pScrn, PM2VDACRDDClk0PostScale);
-    /* save KClk, MClk and SClk settings */
- /*   glintReg->DacRegs[PM3RD_KClkControl] =
-	Permedia2vInIndReg(pScrn,PM3RD_KClkControl);
-    glintReg->DacRegs[PM3RD_MClkControl] =
-	Permedia2vInIndReg(pScrn,PM3RD_MClkControl);
-    glintReg->DacRegs[PM3RD_SClkControl] =
-	Permedia2vInIndReg(pScrn,PM3RD_SClkControl);
-    glintReg->DacRegs[PM3RD_KClkPreScale] =
-	Permedia2vInIndReg(pScrn,PM3RD_KClkPreScale);
-    glintReg->DacRegs[PM3RD_KClkFeedbackScale] =
-	Permedia2vInIndReg(pScrn,PM3RD_KClkFeedbackScale);
-    glintReg->DacRegs[PM3RD_KClkPostScale] =
-	Permedia2vInIndReg(pScrn,PM3RD_KClkPostScale);
-*/
 }
 
 void
@@ -486,16 +455,6 @@ Permedia3Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     /* Permedia 3 memory Timings */
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PM3MemBypassWriteMask >> 3],
 		    					PM3MemBypassWriteMask);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PM3LocalMemCaps >> 3],
-	    						PM3LocalMemCaps);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PM3LocalMemTimings >> 3],
-	    						PM3LocalMemTimings);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PM3LocalMemControl >> 3],
-	    						PM3LocalMemControl);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PM3LocalMemRefresh >> 3],
-	    						PM3LocalMemRefresh);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PM3LocalMemPowerDown >> 3],
-	    						PM3LocalMemPowerDown);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PM3ByAperture1Mode >> 3],
 	    						PM3ByAperture1Mode);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PM3ByAperture2Mode >> 3],
@@ -550,19 +509,4 @@ Permedia3Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     Permedia2vOutIndReg(pScrn, PM2VDACRDDClk0PostScale, 0x00, 
 	glintReg->DacRegs[PM2VDACRDDClk0PostScale]);
     Permedia2vOutIndReg(pScrn, PM2VDACIndexClockControl, 0x00, temp|0x03);
-    /* retsore the KClk, MClk and SClk settings */
- /*   Permedia2vOutIndReg(pScrn, PM3RD_KClkPreScale, 0x00,
-	glintReg->DacRegs[PM3RD_KClkPreScale]);
-    Permedia2vOutIndReg(pScrn, PM3RD_KClkFeedbackScale, 0x00,
-	glintReg->DacRegs[PM3RD_KClkFeedbackScale]);
-    Permedia2vOutIndReg(pScrn, PM3RD_KClkPostScale, 0x00,
-	glintReg->DacRegs[PM3RD_KClkPostScale]);
-    Permedia2vOutIndReg(pScrn, PM3RD_KClkControl, 0x00,
-	glintReg->DacRegs[PM3RD_KClkControl]);
-  */  /* Should we wait for KClk to be locked here ? */
-   /* Permedia2vOutIndReg(pScrn, PM3RD_MClkControl, 0x00,
-	glintReg->DacRegs[PM3RD_MClkControl]);
-    Permedia2vOutIndReg(pScrn, PM3RD_SClkControl, 0x00,
-	glintReg->DacRegs[PM3RD_SClkControl]);
-*/
 }
