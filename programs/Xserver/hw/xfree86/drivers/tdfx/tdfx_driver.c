@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.64 2001/02/15 18:01:43 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.65 2001/03/21 17:02:26 dawes Exp $ */
 
 /*
  * Authors:
@@ -2027,9 +2027,7 @@ TDFXLeaveVT(int scrnIndex, int flags) {
   ScrnInfoPtr pScrn;
   vgaHWPtr hwp;
   ScreenPtr pScreen;
-#ifdef XF86DRI
   TDFXPtr pTDFX;
-#endif
 
   TDFXTRACE("TDFXLeaveVT start\n");
   pScrn = xf86Screens[scrnIndex];
