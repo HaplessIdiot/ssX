@@ -23,7 +23,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xclock/xclock.man,v 1.13 2002/10/21 13:33:08 alanh Exp $
+.\" $XFree86: xc/programs/xclock/xclock.man,v 1.15 2003/07/04 16:24:30 eich Exp $
 .\"
 .TH XCLOCK 1 __xorgversion__
 .SH NAME
@@ -143,7 +143,7 @@ clock when displayed in the chosen font.
 Specifies the frequency in seconds at which the time should be redisplayed.
 .TP 8
 .B foreground (\fPclass\fB Foreground)
-Specifies the color for the tic marks. The default depends on whether
+Specifies the color for the tick marks. The default depends on whether
 \fIreverseVideo\fP is specified.  If \fIreverseVideo\fP is specified
 the default is \fIlwhite\fP, otherwise the default is \fIblack\fP. 
 

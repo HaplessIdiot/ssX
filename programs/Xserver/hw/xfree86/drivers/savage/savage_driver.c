@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.38 2003/04/23 21:51:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.40 2003/06/18 16:17:40 eich Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -1846,6 +1846,10 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
 		}
 		break;
 	}
+
+	/* set the correct clock for some BIOSes */
+	VGAOUT8(VGA_MISC_OUT_W, 
+		VGAIN8(VGA_MISC_OUT_R) | 0x0C);
 
 	SavageInitialize2DEngine(pScrn);
 	SavageSetGBD(pScrn);

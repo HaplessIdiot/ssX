@@ -26,7 +26,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.31 2001/07/25 15:05:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.34 2003/06/12 14:12:39 eich Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -179,7 +179,8 @@ extern Bool Must_have_memory;
 #define TAIL_SIZE		0
 #endif
 
-#if defined(__alpha__) || defined(__alpha) || \
+#if defined (_LP64) || \
+    defined(__alpha__) || defined(__alpha) || \
     defined(__ia64__) || defined(ia64) || \
     defined(__sparc64__) || \
     defined(__s390x__) || \

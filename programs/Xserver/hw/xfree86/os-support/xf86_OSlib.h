@@ -180,11 +180,11 @@ extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 # if defined(SCO)
 #  include <sys/vtkd.h>
 #  include <sys/console.h>
-#  include <sys/keyboard.h>
+#  include <sys/scankbd.h>
 #  include <sys/vid.h>
-#  define LED_CAP 0x01
-#  define LED_NUM 0x02
-#  define LED_SCR 0x04
+#  define LED_CAP CLKED
+#  define LED_NUM NLKED
+#  define LED_SCR SLKED
 # elif defined(HAS_USL_VTS)
 #  include <sys/at_ansi.h>
 #  include <sys/kd.h>

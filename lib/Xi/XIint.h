@@ -21,4 +21,11 @@ extern int _XiCheckExtInit(
 #endif
 );
 
+extern XExtensionVersion * _XiGetExtensionVersion(
+#if NeedFunctionPrototypes
+	Display*,
+	_Xconst char*
+#endif
+);
+
 #endif

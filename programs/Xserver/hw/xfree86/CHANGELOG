@@ -1,4 +1,28 @@
 XFree86 4.3.99.8 (xx June 2003)
+ 288. Changing PS/2 mouse resolution to 8 counts/mm as some broken mice have
+      problems with other values (W. uses 8) (Egbert Eich).
+ 287. Fixing mode setting by BIOS. Wrong clock selection in MiscOut register
+      caused screen to stay blank (Egbert Eich).
+ 286. Added description for -dumpSched and -schedInterval to the usage
+      message (Egbert Eich)
+ 285. Update the SCO OpenServer port, fixing these specific problems:
+        . Fixed the Imake template so i[3456]86 and friends arent defined
+        . Fixed bad preprocessor stuff in X11.tmpl that was producing warnings
+        . Updated default GCC flags to more aggresively optimize
+        . Fixed keyboard LED handling
+        . Enable SCO function keys in xterm
+        . Make Delete key send  DEL by default on SCO in xterm
+        . Fix to make fonttosfnt compile (Bugzilla #470, Kean Johnston).
+ 284. Added missing ro2 symbols file to list of files to install 
+      (BugzillaR #476, Egbert Eich).
+ 283. Corrected precedence problem in test in xc/lib/X11/XKBUse.c:
+      XkbUseExtension(). This avoids an extra round trip during application
+      startup (Bugzilla #473, Owen Taylor).
+ 282. Fixing deadlock in libXi - when is called _XLockDisplay() twice - when 
+      calling a Xi function that calls XGetExtensionVersion() (Bugzilla #260,
+      Bastien Nocera, Owen Taylor). 
+ 281. Adding support for video modes <320x240 to S3 driver by changing the 
+      minimal clock frequency to 15.6 MHz (Bugzilla #472, Alexey Baj).
  280. Made mkfontscale behavior and options compatible to mkfontdir, fixed
       bugs in output format (Bugzilla #425, Juliusz Chroboczek, Kean Johnston).
  279. Changed xclock hands back to black (antialiased) , created XClk-col.ad
@@ -17232,7 +17256,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2765 2003/07/02 17:31:24 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2766 2003/07/04 16:24:25 eich Exp $
 
 
 

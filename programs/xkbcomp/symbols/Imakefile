@@ -26,7 +26,7 @@ XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.58 2003/04/13 18:22:19
 		 nl no \
 		 ogham ori \
 		 pc104 pl pl2 pt \
-		 ralt ro ru ru_yawerty \
+		 ralt ro ro2 ru ru_yawerty \
 		 sapmi se se_FI se_NO se_SE si sk sk_qwerty sr srvr_ctrl \
 		 syr syr_phonetic \
 		 tel th th_tis th_pat tj tml tr tr_f \

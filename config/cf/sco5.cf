@@ -57,8 +57,8 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.11 2003/01/28 22:06:08 alanh Exp $
 #ifdef HasGcc2
 # define DefaultCCOptions       GccWarningOptions
 # define CcCmd			gcc
-# define DefaultCDebugFlags	-O2
-# define OptimizedCDebugFlags	-O2
+# define DefaultCDebugFlags	-O6 -fomit-frame-pointer -march=i586 -mcpu=i686
+# define OptimizedCDebugFlags	-O6 -fomit-frame-pointer -march=i586 -mcpu=i686
 #else
 # define DefaultCCOptions	-dy
 # define CcCmd			cc -belf
@@ -81,6 +81,10 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.11 2003/01/28 22:06:08 alanh Exp $
 
 #ifndef HasSymLinks
 # define HasSymLinks            YES
+#endif
+
+#ifndef DoLoadableServer
+# define DoLoadableServer	YES
 #endif
 
 #ifdef BuildDynamicLoading
@@ -141,6 +145,7 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.11 2003/01/28 22:06:08 alanh Exp $
 #define ArCmdBase               ar
 #define AsCmd                   CcCmd
 #define CppCmd			/lib/cpp
+#define PreProcessCmd		CppCmd
 #define RawCppCmd		CppCmd
 #define LdCmd                   ld
 #define LexCmd                  flex

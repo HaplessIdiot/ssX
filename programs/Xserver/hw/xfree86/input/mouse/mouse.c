@@ -2695,7 +2695,7 @@ initMouseHW(InputInfoPtr pInfo)
 		    else
 			c2[1] = 0;
 		} else {
-		    c2[1] = 2;
+		    c2[1] = 3; /* used to be 2, W. uses 3 */
 		}
 		if (!ps2SendPacket(pInfo,c2,2)) {
 		    if (!count--)

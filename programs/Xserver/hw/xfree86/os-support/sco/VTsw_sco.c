@@ -72,6 +72,7 @@ xf86VTSwitchAway()
 {
   ev_flush();
   ev_suspend();
+
   sco_ledstatus = ioctl(xf86Info.consoleFd, KDGETLED, &sco_ledstate);
 
   xf86Info.vtRequestsPending = FALSE;
@@ -97,7 +98,7 @@ xf86VTSwitchTo()
     return(FALSE);
   } else {
     if (sco_ledstatus >= 0) {
-      ioctl (xf86Info.consoleFd, KDSETLED, &sco_ledstate);
+      ioctl (xf86Info.consoleFd, KDSETLED, sco_ledstate);
     }
     sco_ledstatus = -1;
 

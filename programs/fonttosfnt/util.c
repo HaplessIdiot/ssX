@@ -43,6 +43,12 @@ THE SOFTWARE.
 
 #ifdef BSD
 #define HAVE_TM_GMTOFF
+#define GMTOFFMEMBER tm_gmtoff
+#endif
+
+#ifdef SCO
+#define HAVE_TM_GMTOFF
+#define GMTOFFMEMBER tm_tzadj
 #endif
 
 /* That's in POSIX */
@@ -125,7 +131,7 @@ mktime_gmt(struct tm *tm)
     ltm = localtime(&t);
     if(ltm == NULL)
         return -1;
-    return t + ltm->tm_gmtoff;
+    return t + ltm->GMTOFFMEMBER;
 }
 #elif defined(HAVE_TZSET)
 /* Taken from the Linux timegm(3) man page */
