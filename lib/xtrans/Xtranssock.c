@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.47 2000/05/11 18:14:10 tsi Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.48 2001/01/17 19:43:47 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -1718,6 +1718,7 @@ TRANS(SocketBytesReadable) (XtransConnInfo ciptr, BytesReadable_t *pend)
     return ioctl (ciptr->fd, FIONREAD, (char*) pend, sizeof(int));
 #else
     return ioctl (ciptr->fd, FIONREAD, (char *) pend);
+#endif /* __EMX__ */
 #endif /* i386 && SYSV || _SEQUENT_ && _SOCKET_VERSION == 1 */
 #endif /* WIN32 */
 }
