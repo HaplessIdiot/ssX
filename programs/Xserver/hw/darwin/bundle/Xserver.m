@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.27 2001/09/24 06:56:51 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.28 2001/09/29 04:48:53 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -29,6 +29,27 @@
 #define STR(s) #s
 #define XSTRPATH(s) STR(s)
 #define XPATH(file) XSTRPATH(XBINDIR) "/" STR(file)
+
+// Types of shells
+enum {
+    shell_Unknown,
+    shell_Bourne,
+    shell_C
+};
+
+typedef struct {
+    char *name;
+    int type;
+} shellList_t;
+
+static shellList_t const shellList[] = {
+    { "csh",    shell_C },		// standard C shell
+    { "tcsh",   shell_C },		// ... needs no introduction
+    { "sh",     shell_Bourne },		// standard Bourne shell
+    { "zsh",    shell_Bourne },		// Z shell
+    { "bash",   shell_Bourne },		// GNU Bourne again shell
+    { NULL,	shell_Unknown }
+};
 
 extern int argcGlobal;
 extern char **argvGlobal;
@@ -329,11 +350,11 @@ static NSRect aquaMenuBarBox;
     // Start the X clients if started from GUI
     if (quartzStartClients) {
         struct passwd *passwdUser;
-        NSString *shellPath, *shellName, *commandStr;
+        NSString *shellPath, *dashShellName, *commandStr;
         BOOL hasClient = YES;
         char xinitrcbuf[PATH_MAX];
-        const char *shellPathStr, *newargv[2];
-        int fd[2], outFD, length;
+        const char *shellPathStr, *newargv[3], *shellNameStr;
+        int fd[2], outFD, length, shellType, i;
 
         // Register to catch the signal when the client processs finishes
         signal(SIGCHLD, childDone);
@@ -343,11 +364,27 @@ static NSRect aquaMenuBarBox;
 
         // Find the user's default shell
         shellPath = [NSString stringWithCString:passwdUser->pw_shell];
-        shellName = [NSString stringWithFormat:@"-%@",
+        dashShellName = [NSString stringWithFormat:@"-%@",
                                 [shellPath lastPathComponent]];
         shellPathStr = [shellPath cString];
-        newargv[0] = [shellName cString];
-        newargv[1] = NULL;
+        shellNameStr = [[shellPath lastPathComponent] cString];
+
+        // Find the type of shell
+        for (i = 0; shellList[i].name; i++) {
+            if (!strcmp(shellNameStr, shellList[i].name))
+                break;
+        }
+        shellType = shellList[i].type;
+
+        newargv[0] = [dashShellName cString];
+        if (shellType == shell_Bourne) {
+            // Bourne shells need to be told they are interactive to make
+            // sure they read all their initialization files.
+            newargv[1] = "-i";
+            newargv[2] = NULL;
+        } else {
+            newargv[1] = NULL;
+        }
 
         // Create a pipe to communicate with the X client process
         NSAssert(pipe(fd) == 0, @"Could not create new pipe.");
