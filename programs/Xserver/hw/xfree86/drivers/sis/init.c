@@ -4250,8 +4250,10 @@ SiSBuildBuiltInModeList(ScrnInfoPtr pScrn, BOOLEAN includelcdmodes, BOOLEAN isfo
 
    if(!includelcdmodes) return first;
 
-   xf86DrvMsg(0, X_INFO, "Checking database for vendor %x, product %x\n",
-      pSiS->SiS_Pr->CP_Vendor, pSiS->SiS_Pr->CP_Product);
+   if(pSiS->SiS_Pr->CP_Vendor) {
+      xf86DrvMsg(0, X_INFO, "Checking database for vendor %x, product %x\n",
+         pSiS->SiS_Pr->CP_Vendor, pSiS->SiS_Pr->CP_Product);
+   }
 
    i = 0;
    while((!done) && (SiS_PlasmaTable[i].vendor) && (pSiS->SiS_Pr->CP_Vendor)) {
@@ -4480,28 +4482,28 @@ sisfb_mode_rate_to_dclock(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
 #ifdef SIS300
        InitTo300Pointer(SiS_Pr, HwInfo);
 #else
-       return 65 * 1000 * 1000;
+       return 65 * 1000;
 #endif
     } else {
 #ifdef SIS315H
        InitTo310Pointer(SiS_Pr, HwInfo);
 #else
-       return 65 * 1000 * 1000;
+       return 65 * 1000;
 #endif
     }
 
     if(!(SiS_SearchModeID(SiS_Pr, &ModeNo, &ModeIdIndex))) {;
     	printk(KERN_ERR "Could not find mode %x\n", ModeNo);
-    	return 65 * 1000 * 1000;
+    	return 65 * 1000;
     }
-    
+
     RefreshRateTableIndex = SiS_Pr->SiS_EModeIDTable[ModeIdIndex].REFindex;
     RefreshRateTableIndex += (rateindex - 1);
     ClockIndex = SiS_Pr->SiS_RefIndex[RefreshRateTableIndex].Ext_CRTVCLK;
     if(HwInfo->jChipType < SIS_315H) {
        ClockIndex &= 0x3F;
     }
-    Clock = SiS_Pr->SiS_VCLKData[ClockIndex].CLOCK * 1000 * 1000;
+    Clock = SiS_Pr->SiS_VCLKData[ClockIndex].CLOCK * 1000;
     
     return(Clock);
 }

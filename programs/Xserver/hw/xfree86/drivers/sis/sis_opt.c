@@ -636,29 +636,21 @@ SiSOptions(ScrnInfoPtr pScrn)
 	     pSiS->MetaModes = xalloc(strlen(strptr) + 1);
 	     if(pSiS->MetaModes) memcpy(pSiS->MetaModes, strptr, strlen(strptr) + 1);
 	  }
-	  if(pSiS->MetaModes) {
-	     strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_CRT2HSYNC);
-	     if(!strptr) {
-	        strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_CRT2HSYNC2);
-	     }
-	     if(strptr) {
-	        pSiS->CRT2HSync = xalloc(strlen(strptr) + 1);
-		if(pSiS->CRT2HSync) memcpy(pSiS->CRT2HSync, strptr, strlen(strptr) + 1);
-	     }
-	     strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_CRT2VREFRESH);
-	     if(!strptr) {
-	        strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_CRT2VREFRESH2);
-	     }
-	     if(strptr) {
-	        pSiS->CRT2VRefresh = xalloc(strlen(strptr) + 1);
-		if(pSiS->CRT2VRefresh) memcpy(pSiS->CRT2VRefresh, strptr, strlen(strptr) + 1);
-	     }
-	  } else {
-	     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		 "Option \"MergedFB\" (alias \"TwinView\") requires Option \"MetaModes\".\n");
-	     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-	     	 "MergedFB (alias TwinView) mode disabled.\n");
-	     pSiS->MergedFB = FALSE;
+	  strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_CRT2HSYNC);
+	  if(!strptr) {
+	     strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_CRT2HSYNC2);
+	  }
+	  if(strptr) {
+	     pSiS->CRT2HSync = xalloc(strlen(strptr) + 1);
+	     if(pSiS->CRT2HSync) memcpy(pSiS->CRT2HSync, strptr, strlen(strptr) + 1);
+	  }
+	  strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_CRT2VREFRESH);
+	  if(!strptr) {
+	     strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_CRT2VREFRESH2);
+	  }
+	  if(strptr) {
+	     pSiS->CRT2VRefresh = xalloc(strlen(strptr) + 1);
+	     if(pSiS->CRT2VRefresh) memcpy(pSiS->CRT2VRefresh, strptr, strlen(strptr) + 1);
 	  }
 #ifdef SISXINERAMA
 	  if(pSiS->MergedFB) {

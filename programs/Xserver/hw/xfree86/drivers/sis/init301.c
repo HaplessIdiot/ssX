@@ -10649,7 +10649,7 @@ SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS)
          xf86DrvMsg(pSiS->pScrn->scrnIndex, X_PROBED,
 	    "   Pixel clock: %3.3fMhz\n", (float)SiS_Pr->CP_Clock[i] / 1000);
 	 xf86DrvMsg(pSiS->pScrn->scrnIndex, X_INFO,
-	    "   To use this, add \"%dx%d\" to the list of Modes in the Display section\n",
+	    "   To use this, add \"%dx%d\" to the list of Modes in the Screen section\n",
 	    SiS_Pr->CP_HDisplay[i],
 	    SiS_Pr->CP_VDisplay[i]);
       }

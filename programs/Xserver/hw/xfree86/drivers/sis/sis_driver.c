@@ -723,18 +723,17 @@ static void
 SISErrorLog(ScrnInfoPtr pScrn, const char *format, ...)
 {
     va_list ap;
+    static const char *str = "**************************************************\n";
 
     va_start(ap, format);
-    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-    	"**************************************************\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, str);
     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
     	"                      ERROR:\n");
     xf86VDrvMsgVerb(pScrn->scrnIndex, X_ERROR, 1, format, ap);
     va_end(ap);
     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
     	"                  END OF MESSAGE\n");
-    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-    	"**************************************************\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, str);
 }
 
 /* Mandatory */
@@ -1075,20 +1074,20 @@ SiSStrToRanges(range *r, char *s)
    return rangenum;
 }
 
-/* Copy and link two modes form merged-fb mode
+/* Copy and link two modes form mergedfb mode
  * (Code base taken from mga driver)
  * Copys mode i, links the result to dest, and returns it.
  * Links i and j in Private record.
  * If dest is NULL, return value is copy of i linked to itself.
+ * For mergedfb auto-config, we only check the dimension
+ * against virtualX/Y, if they were user-provided.
  */
 static DisplayModePtr
 SiSCopyModeNLink(ScrnInfoPtr pScrn, DisplayModePtr dest,
                  DisplayModePtr i, DisplayModePtr j,
 		 SiSScrn2Rel srel)
 {
-#ifdef SISXINERAMA
     SISPtr pSiS = SISPTR(pScrn);
-#endif
     DisplayModePtr mode;
     int dx = 0,dy = 0;
 
@@ -1103,23 +1102,53 @@ SiSCopyModeNLink(ScrnInfoPtr pScrn, DisplayModePtr dest,
     switch(srel) {
     case sisLeftOf:
     case sisRightOf:
-       dx = min(pScrn->virtualX, i->HDisplay + j->HDisplay)    - mode->HDisplay;
-       dy = min(pScrn->virtualY, max(i->VDisplay,j->VDisplay)) - mode->VDisplay;
+       if(!(pScrn->display->virtualX)) {
+          dx = i->HDisplay + j->HDisplay;
+       } else {
+          dx = min(pScrn->virtualX, i->HDisplay + j->HDisplay);
+       }
+       dx -= mode->HDisplay;
+       if((!pScrn->display->virtualY)) {
+          dy = max(i->VDisplay, j->VDisplay);
+       } else {
+          dy = min(pScrn->virtualY, max(i->VDisplay, j->VDisplay));
+       }
+       dy -= mode->VDisplay;
 #ifdef SISXINERAMA
        pSiS->AtLeastOneNonClone = TRUE;
 #endif
        break;
     case sisAbove:
     case sisBelow:
-       dy = min(pScrn->virtualY, i->VDisplay + j->VDisplay)    - mode->VDisplay;
-       dx = min(pScrn->virtualX, max(i->HDisplay,j->HDisplay)) - mode->HDisplay;
+       if(!(pScrn->display->virtualY)) {
+          dy = i->VDisplay + j->VDisplay;
+       } else {
+          dy = min(pScrn->virtualY, i->VDisplay + j->VDisplay);
+       }
+       dy -= mode->VDisplay;
+       if(!(pScrn->display->virtualX)) {
+          dx = max(i->HDisplay, j->HDisplay);
+       } else {
+          dx = min(pScrn->virtualX, max(i->HDisplay, j->HDisplay));
+       }
+       dx -= mode->HDisplay;
 #ifdef SISXINERAMA
        pSiS->AtLeastOneNonClone = TRUE;
 #endif
        break;
     case sisClone:
-       dx = min(pScrn->virtualX, max(i->HDisplay,j->HDisplay)) - mode->HDisplay;
-       dy = min(pScrn->virtualY, max(i->VDisplay,j->VDisplay)) - mode->VDisplay;
+       if(!(pScrn->display->virtualX)) {
+          dx = max(i->HDisplay, j->HDisplay);
+       } else {
+          dx = min(pScrn->virtualX, max(i->HDisplay, j->HDisplay));
+       }
+       dx -= mode->HDisplay;
+       if(!(pScrn->display->virtualY)) {
+          dy = max(i->VDisplay, j->VDisplay);
+       } else {
+	  dy = min(pScrn->virtualY, max(i->VDisplay, j->VDisplay));
+       }
+       dy -= mode->VDisplay;
        break;
     }
     mode->HDisplay += dx;
@@ -1132,20 +1161,32 @@ SiSCopyModeNLink(ScrnInfoPtr pScrn, DisplayModePtr dest,
     mode->VTotal += dy;
     mode->Clock = 0;
 
+    if( ((mode->HDisplay * ((pScrn->bitsPerPixel + 7) / 8) * mode->VDisplay) > pSiS->maxxfbmem) ||
+        (mode->HDisplay > 4088) ||
+	(mode->VDisplay > 4096) ) {
+
+       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+       		"Skipped %dx%d, not enough video RAM or beyond hardware specs\n",
+		mode->HDisplay, mode->VDisplay);
+       xfree(mode->Private);
+       xfree(mode);
+
+       return dest;
+    }
+
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-    	"Merged %dx%d and %dx%d to %dx%d (Virtual %d %d)\n",
+    	"Merged %dx%d and %dx%d to %dx%d\n",
 	i->HDisplay, i->VDisplay, j->HDisplay, j->VDisplay,
-	mode->HDisplay, mode->VDisplay,
-	pScrn->virtualX, pScrn->virtualY);
+	mode->HDisplay, mode->VDisplay);
 
     mode->next = mode;
     mode->prev = mode;
 
     if(dest) {
-        mode->next = dest->next; 	/* Insert node after "dest" */
-        dest->next->prev = mode;
-        mode->prev = dest;
-        dest->next = mode;
+       mode->next = dest->next; 	/* Insert node after "dest" */
+       dest->next->prev = mode;
+       mode->prev = dest;
+       dest->next = mode;
     }
 
     return mode;
@@ -1166,11 +1207,79 @@ SiSGetModeFromName(char* str, DisplayModePtr i)
     return NULL;
 }
 
-/* Generate the merged-fb mode modelist
+static DisplayModePtr
+SiSFindWidestTallestMode(DisplayModePtr i, Bool tallest)
+{
+    DisplayModePtr c = i, d = NULL;
+    int max = 0;
+    if(!i) return NULL;
+    do {
+       if(tallest) {
+          if(c->VDisplay > max) {
+             max = c->VDisplay;
+	     d = c;
+          }
+       } else {
+          if(c->HDisplay > max) {
+             max = c->HDisplay;
+	     d = c;
+          }
+       }
+       c = c->next;
+    } while(c != i);
+    return d;
+}
+
+static DisplayModePtr
+SiSGenerateModeListFromLargestModes(ScrnInfoPtr pScrn,
+		    DisplayModePtr i, DisplayModePtr j,
+		    SiSScrn2Rel srel)
+{
+#ifdef SISXINERAMA
+    SISPtr pSiS = SISPTR(pScrn);
+#endif
+    DisplayModePtr mode1 = NULL;
+    DisplayModePtr mode2 = NULL;
+    DisplayModePtr result = NULL;
+
+#ifdef SISXINERAMA
+    pSiS->AtLeastOneNonClone = FALSE;
+#endif
+
+    switch(srel) {
+    case sisLeftOf:
+    case sisRightOf:
+       mode1 = SiSFindWidestTallestMode(i, FALSE);
+       mode2 = SiSFindWidestTallestMode(j, FALSE);
+#ifdef SISXINERAMA
+       pSiS->AtLeastOneNonClone = TRUE;
+#endif
+       break;
+    case sisAbove:
+    case sisBelow:
+       mode1 = SiSFindWidestTallestMode(i, TRUE);
+       mode2 = SiSFindWidestTallestMode(j, TRUE);
+#ifdef SISXINERAMA
+       pSiS->AtLeastOneNonClone = TRUE;
+#endif
+       break;
+    case sisClone:
+       mode1 = i;
+       mode2 = j;
+    }
+
+    if(mode1 && mode2) {
+       return(SiSCopyModeNLink(pScrn, result, mode1, mode2, srel));
+    } else {
+       return NULL;
+    }
+}
+
+/* Generate the merged-fb mode modelist from metamodes
  * (Code base taken from mga driver)
  */
 static DisplayModePtr
-SiSGenerateModeList(ScrnInfoPtr pScrn, char* str,
+SiSGenerateModeListFromMetaModes(ScrnInfoPtr pScrn, char* str,
 		    DisplayModePtr i, DisplayModePtr j,
 		    SiSScrn2Rel srel)
 {
@@ -1264,6 +1373,51 @@ SiSGenerateModeList(ScrnInfoPtr pScrn, char* str,
     } while(*(str++) != 0);
 
     return result;
+}
+
+static DisplayModePtr
+SiSGenerateModeList(ScrnInfoPtr pScrn, char* str,
+		    DisplayModePtr i, DisplayModePtr j,
+		    SiSScrn2Rel srel)
+{
+   if(str != NULL) {
+      return(SiSGenerateModeListFromMetaModes(pScrn, str, i, j, srel));
+   } else {
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+      	"No MetaModes given, linking %s modes by default\n",
+	(srel == sisClone) ? "first" : "largest");
+      return(SiSGenerateModeListFromLargestModes(pScrn, i, j, srel));
+   }
+}
+
+static void
+SiSRecalcDefaultVirtualSize(ScrnInfoPtr pScrn)
+{
+    DisplayModePtr mode, bmode;
+    int max;
+    static const char *str = "MergedFB: Default virtual %s %d\n";
+
+    if(!(pScrn->display->virtualX)) {
+       mode = bmode = pScrn->modes;
+       max = 0;
+       do {
+          if(mode->HDisplay > max) max = mode->HDisplay;
+          mode = mode->next;
+       } while(mode != bmode);
+       pScrn->virtualX = max;
+       pScrn->displayWidth = max;
+       xf86DrvMsg(pScrn->scrnIndex, X_INFO, str, "width", max);
+    }
+    if(!(pScrn->display->virtualY)) {
+       mode = bmode = pScrn->modes;
+       max = 0;
+       do {
+          if(mode->VDisplay > max) max = mode->VDisplay;
+          mode = mode->next;
+       } while(mode != bmode);
+       pScrn->virtualY = max;
+       xf86DrvMsg(pScrn->scrnIndex, X_INFO, str, "height", max);
+    }
 }
 
 /* Pseudo-Xinerama extension for MergedFB mode */
@@ -1799,7 +1953,7 @@ SiSXineramaExtensionInit(ScrnInfoPtr pScrn)
        }
 
        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-    	  "Initialized SiS Pseudo-Xinerama extension\n");
+    	  "SiS Pseudo-Xinerama extension initialized\n");
 
        pSiS->SiSXineramaVX = 0;
        pSiS->SiSXineramaVY = 0;
@@ -2256,7 +2410,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        return FALSE;
     }
 
-    /* Determine chipset and VGA engine type for new mode switching code */
+    /* Determine chipset and VGA engine type */
     pSiS->ChipFlags = 0;
     pSiS->SiS_SD_Flags = 0;
     switch(pSiS->Chipset) {
@@ -2647,7 +2801,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
          (pScrn->bitsPerPixel == 24)) ||
 	((pSiS->VGAEngine == SIS_OLD_VGA) && (pScrn->bitsPerPixel == 32)) ) {
        SISErrorLog(pScrn,
-            "Framebuffer bpp %d not supported on this chipset\n", pScrn->bitsPerPixel);
+            "Framebuffer bpp %d not supported for this chipset\n", pScrn->bitsPerPixel);
        if(pSiS->pInt) xf86FreeInt10(pSiS->pInt);
        SISFreeRec(pScrn);
        return FALSE;
@@ -2741,15 +2895,6 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     if((pSiS->DualHeadMode) && (pScrn->bitsPerPixel == 8)) {
        SISErrorLog(pScrn, "Color depth 8 not supported in Dual Head mode.\n");
        if(pSiSEnt) pSiSEnt->ErrorAfterFirst = TRUE;
-       if(pSiS->pInt) xf86FreeInt10(pSiS->pInt);
-       SISFreeRec(pScrn);
-       return FALSE;
-    }
-#endif
-#ifdef SISMERGED
-    /* Due to palette & timing problems we don't support 8bpp in MFBM */
-    if((pSiS->MergedFB) && (pScrn->bitsPerPixel == 8)) {
-       SISErrorLog(pScrn, "Color depth 8 not supported in MergedFB mode.\n");
        if(pSiS->pInt) xf86FreeInt10(pSiS->pInt);
        SISFreeRec(pScrn);
        return FALSE;
@@ -2877,6 +3022,14 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Evaluate options */
     SiSOptions(pScrn);
+
+#ifdef SISMERGED
+    /* Due to palette & timing problems we don't support 8bpp in MFBM */
+    if((pSiS->MergedFB) && (pScrn->bitsPerPixel == 8)) {
+       SISErrorLog(pScrn, "Color depth 8 not supported in MergedFB mode, %s\n", mergeddisstr);
+       pSiS->MergedFB = FALSE;
+    }
+#endif
 
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode) {
@@ -3528,7 +3681,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     } else {
        if(pSiS->ForceCRT1Type == CRT1_LCDA) {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	  	"Hardware does not support LCD-via-CRT1\n");
+	  	"Hardware/Configuration does not support LCD-via-CRT1\n");
        }
        pSiS->ForceCRT1Type = CRT1_VGA;
     }
@@ -3864,7 +4017,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 #ifdef SISMERGED
 	     if(pSiS->MergedFB) {
 	     	SISErrorLog(pScrn,
-		    "No CRT2 output selected or no bridge detected. %s.", mergeddisstr);
+		    "No CRT2 output selected or no bridge detected. %s.\n", mergeddisstr);
 		if(pSiS->CRT2pScrn) xfree(pSiS->CRT2pScrn);
 		pSiS->CRT2pScrn = NULL;
 		pSiS->MergedFB = FALSE;
@@ -4197,6 +4350,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, ddcestr, 2);
 	     xf86SetDDCproperties(pSiS->CRT2pScrn, pMonitor);
 	     pSiS->CRT2pScrn->monitor->DDC = pMonitor;
+	     /* use DDC data if no ranges in config file */
+	     if(!pSiS->CRT2HSync) {
+	        pSiS->CRT2pScrn->monitor->nHsync = 0;
+	     }
+	     if(!pSiS->CRT2VRefresh) {
+	        pSiS->CRT2pScrn->monitor->nVrefresh = 0;
+	     }
           } else {
 	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 	     	"Failed to read DDC data for CRT2\n");
@@ -4665,8 +4825,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
                       pSiS->CRT2pScrn->display->modes, clockRanges,
                       NULL, 256, 4088,
                       pSiS->CRT2pScrn->bitsPerPixel * 8, 128, 4096,
-                      pScrn->virtualX, /* pSiS->CRT2pScrn->display->virtualX, */
-                      pScrn->virtualY, /* pSiS->CRT2pScrn->display->virtualY, */
+                      pScrn->display->virtualX ? pScrn->virtualX : 0,
+                      pScrn->display->virtualY ? pScrn->virtualY : 0,
                       pSiS->maxxfbmem,
                       LOOKUP_BEST_REFRESH);
        pSiS->CheckForCRT2 = FALSE;
@@ -4738,16 +4898,24 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	  pSiS->CRT1Modes = NULL;
 	  pSiS->MergedFB = FALSE;
 
-       } else {
-
-          pScrn->modes = pScrn->modes->next;
-          pScrn->currentMode = pScrn->modes;
-
-	  /* Update CurrentLayout */
-    	  pSiS->CurrentLayout.mode = pScrn->currentMode;
-    	  pSiS->CurrentLayout.displayWidth = pScrn->displayWidth;
-
        }
+
+    }
+
+    if(pSiS->MergedFB) {
+
+       /* If no virtual dimension was given by the user,
+        * calculate a sane one now. Adapts pScrn->virtualX,
+	* pScrn->virtualY and pScrn->displayWidth.
+	*/
+       SiSRecalcDefaultVirtualSize(pScrn);
+
+       pScrn->modes = pScrn->modes->next;  /* We get the last from GenerateModeList() */
+       pScrn->currentMode = pScrn->modes;
+
+       /* Update CurrentLayout */
+       pSiS->CurrentLayout.mode = pScrn->currentMode;
+       pSiS->CurrentLayout.displayWidth = pScrn->displayWidth;
 
     }
 #endif
@@ -10983,14 +11151,14 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
 
         switch(mode->HDisplay)
 	{
-	case 320:  /* TEST */
+	case 320:
      	  	if(mode->VDisplay == 200) {
 	  		ModeIndex = ModeIndex_320x200[i];
 	  	} else if(mode->VDisplay == 240) {
 	  		ModeIndex = ModeIndex_320x240[i];
           	}
           	break;
-        case 400:  /* TEST */
+        case 400:
           	if(mode->VDisplay == 300) {
              		ModeIndex = ModeIndex_400x300[i];
 	  	}

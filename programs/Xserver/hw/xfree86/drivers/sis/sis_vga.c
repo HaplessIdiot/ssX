@@ -240,7 +240,7 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
        pReg->sisRegs3C4[0x06] &= 0x01;
     }
 
-       /* set interlace */
+    /* set interlace */
     if(!(mode->Flags & V_INTERLACE))  {
        offset = pSiS->CurrentLayout.displayWidth >> 3;
     } else  {
