@@ -1,4 +1,6 @@
 XFree86 4.2.99.1 (XX March 2002)
+ 102. Convert xmh to ANSI C (Thomas Dickey).
+ 101. Xterm patch #166 (Thomas Dickey).
  100. Fix keyboard beeps on Cygwin/XFree86 (#5211, Harold Hunt).
   99. Fixed i810 crash on vt switch due to call to Sync() while switched away 
       (Andris Pavenis).
@@ -14744,4 +14746,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2193 2002/04/02 01:35:26 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2195 2002/04/04 14:05:38 eich Exp $
