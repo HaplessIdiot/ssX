@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmSiS.c,v 1.8 2001/08/01 00:44:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmSiS.c,v 1.9 2001/08/27 17:40:59 dawes Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
@@ -43,6 +43,7 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #include <sys/sysmacros.h>	/* for makedev() */
 #endif
 #include "xf86drm.h"
+#include "xf86drmSiS.h"
 #define CONFIG_DRM_SIS
 #include "drm.h"
 #undef CONFIG_DRM_SIS
