@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.102 2000/12/07 15:43:40 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.103 2000/12/07 20:26:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1329,17 +1329,17 @@ xf86EnableInputHandler(pointer handler)
 Bool
 xf86EnableVTSwitch(Bool new)
 {
-    static Bool default = TRUE;
+    static Bool def = TRUE;
     Bool old;
 
     old = VTSwitchEnabled;
     if (!new) {
 	/* Disable VT switching */
-	default = VTSwitchEnabled;
+	def = VTSwitchEnabled;
 	VTSwitchEnabled = FALSE;
     } else {
 	/* Restore VT switching to default */
-	VTSwitchEnabled = default;
+	VTSwitchEnabled = def;
     }
     return old;
 }
