@@ -1,4 +1,5 @@
 XFree86 4.0.1e (3 November 2000)
+ 868. Add missing exported libXext Shm functions to loader (Alan Hourihane).
  867. Change Rage 128 DRM driver name to what the r128 kernel module
       expects (Kevin Martin).
  866. Fix newly merged "ati" driver probe to allow "r128" and "radeon"
@@ -11430,4 +11431,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1376 2000/11/03 00:54:04 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1377 2000/11/03 01:15:45 martin Exp $
