@@ -13,7 +13,7 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.29 2003/11/22 04:51:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.30 2003/12/30 16:35:19 herrb Exp $ */
 
 #ifdef WIN32
 /* avoid conflicting definitions */
@@ -758,14 +758,6 @@ XdmcpSelectHost(
     int			host_len,
     ARRAY8Ptr		AuthenticationName)
 {
-#if defined(IPv6) && defined(AF_INET6)
-    /* Don't need list of addresses for host anymore */
-    if (mgrAddrFirst != NULL) {
-	freeaddrinfo(mgrAddrFirst);
-	mgrAddrFirst = NULL;
-	mgrAddr = NULL;
-    }
-#endif
     state = XDM_START_CONNECTION;
     memmove(&req_sockaddr, host_sockaddr, host_len);
     req_socklen = host_len;
