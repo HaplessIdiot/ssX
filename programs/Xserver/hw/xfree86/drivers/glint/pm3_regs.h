@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_regs.h,v 1.4 2001/01/31 16:15:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_regs.h,v 1.5 2001/02/24 14:29:18 alanh Exp $ */
 
 /*
  * glint register file 
@@ -189,6 +189,7 @@
 	#define PM3VideoOverlayMode_COLORORDER_RGB		(1<<12)
 	#define PM3VideoOverlayMode_LINEARCOLOREXT_OFF		(0<<13)
 	#define PM3VideoOverlayMode_LINEARCOLOREXT_ON		(1<<13)
+	#define PM3VideoOverlayMode_FILTER_MASK			(3<<14)
 	#define PM3VideoOverlayMode_FILTER_OFF			(0<<14)
 	#define PM3VideoOverlayMode_FILTER_FULL			(1<<14)
 	#define PM3VideoOverlayMode_FILTER_PARTIAL		(2<<14)
@@ -199,12 +200,14 @@
 	#define PM3VideoOverlayMode_FLIP_VIDEO			(0<<20)
 	#define PM3VideoOverlayMode_FLIP_VIDEOSTREAMA		(1<<20)
 	#define PM3VideoOverlayMode_FLIP_VIDEOSTREAMB		(2<<20)
+	#define PM3VideoOverlayMode_MIRROR_MASK			(3<<23)
 	#define PM3VideoOverlayMode_MIRRORX_OFF			(0<<23)
 	#define PM3VideoOverlayMode_MIRRORX_ON			(1<<23)
 	#define PM3VideoOverlayMode_MIRRORY_OFF			(0<<24)
 	#define PM3VideoOverlayMode_MIRRORY_ON			(1<<24)
 #define PM3VideoOverlayFifoControl				0x3110
 #define PM3VideoOverlayIndex					0x3118
+#define PM3VideoOverlayBase					0x3120
 #define PM3VideoOverlayBase0					0x3120
 #define PM3VideoOverlayBase1					0x3128
 #define PM3VideoOverlayBase2					0x3130
@@ -372,6 +375,7 @@
 #define PM3RD_VideoOverlayControl				0x020
 	#define PM3RD_VideoOverlayControl_DISABLE		(0<<0)
 	#define PM3RD_VideoOverlayControl_ENABLE		(1<<0)
+	#define PM3RD_VideoOverlayControl_MODE_MASK		(3<<1)
 	#define PM3RD_VideoOverlayControl_MODE_MAINKEY		(0<<1)
 	#define PM3RD_VideoOverlayControl_MODE_OVERLAYKEY	(1<<1)
 	#define PM3RD_VideoOverlayControl_MODE_ALWAYS		(2<<1)

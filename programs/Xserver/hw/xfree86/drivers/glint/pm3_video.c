@@ -23,7 +23,7 @@
  *  Based on work of Michael H. Schimek <m.schimek@netway.at>
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_video.c,v 1.1 2001/02/24 14:29:19 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_video.c,v 1.2 2001/04/10 20:33:31 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -38,6 +38,8 @@
 #include "glint_regs.h"
 #include "pm3_regs.h"
 #include "glint.h"
+
+#define DEBUG(x)
 
 #ifndef XvExtension
 
@@ -58,98 +60,96 @@ void Permedia3VideoLeaveVT(ScrnInfoPtr pScrn) {}
 #define CLAMP(v, min, max) (((v) < (min)) ? (min) : MIN(v, max))
 #define ENTRIES(array) (sizeof(array) / sizeof((array)[0]))
 
-#define ADAPTORS 1
-#define PORTS 1
-
 #define MAX_BUFFERS 3
 
-typedef struct {
-    CARD32			xy, wh;				/* 16.0 16.0 */
-    INT32			s, t;				/* 12.20 fp */
-    short			y1, y2;
-} CookieRec, *CookiePtr;
+enum {
+    OVERLAY_DATA_NONE,
+    OVERLAY_DATA_COLORKEY,
+    OVERLAY_DATA_ALPHAKEY,
+    OVERLAY_DATA_ALPHABLEND
+} ;
 
 typedef struct _PortPrivRec {
     struct _AdaptorPrivRec *    pAdaptor;
 
-    INT32			Attribute[8];			/* Brig, Con, Sat, Hue, Int, Filt, BkgCol, Alpha */
+    /* Attributes */
+    char			OverlayData;
+    INT32			OverlayMode;
+    INT32			OverlayControl;
+    INT32			Attribute[3];
 
-    int				BuffersRequested;
-    int				BuffersAllocated;
-    FBAreaPtr			pFBArea[MAX_BUFFERS];
-    CARD32			BufferBase[MAX_BUFFERS];	/* FB byte offset */
-    int				CurrentBuffer;
+    /* Buffers */
+    int				Id, Bpp;
+    int				Format, Bpp_shift;
+    short			display, copy;
+    FBLinearPtr			Buffer[MAX_BUFFERS];
     CARD32			BufferStride;			/* bytes */
+    int				OverlayStride;			/* pixels */
 
+    /* Buffer and Drawable size and position */
     INT32			vx, vy, vw, vh;			/* 12.10 fp */
     int				dx, dy, dw, dh;
-    int				fw, fh;
 
-    int				Id, Bpp;			/* Scaler */
-
-    int                         Plug;
-    int				BkgCol;				/* RGB 5:6:5; 5:6:5 */
-    int				StopDelay;
-    
+    /* Timer stuff */
+    OsTimerPtr			Timer;
+    Bool			TimerInUse;
+    int				Delay, Instant, StopDelay;
 
 } PortPrivRec, *PortPrivPtr;
-
-enum { VIDEO_OFF, VIDEO_ONE_SHOT, VIDEO_ON };
-
-typedef struct _LFBAreaRec {
-    struct _LFBAreaRec *	Next;
-    int				Linear;
-    FBAreaPtr			pFBArea;
-} LFBAreaRec, *LFBAreaPtr;
 
 typedef struct _AdaptorPrivRec {
     struct _AdaptorPrivRec *	Next;
     ScrnInfoPtr			pScrn;
-
-    OsTimerPtr			Timer;
-    int				TimerUsers;
-    int				Delay, Instant;
-
-    int				FramesPerSec;
-    int				FrameLines;
-    int				IntLine;			/* Frame, not field */
-    int				LinePer;			/* nsec */
-
-    int                         VideoStd;
-
-    PortPrivRec                 Port[PORTS];
-
+    PortPrivPtr                 pPort;
 } AdaptorPrivRec, *AdaptorPrivPtr;
 
-static AdaptorPrivPtr AdaptorPrivList = NULL;
+static AdaptorPrivPtr AdaptorPriv;
 
-#define PORTNUM(p) ((int)((p) - &pAPriv->Port[0]))
-
-#define DEBUG(x)	x
-
-static const Bool ColorBars = FALSE;
 
 /*
- *  Attributes
+ *  Proprietary Attributes
  */
  
-#define XV_ENCODING	"XV_ENCODING"
-#define XV_BRIGHTNESS	"XV_BRIGHTNESS"
-#define XV_CONTRAST 	"XV_CONTRAST"
-#define XV_SATURATION	"XV_SATURATION"
-#define XV_HUE		"XV_HUE"
+#define XV_FILTER		"XV_FILTER"
+/* We support 3 sorts of filters :
+ * 0 : None.
+ * 1 : Partial (only in the X directrion).
+ * 2 : Full.
+ */
 
-/* Proprietary */
+#define XV_MIRROR		"XV_MIRROR"	
+/* We also support mirroring of the image :
+ * bit 0 : if set, will mirror in the X direction.
+ * bit 1 : if set, will mirror in the Y direction.
+ */
 
-#define XV_INTERLACE	"XV_INTERLACE"	/* Interlaced (bool) */
-#define XV_FILTER	"XV_FILTER"	/* Bilinear filter (bool) */
-#define XV_BKGCOLOR	"XV_BKGCOLOR"	/* Output background (0x00RRGGBB) */
-#define XV_ALPHA	"XV_ALPHA"	/* Scaler alpha channel (bool) */
+#define XV_OVERLAY_MODE		"XV_OVERLAY_MODE"
+/* We support these different overlay modes (bit 0-2) :
+ * 0 : Opaque video overlay (default).
+ * 1 : Color keyed overlay, framebuffer color key.
+ *     Data : bit 3-27 : color key in RGB 888 format.
+ * 2 : Color keyed overlay, framebuffer alpha key.
+ *     Data : bit 3-11 : 8 bit alpha key.
+ * 3 : Color keyed overlay, overlay color key.
+ *     Data : bit 3-27 : color key in RGB 888 format.
+ * 4 : Per pixel alpha blending.
+ * 5 : Constant alpha blending.
+ *     Data : bit 3-11 : 8 bit alpha blend factor.
+ * 6-7 : Reserved.
+ */
+
+
+static XF86AttributeRec
+ScalerAttributes[] =
+{
+    { XvSettable | XvGettable, 0, 2, XV_FILTER },
+    { XvSettable | XvGettable, 0, 3, XV_MIRROR },
+    { XvSettable | XvGettable, 0, (2<<27)-1, XV_OVERLAY_MODE },
+};
 
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
-static Atom xvEncoding, xvBrightness, xvContrast, xvSaturation, xvHue;
-static Atom xvInterlace, xvFilter, xvBkgColor, xvAlpha;
+static Atom xvFilter, xvMirror, xvOverlayMode;
 
 
 /* Scaler */
@@ -158,13 +158,6 @@ static XF86VideoEncodingRec
 ScalerEncodings[] =
 {
     { 0, "XV_IMAGE", 2047, 2047, { 1, 1 }},
-};
-
-static XF86AttributeRec
-ScalerAttributes[] =
-{
-    { XvSettable | XvGettable, 0, 1, XV_FILTER },
-    { XvSettable | XvGettable, 0, 1, XV_ALPHA },
 };
 
 static XF86VideoFormatRec
@@ -263,172 +256,113 @@ ScalerImages[] =
       8, XvPacked, 1, 8, 0xC0, 0x38, 0x07,
       0, 0, 0,  0, 0, 0,  0, 0, 0, "BGR", XvTopToBottom },
 };
-
 /*
  *  Buffer management
  */
 
 static void
-RemoveAreaCallback(FBAreaPtr pFBArea)
+RemoveAreaCallback(FBLinearPtr Buffer)
 {
-    PortPrivPtr pPPriv = (PortPrivPtr) pFBArea->devPrivate.ptr;
-    AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
-    DEBUG(ScrnInfoPtr pScrn = pAPriv->pScrn;)
-    int i;
+    PortPrivPtr pPPriv = (PortPrivPtr) Buffer->devPrivate.ptr;
+    int i = -1;
 
-    /* Well, for each buffer, just do nothing ? */
-    for (i = 0; i < MAX_BUFFERS && pPPriv->pFBArea[i] != pFBArea; i++);
-
-    if (i >= MAX_BUFFERS)
-	return;
-
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
-	"RemoveAreaCallback port #%d, buffer #%d, pFB=%p, off=0x%08x\n",
-	PORTNUM(pPPriv), i, pPPriv->pFBArea[i], pPPriv->BufferBase[i]));
-
-    for (; i < MAX_BUFFERS - 1; i++)
-	pPPriv->pFBArea[i] = pPPriv->pFBArea[i + 1];
-
-    pPPriv->pFBArea[MAX_BUFFERS - 1] = NULL;
-
-    pPPriv->BuffersAllocated--;
+    /* Find the buffer that is being removed */
+    for (i = 0; i < MAX_BUFFERS && pPPriv->Buffer[i] != Buffer; i++);
+    if (i >= MAX_BUFFERS) return;
+	
+    if (i == pPPriv->display) pPPriv->display = -1;
+    if (i == pPPriv->copy) pPPriv->copy = -1;
+    pPPriv->Buffer[i] = NULL;
 }
 
 static void
-RemoveableBuffers(PortPrivPtr pPPriv, Bool remove)
+FreeBuffers(PortPrivPtr pPPriv, Bool from_timer)
 {
-    int i;
+    int i = -1;
 
-    for (i = 0; i < MAX_BUFFERS; i++)
-	if (pPPriv->pFBArea[i])
-	    pPPriv->pFBArea[i]->RemoveAreaCallback =
-		remove ? RemoveAreaCallback : NULL;
-}
-
-static void
-FreeBuffers(PortPrivPtr pPPriv)
-{
-    DEBUG(AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;)
-    DEBUG(ScrnInfoPtr pScrn = pAPriv->pScrn;)
-    int i;
-
-    RemoveableBuffers(pPPriv, FALSE);
-
-    for (i = MAX_BUFFERS - 1; i >= 0; i--)
-	if (pPPriv->pFBArea[i]) {
-	    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-		"FreeBuffers port #%d, buffer #%d, pFB=%p, off=0x%08x\n",
-		PORTNUM(pPPriv), i, pPPriv->pFBArea[i], pPPriv->BufferBase[i]));
-
-	    xf86FreeOffscreenArea(pPPriv->pFBArea[i]);
-
-	    pPPriv->pFBArea[i] = NULL;
+    if (!from_timer) {
+	if (pPPriv->TimerInUse) {
+	    pPPriv->TimerInUse = FALSE;
+	    TimerCancel(pPPriv->Timer);
 	}
-
-    pPPriv->BuffersAllocated = 0;
-}
-
-enum { FORCE_LINEAR = 1, FORCE_RECT };
-
-static int
-AllocateBuffers(PortPrivPtr pPPriv,
-    int w, int h, int bytespp,
-    int num, int force)
-{
-    AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
-    ScrnInfoPtr pScrn = pAPriv->pScrn;
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-    Bool linear = (force != FORCE_RECT);
-    int i;
-    if (!linear) {
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	    "Sorry, only linear buffers allowed right now ...\n");
-	return 0;
-    }
-    FreeBuffers(pPPriv);
-
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-	"SVEN : Tryig ot allocate (%d) %s buffer with : %dx%d, bpp = %d.\n",
-	num, (force==FORCE_RECT)?"rectangular":"linear", w, h, bytespp));
-    for (i = 0; i < num; i++) {
-	if (linear) {
-	    pPPriv->BufferStride = w * bytespp;
-
-	    /* Well, we need to set alignement correctly ... */
-#if 0
-	    pPPriv->pFBArea[i] = xf86AllocateLinearOffscreenArea(pScrn->pScreen,
-    		(pPPriv->BufferStride * h
-		 + (1 << pGlint->BppShift) -1) >> pGlint->BppShift,
-		16 >> pGlint->BppShift, NULL, NULL, (pointer) pPPriv);
-#endif
-	    pPPriv->pFBArea[i] = xf86AllocateLinearOffscreenArea(pScrn->pScreen,
-    		pPPriv->BufferStride * h, 0, NULL, NULL, (pointer) pPPriv);
-	    /* Well, not that we have allocated a buffer, let's see
-	     * to what it correspond in the cards memory space ... */
-	    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-		"SVEN : Let's see what kind of buffer got allocated ...\n"
-		"\t BOX : x1 = %d, y1 = %d, x2 = %d, y2 = %d.\n"
-		"\t pScrn->virtualX = %d, pGlint->BppShift = %d.\n",
-		pPPriv->pFBArea[i]->box.x1, pPPriv->pFBArea[i]->box.y1,
-		pPPriv->pFBArea[i]->box.x2, pPPriv->pFBArea[i]->box.y2,
-		pScrn->virtualX, pGlint->BppShift));
-		
-	    if (pPPriv->pFBArea[i])
-		pPPriv->BufferBase[i] =
-		    ((pPPriv->pFBArea[i]->box.y1 * pScrn->virtualX) +
-		     pPPriv->pFBArea[i]->box.x1) << pGlint->BppShift;
-	    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-		"New linear buffer %dx%d, rec %dx%d -> pFB=%p, off=0x%08x\n"
-		"\tNotice : Framebuffer is at : 0x%08x, 0x%08x.\n",
-		w, h, pPPriv->BufferStride, h, pPPriv->pFBArea[i],
-		pPPriv->BufferBase[i], pGlint->FbAddress, pGlint->FbBase));
-	} else {
-#if 0
-	    /* SVEN : well for now, all buffers are linear, so we don't need
-	     * to worry. */
-	    pPPriv->BufferStride = pScrn->displayWidth << BPPSHIFT(pGlint);
-	    pPPriv->pFBArea[i] = xf86AllocateOffscreenArea(pScrn->pScreen,
-    		w, h, 8 >> BPPSHIFT(pGlint), NULL, NULL, (pointer) pPPriv);
-	    if (pPPriv->pFBArea[i])
-		pPPriv->BufferBase[i] =
-		    ((pPPriv->pFBArea[i]->box.y1 * pScrn->displayWidth) +
-		    pPPriv->pFBArea[i]->box.x1) << BPPSHIFT(pGlint);
-	    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
-		"New rect buffer %dx%d, stride %d, pFB=%p, off=0x%08x\n",
-		w, h, pPPriv->BufferStride,  pPPriv->pFBArea[i],
-		pPPriv->BufferBase[i]));
-#endif
-	}
-	if (pPPriv->pFBArea[i])
-	    continue;
     }
 
-    return pPPriv->BuffersAllocated = i;
-    return pPPriv->CurrentBuffer = 0;
+    for (i=0; i < MAX_BUFFERS; i++)
+	if (pPPriv->Buffer[i]) {
+	    xf86FreeOffscreenLinear (pPPriv->Buffer[i]);
+	    pPPriv->Buffer[i] = NULL;
+	}
 }
-
-/* os/WaitFor.c */
 
 static CARD32
 TimerCallback(OsTimerPtr pTim, CARD32 now, pointer p)
 {
-    AdaptorPrivPtr pAPriv = (AdaptorPrivPtr) p;
-    int i;
+    PortPrivPtr pPPriv = (PortPrivPtr) p;
 
-    for (i = 0; i <= PORTS; i++) {
-	if (pAPriv->Port[i].StopDelay >= 0) {
-	    if (!(pAPriv->Port[i].StopDelay--)) {
-		FreeBuffers(&pAPriv->Port[i]);
-		pAPriv->TimerUsers &= ~(1 << i);
-	    }
+    if (pPPriv->StopDelay >= 0) {
+	if (!(pPPriv->StopDelay--)) {
+	    FreeBuffers(pPPriv, TRUE);
+	    pPPriv->TimerInUse = FALSE;
 	}
     }
 
-    if (pAPriv->TimerUsers)
-	return pAPriv->Instant;
+    if (pPPriv->TimerInUse)
+	return pPPriv->Instant;
 
     return 0; /* Cancel */
 }
+
+static int
+AllocateBuffers(PortPrivPtr pPPriv,
+    int w_bpp, int h)
+{
+    AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
+    ScrnInfoPtr pScrn = pAPriv->pScrn;
+    int i = -1;
+
+    /* we start a timer to free the buffers if they are nto used within
+     * 5 seconds (pPPriv->Delay * pPPriv->Instant) */
+    pPPriv->StopDelay = pPPriv->Delay;
+    if (!pPPriv->TimerInUse) {
+	pPPriv->TimerInUse = TRUE;
+	TimerSet(pPPriv->Timer, 0, 80, TimerCallback, pAPriv);
+    }
+
+    for (i=0; i < MAX_BUFFERS && (i == pPPriv->display || i == pPPriv->copy); i++);
+
+    if (pPPriv->Buffer[i]) {
+	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
+	    "Buffer %d exists.\n", i));
+	if (pPPriv->Buffer[i]->size == w_bpp * h) {
+	    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
+		"Buffer %d is of the good size, let's use it.\n", i));
+	    return (pPPriv->copy = i);
+	}
+	else if (xf86ResizeOffscreenLinear (pPPriv->Buffer[i], w_bpp * h)) {
+		DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
+		    "I was able to resize buffer %d, let's use it.\n", i));
+	    	return (pPPriv->copy = i);
+	    }
+	    else {
+		DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
+		    "I was not able to resize buffer %d.\n", i));
+		xf86FreeOffscreenLinear (pPPriv->Buffer[i]);
+		pPPriv->Buffer[i] = NULL;
+	    }
+    }
+    if ((pPPriv->Buffer[i] = xf86AllocateOffscreenLinear (pScrn->pScreen,
+	w_bpp * h, 0, NULL, NULL, (pointer) pPPriv))) {
+	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
+	    "Sucessfully allocated buffer %d, let's use it.\n", i));
+	return (pPPriv->copy = i);
+    }
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
+	"Unable to allocate a buffer.\n"));
+    return -1;
+}
+
+#define GET_OFFSET(pScrn, offset)		\
+    (offset + (pScrn->virtualY*pScrn->displayWidth*pScrn->bitsPerPixel/8))
 
 /*
  *  Xv interface
@@ -553,29 +487,74 @@ compute_scale_factor(
     }
 }
 
-/* BeginOverlay ...
- * This is still not workign correctly, in particular if we are 
- * using shrinking, since what we have to check is not a multiple of 4
- * width is the shrinked width, not the original width.
- */
+/* Some thougth about clipping :
+ *
+ * To support clipping, we will need to :
+ *   - We need to convert the clipregion to a bounding box
+ *     and a bitmap that is the mask associated with the clipregion.
+ *   - Load this bitmap to offscreen memory.
+ *   - Copy/expand this bitmap to the needed area, masking only the alpha
+ *     channel of the framebuffer.
+ *   - Use either the alpha blended or framebuffer alpha keyed overlay mode to
+ *     mask the clipped away region.
+ *   - If the clip region gets changed, we have to upload a new clip mask,
+ *     clear the old alpha mask in the framebuffer and copy the new clip mask
+ *     to the framebuffer again.
+ *   - If the position of the region get's changed (but not the clip mask) we
+ *     need to clear the old frambuffer clip mask in the alpha channel and
+ *     upload the new one.
+ *
+ * All this will only work if :
+ *
+ *  1) we are using an framebuffer format with an alpha channel, that is
+ *     RGBA 8888 (depth 24) and RGBA 5551 (depth 15).
+ *  2) nobody else uses the alpha channel.
+ *
+ */ 
+
 static void
-BeginOverlay(PortPrivPtr pPPriv, CARD32* BufferBase, int num,
-    int format, int bpp_shift, int alpha)
+BeginOverlay(PortPrivPtr pPPriv, int display, int bpp_shift, BoxPtr extent)
 {
     AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
     ScrnInfoPtr pScrn = pAPriv->pScrn;
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    unsigned int src_w = pPPriv->vw;
-    unsigned int dst_w = pPPriv->dw;
+    unsigned int src_x = pPPriv->vx, dst_x = pPPriv->dx;
+    unsigned int src_y = pPPriv->vy, dst_y = pPPriv->dy;
+    unsigned int src_w = pPPriv->vw, dst_w = pPPriv->dw;
+    unsigned int src_h = pPPriv->vh, dst_h = pPPriv->dh;
     unsigned int shrink_delta, zoom_delta;
+
+    /* Let's overlay only to visible parts of the screen
+     * Note : this has no place here, and will not work if
+     * clipping is not supported, since Xv will not show this. */
+    if (pPPriv->dx < pScrn->frameX0) {
+	dst_w = dst_w - pScrn->frameX0 + dst_x;
+	dst_x = 0;
+	src_w = dst_w * pPPriv->vw / pPPriv->dw;
+	src_x = src_x + pPPriv->vw - src_w;
+    } else if (pScrn->frameX0 > 0) dst_x = dst_x - pScrn->frameX0;
+    if (pPPriv->dy < pScrn->frameY0) {
+	dst_h = dst_h - pScrn->frameY0 + pPPriv->dy; 
+	dst_y = 0;
+	src_h = dst_h * pPPriv->vh / pPPriv->dh;
+	src_y = src_y + pPPriv->vh - src_h;
+    } else if (pScrn->frameY0 > 0) dst_y = dst_y - pScrn->frameY0;
+    if (dst_x + dst_w > (pScrn->frameX1 - pScrn->frameX0)) {
+	unsigned int old_w = dst_w;
+	dst_w = pScrn->frameX1 - pScrn->frameX0 - dst_x;
+	src_w = dst_w * src_w / old_w;
+    }
+    if (dst_y + dst_h > (pScrn->frameY1 - pScrn->frameY0)) {
+	unsigned int old_h = dst_h;
+	dst_h = pScrn->frameY1 - pScrn->frameY0 - dst_y;
+	src_h = dst_h * src_h / old_h;
+    }
 
     /* Let's adjust the width of source and dest to be compliant with 
      * the Permedia3 overlay unit requirement, and compute the X deltas. */
     compute_scale_factor(&src_w, &dst_w, &shrink_delta, &zoom_delta);
 
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-	"BeginOverlay %08x %08x %d %d\n",
-	BufferBase[0], format, bpp_shift, alpha));
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3, "BeginOverlay\n"));
     if (src_w != pPPriv->vw)
 	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
 	    "BeginOverlay : Padding video width to 4 pixels %d->%d.\n",
@@ -585,51 +564,42 @@ BeginOverlay(PortPrivPtr pPPriv, CARD32* BufferBase, int num,
 	    "BeginOverlay : Scaling destination width from %d to %d.\n"
 	    "\tThe scaling factor is to high, and may cause problems.",
 	    pPPriv->dw, dst_w));
-    if (alpha)
-	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 0,
-	    "BeginOverlay Sorry, Alpha is not yet supported, disabling it.\n"));
 
+    if (display != -1) pPPriv->display = display;
     GLINT_WAIT(12);
     GLINT_WRITE_REG(3|(12<<16), PM3VideoOverlayFifoControl);
     /* Updating the Video Overlay Source Image Parameters */
-    switch (num) {
-	case 0:
-	    GLINT_WRITE_REG((BufferBase[0]>>bpp_shift), PM3VideoOverlayBase0);
-	    break;
-	case 1:
-	    GLINT_WRITE_REG((BufferBase[1]>>bpp_shift), PM3VideoOverlayBase1);
-	    break;
-	case 2:
-	    GLINT_WRITE_REG((BufferBase[2]>>bpp_shift), PM3VideoOverlayBase2);
-	    break;
-    }
-    GLINT_WRITE_REG(num, PM3VideoOverlayIndex);
-    GLINT_WRITE_REG(format |
+    GLINT_WRITE_REG(
+	GET_OFFSET(pScrn, pPPriv->Buffer[pPPriv->display]->offset)>>bpp_shift,
+	PM3VideoOverlayBase+(pPPriv->display*8));
+    GLINT_WRITE_REG(pPPriv->display, PM3VideoOverlayIndex);
+    GLINT_WRITE_REG(pPPriv->Format |
 	PM3VideoOverlayMode_BUFFERSYNC_MANUAL |
 	PM3VideoOverlayMode_FLIP_VIDEO |
-	PM3VideoOverlayMode_FILTER_FULL |
+	/* Filtering & Mirroring Attributes */
+	pPPriv->OverlayMode |
 	PM3VideoOverlayMode_ENABLE,
 	PM3VideoOverlayMode);
     /* Let's set the source stride. */
-    GLINT_WRITE_REG(PM3VideoOverlayStride_STRIDE(pPPriv->fw),
+    GLINT_WRITE_REG(PM3VideoOverlayStride_STRIDE(pPPriv->OverlayStride),
 	PM3VideoOverlayStride);
     /* Let's set the position and size of the visible part of the source. */
     GLINT_WRITE_REG(PM3VideoOverlayWidth_WIDTH(src_w),
 	PM3VideoOverlayWidth);
-    GLINT_WRITE_REG(PM3VideoOverlayHeight_HEIGHT(pPPriv->vh),
+    GLINT_WRITE_REG(PM3VideoOverlayHeight_HEIGHT(src_h),
 	PM3VideoOverlayHeight);
     GLINT_WRITE_REG(
-	PM3VideoOverlayOrigin_XORIGIN(pPPriv->vx) |
-	PM3VideoOverlayOrigin_YORIGIN(pPPriv->vy),
+	PM3VideoOverlayOrigin_XORIGIN(src_x) |
+	PM3VideoOverlayOrigin_YORIGIN(src_y),
 	PM3VideoOverlayOrigin);
     /* Scale the source to the destinationsize */
-    if (pPPriv->vh == pPPriv->dh) {
+    if (src_h == dst_h) {
 	GLINT_WRITE_REG(
 	    PM3VideoOverlayYDelta_NONE,
 	    PM3VideoOverlayYDelta);
     } else {
 	GLINT_WRITE_REG(
-	    PM3VideoOverlayYDelta_DELTA(pPPriv->vh,pPPriv->dh),
+	    PM3VideoOverlayYDelta_DELTA(src_h,dst_h),
 	    PM3VideoOverlayYDelta);
     }
     GLINT_WRITE_REG(shrink_delta, PM3VideoOverlayShrinkXDelta);
@@ -639,27 +609,47 @@ BeginOverlay(PortPrivPtr pPPriv, CARD32* BufferBase, int num,
 	PM3VideoOverlayUpdate);
     /* Setting the ramdac video overlay rgion */
     /* Begining of overlay region */
-    RAMDAC_WRITE((pPPriv->dx&0xff), PM3RD_VideoOverlayXStartLow);
-    RAMDAC_WRITE((pPPriv->dx&0xf00)>>8, PM3RD_VideoOverlayXStartHigh);
-    RAMDAC_WRITE((pPPriv->dy&0xff), PM3RD_VideoOverlayYStartLow); 
-    RAMDAC_WRITE((pPPriv->dy&0xf00)>>8, PM3RD_VideoOverlayYStartHigh);
+    RAMDAC_WRITE((dst_x&0xff), PM3RD_VideoOverlayXStartLow);
+    RAMDAC_WRITE((dst_x&0xf00)>>8, PM3RD_VideoOverlayXStartHigh);
+    RAMDAC_WRITE((dst_y&0xff), PM3RD_VideoOverlayYStartLow); 
+    RAMDAC_WRITE((dst_y&0xf00)>>8, PM3RD_VideoOverlayYStartHigh);
     /* End of overlay regions (+1) */
-    RAMDAC_WRITE(((pPPriv->dx+dst_w)&0xff), PM3RD_VideoOverlayXEndLow);
-    RAMDAC_WRITE(((pPPriv->dx+dst_w)&0xf00)>>8,PM3RD_VideoOverlayXEndHigh);
-    RAMDAC_WRITE(((pPPriv->dy+pPPriv->dh)&0xff), PM3RD_VideoOverlayYEndLow); 
-    RAMDAC_WRITE(((pPPriv->dy+pPPriv->dh)&0xf00)>>8,PM3RD_VideoOverlayYEndHigh);
+    RAMDAC_WRITE(((dst_x+dst_w)&0xff), PM3RD_VideoOverlayXEndLow);
+    RAMDAC_WRITE(((dst_x+dst_w)&0xf00)>>8,PM3RD_VideoOverlayXEndHigh);
+    RAMDAC_WRITE(((dst_y+dst_h)&0xff), PM3RD_VideoOverlayYEndLow); 
+    RAMDAC_WRITE(((dst_y+dst_h)&0xf00)>>8,PM3RD_VideoOverlayYEndHigh);
     
+    switch (pPPriv->OverlayData) {
+	case OVERLAY_DATA_COLORKEY :
+	    RAMDAC_WRITE(((pPPriv->OverlayControl>>8)&0xff),
+		PM3RD_VideoOverlayKeyR);
+	    RAMDAC_WRITE(((pPPriv->OverlayControl>>16)&0xff),
+		PM3RD_VideoOverlayKeyG);
+	    RAMDAC_WRITE(((pPPriv->OverlayControl>>24)&0xff),
+		PM3RD_VideoOverlayKeyB);
+	    break;
+	case OVERLAY_DATA_ALPHAKEY :
+	    RAMDAC_WRITE(((pPPriv->OverlayControl>>8)&0xff),
+		PM3RD_VideoOverlayKeyR);
+	    break;
+	case OVERLAY_DATA_ALPHABLEND :
+	    RAMDAC_WRITE(((pPPriv->OverlayControl>>8)&0xff),
+		PM3RD_VideoOverlayBlend);
+	    break;
+    }
     /* And now enable Video Overlay in the RAMDAC */
     RAMDAC_WRITE(PM3RD_VideoOverlayControl_ENABLE |
-	PM3RD_VideoOverlayControl_MODE_ALWAYS,
+	/* OverlayMode attribute */
+	(pPPriv->OverlayControl&0xff),
 	PM3RD_VideoOverlayControl);
 
-    /* Let's use a double buffering scheme */
-    pPPriv->CurrentBuffer = 1-pPPriv->CurrentBuffer;
+    pPPriv->Buffer[pPPriv->display]->RemoveLinearCallback =
+	RemoveAreaCallback;
+    if (display != -1) pPPriv->copy = -1;
 }
 
 static void
-StopOverlay(PortPrivPtr pPPriv, CARD32* BufferBase, int num, int cleanup)
+StopOverlay(PortPrivPtr pPPriv, int cleanup)
 {
     AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
     ScrnInfoPtr pScrn = pAPriv->pScrn;
@@ -674,6 +664,55 @@ StopOverlay(PortPrivPtr pPPriv, CARD32* BufferBase, int num, int cleanup)
     GLINT_WRITE_REG(PM3VideoOverlayMode_DISABLE,
 	PM3VideoOverlayMode);
 }
+/* ReputImage may be used if only the position of the destination changes,
+ * maybe while moving the window around or something such.
+ */
+static int
+Permedia3ReputImage(ScrnInfoPtr pScrn,
+    short drw_x, short drw_y,
+    RegionPtr clipBoxes, pointer data)
+{
+    PortPrivPtr pPPriv = (PortPrivPtr) data;  
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    BoxPtr extent;
+
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+	"ReputImage %d,%d.\n", drw_x, drw_y));
+    /* If the buffer was freed, we cannot overlay it. */
+    if (pPPriv->display == -1) {
+	StopOverlay (pPPriv, FALSE);
+	return Success;
+    }
+    if (REGION_SIZE(clipBoxes) != 0) {
+	/* We need to transform the clipBoxes into a bitmap,
+	 * and upload it to offscreen memory. */
+	StopOverlay (pPPriv, FALSE);
+	return Success;
+    }
+    /* Check that the dst area is some part of the visible screen. */
+    if ((drw_x + pPPriv->dw) < pScrn->frameX0 ||
+        (drw_y + pPPriv->dh) < pScrn->frameY0 ||
+	drw_x > pScrn->frameX1 || drw_y > pScrn->frameY1) {
+        return Success;
+    }
+    /* Copy the destinations coordinates */
+    pPPriv->dx = drw_x;
+    pPPriv->dy = drw_y;
+
+    /* We sync the chip. */
+    if (pGlint->MultiAperture) DualPermedia3Sync(pScrn);
+    else Permedia3Sync(pScrn);
+
+    extent = REGION_EXTENTS(pScrn, clipBoxes);
+    BeginOverlay(pPPriv, -1, pPPriv->Bpp_shift, extent);
+
+    /* We sync the chip. */
+    if (pGlint->MultiAperture) DualPermedia3Sync(pScrn);
+    else Permedia3Sync(pScrn);
+
+    return Success;
+}
+
 static int
 Permedia3PutImage(ScrnInfoPtr pScrn,
     short src_x, short src_y, short drw_x, short drw_y,
@@ -682,21 +721,35 @@ Permedia3PutImage(ScrnInfoPtr pScrn,
     Bool sync, RegionPtr clipBoxes, pointer data)
 {
     PortPrivPtr pPPriv = (PortPrivPtr) data;  
-    AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    int i;
+    int copy = -1;
+    BoxPtr extent;
+    BoxRec ext;
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-	"PutImage %d,%d,%d,%d -> %d,%d,%d,%d id=0x%08x buf=%p w=%d h=%d sync=%d\n",
+	"PutImage %d,%d,%d,%d -> %d,%d,%d,%d "
+	"id=0x%08x buf=%p w=%d h=%d sync=%d\n",
 	src_x, src_y, src_w, src_h, drw_x, drw_y, drw_w, drw_h,
 	id, buf, width, height, sync));
 
-    /* SVEN : Let's check if the source window is contained in the
-     * actual source */
+    extent = REGION_EXTENTS(pScrn, clipBoxes);
+    ext = *extent;
+    if (REGION_SIZE(clipBoxes) != 0) return Success;
+
+    /* Check that the src area to put is included in the buffer. */
     if ((src_x + src_w) > width ||
-        (src_y + src_h) > height)
+        (src_y + src_h) > height ||
+	src_x < 0 || src_y < 0)
         return BadValue;
 
+    /* Check that the dst area is some part of the visible screen. */
+    if ((drw_x + drw_w) < pScrn->frameX0 ||
+        (drw_y + drw_h) < pScrn->frameY0 ||
+	drw_x > pScrn->frameX1 || drw_y > pScrn->frameY1) {
+        return Success;
+    }
+
+    /* Copy the source and destinations coordinates and size */
     pPPriv->vx = src_x;
     pPPriv->vy = src_y;
     pPPriv->vw = src_w;
@@ -707,196 +760,183 @@ Permedia3PutImage(ScrnInfoPtr pScrn,
     pPPriv->dw = drw_w;
     pPPriv->dh = drw_h;
 
-    /* SVEN : Let's check if there is a allocated buffer already of the same
-     * id, width and height. If yes, use it, if not, we need to allocate one.
-     */
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-	"SVEN : PutImage Do we need to allocate buffers ?\n"
-	"\t existing : buffers = %d, id = %d, fw = %d, fh = %d.\n"
-	"\t requested : buffers = %d, id = %d, fw = %d, fh = %d.\n",
-	pPPriv->BuffersAllocated, pPPriv->Id, pPPriv->fw, pPPriv->fh,
-	3, id, width, height));
-
-    /* Maybe we would test for correct bpp instead of if here, ? */
-    if (pPPriv->BuffersAllocated <= 0 ||
-	id != pPPriv->Id || /* same bpp */
-	width != pPPriv->fw ||
-	height != pPPriv->fh)
-    {
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-	"SVEN : PutImage, yes, we need to allocate buffers, isn't it ?.\n"));
-	/* SVEN : search for a ScalerImage corresponding to the id */
+    /* If the image format changed since a previous call,
+     * let's check if it is supported. By default, we suppose that
+     * the previous image format was ScalerImages[0].id */
+    if (id != pPPriv->Id) {
+	int i;
 	for (i = 0; i < ENTRIES(ScalerImages); i++)
 	    if (id == ScalerImages[i].id)
 		break;
-
-	/* SVEN : If no scaler was found, we stop here and then */
 	if (i >= ENTRIES(ScalerImages))
 	    return XvBadAlloc;
+	pPPriv->Id = id;
+	pPPriv->Bpp = ScalerImages[i].bits_per_pixel;
+    }
 
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-	"SVEN : PutImage, We did found a compatible image format (%d).\n", i));
-	/* SVEN : Let's sync the chip ... (we do that a lot ...) */
-	if (pGlint->MultiAperture) DualPermedia3Sync(pScrn);
-	else Permedia3Sync(pScrn);
-#if 0 /* SVEN : This was not disabled by me, don't know what it was */
-	if (pPPriv->BuffersAllocated <= 0 ||
-	    pPPriv->Bpp != ScalerImages[i].bits_per_pixel ||
-	    width > pPPriv->fw || height > pPPriv->fw ||
-	    pPPriv->fw * pPPriv->fh > width * height * 2)
-#else
-	if (1)
-#endif
-	{
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-	"SVEN : PutImage, We will allocate a buffer ...\n"));
-	    /* SVEN : Let's allocate a buffer to store the image.
-	     * If it is not possible, we exit */
-	    if (!AllocateBuffers(pPPriv, width, height,
-		(ScalerImages[i].bits_per_pixel + 7) >> 3, 3, 0)) {
-		pPPriv->Id = 0;
-		pPPriv->Bpp = 0;
-		pPPriv->fw = 0;
-		pPPriv->fh = 0;
+    /* We sync the chip. I don't know if it is really
+     * needed but X crashed when i didn't do it. */
+    if (pGlint->MultiAperture) DualPermedia3Sync(pScrn);
+    else Permedia3Sync(pScrn);
 
-		return XvBadAlloc;
-	    }
+    /* Let's define the different strides values */
+    pPPriv->OverlayStride = width;
+    pPPriv->BufferStride = ((pPPriv->Bpp+7)>>3) * width;
 
-	    /* SVEN : We set the id, bpp, width and height values of 
-	     * the allocated buffer, so that we will not need to
-	     * allocate a buffer again on the next frame. */
-	    pPPriv->Id = id;
-	    pPPriv->Bpp = ScalerImages[i].bits_per_pixel;
-	    pPPriv->fw = width;
-	    pPPriv->fh = height;
-
-	    /* SVEN : Add RemoveAreaCallBack to the pFBAreas of each buffer */
-	    /* Let's see if this cause the crash ??? No, it doesn't ... */
-	    RemoveableBuffers(pPPriv, TRUE);
-	}
-    } else
-	if (pGlint->MultiAperture) DualPermedia3Sync(pScrn);
-	else Permedia3Sync(pScrn);
-
+    /* Now we allocate a buffer, if it is needed */
+    if ((copy = AllocateBuffers(pPPriv, pPPriv->BufferStride, height)) == -1)
+	return XvBadAlloc;
+    
+    /* Now, we can copy the image to the buffer */
     switch (id) {
     case LE4CC('Y','V','1','2'):
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
 	CopyYV12LE(buf,
-	    (CARD32 *)((CARD8 *) pGlint->FbBase + pPPriv->BufferBase[pPPriv->CurrentBuffer]),
+	    (CARD32 *)((CARD8 *) pGlint->FbBase +
+		GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset)),
 	    width, height, pPPriv->BufferStride);
 #else
 	if (pGlint->FBDev)
 	    CopyYV12LE(buf,
-		(CARD32 *)((CARD8 *) pGlint->FbBase + pPPriv->BufferBase[0]),
+		(CARD32 *)((CARD8 *) pGlint->FbBase +
+		    GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset)),
 		width, height, pPPriv->BufferStride);
 	else
 	    CopyYV12BE(buf,
-		(CARD32 *)((CARD8 *) pGlint->FbBase + pPPriv->BufferBase[0]),
+		(CARD32 *)((CARD8 *) pGlint->FbBase +
+		    GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset)),
 		width, height, pPPriv->BufferStride);
 #endif
-	BeginOverlay(pPPriv, pPPriv->BufferBase, pPPriv->CurrentBuffer, FORMAT_YUV422, 1, 0);
+	pPPriv->Format = FORMAT_YUV422;
+	pPPriv->Bpp_shift = 1;
 	break;
-
     case LE4CC('Y','U','Y','2'):
-	CopyFlat(buf, (CARD8 *) pGlint->FbBase + pPPriv->BufferBase[0],
+	CopyFlat(buf, (CARD8 *) pGlint->FbBase +
+		GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset),
 	    width << 1, height, pPPriv->BufferStride);
-	BeginOverlay(pPPriv, pPPriv->BufferBase, 0, FORMAT_YUV422, 1, 0);
+	pPPriv->Format = FORMAT_YUV422;
+	pPPriv->Bpp_shift = 1;
 	break;
 
     case LE4CC('U','Y','V','Y'):
-	CopyFlat(buf, (CARD8 *) pGlint->FbBase + pPPriv->BufferBase[0],
+	CopyFlat(buf, (CARD8 *) pGlint->FbBase +
+		GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset),
 	    width << 1, height, pPPriv->BufferStride);
-	/* Not sure about this one ... */
-	BeginOverlay(pPPriv, pPPriv->BufferBase, 0, FORMAT_VUY422, 1, 0);
+	pPPriv->Format = FORMAT_VUY422;
+	pPPriv->Bpp_shift = 1;
 	break;
 
     case LE4CC('Y','U','V','A'):
-	CopyFlat(buf, (CARD8 *) pGlint->FbBase + pPPriv->BufferBase[0],
+	CopyFlat(buf, (CARD8 *) pGlint->FbBase +
+		GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset),
 	    width << 2, height, pPPriv->BufferStride);
-	BeginOverlay(pPPriv, pPPriv->BufferBase, 0, FORMAT_YUV444, 2, pPPriv->Attribute[7]);
+	pPPriv->Format = FORMAT_YUV444;
+	pPPriv->Bpp_shift = 2;
 	break;
 
     case LE4CC('V','U','Y','A'):
-	CopyFlat(buf, (CARD8 *) pGlint->FbBase + pPPriv->BufferBase[0],
+	CopyFlat(buf, (CARD8 *) pGlint->FbBase +
+		GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset),
 	    width << 2, height, pPPriv->BufferStride);
-	BeginOverlay(pPPriv, pPPriv->BufferBase, 0, FORMAT_VUY444, 2, pPPriv->Attribute[7]);
+	pPPriv->Format = FORMAT_VUY444;
+	pPPriv->Bpp_shift = 2;
 	break;
 
     case 0x41: /* RGBA 8:8:8:8 */
-	CopyFlat(buf, (CARD8 *) pGlint->FbBase + pPPriv->BufferBase[0],
+	CopyFlat(buf, (CARD8 *) pGlint->FbBase +
+		GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset),
 	    width << 2, height, pPPriv->BufferStride);
-	BeginOverlay(pPPriv, pPPriv->BufferBase, 0, FORMAT_RGB8888, 2, pPPriv->Attribute[7]);
+	pPPriv->Format = FORMAT_RGB8888;
+	pPPriv->Bpp_shift = 2;
 	break;
 
     case 0x42: /* RGB 5:6:5 */
-	CopyFlat(buf, (CARD8 *) pGlint->FbBase + pPPriv->BufferBase[0],
+	CopyFlat(buf, (CARD8 *) pGlint->FbBase +
+		GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset),
 	    width << 1, height, pPPriv->BufferStride);
-	BeginOverlay(pPPriv, pPPriv->BufferBase, 0, FORMAT_RGB565, 1, 0);
+	pPPriv->Format = FORMAT_RGB565;
+	pPPriv->Bpp_shift = 1;
 	break;
 
     case 0x43: /* RGB 1:5:5:5 */
-	CopyFlat(buf, (CARD8 *) pGlint->FbBase + pPPriv->BufferBase[0],
+	CopyFlat(buf, (CARD8 *) pGlint->FbBase +
+		GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset),
 	    width << 1, height, pPPriv->BufferStride);
-	BeginOverlay(pPPriv, pPPriv->BufferBase, 0, FORMAT_RGB5551, 1, pPPriv->Attribute[7]);
+	pPPriv->Format = FORMAT_RGB5551;
+	pPPriv->Bpp_shift = 1;
 	break;
 
     case 0x44: /* RGB 4:4:4:4 */
-	CopyFlat(buf, (CARD8 *) pGlint->FbBase + pPPriv->BufferBase[0],
+	CopyFlat(buf, (CARD8 *) pGlint->FbBase +
+		GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset),
 	    width << 1, height, pPPriv->BufferStride);
-	BeginOverlay(pPPriv, pPPriv->BufferBase, 0, FORMAT_RGB4444, 1, pPPriv->Attribute[7]);
+	pPPriv->Format = FORMAT_RGB4444;
+	pPPriv->Bpp_shift = 1;
 	break;
 
     case 0x46: /* RGB 2:3:3 */
-	CopyFlat(buf, (CARD8 *) pGlint->FbBase + pPPriv->BufferBase[0],
+	CopyFlat(buf, (CARD8 *) pGlint->FbBase +
+		GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset),
 	    width, height, pPPriv->BufferStride);
-	BeginOverlay(pPPriv, pPPriv->BufferBase, 0, FORMAT_RGB332, 0, 0);
+	pPPriv->Format = FORMAT_RGB332;
+	pPPriv->Bpp_shift = 0;
 	break;
 
     case 0x47: /* BGRA 8:8:8:8 */
-	CopyFlat(buf, (CARD8 *) pGlint->FbBase + pPPriv->BufferBase[0],
+	CopyFlat(buf, (CARD8 *) pGlint->FbBase +
+		GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset),
 	    width << 2, height, pPPriv->BufferStride);
-	BeginOverlay(pPPriv, pPPriv->BufferBase, 0, FORMAT_BGR8888, 2, pPPriv->Attribute[7]);
+	pPPriv->Format = FORMAT_BGR8888;
+	pPPriv->Bpp_shift = 2;
 	break;
 
     case 0x48: /* BGR 5:6:5 */
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-	"PutImage case (13) BGR565.\n"));
-	CopyFlat(buf, (CARD8 *) pGlint->FbBase + pPPriv->BufferBase[0],
+	CopyFlat(buf, (CARD8 *) pGlint->FbBase +
+		GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset),
 	    width << 1, height, pPPriv->BufferStride);
-	BeginOverlay(pPPriv, pPPriv->BufferBase, 0, FORMAT_BGR565, 1, 0);
+	pPPriv->Format = FORMAT_BGR565;
+	pPPriv->Bpp_shift = 1;
 	break;
 
     case 0x49: /* BGR 1:5:5:5 */
-	CopyFlat(buf, (CARD8 *) pGlint->FbBase + pPPriv->BufferBase[0],
+	CopyFlat(buf, (CARD8 *) pGlint->FbBase +
+		GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset),
 	    width << 1, height, pPPriv->BufferStride);
-	BeginOverlay(pPPriv, pPPriv->BufferBase, 0, FORMAT_BGR5551, 1, pPPriv->Attribute[7]);
+	pPPriv->Format = FORMAT_BGR5551;
+	pPPriv->Bpp_shift = 1;
 	break;
 
     case 0x4A: /* BGR 4:4:4:4 */
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-	"PutImage case (15) BGR4444.\n"));
-	CopyFlat(buf, (CARD8 *) pGlint->FbBase + pPPriv->BufferBase[0],
+	CopyFlat(buf, (CARD8 *) pGlint->FbBase +
+		GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset),
 	    width << 1, height, pPPriv->BufferStride);
-	BeginOverlay(pPPriv, pPPriv->BufferBase, 0, FORMAT_BGR4444, 1, pPPriv->Attribute[7]);
+	pPPriv->Format = FORMAT_BGR4444;
+	pPPriv->Bpp_shift = 1;
 	break;
 
     case 0x4C: /* BGR 2:3:3 */
-	CopyFlat(buf, (CARD8 *) pGlint->FbBase + pPPriv->BufferBase[0],
+	CopyFlat(buf, (CARD8 *) pGlint->FbBase +
+		GET_OFFSET(pScrn, pPPriv->Buffer[copy]->offset),
 	    width << 0, height, pPPriv->BufferStride);
-	BeginOverlay(pPPriv, pPPriv->BufferBase, 0, FORMAT_BGR332, 0, 0);
+	pPPriv->Format = FORMAT_BGR332;
+	pPPriv->Bpp_shift = 0;
 	break;
-
     default:
 	return XvBadAlloc;
     }
+    /* We sync the chip. */
+    if (pGlint->MultiAperture) DualPermedia3Sync(pScrn);
+    else Permedia3Sync(pScrn);
 
-    /* SVEN : Don't know what these two are for, let them stay as is */
-    pPPriv->StopDelay = pAPriv->Delay;
-    if (!pAPriv->TimerUsers) {
-	pAPriv->TimerUsers |= 1 << PORTNUM(pPPriv);
-	TimerSet(pAPriv->Timer, 0, 80, TimerCallback, pAPriv);
-    }
+    /* Don't know why we need this,
+     * but the server will crash if i remove it. */
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+	"Starting the overlay.\n");
 
+    /* We start the overlay */
+    BeginOverlay(pPPriv, copy, pPPriv->Bpp_shift, extent);
+
+    /* We sync the chip again. */
     if (sync) {
 	if (pGlint->MultiAperture) DualPermedia3Sync(pScrn);
 	else Permedia3Sync(pScrn);
@@ -909,20 +949,14 @@ static void
 Permedia3StopVideo(ScrnInfoPtr pScrn, pointer data, Bool cleanup)
 {
     PortPrivPtr pPPriv = (PortPrivPtr) data;  
-    AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-	"StopVideo port=%d, exit=%d\n", PORTNUM(pPPriv), cleanup));
+	"StopVideo : exit=%d\n", cleanup));
 
-    StopOverlay(pPPriv, pPPriv->BufferBase, pPPriv->CurrentBuffer, cleanup);
+    StopOverlay(pPPriv, cleanup);
 
     if (cleanup) {
-	FreeBuffers(pPPriv);
-	if (pAPriv->TimerUsers) {
-	    pAPriv->TimerUsers &= ~PORTNUM(pPPriv);
-	    if (!pAPriv->TimerUsers)
-		TimerCancel(pAPriv->Timer);
-	}
+	FreeBuffers(pPPriv, FALSE);
     }
 }
 
@@ -931,11 +965,131 @@ Permedia3SetPortAttribute(ScrnInfoPtr pScrn,
     Atom attribute, INT32 value, pointer data)
 {
     PortPrivPtr pPPriv = (PortPrivPtr) data;
-    AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
+
+    /* Note, we could decode and store attributes directly here */
+    if (attribute == xvFilter) {
+	switch (value) {
+	    case 0:	/* No Filtering */
+		pPPriv->OverlayMode =
+		    (pPPriv->OverlayMode &
+		      ~PM3VideoOverlayMode_FILTER_MASK) |
+		    PM3VideoOverlayMode_FILTER_OFF;
+		break;
+	    case 1:	/* No Filtering */
+		pPPriv->OverlayMode =
+		    (pPPriv->OverlayMode &
+		      ~PM3VideoOverlayMode_FILTER_MASK) |
+		    PM3VideoOverlayMode_FILTER_PARTIAL;
+		break;
+	    case 2:	/* No Filtering */
+		pPPriv->OverlayMode =
+		    (pPPriv->OverlayMode &
+		      ~PM3VideoOverlayMode_FILTER_MASK) |
+		    PM3VideoOverlayMode_FILTER_FULL;
+		break;
+	    default:
+		return BadValue;
+	}
+	pPPriv->Attribute[0] = value;
+    }
+    else if (attribute == xvMirror) {
+	switch (value) {
+	    case 0:	/* No Mirroring */
+		pPPriv->OverlayMode =
+		    (pPPriv->OverlayMode &
+		      ~PM3VideoOverlayMode_MIRROR_MASK) |
+		    PM3VideoOverlayMode_MIRRORX_OFF |
+		    PM3VideoOverlayMode_MIRRORY_OFF;
+		break;
+	    case 1:	/* X Axis Mirroring */
+		pPPriv->OverlayMode =
+		    (pPPriv->OverlayMode &
+		      ~PM3VideoOverlayMode_MIRROR_MASK) |
+		    PM3VideoOverlayMode_MIRRORX_ON |
+		    PM3VideoOverlayMode_MIRRORY_OFF;
+		break;
+	    case 2:	/* Y Axis Mirroring */
+		pPPriv->OverlayMode =
+		    (pPPriv->OverlayMode &
+		      ~PM3VideoOverlayMode_MIRROR_MASK) |
+		    PM3VideoOverlayMode_MIRRORX_OFF |
+		    PM3VideoOverlayMode_MIRRORY_ON;
+		break;
+	    case 3:	/* X and Y Axis Mirroring */
+		pPPriv->OverlayMode =
+		    (pPPriv->OverlayMode &
+		      ~PM3VideoOverlayMode_MIRROR_MASK) |
+		    PM3VideoOverlayMode_MIRRORX_ON |
+		    PM3VideoOverlayMode_MIRRORY_ON;
+		break;
+	    default:
+		return BadValue;
+	}
+	pPPriv->Attribute[1] = value;
+    }
+    else if (attribute == xvOverlayMode) {
+	pPPriv->OverlayControl =
+	    PM3RD_VideoOverlayControl_ENABLE;
+	switch (value&&0xff) {
+	    case 0:	/* Opaque video overlay */
+		pPPriv->OverlayData = 
+		    OVERLAY_DATA_NONE;
+		pPPriv->OverlayControl =
+		    PM3RD_VideoOverlayControl_MODE_ALWAYS;
+		break;	
+	    case 1:	/* Color keyed overlay, framebuffer color key */
+		pPPriv->OverlayData = 
+		    OVERLAY_DATA_COLORKEY;
+		pPPriv->OverlayControl =
+		    /* color key in RGB 888 mode */
+		    ((value<<5)&0xffffff00) |
+		    PM3RD_VideoOverlayControl_MODE_MAINKEY |
+		    PM3RD_VideoOverlayControl_KEY_COLOR;
+		break;	
+	    case 2:	/* Color keyed overlay, framebuffer alpha key */
+		pPPriv->OverlayData = 
+		    OVERLAY_DATA_ALPHAKEY;
+		pPPriv->OverlayControl =
+		    /* 8 bit alpha key */
+		    ((value<<5)&0xff00) |
+		    PM3RD_VideoOverlayControl_MODE_MAINKEY |
+		    PM3RD_VideoOverlayControl_KEY_ALPHA;
+		break;	
+	    case 3:	/* Color keyed overlay, overlay color key */
+		pPPriv->OverlayData = 
+		    OVERLAY_DATA_COLORKEY;
+		pPPriv->OverlayControl =
+		    /* color key in RGB 888 mode */
+		    ((value<<5)&0xffffff00) |
+		    PM3RD_VideoOverlayControl_MODE_OVERLAYKEY;
+		break;	
+	    case 4:	/* Per pixel alpha blending */
+		pPPriv->OverlayData = 
+		    OVERLAY_DATA_NONE;
+		pPPriv->OverlayControl =
+		    PM3RD_VideoOverlayControl_MODE_BLEND |
+		    PM3RD_VideoOverlayControl_BLENDSRC_MAIN;
+		break;	
+	    case 5:	/* Constant alpha blending */
+		pPPriv->OverlayData = 
+		    OVERLAY_DATA_ALPHABLEND;
+		pPPriv->OverlayControl =
+		    /* 8 bit alpha blend factor
+		     * (only the 2 top bits are used) */
+		    ((value<<5)&0xff00) |
+		    PM3RD_VideoOverlayControl_MODE_BLEND |
+		    PM3RD_VideoOverlayControl_BLENDSRC_REGISTER;
+		break;	
+	    default:
+		return BadValue;
+	}
+	pPPriv->Attribute[2] = value;
+    }
+    else return BadMatch;
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-	"SPA attr=%d val=%d port=%d\n",
-	attribute, value, PORTNUM(pPPriv)));
+	"SPA attr=%d val=%d\n",
+	attribute, value));
 
     return Success;
 }
@@ -945,43 +1099,18 @@ Permedia3GetPortAttribute(ScrnInfoPtr pScrn,
     Atom attribute, INT32 *value, pointer data)
 {
     PortPrivPtr pPPriv = (PortPrivPtr) data;
-    AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
 
-    if (PORTNUM(pPPriv) >= 2 &&
-	attribute != xvFilter &&
-	attribute != xvAlpha)
-	return BadMatch;
-
-    if (attribute == xvEncoding) {
-	if (pAPriv->VideoStd < 0)
-	    return XvBadAlloc;
-	else
-	    if (pPPriv == &pAPriv->Port[0])
-		*value = pAPriv->VideoStd * 3 + pPPriv->Plug;
-	    else
-		*value = pAPriv->VideoStd * 2 + pPPriv->Plug - 1;
-    } else if (attribute == xvBrightness)
+    if (attribute == xvFilter)
 	*value = pPPriv->Attribute[0];
-    else if (attribute == xvContrast)
+    else if (attribute == xvMirror)
 	*value = pPPriv->Attribute[1];
-    else if (attribute == xvSaturation)
+    else if (attribute == xvOverlayMode)
 	*value = pPPriv->Attribute[2];
-    else if (attribute == xvHue)
-	*value = pPPriv->Attribute[3];
-    else if (attribute == xvInterlace)
-	*value = pPPriv->Attribute[4];
-    else if (attribute == xvFilter)
-	*value = pPPriv->Attribute[5];
-    else if (attribute == xvBkgColor)
-	*value = pPPriv->Attribute[6];
-    else if (attribute == xvAlpha)
-	*value = pPPriv->Attribute[7];
-    else
-	return BadMatch;
+    else return BadMatch;
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-	"GPA attr=%d val=%d port=%d\n",
-	attribute, *value, PORTNUM(pPPriv)));
+	"GPA attr=%d val=%d\n",
+	attribute, *value));
 
     return Success;
 }
@@ -1063,13 +1192,9 @@ Permedia3QueryImageAttributes(ScrnInfoPtr pScrn,
 static void
 DeleteAdaptorPriv(AdaptorPrivPtr pAPriv)
 {
-    int i;
+    FreeBuffers(pAPriv->pPort, FALSE);
 
-    for (i = 0; i < PORTS; i++) {
-        FreeBuffers(&pAPriv->Port[i]);
-    }
-
-    TimerFree(pAPriv->Timer);
+    TimerFree(pAPriv->pPort->Timer);
 
     xfree(pAPriv);
 }
@@ -1078,34 +1203,50 @@ static AdaptorPrivPtr
 NewAdaptorPriv(ScrnInfoPtr pScrn)
 {
     AdaptorPrivPtr pAPriv = (AdaptorPrivPtr) xcalloc(1, sizeof(AdaptorPrivRec));
+    PortPrivPtr pPPriv = (PortPrivPtr) xcalloc(1, sizeof(PortPrivRec));
     int i;
 
     if (!pAPriv) return NULL;
-
     pAPriv->pScrn = pScrn;
+    if (!pPPriv) return NULL;
+    pAPriv->pPort = pPPriv;
+
     
-    if (!(pAPriv->Timer = TimerSet(NULL, 0, 0, TimerCallback, pAPriv))) {
+    /* We allocate a timer */
+    if (!(pPPriv->Timer = TimerSet(NULL, 0, 0, TimerCallback, pPPriv))) {
 	DeleteAdaptorPriv(pAPriv);
 	return NULL;
     }
 
-    for (i = 0; i < PORTS; i++) {
-	pAPriv->Port[i].pAdaptor = pAPriv;
+    /* Attributes */
+    pPPriv->pAdaptor = pAPriv;
+    pPPriv->Attribute[0] = 0;	/* Full filtering enabled */
+    pPPriv->Attribute[1] = 0;	/* No mirroring */
+    pPPriv->Attribute[2] = 0;	/* Opaque overlay mode */
+    pPPriv->OverlayData = 0;
+    pPPriv->OverlayMode =
+	PM3VideoOverlayMode_FILTER_FULL |
+	PM3VideoOverlayMode_MIRRORX_OFF |
+	PM3VideoOverlayMode_MIRRORY_OFF;
+    pPPriv->OverlayControl =
+	PM3RD_VideoOverlayControl_ENABLE |
+	PM3RD_VideoOverlayControl_MODE_ALWAYS;
 
-    	pAPriv->Port[i].StopDelay = -1;
-	pAPriv->Port[i].fw = 0;
-	pAPriv->Port[i].fh = 0;
-	pAPriv->Port[i].BuffersRequested = 1;
-	pAPriv->Delay = 125;
-	pAPriv->Instant = 1000 / 25;
+    /* Buffers */
+    pPPriv->Id = ScalerImages[0].id;
+    pPPriv->Bpp = ScalerImages[0].bits_per_pixel;
+    pPPriv->copy = -1;
+    pPPriv->display = -1;
+    for (i = 0; i < MAX_BUFFERS; i++)
+	pPPriv->Buffer[i] = NULL;
 
-	pAPriv->Port[i].Attribute[5] = 0;	/* Bilinear Filter (Bool) */
-	pAPriv->Port[i].Attribute[7] = 0;	/* Alpha Enable (Bool) */
-    }
+    /* Timer */
+    pPPriv->StopDelay = -1;
+    pPPriv->Delay = 125;
+    pPPriv->Instant = 1000 / 25;
 
     return pAPriv;
 }
-
 
 /*
  *  Glint interface
@@ -1114,42 +1255,22 @@ NewAdaptorPriv(ScrnInfoPtr pScrn)
 void
 Permedia3VideoEnterVT(ScrnInfoPtr pScrn)
 {
-    AdaptorPrivPtr pAPriv;
-
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv enter VT\n"));
-
-    for (pAPriv = AdaptorPrivList; pAPriv != NULL; pAPriv = pAPriv->Next)
-	if (pAPriv->pScrn == pScrn) {
-	    /* SVEN : nothing is done here, since we disabled
-	     * input/ouput video support. */
-	}
 }
 
 void
 Permedia3VideoLeaveVT(ScrnInfoPtr pScrn)
 {
-    AdaptorPrivPtr pAPriv;
-
-    for (pAPriv = AdaptorPrivList; pAPriv != NULL; pAPriv = pAPriv->Next)
-	if (pAPriv->pScrn == pScrn) {
-	    /* SVEN : nothing is done here, since we disabled
-	     * input/ouput video support. */
-	}
-
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv leave VT\n"));
 }
 
 void
 Permedia3VideoUninit(ScrnInfoPtr pScrn)
 {
-    AdaptorPrivPtr pAPriv, *ppAPriv;
-
-    for (ppAPriv = &AdaptorPrivList; (pAPriv = *ppAPriv); ppAPriv = &(pAPriv->Next))
-	if (pAPriv->pScrn == pScrn) {
-	    *ppAPriv = pAPriv->Next;
-	    DeleteAdaptorPriv(pAPriv);
-	    break;
-	}
+    if (AdaptorPriv->pScrn == pScrn) {
+	DeleteAdaptorPriv(AdaptorPriv);
+	AdaptorPriv = NULL;
+    }
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv cleanup\n"));
 }
 
@@ -1159,43 +1280,43 @@ Permedia3VideoInit(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     GLINTPtr pGlint = GLINTPTR(pScrn);
     AdaptorPrivPtr pAPriv;
-    DevUnion Private[PORTS];
+    DevUnion Private[1];
     XF86VideoAdaptorRec VAR;
     XF86VideoAdaptorPtr VARPtrs;
-    int i;
 
     switch (pGlint->Chipset) {
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
             break;
-
 	case PCI_VENDOR_3DLABS_CHIP_GAMMA:
 	    if (pGlint->MultiChip == PCI_CHIP_PERMEDIA3) break;
-
 	default:
 	    xf86DrvMsgVerb(pScrn->scrnIndex, X_ERROR, 1,
 		"No Xv support for chipset %d.\n", pGlint->Chipset);
             return;
     }
 
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 1,
+	"Initializing Permedia3 Xv driver rev. 1\n");
+
     if (pGlint->NoAccel) {
 	xf86DrvMsgVerb(pScrn->scrnIndex, X_ERROR, 1,
-	    "Sorry, need to enable accel for Xv support for Permedia3.\n");
+	    "Xv : Sorry, Xv is not supported without accelerations");
 	return;
+#if 0	/* This works, but crashes the X server after a time. */
+	xf86DrvMsgVerb(pScrn->scrnIndex, X_ERROR, 1,
+	    "Xv : Acceleration disabled, starting offscreen memory manager\n.");
+	Permedia3EnableOffscreen (pScreen);
+#endif
     }
 
-    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 1,
-	"Initializing Xv driver rev. 1\n");
-
     if (!(pAPriv = NewAdaptorPriv(pScrn))) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-	    "Xv driver initialization failed\n");
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Xv initialization failed\n");
 	return;
     }
 
     memset(&VAR, 0, sizeof(VAR));
 
-    for (i = 0; i < PORTS; i++)
-	Private[i].ptr = (pointer) &pAPriv->Port[i];
+    Private[0].ptr = (pointer) pAPriv->pPort;
 
     VARPtrs = &VAR;
 
@@ -1206,7 +1327,7 @@ Permedia3VideoInit(ScreenPtr pScreen)
     VAR.pEncodings = ScalerEncodings;
     VAR.nFormats	= ENTRIES(ScalerVideoFormats);
     VAR.pFormats	= ScalerVideoFormats;
-    VAR.nPorts = 3;
+    VAR.nPorts = 1;
     VAR.pPortPrivates = &Private[0];
     VAR.nAttributes = ENTRIES(ScalerAttributes);
     VAR.pAttributes = ScalerAttributes;
@@ -1222,22 +1343,16 @@ Permedia3VideoInit(ScreenPtr pScreen)
     VAR.GetPortAttribute = Permedia3GetPortAttribute;
     VAR.QueryBestSize = Permedia3QueryBestSize;
     VAR.PutImage = Permedia3PutImage;
+    VAR.ReputImage = Permedia3ReputImage;
     VAR.QueryImageAttributes = Permedia3QueryImageAttributes;
 
     if (xf86XVScreenInit(pScreen, &VARPtrs, 1)) {
-	xvEncoding	= MAKE_ATOM(XV_ENCODING);
-	xvHue		= MAKE_ATOM(XV_HUE);
-	xvSaturation	= MAKE_ATOM(XV_SATURATION);
-	xvBrightness	= MAKE_ATOM(XV_BRIGHTNESS);
-	xvContrast	= MAKE_ATOM(XV_CONTRAST);
-	xvInterlace	= MAKE_ATOM(XV_INTERLACE);
 	xvFilter	= MAKE_ATOM(XV_FILTER);
-	xvBkgColor	= MAKE_ATOM(XV_BKGCOLOR);
-	xvAlpha		= MAKE_ATOM(XV_ALPHA);
+	xvMirror	= MAKE_ATOM(XV_MIRROR);
+	xvOverlayMode	= MAKE_ATOM(XV_OVERLAY_MODE);
 
 	/* Add it to the AdaptatorList */
-	pAPriv->Next = AdaptorPrivList;
-	AdaptorPrivList = pAPriv;
+	AdaptorPriv = pAPriv;
 
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Xv frontend scaler enabled\n");
     } else {

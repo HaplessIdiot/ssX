@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.23 2001/02/27 23:04:59 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.24 2001/04/10 20:33:30 dawes Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -361,7 +361,6 @@ Permedia3AccelInit(ScreenPtr pScreen)
     XAAInfoRecPtr infoPtr;
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    BoxRec AvailFBArea;
 
     pGlint->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if (!infoPtr) return FALSE;
@@ -449,18 +448,6 @@ Permedia3AccelInit(ScreenPtr pScreen)
     infoPtr->WritePixmap = Permedia3WritePixmap;
     infoPtr->WritePixmapFlags = 0;
 
-    /* Available Framebuffer Area for XAA. */
-    AvailFBArea.x1 = 0;
-    AvailFBArea.y1 = 0;
-    AvailFBArea.x2 = pScrn->displayWidth;
-    /* X coords are short's so we have to do this to make sure we dont wrap*/
-    AvailFBArea.y2 = ((pGlint->FbMapSize > 16384*1024) ? 16384*1024 :
-	pGlint->FbMapSize)  / (pScrn->displayWidth *
-	pScrn->bitsPerPixel / 8);
-
-    /* Permedia3 has a maximum 4096x4096 framebuffer */
-    if (AvailFBArea.y2 > 4095) AvailFBArea.y2 = 4095;
-
     {
 	Bool shared_accel = FALSE;
 	int i;
@@ -473,11 +460,33 @@ Permedia3AccelInit(ScreenPtr pScreen)
 	    infoPtr->RestoreAccelState = Permedia3RestoreAccelState;
     }
 
-    xf86InitFBManager(pScreen, &AvailFBArea);
+    Permedia3EnableOffscreen(pScreen);
 
     return(XAAInit(pScreen, infoPtr));
 }
 
+void
+Permedia3EnableOffscreen (ScreenPtr pScreen)
+{
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    BoxRec AvailFBArea;
+
+    if (xf86FBManagerRunning(pScreen)) return;
+    /* Available Framebuffer Area for XAA. */
+    AvailFBArea.x1 = 0;
+    AvailFBArea.y1 = 0;
+    AvailFBArea.x2 = pScrn->displayWidth;
+    /* X coords are short's so we have to do this to make sure we dont wrap*/
+    AvailFBArea.y2 = ((pGlint->FbMapSize > 16384*1024) ? 16384*1024 :
+	pGlint->FbMapSize)  / (pScrn->displayWidth *
+	pScrn->bitsPerPixel / 8);
+
+    /* Permedia3 has a maximum 4096x4096 framebuffer */
+    if (AvailFBArea.y2 > 4095) AvailFBArea.y2 = 4095;
+
+    xf86InitFBManager(pScreen, &AvailFBArea);
+}
 #define CHECKCLIPPING				\
 {						\
     if (pGlint->ClippingOn) {			\
