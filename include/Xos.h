@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.67 94/11/30 20:48:05 kaleb Exp $
- * $XFree86: xc/include/Xos.h,v 3.8 1994/11/26 12:34:49 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.9 1995/01/28 15:42:04 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -214,7 +214,7 @@ struct timeval {
 #endif /* SYSV */
 
 /* define X_GETTIMEOFDAY macro, a portable gettimeofday() */
-#if defined(SVR4) || defined(VMS) || defined(WIN32)
+#if (defined(SVR4) && !defined(SVR42MP)) || defined(VMS) || defined(WIN32)
 #define X_GETTIMEOFDAY(t) gettimeofday(t)
 #else
 #define X_GETTIMEOFDAY(t) gettimeofday(t, (struct timezone*)0)

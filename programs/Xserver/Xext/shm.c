@@ -28,7 +28,7 @@ in this Software without prior written authorization from the X Consortium.
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
 /* $XConsortium: shm.c,v 1.23 94/04/17 20:32:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.1 1994/09/17 04:05:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.2 1994/12/02 05:45:07 dawes Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -60,13 +60,9 @@ typedef struct _ShmDesc {
     unsigned long size;
 } ShmDescRec, *ShmDescPtr;
 
-#if !(defined(sun) && defined (SVR4))
-
 #if NeedFunctionPrototypes
 
-#if defined(SVR4)
-void *shmat(int, void*, int);
-#else
+#ifndef SVR4
 #if !defined(sgi) && !defined(hpux) && !defined(__alpha) && !defined(__FreeBSD__) && !defined(__386BSD__) && !defined(__NetBSD__)
 char *shmat(int, char*, int);
 #endif
@@ -74,8 +70,6 @@ char *shmat(int, char*, int);
 
 #else
 char *shmat();
-#endif
-
 #endif
 
 static void miShmPutImage(), fbShmPutImage();
