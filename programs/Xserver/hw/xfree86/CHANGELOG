@@ -1,3 +1,8 @@
+XFree86 3.2An (15 March 1997)
+ 568. Build fixes in order to get a clean compile on Linux and FreeBSD
+      (not for PC98, though). The servers still don't work quite as
+      they should.
+
 XFree86 3.2Am (12 March 1997)
  567. First attempt to get a universal SVGA server that statically links
       in all drivers except those from the accel directory. Links ok and
@@ -4165,4 +4170,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.429 1997/03/11 15:19:54 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.430 1997/03/12 11:35:28 hohndel Exp $
