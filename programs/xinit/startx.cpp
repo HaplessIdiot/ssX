@@ -1,7 +1,7 @@
 XCOMM!/bin/sh
 
 XCOMM $XConsortium: startx.cpp,v 1.4 91/08/22 11:41:29 rws Exp $
-XCOMM $XFree86: xc/programs/xinit/startx.cpp,v 3.3 2000/11/30 23:30:12 dawes Exp $
+XCOMM $XFree86: xc/programs/xinit/startx.cpp,v 3.4 2000/12/02 17:38:23 herrb Exp $
 XCOMM 
 XCOMM This is just a sample implementation of a slightly less primitive 
 XCOMM interface than xinit.  It looks for user .xinitrc and .xserverrc
@@ -100,7 +100,7 @@ while [ "x$1" != "x" ]; do
 		    clientargs="$clientargs $1"
 		else
 		    case "$1" in
-			:[0-9]*) display="$1" ;;
+			:[0-9]*) display="$1"; serverargs="$serverargs $1";;
 			*) serverargs="$serverargs $1" ;;
 		    esac
 		fi ;;
@@ -128,7 +128,7 @@ xauth add $display . $mcookie
 xauth add `HOSTNAME`$display . $mcookie
 #endif
 
-xinit $clientargs -- $serverargs $display
+xinit $clientargs -- $serverargs
 
 /*
  * various machines need special cleaning up
