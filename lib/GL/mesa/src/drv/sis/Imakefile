@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.8 2000/09/24 13:51:10 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.9 2000/09/26 15:56:48 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -290,7 +290,7 @@ LinkSourceFile(xdriP.h, ../../X)
          SRCS = $(DRISRCS) $(DRMSRCS) $(SISSRCS) $(MESASRCS) $(ASMSRCS)
          OBJS = $(DRIOBJS) $(DRMOBJS) $(SISOBJS) $(MESAOBJS) $(ASMOBJS)
 
-REQUIREDLIBS += -lm
+REQUIREDLIBS += MathLibrary
 #if !GlxBuiltInSIS
 REQUIREDLIBS += -L../../../.. -lGL -L../../../../../X11 -lX11
 #endif

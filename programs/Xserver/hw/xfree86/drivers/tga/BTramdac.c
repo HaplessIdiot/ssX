@@ -24,7 +24,7 @@
  * tgaBTOutIndReg() and tgaBTInIndReg() are used to access 
  * the indirect TGA BT RAMDAC registers only.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/BTramdac.c,v 1.3 1998/08/13 14:45:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/BTramdac.c,v 1.4 1999/02/07 11:11:14 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -114,4 +114,65 @@ tgaBTReadData (ScrnInfoPtr pScrn)
     pTga = TGAPTR(pScrn);
     
     return(TGA_READ_REG(TGA_RAMDAC_REG)>>16);
+}
+
+/********************* TGA2 stuff below here ********************/
+
+void
+tga2BTOutIndReg(ScrnInfoPtr pScrn,
+		     CARD32 reg, unsigned char mask, unsigned char data)
+{
+  TGAPtr pTga;
+  unsigned char tmp = 0x00;
+  unsigned int addr = 0xe000U | (reg << 8);
+
+  pTga = TGAPTR(pScrn);
+  
+  if (mask != 0x00)
+    tmp = TGA2_READ_RAMDAC_REG(addr) & mask;
+
+#if 0
+  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "tga2OutIndReg: reg 0x%x data 0x%x\n",
+	     reg, tmp|data);
+#endif
+  TGA2_WRITE_RAMDAC_REG ((tmp | data), addr);
+}
+
+unsigned char
+tga2BTInIndReg (ScrnInfoPtr pScrn, CARD32 reg)
+{
+  TGAPtr pTga;
+  unsigned char ret;
+  unsigned int addr = 0xe000U | (reg << 8);
+
+  pTga  = TGAPTR(pScrn);
+
+  ret = TGA2_READ_RAMDAC_REG(addr);
+
+  return (ret);
+}
+
+void
+tga2BTWriteAddress (ScrnInfoPtr pScrn, CARD32 index)
+{
+    tga2BTOutIndReg(pScrn, BT_WRITE_ADDR, 0, index);
+}
+
+void
+tga2BTWriteData (ScrnInfoPtr pScrn, unsigned char data)
+{
+    tga2BTOutIndReg(pScrn, BT_RAMDAC_DATA, 0, data);
+}
+
+void
+tga2BTReadAddress (ScrnInfoPtr pScrn, CARD32 index)
+{
+    tga2BTOutIndReg(pScrn, BT_PIXEL_MASK, 0, 0xff);
+    tga2BTOutIndReg(pScrn, BT_READ_ADDR, 0, index);
+}
+
+unsigned char
+tga2BTReadData (ScrnInfoPtr pScrn)
+{
+    return tga2BTInIndReg(pScrn, BT_RAMDAC_DATA);
 }
