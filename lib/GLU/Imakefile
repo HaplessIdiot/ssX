@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/GLU/Imakefile,v 1.1 2001/01/15 22:17:52 dawes Exp $
 
 XCOMM License Applicability. Except to the extent portions of this file are
 XCOMM made subject to an alternative license as permitted in the SGI Free
@@ -42,8 +42,9 @@ XCOMM
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 #define SoRev SOGLUREV
 
+#define CplusplusSource
+
 #ifdef XFree86Version
-#define SharedLibraryCcCmd CplusplusCmd
 SHLIBLDFLAGS = -shared -Wl,--whole-archive
 REQUIREDLIBS = -Wl,--no-whole-archive
 #else
