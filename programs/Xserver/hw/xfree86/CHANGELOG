@@ -1,4 +1,7 @@
 XFree86 4.0.1a (XX XXXX 2000)
+ 431. Fix Glint PM3 memory detect when only 1MB of videoram (Alan Hourihane). 
+ 430. Fix DAC colour problem and blank out issue in glint driver 
+      (Alan Hourihane).
  429. Add missing clock values to the trident driver (Alan Hourihane).
  428. Fix Glint driver's SaveScreen function (#4057, Michel Danzer).
  427. Convert MGA driver to use fb instead of cfb (Mark Vojkovich).
@@ -10838,4 +10841,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1235 2000/07/08 23:29:29 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1236 2000/07/09 20:20:07 alanh Exp $

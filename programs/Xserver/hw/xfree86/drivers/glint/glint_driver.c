@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.89 2000/06/22 10:40:48 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.90 2000/07/08 23:29:32 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -702,7 +702,6 @@ GLINTProbe(DriverPtr drv, int flags)
 
 		    pPci = xf86GetPciInfoForEntity(usedChips[i]);
 
-		 
 		    /* Only claim other chips when GAMMA is used */
 		    if (pPci->chipType == PCI_CHIP_GAMMA) {
 		      while (*checkusedPci != NULL) {
@@ -1303,6 +1302,9 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
         	GLINTMapMem(pScrn);
 		Permedia3PreInit(pScrn, pGlint);
         	GLINTUnmapMem(pScrn);
+		pScrn->videoRam = Permedia3MemorySizeDetect(pScrn);
+        } else if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) {
+		/* The PM2v has the same problem detecting memory as the PM3 */
 		pScrn->videoRam = Permedia3MemorySizeDetect(pScrn);
     	} else {
 		pGlint->FbMapSize = 0; /* Need to set FbMapSize for MMIO access */
@@ -2679,11 +2681,6 @@ GLINTAdjustFrame(int scrnIndex, int x, int y, int flags)
 	return;
     }
 
-    if (pGlint->VGAcore) {
-    	vgaHWPtr hwp;
-    	hwp = VGAHWPTR(pScrn);
-    }
-
     base = ((y * pScrn->displayWidth + x) >> 1) >> pGlint->BppShift;
     if (pScrn->bitsPerPixel == 24) base *= 3;
  
@@ -2822,9 +2819,9 @@ GLINTCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	if (pGlint->FBDev)
 		fbdevHWRestore(pScrn);
 	else {	
-        GLINTRestore(pScrn);
-	if (pGlint->VGAcore)
-       	    vgaHWLock(VGAHWPTR(pScrn));
+            GLINTRestore(pScrn);
+	    if (pGlint->VGAcore)
+       	        vgaHWLock(VGAHWPTR(pScrn));
 	}
         GLINTUnmapMem(pScrn);
     }

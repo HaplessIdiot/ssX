@@ -27,7 +27,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.2 2000/05/10 18:55:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.3 2000/06/12 10:11:38 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -135,7 +135,10 @@ Permedia3MemorySizeDetect(ScrnInfoPtr pScrn)
 	if(size == 64) break;
     }
     /* Correct memory amount since fail */
-    size = size / 2;
+    if (size != 1)
+	size = size / 2;
+    else
+	return 1*1024;
     /* Just to make sure */
     if (PM3QuickFillMemory(pScrn,size))
 	return size*1024;
@@ -271,7 +274,7 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->glintRegs[PMVsEnd >> 3] -= 1;
 
     /* The hw cursor needs /VSYNC to recognize vert retrace. We'll stick
-       both sync lines to active high (???) here and if needed invert them
+       both sync lines to active high here and if needed invert them
        using the RAMDAC's RDSyncControl below. */
     pReg->glintRegs[PMVideoControl >> 3] =
 	(1 << 5) | (1 << 3) | 1;
@@ -305,7 +308,7 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if (!(mode->Flags & V_PHSYNC))
         pReg->DacRegs[PM2VDACRDSyncControl] |= 0x01; /* invert hsync */
     if (!(mode->Flags & V_PVSYNC))
-        pReg->DacRegs[PM2VDACRDSyncControl] |= 0x04; /* invert vsync */
+        pReg->DacRegs[PM2VDACRDSyncControl] |= 0x08; /* invert vsync */
 
     switch (pScrn->bitsPerPixel)
     {
