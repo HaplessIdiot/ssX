@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.16 2001/05/04 19:05:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.18 2001/10/01 13:44:14 eich Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -692,7 +692,7 @@ VBEBankSwitch(vbeInfoPtr pVbe, unsigned int iBank, int window)
     if (pVbe->pInt10->ax != 0x4f)
 	return (FALSE);
 
-    return (0);
+    return (TRUE);
 }
 
 Bool
