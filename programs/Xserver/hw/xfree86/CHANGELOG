@@ -1,4 +1,5 @@
 XFree86 3.1.2Ei (18 August 1996)
+664. Fix some PC98 Imakefile problems (Michio "Karl" Jinbo).
 663. Linux/m68k support (Geert Uytterhoeven, Martin Schaller, Gary Henderson).
 662. Change the S3 server's handling of situations where mode choices
      cause problems.  It is now less likely to exit in these situations.
