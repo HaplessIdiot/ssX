@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/genauth.c,v 3.13 2001/12/14 20:01:22 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/genauth.c,v 3.14 2002/05/31 18:46:10 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -120,7 +120,7 @@ InitXdmcpWrapper (void)
 
     _XdmcpWrapperToOddParity(sum, key);
 
-#elif DEV_RANDOM
+#elif defined(DEV_RANDOM)
     int fd;
     unsigned char   tmpkey[8];
     
