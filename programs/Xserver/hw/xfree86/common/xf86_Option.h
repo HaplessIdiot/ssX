@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.3 1994/06/12 16:36:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.4 1994/06/15 15:42:36 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -63,8 +63,6 @@ typedef struct {
 #define OPTION_FAST_DRAM	12 /* fast DRAM (for ET4000, S3) */
 #define OPTION_MED_DRAM		13 /* medium speed DRAM (for S3) */
 #define OPTION_SLOW_DRAM	14 /* slow DRAM (for Cirrus, S3) */
-#define OPTION_MEM_ACCESS	15 /* prevent direct access to video ram
-				      from being automatically disabled */
 #define OPTION_NO_MEM_ACCESS	16 /* Unable to access video ram directly */
 #define OPTION_NOLINEAR_MODE	17 /* chipset has broken linear access mode */
 #define OPTION_INTEL_GX		18 /* Linear fb on an Intel GX/Pro (Mach32) */
@@ -97,11 +95,13 @@ typedef struct {
 /* These should probably be included under "memory options" */
 #define OPTION_FIFO_CONSERV	42 /* (cirrus) */
 #define OPTION_FIFO_AGGRESSIVE	43 /* (cirrus) */
-#define OPTION_SPEA_MERCURY	45 /* Enable pixmux for SPEA Mercury (S3) */
-#define OPTION_NUMBER_NINE	46 /* Enable pixmux for #9 with Bt485 (S3) */
-#define OPTION_STB_PEGASUS	47 /* Enable pixmux for STB Pegasus (S3) */
-#define OPTION_ELSA_W1000PRO	48 /* Enable pixmux for ELSA Winner 1000PRO (S3) */
-#define OPTION_ELSA_W2000PRO	49 /* Enable pixmux for ELSA Winner 2000PRO (S3) */
+#define OPTION_PCI_HACK		44 /* (S3) */
+#define OPTION_POWER_SAVER	45 /* Power-down screen saver */
+#define OPTION_SPEA_MERCURY	46 /* Enable pixmux for SPEA Mercury (S3) */
+#define OPTION_NUMBER_NINE	47 /* Enable pixmux for #9 with Bt485 (S3) */
+#define OPTION_STB_PEGASUS	48 /* Enable pixmux for STB Pegasus (S3) */
+#define OPTION_ELSA_W1000PRO	49 /* Enable pixmux for ELSA Winner 1000PRO (S3) */
+#define OPTION_ELSA_W2000PRO	50 /* Enable pixmux for ELSA Winner 2000PRO (S3) */
 
 /* More RAMDAC options */
 #define OPTION_BT481            55 /* Has BrookTree Bt481 RAMDAC */
@@ -159,7 +159,6 @@ OptFlagRec xf86_OptionTab[] = {
   { "fast_dram",	OPTION_FAST_DRAM },
   { "med_dram",		OPTION_MED_DRAM },
   { "slow_dram",	OPTION_SLOW_DRAM },
-  { "memaccess",	OPTION_MEM_ACCESS },
   { "nomemaccess",	OPTION_NO_MEM_ACCESS },
   { "nolinear",		OPTION_NOLINEAR_MODE },
   { "intel_gx",		OPTION_INTEL_GX },
@@ -188,6 +187,8 @@ OptFlagRec xf86_OptionTab[] = {
   { "secondary",	OPTION_SECONDARY },
   { "fifo_conservative",OPTION_FIFO_CONSERV },
   { "fifo_aggressive",	OPTION_FIFO_AGGRESSIVE },
+  { "pci_hack",		OPTION_PCI_HACK },
+  { "power_saver",	OPTION_POWER_SAVER },
   { "spea_mercury",	OPTION_SPEA_MERCURY },
   { "number_nine",	OPTION_NUMBER_NINE },
   { "stb_pegasus",	OPTION_STB_PEGASUS },
