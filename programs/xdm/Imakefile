@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/81 1996/10/22 18:32:26 kaleb $
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.19 1997/01/20 12:39:02 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.20 1997/02/16 10:27:35 hohndel Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -70,7 +70,9 @@ SHADOWLIB = -lshadow
 
 #if SystemV4 || HasShadowPasswd
 PWD_DEFINES = -DUSESHADOW
+#if !defined(i386IscArchitecture)
 SYS_LIBRARIES3 = -lresolv
+#endif
 #if SystemV || defined(SequentArchitecture)
 SYS_LIBRARIES1 = -lsec
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.2 1997/02/17 09:46:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.3 1997/02/17 11:33:01 hohndel Exp $ */
 
 
 
@@ -49,6 +49,9 @@ extern vgaVideoChipPtr vgaDrivers[];
 extern unsigned char (* dacInTi3026IndReg)(unsigned char);
 extern void (* dacOutTi3026IndReg)(unsigned char,unsigned char,unsigned char);
 extern int LoaderDefaultFunc(void);
+extern void STG1703magic(int);
+extern unsigned char STG1703getIndex(unsigned int);
+extern void STG1703setIndex(unsigned int, unsigned char);
 
 extern int vgaIOBase,vgaCRReg,vgaCRIndex;
 extern unsigned char *xf86rGammaMap,*xf86gGammaMap,*xf86bGammaMap;
@@ -113,6 +116,15 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(s3OutIBMRGBIndReg)
    SYMFUNC(CirrusFindClock)
    SYMFUNC(CirrusSetClock)
+   SYMFUNC(GlennsIODelay)
+   SYMFUNC(STG1703getIndex)
+   SYMFUNC(STG1703setIndex)
+   SYMFUNC(STG1703magic)
+   SYMFUNC(gendacMNToClock)
+   SYMFUNC(Et4000AltICD2061SetClock)
+   SYMFUNC(ET4000stg1703SetClock)
+   SYMFUNC(ET4000gendacSetClock)
+
 
    SYMFUNC(pciWriteWord)
    SYMFUNC(pcibusWrite)

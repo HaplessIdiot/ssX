@@ -1,4 +1,6 @@
 XFree86 3.2Af (XX February 1997)
+ 457. Fix xdm/Imakefile for ISC (Michael Rohleder).
+ 456. Fix problem with S3V and W32 modules (Dirk Hohndel).
  455. Move module rules from xf86.rules to Imake.rules, and when building
       a module, install a link to it in xc/exports/lib/modules/ (David Dawes).
  454. Start Elf loader for Linux/Alpha; doesn't work, yet (#44, Alan Hourihane).
