@@ -1,5 +1,5 @@
 /*
- * Copyright 1992-1998 by Alan Hourihane, Wigan, England.
+ * Copyright 1992-2000 by Alan Hourihane, Wigan, England.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.112 2000/11/30 10:19:48 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.113 2000/12/02 15:30:58 tsi Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -47,7 +47,7 @@
 #include "vgaHW.h"
 #include "xf86RAC.h"
 #include "vbe.h"
-
+#include "dixstruct.h"
 #include "compiler.h"
 
 #include "mipointer.h"
@@ -94,6 +94,7 @@ static Bool	TRIDENTUnmapMem(ScrnInfoPtr pScrn);
 static void	TRIDENTSave(ScrnInfoPtr pScrn);
 static void	TRIDENTRestore(ScrnInfoPtr pScrn);
 static Bool	TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+static void 	TRIDENTBlockHandler(int, pointer, pointer, pointer);
 
 static void	TRIDENTEnableMMIO(ScrnInfoPtr pScrn);
 static void	TRIDENTDisableMMIO(ScrnInfoPtr pScrn);
@@ -199,7 +200,6 @@ static PciChipsets TRIDENTPciChipsets[] = {
     
 typedef enum {
     OPTION_SW_CURSOR,
-    OPTION_HW_CURSOR,
     OPTION_PCI_RETRY,
     OPTION_RGB_BITS,
     OPTION_NOACCEL,
@@ -208,27 +208,20 @@ typedef enum {
     OPTION_SHADOW_FB,
     OPTION_ROTATE,
     OPTION_MMIO_ONLY,
-#if 0
-    /* obsolete */
-    OPTION_CYBER_SHADOW,
-#endif
+    OPTION_VIDEO_KEY,
     OPTION_NOMMIO,
     OPTION_NOPCIBURST
 } TRIDENTOpts;
 
 static OptionInfoRec TRIDENTOptions[] = {
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_PCI_RETRY,		"PciRetry",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SETMCLK,		"SetMClk",	OPTV_FREQ,	{0}, FALSE },
     { OPTION_MUX_THRESHOLD,	"MUXThreshold",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_ROTATE,  	        "Rotate",	OPTV_ANYSTR,	{0}, FALSE },
-#if 0
-        /* obsolete */
-    { OPTION_CYBER_SHADOW,	"CyberShadow",	OPTV_BOOLEAN,	{0}, FALSE },
-#endif
+    { OPTION_VIDEO_KEY,		"VideoKey",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_NOMMIO,		"NoMMIO",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOPCIBURST,	"NoPciBurst",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_MMIO_ONLY,		"MMIOonly",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -625,6 +618,27 @@ TRIDENTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int
     OUTW(0x3C4, (temp<<8) | 0x0E);
 }
 #endif
+
+static void
+TRIDENTBlockHandler (
+    int i,
+    pointer     blockData,
+    pointer     pTimeout,
+    pointer     pReadmask
+){
+    ScreenPtr      pScreen = screenInfo.screens[i];
+    ScrnInfoPtr    pScrn = xf86Screens[i];
+    TRIDENTPtr     pTrident = TRIDENTPTR(pScrn);
+
+    pScreen->BlockHandler = pTrident->BlockHandler;
+    (*pScreen->BlockHandler) (i, blockData, pTimeout, pReadmask);
+    pScreen->BlockHandler = TRIDENTBlockHandler;
+
+    if(pTrident->VideoTimerCallback) {
+	UpdateCurrentTime();
+	(*pTrident->VideoTimerCallback)(pScrn, currentTime.milliseconds);
+    }
+}
 
 static 
 OptionInfoPtr
@@ -1168,8 +1182,6 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     }
     from = X_DEFAULT;
     pTrident->HWCursor = TRUE;
-    if (xf86GetOptValBool(TRIDENTOptions, OPTION_HW_CURSOR, &pTrident->HWCursor))
-	from = X_CONFIG;
     if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
 	pTrident->HWCursor = FALSE;
@@ -1189,14 +1201,16 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	pTrident->UsePCIBurst = FALSE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI Burst disbled\n");
     }
-#if 0
-    /* obsolete */
-    if ((pTrident->CyberShadowSet = xf86GetOptValBool(TRIDENTOptions,
-						     OPTION_CYBER_SHADOW,
-						      &pTrident->CyberShadow)))
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Cyber Shadow Registers %s\n",
-		   pTrident->CyberShadow?"enabled":"disabled");
-#endif
+    if(xf86GetOptValInteger(TRIDENTOptions, OPTION_VIDEO_KEY,
+						&(pTrident->videoKey))) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
+							pTrident->videoKey);
+    } else {
+	pTrident->videoKey =  (1 << pScrn->offset.red) | 
+			(1 << pScrn->offset.green) |
+			(((pScrn->mask.blue >> pScrn->offset.blue) - 1)
+			<< pScrn->offset.blue); 
+    }
     if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_NOMMIO, FALSE)) {
 	pTrident->NoMMIO = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MMIO Disabled\n");
@@ -1211,7 +1225,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    pTrident->MUXThreshold = 80000; /* 100MHz */
+    pTrident->MUXThreshold = 160000; /* 160MHz */
     if (xf86GetOptValInteger(TRIDENTOptions, OPTION_MUX_THRESHOLD, 
 						&pTrident->MUXThreshold)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MUX Threshold set to %d\n",
@@ -1370,7 +1384,6 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     pScrn->progClock = TRUE;
     pTrident->EngineOperation = 0x00;
-    pTrident->UseGERetry = FALSE;
     pTrident->IsCyber = FALSE;
     pTrident->HasSGRAM = FALSE;
     pTrident->NewClockCode = FALSE;
@@ -2229,6 +2242,10 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    break;
     }
 
+    /* Calculate skew offsets for video overlay */
+    pTrident->hsync = (mode->CrtcHTotal - mode->CrtcHSyncStart) - 23;
+    pTrident->vsync = (mode->CrtcVTotal - mode->CrtcVSyncStart) - 4;
+
     vgaHWUnlock(hwp);
 
     /* Initialise the ModeReg values */
@@ -2472,6 +2489,9 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
+    pTrident->BlockHandler = pScreen->BlockHandler;
+    pScreen->BlockHandler = TRIDENTBlockHandler;
+
     if (!pTrident->ShadowFB)
 	TRIDENTDGAInit(pScreen);
 
@@ -2530,8 +2550,8 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	pTrident->HWCursor = FALSE;
 
     if (pTrident->HWCursor) {
-	TridentHWCursorInit(pScreen);
     	xf86SetSilkenMouse(pScreen);
+	TridentHWCursorInit(pScreen);
     }
 
     /* Initialise default colourmap */
@@ -2583,16 +2603,12 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScrn->fbOffset = 0;
 
 #ifdef XvExtension
-    {
-	XF86VideoAdaptorPtr *ptr;
-	int n;
-	
-	n = xf86XVListGenericAdaptors(pScrn,&ptr);
-	if (n) {
-	    xf86XVScreenInit(pScreen, ptr, n);
-	}
-    }
+    if (pTrident->Chipset >= CYBER9397)
+	TRIDENTInitVideo(pScreen);
 #endif
+
+    if(pTrident->BlockHandler)
+	pScreen->BlockHandler = pTrident->BlockHandler;
 
     pTrident->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = TRIDENTCloseScreen;

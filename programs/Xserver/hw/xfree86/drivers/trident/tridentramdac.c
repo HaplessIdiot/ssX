@@ -1,5 +1,5 @@
 /*
- * Copyright 1998 by Alan Hourihane, Wigan, England.
+ * Copyright 1992-2000 by Alan Hourihane, Wigan, England.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,7 +24,7 @@
  * TridentOutIndReg() and TridentInIndReg() are used to access 
  * the indirect Trident RAMDAC registers only.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridentramdac.c,v 1.2 1998/09/13 05:23:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridentramdac.c,v 1.3 1999/04/25 10:02:32 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
