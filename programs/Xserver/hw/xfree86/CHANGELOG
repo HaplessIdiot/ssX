@@ -1,4 +1,4 @@
-XFree86 3.9m (12 August 1997)
+XFree86 3.9m (13 August 1997)
 1186. Fix denial of service attack through xdm double freeing memory (#875,
       Kaleb Keithley).
 1185. Fix Solaris build problem (#874, Takaaki Nomura).
@@ -5245,4 +5245,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.519 1997/08/12 12:01:56 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.520 1997/08/13 05:32:11 hohndel Exp $
