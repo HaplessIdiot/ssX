@@ -294,16 +294,18 @@ XeditLispInitialize(void)
 static void
 XeditLispTextReplace(char *string, int length)
 {
-    XawTextBlock block;
-    XawTextPosition position = XawTextGetInsertionPoint(lisp.output);
+    if (XawTextGetSource(lisp.output) == scratch) {
+	XawTextBlock block;
+	XawTextPosition position = XawTextGetInsertionPoint(lisp.output);
 
-    block.firstPos = 0;
-    block.format = FMT8BIT;
-    block.length = length;
-    block.ptr = string;
-    XawTextReplace(lisp.output, position, position, &block);
-    position += length;
-    XawTextSetInsertionPoint(lisp.output, position);
+	block.firstPos = 0;
+	block.format = FMT8BIT;
+	block.length = length;
+	block.ptr = string;
+	XawTextReplace(lisp.output, position, position, &block);
+	position += length;
+	XawTextSetInsertionPoint(lisp.output, position);
+    }
 }
 
 static void

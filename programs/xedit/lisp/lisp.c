@@ -292,7 +292,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Eql, "eql left right"},
     {LispFunction, Lisp_Equal, "equal left right"},
     {LispFunction, Lisp_Equalp, "equalp left right"},
-    {LispMacro, Lisp_Error, "error control-string &rest arguments"},
+    {LispFunction, Lisp_Error, "error control-string &rest arguments"},
     {LispFunction, Lisp_Eval, "eval form"},
     {LispFunction, Lisp_Evenp, "evenp integer"},
     {LispFunction, Lisp_Export, "export symbols &optional package"},

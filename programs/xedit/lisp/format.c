@@ -1889,13 +1889,13 @@ LispFormat(LispMac *mac, LispObj *stream, FmtInfo *info)
 	    /* everything seens fine, print the format directive */
 	    switch (args->command) {
 		case 'A':
-		    format_ascii(mac, stream, object, args);
-		    break;
-		case 'S':
 		    escape = LispGetEscape(mac, stream);
 		    LispSetEscape(mac, stream, 1);
 		    format_ascii(mac, stream, object, args);
 		    LispSetEscape(mac, stream, escape);
+		    break;
+		case 'S':
+		    format_ascii(mac, stream, object, args);
 		    break;
 		case 'B':
 		    format_in_radix(mac, stream, object, 2, args);
@@ -2072,7 +2072,9 @@ Lisp_Format(LispMac *mac, LispBuiltin *builtin)
 	    LispMoreProtects(mac);
 	mac->protect.objects[mac->protect.length++] = stream;
     }
-    else if (stream == T)	/* print directly to *standard-output* */
+    else if (stream == T ||	/* print directly to *standard-output* */
+	     (stream->data.stream.type == LispStreamStandard &&
+	      stream->data.stream.source.file == Stdout))
 	stream = NIL;
     else if (!STREAM_P(stream))
 	LispDestroy(mac, "%s: %s is not a stream",
@@ -2106,12 +2108,10 @@ Lisp_Format(LispMac *mac, LispBuiltin *builtin)
     LispFormat(mac, stream, &info);
 
     /* if printing to stdout */
-    if (stream == NIL || (stream->data.stream.type == LispStreamStandard &&
-	stream->data.stream.source.file == Stdout))
+    if (stream == NIL)
 	LispFflush(Stdout);
-
-    /* if printing to string-stream, return a string */
-    if (stream != NIL && stream->data.stream.type == LispStreamString)
+    /* else if printing to string-stream, return a string */
+    else if (stream->data.stream.type == LispStreamString)
 	stream = STRING(LispGetSstring(SSTREAMP(stream)));
 
     mac->protect.length = protect;
