@@ -21,7 +21,7 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
     inSISIDXREG(pSiS->RelIO+CROFFSET, 0x32, temp);
     if (temp & 0x08)
            pSiS->VBFlags |= CRT2_LCD;
-
+    
     inSISIDXREG(pSiS->RelIO+CROFFSET, 0x36, temp);
     if (temp == 1)
         pSiS->VBFlags |= LCD_800x600;

@@ -86,6 +86,8 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     pSiS->scrnOffset = pScrn->displayWidth * pScrn->bitsPerPixel / 8;
 
+    pReg->sisRegs3C4[0x06] &= 0x01;
+    
     if ((mode->Flags & V_INTERLACE)==0)  {
         offset = pScrn->displayWidth >> 3;
         pReg->sisRegs3C4[0x06] &= 0xDF;

@@ -35,7 +35,6 @@ authorization from the XFree86 Project and silicon Motion.
 #include "xaarop.h"
 #include "servermd.h"
 
-static void SMI_EngineReset(ScrnInfoPtr);
 
 static void SMI_SetupForScreenToScreenCopy(ScrnInfoPtr, int, int, int,
 										   unsigned int, int);
@@ -245,7 +244,7 @@ SMI_GEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
 	{
 		if (pSmi->GEResetCnt++ < 10 || xf86GetVerbosity() > 1)
 		{
-			ErrorF("\tSMI_GEReset called from %s line %d\n", file, line);
+			xf86DrvMsg(pScrn->scrnIndex,X_INFO,"\tSMI_GEReset called from %s line %d\n", file, line);
 		}
 	}
 	else
@@ -277,7 +276,7 @@ SMI_AccelSync(ScrnInfoPtr pScrn)
 	LEAVE_PROC("SMI_AccelSync");
 }
 
-static void
+void
 SMI_EngineReset(ScrnInfoPtr pScrn)
 {
 	SMIPtr pSmi = SMIPTR(pScrn);

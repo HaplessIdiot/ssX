@@ -2044,7 +2044,7 @@ neoProgramShadowRegs(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore)
     }
 
     if (noProgramShadowRegs) {
-	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Not programming shadow registers\n");
+	xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,3,"Not programming shadow registers\n");
 	if (nPtr->NeoSavedReg.reg){
 	    for (i = 0x40; i <= 0x59; i++) {
 		VGAwCR(i, nPtr->NeoSavedReg.reg->CR[i]);

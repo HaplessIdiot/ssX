@@ -666,7 +666,7 @@ TRIDENTBlockHandler (
 	UpdateCurrentTime();
 	(*pTrident->VideoTimerCallback)(pScrn, currentTime.milliseconds);
     }
-}
+} 
 
 static const OptionInfoRec *
 TRIDENTAvailableOptions(int chipid, int busid)
@@ -2441,7 +2441,6 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     tridentReg = &pTrident->ModeReg;
 
     vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE);
-
     if (pScrn->progClock)
     	TridentRestore(pScrn, tridentReg);
     else
@@ -2983,20 +2982,27 @@ TRIDENTValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-  
-    if (pTrident->lcdActive && (pTrident->lcdMode != 0xff)
-	&& ((mode->HDisplay > LCD[pTrident->lcdMode].display_x) 
+    
+    if (pTrident->lcdActive && (pTrident->lcdMode != 0xff)){
+	if (((mode->HDisplay > LCD[pTrident->lcdMode].display_x) 
 	|| (mode->VDisplay > LCD[pTrident->lcdMode].display_y))) {
-        xf86DrvMsg(scrnIndex,X_INFO, "Removing mode (%dx%d) "
-	       "larger than the LCD panel (%dx%d)\n",
-	       mode->HDisplay,
-	       mode->VDisplay,
-	       LCD[pTrident->lcdMode].display_x,
-	       LCD[pTrident->lcdMode].display_y);
-	return(MODE_BAD);
-  }
-
-    return(MODE_OK);
+	    xf86DrvMsg(scrnIndex,X_INFO, "Removing mode (%dx%d) "
+		       "larger than the LCD panel (%dx%d)\n",
+		       mode->HDisplay,
+		       mode->VDisplay,
+		       LCD[pTrident->lcdMode].display_x,
+		       LCD[pTrident->lcdMode].display_y);
+	    return(MODE_BAD);
+	}
+	if (((float)mode->HDisplay/(float)mode->VDisplay) > 2.0) {
+	    xf86DrvMsg(scrnIndex,X_INFO, "Removing mode (%dx%d) "
+		       "unusual aspect ratio\n",
+		       mode->HDisplay,
+		       mode->VDisplay);
+	    return(MODE_BAD);
+	}
+    }
+    return (MODE_OK);
 }
 
 /* Do screen blanking */

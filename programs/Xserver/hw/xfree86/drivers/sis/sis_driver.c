@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.66 2001/06/15 21:23:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.68 2001/10/01 13:44:10 eich Exp $ */
 
 #include "fb.h"
 #include "xf1bpp.h"
@@ -150,7 +150,6 @@ static SymTabRec SISChipsets[] = {
     { PCI_CHIP_SG86C225,    "SIS86c225" },
 #endif
     { PCI_CHIP_SIS5597,     "SIS5597" },
-    { PCI_CHIP_SIS5597,     "SIS5598" },
     { PCI_CHIP_SIS530,      "SIS530" },
     { PCI_CHIP_SIS6326,     "SIS6326" },
     { PCI_CHIP_SIS300,      "SIS300" },
@@ -358,37 +357,52 @@ SISFreeRec(ScrnInfoPtr pScrn)
 static void 
 SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 {
+    SISPtr pSiS = SISPTR(pScrn);
     unsigned char extDDC_PCR;
     unsigned char crtc17 = 0;
-    unsigned char seq1 = 0 ;
+    unsigned char seq1 = 0;
     int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,"SISDisplayPowerManagementSet(%d)\n",PowerManagementMode);
     outb(vgaIOBase + 4, 0x17);
     crtc17 = inb(vgaIOBase + 5);
+    /* enable access to extended sequencer registers */
+    outw(VGA_SEQ_INDEX, 0x8605);
     outb(VGA_SEQ_INDEX, 0x11);
-    extDDC_PCR = inb(VGA_SEQ_DATA) & ~0xC0;
+    extDDC_PCR = inb(VGA_SEQ_DATA);
+    /* if not blanked obtain state of LCD blank flags set by BIOS */
+    if (!pSiS->Blank)
+	pSiS->LCDon = extDDC_PCR;
+    /* erase LCD blank flags */
+    extDDC_PCR &= ~0xC;
+    
     switch (PowerManagementMode)
     {
         case DPMSModeOn:
             /* HSync: On, VSync: On */
             seq1 = 0x00 ;
+	    /* don't just unblanking; use LCD state set by BIOS */
+	    extDDC_PCR  |= (pSiS->LCDon & 0x0C);
+	    pSiS->Blank = FALSE;
             crtc17 |= 0x80;
             break;
         case DPMSModeStandby:
             /* HSync: Off, VSync: On */
             seq1 = 0x20 ;
-            extDDC_PCR |= 0x40;
+            extDDC_PCR |= 0x8;
+	    pSiS->Blank = TRUE;
             break;
         case DPMSModeSuspend:
             /* HSync: On, VSync: Off */
             seq1 = 0x20 ;
-            extDDC_PCR |= 0x80;
+            extDDC_PCR |= 0x8;
+	    pSiS->Blank = TRUE;
             break;
         case DPMSModeOff:
             /* HSync: Off, VSync: Off */
             seq1 = 0x20 ;
-            extDDC_PCR |= 0xC0;
+            extDDC_PCR |= 0xC;
+	    pSiS->Blank = TRUE;
             /* DPMSModeOff is not supported with ModeStandby | ModeSuspend  */
             /* need same as the generic VGA function */
             crtc17 &= ~0x80;
@@ -1235,7 +1249,8 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
             (pSiS->Chipset == PCI_CHIP_SIS630) ||
             (pSiS->Chipset == PCI_CHIP_SIS540)) {
         SiSPreSetMode(pScrn);
-        SiSSetMode(pScrn, pScrn->currentMode);
+        if (!SiSSetMode(pScrn, pScrn->currentMode))
+	    return FALSE;
     } else
         (*pSiS->SiSRestore)(pScrn, sisReg);
 
@@ -1514,7 +1529,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     ShadowFBInit(pScreen, refreshArea);
     }
-
+    
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)SISDisplayPowerManagementSet, 0);
 
 #ifdef XvExtension
@@ -1793,6 +1808,16 @@ SISFreeScreen(int scrnIndex, int flags)
 static int
 SISValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    SISPtr pSiS = SISPTR(pScrn);
+
+    if ((pSiS->Chipset == PCI_CHIP_SIS300) ||
+            (pSiS->Chipset == PCI_CHIP_SIS630) ||
+            (pSiS->Chipset == PCI_CHIP_SIS540)) {
+	if (CalcModeIndex(pScrn, mode) < 0x14)
+	    return (MODE_BAD);
+    }
+    
     return(MODE_OK);
 }
 
@@ -1802,6 +1827,29 @@ SISValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 static Bool
 SISSaveScreen(ScreenPtr pScreen, int mode)
 {
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+
+    if ((pScrn != NULL) && pScrn->vtSema) { 
+	SISPtr pSiS = SISPTR(pScrn);
+	/* enable access to extended sequencer registers */
+	outw(VGA_SEQ_INDEX, 0x8605);
+	outb(VGA_SEQ_INDEX, 0x11);
+	/* if not blanked obtain state of LCD blank flags set by BIOS */
+	if (!pSiS->Blank) {
+	    unsigned char val;
+	    val = inb(VGA_SEQ_DATA);
+	    pSiS->LCDon = val;
+	}
+	if (!xf86IsUnblank(mode)) {
+	    pSiS->Blank = TRUE;
+	    outb(VGA_SEQ_DATA, (pSiS->LCDon | 0x8));
+	} else {
+	    pSiS->Blank = FALSE;
+	    /* don't just unblanking; use LCD state set by BIOS */
+	    outb(VGA_SEQ_DATA, (pSiS->LCDon));
+	}
+    }
+
     return vgaHWSaveScreen(pScreen, mode);
 }
 

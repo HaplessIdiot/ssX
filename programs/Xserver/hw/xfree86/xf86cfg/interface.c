@@ -494,8 +494,8 @@ main(int argc, char *argv[])
     SelectLayoutCallback(layoutsme,
 			 XF86Config->conf_layout_lst, NULL);
 
+    startaccessx();
     if (startedx) {
-	startaccessx();
 	switch (fork()) {
 	    case 0: {
 		char path[PATH_MAX];

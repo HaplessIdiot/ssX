@@ -493,7 +493,7 @@ SiSSubsequentSolidHorzVertLine(ScrnInfoPtr pScrn,
 
 	PDEBUG(ErrorF("Subsequent SolidHorzVertLine(%d, %d, %d, %d)\n",
 					x, y, len, dir));
-
+	len--; /* starting point is included! */
 	dstbase = 0;
 	if ((y >= 2048) || ((y + len) >= 2048)) { 
 		dstbase = pSiS->scrnOffset * y;

@@ -137,6 +137,7 @@ typedef struct {
     XF86VideoAdaptorPtr adaptor;
     int                 videoKey;
     int			hsync;
+    int			hsync_lskew;
     int			vsync;
     CARD32              videoFlags;
     int			keyOffset;
@@ -168,6 +169,13 @@ typedef struct {
     int y_res;
     int mode;
 } biosMode;
+
+typedef struct {
+  int x_res;
+  int y_res;
+  CARD8 GR5a;
+  CARD8 GR5c;
+} newModes;
 
 /* Prototypes */
 

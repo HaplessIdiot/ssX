@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.4 2001/03/03 22:26:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.6 2001/05/15 10:19:40 eich Exp $ */
 
 #ifndef _SMI_H
 #define _SMI_H
@@ -266,7 +266,7 @@ typedef struct
 									"(%d)\n", __LINE__); xf86Break1()
 	#define DEBUG(arg)				xf86ErrorFVerb arg
 #else
-	#define VERBLEV	2
+	#define VERBLEV	4
 	#define ENTER_PROC(PROCNAME)
 	#define DEBUG_PROC(PROCNAME)
 	#define LEAVE_PROC(PROCNAME)
@@ -322,9 +322,10 @@ do									\
 /******************************************************************************/
 
 /* smi_dac.c */
-void SMI_CommonCalcClock(long freq, int min_m, int min_n1, int max_n1,
-			 int min_n2, int max_n2, long freq_min, long freq_max,
-			 unsigned char * mdiv, unsigned char * ndiv);
+void SMI_CommonCalcClock(int scrnIndex, long freq, int min_m, int min_n1, 
+			 int max_n1, int min_n2, int max_n2, long freq_min, 
+			 long freq_max, unsigned char * mdiv, 
+			 unsigned char * ndiv);
 
 /* smi_i2c */
 Bool SMI_I2CInit(ScrnInfoPtr pScrn);
@@ -333,6 +334,7 @@ Bool SMI_I2CInit(ScrnInfoPtr pScrn);
 Bool SMI_AccelInit(ScreenPtr pScrn);
 void SMI_AccelSync(ScrnInfoPtr pScrn);
 void SMI_GEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file);
+void SMI_EngineReset(ScrnInfoPtr);
 
 /* smi_hwcurs.c */
 Bool SMI_HWCursorInit(ScreenPtr pScrn);

@@ -199,6 +199,7 @@ typedef unsigned char UChar;
 #define PanelType0F             0x78
 
 Bool SiSSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode);
+UShort CalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode);
 void SetReg1(UShort port, UShort index, UShort  data);
 void DisableBridge(UShort  BaseAddr);
 void UnLockCRT2(UShort BaseAddr);
@@ -206,3 +207,4 @@ void LockCRT2(UShort BaseAddr);
 void EnableBridge(UShort BaseAddr);
 void SetCH7005(UShort tempbx);
 UShort GetCH7005(UShort tempbx);
+unsigned char SiSGetSetModeID(ScrnInfoPtr pScrn, unsigned char id);

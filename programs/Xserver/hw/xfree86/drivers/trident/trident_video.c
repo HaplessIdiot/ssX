@@ -67,6 +67,8 @@ static void tridentSetVideoGamma(TRIDENTPtr pTrident,int value,int brightness);
 static void tridentSetVideoContrast(TRIDENTPtr pTrident,int value);
 static void tridentSetVideoParameters(TRIDENTPtr pTrident, int brightness, 
 				      int saturation, int hue);
+void tridentFixFrame(ScrnInfoPtr pScrn, int *fixFrame);
+
 
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
@@ -85,18 +87,23 @@ void TRIDENTInitVideo(ScreenPtr pScreen)
      *
      * 9525         : flags: None
      * CyberBlade/i7: flags: VID_ZOOM_INV | VID_ZOOM_MINI
+     * CyberBlade/i1: flags: VID_ZOOM_INV | VID_ZOOM_MINI
+     * CyberBlade/Ai1: flags: VID_ZOOM_INV 
      * Cyber 9540   : flags: VID_ZOOM_INV | VID_SHIFT_4
+     * CyberXPm8    : flags: VID_ZOOM_INV | VID_SHIFT_4
      *
      * When you make changes make sure not to break these
      * Add new chipsets to this list.
      */
     if (pTrident->Chipset >= BLADE3D) {
        pTrident->videoFlags = VID_ZOOM_INV ;
-       if (pTrident->Chipset <= CYBERBLADEI7D)
+       if (pTrident->Chipset <= CYBERBLADEI1D)
 	 pTrident->videoFlags |= VID_ZOOM_MINI;
-       else 
+       else if (pTrident->Chipset < CYBERBLADEAI1 /* verified EE */
+		|| pTrident->Chipset > CYBERBLADEAI1D)
 	 pTrident->videoFlags |= VID_OFF_SHIFT_4;
     }
+ 
     newAdaptor = TRIDENTSetupImageVideo(pScreen);
     TRIDENTInitOffscreenImages(pScreen);
 
@@ -124,6 +131,13 @@ void TRIDENTInitVideo(ScreenPtr pScreen)
 
     if(newAdaptors)
 	xfree(newAdaptors);
+
+    xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,3,"XvFlags: %s %s %s\n",
+		   pTrident->videoFlags & VID_ZOOM_INV ? "VID_ZOOM_INV" : "",
+		   pTrident->videoFlags & VID_ZOOM_MINI ? "VID_ZOOM_MINI" : "",
+		   pTrident->videoFlags & VID_OFF_SHIFT_4 ? "VID_OFF_SHIFT_4"
+		   : "");
+		   
 }
 
 /* client libraries expect an encoding */
@@ -153,7 +167,7 @@ static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
     {XvSettable | XvGettable, 0, 0x3F,          "XV_BRIGHTNESS"},
     {XvSettable | XvGettable, 0, 360 ,          "XV_HUE"},
     {XvSettable | XvGettable, -128, 127,        "XV_GAMMA"},
-    {XvSettable | XvGettable, 0, 127,           "XV_CONTRAST"}
+    {XvSettable | XvGettable, 0, 7,           "XV_CONTRAST"}
 };
 
 #define NUM_IMAGES 4
@@ -210,6 +224,7 @@ typedef struct {
    CARD32	videoStatus;
    Time		offTime;
    Time		freeTime;
+   int          fixFrame;
 } TRIDENTPortPrivRec, *TRIDENTPortPrivPtr;
 
 
@@ -243,6 +258,11 @@ void TRIDENTResetVideo(ScrnInfoPtr pScrn)
 	}
     }
 
+    if (pTrident->Chipset >= CYBERBLADEXPm8) {
+	OUTW(0x3C4, 0x007A);
+	OUTW(0x3C4, 0x007D);
+    }
+    
     switch (pScrn->depth) {
     case 8:
 	VIDEOOUT(pPriv->colorKey, pTrident->keyOffset);
@@ -285,6 +305,10 @@ void TRIDENTResetVideo(ScrnInfoPtr pScrn)
 	    break;
 	}    
     }    
+    tridentSetVideoGamma(pTrident,pPriv->Gamma,pPriv->Brightness);
+    tridentSetVideoContrast(pTrident,pPriv->Contrast);
+    tridentSetVideoParameters(pTrident,pPriv->Brightness,pPriv->Saturation,
+                            pPriv->HUE);
 }
 
 
@@ -328,12 +352,14 @@ TRIDENTSetupImageVideo(ScreenPtr pScreen)
     adapt->QueryImageAttributes = TRIDENTQueryImageAttributes;
 
     pPriv->colorKey = pTrident->videoKey & ((1 << pScrn->depth) - 1);
-    pPriv->Brightness = 0x20;
-    pPriv->Saturation = 100;
+    pPriv->Brightness = 45;
+    pPriv->Saturation = 80;
+    pPriv->Contrast = 4;
     pPriv->Gamma = 0;
     pPriv->HUE = 0;
     pPriv->videoStatus = 0;
-    
+    pPriv->fixFrame = 100;
+
     /* gotta uninit this someplace */
     REGION_INIT(pScreen, &pPriv->clip, NullBox, 0); 
 
@@ -487,6 +513,11 @@ tridentSetVideoParameters(TRIDENTPtr pTrident, int brightness,
 {
     double dtmp;
     CARD8 sign, tmp, tmp1;
+
+    if (brightness >= 0x20) 
+      brightness -= 0x20;
+    else 
+      brightness += 0x20;
     dtmp = sin((double)hue / 180.0 * PI) * saturation / 12.5;
     sign = (dtmp < 0) ? 1 << 1 : 0;
     tmp1 = ((int)fabs(dtmp) >> 4) & 0x1;
@@ -752,7 +783,7 @@ TRIDENTDisplayVideo(
 	break;
     }  
     tx1 = dstBox->x1 + pTrident->hsync;
-    tx2 = dstBox->x2 + pTrident->hsync; 
+    tx2 = dstBox->x2 + pTrident->hsync + pTrident->hsync_lskew; 
     ty1 = dstBox->y1 + pTrident->vsync - 2;
     ty2 = dstBox->y2 + pTrident->vsync + 2;
 
@@ -771,12 +802,6 @@ TRIDENTDisplayVideo(
         offset = offset >> 4;
     else
         offset = offset >> 3;
-
-    if (pTrident->Chipset >= CYBERBLADEXPm8) {
-	int bpp = pScrn->bitsPerPixel >> 3;		
-	int dstPitch = ((width << 1) + 15) & ~15;
-	offset += (((dstPitch * (height - 1)) + bpp - 1) / bpp) >> 4;
-    }
 
     OUTW(vgaIOBase + 4, (((width<<1) & 0xff)<<8)   | 0x90);
     OUTW(vgaIOBase + 4, ((width<<1) & 0xff00)      | 0x91);
@@ -954,6 +979,7 @@ TRIDENTPutImage(
    left <<= 1;
 
    offset = pPriv->linear->offset * bpp;
+   
    dst_start = pTrident->FbBase + offset + left + (top * dstPitch);
 
    switch(id) {
@@ -990,6 +1016,8 @@ TRIDENTPutImage(
     }
 
     offset += top * dstPitch;
+
+    tridentFixFrame(pScrn,&pPriv->fixFrame);
     TRIDENTDisplayVideo(pScrn, id, offset, width, height, dstPitch,
 	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
 
@@ -1192,6 +1220,7 @@ TRIDENTDisplaySurface(
 
     TRIDENTResetVideo(pScrn);
 
+    tridentFixFrame(pScrn,&portPriv->fixFrame);
     TRIDENTDisplayVideo(pScrn, surface->id, surface->offsets[0], 
 	     surface->width, surface->height, surface->pitches[0],
 	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
@@ -1265,3 +1294,110 @@ TRIDENTVideoTimerCallback(ScrnInfoPtr pScrn, Time time)
     } else  /* shouldn't get here */
 	pTrident->VideoTimerCallback = NULL;
 }
+
+    /* Calculate skew offsets for video overlay */
+
+
+void
+tridentFixFrame(ScrnInfoPtr pScrn, int *fixFrame)
+{
+
+  TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+  int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+  int HTotal, HSyncStart;
+  int VTotal, VSyncStart;
+  int h_off = 0;
+  int v_off = 0;
+  unsigned char CRTC[0x11];
+  Bool isShadow;
+  unsigned char shadow = 0;
+
+  if ((*fixFrame)++ < 100) 
+    return;
+  
+  *fixFrame = 0;
+  isShadow = (pTrident->ModeReg.tridentRegs3CE[CyberControl] & 0x81) == 0x81;
+  
+  if (isShadow)
+    SHADOW_ENABLE(shadow);
+
+  OUTB(vgaIOBase + 4, 0x0);
+  CRTC[0x0] = INB(vgaIOBase + 5);
+  OUTB(vgaIOBase + 4, 0x4);
+  CRTC[0x4] = INB(vgaIOBase + 5);
+  OUTB(vgaIOBase + 4, 0x5);
+  CRTC[0x5] = INB(vgaIOBase + 5);
+  OUTB(vgaIOBase + 4, 0x6);
+  CRTC[0x6] = INB(vgaIOBase + 5);
+  OUTB(vgaIOBase + 4, 0x7);
+  CRTC[0x7] = INB(vgaIOBase + 5);
+  OUTB(vgaIOBase + 4, 0x10);
+  CRTC[0x10] = INB(vgaIOBase + 5);
+
+  HTotal = CRTC[0] << 3;
+  VTotal = CRTC[6] 
+    | ((CRTC[7] & (1<<0)) << 8)
+    | ((CRTC[7] & (1<<5)) << 4);
+  HSyncStart = (CRTC[4] 
+		+ ((CRTC[5] >> 5) & 0x3)) << 3;
+  VSyncStart = CRTC[0x10] 
+    | ((CRTC[7] & (1<<2)) << 6)
+    | ((CRTC[7] & (1<<7)) << 2);
+
+  if (isShadow) {
+    SHADOW_RESTORE(shadow);
+    if (pTrident->lcdMode != 0xff) {
+      h_off = (LCD[pTrident->lcdMode].display_x 
+	       - pScrn->currentMode->HDisplay) >> 1;
+      v_off = (LCD[pTrident->lcdMode].display_y 
+	       - pScrn->currentMode->VDisplay) >> 1;
+    }
+  } 
+
+  pTrident->hsync = (HTotal - HSyncStart) + 23 + h_off;
+  pTrident->vsync = (VTotal - VSyncStart) - 2 + v_off;
+  
+  /* HACK !!! - maybe worth doing them as options ! */
+  /* As awful as this is, it appears to be the only way....Sigh! */
+  switch (pTrident->Chipset) {
+  case TGUI9680:
+    /* Furthur tweaking needed */
+#if 0
+    pTrident->hsync -= (mode->CrtcHTotal / 16);
+#endif
+    pTrident->vsync += 2;
+    break;
+  case PROVIDIA9682:
+    /* Furthur tweaking needed */
+    pTrident->hsync += 7;
+    break;
+  case PROVIDIA9685:
+    /* Spot on */
+    break;
+  case CYBERBLADEXPm8:
+  case CYBERBLADEXPm16:
+    pTrident->hsync -= 15;
+    pTrident->hsync_lskew = 3;
+    break;
+  case BLADE3D:
+    if (pScrn->depth == 24)
+      pTrident->hsync -= 8;
+    else
+      pTrident->hsync -= 6;
+    break;
+  case CYBERBLADEI7:
+  case CYBERBLADEI7D:
+  case CYBERBLADEI1:
+  case CYBERBLADEI1D:
+    pTrident->hsync -= 8;
+    break;
+  case CYBERBLADEAI1:
+  case CYBERBLADEAI1D:
+    pTrident->hsync -= 7;
+    break;
+  case CYBERBLADEE4:
+    pTrident->hsync -= 8;
+    break;
+  }
+}
+    

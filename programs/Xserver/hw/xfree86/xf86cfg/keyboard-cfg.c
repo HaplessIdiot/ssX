@@ -771,7 +771,9 @@ WriteXKBConfiguration(char *filename, XkbConfigRtrnPtr conf)
 		conf->mk_max_speed);
     fprintf(fp, "MouseKeysCurve		 =	%d\n", conf->mk_curve);
 
-    fprintf(fp, "AccessXTimeout		 =	%d\n", conf->ax_timeout);
+    if (conf->ax_timeout)
+	fprintf(fp, "AccessXTimeout		 =	%d\n",
+		conf->ax_timeout);
     if (conf->initial_ctrls != 0) {
 	fprintf(fp, "Controls		%c=	",
 		conf->replace_initial_ctrls ? ' ' : '+');

@@ -106,6 +106,8 @@
 #define VertStretch  0x52
 #define HorStretch   0x53
 #define BiosMode     0x5c
+#define BiosNewMode1 0x5a
+#define BiosNewMode2 0x5c
 #define BiosReg      0x5d
 
 /* Graphics Engine for 9420/9430 */
@@ -363,5 +365,5 @@
 #define SHADOW_RESTORE(val) \
         do {\
                OUTB(0x3CE, CyberControl); \
-	       OUTB(0x3CF,tmp); \
+	       OUTB(0x3CF,val); \
         } while (0);
