@@ -28,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86$ */
 
 int  sp_bics_map[] = {
     32, 0,

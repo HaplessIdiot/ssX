@@ -1,6 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/bankc.c,v 3.1 1997/02/10 16:41:01 hohndel Exp $ */
 /*
- * Copyright 1997 by Alan Hourihane, Wigan, England.
+ * Copyright 1998 by Alan Hourihane, Wigan, England.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -20,32 +19,47 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
+ * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
+ *
+ * TridentOutIndReg() and TridentInIndReg() are used to access 
+ * the indirect Trident RAMDAC registers only.
  */
+/* $XFree86$ */
 
-#define PSZ 8
-#include "vga256.h"
-void TVGA8900SetRead(int bank)
+#include "xf86.h"
+#include "xf86_OSproc.h"
+#include "xf86_ansic.h"
+
+#include "xf86PciInfo.h"
+#include "xf86Pci.h"
+
+#include "trident_regs.h"
+#include "trident.h"
+
+void
+TridentWriteAddress (ScrnInfoPtr pScrn, CARD32 index)
 {
-  outw(0x3c4, (((bank & 0xff) ^ 0x02)<<8)|0x0E);
+    outb(0x3C6, 0xFF);
+    outb(0x3C7, index);
+    outb(0x3C8, index);
 }
-void TGUISetRead(int bank)
+
+void
+TridentWriteData (ScrnInfoPtr pScrn, unsigned char data)
 {
-  outb(0x3d9, bank & 0xff);
+    outb(0x3C9, data);
 }
-void TVGA8900SetWrite(int bank)
+
+void
+TridentReadAddress (ScrnInfoPtr pScrn, CARD32 index)
 {
-  outw(0x3c4, (((bank & 0xff) ^ 0x02)<<8)|0x0E);
+    outb(0x3C6, 0xFF);
+    outb(0x3C7, index);
+    outb(0x3C8, index);
 }
-void TGUISetWrite(int bank)
+
+unsigned char
+TridentReadData (ScrnInfoPtr pScrn)
 {
-  outb(0x3d8, bank & 0xff);
-}
-void TVGA8900SetReadWrite(int bank)
-{
-  outw(0x3c4, (((bank & 0xff) ^ 0x02)<<8)|0x0E);
-}
-void TGUISetReadWrite(int bank)
-{
-  outw(0x3d8, (bank & 0xff)<< 8 | bank & 0xff);
+    return(inb(0x3C9));
 }

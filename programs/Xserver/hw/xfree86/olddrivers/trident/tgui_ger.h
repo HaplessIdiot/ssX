@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_ger.h,v 1.3 1997/10/13 17:16:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_ger.h,v 1.4 1997/11/08 16:24:29 hohndel Exp $ */
 
 /* Graphics Engine for 9420/9430 */
 

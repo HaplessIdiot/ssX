@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_drv.h,v 1.1 1997/03/06 23:17:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/bankc.c,v 1.1 1997/03/06 23:17:01 hohndel Exp $ */
 /*
- * Copyright 1995 by Alan Hourihane, Wigan, England.
+ * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -22,18 +22,30 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XConsortium: tgui_drv.h /main/2 1996/02/21 18:08:15 kaleb $ */
 
-/* Variables defined in tgui_cursor.c. */
-
-extern int TridentCursorHotX;
-extern int TridentCursorHotY;
-extern int TridentCursorWidth;
-extern int TridentCursorHeight;
-
-/* Functions defined in tgui_cursor.c. */
-
-extern Bool TridentCursorInit();
-extern void TridentRestoreCursor();
-extern void TridentWarpCursor();
-extern void TridentQueryBestSize();
+#define PSZ 8
+#include "vga256.h"
+void TVGA8900SetRead(int bank)
+{
+  outw(0x3c4, (((bank & 0xff) ^ 0x02)<<8)|0x0E);
+}
+void TGUISetRead(int bank)
+{
+  outb(0x3d9, bank & 0xff);
+}
+void TVGA8900SetWrite(int bank)
+{
+  outw(0x3c4, (((bank & 0xff) ^ 0x02)<<8)|0x0E);
+}
+void TGUISetWrite(int bank)
+{
+  outb(0x3d8, bank & 0xff);
+}
+void TVGA8900SetReadWrite(int bank)
+{
+  outw(0x3c4, (((bank & 0xff) ^ 0x02)<<8)|0x0E);
+}
+void TGUISetReadWrite(int bank)
+{
+  outw(0x3d8, (bank & 0xff)<< 8 | bank & 0xff);
+}

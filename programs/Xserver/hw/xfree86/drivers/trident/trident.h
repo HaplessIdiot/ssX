@@ -1,6 +1,5 @@
-/* $XConsortium: t89_driver.h /main/3 1996/02/21 18:08:07 kaleb $ */
 /*
- * Copyright 1995 by Alan Hourihane, Wigan, England.
+ * Copyright 1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -20,12 +19,80 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
+ * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.h,v 1.8 1997/12/28 21:28:31 hohndel Exp $ */
+/* $XFree86$ */
 
-extern int TVGAchipset;
-extern Bool IsCyber;
+#ifndef _TRIDENT_H_
+#define _TRIDENT_H_
+
+#include "xf86Cursor.h"
+#include "xaa.h"
+#include "xf86RamDac.h"
+#include "compiler.h"
+
+typedef struct {
+	unsigned char tridentRegs3x4[0x100];
+	unsigned char tridentRegs3CE[0x100];
+	unsigned char tridentRegs3C4[0x100];
+	unsigned char tridentRegsDAC[0x01];
+	unsigned char tridentRegsClock[0x03];
+	unsigned char DacRegs[0x300];
+} TRIDENTRegRec, *TRIDENTRegPtr;
+
+#define TRIDENTPTR(p)	((TRIDENTPtr)((p)->driverPrivate))
+
+typedef struct {
+    pciVideoPtr		PciInfo;
+    PCITAG		PciTag;
+    int			Chipset;
+    int			TVGAchipset;
+    int			DACtype;
+    int			RamDac;
+    int                 ChipRev;
+    int			HwBpp;
+    int			BppShift;
+    CARD32		IOAddress;
+    CARD32		FbAddress;
+    unsigned char *     IOBase;
+#ifdef __alpha__
+    unsigned char *     IOBaseDense;
+#endif
+    unsigned char *	FbBase;
+    long		FbMapSize;
+    Bool		NoAccel;
+    Bool		Dac6Bit;
+    Bool		HWCursor;
+    Bool		UsePCIRetry;
+    Bool		NewClockCode;
+    Bool		IsCyber;
+    float		frequency;
+    int			MinClock;
+    int			MaxClock;
+    TRIDENTRegRec	SavedReg;
+    TRIDENTRegRec	ModeReg;
+    CARD32		AccelFlags;
+    CARD32		BltScanDirection;
+    RamDacRecPtr	RamDacRec;
+    xf86CursorInfoPtr	CursorInfoRec;
+    XAAInfoRecPtr	AccelInfoRec;
+    CloseScreenProcPtr	CloseScreen;
+} TRIDENTRec, *TRIDENTPtr;
+
+/* Prototypes */
+
+void TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg);
+void TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg);
+Bool TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+Bool TridentAccelInit(ScreenPtr pScreen);
+
+void TridentOutIndReg(ScrnInfoPtr pScrn,
+		     CARD32 reg, unsigned char mask, unsigned char data);
+unsigned char TridentInIndReg(ScrnInfoPtr pScrn, CARD32 reg);
+void TridentWriteAddress(ScrnInfoPtr pScrn, CARD32 index);
+void TridentReadAddress(ScrnInfoPtr pScrn, CARD32 index);
+void TridentWriteData(ScrnInfoPtr pScrn, unsigned char data);
+unsigned char TridentReadData(ScrnInfoPtr pScrn);
 
 /*
  * Trident Chipset Definitions
@@ -61,18 +128,18 @@ extern Bool IsCyber;
 #define IMAGE985	26
 
 /* defines */
-#define IsTGUI9440	(TVGAchipset == TGUI9440AGi)
-#define IsTGUI9660	((TVGAchipset == TGUI9660))
-#define IsTGUI9680	((TVGAchipset == TGUI9680))
-#define IsTGUI9682	((TVGAchipset == TGUI9682))
-#define IsTGUI9685	((TVGAchipset == TGUI9685))
-#define IsAdvCyber	((TVGAchipset == CYBER9382) || \
-			 (TVGAchipset == CYBER9385) || \
-			 (TVGAchipset == CYBER9388))
-#define Is3Dchip	((TVGAchipset == CYBER9397) || \
-			 (TVGAchipset == CYBER9520) || \
-			 (TVGAchipset == IMAGE975) || \
-			 (TVGAchipset == IMAGE985))
+#define IsTGUI9440	(pTrident->TVGAchipset == TGUI9440AGi)
+#define IsTGUI9660	((pTrident->TVGAchipset == TGUI9660))
+#define IsTGUI9680	((pTrident->TVGAchipset == TGUI9680))
+#define IsTGUI9682	((pTrident->TVGAchipset == TGUI9682))
+#define IsTGUI9685	((pTrident->TVGAchipset == TGUI9685))
+#define IsAdvCyber	((pTrident->TVGAchipset == CYBER9382) || \
+			 (pTrident->TVGAchipset == CYBER9385) || \
+			 (pTrident->TVGAchipset == CYBER9388))
+#define Is3Dchip	((pTrident->TVGAchipset == CYBER9397) || \
+			 (pTrident->TVGAchipset == CYBER9520) || \
+			 (pTrident->TVGAchipset == IMAGE975) || \
+			 (pTrident->TVGAchipset == IMAGE985))
 
 #ifdef INITIALIZE_LIMITS
 /* Clock Limits */
@@ -212,3 +279,6 @@ extern int tridentClockLimit32bpp[];
 
 #define TKD8001		0
 #define TGUIDAC		1
+
+#endif /* _TRIDENT_H_ */
+

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.184 1998/09/05 06:36:03 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.185 1998/09/06 04:46:52 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -61,7 +61,7 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #endif
 /* Pure PCI drivers should go first */
 #ifndef XF86CardDrivers
-#define XF86CardDrivers		mga glint cirrus tga tseng chips vga
+#define XF86CardDrivers		mga glint tga cirrus tseng trident chips vga
 #endif
 #endif
 
