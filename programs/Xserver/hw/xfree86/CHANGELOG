@@ -1,4 +1,8 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 759. Updates for XKB keyboard maps:
+      - Add Tibetan/Dzongkha keyboard layout (Bugzilla #1082, Gregory Mokhin).
+      - Add three new Internet/multimedia keyboard descriptions
+        (Bugzilla #1088, Radics Laszlo).
  758. Add overlooked SecondaryColor entries to AppleDRI indirect dispatch
       table (Torrey T. Lyons).
  757. Allocate pBIOSInfo->UserSetting in the via driver, which fixes a crash
@@ -18546,7 +18550,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3102 2004/01/15 01:43:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3103 2004/01/17 00:41:34 torrey Exp $
 
 
 
