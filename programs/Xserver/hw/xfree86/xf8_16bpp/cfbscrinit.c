@@ -4,7 +4,7 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbscrinit.c,v 1.1 1999/01/31 12:22:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbscrinit.c,v 1.2 1999/02/07 06:18:51 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -163,13 +163,14 @@ cfb8_16SetupScreen(
 static Bool
 cfb8_16CreateScreenResources(ScreenPtr pScreen)
 {
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     cfb8_16ScreenPtr pScreenPriv = CFB8_16_GET_SCREEN_PRIVATE(pScreen);
     PixmapPtr pix8, pix16;
     
     xfree(pScreen->devPrivate); /* freeing miScreenInitParmsRec */
 
     pix8 = (*pScreen->CreatePixmap)(pScreen, 0, 0, 8);
-    pix16 = (*pScreen->CreatePixmap)(pScreen, 0, 0, 16);
+    pix16 = (*pScreen->CreatePixmap)(pScreen, 0, 0, pScrn->depth);
     if(!pix16 || !pix8)
 	return FALSE;
 
@@ -336,16 +337,17 @@ cfb8_16RestoreAreas(
 static Bool
 cfb8_16CreateGC(GCPtr pGC)
 {
-    if(pGC->depth == 16)
-	return(cfb16CreateGC(pGC));
-    else
+    if(pGC->depth == 8)
 	return(cfbCreateGC(pGC));
+    else
+	return(cfb16CreateGC(pGC));
 }
 
 static Bool
 cfb8_16SaveRestoreImage(int index, SaveRestoreFlags what)
 {
     ScreenPtr pScreen = xf86Screens[index]->pScreen;
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     cfb8_16ScreenPtr pScreenPriv = CFB8_16_GET_SCREEN_PRIVATE(pScreen);
     static unsigned char *devPrivates8[MAXSCREENS];
     static unsigned char *devPrivates16[MAXSCREENS];
@@ -411,11 +413,12 @@ cfb8_16SaveRestoreImage(int index, SaveRestoreFlags what)
 	/* DEPTH 16 */
 
 	pPixDst = GetScratchPixmapHeader(pScreen, pScreen->width, 
-			pScreen->height, 16, 16, devKind16, devPrivate16);
+			pScreen->height, pScrn->depth, 16, devKind16,
+			devPrivate16);
 
 	pPixSrc = GetScratchPixmapHeader(pScreen, pScreen->width, 
-				pScreen->height, 16, 16, devKinds16[index],
-				devPrivates16[index]);
+				pScreen->height, pScrn->depth, 16,
+				devKinds16[index], devPrivates16[index]);
 
 	cfb16DoBitbltCopy((DrawablePtr)pPixSrc, (DrawablePtr)pPixDst,
                     			GXcopy, &pixReg, &Pnt, ~0L);

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.84 1999/03/14 11:18:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.85 1999/03/20 08:59:20 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -197,7 +197,8 @@ typedef enum {
     OPTION_8_PLUS_24,
     OPTION_MGA_SDRAM,
     OPTION_SHADOW_FB,
-    OPTION_FBDEV
+    OPTION_FBDEV,
+    OPTION_COLOR_KEY
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
@@ -212,6 +213,7 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_MGA_SDRAM,		"MGASDRAM",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_FBDEV,		"UseFBDev",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_COLOR_KEY,		"ColorKey",	OPTV_INTEGER,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1080,6 +1082,11 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 		"Option \"8Plus24\" is not supported by the G100\n");
 	} else if(pScrn->bitsPerPixel == 32) {
 	    pMga->Overlay8Plus24 = TRUE;
+	    if(!xf86GetOptValInteger(
+			MGAOptions, OPTION_COLOR_KEY,&(pMga->colorKey)))
+		pMga->colorKey = TRANSPARENCY_KEY;
+	    pScrn->colorKey = pMga->colorKey;	    
+	    pScrn->overlayFlags = OVERLAY_8_32_PLANAR;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 				"PseudoColor overlay enabled\n");
 	} else {
@@ -2110,7 +2117,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    ret = cfb8_32ScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth, TRANSPARENCY_KEY);
+			pScrn->displayWidth);
 	else 
 	    ret = cfb32ScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
@@ -2166,14 +2173,6 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		"Hardware cursor initialization failed\n");
     }
 
-    if(pMga->Overlay8Plus24) {
-	if(!xf86Overlay8Plus32Init(pScreen))
-	    return FALSE;
-    }
-
-    if(pMga->ShadowFB)
-	ShadowFBInit(pScreen, MGARefreshArea);
-
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
 	return FALSE;
@@ -2185,6 +2184,14 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	(pMga->Overlay8Plus24 ? 0 : CMAP_PALETTED_TRUECOLOR) |
 			CMAP_RELOAD_ON_MODE_SWITCH))	
 	return FALSE;
+
+    if(pMga->Overlay8Plus24) { /* Must come after colormap initialization */
+	if(!xf86Overlay8Plus32Init(pScreen))
+	    return FALSE;
+    }
+
+    if(pMga->ShadowFB)
+	ShadowFBInit(pScreen, MGARefreshArea);
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, MGADisplayPowerManagementSet, 0);

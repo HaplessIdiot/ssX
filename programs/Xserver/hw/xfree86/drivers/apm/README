@@ -1,0 +1,81 @@
+
+Note 1: This driver is work in progress. It might not work at all.
+Want to help? Docs are at 
+ftp://beta.xfree86.org/pub/xf86/devel/Documentation/apm
+
+Note 2: The driver has preliminary, completely untested support for
+dynamic loading. Use static loading to build a useable (?) server.
+
+
+This is the Alliance Promotion driver for XFree86 4.0+. It currently
+only supports the AT3D and AT25 chipsets (found on various Voodoo-
+Rush cards). The 6422 and AT24 chips are supported in the XFree86
+3.3.x series.
+
+
+Authors:
+-----------------------------------------------------------------------
+Kent Hamilton    Initial creation.
+Henrik Harmsen   Lots of additions and fixes.  <hch@cd.chalmers.se>
+Loic Grenie      Conversion to 4.0.            <grenie@lami.univ-evry.fr>
+
+
+History:
+-----------------------------------------------------------------------
+Created by Kent Hamilton for Xfree86 from source from Alliance
+
+Modified 1997-06 by Henrik Harmsen
+  - Added support for AT3D
+  - Acceleration added for 8,16,32bpp: (for AT3D and AT24)
+    - Filled rectangles
+    - Screen-screen bitblts
+    - Host-screen color expansion bitblts for text
+  - DPMS support
+  - Enabled hardware cursor code (also in 8bpp)
+  - Set to programmable VCLK clock
+  - Set MCLK to 57.3 MHz on AT3D.
+  - Various bugfixes and cleanups
+
+Modified 1997-07-06 by Henrik Harmsen
+  - Fixed bug that made the HW cursor screw up on VT switches
+  - Probably fixed bug that screwed up the screen when using
+    screen-screen bitblts. This forced me to put an ApmSync() at 
+    the end of ApmSubsequentScreenToScreenCopy() which makes
+    me unhappy... But: Better it works than not...
+
+Modified 1997-10-19 by Henrik Harmsen
+  - HW line drawing.
+  - HW clipping.
+  - Added support for ROP's.
+  - Text acceleration now lots faster and support for accelerated
+    proportional text. (Uses SCANLINE_PAD_DWORD + clipping).
+  - Combined write for many register writes gives good 
+    general speedup. (write x+y as a single 32 bit entity, rather
+    obvious, really...:-)
+  - Now waits for correct number of free slots in FIFO before
+    issuing writes to the card.
+    This seems to have eliminated the last instances of dropped
+    interrupts from serial IO and no more lost packets in PPP :-)
+  - Converted cursor support to use XAA interface.
+  - Fixed ApmSync(). Finally removed call to ApmSync at end of
+    ApmSubsequentScreenToScreenCopy() :-)
+
+Modified 1998-03-29 by Henrik Harmsen
+  - Added DGA support.
+  - Added accel support for AP6422. Fixed AT24 accel support.
+  - Fixed clock register calculation for AP6422 and AT24.
+  - DPMS support for AT24 & AP6422.
+  - 2% faster text accel for AT24/AT3D :-)
+
+Modified 1998-12-18 by Loic Grenie
+  - Converted to Xfree86 4.0 driver interface. (Only support for 
+    AT25/AT3D chips).
+
+Modified 1999-03-14 by Henrik Harmsen
+  - Various fixes to bring it up to 3.9Pd.
+  - Added preliminary (completely untested) support for dynamic 
+    loading.
+
+
+
+$XFree86$

@@ -1,4 +1,65 @@
 XFree86 3.9Pf (21 March 1999)
+2409. Updates to s3virge driver to get it working under Linux/Alpha
+      (#2586, Matt Grossman).
+2408. Fix getline() clash (#2585, Alan Hourihane).
+2407. Have the s3virge driver use the new XAA rop helper functions (#2584,
+      Mark Vojkovich).
+2406. Add code to SuperProbe to detect the S3 Trio3D and Savage3D
+      (2583, Eric Molitor).
+2405. Add some XAA helper functions that drivers can call for help
+      converting X rops into MS rops (#2582, Mark Vojkovich).
+2404. Resync the overlay support in the glint driver (#2580, 2581,
+      Mark Vojkovich).
+2403. Add support for changing the overlay color key to the MGA driver
+      (#2579, Mark Vojkovich).
+2402. Preallocate the color key in the default colormap and set it to
+      something already in the default man (black) so that AllocColor will
+      never allocate it (#2578, Mark Vojkovich).
+2401. Use the color key field in the ScrnInfoRec for the overlay layers
+      (#2578, Mark Vojkovich).
+2400. Preliminary loader support for Linux/PPC ELF objects (#2577 (2570),
+      Stuart Anderson).
+2399. Fix some XAA offscreen pixmap problmes (#2576, Mark Vojkovich).
+2398. DGA fixes.  Old apps should now run with the new driver interface,
+      and event handling should work better than before (#2575,
+      Mark Vojkovich).
+2397. Fix most remaining signed/unsigned and prototype warnings in the
+      following directories: lib/Xaw, lib/Xmu, programs/xclipboard,
+      programs/xconsole, programs/xmag, and programs/xvidtune (#2574,
+      Thomas Dickey).
+2396. Restore the interface of XmuConvertStandardSelection() to use
+      XPointer rather than XtPointer (#2574, Thomas Dickey).
+2395. Fix an malloc size bug in libICE (#2572, Christopher Sekiya).
+2394. Make MIT-SHM resource types non-static so that other extensions
+      (like Xv) can access client shared memory segments (#2571,
+      Mark Vojkovich).
+2393. First cut at altering the C&T user docs for 4.0 (#2569, David Bateman).
+2392. Fix a C&T problem affecting the colourmap setup for 1bpp modes, and some
+      other minor C&T driver fixes (#2569, David Bateman).
+2391. Fix an buffer overflow in os/connection.c (#2568, Gerd Knorr).
+2390. Add support for Modes sections and the UseModes keyword for Monitor
+      sections to the parser (the data isn't used yet) (#2564, Dirk Hohndel).
+2389. Fix xfree86.cf for Alpha (#2567, Dirk Hohndel).
+2388. Fix XAAFillPolygonStippled to obey the flag NO_TRANSPARENCY in
+      Mono8x8PatternFill (#2566, Xavier Ducoin).
+2387. Only allow the shadowfb layer in the C&T driver when linear addressing
+      is enabled (#2565 (2561), David Bateman).
+2386. Fix some problems with the xf8_16bpp layer, and allow it to work
+      with depth 15 as well as 16 (#2565 (2561, 2562), David Bateman).
+2385. Implement TrueColor with PseudoColor Overlays (8+16) for the
+      C&T driver for HiQV chipsets (#2565 (2561), David Bateman).
+2384. Add a -quiet option to xgamma (#2565 (2561), David Bateman).
+2383. Add TrueColor Gamma Correction for C&T HiQV chipsets (#2565 (2561),
+      David Bateman).
+2382. Fix Permedia 2 HW cursor lockup (#2563, Alan Hourihane).
+2381. Initial XAA support for SiS530 and SiS620 (#2560, Xavier Ducoin).
+2380. Add SuperProbe for SiS (#2559, Xavier Ducoin).
+2379. Fix the InstalMultipleMan and InstallMultipleManSuffix rules for
+      NetBSD and OpenBSD (#2558 (2557), Matthieu Herrb).
+2378. Add Cards entry for Number Nine FX Reality 772 (#2556, Harald Koenig).
+2377. Make XF86Setup build again (not fully functional yet) (#2555, Joe Moss).
+2376. Update the apm (Alliance Promotion) to the 4.0 interface (#2554,
+      Loic Grenie, Henrik Harmsen).
 2375. Add some rules for driver/module man pages, and add a sample driver
       man page for the mga driver (David Dawes).
 2374. Update the Option Names section of xfree86/Registry (David Dawes).
@@ -70,8 +131,7 @@ XFree86 3.9Pe (14 March 1999)
 2337. Fix Permedia 2V hardware cursor (#2534, Alan Hourihane).
 2336. Add the rest of the known EM_ machine type defines, and Sparc
       specific relocation defines to loader/elf.h (#2533, David Miller).
-2335. Add sparse mapping of MMIO to the s3virge driver for Alpha (#2532,
-      Matt Grossman).
+2335. -
 2334. Disable MTRRs when unmapping memory (#2531, David Wragg).
 2333. Avoid the MTRR messages on systems with no MTRR support unless
       the "mtrr" option is specified or -verbose is used (#2531, David Wragg).
@@ -7500,4 +7560,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.708 1999/03/20 08:59:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.709 1999/03/21 01:45:03 dawes Exp $

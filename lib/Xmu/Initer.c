@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/Initer.c,v 1.3 1998/08/20 13:59:37 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Initer.c,v 1.4 1998/10/03 09:06:30 dawes Exp $ */
 
 /* Created By:  Chris D. Peterson
  *              MIT X Consortium
@@ -61,7 +61,7 @@ XmuAddInitializer(XmuInitializerProc func, XPointer data)
 void
 XmuCallInitializers(XtAppContext app_con)
 {
-  int i;
+  unsigned i;
 
   for (i = 0 ; i < init_list_length ; i++) {
     if (AddToAppconList(&(init_list[i].app_con_list), app_con))

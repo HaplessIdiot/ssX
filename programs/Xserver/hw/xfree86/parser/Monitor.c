@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.3 1998/11/22 10:37:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.4 1999/01/23 09:56:10 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -39,6 +39,7 @@ static xf86ConfigSymTabRec MonitorTab[] =
 	{IDENTIFIER, "identifier"},
 	{VENDOR, "vendorname"},
 	{MODEL, "modelname"},
+	{USEMODES, "usemodes"},
 	{MODELINE, "modeline"},
 	{DISPLAYSIZE, "displaysize"},
 	{HORIZSYNC, "horizsync"},
@@ -46,6 +47,15 @@ static xf86ConfigSymTabRec MonitorTab[] =
 	{MODE, "mode"},
 	{GAMMA, "gamma"},
 	{OPTION, "option"},
+	{-1, ""},
+};
+
+static xf86ConfigSymTabRec ModesTab[] =
+{
+	{ENDSECTION, "endsection"},
+	{IDENTIFIER, "identifier"},
+	{MODELINE, "modeline"},
+	{MODE, "mode"},
 	{-1, ""},
 };
 
@@ -522,6 +532,24 @@ parseMonitorSection (void)
 				}
 			}
 			break;
+		case USEMODES:
+		        {
+				XF86ConfModesLinkPtr mptr;
+
+				if ((token = xf86GetToken (NULL)) != STRING)
+					Error (QUOTE_MSG, "UseModes");
+
+				/* add to the end of the list of modes sections 
+				   referenced here */
+				mptr = xf86confmalloc (sizeof (XF86ConfModesLinkRec));
+				mptr->list.next = NULL;
+				mptr->ml_modes_str = val.str;
+				mptr->ml_modes = NULL;
+				ptr->mon_modes_sect_lst = (XF86ConfModesLinkPtr)
+					addListItem((GenericListPtr)ptr->mon_modes_sect_lst,
+						    (GenericListPtr)mptr);
+			}
+			break;
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
@@ -538,6 +566,50 @@ parseMonitorSection (void)
 
 #ifdef DEBUG
 	printf ("Monitor section parsed\n");
+#endif
+	return ptr;
+}
+
+#undef CLEANUP
+#define CLEANUP freeModesList
+
+XF86ConfModesPtr
+parseModesSection (void)
+{
+	int has_ident = FALSE;
+	parsePrologue (XF86ConfModesPtr, XF86ConfModesRec)
+
+	while ((token = xf86GetToken (ModesTab)) != ENDSECTION)
+	{
+		switch (token)
+		{
+		case IDENTIFIER:
+			if (xf86GetToken (NULL) != STRING)
+				Error (QUOTE_MSG, "Identifier");
+			ptr->modes_identifier = val.str;
+			has_ident = TRUE;
+			break;
+		case MODE:
+			HANDLE_LIST (mon_modeline_lst, parseVerboseMode,
+						 XF86ConfModeLinePtr);
+			break;
+		case MODELINE:
+			HANDLE_LIST (mon_modeline_lst, parseModeLine,
+						 XF86ConfModeLinePtr);
+			break;
+		default:
+			xf86ParseError (INVALID_KEYWORD_MSG, xf86TokenString ());
+			CLEANUP (ptr);
+			return NULL;
+			break;
+		}
+	}
+
+	if (!has_ident)
+		Error (NO_IDENT_MSG, NULL);
+
+#ifdef DEBUG
+	printf ("Modes section parsed\n");
 #endif
 	return ptr;
 }
@@ -621,6 +693,54 @@ printMonitorSection (FILE * cf, XF86ConfMonitorPtr ptr)
 }
 
 void
+printModesSection (FILE * cf, XF86ConfModesPtr ptr)
+{
+	int i;
+	XF86ConfModeLinePtr mlptr;
+	XF86OptionPtr optr;
+
+	while (ptr)
+	{
+		fprintf (cf, "Section \"Modes\"\n");
+		if (ptr->modes_identifier)
+			fprintf (cf, "\tIdentifier     \"%s\"\n", ptr->modes_identifier);
+		for (mlptr = ptr->mon_modeline_lst; mlptr; mlptr = mlptr->list.next)
+		{
+			fprintf (cf, "\tModeLine     \"%s\" %2.1f ",
+					 mlptr->ml_identifier, mlptr->ml_clock / 1000.0);
+			fprintf (cf, "%d %d %d %d %d %d %d %d",
+					 mlptr->ml_hdisplay, mlptr->ml_hsyncstart,
+					 mlptr->ml_hsyncend, mlptr->ml_htotal,
+					 mlptr->ml_vdisplay, mlptr->ml_vsyncstart,
+					 mlptr->ml_vsyncend, mlptr->ml_vtotal);
+			if (mlptr->ml_flags & XF86CONF_PHSYNC)
+				fprintf (cf, " +hsync");
+			if (mlptr->ml_flags & XF86CONF_NHSYNC)
+				fprintf (cf, " -hsync");
+			if (mlptr->ml_flags & XF86CONF_PVSYNC)
+				fprintf (cf, " +vsync");
+			if (mlptr->ml_flags & XF86CONF_NVSYNC)
+				fprintf (cf, " -vsync");
+			if (mlptr->ml_flags & XF86CONF_INTERLACE)
+				fprintf (cf, " interlace");
+			if (mlptr->ml_flags & XF86CONF_CSYNC)
+				fprintf (cf, " composite");
+			if (mlptr->ml_flags & XF86CONF_PCSYNC)
+				fprintf (cf, " +csync");
+			if (mlptr->ml_flags & XF86CONF_NCSYNC)
+				fprintf (cf, " -csync");
+			if (mlptr->ml_flags & XF86CONF_DBLSCAN)
+				fprintf (cf, " doublescan");
+			if (mlptr->ml_flags & XF86CONF_HSKEW)
+				fprintf (cf, " hskew %d", mlptr->ml_hskew);
+			fprintf (cf, "\n");
+		}
+		fprintf (cf, "EndSection\n\n");
+		ptr = ptr->list.next;
+	}
+}
+
+void
 freeMonitorList (XF86ConfMonitorPtr ptr)
 {
 	XF86ConfMonitorPtr prev;
@@ -631,6 +751,21 @@ freeMonitorList (XF86ConfMonitorPtr ptr)
 		TestFree (ptr->mon_vendor);
 		TestFree (ptr->mon_modelname);
 		OptionListFree (ptr->mon_option_lst);
+		freeModeLineList (ptr->mon_modeline_lst);
+		prev = ptr;
+		ptr = ptr->list.next;
+		xf86conffree (prev);
+	}
+}
+
+void
+freeModesList (XF86ConfModesPtr ptr)
+{
+	XF86ConfModesPtr prev;
+
+	while (ptr)
+	{
+		TestFree (ptr->modes_identifier);
 		freeModeLineList (ptr->mon_modeline_lst);
 		prev = ptr;
 		ptr = ptr->list.next;
@@ -664,6 +799,19 @@ xf86FindMonitor (const char *ident, XF86ConfMonitorPtr p)
 	return (NULL);
 }
 
+XF86ConfModesPtr
+xf86FindModes (const char *ident, XF86ConfModesPtr p)
+{
+	while (p)
+	{
+		if (NameCompare (ident, p->modes_identifier) == 0)
+			return (p);
+
+		p = p->list.next;
+	}
+	return (NULL);
+}
+
 XF86ConfModeLinePtr
 xf86FindModeLine (const char *ident, XF86ConfModeLinePtr p)
 {
@@ -677,3 +825,34 @@ xf86FindModeLine (const char *ident, XF86ConfModeLinePtr p)
 	return (NULL);
 }
 
+int
+validateMonitor (XF86ConfigPtr p, XF86ConfScreenPtr screen)
+{
+	XF86ConfMonitorPtr monitor = screen->scrn_monitor;
+	XF86ConfModesLinkPtr modeslnk = monitor->mon_modes_sect_lst;
+	XF86ConfModesPtr modes;
+	while(modeslnk)
+	{
+		modes = xf86FindModes (modeslnk->ml_modes_str, p->conf_modes_lst);
+		if (!modes)
+		{
+			xf86ValidationError (UNDEFINED_MODES_MSG, 
+					     modeslnk->ml_modes_str, screen->scrn_identifier);
+			return (FALSE);
+		}
+		else
+		{
+			modeslnk->ml_modes = modes;
+
+			/* now add the modes found in the modes section to the list of modes
+			   for this monitor */
+			monitor->mon_modeline_lst = (XF86ConfModeLinePtr)
+				addListItem((GenericListPtr)monitor->mon_modeline_lst,
+					    (GenericListPtr)modes->mon_modeline_lst);
+		}
+		modeslnk = modeslnk->list.next;
+	}
+	/* finally add the default modes as well */
+	
+	return (TRUE);
+}

@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Text.h,v 1.7 1998/11/15 04:30:03 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.h,v 1.8 1998/12/06 06:08:12 dawes Exp $ */
 
 #ifndef _XawText_h
 #define _XawText_h
@@ -192,6 +192,9 @@ typedef struct {
 #define XawEditDone		0
 #define XawEditError		1
 #define XawPositionError	2
+
+/* XrmQuark is not unsigned long */
+#define XawTextFormat(tw,fmt) ((unsigned long)_XawTextFormat(tw) == (fmt))
 
 extern unsigned long FMT8BIT;
 extern unsigned long XawFmt8Bit;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.4 1999/01/12 06:24:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.5 1999/03/07 11:40:42 dawes Exp $ */
 /*
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -143,6 +143,8 @@ else\
 "Undefined Screen \"%s\" referenced by ServerLayout \"%s\"."
 #define UNDEFINED_MONITOR_MSG \
 "Undefined Monitor \"%s\" referenced by Screen \"%s\"."
+#define UNDEFINED_MODES_MSG \
+"Undefined Modes Section \"%s\" referenced by Monitor \"%s\"."
 #define UNDEFINED_DEVICE_MSG \
 "Undefined Device \"%s\" referenced by Screen \"%s\"."
 #define UNDEFINED_ADAPTOR_MSG \

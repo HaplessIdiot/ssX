@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfb8_32.h,v 1.1 1999/01/03 03:58:54 dawes Exp $ */
 
 #ifndef _CFB8_32_H
 #define _CFB8_32_H
@@ -130,8 +130,7 @@ cfb8_32ScreenInit (
     pointer pbits,
     int xsize, int ysize,
     int dpix, int dpiy,	
-    int width,
-    unsigned char key
+    int width
 );
 
 void

@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.3 1999/01/31 12:21:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.4 1999/03/06 13:12:36 dawes Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -72,6 +72,11 @@ typedef struct {
     int			Xdirection;
     int			Ydirection;
     int			sisPatternReg[4];
+    int			ROPReg;		/* for sis530 */
+    int			CommandReg;  	/* for sis530 */
+    int			DstX;
+    int			DstY;
+    unsigned char *	XAAScanlineColorExpandBuffers[2];
     SISRegRec		SavedReg;
     SISRegRec		ModeReg;
     CARD32		AccelFlags;
@@ -88,6 +93,7 @@ void SiSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg);
 void SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg);
 Bool SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool SiSAccelInit(ScreenPtr pScreen);
+Bool SiS2AccelInit(ScreenPtr pScreen);
 int  SiSMclk(void);
 
 #endif

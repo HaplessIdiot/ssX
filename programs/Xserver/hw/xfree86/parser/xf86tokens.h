@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.5 1999/01/12 06:24:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.6 1999/03/07 11:40:44 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -92,6 +92,10 @@ typedef enum {
     VERTREFRESH,
     MODE,
     GAMMA,
+    USEMODES,
+
+    /* Modes tokens */
+    /* no new ones */
 
     /* Mode tokens */
     DOTCLOCK,

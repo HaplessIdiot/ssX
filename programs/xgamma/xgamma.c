@@ -21,7 +21,7 @@
  * 
  * Written by David Bateman
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xgamma/xgamma.c,v 1.2 1999/03/14 14:39:41 dawes Exp $ */
 
 #include <stdio.h>
 #include <errno.h>
@@ -51,11 +51,12 @@ Syntax(void)
     	     ProgramName);
     fprintf (stderr, "where the available options are:\n");
     fprintf (stderr, "    -display host:dpy       or -d\n");
+    fprintf (stderr, "    -quiet                  or -q\n");
     fprintf (stderr, "    -gamma f.f              Gamma Value\n");
     fprintf (stderr, "    -rgamma f.f             Red Gamma Value\n");
     fprintf (stderr, "    -ggamma f.f             Green Gamma Value\n");
     fprintf (stderr, "    -bgamma f.f             Blue Gamma Value\n\n");
-    fprintf (stderr, "If no gamma is specified, return the current setting\n");
+    fprintf (stderr, "If no gamma is specified, returns the current setting\n");
     exit (1);
 }
 
@@ -95,15 +96,19 @@ main(int argc, char *argv[])
     Display *dpy;
     float gam = -1., rgam = -1., ggam = -1., bgam = -1.;
     XF86VidModeGamma gamma;
+    Bool quiet = False;
 
     ProgramName = argv[0];
     for (i = 1; i < argc; i++) {
 	char *arg = argv[i];
 
 	if (arg[0] == '-') {
-	    if (isabbreviation ("-display", arg, 2)) {
+	    if (isabbreviation ("-display", arg, 1)) {
 		if (++i >= argc) Syntax ();
 		displayname = argv[i];
+		continue;
+	    } else if (isabbreviation ("-quiet", arg, 1)) {
+		quiet = True;
 		continue;
 	    } else if (isabbreviation ("-gamma", arg, 2)) {
 		if (++i >= argc) Syntax ();
@@ -187,7 +192,7 @@ main(int argc, char *argv[])
 	fprintf(stderr, "Unable to query gamma correction\n");
 	XCloseDisplay (dpy);
 	exit (2);
-    } else
+    } else if (!quiet)
 	fprintf(stderr, "-> Red %6.3f, Green %6.3f, Blue %6.3f\n", gamma.red,
 		gamma.green, gamma.blue);
 
@@ -203,7 +208,7 @@ main(int argc, char *argv[])
 	    if (!XF86VidModeGetGamma(dpy, DefaultScreen(dpy), &gamma)) {
 		fprintf(stderr, "Unable to query gamma correction\n");
 		ret = 2;
-	    } else
+	    } else if (!quiet)
 		fprintf(stderr, "<- Red %6.3f, Green %6.3f, Blue %6.3f\n",
 		        gamma.red, gamma.green, gamma.blue);
 	}
@@ -218,7 +223,7 @@ main(int argc, char *argv[])
 	    if (!XF86VidModeGetGamma(dpy, DefaultScreen(dpy), &gamma)) {
 		fprintf(stderr, "Unable to query gamma correction\n");
 		ret = 2;
-	    } else
+	    } else if (!quiet)
 		fprintf(stderr, "<- Red %6.3f, Green %6.3f, Blue %6.3f\n",
 		        gamma.red, gamma.green, gamma.blue);
 	}

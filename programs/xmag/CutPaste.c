@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xmag/CutPaste.c,v 1.2 1999/01/31 12:22:29 dawes Exp $ */
+/* $XFree86: xc/programs/xmag/CutPaste.c,v 1.3 1999/03/07 11:41:11 dawes Exp $ */
 /*
  * Author:  Davor Matic, MIT X Consortium
  */
@@ -65,7 +65,8 @@ ConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
 	   Xt converts MULTIPLE, and we convert PIXMAP and BITMAP.
 	 */
 	success = XmuConvertStandardSelection(w, (Time)0, selection, target,
-					      type, value, length, format);
+					      type, (XPointer *)value, length,
+					      format);
 	if (success && *target == XA_TARGETS(XtDisplay(w))) {
 	    Atom* tmp;
 	    tmp = (Atom *) XtRealloc(*value, (*length + 3) * sizeof(Atom));

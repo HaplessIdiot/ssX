@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.5 1999/02/12 22:52:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.6 1999/03/07 11:40:44 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -198,6 +198,22 @@ parser_rgb;
 typedef struct
 {
 	GenericListRec list;
+	char *modes_identifier;
+	XF86ConfModeLinePtr mon_modeline_lst;
+}
+XF86ConfModesRec, *XF86ConfModesPtr;
+
+typedef struct
+{
+	GenericListRec list;
+	char *ml_modes_str;
+	XF86ConfModesPtr ml_modes;
+}
+XF86ConfModesLinkRec, *XF86ConfModesLinkPtr;
+
+typedef struct
+{
+	GenericListRec list;
 	char *mon_identifier;
 	char *mon_vendor;
 	char *mon_modelname;
@@ -212,6 +228,7 @@ typedef struct
 	float mon_gamma_green;
 	float mon_gamma_blue;
 	XF86OptionPtr mon_option_lst;
+	XF86ConfModesLinkPtr mon_modes_sect_lst;
 }
 XF86ConfMonitorRec, *XF86ConfMonitorPtr;
 
@@ -350,6 +367,7 @@ typedef struct
 	XF86ConfKeyboardPtr conf_keyboard;
 	XF86ConfPointerPtr conf_pointer;
 	XF86ConfVideoAdaptorPtr conf_videoadaptor_lst;
+	XF86ConfModesPtr conf_modes_lst;
 	XF86ConfMonitorPtr conf_monitor_lst;
 	XF86ConfDevicePtr conf_device_lst;
 	XF86ConfScreenPtr conf_screen_lst;
@@ -376,6 +394,7 @@ extern int xf86WriteConfigFile (const char *, XF86ConfigPtr);
 XF86ConfDevicePtr xf86FindDevice(const char *ident, XF86ConfDevicePtr p);
 XF86ConfLayoutPtr xf86FindLayout(const char *name, XF86ConfLayoutPtr list);
 XF86ConfMonitorPtr xf86FindMonitor(const char *ident, XF86ConfMonitorPtr p);
+XF86ConfModesPtr xf86FindModes(const char *ident, XF86ConfModesPtr p);
 XF86ConfModeLinePtr xf86FindModeLine(const char *ident, XF86ConfModeLinePtr p);
 XF86ConfScreenPtr xf86FindScreen(const char *ident, XF86ConfScreenPtr p);
 XF86ConfDisplayPtr xf86FindDisplay(int depth, XF86ConfDisplayPtr p);

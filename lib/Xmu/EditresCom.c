@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.9 1998/11/01 07:57:47 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.10 1999/01/31 12:21:19 dawes Exp $ */
 
 /*
  * Author:  Chris D. Peterson, Dave Sternlicht, MIT X Consortium
@@ -151,7 +151,6 @@ static void ExecuteGetGeometry(Widget, ProtocolStream*);
 static void ExecuteGetResources(Widget w, ProtocolStream *stream);
 static void ExecuteSetValues(Widget, SetValuesEvent*, WidgetInfo*,
 			     ProtocolStream*, unsigned short*);
-static int FindChildren(Widget, Widget**, Bool, Bool, Bool);
 static void FreeEvent(EditresEvent*);
 static void GetCommand(Widget w, XtPointer, Atom*, Atom*, XtPointer,
 		       unsigned long*, int*);
@@ -720,7 +719,7 @@ FindChildren(Widget parent, Widget **children, Bool normal, Bool popup,
 	     Bool extra)
 {
   CompositeWidget cw = (CompositeWidget)parent;
-    int i, num_children, current = 0;
+  Cardinal i, num_children, current = 0;
   Widget *extra_widgets = NULL;
   Cardinal num_extra = 0;
     
@@ -1494,7 +1493,7 @@ ExecuteGetResources(Widget w, ProtocolStream *stream)
 {
     XtResourceList norm_list, cons_list;
     Cardinal num_norm, num_cons;
-    register int i;
+    register Cardinal i;
 
     /* 
    * Get Normal Resources
@@ -1788,7 +1787,7 @@ _XEditResResetStream(ProtocolStream *stream)
 Bool
 _XEditResGet8(ProtocolStream *stream, unsigned char *value)
 {
-  if (stream->size < stream->current - stream->top)
+  if (stream->size < (unsigned long)(stream->current - stream->top))
     return (False);
 
   *value = *((stream->current)++);
@@ -2075,7 +2074,7 @@ _XEditresGetStringValues(Widget w, Arg *warg, int numargs)
   Cardinal num_res;
   XtResource *res = NULL;
   long value;
-  int i;
+  Cardinal i;
   char *string = "";
   Arg args[1];
   XrmValue to, from;

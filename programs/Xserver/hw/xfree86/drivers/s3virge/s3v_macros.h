@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_macros.h,v 1.2 1999/03/07 11:40:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_macros.h,v 1.3 1999/03/14 03:22:04 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -25,8 +25,46 @@ be used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the XFree86 Project.
 */
 
-#define SUB_SYS_CTL	0x8504
+#ifndef _S3V_MACROS_H
+#define _S3V_MACROS_H
 
+/* use these macros and INREG/OUTREG to access the extended registers
+   of s3 virge -- add any others you need here */
+
+/* miscellaneous registers */
+#define SUBSYS_STAT_REG 0x8504
+
+/* memory port controller registers */
+#define FIFO_CONTROL_REG 0x8200
+#define MIU_CONTROL_REG 0x8204
+#define STREAMS_TIMEOUT_REG 0x8208
+#define MISC_TIMEOUT_REG 0x820c
+
+/* streams registers */
+#define PSTREAM_CONTROL_REG 0x8180
+#define COL_CHROMA_KEY_CONTROL_REG 0x8184
+#define SSTREAM_CONTROL_REG 0x8190
+#define CHROMA_KEY_UPPER_BOUND_REG 0x8194
+#define SSTREAM_STRETCH_REG 0x8198
+#define BLEND_CONTROL_REG 0x81A0
+#define PSTREAM_FBADDR0_REG 0x81C0
+#define PSTREAM_FBADDR1_REG 0x81C4
+#define PSTREAM_STRIDE_REG 0x81C8
+#define DOUBLE_BUFFER_REG 0x81CC
+#define SSTREAM_FBADDR0_REG 0x81D0
+#define SSTREAM_FBADDR1_REG 0x81D4
+#define SSTREAM_STRIDE_REG 0x81D8
+#define OPAQUE_OVERLAY_CONTROL_REG 0x81DC
+#define K1_VSCALE_REG 0x81E0
+#define K2_VSCALE_REG 0x81E4
+#define DDA_VERT_REG 0x81E8
+#define STREAMS_FIFO_REG 0x81EC
+#define PSTREAM_START_REG 0x81F0
+#define PSTREAM_WINDOW_SIZE_REG 0x81F4
+#define SSTREAM_START_REG 0x81F8
+#define SSTREAM_WINDOW_SIZE_REG 0x81FC
+
+/* image write stuff */
 #define SRC_BASE	0xA4D4
 #define DEST_BASE	0xA4D8
 #define CLIP_L_R	0xA4DC
@@ -44,15 +82,15 @@ in this Software without prior written authorization from the XFree86 Project.
 #define RDEST_XY	0xA50C
 
 
-
 #define BLT_BUG		0x00000001
 #define MONO_TRANS_BUG	0x00000002
 
 
-#define WAITFIFO(n) if(ps3v->NoPCIRetry) \
-	 while(((INREG(SUB_SYS_CTL) >> 8) & 0x1f) < n){}
 
-#define WAITIDLE()  while((INREG(SUB_SYS_CTL) & 0x3f00) < 0x3000){}
+#define WAITFIFO(n) if(ps3v->NoPCIRetry) \
+	 while(((INREG(SUBSYS_STAT_REG) >> 8) & 0x1f) < n){}
+
+#define WAITIDLE()  while((INREG(SUBSYS_STAT_REG) & 0x3f00) < 0x3000){}
 
 #define CHECK_DEST_BASE(y,h)\
     if((y < ps3v->DestBaseY) || ((y + h) > (ps3v->DestBaseY + 2048))) {\
@@ -71,5 +109,4 @@ in this Software without prior written authorization from the XFree86 Project.
     y -= ps3v->SrcBaseY
 
 
-#define NO_SRC_ROP(r) \
-  ((r == GXnoop) || (r == GXclear) || (r == GXinvert) || (r == GXset))
+#endif /* _S3V_MACROS_H */

@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.29 1999/03/14 03:21:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.30 1999/03/20 08:59:19 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -904,6 +904,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     if (pGlint->Overlay) {
 	if ((pScrn->depth == 24) && (pScrn->bitsPerPixel == 32)) {
+	    pScrn->colorKey = 255; /* we should let the user change this */
+	    pScrn->overlayFlags = OVERLAY_8_32_PLANAR;
 	    pGlint->Overlay = TRUE;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "32/8bpp overlay enabled\n");
 	}
@@ -1921,7 +1923,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    ret = cfb8_32ScreenInit(pScreen, pGlint->FbBase,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth, 0xFF);
+			pScrn->displayWidth);
 	else 
 	    ret = cfb32ScreenInit(pScreen, pGlint->FbBase,
 			pScrn->virtualX, pScrn->virtualY,
@@ -1979,11 +1981,6 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
-    if(pGlint->Overlay && (pScrn->bitsPerPixel == 32)) {
-	if(!xf86Overlay8Plus32Init(pScreen))
-	    return FALSE;
-    }
-
     /* Initialise cursor functions */
     if (pGlint->HWCursor) {
 	if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) || 
@@ -2026,6 +2023,11 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    (pGlint->Overlay ? 0 : CMAP_PALETTED_TRUECOLOR)))
 	return FALSE;
 	}
+    }
+
+    if(pGlint->Overlay && (pScrn->bitsPerPixel == 32)) {
+	if(!xf86Overlay8Plus32Init(pScreen))
+	    return FALSE;
     }
 
 #ifdef DPMSExtension

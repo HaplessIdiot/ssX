@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/Xct.c,v 1.4 1998/08/20 13:59:43 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Xct.c,v 1.5 1998/10/03 09:06:38 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include "Xct.h"
@@ -283,7 +283,7 @@ HandleExtended(register XctData data, int c)
     register XctPriv priv = data->priv;
     XctString enc = data->item + 6;
     register XctString ptr = enc;
-    int i, len;
+    unsigned i, len;
 
     while (*ptr != 0x02) {
 	if (!*ptr || (++ptr == priv->ptr))
@@ -668,7 +668,7 @@ XctNextItem(register XctData data)
 void
 XctFree(register XctData data)
 {
-    int i;
+    unsigned i;
     register XctPriv priv = data->priv;
 
     if (priv->dirstack)

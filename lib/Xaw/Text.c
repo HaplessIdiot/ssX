@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.20 1999/02/28 11:19:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.21 1999/03/14 03:21:11 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -973,9 +973,9 @@ _XawTextGetText(TextWidget ctx, XawTextPosition left, XawTextPosition right)
   XawTextBlock text;
   int bytes;
 
-  if (_XawTextFormat(ctx) == XawFmt8Bit)
+  if (XawTextFormat(ctx, XawFmt8Bit))
     bytes = sizeof(unsigned char);
-  else if (_XawTextFormat(ctx) == XawFmtWide) 
+  else if (XawTextFormat(ctx, XawFmtWide)) 
     bytes = sizeof(wchar_t);
   else /* if there is another fomat, add here */
     bytes = 1;
@@ -1012,7 +1012,7 @@ _XawTextGetSTRING(TextWidget ctx, XawTextPosition left, XawTextPosition right)
   wchar_t *ws, wc;
 
   /* allow ESC in accordance with ICCCM */
-  if (_XawTextFormat(ctx) == XawFmtWide)
+  if (XawTextFormat(ctx, XawFmtWide))
     {
       MultiSinkObject sink = (MultiSinkObject)ctx->text.sink;
       ws = (wchar_t *)_XawTextGetText(ctx, left, right);
@@ -1788,7 +1788,7 @@ TextConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
 	return (True);
 
       XmuConvertStandardSelection(w, ctx->text.time, selection,
-				  target, type, (XtPointer*)&std_targets,
+				  target, type, (XPointer*)&std_targets,
 				  &std_length, format);
 
       *value = XtMalloc((unsigned)sizeof(Atom)*(std_length + 7));
@@ -1836,7 +1836,7 @@ TextConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
     {
       if (*target == XA_TEXT(d))
 	{
-	  if (_XawTextFormat(ctx) == XawFmtWide)
+	  if (XawTextFormat(ctx, XawFmtWide))
 	    *type = XA_COMPOUND_TEXT(d);
 	  else
 	    *type = XA_STRING;
@@ -1853,7 +1853,7 @@ TextConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
       if (!salt)
 	{
 	  *value = _XawTextGetSTRING(ctx, s->left, s->right);
-	  if (_XawTextFormat(ctx) == XawFmtWide)
+	  if (XawTextFormat(ctx, XawFmtWide))
 	    {
 	      XTextProperty textprop;
 	      if (XwcTextListToTextProperty(d, (wchar_t **)value, 1,
@@ -1876,7 +1876,7 @@ TextConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
 	  strcpy ((char *)*value, salt->contents);
 	  *length = salt->length;
 	}
-      if (_XawTextFormat(ctx) == XawFmtWide && *type == XA_STRING)
+      if (XawTextFormat(ctx, XawFmtWide) && *type == XA_STRING)
 	{
 	  XTextProperty textprop;
 	  wchar_t **wlist;
@@ -1950,7 +1950,7 @@ TextConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
     }
 
   if (XmuConvertStandardSelection(w, ctx->text.time, selection, target, type,
-				  (XtPointer *)value, length, format))
+				  (XPointer *)value, length, format))
     return (True);
 
   /* else */
@@ -2088,7 +2088,7 @@ _XawTextSaltAwaySelection(TextWidget ctx, Atom *selections, int num_atoms)
   salt->s.right = ctx->text.s.right;
   salt->s.type = ctx->text.s.type;
   salt->contents = _XawTextGetSTRING(ctx, ctx->text.s.left, ctx->text.s.right);
-  if (_XawTextFormat(ctx) == XawFmtWide)
+  if (XawTextFormat(ctx, XawFmtWide))
     {
       XTextProperty textprop;
       if (XwcTextListToTextProperty(XtDisplay((Widget)ctx),
@@ -2177,7 +2177,7 @@ _SetSelection(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 	      tptr= ptr= (unsigned char *)_XawTextGetSTRING(ctx,
 							    ctx->text.s.left,
 							    ctx->text.s.right);
-	      if (_XawTextFormat(ctx) == XawFmtWide)
+	      if (XawTextFormat(ctx, XawFmtWide))
 		{
 		  /*
 		   * Only XA_STRING(Latin 1) is allowed in CUT_BUFFER,
@@ -3571,7 +3571,8 @@ XawTextReplace(Widget w, XawTextPosition startPos, XawTextPosition endPos,
 {
     TextWidget ctx = (TextWidget)w;
     TextSrcObject src = (TextSrcObject)ctx->text.source;
-    int i, result;
+    Cardinal i;
+    int result;
 
     for (i = 0; i < src->textSrc.num_text; i++)
 	_XawTextPrepareToUpdate((TextWidget)src->textSrc.text[i]);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.7 1999/03/07 11:40:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.8 1999/03/14 03:22:02 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -46,6 +46,7 @@ in this Software without prior written authorization from the XFree86 Project.
 
 #include "vgaHW.h"
 
+#include "s3v_macros.h"
 
 /* All drivers initialising the SW cursor need this */
 #include "mipointer.h"
@@ -74,7 +75,7 @@ in this Software without prior written authorization from the XFree86 Project.
 #ifndef _S3V_VGAHWMMIO_H
 #define _S3V_VGAHWMMIO_H
 
-#if defined(__alpha__)
+#ifdef __alpha__
 #define VGAIN8(addr) xf86ReadSparse8(ps3v->IOBase, (addr))
 #define VGAIN16(addr) xf86ReadSparse16(ps3v->IOBase, (addr))
 #define VGAIN(addr) xf86ReadSparse32(ps3v->IOBase, (addr))
@@ -84,8 +85,11 @@ in this Software without prior written authorization from the XFree86 Project.
 
 #define INREG(addr) xf86ReadSparse32(ps3v->MapBase, (addr))
 #define OUTREG(addr, val) xf86WriteSparse32((val),ps3v->MapBase,(addr))
+#define NEW_INREG(addr) xf86ReadSparse32(s3vMmioMem, (addr))
+#define NEW_OUTREG(addr, val) xf86WriteSparse32((val), s3vMmioMem, (addr))
 
-#else /* !(__alpha__) */
+#else
+
 #define VGAIN8(addr) *(volatile CARD8 *)(ps3v->IOBase + (addr))
 #define VGAIN16(addr) *(volatile CARD16 *)(ps3v->IOBase + (addr))
 #define VGAIN(addr) *(volatile CARD32 *)(ps3v->IOBase + (addr))
@@ -95,8 +99,10 @@ in this Software without prior written authorization from the XFree86 Project.
 
 #define INREG(addr) *(volatile CARD32*)(ps3v->MapBase+ (addr))
 #define OUTREG(addr, val) *(volatile CARD32 *)(ps3v->MapBase + (addr)) = (val)
-
+#define NEW_INREG(addr) INREG(addr)
+#define NEW_OUTREG(addr, val) OUTREG(addr, val)
 #endif /* __alpha__ */
+
 
 #endif /*_S3V_VGAHWMMIO_H*/
 
@@ -154,106 +160,110 @@ typedef struct {
 	GCPtr		CurrentGC;
 	/* end accel stuff */
     /* ViRGE specifics -start- */   
-  					/* S3V console saved mode registers */
-    S3VRegRec 		SavedReg;
-    					/* XServer video state mode registers */
-    S3VRegRec 		ModeReg;
-    					/* Flag indicating ModeReg has been */
-					/* duped from console state. */
-    Bool		ModeStructInit;
-    					/* Is STREAMS processor needed for */
-					/* this mode? */
-    Bool 		NeedSTREAMS;
-    					/* Is STREAMS running now ? */
-    Bool 		STREAMSRunning;
-    					/* Compatibility variables */
-    int 		vgaCRIndex, vgaCRReg;
-    int 		Width, Bpp,Bpl, ScissB;   
-    					/* XAA */
-    unsigned 		PlaneMask;
-    int 		bltbug_width1, bltbug_width2;
-    					/* In units as noted, set in PreInit */
-    int			videoRambytes;
-    int			videoRamKbytes;
-    					/* In Kbytes, set in PreInit */
-    int			MemOffScreen;
-    					/* Holds the virtual memory address */
-					/* returned when the MMIO registers */
-					/* are mapped with xf86MapPciMem    */
-    unsigned char *	MapBase;
-    					/* MapBase + 0x8000 */
-    unsigned char *	IOBase;
-    					/* Same as MapBase, except framebuffer*/
-    unsigned char *	FBBase;
-    					/* Current visual FB starting location */
-    unsigned char *	FBStart;
-    				     	/* Saved CR53 value */
-    unsigned char	EnableMmioCR53;
-    					/* Extended reg unlock storage */
-    unsigned char	CR38,CR39,CR40;
-    					/* Flag indicating if vgaHWMapMem was */
-					/* used successfully for this screen */
-    Bool		PrimaryVidMapped;
-    					/* Clock value */
-    int			dacSpeedBpp;
-    int			minClock;
-    					/* Maximum clock for present bpp */
-    int			maxClock;
-    int			HorizScaleFactor;
-    Bool		bankedMono;
-    					/* Memory Clock */
-    int 		MCLK;
-    					/* MX LCD clock			*/
-    int			LCDClk;
-    					/* Limit the number of errors	*/
-					/* printed using a counter 	*/
-    int			GEResetCnt;
-    					/*************************/
-    					/* ViRGE options -start- */
-					
-    					/* Enable PCI burst mode for reads? */
-    Bool 		pci_burst_on;
-    					/* Diasable PCI retries */
-    Bool		NoPCIRetry;
-    					/* Adjust fifo for acceleration? */
-    Bool 		fifo_conservative;
-    Bool 		fifo_moderate;
-    Bool 		fifo_aggressive;
-    					/* Set memory options */
-    Bool 		slow_edodram;
-    Bool 		fast_dram;
-    Bool 		fpm_vram;
-    					/* Disable Acceleration */
-    Bool		NoAccel;
-    					/* Adjust memory ras precharge */ 
-					/* timing */
-    Bool		ShowCache;
-    Bool 		early_ras_precharge;
-    Bool 		late_ras_precharge;
-    					/* MX LCD centering		*/
-    Bool		lcd_center;
-    					/* ViRGE options -end- */
-    					/***********************/
-    /* ViRGE specifics -end- */
-    
-    /* Used by ViRGE driver, but generic */
-    
-    					/* Pointer used to save wrapped */
-					/* CloseScreen function.	*/
-    CloseScreenProcPtr	CloseScreen;
-    					/* XAA info Rec 	*/
-    XAAInfoRecPtr 	AccelInfoRec;
-    					/* PCI info vars.	*/
-    pciVideoPtr 	PciInfo;
-    PCITAG 		PciTag;
-    					/* Chip info, set using PCI	*/
-					/* above.			*/
-    int			Chipset;
-    int			ChipRev;
-    
-    /* Used by ViRGE driver, but generic -end- */
-    
-    
+  /* S3V console saved mode registers */
+  S3VRegRec 		SavedReg;
+  /* XServer video state mode registers */
+  S3VRegRec 		ModeReg;
+  /* Flag indicating ModeReg has been */
+  /* duped from console state. */
+  Bool		ModeStructInit;
+  /* Is STREAMS processor needed for */
+  /* this mode? */
+  Bool 		NeedSTREAMS;
+  /* Is STREAMS running now ? */
+  Bool 		STREAMSRunning;
+  /* Compatibility variables */
+  int 		vgaCRIndex, vgaCRReg;
+  int 		Width, Bpp,Bpl, ScissB;   
+  /* XAA */
+  unsigned 		PlaneMask;
+  int 		bltbug_width1, bltbug_width2;
+  /* In units as noted, set in PreInit */
+  int			videoRambytes;
+  int			videoRamKbytes;
+  /* In Kbytes, set in PreInit */
+  int			MemOffScreen;
+  /* Holds the virtual memory address */
+  /* returned when the MMIO registers */
+  /* are mapped with xf86MapPciMem    */
+  unsigned char *	MapBase;
+#ifdef __alpha__
+  unsigned char *       MapBaseDense;
+#endif
+  
+  /* MapBase + 0x8000 */
+  unsigned char *	IOBase;
+  /* Same as MapBase, except framebuffer*/
+  unsigned char *	FBBase;
+  /* Current visual FB starting location */
+  unsigned char *	FBStart;
+  /* Saved CR53 value */
+  unsigned char	EnableMmioCR53;
+  /* Extended reg unlock storage */
+  unsigned char	CR38,CR39,CR40;
+  /* Flag indicating if vgaHWMapMem was */
+  /* used successfully for this screen */
+  Bool		PrimaryVidMapped;
+  /* Clock value */
+  int			dacSpeedBpp;
+  int			minClock;
+  /* Maximum clock for present bpp */
+  int			maxClock;
+  int			HorizScaleFactor;
+  Bool		bankedMono;
+  /* Memory Clock */
+  int 		MCLK;
+  /* MX LCD clock			*/
+  int			LCDClk;
+  /* Limit the number of errors	*/
+  /* printed using a counter 	*/
+  int			GEResetCnt;
+  /*************************/
+  /* ViRGE options -start- */
+  
+  /* Enable PCI burst mode for reads? */
+  Bool 		pci_burst_on;
+  /* Diasable PCI retries */
+  Bool		NoPCIRetry;
+  /* Adjust fifo for acceleration? */
+  Bool 		fifo_conservative;
+  Bool 		fifo_moderate;
+  Bool 		fifo_aggressive;
+  /* Set memory options */
+  Bool 		slow_edodram;
+  Bool 		fast_dram;
+  Bool 		fpm_vram;
+  /* Disable Acceleration */
+  Bool		NoAccel;
+  /* Adjust memory ras precharge */ 
+  /* timing */
+  Bool		ShowCache;
+  Bool 		early_ras_precharge;
+  Bool 		late_ras_precharge;
+  /* MX LCD centering		*/
+  Bool		lcd_center;
+  /* ViRGE options -end- */
+  /***********************/
+  /* ViRGE specifics -end- */
+  
+  /* Used by ViRGE driver, but generic */
+  
+  /* Pointer used to save wrapped */
+  /* CloseScreen function.	*/
+  CloseScreenProcPtr	CloseScreen;
+  /* XAA info Rec 	*/
+  XAAInfoRecPtr 	AccelInfoRec;
+  /* PCI info vars.	*/
+  pciVideoPtr 	PciInfo;
+  PCITAG 		PciTag;
+  /* Chip info, set using PCI	*/
+  /* above.			*/
+  int			Chipset;
+  int			ChipRev;
+  
+  /* Used by ViRGE driver, but generic -end- */
+  
+  
 } S3VRec, *S3VPtr;
 
 

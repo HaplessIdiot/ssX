@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.34 1999/02/07 06:19:02 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.35 1999/03/14 03:22:45 dawes Exp $ */
 
 /************************************************************
 
@@ -84,8 +84,6 @@ authorization.
 #define HAVE_TCGETATTR 1
 #endif
 
-#define XMU_POINTER XtPointer
-
 #endif /* HAVE_CONFIG_H */
 
 /***====================================================================***/
@@ -120,13 +118,6 @@ extern int errno;
  */
 #ifdef linux
 #undef HAVE_WAITPID
-#endif
-
-/*
- * FIXME:  Xmu interface in XFree86 3.9N* introduces an incompatibility.
- */
-#ifndef XMU_POINTER
-#define XMU_POINTER XPointer
 #endif
 
 /***====================================================================***/

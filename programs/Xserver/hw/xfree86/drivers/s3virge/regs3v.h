@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/regs3v.h,v 1.3 1999/01/31 12:21:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/regs3v.h,v 1.4 1999/03/14 03:22:02 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -127,7 +127,7 @@ in this Software without prior written authorization from the XFree86 Project.
 				    || S3_ViRGE_VX_SERIES(chip))
 #define S3_ANY_SERIES(chip)       (    S3_ViRGE_SERIES(chip)		\
 				    || S3_ViRGE_VX_SERIES(chip))
-#endif
+#endif /* 0 */
 
 #if 0
 /* take these from ../../common/xf86PciInfo.h instead */
@@ -139,7 +139,7 @@ in this Software without prior written authorization from the XFree86 Project.
 #define PCI_ViRGE_GX2 		0x8A10
 #define PCI_ViRGE_MX		0x8C01
 #define PCI_ViRGE_MXP 		0x8C03
-#endif
+#endif /* 0 */
 
 /* Chip tags */
 #if 1
@@ -159,7 +159,7 @@ in this Software without prior written authorization from the XFree86 Project.
 #define S3_ViRGE_GX2	 4
 #define S3_ViRGE_MX		 5
 #define S3_ViRGE_MXP	 6
-#endif
+#endif /* 1 */
 
 #if 0
 
@@ -169,7 +169,7 @@ in this Software without prior written authorization from the XFree86 Project.
 #define	DAC_W_INDEX	0x03c8
 #define	DAC_DATA	0x03c9
 
-#endif
+#endif /* 0 */
 
 /* Subsystem Control Register */
 #define	GPCTRL_NC	0x0000
@@ -250,6 +250,7 @@ in this Software without prior written authorization from the XFree86 Project.
 #define CMD_3D		0x80000000
 
 /* The Mix ROPs (selected ones, not all 256)  */
+#if 0
 
 #define	ROP_0				(0x00<<17)
 #define	ROP_DSon			(0x11<<17)
@@ -335,7 +336,7 @@ in this Software without prior written authorization from the XFree86 Project.
 #define	ROP_DPan_SaDSnao /* SDPSnoax */	(0x6e<<17)
 #define	ROP_1_SaDSnao    /* DSo      */	(0xee<<17)
 
-
+#endif
 
 #if 0
 
@@ -344,7 +345,7 @@ typedef struct {
 }
 LUTENTRY;
 
-#endif
+#endif /* 0 */
 
 #if 0  /* delete me 3.9Nn */
 /* Wait until "v" queue entries are free */
@@ -365,7 +366,7 @@ LUTENTRY;
 
 /* Wait until a DMA transfer is done */ 
 #define WaitDMAEmpty()    do { mem_barrier(); while  ((((mmtr)s3vMmioMem)->dma_regs.regs.cmd.write_pointer) != (((mmtr)s3vMmioMem)->dma_regs.regs.cmd.read_pointer)); } while(0)
-#endif
+#endif /* 0 */
 
 
 #define MAXLOOP 0xffffff /* timeout value for engine waits, ~6 secs */
@@ -392,6 +393,7 @@ LUTENTRY;
          if (loop >= MAXLOOP) S3VGEReset(pScrn,1,__LINE__,__FILE__); \
   } while (0)
 
+
 /* Wait until Command FIFO is empty */
 #define WaitCommandEmpty()       do { int loop=0; mem_barrier(); 			\
 	if (ps3v->Chipset == S3_ViRGE_GX2 || ps3v->Chipset == S3_ViRGE_MX || ps3v->Chipset == S3_ViRGE_MXP) 		\
@@ -413,10 +415,11 @@ LUTENTRY;
 
 #ifndef NULL
 #define NULL	0
-#endif
+
+#endif /* NULL */
 
 
-#endif
+#endif /* 0 */
 
 
 

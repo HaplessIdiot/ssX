@@ -48,7 +48,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/XawIm.c,v 1.7 1999/03/14 03:21:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/XawIm.c,v 1.8 1999/03/14 11:17:40 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -467,7 +467,7 @@ OpenIM(XawVendorShellExtPart *ve)
 	    xim = XOpenIM(XtDisplay(ve->parent), NULL, NULL, NULL);
     } else {
 	/* no fragment can be longer than the whole string */
-	int	len = strlen (ve->im.input_method) + 5;
+	Cardinal len = strlen (ve->im.input_method) + 5;
 
 	if (len < sizeof buf) pbuf = buf;
 	else pbuf = XtMalloc (len);
@@ -1131,7 +1131,7 @@ SetValues(Widget w, XawVendorShellExtPart *ve,
 
     XrmName	argName;
     XrmResourceList	xrmres;
-    int	i;
+    Cardinal	i;
     XawIcTablePart	*p, save_tbl;
 
     if ((p = GetIcTable(w, ve)) == NULL) return;

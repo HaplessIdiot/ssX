@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.16 1998/12/20 11:57:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.17 1999/03/14 11:18:02 dawes Exp $ */
 
 
 #ifndef _CT_DRIVER_H_
@@ -105,6 +105,7 @@ typedef struct {
 #define ChipsUseVClk1		0x00000100
 #define ChipsHWCursor		0x00000200
 #define ChipsShadowFB		0x00000400
+#define ChipsOverlay8plus16	0x00000800
 
 /* Architecture type flags */
 #define ChipsHiQV		0x00001000
@@ -115,6 +116,9 @@ typedef struct {
 /* Acceleration flags for the C&T chipsets */
 #define ChipsColorTransparency	0x0100000
 #define ChipsImageReadSupport	0x0200000
+
+/* Overlay Transparency Key */
+#define TRANSPARENCY_KEY 255
 
 /* Flag Bus Types */
 #define ChipsUnknown	0
@@ -146,6 +150,7 @@ typedef struct {
 	unsigned char XR[0xFF];
 	unsigned char CR[0x80];
 	unsigned char FR[0x80];
+	unsigned char MR[0x80];
 	CHIPSClockReg Clock;
 } CHIPSRegRec, *CHIPSRegPtr;
 
@@ -238,6 +243,8 @@ typedef struct _CHIPSRec {
     long		FbMapSize;
     unsigned char *	ShadowPtr;
     int			ShadowPitch;
+    int                 FbOffset16;
+    int                 FbSize16;  
     OptionInfoPtr	Options;
     CHIPSPanelSizeRec	PanelSize;
     int			FrameBufferSize;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.23 1998/01/11 03:48:47 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.24 1998/12/20 11:58:45 dawes Exp $ */
 
 /*
 
@@ -146,26 +146,25 @@ static Widget auto_apply_toggle;
 static Bool S3Specials = False;
 static char modebuf[160];
 
-static void UpdateSyncRates();
+static void UpdateSyncRates(Bool dolabels);
 
-static void CleanUp(dpy)
-    Display *dpy;
+static void
+CleanUp(Display *dpy)
 {
     /* Make sure mode switching is not locked out at exit */
     XF86VidModeLockModeSwitch(dpy, DefaultScreen(dpy), FALSE);
     XFlush(dpy);
 }
 
-static void CatchSig(signal)
-    int signal;
+static void
+CatchSig(int signal)
 {
     CleanUp(XtDisplay(Top));
     exit(3);
 }
 
-static Bool GetModeLine (dpy, scrn)
-    Display* dpy;
-    int scrn;
+static Bool
+GetModeLine (Display* dpy, int scrn)
 {
     XF86VidModeModeLine mode_line;
     fields i;
@@ -198,9 +197,8 @@ static Bool GetModeLine (dpy, scrn)
     return TRUE;
 }
 
-static Bool GetMonitor (dpy, scrn)
-    Display* dpy;
-    int scrn;
+static Bool
+GetMonitor (Display* dpy, int scrn)
 {
     XF86VidModeMonitor monitor;
     int i;
@@ -222,11 +220,10 @@ static Bool GetMonitor (dpy, scrn)
 }
 
 static int hitError = 0;
-static int (*xtErrorfunc)();
+static int (*xtErrorfunc)(Display *, XErrorEvent *);
 
-static int vidmodeError(dis, err)
-Display *dis;
-XErrorEvent *err;
+static int
+vidmodeError(Display *dis, XErrorEvent *err)
 {
   if ((err->error_code >= ErrorBase &&
       err->error_code < ErrorBase + XF86VidModeNumberErrors) ||
@@ -240,7 +237,8 @@ XErrorEvent *err;
   return 0; /* ignored */
 }
 
-static void SetScrollbars ()
+static void
+SetScrollbars (void)
 {
     fields i;
 
@@ -259,9 +257,8 @@ static void SetScrollbars ()
     }
 }
 
-static void QuitCB (w, client, call)
-    Widget w;
-    XtPointer client, call;
+static void
+QuitCB (Widget w, XtPointer client, XtPointer call)
 {
     CleanUp(XtDisplay(w));
 #if XtSpecificationRelease < 6
@@ -271,16 +268,14 @@ static void QuitCB (w, client, call)
 #endif
 }
 
-static void popdownInvalid(w, client, call)
-    Widget w;
-    XtPointer client, call;
+static void
+popdownInvalid(Widget w, XtPointer client, XtPointer call)
 {
    XtPopdown((Widget)client);
 }
 
-static void ApplyCB (w, client, call)
-    Widget w;
-    XtPointer client, call;
+static void
+ApplyCB (Widget w, XtPointer client, XtPointer call)
 {
     XF86VidModeModeLine mode_line;
     INT32 S3private[4];
@@ -340,8 +335,8 @@ static void ApplyCB (w, client, call)
 }
 
 
-static void SetLabel(i)
-fields i;
+static void
+SetLabel(fields i)
 {
    ScrollData* sdp = &AppRes.field[i];
 
@@ -395,8 +390,8 @@ fields i;
 
 }
 
-static void UpdateSyncRates(dolabels)
-    Bool dolabels;
+static void
+UpdateSyncRates(Bool dolabels)
 {
     AppRes.field[HSyncRate].val = AppRes.field[PixelClock].val * 1000 /
 				  AppRes.field[HTotal].val;
@@ -412,9 +407,8 @@ static void UpdateSyncRates(dolabels)
     }
 }
 
-static void RestoreCB (w, client, call)
-    Widget w;
-    XtPointer client, call;
+static void
+RestoreCB (Widget w, XtPointer client, XtPointer call)
 {
     fields i;
     Boolean state;
@@ -430,9 +424,8 @@ static void RestoreCB (w, client, call)
 }
 
 
-static void ApplyIfAutoCB (w, client, call)
-    Widget w;
-    XtPointer client, call;
+static void
+ApplyIfAutoCB (Widget w, XtPointer client, XtPointer call)
 {
    Boolean state;
 
@@ -442,9 +435,8 @@ static void ApplyIfAutoCB (w, client, call)
 }
 
 
-static void FetchCB (w, client, call)
-    Widget w;
-    XtPointer client, call;
+static void
+FetchCB (Widget w, XtPointer client, XtPointer call)
 {
     fields i;
     (void) GetModeLine(XtDisplay (w), DefaultScreen (XtDisplay (w)));
@@ -456,9 +448,8 @@ static void FetchCB (w, client, call)
 
 static XtIntervalId TOid;
 
-static void TestTO (client, id)
-    XtPointer client;
-    XtIntervalId* id;
+static void
+TestTO (XtPointer client, XtIntervalId* id)
 {
     fields i;
     for (i = HDisplay; i < fields_num; i++)
@@ -473,17 +464,15 @@ static void TestTO (client, id)
     XtPopdown(testing_popup);
 }
 
-static void TestTOCB (w, client, call)
-    Widget w;
-    XtPointer client, call;
+static void
+TestTOCB (Widget w, XtPointer client, XtPointer call)
 {
   XtRemoveTimeOut(TOid);
   TestTO(w, (XtIntervalId *) NULL);
 }
 
-static void TestCB (w, client, call)
-    Widget w;
-    XtPointer client, call;
+static void
+TestCB (Widget w, XtPointer client, XtPointer call)
 {
     fields i;
     for (i = HDisplay; i < fields_num; i++)
@@ -497,12 +486,13 @@ static void TestCB (w, client, call)
     ApplyCB (w, client, call);
 }
 
-static Boolean ConvertSelection(w, selection, target, type, value, length, format)
-    Widget w;
-    Atom *selection, *target, *type;
-    XtPointer *value;
-    unsigned long *length;
-    int *format;
+static Boolean
+ConvertSelection(
+    Widget w,
+    Atom *selection, Atom *target, Atom *type,
+    XtPointer *value,
+    unsigned long *length,
+    int *format)
 {
     if (XmuConvertStandardSelection(w, CurrentTime, selection, target, type,
                                     (XPointer *) value, length, format))
@@ -518,9 +508,8 @@ static Boolean ConvertSelection(w, selection, target, type, value, length, forma
     return False;
 }
 
-static void ShowCB(w, client, call)
-    Widget w;
-    XtPointer client, call;
+static void
+ShowCB(Widget w, XtPointer client, XtPointer call)
 {
     Time time;
     char tmpbuf[16];
@@ -584,9 +573,8 @@ static void ShowCB(w, client, call)
     printf("\n");
 }
 
-static void AdjustCB(w, client, call)
-    Widget w;
-    XtPointer client, call;
+static void
+AdjustCB(Widget w, XtPointer client, XtPointer call)
 {
    int what = (int) client;
    Boolean state;
@@ -663,9 +651,8 @@ static void AdjustCB(w, client, call)
 
 
 #if 0
-static void EditCB (w, client, call)
-    Widget w;
-    XtPointer client, call;
+static void
+EditCB (Widget w, XtPointer client, XtPointer call)
 {
     int base, current, i, len;
     int lower, upper;
@@ -737,9 +724,8 @@ static void EditCB (w, client, call)
 }
 #endif
 
-static void FlagsEditCB (w, client, call)
-    Widget w;
-    XtPointer client, call;
+static void
+FlagsEditCB (Widget w, XtPointer client, XtPointer call)
 {
     int i, len;
     char* string;
@@ -765,9 +751,8 @@ static void FlagsEditCB (w, client, call)
     }
 }
 
-static void BlankEditCB (w, client, call)
-    Widget w;
-    XtPointer client, call;
+static void
+BlankEditCB (Widget w, XtPointer client, XtPointer call)
 {
     int i, len;
     char* string;
@@ -814,9 +799,8 @@ static void BlankEditCB (w, client, call)
 	ApplyCB (sdp->textwidget, client, call);
 }
 
-static void ChangeBlankCB (w, client, call)
-    Widget w;
-    XtPointer client, call;
+static void
+ChangeBlankCB (Widget w, XtPointer client, XtPointer call)
 {
     char* string;
     char buf[2];
@@ -853,8 +837,8 @@ static void ChangeBlankCB (w, client, call)
 	ApplyCB (sdp->textwidget, client, call);
 }
 
-static int isValid(val, field)
-int val, field;
+static int
+isValid(int val, int field)
 {
    switch(field) {
      case HSyncStart:
@@ -889,9 +873,8 @@ int val, field;
    return val;
 }
 
-static void ScrollCB (w, client, call)
-    Widget w;
-    XtPointer client, call;
+static void
+ScrollCB (Widget w, XtPointer client, XtPointer call)
 {
     float percent = *(float*) call;
     int ipercent = percent * 100;
@@ -926,9 +909,8 @@ static void ScrollCB (w, client, call)
     }
 }
 
-static void SwitchCB (w, client, call)
-    Widget w;
-    XtPointer client, call;
+static void
+SwitchCB (Widget w, XtPointer client, XtPointer call)
 {
     XF86VidModeLockModeSwitch(XtDisplay(w), DefaultScreen (XtDisplay (w)),
 			      FALSE);
@@ -939,11 +921,12 @@ static void SwitchCB (w, client, call)
     FetchCB(w, NULL, NULL);
 }
 
-static void AddCallback (w, callback_name, callback, client_data)
-    Widget w;
-    String  callback_name;
-    XtCallbackProc callback;
-    XtPointer client_data;
+static void
+AddCallback (
+    Widget w,
+    String  callback_name,
+    XtCallbackProc callback,
+    XtPointer client_data)
 {
     Widget src;
 
@@ -951,12 +934,13 @@ static void AddCallback (w, callback_name, callback, client_data)
     XtAddCallback (src, callback_name, callback, client_data);
 }
 
-static void CreateTyp (form, findex, w1name, w2name, w3name)
-    Widget form;
-    fields findex;
-    String w1name;
-    String w2name;
-    String w3name;
+static void
+CreateTyp (
+    Widget form,
+    fields findex,
+    String w1name,
+    String w2name,
+    String w3name)
 {
     Widget wids[3];
     char buf[10];
@@ -981,16 +965,15 @@ static void CreateTyp (form, findex, w1name, w2name, w3name)
 }
 
 
-static void AckWarn (w, client, call)
-    Widget w;
-    XtPointer client, call; 
+static void
+AckWarn (Widget w, XtPointer client, XtPointer call)
 {
     XtPopdown((Widget) client);
     XtDestroyWidget((Widget) client);
 }
 
-static void displayWarning(top)
-    Widget top;
+static void
+displayWarning(Widget top)
 {
     Widget w, popup, popupBox;
     int x, y;
@@ -1036,8 +1019,8 @@ static void displayWarning(top)
 
 
 #if 0
-static void s3Special(top)
-    Widget top;
+static void
+s3Special(Widget top)
 {
     Widget w, popup, form, invert_vclk_toggle, wids[6];
     char buf1[5] = {'\0',};
@@ -1084,8 +1067,8 @@ static void s3Special(top)
 
 
 
-static void CreateHierarchy(top)
-    Widget top;
+static void
+CreateHierarchy(Widget top)
 {
     char buf[5];
     Widget form, forms[14], s3form;
@@ -1260,7 +1243,7 @@ static void CreateHierarchy(top)
 	(void) sprintf (buf, "%d", AppRes.field[BlankDelay1].val);
 	wids[4] = XtVaCreateWidget("Blank1-text", asciiTextWidgetClass,
 			s3form, XtNstring, buf, XtNtranslations, trans, NULL);
-	AddCallback(wids[4], XtNcallback, BlankEditCB, BlankDelay1);
+	AddCallback(wids[4], XtNcallback, BlankEditCB, (XPointer) BlankDelay1);
 	AppRes.field[BlankDelay1].textwidget = wids[4];
 	wids[5] = XtVaCreateWidget("Blank1Inc-button", commandWidgetClass,
 				   s3form, NULL);
@@ -1276,7 +1259,7 @@ static void CreateHierarchy(top)
 	(void) sprintf (buf, "%d", AppRes.field[BlankDelay2].val);
 	wids[8] = XtVaCreateWidget("Blank2-text", asciiTextWidgetClass,
 			s3form, XtNstring, buf, XtNtranslations, trans, NULL);
-	AddCallback(wids[8], XtNcallback, BlankEditCB, BlankDelay2);
+	AddCallback(wids[8], XtNcallback, BlankEditCB, (XPointer) BlankDelay2);
 	AppRes.field[BlankDelay2].textwidget = wids[8];
 	wids[9] = XtVaCreateWidget("Blank2Inc-button", commandWidgetClass,
 				   s3form, NULL);
@@ -1348,22 +1331,17 @@ static void CreateHierarchy(top)
 		  (XtPointer) invalid_mode_popup);
 }
 
-static void QuitAction (w, e, vector, count)
-    Widget w;
-    XEvent* e;
-    String* vector;
-    Cardinal* count;
+static void
+QuitAction (Widget w, XEvent* e, String* vector, Cardinal* count)
 {
-    if (e->type == ClientMessage && e->xclient.data.l[0] == wm_delete_window
+    if ((e->type == ClientMessage
+      && e->xclient.data.l[0] == (long) wm_delete_window)
 	|| e->type == KeyPress)
 	QuitCB(w, NULL, NULL);
 }
 
-static void RestoreAction (w, e, vector, count)
-    Widget w;
-    XEvent* e;
-    String* vector;
-    Cardinal* count;
+static void
+RestoreAction (Widget w, XEvent* e, String* vector, Cardinal* count)
 {
     Boolean state;
 
@@ -1374,76 +1352,76 @@ static void RestoreAction (w, e, vector, count)
 }
 
 
-static void ShowAction(w, e, vector, count)
-    Widget w; XEvent* e; String* vector; Cardinal* count;
+static void
+ShowAction(Widget w, XEvent* e, String* vector, Cardinal* count)
 {
     ShowCB(w, NULL, NULL);
 }
 
-static void MoveLeftAction(w, e, vector, count)
-    Widget w; XEvent* e; String* vector; Cardinal* count;
+static void
+MoveLeftAction(Widget w, XEvent* e, String* vector, Cardinal* count)
 {
     AdjustCB(w, (XtPointer)HSyncStart, NULL);
 }
 
-static void MoveRightAction(w, e, vector, count)
-    Widget w; XEvent* e; String* vector; Cardinal* count;
+static void
+MoveRightAction(Widget w, XEvent* e, String* vector, Cardinal* count)
 {
     AdjustCB(w, (XtPointer)-HSyncStart, NULL);
 }
 
-static void NarrowerAction(w, e, vector, count)
-    Widget w; XEvent* e; String* vector; Cardinal* count;
+static void
+NarrowerAction(Widget w, XEvent* e, String* vector, Cardinal* count)
 {
     AdjustCB(w, (XtPointer)HTotal, NULL);
 }
 
-static void WiderAction(w, e, vector, count)
-    Widget w; XEvent* e; String* vector; Cardinal* count;
+static void
+WiderAction(Widget w, XEvent* e, String* vector, Cardinal* count)
 {
     AdjustCB(w, (XtPointer)-HTotal, NULL);
 }
 
-static void MoveUpAction(w, e, vector, count)
-    Widget w; XEvent* e; String* vector; Cardinal* count;
+static void
+MoveUpAction(Widget w, XEvent* e, String* vector, Cardinal* count)
 {
     AdjustCB(w, (XtPointer)VSyncStart, NULL);
 }
 
-static void MoveDownAction(w, e, vector, count)
-    Widget w; XEvent* e; String* vector; Cardinal* count;
+static void
+MoveDownAction(Widget w, XEvent* e, String* vector, Cardinal* count)
 {
     AdjustCB(w, (XtPointer)-VSyncStart, NULL);
 }
 
-static void TallerAction(w, e, vector, count)
-    Widget w; XEvent* e; String* vector; Cardinal* count;
+static void
+TallerAction(Widget w, XEvent* e, String* vector, Cardinal* count)
 {
     AdjustCB(w, (XtPointer)-VTotal, NULL);
 }
 
-static void ShorterAction(w, e, vector, count)
-    Widget w; XEvent* e; String* vector; Cardinal* count;
+static void
+ShorterAction(Widget w, XEvent* e, String* vector, Cardinal* count)
 {
     AdjustCB(w, (XtPointer)VTotal, NULL);
 }
 
-static void NextModeAction(w, e, vector, count)
-    Widget w; XEvent* e; String* vector; Cardinal* count;
+static void
+NextModeAction(Widget w, XEvent* e, String* vector, Cardinal* count)
 {
-	SwitchCB(w, 1, NULL);
+	SwitchCB(w, (XPointer) 1, NULL);
 }
 
-static void PrevModeAction(w, e, vector, count)
-    Widget w; XEvent* e; String* vector; Cardinal* count;
+static void
+PrevModeAction(Widget w, XEvent* e, String* vector, Cardinal* count)
 {
-	SwitchCB(w, -1, NULL);
+	SwitchCB(w, (XPointer) -1, NULL);
 }
 
 
 
-
-static void usage()
+static void
+usage(void)
 {
     fprintf(stderr, "Usage: xvidtune [option]\n");
     fprintf(stderr, "    where option is one of:\n");
@@ -1454,9 +1432,9 @@ static void usage()
     exit(1);
 }
 
-int main (argc, argv)
-    int argc;
-    char** argv;
+
+int
+main (int argc, char** argv)
 {
     Widget top;
     XtAppContext app;

@@ -1,17 +1,5 @@
-/* $XConsortium: apm_cursor.c /main/3 1996/10/25 07:01:53 kaleb $ */
+/* $XFree86$ */
 
-
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.5 1997/10/25 13:50:19 hohndel Exp $ */
-
-
-/* 
-   Created 1997-10-18 by Henrik Harmsen
-
-   Uses XAA interface
-
-   See apm_driver.c for more info
-*/
 
 #include "X.h"
 #include "Xproto.h"
@@ -27,68 +15,77 @@
 #include "xf86.h"
 #include "mipointer.h"
 #include "xf86Priv.h"
-#include "xf86_Option.h"
 #include "xf86_ansic.h"
-#include "vga.h"
-#include "xf86cursor.h"
-
-#define XCONFIG_FLAGS_ONLY
-#include "xf86_Config.h"
 
 #include "apm.h"
 
-static void ApmShowCursor(void);
-static void ApmHideCursor(void);
-static void ApmSetCursorPosition(int x, int y, int xoff, int yoff);
-static void ApmSetCursorColors(int bg, int fg);
-static void ApmLoadCursorImage(u8* data, int xorigin, int yorigin);
+#define CURSORWIDTH	64
+#define CURSORHEIGHT	64
+#define CURSORSIZE	(CURSORWIDTH * CURSORHEIGHT / 8)
+#define CURSORALIGN	((CURSORSIZE + 1023) & ~1023l)
 
-extern Bool XAACursorInit();
-extern void XAARestoreCursor();
-extern void XAAWarpCursor();
-extern void XAAQueryBestSize();
+static void	ApmShowCursor(ScrnInfoPtr pScrn);
+static void	ApmHideCursor(ScrnInfoPtr pScrn);
+static void	ApmSetCursorPosition(ScrnInfoPtr pScrn, int x, int y);
+static void	ApmSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg);
+static void	ApmLoadCursorImage(ScrnInfoPtr pScrn, u8* data);
+static Bool	ApmUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs);
 
-static u32 CursorAddress;
 static u8 ConvertTable[256];
 
+/* Inline functions */
 static __inline__ void
-WaitForFifo(int slots)
+WaitForFifo(ApmPtr pApm, int slots)
 {
-  volatile int i;
+  if (!pApm->UsePCIRetry) {
+    volatile int i;
 #define MAXLOOP 1000000
 
-  for(i = 0; i < MAXLOOP; i++) { 
-    if ((STATUS() & STATUS_FIFO) >= slots)
-      break;
+    for(i = 0; i < MAXLOOP; i++) {
+      if ((STATUS() & STATUS_FIFO) >= slots)
+	break;
+    }
+    if (i == MAXLOOP) {
+      FatalError("Hung in WaitForFifo() (Status = 0x%08X)\n", STATUS());
+    }
   }
-  if (i == MAXLOOP)
-    FatalError("Hung in WaitForFifo()\n");
 }
 
-void ApmCursorInit(void)
+static __inline__ void
+ApmCheckMMIO_InitFast(ScrnInfoPtr pScrn)
 {
-  u32 tmp, ApmCursorBytes, i, j, k;
-  u8 x, z, c;
+  if (!APMPTR(pScrn)->apmMMIO_Init)
+    ApmCheckMMIO_Init(pScrn);
+}
 
-  XAACursorInfoRec.MaxWidth = 64;
-  XAACursorInfoRec.MaxHeight = 64;
+int ApmHWCursorInit(ScreenPtr pScreen)
+{
+  ScrnInfoPtr		pScrn = xf86Screens[pScreen->myNum];
+  APMDECL(pScrn);
+  xf86CursorInfoPtr	infoPtr;
+  u32			i;
 
-  CursorAddress = vga256InfoRec.videoRam;
+  infoPtr = xf86CreateCursorInfoRec();
+  if (!infoPtr)
+      return FALSE;
 
-  XAACursorInfoRec.Flags = USE_HARDWARE_CURSOR |
-    HARDWARE_CURSOR_PROGRAMMED_ORIGIN |
-    HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE |
-    HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK |
-    HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
-    HARDWARE_CURSOR_PROGRAMMED_BITS;
-  XAACursorInfoRec.SetCursorColors = ApmSetCursorColors;
-  XAACursorInfoRec.SetCursorPosition = ApmSetCursorPosition;
-  XAACursorInfoRec.HideCursor = ApmHideCursor;
-  XAACursorInfoRec.ShowCursor = ApmShowCursor;
-  XAACursorInfoRec.LoadCursorImage = ApmLoadCursorImage;
-  XAACursorInfoRec.GetInstalledColormaps = vgaGetInstalledColormaps;
+  pApm->CursorInfoRec		= infoPtr;
+  pApm->OffscreenReserved	+= 2 * CURSORALIGN;
+  pApm->DisplayedCursorAddress	= pApm->BaseCursorAddress =
+  pApm->CursorAddress	= 1024 * pScrn->videoRam - pApm->OffscreenReserved;
+
+  infoPtr->MaxWidth	= CURSORWIDTH;
+  infoPtr->MaxHeight	= CURSORHEIGHT;
+
+  infoPtr->Flags = HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_1;
+  infoPtr->SetCursorColors	= ApmSetCursorColors;
+  infoPtr->SetCursorPosition	= ApmSetCursorPosition;
+  infoPtr->LoadCursorImage	= ApmLoadCursorImage;
+  infoPtr->HideCursor		= ApmHideCursor;
+  infoPtr->ShowCursor		= ApmShowCursor;
+  infoPtr->UseHWCursor		= ApmUseHWCursor;
   
-  ErrorF("%s %s: %s: Using hardware cursor (XAA).\n", 
+  /*ErrorF("%s %s: %s: Using hardware cursor (XAA).\n", 
          XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);    
 
   if(XAACursorInfoRec.Flags & USE_HARDWARE_CURSOR) {
@@ -97,74 +94,94 @@ void ApmCursorInit(void)
     vgaHWCursor.Restore = XAARestoreCursor;
     vgaHWCursor.Warp = XAAWarpCursor;
     vgaHWCursor.QueryBestSize = XAAQueryBestSize;
-  }
+  }*/
 
   /* Set up the convert table for the input cursor data */
   for (i = 0; i < 256; i++)
   {
-    x = i;
-    for (j = 0; j < 8; j += 2)
-    {
-      c = (x & (3 << j)) >> j;
-      switch (c)
-      {
-        case 0:
-        case 1:
-             z = 2;
-             break;
-        case 2:
-             z = 0;
-             break;
-        case 3:
-             z = 1;
-             break;
-        default:
-             FatalError("APM: Internal error in apm_cursor.c");
-             break;
-      }
-      x = (x & ~(3 << j)) | z << j;
-    }
-    ConvertTable[i] = x;
+#if 1
+    ConvertTable[i] = ((~i) & 0xAA) | (i & (i >> 1) & 0x55);
+#else
+    unsigned char	CT[4] = { 2, 2, 0, 1 };
+
+    ConvertTable[i] = (CT[(i >> 6) & 3] << 6) |
+		      (CT[(i >> 4) & 3] << 4) |
+		      (CT[(i >> 2) & 3] << 2) | CT[i & 3];
+#endif
   }
+
+  return xf86InitCursor(pScreen, infoPtr);
 }
 
  
 static void 
-ApmShowCursor(void)
+ApmShowCursor(ScrnInfoPtr pScrn)
 {
-  ApmCheckMMIO_Init();
-  WaitForFifo(2);
+  APMDECL(pScrn);
+
+  ApmCheckMMIO_InitFast(pScrn);
+  WaitForFifo(pApm, 2);
   WRXB(0x140, 1);
-  WRXW(0x144, CursorAddress);
+  WRXW(0x144, pApm->CursorAddress >> 10);
+  pApm->DisplayedCursorAddress = pApm->CursorAddress;
 }
 
 
 static void
-ApmHideCursor(void)
+ApmHideCursor(ScrnInfoPtr pScrn)
 {
-  ApmCheckMMIO_Init();
-  WaitForFifo(1);
+  APMDECL(pScrn);
+
+  ApmCheckMMIO_InitFast(pScrn);
+  WaitForFifo(pApm, 1);
   WRXB(0x140, 0);
 }
 
+static Bool ApmUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
+{
+    return xf86Screens[pScreen->myNum]->bitsPerPixel >= 8;
+}
 
 static void
-ApmSetCursorPosition(int x, int y, int xoff, int yoff)
+ApmSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
-  WaitForFifo(2);
-  WRXW(0x14c, yoff << 8 | xoff & 0xff);
-  WRXL(0x148, y << 16 | x & 0xffff);
+  APMDECL(pScrn);
+  int	xoff, yoff;
+
+  if (x < -CURSORWIDTH || y < -CURSORHEIGHT) {
+      WaitForFifo(pApm, 1);
+      WRXB(0x140, 0);
+      return;
+  }
+
+  if (x < 0) {
+      xoff = -x;
+      x = 0;
+  }
+  else
+      xoff = 0;
+  if (y < 0) {
+      yoff = -y;
+      y = 0;
+  }
+  else
+      yoff = 0;
+
+  WaitForFifo(pApm, 2);
+  WRXW(0x14c, (yoff << 8) | (xoff & 0xff));
+  WRXL(0x148, (y << 16) | (x & 0xffff));
 }
 
 
 static void
-ApmSetCursorColors(int bg, int fg)
+ApmSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {	 
+  APMDECL(pScrn);
   u16 packedcolfg, packedcolbg;
 
-  if (vga256InfoRec.bitsPerPixel == 8)
+  if (pScrn->bitsPerPixel == 8)
   {
-    WaitForFifo(2);
+    WaitForFifo(pApm, 2);
     WRXB(0x141, fg);
     WRXB(0x142, bg);
   }
@@ -178,26 +195,29 @@ ApmSetCursorColors(int bg, int fg)
       ((bg & 0xe00000) >> 16) |
       ((bg & 0x00e000) >> 11) |
       ((bg & 0x0000c0) >> 6);
-    WaitForFifo(2);
+    WaitForFifo(pApm, 2);
     WRXB(0x141, packedcolfg);
     WRXB(0x142, packedcolbg);
   }
 }
 
 
-#define CURSIZE (64*16)
 static void 
-ApmLoadCursorImage(u8* data, int xorigin, int yorigin)
+ApmLoadCursorImage(ScrnInfoPtr pScrn, u8* data)
 {
+  APMDECL(pScrn);
   u32 i;
-  u8 tmp[CURSIZE];
+  u8 tmp[2 * CURSORSIZE];
 
   /* Correct input data */
-  for (i = 0; i < CURSIZE; i++)
+  for (i = 0; i < sizeof tmp; i++)
   {
     tmp[i] = ConvertTable[data[i]];
   }
-  xf86memcpy((u8*)vgaLinearBase + (CursorAddress << 10), tmp, CURSIZE);
+  /*
+   * To avoid flicker.
+   * Note: 2*pApm->BaseCursorAddress + CURSORALIGN (=1024) < 2^31 all the time.
+   */
+  pApm->CursorAddress = 2*pApm->BaseCursorAddress + CURSORALIGN - pApm->DisplayedCursorAddress;
+  memcpy((u8*)pApm->FbBase + pApm->CursorAddress, tmp, sizeof tmp);
 }
-
-

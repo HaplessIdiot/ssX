@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.10 1999/02/12 22:52:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.11 1999/03/07 11:40:35 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -398,14 +398,14 @@ static void
 Permedia2ShowCursor(ScrnInfoPtr pScrn)
 {
     /* Enable cursor - X11 mode */
-    Permedia2OutIndReg(pScrn, PM2DACCursorControl, 0xBC, 0x43);
+    Permedia2OutIndReg(pScrn, PM2DACCursorControl, 0x00, 0x43);
 }
 
 static void
 Permedia2HideCursor(ScrnInfoPtr pScrn)
 {
     /* Disable cursor */
-    Permedia2OutIndReg(pScrn, PM2DACCursorControl, 0xFC, 0x00);
+    Permedia2OutIndReg(pScrn, PM2DACCursorControl, 0x00, 0x00);
 }
 
 static void
@@ -417,7 +417,6 @@ Permedia2LoadCursorImage(
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int i;
        
-    Permedia2OutIndReg(pScrn, PM2DACCursorControl, 0xB0, 0x43);
     GLINT_SLOW_WRITE_REG(0x00, PM2DACWriteAddress);
     for (i=0; i<1024; i++) {
 	GLINT_SLOW_WRITE_REG(*(src++), PM2DACCursorData);

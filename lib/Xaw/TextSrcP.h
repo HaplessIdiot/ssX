@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSrcP.h,v 1.4 1998/10/03 08:42:28 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrcP.h,v 1.5 1998/11/15 04:30:05 dawes Exp $ */
 
 #ifndef _XawTextSrcP_h
 #define _XawTextSrcP_h
@@ -56,6 +56,7 @@ SOFTWARE.
 #include <X11/Xaw/TextSrc.h>
 #include <X11/Xaw/TextP.h>	/* This source works with the Text widget */
 
+#if 0	/* no longer used */
 /* New fields for the TextSrc object class */
 typedef struct {
   XtPointer		next_extension;
@@ -64,6 +65,7 @@ typedef struct {
   Cardinal		record_size;
   int			(*Input)();
 } TextSrcExtRec, *TextSrcExt;
+#endif
 
 typedef XawTextPosition (*_XawSrcReadProc)
      (Widget, XawTextPosition, XawTextBlock*, int);
@@ -144,7 +146,9 @@ wchar_t* _XawTextMBToWC
  int		*len_in_out
  );
 
+#if 0	/* no longer used */
 typedef XawTextPosition (*_XawTextPositionFunc)();
+#endif
 
 #define XtInheritInput			((_XawTextPositionFunc)_XtInherit)
 #define XtInheritRead			((_XawSrcReadProc)_XtInherit)

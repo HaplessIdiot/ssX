@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.35 1998/12/13 07:37:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.36 1998/12/20 11:58:00 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -309,9 +309,9 @@ InitConnectionLimits()
 #endif
 
 #ifndef WIN32
-    ConnectionTranslation = (int *)xnfalloc(lastfdesc + 1);
+    ConnectionTranslation = (int *)xnfalloc(sizeof(int)*(lastfdesc + 1));
 #else
-    ConnectionTranslation = (int *)xnfalloc(MAXFD);
+    ConnectionTranslation = (int *)xnfalloc(sizeof(int)*(MAXFD));
 #endif
 }
 

@@ -1,4 +1,4 @@
-.\" $XFree86$ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.1 1999/03/21 01:45:07 dawes Exp $ 
 .TH MGA __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 mga - Matrox video driver
@@ -67,8 +67,25 @@ The following driver
 .B Options
 are supported:
 .TP
+.BI "Option ""8Plus24"" """ boolean """
+Enable or disable 8+24 overlay mode.  Only appropriate for depth 24.
+Default: off.
+.TP
+.BI "Option ""ColorKey"" """ integer """
+Set the colormap index used for the transparency key for the depth 8 plane
+when operating in 8+24 overlay mode.  The value must be in the range
+2\-255.  Default: 255.
+.TP
 .BI "Option ""HWCursor"" """ boolean """
 Enable or disable the HW cursor.  Default: on.
+.TP
+.BI "Option ""MGASDRAM"" """ boolean """
+Specify whether G100 and G200 cards have SDRAM.  The driver attempts to
+auto-detect this based on the card's PCI subsystem ID.  This option may
+be used to override that auto-detection.  Default: auto-detected.
+.TP
+.BI "Option ""NoAccel"" """ boolean """
+Disable or enable acceleration.  Default: acceleration is enabled.
 .TP
 .BI "Option ""PciRetry"" """ boolean """
 Enable or disable PCI retries.  Default: off.
@@ -77,32 +94,21 @@ Enable or disable PCI retries.  Default: off.
 Set the number of significant bits per RGB channel.  Only appropriate for
 depth 8.  Allowed values are 6 and 8.  Default: 8.
 .TP
-.BI "Option ""SyncOnGreen"" """ boolean """
-Enable or disable combinging the sync signals with the green signal.
-Default: off.
-.TP
-.BI "Option ""NoAccel"" """ boolean """
-Disable or enable acceleration.  Default: acceleration is enabled.
-.TP
-.BI "Option ""ShowCache"" """ boolean """
-Enable or disable viewing offscreen memory.  Default: off.
-.TP
-.BI "Option ""8Plus24"" """ boolean """
-Enable or disable 8+24 overlay mode.  Only appropriate for depth 24.
-Default: off.
-.TP
-.BI "Option ""MGASDRAM"" """ boolean """
-Specify whether G100 and G200 cards have SDRAM.  The driver attempts to
-auto-detect this based on the card's PCI subsystem ID.  This option may
-be used to override that auto-detection.  Default: auto-detected.
-.TP
 .BI "Option ""ShadowFB"" """ boolean """
 Enable or disable use of the shadow framebuffer layer.  See
 shadowfb(__drivermansuffix__) for further information.  Default: off.
 .TP
+.BI "Option ""ShowCache"" """ boolean """
+Enable or disable viewing offscreen memory.  Default: off.
+.TP
+.BI "Option ""SyncOnGreen"" """ boolean """
+Enable or disable combinging the sync signals with the green signal.
+Default: off.
+.TP
 .BI "Option ""UseFBDev"" """ boolean """
-Enable or disable use of on OS-specific fb interface.  See
-fbdevhw(__drivermansuffix__) for further information.  Default: off.
+Enable or disable use of on OS-specific fb interface (and is not supported
+on all OSs).  See fbdevhw(__drivermansuffix__) for further information.
+Default: off.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)
 .SH AUTHORS

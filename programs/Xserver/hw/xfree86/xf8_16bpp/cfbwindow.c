@@ -4,7 +4,7 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbwindow.c,v 1.1 1999/01/31 12:22:17 dawes Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -17,7 +17,7 @@
 #include "mistruct.h"
 #include "regionstr.h"
 #include "cfbmskbits.h"
-
+#include "xf86.h"
 
 /* We don't bother with cfb's fastBackground/Border so we don't
    need to use the Window privates */
@@ -59,6 +59,9 @@ cfb8_16CopyWindow(
     RegionPtr prgnSrc
 ){
     ScreenPtr pScreen = pWin->drawable.pScreen;
+    cfb8_16ScreenPtr pScreenPriv = 
+		CFB8_16_GET_SCREEN_PRIVATE(pWin->drawable.pScreen);
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     DDXPointPtr ppt, pptSrc;
     RegionRec rgnDst;
     BoxPtr pbox;
@@ -83,6 +86,11 @@ cfb8_16CopyWindow(
 	}
 	cfbDoBitbltCopy((DrawablePtr)pRoot, (DrawablePtr)pRoot,
                 		GXcopy, &rgnDst, pptSrc, ~0L);
+	if(pWin->drawable.bitsPerPixel == 16)
+	    cfb16DoBitbltCopy((DrawablePtr)pScreenPriv->pix16, 
+			      (DrawablePtr)pScreenPriv->pix16,
+                		GXcopy, &rgnDst, pptSrc, ~0L);
+
 	DEALLOCATE_LOCAL(pptSrc);
     }
 
@@ -90,7 +98,7 @@ cfb8_16CopyWindow(
 
     if(pWin->drawable.depth == 8) {
       REGION_INIT(pScreen, &rgnDst, NullBox, 0);
-      miSegregateChildren(pWin, &rgnDst, 16);
+      miSegregateChildren(pWin, &rgnDst, pScrn->depth);
       if(REGION_NOTEMPTY(pScreen, &rgnDst)) {
 	REGION_INTERSECT(pScreen, &rgnDst, &rgnDst, prgnSrc);
 	nbox = REGION_NUM_RECTS(&rgnDst);
@@ -103,8 +111,9 @@ cfb8_16CopyWindow(
 		ppt->y = pbox->y1 + dy;
 	    }
 
-	    cfb16DoBitbltCopy((DrawablePtr)pRoot, (DrawablePtr)pRoot,
-				GXcopy, &rgnDst, pptSrc, ~0L);
+	    cfb16DoBitbltCopy((DrawablePtr)pScreenPriv->pix16, 
+			      (DrawablePtr)pScreenPriv->pix16,
+			      GXcopy, &rgnDst, pptSrc, ~0L);
 	    DEALLOCATE_LOCAL(pptSrc);
 	}
       }
