@@ -41,7 +41,7 @@ XINERAMAHEADERS = panoramiXext.h panoramiXproto.h Xinerama.h
 #if BuildRender || BuildXftLibrary
 RENDERHEADERS = render.h renderproto.h
 #endif
-#if BuildRandRLibrary
+#if BuildRandR || BuildRandRLibrary
 RANDRHEADERS = randr.h randrproto.h
 #endif
 #if BuildXTrap || BuildXTrapLibrary
