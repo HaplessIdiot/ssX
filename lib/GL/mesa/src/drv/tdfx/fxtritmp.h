@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxtritmp.h,v 1.1 2000/09/24 13:51:20 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -389,12 +389,12 @@ static void TAG(fx_points) (GLcontext * ctx, GLuint first, GLuint last)
     }
 
     if (!VB->ClipOrMask) {
-        for (i = first; i <= last; i++) {
+        for (i = first; i < last; i++) {
             DRAW_POINT(i, radius, color[i]);
         }
     }
     else {
-        for (i = first; i <= last; i++) {
+        for (i = first; i < last; i++) {
             if (VB->ClipMask[i] == 0) {
                 DRAW_POINT(i, radius, color[i]);
             }
@@ -408,12 +408,12 @@ static void TAG(fx_points) (GLcontext * ctx, GLuint first, GLuint last)
         FX_grRenderBuffer(fxMesa, GR_BUFFER_FRONTBUFFER);
 
         if (!VB->ClipOrMask) {
-            for (i = first; i <= last; i++) {
+            for (i = first; i < last; i++) {
                 DRAW_POINT(i, radius, color[i]);
             }
         }
         else {
-            for (i = first; i <= last; i++) {
+            for (i = first; i < last; i++) {
                 if (VB->ClipMask[i] == 0) {
                     DRAW_POINT(i, radius, color[i]);
                 }

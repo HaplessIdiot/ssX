@@ -1,4 +1,4 @@
-/* Header:   //Mercury/Projects/archives/XFree86/4.0/smi_video.c.-arc   1.12   08 Nov 2000 18:38:34   Frido  $ */
+/* Header:   //Mercury/Projects/archives/XFree86/4.0/smi_video.c.-arc   1.14   30 Nov 2000 16:51:40   Frido  $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and silicon Motion.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_video.c,v 1.1 2000/11/28 20:59:20 dawes Exp $ */
 
 #include "smi.h"
 #include "smi_video.h"
@@ -701,7 +701,7 @@ SMI_StopVideo(
 			#if SMI_USE_CAPTURE
 			WRITE_CPR(pSmi, 0x00, READ_CPR(pSmi, 0x00) & ~0x00000001);
 			WRITE_VPR(pSmi, 0x54, READ_VPR(pSmi, 0x54) & ~0x00F00000);
-			OUT_SEQ(pSmi, 0x21, IN_SEQ(pSmi, 0x21) | 0x04);
+/* #864		OUT_SEQ(pSmi, 0x21, IN_SEQ(pSmi, 0x21) | 0x04); */
 			#endif
 		}
 		if (ptrPort->area != NULL)

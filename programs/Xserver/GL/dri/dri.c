@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.21 2000/09/26 15:57:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.22 2000/11/08 05:02:55 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -235,9 +235,6 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
 	pDRIPriv->pSAREA->drawableTable[i].flags = 0;
     }
 
-    /* Grab the hardware lock */
-    DRILock(pScreen, 0);
-
     return TRUE;
 }
 
@@ -266,6 +263,11 @@ DRIFinishScreenInit(ScreenPtr pScreen)
 
     DRIDrvMsg(pScreen->myNum, X_INFO,
 	      "X context handle = 0x%08lx\n", pDRIPriv->myContext);
+
+    /* Now that we have created the X server's context, we can grab the
+     * hardware lock for the X server.
+     */
+    DRILock(pScreen, 0);
 
     /* pointers so that we can prevent memory leaks later */
     pDRIPriv->hiddenContextStore    = NULL;

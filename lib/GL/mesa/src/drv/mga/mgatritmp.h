@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatritmp.h,v 1.4 2000/08/28 02:43:13 tsi Exp $ */
 
 static __inline void TAG(triangle)(GLcontext *ctx,
 				   GLuint e0, GLuint e1, GLuint e2,
@@ -171,7 +171,7 @@ static void TAG(points)( GLcontext *ctx, GLuint first, GLuint last )
    GLfloat sz = ctx->Point.Size * .5;
    int i;
    
-   for(i=first;i<=last;i++) 
+   for(i=first;i<last;i++) 
       if(VB->ClipMask[i]==0) {
 	 if (IND & (MGA_TWOSIDE_BIT|MGA_OFFSET_BIT)) {	
 	    mgaVertex tmp0 = mgaVB[i];

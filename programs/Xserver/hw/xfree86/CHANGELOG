@@ -1,11 +1,20 @@
-1091. Enable 3D support for Rage 128 Mobility chips (Kevin Martin).
-
-XFree86 4.0.1h (4 December 2000)
-1090. Fix alot of Rage 128 Xv bugs (Mark Vojkovich).
+XFree86 4.0.1i (xx December 2000)
+1097. Resync with the DRI CVS trunk.
+1096. Fix alot of Rage 128 Xv bugs (Mark Vojkovich).
+1095. Fix XKB symbols for Swedish Macintosh keyboards (#4337, Olaf Hering).
+1094. Disable DRI on PPC (#4337, Olaf Hering).
+1093. Suppress xf86ReadBIOS debugging messages for BSD (#4336, Takaaki Nomura).
+1092. Silicon Motion driver update, includes bug fixes (#4335,
+      Frido Garritsen, Silicon Motion, Inc.).
+1091. Updates to the dumpkeymap utility and its documentation (#4323,
+      Eric Sunshine).
+1090. Enable 3D support for Rage 128 Mobility chips (Kevin Martin).
 1089. Add clip rectangles support to Render extension, Xrender and Xft.
       Make Xrender and Xft usable from c++.
       Fix a bunch of compiler warnings in Render extension code
       (Keith Packard)
+
+XFree86 4.0.1h (4 December 2000)
 1088. Fix key mapping for the '\' key on GB keyboards in Solaris 8.
 1087. Status doc updates for Neomagic an NVIDIA (#4334, Andrew C. Aitchison,
       Mark Vojkovich).
@@ -11889,4 +11898,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1445 2000/12/05 15:37:07 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1446 2000/12/05 18:58:20 mvojkovi Exp $

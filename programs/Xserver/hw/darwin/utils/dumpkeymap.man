@@ -1,113 +1,163 @@
-.\"============================================================================
-.\"
-.\" Manual page for `dumpkeymap'.
-.\"
-.\" Copyright (C) 1999,2000 by Eric Sunshine <sunshine@sunshineco.com>
-.\" All rights reserved.
-.\"
-.\" Redistribution and use in source and binary forms, with or without
-.\" modification, are permitted provided that the following conditions are met:
-.\"
-.\"   1. Redistributions of source code must retain the above copyright
-.\"      notice, this list of conditions and the following disclaimer.
-.\"   2. Redistributions in binary form must reproduce the above copyright
-.\"      notice, this list of conditions and the following disclaimer in the
-.\"      documentation and/or other materials provided with the distribution.
-.\"   3. The name of the author may not be used to endorse or promote products
-.\"      derived from this software without specific prior written permission.
-.\"
-.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
-.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-.\" OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
-.\" NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-.\" SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-.\" TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-.\" PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-.\" LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-.\" NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-.\" SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-.\"
-.\"============================================================================
-.\"
-.\" $XFree86$
-.\"
-.\"----------------------------------------------------------------------------
-.\" Annotation Macros -- Facilitate creation of annotated, non-filled blocks
-.\"	of text.  An annotated block is initiated with the `AS' macro.  Each
-.\"	annotated, non-filled line within the block must be introduced with
-.\"	the `AN' macro which takes two arguments.  The first argument is the
-.\"	detail text to be annotated, and the second is the annotation itself.
-.\"	The block should be terminated with the `AE' macro which actually
-.\"	emits the fully annotated block.  All anotations within the block are
-.\"	aligned at the same horizontal position.  This position is guaranteed
-.\"	to be just to the right of the widest detail line.  Finally, the `AZ'
-.\"	macro, which takes a single argument, can be used to to insert a
-.\"	non-annotated line into the block which does not play a part in the
-.\"	calculation of the horizontal annotation alignment.
-.\" Implementation Note
-.\"	These macros utilize a diversion (named `AD').  Since the prevailing
-.\"	indentation is stored along with the diverted text, we must muck with
-.\"	the indentation level in order to prevent the indentation from being
-.\"	applied to the text a second time when `AD' is finally emitted.
-.\"----------------------------------------------------------------------------
+.ig
+//=============================================================================
+//
+// Manual page for `dumpkeymap'.
+//
+// Copyright (C) 1999,2000 by Eric Sunshine <sunshine@sunshineco.com>
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//   1. Redistributions of source code must retain the above copyright
+//      notice, this list of conditions and the following disclaimer.
+//   2. Redistributions in binary form must reproduce the above copyright
+//      notice, this list of conditions and the following disclaimer in the
+//      documentation and/or other materials provided with the distribution.
+//   3. The name of the author may not be used to endorse or promote products
+//      derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+// WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+// MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+// EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+// OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+// WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+// OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+// ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+//=============================================================================
+//
+// $XFree86$
+//
+..
+.ig
+//-----------------------------------------------------------------------------
+// Local identification information.
+//-----------------------------------------------------------------------------
+..
+.nr VE 4 \" Version number
+.TH DUMPKEYMAP 1 "v\n(VE \-\- 1 December 2000" "Version \n(VE"
+.de UP
+1 December 2000
+..
+.ig
+//-----------------------------------------------------------------------------
+// Annotation Macros
+// -----------------
+//	Facilitate creation of annotated, non-filled blocks of text.  An
+//	annotated block is initiated with the `AS' macro.  Each annotated,
+//	non-filled line within the block must be introduced with the `AN' macro
+//	which takes three arguments.  The first argument is the detail text to
+//	be annotated.  The second is a string of spaces used to align the
+//	annotations by certain (broken) roff interpreters which fail to
+//	implement the proper set of roff commands (such as diversions,
+//	indentation, and tab stops).  It is assumed that the spaces will be
+//	used with fixed-point font.  The third argument is the annotation
+//	itself.  The block should be terminated with the `AE' macro.  For all
+//	roff interpreters which properly implement diversions, indentation, and
+//	tab stops, all anotations within the block are automatically aligned at
+//	the same horizontal position.  This position is guaranteed to be just
+//	to the right of the widest `AN' detail line.  For broken roff
+//	interpreters, such as `rman', the string of spaces from the second
+//	argument are used to align the annotations.  Finally, the `AZ' macro,
+//	which takes a single argument, can be used to to insert a non-annotated
+//	line into the block which does not play a part in the calculation of
+//	the horizontal annotation alignment.
+//
+// Implementation Notes
+// --------------------
+// *1*	These macros utilize a diversion (named `AD').  Since the prevailing
+//	indentation is stored along with the diverted text, we must muck with
+//	the indentation level in order to prevent the indentation from being
+//	applied to the text a second time when `AD' is finally emitted.
+//
+// *2*	Unfortunately, `.if' strips leading whitespace from following text, so
+//	`AN' uses \& to preserve the whitespace.
+//
+// *3*	This manual page has been tested for proper formatting with troff,
+//	groff, nroff and rman (the `man' to `HTML' converter).  Unfortunately,
+//	rman fails to implement many useful features such as diversions,
+//	indentation, and tab stops, and is also hideously buggy.  Furthermore
+//	it identifies itself as nroff and fails to provide any further
+//	identification, so there is no way to create macros which specifically
+//	work around its limitations.  Following is a list of several bugs in
+//	rman which the implementation of these macros must avoid:
+//	    o Fails with multi-line conditionals within macros.
+//	    o Fails on macro definition within multi-line conditionals.
+//	    o Fails when macro arguments are not delimited by exactly 1 space.
+//	    o String definition `.ds' ignores the value; uses empty "" instead.
+//	As a consequence of these problems, the following macros are written
+//	using a series of ugly single-line `.if' conditionals rather than the
+//	more natural multi-line `.if' and `.ie' conditionals.  Also, rman fails
+//	to understand the common idiom of `.\"' to introduce a comment, which
+//	is why all comments in this file are wrapped in ignore `.ig' blocks.
+//-----------------------------------------------------------------------------
+..
 .de AS
-.nr AW 0
-.nr AI \\n(.i
-.in -\\n(AI
+.if t .nr AW 0
+.if t .nr AI \\n(.i
+.if t .in -\\n(AI
 .nf
 ..
 .de AN
-.if \w'\\$1'>\\n(AW .nr AW \w'\\$1'
-.da AD
-\\$1\\t\\$2
-.da
+.if t .if \w'\\$1'>\\n(AW .nr AW \w'\\$1'
+.if t .da AD
+.if t \\&\\$1\\t\\$3
+.if t .da
+.if n \\&\\$1 \\$2\\$3
 ..
 .de AZ
-.da AD
+.if t .da AD
 \\$1
-.da
-\\
+.if t .da
 ..
 .de AE
-.in +\\n(AIu
-.if \\n(AW .ta \\n(AWu+\w'\\(em'u
-.AD
-.DT
-.rm AD
-.rm AW
+.if t .in +\\n(AIu
+.if t .if \\n(AW .ta \\n(AWu+\w'\\(em'u
+.if t .AD
+.if t .DT
+.if t .rm AD
+.if t .rm AW
 .fi
 ..
-.\"----------------------------------------------------------------------------
-.\" Bulleted list macros -- `BG' begins a bulleted list; `BU' delimits
-.\"	bulleted entries; `BE' ends a bulleted list.
-.\"----------------------------------------------------------------------------
+.ig
+//-----------------------------------------------------------------------------
+// Bulleted list macros -- `BG' begins a bulleted list; `BU' delimits
+//	bulleted entries; `BE' ends a bulleted list.
+//-----------------------------------------------------------------------------
+..
 .de BG
 .PP
 .RS
 ..
 .de BU
 .HP
-.ie t \\(bu\\ \\c
-.el *\\ \\c
+\\(bu\\ \\c
 ..
 .de BE
 .RE
 .PP
 ..
-.\"----------------------------------------------------------------------------
-.\" Indented paragraph with stylized hanging tag macro.  `TG' takes a single
-.\"	argument and treats it as the hanging tag of the indented paragraph.
-.\"	The tag is italicized in troff but not in nroff.
-.\"----------------------------------------------------------------------------
+.ig
+//-----------------------------------------------------------------------------
+// Indented paragraph with stylized hanging tag macro.  `TG' takes a single
+//	argument and treats it as the hanging tag of the indented paragraph.
+//	The tag is italicized in troff but not in nroff.
+//-----------------------------------------------------------------------------
+..
 .de TG
 .TP
 .ie t .I "\\$1"
 .el \\$1
 ..
-.\"----------------------------------------------------------------------------
-.\" Manual page for `dumpkeymap'.
-.\"----------------------------------------------------------------------------
-.TH DUMPKEYMAP 1 "November 2000" "Version 3"
+.ig
+//-----------------------------------------------------------------------------
+// Manual page for `dumpkeymap'.
+//-----------------------------------------------------------------------------
+..
 .SH NAME
 dumpkeymap \- Dianostic dump of a .keymapping file
 .SH SYNOPSIS
@@ -200,16 +250,16 @@ variable number of device-specific key mappings.
 .RS
 .AS
 .AZ "struct KeyMappingFile {"
-.AN "    char magic_number[4];"    "// `KYM1'"
-.AN "    DeviceMapping maps[...];" "// Variable number of maps"
+.AN "    char magic_number[4];" "   " "// `KYM1'"
+.AN "    DeviceMapping maps[...];" "" "// Variable number of maps"
 .AZ };
 .AE
 .PP
 .AS
 .AZ "struct DeviceMapping {"
-.AN "    dword interface;"  "// Interface type"
-.AN "    dword handler_id;" "// Interface subtype"
-.AN "    dword map_size;"   "// Byte count of `map' (below)"
+.AN "    dword interface;" " " "// Interface type"
+.AN "    dword handler_id;" "" "// Interface subtype"
+.AN "    dword map_size;" "  " "// Byte count of `map' (below)"
 .AN "    KeyMapping map;"
 .AZ };
 .AE
@@ -256,14 +306,14 @@ structure.
 .RS
 .AS
 .AZ "struct KeyMapping {"
-.AN "    word number_size;"           "// 0=1 byte, non-zero=2 bytes"
-.AN "    number num_modifier_groups;" "// Modifier groups"
+.AN "    word number_size;" "          " "// 0=1 byte, non-zero=2 bytes"
+.AN "    number num_modifier_groups;" "" "// Modifier groups"
 .AZ "    ModifierGroup modifier_groups[...];"
-.AN "    number num_scan_codes;"      "// Scan groups"
+.AN "    number num_scan_codes;" "     " "// Scan groups"
 .AN "    ScanGroup scan_table[...];"
-.AN "    number num_sequence_lists;"  "// Sequence lists"
+.AN "    number num_sequence_lists;" " " "// Sequence lists"
 .AN "    Sequence sequence_lists[...];"
-.AN "    number num_special_keys;"    "// Special keys"
+.AN "    number num_special_keys;" "   " "// Special keys"
 .AN "    SpecialKey special_key[...];"
 .AZ };
 .AE
@@ -285,21 +335,21 @@ etc.
 .RS
 .AS
 .AZ "enum Modifier {"
-.AN "    ALPHALOCK = 0,"
-.AN "    SHIFT,"
-.AN "    CONTROL,"
-.AN "    ALTERNATE,"
-.AN "    COMMAND,"
-.AN "    KEYPAD,"
-.AN "    HELP"
+.AZ "    ALPHALOCK = 0,"
+.AZ "    SHIFT,"
+.AZ "    CONTROL,"
+.AZ "    ALTERNATE,"
+.AZ "    COMMAND,"
+.AZ "    KEYPAD,"
+.AZ "    HELP"
 .AZ };
 .AE
 .PP
 .AS
 .AZ "struct ModifierGroup {"
-.AN "    number modifier;"        "// A Modifier constant"
+.AN "    number modifier;" "       " "// A Modifier constant"
 .AN "    number num_scan_codes;"
-.AN "    number scan_codes[...];" "// Variable number of scan codes"
+.AN "    number scan_codes[...];" "" "// Variable number of scan codes"
 .AZ };
 .AE
 .RE
@@ -320,11 +370,11 @@ code 0, the second represents scan code 1, etc.
 .RS
 .AS
 .AZ "enum ModifierMask {"
-.AN "    ALPHALOCK_MASK"       "= 1 << 0,"
-.AN "    SHIFT_MASK"           "= 1 << 1,"
-.AN "    CONTROL_MASK"         "= 1 << 2,"
-.AN "    ALTERNATE_MASK"       "= 1 << 3,"
-.AN "    CARRIAGE_RETURN_MASK" "= 1 << 4"
+.AN "    ALPHALOCK_MASK" "      " "= 1 << 0,"
+.AN "    SHIFT_MASK" "          " "= 1 << 1,"
+.AN "    CONTROL_MASK" "        " "= 1 << 2,"
+.AN "    ALTERNATE_MASK" "      " "= 1 << 3,"
+.AN "    CARRIAGE_RETURN_MASK" "" "= 1 << 4"
 .AZ };
 .AZ "#define NOT_BOUND 0xff"
 .AE
@@ -414,28 +464,28 @@ KeyMapping::sequence_lists[].
 .RS
 .AS
 .AZ "enum CharacterSet {"
-.AN "    ASCII"        "= 0x00,"
-.AN "    SYMBOL"       "= 0x01,"
+.AN "    ASCII" "       " "= 0x00,"
+.AN "    SYMBOL" "      " "= 0x01,"
 .AN "    ..."
-.AN "    FUNCTION_KEY" "= 0xfe,"
-.AN "    KEY_SEQUENCE" "= 0xff"
+.AN "    FUNCTION_KEY" "" "= 0xfe,"
+.AN "    KEY_SEQUENCE" "" "= 0xff"
 .AZ };
 .AE
 .PP
 .AS
 .AZ "struct Character {"
-.AN "    number set;"       "// CharacterSet of generated character"
-.AN "    number char_code;" "// Actual character generated"
+.AN "    number set;" "      " "// CharacterSet of generated character"
+.AN "    number char_code;" "" "// Actual character generated"
 .AZ };
 .AE
 .PP
 .AS
 .AZ "enum FunctionKey {"
-.AN "    F1 = 0x20, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,"
-.AN "    INSERT, DELETE, HOME, END, PAGE_UP, PAGE_DOWN, PRINT_SCREEN,"
-.AN "    SCROLL_LOCK, PAUSE, SYS_REQUEST, BREAK, RESET, STOP, MENU,"
-.AN "    USER, SYSTEM, PRINT, CLEAR_LINE, CLEAR_DISPLAY, INSERT_LINE,"
-.AN "    DELETE_LINE, INSERT_CHAR, DELETE_CHAR, PREV, NEXT, SELECT"
+.AZ "    F1 = 0x20, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,"
+.AZ "    INSERT, DELETE, HOME, END, PAGE_UP, PAGE_DOWN, PRINT_SCREEN,"
+.AZ "    SCROLL_LOCK, PAUSE, SYS_REQUEST, BREAK, RESET, STOP, MENU,"
+.AZ "    USER, SYSTEM, PRINT, CLEAR_LINE, CLEAR_DISPLAY, INSERT_LINE,"
+.AZ "    DELETE_LINE, INSERT_CHAR, DELETE_CHAR, PREV, NEXT, SELECT"
 .AZ };
 .AE
 .RE
@@ -483,22 +533,22 @@ by the WindowServer.  In general, events are not generated for special keys.
 .RS
 .AS
 .AZ "enum SpecialKeyType {"
-.AN "    VOLUME_UP = 0,"
-.AN "    VOLUME_DOWN,"
-.AN "    BRIGHTNESS_UP,"
-.AN "    BRIGHTNESS_DOWN,"
-.AN "    ALPHA_LOCK,"
-.AN "    HELP,"
-.AN "    POWER,"
-.AN "    SECONDARY_ARROW_UP,"
-.AN "    SECONDARY_ARROW_DOWN"
+.AZ "    VOLUME_UP = 0,"
+.AZ "    VOLUME_DOWN,"
+.AZ "    BRIGHTNESS_UP,"
+.AZ "    BRIGHTNESS_DOWN,"
+.AZ "    ALPHA_LOCK,"
+.AZ "    HELP,"
+.AZ "    POWER,"
+.AZ "    SECONDARY_ARROW_UP,"
+.AZ "    SECONDARY_ARROW_DOWN"
 .AZ };
 .AE
 .PP
 .AS
 .AZ "struct SpecialKey {"
-.AN "    number type;"      "// A SpecialKeyType constant"
-.AN "    number scan_code;" "// Actual scan code"
+.AN "    number type;" "     " "// A SpecialKeyType constant"
+.AN "    number scan_code;" "" "// Actual scan code"
 .AZ };
 .AE
 .RE
@@ -949,3 +999,6 @@ effort to reverse engineer the format of the
 .SM NeXT
 .I .keymapping
 file.
+.if n .PP
+.if n Version \n(VE \-\-
+.if n .UP

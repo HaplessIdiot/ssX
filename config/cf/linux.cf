@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.150 2000/12/02 19:06:57 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.151 2000/12/05 17:15:33 alanh Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -107,20 +107,26 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define InstallXinitConfig	YES
 #define InstallXdmConfig	YES
 #define InstallFSConfig		YES
-#if 0
+#ifdef DebianMaintainer
 #define HasXdmAuth		YES
 #endif
 #define DebuggableLibraries	YES
 #define ForceNormalLib		YES
 #define BuildSpecsDocs		YES
 #define SpecsDocDirs		GL Xext Xv xterm
-#define HasGlide2		NO
+#ifdef DebianMaintainer
+#define HasGlide2		YES
+#endif
 #define Glide2IncDir		/usr/include/glide
-#define HasGlide3		NO
+#ifdef DebianMaintainer
+#define HasGlide3		YES
+#endif
 #define Glide3IncDir		/usr/include/glide3
 #define XAppLoadDir		EtcX11Directory/app-defaults
 #define XFileSearchPathDefault	Concat4(EtcX11Directory/%L/%T/%N%C,%S:EtcX11Directory/%l/%T/%N%C,%S:EtcX11Directory/%T/%N%C,%S:EtcX11Directory/%L/%T/%N%S:EtcX11Directory/%l/%T/%N%S:EtcX11Directory/%T/%N%S):Concat4($(LIBDIR)/%L/%T/%N%C,%S:$(LIBDIR)/%l/%T/%N%C,%S:$(LIBDIR)/%T/%N%C,%S:$(LIBDIR)/%L/%T/%N%S:$(LIBDIR)/%l/%T/%N%S:$(LIBDIR)/%T/%N%S)
+#ifdef DebianMaintainer
 #define BuilderEMailAddr	"submit@bugs.debian.org"
+#endif
 #define SharedLibXdmGreet	YES
 #define LinkGLToUsrInclude	NO
 #define LinkGLToUsrLib		NO
@@ -241,7 +247,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #  elif defined(AlphaArchitecture)
 #    define BuildXF86DRI	YES
 #  elif defined(PpcArchitecture)
-#    define BuildXF86DRI	YES
+#    define BuildXF86DRI	NO
 #  else
 #    define BuildXF86DRI	NO
 #  endif

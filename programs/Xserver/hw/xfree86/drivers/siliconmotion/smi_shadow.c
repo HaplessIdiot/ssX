@@ -1,4 +1,4 @@
-/* Header:   //Mercury/Projects/archives/XFree86/4.0/smi_shadow.c-arc   1.8   27 Nov 2000 15:46:16   Frido  $ */
+/* Header:   //Mercury/Projects/archives/XFree86/4.0/smi_shadow.c-arc   1.10   30 Nov 2000 11:40:38   Frido  $ */
 
 /*
 Copyright (C) 1994-2000 The XFree86 Project, Inc.  All Rights Reserved.
@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and Silicon Motion.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_shadow.c,v 1.1 2000/11/28 20:59:20 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -49,7 +49,7 @@ authorization from the XFree86 Project and Silicon Motion.
 |*
 |*  DESCRIPTION:	Refresh a portion of the shadow buffer to the visual screen
 |*					buffer.  This is mainly used for rotation purposes.
-|*
+|*												y
 |*  RETURNS:		Nothing.
 |*
 \******************************************************************************/
@@ -57,6 +57,15 @@ void SMI_RefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 {
 	SMIPtr pSmi = SMIPTR(pScrn);
 	int width, height, srcX, srcY, destX, destY;
+
+	ENTER_PROC("SMI_RefreshArea");
+
+	/* #671 */
+	if (pSmi->polyLines)
+	{
+		pSmi->polyLines = FALSE;
+		return;
+	}
 
 	if (pSmi->rotate)
 	{
@@ -67,6 +76,14 @@ void SMI_RefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 		WRITE_DPR(pSmi, 0x44, pSmi->FBOffset >> 3);
 	}
 
+	/* #672 */
+	if (pSmi->ClipTurnedOn)
+	{
+		WaitQueue(1);
+		WRITE_DPR(pSmi, 0x2C, pSmi->ScissorsLeft);
+		pSmi->ClipTurnedOn = FALSE;
+	}
+
 	while (num--)
 	{
 		/* Get coordinates of the box to refresh. */
@@ -74,6 +91,8 @@ void SMI_RefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 		srcY   = pbox->y1;
 		width  = pbox->x2 - srcX;
 		height = pbox->y2 - srcY;
+
+		DEBUG((VERBLEV, "x=%d y=%d w=%d h=%d\n", srcX, srcY, width, height));
 
 		if ((width > 0) && (height > 0))
 		{
@@ -158,6 +177,8 @@ void SMI_RefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 		WRITE_DPR(pSmi, 0x3C, (pSmi->Stride << 16) | pSmi->Stride);
 		WRITE_DPR(pSmi, 0x44, 0);
 	}
+
+	LEAVE_PROC("SMI_RefreshArea");
 }
 
 /******************************************************************************\

@@ -1,5 +1,5 @@
-.\" Header:   //Mercury/Projects/archives/XFree86/4.0/siliconmotion.cpp-arc   1.3   21 Nov 2000 18:35:46   Frido  $
-.\" $XFree86$
+.\" Header:   //Mercury/Projects/archives/XFree86/4.0/siliconmotion.cpp-arc   1.4   29 Nov 2000 14:12:56   Frido  $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/siliconmotion.cpp,v 1.1 2000/11/28 20:59:19 dawes Exp $
 .TH siliconmotion __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 siliconmotion \- Silicon Motion video driver
@@ -93,7 +93,7 @@ Turn on byte swapping for capturing using SMI demo board.  Default: off.
 .TP
 .BI "Option ""UseBIOS"" [""" boolean """]
 Use the BIOS to set the modes. This is used for custom panel timings.
-Default: off.
+Default: on.
 
 .PP
 The following video memory

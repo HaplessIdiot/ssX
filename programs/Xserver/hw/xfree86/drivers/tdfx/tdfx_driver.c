@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.46 2000/12/01 14:28:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.47 2000/12/02 15:30:57 tsi Exp $ */
 
 /*
  * Authors:
@@ -1135,7 +1135,6 @@ DoSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TDFXRegPtr tdfxReg, Bool saveFonts)
       dummy=TDFXReadLongMMIO(pTDFX, DACADDR);
     } while (count++<100 && dummy!=i);
     tdfxReg->dactable[i]=TDFXReadLongMMIO(pTDFX, DACDATA);
-    dummy=tdfxReg->dactable[i];
   }
 }
 

@@ -1,4 +1,4 @@
-/* Header:   //Mercury/Projects/archives/XFree86/4.0/smi_accel.c-arc   1.12   27 Nov 2000 15:46:54   Frido  $ */
+/* Header:   //Mercury/Projects/archives/XFree86/4.0/smi_accel.c-arc   1.15   29 Nov 2000 12:12:04   Frido  $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and silicon Motion.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_accel.c,v 1.1 2000/11/28 20:59:19 dawes Exp $ */
 
 #include "smi.h"
 
@@ -63,6 +63,9 @@ static void SMI_SubsequentImageWriteRect(ScrnInfoPtr, int, int, int, int, int);
 #endif
 static void SMI_SetClippingRectangle(ScrnInfoPtr, int, int, int, int);
 static void SMI_DisableClipping(ScrnInfoPtr);
+/* #671 */
+static void SMI_ValidatePolylines(GCPtr, unsigned long, DrawablePtr);
+static void SMI_Polylines(DrawablePtr, GCPtr, int, int, DDXPointPtr);
 
 Bool
 SMI_AccelInit(ScreenPtr pScreen)
@@ -164,7 +167,8 @@ SMI_AccelInit(ScreenPtr pScreen)
 						   | HARDWARE_CLIP_MONO_8x8_FILL
 						   | HARDWARE_CLIP_COLOR_8x8_FILL
 						   | HARDWARE_CLIP_SOLID_FILL
-						   | HARDWARE_CLIP_SOLID_LINE;
+						   | HARDWARE_CLIP_SOLID_LINE
+						   | HARDWARE_CLIP_DASHED_LINE;
 	infoPtr->SetClippingRectangle = SMI_SetClippingRectangle;
 	infoPtr->DisableClipping = SMI_DisableClipping;
 
@@ -219,6 +223,11 @@ SMI_AccelInit(ScreenPtr pScreen)
 	xf86InitFBManager(pScreen, &AvailFBArea);
 
 	ret = XAAInit(pScreen, infoPtr);
+	if (ret && pSmi->shadowFB)										/* #671 */
+	{
+		pSmi->ValidatePolylines = infoPtr->ValidatePolylines;
+		infoPtr->ValidatePolylines = SMI_ValidatePolylines;
+	}
 
 	LEAVE_PROC("SMI_AccelInit");
 	return(ret);
@@ -929,4 +938,164 @@ SMI_DisableClipping(ScrnInfoPtr pScrn)
 	WRITE_DPR(pSmi, 0x30, pSmi->ScissorsRight);
 
 	LEAVE_PROC("SMI_DisableClipping");
+}
+
+/******************************************************************************/
+/*									Polylines							 #671 */
+/******************************************************************************/
+
+/*
+
+In order to speed up the "logout" screen in rotated modes, we need to intercept
+the Polylines function. Normally, the polylines are drawn and the shadowFB is
+then sending a request of the bounding rectangle of those poylines. This should
+be okay, if it weren't for the fact that the Gnome logout screen is drawing
+polylines in rectangles and this asks for a rotation of the entire rectangle.
+This is very slow.
+
+To circumvent this slowness, we intercept the ValidatePolylines function and
+override the default "Fallback" Polylines with our own Polylines function. Our
+Polylines function first draws the polylines through the original Fallback
+function and then rotates the lines, line by line. We then set a flag and
+return control to the shadowFB which will try to rotate the bounding rectangle.
+However, the flag has been set and the RefreshArea function does nothing but
+clear the flag so the next Refresh that comes in shoiuld be handled correctly.
+
+All this code improves the speed quite a bit.
+
+*/
+
+#define IS_VISIBLE(pWin) \
+( \
+	   pScrn->vtSema \
+	&& (((WindowPtr) pWin)->visibility != VisibilityFullyObscured) \
+)
+
+#define TRIM_BOX(box, pGC) \
+{ \
+	BoxPtr extents = &pGC->pCompositeClip->extents; \
+	if (box.x1 < extents->x1) box.x1 = extents->x1; \
+	if (box.y1 < extents->y1) box.y1 = extents->y1; \
+	if (box.x2 > extents->x2) box.x2 = extents->x2; \
+	if (box.y2 > extents->y2) box.y2 = extents->y2; \
+}
+
+#define TRANSLATE_BOX(box, pDraw) \
+{ \
+	box.x1 += pDraw->x; \
+	box.y1 += pDraw->y; \
+	box.x2 += pDraw->x; \
+	box.y2 += pDraw->y; \
+}
+
+#define BOX_NOT_EMPTY(box) \
+	((box.x2 > box.x1) && (box.y2 > box.y1))
+
+static void
+SMI_ValidatePolylines(GCPtr pGC, unsigned long changes, DrawablePtr pDraw)
+{
+	XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+	SMIPtr pSmi = SMIPTR(infoRec->pScrn);
+
+	ENTER_PROC("SMI_ValidatePolylines");
+
+	pSmi->ValidatePolylines(pGC, changes, pDraw);
+	if (pGC->ops->Polylines == XAAFallbackOps.Polylines)
+	{
+		/* Override the Polylines function with our own Polylines function. */
+		pGC->ops->Polylines = SMI_Polylines;
+	}
+
+	LEAVE_PROC("SMI_ValidatePolylines");
+}
+
+static void
+SMI_Polylines(DrawablePtr pDraw, GCPtr pGC, int mode, int npt,
+			  DDXPointPtr pptInit)
+{
+	XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+	ScrnInfoPtr pScrn = infoRec->pScrn;
+	SMIPtr pSmi = SMIPTR(pScrn);
+
+	ENTER_PROC("SMI_Polylines");
+
+	/* Call the original Polylines function. */
+	pGC->ops->Polylines = XAAFallbackOps.Polylines;
+	(*pGC->ops->Polylines)(pDraw, pGC, mode, npt, pptInit);
+	pGC->ops->Polylines = SMI_Polylines;
+
+	if (IS_VISIBLE(pDraw) && npt)
+	{
+		/* Allocate a temporary buffer for all segments of the polyline. */
+		BoxPtr pBox = xnfcalloc(sizeof(BoxRec), npt);
+		int extra = pGC->lineWidth >> 1, box;
+
+		if (npt > 1)
+		{
+			/* Adjust the extra space required per polyline segment. */
+			if (pGC->joinStyle == JoinMiter)
+			{
+				extra = 6 * pGC->lineWidth;
+			}
+			else if (pGC->capStyle == CapProjecting)
+			{
+				extra = pGC->lineWidth;
+			}
+		}
+
+		for (box = 0; --npt;)
+		{
+			/* Setup the bounding box for one polyline segment. */
+			pBox[box].x1 = pptInit->x;
+			pBox[box].y1 = pptInit->y;
+			pptInit++;
+			pBox[box].x2 = pptInit->x;
+			pBox[box].y2 = pptInit->y;
+			if (mode == CoordModePrevious)
+			{
+				pBox[box].x2 += pBox[box].x1;
+				pBox[box].y2 += pBox[box].y1;
+			}
+
+			/* Sort coordinates. */
+			if (pBox[box].x1 > pBox[box].x2)
+			{
+				int tmp = pBox[box].x1;
+				pBox[box].x1 = pBox[box].x2;
+				pBox[box].x2 = tmp;
+			}
+			if (pBox[box].y1 > pBox[box].y2)
+			{
+				int tmp = pBox[box].y1;
+				pBox[box].y1 = pBox[box].y2;
+				pBox[box].y2 = tmp;
+			}
+
+			/* Add extra space required for each polyline segment. */
+			pBox[box].x1 -= extra;
+			pBox[box].y1 -= extra;
+			pBox[box].x2 += extra + 1;
+			pBox[box].y2 += extra + 1;
+
+			/* See if we need to draw this polyline segment. */
+			TRANSLATE_BOX(pBox[box], pDraw);
+			TRIM_BOX(pBox[box], pGC);
+			if (BOX_NOT_EMPTY(pBox[box]))
+			{
+				box++;
+			}
+		}
+
+		if (box)
+		{
+			/* Refresh all polyline segments now. */
+			SMI_RefreshArea(pScrn, box, pBox);
+		}
+
+		/* Free the temporary buffer. */
+		xfree(pBox);
+	}
+
+	pSmi->polyLines = TRUE;
+	LEAVE_PROC("SMI_Polylines");
 }

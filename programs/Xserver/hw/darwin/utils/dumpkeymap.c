@@ -1,4 +1,4 @@
-// $XFree86$
+// $XFree86: xc/programs/Xserver/hw/darwin/utils/dumpkeymap.c,v 1.2 2000/12/04 20:21:18 dawes Exp $
 //=============================================================================
 //
 // Copyright (C) 1999,2000 by Eric Sunshine <sunshine@sunshineco.com>
@@ -83,7 +83,16 @@
 //
 // HISTORY
 //
-//	2000/11/28 Eric Sunshine <sunshine@sunshineco.com>
+//	v4 2000/12/01 Eric Sunshine <sunshine@sunshineco.com>
+//	    Updated manual page to work with `rman', the `man' to `HTML'
+//		translator.  Unfortunately, however, rman is missing important
+//		roff features such as diversions, indentation, and tab stops,
+//		and is also hideously buggy, so getting the manual to work with
+//		rman required quite a few work-arounds.
+//	    The manual page has now been tested with nroff (plain text), troff
+//		(PostScript, etc.), groff (PostScript), and rman (HTML, etc.)
+//
+//	v3 2000/11/28 Eric Sunshine <sunshine@sunshineco.com>
 //	    Considerably expanded the documentation.
 //	    Augmented the existing description of .keymapping internals.
 //	    Added these new documentation topics:
@@ -105,7 +114,7 @@
 //		Apple/NeXT-specific API.
 //	    Added a README file.
 //
-//	2000/11/13 Eric Sunshine <sunshine@sunshineco.com>
+//	v2 2000/11/13 Eric Sunshine <sunshine@sunshineco.com>
 //	    Converted from C++ to plain-C.
 //	    Now parses and takes into account the "number-size" flag stored
 //		with each key map.  This flag indicates the size, in bytes, of
@@ -126,7 +135,7 @@
 //	    Now published under the formal BSD license rather than a
 //		home-grown license.
 //
-//	1999/09/08 Eric Sunshine <sunshine@sunshineco.com>
+//	v1 1999/09/08 Eric Sunshine <sunshine@sunshineco.com>
 //	    Created.
 //-----------------------------------------------------------------------------
 #include <ctype.h>
@@ -138,7 +147,7 @@
 #endif
 
 #define PROG_NAME "dumpkeymap"
-#define PROG_VERSION "3"
+#define PROG_VERSION "4"
 #define AUTHOR_NAME "Eric Sunshine"
 #define AUTHOR_EMAIL "sunshine@sunshineco.com"
 #define AUTHOR_INFO AUTHOR_NAME " <" AUTHOR_EMAIL ">"

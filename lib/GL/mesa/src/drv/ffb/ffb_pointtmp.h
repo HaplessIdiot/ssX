@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/ffb/ffb_pointtmp.h,v 1.1 2000/06/20 05:08:39 dawes Exp $ */
 
 static void TAG(ffb_points)(GLcontext *ctx, GLuint first, GLuint last)
 {
@@ -18,7 +18,7 @@ static void TAG(ffb_points)(GLcontext *ctx, GLuint first, GLuint last)
 #endif
 	int i;
 
-	for (i = first; i <= last; i++) {
+	for (i = first; i < last; i++) {
 		if (VB->ClipMask[i] == 0) {
 			ffb_vertex *tmp = &ffbVB[i];
 #if !(IND & FFB_POINT_BIG_BIT)
