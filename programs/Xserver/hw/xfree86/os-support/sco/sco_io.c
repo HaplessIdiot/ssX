@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_io.c,v 3.0 1996/03/04 05:16:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_io.c,v 3.1 1996/03/10 12:07:10 dawes Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -104,7 +104,8 @@ Bool doclose;
 		if (mouse->mseType == P_LOGI)
 		{
 			write(mouse->mseFd, "U", 1);
-			xf86SetMouseSpeed(mouse->baudRate, 1200,
+			xf86SetMouseSpeed(mouse, mouse->baudRate, 
+					  mouse->oldBaudRate,
 				  	  xf86MouseCflags[P_LOGI]);
 		}
 		if (doclose)

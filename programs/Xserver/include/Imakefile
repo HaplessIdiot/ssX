@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.2 95/01/13 20:28:14 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/include/Imakefile,v 3.2 1994/12/02 05:48:52 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/include/Imakefile,v 3.3 1995/01/28 16:15:32 dawes Exp $
 
 all::
 
@@ -30,6 +30,8 @@ InstallLinkKitNonExecFile(scrnintstr.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(validate.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(window.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(windowstr.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(site.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(extension.h,$(LINKKITDIR)/include)
 
 depend::
 

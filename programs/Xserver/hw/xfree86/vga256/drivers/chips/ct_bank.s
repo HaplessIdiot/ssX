@@ -1,5 +1,5 @@
 /* $XConsortium: ct_bank.s /main/3 1995/09/04 19:44:07 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_bank.s,v 3.3 1995/03/11 14:17:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_bank.s,v 3.4 1996/02/04 09:12:47 dawes Exp $ */
 /*
  * Copyright 1994 by Régis Cridlig <cridlig@dmi.ens.fr>
  *
@@ -35,6 +35,9 @@
 	GLOBL	GLNAME(CHIPSSetReadWrite)
 	GLOBL	GLNAME(CHIPSSetWrite)
 	GLOBL	GLNAME(CHIPSSetRead)
+	GLOBL	GLNAME(CHIPSHiQVSetReadWrite)
+	GLOBL	GLNAME(CHIPSHiQVSetWrite)
+	GLOBL	GLNAME(CHIPSHiQVSetRead)
 
 GLNAME(CHIPSSetReadWrite):
 	MOV_B	(AL, AH)		/* Move bank to high half */
@@ -61,4 +64,14 @@ GLNAME(CHIPSSetRead):
 	MOV_B	(CONST(0x10),AL)	/* Put read index in low byte */
 	MOV_L	(CONST(0x3D6),EDX)	/* Store 0x3D6 register */
 	OUT_W				/* Output read bank */
+	RET
+
+GLNAME(CHIPSHiQVSetReadWrite):
+GLNAME(CHIPSHiQVSetWrite):
+GLNAME(CHIPSHiQVSetRead):
+	MOV_B	(AL, AH)		/* Move bank to high half */
+	AND_B	(CONST(0x7F), AH)       /* Mask out bits 6-0 */
+	MOV_B	(CONST(0x0E),AL)	/* Put read/write index in low byte */
+	MOV_L	(CONST(0x3D6),EDX)	/* Store 0x3D6 register */
+	OUT_W				/* Output read/write bank */
 	RET

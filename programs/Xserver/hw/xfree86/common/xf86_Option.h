@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.53 1996/06/29 09:07:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.54 1996/08/10 13:06:20 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -54,6 +54,7 @@ typedef struct {
 #define OPTION_HIBIT_LOW	 6
 #define OPTION_CLKDIV2		 7  /* allow using clocks divided by 2 
 				       in addition to bare clocks */
+#define OPTION_HW_CLKS		 8  /* (ct) Hardware clocks */
 
 /* Laptop display options */
 #define OPTION_INTERN_DISP	10  /* Laptops - enable internal display (WD)*/
@@ -61,6 +62,10 @@ typedef struct {
 #define OPTION_CLGD6225_LCD	12  /* Option to avoid setting the DAC to */
 				   /* white on a clgd6225 with the LCD */
 				   /* enabled */
+#define OPTION_STN              13  /* DSTN option (CT)*/
+#define OPTION_EXT_FRAM_BUF     14 /* external frame accelerator (CT) */
+#define OPTION_LCD_STRETCH      15 /* disable LCD stretching */
+#define OPTION_LCD_CENTER	16 /* enable LCD centering */
 
 /* Memory options */
 #define OPTION_FAST_DRAM	20 /* fast DRAM (for ET4000, S3, AGX) */
@@ -135,10 +140,12 @@ typedef struct {
 #define OPTION_TRIO64VP_BUG1	101 /* Trio64V+ bug hack #1 */
 #define OPTION_TRIO64VP_BUG2	102 /* Trio64V+ bug hack #2 */
 #define OPTION_TRIO64VP_BUG3	103 /* Trio64V+ bug hack #3 */
+#define OPTION_USE_MODELINE	104 /* use modeline for LCD instead of preset (ct)*/
+#define OPTION_SUSPEND_HACK	105 /* (CT) Use different suspend/resume scheme */
 
 /* Debugging options */
-#define OPTION_SHOWCACHE	105 /* Allow cache to be seen (S3) */
-#define OPTION_FB_DEBUG		106 /* Linear fb debug for S3 */
+#define OPTION_SHOWCACHE	108 /* Allow cache to be seen (S3) */
+#define OPTION_FB_DEBUG		109 /* Linear fb debug for S3 */
 
 /* Some AGX Tuning/Debugging options -- several are for development testing */
 #define OPTION_8_BIT_BUS        110 /* Force 8-bit CPU interface - MR1:0 */
@@ -231,10 +238,16 @@ OptFlagRec xf86_OptionTab[] = {
   { "hibit_high",	OPTION_HIBIT_HIGH },
   { "hibit_low",	OPTION_HIBIT_LOW },
   { "clkdiv2",		OPTION_CLKDIV2 },
+  { "hw_clocks",        OPTION_HW_CLKS },
 
   { "intern_disp",	OPTION_INTERN_DISP },
   { "extern_disp",	OPTION_EXTERN_DISP },
   { "clgd6225_lcd",	OPTION_CLGD6225_LCD },
+  { "stn",              OPTION_STN},
+  { "ext_fram_buf",	OPTION_EXT_FRAM_BUF },
+  { "no_stretch",	OPTION_LCD_STRETCH },
+  { "lcd_center",	OPTION_LCD_CENTER },
+  { "lcd_centre",	OPTION_LCD_CENTER },
 
   { "fast_dram",	OPTION_FAST_DRAM },
   { "med_dram",		OPTION_MED_DRAM },
@@ -313,6 +326,8 @@ OptFlagRec xf86_OptionTab[] = {
   { "trio64v+_bug1",	OPTION_TRIO64VP_BUG1 },
   { "trio64v+_bug2",	OPTION_TRIO64VP_BUG2 },
   { "trio64v+_bug3",	OPTION_TRIO64VP_BUG2 },
+  { "use_modeline",	OPTION_USE_MODELINE },
+  { "suspend_hack",	OPTION_SUSPEND_HACK },
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },

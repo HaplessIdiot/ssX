@@ -393,6 +393,31 @@ It is recommended to use gcc compiled without the
 XFree86.  It is, however, possible with the above changes.  These changes may
 become obsolete or invalid in a later version of XFree86.<p>
 
+<sect>Compiling XFree86 under Open Server 5<p>
+
+As of GCC version 2.8.0, Open Server is supported. Configure it by
+using the following.
+<tscreen><verb>
+    ./configure i486-sco3.2v5.0
+</verb></tscreen><p>
+
+There is no reason to modify gcc in any way.  It compiles cleanly on
+Open Server 5.<p>
+
+Build the system using
+<verb>
+        make World
+</verb>
+
+Under Open Server 5 things are very different to previous versions of
+SCO UNIX.
+<itemize>
+<item>All programs are compiled in ELF mode to reduce size
+<item>Both ELF and COFF libraries are generated
+<item>You do not need to provide a <tt>BOOTSTAPCFLAGS</tt> line when
+building.  Open Server 5 is automatically detected.
+</itemize>
+
 <sect>Relevant Documentation<p>
 
 Some relevant documentation for SCO Users and Developers can be found in
@@ -681,7 +706,7 @@ for providing an
 ftp site for the binary distribution.
 
 <verb>  
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.9 1996/02/04 09:08:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.10 1996/02/24 05:59:11 dawes Exp $
 
 
 

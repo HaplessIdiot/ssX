@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/os.h,v 3.3 1995/01/28 16:07:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/os.h,v 3.4 1996/02/04 09:10:38 dawes Exp $ */
 
 
 
@@ -14,7 +14,9 @@
 #define X_NOT_STDC_ENV
 #endif
 #if defined(SYSV) && defined(i386)
+#ifndef SCO
 #define X_NOT_STDC_ENV
+#endif
 #endif
 
 /* from <X11/Xlibint.h> */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.35 1996/05/06 05:57:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.36 1996/05/11 11:03:57 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -206,6 +206,7 @@ typedef struct {
   int            suspendTime;
   int            offTime;
   int            s3BlankDelay;
+  int            textClockFreq;
 #ifdef XFreeXDGA
   int            directMode;
   void           (*setBank)(

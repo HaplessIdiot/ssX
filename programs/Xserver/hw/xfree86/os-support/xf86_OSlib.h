@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.25 1996/03/10 12:05:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.26 1996/06/10 09:15:27 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -120,6 +120,9 @@
 
 # if defined(SCO)
 #  include <sys/sysmacros.h>
+#  if defined(SCO325)
+#   define POSIX_TTY
+#  endif
 # endif /* SCO */
 
 # ifdef SVR4

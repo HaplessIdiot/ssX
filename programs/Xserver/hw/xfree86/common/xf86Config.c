@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.93 1996/06/29 12:20:33 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.94 1996/06/30 04:41:59 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1992,6 +1992,12 @@ configDeviceSection()
       else pushToken = token;
       break;
 
+    case TEXTCLOCKFRQ:
+      if (xf86GetToken(NULL) != NUMBER)
+         xf86ConfigError("Text clock expected");
+      devp->textClockValue = (int)(val.realnum * 1000.0 + 0.5);
+      break;
+
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
       break; /* :-) */
@@ -2592,6 +2598,7 @@ configScreenSection()
 	  screen->s3MClk = device_list[i].s3MClk;
 	  screen->s3RefClk = device_list[i].s3RefClk;
 	  screen->s3BlankDelay = device_list[i].s3BlankDelay;
+	  screen->textClockFreq = device_list[i].textClockValue;
 	  if (OFLG_ISSET(XCONFIG_VGABASE, &screen->xconfigFlag))
 	    screen->VGAbase = device_list[i].VGAbase;
 #ifdef XF86SETUP

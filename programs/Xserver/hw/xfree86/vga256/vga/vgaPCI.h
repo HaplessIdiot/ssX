@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.5 1996/04/15 11:32:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.6 1996/08/10 13:08:41 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -73,6 +73,9 @@
 
 /* Chips & Tech */
 #define PCI_CHIP_65545		0x00D8
+#define PCI_CHIP_65548		0x00DC
+#define PCI_CHIP_65550		0x00E0
+#define PCI_CHIP_65554		0x00E4
 
 /* SiS */
 #define PCI_CHIP_SG86C201	0x0001
@@ -81,6 +84,7 @@
 
 /* Number Nine */
 #define PCI_CHIP_I128		0x2309
+#define PCI_CHIP_I128_2		0x2339
 
 /* S3 */
 #define PCI_CHIP_TRIO		0x8811
@@ -91,6 +95,7 @@
 #define PCI_CHIP_964_0		0x88D0
 #define PCI_CHIP_964_1		0x88D1
 #define PCI_CHIP_968		0x88F0
+#define PCI_CHIP_VIRGE		0x5631
 
 /* ARK Logic */
 #define PCI_CHIP_1000PV		0xA091
@@ -177,6 +182,9 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_CHIPSTECH, "C&T", {
 				{PCI_CHIP_65545,	"65545"},
+				{PCI_CHIP_65548,	"65548"},
+				{PCI_CHIP_65550,	"65550"},
+				{PCI_CHIP_65554,	"65554"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_SIS,	"SiS",	{
 				{PCI_CHIP_SG86C201,	"SG86C201"},
@@ -185,6 +193,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_NUMNINE, "Number Nine", {
 				{PCI_CHIP_I128,		"Imagine 128"},
+				{PCI_CHIP_I128_2,	"Imagine 128 II"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_UMC,	"UMC",	{
 				{0x0000,		NULL}}},
@@ -197,6 +206,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_964_0,	"964"},
 				{PCI_CHIP_964_1,	"964"},
 				{PCI_CHIP_968,		"968"},
+				{PCI_CHIP_VIRGE,	"ViRGE"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_ARK,	"ARK Logic", {
 				{PCI_CHIP_1000PV,	"1000PV"},

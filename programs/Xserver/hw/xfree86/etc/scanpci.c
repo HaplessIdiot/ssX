@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.13 1996/06/10 09:15:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.14 1996/08/10 13:06:51 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -172,7 +172,7 @@ static unsigned long inl(unsigned short port) { unsigned long ret;
 # endif
 #endif
 
-#if defined(__SUNPRO_C)
+#if defined(__SUNPRO_C) || defined(_SCO_DS)
 /*
  * This section is a gross hack in if you tell anyone that I wrote it,
  * I'll deny it.  :-)
@@ -463,6 +463,9 @@ struct pci_vendor_device {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x102C, "CT", {
                             { 0x00D8, "65545", NF },
+                            { 0x00DC, "65548", NF },
+                            { 0x00E0, "65550", NF },
+                            { 0x00E4, "65554", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1036, "FD", {
                             { 0x0000, "TMC-18C30 (36C70)", NF },
@@ -580,6 +583,7 @@ struct pci_vendor_device {
                             { 0x88D0, "964-0", NF },
                             { 0x88D1, "964-1", NF },
                             { 0x88F0, "968", NF },
+			    { 0x5631, "ViRGE", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x8086, "Intel", {
                             { 0x0482, "82375EB pci-eisa bridge", NF },

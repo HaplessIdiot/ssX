@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: screen.c,v 1.33 94/04/02 17:34:36 gildea Exp $
- *	$XFree86: xc/programs/xterm/screen.c,v 3.5 1996/02/18 03:45:51 dawes Exp $
+ *	$XFree86: xc/programs/xterm/screen.c,v 3.6 1996/08/10 13:09:51 dawes Exp $
  */
 
 /*
@@ -129,7 +129,7 @@ Reallocate(sbuf, sbufaddr, nrow, ncol, oldrow, oldcol)
 	register Size_t mincols;
 	Char *oldbuf;
 	int move_down = 0, move_up = 0;
-	
+
 	if (sbuf == NULL || *sbuf == NULL)
 		return 0;
 
@@ -180,7 +180,7 @@ Reallocate(sbuf, sbufaddr, nrow, ncol, oldrow, oldcol)
 	    tmp += ncol*move_down;
 	}
 	for (i = 0; i < minrows; i++, tmp += ncol) {
-		memmove( tmp, base[i], mincols);
+		memcpy( tmp, base[i], mincols);
 	}
 	/*
 	 * update the pointers in sbuf
@@ -206,7 +206,10 @@ register unsigned flags;
 register unsigned cur_fg, cur_bg;
 register int length;		/* length of string */
 {
-	register Char *attrs, *attrs0, *fgs, *bgs;
+#if OPT_ISO_COLORS
+	register Char *fgs = 0, *bgs = 0;
+#endif
+	register Char *attrs;
 	register int avail  = screen->max_col - screen->cur_col + 1;
 	register Char *col;
 	register int wrappedbit;
@@ -218,22 +221,25 @@ register int length;		/* length of string */
 
 	col   = SCRN_BUF_CHARS(screen, screen->cur_row) + screen->cur_col;
 	attrs = SCRN_BUF_ATTRS(screen, screen->cur_row) + screen->cur_col;
-	fgs   = SCRN_BUF_FORES(screen, screen->cur_row) + screen->cur_col;
-	bgs   = SCRN_BUF_BACKS(screen, screen->cur_row) + screen->cur_col;
 
-	attrs0 = attrs;
-	wrappedbit = *attrs0&LINEWRAPPED;
+	if_OPT_ISO_COLORS(screen,{
+	    fgs = SCRN_BUF_FORES(screen, screen->cur_row) + screen->cur_col;
+	    bgs = SCRN_BUF_BACKS(screen, screen->cur_row) + screen->cur_col;
+	})
+
+	wrappedbit = *attrs & LINEWRAPPED;
 	flags &= ATTRIBUTES;
 	flags |= CHARDRAWN;
-	memmove( col, str, length);
-	while(length-- > 0)
-	{
-		*attrs++ = flags;
-		*fgs++ = cur_fg;
-		*bgs++ = cur_bg;
-	}
+	memcpy( col,   str,    length);
+	memset( attrs, flags,  length);
+
+	if_OPT_ISO_COLORS(screen,{
+		memset( fgs,   cur_fg, length);
+		memset( bgs,   cur_bg, length);
+	})
+
 	if (wrappedbit)
-	    *attrs0 |= LINEWRAPPED;
+	    *attrs |= LINEWRAPPED;
 }
 
 static void
@@ -248,16 +254,16 @@ int where, n, size;
 	register int i;
 
 	/* save n lines at where */
-	memmove( (char *)save,
+	memcpy ( (char *)save,
 		 (char *) &sb[MAX_PTRS * where],
 		 MAX_PTRS * sizeof(char *) * n);
 
 	/* clear contents of old rows */
-	if (term->flags & (FG_COLOR|BG_COLOR)) {
+	if (TERM_COLOR_FLAGS) {
 		int last = (n * MAX_PTRS);
-		int flags = (term->flags & (FG_COLOR|BG_COLOR));
+		int flags = TERM_COLOR_FLAGS;
 		for (i = 0; i < last; i += MAX_PTRS) {
-			memset(save[i+0], 0, size);
+			bzero(save[i+0], size);
 			memset(save[i+1], flags, size);
 			memset(save[i+2], term->cur_foreground, size);
 			memset(save[i+3], term->cur_background, size);
@@ -280,7 +286,7 @@ register ScrnBuf sb;
 int last;
 register int where, n, size;
 {
-	char *save [MAX_PTRS * MAX_ROWS];
+	char *save [4 /* MAX_PTRS */ * MAX_ROWS];
 
 	/* save n lines at bottom */
 	ScrnClearLines(save, sb, (last -= n - 1), n, size);
@@ -299,7 +305,7 @@ register int where, n, size;
 		MAX_PTRS * sizeof (char *) * (last - where));
 
 	/* reuse storage for new lines at where */
-	memmove( (char *) &sb[MAX_PTRS * where],
+	memcpy ( (char *) &sb[MAX_PTRS * where],
 		 (char *)save,
 		 MAX_PTRS * sizeof(char *) * n);
 }
@@ -316,7 +322,7 @@ register ScrnBuf sb;
 register int n, last, size;
 int where;
 {
-	char *save [MAX_PTRS * MAX_ROWS];
+	char *save [4 /* MAX_PTRS */ * MAX_ROWS];
 
 	ScrnClearLines(save, sb, where, n, size);
 
@@ -326,25 +332,29 @@ int where;
 		MAX_PTRS * sizeof (char *) * ((last -= n - 1) - where));
 
 	/* reuse storage for new bottom lines */
-	memmove( (char *) &sb[MAX_PTRS * last],
+	memcpy ( (char *) &sb[MAX_PTRS * last],
 		 (char *)save, 
 		MAX_PTRS * sizeof(char *) * n);
 }
 
 void
-ScrnInsertChar (sb, row, col, n, size)
+ScrnInsertChar (screen, n, size)
     /*
-      Inserts n blanks in sb at row, col.  Size is the size of each row.
-      */
-    ScrnBuf sb;
-    int row, size;
-    register int col, n;
+     * Inserts n blanks in screen at current row, col.  Size is the size of each
+     * row.
+     */
+    register TScreen *screen;
+    register int n;
+    int size;
 {
+	ScrnBuf sb = screen->buf;
+	int row = screen->cur_row;
+	int col = screen->cur_col;
 	register int i, j;
 	register Char *ptr = BUF_CHARS(sb, row);
 	register Char *attrs = BUF_ATTRS(sb, row);
 	int wrappedbit = attrs[0]&LINEWRAPPED;
-	int flags = CHARDRAWN | (term->flags & (FG_COLOR|BG_COLOR));
+	int flags = CHARDRAWN | TERM_COLOR_FLAGS;
 
 	attrs[0] &= ~LINEWRAPPED; /* make sure the bit isn't moved */
 	for (i = size - 1; i >= col + n; i--) {
@@ -356,37 +366,45 @@ ScrnInsertChar (sb, row, col, n, size)
 	    ptr[i] = ' ';
 	for (i=col; i<col+n; i++)
 	    attrs[i] = flags;
-	if (flags & FG_COLOR)
-	    memset(BUF_FORES(sb, row) + col, term->cur_foreground, n);
-	if (flags & BG_COLOR)
-	    memset(BUF_BACKS(sb, row) + col, term->cur_background, n);
+	if_OPT_ISO_COLORS(screen,{
+	    if (flags & FG_COLOR)
+		memset(BUF_FORES(sb, row) + col, term->cur_foreground, n);
+	    if (flags & BG_COLOR)
+		memset(BUF_BACKS(sb, row) + col, term->cur_background, n);
+	})
 
 	if (wrappedbit)
 	    attrs[0] |= LINEWRAPPED;
 }
 
 void
-ScrnDeleteChar (sb, row, col, n, size)
+ScrnDeleteChar (screen, n, size)
     /*
-      Deletes n characters in sb at row, col. Size is the size of each row.
+      Deletes n characters at current row, col. Size is the size of each row.
       */
-    ScrnBuf sb;
-    register int row, size;
-    register int n, col;
+    register TScreen *screen;
+    register int size;
+    register int n;
 {
+	ScrnBuf sb = screen->buf;
+	int row = screen->cur_row;
+	int col = screen->cur_col;
 	register Char *ptr = BUF_CHARS(sb, row);
 	register Char *attrs = BUF_ATTRS(sb, row);
 	register Size_t nbytes = (size - n - col);
 	int wrappedbit = attrs[0]&LINEWRAPPED;
 
-	memmove( ptr + col, ptr + col + n, nbytes);
-	memmove( attrs + col, attrs + col + n, nbytes);
-	bzero (ptr + size - n, n);
-	memset (attrs + size - n, term->flags & (FG_COLOR|BG_COLOR), n);
-	if (term->flags & FG_COLOR)
-	    memset(BUF_FORES(sb, row) + size - n, term->cur_foreground, n);
-	if (term->flags & BG_COLOR)
-	    memset(BUF_BACKS(sb, row) + size - n, term->cur_background, n);
+	memcpy (ptr   + col, ptr   + col + n, nbytes);
+	memcpy (attrs + col, attrs + col + n, nbytes);
+	bzero  (ptr + size - n, n);
+	memset (attrs + size - n, TERM_COLOR_FLAGS, n);
+
+	if_OPT_ISO_COLORS(screen,{
+	    if (term->flags & FG_COLOR)
+		memset(BUF_FORES(sb, row) + size - n, term->cur_foreground, n);
+	    if (term->flags & BG_COLOR)
+		memset(BUF_BACKS(sb, row) + size - n, term->cur_background, n);
+	})
 	if (wrappedbit)
 	    attrs[0] |= LINEWRAPPED;
 }
@@ -417,14 +435,16 @@ Boolean force;			/* ... leading/trailing spaces */
 	 screen->cursor_row <= maxrow + topline)
 		screen->cursor_state = OFF;
 	for (row = toprow; row <= maxrow; y += FontHeight(screen), row++) {
+#if OPT_ISO_COLORS
+	   register Char *fgs = 0, *bgs = 0;
+#endif
 	   register Char *chars;
 	   register Char *attrs;
-	   register Char *fgs, *bgs;
 	   register int col = leftcol;
 	   int maxcol = leftcol + ncols - 1;
 	   int lastind;
 	   int flags;
-	   int fg, bg;
+	   int fg = 0, bg = 0;
 	   int x, n;
 	   GC gc;
 	   Boolean hilite;	
@@ -439,13 +459,16 @@ Boolean force;			/* ... leading/trailing spaces */
 
 	   chars = SCRN_BUF_CHARS(screen, lastind + topline);
 	   attrs = SCRN_BUF_ATTRS(screen, lastind + topline);
-	   fgs   = SCRN_BUF_FORES(screen, lastind + topline);
-	   bgs   = SCRN_BUF_BACKS(screen, lastind + topline);
+
+	   if_OPT_ISO_COLORS(screen,{
+		   fgs = SCRN_BUF_FORES(screen, lastind + topline);
+		   bgs = SCRN_BUF_BACKS(screen, lastind + topline);
+	   })
 
 	   if (row < screen->startHRow || row > screen->endHRow ||
 	       (row == screen->startHRow && maxcol < screen->startHCol) ||
 	       (row == screen->endHRow && col >= screen->endHCol))
-	       {
+	   {
 	       /* row does not intersect selection; don't hilite */
 	       if (!force) {
 		   while (col <= maxcol && (attrs[col] & ~BOLD) == 0 &&
@@ -477,8 +500,10 @@ Boolean force;			/* ... leading/trailing spaces */
 	   if (col > maxcol) continue;
 
 	   flags = attrs[col];
-	   fg = fgs[col];
-	   bg = bgs[col];
+	   if_OPT_ISO_COLORS(screen,{
+	        fg = fgs[col];
+	        bg = bgs[col];
+	   })
 	   gc = updatedXtermGC(screen, flags, fg, bg, hilite);
 	   gc_changes |= (flags & (FG_COLOR|BG_COLOR));
 
@@ -486,9 +511,12 @@ Boolean force;			/* ... leading/trailing spaces */
 	   lastind = col;
 
 	   for (; col <= maxcol; col++) {
-		if ((attrs[col] != flags) ||
-		    ((flags & FG_COLOR) && (fgs[col] != fg)) ||
-		    ((flags & BG_COLOR) && (bgs[col] != bg))) {
+		if ((attrs[col] != flags)
+#if OPT_ISO_COLORS
+		 || ((flags & FG_COLOR) && (fgs[col] != fg))
+		 || ((flags & BG_COLOR) && (bgs[col] != bg))
+#endif
+		 ) {
 
 		   XDrawImageString(screen->display, TextWindow(screen), 
 		        	gc, x, y, (char *) &chars[lastind], n = col - lastind);
@@ -504,8 +532,10 @@ Boolean force;			/* ... leading/trailing spaces */
 		   lastind = col;
 
 		   flags = attrs[col];
-		   fg = fgs[col];
-		   bg = bgs[col];
+		   if_OPT_ISO_COLORS(screen,{
+		        fg = fgs[col];
+		        bg = bgs[col];
+		   })
 	   	   gc = updatedXtermGC(screen, flags, fg, bg, hilite);
 	   	   gc_changes |= (flags & (FG_COLOR|BG_COLOR));
 		}
@@ -529,10 +559,12 @@ Boolean force;			/* ... leading/trailing spaces */
 	 * screen foreground and background so that other functions (e.g.,
 	 * ClearRight) will get the correct colors.
 	 */
-	if (gc_changes & FG_COLOR)
+	if_OPT_ISO_COLORS(screen,{
+	    if (gc_changes & FG_COLOR)
 		SGR_Foreground(term->cur_foreground);
-	if (gc_changes & BG_COLOR)
+	    if (gc_changes & BG_COLOR)
 		SGR_Background(term->cur_background);
+	})
 }
 
 void
@@ -547,15 +579,17 @@ register int first, last;
 	ScrnBuf	buf = screen->buf;
 	int	len = screen->max_col + 1;
 	register int row;
-	register int flags = term->flags & (FG_COLOR|BG_COLOR);
+	register int flags = TERM_COLOR_FLAGS;
 
 	for (row = first; row <= last; row++) {
-		bzero (BUF_CHARS(buf, row), len);
-		memset(BUF_ATTRS(buf, row), flags, len);
+	    bzero (BUF_CHARS(buf, row), len);
+	    memset(BUF_ATTRS(buf, row), flags, len);
+	    if_OPT_ISO_COLORS(screen,{
 		memset(BUF_FORES(buf, row), 
 			(flags & FG_COLOR) ? term->cur_foreground : 0, len);
 		memset(BUF_BACKS(buf, row), 
 			(flags & BG_COLOR) ? term->cur_background : 0, len);
+	    })
 	}
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.49 1996/04/15 11:30:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.50 1996/05/11 11:04:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -386,6 +386,7 @@ static SymTabRec KeyMapTab[] = {
 #define VGABASEADDR    100
 #define S3REFCLK       101
 #define S3BLANKDELAY   102
+#define TEXTCLOCKFRQ   103
 
 #ifdef INIT_CONFIG
 static SymTabRec DeviceTab[] = {
@@ -415,6 +416,7 @@ static SymTabRec DeviceTab[] = {
   { VGABASEADDR,"vgabase" },
   { S3REFCLK,	"s3refclk" },
   { S3BLANKDELAY,"s3blankdelay" },
+  { TEXTCLOCKFRQ, "textclockfreq" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */
