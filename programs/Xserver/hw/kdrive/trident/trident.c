@@ -1,5 +1,5 @@
 /*
- * $Id: trident.c,v 1.11 2000/09/24 13:52:40 alanh Exp $
+ * $Id: trident.c,v 1.12 2000/09/27 20:46:36 keithp Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -286,6 +286,9 @@ tridentScreenFini (KdScreenInfo *screen)
 {
     TridentScreenInfo	*tridents = (TridentScreenInfo *) screen->driver;
 
+#ifdef VESA
+    vesaScreenFini (screen);
+#endif
     xfree (tridents);
     screen->driver = 0;
 }
