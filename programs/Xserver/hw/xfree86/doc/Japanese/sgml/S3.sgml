@@ -679,10 +679,6 @@ run_xbench fillrects500              -7.81 13.57  #  0 1  #   -8.53   13.58  #
 exit
 </code>
 
-<verb>
-$XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.25 1995/07/24 11:17:14 dawes Exp $
-</verb>
 <hrule>
 このファイルは xc/programs/Xserver/hw/xfree86/
 doc/sgml/S3.sgml,v 3.26 1995/07/30 04:15:58 を、岡本  一幸 
@@ -696,7 +692,7 @@ XFree86 プロジェクト社と岡本　一幸にありますが、この和訳の不具合は私に、
 電子メールで送って下さい。
 
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/Japanese/sgml/S3.sgml,v 3.0 1995/10/22 10:40:53 dawes Exp $
 </verb>
 <hrule>
 &lsqb;EOF&rsqb;

@@ -1123,10 +1123,6 @@ Xconfig では、線上で輝いているドットの数、輝いているドットから同期信号の開
 最後に、フレーム長のどちらかの数値を増やせば再描画速度が低下してしまうこと、
 またその逆も言えることを覚えておいて下さい。
 
-<verb>
-  $XConsortium: VidModes.sgml,v 1.3 95/01/27 16:14:33 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.6 1995/07/21 14:40:58 dawes Exp $
-</verb>
 <hrule>
 
 このファイルは xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.6
@@ -1140,7 +1136,7 @@ name="&lt;ikko-@pacific.rim.or.jp&gt;"> ) が XFree86 3.1.2 を
 XFree86 プロジェクト社と岡本　一幸にありますが、この和訳の不具合は私に、
 電子メールで送って下さい。
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/Japanese/sgml/VidModes.sgml,v 3.0 1995/10/22 10:40:54 dawes Exp $
 </verb>
 <hrule>
 &lsqb;EOF&rsqb;

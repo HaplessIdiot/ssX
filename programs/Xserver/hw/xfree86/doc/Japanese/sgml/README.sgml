@@ -886,10 +886,6 @@ X コンソーシアム の X11R6 PL12 から XFree86 3.1.2 へのソースのバージョンア
 <tt>README</tt> ファイルに格納場所からダウンする必要のあるファイルについて記載されています。README ファイルのコンパイル時間オプションの選択をみると、配付物
 が作成されている状態が分かります。
 
-<verb>
-$XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.27 1995/07/24 05:56:20 dawes Exp $
-</verb>
 <hrule>
 
 このファイルは xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.27
@@ -903,7 +899,7 @@ name="&lt;ikko-@pacific.rim.or.jp&gt;"> ) が XFree86 3.1.2 を
 XFree86 プロジェクト社と岡本　一幸にありますが、この和訳の不具合は私に、
 電子メールで送って下さい。
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/Japanese/sgml/README.sgml,v 3.0 1995/10/22 10:40:52 dawes Exp $
 </verb>
 <hrule>
 &lsqb;EOF&rsqb;

@@ -340,10 +340,6 @@
   <url url="LinkKit.html" name="README.LinkKit"> ファイルを参照してくだ
   さい。
 
-<verb>
-$XConsortium: INSTALL.sgml,v 1.4 95/01/27 16:14:24 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.12 1995/07/22 09:42:53 dawes Exp $
-</verb>
 <hrule>
 
 このファイルは xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.12
@@ -357,7 +353,7 @@ name="&lt;ikko-@pacific.rim.or.jp&gt;"> ) が XFree86 3.1.2 を
 XFree86 プロジェクト社と岡本　一幸にありますが、この和訳の不具合は私に、
 電子メールで送って下さい。
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/Japanese/sgml/INSTALL.sgml,v 3.0 1995/10/22 10:40:48 dawes Exp $
 </verb>
 <hrule>
 &lsqb;EOF&rsqb;

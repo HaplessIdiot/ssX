@@ -723,10 +723,6 @@ XFree86 3.1.1 からの変更点:
 <item>   5429 対応の VLB の初期値の基底アドレスを 0x03e00000 とした。
 </itemize>
 
-<verb>
-$XConsortium: cirrus.sgml,v 1.4 95/01/27 16:14:36 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.10 1995/07/03 08:50:57 dawes Exp $
-</verb>
 <hrule>
 このファイルは xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.10 1995/07/03 08:50:57   を、岡本  一幸 
 ( Kazuyuki Okamoto <url url="mailto:ikko-@pacific.rim.or.jp"
@@ -738,7 +734,7 @@ name="&lt;ikko-@pacific.rim.or.jp&gt;"> ) が XFree86 3.1.2 を
 XFree86 プロジェクト社と岡本　一幸にありますが、この和訳の不具合は私
 に、電子メールで送って下さい。
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/Japanese/sgml/cirrus.sgml,v 3.0 1995/10/22 10:40:56 dawes Exp $
 </verb>
 <hrule>
 &lsqb;EOF&rsqb;

@@ -31,10 +31,6 @@ Copyright (C) 1994, 1995 The XFree86 Project, Inc.  All Rights Reserved.
 ことはありません。
 
 
-<verb>
-$XConsortium: CPYRIGHT.sgml,v 1.2 95/01/16 13:17:39 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/CPYRIGHT.sgml,v 3.3 1995/01/28 16:01:20 dawes Exp $
-</verb>
 <hrule>
 
 このファイルは xc/programs/Xserver/hw/xfree86/doc/sgml/CPYRIGHT.sgml,v 3.3 
@@ -50,7 +46,7 @@ XFree86 プロジェクト社と岡本　一幸にありますが、この和訳の不具合は私に、
 <verb>
 Copyright (C) 1995, Kazuyuki (ikko-) Okamoto. All Rights Reserved.
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/Japanese/sgml/CPYRIGHT.sgml,v 3.0 1995/10/22 10:40:46 dawes Exp $
 </verb>
 <hrule>
 &lsqb;EOF&rsqb;
