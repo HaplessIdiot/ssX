@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/durango.c,v 1.1 2002/12/10 15:12:23 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/durango.c,v 1.2tsi Exp $ */
 /*
  * $Workfile: durango.c $
- * $Revision: 1.2 $
- * $Author: dawes $
+ * $Revision: 1.3 $
+ * $Author: tsi $
  *
  * This is the main file used to add Durango graphics support to a software 
  * project.  The main reason to have a single file include the other files
@@ -574,33 +574,39 @@ gfx_outd(unsigned short port, unsigned long data)
    outl(port, data);
 }
 
+#ifdef i386
 extern unsigned long nsc_asm_msr_vsa_rd(unsigned long, unsigned long *,
 					unsigned long *);
 extern unsigned long nsc_asm_msr_vsa_wr(unsigned long, unsigned long,
 					unsigned long);
+#endif
 
 void
 gfx_msr_asm_read(unsigned short msrReg, unsigned long msrAddr,
 		 unsigned long *ptrHigh, unsigned long *ptrLow)
 {
+#ifdef i386
    unsigned long addr, val1, val2;
 
    addr = msrAddr | (unsigned long)msrReg;
    nsc_asm_msr_vsa_rd(addr, &val2, &val1);
    *ptrHigh = val2;
    *ptrLow = val1;
+#endif
 }
 
 void
 gfx_msr_asm_write(unsigned short msrReg, unsigned long msrAddr,
 		  unsigned long *ptrHigh, unsigned long *ptrLow)
 {
+#ifdef i386
    unsigned long addr, val1, val2;
 
    val2 = *ptrHigh;
    val1 = *ptrLow;
    addr = (msrAddr & 0xFFFF0000) | (unsigned long)msrReg;
    nsc_asm_msr_vsa_wr(addr, val2, val1);
+#endif
 }
 #else /* else nothing */
 
