@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.8 95/01/16 13:17:00 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.20tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.21 1995/07/12 15:37:16 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -59,6 +59,7 @@ double xf86rGamma=1.0, xf86gGamma=1.0, xf86bGamma=1.0;
 unsigned char xf86rGammaMap[256], xf86gGammaMap[256], xf86bGammaMap[256];
 
 static void xf86PrintConfig();
+static void xf86CheckBeta();
 
 extern ScrnInfoPtr xf86Screens[];
 extern int xf86MaxScreens;
@@ -91,6 +92,8 @@ InitOutput(pScreenInfo, argc, argv)
    
 
   if (serverGeneration == 1) {
+
+    xf86CheckBeta();
 
     xf86PrintConfig();
 
@@ -460,7 +463,7 @@ ddxProcessArgument (argc, argv, i)
   {
     return 1;
   }
-  if (!strcmp(argv[i],"-showconfig"))
+  if (!strcmp(argv[i],"-showconfig") || !strcmp(argv[i],"-version"))
   {
     xf86PrintConfig();
     exit(0);
@@ -594,4 +597,166 @@ xf86PrintConfig()
   for (i = 0; i < xf86MaxScreens; i++)
     if (xf86Screens[i])
       (xf86Screens[i]->PrintIdent)();
+}
+
+
+#ifndef XF86_BETA_FILE
+#define XF86_BETA_FILE ".XFree86"
+#endif
+#ifndef EXPIRY_TIME
+#define EXPIRY_TIME 0
+#endif
+#ifndef SHOW_BETA_MESSAGE
+#if (XF86_VERSION_BETA > 0) && (XF86_VERSION_ALPHA == 0)
+#define SHOW_BETA_MESSAGE
+#endif
+#endif
+#ifndef EXPIRE_SERVER
+#if (XF86_VERSION_BETA > 0) && (XF86_VERSION_ALPHA == 0)
+#define EXPIRE_SERVER
+#endif
+#endif
+#ifndef MESSAGE_SLEEP
+#define MESSAGE_SLEEP 10
+#endif
+#define DAY_IN_SECONDS (24 * 60 * 60)
+#define WEEK_IN_SECONDS (7 * DAY_IN_SECONDS)
+
+extern char *getenv();
+
+static void
+xf86CheckBeta()
+{
+  char *home = NULL;
+  char *filename = NULL;
+  FILE *f = NULL;
+  FILE *m = NULL;
+  Bool showmessage = FALSE;
+  Bool writefile = FALSE;
+  Bool expired = FALSE;
+  Bool expiresoon = FALSE;
+  Bool requireconfirm = FALSE;
+  char oldvers[16] = {0, };
+  time_t expirytime = EXPIRY_TIME;
+ 
+#ifdef SHOW_BETA_MESSAGE
+  /*
+   * Check if the beta message should be displayed.  It is displayed when
+   * the version doesn't match that in $HOME/.XFree86, and when within
+   * one week of the expiry date.
+   */
+  
+  if (!(home = getenv("HOME")))
+    showmessage = TRUE;
+  else {
+    if (!(filename =
+	  (char *)ALLOCATE_LOCAL(strlen(home) + strlen(XF86_BETA_FILE) + 1)))
+      showmessage = TRUE;
+    else {
+      if (home[0] == '/' && home[1] == '\0')
+        home[0] = '\0';
+      sprintf(filename, "%s/%s", home, XF86_BETA_FILE);
+      writefile = TRUE;
+      if (!(f = fopen(filename, "r+")))
+        showmessage = TRUE;
+      else {
+	fgets(oldvers, 16, f);
+	if (strcmp(oldvers, XF86_VERSION)) {
+	  showmessage = TRUE;
+	}
+	fclose(f);
+      }
+    }
+  }
+#endif
+#ifdef EXPIRE_SERVER
+  if (expirytime != 0) {
+    if (time(NULL) > expirytime) {
+      showmessage = TRUE;
+      expired = TRUE;
+    } else if (expirytime - time(NULL) < WEEK_IN_SECONDS) {
+      showmessage = TRUE;
+      expiresoon = TRUE;
+    }
+  }
+#endif
+
+  if (showmessage) {
+
+#if 0
+  /*
+   * This doesn't work very well.  stdin is usually closed, and even if
+   * the server doesn't close it, xinit prevents this from being useful.
+   */
+    /* Check if stderr is a tty */
+    if (isatty(fileno(stderr))) {
+      requireconfirm = TRUE;
+    }
+#endif
+
+#if 0
+    /* This doesn't work when the server is started by xinit */
+#ifndef __EMX__
+    /* See if /dev/tty can be opened */
+    m = fopen("/dev/tty", "r+");
+#endif
+#endif
+
+    if (m)
+      requireconfirm = TRUE;
+    else
+      m = stderr;
+    if (m) {
+      putc('\007', m);
+      fprintf(m, "\n");
+      fprintf(m, "             This is a beta version of XFree86\n\n");
+      fprintf(m, " Please send success and problem reports to"
+		 " <report@XFree86.org>\n\n");
+      if (expired) {
+	fprintf(m, " This version (%s) has expired\n", XF86_VERSION);
+	fprintf(m, " Please get the release version or a newer beta version\n");
+      } else if (expiresoon) {
+	fprintf(m, " WARNING! This version (%s) will expire in less than"
+		   " %d day(s)\n at %s\n", XF86_VERSION,
+		(expirytime - time(NULL)) / DAY_IN_SECONDS + 1,
+		ctime(&expirytime));
+	fprintf(m, " Please get the release version or a newer beta version\n");
+      } else if (expirytime != 0) {
+	fprintf(m, " This version (%s) will expire at %s\n", XF86_VERSION,
+		ctime(&expirytime));
+      }
+      if (!expired) {
+	if (requireconfirm) {
+	  char c[2];
+	  fprintf(m, "\nHit <Enter> to continue: ");
+	  fflush(m);
+	  fgets(c, 2, m);
+	} else {
+	  fflush(m);
+	  fprintf(m, "\nWaiting for %d seconds...", MESSAGE_SLEEP);
+	  fflush(m);
+	  sleep(MESSAGE_SLEEP);
+	  fprintf(m, "\n");
+	}
+      }
+      fprintf(m, "\n");
+      if (m != stderr)
+	fclose(m);
+    }
+  }
+#ifdef SHOW_BETA_MESSAGE
+  if (writefile) {
+    unlink(filename);
+    if (f = fopen(filename, "w")) {
+      fprintf(f, XF86_VERSION);
+      fclose(f);
+    }
+  }
+  if (filename) {
+    DEALLOCATE_LOCAL(filename);
+    filename = NULL;
+  }
+#endif
+  if (expired)
+    exit(1);
 }
