@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.27 1999/04/04 08:46:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.28 1999/04/11 13:10:49 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -1037,6 +1037,7 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
                                 {0x0576, "VT 82C576 3V" },
                                 {0x0586, "VT 82C586 MVP3 ISA Bridge" },
                                 {0x0597, "VT 82C598 MVP3 Host Bridge" },
+                                {0x3038, "VT 82C586 MVP3 USB Controller" },
                                 {0x3040, "VT 82C586B Apollo MVP3 ACPI Bridge" },
                                 {0x8598, "VT 82C598 MVP3 PCI/AGP Bridge" },
 				{0x0000,		NULL}}},
