@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.10 1998/11/22 10:37:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.11 1998/11/28 10:43:02 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -538,6 +538,7 @@ typedef enum {
     PROT_NETPS2,			/* Genius PS/2 NetMouse */
     PROT_NETSCROLLPS2,			/* Genius PS/2 NetScroll */
     PROT_SYSMOUSE,			/* SysMouse */
+    PROT_WSMOUSE,			/* wsmouse (NetBSD) */
     PROT_AUTO,				/* automatic */
     NUM_PROTOCOLS			/* MUST BE LAST */
 } MouseProtocol;

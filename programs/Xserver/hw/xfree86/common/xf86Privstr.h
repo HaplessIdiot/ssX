@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.3 1998/07/26 09:56:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.4 1998/12/05 14:40:07 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -48,7 +48,11 @@ typedef struct _MouseDevRec {
     int			positiveZ;
 #ifndef MOUSE_PROTOCOL_IN_KERNEL
     int			protoBufTail;
+#ifndef WSCONS_SUPPORT
     unsigned char	protoBuf[8];
+#else
+    unsigned char	protoBuf[32];
+#endif
     unsigned char	protoPara[7];
     unsigned char	inSync;		/* driver in sync with datastream */
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.4 1998/08/19 13:13:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.5 1998/12/05 14:40:06 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -108,6 +108,11 @@ Bool xf86SupportedMouseTypes[NUM_PROTOCOLS] =
 #else
 	FALSE,	/* sysmouse */
 #endif
+#ifdef WSCONS_SUPPORT
+	TRUE,	/* wsmouse */
+#else
+	FALSE,	/* wsmouse */
+#endif
 #ifdef PNP_MOUSE
 	TRUE	/* auto */
 #else
@@ -147,6 +152,7 @@ unsigned short xf86MouseCflags[NUM_PROTOCOLS] =
 	0,						     /* GlidePoint */
 	0,						     /* NetMouse */
 	0,						     /* NetScroll */
+	0,						     /* wsmouse */
 
 	(CS8 | CSTOPB          | CREAD | CLOCAL | HUPCL ),   /* sysmouse */
 	0						     /* auto */
@@ -200,6 +206,12 @@ static unsigned char proto[][8] = {
   {  0xc0, 0x00, 0x00, 0x00,  6,   0x00, 0xff, 0       },  /* NetScroll */
 
   {  0xf8, 0x80, 0x00, 0x00,  5,   0x00, 0xff, 0       },  /* sysmouse */
+#ifdef WSCONS_SUPPORT
+  {  0x00, 0x00, 0x00, 0x00, sizeof(struct wscons_event),
+                                         0x00, 0x00, 0 },  /* wsmouse */
+#else
+  {  0x00, 0x00, 0x00, 0x00, 0,    0x00, 0xff, 0       },  /* wsmouse */
+#endif
 };
 #endif /* ! MOUSE_PROTOCOL_IN_KERNEL */
 
@@ -531,6 +543,9 @@ MouseDevPtr mouse;
 	}
 	break;
 
+      case PROT_WSMOUSE:
+	break;
+
       default:
 	xf86SetMouseSpeed(mouse, mouse->baudRate, mouse->baudRate,
                           xf86MouseCflags[mouse->mseType]);
@@ -616,6 +631,9 @@ xf86MouseProtocol(device, rBuf, nBytes)
   int                  i, j, buttons, dx, dy, dz, baddata;
   int                  pBufP = mouse->protoBufTail;
   unsigned char        *pBuf = mouse->protoBuf;
+#ifdef WSCONS_SUPPORT
+  struct wscons_event  ev;
+#endif
   
 #ifdef EXTMOUSEDEBUG2
     ErrorF("received %d bytes",nBytes);
@@ -950,13 +968,52 @@ xf86MouseProtocol(device, rBuf, nBytes)
 	}
       break;
 
+#ifdef WSCONS_SUPPORT
+    case PROT_WSMOUSE:        /* wsmouse */
+      /* copy to guarantee alignment */
+      memcpy(&ev, pBuf, sizeof ev);
+      switch (ev.type) {
+	case WSCONS_EVENT_MOUSE_UP:
+	  dx = dy = 0;
+#define BUTBIT (1 << (ev.value <= 2 ? 2 - ev.value : ev.value))
+	  buttons = mouse->lastButtons & ~BUTBIT;
+	  break;
+	case WSCONS_EVENT_MOUSE_DOWN:
+	  dx = dy = 0;
+	  buttons = mouse->lastButtons | BUTBIT;
+#undef BUTBIT
+	  break;
+	case WSCONS_EVENT_MOUSE_DELTA_X:
+	  dx = ev.value;
+	  dy = 0;
+	  buttons = mouse->lastButtons;
+	  break;
+	case WSCONS_EVENT_MOUSE_DELTA_Y:
+	  dx = 0;
+	  dy = -ev.value;
+	  buttons = mouse->lastButtons;
+	  break;
+#ifdef WSCONS_EVENT_MOUSE_DELTA_Z
+	case WSCONS_EVENT_MOUSE_DELTA_Z:
+	  dx = dy = 0;
+	  dz = ev.value;
+	  buttons = mouse->lastButtons;
+	  break;
+#endif
+	default:
+	  ErrorF("wsmouse: bad event type=%d\n", ev.type);
+	  return;
+      }
+      break;
+#endif /* WSCONS_SUPPORT */
+
     default: /* There's a table error */
 #ifdef EXTMOUSEDEBUG
       ErrorF("mouse table error\n");
 #endif
       continue;
     }
-
+    
 #ifdef EXTMOUSEDEBUG
     ErrorF("packet");
     for ( j=0; j < pBufP; j++)

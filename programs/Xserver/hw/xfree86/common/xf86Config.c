@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.153 1998/11/22 10:37:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.154 1998/11/22 12:45:04 dawes Exp $ */
 
 
 /*
@@ -768,6 +768,7 @@ static SymTabRec MouseTab[] = {
   { PROT_NETPS2,		"netmouseps/2" },
   { PROT_NETSCROLLPS2,		"netscrollps/2" },
   { PROT_SYSMOUSE,		"sysmouse" },
+  { PROT_WSMOUSE,		"wsmouse" },
   { PROT_AUTO,			"auto" },
   { -1,				"" },
 };
