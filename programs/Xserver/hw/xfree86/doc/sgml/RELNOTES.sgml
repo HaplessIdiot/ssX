@@ -9,7 +9,7 @@
 <date>15 January 2002
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.67 2002/01/15 23:35:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.68 2002/01/16 00:10:17 dawes Exp $
 </ident>
 
 <abstract>
@@ -185,8 +185,9 @@ don't have enough space to cover them all here.
 <item> The fontenc layer is updated, and the fontenc library is now installed
 	and available for other applications.
 <item> Improvements to the input method framework in Xlib for UTF-8 locales.
-<item> A filter called "luit" is added, which provides locale and ISO&nbsp;2022
-	support for Unicode terminals.
+<item> A filter called ``luit'' is added, which provides locale and
+	ISO&nbsp;2022 support to any Unicode terminal, notably xterm.
+	Use of luit is still experimental in this release.
 </itemize>
 
 <sect1>OS Support Updates
@@ -348,7 +349,7 @@ XFree86 &relvers; includes the following input drivers:
 </tabular>
 </table>
 
-<sect>Summary of XFree86 4.
+<sect>Overview of XFree86 4.x.
 <p>
 Unlike XFree86 3.3.x where there are multiple X server binaries, each
 of which drive different hardware, XFree86 &relvers; has a single X
@@ -416,10 +417,13 @@ The X server also has preliminary support for generating a basic config
 file.  This is done by running (as root) "<tt>XFree86 -configure</tt>".
 Alternatively, the sample config file <tt>XF86Config.eg</tt> that is
 installed in <tt>/usr/X11R6/lib/X11</tt> may be used as a starting point.
+The <tt>xf86cfg</tt> utility can also be used to create a new configuration
+file or to edit an existing one.
 The <tt>XF86Setup</tt> utility is currently not usable, but work is
 continuing in this area.
 
-The main changes are covered here, but please refer to the XF86Config
+The main changes are covered here, but please refer to the <htmlurl
+name="XF86Config(5)" url="XF86Config.5.html">
 manual page for more comprehensive information:
 
 <itemize>
@@ -503,6 +507,14 @@ EndSection
     Option "suspend time"  "30"
     Option "off time"      "40"
 </verb></quote>
+
+	The new option <tt>AllowDeactivateGrabs</tt> allows deactivating
+	any active grab with the key sequence <tt>Ctrl+Alt+Keypad-Divide</tt>
+	and the new option <tt>AllowClosedownGrabs</tt> allows closing the
+	conection to the grabbing client with the key sequence
+	<tt>Ctrl+Alt+Keypad-Multiply</tt>. Note that these options are off
+	by default as they allow users to remove the grab used by screen
+	saver/locker programs.
 
   <item>The Keyboard, Pointer and XInput sections have been replaced by a
 	more general InputDevice section.  The old Keyboard and Pointer
@@ -720,7 +732,7 @@ The following X server command line options have been changed since 3.3.x:
 	messages that get written to stderr.  It may be specified multiple
 	times to increase the verbosity level (as with 3.3.x), or the
 	verbosity level may be specified explicitly as a number.  The
-	default verbosity level is 1.
+	default verbosity level is 0.
 
 </quote>
 
@@ -737,6 +749,8 @@ The following X server command line options have been changed since 3.3.x:
 
 </quote>
 
+A more complete list of XFree86 X server command line options can be found
+in the <htmlurl name="XFree86(1)" url="XFree86.1.html"> manual page.
 
 <sect1>XAA
 <p>
@@ -1245,8 +1259,8 @@ The license terms for the Luxi fonts are included in the file
 name="License document" url="LICENSE.html">.  For further information,
 please contact
 <email>design@bigelowandholmes.com</email> or
-<email>info@urwpp.de</email>, or consult
-<url name="the URW++ web site" url="http://www.urwpp.de">.
+<email>info@urwpp.de</email>, or consult the
+<url name="URW++ web site" url="http://www.urwpp.de">.
 
 
 <!--
