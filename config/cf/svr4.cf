@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.52tsi Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.53 2004/06/25 15:33:21 tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -116,6 +116,9 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.52tsi Exp $
 #endif
 #ifndef CppCmd
 #define	CppCmd	/usr/ccs/lib/cpp
+#ifndef CPPAsmOptions
+#define CPPAsmOptions /* */
+#endif
 #endif
 #ifndef RawCppCmd
 #if !defined(SunArchitecture)
