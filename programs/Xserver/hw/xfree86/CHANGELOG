@@ -1,4 +1,6 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 851. Don't use XkbGetKeyboard() in xset, just use XkbAllocKeyboard()
+      (Ivan Pascal).
  850. Fixes for the nsc driver for HW cursor hotspots and GX2 video
       clipping issues (Sarma Kolluru, NSC).
  849. Fix HW cursor on CRTC2 for SiS650+301B (Thomas Winischhofer).
@@ -16269,4 +16271,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2529 2003/02/06 13:13:59 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2530 2003/02/06 17:45:59 alanh Exp $
