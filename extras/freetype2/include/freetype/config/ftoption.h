@@ -1,11 +1,11 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/freetype2/include/freetype/config/ftoption.h,v 1.2 2001/09/14 22:13:47 keithp Exp $ */
 /***************************************************************************/
 /*                                                                         */
 /*  ftoption.h                                                             */
 /*                                                                         */
 /*    User-selectable configuration macros (specification only).           */
 /*                                                                         */
-/*  Copyright 1996-2000 by                                                 */
+/*  Copyright 1996-2001 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -78,16 +78,17 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* Module errors                                                         */
   /*                                                                       */
-  /*   If this macro is set (which is the default), the higher byte of an  */
-  /*   error code gives the module in which the error has occurred, while  */
-  /*   the lower byte is the real error code.                              */
+  /*   If this macro is set (which is _not_ the default), the higher byte  */
+  /*   of an error code gives the module in which the error has occurred,  */
+  /*   while the lower byte is the real error code.                        */
   /*                                                                       */
-  /*   Unsetting this macro makes sense for backwards compatibility; only  */
-  /*   the real error code is emitted, and the higher byte is always zero. */
+  /*   Setting this macro makes sense for debugging purposes only, since   */
+  /*   it would break source compatibility of certain programs that use    */
+  /*   FreeType 2.                                                         */
   /*                                                                       */
   /*   More details can be found in the files ftmoderr.h and fterrors.h.   */
   /*                                                                       */
-#define FT_CONFIG_OPTION_USE_MODULE_ERRORS
+#undef  FT_CONFIG_OPTION_USE_MODULE_ERRORS
 
 
   /*************************************************************************/
