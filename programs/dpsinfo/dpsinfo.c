@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/dpsinfo/dpsinfo.c,v 1.1 2001/03/01 01:23:58 dawes Exp $ */
+/* $XFree86: xc/programs/dpsinfo/dpsinfo.c,v 1.2 2001/04/01 14:00:17 tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,6 +29,9 @@ THE SOFTWARE.
 #include <X11/Xlib.h>
 #include <DPS/XDPSlib.h>
 #include <DPS/dpsXclient.h>
+#include <DPS/psops.h>
+
+#include "iwraps.h"
 
 char *ProgramName;
 

@@ -450,27 +450,37 @@ static char *bounds_metrics_fmt =
 
 
 static char* stringValued [] = { /* values are atoms */
-    "FAMILY_NAME",
+    /* font name components (see section 3.2 of the XLFD) */
     "FOUNDRY",
-    "STYLE",
-    "MONOSPACED",
-    "RELATIVE_WEIGHT",
-    "RELATIVE_SET",
-    "CLASSIFICATION",
+    "FAMILY_NAME",
+    "WEIGHT_NAME",
+    "SLANT",
+    "SETWIDTH_NAME",
+    "ADD_STYLE_NAME",
+    "SPACING",
     "CHARSET_REGISTRY",
     "CHARSET_ENCODING",
-    "QUALITY",
-    "CHARSET_COLLECTIONS",
-    "FULL_NAME",
-    "COPYRIGHT",
-    "WEIGHT_NAME",
-    "SETWIDTH_NAME",
-    "SLANT",
-    "SPACING",
-    "ADD_STYLE_NAME",
-    "FONTNAME_REGISTRY",
+
+    /* other standard X font properties (see section 3.2 of the XLFD) */
     "FONT",
+    "FACE_NAME",
+    "FULL_NAME",              /* deprecated */
+    "COPYRIGHT",
+    "NOTICE",
+    "FONT_TYPE",
+    "FONT_VERSION",
+    "RASTERIZER_NAME",
+    "RASTERIZER_VERSION",
+
+    /* unregistered font properties */
+    "CHARSET_COLLECTIONS",
+    "CLASSIFICATION",
     "DEVICE_FONT_NAME",
+    "FONTNAME_REGISTRY",
+    "MONOSPACED",
+    "QUALITY",
+    "RELATIVE_SET",
+    "STYLE",
      NULL
     };
 

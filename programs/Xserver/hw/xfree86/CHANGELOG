@@ -1,4 +1,15 @@
 XFree86 4.0.99.3 (26 April 2001)
+ 446. Don't define the <Ctrl>T compose sequences in the iso8859-1 compose
+      map by default (#4611, Mike Harris).
+ 445. Allow the nls compose data files to be pre-processed (David Dawes).
+ 444. Fix some problems introduced with the internationalisation of twm
+      (#4607, Juliusz Chroboczek).
+ 443. Fix dpsinfo so that the correct headers are included (#4606,
+      Juliusz Chroboczek).
+ 442. Fix mismatches between the way xlsfonts interprets font properties and
+      the way they are defined in the XLFD spec (#4604, Jochen Voss).
+ 441. Add entries for German iso-8859-15 locales (#4603,
+      Philipp Matthias Hahn).
  440. Cleanup build in Xserver/GL/mesa, making use of the earlier cleanups in
       the lib/GL build (David Dawes).  #4602 is redundant as a result.
  439. [SECURITY] Check for negative reply length/overflow in _XAsyncReply
@@ -13084,4 +13095,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1719 2001/04/26 16:23:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1720 2001/04/26 16:54:48 dawes Exp $

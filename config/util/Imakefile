@@ -2,10 +2,10 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:41:52 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.34 2001/03/21 20:25:00 dawes Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.35 2001/04/26 16:01:37 dawes Exp $
 
 #if UseCCMakeDepend
-MDEP_PROG = makedepend
+CCMDEP_PROG = ccmakedep
 #endif
 
 #ifdef ExportListGenSource
@@ -29,7 +29,7 @@ RMAN_PROG = ProgramTargetName(rman)
 QNXCopyInstaller($(PROJECTROOT)/bin/install.qnx,./install.sh)
 #endif
 
-PROGRAMS = xmkmf $(MDEP_PROG) $(GCCMDEP_PROG) mergelib $(LNDIR_PROG) \
+PROGRAMS = xmkmf $(CCMDEP_PROG) $(GCCMDEP_PROG) mergelib $(LNDIR_PROG) \
 	   $(RMAN_PROG) ProgramTargetName(revpath) \
 	   ProgramTargetName(makestrs) $(EXPORTLISTGEN) $(CMKDIRHIER)
 DEPLIBS =
@@ -67,6 +67,7 @@ InstallNamedProg(exportlistgen,exportlistgen,$(BINDIR))
 #endif
 
 CppScriptTarget(xmkmf,xmkmf.cpp,-DCONFIGDIRSPEC='"'"-I$(CONFIGDIR)"'"',$(ICONFIGFILES))
+CppScriptTarget(ccmakedep,mdepend.cpp,-DPREPROC='"'"$(PREPROCESSCMD_MKDEPEND)"'"',$(ICONFIGFILES))
 CppScriptTarget(mergelib,mergelib.cpp,"-DARCMD=$(AR)" "-DRANLIB=$(RANLIB)",$(ICONFIGFILES))
 #ifndef OS2Architecture
 CppScriptTarget(gccmakedep,gccmdep.cpp,-DCCCMD='"'"$(GCCCMD)"'"' -DRMCMD='"'"$(RM)"'"' -DLNCMD='"'"$(LN)"'"' -DMVCMD='"'"$(MV)"'"',$(ICONFIGFILES))
@@ -137,10 +138,8 @@ InstallNamedProg(mkhtmlindex.sh,mkhtmlindex,$(BINDIR))
 #endif
 #endif
 InstallManPage(mkdirhier,$(MANDIR))
-#if UseCCMakeDepend
-InstallNamedProg(makedepend,makedepend,$(BINDIR))
-InstallDriverSDKNamedProg(makedepend,makedepend,$(DRIVERSDKDIR)/config/util)
-#endif
+InstallNamedProg(ccmakedep,ccmakedep,$(BINDIR))
+InstallDriverSDKNamedProg(ccmakedep,ccmakedep,$(DRIVERSDKDIR)/config/util)
 #if SystemV || SystemV4
 InstallNamedProg(bsdinst.sh,bsdinst,$(BINDIR))
 InstallDriverSDKNamedProg(bsdinst.sh,bsdinst.sh,$(DRIVERSDKDIR)/config/util)

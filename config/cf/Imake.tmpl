@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.100 2001/04/19 19:54:41 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.101 2001/04/23 16:17:05 tsi Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1236,6 +1236,12 @@ TCLIBDIR = TclLibDir
 #define DependCmd gccmakedep
 #else
 #define DependCmd $(DEPENDSRC)/gccmakedep
+#endif
+#elif UseCCMakeDepend
+#ifdef UseInstalled		/* assume BINDIR in path */
+#define DependCmd ccmakedep
+#else
+#define DependCmd $(DEPENDSRC)/ccmakedep
 #endif
 #else
 #ifdef UseInstalled		/* assume BINDIR in path */
