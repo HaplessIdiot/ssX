@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.47 1999/06/12 07:18:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.48 1999/06/12 17:30:17 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -122,7 +122,6 @@ resPtr xf86JoinResLists(resPtr rlist1, resPtr rlist2);
 resPtr xf86DupResList(const resPtr rlist);
 void xf86FreeResList(resPtr rlist);
 void xf86PrintResList(int verb, resPtr list);
-unsigned long xf86ChkConflict(resRange *rgp, int entityIndex);
 void xf86ResourceBrokerInit(void);
 void xf86PostProbe(void);
 void xf86ClearEntityListForScreen(int scrnIndex);

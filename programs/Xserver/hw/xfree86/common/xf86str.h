@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.39 1999/06/12 17:30:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.40 1999/06/13 05:18:50 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -16,6 +16,12 @@
 #include "input.h"
 #include "scrnintstr.h"
 #include "xf86Module.h"
+
+/*
+ * memType is of the size of the addressable memory (machine size)
+ * usually unsigned long.
+ */
+typedef unsigned long memType;
 
 /* Video mode flags */
 
@@ -273,13 +279,14 @@ typedef struct {
     int			class;
     int			subclass;
     int			interface;
-    unsigned long	memBase[6];
-    unsigned long	ioBase[6];
+    memType  	        memBase[6];
+    memType  	        ioBase[6];
     int			size[6];
     unsigned char	type[6];
-    unsigned long	biosBase;
+    memType   	        biosBase;
     int			biosSize;
     pointer		thisCard;
+    Bool                validate;
 } pciVideoRec, *pciVideoPtr;
 
 typedef struct {
@@ -463,18 +470,18 @@ typedef struct _CurrAccRec {
 
 typedef struct {
     long type;     /* shared, exclusive, unused etc. */
-    unsigned long a;
-    unsigned long b;
+    memType a;
+    memType b;
 } resRange, *resList;
 
 #define RANGE(r,u,v,t) (r).a = (u);\
                        (r).b = (v);\
                        (r).type = t;
 
-#define __base a
-#define __mask b
-#define __begin a
-#define __end b
+#define rBase a
+#define rMask b
+#define rBegin a
+#define rEnd b
 
 /* resource record */
 typedef struct _resRec *resPtr;
@@ -484,11 +491,11 @@ typedef struct _resRec {
     resPtr	next;
 } resRec;
 
-#define sparse_base	val.__base
-#define sparse_mask	val.__mask
-#define block_begin	val.__begin
-#define block_end	val.__end
-#define r_type		val.type
+#define sparse_base	val.rBase
+#define sparse_mask	val.rMask
+#define block_begin	val.rBegin
+#define block_end	val.rEnd
+#define res_type	val.type
 
 typedef struct {
     int numChipset;

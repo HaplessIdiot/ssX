@@ -1,5 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.26 1999/06/13 05:18:45 dawes Exp $ */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.27 1999/06/14 13:37:48 dawes Exp $ */
+#define DEBUG
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -69,7 +69,7 @@ resRange res8514Shared[] = {_8514_SHARED, _END};
 resRange PciAvoid[] = {_PCI_AVOID, _END};
 
 /* Flag: do we need RAC ? */
-static needRAC = FALSE;
+static Bool needRAC = FALSE;
 
 /* Bus-specific probe/sorting functions */
 
@@ -103,6 +103,12 @@ static needRAC = FALSE;
     (((b) == PCI_CLASS_PREHISTORIC && (s) == PCI_SUBCLASS_PREHISTORIC_VGA) || \
      ((b) == PCI_CLASS_DISPLAY && (s) == PCI_SUBCLASS_DISPLAY_VGA))
 
+/* XXX Fixme: Hack: so far we only support 32 bit PCI addresses */
+#define PCI_MEMBASE_LENGTH_TYPE(x) 0xFFFFFFFF
+#define PCI_MEMBASE_LENGTH_MAX 0xFFFFFFFF
+#undef MIN
+#define MIN(x,y) ((x<y)?x:y)
+
 SymTabPtr xf86PCIVendorNameInfo;
 pciVendorCardInfo *xf86PCICardInfo;
 pciVendorDeviceInfo * xf86PCIVendorInfo;
@@ -130,6 +136,7 @@ xf86FindPCIVideoInfo(void)
 					  sizeof(pciVideoPtr) * (num + 1));
 	    xf86PciVideoInfo[num] = NULL;
 	    info = xf86PciVideoInfo[num - 1] = xnfalloc(sizeof(pciVideoRec));
+	    info->validate = FALSE;
 	    info->vendor = pcrp->pci_vendor;
 	    info->chipType = pcrp->pci_device;
 	    info->chipRev = pcrp->pci_rev_id;
@@ -157,8 +164,10 @@ xf86FindPCIVideoInfo(void)
 	    for (j = 0; j < 6; j++) {
 		info->memBase[j] = 0;
 		info->ioBase[j] = 0;
-		if (PCINONSYSTEMCLASSES(info->class, info->subclass))
+		if (PCINONSYSTEMCLASSES(info->class, info->subclass)) {
 		    info->size[j]  = pciGetBaseSize(pcrp->tag, j, TRUE, NULL);
+		    info->validate = TRUE;
+		}
 		else
 		  info->size[j] = pcrp->basesize[j];
                   /* pciGetBaseSize(pcrp->tag, j, FALSE, NULL) */
@@ -172,83 +181,83 @@ xf86FindPCIVideoInfo(void)
 
 	    if (pcrp->pci_base0) {
 		if (pcrp->pci_base0 & PCI_MAP_IO) {
-		    info->ioBase[0] = PCIGETIO(pcrp->pci_base0);
+		    info->ioBase[0] = (memType)PCIGETIO(pcrp->pci_base0);
 		    info->type[0] = pcrp->pci_base0 & PCI_MAP_IO_ATTR_MASK;
 		} else
 		    if (PCI_MAP_IS64BITMEM(pcrp->pci_base0))
 			mem64 = TRUE;
 		    else {
-			info->memBase[0] = PCIGETMEMORY(pcrp->pci_base0);
+			info->memBase[0] = (memType)PCIGETMEMORY(pcrp->pci_base0);
 			info->type[0] = pcrp->pci_base0 & PCI_MAP_MEMORY_ATTR_MASK;
 		    }
 	    }
 
 	    if (pcrp->pci_base1 && !mem64) {
 		if (pcrp->pci_base1 & PCI_MAP_IO) {
-		    info->ioBase[1] = PCIGETIO(pcrp->pci_base1);
-		    info->type[1] = pcrp->pci_base0 & PCI_MAP_IO_ATTR_MASK;
+		    info->ioBase[1] = (memType)PCIGETIO(pcrp->pci_base1);
+		    info->type[1] = pcrp->pci_base1 & PCI_MAP_IO_ATTR_MASK;
 		} else
 		    if (PCI_MAP_IS64BITMEM(pcrp->pci_base1))
 			mem64 = TRUE;
 		    else {
-			info->memBase[1] = PCIGETMEMORY(pcrp->pci_base1);
-			info->type[1] = pcrp->pci_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+			info->memBase[1] = (memType)PCIGETMEMORY(pcrp->pci_base1);
+			info->type[1] = pcrp->pci_base1 & PCI_MAP_MEMORY_ATTR_MASK;
 		    }
 	    } else if (mem64)
 		mem64 = FALSE;
 
 	    if (pcrp->pci_base2 && !mem64) {
 		if (pcrp->pci_base2 & PCI_MAP_IO) {
-		    info->ioBase[2] = PCIGETIO(pcrp->pci_base2);
-		    info->type[2] = pcrp->pci_base0 & PCI_MAP_IO_ATTR_MASK;
+		    info->ioBase[2] = (memType)PCIGETIO(pcrp->pci_base2);
+		    info->type[2] = pcrp->pci_base2 & PCI_MAP_IO_ATTR_MASK;
 		} else
 		    if (PCI_MAP_IS64BITMEM(pcrp->pci_base2))
 			mem64 = TRUE;
 		    else {
-			info->memBase[2] = PCIGETMEMORY(pcrp->pci_base2);
-			info->type[2] = pcrp->pci_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+			info->memBase[2] = (memType)PCIGETMEMORY(pcrp->pci_base2);
+			info->type[2] = pcrp->pci_base2 & PCI_MAP_MEMORY_ATTR_MASK;
 		    }
 	    } else if (mem64)
 		mem64 = FALSE;
 
 	    if (pcrp->pci_base3 && !mem64) {
 		if (pcrp->pci_base3 & PCI_MAP_IO) {
-		    info->ioBase[3] = PCIGETIO(pcrp->pci_base3);
-		    info->type[3] = pcrp->pci_base0 & PCI_MAP_IO_ATTR_MASK;
+		    info->ioBase[3] = (memType)PCIGETIO(pcrp->pci_base3);
+		    info->type[3] = pcrp->pci_base3 & PCI_MAP_IO_ATTR_MASK;
 		} else
 		    if (PCI_MAP_IS64BITMEM(pcrp->pci_base3))
 			mem64 = TRUE;
 		    else {
-			info->memBase[3] = PCIGETMEMORY(pcrp->pci_base3);
-			info->type[3] = pcrp->pci_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+			info->memBase[3] = (memType)PCIGETMEMORY(pcrp->pci_base3);
+			info->type[3] = pcrp->pci_base3 & PCI_MAP_MEMORY_ATTR_MASK;
 		    }
 	    } else if (mem64)
 		mem64 = FALSE;
 
 	    if (pcrp->pci_base4 && !mem64) {
 		if (pcrp->pci_base4 & PCI_MAP_IO) {
-		    info->ioBase[4] = PCIGETIO(pcrp->pci_base4);
-		    info->type[4] = pcrp->pci_base0 & PCI_MAP_IO_ATTR_MASK;
+		    info->ioBase[4] = (memType)PCIGETIO(pcrp->pci_base4);
+		    info->type[4] = pcrp->pci_base4 & PCI_MAP_IO_ATTR_MASK;
 		} else
 		    if (PCI_MAP_IS64BITMEM(pcrp->pci_base4))
 			mem64 = TRUE;
 		    else {
-			info->memBase[4] = PCIGETMEMORY(pcrp->pci_base4);
-			info->type[4] = pcrp->pci_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+			info->memBase[4] = (memType)PCIGETMEMORY(pcrp->pci_base4);
+			info->type[4] = pcrp->pci_base4 & PCI_MAP_MEMORY_ATTR_MASK;
 		    }
 	    } else if (mem64)
 		mem64 = FALSE;
 
 	    if (pcrp->pci_base5 && !mem64) {
 		if (pcrp->pci_base5 & PCI_MAP_IO) {
-		    info->ioBase[5] = PCIGETIO(pcrp->pci_base5);
-		    info->type[5] = pcrp->pci_base0 & PCI_MAP_IO_ATTR_MASK;
+		    info->ioBase[5] = (memType)PCIGETIO(pcrp->pci_base5);
+		    info->type[5] = pcrp->pci_base5 & PCI_MAP_IO_ATTR_MASK;
 		} else
 		    if (PCI_MAP_IS64BITMEM(pcrp->pci_base5))
 			mem64 = TRUE;
 		    else {
-			info->memBase[5] = PCIGETMEMORY(pcrp->pci_base5);
-			info->type[5] = pcrp->pci_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+			info->memBase[5] = (memType)PCIGETMEMORY(pcrp->pci_base5);
+			info->type[5] = pcrp->pci_base5 & PCI_MAP_MEMORY_ATTR_MASK;
 		    }
 	    }
 	}
@@ -388,10 +397,67 @@ xf86CheckPciSlot(int bus, int device, int func)
 }
 
 /*
+ * fixPciSizeInfo() -- fix pci size info by testing it destructively
+ * (if not already done), fix pciVideoInfo and entry in the resource
+ * list.
+ */
+static void
+fixPciSizeInfo(int entityIndex)
+{
+    pciVideoPtr pvp;
+    resPtr pAcc;
+    PCITAG tag;
+    int j;
+    
+    if (! (pvp = xf86GetPciInfoForEntity(entityIndex))) return;
+    if (pvp->validate) return;
+
+    tag = pciTag(pvp->bus,pvp->device,pvp->func);
+    
+    for (j = 0; j < 6; j++) {
+	pAcc = Acc;
+	if (pvp->memBase[j]) 
+	    while (pAcc) {
+		if (((pAcc->res_type & (ResMem | ResBlock))
+		     == (ResMem | ResBlock))
+		    && (pAcc->block_begin == pvp->memBase[j])
+		    && (pAcc->block_end == pvp->memBase[j]
+		    + (1 << (pvp->size[j])) - 1)) break;
+		pAcc = pAcc->next;
+	    } else if (pvp->ioBase[j])
+	    while (pAcc) {
+		if (((pAcc->res_type & (ResIo | ResBlock)) ==
+		     (ResIo | ResBlock))
+		    && (pAcc->block_begin == pvp->ioBase[j])
+		    && (pAcc->block_end == pvp->ioBase[j]
+		    + (1 << (pvp->size[j])) - 1)) break;
+		pAcc = pAcc->next;
+	    } else continue;
+	pvp->size[j]  = pciGetBaseSize(tag, j, TRUE, NULL);
+	if (pAcc)
+	    pAcc->block_end = pAcc->block_begin + (1 << (pvp->size[j])) - 1;
+    }
+    if (pvp->biosBase) {
+	pAcc = Acc;
+	while (pAcc) {
+	    if (((pAcc->res_type & (ResMem | ResBlock)) == (ResMem | ResBlock))
+		&& (pAcc->block_begin == pvp->biosBase)
+		    && (pAcc->block_end == pvp->biosBase
+		    + (1 << (pvp->biosSize)) - 1)) break;
+	    pAcc = pAcc->next;
+	}
+	pvp->biosSize = pciGetBaseSize(tag, 6, TRUE, NULL);
+	if (pAcc)
+	    pAcc->block_end = pAcc->block_begin + (1 << (pvp->biosSize))- 1;
+    }
+    
+    pvp->validate = TRUE;
+}
+
+/*
  * If the slot requested is already in use, return -1.
  * Otherwise, claim the slot for the screen requesting it.
  */
-
 int
 xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
 		 int chipset, GDevPtr dev, Bool active)
@@ -416,7 +482,7 @@ xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
 	p->inUse = FALSE;
 	/* Here we initialize the access structure */
 	p->access = xnfcalloc(1,sizeof(EntityAccessRec));
-	while (ppaccp) {
+	while (*ppaccp) {
 	    if ((*ppaccp)->busnum == bus
 		&& (*ppaccp)->devnum == device
 		&& (*ppaccp)->funcnum == func) {
@@ -426,12 +492,19 @@ xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
 	    }
 	    ppaccp++;
 	}
+	/* This should not happen ! */
+	if (!*ppaccp) {
+	    p->access->fallback = &AccessNULL;
+	    p->access->pAccess = &AccessNULL;
+	}
+	
 	p->busAcc = NULL;
 	while (pbap) {
 	    if (pbap->type == BUS_PCI && pbap->busdep.pci.bus == bus)
 		p->busAcc = pbap;
 	    pbap = pbap->next;
 	}
+	fixPciSizeInfo(num);
  	return num;
     } else
  	return -1;
@@ -1083,7 +1156,7 @@ xf86EntityInit(void)
 	    pprev_next = &Acc;
 	    res = Acc;
 	    while (res) {  
-		if (res->r_type & ResInit && (res->entityIndex == i)) {
+		if (res->res_type & ResInit && (res->entityIndex == i)) {
 		    (*pprev_next) = res->next;
 		    xfree(res);
 		} else 
@@ -1171,14 +1244,12 @@ disableAccess(void)
  * xf86AccessInit() - set up everything needed for access control
  * called only once on first server generation.
  */
-static void ValidatePci(void);
 
 void
 xf86AccessInit(void)
 {
     initPciState();
     initPciBusState();
-    ValidatePci();
     DisablePciBusAccess();
     DisablePciAccess();
     
@@ -1484,11 +1555,11 @@ xf86CheckPciGAType(pciVideoPtr pPci)
 
 /* new RAC */
 
-static unsigned long
-getMask(unsigned long val)
+static memType
+getMask(memType val)
 {
-    unsigned long mask = 0;
-    unsigned long tmp = 0;
+    memType mask = 0;
+    memType tmp = 0;
     
     mask=~mask;
     tmp = ~((~tmp) >> 1);
@@ -1504,30 +1575,30 @@ getMask(unsigned long val)
  * checkConflictBlock() -- check for conflicts of a block resource range.
  * If conflict is found return end of conflicting range. Else return 0.
  */
-static unsigned long
+static memType
 checkConflictBlock(resRange *range, resPtr pRes)
 {
-    unsigned long val,tmp,prev;
+    memType val,tmp,prev;
     int i;
     
-    switch (pRes->r_type & ResExtMask) {
+    switch (pRes->res_type & ResExtMask) {
     case ResBlock:
-	if (range->__begin < pRes->block_end &&
-	    range->__end > pRes->block_begin)
-	    return pRes->block_end < range->__end ?
-					pRes->block_end : range->__end;
+	if (range->rBegin < pRes->block_end &&
+	    range->rEnd > pRes->block_begin)
+	    return pRes->block_end < range->rEnd ?
+					pRes->block_end : range->rEnd;
 	return 0;
     case ResSparse:
-	if (pRes->sparse_base > range->__end) return 0;
+	if (pRes->sparse_base > range->rEnd) return 0;
 	
-	val = (~pRes->sparse_mask | pRes->sparse_base) & getMask(range->__end);
+	val = (~pRes->sparse_mask | pRes->sparse_base) & getMask(range->rEnd);
 #ifdef DEBUG
 	ErrorF("base = 0x%lx, mask = 0x%lx, begin = 0x%lx, end = 0x%lx ,"
 	       "val\n 0x%lx\n",
-		pRes->sparse_base, pRes->sparse_mask, range->__begin,
-		range->__end, val);
+		pRes->sparse_base, pRes->sparse_mask, range->rBegin,
+		range->rEnd, val);
 #endif
-	i = sizeof(unsigned long) * 8;
+	i = sizeof(memType) * 8;
 	tmp = prev = pRes->sparse_base;
 	
 	while (i) {
@@ -1535,12 +1606,12 @@ checkConflictBlock(resRange *range, resPtr pRes)
 	    ErrorF("tmp = 0x%lx\n",tmp);
 #endif
 	    tmp |= 1<< (--i) & val;
-	    if (tmp > range->__end)
+	    if (tmp > range->rEnd)
 		tmp = prev;
 	    else
 		prev = tmp;
 	}
-	if (tmp >= range->__begin) {
+	if (tmp >= range->rBegin) {
 #ifdef DEBUG
 	    ErrorF("conflict found at: 0x%lx\n",tmp);
 #endif
@@ -1556,27 +1627,27 @@ checkConflictBlock(resRange *range, resPtr pRes)
  * checkConflictSparse() -- check for conflicts of a sparse resource range.
  * If conflict is found return base of conflicting region. Else return 0.
  */
-#define ul_max ~(unsigned long)0
-#define length sizeof(unsigned long) * 8
-static unsigned long
+#define mt_max ~(memType)0
+#define length sizeof(memType) * 8
+static memType
 checkConflictSparse(resRange *range, resPtr pRes)
 {
-    unsigned long val, tmp, prev;
+    memType val, tmp, prev;
     int i;
     
-    switch (pRes->r_type & ResExtMask) {
+    switch (pRes->res_type & ResExtMask) {
     case ResSparse:
-	tmp = pRes->sparse_mask & range->__mask;
-	if ((tmp & pRes->sparse_base) == (tmp & range->__base))
+	tmp = pRes->sparse_mask & range->rMask;
+	if ((tmp & pRes->sparse_base) == (tmp & range->rBase))
 	    return pRes->sparse_mask;
 	return 0;
 
     case ResBlock:
-	if (pRes->block_end < range->__base) return 0;
+	if (pRes->block_end < range->rBase) return 0;
 	
-	val = (~range->__mask | range->__base) & getMask(pRes->block_end);
+	val = (~range->rMask | range->rBase) & getMask(pRes->block_end);
 	i = length;
-	tmp = prev = range->__base;
+	tmp = prev = range->rBase;
 	
 	while (i) {
 #ifdef DEBUG
@@ -1596,12 +1667,12 @@ checkConflictSparse(resRange *range, resPtr pRes)
 	     * with base values = 2^n and find the smallest mask.
 	     * This might be done in a simpler way....
 	     */
-	    unsigned long mask, m_mask = 0, base = pRes->block_begin;
+	    memType mask, m_mask = 0, base = pRes->block_begin;
 	    int i;	    
 	    while (base < pRes->block_end) {
 		for (i = 1; i < length; i++)
-		    if ( base != (base & (ul_max << i))) break;
-		mask = ul_max >> (length - i);
+		    if ( base != (base & (mt_max << i))) break;
+		mask = mt_max >> (length - i);
 		do mask >>= 1;
 		while ((mask + base + 1) > pRes->block_end);
 		/* m_mask and are _inverted_ sparse masks */ 
@@ -1616,7 +1687,7 @@ checkConflictSparse(resRange *range, resPtr pRes)
     }
     return 0;
 }
-#undef ul_max
+#undef mt_max
 #undef length
 
 /*
@@ -1632,27 +1703,27 @@ needCheck(resPtr pRes, long type, int entityIndex, xf86State state)
     BusType loc = BUS_NONE;
     BusType r_loc = BUS_NONE;
     
-    if (!((pRes->r_type & type) & ResPhysMask)) return FALSE;
+    if (!((pRes->res_type & type) & ResPhysMask)) return FALSE;
 
     /*
      * Resources set by BIOS (ResBios) are allowed to conflict
      * with resources marked (ResNoAvoid).
      */
-    if (pRes->r_type & type & ResBios)
+    if (pRes->res_type & type & ResBios)
 	return FALSE;
     
-    if (type & pRes->r_type & ResUnused) return FALSE;
+    if (type & pRes->res_type & ResUnused) return FALSE;
 
     if (state == OPERATING) {
-	if (type & ResDisableOpr || pRes->r_type & ResDisableOpr)
+	if (type & ResDisableOpr || pRes->res_type & ResDisableOpr)
 	    return FALSE;
-	if (type & pRes->r_type & ResUnusedOpr) return FALSE;
+	if (type & pRes->res_type & ResUnusedOpr) return FALSE;
 	/*
 	 * Maybe we should have ResUnused set The resUnusedOpr
 	 * bit, too. This way we could avoid this confusion
 	 */
-	if ((type & ResUnusedOpr && pRes->r_type & ResUnused) ||
-	    (type & ResUnused && pRes->r_type & ResUnusedOpr))
+	if ((type & ResUnusedOpr && pRes->res_type & ResUnused) ||
+	    (type & ResUnused && pRes->res_type & ResUnusedOpr))
 	    return FALSE;
     }
     
@@ -1663,7 +1734,7 @@ needCheck(resPtr pRes, long type, int entityIndex, xf86State state)
 
     switch (type & ResAccMask) {
     case ResExclusive:
-	switch (pRes->r_type & ResAccMask) {
+	switch (pRes->res_type & ResAccMask) {
 	case ResExclusive:
 	    break;
 	case ResShared:
@@ -1674,7 +1745,7 @@ needCheck(resPtr pRes, long type, int entityIndex, xf86State state)
 	}
 	break;
     case ResShared:
-	switch (pRes->r_type & ResAccMask) {
+	switch (pRes->res_type & ResAccMask) {
 	case ResExclusive:
 	    /* ISA buses are only locally exclusive on a PCI system */
 	    if (loc == BUS_PCI && r_loc == BUS_ISA) 
@@ -1702,10 +1773,10 @@ needCheck(resPtr pRes, long type, int entityIndex, xf86State state)
  * checkConflict() - main conflict checking function which all other
  * function call.
  */
-static unsigned long
+static memType
 checkConflict(resRange *rgp, resPtr pRes, int entityIndex, xf86State state)
 {
-    unsigned long ret;
+    memType ret;
     
     while(pRes) {
 	if (!needCheck(pRes,rgp->type, entityIndex ,state)) { 
@@ -1714,19 +1785,19 @@ checkConflict(resRange *rgp, resPtr pRes, int entityIndex, xf86State state)
 	}
 	switch (rgp->type & ResExtMask) {
 	case ResBlock:
-	    if (rgp->__end < rgp->__begin) {
+	    if (rgp->rEnd < rgp->rBegin) {
 		xf86Msg(X_ERROR,"end of block range 0x%lx < begin 0x%lx\n",
-			rgp->__end,rgp->__begin);
+			rgp->rEnd,rgp->rBegin);
 		return 0;
 	    }
 	    if ((ret = checkConflictBlock(rgp, pRes)))
 		return ret;
 	    break;
 	case ResSparse:
-	    if ((rgp->__base & rgp->__mask) != rgp->__base) {
+	    if ((rgp->rBase & rgp->rMask) != rgp->rBase) {
 		xf86Msg(X_ERROR,"sparse io range (base: 0x%lx  mask: 0x%lx)"
 			"doesn't satisfy (base & mask = mask)\n",
-			rgp->__base, rgp->__mask);
+			rgp->rBase, rgp->rMask);
 		return 0;
 	    }
 	    if ((ret = checkConflictSparse(rgp, pRes)))
@@ -1741,7 +1812,7 @@ checkConflict(resRange *rgp, resPtr pRes, int entityIndex, xf86State state)
 /*
  * ChkConflict() -- used locally ; find conflict with any location.
  */
-static unsigned long
+static memType
 ChkConflict(resRange *rgp, resPtr res, xf86State state)
 {
     return checkConflict(rgp, res, -2, state);
@@ -1752,7 +1823,7 @@ ChkConflict(resRange *rgp, resPtr res, xf86State state)
  * the resource broker that gets exported. Tests all resources ie.
  * performs test with SETUP flag.
  */
-unsigned long
+memType
 xf86ChkConflict(resRange *rgp, int entityIndex)
 {
     return checkConflict(rgp, Acc, entityIndex, SETUP);
@@ -1782,17 +1853,17 @@ xf86AddResToList(resPtr rlist, resRange *range, int entityIndex)
 
     switch (range->type & ResExtMask) {
     case ResBlock:
-	if (range->__end < range->__begin) {
+	if (range->rEnd < range->rBegin) {
 		xf86Msg(X_ERROR,"end of block range 0x%lx < begin 0x%lx\n",
-			range->__end,range->__begin);
+			range->rEnd,range->rBegin);
 		return rlist;
 	}
 	break;
     case ResSparse:
-	if ((range->__base & range->__mask) != range->__base) {
+	if ((range->rBase & range->rMask) != range->rBase) {
 	    xf86Msg(X_ERROR,"sparse io range (base: 0x%lx  mask: 0x%lx)"
 		    "doesn't satisfy (base & mask = mask)\n",
-		    range->__base, range->__mask);
+		    range->rBase, range->rMask);
 	    return rlist;
 	}
 	break;
@@ -1853,8 +1924,8 @@ xf86PrintResList(int verb, resPtr list)
     r = "M";
     while (1) {
 	while (list) {
-	    if ((list->r_type & ResPhysMask) == type) {
-		switch (list->r_type & ResExtMask) {
+	    if ((list->res_type & ResPhysMask) == type) {
+		switch (list->res_type & ResExtMask) {
 		case ResBlock:
 		    xf86ErrorFVerb(verb, "\t[%d] %d\t0x%08x - 0x%08x (0x%x)",
 				   i, list->entityIndex, list->block_begin,
@@ -1871,15 +1942,15 @@ xf86PrintResList(int verb, resPtr list)
 		    continue;
 		}
 		xf86ErrorFVerb(verb, " %s", r);
-		switch (list->r_type & ResAccMask) {
+		switch (list->res_type & ResAccMask) {
 		case ResExclusive:
-		    if (list->r_type & ResUnused)
+		    if (list->res_type & ResUnused)
 			s = "x";
 		    else
 			s = "X";
 		    break;
 		case ResShared:
-		    if (list->r_type & ResUnused)
+		    if (list->res_type & ResUnused)
 			s = "s";
 		    else
 			s = "S";
@@ -1888,7 +1959,7 @@ xf86PrintResList(int verb, resPtr list)
 		    s = "?";
 		}
 		xf86ErrorFVerb(verb, "%s", s);
-		switch (list->r_type & ResExtMask) {
+		switch (list->res_type & ResExtMask) {
 		case ResBlock:
 		    s = "B";
 		    break;
@@ -1899,11 +1970,11 @@ xf86PrintResList(int verb, resPtr list)
 		    s = "?";
 		}
 		xf86ErrorFVerb(verb, "%s", s);
-		if (list->r_type & ResMinimised)
+		if (list->res_type & ResMinimised)
 		    xf86ErrorFVerb(verb, "M");
-		if (list->r_type & ResInit)
+		if (list->res_type & ResInit)
 		    xf86ErrorFVerb(verb, "t");
-		if (list->r_type & ResBios)
+		if (list->res_type & ResBios)
 		    xf86ErrorFVerb(verb, "(B)");
 		xf86ErrorFVerb(verb, "\n");
 		i++;
@@ -1930,11 +2001,12 @@ static void
 RemoveOverlaps(resPtr target, resPtr list, Bool pciAlignment)
 {
     resPtr pRes;
-    unsigned long size, newsize, adjust;
+    memType size, newsize, adjust;
 
     for (pRes = list; pRes; pRes = pRes->next) {
 	if (pRes != target
-	    && ((pRes->r_type & ResPhysMask) == (target->r_type & ResPhysMask))
+	    && ((pRes->res_type & ResPhysMask) ==
+		(target->res_type & ResPhysMask))
 	    && pRes->block_begin <= target->block_end
 	    && pRes->block_end >= target->block_begin) {
 	    /*
@@ -1959,14 +2031,15 @@ RemoveOverlaps(resPtr target, resPtr list, Bool pciAlignment)
 	    } else if (!pciAlignment &&
 		       pRes->block_end >= target->block_begin) {
 		target->block_begin = pRes->block_end + 1;
-	    } if (pciAlignment) {
+	    }
+	    if (pciAlignment) {
 		/*
 		 * Align to a power of two.  This requires finding the
 		 * largest power of two that is smaller than the adjusted
 		 * size.
 		 */
 		size = target->block_end - target->block_begin + 1;
-		newsize = 1UL << (sizeof(unsigned long) * 8 - 1);
+		newsize = 1UL << (sizeof(memType) * 8 - 1);
 		while (!(newsize & size))
 		    newsize >>= 1;
 		target->block_end = target->block_begin + newsize - 1;
@@ -1991,7 +2064,7 @@ xf86GetPciSysRes(resPtr *res, int flags)
     pciConfigPtr pcrp, *pcrpp;
     pciVideoPtr pvp, *pvpp;
     CARD32 *basep;
-    unsigned long end;
+    memType end;
     resPtr sysRes = NULL, nonsysRes = NULL;
     int i;
     resPtr pRes;
@@ -2047,12 +2120,12 @@ xf86GetPciSysRes(resPtr *res, int flags)
 	    if (basep[i]) {
 		if (PCI_MAP_IS_IO(basep[i])) {
 		    RANGE(range,PCIGETIO(basep[i]),
-			  range.__begin + (1 << pcrp->basesize[i]) - 1,
+			  range.rBegin + (1 << pcrp->basesize[i]) - 1,
 			  ResExcIoBlock);
 		    sysRes = xf86AddResToList(sysRes, &range, -1);
 		} else {
 		    RANGE(range,PCIGETMEMORY(basep[i]),
-			  range.__begin + (1 << pcrp->basesize[i]) - 1,
+			  range.rBegin + (1 << pcrp->basesize[i]) - 1,
 			  ResExcMemBlock);
 		    sysRes = xf86AddResToList(sysRes, &range, -1);
 		}
@@ -2060,7 +2133,7 @@ xf86GetPciSysRes(resPtr *res, int flags)
 	}
 	if (pcrp->pci_baserom) {
 	    RANGE(range,PCIGETROM(pcrp->pci_baserom),
-		  range.__begin	+ (1 << pcrp->basesize[6]) - 1,
+		  range.rBegin	+ (1 << pcrp->basesize[6]) - 1,
 		  ResExcIoBlock);
 	    sysRes = xf86AddResToList(sysRes, &range, -1);
 	}
@@ -2081,12 +2154,12 @@ xf86GetPciSysRes(resPtr *res, int flags)
 	    if ((end = ChkConflict(&r, pRes->next, SETUP)))
 		xf86MsgVerb(X_INFO, verb,
 			    "PCI %s Resource overlap for 0x%08x at 0x%08x\n",
-			    (pRes->r_type & ResMem)?"Memory":"Io",
+			    (pRes->res_type & ResMem)?"Memory":"Io",
 			    pRes->block_begin, end);
 	    if ((end = ChkConflict(&r, nonsysRes, SETUP)))
 		xf86MsgVerb(X_INFO, verb,
 			    "PCI %s Resource overlap for 0x%08x at 0x%08x\n",
-			    (pRes->r_type & ResMem)?"Memory":"Io",
+			    (pRes->res_type & ResMem)?"Memory":"Io",
 			    pRes->block_begin, end);
 	}
     }
@@ -2122,7 +2195,7 @@ xf86GetPciSysRes(resPtr *res, int flags)
     }
 }
 
-static Bool fixPciResource(unsigned int prt, CARD32 alignment,
+static Bool fixPciResource(unsigned int prt, memType alignment,
 			   pciVideoPtr pvp, long type);
 
 static void
@@ -2130,8 +2203,9 @@ ValidatePci(void)
 {
     pciVideoPtr pvp, pvp1;
     PciBusPtr pbp, pbp1;
-    unsigned long start_mp = 0, end_mp = 0, start_m = 0, end_m = 0;
-    unsigned long start_io = 0, end_io = 0;
+    memType start_mp = 0, start_m = 0;
+    memType end_mp = PCI_MEMBASE_LENGTH_MAX, end_m = PCI_MEMBASE_LENGTH_MAX;
+    memType start_io = 0, end_io = 0;
     resPtr tmp, avoid;
     resPtr Sys;
     resPtr Fix;
@@ -2149,9 +2223,11 @@ ValidatePci(void)
      * resources.
      */
     while ((pvp = xf86PciVideoInfo[n++])) {
+	if (!pvp->validate) continue;
 	Sys = NULL;
 	m = n;
 	while ((pvp1 = xf86PciVideoInfo[m++])) {
+	    if (!pvp->validate) continue;
 	    for (i = 0; i<6; i++) {
 		if (pvp1->ioBase[i]) {
 		    RANGE(range,pvp1->ioBase[i],
@@ -2172,21 +2248,25 @@ ValidatePci(void)
 		Sys = xf86AddResToList(Sys,&range,-1);
 	    }
 	}
+#ifdef DEBUG
+	xf86MsgVerb(X_INFO, 3,"Sys:\n");
+	xf86PrintResList(3,Sys);
+#endif
 	avoid = NULL;
 	pbp = pbp1 = xf86PciBus;
 	while (pbp) {
 	    if (pbp->secondary == pvp->bus) {
 		if (pbp->pmem) {
 		    start_mp = pbp->pmem->block_begin;
-		    end_mp = pbp->pmem->block_end;
+		    end_mp = MIN(end_mp,pbp->pmem->block_end);
 		}
 		if (pbp->mem) {
 		    start_m = pbp->mem->block_begin;
-		    end_m = pbp->mem->block_end;
+		    end_m = MIN(end_m,pbp->mem->block_end);
 		}
 		if (pbp->io) {
 		    start_io = pbp->io->block_begin;
-		    end_io = pbp->io->block_end;
+		    end_io = MIN(end_io,pbp->io->block_end);
 		}
 	    }
 	    while (pbp1) {
@@ -2202,19 +2282,50 @@ ValidatePci(void)
 	    }	
 	    pbp = pbp->next;
 	}	
+#ifdef DEBUG
+	xf86MsgVerb(X_INFO, 3,"avoid:\n");
+	xf86PrintResList(3,avoid);
+#endif
 	Fix = NULL;
 	for (i = 0; i < 6; i++) {
+	    int j;
+	    resPtr own = NULL;
+	    for (j = i+1; j < 6; j++) {
+		if (pvp->ioBase[j]) {
+		    RANGE(range,pvp->ioBase[j],
+			  pvp->ioBase[j] + (1 << pvp->size[j]) - 1,
+			  ResExcIoBlock);
+		    own = xf86AddResToList(own,&range,-1);
+		} else if (pvp->memBase[j]) {
+		    RANGE(range,pvp->memBase[j],
+			  pvp->memBase[j] + (1 << pvp->size[j]) - 1,
+			  ResExcMemBlock);
+		    own = xf86AddResToList(own,&range,-1);
+		}
+	    }
+	    if (pvp->biosBase) {
+		RANGE(range, pvp->biosBase,
+		      pvp->biosBase + (1 << pvp->biosSize) - 1,
+		      ResExcMemBlock);
+		own = xf86AddResToList(own,&range,-1);
+	    }
+#ifdef DEBUG
+	xf86MsgVerb(X_INFO, 3,"own:\n");
+	xf86PrintResList(3,own);
+#endif
+
 	    if (pvp->ioBase[i]) {
 		RANGE(range,pvp->ioBase[i],
 		      pvp->ioBase[i] + (1 << pvp->size[i]) - 1,
 		      ResExcIoBlock);
-		if (range.__begin >= start_io && range.__end <= end_io
+		if (range.rBegin >= start_io && range.rEnd <= end_io
+		    && ! ChkConflict(&range,own,SETUP)
 		    && ! ChkConflict(&range,avoid,SETUP)
 		    && ! ChkConflict(&range,Sys,SETUP))
 		    continue;
 		xf86MsgVerb(X_WARNING, 0,
 			"****INVALID IO ALLOCATION**** b: 0x%lx e: 0x%lx"
-			"correcting\a\n", range.__begin,range.__end);
+			"correcting\a\n", range.rBegin,range.rEnd);
 #ifdef DEBUG
 		sleep(2);
 #endif
@@ -2224,39 +2335,42 @@ ValidatePci(void)
 		      pvp->memBase[i] + (1 << pvp->size[i]) - 1,
 		      ResExcMemBlock);
 		if (pvp->type[i] & PCI_MAP_MEMORY_CACHABLE) {
-		    if (range.__begin >= start_mp && range.__end <= end_mp
+		    if (range.rBegin >= start_mp && range.rEnd <= end_mp
+			&& ! ChkConflict(&range,own,SETUP)
 			&& ! ChkConflict(&range,avoid,SETUP)
 			&& ! ChkConflict(&range,Sys,SETUP))
 			continue;
 		}
-		if (range.__begin >= start_m && range.__end <= end_m
+		if (range.rBegin >= start_m && range.rEnd <= end_m
+		    && ! ChkConflict(&range,own,SETUP)
 		    && ! ChkConflict(&range,avoid,SETUP)
 		    && ! ChkConflict(&range,Sys,SETUP))
 		    continue;
 		xf86MsgVerb(X_WARNING, 0,
 			"****INVALID MEM ALLOCATION**** b: 0x%lx e: 0x%lx "
-			"correcting\a\n", range.__begin,range.__end);
+			"correcting\a\n", range.rBegin,range.rEnd);
 #ifdef DEBUG
 		sleep(2);
 #endif
 		fixPciResource(pciMem | i, 0, pvp, range.type);
 	    }
+	    xf86FreeResList(own);
 	}
 	if (pvp->biosBase) {
 	    RANGE(range, pvp->biosBase,
 		  pvp->biosBase + (1 << pvp->biosSize) - 1,
 		  ResExcMemBlock);
-	    if (range.__begin >= start_m && range.__end <= end_m
+	    if (range.rBegin >= start_m && range.rEnd <= end_m
 		&& ! ChkConflict(&range,avoid,SETUP)
 		&& ! ChkConflict(&range,Sys,SETUP))
 		continue;
-	    if (range.__begin >= start_mp && range.__end <= end_mp
+	    if (range.rBegin >= start_mp && range.rEnd <= end_mp
 		&& ! ChkConflict(&range,avoid,SETUP)
 		&& ! ChkConflict(&range,Sys,SETUP))
 		continue;
 	    xf86MsgVerb(X_WARNING, 0,
 		"****INVALID BIOS ROM ALLOCATION**** b: 0x%lx e: 0x%lx "
-		"correcting\a\n",range.__begin,range.__end);
+		"correcting\a\n",range.rBegin,range.rEnd);
 #ifdef DEBUG
 	    sleep(2);
 #endif
@@ -2363,8 +2477,8 @@ resError(resList list)
 	       "specify your computer hardware as closely as possible\n",
 	       ResIsBlock(list)?"Block":"Sparse",
 	       ResIsMem(list)?"Mem":"Io",
-	       ResIsBlock(list)?list->__begin:list->__base,
-	       ResIsBlock(list)?list->__end:list->__mask);
+	       ResIsBlock(list)?list->rBegin:list->rBase,
+	       ResIsBlock(list)?list->rEnd:list->rMask);
 }
 
 /*
@@ -2376,8 +2490,7 @@ xf86ClaimFixedResources(resList list, int entityIndex)
 {
     resPtr ptr = NULL;
 	
-    if (!list)
-	return;
+    if (!list) return;
     
     while (list->type !=ResEnd) {
 	switch (list->type & ResAccMask) {
@@ -2405,6 +2518,10 @@ xf86ClaimFixedResources(resList list, int entityIndex)
 	xf86JoinResLists(xf86Entities[entityIndex]->resources,ptr);
     xf86MsgVerb(X_INFO, 3, "resource ranges after probing driver:\n");
     xf86PrintResList(3,Acc);
+#ifdef DEBUG
+    xf86MsgVerb(X_INFO, 3, "to be registered later:\n");
+    xf86PrintResList(3,ptr);
+#endif
 }
 
 static void
@@ -2465,15 +2582,16 @@ checkRoutingForScreens(xf86State state)
 void
 xf86PostProbe(void)
 {
-    unsigned long val;
-    int i;
+    memType val;
+    int i,j;
     resPtr resp, acc, tmp, resp_x, *pprev_next;
 
+    ValidatePci();
     /* don't compare against ResInit - remove it from clone.*/
     acc = tmp = xf86DupResList(Acc);
     pprev_next = &acc;
     while (tmp) {
-	if (tmp->r_type & ResInit) {
+	if (tmp->res_type & ResInit) {
 	    (*pprev_next) = tmp->next;
 	    xfree(tmp);
 	} else 
@@ -2507,6 +2625,19 @@ xf86PostProbe(void)
     xf86MsgVerb(X_INFO, 3, "resource ranges after probing:\n");
     xf86PrintResList(3, Acc);
     checkRoutingForScreens(SETUP);
+
+    for (i = 0; i < xf86NumScreens; i++) {
+	pointer *route = NULL;
+	for (j = 0; j<xf86Screens[i]->numEntities; j++) {
+	    EntityPtr pEnt = xf86Entities[xf86Screens[i]->entityList[j]];
+	    if (pEnt->entityProp & NEED_VGA_ROUTED_SETUP)
+		route = pEnt->busAcc;
+	    if (route) {
+		xf86Screens[i]->busAccess = route;
+		break;
+	    }
+	}
+    }
 }
 
 void
@@ -2574,7 +2705,7 @@ xf86DeallocateResourcesForEntity(int entityIndex, long type)
 
     while (res) {
 	if (res->entityIndex == entityIndex &&
-	    (type & ResAccMask & res->r_type))
+	    (type & ResAccMask & res->res_type))
 	{
 	    (*pprev_next) = res->next;
 	    xfree(res);
@@ -2685,11 +2816,11 @@ xf86FindScreenForEntity(int entityIndex)
 #define ALIGN(x,a) ((x) + a) &~(a)
 
 resRange 
-xf86GetBlock(long type, unsigned long size,
-	 unsigned long window_start, unsigned long window_end,
-	 unsigned long align_mask, resPtr avoid)
+xf86GetBlock(long type, memType size,
+	 memType window_start, memType window_end,
+	 memType align_mask, resPtr avoid)
 {
-    unsigned long min, max, tmp;
+    memType min, max, tmp;
     resRange r = {ResEnd,0,0};
     
     if (!size) return r;
@@ -2702,7 +2833,7 @@ xf86GetBlock(long type, unsigned long size,
     type = (type & ~ResExtMask & ~ResNoAvoid) | ResBlock;
     
     while (ResRange) {
-	if (type & ResRange->r_type & ResPhysMask) {
+	if (type & ResRange->res_type & ResPhysMask) {
 	    if (ResRange->block_begin > window_start)
 		min = ResRange->block_begin;
 	    else
@@ -2731,17 +2862,17 @@ xf86GetBlock(long type, unsigned long size,
     return r;
 }
 
-#define ul_max ~(unsigned long)0
-#define length sizeof(unsigned long) * 8
+#define mt_max ~(memType)0
+#define length sizeof(memType) * 8
 /*
  * make_base() -- assign the lowest bits to the bits set in mask.
  *                example: mask 011010 val 0000110 -> 011000 
  */
-static unsigned long
-make_base(unsigned long val, unsigned long mask)
+static memType
+make_base(memType val, memType mask)
 {
     int i,j = 0;
-    unsigned long ret = 0
+    memType ret = 0
 	;
     for (i = 0;i<length;i++) {
 	if ((1 << i) & mask) {
@@ -2756,12 +2887,12 @@ make_base(unsigned long val, unsigned long mask)
  * make_base() -- assign the bits set in mask to the lowest bits.
  *                example: mask 011010 , val 010010 -> 000011
  */
-static unsigned long
-unmake_base(unsigned long val, unsigned long mask)
+static memType
+unmake_base(memType val, memType mask)
 {
     int i,j = 0;
-    unsigned long ret = 0
-	;
+    memType ret = 0;
+    
     for (i = 0;i<length;i++) {
 	if ((1 << i) & mask) {
 	    ret |= (((val >> i) & 1) << j);
@@ -2771,8 +2902,8 @@ unmake_base(unsigned long val, unsigned long mask)
     return ret;
 }
 
-static unsigned long
-fix_counter(unsigned long val, unsigned long old_mask, unsigned long mask)
+static memType
+fix_counter(memType val, memType old_mask, memType mask)
 {
     mask = old_mask & mask;
     
@@ -2781,19 +2912,19 @@ fix_counter(unsigned long val, unsigned long old_mask, unsigned long mask)
 }
 
 resRange
-xf86GetSparse(long type,  unsigned long fixed_bits,
-	  unsigned long decode_mask, unsigned long address_mask, resPtr avoid)
+xf86GetSparse(long type,  memType fixed_bits,
+	  memType decode_mask, memType address_mask, resPtr avoid)
 {
     resRange r = {ResEnd,0,0};
-    unsigned long new_mask;
-    unsigned long mask1;
-    unsigned long base;
-    unsigned long bits;
-    unsigned long counter = 0;
-    unsigned long counter1;
-    unsigned long max_counter = ~(unsigned long)0;
-    unsigned long max_counter1;
-    unsigned long conflict = 0;
+    memType new_mask;
+    memType mask1;
+    memType base;
+    memType bits;
+    memType counter = 0;
+    memType counter1;
+    memType max_counter = ~(memType)0;
+    memType max_counter1;
+    memType conflict = 0;
     
     /* for sanity */
     type = (type & ~ResExtMask & ~ResNoAvoid) | ResSparse;
@@ -2854,9 +2985,9 @@ xf86GetSparse(long type,  unsigned long fixed_bits,
      * use our choice of bits in the new_mask part. We try
      * another choice.
      */
-    max_counter = fix_counter(ul_max,ul_max,new_mask);
+    max_counter = fix_counter(mt_max,mt_max,new_mask);
     mask1 = decode_mask & ~new_mask;
-    max_counter1 = fix_counter(ul_max,ul_max,mask1);
+    max_counter1 = fix_counter(mt_max,mt_max,mask1);
     counter = 0;
     
     while (1) {
@@ -2884,7 +3015,7 @@ xf86GetSparse(long type,  unsigned long fixed_bits,
 }
 
 #undef length
-#undef ul_max
+#undef mt_max
 
 static resList
 xf86GetResourcesImplicitly(int entityIndex)
@@ -2952,7 +3083,7 @@ checkRequiredResources(int entityIndex)
 	    /*  ResAny to find conflicts with anything. */
 	    range.type = (range.type & ~ResAccMask) | ResAny | ResBios;
 	    if (checkConflict(&range,Acc,entityIndex,OPERATING))
-		switch (pAcc->r_type & ResPhysMask) {
+		switch (pAcc->res_type & ResPhysMask) {
 		case ResMem:
 		    pEnt->entityProp |= NEED_MEM_SHARED;
 		    break;
@@ -2960,8 +3091,8 @@ checkRequiredResources(int entityIndex)
 		    pEnt->entityProp |= NEED_IO_SHARED;
 		    break;
 		}
-	    if (!(pAcc->r_type & ResOprMask)) {
-		switch (pAcc->r_type & ResPhysMask) {
+	    if (!(pAcc->res_type & ResOprMask)) {
+		switch (pAcc->res_type & ResPhysMask) {
 		case ResMem:
 		    pEnt->entityProp |= NEED_MEM;
 		    break;
@@ -3157,14 +3288,27 @@ xf86EnterServerState(xf86State state)
 {
     EntityPtr pEnt;
     ScrnInfoPtr pScrn;
-    pointer route = NULL;
     int i,j;
     resType rt;
+
+#ifdef DEBUG
+    if (state == SETUP)
+	ErrorF("Entering SETUP state\n");
+    else
+	ErrorF("Entering OPERATING state\n");
+#endif
 
     for (i=0; i<xf86NumScreens; i++) {
 	pScrn = xf86Screens[i];
 	j = pScrn->entityList[pScrn->numEntities - 1];
 	pScrn->access = xf86Entities[j]->access;
+	
+ 	for (j = 0; j<xf86Screens[i]->numEntities; j++) {
+ 	    pEnt = xf86Entities[xf86Screens[i]->entityList[j]];
+ 	    if (pEnt->entityProp & (state == SETUP ? NEED_VGA_ROUTED_SETUP
+ 				    : NEED_VGA_ROUTED))
+		xf86Screens[i]->busAccess = pEnt->busAcc;
+ 	}
     }
     
     /*
@@ -3176,18 +3320,11 @@ xf86EnterServerState(xf86State state)
 	return;
     }
     
-#ifdef DEBUG
-    if (state == SETUP)
-	ErrorF("Entering SETUP state\n");
-    else
-	ErrorF("Entering OPERATING state\n");
-#endif
     disableAccess();
     
     for (i=0; i<xf86NumScreens;i++) {
 
 	rt = NONE;
-	route = NULL;
 	
 	for (j = 0; j<xf86Screens[i]->numEntities; j++) {
 	    pEnt = xf86Entities[xf86Screens[i]->entityList[j]];
@@ -3200,18 +3337,13 @@ xf86EnterServerState(xf86State state)
 		else
 		    rt = pEnt->access->rt;
 	    }
-	    if (pEnt->entityProp & (state == SETUP ? NEED_VGA_ROUTED_SETUP
-				    : NEED_VGA_ROUTED))
-		route = pEnt->busAcc;
 	}
 	xf86Screens[i]->resourceType = rt;
-	if (rt == NONE)
+	if (rt == NONE) {
 	    xf86Screens[i]->access = NULL;
-	
-	if (route && rt != NONE)
-	    xf86Screens[i]->busAccess = route;
-	else
 	    xf86Screens[i]->busAccess = NULL;
+	}
+	
 #ifdef DEBUG
 	if (xf86Screens[i]->busAccess)
 	    ErrorF("Screen %i setting vga route\n",i);
@@ -3347,7 +3479,7 @@ xf86PostScreenInit(void)
  * PCI base address register values for the given PCI device.
  */
 Bool
-xf86CheckPciMemBase(pciVideoPtr pPci, unsigned long base)
+xf86CheckPciMemBase(pciVideoPtr pPci, memType base)
 {
     int i;
 
@@ -3378,18 +3510,18 @@ xf86IsEntityPrimary(int entityIndex)
 }
 
 static Bool
-fixPciResource(unsigned int prt, CARD32 alignment, pciVideoPtr pvp, long type)
+fixPciResource(unsigned int prt, memType alignment, pciVideoPtr pvp, long type)
 {
     int  res_n;
-    unsigned long *p_base;
+    memType *p_base;
     int *p_size;
     unsigned char p_type;
     resPtr *pAcc = &Acc;
     resPtr avoid = NULL;
     resList p_avoid = PciAvoid;
     resRange range;
-    unsigned long start_w = 0, end_w = ~0;
-    unsigned long start_w_2nd = 0, end_w_2nd = 0;
+    memType start_w = 0, end_w = ~0;
+    memType start_w_2nd = 0, end_w_2nd = ~0;
     PCITAG tag;
     PciBusPtr pbp = xf86PciBus, pbp1 = xf86PciBus;
     resPtr tmp;
@@ -3405,6 +3537,7 @@ fixPciResource(unsigned int prt, CARD32 alignment, pciVideoPtr pvp, long type)
 	p_base = &(pvp->memBase[res_n]);
 	p_size = &(pvp->size[res_n]);
 	p_type = pvp->type[res_n];
+	end_w = end_w_2nd = PCI_MEMBASE_LENGTH_TYPE(p_type);
 	break;
     case pciIo:
 	type |= ResIo;
@@ -3412,6 +3545,7 @@ fixPciResource(unsigned int prt, CARD32 alignment, pciVideoPtr pvp, long type)
 	p_base = &(pvp->memBase[res_n]);
 	p_size = &(pvp->size[res_n]);
 	p_type = pvp->type[res_n];
+	end_w = ~(CARD16)0;
 	break;
     case pciBios:
 	type |= ResMem;
@@ -3419,8 +3553,9 @@ fixPciResource(unsigned int prt, CARD32 alignment, pciVideoPtr pvp, long type)
 	p_base = &(pvp->biosBase);
 	p_size = &(pvp->biosSize);
 	/* XXX This should also include the PCI_MAP_MEMORY_TYPE_MASK part */
-	/* bios is always in the 32 bit address range */
 	p_type = 0;
+	/* bios is always in the 32 bit address range */
+	end_w = end_w_2nd = ~(CARD32)0;
 	break;
     default:
 	return FALSE;
@@ -3432,7 +3567,7 @@ fixPciResource(unsigned int prt, CARD32 alignment, pciVideoPtr pvp, long type)
     
     /* Access list holds bios resources -- remove this one */
     while ((*pAcc)) {
-	if ((((*pAcc)->r_type & type) == type)
+	if ((((*pAcc)->res_type & (type & ~ResAccMask)) == (type & ~ResAccMask))
 	    && ((*pAcc)->block_begin == (*p_base))
 	    && ((*pAcc)->block_end == (*p_base) + (1 << (*p_size)) - 1)) {
 #ifdef DEBUG
@@ -3457,18 +3592,18 @@ fixPciResource(unsigned int prt, CARD32 alignment, pciVideoPtr pvp, long type)
 		     || (res_n == 0xff)) /* bios should also be prefetchable */
 		    && pbp->pmem) {
 		    start_w = pbp->pmem->block_begin;
-		    end_w = pbp->pmem->block_end;
+		    end_w = MIN(end_w,pbp->pmem->block_end);
 		    if (pbp->mem) {
 			start_w_2nd = pbp->mem->block_begin;
-			end_w_2nd = pbp->mem->block_end;
+			end_w_2nd = MIN(end_w_2nd,pbp->mem->block_end);
 		    }
 		} else if (pbp->mem) {
 		    start_w = pbp->mem->block_begin;
-		    end_w = pbp->mem->block_end;
+		    end_w = MIN(end_w,pbp->mem->block_end);
 		} 
 	    } else if (pbp->io) {
 		start_w = pbp->io->block_begin;
-		end_w = pbp->io->block_end;
+		end_w = MIN(end_w,pbp->io->block_end);
 	    }
 		
 	    while (pbp1) {
@@ -3511,20 +3646,20 @@ fixPciResource(unsigned int prt, CARD32 alignment, pciVideoPtr pvp, long type)
     (*p_size) = 0;
     while (alignment >> (*p_size))
 	(*p_size)++;
-    (*p_base) = range.__begin;
+    (*p_base) = range.rBegin;
+    
 #ifdef DEBUG
     ErrorF("New PCI res %i base: 0x%lx, size: 0x%lx, type %s\n",
 	   res_n,(*p_base),(1 << (*p_size)),type | ResMem ? "Mem" : "Io");
 #endif
     tag = pciTag(pvp->bus,pvp->device,pvp->func);
 
-    if (res_n != 0xff) 
+    if (res_n != 0xff) /*XXX fix for 64 bit */
 	pciWriteLong(tag,PCI_CMD_BASE_REG + res_n * sizeof(CARD32),
-		     (*p_base) | (unsigned long)(p_type));
-
-     else {
-	unsigned long val = pciReadLong(tag,PCI_CMD_BIOS_REG) & 0x01;
-	pciWriteLong(tag,PCI_CMD_BIOS_REG,(*p_base) | val);
+		     (CARD32)(*p_base) | (CARD32)(p_type));
+    else {
+	CARD32 val = pciReadLong(tag,PCI_CMD_BIOS_REG) & 0x01;
+	pciWriteLong(tag,PCI_CMD_BIOS_REG,(CARD32)(*p_base) | val);
     }
     /* fake BIOS allocated resource */
     range.type |= ResBios;
@@ -3535,7 +3670,7 @@ fixPciResource(unsigned int prt, CARD32 alignment, pciVideoPtr pvp, long type)
 }
 
 Bool
-xf86FixPciResource(int entityIndex, unsigned int prt, CARD32 alignment,
+xf86FixPciResource(int entityIndex, unsigned int prt, memType alignment,
 		    long type)
 {
     pciVideoPtr pvp = xf86GetPciInfoForEntity(entityIndex);
@@ -3553,7 +3688,7 @@ xf86ReallocatePciResources(int entityIndex, resPtr pRes)
     if (!pvp) return pRes;
 
     while (pRes) {
-	switch (pRes->r_type & ResPhysMask) {
+	switch (pRes->res_type & ResPhysMask) {
 	case ResMem:
 	    if (pRes->block_begin == pvp->biosBase &&
 		pRes->block_end == pvp->biosBase + (1 << (pvp->biosSize)) - 1)
@@ -3580,7 +3715,7 @@ xf86ReallocatePciResources(int entityIndex, resPtr pRes)
 	if (!prt) return pRes;
 
 	pResTmp = pRes->next;
-	if (! fixPciResource(prt, 0, pvp, pRes->r_type)) {
+	if (! fixPciResource(prt, 0, pvp, pRes->res_type)) {
 	    pRes->next = pBad;
 	    pBad = pRes;
 	} else

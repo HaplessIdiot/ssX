@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.48 1999/06/13 05:18:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.49 1999/06/14 06:06:33 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1689,7 +1689,6 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	/* Allocate an entry in the lists to be returned */
 	numFound++;
 	retEntities = xnfrealloc(retEntities, numFound * sizeof(int));
-		
 	retEntities[numFound - 1]
 	    = xf86ClaimPciSlot(pPci->bus, pPci->device,
 			       pPci->func,drvp,	instances[i].chip,
@@ -2151,47 +2150,58 @@ xf86FindXvOptions(int scrnIndex, int adaptor_index, char *port_name,
  * this entity, take the dog for a walk...
  */
 Bool
-xf86ConfigActiveIsaEntity(ScrnInfoPtr pScrn, EntityInfoPtr pEnt,
+xf86ConfigActiveIsaEntity(ScrnInfoPtr pScrn, int entityIndex,
 			  IsaChipsets *i_chip, resList res, EntityProc init,
 			  EntityProc enter, EntityProc leave, pointer private)
 {
     IsaChipsets *i_id;
-
-    if (!pEnt->active || !(pEnt->location.type == BUS_ISA)) return FALSE;
-
-    xf86AddEntityToScreen(pScrn,pEnt->index);
+    EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
+    
+    if (!pEnt->active || !(pEnt->location.type == BUS_ISA)) {
+	xfree(pEnt);
+	return FALSE;
+    }
+    
+    xf86AddEntityToScreen(pScrn,entityIndex);
 
     if (i_chip) {
 	for (i_id = i_chip; i_id->numChipset != -1; i_id++) {
 	    if (pEnt->chipset == i_id->numChipset) break;
 	}
-	xf86ClaimFixedResources(i_id->resList,pEnt->index);
+	xf86ClaimFixedResources(i_id->resList,entityIndex);
     }
-    xf86ClaimFixedResources(res,pEnt->index);
-    if (!xf86SetEntityFuncs(pEnt->index,init,enter,leave,private))
+    xfree(pEnt);
+    xf86ClaimFixedResources(res,entityIndex);
+    if (!xf86SetEntityFuncs(entityIndex,init,enter,leave,private)) 
 	return FALSE;
 
     return TRUE;
 }
 
 Bool
-xf86ConfigActivePciEntity(ScrnInfoPtr pScrn, EntityInfoPtr pEnt,
+xf86ConfigActivePciEntity(ScrnInfoPtr pScrn, int entityIndex,
 			  PciChipsets *p_chip, resList res, EntityProc init,
 			  EntityProc enter, EntityProc leave, pointer private)
 {
     PciChipsets *p_id;
+    EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
 
-    if (!pEnt->active || !(pEnt->location.type == BUS_PCI)) return FALSE;
-    xf86AddEntityToScreen(pScrn,pEnt->index);
+    if (!pEnt->active || !(pEnt->location.type == BUS_PCI)) {
+	xfree(pEnt);
+	return FALSE;
+    }
+    xf86AddEntityToScreen(pScrn,entityIndex);
     
     if (p_chip) {
 	for (p_id = p_chip; p_id->numChipset != -1; p_id++) {
 	    if (pEnt->chipset == p_id->numChipset) break;
 	}
-	xf86ClaimFixedResources(p_id->resList,pEnt->index);
+	xf86ClaimFixedResources(p_id->resList,entityIndex);
     }
-    xf86ClaimFixedResources(res,pEnt->index);
-    if (!xf86SetEntityFuncs(pEnt->index,init,enter,leave,private))
+    xfree(pEnt);
+
+    xf86ClaimFixedResources(res,entityIndex);
+    if (!xf86SetEntityFuncs(entityIndex,init,enter,leave,private))
 	return FALSE;
 
     return TRUE;

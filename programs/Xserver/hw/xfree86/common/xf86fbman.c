@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.9 1999/01/14 13:04:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.10 1999/04/11 13:10:50 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -169,7 +169,7 @@ AllocateArea(
    FBLinkPtr link = NULL;
    FBAreaPtr area = NULL;
    RegionRec NewReg;
-   int i, x, num;
+   int i, x = 0, num;
    BoxPtr boxp;
 
    if(granularity <= 1) granularity = 0;

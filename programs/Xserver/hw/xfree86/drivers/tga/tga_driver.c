@@ -22,24 +22,48 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.24 1999/04/25 15:30:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.25 1999/04/29 09:13:45 dawes Exp $ */
 
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
-#include "micmap.h"
+/*  #include "compiler.h" */
+/* everybody includes these */
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
+
+/* PCI headers */
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
-#include "xf86cmap.h"
-#include "mipointer.h"
 
+/* module versioning */
+#include "xf86Version.h"
+
+/* RAC stuff */
+#include "xf86Resources.h"
+
+/*  #include "vgaHW.h" */
+
+/* software cursor */
+#include "mipointer.h"
+/* backing store */
 #include "mibstore.h"
+
+/*  #include "mibank.h" */
+/* colormap manipulation */
+#include "micmap.h"
+
+/* TGA only does 8 and 32 bpp */
+#define PSZ 8
+#include "cfb.h"
+#undef PSZ
+/*  #include "cfb16.h" */
+/*  #include "cfb24.h" */
+#include "cfb32.h"
+
+/* more RAC stuff */
+#include "xf86RAC.h"
+
+/* Gamma Correction? */
+#include "xf86cmap.h"
 
 #include "tga_regs.h"
 #include "BT.h"
@@ -121,7 +145,7 @@ static SymTabRec TGAChipsets[] = {
 };
 
 static PciChipsets TGAPciChipsets[] = {
-    { PCI_CHIP_DEC21030,	PCI_CHIP_DEC21030,	RES_NONE },
+    { PCI_CHIP_DEC21030,	PCI_CHIP_DEC21030,	NULL },
     { -1,			-1,			RES_UNDEFINED }
 };
 
@@ -249,9 +273,9 @@ static Bool
 TGAProbe(DriverPtr drv, int flags)
 {
     int i;
-    pciVideoPtr pPci, *usedPci;
+    pciVideoPtr pPci;
     GDevPtr *devSections;
-    GDevPtr *usedDevs;
+/*      GDevPtr *usedDevs; */
     int *usedChips;
     int numDevSections;
     int numUsed;
@@ -305,46 +329,38 @@ TGAProbe(DriverPtr drv, int flags)
 
     numUsed = xf86MatchPciInstances(TGA_NAME, PCI_VENDOR_DIGITAL,
 		   TGAChipsets, TGAPciChipsets, devSections, numDevSections,
-		   &usedDevs, &usedPci, &usedChips);
+		   drv, &usedChips);
+				    
     xfree(devSections);
     devSections = NULL;
     if (numUsed <= 0)
 	return FALSE;
 
     for (i = 0; i < numUsed; i++) {
-	pPci = usedPci[i];
+	ScrnInfoPtr pScrn;
 
-	/*
-	 * Check that nothing else has claimed the slots.
-	 */
-	
-	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func, RES_NONE)) {
-	    ScrnInfoPtr pScrn;
+	/* Allocate a ScrnInfoRec and claim the slot */
+	pScrn = xf86AllocateScreen(drv, 0);
 
-	    /* Allocate a ScrnInfoRec and claim the slot */
-	    pScrn = xf86AllocateScreen(drv, 0);
-	    xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
-			     RES_NONE, &TGA, usedChips[i], pScrn->scrnIndex);
+	pPci = xf86GetPciInfoForEntity(usedChips[i]);
 
-	    /* Fill in what we can of the ScrnInfoRec */
-	    pScrn->driverVersion = VERSION;
-	    pScrn->driverName	 = TGA_DRIVER_NAME;
-	    pScrn->name		 = TGA_NAME;
-	    pScrn->Probe	 = TGAProbe;
-	    pScrn->PreInit	 = TGAPreInit;
-	    pScrn->ScreenInit	 = TGAScreenInit;
-	    pScrn->SwitchMode	 = TGASwitchMode;
-	    pScrn->AdjustFrame	 = TGAAdjustFrame;
-	    pScrn->EnterVT	 = TGAEnterVT;
-	    pScrn->LeaveVT	 = TGALeaveVT;
-	    pScrn->FreeScreen	 = TGAFreeScreen;
-	    pScrn->ValidMode	 = TGAValidMode;
-	    pScrn->device	 = usedDevs[i];
-	    foundScreen = TRUE;
-	}
+	/* Fill in what we can of the ScrnInfoRec */
+	pScrn->driverVersion	= VERSION;
+	pScrn->driverName	= TGA_DRIVER_NAME;
+	pScrn->name		= TGA_NAME;
+	pScrn->Probe	 	= TGAProbe;
+	pScrn->PreInit	 	= TGAPreInit;
+	pScrn->ScreenInit	= TGAScreenInit;
+	pScrn->SwitchMode	= TGASwitchMode;
+	pScrn->AdjustFrame	= TGAAdjustFrame;
+	pScrn->EnterVT		= TGAEnterVT;
+	pScrn->LeaveVT		= TGALeaveVT;
+	pScrn->FreeScreen	= TGAFreeScreen;
+	pScrn->ValidMode	= TGAValidMode;
+	xf86ConfigActivePciEntity(pScrn, usedChips[i], TGAPciChipsets, NULL,
+				      NULL, NULL, NULL, NULL);
+	foundScreen = TRUE;
     }
-    xfree(usedDevs);
-    xfree(usedPci);
     return foundScreen;
 }
 
@@ -384,7 +400,7 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
 static Bool
 TGAPreInit(ScrnInfoPtr pScrn, int flags)
 {
-    pciVideoPtr *pciList = NULL;
+    pciVideoPtr pciPtr;
     TGAPtr pTga;
     MessageType from;
     int i;
@@ -409,12 +425,69 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     if (!xf86LoadSubModule(pScrn, "ramdac"))
 	return FALSE;
 
+    /* Allocate the TGARec driverPrivate */
+    if (!TGAGetRec(pScrn)) {
+	return FALSE;
+    }
+    pTga = TGAPTR(pScrn);
+    
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
 
+    /*********************
+    Handle pci and chipset stuff
+    *********************/
+		      
+    
+    /* This driver doesn't expect more than one entity per screen */
+    if (pScrn->numEntities > 1)
+	return FALSE;
+    /* This is the general case */
+    for (i = 0; i < pScrn->numEntities; i++) {
+	pTga->pEnt = xf86GetEntityInfo(pScrn->entityList[i]);
+	if (pTga->pEnt->resources) return FALSE;
+	pTga->Chipset = pTga->pEnt->chipset;
+	pScrn->chipset = (char *)xf86TokenToString(TGAChipsets,
+						   pTga->pEnt->chipset);
+
+	/* TGA is purely PCI */
+	if (pTga->pEnt->location.type == BUS_PCI) {
+	    pciPtr = xf86GetPciInfoForEntity(pTga->pEnt->index);
+	    pTga->PciInfo = pciPtr;
+	    pTga->PciTag = pciTag(pTga->PciInfo->bus, 
+				  pTga->PciInfo->device,
+				  pTga->PciInfo->func);
+	}
+	else
+	    return FALSE;
+    }
+
     /*
-     * The first thing we should figure out is the depth, bpp, etc.
+     * This shouldn't happen because such problems should be caught in
+     * TGAProbe(), but check it just in case.
      */
+    if (pScrn->chipset == NULL) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "ChipID 0x%04X is not recognised\n", pTga->Chipset);
+	return FALSE;
+    }
+    if (pTga->Chipset < 0) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "Chipset \"%s\" is not recognised\n", pScrn->chipset);
+	return FALSE;
+    }
+
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Chipset: \"%s\"\n", pScrn->chipset);
+
+    pTga->PciTag = pciTag(pTga->PciInfo->bus, pTga->PciInfo->device,
+			  pTga->PciInfo->func);
+
+ 
+
+    /*********************
+    deal with depth and framebuffer size
+    *********************/
+    
     if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support32bppFb)) {
 	return FALSE;
     } else {
@@ -432,6 +505,18 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
+    /* we can do option processing now */
+
+    /* Collect all of the relevant option flags (fill in pScrn->options) */
+    xf86CollectOptions(pScrn, NULL);
+    /* Process the options */
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, TGAOptions);
+    if (xf86ReturnOptValBool(TGAOptions, OPTION_PCI_RETRY, FALSE)) {
+	pTga->UsePCIRetry = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
+    }
+    /* end option processing */
+    
     /*
      * This must happen after pScrn->display has been set because
      * xf86SetWeight references it.
@@ -472,21 +557,6 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    /* We use a programamble clock */
-    pScrn->progClock = TRUE;
-
-    /* Allocate the TGARec driverPrivate */
-    if (!TGAGetRec(pScrn)) {
-	return FALSE;
-    }
-    pTga = TGAPTR(pScrn);
-
-    /* Collect all of the relevant option flags (fill in pScrn->options) */
-    xf86CollectOptions(pScrn, NULL);
-
-    /* Process the options */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, TGAOptions);
-
     /* Set the bits per RGB for 8bpp mode */
     if (pScrn->depth == 8) {
 	/* XXX This is here just to test options. */
@@ -499,6 +569,9 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
     from = X_DEFAULT;
+
+    /* determine whether we use hardware or software cursor */
+    
     pTga->HWCursor = TRUE;
     if (xf86GetOptValBool(TGAOptions, OPTION_HW_CURSOR, &pTga->HWCursor))
 	from = X_CONFIG;
@@ -513,79 +586,16 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
       xf86DrvMsg(pScrn->scrnIndex, from,
 		 "Hardware cursor currently only works with BT485 ramdac\n");
     }
-    
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pTga->HWCursor ? "HW" : "SW");
+
     if (xf86ReturnOptValBool(TGAOptions, OPTION_NOACCEL, FALSE)) {
 	pTga->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
-    if (xf86ReturnOptValBool(TGAOptions, OPTION_PCI_RETRY, FALSE)) {
-	pTga->UsePCIRetry = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
-    }
-
-    /* Find the PCI slot for this screen */
-    if ((i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL)) != 1) {
-	/* This shouldn't happen */
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "Expected one PCI card, but found %d\n", i);
-	TGAFreeRec(pScrn);
-	return FALSE;
-    }
-
-    pTga->PciInfo = *pciList;
-    pTga->RamDac = NULL;
-    /*
-     * Set the Chipset and ChipRev, allowing config file entries to
-     * override.
-     */
-    if (pScrn->device->chipset && *pScrn->device->chipset) {
-	pScrn->chipset = pScrn->device->chipset;
-        pTga->Chipset = xf86StringToToken(TGAChipsets, pScrn->chipset);
-        from = X_CONFIG;
-    } else if (pScrn->device->chipID >= 0) {
-	pTga->Chipset = pScrn->device->chipID;
-	pScrn->chipset = (char *)xf86TokenToString(TGAChipsets, pTga->Chipset);
-
-	from = X_CONFIG;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipID override: 0x%04X\n",
-		   pTga->Chipset);
-    } else {
-	from = X_PROBED;
-	pTga->Chipset = pTga->PciInfo->chipType;
-	pScrn->chipset = (char *)xf86TokenToString(TGAChipsets, pTga->Chipset);
-    }
-    if (pScrn->device->chipRev >= 0) {
-	pTga->ChipRev = pScrn->device->chipRev;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
-		   pTga->ChipRev);
-    } else {
-	pTga->ChipRev = pTga->PciInfo->chipRev;
-    }
-
-    /*
-     * This shouldn't happen because such problems should be caught in
-     * TGAProbe(), but check it just in case.
-     */
-    if (pScrn->chipset == NULL) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "ChipID 0x%04X is not recognised\n", pTga->Chipset);
-	return FALSE;
-    }
-    if (pTga->Chipset < 0) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "Chipset \"%s\" is not recognised\n", pScrn->chipset);
-	return FALSE;
-    }
-
-    xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
-
-    pTga->PciTag = pciTag(pTga->PciInfo->bus, pTga->PciInfo->device,
-			  pTga->PciInfo->func);
-    
-    if (pScrn->device->MemBase != 0) {
-	pTga->FbAddress = pScrn->device->MemBase;
+        
+    if (pTga->pEnt->device->MemBase != 0) {
+	pTga->FbAddress = pTga->pEnt->device->MemBase;
 	from = X_CONFIG;
     } else {
       pTga->FbAddress = pTga->PciInfo->memBase[0] & 0xFF800000;
@@ -594,11 +604,15 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     /* Adjust MMIO region */
     pTga->IOAddress = pTga->FbAddress + TGA_REGS_OFFSET;
 
-    /* Check what sort of TGA card we have */
+    
+    /*********************
+    determine what sort of TGA card we have -- the only differences are
+    framebuffer size and ramdac type, all TGA cards use 21030 chips
+    *********************/
 
     /* check what the user has specified in XF86Config */
-    if(pScrn->device->videoRam) {
-      switch(pScrn->device->videoRam) {
+    if(pTga->pEnt->device->videoRam) {
+      switch(pTga->pEnt->device->videoRam) {
       case 2048:
 	pTga->CardType = TYPE_TGA_8PLANE;
 	break;
@@ -611,7 +625,7 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
       default:
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "%d KB video RAM specified, driver only supports 2048, 8192, or 16384 KB cards\n",
-		   pScrn->device->videoRam);
+		   pTga->pEnt->device->videoRam);
 	return FALSE;
       }
     }
@@ -650,7 +664,6 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
-
     xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
 	       (unsigned long)pTga->FbAddress);
 
@@ -660,11 +673,10 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     /* HW bpp matches reported bpp */
     pTga->HwBpp = pScrn->bitsPerPixel;
 
-    if (pScrn->device->videoRam != 0) {
-	pScrn->videoRam = pScrn->device->videoRam;
+    if (pTga->pEnt->device->videoRam != 0) {
+	pScrn->videoRam = pTga->pEnt->device->videoRam;
 	from = X_CONFIG;
     } else {
-
       switch (pTga->CardType) {
       case TYPE_TGA_8PLANE:
 	pScrn->videoRam = 2*1024;
@@ -683,7 +695,34 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     pTga->FbMapSize = pScrn->videoRam * 1024;
 
-    /* Let's check what type of DAC we have and reject if necessary */
+    /* Load bpp-specific modules */
+    switch (pScrn->bitsPerPixel) {
+    case 8:
+	mod = "cfb";
+	break;
+    case 32:
+	mod = "cfb32";
+	break;
+    }
+    if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
+	TGAFreeRec(pScrn);
+	return FALSE;
+    }
+
+    /* Load XAA if needed */
+    if (!pTga->NoAccel || pTga->HWCursor)
+	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	    TGAFreeRec(pScrn);
+	    return FALSE;
+	}
+
+    
+    /*********************    
+    Let's check what type of DAC we have and reject if necessary
+    *********************/
+    
+    pTga->RamDac = NULL;
+    
     switch (pTga->Chipset)
     {
 	case PCI_CHIP_DEC21030:
@@ -705,7 +744,6 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    }
 
             TGAMapMem(pScrn);
-
 	    
 	    pTga->RamDac = BTramdacProbe(pScrn, BTramdacs);
 
@@ -716,6 +754,13 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
     }
 
+    
+    /*********************
+    set up clock and mode stuff
+    *********************/
+    
+    pScrn->progClock = TRUE;
+    
     /* Set the min pixel clock */
     pTga->MinClock = 16250;	/* XXX Guess, need to check this */
     xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Min pixel clock is %d MHz\n",
@@ -725,25 +770,19 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
      * If the user has specified ramdac speed in the XF86Config
      * file, we respect that setting.
      */
-    if (pScrn->device->dacSpeeds[0]) {
+    if (pTga->pEnt->device->dacSpeeds[0]) {
 	int speed = 0;
 
 	switch (pScrn->bitsPerPixel) {
 	case 8:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP8];
-	   break;
-	case 16:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP16];
-	   break;
-	case 24:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP24];
+	   speed = pTga->pEnt->device->dacSpeeds[DAC_BPP8];
 	   break;
 	case 32:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP32];
+	   speed = pTga->pEnt->device->dacSpeeds[DAC_BPP32];
 	   break;
 	}
 	if (speed == 0)
-	    pTga->MaxClock = pScrn->device->dacSpeeds[0];
+	    pTga->MaxClock = pTga->pEnt->device->dacSpeeds[0];
 	else
 	    pTga->MaxClock = speed;
 	from = X_CONFIG;
@@ -811,35 +850,6 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Set display resolution */
     xf86SetDpi(pScrn, 0, 0);
-
-    /* Load bpp-specific modules */
-    switch (pScrn->bitsPerPixel) {
-    case 8:
-	mod = "cfb";
-	break;
-    case 16:
-	mod = "cfb16";
-	break;
-    case 24:
-	mod = "cfb24";
-	break;
-    case 32:
-	mod = "cfb32";
-	break;
-    }
-    if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
-	TGAFreeRec(pScrn);
-	return FALSE;
-    }
-
-
-    /* Load XAA if needed */
-    if (!pTga->NoAccel || pTga->HWCursor)
-	if (!xf86LoadSubModule(pScrn, "xaa")) {
-	    TGAFreeRec(pScrn);
-	    return FALSE;
-	}
-
 
     return TRUE;
 }

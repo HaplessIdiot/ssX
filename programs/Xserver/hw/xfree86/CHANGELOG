@@ -1,3 +1,12 @@
+XFree86 3.9Pt (20 June 1999)
+2756. Fix for DPMS with the new RAC (Itai Nahshon).
+2755. RAC updates, including changing the way PCI resource validation works
+      (Egbert Eich).
+2754. Update the TGA driver for the new RAC (#2886, Matt Grossman).
+2753. Fix a fatal event problem with DGA 2.0 (#2884, Mark Vojkovich).
+2752. Fix some macros in xf86str.h that conflict with system headers on some
+      platforms (#2883, 2888, Matt Grossman).
+
 XFree86 3.9Ps (14 June 1999)
 2751. Some small RAC updates (Egbert Eich).
 2750. Direct Rendering Infrastructure from Precision Insight (#2871).
@@ -8185,4 +8194,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.777 1999/06/14 12:02:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.778 1999/06/14 13:37:43 dawes Exp $

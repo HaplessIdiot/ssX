@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.107 1999/06/12 17:30:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.108 1999/06/13 05:18:44 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -73,7 +73,7 @@ Bool xf86SetEntityFuncs(int entityIndex, EntityProc init,
 			EntityProc enter, EntityProc leave, pointer);
 void xf86DeallocateResourcesForEntity(int entityIndex, long type);
 resPtr xf86RegisterResources(int entityIndex, resList list, int access);
-Bool xf86CheckPciMemBase(pciVideoPtr pPci, unsigned long base);
+Bool xf86CheckPciMemBase(pciVideoPtr pPci, memType base);
 void xf86SetAccessFuncs(EntityInfoPtr pEnt, xf86AccessPtr p_io,
 			xf86AccessPtr p_mem, xf86AccessPtr p_io_mem,
 			xf86AccessPtr *ppAccessOld);
@@ -83,12 +83,14 @@ Bool xf86FixPciResource(int entityIndex, unsigned int prt, CARD32 alignment,
 resPtr xf86ReallocatePciResources(int entityIndex, resPtr pRes);
 resPtr xf86SetOperatingState(resList list, int entityIndex, int mask);
 void xf86EnterServerState(xf86State state);
-resRange xf86GetBlock(long type, unsigned long size,
-		      unsigned long window_start, unsigned long window_end,
-		      unsigned long align_mask, resPtr avoid);
-resRange xf86GetSparse(long type,  unsigned long fixed_bits,
-		       unsigned long decode_mask, unsigned long address_mask,
+resRange xf86GetBlock(long type, memType size,
+		      memType window_start, memType window_end,
+		      memType align_mask, resPtr avoid);
+resRange xf86GetSparse(long type,  memType fixed_bits,
+		       memType decode_mask, memType address_mask,
 		       resPtr avoid);
+memType xf86ChkConflict(resRange *rgp, int entityIndex);
+ 
  
 /* xf86Cursor.c */
 
@@ -189,11 +191,11 @@ int xf86NewSerialNumber(WindowPtr p, pointer unused);
 pointer xf86FindXvOptions(int scrnIndex, int adapt_index, char *port_name,
 			  char **adaptor_name, pointer *adaptor_options);
 void xf86GetOS(const char **name, int *major, int *minor, int *teeny);
-Bool xf86ConfigActivePciEntity(ScrnInfoPtr pScrn, EntityInfoPtr pEnt,
+Bool xf86ConfigActivePciEntity(ScrnInfoPtr pScrn, int entityIndex,
 			       PciChipsets *p_chip, resList res,
 			       EntityProc init, EntityProc enter,
 			       EntityProc leave, pointer private);
-Bool xf86ConfigActiveIsaEntity(ScrnInfoPtr pScrn, EntityInfoPtr pEnt,
+Bool xf86ConfigActiveIsaEntity(ScrnInfoPtr pScrn, int entityIndex,
 			       IsaChipsets *i_chip, resList res,
 			       EntityProc init, EntityProc enter,
 			       EntityProc leave, pointer private); 

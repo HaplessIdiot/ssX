@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.4 1999/02/15 18:47:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.5 1999/03/29 09:41:28 dawes Exp $ */
 /*
  * finish setting up the server
  * call the functions from the scanpci module
@@ -29,8 +29,10 @@ void xf86DisplayPCICardInfo(int);
 void DoScanPci(int argc, char **argv, int i)
 {
   int j,skip,globalVerbose,scanpciVerbose;
+#ifdef XFree86LOADER
   int errmaj, errmin;
   char *name;
+#endif
 
   /*
    * first we need to finish setup of the OS so that we can call other
@@ -39,7 +41,7 @@ void DoScanPci(int argc, char **argv, int i)
   OsInit();
 
   /*
-   * now we decrese verbosity and remember the value, in case a later
+   * now we decrease verbosity and remember the value, in case a later
    * -verbose on the command line increases it, because that is a 
    * verbose flag for scanpci...
    */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DPMS.c,v 1.2 1998/07/25 16:55:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DPMS.c,v 1.3 1999/01/13 08:31:03 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -104,8 +104,10 @@ DPMSSet(CARD16 level)
     /* For each screen, set the DPMS level */
     for (i = 0; i < xf86NumScreens; i++) {
 	pDPMS = (DPMSPtr)screenInfo.screens[i]->devPrivates[DPMSIndex].ptr;
-	if (pDPMS && pDPMS->Set && pDPMS->Enabled && xf86Screens[i]->vtSema)
+	if (pDPMS && pDPMS->Set && pDPMS->Enabled && xf86Screens[i]->vtSema) {
+	    xf86EnableAccess(xf86Screens[i]);
 	    pDPMS->Set(xf86Screens[i], level, 0);
+	}
     }
 }
 

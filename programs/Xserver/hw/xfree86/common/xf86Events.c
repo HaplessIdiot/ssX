@@ -1,4 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.72 1999/06/12 07:18:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.73 1999/06/13 05:18:45 dawes Exp $ */
+#define DEBUG
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1407,6 +1408,10 @@ xf86VTSwitch()
 
     } else {
 	for (i = 0; i < xf86NumScreens; i++) {
+ 	    /*
+ 	     * zero all access functions to
+ 	     * trap calls when switched away.
+ 	     */
 	    xf86Screens[i]->vtSema = FALSE;
 	    xf86Screens[i]->access = NULL;
 	    xf86Screens[i]->busAccess = NULL;

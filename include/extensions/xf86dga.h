@@ -1,7 +1,7 @@
 /*
    Copyright (c) 1999  XFree86 Inc
 */
-/* $XFree86: xc/include/extensions/xf86dga.h,v 3.11 1999/05/16 13:24:48 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga.h,v 3.12 1999/05/16 14:24:20 dawes Exp $ */
 
 #ifndef _XF86DGA_H_
 #define _XF86DGA_H_
@@ -128,6 +128,7 @@ typedef union {
   XDGAButtonEvent xbutton;
   XDGAKeyEvent	  xkey;
   XDGAMotionEvent xmotion;
+  long		  pad[24];
 } XDGAEvent;
 
 Bool XDGAQueryExtension(

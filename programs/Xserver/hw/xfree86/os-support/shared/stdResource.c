@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.4 1999/04/04 13:51:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.5 1999/06/12 07:19:05 dawes Exp $ */
 
 /* Standard resource information code */
 
@@ -94,7 +94,7 @@ xf86FindPciBridgeInfo(const pciConfigPtr *pciInfo)
     /* prefetchable range is unknown therefore we don't set it            */
     RANGE(range,0,0xFFFF, ResIo | ResBlock | ResExclusive | ResMinimised);
     PciBus->io = xf86AddResToList(NULL, &range, -1);
-    RANGE(range,0,~(unsigned long)0,
+    RANGE(range,0,~(memType)0,
 		      ResMem | ResBlock | ResExclusive | ResMinimised);
     PciBus->mem = xf86AddResToList(NULL, &range, -1);
     /* Add each PCI-PCI bridge */
@@ -182,7 +182,7 @@ xf86StdInitOSPciAllocator(const pciConfigPtr *pciInfo, resPtr *sysRes,
     /* resources assigned by bios should be avoided */
     res = tmp_res = xf86DupResList(pciRes);
     while (tmp_res) {
-	tmp_res->r_type |= ResBios;
+	tmp_res->res_type |= ResBios;
 	tmp_res = tmp_res->next;
     }
     (*sysRes) = xf86JoinResLists(res,(*sysRes));
