@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.35 2002/11/21 07:25:10 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.36 2002/11/23 08:26:50 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -462,6 +462,10 @@ LispAtom *LispDoGetAtom(char *str, int);
 LispObj *LispGetAtomProperty(LispAtom*, LispObj*);
 	/* put value in atom's property list */
 LispObj *LispPutAtomProperty(LispAtom*, LispObj*, LispObj*);
+	/* remove value from atom's property list */
+LispObj *LispRemAtomProperty(LispAtom*, LispObj*);
+	/* replace atom's property list */
+LispObj *LispReplaceAtomPropertyList(LispAtom*, LispObj*);
 
 	/* returns function associated with symbol */
 LispObj *LispSymbolFunction(LispObj*);

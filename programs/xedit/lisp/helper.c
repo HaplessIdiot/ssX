@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.45 2002/11/23 08:26:49 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.46 2002/11/25 02:35:30 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -278,7 +278,7 @@ LispCheckSequenceStartEnd(LispBuiltin *builtin,
     *plength = LispLength(sequence);
 
     /* Check start argument */
-    if (start == UNSPEC)
+    if (start == UNSPEC || start == NIL)
 	*pstart = 0;
     else {
 	CHECK_INDEX(start);
@@ -286,7 +286,7 @@ LispCheckSequenceStartEnd(LispBuiltin *builtin,
     }
 
     /* Check end argument */
-    if (end == UNSPEC)
+    if (end == UNSPEC || end == NIL)
 	*pend = *plength;
     else {
 	CHECK_INDEX(end);

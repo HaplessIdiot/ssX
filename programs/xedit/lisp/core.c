@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.62 2002/11/23 21:41:51 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.63 2002/11/25 02:35:29 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -149,10 +149,12 @@ static LispObj *LispMapc(LispBuiltin*, int);
 static LispObj *LispMapl(LispBuiltin*, int);
 static LispObj *LispMapnconc(LispObj*);
 extern LispObj *LispRunSetf(LispArgList*, LispObj*, LispObj*, LispObj*);
+extern LispObj *LispRunSetfMacro(LispAtom*, LispObj*, LispObj*);
 static LispObj *LispMergeSort(LispObj*, LispObj*, LispObj*, int);
 static LispObj *LispXReverse(LispBuiltin*, int);
 static LispObj *LispCopyList(LispBuiltin*, LispObj*, int);
 static LispObj *LispValuesList(LispBuiltin*, int);
+static LispObj *LispTreeEqual(LispObj*, LispObj*, LispObj*, int);
 
 extern void LispSetAtomObjectProperty(LispAtom*, LispObj*);
 
@@ -1010,6 +1012,7 @@ Lisp_Constantp(LispBuiltin *builtin)
     environment = ARGUMENT(1);
     form = ARGUMENT(0);
 
+    /* not all self-evaluating objects are considered constants */
     if (!POINTERP(form) ||
 	NUMBERP(form) ||
 	XQUOTEP(form) ||
@@ -1634,7 +1637,7 @@ Lisp_Fboundp(LispBuiltin *builtin)
     CHECK_SYMBOL(symbol);
 
     atom = symbol->data.atom;
-    if (atom->a_function || atom->a_builtin)
+    if (atom->a_function || atom->a_builtin || atom->a_compiled)
 	return (T);
 
     return (NIL);
@@ -2233,6 +2236,42 @@ Lisp_ListP(LispBuiltin *builtin)
     return (result);
 }
 
+/* "classic" list-length */
+LispObj *
+Lisp_ListLength(LispBuiltin *builtin)
+/*
+ list-length list
+ */
+{
+    long length;
+    LispObj *fast, *slow;
+
+    LispObj *list;
+
+    list = ARGUMENT(0);
+
+    CHECK_LIST(list);
+    for (fast = slow = list, length = 0;
+	 CONSP(slow);
+	 slow = CDR(slow), length += 2) {
+	if (fast == NIL)
+	    break;
+	CHECK_CONS(fast);
+	fast = CDR(fast);
+	if (fast == NIL) {
+	    ++length;
+	    break;
+	}
+	CHECK_CONS(fast);
+	fast = CDR(fast);
+	if (slow == fast)
+	    /* circular list */
+	    return (NIL);
+    }
+
+    return (FIXNUM(length));
+}
+
 LispObj *
 Lisp_Listp(LispBuiltin *builtin)
 /*
@@ -2394,16 +2433,8 @@ LispListSet(LispBuiltin *builtin, int function)
 		  value != expect) ||
 		 (intersection && value == expect)) {
 	    if (inplace) {
-		if (result == NIL) {
-#if 0
-		    if (!setexclusiveor) {
-			/* will need it again for nset-exclusive-or */
-			RPLACA(list1, CAR(cmp1));
-			RPLACD(list1, CDR(cmp1));
-		    }
-#endif
+		if (result == NIL)
 		    result = cons = cmp1;
-		}
 		else {
 		    if (setexclusiveor) {
 			/* don't remove elements yet, will need
@@ -2441,14 +2472,8 @@ LispListSet(LispBuiltin *builtin, int function)
     }
     else if (xunion) {
 	/* Add list2 to tail of result */
-	if (result == NIL) {
-	    if (inplace) {
-		RPLACA(list1, CAR(list2));
-		RPLACD(list1, CDR(list2));
-	    }
-	    else
-		result = list2;
-	}
+	if (result == NIL)
+	    result = list2;
 	else
 	    RPLACD(cons, list2);
     }
@@ -2505,12 +2530,6 @@ LispListSet(LispBuiltin *builtin, int function)
 		result = result2;
 	    else
 		RPLACD(cons, result2);
-#if 0
-	    if (CONSP(result)) {
-		RPLACA(list1, CAR(result));
-		RPLACD(list1, CDR(result));
-	    }
-#endif
 	}
     }
     else if ((function == NSETDIFFERENCE || function == NINTERSECTION) &&
@@ -2832,16 +2851,16 @@ Lisp_MakeList(LispBuiltin *builtin)
 LispObj *
 Lisp_MakeSymbol(LispBuiltin *builtin)
 /*
- make-symbol string
+ make-symbol name
  */
 {
-    LispObj *string, *symbol;
+    LispObj *name, *symbol;
 
-    string = ARGUMENT(0);
-    CHECK_STRING(string);
+    name = ARGUMENT(0);
+    CHECK_STRING(name);
 
-    symbol = UNINTERNED_ATOM(THESTR(string));
-    symbol->data.atom->unreadable = !LispCheckAtomString(THESTR(string));
+    symbol = UNINTERNED_ATOM(THESTR(name));
+    symbol->data.atom->unreadable = !LispCheckAtomString(THESTR(name));
 
     return (symbol);
 }
@@ -3980,7 +3999,7 @@ Lisp_Progn(LispBuiltin *builtin)
  * acceptable for the the interpreter), if the code being executed
  * ever tries to change/bind a progv symbol, the symbol state will
  * be restored when exiting the progv block, so, code like:
- *	(progv ('(*x*) '(1) (defvar *x* 10)))
+ *	(progv '(*x*) '(1) (defvar *x* 10))
  * when exiting the block, will have *x* unbound, and not a dynamic
  * symbol; if it was already bound, will have the old value.
  *  Symbols already dynamic can be freely changed, even unbounded in
@@ -5038,6 +5057,22 @@ Lisp_RemoveIfNot(LispBuiltin *builtin)
 }
 
 LispObj *
+Lisp_Remprop(LispBuiltin *builtin)
+/*
+ remprop symbol indicator
+ */
+{
+    LispObj *symbol, *indicator;
+
+    indicator = ARGUMENT(1);
+    symbol = ARGUMENT(0);
+
+    CHECK_SYMBOL(symbol);
+
+    return (LispRemAtomProperty(symbol->data.atom, indicator));
+}
+
+LispObj *
 Lisp_Return(LispBuiltin *builtin)
 /*
  return &optional result
@@ -5398,7 +5433,7 @@ Lisp_Search(LispBuiltin *builtin)
 	}
 
 	/* while a match is possible */
-	while (end2 > length1) {
+	while (end2 >= length1) {
 
 	    /* prepare to search */
 	    off1 = 0;
@@ -5598,8 +5633,7 @@ Lisp_Setf(LispBuiltin *builtin)
  */
 {
     LispAtom *atom;
-    int struct_access;
-    LispObj *setf, *place, *value, *result = NIL;
+    LispObj *setf, *place, *value, *result = NIL, *data;
 
     LispObj *form;
 
@@ -5620,9 +5654,21 @@ Lisp_Setf(LispBuiltin *builtin)
 	    (void)LispSetVar(place, result);
 	}
 	else if (XCONSP(place)) {
+	    /* it really should not be required to protect any object
+	     * evaluated here, but is done for safety in case one of
+	     * the evaluated forms returns data not gc protected, what
+	     * could cause surprises if the object is garbage collected
+	     * before finishing setf. */
+	    GC_ENTER();
+
 	    setf = CAR(place);
 	    if (!SYMBOLP(setf))
 		goto invalid_place;
+	    if (!CONSP(CDR(place)))
+		goto invalid_place;
+
+	    value = EVAL(value);
+	    GC_PROTECT(value);
 
 	    atom = setf->data.atom;
 	    if (atom->a_defsetf == 0) {
@@ -5633,51 +5679,56 @@ Lisp_Setf(LispBuiltin *builtin)
 		     *	(defsetf THE-STRUCT-FIELD (struct) (value)
 		     *	 `(lisp::struct-store 'THE-STRUCT-FIELD ,struct ,value))
 		     */
-		    setf = Ostruct_store;
-		    struct_access = 1;
+		    place = CDR(place);
+		    data = CAR(place);
+		    if (CONSP(CDR(place)))
+			goto invalid_place;
+		    data = EVAL(data);
+		    GC_PROTECT(data);
+		    result = APPLY3(Ostruct_store, setf, data, value);
+		    GC_LEAVE();
+		    continue;
 		}
-		else
-		    goto invalid_place;
-	    }
-	    else {
-		setf = setf->data.atom->property->setf;
-		struct_access = 0;
+		/* Must also expand macros */
+		else if (atom->a_function &&
+			 atom->property->fun.function->funtype == LispMacro) {
+		    result = LispRunSetfMacro(atom, CDR(place), value);
+		    continue;
+		}
+		goto invalid_place;
 	    }
 
+	    place = CDR(place);
+	    setf = setf->data.atom->property->setf;
 	    if (SYMBOLP(setf)) {
-		GC_ENTER();
 		LispObj *arguments, *cons;
 
-		/*  It should be possible to call LispFuncall with an
-		 * extra argument, so that it is not required to build
-		 * an argument list, i.e. avoid allocating several conses
-		 * and this way generating a lot of garbage. */
-		if (struct_access) {
-		    arguments = cons = CONS(CAR(place), NIL);
+		if (!CONSP(CDR(place))) {
+		    arguments = EVAL(CAR(place));
 		    GC_PROTECT(arguments);
+		    result = APPLY2(setf, arguments, value);
+		}
+		else if (!CONSP(CDDR(place))) {
+		    arguments = EVAL(CAR(place));
+		    GC_PROTECT(arguments);
+		    cons = EVAL(CADR(place));
+		    GC_PROTECT(cons);
+		    result = APPLY3(setf, arguments, cons, value);
 		}
 		else {
-		    place = CDR(place);
-		    if (CONSP(place)) {
-			arguments = cons = CONS(EVAL(CAR(place)), NIL);
-			GC_PROTECT(arguments);
+		    arguments = cons = CONS(EVAL(CAR(place)), NIL);
+		    GC_PROTECT(arguments);
+		    for (place = CDR(place); CONSP(place); place = CDR(place)) {
+			RPLACD(cons, CONS(EVAL(CAR(place)), NIL));
+			cons = CDR(cons);
 		    }
-		    else {
-			result = APPLY1(setf, EVAL(value));
-			continue;
-		    }
+		    RPLACD(cons, CONS(value, NIL));
+		    result = APPLY(setf, arguments);
 		}
-		for (place = CDR(place); CONSP(place); place = CDR(place)) {
-		    RPLACD(cons, CONS(EVAL(CAR(place)), NIL));
-		    cons = CDR(cons);
-		}
-		RPLACD(cons, CONS(EVAL(value), NIL));
-		result = APPLY(setf, arguments);
-		GC_LEAVE();
 	    }
 	    else
-		result = LispRunSetf(atom->property->salist,
-				     setf, place, EVAL(value));
+		result = LispRunSetf(atom->property->salist, setf, place, value);
+	    GC_LEAVE();
 	}
 	else
 	    goto invalid_place;
@@ -5696,10 +5747,10 @@ Lisp_Psetf(LispBuiltin *builtin)
  psetf &rest form
  */
 {
+    int base;
     GC_ENTER();
     LispAtom *atom;
-    int base, struct_access;
-    LispObj *setf, *place = NIL, *value;
+    LispObj *setf, *place = NIL, *value, *data;
 
     LispObj *form;
 
@@ -5708,11 +5759,11 @@ Lisp_Psetf(LispBuiltin *builtin)
     /* parallel setf, first pass evaluate values and basic error checking */
     base = gc__protect;
     for (setf = form; CONSP(setf); setf = CDR(setf)) {
+	if (!POINTERP(CAR(setf)))
+	    goto invalid_place;
 	setf = CDR(setf);
 	if (!CONSP(setf))
 	    LispDestroy("%s: odd number of arguments", STRFUN(builtin));
-	if (!POINTERP(CAR(setf)))
-	    goto invalid_place;
 	value = EVAL(CAR(setf));
 	GC_PROTECT(value);
     }
@@ -5727,50 +5778,63 @@ Lisp_Psetf(LispBuiltin *builtin)
 	    (void)LispSetVar(place, value);
 	}
 	else if (XCONSP(place)) {
+	    LispObj *arguments, *cons;
+	    int xbase = lisp__data.protect.length;
+
 	    setf = CAR(place);
 	    if (!SYMBOLP(setf))
+		goto invalid_place;
+	    if (!CONSP(CDR(place)))
 		goto invalid_place;
 
 	    atom = setf->data.atom;
 	    if (atom->a_defsetf == 0) {
 		if (atom->a_defstruct &&
 		    atom->property->structure.function >= 0) {
-		    setf = Ostruct_store;
-		    struct_access = 1;
+		    place = CDR(place);
+		    data = CAR(place);
+		    if (CONSP(CDR(place)))
+			goto invalid_place;
+		    data = EVAL(data);
+		    GC_PROTECT(data);
+		    (void)APPLY3(Ostruct_store, setf, data, value);
+		    lisp__data.protect.length = xbase;
+		    continue;
 		}
-		else
-		    goto invalid_place;
-	    }
-	    else {
-		setf = setf->data.atom->property->setf;
-		struct_access = 0;
+		else if (atom->a_function &&
+			 atom->property->fun.function->funtype == LispMacro) {
+		    (void)LispRunSetfMacro(atom, CDR(place), value);
+		    lisp__data.protect.length = xbase;
+		    continue;
+		}
+		goto invalid_place;
 	    }
 
+	    place = CDR(place);
+	    setf = setf->data.atom->property->setf;
 	    if (SYMBOLP(setf)) {
-		int xbase = lisp__data.protect.length;
-		LispObj *arguments, *cons;
-
-		if (struct_access) {
-		    arguments = cons = CONS(CAR(place), NIL);
+		if (!CONSP(CDR(place))) {
+		    arguments = EVAL(CAR(place));
 		    GC_PROTECT(arguments);
+		    (void)APPLY2(setf, arguments, value);
+		}
+		else if (!CONSP(CDDR(place))) {
+		    arguments = EVAL(CAR(place));
+		    GC_PROTECT(arguments);
+		    cons = EVAL(CADR(place));
+		    GC_PROTECT(cons);
+		    (void)APPLY3(setf, arguments, cons, value);
 		}
 		else {
-		    place = CDR(place);
-		    if (CONSP(place)) {
-			arguments = cons = CONS(EVAL(CAR(place)), NIL);
-			GC_PROTECT(arguments);
+		    arguments = cons = CONS(EVAL(CAR(place)), NIL);
+		    GC_PROTECT(arguments);
+		    for (place = CDR(place); CONSP(place); place = CDR(place)) {
+			RPLACD(cons, CONS(EVAL(CAR(place)), NIL));
+			cons = CDR(cons);
 		    }
-		    else {
-			(void)APPLY1(setf, value);
-			continue;
-		    }
+		    RPLACD(cons, CONS(value, NIL));
+		    (void)APPLY(setf, arguments);
 		}
-		for (place = CDR(place); CONSP(place); place = CDR(place)) {
-		    RPLACD(cons, CONS(EVAL(CAR(place)), NIL));
-		    cons = CDR(cons);
-		}
-		RPLACD(cons, CONS(value, NIL));
-		(void)APPLY(setf, arguments);
 		lisp__data.protect.length = xbase;
 	    }
 	    else
@@ -6181,9 +6245,12 @@ Lisp_SymbolValue(LispBuiltin *builtin)
 
     CHECK_SYMBOL(symbol);
     atom = symbol->data.atom;
-    if (!atom->a_object)
+    if (!atom->a_object || atom->property->value == UNBOUND) {
+	if (atom->package == lisp__data.keyword)
+	    return (symbol);
 	LispDestroy("%s: the symbol %s has no value",
 		    STRFUN(builtin), STROBJ(symbol));
+    }
 
     return (atom->dyn ? LispGetVar(symbol) : atom->property->value);
 }
@@ -6360,7 +6427,6 @@ Lisp_Throw(LispBuiltin *builtin)
 	LispBlock *block = lisp__data.block.block[--blevel];
 
 	if (block->type == LispBlockCatch && tag == block->tag) {
-	    RETURN_COUNT = 0;
 	    lisp__data.block.block_ret = EVAL(result);
 	    LispBlockUnwind(block);
 	    BLOCKJUMP(block);
@@ -6370,6 +6436,85 @@ Lisp_Throw(LispBuiltin *builtin)
 
     /*NOTREACHED*/
     return (NIL);
+}
+
+static LispObj *
+LispTreeEqual(LispObj *left, LispObj *right, LispObj *test, int expect)
+{
+    LispObj *cmp_left, *cmp_right;
+
+    if ((OBJECT_TYPE(left)) ^ (OBJECT_TYPE(right)))
+	return (NIL);
+    if (CONSP(left)) {
+	for (; CONSP(left) && CONSP(right);
+	     left = CDR(left), right = CDR(right)) {
+	    cmp_left = CAR(left);
+	    cmp_right = CAR(right);
+	    if ((OBJECT_TYPE(cmp_left)) ^ (OBJECT_TYPE(cmp_right)))
+		return (NIL);
+	    if (CONSP(cmp_left)) {
+		if (LispTreeEqual(cmp_left, cmp_right, test, expect) == NIL)
+		    return (NIL);
+	    }
+	    else {
+		if (POINTERP(cmp_left) &&
+		    (XQUOTEP(cmp_left) || XBACKQUOTEP(cmp_left))) {
+		    cmp_left = cmp_left->data.quote;
+		    cmp_right = cmp_right->data.quote;
+		}
+		else if (COMMAP(cmp_left)) {
+		    cmp_left = cmp_left->data.comma.eval;
+		    cmp_right = cmp_right->data.comma.eval;
+		}
+		if ((APPLY2(test, cmp_left, cmp_right) != NIL) != expect)
+		    return (NIL);
+	    }
+	}
+	if ((OBJECT_TYPE(left)) ^ (OBJECT_TYPE(right)))
+	    return (NIL);
+    }
+
+    if (POINTERP(left) && (XQUOTEP(left) || XBACKQUOTEP(left))) {
+	left = left->data.quote;
+	right = right->data.quote;
+    }
+    else if (COMMAP(left)) {
+	left = left->data.comma.eval;
+	right = right->data.comma.eval;
+    }
+
+    return ((APPLY2(test, left, right) != NIL) == expect ? T : NIL);
+}
+
+LispObj *
+Lisp_TreeEqual(LispBuiltin *builtin)
+/*
+ tree-equal tree-1 tree-2 &key test test-not
+ */
+{
+    int expect;
+    LispObj *compare;
+
+    LispObj *tree_1, *tree_2, *test, *test_not;
+
+    test_not = ARGUMENT(3);
+    test = ARGUMENT(2);
+    tree_2 = ARGUMENT(1);
+    tree_1 = ARGUMENT(0);
+
+    CHECK_TEST_0();
+    if (test_not != UNSPEC) {
+	expect = 0;
+	compare = test_not;
+    }
+    else {
+	if (test == UNSPEC)
+	    test = Oeql;
+	expect = 1;
+	compare = test;
+    }
+
+    return (LispTreeEqual(tree_1, tree_2, compare, expect));
 }
 
 LispObj *
@@ -6517,7 +6662,7 @@ Lisp_UnwindProtect(LispBuiltin *builtin)
  */
 {
     LispObj *result, **presult = &result;
-    int did_jump, *pdid_jump = &did_jump;
+    int did_jump, *pdid_jump = &did_jump, destroyed;
     LispBlock *block;
 
     LispObj *protect, *cleanup, **pcleanup = &cleanup;
@@ -6537,13 +6682,21 @@ Lisp_UnwindProtect(LispBuiltin *builtin)
     if (!lisp__data.destroyed && *pdid_jump)
 	*presult = lisp__data.block.block_ret;
 
+    destroyed = lisp__data.destroyed;
+    lisp__data.destroyed = 0;
+
     /* run cleanup, unprotected code */
     if (CONSP(*pcleanup))
 	for (; CONSP(cleanup); cleanup = CDR(cleanup))
 	    (void)EVAL(CAR(cleanup));
-    else if (lisp__data.destroyed)
-	/* no cleanup code */
+
+    if (destroyed) {
+	/* in case there is another unwind-protect */
+	LispBlockUnwind(NULL);
+	/* if not, just return to the toplevel */
+	lisp__data.destroyed = 1;
 	LispDestroy(".");
+    }
 
     return (result);
 }
@@ -6743,6 +6896,22 @@ Lisp_XeditPut(LispBuiltin *builtin)
     CHECK_SYMBOL(symbol);
 
     return (CAR(LispPutAtomProperty(symbol->data.atom, indicator, value)));
+}
+
+LispObj *
+Lisp_XeditSetSymbolPlist(LispBuiltin *builtin)
+/*
+ lisp::set-symbol-plist symbol list
+ */
+{
+    LispObj *symbol, *list;
+
+    list = ARGUMENT(1);
+    symbol = ARGUMENT(0);
+
+    CHECK_SYMBOL(symbol);
+
+    return (LispReplaceAtomPropertyList(symbol->data.atom, list));
 }
 
 LispObj *

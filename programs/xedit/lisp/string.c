@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.19 2002/11/23 08:26:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.20 2002/11/25 02:35:30 paulo Exp $ */
 
 #include "helper.h"
 #include "read.h"
@@ -772,7 +772,7 @@ LispStringTrim(LispBuiltin *builtin, int left, int right, int inplace)
  string-{,left-,right-}trim character-bag string
 */
 {
-    char *string;
+    unsigned char *string;
     long start, end, length;
 
     LispObj *ochars, *ostring;
@@ -789,14 +789,14 @@ LispStringTrim(LispBuiltin *builtin, int left, int right, int inplace)
     }
     CHECK_STRING(ostring);
 
-    string = THESTR(ostring);
+    string = (unsigned char*)THESTR(ostring);
     length = STRLEN(ostring);
 
     start = 0;
     end = length;
 
     if (XSTRINGP(ochars)) {
-	char *chars = THESTR(ochars);
+	unsigned char *chars = (unsigned char*)THESTR(ochars);
 	long i, clength = STRLEN(ochars);
 
 	if (left) {
@@ -862,7 +862,7 @@ LispStringTrim(LispBuiltin *builtin, int left, int right, int inplace)
 	string = LispMalloc(length + 1);
 	memcpy(string, THESTR(ostring) + start, length);
 	string[length] = '\0';
-	ostring = LSTRING2(string, length);
+	ostring = LSTRING2((char*)string, length);
     }
 
     return (ostring);

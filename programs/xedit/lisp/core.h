@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.31 2002/11/23 21:41:51 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.32 2002/11/25 02:35:29 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -114,6 +114,7 @@ LispObj *Lisp_Let(LispBuiltin*);
 LispObj *Lisp_Length(LispBuiltin*);
 LispObj *Lisp_LetP(LispBuiltin*);
 LispObj *Lisp_List(LispBuiltin*);
+LispObj *Lisp_ListLength(LispBuiltin*);
 LispObj *Lisp_ListP(LispBuiltin*);
 LispObj *Lisp_Listp(LispBuiltin*);
 LispObj *Lisp_Loop(LispBuiltin*);
@@ -165,6 +166,7 @@ LispObj *Lisp_Remove(LispBuiltin*);
 LispObj *Lisp_RemoveDuplicates(LispBuiltin*);
 LispObj *Lisp_RemoveIf(LispBuiltin*);
 LispObj *Lisp_RemoveIfNot(LispBuiltin*);
+LispObj *Lisp_Remprop(LispBuiltin*);
 LispObj *Lisp_Replace(LispBuiltin*);
 LispObj *Lisp_Return(LispBuiltin*);
 LispObj *Lisp_ReturnFrom(LispBuiltin*);
@@ -198,6 +200,7 @@ LispObj *Lisp_Tagbody(LispBuiltin*);
 LispObj *Lisp_Terpri(LispBuiltin*);
 LispObj *Lisp_Throw(LispBuiltin*);
 LispObj *Lisp_The(LispBuiltin*);
+LispObj *Lisp_TreeEqual(LispBuiltin*);
 LispObj *Lisp_Typep(LispBuiltin*);
 LispObj *Lisp_Union(LispBuiltin*);
 LispObj *Lisp_Nunion(LispBuiltin*);
@@ -212,6 +215,7 @@ LispObj *Lisp_When(LispBuiltin*);
 LispObj *Lisp_While(LispBuiltin*);
 LispObj *Lisp_XeditEltStore(LispBuiltin*);
 LispObj *Lisp_XeditPut(LispBuiltin*);
+LispObj *Lisp_XeditSetSymbolPlist(LispBuiltin*);
 LispObj *Lisp_XeditVectorStore(LispBuiltin*);
 
 #endif

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/lisp.lsp,v 1.5 2002/11/23 08:26:52 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/lisp.lsp,v 1.6 2002/11/25 02:35:31 paulo Exp $
 ;;
 (provide "lisp")
 
@@ -149,6 +149,8 @@
 
 (defsetf get (symbol key &optional default) (value)
     `(lisp::put ,symbol ,key ,value))
+
+(defsetf symbol-plist lisp::set-symbol-plist)
 
 (defsetf gethash (key hash-table &optional default) (value)
     `(lisp::puthash ,key ,hash-table ,value))

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.25 2002/11/21 07:25:11 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.26 2002/11/23 08:26:50 paulo Exp $ */
 
 #include "write.h"
 #include "hash.h"
@@ -153,6 +153,8 @@ Lisp_Prin1(LispBuiltin *builtin)
     output_stream = ARGUMENT(1);
     object = ARGUMENT(0);
 
+    if (output_stream == UNSPEC)
+	output_stream = NIL;
     LispPrint(object, output_stream, 0);
 
     return (object);
