@@ -9,7 +9,7 @@
 <date>14 February 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.112 2004/02/17 18:37:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.113 2004/02/17 21:33:07 herrb Exp $
 </ident>
 
 <abstract>
@@ -1287,6 +1287,7 @@ Earle F. Philhower III,
 Nils Philippsen,
 Manfred Pohler,
 Alexander Pohoyda,
+Alain Poirier,
 Arnaud Quette,
 Jim Radford,
 Dale Rahn,
