@@ -9,10 +9,10 @@ David Dawes,
 Marc  Wandschneider,
 Mark  Weaver,
 Matthieu Herrb
-<Date>Last modified on: 1 July 2000
+<Date>Last modified on: 2 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.55 2000/03/03 21:28:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.56 2000/07/02 02:35:27 dawes Exp $
 </ident>
 <toc>
 
@@ -38,8 +38,8 @@ url="ftp://ftp.XFree86.org/pub/XFree86/&relvers;/NetBSD">
 
 
 A list of mirror sites is provided by
-<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/MIRRORS"
-url="ftp://ftp.XFree86.org/pub/XFree86/MIRRORS">
+<htmlurl name="http://www.xfree86.org/MIRRORS.shtml"
+url="http://www.xfree86.org/MIRRORS.shtml">
 
 
 XFree86 also builds on other NetBSD architectures. See section
@@ -59,6 +59,18 @@ this file and we'll revise it.
 <p>
 See the <htmlurl url="RELNOTES.html" name="Release Notes"> for
 non-OS dependent new features in XFree86 &relvers;.
+
+<sect1>New OS dependent features in 4.0.2
+<p>
+<itemize>
+<item>A fix for libXmu OS detection which was broken since <tt/unix/
+isn't defined anymore by the C preprocessor.
+<item>(limited) native wscons support. This is not activated by
+default.
+<item>Updates to the aperture driver
+<item>Support for multithread libraries with GNU pth
+<item>Add <tt>/usr/pkg/bin</tt> to the default user path.
+</itemize>
 
 <sect1>New OS dependent features in 4.0.1
 <p>
@@ -358,7 +370,7 @@ And finally run <tt/make World/ in the <tt/xc/ directory.
 
 <p>
 XFree86 has a configuration option to select the console
-drivers to use in <tt/xf86site.def/:
+drivers to use in <tt/host.def/:
 <itemize>
 <item> if you're using pccons put:
 <tscreen><verb>
@@ -369,8 +381,17 @@ drivers to use in <tt/xf86site.def/:
  #define XFree86ConsoleDefines -DPCVT_SUPPORT
 </verb></tscreen>
 </itemize>
-If you don't define <bf/XFree86ConsoleDefines/ in <tt/xf86site.def/ the
+If you don't define <bf/XFree86ConsoleDefines/ in <tt/host.def/ the
 pccons and pcvt drivers will be supported by default.
+
+<p>
+Experimental native support for the wscons console driver can be built
+by adding:
+<tscreen><verb>
+ #define XFree86ConsoleDefines -DWSCONS_SUPPORT
+</verb></tscreen>
+to <tt>xc/config/host.def</tt> before rebuilding the server. 
+This has not been toroughly tested, except on the macppc. 
 
 <sect1>Building on other architectures<label id="sparc">
 
@@ -381,6 +402,13 @@ start with this tree to rebuild from sources.
 The NetBSD xsrc source tree is available at: 
 <htmlurl url="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/xsrc/"
 name="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/xsrc/">
+
+<p>
+There's an <em/experimental/ patch by Tsubai Masanari to make XFree86
+4.0.1 work on 
+NetBSD/macppc at:
+<htmlurl url="ftp://nandra.iri.co.jp/pub/NetBSD/macppc/XFree86/README"
+name="ftp://nandra.iri.co.jp/pub/NetBSD/macppc/XFree86/README">.
 
 <sect>Building New X Clients
 
