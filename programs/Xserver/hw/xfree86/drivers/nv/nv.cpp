@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv.cpp,v 1.4 1999/04/27 12:05:12 dawes Exp $ 
-.TH NV __drivermansuffix__ "Version 4.0"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv.cpp,v 1.1 1999/08/01 07:20:54 dawes Exp $ 
+.TH NV __drivermansuffix__ "Version 3.9.16"  "XFree86"
 .SH NAME
 nv \- NVIDIA video driver
 .SH SYNOPSIS
