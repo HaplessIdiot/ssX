@@ -1574,6 +1574,8 @@ MoveWindowInStack(pWin, pNextSib)
 
     if (pWin->nextSib != pNextSib)
     {
+	WindowPtr pOldNextSib = pWin->nextSib;
+
 	if (!pNextSib)	      /* move to bottom */
 	{
 	    if (pParent->firstChild == pWin)
@@ -1630,6 +1632,8 @@ MoveWindowInStack(pWin, pNextSib)
 		     pFirstChange = pFirstChange->nextSib;
 	    }
 	}
+	if(pWin->drawable.pScreen->RestackWindow)
+	    (*pWin->drawable.pScreen->RestackWindow)(pWin, pOldNextSib);
     }
 
     return( pFirstChange );
