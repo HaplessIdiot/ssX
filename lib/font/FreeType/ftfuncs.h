@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.h,v 1.13 2003/06/08 15:41:13 herrb Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.h,v 1.14 2003/10/19 18:53:50 dawes Exp $ */
 
 /* Number of buckets in the hashtable holding faces */
 #define NUMFACEBUCKETS 32
@@ -180,4 +180,4 @@ FreeTypeLoadFont(FTFontPtr font, FontInfoPtr info, FTFacePtr face,
 		 char *FTFileName, FontScalablePtr vals, FontEntryPtr entry,
                  FontBitmapFormatPtr bmfmt, FT_Int32 load_flags, 
 		 struct TTCapInfo *tmp_ttcap, char *dynStrTTCapCodeRange,
-		 int ttcap_spacing, int *zero_code );
+		 int ttcap_spacing );
