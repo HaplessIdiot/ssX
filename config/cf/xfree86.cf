@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.333 2000/12/08 22:09:40 keithp Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.334 2000/12/08 22:45:44 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -264,7 +264,23 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 
 #ifdef MipsArchitecture
 # ifndef XF86Server
-#  define XF86Server            YES
+#  define XF86Server		YES
+# endif
+/* 1bpp module */
+# ifndef XF1Bpp
+#  define XF1Bpp		YES
+# endif
+/* 4bpp module */
+# ifndef XF4Bpp
+#  define XF4Bpp		YES
+# endif
+/* 8/32bpp overlay module */
+# ifndef XF8_32Bpp
+#  define XF8_32Bpp		YES
+# endif
+/* 8/16bpp dual fb module */
+# ifndef XF8_16Bpp
+#  define XF8_16Bpp		YES
 # endif
 /* 24/32bpp conversion module */
 # ifndef XF24_32Bpp
@@ -272,20 +288,37 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 # endif
 /* shadow fb module */
 # ifndef XFShadowFB
-#  define XFShadowFB            YES
+#  define XFShadowFB		YES
+# endif
+/* vgahw module */
+# ifndef XF86VgaHw
+#  define XF86VgaHw		YES
+# endif
+/* fbdevhw module */
+# ifndef XF86FBDevHw
+#  define XF86FBDevHw		YES
 # endif
 /* XAA module */
 # ifndef XF86XAA
-#  define XF86XAA               YES
+#  define XF86XAA		YES
 # endif
 /* ramdac module */
 # ifndef XF86Ramdac
-#  define XF86Ramdac            YES
+#  define XF86Ramdac		YES
+# endif
+/* I2C module */
+# ifndef XF86I2C
+#  define XF86I2C		YES
+# endif
+/* DDC module */
+# ifndef XF86DDC
+#  define XF86DDC		YES
 # endif
 /* RAC (Resource Access Control) module */
 # ifndef XF86RAC
 #  define XF86RAC		YES
 # endif
+
 /* int10 module */
 # ifndef XF86Int10
 #  define XF86Int10		YES
