@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.124 2002/04/03 13:02:38 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.125 2002/04/24 16:20:39 martin Exp $ */
 /*
  * PCI Probe
  *
@@ -458,6 +458,7 @@
 /* SGS */
 #define PCI_CHIP_STG2000	0x0008
 #define PCI_CHIP_STG1764	0x0009
+#define PCI_CHIP_KYROII		0x0010
 
 /* BusLogic */
 #define PCI_CHIP_946C_01	0x0140
@@ -1088,6 +1089,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
     {PCI_VENDOR_SGS,	{
 				{PCI_CHIP_STG2000,	"STG2000",0},
 				{PCI_CHIP_STG1764,	"STG1764",0},
+				{PCI_CHIP_KYROII,	"Kyro-II",0},
 				{0x0000,		NULL,0}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_BUSLOGIC, {
