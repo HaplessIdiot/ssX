@@ -1,6 +1,6 @@
 /*
  * $XConsortium: s3Cursor.c,v 1.2 94/03/28 21:14:00 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.5 1994/08/12 14:01:34 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.6 1994/08/20 07:33:42 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -438,7 +438,7 @@ s3MoveCursor(pScr, x, y)
 
    if (!S3_x64_SERIES(s3ChipId))
       x -= x % s3Bpp;
-   else
+   else if (s3Bpp > 2)
       x &= ~1;
 
    UNLOCK_SYS_REGS;
