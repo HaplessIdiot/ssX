@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ia64Pci.c,v 1.2tsi Exp $ */
+/* $XFree86$ */
 /*
  * Copyright (C) 2002-2003 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -25,35 +25,12 @@
  * XFree86 Project.
  */
 
-/*
- * This file contains the glue needed to support various IA-64 chipsets.
- */
+#ifndef PCI_ZX1_H
+#define PCI_ZX1_H 1
 
-#include "460gxPCI.h"
-#include "e8870PCI.h"
-#include "zx1PCI.h"
-#include "Pci.h"
+#include <X11/Xdefs.h>
 
-void
-ia64ScanPCIWrapper(scanpciWrapperOpt flags)
-{
+Bool xf86PreScanZX1(void);
+void xf86PostScanZX1(void);
 
-    if (flags == SCANPCI_INIT) {
-
-	/* PCI configuration space probes should be done first */
-	if (xf86PreScan460GX())
-	    return;
-	if (xf86PreScanE8870())
-	    return;
-	if (xf86PreScanZX1())
-	    return;
-
-    } else /* if (flags == SCANPCI_TERM) */ {
-
-	xf86PostScan460GX();
-	xf86PostScanE8870();
-	xf86PostScanZX1();
-
-    }
-
-}
+#endif

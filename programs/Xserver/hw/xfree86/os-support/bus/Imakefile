@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/27 18:07:43 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.28 2003/01/16 16:09:10 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.29tsi Exp $
 
 #include <Server.tmpl>
 
@@ -116,8 +116,8 @@ PCIARCHSRC = sparcPci.c
 PCIARCHOBJ = sparcPci.o
 # endif
 #elif defined(ia64Architecture)
-PCIARCHSRC = ia64Pci.c 460gxPCI.c
-PCIARCHOBJ = ia64Pci.o 460gxPCI.o
+PCIARCHSRC = ia64Pci.c 460gxPCI.c e8870PCI.c zx1PCI.c
+PCIARCHOBJ = ia64Pci.o 460gxPCI.o e8870PCI.o zx1PCI.o
 #endif
 
 SRCS = Pci.c $(PCIDRVRSRC) $(SBUSDRVSRC) $(PCIARCHSRC)
