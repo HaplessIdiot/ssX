@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.21 1997/06/15 07:12:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.22 1997/06/20 09:24:50 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -367,8 +367,7 @@ int xf86CacheStipple(pDrawable, pGC)
     {
         IncrementCacheLRU(devPriv->slot);
 	return (1);
-    } 
-    else if (xf86CachableTile(pix)) {
+    } else {
         slot = FindCacheSlot(pix);
 
         if (!DoCacheStipple(slot, pDrawable, pGC)) {
@@ -1099,7 +1098,7 @@ static Bool ReduceStippleToSize8(pci, pix)
         return FALSE;
     srcp = pix->devPrivate.ptr;
     for (y = 0; y < min(8, h); y++) {
-        switch ((w + 7) / 8) {
+        switch ((w + 7) >> 3) {
         case 1 : /* width 1, 2, 4 or 8 */
             bits[y] = *(unsigned char *)srcp;
             break;
@@ -1120,7 +1119,7 @@ static Bool ReduceStippleToSize8(pci, pix)
         srcp += pix->devKind;
     }
     for (y = 8; y < h; y++) {
-        switch ((w + 7) / 8) {
+        switch ((w + 7) >> 3) {
         case 1 : /* width 1, 2, 4 or 8 */
             if (*(unsigned char *)srcp != bits[y & 7])
                 return FALSE;
@@ -1158,7 +1157,6 @@ static int DoCacheStipple(slot, pDrawable, pGC)
     WindowPtr rootWin;
     RegionRec rgnDst;
     DDXPointRec ptSrc;
-    int check_reducible;
     void (*WriteBitmapFunc)();
     pix = pGC->stipple;
 
@@ -1189,12 +1187,12 @@ static int DoCacheStipple(slot, pDrawable, pGC)
     pci->id = pix->drawable.serialNumber;
 
     /* See if we can use any hardware pattern feature. */
-    check_reducible = TRUE;
+
+    if(ReduceStippleToSize8(pci, pix)) {
     /* See if we can use a mono (color-expanded) pattern. */
-    if (xf86AccelInfoRec.Subsequent8x8PatternColorExpand
-    && ((xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_MONO_TRANSPARENCY)
-    || pGC->fillStyle == FillOpaqueStippled))
-        if (check_reducible = ReduceStippleToSize8(pci, pix)) {
+       if (xf86AccelInfoRec.Subsequent8x8PatternColorExpand
+       && ((xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_MONO_TRANSPARENCY)
+       || pGC->fillStyle == FillOpaqueStippled)) {
             /*
              * The width of the tile is 1, 2, 4, or 8.
              * The height is 1, 2, 4, or 8.
@@ -1241,14 +1239,14 @@ static int DoCacheStipple(slot, pDrawable, pGC)
             return 1;
         }
 
-    if (xf86AccelInfoRec.SubsequentFill8x8Pattern &&
-    (!(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_ALIGN_64)
-    || (xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) &&
-    (!(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_MOD_64_OFFSET)
-    || (xf86AccelInfoRec.FramebufferWidth & 63) == 0) &&
-    ((xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_TRANSPARENCY)
-    || pGC->fillStyle == FillOpaqueStippled) &&
-    xf86AccelInfoRec.BitsPerPixel != 24)
+        if (xf86AccelInfoRec.SubsequentFill8x8Pattern &&
+        (!(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_ALIGN_64)
+        || (xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN))
+        && (!(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_MOD_64_OFFSET)
+        || (xf86AccelInfoRec.FramebufferWidth & 63) == 0) &&
+        ((xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_TRANSPARENCY)
+        || pGC->fillStyle == FillOpaqueStippled) &&
+        xf86AccelInfoRec.BitsPerPixel != 24) {
         /*
          * Stipples are often 32 pixels wide. However, we are only
          * able to use the hardware pattern if the 8 pixels are
@@ -1258,7 +1256,6 @@ static int DoCacheStipple(slot, pDrawable, pGC)
          * rigging...if a certain X server that shall not be named here
          * does it, why shouldn't we.
          */
-        if (check_reducible && ReduceStippleToSize8(pci, pix)) {
             /*
              * The width of the stipple is 1, 2, 4, or 8.
              * The height is 1, 2, 4, or 8.
@@ -1300,6 +1297,13 @@ static int DoCacheStipple(slot, pDrawable, pGC)
             DEALLOCATE_LOCAL(pci);
             return 1;
         }
+    } 
+
+    if((pix->drawable.width > MaxWidth) ||
+       	     (pix->drawable.height > MaxHeight)) {
+        DEALLOCATE_LOCAL(pci);
+        return 0;
+    }
 
 REGULAR_STIPPLE:
 

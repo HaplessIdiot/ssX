@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.26 1997/05/12 13:27:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.27 1997/06/15 07:12:26 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -30,6 +30,7 @@
 
 #include "Xos.h"
 #include <signal.h>
+#include <stdio.h>
 
 #define NEED_EVENTS
 #include "X.h"
@@ -53,6 +54,9 @@
 #else
 #include "compiler.h"
 
+#ifdef XFree86LOADER
+#include "xf86_libc.h"
+#endif
 #include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
@@ -1150,7 +1154,7 @@ xf86WcmOpen(LocalDevicePtr	local)
   
     DBG(1, ErrorF("opening %s\n", common->wcmDevice));
 
-    SYSCALL(local->fd = open(common->wcmDevice, O_RDWR|O_NDELAY));
+    SYSCALL(local->fd = open(common->wcmDevice, O_RDWR|O_NDELAY, 0));
     if (local->fd == -1) {
 	ErrorF("Error opening %s : %s\n", common->wcmDevice, strerror(errno));
 	return !Success;
@@ -1905,4 +1909,59 @@ init_xf86Wacom(unsigned long    server_version)
 }
 #endif
 
+#ifdef XFree86LOADER
+/*
+ * Entry point for the loader code
+ */
+XF86ModuleVersionInfo xf86WacomVersion = {
+    "xf86Wacom",
+    MODULEVENDORSTRING,
+    MODINFOSTRING1,
+    MODINFOSTRING2,
+    XF86_VERSION_CURRENT,
+    0x00010000,
+    {0,0,0,0}
+};
+
+void
+xf86WacomModuleInit(data, magic)
+    pointer *data;
+    INT32 *magic;
+{
+    static int cnt = 0;
+
+    switch (cnt) {
+      case 0:
+	*magic = MAGIC_VERSION;
+	*data = &xf86WacomVersion;
+	cnt++;
+	break;
+	
+      case 1:
+	*magic = MAGIC_ADD_XINPUT_DEVICE;
+	*data = &wacom_stylus_assoc;
+	cnt++;
+	break;
+	
+      case 2:
+	*magic = MAGIC_ADD_XINPUT_DEVICE;
+	*data = &wacom_cursor_assoc;
+	cnt++;
+	break;
+	
+      case 3:
+	*magic = MAGIC_ADD_XINPUT_DEVICE;
+	*data = &wacom_eraser_assoc;
+	cnt++;
+	break;
+	
+      default:
+	*magic = MAGIC_DONE;
+	*data = NULL;
+	break;
+    } 
+}
+#endif
+
+      
 /* end of xf86Wacom.c */

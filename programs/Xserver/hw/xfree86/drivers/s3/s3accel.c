@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.8 1997/04/18 09:11:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.9 1997/06/10 12:30:29 hohndel Exp $ */
 
 /*
  *
@@ -38,6 +38,8 @@ void S3SubsequentDashedBresenhamLine32();
 #ifdef S3_NEWMMIO
  void S3SetupForCPUToScreenColorExpand();
  void S3SubsequentCPUToScreenColorExpand32();
+
+ static Bool LeftClipped = FALSE;
 #endif
 
 static Bool Transfer32 = FALSE;
@@ -109,15 +111,18 @@ void S3AccelInit()
     xf86AccelInfoRec.SubsequentCPUToScreenColorExpand =
 				S3SubsequentCPUToScreenColorExpand32;
 
-    xf86AccelInfoRec.ColorExpandFlags = CPU_TRANSFER_PAD_DWORD |
-				       	CPU_TRANSFER_BASE_FIXED |
-					BIT_ORDER_IN_BYTE_MSBFIRST |
-					SCANLINE_PAD_DWORD;
-
     xf86AccelInfoRec.CPUToScreenColorExpandBase = (void*) &IMG_TRANS;
     xf86AccelInfoRec.CPUToScreenColorExpandRange = 0x8000;
 
-#else
+#endif
+
+    xf86AccelInfoRec.ColorExpandFlags = CPU_TRANSFER_PAD_DWORD |
+				       	CPU_TRANSFER_BASE_FIXED |
+					BIT_ORDER_IN_BYTE_MSBFIRST |
+					SCANLINE_PAD_DWORD |
+					LEFT_EDGE_CLIPPING |
+					LEFT_EDGE_CLIPPING_NEGATIVE_X;
+
     xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand = 
 			S3SetupForScanlineScreenToScreenColorExpand;
     if(Transfer32) {
@@ -128,15 +133,11 @@ void S3AccelInit()
 			S3SubsequentScanlineScreenToScreenColorExpand16;
     }
 
-    xf86AccelInfoRec.ColorExpandFlags = BIT_ORDER_IN_BYTE_MSBFIRST|
-					VIDEO_SOURCE_GRANULARITY_PIXEL;
 
     xf86AccelInfoRec.ScratchBufferAddr = 1;
     xf86AccelInfoRec.ScratchBufferSize = 512;
     xf86AccelInfoRec.ScratchBufferBase = (void*)ScratchBuffer;
     xf86AccelInfoRec.PingPongBuffers = 1;
-#endif
-
 
     /* pixmap cache */    
     xf86AccelInfoRec.PixmapCacheMemoryStart =
@@ -153,6 +154,12 @@ void S3AccelInit()
 
 void S3Sync() {
     WaitIdle();
+#ifdef S3_NEWMMIO
+    if(LeftClipped) {
+	SET_SCISSORS_L(0);
+	LeftClipped = FALSE;
+    }	
+#endif
 }
 
 
@@ -387,6 +394,12 @@ void S3SubsequentCPUToScreenColorExpand32(x, y, w, h, skipleft)
     WaitQueue(4);
     SET_CURPT((short)x, (short)y); 
     SET_AXIS_PCNT((short)w - 1, (short)h - 1);
+
+    if(skipleft) {
+       	WaitQueue(2);
+	SET_SCISSORS_L(skipleft + x);
+	LeftClipped = TRUE;
+    }
 
     WaitIdle();
     SET_CMD(CMD_RECT | BYTSEQ | _32BIT | PCDATA | DRAW | PLANAR |

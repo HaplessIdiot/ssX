@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.26 1997/06/03 14:11:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.27 1997/06/15 07:12:26 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -82,7 +82,7 @@ extern	int	DeviceValuator;
 extern	int	ProximityIn;
 extern	int	ProximityOut;
 
-#ifndef DYNAMIC_MODULE
+#if !defined(DYNAMIC_MODULE) && !defined(XFree86LOADER)
 #ifdef JOYSTICK_SUPPORT
 extern DeviceAssocRec   joystick_assoc;
 #endif
@@ -253,7 +253,7 @@ xf86ConfigExtendedInputSection(LexPtr       val)
   int           i;
   int           token;
 
-#ifndef DYNAMIC_MODULE
+#if !defined(DYNAMIC_MODULE) && !defined(XFree86LOADER)
 # ifdef JOYSTICK_SUPPORT
   xf86AddDeviceAssoc(&joystick_assoc);
 # endif

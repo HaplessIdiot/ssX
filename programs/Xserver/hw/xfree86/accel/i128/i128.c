@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.30 1997/06/15 07:12:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.31 1997/06/15 12:32:47 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -181,7 +181,6 @@ int i128AdjustCursorXPos = 0;
 pointer i128VideoMem = NULL;
 struct i128io i128io;
 struct i128mem i128mem;
-CARD32 i128io_config1_save, i128io_config2_save;
 int i128hotX, i128hotY;
 Bool i128BlockCursor, i128ReloadCursor;
 int i128CursorStartX, i128CursorStartY, i128CursorLines;
@@ -259,7 +258,7 @@ i128Probe()
    DisplayModePtr pMode, pEnd;
    int i, tx, ty;
    int maxDisplayWidth, maxDisplayHeight;
-   unsigned short ioaddr, iobase;
+   unsigned short ioaddr;
    OFlagSet validOptions;
    unsigned PCI_CtrlIOPorts[] = { 0xCF8, 0xCFA };
    int Num_PCI_CtrlIOPorts = 2;
@@ -271,6 +270,7 @@ i128Probe()
    float mclk;
    pciConfigPtr pcrp, *pcrpp;
    unsigned char tmpl, tmph, tmp;
+   extern i128Registers iR;
 
    pcrpp = xf86scanpci(i128InfoRec.scrnIndex);
 
@@ -288,26 +288,27 @@ i128Probe()
    if (!pcrp)
       return(FALSE);
 
-   iobase = (unsigned short )pcrp->_base5 & 0xFF00;
+   iR.iobase = (unsigned short )pcrp->_base5 & 0xFF00;
 
    i128DeviceType = pcrp->_device_vendor;
 
    for (i=0; i<11; i++)  /* 11 32bit I/O address registers (0x00-0x28) */
-      PCI_DevIOPorts[i] = iobase + (i*4);
+      PCI_DevIOPorts[i] = iR.iobase + (i*4);
 
    xf86AddIOPorts(i128InfoRec.scrnIndex, 11, PCI_DevIOPorts);
    xf86EnableIOPorts(i128InfoRec.scrnIndex);
 
-   i128io.rbase_g = inl(iobase)        & 0xFFFFFF00;
-   i128io.rbase_w = inl(iobase + 0x04) & 0xFFFFFF00;
-   i128io.rbase_a = inl(iobase + 0x08) & 0xFFFFFF00;
-   i128io.rbase_b = inl(iobase + 0x0C) & 0xFFFFFF00;
-   i128io.rbase_i = inl(iobase + 0x10) & 0xFFFFFF00;
-   i128io.rbase_e = inl(iobase + 0x14) & 0xFFFF8003;
-   i128io.id =      inl(iobase + 0x18) & 0x7FFFFFFF;
-   i128io.config1 = inl(iobase + 0x1C) & 0xF3333F1F;
-   i128io.config2 = inl(iobase + 0x20) & 0xFFF70F03;
-   i128io.soft_sw = inl(iobase + 0x28) & 0x0000FFFF;
+   i128io.rbase_g = inl(iR.iobase)        & 0xFFFFFF00;
+   i128io.rbase_w = inl(iR.iobase + 0x04) & 0xFFFFFF00;
+   i128io.rbase_a = inl(iR.iobase + 0x08) & 0xFFFFFF00;
+   i128io.rbase_b = inl(iR.iobase + 0x0C) & 0xFFFFFF00;
+   i128io.rbase_i = inl(iR.iobase + 0x10) & 0xFFFFFF00;
+   i128io.rbase_e = inl(iR.iobase + 0x14) & 0xFFFF8003;
+   i128io.id =      inl(iR.iobase + 0x18) & 0x7FFFFFFF;
+   i128io.config1 = inl(iR.iobase + 0x1C) & 0xF3333F1F;
+   i128io.config2 = inl(iR.iobase + 0x20) & 0xFFF70F03;
+   i128io.soft_sw = inl(iR.iobase + 0x28) & 0x0000FFFF;
+   i128io.vga_ctl = inl(iR.iobase + 0x30) & 0x0000FFFF;
 
 #ifdef DEBUG
    ErrorF("  PCI Registers\n");
@@ -348,20 +349,22 @@ i128Probe()
    ErrorF("    CONFIG1   0x%08x\n", i128io.config1);
    ErrorF("    CONFIG2   0x%08x\n", i128io.config2);
    ErrorF("    SOFT_SW   0x%08x\n", i128io.soft_sw);
+   ErrorF("    VGA_CTL   0x%08x\n", i128io.vga_ctl);
 #endif
 
-   i128io_config1_save = i128io.config1;
-   i128io_config2_save = i128io.config2;
+   iR.config1 = i128io.config1;
+   iR.config2 = i128io.config2;
+   /* vga_ctl is saved later */
 
    /* enable all of the memory mapped windows */
 
    i128io.config1 &= 0xF300201D;
    i128io.config1 |= 0x00333F10;
-   outl(iobase + 0x1C, i128io.config1);
+   outl(iR.iobase + 0x1C, i128io.config1);
 
    i128io.config2 &= 0xFF000000;
    i128io.config2 |= 0x00500000;
-   outl(iobase + 0x20, i128io.config2);
+   outl(iR.iobase + 0x20, i128io.config2);
 
    xf86DisableIOPorts(i128InfoRec.scrnIndex);
    xf86ClearIOPortList(i128InfoRec.scrnIndex);

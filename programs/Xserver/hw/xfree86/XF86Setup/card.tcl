@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.12 1996/12/27 06:54:00 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.13 1997/06/17 08:17:52 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -18,8 +18,9 @@
 
 proc Card_create_widgets { win } {
 	global ServerList XF86Setup_library cardDevNum DeviceIDs
-	global cardDetail cardReadmeWasSeen UseConfigFile
+	global cardDetail cardReadmeWasSeen UseConfigFile cardDriverReadme
 
+	set cardDriverReadme "NONE"
 	set w [winpathprefix $win]
 	set cardDevNum 0
 	frame $w.card -width 640 -height 420 \

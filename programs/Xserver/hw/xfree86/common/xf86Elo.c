@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.18 1996/12/19 10:02:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.19 1996/12/23 06:43:23 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -60,6 +60,7 @@
 
 #include "Xos.h"
 #include <signal.h>
+#include <stdio.h>
 
 #define	 NEED_EVENTS
 #include "X.h"
@@ -78,6 +79,10 @@
 #include "extio.h"
 #else
 #include "compiler.h"
+
+#ifdef XFree86LOADER
+#include "xf86_libc.h"
+#endif
 #include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
@@ -1070,7 +1075,7 @@ xf86EloControl(DeviceIntPtr	dev,
 
       DBG(2, ErrorF("Elographics touchscreen opening : %s\n",
 		    priv->input_dev));
-      SYSCALL(local->fd = open(priv->input_dev, O_RDWR));
+      SYSCALL(local->fd = open(priv->input_dev, O_RDWR, 0));
       if (local->fd < 0) {
 	Error("Unable to open Elographics touchscreen device");
 	return !Success;
@@ -1281,5 +1286,47 @@ init_xf86Elo(unsigned long      server_version)
     } else {
 	return 1;
     }
+}
+#endif
+
+#ifdef XFree86LOADER
+/*
+ * Entry point for the loader code
+ */
+XF86ModuleVersionInfo xf86EloVersion = {
+    "xf86Elo",
+    MODULEVENDORSTRING,
+    MODINFOSTRING1,
+    MODINFOSTRING2,
+    XF86_VERSION_CURRENT,
+    0x00010000,
+    {0,0,0,0}
+};
+
+void
+xf86EloModuleInit(data, magic)
+    pointer *data;
+    INT32 *magic;
+{
+    static int cnt = 0;
+
+    switch (cnt) {
+      case 0:
+      *magic = MAGIC_VERSION;
+      *data = &xf86EloVersion;
+      cnt++;
+      break;
+      
+      case 1:
+      *magic = MAGIC_ADD_XINPUT_DEVICE;
+      *data = &elographics_assoc;
+      cnt++;
+      break;
+
+      default:
+      *magic = MAGIC_DONE;
+      *data = NULL;
+      break;
+    } 
 }
 #endif

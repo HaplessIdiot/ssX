@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.6 1997/01/24 01:02:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.7 1997/06/03 14:11:21 hohndel Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -30,14 +30,7 @@
 #include "IBMRGB.h"
 
 
-typedef struct {
-CARD32 i128_base_g[0x60/4];	/* base g registers                  */
-CARD32 i128_base_w[0x28/4];	/* base w registers                  */
-unsigned char Ti302X[0x40];		/* Ti302[05] registers               */
-unsigned char Ti3025[9];		/* Ti3025 N,M,P for PCLK, MCLK, LCLK */
-unsigned char IBMRGB[0x101];		/* IBMRGB registers                  */
-} i128Registers;
-static i128Registers iR;
+i128Registers iR;
 
 static int i128Initialized = 0;
 static Bool LUTInited = FALSE;
@@ -46,6 +39,7 @@ int i128InitCursorFlag = TRUE;
 int i128HDisplay;
 
 extern struct i128mem i128mem;
+extern struct i128io i128io;
 extern int i128Weight;
 extern int i128DisplayWidth;
 extern int i128RamdacType;
@@ -60,6 +54,17 @@ void
 saveI128state()
 #endif
 {
+        unsigned PCI_DevIOPorts[1];
+
+	/* iobase is filled in during the device probe (as well as config 1&2)*/
+	if ((i128io.id&0x7) > 1) {
+      		PCI_DevIOPorts[0] = iR.iobase + 0x30;
+                xf86AddIOPorts(i128InfoRec.scrnIndex, 1, PCI_DevIOPorts);
+                xf86EnableIOPorts(i128InfoRec.scrnIndex);
+		iR.vga_ctl = inl(iR.iobase + 0x30);
+                xf86DisableIOPorts(i128InfoRec.scrnIndex);
+	}
+
 	if (i128RamdacType == TI3025_DAC) {
 		iR.i128_base_g[INDEX_TI/4] =
 			i128mem.rbase_g[INDEX_TI/4]; /*  0x0018  */
@@ -200,6 +205,8 @@ void
 restoreI128state()
 #endif
 {
+        unsigned PCI_DevIOPorts[3];
+
 	if (i128RamdacType == TI3025_DAC) {
 		i128mem.rbase_g_b[INDEX_TI] = TI_PLL_CONTROL;
 		i128mem.rbase_g_b[DATA_TI] = 0x00;
@@ -329,6 +336,22 @@ restoreI128state()
 	i128mem.rbase_g[CRT_1CON] = iR.i128_base_g[CRT_1CON]; /*  0x0058  */
 	i128mem.rbase_g[CRT_2CON] = iR.i128_base_g[CRT_2CON]; /*  0x005C  */
 
+        PCI_DevIOPorts[0] = iR.iobase + 0x1C;
+        PCI_DevIOPorts[1] = iR.iobase + 0x20;
+        PCI_DevIOPorts[2] = iR.iobase + 0x30;
+
+        xf86AddIOPorts(i128InfoRec.scrnIndex, 3, PCI_DevIOPorts);
+        xf86EnableIOPorts(i128InfoRec.scrnIndex);
+
+	/* iobase is filled in during the device probe (as well as config 1&2)*/
+	if ((i128io.id&0x7) > 1)
+		outl(iR.iobase + 0x30, iR.vga_ctl);
+
+	outl(iR.iobase + 0x20, iR.config2);
+	outl(iR.iobase + 0x1C, iR.config1);
+
+	xf86DisableIOPorts(i128InfoRec.scrnIndex);
+
 }
 
 
@@ -402,6 +425,12 @@ i128Init(mode)
 	i128mem.rbase_w[MW0_WKEY] = 0x00000000;
 	i128mem.rbase_w[MW0_KDAT] = 0x00000000;
 	i128mem.rbase_w[MW0_MASK] = 0xFFFFFFFF;
+
+	if ((i128io.id&0x7) > 1) {
+	   	i128io.vga_ctl &= 0x0000FF00;
+   		i128io.vga_ctl |= 0x00000082;
+   		outl(iR.iobase + 0x30, i128io.vga_ctl);
+	}
 
 	if (i128RamdacType == TI3025_DAC)
 		ret = i128ProgramTi3025(mode->SynthClock);

@@ -23,19 +23,23 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.5 1996/02/04 09:10:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.6 1996/12/23 06:50:02 dawes Exp $ */
 
 static const char rcs_id[] = "Id: lnx_jstk.c,v 1.1 1995/12/20 14:06:09 lepied Exp";
 
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 #define inline __inline__
 #include <linux/joystick.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
-extern int errno;
+#ifdef XFree86LOADER
+#include "xf86_libc.h"
+#endif
+
 
 /***********************************************************************
  *
@@ -57,7 +61,7 @@ xf86JoystickOn(char *name, int *timeout, int *centerX, int *centerY)
   ErrorF("xf86JoystickOn %s\n", name);
 #endif
 
-  if ((fd = open(name, O_RDWR | O_NDELAY)) < 0)
+  if ((fd = open(name, O_RDWR | O_NDELAY, 0)) < 0)
     {
       ErrorF("Cannot open joystick '%s' (%s)\n", name,
             strerror(errno));
@@ -84,17 +88,17 @@ xf86JoystickOn(char *name, int *timeout, int *centerX, int *centerY)
   read(fd, &js, JS_RETURN);
   if (*centerX < 0) {
     *centerX = js.x;
-    if (xf86Verbose) {    
+    if (xf86Verbose) {
       ErrorF("(--) Joystick: CenterX set to %d\n", *centerX);
     }
   }
   if (*centerY < 0) {
     *centerY = js.y;
-    if (xf86Verbose) {    
+    if (xf86Verbose) {
       ErrorF("(--) Joystick: CenterY set to %d\n", *centerY);
     }
   }
-  
+
   return fd;
 }
 
@@ -169,5 +173,19 @@ int     *buttons;
   
   return 1;
 }
+
+#ifdef XFree86LOADER
+/*
+ * Entry point for XFree86 Loader
+ */
+void
+linux_jstkModuleInit(data, magic)
+    pointer *data;
+    INT32 *magic;
+{
+    *magic = MAGIC_DONE;
+    *data = NULL;
+}
+#endif
 
 /* end of lnx_jstk.c */

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.63 1997/06/08 15:31:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.64 1997/06/15 07:12:23 dawes Exp $
 
 
 
@@ -136,6 +136,20 @@ SERVERSRCS = \
 	XF86_TGA.c \
 	XF86_GLINT.c
 
+#ifndef DoLoadableServer
+XINPUT_DEV_SRCS = \
+	$(JOYSTICK_SRC) \
+	$(WACOM_SRC) \
+	$(ELOGRAPHICS_SRC) \
+	$(SUMMASKETCH_SRC)
+
+XINPUT_DEV_OBJS = \
+	$(JOYSTICK_OBJ) \
+	$(WACOM_OBJ) \
+	$(ELOGRAPHICS_OBJ) \
+	$(SUMMASKETCH_OBJ)
+#endif
+
 SRCS =	\
 	$(XF86DL_SRC) \
 	$(XCONFIGSRC).c \
@@ -153,10 +167,7 @@ SRCS =	\
 	xf86_Option.c \
 	$(KBD).c \
 	$(XF86_XINPUT_SRC) \
-	$(JOYSTICK_SRC) \
-	$(WACOM_SRC) \
-	$(ELOGRAPHICS_SRC) \
-	$(SUMMASKETCH_SRC) \
+	$(XINPUT_DEV_SRCS) \
 	$(XKBDDXSRC) \
 	$(BETASRC) \
 	$(SERVERSRCS)
@@ -171,10 +182,7 @@ OBJS = \
 	xf86Lock.o \
 	xf86_Mouse.o \
 	$(XF86_XINPUT_OBJ) \
-	$(JOYSTICK_OBJ) \
-	$(WACOM_OBJ) \
-	$(ELOGRAPHICS_OBJ) \
-	$(SUMMASKETCH_OBJ) \
+	$(XINPUT_DEV_OBJS) \
 	$(XKBDDXOBJ) \
 	$(BETAOBJ) \
 	$(KBD).o
@@ -241,6 +249,14 @@ SpecialObjectRule(xf86Summa.o,xf86Summa.c,$(SHARED_CFLAGS))
 DynamicModuleTarget(xf86Summa.so,xf86Summa.o)
 InstallDynamicModule(xf86Summa.so,$(MODULEDIR))
 #  endif
+# endif
+# if DoLoadableServer
+all:: $(XINPUT_DEV_OBJS)
+
+InstallDynamicModule($(JOYSTICK_OBJ),$(MODULEDIR))
+InstallDynamicModule($(WACOM_OBJ),$(MODULEDIR))
+InstallDynamicModule($(ELOGRAPHICS_OBJ),$(MODULEDIR))
+InstallDynamicModule($(SUMMASKETCH_OBJ),$(MODULEDIR))
 # endif
 #endif
 SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEDEFINES) $(EXT_DEFINES))

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.1 1997/06/17 08:17:55 hohndel Exp $ */
 /*
  * glint register file 
  *
@@ -160,9 +160,12 @@
 #define Render			GLINT_TAG_ADDR(0x00,0x07)
 #define		LINE		0x00
 #define		AREASTIPPLE	0x01
+#define		LINESTIPPLE	0x02
 #define		POINT		0x80
 #define		TRAPEZOID	0x40
 #define		FASTFILL	0x08
+#define		SYNCONBITMASK	0x800
+#define		SYNCONHOSTDATA	0x1000
 #define		SPANOPERATION	0x40000
 #define ContinueNewLine		GLINT_TAG_ADDR(0x00,0x08)
 #define ContinueNewDom		GLINT_TAG_ADDR(0x00,0x09)

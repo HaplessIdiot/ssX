@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.18 1996/12/23 06:43:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.19 1997/06/15 07:12:25 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -44,6 +44,9 @@
 #include "xf86Version.h"
 
 #include "osdep.h"
+#ifdef XFree86LOADER
+#define strdup(a) xf86strdup(a)
+#endif
 
 /******************************************************************************
  * debugging macro
@@ -607,4 +610,60 @@ init_xf86Jstk(unsigned long     server_version)
 }
 #endif
 
+#ifdef XFree86LOADER
+/*
+ * Entry point for the loader code
+ */
+XF86ModuleVersionInfo xf86JstkVersion = {
+    "xf86Jstk",
+    MODULEVENDORSTRING,
+    MODINFOSTRING1,
+    MODINFOSTRING2,
+    XF86_VERSION_CURRENT,
+    0x00010000,
+    {0,0,0,0}
+};
+
+void
+xf86JstkModuleInit(data, magic)
+    pointer *data;
+    INT32 *magic;
+{
+    static int cnt = 0;
+
+    switch (cnt) {
+      case 0:
+	*magic = MAGIC_VERSION;
+	*data = &xf86JstkVersion;
+	cnt++;
+	break;
+	
+      case 1:
+	*magic = MAGIC_LOAD;
+#ifdef linux
+	*data = "lnx_jstk.o";
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined (__OpenBSD__)
+	*data = "bsd_jstk.o";
+#else
+#error "Joystick XInput module not supported on this machine"
+#endif
+	cnt++;
+	break;
+
+      case 2:
+	*magic = MAGIC_ADD_XINPUT_DEVICE;
+	*data = &joystick_assoc;
+	cnt++;
+	break;
+
+      default:
+	*magic = MAGIC_DONE;
+	*data = NULL;
+	break;
+    } 
+}
+#endif
+
+	
 /* end of xf86Jstk.c */
+

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dseg.c,v 3.2 1997/04/17 09:16:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dseg.c,v 3.3 1997/04/18 09:12:27 hohndel Exp $ */
 
 /***********************************************************
 
@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.24 94/07/28 14:33:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dseg.c,v 3.2 1997/04/17 09:16:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dseg.c,v 3.3 1997/04/18 09:12:27 hohndel Exp $ */
 
 /*
  * Accelerated dashed lines.
@@ -227,7 +227,7 @@ xf86PolyDashedLine(pDrawable, pGC, mode, npt, pptInit)
 #ifdef POLYSEGMENT
 		        xf86AccelInfoRec.SubsequentDashedTwoPointLine(
 		            x1, y1, x2, y2, 
-			    bias | pGC->capStyle == CapNotLast ? 0x100 : 0,
+			    bias | (pGC->capStyle == CapNotLast ? 0x100 : 0),
 			    PatternOffset);
 #else
 		        xf86AccelInfoRec.SubsequentDashedTwoPointLine(
@@ -265,7 +265,7 @@ xf86PolyDashedLine(pDrawable, pGC, mode, npt, pptInit)
 		         */
 		        xf86AccelInfoRec.SubsequentDashedTwoPointLine(
 		            x1, y1, x2, y2, bias |
-		            pGC->capStyle == CapNotLast ? 0x100 : 0,
+		            (pGC->capStyle == CapNotLast ? 0x100 : 0),
 			    PatternOffset);
 #else
 		        xf86AccelInfoRec.SubsequentDashedTwoPointLine(

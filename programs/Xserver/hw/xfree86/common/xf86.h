@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.59 1997/05/18 12:12:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.60 1997/06/03 14:11:46 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -293,6 +293,7 @@ typedef enum {
 #define MAGIC_DONT_CHECK_UNRESOLVED	10	/* delay checking */
 
 #define MAGIC_GLX_VISUALS_INIT		11      /* GLX visuals init function */
+#define MAGIC_ADD_XINPUT_DEVICE         12      /* register xinput device */
 
 #define LD_RESOLV_IFDONE		0	/* only check if no more 
 						   delays pending */

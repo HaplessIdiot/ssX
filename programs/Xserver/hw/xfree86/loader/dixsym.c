@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.5 1997/02/27 13:58:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.6 1997/05/06 09:46:31 dawes Exp $ */
 
 
 
@@ -50,6 +50,11 @@ extern int GrabInProgress;
 extern int monitorResolution;
 extern Bool permitOldBugs;
 
+#ifdef XINPUT
+extern void InitValuatorAxisStruct();
+extern void AssignTypeAndName();
+#endif
+
 /* DIX things */
 
 extern void writev () ;
@@ -72,6 +77,10 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(FreeCursor)
   /* devices.c */
   SYMFUNC(Ones)
+  SYMFUNC(InitButtonClassDeviceStruct)
+  SYMFUNC(InitFocusClassDeviceStruct)
+  SYMFUNC(InitPtrFeedbackClassDeviceStruct)
+  SYMFUNC(InitValuatorClassDeviceStruct)
   /* dispatch.c */
   SYMVAR(dispatchException)
   SYMVAR(isItTimeToYield)
@@ -193,6 +202,7 @@ LOOKUP dixLookupTab[] = {
   /* access.c */
   SYMFUNC(LocalClient)
   /* util.c */
+  SYMFUNC(Error)
   SYMFUNC(ErrorF)
   SYMFUNC(FatalError)
   SYMVAR(Must_have_memory)
@@ -214,6 +224,14 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(GrabInProgress)
   /* utils.c */
   SYMFUNC(AdjustWaitForDelay)
+
+#ifdef XINPUT
+  /* Xi */
+  /* exevents.c */
+  SYMFUNC(InitValuatorAxisStruct)
+  /* extinit.c */
+  SYMFUNC(AssignTypeAndName)
+#endif
 
   /* libfont.a */
   SYMFUNC(GetGlyphs)

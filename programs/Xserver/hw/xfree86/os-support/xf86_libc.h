@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.5 1997/03/22 09:36:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.6 1997/04/18 09:11:59 hohndel Exp $ */
 
 
 
@@ -75,6 +75,7 @@ typedef struct _xf86dirent *XF86DIRENT;
 #define strcmp(a,b)	xf86strcmp(a,b)
 #define strncmp(a,b,c)	xf86strncmp(a,b,c)
 #define strlen(a)	xf86strlen(a)
+#define strdup(a)       xf86strdup(a)
 
 /*
  * some math functions
@@ -88,6 +89,15 @@ typedef struct _xf86dirent *XF86DIRENT;
 #define cos(a)		xf86cos(a)
 #define ffs(a)          xf86ffs(a)
 #define fabs(a)         xf86fabs(a)
+
+/*
+ * Basic I/O functions 
+ */
+#define open(a,b,c)     xf86open(a,b,c)
+#define close(a)        xf86close(a)
+#define ioctl(a,b,c)    xf86ioctl(a,b,c)
+#define read(a,b,c)     xf86read(a,b,c)
+#define write(a,b,c)    xf86write(a,b,c)
 
 /*
  * FILE is not really compatible accross operating systems
@@ -112,13 +122,15 @@ typedef struct _xf86dirent *XF86DIRENT;
  * misc other functions we provide
  */
 #define getenv(a)	xf86getenv(a)
-
+#define strerror(a)     xf86strerror(a)
+#define errno           xf86errno
 
 #endif /* DONT_DEFINE_WRAPPERS */
 
 /*
  * at this point I don't think we support any non-ANSI compilers...
  */
+extern int xf86errno;
 
 extern void * xf86memmove(void *, const void *, INT32);
 
@@ -137,6 +149,8 @@ extern char * xf86strncpy(char *, const char *, INT32);
 extern int xf86strcmp(const char *, const char *);
 
 extern int xf86strncmp(const char *, const char *, INT32);
+
+extern char *xf86strdup(const char *);
 
 extern size_t xf86strlen(const char *);
 
@@ -179,6 +193,16 @@ XF86DIRENT xf86readdir(XF86DIR dirp);
 void xf86rewinddir(XF86DIR dirp);
 
 int xf86closedir(XF86DIR dirp);
+
+int xf86open(const char *path, int flags, ...);
+
+int xf86close(int fd);
+
+int xf86ioctl(int fd, unsigned long request, char *argp);
+
+unsigned int xf86read(int fd, void *buf, size_t nbytes);
+
+unsigned int xf86write(int fd, void *buf, size_t nbytes);
 
 #endif /* XFree86LOADER */
 

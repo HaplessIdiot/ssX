@@ -20,10 +20,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.5 1996/12/18 03:12:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.6 1997/06/15 07:12:25 dawes Exp $ */
 
 #include "Xos.h"
 #include <signal.h>
+#include <stdio.h>
 
 #define NEED_EVENTS
 #include "X.h"
@@ -45,6 +46,9 @@
 #else
 #include "compiler.h"
 
+#ifdef XFree86LOADER
+#include "xf86_libc.h"
+#endif
 #include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
@@ -604,7 +608,7 @@ xf86SumOpen(LocalDevicePtr local)
 
     DBG(1, ErrorF("opening %s\n", priv->sumDevice));
 
-    SYSCALL(local->fd = open(priv->sumDevice, O_RDWR|O_NDELAY));
+    SYSCALL(local->fd = open(priv->sumDevice, O_RDWR|O_NDELAY, 0));
     if (local->fd == -1) {
 	Error(priv->sumDevice);
 	return !Success;
@@ -1031,4 +1035,45 @@ init_xf86Summa(unsigned long server_version)
 }
 #endif
 
+#ifdef XFree86LOADER
+/*
+ * Entry point for the loader code
+ */
+XF86ModuleVersionInfo xf86SummaVersion = {
+    "xf86Summa",
+    MODULEVENDORSTRING,
+    MODINFOSTRING1,
+    MODINFOSTRING2,
+    XF86_VERSION_CURRENT,
+    0x00010000,
+    {0,0,0,0}
+};
+
+void
+xf86SummaModuleInit(data, magic)
+    pointer *data;
+    INT32 *magic;
+{
+    static int cnt = 0;
+
+    switch (cnt) {
+      case 0:
+      *magic = MAGIC_VERSION;
+      *data = &xf86SummaVersion;
+      cnt++;
+      break;
+      
+      case 1:
+      *magic = MAGIC_ADD_XINPUT_DEVICE;
+      *data = &summasketch_assoc;
+      cnt++;
+      break;
+
+      default:
+      *magic = MAGIC_DONE;
+      *data = NULL;
+      break;
+    } 
+}
+#endif
 /* end of xf86Summa.c */
