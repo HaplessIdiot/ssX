@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.24 2002/02/05 19:16:09 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.25 2002/03/28 02:21:03 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -84,8 +84,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 /* we don't need -lm */
 #define MathLibrary             /**/
 
-/* we don't have a termcap library */
-#define TermcapLibrary          /**/
+#define TermcapLibrary          -lcurses
 
 /* we don't have a dbm library */
 #define DBMLibrary              /**/

@@ -1,4 +1,6 @@
 XFree86 4.2.99.1 (XX March 2002)
+  61. Build with libcurses on Darwin for forward compatibility
+      (Jordan Hubbard).
   60. Add Trident CyberBladeXP acceleration (Alan Hourihane).
   59. Major XDarwin rootless mode rewrite:
        - Use Carbon to draw directly to windows' backing buffers, rather
@@ -14681,4 +14683,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2191 2002/03/28 02:21:04 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2192 2002/04/01 12:06:17 alanh Exp $
