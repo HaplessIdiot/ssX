@@ -1,3 +1,12 @@
+XFree86 3.1.2A (19 November 1995)
+ 77. Added a Beta Report template form.
+ 76. Update xf86config for some of the new Ramdacs.
+ 75. Allow 'Ramdac "ibm_rgb526" to be recognised by the S3 server.  It
+     then treats it as an RGB524.
+ 74. Modify the beta startup message usage so that it gets printed once
+     for each different server started.
+ 73. Fix for AGX-010 clock probing (Henry Worth).
+
 XFree86 3.1.2e (16 November 1995)
  72. Updates to the Cards database.
  71. S3 868 + AT&T 20C409 support (8/15/16/24bpp) without pixmux, and
