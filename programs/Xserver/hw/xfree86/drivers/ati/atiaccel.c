@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiaccel.c,v 1.2 2001/04/03 17:13:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiaccel.c,v 1.3 2001/04/03 22:19:34 dawes Exp $ */
 /*
  * Copyright 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -41,7 +41,6 @@ ATIInitializeAcceleration
 {
     BoxRec       ScreenArea;
     unsigned int scanlines;
-    int          y2;
 
     if (!pATI->OptionAccel)
         return TRUE;
@@ -64,11 +63,11 @@ ATIInitializeAcceleration
 
     ScreenArea.x1 = ScreenArea.y1 = 0;
     ScreenArea.x2 = pATI->displayWidth;
-    y2 = pScreenInfo->videoRam * 1024 * 8 / pATI->displayWidth /
+    scanlines = pScreenInfo->videoRam * 1024 * 8 / pATI->displayWidth /
         pATI->bitsPerPixel;
-    if (y2 > ATIMach64MaxY)
-        y2 = ATIMach64MaxY;
-    ScreenArea.y2 = (short int)y2;
+    if (scanlines > ATIMach64MaxY)
+        scanlines = ATIMach64MaxY;
+    ScreenArea.y2 = (short int)scanlines;
     xf86InitFBManager(pScreen, &ScreenArea);
 
     if (XAAInit(pScreen, pATI->pXAAInfo))
