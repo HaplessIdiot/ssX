@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.74 2001/05/10 21:05:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.75 2001/05/15 10:19:40 eich Exp $ */
 
 /*
  * Authors:
@@ -170,6 +170,7 @@ typedef enum {
   OPTION_SHOWCACHE,
   OPTION_VIDEO_KEY,
   OPTION_NO_SLI,
+  OPTION_TEXTURED_VIDEO,
   OPTION_DRI
 } TDFXOpts;
 
@@ -180,6 +181,7 @@ static const OptionInfoRec TDFXOptions[] = {
   { OPTION_SHOWCACHE, "ShowCache", OPTV_BOOLEAN, {0}, FALSE},
   { OPTION_VIDEO_KEY, "VideoKey", OPTV_INTEGER, {0}, FALSE},
   { OPTION_NO_SLI, "NoSLI", OPTV_BOOLEAN, {0}, FALSE},
+  { OPTION_TEXTURED_VIDEO, "TexturedVideo", OPTV_BOOLEAN, {1}, FALSE},
   { OPTION_DRI, "DRI", OPTV_BOOLEAN, {0}, FALSE},
   { -1, NULL, OPTV_NONE, {0}, FALSE}
 };
@@ -465,12 +467,12 @@ TDFXProbe(DriverPtr drv, int flags) {
 static int
 TDFXCountRam(ScrnInfoPtr pScrn) {
   TDFXPtr pTDFX;
-  int memSize;
-  int memType=-1; /* SDRAM or SGRAM */
+  int vmemSize;
+  int vmemType=-1; /* SDRAM or SGRAM */
 
   pTDFX = TDFXPTR(pScrn);
   TDFXTRACE("TDFXCountRam start\n");
-  memSize=0;
+  vmemSize=0;
   if (pTDFX->PIOBase[0]) {
     CARD32 
       partSize,                 /* size of SGRAM chips in Mbits */
@@ -482,10 +484,10 @@ TDFXCountRam(ScrnInfoPtr pScrn) {
       miscInit1;
 
     /* determine memory type: SDRAM or SGRAM */
-    memType = MEM_TYPE_SGRAM;
+    vmemType = MEM_TYPE_SGRAM;
     dramInit1_strap = pTDFX->readLong(pTDFX, DRAMINIT1);
     dramInit1_strap &= SST_MCTL_TYPE_SDRAM;
-    if (dramInit1_strap) memType = MEM_TYPE_SDRAM;
+    if (dramInit1_strap) vmemType = MEM_TYPE_SDRAM;
 
     /* set memory interface delay values and enable refresh */
     /* these apply to all RAM vendors */
@@ -505,8 +507,8 @@ TDFXCountRam(ScrnInfoPtr pScrn) {
     dramInit0_strap = pTDFX->readLong(pTDFX, DRAMINIT0);
 
     if (pTDFX->ChipType<=PCI_CHIP_VOODOO3) { /* Banshee/V3 */
-      if (memType == MEM_TYPE_SDRAM) {
-	memSize = 16;
+      if (vmemType == MEM_TYPE_SDRAM) {
+	vmemSize = 16;
       } else {
 	nChips = ((dramInit0_strap & SST_SGRAM_NUM_CHIPSETS) == 0) ? 4 : 8;
     
@@ -519,22 +521,22 @@ TDFXCountRam(ScrnInfoPtr pScrn) {
 		 (dramInit0_strap & SST_SGRAM_TYPE) << SST_SGRAM_TYPE_SHIFT );
 	  return 0;
 	}
-	memSize = (nChips * partSize) / 8;      /* in MBytes */
+	vmemSize = (nChips * partSize) / 8;      /* in MBytes */
       }
     } else { /* V4, V5 */
       nChips = ((dramInit0_strap & SST_SGRAM_NUM_CHIPSETS)==0) ? 4 : 8;
       partSize=1<<((dramInit0_strap&0x38000000)>>28);
       banks=((dramInit0_strap&BIT(30))==0) ? 2 : 4;
-      memSize=nChips*partSize*banks;
+      vmemSize=nChips*partSize*banks;
     }
     TDFXTRACEREG("dramInit0 = %x dramInit1 = %x\n", dramInit0_strap, dramInit1_strap);
-    TDFXTRACEREG("MemConfig %d chips %d size %d total\n", nChips, partSize, memSize);
+    TDFXTRACEREG("MemConfig %d chips %d size %d total\n", nChips, partSize, vmemSize);
 
     /*
       disable block writes for SDRAM
     */
     miscInit1 = pTDFX->readLong(pTDFX, MISCINIT1);
-    if ( memType == MEM_TYPE_SDRAM ) {
+    if ( vmemType == MEM_TYPE_SDRAM ) {
       miscInit1 |= SST_DISABLE_2D_BLOCK_WRITE;
     }
     miscInit1|=1;
@@ -542,7 +544,7 @@ TDFXCountRam(ScrnInfoPtr pScrn) {
   }
 
   /* return # of KBytes of board memory */
-  return memSize*1024;
+  return vmemSize*1024;
 }
 
 #if 0
@@ -981,6 +983,12 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShowCache %s\n", pTDFX->ShowCache ? "Enabled" : "Disabled");
   } else {
     pTDFX->ShowCache = FALSE;
+  }
+
+  if (xf86GetOptValBool(pTDFX->Options, OPTION_TEXTURED_VIDEO, &(pTDFX->TextureXvideo))) {
+    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Texture Xvideo Adaptor %s\n", pTDFX->TextureXvideo ? "Enabled" : "Disabled");
+  } else {
+    pTDFX->TextureXvideo = FALSE;
   }
 
   if (xf86GetOptValInteger(pTDFX->Options, OPTION_VIDEO_KEY, &(pTDFX->videoKey))) {
@@ -1876,7 +1884,8 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   pTDFX->stride = pScrn->displayWidth*pTDFX->cpp;
 
   /* enough to do DVD */
-  pTDFX->pixmapCacheLinesMin = ((720*480*2) + pTDFX->stride - 1)/pTDFX->stride;
+  pTDFX->pixmapCacheLinesMin = ((720*480*pTDFX->cpp) + 
+					pTDFX->stride - 1)/pTDFX->stride;
 
   allocateMemory(pScrn);
 
@@ -2180,12 +2189,12 @@ TDFXCloseScreen(int scrnIndex, ScreenPtr pScreen)
   if (pTDFX->scanlineColorExpandBuffers[1])
     xfree(pTDFX->scanlineColorExpandBuffers[1]);
   pTDFX->scanlineColorExpandBuffers[1]=0;
-
-  if (pTDFX->adaptor) {
-     xfree(pTDFX->adaptor->pPortPrivates[0].ptr);
-     xf86XVFreeVideoAdaptorRec(pTDFX->adaptor);
-     pTDFX->adaptor = NULL;
-  }
+  if (pTDFX->overlayAdaptor)
+    xfree(pTDFX->overlayAdaptor);
+  pTDFX->overlayAdaptor=0;
+  if (pTDFX->textureAdaptor)
+    xfree(pTDFX->textureAdaptor);
+  pTDFX->textureAdaptor=0;
 
   pScrn->vtSema=FALSE;
 
