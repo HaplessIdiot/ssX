@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.8 1999/03/14 03:22:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.9 1999/03/21 07:35:16 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -25,9 +25,7 @@ be used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the XFree86 Project.
 */
 
-#define COMPMACROS3X
 #include "s3v.h"
-#undef COMPMACROS3X
 #include "s3v_macros.h"
 
 #include "miline.h"
@@ -99,9 +97,6 @@ S3VAccelInit(ScreenPtr pScreen)
     infoPtr->Flags = PIXMAP_CACHE |
 		     LINEAR_FRAMEBUFFER |
 		     OFFSCREEN_PIXMAPS;
-
-    infoPtr->Flags = LINEAR_FRAMEBUFFER;
-
 
     infoPtr->Sync = S3VAccelSync;
 
@@ -207,9 +202,10 @@ S3VAccelInit(ScreenPtr pScreen)
 
     xf86InitFBManager(pScreen, &AvailFBArea);
 
+    /* make sure offscreen pixmaps aren't bigger than our address space */
+    infoPtr->maxOffPixWidth  = 2048;
+    infoPtr->maxOffPixHeight = 2048;
 
-
-    
     return (XAAInit(pScreen, infoPtr));
 } 
 
@@ -225,8 +221,15 @@ S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
 {
     unsigned char tmp;
     int r;
-    int32  fifo_control, miu_control, streams_timeout, misc_timeout;
-    COMPVARS;  	  
+    CARD32 fifo_control = 0, miu_control = 0;
+    CARD32 streams_timeout = 0, misc_timeout = 0;
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+	S3VPtr ps3v = S3VPTR(pScrn);
+  	int vgaCRIndex, vgaCRReg, vgaIOBase;
+  	vgaIOBase = hwp->IOBase;
+  	vgaCRIndex = vgaIOBase + 4;
+  	vgaCRReg = vgaIOBase + 5;  	  
+
 
     if (from_timeout) {
       if (ps3v->GEResetCnt++ < 10 || xf86GetVerbosity() > 1)

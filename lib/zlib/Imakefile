@@ -4,7 +4,7 @@ XCOMM $TOG: Imakefile /main/4 1998/02/04 14:32:56 kaleb $
 
 
 
-XCOMM $XFree86: xc/lib/zlib/Imakefile,v 1.3 1998/10/03 09:07:38 dawes Exp $
+XCOMM $XFree86: xc/lib/zlib/Imakefile,v 1.4 1998/12/20 11:57:22 dawes Exp $
 
 #define DoNormalLib   YES
 #define DoSharedLib   NO
@@ -14,7 +14,12 @@ XCOMM $XFree86: xc/lib/zlib/Imakefile,v 1.3 1998/10/03 09:07:38 dawes Exp $
 #define HasSharedData NO
 #define LibName       z
 #define SoRev         SOZLIBREV
+#if OsNeedZlibHeaders
+#define LibHeaders    YES
+HEADERS = zconf.h zlib.h
+#else
 #define LibHeaders    NO
+#endif
 
 SRCS = adler32.c compress.c crc32.c gzio.c uncompr.c deflate.c \
        trees.c zutil.c inflate.c infblock.c inftrees.c \

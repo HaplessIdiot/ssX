@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.53 1999/03/20 08:59:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.54 1999/03/21 07:35:06 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1487,6 +1487,8 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	if (pScrn->bitsPerPixel == 16) {
 	    if (cPtr->Flags & ChipsLinearSupport) {
 		cPtr->Flags |= ChipsOverlay8plus16;
+		pScrn->colorKey = TRANSPARENCY_KEY;
+		pScrn->overlayFlags = OVERLAY_8_16_DUALFB;
 		cPtr->Flags &= ~ChipsAccelSupport;  /* Acceleration disabled */
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 			   "PseudoColor overlay enabled - acceleration disabled.\n");
@@ -3263,8 +3265,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    ret = cfb8_16ScreenInit(pScreen, (unsigned char *)FBStart + 
 			cPtr->FbOffset16, FBStart, pScrn->virtualX,
 			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth, pScrn->displayWidth,
-			TRANSPARENCY_KEY);
+			pScrn->displayWidth, pScrn->displayWidth);
 	else
 	    ret = cfb16ScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,

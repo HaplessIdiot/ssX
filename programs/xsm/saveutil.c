@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/xsm/saveutil.c,v 1.3 1999/03/07 14:23:44 dawes Exp $ */
 
 #include "xsm.h"
 #include "log.h"
@@ -77,7 +77,7 @@ ReadSave(char *session_name, char **sm_id)
     buflen = 0;
 
     /* Read version # */
-    getline(&buf, &buflen, f);
+    getnextline(&buf, &buflen, f);
     if((p = strchr(buf, '\n'))) *p = '\0';
     version_number = atoi (buf);
     if (version_number > SAVEFILE_VERSION)
@@ -91,20 +91,20 @@ ReadSave(char *session_name, char **sm_id)
     }
 
     /* Read SM's id */
-    getline(&buf, &buflen, f);
+    getnextline(&buf, &buflen, f);
     if((p = strchr(buf, '\n'))) *p = '\0';
     *sm_id = XtNewString(buf);
 
     /* Read number of clients running in the last session */
     if (version_number >= 2)
     {
-	getline(&buf, &buflen, f);
+	getnextline(&buf, &buflen, f);
 	if((p = strchr(buf, '\n'))) *p = '\0';
 	num_clients_in_last_session = atoi (buf);
     }
 
     state = 0;
-    while(getline(&buf, &buflen, f)) {
+    while(getnextline(&buf, &buflen, f)) {
 	if((p = strchr(buf, '\n'))) *p = '\0';
 	for(p = buf; *p && isspace(*p); p++) /* LOOP */;
 	if(*p == '#') continue;
@@ -204,7 +204,7 @@ ReadSave(char *session_name, char **sm_id)
 	String strbuf;
 	int bufsize = 0;
 
-	getline(&buf, &buflen, f);
+	getnextline(&buf, &buflen, f);
 	if((p = strchr(buf, '\n'))) *p = '\0';
 	non_session_aware_count = atoi (buf);
 
@@ -215,7 +215,7 @@ ReadSave(char *session_name, char **sm_id)
 
 	    for (i = 0; i < non_session_aware_count; i++)
 	    {
-		getline(&buf, &buflen, f);
+		getnextline(&buf, &buflen, f);
 		if((p = strchr(buf, '\n'))) *p = '\0';
 		non_session_aware_clients[i] = (char *) malloc (
 		    strlen (buf) + 2);
@@ -433,7 +433,7 @@ DeleteSession(char *session_name)
     buflen = 0;
 
     /* Read version # */
-    getline(&buf, &buflen, f);
+    getnextline(&buf, &buflen, f);
     if((p = strchr(buf, '\n'))) *p = '\0';
     version_number = atoi (buf);
     if (version_number > SAVEFILE_VERSION)
@@ -446,15 +446,15 @@ DeleteSession(char *session_name)
     }
 
     /* Skip SM's id */
-    getline(&buf, &buflen, f);
+    getnextline(&buf, &buflen, f);
 
     /* Skip number of clients running in the last session */
     if (version_number >= 2)
-	getline(&buf, &buflen, f);
+	getnextline(&buf, &buflen, f);
 
     state = 0;
     foundDiscard = 0;
-    while(getline(&buf, &buflen, f)) {
+    while(getnextline(&buf, &buflen, f)) {
 	if((p = strchr(buf, '\n'))) *p = '\0';
 	for(p = buf; *p && isspace(*p); p++) /* LOOP */;
 	if(*p == '#') continue;
@@ -512,7 +512,7 @@ DeleteSession(char *session_name)
 
 
 Bool
-getline(char **pbuf, int *plen, FILE *f)
+getnextline(char **pbuf, int *plen, FILE *f)
 {
 	int c;
 	int i;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.8 1999/02/28 11:19:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.9 1999/03/14 05:51:05 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -978,6 +978,23 @@ xf86ReadPciBIOS(unsigned long Base, unsigned long Offset, PCITAG Tag,
     return ret;
 }
 
-#endif /* INCLUDE_XF86_MAP_PCI_MEM */
+#elif defined(__sparc__)
 
+pointer
+xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, pointer Base,
+		unsigned long Size)
+{
+    FatalError("xf86MapPciMem: Unsupported on SPARC\n");
+    return((pointer)-1);
+}
+
+int
+xf86ReadPciBIOS(unsigned long Base, unsigned long Offset, PCITAG Tag,
+		unsigned char *Buf, int Len)
+{
+    FatalError("xf86ReadPciBIOS: Unsupported on SPARC\n");
+    return -1;
+}
+
+#endif /* INCLUDE_XF86_MAP_PCI_MEM */
 

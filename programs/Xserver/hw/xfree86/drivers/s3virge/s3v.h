@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.8 1999/03/14 03:22:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.9 1999/03/21 07:35:16 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -222,7 +222,7 @@ typedef struct {
   /* ViRGE options -start- */
   
   /* Enable PCI burst mode for reads? */
-  Bool 		pci_burst_on;
+  Bool 		pci_burst;
   /* Diasable PCI retries */
   Bool		NoPCIRetry;
   /* Adjust fifo for acceleration? */
@@ -278,14 +278,6 @@ typedef struct {
 #else
 #define PVERB5(arg) xf86ErrorFVerb(2, arg)
 #define VERBLEV	2
-#endif
-
-
-
-/******************* compat. macros **********************/
-
-#ifdef COMPMACROS3X
-#include "s3v_comp.h"
 #endif
 
 

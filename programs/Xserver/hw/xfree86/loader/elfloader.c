@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.17 1999/03/14 11:18:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.18 1999/03/21 07:35:21 dawes Exp $ */
 
 /*
  *
@@ -162,7 +162,7 @@ typedef struct _elf_reloc {
 #if defined(i386)
 	Elf_Rel	*rel;
 #endif
-#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__)
+#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__) || defined(__sparc__)
 	Elf_Rela	*rel;
 #endif
 	ELFModulePtr	file;
@@ -188,7 +188,7 @@ static int ELFhashCleanOut(void *, itemPtr);
 static char *ElfGetStringIndex(ELFModulePtr, int, int);
 static char *ElfGetString(ELFModulePtr, int);
 static char *ElfGetSectionName(ELFModulePtr, int);
-#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__)
+#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__) || defined(__sparc__)
 static ELFRelocPtr ElfDelayRelocation(ELFModulePtr, unsigned char *, Elf_Rela *);
 #else
 static ELFRelocPtr ElfDelayRelocation(ELFModulePtr, unsigned char *, Elf_Rel *);
@@ -198,7 +198,7 @@ static LOOKUP *ElfCreateCOMMON(ELFModulePtr);
 static char *ElfGetSymbolNameIndex(ELFModulePtr, int, int);
 static char *ElfGetSymbolName(ELFModulePtr, int);
 static Elf_Addr ElfGetSymbolValue(ELFModulePtr, int);
-#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__)
+#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__) || defined(__sparc__)
 static ELFRelocPtr Elf_RelocateEntry(ELFModulePtr, unsigned char *, Elf_Rela *);
 #else
 static ELFRelocPtr Elf_RelocateEntry(ELFModulePtr, unsigned char *, Elf_Rel *);
@@ -231,7 +231,7 @@ unsigned char	*secp;
 #if defined(i386)
 Elf_Rel	*rel;
 #endif
-#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__)
+#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__) || defined(__sparc__)
 Elf_Rela	*rel;
 #endif
 {
@@ -247,7 +247,7 @@ Elf_Rela	*rel;
     reloc->next=0;
 #ifdef ELFDEBUG
     ELFDEBUG("ElfDelayRelocation %lx: file %lx, sec %lx, r_offset 0x%x, r_info 0x%x", reloc, elffile, secp, rel->r_offset, rel->r_info);
-#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__)
+#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__) || defined(__sparc__)
     ELFDEBUG(", r_addend 0x%x", rel->r_addend);
 #endif
     ELFDEBUG("\n" );
@@ -687,13 +687,16 @@ unsigned char *secp;	/* Begining of the target section */
 #if defined(i386)
 Elf_Rel	*rel;
 #endif
-#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__)
+#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__) || defined(__sparc__)
 Elf_Rela	*rel;
 #endif
 {
     unsigned int *dest32;	/* address of the 32 bit place being modified */
-#if defined(__powerpc__) || defined(__mc68000__)
+#if defined(__powerpc__) || defined(__mc68000__) || defined(__sparc__)
     unsigned short *dest16;	/* address of the 16 bit place being modified */
+#endif
+#if defined(__sparc__)
+    unsigned char *dest8;	/* address of the 8 bit place being modified */
 #endif
 #if defined(__alpha__)
     unsigned int *dest32h;	/* address of the high 32 bit place being modified */
@@ -707,7 +710,7 @@ Elf_Rela	*rel;
 	ELFDEBUG( "%lx %d %d\n", rel->r_offset,
 		ELF_R_SYM(rel->r_info),ELF_R_TYPE(rel->r_info) );
 #endif
-#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__)
+#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__) || defined(__sparc__)
 	ELFDEBUG( "%x %d %d %x\n", rel->r_offset,
 		ELF_R_SYM(rel->r_info),ELF_R_TYPE(rel->r_info),
 		rel->r_addend );
@@ -1554,6 +1557,131 @@ ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
 	    break;
 #endif /* PowerMAX_OS */
 #endif /* __powerpc__ */
+#ifdef __sparc__
+	case R_SPARC_RELATIVE:
+		dest32 = (unsigned int *)(secp + rel->r_offset);
+		*dest32 += (unsigned int)secp + rel->r_addend;
+		break;
+
+	case R_SPARC_GLOB_DAT:
+	case R_SPARC_32:
+		dest32 = (unsigned int *)(secp + rel->r_offset);
+		symval = ElfGetSymbolValue(elffile, ELF_R_SYM(rel->r_info));
+		if(!symval)
+			return ElfDelayRelocation(elffile, secp, rel);
+		symval += rel->r_addend;
+		*dest32 = symval;
+		break;
+
+	case R_SPARC_JMP_SLOT:
+		dest32 = (unsigned int *)(secp + rel->r_offset);
+		symval = ElfGetSymbolValue(elffile, ELF_R_SYM(rel->r_info));
+		if(!symval)
+			return ElfDelayRelocation(elffile, secp, rel);
+
+		/* Before we change it the PLT entry looks like:
+		 *
+		 * pltent:	sethi	%hi(rela_plt_offset), %g1
+		 *		b,a	PLT0
+		 *		nop
+		 *
+		 * We change it into:
+		 *
+		 * pltent:	sethi	%hi(rela_plt_offset), %g1
+		 *		sethi	%hi(symval), %g1
+		 *		jmp	%g1 + %lo(symval), %g0
+		 */
+		symval += rel->r_addend;
+		dest32[2] = 0x81c06000 | (symval & 0x3ff);
+		__asm __volatile("flush %0 + 0x8" : : "r" (dest32));
+		dest32[1] = 0x03000000 | (symval >> 10);
+		__asm __volatile("flush %0 + 0x4" : : "r" (dest32));
+		break;
+
+	case R_SPARC_8:
+		dest8 = (unsigned char *)(secp + rel->r_offset);
+		symval = ElfGetSymbolValue(elffile, ELF_R_SYM(rel->r_info));
+		symval += rel->r_addend;
+		if(!symval)
+			return ElfDelayRelocation(elffile, secp, rel);
+		*dest8 = symval;
+		break;
+
+	case R_SPARC_16:
+		dest16 = (unsigned short *)(secp + rel->r_offset);
+		symval = ElfGetSymbolValue(elffile, ELF_R_SYM(rel->r_info));
+		symval += rel->r_addend;
+		if(!symval)
+			return ElfDelayRelocation(elffile, secp, rel);
+		*dest16 = symval;
+		break;
+
+	case R_SPARC_DISP8:
+		dest8 = (unsigned char *)(secp + rel->r_offset);
+		symval = ElfGetSymbolValue(elffile, ELF_R_SYM(rel->r_info));
+		symval += rel->r_addend;
+		if(!symval)
+			return ElfDelayRelocation(elffile, secp, rel);
+		*dest8 = (symval - (Elf32_Addr) dest8);
+		break;
+
+	case R_SPARC_DISP16:
+		dest16 = (unsigned short *)(secp + rel->r_offset);
+		symval = ElfGetSymbolValue(elffile, ELF_R_SYM(rel->r_info));
+		if(!symval)
+			return ElfDelayRelocation(elffile, secp, rel);
+		symval += rel->r_addend;
+		*dest16 = (symval - (Elf32_Addr) dest16);
+		break;
+
+	case R_SPARC_DISP32:
+		dest32 = (unsigned int *)(secp + rel->r_offset);
+		symval = ElfGetSymbolValue(elffile, ELF_R_SYM(rel->r_info));
+		if(!symval)
+			return ElfDelayRelocation(elffile, secp, rel);
+		symval += rel->r_addend;
+		*dest32 = (symval - (Elf32_Addr) dest32);
+		break;
+
+	case R_SPARC_LO10:
+		dest32 = (unsigned int *)(secp + rel->r_offset);
+		symval = ElfGetSymbolValue(elffile, ELF_R_SYM(rel->r_info));
+		if(!symval)
+			return ElfDelayRelocation(elffile, secp, rel);
+		symval += rel->r_addend;
+		*dest32 = (*dest32 & ~0x3ff) | (symval & 0x3ff);
+		break;
+
+	case R_SPARC_WDISP30:
+		dest32 = (unsigned int *)(secp + rel->r_offset);
+		symval = ElfGetSymbolValue(elffile, ELF_R_SYM(rel->r_info));
+		if(!symval)
+			return ElfDelayRelocation(elffile, secp, rel);
+		symval += rel->r_addend;
+		*dest32 = ((*dest32 & 0xc0000000) |
+			   ((symval - (Elf32_Addr) dest32) >> 2));
+		break;
+
+	case R_SPARC_HI22:
+		dest32 = (unsigned int *)(secp + rel->r_offset);
+		symval = ElfGetSymbolValue(elffile, ELF_R_SYM(rel->r_info));
+		if(!symval)
+			return ElfDelayRelocation(elffile, secp, rel);
+		symval += rel->r_addend;
+		*dest32 = (*dest32 & 0xffc00000) | (symval >> 10);
+		break;
+
+	case R_SPARC_NONE:
+		break;
+
+	case R_SPARC_COPY:
+		/* Fix your code...  I'd rather dish out an error here
+		 * so people will not link together PIC and non-PIC
+		 * code into a final driver object file.
+		 */
+		ErrorF("Elf_RelocateEntry()  Copy relocs not supported on Sparc.\n");
+		break;
+#endif
 	default:
 	    ErrorF(
 		   "Elf_RelocateEntry() Unsupported relocation type %d\n",
@@ -1573,7 +1701,7 @@ int	index; /* The section to use as relocation data */
 #if defined(i386)
     Elf_Rel	*rel=(Elf_Rel *)elffile->saddr[index];
 #endif
-#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__)
+#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__) || defined(__sparc__)
     Elf_Rela	*rel=(Elf_Rela *)elffile->saddr[index];
 #endif
     Elf_Sym	*syms;
@@ -1912,7 +2040,7 @@ ELFDEBUG(".rodata1 starts at %lx\n", elffile->rodata1 );
 		continue;
 		}
 #endif /* i386/alpha */
-#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__)
+#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__) || defined(__sparc__)
 	/* .rela.text */
 	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
 		   ".rela.text" ) == 0 ) {

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbcpyarea.c,v 1.1 1999/01/03 03:58:55 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -98,14 +98,11 @@ cfbDoBitblt8To32(
 	    }
 	}
     } else {  /* it ain't pretty, but hey */
-	register unsigned char tmp;
 	for(;nbox; pbox++, pptSrc++, nbox--) {
 	    data8 = ptr8 + (pptSrc->y * pitch8) + pptSrc->x;
 	    data32 = ptr32 + (pbox->y1 * pitch32) + (pbox->x1 << 2);
 	    width = pbox->x2 - pbox->x1;
 	    height = pbox->y2 - pbox->y1;
-
-	    /* Some of these can probably be reduced more */
 
 	    while(height--) {	
 		switch(rop) {
@@ -126,62 +123,46 @@ cfbDoBitblt8To32(
 			data32[i<<2] &= data8[i] | ~pm;
 		    break;
 		case GXandReverse:
-		    for(i = 0; i < width; i++) {
-			tmp = data32[i<<2];
-			data32[i<<2] = ((~tmp & data8[i]) & pm) | (tmp & ~pm);
-		    }
+		    for(i = 0; i < width; i++) 
+			data32[i<<2] = ~data32[i<<2] & (data8[i] | ~pm);
 		    break;
 		case GXandInverted:
-		    for(i = 0; i < width; i++) {
-			tmp = data32[i<<2];
-			data32[i<<2] = (tmp & ~data8[i] & pm) | (tmp & ~pm);
-		    }
+		    for(i = 0; i < width; i++) 
+			data32[i<<2] &= ~data8[i] | ~pm;
 		    break;
 		case GXnoop:
 		    return;
 		case GXxor:
-		    for(i = 0; i < width; i++) {
-			tmp = data32[i<<2];
-			data32[i<<2] = ((tmp ^ data8[i]) & pm) | (tmp & ~pm);
-		    }
+		    for(i = 0; i < width; i++) 
+			data32[i<<2] ^= data8[i] & pm;
 		    break;
 		case GXnor:
-		    for(i = 0; i < width; i++) {
-			tmp = data32[i<<2];
-			data32[i<<2] = (~(tmp | data8[i]) & pm) | (tmp & ~pm);
-		    }
+		    for(i = 0; i < width; i++)
+			data32[i<<2] =  ~(data32[i<<2] | (data8[i] & pm));
 		    break;
 		case GXequiv:
-		    for(i = 0; i < width; i++) {
-			tmp = data32[i<<2];
-			data32[i<<2] = ((tmp ^ ~data8[i]) & pm) | (tmp & ~pm);
-		    }
+		    for(i = 0; i < width; i++)
+			data32[i<<2] = ~(data32[i<<2] ^ (data8[i] & pm));
 		    break;
 		case GXinvert:
 		    for(i = 0; i < width; i++)
 			data32[i<<2] ^= pm;
 		    break;
 		case GXorReverse:
-		    for(i = 0; i < width; i++) {
-			tmp = data32[i<<2];
-			data32[i<<2] = ((~tmp | data8[i]) & pm) | (tmp & ~pm);
-		    }
+		    for(i = 0; i < width; i++)
+			data32[i<<2] = ~data32[i<<2] | (data8[i] & pm);
 		    break;
 		case GXcopyInverted:
 		    for(i = 0; i < width; i++)
 			data32[i<<2] = (~data8[i] & pm) | (data32[i<<2] & ~pm);
 		    break;
 		case GXorInverted:
-		    for(i = 0; i < width; i++) {
-			tmp = data32[i<<2];
-			data32[i<<2] = ((tmp | ~data8[i]) & pm) | (tmp & ~pm);
-		    }
+		    for(i = 0; i < width; i++)
+			data32[i<<2] |= ~data8[i] & pm;
 		    break;
 		case GXnand:
-		    for(i = 0; i < width; i++) {
-			tmp = data32[i<<2];
-			data32[i<<2] = (~(tmp & data8[i]) & pm) | (tmp & ~pm);
-		    }
+		    for(i = 0; i < width; i++) 
+			data32[i<<2] = ~(data32[i<<2] & (data8[i] | ~pm));
 		    break;
 		case GXset:
 		    for(i = 0; i < width; i++)
@@ -260,30 +241,25 @@ cfbDoBitblt32To8(
 		    break;
 		case GXandReverse:
 		    for(i = 0; i < width; i++)
-			data8[i] = ((data32[i<<2] & ~data8[i]) & pm) | 
-							(data8[i] & ~pm);
+			data8[i] = ~data8[i] & (data32[i<<2] | ~pm);
 		    break;
 		case GXandInverted:
 		    for(i = 0; i < width; i++)
-			data32[i] = (~data32[i<<2] & data8[i] & pm) | 
-							(data8[i] & ~pm);
+			data8[i] &= ~data32[i<<2] | ~pm;
 		    break;
 		case GXnoop:
 		    return;
 		case GXxor:
 		    for(i = 0; i < width; i++) 
-			data8[i] = ((data32[i<<2] ^ data8[i]) & pm) | 
-							(data8[i] & ~pm);
+			data8[i] ^= data32[i<<2] & pm;
 		    break;
 		case GXnor:
 		    for(i = 0; i < width; i++)
-			data8[i] = (~(data32[i<<2] | data8[i]) & pm) | 
-							(data8[i] & ~pm);
+			data8[i] = ~(data8[i] | (data32[i<<2] & pm));
 		    break;
 		case GXequiv:
 		    for(i = 0; i < width; i++)
-			data8[i] = ((~data32[i<<2] ^ data8[i]) & pm) | 
-							(data8[i] & ~pm);
+			data8[i] = ~(data8[i] ^ (data32[i<<2] & pm));
 		    break;
 		case GXinvert:
 		    for(i = 0; i < width; i++)
@@ -291,8 +267,7 @@ cfbDoBitblt32To8(
 		    break;
 		case GXorReverse:
 		    for(i = 0; i < width; i++)
-			data8[i] = ((data32[i<<2] | ~data8[i]) & pm) | 
-							(data8[i] & ~pm);
+			data8[i] = ~data8[i] | (data32[i<<2] & pm);
 		    break;
 		case GXcopyInverted:
 		    for(i = 0; i < width; i++)
@@ -300,13 +275,11 @@ cfbDoBitblt32To8(
 		    break;
 		case GXorInverted:
 		    for(i = 0; i < width; i++)
-			data8[i] = ((~data32[i<<2] | data8[i]) & pm) | 
-							(data8[i] & ~pm);
+			data8[i] |= ~data32[i<<2] & pm;
 		    break;
 		case GXnand:
 		    for(i = 0; i < width; i++)
-			data8[i] = (~(data32[i<<2] & data8[i]) & pm) | 
-							(data8[i] & ~pm);
+			data8[i] = ~(data8[i] & (data32[i<<2] | ~pm));
 		    break;
 		case GXset:
 		    for(i = 0; i < width; i++)

@@ -23,7 +23,7 @@
  *
  * IBM RAMDAC routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.c,v 1.8 1998/12/06 06:08:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.c,v 1.9 1999/02/12 22:52:10 hohndel Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -328,7 +328,7 @@ IBMramdac526SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 	    ramdacReg->DacRegs[IBMRGB_24bpp] = 0;
 	    ramdacReg->DacRegs[IBMRGB_16bpp] = 0;
 	    ramdacReg->DacRegs[IBMRGB_8bpp] = 0;
-	    if (ramdacReg->Overlay) {
+	    if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
 		ramdacReg->DacRegs[IBMRGB_key_control] = 0x01; /* Enable Key */
 		ramdacReg->DacRegs[IBMRGB_key] = 0xFF; 
 		ramdacReg->DacRegs[IBMRGB_key_mask] = 0xFF;
@@ -413,7 +413,7 @@ IBMramdac640SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
     	    ramdacReg->DacRegs[RGB640_SER_MODE] = IBM640_SER_4_1; /* 4:1 Mux*/
     	    ramdacReg->DacRegs[RGB640_MISC_CONF] = IBM640_PCLK_8; /* pll / 8 */
 	    bpp = 0x09;
-	    if (ramdacReg->Overlay) {
+	    if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
 		ramdacReg->DacRegs[RGB640_SER_WID_07_04] = 0x04;
 		ramdacReg->DacRegs[RGB640_CHROMA_KEY0] = 0xFF;
 		ramdacReg->DacRegs[RGB640_CHROMA_MASK0] = 0xFF;

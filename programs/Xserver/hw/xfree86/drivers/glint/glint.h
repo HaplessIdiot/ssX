@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.14 1999/02/07 06:18:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.15 1999/02/12 22:52:02 hohndel Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -87,7 +87,6 @@ typedef struct {
     Bool		UseBlockWrite;
     Bool		UseFireGL3000;
     Bool		VGAcore;
-    Bool		Overlay;
     int			MinClock;
     int			MaxClock;
     int			RefClock;
@@ -105,7 +104,6 @@ typedef struct {
     CloseScreenProcPtr	CloseScreen;
     GCPtr		CurrentGC;
     I2CBusPtr		DDCBus, VSBus;
-    Bool		VideoIO;
     unsigned char *	XAAScanlineColorExpandBuffers[1];
 } GLINTRec, *GLINTPtr;
 

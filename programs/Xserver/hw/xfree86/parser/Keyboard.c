@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Keyboard.c,v 1.1.2.5 1998/06/05 16:23:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Keyboard.c,v 1.2 1998/07/25 16:57:12 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -239,6 +239,8 @@ parseKeyboardSection (void)
 void
 printKeyboardSection (FILE * cf, XF86ConfKeyboardPtr ptr)
 {
+	int i;
+
 	if (ptr == NULL)
 		return;
 
@@ -247,8 +249,66 @@ printKeyboardSection (FILE * cf, XF86ConfKeyboardPtr ptr)
 	if (ptr->keyb_kbdDelay || ptr->keyb_kbdRate)
 		fprintf (cf, "\tAutoRepeat   %d %d\n", ptr->keyb_kbdDelay,
 						ptr->keyb_kbdRate);
+	if (ptr->keyb_serverNumLock)
+		fprintf (cf, "\tServerNumLock\n");
+	if (ptr->keyb_xleds) {
+		fprintf (cf, "\tXLeds       ");
+		for (i = 1; i < 8*sizeof(ptr->keyb_xleds); i++)
+			if (ptr->keyb_xleds & (1L << (i-1)))
+				fprintf(cf, " %d", i);
+		fprintf (cf, "\n");
+	}
+
+#define SPECKEYMAP(idx, nam)  \
+	{ \
+	    if (ptr->keyb_specialKeyMap[idx]) { \
+		fprintf (cf, "\t%10s   ", nam); \
+		for (i = 0; KeyMapTab[i].token >= 0; i++) { \
+		    if (KeyMapTab[i].token == ptr->keyb_specialKeyMap[idx]) { \
+			fprintf(cf, "%c%s\n", toupper(KeyMapTab[i].name), \
+				KeyMapTab[i].name+1); \
+			break; \
+		    } \
+		} \
+	    } \
+	}
+
+	SPECKEYMAP(CONF_K_INDEX_LEFTALT, "LeftAlt");
+	SPECKEYMAP(CONF_K_INDEX_RIGHTALT, "RightAlt");
+	SPECKEYMAP(CONF_K_INDEX_SCROLLLOCK, "ScrollLock");
+	SPECKEYMAP(CONF_K_INDEX_RIGHTCTL, "RightCtl");
+#undef SPECKEYMAP
+
+	if (ptr->keyb_vtinit)
+		fprintf (cf, "\tVTInit       \"%s\"\n", ptr->keyb_vtinit);
+	if (ptr->keyb_vtSysreq)
+		fprintf (cf, "\tVTSysReq\n");
+	if (ptr->keyb_xkbDisable)
+		fprintf (cf, "\tXkbDisable\n");
+	if (ptr->keyb_xkbkeycodes)
+		fprintf (cf, "\tXkbKeycodes  \"%s\"\n", ptr->keyb_xkbkeycodes);
+	if (ptr->keyb_xkbtypes)
+		fprintf (cf, "\tXkbTypes     \"%s\"\n", ptr->keyb_xkbtypes);
+	if (ptr->keyb_xkbcompat)
+		fprintf (cf, "\tXkbCompat    \"%s\"\n", ptr->keyb_xkbcompat);
+	if (ptr->keyb_xkbsymbols)
+		fprintf (cf, "\tXkbSymbols   \"%s\"\n", ptr->keyb_xkbsymbols);
+	if (ptr->keyb_xkbgeometry)
+		fprintf (cf, "\tXkbGeometry  \"%s\"\n", ptr->keyb_xkbgeometry);
 	if (ptr->keyb_xkbkeymap)
 		fprintf (cf, "\tXkbKeymap    \"%s\"\n", ptr->keyb_xkbkeymap);
+	if (ptr->keyb_xkbrules)
+		fprintf (cf, "\tXkbRules     \"%s\"\n", ptr->keyb_xkbrules);
+	if (ptr->keyb_xkbmodel)
+		fprintf (cf, "\tXkbModel     \"%s\"\n", ptr->keyb_xkbmodel);
+	if (ptr->keyb_xkblayout)
+		fprintf (cf, "\tXkbLayout    \"%s\"\n", ptr->keyb_xkblayout);
+	if (ptr->keyb_xkbvariant)
+		fprintf (cf, "\tXkbVariant   \"%s\"\n", ptr->keyb_xkbvariant);
+	if (ptr->keyb_xkboptions)
+		fprintf (cf, "\tXkbOptions   \"%s\"\n", ptr->keyb_xkboptions);
+	if (ptr->keyb_panix106)
+		fprintf (cf, "\tPanix106\n");
 
 }
 

@@ -16,7 +16,7 @@ DEFINES = -DTT_MAKE_OPTION_SINGLE_OBJECT=1  $(FONTMODULEDEF) \
 	  $(XTT_DEBUG_FLAGS) $(XTT_CCONV_MOUDLE_DEFINES) \
 	  $(XTT_USE_OPT_ENC_DEFINES)
 
-#include "Imakefile.obj"
+#include "Imakefile.inc"
 
 CCONVHEADERS = \
   xttcap.h xttcconv.h xttcconvP.h xttcommon.h xttversion.h cconvversion.h

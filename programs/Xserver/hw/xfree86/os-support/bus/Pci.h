@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.4 1998/09/19 12:14:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.5 1999/02/19 21:27:05 hohndel Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -144,6 +144,8 @@
 # if !defined(PowerMAX_OS)
 #  define INCLUDE_XF86_MAP_PCI_MEM
 # endif
+#elif defined(__sparc__) && defined(linux)
+# define ARCH_PCI_INIT sparcPciInit
 #elif defined(__alpha__)
 # define ARCH_PCI_INIT axpPciInit
 # define INCLUDE_XF86_MAP_PCI_MEM

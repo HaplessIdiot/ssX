@@ -6,7 +6,7 @@
    are subject to change without notice.
 
 
-Last modified: 20 March 1999.
+Last modified: 28 March 1999.
 
 
 Preface
@@ -1968,7 +1968,6 @@ The XF86VideoAdaptorRec:
 	GetVideoFuncPtr GetVideo;
 	GetStillFuncPtr GetStill;
 	StopVideoFuncPtr StopVideo;
-	ReclipVideoFuncPtr ReclipVideo;
 	SetPortAttributeFuncPtr SetPortAttribute;
 	GetPortAttributeFuncPtr GetPortAttribute;
 	QueryBestSizeFuncPtr QueryBestSize;
@@ -1992,15 +1991,26 @@ The XF86VideoAdaptorRec:
 	VIDEO_NO_CLIPPING
 
 	   This indicates that the video adaptor does not support
-	   clipping.
-	 
+	   clipping. The driver will never receive Get/Put requests
+	   where less than the entire area determined by drw_x, drw_y,
+	   drw_w and drw_h is visible.
+
 	VIDEO_INVERT_CLIPLIST
 
 	   This indicates that the video driver requires the clip
 	   list to contain the regions which are obscured rather 
 	   than the regions which are are visible.
 
-     name  
+	VIDEO_EXPOSE
+
+	   This flag applies to GetStill and GetVideo only, it
+	   indicates the clip list shall contain obscured regions.
+	   Note the source region will still be clipped against
+	   the screen bounds. This flag is meant for showing all the
+	   contents of the [root] window, if the administrator has no
+	   hesitations regarding security.
+
+     name
 	
 	The name of the adaptor.
 
@@ -2034,7 +2044,7 @@ The XF86VideoAdaptorRec:
 	containing information about the port.
 
 
-     PutVideo PutStill GetVideo GetStill StopVideo ReclipVideo
+     PutVideo PutStill GetVideo GetStill StopVideo
      SetPortAttribute GetPortAttribute QueryBestSize
 
 	These functions define the DDX->driver interface.  In each
@@ -2046,18 +2056,32 @@ The XF86VideoAdaptorRec:
 	     adaptor type does not contain XvInputMask.
 	 2). GetVideo and GetStill are not required when the
 	     adaptor type does not contain XvOutputMask.
-	 3). ReclipVideo is not required if the VIDEO_NO_CLIPPING
-	     flag is set.  If you do not provide ReclipVideo, the
-	     VIDEO_NO_CLIPPING flag will be forced.
 
         These functions should return Success if the operation was
 	completed successfully.  They can return XvBadAlloc otherwise.
+	Xv DDX will not call a Get/Put function while video is active,
+	rather issue a StopVideo call first.
 
+	Earlier versions of Xv DDX had a ReclipVideo function, obsolete
+	now.  The clip region will be passed directly by the functions
+	below.  If the VIDEO_NO_CLIPPING flag is set, the RegionPtr
+	should be ignored by the driver.  "ClipBoxes" is an X-Y banded
+	region identical to those used throughout the server.  The clipBoxes
+	represent the visible portions of area determined by drw_x, drw_y,
+	drw_w and drw_h in the Get/Put function.  The boxes are	in screen
+	coordinates, are guaranteed not to overlap and an empty region will
+	be passed only to GetVideo, once.  This to notify the driver the
+	primitive is totally obscured now.  A StopVideo call will immediately
+	follow nevertheless. In the case where the VIDEO_INVERT_CLIPLIST
+	flag is set, clipBoxes will indicate the areas of the primitive
+	which are obscured rather than the areas visible.  The Region 
+	must not be altered by the driver and will be deleted when the
+	function returns.
 
 	typedef  int (* PutVideoFuncPtr)( ScrnInfoPtr pScrn, 
 		short vid_x, short vid_y, short drw_x, short drw_y,
 		short vid_w, short vid_h, short drw_w, short drw_h,
-		pointer data );
+		RegionPtr clipBoxes, pointer data );
 
 	  This indicates that the driver should take a subsection
 	  "vid_w" x "vid_h" at location ("vid_x", "vid_y") from the
@@ -2075,7 +2099,7 @@ The XF86VideoAdaptorRec:
 	typedef  int (* PutStillFuncPtr)( ScrnInfoPtr pScrn, 
 		short vid_x, short vid_y, short drw_x, short drw_y,
 		short vid_w, short vid_h, short drw_w, short drw_h,
-		pointer data );
+		RegionPtr clipBoxes, pointer data );
 
 	  This is same as PutVideo except that the driver should 
 	  place only one frame from the stream on the screen. 
@@ -2084,18 +2108,18 @@ The XF86VideoAdaptorRec:
 	typedef int (* GetVideoFuncPtr)( ScrnInfoPtr pScrn, 
 		short vid_x, short vid_y, short drw_x, short drw_y,
 		short vid_w, short vid_h, short drw_w, short drw_h,
-		pointer data );
+		RegionPtr clipBoxes, pointer data );
 
 	  This is same as PutVideo except that the driver gets video
 	  from the screen and outputs it.  The driver should do the
 	  best it can to get the requested dimensions correct without
 	  reading from an area larger than requested.
-	
+
 
 	typedef int (* GetStillFuncPtr)( ScrnInfoPtr pScrn, 
 		short vid_x, short vid_y, short drw_x, short drw_y,
 		short vid_w, short vid_h, short drw_w, short drw_h,
-		pointer data );
+		RegionPtr clipBoxes, pointer data );
 
 	  This is the same as GetVideo except that the driver should
 	  place only one frame from the screen into the output stream.
@@ -2114,27 +2138,7 @@ The XF86VideoAdaptorRec:
 	  video is being stopped temporarily due to clipping or moving
 	  of the window, etc... and video will likely be restarted soon
 	  so the driver should not deallocate any offscreen areas
-	  associated with that port.  
-
-
-	typedef void (* ReclipVideoFuncPtr)(ScrnInfoPtr pScrn, 
-		RegionPtr clipBoxes, pointer data );
-
-	  This function is optional and will not be used if the  
-	  VIDEO_NO_CLIPPING flag is set.  If this function is not
-	  provided, the VIDEO_NO_CLIPPING flag will be forced.
-	  "ClipBoxes" is an X-Y banded region identical to those
-	  used throughout the server.  If clipping is supported,
-	  this function will be called before any of the Get/Put
-	  functions above.  The clipBoxes represent the visible
-	  portions of area determined by drw_x, drw_y, drw_w and
-	  drw_h in the upcoming Get/Put function.  The boxes are
-	  in screen coordinates, are guaranteed not to overlap and
-	  an empty region will never be passed.  In the case where
-	  the VIDEO_INVERT_CLIPLIST flag is set, clipBoxes will
-	  indicate the areas of the upcoming primitive which are
-	  obscured rather than the areas visible.
-
+	  associated with that port.
 
 	typedef int (* SetPortAttributeFuncPtr)(ScrnInfoPtr pScrn,
 		 Atom attribute,INT32 value, pointer data);
@@ -3384,7 +3388,7 @@ B.2  General vgahw Functions:
       This function unlocks the VGA CRTC[0-7] registers, and must be
       called before attempting to write to those registers.
 
-      A macro VGAHW_ULOCK(base) is also available in vgaHW.h that does
+      A macro VGAHW_UNLOCK(base) is also available in vgaHW.h that does
       the same thing, and this may be used when the vgahw module is not
       loaded (for example, in the ChipProbe() function).
 
@@ -4646,4 +4650,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.26 1999/02/28 11:19:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.27 1999/03/20 08:59:04 dawes Exp $

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.23 1998/09/05 06:36:19 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.24 1998/10/03 09:07:35 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -458,6 +458,12 @@ static int is_numeric (
 #endif
 );
 
+static int trans_mkdir (
+#if NeedFunctionPrototypes
+    char *,		/* path */
+    int			/* mode */
+#endif
+);
 
 /*
  * Some XTRANSDEBUG stuff

@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_dac.c,v 1.5 1999/02/07 06:18:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_dac.c,v 1.6 1999/02/12 22:52:06 hohndel Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -164,8 +164,6 @@ PermediaInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ramdacReg->DacRegs[IBMRGB_pwr_mgmt] = 0;
     ramdacReg->DacRegs[IBMRGB_dac_op] = 0;
     ramdacReg->DacRegs[IBMRGB_pal_ctrl] = 0;
-
-    if (pGlint->Overlay) ramdacReg->Overlay = TRUE;
 
     (*pGlint->RamDac->SetBpp)(pScrn, ramdacReg);
 

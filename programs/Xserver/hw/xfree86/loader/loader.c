@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.34 1999/03/14 14:10:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.35 1999/03/21 07:35:25 dawes Exp $ */
 
 /*
  *
@@ -81,6 +81,14 @@ void * os2loader_calloc(size_t,size_t);
 #define HANDLE_USED 1
 static char freeHandles[MAX_HANDLE] ;
 static int refCount[MAX_HANDLE] ;
+#endif
+
+#ifdef __sparc__
+extern LOOKUP SparcLookupTab[];
+#ifdef linux
+extern int sparcUseHWMulDiv(void);
+extern LOOKUP SparcV89LookupTab[];
+#endif
 #endif
 
 /*
@@ -212,6 +220,14 @@ LoaderInit(void)
     LoaderAddSymbols(-1, -1, xfree86LookupTab ) ;
     LoaderAddSymbols(-1, -1, dixLookupTab ) ;
     LoaderAddSymbols(-1, -1, fontLookupTab ) ;
+#ifdef __sparc__
+#ifdef linux
+    if (sparcUseHWMulDiv())
+	LoaderAddSymbols(-1, -1, SparcV89LookupTab ) ;
+    else
+#endif
+	LoaderAddSymbols(-1, -1, SparcLookupTab ) ;
+#endif 
 
     xf86MsgVerb(X_INFO, 2, "Module ABI versions:\n");
     xf86ErrorFVerb(2, "\t%s: %d.%d\n", ABI_CLASS_ANSIC,

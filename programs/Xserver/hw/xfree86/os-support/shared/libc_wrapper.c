@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.37 1999/03/14 03:22:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.38 1999/03/21 12:46:42 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -47,6 +47,24 @@
 #include <errno.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
+#ifdef HAS_SVR3_MMAPDRV
+#define NO_MMAP
+#ifdef SELF_CONTAINED_WRAPPER
+#include <sys/at_ansi.h>
+#include <sys/kd.h>
+#include <sys/sysmacros.h>
+#if !defined(_NEED_SYSI86)
+# include <sys/immu.h>
+# include <sys/region.h>
+#endif
+#include <sys/mmap.h>
+struct kd_memloc MapDSC;
+int mmapFd = -2;
+#else
+extern struct kd_memloc MapDSC;
+extern int mmapFd;
+#endif
+#endif
 #ifndef NO_MMAP
 #include <sys/mman.h>
 #endif
@@ -406,9 +424,30 @@ xf86mmap(void *start, xf86size_t length, int prot,
     xf86errno = xf86GetErrno();
     return rc;
 #else
+#ifdef HAS_SVR3_MMAPDRV
+    void *rc;
+#ifdef SELF_CONTAINED_WRAPPER
+    if(mmapFd < 0) {
+      if ((mmapFd = open("/dev/mmap", O_RDWR)) == -1) {
+          ErrorF("Warning: failed to open /dev/mmap \n");
+          xf86errno = xf86_ENOSYS;
+          return NULL;
+      }
+    }
+#endif
+    MapDSC.vaddr    = (char *)start;
+    MapDSC.physaddr = (char *)offset;
+    MapDSC.length   = length;
+    MapDSC.ioflg    = 1;
+
+    rc = (pointer)ioctl(mmapFd, MAP, &MapDSC);
+    xf86errno = xf86GetErrno();
+    return rc;
+#else
     ErrorF("Warning: mmap() is not supported on this platform\n");
     xf86errno = xf86_ENOSYS;
     return NULL;
+#endif
 #endif
 }
 
@@ -421,9 +460,16 @@ xf86munmap(void *start, xf86size_t length)
     xf86errno = xf86GetErrno();
     return rc;
 #else
+#ifdef HAS_SVR3_MMAPDRV
+    int rc = ioctl(mmapFd, UNMAPRM , start);
+ 
+    xf86errno = xf86GetErrno();
+    return rc;
+#else
     ErrorF("Warning: munmap() is not supported on this platform\n");
     xf86errno = xf86_ENOSYS;
     return -1;
+#endif
 #endif
 }
 
@@ -1532,6 +1578,7 @@ xf86GetErrno ()
 		mapnum (EROFS);
 		mapnum (ETXTBSY);
 		mapnum (ENOTTY);
+		mapnum (EBUSY);
 
 		default:
 			return (xf86_UNKNOWN);

@@ -1,0 +1,43 @@
+XCOMM $XFree86$
+/* -*- Makefile -*- */
+
+DEFAULT_CCONV_SUBDIR = ISO8859.1
+#if XTrueTypeUseOptEncodings
+CCONV_SUBDIRS = BIG5 GB2312 JISX0201 JISX0208 JISX0212 KSC5601 KSCJOHAB \
+           ISO8859.2 ISO8859.3 ISO8859.4 ISO8859.5 ISO8859.6 \
+           ISO8859.7 ISO8859.8 ISO8859.9 ISO8859.10 ISO8859.11 \
+           ISO8859.14 ISO8859.15 KOI8 VISCII TCVN \
+           ARMSCII8 ARABIC MULEENCODING DOSENCODING
+#endif
+
+SUBDIRS = $(MODULE_SUBDIRS) $(DEFAULT_CCONV_SUBDIR) $(CCONV_SUBDIRS)
+
+#if XTrueTypeDebugXTT
+  XTT_DEBUG_SRCS = xttdump.c
+  XTT_DEBUG_OBJS = xttdump.o
+#endif
+
+SRCS = \
+  xttcache.c xttchinfo.c xttprop.c xttfuncs.c xttcconv.c xttcap.c xttmisc.c \
+  xttdump.c $(XTT_DEBUG_SRCS) freetype.c ftxcmap.c $(MODULE_C)
+OBJS = \
+  xttcache.o xttchinfo.o xttprop.o xttfuncs.o xttcconv.o xttcap.o xttmisc.o \
+  xttdump.o $(XTT_DEBUG_OBJS) freetype.o ftxcmap.o $(MODULE_O)
+
+LinkSourceFile(freetype.c,$(FTSOURCEDIR)/lib/arch/unix)
+LinkSourceFile(ftxcmap.c,$(FTSOURCEDIR)/lib/extend)
+LinkSourceFile(xttcache.c,$(XTTSOURCEDIR))
+LinkSourceFile(xttcache.h,$(XTTSOURCEDIR))
+LinkSourceFile(xttcap.c,$(XTTSOURCEDIR))
+LinkSourceFile(xttcap.h,$(XTTSOURCEDIR))
+LinkSourceFile(xttcconv.c,$(XTTSOURCEDIR))
+LinkSourceFile(xttcconv.h,$(XTTSOURCEDIR))
+LinkSourceFile(xttcconvP.h,$(XTTSOURCEDIR))
+LinkSourceFile(xttchinfo.c,$(XTTSOURCEDIR))
+LinkSourceFile(xttdump.c,$(XTTSOURCEDIR))
+LinkSourceFile(xttfuncs.c,$(XTTSOURCEDIR))
+LinkSourceFile(xttstruct.h,$(XTTSOURCEDIR))
+LinkSourceFile(xttcommon.h,$(XTTSOURCEDIR))
+LinkSourceFile(xttmisc.c,$(XTTSOURCEDIR))
+LinkSourceFile(xttprop.c,$(XTTSOURCEDIR))
+LinkSourceFile(xttversion.h,$(XTTSOURCEDIR))

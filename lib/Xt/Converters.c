@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Converters.c,v 3.5 1998/10/03 09:06:50 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Converters.c,v 3.6 1998/12/20 11:57:08 dawes Exp $ */
 
 /*
 
@@ -827,9 +827,11 @@ Boolean XtCvtStringToFloat(dpy, args, num_args, fromVal, toVal, closure_ret)
     int ret;
     float f, nan;
 
+#ifndef ISC /* On ISC this generates a core dump :-( at least with gs */
     /* depending on the system this may or may not do anything useful */
     (void) sscanf ("NaNS", "%g", 
 		   toVal->addr != NULL ? (float*) toVal->addr : &nan); 
+#endif
 
     if (*num_args != 0)
 	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),

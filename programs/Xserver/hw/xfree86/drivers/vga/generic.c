@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.23 1999/02/12 22:52:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.24 1999/02/19 21:27:03 hohndel Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -306,8 +306,7 @@ VGAFindIsaDevice()
     CARD16 GenericIOBase = VGAHW_GET_IOBASE();
     CARD8 CurrentValue, TestValue;
     
-    /* Unlock VGA registers */
-    VGAHW_UNLOCK(GenericIOBase);
+    /* There's no need to unlock VGA CRTC registers here */
 
     /* VGA has one more read/write attribute register than EGA */
     (void) inb(GenericIOBase + 0x0AU);  /* Reset flip-flop */
@@ -317,9 +316,6 @@ VGAFindIsaDevice()
     outb(0x3C0, 0x14 | 0x20);
     TestValue = inb(0x3C1);
     outb(0x3C0, CurrentValue);
-
-    /* XXX:  This should restore lock state, rather than relock */
-    VGAHW_LOCK(GenericIOBase);
 
     /* Quit now if no VGA is present */
     if ((CurrentValue ^ 0x0F) != TestValue)
