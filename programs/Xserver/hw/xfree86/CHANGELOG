@@ -1,3 +1,4 @@
+1229. Xterm patch #149 (#4351, Thomas Dickey).
 1228. Fix Y offsets passed to pixmap cache when DRI disabled in R128 driver
       (Alan Hourihane).
 1227. Add BlockFills to Permedia3 (Alan Hourihane).
@@ -12147,4 +12148,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1499 2000/12/22 11:48:59 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1500 2000/12/22 12:13:11 alanh Exp $
