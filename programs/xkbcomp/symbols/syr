@@ -1,5 +1,5 @@
 //
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/syr,v 1.1 2002/11/22 03:06:50 dawes Exp $
 //
 
 partial default alphanumeric_keys
@@ -63,8 +63,10 @@ xkb_symbols "basic" {
     
     // Begin Modifier Mappings
     
-    modifier_map Shift  { Shift_L Shift_R };
+    modifier_map Shift  { Shift_L, Shift_R };
     modifier_map Lock   { Caps_Lock, ISO_Lock };
-    modifier_map Control{ Control_L Control_R };
-    modifier_map Mod1	{ Alt_L Alt_R };
+    modifier_map Control{ Control_L, Control_R };
+    modifier_map Mod1	{ Alt_L, Alt_R };
     modifier_map Mod2   { Mode_switch };
+
+};
