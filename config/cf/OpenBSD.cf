@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.75 2002/10/06 20:04:51 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.76 2002/10/29 23:24:18 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -56,6 +56,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasKrbIV		YES
 #endif
 #define HasUsableFileMmap	YES
+#define HasShadowPasswd		NO
 
 #define HasNCurses		YES
 #define NCursesLibName		-lcurses
@@ -134,6 +135,10 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define UseGas			YES
 #define GnuCpp			YES
 
+#ifndef HasGccStackProtector	
+#define HasGccStackProtector	NO
+#endif
+
 #define UseGnuMalloc		NO
 
 #define NeedConstPrototypes	YES
@@ -179,6 +184,15 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  define UseElfFormat NO
 # endif
 #endif
+
+/*
+ * Increment shared libraries major numbers if using Gcc Stack Protector
+ * (This introduces an ABI change)
+ */
+#ifndef OverrideShlibRevs
+# define OverrideShlibRevs     HasGccStackProtector
+#endif
+
 
 #define StandardDefines	-DCSRG_BASED
 #define XawI18nDefines	-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
@@ -460,14 +474,10 @@ install:: fonts.alias							@@\
 
 /* No MMX support in OpenBSD/a.out gas */
 # if !UseElfFormat
-#   define HasMMXSupport		NO
+#   define HasMMXSupport	NO
 # endif
 
-# if KDriveXServer
-#  include <kdrive.cf>
-# else 
-#  include <xfree86.cf>
-# endif
+# include <xfree86.cf>
 
 #endif /* i386Architecture */
 

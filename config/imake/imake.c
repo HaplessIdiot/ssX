@@ -7,7 +7,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.61tsi Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.62 2002/11/19 15:25:30 tsi Exp $ */
 
 /*
  *
@@ -1020,6 +1020,34 @@ get_libc_version(FILE *inFile)
 }
 #endif
 
+#if defined(__OpenBSD__) 
+static void
+get_stackprotector(FILE *inFile)
+{
+  FILE *fp;
+  char *cc;
+  char command[1024], buf[1024];
+  
+  cc = getenv("CC");
+  if (cc == NULL) {
+    cc = "cc";
+  }
+  snprintf(command, sizeof(command), "%s -v 2>&1", cc);
+  fp = popen(command, "r");
+  if (fp == NULL) 
+    abort();
+  while (fgets(buf, sizeof(buf), fp)) {
+    if (strstr(buf, "propolice") != NULL) {
+      fprintf(inFile, "#define HasGccStackProtector YES\n");
+      break;
+    }
+  }
+  if (pclose(fp)) 
+    abort();
+}
+#endif
+	
+
 #if defined CROSSCOMPILE || defined linux
 static void
 get_distrib(FILE *inFile)
@@ -1575,6 +1603,9 @@ define_os_defaults(FILE *inFile)
       fprintf(inFile, "#define DefaultOSTeenyVersion 0\n");
     }
 #endif /* EMX */
+#if defined(__OpenBSD__)
+  get_stackprotector(inFile);
+#endif
   return FALSE;
 }
 
