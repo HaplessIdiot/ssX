@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.71 2001/09/09 01:07:26 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.72 2001/09/20 01:06:35 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_160">Patch #160 - 2001/10/7 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_159">Patch #159 - 2001/9/19 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_158">Patch #158 - 2001/9/8 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_157">Patch #157 - 2001/6/18 - XFree86 4.1.0</A>
@@ -203,6 +204,41 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_160">Patch #160 - 2001/10/7 - XFree86 4.1.0</A></H1>
+<ul>
+	<li>modify logic in main.c (see patch #145) to avoid generating the
+	    same identifier, for example, for /dev/tty1 and /dev/pts/1, which
+	    is used to denote an entry in the utmp file (Debian bug report
+	    #84676), 
+
+	<li>add configure check for <code>&lt;ncurses/term.h&gt;</code> to get
+	    rid of hardcoded <code>__CYGWIN__</code> ifdef in resize.c
+	    <p>
+	    NOTE: The CYGWIN port should not be linking <code>resize</code>
+	    with ncurses.  It appears that the only reason it is, is because
+	    both the ncurses and termcap ports on that platform are badly
+	    misconfigured (essential pieces have been removed, etc).  Checking
+	    for <code>&lt;ncurses/term.h&gt;</code> does not hurt anything,
+	    since there are some correct installations that are set up that
+	    way.
+
+	<li>add a sample <code>uxterm</code> script, which uses the
+	    <code>UXTerm</code> application defaults for UTF-8 environments.
+
+	<li>undo change to xterm application defaults, since this introduced an
+	    unnecessary incompatibility.  The intended functionality was
+	    already addressed by the <a href="#xterm_141">UXTerm</a>
+	    app-defaults file.
+
+	<li>resync with XFree86 CVS:
+	<ul>
+	<li>Modified xterm app default to use LFD fontnames instead of old type
+	    (Michael Schroeder).
+	<li>Fix xterm when XIM is disabled - caused a segfault 
+	    (Tomohiro Kubota).
+	</ul>
+</ul>
 
 <H1><A NAME="xterm_159">Patch #159 - 2001/9/19 - XFree86 4.1.0</A></H1>
 <ul>
