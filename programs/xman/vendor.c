@@ -1,5 +1,5 @@
 /* $XConsortium: vendor.c,v 1.10 94/04/17 20:43:59 rws Exp $ */
-/* $XFree86: contrib/programs/xman/vendor.c,v 3.2 1998/09/26 08:16:57 dawes Exp $ */
+/* $XFree86: xc/programs/xman/vendor.c,v 1.1 2000/02/12 03:55:19 dawes Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -174,9 +174,9 @@ static SectionNameRec SectionNames[] = {
  *	Returns: none.
  */
 
-void AddStandardSections(list, path)
-SectionList **list;
-char * path;
+void AddStandardSections(
+SectionList **list,
+char * path)
 {
 #ifdef CRAY
     AddStandardCraySections(list, path);
@@ -206,9 +206,9 @@ char * path;
  *	Returns: none.
  */
 
-AddStandardCraySections(list, path)
-SectionList **list;
-char *path;
+void AddStandardCraySections(
+SectionList **list,
+char *path)
 {
   char file[BUFSIZ];
   int i;
@@ -273,20 +273,19 @@ char *path;
  */
 
 char *
-CreateManpageName(entry, section, flags)
-char * entry;
-int section;
-int flags;
+CreateManpageName(
+char * entry,
+int section,	/* FIXME: unused */
+int flags)
 {
   char * cp;
-  char *p;
   char page[BUFSIZ];
   char sect[BUFSIZ];
 
   ParseEntry(entry, NULL, sect, page);
 
 #ifndef CRAY
-  if ( (cp = rindex(page, '.')) != NULL)
+  if ( (cp = rindex(page, '.')) != NULL) {
     if ( (int)strlen(cp) > 2 ) {
       *cp++ = '(';
       while( (cp[1] != '\0') ) {
@@ -298,13 +297,14 @@ int flags;
     }
     else
       *cp = '\0';
+  }
 
 #else	/* CRAY	- pick up the Cray name from the section */
 
   if ( (cp = rindex(page, '.')) == NULL)
     cp = page + strlen(page);
   if ((flags & MSUFFIX) && strlen(sect) > 4) {
-    p = sect + 4;
+    char *p = sect + 4;
     *cp++ = '(';
     while (*p)
       *cp++ = *p++;

@@ -1,5 +1,5 @@
 /* $XConsortium: ScrollByL.c,v 1.30 94/04/17 20:43:46 rws Exp $ */
-/* $XFree86: contrib/programs/xman/ScrollByL.c,v 3.1 1998/09/26 08:16:56 dawes Exp $ */
+/* $XFree86: xc/programs/xman/ScrollByL.c,v 1.1 2000/02/12 03:55:14 dawes Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -36,6 +36,11 @@ from the X Consortium.
 
 #include <stdio.h>
 #include <ctype.h>
+
+#include <X11/Xos.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
 
 #include <X11/IntrinsicP.h>
 #include <sys/stat.h>		/* depends on IntrinsicP.h */
@@ -102,14 +107,24 @@ static XtResource resources[] = {
  *
  ****************************************************************/
 
-static Boolean ScrollVerticalText();
-static void MoveAndClearText(), LoadFile(), PrintText(), VerticalJump();
-static void VerticalScroll(), SetThumbHeight(), PaintText(), Layout();
+static Boolean ScrollVerticalText(Widget w, int new_line, Boolean force_redisp);
+static void Layout(Widget w);
+static void LoadFile(Widget w);
+static void MoveAndClearText(Widget w, int old_y, int height, int new_y);
+static void PaintText(Widget w, int y_loc, int height);
+static void PrintText(Widget w, int start_line, int num_lines, int location);
+static void SetThumbHeight(Widget w);
+static void VerticalJump(Widget w, XtPointer junk, XtPointer percent_ptr);
+static void VerticalScroll(Widget w, XtPointer client_data, XtPointer call_data);
 
 /* semi - public functions. */
 
-static void Realize(), Initialize(), Destroy(), Redisplay(), Page();
-static Boolean SetValuesHook();
+static void Realize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes);
+static void Initialize(Widget req, Widget new, ArgList args, Cardinal *num_args);
+static void Destroy(Widget w);
+static void Redisplay(Widget w, XEvent *event, Region region);
+static void Page(Widget w, XEvent * event, String * params, Cardinal *num_params);
+static Boolean SetValuesHook(Widget w, ArgList args, Cardinal *num_args);
 
 static XtActionsRec actions[] = {
   { "Page",   Page},
@@ -178,8 +193,7 @@ WidgetClass scrollByLineWidgetClass =
  */
 
 static void
-Layout(w)
-Widget w;
+Layout(Widget w)
 {    
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
   Dimension width, height;
@@ -215,11 +229,7 @@ Widget w;
 
 /* ARGSUSED */
 static void 
-GExpose(w,junk,event,cont)
-Widget w;
-XtPointer junk;
-XEvent *event;
-Boolean *cont;
+GExpose(Widget w, XtPointer junk, XEvent *event, Boolean *cont)
 {
 
 /*
@@ -236,10 +246,8 @@ Boolean *cont;
  */
 
 /* ARGSUSED */
-static void Redisplay(w, event, region)
-Widget w;
-XEvent *event;
-Region region;
+static void
+Redisplay(Widget w, XEvent *event, Region region)
 {
   int top, height;		/* the locations of the top and height
 				   of the region that needs to be repainted. */
@@ -269,9 +277,7 @@ Region region;
  */
 
 static void
-PaintText(w, y_loc, height)
-Widget w;
-int y_loc, height;
+PaintText(Widget w, int y_loc, int height)
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
   int start_line, num_lines, location;
@@ -304,11 +310,7 @@ int y_loc, height;
 
 /* ARGSUSED */
 static void 
-Page(w, event, params, num_params)
-Widget w;
-XEvent * event;
-String * params;
-Cardinal *num_params;
+Page(Widget w, XEvent * event, String * params, Cardinal *num_params)
 {
    ScrollByLineWidget sblw = (ScrollByLineWidget) w;
    Widget bar = sblw->scroll.bar;
@@ -327,18 +329,18 @@ Cardinal *num_params;
    case 'f':
    case 'F':
      /* move one page forward */
-     VerticalScroll(bar, NULL, (int) bar->core.height);
+     VerticalScroll(bar, NULL, (XtPointer)((int) bar->core.height));
      break;
    case 'b':
    case 'B':
      /* move one page backward */
-     VerticalScroll(bar, NULL,  - (int) bar->core.height);
+     VerticalScroll(bar, NULL,  (XtPointer)(- (int) bar->core.height));
      break;
    case 'L':
    case 'l':
      /* move one line forward */
      VerticalScroll(bar, NULL, 
-		    (int) atoi(params[1]) * sblw->scroll.font_height);
+		    (XtPointer)((int) atoi(params[1]) * sblw->scroll.font_height));
      break;
    default:
      return;
@@ -352,8 +354,7 @@ Cardinal *num_params;
  */
 
 static void
-CreateScrollbar(w)
-Widget w;
+CreateScrollbar(Widget w)
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
   Arg args[5];
@@ -380,10 +381,10 @@ Widget w;
  */
 
 static Boolean
-ScrollVerticalText(w, new_line, force_redisp)
-Widget w;
-int new_line;
-Boolean force_redisp;
+ScrollVerticalText(
+Widget w,
+int new_line,
+Boolean force_redisp)
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
   int num_lines = (int)w->core.height / sblw->scroll.font_height + 1;
@@ -453,9 +454,7 @@ Boolean force_redisp;
  */
 	   
 static void
-MoveAndClearText(w, old_y, height, new_y)
-Widget w;
-int old_y, new_y, height;
+MoveAndClearText(Widget w, int old_y, int height, int new_y)
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
   int from_left = sblw->scroll.indent + sblw->scroll.offset - 1;
@@ -520,8 +519,7 @@ int old_y, new_y, height;
  */
 
 static void
-SetThumbHeight(w)
-Widget w;
+SetThumbHeight(Widget w)
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
   float shown;
@@ -547,8 +545,7 @@ Widget w;
  */
 
 static void
-SetThumb(w) 
-Widget w;
+SetThumb(Widget w)
 {
   float location;
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
@@ -571,10 +568,7 @@ Widget w;
 
 /* ARGSUSED */
 static void
-VerticalJump(w, junk, percent_ptr)
-Widget w;
-XtPointer junk;
-XtPointer percent_ptr;
+VerticalJump(Widget w, XtPointer junk, XtPointer percent_ptr)
 {
   float percent = *((float *) percent_ptr);
   int new_line;			/* The new location for the line pointer. */
@@ -596,10 +590,7 @@ XtPointer percent_ptr;
 
 /* ARGSUSED */
 static void
-VerticalScroll(w, client_data, call_data)
-Widget w;
-XtPointer client_data;
-XtPointer call_data;
+VerticalScroll(Widget w, XtPointer client_data, XtPointer call_data)
 {
   int pos = (int)(long) call_data;
   int new_line;			/* The new location for the line pointer. */
@@ -614,10 +605,7 @@ int h_width;			/* main font width */
 
 /* ARGSUSED */
 static void 
-Initialize(req, new, args, num_args)
-Widget req, new;
-ArgList args;
-Cardinal *num_args;
+Initialize(Widget req, Widget new, ArgList args, Cardinal *num_args)
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) new;
   unsigned long figWidth;
@@ -649,8 +637,7 @@ Cardinal *num_args;
  */
 
 static void
-CreateGCs(w) 
-Widget w;
+CreateGCs(Widget w)
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
 
@@ -683,8 +670,7 @@ Widget w;
  */
 
 static void
-DestroyGCs(w)
-Widget w;
+DestroyGCs(Widget w)
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
 
@@ -695,10 +681,7 @@ Widget w;
 }
 
 static void
-Realize(w, valueMask, attributes)
-register Widget w;
-Mask *valueMask;
-XSetWindowAttributes *attributes;
+Realize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes)
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
 
@@ -719,8 +702,7 @@ XSetWindowAttributes *attributes;
  */
 
 static void
-Destroy(w)
-Widget w;
+Destroy(Widget w)
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
 
@@ -739,10 +721,7 @@ Widget w;
 
 /* ARGSUSED */
 static Boolean 
-SetValuesHook( w, args, num_args)
-Widget w;
-ArgList args;
-Cardinal *num_args;
+SetValuesHook(Widget w, ArgList args, Cardinal *num_args)
 {
   Boolean ret = TRUE;
   int i;
@@ -800,8 +779,7 @@ Cardinal *num_args;
  */
 
 static void
-LoadFile(w)
-Widget w;
+LoadFile(Widget w)
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
   FILE * file = sblw->scroll.file;
@@ -905,8 +883,8 @@ Widget w;
 				/* Choose BOLD over ITALICS.  If neither */
 				/* is chosen, use NORMAL. */
 
-static int DumpText();
-static Boolean Boldify();	
+static int DumpText(Widget w, int x_loc, int y_loc, char * buf, int len, int format);
+static Boolean Boldify(char *);
 
 /*	Function Name: PrintText
  *	Description: This function actually prints the text.
@@ -920,9 +898,7 @@ static Boolean Boldify();
 /* ARGSUSED */
 
 static void
-PrintText(w, start_line, num_lines, location)
-Widget w;
-int  start_line, num_lines, location;
+PrintText(Widget w, int start_line, int num_lines, int location)
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
 
@@ -1185,12 +1161,7 @@ int  start_line, num_lines, location;
  */
 
 static int
-DumpText(w, x_loc, y_loc, buf, len, format)
-Widget w;
-int x_loc, y_loc;
-char * buf;
-int len;
-int format;
+DumpText(Widget w, int x_loc, int y_loc, char * buf, int len, int format)
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
   GC gc;
@@ -1230,8 +1201,7 @@ int format;
  */
 
 static Boolean
-Boldify(sp)
-register char *sp;
+Boldify(register char *sp)
 {
   register char *sp_pointer;
   int length,count;

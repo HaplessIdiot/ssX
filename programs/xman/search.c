@@ -1,5 +1,5 @@
 /* $XConsortium: search.c,v 1.21 94/04/17 20:43:58 rws Exp $ */
-/* $XFree86: contrib/programs/xman/search.c,v 3.0 1994/06/05 08:00:24 dawes Exp $ */
+/* $XFree86: xc/programs/xman/search.c,v 1.1 2000/02/12 03:55:18 dawes Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -38,12 +38,8 @@ from the X Consortium.
 
 #define SEARCHARGS 10
 
-FILE * DoManualSearch();
-static int BEntrySearch();
-
-#ifdef MANCONF
-Bool ReadManConfig();
-#endif
+FILE * DoManualSearch(ManpageGlobals *man_globals, char * string);
+static int BEntrySearch(char * string, char ** first, int number);
 
 /*	Function Name: MakeSearchWidget
  *	Description: This Function Creates the Search Widget.
@@ -53,12 +49,10 @@ Bool ReadManConfig();
  */
 
 void
-MakeSearchWidget(man_globals, parent)
-ManpageGlobals * man_globals;
-Widget parent;
+MakeSearchWidget(ManpageGlobals * man_globals, Widget parent)
 {
   Widget dialog, command, text, cancel;
-  Arg arglist[1];
+  Arg arglist[2];
   Cardinal num_args = 0;
 
   XtSetArg(arglist[0], XtNtransientFor, parent); 
@@ -94,8 +88,6 @@ Widget parent;
     PopupWarning(NULL,
 		 "Could not find manual search widget in MakeSearchWidget.");
   else {
-    Cardinal num_args = 0;
-    Arg arglist[2];
     static char * half_size[] = {
       MANUALSEARCH, APROPOSSEARCH, NULL
     };
@@ -103,6 +95,7 @@ Widget parent;
       "label", "value", CANCEL, NULL
     };
 
+    num_args = 0;
     XtSetArg(arglist[num_args], XtNfromVert, command); num_args++;
     XtSetArg(arglist[num_args], XtNfromHoriz, NULL); num_args++;
     XtSetValues(cancel, arglist, num_args);
@@ -118,8 +111,8 @@ Widget parent;
  */
 
 static char *
-SearchString(man_globals)
-ManpageGlobals * man_globals;
+SearchString(
+ManpageGlobals * man_globals)
 {
   Widget dialog;
 
@@ -154,9 +147,7 @@ ManpageGlobals * man_globals;
  */
 
 FILE *
-DoSearch(man_globals,type)
-ManpageGlobals * man_globals;
-int type;
+DoSearch(ManpageGlobals * man_globals, int type)
 {
   char cmdbuf[BUFSIZ],*mantmp,*manpath;
   char tmp[BUFSIZ],path[BUFSIZ];
@@ -298,9 +289,7 @@ int type;
 #define NO_ENTRY -100
 
 FILE * 
-DoManualSearch(man_globals, string)
-ManpageGlobals *man_globals;
-char * string;
+DoManualSearch(ManpageGlobals *man_globals, char * string)
 {
   int e_num = NO_ENTRY;
   int i;
@@ -350,10 +339,10 @@ char * string;
  */
 
 static int
-BEntrySearch(string, first, number)
-char * string;
-char ** first;
-int number;
+BEntrySearch(
+char * string,
+char ** first,
+int number)
 {
   int check, cmp, len_cmp, global_number;
   char *head, *tail;

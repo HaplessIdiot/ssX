@@ -51,7 +51,5 @@ extern XContext manglobals_context;	/* The context for man_globals. */
 
 extern Widget initial_widget;	      /* The initial widget, never realized. */
 
-extern char * option_names[];
-
 extern char **saved_argv;
 extern int saved_argc;

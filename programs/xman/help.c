@@ -39,8 +39,6 @@ from the X Consortium.
 
 extern Atom wm_delete_window;	/* in main.c */
 
-ManpageGlobals * InitPsuedoGlobals();
-
 /*	Function Name: MakeHelpWidget.
  *	Description: This function creates the help widget so that it will be
  *                   ready to be displayed.
@@ -49,7 +47,7 @@ ManpageGlobals * InitPsuedoGlobals();
  */
 
 Boolean
-MakeHelpWidget()
+MakeHelpWidget(void)
 {
 
   ManpageGlobals * man_globals;	/* The psuedo global structure. */
@@ -96,8 +94,7 @@ MakeHelpWidget()
  */
 
 Boolean
-OpenHelpfile(man_globals)
-ManpageGlobals * man_globals;
+OpenHelpfile(ManpageGlobals * man_globals)
 {
   FILE * help_file_ptr;
 

@@ -1,5 +1,5 @@
 /* $XConsortium: misc.c,v 1.31 94/12/16 21:36:53 gildea Exp $ */
-/* $XFree86: contrib/programs/xman/misc.c,v 3.3 1998/09/26 08:16:57 dawes Exp $ */
+/* $XFree86: xc/programs/xman/misc.c,v 1.1 2000/02/12 03:55:18 dawes Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -44,9 +44,9 @@ from the X Consortium.
 #include <X11/Xaw/Dialog.h>
 #include <X11/Shell.h>
 
-static FILE * Uncompress();
-static Boolean UncompressNamed(), UncompressUnformatted();
-extern int errno;		/* error codes. */
+static FILE * Uncompress(ManpageGlobals * man_globals, char * filename);
+static Boolean UncompressNamed(ManpageGlobals * man_globals, char * filename, char * output);
+static Boolean UncompressUnformatted(ManpageGlobals * man_globals, char * entry, char * filename);
 
 #if defined(ISC) || defined(SCO)
 static char *uncompress_format = NULL;
@@ -63,20 +63,17 @@ static char *uncompress_formats[] =
  *	Returns: none
  */
 
-extern Widget initial_widget, top;
+extern Widget top;
 static Widget warnShell, warnDialog;
 
-void 
-PopdownWarning(w, client, call)
-     Widget w; XtPointer client, call;
+static void 
+PopdownWarning(Widget w, XtPointer client, XtPointer call)
 {
   XtPopdown((Widget)client);
 }
 
 void
-PopupWarning(man_globals, string)
-ManpageGlobals * man_globals;
-char * string;
+PopupWarning(ManpageGlobals * man_globals, char * string)
 {
   int n;
   Arg wargs[3];
@@ -122,29 +119,6 @@ char * string;
   }
 }
 
-
-/*      THIS ROUTINE IS OBSOLETE...
- *	Function Name: PrintWarning
- *	Description: This function prints a warning message to stderr.
- *	Arguments: string - the specific warning string.
- *	Returns: none
- */
-
-void
-PrintWarning(man_globals, string)
-ManpageGlobals * man_globals;
-char * string;
-{
-  char buffer[BUFSIZ];
-
-  sprintf( buffer, "Xman Warning: %s", string);
-
-  if (man_globals != NULL) 
-    ChangeLabel(man_globals->label, buffer);
-
-  fprintf(stderr, "%s\n", buffer);
-}
-
 /*	Function Name: PrintError
  *	Description: This Function prints an error message and exits.
  *	Arguments: string - the specific message.
@@ -152,8 +126,7 @@ char * string;
  */
 
 void
-PrintError(string)
-char * string;
+PrintError(char * string)
 {
   fprintf(stderr,"Xman Error: %s\n",string);
   exit(1);
@@ -167,9 +140,7 @@ char * string;
  */
 
 void
-OpenFile(man_globals, file)
-ManpageGlobals * man_globals;
-FILE * file;
+OpenFile(ManpageGlobals * man_globals, FILE * file)
 {
   Arg arglist[1];
   Cardinal num_args = 0;
@@ -199,9 +170,7 @@ FILE * file;
  */
 
 FILE *
-FindManualFile(man_globals, section_num, entry_num)
-ManpageGlobals * man_globals;
-int section_num, entry_num;
+FindManualFile(ManpageGlobals * man_globals, int section_num, int entry_num)
 {
   FILE * file;
   char path[BUFSIZ], page[BUFSIZ], section[BUFSIZ], *temp;
@@ -212,7 +181,7 @@ int section_num, entry_num;
   int i;
 #endif
 
-  temp = CreateManpageName(entry);
+  temp = CreateManpageName(entry, 0, 0);
   sprintf(man_globals->manpage_title, "The current manual page is: %s.", temp);
   XtFree(temp);
   
@@ -305,9 +274,7 @@ int section_num, entry_num;
  */
 
 static FILE *
-Uncompress(man_globals, filename)
-ManpageGlobals * man_globals;
-char * filename;
+Uncompress(ManpageGlobals * man_globals, char * filename)
 {
   char tmp_file[BUFSIZ], error_buf[BUFSIZ];
   FILE * file;
@@ -336,9 +303,7 @@ char * filename;
  */
 
 static Boolean
-UncompressNamed(man_globals, filename, output)
-ManpageGlobals * man_globals;
-char * filename, * output;
+UncompressNamed(ManpageGlobals * man_globals, char * filename, char * output)
 {
   char tmp[BUFSIZ], cmdbuf[BUFSIZ], error_buf[BUFSIZ];
   struct stat junk;
@@ -389,9 +354,7 @@ char * filename, * output;
 /* ARGSUSED */
 
 FILE *
-Format(man_globals, entry)
-ManpageGlobals * man_globals; 
-char * entry;
+Format(ManpageGlobals * man_globals, char * entry)
 {
   FILE * file;
   Widget manpage = man_globals->manpagewidgets.manpage;
@@ -489,9 +452,7 @@ char * entry;
  */
 
 static Boolean
-UncompressUnformatted(man_globals, entry, filename)
-ManpageGlobals * man_globals;
-char * entry, * filename;
+UncompressUnformatted(ManpageGlobals * man_globals, char * entry, char * filename)
 {
   char path[BUFSIZ], page[BUFSIZ], section[BUFSIZ], input[BUFSIZ];
   int len_cat = strlen(CAT), len_man = strlen(MAN);
@@ -593,9 +554,7 @@ char * entry, * filename;
  */
 
 void
-AddCursor(w,cursor)
-Widget w;
-Cursor cursor;
+AddCursor(Widget w, Cursor cursor)
 {
   XColor colors[2];
   Arg args[10];
@@ -627,9 +586,7 @@ Cursor cursor;
  */
 
 void
-ChangeLabel(w,str)
-Widget w;
-char * str;
+ChangeLabel(Widget w, char * str)
 {
   Arg arglist[3];		/* An argument list. */
 
@@ -664,10 +621,7 @@ char * str;
  */
 
 void
-PositionCenter(widget,x,y,above,left,v_space,h_space)
-Widget widget;
-int x,y,above,left;
-int h_space,v_space;
+PositionCenter(Widget widget, int x, int y, int above, int left, int v_space, int h_space)
 {
   Arg wargs[2];
   int x_temp,y_temp;		/* location of the new window. */
@@ -711,8 +665,7 @@ int h_space,v_space;
  */
 
 void
-ParseEntry(entry, path, sect, page)
-char *entry, *path, *page, *sect;
+ParseEntry(char *entry, char *path, char *sect, char *page) 
 {
   char *c, temp[BUFSIZ];
 
@@ -755,8 +708,7 @@ char *entry, *path, *page, *sect;
  */
 
 ManpageGlobals *
-GetGlobals(w)
-Widget w;
+GetGlobals(Widget w)
 {
   Widget temp;
   caddr_t data;
@@ -788,9 +740,7 @@ Widget w;
  */
 
 void
-SaveGlobals(w, globals)
-Widget w;
-ManpageGlobals * globals;
+SaveGlobals(Widget w, ManpageGlobals * globals)
 {
   if (XSaveContext(XtDisplay(w), XtWindow(w), manglobals_context,
 		   (caddr_t) globals) != XCSUCCESS)
@@ -808,8 +758,7 @@ ManpageGlobals * globals;
  */
 
 void
-RemoveGlobals(w)
-Widget w;
+RemoveGlobals(Widget w)
 {
   if (XDeleteContext(XtDisplay(w), XtWindow(w), 
 		     manglobals_context) != XCSUCCESS)

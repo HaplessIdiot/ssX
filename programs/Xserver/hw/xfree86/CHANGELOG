@@ -1,4 +1,15 @@
-XFree86 3.9.18c (2 March 2000)
+XFree86 3.9.18Z (3 March 2000)
+3921. LynxOS documentation and bindist updates, and an os-support fix (#3779,
+      Thomas Mueller).
+3920. Update the wacom input driver to suppor the PL400 model and the
+      stroking pen on the Intuos model (#3778, Frederic Lepied).
+3919. Xterm patch #131 (#3777, Thomas Dickey).
+3918. Fix a mouse driver bug that prevented the X server from seeing the
+      mouse button 4 and above when three button emulation is enabled
+      (#3773, Yoshihiko Sarumau, Kazutaka Yokota).
+3917. Add prototypes for xman, and eliminate most of the compiler warnings
+      (#3772, Thomas Dickey).
+3916. Xterm patch #130 (#3771, Thomas Dickey).
 3915. Fix a segfault in XAA caused by reading beyond shared memory bitmaps
       when hardware clipping is not available (Mark Vojkovich).
 3914. Update the mga man page (Mark Vojkovich).
@@ -9935,4 +9946,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1056 2000/03/03 04:49:03 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1058 2000/03/03 18:55:57 mvojkovi Exp $

@@ -54,7 +54,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/xterm/screen.c,v 3.46 1999/12/30 02:05:57 robin Exp $ */
+/* $XFree86: xc/programs/xterm/screen.c,v 3.47 2000/02/08 17:19:41 dawes Exp $ */
 
 /* screen.c */
 
@@ -284,7 +284,7 @@ ScreenWrite (
 	PAIRED_CHARS(Char *str, Char *str2),
 	register unsigned flags,
 	register unsigned cur_fg_bg,
-	register int length)		/* length of string */
+	register int len)		/* length of string */
 {
 #if OPT_ISO_COLORS
 #if OPT_EXT_COLORS
@@ -297,6 +297,7 @@ ScreenWrite (
 #if OPT_DEC_CHRSET
 	register Char *cb = 0;
 #endif
+	register int length = len;	/* workaround for compiler bug? */
 	register Char *attrs;
 	register int avail  = screen->max_col - screen->cur_col + 1;
 	register Char *col;

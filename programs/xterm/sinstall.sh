@@ -1,5 +1,5 @@
 #!/bin/sh
-# $XFree86$
+# $XFree86: xc/programs/xterm/sinstall.sh,v 1.2 1999/11/19 13:55:23 hohndel Exp $
 #
 # Install program setuid if the installer is running as root, and if xterm is
 # already installed on the system with setuid privilege.  This is a safeguard
@@ -24,7 +24,7 @@ TST_PROG="$4"
 test -z "$SINSTALL" && SINSTALL=install
 test -z "$NEW_PROG" && NEW_PROG=xterm
 test -z "$REF_PROG" && REF_PROG=/usr/bin/X11/xterm
-test -z "$TST_PROG" && REF_PROG="$REF_PROG"
+test -z "$TST_PROG" && TST_PROG="$REF_PROG"
 
 PROG_MODE=755
 PROG_USR=

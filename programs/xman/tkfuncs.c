@@ -36,6 +36,8 @@ from the X Consortium.
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
 
+#include "globals.h"
+
 /* 
  * I am doing the "wrong" thing here by looking in the core field for the
  * widget to get this info, the "right" thing to do is to do a XtGetValues
@@ -49,8 +51,7 @@ from the X Consortium.
  */
 
 int
-Width(w)
-Widget w;
+Width(Widget w)
 {
   return( (int) w->core.width );
 }
@@ -62,8 +63,7 @@ Widget w;
  */
 
 int
-Height(w)
-Widget w;
+Height(Widget w)
 {
   return( (int) w->core.height );
 }
@@ -75,8 +75,7 @@ Widget w;
  */
 
 int
-BorderWidth(w)
-Widget w;
+BorderWidth(Widget w)
 {
   return( (int) w->core.border_width );
 }
@@ -93,8 +92,7 @@ Widget w;
  */
 
 char * 
-Name(w)
-Widget w;
+Name(Widget w)
 {
   return( w->core.name);
 }

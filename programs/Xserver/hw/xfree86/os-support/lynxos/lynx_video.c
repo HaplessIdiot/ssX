@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.13 1999/05/03 12:16:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.14 1999/12/08 06:10:13 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -190,8 +190,6 @@ xf86OSInitVidMem(VidMemInfoPtr pVidMem)
   pVidMem->linearSupported = TRUE;
   pVidMem->mapMem = MapVidMem;
   pVidMem->unmapMem = UnMapVidMem;
-  pVidMem->mapMemSparse = 0;
-  pVidMem->unmapMemSparse = 0;
   pVidMem->setWC = 0;
   pVidMem->undoWC = 0;
 #ifdef HAS_MTRR_SUPPORT

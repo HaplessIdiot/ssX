@@ -9,7 +9,7 @@ Matthieu Herrb
 <Date>Last modified on: 20 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.7 2000/02/21 18:05:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.8 2000/02/29 03:09:15 dawes Exp $
 </ident>
 
 <toc>
@@ -27,13 +27,13 @@ See the <htmlurl url="COPYRIGHT.html" name="Copyright Notice">.
 
 The sources for XFree86 &relvers; are available by anonymous ftp from:
 
-<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/snapshots/&relvers;"
-url="ftp://ftp.XFree86.org/pub/XFree86/snapshots">
+<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/&relvers;"
+url="ftp://ftp.XFree86.org/pub/XFree86/&relvers;">
 
 Binaries for OpenBSD/i386 2.6 and later are available from:
 
-<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/snapshots/&relvers;/binaries/OpenBSD"
-url="ftp://ftp.XFree86.org/pub/XFree86/snapshots/&relvers;/binaries/OpenBSD">
+<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/&relvers;/binaries/OpenBSD"
+url="ftp://ftp.XFree86.org/pub/XFree86/&relvers;/binaries/OpenBSD">
 
 A list of mirror sites is provided by
 <htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/MIRRORS"

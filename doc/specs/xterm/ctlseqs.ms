@@ -1,7 +1,7 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
 .\" $XConsortium: ctlseqs.ms,v 1.16 94/12/28 20:45:48 gildea Exp $
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.34 2000/02/10 18:57:17 dawes Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.35 2000/02/13 00:56:01 dawes Exp $
 .\"
 .\"
 .\" Copyright 1996,1997,1998,1999,2000 by Thomas E. Dickey <dickey@clark.net>
@@ -294,6 +294,7 @@ A single (usually optional) numeric parameter, composed of one of more digits.
 .IP \*(Pm
 A multiple numeric parameter composed of any number of single numeric
 parameters, separated by \*; character(s).
+Individual values for the parameters are listed with \*(Ps .
 .IP \*(Pt
 A text parameter composed of printable characters.
 .
@@ -673,7 +674,7 @@ The response depends on the \fBdecTerminalId\fP resource setting.
 It should apply only to VT220 and up, but \fIxterm\fP extends this to VT100.
   \(-> \*(Cs\*(Pp\*s\*;\*(Pv\*s\*;\*(Pc\*s\*c
 .br
-where \*(Pc denotes the terminal type
+where \*(Pp denotes the terminal type
   \(-> \*0 (``VT100'')
   \(-> \*1 (``VT220'')
 .br
