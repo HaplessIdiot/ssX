@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.4 1997/02/17 09:46:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.5 1997/02/27 13:58:44 hohndel Exp $ */
 
 
 
@@ -1497,11 +1497,13 @@ ELFResolveSymbols()
 }
 
 int
-ELFCheckForUnresolved()
+ELFCheckForUnresolved(color_depth)
+int color_depth;
 {
 	elf_reloc	*erel;
 	char		**addr;
 	extern int	LoaderDefaultFunc();
+        int flag, fatalsym=0;
 
 	if( (erel=listResolve) == NULL )
 		return 0;
@@ -1510,17 +1512,13 @@ ELFCheckForUnresolved()
 	{
 		addr = (char**)(erel->secp+erel->rel->r_offset);
 		*addr += ((int) &LoaderDefaultFunc - (int)addr);
-
-		if (xf86ShowUnresolved)
-		{
-			ErrorF("Unresolved Symbol %s from %s\n",
-				ElfGetSymbolName(erel->file, 
+                flag = _LoaderHandleUnresolved(ElfGetSymbolName(erel->file, 
 					ELF32_R_SYM(erel->rel->r_info)),
-				_LoaderHandleToName(erel->file->handle));
-		}
+				_LoaderHandleToName(erel->file->handle), color_depth);
+                if(flag) fatalsym = 1;
 		erel=erel->next;
 	}
-	return 1;
+	return fatalsym;
 }
 
 void

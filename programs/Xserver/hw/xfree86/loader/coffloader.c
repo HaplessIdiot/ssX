@@ -884,23 +884,25 @@ while( (rel=oldlist) != NULL )
 }
 
 int
-COFF2CheckForUnresolved()
+COFF2CheckForUnresolved(color_depth)
+int color_depth;
 {
 char	*name;
 coff_reloc	*crel;
+int flag, fatalsym = 0;
 
 if( (crel=listResolve) == NULL )
 	return 0;
 
 while( crel )
 	{
-	ErrorF("Unresolved Symbol %s from %s\n",
-		name=COFF2GetSymbolName(crel->file, crel->rel->r_symndx),
-			_LoaderHandleToName(crel->file->handle));
+        flag = _LoaderHandleUnresolved(name=COFF2GetSymbolName(crel->file, crel->rel->r_symndx),
+			_LoaderHandleToName(crel->file->handle), color_depth);
+        if (flag) fatalsym = 1;
 	free(name);
 	crel=crel->next;
 	}
-return 1;
+return fatalsym;
 }
 
 void

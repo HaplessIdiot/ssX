@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.10 1996/12/23 06:50:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.11 1997/01/27 06:58:07 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -76,7 +76,12 @@ void xf86OpenConsole()
 
 	/* hv 250197 workaround for xkb-Problem: switch to X11ROOT drive */
 	char *x11r = getenv("X11ROOT");
-	if (_chdir2(x11r) < 0) {
+        /* Make sure X11ROOT is set before we go further sm280297 */
+        if (x11r == NULL){ 
+           ErrorF("The environment variable X11ROOT is not set! The xserver is aborting.\n");	
+           exit(1);  
+           }
+        if (_chdir2(x11r) < 0) {
 		ErrorF("xf86-OS/2: Cannot change to X11ROOT directory!\n");
 	}
 

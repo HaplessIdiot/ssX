@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.20 1997/02/17 09:45:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.21 1997/02/25 14:20:52 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -40,6 +40,7 @@
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
 #include "xf86_Config.h"
+#include "xf86Version.h"
 #include "s3ELSA.h"
 #ifdef XFreeXDGA
 #include "X.h"
@@ -195,6 +196,16 @@ ScrnInfoRec s3InfoRec =
 #endif
 };
 
+XF86ModuleVersionInfo s3vVersRec =
+{
+	"libs3v.a", 
+	"The XFree86 Project",
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,
+	{0,0,0,0}	/* signature, to be patched into the file by a tool */
+};
 
 ScrnInfoRec *
 ServerInit()
@@ -218,12 +229,25 @@ ModuleInit(data,magic)
 
     switch(cnt++)
     {
+	/* MAGIC_VERSION must be first in ModuleInit */
     case 0:
+	* data = (pointer) &s3vVersRec;
+	* magic= MAGIC_VERSION;
+	break;
+    case 1:
         * data = (pointer) &s3InfoRec;
         * magic= MAGIC_ADD_VIDEO_CHIP_REC;
         break;
-    case 1:
-        * data = (pointer) "libmfb.a";
+    case 2:        
+        * data = (pointer) "s3vConf.o";
+        * magic= MAGIC_LOAD;
+        break;
+    case 3:
+        * data = (pointer) "s3_virge.o";
+        * magic= MAGIC_LOAD;
+        break;
+    case 4:
+        * data = (pointer) "libxf86cache.a";
         * magic= MAGIC_LOAD;
         break;
     default:

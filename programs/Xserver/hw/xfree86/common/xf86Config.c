@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.119 1997/02/25 14:20:59 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.120 1997/02/27 13:58:27 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2654,6 +2654,7 @@ configScreenSection()
   case VGA16:
   case ACCEL:
   case FBDEV:
+  case XF86:
 	break;
   default:
     xf86ConfigError("Not a recognized driver name");
@@ -3027,20 +3028,27 @@ configScreenSection()
         FatalError("color depth of %d currently not supported by loader\n",
 		screen->depth);
     }
+    /* Before checking for unresolved, call LoaderFixups() again, to make
+     * sure that any special symbols are properly fixed-up 
+     */ 
+     LoaderFixups();
+
     /*
-     * at this point all symbols should be resolvable. If not, we should
-     * issue a fatal error and stop right here. This is disabled while
-     * we are working on this code
+     * at this point all symbols should be resolvable, except for 
+     * those which are not needed for the current color depth.
+     * We check for unresolved, and issue a fatal error and stop 
+     * right here. LoaderCheckForUnresolved() will ignore all color-depth
+     * functions not needed for the current color depth. For now, we just 
+     * issue a warning while we are working on this code
      */
-    if( LoaderCheckUnresolved() )
+    if( LoaderCheckUnresolved( screen->depth ) )
     {
         /*
-	 * disabled
-
-	FatalError("Some symbols couldn't be resolved!\n");
-
-	 * disabled
+	 * leave as a warning for now
 	 */
+
+	ErrorF("Warning: Some symbols couldn't be resolved!\n");
+
     }
 
     /*

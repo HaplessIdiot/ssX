@@ -1,4 +1,11 @@
 XFree86 3.2Ak ( 5 March 1997)
+ 542. Build fix for libc_wrapper.c on ISC (#117, Michael Rohleder).
+ 541. Add Module Version to Mach32 server (#117, Michael Rohleder).
+ 540. Add smarter handling of unresolved symbols in the loader (#116,
+      Sebastien Marineau).
+ 539. Fix problem in OS/2 loader (#115, Sebastien Marineau).
+ 538. Add module versioning and auto loading to S3V server (#114, Sebastien
+      Marineau).
  537. Change name of Screen Section to "XFree86".
  536. Set correct clipping rectangle for SVGA/S3 (#112, Mark Vojkovich).
  535. Fix a problem in trapezoid solid fill code (not sure if this fixes
