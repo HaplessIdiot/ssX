@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (21 October 2002)
+ 439. Workaround for <linux/input.h> conflict (Marc La France).
  438. Fix some memory leaks in libX11 i18n code (#A.1314, Olivier Chapuis).
  437. Add DGA and Xvideo support to the i740 driver (#A.1307, Kopecek Tomas).
  436. Fix the number of beeps when using AccessX and XKB 
@@ -15422,4 +15423,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2353 2002/10/21 19:38:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2354 2002/10/22 02:44:25 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.85 2002/04/04 14:05:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.87 2002/09/29 23:54:34 keithp Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -246,6 +246,15 @@ typedef struct _ModuleInfoRec {
  * required for the public interface should be added to xf86str.h, with
  * function prototypes added to xf86.h.
  */
+
+/* Tolerate prior #include <linux/input.h> */
+#if defined(linux) && defined(_INPUT_H)
+#undef BUS_NONE
+#undef BUS_ISA
+#undef BUS_PCI
+#undef BUS_SBUS
+#undef BUS_last
+#endif
 
 typedef enum {
     BUS_NONE,
