@@ -1,5 +1,5 @@
 /* $XConsortium: mejpeg.c,v 1.5 94/04/17 20:34:21 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/mejpeg.c,v 3.1 1996/08/20 13:16:17 dawes Exp $ */
 /**** module mejpeg.c ****/
 /******************************************************************************
 
@@ -100,13 +100,13 @@ terms and conditions:
 /*
  *  Server XIE Includes
  */
+#include <../include/jpeg.h>	/* XXX - ugh! */
 #include <error.h>
 #include <macro.h>
 #include <photomap.h>
 #include <element.h>
 #include <texstr.h>
 #include <memory.h>
-#include <../include/jpeg.h>	/* XXX - ugh! */
 
 
 /*

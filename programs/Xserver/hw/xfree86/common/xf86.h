@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.61 1997/06/25 08:24:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.62 1997/06/29 07:54:31 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -308,11 +308,11 @@ typedef enum {
 typedef struct {
 	char *modname;		/* name of module, e.g. "foo_drv.o" */
 	char *vendor;		/* vendor specific string */
-	INT32 _modinfo1_;	/* constanta MODINFOSTRING1/2 to find */
-	INT32 _modinfo2_;	/* infoarea with a binary editor or sign tool */
-	INT32 xf86version;	/* contains XF86_VERSION_CURRENT */
-	INT32 modversion;	/* contains a module specific version id */
-	INT32 checksum[4];	/* contains a digital signature of the */
+	CARD32 _modinfo1_;	/* constanta MODINFOSTRING1/2 to find */
+	CARD32 _modinfo2_;	/* infoarea with a binary editor or sign tool */
+	CARD32 xf86version;	/* contains XF86_VERSION_CURRENT */
+	CARD32 modversion;	/* contains a module specific version id */
+	CARD32 checksum[4];	/* contains a digital signature of the */
 				/* version info structure */
 } XF86ModuleVersionInfo;
 

@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.6 1997/06/15 07:12:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.7 1997/06/25 08:24:58 hohndel Exp $ */
 
 #include "Xos.h"
 #include <signal.h>
@@ -585,7 +585,7 @@ write_and_read(int fd, char *data, char *buffer, int len, int cr_term)
 	    break;
 	}
 	if (cr_term && buffer[numread - 1] == '\r') {
-	    break;
+	    break;				/* Is this intentional? */
 	    buffer[numread - 1] = 0;
 	}
     }

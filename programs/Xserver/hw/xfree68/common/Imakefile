@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/3 1996/10/25 11:32:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/common/Imakefile,v 3.7 1997/05/03 09:16:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/common/Imakefile,v 3.8 1997/06/29 07:54:27 dawes Exp $
 
 
 
@@ -246,12 +246,24 @@ InstallDynamicModule(xf86AceCad.so,$(MODULEDIR))
 # if DoLoadableServer
 AllTarget($(XINPUT_DEV_OBJS))
 
+#  if JoystickSupport
 InstallDynamicModule($(JOYSTICK_OBJ),$(MODULEDIR))
+#  endif
+#  if WacomSupport
 InstallDynamicModule($(WACOM_OBJ),$(MODULEDIR))
+#  endif
+#  if MicroTouchSupport
 InstallDynamicModule($(MICROTOUCH_OBJ),$(MODULEDIR))
+#  endif
+#  if ElographicsSupport
 InstallDynamicModule($(ELOGRAPHICS_OBJ),$(MODULEDIR))
+#  endif
+#  if SummaSketchSupport
 InstallDynamicModule($(SUMMASKETCH_OBJ),$(MODULEDIR))
+#  endif
+#  if AceCadSupport
 InstallDynamicModule($(ACECAD_OBJ),$(MODULEDIR))
+#  endif
 # endif
 #endif
 SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEDEFINES) $(EXT_DEFINES))

@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MuTouch.c,v 3.1 1997/06/29 07:54:33 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1098,7 +1098,9 @@ xf86MuTControl(DeviceIntPtr	dev,
 	DBG(3, ErrorF("Try to see if the link is at the specified rate\n"));
 	memset(&termios_tty, 0, sizeof(termios_tty));
 	termios_tty.c_cflag = priv->link_speed | CS8 | CREAD | CLOCAL;
+#ifdef CRTSCTS
 	termios_tty.c_cflag &= ~CRTSCTS;
+#endif
 	termios_tty.c_cc[VMIN] = 1;
 	if (tcsetattr(local->fd, TCSANOW, &termios_tty) < 0) {
 	  Error("Unable to configure MicroTouch touchscreen port");

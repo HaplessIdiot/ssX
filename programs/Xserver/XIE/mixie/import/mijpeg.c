@@ -1,5 +1,5 @@
 /* $XConsortium: mijpeg.c,v 1.4 94/04/17 20:34:54 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/XIE/mixie/import/mijpeg.c,v 3.0 1996/02/20 14:32:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/import/mijpeg.c,v 3.1 1996/08/20 12:24:11 dawes Exp $ */
 /**** module mijpeg.c ****/
 /******************************************************************************
 Copyright (c) 1993, 1994  X Consortium
@@ -101,6 +101,12 @@ terms and conditions:
 /*
  *  Server XIE Includes
  */
+
+#ifndef XIE
+#define XIE
+#endif
+#include <jpeg.h>
+
 #include <error.h>
 #include <macro.h>
 #include <photomap.h>
@@ -108,11 +114,6 @@ terms and conditions:
 #include <texstr.h>
 #include <memory.h>
 
-
-#ifndef XIE
-#define XIE
-#endif
-#include <jpeg.h>
 
 /*
  *  routines referenced by other DDXIE modules
