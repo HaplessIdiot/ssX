@@ -1,5 +1,5 @@
 /* $XConsortium: mach32init.c,v 1.1 94/03/28 21:08:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.1 1994/05/08 06:21:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.2 1994/09/11 00:49:01 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -144,9 +144,9 @@ void mach32SetCRTCRegs(crtcRegs)
     outw(V_SYNC_WID,  crtcRegs->v_sync_wid);
 
     /* Set the width of the display -- useful for future extensions */
-    outw(CRT_PITCH, mach32VirtX >> 3);
+    outw(CRT_PITCH, mach32DisplayWidth >> 3);
 
-    outw(GE_PITCH,  mach32VirtX >> 3);
+    outw(GE_PITCH,  mach32DisplayWidth >> 3);
 
     /* Clock select register */
     outw(CLOCK_SEL, crtcRegs->clock_sel);
@@ -326,8 +326,9 @@ void mach32InitAperture(screen_idx)
 	    for (i = 0; i <= mach32MaxY; i++) {
 
 		mach32VideoPageBoundary[i] = 65536 -
-		    ((i*mach32VirtX*(mach32InfoRec.bitsPerPixel/8)) -
-		    ((i*mach32VirtX*(mach32InfoRec.bitsPerPixel/8))&0xffff0000));
+		    ((i*mach32DisplayWidth*(mach32InfoRec.bitsPerPixel/8)) -
+		     ((i*mach32DisplayWidth*(mach32InfoRec.bitsPerPixel/8)) & 
+		      0xffff0000));
 		if (mach32VideoPageBoundary[i] >= mach32MaxX)
 		    mach32VideoPageBoundary[i] = 0;
 	    }

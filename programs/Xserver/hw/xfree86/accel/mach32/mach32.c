@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.22 1994/09/27 10:28:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.23 1994/10/23 12:57:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -145,6 +145,7 @@ static Bool LUTissaved = FALSE;
 
 short mach32MaxX, mach32MaxY;
 short mach32VirtX, mach32VirtY;
+short mach32DisplayWidth;
 
 Bool mach32Use4MbAperture = FALSE;
 Bool mach32DAC8Bit = FALSE;
@@ -613,6 +614,10 @@ mach32Probe()
 		if(pEnd == (DisplayModePtr) NULL)
 			pEnd = pMode;
 		pMode = pMode->next;
+		mach32InfoRec.virtualX = max(mach32InfoRec.virtualX,
+					     pMode->HDisplay);
+		mach32InfoRec.virtualY = max(mach32InfoRec.virtualY,
+					     pMode->VDisplay);
 	  }
     } while (pMode != pEnd);
 
@@ -644,10 +649,14 @@ mach32Probe()
 		mach32InfoRec.name, mach32VirtX, mach32VirtY);
     }
 
-    if ((mach32VirtX) < 1024) {
-	ErrorF("mach32 X server requires virtual screen width >= 1024\n");
-	xf86DisableIOPorts(mach32InfoRec.scrnIndex);
-	return(FALSE);
+    if (mach32VirtX < 1024)
+	mach32DisplayWidth = 1024;
+    else
+	mach32DisplayWidth = mach32VirtX;
+
+    if (xf86Verbose) {
+	ErrorF("%s %s: Display width: %d\n",
+		XCONFIG_PROBED, mach32InfoRec.name, mach32DisplayWidth);
     }
 
     if (!mach32InfoRec.videoRam) {
@@ -675,10 +684,11 @@ mach32Probe()
 	      mach32InfoRec.videoRam );
     }
 
-    if (((mach32VirtX) * (mach32VirtY) * (mach32InfoRec.bitsPerPixel / 8)) >
+    if (((mach32DisplayWidth) * (mach32VirtY) *
+	 (mach32InfoRec.bitsPerPixel / 8)) >
 	(mach32InfoRec.videoRam*1024)) {
-	ErrorF("Not enough memory for requested virtual resolution (%dx%d)\n",
-	       mach32VirtX, mach32VirtY);
+	ErrorF("Not enough memory for requested display size (%dx%d)\n",
+	       mach32DisplayWidth, mach32VirtY);
 	xf86DisableIOPorts(mach32InfoRec.scrnIndex);
 	return(FALSE);
     }
@@ -689,13 +699,14 @@ mach32Probe()
 			 * happens before the pixmap cache is initialized).
 			 */
     
-    mach32MaxX = mach32VirtX - 1;
+    mach32MaxX = mach32DisplayWidth - 1;
     available_ram = mach32InfoRec.videoRam * 1024;
 
     sw_cursor_supplied = OFLG_ISSET(OPTION_SW_CURSOR, &mach32InfoRec.options);
     if (!sw_cursor_supplied)
     {
-	if (available_ram - (mach32VirtX * mach32VirtY) >= MACH32_CURSBYTES)
+	if (available_ram - (mach32DisplayWidth * mach32VirtY) >=
+	    MACH32_CURSBYTES)
 	{
 	    available_ram -= (MACH32_CURSBYTES + 1023) & ~1023;
 	    mach32InfoRec.videoRam -= (MACH32_CURSBYTES + 1023) / 1024;
@@ -715,7 +726,7 @@ mach32Probe()
 	   "software" : "hardware");
 
     mach32MaxY = available_ram /
-                 (mach32VirtX * (mach32InfoRec.bitsPerPixel / 8)) - 1;
+                 (mach32DisplayWidth * (mach32InfoRec.bitsPerPixel / 8)) - 1;
 
     if (mach32MaxY > 1535)
 	  mach32MaxY = 1535;	/* Limitation of 8514 drawing commands */
@@ -834,7 +845,7 @@ mach32Initialize (scr_index, pScreen, argc, argv)
     if (!mach32ScreenInit(pScreen, mach32VideoMem,
 			  mach32VirtX, mach32VirtY,
 			  displayResolution, displayResolution,
-			  mach32VirtX))
+			  mach32DisplayWidth))
 
 		return(FALSE);
 
@@ -1112,7 +1123,7 @@ mach32AdjustFrame(x, y)
     int x, y;
 {
     /* cursor offset in units of bytes/4 */
-    int byte_offset = ((x + y*mach32VirtX) *
+    int byte_offset = ((x + y * mach32DisplayWidth) *
 			(mach32InfoRec.bitsPerPixel / 8)) >> 2;
 
     mach32CursorOff();

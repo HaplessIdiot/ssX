@@ -1,5 +1,5 @@
 /* $XConsortium: mach32im.c,v 1.1 94/03/28 21:08:22 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.2 1994/09/07 15:49:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.3 1994/09/11 00:49:00 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -143,7 +143,7 @@ mach32ImageInit()
 
     PMask = (1UL << mach32InfoRec.depth) - 1;
     BytesPerPixel = mach32InfoRec.bitsPerPixel / 8;
-    screenStride = mach32VirtX * BytesPerPixel;
+    screenStride = mach32DisplayWidth * BytesPerPixel;
 
     for (i = 0; i < 256; i++) {
 	reorder(i,swapbits[i]);
@@ -200,7 +200,7 @@ mach32ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     WaitIdleEmpty();
 
     psrc += pwidth * py + px * BytesPerPixel;
-    curvm = mach32VideoMem + (x + y * mach32VirtX) * BytesPerPixel;
+    curvm = mach32VideoMem + (x + y * mach32DisplayWidth) * BytesPerPixel;
 
     byteCount = w * BytesPerPixel;
     while(h--) {
@@ -244,7 +244,7 @@ mach32ImageWriteBank(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     WaitIdleEmpty();
 
     psrc += pwidth * py + px * BytesPerPixel;
-    offset = (x + y * mach32VirtX) * BytesPerPixel;
+    offset = (x + y * mach32DisplayWidth) * BytesPerPixel;
     bank = offset / mach32BankSize;
     offset &= (mach32BankSize-1);
     curvm = &mach32VideoMem[offset];
@@ -255,7 +255,7 @@ mach32ImageWriteBank(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 	/*
 	 * calc number of line before need to switch banks
 	 */
-	count = (mach32BankSize - offset) / mach32VirtX / BytesPerPixel;
+	count = (mach32BankSize - offset) / mach32DisplayWidth / BytesPerPixel;
 	if (count >= h) {
 		count = h;
 		h = 0;
@@ -413,7 +413,7 @@ mach32ImageReadBank(x, y, w, h, psrc, pwidth, px, py, planemask)
     WaitIdleEmpty();
 
     psrc += pwidth * py + px * BytesPerPixel;
-    offset = (x + y * mach32VirtX) * BytesPerPixel;
+    offset = (x + y * mach32DisplayWidth) * BytesPerPixel;
     bank = offset / mach32BankSize;
     offset &= (mach32BankSize-1);
     curvm = &mach32VideoMem[offset];
@@ -545,7 +545,7 @@ mach32ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     modulus(y-poy,ph,ymod);
 
     for (j = y; j < y+h; j++) {
-	curvm = mach32VideoMem + (x + j*mach32VirtX) * BytesPerPixel;
+	curvm = mach32VideoMem + (x + j * mach32DisplayWidth) * BytesPerPixel;
 	
 	pline = psrc + pwidth*ymod;
 	if (++ymod >= ph)
@@ -603,7 +603,8 @@ mach32ImageFillBank(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 
     for (j = y; j < y+h; j++) {
 	XYSetVGAPage(x,j);
-	curvm = mach32VideoMem + (((x+j*mach32VirtX) * BytesPerPixel) & 0xffff);
+	curvm = mach32VideoMem +
+		(((x + j * mach32DisplayWidth) * BytesPerPixel) & 0xffff);
 	pline = psrc + pwidth*ymod;
 	if (++ymod >= ph)
 	    ymod -= ph;
