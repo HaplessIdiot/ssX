@@ -4474,9 +4474,7 @@ WriteEventsToClient(pClient, count, events)
     int       i;
 #ifdef PANORAMIX
     PanoramiXRes      *win;
-#endif
 
-#ifdef PANORAMIX
     if (!noPanoramiXExtension) {
       switch (events->u.u.type) {
         case ButtonPress : case ButtonRelease :
@@ -4499,8 +4497,17 @@ WriteEventsToClient(pClient, count, events)
                 }
              }
             break;
-        case Expose :
-	    /* fixed up in miSendExposures */ 
+        case Expose :           /* fixed up in miSendExposures */ 
+        case VisibilityNotify : /* Fixed up in SendVisibilityNotify */
+        case GraphicsExpose :
+	case NoExpose :         /* Fixed up in ProcCopyArea/Plane */
+        case CreateNotify :     /* fixed up in CreateWindow */ 
+        case MapNotify :        /* fixed up in MapWindow/SubWindows */ 
+	case UnmapNotify :      /* fixed up in UnmapWindow/SubWindows */ 
+        case DestroyNotify :    /* fixed up in DeleteWindow/CrushTree */ 
+	case GravityNotify :    /* fixed up in ResizeChildrenWinSize */  
+        case CirculateNotify :  /* fixed up in CirculateWindow */
+        case ReparentNotify :   /* fixed up in ReparentWindow */
             break;
         case FocusOut :
             FORCE_WIN(events->u.focus.window);
@@ -4508,30 +4515,8 @@ WriteEventsToClient(pClient, count, events)
         case FocusIn :
             FORCE_WIN(events->u.focus.window);
             break;
-        case VisibilityNotify :
-	    /* Fixed up in SendVisibilityNotify */
-            break;
-        case GraphicsExpose :
-	case NoExpose :
-	    /* Fixed up in ProcCopyArea/Plane */
-            break;
-        case CreateNotify :
-	    /* fixed up in CreateWindow */ 
-            break;
         case ColormapNotify :
 	    SKIP_FAKE_WINDOW(events->u.colormap.window);
-            break;
-        case MapNotify : 
-	    /* fixed up in MapWindow/SubWindows */ 
-            break;
-	case UnmapNotify :
- 	    /* fixed up in UnmapWindow/SubWindows */ 
-            break;
-        case DestroyNotify : 
- 	    /* fixed up in DeleteWindow/CrushTree */ 
-            break;
-	case GravityNotify :
-	    /* fixed up in ResizeChildrenWinSize */  
             break;
         case MapRequest :
             SKIP_FAKE_WINDOW(events->u.mapRequest.window);
@@ -4549,14 +4534,8 @@ WriteEventsToClient(pClient, count, events)
         case ResizeRequest :
             SKIP_FAKE_WINDOW(events->u.resizeRequest.window);
             break;
-        case CirculateNotify : 
- 	    /* fixed up in CirculateWindow */
-            break;
         case CirculateRequest :
 	    SKIP_FAKE_WINDOW(events->u.circulate.window);
-            break;
-        case ReparentNotify :
-	    /* fixed up in ReparentWindow */
             break;
         case PropertyNotify :
             SKIP_FAKE_WINDOW(events->u.property.window);
@@ -4566,14 +4545,9 @@ WriteEventsToClient(pClient, count, events)
             break;
         default :
             switch (events->u.u.type & ~0x80) {
-		case VisibilityNotify :
-		   /* Fixed up in SendVisibilityNotify */
-		   break;
-		case MapNotify : 
-		   /* fixed up in MapWindow/SubWindows */ 
-		   break;
-		case UnmapNotify :
-		   /* fixed up in UnmapWindow/SubWindow */ 
+		case VisibilityNotify : /* Fixed up in SendVisibilityNotify */
+		case MapNotify :        /* fixed up in MapWindow/SubWindows */ 
+		case UnmapNotify :      /* fixed up in UnmapWindow/SubWindow */ 
 		   break;
 		case MapRequest :
 		   SKIP_FAKE_WINDOW(events->u.mapRequest.window);
