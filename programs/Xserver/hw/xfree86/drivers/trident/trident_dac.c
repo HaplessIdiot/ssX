@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.29 2000/11/16 19:45:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.30 2000/11/26 10:08:52 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -386,6 +386,10 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	    offset = (pScrn->displayWidth * 3) >> 3;
     	    pReg->tridentRegs3x4[PixelBusReg] = 0x29;
 	    pReg->tridentRegsDAC[0x00] = 0xD0;
+	    if (pTrident->Chipset == CYBERBLADEE4) {
+    		OUTB(vgaIOBase+ 4, New32);
+		pReg->tridentRegs3x4[New32] = INB(vgaIOBase + 5) & 0x7F;
+	    }
 	    break;
 	case 32:
 	    pReg->tridentRegs3CE[MiscExtFunc] |= 0x02;
@@ -394,6 +398,12 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	    offset = pScrn->displayWidth >> 1;
     	    pReg->tridentRegs3x4[PixelBusReg] = 0x09;
 	    pReg->tridentRegsDAC[0x00] = 0xD0;
+	    if (pTrident->Chipset == CYBERBLADEE4) {
+    		OUTB(vgaIOBase+ 4, New32);
+		pReg->tridentRegs3x4[New32] = INB(vgaIOBase + 5) | 0x80;
+		/* With new mode 32bpp we set the packed flag */
+    	    	pReg->tridentRegs3x4[PixelBusReg] |= 0x20;
+	    }
 	    break;
     }
     pReg->tridentRegs3x4[Offset] = offset & 0xFF;
@@ -414,13 +424,17 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->tridentRegs3C4[NewMode1] = 0xC0;
     pReg->tridentRegs3C4[Protection] = 0x92;
 
+    pReg->tridentRegs3x4[LinearAddReg] = 0;
     if (pTrident->Linear)
-    	pReg->tridentRegs3x4[LinearAddReg] = ((pTrident->FbAddress >> 24) << 6)|
-					 ((pTrident->FbAddress >> 20) & 0x0F)|
-					 0x20;
+	/* This is used for VLB, when we support it again in 4.0 */
+	if (pTrident->Chipset < TGUI9685)
+    	    pReg->tridentRegs3x4[LinearAddReg] |=
+					((pTrident->FbAddress >> 24) << 6)|
+					((pTrident->FbAddress >> 20) & 0x0F)|
+	/* Turn on linear mapping */
+    	pReg->tridentRegs3x4[LinearAddReg] |= 0x20; 
     else {
 	pReg->tridentRegs3CE[MiscExtFunc] |= 0x04;
-    	pReg->tridentRegs3x4[LinearAddReg] = 0;
     }
     
     pReg->tridentRegs3x4[CRTCModuleTest] = 
@@ -462,6 +476,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	pReg->tridentRegs3x4[PCIReg] = INB(vgaIOBase + 5) & 0xF9; 
     else
     	pReg->tridentRegs3x4[PCIReg] = INB(vgaIOBase + 5) & 0xF8; 
+
     /* Enable PCI Bursting on capable chips */
     if (pTrident->Chipset >= TGUI9660) {
 	if(pTrident->UsePCIBurst) {
@@ -523,7 +538,8 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     OUTW_3CE(MiscExtFunc);
     OUTW_3x4(Offset);
     if (pTrident->Chipset >= PROVIDIA9685) OUTW_3x4(Enhancement0);
-    if (pTrident->Chipset >= BLADE3D) OUTW_3x4(RAMDACTiming);
+    if (pTrident->Chipset >= BLADE3D)      OUTW_3x4(RAMDACTiming);
+    if (pTrident->Chipset == CYBERBLADEE4) OUTW_3x4(New32);
     if (pTrident->IsCyber) {
 	CARD8 tmp;
 
@@ -622,7 +638,8 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     INB_3x4(PCIReg);
     INB_3x4(PCIRetry);
     if (pTrident->Chipset >= PROVIDIA9685) INB_3x4(Enhancement0);
-    if (pTrident->Chipset >= BLADE3D) INB_3x4(RAMDACTiming);
+    if (pTrident->Chipset >= BLADE3D)      INB_3x4(RAMDACTiming);
+    if (pTrident->Chipset == CYBERBLADEE4) INB_3x4(New32);
     if (pTrident->IsCyber) {
 	CARD8 tmp;
 	INB_3CE(VertStretch);
