@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.5 1998/10/05 13:22:01 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.6 1998/10/05 14:15:24 dawes Exp $ */
 
 #undef DEBUG
 
@@ -42,6 +42,7 @@ struct ttf_encoding
   TT_CharMap cmap;
   int nchars;
   unsigned (*recode)(unsigned, void*); /* 0 means no supplementary coding */
+  void *client_data;
 };
 
 /* Prototypes */
