@@ -1,4 +1,4 @@
-XFree86 3.2Aj (xx February 1997)
+XFree86 3.2Aj (28 February 1997)
  526. Various build fixes for FreeBSD, NetBSD, Linux, Solaris (Dirk Hohndel).
  525. Fixes for OS/2 loader and ar code (#100, Sebastien Marineau).
  524. Updates to S3/SVGA driver (#99, Mark Vojkovich).
