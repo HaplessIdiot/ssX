@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/afb/Imakefile,v 3.0tsi Exp $
 XCOMM $XConsortium: Imakefile,v 1.38 94/03/11 18:47:47 dpw Exp $
 #include <Server.tmpl>
 
@@ -48,5 +48,8 @@ ObjectFromSpecialSource(afbbltG,afbblt,-DMROP=0)
 ObjectFromSpecialSource(afbtileC,afbtile,-DMROP=Mcopy)
 
 ObjectFromSpecialSource(afbtileG,afbtile,-DMROP=0)
+
+InstallLinkKitLibrary(afb,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(afb.h,$(LINKKITDIR)/include)
 
 DependTarget()

@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranslcl.c /main/26 1996/02/06 14:12:08 mor $ */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.17 1996/02/09 10:16:03 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.18 1996/05/10 06:55:49 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -81,11 +81,13 @@ from the X Consortium.
 #include <sys/signal.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
-#if 0
-#include <sys/ptms.h> /* Maybe for SVR4 only?? */
-#endif
+#ifdef SCO325
+#include <sys/stream.h>
+#include <sys/ptms.h>
+#else
 #ifdef SVR4
 #include <sys/filio.h>
+#endif
 #endif
 #include <sys/stropts.h>
 #include <sys/wait.h>
@@ -1763,7 +1765,11 @@ char *protocol;
     else {
 	XLOCAL=(char *)getenv("XLOCAL");
 	if(XLOCAL==NULL)
+#ifdef SCO
+            XLOCAL="PTS:NAMED:SCO:UNIX";
+#else
 	    XLOCAL="UNIX:PTS:NAMED:ISC:SCO";
+#endif
 	workingXLOCAL=freeXLOCAL=(char *)xalloc (strlen (XLOCAL) + 1);
 	if (workingXLOCAL)
 	    strcpy (workingXLOCAL, XLOCAL);

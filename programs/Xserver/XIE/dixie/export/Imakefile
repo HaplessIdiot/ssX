@@ -4,7 +4,7 @@ XCOMM build device independent export element objects
 
 SRCS1 = eclut.c ecphoto.c edraw.c edrawp.c elut.c ephoto.c
 OBJS1 = eclut.o ecphoto.o edraw.o edrawp.o elut.o ephoto.o
-		
+
 #if BuildDIS
 DEFINES = -DXIE_DIS
 #else
@@ -19,10 +19,11 @@ OBJS2 = echist.o ecroi.o eroi.o
    INCLUDES = -I../../include -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(EXTINCSRC)
    LINTLIBS = ../export/llib-lexp.ln ../import/llib-limp.ln \
               ../process/llib-lproc.ln ../request/llib-lreq.ln
-SubdirLibraryRule($(OBJS))
-NormalLibraryObjectRule()
-LintLibraryTarget(exp,$(SRCS))
 
+#define DoSharedLib	XieDynamicModule
+#include <ServerLib.tmpl>
+SubdirLibraryRule($(OBJS))
+LintLibraryTarget(exp,$(SRCS))
 NormalLintTarget($(SRCS))
 
 DependTarget()

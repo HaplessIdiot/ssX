@@ -1,5 +1,5 @@
 /* $XConsortium: dipexExt.c,v 5.11 94/04/17 20:36:04 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.0 1995/07/07 15:35:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.1 1996/03/29 22:10:01 dawes Exp $ */
 
 /***********************************************************
 
@@ -324,3 +324,23 @@ pexContext *cntxtPtr;
 pexReq *strmPtr;
 { }
 
+#ifdef DYNAMIC_MODULE
+/*
+ * Entry point of dynamic loading
+ */
+extern void (*PexExtensionInitPtr)(void);
+
+int
+#ifndef DLSYM_BUG
+init_module(server_version)
+#else
+init_pex5(server_version)
+#endif
+unsigned long server_version;
+{
+
+  PexExtensionInitPtr = PexExtensionInit;
+  ErrorF("Init module PEX 0x%x\n", PexExtensionInitPtr);
+  return 1;
+}
+#endif /* DYNAMIC_MODULE */

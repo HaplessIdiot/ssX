@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.29 1996/09/03 15:12:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.30 1996/09/14 13:10:54 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -52,6 +52,9 @@
 /* SYSV386 (SVR3, SVR4)                                                   */
 /**************************************************************************/
 #if defined(SYSV) || defined(SVR4)
+# ifdef SCO325
+#  define _SVID3
+# endif
 # if defined(sun) && defined(i386) && defined(SVR4)
 #  /* Fix for Solaris ANSI compilation */
 #  define __EXTENSIONS__
@@ -117,15 +120,17 @@
 
 # if defined(SCO)
 #  include <sys/sysmacros.h>
-#  if defined(SCO325)
-#   define POSIX_TTY
-#  endif
+#  define POSIX_TTY
 # endif /* SCO */
 
 # ifdef SVR4
 #  include <sys/mman.h>
 #  if !(defined(sun) && defined (i386) && defined (SVR4))
 #    define DEV_MEM "/dev/pmem"
+#  endif
+#  ifdef SCO325
+#   undef DEV_MEM
+#   define DEV_MEM "/dev/mem"
 #  endif
 #  define CLEARDTR_SUPPORT
 #  define POSIX_TTY
@@ -145,7 +150,7 @@
 #  define i386 /* note defined in ANSI C mode */
 # endif /* ATT && !i386 */
 
-# if (defined(ATT) || defined(SVR4)) && !(defined(sun) && defined (i386) && defined (SVR4))
+# if (defined(ATT) || defined(SVR4)) && !(defined(sun) && defined (i386) && defined (SVR4)) && !defined(SCO325)
 #  define XQUEUE
 #  include <sys/xque.h>
 # endif /* ATT || SVR4 */

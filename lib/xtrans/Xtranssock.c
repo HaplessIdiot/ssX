@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c /main/52 1996/01/12 15:08:49 kaleb $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.18 1996/01/24 21:59:12 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.19 1996/05/10 06:55:52 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -95,7 +95,7 @@ from the X Consortium.
 #include <netinet/tcp.h>
 #endif /* !NO_TCP_H */
 #include <sys/ioctl.h>
-#ifdef SVR4
+#if defined(SVR4) && !defined(SCO325)
 #include <sys/filio.h>
 #endif
 #if (defined(i386) && defined(SYSV) && !defined(sco)) || defined(_SEQUENT_)
@@ -1774,7 +1774,7 @@ char dummybuf[1500];
 #ifdef WIN32
     return ioctlsocket ((SOCKET) ciptr->fd, FIONREAD, (u_long *) pend);
 #else
-#if (defined(i386) && defined(SYSV) && !defined(sco)) || defined(_SEQUENT_)
+#if (defined(i386) && defined(SYSV)) || defined(_SEQUENT_)
     return ioctl (ciptr->fd, I_NREAD, (char *) pend);
 #else
 #if defined(__EMX__)

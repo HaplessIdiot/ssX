@@ -1,5 +1,5 @@
 /* $XConsortium: fslibos.h,v 1.15 94/07/20 10:37:01 mor Exp $ */
-/* $XFree86: xc/lib/font/fc/fslibos.h,v 3.0 1995/03/11 14:10:07 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fslibos.h,v 3.1 1996/01/05 13:14:03 dawes Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -60,7 +60,11 @@ from the X Consortium.
 #endif
 #ifndef OPEN_MAX
 #if defined(SVR4) || defined(__EMX__)
+#ifdef SCO325
+#define OPEN_MAX sysconf(_SC_OPEN_MAX)
+#else
 #define OPEN_MAX 256
+#endif
 #else
 #include <sys/param.h>
 #ifndef OPEN_MAX

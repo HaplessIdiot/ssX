@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl /main/r61_main/6 1996/01/15 12:26:59 gildea $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.32 1996/08/25 13:51:23 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.33tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -72,6 +72,24 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.32 1996/08/25 13:51:23 dawes Exp $
 #ifndef UseKoi8RForCyrillic
 #define UseKoi8RForCyrillic	NO
 #endif
+#ifndef BuildMITMiscExt
+#define BuildMITMiscExt		YES
+#endif
+#ifndef BuildTestExt
+#define BuildTestExt		YES
+#endif
+#ifndef BuildSyncExt
+#define BuildSyncExt		YES
+#endif
+#ifndef BuildXCMiscExt
+#define BuildXCMiscExt		YES
+#endif
+#ifndef BuildShapeExt
+#define BuildShapeExt		YES
+#endif
+#ifndef BuildBigReqsExt
+#define BuildBigReqsExt		YES
+#endif
 #ifndef BuildPhigs
 #define BuildPhigs		NO
 #endif
@@ -87,14 +105,17 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.32 1996/08/25 13:51:23 dawes Exp $
 #ifndef BuildXIE
 #define BuildXIE		YES
 #endif
+#ifndef BuildXIElib
+#define BuildXIElib		BuildXIE
+#endif
 #ifndef BuildXKB
 #define BuildXKB		YES
 #endif
 #ifndef BuildXKBlib
-#define BuildXKBlib		YES
+#define BuildXKBlib		BuildXKB
 #endif
 #ifndef BuildXKBuilib
-#define BuildXKBuilib		YES
+#define BuildXKBuilib		BuildXKB
 #endif
 	/*
 	 * WARNING: Setting UseXKBInClients to YES cause incompatibilities
@@ -107,20 +128,41 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.32 1996/08/25 13:51:23 dawes Exp $
 #ifndef BuildDBE
 #define BuildDBE		YES
 #endif
+#ifndef BuildDBElib
+#define BuildDBElib		BuildDBE
+#endif
 #ifndef BuildMultibuffer
 #define BuildMultibuffer	NO
 #endif
 #ifndef BuildRECORD
 #define BuildRECORD		YES
 #endif
+#ifndef BuildRECORDlib
+#define BuildRECORDlib		BuildRECORD
+#endif
 #ifndef BuildScreenSaverExt
 #define BuildScreenSaverExt	NO
+#endif
+#ifndef BuildScreenSaverLibrary
+#define BuildScreenSaverLibrary	BuildScreenSaverExt
 #endif
 #ifndef BuildXF86VidModeExt
 #define BuildXF86VidModeExt	NO
 #endif
+#ifndef BuildXF86VidModeLibrary
+#define BuildXF86VidModeLibrary BuildXF86VidModeExt
+#endif
 #ifndef BuildXF86MiscExt
 #define BuildXF86MiscExt	NO
+#endif
+#ifndef BuildXF86MiscLibrary
+#define BuildXF86MiscLibrary	BuildXF86MiscExt
+#endif
+#ifndef BuildXF86DGA
+#define BuildXF86DGA		NO
+#endif
+#ifndef BuildXF86DGALibrary
+#define BuildXF86DGALibrary	BuildXF86DGA
 #endif
 #ifndef BuildLBX
 #define BuildLBX		NO
@@ -229,6 +271,41 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.32 1996/08/25 13:51:23 dawes Exp $
 #define ExtensionOSDefines /**/
 #endif
 #ifndef ExtensionDefines
+#ifndef MITMiscDefines
+#if BuildMITMiscExt
+#define MITMiscDefines -DMITMISC
+#else
+#define MITMiscDefines /**/
+#endif
+#endif
+#ifndef XTestDefines
+#if BuildTestExt
+#define XTestDefines -DXTEST
+#else
+#define XTestDefines /**/
+#endif
+#endif
+#ifndef XSyncDefines
+#if BuildSyncExt
+#define XSyncDefines -DXSYNC
+#else
+#define XSyncDefines /**/
+#endif
+#endif
+#ifndef XCMiscDefines
+#if BuildXCMiscExt
+#define XCMiscDefines -DXCMISC
+#else
+#define XCMiscDefines /**/
+#endif
+#endif
+#ifndef ShapeDefines
+#if BuildShapeExt
+#define ShapeDefines -DSHAPE
+#else
+#define ShapeDefines /**/
+#endif
+#endif
 #ifndef PexDefines
 #if BuildPexExt
 #define PexDefines -DPEXEXT
@@ -275,7 +352,11 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.32 1996/08/25 13:51:23 dawes Exp $
 #define XkbServerDefines /**/
 #endif
 #ifndef BigReqDefines
+#if BuildBigReqsExt
 #define BigReqDefines -DBIGREQS
+#else
+#define BigReqDefines /**/
+#endif
 #endif
 #ifndef LbxDefines
 #if BuildLBX
@@ -338,13 +419,20 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.32 1996/08/25 13:51:23 dawes Exp $
 #define SitePervasiveExtensionDefines /**/
 #endif
 #ifndef PervasiveExtensionDefines
-#define PervasiveExtensionDefines -DSHAPE XInputDefines XkbDefines LbxDefines PervasiveDBEDefines SitePervasiveExtensionDefines
+#define PervasiveExtensionDefines ShapeDefines XInputDefines XkbDefines \
+				  LbxDefines PervasiveDBEDefines \
+				  SitePervasiveExtensionDefines
 #endif
 #ifndef SiteExtensionDefines
 #define SiteExtensionDefines /**/
 #endif
 #ifndef BaseExtensionDefines
-#define BaseExtensionDefines MultibufferDefines -DMITMISC -DXTEST -DXSYNC -DXCMISC RECORDDefines PexDefines ShmDefines XieDefines BigReqDefines VidTuneExtensionDefines XF86MiscExtensionDefines DBEDefines SiteExtensionDefines ScreenSaverExtensionDefines
+#define BaseExtensionDefines MultibufferDefines MITMiscDefines XTestDefines \
+			     XSyncDefines XCMiscDefines RECORDDefines \
+			     PexDefines ShmDefines XieDefines BigReqDefines \
+			     VidTuneExtensionDefines XF86MiscExtensionDefines \
+			     DBEDefines SiteExtensionDefines \
+			     ScreenSaverExtensionDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif

@@ -1,5 +1,5 @@
 /* $XConsortium: session.c,v 1.6 94/04/17 20:33:58 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.0 1996/03/29 22:11:28 dawes Exp $ */
 /**** session.c ****/
 /****************************************************************************
 
@@ -344,5 +344,25 @@ static void XieReset (extEntry)
 	   STRIPS, BYTES);
 #endif  
 }
+
+#ifdef DYNAMIC_MODULE
+/*
+ * Entry point of dynamic loading
+ */
+extern void (*XieInitPtr)(void);
+
+int
+#ifndef DLSYM_BUG
+init_module(server_version)
+#else
+init_xie(server_version)
+#endif
+unsigned long server_version;
+{
+
+  XieInitPtr = XieInit;
+  return 1;
+}
+#endif /* DYNAMIC_MODULE */
 
 /**** End of session.c ****/

@@ -1,5 +1,5 @@
 /* $XConsortium: XF86VMode.c /main/2 1995/11/14 18:17:58 kaleb $ */
-/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.16 1996/01/28 07:28:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.17 1996/02/18 03:41:18 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -242,6 +242,89 @@ Bool XF86VidModeGetAllModeLines(dpy, screen, modecount, modelinesPtr)
     return True;
 }
 
+Bool XF86VidModeAddModeLine (dpy, screen, newmodeline, aftermodeline)
+    Display *dpy;
+    int screen;
+    XF86VidModeModeInfo* newmodeline;
+    XF86VidModeModeInfo* aftermodeline;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeAddModeLineReq *req;
+
+    XF86VidModeCheckExtension (dpy, info, 0);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeAddModeLine, req);
+    req->reqType = info->codes->major_opcode;
+    req->xf86vidmodeReqType = X_XF86VidModeAddModeLine;
+    req->screen = screen;
+    req->dotclock =	newmodeline->dotclock;
+    req->hdisplay =	newmodeline->hdisplay;
+    req->hsyncstart =	newmodeline->hsyncstart;
+    req->hsyncend =	newmodeline->hsyncend;
+    req->htotal =	newmodeline->htotal;
+    req->vdisplay =	newmodeline->vdisplay;
+    req->vsyncstart =	newmodeline->vsyncstart;
+    req->vsyncend =	newmodeline->vsyncend;
+    req->vtotal =	newmodeline->vtotal;
+    req->flags =	newmodeline->flags;
+    req->privsize =	newmodeline->privsize;
+    req->after_dotclock =	aftermodeline->dotclock;
+    req->after_hdisplay =	aftermodeline->hdisplay;
+    req->after_hsyncstart =	aftermodeline->hsyncstart;
+    req->after_hsyncend =	aftermodeline->hsyncend;
+    req->after_htotal =		aftermodeline->htotal;
+    req->after_vdisplay =	aftermodeline->vdisplay;
+    req->after_vsyncstart =	aftermodeline->vsyncstart;
+    req->after_vsyncend =	aftermodeline->vsyncend;
+    req->after_vtotal =		aftermodeline->vtotal;
+    req->after_flags =		aftermodeline->flags;
+    if (newmodeline->privsize) {
+	req->length += newmodeline->privsize;
+	Data32(dpy, (long *) newmodeline->private,
+	       newmodeline->privsize * sizeof(INT32));
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+Bool XF86VidModeDeleteModeLine (dpy, screen, modeline)
+    Display *dpy;
+    int screen;
+    XF86VidModeModeInfo* modeline;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeDeleteModeLineReq *req;
+
+    XF86VidModeCheckExtension (dpy, info, 0);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeDeleteModeLine, req);
+    req->reqType = info->codes->major_opcode;
+    req->xf86vidmodeReqType = X_XF86VidModeDeleteModeLine;
+    req->screen = screen;
+    req->dotclock =	modeline->dotclock;
+    req->hdisplay =	modeline->hdisplay;
+    req->hsyncstart =	modeline->hsyncstart;
+    req->hsyncend =	modeline->hsyncend;
+    req->htotal =	modeline->htotal;
+    req->vdisplay =	modeline->vdisplay;
+    req->vsyncstart =	modeline->vsyncstart;
+    req->vsyncend =	modeline->vsyncend;
+    req->vtotal =	modeline->vtotal;
+    req->flags =	modeline->flags;
+    req->privsize =	modeline->privsize;
+    if (modeline->privsize) {
+	req->length += modeline->privsize;
+	Data32(dpy, (long *) modeline->private,
+	       modeline->privsize * sizeof(INT32));
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
 Bool XF86VidModeModModeLine (dpy, screen, modeline)
     Display *dpy;
     int screen;
@@ -257,16 +340,52 @@ Bool XF86VidModeModModeLine (dpy, screen, modeline)
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeModModeLine;
     req->screen = screen;
-    req->hdisplay = modeline->hdisplay;
-    req->hsyncstart = modeline->hsyncstart;
-    req->hsyncend = modeline->hsyncend;
-    req->htotal = modeline->htotal;
-    req->vdisplay = modeline->vdisplay;
-    req->vsyncstart = modeline->vsyncstart;
-    req->vsyncend = modeline->vsyncend;
-    req->vtotal = modeline->vtotal;
-    req->flags = modeline->flags;
-    req->privsize = modeline->privsize;
+    req->hdisplay =	modeline->hdisplay;
+    req->hsyncstart =	modeline->hsyncstart;
+    req->hsyncend =	modeline->hsyncend;
+    req->htotal =	modeline->htotal;
+    req->vdisplay =	modeline->vdisplay;
+    req->vsyncstart =	modeline->vsyncstart;
+    req->vsyncend =	modeline->vsyncend;
+    req->vtotal =	modeline->vtotal;
+    req->flags =	modeline->flags;
+    req->privsize =	modeline->privsize;
+    if (modeline->privsize) {
+	req->length += modeline->privsize;
+	Data32(dpy, (long *) modeline->private,
+	       modeline->privsize * sizeof(INT32));
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+Status XF86VidModeValidateModeLine (dpy, screen, modeline)
+    Display *dpy;
+    int screen;
+    XF86VidModeModeInfo* modeline;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeValidateModeLineReq *req;
+
+    XF86VidModeCheckExtension (dpy, info, 0);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeValidateModeLine, req);
+    req->reqType = info->codes->major_opcode;
+    req->xf86vidmodeReqType = X_XF86VidModeValidateModeLine;
+    req->screen = screen;
+    req->dotclock =	modeline->dotclock;
+    req->hdisplay =	modeline->hdisplay;
+    req->hsyncstart =	modeline->hsyncstart;
+    req->hsyncend =	modeline->hsyncend;
+    req->htotal =	modeline->htotal;
+    req->vdisplay =	modeline->vdisplay;
+    req->vsyncstart =	modeline->vsyncstart;
+    req->vsyncend =	modeline->vsyncend;
+    req->vtotal =	modeline->vtotal;
+    req->flags =	modeline->flags;
+    req->privsize =	modeline->privsize;
     if (modeline->privsize) {
 	req->length += modeline->privsize;
 	Data32(dpy, (long *) modeline->private,
@@ -293,6 +412,42 @@ Bool XF86VidModeSwitchMode(dpy, screen, zoom)
     req->xf86vidmodeReqType = X_XF86VidModeSwitchMode;
     req->screen = screen;
     req->zoom = zoom;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+    
+Bool XF86VidModeSwitchToMode(dpy, screen, modeline)
+    Display* dpy;
+    int screen;
+    XF86VidModeModeInfo* modeline;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeSwitchToModeReq *req;
+
+    XF86VidModeCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeSwitchToMode, req);
+    req->reqType = info->codes->major_opcode;
+    req->xf86vidmodeReqType = X_XF86VidModeSwitchToMode;
+    req->screen = screen;
+    req->dotclock =	modeline->dotclock;
+    req->hdisplay =	modeline->hdisplay;
+    req->hsyncstart =	modeline->hsyncstart;
+    req->hsyncend =	modeline->hsyncend;
+    req->htotal =	modeline->htotal;
+    req->vdisplay =	modeline->vdisplay;
+    req->vsyncstart =	modeline->vsyncstart;
+    req->vsyncend =	modeline->vsyncend;
+    req->vtotal =	modeline->vtotal;
+    req->flags =	modeline->flags;
+    req->privsize =	modeline->privsize;
+    if (modeline->privsize) {
+	req->length += modeline->privsize;
+	Data32(dpy, (long *) modeline->private,
+	       modeline->privsize * sizeof(INT32));
+    }
     UnlockDisplay(dpy);
     SyncHandle();
     return True;
@@ -408,3 +563,56 @@ Bool XF86VidModeGetMonitor(dpy, screen, monitor)
     SyncHandle();
     return True;
 }
+
+Bool XF86VidModeGetViewPort(dpy, screen, x, y)
+    Display* dpy;
+    int screen;
+    int *x, *y;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeGetViewPortReply rep;
+    xXF86VidModeGetViewPortReq *req;
+    CARD32 syncrange;
+    int i;
+
+    XF86VidModeCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeGetViewPort, req);
+    req->reqType = info->codes->major_opcode;
+    req->xf86vidmodeReqType = X_XF86VidModeGetViewPort;
+    req->screen = screen;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+Bool XF86VidModeSetViewPort(dpy, screen, x, y)
+    Display* dpy;
+    int screen;
+    int x, y;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeSetViewPortReq *req;
+    CARD32 syncrange;
+    int i;
+
+    XF86VidModeCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeSetViewPort, req);
+    req->reqType = info->codes->major_opcode;
+    req->xf86vidmodeReqType = X_XF86VidModeSetViewPort;
+    req->screen = screen;
+
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+

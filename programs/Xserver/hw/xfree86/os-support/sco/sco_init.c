@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.6 1995/11/12 09:52:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.7 1996/02/04 09:10:17 dawes Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -48,7 +48,7 @@ extern void xf86VTRequest(
 
 void xf86OpenConsole()
 {
-    int fd;
+    int fd,wc;
     struct vt_mode VT;
     struct stat status;
     char vtname[11];
@@ -82,18 +82,18 @@ void xf86OpenConsole()
 	{
 	    if ((fstat(0, &status) >= 0) && (status.st_mode & S_IFCHR))
 	    {
-		xf86Info.vtno = minor(status.st_rdev);
+		wc = minor(status.st_rdev);
 	    } 
 	    else 
 	    {
 		ErrorF("%s: Failed to stat stdin, using tty02 (%s)\n",
 		       "xf86OpenConsole", strerror(errno));
-		xf86Info.vtno = 1; /* tty02 */
+		 wc = 1; /* tty02 */
 	    }
 	}
-	ErrorF("(using VT number %d)\n\n", xf86Info.vtno + 1);
+	ErrorF("(using VT number %d)\n\n", wc + 1);
 
-	sprintf(vtname,"/dev/tty%02d", xf86Info.vtno+1); /* /dev/tty[01-12] */
+	sprintf(vtname,"/dev/tty%02d", wc+1); /* /dev/tty[01-12] */
 
 	if ((xf86Info.consoleFd = open(vtname, O_RDWR | O_NDELAY, 0)) < 0)
 	{
@@ -118,8 +118,8 @@ void xf86OpenConsole()
 	}
 
 	/* We activate the console just in case its not the one we are on */
-
-	if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
+        xf86Info.vtno = wc;
+	if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, wc) != 0)
 	{
 	    ErrorF("xf86OpenConsole: VT_ACTIVATE failed\n");
 	}

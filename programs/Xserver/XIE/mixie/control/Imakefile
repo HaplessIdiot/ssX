@@ -24,8 +24,9 @@ XCOMM build device dependent machine independent control objects
               ../control/llib-lctrl.ln ../export/llib-lmexp.ln ../fax/llib-lfax.ln \
               ../import/llib-lmimp.ln ../jpeg/llib-ljpeg.ln ../process/llib-lmproc.ln
 
+#define DoSharedLib	XieDynamicModule
+#include <ServerLib.tmpl>
 SubdirLibraryRule($(OBJS))
-NormalLibraryObjectRule()
 LintLibraryTarget(ctrl,$(SRCS))
 NormalLintTarget($(SRCS))
 

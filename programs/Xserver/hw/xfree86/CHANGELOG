@@ -1,3 +1,40 @@
+XFree86 3.1.2Gi (3 October 1996)
+911. SCO updates.  SCO5 is now the only supported version (there are
+     still problems to be resolved though) (J. Kean Johnston).
+910. LinkKit updates and related cleanups (Marc Aurele La France).
+909. Updated code to program the Ti3026 clock in the MGA server
+     (Andrew E. Mileski).
+908. Preliminary S3 ViRGE/VX support (Harald Koenig).
+907. Fix S3 PCI read burst disable problem (Harald Koenig)
+906. Fix SuperProbe memory reporting for the S3 ViRGE, ViRGE/VX, and
+     separately report off-screen memory (Harald Koenig).
+905. Fix MGA interleave and 32bpp problems (Radoslaw Kapitan).
+904. Fix a RD_MASK problem that shows with 928 cards (at least on some
+     PC98 servers) (Michio "Karl" Jinbo, Harald Koenig).
+903. Allow xterm to be statically linked with libtermcap on Linux
+     (Dirk Hohndel).
+902. Fix screen save/restore on VT switch for the TGA server (Alan Hourihane).
+901. Chips&Tech updates, including a fix for line acceleration
+     problems (David Bateman).
+900. VidMode extension changes/enhancements (not complete yet) (Joe Moss).
+899. S3 ViRGE solid line code (Harald Koenig).
+898. S3 ViRGE updates, including using cfb calls for non-implemented
+     functions (Harald Koenig).
+897. Fix for a line drawing problem in the Cirrus driver (Harm Hanemaayer).
+896. Ark driver updates, including fixes for FIFO settings, HW cursor at
+     16/32bpp, virtual panning at 24bpp, and enable BitBlt acceleration at
+     32bpp (Harm Hanemaayer).
+895. LynxOS microSPARC updates (Thomas Mueller).
+894. Add support for Japanese 106 key keyboards on PANIX.  This is enabled
+     with the 'panix106' keyword in the Keyboard section (Takefumi Tsukada).
+893. README.SVR4 update (Takaaki Nomura).
+892. ValidMode function for Mach32 (Bryan Feir).
+891. Fix a Mach32 problem with VT switch screen save/restore when the
+     virtual width is less than 1024 (Bryan Feir).
+890. Updated NetBSD aperture driver (Matthieu Herrb).
+889. Allow the PEX and XIE server extensions to be built as dynamic modules
+     (FreeBSD and NetBSD so far).  (Matthieu Herrb).
+
 XFree86 3.1.2Gh (29 September 1996)
 888. Replace virtualX by displayWidth where appropriate in many SVGA drivers.
 887. Fix virtual width/pitch checking/setting for the MGA driver.
@@ -48,8 +85,8 @@ XFree86 3.1.2Gh (29 September 1996)
 860. Work around a bash problem on LynxOS which affects rstart/Imakefile
      (Thomas Mueller).
 859. Solid vertical and horizontal lines for the S3 ViRGE server (Berry Dijk).
-858. Fix max clock for TGA (Alah Hourihane).
-857. Fix for TGA VT switching problems (Alah Hourihane).
+858. Fix max clock for TGA (Alan Hourihane).
+857. Fix for TGA VT switching problems (Alan Hourihane).
 856. Add code to detect the ViRGE/VX (Dirk Hohndel).
 
 XFree86 3.1.2Gg (26 September 1996)
@@ -1066,7 +1103,7 @@ XFree86 3.1.2Bh (13 January 1996)
      build problems).
 224. Update xdpyinfo to print some info about XKB (Joe Moss).
 223. Fix(?) problem some people see with vertical lines / black screens
-     with the Trident driver (Alah Hourihane).
+     with the Trident driver (Alan Hourihane).
 222. Update the Trident and SiS drivers to use the vga PCI probe data
      (Alan Hourihane).
 221. Define SetTtyGroup for Linux (Kevin Martin).
@@ -1234,7 +1271,7 @@ XFree86 3.1.2Ac (17 December 1995)
      running xterm on ISC (Michael Rohleder).
 136. Major Trident driver updates, including HW cursor for 9440, and
      an option to use a set of fixed clocks instead of fully programmable
-     clocks for the TGUI chips (Alah Hourihane).
+     clocks for the TGUI chips (Alan Hourihane).
 135. I128 updates (Robin Cutshaw).
 134. Mach64 support for ATI Extended VGA register location on PCI
      cards with block I/O (Kevin Martin).
