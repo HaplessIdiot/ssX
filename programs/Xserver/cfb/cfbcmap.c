@@ -1,5 +1,5 @@
 /* $XConsortium: cfbcmap.c,v 4.19 94/04/17 20:28:46 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbcmap.c,v 3.0 1994/05/08 05:17:57 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -92,7 +92,6 @@ cfbUninstallColormap(pmap)
 
 #endif
 
-#ifndef MULTICFB
 void
 cfbResolveColor(pred, pgreen, pblue, pVisual)
     unsigned short	*pred, *pgreen, *pblue;
@@ -543,4 +542,3 @@ cfbInitVisuals (visualp, depthp, nvisualp, ndepthp, rootDepthp, defaultVisp, siz
     *defaultVisp = depth[i].vids[j];
     return TRUE;
 }
-#endif
