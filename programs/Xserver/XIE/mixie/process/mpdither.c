@@ -1,4 +1,5 @@
 /* $XConsortium: mpdither.c /main/6 1995/12/02 16:53:58 dpw $ */
+/* $XFree86$ */
 /* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module mpdither.c ****/
 /******************************************************************************
