@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.81 2001/06/14 23:37:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.82 2001/06/15 21:23:01 dawes Exp $ */
 
 /*
  * Authors:
@@ -473,16 +473,28 @@ TDFXCountRam(ScrnInfoPtr pScrn) {
     /* set memory interface delay values and enable refresh */
     /* these apply to all RAM vendors */
     dramInit1 = 0x0;
-    if (pTDFX->ChipType==PCI_CHIP_BANSHEE)
-      dramInit1 |= 7<<SST_SGRAM_OFLOP_DEL_ADJ_SHIFT;
-    else
-      dramInit1 |= 2<<SST_SGRAM_OFLOP_DEL_ADJ_SHIFT;
+    dramInit1 |= 2<<SST_SGRAM_OFLOP_DEL_ADJ_SHIFT;
     dramInit1 |= SST_SGRAM_CLK_NODELAY;
     dramInit1 |= SST_DRAM_REFRESH_EN;
     dramInit1 |= (0x18 << SST_DRAM_REFRESH_VALUE_SHIFT) & SST_DRAM_REFRESH_VALUE;  
     dramInit1 &= ~SST_MCTL_TYPE_SDRAM;
     dramInit1 |= dramInit1_strap;
-    pTDFX->writeLong(pTDFX, DRAMINIT1, dramInit1);
+
+    /* Some information about the timing register (for later debugging) */
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+               "DRAMINIT1 read 0x%x, programming 0x%x (not Banshee)\n",
+	       pTDFX->readLong(pTDFX, DRAMINIT1), dramInit1);
+
+    /* 
+     * Here we don't whack the timing register on the Banshee boards as the
+     * BIOS has done a perfectly good job. As Banshee boards were made by
+     * different manufacturers we don't touch this, but carry on whacking it 
+     * for Voodoo3 and Voodoo5 boards, as we've never had a problem with them.
+     * I guess this could be removed for all boards as we probably shouldn't
+     * be doing this to the V3/V5 boards too.
+     */
+    if (pTDFX->ChipType != PCI_CHIP_BANSHEE)
+    	pTDFX->writeLong(pTDFX, DRAMINIT1, dramInit1);
 
     /* determine memory size from strapping pins (dramInit0 and dramInit1) */
     dramInit0_strap = pTDFX->readLong(pTDFX, DRAMINIT0);
