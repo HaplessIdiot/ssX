@@ -45,6 +45,7 @@
 
 #include "nv_include.h"
 #include "xaalocal.h"
+#include "xaarop.h"
 
 #include "nvreg.h"
 #include "nvvga.h"
@@ -92,64 +93,24 @@ static void NVSetPattern(NVPtr pNv, int clr0, int clr1, int pat0,
  * Set ROP.  Translate X rop into ROP3.  Internal routine.
  */
 static void NVSetRopSolid(NVPtr pNv, int rop)
-{
-    static int ropTrans[16] = 
-    {
-        0x00, /* GXclear        */
-        0x88, /* Gxand          */
-        0x44, /* GXandReverse   */
-        0xCC, /* GXcopy         */
-        0x22, /* GXandInverted  */
-        0xAA, /* GXnoop         */
-        0x66, /* GXxor          */
-        0xEE, /* GXor           */
-        0x11, /* GXnor          */
-        0x99, /* GXequiv        */
-        0x55, /* GXinvert       */
-        0xDD, /* GXorReverse    */
-        0x33, /* GXcopyInverted */
-        0xBB, /* GXorInverted   */
-        0x77, /* GXnand         */
-        0xFF  /* GXset          */
-    };
-    
+{    
     if (pNv->currentRop != rop)
     {
         if (pNv->currentRop > 16)
             NVSetPattern(pNv, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
         pNv->currentRop = rop;
         RIVA_FIFO_FREE(pNv->riva, Rop, 1);
-        pNv->riva.Rop->Rop3 = ropTrans[rop];
+        pNv->riva.Rop->Rop3 = XAACopyROP[rop];
     }
 }
 
 static void NVSetRopPattern(NVPtr pNv, int rop)
 {
-    static int ropTrans[16] = 
-    {
-        0x00, /* GXclear        */
-        0xA0, /* Gxand          */
-        0x0A, /* GXandReverse   */
-        0xF0, /* GXcopy         */
-        0x30, /* GXandInverted  */
-        0xAA, /* GXnoop         */
-        0x3A, /* GXxor          */
-        0xFA, /* GXor           */
-        0x03, /* GXnor          */
-        0xA0, /* Gxequiv        */
-        0x0F, /* GXinvert       */
-        0xAF, /* GXorReverse    */
-        0x33, /* GXcopyInverted */
-        0xBB, /* GXorInverted   */
-        0xF3, /* GXnand         */
-        0xFF  /* GXset          */
-    };
-
     if (pNv->currentRop != rop + 16)
     {
         pNv->currentRop = rop + 16; /* +16 is important */
         RIVA_FIFO_FREE(pNv->riva, Rop, 1);
-        pNv->riva.Rop->Rop3 = ropTrans[rop];
+        pNv->riva.Rop->Rop3 = XAAPatternROP[rop];
     }
 }
 
@@ -666,7 +627,7 @@ NVAccelInit(ScreenPtr pScreen)
 
     infoPtr->Mono8x8PatternFillFlags = HARDWARE_PATTERN_SCREEN_ORIGIN |
 				       HARDWARE_PATTERN_PROGRAMMED_BITS |
-				       NO_PLANEMASK | GXCOPY_ONLY;
+				       NO_PLANEMASK;
     infoPtr->SetupForMono8x8PatternFill = NVSetupForMono8x8PatternFill;
     infoPtr->SubsequentMono8x8PatternFillRect =
         NVSubsequentMono8x8PatternFillRect;
