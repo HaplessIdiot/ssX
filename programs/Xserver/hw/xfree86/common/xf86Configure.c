@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.17 2000/02/24 05:36:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.18 2000/02/24 16:54:20 tsi Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -46,7 +46,6 @@ pciVideoPtr ConfiguredPciCard;
 xf86MonPtr ConfiguredMonitor;
 int ConfiguredIsaCard;
 int FoundPciCards = 0;
-static int haveVGA = -1;
 Bool havePrimary = FALSE;
 Bool xf86DoConfigurePass1 = TRUE;
 Bool foundMouse = FALSE;
@@ -204,7 +203,7 @@ configureScreenSection (char *driver)
 	ptr->scrn_device_str = "ISA Card";
     }
 
-    if ((driver == NULL) && (haveVGA != -1))
+    if (!strcmp(driver, "vga"))
     {
 	XF86ConfDisplayPtr display;
 	display = xf86confmalloc(sizeof(XF86ConfDisplayRec));
@@ -594,18 +593,13 @@ DoConfigure()
 	probeResultPci = FALSE;
 	probeResultIsa = FALSE;
 	
-	/* We don't allow vga as we want direct support */
-	/* Then fallback later if no driver found */
-	if (strcmp(*vl,"vga")) {
-	    if (xf86DriverList[i]->Probe != NULL)
-	    	probeResultPci = (*xf86DriverList[i]->Probe)(
-		    xf86DriverList[i], PROBE_DETECTPCI);
-		if (!probeResultPci)
-	    	    probeResultIsa = (*xf86DriverList[i]->Probe)(
-			xf86DriverList[i], PROBE_DETECTISA);
-	} else {
-	    haveVGA = i;
-	}
+	if (xf86DriverList[i]->Probe == NULL) continue;
+
+	probeResultPci = (*xf86DriverList[i]->Probe)(
+	    xf86DriverList[i], PROBE_DETECTPCI);
+	if (!probeResultPci)
+	    probeResultIsa = (*xf86DriverList[i]->Probe)(
+		xf86DriverList[i], PROBE_DETECTISA);
 	
 	/* Bail when we find the primary card ! */
 	if (probeResultPci) {
@@ -635,44 +629,8 @@ DoConfigure()
 	vl++;
     }
 
-    /* Try vga driver if we haven't found any direct modules */
-    if ((haveVGA != -1) && (foundDriver == NULL)) {
-	probeResultPci = FALSE;
-	probeResultIsa = FALSE;
-	
-	if (xf86DriverList[haveVGA]->Probe != NULL) {
-	    	probeResultPci = (*xf86DriverList[haveVGA]->Probe)(
-		    xf86DriverList[haveVGA], PROBE_DETECTPCI);
-		if (!probeResultPci)
-		    probeResultIsa = (*xf86DriverList[haveVGA]->Probe)(
-			xf86DriverList[haveVGA], PROBE_DETECTISA);
-	} 
-	
-	/* Bail when we find the primary card ! */
-	if (probeResultPci) {
-	    ErrorF("Failed to find a direct driver but....\n");
-	    ErrorF("We have found a PCI vga driver\n");
-	    foundDriver = "vga";
-	    if (xf86DriverList[haveVGA]->Identify != NULL)
-	        (*xf86DriverList[haveVGA]->Identify)(0);
-	    if (xf86DriverList[haveVGA]->AvailableOptions != NULL)
-		options = (*xf86DriverList[haveVGA]->AvailableOptions)(
-				(ConfiguredPciCard->vendor << 16) | 
-				ConfiguredPciCard->chipType, BUS_PCI);
-	}
-	if (probeResultIsa) {
-	    ErrorF("Failed to find a direct driver but....\n");
-	    ErrorF("We have found an ISA vga driver\n");
-	    foundDriver = "vga";
-	    if (xf86DriverList[haveVGA]->Identify != NULL)
-	        (*xf86DriverList[haveVGA]->Identify)(0);
-	    if (xf86DriverList[haveVGA]->AvailableOptions != NULL)
-		options = (*xf86DriverList[haveVGA]->AvailableOptions)(
-				ConfiguredIsaCard, BUS_ISA);
-	}
-    }
 
-    if ((haveVGA == -1) && (foundDriver == NULL)) {
+    if (foundDriver == NULL) {
 	ErrorF("Unable to configure XFree86 - no able drivers found.\n");
 	goto bail;
     }
