@@ -1,17 +1,39 @@
 /*
  * Common internal rootless definitions and code
- *
- * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.h,v 1.5 2002/07/15 19:58:31 torrey Exp $ */
+/*
+ * Copyright (c) 2001 Greg Parker. All Rights Reserved.
+ * Copyright (c) 2002-2003 Torrey T. Lyons. All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE ABOVE LISTED COPYRIGHT HOLDER(S) BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the name(s) of the above copyright
+ * holders shall not be used in advertising or otherwise to promote the sale,
+ * use or other dealings in this Software without prior written authorization.
+ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.h,v 1.6 2002/07/24 05:58:33 torrey Exp $ */
 
 #ifndef _ROOTLESSCOMMON_H
 #define _ROOTLESSCOMMON_H
 
 #include "rootless.h"
-
-#include "pixmapstr.h"
-#include "windowstr.h"
+#include "fb.h"
 
 #ifdef RENDER
 #include "picturestr.h"
@@ -189,12 +211,22 @@ extern RegionRec rootlessHugeRoot;
  * SetPixmapBaseToScreen
  *  Move the given pixmap's base address to where pixel (0, 0)
  *  would be if the pixmap's actual data started at (x, y).
+ *  Can't access the bits before the first word of the drawable's data in
+ *  rootless mode, so make sure our base address is always 32-bit aligned.
  */
-#define SetPixmapBaseToScreen(pix, x, y) { \
-    PixmapPtr   _pPix = (PixmapPtr) (pix); \
-    _pPix->devPrivate.ptr = (char *) (_pPix->devPrivate.ptr) - \
-                            ((int)(x) * _pPix->drawable.bitsPerPixel/8 + \
-                             (int)(y) * _pPix->devKind); \
+#define SetPixmapBaseToScreen(pix, _x, _y) {				\
+    PixmapPtr   _pPix = (PixmapPtr) (pix);				\
+    _pPix->devPrivate.ptr = (char *) (_pPix->devPrivate.ptr) -		\
+                            ((int)(_x) * _pPix->drawable.bitsPerPixel/8 + \
+                             (int)(_y) * _pPix->devKind);		\
+    if (_pPix->drawable.bitsPerPixel != FB_UNIT) {			\
+        unsigned _diff = ((unsigned) _pPix->devPrivate.ptr) & 		\
+                         (FB_UNIT / CHAR_BIT - 1);			\
+	_pPix->devPrivate.ptr = (char *) (_pPix->devPrivate.ptr) - 	\
+                                _diff;					\
+        _pPix->drawable.x = _diff /					\
+                            (_pPix->drawable.bitsPerPixel / CHAR_BIT);	\
+    }									\
 }
 
 
