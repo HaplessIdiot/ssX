@@ -11,7 +11,8 @@ XFree86 4.0.1d (?? ?????? 2000)
  570. IA-64 changes resulting from a source cross-check with Alpha support
       for 64-bit dependencies (Marc La France).
  569. Fix in ATI drivber for DPMS support on panels (Marc La France).
- 568. Fix I810 driver bugs relating to Xv (#4121, 4117, 4123, Jonathan Bian).
+ 568. I810 bugs fixes and enhancements relating to Xv (#4121, 4117, 4123, 
+      4128, Jonathan Bian).
 
 XFree86 4.0.1c (28 August 2000)
  567. Add support to xset for setting the keyboard repeat rate using XKB
@@ -11100,4 +11101,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1292 2000/09/01 19:30:36 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1293 2000/09/01 21:26:42 mvojkovi Exp $
