@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillarc.c,v 3.5 2001/12/14 19:59:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillarc.c,v 3.6tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -181,6 +181,7 @@ RROP_NAME(cfbFillEllipseSolid)(
 	    RROP_SOLID_MASK(addrl, endmask);
 #endif /* PSZ == 24 */
     }
+    RROP_UNDECLARE
 }
 
 #if PSZ == 24
@@ -313,6 +314,7 @@ RROP_NAME(cfbFillArcSliceSolid)(
 	    FILLSLICESPANS(slice.flip_bot, addrlb);
 	}
     }
+    RROP_UNDECLARE
 }
 
 void
