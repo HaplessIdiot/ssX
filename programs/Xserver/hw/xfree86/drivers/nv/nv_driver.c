@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.108 2003/05/04 01:20:52 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.109 2003/06/23 21:38:42 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1255,11 +1255,15 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     clockRanges->maxClock = pNv->MaxClock;
     clockRanges->clockIndex = -1;		/* programmable */
     if(((pNv->Chipset & 0x0ff0) <= 0x0100) ||
-       ((pNv->Chipset & 0x0ff0) == 0x0150))
+       ((pNv->Chipset & 0x0ff0) == 0x0150) ||
+       ((pNv->Chipset & 0x0ff0) >= 0x0300))
     {
        clockRanges->interlaceAllowed = TRUE;
-    } else  /* Chips after NV15 (including NV11) do not support interlaced */
+    } else {
+        /* No NV2x chips support interlaced modes and the only
+           NV1x chips that do are NV10 and NV15 */
        clockRanges->interlaceAllowed = FALSE;
+    }
     clockRanges->doubleScanAllowed = TRUE;
 
     if(pNv->FlatPanel == 1) {
