@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.25 2001/06/01 02:10:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.26 2001/09/26 12:59:18 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -63,7 +63,7 @@ static void MGAVideoTimerCallback(ScrnInfoPtr pScrn, Time time);
 
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
-static Atom xvBrightness, xvContrast, xvColorKey;
+static Atom xvBrightness, xvContrast, xvColorKey, xvDoubleBuffer;
 
 void MGAInitVideo(ScreenPtr pScreen)
 {
@@ -191,7 +191,7 @@ MGAResetVideoOverlay(ScrnInfoPtr pScrn)
 
 
 static XF86VideoAdaptorPtr
-MGAAllocAdaptor(ScrnInfoPtr pScrn)
+MGAAllocAdaptor(ScrnInfoPtr pScrn, Bool doublebuffer)
 {
     XF86VideoAdaptorPtr adapt;
     MGAPtr pMga = MGAPTR(pScrn);
@@ -216,12 +216,15 @@ MGAAllocAdaptor(ScrnInfoPtr pScrn)
     xvBrightness = MAKE_ATOM("XV_BRIGHTNESS");
     xvContrast   = MAKE_ATOM("XV_CONTRAST");
     xvColorKey   = MAKE_ATOM("XV_COLORKEY");
+    xvDoubleBuffer = MAKE_ATOM("XV_DOUBLE_BUFFER");   
 
     pPriv->colorKey = pMga->videoKey;
     pPriv->videoStatus = 0;
     pPriv->brightness = 0;
     pPriv->contrast = 128;
     pPriv->lastPort = -1;
+    pPriv->doubleBuffer = doublebuffer;       
+    pPriv->currentBuffer = 0;         
 
     pMga->adaptor = adapt;
     pMga->portPrivate = pPriv;
@@ -236,7 +239,7 @@ MGASetupImageVideoOverlay(ScreenPtr pScreen)
     MGAPtr pMga = MGAPTR(pScrn);
     XF86VideoAdaptorPtr adapt;
 
-    adapt = MGAAllocAdaptor(pScrn);
+    adapt = MGAAllocAdaptor(pScrn, TRUE);
 
     adapt->type = XvWindowMask | XvInputMask | XvImageMask;
     adapt->flags = VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT;
@@ -283,7 +286,7 @@ MGASetupImageVideoTexture(ScreenPtr pScreen)
     XF86VideoAdaptorPtr adapt;
     MGAPtr pMga = MGAPTR(pScrn);
 
-    adapt = MGAAllocAdaptor(pScrn);
+    adapt = MGAAllocAdaptor(pScrn, FALSE);
 
     adapt->type = XvWindowMask | XvInputMask | XvImageMask;
     adapt->flags = 0;
@@ -498,6 +501,11 @@ MGASetPortAttributeOverlay(
 	outMGAdac(0x57, (pPriv->colorKey & pScrn->mask.blue) >> 
 		    pScrn->offset.blue);
 	REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
+  } else
+  if(attribute == xvDoubleBuffer) {
+	if((value < 0) || (value > 1))
+          return BadValue;
+	pPriv->doubleBuffer = value;  
   } else return BadMatch;
 
   return Success;
@@ -518,6 +526,9 @@ MGAGetPortAttributeOverlay(
   } else
   if(attribute == xvContrast) {
 	*value = pPriv->contrast;
+  } else
+  if(attribute == xvDoubleBuffer) {
+        *value = pPriv->doubleBuffer ? 1 : 0;
   } else
   if(attribute == xvColorKey) {
 	*value = pPriv->colorKey;
@@ -684,11 +695,15 @@ MGADisplayVideoOverlay(
 
     CHECK_DMA_QUIESCENT(pMga, pScrn);
 
-    /* got 64 scanlines to do it in */
-    tmp = INREG(MGAREG_VCOUNT) + 64;
-    if(tmp > pScrn->currentMode->VDisplay)
-	tmp -= pScrn->currentMode->VDisplay;
+    /* got 48 scanlines to do it in */
+    tmp = INREG(MGAREG_VCOUNT) + 48;
+    /* FIXME always change it in vertical retrace use CrtcV ?*/
+    if(tmp > pScrn->currentMode->VTotal)
+	tmp -= 49; /* too bad */
+    else
+        tmp = pScrn->currentMode->VTotal -1;
 
+    tmp = pScrn->currentMode->VDisplay +1;
     /* enable accelerated 2x horizontal zoom when pixelclock >135MHz */
     hzoom = (pScrn->currentMode->Clock > 135000) ? 1 : 0;
 
@@ -886,8 +901,12 @@ MGAPutImage(
 	break;
    }  
 
-   if(!(pPriv->linear = MGAAllocateMemory(pScrn, pPriv->linear, new_size)))
+   if(!(pPriv->linear = MGAAllocateMemory(pScrn, pPriv->linear, 
+						pPriv->doubleBuffer ? (new_size << 1) : new_size)))
+   {
 	return BadAlloc;
+   }
+   pPriv->currentBuffer ^= 1;
 
     /* copy data */
    top = y1 >> 16;
@@ -896,6 +915,8 @@ MGAPutImage(
    left <<= 1;
 
    offset = pPriv->linear->offset * bpp;
+   if(pPriv->doubleBuffer)
+        offset += pPriv->currentBuffer * new_size * bpp;
    dst_start = pMga->FbStart + offset + left + (top * dstPitch);
 
    if(pMga->TexturedVideo && pMga->AccelInfoRec->NeedToSync &&
