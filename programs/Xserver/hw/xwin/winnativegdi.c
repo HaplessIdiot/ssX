@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winnativegdi.c,v 1.9 2001/11/11 22:45:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winnativegdi.c,v 1.10 2001/11/11 23:06:45 alanh Exp $ */
 
 #include "win.h"
 
@@ -62,10 +62,6 @@ winCloseScreenNativeGDI (int nIndex, ScreenPtr pScreen)
 
   /* Delete the window property */
   RemoveProp (pScreenPriv->hwndScreen, WIN_SCR_PROP);
-
-  /* Redisplay the Windows cursor */
-  if (!pScreenPriv->fCursor)
-    ShowCursor (TRUE);
   
   ErrorF ("winCloseScreenNativeGDI () - Destroying window\n");
   

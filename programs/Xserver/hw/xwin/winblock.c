@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winblock.c,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winblock.c,v 1.3 2001/07/02 09:37:17 alanh Exp $ */
 
 #include "win.h"
 
@@ -38,4 +38,12 @@ winBlockHandler (int nScreen,
 		 pointer pTimeout,
 		 pointer pReadMask)
 {
+  winScreenPriv((ScreenPtr)pBlockData);
+  MSG			msg;
+
+  /* Process all messages on our queue */
+  while (PeekMessage (&msg, pScreenPriv->hwndScreen, 0, 0, PM_REMOVE))
+    {
+      DispatchMessage (&msg);
+    }
 }

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.17 2001/11/01 12:19:42 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.18 2001/11/11 22:45:57 alanh Exp $ */
 
 #include "win.h"
 
@@ -516,10 +516,6 @@ winCloseScreenShadowDD (int nIndex, ScreenPtr pScreen)
       IDirectDraw_Release (pScreenPriv->pdd);
       pScreenPriv->pdd = NULL;
     }
-
-  /* Redisplay the Windows cursor */
-  if (!pScreenPriv->fCursor)
-      ShowCursor (TRUE);
 
   /* Kill our window */
   if (pScreenPriv->hwndScreen)

@@ -22,7 +22,7 @@
   from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.6 2001/06/25 08:12:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.7 2001/11/11 22:45:57 alanh Exp $ */
 
 #include "win.h"
 
@@ -46,11 +46,13 @@ LegalModifier (unsigned int uiKey, DevicePtr pDevice)
 
 
 /* Called from dix/dispatch.c */
-/* We tell mi to dequeue the events that we have sent it */
+/*
+ * Run through the Windows message queue(s) one more time.
+ * Tell mi to dequeue the events that we have sent it.
+ */
 void
 ProcessInputEvents (void)
 {
-
 #if CYGDEBUG
   ErrorF ("ProcessInputEvents ()\n");
 #endif
@@ -67,9 +69,9 @@ ProcessInputEvents (void)
 int
 TimeSinceLastInputEvent ()
 {
-    if (g_c32LastInputEventTime == 0)
-        g_c32LastInputEventTime = GetTickCount ();
-    return GetTickCount () - g_c32LastInputEventTime;
+  if (g_c32LastInputEventTime == 0)
+    g_c32LastInputEventTime = GetTickCount ();
+  return GetTickCount () - g_c32LastInputEventTime;
 }
 
 

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwakeup.c,v 1.3 2001/05/02 00:45:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwakeup.c,v 1.4 2001/07/02 09:37:17 alanh Exp $ */
 
 #include "win.h"
 
@@ -44,7 +44,7 @@ winWakeupHandler (int nScreen,
   winScreenPriv((ScreenPtr)pWakeupData);
   MSG			msg;
 
-  /* Process all message on our queue */
+  /* Process all messages on our queue */
   while (PeekMessage (&msg, pScreenPriv->hwndScreen, 0, 0, PM_REMOVE))
     {
       DispatchMessage (&msg);

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.25 2001/11/11 22:45:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.26 2001/11/12 08:47:53 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -182,7 +182,7 @@
  * Debugging macros
  */
 
-#if CYGDEBUG || YES
+#if CYGDEBUG
 #define DEBUG_MSG(str,...) \
 if (fDebugProcMsg) \
 { \

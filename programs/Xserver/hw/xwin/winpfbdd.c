@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.12 2001/11/01 12:19:41 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.13 2001/11/11 22:45:57 alanh Exp $ */
 
 #include "win.h"
 
@@ -258,10 +258,6 @@ winCloseScreenPrimaryDD (int nIndex, ScreenPtr pScreen)
       IDirectDraw2_Release (pScreenPriv->pdd);
       pScreenPriv->pdd = NULL;
     }
-
-  /* Redisplay the Windows cursor */
-  if (!pScreenPriv->fCursor)
-      ShowCursor (TRUE);
 
   /* Kill our window */
   if (pScreenPriv->hwndScreen)
