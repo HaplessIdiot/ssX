@@ -534,7 +534,7 @@ unsigned char config1, config2;
       vga256InfoRec.MemBase = pciInfo->MemBase;
    if (pciInfo)
       if(pciInfo->ChipType != S3_ViRGE && 
-         pciInfo->ChipType != S3_ViRGE_VX) &&
+         pciInfo->ChipType != S3_ViRGE_VX &&
 	 pciInfo->ChipType != S3_ViRGE_DXGX){
           ErrorF("Unidentified S3 chipset detected!\n");
           return FALSE;
