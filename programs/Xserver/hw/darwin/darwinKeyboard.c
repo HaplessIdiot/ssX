@@ -36,7 +36,7 @@
 //
 //=============================================================================
 
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.10 2001/10/06 20:05:52 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.11 2001/11/01 23:56:29 torrey Exp $ */
 
 /*
 ===========================================================================
@@ -220,7 +220,8 @@ static darwinKeyPad_t const normal_to_keypad[] = {
 };
 int const NUM_KEYPAD = sizeof(normal_to_keypad) / sizeof(normal_to_keypad[0]);
 
-static void DarwinChangeKeyboardControl( DeviceIntPtr device, KeybdCtrl *ctrl ) {
+static void DarwinChangeKeyboardControl( DeviceIntPtr device, KeybdCtrl *ctrl )
+{
     // keyclick, bell volume / pitch, autorepead, LED's
 }
 
@@ -335,6 +336,7 @@ static void parse_next_char_code(
     }
 }
 
+
 /*
  * DarwinReadKeymapFile
  *      Read the appropriate keymapping from a keymapping file.
@@ -347,27 +349,48 @@ Bool DarwinReadKeymapFile(
     int                 interface = 0, handler_id = 0;
     int                 map_interface, map_handler_id, map_size = 0;
     unsigned int        i, size;
-    Boolean             hasMatch = FALSE;
+    int                 *bufferEnd;
     union km_tag {
         int             *intP;
         char            *charP;
     } km;
 
     fref = fopen( darwinKeymapFile, "rb" );
-    if (fref == 0) {
-        ErrorF("Unable to open keymapping file %s.\n", darwinKeymapFile);
+    if (fref == NULL) {
+        ErrorF("Unable to open keymapping file '%s' (errno %d).\n",
+               darwinKeymapFile, errno);
         return FALSE;
     }
-    assert( !fstat(fileno(fref), &st) );
+    if (fstat(fileno(fref), &st) == -1) {
+        ErrorF("Could not stat keymapping file '%s' (errno %d).\n",
+               darwinKeymapFile, errno);
+        return FALSE;
+    }
 
     // check to make sure we don't crash later
     if (st.st_size <= 16*sizeof(int)) {
-        ErrorF("Invalid keymapping file.\n");
+        ErrorF("Keymapping file '%s' is invalid (too small).\n",
+               darwinKeymapFile);
         return FALSE;
     }
 
     inBuffer = (char*) xalloc( st.st_size );
-    assert( fread(inBuffer, st.st_size, 1, fref) );
+    bufferEnd = (int *) (inBuffer + st.st_size);
+    if (fread(inBuffer, st.st_size, 1, fref) != 1) {
+        ErrorF("Could not read %qd bytes from keymapping file '%s' (errno %d).\n",
+               st.st_size, darwinKeymapFile, errno);
+        return FALSE;
+    }
+
+    if (strncmp( inBuffer, "KYM1", 4 ) == 0) {
+        // Magic number OK.
+    } else if (strncmp( inBuffer, "KYMP", 4 ) == 0) {
+        ErrorF("Keymapping file '%s' is intended for use with the original NeXT keyboards and cannot be used by XDarwin.\n", darwinKeymapFile);
+        return FALSE;
+    } else {
+        ErrorF("Keymapping file '%s' has a bad magic number and cannot be used by XDarwin.\n", darwinKeymapFile);
+        return FALSE;
+    }
 
     // find the keyboard interface and handler id
     size = sizeof( info ) / sizeof( int );
@@ -376,60 +399,55 @@ Bool DarwinReadKeymapFile(
         ErrorF("Error reading event status driver info.\n");
         return FALSE;
     }
+
     size = size * sizeof( int ) / sizeof( info[0] );
     for( i = 0; i < size; i++) {
         if (info[i].dev_type == NX_EVS_DEVICE_TYPE_KEYBOARD) {
+            Bool hasInterface = FALSE;
+            Bool hasMatch = FALSE;
+
             interface = info[i].interface;
             handler_id = info[i].id;
-            break;
-        }
-    }
 
-    // Find the appropriate keymapping:
-    // The first time through we try to match both interface and handler_id.
-    // If we can't match both, we take the first match for interface.
-    if (strncmp( inBuffer, "KYM1", 4 ) == 0) {
-        Bool hasInterface = FALSE;
-        int *bufferEnd = (int *) (inBuffer + st.st_size);
-        do {
-            km.charP = inBuffer;
-            km.intP++;
-            while (km.intP+3 < bufferEnd) {
-                map_interface = NXSwapBigIntToHost(*(km.intP++));
-                map_handler_id = NXSwapBigIntToHost(*(km.intP++));
-                map_size = NXSwapBigIntToHost(*(km.intP++));
-                if (map_interface == interface) {
-                    if (map_handler_id == handler_id || hasInterface) {
-                        hasMatch = TRUE;
-                        break;
-                    } else {
-                        hasInterface = TRUE;
+            // Find an appropriate keymapping:
+            // The first time we try to match both interface and handler_id.
+            // If we can't match both, we take the first match for interface.
+
+            do {
+                km.charP = inBuffer;
+                km.intP++;
+                while (km.intP+3 < bufferEnd) {
+                    map_interface = *(km.intP++);
+                    map_handler_id = *(km.intP++);
+                    map_size = *(km.intP++);
+                    if (map_interface == interface) {
+                        if (map_handler_id == handler_id || hasInterface) {
+                            hasMatch = TRUE;
+                            break;
+                        } else {
+                            hasInterface = TRUE;
+                        }
                     }
+                    km.charP += map_size;
                 }
-                km.charP += map_size;
+            } while (hasInterface && !hasMatch);
+
+            if (hasMatch) {
+                // fill in NXKeyMapping structure
+                keyMap->size = map_size;
+                keyMap->mapping = (char*) xalloc(map_size);
+                memcpy(keyMap->mapping, km.charP, map_size);
+                return TRUE;
             }
-            if (hasMatch) break;
-        } while (hasInterface);
-    } else if (strncmp( inBuffer, "KYMP", 4 ) == 0) {
-        ErrorF("This old style keymapping file is intended for use with the original NeXT keyboards.\n");
-        return FALSE;
-    } else {
-        ErrorF("The keymapping file has a bad magic number.\n");
-        return FALSE;
-    }
+        } // if dev_id == keyboard device
+    } // foreach info struct
 
-    if (hasMatch) {
-        // fill in NXKeyMapping structure
-        keyMap->size = map_size;
-        keyMap->mapping = (char*) xalloc(map_size);
-        memcpy(keyMap->mapping, km.charP, map_size);
-    } else {
-        ErrorF("Keymapping file did not contain appropriate keyboard interface.\n");
-        return FALSE;
-    }
-
-    return TRUE;
+    // The keymapping file didn't match any of the info structs
+    // returned by NXEventSystemInfo.
+    ErrorF("Keymapping file '%s' did not contain appropriate keyboard interface.\n", darwinKeymapFile);
+    return FALSE;
 }
+
 
 /*
  * DarwinKeyboardInit
