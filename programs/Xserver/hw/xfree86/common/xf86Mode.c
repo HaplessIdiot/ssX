@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.46 2001/11/21 20:06:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.47 2001/12/04 17:41:08 tsi Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1129,6 +1129,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     int pixelArea = scrp->videoRam * (1024 * 8);	/* in bits */
     int modeSize;					/* in pixels */
     int bitsPerPixel, pixmapPad;
+    Bool validateAllDefaultModes;
     PixmapFormatRec *BankFormat;
     ClockRangePtr cp;
     ClockRangesPtr storeClockRanges;
@@ -1468,7 +1469,9 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    endp = &new->next;
 	}
     }
+
     /* Lookup each mode */
+    validateAllDefaultModes = FALSE;
     for (p = scrp->modes; ; p = p->next) {
 	/*
 	 * If the supplied mode names don't produce a valid mode, scan through
@@ -1477,9 +1480,10 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	 */
 
 	if (p == NULL) {
-	    if (numModes > 0)
+	    if ((numModes > 0) && !validateAllDefaultModes)
 		break;
 
+	    validateAllDefaultModes = TRUE;
 	    r = NULL;
 	    modeSize = 0;
 	    for (q = scrp->modePool;  q != NULL;  q = q->next) {
