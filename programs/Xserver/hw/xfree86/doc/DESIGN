@@ -5326,6 +5326,7 @@ Drivers must NOT include the following:
               "unaccelerated driver for ZZZ Zzzzzy cards",
               ZZZIdentify,
               ZZZProbe,
+              ZZZAvailableOptions, 
               NULL,
               0
           };
@@ -5614,7 +5615,14 @@ NOTE: The xf86DrvMsg() functions cannot be used from the Probe.
          xfree(devSections);
          return foundScreen;
 
-20.3.5  PreInit
+20.3.5  AvailableOptions
+
+Define the AvailableOptions function. The purpose of this is to return the
+available driver options back to the -configure option, so that an XF86Config
+file can be built and the user can see which options are available for them
+to use.
+
+20.3.6  PreInit
 
 Define the PreInit() function.  The purpose of this is to find all the infor-
 mation required to determine if the configuration is usable, and to ini-
@@ -5883,7 +5891,7 @@ NOTES:
          return TRUE;
      }
 
-20.3.6  MapMem, UnmapMem
+20.3.7  MapMem, UnmapMem
 
 Define functions to map and unmap the video memory and any other memory aper-
 tures required.  These functions are not mandatory, but it is often useful to
@@ -5905,7 +5913,7 @@ have such functions.
          return TRUE or FALSE;
      }
 
-20.3.7  Save, Restore
+20.3.8  Save, Restore
 
 Define functions to save and restore the original video state.  These func-
 tions are not mandatory, but are often useful.
@@ -5932,7 +5940,7 @@ tions are not mandatory, but are often useful.
          ...
      }
 
-20.3.8  ModeInit
+20.3.9  ModeInit
 
 Define a function to initialise a new video mode.  This function isn't manda-
 tory, but is often useful.
@@ -5949,7 +5957,7 @@ tory, but is often useful.
          ...
      }
 
-20.3.9  ScreenInit
+20.3.10  ScreenInit
 
 Define the ScreenInit() function.  This is called at the start of each server
 generation, and should fill in as much of the ScreenRec as possible as well
@@ -6139,7 +6147,7 @@ tion, and functions it calls, one cannot be found from the other.
          return TRUE;
      }
 
-20.3.10  SwitchMode
+20.3.11  SwitchMode
 
 Define the SwitchMode() function if mode switching is supported by the
 driver.
@@ -6150,7 +6158,7 @@ driver.
          return ZZZModeInit(xf86Screens[scrnIndex], mode);
      }
 
-20.3.11  AdjustFrame
+20.3.12  AdjustFrame
 
 Define the AdjustFrame() function if the driver supports this.
 
@@ -6160,7 +6168,7 @@ Define the AdjustFrame() function if the driver supports this.
          /* Adjust the viewport */
      }
 
-20.3.12  EnterVT, LeaveVT
+20.3.13  EnterVT, LeaveVT
 
 Define the EnterVT() and LeaveVT() functions.
 
@@ -6180,7 +6188,7 @@ These functions are mandatory.
          ZZZRestore(pScrn);
      }
 
-20.3.13  CloseScreen
+20.3.14  CloseScreen
 
 Define the CloseScreen() function:
 
@@ -6198,7 +6206,7 @@ pScreen->CloseScreen, and finishes by calling it.
          return (*pScreen->CloseScreen)(scrnIndex, pScreen);
      }
 
-20.3.14  SaveScreen
+20.3.15  SaveScreen
 
 Define the SaveScreen() function (the screen blanking function).  When using
 the vgahw module, this will typically be:
@@ -6211,7 +6219,7 @@ This function is mandatory.
          return vgaHWSaveScreen(pScreen, unblank);
      }
 
-20.3.15  FreeScreen
+20.3.16  FreeScreen
 
 Define the FreeScreen() function.  This function is optional.  It should be
 defined if the ScrnInfoRec driverPrivate field is used so that it can be
