@@ -1,4 +1,6 @@
 XFree86 4.X.Ya (?? January 2001)
+  82. If MouseKeys is switched on, then the mousekeys autorepeat. (fixes
+      #272, Stephen Montgomery-Smith)
   81. Ensure Video is unavailable when no acceleration available in the
       trident driver (Alan Hourihane).
   80. Implement a distclean make target (Marc La France).
@@ -12311,4 +12313,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1537 2001/01/24 17:28:55 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1538 2001/01/25 11:40:36 alanh Exp $
