@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.1 1998/11/28 10:43:05 dawes Exp $ */
 
 /* print_edid.c: print out all information retrieved from display device 
  * 
@@ -179,7 +179,7 @@ print_std_timings(struct std_timings *t)
     int i;
     ErrorF("Supported Future Video Modes:\n");
     for (i=0;i<STD_TIMINGS;i++) {
-	if (t[i].hsize > 255) {  /* sanity check */
+	if (t[i].hsize > 256) {  /* sanity check */
 	    ErrorF("#%i: hsize: %i  vsize %i  refresh: %i  vid: %i\n",
 		   i, t[i].hsize, t[i].vsize, t[i].refresh, t[i].id);
 	}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.35 1998/11/22 10:37:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.36 1998/11/29 10:50:27 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -27,12 +27,9 @@
 #include "mga_map.h"
 #include "mga_macros.h"
 
-#if 0
-/* To use planar screen->screen expansions instead of linear ones */
-#if PSZ != 24
+/* To use planar screen->screen expansions instead of linear ones
+   because there seems to be a hardware problem with the linear ones */
 #define USE_PLANAR_EXPANSION
-#endif
-#endif
 
 static void MGANAME(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir,
 				int ydir, int rop, unsigned int planemask,
@@ -77,6 +74,7 @@ static void MGANAME(SetupForImageWrite)(ScrnInfoPtr pScrn, int rop,
 static void MGANAME(SubsequentImageWriteRect)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h, int skipleft);
 #ifdef USE_PLANAR_EXPANSION
+#if PSZ != 24
 static void MGANAME(SetupForPlanarScreenToScreenColorExpandFill)(
 				ScrnInfoPtr pScrn, int fg, int bg, int rop, 
 				unsigned int planemask);
@@ -84,6 +82,7 @@ static void MGANAME(SubsequentPlanarScreenToScreenColorExpandFill)(
 				ScrnInfoPtr pScrn,
 				int x, int y, int w, int h,
 				int srcx, int srcy, int skipleft);
+#endif
 #else
 static void MGANAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int fg, int bg, int rop, 
@@ -173,6 +172,8 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 
     /* fill out infoPtr here */
     infoPtr->Flags = 	PIXMAP_CACHE | 
+			OFFSCREEN_PIXMAPS |
+			LINEAR_FRAMEBUFFER |
 			MICROSOFT_ZERO_LINE_BIAS;
 
     if(pMga->Overlay8Plus24)
@@ -241,8 +242,10 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     infoPtr->SubsequentCPUToScreenColorExpandFill =
 		MGANAME(SubsequentCPUToScreenColorExpandFill);
 
+
     /* screen to screen color expansion */
 #ifdef USE_PLANAR_EXPANSION
+#if PSZ != 24
     /* Example of how to use the planar expansions instead. It's slower. */
     infoPtr->SetupForScreenToScreenColorExpandFill = 
 		MGANAME(SetupForPlanarScreenToScreenColorExpandFill);
@@ -250,6 +253,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 		MGANAME(SubsequentPlanarScreenToScreenColorExpandFill);
     infoPtr->CacheColorExpandDensity = pScrn->bitsPerPixel;
     infoPtr->CacheMonoStipple = XAACachePlanarMonoStipple;
+#endif
 #else
     infoPtr->ScreenToScreenColorExpandFillFlags = BIT_ORDER_IN_BYTE_LSBFIRST;
     infoPtr->SetupForScreenToScreenColorExpandFill = 
@@ -1124,6 +1128,7 @@ MGANAME(SubsequentDashedTwoPointLine)(
 
 
 #ifdef USE_PLANAR_EXPANSION
+#if PSZ != 24
 
 	/******************************************\
 	|  Planar Screen to Screen Color Expansion |
@@ -1175,6 +1180,7 @@ MGANAME(SubsequentPlanarScreenToScreenColorExpandFill)(
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 }
 
+#endif
 #else /* USE_PLANAR_EXPANSION */
 
 	/***********************************\

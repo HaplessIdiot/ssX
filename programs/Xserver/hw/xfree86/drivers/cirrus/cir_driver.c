@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.24 1998/11/15 04:30:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.25 1998/11/29 10:50:23 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -59,6 +59,8 @@
 #include "extensions/xf86dgastr.h"
 #endif
 #endif
+
+#include "xf86DDC.h"
 
 #include "cir.h"
 
@@ -679,6 +681,7 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
     pCir = CIRPTR(pScrn);
+    pCir->pScrn = pScrn;
 
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
@@ -1031,6 +1034,11 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 
    if (!xf86LoadSubModule(pScrn, "i2c")) {
+       CIRFreeRec(pScrn);
+       return FALSE;
+   }
+
+   if (!xf86LoadSubModule(pScrn, "ddc")) {
        CIRFreeRec(pScrn);
        return FALSE;
    }
@@ -1733,6 +1741,8 @@ CIRScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
             "I2C initialization failed\n");
     }
+    else
+	xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,pCir->I2CPtr1));
 
 #ifdef CIRPROBEI2C
     CirProbeI2C(pScrn->scrnIndex);

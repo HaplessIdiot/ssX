@@ -23,7 +23,7 @@
  *
  * Generic RAMDAC access routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.c,v 1.2 1998/07/25 16:57:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.c,v 1.3 1998/08/20 08:56:04 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -105,11 +105,7 @@ RamDacInit(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPriv)
 {
     RamDacHWRecPtr ramdacHWPtr;
     RamDacRegRecPtr ramdacReg;
-#ifdef PERSCREEN
     RamDacScreenRecPtr ramdacScrPtr;
-#else
-    RamDacColormapPtr ramdacColPtr;
-#endif
 
     /*
      * make sure the RamDacRec is allocated
@@ -118,15 +114,9 @@ RamDacInit(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPriv)
 	return FALSE;
     ramdacHWPtr = RAMDACHWPTR(pScrn);
     ramdacReg = &ramdacHWPtr->ModeReg;
-#ifdef PERSCREEN
     ramdacScrPtr = ((RamDacScreenRecPtr)
 			(pScrn)->privates[RamDacGetScreenIndex()].ptr);
     ramdacScrPtr->RamDacRec = ramdacPriv;
-#else
-    ramdacColPtr = ((RamDacColormapRecPtr)
-			(pScrn)->privates[RamDacGetColormapIndex()].ptr);
-    ramdacColPtr->RamDacRec = ramdacPriv;
-#endif
 
     return(TRUE);
 }
@@ -153,23 +143,13 @@ RamDacGetRec(ScrnInfoPtr scrp)
      */
     if (scrp->privates[RamDacHWPrivateIndex].ptr != NULL)
 	return TRUE;
-#ifdef PERSCREEN
     if (scrp->privates[RamDacScreenPrivateIndex].ptr != NULL)
 	return TRUE;
-#else
-    if (scrp->privates[RamDacColormapPrivateIndex].ptr != NULL)
-	return TRUE;
-#endif
 
     scrp->privates[RamDacHWPrivateIndex].ptr = 
 					xnfcalloc(sizeof(RamDacHWRec), 1);
-#ifdef PERSCREEN
     scrp->privates[RamDacScreenPrivateIndex].ptr = 
 					xnfcalloc(sizeof(RamDacScreenRec), 1);
-#else
-    scrp->privates[RamDacColormapPrivateIndex].ptr = 
-					xnfcalloc(sizeof(RamDacScreenRec), 1);
-#endif
     /* Does this really belong here? */
     regp = &((RamDacHWRecPtr)scrp->privates[RamDacHWPrivateIndex].ptr)->ModeReg;
     
@@ -180,31 +160,17 @@ void
 RamDacFreeRec(ScrnInfoPtr pScrn)
 {
     RamDacHWRecPtr ramdacHWPtr;
-#ifdef PERSCREEN
     RamDacScreenRecPtr ramdacScrPtr;
-#else
-    RamDacColormapPtr ramdacColPtr;
-#endif
 
     if (RamDacHWPrivateIndex < 0)
 	return;
 
-#ifdef PERSCREEN
     if (RamDacScreenPrivateIndex < 0)
 	return;
-#else
-    if (RamDacColormapPrivateIndex < 0)
-	return;
-#endif
 
     ramdacHWPtr = RAMDACHWPTR(pScrn);
-#ifdef PERSCREEN
     ramdacScrPtr = ((RamDacScreenRecPtr)
 				(pScrn)->privates[RamDacGetScreenIndex()].ptr);
-#else
-    ramdacColPtr = ((RamDacColormapRecPtr)
-				(pScrn)->privates[RamDacGetScreenIndex()].ptr);
-#endif
     
     if (ramdacHWPtr)
 	xfree(ramdacHWPtr);

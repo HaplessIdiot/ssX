@@ -23,7 +23,7 @@
  *
  * IBM RAMDAC routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.c,v 1.6 1998/08/29 14:34:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.c,v 1.7 1998/09/05 06:37:02 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -218,9 +218,7 @@ IBMramdacSave(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr,
 RamDacHelperRecPtr
 IBMramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRecPtr ramdacPtr*/)
 {
-#ifdef PERSCREEN
     RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
-#endif
     RamDacHelperRecPtr ramdacHelperPtr = NULL;
     Bool RamDacIsSupported = FALSE;
     int IBMramdac_ID = -1;

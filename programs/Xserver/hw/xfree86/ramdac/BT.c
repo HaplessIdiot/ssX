@@ -23,7 +23,7 @@
  *
  * BT RAMDAC routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/BT.c,v 1.3 1998/08/13 14:46:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/BT.c,v 1.4 1998/08/20 08:56:03 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -66,9 +66,7 @@ BTramdacSave(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr,
 RamDacHelperRecPtr
 BTramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/*, RamDacRecPtr ramdacPtr*/)
 {
-#ifdef PERSCREEN
     RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
-#endif
     Bool RamDacIsSupported = FALSE;
     RamDacHelperRecPtr ramdacHelperPtr = NULL;
     int BTramdac_ID = -1;

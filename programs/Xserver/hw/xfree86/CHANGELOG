@@ -1,6 +1,66 @@
 XFree86 3.9Np (6 December 1998)
-2029. New XInput code, including new drivers for the SpaceOrb and Magellan
+2057. Some xedit updates (#2291, Paulo Cesar Pereira de Andrade).
+2056. Updates to the Xaw text code (#2291, Paulo Cesar Pereira de Andrade).
+2055. XAA doc updates (#2289, Mark Vojkovich).
+2054. Replace linear screen to screen colour expansions with planar ones
+      in the MGA driver because there seems to be a hardware problem with
+      the linear ones (#2288, Mark Vojkovich).
+2053. Enable offscreen pixmaps for the MGA driver (#2288, Mark Vojkovich).
+2052. Some misc XAA updates (#2287, Mark Vojkovich).
+2051. A non-trival rewrite of the way fills are done in XAA (#2287,
+      Mark Vojkovich).
+2050. Add a LINEAR_FRAMEBUFFER flag to XAA so that the pixmap cache can
+      be loaded without requiring a driver-supplied ImageWrite function
+      (#2287, Mark Vojkovich).
+2049. Add fully accelerated offscreen pixmaps support to XAA (#2287,
+      Mark Vojkovich).
+2048. Add a RemoveAreaCallback for the offscreen memory manager.  Areas
+      for which this is supplied are considered lower priority than ones
+      that don't, and can be booted out when something of higher priority
+      needs the space (#2286, Mark Vojkovich).
+2047. Remove the ScreenPtr passed to the offscreen memory manager's resize
+      function since it is already available from the FbAreaPtr (#2286,
+      Mark Vojkovich).
+2046. Change xf86SaveRestoreImage() so that it doesn't create a new
+      screen pixmap but modifies the old one (#2285, Mark Vojkovich).
+2045. Add support to mi for pixmaps with non-zero origins (#2284,
+      Mark Vojkovich).
+2044. Fix some Alpha compilation problems introduced in 3.9No (#2283,
+      Alan Hourihane).
+2043. Fix an Xlib  problem with _XimLookupMBText() when using KOI8-R
+      (#2282, Alexander Kabaev).
+2042. Fix the pattern source address mask for the C&T HiQV chips, which
+      was causing 8x8 pattern problems when using more than 2MB of video
+      memory (#2281, Peter Wainwright).
+2041. Update the TGA and Trident drivers for the ramdac/cmap changes (#2277,
+      Alan Hourihane).
+2040. Change the Permedia2 to use a direct LoadPalette rather than the
+      ramdac module because of 16bpp difficulty with the TVP3026 (#2277,
+      Alan Hourihane).
+2039. Remove the old cmap code from the ramdac module and use the new
+      cmap layer instead (#2277, Alan Hourihane).
+2038. Fix os.h and misc.h so that system headers don't get included when
+      building modules.
+2037. Make the X server read an Xauthority file using the real user id
+      to avoid problems when it is located on an NFS-mounted filesystem.
+      (as suggested by #2276, MIHIRA Sanpei Yoshiro).
+2036. Xdm patch to allow the "Willing to manage" test displayed in the chooser
+      window to be generated from a program run on the target host.  This
+      allows information like number of users, load average, etc to be
+      displayed (like CDE does) (#2275, Dick Snippe).
+2035. Fix a core dump problem in xauth when interrupted while attempting
+      to lock the auth file.  Also fix a potential problem with calling
+      printf() from within a signal handler (#2274, BSDI/Jeff Polk).
+2034. Add DDC2 probing for Cirrus 5446/5480 and Laguna chipsets (#2273,
+      Itai Nahshon).
+2033. Fix some possible memory corruption and some minor bugs in the new DDC
+      code (#2271, 2272, Itai Nahshon).
+2032. Offscreen memory manager and colormap layer doc updates (#2270, 2290,
+      Mark Vojkovich).
+2031. Some glint clipping fixes (#2269, Alan Hourihane).
+2030. New XInput code, including new drivers for the SpaceOrb and Magellan
       (#2243, Metro Link).
+2029. Fix mga YDstOrg start address adjustment after VT switching.
 2028. Fix cfb24 bitblt for non-trivial planemasks (Peter Wainwright).
 2027. Fix bad headers included when compiling cup.c for extmod module.
 2026. Fix a malloc/xfree mismatch in xtrans LocalInitTransports().
@@ -6864,4 +6924,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.647 1998/11/29 13:09:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.648 1998/12/05 14:39:59 dawes Exp $

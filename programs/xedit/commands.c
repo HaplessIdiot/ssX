@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.3 1998/11/01 07:57:48 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.4 1998/11/15 04:30:44 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include "xedit.h"
@@ -277,19 +277,18 @@ DoSave(Widget w, XtPointer client_data, XtPointer call_data)
       if ( XawAsciiSaveAsFile(source, filename) ) {
 	  int i;
 	  Arg args[1];
+	  char label_buf[BUFSIZ];
+
+	  XmuSnprintf(label_buf, sizeof(label_buf),
+		      "%s       Read - Write", name);
+	  XtSetArg(args[0], XtNlabel, label_buf);
+	  for (i = 0; i < 3; i++)
+	      if (XawTextGetSource(texts[i]) == source)
+		  XtSetValues(labels[i], args, 1);
 
 	  XmuSnprintf(buf, sizeof(buf), "Saved file:  %s\n", name);
 
 	  if (item && item->source != scratch) {
-	      char label_buf[BUFSIZ];
-
-	      XmuSnprintf(label_buf, sizeof(label_buf),
-			  "%s       Read - Write", name);
-	      XtSetArg(args[0], XtNlabel, label_buf);
-	      for (i = 0; i < 3; i++)
-		  if (XawTextGetSource(texts[i]) == source)
-		      XtSetValues(labels[i], args, 1);
-
 	      XtSetArg(args[0], XtNlabel, filename);
 	      XtSetValues(item->sme, args, 1);
 
@@ -313,12 +312,6 @@ DoSave(Widget w, XtPointer client_data, XtPointer call_data)
 				   XtNtype, XawAsciiFile,
 				   XtNeditType, XawtextEdit,
 				   NULL, NULL);
-
-	      XtSetArg(args[0], XtNtextSource, scratch);
-	      for (i = 0; i < 3; i++)
-		  if (texts[i] != textwindow &&
-		      XawTextGetSource(texts[i]) == tmp)
-		      XtSetValues(texts[i], args, 1);
 
 	      ResetSourceChanged(item);
 

@@ -2,7 +2,7 @@
 
                                   DRAFT
 
-Last modified: 29 November 1998.
+Last modified: 6 December 1998.
 
 
 
@@ -1627,15 +1627,10 @@ Section 10: Offscreen Memory Manager
 ====================================
 
 Management of offscreen video memory may be handled by the XFree86
-framebuffer manager.  The manager provides functions in the ScrnInfoRec
-for allocation and freeing of offscreen memory areas as well as resizing
-of existing areas:
-
-    AllocateOffscreenAreaProcPtr AllocateOffscreenArea;
-    FreeOffscreenAreaProcPtr FreeOffscreenArea;
-    ResizeOffscreenAreaProcPtr ResizeOffscreenArea;
-
-which have the following definitions (taken from xf86fbman.h):
+framebuffer manager.  Once the offscreen memory manager is running,
+drivers or extensions may allocate, free or resize areas of offscreen
+video memory using the following functions (definitions taken from 
+xf86fbman.h):
 
     typedef struct _FBArea {
         ScreenPtr    pScreen;
@@ -1646,25 +1641,34 @@ which have the following definitions (taken from xf86fbman.h):
     } FBArea, *FBAreaPtr;
 
     typedef void (*MoveAreaCallbackProcPtr)(FBAreaPtr);
+    typedef void (*RemoveAreaCallbackProcPtr)(FBAreaPtr);
 
-    typedef FBAreaPtr (*AllocateOffscreenAreaProcPtr) (
+    FBAreaPtr xf86AllocateOffscreenArea (
         ScreenPtr pScreen,
         int width, int height,
         int granularity,
         MoveAreaCallbackProcPtr MoveAreaCallback,
+        RemoveAreaCallbackProcPtr RemoveAreaCallback,
         pointer privData
     );
 
-    typedef void (*FreeOffscreenAreaProcPtr) (FBAreaPtr area);
+    void xf86FreeOffscreenArea (FBAreaPtr area);
 
-    typedef Bool (*ResizeOffscreenAreaProcPtr) (
-	ScreenPtr pScreen, 
-	int w, int h,
+    Bool xf86ResizeOffscreenArea (
 	FBAreaPtr area
+	int w, int h
     );
 
+The function:
 
-AllocateOffscreenArea can be used to request a rectangle of dimensions
+    Bool xf86FBManagerRunning(ScreenPtr pScreen);
+
+can be used by an extension to check if the driver has initialized
+the memory manager.  The manager is not available if this returns
+false and the functions above will all fail.
+
+
+xf86AllocateOffscreenArea can be used to request a rectangle of dimensions
 width x height (in pixels) from unused offscreen memory.  Granularity
 specifies that the leftmost edge of the rectangle must lie on some
 multiple of granularity pixels.  A granularity of zero means the same
@@ -1674,16 +1678,24 @@ offscreen area is moved.  If no MoveAreaCallback is supplied then the
 area is considered to be immovable.  The privData field will be stored
 in the manager's internal structure for that allocated area and will be
 returned to the requester in the FBArea passed via the MoveAreaCallback.
+An optional RemoveAreaCallback is provided.  If the driver provides
+this it indicates that the area should be allocated with a lower
+priority.  Such an area may be removed when a higher priority request
+(one that doesn't have a RemoveAreaCallback) is made.  When this
+function is called, the driver will have an oportunity to do whatever
+cleanup it needs to do to deal with the loss of the area, but it
+must finish its cleanup before the function exits since the offscreen
+memory manager will free the area immediately after.
 
-AllocateOffscreenArea returns NULL if it was unable to allocate the
+xf86AllocateOffscreenArea returns NULL if it was unable to allocate the
 requested area.  When no longer needed, areas should be freed with
-FreeOffscreenArea.
+xf86FreeOffscreenArea.
 
-ResizeOffscreenArea resizes an existing FBArea.  ResizeOffscreenArea
-returns TRUE if the resize was successful.  If ResizeOffscreenArea
+xf86ResizeOffscreenArea resizes an existing FBArea.  xf86ResizeOffscreenArea
+returns TRUE if the resize was successful.  If xf86ResizeOffscreenArea
 returns FALSE, the original FBArea is left unmodified.  Resizing
 an area maintains the area's original granularity, devPrivate,
-and MoveAreaCallback.  ResizeOffscreenArea has considerably less
+and MoveAreaCallback.  xf86ResizeOffscreenArea has considerably less
 overhead than freeing the old area then reallocating the new size,
 so it should be used whenever possible.
 
@@ -1698,9 +1710,7 @@ within the total video memory, however, the driver can reserve
 areas at the extremities by passing a smaller area to the manager.
 
 xf86InitFBManager() must be called before XAA is initialized since
-XAA uses the manager for it's pixmap cache.  The driver may optionally
-provide it's own memory manager in place of the generic one, however,
-it should provide the exact same interface.
+XAA uses the manager for it's pixmap cache.  
 
 An alternative function is provided to allow the driver to initialize
 the framebuffer manager with a Region rather than a box.
@@ -1737,31 +1747,39 @@ the colormap layer, a driver calls the xf86HandleColormaps() function.
       bits in each colour component.  This would normally be the same as
       pScrn->rgbBits.  loadPalette is a driver-provided function for
       loading a colormap into the harwdare, and is described below.
-      setOverscan is an optional function that may provided when the
+      setOverscan is an optional function that may be provided when the
       overscan color is an index from the standard LUT and when it needs
       to be adjusted to keep it as close to black as possible.  The
       setOverscan function programs the overscan index.  It shouldn't
       normally be used for depths other than 8.  setOverscan should be
-      set to NULL when it isn't needed.  flags may be set to the following
+      set to NULL when it isn't needed. flags may be set to the following
       (which may be ORed together):
 
         CMAP_PALETTED_TRUECOLOR     the TrueColor visual is paletted and is
                                     just a special case of DirectColor.  This
                                     flag is only valid for bpp > 8.
 
-        CMAP_RELOAD_ON_MODE_SWITCH  reload the colormap automatically when
-                                    VT switching back to the Xserver.
+        CMAP_RELOAD_ON_MODE_SWITCH  reload the colormap automatically
+                                    after mode switches.  This is useful
+                                    for when the driver is resetting the
+                                    hardware during mode switches and 
+                                    corrupting or erasing the hardware
+                                    palette.  
 
+      The colormap layer always reloads the palette after VT enters so it
+      is not necessary for the driver to save and restore the palette
+      when switching VTs.  The driver must, however, still save the
+      initial palette during server start up and restore it during 
+      server exit. 
 
     void LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
                      LOCO *colors, short visualClass)
 
       LoadPalette is a driver-provide function for loading a colormap into
-      hardware.  numColors is the number of colormap entries to write out.
-      indices is a list of the index values of the entries to be written,
-      and colors is the colormap entries corresponding to each if the
-      indices.
-
+      hardware.  colors is the array of RGB values that represent the full
+      colormap.  indices is a list of index values into the colors array.
+      These indices indicate the entries that need to be updated.  numColors 
+      is the number of the indices to be updated.
 
     void SetOverscan(ScrnInfoPtr pScrn, int overscan)
 
@@ -4208,4 +4226,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.19 1998/11/28 10:42:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.20 1998/11/29 13:09:19 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.6 1998/11/15 04:30:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.7 1998/11/22 10:37:19 dawes Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -40,7 +40,7 @@ typedef struct {
 #define CIRPTR(p) ((CIRPtr)((p)->driverPrivate))
 
 typedef struct {
-    ScreenPtr		pScreen;
+    ScrnInfoPtr		pScrn;
     pciVideoPtr		PciInfo;
     PCITAG		PciTag;
     int			Chipset;

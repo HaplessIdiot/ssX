@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.h,v 1.5 1998/08/29 05:44:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.h,v 1.6 1998/08/29 14:34:42 dawes Exp $ */
 
 #ifndef _XF86RAMDAC_H
 #define _XF86RAMDAC_H 1
@@ -8,11 +8,6 @@
 /* Define unique vendor codes for RAMDAC's */
 #define VENDOR_IBM	0x0000
 #define VENDOR_BT	0x0001
-
-/* defining this causes only one ramdac to be used per screen     */
-/* We should remove this and use the Colormap private to install  */
-/* multiple ramdacs per screen.                                   */
-#define PERSCREEN 1
 
 typedef struct _RamDacRegRec {
 /* This is probably the nastiest assumption, we allocate 1024 slots for
@@ -91,24 +86,13 @@ typedef struct _RamDacHelperRec {
 
 #define RAMDACHWPTR(p) ((RamDacHWRecPtr)((p)->privates[RamDacGetHWIndex()].ptr))
 
-#ifdef PERSCREEN
 typedef struct _RamdacScreenRec {
     RamDacRecPtr	RamDacRec;
 } RamDacScreenRec, *RamDacScreenRecPtr;
 #define RAMDACSCRPTR(p) ((RamDacScreenRecPtr)((p)->privates[RamDacGetScreenIndex()].ptr))->RamDacRec
-#else
-typedef struct _RamdacColormapRec {
-    RamDacRecPtr	RamDacRec;
-} RamDacColormapRec, *RamDacColormapRecPtr;
-#define RAMDACCOLPTR(p) ((RamDacColormapRecPtr)((p)->privates[RamDacGetColormapIndex()].ptr))->RamDacRec
-#endif
 
 extern int RamDacHWPrivateIndex;
-#ifdef PERSCREEN
 extern int RamDacScreenPrivateIndex;
-#else
-extern int RamDacColormapPrivateIndex;
-#endif
 
 typedef struct {
     int		token;
@@ -121,7 +105,8 @@ void RamDacHelperDestroyInfoRec(RamDacHelperRecPtr RamDacRec);
 Bool RamDacInit(ScrnInfoPtr pScrn, RamDacRecPtr RamDacRec);
 void RamDacSetGamma(ScrnInfoPtr pScrn, Bool Real8BitDac);
 void RamDacRestoreDACValues(ScrnInfoPtr pScrn);
-void RamDacHandleColormaps(ScreenPtr pScreen, ScrnInfoPtr pScrn);
+Bool RamDacHandleColormaps(ScreenPtr pScreen, int maxColors, int sigRGBbits,
+			   unsigned int flags);
 void RamDacFreeRec(ScrnInfoPtr pScrn);
 int  RamDacGetHWIndex(void);
 

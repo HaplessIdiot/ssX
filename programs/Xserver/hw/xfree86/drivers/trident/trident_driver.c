@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.31 1998/10/11 10:20:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.32 1998/11/15 04:30:33 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -46,7 +46,7 @@
 #include "xf86Version.h"
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
-
+#include "xf86cmap.h"
 #include "vgaHW.h"
 
 #include "mipointer.h"
@@ -784,10 +784,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-#if 0
     /*
-     * If the driver can do gamma correction, it should call xf86SetGamma()
-     * here.
+     * The new cmap layer needs this to be initialised.
      */
 
     {
@@ -797,7 +795,6 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
     }
-#endif
 
     /* We use a programamble clock */
     pScrn->progClock = TRUE;
@@ -1650,9 +1647,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
-    if (pScrn->pixmapBPP == 8) {
-	RamDacHandleColormaps(pScreen, pScrn);	
-    } else if (pScrn->depth > 8) {
+    if (pScrn->bitsPerPixel > 8) {
         /* Fixup RGB ordering */
         visual = pScreen->visuals + pScreen->numVisuals;
         while (--visual >= pScreen->visuals) {
@@ -1665,7 +1660,6 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		visual->blueMask = pScrn->mask.blue;
 	    }
 	}
-	RamDacSetGamma(pScrn, FALSE);
     } else if (pScrn->depth == 1) {
 	Trident1bppColorMap(pScrn);
     }
@@ -1720,6 +1714,10 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
+	return FALSE;
+
+    if (!RamDacHandleColormaps(pScreen, 256, pScrn->rgbBits,
+	CMAP_RELOAD_ON_MODE_SWITCH | CMAP_PALETTED_TRUECOLOR))
 	return FALSE;
 
 #ifdef DPMSExtension
@@ -1814,8 +1812,6 @@ TRIDENTEnterVT(int scrnIndex, int flags)
     /* Should we re-save the text mode on each VT enter? */
     if (!TRIDENTModeInit(pScrn, pScrn->currentMode))
 	return FALSE;
-
-    RamDacRestoreDACValues(pScrn);
 
     return TRUE;
 }

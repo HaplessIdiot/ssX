@@ -27,7 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
-/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.12 1998/10/25 07:11:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.13 1998/11/15 04:30:00 dawes Exp $ */
 
 /*
 
@@ -117,6 +117,7 @@ static void RemovePiece(MultiSrcObject, MultiPiece*);
 static void RemoveOldStringOrFile(MultiSrcObject, Bool);
 static String StorePiecesInString(MultiSrcObject);
 static Bool WriteToFile(String, String);
+static void GetDefaultPieceSize(Widget, int, XrmValue*);
 
 /*
  * Initialization
@@ -156,8 +157,8 @@ static XtResource resources[] = {
     XtRInt,
     sizeof(XawTextPosition),
     offset(piece_size),
-    XtRImmediate,
-    (XtPointer)BUFSIZ
+    XtRCallProc,
+    (XtPointer)GetDefaultPieceSize
   },
   {
     XtNuseStringInPlace,
@@ -852,7 +853,7 @@ XawMultiSrcSetValues(Widget current, Widget request, Widget cnew,
 	fclose(file);
       for (i = 0; i < src->text_src.num_text; i++)
 	  /* Tell text widget what happened */
-	  XawTextSetSource(src->text_src.text[i], cnew, 0, 0);
+	  XawTextSetSource(src->text_src.text[i], cnew, 0);
       total_reset = True;
     }
 
@@ -1631,4 +1632,19 @@ CvtMultiTypeToString(Display *dpy, XrmValuePtr args, Cardinal *num_args,
   toVal->size = sizeof(String);
 
   return (True);
+}
+
+/*ARGSUSED*/
+static void
+GetDefaultPieceSize(Widget w, int offset, XrmValue *value)
+{
+    static int pagesize;
+
+    if (pagesize == 0) {
+	pagesize = getpagesize();
+	if (pagesize < BUFSIZ)
+	    pagesize = BUFSIZ;
+    }
+
+    value->addr = (XtPointer)&pagesize;
 }

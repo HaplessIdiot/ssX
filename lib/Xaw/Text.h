@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Text.h,v 1.6 1998/10/10 15:25:08 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.h,v 1.7 1998/11/15 04:30:03 dawes Exp $ */
 
 #ifndef _XawText_h
 #define _XawText_h
@@ -65,6 +65,7 @@ SOFTWARE.
  insertPosition	    TextPosition     XawTextPosition	0
  leftMargin	    Margin	     Position		2
  rightMargin	    Margin	     Position		4
+ positionCallback   Callback	     Callback		NULL
  scrollHorizontal   Scroll	     Boolean		False
  scrollVertical     Scroll	     Boolean		False
  selectTypes        SelectTypes      Pointer            see documentation
@@ -117,7 +118,8 @@ typedef enum {
   XawselectWord,
   XawselectLine,
   XawselectParagraph,
-  XawselectAll
+  XawselectAll,
+  XawselectAlphaNumeric
 } XawTextSelectType;
 
 typedef struct {
@@ -126,6 +128,13 @@ typedef struct {
     char *ptr;
     unsigned long format;
 } XawTextBlock, *XawTextBlockPtr;
+
+typedef struct {
+    int line_number;
+    int column_number;
+    XawTextPosition insert_position;
+    XawTextPosition last_position;
+} XawTextPositionInfo;
 
 #include <X11/Xaw/TextSink.h>
 #include <X11/Xaw/TextSrc.h>
@@ -152,6 +161,7 @@ typedef struct {
 #define XtNdisplayPosition "displayPosition"
 #define XtNleftMargin "leftMargin"
 #define XtNrightMargin "rightMargin"
+#define XtNpositionCallback "positionCallback"
 #define XtNscrollVertical "scrollVertical"
 #define XtNscrollHorizontal "scrollHorizontal"
 #define XtNselectTypes "selectTypes"
@@ -231,8 +241,7 @@ void XawTextSetSource
 (
  Widget			w,
  Widget			source,
- XawTextPosition	top,
- XawTextPosition	position
+ XawTextPosition	top
  );
 
 int XawTextReplace

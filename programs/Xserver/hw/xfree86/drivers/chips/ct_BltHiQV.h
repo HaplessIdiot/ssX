@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BltHiQV.h,v 1.5 1998/08/29 05:43:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BltHiQV.h,v 1.6 1998/11/28 10:43:06 dawes Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* These are done using Memory Mapped IO, of the registers */
@@ -113,7 +113,7 @@ outb(0x3D6,0x20);   {int timeout; \
       ((Width)&0xFFFF)
 
 #define ctSETPATSRCADDR(srcAddr)\
-  *(unsigned int *)(cPtr->MMIOBase + BR(0x5)) = (srcAddr)&0x1FFFFFL
+  *(unsigned int *)(cPtr->MMIOBase + BR(0x5)) = (srcAddr)&0x7FFFFFL
 
 #define ctSETBGCOLOR8(c) {\
     if ((cAcl->bgColor != (c)) || (cAcl->bgColor == -1)) { \

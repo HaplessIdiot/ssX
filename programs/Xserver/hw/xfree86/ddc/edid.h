@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/edid.h,v 1.1 1998/11/28 10:43:04 dawes Exp $ */
 
 /* edid.h: defines to parse an EDID block 
  *
@@ -103,7 +103,7 @@
 #define YEAR _YEAR(GET(V_YEAR))
 #define WEEK GET(V_WEEK) & 0xFF
 #define _L1(x) ((x[0] & 0x7C) >> 2) + '@'
-#define _L2(x) ((x[0] & 0x03) << 2) + ((x[1] & 0xE0) >> 5) + '@'
+#define _L2(x) ((x[0] & 0x03) << 3) + ((x[1] & 0xE0) >> 5) + '@'
 #define _L3(x) (x[1] & 0x1F) + '@';
 #define L1 _L1(GET_ARRAY(V_MANUFACTURER))
 #define L2 _L2(GET_ARRAY(V_MANUFACTURER))
@@ -154,7 +154,7 @@
 #define T_MANU GET(E_TMANU)
 
 /* extract information from estabished timing section */
-#define _HSIZE1(x) (x[0] * 8) + 31
+#define _HSIZE1(x) ((x[0] + 31) * 8)
 #define HSIZE1 _HSIZE1(c)
 #define RATIO(x) ((x[1] & 0xC0) >> 6)
 #define RATIO1_1 0
@@ -408,7 +408,7 @@ typedef struct {
   struct disp_features features;
   struct established_timings timings1;
   struct std_timings timings2[8];
-  struct detailed_monitor_section det_mon[3];
+  struct detailed_monitor_section det_mon[4];
   xf86vdifPtr vdif;
   int no_sections;
 } xf86Monitor, *xf86MonPtr;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.1 1998/11/28 10:43:05 dawes Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -191,7 +191,7 @@ xf86DoEDID_DDC2(int scrnIndex, I2CBusPtr pBus)
  */
 static unsigned char *
 EDIDRead_DDC1(ScrnInfoPtr pScrn, void (*DDCSpeed)(ScrnInfoPtr,xf86ddcSpeed), 
-unsigned int (*read_DDC)(ScrnInfoPtr))
+              unsigned int (*read_DDC)(ScrnInfoPtr))
 {
     unsigned char *EDID_block = NULL;
     int count = RETRIES;
@@ -248,7 +248,7 @@ FetchEDID_DDC1(register ScrnInfoPtr pScrn,
 	/* wait for next retrace */
 	*xp = read_DDC(pScrn);
 	xp++;
-    } while(count--);
+    } while(--count);
     return (ptr);
 }
 

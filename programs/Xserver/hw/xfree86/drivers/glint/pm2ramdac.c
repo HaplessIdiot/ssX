@@ -24,7 +24,7 @@
  * Permedia2OutIndReg() and Permedia2InIndReg() are used to access 
  * the indirect Permedia2 RAMDAC registers only.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2ramdac.c,v 1.3 1998/07/31 10:41:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2ramdac.c,v 1.4 1998/08/13 14:45:52 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -94,4 +94,52 @@ Permedia2ReadData (ScrnInfoPtr pScrn)
     GLINTPtr pGlint = GLINTPTR(pScrn);
     
     return(GLINT_READ_REG(PM2DACData));
+}
+
+void Permedia2LoadPalette(
+    ScrnInfoPtr pScrn, 
+    int numColors, 
+    int *indices,
+    LOCO *colors,
+    short visualClass
+){
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    int i, index, shift;
+
+    shift = (pScrn->depth == 15) ? 3 : 0;
+
+    for(i = 0; i < numColors; i++) {
+	index = indices[i];
+	Permedia2WriteAddress(pScrn, index << shift);
+	Permedia2WriteData(pScrn, colors[index].red);
+	Permedia2WriteData(pScrn, colors[index].green);
+	Permedia2WriteData(pScrn, colors[index].blue);
+    }
+}
+
+/* special one for 565 mode */
+void Permedia2LoadPalette16(
+    ScrnInfoPtr pScrn, 
+    int numColors, 
+    int *indices,
+    LOCO *colors,
+    short visualClass
+){
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    int i, index;
+
+    for(i = 0; i < numColors; i++) {
+	index = indices[i];
+	Permedia2WriteAddress(pScrn, index << 2);
+	Permedia2WriteData(pScrn, colors[index >> 1].red);
+	Permedia2WriteData(pScrn, colors[index].green);
+	Permedia2WriteData(pScrn, colors[index >> 1].blue);
+
+	if(index <= 31) {
+	    Permedia2WriteAddress(pScrn, index << 3);
+	    Permedia2WriteData(pScrn, colors[index].red);
+	    Permedia2WriteData(pScrn, colors[(index << 1) + 1].green);
+	    Permedia2WriteData(pScrn, colors[index].blue);
+	}
+    }
 }

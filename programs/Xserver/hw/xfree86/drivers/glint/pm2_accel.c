@@ -29,7 +29,7 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.8 1998/11/22 10:37:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.9 1998/11/28 10:43:11 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1220,15 +1220,16 @@ Permedia2WritePixmap8bpp(
 	} else {
   	   char align = (x & pGlint->bppalign);
 		
-	   Permedia2SetClippingRectangle(pScrn,x+skipleft,y,x+w,y+h);
 
 	   if (rop == GXcopy) {
+	     CHECKCLIPPING;
 	     GLINT_WAIT(6);
              Permedia2LoadCoord(pScrn, x>>pGlint->BppShift, y, 
 				(w+pGlint->bppalign)>>pGlint->BppShift, h);
   	     GLINT_WRITE_REG(align<<29|x<<16|(x+w), PackedDataLimits);
 	     GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
 	   } else {
+	     Permedia2SetClippingRectangle(pScrn,x+skipleft,y,x+w,y+h);
 	     GLINT_WAIT(5);
              Permedia2LoadCoord(pScrn, x, y, w, h);
 	     GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
@@ -1376,15 +1377,16 @@ Permedia2WritePixmap16bpp(
 	} else {
   	   char align = (x & pGlint->bppalign);
 		
-	   Permedia2SetClippingRectangle(pScrn,x+skipleft,y,x+w,y+h);
 
 	   if (rop == GXcopy) {
+	     CHECKCLIPPING;
 	     GLINT_WAIT(6);
              Permedia2LoadCoord(pScrn, x>>pGlint->BppShift, y, 
 				(w+pGlint->bppalign)>>pGlint->BppShift, h);
   	     GLINT_WRITE_REG(align<<29|x<<16|(x+w), PackedDataLimits);
 	     GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
 	   } else {
+	     Permedia2SetClippingRectangle(pScrn,x+skipleft,y,x+w,y+h);
 	     GLINT_WAIT(5);
              Permedia2LoadCoord(pScrn, x, y, w, h);
 	     GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);

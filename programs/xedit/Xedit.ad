@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit.ad,v 1.1 1998/10/25 07:12:16 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit.ad,v 1.2 1998/11/15 04:30:43 dawes Exp $
 
 *geometry:				590x440
 *input:					TRUE
@@ -13,7 +13,7 @@ Use Control-E to jump to the end of the line.\n\
 Use Control-T to transpose characters.\n\
 Use Control-K to cut to the end of the line. Control-Y to paste.\n\
 Use Control-Q to escape control characters.\n\
-Use Control-U,<number> to multiply actions. Control-G to cancel.\n\
+Use Control-U[,<number>] to multiply actions. Control-G to cancel.\n\
 Use Control-Z to scroll one line up. Meta-Z to scroll one line down.\n\
 Use Meta-Q to format a paragraph.\n\
 Use Button3 to extend selections.\n\
@@ -24,11 +24,22 @@ Use Control-X,Control-S to save.\n\
 Use Control-X,Control-C to exit.\n\
 Use Control-C to paste the selection at CUT_BUFFER0.
 
+*formWindow*defaultDistance:		2
+*formWindow.?.borderWidth:		0
+*formWindow.min:			18
+*formWindow.max:			18
+*formWindow.showGrip:			False
+*positionWindow.fromHoriz:		labelWindow
+*positionWindow.horizDistance:		0
+*positionWindow.left:			chainRight
+*positionWindow.right:			chainRight
+*positionWindow.width:			50
+*positionWindow.label:			error
+*positionWindow.justify:		left
 *labelWindow*justify:			center
 *labelWindow*label:			no file yet
-*labelWindow.min:			18
-*labelWindow.max:			18
-*labelWindow.showGrip:			False
+*labelWindow.left:			chainLeft
+*labelWindow.right:			chainRight
 
 *quit.label:				Quit
 *save.label:				Save
@@ -57,6 +68,7 @@ xedit.textSource*enableUndo:		True
 *insertFile*text.width:			141
 *search*searchText.width:		157
 *search*replaceText.width:		157
+*search*case.horizDistance:		25
 
 *fileMenu.BackingStore:			NotUseful
 *fileMenu.menuLabel.vertSpace:		80

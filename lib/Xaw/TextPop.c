@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.5 1998/08/16 10:24:39 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.6 1998/10/03 08:42:26 dawes Exp $ */
 
 /*
  * This file is broken up into three sections one dealing with
@@ -707,6 +707,20 @@ AddSearchChildren(Widget form, char *ptr, Widget tw)
     XtOverrideTranslations(search->right_toggle, radio_translations);
   }
 
+  if (_XawTextFormat((TextWidget)tw) == XawFmt8Bit) {
+      num_args = 0;
+      XtSetArg(args[num_args], XtNlabel, "Case Sensitive"); num_args++;
+      XtSetArg(args[num_args], XtNfromVert, search->label2); num_args++;
+      XtSetArg(args[num_args], XtNfromHoriz, search->right_toggle); num_args++;
+      XtSetArg(args[num_args], XtNleft, XtChainLeft); num_args++;
+      XtSetArg(args[num_args], XtNright, XtChainLeft); num_args++;
+      XtSetArg(args[num_args], XtNstate, True); num_args++;
+      search->case_sensitive = XtCreateManagedWidget("case", toggleWidgetClass,
+						     form, args, num_args);
+  }
+  else
+      search->case_sensitive = NULL;
+
   num_args = 0;
   XtSetArg(args[num_args], XtNfromVert, search->left_toggle); num_args++;
   XtSetArg(args[num_args], XtNlabel, "Search for:  ");		num_args++;
@@ -840,12 +854,25 @@ DoSearch(struct SearchAndReplace *search)
 
   TextWidget ctx = (TextWidget)tw;
 
+  text.firstPos = 0;
   text.ptr = GetStringRaw(search->search_text);
   if ((text.format = _XawTextFormat(ctx)) == XawFmtWide)
       text.length = wcslen((wchar_t*)text.ptr);
-  else
+  else {
       text.length = strlen(text.ptr);
-  text.firstPos = 0;
+
+      if (search->case_sensitive) {
+	  /* text.firstPos isn't useful here, so I'll use it as an
+	   * options flag.
+	   */
+	  Arg args[1];
+	  Boolean case_sensitive;
+
+	  XtSetArg(args[0], XtNstate, &case_sensitive);
+	  XtGetValues(search->case_sensitive, args, 1);
+	  text.firstPos = !case_sensitive;
+      }
+  }
   
   dir = (XawTextScanDirection)
     ((XPointer)XawToggleGetCurrent(search->left_toggle) - R_OFFSET);

@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.12 1998/10/25 07:11:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.13 1998/11/15 04:29:58 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -95,6 +95,7 @@ static void RemoveOldStringOrFile(AsciiSrcObject, Bool);
 static void RemovePiece(AsciiSrcObject, Piece*);
 static String StorePiecesInString(AsciiSrcObject);
 static Bool WriteToFile(String, String, unsigned);
+static void GetDefaultPieceSize(Widget, int, XrmValue*);
 
 /*
  * More Prototypes
@@ -145,8 +146,8 @@ static XtResource resources[] = {
     XtRInt,
     sizeof(XawTextPosition),
     offset(piece_size),
-    XtRImmediate,
-    (XtPointer)BUFSIZ
+    XtRCallProc,
+    (XtPointer)GetDefaultPieceSize
   },
   {
     XtNuseStringInPlace,
@@ -679,19 +680,28 @@ Search(Widget w, register XawTextPosition position, XawTextScanDirection dir,
   Piece *piece;
   char *buf;
   XawTextPosition first;
-  int cnt;
+  int cnt, case_sensitive;
+
+  if (dir == XawsdLeft) {
+      if (position == 0)
+	  return (XawTextSearchError);
+      position--;
+  }
 
   buf = XtMalloc((unsigned)sizeof(unsigned char) * text->length);
-  memcpy(buf, (text->ptr + text->firstPos), (unsigned)text->length);
+  memcpy(buf, text->ptr, (unsigned)text->length);
   piece = FindPiece(src, position, &first);
   ptr = (position - first) + piece->text;
+  case_sensitive = text->firstPos;
 
   if (dir == XawsdRight) {
       str = buf;
       c = *str;
       /*CONSTCOND*/
       while (1) {
-	  if (*ptr++ == c) {
+	  if (*ptr++ == c
+	      || (case_sensitive && isalpha(c) && isalpha(ptr[-1])
+		  && toupper(c) == toupper(ptr[-1]))) {
 	      if (++count == text->length)
 		  break;
 	      c = *++str;
@@ -718,15 +728,13 @@ Search(Widget w, register XawTextPosition position, XawTextScanDirection dir,
       }
   }
   else {
-      if (position == 0) {
-	  XtFree(buf);
-	  return (XawTextSearchError);
-      }
       str = buf + text->length - 1;
       c = *str;
       /*CONSTCOND*/
       while (1) {
-	  if (*ptr-- == c) {
+	  if (*ptr-- == c
+	      || (case_sensitive && isalpha(c) && isalpha(ptr[1])
+		  && toupper(c) == toupper(ptr[1]))) {
 	      if (++count == text->length)
 		  break;
 	      c = *--str;
@@ -813,7 +821,7 @@ XawAsciiSrcSetValues(Widget current, Widget request, Widget cnew,
 	fclose(file);
       for (i = 0; i < src->text_src.num_text; i++)
 	  /* Tell text widget what happened */
-	  XawTextSetSource(src->text_src.text[i], cnew, 0, 0);
+	  XawTextSetSource(src->text_src.text[i], cnew, 0);
       total_reset = True;
     }
 
@@ -1524,6 +1532,20 @@ CvtAsciiTypeToString(Display *dpy, XrmValuePtr args, Cardinal *num_args,
   return (True);
 }
 
+/*ARGSUSED*/
+static void
+GetDefaultPieceSize(Widget w, int offset, XrmValue *value)
+{
+    static int pagesize;
+
+    if (pagesize == 0) {
+	pagesize = getpagesize();
+	if (pagesize < BUFSIZ)
+	    pagesize = BUFSIZ;
+    }
+
+    value->addr = (XtPointer)&pagesize;
+}
 
 #if (defined(ASCII_STRING) || defined(ASCII_DISK))
 #  include <X11/Xaw/Cardinals.h>

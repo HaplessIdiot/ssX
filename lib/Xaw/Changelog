@@ -581,9 +581,7 @@ will not allways be displayed correctly.
   respect, i.e. when calling xedit with something like:
   xedit -xrm '*international: true'
 + Converted all calls to strncpy, in AsciiSrc.c to memcpy, so that the (ascii)
-  text widget will work properly with data containing nulls. Hmm, xedit would
-  not only loads junk data when trying to edit libXaw.a as it would also
-  core dump very badly (this is fixed with this patch).
+  text widget will work properly with data containing nulls.
 + Added a experimental 'Xaw Scan Type' XawstAlphaNumeric, that shoud make
   edition of C (or any other language) easier in xedit (i.e. the text widget).
   It can be tested with Ctrl-Left and Ctrl-Right, by now.
@@ -622,9 +620,7 @@ will not allways be displayed correctly.
  + Moved the undo/redo code to TextSrc.c, and some code/data from
    {Ascii,Multi}Src.c to TextSrc.c. The callback now is called when the
    source is changed, or becames unchanged due to an undo/redo. Also
-   changed the Scan procedure to be a bit faster (it is yet very slow,
-   I'll look at the Emacs sources to try give it a comparable speed,
-   and probably add a case insensitive option).
+   changed the Scan procedure to be a bit faster.
  + The asciiTextWidget will now accept a source or sink object being set at
    creation time.
  + Fixed the 'struct XawDisplayList' being redefined when compiling Xaw under
@@ -639,19 +635,55 @@ will not allways be displayed correctly.
    was to make the TextWidget be able to have more than one source, but, to
    be backwards compatible, I did the reverse (the source can have more than
    one TextWidget).
- + Changed the XawTextSetSource parmateters. THIS BREAKS BACKWARDS COMPATIBILITY
-,
-   but it is required. The previous function definition was completely broken,
-   because the top-position and the insert-position aren't the same.
  + Fixed a automatic wrap bug (TextWidget) that could eat non white space
    characters (my previous patch to this problem was completely wrong).
 
 -- xedit --
  + Added a split-window feature to xedit. To keep xedit simple, it only allows
-   to windows at the same time: or subdivides in the vertical or horizontal.
+   two windows at the same time: or subdivides in the vertical or horizontal.
  + Added more some key-bindings, that should do the same as Emacs.
 
+#2291 5 Dec 1998
+
+-- Xaw (only changes to the 'text' code) --
+ + Changed the default 'piece size' from BUFSIZ to the value returned by
+   the getpagesize() function (or keep BUFSIZ if that value is smaller).
+ + Added a case sensitive option to the search popup. This is a 'hack' by
+   now, but should not cause trouble to anybody.
+ + Fixed a bug inserted when changing the code for the search, the only side
+   effect I saw was that the jumping cursor to show the matching '(', '[' or '{'
+   stopped working in my last patch.
+ + Moved back my change to the function XawTextSetSource. The 'correct' function
+   is _XawTextSetSource. This is only to make sure old code should compile
+   cleanly.
+ + Added line and column number calculation code (and a callback to tell when
+   that information changed) to the TextWidget. This was not an easy task,
+   because I tried to optimize as much as possible the code, and do relative
+   calculations, instead of scanning the entire file to count the number of
+   lines (there are several special cases, when removing/inserting text).
+ + Added the selection type XawselectAlphaNumeric. This adds one step in
+   the sequence word-line-all when doing multiclick in the text.
+ + Fixed some bugs in the 'kill ring' feature added in the last patch. Now
+   it is expected to never fail.
+ + Corrected the indentation of TextP.h, and changed more some fields. The
+   internal data of the TextWidget changed a lot, so it is not expected that
+   program code read directly the private data, at the price of requiring the
+   correct library version.
+ + Fixed a small bug in the undo code, that would 'think' the file was unchanged
+   in the incorrect position in the undo buffer.
+ + Changed the default key bindings for delete/kill word functions to use the
+   alpha numeric versions (this is better for coding, and more compatible with
+   other text editors).
+
+-- xedit --
+ + Changed the labelWindow, to show the current line number (but it is also
+   possible to show the current column number, offset or file size).
+ + Fixed bug when saving the *scratch* buffer with a new name.
+ + The 'changedBitmap' is now correctly displayed on all the windows showing a
+   changed file.
+ + Small changes to the xedit man page.
 
 
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.10 1998/10/25 07:11:13 dawes Exp $
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.11 1998/11/15 04:29:59 dawes Exp $

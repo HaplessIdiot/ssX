@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.14 1998/11/22 10:37:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.15 1998/11/28 10:43:10 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -42,7 +42,7 @@
 #include "xf86Version.h"
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
-
+#include "xf86cmap.h"
 #include "vgaHW.h"
 
 #include "mipointer.h"
@@ -756,6 +756,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     } else {
 	/* Check that the returned depth is one we support */
 	switch (pScrn->depth) {
+	case 1:
 	case 4:
 	case 8:
 	case 15:
@@ -1152,6 +1153,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	if ( (pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA) ||
 	     (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA) ) {
 		switch (pScrn->bitsPerPixel) {
+		    case 1:
 		    case 4:
 		    case 8:
 			pGlint->MaxClock = 200000;
@@ -1171,6 +1173,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	     (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) ||
 	     (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) ) {
 		switch (pScrn->bitsPerPixel) {
+		    case 1:
 		    case 4:
 		    case 8:
 			pGlint->MaxClock = 230000;
@@ -1300,6 +1303,9 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
+    case 1:
+	mod = "xf1bpp";
+	break;
     case 4:
 	mod = "xf4bpp";
 	break;
@@ -1748,6 +1754,12 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
 
     switch (pScrn->bitsPerPixel) {
+    case 1:
+	ret = xf1bppScreenInit(pScreen, pGlint->FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	break;
     case 4:
 	ret = xf4bppScreenInit(pScreen, pGlint->FbBase,
 			pScrn->virtualX, pScrn->virtualY,
@@ -1790,9 +1802,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
-    if (pScrn->bitsPerPixel == 8) {
-	RamDacHandleColormaps(pScreen, pScrn);	
-    } else {
+    if (pScrn->bitsPerPixel > 8) {
         /* Fixup RGB ordering */
         visual = pScreen->visuals + pScreen->numVisuals;
         while (--visual >= pScreen->visuals) {
@@ -1805,7 +1815,6 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		visual->blueMask = pScrn->mask.blue;
 	    }
 	}
-	RamDacSetGamma(pScrn, TRUE);
     }
 
     if (!pGlint->NoAccel) {
@@ -1849,6 +1858,20 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
 	return FALSE;
+
+    if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) ||
+	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) || 
+	(pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA2)) {
+    	if (!xf86HandleColormaps(pScreen, 256, pScrn->rgbBits, 
+	    (pScrn->depth == 16) ? Permedia2LoadPalette16:Permedia2LoadPalette,
+	    NULL,
+	    CMAP_RELOAD_ON_MODE_SWITCH | CMAP_PALETTED_TRUECOLOR))
+	return FALSE;
+    } else {
+    	if (!RamDacHandleColormaps(pScreen, 256, pScrn->rgbBits, 
+	    CMAP_RELOAD_ON_MODE_SWITCH | CMAP_PALETTED_TRUECOLOR))
+	return FALSE;
+    }
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)GLINTDisplayPowerManagementSet, 0);
@@ -1926,7 +1949,6 @@ GLINTEnterVT(int scrnIndex, int flags)
     if (!GLINTModeInit(pScrn, pScrn->currentMode))
 	return FALSE;
 
-    RamDacRestoreDACValues(pScrn);
     return TRUE;
 }
 

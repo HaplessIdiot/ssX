@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.13 1998/10/25 07:11:15 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.14 1998/11/15 04:30:04 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -422,10 +422,9 @@ _SelectionReceived(Widget w, XtPointer client_data, Atom *selection,
     }
 
   ctx->text.from_left = -1;
-  ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
+  ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.old_insert,
 				XawstPositions, XawsdRight, text.length, True);
 
-  _XawTextSetScrollBars(ctx);
   EndAction(ctx);
   XtFree(client_data);
   XFree(value);		/* the selection value should be freed with XFree */
@@ -1105,10 +1104,12 @@ _DeleteOrKill(TextWidget ctx, XawTextPosition from, XawTextPosition to,
 	if (!append)
 	    salt->contents = string;
 	else {
-	    salt->contents = XtMalloc(length + size);
-	    strcpy(salt->contents, ring);
+	    salt->contents = XtMalloc(length + size + 1);
+	    strncpy(salt->contents, ring, size);
+	    salt->contents[size] = '\0';
 	    XtFree(ring);
-	    strcat(salt->contents, string);
+	    strncat(salt->contents, string, length);
+	    salt->contents[length + size] = '\0';
 	    XtFree(string);
 	}
 
@@ -1167,7 +1168,6 @@ DeleteOrKill(TextWidget ctx, XEvent *event, XawTextScanDirection dir,
     from = ctx->text.insertPos;
 
   _DeleteOrKill(ctx, from, to, kill);
-  _XawTextSetScrollBars(ctx);
   EndAction(ctx);
 }
 
@@ -1196,34 +1196,56 @@ DeleteBackwardChar(Widget w, XEvent *event, String *p, Cardinal *n)
   DeleteOrKill((TextWidget)w, event, XawsdLeft, XawstPositions, True, False);
 }
 
-/*ARGSUSED*/
 static void
-DeleteForwardWord(Widget w, XEvent *event, String *p, Cardinal *n)
+DeleteForwardWord(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  DeleteOrKill((TextWidget)w, event,
-	       XawsdRight, XawstWhiteSpace, False, False);
+    XawTextScanType type;
+
+    if (*num_params && (*params[0] == 'A' || *params[0] == 'a'))
+	type = XawstAlphaNumeric;
+    else
+	type = XawstWhiteSpace;
+
+    DeleteOrKill((TextWidget)w, event, XawsdRight, type, False, False);
 }
 
-/*ARGSUSED*/
 static void
-DeleteBackwardWord(Widget w, XEvent *event, String *p, Cardinal *n)
+DeleteBackwardWord(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  DeleteOrKill((TextWidget)w, event,
-	       XawsdLeft, XawstWhiteSpace, False, False);
+    XawTextScanType type;
+
+    if (*num_params && (*params[0] == 'A' || *params[0] == 'a'))
+	type = XawstAlphaNumeric;
+    else
+	type = XawstWhiteSpace;
+
+    DeleteOrKill((TextWidget)w, event, XawsdLeft, type, False, False);
 }
 
-/*ARGSUSED*/
 static void
-KillForwardWord(Widget w, XEvent *event, String *p, Cardinal *n)
+KillForwardWord(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  DeleteOrKill((TextWidget)w, event, XawsdRight, XawstWhiteSpace, False, True);
+    XawTextScanType type;
+
+    if (*num_params && (*params[0] == 'A' || *params[0] == 'a'))
+	type = XawstAlphaNumeric;
+    else
+	type = XawstWhiteSpace;
+
+    DeleteOrKill((TextWidget)w, event, XawsdRight, type, False, True);
 }
 
-/*ARGSUSED*/
 static void
-KillBackwardWord(Widget w, XEvent *event, String *p, Cardinal *n)
+KillBackwardWord(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  DeleteOrKill((TextWidget) w, event, XawsdLeft, XawstWhiteSpace, False, True);
+    XawTextScanType type;
+
+    if (*num_params && (*params[0] == 'A' || *params[0] == 'a'))
+	type = XawstAlphaNumeric;
+    else
+	type = XawstWhiteSpace;
+
+    DeleteOrKill((TextWidget) w, event, XawsdLeft, type, False, True);
 }
 
 /*ARGSUSED*/
@@ -1245,7 +1267,6 @@ KillToEndOfLine(Widget w, XEvent *event, String *p, Cardinal *n)
       ctx->text.kill_ring = KILL_RING_BEGIN;
 
   _DeleteOrKill(ctx, ctx->text.insertPos, end_of_line, True);
-  _XawTextSetScrollBars(ctx);
   EndAction(ctx);
 }
 
@@ -1261,7 +1282,6 @@ _XawTextZapSelection(TextWidget ctx, XEvent *event, Bool kill)
 {
   StartAction(ctx, event);
   _DeleteOrKill(ctx, ctx->text.s.left, ctx->text.s.right, kill);
-  _XawTextSetScrollBars(ctx);
   EndAction(ctx);
 }
 
@@ -1325,7 +1345,6 @@ InsertNewLineAndBackup(Widget w, XEvent *event, String *p, Cardinal *n)
 {
   StartAction((TextWidget)w, event);
   (void)InsertNewLineAndBackupInternal((TextWidget)w);
-  _XawTextSetScrollBars((TextWidget)w);
   EndAction((TextWidget)w);
 }
 
@@ -1337,10 +1356,9 @@ LocalInsertNewLine(TextWidget ctx, XEvent *event)
     return (XawEditError);
 
   ctx->text.from_left = -1;
-  ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
+  ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.old_insert,
 				XawstPositions, XawsdRight, MULT(ctx),
 				True);
-  _XawTextSetScrollBars(ctx);
   EndAction(ctx);
   return (XawEditDone);
 }
@@ -1415,9 +1433,8 @@ InsertNewLineAndIndent(Widget w, XEvent *event, String *p, Cardinal *n)
 
   XtFree(text.ptr);
   ctx->text.from_left = -1;
-  ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
+  ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.old_insert,
 				XawstPositions, XawsdRight, text.length, True);
-  _XawTextSetScrollBars(ctx);
   EndAction(ctx);
 }
 
@@ -1774,7 +1791,7 @@ InsertChar(Widget w, XEvent *event, String *p, Cardinal *n)
   if (error == XawEditDone)
     {
       ctx->text.from_left = -1;
-      ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
+      ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.old_insert,
 				    XawstPositions, XawsdRight,
 				    text.length, True);
       if (ctx->text.auto_fill)
@@ -1784,7 +1801,6 @@ InsertChar(Widget w, XEvent *event, String *p, Cardinal *n)
     XBell(XtDisplay(ctx), 50);
 
   XawStackFree(text.ptr, ptrbuf);
-  _XawTextSetScrollBars(ctx);
   EndAction(ctx);
 
   if (error == XawEditDone && text.format == XawFmt8Bit && text.length == 1
@@ -1822,7 +1838,9 @@ InsertChar(Widget w, XEvent *event, String *p, Cardinal *n)
       ctx->text.insertPos = pos;
       EndAction(ctx);
 
-      XFlush(XtDisplay(w));
+      XSync(XtDisplay(w), False);
+      while (XtAppPending(XtWidgetToApplicationContext(w)) & XtIMXEvent)
+	  XtAppProcessEvent(XtWidgetToApplicationContext(w), XtIMXEvent);
       FD_ZERO(&fds);
       FD_SET(ConnectionNumber(XtDisplay(w)), &fds);
       (void)select(FD_SETSIZE, &fds, NULL, NULL, &tmval);
@@ -1986,7 +2004,7 @@ InsertString(Widget w, XEvent *event, String *params, Cardinal *num_params)
 
       ctx->text.from_left = -1;
       /* Advance insertPos to the end of the string we just inserted. */
-      ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
+      ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.old_insert,
 				     XawstPositions, XawsdRight, text.length,
 				    True);
 
@@ -2386,7 +2404,6 @@ FormParagraph(Widget w, XEvent *event, String *params, Cardinal *num_params)
       XtFree(rbuf);
   }
 
-  _XawTextSetScrollBars(ctx);
   ctx->text.clear_to_eol = True;
   EndAction(ctx);
 }

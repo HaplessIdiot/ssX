@@ -18,12 +18,12 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/lib/Xaw/XawInit.h,v 1.5 1998/10/03 08:42:33 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/XawInit.h,v 1.6 1998/11/15 04:30:06 dawes Exp $ */
 
 #ifndef _XawInit_h
 #define _XawInit_h
 
-typedef struct XawDL XawDisplayList;
+typedef struct _XawDL XawDisplayList;
 
 _XFUNCPROTOBEGIN
 

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.13 1998/10/04 09:40:55 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.14 1998/10/10 15:25:32 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -225,6 +225,9 @@ struct display {
 
 	int		version;	/* to keep dynamic greeter clued in */
 	/* add new fields only after here.  And preferably at the end. */
+
+	/* Hack for making "Willing to manage" configurable */
+	char		*willing;	/* "Willing to manage" program */
 };
 
 #ifdef XDMCP
@@ -307,6 +310,7 @@ extern char	*accessFile;
 extern char	**exportList;
 extern char	*randomFile;
 extern char	*greeterLib;
+extern char	*willing;
 extern int	choiceTimeout;	/* chooser choice timeout */
 
 extern struct display	*FindDisplayByName (char *name),

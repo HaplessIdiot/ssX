@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.6 1998/09/13 09:10:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.7 1998/10/11 10:20:32 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -35,7 +35,7 @@
 #include "xf86_ansic.h"
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
-
+#include "xf86cmap.h"
 #include "mipointer.h"
 
 #include "mibstore.h"
@@ -462,10 +462,8 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-#if SAMPLE
     /*
-     * If the driver can do gamma correction, it should call xf86SetGamma()
-     * here.
+     * The new cmap code requires this to be initialised.
      */
 
     {
@@ -475,7 +473,6 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
     }
-#endif
 
     /* We use a programamble clock */
     pScrn->progClock = TRUE;
@@ -1171,9 +1168,7 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
-    if (pScrn->bitsPerPixel == 8) {
-	RamDacHandleColormaps(pScreen, pScrn);	
-    } else {
+    if (pScrn->bitsPerPixel > 8) {
         /* Fixup RGB ordering */
         visual = pScreen->visuals + pScreen->numVisuals;
         while (--visual >= pScreen->visuals) {
@@ -1186,7 +1181,6 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		visual->blueMask = pScrn->mask.blue;
 	    }
 	}
-/*	RamDacSetGamma(pScrn, TRUE); */
     }
 
     if (!pTga->NoAccel) {
@@ -1205,6 +1199,10 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
+	return FALSE;
+
+    if (!RamDacHandleColormaps(pScreen, 256, pScrn->rgbBits,
+	 CMAP_RELOAD_ON_MODE_SWITCH | CMAP_PALETTED_TRUECOLOR))
 	return FALSE;
 
     pTga->CloseScreen = pScreen->CloseScreen;
@@ -1259,8 +1257,6 @@ TGAEnterVT(int scrnIndex, int flags)
     if (!TGAModeInit(pScrn, pScrn->currentMode))
 	return FALSE;
 
-    /* This is done by TGAModeInit -tor */
-    /* RamDacRestoreDACValues(pScrn); */
     return TRUE;
 }
 

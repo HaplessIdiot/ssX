@@ -1,6 +1,6 @@
 /* (c) Itai Nahshon */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_i2c.c,v 1.3 1998/10/06 04:39:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_i2c.c,v 1.4 1998/11/15 04:30:24 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -22,7 +22,7 @@
 static Bool
 CIRI2CSwitchToBus(I2CBusPtr b) {
     CIRPtr pCir = ((CIRPtr)b->DriverPrivate.ptr);
-    vgaHWPtr hwp = VGAHWPTR(xf86Screens[pCir->pScreen->myNum]);
+    vgaHWPtr hwp = VGAHWPTR(pCir->pScrn);
     if (b == pCir->I2CPtr1) {
         if ((pCir->ModeReg.ExtVga[GR17] & 0x60) == 0)
 		return TRUE;
@@ -44,7 +44,7 @@ static void
 CIRI2CPutBits(I2CBusPtr b, int clock,  int data) {
     unsigned int reg = 0xfc;
     CIRPtr pCir = ((CIRPtr)b->DriverPrivate.ptr);
-    vgaHWPtr hwp = VGAHWPTR(xf86Screens[pCir->pScreen->myNum]);
+    vgaHWPtr hwp = VGAHWPTR(pCir->pScrn);
     
     if(!CIRI2CSwitchToBus(b))
         return;
@@ -59,7 +59,7 @@ static void
 CIRI2CGetBits(I2CBusPtr b, int *clock, int *data) {
     unsigned int reg;
     CIRPtr pCir = ((CIRPtr)b->DriverPrivate.ptr);
-    vgaHWPtr hwp = VGAHWPTR(xf86Screens[pCir->pScreen->myNum]);
+    vgaHWPtr hwp = VGAHWPTR(pCir->pScrn);
 
     if(!CIRI2CSwitchToBus(b))
         return;
