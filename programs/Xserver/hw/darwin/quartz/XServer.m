@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.13 2003/10/16 23:50:09 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.14 2003/11/11 01:22:32 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -922,11 +922,17 @@ static io_connect_t root_port;
         xe.u.clientMessage.u.l.longs0 = [[NSApp currentEvent] modifierFlags];
         [self sendXEvent:&xe];
 
-        // put the pasteboard into the X cut buffer
-        [self readPasteboard];
+        // If there is no AppleWM-aware cut and paste manager, do what we can.
+        if ((AppleWMSelectedEvents() & AppleWMPasteboardNotifyMask) == 0) {
+            // put the pasteboard into the X cut buffer
+            [self readPasteboard];
+        }
     } else {
-        // put the X cut buffer on the pasteboard
-        [self writePasteboard];
+        // If there is no AppleWM-aware cut and paste manager, do what we can.
+        if ((AppleWMSelectedEvents() & AppleWMPasteboardNotifyMask) == 0) {
+            // put the X cut buffer on the pasteboard
+            [self writePasteboard];
+        }
 
         xe.u.u.type = kXDarwinDeactivate;
         [self sendXEvent:&xe];
