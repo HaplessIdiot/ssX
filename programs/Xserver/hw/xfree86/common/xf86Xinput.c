@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.46 1999/05/16 06:55:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.47 1999/05/30 02:28:10 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -83,7 +83,7 @@ static int      debug_level = 0;
 
 static LocalDevicePtr	localDevices = NULL;
 
-static LocalDevicePtr	switch_device;
+static LocalDevicePtr	switch_device = NULL;
 extern DeviceAssocRec	switch_assoc;
 
 /***********************************************************************
@@ -492,7 +492,7 @@ ChangePointerDevice (
    *************************************************************************/
 
   /* Return failure if we try with the Switch device */
-  if (new_dev == switch_device->dev) {
+  if (switch_device && new_dev == switch_device->dev) {
     return !Success;
   }
   

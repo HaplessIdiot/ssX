@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.224 1999/05/22 08:39:55 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.225 1999/05/23 14:37:54 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -478,6 +478,11 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /*
  * Build XF86Setup -- needs Tk and Tcl
  */
+/* There are problems building XF86Setup, so turn it off for now */
+#ifndef BuildXF86Setup
+#define BuildXF86Setup NO
+#endif
+
 #ifndef BuildXF86Setup
 #if HasTk && HasTcl && BuildXF86VidModeLibrary && BuildXF86MiscLibrary && BuildXKBlib
 #define BuildXF86Setup			YES

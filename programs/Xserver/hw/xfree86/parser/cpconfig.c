@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/cpconfig.c,v 1.1.2.3 1998/05/30 15:19:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/cpconfig.c,v 1.2 1998/07/25 16:57:15 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -57,12 +57,24 @@ xrealloc (void *p, int size)
 #endif
 
 
-void
-main (void)
+int
+main (int argc, char *argv[])
 {
 	char filename[128];
 	XF86ConfigPtr conf;
 
+	if (argc > 1)
+	{
+		if (strlen(argv[1]) >= sizeof(xf86ConfigFile))
+		{
+			fprintf(stderr, "Filename `%s' is too long\n", argv[1]);
+			exit(1);
+		}
+		else
+		{
+			strcpy(xf86ConfigFile, argv[1]);
+		}
+	}
 	if (xf86OpenConfigFile (filename))
 	{
 		fprintf (stderr, "Opened %s for the config file\n", filename);
@@ -83,29 +95,9 @@ main (void)
 	}
 	xf86CloseConfigFile ();
 
-#if 0
-	strcpy (xf86ConfigFile, "XF86Config.2");
-	if (xf86OpenConfigFile (filename))
-	{
-		fprintf (stderr, "Opened %s for the config file\n", filename);
+	if (argc > 2) {
+		fprintf(stderr, "Writing config file to `%s'\n", argv[2]);
+		xf86WriteConfigFile (argv[2], conf);
 	}
-	else
-	{
-		fprintf (stderr, "Unable to open config file\n");
-		exit (1);
-	}
-
-	if ((conf = xf86ReadConfigFile ()) == NULL)
-	{
-		fprintf (stderr, "Problem when parsing config file\n");
-	}
-	else
-	{
-		fprintf (stderr, "Config file parsed OK\n");
-	}
-	xf86CloseConfigFile ();
-#endif
-/**
-	xf86WriteConfigFile ("XF86Config.new", conf);
-**/
+	exit(0);
 }

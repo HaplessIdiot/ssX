@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.10 1999/04/29 05:13:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.11 1999/05/23 14:38:05 dawes Exp $ */
 /*
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -125,6 +125,8 @@ else\
 "The ZAxisMapping keyword requires 2 positive numbers or X or Y to follow it."
 #define AUTOREPEAT_MSG \
 "The AutoRepeat keyword requires 2 numbers (delay and rate) to follow it."
+#define XLEDS_MSG \
+"The XLeds keyword requries one or more numbers to follow it."
 #define DACSPEED_MSG \
 "The DacSpeed keyword must be followed by a list of up to %d numbers."
 #define DISPLAYSIZE_MSG \

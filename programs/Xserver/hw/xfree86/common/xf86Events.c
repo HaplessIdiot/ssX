@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.69 1999/05/22 08:40:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.70 1999/05/23 04:26:04 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1288,6 +1288,9 @@ static void
 xf86VTSwitch()
 {
   int i;
+#ifdef NEW_INPUT
+  InputInfoPtr pInfo;
+#endif
 
 #ifdef DEBUG
   ErrorF("xf86VTSwitch()\n");
@@ -1318,8 +1321,16 @@ xf86VTSwitch()
 
 #ifndef __EMX__
     DisableDevice((DeviceIntPtr)xf86Info.pKeyboard);
+#ifndef NEW_INPUT
     DisableDevice((DeviceIntPtr)xf86Info.pMouse);
-#endif
+#else
+    pInfo = xf86InputDevs;
+    while (pInfo) {
+      DisableDevice(pInfo->dev);
+      pInfo = pInfo->next;
+    }
+#endif /* NEW_INPUT */
+#endif /* !__EMX__ */
 
     if (!xf86VTSwitchAway()) {
       /*
@@ -1341,8 +1352,16 @@ xf86VTSwitch()
 
 #ifndef __EMX__
       EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
+#ifndef NEW_INPUT
       EnableDevice((DeviceIntPtr)xf86Info.pMouse);
-#endif
+#else
+      pInfo = xf86InputDevs;
+      while (pInfo) {
+	EnableDevice(pInfo->dev);
+	pInfo = pInfo->next;
+      }
+#endif /* NEW_INPUT */
+#endif /* !__EMX__ */
 
     } else {
       for (i = 0; i < xf86NumScreens; i++)
@@ -1371,8 +1390,16 @@ xf86VTSwitch()
 
 #ifndef __EMX__
     EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
+#ifndef NEW_INPUT
     EnableDevice((DeviceIntPtr)xf86Info.pMouse);
-#endif
+#else
+    pInfo = xf86InputDevs;
+    while (pInfo) {
+      EnableDevice(pInfo->dev);
+      pInfo = pInfo->next;
+    }
+#endif /* NEW_INPUT */
+#endif /* !__EMX__ */
 
   }
 }

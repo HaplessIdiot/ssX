@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.180 1999/05/23 04:26:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.181 1999/05/23 14:38:01 dawes Exp $ */
 
 
 /*
@@ -640,6 +640,7 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     return TRUE;
 }
 
+#ifndef NEW_INPUT
 static Bool
 configKeyboard(XF86ConfKeyboardPtr keybconf)
 {
@@ -804,7 +805,6 @@ configKeyboard(XF86ConfKeyboardPtr keybconf)
   return TRUE;
 }
 
-#ifndef NEW_INPUT
 static SymTabRec MouseTab[] = {
   { PROT_MS,			"microsoft" },
   { PROT_MSC,			"mousesystems" },
@@ -1110,6 +1110,187 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
 }
 #endif
 
+/*
+ * XXX This function is temporary, and will be removed when the keyboard
+ * driver is converted into a regular input driver.
+ */
+static Bool
+configInputKbd(IDevPtr inputp)
+{
+  char *s;
+#ifdef XKB
+  MessageType from = X_DEFAULT;
+#endif
+
+  /* Initialize defaults */
+  xf86Info.xleds         = 0L;
+  xf86Info.kbdDelay      = 500;
+  xf86Info.kbdRate       = 30;
+  xf86Info.kbdProc       = NULL;
+  xf86Info.vtinit        = NULL;
+  xf86Info.vtSysreq      = VT_SYSREQ_DEFAULT;
+#if defined(SVR4) && defined(i386) && !defined(PC98)
+  xf86Info.panix106      = FALSE;
+#endif
+#ifdef XKB
+  /* XXX Should handle PC98-specifics at runtime */
+#ifndef PC98
+  xf86Info.xkbrules      = "xfree86";
+  xf86Info.xkbmodel      = "pc101";
+  xf86Info.xkblayout     = "us";
+  xf86Info.xkbvariant    = NULL;
+  xf86Info.xkboptions    = NULL;
+#else
+  xf86Info.xkbrules      = "xfree98";
+  xf86Info.xkbmodel      = "pc98";
+  xf86Info.xkblayout     = "nec/jp";
+  xf86Info.xkbvariant    = NULL;
+  xf86Info.xkboptions    = NULL;
+#endif
+  xf86Info.xkbcomponents_specified = FALSE;
+  /* Should discourage the use of these. */
+  xf86Info.xkbkeymap     = NULL;
+  xf86Info.xkbtypes      = NULL;
+  xf86Info.xkbcompat     = NULL;
+  xf86Info.xkbkeycodes   = NULL;
+  xf86Info.xkbsymbols    = NULL;
+  xf86Info.xkbgeometry   = NULL;
+#endif
+
+  s = xf86SetStrOption(inputp->commonOptions, "Protocol", "standard");
+  if (xf86NameCmp(s, "standard") == 0) {
+     xf86Info.kbdProc    = xf86KbdProc;
+#ifdef AMOEBA
+     xf86Info.kbdEvents  = NULL;
+#else
+     xf86Info.kbdEvents  = xf86KbdEvents;
+#endif
+  } else if (xf86NameCmp(s, "xqueue") == 0) {
+#ifdef XQUEUE
+    xf86Info.kbdProc = xf86XqueKbdProc;
+    xf86Info.kbdEvents = xf86XqueEvents;
+    xf86Msg(X_CONFIG, "Xqueue selected for keyboard input\n");
+#endif
+  } else {
+    xf86ConfigError("\"%s\" is not a valid keyboard protocol name", s);
+    return FALSE;
+  }
+
+  s = xf86SetStrOption(inputp->commonOptions, "AutoRepeat", NULL);
+  if (s) {
+    if (sscanf(s, "%d %d", &xf86Info.kbdDelay, &xf86Info.kbdRate) != 2) {
+      xf86ConfigError("\"%s\" is not a valid AutoRepeat value", s);
+      return FALSE;
+    }
+  }
+
+  s = xf86SetStrOption(inputp->commonOptions, "XLeds", NULL);
+  if (s) {
+    char *l, *end;
+    unsigned int i;
+    l = strtok(s, " \t\n");
+    while (l) {
+      i = strtoul(l, &end, 0);
+      if (*end == '\0')
+	xf86Info.xleds |= 1L << (i - 1);
+      else {
+	xf86ConfigError("\"%s\" is not a valid XLeds value", l);
+	return FALSE;
+      }
+      l = strtok(NULL, " \t\n");
+    }
+  }
+
+#ifdef XKB
+  from = X_DEFAULT;
+  if (noXkbExtension)
+    from = X_CMDLINE;
+  else if (xf86FindOption(inputp->commonOptions, "XkbDisable")) {
+    noXkbExtension =
+	xf86SetBoolOption(inputp->commonOptions, "XkbDisable", FALSE);
+    from = X_CONFIG;
+  }
+  if (noXkbExtension)
+    xf86Msg(from, "XKB: disabled\n");
+
+  if (!noXkbExtension && !XkbInitialMap) {
+    if ((s = xf86SetStrOption(inputp->commonOptions, "XkbKeymap", NULL))) {
+      xf86Info.xkbkeymap = s;
+      xf86Msg(X_CONFIG, "XKB: keymap: \"%s\" "
+	        "(overrides other XKB settings)\n", xf86Info.xkbkeymap);
+    } else {
+      if ((s = xf86SetStrOption(inputp->commonOptions, "XkbCompat", NULL))) {
+        xf86Info.xkbcompat = s;
+        xf86Info.xkbcomponents_specified = TRUE;
+        xf86Msg(X_CONFIG, "XKB: compat: \"%s\"\n", xf86Info.xkbcompat);
+      }
+
+      if ((s = xf86SetStrOption(inputp->commonOptions, "XkbTypes", NULL))) {
+        xf86Info.xkbtypes = s;
+        xf86Info.xkbcomponents_specified = TRUE;
+        xf86Msg(X_CONFIG, "XKB: types: \"%s\"\n", xf86Info.xkbtypes);
+      }
+
+      if ((s = xf86SetStrOption(inputp->commonOptions, "XkbKeycodes", NULL))) {
+        xf86Info.xkbkeycodes = s;
+        xf86Info.xkbcomponents_specified = TRUE;
+        xf86Msg(X_CONFIG, "XKB: keycodes: \"%s\"\n", xf86Info.xkbkeycodes);
+      }
+
+      if ((s = xf86SetStrOption(inputp->commonOptions, "XkbGeometry", NULL))) {
+        xf86Info.xkbgeometry = s;
+        xf86Info.xkbcomponents_specified = TRUE;
+        xf86Msg(X_CONFIG, "XKB: geometry: \"%s\"\n", xf86Info.xkbgeometry);
+      }
+
+      if ((s = xf86SetStrOption(inputp->commonOptions, "XkbSymbols", NULL))) {
+        xf86Info.xkbsymbols = s;
+        xf86Info.xkbcomponents_specified = TRUE;
+        xf86Msg(X_CONFIG, "XKB: symbols: \"%s\"\n", xf86Info.xkbsymbols);
+      }
+
+      if ((s = xf86SetStrOption(inputp->commonOptions, "XkbRules", NULL))) {
+        xf86Info.xkbrules = s;
+        xf86Info.xkbcomponents_specified = TRUE;
+        xf86Msg(X_CONFIG, "XKB: rules: \"%s\"\n", xf86Info.xkbrules);
+      }
+
+      if ((s = xf86SetStrOption(inputp->commonOptions, "XkbModel", NULL))) {
+        xf86Info.xkbmodel = s;
+        xf86Info.xkbcomponents_specified = TRUE;
+        xf86Msg(X_CONFIG, "XKB: model: \"%s\"\n", xf86Info.xkbmodel);
+      }
+
+      if ((s = xf86SetStrOption(inputp->commonOptions, "XkbLayout", NULL))) {
+        xf86Info.xkblayout = s;
+        xf86Info.xkbcomponents_specified = TRUE;
+        xf86Msg(X_CONFIG, "XKB: layout: \"%s\"\n", xf86Info.xkblayout);
+      }
+
+      if ((s = xf86SetStrOption(inputp->commonOptions, "XkbVariant", NULL))) {
+        xf86Info.xkbvariant = s;
+        xf86Info.xkbcomponents_specified = TRUE;
+        xf86Msg(X_CONFIG, "XKB: variant: \"%s\"\n", xf86Info.xkbvariant);
+      }
+
+      if ((s = xf86SetStrOption(inputp->commonOptions, "XkbOptions", NULL))) {
+        xf86Info.xkboptions = s;
+        xf86Info.xkbcomponents_specified = TRUE;
+        xf86Msg(X_CONFIG, "XKB: options: \"%s\"\n", xf86Info.xkboptions);
+      }
+    }
+  }
+#endif
+#if defined(SVR4) && defined(i386) && !defined(PC98)
+  if ((xf86Info.panix106 =
+	xf86SetBoolOption(inputp->commonOptions, "Panix106", FALSE))) {
+    xf86Msg(X_CONFIG, "PANIX106: enabled\n");
+  }
+#endif
+
+  return TRUE;
+}
+
 static Bool
 checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 {
@@ -1195,7 +1376,6 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 	    xf86Msg(X_ERROR, "No core pointer device specified\n");
 	return FALSE;
     }
-#ifdef NOT_YET
     if (foundKeyboard) {
 	count++;
 	indp = xnfrealloc(servlayoutp->inputs, (count + 1) * sizeof(IDevRec));
@@ -1210,7 +1390,6 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 	    xf86Msg(X_ERROR, "No core keyboard device specified\n");
 	return FALSE;
     }
-#endif
     return TRUE;
 }
 
@@ -1774,6 +1953,10 @@ configInput(IDevPtr inputp, XF86ConfInputPtr conf_input, MessageType from)
     inputp->commonOptions = conf_input->inp_option_lst;
     inputp->extraOptions = NULL;
 
+    /* XXX This is required until the keyboard driver is converted */
+    if (!xf86NameCmp(inputp->driver, "keyboard"))
+	return configInputKbd(inputp);
+
     return TRUE;
 }
 	
@@ -1908,9 +2091,9 @@ xf86HandleConfigFile(void)
 
     if (!configFiles(xf86configptr->conf_files) ||
         !configServerFlags(xf86configptr->conf_flags,
-			   xf86ConfigLayout.options) ||
-        !configKeyboard(xf86configptr->conf_keyboard)
+			   xf86ConfigLayout.options)
 #ifndef NEW_INPUT
+        || !configKeyboard(xf86configptr->conf_keyboard)
         || !configPointer(xf86Info.mouseDev,xf86configptr->conf_pointer)
 #endif
        ) {

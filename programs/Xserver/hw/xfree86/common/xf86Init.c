@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.120 1999/05/22 08:40:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.121 1999/05/23 14:38:03 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -731,60 +731,68 @@ InitInput(argc, argv)
     xtest_command_key = KEY_Begin + MIN_KEYCODE;
 #endif /* XTESTEXT1 */
 
-    /* Call the PreInit function for each input device instance. */
-    for (pDev = xf86ConfigLayout.inputs; pDev && pDev->identifier; pDev++) {
-	if ((pDrv = MatchInput(pDev)) == NULL) {
-	    xf86Msg(X_ERROR, "No Input driver matching `%s'\n", pDev->driver);
-	    /* XXX For now, just continue. */
-	    continue;
+    if (serverGeneration == 1) {
+	/* Call the PreInit function for each input device instance. */
+	for (pDev = xf86ConfigLayout.inputs; pDev && pDev->identifier; pDev++) {
+	    /* XXX The keyboard driver is a special case for now. */
+	    if (!xf86NameCmp(pDev->driver, "keyboard")) {
+		xf86Msg(X_INFO, "Keyboard \"%s\" handled with legacy driver\n",
+			pDev->identifier);
+		continue;
+	    }
+	    if ((pDrv = MatchInput(pDev)) == NULL) {
+		xf86Msg(X_ERROR, "No Input driver matching `%s'\n", pDev->driver);
+		/* XXX For now, just continue. */
+		continue;
+	    }
+	    if (!pDrv->PreInit) {
+		xf86MsgVerb(X_WARNING, 0,
+		    "Input driver `%s' has no PreInit function (ignoring)\n",
+		    pDrv->driverName);
+		continue;
+	    }
+	    pInfo = pDrv->PreInit(pDrv, pDev, 0);
+	    if (!pInfo) {
+		xf86Msg(X_ERROR, "PreInit returned NULL for \"%s\"\n",
+			pDev->identifier);
+		continue;
+	    } else if (!(pInfo->flags & XI86_CONFIGURED)) {
+		xf86Msg(X_ERROR, "PreInit failed for input device \"%s\"\n",
+			pDev->identifier);
+		xf86DeleteInput(pInfo, 0);
+		continue;
+	    }
+	    if (pInfo->flags & XI86_CORE_KEYBOARD) {
+		if (coreKeyboard) {
+		    xf86Msg(X_ERROR,
+		      "Attempt to register more than one core keyboard (%s)\n",
+		      pInfo->name);
+		    pInfo->flags &= ~XI86_CORE_KEYBOARD;
+		} else
+		    coreKeyboard = pInfo;
+	    }
+	    if (pInfo->flags & XI86_CORE_POINTER) {
+		if (corePointer) {
+		    xf86Msg(X_ERROR,
+			"Attempt to register more than one core pointer (%s)\n",
+			pInfo->name);
+		    pInfo->flags &= ~XI86_CORE_POINTER;
+		} else
+		    corePointer = pInfo;
+	    }
 	}
-	if (!pDrv->PreInit) {
-	    xf86MsgVerb(X_WARNING, 0,
-		"Input driver `%s' has no PreInit function (ignoring)\n",
-		pDrv->driverName);
-	    continue;
-	}
-	pInfo = pDrv->PreInit(pDrv, pDev, 0);
-	if (!pInfo) {
-	    xf86Msg(X_ERROR, "PreInit returned NULL for \"%s\"\n",
-		    pDev->identifier);
-	    continue;
-	} else if (!(pInfo->flags & XI86_CONFIGURED)) {
-	    xf86Msg(X_ERROR, "PreInit failed for input device \"%s\"\n",
-		    pDev->identifier);
-	    xf86DeleteInput(pInfo, 0);
-	    continue;
-	}
-	if (pInfo->flags & XI86_CORE_KEYBOARD) {
-	    if (coreKeyboard) {
-		xf86Msg(X_ERROR,
-		    "Attempt to register more than one core keyboard (%s)\n",
-		    pInfo->name);
-		pInfo->flags &= ~XI86_CORE_KEYBOARD;
-	    } else
-		coreKeyboard = pInfo;
-	}
-	if (pInfo->flags & XI86_CORE_POINTER) {
-	    if (corePointer) {
-		xf86Msg(X_ERROR,
-		    "Attempt to register more than one core pointer (%s)\n",
-		    pInfo->name);
-		pInfo->flags &= ~XI86_CORE_POINTER;
-	    } else
-		corePointer = pInfo;
-	}
-    }
 #ifdef NEW_INPUT
-    if (!corePointer) {
-	xf86Msg(X_WARNING, "No core pointer registered\n");
-	/* XXX register a dummy core pointer */
-    }
+	if (!corePointer) {
+	    xf86Msg(X_WARNING, "No core pointer registered\n");
+	    /* XXX register a dummy core pointer */
+	}
 #ifdef NEW_KBD
-    if (!coreKeyboard) {
-	xf86Msg(X_WARNING, "No core keyboard registered\n");
-	/* XXX register a dummy core keyboard */
-    }
+	if (!coreKeyboard) {
+	    xf86Msg(X_WARNING, "No core keyboard registered\n");
+	    /* XXX register a dummy core keyboard */
+	}
 #endif
+    }
 
     /* Initialise all input devices. */
     pInfo = xf86InputDevs;
