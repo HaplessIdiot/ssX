@@ -30,6 +30,26 @@ series.
    o The server can now load/initialise extension modules that it doesn't
      have built-in knowledge of.
 
+   o More PS/2 mice (Microsoft IntelliMouse Explorer, Genius NetScroll Mouse
+     Optical, IBM ScrollPoint) and serial PnP mice (A4 Tech 4D/4D+, MouseSys-
+     tems SmartScroll, Logitech Cordless MouseMan Wheel, 8D Scroll mouse) are
+     recognized and supported.  USB mice support is also available in FreeBSD
+     and OpenBSD.
+
+   o A DPS extension for XFree86 is currently under development.  The DPS
+     client library is now part of the XFree86 source tree; the extension
+     code itself, however, cannot be integrated for licensing reasons and is
+     distributed separately.  For more information, please consult the DPS
+     site at SourceForge <URL:http://dps.sourceforge.net>.
+
+   o The "apm" driver (Alliance Pro Motion) has been updated.  Support for
+     the AT24 has been added in this release, and acceleration has been
+     improved.  Further details can be found in the APM section (section
+     4.12.1, page 1) below.
+
+   o Preliminary support has been added to the X server for the extended keys
+     on some "Internet" keyboards.
+
 2.  Summary of new features in 3.9.17 compared with 3.9.16.
 
    o The 3dfx driver is now supported by the DRI.
@@ -577,10 +597,12 @@ XFree86 3.9.18 includes the following drivers:
                     |ati         | ATI                  |
                     |chips       | Chips & Technologies |
                     |cirrus      | Cirrus Logic         |
+                    |cyrix (*)   | Cyrix MediaGX        |
                     |fbdev       | Linux fbdev          |
                     |glide       | Glide2x (3Dfx)       |
                     |glint       | 3Dlabs               |
                     |i740        | Intel i740           |
+                    |i810        | Intel i810           |
                     |mga         | Matrox               |
                     |neomagic    | NeoMagic             |
                     |nv          | NVIDIA               |
@@ -595,13 +617,36 @@ XFree86 3.9.18 includes the following drivers:
                     |vga         | Generic VGA          |
                     +------------+----------------------+
 
+Drivers marked with (*) are present in a preliminary form in this release,
+but are not complete and/or stable yet.
+
 4.12.1  APM
 
-The driver apm is for Alliance AT3D/AT25 based boards.  The driver is still
-in development. I hope to be able to correct the errors I find.  The Rush
-extension should be ready for the next snapshot; I can do better memory man-
-agement, but I'll need time. If someone can help me, feel free to drop an
-email to <grenie@lami.univ-evry.fr>
+It's the driver for Alliance AT3D/AT25 and AT24 chips. There is a rather com-
+plete support for the functions with acceleration at 8,15,16,24 and 32 bits
+(limited by the chip at 24bpp). There is preliminary, still buggy, support
+for the AP6422 chip, which is still supported in 3.3.x servers. The Xv driver
+is almost ok. The Rush extension for glide2x works, with some additions,
+including overlay of the result. DGA and DGA2 have been tested ok.
+
+Main useful options:
+
+      SetMclk
+            to set the memory clock (default should be OK).
+
+      SWCursor
+            to force the software cursor.
+
+      HWCursor
+            to force the hardware cursor.
+
+      NoAccel
+            to disable (XAA) acceleration.
+
+      ShadowFB
+            to enable shadow framebuffer operation (the rendering is done in
+            system memory and then copied to the framebuffer, useful when
+            acceleration is disabled).
 
 4.12.2  Chips & Technologies
 
@@ -1049,7 +1094,7 @@ been implemented is a modified search path for the X server's XF86Config
 file.  The details of this can be found above in the Configuration File (sec-
 tion 4.2, page 1) section.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.24 2000/02/12 05:24:55 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.28 2000/02/13 03:45:22 dawes Exp $
 
 
 $XFree86$

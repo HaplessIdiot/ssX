@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                               9 February 2000
+                              12 February 2000
 
                                   Abstract
 
@@ -201,12 +201,12 @@ architectures known to work on (e.g., Alpha, PPC), etc.
             XF86_SVGA server with the cyrix driver.
 
       3.9.18:
-            No native support for the Cyrix MediaGX, because the old driver
-            has not been ported.  NEED TO CHECK IF THESE CARDS WILL WORK WITH
+            A preliminary port of the driver is available, but it isn't ready
+            for widespread use.  NEED TO CHECK IF THESE CARDS WILL WORK WITH
             fbdev.
 
       Summary:
-            No Cyrix chips are supported in 3.9.18.
+            No Cyrix chips are well-supported in 3.9.18.
 
 12.  Epson
 
@@ -480,13 +480,13 @@ architectures known to work on (e.g., Alpha, PPC), etc.
             by the XF86_SVGA server with the sis driver.
 
       3.9.18:
-            Support (accelerated) for the SiS 86C205, 86C215, 86C225, 5597,
-            5598, 530 and 6326 is provided by the "sis" driver.
+            Support (accelerated) for the SiS 5597, 5598, 530, 6326, 630,
+            300, and 540 is provided by the "sis" driver.
 
       Summary:
             Support for the older (CHECK: are they all older than the sup-
-            ported chips?) chips: 86C201, 86C202, 620, 300, 630 and 540 is
-            only available in 3.3.6.
+            ported chips?) chips: 86C201, 86C202 and 620, is only available
+            in 3.3.6.
 
 29.  Silicon Motion, Inc
 
@@ -580,7 +580,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Weitek chips are supported in 3.9.18.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.8 2000/02/11 22:35:54 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.11 2000/02/13 03:45:22 dawes Exp $
 
 
 $XFree86$
