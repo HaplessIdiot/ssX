@@ -19,17 +19,19 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/signals.c,v 3.3 2001/07/25 15:05:30 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/signals.c,v 3.4 2001/08/01 00:45:07 tsi Exp $ */
 
 #include <stdlib.h>
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
+#include <X11/Intrinsic.h>
 
 #include <X11/SM/SMlib.h>
 
 #include "save.h"
 
+#include <errno.h>
 #ifdef USG
 #ifndef __TYPES__
 #include <sys/types.h>			/* forgot to protect it... */
@@ -65,6 +67,8 @@ in this Software without prior written authorization from The Open Group.
 #undef _POSIX_SOURCE
 #endif
 #endif
+#include "list.h"
+#include "save.h"
 
 #if defined(X_NOT_POSIX) && defined(SIGNALRETURNSINT)
 #define SIGVAL int
@@ -92,6 +96,7 @@ in this Software without prior written authorization from The Open Group.
 
 int checkpoint_from_signal = 0;
 
+extern XtSignalId sig_term_id, sig_usr1_id;
 extern Bool wantShutdown;
 
 
@@ -113,10 +118,10 @@ SIGVAL (*Signal (sig, handler))()
 
 
 void
-sig_child_handler ()
+sig_child_handler (XtPointer closure, XtSignalId id)
 
 {
-    int pid;
+    int pid, olderrno = errno;
 
 #if !defined(USE_POSIX_WAIT) && (defined(USE_SYSV_SIGNALS) && \
     (defined(CRAY) || !defined(SIGTSTP)))
@@ -150,11 +155,18 @@ sig_child_handler ()
 #endif /* USE_POSIX_WAIT else */
     }
     while (pid > 0);
+    errno = olderrno;
 }
 
 
+void 
+sig_term_handler(int sig)
+{
+    XtNoticeSignal(sig_term_id);
+}
+
 void
-sig_term_handler ()
+xt_sig_term_handler (XtPointer closure, XtSignalId *id)
 
 {
     wantShutdown = 1;
@@ -162,9 +174,13 @@ sig_term_handler ()
     DoSave (SmSaveLocal, SmInteractStyleNone, 1 /* fast */);
 }
 
+void sig_usr1_handler(int sig)
+{
+    XtNoticeSignal(sig_usr1_id);
+}
 
 void
-sig_usr1_handler ()
+xt_sig_usr1_handler (XtPointer closure, XtSignalId *id)
 
 {
     wantShutdown = 0;
@@ -175,7 +191,7 @@ sig_usr1_handler ()
 
 
 void
-register_signals ()
+register_signals (XtAppContext appContext)
 
 {
     /*
@@ -197,6 +213,7 @@ register_signals ()
      */
 
     Signal (SIGTERM, sig_term_handler);
+    sig_term_id = XtAppAddSignal(appContext, xt_sig_term_handler, NULL);
 
 
     /*
@@ -204,6 +221,7 @@ register_signals ()
      */
 
     Signal (SIGUSR1, sig_usr1_handler);
+    sig_usr1_id = XtAppAddSignal(appContext, xt_sig_usr1_handler, NULL);
 }
 
 

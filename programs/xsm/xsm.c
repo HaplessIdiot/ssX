@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/xsm.c,v 1.6 1999/08/01 07:57:34 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/xsm.c,v 1.7 2001/01/17 23:46:31 dawes Exp $ */
 
 /*
  * X Session Manager.
@@ -96,6 +96,7 @@ extern Widget checkPointButton;
 extern Widget shutdownButton;
 extern Widget clientListWidget;
 extern Widget savePopup;
+extern XtSignalId sig_term_id, sig_usr1_id;
 
 extern int checkpoint_from_signal;
 
@@ -155,7 +156,7 @@ main(int argc, char *argv[])
     wmDeleteAtom = XInternAtom (
 	XtDisplay (topLevel), "WM_DELETE_WINDOW", False);
 
-    register_signals ();
+    register_signals (appContext);
 
 
     /*
