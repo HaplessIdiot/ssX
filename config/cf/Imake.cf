@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imake.cf /main/22 1995/12/05 16:39:53 mor $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.26 1996/10/03 08:28:02 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.27 1996/10/06 13:09:30 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -62,6 +62,28 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.26 1996/10/03 08:28:02 dawes Exp $
 #ifdef __OpenBSD__
 # undef __OpenBSD__
 # define OpenBSDArchitecture
+# define MacroIncludeFile <NetBSD.cf>
+# define MacroFile NetBSD.cf
+# ifdef __i386__
+#  define i386BsdArchitecture
+#  define i386Architecture
+#  undef i386
+# endif
+# if defined(__sparc__) || defined(sparc)
+#  define SparcArchitecture
+#  undef sparc
+# endif
+# ifdef mips
+#   define MipsArchitecture
+#   undef mips
+# endif
+# ifdef __alpha
+#   define AlphaArchitecture
+#   undef __alpha
+# endif
+# ifdef mc68000
+#   define Mc68020Architecture
+# endif
 #endif /* OpenBSD */
 
 #ifdef __NetBSD__

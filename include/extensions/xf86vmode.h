@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.16 1996/02/04 08:54:03 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.17 1996/10/03 08:29:01 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -36,6 +36,7 @@ from Kaleb S. KEITHLEY
 #define _XF86VIDMODE_H_
 
 #include <X11/Xfuncproto.h>
+#include <X11/Xmd.h>
 
 #define X_XF86VidModeQueryVersion	0
 #define X_XF86VidModeGetModeLine	1

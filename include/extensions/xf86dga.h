@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86dga.h,v 3.1 1996/01/17 12:44:37 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga.h,v 3.2 1996/08/10 13:03:33 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -19,6 +19,8 @@ Copyright (c) 1995  XFree86 Inc
 #define X_XF86DGAGetVidPage		5
 #define X_XF86DGASetVidPage		6
 #define X_XF86DGAInstallColormap	7
+#define X_XF86DGAQueryDirectVideo	8
+#define X_XF86DGAViewPortChanged	9
 
 #define XF86DGADirectPresent		0x01
 #define XF86DGADirectGraphics		0x02
@@ -139,6 +141,22 @@ int XF86DGAForkApp(
     int screen
 #endif
 );
+
+Status XF86DGAQueryDirectVideo(
+#if NeedFunctionPrototypes
+    Display *		/* dpy */,
+    int			/* screen */,
+    int *		/* flags */
+#endif
+);
+
+Bool XF86DGAViewPortChanged(
+#if NeedFunctionPrototypes
+    Display *		/* dpy */,
+    int			/* screen */
+#endif
+);
+
 
 _XFUNCPROTOEND
 

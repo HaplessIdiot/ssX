@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.4 1996/08/10 13:03:42 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.5 1996/08/21 08:38:04 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -213,7 +213,9 @@ Bool XF86DGASetViewPort(dpy, screen, x, y)
     req->y = y;
     UnlockDisplay(dpy);
     SyncHandle();
+#if 0
     XSync(dpy,False);
+#endif
     return True;
 }
 
@@ -291,6 +293,59 @@ Colormap cmap;
     XSync(dpy,False);
     return True;
 }
+
+Bool XF86DGAQueryDirectVideo(dpy, screen, flags)
+    Display *dpy;
+    int screen;
+    int *flags;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86DGAQueryDirectVideoReply rep;
+    xXF86DGAQueryDirectVideoReq *req;
+
+    XF86DGACheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86DGAQueryDirectVideo, req);
+    req->reqType = info->codes->major_opcode;
+    req->dgaReqType = X_XF86DGAQueryDirectVideo;
+    req->screen = screen;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+    *flags = rep.flags;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+Bool XF86DGAViewPortChanged(dpy, screen)
+    Display *dpy;
+    int screen;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86DGAViewPortChangedReply rep;
+    xXF86DGAViewPortChangedReq *req;
+
+    XF86DGACheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86DGAViewPortChanged, req);
+    req->reqType = info->codes->major_opcode;
+    req->dgaReqType = X_XF86DGAViewPortChanged;
+    req->screen = screen;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return rep.result;
+}
+
 
 
 /* Helper functions */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.14 1996/02/04 08:54:04 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.15 1996/10/03 08:29:02 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -218,6 +218,20 @@ typedef struct _XF86VidModeLockModeSwitch {
     CARD16	lock B16;
 } xXF86VidModeLockModeSwitchReq;
 #define sz_xXF86VidModeLockModeSwitchReq	8
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    BOOL	pad1;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	status B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
+} xXF86VidModeValidateModeLineReply;
+#define sz_xXF86VidModeValidateModeLineReply	32
 
 typedef struct {
     BYTE	type;			/* X_Reply */

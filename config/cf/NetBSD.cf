@@ -4,7 +4,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/14 1996/01/28 07:42:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.41 1996/10/06 13:09:36 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.42 1996/10/08 12:06:29 dawes Exp $
 
 #ifndef OpenBSDArchitecture
 
@@ -48,7 +48,10 @@ XCOMM operating system:  OSName
 /*
  * C library features
  */
-
+#if defined(OpenBSDArchitecture) || \
+   defined(NetBSDArchitecture) && (OsMajorVersion == 1 && OsMinorVersion >= 2)
+#  define HasPoll			YES
+#endif
 #define HasNdbm         	YES
 #define HasPutenv       	YES
 #define HasSnprintf		YES

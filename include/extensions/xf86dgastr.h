@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.0 1995/12/09 11:03:16 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.1 1996/08/10 13:03:34 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -13,8 +13,8 @@ Copyright (c) 1995  XFree86 Inc.
 
 #define XF86DGANAME "XFree86-DGA"
 
-#define XF86DGA_MAJOR_VERSION	0	/* current version numbers */
-#define XF86DGA_MINOR_VERSION	1
+#define XF86DGA_MAJOR_VERSION	1	/* current version numbers */
+#define XF86DGA_MINOR_VERSION	0
 
 typedef struct _XF86DGAQueryVersion {
     CARD8	reqType;		/* always DGAReqCode */
@@ -144,6 +144,54 @@ typedef struct _XF86DGASetVidPage {
     CARD16      vpage B16;
 } xXF86DGASetVidPageReq;
 #define sz_xXF86DGASetVidPageReq	8
+
+
+typedef struct _XF86DGAQueryDirectVideo {
+    CARD8	reqType;		/* always DGAReqCode */
+    CARD8	dgaReqType;		/* always X_DGAQueryVersion */
+    CARD16	length B16;
+    CARD16	screen B16;
+    CARD16      pad B16;
+} xXF86DGAQueryDirectVideoReq;
+#define sz_xXF86DGAQueryDirectVideoReq	8
+
+typedef struct {
+    BYTE	type;
+    BOOL	pad1;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	flags B32;
+    CARD32	pad B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+} xXF86DGAQueryDirectVideoReply;
+#define sz_xXF86DGAQueryDirectVideoReply 32
+
+
+typedef struct _XF86DGAViewPortChanged {
+    CARD8	reqType;		/* always DGAReqCode */
+    CARD8	dgaReqType;		/* always X_DGAQueryVersion */
+    CARD16	length B16;
+    CARD16	screen B16;
+    CARD16      pad B16;
+} xXF86DGAViewPortChangedReq;
+#define sz_xXF86DGAViewPortChangedReq	8
+
+typedef struct {
+    BYTE	type;
+    BOOL	pad1;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	result B32;
+    CARD32	pad B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+} xXF86DGAViewPortChangedReply;
+#define sz_xXF86DGAViewPortChangedReply 32
 
 #endif /* _XF86DGASTR_H_ */
 
