@@ -1,0 +1,63 @@
+<!doctype linuxdoc system>
+<article>
+ 
+<!-- made up title -->
+<title> Information for ISC Users
+<author> The XFree86 Project, Inc.
+<date> 16 December 1994
+<toc>
+
+<sect> Information for ISC Users <p>
+<!-- very freely translated from the german -->
+Changes to the system configuration files:
+<tt>/usr/local/lib/gcc-lib/i386-isc4.0/2.6.0/include/sys/limits.h</tt>
+(even better: <tt>/usr/include/sys/limits.h</tt> -- will remain with a new gcc.)
+<verb>
+#ifndef OPEN_MAX
+#ifdef ISC
+#define OPEN_MAX        256
+#else
+#define OPEN_MAX        20
+#endif
+#endif
+</verb>
+<tt>OPEN_MAX</tt> had to be increased to avoid too early 
+Xlib Errors (max no. of clients reached).
+
+<tt>/usr/include/sys/ioctl.h</tt>
+surrounded by <tt>ifdef _IOCTL_H endif</tt>
+to prevent multiple includes.
+
+<tt>
+BOOTSTRAPCFLAGS="-DISC -DISC40 -DISC30 -DSYSV -Di386"
+</tt>
+
+<descrip>
+<tag>-DISC -DISC30</tag>
+	these two defines are necessary to build the release
+                   I don't know if the build will succeed for ISC Versions 
+                   prior than 3.x
+
+<tag>-DISC40</tag>
+	are only for getting the ISC Version and therefore
+                   set the HasSymLinks to Yes ('cause symbolic linking
+                   were only supported from Version 4.x using the S5L 
+                   Filesystem)
+
+<tag>-DSYSV -Di386</tag>
+	standard defines for SystemV Release3 on x86 Platform
+
+<tag>GCC-Versions</tag>
+	I'd tried gcc Version 2.5.8 ,2.6.0 and 2.6.2
+
+<tag>Optimization</tag>
+	using gcc-2.6.0 you got only 1 Problem using -O3
+                   in libX11.a for building the file lcUTF.o
+                   remake in this directory with CDEBUGFLAGS=-O2 do work.
+</descrip>
+
+<verb>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.isc,v 3.1 1994/12/02 05:46:55 dawes Exp $
+</verb>
+
+</article>

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.8 1994/11/30 21:55:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.9 1994/12/19 12:52:26 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -9,6 +9,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.8 1994/11/30 21
 SUBDIRS = sgml
 #endif
 
+#if !BuildLinuxDocText
 /* FreeBSD's README is handled separately because of name length limits */
 #ifdef BSD386Architecture
 OSREADME = README.Bsdi
@@ -46,23 +47,28 @@ OSREADME = README.SOLX86
 OSREADME = README.SVR4
 # endif
 #endif
+#endif /* !BuildLinuxDocText */
 
 all::
 
+#if !BuildLinuxDocText
 HWREADME =  README.ati README.trident README.tseng README.WstDig \ 
             README.cirrus README.Video7 README.P9000 README.agx \
             README.S3 README.W32
 
-MAINDOCS = COPYRIGHT README README.Config INSTALL ServersOnly
+MAINDOCS = COPYRIGHT README README.Config INSTALL
 
 OTHERDOCS = VideoModes.doc README.clkprog
+#endif
+
+MISCDOCS = ServersOnly
 
 DATABASE = modeDB.txt AccelCards Monitors Devices
 
-FILES = $(MAINDOCS) $(OSREADME) $(HWREADME) $(OTHERDOCS) $(DATABASE)
+FILES = $(MAINDOCS) $(OSREADME) $(HWREADME) $(OTHERDOCS) $(MISCDOCS) $(DATABASE)
 
 InstallMultipleDestFlags(install,$(FILES),$(LIBDIR)/doc,$(INSTDATFLAGS))
 
-#ifdef FreeBSDArchitecture
+#if defined(FreeBSDArchitecture) && !BuildLinuxDocText
 InstallNamedNonExec(READ.FreeBSD,README.FreeBSD,$(LIBDIR)/doc)
 #endif

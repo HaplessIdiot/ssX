@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/lnxdoc.tmpl,v 3.0 1994/12/19 12:52:07 dawes Exp $
 XCOMM
 
 #ifndef HasLinuxDoc
@@ -19,6 +19,10 @@ XCOMM
 
 #ifndef LinuxDocRoffCmd
 #define LinuxDocRoffCmd		$(LINUXDOCBIN)/qroff
+#endif
+
+#ifndef XFree86IdentFix
+#define XFree86IdentFix		sed '/\$$XFree86:/s/\$$/Generated from /'
 #endif
 
 #ifndef LinuxDocFixrefCmd
@@ -75,6 +79,7 @@ XCOMM
    LINUXDOCFIXREF = $(LINUXDOCENV) LinuxDocFixrefCmd
   LINUXDOCPREHTML = $(LINUXDOCENV) LinuxDocPreHtmlCmd
      LINUXDOCHTML = $(LINUXDOCENV) LinuxDocHtmlCmd
+  XFREE86IDENTFIX = XFree86IdentFix
             DVIPS = DvipsCmd
      DVIPSOPTIONS = DvipsOptions
 
@@ -84,6 +89,9 @@ XFREE86HTMLDOCDIR = $(XFREE86DOCDIR)/html
 
 
 XCOMM Some extra things to clean
-clean::
-	RemoveFiles(*.tex *.toc *.dvi *.aux *.log)
+
+#ifdef ExtraFilesToClean
+#undef ExtraFilesToClean
+#endif
+#define ExtraFilesToClean *.aux *.dvi *.log *.tex *.toc
 

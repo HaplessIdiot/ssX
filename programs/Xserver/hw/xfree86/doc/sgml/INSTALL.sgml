@@ -1,0 +1,344 @@
+<!doctype linuxdoc system>
+
+<article>
+<title>Installation Guide for XFree86 3.1
+<author>David Dawes
+<Date>4 Dec 1994
+
+<toc>
+
+    
+<sect>Building XFree86
+
+<p>
+<quote>
+<bf/NOTE:/  Refer to the appropriate OS-specific README file before attempting
+       to build XFree86.  These files contain additional information that 
+       you may need to successfully build under your OS.
+</quote>
+
+
+We highly recommend using GCC-2 to build XFree86.  Do not use version
+2.6.0 or 2.4.x versions prior to 2.4.5 due to bugs that cause either
+build or execution failures.  Most of the XFree86 3.1.1 binary kits are
+built with GCC 2.4.5 or 2.5.8.  Use of GCC's -m486 option will yield
+approximately 5% better performance on a 486, with no degradation (other
+than larger binaries) on a 386.  (gcc-2 is available from prep.ai.mit.edu
+and other sites archiving GNU source.)
+
+<enum>
+<item>You need the following:
+
+    <itemize>
+    <item> X Consortium X11R6 distribution with fixes 01-05 applied.
+
+    <item> <tt/XFree86-3.1.tar.gz/ (a tar of
+           <tt>xc/programs/Xserver/hw/xfree86/</tt>)
+
+    <item> <tt/XFree86-3.1.diff.gz/ (a patch for everything outside of
+                                 <tt>xc/programs/Xserver/hw/xfree86/</tt>)
+
+    <item> <tt/XFree86-contrib-3.1.diff.gz/ (an optional patch for
+              some of the X Consortium's ``contrib'' distribution)
+
+    <item> The full XFree86 source tree requires about 110MB.  An additional
+      110MB (more for OSs without shared libraries) is required to build
+      everything.  About 45-55MB (for OSs with shared libraries) is required
+      to install the full distribution.  It is possible to reduce the space
+      required by removing some parts which are not essential to the build
+      process:
+
+<tscreen><verb>
+ xc/test                      13MB
+ xc/doc/hardcopy               8MB
+ xc/doc/specs                 11MB
+</verb></tscreen>
+
+      If you don't need to build the fonts, <tt>xc/fonts</tt> can be
+      removed saving 30MB.  If you don't want to build PEX or XIE you
+      can remove:
+<tscreen><verb>
+ xc/programs/Xserver/XIE       3MB
+ xc/programs/Xserver/PEX5      2MB
+</verb></tscreen>
+
+      A few more MB can be freed by removing unnecessary directories under
+ <tt>xc/programs/Xserver/hw/</tt>.
+
+    <item> It is possible to configure a cut-down source tree for building only
+      the XFree86 servers.  Building from a cut-down source tree requires
+      about 40-45MB of disk space.  The files/directories required to do
+      this are listed in the ServersOnly file (which can be found in the
+      same directory as this file).
+
+    <item> The <tt/XFree86-3.1-contrib.diff.gz/ patch provides patches
+    to a small part of the X Consortium's contrib distribution.  It
+    mostly covers those clients which were in the core distribution of
+    X11R5, but were moved to the contrib distribution for X11R6.  To
+    use this patch, you need to have the following files/directories
+    from the final X Consortium contrib release (not the initial
+    contrib-0 version):
+
+<tscreen><verb>
+          contrib/Imakefile
+          contrib/programs/Imakefile
+          contrib/programs/ico/
+          contrib/programs/listres/
+          contrib/programs/showfont/
+          contrib/programs/viewres/
+          contrib/programs/xbiff/
+          contrib/programs/xcalc/
+          contrib/programs/xditview/
+          contrib/programs/xedit/
+          contrib/programs/xev/
+          contrib/programs/xeyes/
+          contrib/programs/xfontsel/
+          contrib/programs/xgc/
+          contrib/programs/xload/
+          contrib/programs/xman/
+          contrib/programs/xmessage/
+</verb></tscreen>
+     </itemize>
+        
+<item> Starting from the stock X Consortium PL5 distribution, go to the
+   directory above your <tt/xc/ directory, and run:
+
+<tscreen><verb>
+      rm -fr xc/programs/Xserver/hw/xfree86
+      gzip -d < XFree86-3.1.tar.gz | tar vxf -
+      gzip -d < XFree86-3.1.diff.gz | patch -p -E
+</verb></tscreen>
+
+   If you are installing in an unmodified tree there shouldn't be any
+   problems.  Check for any patch rejections and resolve them. If
+   you've modified some files (e.g. <tt/xf86site.def/, <tt/site.def/)
+   you should rename them, and restore the standard versions before
+   patching. If you don't have backups of the originals, individual
+   files can be easily obtained from <url url="ftp://ftp.x.org/pub/R6untarred">
+
+   If you are patching a tree that you've previously used, make sure you run
+   ``<tt/make clean/'' from the <tt/xc/ directory before applying the diffs.
+
+   If you are using the patch for the contrib code, go to the directory
+   above your <tt/contrib/ directory, and run:
+
+<tscreen><verb>
+      gzip -d < XFree86-3.1-contrib-diff.gz | patch -p -E
+</verb></tscreen>
+
+<item> Read through <tt>config/cf/xf86site.def</tt>.  Set the various
+   parameters to suit your configuration.  If it is your first build,
+   you should set <bf/BuildFonts/, <bf/InstallXdmConfig/,
+   <bf/InstallXinitConfig/ to <bf/YES/ (as well as <bf/InstallFSConfig/ if you
+   are building the Font Server).
+
+   If you are using a cut-down source tree for building only the servers,
+   set <bf/BuildServersOnly/ to <bf/YES/.
+
+   Set the defines to specify which server(s) you want to build:
+
+<tscreen><verb>
+ Colour SVGA server (XF86_SVGA):           XF86SVGAServer
+ 16 colour (S)VGA server (XF86_VGA16):     XF86VGA16Server
+ ET4000/W32 accelerated server (XF86_W32): XF86W32Server
+ Monochrome server  (XF86_Mono):           XF86MonoServer
+ S3 accelerated server (XF86_S3):          XF86S3Server
+ 8514/A accelerated server (XF86_8514):    XF86I8514Server
+ Mach8 accelerated server (XF86_Mach8):    XF86Mach8Server
+ Mach32 accelerated server (XF86_Mach32):  XF86Mach32Server
+ Mach64 accelerated server (XF86_Mach64):  XF86Mach64Server
+ P9000 accelerated server (XF86_P9000):    XF86P9000Server
+ AGX accelerated server (XF86_AGX):        XF86AGXServer
+</verb></tscreen>
+       
+   To build a dual headed Mono+VGA2 server, set <bf/XF86MonoDualServer/ to
+   <bf/YES/.
+
+   To build a dual headed Mono+VGA16 server, set
+   <bf/XF86VGA16DualServer/ to <bf/YES/.
+
+   Set <bf/ServerToInstall/ to the server you want linked to <tt/X/.  If
+   this isn't specified, it will default to the first one in the above
+   list which is being built.
+   
+   The drivers you wish to include in the server are also selected in
+   <tt/xf86site.def/.  The drivers used for the SVGA server are set by
+   the <bf/XF86SvgaDrivers/ parameter.  This should be a list of the
+   driver directory names (in lower case).  The ordering determines
+   the order in which the drivers are probed at startup.  The default
+   is to include all supplied drivers.  Similarly the following
+   parameters specify drivers for the other servers:
+<tscreen><verb>
+ XF86Vga16Drivers            XF86_VGA16
+ XF86Vga2Drivers             XF86_Mono (vga2 drivers)
+ XF86MonoDrivers             XF86_Mono, XF86_VGA16 (other mono
+ drivers)
+</verb></tscreen>
+
+   The SVGA, VGA16 and VGA2 screens each have ``generic'' drivers, and these
+   should always be last in the list because their probe will succeed for
+   any VGA card.
+
+<item> Before building the distribution, read through the OS-specific
+   <tt/README/ file in <tt>xc/programs/Xserver/hw/xfree86/doc</tt> that is
+   relevant to you.  Once those OS-specific details have been taken
+   care of, go the <tt/xc/ directory and run ``<tt/make World/'' with the
+   <bf/BOOTSTRAPCFLAGS/ set as described in the OS-specific README.
+
+<item> If all goes well, that will finish successfully in anything
+   from two to twelve hours depending on your
+   CPU/RAM/OS/compiler/disks.  You should check <tt/World.Log/ to see
+   if there were any problems.  If there weren't any then you can do a
+   ``<tt/make install/'' and a ``<tt/make install.man/''.  Make sure
+   you have enough space in <tt>/usr/X11R6</tt> for the install to
+   succeed.  If you want to install on a filesystem other than
+   <tt>/usr</tt>, make a symbolic link to <tt>/usr/X11R6</tt> before
+   installing.
+
+   To install the binary Link Kit (in <tt>/usr/X11R6/lib/Server</tt>),
+   run:
+<tscreen><verb>
+     make install.linkkit
+</verb></tscreen>
+
+<item> To build the subset of the contrib release supported by
+   XFree86, make sure that you have first built and installed the core
+   distribution.  Then go to the <tt/contrib/ directory and run
+   ``<tt/xmkmf -a; make/''.  When that is completed you can do a
+   ``<tt/make install/'' and a ``<tt/make install.man/''.
+</enum>
+
+<sect> Using and configuring XFree86
+<p>
+<enum>
+<item> Add <tt>/usr/X11R6/bin</tt> to your <bf/PATH/ and
+   <tt>/usr/X11R6/man</tt> to your <bf/MANPATH/.
+
+<item> Set up an <tt/XF86Config/ file.  The default locations for this
+   file are: <tt>/etc/XF86Config</tt>,
+   <tt>/usr/X11R6/lib/X11/XF86Config.</tt><em/hostname/, and
+   <tt>/usr/X11R6/lib/X11/XF86Config</tt>.  There is a sample file
+   installed as <tt>/usr/X11R6/lib/X11/XF86Config.eg</tt>, and this
+   should be used as a starting point.
+
+   For details about the <tt/XF86Config/ file format, refer to the
+   <em>XF86Config(4/()</em> manual page.
+   
+<item> If you use a <tt>&dollar;{HOME}/.xserverrc</tt> file with xinit, make
+   sure that the script exec's the server (e.g ``<tt>exec
+   /usr/X11R6/bin/XF86_SVGA</tt>'' rather than just
+   ``<tt>/usr/X11R6/bin/XF86_SVGA</tt>'').  If you don't do this, the
+   server may not exit when your last client finishes.
+</enum>
+
+<sect> Reconfiguring the server (source distribution)
+<p>
+To build a different set of servers or servers with a different set of
+drivers installed:
+<enum>
+<item>Make sure the source for any new drivers is in the correct place (e.g.,
+   driver source for the SVGA server should be in a subdir of
+   <tt>xc/programs/Xserver/hw/xfree86/vga256/drivers</tt>).
+
+<item> Change the settings of the server defines (eg <bf/XF86SVGAServer/ as
+   described above) in <tt/xf86site.def/ to specify which servers you
+   wish to build.  Also, change the driver lists to suit your needs.
+
+<item> From <tt>xc/programs/Xserver</tt>, run:
+<tscreen><verb>
+     make Makefile
+     make Makefiles
+     make depend
+     make
+</verb></tscreen>
+</enum>
+
+<sect> Reconfiguring the server (binary distribution)
+<p>
+  If you have installed the server Binary LinkKit, it is possible to
+reconfigure the drivers and some of the extensions in the servers.  To
+do this, go to the configuration directory
+(<tt>/usr/X11R6/lib/Server</tt>) and do the following:
+<enum>
+<item> For systems which don't use gcc-2, you may need to install
+   <tt/libgcc.a/ if the binary distribution you are using was built
+   with gcc-2.
+
+<item> Edit the <tt/site.def/ file to define which servers you want to
+   build, and the drivers you want included.
+
+    <itemize>
+    <item>  Set <bf/HasGcc/ and <bf/HasGcc2/ to match the compiler you
+    are using if the defaults aren't correct.
+
+    <item> If the LinkKit was built with gcc-2.x and you are using
+      some other compiler, you must install <tt/libgcc.a/ and set
+      <bf/NeedLibGcc/ to <bf/YES/.
+
+    <item> To build the 256 colour server: set <bf/XF86SVGAServer/ to <bf/YES/.
+    <item> To build the 16 colour server: set <bf/XF86VGA16Server/ to <bf/YES/.
+    <item> To build the monochrome server: set <bf/XF86MonoServer/ to <bf/YES/.
+    <item> To build the S3 server: set <bf/XF86S3Server/ to <bf/YES/.
+    <item> To build the Mach8 server: set <bf/XF86Mach8Server/ to <bf/YES/.
+    <item> To build the Mach32 server: set <bf/XF86Mach32Server/ to <bf/YES/.
+    <item> To build the Mach64 server: set <bf/XF86Mach64Server/ to <bf/YES/.
+    <item> To build the P9000 server: set <bf/XF86P9000Server/ to <bf/YES/.
+    <item> To build the AGX server: set <bf/XF86AGXServer/ to <bf/YES/.
+    <item> To build the ET4000/W32 server: set <bf/XF86W32Server/ to <bf/YES/.
+    <item> To build the IBM 8514/A server: set <bf/XF86I8514Server/ to <bf/YES/.
+
+    <item> Set <bf/XF86SvgaDrivers/ to the list of drivers you want to
+      include in the SVGA server.
+
+    <item>  Set <bf/XF86Vga16Drivers/ to the list of drivers you want
+       to include in the 16 colour server.
+
+    <item> Set <bf/XF86Vga2Drivers/ to the list of drivers you want to
+       include in the monochrome vga server.
+
+    <item> Set <bf/XF86MonoDrivers/ to the list of non-vga mono drivers you
+       want to include in the mono or VGA16 servers (when building
+       dual-headed servers).
+
+    </itemize>
+
+<quote>
+   <bf/Note:/ the ordering of drivers determines the order in
+   which the probing is done.  The <bf/generic/ driver should be the last
+   one included in the Mono and VGA16 and SVGA servers because its
+   probe always succeeds.  
+</quote>
+
+<item> If you are including a driver that it not part of the standard
+   distribution, make a directory in <tt>drivers/vga256</tt>
+   (<tt>drivers/vga2</tt> if it is for the VGA2 part of the Mono
+   server, <tt>drivers/vga16</tt> if it is for the 16 colour server, or
+   drivers/mono non-VGA part of the Mono and VGA16 servers) and copy
+   either the source or <tt/.o/ file and a suitable <tt/Imakefile/ into that
+   directory.  The name of the directory should be the same as the
+   name of the driver (refer to the documentation in the <tt/VGADriverDoc/
+   directory for more details).
+
+<item> To build the Makefile, run
+<tscreen><verb>
+     ./mkmf
+</verb></tscreen>
+
+<item> Run ``<tt/make/'' to link the server(s) as configured.
+
+<item> Run ``<tt/make install/'' to install the new server(s).
+
+<item> Run ``<tt/make clean/'' to remove the files that were created by this
+   procedure.
+
+<item> It is possible to see which drivers are included in the server by
+   running it with the ``<tt/-showconfig/'' flag.
+
+</enum>
+
+<verb>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/INSTALL,v 3.3 1994/09/28 16:24:59 dawes Exp $
+</verb>
+
+</article>
+
