@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.29 1997/06/11 12:24:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.30 1997/06/15 07:12:18 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -462,7 +462,7 @@ i128Probe()
  
    /* Now we can map the rest of the chip into memory */
 
-   i128mem.mw0_ad =  (CARD32 *)xf86MapVidMem(0, 0,
+   i128mem.mw0_ad =  (unsigned char *)xf86MapVidMem(0, 0,
 			(pointer)(pcrp->_base0 & 0xFFC00000),
                         i128InfoRec.videoRam * 1024);
    i128VideoMem = (pointer )i128mem.mw0_ad;
@@ -471,7 +471,7 @@ i128Probe()
 			(pointer)(pcrp->_base1 & 0xFFC00000),
                         i128InfoRec.videoRam * 1024);
 #endif
-   i128mem.xyw_ada = (CARD32 *)xf86MapVidMem(0, 2,
+   i128mem.xyw_ada = (unsigned char *)xf86MapVidMem(0, 2,
 			(pointer)(pcrp->_base2 & 0xFFC00000),
                         i128InfoRec.videoRam * 1024);
 #ifdef TOOMANYMMAPS

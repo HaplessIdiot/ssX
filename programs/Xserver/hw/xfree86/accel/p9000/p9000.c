@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.50 1997/06/03 14:11:27 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.51 1997/06/11 12:24:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -1028,11 +1028,11 @@ p9000SaveScreen (pScreen, on)
  * p9000DPMSSet -- Sets VESA Display Power Management Signaling (DPMS) Mode
  */
 
-#ifdef DPMSExtension
 void
 p9000DPMSSet(PowerManagementMode)
      int PowerManagementMode;
 {
+#ifdef DPMSExtension
     if (!xf86VTSema) return;
 
     switch (PowerManagementMode) {
@@ -1053,8 +1053,8 @@ p9000DPMSSet(PowerManagementMode)
 	p9000Store(SRTCTL,CtlBase,0x01C4L);
 	break;
     }
-}
 #endif
+}
 
 /*
  * p9000SwitchMode --
