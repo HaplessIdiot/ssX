@@ -119,7 +119,7 @@ xf86HandlePMEvents(int fd, pointer data)
     if ((n = xf86PMGetEventFromOs(fd,events,MAX_NO_EVENTS))) {
 	do {
 	    for (i = 0; i < n; i++) {
-		xf86MsgVerb(3,X_INFO,"PM Event received: %s\n",
+		xf86MsgVerb(X_INFO,3,"PM Event received: %s\n",
 			    eventName(events[i]));
 		DoApmEvent(events[i]);
 		switch (xf86PMConfirmEventToOs(fd,events[i])) {

@@ -121,8 +121,10 @@ xf86OSPMOpen(void)
    if (APMihPtr || !xf86Info.pmFlag)
        return NULL;
    
-   if (access( APM_PROC, R_OK ) || ((fd = open( APM_PROC, O_RDONLY)) == -1))
+   if (access( APM_PROC, R_OK ) || ((fd = open( APM_PROC, O_RDONLY)) == -1)) {
+       xf86MsgVerb(X_WARNING,3,"Cannot open APM\n");
        return NULL;
+   }
    close( fd );
 #ifdef DEBUG
    ErrorF("APM: Opening device\n");
@@ -131,8 +133,10 @@ xf86OSPMOpen(void)
        xf86PMGetEventFromOs = lnxPMGetEventFromOs;
        xf86PMConfirmEventToOs = lnxPMConfirmEventToOs;
        APMihPtr = xf86AddInputHandler(fd,xf86HandlePMEvents,NULL);
+       xf86MsgVerb(X_INFO,3,"Open APM successful\n");
        return lnxCloseAPM;
    }
+   xf86MsgVerb(X_WARNING,3,"Open APM failed\n");
    return NULL;
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.104 2000/12/01 15:28:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.106 2000/12/06 15:35:10 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2553,7 +2553,8 @@ xf86ConfigPciEntity(ScrnInfoPtr pScrn, int scrnFlag, int entityIndex,
     EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
     if (!pEnt) return pScrn;
 
-    if (!(pEnt->location.type == BUS_PCI)) {
+    if (!(pEnt->location.type == BUS_PCI) 
+	|| !xf86GetPciInfoForEntity(entityIndex)) {
 	xfree(pEnt);
 	return pScrn;
     }

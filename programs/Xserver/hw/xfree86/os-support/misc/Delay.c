@@ -14,12 +14,13 @@ xf86UDelay(long usec)
     struct timeval start, interrupt;
 #else
     int sigio;
-    
+
     sigio = xf86BlockSIGIO();
     xf86usleep(usec);
     xf86UnblockSIGIO(sigio);
 #endif
-#if 0    
+
+#if 0
     gettimeofday(&start,NULL);
 
     do {
@@ -29,7 +30,7 @@ xf86UDelay(long usec)
 	if ((usec = usec - (interrupt.tv_sec - start.tv_sec) * 1000000
 	      - (interrupt.tv_usec - start.tv_usec)) < 0)
 	    break;
-	
+	start = interrupt;
     } while (1);
 #endif
 }

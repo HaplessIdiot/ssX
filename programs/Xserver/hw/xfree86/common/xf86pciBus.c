@@ -2930,7 +2930,12 @@ pciConvertListToHost(int bus, int dev, int func, resPtr list)
 void
 pciConvertRange2Host(int entityIndex, resRange *pRange)
 {
-    PCITAG tag = TAG(xf86GetPciInfoForEntity(entityIndex));
+    PCITAG tag;
+    pciVideoPtr pvp;
+
+    pvp = xf86GetPciInfoForEntity(entityIndex);
+    if (!pvp) return;
+    tag = TAG(pvp);
     pciTagConvertRange2Host(tag, pRange);
 }
 
