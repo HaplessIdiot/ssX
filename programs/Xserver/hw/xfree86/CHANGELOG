@@ -1,3 +1,7 @@
+
+3973. Remove 24bpp shadowfb support from the NV driver since the hardware
+      is not capable of 24bpp (Mark Vojkovich).
+
 XFree86 4.0 (8 March 2000)
 3972. Possible fix for a cirrus driver crash when using -configure
       (David Dawes).
