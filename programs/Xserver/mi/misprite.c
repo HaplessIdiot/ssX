@@ -44,6 +44,9 @@ in this Software without prior written authorization from The Open Group.
 # include   "mispritest.h"
 # include   "dixfontstr.h"
 # include   "fontstruct.h"
+#ifdef RENDER
+# include   "mipict.h"
+#endif
 
 /*
  * screen wrappers
@@ -65,6 +68,31 @@ static void	    miSpritePaintWindowBackground();
 static void	    miSpritePaintWindowBorder();
 static void	    miSpriteCopyWindow();
 static void	    miSpriteClearToBackground();
+
+#ifdef RENDER
+static void	    miSpriteComposite(CARD8	op,
+				      PicturePtr pSrc,
+				      PicturePtr pMask,
+				      PicturePtr pDst,
+				      INT16	xSrc,
+				      INT16	ySrc,
+				      INT16	xMask,
+				      INT16	yMask,
+				      INT16	xDst,
+				      INT16	yDst,
+				      CARD16	width,
+				      CARD16	height);
+
+static void	    miSpriteGlyphs(CARD8	op,
+				   PicturePtr	pSrc,
+				   PicturePtr	pDst,
+				   PictFormatPtr maskFormat,
+				   INT16	xSrc,
+				   INT16	ySrc,
+				   int		nlist,
+				   GlyphListPtr	list,
+				   GlyphPtr	*glyphs);
+#endif
 
 static void	    miSpriteSaveDoomedAreas();
 static RegionPtr    miSpriteRestoreAreas();
@@ -227,6 +255,9 @@ miSpriteInitialize (pScreen, cursorFuncs, screenFuncs)
 {
     miSpriteScreenPtr	pPriv;
     VisualPtr		pVisual;
+#ifdef RENDER
+    PictureScreenPtr	ps = GetPictureScreen(pScreen);
+#endif
     
     if (miSpriteGeneration != serverGeneration)
     {
@@ -267,7 +298,14 @@ miSpriteInitialize (pScreen, cursorFuncs, screenFuncs)
 
     pPriv->SaveDoomedAreas = pScreen->SaveDoomedAreas;
     pPriv->RestoreAreas = pScreen->RestoreAreas;
-
+#ifdef RENDER
+    if (ps)
+    {
+	pPriv->Composite = ps->Composite;
+	pPriv->Glyphs = ps->Glyphs;
+    }
+#endif
+    
     pPriv->pCursor = NULL;
     pPriv->x = 0;
     pPriv->y = 0;
@@ -302,6 +340,13 @@ miSpriteInitialize (pScreen, cursorFuncs, screenFuncs)
 
     pScreen->SaveDoomedAreas = miSpriteSaveDoomedAreas;
     pScreen->RestoreAreas = miSpriteRestoreAreas;
+#ifdef RENDER
+    if (ps)
+    {
+	ps->Composite = miSpriteComposite;
+	ps->Glyphs = miSpriteGlyphs;
+    }
+#endif
 
     return TRUE;
 }
@@ -320,6 +365,9 @@ miSpriteCloseScreen (i, pScreen)
     ScreenPtr	pScreen;
 {
     miSpriteScreenPtr   pScreenPriv;
+#ifdef RENDER
+    PictureScreenPtr	ps = GetPictureScreen(pScreen);
+#endif
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
 
@@ -339,7 +387,10 @@ miSpriteCloseScreen (i, pScreen)
 
     pScreen->SaveDoomedAreas = pScreenPriv->SaveDoomedAreas;
     pScreen->RestoreAreas = pScreenPriv->RestoreAreas;
-
+#ifdef RENDER
+    ps->Composite = pScreenPriv->Composite;
+    ps->Glyphs = pScreenPriv->Glyphs;
+#endif
     xfree ((pointer) pScreenPriv);
 
     return (*pScreen->CloseScreen) (i, pScreen);
@@ -1842,6 +1893,133 @@ static void
 miSpriteLineHelper()
 {
     FatalError("miSpriteLineHelper called\n");
+}
+#endif
+
+#ifdef RENDER
+
+# define mod(a,b)	((b) == 1 ? 0 : (a) >= 0 ? (a) % (b) : (b) - (-a) % (b))
+
+static void
+miSpritePictureOverlap (PicturePtr  pPict,
+			INT16	    x,
+			INT16	    y,
+			CARD16	    w,
+			CARD16	    h)
+{
+    if (pPict->pDrawable->type == DRAWABLE_WINDOW)
+    {
+	WindowPtr		pWin = (WindowPtr) (pPict->pDrawable);
+	miSpriteScreenPtr	pScreenPriv = (miSpriteScreenPtr)
+	    pPict->pDrawable->pScreen->devPrivates[miSpriteScreenIndex].ptr;
+	if (GC_CHECK(pWin))
+	{
+	    if (pPict->repeat)
+	    {
+		x = mod(x,pWin->drawable.width);
+		y = mod(y,pWin->drawable.height);
+	    }
+	    if (ORG_OVERLAP (&pScreenPriv->saved, pWin->drawable.x, pWin->drawable.y,
+			     x, y, w, h))
+		miSpriteRemoveCursor (pWin->drawable.pScreen);
+	}
+    }
+}
+
+#define PICTURE_PROLOGUE(ps, pScreenPriv, field) \
+    ps->field = pScreenPriv->field
+
+#define PICTURE_EPILOGUE(ps, field, wrap) \
+    ps->field = wrap
+
+static void
+miSpriteComposite(CARD8	op,
+		  PicturePtr pSrc,
+		  PicturePtr pMask,
+		  PicturePtr pDst,
+		  INT16	xSrc,
+		  INT16	ySrc,
+		  INT16	xMask,
+		  INT16	yMask,
+		  INT16	xDst,
+		  INT16	yDst,
+		  CARD16	width,
+		  CARD16	height)
+{
+    ScreenPtr		pScreen = pDst->pDrawable->pScreen;
+    PictureScreenPtr	ps = GetPictureScreen(pScreen);
+    miSpriteScreenPtr	pScreenPriv;
+
+    pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
+    PICTURE_PROLOGUE(ps, pScreenPriv, Composite);
+    miSpritePictureOverlap (pSrc, xSrc, ySrc, width, height);
+    if (pMask)
+	miSpritePictureOverlap (pMask, xMask, yMask, width, height);
+    miSpritePictureOverlap (pDst, xDst, yDst, width, height);
+
+    (*ps->Composite) (op,
+		       pSrc,
+		       pMask,
+		       pDst,
+		       xSrc,
+		       ySrc,
+		       xMask,
+		       yMask,
+		       xDst,
+		       yDst,
+		       width,
+		       height);
+    
+    PICTURE_EPILOGUE(ps, Composite, miSpriteComposite);
+}
+
+static void
+miSpriteGlyphs(CARD8		op,
+	       PicturePtr	pSrc,
+	       PicturePtr	pDst,
+	       PictFormatPtr	maskFormat,
+	       INT16		xSrc,
+	       INT16		ySrc,
+	       int		nlist,
+	       GlyphListPtr	list,
+	       GlyphPtr		*glyphs)
+{
+    ScreenPtr		pScreen = pDst->pDrawable->pScreen;
+    PictureScreenPtr	ps = GetPictureScreen(pScreen);
+    miSpriteScreenPtr	pScreenPriv;
+
+    pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
+    PICTURE_PROLOGUE(ps, pScreenPriv, Glyphs);
+    if (pSrc->pDrawable->type == DRAWABLE_WINDOW)
+    {
+	WindowPtr   pSrcWin = (WindowPtr) (pSrc->pDrawable);
+
+	if (GC_CHECK(pSrcWin))
+	    miSpriteRemoveCursor (pScreen);
+    }
+    if (pDst->pDrawable->type == DRAWABLE_WINDOW)
+    {
+	WindowPtr   pDstWin = (WindowPtr) (pDst->pDrawable);
+
+	if (GC_CHECK(pDstWin))
+	{
+	    BoxRec  extents;
+
+	    miGlyphExtents (nlist, list, glyphs, &extents);
+	    if (BOX_OVERLAP(&pScreenPriv->saved,
+			    extents.x1 + pDstWin->drawable.x,
+			    extents.y1 + pDstWin->drawable.y,
+			    extents.x2 + pDstWin->drawable.x,
+			    extents.y2 + pDstWin->drawable.y))
+	    {
+		miSpriteRemoveCursor (pScreen);
+	    }
+	}
+    }
+    
+    (*ps->Glyphs) (op, pSrc, pDst, maskFormat, xSrc, ySrc, nlist, list, glyphs);
+    
+    PICTURE_EPILOGUE (ps, Glyphs, miSpriteGlyphs);
 }
 #endif
 

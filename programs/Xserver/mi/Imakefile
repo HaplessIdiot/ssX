@@ -47,7 +47,7 @@ EXT_DEFINES = ExtensionDefines -UXINPUT -UXF86VIDMODE -UXFreeXDGA -UXF86MISC \
 EXT_DEFINES = ExtensionDefines
 #endif
 
-INCLUDES = -I. -I../include -I../../../include/fonts \
+INCLUDES = -I. -I../include -I../../../include/fonts -I../render \
            -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(EXTINCSRC) -I$(SERVERSRC)/Xext
 LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
 
