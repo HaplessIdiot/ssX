@@ -1,9 +1,9 @@
 XCOMM $XConsortium: Imakefile,v 1.40 93/08/25 16:48:37 rws Exp $
-XCOMM $XFree86: xc/programs/twm/Imakefile,v 3.0 1994/04/28 12:44:19 dawes Exp $
+XCOMM $XFree86: xc/programs/twm/Imakefile,v 3.1 1994/10/20 06:14:21 dawes Exp $
 
          YFLAGS = -d
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
-LOCAL_LIBRARIES = $(XMULIB) $(LEXLIB) $(XLIB)
+LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
        LINTLIBS = $(LINTXMU) $(LINTXLIB)
         DEFINES = $(SIGNAL_DEFINES)
 
