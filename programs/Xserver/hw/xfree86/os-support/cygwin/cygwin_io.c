@@ -24,7 +24,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from Sebastien Marineau.
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx4/qnx_io.c,v 1.1 1999/12/27 00:45:47 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/cygwin/cygwin_io.c,v 1.1 2000/08/10 17:40:35 dawes Exp $
  */
 
 /* This module contains the qnx-specific functions to access the keyboard
@@ -45,11 +45,6 @@
 #include "xf86_OSlib.h"
 
 
-void xf86KbdOn()
-{
-	
-	return;
-}
 
 void
 xf86SoundKbdBell(loudness, pitch, duration)
@@ -91,23 +86,12 @@ xf86KbdInit()
 	return;
 }
 
-void
-xf86KbdOff()
-{
-
-	return;
-}
-
 
 void xf86MouseInit()
 {
 	return;
 }
 
-void OsVendorVErrorFProc()
-{
-	return FALSE;
-}
 
 void xf86ProtocolIDToName()
 {

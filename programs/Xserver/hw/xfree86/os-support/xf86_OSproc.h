@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.44 2000/08/15 16:05:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.45 2000/08/23 20:05:02 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -237,8 +237,10 @@ extern void xf86KbdInit(void);
 extern int xf86KbdOn(void);
 extern int xf86KbdOff(void);
 extern void xf86KbdEvents(void);
+#ifdef XQUEUE
 extern int  xf86XqueKbdProc(DeviceIntPtr, int);
 extern void xf86XqueEvents(void);
+#endif
 extern PMClose xf86OSPMOpen(void);
 
 #ifdef NEED_OS_RAC_PROTOS

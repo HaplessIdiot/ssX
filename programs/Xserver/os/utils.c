@@ -45,7 +45,11 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.62 2000/08/04 16:13:45 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.63 2000/08/10 17:40:40 dawes Exp $ */
+#ifdef __CYGWIN__
+#include <stdlib.h>
+#include <signal.h>
+#endif
 
 #if defined(WIN32) && !defined(__CYGWIN__)
 #include <X11/Xwinsock.h>
