@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.37 2002/01/17 20:54:23 dawes Exp $
+# $XFree86: Xinstall.sh,v 1.38 2002/02/05 21:18:53 torrey Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -860,6 +860,9 @@ InstallUpdate()
 			echo ""
 		fi
 	done
+	# update Fontconfig cache
+	Echo "Updating the index of Freetype fonts..."
+	$RUNDIR/bin/fc-cache -v
 
 	echo ""
 	echo "Update installation complete."
