@@ -45,6 +45,7 @@
 #include "xf86Bus.h"
 #include "xf86Sbus.h"
 #endif
+#include "globals.h"
 
 typedef struct _DevToConfig {
     GDevRec GDev;
@@ -529,6 +530,15 @@ configureFilesSection (void)
 {
     parsePrologue (XF86ConfFilesPtr, XF86ConfFilesRec)
 
+#ifdef XFree86LOADER
+   if (xf86ModulePath && xf86ModPathFrom == X_CMDLINE)
+       ptr->file_modulepath = strdup(xf86ModulePath);
+#endif
+   if (xf86fpFlag && defaultFontPath)
+       ptr->file_fontpath = strdup(defaultFontPath);
+   if (xf86coFlag && rgbPath)
+       ptr->file_rgbpath = strdup(rgbPath);
+   
     return ptr;
 }
 
