@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.3 1996/01/17 14:03:46 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -18,7 +18,8 @@
 #define _XF86MISC_SERVER_
 #include "xf86mscstr.h"
 #include "Xfuncproto.h"
-#include "../hw/xfree86/common/xf86.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 
 extern int xf86ScreenIndex;
 
@@ -140,6 +141,153 @@ ProcXF86MiscGetSaver(client)
     return (client->noClientException);
 }
 
+#define MTYPE_XQUEUE	10
+#define MTYPE_OSMOUSE	11
+
+static int
+ProcXF86MiscGetMouseSettings(client)
+    register ClientPtr client;
+{
+    REQUEST(xXF86MiscGetMouseSettingsReq);
+    xXF86MiscGetMouseSettingsReply rep;
+    register int n;
+
+    REQUEST_SIZE_MATCH(xXF86MiscGetMouseSettingsReq);
+    rep.type = X_Reply;
+    rep.sequenceNumber = client->sequence;
+    rep.mousetype = xf86Info.mseType;
+#ifdef XQUEUE
+    if (xf86Info.mseProc == xf86XqueMseProc)
+        rep.mousetype = MTYPE_XQUEUE;
+#endif
+#if defined(USE_OSMOUSE) || defined(OSMOUSE_ONLY)
+    if (xf86Info.mseProc == xf86OsMouseProc)
+        rep.mousetype = MTYPE_OSMOUSE;
+#endif
+    rep.baudrate = xf86Info.baudRate;
+    rep.samplerate = xf86Info.sampleRate;
+    rep.emulate3buttons = xf86Info.emulate3Buttons;
+    rep.emulate3timeout = xf86Info.emulate3Timeout;
+    rep.chordmiddle = xf86Info.chordMiddle;
+    rep.flags = xf86Info.mouseFlags;
+    if (xf86Info.mseDevice)
+        rep.devnamelen = strlen(xf86Info.mseDevice);
+    else
+        rep.devnamelen = 0;
+    rep.length = (sizeof(xXF86MiscGetMouseSettingsReply) -
+		  sizeof(xGenericReply) + (rep.devnamelen+3 & ~3)) >> 2;
+    
+    if (client->swapped) {
+    	swaps(&rep.sequenceNumber, n);
+    	swapl(&rep.length, n);
+    	swapl(&rep.mousetype, n);
+    	swapl(&rep.baudrate, n);
+    	swapl(&rep.samplerate, n);
+    	swapl(&rep.emulate3buttons, n);
+    	swapl(&rep.emulate3timeout, n);
+    	swapl(&rep.chordmiddle, n);
+    	swapl(&rep.flags, n);
+    }
+    WriteToClient(client, SIZEOF(xXF86MiscGetMouseSettingsReply), (char *)&rep);
+    if (rep.devnamelen)
+        WriteToClient(client, rep.devnamelen, xf86Info.mseDevice);
+    return (client->noClientException);
+}
+
+#define KTYPE_XQUEUE	4
+
+static int
+ProcXF86MiscGetKbdSettings(client)
+    register ClientPtr client;
+{
+    REQUEST(xXF86MiscGetKbdSettingsReq);
+    xXF86MiscGetKbdSettingsReply rep;
+    register int n;
+
+    REQUEST_SIZE_MATCH(xXF86MiscGetKbdSettingsReq);
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.kbdtype = xf86Info.kbdType;
+#ifdef XQUEUE
+    if (xf86Info.kbdProc == xf86XqueKbdProc)
+        rep.kbdtype = KTYPE_XQUEUE;
+#endif
+    rep.rate = xf86Info.kbdRate;
+    rep.delay = xf86Info.kbdDelay;
+    rep.servnumlock = xf86Info.serverNumLock;
+    if (client->swapped) {
+    	swaps(&rep.sequenceNumber, n);
+    	swapl(&rep.length, n);
+    	swapl(&rep.kbdtype, n);
+    	swapl(&rep.rate, n);
+    	swapl(&rep.delay, n);
+    }
+    WriteToClient(client, SIZEOF(xXF86MiscGetKbdSettingsReply), (char *)&rep);
+    return (client->noClientException);
+}
+
+static int
+ProcXF86MiscSetMouseSettings(client)
+    register ClientPtr client;
+{
+    REQUEST(xXF86MiscSetMouseSettingsReq);
+
+    REQUEST_SIZE_MATCH(xXF86MiscSetMouseSettingsReq);
+
+    if (stuff->baudrate < 1200)
+	return BadValue;
+    if (stuff->samplerate < 0)
+	return BadValue;
+    if (stuff->emulate3timeout < 0)
+	return BadValue;
+
+    xf86Info.mseType = stuff->mousetype;
+    xf86Info.baudRate = stuff->baudrate;
+    xf86Info.sampleRate = stuff->samplerate;
+    xf86Info.emulate3Buttons = stuff->emulate3buttons;
+    xf86Info.emulate3Timeout = stuff->emulate3timeout;
+    xf86Info.chordMiddle = stuff->chordmiddle;
+    xf86Info.mouseFlags = stuff->flags;
+
+    return (client->noClientException);
+}
+
+static int
+ProcXF86MiscSetKbdSettings(client)
+    register ClientPtr client;
+{
+    REQUEST(xXF86MiscSetKbdSettingsReq);
+
+    REQUEST_SIZE_MATCH(xXF86MiscSetKbdSettingsReq);
+
+    if (stuff->rate < 0)
+	return BadValue;
+    if (stuff->delay < 0)
+	return BadValue;
+
+    xf86Info.kbdType = stuff->kbdtype;
+    if (xf86Info.kbdRate!=stuff->rate || xf86Info.kbdDelay!=stuff->delay) {
+	char rad;
+
+	xf86Info.kbdRate = stuff->rate;
+	xf86Info.kbdDelay = stuff->delay;
+        if      (xf86Info.kbdDelay <= 375) rad = 0x00;
+        else if (xf86Info.kbdDelay <= 625) rad = 0x20;
+        else if (xf86Info.kbdDelay <= 875) rad = 0x40;
+        else                               rad = 0x60;
+    
+        if      (xf86Info.kbdRate <=  2)   rad |= 0x1F;
+        else if (xf86Info.kbdRate >= 30)   rad |= 0x00;
+        else                               rad |= ((58/xf86Info.kbdRate)-2);
+    
+        xf86SetKbdRepeat(rad);
+    }
+    xf86Info.serverNumLock = stuff->servnumlock;
+
+    return (client->noClientException);
+}
+
 static int
 ProcXF86MiscDispatch (client)
     register ClientPtr	client;
@@ -153,6 +301,14 @@ ProcXF86MiscDispatch (client)
 	return ProcXF86MiscGetSaver(client);
     case X_XF86MiscSetSaver:
 	return ProcXF86MiscSetSaver(client);
+    case X_XF86MiscGetMouseSettings:
+	return ProcXF86MiscGetMouseSettings(client);
+    case X_XF86MiscGetKbdSettings:
+	return ProcXF86MiscGetKbdSettings(client);
+    case X_XF86MiscSetMouseSettings:
+	return ProcXF86MiscSetMouseSettings(client);
+    case X_XF86MiscSetKbdSettings:
+	return ProcXF86MiscSetKbdSettings(client);
     default:
 	return BadRequest;
     }
@@ -195,6 +351,58 @@ SProcXF86MiscSetSaver(client)
 }
 
 static int
+SProcXF86MiscGetMouseSettings(client)
+    ClientPtr client;
+{
+    register int n;
+    REQUEST(xXF86MiscGetMouseSettingsReq);
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xXF86MiscGetMouseSettingsReq);
+    return ProcXF86MiscGetMouseSettings(client);
+}
+
+static int
+SProcXF86MiscGetKbdSettings(client)
+    ClientPtr client;
+{
+    register int n;
+    REQUEST(xXF86MiscGetKbdSettingsReq);
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xXF86MiscGetKbdSettingsReq);
+    return ProcXF86MiscGetKbdSettings(client);
+}
+
+static int
+SProcXF86MiscSetMouseSettings(client)
+    ClientPtr client;
+{
+    register int n;
+    REQUEST(xXF86MiscSetMouseSettingsReq);
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xXF86MiscSetMouseSettingsReq);
+    swapl(&stuff->mousetype, n);
+    swapl(&stuff->baudrate, n);
+    swapl(&stuff->samplerate, n);
+    swapl(&stuff->emulate3timeout, n);
+    swapl(&stuff->flags, n);
+    return ProcXF86MiscSetMouseSettings(client);
+}
+
+static int
+SProcXF86MiscSetKbdSettings(client)
+    ClientPtr client;
+{
+    register int n;
+    REQUEST(xXF86MiscSetKbdSettingsReq);
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xXF86MiscSetKbdSettingsReq);
+    swapl(&stuff->kbdtype, n);
+    swapl(&stuff->rate, n);
+    swapl(&stuff->delay, n);
+    return ProcXF86MiscSetKbdSettings(client);
+}
+
+static int
 SProcXF86MiscDispatch (client)
     register ClientPtr	client;
 {
@@ -207,6 +415,14 @@ SProcXF86MiscDispatch (client)
 	return SProcXF86MiscGetSaver(client);
     case X_XF86MiscSetSaver:
 	return SProcXF86MiscSetSaver(client);
+    case X_XF86MiscGetMouseSettings:
+	return SProcXF86MiscGetMouseSettings(client);
+    case X_XF86MiscGetKbdSettings:
+	return SProcXF86MiscGetKbdSettings(client);
+    case X_XF86MiscSetMouseSettings:
+	return SProcXF86MiscSetMouseSettings(client);
+    case X_XF86MiscSetKbdSettings:
+	return SProcXF86MiscSetKbdSettings(client);
     default:
 	return BadRequest;
     }

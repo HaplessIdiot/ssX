@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.19 1995/11/18 02:31:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.20 1995/11/19 01:25:11 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -78,6 +78,8 @@
 #include <ctype.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "cards.h"
 
@@ -93,7 +95,12 @@
  * when the program is told to probe clocks (which can only happen for
  * root).
  */
+#ifndef __EMX__
 #define TEMPORARY_XF86CONFIG_FILENAME "/tmp/XF86Config.tmp"
+#else
+/* put in root dir, would have to find TMP dir first else */
+#define TEMPORARY_XF86CONFIG_FILENAME "/XConfig.tmp"
+#endif
 
 /*
  * Define this to have /etc/XF86Config prompted for as the default
@@ -101,12 +108,35 @@
  */
 #define PREFER_XF86CONFIG_IN_ETC
 
-
 /*
  * Configuration variables.
  */
 
 #define MAX_CLOCKS_LINES 16
+
+/* (hv) make a number of filenames defines, because I want OS/2 to need just
+ * 8.3 names here
+ */
+#ifdef __EMX__
+#define DUMBCONFIG2 "/dconfig.2"
+#define DUMBCONFIG3 "/dconfig.3"
+#else
+#define DUMBCONFIG2 "/tmp/dumbconfig.2"
+#define DUMBCONFIG3 "/tmp/dumbconfig.3"
+#endif
+
+/* some more vars to make path names in texts more flexible. OS/2 users
+ * may be more irritated than Unix users
+ */
+#ifndef __EMX__
+#define TREEROOT "/usr/X11R6"
+#define TREEROOTLX "/usr/X11R6/lib/X11"
+#define CONFIGNAME "XF86Config"
+#else
+#define TREEROOT "/XFree86"
+#define TREEROOTLX "/XFree86/lib/X11"
+#define CONFIGNAME "XConfig"
+#endif
 
 int config_mousetype;		/* Mouse. */
 int config_emulate3buttons;
@@ -156,17 +186,17 @@ void write_XF86Config();
 
 static char *intro_text =
 "\n"
-"This program will create a basic XF86Config file, based on menu selections you\n"
+"This program will create a basic " CONFIGNAME " file, based on menu selections you\n"
 "make.\n"
 "\n"
-"The XF86Config file usually resides in /usr/X11R6/lib/X11 or /etc. A sample\n"
-"XF86Config file is supplied with XFree86; it is configured for a standard\n"
+"The " CONFIGNAME " file usually resides in " TREEROOTLX " or /etc. A sample\n"
+CONFIGNAME " file is supplied with XFree86; it is configured for a standard\n"
 "VGA card and monitor with 640x480 resolution. This program will ask for a\n"
 "pathname when it is ready to write the file.\n"
 "\n"
-"You can either take the sample XF86Config as a base and edit it for your\n"
-"configuration, or let this program produce a base XF86Config file for your\n"
-"configuration and fine-tune it. Refer to /usr/X11R6/lib/X11/doc/README.Config\n"
+"You can either take the sample " CONFIGNAME " as a base and edit it for your\n"
+"configuration, or let this program produce a base " CONFIGNAME " file for your\n"
+"configuration and fine-tune it. Refer to " TREEROOTLX "/doc/README.Config\n"
 "for a detailed overview of the configuration process.\n"
 "\n"
 "For accelerated servers (including accelerated drivers in the SVGA server),\n"
@@ -183,12 +213,12 @@ static char *intro_text =
 static char *finalcomment_text =
 "File has been written. Take a look at it before running 'startx'. Note that\n"
 "the XF86Config file must be in one of the directories searched by the server\n"
-"(e.g. /usr/X11R6/lib/X11) in order to be used. Within the server press\n"
+"(e.g. " TREEROOTLX ") in order to be used. Within the server press\n"
 "ctrl, alt and '+' simultaneously to cycle video resolutions. Pressing ctrl,\n"
 "alt and backspace simultaneously immediately exits the server (use if\n"
 "the monitor doesn't sync for a particular mode).\n"
 "\n"
-"For further configuration, refer to /usr/X11R6/lib/X11/doc/README.Config.\n"
+"For further configuration, refer to " TREEROOTLX "/doc/README.Config.\n"
 "\n";
 
 
@@ -227,11 +257,28 @@ void getstring(s)
 		*cp=0;
 }
 
-
 /*
  * Mouse configuration.
+ *
+ * (hv) OS/2 (__EMX__) only has an OS supported mouse, so user has no options
+ * the server will enable a third button automatically if there is one
  */
 
+static char *mousetype_identifier[9] = {
+	"Microsoft",
+	"MouseSystems",
+	"Busmouse",
+	"PS/2",
+	"Logitech",
+	"MouseMan",
+	"MMSeries",
+	"MMHitTab",
+#ifdef __EMX__
+	"OSMOUSE"
+#endif
+};
+
+#ifndef __EMX__
 static char *mouseintro_text =
 "First specify a mouse protocol type. Choose one from the following list:\n"
 "\n";
@@ -245,17 +292,6 @@ static char *mousetype_name[8] = {
 	"Logitech MouseMan (Microsoft compatible)",
 	"MM Series",	/* XXXX These descriptions should be improved. */
 	"MM HitTablet"
-};
-
-static char *mousetype_identifier[8] = {
-	"Microsoft",
-	"MouseSystems",
-	"Busmouse",
-	"PS/2",
-	"Logitech",
-	"MouseMan",
-	"MMSeries",
-	"MMHitTab"
 };
 
 static char *mousedev_text =
@@ -302,7 +338,11 @@ static char *mousemancomment_text =
 "You have selected a Logitech MouseMan type mouse. You might want to enable\n"
 "ChordMiddle which could cause the third button to work.\n";
 
+#endif /* !__EMX__ */
+
 void mouse_configuration() {
+
+#ifndef __EMX__
 	int i;
 	char s[80];
 	printf("%s", mouseintro_text);
@@ -397,6 +437,15 @@ void mouse_configuration() {
 		strcpy(config_pointerdevice, s);
        }
        printf("\n");
+
+#else /* __EMX__ */
+       	/* set some reasonable defaults for OS/2 */
+       	config_mousetype = 8;
+	config_chordmiddle = 0;       
+	config_cleardtrrts = 0;
+	config_emulate3buttons = 0;
+	config_pointerdevice = "OS2MOUSE";
+#endif /* __EMX__ */
 }
 
 
@@ -438,7 +487,7 @@ static char *monitorintro_text =
 "\n"
 "The valid range for horizontal sync and vertical sync should be documented\n"
 "in the manual of your monitor. If in doubt, check the monitor database\n"
-"/usr/X11R6/lib/X11/doc/Monitors to see if your monitor is there.\n"
+TREEROOTLX "/doc/Monitors to see if your monitor is there.\n"
 "\n";
 
 static char *hsyncintro_text =
@@ -753,6 +802,7 @@ static char *screenintro_text =
 "XF86Config (vga2, vga16, svga, accel).\n"
 "\n";
 
+#ifndef __EMX__
 static char *screenlink_text =
 "The server to run is selected by changing the symbolic link 'X'. For example,\n"
 "'rm /usr/X11R6/bin/X; ln -s /usr/X11R6/bin/XF86_SVGA /usr/X11R6/bin/X' selects\n"
@@ -764,6 +814,7 @@ static char *varlink_text =
 "preferred location of the symbolic link 'X'. You can select this location\n"
 "when setting the symbolic link.\n"
 "\n";
+#endif /* !__EMX__ */
 
 static char *deviceintro_text =
 "Now you must give information about your video card. This will be used for\n"
@@ -971,11 +1022,23 @@ static char *modestring[NU_MODESTRINGS] = {
 #endif
 };
 
+/* (hv) to avoid the UNIXISM to try to open a dir to check for existance */
+static int exists_dir(char *name) {
+	struct stat sbuf;
+
+	/* is it there ? */
+	if (stat(name,&sbuf) == -1)
+		return 0;
+
+	/* is there, but is it a dir? */
+	return ((sbuf.st_mode & S_IFMT)==S_IFDIR) ? 1 : 0;
+}
+
 void screen_configuration() {
 	int i, c, varlink;
 	int usecardscreentype;
 	char s[80];
-	FILE *f;
+
 	printf("%s", screenintro_text);
 
 	if (card_screentype != -1)
@@ -993,14 +1056,12 @@ void screen_configuration() {
 	}
 	printf("\n");
 
+#ifndef __EMX__
 	printf("%s", screenlink_text);
 
-	f = fopen("/var/X11R6/bin", "r");
-	varlink = 0;
-	if (f != NULL) {
-		varlink = 1;
+	varlink = exists_dir("/var/X11R6/bin");
+	if (varlink) {
 		printf("%s", varlink_text);
-		fclose(f);
 	}
 
 	printf("Please answer the following question with either 'y' or 'n'.\n");
@@ -1050,6 +1111,7 @@ void screen_configuration() {
 		}
 		system(s);
 	}
+#endif /* !__EMX__ */
 
 	emptylines();
 
@@ -1325,18 +1387,18 @@ skipramdacselection:
 		sync();
 #endif
 		if (system("X -probeonly -pn -xf86config "
-		TEMPORARY_XF86CONFIG_FILENAME " 2>/tmp/dumbconfig.2")) {
+		TEMPORARY_XF86CONFIG_FILENAME " 2>" DUMBCONFIG2)) {
 			printf("X -probeonly call failed.\n");
 			printf("No Clocks line inserted.\n");
 			goto clocksprobefailed;
 		}
 		/* Look for 'clocks:' (case sensitive). */		
-		if (system("grep clocks\\: /tmp/dumbconfig.2 >/tmp/dumbconfig.3")) {
+		if (system("grep clocks\\: " DUMBCONFIG2 " >" DUMBCONFIG3)) {
 			printf("grep failed.\n");
 			printf("Cannot find clocks in server output.\n");
 			goto clocksprobefailed;
 		}
-		f = fopen("/tmp/dumbconfig.3", "r");
+		f = fopen(DUMBCONFIG3, "r");
 		buf = malloc(8192);
 		/* Parse lines. */
 		while (fgets(buf, 8192, f) != NULL) {
@@ -1358,8 +1420,8 @@ skipramdacselection:
 		}
 		fclose(f);
 clocksprobefailed:
-		unlink("/tmp/dumbconfig.3");
-		unlink("/tmp/dumbconfig.2");
+		unlink(DUMBCONFIG3);
+		unlink(DUMBCONFIG2);
 		unlink(TEMPORARY_XF86CONFIG_FILENAME);
 		printf("\n");
 
@@ -1487,7 +1549,7 @@ static char *XF86Config_firstchunk_text =
 "# file minus the extension (like \".txt\" or \".db\").  There is normally\n"
 "# no need to change the default.\n"
 "\n"
-"    RgbPath	\"/usr/X11R6/lib/X11/rgb\"\n"
+"    RgbPath	\"" TREEROOTLX "/rgb\"\n"
 "\n"
 "# Multiple FontPath entries are allowed (which are concatenated together),\n"
 "# as well as specifying multiple comma-separated entries in one FontPath\n"
@@ -1498,13 +1560,13 @@ static char *XF86Config_firstchunk_text =
 "# to the end of this list (or comment them out).\n"
 "# \n"
 "\n"
-"    FontPath	\"/usr/X11R6/lib/X11/fonts/misc/\"\n"
-"    FontPath	\"/usr/X11R6/lib/X11/fonts/75dpi/:unscaled\"\n"
-"    FontPath	\"/usr/X11R6/lib/X11/fonts/100dpi/:unscaled\"\n"
-"    FontPath	\"/usr/X11R6/lib/X11/fonts/Type1/\"\n"
-"    FontPath	\"/usr/X11R6/lib/X11/fonts/Speedo/\"\n"
-"    FontPath	\"/usr/X11R6/lib/X11/fonts/75dpi/\"\n"
-"    FontPath	\"/usr/X11R6/lib/X11/fonts/100dpi/\"\n"
+"    FontPath	\"" TREEROOTLX "/fonts/misc/\"\n"
+"    FontPath	\"" TREEROOTLX "/fonts/75dpi/:unscaled\"\n"
+"    FontPath	\"" TREEROOTLX "/fonts/100dpi/:unscaled\"\n"
+"    FontPath	\"" TREEROOTLX "/fonts/Type1/\"\n"
+"    FontPath	\"" TREEROOTLX "/fonts/Speedo/\"\n"
+"    FontPath	\"" TREEROOTLX "/fonts/75dpi/\"\n"
+"    FontPath	\"" TREEROOTLX "/fonts/100dpi/\"\n"
 "\n"
 "EndSection\n"
 "\n"
@@ -1773,8 +1835,10 @@ void write_XF86Config(filename)
 	f = fopen(filename, "w");
 	if (f == NULL) {
 		printf("Failed to open filename for writing.\n");
+#ifndef __EMX__
 		if (getuid() != 0)
 			printf("Maybe you need to be root to write to the specified directory?\n");
+#endif
 		exit(-1);
 	}
 
@@ -2070,6 +2134,7 @@ char *ask_XF86Config_location() {
 "I am going to write the XF86Config file now. Make sure you don't accidently\n"
 "overwrite a previously configured one.\n\n");
 
+#ifndef __EMX__
 	if (getuid() == 0) {
 #ifdef PREFER_XF86CONFIG_IN_ETC
 		printf("Shall I write it to /etc/XF86Config? ");
@@ -2093,13 +2158,31 @@ char *ask_XF86Config_location() {
 		if (answerisyes(s))
 			return "/etc/XF86Config";
 #endif
+#else /* __EMX__ */
+	{
+		printf("Please answer the following question with either 'y' or 'n'.\n");
+		printf("Shall I write it to the default location, drive:/XFree86/lib/X11/XConfig? ");
+		getstring(s);
+		printf("\n");
+		if (answerisyes(s)) {
+			static char pn[80];
+			char *root = getenv("X11ROOT");
+			if (!root) root = "";
+			sprintf(pn,"%s/XFree86/lib/X11/XConfig",root);
+			return pn;
+		}
+#endif /* __EMX__ */
 	}
 
 	printf("Do you want it written to the current directory as 'XF86Config'? ");
 	getstring(s);
 	printf("\n");
 	if (answerisyes(s))
+#ifndef __EMX__
 		return "XF86Config";
+#else
+		return "XConfig";
+#endif
 
 	printf("Please give a filename to write to: ");
 	getstring(s);
@@ -2115,25 +2198,26 @@ char *ask_XF86Config_location() {
  * search path order in that case.
  */
 
-static char *oldxfree86_text =
-"The directory '/usr/X386/bin' exists. You probably have an old version of\n"
-"XFree86 installed (XFree86 3.1 installs in '/usr/X11R6' instead of\n"
-"'/usr/X386').\n"
-"\n"
-"It is important that the directory '/usr/X11R6/bin' is present in your\n"
-"search path, *before* any occurrence of '/usr/X386/bin'. If you have installed\n"
-"X program binaries that are not in the base XFree86 distribution in\n"
-"'/usr/X386/bin', you can keep the directory in your path as long as it is\n"
-"after '/usr/X11R6/bin'.\n"
-"\n";
-
 static char *notinstalled_text =
-"The directory /usr/X11R6 does not exist. This probably means that you have\n"
+"The directory " TREEROOT " does not exist. This probably means that you have\n"
 "not yet installed an X11R6-based version of XFree86. Please install\n"
 "XFree86 3.1+ before running this program, following the instructions in\n"
 "the INSTALL or README that comes with the XFree86 distribution for your OS.\n"
 "For a minimal installation it is sufficient to only install base binaries,\n"
 "libraries, configuration files and a server that you want to use.\n"
+"\n";
+
+#ifndef __EMX__
+static char *oldxfree86_text =
+"The directory '/usr/X386/bin' exists. You probably have an old version of\n"
+"XFree86 installed (XFree86 3.1 installs in '" TREEROOT "' instead of\n"
+"'/usr/X386').\n"
+"\n"
+"It is important that the directory '" TREEROOT "' is present in your\n"
+"search path, *before* any occurrence of '/usr/X386/bin'. If you have installed\n"
+"X program binaries that are not in the base XFree86 distribution in\n"
+"'/usr/X386/bin', you can keep the directory in your path as long as it is\n"
+"after '" TREEROOT "'.\n"
 "\n";
 
 static char *pathnote_text =	
@@ -2143,13 +2227,14 @@ static char *pathnote_text =
 "link is '/usr/bin/X11'.\n"
 "\n"
 "Make sure the path is OK before continuing.\n";
+#endif
 
 void path_check() {
 	char s[80];
-	FILE *f;
+	int ok;
 
-	f = fopen("/usr/X11R6", "r");
-	if (f == NULL) {
+	ok = exists_dir(TREEROOT);
+	if (!ok) {
 		printf("%s", notinstalled_text);
 		printf("Do you want to continue? ");
 		getstring(s);
@@ -2157,18 +2242,18 @@ void path_check() {
 			exit(-1);
 		printf("\n");
 	}
-	fclose(f);
 
-	f = fopen("/usr/X386/bin", "r");
-	if (f == NULL)
+#ifndef __EMX__
+	ok = exists_dir("/usr/X386/bin");
+	if (!ok)
 		return;
 
-	fclose(f);
 	printf("%s", oldxfree86_text);
 	printf("Your PATH is currently set as follows:\n%s\n\n",
 		getenv("PATH"));
 	printf("%s", pathnote_text);
 	keypress();
+#endif
 }
 
 

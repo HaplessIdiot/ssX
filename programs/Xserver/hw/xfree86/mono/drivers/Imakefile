@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/Imakefile,v 3.4 1994/12/25 12:31:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/Imakefile,v 3.5 1995/03/11 14:14:27 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -14,7 +14,12 @@ SRCS = apollo/?*.c hercules/?*.c hgc1280/?*.c sigma/?*.c
 OBJS = apollo/?*_drv.o hercules/?*_drv.o hgc1280/?*_drv.o sigma/?*_drv.o
 #endif
 
+#if MakeHasPosixVariableSubstitutions
+DONES=$(SUBDIRS:%=%/DONE)
+NormalDepLibraryTarget(monodrv,$(SUBDIRS) $(DONES),$(OBJS))
+#else
 NormalDepLibraryTarget(monodrv,$(SUBDIRS),$(OBJS))
+#endif
 
 NormalLibraryObjectRule()
 

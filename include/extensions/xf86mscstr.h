@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86mscstr.h,v 3.0 1996/01/16 15:00:33 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86mscstr.h,v 3.1 1996/01/17 12:44:39 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -14,7 +14,7 @@
 #define XF86MISCNAME		"XFree86-Misc"
 
 #define XF86MISC_MAJOR_VERSION	0	/* current version numbers */
-#define XF86MISC_MINOR_VERSION	0
+#define XF86MISC_MINOR_VERSION	1
 
 typedef struct _XF86MiscQueryVersion {
     CARD8	reqType;		/* always XF86MiscReqCode */
@@ -71,5 +71,80 @@ typedef struct {
     CARD32	pad5 B32;
 } xXF86MiscGetSaverReply;
 #define sz_xXF86MiscGetSaverReply	32
+
+typedef struct _XF86MiscGetMouseSettings {
+    CARD8	reqType;		/* always XF86MiscReqCode */
+    CARD8	xf86miscReqType;	/* always X_XF86MiscGetMouseSettings */
+    CARD16	length B16;
+} xXF86MiscGetMouseSettingsReq;
+#define sz_xXF86MiscGetMouseSettingsReq	4
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    BOOL	pad1;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	mousetype B32;
+    CARD32	baudrate B32;
+    CARD32	samplerate B32;
+    BOOL	emulate3buttons;
+    BOOL	chordmiddle;
+    CARD16	pad2 B16;
+    CARD32	emulate3timeout B32;
+    CARD32	flags B32;
+    CARD32	devnamelen B32;		/* strlen(device)+1 */
+} xXF86MiscGetMouseSettingsReply;
+#define sz_xXF86MiscGetMouseSettingsReply	36
+
+typedef struct _XF86MiscGetKbdSettings {
+    CARD8	reqType;		/* always XF86MiscReqCode */
+    CARD8	xf86miscReqType;	/* always X_XF86MiscGetKbdSettings */
+    CARD16	length B16;
+} xXF86MiscGetKbdSettingsReq;
+#define sz_xXF86MiscGetKbdSettingsReq	4
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    BOOL	pad1;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	kbdtype B32;
+    CARD32	rate B32;
+    CARD32	delay B32;
+    BOOL	servnumlock;
+    BOOL	pad2;
+    CARD16	pad3 B16;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+} xXF86MiscGetKbdSettingsReply;
+#define sz_xXF86MiscGetKbdSettingsReply	32
+
+typedef struct _XF86MiscSetMouseSettings {
+    CARD8	reqType;		/* always XF86MiscReqCode */
+    CARD8	xf86miscReqType;	/* always X_XF86MiscSetMouseSettings */
+    CARD16	length B16;
+    CARD32	mousetype B32;
+    CARD32	baudrate B32;
+    CARD32	samplerate B32;
+    BOOL	emulate3buttons;
+    BOOL	chordmiddle;
+    CARD16	pad2 B16;
+    CARD32	emulate3timeout B32;
+    CARD32	flags B32;
+} xXF86MiscSetMouseSettingsReq;
+#define sz_xXF86MiscSetMouseSettingsReq	28
+
+typedef struct _XF86MiscSetKbdSettings {
+    CARD8	reqType;		/* always XF86MiscReqCode */
+    CARD8	xf86miscReqType;	/* always X_XF86MiscSetKbdSettings */
+    CARD16	length B16;
+    CARD32	kbdtype B32;
+    CARD32	rate B32;
+    CARD32	delay B32;
+    BOOL	servnumlock;
+    BOOL	pad1;
+    CARD16	pad2 B16;
+} xXF86MiscSetKbdSettingsReq;
+#define sz_xXF86MiscSetKbdSettingsReq	20
 
 #endif /* _XF86VIDMODESTR_H_ */

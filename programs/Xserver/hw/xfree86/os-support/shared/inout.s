@@ -1,5 +1,5 @@
 /* $XConsortium: inout.s,v 1.3 94/10/12 20:50:05 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/inout.s,v 3.0 1994/08/31 04:40:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/inout.s,v 3.2 1995/01/28 17:05:02 dawes Exp $ */
 
 #include "assyntax.h"
 
@@ -24,7 +24,7 @@
 GLNAME(inb):
 	MOV_L	(REGOFF(4,ESP),EDX)
 	SUB_L	(EAX,EAX)
-	IN1_B	(DX)
+	IN_B
 	RET
 
 /*
@@ -40,7 +40,7 @@ GLNAME(inb):
 GLNAME(outb):
 	MOV_L	(REGOFF(4,sp),EDX)
 	MOV_L	(REGOFF(8,sp),EAX)
-	OUT1_B	(DX)
+	OUT_B
 	RET
 /*
  *-----------------------------------------------------------------------
@@ -54,7 +54,7 @@ GLNAME(outb):
 	GLOBL	GLNAME(inw)
 GLNAME(inw):
 	MOV_L	(REGOFF(4,ESP),EDX)
-	IN1_W	(DX)
+	IN_W
 	RET
 
 /*
@@ -70,7 +70,7 @@ GLNAME(inw):
 GLNAME(outw):
 	MOV_L	(REGOFF(4,ESP),EDX)
 	MOV_L	(REGOFF(8,ESP),EAX)
-	OUT1_W	(DX)
+	OUT_W
 	RET
 
 /*
@@ -85,7 +85,7 @@ GLNAME(outw):
 	GLOBL	GLNAME(inl)
 GLNAME(inl):
 	MOV_L	(REGOFF(4,ESP),EDX)
-	IN1_L	(EDX)
+	IN_L
 	RET
 
 /*
@@ -101,6 +101,6 @@ GLNAME(inl):
 GLNAME(outl):
 	MOV_L	(REGOFF(4,ESP),EDX)
 	MOV_L	(REGOFF(8,ESP),EAX)
-	OUT1_L	(EDX)
+	OUT_L
 	RET
 

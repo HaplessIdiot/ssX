@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.0 1995/03/11 14:15:21 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -50,6 +50,8 @@ void xf86OpenConsole()
 	KBDHWID hwid;
 	APIRET rc;
 
+	ErrorF("Opening console!\n");
+
 	xf86Info.consoleFd = -1;
 
 	/* grab the keyboard */
@@ -63,6 +65,8 @@ void xf86OpenConsole()
 	if (rc != 0)
 		FatalError("xf86OpenConsole: cannot open keyboard, rc=%d\n",rc);
 	xf86Info.consoleFd = fd;
+
+	ErrorF("Keyboard opened!\n");
 
 	/* assign logical keyboard */
 	KbdFreeFocus(0);

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.0 1994/10/20 06:00:12 dawes Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.1 1995/03/11 14:02:50 dawes Exp $
 
 /*
  * OS2/EMX shared library rules (DLL version)
@@ -123,12 +123,16 @@ install:: libname.dll libname.a						@@\
 #define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
 AllTarget(libname.dll)							@@\
 .SUFFIXES: .obj .rsp .def						@@\
+        LBRPATH = $(subst /,\,$(LIBRARY_PATH))				@@\
+        LBRDEF = Concat3(libname,os2,.def)				@@\
+	LBRCPPDEF = Concat3(libname,os2,-def.cpp)			@@\
+	LBRRSP = Concat3(libname,os2,.rsp)				@@\
 									@@\
-link.rsp: Concat3(libname,os2,.rsp)					@@\
-	@echo $(EMXLIBPATH)"\\dll0.obj+" >link.rsp			@@\
-	@cat Concat3(libname,os2,.rsp) >>link.rsp			@@\
-	@echo $(EMXLIBPATH)\\mt\\ $(EMXLIBPATH)\\ $(REQUIREDLIBS) bsd socket c_import os2 emx2 >>link.rsp	@@\
-	@echo Concat3(libname,os2,.def) >>link.rsp			@@\
+link.rsp: $(LBRRSP) $(LBRDEF)						@@\
+	@echo $(LBRPATH)"\\dll0.obj+" >link.rsp				@@\
+	@cat $(LBRRSP) >>link.rsp					@@\
+	@echo $(LBRPATH)\\mt\\ $(LBRPATH)\\ $(REQUIREDLIBS) bsd socket c_alias c_static c_import os2 emx2 end >>link.rsp	@@\
+	@echo $(LBRDEF) >>link.rsp					@@\
 									@@\
 libname.dll:  $(OBJS) link.rsp						@@\
 	link386 @link.rsp >nul						@@\
@@ -152,6 +156,20 @@ LibraryTargetName(libname): objlist					@@\
 	RanLibrary($@)							@@\
 	BuildLibSupportLibs($*)
 #endif /* NormalLibraryTarget */
+
+/*
+ * NormalDepLibraryTarget - generate rules to create a library.
+ */
+#ifndef NormalDepLibraryTarget
+#define	NormalDepLibraryTarget(libname,deplist,objlist)			@@\
+AllTarget(LibraryTargetName(libname))					@@\
+									@@\
+LibraryTargetName(libname): deplist					@@\
+	RemoveFile($@)							@@\
+	MakeLibrary($@,objlist)						@@\
+	RanLibrary($@)							@@\
+	BuildLibSupportLibs($*)
+#endif /* NormalDepLibraryTarget */
 
 /*
  * SharedLibraryDataTarget - generate rules to create shlib data file;

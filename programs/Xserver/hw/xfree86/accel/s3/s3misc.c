@@ -1,5 +1,5 @@
 /* $XConsortium: s3misc.c,v 1.6 95/01/23 15:34:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.36 1996/01/11 10:37:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.37 1996/01/16 15:03:29 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -197,7 +197,6 @@ s3Initialize(scr_index, pScreen, argc, argv)
 			      0, 0, (short) s3alu[GXcopy], ~0);	 
 
 	    if (S3_801_928_SERIES (s3ChipId)) {
-#ifndef PC98_PWLB
 	       outb(vgaCRIndex, 0x59);
 	       if (S3_x64_SERIES(s3ChipId)) 
 		  if (s3InfoRec.MemBase != 0) 
@@ -207,6 +206,11 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		  else
 		     outb(vgaCRReg, 0xf3);
 	       else
+#ifdef PC98_PWLB
+		if (pc98BoardType == PWLB)
+		  outb(vgaCRReg, 0x00);
+		else
+#endif
 		  outb(vgaCRReg, 0x03);
 
 	       outb(vgaCRIndex, 0x5a);
@@ -218,13 +222,12 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		  else
 		     outb(vgaCRReg, 0x00);
 	       else
-	          outb(vgaCRReg, 0x00);
-#else
-	       outb(vgaCRIndex, 0x59);
-	       outb(vgaCRReg, 0x00);
-	       outb(vgaCRIndex, 0x5a);
-	       outb(vgaCRReg, 0x40);
+#ifdef PC98_PWLB
+	       if (pc98BoardType == PWLB)
+		 outb(vgaCRReg, 0x40);
+	       else
 #endif
+	          outb(vgaCRReg, 0x00);
 	       outb (vgaCRIndex, 0x58);
 	       if (s3InfoRec.videoRam <= 1024) {
 		  s3LinApOpt=0x15;

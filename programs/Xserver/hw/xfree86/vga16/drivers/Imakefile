@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.3 95/01/06 20:58:18 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/Imakefile,v 3.5 1995/01/28 17:05:27 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/Imakefile,v 3.6 1995/03/11 14:15:49 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -11,13 +11,18 @@ SRCS = */?*.c
 OBJS = */?*_drv.o 
 #else
 SRCS = ati/?*.c cl64xx/?*.c et4000/?*.c generic/?*.c ncr77c22/?*.c \
-       oak/?*.c tvga8900/?*.c
+       oak/?*.c tvga8900/?*.c sis/?*.c
 
 OBJS = ati/?*_drv.o cl64xx/?*_drv.o et4000/?*_drv.o generic/?*_drv.o \
-       ncr77c22/?*_drv.o oak/?*_drv.o tvga8900/?*_drv.o
+       ncr77c22/?*_drv.o oak/?*_drv.o tvga8900/?*_drv.o sis/?*_drv.o
 #endif
 
+#if MakeHasPosixVariableSubstitutions
+DONES=$(SUBDIRS:%=%/DONE)
+NormalDepLibraryTarget(driver16,$(SUBDIRS) $(DONES),$(OBJS))
+#else
 NormalDepLibraryTarget(driver16,$(SUBDIRS),$(OBJS))
+#endif
 
 NormalLibraryObjectRule()
 

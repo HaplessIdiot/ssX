@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.7 1996/01/05 13:07:36 dawes Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.8 1996/01/21 01:47:20 dawes Exp $
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
 #endif
@@ -38,23 +38,27 @@ SimpleProgramTarget(lndir)
 #endif
 
 NormalProgramTarget(makestrs,makestrs.o,,,)
+
 InstallManPage(makestrs,$(MANDIR))
 
-InstallNamedProg(xmkmf,xmkmf,$(BINDIR))
 InstallManPage(xmkmf,$(MANDIR))
 
 #if defined(OS2Architecture)
 InstallNamedProg(mkdirhier.cmd,mkdirhier.cmd,$(BINDIR))
 InstallNamedProg(indir.cmd,indir.cmd,$(BINDIR))
 InstallNamedProg(os2inst.cmd,os2inst.cmd,$(BINDIR))
+InstallNamedProg(xmkmf.cmd,xmkmf.cmd,$(BINDIR))
+InstallNamedProg(xmake.cmd,xmake.cmd,$(BINDIR))
 InstallLinkKitNamedProg(mkdirhier.cmd,mkdirhier.cmd,$(LINKKITDIR)/config/util)
 InstallLinkKitNamedProg(indir.cmd,indir.cmd,$(LINKKITDIR)/config/util)
 InstallLinkKitNamedProg(os2inst.cmd,os2inst.cmd,$(LINKKITDIR)/config/util)
 #else
+InstallNamedProg(xmkmf,xmkmf,$(BINDIR))
 InstallNamedProg(mkdirhier.sh,mkdirhier,$(BINDIR))
 InstallNamedProg(gccmakedep,gccmakedep,$(BINDIR))
 InstallLinkKitNamedProg(mkdirhier.sh,mkdirhier.sh,$(LINKKITDIR)/config/util)
 InstallLinkKitNamedProg(gccmakedep,gccmakedep,$(LINKKITDIR)/config/util)
+InstallNamedProg(mergelib,mergelib,$(BINDIR))
 #endif
 InstallManPage(mkdirhier,$(MANDIR))
 #if UseCCMakeDepend
@@ -65,4 +69,3 @@ InstallLinkKitNamedProg(makedepend,makedepend,$(LINKKITDIR)/config/util)
 InstallNamedProg(bsdinst.sh,bsdinst,$(BINDIR))
 InstallLinkKitNamedProg(bsdinst.sh,bsdinst.sh,$(LINKKITDIR)/config/util)
 #endif
-InstallNamedProg(mergelib,mergelib,$(BINDIR))

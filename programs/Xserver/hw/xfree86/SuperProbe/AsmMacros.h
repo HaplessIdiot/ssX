@@ -26,17 +26,8 @@
  */
 
 /* $XConsortium: AsmMacros.h,v 1.7 95/01/25 23:14:20 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.4 1994/12/17 09:58:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.5 1995/01/28 15:46:54 dawes Exp $ */
 
-#if defined(__EMX__)
-#include <sys/hw.h>
-#define outb(p,v) _outp8(p,v)
-#define outw(p,v) _outp16(p,v)
-#define outl(p,v) _outp32(p,v)
-#define inb(p) _inp8(p)
-#define inw(p) _inp16(p)
-#define inl(p) _inp32(p)
-#else
 #if defined(__GNUC__)
 
 #ifdef GCCUSESGAS
@@ -212,4 +203,3 @@ void outl(U16_t, U32_t);
 
 #endif /* _MINIX and _ACK */
 #endif /* __GNUC__ */
-#endif /* __EMX__ */

@@ -1,8 +1,8 @@
 
 ALPHA-CODE ALPHA-CODE ALPHA-CODE ALPHA-CODE ALPHA-CODE ALPHA-CODE ALPHA-CODE
 
-           README for XFree86 3.1.1 on OS/2 2.11 and Warp
-           --------------------------------------------
+           README for XFree86 3.1.2 on OS/2 2.11 and Warp
+           ----------------------------------------------
 
 
 This is a preliminary README which will be updated when the port is finished.
@@ -19,12 +19,17 @@ Contents
 ------------------------
 
 XFree86/OS2 is the work title for a project to port XFree86 to OS/2.
-Currently the main worker on this is Holger Veit <veit@gmd.de>, with
-some assistance of Jeff Bakst (<email address not handy in the moment>).
+Currently the main worker on this is Holger Veit <Holger.Veit@gmd.de>, with
+some assistance from a few guys from the net.
 If you want to participate and help, please contact Holger, after having 
 read this readme. Please refrain from mails that ask about the current
 status, or letters of encouragement. It is well known that XFree86/OS2
 would be a great idea.
+*****
+For somewhat more up-to-date information - possibly also invalidating parts
+of this file, read http://borneo.gmd.de/~veit/os2/xf86os2.html first.
+*****
+
 
 2 - What are the primary design goals?
 --------------------------------------
@@ -56,7 +61,7 @@ xdm, for instance, as well as accepting remote connections.
 XFree86/OS2 can use TCP/IP sockets right now, and it is intended that it
 will support local (named pipe) connections as well.
 
-XFree86/OS2 requires OS/2 2.11 or OS/2 Warp.
+XFree86/OS2 requires OS/2 2.11, OS/2 Warp, OS/2 Warp Connect or OS/2 Warp Server.
 
 The port is being done using the EMX/GCC development system, but it is
 intended to adapt the configuration to different compilers as well.
@@ -91,16 +96,20 @@ As the port is currently done by a single person only in his free time
   porting own applications now (you need to test them remote for now, however).
 
 - Many X clients from the tree compile, several ones have been tested with
-  a remote Xserver; and they display correctly. This was with EMX 0.8h,
-  in the meantime, EMX 0.9A is in use, so things might have been broken.
+  a remote Xserver; and they display correctly. This is with EMX 0.9B.
 
 - SuperProbe as a test case for direct I/O and MMap has been ported.
 
-- Most of the Server compiles, and the difficult os-support part has been
-  written, but nothing has been tested yet.
+- The servers compiles, and the difficult os-support part has been
+  written, but few has been tested yet.
 
-- xterm, xconsole and xdm are critical, they only partly compile, but
-  certainly won't run without some possibly severe changes.
+- xterm, xconsole now work.
+
+- xdm is still critical, it does not compile yet and will, likewise to
+  xterm need substantial rewriting. Since security is involved here more
+  than in other programs, I will defer its port until I find a suitable
+  secure scheme. I am thinking about a port of the BSD UFS file system and
+  provide a Kerberos V authentification, but this is music of the future.
 
 - There are still some Unix shell scripts in the tree, that must be rewritten 
   to REXX. This involves changing several Imakefiles.
@@ -108,11 +117,19 @@ As the port is currently done by a single person only in his free time
 4 - How to get started when I want to recompile the code?
 ---------------------------------------------------------
 
-Starting with a shopping list, get the following things:
+Please consult the XFree86/OS2 home page http://borneo.gmd.de/~veit/os2/xf86os2.html
+for details. You will find links to a number of patch files "os2pack*" which
+you basically need to apply to an unpacked XFree86-3.1.2 source tree.
+Read the README files in these patch packages on details about prerequisites
+and getting the code compiled. The following ``shopping listïï is still
+valid:
+
+Get the following things:
 - IBM TCP/IP 2.0 (commercial); Warp IAK is sufficient for the final system, 
   but without a working X server, you now need to access a remote Unix system
-  via ethernet.
-- EMX/GCC 0.9A package, with gcc, as, ar, etc. You don't need g++ now.
+  via ethernet. Alternatively, you may also use the TCP/IP support from
+  Warp Connect or Warp Server.
+- EMX/GCC 0.9B package, with gcc, as, ar, etc. You don't need g++ now.
   The gcc version is almost uncritical.
 - GNU Make 3.71/72 for OS/2
 - GNU shell utils, and file utils
@@ -122,56 +139,6 @@ Starting with a shopping list, get the following things:
 - GNU bison and flex
 - GNU diff and patch
 
-Looks almost complete for now. Install everything properly and test it
-with simple files. If you won't be able to get it running to compile
-hello.c, forget fixing problems in XFree86.
-
-Get X11 and patch it up to the current level of XFree86, again something
-that you are supposed to manage yourself. Note that you install it
-on a reasonably large HPFS file system. I have installed both EMX and
-X11 on 300 MB HPFS, with the whole core tree built (as far as it works),
-there are still 70MB free. Take into account that you could put your
-swapfile on this disk as well, and that you need approx 40-50 MB to
-install the system later on; so don't try to save disk space and start with
-a too small disk.
-
-X11 is supposed to be installed in a root dir \x11, emx in \emx, so my
-disk layout of d: looks like
-	d:\emx
-	  ...\bin
-	  ...\lib
-	  ...\dll
-	  ...\include
-	  ......\sys
-        d:\x11
-	  ...\xc
-	  ......\config
-	  .........\imake
-	  .........\cf   etc.
-	  ......\include
-	  ......\lib
-	  .........\X11
-	  .........\oldX
-	  .........\Xt   etc.
-	  ......\programs
-	  .........\appres
-	  .........\bdftopcf
-	  .........\Xserver
-	  .............\cfb
-	  .............\hw
-	  ................\xfree86 etc.
-	d:\XFree86	(where the system is going to be installed)
-
-It is a good idea to use the same layout.
-
-To recompile:
-- Check \x11\xc\config\cf\os2.cf, I temporarily put some declarations there
-  that logically belong into site.def.
-- From \x11\xc\config\util, get buildos2.cmd and put it into \x11\xc.
-- Run this script, it should eventually finish. It will place a buildxc.log
-  file in \x11\xc.
-That's it for now. You are on your own.
-
 Holger Veit
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.OS2,v 3.0 1995/03/11 14:14:02 dawes Exp $

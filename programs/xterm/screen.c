@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: screen.c,v 1.33 94/04/02 17:34:36 gildea Exp $
- *	$XFree86: xc/programs/xterm/screen.c,v 3.2 1995/12/16 08:24:08 dawes Exp $
+ *	$XFree86: xc/programs/xterm/screen.c,v 3.3 1996/01/10 05:44:23 dawes Exp $
  */
 
 /*
@@ -63,6 +63,19 @@ extern void free();
 #include <sys/termio.h>
 #define TIOCGPGRP TCGETPGRP
 #define TIOCSPGRP TCSETPGRP
+#endif
+
+#ifdef __EMX__
+extern int ptioctl(int fd, int func, void* data);
+#define ioctl ptioctl
+#define TIOCSWINSZ	113
+#define TIOCGWINSZ	117
+struct winsize {
+        unsigned short  ws_row;         /* rows, in characters */
+        unsigned short  ws_col;         /* columns, in characters */
+        unsigned short  ws_xpixel;      /* horizontal size, pixels */
+        unsigned short  ws_ypixel;      /* vertical size, pixels */
+};
 #endif
 
 static int Reallocate PROTO((ScrnBuf *sbuf, Char **sbufaddr, int nrow, int ncol, int oldrow, int oldcol));

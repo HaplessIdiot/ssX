@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.1 1995/12/23 09:36:44 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.2 1996/01/17 12:45:52 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -7,6 +7,12 @@ Copyright (c) 1995  The XFree86 Project, Inc
 */
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
+
+#ifdef __EMX__ /* needed here to override certain constants in X headers */
+#define INCL_DOS
+#define INCL_DOSIOCTL
+#include <os2.h>
+#endif
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -299,7 +305,9 @@ Bool XF86DGASetVidPage(dpy, screen, vpage)
 # include <sys/mmap.h>
 #else
 # if !defined(Lynx)
-#  include <sys/mman.h>
+#  if !defined(__EMX__)
+#   include <sys/mman.h>
+#  endif
 # else
 #  include <sys/types.h>
 #  include <errno.h>
@@ -313,6 +321,7 @@ extern int errno;
 #if defined(ISC) && defined(HAS_SVR3_MMAP)
 struct kd_memloc XFree86mloc;
 #endif
+
 static char * _XFree86addr = NULL;
 static int    _XFree86size = 0;
 
@@ -323,7 +332,7 @@ int enable;
 {
    if (enable&XF86DGADirectGraphics) {
 	 fprintf(stderr, "video memory unprotecting\n");
-#if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx)
+#if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) && !defined(__EMX__)
       if (_XFree86addr && _XFree86size)
          if (mprotect(_XFree86addr,_XFree86size, PROT_READ|PROT_WRITE)) {
          fprintf(stderr, "XF86DGADirectVideo: mprotect (%s)\n",
@@ -334,7 +343,7 @@ int enable;
    } else {
       if (_XFree86addr && _XFree86size)
 	 fprintf(stderr, "video memory protecting\n");
-#if !defined(ISC) && !defined(HAS_SVR3_MMAP)
+#if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(__EMX__)
 #ifndef Lynx
          if (mprotect(_XFree86addr,_XFree86size, PROT_READ)) {
          fprintf(stderr, "XF86DGADirectVideo: mprotect (%s)\n",
@@ -372,6 +381,11 @@ int *width, *bank, *ram;
 {
    int offset, fd;
    int pid, status;
+#ifdef __EMX__
+   APIRET rc;
+   ULONG action;
+   HFILE hfd;
+#endif
 
    XF86DGAGetVideoLL(dis, screen , &offset, width, bank, ram);
 
@@ -382,10 +396,24 @@ int *width, *bank, *ram;
         fprintf(stderr, "XF86DGAGetVideo: failed to open /dev/mmap (%s)\n",
                            strerror(errno));
 #else
+#ifdef __EMX__
+   /* Dragon warning here! /dev/pmap$ is never closed, except on progam exit.
+    * Consecutive calling of this routine will make PMAP$ driver run out
+    * of memory handles. Some umap/close mechanism should be provided
+    */
+
+   rc = DosOpen("/dev/pmap$", &hfd, &action, 0, FILE_NORMAL, FILE_OPEN,
+		OPEN_ACCESS_READWRITE | OPEN_SHARE_DENYNONE, (PEAOP2)NULL);
+   if (rc != 0) {
+	fprintf(stderr, 
+		"XF86DGAGetVideo: failed to open /dev/pmap$ (rc=%d)\n",
+		rc);
+#else
    if ((fd = open("/dev/mem", O_RDWR)) < 0)
    {
         fprintf(stderr, "XF86DGAGetVideo: failed to open /dev/mem (%s)\n",
                            strerror(errno));
+#endif
 #endif
         exit (-1);
    }
@@ -414,8 +442,40 @@ int *width, *bank, *ram;
      DEBUG_MMAP("after MMAP");
      fprintf(stderr, "XF86DGAGetVideo: failed to mmap /dev/mmap (%s)\n",
                            strerror(errno));
-#else
-#ifndef Lynx
+#else /* !ISC */
+#ifdef Lynx
+   *addr = (void *)smem_create("XF86DGA", (char *)offset, *bank, SM_READ|SM_WRITE);
+   if (*addr == NULL) {
+        fprintf(stderr, "XF86DGAGetVideo: smem_create() failed (%s)\n",
+                           strerror(errno));
+#else /* !Lynx */
+#ifdef __EMX__
+   {
+	struct map_ioctl {
+		union {
+			ULONG phys;
+			void* user;
+		} a;
+		ULONG size;
+	} pmap,dmap;
+	ULONG plen,dlen;
+#define XFREE86_PMAP	0x76
+#define PMAP_MAP	0x44
+
+	pmap.a.phys = offset;
+	pmap.size = *bank;
+	rc = DosDevIOCtl(hfd, XFREE86_PMAP, PMAP_MAP,
+			 (PULONG)&pmap, sizeof(pmap), &plen,
+			 (PULONG)&dmap, sizeof(dmap), &dlen);
+	if (rc==0) {
+		*addr = dmap.a.user;
+	}
+   }
+   if (rc != 0) {
+        fprintf(stderr, 
+		"XF86DGAGetVideo: failed to mmap /dev/pmap$ (rc=%d)\n",
+                rc);
+#else /* !__EMX__ */
    /* This requires linux-0.99.pl10 or above */
    *addr = (void *)mmap(NULL, *bank, PROT_READ,
                             MAP_SHARED, fd, (off_t)offset);
@@ -426,13 +486,9 @@ int *width, *bank, *ram;
    if (*addr == (char *) -1) {
         fprintf(stderr, "XF86DGAGetVideo: failed to mmap /dev/mem (%s)\n",
                            strerror(errno));
-#else
-   *addr = (void *)smem_create("XF86DGA", (char *)offset, *bank, SM_READ|SM_WRITE);
-   if (*addr == NULL) {
-        fprintf(stderr, "XF86DGAGetVideo: smem_create() failed (%s)\n",
-                           strerror(errno));
-#endif
-#endif
+#endif /* !__EMX__*/
+#endif /* !Lynx */
+#endif /* !ISC && !HAS_SVR3_MMAP */
         exit (-2);
    }
    _XFree86size = *bank;

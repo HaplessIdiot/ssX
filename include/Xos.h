@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.68 95/06/02 16:51:21 gildea Exp $
- * $XFree86: xc/include/Xos.h,v 3.12 1995/06/14 07:01:22 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.13 1995/08/05 11:49:40 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -263,6 +263,10 @@ typedef char *caddr_t;
 typedef unsigned char u_char;
 #endif /* MINIX */
 
+#ifdef __EMX__
+typedef unsigned long fd_mask;
+#endif
+
 /* use POSIX name for signal */
 #if defined(X_NOT_POSIX) && defined(SYSV) && !defined(SIGCHLD) && !defined(ISC)
 #define SIGCHLD SIGCLD
@@ -274,7 +278,7 @@ typedef unsigned char u_char;
 #define NGROUPS 16
 #endif
 
-#if defined(SCO) || defined(ISC)
+#if defined(SCO) || defined(ISC) || defined(__EMX__)
 /*
  *	Some OS's may not have this
  */

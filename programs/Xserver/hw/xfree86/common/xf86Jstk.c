@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.3 1996/01/12 14:33:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.4 1996/01/14 13:35:08 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -49,8 +49,13 @@
 #ifdef DBG
 #undef DBG
 #endif
-#if 0
-static int      debug_level = 4;
+#ifdef DEBUG
+#undef DEBUG
+#endif
+
+static int      debug_level = 0;
+#define DEBUG 1
+#if DEBUG
 #define DBG(lvl, f) {if ((lvl) <= debug_level) f;}
 #else
 #define DBG(lvl, f)
@@ -91,6 +96,7 @@ typedef struct
 #define CENTERY 8
 #define DELTA 9
 #define PORT 10
+#define DEBUG_LEVEL 11
 
 static SymTabRec JstkTab[] = {
   { ENDSUBSECTION,	"endsubsection" },
@@ -104,6 +110,7 @@ static SymTabRec JstkTab[] = {
   { CENTERY,		"centery" },
   { DELTA,		"delta" },
   { PORT,		"port" },
+  { DEBUG_LEVEL,	"debuglevel" },
   { -1,			"" },
 };
 
@@ -238,6 +245,21 @@ xf86JstkConfig(LocalDevicePtr    *array,
       priv->jstkDelta = val->num;
      break;
       
+    case DEBUG_LEVEL:
+	if (xf86GetToken(NULL) != NUMBER)
+	    xf86ConfigError("Option number expected");
+	debug_level = val->num;
+	if (xf86Verbose) {
+#if DEBUG
+	    ErrorF("%s Joystick debug level sets to %d\n", XCONFIG_GIVEN,
+		   debug_level);      
+#else
+	    ErrorF("%s Joystick debug level not sets to %d because debugging is not compiled\n",
+		   XCONFIG_GIVEN, debug_level);
+#endif
+	}
+        break;
+
     case EOF:
       FatalError("Unexpected EOF (missing EndSubSection)");
       break; /* :-) */

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/Imakefile,v 3.1 1994/05/30 08:27:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/Imakefile,v 3.2 1995/06/02 10:27:36 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = s3_driver.c s3_bank.s
@@ -13,6 +13,9 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I$(INCLUDESRC)
 #endif
 
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 

@@ -1,5 +1,5 @@
 # $XConsortium: Makefile /main/32 1996/01/18 06:15:36 kaleb $
-# $XFree86: xc/Makefile,v 3.1 1996/01/12 14:55:25 dawes Exp $
+# $XFree86: xc/Makefile,v 3.2 1996/01/21 01:47:06 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -119,6 +119,26 @@ World.Win32:
 	@echo Full build of $(RELEASE) of the X Window System complete.
 	@echo :
 
+World.OS2:
+	@echo :
+	@echo Building $(RELEASE) of the X Window System on OS/2.
+	@echo :
+	@echo :
+	\indir $(IMAKESRC) $(MAKE) SHELL= -f Makefile.ini clean.os2
+	\indir $(IMAKESRC) $(MAKE) SHELL= CC=gcc -f Makefile.ini imake.os2
+	-if exist Makefile.bak del Makefile.bak
+	-if exist Makefile ren Makefile Makefile.bak
+	$(subst /,\,$(IMAKE)) -I$(IRULESRC) $(IMAKE_DEFINES) -DTOPDIR=$(TOP) -DCURDIR=$(CURRENT_DIR)
+	$(MAKE) $(MFLAGS) VerifyOS
+	$(MAKE) $(MFLAGS) Makefiles
+	$(MAKE) $(MFLAGS) clean
+	$(MAKE) $(MFLAGS) includes
+	$(MAKE) $(MFLAGS) depend
+	$(MAKE) $(MFLAGS)  
+	@echo :
+	@echo :
+	@echo Full build of $(RELEASE) of the X Window System complete.
+	@echo :
 
 # don't allow any default rules in this Makefile
 .SUFFIXES:

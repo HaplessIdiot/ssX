@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/7 1995/11/07 19:46:45 gildea $
-XCOMM $XFree86: xc/config/imake/Imakefile,v 3.3 1995/07/12 15:28:03 dawes Exp $
+XCOMM $XFree86: xc/config/imake/Imakefile,v 3.4 1996/01/05 13:07:08 dawes Exp $
 
 DEPLIBS = 
 
@@ -26,6 +26,10 @@ InstallLinkKitNamedProg(imake,imake,$(LINKKITDIR)/config/imake)
 #else /* OS2Architecture */
 all::
 
+CCOPTIONS = -Zsysv-signals
+EXTRA_LIBRARIES = /*nothing*/
+SimpleProgramTarget(imake)
+InstallLinkKitNamedProg(imake,imake,$(LINKKITDIR)/config/imake)
 InstallNamedProg(imakesvc.cmd,imakesvc.cmd,$(BINDIR))
 InstallLinkKitNamedProg(imakesvc.cmd,imakesvc.cmd,$(LINKKITDIR)/config/imake)
 #endif

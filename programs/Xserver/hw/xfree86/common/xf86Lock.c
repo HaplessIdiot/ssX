@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Lock.c,v 1.3 95/01/06 21:01:52 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Lock.c,v 3.1 1994/12/29 10:07:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Lock.c,v 3.2 1995/01/28 15:57:46 dawes Exp $ */
 
 /*
  * Explicit support for a server lock file like the ones used for UUCP.
@@ -13,6 +13,7 @@
 
 #include "Xos.h"
 #include <sys/stat.h>
+#include <stdio.h>
 #include "misc.h"
 
 #ifdef _MINIX
@@ -54,8 +55,17 @@ xf86LockServer()
   /*
    * Path names
    */
+#ifndef __EMX__
   (void) sprintf(tmp, "%s%s%s", LOCK_TMPPATH, display, LOCK_SUFFIX);
   (void) sprintf(lock, "%s%s%s", LOCK_PATH, display, LOCK_SUFFIX);
+#else
+  /* OS/2 uses TMP directory, must also prepare for 8.3 names */
+  char *tmppath = getenv("TMP");
+  if (!tmppath)
+    FatalError("No TMP dir found\n", tmp);
+  (void) sprintf(tmp, "%s/xf86$%s.lck",tmppath, display);
+  (void) sprintf(lock, "%s/xf86_%s.lck",tmppath, display);
+#endif
 
   /*
    * Create a temporary file containing our PID.  Attempt three times
@@ -85,7 +95,12 @@ xf86LockServer()
   i = 0;
   haslock = 0;
   while ((!haslock) && (i++ < 3)) {
+
+#ifndef __EMX__
     haslock = (link(tmp,lock) == 0);
+#else
+    haslock = (rename(tmp,lock)==0);
+#endif
     if (haslock) {
       /*
        * We're done.

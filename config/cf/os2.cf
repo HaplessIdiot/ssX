@@ -1,9 +1,9 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.4 1995/03/12 12:57:55 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.5 1995/09/22 07:06:32 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
-#define OSMajorVersion    2
-#define OSMinorVersion    1
+#define OSMajorVersion    3
+#define OSMinorVersion    0
 
 /*
  * C library features
@@ -18,12 +18,6 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.4 1995/03/12 12:57:55 dawes E
 /* X_WCHAR and X_LOCALE are set in Xosdefs.h */
 #define StandardDefines   /**/
 #define XawI18nDefines    -DUSE_XWCHAR_STRING -DUSE_XMBTOWC
-
-/* Set the following to the path where the emx *.lib files are! 
- * The following is a correct path:
- * EMXLIBPATH = q:\foo\bar
- */
-  EMXLIBPATH = d:\emx\lib
 
 /* This will redirect everything to /XFree86
  * Care will be taken that programs that need a file from this tree
@@ -44,10 +38,6 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.4 1995/03/12 12:57:55 dawes E
 #define OSDefines		-D__EMX__ -D__i386__ -Demxos2 -D_POSIX_SOURCE \
 				-D_BSD_SOURCE -D_GNU_SOURCE
 
-#define BuildPexExt	YES
-#define BuildXInputExt	NO
-#define BuildXIE	YES
-#define BuildXKB	NO
 /* OS/2 bash implementation (or even OS/2 itself) has a bug preventing
  * proper make clean/include/depend/all in deeper Xfree86 dirs. The following
  * prevents diving into XFree86 dirs, unless explicitly requested.
@@ -73,12 +63,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.4 1995/03/12 12:57:55 dawes E
 # define HasShm          	NO
 #endif
 #define ConnectionFlags		-DTCPCONN
-
-/* set to YES if you have MASM 6.0
- * ATTENTION: if you have no MASM 6.0, you need UUDECODE, because
- * there are precompiled versions of certain object files
- */
-#define HasMasm			NO
+#define StdIncDir $(C_INCLUDE_PATH)
 
 /*
  * Compiler Features
@@ -101,13 +86,6 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.4 1995/03/12 12:57:55 dawes E
 #define StandardCppDefines	-traditional
 #define PreProcessCmd	CppCmd
 
-/*
- * ATTENTION: This is defined, but due to a bug in make/gcc (?) the defines are
- * hard coded into config/makedepend/main.c.
- * You must change them there!
- */
-#define PreIncDir	/emx/include
-
 #define CcCmd	gcc
 #define DefaultCCOptions	-Zmtd -Zsysv-signals
 #define LibraryCCOptions	-Zmtd -Zsysv-signals
@@ -121,8 +99,8 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.4 1995/03/12 12:57:55 dawes E
 
 #define LdCmd	ld
 #define ExtraLoadFlags	/**/
-#define ExtraLibraries	/emx/lib/binmode.Osuf -lsocket -lbsd
-#define ServerExtraSysLibs -lemxio
+#define ExtraLibraries	$(LIBRARY_PATH)/binmode.Osuf -lsocket -lbsd
+/*define ServerExtraSysLibs -lemxio*/
 
 /* quite a number of programs you need, most of them the same as
  * with Unix, but listed here for completeness
@@ -145,6 +123,9 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.4 1995/03/12 12:57:55 dawes E
 #define ImakeCmd \imake
 #define MkdirHierCmd \mkdirhier
 #define DependCmd \makedepend
+#else
+/* imake and mkdirhier come from Imake.tmpl, but DependCmd must be overriden */
+#define DependCmd makedepend
 #endif
 
 /* "shell scripts" in OS/2 have this extension */
@@ -171,7 +152,6 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.4 1995/03/12 12:57:55 dawes E
 #else
 #define ServerExtraDefines GccGasOption
 #endif
-
 
 /*
  * Make & install Features

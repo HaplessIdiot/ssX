@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.1 1995/06/17 12:18:51 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -73,7 +73,7 @@ int xf86GetKbdLeds()
 	return rc ? 0 : kinfo.fsState & 0x70;
 }
 
-#if __STDC__
+#if NeedFunctionPrototypes
 void xf86SetKbdRepeat(char rad)
 #else
 void xf86SetKbdRepeat(rad)
@@ -135,6 +135,7 @@ int xf86KbdOn()
 int xf86KbdOff()
 {
 	KBDINFO info;
+
 	KbdGetStatus(&info,(HKBD)xf86Info.consoleFd);
 	info.fsMask &= ~0x136;
 	info.fsMask |= 0x29;
@@ -154,6 +155,7 @@ int xf86MouseOn()
 	APIRET rc;
 	USHORT nbut;
 
+
 	if (serverGeneration == 1) {
 		rc = MouOpen((PSZ)NULL,(PHMOU)&fd);
 		if (rc != 0)
@@ -169,7 +171,7 @@ int xf86MouseOn()
 	if (rc == 0)
 		ErrorF("OsMouse has %d button(s).\n",nbut);
 
-	return -1;
+	return (xf86Info.mseFd);
 }
 
 /* This table is a bit irritating, because these mouse types are infact

@@ -1,14 +1,18 @@
-% $XConsortium: dbe.tex /main/2 1995/10/09 08:34:28 dpw $
+% $XConsortium: dbe.tex /main/5 1996/01/19 15:03:46 converse $
 \documentstyle{article}
 \pagestyle{myheadings}
 \markboth{Double Buffer Extension Specification}{Double Buffer Extension Specification}
 \setlength{\parindent}{0 pt}
 \setlength{\parskip}{6pt}
 
-\newcommand{\requestname}[1]{{\bf #1}}
+% Request names are literal symbols; therefore, use the same font for both.
+\newcommand{\requestname}[1]{{\tt #1}}
+\newcommand{\literal}[1]{\mbox{\tt #1}}
+
+% Font treatment of type names differs between protocol and library sections.
+\newcommand{\libtypename}[1]{\mbox{\tt #1}}
+\newcommand{\typename}[1]{\mbox{\rm #1}}
 \newcommand{\argname}[1]{\mbox{\it #1}}
-\newcommand{\typename}[1]{\mbox{\tt #1}}
-\newcommand{\constant}[1]{\mbox{\tt #1}}
 \newcommand{\argdecl}[2]{\argname{#1} & : \typename{#2}\\}
 
 \newenvironment{arequest}[1]{\requestname{#1} \\ \begin{tabular}{ll}}{\end{tabular}}
@@ -25,8 +29,9 @@
 \newenvironment{etypedef}[1]{\begin{keeptogether} \typename{#1} \begin{tabbing} \etabstops }{\end{tabbing} \end{keeptogether}}
 
 \newcommand{\cfunctionname}[1]{\mbox{\tt #1}}
+\newcommand{\cfunctiondecl}[1]{\mbox{\rm #1}}
 \newcommand{\cargdecl}[2]{\penalty -1\typename{#1} \argname{#2}}
-\newenvironment{cfunction}[2]{\begin{sloppypar}\begin{keeptogether}\vspace{5mm}\typename{#1}\\ \cfunctionname{#2}\ (}{)\end{keeptogether}\end{sloppypar}{\hangafter=2 \hangindent=20pt \raggedright\par}}
+\newenvironment{cfunction}[2]{\begin{sloppypar}\begin{keeptogether}\vspace{5mm}\typename{#1}\\ \cfunctiondecl{#2}\ (}{)\end{keeptogether}\end{sloppypar}{\hangafter=2 \hangindent=20pt \raggedright\par}}
 
 % make things easier with all the long names
 \spaceskip .3333em plus 5em
@@ -70,8 +75,8 @@ not.  Successive frames of an animation are rendered into the back
 buffer while the previously rendered frame is displayed in the front
 buffer.  When a new frame is ready, the back and front buffers swap
 roles, making the new frame visible.  Ideally, this exchange appears to
-happen instantaneously to the user, with no visual artifacts.  Thus,
-only completely rendered images are presented to the user, and remain
+happen instantaneously to the user and with no visual artifacts.  Thus,
+only completely rendered images are presented to the user, and they remain
 visible during the entire time it takes to render a new frame.  The
 result is a flicker-free animation.
 
@@ -117,7 +122,8 @@ hardware access (DGHA) architectures.
 
 Normal windows are created using the core \requestname{CreateWindow}
 request, which allocates a set of window attributes and, for
-InputOutput windows, a front buffer, into which an image can be drawn.
+\literal{InputOutput} windows, a front buffer,
+into which an image can be drawn.
 The contents of this buffer will be displayed when the window is
 visible.
 
@@ -140,7 +146,7 @@ buffer always use the window XID for all drawing requests to the
 window.
 
 Multiple clients and toolkits can all use double-buffering on the same
-window.  DBE doesn't provide a request for querying whether a window
+window.  DBE does not provide a request for querying whether a window
 has double-buffering support, and if so, what the back buffer name is.
 Given the asynchronous nature of the X Window System, this would cause
 race conditions.  Instead, DBE allows multiple back buffer names to
@@ -166,10 +172,12 @@ front buffer).
 depth, width, height, and shape as the window.
 
 \item Both buffers associated with a window are ``visible'' (or
-``obscured'') in the same way.  When an Expose event is generated for
+``obscured'') in the same way.  When an \literal{Expose} event is
+generated for
 a window, both buffers should be considered to be damaged in the
 exposed area.  Damage that occurs to either buffer will result in an
-Expose event on the window.  When a double-buffered window is exposed,
+\literal{Expose} event on the window.  When a double-buffered window is
+exposed,
 both buffers are tiled with the window background, exactly as stated
 by the core protocol.  Even though the back buffer is not visible,
 terms such as obscure apply to the back buffer as well as to the front
@@ -181,7 +189,7 @@ expects a \typename{DRAWABLE}.  This enables an application to draw
 directly into \typename{BACKBUFFER}s in the same fashion as it would
 draw into any other \typename{DRAWABLE}.
 
-\item It is an error (Window) to pass a \typename{BACKBUFFER} in a
+\item It is an error (\literal{Window}) to pass a \typename{BACKBUFFER} in a
 core request that expects a Window.
 
 \item A \typename{BACKBUFFER} will never be sent by core X in a reply,
@@ -210,19 +218,20 @@ the image.
 
 Drawing to a back buffer always uses the clip region that would be
 used to draw to the front buffer with a GC subwindow-mode of
-ClipByChildren.  If an ancestor of a double-buffered window is drawn
-to with a core GC having a subwindow-mode of IncludeInferiors, the
+\literal{ClipByChildren}.  If an ancestor of a double-buffered window is drawn
+to with a core GC having a subwindow-mode of \literal{IncludeInferiors}, the
 effect on the double-buffered window's back buffer depends on the
 depth of the double-buffered window and the ancestor.  If the depths
 are the same, the contents of the back buffer of the double-buffered
 window are not changed.  If the depths are different, the contents of
 the back buffer of the double-buffered window are undefined for the
-pixels that the IncludeInferiors drawing touched.
+pixels that the \literal{IncludeInferiors} drawing touched.
 
-DBE adds no new events.  DBE doesn't extend the semantics of any
+DBE adds no new events.  DBE does not extend the semantics of any
 existing events with the exception of adding a new \typename{DRAWABLE}
 type called \typename{BACKBUFFER}.  If events, replies, or errors that
-contain a \typename{DRAWABLE} (e.g., GraphicsExpose) are generated in
+contain a \typename{DRAWABLE} (e.g., \literal{GraphicsExpose}) are
+generated in
 response to a request, the \typename{DRAWABLE} returned will be the
 one specified in the request.
 
@@ -252,7 +261,7 @@ with the window's bit gravity (see the core
 \requestname{ConfigureWindow} request), and the remaining areas are
 tiled with the window background.  If bit gravity is not implemented,
 then the entire unobscured region of both buffers is tiled with the
-window background.  In either case, Expose events are generated for
+window background.  In either case, \literal{Expose} events are generated for
 the region that is tiled with the window background.
 
 If the core \requestname{GetGeometry} request is executed on a
@@ -264,8 +273,8 @@ If the Shape extension \requestname{ShapeRectangles},
 \requestname{ShapeOffset} request is executed on a double-buffered
 window, both buffers are reshaped to match the new window shape.  The
 region difference \[ D = new shape - old shape \] is tiled with the
-window background in both buffers, and Expose events are generated for
-D.
+window background in both buffers, and \literal{Expose} events are
+generated for D.
 
 \subsection{Complex Swap Actions}
 
@@ -300,14 +309,14 @@ in the following order:
 \begin{itemize}
 \item \requestname{DBEBeginIdiom} request.
 \item \requestname{DBESwapBuffers} request with XIDs for two windows, each
-of which uses a swap action of Untouched.
+of which uses a swap action of \literal{Untouched}.
 \item Core X \requestname{PolyFillRectangle} request to the back buffer of one window.
 \item Core X \requestname{PolyFillRectangle} request to the back buffer of the other window.
 \item \requestname{DBEEndIdiom} request.
 \end{itemize}
 
 The \requestname{DBEBeginIdiom} and \requestname{DBEEndIdiom} requests
-don't perform any actions themselves.  They are treated as markers by
+do not perform any actions themselves.  They are treated as markers by
 implementations that can combine certain groups/series of requests as
 idioms, and are ignored by other implementations or for non-recognized
 groups/series of requests.  If these requests are sent out of order,
@@ -315,7 +324,7 @@ or are mismatched, no errors are sent, and the requests are executed
 as usual, though performance may suffer.
 
 An idiom need not include a \requestname{DBESwapBuffers} request.  For
-example, if a swap action of Copied is desired, but only some of the
+example, if a swap action of \literal{Copied} is desired, but only some of the
 planes should be copied, a core X \requestname{CopyArea} request may
 be used instead of \requestname{DBESwapBuffers}.  If
 \requestname{DBESwapBuffers} is included in an idiom, it should
@@ -324,11 +333,11 @@ when the \requestname{DBESwapBuffers} is included in an idiom, that
 request's swap action will still be valid, and if the swap action
 might overlap with another request, then the final result of the idiom
 must be as if the separate requests were executed serially.  For
-example, if the specified swap action is Untouched, and if a
+example, if the specified swap action is \literal{Untouched}, and if a
 \requestname{PolyFillRectangle} using a client clip rectangle is done
 to the window's back buffer after the \requestname{DBESwapBuffers}
 request, then the contents of the new back buffer (after the idiom)
-will be the same as if the idiom weren't recognized by the
+will be the same as if the idiom was not recognized by the
 implementation.
 
 It is highly recommended that API providers define, and application
@@ -371,7 +380,7 @@ in this document will return a \argname{server-major-version} of one
 
 The Double Buffering client must issue a \requestname{DBEGetVersion}
 request before any other Double Buffering request in order to
-negotiate a compatible protocol version, otherwise the client will get
+negotiate a compatible protocol version; otherwise, the client will get
 undefined behavior (DBE may or may not work).
 
 \subsection{DBEGetVisualInfo}
@@ -385,7 +394,7 @@ buffering.
 \argdecl{visinfo}{LISTofSCREENVISINFO}
 \end{arequest}
 
-(Errors: Drawable)
+(Errors: \literal{Drawable})
 
 The following type definitions apply:
 
@@ -397,7 +406,7 @@ The following type definitions apply:
 \end{tabbing}
 
 All of the values passed in \argname{screen-specifiers} must be valid
-\typename{DRAWABLE}s (or a Drawable error results).  For each drawable
+\typename{DRAWABLE}s (or a \literal{Drawable} error results).  For each drawable
 in \argname{screen-specifiers}, the reply will contain a list of
 VISINFO structures for visuals that support double-buffering on the
 screen on which the drawable resides.  The \argname{visual} member
@@ -426,9 +435,9 @@ window.
 \argdecl{swap-action-hint}{SWAPACTION}
 \end{arequest}
 
-(Errors: Alloc, Value, IDChoice, Match, Window)
+(Errors: \literal{Alloc, Value, IDChoice, Match, Window})
 
-If the \argname{window} isn't already a double-buffered window, the
+If the \argname{window} is not already a double-buffered window, the
 window becomes double-buffered, and the \argname{back-buffer-name} is
 associated with the window.  The \argname{swap-action-hint} tells the
 server which swap action is most likely to be used with the window in
@@ -445,15 +454,17 @@ until either the window is destroyed, or until all of the back buffer
 names for the window are deallocated.
 
 The window passed into the request must be a valid \typename{WINDOW}
-(or a Window error results).  The window passed into the request must
-be an InputOutput window (or a Match error results).  The visual of
-the window must be in the list returned by
-\requestname{DBEGetVisualInfo} (or a Match error results).  The
-\argname{back-buffer-name} must be in the range assigned to the
-client, and must not already be in use (or an IDChoice error results).
+(or a \literal{Window} error results).
+The window passed into the request must
+be an \literal{InputOutput} window (or a \literal{Match} error results).
+The visual of the window must be in the list returned by
+\requestname{DBEGetVisualInfo} (or a \literal{Match} error results).
+The \argname{back-buffer-name} must be in the range assigned to the
+client, and must not already be in use (or an \literal{IDChoice}
+error results).
 If the server cannot allocate all resources associated with turning on
-double-buffering for the window, an Alloc error results, the window's
-double-buffer status (whether it is already double-buffered or not)
+double-buffering for the window, an \literal{Alloc} error results, the
+window's double-buffer status (whether it is already double-buffered or not)
 remains unchanged, and the \argname{back-buffer-name} is freed.
 
 \subsection{DBEDeallocateBackBufferName}
@@ -465,7 +476,7 @@ This request frees a drawable ID that was obtained by
 \argdecl{back-buffer-name}{BACKBUFFER}
 \end{arequest}
 
-                (Errors: Buffer)
+                (Errors: \literal{Buffer})
 
 The \argname{back-buffer-name} passed in the request is freed and no
 longer associated with the window.  If this is the last
@@ -475,7 +486,7 @@ resources associated with the window may be freed.  The window's
 current front buffer remains the front buffer.
 
 The \argname{back-buffer-name} must be a valid \typename{BACKBUFFER}
-associated with a window (or a Buffer error results).
+associated with a window (or a \literal{Buffer} error results).
 
 \subsection{DBESwapBuffers}
 
@@ -486,21 +497,23 @@ appropriate swap action for each window.
 \argdecl{windows}{LISTofSWAPINFO}
 \end{arequest}
 
-                (Errors: Match, Window, Value)
+                (Errors: \literal{Match, Window, Value})
 
 The following type definitions apply:
 
 \typename{SWAPINFO}: [\typename{WINDOW}
 \argname{window}; \typename{SWAPACTION} \argname{swap-action}]
 
-\typename{SWAPACTION}: {\{Undefined, Background, Untouched, Copied\}}
+\typename{SWAPACTION}: {\{\literal{Undefined, Background, Untouched, Copied}\}}
 
 Each window passed into the request must be a valid \typename{WINDOW}
-(or a Window error results).  Each window passed into the request must
-be a double-buffered window (or a Match error results).  Each window
-passed into the request must only be listed once (or a Match error
-results).  Each \argname{swap-action} in the list must have one of the
-values specified for type \typename{SWAPACTION} (or a Value error
+(or a \literal{Window} error results).
+Each window passed into the request must
+be a double-buffered window (or a \literal{Match} error results).
+Each window passed into the request must only be listed once
+(or a \literal{Match} error results).
+Each \argname{swap-action} in the list must have one of the
+values specified for type \typename{SWAPACTION} (or a \literal{Value} error
 results).  If an error results, none of the valid double-buffered
 windows will have their buffers swapped.
 
@@ -510,21 +523,21 @@ addition to making the old back buffer become visible.  The
 defined actions are as follows:
 
 \begin{description}
-\item[Undefined]	The contents of the new back buffer become
+\item[\literal{Undefined}]	The contents of the new back buffer become
 			undefined.  This may be the most efficient
 			action since it allows the implementation to
 			discard the contents of the buffer if it needs
 			to.
 
-\item[Background]	The unobscured region of the new back buffer
+\item[\literal{Background}]	The unobscured region of the new back buffer
 			will be tiled with the window background.  The
 			background action allows devices to use a fast
 			clear capability during a swap.
 
-\item[Untouched]	The unobscured region of the new back buffer
+\item[\literal{Untouched}]	The unobscured region of the new back buffer
 			will be unmodified by the swap.
 
-\item[Copied]		The unobscured region of the new back buffer
+\item[\literal{Copied}]		The unobscured region of the new back buffer
 			will be the contents of the old back buffer.
 \end{description}
 
@@ -577,7 +590,7 @@ If \argname{back-buffer-name} is a valid \typename{BACKBUFFER}, the
 be the window which has the back buffer that
 \argname{back-buffer-name} refers to.  If \argname{back-buffer-name}
 is not a valid \typename{BACKBUFFER}, the \argname{window} field of
-the \argname{attributes} in the reply will be None.
+the \argname{attributes} in the reply will be \literal{None}.
 
 \section{Encoding}
 
@@ -704,11 +717,11 @@ identifier names provided by this header begin with Xdbe.
 
 \subsection{Types}
 
-The type \typename{XdbeBackBuffer} is a \typename{Drawable}.
+The type \libtypename{XdbeBackBuffer} is a \libtypename{Drawable}.
 
-The type \typename{XdbeSwapAction} can be one of the constants
-\constant{XdbeUndefined}, \constant{XdbeBackground},
-\constant{XdbeUntouched}, or \constant{XdbeCopied}.
+The type \libtypename{XdbeSwapAction} can be one of the constants
+\literal{XdbeUndefined}, \literal{XdbeBackground},
+\literal{XdbeUntouched}, or \literal{XdbeCopied}.
 
 \subsection{Functions}
 
@@ -716,7 +729,7 @@ The C routines provide direct access to the protocol and add no
 additional semantics.  For complete details on the effects of these
 functions, refer to the appropriate protocol request, which can be
 derived by replacing Xdbe at the start of the function name with DBE\@.
-All functions that have return type \typename{Status} will return
+All functions that have return type \libtypename{Status} will return
 non-zero for success and zero for failure.
 
 \begin{keeptogether}
@@ -726,7 +739,7 @@ non-zero for success and zero for failure.
 \cargdecl{int *}{minor\_version\_return}
 \end{cfunction}
 
-Sets \argname{major\_version\_return} and
+This function sets \argname{major\_version\_return} and
 \argname{minor\_version\_return} to the major and minor DBE protocol
 version supported by the server.  If the DBE library is compatible
 with the version returned by the server, this function returns
@@ -753,15 +766,15 @@ the supported visuals are being requested.  If \argname{num\_screens}
 is zero, information for all screens is requested.  In this case, upon
 return from this function, \argname{num\_screens} will be set to the
 number of screens that were found.  If an error occurs, this function
-returns NULL, else it returns a pointer to a list of
-\typename{XdbeScreenVisualInfo} structures of length \argname{num\_screens}.
+returns NULL; otherwise, it returns a pointer to a list of
+\libtypename{XdbeScreenVisualInfo} structures of length \argname{num\_screens}.
 The {\it n}th element in the returned list corresponds to the {\it
 n}th drawable in the \argname{screen\_specifiers} list, unless
 \argname{num\_screens} was passed in with the value zero, in which
 case the {\it n}th element in the returned list corresponds to the
 {\it n}th screen of the server, starting with screen zero.
 
-The \typename{XdbeScreenVisualInfo} structure has the following
+The \libtypename{XdbeScreenVisualInfo} structure has the following
 fields:
 
 \begin{tabular}{lll}
@@ -769,7 +782,7 @@ fields:
 \typename{XdbeVisualInfo *} & \argname{visinfo} & list of visuals and depths for this screen \\
 \end{tabular}
 
-The \typename{XdbeVisualInfo} structure has the following fields:
+The \libtypename{XdbeVisualInfo} structure has the following fields:
 
 \begin{tabular}{lll}
 \typename{VisualID} & \argname{visual} & one visual ID that supports double-buffering\\
@@ -783,7 +796,7 @@ The \typename{XdbeVisualInfo} structure has the following fields:
 \cargdecl{XdbeScreenVisualInfo *}{visual\_info}
 \end{cfunction}
 
-This function frees the list of \typename{XdbeScreenVisualInfo} returned by
+This function frees the list of \libtypename{XdbeScreenVisualInfo} returned by
 the function \cfunctionname{XdbeGetVisualInfo}.
 \end{keeptogether}
 
@@ -829,7 +842,7 @@ have their buffers swapped; it is the number of elements in the
 \argname{swap\_info} array.  The argument \argname{swap\_info}
 specifies the information needed per window to do the swap.
 
-The \typename{XdbeSwapInfo} structure has the following fields:
+The \libtypename{XdbeSwapInfo} structure has the following fields:
 
 \begin{tabular}{lll}
 \typename{Window} & \argname{swap\_window} & window for which to swap buffers \\
@@ -863,30 +876,30 @@ This function marks the end of an idiom sequence.
 This function returns the attributes associated with the specified
 \argname{buffer}.
 
-The \typename{XdbeBackBufferAttributes} structure has the following fields:
+The \libtypename{XdbeBackBufferAttributes} structure has the following fields:
 
 \begin{tabular}{lll}
 \typename{Window} & \argname{window} & window that buffer belongs to \\
 \end{tabular}
 
-If \argname{buffer} is not a valid \typename{XdbeBackBuffer}, \argname{window}
-is set to \constant{None}.
+If \argname{buffer} is not a valid \libtypename{XdbeBackBuffer},
+\argname{window} is set to \literal{None}.
 
-The returned \typename{XdbeBackBufferAttributes} structure can be
+The returned \libtypename{XdbeBackBufferAttributes} structure can be
 freed with the Xlib function \cfunctionname{XFree}.
 \end{keeptogether}
 
 \begin{keeptogether}
 \subsection{Errors}
 
-The \typename{XdbeBufferError} structure has the following fields:
+The \libtypename{XdbeBufferError} structure has the following fields:
 
 \begin{tabular}{lll}
 \typename{int} & \argname{type} \\
 \typename{Display *} & \argname{display}& Display the event was read from\\
 \typename{XdbeBackBuffer} &  \argname{buffer}& resource id \\
 \typename{unsigned long} & \argname{serial}& serial number of failed request\\
-\typename{unsigned char} & \argname{error\_code}& error base + \constant{XdbeBadBuffer}\\
+\typename{unsigned char} & \argname{error\_code}& error base + \literal{XdbeBadBuffer}\\
 \typename{unsigned char} & \argname{request\_code}& Major op-code of failed request\\
 \typename{unsigned char} & \argname{minor\_code}& Minor op-code of failed request\\
 \end{tabular}

@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c /main/141 1995/12/08 14:09:46 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.17 1996/01/05 13:20:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.18 1996/01/06 05:25:37 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -103,7 +103,9 @@ extern int errno;
 #   ifdef CSRG_BASED
 #    include <sys/param.h>
 #   endif
-#   include <netinet/tcp.h>
+#    ifndef __EMX__
+#     include <netinet/tcp.h>
+#    endif
 #  endif
 # endif
 #endif

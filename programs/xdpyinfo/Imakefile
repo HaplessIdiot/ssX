@@ -1,7 +1,11 @@
 XCOMM $XConsortium: Imakefile /main/7 1995/12/04 15:10:00 dpw $
-XCOMM $XFree86: xc/programs/xdpyinfo/Imakefile,v 3.5 1996/01/16 15:08:51 dawes Exp $
+XCOMM $XFree86: xc/programs/xdpyinfo/Imakefile,v 3.6 1996/01/17 12:50:52 dawes Exp $
         DEPLIBS = $(DEPXTESTLIB) $(DEPXIELIB) $(DEPXLIB) $(DEPXKBFILELIB) $(DEPXF86LIBS)
+#ifndef OS2Architecture
 LOCAL_LIBRARIES = $(XTESTLIB) $(XIELIB) $(XLIB) $(XKBFILELIB) $(XF86LIBS)
+#else
+LOCAL_LIBRARIES = $(XTESTLIB) $(XIELIB) $(XKBFILELIB) $(XF86LIBS) $(XLIB)
+#endif
   SYS_LIBRARIES = MathLibrary
 
 

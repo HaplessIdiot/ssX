@@ -1,5 +1,5 @@
 /* $XConsortium: GC.c,v 1.7 95/07/10 17:42:22 ray Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/GC.c,v 3.0 1995/03/11 14:18:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/GC.c,v 3.1 1996/01/05 13:19:04 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -27,14 +27,14 @@ is" without express or implied warranty.
 
 #include "Display.h"
 #ifdef __EMX__
-#include "GC1.h"
+#include "os2GC.h"
 #else
 #include "GC.h" 
 #endif
 #include "GCOps.h"
 #include "Drawable.h"
 #ifdef __EMX__
-#include "Font1.h"
+#include "os2Font.h"
 #else
 #include "Font.h"
 #endif

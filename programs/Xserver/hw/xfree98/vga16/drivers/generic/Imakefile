@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga16/drivers/generic/Imakefile,v 3.0 1995/12/17 10:06:06 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga16/drivers/generic/Imakefile,v 3.1 1996/01/10 05:42:16 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = gen_driver.c
@@ -14,6 +14,9 @@ INCLUDES = -I. -I$(XF98COMSRC) -I$(XF98HWSRC) -I$(XF98OSSRC) \
 
 DEFINES = -DXF86VGA16 -DPC98 -DPC98_EGC
 
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
 NormalLibraryObjectRule()
 
 NormalRelocatableTarget(gen_drv, $(OBJS))

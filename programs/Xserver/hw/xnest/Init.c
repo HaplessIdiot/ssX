@@ -1,5 +1,5 @@
 /* $XConsortium: Init.c /main/5 1996/01/15 21:05:07 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.1 1996/01/05 13:19:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.2 1996/01/17 12:47:32 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -33,8 +33,8 @@ is" without express or implied warranty.
 #include "Args.h"
 #include "Drawable.h"
 #ifdef __EMX__
-#include "GC1.h"
-#include "Font1.h"
+#include "os2GC.h"
+#include "os2Font.h"
 #else
 #include "GC.h"
 #include "Font.h"

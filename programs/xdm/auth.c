@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xdm/auth.c,v 3.12 1996/01/05 13:20:57 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.13 1996/01/06 05:25:47 dawes Exp $ */
 /* $XConsortium: auth.c /main/62 1995/12/19 16:44:07 mor $ */
 /*
 
@@ -111,7 +111,8 @@ extern int errno;
 
 #ifdef __EMX__
 #define link rename
-#define chown(a,b,c)
+int chown(int a,int b,int c) {}
+#include <io.h>
 #endif
 
 extern int	MitInitAuth ();

@@ -1,5 +1,5 @@
 .\" $XConsortium: xset.man /main/28 1995/12/15 14:05:55 gildea $
-.\" $XFree86$
+.\" $XFree86: xc/programs/xset/xset.man,v 3.0 1996/01/17 12:51:16 dawes Exp $
 .\" Copyright (c) 1988  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -38,7 +38,7 @@ xset - user preference utility for X
 [[-]led [\fIinteger\fP]] [led on/off]
 [m[ouse] [\fIaccel_mult\fP[/\fIaccel_div\fP] [\fIthreshold\fP]]] [m[ouse] default]
 [p \fIpixel\fP \fIcolor\fP]
-[[-]r [keycode]] [r on/off]
+[[-]r [keycode]] [r on/off] [r rate \fIdelay\fP [\fIrate\fP]]
 [s [\fIlength\fP [\fIperiod\fP]]] [s blank/noblank]
 [s expose/noexpose] [s on/off] [s default] [s activate] [s reset]
 [s power [\fIsuspend\fP [\fIoff\fP]]]
@@ -173,6 +173,10 @@ If a preceding dash or the 'off' flag is used, autorepeat will be disabled.
 If no parameters or the 'on' flag is used, autorepeat will be enabled.
 If a specific keycode is specified as a parameter, autorepeat for that
 keycode is enabled or disabled.
+If the server is supports the XFree86-Misc extension, then a parameter
+of 'rate' is accepted and should be followed by one or two numeric
+values. The first specifies the delay before autorepeat starts and
+the second specifies the repeat rate.
 .PP
 .TP 8
 .B s
@@ -201,7 +205,7 @@ server must be inactive for screen saving to activate, and the period
 to change the background pattern to avoid burn in.
 The arguments are specified in seconds.
 If only one numerical parameter is given, it will be used for the length.
-The 'power' flag allows the power saver paramters to be set on servers
+The 'power' flag allows the power saver parameters to be set on servers
 which have the XFree86-Misc server extension.  With no additional parameters
 the defaults are set.  The suspend time and off time can be specified in
 seconds.  If only one value is given it is used for the suspend time.
@@ -220,3 +224,5 @@ X(1), Xserver(1), xmodmap(1), xrdb(1), xsetroot(1)
 Bob Scheifler, MIT Laboratory for Computer Science
 .br
 David Krikorian, MIT Project Athena (X11 version)
+.br
+XFree86-Misc support added by David Dawes and Joe Moss

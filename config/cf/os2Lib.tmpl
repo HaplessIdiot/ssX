@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.0 1994/10/20 06:00:14 dawes Exp $
 
 /*
  * OS2/EMX shared library template
@@ -21,14 +21,14 @@ XCOMM $XFree86$
 #define SharedPexReqs $(LDPRELIB) $(XLIBONLY) MathLibrary
 #else
 #define SharedXtReqs ..\\..\\usrlib\\ ICE SM X11
-#define SharedXawReqs ..\\..\\usrlib\\ Xmu Xt X11 XexExt Xext
-#define SharedXmuReqs ..\\..\\usrlib\\ Xt X11 XexExt Xext
+#define SharedXawReqs ..\\..\\usrlib\\ Xmu Xt X11 Xext
+#define SharedXmuReqs ..\\..\\usrlib\\ Xt X11 Xext
 #define SharedSMReqs ..\\..\\usrlib\\ ICE
-#define SharedXextReqs ..\\..\\usrlib\\ X11 XexExt Xext
-#define SharedXiReqs ..\\..\\usrlib\\ X11 XexExt Xext
-#define SharedXieReqs ..\\..\\usrlib\\ X11 XexExt Xext
-#define SharedXtstReqs ..\\..\\usrlib\\ X11 XexExt Xext
-#define SharedOldXReqs ..\\..\\usrlib\\ X11 XexExt Xext
+#define SharedXextReqs ..\\..\\usrlib\\ X11 Xext
+#define SharedXiReqs ..\\..\\usrlib\\ X11 Xext
+#define SharedXieReqs ..\\..\\usrlib\\ X11 Xext
+#define SharedXtstReqs ..\\..\\usrlib\\ X11 Xext
+#define SharedOldXReqs ..\\..\\usrlib\\ X11 Xext
 #define SharedPexReqs ..\\..\\usrlib\\ X11 m
 #endif
 

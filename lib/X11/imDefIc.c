@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIc.c /main/14 1995/12/06 11:23:22 kaleb $ */
+/* $XConsortium: imDefIc.c /main/15 1996/01/21 15:11:34 kaleb $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.
@@ -856,19 +856,19 @@ _XimProtoICFree(ic)
 
     if (ic->private.proto.preedit_font) {
 	Xfree(ic->private.proto.preedit_font);
-	ic->private.proto.preedit_font = 0;
+	ic->private.proto.preedit_font = NULL;
     }
     if (ic->private.proto.status_font) {
 	Xfree(ic->private.proto.status_font);
-	ic->private.proto.status_font = 0;
+	ic->private.proto.status_font = NULL;
     }
     if (ic->private.proto.commit_info) {
 	_XimFreeCommitInfo(ic);
-	ic->private.proto.commit_info = 0;
+	ic->private.proto.commit_info = NULL;
     }
     if (ic->private.proto.ic_inner_resources) {
 	Xfree(ic->private.proto.ic_inner_resources);
-	ic->private.proto.ic_inner_resources = 0;
+	ic->private.proto.ic_inner_resources = NULL;
     }
 
 #ifdef XIM_CONNECTABLE
@@ -879,15 +879,15 @@ _XimProtoICFree(ic)
 
     if (ic->private.proto.saved_icvalues) {
 	Xfree(ic->private.proto.saved_icvalues);
-	ic->private.proto.saved_icvalues = 0;
+	ic->private.proto.saved_icvalues = NULL;
     }
     if (ic->private.proto.ic_resources) {
 	Xfree(ic->private.proto.ic_resources);
-	ic->private.proto.ic_resources = 0;
+	ic->private.proto.ic_resources = NULL;
     }
     if (ic->core.hotkey) {
 	Xfree(ic->core.hotkey);
-	ic->core.hotkey = 0;
+	ic->core.hotkey = NULL;
     }
 
     return;

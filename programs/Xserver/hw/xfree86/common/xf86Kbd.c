@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Kbd.c,v 1.6 95/01/23 15:34:04 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.9 1995/06/02 10:11:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.10 1995/06/08 06:27:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -257,7 +257,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
   pMap = map;
 #endif
 
-#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__)
+#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__)
   /*
    * use the keymap, which can be gotten from our oringinal vt??.
    * ( ttymap(1) !!!! )
@@ -280,7 +280,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 	if (k[0] == k[2] && k[1] == k[3]) k[2] = k[3] = NoSymbol;
       }
   }
-#endif /* !Lynx && !AMOEBA && !MINIX && !__OSF__ */
+#endif /* !Lynx && !AMOEBA && !MINIX && !__OSF__ && !__EMX__ */
 
   /*
    * Apply the special key mapping specified in XF86Config 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.0 1995/03/11 14:15:25 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -242,7 +242,7 @@ os2PostKbdEvent(scanCode, down)
 	      lockkeys |= SCROLLFLAG;
           break;
     }
-    if (keysym[1] == XK_Mode_Lock)
+    if (keysym[1] == XF86XK_ModeLock)
     {
       if (lockkeys & MODEFLAG)
           return;
@@ -265,7 +265,7 @@ os2PostKbdEvent(scanCode, down)
             lockkeys &= ~SCROLLFLAG;
             break;
     }
-    if (keysym[1] == XK_Mode_Lock)
+    if (keysym[1] == XF86XK_ModeLock)
       lockkeys &= ~MODEFLAG;
   }
 
@@ -276,7 +276,7 @@ os2PostKbdEvent(scanCode, down)
    */
   if (keyc->modifierMap[keycode] & LockMask ||
       keysym[0] == XK_Scroll_Lock ||
-      keysym[1] == XK_Mode_Lock ||
+      keysym[1] == XF86XK_ModeLock ||
       keysym[0] == XK_Num_Lock)
     {
       Bool flag;
@@ -292,7 +292,7 @@ os2PostKbdEvent(scanCode, down)
       if (keyc->modifierMap[keycode] & LockMask)   xf86Info.capsLock   = flag;
       if (keysym[0] == XK_Num_Lock)    xf86Info.numLock    = flag;
       if (keysym[0] == XK_Scroll_Lock) xf86Info.scrollLock = flag;
-      if (keysym[1] == XK_Mode_Lock)   xf86Info.modeSwitchLock = flag;
+      if (keysym[1] == XF86XK_ModeLock)   xf86Info.modeSwitchLock = flag;
       updateLeds = TRUE;
     }
 	

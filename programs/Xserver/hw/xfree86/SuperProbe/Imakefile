@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.4 95/01/06 20:56:40 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.8 1995/03/11 14:12:30 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.9 1995/06/02 10:08:41 dawes Exp $
 
 #if defined(SVR3Architecture) || defined(SVR4Architecture)
 # define OSModule OS_SYSV
@@ -33,10 +33,6 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.8 1995/0
 # define OSModule OS_Os2
   CCOPTIONS = -Zmts
 #endif
-#if defined(OS2Architecture)
-# define OSModule OS_Os2
-  CCOPTIONS = -Zmts
-#endif
 
 OS_SRC = OSModule.c $(OS_IO_SRC)
 OS_OBJ = OSModule.o $(OS_IO_OBJ)
@@ -58,11 +54,11 @@ GASDEFINES = GccGasOption
 #endif
 CONSDEFINES = XFree86ConsoleDefines
 
-DEFINES = $(GASDEFINES) $(CONSDEFINES)
-
 #ifdef OS2Architecture
-SPECIALS = -lemxio
+SPECIALS= sprobe.def
 #endif
+
+DEFINES = $(GASDEFINES) $(CONSDEFINES)
 
 PROG = SuperProbe
 

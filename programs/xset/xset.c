@@ -1,6 +1,6 @@
 /* 
  * $XConsortium: xset.c,v 1.70 95/05/12 17:22:03 mor Exp $ 
- * $XFree86$ 
+ * $XFree86: xc/programs/xset/xset.c,v 3.0 1996/01/17 12:51:15 dawes Exp $ 
  */
 
 /*
@@ -45,6 +45,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/extensions/MITMisc.h>
 #endif
 #ifdef XF86MISC
+#include <X11/extensions/xf86misc.h>
 #include <X11/extensions/xf86mscstr.h>
 #endif
 
@@ -68,6 +69,8 @@ in this Software without prior written authorization from the X Consortium.
 #define POWER_OFF 6
 #define SUSPEND_DEFAULT 900
 #define OFF_DEFAULT 1800
+#define KBDDELAY_DEFAULT 500
+#define KBDRATE_DEFAULT 30
 #endif
 
 #define	nextarg(i, argv) \
@@ -98,6 +101,10 @@ int numpixels = 0;
 char *disp = NULL;
 Display *dpy;
 Bool hasargs = False;
+#ifdef XF86MISC
+int miscpresent = 1;
+int major, minor;
+#endif
 
 progName = argv[0];
 for (i = 1; i < argc; i++) {
@@ -365,9 +372,6 @@ for (i = 1; i < argc; ) {
     }
 #ifdef XF86MISC
     else if (strcmp(arg, "power") == 0) { /* XFree86 power saver settings */
-	int miscpresent = 1;
-	int major, minor;
-
 	if (!XF86MiscQueryVersion(dpy, &major, &minor)) {
 	    miscpresent = 0;
 	    fprintf(stderr,
@@ -418,9 +422,9 @@ for (i = 1; i < argc; ) {
     if (is_number(arg, 255)) {
       key = atoi(arg);
       i++;
-  } 
-    set_repeat(dpy, key, auto_repeat_mode);
     }
+    set_repeat(dpy, key, auto_repeat_mode);
+  } 
   else if (strcmp(arg, "r") == 0) {         /* Turn on one or all autorepeats */
     auto_repeat_mode = ON;
     key = ALL;          /* None specified */
@@ -429,14 +433,39 @@ for (i = 1; i < argc; ) {
     if (strcmp(arg, "on") == 0) {
       i++;
     } 
-    else if (strcmp(arg, "off") == 0) {       /*  ...except in this case. */
+    else if (strcmp(arg, "off") == 0) {       /*  ...except in this case */
       auto_repeat_mode = OFF;
       i++;
     }
+#ifdef XF86MISC
+    else if (strcmp(arg, "rate") == 0) {       /*  ...or this one. */
+      int delay=KBDDELAY_DEFAULT, rate=KBDRATE_DEFAULT;
+
+      if (!XF86MiscQueryVersion(dpy, &major, &minor)) {
+        miscpresent = 0;
+        fprintf(stderr,
+          "server does not have extension for \"r rate\" option\n");
+      }
+
+      i++;
+      arg = nextarg(i, argv);
+      if (is_number(arg, 10000)) {
+	delay = atoi(arg);
+	i++;
+        arg = nextarg(i, argv);
+        if (is_number(arg, 255)) {
+	  rate = atoi(arg);
+	  i++;
+        }
+      }
+      if (miscpresent)
+        set_repeatrate(dpy, delay, rate);
+    }
+#endif
     else if (is_number(arg, 255)) {
       key = atoi(arg);
       i++;
-  } 
+    } 
     set_repeat(dpy, key, auto_repeat_mode);
   } 
   else if (strcmp(arg, "p") == 0) {
@@ -792,6 +821,21 @@ int key, auto_repeat_mode;
   return;
 }
 
+#ifdef XF86MISC
+set_repeatrate(dpy, delay, rate)
+Display *dpy;
+int delay, rate;
+{
+  XF86MiscKbdSettings values;
+
+  XF86MiscGetKbdSettings(dpy, &values);
+  values.delay = delay;
+  values.rate = rate;
+  XF86MiscSetKbdSettings(dpy, &values);
+  return;
+}
+#endif
+
 set_pixels(dpy, pixels, colors, numpixels)
 Display *dpy;
 unsigned long *pixels;
@@ -904,7 +948,8 @@ XKeyboardState values;
 int acc_num, acc_denom, threshold;
 int timeout, interval, prefer_blank, allow_exp;
 #ifdef XF86MISC
-int suspendtime, offtime, miscpresent = 1;
+int suspendtime, offtime;
+XF86MiscKbdSettings kbdinfo;
 #endif
 char **font_path; int npaths;
 int i, j;
@@ -914,16 +959,17 @@ XGetKeyboardControl(dpy, &values);
 XGetPointerControl(dpy, &acc_num, &acc_denom, &threshold);
 XGetScreenSaver(dpy, &timeout, &interval, &prefer_blank, &allow_exp);
 font_path = XGetFontPath(dpy, &npaths);
-#ifdef XF86MISC
-if (!XF86MiscGetSaver(dpy, scr, &suspendtime, &offtime))
-  miscpresent = 0;
-#endif
 
 printf ("Keyboard Control:\n");
 printf ("  auto repeat:  %s    key click percent:  %d    LED mask:  %08lx\n", 
 	on_or_off (values.global_auto_repeat,
 		   AutoRepeatModeOn, "on", AutoRepeatModeOff, "off", buf),
 	values.key_click_percent, values.led_mask);
+#ifdef XF86MISC
+if (XF86MiscGetKbdSettings(dpy, &kbdinfo))
+  printf ("  auto repeat delay:  %d    repeat rate:  %d\n",
+          kbdinfo.delay, kbdinfo.rate);
+#endif
 printf ("  auto repeating keys:  ");
 for (i = 0; i < 4; i++) {
     if (i) printf ("                        ");
@@ -948,7 +994,7 @@ printf ("allow exposures:  %s\n",
 		   DontAllowExposures, "no", buf));
 printf ("  timeout:  %d    cycle:  %d\n", timeout, interval);
 #ifdef XF86MISC
-if (miscpresent)
+if (XF86MiscGetSaver(dpy, scr, &suspendtime, &offtime))
   printf ("  suspend time:  %d    off time:  %d\n", suspendtime, offtime);
 #endif
 
@@ -1030,6 +1076,9 @@ usage (fmt, arg)
     fprintf (stderr, "    To turn auto-repeat off or on:\n");
     fprintf (stderr, "\t-r [keycode]        r off\n");
     fprintf (stderr, "\t r [keycode]        r on\n");
+#ifdef XF86MISC
+    fprintf (stderr, "\t r rate [delay [rate]]\n");
+#endif
     fprintf (stderr, "    For screen-saver control:\n");
     fprintf (stderr, "\t s [timeout [cycle]]  s default    s on\n");
     fprintf (stderr, "\t s blank              s noblank    s off\n");

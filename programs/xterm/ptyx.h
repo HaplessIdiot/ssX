@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/66 1995/12/09 08:58:41 kaleb $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.6 1996/01/06 05:25:57 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.7 1996/01/10 05:44:20 dawes Exp $
  */
 
 /*
@@ -101,7 +101,11 @@
 #ifdef hpux
 #define PTYCHAR1	"zyxwvutsrqp"
 #else	/* !hpux */
+#ifdef __EMX__
+#define PTYCHAR1	"pq"
+#else
 #define	PTYCHAR1	"pqrstuvwxyzPQRSTUVWXYZ"
+#endif  /* !__EMX__ */
 #endif	/* !hpux */
 #endif	/* !PTYCHAR1 */
 

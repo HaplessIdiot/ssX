@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Main.c,v 1.4 95/01/06 20:56:41 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.5 1994/12/17 09:58:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.6 1995/01/28 15:47:08 dawes Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -517,7 +517,8 @@ char *argv[];
 #else
 /* this will be removed again in future. */
     printf("This is a PRELIMINARY TEST VERSION for OS/2! Please send bug reports\n");
-    printf("and other comments, e.g. false detections of boards or chipsets to veit@gmd.de.\n");
+    printf("and other comments, e.g. false detections of boards or chipsets to\n");
+    printf("Holger.Veit@gmd.de.\n");
     printf("If necessary, they will be forwarded to the author of the program.\n\n");
 #endif
 {

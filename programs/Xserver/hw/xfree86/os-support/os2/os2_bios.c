@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_bios.c,v 3.1 1995/06/24 10:29:29 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -39,7 +39,7 @@
 #include "xf86Priv.h"
 
 /*
- * Read BIOS via TESTCFG.SYS device driver
+ * Read BIOS via xf86sup.SYS device driver
  */
 
 #define Bios_Base 0
@@ -52,38 +52,45 @@ int Len;
 {
 	HFILE fd;
 	struct {
-		ULONG cmd;
-		ULONG phys;
-		USHORT len;
+		ULONG command;
+		ULONG physaddr;
+		USHORT numbytes;
 	} par;
 	UCHAR	*dta;
 	ULONG	plen,dlen;
 	int 	i;
 	ULONG	action;
+	APIRET rc;
+	ULONG Phys_address;
 
-	/* open the special device (default with OS/2) */
-	if (DosOpen((PSZ)"\\DEV\\TESTCFG$", (PHFILE)&fd, (PULONG)&action,
+
+	Phys_address=Base+Offset;
+
+	/* open the special device pmap$ (default with OS/2) */
+	if (DosOpen((PSZ)"PMAP$", (PHFILE)&fd, (PULONG)&action,
 	   (ULONG)0, FILE_SYSTEM, FILE_OPEN,
 	   OPEN_SHARE_DENYNONE|OPEN_FLAGS_NOINHERIT|OPEN_ACCESS_READONLY,
 	   (ULONG)0) != 0) {
-		FatalError("xf86ReadBIOS: install DEVICE=path\\TESTCFG.SYS!");
+		FatalError("xf86ReadBIOS: install DEVICE=path\\xf86sup.SYS!");
 		return -1;
 	}
 
 	/* prepare parameter and data packets for ioctl */
-	par.cmd 	= 0;
-	par.phys 	= (ULONG)Bios_Base+(Offset & 0xffff8000);
-	par.len 	= (Offset & 0x7fff) + Len;
+	par.command 	= 0;
+	par.physaddr 	= (ULONG)Bios_Base+(Phys_address & 0xffff8000);
+	par.numbytes 	= (Phys_address & 0x7fff) + Len;
 	plen 		= sizeof(par);
 
-	dta		= (UCHAR*)malloc(par.len);
-	dlen 		= Len;
+	dta		= (UCHAR*)xalloc(par.numbytes);
+	dlen 		= par.numbytes;
 
 	/* issue call to get a readonly copy of BIOS ROM */
-	if (DosDevIOCtl(fd, (ULONG)0x80, (ULONG)0x40,
+	if (rc=DosDevIOCtl(fd, (ULONG)0x76, (ULONG)0x64,
 	   (PVOID)&par, (ULONG)plen, (PULONG)&plen,
 	   (PVOID)dta, (ULONG)dlen, (PULONG)&dlen)) {
-		FatalError("xf86ReadBIOS: BIOS map failed, addr=%lx\n", Bios_Base+Offset);
+		FatalError("rc=%d %s\n",rc,dta);
+		FatalError("xf86ReadBIOS: BIOS map failed, addr=%lx\n", Bios_Base+Phys_address);
+		free(dta);
 		DosClose(fd);
 		return -1;
 	}
@@ -91,17 +98,18 @@ int Len;
 	/*
  	 * Sanity check...
  	 */
-	if ((Offset & 0x7fff) != 0 && 
+	if ((Phys_address & 0x7fff) != 0 && 
 		(dta[0] != 0x55 || dta[1] != 0xaa)) {
 		FatalError("BIOS sanity check failed, addr=%x\n",
-			Bios_Base+Offset);
+			Bios_Base+Phys_address);
 		DosClose(fd);
+		free(dta);
 		return -1;
 	}
 
 	/* copy data to buffer */
-	memcpy(Buf,dta + (Offset & 0x7fff), Len);
-	free(dta);
+	memcpy(Buf,dta + (Phys_address & 0x7fff), Len);
+	xfree(dta);
 
 	/* close device */
 	DosClose(fd);

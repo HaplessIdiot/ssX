@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/6 1995/11/16 14:41:07 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xnest/Imakefile,v 3.3 1995/12/23 09:40:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xnest/Imakefile,v 3.4 1996/01/05 13:19:06 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = 	Args.c \
@@ -43,26 +43,16 @@ OBJS = 	Args.o \
 	stubs.o
 
 
-INCLUDES = -I. -I$(BUILDINCDIR) -I$(FONTINCSRC) \
-	   -I../../mi -I../../include -I../../os  \
-           -I$(EXTINCSRC) -I$(INCLUDESRC)
-
-#ifdef OS2Architecture
-XCOMM Dirty hack
-includes::
-	$(RM) GC1.h Font1.h
-	@copy GC.h GC.h.backup
-	@copy Font.h Font.h.backup
-clean::
-	-@if exist GC1.h copy GC1.h GC.h
-	-@if exist Font1.h copy Font1.h Font.h
-LinkFile(GC1.h,GC.h)
-LinkFile(Font1.h,Font.h)
-includes:: GC.h Font.h
-	$(RM) GC.h Font.h
-#endif
+INCLUDES = -I$(BUILDINCDIR) -I$(FONTINCSRC) \
+	   -I../../mi -I../../include -I../../os \
+           -I$(EXTINCSRC) -I$(INCLUDESRC) -I.
 
 all:: $(OBJS)
+
+#ifdef OS2Architecture
+LinkFile(os2GC.h,GC.h)
+LinkFile(os2Font.h,Font.h)
+#endif
 
 LinkSourceFile(stubs.c,../../Xi)
 SpecialCObjectRule(Init,$(ICONFIGFILES),$(EXT_DEFINES))

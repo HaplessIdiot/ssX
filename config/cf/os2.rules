@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.2 1995/03/11 14:02:48 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.3 1995/04/24 07:18:51 dawes Exp $
 
 .SUFFIXES: .Osuf .c .CCsuf
 
@@ -136,8 +136,8 @@ clean::									@@\
 
 #define InstallMultipleDestFlags(step,list,dest,flags)			@@\
 step:: list								@@\
-	MakeDir($(DESTDIR)/dest)					@@\
-	$(INSTALL) $(INSTALLFLAGS) flags $** $(subst /,\,$(DESTDIR))\dest
+	MakeDir($(DESTDIR)dest)						@@\
+	$(INSTALL) $(INSTALLFLAGS) flags list $(subst /,\,$(DESTDIR)dest)
 
 #define	CleanTarget()							@@\
 clean::									@@\
@@ -210,8 +210,11 @@ clean::									@@\
 
 #define MakeMakeSubdirs(dirs,target)					@@\
 MMSDIRS = dirs								@@\
+MMSTOP = $(TOP)								@@\
+MMSRULES = $(IRULESRC)							@@\
+MMSCUR = $(CURRENT_DIR)							@@\
 target::								@@\
-	@for %i in ($(subst /,\,$(MMSDIRS))) do ImakeHelper 1 IMmode %i ../$(IRULESRC) ../$(TOP) $(CURRENT_DIR)
+	@for %i in ($(subst /,\,$(MMSDIRS))) do ImakeHelper 1 IMmode %i $(MMSRULES) $(MMSTOP) $(MMSCUR)
 
 #define NamedTargetSubdirs(name,dirs,verb,flags,subname)		@@\
 Concat(SUBST,name) = dirs						@@\
@@ -220,13 +223,8 @@ name::									@@\
 
 #define InstallNamedTarget(step,srcname,flags,dest,dstname)		@@\
 step:: srcname								@@\
-	MakeDir($(DESTDIR)/dest)					@@\
-	$(INSTALL) $(INSTALLFLAGS) flags srcname $(subst /,\,$(DESTDIR))\dest\dstname
-
-#define	InstallTarget(step,file,flags,dest)				@@\
-step:: srcname								@@\
-	MakeDir($(DESTDIR)/dest)					@@\
-	$(INSTALL) $(INSTALLFLAGS) flags srcname $(subst /,\,$(DESTDIR))\dest
+	MakeDir($(DESTDIR)dest)						@@\
+	$(INSTALL) $(INSTALLFLAGS) flags srcname $(subst \,/,$(DESTDIR)dest)/dstname
 
 #define	BuildMakefileTarget(notused,imakeflags)				@@\
 ImakeDependency(Makefile)						@@\
@@ -321,3 +319,56 @@ ServerTargetWithFlags(server,subdirs,objects,libs,syslibs server.def,$(_NOOP_)) 
 									@@\
 ProgramTargetName(server): server.def
 #endif /* ServerTarget */
+
+/*
+ * ToolkitMakeStrings generates a string-table, i.e., a C source
+ * file and the matching header(s), e.g., Xt's StringDefs.c, StringDefs.h,
+ * and Shell.h files; or Motif's XmStrDefs.c and XmStrDefs.h files.
+ *
+ * The 'files' argument is the list of files that will be produced by
+ * this rule, e.g., for Xt they would be "Shell.h StringDefs.c StringDefs.h"
+ * and for Motif they would be "XmStrDefs.c XmStrDefs.h".
+ *
+ * The 'source' argument is the string-list file to be parsed, e.g., in
+ * Xt that would be "util/string.list".  For Motif 2.0 it would be
+ * "../../tools/makestr/xmstring.list", and for Motif-CDE1 it would be
+ * "util/xmstring.list".
+ *
+ * The 'options' argument is passed by the library's Imakefile, see the
+ * Xt Imakefile for an example.  Typically this would be nothing, -intelabi,
+ * or -sparcabi; there are other choices, but these are typical.
+ *
+ * The 'depends' argument names additional files the target files
+ * depend on.  It should name the #ctmpl and #htmpl files from the
+ * 'source' file.
+ *
+ * The 'dest' argument is the C source output file.  For Xt this should
+ * be "StringDefs.c", and for all versions of Motif it would be "XmStrDefs.c"
+ *
+ * Headers are generated and named according to data in the 'source'
+ * file.
+ */
+
+#ifndef ToolkitMakeStrings
+#define ToolkitMakeStrings(files,source,options,depends,dest)		@@\
+MAKESTRS = $(CONFIGSRC)/util/makestrs					@@\
+MAKESTRS1 = /makestrs.exe						@@\
+									@@\
+ProgramTargetName($(MAKESTRS)): $(MAKESTRS).c				@@\
+	ImakeIndir $(CONFIGSRC)/util make SHELL= ProgramTargetName(makestrs)	@@\
+	ImakeHelper 7 $(CONFIGSRC)/util/makestrs.exe /			@@\
+									@@\
+files: ProgramTargetName($(MAKESTRS)) source depends			@@\
+	RemoveFiles(files)						@@\
+	RunProgram(MAKESTRS1,options < source > dest)			@@\
+									@@\
+AllTarget(files)							@@\
+									@@\
+includes:: files							@@\
+									@@\
+depend:: files								@@\
+									@@\
+clean::									@@\
+	RemoveFiles(files)
+
+#endif /* ToolkitMakeStrings */

@@ -1,5 +1,5 @@
 /* $XConsortium: genauth.c,v 1.23 95/07/10 21:18:07 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/genauth.c,v 3.2 1995/01/28 16:16:53 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/genauth.c,v 3.3 1995/11/02 00:29:43 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -168,7 +168,9 @@ int	len;
     }
 #else
     {
+#ifndef __EMX__
 	long    time ();
+#endif
 
 	ldata[0] = time ((long *) 0);
 	ldata[1] = getpid ();

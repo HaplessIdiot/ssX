@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/36 1995/12/15 18:56:01 matt $
-XCOMM $XFree86: xc/config/cf/Imakefile,v 3.8 1995/07/12 15:27:25 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imakefile,v 3.9 1996/01/05 13:06:27 dawes Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
@@ -26,6 +26,8 @@ lnxdoc.rules \
 necLib.rules \
 noop.rules \
 oldlib.rules \
+os2.rules \
+os2Lib.rules \
 osfLib.rules \
 sgiLib.rules \
 sunLib.rules \
@@ -46,6 +48,7 @@ WinLib.tmpl \
 hpLib.tmpl \
 ibmLib.tmpl \
 necLib.tmpl \
+os2Lib.tmpl \
 osfLib.tmpl \
 sgiLib.tmpl \
 sunLib.tmpl \
@@ -80,6 +83,7 @@ minix.cf \
 moto.cf \
 ncr.cf \
 nec.cf \
+os2.cf \
 osf1.cf \
 pegasus.cf \
 sco.cf \

@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c /main/52 1996/01/12 15:08:49 kaleb $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.16 1996/01/05 13:14:37 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.17 1996/01/13 12:21:13 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -77,7 +77,7 @@ from the X Consortium.
 #include <sys/stat.h>
 #endif
 
-#ifdef hpux
+#if defined(hpux) || defined(__EMX__)
 #define NO_TCP_H
 #endif /* hpux */
 #ifdef MOTOROLA

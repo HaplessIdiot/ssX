@@ -1,5 +1,5 @@
 /* $XConsortium: Screen.c,v 1.5 95/07/10 17:42:22 ray Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.0 1995/03/11 14:18:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.1 1996/01/05 13:19:08 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -28,8 +28,8 @@ is" without express or implied warranty.
 #include "Screen.h"
 #include "Args.h"
 #ifdef __EMX__
-#include "GC1.h"
-#include "Font1.h"
+#include "os2GC.h"
+#include "os2Font.h"
 #else
 #include "GC.h"
 #include "Font.h"

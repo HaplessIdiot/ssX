@@ -1,5 +1,5 @@
 /* $XConsortium: cards.c,v 1.4 95/06/09 20:57:00 gildea Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.4 1995/06/14 07:51:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.5 1995/07/21 14:42:05 dawes Exp $ */
 
 /*
  *  Functions to manipulate card database.
@@ -93,6 +93,18 @@ int parse_database() {
 	FILE *f;
 	char buf[128];
 	int i, lineno;
+	char filename[128];
+
+#ifndef __EMX__
+	strcpy(filename, CARD_DATABASE_FILE);
+#else
+	char *root = getenv("X11ROOT");
+	if (!root) {
+		printf("No X11ROOT environment variable set\n");
+		return -1;
+	}
+	sprintf(filename,"%s%s",root,CARD_DATABASE_FILE);
+#endif
 	f = fopen(CARD_DATABASE_FILE, "r");
 	if (f == NULL)
 		return -1;

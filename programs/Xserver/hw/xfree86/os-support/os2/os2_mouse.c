@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.0 1995/03/11 14:15:27 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -113,9 +113,9 @@ int what;
 		xf86Info.emulateState = 0;
 		pPointer->on = TRUE;
 		state = 0x300;
-		MouSetDevStatus(&state,xf86Info.mseFd);
+		rc=MouSetDevStatus(&state,xf86Info.mseFd);
 		state = 0x7f;
-		MouSetEventMask(&state,xf86Info.mseFd);
+		rc=MouSetEventMask(&state,xf86Info.mseFd);
 		MouFlushQue(xf86Info.mseFd);
 		break;
       
@@ -147,10 +147,10 @@ void xf86OsMouseEvents()
 	while ( (rc=MouReadEventQue(&mev,&waitflg,xf86Info.mseFd)) == 0) {
 		waitflg = 0;
 		if ((state=mev.fs) != 0) {
-#if DEBUG
+/*#if DEBUG*/
 			ErrorF("mouse event: fs(%x) row(%d) col(%d)\n",
 				state, mev.row, mev.col);
-#endif		
+/*#endif*/	
 			buttons = ((state & 0x06) ? 1 : 0) |
 				  ((state & 0x18) ? 2 : 0) |
 				  ((state & 0x60) ? 4 : 0);

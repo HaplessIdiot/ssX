@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hercules/Imakefile,v 3.1 1994/09/11 11:14:20 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hercules/Imakefile,v 3.2 1995/06/02 10:13:02 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = hercules.c
@@ -13,6 +13,9 @@ INCLUDES = -I. -I../../mono -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I$(INCLUDESRC)
 #endif
 
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
 NormalLibraryObjectRule()
 
 NormalRelocatableTarget(herc_drv, $(OBJS))

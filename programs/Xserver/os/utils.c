@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c /main/122 1996/01/14 16:45:32 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.11 1996/01/05 13:20:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.12 1996/01/16 15:08:00 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -231,8 +231,17 @@ LockServer()
   /*
    * Path names
    */
+#ifndef __EMX__
   (void) sprintf(tmp, "%s%s%s", LOCK_TMPPATH, display, LOCK_SUFFIX);
   (void) sprintf(lock, "%s%s%s", LOCK_PATH, display, LOCK_SUFFIX);
+#else
+  /* OS/2 uses TMP directory, must also prepare for 8.3 names */
+  char *tmppath = getenv("TMP");
+  if (!tmppath)
+    FatalError("No TMP dir found\n");
+  (void) sprintf(tmp, "%s/xf86$%s.lck",tmppath, display);
+  (void) sprintf(lock, "%s/xf86_%s.lck",tmppath, display);
+#endif
 
   /*
    * Create a temporary file containing our PID.  Attempt three times
@@ -265,7 +274,7 @@ LockServer()
 #ifndef __EMX__
     haslock = (link(tmp,lock) == 0);
 #else
-    haslock = 0;
+    haslock = (rename(tmp,lock)==0);
 #endif
     if (haslock) {
       /*
@@ -335,11 +344,22 @@ UnlockServer()
 #ifndef AMOEBA
   char buf[PATH_MAX];
 
-  if (StillLocking)
-    return;
-  (void)sprintf(buf, "%s%s%s", LOCK_PATH, display, LOCK_SUFFIX);
+  if (!StillLocking){
+
+#ifndef __EMX__
+  (void) sprintf(buf, "%s%s%s", LOCK_PATH, display, LOCK_SUFFIX);
+#else
+  /* OS/2 uses TMP directory, must also prepare for 8.3 names */
+   char *tmppath = getenv("TMP");
+  if (!tmppath)
+    FatalError("No TMP dir found\n");
+  (void) sprintf(buf, "%s/xf86_%s.lck",tmppath, display);
+  (void) chmod(buf,S_IREAD|S_IWRITE);
+#endif /* __EMX__ */
   (void) unlink(buf);
+  }
 #endif
+
 }
 #endif /* SERVER_LOCK */
 

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/12/15 21:06:48 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/Imakefile,v 3.1 1995/01/28 16:11:01 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/Imakefile,v 3.2 1995/06/02 10:23:39 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = ali_driver.c ali_bank.s
@@ -13,6 +13,9 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I../../vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
 #endif
 
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 

@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.1 1996/01/11 13:31:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.2 1996/01/14 13:35:07 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -106,6 +106,7 @@
 #define MAXY		7
 #define MINX		8
 #define MINY		9
+#define DEBUG_LEVEL     10
 
 static SymTabRec EloTab[] = {
   { ENDSUBSECTION,     "endsubsection" },
@@ -118,6 +119,7 @@ static SymTabRec EloTab[] = {
   { SCREENNO,	       "screenno" },
   { UNTOUCHDELAY,      "untouchdelay" },
   { REPORTDELAY,       "reportdelay"},
+  { DEBUG_LEVEL,       "debuglevel" },
   { -1,                "" },
 };
 #endif
@@ -192,8 +194,13 @@ static SymTabRec EloTab[] = {
 #ifdef DBG
 #undef DBG
 #endif
-#if 0
-static int      debug_level = 4;
+#ifdef DEBUG
+#undef DEBUG
+#endif
+
+static int      debug_level = 0;
+#define DEBUG 1
+#if DEBUG
 #define DBG(lvl, f) {if ((lvl) <= debug_level) f;}
 #else
 #define DBG(lvl, f)
@@ -330,6 +337,21 @@ xf86EloConfig(LocalDevicePtr    *array,
 	       XCONFIG_GIVEN, priv->min_y);      
      break;
       
+    case DEBUG_LEVEL:
+	if (xf86GetToken(NULL) != NUMBER)
+	    xf86ConfigError("Option number expected");
+	debug_level = val->num;
+	if (xf86Verbose) {
+#if DEBUG
+	    ErrorF("%s Elographics debug level sets to %d\n", XCONFIG_GIVEN,
+		   debug_level);      
+#else
+	    ErrorF("%s Elographics debug level not sets to %d because debugging is not compiled\n",
+		   XCONFIG_GIVEN, debug_level);      
+#endif
+	}
+        break;
+
     case EOF:
       FatalError("Unexpected EOF (missing EndSubSection)");
       break;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.0 1995/03/11 14:15:28 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -40,13 +40,13 @@
 /* Video Memory Mapping helper functions                                   */
 /***************************************************************************/
 
-/* This section uses a special IBM unsupported device driver function.
- * The driver SMVDD.SYS is supplied for reference in this directory.
- * You must install it with a line DEVICE=path\SMVDD.SYS in config.sys.
+/* This section uses the xf86sup.sys driver developed for xfree86.
+ * The driver allows mapping of physical memory
+ * You must install it with a line DEVICE=path\xf86sup.sys in config.sys.
  */
 
 static HFILE mapdev = -1;
-static char* mappath = "\\DEV\\SMVDD01$";
+static char* mappath = "\\DEV\\PMAP$";
 static HFILE open_mmap() 
 {
 	APIRET rc;
@@ -72,27 +72,22 @@ static void close_mmap()
 }
 
 /* this structure is used as a parameter packet for the direct access
- * ioctl of smvdd.sys
+ * ioctl of pmap$
  */
-typedef struct {
-	ULONG	hstream;
-	ULONG 	hid;
-	ULONG	flag;
-	ULONG	addr;
-	ULONG	size;
-} DIOParPkt;
 
-/* this structure is used as a return value for the direct access ioctl
- * of smvdd.sys. Attention this structure is unaligned and packed!
- */
-typedef struct {
-	USHORT	lin[3]; /* this is actually USHORT,ULONG but unpacked */
-} DIODtaPkt;
+/* Changed here for structure of driver PMAP$ */
 
-typedef union {
-	ULONG l;
-	USHORT s[2];
-} S2L;
+typedef struct{
+	ULONG addr;
+	ULONG size;
+	} DIOParPkt;
+
+/* This is the data packet for the mapping function */
+
+typedef struct {
+	ULONG addr;
+	USHORT sel;
+	} DIODtaPkt;
 
 /***************************************************************************/
 /* Video Memory Mapping section                                            */
@@ -110,31 +105,28 @@ unsigned long Size;
 	DIODtaPkt	dta;
 	ULONG		dlen;
 
-	par.hstream	= 0;
-	par.hid		= 0;
-	par.flag	= 1l;
 	par.addr	= (ULONG)Base;
 	par.size	= (ULONG)Size;
 	plen 		= sizeof(par);
+	dlen		= sizeof(dta);
 
 	open_mmap();
 	if (mapdev == -1)
-		FatalError("xf86MapVidMem: install DEVICE=path\\SMVDD.SYS!");
+		FatalError("xf86MapVidMem: install DEVICE=path\\XF86SUP.SYS!");
 
-	if (DosDevIOCtl(mapdev, (ULONG)0x81, (ULONG)0x42,
+	if (DosDevIOCtl(mapdev, (ULONG)0x76, (ULONG)0x44,
 	      (PVOID)&par, (ULONG)plen, (PULONG)&plen,
-	      (PVOID)&dta, (ULONG)6, (PULONG)&dlen) == 0) {
-		S2L x;
-		x.s[0] = dta.lin[1];
-		x.s[1] = dta.lin[2];
-		if (dlen==6)
-			return (pointer)x.l;
+	      (PVOID)&dta, (ULONG)dlen, (PULONG)&dlen) == 0) {
+		ErrorF("xf86MapVidMem: (ScreenNum= %d, Base= %p, Size= 0x%x\n",
+		ScreenNum, Base, Size);
+		if (dlen==sizeof(dta))
+			return (pointer)dta.addr;
 		/*else fail*/
 	}
 
 	/* fail */
-	ErrorF("xf86MapVidMem: (ScreenNum= %d, Base= %p, Size= 0x%x\n",
-		ScreenNum, Base, Size);
+	ErrorF("xf86MapVidMem FAILED!!: (ScreenNum= %d, Base= %p, Size= 0x%x return len %d\n",
+		ScreenNum, Base, Size,dlen);
 	return (pointer)0;
 }
 
@@ -148,18 +140,29 @@ unsigned long Size;
 	DIOParPkt	par;
 	ULONG		plen;
 
-	par.hstream	= 0l;
-	par.hid		= 0l;
-	par.flag	= 0l;
+/* We need here the VIRTADDR for unmapping, not the physical address      */
+/* This should be taken care of either here by keeping track of allocated */
+/* pointers, but this is also already done in the driver... Thus it would */
+/* be a waste to do this tracking twice. Can this be changed when the fn. */
+/* is called? This would require tracking this function in all servers,   */
+/* and changing it appropriately to call this with the virtual adress	  */
+/* If the above mapping function is only called once, then we can store   */
+/* the virtual adress and use it here.... 				  */
+	
 	par.addr	= (ULONG)Base;
-	par.size	= 0l;
+	par.size	= Size;
 	plen 		= sizeof(par);
 
 	if (mapdev != -1)
-	    DosDevIOCtl(mapdev, (ULONG)0x81, (ULONG)0x42,
+	    DosDevIOCtl(mapdev, (ULONG)0x76, (ULONG)0x45,
 	      (PVOID)&par, (ULONG)plen, (PULONG)&plen,
 	      NULL, 0, NULL);
-	close_mmap();
+
+/* Now if more than one region has been allocated and we close the driver, *
+ * the other pointers will immediately become invalid. We avoid closing    *
+ * driver for now, but this should be fixed                                */
+ 
+	/*close_mmap();*/
 }
 
 Bool xf86LinearVidMem()

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.113 1995/12/28 01:32:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.114 1996/01/11 10:37:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1857,10 +1857,7 @@ s3Probe()
       case S3_SDAC_DAC:
       case S3_TRIO32_DAC:
       case S3_TRIO64_DAC:
-	 if (OFLG_ISSET(CLOCK_OPTION_ICS5342, &s3InfoRec.clockOptions)) 
-	    s3InfoRec.dacSpeed = 125000;  /* limit of current ICS5342 clock code */
-	 else
-	    s3InfoRec.dacSpeed = 135000;
+	 s3InfoRec.dacSpeed = 135000;
 	 break;
       case TI3020_DAC:
          if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options))

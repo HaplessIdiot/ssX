@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.3 1996/01/11 13:31:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.4 1996/01/14 13:35:09 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -66,8 +66,13 @@
 #ifdef DBG
 #undef DBG
 #endif
-#if 0
-static int      debug_level = 6;
+#ifdef DEBUG
+#undef DEBUG
+#endif
+
+static int      debug_level = 0;
+#define DEBUG 1
+#if DEBUG
 #define DBG(lvl, f) {if ((lvl) <= debug_level) f;}
 #else
 #define DBG(lvl, f)
@@ -122,6 +127,7 @@ typedef struct
 #define DEVICENAME	2
 #define THE_MODE	3
 #define SUPPRESS	4
+#define DEBUG_LEVEL     5
 
 #if !defined(sun) || defined(i386)
 static SymTabRec WcmTab[] = {
@@ -130,6 +136,7 @@ static SymTabRec WcmTab[] = {
   { DEVICENAME,		"devicename" },
   { THE_MODE,		"mode" },
   { SUPPRESS,		"suppress" },
+  { DEBUG_LEVEL,	"debuglevel" },
   { -1,			"" }
 };
 
@@ -291,6 +298,21 @@ xf86WcmConfig(LocalDevicePtr    *array,
       if (xf86Verbose)
 	ErrorF("%s Wacom suppress value is %d\n", XCONFIG_GIVEN, priv->wcmSuppress);      
       break;
+
+    case DEBUG_LEVEL:
+	if (xf86GetToken(NULL) != NUMBER)
+	    xf86ConfigError("Option number expected");
+	debug_level = val->num;
+	if (xf86Verbose) {
+#if DEBUG
+	    ErrorF("%s Wacom debug level sets to %d\n", XCONFIG_GIVEN,
+		   debug_level);      
+#else
+            ErrorF("%s Wacom debug level not sets to %d because debugging is not compiled\n", XCONFIG_GIVEN,
+		   debug_level);      
+#endif
+	}
+	break;
 
     case EOF:
       FatalError("Unexpected EOF (missing EndSubSection)");

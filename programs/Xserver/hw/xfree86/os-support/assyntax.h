@@ -1,5 +1,5 @@
 /* $XConsortium: assyntax.h,v 1.2 95/01/05 20:43:31 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/assyntax.h,v 3.3 1995/03/11 14:14:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/assyntax.h,v 3.4 1995/06/02 10:17:30 dawes Exp $ */
 #ifndef __ASSYNTAX_H__
 #define	__ASSYNTAX_H__
 
@@ -362,16 +362,9 @@
 #define	IMUL_L(a, b)	CHOICE(imull ARG2(a,b), imull ARG2(a,b), _LTOG imul ARG2(b,a))
 #define	IMUL_W(a, b)	CHOICE(imulw ARG2(a,b), imulw ARG2(a,b), _WTOG imul ARG2(b,a))
 #define	IMUL_B(a)	CHOICE(imulb a, imulb a, imulb a)
-#ifndef __EMX__
 #define	IN_L		CHOICE(inl (DX), inl ARG2(DX,EAX), _LTOG in DX)
 #define	IN_W		CHOICE(inw (DX), inw ARG2(DX,AX), _WTOG in DX)
 #define	IN_B		CHOICE(inb (DX), inb ARG2(DX,AL), inb DX)
-#else
-/* EMX: Unfortunately, there is currently no other way than calling a routine */
-#define	IN_L		call GLNAME(os2inl)
-#define	IN_W		call GLNAME(os2inw)
-#define	IN_B		call GLNAME(os2inb)
-#endif
 /* Please AS code writer: use the following ONLY, if you refer to ports<256
  * directly, but not in IN1_W(DX), for instance, even if IN1_ looks nicer
  */
@@ -380,29 +373,16 @@
 #define IN1_W(a)    CHOICE(inw (a), inw ARG2(a,AX), _WTOG in a)
 #define IN1_B(a)    CHOICE(inb (a), inb ARG2(a,AL), inb a)
 #else
-#ifndef __EMX__
 #define	IN1_L(a)	CHOICE(inl a, inl ARG2(a,EAX), _LTOG in a)
 #define	IN1_W(a)	CHOICE(inw a, inw ARG2(a,AX), _WTOG in a)
 #define	IN1_B(a)	CHOICE(inb a, inb ARG2(a,AL), inb a)
-#else
-/* EMX: cannot handle this currently, need to check where this is used */
-#define IN1_L(a)	crash-boom 1
-#define IN1_W(a)	crash-boom 2
-#define IN1_B(a)	crash-boom 3
-#endif
 #endif
 #define	INC_L(a)	CHOICE(incl a, incl a, _LTOG inc a)
 #define	INC_W(a)	CHOICE(incw a, incw a, _WTOG inc a)
 #define	INC_B(a)	CHOICE(incb a, incb a, incb a)
-#ifndef __EMX__
 #define	INS_L		CHOICE(insl, insl, _LTOG ins)
 #define	INS_W		CHOICE(insw, insw, _WTOG ins)
 #define	INS_B		CHOICE(insb, insb, insb)
-#else
-#define	INS_L		call GLNAME(os2insl)
-#define	INS_W		call GLNAME(os2insw)
-#define	INS_B		call GLNAME(os2insb)
-#endif
 #define	INT(a)		CHOICE(int a, int a, int a)
 #define	INT3		CHOICE(int CONST(3), int3, int CONST(3))
 #define	INTO		CHOICE(into, into, into)
@@ -495,7 +475,6 @@
 #define	OR_L(a,b)	CHOICE(orl ARG2(a,b), orl ARG2(a,b), _LTOG or ARG2(b,a))
 #define	OR_W(a,b)	CHOICE(orw ARG2(a,b), orw ARG2(a,b), _WTOG or ARG2(b,a))
 #define	OR_B(a,b)	CHOICE(orb ARG2(a,b), orb ARG2(a,b), orb ARG2(b,a))
-#ifndef __EMX__
 #define	OUT_L		CHOICE(outl (DX), outl ARG2(EAX,DX), _LTOG out DX)
 #define	OUT_W		CHOICE(outw (DX), outw ARG2(AX,DX), _WTOG out DX)
 #define	OUT_B		CHOICE(outb (DX), outb ARG2(AL,DX), outb DX)
@@ -508,18 +487,6 @@
 #define	OUTS_L		CHOICE(outsl, outsl, _LTOG outs)
 #define	OUTS_W		CHOICE(outsw, outsw, _WTOG outs)
 #define	OUTS_B		CHOICE(outsb, outsb, outsb)
-#else
-/* EMX unfortunately: routines for now */
-#define	OUT_L		call GLNAME(os2outl)
-#define	OUT_W		call GLNAME(os2outw)
-#define	OUT_B		call GLNAME(os2outb)
-#define	OUT1_L(a)	crash-boom 4 /* need to check where this is used */
-#define	OUT1_W(a)	crash-boom 5
-#define	OUT1_B(a)	crash-boom 6
-#define	OUTS_L		call GLNAME(os2outsl)
-#define	OUTS_W		call GLNAME(os2outsw)
-#define	OUTS_B		call GLNAME(os2outsb)
-#endif
 #define	POP_SR(a)	CHOICE(pop a, pop a, pop a)
 #define	POP_L(a)	CHOICE(popl a, popl a, _LTOG pop a)
 #define	POP_W(a)	CHOICE(popw a, popw a, _WTOG pop a)

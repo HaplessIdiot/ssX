@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.67 1996/01/16 11:01:00 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.68 1996/01/16 15:03:47 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -309,7 +309,12 @@ xf86GetToken(tab)
 	  configLineNo++;
 	  configStart = configPos = 0;
 	}
+#ifndef __EMX__
 	while (((c=configBuf[configPos++])==' ') || ( c=='\t') || ( c=='\n'));
+#else
+	while (((c=configBuf[configPos++])==' ') || ( c=='\t') || ( c=='\n') 
+		|| (c=='\r'));
+#endif
 	if (c == '#') c = '\0'; 
       } while (!c);
       
@@ -361,7 +366,11 @@ xf86GetToken(tab)
 	  i = -1;
 	  do {
 	    configRBuf[++i] = (c = configBuf[configPos++]);
+#ifndef __EMX__
 	  } while ((c != '\"') && (c != '\n') && (c != '\0'));
+#else
+	  } while ((c != '\"') && (c != '\n') && (c != '\r') && (c != '\0'));
+#endif
 	  configRBuf[i] = '\0';
 	  val.str = (char *)xalloc(strlen(configRBuf) + 1);
 	  strcpy(val.str, configRBuf);      /* private copy ! */
@@ -378,7 +387,11 @@ xf86GetToken(tab)
           i = 0;
 	  do {
 	    configRBuf[++i] = (c = configBuf[configPos++]);;
+#ifndef __EMX__
 	  } while ((c != ' ') && (c != '\t') && (c != '\n') && (c != '\0'));
+#else
+	  } while ((c != ' ') && (c != '\t') && (c != '\n') && (c != '\r') && (c != '\0') );
+#endif
 	  configRBuf[i] = '\0'; i=0;
 	}
       
@@ -591,7 +604,11 @@ findConfigFile(filename, fp)
      * First check if the -xf86config option was used.
      */
     configPaths[pcount] = (char *)xalloc(PATH_MAX);
+#ifndef __EMX__
     if (getuid() == 0 && xf86ConfigFile[0]) {
+#else
+    if (xf86ConfigFile[0]) {
+#endif
       strcpy(configPaths[pcount], xf86ConfigFile);
       if (configFile = fopen(configPaths[pcount], "r"))
         break;
@@ -603,8 +620,14 @@ findConfigFile(filename, fp)
     /*
      * Check if XF86CONFIG is set.
      */
+#ifndef __EMX__
     if (getuid() == 0 && (xconfig = getenv("XF86CONFIG"))) {
       if (index(xconfig, '/')) {
+#else
+    /* no root available, and filenames start with drive letter */
+    if ((xconfig = getenv("XF86CONFIG"))) {
+      if (isalpha(xconfig[0]) && xconfig[1]==':') {
+#endif
         strcpy(configPaths[pcount], xconfig);
         if (configFile = fopen(configPaths[pcount], "r"))
           break;
@@ -615,6 +638,7 @@ findConfigFile(filename, fp)
       }
     }
      
+#ifndef __EMX__
     /*
      * ~/XF86Config ...
      */
@@ -656,16 +680,28 @@ findConfigFile(filename, fp)
                 MAXHOSTNAMELEN);
 #endif
     if (configFile = fopen( configPaths[pcount], "r" )) break;
+#endif /* !__EMX__  */
     
     /*
      * $(LIBDIR)/XF86Config
      */
     configPaths[++pcount] = (char *)xalloc(PATH_MAX);
+#ifndef __EMX__
     if (getuid() == 0 && xwinhome)
 	sprintf(configPaths[pcount], "%s/lib/X11/XF86Config", xwinhome);
     else
 	strcpy(configPaths[pcount], SERVER_CONFIG_FILE);
     if (getuid() == 0 && xconfig) strcat(configPaths[pcount],xconfig);
+#else
+    /* we explicitly forbid numerous config files everywhere for OS/2;
+     * users should consider them lucky to have one in a standard place
+     * and another one with the -xf86config option
+     */
+    xwinhome = getenv("X11ROOT"); /* get drive letter */
+    if (!xwinhome) FatalError("X11ROOT environment variable not set\n");
+    sprintf(configPaths[pcount], "%s/XFree86/lib/X11/XConfig", xwinhome);
+#endif
+
     if (configFile = fopen( configPaths[pcount], "r" )) break;
     
     ErrorF("\nCould not find config file!\n");
@@ -968,12 +1004,35 @@ xf86Config (vtopen)
 
  }
 }
+
+static char* prependRoot(char *pathname) 
+{
+#ifndef __EMX__
+	return pathname;
+#else
+	/* XXXX caveat: multiple path components in line */
+
+	char *pathbuf;
+	char *root = getenv("X11ROOT"); 
+	if (!root) root = "";
+
+	pathbuf = (char*)xalloc(strlen(root)+strlen(pathname)+1);
+
+	/* prepend the drive path if not already present */
+	if (isalpha(pathname[0]) && pathname[1] == ':')
+		strcpy(pathbuf,pathname);
+	else
+		sprintf(pathbuf,"%s%s", root, pathname);
+	return pathbuf;
+#endif
+}
     
 static void
 configFilesSection()
 {
   int            token;
   int            i, j;
+  char           *str;
 
   while ((token = xf86GetToken(FilesTab)) != ENDSECTION) {
     switch (token) {
@@ -982,15 +1041,16 @@ configFilesSection()
       if (xf86GetToken(NULL) != STRING)
 	xf86ConfigError("Font path component expected");
       j = FALSE;
+      str = prependRoot(val.str);
       if (fontPath == NULL)
 	{
 	  fontPath = (char *)xalloc(1);
 	  fontPath[0] = '\0';
-	  i = strlen(val.str) + 1;
+	  i = strlen(str) + 1;
 	}
       else
 	{
-          i = strlen(fontPath) + strlen(val.str) + 1;
+          i = strlen(fontPath) + strlen(str) + 1;
           if (fontPath[strlen(fontPath)-1] != ',') 
 	    {
 	      i++;
@@ -1000,7 +1060,11 @@ configFilesSection()
       fontPath = (char *)xrealloc(fontPath, i);
       if (j)
         strcat(fontPath, ",");
-      strcat(fontPath, val.str);
+
+      strcat(fontPath, str);
+#ifdef __EMX__
+      xfree(str);
+#endif
       xfree(val.str);
       break;
       
@@ -1008,7 +1072,7 @@ configFilesSection()
       OFLG_SET(XCONFIG_RGBPATH, &GenericXF86ConfigFlag);
       if (xf86GetToken(NULL) != STRING) xf86ConfigError("RGB path expected");
       if (!xf86coFlag)
-        rgbPath = val.str;
+        rgbPath = prependRoot(val.str);
       break;
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");

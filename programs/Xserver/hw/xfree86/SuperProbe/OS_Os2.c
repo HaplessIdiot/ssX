@@ -27,7 +27,7 @@
  */
 
 /* $XConsortium: OS_Os2.c,v 1.1 95/01/06 20:47:15 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Os2.c,v 3.0 1994/12/17 09:58:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Os2.c,v 3.1 1995/01/28 15:47:19 dawes Exp $ */
 
 
 #include "Probe.h"
@@ -39,70 +39,68 @@
 #define UNUSED (Byte*)0xffffffffl
 
 HFILE consFd = -1;
-HFILE testFd = -1;
+
 ULONG action;
-char *videoDrvPath = "\\DEV\\SMVDD01$";
-char *testCfgPath = "\\DEV\\TESTCFG$";
+char *videoDrvPath = "/dev/pmap$";
+char *ioDrvPath = "/dev/fastio$";
+
 Byte* videoAddr = UNUSED;
+ULONG videoSize = 0x10000;
+int ioenabled = FALSE;
+
+static void sorry()
+{
+	fprintf(stderr,
+		"Didn't find a properly installed XF86SUP.SYS at your system\n");
+	fprintf(stderr,"Please install it before retrying\n");
+}
 
 /*
  * OpenVideo --
  *
  * Enable access to the installed video hardware.  For OS/2, we take
- * advantage of a special driver that is part of MMPM/2, which is a
- * package that is part of OS/2 2.X, and should also be part of OS/2 3.0.
+ * advantage of the driver xf86sup.sys which was specifically written
+ * for XFree86/OS2.
  */
 int OpenVideo()
 {
 	if (DosOpen((PSZ)videoDrvPath, (PHFILE)&consFd, (PULONG)&action,
 	   (ULONG)0, FILE_SYSTEM, FILE_OPEN,
 	   OPEN_SHARE_DENYNONE|OPEN_FLAGS_NOINHERIT|OPEN_ACCESS_READONLY,
-	   (ULONG)0) != 0 ||
-	   DosOpen((PSZ)testCfgPath, (PHFILE)&testFd, (PULONG)&action,
-	   (ULONG)0, FILE_SYSTEM, FILE_OPEN,
-	   OPEN_SHARE_DENYNONE|OPEN_FLAGS_NOINHERIT|OPEN_ACCESS_READONLY,
-	   (ULONG)0) != 0)
+	   (ULONG)0) != 0) {
+		sorry();
 		return -1;
+	}
 	return 1;
 }
 
 /* this structure is used as a parameter packet for the direct access
- * ioctl of smvdd.sys
+ * to physical memory
  */
 typedef struct {
-	ULONG	hstream;
-	ULONG 	hid;
-	ULONG	flag;
-	ULONG	addr;
+	ULONG	addr;	/* PHYSADDR for map, VIRTADDR for unmap */
 	ULONG	size;
 } DIOParPkt;
 
 /* this structure is used as a return value for the direct access ioctl
- * of smvdd.sys. Attention this structure is unaligned and packed!
+ * to physical memory
  */
 typedef struct {
-	USHORT	lin[3]; /* this is actually USHORT,ULONG but unpacked */
+	ULONG	addr;
+	USHORT	sel;
 } DIODtaPkt;
 
-typedef union {
-	ULONG l;
-	USHORT s[2];
-} S2L;
-
-static Byte* UnmapPhys()
+static Byte* UnmapPhys(Byte* addr,ULONG size)
 {
 	DIOParPkt	par;
 	ULONG		plen;
 
-	par.hstream	= 0l;
-	par.hid		= 0l;
-	par.flag	= 0l;
-	par.addr	= 0l;
-	par.size	= 0l;
+	par.addr	= (ULONG)addr;
+	par.size	= size;
 	plen 		= sizeof(par);
 
 	if (consFd != -1)
-		DosDevIOCtl(consFd, (ULONG)0x81, (ULONG)0x42,
+		DosDevIOCtl(consFd, (ULONG)0x76, (ULONG)0x45,
 		   (PVOID)&par, (ULONG)plen, (PULONG)&plen,
 		   NULL, 0, NULL);
 	return UNUSED; /* no error */
@@ -116,10 +114,9 @@ static Byte* UnmapPhys()
 void CloseVideo()
 {
 	if (videoAddr != UNUSED)
-		videoAddr = UnmapPhys();
+		videoAddr = UnmapPhys(videoAddr,videoSize);
 
 	DosClose(consFd);
-	DosClose(testFd);
 }
 
 /*
@@ -135,22 +132,16 @@ Byte *MapVGA()
 	DIODtaPkt	dta;
 	ULONG		dlen;
 
-	par.hstream	= 0;
-	par.hid		= 0;
-	par.flag	= 1l;
 	par.addr	= 0xa0000l;
-	par.size	= 0x10000l;
+	par.size	= videoSize;
 	plen 		= sizeof(par);
 
 	if (consFd != -1 &&
-	    DosDevIOCtl(consFd, (ULONG)0x81, (ULONG)0x42,
+	    DosDevIOCtl(consFd, (ULONG)0x76, (ULONG)0x44,
 	       (PVOID)&par, (ULONG)plen, (PULONG)&plen,
 	       (PVOID)&dta, (ULONG)6, (PULONG)&dlen) == 0) {
-		S2L x;
-		x.s[0] = dta.lin[1];
-		x.s[1] = dta.lin[2];
 		if (dlen==6) {
-			videoAddr = (Byte*)x.l;
+			videoAddr = (Byte*)dta.addr;
 			return videoAddr;
 		}
 	} else {
@@ -167,7 +158,7 @@ Byte *MapVGA()
 void UnMapVGA(base)
 Byte *base;
 {
-	UnmapPhys();
+	UnmapPhys(videoAddr,videoSize);
 }
 
 /*
@@ -199,7 +190,7 @@ int Len;
 	dta		= (UCHAR*)malloc(par.len);
 	dlen 		= Len;
 
-	if (DosDevIOCtl(testFd, (ULONG)0x80, (ULONG)0x40,
+	if (DosDevIOCtl(consFd, (ULONG)0x76, (ULONG)0x64,
 	   (PVOID)&par, (ULONG)plen, (PULONG)&plen,
 	   (PVOID)dta, (ULONG)dlen, (PULONG)&dlen)) {
 		fprintf(stderr, "%s: BIOS map failed, addr=%lx\n",
@@ -227,15 +218,44 @@ int Len;
  * EnableIOPort --
  *
  * Enable access to 'NumPorts' IO ports listed in array 'Ports'.
- * This is a no op here: I/O access is implicitly enabled for this 
- * process through a special library
  */
+USHORT callgate[3] = {0,0,0};
+
 /*ARGSUSED*/
 int EnableIOPorts(NumPorts, Ports)
 CONST int NumPorts;
 CONST Word *Ports;
 {
-	return(0);
+	HFILE hfd;
+	ULONG dlen;
+
+	/* no need to call multiple times */
+	if (ioenabled) return 0;
+	
+	if (DosOpen((PSZ)ioDrvPath, (PHFILE)&hfd, (PULONG)&action,
+	   (ULONG)0, FILE_SYSTEM, FILE_OPEN,
+	   OPEN_SHARE_DENYNONE|OPEN_FLAGS_NOINHERIT|OPEN_ACCESS_READONLY,
+	   (ULONG)0) != 0) {
+		sorry();
+		return -1;
+	}
+	callgate[0] = callgate[1] = 0;
+
+	if (DosDevIOCtl(hfd, (ULONG)0x76, (ULONG)0x64,
+		NULL, 0, NULL,
+		(ULONG*)&callgate[2], sizeof(USHORT), &dlen) != 0) {
+		sorry();
+		DosClose(hfd);
+		return -1;
+	}
+
+	asm volatile ("movl $13,%%ebx;.byte 0xff,0x1d;.long _callgate"
+			: /*no outputs */ 
+			: /*no inputs */
+			: "eax","ebx","ecx","edx","cc");
+
+	ioenabled = TRUE;
+	return 0;
 }
 
 /*
@@ -264,3 +284,4 @@ int Delay;
 {
 	DosSleep(Delay ? Delay : 1);
 }
+

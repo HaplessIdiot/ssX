@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 95/01/06 20:34:08 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/Imakefile,v 3.1 1995/01/28 16:12:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/Imakefile,v 3.2 1995/06/02 10:24:19 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = cl_driver.c cl_bank.s
@@ -13,6 +13,9 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I$(INCLUDESRC)
 #endif
 
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 

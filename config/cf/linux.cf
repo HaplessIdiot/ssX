@@ -1,8 +1,16 @@
 XCOMM platform:  $XConsortium: linux.cf /main/14 1995/12/04 17:38:41 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.31 1996/01/05 13:06:36 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.32 1996/01/13 12:17:54 dawes Exp $
+
+#ifndef UseElfFormat
+#define UseElfFormat		NO
+#endif
 
 #ifndef OSName
-#define OSName			Linux
+#if UseElfFormat
+#define OSName			Linux (ELF)
+#else
+#define OSName			Linux (a.out)
+#endif
 #endif
 #ifndef OSVendor
 #define OSVendor		/**/
@@ -21,9 +29,6 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.31 1996/01/05 13:06:36 dawe
 #define LinuxElfDefault		NO
 #endif
 
-#ifndef UseElfFormat
-#define UseElfFormat		NO
-#endif
 #define HasGcc			YES
 #define HasGcc2			YES
 #ifndef HasGcc2ForCplusplus

@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/Imakefile,v 3.0 1995/12/16 08:21:07 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = sis86c201.c sis_bank.s
@@ -12,6 +12,9 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I../../vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
 #endif
 
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
