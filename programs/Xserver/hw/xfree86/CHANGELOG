@@ -1,7 +1,15 @@
+XFree86 3.0Dc (11 August 1994)
+177. Various 15/16bpp S3 fixes (Jon Tombs, Harald Koenig).
+176. 16bpp support for ATT 20C490 (Jon Tombs).
+175. 16/24/32bpp code for SC15025 (Harald Koenig).
+174. Support for gamma correction in S3 server (Harald Koenig).
+173. Probe code for the SC15025 (S3 server and SuperProbe) (Harald Koenig).
+
 XFree86 3.0Db (6 August 1994)
 172. Patches for N.M value triming (Harald Koenig).
 171. ATT20C498 and 864 support for 15/16/24bpp in S3 server (Harald Koenig).
-170. Ti3020 Ramdac support for 15/16/24bpp in S3 server (Robin Cutshaw).
+170. Ti3020 and Bt485 Ramdac support for 15/16/24bpp in S3 server
+     (Robin Cutshaw).
 169. Fix problems building debugging libFS (Christos Zoulas).
 168. Remove XOR'd extended register addressing in S3 server.
 
