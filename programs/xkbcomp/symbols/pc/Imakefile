@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XFree86: xc/programs/xkbcomp/symbols/pc/Imakefile,v 1.10 2003/01/26 02:38:14 dawes Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/symbols/pc/Imakefile,v 1.11 2003/04/03 16:34:51 dawes Exp $
 XCOMM
 
      DATAFILES = al am ar \
@@ -20,7 +20,7 @@ XCOMM
 		ro ru \
 		sapmi se si sk sk_qwerty sr syr syr_phonetic \
 		tel th th_tis th_pat tj tml tr \
-		ua us \
+		ua us uz \
 		yu 
 
 all::
