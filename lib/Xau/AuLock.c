@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xau/AuLock.c,v 3.0 1994/10/20 06:04:31 dawes Exp $ */
+/* $XFree86: xc/lib/Xau/AuLock.c,v 3.1 1998/10/03 08:41:58 dawes Exp $ */
 
 #include <X11/Xauth.h>
 #include <X11/Xos.h>
@@ -89,7 +89,7 @@ long	dead;
     
     while (retries > 0) {
 	if (creat_fd == -1) {
-	    creat_fd = creat (creat_name, 0666);
+	    creat_fd = open (creat_name, O_WRONLY | O_CREAT | O_EXCL, 0600);
 	    if (creat_fd == -1) {
 		if (errno != EACCES)
 		    return LOCK_ERROR;
