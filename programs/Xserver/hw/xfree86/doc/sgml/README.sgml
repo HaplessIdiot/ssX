@@ -16,12 +16,12 @@
 <date>2 June 2001
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.115 2001/06/01 18:26:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.116 2001/06/02 16:17:54 dawes Exp $
 </ident>
 
 <abstract>
 
-XFree86 is the Open Source port of X.Org's X11R6.4 release that supports
+XFree86 is the Open Source port of X.Org's X11R6.5.1 release that supports
 several UNIX(R) and UNIX-like (such as Linux, the BSDs and Solaris x86)
 operating systems on Intel and other platforms.
 

@@ -12,7 +12,7 @@ Matthieu Herrb
 <Date>Last modified on: 3 March 2001
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.60 2001/03/04 09:47:34 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.61 2001/06/01 18:26:04 dawes Exp $
 </ident>
 <toc>
 
@@ -20,7 +20,7 @@ $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.60 2001/03/04 
 <sect>What and Where is XFree86?
 
 <p>
-XFree86 is the Open Source port of X.Org's X11R6.4 release that supports
+XFree86 is the Open Source port of X.Org's X11R6.5.1 release that supports
 several UNIX(R) and UNIX-like (such as Linux, the BSDs and Solaris x86)
 operating systems on Intel and other platforms.
 
