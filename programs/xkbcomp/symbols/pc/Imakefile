@@ -1,9 +1,25 @@
 XCOMM
+XCOMM $XFree86$
+XCOMM
 
-     DATAFILES = al am ar be ben bg br by cz de dev dk ee el en_US es fi \
-		fr gb ge_la ge_ru guj gur hr il il_phonetic ir is it iu \
-		la latin lt lv mk mm mt mt_us nl no pc pl pl2 pt ro ru \
-		sapmi se si sk sk_qwerty sr th tj tml tr ua us yu 
+     DATAFILES = al am ar \
+		be ben bg br by \
+		cz \
+		de dev dk \
+		ee el en_US es 
+		fi fr \
+		gb ge_la ge_ru guj gur \
+		hr \
+		il il_phonetic ir is it iu \
+		la latin lt lv \
+		mk mm mt mt_us \
+		nl no \
+		pc pl pl2 pt \
+		ro ru \
+		sapmi se si sk sk_qwerty sr syr syr_phonetic \
+		th tj tml tr \
+		ua us \
+		yu 
 
 all::
 
