@@ -1,5 +1,5 @@
 /* $XConsortium: Screen.c /main/8 1996/12/02 10:21:46 lehors $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.4 1998/04/05 16:42:23 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.3.4.3 1998/07/18 17:54:21 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -38,10 +38,6 @@ is" without express or implied warranty.
 #include "Init.h"
 #include "Args.h"
 
-extern Bool miModifyPixmapHeader();
-extern Bool miCreateScreenResources();
-extern Bool miCloseScreen();
-extern Bool miScreenInit();
 extern Window xnestParentWindow;
 
 Window xnestDefaultWindows[MAXSCREENS];
