@@ -1,4 +1,5 @@
-# $XFree86$
+/*
+# $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_msr_asm.s,v 1.1 2002/12/10 15:12:25 alanh Exp $
 ##########################################################################
 # NSC_LIC_ALTERNATIVE_PREAMBLE
 #
@@ -127,170 +128,102 @@
 # Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 #
 # END_NSC_LIC_GPL 
+*/
 
+#include "assyntax.h"
 
-	.file	"nsc_msr_asm.s"
+	FILE("nsc_msr_asm.s")
 
-.text
+	AS_BEGIN
 
+	SEG_TEXT
 
-	.align 4
-.globl nsc_asm_msr_direct_rd
-	.type	 nsc_asm_msr_direct_rd,@function
-nsc_asm_msr_direct_rd:
+	ALIGNTEXT4
 
+	GLOBL	GLNAME(nsc_asm_msr_vsa_rd)
 
-	pushl %ebp
-	movl %esp,%ebp
-
-	pushl %ebx
-	pushl %ecx
-	pushl %edx
-
-#	movl 8(%ebp),%ecx
-	movl $0x0c0002001,%ecx
-
-	rdmsr
+GLNAME(nsc_asm_msr_vsa_rd):
 	
-#	movl 12(%ebp),%ebx
-#	movl %eax,(%ebx)
+	PUSH_L	(EBP)
+	MOV_L	(ESP,EBP)
 
-#	movl 16(%ebp),%ebx
-#	movl %edx,(%ebx)
-
-
-	popl %edx
-	popl %ecx
-	popl %ebx
-
-	leave
-	ret
-
-###################################
-
-
-	.align 4
-.globl nsc_asm_msr_direct_wr
-	.type	 nsc_asm_msr_direct_wr,@function
-nsc_asm_msr_direct_wr:
+	PUSH_L	(EAX)
+	PUSH_L	(EBX)
+	PUSH_L	(ECX)
+	PUSH_L	(EDX)
 	
+	MOV_L	(REGOFF(8,EBP),ECX)
 
-	pushl %ebp
-	movl %esp,%ebp
+	/* unlock */
+	MOV_W	(CONST(0x0ac1c),DX)
+	MOV_W	(CONST(0x0fc53),AX)
+	OUT_W
 
-	pushl %eax
-	pushl %ebx
-	pushl %ecx
-	pushl %edx
+	MOV_W	(CONST(0x0ac1c),DX)
+	MOV_W	(CONST(0x0007),AX)
+	OUT_W
+
+	MOV_W	(CONST(0x0ac1e),DX)
+	IN_W
+
+	MOV_L	(REGOFF(12,EBP),EBX)
+	MOV_L	(EDX,REGIND(EBX))
+	MOV_L	(REGOFF(16,EBP),EBX)
+	MOV_L	(EAX,REGIND(EBX))
+
+	POP_L	(EDX)
+	POP_L	(ECX)
+	POP_L	(EBX)
+	POP_L	(EAX)
+
+	LEAVE
+	RET
+
+/*###################################*/
 
 
-	movl 8(%ebp),%ecx
-	movl 12(%ebp),%edx
-	movl 16(%ebp),%eax
+	ALIGNTEXT4
 
-	wrmsr
+	GLOBL	GLNAME(nsc_asm_msr_vsa_wr)
 
+GLNAME(nsc_asm_msr_vsa_wr):
 
-	popl %edx
-	popl %ecx
-	popl %ebx
-	popl %edx
+	PUSH_L	(EBP)
+	MOV_L	(ESP,EBP)
 
-	leave
-	ret
+	PUSH_L	(EAX)
+	PUSH_L	(EBX)
+	PUSH_L	(ECX)
+	PUSH_L	(EDX)
+	PUSH_L	(EDI)
+	PUSH_L	(ESI)
 
-###################################
+	MOV_L	(REGOFF(8,EBP),ECX)
 
-
-
-	.align 4
-.globl nsc_asm_msr_vsa_rd
-	.type	 nsc_asm_msr_vsa_rd,@function
-nsc_asm_msr_vsa_rd:
+	/* unlock */
+	MOV_W	(CONST(0x0ac1c),DX)
+	MOV_L	(CONST(0x0fc530007),EAX)
+	OUT_L
 	
+	MOV_L	(REGOFF(12,EBP),EBX)
+	MOV_L	(REGOFF(16,EBP),EAX)
 
-	pushl %ebp
-	movl %esp,%ebp
+	XOR_L	(ESI,ESI)
+	XOR_L	(EDI,EDI)
 
-	pushl %eax
-	pushl %ebx
-	pushl %ecx
-	pushl %edx
+	MOV_W	(CONST(0x0ac1e),DX)
 
+	OUT_W
 
-	movl 8(%ebp),%ecx
+	POP_L	(ESI)
+	POP_L	(EDI)
+	POP_L	(EDX)
+	POP_L	(ECX)
+	POP_L	(EBX)
+	POP_L	(EAX)
 
-	#unlock
-	movw $0x0ac1c,%dx
-        movw $0x0fc53,%ax
-        outw %ax,%dx     
-	
-	movw $0x0ac1c,%dx
-        movw $0x0007,%ax
-        outw %ax,%dx       
+	LEAVE
+	RET
 
-	movw $0x0ac1e,%dx
-        inw %dx,%ax    
-
-	movl 12(%ebp),%ebx
-	movl %edx,(%ebx)
-	movl 16(%ebp),%ebx
-	movl %eax,(%ebx)
-
-	popl %edx
-	popl %ecx
-	popl %ebx
-	popl %edx
-
-	leave
-	ret
-
-###################################
-
-
-	.align 4
-.globl nsc_asm_msr_vsa_wr
-	.type	 nsc_asm_msr_vsa_wr,@function
-nsc_asm_msr_vsa_wr:
-	
-
-	pushl %ebp
-	movl %esp,%ebp
-
-	pushl %eax
-	pushl %ebx
-	pushl %ecx
-	pushl %edx
-	pushl %edi
-	pushl %esi
-
-
-	movl 8(%ebp),%ecx
-
-	#unlock
-	movw $0x0ac1c,%dx
-        movl $0x0fc530007,%eax
-        outl %eax,%dx     
-	
-	movl 12(%ebp),%ebx
-	movl 16(%ebp),%eax
-
-	xor %esi,%esi
-	xor %edi,%edi
-
-	movw $0x0ac1e,%dx
-
-        outw %ax,%dx       
-
-	popl %esi
-	popl %edi
-	popl %edx
-	popl %ecx
-	popl %ebx
-	popl %eax
-
-	leave
-	ret
-
-###################################
+/*###################################*/
 
