@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_debug.h,v 1.1 2002/09/09 19:18:48 dawes Exp $ */
 
 /*
  * Author:
@@ -36,12 +36,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef I830DEBUG_INC
 #define I830DEBUG_INC
 
-/* Do sanity checking on vertex buffers */
-#define VERTEX_SANITY		0
-/* Print out information at each vertex buffer dispatch */
-#define PRINT_VERTEX_INFO	0
-/* Dump all emitted state */
-#define OUTPUT_EMITTED_STATE	0
 
 void i830DumpContextState( i830ContextPtr imesa );
 void i830DumpBufferState( i830ContextPtr imesa );

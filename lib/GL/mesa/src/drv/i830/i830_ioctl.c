@@ -26,7 +26,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_ioctl.c,v 1.2 2002/09/09 19:18:48 dawes Exp $ */
 
 /*
  * Author:
@@ -59,9 +59,68 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "drm.h"
 
-#if 1
-#include "xf86drmI830.h"
+
+/*
+ * XXX This is here only while not all of the XFree86 versions of interest
+ * don't have the drmCommand interfaces.
+ */
+
+#if !defined(HAVE_DRM_COMMAND)
 #include <sys/ioctl.h>
+
+#define DRM_COMMAND_BASE		0x40
+
+#define DRM_I830_INIT			0x00
+#define DRM_I830_VERTEX			0x01
+#define DRM_I830_CLEAR			0x02
+#define DRM_I830_FLUSH			0x03
+#define DRM_I830_GETAGE			0x04
+#define DRM_I830_GETBUF			0x05
+#define DRM_I830_SWAP			0x06
+#define DRM_I830_COPY			0x07
+#define DRM_I830_DOCOPY			0x08
+
+static int
+drmCommandNone(int fd, unsigned long drmCommandIndex)
+{
+    void *data = NULL; /* dummy */
+    unsigned long request;
+
+    request = DRM_IO(DRM_COMMAND_BASE + drmCommandIndex);
+
+    if (ioctl(fd, request, data)) {
+	return -errno;
+    }
+    return 0;
+}
+
+static int
+drmCommandWrite(int fd, unsigned long drmCommandIndex,
+                void *data, unsigned long size )
+{
+    unsigned long request;
+
+    request = DRM_IOW(DRM_COMMAND_BASE + drmCommandIndex, size);
+
+    if (ioctl(fd, request, data)) {
+	return -errno;
+    }
+    return 0;
+}
+
+static int
+drmCommandWriteRead(int fd, unsigned long drmCommandIndex,
+                   void *data, unsigned long size )
+{
+    unsigned long request;
+
+    request = DRM_IOWR(DRM_COMMAND_BASE + drmCommandIndex, size);
+
+    if (ioctl(fd, request, data)) {
+	return -errno;
+    }
+    return 0;
+}
 #endif
 
 static drmBufPtr i830_get_buffer_ioctl( i830ContextPtr imesa )
@@ -70,30 +129,18 @@ static drmBufPtr i830_get_buffer_ioctl( i830ContextPtr imesa )
    drmBufPtr buf;
    int retcode,i = 0;
    while (1) {
-#if 0
       retcode = drmCommandWriteRead(imesa->driFd, 
 				    DRM_I830_GETBUF, 
 				    &dma, 
 				    sizeof(drmI830DMA));
-#else
-      retcode = ioctl(imesa->driFd, DRM_IOCTL_I830_GETBUF, &dma);
-#endif
       if (dma.granted == 1 && retcode == 0)
 	break;
 
       if (++i > 1000) {
-#if 0
 	 retcode = drmCommandNone(imesa->driFd, DRM_I830_FLUSH);
-#else
-	 ioctl(imesa->driFd, DRM_IOCTL_I830_FLUSH);
-#endif
 	 i = 0;
       }
    }
-   if (0)
-      fprintf(stderr,"\nimesa->i830Screen->bufs->list: %p\n
-		       dma.request_idx: %d\n",imesa->i830Screen->bufs->list,
-	      dma.request_idx);
 
    buf = &(imesa->i830Screen->bufs->list[dma.request_idx]);
    buf->idx = dma.request_idx;
@@ -164,7 +211,7 @@ static void i830ClearWithTris(GLcontext *ctx, GLbitfield mask,
    GLuint old_dirty;
    int x0, y0, x1, y1;
 
-   if(I830_DEBUG&DEBUG_VERBOSE_IOCTL)
+   if (I830_DEBUG & DEBUG_IOCTL)
      fprintf(stderr, "Clearing with triangles\n");
 
    old_dirty = imesa->dirty & ~I830_UPLOAD_CLIPRECTS;
@@ -524,12 +571,8 @@ static void i830Clear(GLcontext *ctx, GLbitfield mask, GLboolean all,
 	 }
 
 	 imesa->sarea->nbox = n;
-#if 0
 	 drmCommandWrite(imesa->driFd, DRM_I830_CLEAR,
 			 &clear, sizeof(drmI830Clear));
-#else
-	 ioctl(imesa->driFd, DRM_IOCTL_I830_CLEAR, &clear);
-#endif
       }
 
       UNLOCK_HARDWARE( imesa );
@@ -572,11 +615,7 @@ void i830CopyBuffer( const __DRIdrawablePrivate *dPriv )
 
       for ( ; i < nr ; i++) 
 	 *b++ = pbox[i];
-#if 0
       drmCommandNone(imesa->driFd, DRM_I830_SWAP);
-#else
-      ioctl(imesa->driFd, DRM_IOCTL_I830_SWAP);
-#endif
    }
 
    tmp = GET_ENQUEUE_AGE(imesa);
@@ -618,53 +657,38 @@ void i830RegetLockQuiescent( i830ContextPtr imesa )
 
 void i830WaitAgeLocked( i830ContextPtr imesa, int age )
 {
-   int i = 0, j;
+   int i = 0;
    while (++i < 5000) {
-#if 0
       drmCommandNone(imesa->driFd, DRM_I830_GETAGE);
-#else
-      ioctl(imesa->driFd, DRM_IOCTL_I830_GETAGE);
-#endif
       if (GET_DISPATCH_AGE(imesa) >= age) return;
-      for (j = 0 ; j < 1000 ; j++);
+      UNLOCK_HARDWARE( imesa );
+      if (I830_DEBUG & DEBUG_SLEEP) fprintf(stderr, ".");
+      usleep(1);
+      LOCK_HARDWARE( imesa );
    }
-#if 0
-   drmCommandNone(imesa->driFd, DRM_I830_FLUSH);
-#else
-   ioctl(imesa->driFd, DRM_IOCTL_I830_FLUSH);
-#endif
+   /* If that didn't work, just do a flush:
+    */
+   drmCommandNone(imesa->driFd, DRM_I830_FLUSH); 
 }
 
 void i830WaitAge( i830ContextPtr imesa, int age  ) 
 {
-   int i = 0, j;
+   int i = 0;
    while (++i < 5000) {
-#if 0
       drmCommandNone(imesa->driFd, DRM_I830_GETAGE);
-#else
-      ioctl(imesa->driFd, DRM_IOCTL_I830_GETAGE);
-#endif
       if (GET_DISPATCH_AGE(imesa) >= age) return;
-      for (j = 0 ; j < 1000 ; j++);
    }
 
    i = 0;
    while (++i < 1000) {
-#if 0
       drmCommandNone(imesa->driFd, DRM_I830_GETAGE);
-#else
-      ioctl(imesa->driFd, DRM_IOCTL_I830_GETAGE);
-#endif
       if (GET_DISPATCH_AGE(imesa) >= age) return;
+      if (I830_DEBUG & DEBUG_SLEEP) fprintf(stderr, ".");
       usleep(1000);
    }
 
    LOCK_HARDWARE(imesa);
-#if 0
-   drmCommandNone(imesa->driFd, DRM_I830_FLUSH);
-#else
-   ioctl(imesa->driFd, DRM_IOCTL_I830_FLUSH);
-#endif
+   drmCommandNone(imesa->driFd, DRM_I830_FLUSH); 
    UNLOCK_HARDWARE(imesa);
 }
 
@@ -683,84 +707,48 @@ void i830FlushPrimsLocked( i830ContextPtr imesa )
    drmI830Vertex vertex;
    int i;
 
-   if (0) fprintf(stderr, "%s dirty: %08x\n", __FUNCTION__, imesa->dirty);
-   if (imesa->dirty)
-#if OUTPUT_EMITTED_STATE
-     i830EmitHwStateLockedDebug(imesa);
-#else
-     i830EmitHwStateLocked(imesa);
-#endif
+   if (I830_DEBUG & DEBUG_IOCTL) 
+      fprintf(stderr, "%s dirty: %08x\n", __FUNCTION__, imesa->dirty);
+
+   if (imesa->dirty) {
+      if (I830_DEBUG & DEBUG_SANITY)
+	 i830EmitHwStateLockedDebug(imesa);
+      else
+	 i830EmitHwStateLocked(imesa);
+   }
 
    vertex.idx = buffer->idx;
    vertex.used = imesa->vertex_low;
    vertex.discard = 0;
    sarea->vertex_prim = imesa->hw_primitive;
 
-   if (0)
-      fprintf(stderr,"\nVertex idx%d\n"
-	      "\nused %d\n"
-	      "\ndiscard %d\n", 
-	      vertex.idx,
-	      vertex.used, 
-	      vertex.discard);
+   if (I830_DEBUG & DEBUG_IOCTL)
+      fprintf(stderr,"%s: Vertex idx %d used %d discard %d\n", 
+	      __FUNCTION__, vertex.idx, vertex.used, vertex.discard);
+
    if (!nbox)
       vertex.used = 0;
-   else if (nbox > I830_NR_SAREA_CLIPRECTS)
-      imesa->upload_cliprects = GL_TRUE;
 
-   if (!nbox || !imesa->upload_cliprects) {
-      sarea->nbox = nbox == 1 ? 0 : nbox;
-      vertex.discard = 1;
-#if 0
+   for (i = 0 ; i < nbox ; ) {
+      int nr = MIN2(i + I830_NR_SAREA_CLIPRECTS, nbox);
+      XF86DRIClipRectPtr b = sarea->boxes;
+
+      sarea->nbox = nr - i;
+      for ( ; i < nr ; i++, b++) 
+	 *b++ = pbox[i];
+
+      /* Finished with the buffer?
+       */
+      if (nr == nbox)
+	 vertex.discard = 1;
+
+      /* Do a bunch of sanity checks on the vertices sent to the hardware */
+      if (I830_DEBUG & DEBUG_SANITY) 
+	 i830VertexSanity(imesa, vertex);
+      
       drmCommandWrite (imesa->driFd, DRM_I830_VERTEX, 
 		       &vertex, sizeof(drmI830Vertex));
-#else
-      ioctl(imesa->driFd, DRM_IOCTL_I830_VERTEX, &vertex);
-#endif
-      age_imesa(imesa, sarea->last_enqueue);
-   } else {
-      for (i = 0 ; i < nbox ; ) {
-	 int nr = MIN2(i + I830_NR_SAREA_CLIPRECTS, nbox);
-	 XF86DRIClipRectPtr b = sarea->boxes;
-
-	 sarea->nbox = nr - i;
-	 for ( ; i < nr ; i++, b++) {
-	    *b++ = pbox[i];
-	    if (0)
-	      fprintf(stderr,"\nCo-ordiantes:  x1 %d\n"
-		      "y1: %d\n"
-		      "x2: %d\n"
-		      "x3: %d\n",
-		      b->x1,
-		      b->y1,
-		      b->x2,
-		      b->y2);
-	 }
-
-	 /* Finished with the buffer?
-	  */
-	 if (nr == nbox)
-	   vertex.discard = 1;
-	 if (0)
-	   fprintf(stderr,"\nWriting vertex info to hardware\n");
-	 if (0) {
-	    fprintf(stderr,"\nimesa->BufferSetup[I830_DESTREG_DR1] = %x\n",
-		    imesa->BufferSetup[I830_DESTREG_DR1]);
-	    fprintf(stderr,"\nimesa->BufferSetup[I830_DESTREG_DR4] = %x\n",
-		    imesa->BufferSetup[I830_DESTREG_DR4]);
-	 }
-
-	 /* Do a bunch of sanity checks on the vertices sent to the hardware */
-	 if (VERTEX_SANITY) i830VertexSanity(imesa, vertex);
-
-#if 0
-	 drmCommandWrite (imesa->driFd, DRM_I830_VERTEX, 
-			  &vertex, sizeof(drmI830Vertex));
-#else
-	 ioctl(imesa->driFd, DRM_IOCTL_I830_VERTEX, &vertex);
-#endif
-	 age_imesa(imesa, imesa->sarea->last_enqueue);
-      }
+      age_imesa(imesa, imesa->sarea->last_enqueue);
    }
 
    /* Reset imesa vars:
@@ -774,29 +762,27 @@ void i830FlushPrimsLocked( i830ContextPtr imesa )
    imesa->upload_cliprects = GL_FALSE;
 }
 
-void i830FlushPrimsGetBuffer( i830ContextPtr imesa )
-{
-   LOCK_HARDWARE(imesa);
-   if (imesa->vertex_buffer)
-     i830FlushPrimsLocked( imesa );
-   imesa->vertex_buffer = i830_get_buffer_ioctl( imesa );
-   imesa->vertex_high = imesa->vertex_buffer->total;
-   imesa->vertex_addr = (char *)imesa->vertex_buffer->address;
-   imesa->vertex_low = 4;	/* leave room for instruction header */
-   imesa->vertex_last_prim = imesa->vertex_low;
-   UNLOCK_HARDWARE(imesa);
-}
-
 void i830FlushPrimsGetBufferLocked( i830ContextPtr imesa )
 {
    if (imesa->vertex_buffer)
      i830FlushPrimsLocked( imesa );
    imesa->vertex_buffer = i830_get_buffer_ioctl( imesa );
-   imesa->vertex_high = imesa->vertex_buffer->total;
    imesa->vertex_addr = (char *)imesa->vertex_buffer->address;
-   imesa->vertex_low = 4;	/* leave room for instruction header */
+
+   /* leave room for instruction header & footer:
+    */
+   imesa->vertex_high = imesa->vertex_buffer->total - 4; 
+   imesa->vertex_low = 4;	
    imesa->vertex_last_prim = imesa->vertex_low;
 }
+
+void i830FlushPrimsGetBuffer( i830ContextPtr imesa )
+{
+   LOCK_HARDWARE(imesa);
+   i830FlushPrimsGetBufferLocked( imesa );
+   UNLOCK_HARDWARE(imesa);
+}
+
 
 void i830FlushPrims( i830ContextPtr imesa )
 {
@@ -809,11 +795,7 @@ void i830FlushPrims( i830ContextPtr imesa )
 
 int i830_check_copy(int fd)
 {
-#if 0
    return drmCommandNone(fd, DRM_I830_DOCOPY);
-#else
-   return ioctl(fd, DRM_IOCTL_I830_DOCOPY);
-#endif
 }
 
 static void i830DDFlush( GLcontext *ctx )

@@ -25,7 +25,7 @@
 /* Adapted for use in the I830M driver: 
  *   Jeff Hartmann <jhartmann@2d3d.com>
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.h,v 1.1 2002/09/09 19:18:47 dawes Exp $ */
 
 #ifndef I830CONTEXT_INC
 #define I830CONTEXT_INC
@@ -41,11 +41,20 @@ typedef struct i830_texture_object_t *i830TextureObjectPtr;
 
 #include "i830_screen.h"
 #include "i830_tex.h"
-#include "i830_drv.h"
 
 #define TAG(x) i830##x
 #include "tnl_dd/t_dd_vertex.h"
 #undef TAG
+
+#define DV_PF_555  (1<<8)
+#define DV_PF_565  (2<<8)
+#define DV_PF_8888 (3<<8)
+
+#define I830_TEX_MAXLEVELS 10
+
+#define I830_CONTEXT(ctx)	((i830ContextPtr)(ctx->DriverCtx))
+#define GET_DISPATCH_AGE(imesa) imesa->sarea->last_dispatch
+#define GET_ENQUEUE_AGE(imesa)	imesa->sarea->last_enqueue
 
 
 typedef void (*i830_tri_func)(i830ContextPtr, i830Vertex *, i830Vertex *,
@@ -57,13 +66,10 @@ typedef void (*i830_point_func)(i830ContextPtr, i830Vertex *);
 #define I830_FALLBACK_DRAW_BUFFER	 0x2
 #define I830_FALLBACK_READ_BUFFER	 0x4
 #define I830_FALLBACK_COLORMASK		 0x8
-#define I830_FALLBACK_SPECULAR		 0x20
-#define I830_FALLBACK_LOGICOP		 0x40
-#define I830_FALLBACK_RENDERMODE	 0x80
-#define I830_FALLBACK_STENCIL		 0x100
-#define I830_FALLBACK_BLEND_EQ		 0x200
-#define I830_FALLBACK_BLEND_FUNC 	 0x400
-#define I830_FALLBACK_STIPPLE		 0x800
+#define I830_FALLBACK_RENDERMODE	 0x10
+#define I830_FALLBACK_STENCIL		 0x20
+#define I830_FALLBACK_STIPPLE		 0x40
+#define I830_FALLBACK_USER		 0x80
 
 struct i830_context_t 
 {
@@ -262,6 +268,30 @@ extern void i830DDUpdateHwState(GLcontext *ctx);
 
 #define SUBPIXEL_X 0.125
 #define SUBPIXEL_Y 0.125
+
+
+/* ================================================================
+ * Debugging:
+ */
+#define DO_DEBUG		1
+#if DO_DEBUG
+extern int I830_DEBUG;
+#else
+#define I830_DEBUG		0
+#endif
+
+#define DEBUG_TEXTURE	0x1
+#define DEBUG_STATE	0x2
+#define DEBUG_IOCTL	0x4
+#define DEBUG_PRIMS	0x8
+#define DEBUG_VERTS	0x10
+#define DEBUG_FALLBACKS	0x20
+#define DEBUG_VERBOSE	0x40
+#define DEBUG_DRI       0x80
+#define DEBUG_DMA       0x100
+#define DEBUG_SANITY    0x200
+#define DEBUG_SYNC      0x400
+#define DEBUG_SLEEP     0x800
 	
 #endif
 

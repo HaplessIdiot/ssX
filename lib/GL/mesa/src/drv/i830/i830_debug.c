@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_debug.c,v 1.1 2002/09/09 19:18:48 dawes Exp $ */
 
 /*
  * Author:
@@ -288,7 +288,7 @@ void i830VertexSanity( i830ContextPtr imesa, drmI830Vertex vertex )
 	 sleep(10);
       }
    }
-   if (PRINT_VERTEX_INFO) {
+   if (1) {
       fprintf(stderr, "\n\nPrim name (%s), vertices (%d)\n",
 	      prim_name,
 	      size / vfmt_size);

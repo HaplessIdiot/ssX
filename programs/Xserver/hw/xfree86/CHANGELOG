@@ -1,4 +1,22 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 247. Fix various bugs in the DRI support for the i830 and i845G
+      (Keith Whitwell).
+ 246. Major rework of the 2D i830/i845G support, including:
+       - Improve VESA mode selection, and fix refresh rate selection.
+       - Don't duplicate functions provided in the vbe modules.
+       - Don't duplicate functions provided in the vgahw module.
+       - Rewrite memory allocation.
+       - Rewrite initialisation and save/restore state handling.
+       - Decouple the i810 support from i830 and later.
+       - Remove various unnecessary hacks and workarounds.
+       - Fix an 845G problem with the ring buffer not in pre-allocated
+         memory.
+       - Fix screen blanking.
+       - Fix some HW cursor glitches, and turn HW cursor off at VT switch
+         and exit.
+       - Don't attempt to use the i830's function 1 entity.
+       - Fix problems with option handling.
+      (David Dawes).
  245. A "hammer" approach at ensuring font properties are freed properly
       (Marc La France).
  244. Fix 'su' usage for FreeBSD in the default xdm config (Eric Anholt).
@@ -15011,4 +15029,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2292 2002/09/10 16:09:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2293 2002/09/10 16:16:08 tsi Exp $

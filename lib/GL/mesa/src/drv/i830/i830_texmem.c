@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_texmem.c,v 1.1 2002/09/09 19:18:48 dawes Exp $ */
 
 /*
  * Author:
@@ -285,7 +285,7 @@ void i830TexturesGone( i830ContextPtr imesa,
 {   
    i830TextureObjectPtr t, tmp;
 
-   if (I830_DEBUG&DEBUG_VERBOSE_TRACE)
+   if (I830_DEBUG&DEBUG_TEXTURE)
       fprintf(stderr, "%s\n", __FUNCTION__);
 
    foreach_s ( t, tmp, &imesa->TexObjList ) {

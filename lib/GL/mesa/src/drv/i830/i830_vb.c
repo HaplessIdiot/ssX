@@ -23,7 +23,7 @@
  * Adapted for use on the I830M:
  *   Jeff Hartmann <jhartmann@2d3d.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_vb.c,v 1.2 2002/09/09 19:18:49 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_vb.c,v 1.3 2002/09/10 00:39:38 dawes Exp $ */
 
 #include "glheader.h"
 #include "mtypes.h"
@@ -43,7 +43,6 @@
 #include "i830_ioctl.h"
 #include "i830_tris.h"
 #include "i830_state.h"
-#include "i830_drv.h"
 
 #define I830_TEX1_BIT       0x1
 #define I830_TEX0_BIT       0x2
@@ -120,7 +119,7 @@ static struct {
 #define GET_VIEWPORT_MAT() I830_CONTEXT(ctx)->ViewportMatrix.m
 #define GET_TEXSOURCE(n)  n
 #define GET_VERTEX_FORMAT() I830_CONTEXT(ctx)->vertex_format
-#define GET_VERTEX_STORE() I830_CONTEXT(ctx)->verts
+#define GET_VERTEX_STORE() ((GLubyte *)I830_CONTEXT(ctx)->verts)
 #define GET_VERTEX_STRIDE_SHIFT() I830_CONTEXT(ctx)->vertex_stride_shift
 #define GET_UBYTE_COLOR_STORE() &I830_CONTEXT(ctx)->UbyteColor
 #define GET_UBYTE_SPEC_COLOR_STORE() &I830_CONTEXT(ctx)->UbyteSecondaryColor
@@ -492,9 +491,9 @@ void i830ChooseVertexState( GLcontext *ctx )
    if (ctx->Fog.Enabled)
       ind |= I830_FOG_BIT;
 
-   if (ctx->Texture._ReallyEnabled & 0xf0)
+   if (ctx->Texture._ReallyEnabled & TEXTURE1_ANY)
       ind |= I830_TEX1_BIT|I830_TEX0_BIT;
-   else if (ctx->Texture._ReallyEnabled & 0xf)
+   else if (ctx->Texture._ReallyEnabled & TEXTURE0_ANY)
       ind |= I830_TEX0_BIT;
 
    imesa->SetupIndex = ind;
@@ -556,8 +555,6 @@ void i830InitVB( GLcontext *ctx )
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
    GLuint size = TNL_CONTEXT(ctx)->vb.Size;
-   if (DEBUGGING)
-   fprintf (stderr,"\n%s\n",__FUNCTION__);
    
    imesa->verts = (char *)ALIGN_MALLOC(size * 4 * 16, 32);
 
@@ -568,8 +565,6 @@ void i830InitVB( GLcontext *ctx )
 	 firsttime = 0;
       }
    }
-   if (DEBUGGING)
-   fprintf(stderr,"\nFinished InitVB\n");
 }
 
 
