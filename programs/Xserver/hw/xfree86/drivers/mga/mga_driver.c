@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.159 2000/06/21 17:28:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.160 2000/06/22 10:40:48 alanh Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1319,7 +1319,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	  default:
 	    pMga->numXAALines = 512;
 	}
-        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Will Use %d lines for "
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Will Use %d lines for "
 		   "offscreen memory if the DRI is enabled.\n",
 		   pMga->numXAALines);
     }
