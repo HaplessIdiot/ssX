@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_g450pll.c,v 1.4 2002/01/07 21:09:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_g450pll.c,v 1.6 2002/04/04 14:05:43 eich Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -325,7 +325,7 @@ double MGAG450SetPLLFreq(ScrnInfoPtr pScrn, long f_out)
 
    MGAPtr pMga = MGAPTR(pScrn);
 
-#if DEBUG
+#ifdef DEBUG
    xf86DrvMsg(pScrn->scrnIndex,X_INFO, "Restoring PLLClk = %d\n",f_out);
 #endif
    G450FindFirstPLLParam(pScrn, f_out, &ulMNP);
@@ -482,16 +482,15 @@ double MGAG450SetPLLFreq(ScrnInfoPtr pScrn, long f_out)
 long
 MGAG450SavePLLFreq(ScrnInfoPtr pScrn) 
 {
-    MGAPtr pMga = MGAPTR(pScrn);
     CARD32 ulMNP = G450ReadMNP(pScrn);
-    CARD8 ucMisc, ucP;
+    CARD8  ucP;
     CARD32 freq;
 
     G450CalculVCO(pScrn, ulMNP, &freq);
     ucP = (CARD8)(ulMNP & 0x03);
     G450ApplyPFactor(pScrn, ucP, &freq);
 
-#if DEBUG
+#ifdef DEBUG
     xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Saved PLLClk = %d\n",freq);
 #endif
     return freq;
