@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.17 1997/09/12 09:23:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.18 1997/09/19 09:01:17 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -518,7 +518,7 @@ static char *
 MGAIdent(n)
 int n;
 {
-	static char *chipsets[] = {"mga2064w", "mga1064sg", "mga2164w" };
+	static char *chipsets[] = {"mga2064w", "mga1064sg", "mga2164w", "mga2164w AGP" };
 
 	if (n + 1 > sizeof(chipsets) / sizeof(char *))
 		return(NULL);
@@ -580,6 +580,10 @@ MGAProbe()
 				case PCI_CHIP_MGA2164:
 					MGAchipset = id;
 					vga256InfoRec.chipset = MGAIdent(2);
+				break;
+				case PCI_CHIP_MGA2164_AGP:
+					MGAchipset = PCI_CHIP_MGA2164;
+					vga256InfoRec.chipset = MGAIdent(3);
 			}
 			if (MGAchipset)
 				break;

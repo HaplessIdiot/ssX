@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.33 1997/07/19 05:43:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.34 1997/08/15 07:19:22 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -96,6 +96,7 @@
 #define PCI_CHIP_MGA2064	0x0519
 #define PCI_CHIP_MGA1064	0x051a
 #define PCI_CHIP_MGA2164	0x051b
+#define PCI_CHIP_MGA2164_AGP	0x051f
 
 /* Chips & Tech */
 #define PCI_CHIP_65545		0x00D8
@@ -260,6 +261,8 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_MGA2085,	"MGA 2085PX"},
 				{PCI_CHIP_MGA2064,	"MGA 2064W"},
 				{PCI_CHIP_MGA1064,	"MGA 1064SG"},
+				{PCI_CHIP_MGA2164,	"MGA 2164W"},
+				{PCI_CHIP_MGA2164_AGP,	"MGA 2164W AGP"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_CHIPSTECH, "C&T", {
 				{PCI_CHIP_65545,	"65545"},

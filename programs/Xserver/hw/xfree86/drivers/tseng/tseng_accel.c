@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.10 1997/08/12 12:02:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.11 1997/08/26 10:01:27 hohndel Exp $ */
 
 
 /*
@@ -75,7 +75,7 @@ void TsengSetupForFill8x8Pattern();
 void TsengSubsequentFill8x8Pattern();
 
 
-static int bytesperpixel, powerPerPixel;
+static int bytesperpixel, powerPerPixel, neg_x_pixel_offset;
 static int tseng_line_width;
 static Bool need_wait_acl = FALSE;
 #define COLEXP_ONE_BUF 324  /* (1024-48) / 3 rounded down to multiple of 3*4 */
@@ -141,7 +141,7 @@ void TsengAccelInit() {
      *
      * The W32 and W32i chips don't have a register to set the amount of
      * bytes per pixel, and hence they don't skip 1 byte in each 4-byte word
-     * at 24bpp. Therefor, the FG or BG colors would have to be contatenated
+     * at 24bpp. Therefor, the FG or BG colors would have to be concatenated
      * in video memory (R-G-B-R-G-B-... instead of R-G-B-X-R-G-B-X-..., with
      * X = dont' care), plus a wrap value that is a multiple of 3 would have
      * to be set. There is no such wrap combination available.
@@ -152,16 +152,20 @@ void TsengAccelInit() {
       xf86AccelInfoRec.SetupForFillRectSolid = TsengSetupForFillRectSolid;
       if (Is_ET6K) {
         xf86AccelInfoRec.SubsequentFillRectSolid = Tseng6KSubsequentFillRectSolid;
-#if TRAPEZOIDS_FIXED
-        /* disabled for now: not fully compliant yet */
-        xf86AccelInfoRec.SubsequentFillTrapezoidSolid = TsengSubsequentFillTrapezoidSolid;
-#endif
       }
       else if (Is_W32p)
         xf86AccelInfoRec.SubsequentFillRectSolid = TsengW32pSubsequentFillRectSolid;
       else  /* W32, W32i */
         xf86AccelInfoRec.SubsequentFillRectSolid = TsengW32iSubsequentFillRectSolid;
     }
+
+#if TSENG_TRAPEZOIDS
+    if (Is_ET6K)
+    {
+        /* disabled for now: not fully compliant yet */
+        xf86AccelInfoRec.SubsequentFillTrapezoidSolid = TsengSubsequentFillTrapezoidSolid;
+    }
+#endif
 
     /*
      * We also want to set up the ScreenToScreenCopy (BitBLT) primitive for
@@ -178,12 +182,10 @@ void TsengAccelInit() {
     xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY;
 #endif
     
-#if 1
     xf86AccelInfoRec.SetupForScreenToScreenCopy =
         TsengSetupForScreenToScreenCopy;
     xf86AccelInfoRec.SubsequentScreenToScreenCopy =
         TsengSubsequentScreenToScreenCopy;
-#endif
 
     /*
      * 8x8 pattern tiling not possible on W32/i/p chips in 24bpp mode.
@@ -213,29 +215,24 @@ void TsengAccelInit() {
     /*
      * Setup hardware-line-drawing code.
      *
-     * We use Bresenham for 8bpp lines, because it supports hardware
-     * clipping (using the error term). At >8bpp, we need to be able to swap
-     * the start and end points of the line (see comments there), which is
-     * only possible with TwoPointLines. But for those, clipped lines are not
-     * accelerated (hardware clipping support is lacking)...
+     * We use Bresenham by preference, because it supports hardware clipping
+     * (using the error term). TwoPointLines() is implemented, but not used,
+     * because clipped lines are not accelerated (hardware clipping support
+     * is lacking)...
      */
 
     if (Is_W32p_up)
     {
-    if (vgaBitsPerPixel == 8) {
-    xf86AccelInfoRec.SubsequentBresenhamLine =
-        TsengSubsequentBresenhamLine;
-    xf86AccelInfoRec.ErrorTermBits = 11; /* min(errorterm_size, delta_major_size, delta_minor_size) */
-    }
-    else {
-    xf86AccelInfoRec.SubsequentTwoPointLine =
-        TsengSubsequentTwoPointLine;
-    }
-
-    xf86GCInfoRec.PolyLineSolidZeroWidthFlags =
-         TWO_POINT_LINE_ERROR_TERM;
-    xf86GCInfoRec.PolySegmentSolidZeroWidthFlags =
-         TWO_POINT_LINE_ERROR_TERM;
+      xf86AccelInfoRec.SubsequentBresenhamLine = TsengSubsequentBresenhamLine;
+      /* ErrorTermBits = min(errorterm_size, delta_major_size, delta_minor_size) */
+      xf86AccelInfoRec.ErrorTermBits = 11;
+#if TSENG_TWOPOINTLINE
+      xf86AccelInfoRec.SubsequentTwoPointLine = TsengSubsequentTwoPointLine;
+#endif
+      xf86GCInfoRec.PolyLineSolidZeroWidthFlags =
+           TWO_POINT_LINE_ERROR_TERM;
+      xf86GCInfoRec.PolySegmentSolidZeroWidthFlags =
+           TWO_POINT_LINE_ERROR_TERM;
     }
 
     /*
@@ -336,7 +333,7 @@ void TsengAccelInit() {
 #endif
     }
 
-#if 0
+#if TSENG_CPU_TO_SCREEN_COLOREXPAND
     /*
      * CPU-to-screen color expansion doesn't seem to be reliable yet. The
      * W32 needs the correct amount of data sent to it in this mode, or it
@@ -402,15 +399,19 @@ void TsengAccelInit() {
      {
        case 1: powerPerPixel = 0;
                planemask_mask = 0x000000FF;
+               neg_x_pixel_offset = 3;
                break;
        case 2: powerPerPixel = 1;
                planemask_mask = 0x0000FFFF;
+               neg_x_pixel_offset = 3;
                break;
        case 3: powerPerPixel = 1;
                planemask_mask = 0x00FFFFFF;
+               neg_x_pixel_offset = 2;
                break;
        case 4: powerPerPixel = 2;
                planemask_mask = 0xFFFFFFFF;
+               neg_x_pixel_offset = 3;
                break;
      }
      
@@ -1150,6 +1151,7 @@ void TsengSubsequentScanlineScreenToScreenColorExpand_1to2to16(srcaddr)
 }
 
 
+#if TSENG_CPU_TO_SCREEN_COLOREXPAND
 /*
  * CPU-to-Screen color expansion.
  *   This is for ET4000 only (The ET6000 cannot do this)
@@ -1205,7 +1207,7 @@ void TsengSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
   SET_XY(w, h);
   START_ACL_CPU(destaddr);
 }
-
+#endif
 
 void TsengSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
    int bg, fg;
@@ -1252,27 +1254,7 @@ void TsengSubsequentScreenToScreenColorExpand(srcx, srcy, x, y, w, h)
 /*
  * W32p/ET6000 hardware linedraw code. 
  *
- * Actually, the Tseng engines are rather slow line-drawing machines.
- * On 350-pixel long lines, the _raw_ accelerator performance is about
- * 24400 lines per second. And that is "only" about 8.5 Million pixels
- * per second.
- * The break-even point is a Pentium-133, which does line-drawing as fast as
- * the ET6000, including X-overhead.
- * Of course, there's the issue of hardware parallellism that makes a difference.
- *
  * TsengSetupForFillRectSolid() is used as a setup function.
- *
- * Bresenham lines can only be used at 8bpp, since we need to be able to
- * swap start- and end-points in case it's an XDECREASING line (to avoid
- * swapping bytes in the fg/bg colors). At 8bpp, this problem is not
- * present, and hence we can use Bresenham (it's more optimal, since it's
- * also used for clipped lies, as opposed to TwoPointLines). Swapping
- * start/end for Bresenham lines is not easy, as we need to compensate for
- * clipping and the bias (which is "built into" the error term).
- *
- * It would probably be a lot more straightforward to add (and implement) a
- * LINE_ONLY_XINCREASING flag to XAA, because you can then swap start/end
- * before going through the clipping code.
  */
 
 void TsengSubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
@@ -1317,6 +1299,12 @@ void TsengSubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
    SET_DELTA(DeltaMinor, DeltaMajor);
    *ACL_ERROR_TERM = ErrorTerm;
 
+   /* make sure colors are rendered correctly if >8bpp */
+   if (octant & XDECREASING)
+      *ACL_SOURCE_ADDRESS = Fg + neg_x_pixel_offset;
+   else 
+      *ACL_SOURCE_ADDRESS = Fg;
+
    SET_XYDIR(xydir);
    
    START_ACL(destaddr);
@@ -1345,6 +1333,7 @@ void TsengSubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
  *    causing a complete accelerator hang.
  */
 
+#if TSENG_TWOPOINTLINE
 void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
    int x1, y1;
    int x2, y2; /* excl. */
@@ -1422,6 +1411,7 @@ void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
 
    START_ACL(destaddr);
 }
+#endif
 
 /*
  * Trapezoid filling code.
@@ -1429,9 +1419,9 @@ void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
  * TsengSetupForFillRectSolid() is used as a setup function
  */
 
-#undef USE_ERROR_TERM
 #undef DEBUG_TRAP
 
+#if TSENG_TRAPEZOIDS
 void TsengSubsequentFillTrapezoidSolid(ytop, height, left, dxL, dyL, eL, right, dxR, dyR, eR)
         int ytop;
         int height;
@@ -1442,17 +1432,12 @@ void TsengSubsequentFillTrapezoidSolid(ytop, height, left, dxL, dyL, eL, right, 
         int dxR, dyR;
         int eR;
 {
+    unsigned int tseng_bias_compensate = 0xd8;
     int destaddr, algrthm;
-    int xcount = right - left + 1;
-#ifdef USE_ERROR_TERM
-    int dir_reg = 0x60;
-    int sec_dir_reg = 0x20;
-#else
-    int dir_reg = 0x40;
-    int sec_dir_reg = 0x00;
-#endif
+    int xcount = right - left + 1;  /* both edges included */
+    int dir_reg = 0x60;     /* trapezoid drawing; use error term for primary edge */
+    int sec_dir_reg = 0x20; /* use error term for secondary edge */
     int octant=0;
-    int bias = 0x00; /* FIXME !!! */
 
 /*    ErrorF("#");*/
 
@@ -1495,13 +1480,11 @@ void TsengSubsequentFillTrapezoidSolid(ytop, height, left, dxL, dyL, eL, right, 
       SetYMajorOctant(octant);
       SET_DELTA(dxL, dyL);
     }
-#ifdef USE_ERROR_TERM
-    *ACL_ERROR_TERM = eL-1;
-#endif
+    *ACL_ERROR_TERM = eL;
 
     /* select "linedraw algorithm" (=bias) and load direction register */
     /* ErrorF(" o=%d ", octant);*/
-    algrthm = ((bias >> octant) & 1) ^ 1;
+    algrthm = ((tseng_bias_compensate >> octant) & 1) ^ 1;
     dir_reg |= algrthm << 4;
     SET_XYDIR(dir_reg);
 
@@ -1527,9 +1510,7 @@ void TsengSubsequentFillTrapezoidSolid(ytop, height, left, dxL, dyL, eL, right, 
     {
       SET_SECONDARY_DELTA(dxR, dyR);
     }
-#ifdef USE_ERROR_TERM
     *ACL_SECONDARY_ERROR_TERM = eR;
-#endif
 
     /* ErrorF("%02x", sec_dir_reg);*/
     SET_SECONDARY_XYDIR(sec_dir_reg);
@@ -1542,4 +1523,5 @@ void TsengSubsequentFillTrapezoidSolid(ytop, height, left, dxL, dyL, eL, right, 
 
     START_ACL_6(destaddr);
 }
+#endif
 

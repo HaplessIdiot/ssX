@@ -119,4 +119,11 @@ GetInstalledColormaps()
    HARDWARE_CURSOR_TRUECOLOR_AT_8BPP defined. Normally it should be set
    to vgaGetInstalledColormaps for vga based chipsets.
 
-$XFree86: xc/programs/Xserver/hw/xfree86/xaa/NOTES.cursor,v 3.1 1997/09/19 08:30:08 hohndel Exp $
+UseHWCursor()
+
+    This optional function enables the drivers to specify other conditions
+    under which the hardware cursor can not be used. For instance hardware 
+    cursors might not be usuable with interlaced modes. The function should
+    return TRUE if a hardware can be used.
+
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/NOTES.cursor,v 3.2 1997/09/25 07:31:15 hohndel Exp $

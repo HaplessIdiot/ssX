@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cursor.c,v 3.2 1997/09/19 11:24:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cursor.c,v 3.3 1997/09/25 07:31:15 hohndel Exp $ */
 /*
  * Copyright 1996  The XFree86 Project
  *
@@ -277,6 +277,16 @@ static void SetCursor(ScreenPtr pScr, CursorPtr pCurs, int x, int y)
 {
     if (!pCurs)
 	return;
+
+    if (XAACursorInfoRec.UseHWCursor) {
+	if (!XAACursorInfoRec.UseHWCursor()) {
+		extern miPointerSpriteFuncRec miSpritePointerFuncs;
+		if (!tempSWCursor) XAACursorInfoRec.HideCursor();
+		tempSWCursor = TRUE;
+		(miSpritePointerFuncs.SetCursor)(pScr, pCurs, x, y);
+		return;	    
+	}
+    }
 
     if (pCurs->bits->height > XAACursorInfoRec.MaxHeight ||
 	pCurs->bits->width  > XAACursorInfoRec.MaxWidth) {

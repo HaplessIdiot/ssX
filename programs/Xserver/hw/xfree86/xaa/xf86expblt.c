@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.14 1997/07/29 12:08:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.15 1997/09/09 10:27:53 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -547,6 +547,58 @@ int glyphwidth_stretchsize[32] = {
 extern int glyphwidth_stretchsize[32];
 #endif
 
+#ifdef FIXEDBASE
+  #ifdef MSBFIRST
+    #define WRITE_BITS()   *base = reverse_bitorder(bits)
+  #else
+    #define WRITE_BITS()   *base = bits
+  #endif
+#else
+  #ifdef MSBFIRST
+    #define WRITE_BITS()   *(base++) = reverse_bitorder(bits)
+  #else
+    #define WRITE_BITS()   *(base++) = bits
+  #endif
+#endif
+
+
+unsigned int *xf86DrawTextScanline(base, glyphp, line, nglyph, glyphwidth)
+    unsigned int *base;
+    unsigned int **glyphp;
+    int line;
+    int nglyph;
+    int glyphwidth;
+{
+    register CARD32 bits;
+    register int shift; 
+    int count = 0;
+
+    if (glyphwidth_stretchsize[glyphwidth - 1] &&
+        glyphwidth_stretchsize[glyphwidth - 1] <= nglyph) {
+        base = (*glyphwidth_function[glyphwidth - 1])(base, glyphp, line,
+            nglyph);
+        count = nglyph - 
+                (nglyph & (glyphwidth_stretchsize[glyphwidth - 1] - 1));
+    }
+
+    for(bits = 0, shift = 0;count < nglyph; count++) {
+        bits |= glyphp[count][line] << shift;
+        shift += glyphwidth;
+        if(shift & ~31) {
+            WRITE_BITS();
+            shift &= 31;            
+            bits = glyphp[count][line] >> (glyphwidth - shift);
+        }
+    }  
+    if(shift) WRITE_BITS();
+
+    return base;
+}
+
+
+
+#if 0
+/* this is the old code, new code is above (MArk) */
 unsigned int *xf86DrawTextScanline(base, glyphp, line, nglyph, glyphwidth)
     unsigned int *base;
     unsigned int **glyphp;
@@ -597,6 +649,8 @@ unsigned int *xf86DrawTextScanline(base, glyphp, line, nglyph, glyphwidth)
     }
     return base;
 }
+
+#endif
 
 /*
  * This function does not transfer one scanline worth of bits like all the

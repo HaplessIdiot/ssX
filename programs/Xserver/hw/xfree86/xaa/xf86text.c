@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.13 1997/04/18 09:13:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.14 1997/05/03 09:19:38 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -54,6 +54,8 @@
  *
  * Note that fall-back functions (usually cfb) are called for the
  * clipped case.
+ * 
+ * note that the non-clipped part is accelerated, and the clipped part is not
  *
  * When a font-cache is implemented (which is not necessarily the fastest
  * way to draw text), you would probably be clipping each character.
@@ -65,15 +67,16 @@ xf86ImageGlyphBltTE(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     GCPtr pGC;
     int xInit, yInit;
     int nglyph;
-    CharInfoPtr *ppci;		       /* array of character info */
+    CharInfoPtr *ppci;      /* array of character info */
     unsigned char *pglyphBase;	       /* start of array of glyphs */
 {
     FontPtr pfont = pGC->font;
-    int widthGlyph;
     int h;
     int x, y;
     BoxRec bbox;		       /* for clipping */
     int glyphWidth;		       /* Character width in pixels. */
+    int a, cnt, runType;	       /* font clipping pointers */
+    CharInfoPtr *ppciBitPtr;
 
     glyphWidth = FONTMAXBOUNDS(pfont, characterWidth);
     h = FONTASCENT(pfont) + FONTDESCENT(pfont);
@@ -88,14 +91,61 @@ xf86ImageGlyphBltTE(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     bbox.y1 = y;
     bbox.y2 = y + h;
 
-    switch (RECT_IN_REGION(pGC->pScreen, cfbGetCompositeClip(pGC), &bbox)) {
-    case rgnPART:
-        (*(xf86GCInfoRec.ImageGlyphBltFallBack))(
-	    pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
-    case rgnOUT:
+    switch (RECT_IN_REGION(pGC->pScreen, cfbGetCompositeClip(pGC), &bbox))
+    {
+    case rgnPART:	/* the text is partially clipped */
+	if ( nglyph < 8 ) 	/* make it worth our while */
+	{
+		(*(xf86GCInfoRec.ImageGlyphBltFallBack))(
+		    pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
+		return;
+	}
+	
+	/* find runs that are of the same type */
+
+	cnt = 0;	
+
+	while ( cnt < nglyph )
+	{
+		/* set the the conditions up for the run */
+		a = cnt;
+		bbox.x1 = x + a * glyphWidth;	/* starts at a */
+		bbox.x2 = bbox.x1 + glyphWidth; /* one glyph wide */
+		runType = RECT_IN_REGION(pGC->pScreen, cfbGetCompositeClip(pGC), &bbox);
+
+		do {
+			bbox.x1 = bbox.x2;
+			bbox.x2 += glyphWidth;
+			cnt++;
+		} while ( cnt < nglyph && 
+			  (runType == RECT_IN_REGION(pGC->pScreen, cfbGetCompositeClip(pGC), &bbox)) );
+
+		/* make up substring */
+		bbox.x1 = xInit + a * glyphWidth;
+		ppciBitPtr = ppci +a;	/* move along to beginning of string */
+		
+		switch ( runType ) {
+		case rgnIN:
+			(*(xf86AccelInfoRec.ImageTextTE))(
+			    pDrawable, pGC, bbox.x1, yInit, cnt-a, ppciBitPtr,
+			    pglyphBase);
+		break;
+		case rgnPART:
+			(*(xf86GCInfoRec.ImageGlyphBltFallBack))(
+			    pDrawable, pGC, bbox.x1, yInit, cnt-a, ppciBitPtr,
+			    pglyphBase);
+		break;
+		default:
+		/* XXX add some debug to this in case rgnOUT rears it's head */
+		break;
+		} /* end switch */
+	} /* end while */
+	return;
+    case rgnOUT:	/* not in our clip region, so return */
 	return;
     }
 
+    /* otherwise, there's no clipping, so accelerate the entire string */
     (*(xf86AccelInfoRec.ImageTextTE))(
         pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
 }
@@ -115,7 +165,6 @@ xf86ImageGlyphBltNonTE(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     unsigned char *pglyphBase;	       /* start of array of glyphs */
 {
     FontPtr pfont = pGC->font;
-    int widthGlyph;
     int h;
     int x, y;
     BoxRec bbox;		       /* for clipping */
@@ -170,18 +219,16 @@ xf86PolyGlyphBltTE(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     unsigned char *pglyphBase;	       /* start of array of glyphs */
 {
     FontPtr pfont = pGC->font;
-    unsigned int *pdstBase;
-    int widthDst;
-    int widthGlyph;
     int h;
     int x, y;
     BoxRec bbox;		       /* for clipping */
-
     int glyphWidth;		       /* Character width in pixels. */
+    int a, cnt, runType;               /* font clipping pointers */
+    CharInfoPtr *ppciBitPtr;
 
     glyphWidth = FONTMAXBOUNDS(pfont, characterWidth);
-
     h = FONTASCENT(pfont) + FONTDESCENT(pfont);
+
     if ((h | glyphWidth) == 0)
 	return;
 
@@ -192,10 +239,56 @@ xf86PolyGlyphBltTE(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     bbox.y1 = y;
     bbox.y2 = y + h;
 
-    switch (RECT_IN_REGION(pGC->pScreen, cfbGetCompositeClip(pGC), &bbox)) {
-    case rgnPART:
-	(*(xf86GCInfoRec.PolyGlyphBltFallBack))(
-	    pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
+    switch (RECT_IN_REGION(pGC->pScreen, cfbGetCompositeClip(pGC), &bbox))
+    {
+    case rgnPART:	/* the text is partially clipped */
+	if ( nglyph < 8 ) 	/* make it worth our while */
+	{
+		(*(xf86GCInfoRec.PolyGlyphBltFallBack))(
+		    pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
+		return;
+	}
+	
+	/* find runs that are of the same type */
+
+	cnt = 0;	
+
+	while ( cnt < nglyph )
+	{
+		/* set the the conditions up for the run */
+		a = cnt;
+		bbox.x1 = x + a * glyphWidth;	/* starts at a */
+		bbox.x2 = bbox.x1 + glyphWidth; /* one glyph wide */
+		runType = RECT_IN_REGION(pGC->pScreen, cfbGetCompositeClip(pGC), &bbox);
+
+		do {
+			bbox.x1 = bbox.x2;
+			bbox.x2 += glyphWidth;
+			cnt++;
+		} while ( cnt < nglyph && 
+			  (runType == RECT_IN_REGION(pGC->pScreen, cfbGetCompositeClip(pGC), &bbox)) );
+
+		/* make up substring */
+		bbox.x1 = xInit + a * glyphWidth;
+		ppciBitPtr = ppci +a; 	/* move along to beginning of string */
+
+		switch ( runType ) {
+		case rgnIN:
+			(*(xf86AccelInfoRec.PolyTextTE))(
+			    pDrawable, pGC, bbox.x1, yInit, cnt-a, ppciBitPtr,
+			    pglyphBase);
+		break;
+		case rgnPART:
+			(*(xf86GCInfoRec.PolyGlyphBltFallBack))(
+			    pDrawable, pGC, bbox.x1, yInit, cnt-a, ppciBitPtr,
+			    pglyphBase);
+		break;
+		default:
+		/* XXX add some debug to this in case rgnOUT rears it's head */
+		break;
+		} /* end switch */
+	} /* end while */
+	return;
     case rgnOUT:
 	return;
     }
@@ -215,9 +308,6 @@ xf86PolyGlyphBltNonTE(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     unsigned char *pglyphBase;	       /* start of array of glyphs */
 {
     FontPtr pfont = pGC->font;
-    unsigned int *pdstBase;
-    int widthDst;
-    int widthGlyph;
     int h;
     int x, y;
     BoxRec bbox;		       /* for clipping */
@@ -368,19 +458,14 @@ nglyph, ppci, pglyphBase)
     unsigned char *pglyphBase;	       /* start of array of glyphs */
 {
     FontPtr pfont = pGC->font;
-    unsigned int *pdstBase;
-    int widthDst;
-    int widthGlyph;
     int w, h;
     int x, y;
 
     int glyphWidth;		       /* Character width in pixels. */
     int glyphWidthBytes;	       /* Character width in bytes (padded). */
-    int i;
 
     /* Characters are padded to 4 bytes. */
     unsigned int **glyphp;
-    int destaddr, blitwidth;
 
     glyphWidth = FONTMAXBOUNDS(pfont, characterWidth);
     glyphWidthBytes = GLYPHWIDTHBYTESPADDED(*ppci);
@@ -455,15 +540,11 @@ nglyph, ppci, pglyphBase)
     unsigned char *pglyphBase;	       /* start of array of glyphs */
 {
     FontPtr pfont = pGC->font;
-    unsigned int *pdstBase;
-    int widthDst;
-    int widthGlyph;
     int w, h;
     int x, y;
 
     int glyphWidth;		       /* Character width in pixels. */
     int glyphWidthBytes;	       /* Character width in bytes (padded). */
-    int i;
 
     /* Characters are padded to 4 bytes. */
     unsigned int **glyphp;
@@ -531,15 +612,11 @@ nglyph, ppci, pglyphBase)
     unsigned char *pglyphBase;	       /* start of array of glyphs */
 {
     FontPtr pfont = pGC->font;
-    unsigned int *pdstBase;
-    int widthDst;
-    int widthGlyph;
     int h;
     int x, y;
 
     int glyphWidth;		       /* Character width in pixels. */
     int glyphWidthBytes;	       /* Character width in bytes (padded). */
-    int i;
 
     /* Characters are padded to 4 bytes. */
     unsigned int **glyphp;
@@ -598,15 +675,11 @@ nglyph, ppci, pglyphBase)
     unsigned char *pglyphBase;	       /* start of array of glyphs */
 {
     FontPtr pfont = pGC->font;
-    unsigned int *pdstBase;
-    int widthDst;
-    int widthGlyph;
     int w, h;
     int x, y;
 
     int glyphWidth;		       /* Character width in pixels. */
     int glyphWidthBytes;	       /* Character width in bytes (padded). */
-    int i;
 
     /* Characters are padded to 4 bytes. */
     unsigned int **glyphp;
@@ -710,14 +783,11 @@ nglyph, ppci, pglyphBase)
     unsigned char *pglyphBase;	       /* start of array of glyphs */
 {
     FontPtr pfont = pGC->font;
-    unsigned int *pdstBase;
-    int widthDst;
-    int widthGlyph;
+    int i;
     int w, h;
     int x, y;
     int glyphWidth;		       /* Character width in pixels. */
     int glyphWidthBytes;	       /* Character width in bytes (padded). */
-    int i;
 
     NonTEGlyphInfo *glyphinfop;
     xRectangle backrect;
@@ -798,9 +868,6 @@ nglyph, ppci, pglyphBase)
     unsigned char *pglyphBase;	       /* start of array of glyphs */
 {
     FontPtr pfont = pGC->font;
-    unsigned int *pdstBase;
-    int widthDst;
-    int widthGlyph;
     int w, h;
     int x, y;
 
@@ -890,15 +957,11 @@ nglyph, ppci, pglyphBase)
     unsigned char *pglyphBase;	       /* start of array of glyphs */
 {
     FontPtr pfont = pGC->font;
-    unsigned int *pdstBase;
-    int widthDst;
-    int widthGlyph;
     int w, h;
     int x, y;
 
     int glyphWidth;		       /* Character width in pixels. */
     int glyphWidthBytes;	       /* Character width in bytes (padded). */
-    int i;
     
     NonTEGlyphInfo *glyphinfop;
 
@@ -958,15 +1021,11 @@ nglyph, ppci, pglyphBase)
     unsigned char *pglyphBase;	       /* start of array of glyphs */
 {
     FontPtr pfont = pGC->font;
-    unsigned int *pdstBase;
-    int widthDst;
-    int widthGlyph;
     int w, h;
     int x, y;
 
     int glyphWidth;		       /* Character width in pixels. */
     int glyphWidthBytes;	       /* Character width in bytes (padded). */
-    int i;
 
     NonTEGlyphInfo *glyphinfop;
 
@@ -1031,7 +1090,6 @@ static void DrawTextTECPUToScreenColorExpand(nglyph, h, glyphp, glyphwidth)
     unsigned int **glyphp;
     int glyphwidth;
 {
-    int bitmapwidth;
     int line;
     unsigned char *base;
     unsigned int *(*DrawTextScanlineFunc)(
@@ -1248,8 +1306,7 @@ static void DrawTextTEScreenToScreenColorExpand(nglyph, w, h, glyphp, glyphwidth
     unsigned int **glyphp;
     int glyphwidth;
 {
-    int bitmapwidth;
-    int line;
+    int bitmapwidth, line;
     int offset, endoffset;
     unsigned int *(*DrawTextScanlineFunc)(
 #if NeedNestedPrototypes
@@ -1316,7 +1373,6 @@ DrawTextNonTECPUToScreenColorExpand(nglyph, w, h, glyphinfop)
     int h;
     NonTEGlyphInfo *glyphinfop;
 {
-    int bitmapwidth;
     int line;
     unsigned char *base;
     unsigned int *(*DrawTextScanlineFunc)(

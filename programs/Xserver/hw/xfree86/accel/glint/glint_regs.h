@@ -1,4 +1,4 @@
-/* $XFree86: /f/CVS/xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.4 1997/09/09 10:27:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.5 1997/09/25 07:31:12 hohndel Exp $ */
 
 /*
  * glint register file 
@@ -386,10 +386,10 @@
 #define dAdyDom								GLINT_TAG_ADDR(0x0f,0x0b)
 #define ColorDDAMode						GLINT_TAG_ADDR(0x0f,0x0c)
 	/* 0:					*/
-	/* FlatShading			*/
+	#define FlatShading			                0
 	/* UNIT_DISABLE			*/
-
 	#define CDDA_GouraudShading					0x0002
+        
 
 #define ConstantColor						GLINT_TAG_ADDR(0x0f,0x0d)
 #define GLINTColor							GLINT_TAG_ADDR(0x0f,0x0e)
@@ -464,6 +464,9 @@
 
 #define FBSoftwareWriteMask					GLINT_TAG_ADDR(0x10,0x04)
 #define LogicalOpMode						GLINT_TAG_ADDR(0x10,0x05)
+        #define Use_ConstantFBWriteData 0x40
+
+
 #define FBWriteData							GLINT_TAG_ADDR(0x10,0x06)
 #define RouterMode							GLINT_TAG_ADDR(0x10,0x08)
 

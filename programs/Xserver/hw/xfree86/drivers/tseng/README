@@ -56,9 +56,6 @@ There is already support in XAA for doing acceleration in 24bpp using the
 Another option is to expand the bitmap in the Tseng acceleration code
 before rendering it. That's a lot easier to do.
 
-* The W32i doesn't work accelerated in the current Tseng driver. At least
-not correct. WARNING: trying it may cause a complete system hang. Prepare.
-
 * Hardware cursor support for the W32 is still lacking color support. We
 need to reserve color cells #0 and #255 to make this work. From discussions
 on the beta list, it seems the best solution is to allocate these cells
@@ -73,9 +70,10 @@ cause cursor color problems when someone uses a local color map.
 All cards:
 
 * The accelerator on the Tseng devices is capable of much more. Especially
-the pattern support if not used most of the time: It can render a pattern in
+the pattern support is not used most of the time: It can render a pattern in
 just about every accelerated operation. This means patterned lines, bitblts,
-screencopies, etc. are possible.
+screencopies, etc. are possible. However, operations like these are very
+uncommon in normal server use, so the speed benefit would go largely unnoticed.
 
 
 ET4000:
@@ -85,8 +83,7 @@ ET4000:
         - 8-bit RAMDAC support for >8bpp modes: Sierra DACs and possibly others
 
 * SuperProbe could use an update. It doesn't detect some of the RAMDACs that
-are detected by the driver. It also doesn't have the enhanced ET6000 memory
-detection code that is in the driver (the 2.25 MB problem).
+are detected by the driver.
 
 
 ET-6000:
@@ -97,12 +94,9 @@ only using a small part of it (I'm thinking about the compare map and the
 extensions to the MIX hardware compared to the ET4000).
 
 * Apart from the things mentionned above, I think the ET6000 server is
-pretty complete. SOme optimisations could possibly be added. Like for
+pretty complete. Some optimisations could possibly be added. Like for
 example some assembler code for calculating a framebuffer address from X/Y
 coordinates. That would help to speed up small blits.
-
-* SuperProbe doesn't detect the amount of MDRAM on an ET6000 yet. The same
-code that does this in the Tseng driver needs to be included in SuperProbe.
 
 
 =======================================================================
@@ -266,4 +260,4 @@ the off-screen scanline buffers and calling the Subsequent() function.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/README,v 1.6 1997/05/03 09:18:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/README,v 1.7 1997/06/11 12:24:44 dawes Exp $
