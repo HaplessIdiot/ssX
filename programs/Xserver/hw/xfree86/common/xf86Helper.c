@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.60 1999/10/13 16:49:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.61 1999/10/13 22:32:58 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2239,10 +2239,15 @@ xf86SetSilkenMouse (ScreenPtr pScreen)
 	if (xf86GetOptValBool(SMOptions, OPTION_SILKEN_MOUSE, &useSM))
 	    from = X_CONFIG;
     }
-    pScrn->silkenMouse = useSM;
+    /*
+     * XXX quick hack to report correctly for OSs that can't do SilkenMouse
+     * yet.  Should handle this differently so that alternate async methods
+     * like Xqueue work correctly with this too.
+     */
+    pScrn->silkenMouse = useSM && xf86SIGIOSupported();
     if (serverGeneration == 1)
 	xf86DrvMsg(pScreen->myNum, from, "Silken mouse %s\n",
-		   useSM ? "enabled" : "disabled");
+		   pScrn->silkenMouse ? "enabled" : "disabled");
 }
 
 /* Wrote this function for the PM2 Xv driver, preliminary. */

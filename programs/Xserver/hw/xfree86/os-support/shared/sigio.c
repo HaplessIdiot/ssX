@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.1 1999/06/07 13:01:43 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.2 1999/06/14 12:02:11 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.3 1999/10/13 22:33:07 dawes Exp $
  * 
  */
 
@@ -211,3 +211,11 @@ xf86AssertBlockedSIGIO (char *where)
 	xf86Msg (X_ERROR, "SIGIO not blocked at %s\n", where);
 }
 #endif
+
+/* XXX This is a quick hack for the benefit of xf86SetSilkenMouse() */
+Bool
+xf86SIGIOSupported ()
+{
+    return TRUE;
+}
+
