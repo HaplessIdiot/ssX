@@ -1,4 +1,6 @@
 XFree86 4.0b (?? April 2000)
+ 140. Fix XvPutImage in the client libs so that it can use the BIG-REQUESTS
+      extension (Mark Vojkovich).
  139. Fixed xf4bpp for devPrivates in PixmapRec. (Egbert Eich).
  138. Fixed laguna driver to map FB after the video RAM size is known
       (Egbert Eich).
