@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.172 2000/10/21 22:27:18 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.173 2000/10/24 22:45:07 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -842,7 +842,6 @@ MGASoftReset(ScrnInfoPtr pScrn)
 {
 	MGAPtr pMga = MGAPTR(pScrn);
 
-   	ErrorF("SoftReset called!!!\n");
 	pMga->FbMapSize = 8192 * 1024;
 	MGAMapMem(pScrn);
 
