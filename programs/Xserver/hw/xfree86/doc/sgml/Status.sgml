@@ -9,7 +9,7 @@
 <date>1 June 2001
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.34 2001/12/19 21:27:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.35 2002/01/11 18:08:42 alanh Exp $
 </ident>
 
 <abstract>
@@ -91,7 +91,7 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 
 <tag>Summary:</tag>
 	All hardware supported in &legacyvers; is also supported in &relvers;.
-	The Permedia 3, Permedia 4, GLINT R3, GLINT R4 and Gamma2 is 
+	The Permedia 3, Permedia 4, GLINT R3, GLINT R4 and Gamma2 are
 	supported only in &relvers;.
 
 </descrip>
