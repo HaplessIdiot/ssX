@@ -1,4 +1,4 @@
-/* $Xorg: t1funcs.c,v 1.5 2001/02/09 02:04:01 xorgcvs Exp $ */
+/* $Xorg: t1funcs.c,v 1.5 2001/02/09 02:04:01 xorgcvsX Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -71,7 +71,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: t1funcs.c,v 3.26 2001/12/14 19:56:44 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.27 2002/02/18 20:51:57 herrb Exp $ */
 
 /*
 
@@ -341,7 +341,7 @@ CIDOpenScalable (FontPathElementPtr fpe,
     bzero(cid, sizeof(cidglyphs));
 
     /* heuristic for "maximum" size of pool we'll need: */
-    size = 200000 + 120 *
+    size = 200000 + 600 *
               (int)hypot(vals->pixel_matrix[2], vals->pixel_matrix[3])
               * sizeof(short);
     if (size < 0 || NULL == (pool = (long *) xalloc(size))) {
@@ -549,9 +549,9 @@ Type1OpenScalable (FontPathElementPtr fpe,
  
        /* heuristic for "maximum" size of pool we'll need: */
 #ifdef BUILDCID
-       size = 400000 + 120 *
+       size = 400000 + 600 *
 #else
-       size = 200000 + 120 *
+       size = 200000 + 600 *
 #endif
 	      (int)hypot(vals->pixel_matrix[2], vals->pixel_matrix[3])
 	      * sizeof(short);
@@ -1549,7 +1549,7 @@ CIDRenderGlyph(FontPtr pFont, psobj *charstringP, psobj *subarrayP,
 #define  PAD(bits, pad)  (((bits)+(pad)-1)&-(pad))
 
        /* heuristic for "maximum" size of pool we'll need: */
-       size = 200000 + 120 *
+       size = 200000 + 600 *
               (int)hypot(cid->pixel_matrix[2], cid->pixel_matrix[3])
               * sizeof(short);
        if (size < 0 || NULL == (pool = (long *) xalloc(size))) {
