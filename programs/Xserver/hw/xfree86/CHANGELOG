@@ -1,4 +1,6 @@
 XFree86 4.3.99.7 (xx June 2003)
+ 215. Fix i810/i815 problem with interlaced modes where only the top half
+      of the screen gets displayed (Paul Stewart).
  214. Changed any occurance of x86_64 to AMD64, the official name of the
       architecture (Egbert Eich).
  213. Removed Copyright sign from man pages as this causes some formatters
@@ -17077,7 +17079,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2734 2003/06/11 19:47:10 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2736 2003/06/12 14:12:29 eich Exp $
 
 
 
