@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.7 2000/11/30 23:23:23 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.8 2000/12/01 01:01:01 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -574,36 +574,43 @@ R128DisplayVideo(
     int offset,
     short width, short height,
     int pitch, 
-    int left, int right,
+    int left, int right, int top,
     BoxPtr dstBox,
     short src_w, short src_h,
     short drw_w, short drw_h
 ){
     R128InfoPtr info = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
-    int h_inc, step_by, start;
-    int p1_accum_init, p1_preshift, p23_accum_init, p23_preshift;
+    int v_inc, h_inc, step_by, tmp;
+    int p1_h_accum_init, p23_h_accum_init;
+    int p1_v_accum_init;
 
-    h_inc = ((src_w - 1) << 12) / (drw_w - 1);
+    v_inc = (src_h << 20) / drw_h;
+    h_inc = (src_w << 12) / drw_w;
     step_by = 1;
 
     while(h_inc >= (2 << 12)) {
 	step_by++;
 	h_inc >>= 1;
     }
-	
-    left >>= 16;
-    offset += (left & ~7) << 1;
-    left = left & 7;
-    start = ((left & 3) << 12) + 0x00002800 + (h_inc >> 1); 
-    p1_accum_init = (start << 8) & 0x000f8000;
-    p1_preshift = (start << 16) & 0xf0000000;
 
-    /* This is not quite correct. In some situations the Chroma and
-       Luma alignment is off.  I'm not even trying to fix Y yet. */
-    start = ((left & 1) << 12) + 0x00002800 + (h_inc >> 2); 
-    p23_accum_init = (start << 8) & 0x000f8000;
-    p23_preshift = (start << 16) & 0x70000000;
+    /* keep everything in 16.16 */
+
+    offset += ((left >> 16) & ~7) << 1;
+
+    tmp = (left & 0x0003ffff) + 0x00028000 + (h_inc << 3); 
+    p1_h_accum_init = ((tmp <<  4) & 0x000f8000) |
+                      ((tmp << 12) & 0xf0000000);
+
+    tmp = ((left >> 1) & 0x0001ffff) + 0x00028000 + (h_inc << 2); 
+    p23_h_accum_init = ((tmp <<  4) & 0x000f8000) |
+                       ((tmp << 12) & 0x70000000);
+
+    tmp = (top & 0x0000ffff) + 0x00018000;
+    p1_v_accum_init = ((tmp << 4) & 0x03ff8000) | 0x00000001;
+
+    left = (left >> 16) & 7;
+
 
     OUTREG(R128_OV0_REG_LOAD_CNTL, 1);
     while(!(INREG(R128_OV0_REG_LOAD_CNTL) & (1 << 3)));
@@ -612,17 +619,17 @@ R128DisplayVideo(
     OUTREG(R128_OV0_STEP_BY, step_by | (step_by << 8));
     OUTREG(R128_OV0_Y_X_START, dstBox->x1 | (dstBox->y1 << 16));
     OUTREG(R128_OV0_Y_X_END,   dstBox->x2 | (dstBox->y2 << 16));
-    OUTREG(R128_OV0_V_INC, ((src_h - 1) << 20) / (drw_h - 1));
+    OUTREG(R128_OV0_V_INC, v_inc);
     OUTREG(R128_OV0_P1_BLANK_LINES_AT_TOP, 0x00000fff | ((src_h - 1) << 16));
     OUTREG(R128_OV0_VID_BUF_PITCH0_VALUE, pitch);
-    OUTREG(R128_OV0_P1_X_START_END, (src_w - 1) | (left << 16));
+    OUTREG(R128_OV0_P1_X_START_END, (src_w + left - 1) | (left << 16));
     left >>= 1; src_w >>= 1;
-    OUTREG(R128_OV0_P2_X_START_END, (src_w - 1) | (left << 16));
-    OUTREG(R128_OV0_P3_X_START_END, (src_w - 1) | (left << 16));
+    OUTREG(R128_OV0_P2_X_START_END, (src_w + left - 1) | (left << 16));
+    OUTREG(R128_OV0_P3_X_START_END, (src_w + left - 1) | (left << 16));
     OUTREG(R128_OV0_VID_BUF0_BASE_ADRS, offset & 0xfffffff0);
-    OUTREG(R128_OV0_P1_V_ACCUM_INIT, (2 << 20) | 0x00000001);  /* fixme */
-    OUTREG(R128_OV0_P1_H_ACCUM_INIT, p1_preshift | p1_accum_init);
-    OUTREG(R128_OV0_P23_H_ACCUM_INIT, p23_preshift | p23_accum_init);
+    OUTREG(R128_OV0_P1_V_ACCUM_INIT, p1_v_accum_init); 
+    OUTREG(R128_OV0_P1_H_ACCUM_INIT, p1_h_accum_init);
+    OUTREG(R128_OV0_P23_H_ACCUM_INIT, p23_h_accum_init);
 
     if(id == FOURCC_UYVY)
        OUTREG(R128_OV0_SCALE_CNTL, 0x41008C03);
@@ -757,7 +764,7 @@ R128PutImage(
 
     offset += top * dstPitch;
     R128DisplayVideo(pScrn, id, offset, width, height, dstPitch,
-	     	     x1, x2, &dstBox, src_w, src_h, drw_w, drw_h);
+	     	     x1, x2, y1, &dstBox, src_w, src_h, drw_w, drw_h);
 
     pPriv->videoStatus = CLIENT_VIDEO_ON;
 	
