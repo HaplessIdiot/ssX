@@ -1,5 +1,5 @@
 /* $XConsortium: button.c /main/70 1996/01/14 16:52:34 kaleb $ */
-/* $XFree86: xc/programs/xterm/button.c,v 3.3 1996/01/16 15:09:38 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.4 1996/03/10 12:15:20 dawes Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -96,7 +96,7 @@ static int saveStartRRow, saveStartRCol, saveEndRRow, saveEndRCol;
 
 /* Multi-click handling */
 static int numberOfClicks = 0;
-static long int lastButtonUpTime = 0;
+static Time lastButtonUpTime = 0;
 typedef int SelectUnit;
 #define SELECTCHAR 0
 #define SELECTWORD 1
@@ -428,15 +428,19 @@ SetSelectUnit(buttonDownTime, defaultUnit)
     Time buttonDownTime;
     SelectUnit defaultUnit;
 {
-/* Do arithmetic as integers, but compare as unsigned solves clock wraparound */
-	if ((long unsigned)((long int)buttonDownTime - lastButtonUpTime)
-	 > term->screen.multiClickTime) {
-		numberOfClicks = 1;
-		selectUnit = defaultUnit;
-	} else {
-		++numberOfClicks;
-		selectUnit = ((selectUnit + 1) % NSELECTUNITS);
-	}
+    int delta;
+    if (buttonDownTime > lastButtonUpTime) /* most of the time */
+	delta = buttonDownTime - lastButtonUpTime;
+    else /* time has rolled over since lastButtonUpTime */
+	delta = (((Time) ~0) - lastButtonUpTime) + buttonDownTime;
+
+    if (delta > term->screen.multiClickTime) {
+	numberOfClicks = 1;
+	selectUnit = defaultUnit;
+    } else {
+	++numberOfClicks;
+	selectUnit = ((selectUnit + 1) % NSELECTUNITS);
+    }
 }
 
 static void do_select_start (w, event, startrow, startcol)

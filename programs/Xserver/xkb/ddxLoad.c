@@ -1,5 +1,5 @@
 /* $XConsortium: ddxLoad.c /main/8 1996/02/05 06:18:40 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.7 1996/03/16 12:47:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.8 1996/05/12 12:00:13 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -96,7 +96,7 @@ XkbDDXCompileNamedKeymap(xkb,names,nameRtrn,nameRtrnLen)
     int				nameRtrnLen;
 #endif
 {
-char 	cmd[PATH_MAX],file[PATH_MAX],*map,*outFile;
+char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
 
     if (names->keymap==NULL)
 	return False;
@@ -115,20 +115,23 @@ char 	cmd[PATH_MAX],file[PATH_MAX],*map,*outFile;
 	 outFile= _XkbDupString(&outFile[1]);
     else outFile= _XkbDupString(file);
     XkbEnsureSafeMapName(outFile);
+    (void) strcpy (xkm_output_dir, XKM_OUTPUT_DIR);
+    if (xkm_output_dir[strlen(xkm_output_dir)] != '/') /* hi IBM, Digital */
+	(void) strcat (xkm_output_dir, "/");
     if (XkbBaseDirectory!=NULL) {
 	sprintf(cmd,"%s/xkbcomp -w %d -R%s -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s%s.xkm",
 		XkbBaseDirectory,
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		XkbBaseDirectory,(map?"-m ":""),(map?map:""),
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,file,
-		XKM_OUTPUT_DIR,outFile);
+		xkm_output_dir,outFile);
     }
     else {
 	sprintf(cmd,"xkbcomp -w %d -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s%s.xkm",
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		(map?"-m ":""),(map?map:""),
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,file,
-		XKM_OUTPUT_DIR,outFile);
+		xkm_output_dir,outFile);
     }
 #ifdef DEBUG
     if (xkbDebugFlags) {
@@ -330,6 +333,7 @@ unsigned	missing;
     if (finfoRtrn->xkb==NULL) {
 	ErrorF("Error loading keymap %s\n",fileName);
 	fclose(file);
+	(void) unlink (fileName);
 	return 0;
     }
 #ifdef DEBUG
@@ -338,35 +342,6 @@ unsigned	missing;
     }
 #endif
     fclose(file);
+    (void) unlink (fileName);
     return (need|want)&(~missing);
 }
-
-void    	
-#if NeedFunctionPrototypes
-XkbDDXRemoveMapFile(XkbComponentNamesPtr names)
-#else
-XkbDDXRemoveMapFile(names)
-    XkbComponentNamesPtr names;
-#endif
-{
-char	buf[PATH_MAX],keymap[PATH_MAX],*filename=keymap,*tmpptr;
-extern char *display;
-
-    if ((names->keymap==NULL)||(names->keymap[0]=='\0')) {
-	extern char *display;
-	sprintf(keymap,"server-%s",display);
-    }
-    else {
-        strncpy(keymap,names->keymap,PATH_MAX);
-        keymap[PATH_MAX-1]= '\0';
-        if ((filename= strrchr(keymap,'/'))!=NULL)
-	     filename++;
-	else filename = keymap;
-	if ((tmpptr= strchr(filename,'('))!=NULL)
-	    *tmpptr= '\0';
-    }
-    XkbEnsureSafeMapName(filename);
-    sprintf(buf,"%s%s.xkm",XKM_OUTPUT_DIR,filename);
-    unlink(buf);
-}
-
