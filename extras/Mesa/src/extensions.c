@@ -52,7 +52,7 @@ static struct { int enabled; const char *name; } default_extensions[] = {
    { DEFAULT_ON,     "GL_ARB_multitexture" },
    { DEFAULT_OFF,    "GL_ARB_texture_compression" },
    { DEFAULT_OFF,    "GL_ARB_texture_cube_map" },  /* in progress */
-   { ALWAYS_ENABLED, "GL_ARB_tranpose_matrix" },
+   { ALWAYS_ENABLED, "GL_ARB_transpose_matrix" },
    { ALWAYS_ENABLED, "GL_EXT_abgr" },
    { DEFAULT_ON,     "GL_EXT_blend_color" },
    { DEFAULT_ON,     "GL_EXT_blend_func_separate" },
