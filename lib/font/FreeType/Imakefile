@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.25 2003/05/29 03:05:08 dawes Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.26 2003/05/29 14:53:28 dawes Exp $
 
 #if BuildServer && DoLoadableServer
 #define IHaveSubdirs
@@ -27,15 +27,20 @@ FT2INCS =  -I$(FT2INCDIR) \
            -I$(FT2SOURCEDIR)/psaux \
            -I$(FT2SOURCEDIR)/psnames \
            -I$(FT2SOURCEDIR)/pshinter \
-           -I$(FT2SOURCEDIR)/autohint
+           -I$(FT2SOURCEDIR)/autohint \
+           -I$(FT2SOURCEDIR)/bdf \
+           -I$(FT2SOURCEDIR)/pcf
 
 FT2SRCS = ftbase.c ftinit.c ftglyph.c ftsystem.c fttype1.c ftxf86.c \
           ftgzip.c raster.c sfnt.c truetype.c cff.c type1.c \
-          psaux.c psnames.c pshinter.c  autohint.c
+          psaux.c psnames.c pshinter.c  autohint.c \
+          ftbdf.c bdf.c pcf.c
 
 FT2OBJS = ftbase.o ftinit.o ftglyph.o ftsystem.o fttype1.o ftxf86.o \
           ftgzip.o raster.o sfnt.o truetype.o cff.o type1.o \
-          psaux.o psnames.o pshinter.o autohint.o
+          psaux.o psnames.o pshinter.o autohint.o \
+          ftbdf.o bdf.o pcf.o
+
 #endif
 
 INCLUDES = -I. -I$(FONTINCSRC) -I../include -I$(XINCLUDESRC) \
@@ -59,7 +64,6 @@ NormalLintTarget($(SRCS))
 LinkSourceFile(ftbase.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(ftinit.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(ftglyph.c,$(FT2SOURCEDIR)/base)
-/* LinkSourceFile(ftsystem.c,$(FT2SOURCEDIR)/base) */
 LinkSourceFile(ftutil.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(fttype1.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(ftxf86.c,$(FT2SOURCEDIR)/base)
@@ -73,6 +77,9 @@ LinkSourceFile(psaux.c,$(FT2SOURCEDIR)/psaux)
 LinkSourceFile(psnames.c,$(FT2SOURCEDIR)/psnames)
 LinkSourceFile(pshinter.c,$(FT2SOURCEDIR)/pshinter)
 LinkSourceFile(autohint.c,$(FT2SOURCEDIR)/autohint)
+LinkSourceFile(ftbdf.c,$(FT2SOURCEDIR)/base)
+LinkSourceFile(bdf.c,$(FT2SOURCEDIR)/bdf)
+LinkSourceFile(pcf.c,$(FT2SOURCEDIR)/pcf)
 #endif
 
 #endif

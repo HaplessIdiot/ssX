@@ -1,3 +1,4 @@
+/* $XFree86: xc/extras/freetype2/include/freetype/config/ftoption.h,v 1.6 2003/05/29 02:13:03 dawes Exp $ */
 /***************************************************************************/
 /*                                                                         */
 /*  ftoption.h                                                             */
@@ -16,7 +17,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86: xc/lib/font/FreeType/ftoption.h,v 1.4 2003/05/29 03:05:08 dawes Exp $ */
+
 
 #ifndef __FTOPTION_H__
 #define __FTOPTION_H__
@@ -26,7 +27,6 @@
 
 
 FT_BEGIN_HEADER
-
 
   /*************************************************************************/
   /*                                                                       */
@@ -80,115 +80,6 @@ FT_BEGIN_HEADER
 
   /*************************************************************************/
   /*                                                                       */
-  /* CMap support                                                          */
-  /*                                                                       */
-  /*   Define this if you want generic cmap support.                       */
-  /*                                                                       */
-#define FT_CONFIG_OPTION_USE_CMAPS
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* Convenience functions support                                         */
-  /*                                                                       */
-  /*   Some functions of the FreeType 2 API are provided as a convenience  */
-  /*   for client applications and developers. However,  they are not      */
-  /*   required to build and run the library itself.                       */
-  /*                                                                       */
-  /*   By defining this configuration macro, you'll disable the            */
-  /*   compilation of these functions at build time.  This can be useful   */
-  /*   to reduce the library's code size when you don't need any of        */
-  /*   these functions.                                                    */
-  /*                                                                       */
-  /*   All convenience functions are declared as such in their             */
-  /*   documentation.                                                      */
-  /*                                                                       */
-#undef FT_CONFIG_OPTION_NO_CONVENIENCE_FUNCS
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* Module errors                                                         */
-  /*                                                                       */
-  /*   If this macro is set (which is _not_ the default), the higher byte  */
-  /*   of an error code gives the module in which the error has occurred,  */
-  /*   while the lower byte is the real error code.                        */
-  /*                                                                       */
-  /*   Setting this macro makes sense for debugging purposes only, since   */
-  /*   it would break source compatibility of certain programs that use    */
-  /*   FreeType 2.                                                         */
-  /*                                                                       */
-  /*   More details can be found in the files ftmoderr.h and fterrors.h.   */
-  /*                                                                       */
-#undef FT_CONFIG_OPTION_USE_MODULE_ERRORS
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* Alternate Glyph Image Format support                                  */
-  /*                                                                       */
-  /*   By default, the glyph images returned by the FreeType glyph loader  */
-  /*   can either be a pixmap or a vectorial outline defined through       */
-  /*   Bezier control points.  When defining the following configuration   */
-  /*   macro, some font drivers will be able to register alternate         */
-  /*   glyph image formats.                                                */
-  /*                                                                       */
-  /*   Unset this macro if you are sure that you will never use a font     */
-  /*   driver with an alternate glyph format; this will reduce the size of */
-  /*   the base layer code.                                                */
-  /*                                                                       */
-  /*   Note that a few Type 1 fonts, as well as Windows `vector' fonts     */
-  /*   use a vector `plotter' format that isn't supported when this        */
-  /*   macro is undefined.                                                 */
-  /*                                                                       */
-#undef FT_CONFIG_OPTION_ALTERNATE_GLYPH_FORMATS
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* Glyph Postscript Names handling                                       */
-  /*                                                                       */
-  /*   By default, FreeType 2 is compiled with the `PSNames' module.  This */
-  /*   module is in charge of converting a glyph name string into a        */
-  /*   Unicode value, or return a Macintosh standard glyph name for the    */
-  /*   use with the TrueType `post' table.                                 */
-  /*                                                                       */
-  /*   Undefine this macro if you do not want `PSNames' compiled in your   */
-  /*   build of FreeType.  This has the following effects:                 */
-  /*                                                                       */
-  /*   - The TrueType driver will provide its own set of glyph names,      */
-  /*     if you build it to support postscript names in the TrueType       */
-  /*     `post' table.                                                     */
-  /*                                                                       */
-  /*   - The Type 1 driver will not be able to synthetize a Unicode        */
-  /*     charmap out of the glyphs found in the fonts.                     */
-  /*                                                                       */
-  /*   You would normally undefine this configuration macro when building  */
-  /*   a version of FreeType that doesn't contain a Type 1 or CFF driver.  */
-  /*                                                                       */
-#define FT_CONFIG_OPTION_POSTSCRIPT_NAMES
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* Postscript Names to Unicode Values support                            */
-  /*                                                                       */
-  /*   By default, FreeType 2 is built with the `PSNames' module compiled  */
-  /*   in.  Among other things, the module is used to convert a glyph name */
-  /*   into a Unicode value.  This is especially useful in order to        */
-  /*   synthetize on the fly a Unicode charmap from the CFF/Type 1 driver  */
-  /*   through a big table named the `Adobe Glyph List' (AGL).             */
-  /*                                                                       */
-  /*   Undefine this macro if you do not want the Adobe Glyph List         */
-  /*   compiled in your `PSNames' module.  The Type 1 driver will not be   */
-  /*   able to synthetize a Unicode charmap out of the glyphs found in the */
-  /*   fonts.                                                              */
-  /*                                                                       */
-#define FT_CONFIG_OPTION_ADOBE_GLYPH_LIST
-
-
-  /*************************************************************************/
-  /*                                                                       */
   /* Many compilers provide a non-ANSI 64-bit data type that can be used   */
   /* by FreeType to speed up some computations.  However, this will create */
   /* some problems when compiling the library in strict ANSI mode.         */
@@ -204,7 +95,7 @@ FT_BEGIN_HEADER
   /*         file "ftconfig.h" either statically, or through Autoconf      */
   /*         on platforms that support it.                                 */
   /*                                                                       */
-#define FT_CONFIG_OPTION_FORCE_INT64
+#undef  FT_CONFIG_OPTION_FORCE_INT64
 
 
   /*************************************************************************/
@@ -279,40 +170,61 @@ FT_BEGIN_HEADER
   /*   will be later automatically defined as `extern return_type' to      */
   /*   allow normal compilation.                                           */
   /*                                                                       */
-#undef FT_EXPORT
-#undef FT_EXPORT_DEF
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* Debug level                                                           */
-  /*                                                                       */
-  /*   FreeType can be compiled in debug or trace mode.  In debug mode,    */
-  /*   errors are reported through the `ftdebug' component.  In trace      */
-  /*   mode, additional messages are sent to the standard output during    */
-  /*   execution.                                                          */
-  /*                                                                       */
-  /*   Define FT_DEBUG_LEVEL_ERROR to build the library in debug mode.     */
-  /*   Define FT_DEBUG_LEVEL_TRACE to build it in trace mode.              */
-  /*                                                                       */
-  /*   Don't define any of these macros to compile in `release' mode!      */
-  /*                                                                       */
-#undef  FT_DEBUG_LEVEL_ERROR
-#undef  FT_DEBUG_LEVEL_TRACE
+/* #define  FT_EXPORT(x)       extern x */
+/* #define  FT_EXPORT_DEF(x)   x */
 
 
   /*************************************************************************/
   /*                                                                       */
-  /* Memory Debugging                                                      */
+  /* Glyph Postscript Names handling                                       */
   /*                                                                       */
-  /*   FreeType now comes with an integrated memory debugger that is       */
-  /*   capable of detecting simple errors like memory leaks or double      */
-  /*   deletes.  To compile it within your build of the library, you       */
-  /*   should define FT_DEBUG_MEMORY here.                                 */
+  /*   By default, FreeType 2 is compiled with the `PSNames' module.  This */
+  /*   module is in charge of converting a glyph name string into a        */
+  /*   Unicode value, or return a Macintosh standard glyph name for the    */
+  /*   use with the TrueType `post' table.                                 */
   /*                                                                       */
-  /*   Note that the memory debugger is only activated at runtime when     */
-  /*   when the _environment_ variable "FT_DEBUG_MEMORY" is also defined!  */
+  /*   Undefine this macro if you do not want `PSNames' compiled in your   */
+  /*   build of FreeType.  This has the following effects:                 */
   /*                                                                       */
-#undef  FT_DEBUG_MEMORY
+  /*   - The TrueType driver will provide its own set of glyph names,      */
+  /*     if you build it to support postscript names in the TrueType       */
+  /*     `post' table.                                                     */
+  /*                                                                       */
+  /*   - The Type 1 driver will not be able to synthetize a Unicode        */
+  /*     charmap out of the glyphs found in the fonts.                     */
+  /*                                                                       */
+  /*   You would normally undefine this configuration macro when building  */
+  /*   a version of FreeType that doesn't contain a Type 1 or CFF driver.  */
+  /*                                                                       */
+#define FT_CONFIG_OPTION_POSTSCRIPT_NAMES
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* Postscript Names to Unicode Values support                            */
+  /*                                                                       */
+  /*   By default, FreeType 2 is built with the `PSNames' module compiled  */
+  /*   in.  Among other things, the module is used to convert a glyph name */
+  /*   into a Unicode value.  This is especially useful in order to        */
+  /*   synthetize on the fly a Unicode charmap from the CFF/Type 1 driver  */
+  /*   through a big table named the `Adobe Glyph List' (AGL).             */
+  /*                                                                       */
+  /*   Undefine this macro if you do not want the Adobe Glyph List         */
+  /*   compiled in your `PSNames' module.  The Type 1 driver will not be   */
+  /*   able to synthetize a Unicode charmap out of the glyphs found in the */
+  /*   fonts.                                                              */
+  /*                                                                       */
+#define FT_CONFIG_OPTION_ADOBE_GLYPH_LIST
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* Allow the use of FT_Incremental_Interface to load typefaces that      */
+  /* contain no glyph data, but supply it via a callback function.         */
+  /* This allows FreeType to be used with the PostScript language, using   */
+  /* the GhostScript interpreter.                                          */
+  /*                                                                       */
+/* #define  FT_CONFIG_OPTION_INCREMENTAL */
 
 
   /*************************************************************************/
@@ -330,9 +242,61 @@ FT_BEGIN_HEADER
   /* FT_MAX_MODULES                                                        */
   /*                                                                       */
   /*   The maximum number of modules that can be registered in a single    */
-  /*   FreeType library object.  16 is the default.                        */
+  /*   FreeType library object.  32 is the default.                        */
   /*                                                                       */
-#define FT_MAX_MODULES  16
+#define FT_MAX_MODULES  32
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* Debug level                                                           */
+  /*                                                                       */
+  /*   FreeType can be compiled in debug or trace mode.  In debug mode,    */
+  /*   errors are reported through the `ftdebug' component.  In trace      */
+  /*   mode, additional messages are sent to the standard output during    */
+  /*   execution.                                                          */
+  /*                                                                       */
+  /*   Define FT_DEBUG_LEVEL_ERROR to build the library in debug mode.     */
+  /*   Define FT_DEBUG_LEVEL_TRACE to build it in trace mode.              */
+  /*                                                                       */
+  /*   Don't define any of these macros to compile in `release' mode!      */
+  /*                                                                       */
+/* #define  FT_DEBUG_LEVEL_ERROR */
+/* #define  FT_DEBUG_LEVEL_TRACE */
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* Memory Debugging                                                      */
+  /*                                                                       */
+  /*   FreeType now comes with an integrated memory debugger that is       */
+  /*   capable of detecting simple errors like memory leaks or double      */
+  /*   deletes.  To compile it within your build of the library, you       */
+  /*   should define FT_DEBUG_MEMORY here.                                 */
+  /*                                                                       */
+  /*   Note that the memory debugger is only activated at runtime when     */
+  /*   when the _environment_ variable "FT_DEBUG_MEMORY" is also defined!  */
+  /*                                                                       */
+/* #define  FT_DEBUG_MEMORY */
+
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* Module errors                                                         */
+  /*                                                                       */
+  /*   If this macro is set (which is _not_ the default), the higher byte  */
+  /*   of an error code gives the module in which the error has occurred,  */
+  /*   while the lower byte is the real error code.                        */
+  /*                                                                       */
+  /*   Setting this macro makes sense for debugging purposes only, since   */
+  /*   it would break source compatibility of certain programs that use    */
+  /*   FreeType 2.                                                         */
+  /*                                                                       */
+  /*   More details can be found in the files ftmoderr.h and fterrors.h.   */
+  /*                                                                       */
+#undef FT_CONFIG_OPTION_USE_MODULE_ERRORS
+
 
 
   /*************************************************************************/
@@ -414,7 +378,10 @@ FT_BEGIN_HEADER
   /* By undefining this, you will only compile the code necessary to load  */
   /* TrueType glyphs without hinting.                                      */
   /*                                                                       */
-/* #define  TT_CONFIG_OPTION_BYTECODE_INTERPRETER */
+  /*   do not #undef this macro here, since the build system might         */
+  /*   define for certain configurations                                   */
+  /*                                                                       */
+#define  TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 
 
   /*************************************************************************/
@@ -428,6 +395,25 @@ FT_BEGIN_HEADER
   /* this macro will generate faster, though larger, code.                 */
   /*                                                                       */
 #define TT_CONFIG_OPTION_INTERPRETER_SWITCH
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* Define TT_CONFIG_OPTION_COMPONENT_OFFSET_SCALED to compile the        */
+  /* TrueType glyph loader to use Apple's definition of how to handle      */
+  /* component offsets in composite glyphs.                                */
+  /*                                                                       */
+  /* Apple and MS disagree on the default behavior of component offsets    */
+  /* in composites.  Apple says that they should be scaled by the scale    */
+  /* factors in the transformation matrix (roughly, it's more complex)     */
+  /* while MS says they should not.  OpenType defines two bits in the      */
+  /* composite flags array which can be used to disambiguate, but old      */
+  /* fonts will not have them.                                             */
+  /*                                                                       */
+  /*   http://partners.adobe.com/asn/developer/opentype/glyf.html          */
+  /*   http://fonts.apple.com/TTRefMan/RM06/Chap6glyf.html                 */
+  /*                                                                       */
+#undef TT_CONFIG_OPTION_COMPONENT_OFFSET_SCALED
 
 
   /*************************************************************************/
@@ -468,14 +454,6 @@ FT_BEGIN_HEADER
 
   /*************************************************************************/
   /*                                                                       */
-  /* Define T1_CONFIG_OPTION_DISABLE_HINTER if you want to generate a      */
-  /* driver with no hinter.  This can be useful to debug the parser.       */
-  /*                                                                       */
-#undef T1_CONFIG_OPTION_DISABLE_HINTER
-
-
-  /*************************************************************************/
-  /*                                                                       */
   /* Define this configuration macro if you want to prevent the            */
   /* compilation of `t1afm', which is in charge of reading Type 1 AFM      */
   /* files into an existing face.  Note that if set, the T1 driver will be */
@@ -490,9 +468,28 @@ FT_BEGIN_HEADER
   /* compilation of the Multiple Masters font support in the Type 1        */
   /* driver.                                                               */
   /*                                                                       */
-#undef T1_CONFIG_OPTION_NO_MM_SUPPORT
+#define T1_CONFIG_OPTION_NO_MM_SUPPORT
 
  /* */
+
+/*
+ * the FT_CONFIG_OPTION_CHESTER_XXXX macros are used to toggle some recent
+ * improvements to the auto-hinter contributed by David Chester. They will
+ * most likely disappear completely in the next release. For now, you should
+ * always keep them defined
+ *
+ */
+#define  FT_CONFIG_OPTION_CHESTER_HINTS
+
+#ifdef   FT_CONFIG_OPTION_CHESTER_HINTS
+
+#  define  FT_CONFIG_CHESTER_SMALL_F
+#  define  FT_CONFIG_CHESTER_ASCENDER
+#  define  FT_CONFIG_CHESTER_SERIF
+#  define  FT_CONFIG_CHESTER_STEM
+#  define  FT_CONFIG_CHESTER_BLUE_SCALE
+
+#endif /* FT_CONFIG_OPTION_CHESTER_HINTS */
 
 FT_END_HEADER
 

@@ -1,6 +1,6 @@
 /*
 Copyright (c) 1997 by Mark Leisher
-Copyright (c) 1998-2002 by Juliusz Chroboczek
+Copyright (c) 1998-2003 by Juliusz Chroboczek
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.27 2003/02/13 03:01:45 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.28 2003/04/03 16:26:03 dawes Exp $ */
 
 #include "fontmisc.h"
 
@@ -79,7 +79,7 @@ hash(char *string)
     int i;
     unsigned u = 0;
     for(i = 0; string[i] != '\0'; i++)
-        u = (u<<2) + (unsigned char)string[i];
+        u = (u<<5) + (u >> (NUMFACEBUCKETS - 5)) + (unsigned char)string[i];
     return u;
 }
 
@@ -155,9 +155,16 @@ FreeTypeOpenFace(FTFacePtr *facep, char *fileName)
         ErrorF("FreeType: couldn't open face %s: %d\n", fileName, ftrc);
         xfree(face->filename);
         xfree(face);
-        return BadFontPath;
+        return BadFontName;
     }
 
+    face->bitmap = ((face->face->face_flags & FT_FACE_FLAG_SCALABLE) == 0);
+    if(!face->bitmap) {
+        TT_MaxProfile *maxp;
+        maxp = FT_Get_Sfnt_Table(face->face, ft_sfnt_maxp);
+        if(maxp && maxp->maxContours == 0)
+            face->bitmap = 1;
+    }
     /* Insert face in hashtable and return it */
     face->next = faceTable[bucket];
     faceTable[bucket] = face;
@@ -263,20 +270,49 @@ FreeTypeActivateInstance(FTInstancePtr instance)
     return Successful;
 }
 
+int
+FTFindSize(FT_Face face, FTNormalisedTransformationPtr trans,
+           int *x_return, int *y_return)
+{
+    int tx, ty, x, y;
+    int i, j;
+    int d, dd;
+
+    if(trans->nonIdentity)
+        return BadFontName;
+
+    tx = (int)(trans->scale * trans->xres / 72.0 + 0.5);
+    ty = (int)(trans->scale * trans->yres / 72.0 + 0.5);
+
+    d = 100;
+    j = -1;
+    for(i = 0; i < face->num_fixed_sizes; i++) {
+        x = face->available_sizes[i].width;
+        y = face->available_sizes[i].height;
+        if(ABS(x - tx) <= 1 && ABS(y - ty) <= 1) {
+            dd = ABS(x - tx) * ABS(x - tx) + ABS(y - ty) * ABS(y - ty);
+            if(dd < d) {
+                j = i;
+                d = dd;
+            }
+        }            
+    }
+    if(j < 0)
+        return BadFontName;
+
+    *x_return = face->available_sizes[j].width;
+    *y_return = face->available_sizes[j].height;
+    return Successful;
+}
+
 static int
-FreeTypeOpenInstance(FTInstancePtr *instance_return, 
+FreeTypeOpenInstance(FTInstancePtr *instance_return, FTFacePtr face,
                      char *fileName, FTNormalisedTransformationPtr trans,
                      int charcell, FontBitmapFormatPtr bmfmt)
 {
     FT_Error ftrc;
     int xrc;
     FTInstancePtr instance, otherInstance;
-    FTFacePtr face;
-
-    xrc = FreeTypeOpenFace(&face, fileName);
-    if(xrc != Successful) {
-        return xrc;
-    }
 
     /* Search for a matching instance */
     for(otherInstance = face->instances;
@@ -319,10 +355,18 @@ FreeTypeOpenInstance(FTInstancePtr *instance_return,
         return FTtoXReturnCode(ftrc);
     }
     FreeTypeActivateInstance(instance);
-    ftrc = FT_Set_Char_Size(instance->face->face, 
-                            (int)(trans->scale*(1<<6)+0.5),
-                            (int)(trans->scale*(1<<6)+0.5),
-                            trans->xres, trans->yres);
+    if(!face->bitmap) {
+        ftrc = FT_Set_Char_Size(instance->face->face,
+                                (int)(trans->scale*(1<<6) + 0.5),
+                                (int)(trans->scale*(1<<6) + 0.5),
+                                trans->xres, trans->yres);
+    } else {
+        int xsize, ysize;
+        xrc = FTFindSize(face->face, trans, &xsize, &ysize);
+        if(xrc != Successful)
+            return xrc;
+        ftrc = FT_Set_Pixel_Sizes(instance->face->face, xsize, ysize);
+    }
     if(ftrc != 0) {
         FT_Done_Size(instance->size);
         FreeTypeFreeFace(instance->face);
@@ -617,7 +661,7 @@ FreeTypeRasteriseGlyph(CharInfoPtr tgp, FTInstancePtr instance,
         for(i = MAX(0, -dy); i < bitmap->rows && i + dy < ht; i++)
             memcpy(raster + (i + dy) * bpr,
                    bitmap->buffer + i * bitmap->pitch,
-                   bitmap->pitch);
+                   MIN(bpr, bitmap->pitch));
     } else {
         for(i = MAX(0, -dy); i < bitmap->rows && i + dy < ht; i++) {
             for(j = MAX(0, -dx); j < bitmap->width && j + dx < wd; j++) {
@@ -725,8 +769,7 @@ FreeTypeUnloadXFont(FontPtr pFont)
 
 static int
 FreeTypeAddProperties(FTFontPtr font, FontScalablePtr vals, FontInfoPtr info, 
-                      char *fontname, 
-                      int rawAverageWidth)
+                      char *fontname, int rawAverageWidth)
 {
     int i, j, maxprops;
     char *sp, *ep, val[MAXFONTNAMELEN], *vp;
@@ -745,7 +788,11 @@ FreeTypeAddProperties(FTFontPtr font, FontScalablePtr vals, FontInfoPtr info,
     face = instance->face;
     smetrics = instance->size->metrics;
     trans = &instance->transformation;
-    upm =  face->face->units_per_EM;
+    upm = face->face->units_per_EM;
+    if(upm == 0) {
+        /* Work around FreeType bug */
+        upm = 2048;
+    }
 
     os2 = FT_Get_Sfnt_Table(face->face, ft_sfnt_os2);
     post = FT_Get_Sfnt_Table(face->face, ft_sfnt_post);
@@ -841,27 +888,33 @@ FreeTypeAddProperties(FTFontPtr font, FontScalablePtr vals, FontInfoPtr info,
         }
     }
 
-    info->props[i].name = MakeAtom("RAW_AVERAGE_WIDTH", 17, TRUE);
-    info->props[i].value = rawAverageWidth;
-    i++;
+    if(!face->bitmap) {
+        info->props[i].name = MakeAtom("RAW_AVERAGE_WIDTH", 17, TRUE);
+        info->props[i].value = rawAverageWidth;
+        i++;
+    }
 
     info->props[i].name = MakeAtom("FONT_ASCENT", 11, TRUE);
     info->props[i].value = info->fontAscent;
     i++;
 
-    info->props[i].name = MakeAtom("RAW_ASCENT", 15, TRUE);
-    info->props[i].value = 
-      ((double)face->face->ascender/(double)upm*1000.0);
-    i++;
+    if(!face->bitmap) {
+        info->props[i].name = MakeAtom("RAW_ASCENT", 15, TRUE);
+        info->props[i].value = 
+            ((double)face->face->ascender/(double)upm*1000.0);
+        i++;
+    }
 
     info->props[i].name = MakeAtom("FONT_DESCENT", 12, TRUE);
     info->props[i].value = info->fontDescent;
     i++;
 
-    info->props[i].name = MakeAtom("RAW_DESCENT", 16, TRUE);
-    info->props[i].value = 
-      -((double)face->face->descender/(double)upm*1000.0);
-    i++;
+    if(!face->bitmap) {
+        info->props[i].name = MakeAtom("RAW_DESCENT", 16, TRUE);
+        info->props[i].value = 
+            -((double)face->face->descender/(double)upm*1000.0);
+        i++;
+    }
 
     j = FTGetEnglishName(face->face, TT_NAME_ID_COPYRIGHT,
                          val, MAXFONTNAMELEN);
@@ -975,7 +1028,7 @@ FreeTypeAddProperties(FTFontPtr font, FontScalablePtr vals, FontInfoPtr info,
         i++;
 
         info->props[i].name = MakeAtom("UNDERLINE_POSITION",18,TRUE);
-        info->props[i].value = underlinePosition;
+        info->props[i].value = -underlinePosition;
         i++;
 
         /* The italic angle is often unreliable for Type 1 fonts */
@@ -1102,7 +1155,8 @@ FreeTypeFontGetDefaultGlyph(CharInfoPtr *g, FTFontPtr font)
 }
 
 static int
-FreeTypeLoadFont(FTFontPtr *font_return, char *fileName, 
+FreeTypeLoadFont(FTFontPtr *font_return, FTFacePtr face,
+                 char *fileName,
                  FontScalablePtr vals, FontEntryPtr entry,
                  FontBitmapFormatPtr bmfmt)
 {
@@ -1110,7 +1164,7 @@ FreeTypeLoadFont(FTFontPtr *font_return, char *fileName,
     FTFontPtr font;
     FTNormalisedTransformationRec trans;
     int charcell;
-    
+
     font = (FTFontPtr)xalloc(sizeof(FTFontRec));
     if(font == NULL)
         return AllocError;
@@ -1173,8 +1227,8 @@ FreeTypeLoadFont(FTFontPtr *font_return, char *fileName,
             }
         }
     }
-    
-    xrc = FreeTypeOpenInstance(&font->instance, 
+
+    xrc = FreeTypeOpenInstance(&font->instance, face,
                                fileName, &trans, charcell, bmfmt);
     if(xrc != Successful)
         return xrc;
@@ -1182,11 +1236,11 @@ FreeTypeLoadFont(FTFontPtr *font_return, char *fileName,
     if(entry->name.ndashes == 14) {
         if(FTPickMapping(entry->name.name, entry->name.length, fileName,
                          font->instance->face->face, &font->mapping))
-            return BadFontFormat;
+            return BadFontName;
     } else {
         if(FTPickMapping(0, 0, fileName, 
                          font->instance->face->face, &font->mapping))
-            return BadFontFormat;
+            return BadFontName;
     }
     
 
@@ -1341,24 +1395,34 @@ FreeTypeLoadXFont(char *fileName,
   ((long) \
    ceil(((double)(value)/(double)upm) * 1000.0))
 
-
     FTFontPtr font;
     FTInstancePtr instance;
-    FT_Size_Metrics smetrics;
+    FT_Size_Metrics *smetrics;
     FTFacePtr face;
     int xrc, i;
     int charcell, constantWidth;
-    long rawWidth, rawAverageWidth, aw, code, lastCode, firstCode;
+    long rawWidth, rawAverageWidth, code, lastCode, firstCode;
     int upm, minLsb, maxRsb, ascent, descent, width, averageWidth;
+    int ourvals = 0;
   
-
-    xrc = FreeTypeLoadFont(&font, fileName, vals, entry, bmfmt);
-    if(xrc != Successful)
+    xrc = FreeTypeOpenFace(&face, fileName);
+    if(xrc != Successful) {
         return xrc;
+    }
+
+    if(MAX(hypot(vals->pixel_matrix[0], vals->pixel_matrix[1]),
+           hypot(vals->pixel_matrix[2], vals->pixel_matrix[3])) < 1.0) {
+        FreeTypeFreeFace(face);
+        return BadFontName;
+    }
+
+    xrc = FreeTypeLoadFont(&font, face, fileName, vals, entry, bmfmt);
+    if(xrc != Successful) {
+        return xrc;
+    }
 
     instance = font->instance;
-    face = instance->face;
-    smetrics = instance->size->metrics;
+    smetrics = &instance->size->metrics;
 
     upm = face->face->units_per_EM;
     charcell = (instance->monospaced == FT_CHARCELL);
@@ -1371,24 +1435,26 @@ FreeTypeLoadXFont(char *fileName,
        for monospaced fonts, and try to provide a reasonable
        approximation for others. */
 
-    if(constantWidth)
-        aw = face->face->max_advance_width;
-    else
-        aw = face->face->max_advance_width / 2;
+    averageWidth = (smetrics->max_advance * 10) / 64;
+    if(!face->bitmap)
+        rawAverageWidth =
+            TRANSFORM_FUNITS_RAW(face->face->max_advance_width * 10L);
+    
+    if(!constantWidth) {
+        averageWidth /= 2;
+        rawAverageWidth /= 2;
+    }
 
-    if(constantWidth)
-        averageWidth = 10*TRANSFORM_FUNITS_X(aw);
-    else
-        averageWidth = TRANSFORM_FUNITS_X(aw*10L);
-    rawAverageWidth = TRANSFORM_FUNITS_RAW(aw*10L);
 
-    vals->width = averageWidth;
+    /* Preserve average width for bitmap fonts */
+    if(vals->width == 0)
+        vals->width = averageWidth;
+    else
+        averageWidth = vals->width;
   
     if(info) {
-        info->fontAscent = 
-            TRANSFORM_FUNITS_Y(face->face->ascender);
-        info->fontDescent = 
-            -TRANSFORM_FUNITS_Y(face->face->descender);
+        info->fontAscent = smetrics->ascender / 64;
+        info->fontDescent = -smetrics->descender / 64;
         firstCode = 0;
         lastCode = 0xFFFFL;
         if(font->nranges) {
@@ -1430,22 +1496,35 @@ FreeTypeLoadXFont(char *fileName,
         /* firstCode and lastCode are not valid in case of a matrix
            encoding */
 
-        transformBBox(&instance->transformation, upm,
-                      smetrics.x_ppem, smetrics.y_ppem,
-                      charcell? 0 :
-                      face->face->bbox.xMin,
-                      face->face->bbox.yMin,
-                      charcell ?
-                      face->face->max_advance_width :
-                      face->face->bbox.xMax,
-                      face->face->bbox.yMax,
-                      &minLsb, &descent, &maxRsb, &ascent);
-        descent = -descent;
-
-        width = TRANSFORM_FUNITS_X(face->face->max_advance_width);
-        rawWidth = 
-            TRANSFORM_FUNITS_RAW(face->face->max_advance_width);
+        width = smetrics->max_advance / 64;
+        if(!face->bitmap)
+            rawWidth = 
+                TRANSFORM_FUNITS_RAW(face->face->max_advance_width);
         instance->width = width;
+
+        if(!face->bitmap) {
+            transformBBox(&instance->transformation, upm,
+                          smetrics->x_ppem, smetrics->y_ppem,
+                          charcell? 0 :
+                          face->face->bbox.xMin,
+                          face->face->bbox.yMin,
+                          charcell ?
+                          face->face->max_advance_width :
+                          face->face->bbox.xMax,
+                          face->face->bbox.yMax,
+                          &minLsb, &descent, &maxRsb, &ascent);
+        }
+
+        descent = -smetrics->descender / 64;
+        ascent = smetrics->ascender / 64;
+        if(charcell) {
+            minLsb = 0;
+            maxRsb = width;
+        } else if(!face->bitmap) {
+            /* For now */
+            minLsb = -width / 2;
+            maxRsb = width * 3 / 2;
+        }
 
         info->constantWidth=constantWidth;
         info->constantMetrics=charcell;
@@ -1658,13 +1737,6 @@ FreeTypeOpenScalable(FontPathElementPtr fpe, FontPtr *ppFont, int flags,
 #endif
     MUMBLE("\n");
 
-    /* Reject ridiculously small values.  Singular matrices are okay. */
-    if(MAX(hypot(vals->pixel_matrix[0], vals->pixel_matrix[1]),
-           hypot(vals->pixel_matrix[2], vals->pixel_matrix[3]))
-       <1.0)
-        return BadFontName;
-
-    /* Create an X11 server-side font. */
     xf = CreateFontRec();
     if (xf == NULL)
         return AllocError;
@@ -1674,16 +1746,13 @@ FreeTypeOpenScalable(FontPathElementPtr fpe, FontPtr *ppFont, int flags,
         DestroyFontRec(xf);
         return xrc;
     }
-    /* Load the font and fill its info structure. */
     xrc = FreeTypeLoadXFont(fileName, vals, xf, &xf->info, &bmfmt, entry);
     if(xrc != Successful) {
-        /* Free everything up at this level and return the error code. */
         MUMBLE1("Error during load: %d\n",xrc);
         DestroyFontRec(xf);
         return xrc;
     }
 
-    /* Set the font and return. */
     *ppFont = xf;
 
     return xrc;
@@ -1704,10 +1773,6 @@ FreeTypeGetInfoScalable(FontPathElementPtr fpe, FontInfoPtr info,
     fwrite(entry->name.name, entry->name.length, 1, stdout);
 #endif
     MUMBLE("\n");
-
-    if(MAX(hypot(vals->pixel_matrix[0], vals->pixel_matrix[1]),
-           hypot(vals->pixel_matrix[2], vals->pixel_matrix[3])) < 1.0)
-        return BadFontName;
 
     xrc = FreeTypeSetUpFont(fpe, 0, info, 0, 0, &bmfmt);
     if(xrc != Successful) {
@@ -1760,6 +1825,21 @@ static FontRendererRec renderers[] = {
 };
 static int num_renderers = sizeof(renderers) / sizeof(renderers[0]);
 
+static FontRendererRec alt_renderers[] = {
+    {".bdf", 4, 0, FreeTypeOpenScalable, 0,
+     FreeTypeGetInfoScalable, 0, CAPABILITIES},
+    {".BDF", 4, 0, FreeTypeOpenScalable, 0,
+     FreeTypeGetInfoScalable, 0, CAPABILITIES},
+    {".pcf", 4, 0, FreeTypeOpenScalable, 0,
+     FreeTypeGetInfoScalable, 0, CAPABILITIES},
+    {".PCF", 4, 0, FreeTypeOpenScalable, 0,
+     FreeTypeGetInfoScalable, 0, CAPABILITIES},
+};
+
+static int num_alt_renderers =  
+sizeof(alt_renderers) / sizeof(alt_renderers[0]);
+    
+
 void
 FreeTypeRegisterFontFileFunctions(void)
 {
@@ -1767,4 +1847,7 @@ FreeTypeRegisterFontFileFunctions(void)
 
     for (i = 0; i < num_renderers; i++)
         FontFileRegisterRenderer(&renderers[i]);
+
+    for (i = 0; i < num_alt_renderers; i++)
+        FontFilePriorityRegisterRenderer(&alt_renderers[i], -10);
 }
