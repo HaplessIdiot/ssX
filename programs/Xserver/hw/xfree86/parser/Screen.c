@@ -315,6 +315,7 @@ xf86parseScreenSection (void)
 			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "SubSection");
 			{
+			        xf86conffree(val.str);
 				HANDLE_LIST (scrn_display_lst, xf86parseDisplaySubSection,
 							 XF86ConfDisplayPtr);
 			}

@@ -70,7 +70,7 @@ static int configPos = 0;		/* current readers position */
 static int configLineNo = 0;	/* linenumber */
 static char *configBuf, *configRBuf;	/* buffer for lines */
 static char *configPath;		/* path to config file */
-static char *configSection;		/* name of current section being parsed */
+static char *configSection = NULL;	/* name of current section being parsed */
 static int pushToken = LOCK_TOKEN;
 LexRec val;
 
@@ -626,7 +626,9 @@ xf86openConfigFile(const char *path, const char *cmdline, const char *projroot)
 		}
 		template = strtok(NULL, ",");
 	}
+	xf86conffree(pathcopy);
 	if (!configFile) {
+
 		return NULL;
 	}
 
@@ -821,10 +823,14 @@ void
 xf86closeConfigFile (void)
 {
 	xf86conffree (configPath);
+	configPath = NULL;
 	xf86conffree (configRBuf);
+	configRBuf = NULL;
 	xf86conffree (configBuf);
+	configBuf = NULL;
 
 	fclose (configFile);
+	configFile = NULL;
 }
 
 void
@@ -905,7 +911,10 @@ xf86validationError (char *format,...)
 void
 xf86setSection (char *section)
 {
-	configSection = section;
+  if (configSection)
+      xf86conffree(configSection);
+  configSection = xf86confmalloc(strlen (section) + 1);
+  strcpy (configSection, section);
 }
 
 /* 
