@@ -57,7 +57,7 @@ typedef struct _S3VMODETABLE {
 typedef struct {
     unsigned int mode, refresh;
     unsigned char SR08, SR0E, SR0F;
-    unsigned char SR10, SR11, SR12, SR13, SR15, SR18, SR29, SR30;
+    unsigned char SR10, SR11, SR12, SR13, SR15, SR18, SR1B, SR29, SR30;
     unsigned char SR54[8];
     unsigned char Clock;
     unsigned char CR31, CR32, CR33, CR34, CR36, CR3A, CR3B, CR3C;
@@ -127,6 +127,7 @@ typedef struct _Savage {
     Bool		CrtOnly;
     Bool		TvOn;
     Bool		PAL;
+    Bool		ForceInit;
     int			iDevInfo;
     int			iDevInfoPrim;
 
@@ -157,6 +158,7 @@ typedef struct _Savage {
     vbeInfoPtr		pVbe;
     int			EntityIndex;
     int			ShadowCounter;
+    int			vgaIOBase;	/* 3b0 or 3d0 */
 
     /* The various Savage wait handlers. */
     int			(*WaitQueue)(struct _Savage *, int);
@@ -201,6 +203,7 @@ typedef struct _Savage {
     int			VideoZoomMax;
     int			dwBCIWait2DIdle;
     XF86OffscreenImagePtr offscreenImages;
+
 } SavageRec, *SavagePtr;
 
 /* Video flags. */

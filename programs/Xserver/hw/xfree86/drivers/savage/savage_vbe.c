@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_vbe.c,v 1.9 2001/05/19 02:05:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_vbe.c,v 1.11 2002/05/14 20:19:52 alanh Exp $ */
 
 #include "savage_driver.h"
 #include "savage_vbe.h"
@@ -35,18 +35,18 @@ SavageSetTextMode( SavagePtr psav )
 {
     /* Restore display device if changed. */
     if( psav->iDevInfo != psav->iDevInfoPrim ) {
-	SavageClearVM86Regs( psav->pVbe->pInt10 );
-	psav->pVbe->pInt10->ax = 0x4f14;
-	psav->pVbe->pInt10->bx = 0x0003;
-	psav->pVbe->pInt10->cx = psav->iDevInfoPrim;
-	xf86ExecX86int10( psav->pVbe->pInt10 );
+	SavageClearVM86Regs( psav->pInt10 );
+	psav->pInt10->ax = 0x4f14;
+	psav->pInt10->bx = 0x0003;
+	psav->pInt10->cx = psav->iDevInfoPrim;
+	xf86ExecX86int10( psav->pInt10 );
     }
 
-    SavageClearVM86Regs( psav->pVbe->pInt10 );
+    SavageClearVM86Regs( psav->pInt10 );
 
-    psav->pVbe->pInt10->ax = 0x83;
+    psav->pInt10->ax = 0x83;
 
-    xf86ExecX86int10( psav->pVbe->pInt10 );
+    xf86ExecX86int10( psav->pInt10 );
 }
 
 
@@ -69,13 +69,13 @@ SavageSetVESAMode( SavagePtr psav, int n, int Refresh )
 
     /* Establish the refresh rate for this mode. */
 
-    SavageClearVM86Regs( psav->pVbe->pInt10 );
-    psav->pVbe->pInt10->ax = 0x4f14;	/* S3 extensions */
-    psav->pVbe->pInt10->bx = 0x0001;	/* Set default refresh rate */
-    psav->pVbe->pInt10->cx = n;
-    psav->pVbe->pInt10->di = Refresh & 0xffff;
+    SavageClearVM86Regs( psav->pInt10 );
+    psav->pInt10->ax = 0x4f14;	/* S3 extensions */
+    psav->pInt10->bx = 0x0001;	/* Set default refresh rate */
+    psav->pInt10->cx = n;
+    psav->pInt10->di = Refresh & 0xffff;
 
-    xf86ExecX86int10( psav->pVbe->pInt10 );
+    xf86ExecX86int10( psav->pInt10 );
 
     /* Set TV type if TV is on. */
     if( psav->TvOn ) {
@@ -191,7 +191,7 @@ SavageGetBIOSModes(
 	return 0;
 
     vbe = (vbeControllerInfoPtr) psav->pVbe->memory;
-    vbeLinear = xf86Int10AllocPages( psav->pVbe->pInt10, 1, &vbeReal );
+    vbeLinear = xf86Int10AllocPages( psav->pInt10, 1, &vbeReal );
     if( !vbeLinear )
     {
 	ErrorF( "Cannot allocate scratch page in real mode memory." );
@@ -200,7 +200,7 @@ SavageGetBIOSModes(
     vmib = (struct vbe_mode_info_block *) vbeLinear;
     
     for (
-	mode_list = xf86int10Addr( psav->pVbe->pInt10, L_ADD(vbe->VideoModePtr) );
+	mode_list = xf86int10Addr( psav->pInt10, L_ADD(vbe->VideoModePtr) );
 	*mode_list != 0xffff;
 	mode_list++
     )
@@ -220,15 +220,15 @@ SavageGetBIOSModes(
 	if( *mode_list >= 0x0200 )
 	    continue;
 
-	SavageClearVM86Regs( psav->pVbe->pInt10 );
+	SavageClearVM86Regs( psav->pInt10 );
 
-	psav->pVbe->pInt10->ax = 0x4f01;
-	psav->pVbe->pInt10->cx = *mode_list;
-	psav->pVbe->pInt10->es = SEG_ADDR(vbeReal);
-	psav->pVbe->pInt10->di = SEG_OFF(vbeReal);
-	psav->pVbe->pInt10->num = 0x10;
+	psav->pInt10->ax = 0x4f01;
+	psav->pInt10->cx = *mode_list;
+	psav->pInt10->es = SEG_ADDR(vbeReal);
+	psav->pInt10->di = SEG_OFF(vbeReal);
+	psav->pInt10->num = 0x10;
 
-	xf86ExecX86int10( psav->pVbe->pInt10 );
+	xf86ExecX86int10( psav->pInt10 );
 
 	if( 
 	   (vmib->bits_per_pixel == iDepth) &&
@@ -255,8 +255,8 @@ SavageGetBIOSModes(
 		
 		/* Query the refresh rates at this mode. */
 
-		psav->pVbe->pInt10->cx = *mode_list;
-		psav->pVbe->pInt10->dx = 0;
+		psav->pInt10->cx = *mode_list;
+		psav->pInt10->dx = 0;
 
 		do
 		{
@@ -280,14 +280,14 @@ SavageGetBIOSModes(
 			}
 		    }
 
-		    psav->pVbe->pInt10->ax = 0x4f14;	/* S3 extended functions */
-		    psav->pVbe->pInt10->bx = 0x0201;	/* query refresh rates */
-		    psav->pVbe->pInt10->num = 0x10;
-		    xf86ExecX86int10( psav->pVbe->pInt10 );
+		    psav->pInt10->ax = 0x4f14;	/* S3 extended functions */
+		    psav->pInt10->bx = 0x0201;	/* query refresh rates */
+		    psav->pInt10->num = 0x10;
+		    xf86ExecX86int10( psav->pInt10 );
 
-		    s3vModeTable->RefreshRate[iRefresh++] = psav->pVbe->pInt10->di;
+		    s3vModeTable->RefreshRate[iRefresh++] = psav->pInt10->di;
 		}
-		while( psav->pVbe->pInt10->dx );
+		while( psav->pInt10->dx );
 
 		s3vModeTable->RefreshCount = iRefresh;
 
@@ -296,7 +296,7 @@ SavageGetBIOSModes(
 	}
     }
 
-    xf86Int10FreePages( psav->pVbe->pInt10, vbeLinear, 1 );
+    xf86Int10FreePages( psav->pInt10, vbeLinear, 1 );
 
     return iModeCount;
 }

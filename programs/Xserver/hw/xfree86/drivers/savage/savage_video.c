@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.6 2001/11/02 16:24:51 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.9 2002/05/14 20:19:52 alanh Exp $ */
 
 #include "Xv.h"
 #include "dix.h"
@@ -139,7 +139,7 @@ static XF86ImageRec Images[] =
    XVIMAGE_YV12,
    XVIMAGE_I420,
    {
-	FOURCC_RV16,
+	FOURCC_RV15,
         XvRGB,
 	LSBFirst,
 	{'R','V','1','5',
@@ -156,7 +156,7 @@ static XF86ImageRec Images[] =
 	XvTopToBottom
    },
    {
-	FOURCC_RV15,
+	FOURCC_RV16,
         XvRGB,
 	LSBFirst,
 	{'R','V','1','6',
@@ -413,20 +413,14 @@ void SavageInitStreamsNew(ScrnInfoPtr pScrn)
 void SavageStreamsOn(ScrnInfoPtr pScrn, int id)
 {
     SavagePtr psav = SAVPTR(pScrn);
-    vgaHWPtr hwp;
     unsigned char jStreamsControl;
-    unsigned short vgaIOBase, vgaCRIndex, vgaCRReg;
+    unsigned short vgaCRIndex = psav->vgaIOBase + 4;
+    unsigned short vgaCRReg = psav->vgaIOBase + 5;
 
     xf86ErrorFVerb(XVTRACE, "SavageStreamsOn\n" );
 
     /* Sequence stolen from streams.c in M7 NT driver */
 
-    hwp = VGAHWPTR(pScrn);
-
-    vgaHWGetIOBase(hwp);
-    vgaIOBase = hwp->IOBase;
-    vgaCRIndex = vgaIOBase + 4;
-    vgaCRReg = vgaIOBase + 5;
 
     xf86EnableIO();
 
@@ -446,7 +440,7 @@ void SavageStreamsOn(ScrnInfoPtr pScrn, int id)
 
 	/* Wait for VBLANK. */
 	
-	VerticalRetraceWait();
+	VerticalRetraceWait(psav);
 
 	/* Fire up streams! */
 
@@ -467,7 +461,7 @@ void SavageStreamsOn(ScrnInfoPtr pScrn, int id)
 
 	/* Wait for VBLANK. */
 	
-	VerticalRetraceWait();
+	VerticalRetraceWait(psav);
 
 	/* Fire up streams! */
 
@@ -478,7 +472,7 @@ void SavageStreamsOn(ScrnInfoPtr pScrn, int id)
 
     /* Wait for VBLANK. */
     
-    VerticalRetraceWait();
+    VerticalRetraceWait(psav);
 
     /* Turn on secondary stream TV flicker filter, once we support TV. */
 
@@ -492,18 +486,11 @@ void SavageStreamsOn(ScrnInfoPtr pScrn, int id)
 void SavageStreamsOff(ScrnInfoPtr pScrn)
 {
     SavagePtr psav = SAVPTR(pScrn);
-    vgaHWPtr hwp;
     unsigned char jStreamsControl;
-    unsigned short vgaIOBase, vgaCRIndex, vgaCRReg;
+    unsigned short vgaCRIndex = psav->vgaIOBase + 4;
+    unsigned short vgaCRReg = psav->vgaIOBase + 5;
 
     xf86ErrorFVerb(XVTRACE, "SavageStreamsOff\n" );
-
-    hwp = VGAHWPTR(pScrn);
-
-    vgaHWGetIOBase(hwp);
-    vgaIOBase = hwp->IOBase;
-    vgaCRIndex = vgaIOBase + 4;
-    vgaCRReg = vgaIOBase + 5;
 
     xf86EnableIO();
 
@@ -523,7 +510,7 @@ void SavageStreamsOff(ScrnInfoPtr pScrn)
 
     /* Wait for VBLANK. */
 
-    VerticalRetraceWait();
+    VerticalRetraceWait(psav);
 
     /* Kill streams. */
 
@@ -1030,36 +1017,41 @@ SavageSetPortAttribute(
     pointer data
 ){
     SavagePortPrivPtr pPriv = (SavagePortPrivPtr)data;
-    /*SavagePtr psav = SAVPTR(pScrn);*/
+    SavagePtr psav = SAVPTR(pScrn);
 
     if(attribute == xvColorKey) {
 	pPriv->colorKey = value;
-	SavageSetColorKey( pScrn );
+	if( psav->videoFlags & VF_STREAMS_ON)
+	    SavageSetColorKey( pScrn );
 	REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
     } 
     else if( attribute == xvBrightness) {
 	if((value < -128) || (value > 127))
 	    return BadValue;
 	pPriv->brightness = value;
-	SavageSetColor( pScrn );
+	if( psav->videoFlags & VF_STREAMS_ON)
+	    SavageSetColor( pScrn );
     }
     else if( attribute == xvContrast) {
 	if((value < 0) || (value > 255))
 	    return BadValue;
 	pPriv->contrast = value;
-	SavageSetColor( pScrn );
+	if( psav->videoFlags & VF_STREAMS_ON)
+	    SavageSetColor( pScrn );
     }
     else if( attribute == xvSaturation) {
 	if((value < 0) || (value > 255))
 	    return BadValue;
 	pPriv->saturation = value;
-	SavageSetColor( pScrn );
+	if( psav->videoFlags & VF_STREAMS_ON)
+	    SavageSetColor( pScrn );
     }
     else if( attribute == xvHue) {
 	if((value < -180) || (value > 180))
 	    return BadValue;
 	pPriv->hue = value;
-	SavageSetColor( pScrn );
+	if( psav->videoFlags & VF_STREAMS_ON)
+	    SavageSetColor( pScrn );
     }
     else
 	return BadMatch;
@@ -1818,8 +1810,10 @@ SavageInitOffscreenImages(ScreenPtr pScreen)
 	if(!(offscreenImages = xalloc(sizeof(XF86OffscreenImageRec))))
 	    return;
 	psav->offscreenImages = offscreenImages;
-    } else 
+    } else {
 	offscreenImages = psav->offscreenImages;
+    }
+
     offscreenImages[0].image = &Images[0];
     offscreenImages[0].flags = VIDEO_OVERLAID_IMAGES | 
 			       VIDEO_CLIP_TO_VIEWPORT;
@@ -1861,8 +1855,12 @@ static void InitStreamsForExpansion(SavagePtr psav)
     PanelSizeY = psav->PanelY;
     ViewPortWidth = psav->iResX;
     ViewPortHeight = psav->iResY;
-    if (PanelSizeX == 1408)
-        PanelSizeX = 1400;
+    if( PanelSizeX == 1408 )
+	PanelSizeX = 1400;
+    psav->XExpansion = 0x00010001;
+    psav->YExpansion = 0x00010001;
+    psav->displayXoffset = 0;
+    psav->displayYoffset = 0;
 
     VGAOUT8(0x3C4, HZEXP_FACTOR_IGA1);
     XFactor = VGAIN8(0x3C5) >> 4;

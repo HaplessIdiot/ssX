@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_dga.c,v 1.2 2001/04/18 15:29:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_dga.c,v 1.4 2002/05/14 20:19:51 alanh Exp $ */
 
 /*
 Copyright (C) 1994-2000 The XFree86 Project, Inc.  All Rights Reserved.
@@ -273,10 +273,10 @@ Savage_SetMode(
 	pScrn->depth = OldDepth[index];
 	pScrn->currentMode = OldMode[index];
 
+	psav->DGAactive = FALSE;
 	SavageSwitchMode(index, pScrn->currentMode, 0);
 	if( psav->hwcursor )
 	    SavageShowCursor(pScrn);
-	psav->DGAactive = FALSE;
     } else {
 	Bool holdBIOS = psav->UseBIOS;
 

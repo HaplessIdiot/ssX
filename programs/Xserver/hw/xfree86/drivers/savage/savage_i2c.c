@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_i2c.c,v 1.2 2002/05/14 20:19:52 alanh Exp $ */
 
 /*
 Copyright (C) 1994-2000 The XFree86 Project, Inc.  All Rights Reserved.
@@ -43,18 +43,12 @@ SavageI2CPutBits(I2CBusPtr b, int clock,  int data)
 {
     ScrnInfoPtr pScrn = (ScrnInfoPtr)(xf86Screens[b->scrnIndex]);
     SavagePtr psav = SAVPTR(pScrn);
-    vgaHWPtr hwp;
-    int vgaIOBase;
     unsigned char reg = 0x10;
-
-    hwp = VGAHWPTR(pScrn);
-    vgaHWGetIOBase(hwp);
-    vgaIOBase = hwp->IOBase;
 
     if(clock) reg |= 0x1;
     if(data)  reg |= 0x2;
 
-    OutI2CREG(reg);
+    OutI2CREG(psav,reg);
     /*ErrorF("SavageI2CPutBits: %d %d\n", clock, data); */
 }
 
@@ -63,15 +57,9 @@ SavageI2CGetBits(I2CBusPtr b, int *clock, int *data)
 {
     ScrnInfoPtr pScrn = (ScrnInfoPtr)(xf86Screens[b->scrnIndex]);
     SavagePtr psav = SAVPTR(pScrn);
-    vgaHWPtr hwp;
-    int vgaIOBase;
     unsigned char reg = 0x10;
 
-    hwp = VGAHWPTR(pScrn);
-    vgaHWGetIOBase(hwp);
-    vgaIOBase = hwp->IOBase;
-
-    InI2CREG(reg);
+    InI2CREG(psav,reg);
 
     *clock = reg & 0x4;
     *data = reg & 0x8;
