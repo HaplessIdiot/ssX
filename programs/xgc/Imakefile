@@ -1,6 +1,9 @@
 XCOMM $XConsortium: Imakefile,v 1.12 93/08/25 10:13:31 rws Exp $
-XCOMM $XFree86: contrib/programs/xgc/Imakefile,v 3.1 1999/07/19 13:34:53 dawes Exp $
-        DEFINES = 
+XCOMM $XFree86: xc/programs/xgc/Imakefile,v 1.2 2002/02/15 08:06:56 keithp Exp $
+#if HasSnprintf
+     SNPDEFINES = -DHAS_SNPRINTF
+#endif
+        DEFINES = $(SNPDEFINES)
            SRCS = dashlist.c planemask.c getfile.c tests.c text.c \
                   choice.c main.c interpret.c record.c testfrac.c
            OBJS = dashlist.o planemask.o getfile.o tests.o text.o \
