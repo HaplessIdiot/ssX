@@ -35,6 +35,10 @@ extern BOOL killed;
 
     // settings
     NSString *mDisplay;
+
+    // Aqua interface
+    IBOutlet NSPanel *helpWindow;
+    IBOutlet id startupHelpButton;
 }
 
 - (id)init;
@@ -50,6 +54,8 @@ extern BOOL killed;
 - (void)kill;
 - (void)sendEvent:(NXEvent*)ev;
 - (void)sendShowHide:(BOOL)show;
+
+- (IBAction)closeHelpAndShow:(id)sender;
 
 //NSApplication delegate
 - (BOOL)applicationShouldTerminate:(NSApplication *)sender;

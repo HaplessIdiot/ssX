@@ -74,6 +74,64 @@
 				);
 			};
 		};
+		0155E89200224F96CE6F79C2 = {
+			isa = PBXFileReference;
+			path = Xmaster.icns;
+			refType = 4;
+		};
+		0155E89300224F96CE6F79C2 = {
+			fileRef = 0155E89200224F96CE6F79C2;
+			isa = PBXBuildFile;
+			settings = {
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		0157A37D002CF6D7CE6F79C2 = {
+			children = (
+				0157A37E002CF6D7CE6F79C2,
+			);
+			isa = PBXVariantGroup;
+			name = Credits.rtf;
+			path = "";
+			refType = 4;
+		};
+		0157A37E002CF6D7CE6F79C2 = {
+			isa = PBXFileReference;
+			name = English;
+			path = English.lproj/Credits.rtf;
+			refType = 4;
+		};
+		0157A37F002CF6D7CE6F79C2 = {
+			fileRef = 0157A37D002CF6D7CE6F79C2;
+			isa = PBXBuildFile;
+			settings = {
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		0157A382002CFAEBCE6F79C2 = {
+			isa = PBXFileReference;
+			path = XmasterHelp.html;
+			refType = 4;
+		};
+		0157A383002CFAEBCE6F79C2 = {
+			fileRef = 0157A382002CFAEBCE6F79C2;
+			isa = PBXBuildFile;
+			settings = {
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
 		04329610000763920A000002 = {
 			isa = PBXFileReference;
 			path = Preferences.m;
@@ -115,22 +173,6 @@
 			);
 			isa = PBXRezBuildPhase;
 			name = "ResourceManager Resources";
-		};
-		05835BC70026835FCE6F79C2 = {
-			isa = PBXFileReference;
-			path = Xmaster.icns;
-			refType = 4;
-		};
-		05835BC80026835FCE6F79C2 = {
-			fileRef = 05835BC70026835FCE6F79C2;
-			isa = PBXBuildFile;
-			settings = {
-				INCLUDED_OSS = (
-					MACOS,
-					WINDOWS,
-					PDOUNIX,
-				);
-			};
 		};
 		080E96DCFE201CFB7F000001 = {
 			fileRef = 29B97318FDCFA39411CA2CEA;
@@ -284,7 +326,9 @@
 			children = (
 				29B97318FDCFA39411CA2CEA,
 				089C165CFE840E0CC02AAC07,
-				05835BC70026835FCE6F79C2,
+				0157A37D002CF6D7CE6F79C2,
+				0157A382002CFAEBCE6F79C2,
+				0155E89200224F96CE6F79C2,
 			);
 			isa = PBXGroup;
 			name = Resources;
@@ -360,20 +404,32 @@
 <!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">
 <plist version=\"0.9\">
 <dict>
+	<key>CFBuildVersion</key>
+	<string>0.3</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
 	<string>Xmaster</string>
+	<key>CFBundleGetInfoString</key>
+	<string>XFree86 Version 4.0.2</string>
 	<key>CFBundleIconFile</key>
 	<string>Xmaster.icns</string>
+	<key>CFBundleIdentifier</key>
+	<string>org.xfree86.utils.Xmaster</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Xmaster</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>Xmaster (v0.3)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.2</string>
+	<string>0.3</string>
+	<key>NSHelpFile</key>
+	<string>XmasterHelp.html</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
@@ -398,7 +454,9 @@
 			files = (
 				080E96DCFE201CFB7F000001,
 				089C165EFE840E0CC02AAC07,
-				05835BC80026835FCE6F79C2,
+				0155E89300224F96CE6F79C2,
+				0157A37F002CF6D7CE6F79C2,
+				0157A383002CFAEBCE6F79C2,
 			);
 			isa = PBXResourcesBuildPhase;
 			name = "Bundle Resources";
