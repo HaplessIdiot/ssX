@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_swtcl.c,v 1.1.1.4 2004/12/10 15:33:23 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_swtcl.c,v 1.4 2004/12/10 15:41:01 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -508,7 +508,7 @@ static __inline void radeonEltPrimitive( radeonContextPtr rmesa, GLenum prim )
 
 
 
-#define LOCAL_VARS radeonContextPtr rmesa = RADEON_CONTEXT(ctx); (void)rmesa
+#define LOCAL_VARS radeonContextPtr rmesa = RADEON_CONTEXT(ctx)
 #define ELTS_VARS( buf )  GLushort *dest = buf
 #define INIT( prim ) radeonDmaPrimitive( rmesa, prim )
 #define ELT_INIT(prim) radeonEltPrimitive( rmesa, prim )
@@ -562,14 +562,16 @@ static void *radeon_alloc_elts( radeonContextPtr rmesa, int nr )
 #ifdef MESA_BIG_ENDIAN
 /* We could do without (most of) this ugliness if dest was always 32 bit word aligned... */
 #define EMIT_ELT(offset, x) do {				\
+   	radeonContextPtr rmesa = RADEON_CONTEXT(ctx);		\
 	int off = offset + ( ( (GLuint)dest & 0x2 ) >> 1 );	\
 	GLushort *des = (GLushort *)( (GLuint)dest & ~0x2 );	\
 	(des)[ off + 1 - 2 * ( off & 1 ) ] = (GLushort)(x); 	\
-	(void)rmesa; } while (0)
+	(void) rmesa; } while (0)
 #else
 #define EMIT_ELT(offset, x) do {				\
+   	radeonContextPtr rmesa = RADEON_CONTEXT(ctx);		\
 	(dest)[offset] = (GLushort) (x);			\
-	(void)rmesa; } while (0)
+	(void) rmesa; } while (0)
 #endif
 #define EMIT_TWO_ELTS(offset, x, y)  *(GLuint *)(dest+offset) = ((y)<<16)|(x);
 #define INCR_ELTS( nr ) dest += nr
