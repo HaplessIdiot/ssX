@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.8 1999/04/27 12:05:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.9 1999/05/23 14:38:05 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -26,6 +26,8 @@
  * in this Software without prior written authorization from Metro Link.
  * 
  */
+
+/* View/edit this file with tab stops set to 4 */
 
 #include "xf86Parser.h"
 #include "xf86tokens.h"

@@ -1,4 +1,6 @@
 XFree86 3.9Pp (30 May 1999)
+2697. Rework the config file search algorithm, and allow "safe" relative
+      paths to be specified by non-root users (David Dawes).
 2696. Close input devices while VT switched away (David Dawes).
 2695. Prevent the input device "PreInit" from being called in subsequent
       server generations (David Dawes).
@@ -8077,4 +8079,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.760 1999/05/30 03:03:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.761 1999/05/30 07:18:19 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.13 1999/05/23 14:38:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.14 1999/05/30 07:18:30 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -402,7 +402,8 @@ xf86ConfigSymTabRec, *xf86ConfigSymTabPtr;
 /*
  * prototypes for public functions
  */
-extern int xf86OpenConfigFile (char *);
+extern const char *xf86OpenConfigFile (const char *, const char *,
+					const char *);
 extern XF86ConfigPtr xf86ReadConfigFile (void);
 extern void xf86CloseConfigFile (void);
 extern void XF86FreeConfig (XF86ConfigPtr p);
@@ -421,5 +422,8 @@ XF86ConfVideoAdaptorPtr xf86FindVideoAdaptor(const char *ident,
 						XF86ConfVideoAdaptorPtr p);
 
 GenericListPtr addListItem(GenericListPtr head, GenericListPtr new);
+
+int PathIsAbsolute(const char *path);
+int PathIsSafe(const char *path);
 
 #endif /* _xf86Parser_h_ */

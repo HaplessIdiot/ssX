@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.4 1999/04/25 10:02:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.5 1999/05/23 14:38:05 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -26,6 +26,8 @@
  * in this Software without prior written authorization from Metro Link.
  * 
  */
+
+/* View/edit this file with tab stops set to 4 */
 
 #include "X11/Xos.h"
 #include "xf86Parser.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.5 1999/04/29 05:13:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.6 1999/04/29 09:13:55 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -26,6 +26,8 @@
  * in this Software without prior written authorization from Metro Link.
  * 
  */
+
+/* View/edit this file with tab stops set to 4 */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -57,8 +59,6 @@
 
 #include "Configint.h"
 #include "xf86tokens.h"
-
-extern char xf86ConfigFile[];
 
 #define CONFIG_BUF_LEN     1024
 
@@ -305,6 +305,298 @@ xf86TokenString (void)
 	return configRBuf;
 }
 
+#if 1
+int
+PathIsAbsolute(const char *path)
+{
+	if (path && path[0] == '/')
+		return 1;
+#ifdef __EMX__
+	if (path && (path[0] == '\\' || (path[1] == ':')))
+		return 0;
+#endif
+	return 0;
+}
+
+/* A path is "safe" if it is relative and if it contains no ".." elements. */
+int
+PathIsSafe(const char *path)
+{
+	if (PathIsAbsolute(path))
+		return 0;
+
+	/* Compare with ".." */
+	if (!strcmp(path, ".."))
+		return 0;
+
+	/* Look for leading "../" */
+	if (!strncmp(path, "../", 3))
+		return 0;
+
+	/* Look for trailing "/.." */
+	if ((strlen(path) > 3) && !strcmp(path + strlen(path) - 3, "/.."))
+		return 0;
+
+	/* Look for "/../" */
+	if (strstr(path, "/../"))
+		return 0;
+
+	return 1;
+}
+
+/*
+ * This function substitutes the following escape sequences:
+ *
+ *    %A    cmdline argument as an absolute path (must be absolute to match)
+ *    %R    cmdline argument as a relative path
+ *    %S    cmdline argument as a "safe" path (relative, and no ".." elements)
+ *    %X    default config file name ("XF86Config")
+ *    %H    hostname
+ *    %E    config file environment ($XF86CONFIG) as an absolute path
+ *    %F    config file environment ($XF86CONFIG) as a relative path
+ *    %G    config file environment ($XF86CONFIG) as a safe path
+ *    %D    $HOME
+ *    %P    projroot
+ *    %%    %
+ */
+
+#ifndef XCONFIGFILE
+#define XCONFIGFILE	"XF86Config"
+#endif
+#ifndef PROJECTROOT
+#define PROJECTROOT	"/usr/X11R6"
+#endif
+#ifndef XCONFENV
+#define XCONFENV	"XF86CONFIG"
+#endif
+
+#define BAIL_OUT		do {									\
+							xf86conffree(result);				\
+							return NULL;						\
+						} while (0)
+
+#define CHECK_LENGTH	do {									\
+							if (l > PATH_MAX) {					\
+								BAIL_OUT;						\
+							}									\
+						} while (0)
+
+#define APPEND_STR(s)	do {									\
+							if (strlen(s) + l > PATH_MAX) {		\
+								BAIL_OUT;						\
+							} else {							\
+								strcpy(result + l, s);			\
+								l += strlen(s);					\
+							}									\
+						} while (0)
+
+static char *
+DoSubstitution(const char *template, const char *cmdline, const char *projroot,
+				int *cmdlineUsed, int *envUsed)
+{
+	char *result;
+	int i, l;
+	static const char *env = NULL, *home = NULL;
+    static char *hostname = NULL;
+
+	if (!template)
+		return NULL;
+
+	if (cmdlineUsed)
+		*cmdlineUsed = 0;
+	if (envUsed)
+		*envUsed = 0;
+
+	result = xf86confmalloc(PATH_MAX + 1);
+	l = 0;
+	for (i = 0; template[i]; i++) {
+		if (template[i] != '%') {
+			result[l++] = template[i];
+			CHECK_LENGTH;
+		} else {
+			switch (template[++i]) {
+			case 'A':
+				if (cmdline && PathIsAbsolute(cmdline)) {
+					APPEND_STR(cmdline);
+					if (cmdlineUsed)
+						*cmdlineUsed = 1;
+				} else
+					BAIL_OUT;
+				break;
+			case 'R':
+				if (cmdline && !PathIsAbsolute(cmdline)) {
+					APPEND_STR(cmdline);
+					if (cmdlineUsed)
+						*cmdlineUsed = 1;
+				} else 
+					BAIL_OUT;
+				break;
+			case 'S':
+				if (cmdline && PathIsSafe(cmdline)) {
+					APPEND_STR(cmdline);
+					if (cmdlineUsed)
+						*cmdlineUsed = 1;
+				} else 
+					BAIL_OUT;
+				break;
+			case 'X':
+				APPEND_STR(XCONFIGFILE);
+				break;
+			case 'H':
+				if (!hostname) {
+					if ((hostname = xf86confmalloc(MAXHOSTNAMELEN + 1))) {
+						if (gethostname(hostname, MAXHOSTNAMELEN) == 0) {
+							hostname[MAXHOSTNAMELEN] = '\0';
+						} else {
+							xf86conffree(hostname);
+							hostname = NULL;
+						}
+					}
+				}
+				if (hostname)
+					APPEND_STR(hostname);
+				break;
+			case 'E':
+				if (!env)
+					env = getenv(XCONFENV);
+				if (env && PathIsAbsolute(env)) {
+					APPEND_STR(env);
+					if (envUsed)
+						*envUsed = 1;
+				} else
+					BAIL_OUT;
+				break;
+			case 'F':
+				if (!env)
+					env = getenv(XCONFENV);
+				if (env && !PathIsAbsolute(env)) {
+					APPEND_STR(env);
+					if (envUsed)
+						*envUsed = 1;
+				} else
+					BAIL_OUT;
+				break;
+			case 'G':
+				if (!env)
+					env = getenv(XCONFENV);
+				if (env && PathIsSafe(env)) {
+					APPEND_STR(env);
+					if (envUsed)
+						*envUsed = 1;
+				} else
+					BAIL_OUT;
+				break;
+			case 'D':
+				if (!home)
+					home = getenv("HOME");
+				if (home && PathIsAbsolute(home))
+					APPEND_STR(home);
+				else
+					BAIL_OUT;
+				break;
+			case 'P':
+				if (projroot && PathIsAbsolute(projroot))
+					APPEND_STR(projroot);
+				else
+					BAIL_OUT;
+				break;
+			case '%':
+				result[l++] = '%';
+				CHECK_LENGTH;
+				break;
+			default:
+				fprintf(stderr, "invalid escape %%%c found in path template\n",
+						template[i]);
+				BAIL_OUT;
+				break;
+			}
+		}
+	}
+#ifdef DEBUG
+	fprintf(stderr, "Converted `%s' to `%s'\n", template, result);
+#endif
+	return result;
+}
+
+/* 
+ * xf86OpenConfigFile --
+ *
+ * This function take a config file search path (optional), a command-line
+ * specified file name (optional) and the ProjectRoot path (optional) and
+ * locates and opens a config file based on that information.  If a
+ * command-line file name is specified, then this function fails if none
+ * of the located files.
+ *
+ * The return value is a pointer to the actual name of the file that was
+ * opened.  When no file is found, the return value is NULL.
+ *
+ * The escape sequences allowed in the search path are defined above.
+ *  
+ */
+
+#ifndef DEFAULT_CONF_PATH
+#define DEFAULT_CONF_PATH	"/etc/X11/%S," \
+							"%P/etc/X11/%S," \
+							"/etc/X11/%G," \
+							"%P/etc/X11/%G," \
+							"/etc/X11/%X," \
+							"/etc/%X," \
+							"%P/etc/X11/%X.%H," \
+							"%P/etc/X11/%X," \
+							"%P/lib/X11/%X.%H," \
+							"%P/lib/X11/%X"
+#endif
+
+const char *
+xf86OpenConfigFile(const char *path, const char *cmdline, const char *projroot)
+{
+	char *pathcopy;
+	const char *template;
+	int cmdlineUsed = 0;
+
+	configFile = NULL;
+	configStart = 0;		/* start of the current token */
+	configPos = 0;		/* current readers position */
+	configLineNo = 0;	/* linenumber */
+	pushToken = LOCK_TOKEN;
+
+	if (!path || !path[0])
+		path = DEFAULT_CONF_PATH;
+	pathcopy = xf86confmalloc(strlen(path) + 1);
+	strcpy(pathcopy, path);
+	if (!projroot || !projroot[0])
+		projroot = PROJECTROOT;
+
+	template = strtok(pathcopy, ",");
+
+	/* First, search for a config file. */
+	while (template && !configFile) {
+		if ((configPath = DoSubstitution(template, cmdline, projroot,
+										 &cmdlineUsed, NULL))) {
+			if ((configFile = fopen(configPath, "r")) != 0) {
+				if (cmdline && !cmdlineUsed) {
+					fclose(configFile);
+					configFile = NULL;
+				}
+			}
+		}
+		if (configPath && !configFile) {
+			xf86conffree(configPath);
+			configPath = NULL;
+		}
+		template = strtok(NULL, ",");
+	}
+	if (!configFile) {
+		return NULL;
+	}
+
+	configBuf = xf86confmalloc (CONFIG_BUF_LEN);
+	configRBuf = xf86confmalloc (CONFIG_BUF_LEN);
+	configBuf[0] = '\0';		/* sanity ... */
+
+	return configPath;
+}
+#else
 /* 
  * xf86OpenConfigFile --
  *
@@ -483,6 +775,7 @@ xf86OpenConfigFile (char *filename)
 
 	return 1;
 }
+#endif
 
 void
 xf86CloseConfigFile (void)

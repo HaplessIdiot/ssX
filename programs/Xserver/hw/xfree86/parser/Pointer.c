@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Pointer.c,v 1.4 1999/04/17 07:07:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Pointer.c,v 1.5 1999/05/23 14:38:08 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -26,6 +26,8 @@
  * in this Software without prior written authorization from Metro Link.
  * 
  */
+
+/* View/edit this file with tab stops set to 4 */
 
 #include "xf86Parser.h"
 #include "xf86tokens.h"
