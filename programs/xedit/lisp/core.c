@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.19 2002/01/31 04:33:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.20 2002/02/08 02:59:26 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -467,135 +467,12 @@ Lisp_Coerce(LispMac *mac, LispBuiltin *builtin)
  coerce object result-type
  */
 {
-    LispObj *result = NIL;
-    LispType type = LispNil_t;
-
     LispObj *object, *result_type;
 
     result_type = ARGUMENT(1);
     object = ARGUMENT(0);
 
-    if (result_type == NIL)
-	LispDestroy(mac, "%s: cannot convert %s to nil",
-		    STRFUN(builtin), STROBJ(object));
-    else if (result_type == T)
-	return (object);
-    else if (!SYMBOL_P(result_type))
-	LispDestroy(mac, "%s: bad argument %s",
-		    STRFUN(builtin), STROBJ(result_type));
-    else {
-	LispAtom *atom = result_type->data.atom;
-
-	if (atom == mac->atom_atom || atom == mac->symbol_atom)
-	    type = LispAtom_t;
-	else if (atom == mac->real_atom || atom == mac->float_atom)
-	    type = LispReal_t;
-	else if (atom == mac->integer_atom)
-	    type = LispInteger_t;
-	else if (atom == mac->cons_atom || atom == mac->list_atom)
-	    type = LispCons_t;
-	else if (atom == mac->string_atom)
-	    type = LispString_t;
-	else if (atom == mac->character_atom)
-	    type = LispCharacter_t;
-	else if (atom == mac->vector_atom || atom == mac->array_atom)
-	    type = LispArray_t;
-	else if (atom == mac->opaque_atom)
-	    type = LispOpaque_t;
-	else if (atom == mac->rational_atom)
-	    type = LispRatio_t;
-	else
-	    LispDestroy(mac, "%s: invalid type specification %s",
-			STRFUN(builtin), STRPTR(result_type));
-    }
-
-    if (object->type == LispOpaque_t) {
-	switch (type) {
-	    case LispAtom_t:
-		result = ATOM(object->data.opaque.data);
-		break;
-	    case LispString_t:
-		result = STRING(object->data.opaque.data);
-		break;
-	    case LispCharacter_t:
-		result = CHAR((int)object->data.opaque.data);
-		break;
-	    case LispReal_t:
-		result = REAL((double)((long)object->data.opaque.data));
-		break;
-	    case LispInteger_t:
-		result = INTEGER(((long)object->data.opaque.data));
-		break;
-	    case LispOpaque_t:
-		result = OPAQUE(object->data.opaque.data, 0);
-		break;
-	    default:
-		LispDestroy(mac, "%s: cannot convert %s to %s",
-			    STRFUN(builtin), STROBJ(object),
-			    STRPTR(result_type));
-	}
-    }
-    else if (object->type != type) {
-	if (FLOAT_P(object) && type == LispInteger_t &&
-	    (long)object->data.real == object->data.real) {
-	    long integer = FIXNUM_VALUE(object);
-
-	    result = INTEGER(integer);
-	}
-	else if ((INT_P(object) || RATIO_P(object)) && type == LispReal_t) {
-	    double real = FIXNUM_VALUE(object);
-
-	    result = REAL(real);
-	}
-	else if (INT_P(object) && type == LispRatio_t)
-	    result = object;
-	else if (type == LispString_t) {
-	    if (object == NIL)
-		result = STRING("");
-	    else {
-		GCProtect();
-		result = EVAL(CONS(SYMBOL(mac->string_atom),
-				   CONS(QUOTE(object), NIL)));
-		GCUProtect();
-	    }
-	}
-	else if (type == LispCharacter_t) {
-	    GCProtect();
-	    result = EVAL(CONS(SYMBOL(mac->character_atom),
-			       CONS(QUOTE(object), NIL)));
-	    GCUProtect();
-	}
-	else if (object == NIL && type == LispCons_t)
-	    result = object;
-	else if ((object == NIL || CONS_P(object)) && type == LispArray_t) {
-	    int count = 0;
-	    LispObj *item;
-
-	    for (count = 0, item = object; CONS_P(item);
-		 count++, item = CDR(item))
-		;
-	    GCProtect();
-	    item = CONS(INTEGER(count), NIL);
-	    result = LispNew(mac, item, NIL);
-	    result->type = LispArray_t;
-	    result->data.array.dim = item;
-	    result->data.array.list = object;
-	    result->data.array.rank = 1;
-	    result->data.array.type = LispTrue_t;
-	    result->data.array.zero = count == 0;
-	    GCUProtect();
-	}
-	else if (object->type == LispArray_t && object->data.array.rank == 1 &&
-		 type == LispCons_t)
-	    result = object->data.array.list;
-	else
-	    LispDestroy(mac, "%s: cannot convert %s to %s",
-			STRFUN(builtin), STROBJ(object), STRPTR(result_type));
-    }
-    else
-	result = object;
-
-    return (result);
+    return (LispCoerce(mac, builtin, object, result_type));
 }
 
 LispObj *
@@ -2441,10 +2318,11 @@ Lisp_Quit(LispMac *mac, LispBuiltin *builtin)
 
     ostatus = ARGUMENT(0);
 
-    if (ostatus != NIL && !INT_P(ostatus))
+    if (INT_P(ostatus))
+	status = (int)ostatus->data.integer;
+    else if (ostatus != NIL)
 	LispDestroy(mac, "%s: bad exit status argument %s",
 		    STRFUN(builtin), STROBJ(ostatus));
-    status = (int)ostatus->data.integer;
 
     exit(status);
 }
@@ -2942,6 +2820,38 @@ Lisp_Setf(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
+Lisp_Sleep(LispMac *mac, LispBuiltin *builtin)
+/*
+ sleep seconds
+ */
+{
+    long sec, msec;
+    double value, dsec;
+
+    LispObj *seconds;
+
+    seconds = ARGUMENT(0);
+
+    value = -1.0;
+    if (FIXNUM_P(seconds))
+	value = FIXNUM_VALUE(seconds);
+
+    if (value < 0.0 || !finite(value) || value > INT_MAX)
+	LispDestroy(mac, "%s: %s is not a positive integer",
+		    STRFUN(builtin), STROBJ(seconds));
+
+    msec = modf(value, &dsec) * 1e6;
+    sec = dsec;
+
+    if (sec)
+	sleep(sec);
+    if (msec)
+	usleep(msec);
+
+    return (NIL);
+}
+
+LispObj *
 Lisp_Stringp(LispMac *mac, LispBuiltin *builtin)
 /*
  stringp object
@@ -3222,6 +3132,24 @@ Lisp_Terpri(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
+Lisp_The(LispMac *mac, LispBuiltin *builtin)
+/*
+ the value-type form
+ */
+{
+    LispObj *value_type, *form;
+
+    form = ARGUMENT(1);
+    value_type = ARGUMENT(0);
+    MACRO_ARGUMENT2();
+
+    if (NCONSTANT_P(form))
+	form = EVAL(form);
+
+    return (LispCoerce(mac, builtin, form, value_type));
+}
+
+LispObj *
 Lisp_Throw(LispMac *mac, LispBuiltin *builtin)
 /*
  throw tag result
@@ -3324,9 +3252,9 @@ Lisp_Typep(LispMac *mac, LispBuiltin *builtin)
 	else if (atom == mac->real_atom)
 	    result = FLOAT_P(object) ? T : NIL;
 	else if (atom == mac->integer_atom)
-	    result = INT_P(object) ? T : NIL;
+	    result = INTEGER_P(object) ? T : NIL;
 	else if (atom == mac->rational_atom)
-	    result = RATIO_P(object) || INT_P(object) ? T : NIL;
+	    result = RATIONAL_P(object) ? T : NIL;
 	else if (atom == mac->cons_atom || atom == mac->list_atom)
 	    result = CONS_P(object) ? T : NIL;
 	else if (atom == mac->string_atom)

@@ -1,6 +1,6 @@
-$XFree86: xc/programs/xedit/lisp/README,v 1.5 2001/10/18 03:15:21 paulo Exp $
+$XFree86: xc/programs/xedit/lisp/README,v 1.6 2002/01/30 21:00:56 paulo Exp $
 
-LAST UPDATED:	$Date: 2002/01/30 21:00:56 $
+LAST UPDATED:	$Date: 2002/02/10 02:50:06 $
 
 
     SUMMARY
@@ -71,67 +71,81 @@ is only for testing, create a file named "xedit.lsp", with the contents:
 ;; (provide "xedit")
 
 (defun point ()
-    (format t "get-point~%")
+    (format t "~Cget-point~%" #\Escape)
     (read)	;; current point
 )
 
 (defun point-min ()
-    (format t "point-min~%")
+    (format t "~Cpoint-min~%" #\Escape)
     (read)	;; minimal point value
 )
 
 (defun point-max ()
-    (format t "point-max~%")
+    (format t "~Cpoint-max~%" #\Escape)
     (read)	;; maximal point value
 )
 
 (defun goto-char (point)
-    (format t "set-point ~D~%" point)
+    (format t "~Cset-point ~D~%" #\Escape point)
     (read)	;; nil return value
     point
 )
 
 (defun insert (str)
-    (format t "insert ~S~%" str)
+    (format t "~Cinsert ~A~%" #\Escape str)
     (read)	;; nil return value
 )
 
 (defun get-background-color ()
-    (format t "get-background~%")
+    (format t "~Cget-background~%" #\Escape)
     (read)	;; current background color
 )
 
 (defun set-background-color (color)
-    (format t "set-background ~S~%" color)
+    (format t "~Cset-background ~A~%" #\Escape color)
     (read)	;; nil return value
 )
 
 (defun get-font ()
-    (format t "get-font~%")
+    (format t "~Cget-font~%" #\Escape)
     (read)	;; current font
 )
 
 (defun set-font (font)
-    (format t "set-font ~S~%" font)
+    (format t "~Cset-font ~A~%" #\Escape font)
     (read)	;; nil return value
 )
 
 (defun get-foreground-color ()
-    (format t "get-foreground~%")
+    (format t "~Cget-foreground~%" #\Escape)
     (read)	;; current foreground color
 )
 
 (defun set-foreground-color (color)
-    (format t "set-foreground ~S~%" color)
+    (format t "~Cset-foreground ~A~%" #\Escape color)
     (read)	;; nil return value
 )
 
 (defun other-buffer ()
-    (format t "get-other-buffer~%")
+    (format t "~Cget-other-buffer~%" #\Escape)
     (read)	;; value of other buffer
 )
+
+(defun search-forward (string)
+    (format t "~Csearch-forward ~A~%" #\Escape string)
+    (read)	;; position of nil if not found
+)
+
+(defun search-backward (string)
+    (format t "~Csearch-backward ~A~%" #\Escape string)
+    (read)	;; position of nil if not found
+)
+
+(defun replace-text (left right string)
+    (format t "~Creplace-text ~D ~D ~A~%" #\Escape left right string)
+    (read)	;; nil return value
+)
 --
-Note that it is printing a literal ESC.
   After creating the file xedit.lsp, at the *scratch* buffer, type
 (load "xedit.lsp") and press Ctrl+J. After that, you should be able to use
 the defined functions. Try this:

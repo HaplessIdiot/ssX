@@ -1,6 +1,8 @@
 #include "xedit.h"
 #include <stdlib.h>
+#include <limits.h>		/* LONG_MIN and LONG_MAX */
 #include <ctype.h>
+#include <errno.h>
 
 #define BUFFERFMT	"\"#<XEDIT-BUFFER@0x%lx>\""
 
@@ -25,8 +27,11 @@ union _XeditReqArg {
     xedit_flist_item *item;
 };
 
+/* XXX update if a function with more arguments is defined */
+#define REQUEST_MAX_ARGUMENTS	3
+
 struct _XeditReqArgs {
-    XeditReqArg *args;
+    XeditReqArg args[REQUEST_MAX_ARGUMENTS];
     int num_args;
 };
 
@@ -40,6 +45,8 @@ struct _XeditReqInfo {
  * Prototypes
  */
 static xedit_flist_item *StringToFlistItem(char*);
+static Bool Search(XeditReqInfo*, XeditReqArgs*, char**, XawTextScanDirection);
+
 static Bool PointMin(XeditReqInfo*, XeditReqArgs*, char**);
 static Bool PointMax(XeditReqInfo*, XeditReqArgs*, char**);
 static Bool GetPoint(XeditReqInfo*, XeditReqArgs*, char**);
@@ -75,6 +82,9 @@ static Bool GetBufferName(XeditReqInfo*, XeditReqArgs*, char**);
 static Bool SetBufferName(XeditReqInfo*, XeditReqArgs*, char**);
 static Bool GetBufferFileName(XeditReqInfo*, XeditReqArgs*, char**);
 static Bool SetBufferFileName(XeditReqInfo*, XeditReqArgs*, char**);
+static Bool SearchForward(XeditReqInfo*, XeditReqArgs*, char**);
+static Bool SearchBackward(XeditReqInfo*, XeditReqArgs*, char**);
+static Bool ReplaceText(XeditReqInfo*, XeditReqArgs*, char**);
 
 /* todo */
 #if 0
@@ -102,11 +112,11 @@ static XeditReqTrans trans[] = {
 
     /* input  = nil
      * output = string: converter value, one of "true" and "false" */
-    {"get-auto-fill",		GetAutoFill},
+    {"get-auto-fill",		GetAutoFill,		""},
 
     /* input  = nil
      * output = string: background color */
-    {"get-background",		GetBackground},
+    {"get-background",		GetBackground,		""},
 
     /* input  = string: buffer-identifier
      * output = string: buffer-file-name */
@@ -118,47 +128,47 @@ static XeditReqTrans trans[] = {
 
     /* input  = nil
      * output = string: buffer-identifier */
-    {"get-current-buffer",	GetCurrentBuffer},
+    {"get-current-buffer",	GetCurrentBuffer,	""},
 
     /* input  = nil
      * output = string: font name */
-    {"get-font",		GetFont},
+    {"get-font",		GetFont,		""},
 
     /* input  = nil
      * output = string: foreground color */
-    {"get-foreground",		GetForeground},
+    {"get-foreground",		GetForeground,		""},
 
     /* input  = nil
      * output = string: one of "always" and "never" */
-    {"get-horiz-scrollbar",	GetHorizScrollbar},
+    {"get-horiz-scrollbar",	GetHorizScrollbar,	""},
 
     /* input  = nil
      * output = string: one of "left", "right", "center" and "full" */
-    {"get-justification",	GetJustification},
+    {"get-justification",	GetJustification,	""},
 
     /* input  = nil
      * output = integer: left colum, used only if AutoFill is true */
-    {"get-left-column",		GetLeftColumn},
+    {"get-left-column",		GetLeftColumn,		""},
 
     /* input  = nil
      * output = string: buffer-identifier */
-    {"get-other-buffer",	GetOtherBuffer},
+    {"get-other-buffer",	GetOtherBuffer,		""},
 
     /* input  = nil
      * output = integer: current cursor position */
-    {"get-point",		GetPoint},
+    {"get-point",		GetPoint,		""},
 
     /* input  = nil
      * output = integer: right colum, used only if AutoFill is true */
-    {"get-right-column",	GetRightColumn},
+    {"get-right-column",	GetRightColumn,		""},
 
     /* input  = nil
      * output = string: one of "always" and "never" */
-    {"get-vert-scrollbar",	GetVertScrollbar},
+    {"get-vert-scrollbar",	GetVertScrollbar,	""},
 
     /* input  = nil
      * output = string: converter value, one of "never", "line" and "word" */
-    {"get-wrap-mode",		GetWrapMode},
+    {"get-wrap-mode",		GetWrapMode,		""},
 
     /* input  = string: text to be inserted
      * output = nil */
@@ -166,16 +176,29 @@ static XeditReqTrans trans[] = {
 
     /* input  = nil
      * output = integer: largest visible cursor position */
-    {"point-max",		PointMax},
+    {"point-max",		PointMax,		""},
 
     /* input  = nil
      * output = integer: smallest visible cursor position */
-    {"point-min",		PointMin},
+    {"point-min",		PointMin,		""},
 
     /* input  = string: buffer-identifier
      * output = nil
      */
     {"remove-buffer",		RemoveBuffer,		"b"},
+
+    /* input  = string: buffer-identifier
+     * output = nil
+     */
+    {"replace-text",		ReplaceText,		"iis"},
+
+    /* input  = string: string to be searched
+     * output = integer: position of text or nil if no match */
+    {"search-backward",		SearchBackward,		"s"},
+
+    /* input  = string: string to be searched
+     * output = integer: position of text or nil if no match */
+    {"search-forward",		SearchForward,		"s"},
 
     /* input  = string: converter value, one of "true" and "false"
      * output = nil */
@@ -238,12 +261,6 @@ static XeditReqTrans trans[] = {
     {"set-wrap-mode",		SetWrapMode,		"s"},
 };
 
-static char *TooFewArguments = "%s: too few arguments, near %s";
-static char *TooManyArguments = "%s: too many arguments, near %s";
-static char *ExpectingInteger = "%s: expecting integer, near %s";
-static char *ExpectingString = "%s: expecting string, near %s";
-static char *ErrorParsingString = "%s: error parsing string, near %s";
-static char *BadBuffer = "%s: bad buffer spec or buffer does not exist, %s";
 static char buffer[512];
 static char errstr[80];
 
@@ -259,213 +276,183 @@ compar(_Xconst void *left, _Xconst void *right)
 Bool
 XeditProto(char *input, char **result)
 {
-#define FMT(s)		fmt = s; goto proto_error
-    XeditReqTrans *req;
-    XeditReqArgs args;
-    XeditReqInfo info;
-    char fun[64], *ptr, *str, *desc, *fmt;
-    int i, len;
+    static XeditReqInfo info;
+    Bool status;
+    XeditReqTrans *request;
+    XeditReqArgs arguments;
+    char *function, *string, *description, *value;
 
-    *result = "T";
+    /* unless overriden, always return NIL */
+    *result = "NIL\n";
 
     /* get function name */
-    ptr = input;
-    while (*ptr && isspace(*ptr))	/* whitespaces */
-	++ptr;
-    str = ptr;
-    while (*ptr && !isspace(*ptr))	/* function name */
-	++ptr;
-    len = ptr - str;
-    if (len > sizeof(fun) - 1)
-	len = sizeof(fun) - 1;
-    strncpy(fun, str, len);
-    fun[len] = '\0';
+    for (function = input; *function && isspace(*function); function++)
+	;
+    for (string = function; *string && !isspace(*string); string++)
+	;
 
-    /* skip whitespaces */
-    while (*ptr && isspace(*ptr))
-	++ptr;
+    /* input argument is a writable string, and only useful here */
 
-    req = bsearch(fun, trans, sizeof(trans) / sizeof(trans[0]),
-		  sizeof(XeditReqTrans), compar);
+    if (*string) {
+	/* skip spaces after function name */
+	for (*string = '\0', ++string; *string && isspace(*string); string++)
+	    ;
+    }
+    else
+	*string = '\0';
 
-    if (req) {
-	char *val;
-	Bool retval;
+    request = bsearch(function, trans, sizeof(trans) / sizeof(trans[0]),
+		      sizeof(XeditReqTrans), compar);
 
-	/* parse arguments */
-	args.args = NULL;
-	args.num_args = 0;
-
-	desc = req->args_desc;
-	if (desc == NULL && *ptr) {
-	    FMT(TooManyArguments);
-	}
-
-	while (1) {
-	    /* find next argument */
-	    while (*ptr && isspace(*ptr))
-		++ptr;
-	    if (*ptr == '\0')
-		break;
-	    str = ptr;
-	    /* string argument */
-	    if (*desc == 's') {
-		unsigned char c;
-
-		if (*ptr != '"') {
-		    FMT(ExpectingString);
-		}
-
-		val = NULL;
-		len = 0;
-		++ptr;
-		while (*ptr && *ptr != '"') {
-		    if (*ptr == '\0') {
-			FMT(ErrorParsingString);
-		    }
-		    if (*ptr == '\\') {
-			++ptr;
-			switch (*ptr) {
-			    case 'a':
-				c = '\a';
-				break;
-			    case 'f':
-				c = '\f';
-				break;
-			    case 'n':
-				c = '\n';
-				break;
-			    case 'r':
-				c = '\r';
-				break;
-			    case 'x':
-				c = 0;
-				for (i = 0; i < 2; i++) {
-				    int dig = -1;
-
-				    if (isdigit(*ptr))
-					dig = *ptr - '0';
-				    else if (*ptr >= 'a' && *ptr <= 'f')
-					dig = *ptr - 'a' + 10;
-				    else if (*ptr >= 'A' && *ptr <= 'F')
-					dig = *ptr - 'A' + 10;
-				    if (dig < 0) {
-					FMT(ErrorParsingString);
-				    }
-				    c = c * 16 + dig;
-				}
-				break;
-			    case '0': case '1': case '2': case '3': case '4':
-			    case '5': case '6': case '7': case '8': case '9':
-				c = *ptr - '0';
-				for (i = 0; i < 2; i++) {
-				    ++ptr;
-				    if (!isdigit(*ptr) || *ptr > '7') {
-					FMT(ErrorParsingString);
-				    }
-				    c = c * 8 + (*ptr - '0');
-				}
-				break;
-			    case '\0':
-				FMT(ErrorParsingString);
-			    default:
-				c = *ptr;
-				break;
-			}
-		    }
-		    else
-			c = *ptr;
-		    if ((len % 16) == 0)
-			val = XtRealloc(val, len + 16);
-		    val[len++] = c;
-		    ++ptr;
-		}
-		++ptr;
-		val[len] = '\0';
-		args.args = (XeditReqArg*)
-		    XtRealloc((XtPointer)args.args, sizeof(XeditReqArg) *
-			      (args.num_args + 1));
-		args.args[args.num_args++].string = val;
-	    }
-	    else if (*desc == 'i') {
-		char *end;
-		double number;
-
-		while (*ptr && !isspace(*ptr))
-		    ++ptr;
-		number = strtod(str, &end);
-		if (end != ptr || (long)number != number) {
-		    FMT(ExpectingInteger);
-		}
-		args.args = (XeditReqArg*)
-		    XtRealloc((XtPointer)args.args, sizeof(XeditReqArg) *
-			      (args.num_args + 1));
-		args.args[args.num_args++].integer = (long)number;
-	    }
-	    else if (*desc == 'b') {
-		xedit_flist_item *item;
-
-		while (*ptr && !isspace(*ptr))
-		    ++ptr;
-		len = ptr - str;
-		strncpy(buffer, str, sizeof(buffer));
-		buffer[len] = '\0';
-
-		item = StringToFlistItem(buffer);
-		if (item == NULL) {
-		    FMT(BadBuffer);
-		}
-		args.args = (XeditReqArg*)
-		    XtRealloc((XtPointer)args.args, sizeof(XeditReqArg) *
-			      (args.num_args + 1));
-		args.args[args.num_args++].item = item;
-	    }
-	    else if (*desc == '\0') {
-		FMT(TooManyArguments);
-	    }
-	    ++desc;
-	}
-
-	if (desc && *desc) {
-	    FMT(TooFewArguments);
-	}
-
-	info.text = textwindow;
-	info.source = XawTextGetSource(textwindow);
-	info.sink = XawTextGetSink(textwindow);
-	retval = (req->fun)(&info, &args, result);
-	if (req->args_desc) {
-	    for (ptr = req->args_desc, i = 0; *ptr; ptr++, i++) {
-		if (*ptr == 's')
-		    XtFree(args.args[i].string);
-	    }
-	    XtFree((XtPointer)args.args);
-	}
-
-	if (!retval) {
-	    XmuSnprintf(buffer, sizeof(buffer), "%s: %s\n", fun, errstr);
-	    *result = buffer;
-	}
-
-	return (retval);
-
-proto_error:
-	XmuSnprintf(buffer, sizeof(buffer), fmt, fun, ptr);
+    if (request == NULL) {
+	XmuSnprintf(buffer, sizeof(buffer), "unknown request %s\n", function);
 	*result = buffer;
-	if (req->args_desc) {
-	    for (ptr = req->args_desc, i = 0; *ptr; ptr++, i++) {
-		if (*ptr == 's')
-		    XtFree(args.args[i].string);
-	    }
-	    XtFree((XtPointer)args.args);
-	}
+
 	return (False);
     }
 
-    XmuSnprintf(buffer, sizeof(buffer), "unknown request %s", fun);
-    *result = buffer;
+    /* initialize */
+    arguments.num_args = 0;
+    description = request->args_desc;
 
-    return (False);
+    /* parse arguments */
+    for (; *string && *description; description++) {
+	value = string;
+	/* argument is a string */
+	if (*description == 's') {
+	    int length;
+
+	    if (*string != '"') {
+		XmuSnprintf(buffer, sizeof(buffer),
+			    "%s: expecting string\n", function);
+		*result = buffer;
+
+		return (False);
+	    }
+
+	    /* skip '"' */
+	    ++value;
+	    ++string;
+
+	    /* read string */
+	    length = 0;
+	    while (*string != '"') {
+		if (*string == '\0') {
+		    XmuSnprintf(buffer, sizeof(buffer),
+				"%s: unfinished string\n", function);
+		    *result = buffer;
+
+		    return (False);
+		}
+		else if (*string == '\\') {
+		    /* this should be uncommon, just to allow escaping
+		     * quotes and backslashes */
+		    if (length)
+			memmove(value + 1, value, length);
+		    ++value;
+		    /* if not quoting a nul character */
+		    if (*++string)
+			++string;
+		}
+		else
+		    ++string;
+		++length;
+	    }
+
+	    /* check for incomplete string already done */
+	    *string++ = '\0';
+	    arguments.args[arguments.num_args++].string = value;
+	}
+
+	/* argument is an integer */
+	else if (*description == 'i') {
+	    char *end;
+	    long number;
+
+	    /* read number */
+	    value = string;
+	    for (; *string && !isspace(*string); string++)
+		;
+	    if (*string)
+		*string++ = '\0';
+	    else
+		*string = '\0';
+
+	    errno = 0;
+	    number = strtol(value, &end, 10);
+
+	    if (*end || (errno == ERANGE &&
+		((*value == '-' && number == LONG_MIN) ||
+		 (*value != '-' && number == LONG_MAX)))) {
+		XmuSnprintf(buffer, sizeof(buffer),
+			    "%s: expecting integer\n", function);
+		*result = buffer;
+
+		return (False);
+	    }
+
+	    arguments.args[arguments.num_args++].integer = number;
+	}
+
+	/* argument is a buffer name */
+	else if (*description == 'b') {
+	    xedit_flist_item *item;
+
+	    /* read buffer name */
+	    value = string;
+	    for (; *string && !isspace(*string); string++)
+		;
+	    if (*string)
+		*string++ = '\0';
+	    else
+		*string = '\0';
+
+	    item = StringToFlistItem(value);
+	    if (item == NULL) {
+		XmuSnprintf(buffer, sizeof(buffer),
+			    "%s: expecting buffer name\n", function);
+		*result = buffer;
+
+		return (False);
+	    }
+
+	    arguments.args[arguments.num_args++].item = item;
+	}
+
+	/* skip white-spaces before parsing next argument */
+	for (; *string && isspace(*string); string++)
+	    ;
+    }
+
+    if (*description) {
+	XmuSnprintf(buffer, sizeof(buffer), "%s: too few arguments\n", function);
+	*result = buffer;
+
+	return (False);
+    }
+    else if (*string) {
+	XmuSnprintf(buffer, sizeof(buffer), "%s: too many arguments\n", function);
+	*result = buffer;
+
+	return (False);
+    }
+
+    /* if running on another text buffer */
+    if (info.text != textwindow) {
+	info.text = textwindow;
+	info.source = XawTextGetSource(textwindow);
+	info.sink = XawTextGetSink(textwindow);
+    }
+
+    /* call the xedit-proto function */
+    status = (request->fun)(&info, &arguments, result);
+
+    if (status == False) {
+	XmuSnprintf(buffer, sizeof(buffer), "%s: %s\n", function, errstr);
+	*result = buffer;
+    }
+
+    return (status);
 }
 
 static xedit_flist_item *
@@ -491,7 +478,7 @@ PointMin(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XawTextPosition point = XawTextSourceScan(info->source, 0,
 					      XawstAll, XawsdLeft, 1, True);
 
-    XmuSnprintf(buffer, sizeof(buffer), "%ld", point);
+    XmuSnprintf(buffer, sizeof(buffer), "%ld\n", point);
     *result = buffer;
 
     return (True);
@@ -504,7 +491,7 @@ PointMax(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XawTextPosition point = XawTextSourceScan(info->source, 0,
 					      XawstAll, XawsdRight, 1, True);
 
-    XmuSnprintf(buffer, sizeof(buffer), "%ld", point);
+    XmuSnprintf(buffer, sizeof(buffer), "%ld\n", point);
     *result = buffer;
 
     return (True);
@@ -516,7 +503,7 @@ GetPoint(XeditReqInfo *info, XeditReqArgs *args, char **result)
 {
     XawTextPosition point = XawTextGetInsertionPoint(info->text);
 
-    XmuSnprintf(buffer, sizeof(buffer), "%ld", point);
+    XmuSnprintf(buffer, sizeof(buffer), "%ld\n", point);
     *result = buffer;
 
     return (True);
@@ -566,7 +553,7 @@ GetForeground(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XtGetValues(info->sink, arg, 1);
     XtConvertAndStore(info->sink, XtRPixel, &from, XtRString, &to);
     str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", str);
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", str);
     *result = buffer;
 
     return (True);
@@ -613,7 +600,7 @@ GetBackground(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XtGetValues(info->sink, arg, 1);
     XtConvertAndStore(info->text, XtRPixel, &from, XtRString, &to);
     str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", str);
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", str);
     *result = buffer;
 
     return (True);
@@ -660,7 +647,7 @@ GetFont(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XtGetValues(info->sink, arg, 1);
     XtConvertAndStore(info->text, XtRFontStruct, &from, XtRString, &to);
     str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", str);
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", str);
     *result = buffer;
 
     return (True);
@@ -707,7 +694,7 @@ GetWrapMode(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XtGetValues(info->text, arg, 1);
     XtConvertAndStore(info->text, XtRWrapMode, &from, XtRString, &to);
     str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", str);
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", str);
     *result = buffer;
 
     return (True);
@@ -754,7 +741,7 @@ GetAutoFill(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XtGetValues(info->text, arg, 1);
     XtConvertAndStore(info->text, XtRBoolean, &from, XtRString, &to);
     str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", str);
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", str);
     *result = buffer;
 
     return (True);
@@ -792,7 +779,7 @@ GetLeftColumn(XeditReqInfo *info, XeditReqArgs *args, char **result)
 
     XtSetArg(arg[0], XtNleftColumn, &left);
     XtGetValues(info->text, arg, 1);
-    XmuSnprintf(buffer, sizeof(buffer), "%d", left);
+    XmuSnprintf(buffer, sizeof(buffer), "%d\n", left);
     *result = buffer;
 
     return (True);
@@ -820,7 +807,7 @@ GetRightColumn(XeditReqInfo *info, XeditReqArgs *args, char **result)
 
     XtSetArg(arg[0], XtNrightColumn, &right);
     XtGetValues(info->text, arg, 1);
-    XmuSnprintf(buffer, sizeof(buffer), "%d", right);
+    XmuSnprintf(buffer, sizeof(buffer), "%d\n", right);
     *result = buffer;
 
     return (True);
@@ -856,7 +843,7 @@ GetJustification(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XtGetValues(info->text, arg, 1);
     XtConvertAndStore(info->text, XtRJustifyMode, &from, XtRString, &to);
     str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", str);
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", str);
     *result = buffer;
 
     return (True);
@@ -902,7 +889,7 @@ GetVertScrollbar(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XtGetValues(info->text, arg, 1);
     XtConvertAndStore(info->text, XtRScrollMode, &from, XtRString, &to);
     str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", str);
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", str);
     *result = buffer;
 
     return (True);
@@ -948,7 +935,7 @@ GetHorizScrollbar(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XtGetValues(info->text, arg, 1);
     XtConvertAndStore(info->text, XtRScrollMode, &from, XtRString, &to);
     str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", str);
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", str);
     *result = buffer;
 
     return (True);
@@ -990,7 +977,7 @@ CreateBuffer(XeditReqInfo *info, XeditReqArgs *args, char **result)
 			       NULL, NULL);
 
     item = AddTextSource(source, args->args[0].string, NULL, 0, 0);
-    XmuSnprintf(buffer, sizeof(buffer), BUFFERFMT, item);
+    XmuSnprintf(buffer, sizeof(buffer), BUFFERFMT "\n", item);
     *result = buffer;
 
     return (True);
@@ -1013,7 +1000,7 @@ GetCurrentBuffer(XeditReqInfo *info, XeditReqArgs *args, char **result)
 	/* this is probably an error */
 	return (True);
 
-    XmuSnprintf(buffer, sizeof(buffer), BUFFERFMT, item);
+    XmuSnprintf(buffer, sizeof(buffer), BUFFERFMT "\n", item);
     *result = buffer;
 
     return (True);
@@ -1036,7 +1023,7 @@ GetOtherBuffer(XeditReqInfo *info, XeditReqArgs *args, char **result)
 	/* this is not an error */
 	return (True);
 
-    XmuSnprintf(buffer, sizeof(buffer), BUFFERFMT, item);
+    XmuSnprintf(buffer, sizeof(buffer), BUFFERFMT "\n", item);
     *result = buffer;
     return (True);
 }
@@ -1052,7 +1039,7 @@ SetOtherBuffer(XeditReqInfo *info, XeditReqArgs *args, char **result)
 static Bool
 GetBufferName(XeditReqInfo *info, XeditReqArgs *args, char **result)
 {
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", args->args[0].item->name);
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", args->args[0].item->name);
     *result = buffer;
 
     return (True);
@@ -1070,7 +1057,7 @@ SetBufferName(XeditReqInfo *info, XeditReqArgs *args, char **result)
 static Bool
 GetBufferFileName(XeditReqInfo *info, XeditReqArgs *args, char **result)
 {
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", args->args[0].item->filename);
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", args->args[0].item->filename);
     *result = buffer;
 
     return (True);
@@ -1082,6 +1069,61 @@ SetBufferFileName(XeditReqInfo *info, XeditReqArgs *args, char **result)
 {
     XtFree(args->args[0].item->filename);
     args->args[0].item->filename = XtNewString(args->args[1].string);
+
+    return (True);
+}
+
+static Bool
+Search(XeditReqInfo *info, XeditReqArgs *args, char **result,
+       XawTextScanDirection direction)
+{
+    XawTextPosition point, position;
+    XawTextBlock block;
+
+    position = XawTextGetInsertionPoint(info->text);
+
+    block.firstPos = 0;
+    block.format = FMT8BIT;
+    block.length = strlen(args->args[0].string);
+    block.ptr = args->args[0].string;
+    point = XawTextSourceSearch(info->source, position, direction, &block);
+
+    if (point != XawTextSearchError) {
+	XmuSnprintf(buffer, sizeof(buffer), "%ld\n", point);
+	*result = buffer;
+    }
+
+    return (True);
+}
+
+static Bool
+SearchForward(XeditReqInfo *info, XeditReqArgs *args, char **result)
+{
+    return (Search(info, args, result, XawsdRight));
+}
+
+static Bool
+SearchBackward(XeditReqInfo *info, XeditReqArgs *args, char **result)
+{
+    return (Search(info, args, result, XawsdLeft));
+}
+
+static Bool
+ReplaceText(XeditReqInfo *info, XeditReqArgs *args, char **result)
+{
+    XawTextPosition left, right;
+    XawTextBlock block;
+    char *string;
+
+    left = args->args[0].integer;
+    right = args->args[1].integer;
+    string = args->args[2].string;
+
+    block.firstPos = 0;
+    block.format = FMT8BIT;
+    block.length = strlen(string);
+    block.ptr = string;
+    XawTextReplace(info->text, left, right, &block);
 
     return (True);
 }

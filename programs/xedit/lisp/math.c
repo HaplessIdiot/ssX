@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.2 2002/01/31 04:33:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.3 2002/02/08 02:59:29 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -685,63 +685,57 @@ Lisp_Evenp(LispMac *mac, LispBuiltin *builtin)
     return (result);
 }
 
+/* only one float format */
 LispObj *
 Lisp_Float(LispMac *mac, LispBuiltin *builtin)
 /*
  float number &optional (other 1.0)
  */
 {
-    double value;
-
     LispObj *number, *other;
 
     other = ARGUMENT(1);
     number = ARGUMENT(0);
 
+    if (!FLOAT_P(other))
+	LispDestroy(mac, "%s: %s is not a float number",
+		    STRFUN(builtin), STROBJ(other));
+
+    return (LispFloatCoerce(mac, builtin, number));
+}
+
+LispObj *
+LispFloatCoerce(LispMac *mac, LispBuiltin *builtin, LispObj *number)
+{
+    double value = 0.0;
+
     if (!REAL_P(number))
 	LispDestroy(mac, "%s: %s is not a real number",
 		    STRFUN(builtin), STROBJ(number));
-    if (FLOAT_P(number) && XTYPE(number) == XTYPE(other))
+    if (FLOAT_P(number))
 	return (number);
 
-    switch (XTYPE(other)) {
-	case FF:
-	    switch (XTYPE(number)) {
-		case FI:
-		    value = number->data.integer;
-		    if (!finite(value))
-			XERROR("floating point overflow");
-		    number = REAL(value);
-		    break;
-		case FR:
-		    value = XFRN(number) / (double)XFRD(number);
-		    if (!finite(value))
-			XERROR("floating point overflow");
-		    number = REAL(value);
-		    break;
-		case BI:
-		    value = mpi_getd(XBI(number));
-		    if (!finite(value))
-			XERROR("floating point overflow");
-		    number = REAL(value);
-		    break;
-		case BR:
-		    value = mpr_getd(XBR(number));
-		    if (!finite(value))
-			XERROR("floating point overflow");
-		    number = REAL(value);
-		    break;
-		default:
-		    break;
-	    }
+    switch (XTYPE(number)) {
+	case FI:
+	    value = number->data.integer;
+	    break;
+	case FR:
+	    value = XFRN(number) / (double)XFRD(number);
+	    break;
+	case BI:
+	    value = mpi_getd(XBI(number));
+	    break;
+	case BR:
+	    value = mpr_getd(XBR(number));
 	    break;
 	default:
-	    LispDestroy(mac, "%s: %s is not a float number",
-			STRFUN(builtin), STROBJ(other));
 	    break;
     }
 
-    return (number);
+    if (!finite(value))
+	XERROR("floating point overflow");
+
+    return (REAL(value));
 }
 
 LispObj *
@@ -754,7 +748,7 @@ Lisp_Floatp(LispMac *mac, LispBuiltin *builtin)
 
     object = ARGUMENT(0);
 
-    return (REAL_P(object) && !RATIONAL_P(object) ? T : NIL);
+    return (FLOAT_P(object) ? T : NIL);
 }
 
 LispObj *

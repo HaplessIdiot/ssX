@@ -27,8 +27,9 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.5 2002/01/31 04:33:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.6 2002/02/08 02:59:29 paulo Exp $ */
 
+#include "helper.h"
 #include "read.h"
 #include "string.h"
 #include "private.h"
@@ -536,23 +537,7 @@ Lisp_Character(LispMac *mac, LispBuiltin *builtin)
 
     object = ARGUMENT(0);
 
-    if (CHAR_P(object))
-	return (object);
-    else if ((SYMBOL_P(object) || STRING_P(object)) &&
-	     STRPTR(object)[1] == '\0')
-	return (CHAR((unsigned char)STRPTR(object)[0]));
-    else if (INDEX_P(object)) {
-	int c = FIXNUM_VALUE(object);
-
-	if (c <= 0xffff)
-	    return (CHAR(c));
-    }
-
-    LispDestroy(mac, "%s: cannot convert %s to character",
-		STRFUN(builtin), STROBJ(object));
-
-    /*NOTREACHED*/
-    return (NIL);
+    return (LispCharacterCoerce(mac, builtin, object));
 }
 
 LispObj *
@@ -841,28 +826,7 @@ Lisp_String(LispMac *mac, LispBuiltin *builtin)
 
     object = ARGUMENT(0);
 
-    if (STRING_P(object))
-	return (object);
-    else if (SYMBOL_P(object))
-	return (STRING(STRPTR(object)));
-    else if (CHAR_P(object)) {
-	char string[2];
-
-	string[0] = object->data.integer;
-	string[1] = '\0';
-	return (STRING(string));
-    }
-    else if (object == NIL)
-	return (STRING("NIL"));
-    else if (object == T)
-	return (STRING("T"));
-    else if (KEYWORD_P(object))
-	return (STRING(STRPTR(object->data.quote)));
-    else
-	LispDestroy(mac, "%s: cannot convert %s to string",
-		    STRFUN(builtin), STROBJ(object));
-    /*NOTREACHED*/
-    return (NIL);
+    return (LispStringCoerce(mac, builtin, object));
 }
 
 /* XXX preserve-whitespace is being ignored

@@ -27,10 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.1 2002/02/08 02:59:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.2 2002/02/08 03:54:07 paulo Exp $ */
 
 #include "write.h"
 #include <math.h>
+
+#define	FLOAT_PREC	17
 
 /*
  * Prototypes
@@ -94,7 +96,7 @@ parse_double_again:
 
 	/* this should to do the correct rounding */
 	for (count = 2;  count >= 0; count--) {
-	    icheck = d <= 0 ? 0 : d > 16 ? 16 - count : d - count;
+	    icheck = d <= 0 ? 0 : d > FLOAT_PREC ? FLOAT_PREC - count : d - count;
 	    sprintf(fmt, "%%.%de", icheck);
 	    sprintf(stk, fmt, value);
 	    if (count) {
@@ -106,7 +108,7 @@ parse_double_again:
 	}
     }
     else {
-	sprintf(fmt, "%%.%de", d <= 0 ? 0 : d > 16 ? 16 : d);
+	sprintf(fmt, "%%.%de", d <= 0 ? 0 : d > FLOAT_PREC ? FLOAT_PREC : d);
 	sprintf(stk, fmt, value);
     }
 
@@ -125,7 +127,7 @@ parse_double_again:
 
     /* check if did not trim any significant digit,
      * this may happen because '%.e' puts only one digit before the '.' */
-    if (d > 0 && d < 16 && fabs(value) >= 10.0 &&
+    if (d > 0 && d < FLOAT_PREC && fabs(value) >= 10.0 &&
 	strlen(ptr) - 1 - !positive <= *exponent) {
 	d += *exponent - (strlen(ptr) - 1 - !positive) + 1;
 	goto parse_double_again;
@@ -251,7 +253,7 @@ LispDoWriteObject(LispMac *mac, LispObj *stream, LispObj *object, int paren)
 	    length = LispWriteStr(mac, stream, "NIL");
 	    break;
 	case LispTrue_t:
-	    length = LispWriteStr(mac, stream, "T");
+	    length = LispWriteChar(mac, stream, 'T');
 	    break;
 	case LispOpaque_t:
 	    length = LispWriteChar(mac, stream, '#');
@@ -301,10 +303,10 @@ LispDoWriteObject(LispMac *mac, LispObj *stream, LispObj *object, int paren)
 	    length = LispWriteStr(mac, stream, "#C(");
 	    length += LispDoWriteObject(mac, stream,
 					object->data.complex.real, 0);
-	    length += LispWriteStr(mac, stream, " ");
+	    length += LispWriteChar(mac, stream, ' ');
 	    length += LispDoWriteObject(mac, stream,
 					object->data.complex.imag, 0);
-	    length += LispWriteStr(mac, stream, ")");
+	    length += LispWriteChar(mac, stream, ')');
 	    break;
 	case LispCons_t:
 	    length = LispDoWriteList(mac, stream, object, paren);
@@ -397,9 +399,6 @@ LispDoWriteObject(LispMac *mac, LispObj *stream, LispObj *object, int paren)
 	    length = LispWriteStr(mac, stream, "#P");
 	    length += LispDoWriteObject(mac, stream, CAR(object->data.quote), 1);
 	    break;
-	default:
-	    length = 0;
-	    break;
     }
 
     return (length);
@@ -461,6 +460,8 @@ LispWriteChar(LispMac *mac, LispObj *stream, int character)
 int
 LispWriteChars(LispMac *mac, LispObj *stream, int character, int count)
 {
+    int length = 0;
+
     if (count > 0) {
 	char stk[64];
 	LispFile *file;
@@ -471,9 +472,9 @@ LispWriteChars(LispMac *mac, LispObj *stream, int character, int count)
 	    memset(stk, character, sizeof(stk));
 	    for (; count >= sizeof(stk); count -= sizeof(stk)) {
 		if (file != NULL)
-		    LispFwrite(file, stk, sizeof(stk));
+		    length += LispFwrite(file, stk, sizeof(stk));
 		else
-		    LispSwrite(string, stk, sizeof(stk));
+		    length += LispSwrite(string, stk, sizeof(stk));
 	    }
 	}
 	else
@@ -481,13 +482,13 @@ LispWriteChars(LispMac *mac, LispObj *stream, int character, int count)
 
 	if (count) {
 	    if (file != NULL)
-		LispFwrite(file, stk, count);
+		length += LispFwrite(file, stk, count);
 	    else
-		LispSwrite(string, stk, count);
+		length += LispSwrite(string, stk, count);
 	}
     }
 
-    return (count);
+    return (length);
 }
 
 /* write a string to stream */
@@ -620,6 +621,8 @@ LispWriteArray(LispMac *mac, LispObj *stream, LispObj *object)
 	}
     }
     length += LispWriteChar(mac, stream, ')');
+
+    return (length);
 }
 
 int
@@ -974,7 +977,7 @@ LispFormatFixedFloat(LispMac *mac, LispObj *stream, LispObj *object,
 		     int padchar)
 {
     char buffer[512], stk[64];
-    int sign, exponent, length, offset, d = pd ? *pd : 16;
+    int sign, exponent, length, offset, d = pd ? *pd : FLOAT_PREC;
     double value = object->data.real;
 
     if (value == 0.0) {
@@ -1122,12 +1125,13 @@ fixed_float_check_again:
     if (overflowchar && offset > w)
 	goto fixed_float_overflow;
 
+    length = 0;
     /* print padding if required */
     if (w > offset)
-	LispWriteChars(mac, stream, padchar, w - offset);
+	length += LispWriteChars(mac, stream, padchar, w - offset);
 
     /* print float number representation */
-    return (LispWriteStr(mac, stream, buffer));
+    return (LispWriteStr(mac, stream, buffer) + length);
 
 fixed_float_overflow:
     return (LispWriteChars(mac, stream, overflowchar, w));
@@ -1150,7 +1154,7 @@ LispDoFormatExponentialFloat(LispMac *mac, LispObj *stream, LispObj *object,
 			     int format)
 {
     char buffer[512], stk[64];
-    int sign, exponent, length, offset, d = pd ? *pd : 16;
+    int sign, exponent, length, offset, d = pd ? *pd : FLOAT_PREC;
     double value = object->data.real;
 
     if (value == 0.0) {
@@ -1334,12 +1338,13 @@ LispDoFormatExponentialFloat(LispMac *mac, LispObj *stream, LispObj *object,
     if (overflowchar && offset > w)
 	goto exponential_float_overflow;
 
+    length = 0;
     /* print padding if required */
     if (w > offset)
-	LispWriteChars(mac, stream, padchar, w - offset);
+	length += LispWriteChars(mac, stream, padchar, w - offset);
 
     /* print float number representation */
-    return (LispWriteStr(mac, stream, buffer));
+    return (LispWriteStr(mac, stream, buffer) + length);
 
 exponential_float_overflow:
     return (LispWriteChars(mac, stream, overflowchar, w));
@@ -1351,7 +1356,7 @@ LispFormatGeneralFloat(LispMac *mac, LispObj *stream, LispObj *object,
 		       int overflowchar, int padchar, int exponentchar)
 {
     char stk[64];
-    int length, exponent, n, dd, ee, ww, d = pd ? *pd : 16;
+    int length, exponent, n, dd, ee, ww, d = pd ? *pd : FLOAT_PREC;
     double value = object->data.real;
 
     if (value == 0.0) {
@@ -1399,10 +1404,8 @@ LispFormatDollarFloat(LispMac *mac, LispObj *stream, LispObj *object,
 		      int atsign, int collon, int d, int n, int w, int padchar)
 {
     char buffer[512], stk[64];
-    int bytes, sign, exponent, length, offset;
+    int sign, exponent, length, offset;
     double value = object->data.real;
-
-    bytes = 0;
 
     if (value == 0.0) {
 	exponent = 0;
@@ -1410,7 +1413,7 @@ LispFormatDollarFloat(LispMac *mac, LispObj *stream, LispObj *object,
     }
     else
 	/* calculate format parameters, adjusting scale factor */
-	parse_double(stk, &exponent, value, d == 0 ? 16 : d + 1);
+	parse_double(stk, &exponent, value, d == 0 ? FLOAT_PREC : d + 1);
 
     /* set d to a "sane" value */
     if (d > 128)
@@ -1515,19 +1518,20 @@ LispFormatDollarFloat(LispMac *mac, LispObj *stream, LispObj *object,
 	buffer[offset] = '\0';
     }
 
+    length = 0;
     if (sign) {
 	++offset;
 	if (atsign && collon)
-	    bytes += LispWriteChar(mac, stream, value >= 0.0 ? '+' : '-');
+	    length += LispWriteChar(mac, stream, value >= 0.0 ? '+' : '-');
     }
 
     /* print padding if required */
     if (w > offset)
-	bytes += LispWriteChars(mac, stream, padchar, w - offset);
+	length += LispWriteChars(mac, stream, padchar, w - offset);
 
     if (atsign && !collon)
-	bytes += LispWriteChar(mac, stream, value >= 0.0 ? '+' : '-');
+	length += LispWriteChar(mac, stream, value >= 0.0 ? '+' : '-');
 
     /* print float number representation */
-    return (LispWriteStr(mac, stream, buffer) + bytes);
+    return (LispWriteStr(mac, stream, buffer) + length);
 }

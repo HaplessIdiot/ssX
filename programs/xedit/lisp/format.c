@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.15 2002/02/08 03:54:07 paulo Exp $ */
 
 #include "io.h"
 #include "write.h"
@@ -539,21 +539,17 @@ format_ascii(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
 	}
 
 	/* output minpad characters at left */
-	length += minpad;
-	while (minpad) {
-	    LispWriteChar(mac, stream, padchar);
-	    --minpad;
+	if (minpad) {
+	    length += minpad;
+	    LispWriteChars(mac, stream, padchar, minpad);
 	}
 
 	if (colinc) {
-	    int i;
-
 	    /* puts colinc spaces at a time,
 	     * until at least mincol chars out */
 	    while (length < mincol) {
-		for (i = 0; i < colinc; i++)
-		    LispWriteChar(mac, stream, padchar);
-		length += i;
+		LispWriteChars(mac, stream, padchar, colinc);
+		length += colinc;
 	    }
 	}
     }
@@ -577,20 +573,16 @@ format_ascii(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
     /* right padding */
     if (!atsign) {
 	/* output minpad characters at left */
-	length += minpad;
-	while (minpad) {
-	    LispWriteChar(mac, stream, padchar);
-	    --minpad;
+	if (minpad) {
+	    length += minpad;
+	    LispWriteChars(mac, stream, padchar, minpad);
 	}
 	if (colinc) {
-	    int i;
-
 	    /* puts colinc spaces at a time,
 	     * until at least mincol chars out */
 	    while (length < mincol) {
-		for (i = 0; i < colinc; i++)
-		    LispWriteChar(mac, stream, padchar);
-		length += i;
+		LispWriteChars(mac, stream, padchar, colinc);
+		length += colinc;
 	    }
 	}
     }

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/math.h,v 1.1 2002/01/30 21:00:58 paulo Exp $ */
 
 #ifndef Lisp_math_h
 #define Lisp_math_h
@@ -36,6 +36,7 @@
 #include "mp.h"
 
 void LispMathInit(LispMac*);
+LispObj *LispFloatCoerce(LispMac*, LispBuiltin*, LispObj*);
 
 LispObj *Lisp_Mul(LispMac*, LispBuiltin*);		/* * */
 LispObj *Lisp_Plus(LispMac*, LispBuiltin*);		/* + */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.17 2002/01/31 04:33:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.18 2002/02/08 02:59:29 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -45,6 +45,9 @@
  */
 static LispObj *LispReallyDo(LispMac*, LispBuiltin*, int);
 static LispObj *LispReallyDoListTimes(LispMac*, LispBuiltin*, int);
+
+/* in math.c */
+extern LispObj *LispFloatCoerce(LispMac*, LispBuiltin*, LispObj*);
 
 /*
  * Implementation
@@ -109,6 +112,240 @@ LispEqual(LispMac *mac, LispObj *left, LispObj *right)
     }
 
     return (result);
+}
+
+LispObj *
+LispCharacterCoerce(LispMac *mac, LispBuiltin *builtin, LispObj *object)
+{
+    if (CHAR_P(object))
+	return (object);
+    else if ((SYMBOL_P(object) || STRING_P(object)) &&
+	     STRPTR(object)[1] == '\0')
+	return (CHAR((unsigned char)STRPTR(object)[0]));
+    else if (INDEX_P(object)) {
+	int c = object->data.integer;
+
+	if (c <= 0xffff)
+	    return (CHAR(c));
+    }
+
+    LispDestroy(mac, "%s: cannot convert %s to character",
+		STRFUN(builtin), STROBJ(object));
+    /*NOTREACHED*/
+    return (NIL);
+}
+
+LispObj *
+LispStringCoerce(LispMac *mac, LispBuiltin *builtin, LispObj *object)
+{
+    if (STRING_P(object))
+	return (object);
+    else if (SYMBOL_P(object))
+	return (STRING(STRPTR(object)));
+    else if (CHAR_P(object)) {
+	char string[2];
+
+	string[0] = object->data.integer;
+	string[1] = '\0';
+	return (STRING(string));
+    }
+    else if (object == NIL)
+	return (STRING("NIL"));
+    else if (object == T)
+	return (STRING("T"));
+    else if (KEYWORD_P(object))
+	return (STRING(STRPTR(object->data.quote)));
+    else
+	LispDestroy(mac, "%s: cannot convert %s to string",
+		    STRFUN(builtin), STROBJ(object));
+    /*NOTREACHED*/
+    return (NIL);
+}
+
+LispObj *
+LispCoerce(LispMac *mac, LispBuiltin *builtin,
+	   LispObj *object, LispObj *result_type)
+{
+    LispObj *result = NIL;
+    LispType type = LispNil_t;
+
+    if (result_type == NIL)
+	/* not even NIL can be converted to NIL? */
+	LispDestroy(mac, "%s: cannot convert %s to nil",
+		    STRFUN(builtin), STROBJ(object));
+
+    else if (result_type == T)
+	/* no conversion */
+	return (object);
+
+    else if (!SYMBOL_P(result_type))
+	/* only know about simple types */
+	LispDestroy(mac, "%s: bad argument %s",
+		    STRFUN(builtin), STROBJ(result_type));
+
+    else {
+	/* check all known types */
+
+	LispAtom *atom = result_type->data.atom;
+
+	if (atom == mac->atom_atom) {
+	    if (CONS_P(object))
+		goto coerce_fail;
+	    return (object);
+	}
+	/* only convert ATOM to SYMBOL */
+
+	if (atom == mac->real_atom || atom == mac->float_atom)
+	    type = LispReal_t;
+	else if (atom == mac->integer_atom)
+	    type = LispInteger_t;
+	else if (atom == mac->cons_atom || atom == mac->list_atom) {
+	    if (object == NIL)
+		return (object);
+	    type = LispCons_t;
+	}
+	else if (atom == mac->string_atom)
+	    type = LispString_t;
+	else if (atom == mac->character_atom)
+	    type = LispCharacter_t;
+	else if (atom == mac->complex_atom)
+	    type = LispComplex_t;
+	else if (atom == mac->vector_atom || atom == mac->array_atom)
+	    type = LispArray_t;
+	else if (atom == mac->opaque_atom)
+	    type = LispOpaque_t;
+	else if (atom == mac->rational_atom)
+	    type = LispRatio_t;
+	else if (atom == mac->pathname_atom)
+	    type = LispPathname_t;
+	else
+	    LispDestroy(mac, "%s: invalid type specification %s",
+			STRFUN(builtin), STRPTR(result_type));
+    }
+
+    if (object->type == LispOpaque_t) {
+	switch (type) {
+	    case LispAtom_t:
+		result = ATOM(object->data.opaque.data);
+		break;
+	    case LispString_t:
+		result = STRING(object->data.opaque.data);
+		break;
+	    case LispCharacter_t:
+		result = CHAR((long)object->data.opaque.data);
+		break;
+	    case LispReal_t:
+		result = REAL((double)((long)object->data.opaque.data));
+		break;
+	    case LispInteger_t:
+		result = INTEGER(((long)object->data.opaque.data));
+		break;
+	    case LispOpaque_t:
+		result = OPAQUE(object->data.opaque.data, 0);
+		break;
+	    default:
+		goto coerce_fail;
+		break;
+	}
+    }
+
+    else if (object->type != type) {
+	switch (type) {
+	    case LispInteger_t:
+		if (FLOAT_P(object)) {
+		    if ((long)object->data.real == object->data.real)
+			result = INTEGER((long)object->data.real);
+		    else {
+			mpi *integer = LispMalloc(mac, sizeof(mpi));
+
+			mpi_init(integer);
+			mpi_setd(integer, object->data.real);
+			if (mpi_getd(integer) != object->data.real) {
+			    mpi_clear(integer);
+			    LispFree(mac, integer);
+			    goto coerce_fail;
+			}
+			result = BIGINTEGER(integer);
+			LispMused(mac, integer);
+		    }
+		}
+		else if (BIGINT_P(object))
+		    result = object;
+		else
+		    goto coerce_fail;
+		break;
+	    case LispRatio_t:
+		if (FLOAT_P(object)) {
+		    mpr *ratio = LispMalloc(mac, sizeof(mpr));
+
+		    mpr_init(ratio);
+		    mpr_setd(ratio, object->data.real);
+		    if (mpr_fiti(ratio)) {
+			result = RATIO(mpi_geti(mpr_num(ratio)),
+				       mpi_geti(mpr_den(ratio)));
+			mpr_clear(ratio);
+			LispFree(mac, ratio);
+		    }
+		    else {
+			result = BIGRATIO(ratio);
+			LispMused(mac, ratio);
+		    }
+		}
+		else if (RATIONAL_P(object))
+		    result = object;
+		else
+		    goto coerce_fail;
+		break;
+	    case LispReal_t:
+		result = LispFloatCoerce(mac, builtin, object);
+	    	break;
+	    case LispComplex_t:
+		if (NUMBER_P(object))
+		    result = object;
+		else
+		    goto coerce_fail;
+		break;
+	    case LispString_t:
+		if (object == NIL)
+		    result = STRING("");
+		else
+		    result = LispStringCoerce(mac, builtin, object);
+		break;
+	    case LispCharacter_t:
+		result = LispCharacterCoerce(mac, builtin, object);
+		break;
+	    case LispArray_t:
+		if (object == NIL || CONS_P(object))
+		    result = VECTOR(object);
+		else
+		    goto coerce_fail;
+		break;
+	    case LispCons_t:
+		if (object->type == LispArray_t && object->data.array.rank == 1)
+		    result = object->data.array.list;
+		else
+		    goto coerce_fail;
+		break;
+	    case LispPathname_t:
+		GCProtect();
+		result = APPLY(SYMBOL(mac->parse_namestring_atom),
+			       CONS(object, NIL));
+		GCUProtect();
+		break;
+	    default:
+		goto coerce_fail;
+	}
+    }
+    else
+	result = object;
+
+    return (result);
+
+coerce_fail:
+    LispDestroy(mac, "%s: cannot convert %s to %s",
+		STRFUN(builtin), STROBJ(object), STRPTR(result_type));
+    /* NOTREACHED */
+    return (NIL);
 }
 
 static LispObj *
@@ -779,7 +1016,7 @@ probeit:
     if (realpath(name, &resolved[0]) == NULL || stat(resolved, &st)) {
 	if (probe)
 	    return (NIL);
-	LispDestroy(mac, "%s: realpath(%s): %s",
+	LispDestroy(mac, "%s: realpath(\"%s\"): %s",
 		    STRFUN(builtin), name, strerror(errno));
     }
 

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.2 2002/01/31 04:33:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.4 2002/02/08 03:54:07 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -479,7 +479,7 @@ LispReadObject(LispMac *mac)
 		break;
 	    /* don't include any of these characters in an atom name */
 	    else if (ch == ')' || ch == '"' || ch == ';' ||
-		     ch == '#' || ch == '|') {
+		     ch == '\'' || ch == '`' || ch == '#' || ch == '|') {
 		LispUnget(mac, ch);
 		break;
 	    }
