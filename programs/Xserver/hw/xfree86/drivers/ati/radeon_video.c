@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.5 2000/11/21 23:10:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.6 2000/12/08 14:26:17 alanh Exp $ */
 
 #include "radeon.h"
 #include "radeon_reg.h"
@@ -619,8 +619,8 @@ RADEONDisplayVideo(
 
     OUTREG(RADEON_OV0_H_INC, h_inc | ((h_inc >> 1) << 16));
     OUTREG(RADEON_OV0_STEP_BY, step_by | (step_by << 8));
-    OUTREG(RADEON_OV0_Y_X_START, dstBox->x1 | (dstBox->y1 << 16));
-    OUTREG(RADEON_OV0_Y_X_END,   dstBox->x2 | (dstBox->y2 << 16));
+    OUTREG(RADEON_OV0_Y_X_START, dstBox->x1+8 | (dstBox->y1 << 16));
+    OUTREG(RADEON_OV0_Y_X_END,   dstBox->x2+8 | (dstBox->y2 << 16));
     OUTREG(RADEON_OV0_V_INC, v_inc);
     OUTREG(RADEON_OV0_P1_BLANK_LINES_AT_TOP, 0x00000fff | ((src_h - 1) << 16));
     OUTREG(RADEON_OV0_VID_BUF_PITCH0_VALUE, pitch);
