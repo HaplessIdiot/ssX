@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/sis/Imakefile,v 1.4 2004/10/19 04:27:50 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/sis/Imakefile,v 1.5 2004/12/10 16:06:58 alanh Exp $
 
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
@@ -89,13 +89,16 @@ XCOMM DEBUG_DEFINES = -DSIS_DEBUG
 		$(DEBUG_DEFINES)
      INCLUDES = $(X_INCLUDES) $(MESA_INCLUDES) $(DRI_INCLUDES)
 
+      DRIOBJS = $(GLXLIBSRC)/dri/dri_util.o \
+		$(GLXLIBSRC)/dri/glcontextmodes.o
+
       DRMOBJS = $(GLXLIBSRC)/dri/drm/xf86drm.o \
 		$(GLXLIBSRC)/dri/drm/xf86drmHash.o \
 		$(GLXLIBSRC)/dri/drm/xf86drmRandom.o \
 		$(GLXLIBSRC)/dri/drm/xf86drmSL.o
 
          SRCS = $(SISSRCS)
-         OBJS = $(DRMOBJS) $(COREMESAOBJS) \
+         OBJS = $(DRIOBJS) $(DRMOBJS) $(COREMESAOBJS) \
 		$(MESA_ASM_OBJS) $(COMMONOBJS) $(SISOBJS) 
 
 REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB) $(XONLYLIB) ExpatLibrary

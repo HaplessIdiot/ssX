@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/tnl/Imakefile.inc,v 1.3tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/tnl/Imakefile.inc,v 1.4 2004/12/13 22:40:55 tsi Exp $
 
 #ifndef MesaTnlBuildDir
 #define MesaTnlBuildDir $(GLXLIBSRC)/mesa/tnl/
@@ -13,6 +13,7 @@ MESATNLBUILDDIR = MesaTnlBuildDir
 		  $(MESATNLBUILDDIR)t_save_api.c \
 		  $(MESATNLBUILDDIR)t_save_loopback.c \
 		  $(MESATNLBUILDDIR)t_save_playback.c \
+		  $(MESATNLBUILDDIR)t_vb_cull.c \
 		  $(MESATNLBUILDDIR)t_vb_fog.c \
 		  $(MESATNLBUILDDIR)t_vb_light.c \
 		  $(MESATNLBUILDDIR)t_vb_normals.c \
@@ -50,6 +51,7 @@ LinkSourceFile(t_save_api.h, $(MESASRCDIR)/src/mesa/tnl)
 LinkSourceFile(t_save_loopback.c, $(MESASRCDIR)/src/mesa/tnl)
 LinkSourceFile(t_save_playback.c, $(MESASRCDIR)/src/mesa/tnl)
 LinkSourceFile(t_vb_cliptmp.h, $(MESASRCDIR)/src/mesa/tnl)
+LinkSourceFile(t_vb_cull.c, $(MESASRCDIR)/src/mesa/tnl)
 LinkSourceFile(t_vb_fog.c, $(MESASRCDIR)/src/mesa/tnl)
 LinkSourceFile(t_vb_light.c, $(MESASRCDIR)/src/mesa/tnl)
 LinkSourceFile(t_vb_lighttmp.h, $(MESASRCDIR)/src/mesa/tnl)
@@ -83,6 +85,7 @@ LinkSourceFile(t_vtx_x86_gcc.S, $(MESASRCDIR)/src/mesa/tnl)
                   $(MESATNLBUILDDIR)t_save_api.o \
                   $(MESATNLBUILDDIR)t_save_loopback.o \
                   $(MESATNLBUILDDIR)t_save_playback.o \
+                  $(MESATNLBUILDDIR)t_vb_cull.o \
                   $(MESATNLBUILDDIR)t_vb_fog.o \
                   $(MESATNLBUILDDIR)t_vb_light.o \
                   $(MESATNLBUILDDIR)t_vb_normals.o \
@@ -142,6 +145,7 @@ MESA_TNL_EOBJS = $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_array_api.o \
 		  $(MESATNLBUILDDIR)unshared/t_save_api.o \
 		  $(MESATNLBUILDDIR)unshared/t_save_loopback.o \
 		  $(MESATNLBUILDDIR)unshared/t_save_playback.o \
+		  $(MESATNLBUILDDIR)unshared/t_vb_cull.o \
 		  $(MESATNLBUILDDIR)unshared/t_vb_fog.o \
 		  $(MESATNLBUILDDIR)unshared/t_vb_light.o \
 		  $(MESATNLBUILDDIR)unshared/t_vb_normals.o \
@@ -175,6 +179,7 @@ MESA_TNL_EOBJS = $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_array_api.o \
 		  $(MESATNLBUILDDIR)debugger/t_save_api.o \
 		  $(MESATNLBUILDDIR)debugger/t_save_loopback.o \
 		  $(MESATNLBUILDDIR)debugger/t_save_playback.o \
+		  $(MESATNLBUILDDIR)debugger/t_vb_cull.o \
 		  $(MESATNLBUILDDIR)debugger/t_vb_fog.o \
 		  $(MESATNLBUILDDIR)debugger/t_vb_light.o \
 		  $(MESATNLBUILDDIR)debugger/t_vb_normals.o \
@@ -204,6 +209,7 @@ MESA_TNL_EOBJS = $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_array_api.o \
 		  $(MESATNLBUILDDIR)profiled/t_save_api.o \
 		  $(MESATNLBUILDDIR)profiled/t_save_loopback.o \
 		  $(MESATNLBUILDDIR)profiled/t_save_playback.o \
+		  $(MESATNLBUILDDIR)profiled/t_vb_cull.o \
 		  $(MESATNLBUILDDIR)profiled/t_vb_fog.o \
 		  $(MESATNLBUILDDIR)profiled/t_vb_light.o \
 		  $(MESATNLBUILDDIR)profiled/t_vb_normals.o \
