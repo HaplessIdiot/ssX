@@ -30,7 +30,7 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.27 2001/02/07 13:26:19 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.28 2001/02/15 11:03:57 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -1004,7 +1004,7 @@ SECOND_PASS:
     height = h;
     srcpntr = src;
     while(height--) {
-    	GLINT_WAIT(dwords);
+    	GLINT_WAIT(dwords + 1);
     	/* 0x0D is the TAG value for BitMaskPattern */
     	GLINT_WRITE_REG(((dwords - 1) << 16) | 0x0D, OutputFIFO);
    	GLINT_MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),

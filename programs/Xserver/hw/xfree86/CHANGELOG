@@ -1,4 +1,5 @@
 XFree86 4.0.99.2 (?? February 2001)
+ 212. Fix some mis-placed mem_barrier's for Alpha platforms (Jay Estabrook).
  211. Fix a Index/DAC register access in glint PM2v, PM3 driver.
       (#A.319, Romain Dolbeau).
  210. Add Xv support to Permedia3 driver (#4480, #4486 Sven Luther).
@@ -12579,4 +12580,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1593 2001/02/24 14:29:11 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1594 2001/02/27 18:47:23 alanh Exp $
