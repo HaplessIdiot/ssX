@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.24 2003/07/25 01:17:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.25 2003/07/25 14:17:01 tsi Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -19,6 +19,7 @@ const char *i2cSymbols[] = {
     "xf86CreateI2CDevRec",
     "xf86I2CDevInit",
     "xf86I2CWriteRead",
+    "xf86I2CFindDev",
     "xf86DestroyI2CDevRec",
     NULL
 };
