@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.19 2000/11/16 19:44:55 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.20 2001/05/04 19:05:30 dawes Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -9,6 +9,8 @@
 #include "xf86_ansic.h"
 #include "xf86_OSproc.h"
 #include "xf86DDC.h"
+
+static const OptionInfoRec *DDCAvailableOptions(void *unused);
 
 const char *i2cSymbols[] = {
     "xf86CreateI2CDevRec",
@@ -38,6 +40,14 @@ static XF86ModuleVersionInfo ddcVersRec =
 
 XF86ModuleData ddcModuleData = { &ddcVersRec, ddcSetup, NULL };
 
+ModuleInfoRec DDC = {
+    1,
+    "DDC",
+    NULL,
+    0,
+    DDCAvailableOptions,
+};
+
 static pointer
 ddcSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
@@ -45,6 +55,10 @@ ddcSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
     if (!setupDone) {
 	setupDone = TRUE;
+#ifndef REMOVE_LOADER_CHECK_MODULE_INFO
+	if (xf86LoaderCheckSymbol("xf86AddModuleInfo"))
+#endif
+	xf86AddModuleInfo(&DDC, module);
 	/*
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.
@@ -118,6 +132,13 @@ static const OptionInfoRec DDCOptions[] = {
     { DDCOPT_NODDC,	"NoDDC",	OPTV_BOOLEAN,	{0},	FALSE },
     { -1,		NULL,		OPTV_NONE,	{0},	FALSE },
 };
+
+/*ARGSUSED*/
+static const OptionInfoRec *
+DDCAvailableOptions(void *unused)
+{
+    return (DDCOptions);
+}
 
 xf86MonPtr 
 xf86DoEDID_DDC1(

@@ -27,7 +27,7 @@
  *
  * Authors: Paulo CÅÈsar Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.15 2001/04/01 14:00:12 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.16 2001/05/04 19:05:49 dawes Exp $
  */
 
 #include "vesa.h"
@@ -59,6 +59,10 @@ static Bool VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode);
 static void VESAAdjustFrame(int scrnIndex, int x, int y, int flags);
 static void VESAFreeScreen(int scrnIndex, int flags);
 static void VESAFreeRec(ScrnInfoPtr pScrn);
+
+static void
+VESADisplayPowerManagementSet(ScrnInfoPtr pScrn, int mode,
+                int flags);
 
 /* locally used functions */
 static int VESAFindIsaDevice(GDevPtr dev);
@@ -416,6 +420,11 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     pVesa->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
     pVesa->device = xf86GetDevFromEntity(pScrn->entityList[0],
 					 pScrn->entityInstanceList[0]);
+
+    /* Load vgahw module */
+    if (!xf86LoadSubModule(pScrn, "vgahw"))
+    	return (FALSE);
+    
     /* Load vbe module */
     if ((pVbeModule = xf86LoadSubModule(pScrn, "vbe")) == NULL)
         return (FALSE);
@@ -1073,6 +1082,12 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScreen->CloseScreen = VESACloseScreen;
     pScreen->SaveScreen = VESASaveScreen;
 
+    xf86DPMSInit(pScreen, VESADisplayPowerManagementSet, 0);
+
+    /* Report any unused options (only for the first generation) */
+    if (serverGeneration == 1)
+        xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
+
     return (TRUE);
 }
 
@@ -1628,6 +1643,15 @@ VESASaveRestore(ScrnInfoPtr pScrn, vbeSaveRestoreFunction function)
 
     return (TRUE);
 }
+
+static void
+VESADisplayPowerManagementSet(ScrnInfoPtr pScrn, int mode,
+                int flags)
+{
+   vgaHWDPMSSet(pScrn, mode, flags);
+}
+
+
 
 
 /***********************************************************************
