@@ -79,6 +79,11 @@ static const SiS_LCD_StStruct SiS315_LCD_Type[]=
 	{ VB_LCD_CUSTOM,      0,    0, LCD_CUSTOM,   }   /* f */
 };
 
+#if 0
+/* This does not work reliably if CRT2 is on. Since I don't
+ * want to fiddle with the display mode during server start,
+ * I skip this. We detect CRT1 by DDC instead now.
+ */
 static Bool
 SISTestMonitorType(ScrnInfoPtr pScrn, int r, int g, int b)
 {
@@ -89,11 +94,19 @@ SISTestMonitorType(ScrnInfoPtr pScrn, int r, int g, int b)
     vgainfo = SiS_GetSetBIOSScratch(pScrn, 0x489, 0xff);
     if(!vgainfo) vgainfo = 0x11;
 
+#ifdef TWDEBUG
+    xf86DrvMsg(0, X_INFO, "vgainfo %x\n", vgainfo);
+#endif    
+
     if(vgainfo & 0x06) {
        testval = (r * 77) + (g * 151) + (b * 28);
        if((testval & 0xff) > 0x80) testval += 0x100;
        rr = gg = bb = (testval >> 8);
     }
+
+#ifdef TWDEBUG
+    xf86DrvMsg(0, X_INFO, "rr %x gg %x bb %x\n", rr, gg, bb);
+#endif
 
     outSISREG(SISCOLIDX,0x00);
     outSISREG(SISCOLDATA,rr);
@@ -134,6 +147,10 @@ SISDetectCRT1(ScrnInfoPtr pScrn)
        outSISIDXREG(SISSR, 0x00, 0x03);
     }
 
+#ifdef TWDEBUG
+    xf86DrvMsg(0, X_INFO, "CR63 %x CR17 %x SR1F %x\n", CR63, CR17, SR1F);
+#endif
+
     if(mustwait) {
        for(i=0; i < 10; i++) SISWaitRetraceCRT1(pScrn);
     }
@@ -150,7 +167,13 @@ SISDetectCRT1(ScrnInfoPtr pScrn)
     SISWaitRetraceCRT1(pScrn);
 
     if(SISTestMonitorType(pScrn, 0x0f, 0x0f, 0x0f)) ret |= 1;
+#ifdef TWDEBUG
+    xf86DrvMsg(0, X_INFO, "ret %d\n", ret);
+#endif
     if(SISTestMonitorType(pScrn, 0x0f, 0x0f, 0x0f)) ret |= 1;
+#ifdef TWDEBUG
+    xf86DrvMsg(0, X_INFO, "ret %d\n", ret);
+#endif
 
     SISTestMonitorType(pScrn, 0x00, 0x00, 0x00);
 
@@ -168,6 +191,7 @@ SISDetectCRT1(ScrnInfoPtr pScrn)
 
     return ret;
 }
+#endif
 
 /* Detect CRT1 */
 void SISCRT1PreInit(ScrnInfoPtr pScrn)
@@ -201,7 +225,20 @@ void SISCRT1PreInit(ScrnInfoPtr pScrn)
     inSISIDXREG(SISCR, 0x32, CR32);
 
     if(CR32 & 0x20)  CRT1Detected = 1;
-    else CRT1Detected = SISDetectCRT1(pScrn);
+    else {
+#if 0
+       CRT1Detected = SISDetectCRT1(pScrn);
+#endif
+       unsigned short temp = 0xffff;
+       int i = 3;
+       do {
+          temp = SiS_HandleDDC(pSiS->SiS_Pr, pSiS->VBFlags, pSiS->VGAEngine, 0, 0, NULL);
+       } while(((temp == 0) || (temp == 0xffff)) && i--);
+       if((temp) && (temp != 0xffff)) {
+          CRT1Detected = 1;
+	  orSISIDXREG(SISCR,0x32,0x20);
+       }
+    }
 
     if(CR32 & 0x5F)  OtherDevices = 1;
 
@@ -222,7 +259,7 @@ void SISCRT1PreInit(ScrnInfoPtr pScrn)
     }
 
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-    		"%sCRT1 connection detected (VGA)\n",
+    		"%sCRT1 (VGA) connection detected\n",
 		CRT1Detected ? "" : "No ");
 }
 
@@ -506,7 +543,7 @@ void SISCRT2PreInit(ScrnInfoPtr pScrn)
 	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	           "%s secondary VGA, sensing via DDC\n",
 	           pSiS->forcecrt2redetection ?
-		      "Forced redetection of" : "BIOS detected no");
+		      "Forced re-detection of" : "BIOS detected no");
                 if(SiS_SenseVGA2DDC(pSiS->SiS_Pr, pSiS)) {
     	           xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	              "DDC error during secondary VGA detection\n");
