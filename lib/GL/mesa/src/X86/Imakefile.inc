@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile.inc,v 1.4tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile.inc,v 1.5 2002/11/14 21:01:16 tsi Exp $
 
 #ifndef MesaX86BuildDir
 #define MesaX86BuildDir $(GLXLIBSRC)/mesa/src/X86/
@@ -144,7 +144,7 @@ MESA_3DNOW_POBJS = $(MESAX86BUILDDIR)profiled/3dnow.o \
 MESA_3DNOW_DEFS = -DUSE_3DNOW_ASM
 #endif
 
-#if MesaUseKatmai
+#if MesaUseSSE
 MESA_SSE_SRCS = $(MESAX86BUILDDIR)sse.c \
 		$(MESAX86BUILDDIR)sse_normal.S \
 		$(MESAX86BUILDDIR)sse_vertex.S \

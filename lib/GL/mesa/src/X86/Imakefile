@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.22 2002/03/01 21:21:48 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.23 2002/07/14 17:08:16 alanh Exp $
 
 /*
  * Need both shared and unshared Mesa objects in the following cases:
@@ -71,7 +71,7 @@ ObjectFromAsmSource(3dnow_xform3, NullParameter)
 ObjectFromAsmSource(3dnow_xform4, NullParameter)
 #endif
 
-#if MesaUseKatmai
+#if MesaUseSSE
 ObjectFromAsmSource(sse_normal, NullParameter)
 ObjectFromAsmSource(sse_vertex, NullParameter)
 ObjectFromAsmSource(sse_xform1, NullParameter)
