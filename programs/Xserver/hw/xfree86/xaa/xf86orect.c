@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86orect.c,v 3.1 1997/01/12 10:48:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86orect.c,v 3.2 1997/03/27 08:31:33 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -240,5 +240,5 @@ xf86PolyRectangleSolidZeroWidth(pDrawable, pGC, nRectsInit, pRectsInit)
     }
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        NeedToSync = TRUE;
+        SET_SYNC_FLAG;
 } 

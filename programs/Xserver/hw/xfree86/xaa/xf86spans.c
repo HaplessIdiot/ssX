@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86spans.c,v 3.1 1996/11/24 09:57:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86spans.c,v 3.2 1997/03/27 08:31:36 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -154,7 +154,7 @@ xf86FillSpansAsRects(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DEALLOCATE_LOCAL(pwidth);
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        NeedToSync = TRUE;
+        SET_SYNC_FLAG;
 }
 
 

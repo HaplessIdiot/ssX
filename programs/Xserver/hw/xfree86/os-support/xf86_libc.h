@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.4 1997/03/17 07:18:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.5 1997/03/22 09:36:04 hohndel Exp $ */
 
 
 
@@ -26,7 +26,7 @@
  *
  * note: if some pointer is declared "opaque" here, pass it between
  * xf86* functions only, and don't rely on it having a whatever internal
- * structure, even if yome source file might reveal the existance of
+ * structure, even if some source file might reveal the existence of
  * such a structure.
  */
 typedef pointer XF86FILE;	/* opaque FILE* replacement */
@@ -60,6 +60,7 @@ typedef struct _xf86dirent *XF86DIRENT;
 #define memcpy(a,b,c)	xf86memcpy(a,b,c)
 #define memset(a,b,c)	xf86memset(a,b,c)
 #define memmove(a,b,c)	xf86memmove(a,b,c)
+#define memcmp(a,b,c)	xf86memcmp(a,b,c)
 #ifdef  bcopy
 #undef  bcopy
 #endif
@@ -69,9 +70,10 @@ typedef struct _xf86dirent *XF86DIRENT;
  * the string functions 
  */
 #define strcpy(a,b)	xf86strcpy(a,b)
-#define strncmp(a,b,c)	xf86strncmp(a,b,c)
+#define strncpy(a,b,c)	xf86strncpy(a,b,c)
 #define strcat(a,b)	xf86strcat(a,b)
 #define strcmp(a,b)	xf86strcmp(a,b)
+#define strncmp(a,b,c)	xf86strncmp(a,b,c)
 #define strlen(a)	xf86strlen(a)
 
 /*
@@ -113,6 +115,70 @@ typedef struct _xf86dirent *XF86DIRENT;
 
 
 #endif /* DONT_DEFINE_WRAPPERS */
+
+/*
+ * at this point I don't think we support any non-ANSI compilers...
+ */
+
+extern void * xf86memmove(void *, const void *, INT32);
+
+extern void * xf86memset(void *, int, INT32);
+
+extern void * xf86memcpy(void *, const void *, INT32);
+
+extern int xf86memcmp(const void *, const void *, INT32);
+
+extern char * xf86strcat(char *, const char *);
+
+extern char * xf86strcpy(char *, const char *);
+
+extern char * xf86strncpy(char *, const char *, INT32);
+
+extern int xf86strcmp(const char *, const char *);
+
+extern int xf86strncmp(const char *, const char *, INT32);
+
+extern size_t xf86strlen(const char *);
+
+double xf86exp(double);
+
+double xf86log(double);
+
+double xf86pow(double, double);
+
+double xf86sqrt(double);
+
+double xf86cos(double);
+
+double xf86fabs(double);
+
+void xf86bzero(void *, unsigned int);
+
+char * xf86strerror(int);
+
+void xf86usleep(unsigned long);
+
+XF86FILE xf86fopen(const char* fn, const char* mode);
+
+int xf86fclose(XF86FILE f);
+
+size_t xf86fread(void* buf, size_t sz, size_t cnt, XF86FILE f);
+
+size_t xf86fwrite(void* buf, size_t sz, size_t cnt, XF86FILE f);
+
+int xf86fseek(XF86FILE f, long pos, int loc);
+
+int xf86ffs(int mask);
+
+char * xf86getenv(const char *);
+
+XF86DIR	xf86opendir(const char *name);
+
+XF86DIRENT xf86readdir(XF86DIR dirp);
+
+void xf86rewinddir(XF86DIR dirp);
+
+int xf86closedir(XF86DIR dirp);
 
 #endif /* XFree86LOADER */
 

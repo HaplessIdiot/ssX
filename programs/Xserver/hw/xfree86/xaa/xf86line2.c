@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.2 1997/01/12 10:48:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.3 1997/03/27 08:31:32 hohndel Exp $ */
 
 /***********************************************************
 
@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.24 94/07/28 14:33:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.2 1997/01/12 10:48:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.3 1997/03/27 08:31:32 hohndel Exp $ */
 
 /*
  * Accelerated general lines for chips that cannot hardware accelerate
@@ -299,7 +299,7 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
 			            x1, y1t, x1, y2t - 1, bias);
 				if(xf86AccelInfoRec.Flags &
 		                			BACKGROUND_OPERATIONS)
-			        	NeedToSync = TRUE;
+			        	SET_SYNC_FLAG;
 			    }
 			    else
                             if ((usevline == VLINE_FRAMEBUFFER)
@@ -315,7 +315,7 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
 	                            x1, y1t, 1, length);
 				if(xf86AccelInfoRec.Flags &
 		                			BACKGROUND_OPERATIONS)
-			        	NeedToSync = TRUE;
+			        	SET_SYNC_FLAG;
 	                    }
 			}
 		    }
@@ -391,7 +391,7 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
 		        	xf86AccelInfoRec.SubsequentFillRectSolid(
 		            		x1t, y1, x2t - x1t, 1);
 			if(xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-			    NeedToSync = TRUE;
+			    SET_SYNC_FLAG;
 		    }
 		    nbox--;
 		    pbox++;
@@ -446,7 +446,7 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
 		        xf86AccelInfoRec.SubsequentTwoPointLine(
 		            x1, y1, x2, y2, bias);
 			if(xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-			    NeedToSync = TRUE;
+			    SET_SYNC_FLAG;
 		        break;
 		    }
 		    if (!(octant & YMAJOR)) {
@@ -547,7 +547,7 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
 	        /* Maybe it would be better do this with TwoPointLine if av. */
 		xf86AccelInfoRec.SubsequentFillRectSolid(x2, y2, 1, 1);
     		if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        		NeedToSync = TRUE;
+        		SET_SYNC_FLAG;
 		break;
 	    }
 	    else

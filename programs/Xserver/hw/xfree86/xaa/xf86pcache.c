@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.12 1997/03/27 08:31:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.14 1997/04/08 13:16:56 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -525,7 +525,7 @@ static void Expand8x8Pattern(x, y, w, h, pSrc, srcwidth)
             x, y + i, x + 64, y + i, 64, 1);
     }
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        NeedToSync = TRUE;
+        SET_SYNC_FLAG;
 }
 
 
@@ -1257,7 +1257,7 @@ static void DoCacheExpandPixmap(pci)
     }
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        NeedToSync = TRUE;
+        SET_SYNC_FLAG;
 }
 
 static Bool

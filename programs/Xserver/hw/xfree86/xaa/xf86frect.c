@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.14 1997/03/27 08:31:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.16 1997/04/08 13:16:43 hohndel Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.14 1997/03/27 08:31:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.16 1997/04/08 13:16:43 hohndel Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -407,7 +407,7 @@ xf86SimpleFillRectSolid(pDrawable, pGC, nBox, pBoxInit)
 	nBox--;
     }
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        NeedToSync = TRUE;
+        SET_SYNC_FLAG;
 }
 
 /*
@@ -737,7 +737,7 @@ if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
 	    } /* end for loop through each rectangle to draw */
 
             if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-                NeedToSync = TRUE;
+                SET_SYNC_FLAG;
 	    return;
 	} /* end section to handle full-depth fixed patterns */
 
@@ -891,7 +891,7 @@ if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
 	    } /* end for loop through each rectangle to draw */
 
             if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-                NeedToSync = TRUE;
+                SET_SYNC_FLAG;
 	    return;
 	} /* end section to handle color-expanded fixed patterns */
 
@@ -958,5 +958,5 @@ no8x8:
     } /* end for loop through each rectangle to draw */
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        NeedToSync = TRUE;
+        SET_SYNC_FLAG;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86farc.c,v 3.0 1996/11/18 13:22:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86farc.c,v 3.1 1997/03/27 08:31:25 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -89,7 +89,7 @@ xf86FillEllipseSolid(pDraw, pGC, arc)
 	}
     }
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-	NeedToSync = TRUE;
+	SET_SYNC_FLAG;
 }
 
 
@@ -163,7 +163,7 @@ xf86FillArcSliceSolid(pDraw, pGC, arc)
 	}
     }
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        NeedToSync = TRUE;
+        SET_SYNC_FLAG;
 }
 
 

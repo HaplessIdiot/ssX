@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.0 1996/11/18 13:22:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.1 1997/03/27 08:31:21 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -295,7 +295,7 @@ void xf86ScreenToScreenBitBlt(nbox, pptSrc, pbox, xdir, ydir, alu, planemask)
             xf86AccelInfoRec.SubsequentScreenToScreenCopy(pptSrc->x, pptSrc->y,
                 pbox->x1, pbox->y1, pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
         if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-            NeedToSync = TRUE;
+            SET_SYNC_FLAG;
         return;
     }
 
@@ -342,7 +342,7 @@ void xf86ScreenToScreenBitBlt(nbox, pptSrc, pbox, xdir, ydir, alu, planemask)
                         stripeWidth, pbox->y2 - pbox->y1);
             }
         if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-            NeedToSync = TRUE;
+            SET_SYNC_FLAG;
         return;
     }
 
@@ -407,6 +407,6 @@ void xf86ScreenToScreenBitBlt(nbox, pptSrc, pbox, xdir, ydir, alu, planemask)
             }
     } /* next box */
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        NeedToSync = TRUE;
+        SET_SYNC_FLAG;
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wrapper.c,v 3.5 1997/04/12 13:46:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wrapper.c,v 3.6 1997/04/14 07:55:59 hohndel Exp $ */
 
 
 #include "gcstruct.h"
@@ -157,7 +157,11 @@ xf86PolyGlyphBltWrapper(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 {	    
     SYNC_CHECK;
 
-    cfbPolyGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+    /* cfbPolyGlyphBlt8 only supports GXcopy */
+    if (pGC->fillStyle == FillSolid && pGC->alu == GXcopy)
+       cfbPolyGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase); 
+    else
+       miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 }
 
 void static

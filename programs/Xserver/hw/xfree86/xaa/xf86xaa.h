@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.13 1997/04/10 11:35:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.14 1997/04/17 09:16:13 hohndel Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -20,6 +20,7 @@
 #define LINE_PATTERN_POWER_OF_2_ONLY		0x800000
 #define LINE_PATTERN_MSBFIRST_INCREASING	0x1000000
 #define LINE_PATTERN_MSBFIRST_DECREASING	0x2000000
+#define DELAYED_SYNC				0x4000000
 
 /* AccelInfoRec hardware pattern flags */
 
@@ -1014,9 +1015,17 @@ void xf86InitializeAcceleration(
 void xf86InitWrappers();
 extern Bool NeedToSync;
 
-#define	SYNC_CHECK			\
-    if(NeedToSync) {			\
+
+#define SYNC_CHECK 			\
+     if(NeedToSync) {			\
 	xf86AccelInfoRec.Sync();	\
 	NeedToSync = FALSE;		\
-    }
-
+     } 
+  
+#define SET_SYNC_FLAG					\
+    {							\
+	if(xf86AccelInfoRec.Flags & DELAYED_SYNC)	\
+		NeedToSync = TRUE;			\
+	else						\
+		xf86AccelInfoRec.Sync();		\
+     }
