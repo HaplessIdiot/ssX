@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/vidmem.c,v 1.2 1999/04/18 12:59:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/vidmem.c,v 1.3 1999/04/25 15:30:27 dawes Exp $ */
 /*
  * Copyright 1993-1999 by The XFree86 Project, Inc
  *
@@ -228,6 +228,6 @@ xf86MapReadSideEffects(int ScreenNum, int Flags, pointer base,
 	if (!vidMemInfo.initialised || !vidMemInfo.readSideEffects)
 		return;
 
-	vidMemInfo.readSideEffects(ScreenNum, Flags, base, Size);
+	vidMemInfo.readSideEffects(ScreenNum, base, Size);
 }
 
