@@ -3,7 +3,7 @@
  * Support for using the Quartz Window Manager cursor
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.10 2001/09/24 06:56:52 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.11 2001/10/07 18:47:49 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartzCursor.h"
@@ -221,7 +221,15 @@ QuartzRealizeCursor(
     // if the cursor is too big we use a software cursor
     if ((pCursor->bits->height > CURSORHEIGHT) ||
         (pCursor->bits->width > CURSORWIDTH) || !ScreenPriv->useQDCursor)
-        return (*ScreenPriv->spriteFuncs->RealizeCursor)(pScreen, pCursor);
+    {
+        if (quartzRootless) {
+            // rootless can't use a software cursor
+            return TRUE;
+        } else {
+            return (*ScreenPriv->spriteFuncs->RealizeCursor)
+                        (pScreen, pCursor);
+        }
+    }
 
     // make new cursor image
     qdCursor = MakeQDCursor(pCursor); 
@@ -246,8 +254,14 @@ QuartzUnrealizeCursor(
     QuartzCursorScreenPtr ScreenPriv = CURSOR_PRIV(pScreen);
 
     if ((pCursor->bits->height > CURSORHEIGHT) ||
-        (pCursor->bits->width > CURSORWIDTH) || !ScreenPriv->useQDCursor) {
-        return (*ScreenPriv->spriteFuncs->UnrealizeCursor)(pScreen, pCursor);
+        (pCursor->bits->width > CURSORWIDTH) || !ScreenPriv->useQDCursor)
+    {
+        if (quartzRootless) {
+            return TRUE;
+        } else {
+            return (*ScreenPriv->spriteFuncs->UnrealizeCursor)
+                        (pScreen, pCursor);
+        }
     } else {
         DisposeCCursor((CCrsrHandle) pCursor->devPriv[pScreen->myNum]);
         return TRUE;
@@ -294,6 +308,10 @@ QuartzSetCursor(
         curs = (CCrsrHandle) pCursor->devPriv[pScreen->myNum];
         SetCCursor(curs);
         SHOW_QD_CURSOR(pScreen, ScreenPriv->qdCursorVisible);
+    }
+    else if (quartzRootless) {
+        // Rootless can't use a software cursor, so we just use Mac OS arrow.
+        SetCursor(&gQDArrow);
     }
     else {
         // Cursor is too big for QuickDraw. Use X software cursor.
@@ -484,7 +502,10 @@ QuartzInitCursor(
     ScreenPriv->spriteFuncs = PointPriv->spriteFuncs;
     PointPriv->spriteFuncs = &quartzSpriteFuncsRec; 
 
-    ScreenPriv->useQDCursor = QuartzFSUseQDCursor(dfb->colorBitsPerPixel);
+    if (!quartzRootless)
+        ScreenPriv->useQDCursor = QuartzFSUseQDCursor(dfb->colorBitsPerPixel);
+    else
+        ScreenPriv->useQDCursor = TRUE;
     ScreenPriv->qdCursorMode = TRUE;
     ScreenPriv->qdCursorVisible = TRUE;
     ScreenPriv->latentCursor = NULL;
