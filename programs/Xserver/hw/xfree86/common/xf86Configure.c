@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.58 2001/08/01 00:44:51 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.59 2001/08/06 20:51:09 dawes Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -414,7 +414,7 @@ configureDeviceSection (int screennum)
     char identifier[16];
     OptionInfoPtr p;
     int i = 0;
-#if DO_FBDEV_PROBE
+#ifdef DO_FBDEV_PROBE
     Bool foundFBDEV = FALSE;
 #endif
     parsePrologue (XF86ConfDevicePtr, XF86ConfDeviceRec)
@@ -485,7 +485,7 @@ configureDeviceSection (int screennum)
     	}
     }
 
-#if DO_FBDEV_PROBE
+#ifdef DO_FBDEV_PROBE
     /* Crude mechanism to auto-detect fbdev (os dependent) */
     /* Skip it for now. Options list it anyway, and we can't
      * determine which screen/driver this belongs too anyway. */

@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.11 2001/07/02 10:46:04 alanh Exp $ */
 
 
 #ifndef _S3_H
@@ -181,7 +181,10 @@ typedef struct _S3Rec {
  */
 
 Bool S3AccelInit(ScreenPtr pScreen);
+Bool S3AccelInitNewMMIO(ScreenPtr pScreen);
+Bool S3AccelInitPIO(ScreenPtr pScreen);
 Bool S3DGAInit(ScreenPtr pScreen);
+Bool S3SwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 int S3GetRefClock(ScrnInfoPtr pScrn);
 
 void S3InitVideo(ScreenPtr pScreen);
@@ -189,6 +192,7 @@ void S3InitStreams(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
 /* IBMRGB */
 extern RamDacSupportedInfoRec IBMRamdacs[];
+Bool S3ProbeIBMramdac(ScrnInfoPtr pScrn);
 void S3IBMRGB_PreInit(ScrnInfoPtr pScrn);
 void S3IBMRGB_Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
 void S3IBMRGB_Save(ScrnInfoPtr pScrn);
@@ -196,12 +200,14 @@ void S3IBMRGB_Restore(ScrnInfoPtr pScrn);
 Bool S3IBMRGB_CursorInit(ScreenPtr pScreen);
 
 /* TRIO64 */
+Bool S3Trio64DACProbe(ScrnInfoPtr pScrn);
 void S3Trio64DAC_PreInit(ScrnInfoPtr pScrn);
 void S3Trio64DAC_Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
 void S3Trio64DAC_Save(ScrnInfoPtr pScrn);
 void S3Trio64DAC_Restore(ScrnInfoPtr pScrn);
 
 /* Ti */
+Bool S3TiDACProbe(ScrnInfoPtr pScrn);
 void S3TiDAC_PreInit(ScrnInfoPtr pScrn);
 void S3TiDAC_Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
 void S3TiDAC_Save(ScrnInfoPtr pScrn);
@@ -209,6 +215,8 @@ void S3TiDAC_Restore(ScrnInfoPtr pScrn);
 void S3TiLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO *colors,
 		     VisualPtr pVisual);
 Bool S3Ti_CursorInit(ScreenPtr pScreen);
+void S3OutTiIndReg(ScrnInfoPtr pScrn, CARD32 reg, unsigned char mask,
+		   unsigned char data);
 
 /* s3 gen cursor */
 Bool S3_CursorInit(ScreenPtr pScreen);

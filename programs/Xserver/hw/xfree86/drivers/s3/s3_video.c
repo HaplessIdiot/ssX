@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_video.c,v 1.1 2001/07/02 10:46:04 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -495,7 +495,7 @@ static void S3DisplayVideoOverlay(ScrnInfoPtr pScrn, int id, int offset,
 }
 
 
-static S3PutImage(ScrnInfoPtr pScrn, short src_x, short src_y,
+static int S3PutImage(ScrnInfoPtr pScrn, short src_x, short src_y,
 		  short drw_x, short drw_y, short src_w, short src_h,
 		  short drw_w, short drw_h, int id, unsigned char *buf,
 		  short width, short height, Bool sync, RegionPtr clipBoxes,
@@ -596,9 +596,9 @@ static S3PutImage(ScrnInfoPtr pScrn, short src_x, short src_y,
         if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
             REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
             /* draw these */
-            XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0,
-                                        REGION_NUM_RECTS(clipBoxes),
-                                        REGION_RECTS(clipBoxes));
+            (*pS3->pXAA->FillSolidRects)(pScrn, pPriv->colorKey, GXcopy, ~0,
+                                         REGION_NUM_RECTS(clipBoxes),
+                                         REGION_RECTS(clipBoxes));
         }
                           
         offset += left + (top * dstPitch);
