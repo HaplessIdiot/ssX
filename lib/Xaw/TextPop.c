@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.10 1999/06/06 08:48:16 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.11 1999/06/20 08:41:10 dawes Exp $ */
 
 /*
  * This file is broken up into three sections one dealing with
@@ -87,7 +87,7 @@ static Widget CreateDialog(Widget, String, String, AddFunc);
 static void DoInsert(Widget, XtPointer, XtPointer);
 static void DoReplaceAll(Widget, XtPointer, XtPointer);
 static void DoReplaceOne(Widget, XtPointer, XtPointer);
-static Bool DoSearch(struct SearchAndReplace*, Bool);
+static Bool DoSearch(struct SearchAndReplace*);
 static Widget GetShell(Widget);
 static String GetString(Widget);
 static String GetStringRaw(Widget);
@@ -436,7 +436,7 @@ _XawTextDoSearchAction(Widget w, XEvent *event,
     if (*num_params == 1 && (params[0][0] == 'p' || params[0][0] == 'P'))
 	popdown = True;
     
-    if (DoSearch(tw->text.search, True) && popdown)
+    if (DoSearch(tw->text.search) && popdown)
 	PopdownSearch(w, (XtPointer)tw->text.search, NULL);
 }
 
@@ -496,7 +496,7 @@ PopdownSearch(Widget w, XtPointer closure, XtPointer call_data)
 static void 
 SearchButton(Widget w, XtPointer closure, XtPointer call_data)
 {
-    (void)DoSearch((struct SearchAndReplace *)closure, True);
+    (void)DoSearch((struct SearchAndReplace *)closure);
 }
 
 /*
@@ -837,7 +837,7 @@ AddSearchChildren(Widget form, char *ptr, Widget tw)
  */
 /*ARGSUSED*/
 static Bool
-DoSearch(struct SearchAndReplace *search, Bool show_position)
+DoSearch(struct SearchAndReplace *search)
 {
     char msg[BUFSIZ];
     Widget tw = XtParent(search->search_popup);
@@ -876,29 +876,27 @@ DoSearch(struct SearchAndReplace *search, Bool show_position)
    /* The Raw string in find.ptr may be WC I can't use here, so I re - call 
      GetString to get a tame version */
 
-    if (pos == XawTextSearchError)
+    if (pos == XawTextSearchError) {
 	(void)XmuSnprintf(msg, sizeof(msg),
 			  "Could not find string ``%s''.",
 			  GetString(search->search_text));
-    else {
-	if (show_position) {
-	    XawTextDisableRedisplay(tw);
-	    if (dir == XawsdRight)
-		XawTextSetInsertionPoint(tw, pos + text.length);
-	    else
-		XawTextSetInsertionPoint(tw, pos);
-	    _XawTextShowPosition(ctx);
-	    XawTextEnableRedisplay(tw);
-	}
-	XawTextSetSelection(tw, pos, pos + text.length);
-	search->selection_changed = False;	/* selection is good */
-	return (True);
-    }
-  
-    XawTextUnsetSelection(tw);
-    SetSearchLabels(search, msg, "", True);
+	XawTextUnsetSelection(tw);
+	SetSearchLabels(search, msg, "", True);
 
-    return (False);
+	return (False);
+    }
+    XawTextDisableRedisplay(tw);
+    XawTextSetSelection(tw, pos, pos + text.length);
+    search->selection_changed = False;	/* selection is good */
+
+    if (dir == XawsdRight)
+	XawTextSetInsertionPoint(tw, pos + text.length);
+    else
+	XawTextSetInsertionPoint(tw, pos);
+    _XawTextShowPosition(ctx);
+    XawTextEnableRedisplay(tw);
+
+    return (True);
 }
 
 /*
@@ -993,6 +991,7 @@ Replace(struct SearchAndReplace *search, Bool once_only, Bool show_current)
     Widget tw = XtParent(search->search_popup);
     int count = 0;
     TextWidget ctx = (TextWidget)tw;
+    Bool redisplay;
 
     find.ptr = GetStringRaw(search->search_text);
     if ((find.format = _XawTextFormat(ctx)) == XawFmtWide)
@@ -1011,8 +1010,10 @@ Replace(struct SearchAndReplace *search, Bool once_only, Bool show_current)
     dir = (XawTextScanDirection)
       XawToggleGetCurrent(search->left_toggle) - R_OFFSET;
 
+    redisplay = !once_only || (once_only && !show_current);
     ipos = XawTextGetInsertionPoint(tw);
-    XawTextDisableRedisplay(tw);
+    if (redisplay)
+	XawTextDisableRedisplay(tw);
     /*CONSTCOND*/
     while (True) {
 	if (count != 0)	{
@@ -1030,9 +1031,11 @@ Replace(struct SearchAndReplace *search, Bool once_only, Bool show_current)
 				      GetString(search->search_text));
 		    SetSearchLabels(search, msg, "", True);
 
-		    XawTextSetInsertionPoint(tw, ipos);
-		    _XawTextShowPosition(ctx);
-		    XawTextEnableRedisplay(tw);
+		    if (redisplay) {
+			XawTextSetInsertionPoint(tw, ipos);
+			_XawTextShowPosition(ctx);
+			XawTextEnableRedisplay(tw);
+		    }
 
 		    return (False);
 		}
@@ -1048,14 +1051,18 @@ Replace(struct SearchAndReplace *search, Bool once_only, Bool show_current)
 	    if (search->selection_changed) {
 		SetSearchLabels(search, "Selection has been modified, aborting.",
 				"", True);
-		XawTextSetInsertionPoint(tw, ipos);
-		XawTextEnableRedisplay(tw);
+		if (redisplay) {
+		    XawTextSetInsertionPoint(tw, ipos);
+		    XawTextEnableRedisplay(tw);
+		}
 
 		return (False);
 	    }
 	    if (pos == end_pos) {
-		XawTextSetInsertionPoint(tw, ipos);
-		XawTextEnableRedisplay(tw);
+		if (redisplay) {
+		    XawTextSetInsertionPoint(tw, ipos);
+		    XawTextEnableRedisplay(tw);
+		}
 
 		return (False);
 	    }
@@ -1067,8 +1074,10 @@ Replace(struct SearchAndReplace *search, Bool once_only, Bool show_current)
 	    (void)XmuSnprintf(msg, sizeof(msg),
 			      "'%s' with '%s'", find.ptr, replace.ptr);
 	    SetSearchLabels(search, "Error while replacing", msg, True);
-	    XawTextSetInsertionPoint(tw, ipos);
-	    XawTextEnableRedisplay(tw);
+	    if (redisplay) {
+		XawTextSetInsertionPoint(tw, ipos);
+		XawTextEnableRedisplay(tw);
+	    }
 
 	    return (False);
 	}
@@ -1082,10 +1091,7 @@ Replace(struct SearchAndReplace *search, Bool once_only, Bool show_current)
 	    if (show_current)
 		break;
 	    else {
-		DoSearch(search, False);
-		XawTextSetInsertionPoint(tw, ipos);
-		_XawTextShowPosition(ctx);
-		XawTextEnableRedisplay(tw);
+		DoSearch(search);
 
 		return (True);
 	    }

@@ -24,7 +24,7 @@
  * DEC TGA accelerated options.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel8.c,v 1.1 1999/04/25 10:02:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel8.c,v 1.2 1999/07/10 12:17:35 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -154,8 +154,7 @@ DEC21030AccelInit8(ScreenPtr pScreen)
   
 #ifdef __alpha__
   TGA_AccelInfoRec->ScanlineCPUToScreenColorExpandFillFlags =
-    BIT_ORDER_IN_BYTE_LSBFIRST | NO_TRANSPARENCY | LEFT_EDGE_CLIPPING;
-  /* transparency doesn't seem to work right on non-TE fonts -- weird */
+    BIT_ORDER_IN_BYTE_LSBFIRST | LEFT_EDGE_CLIPPING;
   
   TGA_AccelInfoRec->NumScanlineColorExpandBuffers = 1;
   pTga->buffers[0] = (CARD64 *)malloc(1024); /* make it 8-byte aligned */
@@ -214,6 +213,7 @@ TGASetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 #endif
     register unsigned long iobase, offset;
     TGAPtr pTga;
+    unsigned int color;
 
     pTga = TGAPTR(pScrn);
     TGA_GET_IOBASE();
@@ -221,23 +221,33 @@ TGASetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 
 /*      ErrorF("TGASetupForScanlineCPUToScreenColorExpandFill called\n"); */
 
+    color = (fg | (fg << 8) | (fg << 16) | (fg << 24));
+    
     pTga->current_rop = rop | BPP8PACKED;
-    if(bg == -1)
+    if(bg == -1) {
 	pTga->transparent_pattern_p = 1;
+	if(rop == MIX_SRC)
+	  pTga->block_or_opaque_p = USE_BLOCK_FILL;
+	else
+	  pTga->block_or_opaque_p = USE_OPAQUE_FILL;
+	/* actually we are using transparent fill or block fill */
+    }
     else
 	pTga->transparent_pattern_p = 0;
-    
-    TGA_FAST_WRITE_REG((fg | (fg << 8) | (fg << 16) |
-			(fg << 24)), TGA_FOREGROUND_REG);
+
     TGA_FAST_WRITE_REG((planemask | (planemask << 8) | (planemask << 16) |
 			(planemask << 24)), TGA_PLANEMASK_REG);
     TGA_FAST_WRITE_REG(pTga->current_rop, TGA_RASTEROP_REG);
     if(pTga->transparent_pattern_p == 0) {
 	TGA_FAST_WRITE_REG((bg | (bg << 8) | (bg << 16) |
 			    (bg << 24)), TGA_BACKGROUND_REG);
-/*  	TGA_FAST_WRITE_REG(0xFFFFFFFF, TGA_PIXELMASK_REG); */
     }
-
+    if(pTga->block_or_opaque_p == USE_BLOCK_FILL) {
+	TGA_FAST_WRITE_REG(color, TGA_BLOCK_COLOR0_REG);
+	TGA_FAST_WRITE_REG(color, TGA_BLOCK_COLOR1_REG);
+    }
+    else
+	TGA_FAST_WRITE_REG(color, TGA_FOREGROUND_REG);
     TGA_SAVE_OFFSET();
     
     return;
@@ -269,8 +279,12 @@ TGASubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 /*      ErrorF("skipleft is %d\n", skipleft); */
 
     if(pTga->transparent_pattern_p) {
-	TGA_FAST_WRITE_REG(TRANSPARENTSTIPPLE | X11 | BPP8PACKED,
-			   TGA_MODE_REG);
+	if(pTga->block_or_opaque_p == USE_BLOCK_FILL)
+	    TGA_FAST_WRITE_REG(BLOCKSTIPPLE | X11 | BPP8PACKED,
+			       TGA_MODE_REG);
+	else
+	    TGA_FAST_WRITE_REG(TRANSPARENTSTIPPLE | X11 | BPP8PACKED,
+			       TGA_MODE_REG);
 /*  	ErrorF("transparent stipple with x = %d, y = %d, w = %d, h = %d\n", */
 /*  	       x, y, w, h); */
     }

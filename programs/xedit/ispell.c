@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/ispell.c,v 1.10 1999/06/20 08:41:41 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/ispell.c,v 1.11 1999/07/04 06:40:09 dawes Exp $ */
 
 #include "xedit.h"
 #ifndef X_NOT_STDC_ENV
@@ -966,6 +966,10 @@ IspellSend(void)
 		    i = 0;
 		    break;
 		}
+		else if (spaces >= 0 && isspace(*mb))
+		    ++spaces;
+		else
+		    spaces = -1;
 	    }
 	    else if (html && inside_html) {
 		if (*mb == '>')

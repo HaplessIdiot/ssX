@@ -1,7 +1,7 @@
 #ifndef _glx_ansic_h_
 #define _glx_ansic_h_
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/GL/include/GL/glx_ansic.h,v 1.2 1999/06/14 07:31:40 dawes Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -109,6 +109,14 @@
 /*
 ** Either not a loadable module, or pre X3.9
 */
+
+/* assert() is named __assert() in the LynxOS libc. We might get
+ * unresolved externals if we #undef assert and include assert.h
+ * if assert.h was already included on our way here....
+ */
+#if defined(Lynx) && defined(__assert_h)
+#undef __assert_h
+#endif
 
 #ifdef assert
 #undef assert

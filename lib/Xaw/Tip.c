@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/lib/Xaw/Tip.c,v 1.2 1999/06/27 16:37:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Tip.c,v 1.3 1999/06/27 17:00:58 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -596,6 +596,8 @@ TipEventHandler(Widget w, XtPointer client_data, XEvent *event,
 	    break;
 	case MotionNotify:
 	    /* If any button is pressed, timer is 0 */
+	    if (info->mapped)
+		return;
 	    add_timeout = info->tip->tip.timer != 0;
 	    break;
 	default:

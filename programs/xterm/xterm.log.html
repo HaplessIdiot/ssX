@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.32 1999/06/27 14:08:43 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.33 1999/07/04 06:40:15 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_111">Patch #111 - 1999/7/10 - XFree86 3.9Pw</A>
 <LI><A HREF="#xterm_110">Patch #110 - 1999/6/29 - XFree86 3.9Pu</A>
 <LI><A HREF="#xterm_109">Patch #109 - 1999/6/23 - XFree86 3.9Pt</A>
 <LI><A HREF="#xterm_108">Patch #108 - 1999/6/19 - XFree86 3.9Ps</A>
@@ -153,6 +154,34 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_111">Patch #111 - 1999/7/10 - XFree86 3.9Pw</A></H1>
+<ul>
+	<li>add control sequences for specifying the RGB value of the ANSI
+	  colors, and for configuring with 256 colors (patch by Todd Larason
+	  &lt;jtl@molehill.org&gt;).  I made the default configuration to
+	  16-colors, because xterm uses the default color map (which has only
+	  256 colors).
+
+	<li>correct an error in DCS $ q m reporting for colors 8-15 (Todd
+	  Larason).
+
+	<li>add test/demo script for double size characters.  Used this to
+	  test/correct display of double size characters that should wrap,
+	  underlined double size characters.
+
+	<li>increased cache size for double size fonts to 8, to allow for both
+	  normal and bold fonts (from discussion with Aryeh Koenigsberg
+	  &lt;aryeh.koenigsberg@telrad.co.il&gt;).
+
+	<li>integrated patch from Greg Smith &lt;rys@epaibm.rtpnc.epa.gov&gt;
+	  for port to OS390 (aka MVS).  OS390 uses EBCDIC rather than ASCII.
+
+	<li>correct an off-by-one in binary search limits in keysym2ucs.c (Markus
+	  Kuhn).
+
+	<li>implement logging for UTF-8 mode.  The output is written in UTF-8 form.
+</ul>
 
 <H1><A NAME="xterm_110">Patch #110 - 1999/6/29 - XFree86 3.9Pu</A></H1>
 <ul>

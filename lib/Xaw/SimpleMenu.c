@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.17 1999/06/13 13:47:20 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.18 1999/06/20 08:41:06 dawes Exp $ */
 
 /*
  * SimpleMenu.c - Source code file for SimpleMenu widget.
@@ -1609,7 +1609,7 @@ CalculateNewSize(Widget w, Dimension *width_return, Dimension *height_return)
     int width_kid, height_kid;
     int width, height, tmp_w, tmp_h, max_dim;
     short vadd, hadd;
-    int n, columns, test_h;
+    int n, columns, test_h, num_children = 0;
     Boolean try_layout = False;
 
 #ifndef OLDXAW
@@ -1639,6 +1639,7 @@ CalculateNewSize(Widget w, Dimension *width_return, Dimension *height_return)
 	kid = xaw->composite.children[i];
 	if (!XtIsManaged(kid))
 	    continue;
+	++num_children;
 	width_kid = XtWidth(kid);
 	height_kid = XtHeight(kid);
 
@@ -1673,12 +1674,12 @@ CalculateNewSize(Widget w, Dimension *width_return, Dimension *height_return)
     *width_return = width;
     *height_return = height;
 
-    if (try_layout && columns > 1 && xaw->composite.num_children > 2) {
+    if (try_layout && columns > 1 && num_children > 2) {
 	int space;
 
 	height = test_h * (xaw->simple_menu.label ?
-			   xaw->composite.num_children - 1 :
-			   xaw->composite.num_children);
+			   num_children - 1 :
+			   num_children);
 
 	max_dim -= max_dim % test_h;
 	space = max_dim - (height % max_dim);

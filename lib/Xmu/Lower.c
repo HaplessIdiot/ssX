@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xmu/Lower.c,v 1.7 1998/10/03 09:06:32 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Lower.c,v 1.8 1999/04/28 15:04:50 dawes Exp $ */
 
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
@@ -59,8 +59,8 @@ in this Software without prior written authorization from The Open Group.
 #define XmuToupper(c)							 \
 ((c) >= XK_A && (c) <= XK_Z ?						 \
  (c) : (c) >= XK_a && (c) <= XK_z ?					 \
- (c) - (XK_a - XK_A) : (c) >= XK_Agrave && (c) <= XK_Odiaeresis ?	 \
- (c) - (XK_agrave - XK_Agrave) : (c) > XK_slash && (c) <= XK_Thorn ?	 \
+ (c) - (XK_a - XK_A) : (c) >= XK_agrave && (c) <= XK_odiaeresis ?	 \
+ (c) - (XK_agrave - XK_Agrave) : (c) >= XK_oslash && (c) <= XK_thorn ?	 \
  (c) - (XK_oslash - XK_Ooblique) :					 \
  (c))
 

@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit-sample,v 1.6 1999/05/30 03:03:36 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit-sample,v 1.7 1999/06/06 08:49:13 dawes Exp $
 
 Xedit*insertFile*text.width:		150
 Xedit*search*searchText.width:		192
@@ -230,3 +230,4 @@ foreground	rgb:b/2/3;\
 draw-lines	+2,-2,-2,-2,-2,+2;\
 foreground	rgb:8/0/1;\
 draw-lines	-2,+1,+1,+1,+1,-2
+Xedit*tip.background:	yellow
