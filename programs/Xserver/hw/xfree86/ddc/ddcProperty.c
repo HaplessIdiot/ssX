@@ -3,7 +3,7 @@
  * 
  * Copyright 1999 by Andrew C Aitchison <A.C.Aitchison@dpmms.cam.ac.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/ddcProperty.c,v 1.6 2001/03/01 00:56:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/ddcProperty.c,v 1.7 2001/04/05 17:42:32 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -48,8 +48,8 @@ xf86SetDDCproperties(ScrnInfoPtr pScrnInfo, xf86MonPtr DDC)
     if (DDC->ver.version == 1) {
       makeEDID1prop = TRUE;
     } else if (DDC->ver.version == 2) {
-      int checksum1 = 0;
-      int checksum2 = 0;
+      int checksum1;
+      int checksum2;
       makeEDID2prop = TRUE;
 
       /* Some monitors (eg Panasonic PanaSync4)
@@ -58,14 +58,16 @@ xf86SetDDCproperties(ScrnInfoPtr pScrnInfo, xf86MonPtr DDC)
        *
        * Try using checksum to determine when we have such a monitor.
        */
+      checksum2 = 0;
       for (i=0; i<256; i++) { checksum2 += DDC->rawData[i]; }
       if ( (checksum2 % 256) != 0 ) {
 	xf86DrvMsg(pScrnInfo->scrnIndex,X_INFO, "Monitor EDID v2 checksum failed\n");
 	xf86DrvMsg(pScrnInfo->scrnIndex,X_INFO, "XFree86_DDC_EDID2_RAWDATA property may be bad\n");
+	checksum1 = 0;
 	for (i=0; i<128; i++) { checksum1 += DDC->rawData[i]; }
 	if ( (checksum1 % 256) == 0 ) {
 	  xf86DrvMsg(pScrnInfo->scrnIndex,X_INFO, "Monitor EDID v1 checksum passed,\n");
-	  xf86DrvMsg(pScrnInfo->scrnIndex,X_INFO, "XFree86_DDC_EDID2_RAWDATA property created\n");
+	  xf86DrvMsg(pScrnInfo->scrnIndex,X_INFO, "XFree86_DDC_EDID1_RAWDATA property created\n");
 	  makeEDID1prop = TRUE;
 	}
       }

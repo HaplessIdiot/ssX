@@ -1,4 +1,14 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 127. Stops xf86cfg complaining about non-video chips from Intel.
+      Adds a few PCI card ids for Intel and one for Matrox.
+      (#4804 Andrew C Aitchison)
+ 126. Patch to make VBE DDC honour the NoDDC option.
+      Before this, NoDDC disabled only 2 of the 3 ways the server might
+      ask the monitor for DDC infomation.
+      (#4805 Andrew C Aitchison)
+ 125. Stops xf86cfg complaining about non-video chips from Intel.
+      Adds a few PCI card ids for Intel and one for Matrox.
+      (#4804 Andrew C Aitchison)
  124. Add support for NVIDIA nForce integrated graphics (Mark Vojkovich).
  123. Fix a possible fatal crash in Xv when Xinerama is used (Mark Vojkovich).
  122. Corrects typos in output of xf86cfg when checking modules and
@@ -13531,4 +13541,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1870 2001/07/10 07:51:04 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1871 2001/07/11 22:17:05 mvojkovi Exp $

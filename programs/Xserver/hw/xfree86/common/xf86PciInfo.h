@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.99 2001/07/06 04:22:32 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.100 2001/07/09 23:43:33 mvojkovi Exp $ */
 /*
  * PCI Probe
  *
@@ -364,6 +364,7 @@
 #define PCI_CHIP_MGAG100_PCI	0x1000
 #define PCI_CHIP_MGAG100	0x1001
 
+#define PCI_CARD_G400_TH	0x2179
 #define PCI_CARD_MILL_G200_SD	0xff00
 #define PCI_CARD_PROD_G100_SD	0xff01
 #define PCI_CARD_MYST_G200_SD	0xff02
@@ -1470,6 +1471,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_968,		"968",0},
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_INTEL,{
+#ifdef VENDOR_INCLUDE_NONVIDEO
                                 {0x0482, "82375EB pci-eisa bridge",0},
 				{0x0483, "82424ZX cache dram controller",0},
 				{0x0484, "82378IB/ZB pci-isa bridge",0x0601},
@@ -1509,15 +1511,16 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x71a2, "82443GX Host (no AGP)",0},
 				{0x84C4, "P6",0},
 				{0x84C5, "82450GX20",0},
-				{PCI_CHIP_I740_AGP,	"i740 (AGP)",0},
-				{PCI_CHIP_I815_BRIDGE,	"i815 Bridge",0},
-				{PCI_CHIP_I815,		"i815",0},
 				{PCI_CHIP_I810_BRIDGE,	"i810 Bridge",0},
-				{PCI_CHIP_I810,		"i810",0},
 				{PCI_CHIP_I810_DC100_BRIDGE,	"i810-dc100 Bridge",0},
-				{PCI_CHIP_I810_DC100,	"i810-dc100",0},
 				{PCI_CHIP_I810_E_BRIDGE,"i810e Bridge",0},
+				{PCI_CHIP_I815_BRIDGE,	"i815 Bridge",0},
+#endif
+				{PCI_CHIP_I740_AGP,	"i740 (AGP)",0},
+				{PCI_CHIP_I810,		"i810",0},
+				{PCI_CHIP_I810_DC100,	"i810-dc100",0},
 				{PCI_CHIP_I810_E,	"i810e",0},
+				{PCI_CHIP_I815,		"i815",0},
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_ADAPTEC, {
 				{0x0010, "2940U2",0 },
@@ -1752,8 +1755,11 @@ static pciVendorCardInfo xf86PCICardInfoData[] = {
 	{PCI_VENDOR_INTEL, {
 #ifdef VENDOR_INCLUDE_NONVIDEO
                         { 0x0009, "PCI 10/100Mb/s ethernet card",0, NF },
+                        { 0x0040, "PRO/100 S Desktop Adapter PCI 10/100Mb/s ethernet card",0, NF },
  	  /* Seattle AL440BX is 0x8080, is anything else ? */
                         { 0x8080, "motherboard",0, NF },
+                        { 0x3013, "Integrated LAN (82562ET)",0, NF },
+                        { 0x4541, "Eastern (D815EEA) motherboard",0, NF },
                         { 0x4d55, "Maui (MU) motherboard",0, NF },
 #endif
                         { 0x0000, (char *)NULL,0, NF } } },
@@ -1768,6 +1774,7 @@ static pciVendorCardInfo xf86PCICardInfoData[] = {
                         { PCI_CARD_MILL_G200_SG, "Millennium G200 SG",0, NF },
                         { PCI_CARD_MARV_G200_SD, "Marvel G200 SD",0, NF },
                         { 0x1001, "Productiva G100 SG",0, NF },
+                        { PCI_CARD_G400_TH, "G400 Twin Head",0, NF },
                         { 0x0000, (char *)NULL,0, NF } } },
 	{ PCI_VENDOR_SIS, {
                         { 0x6306, "530 based motherboard",0, NF },
