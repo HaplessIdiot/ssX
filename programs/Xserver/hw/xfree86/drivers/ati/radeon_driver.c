@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.24 2001/05/10 16:48:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.25 2001/05/10 21:14:55 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1323,7 +1323,8 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (!RADEONGetPLLParameters(pScrn))          goto fail;
 
-    if (!RADEONPreInitDDC(pScrn, pInt10))        goto fail;
+    /* shouldn't fail just because we can't get DDC */
+    RADEONPreInitDDC(pScrn, pInt10);
 
     if (!RADEONPreInitGamma(pScrn))              goto fail;
 
