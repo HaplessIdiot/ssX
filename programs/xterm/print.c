@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/print.c,v 1.10 1999/07/11 08:49:39 dawes Exp $
+ * $XFree86: xc/programs/xterm/print.c,v 1.11 1999/09/25 14:38:34 dawes Exp $
  */
 
 /************************************************************
@@ -96,8 +96,8 @@ static void printLine(int row, int chr)
 	register TScreen *screen = &term->screen;
 	Char *c = SCRN_BUF_CHARS(screen, row);
 	Char *a = SCRN_BUF_ATTRS(screen, row);
-	Char attr = *a & SGR_MASK;
-	int last = screen->max_col;
+	Char attr = 0;
+	int last = screen->max_col + 1;
 	int col;
 #if OPT_ISO_COLORS && OPT_PRINT_COLORS
 #if OPT_EXT_COLORS
@@ -252,7 +252,7 @@ static void send_SGR(unsigned attr, int fg, int bg)
 	if (attr & BOLD)
 		strcat(msg, ";1");
 	if (attr & UNDERLINE)
-		strcat(msg, ";2");
+		strcat(msg, ";4"); /* typo? DEC documents this as '2' */
 	if (attr & BLINK)
 		strcat(msg, ";5");
 	if (attr & INVERSE)	/* typo? DEC documents this as invisible */

@@ -1,5 +1,5 @@
 .\" $XConsortium: xterm.man /main/85 1996/12/09 17:10:53 kaleb $
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.50 1999/07/18 03:27:16 dawes Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.51 1999/09/25 14:38:44 dawes Exp $
 .\"
 .\"
 .\" Copyright 1999 by Thomas E. Dickey <dickey@clark.net>
@@ -350,6 +350,16 @@ for function keys.
 .BI \+hf
 This option indicates that HP Function Key escape codes should not be generated
 for function keys.
+.TP 8
+.BI \-hold
+Turn on the \fBhold\fP resource, i.e.,
+xterm will not immediately destroy its window when the shell command completes.
+It will wait until you use the window manager to destroy/kill the window, or
+if you use the menu entries that send a signal, e.g., HUP or KILL.
+.TP 8
+.BI \+hold
+Turn off the \fBhold\fP resource, i.e.,
+xterm will immediately destroy its window when the shell command completes.
 .TP 8
 .B \-ie
 Turn on the \fBptyInitialErase\fP resource, i.e.,
@@ -707,6 +717,15 @@ Tie the VTxxx \fBbackarrowKey\fP and \fBptyInitialErase\fP resources
 together by setting the DECBKM state according to whether the initial value of
 stty erase is a backspace or delete character.
 The default is ``false'', which disables this feature.
+.TP 8
+.B "hold (\fPclass\fB Hold)"
+If true,
+xterm will not immediately destroy its window when the shell command completes.
+It will wait until you use the window manager to destroy/kill the window, or
+if you use the menu entries that send a signal, e.g., HUP or KILL.
+You may scroll back, select text, etc., to perform most graphical operations.
+Resizing the display will lose data, however, since this involves interaction
+with the shell which is no longer running.
 .TP 8
 .B "hpFunctionKeys (\fPclass\fB HpFunctionKeys)"
 Specifies whether or not HP Function Key escape codes should be generated for
@@ -2444,5 +2463,6 @@ Jim Gettys (MIT-Athena), Bob Scheifler (MIT X Consortium), Doug Mink (SAO),
 Steve Pitschke (Stellar), Ron Newman (MIT-Athena), Jim Fulton (MIT X
 Consortium), Dave Serisky (HP), Jonathan Kamens (MIT-Athena),
 Jason Bacon <acadix@execpc.com>,
+Stephen P. Wall <swall@redcom.com>,
 David Wexelblat, and
 Thomas Dickey (XFree86 Project).

@@ -1,5 +1,5 @@
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/mi/mibank.h,v 1.3 1998/09/13 05:23:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibank.h,v 1.4 1998/09/19 12:15:05 dawes Exp $ */
 
 #ifndef __MIBANK_H__
 #define __MIBANK_H__ 1
@@ -95,6 +95,14 @@ miInitializeBanking(
     unsigned int /*xsize*/,
     unsigned int /*ysize*/,
     unsigned int /*width*/,
+    miBankInfoPtr /*pBankInfo*/
+#endif
+);
+
+Bool
+miModifyBanking(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
     miBankInfoPtr /*pBankInfo*/
 #endif
 );

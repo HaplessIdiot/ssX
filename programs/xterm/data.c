@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: data.c,v 1.12 95/04/05 19:58:47 kaleb Exp $
- *	$XFree86: xc/programs/xterm/data.c,v 3.15 1999/08/21 13:49:01 dawes Exp $
+ *	$XFree86: xc/programs/xterm/data.c,v 3.16 1999/09/25 14:38:29 dawes Exp $
  */
 
 /*
@@ -61,6 +61,7 @@ XtAppContext app_con;
 XtermWidget term;	/* master data structure for client */
 char *xterm_name;	/* argv[0] */
 Boolean sunFunctionKeys;
+int hold_screen;
 
 #if OPT_HP_FUNC_KEYS
 Boolean hpFunctionKeys;

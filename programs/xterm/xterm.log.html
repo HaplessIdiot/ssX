@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.36 1999/08/21 13:49:08 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.37 1999/09/25 14:38:43 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_116">Patch #116 - 1999/9/25 - XFree86 3.9.16a</A>
 <LI><A HREF="#xterm_115">Patch #115 - 1999/9/18 - XFree86 3.9.16a</A>
 <LI><A HREF="#xterm_114">Patch #114 - 1999/9/15 - XFree86 3.9.16</A>
 <LI><A HREF="#xterm_113">Patch #113 - 1999/8/15 - XFree86 3.9.15b</A>
@@ -158,6 +159,61 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_116">Patch #116 - 1999/9/25 - XFree86 3.9.16a</A></H1>
+<ul>
+	<li>modify warning if change-ownership of PTY fails; some
+	  configurations may not happen to have old-style pty's (reported by
+	  Bob Maynard).
+
+	<li>improve check in configure script for group ownership of installed
+	  xterm; some platforms use the -g option of ls to toggle group off
+	  rather than on (reported by Greg Smith).
+
+	<li>minor improvement to toolbar geometry, to make it not resizable. 
+	  This still is not satisfactory (but is usable) since the toolbar
+	  overlaps the xterm widget if the window is resized to make it
+	  smaller.  It appears that some work is needed for the xterm widget's
+	  geometry management to make it function properly.
+
+	<li>implement configure script tests for utmp, tty group.
+
+	<li>implement <em>-hold</em> option, allowing users to retain the
+	  window after a shell has exited (this is recently an FAQ, but
+	  prompted by a comment by Joachim Plaettner-Hochwarth
+	  &lt;plaettner@aem.umn.edu&gt; in comp.unix.programmer, that the IRIX
+	  winterm provides this option).
+
+	<li>integrated change by Steve Wall to
+	  add support for DEC Locator control sequences for xterm: 
+	  <pre>
+ 
+		DECEFR - Enable Filter Rectangle 
+		DECELR - Enable Locator Reports 
+		DECSLE - Select Locator Events 
+		DECRQLP - Request Locator Position 
+	  </pre>  
+	  This allows the xterm mouse to be used with applications that use the 
+	  DEC Locator sequences, such as VAX Tpu, or SMG$ based applications. 
+
+	<li>patch from Matthias Baake &lt;Matthias.Baake@gmx.de&gt;, for print
+	  action.  From his notes:
+	  <ul>
+	    <li>Bug 1: 
+	      Underlined text is preceded by ESC [0;2m . This should be ESC [0;4m , ESC 
+	      [2m doesn't seem to have any effect. (print.c/send_SGR) 
+	 
+	    <li>Bug 2: 
+	      The check for the last non-empty column (while (last &gt; 0) ... in 
+	      print.c/printLine) omits the rightmost column of the screen, the loop must 
+	      start with last = screen->max_col+1 instead of last = screen->max_col. 
+	 
+	    <li>Bug 3: 
+	      Any attributes of the first character (and of all immediately following 
+	      characters with the same attributes) are ignored. The variable attr 
+	      (print.c/printLine) should be initialized with 0, not with *a &amp; SGR_MASK. 
+	  </ul>
+</ul>
 
 <H1><A NAME="xterm_115">Patch #115 - 1999/9/18 - XFree86 3.9.16a</A></H1>
 <ul>

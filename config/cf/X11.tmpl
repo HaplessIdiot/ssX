@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.50 1999/06/12 07:18:28 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.51 1999/08/28 09:00:18 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -253,9 +253,6 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.50 1999/06/12 07:18:28 dawes Exp $
 #ifndef BuildXF86DGALibrary
 #define BuildXF86DGALibrary	BuildXF86DGA
 #endif
-#ifndef BuildXF86RushLibrary
-#define BuildXF86RushLibrary	NO
-#endif
 #ifndef BuildXvExt
 #define BuildXvExt		NO
 #endif
@@ -273,6 +270,12 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.50 1999/06/12 07:18:28 dawes Exp $
 #endif
 #ifndef BuildGLXLibrary
 #define BuildGLXLibrary		BuildGlxExt
+#endif
+#ifndef BuildXF86RushExt
+#define BuildXF86RushExt	NO
+#endif
+#ifndef BuildXF86RushLibrary
+#define BuildXF86RushLibrary	BuildXF86RushExt
 #endif
 
 #ifndef BuildMiscDocs

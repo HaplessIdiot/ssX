@@ -1,10 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.8 1999/08/28 09:00:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.9 1999/08/28 14:32:45 dawes Exp $ */
 
 
 #include "apm.h"
 #include "miline.h"
-
-extern int xf86Exiting;
 
 /* Defines */
 #define MAXLOOP 1000000
@@ -33,16 +31,17 @@ extern void apm_stopit(void);
 
 static void Dump(void* start, u32 len);
 
+static Bool doSetup = TRUE;
+
 #include "apm_funcs.c"
 
 #define IOP_ACCESS
 #include "apm_funcs.c"
 
-#undef IOP_ACCESS
-#undef PSZ
 #define PSZ	24
 #include "apm_funcs.c"
 
+#define PSZ	24
 #define IOP_ACCESS
 #include "apm_funcs.c"
 
@@ -107,15 +106,15 @@ ApmCacheMonoStipple(ScrnInfoPtr pScrn, PixmapPtr pPix)
     pCache->apmStippleCache.orig_w = w;
     pCache->apmStippleCache.orig_h = h;
     pCache->apmStippleCache.x = draw->box.x1;
-    pCache->apmStippleCache.y = draw->box.y1 + ((pCache - pApm->apmCache) + 1) * pApm->Scanlines;
+    pCache->apmStippleCache.y = draw->box.y1 + ((pCache - pApm->apmCache) + 1) * pApm->CurrentLayout.Scanlines;
     mem = ((draw->box.x2 - draw->box.x1) * (draw->box.y2 - draw->box.y1) *
-			pApm->bitsPerPixel) / (W * h);
+			pScrn->bitsPerPixel) / (W * h);
     width = 2;
     while (width * width <= mem)
 	width++;
     width--;
-    pCache->apmStippleCache.w = (width * W + pApm->bitsPerPixel - 1) /
-			pApm->bitsPerPixel;
+    pCache->apmStippleCache.w = (width * W + pScrn->bitsPerPixel - 1) /
+			pScrn->bitsPerPixel;
     pCache->apmStippleCache.h = ((draw->box.x2 - draw->box.x1) *
 			(draw->box.y2 - draw->box.y1)) /
 			pCache->apmStippleCache.w;
@@ -127,9 +126,9 @@ ApmCacheMonoStipple(ScrnInfoPtr pScrn, PixmapPtr pPix)
     } else			funcNo = 2;
 
     dstPtr = ((CARD32 *)pApm->FbBase) + (draw->box.x1 +
-			draw->box.y1 * pApm->bytesPerScanline) / 4;
+			draw->box.y1*pApm->CurrentLayout.bytesPerScanline) / 4;
     j = 0;
-    dwords = (pCache->apmStippleCache.w * pApm->bitsPerPixel) / 32;
+    dwords = (pCache->apmStippleCache.w * pScrn->bitsPerPixel) / 32;
     while (j + h <= pCache->apmStippleCache.h) {
 	srcPtr = (unsigned char *)pPix->devPrivate.ptr;
 	for (i = h; --i >= 0; ) {
@@ -149,6 +148,54 @@ ApmCacheMonoStipple(ScrnInfoPtr pScrn, PixmapPtr pPix)
     return &pCache->apmStippleCache;
 }
 
+extern GCOps XAAPixmapOps;
+static RegionPtr (*SaveCopyAreaPixmap)(DrawablePtr, DrawablePtr, GC *, int, int, int, int, int, int);
+
+static RegionPtr
+ApmCopyAreaPixmap(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, GC *pGC,
+		int srcx, int srcy,
+		int width, int height,
+		int dstx, int dsty )
+{
+    register int Scanlines = APMPTR(xf86Screens[(pGC)->pScreen->myNum])->CurrentLayout.Scanlines;
+    int is = (pSrcDrawable->type == DRAWABLE_PIXMAP) ? APM_GET_PIXMAP_PRIVATE(pSrcDrawable)->num : 0;
+    int id = (pDstDrawable->type == DRAWABLE_PIXMAP) ? APM_GET_PIXMAP_PRIVATE(pDstDrawable)->num : 0;
+    int sx, sy, dx, dy, pitch;
+    RegionPtr pReg;
+
+    if (is) {
+	sx = pSrcDrawable->x;
+	sy = pSrcDrawable->y % Scanlines;
+	pitch = 2 * pSrcDrawable->width;
+	pSrcDrawable->x = (sx + ((PixmapPtr)pSrcDrawable)->devKind * sy) % pitch;
+	pSrcDrawable->y = (sx + ((PixmapPtr)pSrcDrawable)->devKind * sy) / pitch;
+	((PixmapPtr)pSrcDrawable)->devKind = pitch;
+	pSrcDrawable->depth = 16;
+    }
+    if (id) {
+	dx = pDstDrawable->x;
+	dy = pDstDrawable->y % Scanlines;
+	pitch = 2 * pDstDrawable->width;
+	pDstDrawable->x = (dx + ((PixmapPtr)pDstDrawable)->devKind * dy) % pitch;
+	pDstDrawable->y = (dx + ((PixmapPtr)pDstDrawable)->devKind * dy) / pitch;
+	((PixmapPtr)pDstDrawable)->devKind = pitch;
+	pDstDrawable->depth = 16;
+    }
+    pReg = (*SaveCopyAreaPixmap)(pSrcDrawable, pDstDrawable, pGC,
+					srcx, srcy % Scanlines,
+					width, height,
+					dstx, dsty % Scanlines);
+    if (is) {
+	pSrcDrawable->x = sx;
+	pSrcDrawable->y = sy + is * Scanlines;
+    }
+    if (id) {
+	pDstDrawable->x = dx;
+	pDstDrawable->y = dy + id * Scanlines;
+    }
+    return pReg;
+}
+
 /*********************************************************************************************/
 
 int
@@ -164,21 +211,18 @@ ApmAccelInit(ScreenPtr pScreen)
     if (!pXAAinfo)
 	return FALSE;
 
-    pApm->pScreen	= pScreen;
-    pApm->displayWidth	= pScrn->display->virtualX;
-    pApm->displayHeight	= pScrn->display->virtualY;
-    pApm->bitsPerPixel	= pScrn->bitsPerPixel;
-    pApm->bytesPerScanline= (pApm->displayWidth * pApm->bitsPerPixel) >> 3;
-    mem			= pScrn->videoRam << 10;
-    pApm->Scanlines	= mem / pApm->bytesPerScanline + 1;
+    mem					= pScrn->videoRam << 10;
     /*
-     * Reserve at list one line for transparent 8x8 mono2color expansion
+     * Reserve at least four lines for mono to color expansion
      */
     ScratchMemOffset	= ((mem - pApm->OffscreenReserved) /
-			pApm->bytesPerScanline - 1) * pApm->bytesPerScanline;
+			pApm->CurrentLayout.bytesPerScanline - 4) *
+			pApm->CurrentLayout.bytesPerScanline;
     pApm->ScratchMemSize= mem - ScratchMemOffset - pApm->OffscreenReserved;
-    pApm->ScratchMemOffset	= ScratchMemOffset;
-    switch (pApm->bitsPerPixel) {
+    pApm->ScratchMemPtr	= pApm->ScratchMemOffset
+			= (int)pApm->FbBase + ScratchMemOffset;
+    pApm->ScratchMemEnd	= (int)pApm->FbBase + mem - pApm->OffscreenReserved;
+    switch (pApm->CurrentLayout.bitsPerPixel) {
     case 8:
     case 24:
 	pApm->ScratchMemWidth =
@@ -200,7 +244,7 @@ ApmAccelInit(ScreenPtr pScreen)
 	pApm->ScratchMemWidth =
 		(mem - ScratchMemOffset - pApm->OffscreenReserved) / 4;
 	pApm->ScratchMem =
-		((ScratchMemOffset & 0xFFC000U) << 2) |
+		((ScratchMemOffset & 0xFFC000) << 2) |
 		    ((ScratchMemOffset & 0x3FFC) >> 2);
 	break;
     }
@@ -228,52 +272,54 @@ ApmAccelInit(ScreenPtr pScreen)
 	}
     }
 
-    pApm->Setup_DEC = 0;
-    switch(pApm->bitsPerPixel)
+    pApm->CurrentLayout.Setup_DEC = 0;
+    switch(pApm->CurrentLayout.bitsPerPixel)
     {
       case 8:
-           pApm->Setup_DEC |= DEC_BITDEPTH_8;
+           pApm->CurrentLayout.Setup_DEC |= DEC_BITDEPTH_8;
            break;
       case 16:
-           pApm->Setup_DEC |= DEC_BITDEPTH_16;
+           pApm->CurrentLayout.Setup_DEC |= DEC_BITDEPTH_16;
            break;
       case 24:
-           pApm->Setup_DEC |= DEC_BITDEPTH_24;
+	   /* Note : in 24 bpp, the accelerator wants linear coordinates */
+           pApm->CurrentLayout.Setup_DEC |= DEC_BITDEPTH_24 | DEC_SOURCE_LINEAR |
+				   DEC_DEST_LINEAR;
            break;
       case 32:
-           pApm->Setup_DEC |= DEC_BITDEPTH_32;
+           pApm->CurrentLayout.Setup_DEC |= DEC_BITDEPTH_32;
            break;
       default:
            xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		    "Cannot set up drawing engine control for bpp = %d\n",
-		    pScrn->bitsPerPixel);
+		    pApm->CurrentLayout.bitsPerPixel);
            break;
     }
 
-    switch(pApm->displayWidth)
+    switch(pApm->CurrentLayout.displayWidth)
     {
       case 640:
-           pApm->Setup_DEC |= DEC_WIDTH_640;
+           pApm->CurrentLayout.Setup_DEC |= DEC_WIDTH_640;
            break;
       case 800:
-           pApm->Setup_DEC |= DEC_WIDTH_800;
+           pApm->CurrentLayout.Setup_DEC |= DEC_WIDTH_800;
            break;
       case 1024:
-           pApm->Setup_DEC |= DEC_WIDTH_1024;
+           pApm->CurrentLayout.Setup_DEC |= DEC_WIDTH_1024;
            break;
       case 1152:
-           pApm->Setup_DEC |= DEC_WIDTH_1152;
+           pApm->CurrentLayout.Setup_DEC |= DEC_WIDTH_1152;
            break;
       case 1280:
-           pApm->Setup_DEC |= DEC_WIDTH_1280;
+           pApm->CurrentLayout.Setup_DEC |= DEC_WIDTH_1280;
            break;
       case 1600:
-           pApm->Setup_DEC |= DEC_WIDTH_1600;
+           pApm->CurrentLayout.Setup_DEC |= DEC_WIDTH_1600;
            break;
       default:
            xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		       "Cannot set up drawing engine control "
-		       "for screen width = %d\n", pApm->displayWidth);
+		       "for screen width = %d\n", pApm->CurrentLayout.displayWidth);
            break;
     }
 
@@ -294,8 +340,12 @@ ApmAccelInit(ScreenPtr pScreen)
      */
     pXAAinfo->Flags = PIXMAP_CACHE | LINEAR_FRAMEBUFFER | OFFSCREEN_PIXMAPS;
     pXAAinfo->CacheMonoStipple = ApmCacheMonoStipple;
+    if (XAAPixmapOps.CopyArea != ApmCopyAreaPixmap) {
+	SaveCopyAreaPixmap = XAAPixmapOps.CopyArea;
+	XAAPixmapOps.CopyArea = ApmCopyAreaPixmap;
+    }
 
-    if (pApm->bitsPerPixel != 24) {
+    if (pApm->CurrentLayout.bitsPerPixel != 24) {
 	if (!pApm->noLinear) {
 #define	XAA(s)		pXAAinfo->s = Apm##s
 	    XAA(Sync);
@@ -322,16 +372,34 @@ ApmAccelInit(ScreenPtr pScreen)
 		pXAAinfo->ColorExpandRange	= 32*1024;
 	    }
 
+#if 0
+	    The constraints of the transfer range are incompatible with the
+	    XAA architecture. I rewrote the XAA functions using ImageWrite
 	    /* Accelerated image transfers */
 	    pXAAinfo->ImageWriteFlags	=
 			    LEFT_EDGE_CLIPPING | NO_PLANEMASK |
 			    SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_QWORD |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X |
 			    SYNC_AFTER_IMAGE_WRITE;
 	    pXAAinfo->ImageWriteBase	= pApm->BltMap;
 	    pXAAinfo->ImageWriteRange	= 32*1024;
 	    XAA(SetupForImageWrite);
 	    XAA(SubsequentImageWriteRect);
+#endif
+	    pXAAinfo->WritePixmapFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
 	    XAA(WritePixmap);
+	    pXAAinfo->WriteBitmapFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X |
+			    BIT_ORDER_IN_BYTE_LSBFIRST;
+	    XAA(WriteBitmap);
+	    pXAAinfo->FillImageWriteRectsFlags	=
+			    LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
+	    XAA(FillImageWriteRects);
+	    pXAAinfo->TEGlyphRendererFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
+	    XAA(TEGlyphRenderer);
 
 	    /* Accelerated screen-screen bitblts */
 	    pXAAinfo->ScreenToScreenCopyFlags = NO_PLANEMASK;
@@ -345,12 +413,12 @@ ApmAccelInit(ScreenPtr pScreen)
 	    pXAAinfo->SolidBresenhamLineErrorTermBits = 15;
 
 	    /* Pattern fill */
-	    pXAAinfo->Mono8x8PatternFillFlags = NO_PLANEMASK | NO_TRANSPARENCY |
+	    pXAAinfo->Mono8x8PatternFillFlags = NO_PLANEMASK |
 			    HARDWARE_PATTERN_PROGRAMMED_BITS |
 			    HARDWARE_PATTERN_SCREEN_ORIGIN;
 	    XAA(SetupForMono8x8PatternFill);
 	    XAA(SubsequentMono8x8PatternFillRect);
-	    if (pApm->bitsPerPixel == 8) {
+	    if (pApm->CurrentLayout.bitsPerPixel == 8) {
 		pXAAinfo->Color8x8PatternFillFlags = NO_PLANEMASK |
 				HARDWARE_PATTERN_SCREEN_ORIGIN;
 		XAA(SetupForColor8x8PatternFill);
@@ -384,6 +452,9 @@ ApmAccelInit(ScreenPtr pScreen)
 		pXAAinfo->ColorExpandRange	= 32*1024;
 	    }
 
+#if 0
+	    The constraints of the transfer range are incompatible with the
+	    XAA architecture. I rewrote the XAA functions using ImageWrite
 	    /* Accelerated image transfers */
 	    pXAAinfo->ImageWriteFlags	=
 			    LEFT_EDGE_CLIPPING | NO_PLANEMASK |
@@ -392,7 +463,21 @@ ApmAccelInit(ScreenPtr pScreen)
 	    pXAAinfo->ImageWriteRange	= 32*1024;
 	    XAA(SetupForImageWrite);
 	    XAA(SubsequentImageWriteRect);
+#endif
+	    pXAAinfo->WritePixmapFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
 	    XAA(WritePixmap);
+	    pXAAinfo->WriteBitmapFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X |
+			    BIT_ORDER_IN_BYTE_LSBFIRST;
+	    XAA(WriteBitmap);
+	    pXAAinfo->FillImageWriteRectsFlags	=
+			    LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
+	    XAA(FillImageWriteRects);
+	    pXAAinfo->TEGlyphRendererFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
+	    XAA(TEGlyphRenderer);
 
 	    /* Accelerated screen-screen bitblts */
 	    pXAAinfo->ScreenToScreenCopyFlags = NO_PLANEMASK;
@@ -406,12 +491,12 @@ ApmAccelInit(ScreenPtr pScreen)
 	    pXAAinfo->SolidBresenhamLineErrorTermBits = 15;
 
 	    /* Pattern fill */
-	    pXAAinfo->Mono8x8PatternFillFlags = NO_PLANEMASK | NO_TRANSPARENCY |
+	    pXAAinfo->Mono8x8PatternFillFlags = NO_PLANEMASK |
 			    HARDWARE_PATTERN_PROGRAMMED_BITS |
 			    HARDWARE_PATTERN_SCREEN_ORIGIN;
 	    XAA(SetupForMono8x8PatternFill);
 	    XAA(SubsequentMono8x8PatternFillRect);
-	    if (pApm->bitsPerPixel == 8) {
+	    if (pApm->CurrentLayout.bitsPerPixel == 8) {
 		pXAAinfo->Color8x8PatternFillFlags = NO_PLANEMASK |
 				HARDWARE_PATTERN_SCREEN_ORIGIN;
 		XAA(SetupForColor8x8PatternFill);
@@ -448,6 +533,9 @@ ApmAccelInit(ScreenPtr pScreen)
 		pXAAinfo->ColorExpandRange	= 32*1024;
 	    }
 
+#if 0
+	    The constraints of the transfer range are incompatible with the
+	    XAA architecture. I rewrote the XAA functions using ImageWrite
 	    /* Accelerated image transfers */
 	    pXAAinfo->ImageWriteFlags	=
 			    LEFT_EDGE_CLIPPING | NO_PLANEMASK |
@@ -457,15 +545,22 @@ ApmAccelInit(ScreenPtr pScreen)
 	    pXAAinfo->ImageWriteRange	= 32*1024;
 	    XAA(SetupForImageWrite);
 	    XAA(SubsequentImageWriteRect);
-	    XAA(WritePixmap);
 #endif
+	    pXAAinfo->WritePixmapFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
+	    XAA(WritePixmap);
+	    pXAAinfo->FillImageWriteRectsFlags	=
+			    LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
+	    XAA(FillImageWriteRects);
+	    pXAAinfo->WriteBitmapFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X |
+			    BIT_ORDER_IN_BYTE_LSBFIRST;
+	    XAA(WriteBitmap);
+	    pXAAinfo->TEGlyphRendererFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
+	    XAA(TEGlyphRenderer);
 
-	    /* Accelerated screen-screen bitblts */
-	    pXAAinfo->ScreenToScreenCopyFlags = NO_PLANEMASK;
-	    XAA(SetupForScreenToScreenCopy);
-	    XAA(SubsequentScreenToScreenCopy);
-
-#if 0
 	    /* Accelerated Line drawing */
 	    pXAAinfo->SolidLineFlags = NO_PLANEMASK | HARDWARE_CLIP_LINE;
 	    XAA(SubsequentSolidBresenhamLine);
@@ -479,6 +574,11 @@ ApmAccelInit(ScreenPtr pScreen)
 	    XAA(SetupForMono8x8PatternFill);
 	    XAA(SubsequentMono8x8PatternFillRect);
 #endif
+
+	    /* Accelerated screen-screen bitblts */
+	    pXAAinfo->ScreenToScreenCopyFlags = NO_PLANEMASK | NO_TRANSPARENCY;
+	    XAA(SetupForScreenToScreenCopy);
+	    XAA(SubsequentScreenToScreenCopy);
 #undef XAA
 	}
 	else {
@@ -508,6 +608,9 @@ ApmAccelInit(ScreenPtr pScreen)
 		pXAAinfo->ColorExpandRange	= 32*1024;
 	    }
 
+#if 0
+	    The constraints of the transfer range are incompatible with the
+	    XAA architecture. I rewrote the XAA functions using ImageWrite
 	    /* Accelerated image transfers */
 	    pXAAinfo->ImageWriteFlags	=
 			    LEFT_EDGE_CLIPPING | NO_PLANEMASK |
@@ -516,15 +619,22 @@ ApmAccelInit(ScreenPtr pScreen)
 	    pXAAinfo->ImageWriteRange	= 32*1024;
 	    XAA(SetupForImageWrite);
 	    XAA(SubsequentImageWriteRect);
-	    XAA(WritePixmap);
 #endif
+	    pXAAinfo->WritePixmapFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
+	    XAA(WritePixmap);
+	    pXAAinfo->FillImageWriteRectsFlags	=
+			    LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
+	    XAA(FillImageWriteRects);
+	    pXAAinfo->WriteBitmapFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X |
+			    BIT_ORDER_IN_BYTE_LSBFIRST;
+	    XAA(WriteBitmap);
+	    pXAAinfo->TEGlyphRendererFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
+	    XAA(TEGlyphRenderer);
 
-	    /* Accelerated screen-screen bitblts */
-	    pXAAinfo->ScreenToScreenCopyFlags = NO_PLANEMASK;
-	    XAA(SetupForScreenToScreenCopy);
-	    XAA(SubsequentScreenToScreenCopy);
-
-#if 0
 	    /* Accelerated Line drawing */
 	    pXAAinfo->SolidLineFlags = NO_PLANEMASK | HARDWARE_CLIP_LINE;
 	    XAA(SubsequentSolidBresenhamLine);
@@ -538,28 +648,38 @@ ApmAccelInit(ScreenPtr pScreen)
 	    XAA(SetupForMono8x8PatternFill);
 	    XAA(SubsequentMono8x8PatternFillRect);
 #endif
+
+	    /* Accelerated screen-screen bitblts */
+	    pXAAinfo->ScreenToScreenCopyFlags = NO_PLANEMASK | NO_TRANSPARENCY;
+	    XAA(SetupForScreenToScreenCopy);
+	    XAA(SubsequentScreenToScreenCopy);
 #undef XAA
 	}
     }
 
     /*
-     * Init Rush extension
+     * Init Rush extension.
+     * Must be initialized once per generation.
      */
-    REGION_INIT(pApm->pScreen, &pApm->apmLockedRegion, (BoxRec *)0, 1);
 #ifdef XF86RUSH_EXT
-    /* XXX Should this be called once per screen? */
-    XFree86RushExtensionInit();
+    if (!pApm->CreatePixmap) {
+	pApm->CreatePixmap	= pScreen->CreatePixmap;
+	pApm->DestroyPixmap	= pScreen->DestroyPixmap;
+    }
+    XFree86RushExtensionInit(pScreen);
 #endif
 
     /* Pixmap cache setup */
-    pXAAinfo->CachePixelGranularity = 64 / pApm->bitsPerPixel;
+    pXAAinfo->CachePixelGranularity = 64 / pScrn->bitsPerPixel;
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
-    AvailFBArea.x2 = pApm->displayWidth;
+    AvailFBArea.x2 = pScrn->displayWidth;
     AvailFBArea.y2 = (pScrn->videoRam * 1024 - pApm->OffscreenReserved) /
-	(pApm->displayWidth * ((pApm->bitsPerPixel + 7) >> 3));
+	(pScrn->displayWidth * ((pScrn->bitsPerPixel + 7) >> 3));
 
     xf86InitFBManager(pScreen, &AvailFBArea);
+
+    bzero(pApm->apmCache, sizeof pApm->apmCache);
 
     return XAAInit(pScreen, pXAAinfo);
 }

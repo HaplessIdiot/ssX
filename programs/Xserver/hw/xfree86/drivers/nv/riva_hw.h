@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
 \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.1 1999/08/01 07:21:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.2 1999/08/14 10:49:52 dawes Exp $ */
 #ifndef __RIVA_HW_H__
 #define __RIVA_HW_H__
 #define RIVA_SW_VERSION 0x00010001
@@ -219,6 +219,38 @@ typedef volatile struct
     float TextureT;
 } RivaTexturedTriangle03;
 
+/*
+ * 2D line.
+ */
+typedef volatile struct
+{
+    unsigned reserved00[4];
+    unsigned short FifoFree;
+    unsigned short Nop[1];
+    unsigned reserved01[0x0BC];
+    unsigned Color;             /* source color               0304-0307*/
+    unsigned Reserved02[0x03e];
+    struct {                    /* start aliased methods in array   0400-    */
+        unsigned point0;        /* y_x S16_S16 in pixels            0-   3*/
+        unsigned point1;        /* y_x S16_S16 in pixels            4-   7*/
+    } Lin[16];                  /* end of aliased methods in array      -047f*/
+    struct {                    /* start aliased methods in array   0480-    */
+        signed point0X;         /* in pixels, 0 at left                0-   3*/
+        signed point0Y;         /* in pixels, 0 at top                 4-   7*/
+        signed point1X;         /* in pixels, 0 at left                8-   b*/
+        signed point1Y;         /* in pixels, 0 at top                 c-   f*/
+    } Lin32[8];                 /* end of aliased methods in array      -04ff*/
+    unsigned PolyLin[32];       /* y_x S16_S16 in pixels         0500-057f*/
+    struct {                    /* start aliased methods in array   0580-    */
+        signed x;               /* in pixels, 0 at left                0-   3*/
+        signed y;               /* in pixels, 0 at top                 4-   7*/
+    } PolyLin32[16];            /* end of aliased methods in array      -05ff*/
+    struct {                    /* start aliased methods in array   0600-    */
+        unsigned color;         /* source color                     0-   3*/
+        unsigned point;         /* y_x S16_S16 in pixels            4-   7*/
+    } ColorPolyLin[16];         /* end of aliased methods in array      -067f*/
+} RivaLine;
+    
 /***************************************************************************\
 *                                                                           *
 *                        Virtualized RIVA H/W interface.                    *
@@ -289,6 +321,7 @@ typedef struct _riva_hw_inst
     RivaPixmap              *Pixmap;
     RivaScreenBlt           *Blt;
     RivaBitmap              *Bitmap;
+    RivaLine                *Line;
     RivaTexturedTriangle03  *Tri03;
 } RIVA_HW_INST;
 /*

@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/71 1997/11/17 10:00:11 msr $
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.22 1999/08/14 10:49:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.23 1999/08/21 13:48:13 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -89,7 +89,7 @@ PLATFORMDEFS = -DXFREE86
 #endif
 
    INCLUDES = -I. -I../cfb -I../mfb -I../mi -I../include -I$(XINCLUDESRC) \
-	      -I$(FONTINCSRC) -I$(EXTINCSRC)
+	      -I$(FONTINCSRC) -I$(EXTINCSRC) -I$(SERVERSRC)/Xext
    LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln \
 	     ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln
     DEFINES = $(LMDEFINES) -DPSZ=PixelSize $(PLATFORMDEFS)

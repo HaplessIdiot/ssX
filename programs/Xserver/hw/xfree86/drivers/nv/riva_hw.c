@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.2 1999/08/14 10:49:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.3 1999/08/28 09:01:07 dawes Exp $ */
 
 #include "riva_hw.h"
 #include "riva_tbl.h"
@@ -1362,6 +1362,7 @@ int RivaGetConfig
     chip->Pixmap = (RivaPixmap              *)&(chip->FIFO[0x00006000/4]);
     chip->Blt    = (RivaScreenBlt           *)&(chip->FIFO[0x00008000/4]);
     chip->Bitmap = (RivaBitmap              *)&(chip->FIFO[0x0000A000/4]);
+    chip->Line   = (RivaLine                *)&(chip->FIFO[0x0000C000/4]);
     chip->Tri03  = (RivaTexturedTriangle03  *)&(chip->FIFO[0x0000E000/4]);
     return (0);
 }

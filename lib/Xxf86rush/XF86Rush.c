@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xxf86rush/XF86Rush.c,v 1.1 1999/09/04 09:14:09 dawes Exp $ */
 /*
 
 Copyright (c) 1998 Daryll Strauss
@@ -56,9 +56,7 @@ static XEXT_GENERATE_CLOSE_DISPLAY (close_display, xf86rush_info)
  *                                                                           *
  *****************************************************************************/
 
-Bool XF86RushQueryExtension (dpy, event_basep, error_basep)
-    Display *dpy;
-    int *event_basep, *error_basep;
+Bool XF86RushQueryExtension (Display *dpy, int *event_basep, int *error_basep)
 {
     XExtDisplayInfo *info = find_display (dpy);
 
@@ -71,10 +69,7 @@ Bool XF86RushQueryExtension (dpy, event_basep, error_basep)
     }
 }
 
-Bool XF86RushQueryVersion(dpy, majorVersion, minorVersion)
-    Display* dpy;
-    int* majorVersion; 
-    int* minorVersion;
+Bool XF86RushQueryVersion(Display *dpy, int *majorVersion, int *minorVersion)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xXF86RushQueryVersionReply rep;
@@ -98,11 +93,7 @@ Bool XF86RushQueryVersion(dpy, majorVersion, minorVersion)
     return True;
 }
 
-Bool XF86RushLockPixmap(dpy, screen, pixmap, addr)
-     Display *dpy;
-     int screen;
-     Pixmap pixmap;
-     void **addr;
+Bool XF86RushLockPixmap(Display *dpy, int screen, Pixmap pixmap, void **addr)
 {
   XExtDisplayInfo *info = find_display (dpy);
   xXF86RushLockPixmapReply rep;
@@ -126,10 +117,7 @@ Bool XF86RushLockPixmap(dpy, screen, pixmap, addr)
   return True;
 }
 
-Bool XF86RushUnlockPixmap(dpy, screen, pixmap)
-     Display *dpy;
-     int screen;
-     Pixmap pixmap;
+Bool XF86RushUnlockPixmap(Display *dpy, int screen, Pixmap pixmap)
 {
   XExtDisplayInfo *info = find_display(dpy);
   xXF86RushUnlockPixmapReq *req;
@@ -146,8 +134,7 @@ Bool XF86RushUnlockPixmap(dpy, screen, pixmap)
   return True;
 }
 
-Bool XF86RushUnlockAllPixmaps(dpy)
-     Display *dpy;
+Bool XF86RushUnlockAllPixmaps(Display *dpy)
 {
   XExtDisplayInfo *info = find_display(dpy);
   xXF86RushUnlockAllPixmapsReq *req;
@@ -157,6 +144,40 @@ Bool XF86RushUnlockAllPixmaps(dpy)
   GetReq(XF86RushUnlockAllPixmaps, req);
   req->reqType = info->codes->major_opcode;
   req->rushReqType = X_XF86RushUnlockAllPixmaps;
+  UnlockDisplay(dpy);
+  SyncHandle();
+  return True;
+}
+
+Bool XF86RushSetCopyMode(Display *dpy, int screen, int mode)
+{
+  XExtDisplayInfo *info = find_display(dpy);
+  xXF86RushSetCopyModeReq *req;
+
+  XF86RushCheckExtension (dpy, info, False);
+  LockDisplay(dpy);
+  GetReq(XF86RushSetCopyMode, req);
+  req->reqType = info->codes->major_opcode;
+  req->rushReqType = X_XF86RushSetCopyMode;
+  req->screen = screen;
+  req->CopyMode = mode;
+  UnlockDisplay(dpy);
+  SyncHandle();
+  return True;
+}
+
+Bool XF86RushSetPixelStride(Display *dpy, int screen, int stride)
+{
+  XExtDisplayInfo *info = find_display(dpy);
+  xXF86RushSetPixelStrideReq *req;
+
+  XF86RushCheckExtension (dpy, info, False);
+  LockDisplay(dpy);
+  GetReq(XF86RushSetPixelStride, req);
+  req->reqType = info->codes->major_opcode;
+  req->rushReqType = X_XF86RushSetPixelStride;
+  req->screen = screen;
+  req->PixelStride = stride;
   UnlockDisplay(dpy);
   SyncHandle();
   return True;

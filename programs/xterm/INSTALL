@@ -1,4 +1,4 @@
--- $XFree86: xc/programs/xterm/INSTALL,v 3.15 1999/08/21 13:48:52 dawes Exp $
+-- $XFree86: xc/programs/xterm/INSTALL,v 3.16 1999/09/25 14:38:24 dawes Exp $
 -- Thomas E. Dickey <dickey@clark.net>
 
 Xterm is normally built as part of the X Windows source tree, using
@@ -189,6 +189,17 @@ The options (in alphabetic order):
   --enable-88-color       enable 88-color support
 
 	Compile-in code that interprets SGR 38 and 48 for 88-colors.
+
+  --enable-dec-locator    enable DECterm Locator support
+	Add support for for DEC Locator control sequences for xterm:
+
+		DECEFR - Enable Filter Rectangle
+	        DECELR - Enable Locator Reports
+		DECSLE - Select Locator Events
+		DECRQLP - Request Locator Position
+
+	This allows the xterm mouse to be used with applications that use the
+	DEC Locator sequences, such as VAX Tpu, or SMG$ based applications.
 
   --enable-hp-fkeys       enable support for HP-style function keys
 

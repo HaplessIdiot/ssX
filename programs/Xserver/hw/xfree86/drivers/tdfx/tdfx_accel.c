@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.1 1999/08/29 12:21:02 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -17,12 +17,40 @@
 #include "xaalocal.h"
 #include "xf86fbman.h"
 
+#include "miline.h"
+
 #include "tdfx.h"
 
+#ifdef TDFX_DEBUG_CMDS
+static int cmdCnt=0;
+static int lastAddr=0;
+#endif
+
 #ifndef PROP_3DFX
-#define TDFXWriteLong(p, a, v) TDFXWriteLongMMIO(p, a, v)
 #define DECLARE(a)
+#define DECLARE_LAUNCH(size, x)
+#ifdef TDFX_DEBUG_CMDS
+#define TDFXMakeRoom(p, n) \
+  do { \
+    if (cmdCnt) \
+      ErrorF("Previous TDFXMakeRoom passed incorrect size\n"); \
+    cmdCnt=n; \
+    lastAddr=0;
+    TDFXMakeRoomNoProp(p, n); \
+  } while(0)
+#define TDFXWriteLong(p, a, v) \
+  do { \
+    if (lastAddr && a<lastAddr) \
+      ErrorF("TDFXWriteLong not ordered\n"); \
+    lastAddr=a; \
+    cmdCnt--; \
+    TDFXWriteLongMMIO(p, a, v); \
+  while (0)
+#else
 #define TDFXMakeRoom(p, n) TDFXMakeRoomNoProp(p, n)
+#define TDFXWriteLong(p, a, v) TDFXWriteLongMMIO(p, a, v)
+#endif
+#define TDFXSendNOP TDFXSendNOPNoProp
 #endif
 
 static int TDFXROPCvt[] = {0x00, 0x88, 0x44, 0xCC, 0x22, 0xAA, 0x66, 0xEE,
@@ -31,9 +59,6 @@ static int TDFXROPCvt[] = {0x00, 0x88, 0x44, 0xCC, 0x22, 0xAA, 0x66, 0xEE,
 			   0x05, 0xA5, 0x55, 0xF5, 0x0F, 0xAF, 0x5F, 0xFF};
 #define ROP_PATTERN_OFFSET 16
 
-#ifndef PROP_3DFX
-static void TDFXMakeRoom(TDFXPtr pTDFX, int size);
-#endif
 static void TDFXSetClippingRectangle(ScrnInfoPtr pScrn, int left, int top, 
 				     int right, int bottom);
 static void TDFXDisableClipping(ScrnInfoPtr pScrn);
@@ -61,11 +86,30 @@ static void TDFXSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn, int srcx,
 					    int flags);
 static void TDFXSubsequentSolidHorVertLine(ScrnInfoPtr pScrn, int x, int y, 
 					   int len, int dir);
-#if 0
 static void TDFXNonTEGlyphRenderer(ScrnInfoPtr pScrn, int x, int y, int n, 
 				   NonTEGlyphPtr glyphs, BoxPtr pbox, int fg, 
 				   int rop, unsigned int planemask);
-#endif
+static void TDFXSetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg, int rop,
+                                   unsigned int planemask, int length,
+		                   unsigned char *pattern);
+static void TDFXSubsequentDashedTwoPointLine(ScrnInfoPtr pScrn, int x1, int y1,
+                                             int x2, int y2, int flags,
+                                             int phase);
+static void TDFXSetupForScreenToScreenColorExpandFill(ScrnInfoPtr pScrn,
+                                                      int fg, int bg, int rop,
+                                                      unsigned int planemask);
+static void TDFXSubsequentScreenToScreenColorExpandFill(ScrnInfoPtr pScrn,
+                                                        int x, int y, int w,
+                                                        int h, int srcx,
+                                                        int srcy, int offset);
+static void TDFXSetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+                                                   int fg, int bg, int rop,
+                                                   unsigned int planemask);
+static void TDFXSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+                                                     int x, int y,
+                                                     int w, int h,
+                                                     int skipleft);
+static void TDFXSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
 
 void
 TDFXNeedSync(ScrnInfoPtr pScrn) {
@@ -104,12 +148,10 @@ TDFXAccelInit(ScreenPtr pScreen)
   pTDFX->AccelInfoRec = infoPtr = XAACreateInfoRec();
   if (!infoPtr) return FALSE;
 
-  infoPtr->Flags =  PIXMAP_CACHE | 
-    OFFSCREEN_PIXMAPS |
-    LINEAR_FRAMEBUFFER |
-    MICROSOFT_ZERO_LINE_BIAS;
+  infoPtr->Flags = PIXMAP_CACHE | OFFSCREEN_PIXMAPS | LINEAR_FRAMEBUFFER;
 
   infoPtr->Sync = pTDFX->sync;
+
   infoPtr->SetClippingRectangle = TDFXSetClippingRectangle;
   infoPtr->DisableClipping = TDFXDisableClipping;
   infoPtr->ClippingFlags = HARDWARE_CLIP_SCREEN_TO_SCREEN_COLOR_EXPAND |
@@ -120,43 +162,86 @@ TDFXAccelInit(ScreenPtr pScreen)
     HARDWARE_CLIP_DASHED_LINE |
     HARDWARE_CLIP_SOLID_LINE;
 
+  miSetZeroLineBias(pScreen, OCTANT2 | OCTANT5 | OCTANT7 | OCTANT8);
+  
   commonFlags = BIT_ORDER_IN_BYTE_MSBFIRST | NO_PLANEMASK;
-
-  infoPtr->SetupForScreenToScreenCopy = TDFXSetupForScreenToScreenCopy;
-  infoPtr->SubsequentScreenToScreenCopy = TDFXSubsequentScreenToScreenCopy;
-  infoPtr->ScreenToScreenCopyFlags = commonFlags;
 
   infoPtr->SetupForSolidFill = TDFXSetupForSolidFill;
   infoPtr->SubsequentSolidFillRect = TDFXSubsequentSolidFillRect;
   infoPtr->SolidFillFlags = commonFlags;
-
-  infoPtr->SetupForMono8x8PatternFill = TDFXSetupForMono8x8PatternFill;
-  infoPtr->SubsequentMono8x8PatternFillRect = TDFXSubsequentMono8x8PatternFillRect;
-  infoPtr->Mono8x8PatternFillFlags = commonFlags |
-    HARDWARE_PATTERN_PROGRAMMED_BITS |
-    HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
-    HARDWARE_PATTERN_SCREEN_ORIGIN;
 
   infoPtr->SetupForSolidLine = TDFXSetupForSolidLine;
   infoPtr->SubsequentSolidTwoPointLine = TDFXSubsequentSolidTwoPointLine;
   infoPtr->SubsequentSolidHorVertLine = TDFXSubsequentSolidHorVertLine;
   infoPtr->SolidLineFlags = commonFlags;
 
-#if 0
+  infoPtr->SetupForDashedLine = TDFXSetupForDashedLine;
+  infoPtr->SubsequentDashedTwoPointLine = TDFXSubsequentDashedTwoPointLine;
+  infoPtr->DashedLineFlags = commonFlags | LINE_PATTERN_LSBFIRST_LSBJUSTIFIED;
+  infoPtr->DashPatternMaxLength = 32;
+
   infoPtr->NonTEGlyphRenderer = TDFXNonTEGlyphRenderer;
   infoPtr->NonTEGlyphRendererFlags = commonFlags;
 
-  infoPtr->TEGlyphRenderer = TDFXTEGlyphRenderer;
-  infoPtr->TEGlyphRendererFlags = commonFlags;
+  infoPtr->SetupForScreenToScreenCopy = TDFXSetupForScreenToScreenCopy;
+  infoPtr->SubsequentScreenToScreenCopy = TDFXSubsequentScreenToScreenCopy;
+  infoPtr->ScreenToScreenCopyFlags = commonFlags;
+
+#ifndef PROP_3DFX
+  /* We can use direct method because we're writing straight to the board */
+  infoPtr->SetupForCPUToScreenColorExpandFill =
+    TDFXSetupForCPUToScreenColorExpandFill;
+  infoPtr->SubsequentCPUToScreenColorExpandFill =
+    TDFXSubsequentCPUToScreenColorExpandFill;
+  infoPtr->ColorExpandBase = pTDFX->MMIOBase+SST_2D_LAUNCH;
+  infoPtr->ColorExpandRange = 128;
+  infoPtr->CPUToScreenColorExpandFillFlags = commonFlags |
+    CPU_TRANSFER_PAD_DWORD | SCANLINE_PAD_DWORD |
+    LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X;
+  pTDFX->scanlineColorExpandBuffers[0]=0;
+  pTDFX->scanlineColorExpandBuffers[1]=0;
+#else
+  /* When we're using the proprietary interface we have to use indirect */
+  pTDFX->scanlineColorExpandBuffers[0] = xalloc((pScrn->virtualX+62)/32*4);
+  pTDFX->scanlineColorExpandBuffers[1] = xalloc((pScrn->virtualX+62)/32*4);
+  infoPtr->NumScanlineColorExpandBuffers=2;
+  infoPtr->ScanlineColorExpandBuffers=pTDFX->scanlineColorExpandBuffers;
+  infoPtr->SetupForScanlineCPUToScreenColorExpandFill =
+    TDFXSetupForCPUToScreenColorExpandFill;
+  infoPtr->SubsequentScanlineCPUToScreenColorExpandFill =
+    TDFXSubsequentCPUToScreenColorExpandFill;
+  infoPtr->SubsequentColorExpandScanline =
+    TDFXSubsequentColorExpandScanline;
+  infoPtr->ScanlineCPUToScreenColorExpandFillFlags = commonFlags |
+    CPU_TRANSFER_PAD_DWORD | SCANLINE_PAD_DWORD |
+    LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X;
 #endif
 
-  infoPtr->CPUToScreenColorExpandFillFlags = commonFlags;
+  infoPtr->SetupForMono8x8PatternFill = TDFXSetupForMono8x8PatternFill;
+  infoPtr->SubsequentMono8x8PatternFillRect =
+    TDFXSubsequentMono8x8PatternFillRect;
+  infoPtr->Mono8x8PatternFillFlags = commonFlags |
+    HARDWARE_PATTERN_PROGRAMMED_BITS |
+    HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
+    HARDWARE_PATTERN_SCREEN_ORIGIN;
+
+#if 0
+  /* This causes us to fail compliance */
+  /* I suspect 1bpp pixmaps are getting written to cache correctly */
+  infoPtr->SetupForScreenToScreenColorExpandFill =
+    TDFXSetupForScreenToScreenColorExpandFill;
+  infoPtr->SubsequentScreenToScreenColorExpandFill =
+    TDFXSubsequentScreenToScreenColorExpandFill;
+  infoPtr->ScreenToScreenColorExpandFillFlags = commonFlags;
+#endif
 
   pTDFX->PciCnt=TDFXReadLongMMIO(pTDFX, 0)&0x1F;
-  pTDFX->DrawState=0;
+  pTDFX->PrevDrawState=pTDFX->DrawState=0;
 
-  TDFXWriteLongMMIO(pTDFX, SST_2D_SRCBASEADDR, pTDFX->fbOffset);
-  TDFXWriteLongMMIO(pTDFX, SST_2D_DSTBASEADDR, pTDFX->fbOffset);
+  pTDFX->ModeReg.srcbaseaddr=pTDFX->fbOffset;
+  TDFXWriteLongMMIO(pTDFX, SST_2D_SRCBASEADDR, pTDFX->ModeReg.srcbaseaddr);
+  pTDFX->ModeReg.dstbaseaddr=pTDFX->fbOffset;
+  TDFXWriteLongMMIO(pTDFX, SST_2D_DSTBASEADDR, pTDFX->ModeReg.dstbaseaddr);
 
   /* Fill in acceleration functions */
   return XAAInit(pScreen, infoPtr);
@@ -174,16 +259,22 @@ static void TDFXMakeRoomNoProp(TDFXPtr pTDFX, int size) {
   }
 }
 
+static void TDFXSendNOPNoProp(TDFXPtr pTDFX)
+{
+  TDFXMakeRoomNoProp(pTDFX, 1);
+  TDFXWriteLongMMIO(pTDFX, SST_2D_COMMAND, SST_2D_NOP);
+}  
+
 void TDFXSync(ScrnInfoPtr pScrn)
 {
   TDFXPtr pTDFX;
   int i;
   int stat;
 
-  TDFXTRACEACCEL("TDFXSync start\n");
+  TDFXTRACEACCEL("TDFXSync\n");
   pTDFX=TDFXPTR(pScrn);
-  TDFXMakeRoomNoProp(pTDFX, 1);
-  TDFXWriteLongMMIO(pTDFX, SST_3D_COMMAND, SST_3D_NOP);
+
+  TDFXSendNOPNoProp(pTDFX);
   i=0;
   do {
     stat=TDFXReadLongMMIO(pTDFX, 0);
@@ -195,19 +286,39 @@ void TDFXSync(ScrnInfoPtr pScrn)
 static void
 TDFXMatchState(TDFXPtr pTDFX)
 {
-#ifdef PROP_3DFX
-  /* FLUSH_WCB(); !!! Is this really needed? !!! */
-#endif
+  if (pTDFX->PrevDrawState==pTDFX->DrawState) return;
+  pTDFX->PrevDrawState=pTDFX->DrawState;
+
+  /* Do we need to set a clipping rectangle? */
   if (pTDFX->DrawState&DRAW_STATE_CLIPPING)
     pTDFX->Cmd |= BIT(23);
   else
     pTDFX->Cmd &= ~BIT(23);
+
+  /* Do we need to set transparency? */
+  TDFXMakeRoom(pTDFX, 1);
+  DECLARE(SSTCP_COMMANDEXTRA);
   if (pTDFX->DrawState&DRAW_STATE_TRANSPARENT) {
-    TDFXMakeRoom(pTDFX, 1);
-    DECLARE(SSTCP_COMMANDEXTRA);
+    TDFXWriteLong(pTDFX, SST_2D_COMMANDEXTRA, SST_2D_SRC_COLORKEY_EX);
+  } else {
     TDFXWriteLong(pTDFX, SST_2D_COMMANDEXTRA, 0);
-    pTDFX->DrawState&=~DRAW_STATE_TRANSPARENT;
   }
+
+  /* Has the previous routine left clip1 changed? Reset it. */
+  if (pTDFX->DrawState&DRAW_STATE_CLIP1CHANGED) {
+    TDFXMakeRoom(pTDFX, 2);
+    DECLARE(SSTCP_CLIP1MIN|SSTCP_CLIP1MAX);
+    TDFXWriteLong(pTDFX, SST_2D_CLIP1MIN, pTDFX->ModeReg.clip1min);
+    TDFXWriteLong(pTDFX, SST_2D_CLIP1MAX, pTDFX->ModeReg.clip1max);
+    pTDFX->DrawState&=~DRAW_STATE_CLIP1CHANGED;
+  }
+}
+
+static void
+TDFXClearState(TDFXPtr pTDFX)
+{
+  pTDFX->Cmd=0;
+  pTDFX->DrawState&=~DRAW_STATE_TRANSPARENT;
 }
 
 static void
@@ -216,14 +327,20 @@ TDFXSetClippingRectangle(ScrnInfoPtr pScrn, int left, int top, int right,
 {
   TDFXPtr pTDFX;
 
-  TDFXTRACEACCEL("TDFXSetClippingRectangle start\n");
+  TDFXTRACEACCEL("TDFXSetClippingRectangle\n");
   pTDFX=TDFXPTR(pScrn);
+
+  pTDFX->ModeReg.clip1min=(top&0xFFF)<<16 | (left&0xFFF);
+  pTDFX->ModeReg.clip1max=((bottom+1)&0xFFF)<<16 | ((right+1)&0xFFF);
+
+#if 0
   TDFXMakeRoom(pTDFX, 2);
   DECLARE(SSTCP_CLIP1MIN|SSTCP_CLIP1MAX);
-  TDFXWriteLong(pTDFX, SST_2D_CLIP1MIN, (top&0xFFF)<<16 | (left&0xFFF));
-  TDFXWriteLong(pTDFX, SST_2D_CLIP1MAX, ((bottom+1)&0xFFF)<<16 | 
-		    ((right+1)&0xFFF));
+  TDFXWriteLong(pTDFX, SST_2D_CLIP1MIN, pTDFX->ModeReg.clip1min);
+  TDFXWriteLong(pTDFX, SST_2D_CLIP1MAX, pTDFX->ModeReg.clip1max);
+#endif
   pTDFX->DrawState|=DRAW_STATE_CLIPPING;
+  pTDFX->DrawState|=DRAW_STATE_CLIP1CHANGED;
 }
 
 static void
@@ -231,8 +348,9 @@ TDFXDisableClipping(ScrnInfoPtr pScrn)
 {
   TDFXPtr pTDFX;
 
-  TDFXTRACEACCEL("TDFXDisableClippingRectangle start\n");
+  TDFXTRACEACCEL("TDFXDisableClippingRectangle\n");
   pTDFX=TDFXPTR(pScrn);
+
   pTDFX->DrawState&=~DRAW_STATE_CLIPPING;
 }
 
@@ -243,17 +361,19 @@ TDFXSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
   TDFXPtr pTDFX;
   int fmt;
 
-  TDFXTRACEACCEL("TDFXSetupForScreenToScreenCopy start\n xdir=%d ydir=%d rop=%d planemask=%d trans_color=%d\n", xdir, ydir, rop, planemask, trans_color);
+  TDFXTRACEACCEL("TDFXSetupForScreenToScreenCopy\n xdir=%d ydir=%d "
+		 "rop=%d planemask=%d trans_color=%d\n", 
+		 xdir, ydir, rop, planemask, trans_color);
   pTDFX=TDFXPTR(pScrn);
   TDFXFirstSync(pScrn);
+  TDFXClearState(pTDFX);
+
   if (trans_color!=-1) {
-    TDFXMakeRoom(pTDFX, 4);
-    DECLARE(SSTCP_SRCCOLORKEYMIN|SSTCP_SRCCOLORKEYMAX|
-		   SSTCP_ROP|SSTCP_COMMANDEXTRA);
+    TDFXMakeRoom(pTDFX, 3);
+    DECLARE(SSTCP_SRCCOLORKEYMIN|SSTCP_SRCCOLORKEYMAX|SSTCP_ROP);
     TDFXWriteLong(pTDFX, SST_2D_SRCCOLORKEYMIN, trans_color);
     TDFXWriteLong(pTDFX, SST_2D_SRCCOLORKEYMAX, trans_color);
-    TDFXWriteLong(pTDFX, SST_2D_ROP, TDFXROPCvt[GXinvert]<<8);
-    TDFXWriteLong(pTDFX, SST_2D_COMMANDEXTRA, SST_2D_SRC_COLORKEY_EX);
+    TDFXWriteLong(pTDFX, SST_2D_ROP, TDFXROPCvt[GXnoop]<<8);
     pTDFX->DrawState|=DRAW_STATE_TRANSPARENT;
   }
   pTDFX->Cmd = (TDFXROPCvt[rop]<<24) | SST_2D_SCRNTOSCRNBLIT;
@@ -261,6 +381,7 @@ TDFXSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
   if (ydir==-1) pTDFX->Cmd |= SST_2D_Y_BOTTOM_TO_TOP;
   if (pTDFX->cpp==1) fmt=pTDFX->stride|(1<<16); 
   else fmt=pTDFX->stride|((pTDFX->cpp+1)<<16);
+
   TDFXMakeRoom(pTDFX, 2);
   DECLARE(SSTCP_SRCFORMAT|SSTCP_DSTFORMAT);
   TDFXWriteLong(pTDFX, SST_2D_DSTFORMAT, fmt);
@@ -273,41 +394,31 @@ TDFXSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int srcX, int srcY,
 {
   TDFXPtr pTDFX;
 
-  TDFXTRACEACCEL("TDFXSubsequentScreenToScreenCopy start\n srcX=%d srcY=%d dstX=%d dstY=%d w=%d h=%d\n", srcX, srcY, dstX, dstY, w, h);
+  TDFXTRACEACCEL("TDFXSubsequentScreenToScreenCopy\n srcX=%d srcY=%d"
+                 " dstX=%d dstY=%d w=%d h=%d\n", srcX, srcY, dstX, dstY, w, h);
   pTDFX=TDFXPTR(pScrn);
-  if (pTDFX->Cmd&BIT(15)) {
+  TDFXMatchState(pTDFX);
+
+  if (pTDFX->Cmd&SST_2D_Y_BOTTOM_TO_TOP) {
     srcY += h-1;
     dstY += h-1;
   } 
-  if (pTDFX->Cmd&BIT(14)) {
+  if (pTDFX->Cmd&SST_2D_X_RIGHT_TO_LEFT) {
     srcX += w-1;
     dstX += w-1;
   }
-  pTDFX->Cmd|=SST_2D_GO;
-  TDFXMatchState(pTDFX);
-  /* Board hangs if you send sequential overlapping blits */
-  if (!((srcX+w<pTDFX->prevBlitDest.x1) || (srcX>pTDFX->prevBlitDest.x2) ||
-	(srcY+h<pTDFX->prevBlitDest.y1) || (srcY>pTDFX->prevBlitDest.y2))) {
-    TDFXMakeRoom(pTDFX, 1);
-    DECLARE(SSTCP_COMMAND);
-    TDFXWriteLong(pTDFX, SST_2D_COMMAND, SST_2D_NOP|SST_2D_GO);
+  if (srcY>=pTDFX->prevBlitDest.y1-8 && srcY<=pTDFX->prevBlitDest.y1) {
+    TDFXSendNOP(pTDFX);
   }
+
   TDFXMakeRoom(pTDFX, 4);
   DECLARE(SSTCP_DSTSIZE|SSTCP_DSTXY|SSTCP_SRCXY|SSTCP_COMMAND);
   TDFXWriteLong(pTDFX, SST_2D_SRCXY, (srcX&0x1FFF) | ((srcY&0x1FFF)<<16));
   TDFXWriteLong(pTDFX, SST_2D_DSTSIZE, (w&0x1FFF) | ((h&0x1FFF)<<16));
   TDFXWriteLong(pTDFX, SST_2D_DSTXY, (dstX&0x1FFF) | ((dstY&0x1FFF)<<16));
-  TDFXWriteLong(pTDFX, SST_2D_COMMAND, pTDFX->Cmd);
-  if (pTDFX->DrawState&DRAW_STATE_TRANSPARENT) {
-    TDFXMakeRoom(pTDFX, 1);
-    DECLARE(SSTCP_COMMANDEXTRA);
-    TDFXWriteLong(pTDFX, SST_2D_COMMANDEXTRA, 0);
-    pTDFX->DrawState&=~DRAW_STATE_TRANSPARENT;
-  }
-  pTDFX->prevBlitDest.x1=dstX;
-  pTDFX->prevBlitDest.x2=dstX+w-1;
+  TDFXWriteLong(pTDFX, SST_2D_COMMAND, pTDFX->Cmd|SST_2D_GO);
+
   pTDFX->prevBlitDest.y1=dstY;
-  pTDFX->prevBlitDest.y2=dstY+h-1;
 }
 
 static void
@@ -317,12 +428,16 @@ TDFXSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
   TDFXPtr pTDFX;
   int fmt;
 
-  TDFXTRACEACCEL("TDFXSetupForSolidFill start color=%d rop=%d planemask=%d\n", color, rop, planemask);
+  TDFXTRACEACCEL("TDFXSetupForSolidFill color=%d rop=%d planemask=%d\n",
+                 color, rop, planemask);
   pTDFX=TDFXPTR(pScrn);
+  TDFXClearState(pTDFX);
+  TDFXFirstSync(pScrn);
+
   pTDFX->Cmd=TDFXROPCvt[rop]<<24;
   if (pTDFX->cpp==1) fmt=(1<<16)|pTDFX->stride; 
   else fmt=((pTDFX->cpp+1)<<16)|pTDFX->stride;
-  TDFXFirstSync(pScrn);
+
   TDFXMakeRoom(pTDFX, 3);
   DECLARE(SSTCP_DSTFORMAT|SSTCP_COLORFORE|
 		 SSTCP_COLORBACK);
@@ -334,16 +449,20 @@ TDFXSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
 static void
 TDFXSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 {
+  /* Also called by TDFXSubsequentMono8x8PatternFillRect */
   TDFXPtr pTDFX;
 
-  TDFXTRACEACCEL("TDFXSubsequentSolidFillRect start x=%d y=%d w=%d h=%d\n", x, y, w, h);
+  TDFXTRACEACCEL("TDFXSubsequentSolidFillRect x=%d y=%d w=%d h=%d\n", 
+		 x, y, w, h);
   pTDFX=TDFXPTR(pScrn);
   TDFXMatchState(pTDFX);
+
   TDFXMakeRoom(pTDFX, 3);
   DECLARE(SSTCP_DSTSIZE|SSTCP_DSTXY|SSTCP_COMMAND);
   TDFXWriteLong(pTDFX, SST_2D_DSTSIZE, ((h&0x1FFF)<<16) | (w&0x1FFF));
   TDFXWriteLong(pTDFX, SST_2D_DSTXY, ((y&0x1FFF)<<16) | (x&0x1FFF));
-  TDFXWriteLong(pTDFX, SST_2D_COMMAND, SST_2D_RECTANGLEFILL|pTDFX->Cmd|SST_2D_GO);
+  TDFXWriteLong(pTDFX, SST_2D_COMMAND, pTDFX->Cmd | SST_2D_RECTANGLEFILL |
+		SST_2D_GO);
 }
 
 static void
@@ -353,16 +472,21 @@ TDFXSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patx, int paty,
   TDFXPtr pTDFX;
   int fmt;
 
-  TDFXTRACEACCEL("TDFXSetupForMono8x8PatternFill start patx=%x paty=%x fg=%d bg=%d rop=%d planemask=%d\n", patx, paty, fg, bg, rop, planemask);
+  TDFXTRACEACCEL("TDFXSetupForMono8x8PatternFill patx=%x paty=%x fg=%d"
+                 " bg=%d rop=%d planemask=%d\n", patx, paty, fg, bg, rop,
+		 planemask);
   pTDFX=TDFXPTR(pScrn);
-  pTDFX->Cmd = (TDFXROPCvt[rop+ROP_PATTERN_OFFSET]<<24) | SST_2D_MONOCHROME_PATTERN;
+  TDFXClearState(pTDFX);
+  TDFXFirstSync(pScrn);
+
+  pTDFX->Cmd = (TDFXROPCvt[rop+ROP_PATTERN_OFFSET]<<24) |
+    SST_2D_MONOCHROME_PATTERN;
   if (bg==-1) {
     pTDFX->Cmd |= SST_2D_TRANSPARENT_MONOCHROME;
   }
-
   if (pTDFX->cpp==1) fmt=(1<<16)|pTDFX->stride; 
   else fmt=((pTDFX->cpp+1)<<16)|pTDFX->stride;
-  TDFXFirstSync(pScrn);
+
   TDFXMakeRoom(pTDFX, 5);
   DECLARE(SSTCP_DSTFORMAT|SSTCP_PATTERN0ALIAS
 		  |SSTCP_PATTERN1ALIAS|SSTCP_COLORFORE|
@@ -380,11 +504,13 @@ TDFXSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int patx, int paty,
 {
   TDFXPtr pTDFX;
 
-  TDFXTRACEACCEL("TDFXSubsequentMono8x8PatternFillRect start patx=%x paty=%x x=%d y=%d w=%d h=%d\n", patx, paty, x, y, w, h);
+  TDFXTRACEACCEL("TDFXSubsequentMono8x8PatternFillRect patx=%x paty=%x"
+                 " x=%d y=%d w=%d h=%d\n", patx, paty, x, y, w, h);
   pTDFX=TDFXPTR(pScrn);
+
   pTDFX->Cmd |= ((patx&0x7)<<SST_2D_X_PATOFFSET_SHIFT) |
     ((paty&0x7)<<SST_2D_Y_PATOFFSET_SHIFT);
-  TDFXMatchState(pTDFX);
+
   TDFXSubsequentSolidFillRect(pScrn, x, y, w, h);
 }
 
@@ -394,10 +520,13 @@ TDFXSetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop,
 {
   TDFXPtr pTDFX;
 
-  TDFXTRACEACCEL("TDFXSetupForSolidLine start\n");
+  TDFXTRACEACCEL("TDFXSetupForSolidLine\n");
   pTDFX=TDFXPTR(pScrn);
-  pTDFX->Cmd = (TDFXROPCvt[rop]<<24) | SST_2D_MONOCHROME_PATTERN;
+  TDFXClearState(pTDFX);
   TDFXFirstSync(pScrn);
+
+  pTDFX->Cmd = (TDFXROPCvt[rop]<<24);
+
   TDFXMakeRoom(pTDFX, 2);
   DECLARE(SSTCP_COLORFORE|SSTCP_COLORBACK);
   TDFXWriteLong(pTDFX, SST_2D_COLORBACK, color);
@@ -408,13 +537,18 @@ static void
 TDFXSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn, int srcx, int srcy,
 				int dstx, int dsty, int flags)
 {
+  /* Also used by TDFXSubsequentDashedTwoPointLine */
   TDFXPtr pTDFX;
 
-  TDFXTRACEACCEL("TDFXSubsequentSolidTwoPointLine start\n");
+  TDFXTRACEACCEL("TDFXSubsequentSolidTwoPointLine "
+		 "srcx=%d srcy=%d dstx=%d dsty=%d flags=%d\n",
+		 srcx, srcy, dstx, dsty, flags);
   pTDFX=TDFXPTR(pScrn);
+  TDFXMatchState(pTDFX);
+
   if (flags&OMIT_LAST) pTDFX->Cmd|=SST_2D_POLYLINE;
   else pTDFX->Cmd|=SST_2D_LINE;
-  TDFXMatchState(pTDFX);
+
   TDFXMakeRoom(pTDFX, 3);
   DECLARE(SSTCP_SRCXY|SSTCP_DSTXY|SSTCP_COMMAND);
   TDFXWriteLong(pTDFX, SST_2D_SRCXY, (srcy&0x1FFF)<<16 | (srcx&0x1FFF));
@@ -428,9 +562,10 @@ TDFXSubsequentSolidHorVertLine(ScrnInfoPtr pScrn, int x, int y, int len,
 {
   TDFXPtr pTDFX;
 
-  TDFXTRACEACCEL("TDFXSubsequentSolidHorVertLine start\n");
+  TDFXTRACEACCEL("TDFXSubsequentSolidHorVertLine\n");
   pTDFX=TDFXPTR(pScrn);
   TDFXMatchState(pTDFX);
+
   TDFXMakeRoom(pTDFX, 3);
   DECLARE(SSTCP_SRCXY|SSTCP_DSTXY|SSTCP_COMMAND);
   TDFXWriteLong(pTDFX, SST_2D_SRCXY, (y&0x1FFF)<<16 | (x&0x1FFF));
@@ -441,7 +576,37 @@ TDFXSubsequentSolidHorVertLine(ScrnInfoPtr pScrn, int x, int y, int len,
   TDFXWriteLong(pTDFX, SST_2D_COMMAND, pTDFX->Cmd|SST_2D_POLYLINE|SST_2D_GO);
 }
 
-#if 0
+static void CreateClipBox(TDFXPtr pTDFX, BoxPtr result, BoxPtr src)
+{
+  int cminx, cminy, cmaxx, cmaxy;
+
+  if (pTDFX->DrawState&DRAW_STATE_CLIPPING) {
+    cminx=pTDFX->ModeReg.clip1min&0x1FFF;
+    cminy=(pTDFX->ModeReg.clip1min>>16)&0x1FFF;
+    cmaxx=(pTDFX->ModeReg.clip1max&0x1FFF)-1;
+    cmaxy=((pTDFX->ModeReg.clip1max>>16)&0x1FFF)-1;
+  } else {
+    cminx=pTDFX->ModeReg.clip0min&0x1FFF;
+    cminy=(pTDFX->ModeReg.clip0min>>16)&0x1FFF;
+    cmaxx=(pTDFX->ModeReg.clip0max&0x1FFF)-1;
+    cmaxy=((pTDFX->ModeReg.clip0max>>16)&0x1FFF)-1;
+  }
+  result->x1=max(cminx, src->x1);
+  result->y1=max(cminy, src->y1);
+  result->x2=min(cmaxx, src->x2);
+  result->y2=min(cmaxy, src->y2);
+  if (src->x1!=result->x1 || src->x2!=result->x2 || src->y1!=result->y1 ||
+      src->y2!=result->y2) {
+    ErrorF("Clipping changed:\n");
+    ErrorF("OLD (%d) minx=%d miny=%d maxx=%d maxy=%d\n", 
+	   pTDFX->DrawState&DRAW_STATE_CLIPPING, cminx, cminy, cmaxx, cmaxy);
+    ErrorF("NEW      minx=%d miny=%d maxx=%d maxy=%d\n",
+	   src->x1, src->y1, src->x2, src->y2);
+    ErrorF("RESULT   minx=%d miny=%d maxx=%d maxy=%d\n",
+	   result->x1, result->y1, result->x2, result->y2);
+  }
+}
+
 static void
 TDFXNonTEGlyphRenderer(ScrnInfoPtr pScrn, int x, int y, int n, 
 		       NonTEGlyphPtr glyphs, BoxPtr pbox, int fg, int rop,
@@ -450,62 +615,254 @@ TDFXNonTEGlyphRenderer(ScrnInfoPtr pScrn, int x, int y, int n,
   TDFXPtr pTDFX;
   int ndwords;
   int g;
-  int clip0min, clip0max, srcformat;
+  NonTEGlyphPtr glyph;
 
-  TDFXTRACEACCEL("TDFXNonTEGlyphRenderer start\n");
-  pTDFX = TDFXPTR(pScrn);
-  clip0min=TDFXReadLongMMIO(pTDFX, SST_2D_CLIP0MIN);
-  clip0max=TDFXReadLongMMIO(pTDFX, SST_2D_CLIP0MAX);
-  srcformat=TDFXReadLongMMIO(pTDFX, SST_2D_SRCFORMAT);
+  TDFXTRACEACCEL("TDFXNonTEGlyphRenderer\n");
+  pTDFX=TDFXPTR(pScrn);
+  TDFXFirstSync(pScrn);
+  TDFXClearState(pTDFX);
+  /* Don't bother fixing clip1, we're going to change it anyway */
+  pTDFX->DrawState&=~DRAW_STATE_CLIP1CHANGED;
+  TDFXMatchState(pTDFX);
+  /* We're changing clip1 so make sure we use it and flag it */
+  pTDFX->Cmd|=BIT(23);
+  pTDFX->DrawState|=DRAW_STATE_CLIP1CHANGED;
+
+  pTDFX->Cmd|=(TDFXROPCvt[rop]<<24)|SST_2D_TRANSPARENT_MONOCHROME;
+  pTDFX->Cmd|=SST_2D_HOSTTOSCRNBLIT;
+
   TDFXMakeRoom(pTDFX, 6);
-  DECLARE(SSTCP_CLIP0MIN|SSTCP_CLIP0MAX|SSTCP_SRCFORMAT|
-		  SSTCP_SRCXY|SSTCP_COLORFORE|SSTCP_COMMAND);
-  TDFXWriteLong(pTDFX, SST_2D_CLIP0MIN, (pbox->y1<<16) | pbox->x1);
-  TDFXWriteLong(pTDFX, SST_2D_CLIP0MAX, (pbox->u2<<16) | pbox->x2);
-  TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, SST_2D_SRC_PIXFMT_1BPP |
-		    SST_2D_SOURCE_PACKING_WORD);
+  DECLARE(SSTCP_CLIP1MIN|SSTCP_CLIP1MAX|SSTCP_SRCFORMAT|
+	  SSTCP_SRCXY|SSTCP_COLORFORE|SSTCP_COMMAND);
+  TDFXWriteLong(pTDFX, SST_2D_CLIP1MIN, ((pbox->y1&0x1FFF)<<16) |
+		(pbox->x1&0x1FFF));
+  TDFXWriteLong(pTDFX, SST_2D_CLIP1MAX, (((pbox->y2+1)&0x1FFF)<<16) |
+		((pbox->x2+1)&0x1FFF));
+  TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, SST_2D_PIXFMT_1BPP |
+		SST_2D_SOURCE_PACKING_DWORD);
   TDFXWriteLong(pTDFX, SST_2D_SRCXY, 0);
   TDFXWriteLong(pTDFX, SST_2D_COLORFORE, fg);
-  TDFXWriteLong(pTDFX, SST_2D_COMMAND, pTDFX->Cmd | (TDFXROPCvt[rop]<<24) |
-		    SST_2D_TRANSPARENT_MONOCHROME | SST_2D_SCRNTOSCRNBLIT);
+  TDFXWriteLong(pTDFX, SST_2D_COMMAND, pTDFX->Cmd);
+
   for (g=0, glyph=glyphs; g<n; g++, glyph++) {
     int dx = x+glyph->start;
     int dy = y-glyph->yoff;
-    char *bitmap = glyph->bits;
     int w = glyph->end - glyph->start;
+    int *glyph_data = (int*)glyph->bits;
 
-    ndwords = (glyph->srcwidth+31)>>5;
+    ndwords = (glyph->srcwidth+3)>>2;
     ndwords *= glyph->height;
 
     TDFXMakeRoom(pTDFX, 2);
     DECLARE(SSTCP_DSTSIZE|SSTCP_DSTXY);
-    TDFXWriteLong(pTDFX, SST_2D_DSTSIZE, (glyph->height<<16)|w);
-    TDFXWriteLong(pTDFX, SST_2D_DSTXY, (dy<<16)|dx&0xFFFF);
+    TDFXWriteLong(pTDFX, SST_2D_DSTSIZE, ((glyph->height&0x1FFF)<<16) |
+		  (w&0x1FFF));
+    TDFXWriteLong(pTDFX, SST_2D_DSTXY, ((dy&0x1FFF)<<16) | (dx&0x1FFF));
 
     do {
       int i = ndwords;
       int j;
-      int *glyph_data = (int*)bitmap;
-      int dwords_per_line = (glyph->srcwidth+3)>>2;
 
-      /* !!! This needs to change to for proprietary interface !!! */
-      if (i>LAUNCH_AREA_SIZE) i=LAUNCH_AREA_SIZE;
+      if (i>30) i=30;
       TDFXMakeRoom(pTDFX, i);
+      DECLARE_LAUNCH(i, 0);
       for (j=0; j<i; j++) {
-	TDFXWriteLong(pTDFX, SST_2D_LAUNCH+j, XAAReverseBitOrder(*glyph_data));
-	glyph_data += dwords_per_line;
+	TDFXWriteLong(pTDFX, SST_2D_LAUNCH, XAAReverseBitOrder(*glyph_data));
+	glyph_data++;
       }
-      bitmap += i*4;
       ndwords -= i;
     } while (ndwords);
   }
+}
+
+static void
+TDFXSetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg, int rop,
+                       unsigned int planemask, int length,
+		       unsigned char *pattern)
+{
+  TDFXPtr pTDFX;
+
+  TDFXTRACEACCEL("TDFXSetupForDashedLine\n");
+  pTDFX=TDFXPTR(pScrn);
+  TDFXClearState(pTDFX);
+  TDFXFirstSync(pScrn);
+
+  pTDFX->Cmd = (TDFXROPCvt[rop]<<24) | SST_2D_STIPPLE_LINE;
+  if(bg == -1) {
+    pTDFX->Cmd |= SST_2D_TRANSPARENT_MONOCHROME;
+  }
+  pTDFX->DashedLineSize = ((length-1)&0xFF)+1;
 
   TDFXMakeRoom(pTDFX, 3);
-  DECLARE(SSTCP_CLIP0MIN|SSTCP_CLIP0MAX|SSTCP_SRCFORMAT);
-  TDFXWriteLong(pTDFX, SST_2D_CLIP0MIN, clip0min);
-  TDFXWriteLong(pTDFX, SST_2D_CLIP0MAX, clip0max);
-  TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, srcformat);
+  DECLARE(SSTCP_COLORFORE|SSTCP_COLORBACK|SSTCP_LINESTIPPLE);
+  TDFXWriteLong(pTDFX, SST_2D_LINESTIPPLE, *(int *)pattern);
+  TDFXWriteLong(pTDFX, SST_2D_COLORBACK, bg);
+  TDFXWriteLong(pTDFX, SST_2D_COLORFORE, fg);
 }
-#endif
 
+static void
+TDFXSubsequentDashedTwoPointLine(ScrnInfoPtr pScrn, int x1, int y1,
+                                 int x2, int y2, int flags, int phase)
+{
+  TDFXPtr pTDFX;
+  int linestyle;
+
+  TDFXTRACEACCEL("TDFXSubsequentDashedTwoPointLine\n");
+  pTDFX=TDFXPTR(pScrn);
+
+  linestyle = ((pTDFX->DashedLineSize-1)<<8) |
+              (((phase%pTDFX->DashedLineSize)&0x1F)<<24);
+  
+  TDFXMakeRoom(pTDFX, 1);
+  DECLARE(SSTCP_LINESTYLE);
+  TDFXWriteLong(pTDFX, SST_2D_LINESTYLE, linestyle);
+  
+  TDFXSubsequentSolidTwoPointLine(pScrn, x1, y1, x2, y2, flags);
+}
+
+static void
+TDFXSetupForScreenToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
+                                          int rop, unsigned int planemask)
+{
+  TDFXPtr pTDFX;
+
+  TDFXTRACEACCEL("TDFXSetupForScreenToScreenColorExpandFill\n");
+  pTDFX=TDFXPTR(pScrn);
+  TDFXClearState(pTDFX);
+  TDFXFirstSync(pScrn);
+  
+  pTDFX->Cmd=SST_2D_SCRNTOSCRNBLIT|(TDFXROPCvt[rop]<<24);
+  
+  if (bg==-1) {
+    pTDFX->Cmd |= SST_2D_TRANSPARENT_MONOCHROME;
+  }
+  TDFXMakeRoom(pTDFX, 2);
+  DECLARE(SSTCP_COLORFORE|SSTCP_COLORBACK);
+  TDFXWriteLong(pTDFX, SST_2D_COLORBACK, bg);
+  TDFXWriteLong(pTDFX, SST_2D_COLORFORE, fg);
+}
+
+static void
+TDFXSubsequentScreenToScreenColorExpandFill(ScrnInfoPtr pScrn, int x, int y,
+                                            int w, int h, int srcx, int srcy,
+                                            int offset)
+{
+  TDFXPtr pTDFX;
+  int fmt;
+
+  TDFXTRACEACCEL("TDFXSubsequentScreenToScreenColorExpandFill "
+		 "x=%d y=%d w=%d h=%d srcx=%d srcy=%d offset=%d\n", 
+		 x, y, w, h, srcx, srcy, offset);
+  pTDFX=TDFXPTR(pScrn);
+  /* Don't bother resetting clip1 since we're changing it anyway */
+  pTDFX->DrawState&=~DRAW_STATE_CLIP1CHANGED;
+  TDFXMatchState(pTDFX);
+  /* We changing clip1 so make sure we use it and flag it */
+  pTDFX->Cmd|=BIT(23);
+  pTDFX->DrawState|=DRAW_STATE_CLIP1CHANGED;
+
+  if (srcy>=pTDFX->prevBlitDest.y1-8 && srcy<=pTDFX->prevBlitDest.y1) {
+    TDFXSendNOP(pTDFX);
+  }
+
+  if (pTDFX->cpp==1) fmt=(1<<16)|pTDFX->stride; 
+  else fmt=(pTDFX->cpp+1)<<16|pTDFX->stride;
+
+  TDFXMakeRoom(pTDFX, 8);
+  DECLARE(SSTCP_SRCFORMAT|SSTCP_SRCXY|SSTCP_DSTFORMAT |
+	  SSTCP_DSTSIZE|SSTCP_DSTXY|SSTCP_COMMAND |
+	  SSTCP_CLIP1MIN|SSTCP_CLIP1MAX);
+  TDFXWriteLong(pTDFX,SST_2D_DSTFORMAT, fmt);
+  TDFXWriteLong(pTDFX,SST_2D_CLIP1MIN, (x&0x1FFF) | ((y&0x1FFF)<<16));
+  TDFXWriteLong(pTDFX,SST_2D_CLIP1MAX, ((x+w)&0x1FFF) | (((y+h)&0x1FFF)<<16));
+  TDFXWriteLong(pTDFX,SST_2D_SRCFORMAT, pTDFX->stride);
+  TDFXWriteLong(pTDFX,SST_2D_SRCXY, (srcx&0x1FFF) | ((srcy&0x1FFF)<<16));
+  TDFXWriteLong(pTDFX,SST_2D_DSTSIZE, ((w+offset)&0x1FFF) | ((h&0x1FFF)<<16));
+  TDFXWriteLong(pTDFX,SST_2D_DSTXY, ((x-offset)&0x1FFF) | ((y&0x1FFF)<<16));
+  TDFXWriteLong(pTDFX,SST_2D_COMMAND, pTDFX->Cmd|SST_2D_GO);
+
+  pTDFX->prevBlitDest.y1=y;
+}
+
+static void
+TDFXSetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
+                                       int rop, unsigned int planemask)
+{
+  TDFXPtr pTDFX;
+  
+  TDFXTRACEACCEL("SetupForCPUToScreenColorExpandFill bg=%x fg=%x rop=%d\n",
+                 bg, fg, rop);
+  pTDFX=TDFXPTR(pScrn);
+  TDFXClearState(pTDFX);
+  TDFXFirstSync(pScrn);
+  
+  pTDFX->Cmd=SST_2D_HOSTTOSCRNBLIT|(TDFXROPCvt[rop]<<24);
+  
+  if (bg == -1) {
+    pTDFX->Cmd |= SST_2D_TRANSPARENT_MONOCHROME;
+  }
+  
+  TDFXMakeRoom(pTDFX, 2);
+  DECLARE(SSTCP_COLORBACK|SSTCP_COLORFORE);
+  TDFXWriteLong(pTDFX, SST_2D_COLORBACK, bg);
+  TDFXWriteLong(pTDFX, SST_2D_COLORFORE, fg);
+}
+
+static void
+TDFXSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int x, int y,
+                                         int w, int h, int skipleft)
+{
+  TDFXPtr pTDFX;
+  int fmt;
+  
+  TDFXTRACEACCEL("SubsequentCPUToScreenColorExpandFill x=%d y=%d w=%d h=%d"
+                 " skipleft=%d\n", x, y, w, h, skipleft);
+  pTDFX = TDFXPTR(pScrn);
+  /* We're changing clip1 anyway, so don't bother to reset it */
+  pTDFX->DrawState&=~DRAW_STATE_CLIP1CHANGED;
+  TDFXMatchState(pTDFX);
+  /* Make sure we use clip1 and flag it */
+  pTDFX->Cmd|=BIT(23);
+  pTDFX->DrawState|=DRAW_STATE_CLIP1CHANGED;
+  
+  if (pTDFX->cpp==1) fmt=(1<<16)|pTDFX->stride; 
+  else fmt=((pTDFX->cpp+1)<<16)|pTDFX->stride;
+  pTDFX->scanlineWidth=w;
+
+  TDFXMakeRoom(pTDFX, 8);
+  DECLARE(SSTCP_CLIP1MIN|SSTCP_CLIP1MAX|SSTCP_SRCFORMAT|
+	  SSTCP_DSTFORMAT|SSTCP_DSTSIZE|SSTCP_SRCXY|
+	  SSTCP_DSTXY|SSTCP_COMMAND);
+  TDFXWriteLong(pTDFX, SST_2D_DSTFORMAT, fmt);
+  TDFXWriteLong(pTDFX, SST_2D_CLIP1MIN, ((y&0x1FFF)<<16)|(x&0x1FFF));
+  TDFXWriteLong(pTDFX, SST_2D_CLIP1MAX, (((y+h)&0x1FFF)<<16)|((x+w)&0x1FFF));
+  TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, (((w+31)/32)*4) & 0x3FFF);
+  TDFXWriteLong(pTDFX, SST_2D_SRCXY, skipleft&0x1F);
+  TDFXWriteLong(pTDFX, SST_2D_DSTSIZE, ((w-skipleft)&0x1FFF)|((h&0x1FFF)<<16));
+  TDFXWriteLong(pTDFX, SST_2D_DSTXY, ((x+skipleft)&0x1FFF) | ((y&0x1FFF)<<16));
+  TDFXWriteLong(pTDFX, SST_2D_COMMAND, pTDFX->Cmd);
+}
+  
+static void TDFXSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
+{
+  TDFXPtr pTDFX;
+  int i, size, cnt;
+  int *pos;
+
+  TDFXTRACEACCEL("SubsequentColorExpandScanline bufno=%d\n", bufno);
+  pTDFX = TDFXPTR(pScrn);
+
+  cnt=(pTDFX->scanlineWidth+31)/32;
+  pos=pTDFX->scanlineColorExpandBuffers[bufno];
+  while (cnt>0) {
+    if (cnt>64) size=64;
+    else size=cnt;
+    TDFXMakeRoom(pTDFX, size);
+    DECLARE_LAUNCH(size, 0);
+    for (i=0; i<size; i++, pos++) {
+      TDFXWriteLong(pTDFX, SST_2D_LAUNCH, *pos);
+    }
+    cnt-=size;
+  }
+}
 

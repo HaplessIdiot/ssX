@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit.ad,v 1.16 1999/08/15 13:00:54 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit.ad,v 1.17 1999/08/28 09:01:20 dawes Exp $
 
 *geometry:				590x440
 *input:					TRUE
@@ -145,24 +145,6 @@ float?font=*courier-bold-r*12*&overstrike&underline,\
 punctuation?font=*courier-bold-r*12*,\
 error?foreground=white&background=black&font=*new century schoolbook-bold*25*,\
 default?font=*courier-medium-r*12*
-
-*editModes.html.label:			Html
-*editModes.html.auto:			True
-*editModes.html.properties:\
-default?family=Times&weight=Medium&slant=R&pixelsize=12&registry=ISO8859&encoding=1,\
-b?weight=Bold,\
-strong?weight=Bold,\
-i?slant=I,\
-em?slant=I,\
-address?slant=I,\
-h1?pixelsize=24&weight=Bold,\
-h2?pixelsize=20&weight=Bold,\
-h3?pixelsize=17&weight=Bold,\
-h4?pixelsize=14&weight=Bold,\
-h5?pixelsize=12&weight=Bold,\
-h6?pixelsize=10&weight=Bold,\
-pre?family=Courier&pixelsize=10,\
-kbd?family=Courier&pixelsize=10
 
 *TransientShell*Text.translations: #override \
 c<Key>S:	no-op(r)\n\

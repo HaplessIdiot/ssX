@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.h,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.h,v 1.5 1999/07/06 11:38:25 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -68,6 +68,7 @@ typedef enum
     ATI_CHIP_264GTPRO,  /* Mach64 */
     ATI_CHIP_264LTPRO,  /* Mach64 */
     ATI_CHIP_264XL,     /* Mach64 */
+    ATI_CHIP_MOBILITY,  /* Mach64 */
     ATI_CHIP_Mach64     /* Mach64 */
 } ATIChipType;
 
@@ -82,7 +83,7 @@ typedef enum
     ATI_FOUNDRY_NEC,    /* NEC */
     ATI_FOUNDRY_KSC,    /* KSC (?) */
     ATI_FOUNDRY_UMC,    /* United Microelectronics Corporation */
-    ATI_FOUNDRY_4,
+    ATI_FOUNDRY_TSMC,   /* TSMC (?) */
     ATI_FOUNDRY_5,
     ATI_FOUNDRY_6,
     ATI_FOUNDRY_UMCA    /* UMC alternate */

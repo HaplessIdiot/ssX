@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: VTparse.h,v 1.6 92/09/15 15:28:31 gildea Exp $
- *	$XFree86: xc/programs/xterm/VTparse.h,v 3.10 1998/10/25 07:12:39 dawes Exp $
+ *	$XFree86: xc/programs/xterm/VTparse.h,v 3.11 1999/04/11 13:11:27 dawes Exp $
  */
 
 /*
@@ -45,6 +45,9 @@ typedef char PARSE_T;
 extern Const PARSE_T ansi_table[];
 extern Const PARSE_T csi_ex_table[];
 extern Const PARSE_T csi_quo_table[];
+#if OPT_DEC_LOCATOR
+extern Const PARSE_T csi_tick_table[];
+#endif	/* OPT_DEC_LOCATOR */
 extern Const PARSE_T csi_table[];
 extern Const PARSE_T dec2_table[];
 extern Const PARSE_T dec3_table[];
@@ -190,5 +193,10 @@ extern Const PARSE_T vt52_esc_table[];
 #define CASE_DEC_MC 113
 #define CASE_ESC_PERCENT 114
 #define CASE_UTF8 115
+#define CASE_CSI_TICK_STATE 116
+#define CASE_DECELR 117
+#define CASE_DECRQLP 118
+#define CASE_DECEFR 119
+#define CASE_DECSLE 120
 
 #endif /* included_VTparse_h */

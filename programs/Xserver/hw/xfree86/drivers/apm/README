@@ -1,12 +1,8 @@
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/README,v 1.2 1999/07/10 12:17:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/README,v 1.3 1999/08/28 09:00:57 dawes Exp $
 
 Note 1: This driver is work in progress. It might not work at all.
 Want to help? Docs are at 
 ftp://beta.xfree86.org/pub/xf86/devel/Documentation/apm
-
-Note 2: The driver has preliminary, completely untested support for
-dynamic loading. Use static loading to build a useable (?) server.
-
 
 This is the Alliance Promotion driver for XFree86 4.0+. It currently
 only supports the AT3D and AT25 chipsets (found on various Voodoo-
@@ -15,23 +11,20 @@ Rush cards). There is preliminary, uncomplete and untested support for the
 3.3.x series.
 
 What has worked on my computer :
-    - XAA for 8/16/32 bpp
-    - unaccelerated 24bpp
+    - XAA for 8/16/24/32 bpp
     - DGA (DGA2 untested)
     - DPMS
     - glide2x
+    - using as a module
+    - shadow framebuffer
 
 What has not worked :
     - I2C (I'm not sure my card, Hercules 128/3D, has proper cabling)
-    - 8x8 mono expand fill rectangles. Maybe a bug in the chip, I don't
-      understand
 
 What is untested :
-    - module
-    - shadow framebuffer
+    - DGA2
 
 What should be done :
-    - acceleration for 24bpp
     - overlays (with the video engine, everything should be overlayable
       with everything)
     - AP6422, AT24 (and why not 3210) support
@@ -104,6 +97,5 @@ Modified 1999-03-14 by Henrik Harmsen
 
 Modified 1999-07-07 by Loïc Grenié
   - Converted to new RAC. Support for DGA and DGA2, I2C, Rush extension.
-
 
 

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.32 1999/07/19 13:36:02 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.33 1999/08/15 13:00:35 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2656,11 +2656,14 @@ ModifySelection(TextWidget ctx, XEvent *event,
 		XawTextSelectionAction action,
 		String *params, Cardinal *num_params)
 {
+#ifndef OLDXAW
     int old_y = ctx->text.ev_y;
+#endif
 
     StartAction(ctx, event);
     NotePosition(ctx, event);
 
+#ifndef OLDXAW
     if (event->type == MotionNotify) {
 	if (ctx->text.ev_y <= ctx->text.margin.top) {
 	    if (old_y >= ctx->text.ev_y)
@@ -2672,8 +2675,8 @@ ModifySelection(TextWidget ctx, XEvent *event,
 	      XawTextScroll(ctx, 1, 0);
 	}
     }
+#endif
     ctx->text.from_left = -1;
-
     _XawTextAlterSelection(ctx, mode, action, params, num_params);
 
     EndAction(ctx);

@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.21 1999/08/15 13:00:30 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.22 1999/08/28 09:00:25 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -355,7 +355,10 @@ ReadText(Widget w, XawTextPosition pos, XawTextBlock *text, int length)
     AsciiSrcObject src = (AsciiSrcObject)w;
     XawTextPosition count, start;
     Piece *piece;
-#ifndef OLDXAW
+#if 0	/* #ifndef OLDXAW 
+	 * this code is correct, but adds an unnecessary overhead to the
+	 * current implementation
+	 */
     XawTextAnchor *anchor;
     XawTextEntity *entity;
     XawTextPosition offset, end = pos + length;
@@ -363,9 +366,10 @@ ReadText(Widget w, XawTextPosition pos, XawTextBlock *text, int length)
 
     end = XawMin(end, src->ascii_src.length);
     while ((state = XawTextSourceAnchorAndEntity(w, pos, &anchor, &entity)) &&
-	(entity->flags & XAW_TENTF_HIDE) && pos < end)
+	(entity->flags & XAW_TENTF_HIDE))
 	pos = anchor->position + entity->offset + entity->length;
-    if (state == False && anchor) {
+    if (state == False ||
+	!(entity->flags & XAW_TENTF_REPLACE)) {
 	while (entity) {
 	    offset = anchor->position + entity->offset;
 	    if (offset >= end)

@@ -34,7 +34,7 @@
  * support in this file.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.11 1999/07/04 06:39:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.12 1999/07/11 08:49:27 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -2134,6 +2134,7 @@ Permedia2VideoInit(ScreenPtr pScreen)
 	VARPtrs[i] = &VAR[i];
 
 	VAR[i].type = (i == 0) ? XvInputMask : XvOutputMask;
+	VAR[i].type |= XvWindowMask | XvVideoMask | XvStillMask;
 	VAR[i].name = "Permedia 2";
 
 	if (i == 0) {

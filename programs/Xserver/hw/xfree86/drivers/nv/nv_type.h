@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.3 1999/08/14 10:49:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.4 1999/08/28 09:01:06 dawes Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -9,6 +9,7 @@
 #define SetBit(n) (1<<(n))
 #define Set8Bits(value) ((value)&0xff)
 
+#define MAX_CURS            32
 
 typedef RIVA_HW_STATE* NVRegPtr;
 
@@ -119,6 +120,12 @@ typedef struct {
     unsigned char       *expandFifo;
     int                 expandWidth;
     int                 expandRows;
+    /* Cursor */
+    unsigned short      curFg, curBg;
+    unsigned int        curImage[MAX_CURS*2];
+    /* Misc flags */
+    unsigned int        opaqueMonochrome;
+    int                 currentRop;
 } NVRec, *NVPtr;
 
 #define NVPTR(p) ((NVPtr)((p)->driverPrivate))

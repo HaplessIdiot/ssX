@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_io.c,v 1.1 1999/08/29 12:21:04 dawes Exp $ */
 
 /*
  * Authors:
@@ -48,12 +48,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define moutl(p,v) \
 	*(volatile CARD32 *)(pTDFX->MMIOBase + (p)) = (v)
 #else
-#define minb(p) xf86ReadSparse8(pI740->MMIOBase, (p))
+#define minb(p) xf86ReadSparse8(pTDFX->MMIOBase, (p))
 #define moutb(p,v) \
-	xf86WriteSparse8((v), pI740->MMIOBase, (p))
-#define minl(p) xf86ReadSparse32(pI740->MMIOBase, (p))
+	xf86WriteSparse8((v), pTDFX->MMIOBase, (p))
+#define minl(p) xf86ReadSparse32(pTDFX->MMIOBase, (p))
 #define moutl(p,v) \
-	xf86WriteSparse32((v), pI740->MMIOBase, (p))
+	xf86WriteSparse32((v), pTDFX->MMIOBase, (p))
 #endif
 
 static void TDFXWriteControlPIO(TDFXPtr pTDFX, int addr, char index, char val) {

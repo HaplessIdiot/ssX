@@ -1,5 +1,5 @@
 /* $XConsortium: menu.c /main/66 1996/12/01 23:46:59 swick $ */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.24 1999/08/21 13:49:03 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.25 1999/09/25 14:38:32 dawes Exp $ */
 /*
 
 Copyright 1999 by Thomas E. Dickey <dickey@clark.net>
@@ -589,6 +589,7 @@ static void handle_send_signal (Widget gw GCC_UNUSED, int sig)
 {
     register TScreen *screen = &term->screen;
 
+    if (hold_screen > 1) hold_screen = 0;
     if (screen->pid > 1) kill_process_group (screen->pid, sig);
 }
 
@@ -1966,8 +1967,9 @@ SetupMenus(Widget shell, Widget *forms, Widget *menus)
 				boxWidgetClass,		*forms,
 				XtNorientation,		XtorientHorizontal,
 				XtNtop,			XawChainTop,
+				XtNbottom,		XawChainTop,
 				XtNleft,		XawChainLeft,
-				XtNright,		XawChainRight,
+				XtNright,		XawChainLeft,
 				NULL);
 
 	if (shell == toplevel) {	/* vt100 */

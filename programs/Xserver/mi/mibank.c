@@ -1,5 +1,5 @@
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -44,7 +44,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/mi/mibank.c,v 1.3 1998/09/13 05:23:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibank.c,v 1.4 1998/09/19 12:15:02 dawes Exp $ */
 
 /*
  * This thing originated from an idea of Edwin Goei and his bank switching
@@ -60,11 +60,19 @@
  * "Heavily modified", indeed!  By the time this is finalized, there probably
  * won't be much left of Roell's code...
  *
- * TO DO:
+ * Miscellaneous notes:
  * - Pixels with imbedded bank boundaries are required to be off-screen.  There
  *   >might< be a way to fool the underlying framebuffer into dealing with
  *   partial pixels.
- * - Generalize this to do (hardware) colour plane switching.
+ * - Plans to generalise this to do (hardware) colour plane switching have been
+ *   dropped due to colour flashing concerns.
+ *
+ * TODO:
+ * - Allow miModifyBanking() to change BankSize and nBankDepth.
+ * - Re-instate shared and double banking for framebuffers whose pixmap formats
+ *   don't describe how the server "sees" the screen.
+ * - Remove remaining assumptions that a pixmap's devPrivate field points
+ *   directly to its pixel data.
  */
 
 /* #define NO_ALLOCA 1 */
@@ -77,17 +85,16 @@
 #include "mi.h"
 #include "mibank.h"
 
-extern WindowPtr *WindowTable;
-
-#define BANK_SINGLE  0
-#define BANK_SHARED  1
-#define BANK_DOUBLE  2
+#define BANK_SINGLE 0
+#define BANK_SHARED 1
+#define BANK_DOUBLE 2
+#define BANK_NOBANK 3
 
 typedef struct _miBankScreen
 {
     miBankInfoRec BankInfo;
     unsigned int  nBankBPP;
-    int           type;
+    unsigned int  type;
 
     unsigned long nBitsPerBank;
     unsigned long nBitsPerScanline;
@@ -106,6 +113,7 @@ typedef struct _miBankScreen
      * Screen Wrappers
      */
     CreateScreenResourcesProcPtr  CreateScreenResources;
+    ModifyPixmapHeaderProcPtr     ModifyPixmapHeader;
     CloseScreenProcPtr            CloseScreen;
     GetImageProcPtr               GetImage;
     GetSpansProcPtr               GetSpans;
@@ -120,6 +128,9 @@ typedef struct _miBankGC
 {
     GCOps     *wrappedOps;
     GCFuncs   *wrappedFuncs;
+
+    Bool      fastCopy, fastPlane;
+
     RegionPtr pBankedClips[1];
 } miBankGCRec, *miBankGCPtr;
 
@@ -136,45 +147,28 @@ typedef struct _miBankQueue
 
 /*
  * CAVEAT:  This banking scheme requires that the DDX store Pixmap data in the
- *          server's address space.  If something other than a Pixmap's
- *          devPrivate field is used to point to this data, the following
- * #define's should be changed.  Ditto, if a Pixmap's devKind isn't used as its
- * padded byte width.  Unfortunately, there currently isn't any DDX-independent
- * way of doing this.  ModifyPixmapHeader can't be used because it clobbers
- * pBankGC's validation.
+ *          server's address space.
  */
 
-#define GetPixmapData(_pPix) \
-    ((pointer)((_pPix)->devPrivate.ptr))
+#define ModifyPixmap(_pPix, _width, _devKind, _pbits) \
+    (*pScreen->ModifyPixmapHeader)((_pPix), \
+        (_width), -1, -1, -1, (_devKind), (_pbits))
 
-#define SetPixmapData(_pPix, _pbits) \
-    (_pPix)->devPrivate.ptr = (pointer)(_pbits)
-
-#define SetPixmapWidth(_pPix, _width, _padded) \
-    (_pPix)->drawable.width = (_width); \
-    (_pPix)->devKind = (_padded)
-
-#define SavePixmap \
-    int     width   = pScreenPriv->pBankPixmap->drawable.width; \
-    int     devKind = pScreenPriv->pBankPixmap->devKind; \
-    pointer pbits   = GetPixmapData(pScreenPriv->pBankPixmap)
-
-#define RestorePixmap \
-    SetPixmapWidth(pScreenPriv->pBankPixmap, width, devKind); \
-    SetPixmapData(pScreenPriv->pBankPixmap, pbits)
-
-#define SET_SINGLE_BANK(_pPix, _no) \
-    SetPixmapData(_pPix, (char *)pScreenPriv->BankInfo.pBankA + \
+#define SET_SINGLE_BANK(_pPix, _width, _devKind, _no) \
+    ModifyPixmap(_pPix, _width, _devKind, \
+        (char *)pScreenPriv->BankInfo.pBankA + \
         (*pScreenPriv->BankInfo.SetSourceAndDestinationBanks)(pScreen, (_no)) - \
         (pScreenPriv->BankInfo.BankSize * (_no)))
 
-#define SET_SOURCE_BANK(_pPix, _no) \
-    SetPixmapData(_pPix, (char *)pScreenPriv->BankInfo.pBankA + \
+#define SET_SOURCE_BANK(_pPix, _width, _devKind, _no) \
+    ModifyPixmap(_pPix, _width, _devKind, \
+        (char *)pScreenPriv->BankInfo.pBankA + \
         (*pScreenPriv->BankInfo.SetSourceBank)(pScreen, (_no)) - \
         (pScreenPriv->BankInfo.BankSize * (_no)))
 
-#define SET_DESTINATION_BANK(_pPix, _no) \
-    SetPixmapData(_pPix, (char *)pScreenPriv->BankInfo.pBankB + \
+#define SET_DESTINATION_BANK(_pPix, _width, _devKind, _no) \
+    ModifyPixmap(_pPix, _width, _devKind, \
+        (char *)pScreenPriv->BankInfo.pBankB + \
         (*pScreenPriv->BankInfo.SetDestinationBank)(pScreen, (_no)) - \
         (pScreenPriv->BankInfo.BankSize * (_no)))
 
@@ -195,11 +189,35 @@ static GCFuncs       miBankGCFuncs;
 
 #define BANK_GCPRIVATE(pGC) ((miBankGCPtr)(BANK_GCPRIVLVAL(pGC)))
 
+#define PIXMAP_STATUS(_pPix) \
+    pointer pbits = (_pPix)->devPrivate.ptr
+
+#define PIXMAP_SAVE(_pPix) \
+    PIXMAP_STATUS(_pPix); \
+    if (pbits == (pointer)pScreenPriv) \
+        (_pPix)->devPrivate.ptr = pScreenPriv->pbits
+
+#define PIXMAP_RESTORE(_pPix) \
+    (_pPix)->devPrivate.ptr = pbits
+
+#define BANK_SAVE \
+    int width   = pScreenPriv->pBankPixmap->drawable.width; \
+    int devKind = pScreenPriv->pBankPixmap->devKind; \
+    PIXMAP_SAVE(pScreenPriv->pBankPixmap)
+
+#define BANK_RESTORE \
+    pScreenPriv->pBankPixmap->drawable.width = width; \
+    pScreenPriv->pBankPixmap->devKind = devKind; \
+    PIXMAP_RESTORE(pScreenPriv->pBankPixmap)
+
+#define SCREEN_STATUS \
+    PIXMAP_STATUS(pScreenPriv->pScreenPixmap)
+
 #define SCREEN_SAVE \
-    pointer   pbits   = GetPixmapData(pScreenPriv->pScreenPixmap)
+    PIXMAP_SAVE(pScreenPriv->pScreenPixmap)
 
 #define SCREEN_RESTORE \
-    SetPixmapData(pScreenPriv->pScreenPixmap, pbits)
+    PIXMAP_RESTORE(pScreenPriv->pScreenPixmap)
 
 #define SCREEN_INIT \
     miBankScreenPtr pScreenPriv = BANK_SCRPRIVATE
@@ -225,7 +243,7 @@ static GCFuncs       miBankGCFuncs;
     (pGC)->funcs          = &miBankGCFuncs
 
 #define IS_BANKED(pDrawable) \
-    ((GetPixmapData(pScreenPriv->pScreenPixmap) == (pointer)pScreenPriv) && \
+    ((pbits == (pointer)pScreenPriv) && \
      (((DrawablePtr)(pDrawable))->type == DRAWABLE_WINDOW))
 
 #define CLIP_SAVE \
@@ -251,31 +269,67 @@ static GCFuncs       miBankGCFuncs;
         if (!(pGC->pCompositeClip = pGCPriv->pBankedClips[i])) \
             continue; \
         GCOP_UNWRAP; \
-        SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, i)
+        SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, -1, -1, i)
 
 #define GCOP_BOTTOM_PART \
         GCOP_WRAP; \
     }
 
 #define GCOP_SIMPLE(statement) \
-    GCOP_INIT; \
-    SCREEN_SAVE; \
-    if (!IS_BANKED(pDrawable)) \
+    if (nArray > 0) \
     { \
-        GCOP_UNWRAP; \
-        statement; \
-        GCOP_WRAP; \
-    } \
-    else \
+        GCOP_INIT; \
+        SCREEN_SAVE; \
+        if (!IS_BANKED(pDrawable)) \
+        { \
+            GCOP_UNWRAP; \
+            statement; \
+            GCOP_WRAP; \
+        } \
+        else \
+        { \
+            int i; \
+            CLIP_SAVE; \
+            GCOP_TOP_PART; \
+            statement; \
+            GCOP_BOTTOM_PART; \
+            CLIP_RESTORE; \
+        } \
+        SCREEN_RESTORE; \
+    }
+
+#define GCOP_0D_ARGS mode,
+#define GCOP_1D_ARGS
+#define GCOP_2D_ARGS shape, mode, 
+
+#define GCOP_COMPLEX(aop, atype) \
+    if (nArray > 0) \
     { \
-        int i; \
-        CLIP_SAVE; \
-        GCOP_TOP_PART; \
-        statement; \
-        GCOP_BOTTOM_PART; \
-        CLIP_RESTORE; \
-    } \
-    SCREEN_RESTORE
+        GCOP_INIT; \
+        SCREEN_SAVE; \
+        if (!IS_BANKED(pDrawable)) \
+        { \
+            GCOP_UNWRAP; \
+            (*pGC->ops->aop)(pDrawable, pGC, GCOP_ARGS nArray, pArray); \
+            GCOP_WRAP; \
+        } \
+        else \
+        { \
+            atype *aarg = pArray, *acopy; \
+            int   i; \
+            CLIP_SAVE; \
+            if ((acopy = ALLOCATE_LOCAL_ARRAY(atype, nArray))) \
+                aarg = acopy; \
+            GCOP_TOP_PART; \
+            if (acopy) \
+                memcpy(acopy, pArray, nArray * sizeof(atype)); \
+            (*pGC->ops->aop)(pDrawable, pGC, GCOP_ARGS nArray, aarg); \
+            GCOP_BOTTOM_PART; \
+            DEALLOCATE_LOCAL(acopy); \
+            CLIP_RESTORE; \
+        } \
+        SCREEN_RESTORE; \
+    }
 
 /*********************
  * Utility functions *
@@ -303,6 +357,70 @@ miBankOf(
 #define FirstBankOf(_x, _y) miBankOf(pScreenPriv, (_x), (_y))
 #define  LastBankOf(_x, _y) miBankOf(pScreenPriv, (_x) - 1, (_y))
 
+/* Determine banking type from the BankInfoRec */
+static unsigned int
+miBankDeriveType(
+    ScreenPtr     pScreen,
+    miBankInfoPtr pBankInfo
+)
+{
+    unsigned int type;
+
+    if (pBankInfo->pBankA == pBankInfo->pBankB)
+    {
+        if (pBankInfo->SetSourceBank == pBankInfo->SetDestinationBank)
+        {
+            if (pBankInfo->SetSourceAndDestinationBanks !=
+                pBankInfo->SetSourceBank)
+                return BANK_NOBANK;
+
+            type = BANK_SINGLE;
+        }
+        else
+        {
+            if (pBankInfo->SetSourceAndDestinationBanks ==
+                pBankInfo->SetDestinationBank)
+                return BANK_NOBANK;
+            if (pBankInfo->SetSourceAndDestinationBanks ==
+                pBankInfo->SetSourceBank)
+                return BANK_NOBANK;
+
+            type = BANK_SHARED;
+        }
+    }
+    else
+    {
+        if ((unsigned long)abs((char *)pBankInfo->pBankA -
+                               (char *)pBankInfo->pBankB) < pBankInfo->BankSize)
+            return BANK_NOBANK;
+
+        if (pBankInfo->SetSourceBank == pBankInfo->SetDestinationBank)
+        {
+            if (pBankInfo->SetSourceAndDestinationBanks !=
+                pBankInfo->SetSourceBank)
+                return BANK_NOBANK;
+        }
+        else
+        {
+            if (pBankInfo->SetSourceAndDestinationBanks ==
+                pBankInfo->SetDestinationBank)
+                return BANK_NOBANK;
+        }
+
+        type = BANK_DOUBLE;
+    }
+
+    /*
+     * Internal limitation:  Currently, only single banking is supported when
+     * the pixmap format and the screen's pixel format are different.  The
+     * following test is only partially successful at detecting this condition.
+     */
+    if (pBankInfo->nBankDepth != pScreen->rootDepth)
+        type = BANK_SINGLE;
+
+    return type;
+}
+
 /* Least common multiple */
 static unsigned int
 miLCM(
@@ -329,17 +447,14 @@ static void
 miBankFillSpans(
     DrawablePtr pDrawable,
     GCPtr       pGC,
-    int         nInit,
+    int         nArray,
     DDXPointPtr pptInit,
     int         *pwidthInit,
     int         fSorted
 )
 {
-    if (nInit > 0)
-    {
-        GCOP_SIMPLE((*pGC->ops->FillSpans)(pDrawable, pGC,
-            nInit, pptInit, pwidthInit, fSorted));
-    }
+    GCOP_SIMPLE((*pGC->ops->FillSpans)(pDrawable, pGC,
+        nArray, pptInit, pwidthInit, fSorted));
 }
 
 static void
@@ -349,15 +464,12 @@ miBankSetSpans(
     char        *psrc,
     DDXPointPtr ppt,
     int         *pwidth,
-    int         nspans,
+    int         nArray,
     int         fSorted
 )
 {
-    if (nspans > 0)
-    {
-        GCOP_SIMPLE((*pGC->ops->SetSpans)(pDrawable, pGC, psrc,
-            ppt, pwidth, nspans, fSorted));
-    }
+    GCOP_SIMPLE((*pGC->ops->SetSpans)(pDrawable, pGC, psrc,
+        ppt, pwidth, nArray, fSorted));
 }
 
 static void
@@ -403,7 +515,7 @@ miBankPutImage(
 
                 GCOP_UNWRAP;
 
-                SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, i);
+                SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, -1, -1, i);
 
                 (*pGC->ops->PutImage)(pDrawable, pGC, depth, x, y, w, h,
                     leftPad, format, pImage);
@@ -428,31 +540,33 @@ miBankPutImage(
  * list of things to do.
  */
 static RegionPtr
-miBankCopyArea(
-    DrawablePtr pSrc,
-    DrawablePtr pDst,
-    GCPtr       pGC,
-    int         srcx,
-    int         srcy,
-    int         w,
-    int         h,
-    int         dstx,
-    int         dsty
+miBankCopy(
+    DrawablePtr   pSrc,
+    DrawablePtr   pDst,
+    GCPtr         pGC,
+    int           srcx,
+    int           srcy,
+    int           w,
+    int           h,
+    int           dstx,
+    int           dsty,
+    unsigned long plane,
+    Bool          SinglePlane
 )
 {
-    int           cx1, cy1, cx2, cy2;
-    int           ns, nd, nse, nde, dx, dy, xorg = 0, yorg = 0;
-    int           maxWidth = 0, maxHeight = 0, paddedWidth = 0;
-    int           nBox, nBoxClipSrc, nBoxClipDst, nQueue;
-    unsigned long planemask;
-    BoxPtr        pBox, pBoxClipSrc, pBoxClipDst;
-    BoxRec        fastBox, ccBox;
-    RegionPtr     ret, prgnSrcClip = NULL;
-    RegionRec     rgnDst;
-    char          *pImage = NULL;
-    miBankQueue   *pQueue, *pQueueNew, *Queue;
-    miBankQueue   *pQueueTmp, *pQueueNext, *pQueueBase;
-    Bool          fastBlit, fExpose, freeSrcClip, fastClip, fastExpose;
+    int         cx1, cy1, cx2, cy2;
+    int         ns, nd, nse, nde, dx, dy, xorg = 0, yorg = 0;
+    int         maxWidth = 0, maxHeight = 0, paddedWidth = 0;
+    int         nBox, nBoxClipSrc, nBoxClipDst, nQueue;
+    BoxPtr      pBox, pBoxClipSrc, pBoxClipDst;
+    BoxRec      fastBox, ccBox;
+    RegionPtr   ret = NULL, prgnSrcClip = NULL;
+    RegionRec   rgnDst;
+    char        *pImage = NULL;
+    miBankQueue *pQueue, *pQueueNew, *Queue;
+    miBankQueue *pQueueTmp, *pQueueNext, *pQueueBase;
+    Bool        fastBlit, freeSrcClip, fastClip;
+    Bool        fExpose = FALSE, fastExpose = FALSE;
 
     GCOP_INIT;
     SCREEN_SAVE;
@@ -461,8 +575,12 @@ miBankCopyArea(
     {
         GCOP_UNWRAP;
 
-        ret = (*pGC->ops->CopyArea)(pSrc, pDst, pGC,
-            srcx, srcy, w, h, dstx, dsty);
+        if (SinglePlane)
+            ret = (*pGC->ops->CopyPlane)(pSrc, pDst, pGC,
+                srcx, srcy, w, h, dstx, dsty, plane);
+        else
+            ret = (*pGC->ops->CopyArea)(pSrc, pDst, pGC,
+                srcx, srcy, w, h, dstx, dsty);
 
         GCOP_WRAP;
     }
@@ -500,24 +618,24 @@ miBankCopyArea(
 
                 GCOP_UNWRAP;
 
-                SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, ns);
+                SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, -1, -1, ns);
 
-                (*pGC->ops->CopyArea)(pSrc, pDst, pGC,
-                    cx1 - xorg, cy1 - yorg,
-                    cx2 - cx1, cy2 - cy1,
-                    cx1 + dx - xorg, cy1 + dy - yorg);
+                if (SinglePlane)
+                    (*pGC->ops->CopyPlane)(pSrc, pDst, pGC,
+                        cx1 - xorg, cy1 - yorg,
+                        cx2 - cx1, cy2 - cy1,
+                        cx1 + dx - xorg, cy1 + dy - yorg, plane);
+                else
+                    (*pGC->ops->CopyArea)(pSrc, pDst, pGC,
+                        cx1 - xorg, cy1 - yorg,
+                        cx2 - cx1, cy2 - cy1,
+                        cx1 + dx - xorg, cy1 + dy - yorg);
 
                 GCOP_WRAP;
             }
         }
 
         pGC->fExpose = fExpose;
-
-        if (fExpose)
-            ret = miHandleExposures(pSrc, pDst, pGC,
-                      srcx - xorg, srcy - yorg, w, h, dstx, dsty, 0);
-        else
-            ret = NULL;
     }
     else if (!IS_BANKED(pSrc))
     {
@@ -559,20 +677,24 @@ miBankCopyArea(
 
                 GCOP_UNWRAP;
 
-                SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, nd);
+                SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, -1, -1, nd);
 
-                (*pGC->ops->CopyArea)(pSrc, pDst, pGC,
-                    cx1 + dx - xorg, cy1 + dy - yorg,
-                    cx2 - cx1, cy2 - cy1,
-                    cx1 - xorg, cy1 - yorg);
+                if (SinglePlane)
+                    (*pGC->ops->CopyPlane)(pSrc, pDst, pGC,
+                        cx1 + dx - xorg, cy1 + dy - yorg,
+                        cx2 - cx1, cy2 - cy1,
+                        cx1 - xorg, cy1 - yorg, plane);
+                else
+                    (*pGC->ops->CopyArea)(pSrc, pDst, pGC,
+                        cx1 + dx - xorg, cy1 + dy - yorg,
+                        cx2 - cx1, cy2 - cy1,
+                        cx1 - xorg, cy1 - yorg);
 
                 GCOP_WRAP;
             }
         }
 
         CLIP_RESTORE;
-
-        ret = NULL;
     }
     else /* IS_BANKED(pSrc) && IS_BANKED(pDst) */
     {
@@ -657,16 +779,10 @@ miBankCopyArea(
          * fastBlit can only be TRUE if we don't need to worry about attempts
          * to read partial pixels through the destination bank.
          */
-        fastBlit = FALSE;
-        planemask = (1 << pGC->depth) - 1;
-        if ((pScreenPriv->type == BANK_DOUBLE) ||
-            ((pScreenPriv->type == BANK_SHARED) &&
-             (pDst->depth == pScreen->rootDepth) &&
-             (pDst->depth == pGC->depth) &&
-             ((pGC->planemask & planemask) == planemask) &&
-             ((pGC->alu == GXclear) || (pGC->alu == GXcopy) ||
-              (pGC->alu == GXcopyInverted) || (pGC->alu == GXset))))
-            fastBlit = TRUE;
+        if (SinglePlane)
+            fastBlit = pGCPriv->fastPlane;
+        else
+            fastBlit = pGCPriv->fastCopy;
 
         nQueue = nBox * pScreenPriv->maxRects * 2;
         pQueue = Queue = ALLOCATE_LOCAL_ARRAY(miBankQueue, nQueue);
@@ -780,6 +896,8 @@ miBankCopyArea(
 
         if (nQueue > 0)
         {
+            BANK_SAVE;
+
             pQueue = Queue;
 
             if ((nQueue > 1) &&
@@ -846,39 +964,44 @@ miBankCopyArea(
                 if (pQueue->srcBankNo == pQueue->dstBankNo)
                 {
                     SET_SINGLE_BANK(pScreenPriv->pScreenPixmap,
-                        pQueue->srcBankNo);
+                        -1, -1, pQueue->srcBankNo);
 
-                    (*pGC->ops->CopyArea)(pSrc, pDst, pGC,
-                        pQueue->x - dx - pSrc->x, pQueue->y - dy - pSrc->y,
-                        pQueue->w, pQueue->h,
-                        pQueue->x, pQueue->y);
+                    if (SinglePlane)
+                        (*pGC->ops->CopyPlane)(pSrc, pDst, pGC,
+                            pQueue->x - dx - pSrc->x, pQueue->y - dy - pSrc->y,
+                            pQueue->w, pQueue->h, pQueue->x, pQueue->y, plane);
+                    else
+                        (*pGC->ops->CopyArea)(pSrc, pDst, pGC,
+                            pQueue->x - dx - pSrc->x, pQueue->y - dy - pSrc->y,
+                            pQueue->w, pQueue->h, pQueue->x, pQueue->y);
                 }
                 else if (pQueue->fastBlit)
                 {
-                    SetPixmapWidth(pScreenPriv->pBankPixmap,
-                        pScreenPriv->pScreenPixmap->drawable.width,
-                        pScreenPriv->pScreenPixmap->devKind);
-
                     SET_SOURCE_BANK     (pScreenPriv->pBankPixmap,
+                        pScreenPriv->pScreenPixmap->drawable.width,
+                        pScreenPriv->pScreenPixmap->devKind,
                         pQueue->srcBankNo);
                     SET_DESTINATION_BANK(pScreenPriv->pScreenPixmap,
-                        pQueue->dstBankNo);
+                        -1, -1, pQueue->dstBankNo);
 
-                    (*pGC->ops->CopyArea)(
-                        (DrawablePtr)pScreenPriv->pBankPixmap,
-                        pDst, pGC,
-                        pQueue->x - dx, pQueue->y - dy,
-                        pQueue->w, pQueue->h,
-                        pQueue->x, pQueue->y);
+                    if (SinglePlane)
+                        (*pGC->ops->CopyPlane)(
+                            (DrawablePtr)pScreenPriv->pBankPixmap, pDst, pGC,
+                            pQueue->x - dx, pQueue->y - dy,
+                            pQueue->w, pQueue->h, pQueue->x, pQueue->y, plane);
+                    else
+                        (*pGC->ops->CopyArea)(
+                            (DrawablePtr)pScreenPriv->pBankPixmap, pDst, pGC,
+                            pQueue->x - dx, pQueue->y - dy,
+                            pQueue->w, pQueue->h, pQueue->x, pQueue->y);
                 }
                 else if (pImage)
                 {
-                    SetPixmapWidth(pScreenPriv->pBankPixmap,
-                        maxWidth, paddedWidth);
-                    SetPixmapData(pScreenPriv->pBankPixmap, pImage);
+                    ModifyPixmap(pScreenPriv->pBankPixmap,
+                        maxWidth, paddedWidth, pImage);
 
                     SET_SINGLE_BANK(pScreenPriv->pScreenPixmap,
-                        pQueue->srcBankNo);
+                        -1, -1, pQueue->srcBankNo);
 
                     (*pScreenPriv->pBankGC->ops->CopyArea)(
                         pSrc, (DrawablePtr)pScreenPriv->pBankPixmap,
@@ -887,12 +1010,18 @@ miBankCopyArea(
                         pQueue->w, pQueue->h, 0, 0);
 
                     SET_SINGLE_BANK(pScreenPriv->pScreenPixmap,
-                        pQueue->dstBankNo);
+                        -1, -1, pQueue->dstBankNo);
 
-                    (*pGC->ops->CopyArea)(
-                        (DrawablePtr)pScreenPriv->pBankPixmap,
-                        pDst, pGC,
-                        0, 0, pQueue->w, pQueue->h, pQueue->x, pQueue->y);
+                    if (SinglePlane)
+                        (*pGC->ops->CopyPlane)(
+                            (DrawablePtr)pScreenPriv->pBankPixmap,
+                            pDst, pGC, 0, 0, pQueue->w, pQueue->h,
+                            pQueue->x, pQueue->y, plane);
+                    else
+                        (*pGC->ops->CopyArea)(
+                            (DrawablePtr)pScreenPriv->pBankPixmap,
+                            pDst, pGC, 0, 0, pQueue->w, pQueue->h,
+                            pQueue->x, pQueue->y);
                 }
 
                 GCOP_WRAP;
@@ -900,27 +1029,40 @@ miBankCopyArea(
                 pQueue++;
             }
 
-            if (pImage)
-                DEALLOCATE_LOCAL(pImage);
+            DEALLOCATE_LOCAL(pImage);
+
+            BANK_RESTORE;
         }
 
         CLIP_RESTORE;
 
         pGC->fExpose = fExpose;
 
-        if (Queue)
-            DEALLOCATE_LOCAL(Queue);
-
-        if (fExpose && !fastExpose)
-            ret = miHandleExposures(pSrc, pDst, pGC,
-                      srcx, srcy, w, h, dstx, dsty, 0);
-        else
-            ret = NULL;
+        DEALLOCATE_LOCAL(Queue);
     }
 
     SCREEN_RESTORE;
 
-    return ret;
+    if (!fExpose || fastExpose)
+        return ret;
+
+    return miHandleExposures(pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, 0);
+}
+
+static RegionPtr
+miBankCopyArea(
+    DrawablePtr pSrc,
+    DrawablePtr pDst,
+    GCPtr       pGC,
+    int         srcx,
+    int         srcy,
+    int         w,
+    int         h,
+    int         dstx,
+    int         dsty
+)
+{
+    return miBankCopy(pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, 0, FALSE);
 }
 
 static RegionPtr
@@ -937,481 +1079,8 @@ miBankCopyPlane(
     unsigned long plane
 )
 {
-    int         cx1, cy1, cx2, cy2;
-    int         ns, nd, nse, nde, dx, dy, xorg = 0, yorg = 0;
-    int         maxWidth = 0, maxHeight = 0, paddedWidth = 0;
-    int         nBox, nBoxClipSrc, nBoxClipDst, nQueue;
-    BoxPtr      pBox, pBoxClipSrc, pBoxClipDst;
-    BoxRec      fastBox, ccBox;
-    RegionPtr   ret, prgnSrcClip = NULL;
-    RegionRec   rgnDst;
-    char        *pImage = NULL;
-    miBankQueue *pQueue, *pQueueNew, *Queue;
-    miBankQueue *pQueueTmp, *pQueueNext, *pQueueBase;
-    Bool        fastBlit, fExpose, freeSrcClip, fastClip, fastExpose;
-
-    GCOP_INIT;
-    SCREEN_SAVE;
-
-    if (!IS_BANKED(pSrc) && !IS_BANKED(pDst))
-    {
-        GCOP_UNWRAP;
-
-        ret = (*pGC->ops->CopyPlane)(pSrc, pDst, pGC,
-            srcx, srcy, w, h, dstx, dsty, plane);
-
-        GCOP_WRAP;
-    }
-    else if (!IS_BANKED(pDst))
-    {
-        fExpose = pGC->fExpose;
-        pGC->fExpose = FALSE;
-
-        xorg = pSrc->x;
-        yorg = pSrc->y;
-        dx   = dstx - srcx;
-        dy   = dsty - srcy;
-        srcx += xorg;
-        srcy += yorg;
-
-        ns = FirstBankOf(srcx,     srcy);
-        nse = LastBankOf(srcx + w, srcy + h);
-        for (;  ns <= nse;  ns++)
-        {
-            if (!pScreenPriv->pBanks[ns])
-                continue;
-
-            nBox = REGION_NUM_RECTS(pScreenPriv->pBanks[ns]);
-            pBox = REGION_RECTS(pScreenPriv->pBanks[ns]);
-
-            for (;  nBox--;  pBox++)
-            {
-                cx1 = max(pBox->x1, srcx);
-                cy1 = max(pBox->y1, srcy);
-                cx2 = min(pBox->x2, srcx + w);
-                cy2 = min(pBox->y2, srcy + h);
-
-                if ((cx1 >= cx2) || (cy1 >= cy2))
-                    continue;
-
-                GCOP_UNWRAP;
-
-                SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, ns);
-
-                (*pGC->ops->CopyPlane)(pSrc, pDst, pGC,
-                    cx1 - xorg, cy1 - yorg,
-                    cx2 - cx1, cy2 - cy1,
-                    cx1 + dx - xorg, cy1 + dy - yorg, plane);
-
-                GCOP_WRAP;
-            }
-        }
-
-        pGC->fExpose = fExpose;
-
-        if (fExpose)
-            ret = miHandleExposures(pSrc, pDst, pGC,
-                      srcx - xorg, srcy - yorg, w, h, dstx, dsty, 0);
-        else
-            ret = NULL;
-    }
-    else if (!IS_BANKED(pSrc))
-    {
-        CLIP_SAVE;
-
-        if (pGC->miTranslate)
-        {
-            xorg = pDst->x;
-            yorg = pDst->y;
-        }
-        dx = srcx - dstx;
-        dy = srcy - dsty;
-        dstx += xorg;
-        dsty += yorg;
-
-        nd = FirstBankOf(dstx,     dsty);
-        nde = LastBankOf(dstx + w, dsty + h);
-        for (;  nd <= nde;  nd++)
-        {
-            if (!(pGC->pCompositeClip = pGCPriv->pBankedClips[nd]))
-                continue;
-
-            /*
-             * It's faster to let the lower-level CopyArea do the clipping
-             * within each bank.
-             */
-            nBox = REGION_NUM_RECTS(pScreenPriv->pBanks[nd]);
-            pBox = REGION_RECTS(pScreenPriv->pBanks[nd]);
-
-            for (;  nBox--;  pBox++)
-            {
-                cx1 = max(pBox->x1, dstx);
-                cy1 = max(pBox->y1, dsty);
-                cx2 = min(pBox->x2, dstx + w);
-                cy2 = min(pBox->y2, dsty + h);
-
-                if ((cx1 >= cx2) || (cy1 >= cy2))
-                    continue;
-
-                GCOP_UNWRAP;
-
-                SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, nd);
-
-                (*pGC->ops->CopyPlane)(pSrc, pDst, pGC,
-                    cx1 + dx - xorg, cy1 + dy - yorg,
-                    cx2 - cx1, cy2 - cy1,
-                    cx1 - xorg, cy1 - yorg, plane);
-
-                GCOP_WRAP;
-            }
-        }
-
-        CLIP_RESTORE;
-
-        ret = NULL;
-    }
-    else /* IS_BANKED(pSrc) && IS_BANKED(pDst) */
-    {
-        CLIP_SAVE;
-
-        fExpose = pGC->fExpose;
-
-        fastBox.x1 = srcx + pSrc->x;
-        fastBox.y1 = srcy + pSrc->y;
-        fastBox.x2 = fastBox.x1 + w;
-        fastBox.y2 = fastBox.y1 + h;
-
-        dx = dstx - fastBox.x1;
-        dy = dsty - fastBox.y1;
-        if (pGC->miTranslate)
-        {
-            xorg = pDst->x;
-            yorg = pDst->y;
-        }
-
-        /*
-         * Clip against the source.  Otherwise we will blit too much for SINGLE
-         * and SHARED banked systems.
-         */
-        freeSrcClip = FALSE;
-        fastClip    = FALSE;
-        fastExpose  = FALSE;
-
-        if (pGC->subWindowMode != IncludeInferiors)
-            prgnSrcClip = &((WindowPtr)pSrc)->clipList;
-        else if (!((WindowPtr)pSrc)->parent)
-            fastClip = TRUE;
-        else if ((pSrc == pDst) && (pGC->clientClipType == CT_NONE))
-            prgnSrcClip = pGC->pCompositeClip;
-        else
-        {
-            prgnSrcClip = NotClippedByChildren((WindowPtr)pSrc);
-            freeSrcClip = TRUE;
-        }
-
-        if (fastClip)
-        {
-            fastExpose = TRUE;
-
-            /*
-             * Clip the source.  If regions extend beyond the source size, make
-             * sure exposure events get sent.
-             */
-            if (fastBox.x1 < pSrc->x)
-            {
-                fastBox.x1 = pSrc->x;
-                fastExpose = FALSE;
-            }
-            if (fastBox.y1 < pSrc->y)
-            {
-                fastBox.y1 = pSrc->y;
-                fastExpose = FALSE;
-            }
-            if (fastBox.x2 > pSrc->x + (int) pSrc->width)
-            {
-                fastBox.x2 = pSrc->x + (int) pSrc->width;
-                fastExpose = FALSE;
-            }
-            if (fastBox.y2 > pSrc->y + (int) pSrc->height)
-            {
-                fastBox.y2 = pSrc->y + (int) pSrc->height;
-                fastExpose = FALSE;
-            }
-
-            nBox = 1;
-            pBox = &fastBox;
-        }
-        else
-        {
-            REGION_INIT(pScreen, &rgnDst, &fastBox, 1);
-            REGION_INTERSECT(pScreen, &rgnDst, &rgnDst, prgnSrcClip);
-            pBox = REGION_RECTS(&rgnDst);
-            nBox = REGION_NUM_RECTS(&rgnDst);
-        }
-
-        /*
-         * fastBlit can only be TRUE if we don't need to worry about attempts
-         * to read partial pixels through the destination bank.
-         */
-        fastBlit = FALSE;
-        if ((pScreenPriv->type == BANK_DOUBLE) ||
-            ((pScreenPriv->type == BANK_SHARED) &&
-             (pScreen->rootDepth == 1) &&
-             ((pGC->alu == GXclear) || (pGC->alu == GXcopy) ||
-              (pGC->alu == GXcopyInverted) || (pGC->alu == GXset))))
-            fastBlit = TRUE;
-
-        nQueue = nBox * pScreenPriv->maxRects * 2;
-        pQueue = Queue = ALLOCATE_LOCAL_ARRAY(miBankQueue, nQueue);
-
-        if (Queue)
-        {
-            for (;  nBox--;  pBox++)
-            {
-                ns = FirstBankOf(pBox->x1, pBox->y1);
-                nse = LastBankOf(pBox->x2, pBox->y2);
-                for (;  ns <= nse;  ns++)
-                {
-                    if (!pScreenPriv->pBanks[ns])
-                        continue;
-
-                    nBoxClipSrc = REGION_NUM_RECTS(pScreenPriv->pBanks[ns]);
-                    pBoxClipSrc = REGION_RECTS(pScreenPriv->pBanks[ns]);
-
-                    for (;  nBoxClipSrc--;  pBoxClipSrc++)
-                    {
-                        cx1 = max(pBox->x1, pBoxClipSrc->x1);
-                        cy1 = max(pBox->y1, pBoxClipSrc->y1);
-                        cx2 = min(pBox->x2, pBoxClipSrc->x2);
-                        cy2 = min(pBox->y2, pBoxClipSrc->y2);
-
-                        /* Check to see if the region is empty */
-                        if ((cx1 >= cx2) || (cy1 >= cy2))
-                            continue;
-
-                        /* Translate c[xy]* to destination coordinates */
-                        cx1 += dx + xorg;
-                        cy1 += dy + yorg;
-                        cx2 += dx + xorg;
-                        cy2 += dy + yorg;
-
-                        nd = FirstBankOf(cx1, cy1);
-                        nde = LastBankOf(cx2, cy2);
-                        for (;  nd <= nde;  nd++)
-                        {
-                            if (!pGCPriv->pBankedClips[nd])
-                                continue;
-
-                            /*
-                             * Clients can send quite large clip descriptions,
-                             * so use the bank clips here instead.
-                             */
-                            nBoxClipDst =
-                                REGION_NUM_RECTS(pScreenPriv->pBanks[nd]);
-                            pBoxClipDst =
-                                REGION_RECTS(pScreenPriv->pBanks[nd]);
-
-                            for (;  nBoxClipDst--;  pBoxClipDst++)
-                            {
-                                ccBox.x1 = max(cx1, pBoxClipDst->x1);
-                                ccBox.y1 = max(cy1, pBoxClipDst->y1);
-                                ccBox.x2 = min(cx2, pBoxClipDst->x2);
-                                ccBox.y2 = min(cy2, pBoxClipDst->y2);
-
-                                /* Check to see if the region is empty */
-                                if ((ccBox.x1 >= ccBox.x2) ||
-                                    (ccBox.y1 >= ccBox.y2))
-                                    continue;
-
-                                pQueue->srcBankNo = ns;
-                                pQueue->dstBankNo = nd;
-                                pQueue->x         = ccBox.x1 - xorg;
-                                pQueue->y         = ccBox.y1 - yorg;
-                                pQueue->w         = ccBox.x2 - ccBox.x1;
-                                pQueue->h         = ccBox.y2 - ccBox.y1;
-
-                                if (maxWidth < pQueue->w)
-                                    maxWidth = pQueue->w;
-                                if (maxHeight < pQueue->h)
-                                    maxHeight = pQueue->h;
-
-                                /*
-                                 * When shared banking is used and the source
-                                 * and destination banks differ, prevent
-                                 * attempts to fetch partial scanline pad units
-                                 * through the destination bank.
-                                 */
-                                pQueue->fastBlit = fastBlit;
-                                if (fastBlit &&
-                                    (pScreenPriv->type == BANK_SHARED) &&
-                                    (ns != nd) &&
-                                    ((ccBox.x1 %
-                                      pScreenPriv->nPixelsPerScanlinePadUnit) ||
-                                     (ccBox.x2 %
-                                      pScreenPriv->nPixelsPerScanlinePadUnit) ||
-                                     (RECT_IN_REGION(pScreen,
-                                       pGCPriv->pBankedClips[nd], &ccBox) !=
-                                      rgnIN)))
-                                    pQueue->fastBlit = FALSE;
-                                pQueue++;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (!fastClip)
-        {
-            REGION_UNINIT(pScreen, &rgnDst);
-            if (freeSrcClip)
-                REGION_DESTROY(pScreen, prgnSrcClip);
-        }
-
-        pQueueNew = pQueue;
-        nQueue = pQueue - Queue;
-
-        if (nQueue > 0)
-        {
-            pQueue = Queue;
-
-            if ((nQueue > 1) &&
-                ((pSrc == pDst) || (pGC->subWindowMode == IncludeInferiors)))
-            {
-                if ((srcy + pSrc->y) < (dsty + yorg))
-                {
-                    /* Sort from bottom to top */
-                    pQueueBase = pQueueNext = pQueue + nQueue - 1;
-
-                    while (pQueueBase >= pQueue)
-                    {
-                        while ((pQueueNext >= pQueue) &&
-                               (pQueueBase->y == pQueueNext->y))
-                            pQueueNext--;
-
-                        pQueueTmp = pQueueNext + 1;
-                        while (pQueueTmp <= pQueueBase)
-                            *pQueueNew++ = *pQueueTmp++;
-
-                        pQueueBase = pQueueNext;
-                    }
-
-                    pQueueNew -= nQueue;
-                    pQueue = pQueueNew;
-                    pQueueNew = Queue;
-                }
-
-                if ((srcx + pSrc->x) < (dstx + xorg))
-                {
-                    /* Sort from right to left */
-                    pQueueBase = pQueueNext = pQueue;
-
-                    while (pQueueBase < pQueue + nQueue)
-                    {
-                        while ((pQueueNext < pQueue + nQueue) &&
-                               (pQueueNext->y == pQueueBase->y))
-                            pQueueNext++;
-
-                        pQueueTmp = pQueueNext;
-                        while (pQueueTmp != pQueueBase)
-                            *pQueueNew++ = *--pQueueTmp;
-
-                        pQueueBase = pQueueNext;
-                    }
-
-                    pQueueNew -= nQueue;
-                    pQueue = pQueueNew;
-                }
-            }
-
-            paddedWidth = PixmapBytePad(maxWidth,
-                pScreenPriv->pScreenPixmap->drawable.depth);
-            pImage = (char *)ALLOCATE_LOCAL(paddedWidth * maxHeight);
-
-            pGC->fExpose = FALSE;
-
-            while (nQueue--)
-            {
-                pGC->pCompositeClip = pGCPriv->pBankedClips[pQueue->dstBankNo];
-
-                GCOP_UNWRAP;
-
-                if (pQueue->srcBankNo == pQueue->dstBankNo)
-                {
-                    SET_SINGLE_BANK(pScreenPriv->pScreenPixmap,
-                        pQueue->srcBankNo);
-
-                    (*pGC->ops->CopyPlane)(pSrc, pDst, pGC,
-                        pQueue->x - dx - pSrc->x, pQueue->y - dy - pSrc->y,
-                        pQueue->w, pQueue->h, pQueue->x, pQueue->y, plane);
-                }
-                else if (pQueue->fastBlit)
-                {
-                    SetPixmapWidth(pScreenPriv->pBankPixmap,
-                        pScreenPriv->pScreenPixmap->drawable.width,
-                        pScreenPriv->pScreenPixmap->devKind);
-
-                    SET_SOURCE_BANK     (pScreenPriv->pBankPixmap,
-                        pQueue->srcBankNo);
-                    SET_DESTINATION_BANK(pScreenPriv->pScreenPixmap,
-                        pQueue->dstBankNo);
-
-                    (*pGC->ops->CopyPlane)(
-                        (DrawablePtr)pScreenPriv->pBankPixmap,
-                        pDst, pGC,
-                        pQueue->x - dx, pQueue->y - dy,
-                        pQueue->w, pQueue->h, pQueue->x, pQueue->y, plane);
-                }
-                else if (pImage)
-                {
-                    SetPixmapWidth(pScreenPriv->pBankPixmap,
-                        maxWidth, paddedWidth);
-                    SetPixmapData(pScreenPriv->pBankPixmap, pImage);
-
-                    SET_SINGLE_BANK(pScreenPriv->pScreenPixmap,
-                        pQueue->srcBankNo);
-
-                    (*pScreenPriv->pBankGC->ops->CopyArea)(
-                        pSrc, (DrawablePtr)pScreenPriv->pBankPixmap,
-                        pScreenPriv->pBankGC,
-                        pQueue->x - dx - pSrc->x, pQueue->y - dy - pSrc->y,
-                        pQueue->w, pQueue->h, 0, 0);
-
-                    SET_SINGLE_BANK(pScreenPriv->pScreenPixmap,
-                        pQueue->dstBankNo);
-
-                    (*pGC->ops->CopyPlane)(
-                        (DrawablePtr)pScreenPriv->pBankPixmap,
-                        pDst, pGC, 0, 0, pQueue->w, pQueue->h,
-                        pQueue->x, pQueue->y, plane);
-                }
-
-                GCOP_WRAP;
-
-                pQueue++;
-            }
-
-            if (pImage)
-                DEALLOCATE_LOCAL(pImage);
-        }
-
-        CLIP_RESTORE;
-
-        pGC->fExpose = fExpose;
-
-        if (Queue)
-            DEALLOCATE_LOCAL(Queue);
-
-        if (fExpose && !fastExpose)
-            ret = miHandleExposures(pSrc, pDst, pGC,
-                      srcx, srcy, w, h, dstx, dsty, 0);
-        else
-            ret = NULL;
-    }
-
-    SCREEN_RESTORE;
-
-    return ret;
+    return
+        miBankCopy(pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane, TRUE);
 }
 
 static void
@@ -1419,50 +1088,13 @@ miBankPolyPoint(
     DrawablePtr pDrawable,
     GCPtr       pGC,
     int         mode,
-    int         npt,
-    xPoint      *pptInit
+    int         nArray,
+    xPoint      *pArray
 )
 {
-    if (npt > 0)
-    {
-        GCOP_INIT;
-        SCREEN_SAVE;
-
-        if (!IS_BANKED(pDrawable))
-        {
-            GCOP_UNWRAP;
-
-            (*pGC->ops->PolyPoint)(pDrawable, pGC, mode, npt, pptInit);
-
-            GCOP_WRAP;
-        }
-        else
-        {
-            xPoint *ppt;
-            int    i;
-
-            CLIP_SAVE;
-
-            if (!(ppt = ALLOCATE_LOCAL_ARRAY(xPoint, npt)))
-                ppt = pptInit;
-
-            GCOP_TOP_PART;
-
-            if (ppt != pptInit)
-                memcpy(ppt, pptInit, npt * sizeof(xPoint));
-
-            (*pGC->ops->PolyPoint)(pDrawable, pGC, mode, npt, ppt);
-
-            GCOP_BOTTOM_PART;
-
-            if (ppt != pptInit)
-                DEALLOCATE_LOCAL(ppt);
-
-            CLIP_RESTORE;
-        }
-
-        SCREEN_RESTORE;
-    }
+#   define GCOP_ARGS GCOP_0D_ARGS
+    GCOP_COMPLEX(PolyPoint, xPoint);
+#   undef GCOP_ARGS
 }
 
 static void
@@ -1470,200 +1102,52 @@ miBankPolylines(
     DrawablePtr pDrawable,
     GCPtr       pGC,
     int         mode,
-    int         npt,
-    DDXPointPtr pptInit
+    int         nArray,
+    DDXPointPtr pArray
 )
 {
-    if (npt > 0)
-    {
-        GCOP_INIT;
-        SCREEN_SAVE;
-
-        if (!IS_BANKED(pDrawable))
-        {
-            GCOP_UNWRAP;
-
-            (*pGC->ops->Polylines)(pDrawable, pGC, mode, npt, pptInit);
-
-            GCOP_WRAP;
-        }
-        else
-        {
-            DDXPointPtr ppt;
-            int         i;
-
-            CLIP_SAVE;
-
-            if (!(ppt = ALLOCATE_LOCAL_ARRAY(DDXPointRec, npt)))
-                ppt = pptInit;
-
-            GCOP_TOP_PART;
-
-            if (ppt != pptInit)
-                memcpy(ppt, pptInit, npt * sizeof(DDXPointRec));
-
-            (*pGC->ops->Polylines)(pDrawable, pGC, mode, npt, ppt);
-
-            GCOP_BOTTOM_PART;
-
-            if (ppt != pptInit)
-                DEALLOCATE_LOCAL(ppt);
-
-            CLIP_RESTORE;
-        }
-
-        SCREEN_RESTORE;
-    }
+#   define GCOP_ARGS GCOP_0D_ARGS
+    GCOP_COMPLEX(Polylines, DDXPointRec);
+#   undef GCOP_ARGS
 }
 
 static void
 miBankPolySegment(
     DrawablePtr pDrawable,
     GCPtr       pGC,
-    int         nseg,
-    xSegment    *psegInit
+    int         nArray,
+    xSegment    *pArray
 )
 {
-    if (nseg > 0)
-    {
-        GCOP_INIT;
-        SCREEN_SAVE;
-
-        if (!IS_BANKED(pDrawable))
-        {
-            GCOP_UNWRAP;
-
-            (*pGC->ops->PolySegment)(pDrawable, pGC, nseg, psegInit);
-
-            GCOP_WRAP;
-        }
-        else
-        {
-            xSegment *pseg;
-            int      i;
-
-            CLIP_SAVE;
-
-            if (!(pseg = ALLOCATE_LOCAL_ARRAY(xSegment, nseg)))
-                pseg = psegInit;
-
-            GCOP_TOP_PART;
-
-            if (pseg != psegInit)
-                memcpy(pseg, psegInit, nseg * sizeof(xSegment));
-
-            (*pGC->ops->PolySegment)(pDrawable, pGC, nseg, pseg);
-
-            GCOP_BOTTOM_PART;
-
-            if (pseg != psegInit)
-                DEALLOCATE_LOCAL(pseg);
-
-            CLIP_RESTORE;
-        }
-
-        SCREEN_RESTORE;
-    }
+#   define GCOP_ARGS GCOP_1D_ARGS
+    GCOP_COMPLEX(PolySegment, xSegment);
+#   undef GCOP_ARGS
 }
 
 static void
 miBankPolyRectangle(
     DrawablePtr pDrawable,
     GCPtr       pGC,
-    int         nrect,
-    xRectangle  *prectInit
+    int         nArray,
+    xRectangle  *pArray
 )
 {
-    if (nrect > 0)
-    {
-        GCOP_INIT;
-        SCREEN_SAVE;
-
-        if (!IS_BANKED(pDrawable))
-        {
-            GCOP_UNWRAP;
-
-            (*pGC->ops->PolyRectangle)(pDrawable, pGC, nrect, prectInit);
-
-            GCOP_WRAP;
-        }
-        else
-        {
-            xRectangle *prect;
-            int        i;
-
-            CLIP_SAVE;
-
-            if (!(prect = ALLOCATE_LOCAL_ARRAY(xRectangle, nrect)))
-                prect = prectInit;
-
-            GCOP_TOP_PART;
-
-            if (prect != prectInit)
-                memcpy(prect, prectInit, nrect * sizeof(xRectangle));
-
-            (*pGC->ops->PolyRectangle)(pDrawable, pGC, nrect, prect);
-
-            GCOP_BOTTOM_PART;
-
-            if (prect != prectInit)
-                DEALLOCATE_LOCAL(prect);
-
-            CLIP_RESTORE;
-        }
-
-        SCREEN_RESTORE;
-    }
+#   define GCOP_ARGS GCOP_1D_ARGS
+    GCOP_COMPLEX(PolyRectangle, xRectangle);
+#   undef GCOP_ARGS
 }
 
 static void
 miBankPolyArc(
     DrawablePtr pDrawable,
     GCPtr       pGC,
-    int         narc,
-    xArc        *parcInit
+    int         nArray,
+    xArc        *pArray
 )
 {
-    if (narc > 0)
-    {
-        GCOP_INIT;
-        SCREEN_SAVE;
-
-        if (!IS_BANKED(pDrawable))
-        {
-            GCOP_UNWRAP;
-
-            (*pGC->ops->PolyArc)(pDrawable, pGC, narc, parcInit);
-
-            GCOP_WRAP;
-        }
-        else
-        {
-            xArc *parc;
-            int  i;
-
-            CLIP_SAVE;
-
-            if (!(parc = ALLOCATE_LOCAL_ARRAY(xArc, narc)))
-                parc = parcInit;
-
-            GCOP_TOP_PART;
-
-            if (parc != parcInit)
-                memcpy(parc, parcInit, narc * sizeof(xArc));
-
-            (*pGC->ops->PolyArc)(pDrawable, pGC, narc, parc);
-
-            GCOP_BOTTOM_PART;
-
-            if (parc != parcInit)
-                DEALLOCATE_LOCAL(parc);
-
-            CLIP_RESTORE;
-        }
-
-        SCREEN_RESTORE;
-    }
+#   define GCOP_ARGS GCOP_1D_ARGS
+    GCOP_COMPLEX(PolyArc, xArc);
+#   undef GCOP_ARGS
 }
 
 static void
@@ -1672,150 +1156,39 @@ miBankFillPolygon(
     GCPtr       pGC,
     int         shape,
     int         mode,
-    int         npt,
-    DDXPointRec *pptInit
+    int         nArray,
+    DDXPointRec *pArray
 )
 {
-    if (npt > 0)
-    {
-        GCOP_INIT;
-        SCREEN_SAVE;
-
-        if (!IS_BANKED(pDrawable))
-        {
-            GCOP_UNWRAP;
-
-            (*pGC->ops->FillPolygon)(pDrawable, pGC, shape, mode, npt, pptInit);
-
-            GCOP_WRAP;
-        }
-        else
-        {
-            DDXPointRec *ppt;
-            int         i;
-
-            CLIP_SAVE;
-
-            if (!(ppt = ALLOCATE_LOCAL_ARRAY(DDXPointRec, npt)))
-                ppt = pptInit;
-
-            GCOP_TOP_PART;
-
-            if (ppt != pptInit)
-                memcpy(ppt, pptInit, npt * sizeof(DDXPointRec));
-
-            (*pGC->ops->FillPolygon)(pDrawable, pGC, shape, mode, npt, ppt);
-
-            GCOP_BOTTOM_PART;
-
-            if (ppt != pptInit)
-                DEALLOCATE_LOCAL(ppt);
-
-            CLIP_RESTORE;
-        }
-
-        SCREEN_RESTORE;
-    }
+#   define GCOP_ARGS GCOP_2D_ARGS
+    GCOP_COMPLEX(FillPolygon, DDXPointRec);
+#   undef GCOP_ARGS
 }
 
 static void
 miBankPolyFillRect(
     DrawablePtr pDrawable,
     GCPtr       pGC,
-    int         nrectFill,
-    xRectangle  *prectInit
+    int         nArray,
+    xRectangle  *pArray
 )
 {
-    if (nrectFill > 0)
-    {
-        GCOP_INIT;
-        SCREEN_SAVE;
-
-        if (!IS_BANKED(pDrawable))
-        {
-            GCOP_UNWRAP;
-
-            (*pGC->ops->PolyFillRect)(pDrawable, pGC, nrectFill, prectInit);
-
-            GCOP_WRAP;
-        }
-        else
-        {
-            xRectangle *prect;
-            int        i;
-
-            CLIP_SAVE;
-
-            if (!(prect = ALLOCATE_LOCAL_ARRAY(xRectangle, nrectFill)))
-                prect = prectInit;
-
-            GCOP_TOP_PART;
-
-            if (prect != prectInit)
-                memcpy(prect, prectInit, nrectFill * sizeof(xRectangle));
-
-            (*pGC->ops->PolyFillRect)(pDrawable, pGC, nrectFill, prect);
-
-            GCOP_BOTTOM_PART;
-
-            if (prect != prectInit)
-                DEALLOCATE_LOCAL(prect);
-
-            CLIP_RESTORE;
-        }
-
-        SCREEN_RESTORE;
-    }
+#   define GCOP_ARGS GCOP_1D_ARGS
+    GCOP_COMPLEX(PolyFillRect, xRectangle);
+#   undef GCOP_ARGS
 }
 
 static void
 miBankPolyFillArc(
     DrawablePtr pDrawable,
     GCPtr       pGC,
-    int         narc,
-    xArc        *parcInit
+    int         nArray,
+    xArc        *pArray
 )
 {
-    if (narc > 0)
-    {
-        GCOP_INIT;
-        SCREEN_SAVE;
-
-        if (!IS_BANKED(pDrawable))
-        {
-            GCOP_UNWRAP;
-
-            (*pGC->ops->PolyFillArc)(pDrawable, pGC, narc, parcInit);
-
-            GCOP_WRAP;
-        }
-        else
-        {
-            xArc *parc;
-            int  i;
-
-            CLIP_SAVE;
-
-            if (!(parc = ALLOCATE_LOCAL_ARRAY(xArc, narc)))
-                parc = parcInit;
-
-            GCOP_TOP_PART;
-
-            if (parc != parcInit)
-                memcpy(parc, parcInit, narc * sizeof(xArc));
-
-            (*pGC->ops->PolyFillArc)(pDrawable, pGC, narc, parc);
-
-            GCOP_BOTTOM_PART;
-
-            if (parc != parcInit)
-                DEALLOCATE_LOCAL(parc);
-
-            CLIP_RESTORE;
-        }
-
-        SCREEN_RESTORE;
-    }
+#   define GCOP_ARGS GCOP_1D_ARGS
+    GCOP_COMPLEX(PolyFillArc, xArc);
+#   undef GCOP_ARGS
 }
 
 static int
@@ -1824,40 +1197,14 @@ miBankPolyText8(
     GCPtr       pGC,
     int         x,
     int         y,
-    int         nchar,
+    int         nArray,
     char        *pchar
 )
 {
     int retval = x;
 
-    if (nchar > 0)
-    {
-        GCOP_INIT;
-        SCREEN_SAVE;
-
-        if (!IS_BANKED(pDrawable))
-        {
-            GCOP_UNWRAP;
-
-            retval = (*pGC->ops->PolyText8)(pDrawable, pGC, x, y, nchar, pchar);
-
-            GCOP_WRAP;
-        }
-        else
-        {
-            int i;
-
-            CLIP_SAVE;
-            GCOP_TOP_PART;
-
-            retval = (*pGC->ops->PolyText8)(pDrawable, pGC, x, y, nchar, pchar);
-
-            GCOP_BOTTOM_PART;
-            CLIP_RESTORE;
-        }
-
-        SCREEN_RESTORE;
-    }
+    GCOP_SIMPLE(retval =
+        (*pGC->ops->PolyText8)(pDrawable, pGC, x, y, nArray, pchar));
 
     return retval;
 }
@@ -1868,40 +1215,14 @@ miBankPolyText16(
     GCPtr          pGC,
     int            x,
     int            y,
-    int            nchar,
+    int            nArray,
     unsigned short *pchar
 )
 {
     int retval = x;
 
-    if (nchar > 0)
-    {
-        GCOP_INIT;
-        SCREEN_SAVE;
-
-        if (!IS_BANKED(pDrawable))
-        {
-            GCOP_UNWRAP;
-
-            retval = (*pGC->ops->PolyText16)(pDrawable, pGC, x, y, nchar, pchar);
-
-            GCOP_WRAP;
-        }
-        else
-        {
-            int i;
-
-            CLIP_SAVE;
-            GCOP_TOP_PART;
-
-            retval = (*pGC->ops->PolyText16)(pDrawable, pGC, x, y, nchar, pchar);
-
-            GCOP_BOTTOM_PART;
-            CLIP_RESTORE;
-        }
-
-        SCREEN_RESTORE;
-    }
+    GCOP_SIMPLE(retval =
+        (*pGC->ops->PolyText16)(pDrawable, pGC, x, y, nArray, pchar));
 
     return retval;
 }
@@ -1912,15 +1233,11 @@ miBankImageText8(
     GCPtr       pGC,
     int         x,
     int         y,
-    int         nchar,
+    int         nArray,
     char        *pchar
 )
 {
-    if (nchar > 0)
-    {
-        GCOP_SIMPLE((*pGC->ops->ImageText8)(pDrawable, pGC,
-            x, y, nchar, pchar));
-    }
+    GCOP_SIMPLE((*pGC->ops->ImageText8)(pDrawable, pGC, x, y, nArray, pchar));
 }
 
 static void
@@ -1929,15 +1246,11 @@ miBankImageText16(
     GCPtr          pGC,
     int            x,
     int            y,
-    int            nchar,
+    int            nArray,
     unsigned short *pchar
 )
 {
-    if (nchar > 0)
-    {
-        GCOP_SIMPLE((*pGC->ops->ImageText16)(pDrawable, pGC,
-            x, y, nchar, pchar));
-    }
+    GCOP_SIMPLE((*pGC->ops->ImageText16)(pDrawable, pGC, x, y, nArray, pchar));
 }
 
 static void
@@ -1946,16 +1259,13 @@ miBankImageGlyphBlt(
     GCPtr        pGC,
     int          x,
     int          y,
-    unsigned int nglyph,
+    unsigned int nArray,
     CharInfoPtr  *ppci,
     pointer      pglyphBase
 )
 {
-    if (nglyph > 0)
-    {
-        GCOP_SIMPLE((*pGC->ops->ImageGlyphBlt)(pDrawable, pGC,
-            x, y, nglyph, ppci, pglyphBase));
-    }
+    GCOP_SIMPLE((*pGC->ops->ImageGlyphBlt)(pDrawable, pGC,
+        x, y, nArray, ppci, pglyphBase));
 }
 
 static void
@@ -1964,16 +1274,13 @@ miBankPolyGlyphBlt(
     GCPtr        pGC,
     int          x,
     int          y,
-    unsigned int nglyph,
+    unsigned int nArray,
     CharInfoPtr  *ppci,
     pointer      pglyphBase
 )
 {
-    if (nglyph > 0)
-    {
-        GCOP_SIMPLE((*pGC->ops->PolyGlyphBlt)(pDrawable, pGC,
-            x, y, nglyph, ppci, pglyphBase));
-    }
+    GCOP_SIMPLE((*pGC->ops->PolyGlyphBlt)(pDrawable, pGC,
+        x, y, nArray, ppci, pglyphBase));
 }
 
 static void
@@ -2015,7 +1322,7 @@ miBankPushPixels(
 
                 GCOP_UNWRAP;
 
-                SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, i);
+                SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, -1, -1, i);
 
                 (*pGC->ops->PushPixels)(pGC, pBitmap, pDrawable, w, h, x, y);
 
@@ -2076,9 +1383,10 @@ miBankValidateGC(
     if ((changes & (GCClipXOrigin|GCClipYOrigin|GCClipMask|GCSubwindowMode)) ||
         (pDrawable->serialNumber != (pGC->serialNumber & DRAWABLE_SERIAL_BITS)))
     {
-        ScreenPtr pScreen = pGC->pScreen;
-        RegionPtr prgnClip;
-        int       i;
+        ScreenPtr     pScreen = pGC->pScreen;
+        RegionPtr     prgnClip;
+        unsigned long planemask;
+        int           i;
 
         SCREEN_INIT;
         SCREEN_SAVE;
@@ -2105,6 +1413,43 @@ miBankValidateGC(
                 }
                 else
                     pGCPriv->pBankedClips[i] = prgnClip;
+            }
+
+            /*
+             * fastCopy and fastPlane can only be TRUE if we don't need to
+             * worry about attempts to read partial pixels through the
+             * destination bank.
+             */
+            switch (pScreenPriv->type)
+            {
+                case BANK_SHARED:
+                    pGCPriv->fastCopy = pGCPriv->fastPlane = FALSE;
+
+                    if ((pGC->alu != GXclear) && (pGC->alu != GXcopy) &&
+                        (pGC->alu != GXcopyInverted) && (pGC->alu != GXset))
+                        break;
+
+                    if (pScreen->rootDepth == 1)
+                        pGCPriv->fastPlane = TRUE;
+
+                    /* This is probably paranoia */
+                    if ((pDrawable->depth != pScreen->rootDepth) ||
+                        (pDrawable->depth != pGC->depth))
+                        break;
+
+                    planemask = (1 << pGC->depth) - 1;
+                    if ((pGC->planemask & planemask) == planemask)
+                        pGCPriv->fastCopy = TRUE;
+
+                    break;
+
+                case BANK_DOUBLE:
+                    pGCPriv->fastCopy = pGCPriv->fastPlane = TRUE;
+                    break;
+
+                default:
+                    pGCPriv->fastCopy = pGCPriv->fastPlane = FALSE;
+                    break;
             }
         }
         else
@@ -2256,8 +1601,8 @@ miBankCreateScreenResources(
     {
         /* Set screen buffer address to something recognizable */
         pScreenPriv->pScreenPixmap = (*pScreen->GetScreenPixmap)(pScreen);
-        pScreenPriv->pbits = GetPixmapData(pScreenPriv->pScreenPixmap);
-        SetPixmapData(pScreenPriv->pScreenPixmap, pScreenPriv);
+        pScreenPriv->pbits = pScreenPriv->pScreenPixmap->devPrivate.ptr;
+        pScreenPriv->pScreenPixmap->devPrivate.ptr = (pointer)pScreenPriv;
 
         /* Get shadow pixmap;  width & height of 0 means no pixmap data */
         pScreenPriv->pBankPixmap = (*pScreen->CreatePixmap)(pScreen, 0, 0,
@@ -2273,7 +1618,7 @@ miBankCreateScreenResources(
             pScreenPriv->pScreenPixmap->drawable.height,
             pScreenPriv->pScreenPixmap->drawable.depth,
             pScreenPriv->pScreenPixmap->drawable.bitsPerPixel,
-            pScreenPriv->pScreenPixmap->devKind, (pointer)pScreenPriv);
+            pScreenPriv->pScreenPixmap->devKind, NULL);
 
     /* Create shadow GC */
     if (retval)
@@ -2299,6 +1644,42 @@ miBankCreateScreenResources(
 }
 
 static Bool
+miBankModifyPixmapHeader(
+    PixmapPtr pPixmap,
+    int       width,
+    int       height,
+    int       depth,
+    int       bitsPerPixel,
+    int       devKind,
+    pointer   pPixData
+)
+{
+    Bool retval = FALSE;
+
+    if (pPixmap)
+    {
+        ScreenPtr pScreen = pPixmap->drawable.pScreen;
+
+        SCREEN_INIT;
+        PIXMAP_SAVE(pPixmap);
+        SCREEN_UNWRAP(ModifyPixmapHeader);
+
+        retval = (*pScreen->ModifyPixmapHeader)(pPixmap, width, height,
+            depth, bitsPerPixel, devKind, pPixData);
+
+        SCREEN_WRAP(ModifyPixmapHeader, miBankModifyPixmapHeader);
+
+        if (pbits == (pointer)pScreenPriv)
+        {
+            pScreenPriv->pbits = pPixmap->devPrivate.ptr;
+            pPixmap->devPrivate.ptr = pbits;
+        }
+    }
+
+    return retval;
+}
+
+static Bool
 miBankCloseScreen(
     int       nIndex,
     ScreenPtr pScreen
@@ -2312,11 +1693,10 @@ miBankCloseScreen(
     FreeScratchGC(pScreenPriv->pBankGC);
 
     /* Free shadow pixmap */
-    SetPixmapData(pScreenPriv->pBankPixmap, NULL);
     (*pScreen->DestroyPixmap)(pScreenPriv->pBankPixmap);
 
-    /* Restore screen pixmap data pointer */
-    SetPixmapData(pScreenPriv->pScreenPixmap, pScreenPriv->pbits);
+    /* Restore screen pixmap devPrivate pointer */
+    pScreenPriv->pScreenPixmap->devPrivate.ptr = pScreenPriv->pbits;
 
     /* Delete bank clips */
     for (i = 0;  i < pScreenPriv->nBanks;  i++)
@@ -2326,6 +1706,7 @@ miBankCloseScreen(
     Xfree(pScreenPriv->pBanks);
 
     SCREEN_UNWRAP(CreateScreenResources);
+    SCREEN_UNWRAP(ModifyPixmapHeader);
     SCREEN_UNWRAP(CloseScreen);
     SCREEN_UNWRAP(GetImage);
     SCREEN_UNWRAP(GetSpans);
@@ -2356,7 +1737,7 @@ miBankGetImage(
         ScreenPtr pScreen = pDrawable->pScreen;
 
         SCREEN_INIT;
-        SCREEN_SAVE;
+        SCREEN_STATUS;
         SCREEN_UNWRAP(GetImage);
 
         if (!IS_BANKED(pDrawable))
@@ -2375,10 +1756,10 @@ miBankGetImage(
 
             if (pBankImage)
             {
-                SavePixmap;
+                BANK_SAVE;
 
-                SetPixmapWidth(pScreenPriv->pBankPixmap, w, paddedWidth);
-                SetPixmapData(pScreenPriv->pBankPixmap, pBankImage);
+                ModifyPixmap(pScreenPriv->pBankPixmap, w, paddedWidth,
+                    pBankImage);
 
                 (*pScreenPriv->pBankGC->ops->CopyArea)(
                     (DrawablePtr)WindowTable[pScreen->myNum],
@@ -2389,14 +1770,13 @@ miBankGetImage(
                 (*pScreen->GetImage)((DrawablePtr)pScreenPriv->pBankPixmap,
                     0, 0, w, h, format, planemask, pImage);
 
-                RestorePixmap;
+                BANK_RESTORE;
 
                 DEALLOCATE_LOCAL(pBankImage);
             }
         }
 
         SCREEN_WRAP(GetImage, miBankGetImage);
-        SCREEN_RESTORE;
     }
 }
 
@@ -2415,7 +1795,7 @@ miBankGetSpans(
         ScreenPtr pScreen = pDrawable->pScreen;
 
         SCREEN_INIT;
-        SCREEN_SAVE;
+        SCREEN_STATUS;
         SCREEN_UNWRAP(GetSpans);
 
         if (!IS_BANKED(pDrawable))
@@ -2437,11 +1817,11 @@ miBankGetSpans(
 
             if (pBankImage)
             {
-                SavePixmap;
+                BANK_SAVE;
 
-                SetPixmapWidth(pScreenPriv->pBankPixmap,
-                    pScreenPriv->pScreenPixmap->drawable.width, paddedWidth);
-                SetPixmapData(pScreenPriv->pBankPixmap, pBankImage);
+                ModifyPixmap(pScreenPriv->pBankPixmap,
+                    pScreenPriv->pScreenPixmap->drawable.width,
+                    paddedWidth, pBankImage);
 
                 for (;  nspans--;  ppt++, pwidth++)
                 {
@@ -2460,14 +1840,13 @@ miBankGetSpans(
                     pImage = pImage + PixmapBytePad(*pwidth, pDrawable->depth);
                 }
 
-                RestorePixmap;
+                BANK_RESTORE;
 
                 DEALLOCATE_LOCAL(pBankImage);
             }
         }
 
         SCREEN_WRAP(GetSpans, miBankGetSpans);
-        SCREEN_RESTORE;
     }
 }
 
@@ -2541,7 +1920,7 @@ miBankPaintWindow(
             if (REGION_NIL(&tmpReg))
                 continue;
 
-            SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, i);
+            SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, -1, -1, i);
 
             (*PaintWindow)(pWin, &tmpReg, what);
         }
@@ -2667,10 +2046,8 @@ miBankCopyWindow(
 
     REGION_DESTROY(pScreen, pRgnDst);
 
-    if (pBoxNew2)
-        DEALLOCATE_LOCAL(pBoxNew2);
-    if (pBoxNew1)
-        DEALLOCATE_LOCAL(pBoxNew1);
+    DEALLOCATE_LOCAL(pBoxNew2);
+    DEALLOCATE_LOCAL(pBoxNew1);
 }
 
 /**************************
@@ -2715,7 +2092,7 @@ miBankSaveAreas(
             if (REGION_NIL(&rgnClipped))
                 continue;
 
-            SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, i);
+            SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, -1, -1, i);
 
             REGION_TRANSLATE(pScreen, &rgnClipped, -xorg, -yorg);
 
@@ -2768,7 +2145,7 @@ miBankRestoreAreas(
             if (REGION_NIL(&rgnClipped))
                 continue;
 
-            SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, i);
+            SET_SINGLE_BANK(pScreenPriv->pScreenPixmap, -1, -1, i);
 
             (*pScreen->BackingStoreFuncs.RestoreAreas)(pPixmap, &rgnClipped,
                 xorg, yorg, pWin);
@@ -2793,10 +2170,10 @@ miInitializeBanking(
     miBankScreenPtr pScreenPriv;
     unsigned long   nBitsPerBank, nBitsPerScanline, nPixelsPerScanlinePadUnit;
     unsigned long   BankBase, ServerPad;
-    unsigned int    type, nBanks, maxRects, we, nBankBPP;
+    unsigned int    type, iBank, nBanks, maxRects, we, nBankBPP;
     int             i;
 
-    if (!pBankInfo)
+    if (!pBankInfo || !pBankInfo->BankSize)
         return TRUE;            /* No banking required */
 
     /* Sanity checks */
@@ -2827,57 +2204,9 @@ miInitializeBanking(
     if (nBankBPP > screenInfo.formats[i].bitsPerPixel)
         return FALSE;
 
-    if (pBankInfo->pBankA == pBankInfo->pBankB)
-    {
-        if (pBankInfo->SetSourceBank == pBankInfo->SetDestinationBank)
-        {
-            if (pBankInfo->SetSourceAndDestinationBanks !=
-                pBankInfo->SetSourceBank)
-                return FALSE;
-
-            type = BANK_SINGLE;
-        }
-        else
-        {
-            if (pBankInfo->SetSourceAndDestinationBanks ==
-                pBankInfo->SetDestinationBank)
-                return FALSE;
-            if (pBankInfo->SetSourceAndDestinationBanks ==
-                pBankInfo->SetSourceBank)
-                return FALSE;
-
-            type = BANK_SHARED;
-        }
-    }
-    else
-    {
-        if (abs((char *)pBankInfo->pBankA -
-                (char *)pBankInfo->pBankB) < pBankInfo->BankSize)
-            return FALSE;
-
-        if (pBankInfo->SetSourceBank == pBankInfo->SetDestinationBank)
-        {
-            if (pBankInfo->SetSourceAndDestinationBanks !=
-                pBankInfo->SetSourceBank)
-                return FALSE;
-        }
-        else
-        {
-            if (pBankInfo->SetSourceAndDestinationBanks ==
-                pBankInfo->SetDestinationBank)
-                return FALSE;
-        }
-
-        type = BANK_DOUBLE;
-    }
-
-    /*
-     * Internal limitation:  Currently, only single banking is supported when
-     * the pixmap format and the screen's pixel format are different.  The
-     * following test is only partially successful at detecting this condition.
-     */
-    if (pBankInfo->nBankDepth != pScreen->rootDepth)
-        type = BANK_SINGLE;
+    /* Determine banking type */
+    if ((type = miBankDeriveType(pScreen, pBankInfo)) == BANK_NOBANK)
+        return FALSE;
 
     /* Internal data */
 
@@ -2925,7 +2254,7 @@ miInitializeBanking(
     BankBase = 0;
     maxRects = 0;
     we = 0;
-    for (i = 0;  i < nBanks;  i++)
+    for (iBank = 0;  iBank < nBanks;  iBank++)
     {
         xRectangle   pRects[3], *pRect = pRects;
         unsigned int xb, yb, xe, ye;
@@ -3007,18 +2336,18 @@ miInitializeBanking(
             }
         }
 
-        pScreenPriv->pBanks[i] =
+        pScreenPriv->pBanks[iBank] =
             RECTS_TO_REGION(pScreen, pRect - pRects, pRects, 0);
-        if (!pScreenPriv->pBanks[i])
+        if (!pScreenPriv->pBanks[iBank])
         {
             we = 1;
             break;
         }
     }
 
-    if (we && (i < nBanks))
+    if (we && (iBank < nBanks))
     {
-        for (;  i >= 0;  i--)
+        for (i = iBank;  i >= 0;  i--)
             if (pScreenPriv->pBanks[i])
                 REGION_DESTROY(pScreen, pScreenPriv->pBanks[i]);
 
@@ -3040,6 +2369,7 @@ miInitializeBanking(
     pScreenPriv->nPixelsPerScanlinePadUnit = nPixelsPerScanlinePadUnit;
 
     SCREEN_WRAP(CreateScreenResources, miBankCreateScreenResources);
+    SCREEN_WRAP(ModifyPixmapHeader,    miBankModifyPixmapHeader);
     SCREEN_WRAP(CloseScreen,           miBankCloseScreen);
     SCREEN_WRAP(GetImage,              miBankGetImage);
     SCREEN_WRAP(GetSpans,              miBankGetSpans);
@@ -3061,6 +2391,71 @@ miInitializeBanking(
     return TRUE;
 }
 
+/* This is used to force GC revalidation when the banking type is changed */
+/*ARGSUSED*/
+static int
+miBankNewSerialNumber(
+    WindowPtr pWin,
+    pointer   unused
+)
+{
+    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+    return WT_WALKCHILDREN;
+}
+
+/* This entry modifies the banking interface */
+Bool
+miModifyBanking(
+    ScreenPtr     pScreen,
+    miBankInfoPtr pBankInfo
+)
+{
+    unsigned int type;
+
+    if (!pScreen)
+        return FALSE;
+
+    if (miBankGeneration == serverGeneration)
+    {
+        SCREEN_INIT;
+
+        if (pScreenPriv)
+        {
+            if (!pBankInfo || !pBankInfo->BankSize ||
+                !pBankInfo->pBankA || !pBankInfo->pBankB ||
+                !pBankInfo->SetSourceBank || !pBankInfo->SetDestinationBank ||
+                !pBankInfo->SetSourceAndDestinationBanks)
+                return FALSE;
+
+            /* BankSize and nBankDepth cannot, as yet, be changed */
+            if ((pScreenPriv->BankInfo.BankSize != pBankInfo->BankSize) ||
+                (pScreenPriv->BankInfo.nBankDepth != pBankInfo->nBankDepth))
+                return FALSE;
+
+            if ((type = miBankDeriveType(pScreen, pBankInfo)) == BANK_NOBANK)
+                return FALSE;
+
+            /* Reset banking info */
+            pScreenPriv->BankInfo = *pBankInfo;
+            if (type != pScreenPriv->type)
+            {
+                /*
+                 * Banking type is changing.  Revalidate all window GC's.
+                 */
+                pScreenPriv->type = type;
+                WalkTree(pScreen, miBankNewSerialNumber, 0);
+            }
+
+            return TRUE;
+        }
+    }
+
+    if (!pBankInfo || !pBankInfo->BankSize)
+        return TRUE;                            /* No change requested */
+
+    return FALSE;
+}
+
 /*
  * Given various screen attributes, determine the minimum scanline width such
  * that each scanline is server and DDX padded and any pixels with imbedded
@@ -3074,7 +2469,7 @@ miScanLineWidth(
     unsigned int     ysize,         /* pixels */
     unsigned int     width,         /* pixels */
     unsigned long    BankSize,      /* char's */
-    PixmapFormatRec *pBankFormat, 
+    PixmapFormatRec *pBankFormat,
     unsigned int     nWidthUnit     /* bits */
 )
 {
@@ -3145,27 +2540,27 @@ miScanLineWidth(
             if (!(x % pBankFormat->bitsPerPixel))
                 continue;
 
-            if (x >= minBitsPerScanline)
+            if (x < minBitsPerScanline)
             {
-                if (BankBase != BankUnit)
-                    continue;
-
-                if (!(nBitsPerBank % x))
-                    return (int)width;
-
-                BankBase = ((nBitsPerScanline - minBitsPerScanline) /
-                    (nBitsPerScanline - x)) * BankUnit;
-                continue;
+                /*
+                 * Skip ahead certain widths by dividing the excess scanline
+                 * amongst the y's.
+                 */
+                y *= nBitsPerScanlinePadUnit;
+                nBitsPerScanline +=
+                    ((x + y - 1) / y) * nBitsPerScanlinePadUnit;
+                width = nBitsPerScanline / pBankFormat->bitsPerPixel;
+                break;
             }
 
-            /*
-             * Skip ahead certain widths by dividing the excess scanline
-             * amongst the y's.
-             */
-            y *= nBitsPerScanlinePadUnit;
-            nBitsPerScanline += ((x + y - 1) / y) * nBitsPerScanlinePadUnit;
-            width = nBitsPerScanline / pBankFormat->bitsPerPixel;
-            break;
+            if (BankBase != BankUnit)
+                continue;
+
+            if (!(nBitsPerBank % x))
+                return (int)width;
+
+            BankBase = ((nBitsPerScanline - minBitsPerScanline) /
+                (nBitsPerScanline - x)) * BankUnit;
         }
     }
 

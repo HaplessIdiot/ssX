@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_rush.c,v 1.2 1999/08/28 09:00:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_rush.c,v 1.3 1999/08/28 14:32:46 dawes Exp $ */
 /*
  * Copyright Loïc Grenié 1999
  */
@@ -6,24 +6,46 @@
 #include "apm.h"
 #include "xaalocal.h"
 
-static __inline__ void	__xf86UnlockPixmap(ApmPtr, PixmapLinkPtr pLink);
-static int		xf86RushLockPixmap(int scrnIndex, PixmapPtr pix);
-static void		xf86RushUnlockPixmap(int scrnIndex, PixmapPtr pix);
+static Bool		RushDestroyPixmap(PixmapPtr);
+static __inline__ void	__xf86UnlockPixmap(ApmPtr, PixmapLinkPtr);
+static int		xf86RushLockPixmap(int, PixmapPtr);
+static void		xf86RushUnlockPixmap(int, PixmapPtr);
 static void		xf86RushUnlockAllPixmaps(void);
 
-int
+static Bool RushDestroyPixmap(PixmapPtr pPix)
+{
+    APMDECL(xf86Screens[pPix->drawable.pScreen->myNum]);
+    ApmPixmapPtr pPriv = APM_GET_PIXMAP_PRIVATE(pPix);
+
+    if (pPriv->num)
+	pApm->RushY[pPriv->num - 1] = 0;
+    return (*pApm->DestroyPixmap)(pPix);
+}
+
+static PixmapPtr RushCreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
+{
+    APMDECL(xf86Screens[pScreen->myNum]);
+    PixmapPtr pPix = (*pApm->CreatePixmap)(pScreen, w, h, depth);
+    ApmPixmapPtr pPriv = APM_GET_PIXMAP_PRIVATE(pPix);
+
+    bzero(pPriv, sizeof(*pPriv));
+    return pPix;
+}
+
+static int
 xf86RushLockPixmap(int scrnIndex, PixmapPtr pix)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     APMDECL(pScrn);
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     ApmPixmapPtr pApmPriv = APM_GET_PIXMAP_PRIVATE(pix);
-    FBAreaPtr area = ((XAAPixmapPtr)XAA_GET_PIXMAP_PRIVATE(pix))->offscreenArea;
-    int	p2, width = pApm->bytesPerScanline;
+    XAAPixmapPtr pXAAPriv = XAA_GET_PIXMAP_PRIVATE(pix);
+    FBAreaPtr area = pXAAPriv->offscreenArea;
+    int	p2, width = (pScrn->displayWidth * pScrn->bitsPerPixel) / 8;
 
     pApm->apmLock = TRUE;
+    pApmPriv->num = 0;
     if (area) {
-	RegionRec	NewReg;
-
 	/*
 	 * 1) Make it unmovable so that XAA won't know we're playing
 	 *    with the cache.
@@ -34,18 +56,64 @@ xf86RushLockPixmap(int scrnIndex, PixmapPtr pix)
 	pApmPriv->RemoveAreaCallback	= area->RemoveAreaCallback;
 	area->RemoveAreaCallback	= NULL;
 	pApmPriv->devPriv		= area->devPrivate.ptr;
-	if (((pix->drawable.x + pApm->displayWidth * pix->drawable.y) * pApm->bitsPerPixel) & 32767) {
-	    int		p1;
+    }
+    else {
+	pApmPriv->MoveAreaCallback	= NULL;
+	pApmPriv->RemoveAreaCallback	= NULL;
+	pApmPriv->devPriv		= NULL;
+    }
+    if (pApm->pixelStride || !area ||
+	(((pix->drawable.x + pScrn->displayWidth * pix->drawable.y) *
+					    pScrn->bitsPerPixel) & 32767)) {
+	int		p1, i;
 
-	    /*
-	     * Not aligned on a 4KB boundary, need to move it around.
-	     */
+	/*
+	 * Not aligned on a 4KB boundary, need to move it around.
+	 */
+	if (area)
 	    xf86FreeOffscreenArea(area);
+	if (pApm->pixelStride) {
+	    area = xf86AllocateLinearOffscreenArea(pScrn->pScreen,
+			    ((pix->drawable.width * pix->drawable.height *
+			    pix->drawable.depth) / pScrn->bitsPerPixel) +
+				4095,
+			    pScrn->displayWidth, NULL, NULL, NULL);
+	    if (area) {
+		if (!pApmPriv->devPriv) {
+		    PixmapLinkPtr pLink;
+		    ScreenPtr pScreen = pScrn->pScreen;
+		    PixmapPtr pScreenPix;
+
+		    pLink = xalloc(sizeof(PixmapLink));
+		    if (!pLink) {
+			xf86FreeOffscreenArea(area);
+			return 0;
+		    }
+		    pXAAPriv->flags |= OFFSCREEN;
+		    pix->devKind = pApm->pixelStride;
+		    pScreenPix = (*pScreen->GetScreenPixmap)(pScreen);
+		    pix->devPrivate.ptr = pScreenPix->devPrivate.ptr;
+		    pLink->next = infoRec->OffscreenPixmaps;
+		    pLink->pPix = pix;
+		    infoRec->OffscreenPixmaps = pLink;
+		}
+		for (i = 0; i < 7; i++)
+		    if (!pApm->RushY[i])
+			break;
+		pApmPriv->num = i + 1;
+		pix->drawable.y = area->box.y1 + (i+1)*pApm->CurrentLayout.Scanlines;
+		pApm->RushY[i] = area->box.y1;
+		pix->drawable.x = (32768 - (((area->box.x1 + pScrn->displayWidth * area->box.y1) * pScrn->bitsPerPixel) & 32767)) / pApm->CurrentLayout.bitsPerPixel;
+		if (pix->drawable.x == 32768 / pApm->CurrentLayout.bitsPerPixel)
+		    pix->drawable.x = 0;
+	    }
+	}
+	else {
 	    p2 = 1;
 	    while (!(p2 & width))
 		p2 *= 2;
 	    p1 = 4096 / p2 - 1;
-	    switch(pApm->bitsPerPixel) {
+	    switch(pScrn->bitsPerPixel) {
 	    case 16:
 		p2 /= 2;
 		break;
@@ -53,52 +121,75 @@ xf86RushLockPixmap(int scrnIndex, PixmapPtr pix)
 		p2 /= 4;
 		break;
 	    }
-	    ((XAAPixmapPtr)XAA_GET_PIXMAP_PRIVATE(pix))->offscreenArea = area =
-			    xf86AllocateOffscreenArea(pScrn->pScreen,
-				pix->drawable.width, pix->drawable.height + p1,
-				p2, NULL, NULL, pApmPriv->devPriv);
+	    area = xf86AllocateOffscreenArea(pScrn->pScreen,
+		    (pix->drawable.width * pix->drawable.bitsPerPixel) /
+				    pScrn->bitsPerPixel,
+		    pix->drawable.height + p1,
+		    p2, NULL, NULL, pApmPriv->devPriv);
 	    if (area) {
-		int	devKind = pApm->bytesPerScanline, off = devKind * p1;
-		int	h, goal = (-area->box.x1 * (pApm->bitsPerPixel >> 3) - area->box.y1 * devKind) & 4095;
+		int	devKind = (pScrn->bitsPerPixel * pScrn->displayWidth) / 8;
+		int	off = devKind * p1, h;
+		int	goal = (-area->box.x1 * (pScrn->bitsPerPixel >> 3) - area->box.y1 * devKind) & 4095;
 
+		if (!pApmPriv->devPriv) {
+		    PixmapLinkPtr pLink;
+		    ScreenPtr pScreen = pScrn->pScreen;
+		    PixmapPtr pScreenPix;
+
+		    pLink = xalloc(sizeof(PixmapLink));
+		    if (!pLink) {
+			xf86FreeOffscreenArea(area);
+			return 0;
+		    }
+		    pXAAPriv->flags |= OFFSCREEN;
+		    pix->devKind = pApm->CurrentLayout.bytesPerScanline;
+		    pScreenPix = (*pScreen->GetScreenPixmap)(pScreen);
+		    pix->devPrivate.ptr = pScreenPix->devPrivate.ptr;
+		    pLink->next = infoRec->OffscreenPixmaps;
+		    pLink->pPix = pix;
+		    infoRec->OffscreenPixmaps = pLink;
+		}
 		pix->drawable.x = area->box.x1;
 		for (h = p1; h >= 0; h--, off -= devKind)
 		    if ((off & 4095) == goal)
 			break;
-		pix->drawable.y = area->box.y1 + h;
-	    }
-	    else {
-		/*
-		 * Failed, return the old one
-		 */
-		switch(pApm->bitsPerPixel) {
-		    case 24:
-		    case  8:	p2 = 4; break;
-		    case 16:	p2 = 2; break;
-		    case 32:	p2 = 1; break;
-		    default:	p2 = 0; break;
-		}
-		((XAAPixmapPtr)XAA_GET_PIXMAP_PRIVATE(pix))->offscreenArea = area =
-				xf86AllocateOffscreenArea(pScrn->pScreen,
-				    pix->drawable.width, pix->drawable.height,
-				    p2,
-				    pApmPriv->MoveAreaCallback,
-				    pApmPriv->RemoveAreaCallback,
-				    pApmPriv->devPriv);
-		/* The allocate can not fail: we just removed the old one. */
-		pix->drawable.x = area->box.x1;
-		pix->drawable.y = area->box.y1;
-		return 0;
+		for (i = 0; i < 7; i++)
+		    if (!pApm->RushY[i])
+			break;
+		pApmPriv->num = i + 1;
+		pix->drawable.y = area->box.y1 + h + (i+1)*pApm->CurrentLayout.Scanlines;
+		pApm->RushY[i] = area->box.y1 + h;
 	    }
 	}
-	REGION_INIT(pApm->pScreen, &NewReg, &area->box, 1)
-	REGION_UNION(pApm->pScreen, &pApm->apmLockedRegion, &pApm->apmLockedRegion, &NewReg);
-	REGION_UNINIT(pApm->pScreen, &NewReg);
-	return pApm->LinAddress +
-		    ((pix->drawable.x + pApm->displayWidth * pix->drawable.y) * pApm->bitsPerPixel) / 8;
+	if (!area && (pXAAPriv->flags & OFFSCREEN)) {
+	    /*
+	     * Failed, return the old one
+	     */
+	    switch(pScrn->bitsPerPixel) {
+		case 24:
+		case  8:	p2 = 4; break;
+		case 16:	p2 = 2; break;
+		case 32:	p2 = 1; break;
+		default:	p2 = 0; break;
+	    }
+	    pXAAPriv->offscreenArea =
+		    area = xf86AllocateOffscreenArea(pScrn->pScreen,
+				pix->drawable.width, pix->drawable.height,
+				p2,
+				pApmPriv->MoveAreaCallback,
+				pApmPriv->RemoveAreaCallback,
+				pApmPriv->devPriv);
+	    /* The allocate can not fail: we just removed the old one. */
+	    pix->drawable.x = area->box.x1;
+	    pix->drawable.y = area->box.y1;
+	}
+	if (!area)
+	    return 0;
+	pXAAPriv->offscreenArea = area;
     }
-
-    return 0;
+    return pApm->LinAddress +
+	    ((pix->drawable.x + pScrn->displayWidth *
+	    (pix->drawable.y % pApm->CurrentLayout.Scanlines)) * pApm->CurrentLayout.bitsPerPixel) / 8;
 }
 
 static __inline__ void
@@ -108,22 +199,22 @@ __xf86UnlockPixmap(ApmPtr pApm, PixmapLinkPtr pLink)
     ApmPixmapPtr pApmPriv = APM_GET_PIXMAP_PRIVATE(pix);
     XAAPixmapPtr pXAAPriv = XAA_GET_PIXMAP_PRIVATE(pix);
     FBAreaPtr area = pXAAPriv->offscreenArea;
+    int i;
 
     if (!area)
 	area = pLink->area;
     if ((pXAAPriv->flags & OFFSCREEN) && !area->MoveAreaCallback && !area->RemoveAreaCallback) {
-	RegionRec	NewReg;
-
 	area->MoveAreaCallback		= pApmPriv->MoveAreaCallback;
 	area->RemoveAreaCallback	= pApmPriv->RemoveAreaCallback;
 	area->devPrivate.ptr		= pApmPriv->devPriv;
-	REGION_INIT(pApm->pScreen, &NewReg, &area->box, 1)
-	REGION_SUBTRACT(pApm->pScreen, &pApm->apmLockedRegion, &pApm->apmLockedRegion, &NewReg);
-	REGION_UNINIT(pApm->pScreen, &NewReg);
+    }
+    if (i = pApmPriv->num) {
+	pApm->RushY[i - 1] = 0;
+	pix->drawable.y %= pApm->CurrentLayout.Scanlines;
     }
 }
 
-void
+static void
 xf86RushUnlockPixmap(int scrnIndex, PixmapPtr pix)
 {
     APMDECL(xf86Screens[scrnIndex]);
@@ -140,8 +231,7 @@ xf86RushUnlockPixmap(int scrnIndex, PixmapPtr pix)
 	    ApmWriteSeq(0x1C, 0x2F);
 	}
 	else {
-	    unsigned char tmp = RDXB_IOP(0xDB);
-	    WRXB_IOP(0xDB, (tmp & 0xF4) |  0x0A);
+	    WRXB_IOP(0xDB, (RDXB_IOP(0xDB) & 0xF4) |  0x0A);
 	    wrinx(0x3C4, 0x1B, 0x20);
 	    wrinx(0x3C4, 0x1C, 0x2F);
 	}
@@ -149,10 +239,11 @@ xf86RushUnlockPixmap(int scrnIndex, PixmapPtr pix)
     }
     while (pLink && pLink->pPix != pix)
 	pLink = pLink->next;
-    __xf86UnlockPixmap(pApm, pLink);
+    if (pLink)
+	__xf86UnlockPixmap(pApm, pLink);
 }
 
-void
+static void
 xf86RushUnlockAllPixmaps()
 {
     int		scrnIndex;
@@ -167,7 +258,6 @@ xf86RushUnlockAllPixmaps()
     }
 }
 
-#ifdef XF86RUSH_EXT
 /*
 
 Copyright (c) 1998 Daryll Strauss
@@ -193,16 +283,26 @@ static DISPATCH_PROC(ProcXF86RushQueryVersion);
 static DISPATCH_PROC(ProcXF86RushLockPixmap);
 static DISPATCH_PROC(ProcXF86RushUnlockPixmap);
 static DISPATCH_PROC(ProcXF86RushUnlockAllPixmaps);
+static DISPATCH_PROC(ProcXF86RushSetCopyMode);
+static DISPATCH_PROC(ProcXF86RushSetPixelStride);
+
+static int rush_ext_generation = -1;
 
 static DISPATCH_PROC(SProcXF86RushDispatch);
 
 static void XF86RushResetProc(ExtensionEntry* extEntry);
 
 void
-XFree86RushExtensionInit()
+XFree86RushExtensionInit(ScreenPtr pScreen)
 {
     ExtensionEntry* extEntry;
 
+    if (rush_ext_generation == serverGeneration) {
+	pScreen->CreatePixmap	= RushCreatePixmap;
+	pScreen->DestroyPixmap	= RushDestroyPixmap;
+	return;
+    }
+    rush_ext_generation = serverGeneration;
     if ((extEntry = AddExtension(XF86RUSHNAME,
 				XF86RushNumberEvents,
 				XF86RushNumberErrors,
@@ -212,19 +312,23 @@ XFree86RushExtensionInit()
 				StandardMinorOpcode))) {
 	RushReqCode = (unsigned char)extEntry->base;
 	RushErrorBase = extEntry->errorBase;
+	pScreen->CreatePixmap	= RushCreatePixmap;
+	pScreen->DestroyPixmap	= RushDestroyPixmap;
+    }
+    else {
+	pScreen->CreatePixmap	= APMPTR(xf86Screens[pScreen->myNum])->CreatePixmap;
+	pScreen->DestroyPixmap	= APMPTR(xf86Screens[pScreen->myNum])->DestroyPixmap;
     }
 }
 
 /*ARGSUSED*/
 static void
-XF86RushResetProc (extEntry)
-    ExtensionEntry* extEntry;
+XF86RushResetProc (ExtensionEntry *extEntry)
 {
 }
 
 static int
-ProcXF86RushQueryVersion(client)
-    register ClientPtr client;
+ProcXF86RushQueryVersion(register ClientPtr client)
 {
     xXF86RushQueryVersionReply rep;
     register int n;
@@ -244,8 +348,7 @@ ProcXF86RushQueryVersion(client)
 }
 
 static int
-ProcXF86RushLockPixmap(client)
-     register ClientPtr client;
+ProcXF86RushLockPixmap(register ClientPtr client)
 {
   REQUEST(xXF86RushLockPixmapReq);
   xXF86RushLockPixmapReply rep;
@@ -268,8 +371,7 @@ ProcXF86RushLockPixmap(client)
 }
 
 static int
-ProcXF86RushUnlockPixmap(client)
-     register ClientPtr client;
+ProcXF86RushUnlockPixmap(register ClientPtr client)
 {
   REQUEST(xXF86RushUnlockPixmapReq);
   PixmapPtr pix;
@@ -286,8 +388,7 @@ ProcXF86RushUnlockPixmap(client)
 }
 
 static int
-ProcXF86RushUnlockAllPixmaps(client)
-     register ClientPtr client;
+ProcXF86RushUnlockAllPixmaps(register ClientPtr client)
 {
 
   REQUEST_SIZE_MATCH(xXF86RushUnlockAllPixmapsReq);
@@ -295,9 +396,28 @@ ProcXF86RushUnlockAllPixmaps(client)
   return client->noClientException;
 }
 
+static int
+ProcXF86RushSetCopyMode(register ClientPtr client)
+{
+  REQUEST(xXF86RushSetCopyModeReq);
+
+  REQUEST_SIZE_MATCH(xXF86RushSetCopyModeReq);
+  APMPTR(xf86Screens[stuff->screen])->CopyMode = stuff->CopyMode;
+  return client->noClientException;
+}
+
+static int
+ProcXF86RushSetPixelStride(register ClientPtr client)
+{
+  REQUEST(xXF86RushSetPixelStrideReq);
+
+  REQUEST_SIZE_MATCH(xXF86RushSetPixelStrideReq);
+  APMPTR(xf86Screens[stuff->screen])->pixelStride = stuff->PixelStride;
+  return client->noClientException;
+}
+
 int
-ProcXF86RushDispatch (client)
-    register ClientPtr	client;
+ProcXF86RushDispatch (register ClientPtr client)
 {
     REQUEST(xReq);
 
@@ -314,15 +434,17 @@ ProcXF86RushDispatch (client)
         return ProcXF86RushUnlockPixmap(client);
     case X_XF86RushUnlockAllPixmaps:
         return ProcXF86RushUnlockAllPixmaps(client);
+    case X_XF86RushSetCopyMode:
+        return ProcXF86RushSetCopyMode(client);
+    case X_XF86RushSetPixelStride:
+        return ProcXF86RushSetPixelStride(client);
     default:
 	return BadRequest;
     }
 }
 
 int
-SProcXF86RushDispatch (client)
-    register ClientPtr	client;
+SProcXF86RushDispatch (register ClientPtr client)
 {
     return RushErrorBase + XF86RushClientNotLocal;
 }
-#endif /* XF86RUSH_EXT */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.5 1999/07/06 11:38:34 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -228,7 +228,8 @@ ATIPrintRegisters
                 outl(pATI->CPIO_LCD_GEN_CTRL, lcd_gen_ctrl);
             }
             else if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
-                     (pATI->Chip == ATI_CHIP_264XL))
+                     (pATI->Chip == ATI_CHIP_264XL) ||
+                     (pATI->Chip == ATI_CHIP_MOBILITY))
             {
                 lcd_index = inl(pATI->CPIO_LCD_INDEX);
                 lcd_gen_ctrl = ATIGetLTProLCDReg(LCD_GEN_CNTL);
@@ -271,7 +272,8 @@ ATIPrintRegisters
                 outl(pATI->CPIO_LCD_GEN_CTRL, lcd_gen_ctrl);
             }
             else if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
-                     (pATI->Chip == ATI_CHIP_264XL))
+                     (pATI->Chip == ATI_CHIP_264XL) ||
+                     (pATI->Chip == ATI_CHIP_MOBILITY))
             {
                 lcd_index = inl(pATI->CPIO_LCD_INDEX);
                 lcd_gen_ctrl = ATIGetLTProLCDReg(LCD_GEN_CNTL);
@@ -343,7 +345,8 @@ ATIPrintRegisters
         ATIPrintMach64PLLRegisters(pATI);
     }
     else if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
-             (pATI->Chip == ATI_CHIP_264XL))
+             (pATI->Chip == ATI_CHIP_264XL) ||
+             (pATI->Chip == ATI_CHIP_MOBILITY))
     {
         lcd_index = inl(pATI->CPIO_LCD_INDEX);
         lcd_gen_ctrl = ATIGetLTProLCDReg(LCD_GEN_CNTL);
@@ -364,7 +367,7 @@ ATIPrintRegisters
         ATIPrintMach64PLLRegisters(pATI);
 
         xf86ErrorFVerb(4, "\n\n LCD registers:");
-        for (Index = 0;  Index < 16;  Index++)
+        for (Index = 0;  Index < 64;  Index++)
         {
             if (!(Index & 3))
                 xf86ErrorFVerb(4, "\n 0x%02X: ", Index);

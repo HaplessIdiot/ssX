@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.2 1999/08/01 07:57:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.3 1999/09/25 14:37:22 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -107,9 +107,11 @@ ATIScreenInit
     /* Re-initialize mi's visual list */
     miClearVisualTypes();
 
+#if 0
     if (pScreenInfo->depth > 8)
         VisualMask = TrueColorMask;
     else
+#endif
         VisualMask = miGetDefaultVisualMask(pScreenInfo->depth);
 
     if (!miSetVisualTypes(pScreenInfo->depth, VisualMask,
@@ -206,9 +208,8 @@ ATIScreenInit
 
     xf86SetBlackWhitePixels(pScreen);
 
-    /* Initialize banking */
-    if ((pATI->ApertureSize < (pATI->VideoRAM * 1024)) &&
-        !miInitializeBanking(pScreen,
+    /* Initialize banking if needed */
+    if (!miInitializeBanking(pScreen,
                              pScreenInfo->virtualX, pScreenInfo->virtualY,
                              pScreenInfo->displayWidth, &pATI->BankInfo))
         return FALSE;

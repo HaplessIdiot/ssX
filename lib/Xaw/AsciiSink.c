@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.19 1999/08/15 13:00:29 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.20 1999/08/28 09:00:25 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -332,7 +332,6 @@ void CalculateBearing(TextWidget ctx, XawTextPosition position, int x, int y,
  *	   |		 |
  *
  */
- /* esta primeira versão do código apenas checa um caracter */
     AsciiSinkObject sink = (AsciiSinkObject)ctx->text.sink;
     XawTextAnchor *anchor;
     XawTextEntity *entity;

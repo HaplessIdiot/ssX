@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.19 1999/08/15 13:00:55 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.20 1999/08/28 09:01:20 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -666,7 +666,7 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
     char **matches, *save, *dir_name, *file_name, match[257];
     unsigned n_matches, len, mlen, buflen;
     DIR *dir;
-    Bool changed, slash = False, dot = False;
+    Bool changed, slash = False, dot = False, has_dot = False;
 #define	SM_NEVER	0
 #define SM_HINT		1
 #define SM_ALWAYS	2
@@ -688,8 +688,10 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 		length = cslash - text;
 		slash = True;
 	    }
-	    else
+	    else {
 		length = cdot - text;
+		has_dot = True;
+	    }
 	}
 	else
 	    length = strlen(text);
@@ -857,6 +859,9 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 
 	if (n_matches) {
 	    Bool free_matches = True, add_slash = n_matches == 1 && isdir && !slash;
+
+	    if (mlen && has_dot && match[mlen - 1] == '.')
+		--mlen;
 
 	    if (mlen || add_slash) {
 		XawTextPosition pos;

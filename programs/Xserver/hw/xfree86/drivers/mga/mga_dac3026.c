@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.48 1999/08/21 13:48:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.49 1999/09/25 14:37:27 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -670,10 +670,9 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	else
 	  pReg->Option &= ~0x1000;
 
-        if(pMga->UsePCIRetry)
-	    pReg->Option &= ~0x20000000;
-	else
-	    pReg->Option |= 0x20000000;
+	/* must always have the pci retries on but rely on 
+	   polling to keep them from occuring */
+	pReg->Option &= ~0x20000000;
 
 	pVga->MiscOutReg |= 0x0C; 
 	/* XXX Need to check the first argument */

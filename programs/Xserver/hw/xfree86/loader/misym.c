@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.20 1999/06/14 07:31:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.21 1999/09/25 14:37:40 dawes Exp $ */
 
 /*
  *
@@ -114,6 +114,7 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miRectAlloc)
    SYMFUNC(miInitializeBackingStore)
    SYMFUNC(miInitializeBanking)
+   SYMFUNC(miModifyBanking)
    SYMFUNC(miCopyPlane)
    SYMFUNC(miCopyArea)
    SYMFUNC(miCreateScreenResources)
@@ -126,6 +127,7 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miPointerWarpCursor)
    SYMFUNC(miDCInitialize)
    SYMFUNC(miRectsToRegion)
+   SYMFUNC(miPointInRegion)
    SYMFUNC(miInverse)
    SYMFUNC(miSubtract)
    SYMFUNC(miUnion)

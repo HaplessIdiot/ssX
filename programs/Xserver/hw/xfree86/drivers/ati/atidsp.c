@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.5 1999/08/01 07:57:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.6 1999/09/25 14:37:20 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -224,7 +224,7 @@ ATIDSPCalculate
         vshift, -1) - ATIDivide(1, 1, vshift - xshift, 1);
 
     /* Next is dsp_on */
-    if ((pATIHW->crtc == ATI_CRTC_VGA) && (dsp_precision < 3))
+    if ((pATIHW->crtc == ATI_CRTC_VGA) /* && (dsp_precision < 3) */)
     {
         /*
          * TODO:  I don't yet know why something like this appears necessary.

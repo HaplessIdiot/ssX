@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.3 1999/07/06 11:38:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.4 1999/07/18 03:26:53 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -284,27 +284,90 @@ ATILoadPalette
     CARD8  *LUTEntry;
     int    i, Index;
 
-    for (i = 0;  i < nColours;  i++)
+    if (((pVisual->class | DynamicClass) == DirectColor) &&
+        ((1 << pVisual->nplanes) > (SizeOf(pATI->NewHW.lut) / 3)))
     {
-        Index = Indices[i];
-        if ((Index < 0) || (Index > 255))
-            continue;
+        int reds = pVisual->redMask >> pVisual->offsetRed;
+        int greens = pVisual->greenMask >> pVisual->offsetGreen;
+        int blues = pVisual->blueMask >> pVisual->offsetBlue;
 
-        LUTEntry = &pATI->NewHW.lut[Index * 3];
-        LUTEntry[0] = Colours[Index].red;
-        LUTEntry[1] = Colours[Index].green;
-        LUTEntry[2] = Colours[Index].blue;
+        int redShift = 8 - pScreenInfo->weight.red;
+        int greenShift = 8 - pScreenInfo->weight.green;
+        int blueShift = 8 - pScreenInfo->weight.blue;
+
+        int redMult = 3 << redShift;
+        int greenMult = 3 << greenShift;
+        int blueMult = 3 << blueShift;
+
+        int minShift;
+
+        minShift = redShift;
+        if (minShift > greenShift)
+            minShift = greenShift;
+        if (minShift > blueShift)
+            minShift = blueShift;
+
+        for (i = 0;  i < nColours;  i++)
+        {
+            if((Index = Indices[i]) < 0)
+                continue;
+
+            if (Index <= reds)
+                pATI->NewHW.lut[(Index * redMult) + 0] =
+                    Colours[Index].red << minShift;
+            if (Index <= greens)
+                pATI->NewHW.lut[(Index * greenMult) + 1] =
+                    Colours[Index].green << minShift;
+            if (Index <= blues)
+                pATI->NewHW.lut[(Index * blueMult) + 2] =
+                    Colours[Index].blue << minShift;
+        }
 
         if (pScreenInfo->vtSema)
         {
-            outb(pATI->CPIO_DAC_WRITE, Index);
-            DACDelay;
-            outb(pATI->CPIO_DAC_DATA, LUTEntry[0]);
-            DACDelay;
-            outb(pATI->CPIO_DAC_DATA, LUTEntry[1]);
-            DACDelay;
-            outb(pATI->CPIO_DAC_DATA, LUTEntry[2]);
-            DACDelay;
+            /* Rewrite LUT entries that could have been changed */
+            i = 1 << minShift;
+            LUTEntry = pATI->NewHW.lut;
+
+            for (Index = 0;
+                 Index < (SizeOf(pATI->NewHW.lut) / 3);
+                 Index += i, LUTEntry += i * 3)
+            {
+                outb(pATI->CPIO_DAC_WRITE, Index);
+                DACDelay;
+                outb(pATI->CPIO_DAC_DATA, LUTEntry[0]);
+                DACDelay;
+                outb(pATI->CPIO_DAC_DATA, LUTEntry[1]);
+                DACDelay;
+                outb(pATI->CPIO_DAC_DATA, LUTEntry[2]);
+                DACDelay;
+            }
+        }
+    }
+    else
+    {
+        for (i = 0;  i < nColours;  i++)
+        {
+            Index = Indices[i];
+            if ((Index < 0) || (Index >= (SizeOf(pATI->NewHW.lut) / 3)))
+                continue;
+
+            LUTEntry = &pATI->NewHW.lut[Index * 3];
+            LUTEntry[0] = Colours[Index].red;
+            LUTEntry[1] = Colours[Index].green;
+            LUTEntry[2] = Colours[Index].blue;
+
+            if (pScreenInfo->vtSema)
+            {
+                outb(pATI->CPIO_DAC_WRITE, Index);
+                DACDelay;
+                outb(pATI->CPIO_DAC_DATA, LUTEntry[0]);
+                DACDelay;
+                outb(pATI->CPIO_DAC_DATA, LUTEntry[1]);
+                DACDelay;
+                outb(pATI->CPIO_DAC_DATA, LUTEntry[2]);
+                DACDelay;
+            }
         }
     }
 }
