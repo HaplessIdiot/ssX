@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.222 2001/04/20 16:15:13 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.223 2001/04/20 16:23:41 tsi Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -339,7 +339,8 @@ DECLIBS = hw/dec/ws/LibraryTargetName(dec) LMFCFBLibs
 #else
 DECLIBS = hw/dec/ws/LibraryTargetName(dec) CFB8Libs
 #endif
-ServerTarget(Xdec,$(DECDIRS),$(DECOBJS),$(DECLIBS),$(FONTLIBS) $(SYSLIBS))
+ServerTarget(Xdec,$(DECDIRS),$(DECOBJS), \
+	$(DECLIBS),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xdec
 #endif
@@ -390,7 +391,8 @@ SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 SUNLIBS = hw/sun/LibraryTargetName(sun) CFB8Libs
 #endif
 SUNSYSLIBS = $(FONTLIBS) $(WIDECHARSYSLIB) $(SYSLIBS)
-SetUIDServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
+SetUIDServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS), \
+	$(SUNLIBS),$(SUNSYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xsun
 #endif
@@ -447,7 +449,8 @@ DDXDIR1 = hw/sunAmoeba
 SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 SUNOBJS = hw/sunAmoeba/sunInitColor.o
 SUNLIBS = hw/sunAmoeba/LibraryTargetName(sun) CFB8Libs
-ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(FONTLIBS) $(SYSLIBS))
+ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS), \
+	$(SUNLIBS),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xsun
 #endif
@@ -481,7 +484,8 @@ DDXDIR1 = hw/sunLynx
 SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 SUNOBJS = hw/sunLynx/sunLyInit.o
 SUNLIBS = hw/sunLynx/libsun.a CFB8Libs
-ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(FONTLIBS) $(SYSLIBS))
+ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS), \
+	$(SUNLIBS),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xsun
 #endif
@@ -522,7 +526,8 @@ HPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 HPLIBS = CFB32Libs
 #endif
 HPSYSLIBS = $(FONTLIBS) $(CBRT) $(SYSLIBS)
-ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
+ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS), \
+	$(HPLIBS),$(HPSYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xhp
 #endif
@@ -736,7 +741,8 @@ MakeMutex($(FBDEVDIRS) $(FBDEVOBJS) $(FBDEVLIBS) $(FBDEVSYSLIBS))
 $(FBDEVOBJS) $(XFBDEV) $(FBDEVLIBS) $(FBDEVSYSLIBS):: $(FBDEVDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
-ServerTarget(Xfbdev,$(FBDEVDIRS),$(FBDEVOBJS),$(FBDEVLIBS),$(FBDEVSYSLIBS))
+ServerTarget(Xfbdev,$(FBDEVDIRS),$(FBDEVOBJS), \
+	$(FBDEVLIBS),$(FBDEVSYSLIBS))
 #endif /* XfbdevServer */
 
 #if XSavageServer
@@ -761,7 +767,8 @@ MakeMutex($(SAVAGEDIRS) $(SAVAGEOBJS) $(SAVAGELIBS) $(SAVAGESYSLIBS))
 $(SAVAGEOBJS) $(XSAVAGE) $(SAVAGELIBS) $(SAVAGESYSLIBS):: $(SAVAGEDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
-ServerTarget(Xsavage,$(SAVAGEDIRS),$(SAVAGEOBJS),$(SAVAGELIBS),$(SAVAGESYSLIBS))
+ServerTarget(Xsavage,$(SAVAGEDIRS),$(SAVAGEOBJS), \
+	$(SAVAGELIBS),$(SAVAGESYSLIBS))
 #endif /* XSavageServer */
 
 #if XIgsServer
@@ -786,7 +793,8 @@ MakeMutex($(IGSDIRS) $(IGSOBJS) $(IGSLIBS) $(IGSSYSLIBS))
 $(IGSOBJS) $(XIGS) $(IGSLIBS) $(IGSSYSLIBS):: $(IGSDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
-ServerTarget(Xigs,$(IGSDIRS),$(IGSOBJS),$(IGSLIBS),$(IGSSYSLIBS))
+ServerTarget(Xigs,$(IGSDIRS),$(IGSOBJS), \
+	$(IGSLIBS),$(IGSSYSLIBS))
 #endif /* XIgsServer */
 
 #if XTridentServer
@@ -848,7 +856,8 @@ MakeMutex($(I810DIRS) $(I810LIBS) $(I810SYSLIBS))
 $(I810OBJS) $(I810LIBS) $(I810SYSLIBS):: $(I810DIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
-ServerTarget(Xi810,$(I810DIRS),$(I810OBJS),$(I810LIBS),$(I810SYSLIBS))
+ServerTarget(Xi810,$(I810DIRS),$(I810OBJS), \
+	$(I810LIBS),$(I810SYSLIBS))
 #endif /* Xi810Server */
 
 
@@ -874,7 +883,8 @@ MakeMutex($(SIS530DIRS) $(SIS530OBJS) $(SIS530LIBS) $(SIS530SYSLIBS))
 $(SIS530OBJS) $(SIS530LIBS) $(SIS530SYSLIBS):: $(SIS530DIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
-ServerTarget(Xsis530,$(SIS530DIRS),$(SIS530OBJS),$(SIS530LIBS),$(SIS530SYSLIBS))
+ServerTarget(Xsis530,$(SIS530DIRS),$(SIS530OBJS), \
+	$(SIS530LIBS),$(SIS530SYSLIBS))
 #endif /* XSis530Server */
 
 #if XTrioServer
@@ -899,7 +909,8 @@ MakeMutex($(TRIODIRS) $(TRIOOBJS) $(TRIOLIBS) $(TRIOSYSLIBS))
 $(TRIOOBJS) $(TRIOLIBS) $(TRIOSYSLIBS):: $(TRIODIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
-ServerTarget(Xtrio,$(TRIODIRS),$(TRIOOBJS),$(TRIOLIBS),$(TRIOSYSLIBS))
+ServerTarget(Xtrio,$(TRIODIRS),$(TRIOOBJS), \
+	$(TRIOLIBS),$(TRIOSYSLIBS))
 #endif /* XTrioServer */
 
 #if XTS300Server
@@ -930,7 +941,8 @@ MakeMutex($(TS300DIRS) $(TS300OBJS) $(TS300LIBS) $(TS300SYSLIBS))
 $(TS300OBJS) $(TS300LIBS) $(TS300SYSLIBS):: $(TS300DIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
-ServerTarget(Xts300,$(TS300DIRS),$(TS300OBJS),$(TS300LIBS),$(TS300SYSLIBS))
+ServerTarget(Xts300,$(TS300DIRS),$(TS300OBJS), \
+	$(TS300LIBS),$(TS300SYSLIBS))
 #endif /* XTS300Server */
 
 #if XItsyServer
@@ -954,7 +966,8 @@ MakeMutex($(ITSYDIRS) $(ITSYOBJS) $(ITSYLIBS) $(ITSYSYSLIBS))
 $(ITSYOBJS) $(ITSYLIBS) $(ITSYSYSLIBS):: $(ITSYDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
-ServerTarget(Xitsy,$(ITSYDIRS),$(ITSYOBJS),$(ITSYLIBS),$(ITSYSYSLIBS))
+ServerTarget(Xitsy,$(ITSYDIRS),$(ITSYOBJS), \
+	$(ITSYLIBS),$(ITSYSYSLIBS))
 #endif /* XItsyServer */
 
 #if XvesaServer
@@ -981,7 +994,8 @@ MakeMutex($(VESADIRS) $(VESAOBJS) $(VESALIBS) $(VESASYSLIBS))
 $(VESAOBJS) $(XVESA) $(VESALIBS) $(VESASYSLIBS):: $(VESADIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
-ServerTarget(Xvesa,$(VESADIRS),$(VESAOBJS),$(VESALIBS),$(VESASYSLIBS))
+ServerTarget(Xvesa,$(VESADIRS),$(VESAOBJS), \
+	$(VESALIBS),$(VESASYSLIBS))
 #endif /* XvesaServer */
 
 KDRIVEDIRS=$(KDDIRS) $(FBDEVDIR) $(SAVAGEDIR) $(TRIDENTDIR) $(I810DIR) \
