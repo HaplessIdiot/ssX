@@ -1,7 +1,6 @@
 /* $XConsortium: i128.c /main/13 1996/10/27 11:04:19 kaleb $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
- * Copyright 1997 by Metro Link Incorporated ("Metro Link")
  *
  *                         All Rights Reserved
  *
@@ -9,14 +8,14 @@
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of Robin Cutshaw or Metro Link
- * ("copyright holders") not be used in advertising or publicity pertaining to
+ * documentation, and that the name of Robin Cutshaw
+ * not be used in advertising or publicity pertaining to
  * distribution of the software without specific, written prior permission.
  * The copyright holders make no representations about the suitability of this
  * software for any purpose.  It is provided "as is" without express or
  * implied warranty.
  *
- * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ * ROBIN CUTSHAW DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
  * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
  * IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL,
  * INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
@@ -52,36 +51,6 @@ int i128ValidMode(
     int
 #endif
 ); 
-
-#if defined(XFree86LOADER)
-
-#define _NO_XF86_PROTOTYPES
-#include "xf86.h"
-
-#define MAX_I128_CLOCK		175000
-
-extern void *videoDrivers[];
-
-int i128MaxClock = MAX_I128_CLOCK;
-
-int i128ValidTokens[] =
-{
-  STATICGRAY,
-  GRAYSCALE,
-  STATICCOLOR,
-  PSEUDOCOLOR,
-  TRUECOLOR,
-  DIRECTCOLOR,
-  MODES,
-  OPTION,
-  VIDEORAM,
-  VIEWPORT,
-  VIRTUAL,
-  CLOCKPROG,
-  INSTANCE,
-  -1
-};
-#endif /* XFree86LOADER */
 
 
 ScrnInfoRec i128InfoRec =
@@ -175,7 +144,7 @@ Bool  (*i128ClockSelectFunc) ();
 static Bool ti3025ClockSelect();
 
 ScreenPtr i128savepScreen;
-Bool  i128DAC8Bit = FALSE;
+Bool  i128DAC8Bit = TRUE;
 Bool  i128DACSyncOnGreen = FALSE;
 int i128DisplayWidth;
 int i128DisplayOffset = 0;
@@ -209,59 +178,6 @@ void (*i128ImageFillFunc)(
 #endif
 );
 
-
-ScrnInfoRec *
-ServerInit(void)
-{
-return &i128InfoRec;
-}
-
-
-XF86ModuleVersionInfo i128VersRec =
-{
-	"libi128.a",
-	MODULEVENDORSTRING,
-	MODINFOSTRING1,
-	MODINFOSTRING2,
-	XF86_VERSION_CURRENT,
-	0x00010001,
-	{0,0,0,0},
-};
-
-#ifdef XFree86LOADER
-void
-ModuleInit(data,magic)
-    pointer	* data;
-    INT32	* magic;
-{
-    static int cnt = 0;
-
-    switch(cnt++)
-    {
-    case 0:
-	* data = (pointer) &i128VersRec;
-	* magic= MAGIC_VERSION;
-	break;
-    case 1:
-        * data = (pointer) &i128InfoRec;
-        * magic= MAGIC_ADD_VIDEO_CHIP_REC;
-        break;
-    case 2:
-	* data = (pointer) "libxf86cache";
-	* magic= MAGIC_LOAD;
-	break;
-    case 3:
-	* data = (pointer) "libxaa";
-	* magic= MAGIC_LOAD;
-	xf86xaaloaded = TRUE;
-	break;
-    default:
-        * magic= MAGIC_DONE;
-        break;
-    }
-    return;
-}
-#endif
 
 /*
  * i128PrintIdent -- print identification message
@@ -411,6 +327,7 @@ i128Probe()
    OFLG_ZERO(&validOptions);
    OFLG_SET(OPTION_SHOWCACHE, &validOptions);
    OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
+   OFLG_SET(OPTION_DAC_6_BIT, &validOptions);
    OFLG_SET(OPTION_SYNC_ON_GREEN, &validOptions);
    OFLG_SET(OPTION_POWER_SAVER, &validOptions);
    OFLG_SET(OPTION_NOACCEL, &validOptions);
@@ -791,9 +708,9 @@ i128Probe()
 
    i128VideoMem = (pointer)&((char *)i128VideoMem)[i128DisplayOffset];
 
-   if (OFLG_ISSET(OPTION_DAC_8_BIT, &i128InfoRec.options) ||
-       (i128InfoRec.bitsPerPixel > 8))
-      i128DAC8Bit = TRUE;
+   if (OFLG_ISSET(OPTION_DAC_6_BIT, &i128InfoRec.options) &&
+       (i128InfoRec.bitsPerPixel == 8))
+      i128DAC8Bit = FALSE;
 
    if (xf86bpp == 8)
 	 xf86weight.green = (i128DAC8Bit ? 8 : 6);  /* for XAA */
