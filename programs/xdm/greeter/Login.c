@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/Login.c,v 3.4 1999/03/14 03:22:25 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/Login.c,v 3.6 2000/05/31 07:15:13 eich Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -1269,33 +1269,30 @@ static Boolean SetValues (
 }
 
 char defaultLoginTranslations [] =
-"\
-Ctrl<Key>H:	delete-previous-character() \n\
-Ctrl<Key>D:	delete-character() \n\
-Ctrl<Key>B:	move-backward-character() \n\
-Ctrl<Key>F:	move-forward-character() \n\
-Ctrl<Key>A:	move-to-begining() \n\
-Ctrl<Key>E:	move-to-end() \n\
-Ctrl<Key>K:	erase-to-end-of-line() \n\
-Ctrl<Key>U:	erase-line() \n\
-Ctrl<Key>X:	erase-line() \n\
-Ctrl<Key>C:	restart-session() \n\
-Ctrl<Key>\\\\:	abort-session() \n\
-:Ctrl<Key>plus:	allow-all-access() \n\
-<Key>BackSpace:	delete-previous-character() \n\
+"Ctrl<Key>H:	delete-previous-character() \n"
+"Ctrl<Key>D:	delete-character() \n"
+"Ctrl<Key>B:	move-backward-character() \n"
+"Ctrl<Key>F:	move-forward-character() \n"
+"Ctrl<Key>A:	move-to-begining() \n"
+"Ctrl<Key>E:	move-to-end() \n"
+"Ctrl<Key>K:	erase-to-end-of-line() \n"
+"Ctrl<Key>U:	erase-line() \n"
+"Ctrl<Key>X:	erase-line() \n"
+"Ctrl<Key>C:	restart-session() \n"
+"Ctrl<Key>\\\\:	abort-session() \n"
+":Ctrl<Key>plus:	allow-all-access() \n"
+"<Key>BackSpace:	delete-previous-character() \n"
 #ifdef linux
-<Key>Delete:	delete-character() \n\
+"<Key>Delete:	delete-character() \n"
 #else
-<Key>Delete:	delete-previous-character() \n\
+"<Key>Delete:	delete-previous-character() \n"
 #endif
-<Key>Return:	finish-field() \n"
+"<Key>Return:	finish-field() \n"
 #ifndef XPM
-"<KeyPress>:	insert-char() \
-"
+"<KeyPress>:	insert-char()"
 #else
-"<Key>Tab:	tab-field() \n\
-<KeyPress>:	insert-char() \
-"
+"<Key>Tab:	tab-field() \n"
+"<KeyPress>:	insert-char()\n"
 #endif /* XPM */
 ;
 
