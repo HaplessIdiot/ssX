@@ -298,6 +298,12 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.72 2000/08/01 20:28:37 dawes Exp $
 #ifndef BuildPSResLibrary
 #define BuildPSResLibrary	BuildDPSLibraries
 #endif
+#ifndef BuildRender
+#define BuildRender		NO
+#endif
+#ifndef BuildRenderLibrary
+#define BuildRenderLibrary	BuildRender
+#endif
 
 #ifndef BuildMiscDocs
 #define BuildMiscDocs		NO
@@ -711,6 +717,14 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 #endif
 
+#ifndef RenderDefines
+#if BuildRender
+#define RenderDefines -DRENDER
+#else
+#define RenderDefines /**/
+#endif
+#endif
+
 #ifndef FontCacheExtentionDefines
 #if BuildFontCache
 #define FontCacheExtensionDefines	-DFONTCACHE
@@ -728,7 +742,7 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 	XCSecurityDefines CupDefines PervasiveDBEDefines \
 	XF86BigfontExtensionDefines DPMSDefines \
 	LowMemDefines XprintDefines XineramaDefines \
-	SitePervasiveExtensionDefines
+	SitePervasiveExtensionDefines RenderDefines
 #endif
 #ifndef SiteExtensionDefines
 #define SiteExtensionDefines /**/

@@ -685,6 +685,11 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 # define BuildXinerama		YES
 #endif
 
+/* Build Render extension */
+#ifndef BuildRender
+# define BuildRender		YES
+#endif
+
 #if 0
 #ifndef JoystickSupport
 # define JoystickSupport	NO
