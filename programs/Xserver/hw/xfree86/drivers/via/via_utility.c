@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_utility.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_utility.c,v 1.4 2003/11/03 05:11:46 tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -34,7 +34,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 {
     VIAPtr pVia = VIAPTR(pScrn);
     VIABIOSInfoPtr pBIOSInfo = pVia->pBIOSInfo;
-    UTUSERSETTINGptr pUTUSERSETTING = pBIOSInfo->pUTUSERSETTING;
+    VIAUserSettingPtr pUserSetting = pBIOSInfo->UserSetting;
     VIAModeTablePtr pViaModeTable = pBIOSInfo->pModeTable;
     CARD8 *TV = NULL;
     int i, HPos, VPos, ADWHS, ADWHE;
@@ -42,20 +42,15 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
     CARD32 dwFunc, dwAction = 0, dwInData = 0;
     UTBIOSVERSION pUTBIOSVERSION;
     UTBIOSDATE pUTBIOSDATE;
-    UTDriverVersion pUTDriverVersion;
     UTPANELINFO pUTPANELINFO;
     UTXYVALUE MaxViewSizeValue, ViewSizeValue, MaxViewPosValue, ViewPosValue;
     UTSETTVTUNINGINFO pUTSETTVTUNINGINFO;
     UTSETTVITEMSTATE pUTSETTVITEMSTATE;
     UTGAMMAINFO pUTGAMMAINFO;
-    char DISPLAY_DRIVER_NAME[] = "via_drv.o\0";
-    char VDO_CAPTURE_DRIVER_NAME[] = "via_v4l_drv.o\0";
-    char HWOVERLAY_DRIVER_NAME[] = "libddmpeg.a\0";
     CARD32 dwVideoRam, dwSupportState = 0, dwConnectState = 0, dwActiveState = 0;
     CARD32 dwSAMMState, dwRotateState = 0, dwExpandState, dwStandard = 0;
     CARD32 dwSignalType, dwMaxValue, dwItemID = 0, dwValue, dwState;
     CARD32 value;
-    CARD16 szDriverName[16];
     long dwUTRetOK = 1, dwUTRetFail = 0, dwUTRetNoFunc = -1;
     unsigned char *InParam;
     I2CDevPtr dev = NULL;
@@ -64,7 +59,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 
     WaitIdle();
 
-    if ((pBIOSInfo->ActiveDevice & VIA_DEVICE_TV) && (!pUTUSERSETTING->DefaultSetting)) {
+    if ((pBIOSInfo->ActiveDevice & VIA_DEVICE_TV) && (!pUserSetting->DefaultSetting)) {
 	VIAUTGetInfo(pBIOSInfo);
     }
 
@@ -255,82 +250,6 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 	default:
 	    memcpy((void *) InParam, &dwUTRetFail, sizeof(CARD32));
 	    InParam += 4;
-	    ErrorF(" via_utility.c : dwAction not supported\n");
-	    break;
-	}
-	break;
-    case UT_XV_FUNC_DRIVER:
-	switch (dwAction) {
-	case UT_XV_FUNC_DRIVER_GetFileName:
-	    InParam += 4;
-	    dwInData = *((CARD32 *) InParam);
-	    switch (dwInData) {
-	    case DISPLAY_DRIVER:
-		InParam = buf + 8;
-		memcpy((void *) InParam, &dwUTRetOK, sizeof(CARD32));
-		memcpy((void *) szDriverName, (void *) DISPLAY_DRIVER_NAME, sizeof(DISPLAY_DRIVER_NAME));
-		InParam += 4;
-		memcpy((void *) InParam, &szDriverName, sizeof(szDriverName));
-		break;
-	    case VIDEO_CAPTURE_DRIVER:
-		InParam = buf + 8;
-		memcpy((void *) InParam, &dwUTRetOK, sizeof(CARD32));
-		memcpy((void *) szDriverName, (void *) VDO_CAPTURE_DRIVER_NAME, sizeof(VDO_CAPTURE_DRIVER_NAME));
-		InParam += 4;
-		memcpy((void *) InParam, &szDriverName, sizeof(szDriverName));
-		break;
-	    case HWOVERLAY_DRIVER:
-		InParam = buf + 8;
-		memcpy((void *) InParam, &dwUTRetOK, sizeof(CARD32));
-		memcpy((void *) szDriverName, (void *) HWOVERLAY_DRIVER_NAME, sizeof(HWOVERLAY_DRIVER_NAME));
-		InParam += 4;
-		memcpy((void *) InParam, &szDriverName, sizeof(szDriverName));
-		break;
-	    default:
-		InParam = buf + 8;
-		memcpy((void *) InParam, &dwUTRetFail, sizeof(CARD32));
-		break;
-	    }
-	    break;
-	case UT_XV_FUNC_DRIVER_GetFileVersion:
-	    InParam += 4;
-	    dwInData = *((CARD32 *) InParam);
-	    switch (dwInData) {
-	    case DISPLAY_DRIVER:
-		InParam = buf + 8;
-		memcpy((void *) InParam, &dwUTRetOK, sizeof(CARD32));
-		pUTDriverVersion.dwMajorNum = VERSION_MAJOR;
-		pUTDriverVersion.dwMinorNum = VERSION_MINOR;
-		pUTDriverVersion.dwReversionNum = PATCHLEVEL;
-		InParam += 4;
-		memcpy((void *) InParam, &pUTDriverVersion, sizeof(UTDriverVersion));
-		break;
-	    case VIDEO_CAPTURE_DRIVER:
-		InParam = buf + 8;
-		memcpy((void *) InParam, &dwUTRetOK, sizeof(CARD32));
-		pUTDriverVersion.dwMajorNum = 4;
-		pUTDriverVersion.dwMinorNum = 1;
-		pUTDriverVersion.dwReversionNum = 30;
-		InParam += 4;
-		memcpy((void *) InParam, &pUTDriverVersion, sizeof(UTDriverVersion));
-		break;
-	    case HWOVERLAY_DRIVER:
-		InParam = buf + 8;
-		memcpy((void *) InParam, &dwUTRetOK, sizeof(CARD32));
-		pUTDriverVersion.dwMajorNum = 4;
-		pUTDriverVersion.dwMinorNum = 1;
-		pUTDriverVersion.dwReversionNum = 30;
-		InParam += 4;
-		memcpy((void *) InParam, &pUTDriverVersion, sizeof(UTDriverVersion));
-		break;
-	    default:
-		InParam = buf + 8;
-		memcpy((void *) InParam, &dwUTRetFail, sizeof(CARD32));
-		break;
-	    }
-	    break;
-	default:
-	    memcpy((void *) InParam, &dwUTRetFail, sizeof(CARD32));
 	    ErrorF(" via_utility.c : dwAction not supported\n");
 	    break;
 	}
@@ -687,53 +606,6 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 	    memcpy((void *) InParam, &dwUTRetOK, sizeof(CARD32));
 	    break;
 
-	    /*switch (pBIOSInfo->TVEncoder) {
-	       case VIA_TV2PLUS :
-	       if (ViewSizeValue.dwY == 0xFFFF)
-	       pBIOSInfo->TVVScan = VIA_TVNORMAL;
-	       else
-	       pBIOSInfo->TVVScan = (int)ViewSizeValue.dwY - 1;
-	       VIAPreSetTV2Mode(pBIOSInfo);
-	       VIAPostSetTV2Mode(pBIOSInfo);
-	       InParam = buf + 8;
-	       memcpy((void *)InParam, &dwUTRetOK, sizeof(CARD32));
-	       break;
-	       case VIA_TV3 :
-	       if (ViewSizeValue.dwY == 0xFFFF)
-	       pBIOSInfo->TVVScan = VIA_TVNORMAL;
-	       else
-	       pBIOSInfo->TVVScan = (int)ViewSizeValue.dwY - 1;
-	       VIAPreSetTV3Mode(pBIOSInfo);
-	       VIAPostSetTV3Mode(pBIOSInfo);
-	       InParam = buf + 8;
-	       memcpy((void *)InParam, &dwUTRetOK, sizeof(CARD32));
-	       break;
-	       case VIA_CH7009:
-	       case VIA_CH7019:
-	       if (ViewSizeValue.dwY == 0xFFFF)
-	       pBIOSInfo->TVVScan = VIA_TVNORMAL;
-	       else
-	       pBIOSInfo->TVVScan = (int)ViewSizeValue.dwY - 1;
-	       VIAPreSetCH7019Mode(pBIOSInfo);
-	       VIAPostSetCH7019Mode(pBIOSInfo);
-	       InParam = buf + 8;
-	       memcpy((void *)InParam, &dwUTRetOK, sizeof(CARD32));
-	       break;
-	       case VIA_SAA7108:
-	       if (ViewSizeValue.dwY == 0xFFFF)
-	       pBIOSInfo->TVVScan = VIA_TVNORMAL;
-	       else
-	       pBIOSInfo->TVVScan = (int)ViewSizeValue.dwY - 1;
-	       VIAPreSetSAA7108Mode(pBIOSInfo);
-	       VIAPostSetSAA7108Mode(pBIOSInfo);
-	       InParam = buf + 8;
-	       memcpy((void *)InParam, &dwUTRetOK, sizeof(CARD32));
-	       break;
-	       default :
-	       InParam = buf + 8;
-	       memcpy((void *)InParam, &dwUTRetFail, sizeof(CARD32));
-	       break;
-	       } */
 	case UT_XV_FUNC_TV_GetMaxViewPositionValue:
 	    switch (pBIOSInfo->TVEncoder) {
 	    case VIA_TV2PLUS:
@@ -782,8 +654,8 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 		    ViewPosValue.dwX = 6;
 		    ViewPosValue.dwY = 6;
 		} else {
-		    ViewPosValue.dwX = pUTUSERSETTING->UT_TV_HPOSITION;
-		    ViewPosValue.dwY = pUTUSERSETTING->UT_TV_VPOSITION;
+		    ViewPosValue.dwX = pUserSetting->tvHPosition;
+		    ViewPosValue.dwY = pUserSetting->tvVPosition;
 		}
 		break;
 	    case VIA_SAA7108:
@@ -791,8 +663,8 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 		    ViewPosValue.dwX = 6;
 		    ViewPosValue.dwY = 6;
 		} else {
-		    ViewPosValue.dwX = pUTUSERSETTING->UT_TV_HPOSITION;
-		    ViewPosValue.dwY = pUTUSERSETTING->UT_TV_VPOSITION;
+		    ViewPosValue.dwX = pUserSetting->tvHPosition;
+		    ViewPosValue.dwY = pUserSetting->tvVPosition;
 		}
 		break;
 	    case VIA_FS454:
@@ -820,8 +692,8 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 		if (xf86I2CDevInit(dev)) {
 		    switch (pBIOSInfo->TVEncoder) {
 		    case VIA_TV2PLUS:
-			pUTUSERSETTING->UT_TV_HPOSITION = 0;
-			pUTUSERSETTING->UT_TV_VPOSITION = 0;
+			pUserSetting->tvHPosition = 0;
+			pUserSetting->tvVPosition = 0;
 			break;
 		    case VIA_TV3:
 		    case VIA_VT1622A:
@@ -834,12 +706,12 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			    W_Buffer[2] = TV[0x09];
 			    xf86I2CWriteRead(dev, W_Buffer, 3, NULL, 0);
 			    /*value = TV[0x1C];
-			       pUTUSERSETTING->UT_TV_HPOSITION = TV[0x08] & 0xFF;
-			       pUTUSERSETTING->UT_TV_HPOSITION |= (value & 0x04) << 6;
-			       pUTUSERSETTING->UT_TV_VPOSITION = TV[0x09] & 0xFF;
-			       pUTUSERSETTING->UT_TV_VPOSITION |= (value & 0x02) << 7; */
-			    pUTUSERSETTING->UT_TV_HPOSITION = 6;
-			    pUTUSERSETTING->UT_TV_VPOSITION = 6;
+			       pUserSetting->tvHPosition = TV[0x08] & 0xFF;
+			       pUserSetting->tvHPosition |= (value & 0x04) << 6;
+			       pUserSetting->tvVPosition = TV[0x09] & 0xFF;
+			       pUserSetting->tvVPosition |= (value & 0x02) << 7; */
+			    pUserSetting->tvHPosition = 6;
+			    pUserSetting->tvVPosition = 6;
 			} else {
 			    W_Buffer[0] = 0x08;
 			    xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 2);
@@ -850,8 +722,8 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			    HPos |= (R_Buffer[0] & 0x04) << 6;
 			    VPos |= (R_Buffer[0] & 0x02) << 7;
 
-			    HPos += ViewPosValue.dwX - pUTUSERSETTING->UT_TV_HPOSITION;
-			    VPos += ViewPosValue.dwY - pUTUSERSETTING->UT_TV_VPOSITION;
+			    HPos += ViewPosValue.dwX - pUserSetting->tvHPosition;
+			    VPos += ViewPosValue.dwY - pUserSetting->tvVPosition;
 
 			    W_Buffer[0] = 0x08;
 			    W_Buffer[1] = HPos & 0xFF;
@@ -864,8 +736,8 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			    W_Buffer[1] |= (VPos >> 7) & 0x02;
 			    xf86I2CWriteRead(dev, W_Buffer, 2, NULL, 0);
 
-			    pUTUSERSETTING->UT_TV_HPOSITION = ViewPosValue.dwX;
-			    pUTUSERSETTING->UT_TV_VPOSITION = ViewPosValue.dwY;
+			    pUserSetting->tvHPosition = ViewPosValue.dwX;
+			    pUserSetting->tvVPosition = ViewPosValue.dwY;
 			}
 			break;
 		    case VIA_SAA7108:
@@ -890,8 +762,8 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			    W_Buffer[0] = 0x71;
 			    W_Buffer[1] = TV[0x71];
 			    xf86I2CWriteRead(dev, W_Buffer, 2, NULL, 0);
-			    pUTUSERSETTING->UT_TV_HPOSITION = 6;
-			    pUTUSERSETTING->UT_TV_VPOSITION = 6;
+			    pUserSetting->tvHPosition = 6;
+			    pUserSetting->tvVPosition = 6;
 			} else {
 			    for (i = 0; i < 3; i++) {
 				W_Buffer[0] = VIASAA7108PostionOffset[i];
@@ -905,7 +777,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			    xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 3);
 			    ADWHS = R_Buffer[0] | ((R_Buffer[2] & 0x07) << 8);
 			    ADWHE = R_Buffer[1] | ((R_Buffer[2] & 0x70) << 4);
-			    switch (ViewPosValue.dwX - pUTUSERSETTING->UT_TV_HPOSITION) {
+			    switch (ViewPosValue.dwX - pUserSetting->tvHPosition) {
 			    case 1:	/* Moving Right by 1 unit */
 				ADWHS++;
 				ADWHE++;
@@ -941,16 +813,16 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			    default:
 				break;
 			    }
-			    pUTUSERSETTING->UT_TV_HPOSITION = ViewPosValue.dwX;
-			    pUTUSERSETTING->UT_TV_VPOSITION = ViewPosValue.dwY;
+			    pUserSetting->tvHPosition = ViewPosValue.dwX;
+			    pUserSetting->tvVPosition = ViewPosValue.dwY;
 			}
 			break;
 		    case VIA_FS454:
 		    case VIA_CH7009:
 		    case VIA_CH7019:
 		    default:
-			pUTUSERSETTING->UT_TV_HPOSITION = 0;
-			pUTUSERSETTING->UT_TV_VPOSITION = 0;
+			pUserSetting->tvHPosition = 0;
+			pUserSetting->tvVPosition = 0;
 			break;
 		    }
 		    xf86DestroyI2CDevRec(dev, TRUE);
@@ -1135,32 +1007,32 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 	    dwInData = *((CARD32 *) InParam);
 	    switch (dwInData) {
 	    case UT_TV_TUNING_FFILTER:
-		dwValue = pUTUSERSETTING->UT_TV_FFILTER;
+		dwValue = pUserSetting->tvFFilter;
 		InParam = buf + 8;
 		memcpy((void *) InParam, &dwUTRetOK, sizeof(CARD32));
 		break;
 	    case UT_TV_TUNING_ADAPTIVE_FFILTER:
-		dwValue = pUTUSERSETTING->UT_TV_ADAPTIVE_FFILTER;
+		dwValue = pUserSetting->tvAdaptiveFFilter;
 		InParam = buf + 8;
 		memcpy((void *) InParam, &dwUTRetOK, sizeof(CARD32));
 		break;
 	    case UT_TV_TUNING_BRIGHTNESS:
-		dwValue = pUTUSERSETTING->UT_TV_BRIGHTNESS;
+		dwValue = pUserSetting->tvBrightness;
 		InParam = buf + 8;
 		memcpy((void *) InParam, &dwUTRetOK, sizeof(CARD32));
 		break;
 	    case UT_TV_TUNING_CONTRAST:
-		dwValue = pUTUSERSETTING->UT_TV_CONTRAST;
+		dwValue = pUserSetting->tvContrast;
 		InParam = buf + 8;
 		memcpy((void *) InParam, &dwUTRetOK, sizeof(CARD32));
 		break;
 	    case UT_TV_TUNING_SATURATION:
-		dwValue = pUTUSERSETTING->UT_TV_SATURATION;
+		dwValue = pUserSetting->tvSaturation;
 		InParam = buf + 8;
 		memcpy((void *) InParam, &dwUTRetOK, sizeof(CARD32));
 		break;
 	    case UT_TV_TUNING_TINT:
-		dwValue = pUTUSERSETTING->UT_TV_TINT;
+		dwValue = pUserSetting->tvTint;
 		InParam = buf + 8;
 		memcpy((void *) InParam, &dwUTRetOK, sizeof(CARD32));
 		break;
@@ -1187,7 +1059,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 		    if (xf86I2CDevInit(dev)) {
 			switch (pBIOSInfo->TVEncoder) {
 			case VIA_TV2PLUS:
-			    pUTUSERSETTING->UT_TV_FFILTER = 0;
+			    pUserSetting->tvFFilter = 0;
 			    break;
 			case VIA_TV3:
 			case VIA_VT1622A:
@@ -1195,15 +1067,15 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			    if (pUTSETTVTUNINGINFO.dwValue == 0xFFFF) {
 				W_Buffer[0] = 0x03;
 				W_Buffer[1] = TV[0x03];
-				pUTUSERSETTING->UT_TV_FFILTER = TV[0x03] & 0x03;
-				if (pUTUSERSETTING->UT_TV_FFILTER == 0)
-				    pUTUSERSETTING->ADAPTIVE_FFILTER_ON = TRUE;
+				pUserSetting->tvFFilter = TV[0x03] & 0x03;
+				if (pUserSetting->tvFFilter == 0)
+				    pUserSetting->AdaptiveFilterOn = TRUE;
 			    } else {
 				W_Buffer[0] = 0x03;
 				xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
 				W_Buffer[1] = R_Buffer[0] & ~0x03;
 				W_Buffer[1] |= pUTSETTVTUNINGINFO.dwValue;
-				pUTUSERSETTING->UT_TV_FFILTER = pUTSETTVTUNINGINFO.dwValue;
+				pUserSetting->tvFFilter = pUTSETTVTUNINGINFO.dwValue;
 			    }
 			    xf86I2CWriteRead(dev, W_Buffer, 2, NULL, 0);
 			    break;
@@ -1211,20 +1083,20 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			    if (pUTSETTVTUNINGINFO.dwValue == 0xFFFF) {
 				W_Buffer[0] = 0x37;
 				W_Buffer[1] = TV[0x37];
-				pUTUSERSETTING->UT_TV_FFILTER = (TV[0x37] & 0x30) + 1;
+				pUserSetting->tvFFilter = (TV[0x37] & 0x30) + 1;
 			    } else {
 				W_Buffer[0] = 0x37;
 				xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
 				W_Buffer[1] = R_Buffer[0] & ~0x30;
 				W_Buffer[1] |= (unsigned char) (pUTSETTVTUNINGINFO.dwValue - 1);
-				pUTUSERSETTING->UT_TV_FFILTER = pUTSETTVTUNINGINFO.dwValue;
+				pUserSetting->tvFFilter = pUTSETTVTUNINGINFO.dwValue;
 			    }
 			    break;
 			case VIA_CH7009:
 			case VIA_CH7019:
 			case VIA_FS454:
 			default:
-			    pUTUSERSETTING->UT_TV_FFILTER = 0;
+			    pUserSetting->tvFFilter = 0;
 			    break;
 			}
 
@@ -1250,7 +1122,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 		    if (xf86I2CDevInit(dev)) {
 			switch (pBIOSInfo->TVEncoder) {
 			case VIA_TV2PLUS:
-			    pUTUSERSETTING->UT_TV_ADAPTIVE_FFILTER = 0;
+			    pUserSetting->tvAdaptiveFFilter = 0;
 			    break;
 			case VIA_TV3:
 			case VIA_VT1622A:
@@ -1258,11 +1130,11 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			    if (pUTSETTVTUNINGINFO.dwValue == 0xFFFF) {
 				W_Buffer[0] = 0x61;
 				W_Buffer[1] = TV[0x61];
-				pUTUSERSETTING->UT_TV_ADAPTIVE_FFILTER = TV[0x61] & 0xFF;
+				pUserSetting->tvAdaptiveFFilter = TV[0x61] & 0xFF;
 			    } else {
 				W_Buffer[0] = 0x61;
 				W_Buffer[1] = (unsigned char) pUTSETTVTUNINGINFO.dwValue;
-				pUTUSERSETTING->UT_TV_ADAPTIVE_FFILTER = pUTSETTVTUNINGINFO.dwValue;
+				pUserSetting->tvAdaptiveFFilter = pUTSETTVTUNINGINFO.dwValue;
 			    }
 			    xf86I2CWriteRead(dev, W_Buffer, 2, NULL, 0);
 			    break;
@@ -1271,7 +1143,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			case VIA_CH7009:
 			case VIA_CH7019:
 			default:
-			    pUTUSERSETTING->UT_TV_ADAPTIVE_FFILTER = 0;
+			    pUserSetting->tvAdaptiveFFilter = 0;
 			    break;
 			}
 			xf86DestroyI2CDevRec(dev, TRUE);
@@ -1296,7 +1168,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 		    if (xf86I2CDevInit(dev)) {
 			switch (pBIOSInfo->TVEncoder) {
 			case VIA_TV2PLUS:
-			    pUTUSERSETTING->UT_TV_BRIGHTNESS = 0;
+			    pUserSetting->tvBrightness = 0;
 			    break;
 			case VIA_TV3:
 			case VIA_VT1622A:
@@ -1304,10 +1176,10 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			    W_Buffer[0] = 0x0B;
 			    if (pUTSETTVTUNINGINFO.dwValue == 0xFFFF) {
 				W_Buffer[1] = TV[0x0B];
-				pUTUSERSETTING->UT_TV_BRIGHTNESS = TV[0x0B] & 0xFF;
+				pUserSetting->tvBrightness = TV[0x0B] & 0xFF;
 			    } else {
 				W_Buffer[1] = (unsigned char) pUTSETTVTUNINGINFO.dwValue;
-				pUTUSERSETTING->UT_TV_BRIGHTNESS = pUTSETTVTUNINGINFO.dwValue;
+				pUserSetting->tvBrightness = pUTSETTVTUNINGINFO.dwValue;
 			    }
 			    xf86I2CWriteRead(dev, W_Buffer, 2, NULL, 0);
 			    break;
@@ -1316,7 +1188,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			case VIA_CH7009:
 			case VIA_CH7019:
 			default:
-			    pUTUSERSETTING->UT_TV_BRIGHTNESS = 0;
+			    pUserSetting->tvBrightness = 0;
 			    break;
 			}
 
@@ -1342,7 +1214,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 		    if (xf86I2CDevInit(dev)) {
 			switch (pBIOSInfo->TVEncoder) {
 			case VIA_TV2PLUS:
-			    pUTUSERSETTING->UT_TV_CONTRAST = 0;
+			    pUserSetting->tvContrast = 0;
 			    break;
 			case VIA_TV3:
 			case VIA_VT1622A:
@@ -1350,10 +1222,10 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			    W_Buffer[0] = 0x0C;
 			    if (pUTSETTVTUNINGINFO.dwValue == 0xFFFF) {
 				W_Buffer[1] = TV[0x0C];
-				pUTUSERSETTING->UT_TV_CONTRAST = TV[0x0C] & 0xFF;
+				pUserSetting->tvContrast = TV[0x0C] & 0xFF;
 			    } else {
 				W_Buffer[1] = (unsigned char) pUTSETTVTUNINGINFO.dwValue;
-				pUTUSERSETTING->UT_TV_CONTRAST = pUTSETTVTUNINGINFO.dwValue;
+				pUserSetting->tvContrast = pUTSETTVTUNINGINFO.dwValue;
 			    }
 			    xf86I2CWriteRead(dev, W_Buffer, 2, NULL, 0);
 			    break;
@@ -1362,7 +1234,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			case VIA_CH7009:
 			case VIA_CH7019:
 			default:
-			    pUTUSERSETTING->UT_TV_CONTRAST = 0;
+			    pUserSetting->tvContrast = 0;
 			    break;
 			}
 
@@ -1388,7 +1260,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 		    if (xf86I2CDevInit(dev)) {
 			switch (pBIOSInfo->TVEncoder) {
 			case VIA_TV2PLUS:
-			    pUTUSERSETTING->UT_TV_SATURATION = 0;
+			    pUserSetting->tvSaturation = 0;
 			    break;
 			case VIA_TV3:
 			case VIA_VT1622A:
@@ -1400,15 +1272,15 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 				W_Buffer[0] = 0x0A;
 				W_Buffer[1] = TV[0x0A];
 				value = TV[0x0D];
-				pUTUSERSETTING->UT_TV_SATURATION = TV[0x0A] & 0xFF;
-				pUTUSERSETTING->UT_TV_SATURATION |= value << 8;
+				pUserSetting->tvSaturation = TV[0x0A] & 0xFF;
+				pUserSetting->tvSaturation |= value << 8;
 			    } else {
 				W_Buffer[0] = 0x0D;
 				W_Buffer[1] = (unsigned char) ((pUTSETTVTUNINGINFO.dwValue >> 8) & 0xFF);
 				xf86I2CWriteRead(dev, W_Buffer, 2, NULL, 0);
 				W_Buffer[0] = 0x0A;
 				W_Buffer[1] = (unsigned char) (pUTSETTVTUNINGINFO.dwValue & 0xFF);
-				pUTUSERSETTING->UT_TV_SATURATION = pUTSETTVTUNINGINFO.dwValue;
+				pUserSetting->tvSaturation = pUTSETTVTUNINGINFO.dwValue;
 			    }
 			    xf86I2CWriteRead(dev, W_Buffer, 3, NULL, 0);
 			    break;
@@ -1417,7 +1289,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			case VIA_CH7009:
 			case VIA_CH7019:
 			default:
-			    pUTUSERSETTING->UT_TV_SATURATION = 0;
+			    pUserSetting->tvSaturation = 0;
 			    break;
 			}
 
@@ -1447,8 +1319,8 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 				W_Buffer[0] = 0x10;
 				W_Buffer[1] = TV[0x10];
 				W_Buffer[2] = TV[0x11];
-				pUTUSERSETTING->UT_TV_TINT = TV[0x10] & 0xFF;
-				pUTUSERSETTING->UT_TV_TINT |= (TV[0x11] & 0xE0) << 3;
+				pUserSetting->tvTint = TV[0x10] & 0xFF;
+				pUserSetting->tvTint |= (TV[0x11] & 0xE0) << 3;
 			    } else {
 				W_Buffer[0] = 0x11;
 				xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
@@ -1456,7 +1328,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 				W_Buffer[2] |= (unsigned char) ((pUTSETTVTUNINGINFO.dwValue >> 3) & 0xFF);
 				W_Buffer[0] = 0x10;
 				W_Buffer[1] = (unsigned char) (pUTSETTVTUNINGINFO.dwValue & 0xFF);
-				pUTUSERSETTING->UT_TV_TINT = pUTSETTVTUNINGINFO.dwValue;
+				pUserSetting->tvTint = pUTSETTVTUNINGINFO.dwValue;
 			    }
 			    xf86I2CWriteRead(dev, W_Buffer, 3, NULL, 0);
 			    break;
@@ -1468,8 +1340,8 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 				W_Buffer[1] = TV[0x10];
 				W_Buffer[2] = TV[0x11];
 				value = TV[0x11];
-				pUTUSERSETTING->UT_TV_TINT = TV[0x10] & 0xFF;
-				pUTUSERSETTING->UT_TV_TINT |= TV[0x11] << 8;
+				pUserSetting->tvTint = TV[0x10] & 0xFF;
+				pUserSetting->tvTint |= TV[0x11] << 8;
 			    } else {
 				W_Buffer[0] = 0x11;
 				xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
@@ -1477,7 +1349,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 				W_Buffer[2] |= (unsigned char) (pUTSETTVTUNINGINFO.dwValue >> 8) & 0xFF;
 				W_Buffer[0] = 0x10;
 				W_Buffer[1] = (unsigned char) (pUTSETTVTUNINGINFO.dwValue & 0xFF);
-				pUTUSERSETTING->UT_TV_TINT = pUTSETTVTUNINGINFO.dwValue;
+				pUserSetting->tvTint = pUTSETTVTUNINGINFO.dwValue;
 			    }
 			    xf86I2CWriteRead(dev, W_Buffer, 3, NULL, 0);
 			    break;
@@ -1486,7 +1358,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			case VIA_CH7009:
 			case VIA_CH7019:
 			default:
-			    pUTUSERSETTING->UT_TV_TINT = 0;
+			    pUserSetting->tvTint = 0;
 			    break;
 			}
 
@@ -1536,7 +1408,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 	    dwInData = *((CARD32 *) InParam);
 	    switch (dwInData) {
 	    case UT_TV_SETTING_FFILTER:
-		if (pUTUSERSETTING->UT_TV_FFILTER)
+		if (pUserSetting->tvFFilter)
 		    dwState = UT_STATE_ON;
 		else
 		    dwState = UT_STATE_OFF;
@@ -1544,7 +1416,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 		memcpy((void *) InParam, &dwUTRetOK, sizeof(CARD32));
 		break;
 	    case UT_TV_SETTING_ADAPTIVE_FFILTER:
-		if (pUTUSERSETTING->UT_TV_FFILTER)
+		if (pUserSetting->tvFFilter)
 		    dwState = UT_STATE_OFF;
 		else
 		    dwState = UT_STATE_ON;
@@ -1603,7 +1475,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			    }
 			    xf86I2CWriteRead(dev, W_Buffer, 2, NULL, 0);
 			    xf86DestroyI2CDevRec(dev, TRUE);
-			    pUTUSERSETTING->ADAPTIVE_FFILTER_ON = TRUE;
+			    pUserSetting->AdaptiveFilterOn = TRUE;
 			    InParam = buf + 8;
 			    memcpy((void *) InParam, &dwUTRetOK, sizeof(CARD32));
 
@@ -1629,18 +1501,18 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 				W_Buffer[0] = 0x03;
 				xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
 				W_Buffer[1] = R_Buffer[0] & ~0x03;
-				W_Buffer[1] |= (unsigned char) (pUTUSERSETTING->UT_TV_FFILTER - 1);
+				W_Buffer[1] |= (unsigned char) (pUserSetting->tvFFilter - 1);
 				break;
 			    case VIA_SAA7108:
 				W_Buffer[0] = 0x37;
 				xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
 				W_Buffer[1] = R_Buffer[0] & ~0x30;
-				W_Buffer[1] |= (unsigned char) ((pUTUSERSETTING->UT_TV_FFILTER - 1) << 4);
+				W_Buffer[1] |= (unsigned char) ((pUserSetting->tvFFilter - 1) << 4);
 				break;
 			    }
 			    xf86I2CWriteRead(dev, W_Buffer, 2, NULL, 0);
 			    xf86DestroyI2CDevRec(dev, TRUE);
-			    pUTUSERSETTING->ADAPTIVE_FFILTER_ON = FALSE;
+			    pUserSetting->AdaptiveFilterOn = FALSE;
 			} else {
 			    xf86DestroyI2CDevRec(dev, TRUE);
 			    InParam = buf + 8;
@@ -1663,7 +1535,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			if (xf86I2CDevInit(dev)) {
 			    switch (pBIOSInfo->TVEncoder) {
 			    case VIA_TV2PLUS:
-				pUTUSERSETTING->ADAPTIVE_FFILTER_ON = FALSE;
+				pUserSetting->AdaptiveFilterOn = FALSE;
 				break;
 			    case VIA_TV3:
 			    case VIA_VT1622A:
@@ -1672,14 +1544,14 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 				W_Buffer[1] = 0x00;
 				xf86I2CWriteRead(dev, W_Buffer, 2, NULL, 0);
 				xf86DestroyI2CDevRec(dev, TRUE);
-				pUTUSERSETTING->ADAPTIVE_FFILTER_ON = FALSE;
+				pUserSetting->AdaptiveFilterOn = FALSE;
 				break;
 			    case VIA_SAA7108:
 			    case VIA_FS454:
 			    case VIA_CH7009:
 			    case VIA_CH7019:
 			    default:
-				pUTUSERSETTING->ADAPTIVE_FFILTER_ON = FALSE;
+				pUserSetting->AdaptiveFilterOn = FALSE;
 				break;
 			    }
 			    InParam = buf + 8;
@@ -1700,8 +1572,8 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 			if (xf86I2CDevInit(dev)) {
 			    switch (pBIOSInfo->TVEncoder) {
 			    case VIA_TV2PLUS:
-				pUTUSERSETTING->ADAPTIVE_FFILTER_ON = FALSE;
-				pUTUSERSETTING->UT_TV_ADAPTIVE_FFILTER = 0;
+				pUserSetting->AdaptiveFilterOn = FALSE;
+				pUserSetting->tvAdaptiveFFilter = 0;
 				break;
 			    case VIA_TV3:
 			    case VIA_VT1622A:
@@ -1711,17 +1583,17 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 				W_Buffer[1] = R_Buffer[0] & ~0x03;
 				xf86I2CWriteRead(dev, W_Buffer, 2, NULL, 0);
 				W_Buffer[0] = 0x61;
-				W_Buffer[1] = (unsigned char) pUTUSERSETTING->UT_TV_ADAPTIVE_FFILTER;
+				W_Buffer[1] = (unsigned char) pUserSetting->tvAdaptiveFFilter;
 				xf86DestroyI2CDevRec(dev, TRUE);
-				pUTUSERSETTING->ADAPTIVE_FFILTER_ON = TRUE;
+				pUserSetting->AdaptiveFilterOn = TRUE;
 				break;
 			    case VIA_SAA7108:
 			    case VIA_FS454:
 			    case VIA_CH7009:
 			    case VIA_CH7019:
 			    default:
-				pUTUSERSETTING->ADAPTIVE_FFILTER_ON = FALSE;
-				pUTUSERSETTING->UT_TV_ADAPTIVE_FFILTER = 0;
+				pUserSetting->AdaptiveFilterOn = FALSE;
+				pUserSetting->tvAdaptiveFFilter = 0;
 				break;
 			    }
 			    InParam = buf + 8;
@@ -1894,7 +1766,7 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 
 Bool VIAUTGetInfo(VIABIOSInfoPtr pBIOSInfo)
 {
-    UTUSERSETTINGptr pUTUSERSETTING = pBIOSInfo->pUTUSERSETTING;
+    VIAUserSettingPtr pUserSetting = pBIOSInfo->UserSetting;
     I2CDevPtr dev;
     unsigned char W_Buffer[3];
     unsigned char R_Buffer[2];
@@ -1911,116 +1783,116 @@ Bool VIAUTGetInfo(VIABIOSInfoPtr pBIOSInfo)
 	    case VIA_TV2PLUS:
 	    case VIA_TV3:
 	    case VIA_VT1622A:
-		pUTUSERSETTING->UT_TV_HPOSITION = 6;
-		pUTUSERSETTING->UT_TV_VPOSITION = 6;
+		pUserSetting->tvHPosition = 6;
+		pUserSetting->tvVPosition = 6;
 
 		W_Buffer[0] = 0x03;
 		xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_FFILTER = (R_Buffer[0] & 0x03) + 1;
+		pUserSetting->tvFFilter = (R_Buffer[0] & 0x03) + 1;
 
 		W_Buffer[0] = 0x0B;
 		xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_BRIGHTNESS = R_Buffer[0];
+		pUserSetting->tvBrightness = R_Buffer[0];
 
 		W_Buffer[0] = 0x0C;
 		xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_CONTRAST = R_Buffer[0];
+		pUserSetting->tvContrast = R_Buffer[0];
 
 		W_Buffer[0] = 0x0D;
 		xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_SATURATION = R_Buffer[0] << 8;
+		pUserSetting->tvSaturation = R_Buffer[0] << 8;
 		W_Buffer[0] = 0x0A;
 		xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_SATURATION += R_Buffer[0];
+		pUserSetting->tvSaturation += R_Buffer[0];
 
 		break;
 	    case VIA_VT1623:
 		VIAGPIOI2C_Initial(pBIOSInfo, 0x40);
-		pUTUSERSETTING->UT_TV_HPOSITION = 6;
-		pUTUSERSETTING->UT_TV_VPOSITION = 6;
+		pUserSetting->tvHPosition = 6;
+		pUserSetting->tvVPosition = 6;
 
 		VIAGPIOI2C_Read(pBIOSInfo, 0x03, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_FFILTER = (R_Buffer[0] & 0x03) + 1;
+		pUserSetting->tvFFilter = (R_Buffer[0] & 0x03) + 1;
 
 		VIAGPIOI2C_Read(pBIOSInfo, 0x0B, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_BRIGHTNESS = R_Buffer[0];
+		pUserSetting->tvBrightness = R_Buffer[0];
 
 		VIAGPIOI2C_Read(pBIOSInfo, 0x0C, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_CONTRAST = R_Buffer[0];
+		pUserSetting->tvContrast = R_Buffer[0];
 
 		VIAGPIOI2C_Read(pBIOSInfo, 0x0D, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_SATURATION = R_Buffer[0] << 8;
+		pUserSetting->tvSaturation = R_Buffer[0] << 8;
 		VIAGPIOI2C_Read(pBIOSInfo, 0x0A, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_SATURATION += R_Buffer[0];
+		pUserSetting->tvSaturation += R_Buffer[0];
 
 		break;
 	    case VIA_SAA7108:
-		pUTUSERSETTING->UT_TV_HPOSITION = 6;
-		pUTUSERSETTING->UT_TV_VPOSITION = 6;
+		pUserSetting->tvHPosition = 6;
+		pUserSetting->tvVPosition = 6;
 
 		W_Buffer[0] = 0x37;
 		xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_FFILTER = ((R_Buffer[0] & 0x30) >> 4) + 1;
+		pUserSetting->tvFFilter = ((R_Buffer[0] & 0x30) >> 4) + 1;
 
-		pUTUSERSETTING->UT_TV_BRIGHTNESS = 0;
-		pUTUSERSETTING->UT_TV_CONTRAST = 0;
-		pUTUSERSETTING->UT_TV_SATURATION = 0;
-		pUTUSERSETTING->UT_TV_ADAPTIVE_FFILTER = 0;
-		pUTUSERSETTING->UT_TV_TINT = 0;
-		pUTUSERSETTING->ADAPTIVE_FFILTER_ON = FALSE;
+		pUserSetting->tvBrightness = 0;
+		pUserSetting->tvContrast = 0;
+		pUserSetting->tvSaturation = 0;
+		pUserSetting->tvAdaptiveFFilter = 0;
+		pUserSetting->tvTint = 0;
+		pUserSetting->AdaptiveFilterOn = FALSE;
 		break;
 	    case VIA_CH7009:
 	    case VIA_CH7019:
 	    case VIA_FS454:
 	    default:
-		pUTUSERSETTING->UT_TV_HPOSITION = 0;
-		pUTUSERSETTING->UT_TV_VPOSITION = 0;
-		pUTUSERSETTING->UT_TV_FFILTER = 0;
-		pUTUSERSETTING->UT_TV_BRIGHTNESS = 0;
-		pUTUSERSETTING->UT_TV_CONTRAST = 0;
-		pUTUSERSETTING->UT_TV_SATURATION = 0;
-		pUTUSERSETTING->UT_TV_ADAPTIVE_FFILTER = 0;
-		pUTUSERSETTING->UT_TV_TINT = 0;
-		pUTUSERSETTING->ADAPTIVE_FFILTER_ON = FALSE;
+		pUserSetting->tvHPosition = 0;
+		pUserSetting->tvVPosition = 0;
+		pUserSetting->tvFFilter = 0;
+		pUserSetting->tvBrightness = 0;
+		pUserSetting->tvContrast = 0;
+		pUserSetting->tvSaturation = 0;
+		pUserSetting->tvAdaptiveFFilter = 0;
+		pUserSetting->tvTint = 0;
+		pUserSetting->AdaptiveFilterOn = FALSE;
 		break;
 	    }
 	    if (pBIOSInfo->TVEncoder == VIA_TV2PLUS) {
-		pUTUSERSETTING->UT_TV_ADAPTIVE_FFILTER = 0;
+		pUserSetting->tvAdaptiveFFilter = 0;
 
 		W_Buffer[0] = 0x10;
 		xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_TINT = R_Buffer[0];
+		pUserSetting->tvTint = R_Buffer[0];
 		W_Buffer[0] = 0x11;
 		xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_TINT += (R_Buffer[0] & 0xE0) << 8;
+		pUserSetting->tvTint += (R_Buffer[0] & 0xE0) << 8;
 	    } else if (pBIOSInfo->TVEncoder == VIA_TV3 || pBIOSInfo->TVEncoder == VIA_VT1622A) {
 		W_Buffer[0] = 0x61;
 		xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_ADAPTIVE_FFILTER = R_Buffer[0];
+		pUserSetting->tvAdaptiveFFilter = R_Buffer[0];
 		W_Buffer[0] = 0x10;
 		xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_TINT = R_Buffer[0];
+		pUserSetting->tvTint = R_Buffer[0];
 		W_Buffer[0] = 0x11;
 		xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_TINT += (R_Buffer[0] & 0x07) << 8;
-		if (pUTUSERSETTING->UT_TV_ADAPTIVE_FFILTER && !pUTUSERSETTING->UT_TV_FFILTER)
-		    pUTUSERSETTING->ADAPTIVE_FFILTER_ON = TRUE;
+		pUserSetting->tvTint += (R_Buffer[0] & 0x07) << 8;
+		if (pUserSetting->tvAdaptiveFFilter && !pUserSetting->tvFFilter)
+		    pUserSetting->AdaptiveFilterOn = TRUE;
 		else
-		    pUTUSERSETTING->ADAPTIVE_FFILTER_ON = FALSE;
+		    pUserSetting->AdaptiveFilterOn = FALSE;
 	    } else if (pBIOSInfo->TVEncoder == VIA_VT1623) {
 		VIAGPIOI2C_Read(pBIOSInfo, 0x61, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_ADAPTIVE_FFILTER = R_Buffer[0];
+		pUserSetting->tvAdaptiveFFilter = R_Buffer[0];
 		VIAGPIOI2C_Read(pBIOSInfo, 0x10, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_TINT = R_Buffer[0];
+		pUserSetting->tvTint = R_Buffer[0];
 		VIAGPIOI2C_Read(pBIOSInfo, 0x11, R_Buffer, 1);
-		pUTUSERSETTING->UT_TV_TINT += (R_Buffer[0] & 0x07) << 8;
-		if (pUTUSERSETTING->UT_TV_ADAPTIVE_FFILTER && !pUTUSERSETTING->UT_TV_FFILTER)
-		    pUTUSERSETTING->ADAPTIVE_FFILTER_ON = TRUE;
+		pUserSetting->tvTint += (R_Buffer[0] & 0x07) << 8;
+		if (pUserSetting->tvAdaptiveFFilter && !pUserSetting->tvFFilter)
+		    pUserSetting->AdaptiveFilterOn = TRUE;
 		else
-		    pUTUSERSETTING->ADAPTIVE_FFILTER_ON = FALSE;
+		    pUserSetting->AdaptiveFilterOn = FALSE;
 	    }
 	    xf86DestroyI2CDevRec(dev, TRUE);
-	    pUTUSERSETTING->DefaultSetting = TRUE;
+	    pUserSetting->DefaultSetting = TRUE;
 	} else {
 	    xf86DestroyI2CDevRec(dev, TRUE);
 	    DEBUG(xf86Msg(X_DEFAULT, "DevInit fail!\n"));
@@ -2033,7 +1905,7 @@ Bool VIAUTGetInfo(VIABIOSInfoPtr pBIOSInfo)
 
 Bool VIARestoreUserSetting(VIABIOSInfoPtr pBIOSInfo)
 {
-    UTUSERSETTINGptr pUTUSERSETTING = pBIOSInfo->pUTUSERSETTING;
+    VIAUserSettingPtr pUserSetting = pBIOSInfo->UserSetting;
     I2CDevPtr dev;
     int i, HPos, VPos, ADWHS, ADWHE;
     unsigned char W_Buffer[4], R_Buffer[3];
@@ -2046,8 +1918,8 @@ Bool VIARestoreUserSetting(VIABIOSInfoPtr pBIOSInfo)
 	switch (pBIOSInfo->TVEncoder) {
 	case VIA_TV3:
 	case VIA_VT1622A:
-	    if ((pUTUSERSETTING->UT_TV_HPOSITION != 6)
-		|| (pUTUSERSETTING->UT_TV_VPOSITION != 6)) {
+	    if ((pUserSetting->tvHPosition != 6)
+		|| (pUserSetting->tvVPosition != 6)) {
 		W_Buffer[0] = 0x08;
 		xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 2);
 		HPos = R_Buffer[0];
@@ -2057,8 +1929,8 @@ Bool VIARestoreUserSetting(VIABIOSInfoPtr pBIOSInfo)
 		HPos |= (R_Buffer[0] & 0x04) << 6;
 		VPos |= (R_Buffer[0] & 0x02) << 7;
 
-		HPos += pUTUSERSETTING->UT_TV_HPOSITION - 6;
-		VPos += pUTUSERSETTING->UT_TV_VPOSITION - 6;
+		HPos += pUserSetting->tvHPosition - 6;
+		VPos += pUserSetting->tvVPosition - 6;
 
 		W_Buffer[0] = 0x08;
 		W_Buffer[1] = (unsigned char) (HPos & 0xFF);
@@ -2073,49 +1945,49 @@ Bool VIARestoreUserSetting(VIABIOSInfoPtr pBIOSInfo)
 
 	    W_Buffer[0] = 0x03;	/* Fflick */
 	    xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
-	    if (pUTUSERSETTING->ADAPTIVE_FFILTER_ON) {
+	    if (pUserSetting->AdaptiveFilterOn) {
 		W_Buffer[1] = R_Buffer[0] & ~0x03;
 	    } else {
 		W_Buffer[1] = R_Buffer[0] & ~0x03;
-		W_Buffer[1] |= (unsigned char) (pUTUSERSETTING->UT_TV_FFILTER - 1);
+		W_Buffer[1] |= (unsigned char) (pUserSetting->tvFFilter - 1);
 	    }
 	    xf86I2CWriteRead(dev, W_Buffer, 2, R_Buffer, 0);
 
 	    W_Buffer[0] = 0x61;	/* Adaptive Fflick */
-	    W_Buffer[1] = (unsigned char) pUTUSERSETTING->UT_TV_ADAPTIVE_FFILTER;
+	    W_Buffer[1] = (unsigned char) pUserSetting->tvAdaptiveFFilter;
 	    xf86I2CWriteRead(dev, W_Buffer, 2, R_Buffer, 0);
 
 	    W_Buffer[0] = 0x0B;	/* BRIGHTNESS */
-	    W_Buffer[1] = (unsigned char) pUTUSERSETTING->UT_TV_BRIGHTNESS;
+	    W_Buffer[1] = (unsigned char) pUserSetting->tvBrightness;
 	    xf86I2CWriteRead(dev, W_Buffer, 2, R_Buffer, 0);
 
 	    W_Buffer[0] = 0x0C;	/* CONTRAST */
-	    W_Buffer[1] = (unsigned char) pUTUSERSETTING->UT_TV_CONTRAST;
+	    W_Buffer[1] = (unsigned char) pUserSetting->tvContrast;
 	    xf86I2CWriteRead(dev, W_Buffer, 2, R_Buffer, 0);
 
 	    W_Buffer[0] = 0x0D;	/* SATURATION highbyte */
-	    W_Buffer[1] = (unsigned char) (pUTUSERSETTING->UT_TV_SATURATION >> 8);
+	    W_Buffer[1] = (unsigned char) (pUserSetting->tvSaturation >> 8);
 	    xf86I2CWriteRead(dev, W_Buffer, 2, R_Buffer, 0);
 	    W_Buffer[0] = 0x0A;	/* SATURATION lowbyte */
-	    W_Buffer[1] = (unsigned char) pUTUSERSETTING->UT_TV_SATURATION & 0xFF;
+	    W_Buffer[1] = (unsigned char) pUserSetting->tvSaturation & 0xFF;
 	    xf86I2CWriteRead(dev, W_Buffer, 2, R_Buffer, 0);
 
 	    W_Buffer[0] = 0x11;	/* TINT highbyte */
 	    xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
 	    W_Buffer[2] = R_Buffer[0] & ~0xE0;
-	    W_Buffer[2] |= (unsigned char) (pUTUSERSETTING->UT_TV_TINT >> 8);
+	    W_Buffer[2] |= (unsigned char) (pUserSetting->tvTint >> 8);
 	    W_Buffer[0] = 0x10;	/* TINT lowbyte */
-	    W_Buffer[1] = (unsigned char) pUTUSERSETTING->UT_TV_TINT & 0xFF;
+	    W_Buffer[1] = (unsigned char) pUserSetting->tvTint & 0xFF;
 	    xf86I2CWriteRead(dev, W_Buffer, 3, R_Buffer, 0);
 	    break;
 	case VIA_SAA7108:
-	    if ((pUTUSERSETTING->UT_TV_HPOSITION - 6) != 0) {
+	    if ((pUserSetting->tvHPosition - 6) != 0) {
 		W_Buffer[0] = 0x70;
 		xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 3);
 		ADWHS = (R_Buffer[0] | ((R_Buffer[2] & 0x07) << 8))
-		    + (pUTUSERSETTING->UT_TV_HPOSITION - 6);
+		    + (pUserSetting->tvHPosition - 6);
 		ADWHE = (R_Buffer[1] | ((R_Buffer[2] & 0x70) << 4))
-		    + (pUTUSERSETTING->UT_TV_HPOSITION - 6);
+		    + (pUserSetting->tvHPosition - 6);
 		W_Buffer[0] = 0x70;
 		W_Buffer[1] = ADWHS & 0xFF;
 		W_Buffer[2] = ADWHE & 0xFF;
@@ -2126,15 +1998,15 @@ Bool VIARestoreUserSetting(VIABIOSInfoPtr pBIOSInfo)
 	    for (i = 0; i < 3; i++) {
 		W_Buffer[0] = VIASAA7108PostionOffset[i];
 		if (pBIOSInfo->TVVScan == VIA_TVNORMAL)
-		    W_Buffer[1] = VIASAA7108PostionNormalTabRec[pBIOSInfo->TVType - 1][pBIOSInfo->resTVMode][pUTUSERSETTING->UT_TV_VPOSITION][i];
+		    W_Buffer[1] = VIASAA7108PostionNormalTabRec[pBIOSInfo->TVType - 1][pBIOSInfo->resTVMode][pUserSetting->tvVPosition][i];
 		else
-		    W_Buffer[1] = VIASAA7108PostionOverTabRec[pBIOSInfo->TVType - 1][pBIOSInfo->resTVMode][pUTUSERSETTING->UT_TV_VPOSITION][i];
+		    W_Buffer[1] = VIASAA7108PostionOverTabRec[pBIOSInfo->TVType - 1][pBIOSInfo->resTVMode][pUserSetting->tvVPosition][i];
 		xf86I2CWriteRead(dev, W_Buffer, 2, NULL, 0);
 	    }
 	    W_Buffer[0] = 0x37;
 	    W_Buffer[1] = R_Buffer[0] & ~0x30;
-	    if (!pUTUSERSETTING->ADAPTIVE_FFILTER_ON) {
-		W_Buffer[1] |= (unsigned char) ((pUTUSERSETTING->UT_TV_FFILTER - 1) << 4);
+	    if (!pUserSetting->AdaptiveFilterOn) {
+		W_Buffer[1] |= (unsigned char) ((pUserSetting->tvFFilter - 1) << 4);
 	    }
 	    xf86I2CWriteRead(dev, W_Buffer, 1, R_Buffer, 1);
 	    break;

@@ -1,4 +1,26 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 714. VIA driver updates/fixes:
+       - Remove HARDWARE_NEEDS_PROGRAMMED_ORIGIN (Bugzilla #1011).
+       - Allocate the UserSetting structure and use it. Changed the names so
+         its uses can be tracked through the tree (Bugzilla #1006, #1014).
+       - Remove dead FIFO handling code.
+       - Clean up formatting in via_bios.h, via_driver.h.
+       - via_tuner module (1/2 of Bugzilla #1012, #1013):
+         + Add via_tuner structures and methods.
+         + Handle the back end work for boards with Philips SAA71xx
+           devices on the I2C bus providing one or two TV overlays.
+         + Handle CXA2104S audio decoder if present.
+         + Handle FI1236 TV tuners if present.
+       - Remove bogus DriverVersion, DriverName stuff.
+       - Xv updates (Bugzilla #1013):
+         + Remove DDR mode tables and compute supported overlay modes properly.
+         + Remove various bits of dead code.
+         + Probe for Tuners in the Xv setup.
+	 + Don't advertise XvImageMask on the tuner overlays - they can't do it.
+         + Clean up tuner channel computation.
+         + Make the property setting code use the via_tuner backend.
+         + Fix formatting of the various YUV copying loops.
+      (Alan Cox).
  713. Add a missing code for jisx0208.1990-0.enc (Chisato Yamauchi).
  712. Xtt2 update: Restore the behaviour of "bw" TTCap option for Netscape 4.x.
       (Chisato Yamauchi).
@@ -18426,7 +18448,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3061 2003/12/31 05:10:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3062 2003/12/31 05:13:01 dawes Exp $
 
 
 
