@@ -43,7 +43,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XFree86: xc/programs/Xserver/include/gcstruct.h,v 1.2 1998/03/20 21:08:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/include/gcstruct.h,v 1.3 1998/10/04 09:38:57 dawes Exp $ */
 
 #ifndef GCSTRUCT_H
 #define GCSTRUCT_H
@@ -395,7 +395,7 @@ typedef struct _GC {
     /*
      * The following were moved here from private storage to allow device-
      * independent access to them from screen wrappers.
-     * --- 1997.11.03  Marc Aurele La France (tsi@ualberta.ca)
+     * --- 1997.11.03  Marc Aurele La France (tsi@xfree86.org)
      */
     PixmapPtr		pRotatedPixmap; /* tile/stipple rotated for alignment */
     RegionPtr		pCompositeClip;

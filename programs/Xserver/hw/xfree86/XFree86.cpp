@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.cpp,v 1.3 2000/12/11 20:18:02 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.cpp,v 1.4 2000/12/11 20:29:50 dawes Exp $ 
 .TH XFree86 1 "Version 4.0.2"  "XFree86"
 .SH NAME
 XFree86 - X11R6 X server
@@ -484,7 +484,7 @@ WD 90C24A support.
 Alan Hourihane,    \fIalanh@fairlite.demon.co.uk\fP
 Trident SVGA driver, SiS SVGA driver and DEC 21030 server.
 .TP 8
-Marc Aurele La France, \fItsi@ualberta.ca\fP
+Marc Aurele La France, \fItsi@xfree86.org\fP
 ATI SVGA driver
 .TP 8
 Steve Goldman,     \fIsgoldman@encore.com\fP

@@ -15,7 +15,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.33 2000/08/09 02:19:23 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.34 2000/12/07 15:43:41 tsi Exp $
 </ident>
 
 <abstract>
@@ -562,7 +562,7 @@ Fourth, a scan through the comp.windows.x.i386unix and comp.os.linux.x
 newsgroups using your favourite archiving service can also prove useful in
 resolving problems.<p>
 If you are still experiencing problems, you can send me <it>non-HTMLised</it>
-e-mail at <email>tsi@ualberta.ca</email>.
+e-mail at <email>tsi@xfree86.org</email>.
 Please be as specific as possible when describing the problem(s), and include
 an <it>unedited</it> copy of the server's log and the XF86Config file used.<p>
 <sect>Driver history<p>
