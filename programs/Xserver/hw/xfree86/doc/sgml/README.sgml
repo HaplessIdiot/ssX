@@ -10,7 +10,7 @@
 <date>22 August 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.95 1999/07/20 04:27:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.96 1999/08/21 14:08:28 dawes Exp $
 </ident>
 
 <abstract>
@@ -89,7 +89,7 @@ containing the <tt>xc/</tt> directory.  The patch should be applied by
 running:
 
 <tscreen>
-gunzip &lt; &prevrelvers;-&relvers;.diff.gz | patch -p0 -E
+gunzip &lt; &prevrelvers;-&relvers;.diff.gz | patch -p0 -E<newline>
 rm -fr xc/fonts/scaled/Type1/latin2
 </tscreen>
 
