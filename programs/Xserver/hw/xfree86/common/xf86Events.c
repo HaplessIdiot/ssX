@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.60 1999/03/02 10:41:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.62 1999/03/28 15:32:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1053,6 +1053,11 @@ xf86PostMseEvent(DeviceIntPtr device, int buttons, int dx, int dy)
     buttons = reverseBits(reverseMap, buttons);
 
   if (dx || dy) {
+    /*
+     * The accelaration stuff is now done in xf86Xinput.c when XInput
+     * support is enabled.
+     */
+#ifndef XINPUT
     
     /*
      * accelerate the baby now if sqrt(dx*dx + dy*dy) > threshold !
@@ -1063,7 +1068,6 @@ xf86PostMseEvent(DeviceIntPtr device, int buttons, int dx, int dy)
       dy = (dy * private->num)/ private->den;
     }
 
-#ifndef XINPUT
     MOVEPOINTER(dx, dy, mevent->u.keyButtonPointer.time);
 #else
     xf86PostMotionEvent(device, 0, 0, 2, dx, dy);
