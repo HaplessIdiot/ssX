@@ -1,7 +1,7 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.16 1994/09/25 12:20:24 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.17 1994/10/21 11:20:21 dawes Exp $
 /******************************************************************************/
 /*
- * This file is provide a quick method for most people to change the
+ * This file is to provide a quick method for most people to change the
  * behaviour of their XFree86 installation without having to fully
  * understand the workings of site.def and all the various '.cf' files.
  *
@@ -67,7 +67,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.16 1994/09/25 12:20:24 dawes Exp $
  * SVGA server:
  *
 #define XF86SvgaDrivers		et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
-				ncr77c22 compaq oak mx al2101 cl6420 \
+				ncr77c22 compaq oak mx al2101 ali cl6420 \
 				video7 generic
  */
 
