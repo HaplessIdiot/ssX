@@ -51,7 +51,7 @@ SOFTWARE.
 
 
 
-/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.6 1998/03/20 21:08:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.7 1998/03/21 04:19:58 dawes Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -1277,6 +1277,7 @@ than a switch on the rop per item (span or rectangle.)
  * The following macros should wrap all calls in MFB
  */
 #if defined(XFree86LOADER) && !defined(NOXF86DEFS)
+#include "xf86_ansic.h"
 #include "xf86_libc.h"
 #endif
 
