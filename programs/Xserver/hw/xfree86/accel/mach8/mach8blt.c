@@ -1,4 +1,5 @@
 /* $XConsortium: mach8blt.c,v 1.2 94/04/17 20:30:53 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -552,8 +553,8 @@ mach8CopyPlane(pSrcDrawable, pDstDrawable,
  	    return(NULL);
  	}
  	ValidateGC((DrawablePtr)pPixmap, pGC1);
- 	mach8CopyArea(pSrcDrawable, pPixmap, pGC1, srcx, srcy, width, height,
- 		      0, 0);
+ 	mach8CopyArea(pSrcDrawable, (DrawablePtr)pPixmap, pGC1, srcx, srcy,
+		      width, height, 0, 0);
  	retval = cfbCopyPlane((DrawablePtr)pPixmap, pDstDrawable, pGC,
                               0, 0, width, height, dstx, dsty, bitPlane);
  	(*pSrcDrawable->pScreen->DestroyPixmap)(pPixmap);

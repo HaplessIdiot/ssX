@@ -1,4 +1,5 @@
 /* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -75,9 +76,11 @@ ScrnInfoRec mach8InfoRec = {
     mach8SwitchMode,	/* Bool (* SwitchMode)() */
     mach8PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
+    {0, 0, 0},          /* xrgb weight */
     8,			/* int bitsPerPixel */
     PseudoColor,       	/* int defaultVisual */
     -1, -1,		/* int virtualX,virtualY */
+    -1,                 /* int displayWidth */
     -1, -1, -1, -1,	/* int frameX0, frameY0, frameX1, frameY1 */
     {0, },              /* OFlagSet options */
     {0, },              /* OFlagSet clockOptions */
