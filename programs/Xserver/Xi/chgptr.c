@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/Xi/chgptr.c,v 3.4 1998/10/04 09:37:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/chgptr.c,v 3.5 2001/01/17 22:13:24 dawes Exp $ */
 
 /***********************************************************************
  *
@@ -68,9 +68,6 @@ SOFTWARE.
 #include "exglobals.h"
 
 #include "chgptr.h"
-
-extern	ScreenInfo	screenInfo;
-extern	WindowPtr	*WindowTable;
 
 /***********************************************************************
  *
