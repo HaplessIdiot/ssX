@@ -15,9 +15,9 @@
 
      While Hercules uses Brooktree and AT&T RAMDACS, most other
      AGX based vendors use Sierra RAMDAC's (15025 and 15021).
-     The server has had limited last-minute testing on two boards 
-     based on Sierra RAMDAC's, the Spider Black Widow Plus VLB and 
-     Boca Vortek VL. 
+     The server has had limited last-minute testing on two boards
+     based on Sierra RAMDAC's, the Spider Black Widow Plus VLB and
+     Boca Vortek VL.
   
      The current driver has some basic acceleration routines:
      solid zero-width lines (except AGX-014), bitblt's, fill's,
@@ -36,27 +36,27 @@
 
 3) Known Problems
 
-     a) Doesn't work with Sierra RAMDAC based boards (see above).
-
-     b) The accelerated line routines don't match lines written
+     a) The accelerated line routines don't match lines written
         by the mi routines. This is noticable when switching between
         virtual consoles while running routines that draw and erase 
         lines. This problem is worse with X11R6.  
 
-     c) After converting over to the X11R6 the font caching stopped
+     b) After converting over to the X11R6 the font caching stopped
         working during the xbench text tests. This is probably a 
-*         GC validation problem but I haven't had time to investigate 
-*         it yet, font caching is working in other situations, and 
-*         the failure is benign except for the performance impact 
-*         (probably halves the overall Xstones rating).
+        GC validation problem but I haven't had time to investigate 
+        it yet, font caching is working in other situations, and 
+        the failure is benign except for the performance impact 
+        (probably halves the overall Xstones rating).
 
-     d) The AGX-016 adds support for additional virtual width's,
+     c) The AGX-016 adds support for additional virtual width's,
         the current server may not fully support these (to get
-*         a virtual width approaching 1600 would require compound
-*         adjusts, the documents do not indicate this is possible
-*         so it will have to wait until I can test it).	
+        a virtual width approaching 1600 would require compound
+        adjusts, the documents do not indicate this is possible
+        so it will have to wait until I can test it).	
 
-     e) The video memory probe often doesn't work.
+     d) The video memory probe often doesn't work.
+
+     e) Needs more testing.
 
 4) ToDo
 
@@ -121,9 +121,9 @@
                                  supported yet and are limited to 85Mhz.
                                  Not yet supported on the Grapite Pro's.
             "SC15025"         -  Sierra SC15025 and SC15021 RAMDACi
-                                 (supports 8-bit DAC). The 025 is limited
-                                 to 110Mhz, and the 021 135Mhz. Check
-                                 RAMDAC's actual rating. 
+                                 (supports 8-bit DAC). The SC15025 is
+                                 limited to 110Mhz, and the SC150021
+                                 135Mhz. Check RAMDAC's actual rating. 
 (tested)    "herc_dual_dac"   -  Herc. Graphite Pro RAMDAC PROBE
                                  currently only supports the small RAMDAC.
                                  Not supported by the HG210 Graphite.
@@ -144,10 +144,11 @@
 
            Note: Only an AGX-015 has had much testing, the 
            AGX-014 and AGX-016 are very similiar and have a high
-           likelyhood of working. 
+           likelyhood of working. Some limited testing has been
+           done on the AGX-016 based Spider BW+.  
 
-           The limited documentation I have for the AGX-010 indicates
-           it is a full clone of the XGA architecture (I assume XGA-1). 
+           The limited documentation I have for the AGX-010 is that 
+           is is a full clone of the XGA architecture (I assume XGA-1). 
            See the notes below on the XGA configuration.
            
 
@@ -201,8 +202,8 @@
 
            The server requires at least a 32KB scratchpad, 1MB AGX-016
            users should limit max virtual resolution to 1152x881. Future
-           versions of the server may require a minimum of 64KB for 
-           the scratchpad.
+           versions of the server may require a minimum of 64KB for the
+           scratchpad to support some acceleration features.
 
 
        Clocks:
@@ -211,28 +212,34 @@
           disclaimers apply. Probing may momementarily subject your
           monitor to sweep frequencies in excess of it's rating.
           My experience is that the probe seems to stress my monitor
-          less than the VGA and Mach8 clock probes that I'm familiar
-          with. The cautious may wish to turn off the monitor while the
-          probe is running. Once clocks are know they can be entered
-          into the Xconfig, and subsequent runs won't probe and will
-          be quicker to startup. For the clock probe it is recommended
-          that the X server be run with the -probeonly option. 
+          less than the VGA and Mach8 clock probes. The cautious may 
+          wish to turn off the monitor while the probe is running. 
+          Once clocks are known they can be entered into the Xconfig 
+          accel section, then subsequent runs won't probe clocks and 
+          will be quicker to startup. For the clock probe it is 
+          recommended that the X server be run with the -probeonly option. 
 
           Documents indicate that clocks 8-11 for the AGX-015 should 
           be 80, 50, 45, and 65 and warning messages will be displayed 
-          if they aren't close (actually the first is 90 on my card 
-          and the Sierra based cards is different for all of these). 
-          For XGA compatibility the first two clocks should be about
-          25 amd 28, and the fourth 90 (once again, the Sierra based 
-          boards deviate on the fourth value). The first clock is 
-          used by the probe to derive the others, and is assumed to 
-          be 25.175Mhz.
+          if they aren't close (actually the first is 90 on the Hercules
+          Graphite PRO, and the Sierra-based cards are different for 
+          all of these). For XGA compatibility the first two clocks 
+          should be about 25 and 28, and the fourth 90 (the two 
+          Sierra-based boards have 110 for the fourth). The first
+          clock is used by the probe to derive the others and is 
+          assumed to be 25.175Mhz. If the second clock is not around
+          28-29Mhz, the clock probe results should be viewed as very
+          suspect, and the board vendor contacted. The mapping of 
+          the clock probe array to the control register bits is not 
+          obvious, and is documented in the server sources in 
+          agxInit.c (will be condensed and added here soon).
         
-          The maximum clock generally allowed is 85Mhz, but some RAMDAC's
-          do support higher values. In any case you should check your 
-          RAMDAC, some RAMDAC's used on AGX based boards are produced 
-          in versions rated to lesser values than the server allows.
-          You should check the rating and limit yourself to that value.
+          The maximum pixel clock generally allowed is 85Mhz, but
+          some RAMDAC's support higher values. In any case you should
+          check your RAMDAC, some RAMDAC's used on AGX based boards are 
+          produced in versions rated to lesser values than the server
+          assumes. You should check the rating and limit yourself to 
+          that value.
 
 
        Modes:
@@ -268,12 +275,12 @@
          >>> WARNING this is completely untested -- you may damage <<<
          >>> your hardware attempting this!                        <<< 
 
-         In theory this server may work with true XGA compatible boards.
-         However, this is completely untested and you are on your own
-         and should be familiar with XGA internals, be willing
+         This server may work with true XGA compatible boards.
+         However, this is completely untested and you are on your own.
+         You should be familiar with XGA internals, be willing
          to do some debugging, and be willing to risk your hardware. 
          If you know of any vendors still producing XGA clones for the
-         ISA, VESA, or even PCI bus, let me know. Some bits of POS
+         ISA, VESA, or even PCI bus, let me know. Some bits of crude POS
          probe code exist, but have proved useless for AGX based
          boards, so is currently disabled. 
 
@@ -292,18 +299,18 @@
                                       general control registers. Typically
                                       0x21i0, where i is the instance number.
 
-            COPbase       nnnn      - Address of the graphics engine's
+            COPbase     nnnnnn      - Address of the graphics engine's
                                       memory mapped control registers.
                                       Typically: 
                                       0xC1C00 + ext_mem_addr * 0x2000
                                         + instance * 0x80
                                       where ext_mem_address is the high
-                                      order 4-bits of POS register 2,
-                                      the server assumes zero.
+                                      order 4-bits of POS register 2
+                                      (the server assumes zero).
 
            The XGA-2 has programmable clocks up to 90Mhz, this, and
            the XGA color lookup table code are the most notable areas
-           of XGA unique code that has had absolutely no testing in 
+           of XGA unique code that have had absolutely no testing in 
            any form. The XGA-1 clocks selection is a subset of the 
            AGX mechanism and probing should work. To specify 
            programmable clocks for the XGA-2, specify any of the 
@@ -313,4 +320,4 @@
            
           
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.0 1994/06/15 15:42:47 dawes Exp $
+$XFree86$
