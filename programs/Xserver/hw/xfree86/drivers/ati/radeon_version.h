@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativersion.h,v 1.25 2000/10/30 23:02:12 tsi Exp $ */
+/* $XFree86$ */
 /*
- * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,19 +21,21 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATIVERSION_H___
-#define ___ATIVERSION_H___ 1
+#ifndef _RADEON_VERSION_H_
+#define _RADEON_VERSION_H_ 1
 
-#define ATI_NAME          "ATI"
-#define ATI_DRIVER_NAME   "ati"
+#define RADEON_NAME          "RADEON"
+#define RADEON_DRIVER_NAME   "radeon"
 
-#define ATI_VERSION_NAME  "6.2.0"
+#define RADEON_VERSION_NAME  "4.0.1"
 
-#define ATI_VERSION_MAJOR 6
-#define ATI_VERSION_MINOR 2
-#define ATI_VERSION_PATCH 0
+#define RADEON_VERSION_MAJOR 4
+#define RADEON_VERSION_MINOR 0
+#define RADEON_VERSION_PATCH 1
 
-#define ATI_VERSION_CURRENT \
-    ((ATI_VERSION_MAJOR << 20) | (ATI_VERSION_MINOR << 10) | ATI_VERSION_PATCH)
+#define RADEON_VERSION_CURRENT \
+    ((RADEON_VERSION_MAJOR << 20) | \
+     (RADEON_VERSION_MINOR << 10) | \
+     (RADEON_VERSION_PATCH))
 
-#endif /* ___ATIVERSION_H___ */
+#endif /* _RADEON_VERSION_H_ */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.11 2000/08/28 14:20:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.12 2000/10/11 22:52:57 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -23,6 +23,9 @@
 
 #include "atioption.h"
 #include "atiutil.h"
+
+#include "radeon_probe.h"
+#include "r128_probe.h"
 
 /*
  * Recognised XF86Config options.
@@ -108,5 +111,13 @@ ATIAvailableOptions
     int BusId            /* Ignored */
 )
 {
+    OptionInfoPtr pOptions;
+
+    if ((pOptions = R128AvailableOptions(ChipId, BusId)))
+        return pOptions;
+
+    if ((pOptions = RADEONAvailableOptions(ChipId, BusId)))
+        return pOptions;
+
     return ATIPublicOptions;
 }

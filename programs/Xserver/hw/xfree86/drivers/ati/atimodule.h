@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativersion.h,v 1.25 2000/10/30 23:02:12 tsi Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -21,19 +21,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATIVERSION_H___
-#define ___ATIVERSION_H___ 1
+#if defined(XFree86LOADER) && !defined(___ATIMODULE_H___)
+#define ___ATIMODULE_H___ 1
 
-#define ATI_NAME          "ATI"
-#define ATI_DRIVER_NAME   "ati"
+extern const char *ATISymbols[];
+extern const char *R128Symbols[];
+extern const char *RADEONSymbols[];
 
-#define ATI_VERSION_NAME  "6.2.0"
-
-#define ATI_VERSION_MAJOR 6
-#define ATI_VERSION_MINOR 2
-#define ATI_VERSION_PATCH 0
-
-#define ATI_VERSION_CURRENT \
-    ((ATI_VERSION_MAJOR << 20) | (ATI_VERSION_MINOR << 10) | ATI_VERSION_PATCH)
-
-#endif /* ___ATIVERSION_H___ */
+#endif /* ___ATIMODULE_H___ */

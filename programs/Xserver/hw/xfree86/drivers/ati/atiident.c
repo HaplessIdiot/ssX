@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiident.c,v 1.5 2000/02/18 12:19:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiident.c,v 1.6 2000/08/04 21:07:14 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -24,6 +24,9 @@
 #include "ati.h"
 #include "atiident.h"
 #include "ativersion.h"
+
+#include "r128_probe.h"
+#include "radeon_probe.h"
 
 const char *ATIChipsetNames[] =
 {
@@ -78,6 +81,8 @@ ATIIdentify
     xf86PrintChipsets(ATI_NAME,
         "ATI driver (version " ATI_VERSION_NAME ") for chipsets",
         ATIPublicChipsetNames);
+    R128Identify(flags);
+    RADEONIdentify(flags);
 }
 
 /*
