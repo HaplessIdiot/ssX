@@ -1,5 +1,5 @@
 /* $XConsortium: mach8blt.c,v 1.2 94/04/17 20:30:53 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8blt.c,v 3.0 1994/05/31 08:04:44 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -521,7 +521,8 @@ mach8CopyPlane(pSrcDrawable, pDstDrawable,
 	GCPtr pGC1;
 
 	pBitmap=(*pSrcDrawable->pScreen->CreatePixmap)(pSrcDrawable->pScreen, 
-						       width, height, 1);
+						       pSrcDrawable->width,
+						       pSrcDrawable->height, 1);
 	if (!pBitmap)
 	    return(NULL);
 	pGC1 = GetScratchGC(1, pSrcDrawable->pScreen);
@@ -531,7 +532,8 @@ mach8CopyPlane(pSrcDrawable, pDstDrawable,
 	}
 	ValidateGC((DrawablePtr)pBitmap, pGC1);
 	(void) cfbBitBlt(pSrcDrawable, (DrawablePtr)pBitmap, pGC1, srcx, srcy,
-			 width, height, 0, 0, cfbCopyPlane8to1, bitPlane);
+			 width, height, srcx, srcy, cfbCopyPlane8to1, bitPlane);
+        FreeScratchGC(pGC1);
 	pSrcDrawable = (DrawablePtr)pBitmap;
     } else if ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
  	       (pDstDrawable->type != DRAWABLE_WINDOW)) {
@@ -557,6 +559,7 @@ mach8CopyPlane(pSrcDrawable, pDstDrawable,
 		      width, height, 0, 0);
  	retval = cfbCopyPlane((DrawablePtr)pPixmap, pDstDrawable, pGC,
                               0, 0, width, height, dstx, dsty, bitPlane);
+        FreeScratchGC(pGC1);
  	(*pSrcDrawable->pScreen->DestroyPixmap)(pPixmap);
  	return(retval);
     } else if (((pSrcDrawable->type == DRAWABLE_WINDOW) && 
@@ -662,6 +665,8 @@ mach8CopyPlane(pSrcDrawable, pDstDrawable,
             (*pGC->pScreen->RegionUninit) (&rgnDst);
          if (freeSrcClip)
             (*pGC->pScreen->RegionDestroy) (prgnSrcClip);
+         if (pBitmap)
+            (*pSrcDrawable->pScreen->DestroyPixmap)(pBitmap);
          return NULL;
       }
    }
@@ -863,5 +868,7 @@ mach8CopyPlane(pSrcDrawable, pDstDrawable,
    (*pGC->pScreen->RegionUninit) (&rgnDst);
    if (freeSrcClip)
       (*pGC->pScreen->RegionDestroy) (prgnSrcClip);
+   if (pBitmap)
+      (*pSrcDrawable->pScreen->DestroyPixmap)(pBitmap);
    return prgnExposed;
 }
