@@ -1,5 +1,5 @@
-/* $XConsortium: dm.h,v 1.63.1.1 95/01/26 19:31:18 kaleb Exp $ */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.6 1994/11/19 08:00:30 dawes Exp $ */
+/* $XConsortium: dm.h,v 1.63.1.1 95/01/26 19:31:18 kaleb Mod $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.7 1995/01/28 16:16:51 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -49,6 +49,7 @@ from the X Consortium.
 #include <X11/Xfuncs.h>
 #include <X11/Xmd.h>
 #include <X11/Xauth.h>
+#include <X11/Intrinsic.h>
 
 #if defined(X_POSIX_C_SOURCE)
 #define _POSIX_C_SOURCE X_POSIX_C_SOURCE
@@ -258,6 +259,7 @@ struct greet_info {
 	char            *passwd;        /* binary compat with DEC */
 	int		version;	/* for dynamic greeter to see */
 	/* add new fields below this line, and preferably at the end */
+	Boolean		allow_null_passwd; /* allow null password on login */
 };
 
 /* setgroups is not covered by POSIX, arg type varies */

@@ -1,4 +1,4 @@
-/* $XConsortium: Login.c,v 1.42 94/04/17 20:03:53 gildea Exp $ */
+/* $XConsortium: Login.c,v 1.42 94/04/17 20:03:53 gildea Mod $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -94,7 +94,9 @@ static XtResource resources[] = {
     {XtNsecureSession, XtCSecureSession, XtRBoolean, sizeof (Boolean),
 	offset(secure_session), XtRImmediate, False },
     {XtNallowAccess, XtCAllowAccess, XtRBoolean, sizeof (Boolean),
-	offset(allow_access), XtRImmediate, False }
+	offset(allow_access), XtRImmediate, False },
+    {XtNallowNullPasswd, XtCAllowNullPasswd, XtRBoolean, sizeof (Boolean),
+	offset(allow_null_passwd), XtRImmediate, False}
 };
 
 #undef offset

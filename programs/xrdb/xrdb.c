@@ -2,7 +2,7 @@
  * xrdb - X resource manager database utility
  *
  * $XConsortium: xrdb.c,v 11.75 94/03/27 14:42:02 rws Exp $
- * $XFree86: xc/programs/xrdb/xrdb.c,v 3.0 1994/12/17 10:10:46 dawes Exp $
+ * $XFree86: xc/programs/xrdb/xrdb.c,v 3.1 1995/07/15 15:15:10 dawes Exp $
  */
 
 /*
@@ -102,6 +102,13 @@ typedef struct _Entries {
     int   room, used;
 } Entries;
 
+/* dynamically allocated strings */
+#define CHUNK_SIZE 4096
+typedef struct _String {
+    char *val;
+    int room, used;
+} String;
+
 char *ProgramName;
 Bool quiet = False;
 char tmpname[32];
@@ -118,11 +125,11 @@ char *editFile = NULL;
 char *cpp_program = CPP;
 char *backup_suffix = BACKUP_SUFFIX;
 Bool dont_execute = False;
-char defines[4096];
+String defines;
 int defines_base;
 char *cmd_defines[512];
 int num_cmd_defines = 0;
-char includes[4096];
+String includes;
 Display *dpy;
 Buffer buffer;
 Entries newDB;
@@ -380,35 +387,37 @@ void ReadFile(buffer, input)
 }
 
 AddDef(buff, title, value)
-    char *buff, *title, *value;
+    String *buff;
+    char *title, *value;
 {
 #ifdef PATHETICCPP
     if (need_real_defines) {
-	strcat(buff, "\n#define ");
-	strcat(buff, title);
+	addstring(buff, "\n#define ");
+	addstring(buff, title);
 	if (value && (value[0] != '\0')) {
-	    strcat(buff, " ");
-	    strcat(buff, value);
+	    addstring(buff, " ");
+	    addstring(buff, value);
 	}
 	return;
     }
 #endif
-    if (buff[0]) {
+    if (buff->used) {
 	if (oper == OPSYMBOLS)
-	    strcat(buff, "\n-D");
+	    addstring(buff, "\n-D");
 	else
-	    strcat(buff, " -D");
+	    addstring(buff, " -D");
     } else
-	strcat(buff, "-D");
-    strcat(buff, title);
+	addstring(buff, "-D");
+    addstring(buff, title);
     if (value && (value[0] != '\0')) {
-	strcat(buff, "=");
-	strcat(buff, value);
+	addstring(buff, "=");
+	addstring(buff, value);
     }
 }
 
 AddDefQ(buff, title, value)
-    char *buff, *title, *value;
+    String *buff;
+    char *title, *value;
 {
 #ifdef PATHETICCPP
     if (need_real_defines)
@@ -417,14 +426,15 @@ AddDefQ(buff, title, value)
 #endif
     if (value && (value[0] != '\0')) {
 	AddDef(buff, title, "\"");
-	strcat(buff, value);
-	strcat(buff, "\"");
+	addstring(buff, value);
+	addstring(buff, "\"");
     } else
 	AddDef(buff, title, NULL);
 }
 
 AddNum(buff, title, value)
-    char *buff, *title;
+    String *buff;
+    char *title;
     int value;
 {
     char num[20];
@@ -433,13 +443,15 @@ AddNum(buff, title, value)
 }
 
 AddSimpleDef(buff, title)
-    char *buff, *title;
+    String *buff;
+    char *title;
 {
     AddDef(buff, title, (char *)NULL);
 }
 
 AddDefTok(buff, prefix, title)
-    char *buff, *prefix, *title;
+    String *buff;
+    char *prefix, *title;
 {
     char *s;
     char name[512];
@@ -455,27 +467,28 @@ AddDefTok(buff, prefix, title)
 }
 
 AddUndef(buff, title)
-    char *buff, *title;
+    String *buff;
+    char *title;
 {
 #ifdef PATHETICCPP
     if (need_real_defines) {
-	strcat(buff, "\n#undef ");
-	strcat(buff, title);
+	addstring(buff, "\n#undef ");
+	addstring(buff, title);
 	return;
     }
 #endif
-    if (buff[0]) {
+    if (buff->used) {
 	if (oper == OPSYMBOLS)
-	    strcat(buff, "\n-U");
+	    addstring(buff, "\n-U");
 	else
-	    strcat(buff, " -U");
+	    addstring(buff, " -U");
     } else
-	strcat(buff, "-U");
-    strcat(buff, title);
+	addstring(buff, "-U");
+    addstring(buff, title);
 }
 
 DoCmdDefines(buff)
-    char *buff;
+    String *buff;
 {
     int i;
     char *arg, *val;
@@ -505,7 +518,7 @@ int Resolution(pixels, mm)
 void
 DoDisplayDefines(display, defs, host)
     Display *display;
-    register char *defs;
+    register String *defs;
     char *host;
 {
 #define MAXHOSTNAME 255
@@ -555,7 +568,7 @@ void
 DoScreenDefines(display, scrno, defs)
     Display *display;
     int scrno;
-    register char *defs;
+    register String *defs;
 {
     Screen *screen;
     Visual *visual;
@@ -751,6 +764,27 @@ Bool isabbreviation (arg, s, minslen)
     return (False);
 }
 
+addstring (arg, s)
+    String *arg;
+#if __STDC__
+    const char *s;
+#else
+    char *s;
+#endif
+{
+    if(arg->used + strlen(s) + 1 >= arg->room) {
+	if((arg->val = (char *)realloc(arg->val, arg->room + CHUNK_SIZE))
+	   == NULL)
+	    fatal("%s: Not enough memory\n", ProgramName);
+	arg->room += CHUNK_SIZE;
+    }
+    if(arg->used)
+	strcat(arg->val, s);
+    else
+	strcpy(arg->val, s);
+    arg->used += strlen(s);
+}   
+
 main (argc, argv)
     int argc;
     char **argv;
@@ -764,8 +798,10 @@ main (argc, argv)
 
     ProgramName = argv[0];
 
-    defines[0] = '\0';
-    includes[0] = '\0';
+    defines.room = defines.used = includes.room = includes.used = 0;
+
+    /* initialize the includes String struct */
+    addstring(&includes, "");
 
     /* needs to be replaced with XrmParseCommand */
 
@@ -843,8 +879,8 @@ main (argc, argv)
 		quiet = True;
 		continue;
 	    } else if (arg[1] == 'I') {
-		strcat(includes, " ");
-		strcat(includes, arg);
+		addstring(&includes, " ");
+		addstring(&includes, arg);
 		continue;
 	    } else if (arg[1] == 'U' || arg[1] == 'D') {
 		cmd_defines[num_cmd_defines++] = arg;
@@ -908,8 +944,8 @@ main (argc, argv)
 	fclose(fp);
     }
 	
-    DoDisplayDefines(dpy, defines, displayname);
-    defines_base = strlen(defines);
+    DoDisplayDefines(dpy, &defines, displayname);
+    defines_base = defines.used;
     need_newline = (oper == OPQUERY || oper == OPSYMBOLS ||
 		    (dont_execute && oper != OPREMOVE));
     InitBuffer(&buffer);
@@ -1034,17 +1070,12 @@ Process(scrno, doScreen, execute)
     Window root;
     Atom res_prop;
     FILE *input, *output;
-#ifndef Lynx
-    char cmd[BUFSIZ];
-#else
-    char cmd[1024];
-#endif
+    char *cmd;
 
-    defines[defines_base] = '\0';
     buffer.used = 0;
     InitEntries(&newDB);
-    DoScreenDefines(dpy, scrno, defines);
-    DoCmdDefines(defines);
+    DoScreenDefines(dpy, scrno, &defines);
+    DoCmdDefines(&defines);
     if (doScreen) {
 	xdefs = XScreenResourceString (ScreenOfDisplay(dpy, scrno));
 	root = RootWindow(dpy, scrno);
@@ -1055,7 +1086,7 @@ Process(scrno, doScreen, execute)
 	res_prop = XA_RESOURCE_MANAGER;
     }
     if (oper == OPSYMBOLS) {
-	printf ("%s\n", defines);
+	printf ("%s\n", defines.val);
     } else if (oper == OPQUERY) {
 	if (xdefs)
 	    printf ("%s", xdefs);	/* fputs broken in SunOS 4.0 */
@@ -1105,26 +1136,37 @@ Process(scrno, doScreen, execute)
 #ifdef WIN32
 	    if (!(input = fopen(tmpname2, "w")))
 		fatal("%s: can't open file '%s'\n", ProgramName, tmpname2);
-	    fputs(defines, input);
+	    fputs(defines.val, input);
 	    fprintf(input, "\n#include \"%s\"\n", filename);
 	    fclose(input);
 	    (void) mktemp(tmpname3);
-	    sprintf(cmd, "%s%s %s > %s", cpp_program, includes,
+	    if((cmd = (char *)
+		malloc(strlen(cpp_program) + strlen(includes.val) +
+		       1 + strlen(tmpname2) + 3 + strlen(tmpname3) + 1)) ==
+	       NULL)
+		fatal("%s: Out of memory\n", ProgramName);
+	    sprintf(cmd, "%s%s %s > %s", cpp_program, includes.val,
 		    tmpname2, tmpname3);
 	    if (system(cmd) < 0)
 		fatal("%s: cannot run '%s'\n", ProgramName, cmd);
+	    free(cmd);
 	    if (!(input = fopen(tmpname3, "r")))
 		fatal("%s: can't open file '%s'\n", ProgramName, tmpname3);
 #else
 	    if (!freopen(tmpname2, "w+", stdin))
 		fatal("%s: can't open file '%s'\n", ProgramName, tmpname2);
-	    fputs(defines, stdin);
+	    fputs(defines.val, stdin);
 	    fprintf(stdin, "\n#include \"%s\"\n", filename);
 	    fflush(stdin);
 	    fseek(stdin, 0, 0);
-	    sprintf(cmd, "%s%s", cpp_program, includes);
+	    if((cmd = (char *)
+		malloc(strlen(cpp_program) + strlen(includes.val) + 1)) ==
+	       NULL)
+		fatal("%s: Out of memory\n", ProgramName);
+	    sprintf(cmd, "%s%s", cpp_program, includes.val);
 	    if (!(input = popen(cmd, "r")))
 		fatal("%s: cannot run '%s'\n", ProgramName, cmd);
+	    free(cmd);
 #endif
 	} else {
 #endif
@@ -1135,16 +1177,31 @@ Process(scrno, doScreen, execute)
 	if (cpp_program) {
 #ifdef WIN32
 	    (void) mktemp(tmpname3);
-	    sprintf(cmd, "%s%s %s %s > %s", cpp_program, includes, defines,
+	    if((cmd = (char *)
+		malloc(strlen(cpp_program) + strlen(includes.val) +
+		       1 + strlen(defines.val) +
+		       strlen(filename ? filename : "") + 3 +
+		       strlen(tmpname3) + 1)) ==
+	       NULL)
+		fatal("%s: Out of memory\n", ProgramName);
+	    sprintf(cmd, "%s%s %s %s > %s", cpp_program,
+		    includes.val, defines.val,
 		    filename ? filename : "", tmpname3);
 	    if (system(cmd) < 0)
 		fatal("%s: cannot run '%s'\n", ProgramName, cmd);
+	    free(cmd);
 	    if (!(input = fopen(tmpname3, "r")))
 		fatal("%s: can't open file '%s'\n", ProgramName, tmpname3);
 #else
-	    sprintf(cmd, "%s%s %s", cpp_program, includes, defines);
+	    if((cmd = (char *)
+		malloc(strlen(cpp_program) + strlen(includes.val) +
+		       strlen(defines.val) + 1)) ==
+	       NULL)
+		fatal("%s: Out of memory\n", ProgramName);
+	    sprintf(cmd, "%s%s %s", cpp_program, includes.val, defines.val);
 	    if (!(input = popen(cmd, "r")))
 		fatal("%s: cannot run '%s'\n", ProgramName, cmd);
+	    free(cmd);
 #endif
 	} else {
 	    input = stdin;
