@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.209 2002/06/11 13:50:59 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.210 2002/07/15 20:46:02 dawes Exp $ */
 
 /*
  *
@@ -101,6 +101,13 @@ extern long __divsf3(long, long);
 extern long __moddi3(long, long);
 extern long __udivdi3(long, long);
 extern long __umoddi3(long, long);
+#endif
+
+#if defined(__sparc__)
+# if defined(__GNUC__)		/* XXX: Other compilers? */
+extern long __divdi3(long, long);
+extern long __muldi3(long, long);
+# endif
 #endif
 
 #if defined(__i386__) || defined(__ix86) || defined(i386)
@@ -989,6 +996,12 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(_inb)
    SYMFUNC(_inw)
    SYMFUNC(_inl)
+#endif
+#if defined(__sparc__)
+# if defined(__GNUC__)		/* XXX: Other compilers? */
+   SYMFUNC(__divdi3)
+   SYMFUNC(__muldi3)
+# endif
 #endif
 #if defined(__i386__) || defined(__ix86) || defined(i386)
    SYMFUNC(__divdi3)
