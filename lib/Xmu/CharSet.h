@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xmu/CharSet.h,v 1.2 1998/06/28 08:59:55 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CharSet.h,v 1.3 1998/06/28 12:32:26 dawes Exp $ */
 
 /*
  * The interfaces described by this header file are for miscellaneous utilities
@@ -41,34 +41,30 @@ in this Software without prior written authorization from the X Consortium.
 
 _XFUNCPROTOBEGIN
 
-extern void XmuCopyISOLatin1Lowered(
-#if NeedFunctionPrototypes
-    char *		/* dst_return */,
-    _Xconst char *	/* src */
-#endif
-);
+void XmuCopyISOLatin1Lowered
+(
+ char		*dst_return,
+ _Xconst char	*src
+ );
 
-extern void XmuCopyISOLatin1Uppered(
-#if NeedFunctionPrototypes
-    char *		/* dst_return */,
-    _Xconst char *	/* src */
-#endif
-);
+void XmuCopyISOLatin1Uppered
+(
+ char		*dst_return,
+ _Xconst char	*src
+ );
 
-extern int XmuCompareISOLatin1(
-#if NeedFunctionPrototypes
-    _Xconst char *	/* first */,
-    _Xconst char *	/* second */
-#endif
-);
+int XmuCompareISOLatin1
+(
+ _Xconst char	*first,
+ _Xconst char	*second
+ );
 
-extern void XmuNCopyISOLatin1Lowered(
-#if NeedFunctionPrototypes
-    char *		/* dst_return */,
-    _Xconst char *	/* src */,
-    int			/* size */
-#endif
-);
+void XmuNCopyISOLatin1Lowered
+(
+ char		*dst_return,
+ _Xconst char	*src,
+ int		 size
+ );
 
 _XFUNCPROTOEND
 

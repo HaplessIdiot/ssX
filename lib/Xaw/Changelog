@@ -182,7 +182,7 @@ Patch 5 (#1686) 11 May 1998
  + Bug fixes in the pixmap name interpretation.
 
 
-Patch 6 (#1686) 24 May 1998
+Patch 6 (#1701) 24 May 1998
 
   Xaw
  ------
@@ -202,4 +202,56 @@ Patch 6 (#1686) 24 May 1998
  + All ocurrences of sprintf were replaced by XmuSnprintf and all ocurrences
    of XmuCopyISOLatin1Lowered were replaced by XmuNCopyISOLation1Lowered.
 
+
+Patch 7 (#1738) 21 June 1998
+
+  + Corrected problem with the Command widget, when it was made insensitive
+    without calling the 'reset' action.
+  + Rework of the SimpleMenu code for optimizing the space used. Now it
+    really works as intended.
+  + Fixed portability problems with my previous patches.
+  + Corrected problem pointed by 'grano@cs.Helsinki.FI'. He have followed up
+    a bug report to the devel mailing list. While the problem exist, his
+    patch was not complete, so I did a rework of the AsciiSrc.c:Scan() and
+    MultiSrc.c:Scan() functions.
+  + I added clipping code to the {Ascii,Multi}Sink widgets, to allow use of
+    displayList's as decoration. The best solution I found to avoid too much
+    server requests, and keep full binary compatability was to use the resize
+    method of these widgets, to tell them to the parent widget have changed
+    it's size.
+  + Now the TextWidget has a xterm/emacs like cursor. And it is possible to
+    especify a cursor color.
+  + Fixed several problems caused by code assuming a line of text will be
+    shown as one line in the TextWidget. This is not always true when
+    it uses XawtextWrapLine or XawTextWrapWord, the most common problem was
+    the cursor becomming invisible, after calling the function
+    Text.c:_XawTextShowPosition() that is called to make sure it is visible ;)
+  + Added code that it will not forget the cursor distance from the left of
+    the window while moving the cursor one line up or down.
+  + Ansification of the text code (not yet complete). Private routines now
+    uses prototypes and wide parameters. External routines were kept
+    as before (but with prototypes not masked by NeedFunctionPrototypes),
+    to avoid binary compatability problems. The bigger problem I found in the
+    ansification was a function with 6 parameters being called with only 5.
+  + Several routines were rewritten, sometimes from scratch.
+  + The cursor navigation of the TextWidget was completely reviewed. It
+    should be very familiar to Emacs users. The most Emacs like behaviour is
+    when the cursor in move one line up or down and becomes invisible; the
+    text will be scrolled so that the line with the cursor will be centered
+    in the screen. Also, when doing page up, the cursor will be positioned
+    in the bottom-left, instead of allways in the top-left.
+
+Patch 8 (#1752) 27 June 1998
+
+  + There was a problem with the previous patch regarding to portability.
+    The problem was strcasecmp. I was planning to provide the funcionality
+    in libXmu, and forgot when creating the previous patch :(. There is
+    already a strcasecmp equivalent in libXmu, that is
+    Lower.c:XmuCompareISOLatin1(), so I used that function.
+  + The previous patch was working correctly for viewing text, but there were
+    some cases the text window could end not displaying correctly the text.
+    This problem was fixed.
+  + Now, the only real need of scrollbars is when doing long jumps on the
+    text, because the cursor will be always visible since this new patch
+    does horizontal scrolling automatically.
 
