@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.184 94/05/09 13:16:03 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.8 1994/06/05 13:41:32 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.9 1994/06/15 15:32:42 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -81,7 +81,7 @@ XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.8 1994/06/05 13:41:32 dawes Ex
 #else
         SYSLIBS = MathLibrary Krb5Libraries DBMLibrary $(EXTRASYSLIBS)
 #endif
-           CBRT = mi/cbrt.o
+           CBRT = mi/libcbrt.a
         STDDIRS = include dix os mi $(EXTDIRS)
 
 XCOMM
@@ -434,13 +434,12 @@ SetUIDServerTarget(XF86_SVGA,$(XF86SVGASUBDIRS),$(XF86SVGAOBJS),$(XF86SVGALIBS),
 XCOMM
 XCOMM XFree86 VGA 16 color Server
 XCOMM
-CFB8DIR = cfb
 DDXDIR1 = hw/xfree86
 #if XF86VGA16DualServer
 XF86VGA16MONOOBJS = $(XF86SRC)/mono/monoConf.o
 XF86VGA16MONOLIBS = $(MONODRIVERSRC)/libmonodrv.a $(XF86SRC)/mono/libmono.a
 #endif
-XF86VGA16SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+XF86VGA16SUBDIRS = $(STDDIRS) $(DDXDIR1) $(DEPDIRS)
 XF86VGA16OBJS = $(XF86COMSRC)/XF86_VGA16.o $(XF86SRC)/vga16/vga16Conf.o \
                 $(XF86SRC)/vga16/misc/vga16misc.o $(XF86VGA16MONOOBJS)
 XF86VGA16LIBS = $(VGA16DRIVERSRC)/libdriver16.a $(XF86SRC)/vga16/libvga16.a \
@@ -578,9 +577,8 @@ XCOMM
 XCOMM XFree86 AGX Server
 XCOMM
 MFBDIR   = mfb
-CFB8DIR  = cfb 
 DDXDIR1  = hw/xfree86
-XF86AGXSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+XF86AGXSUBDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
 XF86AGXOBJS = $(XF86COMSRC)/XF86_AGX.o
 XF86AGXLIBS = $(XF86ACCELSRC)/agx/libagx.a $(XF86SRC)/vga256/libvga256.a $(XF86LIBS) MFBLibs
 XF86AGXSYSLIBS = $(SYSLIBS)
