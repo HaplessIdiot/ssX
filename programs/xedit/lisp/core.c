@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.36 2002/03/20 05:12:18 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.37 2002/04/16 17:12:04 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -476,7 +476,7 @@ Lisp_Catch(LispMac *mac, LispBuiltin *builtin)
     tag = ARGUMENT(0);
     MACRO_ARGUMENT2();
 
-    *pbody = body;
+    pbody = &body;
     *pres = NIL;
     *pdid_jump = 1;
     block = LispBeginBlock(mac, tag, LispBlockCatch);
