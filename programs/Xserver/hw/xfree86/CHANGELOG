@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (xx July 2002)
+ 213. Fix scanpci's printing of 64-bit PCI bases (Marc La France).
  212. Add missing dependency and regenerate xf86PciStdIds.h accordingly
       (Marc La France).
  211. A more flexible way of dealing with ix86 motherboard chipsets that can
@@ -14961,4 +14962,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2269 2002/07/24 01:47:21 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2270 2002/07/25 05:06:12 tsi Exp $
