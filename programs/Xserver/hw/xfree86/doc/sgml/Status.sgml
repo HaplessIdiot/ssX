@@ -9,7 +9,7 @@
 <date>23 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.39 2003/01/04 04:20:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.40 2003/02/24 03:41:21 dawes Exp $
 </ident>
 
 <abstract>
@@ -627,14 +627,14 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 	by the XF86_SVGA server with the sis driver.
 
 <tag>&relvers;:</tag>
-	Support (accelerated) for the SiS <!-- 86C205, 86C215, 86C225, -->
-	<!-- 5597, 5598, --> 530, 620, 6326 is provided by the "sis" driver.
-	The 630, 300, and 540 are also supported, but this code is new and
-	there are some problems with it in this version.
+	Support (accelerated) for the SiS 6326, 530, 620, 300, 540, 630,
+	730, 315, 550, 650, 740 is provided by the "sis" driver. The
+	Xabre (SiS 330) might be supported by this is completely untested.
 
 <tag>Summary:</tag>
 	Support for the 86C201, 86C202, 86C205, 86C215, 86C225, 5597 and 5598
-	is currently only available in &legacyvers;.
+	is currently only available in &legacyvers;.  Support for some newer
+	chipsets is only available in &relvers;.
 
 </descrip>
 
