@@ -619,8 +619,6 @@ XF86LOADERLIB = $(XF86SRC)/loader/LibraryTargetName(loader)
 XF86MAINLIBS = PreFbLibsNoFont $(FONTBASE) $(OTHEREXTS) $(XF86COMLIB) \
 	       NoMfbPostFbLibs
 XF86SERVERSYSLIBS = $(SYSLIBS) $(LIBDL) $(LIBREGEX)
-/* Mouse driver */
-XF86IDRVOBJS = $(XF86SRC)/input/mouse/mouse_drv.o
 #else
 XF86MAINLIBS = AllFBLibs $(XF86COMLIB) $(MI)
 XF86SERVERSYSLIBS = $(FONTLIBS) $(SYSLIBS) $(LIBDL) $(LIBREGEX)
