@@ -1,7 +1,12 @@
+XFree86 3.1.1Dc (19 July 1995)
+221. Support for 964+IBM (Hercules Terminator 64) (Harald Koenig).
+220. Disable >8bpp for S3 911 and 924 because it won't work.
+219. Fix some auto-apply problems in xvidtune, and added a restore hot-key "R".
+
 XFree86 3.1.1Db (17 July 1995)
 218. Documentation updates.
 217. xvidtune updates.
-216. S3 paramter updates for STB 968 card, and update to the Trio64V
+216. S3 parameter updates for STB 968 card, and update to the Trio64V
      probe (Harald Koenig).
 
 XFree86 3.1.1Da (16 July 1995)

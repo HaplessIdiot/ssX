@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.63 1995/07/12 15:27:42 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.64 1995/07/15 14:53:11 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -281,8 +281,6 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.63 1995/07/12 15:27:42 dawes Exp $
 /*
  * Definitions for LinkKit self-containment.  This should work whether or not
  * UseInstalled is defined.
- *
- * Construction zone.  Drive with care!
  */
 # ifndef HasLdRunPath
 #  define HasLdRunPath	NO
@@ -399,7 +397,7 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 #endif
 
 #ifndef XFree86Version
-#define XFree86Version	3114
+#define XFree86Version	3120
 #endif
 
 #ifndef XVendorString

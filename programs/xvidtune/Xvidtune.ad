@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xvidtune/Xvidtune.ad,v 3.8 1995/07/15 15:15:50 dawes Exp $
+! $XFree86: xc/programs/xvidtune/Xvidtune.ad,v 3.9 1995/07/17 12:47:45 dawes Exp $
 !
 *adInstalled: true
 *borderWidth: 0
@@ -167,3 +167,6 @@ DEALINGS IN THE SOFTWARE.\n\n
 *Blank1Dec-button.label: -
 *Blank2Inc-button.label: +
 *Blank2Dec-button.label: -
+
+*translations:	#override <Key>r: xvidtune-restore()\n\
+			  <Key>q: xvidtune-quit()

@@ -202,7 +202,7 @@ Under Solaris 2.4 for x86, <tt>sun.cf</tt> needs to read
 
 
 
-<item>	If your are using ProWorks to compile the XFree86 distribution, you 
+<item>	If you are using ProWorks to compile the XFree86 distribution, you 
 	need to modify your PATH appropriately so the ProWorks tools are 
 	available.<p>
 
@@ -310,6 +310,6 @@ Xserver.
 
 <verb>
 $XConsortium: SOLX86.sgml,v 1.2 95/01/16 13:17:48 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.4 1995/06/21 11:53:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.5 1995/07/17 13:52:36 dawes Exp $
 </verb>
 </article>

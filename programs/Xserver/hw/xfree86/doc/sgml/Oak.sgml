@@ -28,8 +28,8 @@ server. The following chipsets for Oak Tech. Inc. are supported:
 	memory-controller data path, it also has register-based
 	color expansion, hardware cursor, a primitive BitBlt
 	engine, a 64 bit graphic latch and some other new (in its
-	time) features. Maximun BIOS resolutions are 1024x768x256
-	Non-Interlaced and 1280x1024x256 interlaced.  Maximun
+	time) features. Maximum BIOS resolutions are 1024x768x256
+	Non-Interlaced and 1280x1024x256 interlaced.  Maximum
 	Dot-Clock is 80Mhz, but usually is coupled with OTI068
 	clock generator whose highest frequency is 78Mhz.
 	Supports up to 2MBytes of 70ns DRAM.
@@ -119,7 +119,7 @@ Option &dquot;favour_bitblt&dquot; (OTI087)
     GOOD LUCK!!!!
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.2 1995/01/21 07:16:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.3 1995/01/28 16:02:01 dawes Exp $
 $XConsortium: Oak.sgml,v 1.1 95/01/23 15:05:36 kaleb Exp $
 </verb>
 

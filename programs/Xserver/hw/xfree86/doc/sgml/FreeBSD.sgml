@@ -132,7 +132,7 @@ need 9Mb for the minimum required run-time binaries only.
      (3.3Mb) Japanese, Chinese and other non-english fonts
 
 <tag/X312fsrv.tgz/
-     (.3Mb) the font server and it's man page
+     (.3Mb) the font server and its man page
 
 <tag/X312prog.tgz/
      (3.9Mb) config, lib*.a and *.h files needed only for compiling
@@ -349,7 +349,7 @@ requires that it be in <tt>/etc/XF86Config</tt>,
 You'll need info on your hardware:
 
 <itemize>
-<item> Your mouse type, baud rate and it's <tt>/dev</tt> entry.
+<item> Your mouse type, baud rate and its <tt>/dev</tt> entry.
 <item> The video card's chipset (e.g. ET4000, S3, etc).
 <item> Your monitor's sync frequencies.
 </itemize>
@@ -579,7 +579,7 @@ Many thanks to:
 
 <verb>
 $XConsortium: FreeBSD.sgml,v 1.3 95/01/23 15:34:41 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.10 1995/01/28 16:01:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.11 1995/07/17 13:52:31 dawes Exp $
 </verb>
 
 </article>

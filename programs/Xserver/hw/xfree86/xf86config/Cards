@@ -19,7 +19,7 @@
 # chipset/server and untested.
 # 
 # $XConsortium: Cards,v 1.3 95/01/23 15:35:21 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.11 1995/07/17 13:54:45 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.12 1995/07/17 14:01:24 dawes Exp $
 
 # Cirrus Logic
 
@@ -264,6 +264,15 @@ CHIPSET S3-868
 SERVER S3
 NOCLOCKPROBE
 
+NAME S3-868 with ATT 20C498 or 21C498
+CHIPSET S3-868
+SERVER S3
+RAMDAC att20c498
+
+NAME Number Nine FX Motion 531
+CLOCKCHIP icd2061a
+SEE S3-868 with ATT 20C498 or 21C498
+
 NAME S3-Trio64 (generic)
 CHIPSET S3-Trio64
 SERVER S3
@@ -352,10 +361,12 @@ SEE S3-864 (generic)
 NAME S3-964 (generic)
 CHIPSET S3-964
 SERVER S3
+NOCLOCKPROBE
 
 NAME S3-968 (generic)
 CHIPSET S3-968
 SERVER S3
+NOCLOCKPROBE
 
 NAME Number Nine GXE64 Pro
 CHIPSET S3-964
@@ -370,10 +381,16 @@ SEE S3-964 (generic)
 NAME Diamond Stealth 64 Video VRAM
 CHIPSET S3-968
 SERVER S3
-NOCLOCKPROBE
 
 NAME Hercules Graphics Terminator 64
+LINE     Option "slow_vram"
 SEE S3-964 (generic)
+
+NAME Hercules Graphics Terminator Pro 64
+SEE S3-968 (generic)
+
+NAME Number Nine FX Motion 771
+SEE S3-968 (generic)
 
 NAME Spider Tarantula 64
 SEE S3-964 (generic)

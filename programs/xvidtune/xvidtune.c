@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.16 1995/07/16 14:57:22 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.17 1995/07/17 12:47:49 dawes Exp $ */
 
 /*
 
@@ -345,6 +345,17 @@ fields i;
 
    if (sdp->textwidget != (Widget) NULL) {
       char buf[10];
+      Boolean state;
+
+      /*
+       * Disable AutoApply so that the apply doesn't happen more than
+       * once as a consequence of callbacks being called because of the
+       * XtSetValues calls
+       */
+
+      XtVaGetValues(auto_apply_toggle, XtNstate, &state, NULL);
+      if (state)
+	 XtVaSetValues(auto_apply_toggle, XtNstate, 0, NULL);
 
       if (i == Flags)
 	 (void) sprintf (buf, "%04x", sdp->val);
@@ -375,6 +386,9 @@ fields i;
 	XtVaSetValues (sdp->textwidget, XtNstate, sdp->val, NULL);
       } else
 	XtVaSetValues (sdp->textwidget, XtNlabel, buf, NULL);
+
+      if (state)
+	 XtVaSetValues(auto_apply_toggle, XtNstate, 1, NULL);
    }
 
 }
@@ -778,6 +792,10 @@ static void BlankEditCB (w, client, call)
 	    buf[0] = string[1];
 	    old = string[0];
 	}
+	if (buf[0] == '+' && old < '7')
+	    buf[0] = old + 1;
+	else if (buf[0] == '-' && old > '0')
+	    buf[0] = old - 1;
 	if (!isdigit(buf[0]) || buf[0] > '7') {
 	    XBell (XtDisplay(XtParent(w)), 100);
 	    buf[0] = old;
@@ -1334,8 +1352,23 @@ static void QuitAction (w, e, vector, count)
     String* vector;
     Cardinal* count;
 {
-    if (e->type == ClientMessage && e->xclient.data.l[0] == wm_delete_window)
+    if (e->type == ClientMessage && e->xclient.data.l[0] == wm_delete_window
+	|| e->type == KeyPress)
 	QuitCB(w, NULL, NULL);
+}
+
+static void RestoreAction (w, e, vector, count)
+    Widget w;
+    XEvent* e;
+    String* vector;
+    Cardinal* count;
+{
+    Boolean state;
+
+    RestoreCB(w, NULL, NULL);
+    XtVaGetValues(auto_apply_toggle, XtNstate, &state, NULL);
+    if (!state)
+	ApplyCB (w, NULL, NULL);
 }
 
 static void usage()
@@ -1361,7 +1394,8 @@ int main (argc, argv)
     Bool query = False;
     int suspendTime, offTime;
 
-    static XtActionsRec actions[] = { { "xvidtune-quit", QuitAction } };
+    static XtActionsRec actions[] = { { "xvidtune-quit", QuitAction },
+				      { "xvidtune-restore", RestoreAction } };
 
     Top = top = XtVaOpenApplication (&app, "Xvidtune", NULL, 0, &argc, argv,
 		NULL, applicationShellWidgetClass, 
@@ -1474,6 +1508,26 @@ int main (argc, argv)
 
     xtErrorfunc = XSetErrorHandler(vidmodeError); 
 
+    trans = XtParseTranslationTable ("\
+	<Key>0: insert-char()\n<Key>1: insert-char()\n\
+	<Key>2: insert-char()\n<Key>3: insert-char()\n\
+	<Key>4: insert-char()\n<Key>5: insert-char()\n\
+	<Key>6: insert-char()\n<Key>7: insert-char()\n\
+	<Key>8: insert-char()\n<Key>9: insert-char()\n\
+	<Key>a: insert-char()\n<Key>b: insert-char()\n\
+	<Key>c: insert-char()\n<Key>d: insert-char()\n\
+	<Key>e: insert-char()\n<Key>f: insert-char()\n\
+	<Key>+: insert-char()\n<Key>-: insert-char()\n\
+	<Key>r: xvidtune-restore()\n<Key>q: xvidtune-quit()\n\
+	<Key>BackSpace: delete-previous-character()\n\
+	<Key>Right: forward-character()\n<Key>KP_Right: forward-character()\n\
+	<Key>Left: backward-character()\n<Key>KP_Left: backward-character()\n\
+	<Key>Delete: delete-previous-character()\n\
+	<Key>KP_Delete: delete-previous-character()\n\
+	<EnterWindow>: enter-window()\n<LeaveWindow>: leave-window()\n\
+	<FocusIn>: focus-in()\n<FocusOut>: focus-out()\n\
+	<Btn1Down>: select-start()\n");
+
     CreateHierarchy (top);
 
     XtAppAddActions (app, actions, XtNumber(actions));
@@ -1494,23 +1548,6 @@ int main (argc, argv)
     /* really we should run our own event dispatching here until the
      * warning has been read...
      */
-    trans = XtParseTranslationTable ("\
-	<Key>0: insert-char()\n<Key>1: insert-char()\n\
-	<Key>2: insert-char()\n<Key>3: insert-char()\n\
-	<Key>4: insert-char()\n<Key>5: insert-char()\n\
-	<Key>6: insert-char()\n<Key>7: insert-char()\n\
-	<Key>8: insert-char()\n<Key>9: insert-char()\n\
-	<Key>a: insert-char()\n<Key>b: insert-char()\n\
-	<Key>c: insert-char()\n<Key>d: insert-char()\n\
-	<Key>e: insert-char()\n<Key>f: insert-char()\n\
-	<Key>BackSpace: delete-previous-character()\n\
-	<Key>Right: forward-character()\n<Key>KP_Right: forward-character()\n\
-	<Key>Left: backward-character()\n<Key>KP_Left: backward-character()\n\
-	<Key>Delete: delete-previous-character()\n\
-	<Key>KP_Delete: delete-previous-character()\n\
-	<EnterWindow>: enter-window()\n<LeaveWindow>: leave-window()\n\
-	<FocusIn>: focus-in()\n<FocusOut>: focus-out()\n\
-	<Btn1Down>: select-start()\n");
     XtAppMainLoop (app);
 
     return 0;

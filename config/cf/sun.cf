@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: sun.cf,v 1.139.1.1 95/06/19 18:22:21 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.19 1995/06/17 12:06:48 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.20 1995/07/08 10:21:54 dawes Exp $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -271,7 +271,11 @@ XCOMM operating system:  OSName
 #endif
 #endif
 #if HasGcc2
+#ifdef UseInstalled
 #define OptimizedCDebugFlags -O2
+#else
+#define OptimizedCDebugFlags -O
+#endif
 #else
 #define SharedLibraryCcCmd cc
 #define ExtraLoadFlags -B/usr/bin/

@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.0 1995/07/07 15:46:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.1 1995/07/12 15:42:33 dawes Exp $ */
 
 #if defined(__STDC__) || defined(AMOEBA)
 #ifndef NOSTDHDRS
@@ -211,6 +211,10 @@ static unsigned long *free_lists[MAX_SMALL/SIZE_STEPS];
 
 #ifdef INTERNAL_MALLOC
 
+#if defined(HAS_MMAP_ANON) || defined (MMAP_DEV_ZERO)
+static int pagesize;
+#endif
+
 #ifdef MMAP_DEV_ZERO
 static int devzerofd = -1;
 #endif
@@ -222,9 +226,6 @@ Xalloc (amount)
 {
     register unsigned long *ptr;
     int indx;
-#if defined(HAS_MMAP_ANON) || defined (MMAP_DEV_ZERO)
-    static int pagesize = 0;
-#endif
 
     /* zero size requested */
     if (amount == 0) {
@@ -289,17 +290,6 @@ Xalloc (amount)
 	}
 #if defined(HAS_MMAP_ANON) || defined(MMAP_DEV_ZERO)
     } else if (amount >= MIN_LARGE) {
-	if (!pagesize) {
-#ifdef _SC_PAGESIZE
-	    pagesize = sysconf(_SC_PAGESIZE);
-#else
-#ifdef HAS_GETPAGESIZE
-	    pagesize = getpagesize();
-#else
-	    pagesize = PAGE_SIZE;
-#endif
-#endif
-	}
 	/* mmapped malloc */
 	/* round up amount */
 	amount += SIZE_HEADER;
@@ -553,6 +543,16 @@ OsInitAllocator ()
     if (beenhere)
 	return;
     beenhere = TRUE;
+
+#if defined(_SC_PAGESIZE) /* || defined(linux) */
+    pagesize = sysconf(_SC_PAGESIZE);
+#else
+#ifdef HAS_GETPAGESIZE
+    pagesize = getpagesize();
+#else
+    pagesize = PAGE_SIZE;
+#endif
+#endif
 
     /* set up linked lists of free blocks */
     bzero ((char *) free_lists, MAX_SMALL/SIZE_STEPS*sizeof(unsigned long *));

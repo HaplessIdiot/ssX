@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.73 1995/07/16 09:14:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.74 1995/07/17 12:44:18 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -794,7 +794,7 @@ s3Init(mode)
    else if (S3_968_SERIES(s3ChipId) && DAC_IS_IBMRGB)
       pixMuxShift = 1;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_IBMRGB)
-      pixMuxShift = 0;
+      pixMuxShift = mode->Flags & V_DBLCLK ? 1 : 0;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_TI3025)
       pixMuxShift =  mode->Flags & V_DBLCLK ? 1 : 0;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES)
@@ -2068,8 +2068,16 @@ s3Init(mode)
       tmp2 = inb(0x3C5);
       outb(0x3C5, tmp2 | 0x20); /* blank the screen */
 
+      if (!S3_968_SERIES(s3ChipId)) {
+	if (mode->Flags & V_DBLCLK)
+	  s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x03);
+	else
+	  s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x01);
+      }
+
       s3OutIBMRGBIndReg(IBMRGB_sync, 0, 0);
-      if (mode->Private[0] & (1 << S3_BLANK_DELAY)) {
+      if ((mode->Private[0] & (1 << S3_BLANK_DELAY))
+	  && S3_968_SERIES(s3ChipId)) {
 	 int pixels = (mode->Private[S3_BLANK_DELAY] & 0x07) * 8 / s3Bpp;
 	 if (pixels > 15) pixels = 15;
 	 s3OutIBMRGBIndReg(IBMRGB_hsync_pos, 0, pixels);
@@ -2093,7 +2101,7 @@ s3Init(mode)
 #else
       outb(vgaCRIndex, 0x22);
       tmp = inb(vgaCRReg);
-      if (s3Bpp == 1)
+      if (s3Bpp == 1 && S3_968_SERIES(s3ChipId))
 	 outb(vgaCRReg, tmp | 8);
       else 
 	 outb(vgaCRReg, tmp & ~8);
@@ -2125,6 +2133,13 @@ s3Init(mode)
 
 	 outb(vgaCRIndex, 0x66);
 	 tmp = inb(vgaCRReg) & 0xf8;
+	 if (!S3_968_SERIES(s3ChipId)) {
+	   if (s3Bpp == 1) tmp |= 3;
+	   else if (s3Bpp == 2) tmp |= 2;
+	   else /* if (s3Bpp == 4) */ tmp |= 1;
+	   if (mode->Flags & V_DBLCLK) tmp--;
+	 }
+
 	 outb(vgaCRReg, tmp);
 
          /*
@@ -2136,12 +2151,13 @@ s3Init(mode)
 /* KTS vvvv */
 
 	 outb(vgaCRIndex, 0x67);
-	 if (s3Bpp == 1)
-	    outb(vgaCRReg, 0x11);
-	 else if (s3Bpp == 2)
-	    outb(vgaCRReg, 0x11);
-	 else /* if (s3Bpp == 4) */
+	 if (s3Bpp == 4)
 	    outb(vgaCRReg, 0x00);
+	 else
+	    if (S3_968_SERIES(s3ChipId))
+	       outb(vgaCRReg, 0x11);
+	    else
+	       outb(vgaCRReg, 0x01);
 
 	 outb(vgaCRIndex, 0x6d);
 	 if (s3Bpp == 1)

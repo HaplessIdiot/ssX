@@ -354,7 +354,7 @@ Set or clear CPU access wait state, default is the POST setting.
 
           Probing is supported, but of course the usual warnings and
           disclaimers apply. Probing may momentarily subject your
-          monitor to sweep frequencies in excess of it's rating.
+          monitor to sweep frequencies in excess of its rating.
           The cautious may wish to turn off the monitor while the 
           probe is running.
 <p>
@@ -592,7 +592,7 @@ Set or clear CPU access wait state, default is the POST setting.
 
 <verb>
 $XConsortium: agx.sgml,v 1.4 95/01/27 16:14:35 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.10 1995/06/25 09:53:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.11 1995/07/15 04:26:17 dawes Exp $
 </verb>
 
 </article>

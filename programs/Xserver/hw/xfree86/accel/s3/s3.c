@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.94 1995/07/16 09:13:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.95 1995/07/17 12:44:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1528,7 +1528,7 @@ s3Probe()
 	    reason = "801 and 805 chips";
       }
       else if (S3_911_SERIES(s3ChipId)) {
-	 if (s3Bpp > 2)
+	 if (s3Bpp > 1)
 	    reason = "911 and 924 chips";
       }
       {
@@ -2826,6 +2826,14 @@ s3Probe()
 	       pMode->Flags |= V_DBLCLK;
 	    }
 	    break;
+	 case IBMRGB52x_DAC:
+	 case IBMRGB524_DAC:
+	 case IBMRGB525_DAC:
+	 case IBMRGB528_DAC:
+	    if (pMode->SynthClock > 80000 && !S3_968_SERIES(s3ChipId)) {
+	       pMode->Flags |= V_DBLCLK;
+	    }
+	    break;
 	 case ATT20C498_DAC:
 	 case ATT22C498_DAC:
 	 case STG1700_DAC:
@@ -2968,7 +2976,14 @@ s3Probe()
 		     pMode->Private[S3_BLANK_DELAY] = 0x00;
 	       }
 	       else if (s3BiosVendor == HERCULES_BIOS) {
-		  pMode->Private[S3_BLANK_DELAY] = 0x00;
+		 if (S3_968_SERIES(s3ChipId)) {
+		   pMode->Private[S3_BLANK_DELAY] = 0x00;
+		 }
+		 else {
+		   pMode->Private[S3_BLANK_DELAY] = (4/s3Bpp) - 1;
+		   if (pMode->Flags & V_DBLCLK) 
+		     pMode->Private[S3_BLANK_DELAY] >>= 1; 
+		 }
 	       }
 	       else
 		  pMode->Private[S3_BLANK_DELAY] = 0x00;
@@ -2998,7 +3013,10 @@ s3Probe()
 		     pMode->Private[S3_EARLY_SC] = 1;
 	       }
 	       else if (s3BiosVendor == HERCULES_BIOS) {
-	          pMode->Private[S3_EARLY_SC] = 0;
+		 if (S3_968_SERIES(s3ChipId))
+		   pMode->Private[S3_EARLY_SC] = 0;
+		 else
+		   pMode->Private[S3_EARLY_SC] = 0;
 	       }
 	       else
 	          pMode->Private[S3_EARLY_SC] = 0;

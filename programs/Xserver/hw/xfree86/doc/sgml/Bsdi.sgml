@@ -182,7 +182,7 @@ or <tt>/usr/X11R6/lib/X11/XF86Config</tt>.
 
 You'll need info on your hardware:
 <itemize>
-<item> Your mouse type, baud rate and it's /dev entry.
+<item> Your mouse type, baud rate and its /dev entry.
 <item> The video card's chipset (e.g. ET4000, S3, etc).
 <item> Your monitor's sync frequencies.
 </itemize>
@@ -221,7 +221,7 @@ and <tt>.twmrc</tt> files in your home directory as described in the xinit and
 startx man pages.
 
 <sect> Rebuilding the XFree86 Distribution <p>
-The server link kit allow you to rebuild just the X server with a
+The server link kit allows you to rebuild just the X server with a
 minimum amount of disk space.  Just unpack it, make the appropriate
 changes to the site.def, type `<tt>./mkmf</tt>' and `<tt>make</tt>' to link
 the server.
@@ -312,7 +312,7 @@ BSD/OS 2.0.
 
 <verb>
 $XConsortium: Bsdi.sgml,v 1.3 95/01/23 15:34:39 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.11 1995/06/17 12:16:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.12 1995/07/17 13:52:29 dawes Exp $
 </verb>
 
 </article>
