@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.79 2003/01/12 17:03:23 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.80 2003/04/03 22:00:24 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -22,6 +22,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifdef Ports
 
 #define BinDir			/usr/local/bin
+#define LibDir			/usr/local/lib/X11
 #define UsrLibDir		/usr/local/lib
 #define ManDirectoryRoot	/usr/local/man
 #define LdPreLib		-L/usr/X11R6/lib -L/usr/local/lib
