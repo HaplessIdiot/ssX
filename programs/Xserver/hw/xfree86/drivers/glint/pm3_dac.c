@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.21 2001/03/20 15:49:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.22 2001/03/20 19:08:58 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -366,8 +366,8 @@ Permedia3Save(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
 
     /* We can't rely on the vgahw layer copying the font information
      * back properly, due to problems with MMIO access to VGA space
-     * so we memcpy the information */
-    memcpy((CARD8*)pGlint->VGAdata,(CARD8*)pGlint->FbBase, 65536); 
+     * so we memcpy the information using the slow routines */
+    xf86SlowBcopy((CARD8*)pGlint->FbBase, (CARD8*)pGlint->VGAdata, 65536);
 
     if ((pGlint->numMultiDevices == 2) || (IS_J2000)) {
 	SAVEREG(GCSRAperture);
@@ -435,9 +435,9 @@ Permedia3Restore(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
 
     /* We can't rely on the vgahw layer copying the font information
      * back properly, due to problems with MMIO access to VGA space
-     * so we memcpy the information */
+     * so we memcpy the information using the slow routines */
     if (pGlint->STATE)
-    	memcpy((CARD8*)pGlint->FbBase,(CARD8*)pGlint->VGAdata, 65536); 
+	xf86SlowBcopy((CARD8*)pGlint->VGAdata, (CARD8*)pGlint->FbBase, 65536);
 
     if ((pGlint->numMultiDevices == 2) || (IS_J2000)) {
 	RESTOREREG(GCSRAperture);

@@ -1,4 +1,5 @@
 XFree86 4.0.99.x (xx May 2001)
+ 491. Fix restoring of text mode fonts on Permedia3 (Alan Hourihane).
  490. Provide workaround for an apparent bug in Mac OS X 10.0.2 that causes
       XDarwin to lose the cursor when switching to X using the Dock icon.
       Fix "Application not responding" message in XDarwin's popup Dock menu
@@ -13177,4 +13178,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1752 2001/05/09 03:11:53 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1753 2001/05/09 07:16:17 torrey Exp $
