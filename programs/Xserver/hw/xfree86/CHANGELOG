@@ -1,4 +1,8 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 528. Cygwin configuration updates and install script updates (Bugzilla #799, 
+      805, Harold L Hunt II, Alexander Gottwald)
+ 527. Build shared libraries for Xt and Xaw on Cygwin. (Bugzilla #804, 
+      Ralf Habacker).
  526. Xterm patches #180, 181 (Thomas Dickey).
  525. Update libfreetype-xtt2 to version 1.0d:
        - Fixed server crash caused by loading fonts for which encoding file
@@ -18044,7 +18048,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2905 2003/10/27 00:26:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2906 2003/10/27 02:04:26 dickey Exp $
 
 
 
