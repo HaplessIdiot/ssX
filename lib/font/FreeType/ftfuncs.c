@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.31 2003/07/17 08:19:25 eich Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.32 2003/10/19 18:53:49 dawes Exp $ */
 
 #include "fontmisc.h"
 
@@ -1105,28 +1105,10 @@ FreeTypeRasteriseGlyph(unsigned idx, int flags, CharInfoPtr tgp,
      */
 
     leftSideBearing  = tgp->metrics.leftSideBearing;
-    if( flags & FT_FORCE_CONSTANT_SPACING )
-	leftSideBearing  -= instance->ttcap.force_c_adjust_lsb_by_pixel;
-    else
-	leftSideBearing  -= instance->ttcap.adjustLeftSideBearingByPixel;
-    if( is_outline == 0 ){
-	leftSideBearing  -= instance->ttcap.lsbShiftOfBitmapAutoItalic;
-	dx = face->face->glyph->bitmap_left - leftSideBearing;
-	if(instance->ttcap.flags & TTCAP_MONO_CENTER)
-	    dx += b_shift;
-	dx -= instance->ttcap.lsbShiftOfBitmapAutoItalic;
-    }
-    else{	/* outline */
-	dx = face->face->glyph->bitmap_left - leftSideBearing;
-	if(instance->ttcap.flags & TTCAP_MONO_CENTER)
-	    dx += b_shift;
-    }
+    if(instance->ttcap.flags & TTCAP_MONO_CENTER)
+	leftSideBearing -= b_shift;
 
-    if( flags & FT_FORCE_CONSTANT_SPACING )
-	dx -= instance->ttcap.force_c_adjust_lsb_by_pixel;
-    else
-	dx -= instance->ttcap.adjustLeftSideBearingByPixel;
-
+    dx = face->face->glyph->bitmap_left - leftSideBearing;
     dy = tgp->metrics.ascent - face->face->glyph->bitmap_top;
 
     /*
@@ -2137,6 +2119,7 @@ FreeTypeSetUpTTCap( char *fileName, FontScalablePtr vals,
 			int max_pixel;
 			max_pixel=strtol(comma_ptr+1, &endptr, 10);
 			if ( endptr != comma_ptr+1 && max_pixel <= pixel ) {
+			  if( ret->flags & TTCAP_DOUBLE_STRIKE )
 			    ret->doubleStrikeShift += pixel / max_pixel;
 			}
 		    }
@@ -2223,8 +2206,6 @@ FreeTypeSetUpTTCap( char *fileName, FontScalablePtr vals,
 	}
     }
     /* forceConstantSpacing{Begin,End} */
-    ret->forceConstantSpacingBegin = -1;
-    ret->forceConstantSpacingEnd = -1;
     if ( 1 /* ft->spacing == 'p' */ ){
         unsigned short first_col=0,last_col=0x00ff;
         unsigned short first_row=0,last_row=0x00ff;
