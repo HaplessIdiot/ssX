@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp.c,v 1.1 2001/08/31 15:00:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp.c,v 1.2 2001/08/31 19:00:03 paulo Exp $ */
 
 #include "xedit.h"
 #include "lisp/lisp.h"
@@ -35,6 +35,7 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include <errno.h>
+#include <locale.h>
 #include <signal.h>
 #include <sys/wait.h>
 
@@ -254,9 +255,10 @@ XeditLispInitialize(void)
     pipe(lisp.efd);
 
     if ((lisp.pid = fork()) == 0) {
-	fclose(stdin);
-	fclose(stdout);
-	fclose(stderr);
+	setlocale(LC_NUMERIC, "C");
+	close(0);
+	close(1);
+	close(2);
 	dup2(lisp.ofd[0], 0);
 	dup2(lisp.ifd[1], 1);
 	dup2(lisp.efd[1], 2);
@@ -266,9 +268,6 @@ XeditLispInitialize(void)
 	close(lisp.ofd[1]);
 	close(lisp.efd[0]);
 	close(lisp.efd[1]);
-	stdin = fdopen(0, "r");
-	stdout = fdopen(1, "w");
-	stderr = fdopen(2, "w");
 	XeditRunLisp();
 	exit(0);
     }
@@ -295,6 +294,22 @@ LispInputCallback(XtPointer closure, int *source, XtInputId *id)
     char str[8192];
 
     len = read(lisp.ifd[0], str, sizeof(str) - 1);
+    if (len && len < PROTOMAXSIZE && *str == PROTOPREFFIX) {
+	char *res = NULL;
+
+	str[len] = '\0';
+	len = 0;
+	lisp.expect = 0;
+
+	if (XeditProto(str + 1, &res) == False) {
+	    if (res)
+		XeditPrintf(res);
+	}
+	else {
+	    write(lisp.ofd[1], res, strlen(res));
+	    write(lisp.ofd[1], "\n", 1);
+	}
+    }
     if (len > 0) {
 	if (lisp.output == messwidget) {
 	    str[len] = '\0';
