@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.6 2000/12/20 01:30:47 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.7 2000/12/20 21:16:59 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "tdfx.h"
@@ -42,12 +42,13 @@ static void TDFXVideoTimerCallback(ScrnInfoPtr pScrn, Time time);
 
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
-static Atom xvColorKey;
+static Atom xvColorKey, xvFilterQuality;
 
 
 typedef struct {
    RegionRec     clip;
    CARD32        colorKey;
+   int           filterQuality;
    CARD32        videoStatus;
    Time          offTime;
    Time          freeTime;
@@ -110,11 +111,12 @@ static XF86VideoFormatRec Formats[NUM_FORMATS] =
 };
 
 
-#define NUM_ATTRIBUTES 1
+#define NUM_ATTRIBUTES 2
 
 static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
 {
-   {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_COLORKEY"}
+   {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_COLORKEY"},
+   {XvSettable | XvGettable, 0, 1, "XV_FILTER_QUALITY"}
 };
 
 #define NUM_IMAGES 4
@@ -139,9 +141,6 @@ TDFXResetVideo(ScrnInfoPtr pScrn)
     pTDFX->writeLong(pTDFX, RGBMAXDELTA, 0x0080808);
     pTDFX->writeLong(pTDFX, VIDCHROMAMIN, pPriv->colorKey);
     pTDFX->writeLong(pTDFX, VIDCHROMAMAX, pPriv->colorKey);
-
-
-
 }
 
 
@@ -165,9 +164,11 @@ TDFXAllocAdaptor(ScrnInfoPtr pScrn)
     adapt->pPortPrivates[0].ptr = (pointer)pPriv;
 
     xvColorKey = MAKE_ATOM("XV_COLORKEY");
+    xvFilterQuality = MAKE_ATOM("XV_FILTER_QUALITY");
 
     pPriv->colorKey = pTDFX->videoKey;
     pPriv->videoStatus = 0;
+    pPriv->filterQuality = 1;
 
     return adapt;
 }
@@ -379,6 +380,11 @@ TDFXSetPortAttribute(
 	pTDFX->writeLong(pTDFX, VIDCHROMAMIN, pPriv->colorKey);
 	pTDFX->writeLong(pTDFX, VIDCHROMAMAX, pPriv->colorKey);
 	REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
+  } else
+  if(attribute == xvFilterQuality) {
+	if((value < 0) || (value > 1))
+           return BadValue;
+	pPriv->filterQuality = value;
   } else return BadMatch;
 
   return Success;
@@ -395,6 +401,9 @@ TDFXGetPortAttribute(
 
   if(attribute == xvColorKey) {
 	*value = pPriv->colorKey;
+  } else 
+  if(attribute == xvFilterQuality) {
+	*value = pPriv->filterQuality;
   } else return BadMatch;
 
   return Success;
@@ -532,6 +541,7 @@ TDFXDisplayVideo(
     short drw_w, short drw_h
 ){
     TDFXPtr pTDFX = TDFXPTR(pScrn);
+    TDFXPortPrivPtr pPriv = pTDFX->adaptor->pPortPrivates[0].ptr;
     int dudx, dvdy;
 
     dudx = (src_w << 20) / drw_w;
@@ -542,13 +552,14 @@ TDFXDisplayVideo(
     left = (left & 0x0001ffff) << 3;
 
     pTDFX->ModeReg.vidcfg &= ~VIDPROCCFGMASK;
-    pTDFX->ModeReg.vidcfg |= 0x00030320;
+    pTDFX->ModeReg.vidcfg |= 0x00000320;
 
     if(drw_w != src_w) pTDFX->ModeReg.vidcfg |= (1 << 14);
     if(drw_h != src_h) pTDFX->ModeReg.vidcfg |= (1 << 15);
     if(id == FOURCC_UYVY) pTDFX->ModeReg.vidcfg |= (6 << 21);
     else                  pTDFX->ModeReg.vidcfg |= (5 << 21);
     if(pScrn->depth == 8) pTDFX->ModeReg.vidcfg |= (1 << 11);
+    if(pPriv->filterQuality) pTDFX->ModeReg.vidcfg |= (3 << 16);
     pTDFX->writeLong(pTDFX, VIDPROCCFG, pTDFX->ModeReg.vidcfg);
 
     pTDFX->writeLong(pTDFX, VIDOVERLAYSTARTCOORDS, 
@@ -565,10 +576,6 @@ TDFXDisplayVideo(
     pTDFX->writeLong(pTDFX, VIDDESKTOPOVERLAYSTRIDE, pTDFX->ModeReg.stride);
     pTDFX->writeLong(pTDFX, SST_3D_LEFTOVERLAYBUF, offset & ~3);
     pTDFX->writeLong(pTDFX, VIDINADDR0, offset & ~3);
-
-/*
-ErrorF("start = %x\n", pTDFX->readLong(pTDFX, VIDCUROVERLAYSTARTADDR));
-*/
 }
 
 
