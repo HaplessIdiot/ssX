@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/2 1996/11/16 15:23:16 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.5 1997/05/03 09:15:52 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.6 1997/05/12 13:27:51 hohndel Exp $
 #include <Server.tmpl>
 
 #ifndef XpRasterDDX
@@ -70,7 +70,7 @@ PSDEF = -DXPPSDDX
 
 OS_DEFINES = ServerOSDefines 
 #if HasMkstemp
-EXTRA_DEFINES = -DHAS_MKSTEMP
+MKTMP_DEFINES = -DHAS_MKSTEMP
 #endif
 
 SUBDIRS = $(RASTDIR) $(PCLDIR) $(MPCLDIR) $(PSDIR)
@@ -89,7 +89,7 @@ SUBDIRS = $(RASTDIR) $(PCLDIR) $(MPCLDIR) $(PSDIR)
 	      $(TOP)/server/ddx/cfb/llib-lcfb.ln
 
 DEFINES = -DXPRINTDIR=\"$(XPRINTDIR)\" $(RASTDEF) $(PCLDEF) $(MPCLDEF) \
-	  $(PSDEF) -UXFree86LOADER
+	  $(PSDEF) $(MKTMP_DEFINES) -UXFree86LOADER
 
 NormalLibraryObjectRule()
 

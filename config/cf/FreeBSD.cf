@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf /main/13 1996/09/29 20:13:31 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.63 1997/03/27 18:37:20 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.64 1997/05/03 09:14:23 dawes Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName
@@ -105,7 +105,26 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define XF86SetupUsesStaticTcl	NO
 #endif
 
-#else
+#else /* ! 2.2 or later */
+
+#if OSMajorVersion == 2 && OSMinorVersion == 1 && OSTeenyVersion >= 6
+
+/*
+ * 2.1.x with x >=6 has tk 4.1 and tcl 7.5 in the packages collection.
+ * Neither packages include the static libs, so you either need to build
+ * them yourself or set XF86SetupUsesStaticTcl and XF86SetupUsesStaticTk
+ * to NO.  This isn't the default because we don't want the XFree86
+ * binaries to have these packages as a dependency.
+ */
+
+#ifndef TkLibName
+#define TkLibName		tk41
+#endif
+#ifndef TclLibName
+#define TclLibName		tcl75
+#endif
+
+#else /* ! 2.1.6 or later */
 
 #ifndef TkLibName
 #define TkLibName		tk40
@@ -114,6 +133,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define TclLibName		tcl74
 #endif
 
+#endif
 #endif
 
 #undef  InstallCmd
@@ -149,6 +169,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifndef ForceNormalLib
 #define ForceNormalLib		YES
 #endif
+#define HasMkstemp		YES
 #else
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DXNO_SYSCONF
 #define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
