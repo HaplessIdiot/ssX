@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/render/mitri.c,v 1.1 2002/05/13 05:25:33 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -76,8 +76,8 @@ miRasterizeTriangle (PicturePtr	pPicture,
     xTrapezoid		trap[2];
 
     top = &tri->p1;
-    left = &tri->p1;
-    right = &tri->p1;
+    left = &tri->p2;
+    right = &tri->p3;
     if (left->y < top->y) {
 	t = left; left = top; top = t;
     }
@@ -109,7 +109,7 @@ miRasterizeTriangle (PicturePtr	pPicture,
     trap[0].left.p2.y = left->y;
     
     trap[0].right.p1 = trap[0].left.p1;
-    trap[0].right.p2.y = right->x;
+    trap[0].right.p2.x = right->x;
     trap[0].right.p2.y = right->y;
     
     if (right->y < left->y)
@@ -264,25 +264,53 @@ miTriFan (CARD8		op,
 	  xPointFixed	*points)
 {
     ScreenPtr		pScreen = pDst->pDrawable->pScreen;
-    PictureScreenPtr    ps = GetPictureScreen(pScreen);
-    xTriangle		*tri, *triBase;
-    xPointFixed		*first = points;
-    int			ntri = npoint - 2;
+    xTriangle		tri;
+    BoxRec		bounds;
+    PicturePtr		pPicture = 0;
+    xPointFixed		*first;
 
     if (npoint < 3)
 	return;
-    triBase = (xTriangle *) ALLOCATE_LOCAL (ntri * sizeof (xTriangle));
-    points++;
+    if (maskFormat)
+    {
+	miPointFixedBounds (npoint, points, &bounds);
+	pPicture = miCreateAlphaPicture (pScreen, maskFormat,
+					 bounds.x2 - bounds.x1,
+					 bounds.y2 - bounds.y1);
+	if (!pPicture)
+	    return;
+    }
+    first = points++;
     npoint--;
-    tri = triBase;
     while (npoint-- > 1)
     {
-	tri->p1 = *first;
-	tri->p2 = points[0];
-	tri->p3 = points[1];
-	tri++;
+	tri.p1 = *first;
+	tri.p2 = points[0];
+	tri.p3 = points[1];
+	if (!maskFormat)
+	{
+	    miTriangleBounds (1, &tri, &bounds);
+	    pPicture = miCreateAlphaPicture (pScreen, maskFormat, 
+					     bounds.x2 - bounds.x1,
+					     bounds.y2 - bounds.y1);
+	    if (!pPicture)
+		break;
+	}
+	miRasterizeTriangle (pPicture, &tri, -bounds.x1, -bounds.y1);
+	if (!maskFormat)
+	{
+	    CompositePicture (op, pSrc, pPicture, pDst,
+			      xSrc, ySrc, 0, 0, bounds.x1, bounds.y1,
+			      bounds.x2 - bounds.x1, bounds.y2 - bounds.y1);
+	    FreePicture (pPicture, 0);
+	}
 	points++;
     }
-    (*ps->Triangles) (op, pSrc, pDst, maskFormat, xSrc, ySrc, ntri, tri);
-    DEALLOCATE_LOCAL (tri);
+    if (maskFormat)
+    {
+	CompositePicture (op, pSrc, pPicture, pDst,
+			  xSrc, ySrc, 0, 0, bounds.x1, bounds.y1,
+			  bounds.x2 - bounds.x1, bounds.y2 - bounds.y1);
+	FreePicture (pPicture, 0);
+    }
 }
