@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/miglyph.c,v 1.3 2000/10/02 05:25:45 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/miglyph.c,v 1.4 2000/11/20 07:13:13 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -82,6 +82,8 @@ miGlyphExtents (int		nlist,
     }
 }
 
+#define NeedsComponent(f) (PICT_FORMAT_A(f) != 0 && PICT_FORMAT_RGB(f) != 0)
+
 void
 miGlyphs (CARD8		op,
 	  PicturePtr	pSrc,
@@ -107,7 +109,7 @@ miGlyphs (CARD8		op,
     int		error;
     CARD8	opTemp = op;
     BoxRec	extents;
-    CARD32	component_alpha = xTrue;
+    CARD32	component_alpha;
     
     if (maskFormat)
     {
@@ -123,6 +125,7 @@ miGlyphs (CARD8		op,
 	pMaskPixmap = (*pScreen->CreatePixmap) (pScreen, width, height, maskFormat->depth);
 	if (!pMaskPixmap)
 	    return;
+	component_alpha = NeedsComponent(maskFormat->format);
 	pMask = CreatePicture (0, &pMaskPixmap->drawable,
 			       maskFormat, CPComponentAlpha, &component_alpha,
 			       serverClient, &error);
@@ -165,6 +168,7 @@ miGlyphs (CARD8		op,
 						  0, (pointer) (glyph + 1));
 		if (!pPixmap)
 		    return;
+		component_alpha = NeedsComponent(list->format->format);
 		pPicture = CreatePicture (0, &pPixmap->drawable, list->format,
 					  CPComponentAlpha, &component_alpha, 
 					  serverClient, &error);
