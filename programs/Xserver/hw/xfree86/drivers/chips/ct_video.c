@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_video.c,v 1.1 2000/04/04 19:25:09 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1016,22 +1016,22 @@ CHIPSFreeSurface(
 
 static int
 CHIPSGetSurfaceAttribute(
-    XF86SurfacePtr surface,
+    ScrnInfoPtr pScrn,
     Atom attribute,
     INT32 *value
 ){
-    return CHIPSGetPortAttribute(surface->pScrn, attribute, value, 
-			(pointer)(GET_PORT_PRIVATE(surface->pScrn)));
+    return CHIPSGetPortAttribute(pScrn, attribute, value, 
+			(pointer)(GET_PORT_PRIVATE(pScrn)));
 }
 
 static int
 CHIPSSetSurfaceAttribute(
-    XF86SurfacePtr surface,
+    ScrnInfoPtr pScrn,
     Atom attribute,
     INT32 value
 ){
-    return CHIPSSetPortAttribute(surface->pScrn, attribute, value, 
-			(pointer)(GET_PORT_PRIVATE(surface->pScrn)));
+    return CHIPSSetPortAttribute(pScrn, attribute, value, 
+			(pointer)(GET_PORT_PRIVATE(pScrn)));
 }
 
 

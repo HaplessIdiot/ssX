@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.h,v 1.5 2000/03/22 03:08:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.h,v 1.6 2000/03/30 15:41:18 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -27,6 +27,9 @@
 #include "atipriv.h"
 #include "atiproto.h"
 #include "xaa.h"
+
+#define ATIMach64MaxX    8191
+#define ATIMach64MaxY   32767
 
 extern void ATIMach64PreInit     FunctionPrototype((ScrnInfoPtr, ATIPtr,
                                                     ATIHWPtr));

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.21 2000/03/05 16:59:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.22 2000/04/04 19:24:46 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -237,7 +237,7 @@ ShmExtensionInit()
 	{
 	    if (!AllocatePixmapPrivate(screenInfo.screens[i],
 				       shmPixmapPrivate, 0))
-		return FALSE;
+		return;
 	}
 #endif
       }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.10 2000/02/25 21:03:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.11 2000/03/31 20:13:26 dawes Exp $ */
 /*
  * includes
  */
@@ -64,7 +64,7 @@ verite_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
   Elf32_Shdr *pshdr, *orig_pshdr=NULL;
   Elf32_Ehdr ehdr ;
 
-#if DEBUG
+#ifdef DEBUG
   ErrorF("RENDITION: Loading microcode %s\n", file_name); 
 #endif
 

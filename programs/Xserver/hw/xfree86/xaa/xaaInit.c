@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.23 1999/10/31 23:52:57 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.26 2000/04/01 22:42:04 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -267,7 +267,8 @@ XAAGetImage (
 	   (pDraw->bitsPerPixel == BitsPerPixel(pDraw->depth)))
 	{
 	    (*infoRec->ReadPixmap)(pScrn, 
-		   sx + pDraw->x, sy + pDraw->y, w, h, pdstLine,
+		   sx + pDraw->x, sy + pDraw->y, w, h,
+		   (unsigned char *)pdstLine,
 		   PixmapBytePad(w, pDraw->depth), 
 		   pDraw->bitsPerPixel, pDraw->depth);
 	    return;

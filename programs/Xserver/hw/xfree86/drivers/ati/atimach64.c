@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.15 2000/03/25 05:24:51 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.16 2000/03/30 15:41:17 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -146,13 +146,14 @@ ATIMach64PollEngineStatus
         }                                                              \
     } while (0)
 
+/* This is no longer as critical, especially for _n == 1 */
 #define ATIMach64WaitForFIFO(_n)                               \
     while ((pATI->nAvailableFIFOEntries < (_n)) &&             \
            (pATI->nAvailableFIFOEntries < pATI->nFIFOEntries)) \
         ATIMach64PollEngineStatus(pATI)
 
-#define ATIMach64WaitForIdle()                 \
-    while (pATI->EngineIsBusy)                 \
+#define ATIMach64WaitForIdle()          \
+    while (pATI->EngineIsBusy)          \
         ATIMach64PollEngineStatus(pATI)
 
 /*
@@ -221,11 +222,9 @@ ATIMach64PreInit
         SetBits(pATIHW->nPlane, MEM_VGA_RPS1);
 
     pATIHW->dac_cntl = inl(pATI->CPIO_DAC_CNTL) &
-        ~(DAC1_CLK_SEL | DAC_PALETTE_ACCESS_CNTL);
+        ~(DAC1_CLK_SEL | DAC_PALETTE_ACCESS_CNTL | DAC_8BIT_EN);
     if ((pScreenInfo->depth > 8) || (pScreenInfo->rgbBits == 8))
         pATIHW->dac_cntl |= DAC_8BIT_EN;
-    else
-        pATIHW->dac_cntl &= ~DAC_8BIT_EN;
 
     pATIHW->config_cntl = inl(pATI->CPIO_CONFIG_CNTL);
     if (pATI->UseSmallApertures)
@@ -270,8 +269,8 @@ ATIMach64PreInit
         pATIHW->sc_right = (pScreenInfo->displayWidth * pATI->XModifier) - 1;
         tmp = (pScreenInfo->videoRam * (1024 * 8) /
             pScreenInfo->displayWidth / pScreenInfo->bitsPerPixel) - 1;
-        if (tmp > 16383)
-            tmp = 16383;
+        if (tmp > ATIMach64MaxY)
+            tmp = ATIMach64MaxY;
         pATIHW->sc_bottom = tmp;
 
         /* Initialise data path */
@@ -285,7 +284,7 @@ ATIMach64PreInit
                 pATIHW->dp_pix_width = /* DP_BYTE_PIX_ORDER | */
                     SetBits(PIX_WIDTH_8BPP, DP_DST_PIX_WIDTH) |
                     SetBits(PIX_WIDTH_8BPP, DP_SRC_PIX_WIDTH) |
-                    SetBits(PIX_WIDTH_8BPP, DP_HOST_PIX_WIDTH);
+                    SetBits(PIX_WIDTH_1BPP, DP_HOST_PIX_WIDTH);
                 break;
 
             case 15:
@@ -293,7 +292,7 @@ ATIMach64PreInit
                 pATIHW->dp_pix_width = /* DP_BYTE_PIX_ORDER | */
                     SetBits(PIX_WIDTH_15BPP, DP_DST_PIX_WIDTH) |
                     SetBits(PIX_WIDTH_15BPP, DP_SRC_PIX_WIDTH) |
-                    SetBits(PIX_WIDTH_15BPP, DP_HOST_PIX_WIDTH);
+                    SetBits(PIX_WIDTH_1BPP, DP_HOST_PIX_WIDTH);
                 break;
 
             case 16:
@@ -301,7 +300,7 @@ ATIMach64PreInit
                 pATIHW->dp_pix_width = /* DP_BYTE_PIX_ORDER | */
                     SetBits(PIX_WIDTH_16BPP, DP_DST_PIX_WIDTH) |
                     SetBits(PIX_WIDTH_16BPP, DP_SRC_PIX_WIDTH) |
-                    SetBits(PIX_WIDTH_16BPP, DP_HOST_PIX_WIDTH);
+                    SetBits(PIX_WIDTH_1BPP, DP_HOST_PIX_WIDTH);
                 break;
 
             case 24:
@@ -311,7 +310,7 @@ ATIMach64PreInit
                     pATIHW->dp_pix_width = /* DP_BYTE_PIX_ORDER | */
                         SetBits(PIX_WIDTH_8BPP, DP_DST_PIX_WIDTH) |
                         SetBits(PIX_WIDTH_8BPP, DP_SRC_PIX_WIDTH) |
-                        SetBits(PIX_WIDTH_8BPP, DP_HOST_PIX_WIDTH);
+                        SetBits(PIX_WIDTH_1BPP, DP_HOST_PIX_WIDTH);
                 }
                 else
                 {
@@ -319,7 +318,7 @@ ATIMach64PreInit
                     pATIHW->dp_pix_width = /* DP_BYTE_PIX_ORDER | */
                         SetBits(PIX_WIDTH_32BPP, DP_DST_PIX_WIDTH) |
                         SetBits(PIX_WIDTH_32BPP, DP_SRC_PIX_WIDTH) |
-                        SetBits(PIX_WIDTH_32BPP, DP_HOST_PIX_WIDTH);
+                        SetBits(PIX_WIDTH_1BPP, DP_HOST_PIX_WIDTH);
                 }
                 break;
 
@@ -672,6 +671,9 @@ ATIMach64Set
             pATI->nAvailableFIFOEntries = 0;
             ATIMach64PollEngineStatus(pATI);
         }
+
+        /* Set FIFO depth */
+        pATI->nFIFOEntries = pATI->nAvailableFIFOEntries;
 
         /* Load destination registers */
         ATIMach64WaitForFIFO(7);
@@ -1056,16 +1058,11 @@ ATIMach64SetupForScreenToScreenCopy
         pATI->dst_cntl |= DST_X_DIR;
 
     if (pATI->XModifier == 1)
-    {
-        ATIMach64WaitForFIFO(4);
         outm(DST_CNTL, pATI->dst_cntl);
-    }
     else
-    {
-        ATIMach64WaitForFIFO(3);
         pATI->dst_cntl |= DST_24_ROT_EN;
-    }
 
+    ATIMach64WaitForFIFO(3);
     outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
     outm(DP_WRITE_MASK, planemask);
     outm(DP_SRC, DP_MONO_SRC_ALLONES |
@@ -1095,6 +1092,15 @@ ATIMach64SubsequentScreenToScreenCopy
     xDst *= pATI->XModifier;
     w    *= pATI->XModifier;
 
+    if ((xDst < (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 0)) ||
+        ((xDst + w - 1) > (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 1)))
+        outm(SC_LEFT_RIGHT, SetWord(pATI->NewHW.sc_right, 1) |
+            SetWord(pATI->NewHW.sc_left, 0));
+    if ((yDst < (int)GetWord(CacheSlot(SC_TOP_BOTTOM), 0)) ||
+        ((yDst + h - 1) > (int)GetWord(CacheSlot(SC_TOP_BOTTOM), 1)))
+        outm(SC_TOP_BOTTOM, SetWord(pATI->NewHW.sc_bottom, 1) |
+            SetWord(pATI->NewHW.sc_top, 0));
+
     if (!(pATI->dst_cntl & DST_X_DIR))
     {
         xSrc += w - 1;
@@ -1107,14 +1113,10 @@ ATIMach64SubsequentScreenToScreenCopy
         yDst += h - 1;
     }
 
-    if (pATI->XModifier == 1)
-        ATIMach64WaitForFIFO(4);
-    else
-    {
-        ATIMach64WaitForFIFO(5);
+    if (pATI->XModifier != 1)
         outm(DST_CNTL, pATI->dst_cntl | SetBits((xDst / 4) % 6, DST_24_ROT));
-    }
 
+    ATIMach64WaitForFIFO(4);
     outm(SRC_Y_X, SetWord(xSrc, 1) | SetWord(ySrc, 0));
     outm(SRC_WIDTH1, w);
     outm(DST_Y_X, SetWord(xDst, 1) | SetWord(yDst, 0));
@@ -1137,14 +1139,10 @@ ATIMach64SetupForSolidFill
 {
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
-    if (pATI->XModifier != 1)
-        ATIMach64WaitForFIFO(4);
-    else
-    {
-        ATIMach64WaitForFIFO(5);
+    if (pATI->XModifier == 1)
         outm(DST_CNTL, DST_X_DIR | DST_Y_DIR);
-    }
 
+    ATIMach64WaitForFIFO(4);
     outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
     outm(DP_WRITE_MASK, planemask);
     outm(DP_SRC, DP_MONO_SRC_ALLONES |
@@ -1169,18 +1167,25 @@ ATIMach64SubsequentSolidFillRect
 {
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
-    if (pATI->XModifier == 1)
-       ATIMach64WaitForFIFO(2);
-    else
+    if (pATI->XModifier != 1)
     {
         x *= pATI->XModifier;
         w *= pATI->XModifier;
 
-        ATIMach64WaitForFIFO(3);
         outm(DST_CNTL, SetBits((x / 4) % 6, DST_24_ROT) |
             (DST_X_DIR | DST_Y_DIR | DST_24_ROT_EN));
     }
 
+    if ((x < (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 0)) ||
+        ((x + w - 1) > (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 1)))
+        outm(SC_LEFT_RIGHT, SetWord(pATI->NewHW.sc_right, 1) |
+            SetWord(pATI->NewHW.sc_left, 0));
+    if ((y < (int)GetWord(CacheSlot(SC_TOP_BOTTOM), 0)) ||
+        ((y + h - 1) > (int)GetWord(CacheSlot(SC_TOP_BOTTOM), 1)))
+        outm(SC_TOP_BOTTOM, SetWord(pATI->NewHW.sc_bottom, 1) |
+            SetWord(pATI->NewHW.sc_top, 0));
+
+    ATIMach64WaitForFIFO(2);
     outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
     outm(DST_HEIGHT_WIDTH, SetWord(w, 1) | SetWord(h, 0));
 }
@@ -1202,12 +1207,17 @@ ATIMach64SetupForSolidLine
 {
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
-    ATIMach64WaitForFIFO(4);
+    ATIMach64WaitForFIFO(6);
     outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
     outm(DP_WRITE_MASK, planemask);
     outm(DP_SRC, DP_MONO_SRC_ALLONES |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
     outm(DP_FRGD_CLR, colour);
+
+    outm(SC_LEFT_RIGHT,
+        SetWord(pATI->NewHW.sc_right, 1) | SetWord(pATI->NewHW.sc_left, 0));
+    outm(SC_TOP_BOTTOM,
+        SetWord(pATI->NewHW.sc_bottom, 1) | SetWord(pATI->NewHW.sc_top, 0));
 }
 
 /*
@@ -1278,50 +1288,6 @@ ATIMach64SubsequentSolidBresenhamLine
 }
 
 /*
- * ATIMach64SetClippingRectangle --
- *
- * This function sets the draw engine's clipping rectangle.
- */
-static void
-ATIMach64SetClippingRectangle
-(
-    ScrnInfoPtr pScreenInfo,
-    int         left,
-    int         top,
-    int         right,
-    int         bottom
-)
-{
-    ATIPtr pATI = ATIPTR(pScreenInfo);
-
-    ATIMach64WaitForFIFO(2);
-    outm(SC_LEFT_RIGHT, SetWord(((right + 1) * pATI->XModifier) - 1, 1) |
-        SetWord(left * pATI->XModifier, 0));
-    outm(SC_TOP_BOTTOM, SetWord(bottom, 1) | SetWord(top, 0));
-}
-
-/*
- * ATIMach64DisableClipping --
- *
- * This function resets the draw engine's clipping rectangle to include the
- * entire virtual resolution.
- */
-static void
-ATIMach64DisableClipping
-(
-    ScrnInfoPtr pScreenInfo
-)
-{
-    ATIPtr pATI = ATIPTR(pScreenInfo);
-
-    ATIMach64WaitForFIFO(2);
-    outm(SC_LEFT_RIGHT,
-        SetWord(pATI->NewHW.sc_right, 1) | SetWord(pATI->NewHW.sc_left, 0));
-    outm(SC_TOP_BOTTOM,
-        SetWord(pATI->NewHW.sc_bottom, 1) | SetWord(pATI->NewHW.sc_top, 0));
-}
-
-/*
  * ATIMach64SetupForMono8x8PatternFill --
  *
  * This function sets up the draw engine for a series of 8x8 1bpp pattern
@@ -1341,28 +1307,21 @@ ATIMach64SetupForMono8x8PatternFill
 {
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
-    if (bg == -1)
-    {
-        if (pATI->XModifier == 1)
-            ATIMach64WaitForFIFO(8);
-        else
-            ATIMach64WaitForFIFO(7);
+    if (pATI->XModifier == 1)
+        outm(DST_CNTL, DST_X_DIR | DST_Y_DIR);
 
+    if (bg == -1)
         outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
             SetBits(MIX_DST, DP_BKGD_MIX));
-    }
     else
     {
-        if (pATI->XModifier == 1)
-            ATIMach64WaitForFIFO(9);
-        else
-            ATIMach64WaitForFIFO(8);
-
+        ATIMach64WaitForFIFO(2);
         outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
             SetBits(ATIMach64ALU[rop], DP_BKGD_MIX));
         outm(DP_BKGD_CLR, bg);
     }
 
+    ATIMach64WaitForFIFO(6);
     outm(DP_WRITE_MASK, planemask);
     outm(DP_SRC, DP_MONO_SRC_PATTERN |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
@@ -1371,9 +1330,6 @@ ATIMach64SetupForMono8x8PatternFill
     outm(PAT_REG0, patx);
     outm(PAT_REG1, paty);
     outm(PAT_CNTL, PAT_MONO_EN);
-
-    if (pATI->XModifier == 1)
-        outm(DST_CNTL, DST_X_DIR | DST_Y_DIR);
 }
 
 /*
@@ -1395,20 +1351,132 @@ ATIMach64SubsequentMono8x8PatternFillRect
 {
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
-    if (pATI->XModifier == 1)
-        ATIMach64WaitForFIFO(2);
-    else
+    if (pATI->XModifier != 1)
     {
         x *= pATI->XModifier;
         w *= pATI->XModifier;
 
-        ATIMach64WaitForFIFO(3);
         outm(DST_CNTL, SetBits((x / 4) % 6, DST_24_ROT) |
             (DST_X_DIR | DST_Y_DIR | DST_24_ROT_EN));
     }
 
+    if ((x < (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 0)) ||
+        ((x + w - 1) > (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 1)))
+        outm(SC_LEFT_RIGHT, SetWord(pATI->NewHW.sc_right, 1) |
+            SetWord(pATI->NewHW.sc_left, 0));
+    if ((y < (int)GetWord(CacheSlot(SC_TOP_BOTTOM), 0)) ||
+        ((y + h - 1) > (int)GetWord(CacheSlot(SC_TOP_BOTTOM), 1)))
+        outm(SC_TOP_BOTTOM, SetWord(pATI->NewHW.sc_bottom, 1) |
+            SetWord(pATI->NewHW.sc_top, 0));
+
+    ATIMach64WaitForFIFO(2);
     outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
     outm(DST_HEIGHT_WIDTH, SetWord(w, 1) | SetWord(h, 0));
+}
+
+/*
+ * ATIMach64SetupForScanlineCPUToScreenColorExpandFill --
+ *
+ * This function sets up the engine for a series of colour expansion fills.
+ */
+static void
+ATIMach64SetupForScanlineCPUToScreenColorExpandFill
+(
+    ScrnInfoPtr  pScreenInfo,
+    int          fg,
+    int          bg,
+    int          rop,
+    unsigned int planemask
+)
+{
+    ATIPtr pATI = ATIPTR(pScreenInfo);
+
+    if (pATI->XModifier == 1)
+        outm(DST_CNTL, DST_X_DIR | DST_Y_DIR);
+
+    if (bg == -1)
+        outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
+            SetBits(MIX_DST, DP_BKGD_MIX));
+    else
+    {
+        ATIMach64WaitForFIFO(2);
+        outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
+            SetBits(ATIMach64ALU[rop], DP_BKGD_MIX));
+        outm(DP_BKGD_CLR, bg);
+    }
+
+    ATIMach64WaitForFIFO(3);
+    outm(DP_WRITE_MASK, planemask);
+    outm(DP_SRC, DP_MONO_SRC_HOST |
+        SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
+    outm(DP_FRGD_CLR, fg);
+}
+
+/*
+ * ATIMach64SubsequentScanlineCPUToScreenColorExpandFill --
+ *
+ * This function sets up the engine for a single colour expansion fill.
+ */
+static void
+ATIMach64SubsequentScanlineCPUToScreenColorExpandFill
+(
+    ScrnInfoPtr pScreenInfo,
+    int         x,
+    int         y,
+    int         w,
+    int         h,
+    int         skipleft
+)
+{
+    ATIPtr pATI = ATIPTR(pScreenInfo);
+
+    if (pATI->XModifier != 1)
+    {
+        x *= pATI->XModifier;
+        w *= pATI->XModifier;
+        skipleft *= pATI->XModifier;
+
+        outm(DST_CNTL, SetBits((x / 4) % 6, DST_24_ROT) |
+            (DST_X_DIR | DST_Y_DIR | DST_24_ROT_EN));
+    }
+
+    pATI->ExpansionBitmapWidth = (w + 31) / 32;
+
+    ATIMach64WaitForFIFO(3);
+    outm(SC_LEFT_RIGHT, SetWord(x + w - 1, 1) | SetWord(x + skipleft, 0));
+    outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
+    outm(DST_HEIGHT_WIDTH,
+        SetWord(pATI->ExpansionBitmapWidth * 32, 1) | SetWord(h, 0));
+}
+
+/*
+ * ATIMach64SubsequentColorExpandScanline --
+ *
+ * This function feeds a bitmap scanline to the engine for a colour expansion
+ * fill.
+ */
+static void
+ATIMach64SubsequentColorExpandScanline
+(
+    ScrnInfoPtr pScreenInfo,
+    int         iBuffer
+)
+{
+    ATIPtr pATI         = ATIPTR(pScreenInfo);
+    CARD32 *pBitmapData = pATI->ExpansionBitmapScanline;
+    int    w            = pATI->ExpansionBitmapWidth;
+
+    pATI->nFIFOEntries >>= 1;
+
+    for (;  w > 0;  w--, pBitmapData++)
+    {
+        if (!pATI->nAvailableFIFOEntries && (w > 1))
+            ATIMach64WaitForFIFO(w);
+
+        outm(HOST_DATA_0, *pBitmapData);
+    }
+
+    pATI->nFIFOEntries <<= 1;
 }
 
 /*
@@ -1445,14 +1513,6 @@ ATIMach64AccelInit
     pXAAInfo->SetupForSolidFill = ATIMach64SetupForSolidFill;
     pXAAInfo->SubsequentSolidFillRect = ATIMach64SubsequentSolidFillRect;
 
-    /* Clips */
-    pXAAInfo->ClippingFlags = HARDWARE_CLIP_SCREEN_TO_SCREEN_COLOR_EXPAND |
-        HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY | HARDWARE_CLIP_MONO_8x8_FILL |
-        HARDWARE_CLIP_COLOR_8x8_FILL | HARDWARE_CLIP_SOLID_FILL |
-        HARDWARE_CLIP_DASHED_LINE | HARDWARE_CLIP_SOLID_LINE;
-    pXAAInfo->SetClippingRectangle = ATIMach64SetClippingRectangle;
-    pXAAInfo->DisableClipping = ATIMach64DisableClipping;
-
     /* 8x8 mono pattern fills */
     pXAAInfo->Mono8x8PatternFillFlags = HARDWARE_PATTERN_PROGRAMMED_BITS |
         HARDWARE_PATTERN_SCREEN_ORIGIN | BIT_ORDER_IN_BYTE_MSBFIRST;
@@ -1469,6 +1529,25 @@ ATIMach64AccelInit
     pXAAInfo->SubsequentSolidHorVertLine = ATIMach64SubsequentSolidHorVertLine;
     pXAAInfo->SubsequentSolidBresenhamLine =
         ATIMach64SubsequentSolidBresenhamLine;
+
+    /*
+     * Use scanline version of colour expansion, not only for the non-ix86
+     * case, but also to avoid PCI retries.
+     */
+    pXAAInfo->ScanlineCPUToScreenColorExpandFillFlags =
+        LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X |
+        BIT_ORDER_IN_BYTE_MSBFIRST | CPU_TRANSFER_PAD_DWORD |
+        SCANLINE_PAD_DWORD;
+    pXAAInfo->NumScanlineColorExpandBuffers = 1;
+    pATI->ExpansionBitmapScanlinePtr = pATI->ExpansionBitmapScanline;
+    pXAAInfo->ScanlineColorExpandBuffers =
+        (CARD8 **)&pATI->ExpansionBitmapScanlinePtr;
+    pXAAInfo->SetupForScanlineCPUToScreenColorExpandFill =
+        ATIMach64SetupForScanlineCPUToScreenColorExpandFill;
+    pXAAInfo->SubsequentScanlineCPUToScreenColorExpandFill =
+        ATIMach64SubsequentScanlineCPUToScreenColorExpandFill;
+    pXAAInfo->SubsequentColorExpandScanline =
+        ATIMach64SubsequentColorExpandScanline;
 
     return TRUE;
 }

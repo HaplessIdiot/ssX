@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.18 2000/03/22 21:19:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.19 2000/03/30 15:41:19 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -31,6 +31,7 @@
 #include "atidsp.h"
 #include "atiident.h"
 #include "atilock.h"
+#include "atimach64.h"
 #include "atimodule.h"
 #include "atioption.h"
 #include "atipreinit.h"
@@ -343,7 +344,7 @@ ATIPreInit
     Bool            AllowCRT = TRUE;
     CARD32          IOValue1, IOValue2 = 0;
     int             i, j, AcceleratorVideoRAM = 0, VGAVideoRAM = 0;
-    int             Numerator, Denominator;
+    int             Numerator, Denominator, Divider;
     resRange        Resources[2] = {{0, 0, 0}, _END};
     ClockRange      ATIClockRange = {NULL, 0, 80000, 0, TRUE, TRUE, 1, 1, 0};
     int             minPitch, maxPitch = 0xFFU, pitchInc, maxHeight = 0;
@@ -1665,15 +1666,28 @@ ATIPreInit
                 pATI->ReferenceNumerator;
             Denominator = pATI->ClockDescriptor.MinM *
                 pATI->XCLKReferenceDivider * pATI->ReferenceDenominator;
+            Divider = 1;
 
+#if 0 
+            /* CLUT reads are unreliable with SDRAM when VCLK is too high */
+            if (pATI->MemoryType < MEM_264_SGRAM)
+            {
+                if (pATI->NewHW.crtc == ATI_CRTC_VGA)
+                    Divider = 4;
+                else
+                    Divider = 8;
+            }
+            else
+#endif
             if (pScreenInfo->depth >= 8)
-                Denominator *= pScreenInfo->bitsPerPixel / 4;
+                Divider = pScreenInfo->bitsPerPixel / 4;
 
             i = (5 - 2) - pATI->XCLKPostDivider;
             if (pATI->NewHW.crtc != ATI_CRTC_VGA)
                i++;
 
-            i = (ATIDivide(Numerator, Denominator, i, -1) / 1000) * 1000;
+            i = (ATIDivide(Numerator, Denominator * Divider, i, -1) /
+                 1000) * 1000;
             if (i < ATIClockRange.maxClock)
                 ATIClockRange.maxClock = i;
         }
@@ -1869,9 +1883,9 @@ ATIPreInit
          * Set engine restrictions on coordinate space.  Use maxPitch for the
          * horizontal and maxHeight for the vertical.
          */
-        if (maxPitch > 4095)
-            maxPitch = 4095;
-        maxHeight = 16383;
+        if (maxPitch > (ATIMach64MaxX / pATI->XModifier))
+            maxPitch = ATIMach64MaxX / pATI->XModifier;
+        maxHeight = ATIMach64MaxY;
 
         /*
          * For SGRAM & WRAM adapters, the display engine limits the pitch to
