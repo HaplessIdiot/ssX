@@ -1,4 +1,7 @@
 XFree86 4.1.99.1 (xx June 2001)
+  71. Fix Linux xf86GetPciSizeFromOS() parsing when the kernel is 64 bit
+      and any base or size is larger than 32 bits in magnitude (#4732,
+      David S. Miller).
   70. Xinstall.sh updates and bug fixes (David Dawes).
   69. Make XDarwin ddx pass up proper right and middle mouse button numbers
       and fix mouse button 5 (Christoph Pfisterer and Torrey T. Lyons).
@@ -13437,4 +13440,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1821 2001/06/01 06:07:35 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1822 2001/06/01 17:09:29 dawes Exp $
