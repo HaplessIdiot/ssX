@@ -3,7 +3,7 @@
 
 
 
-// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.19 2003/04/19 12:22:09 pascal Exp $
+// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.20 2003/05/15 13:31:58 pascal Exp $
 
 // "standard" XFree86 codes
 // It seems that the "default" must be the first entry in the file.
@@ -138,6 +138,7 @@ xkb_keycodes "basic" {
 
     <KP0>  =  90;
     <KPDL> =  91;
+    <KPEQ> = 126;
 
     <FK13> =  118;
     <FK14> =  119;
@@ -298,7 +299,7 @@ xkb_keycodes "basic" {
     <MDSW> =    93; // <U5D>
     <LVL3> =   124; // <U7C>
     <ALT>  =   125; // <U7D>
-    <META> =   126; // <U7E>
+    <META> =   156; // <I1C>
     <SUPR> =   127; // <U7F>
     <HYPR> =   128; // <U80>
 

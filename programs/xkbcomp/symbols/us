@@ -6,7 +6,7 @@
 // uses the punctuation keys configurations common on PC 
 // keyboards (e.g. key <ABO9> is { [ period greater ] })
 
-// $XFree86: xc/programs/xkbcomp/symbols/us,v 3.11 2001/08/17 13:27:58 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/us,v 3.12 2002/11/20 04:49:03 dawes Exp $
 
 partial hidden alphanumeric_keys modifier_keys 
 xkb_symbols "basic" {
@@ -160,6 +160,7 @@ xkb_symbols "generic101" {
     key  <KP2> {	[  KP_Down,	KP_2	]	};
     key  <KP3> {	[  KP_Next,	KP_3	]	};
     key <KPEN> {	[  	KP_Enter	]	};
+    key <KPEQ> {	[  	KP_Equal	]	};
 
     key  <KP0> {	[  KP_Insert,	KP_0	]	};
     key <KPDL> {  [  KP_Delete,	KP_Decimal ]	};

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.148 2003/03/25 04:18:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.149 2003/04/03 16:20:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -440,25 +440,6 @@ xf86PostKbdEvent(unsigned key)
     goto special;
 #endif /* __sparc__ */
 
-#if defined (i386) && defined (SVR4)
-    /* 
-     * PANIX returns DICOP standards based keycodes in using 106jp 
-     * keyboard. We need to remap some keys. 
-     */
-  if(xf86Info.panix106 == TRUE){
-    switch (scanCode) {
-    case 0x56:        scanCode = KEY_BSlash2;	break;  /* Backslash */
-    case 0x5A:        scanCode = KEY_NFER;	break;  /* No Kanji Transfer*/
-    case 0x5B:        scanCode = KEY_XFER;	break;  /* Kanji Tranfer */
-    case 0x5C:        scanCode = KEY_Yen;	break;  /* Yen curs pgup */
-    case 0x6B:        scanCode = KEY_Left;	break;  /* Cur Left */
-    case 0x6F:        scanCode = KEY_PgUp;	break;  /* Cur PageUp */
-    case 0x72:        scanCode = KEY_AltLang;  break;  /* AltLang(right) */
-    case 0x73:        scanCode = KEY_RCtrl;    break;  /* not needed */
-    }
-  }
-#endif  /* i386 && SVR4 */
-
 #ifdef __linux__
   if (xf86Info.kbdCustomKeycodes) {
     specialkey = SpecialServerMap[scanCode];
@@ -489,6 +470,30 @@ xf86PostKbdEvent(unsigned key)
       break;
 #endif
     }
+#if defined (i386) && defined (SVR4)
+    /* 
+     * PANIX returns DICOP standards based keycodes in using 106jp 
+     * keyboard. We need to remap some keys. 
+     */
+    if(xf86Info.panix106 == TRUE){
+      switch (scanCode) {
+      case 0x56:        scanCode = KEY_BSlash2;	break;  /* Backslash */
+      case 0x5A:        scanCode = KEY_NFER;	break;  /* No Kanji Transfer*/
+      case 0x5B:        scanCode = KEY_XFER;	break;  /* Kanji Tranfer */
+      case 0x5C:        scanCode = KEY_Yen;	break;  /* Yen curs pgup */
+      case 0x6B:        scanCode = KEY_Left;	break;  /* Cur Left */
+      case 0x6F:        scanCode = KEY_PgUp;	break;  /* Cur PageUp */
+      case 0x72:        scanCode = KEY_AltLang;	break;  /* AltLang(right) */
+      case 0x73:        scanCode = KEY_RCtrl;	break;  /* not needed */
+      }
+    } else
+#else /* i386 && SVR4 */
+    {
+      switch (scanCode) {
+      case 0x5c:        scanCode = KEY_KP_Equal; break; /* Keypad Equal */
+      }
+    }
+#endif  /* !(i386 && SVR4) */
   }
 
   else if (
