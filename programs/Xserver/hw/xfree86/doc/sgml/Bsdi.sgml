@@ -16,13 +16,17 @@ is available as source patches against the X Consortium X11R6 code, as
 well as binary distributions for many architectures.
 
 The sources for XFree86 are available by anonymous ftp from:
-<verb>
-    ftp.XFree86.org:/pub/XFree86/current
-</verb>
+<p>
+<url
+    name="ftp.XFree86.org:/pub/XFree86/current"
+    url="ftp://ftp.XFree86.org/pub/XFree86/current">
+<p>
 Binaries for BSD/386 1.1 will be available from:
-<verb>
-    ftp.bsdi.com:/contrib/X11/XFree86
-</verb>
+<p>
+<url
+    name="ftp.bsdi.com:/contrib/X11/XFree86"
+    url="ftp://ftp.bsdi.com/contrib/X11/XFree86">
+<p>
 If you're running BSD 1.0, you'll have to build it from the source.
 Building the distribution on BSD/386 1.0 is untested, but belived to
 work correctly. If you run into trouble building on BSD/386 1.0, please
@@ -303,7 +307,7 @@ instructions on how to build a new kernel.
 </verb>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.3 1995/01/04 04:40:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.4 1995/01/15 10:34:11 dawes Exp $
 </verb>
 
 </article>

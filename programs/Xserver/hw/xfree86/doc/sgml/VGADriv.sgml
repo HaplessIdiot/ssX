@@ -342,7 +342,7 @@ For a chipset with only one bank, all three will be declared as entry points
 to the same function (see the ``tvga8900'' driver for an example).
 
 The functions are fairly simple - the bank number is passed to the function
-in register %al.  The function will shift, bitmask, etc - whatever is 
+in register &percnt;al.  The function will shift, bitmask, etc - whatever is 
 required to put the bank number into the correct form - and then write
 it to the correct I/O port.  For chipsets where the two banks are read-only
 HERE
@@ -903,7 +903,7 @@ Sunnyvale, CA  94086 <newline>
 </descrip>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.0 1994/12/25 12:27:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.1 1995/01/10 10:55:30 dawes Exp $
 </verb>
 
 </article>

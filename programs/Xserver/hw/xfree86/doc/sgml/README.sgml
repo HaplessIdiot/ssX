@@ -29,9 +29,9 @@ The following items have been added since XFree86 3.1 was released in
 October 1994:
 <enum>
     <item> XFree86 3.1.1 includes the X Consortium's recently released
-	public patches (up to fix-11).  The XFree86 Project, Inc has
+	public patches (up to fix-10).  The XFree86 Project, Inc has
 	worked with the X Consortium to have much of XFree86 3.1.1
-	included in the X Consortium's fix-11.
+	included in the X Consortium's fix-10.
     <item> A new accelerated server for Mach64 boards.
     <item> Bug fixes and some performance improvements for most of the
 	accelerated servers.
@@ -418,7 +418,7 @@ XFree86 support was integrated into the base X11R6 distribution by:
 </itemize>
 <tag/ISC SVR3 support by:  /
 <itemize>
-       <item> Michael Rohleder <it>&lt;michael.rohleder%iktffm.uucp@germany.eu.net&gt</it>
+       <item> Michael Rohleder <it>&lt;michael.rohleder&percnt;iktffm.uucp@germany.eu.net&gt</it>
 </itemize>
 <tag/Linux shared libraries by:  /
 <itemize>
@@ -670,6 +670,7 @@ involvement in X11R6.
   <item>  Kazuyuki Okamoto, Japan
   <item>  Prime Time Freeware, San Bruno, CA
   <item>  Red Hat Software, Chapel Hill, NC
+  <item>  SPEA Software AG, Starnberg, Germany
   <item>  Clifford M Stein
   <item>  Joel Storm 
   <item>  S.u.S.E, GmbH, Fuerth, Germany
@@ -677,8 +678,9 @@ involvement in X11R6.
   <item>  Jim Tsillas
   <item>  Trans-Ameritech Enterprises, Inc., Santa Clara, CA
   <item>  Unifix Software GmbH, Braunschweig, Germany
-  <item>  Vixie Enterprises, La Honda, CA
-  <item>  <url url="//www.cdrom.com/"  
+  <item>  <url url="http://www.vix.com/"
+	       name="Vixie Enterprises">, La Honda, CA
+  <item>  <url url="http://www.cdrom.com/"  
 	name="Walnut Creek CDROM">, Concord, CA
   <item>  Xtreme s.a.s., Livorno, Italy
 </itemize>
@@ -691,7 +693,7 @@ information, contact The XFree86 Project, Inc, at
 <sect>Source and binary archive sites
 <p>
 
-Source patches are available to upgrade X11R6 PL11 from the X Consortium
+Source patches are available to upgrade X11R6 PL10 from the X Consortium
 to XFree86 3.1.1.  They and binaries for many OSs are available via anonymous
 FTP from:
 
@@ -798,7 +800,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.8 1995/01/18 06:11:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.9 1995/01/18 10:47:07 dawes Exp $
 </verb>
 
 </article>

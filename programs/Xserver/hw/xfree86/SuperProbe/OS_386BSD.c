@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.1 1994/08/31 04:19:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.2 1994/12/10 02:05:23 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -45,7 +45,7 @@
 #   include <machine/ioctl_pc.h>
 #  endif
 #  if defined(PCVT_SUPPORT) && !defined(SYSCONS_SUPPORT)
-#   define SYSCONS_SUPPORT
+#   include <machine/pcvt_ioctl.h>
 #  endif
 #  ifdef SYSCONS_SUPPORT
     /* both, Free and NetBSD have syscons */
@@ -167,7 +167,7 @@ int OpenVideo()
 	}
 	else
 	{
-#ifdef SYSCONS_SUPPORT
+#if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
 		/*
 		 * not codrv and not BSDI; first look if we have a console
 		 * driver that understands USL-style VT commands
@@ -224,7 +224,7 @@ void CloseVideo()
 			ioctl(CONS_fd, CONSOLE_X_MODE, &onoff);
 #endif
 		}
-#ifdef SYSCONS_SUPPORT
+#if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
 		else if(HasUslVt)
 			ioctl(CONS_fd, KDDISABIO, 0);
 #endif

@@ -1,3 +1,11 @@
+XFree86 3.1.0Cb (19 January 1995)
+217. Added a DocIndex (to use as a starting point for the HTML docs).
+216. README.Oak (Jorge Delgado).
+215. SuperProbe/kbd_mode updates for compiling with PCVT_SUPPORT
+     (Joerg Wunsch).
+214. Fix for 90C31 acceleration problems.
+213. Don't use '-ansi -pedantic' for Solaris versions earlier than 2.4.
+
 XFree86 3.1.0Ca (18 January 1995)
 212. S3 update for SPEA Mercury P64 (Norbert Distler).
 211. Late LBX updates from the XC.

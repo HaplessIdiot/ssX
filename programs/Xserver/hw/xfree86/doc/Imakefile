@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.11 1994/12/25 12:27:01 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.12 1995/01/12 12:03:38 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -62,7 +62,7 @@ all::
 #if !BuildLinuxDocText
 HWREADME =  README.ati README.trident README.tseng README.WstDig \ 
             README.cirrus README.Video7 README.P9000 README.agx \
-            README.S3 README.W32
+            README.S3 README.W32 README.Oak
 
 MAINDOCS = COPYRIGHT README README.Config INSTALL
 

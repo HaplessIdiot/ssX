@@ -146,7 +146,7 @@ press.
 
 	Note that if the server complains about being unable to open
 your mouse device, this is NOT a server problem.  It has been a very
-common misconfiguration error on several of the OSs, and 99.999% of the
+common misconfiguration error on several of the OSs, and 99.999&percnt; of the
 time it is because the device is not correctly configured in the OS.
 Hence don't bug us until after you prove that your OS level support
 is correct.
@@ -168,7 +168,8 @@ need is:
 <itemize>
 	<item> Chipset
 	<item> Amount of video memory
-	<item> Dot-clocks available
+	<item> Dot-clocks available or clock chip used (if programmable)
+	<item> Ramdac type (for some servers)
 </itemize>
 The server, in general, is capable of filling these on its own, but it
 is best to fully specify things in the <tt>XF86Config</tt> file, so that no
@@ -304,7 +305,7 @@ you can have an 800x600 display, but a 1280x1024 virtual size).  The
 Virtual keyword is used to specify this size.  Note that many of the new
 accelerated server use non-displayed memory for caching.  It is not
 desirable to use all of your memory for virtual display, as this leaves
-none for caching, and this can cost as much as 30-40% of your server
+none for caching, and this can cost as much as 30-40&percnt; of your server
 performance.
 
 	The last thing you specify in Display subsection is the display
@@ -518,7 +519,7 @@ installation.
 </code>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Config.sgml,v 3.1 1994/12/26 11:03:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Config.sgml,v 3.2 1995/01/07 05:44:31 dawes Exp $
 </verb>
 
 </article>

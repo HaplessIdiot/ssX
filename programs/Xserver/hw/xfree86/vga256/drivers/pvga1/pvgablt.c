@@ -1,5 +1,5 @@
 /* $XConsortium: pvgablt.c,v 1.2 94/04/17 20:32:38 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgablt.c,v 3.0 1994/07/24 11:57:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgablt.c,v 3.1 1995/01/14 10:49:00 dawes Exp $ */
 /*
  * cfb copy area
  */
@@ -219,6 +219,8 @@ pvgacfbDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	switch (WDchipset)
 	{
 	case WD90C31:
+#if 0
+	  /* Not sure why this causes problems (DHD) */
 	  wd90c31BitBlt((unsigned char *)psrcBase, (unsigned char *)pdstBase,
 			widthSrc, widthDst,
 			pptSrc->x, pptSrc->y,
@@ -229,6 +231,32 @@ pvgacfbDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			planemask,
 			BLT_SRC_COLR,
 			0);
+#else
+	  if (xdir == -1 || ydir == -1)
+	  {
+	    dstaddr = (pbox->y1+h-1)*widthDst + pbox->x1+w-1;
+	    srcaddr = (pptSrc->y+h-1)*widthSrc + pptSrc->x+w-1;
+	  }
+	  else
+	  {
+	    dstaddr = pbox->y1*widthDst + pbox->x1;
+	    srcaddr = pptSrc->y*widthSrc + pptSrc->x;
+	  }
+
+	  /** handle the blit, this could actually handle and ROP **/
+	  WAIT_BLIT;
+	  SET_BLT_SRC_LOW ((srcaddr & 0xFFF));
+	  SET_BLT_SRC_HGH (((srcaddr >> 12) & 0xFF));
+	  SET_BLT_DST_LOW ((dstaddr & 0xFFF));
+	  SET_BLT_DST_HGH (((dstaddr >> 12) & 0xFF));
+	  SET_BLT_ROW_PTCH (widthDst);
+	  SET_BLT_DIM_X   (w);
+	  SET_BLT_DIM_Y   (h);
+	  SET_BLT_MASK    ((planemask & 0xFF));
+	  SET_BLT_RAS_OP  (ROP_SRC);
+	  SET_BLT_CNTRL2  (0x00);
+	  SET_BLT_CNTRL1  ((BLT_ACT_STAT | BLT_PACKED | BLT_SRC_COLR | blit_dir));
+#endif
 	  break;
 	case WD90C33:
 	  wd90c33BitBlt((unsigned char *)psrcBase, (unsigned char *)pdstBase,

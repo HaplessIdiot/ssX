@@ -22,7 +22,7 @@ We highly recommend using GCC-2 to build XFree86.  Do not use version
 2.6.0 or 2.4.x versions prior to 2.4.5 due to bugs that cause either
 build or execution failures.  Most of the XFree86 3.1.1 binary kits are
 built with GCC 2.4.5, 2.5.8 or 2.6.3.  Use of GCC's -m486 option will yield
-approximately 5% better performance on a 486, with no degradation (other
+approximately 5&percnt; better performance on a 486, with no degradation (other
 than larger binaries) on a 386.  (gcc-2 is available from prep.ai.mit.edu
 and other sites archiving GNU source.)
 
@@ -30,7 +30,7 @@ and other sites archiving GNU source.)
 <item>You need the following:
 
     <itemize>
-    <item> X Consortium X11R6 distribution with fixes 01-11 applied.
+    <item> X Consortium X11R6 distribution with fixes 01-10 applied.
 
     <item> <tt/XFree86-3.1.1.diff.gz/
 
@@ -99,7 +99,7 @@ and other sites archiving GNU source.)
 </verb></tscreen>
      </itemize>
         
-<item> If you are starting from the stock X Consortium PL11 distribution,
+<item> If you are starting from the stock X Consortium PL10 distribution,
    go to the
    directory above your <tt/xc/ directory, and run:
 
@@ -294,7 +294,7 @@ details of how to do this, please refer to the <url url="LinkKit.html"
 name="README.LinkKit"> file.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.2 1995/01/07 05:44:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.3 1995/01/15 10:34:14 dawes Exp $
 </verb>
 
 </article>

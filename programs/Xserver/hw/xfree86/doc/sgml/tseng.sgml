@@ -11,6 +11,8 @@
 The Tseng chipsets supported by XFree86 are ET3000, ET4000, and
 ET4000/W32.  At this time, the accelerated features of the ET4000/W32
 are not supported; the chipset is treated as a standard ET4000.
+For details about the accelerated ET4000/W32 server, refer to
+<url name="README.W32" url="W32.html">.
 
 <sect> Clock selection problems with some ET4000 boards <p>
 XFree86 has some problems getting the clock selection right with some
@@ -52,7 +54,7 @@ has been removed.  Hopefully the past text-restoral problems are alleviated
 in XFree86 2.0.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.tseng,v 3.1 1994/09/26 15:33:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.0 1994/12/20 11:33:48 dawes Exp $
 </verb>
 
 </article>
