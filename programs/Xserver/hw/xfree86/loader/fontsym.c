@@ -1,7 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/fontsym.c,v 1.1.2.1 1998/07/03 13:44:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/fontsym.c,v 1.2 1998/07/25 16:56:15 dawes Exp $ */
 
 #include "sym.h"
 #include "fntfilst.h"
+#include "fontenc.h"
 
 extern void TwoByteSwap();
 extern void FourByteSwap();
@@ -48,6 +49,10 @@ LOOKUP fontLookupTab[] = {
   SYMFUNC(BitOrderInvert)
   SYMFUNC(FontFileMatchRenderer)
   SYMFUNC(RepadBitmap)
+  SYMFUNC(font_encoding_name)
+  SYMFUNC(font_encoding_recode)
+  SYMFUNC(font_encoding_find)
+  SYMFUNC(font_encoding_from_xlfd)
   
   SYMVAR(FontFileBitmapSources)
 

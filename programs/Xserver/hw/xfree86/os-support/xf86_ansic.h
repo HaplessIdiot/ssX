@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.14 1999/01/24 13:32:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.15 1999/01/31 12:22:05 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -49,6 +49,10 @@
 #endif
 #ifndef EOF
 #define EOF (-1)
+#endif
+
+#ifndef PATH_MAX
+#define PATH_MAX 1024
 #endif
 
 /*
