@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.15 2000/08/01 20:28:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.16 2000/09/24 13:51:22 alanh Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -147,6 +147,8 @@ LinkSourceFile(state.c,$(MESASRCDIR)/src)
 LinkSourceFile(state.h,$(MESASRCDIR)/src)
 LinkSourceFile(stencil.c,$(MESASRCDIR)/src)
 LinkSourceFile(stencil.h,$(MESASRCDIR)/src)
+LinkSourceFile(texformat.c, $(MESASRCDIR)/src)
+LinkSourceFile(texformat.h, $(MESASRCDIR)/src)
 LinkSourceFile(texgen_tmp.h,$(MESASRCDIR)/src)
 LinkSourceFile(teximage.c,$(MESASRCDIR)/src)
 LinkSourceFile(teximage.h,$(MESASRCDIR)/src)
@@ -245,6 +247,7 @@ LinkSourceFile(zoom.h,$(MESASRCDIR)/src)
 		stages.c \
 		state.c \
 		stencil.c \
+		texformat.c \
 		teximage.c \
 		texobj.c \
 		texstate.c \
@@ -321,6 +324,7 @@ LinkSourceFile(zoom.h,$(MESASRCDIR)/src)
 		stages.o \
 		state.o \
 		stencil.o \
+		texformat.o \
 		teximage.o \
 		texobj.o \
 		texstate.o \
@@ -384,4 +388,3 @@ InstallDriverSDKLibraryModule(GLcore,$(DRIVERSDKMODULEDIR),extensions)
 DependSubdirs($(SUBDIRS))
 MakeLintLibSubdirs($(SUBDIRS))
 LintSubdirs($(SUBDIRS))
-
