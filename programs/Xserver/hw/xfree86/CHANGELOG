@@ -1,4 +1,6 @@
 XFree86 4.0.1d (?? ?????? 2000)
+ 576. Disable gamma correction and DirectColor visuals on the I810 because
+      they don't work (Mark Vojkovich).
  575. Fix a bug in XAA's MSBFIRST color expansion support (Mark Vojkovich).
  574. Allow the default I810 video overlay key to be changed from the
       XF86Config file (Mark Vojkovich).
@@ -11098,4 +11100,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1291 2000/09/01 02:31:24 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1292 2000/09/01 19:30:36 mvojkovi Exp $
