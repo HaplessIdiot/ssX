@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.3 1999/03/14 03:21:59 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -145,7 +145,7 @@ MGA_SetMode(
 	
 	pScrn->displayWidth = OldDisplayWidth[index];
 	
-        (*pScrn->SwitchMode)(index, pScrn->currentMode, 0);
+        MGASwitchMode(index, pScrn->currentMode, 0);
 	pMga->DGAactive = FALSE;
    } else {
 	if(!pMga->DGAactive) {  /* save the old parameters */
@@ -157,7 +157,7 @@ MGA_SetMode(
 	pScrn->displayWidth = pMode->bytesPerScanline / 
 			      (pMode->bitsPerPixel >> 3);
 
-        (*pScrn->SwitchMode)(index, pMode->mode, 0);
+        MGASwitchMode(index, pMode->mode, 0);
    }
    
    return TRUE;

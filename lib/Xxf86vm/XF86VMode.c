@@ -1,5 +1,5 @@
 /* $XConsortium: XF86VMode.c /main/2 1995/11/14 18:17:58 kaleb $ */
-/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.23 1997/07/06 12:08:35 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.24 1999/03/07 08:29:29 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -157,6 +157,54 @@ XF86VidModeSetClientVersion(Display *dpy)
     req->xf86vidmodeReqType = X_XF86VidModeSetClientVersion;
     req->major = XF86VIDMODE_MAJOR_VERSION;
     req->minor = XF86VIDMODE_MINOR_VERSION;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+Bool
+XF86VidModeSetGamma(Display *dpy, int screen, XF86VidModeGamma *Gamma)
+{
+    XExtDisplayInfo *info = find_display(dpy);
+    xXF86VidModeSetGammaReq *req;
+
+    XF86VidModeCheckExtension(dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeSetGamma, req);
+    req->reqType = info->codes->major_opcode;
+    req->xf86vidmodeReqType = X_XF86VidModeSetGamma;
+    req->screen = screen;
+    req->red = (CARD32)(Gamma->red * 10000.);
+    req->green = (CARD32)(Gamma->green * 10000.);
+    req->blue = (CARD32)(Gamma->blue * 10000.);
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+Bool
+XF86VidModeGetGamma(Display *dpy, int screen, XF86VidModeGamma *Gamma)
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeGetGammaReply rep;
+    xXF86VidModeGetGammaReq *req;
+
+    XF86VidModeCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeGetGamma, req);
+    req->reqType = info->codes->major_opcode;
+    req->xf86vidmodeReqType = X_XF86VidModeGetGamma;
+    req->screen = screen;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+    Gamma->red = ((float)rep.red) / 10000.;
+    Gamma->green = ((float)rep.green) / 10000.;
+    Gamma->blue = ((float)rep.blue) / 10000.;
     UnlockDisplay(dpy);
     SyncHandle();
     return True;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.13 1998/09/20 14:41:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.14 1999/01/14 13:04:52 dawes Exp $ */
 
 /*
  *
@@ -221,7 +221,7 @@ AOUTCreateCommon(AOUTModulePtr aoutfile)
     while (listCOMMON) {
         common = listCOMMON;
         lookup[l].symName= AOUTGetSymbolName(aoutfile, common->sym);
-        lookup[l].offset = (void (*)())(aoutfile->common+offset);
+        lookup[l].offset = (funcptr)(aoutfile->common+offset);
 #ifdef AOUTDEBUG
         AOUTDEBUG("Adding %x %s\n", lookup[l].offset, lookup[l].symName );
 #endif
@@ -545,7 +545,7 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 	    if (s->n_type & AOUT_EXT) {
 		lookup[l].symName = symname;
 		/* text symbols start at 0 */
-		lookup[l].offset = (void (*)())(aoutfile->text + s->n_value);
+		lookup[l].offset = (funcptr)(aoutfile->text + s->n_value);
 #ifdef AOUTDEBUG
 		AOUTDEBUG("Adding text %s %08x\n", symname, lookup[l].offset);
 #endif
@@ -558,7 +558,7 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 	    if (s->n_type & AOUT_EXT) {
 		lookup[l].symName = symname;
 		/* data symbols are following text */
-		lookup[l].offset = (void (*)())(aoutfile->data + 
+		lookup[l].offset = (funcptr)(aoutfile->data + 
 					       s->n_value - header->a_text);
 #ifdef AOUTDEBUG
 		AOUTDEBUG("Adding data %s %08x\n", symname, lookup[l].offset);
@@ -572,7 +572,7 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 	    if (s->n_type & AOUT_EXT) {
 		lookup[l].symName = symname;
 		/* bss symbols follow both text and data */
-		lookup[l].offset = (void (*)())(aoutfile->bss + s->n_value 
+		lookup[l].offset = (funcptr)(aoutfile->bss + s->n_value 
 					       - (header->a_data 
 						  + header->a_text));
 #ifdef AOUTDEBUG

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.15 1998/09/20 14:41:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.16 1999/01/14 13:04:55 dawes Exp $ */
 
 /*
  *
@@ -317,8 +317,8 @@ ELFModulePtr	elffile;
 	/* this is xstrdup because is should be more efficient. it is freed
 	 * with xf86loaderfree
 	 */
-	lookup[l].symName = (char *)xf86loaderstrdup(ElfGetString(elffile,common->sym->st_name));
-	lookup[l].offset = (void (*)())(elffile->common + offset);
+	lookup[l].symName = xf86loaderstrdup(ElfGetString(elffile,common->sym->st_name));
+	lookup[l].offset = (funcptr)(elffile->common + offset);
 #ifdef ELFDEBUG
 	ELFDEBUG("Adding common %lx %s\n", lookup[l].offset, lookup[l].symName );
 #endif
@@ -1450,8 +1450,8 @@ ELFModulePtr	elffile;
 			    /* since we don't know the value don't advertise the symbol */
 			    break;
 			default:
-			    lookup[l].symName=(char *)xf86loaderstrdup(ElfGetString(elffile,syms[i].st_name));
-			    lookup[l].offset=(void (*)())
+			    lookup[l].symName=xf86loaderstrdup(ElfGetString(elffile,syms[i].st_name));
+			    lookup[l].offset=(funcptr)
 					(elffile->saddr[syms[i].st_shndx]+
 					syms[i].st_value);
 #ifdef ELFDEBUG

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/sym.h,v 1.1.2.1 1998/05/22 13:47:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/sym.h,v 1.3 1998/07/25 16:56:18 dawes Exp $ */
 
 /*
  *
@@ -31,12 +31,14 @@
  * added to the symbol table.
  */
 
+typedef void (*funcptr)(void);
+
 typedef struct {
 	char	*symName;
-	void	(*offset)();
+	funcptr	offset;
 } LOOKUP;
 
-#define SYMFUNC( func ) { #func, (void (*)())&func },
-#define SYMVAR( var ) { #var, (void (*)())&var },
+#define SYMFUNC( func ) { #func, (funcptr)&func },
+#define SYMVAR( var ) { #var, (funcptr)&var },
 
 #endif /* _SYM_H */

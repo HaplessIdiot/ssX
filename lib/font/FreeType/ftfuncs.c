@@ -21,9 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.7 1999/01/31 04:59:22 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.8 1999/01/31 12:21:23 dawes Exp $ */
 
 #include "fntfilst.h"
+#include "fontutil.h"
 #include "FSproto.h"
 #include "freetype.h"
 #include "ftxcmap.h"

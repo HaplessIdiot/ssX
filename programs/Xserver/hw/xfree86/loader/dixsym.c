@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.17 1999/02/07 06:18:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.18 1999/03/01 02:15:10 dawes Exp $ */
 
 
 /*
@@ -50,14 +50,7 @@
 #include "xvmodproc.h"
 #endif
 
-/* These should be in a header somewhere */
-extern Bool     Must_have_memory;
-extern WindowPtr *WindowTable;
-extern int GrabInProgress;
-extern int monitorResolution;
-extern Bool permitOldBugs;
-extern Bool noTestExtensions;
-
+/* XXX This should be in a header somewhere */
 extern void ClientSleepUntil();
 
 /* DIX things */

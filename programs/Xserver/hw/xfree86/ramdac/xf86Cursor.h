@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.h,v 1.2 1998/08/29 14:34:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.h,v 1.3 1999/01/31 12:22:06 dawes Exp $ */
 
 #ifndef _XF86CURSOR_H
 #define _XF86CURSOR_H
@@ -39,6 +39,7 @@ typedef struct {
     Bool                	(*SwitchMode)(int, DisplayModePtr,int);
     Bool                	(*EnterVT)(int, int);
     void                	(*LeaveVT)(int, int);
+    int				(*SetDGAMode)(int, int, DGADevicePtr);
 } xf86CursorScreenRec, *xf86CursorScreenPtr;
 
 Bool xf86InitCursor(

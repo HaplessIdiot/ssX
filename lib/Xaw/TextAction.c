@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.17 1999/02/28 11:19:20 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.18 1999/03/14 03:21:12 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1817,8 +1817,6 @@ TextLeaveWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
     }
 }
 
-static XComposeStatus compose_status = {NULL, 0};
-
 /*
  * Function:
  *	AutoFill
@@ -1897,11 +1895,10 @@ InsertChar(Widget w, XEvent *event, String *p, Cardinal *n)
 
   if (XtIsSubclass (ctx->text.source, (WidgetClass) multiSrcObjectClass))
     text.length = _XawImWcLookupString(w, &event->xkey, (wchar_t*)strbuf,
-				       sizeof(strbuf), &keysym,
-				       (Status*)&compose_status);
+				       sizeof(strbuf), &keysym);
   else
     text.length = _XawLookupString(w, (XKeyEvent*)event, strbuf, sizeof(strbuf),
-				   &keysym, &compose_status);
+				   &keysym);
 
   if (text.length == 0)
     return;

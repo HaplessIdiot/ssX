@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/85 1998/02/26 17:14:44 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/Imakefile,v 3.19 1998/10/25 07:11:22 dawes Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.20 1999/01/13 12:17:44 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -43,6 +43,7 @@ SCREENSAVESRCDIR = beforelight
        XDMSRCDIR = xdm
 XFINDPROXYSRCDIR = xfindproxy
       XFWPSRCDIR = xfwp
+    XGAMMASRCDIR = xgamma
      XHOSTSRCDIR = xhost
 #if BuildPlugin
        XRXSRCDIR = xrx
@@ -65,8 +66,8 @@ SUBDIRS = \
 	$(SMPROXYSRCDIR) $(TWMSRCDIR) x11perf xauth xclipboard xclock \
 	xcmsdb $(XCONSOLESRCDIR) $(XDMSRCDIR) xdpyinfo \
 	$(XF86DGASRCDIR) xedit xfd $(XFSSRCDIR) \
-	$(XFINDPROXYSRCDIR) $(XFWPSRCDIR) $(XHOSTSRCDIR) xieperf \
-	$(XINITSRCDIR) $(XKBSRCDIRS) xkill xlogo xlsatoms xlsclients \
+	$(XFINDPROXYSRCDIR) $(XFWPSRCDIR) $(XGAMMASRCDIR) $(XHOSTSRCDIR) \
+	xieperf $(XINITSRCDIR) $(XKBSRCDIRS) xkill xlogo xlsatoms xlsclients \
 	xlsfonts xmag xmodmap xprop xrdb xrefresh $(XRXSRCDIR) xset \
 	xsetroot $(XSMSRCDIR) xstdcmap xsetmode xsetpointer \
 	$(XTERMSRCDIR) $(XVIDTUNESRCDIR) xwd xwininfo xwud \

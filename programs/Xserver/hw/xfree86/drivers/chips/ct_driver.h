@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.15 1998/11/28 10:43:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.16 1998/12/20 11:57:44 dawes Exp $ */
 
 
 #ifndef _CT_DRIVER_H_
@@ -99,10 +99,12 @@ typedef struct {
 #define ChipsHDepthSupport	0x00000010
 #define ChipsDPMSSupport	0x00000020
 #define ChipsTMEDSupport	0x00000040
+#define ChipsGammaSupport	0x00000080
 
 /* Options flags for the C&T chipsets */
 #define ChipsUseVClk1		0x00000100
 #define ChipsHWCursor		0x00000200
+#define ChipsShadowFB		0x00000400
 
 /* Architecture type flags */
 #define ChipsHiQV		0x00001000
@@ -234,6 +236,8 @@ typedef struct _CHIPSRec {
     unsigned char *	FbBase;
     unsigned char *	MMIOBase;
     long		FbMapSize;
+    unsigned char *	ShadowPtr;
+    int			ShadowPitch;
     OptionInfoPtr	Options;
     CHIPSPanelSizeRec	PanelSize;
     int			FrameBufferSize;

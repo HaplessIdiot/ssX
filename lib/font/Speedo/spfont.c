@@ -21,7 +21,7 @@
  *
  * Author: Dave Lemke, Network Computing Devices Inc
  */
-/* $XFree86: xc/lib/font/Speedo/spfont.c,v 3.6 1999/01/31 04:59:27 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spfont.c,v 3.7 1999/02/07 06:18:20 dawes Exp $ */
 
 /*
 
@@ -54,6 +54,7 @@ from The Open Group.
 #include	"FSproto.h"
 #include	"spint.h"
 #include	"servermd.h"
+#include	"fontutil.h"
 #ifndef FONTMODULE
 #ifdef _XOPEN_SOURCE
 #include <math.h>
