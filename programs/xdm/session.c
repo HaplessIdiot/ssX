@@ -1,5 +1,5 @@
-/* $XConsortium: session.c,v 1.75 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/session.c,v 3.7 1995/07/08 10:32:08 dawes Exp $ */
+/* $XConsortium: session.c /main/76 1996/01/25 18:45:51 kaleb $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.8 1996/01/05 13:21:02 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -834,9 +834,7 @@ char	*user, *home;
     if (user)
     {
 	env = setEnv (env, "USER", user);
-#if defined(SYSV) || defined(SVR4)
 	env = setEnv (env, "LOGNAME", user);
-#endif
     }
     env = setEnv (env, "PATH", d->systemPath);
     env = setEnv (env, "SHELL", d->systemShell);
