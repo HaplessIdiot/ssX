@@ -1,4 +1,6 @@
 XFree86 4.4.99.21 (xx December 2004)
+ 244. Fix a typo in the xsetpointer(1) man page (Bugzilla #1524, NMarci).
+ 243. Fix build warning for lib/X11/Wraphelp.c (Bugzilla #1522, Nicolas Joly).
 
 XFree86 4.4.99.20 (27 December 2004)
  242. Change mmapr to optionally pretty-print its stdout;  Fix usage message
@@ -28,7 +30,7 @@ XFree86 4.4.99.19 (12 December 2004)
       strictly necessary as this is only a source API change)
       (Marc La France).
  231. Cleanup loader.c's handling of MAP_32BIT to match that in elfloader.c
-      (Bugzilla #1515, Nicolas Joly);
+      (Bugzilla #1515, Nicolas Joly).
  230. Fix the code sequence order for the repaya in the Sinhala XKB map
       (Bugzilla #1509, Harshula).
  229. Xterm patch #197 (Thomas Dickey).
@@ -19217,7 +19219,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3368 2004/12/23 22:17:47 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3369 2004/12/27 12:02:37 dawes Exp $
 
 
 
