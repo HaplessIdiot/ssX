@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/fonts/bdf/75dpi/Imakefile.inc,v 1.3 2001/04/17 23:43:45 dawes Exp $
+XCOMM $XFree86: xc/fonts/bdf/75dpi/Imakefile.inc,v 1.4 2001/04/18 17:33:03 dawes Exp $
 
 
 #if BuildUCSFonts
@@ -2461,6 +2461,9 @@ FontTarget(UTRG__12-ISO8859-10)
 FontTarget(UTRG__14-ISO8859-10)
 FontTarget(UTRG__18-ISO8859-10)
 FontTarget(UTRG__24-ISO8859-10)
+#endif
+
+#if BuildISO8859_13Fonts
 FontTarget(courB08-ISO8859-13)
 FontTarget(courB10-ISO8859-13)
 FontTarget(courB12-ISO8859-13)
