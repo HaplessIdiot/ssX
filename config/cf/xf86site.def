@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.159 2000/03/07 15:23:00 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.160 2000/03/22 23:35:47 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -125,7 +125,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.159 2000/03/07 15:23:00 dawes Exp 
  */
 
 /*
- * To disable the internal Xserver malloc, set this to NO
+ * To enable the internal Xserver malloc, uncomment this
  *
 #define UseInternalMalloc	YES
  */
