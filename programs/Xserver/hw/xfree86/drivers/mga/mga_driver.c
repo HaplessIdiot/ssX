@@ -926,50 +926,6 @@ MGACountRam(ScrnInfoPtr pScrn)
    return SizeFound;
 }
 
-/*
- * GetAccelPitchValues -
- *
- * This function returns a list of display width (pitch) values that can
- * be used in accelerated mode.
- */
-#if 0
-static int *
-GetAccelPitchValues(ScrnInfoPtr pScrn)
-{
-    int *linePitches = NULL;
-    int i, n = 0;
-    MGAPtr pMga = MGAPTR(pScrn);
-	
-    /* XXX ajv - 512, 576, and 1536 may not be supported
-       line pitches. see sdk pp 4-59 for more
-       details. Why anyone would want less than 640 is 
-       bizarre. (maybe lots of pixels tall?) */
-
-    /* The only line pitches the accelerator supports */
-#if 0		
-    int accelWidths[] = { 512, 576, 640, 768, 800, 960, 
-		    1024, 1152, 1280, 1536, 1600, 1920, 2048, 0 };
-#else
-    int accelWidths[] = { 640, 768, 800, 960, 1024, 1152, 1280,
-		    1600, 1920, 2048, 0 };
-#endif
-
-    for (i = 0; accelWidths[i] != 0; i++) {
-	if (accelWidths[i] % pMga->Rounding == 0) {
-	    n++;
-	    linePitches = xnfrealloc(linePitches, n * sizeof(int));
-	    linePitches[n - 1] = accelWidths[i];
-	}
-    }
-    /* Mark the end of the list */
-    if (n > 0) {
-	linePitches = xnfrealloc(linePitches, (n + 1) * sizeof(int));
-	linePitches[n] = 0;
-    }
-    return linePitches;
-}
-#endif
-
 static xf86MonPtr
 MGAdoDDC(ScrnInfoPtr pScrn)
 {
