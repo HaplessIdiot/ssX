@@ -4,7 +4,7 @@ XCOMM $Xorg: bsdLib.rules,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.31 2004/03/25 03:19:15 dawes Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.32 2004/03/25 03:25:58 dawes Exp $
 /*
  * NetBSD/FreeBSD shared library rules
  */
@@ -44,7 +44,7 @@ XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.31 2004/03/25 03:19:15 dawes Exp $
  */
 #ifndef InstallSharedLibrary
 #define InstallSharedLibrary(libname,rev,dest)				@@\
-install:: Concat(lib,libname.so.rev)					@@\
+install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest 
 @@\
@@ -241,7 +241,7 @@ INSTALLMINORREV = false
 
 #ifndef InstallSharedLibrary
 #define InstallSharedLibrary(libname,rev,dest)				@@\
-install:: Concat(lib,libname.so.rev) 					@@\
+install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	@SetSonameRev(rev); \						@@\
 	T=Concat(lib,libname.so.$$S) ;\					@@\
@@ -277,7 +277,7 @@ install:: Concat(lib,libname.so.rev) 					@@\
 		done
 
 #define InstallSharedLibtoolLibrary(libname,rev,dest)			@@\
-install:: Concat(lib,libname.so) 					@@\
+install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	@set +e; SetRevisions(rev); \					@@\
 	set -e; \							@@\
@@ -387,7 +387,7 @@ AllTarget(Concat(lib,libname.so.rev))					@@\
 Concat(lib,libname.so.rev):  deplist					@@\
 	$(RM) $@~							@@\
 	@SetSonameRev(rev); \						@@\
-	SONAME=Concat(lib,libname.so.$$S); \ 				@@\
+	SONAME=Concat(lib,libname.so.$$S); \				@@\
 		(set -x; cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$$SONAME solist $(REQUIREDLIBS) BaseShLibReqs); \ @@\
 		if [ $$SONAME != $@ ]; then (set -x; \			@@\
 			$(RM) $$SONAME; $(LN) $@ $$SONAME); fi; \	@@\
@@ -509,7 +509,7 @@ clean::									@@\
  */
 #ifndef InstallAoutSharedLibrary
 #define InstallAoutSharedLibrary(libname,rev,dest)			@@\
-install:: Concat(aout/lib,libname.so.rev)				@@\
+install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) Concat(aout/lib,libname.so.rev) $(DESTDIR)dest 
 @@\

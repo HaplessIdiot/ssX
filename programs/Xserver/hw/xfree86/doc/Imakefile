@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.84 2003/11/22 01:33:31 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.85 2004/01/28 02:09:20 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -72,6 +72,8 @@ DATABASE =
 FILES = $(MAINDOCS) $(OSREADME) $(HWREADME) $(OTHERDOCS) $(MISCDOCS) $(DATABASE)
 
 VERS = XFree86VersionString
+
+AllTarget(BugReport)
 
 CppFileTarget(BugReport, BugReport.cpp, -DXF86_VERSION=$(VERS), $(ICONFIGFILES))
 

@@ -4,7 +4,7 @@ XCOMM $Xorg: osfLib.rules,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
  * OSF/1 shared library rules
  */
 
-XCOMM $XFree86: xc/config/cf/osfLib.rules,v 1.3tsi Exp $
+XCOMM $XFree86: xc/config/cf/osfLib.rules,v 1.4 2004/03/12 18:10:25 tsi Exp $
 
 #ifndef HasSharedLibraries
 #define HasSharedLibraries YES
@@ -37,7 +37,7 @@ XCOMM $XFree86: xc/config/cf/osfLib.rules,v 1.3tsi Exp $
  */
 #ifndef InstallSharedLibrary
 #define	InstallSharedLibrary(libname,rev,dest)				@@\
-install:: Concat(lib,libname.so.rev) 					@@\
+install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest @@\
 	@if $(SOSYMLINK); then (set -x; \				@@\

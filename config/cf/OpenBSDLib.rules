@@ -7,7 +7,7 @@ XCOMM $OpenBSD: OpenBSDLib.rules,v 1.1 2000/10/09 20:43:58 matthieu Exp $
  * OpenBSD shared library rules
  */
 
-XCOMM $XFree86: xc/config/cf/OpenBSDLib.rules,v 1.13 2004/03/21 11:11:44 herrb Exp $
+XCOMM $XFree86: xc/config/cf/OpenBSDLib.rules,v 1.14 2004/03/21 11:29:13 herrb Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat NO
@@ -78,7 +78,7 @@ XCOMM $XFree86: xc/config/cf/OpenBSDLib.rules,v 1.13 2004/03/21 11:11:44 herrb E
  */
 #ifndef InstallSharedLibrary
 #define InstallSharedLibrary(libname,rev,dest)				@@\
-install:: Concat(lib,libname.so.rev) 					@@\
+install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest
 #endif /* InstallSharedLibrary */

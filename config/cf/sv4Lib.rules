@@ -4,7 +4,7 @@ XCOMM $Xorg: sv4Lib.rules,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
  * SVR4 shared library rules
  */
 
-XCOMM $XFree86: xc/config/cf/sv4Lib.rules,v 3.8tsi Exp $
+XCOMM $XFree86: xc/config/cf/sv4Lib.rules,v 3.9 2002/11/22 22:55:56 tsi Exp $
 
 #ifndef HasSharedLibraries
 # define HasSharedLibraries YES
@@ -54,7 +54,7 @@ XCOMM $XFree86: xc/config/cf/sv4Lib.rules,v 3.8tsi Exp $
 #ifndef InstallSharedLibrary
 #if StripInstalledPrograms
 # define InstallSharedLibrary(libname,rev,dest)				@@\
-install:: Concat(lib,libname.so.rev) 					@@\
+install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest @@\
 	mcs -d Concat($(DESTDIR)dest/lib,libname.so.rev)		@@\
@@ -64,7 +64,7 @@ install:: Concat(lib,libname.so.rev) 					@@\
 	  $(LN) Concat(lib,libname.so.rev) Concat(lib,libname.so)); fi
 #else
 # define InstallSharedLibrary(libname,rev,dest)				@@\
-install:: Concat(lib,libname.so.rev) 					@@\
+install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest @@\
 	@if $(SOSYMLINK); then (set -x; \				@@\

@@ -2,7 +2,7 @@ XCOMM $Xorg: sv3Lib.rules,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/sv3Lib.rules,v 3.5 2002/11/22 22:55:56 tsi Exp $
+XCOMM $XFree86: xc/config/cf/sv3Lib.rules,v 3.6 2003/04/14 20:35:50 herrb Exp $
 /*
  * SVR3 shared library rules
  * Copyright (c) 1992, 1993 by Thomas Wolfram, Berlin, Germany
@@ -164,7 +164,7 @@ clean::                                                                 @@\
 #ifndef InstallSharedLibrary
 #if StripInstalledPrograms
 #define	InstallSharedLibrary(libname,rev,dest)				@@\
-install:: Concat(lib,libname.rev) 					@@\
+install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) Concat3(lib,libname,_s.a) $(DESTDIR)dest @@\
 	MakeDir($(DESTDIR)$(LIBDIR)/shlib)                              @@\
@@ -174,7 +174,7 @@ install:: Concat(lib,libname.rev) 					@@\
 	mcs -d Concat($(DESTDIR)$(LIBDIR)/shlib/lib,libname.rev)
 #else
 #define	InstallSharedLibrary(libname,rev,dest)				@@\
-install:: Concat(lib,libname.rev) 					@@\
+install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) Concat3(lib,libname,_s.a) $(DESTDIR)dest @@\
 	MakeDir($(DESTDIR)$(LIBDIR)/shlib)                              @@\

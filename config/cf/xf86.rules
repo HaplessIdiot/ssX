@@ -3,7 +3,7 @@ XCOMM $Xorg: xf86.rules,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.34tsi Exp $
+XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.35 2003/09/01 21:20:01 tsi Exp $
 
 /*
  * Rules needed to build the XFree86 X Servers
@@ -85,7 +85,7 @@ clean::									@@\
 #define InstallDriverSDKNonExecFile(file,dest)				/**/
 #else
 #define InstallDriverSDKNonExecFile(file,dest)				@@\
-install.sdk:: file							@@\
+install.sdk::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTDATFLAGS) file $(DESTDIR)dest
 #endif
@@ -96,7 +96,7 @@ install.sdk:: file							@@\
 #define InstallDriverSDKLibrary(libname,dest)				/**/
 #else
 #define InstallDriverSDKLibrary(libname,dest)				@@\
-install.sdk:: Concat(lib,libname.a)					@@\
+install.sdk::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.a) $(DESTDIR)dest @@\
 	RanLibrary($(RANLIBINSTFLAGS) Concat($(DESTDIR)dest/lib,libname.a))
@@ -108,7 +108,7 @@ install.sdk:: Concat(lib,libname.a)					@@\
 #define InstallDriverSDKNamedLibrary(libname,dlibname,dest)		/**/
 #else
 #define InstallDriverSDKNamedLibrary(libname,dlibname,dest)		@@\
-install.sdk:: Concat(lib,libname.a)					@@\
+install.sdk::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.a) \		@@\
 	  Concat($(DESTDIR)dest/lib,dlibname.a)				@@\
@@ -121,7 +121,7 @@ install.sdk:: Concat(lib,libname.a)					@@\
 #define InstallDriverSDKNamedNonExec(srcname,dstname,dest)		/**/
 #else
 #define InstallDriverSDKNamedNonExec(srcname,dstname,dest)		@@\
-install.sdk:: srcname							@@\
+install.sdk::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTDATFLAGS) srcname $(DESTDIR)dest/dstname
 #endif
@@ -132,7 +132,7 @@ install.sdk:: srcname							@@\
 #define InstallDriverSDKNamedProg(srcname,dstname,dest)			/**/
 #else
 #define InstallDriverSDKNamedProg(srcname,dstname,dest)			@@\
-install.sdk:: srcname							@@\
+install.sdk::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTBINFLAGS) srcname $(DESTDIR)dest/dstname
 #endif
@@ -161,7 +161,7 @@ InstallMultipleDestFlags(install.sdk,list,dest,flags)
 #define InstallDriverSDKDynamicModule(module,dest,subdir)		/**/
 #else
 #define InstallDriverSDKDynamicModule(module,dest,subdir)		@@\
-install.sdk:: module							@@\
+install.sdk::								@@\
 	MakeDir($(DESTDIR)dest/subdir)					@@\
 	$(INSTALL) -c module $(DESTDIR)dest/subdir
 #endif

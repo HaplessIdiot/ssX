@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.250 2004/03/11 15:21:31 tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.251 2004/03/18 07:06:19 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -4233,7 +4233,7 @@ file.ps: src								@@\
 
 #ifndef InstallDoc
 #define InstallDoc(name,deps)						@@\
-install:: deps								@@\
+install::								@@\
 	MakeDir($(DESTDIR)$(DOCPSDIR))					@@\
 	@if [ -f name.ps -a X$(NOPS) = X ]; then set -x; \		@@\
 	  $(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) name.ps \		@@\

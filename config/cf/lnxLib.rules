@@ -1,5 +1,5 @@
 XCOMM $Xorg: lnxLib.rules,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.55 2004/03/18 07:06:19 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.56 2004/03/25 03:19:15 dawes Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -116,7 +116,7 @@ XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.55 2004/03/18 07:06:19 dawes Exp $
  */
 # ifndef InstallSharedLibrary
 #  define	InstallSharedLibrary(libname,rev,dest)			@@\
-install:: Concat(lib,libname.so.rev) 					@@\
+install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest @@\
 	@SetSonameRev(rev); \						@@\
@@ -137,7 +137,7 @@ install:: Concat(lib,libname.so.rev) 					@@\
 		MIN=$$A.$$R
 
 #  define	InstallSharedLibtoolLibrary(libname,rev,dest)		@@\
-install:: Concat(lib,libname.so) 					@@\
+install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	@set +e; SetRevisions(rev); \					@@\
 		set -xe; \						@@\
@@ -673,7 +673,7 @@ jumpclean_1:								@@\
  */
 # ifndef InstallSharedLibrary
 #  define	InstallSharedLibrary(libname,rev,dest)			@@\
-install:: $(JUMP_SA) $(JUMP_SO)						@@\
+install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	@if [ "$(JUMP_IS_HOST)" = YES ]; then \
 		(T=$(DESTDIR)dest/`echo $(JUMP_SO)|sed 's/\.[^\.]*$$//'`;\
