@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.82 2005/02/01 04:24:36 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.83 2005/02/02 21:56:19 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -834,6 +834,9 @@ FindDistName()
 					DistName="NetBSD-1.6 or NetBSD 1.5"
 					;;
 				esac
+				;;
+			2.*)
+				DistName="NetBSD-2.0"
 				;;
 			*)
 				Message="No NetBSD/i386 binaries available for this version"
