@@ -1,0 +1,10 @@
+#
+# $Date$ $Revision$
+# $Header$
+#
+
+DISTDIR_SI = /xc/contrib/GL
+
+DISTFILES_SI = \
+	Imakefile \
+	$(NULL)

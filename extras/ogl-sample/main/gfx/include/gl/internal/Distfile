@@ -1,0 +1,8 @@
+#
+# $Date$ $Revision$
+# $Header$
+#
+
+DISTFILES_SI = \
+	glcore.h /xc/include/GL/internal/glcore.h \
+	$(NULL)
