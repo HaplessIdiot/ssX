@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.4 2001/09/09 23:03:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.5 2001/09/21 05:08:42 paulo Exp $ */
 
 #include "core.h"
 #include "helper.h"
@@ -1183,46 +1183,6 @@ Lisp_Or(LispMac *mac, LispObj *list, char *fname)
 }
 
 LispObj *
-Lisp_Pop(LispMac *mac, LispObj *list, char *fname)
-{
-    LispObj *res, *var, *cdr;
-
-    if ((var = CAR(list))->type != LispAtom_t)
-	LispDestroy(mac, "cannot pop from %s", LispStrObj(mac, var));
-
-    var = EVAL(var);
-    if (var->type == LispNil_t)
-	return (var);
-    else if (var->type != LispCons_t)
-	LispDestroy(mac, "%s is not of type list, at %s",
-		    LispStrObj(mac, var), fname);
-
-    res = CAR(var);
-    cdr = CDR(var);
-
-    switch (var->type = cdr->type) {
-	case LispAtom_t:
-	case LispString_t:
-	    var->data.atom = cdr->data.atom;
-	    break;
-	case LispReal_t:
-	    var->data.real = cdr->data.real;
-	    break;
-	case LispQuote_t:
-	    var->data.quote = cdr->data.quote;
-	    break;
-	case LispCons_t:
-	    CAR(var) = CAR(cdr);
-	    CDR(var) = CDR(cdr);
-	    break;
-	default:
-	    break;
-    }
-
-    return (res);
-}
-
-LispObj *
 Lisp_Princ(LispMac *mac, LispObj *list, char *fname)
 {
     int princ = mac->princ;
@@ -1310,87 +1270,6 @@ Lisp_Provide(LispMac *mac, LispObj *list, char *fname)
     }
 
     return (feat);
-}
-
-LispObj *
-Lisp_Push(LispMac *mac, LispObj *list, char *fname)
-{
-    LispObj *obj, *var, *cons;
-
-    if ((var = CAR(CDR(list)))->type != LispAtom_t)
-	LispDestroy(mac, "cannot push to %s", LispStrObj(mac, var));
-
-    var = EVAL(var);
-
-    obj = EVAL(CAR(list));
-    if (var == obj) {
-	if (var->type == LispCons_t)
-	    obj = CONS(CAR(var), CDR(var));
-	else {
-	    switch (var->type) {
-		case LispNil_t:	
-		    obj = NIL;
-		    break;
-		case LispTrue_t:
-		    obj = T;
-		    break;
-		case LispAtom_t:
-		    obj = ATOM(var->data.atom);
-		    break;
-		case LispString_t:
-		    obj = STRING(var->data.atom);
-		    break;
-		case LispReal_t:
-		    obj = REAL(var->data.real);
-		    break;
-		case LispQuote_t:
-		    obj = QUOTE(var->data.quote);
-		    break;
-		case LispOpaque_t:
-		    obj = OPAQUE(var->data.opaque.data, var->data.opaque.type);
-		    break;
-		default:
-		    break;
-	    }
-	}
-    }
-
-    if (var->type == LispCons_t)
-	cons = CONS(CAR(var), CDR(var));
-    else {
-	LispObj *car = NIL;
-
-	switch (var->type) {
-	    case LispNil_t:
-		car = NIL;
-		break;
-	    case LispTrue_t:
-		car = T;
-		break;
-	    case LispAtom_t:
-		car = ATOM(var->data.atom);
-		break;
-	    case LispString_t:
-		car = STRING(var->data.atom);
-		break;
-	    case LispReal_t:
-		car = REAL(var->data.real);
-		break;
-	    case LispQuote_t:
-		car = QUOTE(var->data.quote);
-		break;
-	    default:
-		break;
-	}
-
-	cons = car;
-	var->type = LispCons_t;
-    }
-
-    CAR(var) = obj;
-    CDR(var) = cons;
-
-    return (var);
 }
 
 LispObj *

@@ -29,7 +29,7 @@ struct _LispBuiltin
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/table.gperf,v 1.2 2001/09/09 23:03:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/table.gperf,v 1.3 2001/09/21 05:08:43 paulo Exp $ */
 %}
 %%
 *,Lisp_Mul,1,0,0
@@ -87,14 +87,12 @@ NTHCDR,Lisp_Nthcdr,1,2,2
 NULL,Lisp_Null,1,0,1
 NUMBERP,Lisp_Numberp,1,1,1
 OR,Lisp_Or,0,0,0
-POP,Lisp_Pop,0,1,1
 PRINC,Lisp_Princ,1,1,1
 PRINT,Lisp_Print,1,1,1
 PROG1,Lisp_Prog1,0,1,0
 PROG2,Lisp_Prog2,0,2,0
 PROGN,Lisp_Progn,0,0,0
 PROVIDE,Lisp_Provide,1,1,1
-PUSH,Lisp_Push,0,2,2
 QUIT,Lisp_Quit,1,0,1
 QUOTE,Lisp_Quote,0,1,1
 READ,Lisp_Read,1,0,0

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86$
+;; $XFree86: xc/programs/xedit/lisp/modules/fun.lsp,v 1.1 2001/08/31 15:00:14 paulo Exp $
 ;;
 (provide "fun")
 
@@ -72,3 +72,9 @@
 (defun tenth (a)	(nth 9 a))
 
 (defun rest (a)		(cdr a))
+
+(defmacro push (object place)
+    (list 'setf place (list 'cons object place)))
+
+(defmacro pop (place)
+    (list 'prog1 (list 'car place) (list 'setf place (list 'cdr place))))

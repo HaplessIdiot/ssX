@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.7 2001/09/28 04:38:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.8 2001/09/29 04:46:05 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -1392,8 +1392,10 @@ LispEval(LispMac *mac, LispObj *obj)
 		LispObj *arg = CDR(cons);
 
 		res = EVAL(CAR(arg));
+		GCProtect();
 		args = cdr = CONS(res, NIL);
 		FRM = CONS(args, FRM);
+		GCUProtect();
 		arg = CDR(arg);
 		while (arg != NIL) {
 		    CDR(cdr) = CONS(EVAL(CAR(arg)), NIL);
@@ -1441,8 +1443,10 @@ LispEval(LispMac *mac, LispObj *obj)
 		LispObj *arg = CDR(cons);
 
 		res = EVAL(CAR(arg));
+		GCProtect();
 		args = cdr = CONS(res, NIL);
 		FRM = CONS(args, FRM);
+		GCUProtect();
 		arg = CDR(arg);
 		while (arg != NIL) {
 		    CDR(cdr) = CONS(EVAL(CAR(arg)), NIL);
@@ -1459,8 +1463,10 @@ LispEval(LispMac *mac, LispObj *obj)
 	    while (list != NIL) {
 		if (CAR(list)->data.atom[0] != '&') {
 		    if (args == NIL) {
+			GCProtect();
 			args = cdr = CONS(list, NIL);
 			FRM = CONS(args, FRM);
+			GCUProtect();
 		    }
 		    else {
 			CDR(cdr) = CONS(list, NIL);
