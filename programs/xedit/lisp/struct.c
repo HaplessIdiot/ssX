@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.10 2002/03/08 04:33:18 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.11tsi Exp $ */
 
 #include "struct.h"
 
@@ -172,7 +172,7 @@ Lisp_XeditMakeStruct(LispMac *mac, LispBuiltin *builtin)
     int nfld, ncvt, length = mac->protect.length;
     LispAtom *atom = NULL;
 
-    LispObj *definition, *object, *field, *fields, *value, *cons, *list;
+    LispObj *definition, *object, *field, *fields, *value = NIL, *cons, *list;
     LispObj *struc, *init;
 
     init = ARGUMENT(1);

@@ -35,7 +35,7 @@
  *  2000  
  *  Modifier: Ivan Pascal      The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.23 2001/10/28 03:32:35 tsi Exp $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.24tsi Exp $ */
 
 /*
  * A generic locale loader for all kinds of ISO-2022 based codesets.
@@ -2279,6 +2279,8 @@ wcstocs(
     return(0);
 }
 
+#ifdef STDCVT
+
 static int
 stdc_wcstocs(
     XlcConv conv,
@@ -2326,6 +2328,8 @@ stdc_wcstocs(
 
     return(0);
 }
+
+#endif
 
 static int
 ctstombs(

@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/GetDflt.c,v 3.18 2001/07/25 15:04:43 dawes Exp $ */
+/* $XFree86: xc/lib/X11/GetDflt.c,v 3.19tsi Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xos.h>
@@ -112,7 +112,9 @@ static char *GetHomeDir (dest, len)
     else
 	*dest = '\0';
 #else
+#ifdef X_NEEDS_PWPARAMS
     _Xgetpwparams pwparams;
+#endif
     struct passwd *pw;
     register char *ptr;
 

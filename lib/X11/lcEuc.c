@@ -30,7 +30,7 @@ OF THIS SOFTWARE.
              Yoshiyuki Segawa		(segawa@ossi.com)
 
 *****************************************************************/
-/* $XFree86: xc/lib/X11/lcEuc.c,v 3.9 2000/12/22 05:27:06 tsi Exp $ */
+/* $XFree86: xc/lib/X11/lcEuc.c,v 3.10tsi Exp $ */
 
 /*
  * An EUC locale.
@@ -114,7 +114,7 @@ euc_mbstowcs(
 
     int cs0flg = False;
     int cs1flg = False;
-    int length;
+    int length = 0;
     int num_conv;
     int unconv_num = 0;
 
@@ -1215,7 +1215,7 @@ euc_mbstocts(
 {
     int ct_len = *to_left;
     int cs_num;
-    int clen, length;
+    int clen, length = 0;
     int unconv_num = 0;
     int num_conv;
     const char *inbufptr = *from;

@@ -35,7 +35,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 				makoto@sm.sony.co.jp
 
 *****************************************************************/
-/* $XFree86: xc/lib/X11/lcSjis.c,v 3.7 2000/11/28 18:49:48 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcSjis.c,v 3.8tsi Exp $ */
 
 /*
  * A Japanese SJIS locale.
@@ -145,7 +145,7 @@ sjis_mbstowcs(
     Bool new_char;
 
     int firstbyte;
-    int length;
+    int length = 0;
     int num_conv;
     int unconv_num = 0;
 
@@ -893,7 +893,7 @@ sjis_mbstocts(
     XPointer ct_base = ctptr;
 
     StateRec ct_state;
-    CTData charset;
+    CTData charset = NULL;
     XLCd lcd = (XLCd) conv->state;
     int codeset_num = XLC_GENERIC(lcd, codeset_num);
 
