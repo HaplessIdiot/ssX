@@ -1,4 +1,21 @@
 XFree86 4.2.99.3 (xx December 2002)
+ 615. Add some missing symbols to the radeon driver's referenced symbols
+      lists (#5531, Mike Harris).
+ 614. Restore the Alt/Meta mappings for pc104/pc105 keyboards in the
+      multi-layout maps (David Dawes).
+ 613. Add UTF-8 locale entries for Amharic-Ethiopian, Tigrinya-Eritrean
+      and Tigrinya-Ethiopian (#5529, Daniel Yacob).
+ 612. Restore the "\|" key in the GB multi-layout keyboard layout (#5528,
+      Andrew Aitchison).
+ 611. Updates for the auto-generated UTF-8 Compose file (#5527,
+      David Monniaux).
+ 610. Updates/fixes for the Korean font encoding file (#5525, Jungshik Shin).
+ 609. Fix some problems with the multilayout version of the Turkish layout
+      (#5521, Nilgün Belma Bugüner).
+ 608. DRM vertical blank ioctl can send a signal as an alternative to
+      blocking (r200 and radeon only so far) (#5523, Michel Dänzer).
+ 607. Build fix for Linux/Alpha (#5515, Mike Harris).
+ 606. Change CppCmd on Linux to /usr/bin/cpp (#5514, Mike Harris).
  605. Fix an incorrect check for the "StrangeLockups" option in the
       neomagic driver (#5505, Mike Harris).
  604. Rename geode driver to nsc and add GX2 support (Sarma Kolluru, NatSemi).
@@ -15747,4 +15764,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2441 2002/12/10 15:12:12 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2442 2002/12/10 17:36:23 dawes Exp $
