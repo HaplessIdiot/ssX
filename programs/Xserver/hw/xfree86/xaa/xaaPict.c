@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.15 2002/09/26 02:56:49 keithp Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.16 2002/11/08 12:39:47 alanh Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -431,8 +431,13 @@ XAAComposite (CARD8      op,
        !(*infoRec->Composite)(op, pSrc, pMask, pDst,
                        xSrc, ySrc, xMask, yMask, xDst, yDst,
                        width, height))
-    { 
-        SYNC_CHECK(pDst->pDrawable);
+    {
+        if(pSrc->pDrawable->type == DRAWABLE_WINDOW ||
+           pDst->pDrawable->type == DRAWABLE_WINDOW ||
+           IS_OFFSCREEN_PIXMAP(pSrc->pDrawable) ||
+           IS_OFFSCREEN_PIXMAP(pDst->pDrawable)) {
+            SYNC_CHECK(pDst->pDrawable);
+        }
         (*GetPictureScreen(pScreen)->Composite) (op,
 		       pSrc,
 		       pMask,
@@ -623,7 +628,22 @@ XAADoGlyphs (CARD8         op,
 	return TRUE;
     }
 
-    return FALSE;
+    /*
+     * If it looks like we have a chance of being able to draw these
+     * glyphs with an accelerated Composite, do that now to avoid
+     * unneeded and costly syncs.
+     */
+    if(maskFormat) {
+        if(!infoRec->CPUToScreenAlphaTextureFormats)
+            return FALSE;
+    } else {
+        if(!infoRec->CPUToScreenTextureFormats)
+            return FALSE;
+    }
+
+    miGlyphs(op, pSrc, pDst, maskFormat, xSrc, ySrc, nlist, list, glyphs);
+
+    return TRUE;
 }	   
 	 
 	
@@ -646,7 +666,12 @@ XAAGlyphs (CARD8         op,
        !(*infoRec->Glyphs)(op, pSrc, pDst, maskFormat,
                                           xSrc, ySrc, nlist, list, glyphs))
     {
-       SYNC_CHECK(pDst->pDrawable);
+       if((pSrc->pDrawable->type == DRAWABLE_WINDOW) ||
+          (pDst->pDrawable->type == DRAWABLE_WINDOW) ||
+          IS_OFFSCREEN_PIXMAP(pSrc->pDrawable) ||
+          IS_OFFSCREEN_PIXMAP(pDst->pDrawable)) {
+           SYNC_CHECK(pDst->pDrawable);
+       }
        (*GetPictureScreen(pScreen)->Glyphs) (op, pSrc, pDst, maskFormat,
 					  xSrc, ySrc, nlist, list, glyphs);
     }

@@ -6,7 +6,7 @@
 char rcsId_vmware[] =
     "Id: vmware.c,v 1.11 2001/02/23 02:10:39 yoel Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.12 2002/09/16 18:06:05 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.13 2002/10/16 22:12:53 alanh Exp $ */
 
 /*
  * TODO: support the vmware linux kernel fb driver (Option "UseFBDev").
@@ -59,8 +59,8 @@ char rcsId_vmware[] =
 #define VMWARE_NAME "VMWARE"
 #define VMWARE_DRIVER_NAME "vmware"
 #define VMWARE_MAJOR_VERSION	10
-#define VMWARE_MINOR_VERSION	9
-#define VMWARE_PATCHLEVEL	0
+#define VMWARE_MINOR_VERSION	10
+#define VMWARE_PATCHLEVEL	2
 #define VERSION (VMWARE_MAJOR_VERSION * 65536 + VMWARE_MINOR_VERSION * 256 + VMWARE_PATCHLEVEL)
 
 static const char VMWAREBuildStr[] = "VMware Guest X Server " 
@@ -179,15 +179,30 @@ VMWAREFreeRec(ScrnInfoPtr pScrn)
 CARD32
 vmwareReadReg(VMWAREPtr pVMWARE, int index)
 {
+    /*
+     * Block SIGIO for the duration, so we don't get interrupted after the
+     * outl but before the inl by a mouse move (which write to our registers).
+     */
+    int oldsigio, ret;
+    oldsigio = xf86BlockSIGIO();
     outl(pVMWARE->indexReg, index);
-    return inl(pVMWARE->valueReg);
+    ret = inl(pVMWARE->valueReg);
+    xf86UnblockSIGIO(oldsigio);
+    return ret;
 }
 
 void
 vmwareWriteReg(VMWAREPtr pVMWARE, int index, CARD32 value)
 {
+    /*
+     * Block SIGIO for the duration, so we don't get interrupted in between
+     * the outls by a mouse move (which write to our registers).
+     */
+    int oldsigio;
+    oldsigio = xf86BlockSIGIO();
     outl(pVMWARE->indexReg, index);
     outl(pVMWARE->valueReg, value);
+    xf86UnblockSIGIO(oldsigio);
 }
 
 void
@@ -204,9 +219,11 @@ vmwareWriteWordToFIFO(VMWAREPtr pVMWARE, CARD32 value)
     }
 
     vmwareFIFO[vmwareFIFO[SVGA_FIFO_NEXT_CMD] / sizeof(CARD32)] = value;
-    vmwareFIFO[SVGA_FIFO_NEXT_CMD] += sizeof(CARD32);
-    if (vmwareFIFO[SVGA_FIFO_NEXT_CMD] == vmwareFIFO[SVGA_FIFO_MAX]) {
-	vmwareFIFO[SVGA_FIFO_NEXT_CMD] = vmwareFIFO[SVGA_FIFO_MIN];
+    if(vmwareFIFO[SVGA_FIFO_NEXT_CMD] == vmwareFIFO[SVGA_FIFO_MAX] -
+       sizeof(CARD32)) {
+        vmwareFIFO[SVGA_FIFO_NEXT_CMD] = vmwareFIFO[SVGA_FIFO_MIN];
+    } else {
+        vmwareFIFO[SVGA_FIFO_NEXT_CMD] += sizeof(CARD32);
     }
 }
 
@@ -1189,13 +1206,20 @@ VMWAREScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     /*
+     * If we have a hw cursor, we need to hook functions that might
+     * read from the framebuffer.
+     */
+    if (pVMWARE->hwCursor) {
+        vmwareCursorHookWrappers(pScreen);
+    }
+
+    /*
      * Initialize acceleration.
      */
     if (!pVMWARE->noAccel) {
         if (!vmwareXAAScreenInit(pScreen)) {
             xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-                       "XAA initialization failed --"
-                       " running unaccelerated!\n");
+                       "XAA initialization failed -- running unaccelerated!\n");
             pVMWARE->noAccel = TRUE;
         }
     }

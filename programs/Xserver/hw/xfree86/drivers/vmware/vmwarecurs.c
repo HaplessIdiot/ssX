@@ -6,7 +6,7 @@
 char rcsId_vmwarecurs[] =
     "Id: vmwarecurs.c,v 1.5 2001/01/30 23:33:02 bennett Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarecurs.c,v 1.6 2002/11/05 17:19:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarecurs.c,v 1.7 2002/11/07 12:25:52 alanh Exp $ */
 
 #include "vmware.h"
 #include "bits2pixels.h"
@@ -241,9 +241,7 @@ vmwareCursorInit(ScreenPtr pScreen)
 {
     xf86CursorInfoPtr infoPtr;
     VMWAREPtr pVMWARE = VMWAREPTR(infoFromScreen(pScreen));
-#ifdef RENDER
-    PictureScreenPtr ps = GetPictureScreenIfSet(pScreen);
-#endif
+    Bool ret;
 
     TRACEPOINT
 
@@ -275,19 +273,12 @@ vmwareCursorInit(ScreenPtr pScreen)
     }
 #endif
 
-    pVMWARE->ScrnFuncs.GetImage = pScreen->GetImage;
-    pVMWARE->ScrnFuncs.CopyWindow = pScreen->CopyWindow;
-    pScreen->GetImage = VMWAREGetImage;
-    pScreen->CopyWindow = VMWARECopyWindow;
-
-#ifdef RENDER
-    if(ps) {
-        pVMWARE->Composite = ps->Composite;
-        ps->Composite = VMWAREComposite;
+    ret = xf86InitCursor(pScreen, infoPtr);
+    if (!ret) {
+        xf86DestroyCursorInfoRec(infoPtr);
+        pVMWARE->CursorInfoRec = NULL;
     }
-#endif /* RENDER */
-
-    return(xf86InitCursor(pScreen, infoPtr));
+    return ret;
 }
 
 void
@@ -302,7 +293,9 @@ vmwareCursorCloseScreen(ScreenPtr pScreen)
     pScreen->GetImage = pVMWARE->ScrnFuncs.GetImage;
     pScreen->CopyWindow = pVMWARE->ScrnFuncs.CopyWindow;
 #ifdef RENDER
-    ps->Composite = pVMWARE->Composite;
+    if (ps) {
+        ps->Composite = pVMWARE->Composite;
+    }
 #endif /* RENDER */
 
     vmwareHideCursor(pScrn);
@@ -311,56 +304,91 @@ vmwareCursorCloseScreen(ScreenPtr pScreen)
 
 /***  Wrap functions that read from the framebuffer ***/
 
+void
+vmwareCursorHookWrappers(ScreenPtr pScreen)
+{
+    VMWAREPtr pVMWARE = VMWAREPTR(infoFromScreen(pScreen));
+#ifdef RENDER
+    PictureScreenPtr ps = GetPictureScreenIfSet(pScreen);
+#endif
+
+    TRACEPOINT
+
+    pVMWARE->ScrnFuncs.GetImage = pScreen->GetImage;
+    pVMWARE->ScrnFuncs.CopyWindow = pScreen->CopyWindow;
+    pScreen->GetImage = VMWAREGetImage;
+    pScreen->CopyWindow = VMWARECopyWindow;
+
+#ifdef RENDER
+    if (ps) {
+        pVMWARE->Composite = ps->Composite;
+        ps->Composite = VMWAREComposite;
+    }
+#endif /* RENDER */
+
+}
+
 static void
 VMWAREGetImage(DrawablePtr src, int x, int y, int w, int h,
                unsigned int format, unsigned long planeMask, char *pBinImage)
 {
-   ScreenPtr pScreen = src->pScreen;
-   VMWAREPtr pVMWARE = VMWAREPTR(infoFromScreen(src->pScreen));
-   BoxRec box;
-   Bool hidden = FALSE;
-   
-   box.x1 = x;
-   box.y1 = y;
-   box.x2 = x + w;
-   box.y2 = y + h;
+    ScreenPtr pScreen = src->pScreen;
+    VMWAREPtr pVMWARE = VMWAREPTR(infoFromScreen(src->pScreen));
+    BoxRec box;
+    Bool hidden = FALSE;
+    
+    VmwareLog(("VMWAREGetImage(%p, %d, %d, %d, %d, %d, %d, %p)\n",
+               src, x, y, w, h, format, planeMask, pBinImage));
 
-   if (BOX_INTERSECT(box, pVMWARE->hwcur.box)) {
-       PRE_OP_HIDE_CURSOR();
-       hidden = TRUE;
-   }
-   pScreen->GetImage = pVMWARE->ScrnFuncs.GetImage;
-   (*pScreen->GetImage)(src, x, y, w, h, format, planeMask, pBinImage);
-   pScreen->GetImage = VMWAREGetImage;
-   if (hidden) {
-       POST_OP_SHOW_CURSOR();
-   }
+    box.x1 = src->x + x;
+    box.y1 = src->y + y;
+    box.x2 = box.x1 + w;
+    box.y2 = box.y1 + h;
+
+    if (BOX_INTERSECT(box, pVMWARE->hwcur.box)) {
+        PRE_OP_HIDE_CURSOR();
+        hidden = TRUE;
+    }
+
+    pScreen->GetImage = pVMWARE->ScrnFuncs.GetImage;
+    (*pScreen->GetImage)(src, x, y, w, h, format, planeMask, pBinImage);
+    pScreen->GetImage = VMWAREGetImage;
+
+    if (hidden) {
+        POST_OP_SHOW_CURSOR();
+    }
 }
 
 static void
 VMWARECopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 {
-   ScreenPtr pScreen = pWin->drawable.pScreen;
-   VMWAREPtr pVMWARE = VMWAREPTR(infoFromScreen(pWin->drawable.pScreen));
-   BoxPtr pBB;
-   Bool hidden = FALSE;
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+    VMWAREPtr pVMWARE = VMWAREPTR(infoFromScreen(pWin->drawable.pScreen));
+    BoxPtr pBB;
+    Bool hidden = FALSE;
+    
+    /*
+     * We only worry about the source region here, since shadowfb will
+     * take care of the destination region.
+     */
+    pBB = REGION_EXTENTS(pWin->drawable.pScreen, prgnSrc);
 
-   /*
-    * We only worry about the source region here, since shadowfb or XAA will
-    * take care of the destination region.
-    */
-   pBB = REGION_EXTENTS(pWin->drawable.pScreen, prgnSrc);
-   if (BOX_INTERSECT(*pBB, pVMWARE->hwcur.box)) {
-       PRE_OP_HIDE_CURSOR();
-       hidden = TRUE;
-   }
-   pScreen->CopyWindow = pVMWARE->ScrnFuncs.CopyWindow;
-   (*pScreen->CopyWindow)(pWin, ptOldOrg, prgnSrc);
-   pScreen->CopyWindow = VMWARECopyWindow;
+    VmwareLog(("VMWARECopyWindow(%p, (%d, %d), (%d, %d - %d, %d)\n",
+               pWin, ptOldOrg.x, ptOldOrg.y,
+               pBB->x1, pBB->y1, pBB->x2, pBB->y2));
+    
+    if (BOX_INTERSECT(*pBB, pVMWARE->hwcur.box)) {
+        PRE_OP_HIDE_CURSOR();
+        hidden = TRUE;
+    }
 
-   if (hidden) {
-       POST_OP_SHOW_CURSOR();
-   }
+    pScreen->CopyWindow = pVMWARE->ScrnFuncs.CopyWindow;
+    (*pScreen->CopyWindow)(pWin, ptOldOrg, prgnSrc);
+    pScreen->CopyWindow = VMWARECopyWindow;
+    
+    if (hidden) {
+        POST_OP_SHOW_CURSOR();
+    }
 }
 
 #ifdef RENDER
@@ -376,10 +404,12 @@ VMWAREComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask,
     BoxRec box;
     Bool hidden = FALSE;
 
-   /*
-    * We only worry about the source region here, since shadowfb or XAA will
-    * take care of the destination region.
-    */
+    TRACEPOINT
+
+    /*
+     * We only worry about the source region here, since shadowfb or XAA will
+     * take care of the destination region.
+     */
     box.x1 = pSrc->pDrawable->x + xSrc;
     box.y1 = pSrc->pDrawable->y + ySrc;
     box.x2 = box.x1 + width;

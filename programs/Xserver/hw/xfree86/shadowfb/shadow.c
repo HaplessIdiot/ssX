@@ -6,7 +6,7 @@
    Pre-fb-write callbacks and RENDER support - Nolan Leake (nolan@vmware.com)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.12 2002/10/17 22:43:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.13 2002/11/05 17:19:42 alanh Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -79,17 +79,6 @@ static void ShadowComposite(
     CARD16 width,
     CARD16 height
 );
-static void ShadowGlyphs(
-    CARD8 op,
-    PicturePtr pSrc,
-    PicturePtr pDst,
-    PictFormatPtr maskFormat,
-    INT16 xSrc,
-    INT16 ySrc,
-    int nlistInit,
-    GlyphListPtr listInit,
-    GlyphPtr *glyphsInit
-);
 #endif /* RENDER */
 
 
@@ -106,7 +95,6 @@ typedef struct {
   ModifyPixmapHeaderProcPtr		ModifyPixmapHeader;
 #ifdef RENDER
   CompositeProcPtr Composite;
-  GlyphsProcPtr Glyphs;
 #endif /* RENDER */
   Bool				(*EnterVT)(int, int);
   void				(*LeaveVT)(int, int);
@@ -248,8 +236,6 @@ ShadowFBInit2 (
     if(ps) {
       pPriv->Composite = ps->Composite;
       ps->Composite = ShadowComposite;
-      pPriv->Glyphs = ps->Glyphs;
-      ps->Glyphs = ShadowGlyphs;
     }
 #endif /* RENDER */
 
@@ -327,7 +313,6 @@ ShadowCloseScreen (int i, ScreenPtr pScreen)
 #ifdef RENDER
     if(ps) {
         ps->Composite = pPriv->Composite;
-        ps->Glyphs = pPriv->Glyphs;
     }
 #endif /* RENDER */
 
@@ -493,14 +478,17 @@ ShadowComposite(
     ShadowScreenPtr pPriv = GET_SCREEN_PRIVATE(pScreen);
     PictureScreenPtr ps = GetPictureScreen(pScreen);
     BoxRec box;
+    Bool boxNotEmpty = FALSE;
 
     box.x1 = pDst->pDrawable->x + xDst;
     box.y1 = pDst->pDrawable->y + yDst;
     box.x2 = box.x1 + width;
     box.y2 = box.y1 + height;
 
-    if (pPriv->preRefresh) {
-        (*pPriv->preRefresh)(pPriv->pScrn, 1, &box);
+    if (pDst->pDrawable->type == DRAWABLE_WINDOW && BOX_NOT_EMPTY(box)) {
+        if (pPriv->preRefresh)
+            (*pPriv->preRefresh)(pPriv->pScrn, 1, &box);
+        boxNotEmpty = TRUE;
     }
     
     ps->Composite = pPriv->Composite;
@@ -508,83 +496,9 @@ ShadowComposite(
 		     xMask, yMask, xDst, yDst, width, height);
     ps->Composite = ShadowComposite;
 
-    if (pPriv->postRefresh) {
+    if (pPriv->postRefresh && boxNotEmpty) {
         (*pPriv->postRefresh)(pPriv->pScrn, 1, &box);
     }
-}
-
-static void
-ShadowGlyphs(
-    CARD8 op,
-    PicturePtr pSrc,
-    PicturePtr pDst,
-    PictFormatPtr maskFormat,
-    INT16 xSrc,
-    INT16 ySrc,
-    int nlistInit,
-    GlyphListPtr listInit,
-    GlyphPtr *glyphsInit
-){
-    ScreenPtr pScreen = pDst->pDrawable->pScreen;
-    ShadowScreenPtr pPriv = GET_SCREEN_PRIVATE(pScreen);
-    PictureScreenPtr ps = GetPictureScreen(pScreen);
-    int nlist = nlistInit;
-    GlyphListPtr list = listInit;
-    GlyphPtr *glyphs = glyphsInit;
-    int x, y;
-    int n;
-    GlyphPtr glyph;
-    RegionRec region;
-    int num = 0;
-
-    if (pPriv->vtSema && pDst->pDrawable->type == DRAWABLE_WINDOW) {
-        REGION_INIT(pScreen, &region, NullBox, 0);
-        
-	x = xSrc;
-	y = ySrc;
-	while (nlist--) {
-	    x += list->xOff;
-	    y += list->yOff;
-	    n = list->len;
-	    while (n--) {
-	        BoxRec box;
-		RegionRec tmpRegion;
-		
-		glyph = *glyphs++;
-
-		box.x1 = pDst->pDrawable->x + x - glyph->info.x;
-		box.y1 = pDst->pDrawable->y + y - glyph->info.y;
-		box.x2 = box.x1 + glyph->info.width;
-		box.y2 = box.y1 + glyph->info.height;		
-		REGION_INIT(pScreen, &tmpRegion, &box, 1);
-		REGION_UNION(pScreen, &region, &region, &tmpRegion);
-		REGION_UNINIT(pScreen, &tmpRegion);
-
-		x += glyph->info.xOff;
-		y += glyph->info.yOff;
-	    }
-	    list++;
-	}
-	
-        if ((num = REGION_NUM_RECTS(&region))) {
-            if(pPriv->preRefresh)
-                (*pPriv->preRefresh)(pPriv->pScrn, num, REGION_RECTS(&region));
-        } else {
-            REGION_UNINIT(pScreen, &region);
-        }
-    }
-
-    ps->Glyphs = pPriv->Glyphs;
-    (*ps->Glyphs)(op, pSrc, pDst, maskFormat, xSrc, ySrc,
-		  nlistInit, listInit, glyphsInit);
-    ps->Glyphs = ShadowGlyphs;
-
-    if (num) {
-        if (pPriv->postRefresh)
-            (*pPriv->postRefresh)(pPriv->pScrn, num, REGION_RECTS(&region));
-        REGION_UNINIT(pScreen, &region);
-    }
-
 }
 #endif /* RENDER */
 
@@ -775,7 +689,6 @@ ShadowSetSpans(
 	BoxRec box;
         Bool boxNotEmpty = FALSE;
 
-
 	box.x1 = ppt->x;
 	box.x2 = box.x1 + *pwidth;
 	box.y2 = box.y1 = ppt->y;
@@ -947,7 +860,7 @@ ShadowPolyPoint(
     if(IS_VISIBLE(pDraw) && nptInit) {
         xPoint *ppt = pptInit;
         int npt = nptInit;
-        
+
 	box.x2 = box.x1 = pptInit->x;
 	box.y2 = box.y1 = pptInit->y;
 
@@ -1072,7 +985,7 @@ ShadowPolySegment(
 	int extra = pGC->lineWidth;
         xSegment *pSeg = pSegInit;
         int nseg = nsegInit;
-        
+
         if(pGC->capStyle != CapProjecting)	
 	   extra >>= 1;
 
@@ -1344,7 +1257,7 @@ ShadowFillPolygon(
 	int i = count;
 	BoxRec box;
         Bool boxNotEmpty = FALSE;
-        
+
 	box.x2 = box.x1 = ppt->x;
 	box.y2 = box.y1 = ppt->y;
 
@@ -1457,7 +1370,7 @@ ShadowPolyFillArc(
     if(IS_VISIBLE(pDraw) && narcsInit) {
         xArc *parcs = parcsInit;
         int narcs = narcsInit;
-        
+
 	box.x1 = parcs->x;
 	box.x2 = box.x1 + parcs->width;
 	box.y1 = parcs->y;
@@ -1822,6 +1735,7 @@ ShadowPolyGlyphBlt(
     if(IS_VISIBLE(pDraw) && nglyphInit) {
         CharInfoPtr *ppci = ppciInit;
         unsigned int nglyph = nglyphInit;
+
 	/* ugh */
 	box.x1 = pDraw->x + x + ppci[0]->metrics.leftSideBearing;
 	box.x2 = pDraw->x + x + ppci[nglyph - 1]->metrics.rightSideBearing;

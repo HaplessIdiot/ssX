@@ -1,7 +1,7 @@
 /* **********************************************************
  * Copyright (C) 1998-2001 VMware, Inc.
  * All Rights Reserved
- * $Id: svga_reg.h,v 1.6 2002/11/23 19:27:49 tsi Exp $
+ * $Id: svga_reg.h,v 1.7 2002/12/10 04:17:19 dawes Exp $
  * **********************************************************/
 
 /*
@@ -9,7 +9,7 @@
  *
  * SVGA hardware definitions
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/svga_reg.h,v 1.6 2002/11/23 19:27:49 tsi Exp $ */
 
 #ifndef _SVGA_REG_H_
 #define _SVGA_REG_H_
@@ -32,10 +32,7 @@
 #define SVGA_MAX_HEIGHT			1770
 #define SVGA_MAX_BITS_PER_PIXEL		32
 
-#ifndef PAGE_SHIFT
 #define PAGE_SHIFT 12
-#endif
-
 #define SVGA_FB_MAX_SIZE \
    ((((SVGA_MAX_WIDTH * SVGA_MAX_HEIGHT *                                    \
        SVGA_MAX_BITS_PER_PIXEL / 8) >> PAGE_SHIFT) + 1) << PAGE_SHIFT)
@@ -144,6 +141,7 @@ enum {
 #define SVGA_CAP_GLYPH              0x0400
 #define SVGA_CAP_GLYPH_CLIPPING     0x0800
 #define SVGA_CAP_OFFSCREEN_1        0x1000
+#define SVGA_CAP_ALPHA_BLEND        0x2000
 
 
 /*
@@ -171,6 +169,71 @@ enum {
 #define SVGA_NUM_SUPPORTED_ROPS   16
 #define SVGA_ROP_ALL            (MASK(SVGA_NUM_SUPPORTED_ROPS))
 #define SVGA_IS_VALID_ROP(rop)  (rop >= 0 && rop < SVGA_NUM_SUPPORTED_ROPS)
+
+/*
+ *  Ops
+ *  For each pixel, the four channels of the image are computed with: 
+ *
+ *	C = Ca * Fa + Cb * Fb
+ *
+ *  where C, Ca, Cb are the values of the respective channels and Fa 
+ *  and Fb come from the following table: 
+ *
+ *	BlendOp		Fa			Fb
+ *	------------------------------------------
+ *	Clear		0			0
+ *	Src		1			0
+ *	Dst		0			1
+ *	Over		1			1-Aa
+ *	OverReverse	1-Ab			1
+ *	In		Ab			0
+ *	InReverse	0			Aa
+ *	Out		1-Ab			0
+ *	OutReverse	0			1-Aa
+ *	Atop		Ab			1-Aa
+ *	AtopReverse	1-Ab			Aa
+ *	Xor		1-Ab			1-Aa
+ *	Add		1			1
+ *	Saturate	min(1,(1-Ab)/Aa)	1
+ *
+ *  Flags
+ *  You can use the following flags to achieve additional affects:
+ * 
+ *      Flag                    Effect
+ *	------------------------------------------
+ *      ConstantSourceAlpha     Ca = Ca * Param0
+ *      ConstantDestAlpha       Cb = Cb * Param1
+ *
+ *  Flag effects resolve before the op.  For example
+ *  BlendOp == Add && Flags == ConstantSourceAlpha |
+ *  ConstantDestAlpha results in:
+ *
+ *       C = (Ca * Param0) + (Cb * Param1)
+ */
+
+#define SVGA_BLENDOP_CLEAR                      0
+#define SVGA_BLENDOP_SRC                        1
+#define SVGA_BLENDOP_DST                        2
+#define SVGA_BLENDOP_OVER                       3
+#define SVGA_BLENDOP_OVER_REVERSE               4
+#define SVGA_BLENDOP_IN                         5
+#define SVGA_BLENDOP_IN_REVERSE                 6
+#define SVGA_BLENDOP_OUT                        7
+#define SVGA_BLENDOP_OUT_REVERSE                8
+#define SVGA_BLENDOP_ATOP                       9 
+#define SVGA_BLENDOP_ATOP_REVERSE               10
+#define SVGA_BLENDOP_XOR                        11
+#define SVGA_BLENDOP_ADD                        12
+#define SVGA_BLENDOP_SATURATE                   13
+
+#define SVGA_NUM_BLENDOPS                       14
+#define SVGA_IS_VALID_BLENDOP(op)               (op >= 0 && op < SVGA_NUM_BLENDOPS)
+
+#define SVGA_BLENDFLAG_CONSTANT_SOURCE_ALPHA    0x01
+#define SVGA_BLENDFLAG_CONSTANT_DEST_ALPHA      0x02
+#define SVGA_NUM_BLENDFLAGS                     2
+#define SVGA_BLENDFLAG_ALL                      (MASK(SVGA_NUM_BLENDFLAGS))
+#define SVGA_IS_VALID_BLENDFLAG(flag)           ((flag & ~SVGA_BLENDFLAG_ALL) == 0)
 
 /*
  *  Memory area offsets (viewed as an array of 32-bit words)
@@ -206,10 +269,31 @@ enum {
 #define SVGA_GLYPH_SCANLINE_SIZE(w) (((w) + 7) >> 3)
 
 /*
+ * Get the width and height of VRAM in the current mode (for offscreen memory)
+ */
+#define SVGA_VRAM_WIDTH_HEIGHT(width /* out */, height /* out */) { \
+   uint32 pitch = svga->reg[SVGA_REG_BYTES_PER_LINE]; \
+   width = (pitch * 8) / ((svga->reg[SVGA_REG_BITS_PER_PIXEL] + 7) & ~7); \
+   height = (svga->reg[SVGA_REG_VRAM_SIZE] - \
+                    svga->reg[SVGA_REG_FB_OFFSET]) / pitch; \
+}
+
+/*
+ * Gets the offset to the first pixel of offscreen memory
+ */
+#define SVGA_OFFSCREEN_START_OFFSET(fbOffset, height, pitch) \
+(fbOffset * 2 + height * pitch - fbOffset % pitch)
+
+/*
  *  Increment from one scanline to the next of a bitmap or pixmap
  */
 #define SVGA_BITMAP_INCREMENT(w) ((( (w)+31 ) >> 5) * sizeof (uint32))
 #define SVGA_PIXMAP_INCREMENT(w,bpp) ((( ((w)*(bpp))+31 ) >> 5) * sizeof (uint32))
+
+/*
+ *  Transparent color for DRAW_GLYPH_CLIPPED
+ */
+#define SVGA_COLOR_TRANSPARENT (~0)
 
 /*
  *  Commands in the command FIFO
@@ -318,7 +402,8 @@ enum {
 
 #define SVGA_CMD_DRAW_GLYPH_CLIPPED       24
 	/* FIFO layout:
-	   X, Y, W, H, FGCOLOR, <cliprect>, <stencil buffer> */
+	   X, Y, W, H, FGCOLOR, BGCOLOR, <cliprect>, <stencil buffer>
+           Transparent color expands are done by setting BGCOLOR to ~0 */
 
 #define	SVGA_CMD_UPDATE_VERBOSE	          25
         /* FIFO layout:
@@ -333,10 +418,16 @@ enum {
 	   srcSurfaceOffset, dstSurfaceOffset, srcX, srcY,
            destX, destY, w, h, rop */
 
-#define	SVGA_CMD_MAX			  28
+#define SVGA_CMD_SURFACE_ALPHA_BLEND      28
+        /* FIFO layout:
+	   srcSurfaceOffset, dstSurfaceOffset, srcX, srcY,
+           destX, destY, w, h, op (SVGA_BLENDOP*), flags (SVGA_BLENDFLAGS*), 
+           param1, param2 */
 
-/* RECT_ROP_BITMAP_COPY currently has the most (non-data) arguments: 10 */
-#define SVGA_CMD_MAX_ARGS                 10
+#define	SVGA_CMD_MAX			  29
+
+/* SURFACE_ALPHA_BLEND currently has the most (non-data) arguments: 12 */
+#define SVGA_CMD_MAX_ARGS                 12
 
 
 /*
