@@ -1,5 +1,5 @@
 /* $XConsortium: access.c,v 1.73 94/04/17 20:26:53 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.0 1994/04/28 12:42:36 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -104,6 +104,10 @@ SOFTWARE.
 #endif
 #if defined(SYSV) &&  defined(i386)
 # include <sys/stream.h>
+# ifdef ISC
+#  include <sys/stropts.h>
+#  include <sys/sioctl.h>
+# endif /* ISC */
 #endif
 #ifdef ESIX
 # include <lan/if.h>
@@ -115,6 +119,7 @@ SOFTWARE.
 
 #ifdef SVR4
 #include <sys/sockio.h>
+#include <sys/stropts.h>
 #endif
 
 #ifdef ESIX
@@ -221,6 +226,62 @@ AccessUsingXdmcp ()
     LocalHostEnabled = FALSE;
 }
 
+
+#if ((defined(SVR4) && !defined(sun)) || defined(ISC)) && defined(SIOCGIFCONF)
+
+/* Deal with different SIOCGIFCONF ioctl semantics on these OSs */
+
+static int
+ifioctl (fd, cmd, arg)
+    int fd;
+    int cmd;
+    char *arg;
+{
+    struct strioctl ioc;
+    int ret;
+
+    bzero((char *) &ioc, sizeof(ioc));
+    ioc.ic_cmd = cmd;
+    ioc.ic_timout = 0;
+    if (cmd == SIOCGIFCONF)
+    {
+	ioc.ic_len = ((struct ifconf *) arg)->ifc_len;
+	ioc.ic_dp = ((struct ifconf *) arg)->ifc_buf;
+#ifdef ISC
+	/* SIOCGIFCONF is somewhat brain damaged on ISC. The argument
+	 * buffer must contain the ifconf structure as header. Ifc_req
+	 * is also not a pointer but a one element array of ifreq
+	 * structures. On return this array is extended by enough
+	 * ifreq fields to hold all interfaces. The return buffer length
+	 * is placed in the buffer header.
+	 */
+        ((struct ifconf *) ioc.ic_dp)->ifc_len =
+                                         ioc.ic_len - sizeof(struct ifconf);
+#endif
+    }
+    else
+    {
+	ioc.ic_len = sizeof(struct ifreq);
+	ioc.ic_dp = arg;
+    }
+    ret = ioctl(fd, I_STR, (char *) &ioc);
+    if (ret >= 0 && cmd == SIOCGIFCONF)
+#ifdef SVR4
+	((struct ifconf *) arg)->ifc_len = ioc.ic_len;
+#endif
+#ifdef ISC
+    {
+	((struct ifconf *) arg)->ifc_len =
+				 ((struct ifconf *)ioc.ic_dp)->ifc_len;
+	((struct ifconf *) arg)->ifc_buf = 
+			(caddr_t)((struct ifconf *)ioc.ic_dp)->ifc_req;
+    }
+#endif
+    return(ret);
+}
+#else /* ((SVR4 && !sun) || ISC) && SIOCGIFCONF */
+#define ifioctl ioctl
+#endif /* ((SVR4 && !sun) || ISC) && SIOCGIFCONF */
 
 /*
  * DefineSelf (fd):
@@ -371,7 +432,7 @@ void
 DefineSelf (fd)
     int fd;
 {
-#if !defined(TCPCONN) && !defined(UNIXCONN)
+#if !defined(TCPCONN) && !defined(STREAMSCONN) && !defined(UNIXCONN)
     return;
 #else
     register int n;
@@ -380,11 +441,7 @@ DefineSelf (fd)
     int		family;
     register HOST	*host;
 
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
-    char name[100];
-#else
     struct utsname name;
-#endif
     register struct hostent  *hp;
 
     union {
@@ -395,12 +452,6 @@ DefineSelf (fd)
     struct	sockaddr_in	*inetaddr;
     struct sockaddr_in broad_addr;
 
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
-    if (gethostname (name, sizeof name) < 0)
-	    hp = NULL;
-    else
-	    hp = gethostbyname (name);
-#else
     /* Why not use gethostname()?  Well, at least on my system, I've had to
      * make an ugly kernel patch to get a name longer than 8 characters, and
      * uname() lets me access to the whole string (it smashes release, you
@@ -408,7 +459,6 @@ DefineSelf (fd)
      */
     uname(&name);
     hp = gethostbyname (name.nodename);
-#endif
     if (hp != NULL)
     {
 	saddr.sa.sa_family = hp->h_addrtype;
@@ -476,11 +526,22 @@ DefineSelf (fd)
 }
 
 #else
+
+#ifdef AF_LINK
+#define ifr_size(p) (sizeof (struct ifreq) + \
+		     (p->ifr_addr.sa_len > sizeof (p->ifr_addr) ? \
+		      p->ifr_addr.sa_len - sizeof (p->ifr_addr) : 0))
+#define ifraddr_size(a) (a.sa_len)
+#else
+#define ifr_size(p) (sizeof (struct ifreq))
+#define ifraddr_size(a) (sizeof (a))
+#endif
+
 void
 DefineSelf (fd)
     int fd;
 {
-    char		buf[2048];
+    char		buf[2048], *cp, *cplim;
     struct ifconf	ifc;
     register int	n;
     int 		len;
@@ -520,20 +581,21 @@ DefineSelf (fd)
 #endif
     ifc.ifc_len = sizeof (buf);
     ifc.ifc_buf = buf;
-    if (ioctl (fd, (int) SIOCGIFCONF, (pointer) &ifc) < 0)
+    if (ifioctl (fd, (int) SIOCGIFCONF, (pointer) &ifc) < 0)
         Error ("Getting interface configuration");
-    for (ifr = ifc.ifc_req
-#if defined (__bsdi__) || defined(__NetBSD__)
-	 ; (char *)ifr < ifc.ifc_buf + ifc.ifc_len;
-	 ifr = (struct ifreq *)((char *)ifr + sizeof (struct ifreq) +
-		(ifr->ifr_addr.sa_len > sizeof (ifr->ifr_addr) ?
-		 ifr->ifr_addr.sa_len - sizeof (ifr->ifr_addr) : 0))
+
+#ifdef ISC
+#define IFC_IFC_REQ (struct ifreq *) ifc.ifc_buf
 #else
-	 , n = ifc.ifc_len / sizeof (struct ifreq); --n >= 0; ifr++
+#define IFC_IFC_REQ ifc.ifc_req
 #endif
-	 )
+
+    cplim = (char *) IFC_IFC_REQ + ifc.ifc_len;
+    
+    for (cp = (char *) IFC_IFC_REQ; cp < cplim; cp += ifr_size (ifr))
     {
-	len = sizeof(ifr->ifr_addr);
+	ifr = (struct ifreq *) cp;
+	len = ifraddr_size (ifr->ifr_addr);
 #ifdef DNETCONN
 	/*
 	 * DECnet was handled up above.
@@ -544,6 +606,11 @@ DefineSelf (fd)
 	family = ConvertAddr (&ifr->ifr_addr, &len, (pointer *)&addr);
         if (family == -1 || family == FamilyLocal)
 	    continue;
+#ifdef DEF_SELF_DEBUG
+	if (family == FamilyInternet) 
+	    ErrorF("Xserver: DefineSelf(): ifname = %s, addr = %d.%d.%d.%d\n",
+		   ifr->ifr_name, addr[0], addr[1], addr[2], addr[3]);
+#endif
         for (host = selfhosts;
  	     host && !addrEqual (family, addr, len, host);
 	     host = host->next)
@@ -587,13 +654,13 @@ DefineSelf (fd)
 	    	struct ifreq    broad_req;
     
 	    	broad_req = *ifr;
-		if (ioctl (fd, SIOCGIFFLAGS, (char *) &broad_req) != -1 &&
+		if (ifioctl (fd, SIOCGIFFLAGS, (char *) &broad_req) != -1 &&
 		    (broad_req.ifr_flags & IFF_BROADCAST) &&
 		    (broad_req.ifr_flags & IFF_UP)
 		    )
 		{
 		    broad_req = *ifr;
-		    if (ioctl (fd, SIOCGIFBRDADDR, &broad_req) != -1)
+		    if (ifioctl (fd, SIOCGIFBRDADDR, &broad_req) != -1)
 			broad_addr = broad_req.ifr_addr;
 		    else
 			continue;
@@ -601,6 +668,11 @@ DefineSelf (fd)
 		else
 		    continue;
 	    }
+#endif
+#ifdef DEF_SELF_DEBUG
+	    ErrorF("Xserver: DefineSelf(): ifname = %s, baddr = %s\n",
+		   ifr->ifr_name,
+	           inet_ntoa(((struct sockaddr_in *) &broad_addr)->sin_addr));
 #endif
 	    XdmcpRegisterBroadcastAddress ((struct sockaddr_in *) &broad_addr);
 	}
