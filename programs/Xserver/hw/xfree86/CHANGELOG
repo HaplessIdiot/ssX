@@ -1,4 +1,8 @@
 XFree86 4.3.99.10 (xx July 2003)
+ 330. SiS driver update:
+       - Fixed SiS 620 support
+       - Added interface for sisctrl utility
+      (Thomas Winischhofer)
  329. Fixes for regressions in xauth and xhost with IPv6 code
       (Matthieu Herrb). 
  328. Update X-TrueType (X-TT) to version 1.4.1 (Chisato Yamauchi,
@@ -17407,7 +17411,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2787 2003/07/27 02:01:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2788 2003/07/27 14:08:54 herrb Exp $
 
 
 
