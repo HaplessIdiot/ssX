@@ -6,7 +6,7 @@
 
                                   Abstract
 
-     This document describes how to build XFree86 from the source dis-
+      This document describes how to build XFree86 from the source dis-
      tribution and is designed to be used in conjunction with the oper-
      ating system (OS) specific README files.
 

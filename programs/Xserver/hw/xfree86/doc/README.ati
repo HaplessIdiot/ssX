@@ -6,7 +6,7 @@
 
                                   Abstract
 
-     This is the README for the XFree86 ATI driver included in this
+      This is the README for the XFree86 ATI driver included in this
      release.
 
 1.  Statement of intent
@@ -706,4 +706,4 @@ Intel architectures.
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.43 dawes Exp $
 
 
-$XFree86: $
+$XFree86$

@@ -1,6 +1,6 @@
                Information for Alliance Promotion chipset users
 
- Loïc Grenié (<grenie@math.jussieu.fr>),       Henrik Harmsen (<Henrik.Harm-
+    Loïc Grenié (<grenie@math.jussieu.fr>), Henrik Harmsen (<Henrik.Harm-
                             sen@erv.ericsson.se>)
 
                                  6 March 2000
@@ -111,4 +111,4 @@ be possible to add support for the 3210 chipset if someone needs it.
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/apm.sgml,v 1.5 dawes Exp $
 
 
-$XFree86: $
+$XFree86$

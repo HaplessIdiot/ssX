@@ -224,7 +224,7 @@ your kernel, it will support the MIT-SHM extension.
 
 You should configure the distribution by editing xc/config/cf/host.def
 before compiling.  To compile the sources, invoke ``make World'' in the xc
-directory."
+directory.
 
 Note that OpenBSD project now has its own source tree, based on the XFree86
 source tree, with some local modifications. You may want to start with this
@@ -297,7 +297,7 @@ particular: David Dawes, Todd Fries, Rod Grimes, Charles Hannum, Amancio
 Hasty, Christoph Robitschko, Matthias Scheler, Michael Smith, Ignatios Sou-
 vatzis, Jack Velte, Nate Williams and Pace Willison.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.34 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.35 dawes Exp $
 
 
 $XFree86$
