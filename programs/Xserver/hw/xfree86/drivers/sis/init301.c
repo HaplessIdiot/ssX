@@ -1495,6 +1495,11 @@ SiS_GetLCDResInfo(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
 	      /* We do not scale to 1280x960 (B/C bridges only) */
               SiS_Pr->SiS_LCDInfo |= DontExpandLCD;
 	   }
+	   if(((HwInfo->jChipType >= SIS_315H) && (ModeNo == 0x23 || ModeNo == 0x24 || ModeNo == 0x25)) ||
+	      ((HwInfo->jChipType < SIS_315H)  && (ModeNo == 0x55 || ModeNo == 0x5a || ModeNo == 0x5b))) {
+	      /* We do not scale to 1280x768 (B/C bridges only) */
+              SiS_Pr->SiS_LCDInfo |= DontExpandLCD;
+	   }
 	   if(SiS_Pr->SiS_VBType & VB_SIS301LV302LV) {
 	      /* No non-scaling data available for LV bridges */
 	      SiS_Pr->SiS_LCDInfo &= ~DontExpandLCD;
