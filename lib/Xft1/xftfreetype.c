@@ -618,6 +618,8 @@ XftFreeTypeClose (Display *dpy, XftFontStruct *font)
 {
     XftFtGlyphSet   *gs, **prev;
     XftDisplayInfo  *info = _XftDisplayInfoGet (dpy);
+    int		    i;
+    XGlyphInfo	    *gi;
 
     for (prev = &info->glyphSets; (gs = *prev); prev = &gs->next)
     {
@@ -626,6 +628,12 @@ XftFreeTypeClose (Display *dpy, XftFontStruct *font)
 	    if (--gs->ref == 0)
 	    {
 		XRenderFreeGlyphSet (dpy, font->glyphset);
+		for (i = 0; i < font->nrealized; font++)
+		{
+		    gi = font->realized[i];
+		    if (gi && gi != XftUntestedGlyph)
+			free (gi);
+		}
 		if (font->realized)
 		    free (font->realized);
 		

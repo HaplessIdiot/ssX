@@ -54,6 +54,8 @@ struct _XftFontStruct {
     FT_Matrix		matrix;
 };
 
+#define XftUntestedGlyph	((XGlyphInfo *) 1)
+
 _XFUNCPROTOBEGIN
 
 /* xftdir.c */
