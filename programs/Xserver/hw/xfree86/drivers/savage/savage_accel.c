@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.22tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.23 2003/12/22 17:48:10 tsi Exp $ */
 
 /*
  *
@@ -66,6 +66,7 @@ static void SavageSubsequentSolidBresenhamLine(
     int length,
     int octant);
 
+#if 0
 static void SavageSubsequentSolidTwoPointLine(
     ScrnInfoPtr pScrn,
     int x1,
@@ -73,6 +74,7 @@ static void SavageSubsequentSolidTwoPointLine(
     int x2,
     int y2,
     int bias);
+#endif
 
 #if 0
 static void SavageSetupForScreenToScreenColorExpand(
@@ -486,7 +488,6 @@ SavageInitAccel(ScreenPtr pScreen)
     xaaptr->SolidLineFlags = NO_PLANEMASK | ROP_NEEDS_SOURCE;
     xaaptr->SetupForSolidLine = SavageSetupForSolidFill;
     xaaptr->SubsequentSolidBresenhamLine = SavageSubsequentSolidBresenhamLine;
-    xaaptr->SubsequentSolidTwoPointLine = SavageSubsequentSolidTwoPointLine;
 #if 0
     xaaptr->SubsequentSolidFillTrap = SavageSubsequentSolidFillTrap; 
 #endif
@@ -1092,6 +1093,7 @@ SavageSubsequentSolidBresenhamLine(
 }
 
 
+#if 0
 static void 
 SavageSubsequentSolidTwoPointLine(
     ScrnInfoPtr pScrn,
@@ -1151,6 +1153,7 @@ SavageSubsequentSolidTwoPointLine(
     BCI_SEND( BCI_LINE_STEPS( 2 * (min - max), 2 * min ) );
     BCI_SEND( BCI_LINE_MISC( max, ym, xp, yp, 2 * min - max ) );
 }
+#endif
 
 
 
