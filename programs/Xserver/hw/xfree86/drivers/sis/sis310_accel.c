@@ -604,7 +604,9 @@ static void SiSSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
 	 * correctly if there are 512x512 slots, but no 256x256
 	 * slots. This leads to catastrophic data fed to us.
 	 * Filter this out here and warn the user.
+	 * Fixed in 4.3.99.10 (?) and Debian's 4.3.0.1
 	 */
+#if (XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,10,0)) && (XF86_VERSION_CURRENT != XF86_VERSION_NUMERIC(4,3,0,1,0))
         if((src_x < 0)  ||
 	   (dst_x < 0)  ||
 	   (src_y < 0)  ||
@@ -622,6 +624,7 @@ static void SiSSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
 	   	"Please update libxaa.a to avoid this error.\n");
 	   return;
 	}
+#endif
 
 	/* Although the chip knows the direction to use
 	 * if the source and destination areas overlap,
