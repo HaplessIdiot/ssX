@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.61 2002/09/18 12:48:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.62 2002/09/18 17:52:06 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -241,8 +241,6 @@ pciInit()
 	if (pciNumBuses <= 0)
 #if defined(ARCH_PCI_OS_INIT)
 	    ARCH_PCI_OS_INIT();
-#else
-	    xf86Msg(X_ERROR,"No OS PCI support available\n");
 #endif
 }
 
