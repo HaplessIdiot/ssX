@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.47 1999/06/27 09:20:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.48 2000/01/24 22:21:50 dawes Exp $ */
 
 /*
  *
@@ -809,7 +809,7 @@ DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent)
  *                abiclass     - (string) must match the module's abiclass
  *                abiversion   - must be consistent with the module's
  *                               abiversion (major equal, minor no older)
- *                moduleclase  - string must match the module's moduleclase
+ *                moduleclass  - string must match the module's moduleclass
  *                               string
  *              "don't care" values are ~0 for numbers, and NULL for strings
  * errmaj       Major error return.
