@@ -1,4 +1,5 @@
 XFree86 4.4.99.5 (xx April 2004)
+  97. Convert lib/Xt to ANSI C (Thomas Dickey).
   96. Rework (and reformat) common layer's SBUS code so that SBUS adapters
       are properly detected on SunOS (Marc La France).
   95. Fix segfault in sunffb driver under option "NoAccel" (Marc La France).
@@ -18896,7 +18897,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3245 2004/05/04 15:26:30 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3246 2004/05/04 16:21:40 tsi Exp $
 
 
 
