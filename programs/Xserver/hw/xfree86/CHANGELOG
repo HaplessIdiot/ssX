@@ -1,3 +1,7 @@
+XFree86 3.1.2Gg (26 September 1996)
+855. Preliminary support for the Matrox Millenium (MGA 2064W)
+     (Radoslaw Kapitan, Andrew Vanderstock, Dirk Hohndel).
+
 XFree86 3.1.2Gf (25 September 1996)
 854. Mach32 documentation (Bryan Feir).
 853. Improve Mach32 ramdac probing in SuperProbe (Bryan Feir).
