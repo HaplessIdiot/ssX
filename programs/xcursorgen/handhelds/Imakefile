@@ -1,3 +1,4 @@
+XCOMM $XFree86$
 
 #define CursorSources(name) $(PNGDIR)/name-16.png
 
@@ -22,6 +23,7 @@ InstallTarget(install,name,$(INSTDATFLAGS),$(THEMEDIR))
 all:: dst								@@\
 									@@\
 dst: src								@@\
+	RemoveFile(dst)							@@\
 	$(LN) src dst							@@\
 									@@\
 clean::									@@\
