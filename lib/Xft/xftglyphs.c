@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.5 2000/12/11 21:48:40 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.6 2000/12/15 17:12:53 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -22,6 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include "xftint.h"
 #include <freetype/ftoutln.h>
@@ -73,6 +74,9 @@ XftGlyphLoad (Display		*dpy,
     FT_Bitmap	    ftbit;
     FT_Matrix	    matrix;
 
+    if (!_XftFreeTypeSetFace (font->face, font->size, font->charmap))
+	return ;
+
     if (font->antialias && font->rgba)
     {
 	matrix.xx = 0x30000L;
@@ -87,7 +91,7 @@ XftGlyphLoad (Display		*dpy,
 	if (!gi)
 	    continue;
 	
-	if (font->encoded)
+	if (font->charmap != -1)
 	{
 	    glyphindex = FT_Get_Char_Index (font->face, charcode);
 	    if (!glyphindex)
@@ -112,7 +116,7 @@ XftGlyphLoad (Display		*dpy,
 	/*
 	 * Try to keep monospace fonts ink-inside
 	 */
-	if (font->monospace)
+	if (font->spacing != XFT_PROPORTIONAL)
 	{
 	    if (TRUNC(right) > font->max_advance_width)
 	    {
@@ -192,33 +196,36 @@ XftGlyphLoad (Display		*dpy,
 		    }
 		}
 	    }
-#if 0
+	    if (_XftFontDebug() & XFT_DBG_GLYPH)
 	    {
-		int		x, y;
-		unsigned char	*line;
-
-		line = bufBitmap;
-		printf ("\nchar 0x%x (%c):\n", (int) charcode, (char) charcode);
-		for (y = 0; y < height; y++)
+		printf ("char 0x%x (%c):\n", (int) charcode, (char) charcode);
+		if (_XftFontDebug() & XFT_DBG_GLYPHV)
 		{
-		    if (font->antialias) 
+		    int		x, y;
+		    unsigned char	*line;
+
+		    line = bufBitmap;
+		    for (y = 0; y < height; y++)
 		    {
-			static char    den[] = { " .:;=+*#" };
-			for (x = 0; x < pitch; x++)
-			    printf ("%c", den[line[x] >> 5]);
-		    }
-		    else
-		    {
-			for (x = 0; x < pitch * 8; x++)
+			if (font->antialias) 
 			{
-			    printf ("%c", line[x>>3] & (1 << (x & 7)) ? '#' : ' ');
+			    static char    den[] = { " .:;=+*#" };
+			    for (x = 0; x < pitch; x++)
+				printf ("%c", den[line[x] >> 5]);
 			}
+			else
+			{
+			    for (x = 0; x < pitch * 8; x++)
+			    {
+				printf ("%c", line[x>>3] & (1 << (x & 7)) ? '#' : ' ');
+			    }
+			}
+			printf ("\n");
+			line += pitch;
 		    }
 		    printf ("\n");
-		    line += pitch;
 		}
 	    }
-#endif
 	}
 	else
 	{
@@ -232,7 +239,7 @@ XftGlyphLoad (Display		*dpy,
 	gi->height = height;
 	gi->x = -TRUNC(left);
 	gi->y = TRUNC(top);
-	if (font->monospace)
+	if (font->spacing != XFT_PROPORTIONAL)
 	    gi->xOff = font->max_advance_width;
 	else
 	    gi->xOff = TRUNC(ROUND(glyph->metrics.horiAdvance));
@@ -368,7 +375,10 @@ XftFreeTypeGlyphExists (Display		*dpy,
 			XftFontStruct	*font,
 			XftChar32	glyph)
 {
-    if (font->encoded)
+    if (font->charmap != -1)
+    {
+	FT_Set_Charmap (font->face, font->face->charmaps[font->charmap]);
 	glyph = (XftChar32) FT_Get_Char_Index (font->face, (FT_ULong) glyph);
+    }
     return glyph && glyph <= font->face->num_glyphs;
 }

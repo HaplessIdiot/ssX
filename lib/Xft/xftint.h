@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.14 2000/12/14 23:03:55 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.15 2000/12/15 17:12:53 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -83,6 +83,14 @@ extern XftFontSet	*_XftFontSet;
 #ifndef XFT_DEFAULT_PATH
 #define XFT_DEFAULT_PATH "/usr/X11R6/lib/X11/XftConfig"
 #endif
+
+#define XFT_DBG_OPEN	1
+#define XFT_DBG_OPENV	2
+#define XFT_DBG_RENDER	4
+#define XFT_DBG_DRAW	8
+#define XFT_DBG_REF	16
+#define XFT_DBG_GLYPH	32
+#define XFT_DBG_GLYPHV	64
 
 typedef enum _XftOp {
     XftOpInteger, XftOpDouble, XftOpString, XftOpBool, XftOpNil,
@@ -299,6 +307,9 @@ _XftFontDebug (void);
 XftPattern *
 XftFreeTypeQuery (const char *file, int id, int *count);
 
+Bool
+_XftFreeTypeSetFace (FT_Face face, FT_F26Dot6 size, int charmap);
+    
 /* xftfs.c */
 /* xftglyphs.c */
 /* xftgram.y */

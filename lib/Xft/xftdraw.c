@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdraw.c,v 1.9 2000/12/12 00:45:17 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdraw.c,v 1.10 2000/12/15 17:12:52 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -22,6 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include "xftint.h"
 #include <X11/Xutil.h>
@@ -200,6 +201,14 @@ XftDrawRenderPrepare (XftDraw	*draw,
 	return False;
     if (memcmp (&color->color, &draw->render.fg_color, sizeof (XRenderColor)))
     {
+	if (_XftFontDebug () & XFT_DBG_DRAW)
+	{
+	    printf ("Switching to color %04x,%04x,%04x,%04x\n",
+		    color->color.alpha,
+		    color->color.red,
+		    color->color.green,
+		    color->color.blue);
+	}
 	XRenderFillRectangle (draw->dpy, PictOpSrc, draw->render.fg_pict,
 			      &color->color, 0, 0, 1, 1);
 	draw->render.fg_color = color->color;
@@ -255,6 +264,10 @@ XftDrawString8 (XftDraw		*draw,
 		XftChar8	*string,
 		int		len)
 {
+    if (_XftFontDebug () & XFT_DBG_DRAW)
+    {
+	printf ("DrawString \"%*.*s\"\n", len, len, string);
+    }
     if (font->core)
     {
 	XftDrawCorePrepare (draw, color, font);
