@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:01:00 dpw Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.1 1994/04/28 14:11:04 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -7,12 +7,8 @@ XCOMM $XFree86$
 VGA2SCREEN = vga2
 #endif
 
-#if XF86HgaServer
-HGA2SCREEN = hga2
-#endif
-
-#if XF86BdmServer
-BDM2SCREEN = bdm2
+#if (XF86MonoDualServer) || (XF86VGA16DualServer)
+MONOSCREEN = mono
 #endif
 
 #if XF86SVGAServer
@@ -27,7 +23,7 @@ VGA16SCREEN = vga16
 ACCELDIRS = accel
 #endif
 
-SCREENS = $(VGA2SCREEN) $(HGA2SCREEN) $(BDM2SCREEN) $(VGA16SCREEN) $(VGA256SCREEN)
+SCREENS = $(VGA2SCREEN) $(MONOSCREEN) $(VGA16SCREEN) $(VGA256SCREEN)
 
 SUBDIRS = common common_hw os-support $(SCREENS) $(ACCELDIRS) 
 
@@ -95,7 +91,6 @@ CppFileTarget(Xconfig, Xconfig.cpp, \
 InstallManPage(XFree86,$(MANDIR))
 InstallNamedTarget(install.man,Xconfig.man,$(INSTMANFLAGS),$(FILEMANDIR),Xconfig.$(FILEMANSUFFIX))
 InstallManPage(XF86_Mono,$(MANDIR))
-InstallManPageAliases(XF86_Mono,$(MANDIR),XF86_Bdm)
 InstallManPage(XF86_VGA16,$(MANDIR))
 InstallManPage(XF86_SVGA,$(MANDIR))
 InstallManPageLong(XF86_Acc,$(MANDIR),XF86_Accel)

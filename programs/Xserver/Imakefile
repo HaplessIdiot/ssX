@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.182 94/04/08 17:50:40 rws Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.0 1994/04/28 12:33:00 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -14,9 +14,13 @@ XCOMM $XFree86$
 #define PreFbLibs $(DIX) $(OS) $(FONT)
 #define BarePostFbLibs $(MFB) $(MI)
 #define PostFbLibs BarePostFbLibs $(EXTENSIONS)
+#define NoMfbBarePostFbLibs $(MI)
+#define NoMfbPostFbLibs NoMfbBarePostFbLibs $(EXTENSIONS)
 
 #define MFBBareLibs PreFbLibs BarePostFbLibs
+#define NoMFBBareLibs PreFbLibs NoMfbBarePostFbLibs
 #define MFBLibs PreFbLibs PostFbLibs
+#define NoMFBLibs PreFbLibs NoMfbPostFbLibs
 #define CFBLibs PreFbLibs $(CFB) PostFbLibs
 #define CFB8Libs PreFbLibs $(CFB8) PostFbLibs
 #define CFB16Libs PreFbLibs $(CFB16) PostFbLibs
@@ -416,7 +420,8 @@ CFB8DIR = cfb
 DDXDIR1 = hw/xfree86
 XF86SVGASUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 XF86SVGAOBJS = $(XF86COMSRC)/XF86_SVGA.o $(XF86SRC)/vga256/vga256Conf.o
-XF86SVGALIBS = $(VGADRIVERSRC)/libdriver256.a $(XF86SRC)/vga256/libvga256.a $(XF86LIBS) MFBLibs
+XF86SVGALIBS = $(VGADRIVERSRC)/libdriver256.a $(XF86SRC)/vga256/libvga256.a \
+               $(XF86LIBS) MFBLibs
 XF86SVGASYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_SVGA,$(XF86SVGASUBDIRS),$(XF86SVGAOBJS),$(XF86SVGALIBS),$(XF86SVGASYSLIBS))
 #ifndef ServerToInstall
@@ -429,13 +434,18 @@ SetUIDServerTarget(XF86_SVGA,$(XF86SVGASUBDIRS),$(XF86SVGAOBJS),$(XF86SVGALIBS),
 XCOMM
 XCOMM XFree86 VGA 16 color Server
 XCOMM
-MFBDIR  = mfb
+/* MFBDIR  = mfb */
 CFB8DIR = cfb
 DDXDIR1 = hw/xfree86
+#if XF86VGA16DualServer
+XF86VGA16MONOOBJS = $(XF86SRC)/mono/monoConf.o
+XF86VGA16MONOLIBS = $(MONODRIVERSRC)/libmonodrv.a $(XF86SRC)/mono/libmono.a
+#endif
 XF86VGA16SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 XF86VGA16OBJS = $(XF86COMSRC)/XF86_VGA16.o $(XF86SRC)/vga16/vga16Conf.o \
-                $(XF86SRC)/vga16/misc/vga16misc.o
-XF86VGA16LIBS = $(VGA16DRIVERSRC)/libdriver16.a $(XF86SRC)/vga16/libvga16.a $(XF86MLIBS) MFBBareLibs $(OTHEREXTS)
+                $(XF86SRC)/vga16/misc/vga16misc.o $(XF86VGA16MONOOBJS)
+XF86VGA16LIBS = $(VGA16DRIVERSRC)/libdriver16.a $(XF86SRC)/vga16/libvga16.a \
+                $(XF86VGA16MONOLIBS) $(XF86MLIBS) NoMFBBareLibs $(OTHEREXTS)
 XF86VGA16SYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_VGA16,$(XF86VGA16SUBDIRS),$(XF86VGA16OBJS),$(XF86VGA16LIBS),$(XF86VGA16SYSLIBS))
 #ifndef ServerToInstall
@@ -448,36 +458,23 @@ SetUIDServerTarget(XF86_VGA16,$(XF86VGA16SUBDIRS),$(XF86VGA16OBJS),$(XF86VGA16LI
 XCOMM
 XCOMM XFree86 Monochrome VGA Server
 XCOMM
-MFBDIR  = mfb
+/* MFBDIR  = mfb */
 DDXDIR1 = hw/xfree86
+#if XF86MonoDualServer
+XF86MONOMONOOBJS = $(XF86SRC)/mono/monoConf.o
+XF86MONOMONOLIBS = $(MONODRIVERSRC)/libmonodrv.a $(XF86SRC)/mono/libmono.a
+#endif
 XF86MONOSUBDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
 XF86MONOOBJS = $(XF86COMSRC)/XF86_Mono.o $(XF86SRC)/vga2/vga2Conf.o \
-               $(XF86SRC)/vga2/misc/vga2misc.o
-XF86MONOLIBS = $(VGA2DRIVERSRC)/libdriver2.a $(XF86SRC)/vga2/libvga2.a $(XF86MLIBS) MFBBareLibs $(OTHEREXTS)
+               $(XF86SRC)/vga2/misc/vga2misc.o $(XF86MONOMONOOBJS)
+XF86MONOLIBS = $(VGA2DRIVERSRC)/libdriver2.a $(XF86SRC)/vga2/libvga2.a \
+               $(XF86MONOMONOLIBS) $(XF86MLIBS) NoMFBBareLibs $(OTHEREXTS)
 XF86MONOSYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_Mono,$(XF86MONOSUBDIRS),$(XF86MONOOBJS),$(XF86MONOLIBS),$(XF86MONOSYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XF86_Mono
 #endif
 #endif	/* XF86MonoServer */
-
-
-#if XF86BdmServer
-XCOMM
-XCOMM XFree86 Banked Monochrome Server
-XCOMM
-DDXDIR1 = hw/xfree86
-XF86BDMSUBDIRS = $(STDDIRS) $(DDXDIR1) $(DEPDIRS)
-XF86BDMOBJS = $(XF86COMSRC)/XF86_Bdm.o $(XF86SRC)/bdm2/bdm2Conf.o \
-              $(XF86SRC)/bdm2/misc/bdm2misc.o
-XF86BDMLIBS = $(BDM2DRIVERSRC)/libbdm2drv.a $(XF86SRC)/bdm2/libbdm2.a \
-              $(XF86MLIBS) $(DIX) $(OS) $(FONT) $(MI) $(OTHEREXTS)
-XF86BDMSYSLIBS = $(SYSLIBS)
-SetUIDServerTarget(XF86_Bdm,$(XF86BDMSUBDIRS),$(XF86BDMOBJS),$(XF86BDMLIBS),$(XF86BDMSYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall XF86_Bdm
-#endif
-#endif	/* XF86BdmServer */
 
 
 #if XF86S3Server

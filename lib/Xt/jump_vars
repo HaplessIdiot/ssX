@@ -1,4 +1,4 @@
-# $XFree86$
+# $XFree86: xc/lib/Xt/jump_vars,v 3.0 1994/04/28 12:32:15 dawes Exp $
 #
 00000100 D _compositeClassRec   libXt          Composite
 00000004 D _compositeWidgetClass libXt          Composite
@@ -30,6 +30,8 @@
 00000004 D _topLevelShellWidgetClass libXt          Shell
 00000100 D _applicationShellClassRec libXt          Shell
 00000004 D _applicationShellWidgetClass libXt          Shell
+00000100 D _sessionShellClassRec libXt          Shell
+00000004 D _sessionShellWidgetClass libXt          Shell
 00001000 D _XtStrings           libXt          StringDefs
 00000800 D _XtShellStrings      libXt          StringDefs
 00000040 D __XtGlobalTM         libXt          TMstate
