@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.40 2000/08/04 16:13:24 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.41 2000/10/20 14:58:59 alanh Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -549,12 +549,12 @@ configureFilesSection (void)
     parsePrologue (XF86ConfFilesPtr, XF86ConfFilesRec)
 
 #ifdef XFree86LOADER
-   if (xf86ModulePath && xf86ModPathFrom == X_CMDLINE)
+   if (xf86ModulePath)
        ptr->file_modulepath = strdup(xf86ModulePath);
 #endif
-   if (xf86fpFlag && defaultFontPath)
+   if (defaultFontPath)
        ptr->file_fontpath = strdup(defaultFontPath);
-   if (xf86coFlag && rgbPath)
+   if (rgbPath)
        ptr->file_rgbpath = strdup(rgbPath);
    
     return ptr;
