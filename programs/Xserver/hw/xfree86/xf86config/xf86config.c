@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.65 2003/02/07 05:46:53 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.66 2003/02/15 05:37:58 paulo Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -387,7 +387,7 @@ struct {
 #ifdef WSCONS_SUPPORT
 #define WS_MOUSE_STRING		"wsmouse"
 #define DEF_PROTO_STRING	WS_MOUSE_STRING
-	{WS_MOUSE_MOUSE_STRING,	&M_WSMOUSE,
+	{WS_MOUSE_STRING,	&M_WSMOUSE,
 	 "wsmouse protocol"
 	},
 #endif
