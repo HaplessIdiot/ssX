@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.11 1999/06/06 08:48:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.12 1999/06/12 15:37:10 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -473,6 +473,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	else {
 	    xf86Msg(X_ERROR, "%s: cannot open input device\n", pInfo->name);
 	    xfree(pMse);
+	    pInfo->private = NULL;
 	    return pInfo;
 	}
     }

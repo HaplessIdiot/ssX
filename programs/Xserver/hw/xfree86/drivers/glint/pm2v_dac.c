@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.10 1999/03/14 03:21:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.11 1999/03/28 15:32:38 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -264,9 +264,10 @@ Permedia2VSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     glintReg->glintRegs[PMVideoControl >> 3] = GLINT_READ_REG(PMVideoControl);
     glintReg->glintRegs[VClkCtl >> 3] = GLINT_READ_REG(VClkCtl);
 
-    Permedia2ReadAddress(pScrn, 0x00);
-    for (i=0;i<768;i++)
+    for (i=0;i<768;i++) {
+    	Permedia2ReadAddress(pScrn, i);
 	glintReg->cmap[i] = Permedia2ReadData(pScrn);
+    }
 
     glintReg->DacRegs[PM2VDACRDIndexControl] = 
 				Permedia2vInIndReg(pScrn, PM2VDACRDIndexControl);
@@ -345,9 +346,10 @@ Permedia2VRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     Permedia2vOutIndReg(pScrn, PM2VDACRDColorFormat, 0x00, 
 				glintReg->DacRegs[PM2VDACRDColorFormat]);
 
-    Permedia2WriteAddress(pScrn, 0x00);
-    for (i=0;i<768;i++)
+    for (i=0;i<768;i++) {
+    	Permedia2WriteAddress(pScrn, i);
 	Permedia2WriteData(pScrn, glintReg->cmap[i]);
+    }
 
     temp = Permedia2vInIndReg(pScrn, PM2VDACIndexClockControl) & 0xFC;
     Permedia2vOutIndReg(pScrn, PM2VDACRDDClk0PreScale, 0x00, 
@@ -356,7 +358,6 @@ Permedia2VRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 				glintReg->DacRegs[PM2VDACRDDClk0FeedbackScale]);
     Permedia2vOutIndReg(pScrn, PM2VDACRDDClk0PostScale, 0x00, 
 				glintReg->DacRegs[PM2VDACRDDClk0PostScale]);
-
     Permedia2vOutIndReg(pScrn, PM2VDACIndexClockControl, 0x00, temp|0x03);
 }
 

@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.9 1999/06/12 16:10:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.10 1999/06/13 05:18:53 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1405,7 +1405,7 @@ Permedia2SetPortAttribute(ScrnInfoPtr pScrn,
 	    AdjustVideoH(pPPriv, fh, pPPriv->fh);
 	    pPPriv->fh = fh;
 
-	    if (VideoOn)
+	    if (VideoOn) {
 		if (StartVideoStream(pPPriv, NULL)) {
 		    pPPriv->VideoOn = VideoOn;
 		    if (pPPriv == &pAPriv->Port[1])
@@ -1414,6 +1414,7 @@ Permedia2SetPortAttribute(ScrnInfoPtr pScrn,
 		    pPPriv->VideoOn = -VideoOn;
 		    return XvBadAlloc;
 		}
+	    }
 	}
 
 	return Success;
@@ -1495,12 +1496,13 @@ Permedia2SetPortAttribute(ScrnInfoPtr pScrn,
 		pAPriv->Port[0].VideoOn = (StartVideoStream(&pAPriv->Port[0], NULL)) ?
 		    VideoOn0 : -VideoOn0;
 
-	    if (VideoOn1)
+	    if (VideoOn1) {
 		if (StartVideoStream(&pAPriv->Port[1], NULL)) {
 		    pAPriv->Port[1].VideoOn = VideoOn1;
 		    GetYUV(pPPriv);
 		} else
 		    pAPriv->Port[1].VideoOn = -VideoOn1;
+	    }
 
 	    if (pAPriv->Port[0].VideoOn < 0 ||
 		pAPriv->Port[1].VideoOn < 0 ||

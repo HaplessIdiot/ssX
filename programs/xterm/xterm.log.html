@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.31 1999/06/20 08:41:46 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.32 1999/06/27 14:08:43 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_110">Patch #110 - 1999/6/29 - XFree86 3.9Pu</A>
 <LI><A HREF="#xterm_109">Patch #109 - 1999/6/23 - XFree86 3.9Pt</A>
 <LI><A HREF="#xterm_108">Patch #108 - 1999/6/19 - XFree86 3.9Ps</A>
 <LI><A HREF="#xterm_107">Patch #107 - 1999/6/12 - XFree86 3.9Pq</A>
@@ -152,6 +153,30 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_110">Patch #110 - 1999/6/29 - XFree86 3.9Pu</A></H1>
+<ul>
+	<li>If colorMode is enabled by default, compile-in default resources to
+	  match the colors listed in XTerm-col.ad (this should fix a
+	  longstanding FAQ).
+
+	<li>added new OSC&nbsp;3&nbsp;;&nbsp;PROPNAME=VALUE&nbsp;ST escape
+	  sequence to set an arbitrary X property on the top level xterm X11
+	  window.  Omit "=VALUE" to delete the X property (patch by Greg Badros
+	  &lt;gjb@cs.washington.edu&gt;).
+
+	<li>change internal flag used for <em>utf8controls</em> resource
+	  so we allow 31-bit range of characters (suggested by Thomas Wolff).
+
+	<li>add check for 16-bit characters in OSC strings, change them to '?'
+	  (reported by Thomas Wolff).
+
+	<li>modify logic of same_font_name() to avoid trying to interpret both
+	  parameters as wildcard patterns.  That does not (cannot) work, and in
+	  some instances the font server will return unresolved wildcards for
+	  the normal or bold fontnames, making them match inadvertently,
+	  triggering the fallback overstrike logic (reported by Tim Adye).
+</ul>
 
 <H1><A NAME="xterm_109">Patch #109 - 1999/6/23 - XFree86 3.9Pt</A></H1>
 <ul>

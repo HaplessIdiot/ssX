@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.11 1999/06/13 15:49:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.12 1999/06/20 07:14:33 dawes Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -158,6 +158,9 @@ float CalculateMCLK(ScrnInfoPtr pScrn);
 #define CYBER939A	27
 #define CYBER9525	28
 #define BLADE3D		29
+#define CYBERBLADEI7	30
+#define CYBERBLADEI7D	31
+#define CYBERBLADEI1	32
 
 #define HAS_DST_TRANS	(pTrident->Chipset == PROVIDIA9682) 
 
@@ -168,6 +171,9 @@ float CalculateMCLK(ScrnInfoPtr pScrn);
 			 (pTrident->Chipset == CYBER9525) || \
 			 (pTrident->Chipset == IMAGE975)  || \
 			 (pTrident->Chipset == IMAGE985)  || \
+			 (pTrident->Chipset == CYBERBLADEI7)  || \
+			 (pTrident->Chipset == CYBERBLADEI7D)  || \
+			 (pTrident->Chipset == CYBERBLADEI1)  || \
 			 (pTrident->Chipset == BLADE3D))
 
 /*

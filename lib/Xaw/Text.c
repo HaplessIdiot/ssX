@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.30 1999/06/13 13:47:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.31 1999/06/20 08:41:08 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -2210,10 +2210,8 @@ _SetSelection(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 
     for (i = 0; i < src->textSrc.num_text; i++) {
 	TextWidget tw = (TextWidget)src->textSrc.text[i];
-	Bool update = ctx->text.old_insert < 0;
 
-	if (update)
-	    _XawTextPrepareToUpdate(tw);
+	_XawTextPrepareToUpdate(tw);
 #else
 	TextWidget tw = ctx;
 	XawTextPosition pos;
@@ -2239,8 +2237,7 @@ _SetSelection(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 	tw->text.s.left = left;
 	tw->text.s.right = right;
 #ifndef OLDXAW
-	if (update)
-	    _XawTextExecuteUpdate(tw);
+	_XawTextExecuteUpdate(tw);
     }
 #endif /* OLDXAW */
 

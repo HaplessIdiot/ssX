@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.7 1999/03/14 03:22:00 dawes Exp $ */
 
 #ifndef _MGA_MACROS_H_
 #define _MGA_MACROS_H_
@@ -19,8 +19,12 @@
 
 #define MGAISBUSY() (INREG8(MGAREG_Status + 2) & 0x01)
 
-#define WAITFIFO(n) if(!pMga->UsePCIRetry) \
-	{while(INREG8(MGAREG_FIFOSTATUS) < (n));}
+#define WAITFIFO(n) \
+   if(!pMga->UsePCIRetry) {\
+	while(pMga->fifoCount < (n))\
+	    pMga->fifoCount = INREG8(MGAREG_FIFOSTATUS);\
+	pMga->fifoCount -= n;\
+   }
 
 #define XYADDRESS(x,y) ((y) * pScrn->displayWidth + (x) + pMga->YDstOrg)
 

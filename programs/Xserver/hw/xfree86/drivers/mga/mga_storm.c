@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.53 1999/06/20 08:41:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.54 1999/06/20 15:02:52 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -20,6 +20,7 @@
 #include "xaalocal.h"
 #include "xf86fbman.h"
 #include "miline.h"
+#include "servermd.h"
 
 #include "mga_bios.h"
 #include "mga.h"
@@ -319,7 +320,8 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 			infoPtr->SubsequentCPUToScreenColorExpandFill) {
 	infoPtr->FillColorExpandRects = MGAFillColorExpandRects; 
 	infoPtr->WriteBitmap = MGAWriteBitmapColorExpand;
-	infoPtr->NonTEGlyphRenderer = MGANonTEGlyphRenderer;  
+        if(BITMAP_SCANLINE_PAD == 32)
+	    infoPtr->NonTEGlyphRenderer = MGANonTEGlyphRenderer;  
     }
 
     if(pMga->ILOADBase && pMga->UsePCIRetry && infoPtr->SetupForSolidFill) {
@@ -456,6 +458,7 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
         break;
     }
     
+    pMga->fifoCount = 0;
 
     WAITFIFO(12);
     OUTREG(MGAREG_PITCH, pScrn->displayWidth);

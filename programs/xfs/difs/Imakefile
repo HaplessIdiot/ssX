@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.14 94/02/09 17:20:10 gildea Exp $
+XCOMM $TOG: Imakefile /main/15 1998/06/16 15:20:22 msr $
 #undef ServerDefines
 #include <Server.tmpl>
 
@@ -13,7 +13,12 @@ OBJS =  main.o dispatch.o extensions.o globals.o events.o tables.o \
 
 INCLUDES = -I../include -I$(FONTINCSRC)
  DEFINES = AllocateLocalDefines
-FONTDEFINES = -DFONT_PCF -DFONT_FS -DFONT_SPEEDO
+#if BuildLowMem
+LOWMEMDEFINES = -DLOWMEMFTPT
+#else
+LOWMEMDEFINES =
+#endif
+FONTDEFINES = -DFONT_PCF -DFONT_FS -DFONT_SPEEDO $(LOWMEMDEFINES)
 #ifdef DefaultFSConfigFile
 DEFAULTCONFIGFILE = DefaultFSConfigFile
      CONFIGDEFINES = -DDEFAULT_CONFIG_FILE=\"$(DEFAULTCONFIGFILE)\"
@@ -25,6 +30,6 @@ NormalLibraryTarget(difs,$(OBJS))
 
 DependTarget()
 
-SpecialObjectRule(main.o,$(ICONFIGFILES),$(CONFIGDEFINES))
+SpecialCObjectRule(main,$(ICONFIGFILES),$(CONFIGDEFINES))
 SpecialCObjectRule(initfonts,$(ICONFIGFILES),$(FONTDEFINES))
 

@@ -1,7 +1,7 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
 .\" $XConsortium: ctlseqs.ms,v 1.16 94/12/28 20:45:48 gildea Exp $
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.23 1999/05/03 12:15:30 dawes Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.24 1999/06/13 13:46:49 dawes Exp $
 .\"
 .\"
 .\" Copyright 1999 by Thomas E. Dickey <dickey@clark.net>
@@ -953,6 +953,8 @@ and window title.
   \*(Ps = \*0 \(-> Change Icon Name and Window Title to \*(Pt
   \*(Ps = \*1 \(-> Change Icon Name to \*(Pt
   \*(Ps = \*2 \(-> Change Window Title to \*(Pt
+  \*(Ps = \*3 \(-> Set X property on top-level window. \*(Pt should be in the form
+"\fIprop=value\fP", or just "\fIprop\fP" to delete the property
   \*(Ps = \*1\*0 \(-> Change color names starting with text foreground to \*(Pt
 (a list of one or more color names or RGB specifications, separated by
 semicolon, up to eight, as per \fIXParseColor\fP).

@@ -19,7 +19,7 @@
 ! other dealings in this Software without prior written authorization
 ! from The Open Group.
 !
-! $XFree86: xc/lib/X11/XErrorDB,v 3.21 1999/03/14 11:17:38 dawes Exp $
+! $XFree86: xc/lib/X11/XErrorDB,v 3.22 1999/05/16 13:24:49 dawes Exp $
 !
 ! these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
@@ -629,6 +629,7 @@ XRequest.XFree86-DGA.21: XDGAFlush
 XRequest.XFree86-DGA.22: XDGAOpenFramebuffer
 XRequest.XFree86-DGA.23: XDGACloseFramebuffer
 XRequest.XFree86-DGA.24: XDGASetClientVersion
+XRequest.XFree86-DGA.25: XDGAChangePixmapMode
 XProtoError.XFree86-DGA.0: XF86DGAClientNotLocal
 XProtoError.XFree86-DGA.1: XF86DGANoDirectVideoMode
 XProtoError.XFree86-DGA.2: XF86DGAScreenNotActive

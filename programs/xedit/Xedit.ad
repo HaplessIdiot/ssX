@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit.ad,v 1.13 1999/06/06 08:49:14 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit.ad,v 1.14 1999/06/20 08:41:41 dawes Exp $
 
 *geometry:				590x440
 *input:					TRUE
@@ -57,8 +57,11 @@ Use Insert to toggle Overwrite mode.
 *labelWindow.right:			chainRight
 
 *quit.label:				Quit
+*quit.tip:				Close xedit window
 *save.label:				Save
+*save.tip:				Save current file
 *load.label:				Load
+*load.tip:				Load a new file
 
 *buttons*orientation:			horizontal
 *buttons*showGrip:			False
@@ -274,6 +277,7 @@ c<Key>G:	cancel-find-file()\n\
 *ispell*word.top:			chainTop
 *ispell*word.bottom:			chainTop
 *ispell*word.label:
+*ispell*word.tip:			Press here to select this text
 *ispell*word.highlightThickness:	0
 *ispell*text.fromHoriz:			replacement
 *ispell*replacement.fromVert:		mispelled
@@ -309,39 +313,50 @@ c<Key>G:	cancel-find-file()\n\
 *ispell*commands.left:			chainLeft
 *ispell*check.label:			Check
 *ispell*check.width:			54
+*ispell*check.tip:			Ask ispell about the word in the text field
 *ispell*look.label:			Look
 *ispell*look.fromHoriz:			check
 *ispell*look.horizDistance:		0
 *ispell*look.width:			46
+*ispell*look.tip:			Runs the look command
 *ispell*undo.fromVert:			check
 *ispell*undo.label:			Undo
 *ispell*undo.width:			102
+*ispell*undo.tip:			Undo last action
 *ispell*replace.fromVert:		undo
 *ispell*replace.label:			Replace
+*ispell*replace.tip:			Replace occurence of the word
 *ispell*replaceAll.fromVert:		undo
 *ispell*replaceAll.fromHoriz:		replace
 *ispell*replaceAll.label:		All
+*ispell*replaceAll.tip:			Replace all occurences of the word
 *ispell*ignore.fromVert:		replace
 *ispell*ignore.label:			Ignore
+*ispell*ignore.tip:			Ignore this word
 *ispell*ignoreAll.fromVert:		replaceAll
 *ispell*ignoreAll.fromHoriz:		ignore
 *ispell*ignoreAll.label:		All
+*ispell*ignoreAll.tip:			Ignore all ocurrences of the word
 *ispell*add.fromVert:			ignore
 *ispell*add.label:			Add
 *ispell*add.width:			50
+*ispell*add.tip:			Add word to your private dictionary
 *ispell*addUncap.fromVert:		ignoreAll
 *ispell*addUncap.fromHoriz:		add
 *ispell*addUncap.label:			Uncap
 *ispell*addUncap.horizDistance:		0
 *ispell*addUncap.width:			50
+*ispell*addUncap.tip:			Add word uncapitalized, to your private dictionary
 *ispell*suspend.fromVert:		add
 *ispell*suspend.label:			Suspend
 *ispell*suspend.width:			57
+*ispell*suspend.tip:			Suspend ispell execution
 *ispell*cancel.fromHoriz:		suspend
 *ispell*cancel.fromVert:		addUncap
 *ispell*cancel.label:			Close
 *ispell*cancel.width:			43
 *ispell*cancel.horizDistance:		0
+*ispell*cancel.tip:			Terminates ispell process
 *ispell*replace.width:			65
 *ispell*ignore.width:			65
 *ispell*replaceAll.width:		35
@@ -352,6 +367,7 @@ c<Key>G:	cancel-find-file()\n\
 *ispell*terse.Label:			Terse Mode
 *ispell*terse.width:			104
 *ispell*terse.borderWidth:		0
+*ispell*terse.tip:			Switch terse mode
 *ispell*status.fromVert:		viewport
 *ispell*status.fromHoriz:		suggestions
 *ispell*status.top:			chainBottom
@@ -378,6 +394,7 @@ c<Key>G:	cancel-find-file()\n\
 *ispell*dict.resizable:			False
 *ispell*dict.leftBitmap:		menu12
 *ispell*dict.label:			Dictionary
+*ispell*dict.tip:			Change dictionary
 *ispell*options.format.width:		65
 *ispell*format.highlightThickness:	0
 *ispell*format.justify:			left
@@ -385,6 +402,7 @@ c<Key>G:	cancel-find-file()\n\
 *ispell*format.leftBitmap:		menu12
 *ispell*format.fromHoriz:		dict
 *ispell*format.horizDistance:		0
+*ispell*format.tip:			Select text type
 
 *columns.minWidth:			140
 *columns.minHeight:			76

@@ -28,7 +28,7 @@
  * 
  * GLINT 500TX / MX accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.13 1999/02/12 22:52:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.14 1999/03/21 07:35:10 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -140,7 +140,7 @@ TXInitializeEngine(ScrnInfoPtr pScrn)
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE,	LogicalOpMode);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE,	DepthMode);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE,	StatisticMode);
-    GLINT_SLOW_WRITE_REG(0xc00,		FilterMode);
+    GLINT_SLOW_WRITE_REG(0x400,		FilterMode);
     GLINT_SLOW_WRITE_REG(0xffffffff,	FBHardwareWriteMask);
     GLINT_SLOW_WRITE_REG(0xffffffff,	FBSoftwareWriteMask);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE,	RasterizerMode);
@@ -246,10 +246,6 @@ TXAccelInit(ScreenPtr pScreen)
     if (!pGlint->UsePCIRetry) {
         infoPtr->ScanlineCPUToScreenColorExpandFillFlags = 
 					       TRANSPARENCY_ONLY |
-#if 0
-					       LEFT_EDGE_CLIPPING |
-					       LEFT_EDGE_CLIPPING_NEGATIVE_X |
-#endif
 					       BIT_ORDER_IN_BYTE_LSBFIRST;
 
         pGlint->XAAScanlineColorExpandBuffers[0] =
@@ -271,10 +267,6 @@ TXAccelInit(ScreenPtr pScreen)
         infoPtr->CPUToScreenColorExpandFillFlags = TRANSPARENCY_ONLY |
 					       SYNC_AFTER_COLOR_EXPAND |
       					       CPU_TRANSFER_PAD_DWORD |
-#if 0
-					       LEFT_EDGE_CLIPPING |
-					       LEFT_EDGE_CLIPPING_NEGATIVE_X |
-#endif
       					       BIT_ORDER_IN_BYTE_LSBFIRST;
         infoPtr->ColorExpandBase = pGlint->IOBase + OutputFIFO + 4;
         infoPtr->SetupForCPUToScreenColorExpandFill =
@@ -361,16 +353,19 @@ TXSync(
 	ScrnInfoPtr pScrn
 ){
     GLINTPtr pGlint = GLINTPTR(pScrn);
+    CARD32 readValue;
 
     CHECKCLIPPING;
 
     while (GLINT_READ_REG(DMACount) != 0);
-    GLINT_WAIT(1);
+    GLINT_WAIT(2);
+    GLINT_WRITE_REG(0x400, FilterMode);
     GLINT_WRITE_REG(0, GlintSync);
     do {
    	while(GLINT_READ_REG(OutFIFOWords) == 0);
 #define Sync_tag 0x188
-    } while (GLINT_READ_REG(OutputFIFO) != Sync_tag);
+	readValue = GLINT_READ_REG(OutputFIFO);
+    } while (readValue != Sync_tag);
 }
 
 static void
@@ -522,10 +517,6 @@ TXSubsequentScanlineCPUToScreenColorExpandFill(
 
     pGlint->dwords = ((w + 31) >> 5); /* dwords per scanline */
 
-#if 0
-    TXSetClippingRectangle(pScrn,x+skipleft, y, x+w, y+h);
-#endif
-
     pGlint->cpucount = y;
     pGlint->cpuheight = h;
     GLINT_WAIT(6);
@@ -561,10 +552,6 @@ TXSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     	MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4), src,dwords);
     }
     pGlint->cpucount += 1;
-#if 0
-    if (pGlint->cpucount == (pGlint->cpuheight + 1))
-	CHECKCLIPPING;
-#endif
 }
 
 static void
@@ -600,10 +587,6 @@ TXSubsequentCPUToScreenColorExpandFill(
 ){
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int dwords = ((w + 31) >> 5) * h;
-
-#if 0
-    TXSetClippingRectangle(pScrn,x+skipleft, y, x+w, y+h);
-#endif
 
     TXLoadCoord(pScrn, x, y, x+w, h, 0, 1);
     GLINT_WRITE_REG(PrimitiveTrapezoid | pGlint->FrameBufferReadMode | 
@@ -663,14 +646,15 @@ TXSubsequentMono8x8PatternFillRect(
     if (pGlint->FrameBufferReadMode != -1) {
 	if (pGlint->ROP == GXcopy) {
 	  GLINT_WRITE_REG(pGlint->BackGroundColor, FBBlockColor);
-	  GLINT_WRITE_REG(PrimitiveTrapezoid | FastFillEnable,Render);
+	  span = 0;
 	} else {
   	  GLINT_WRITE_REG(pGlint->BackGroundColor, PatternRamData0);
-	  GLINT_WRITE_REG(2<<1|2<<4|patternx<<7|patterny<<12|ASM_InvertPattern |
-					UNIT_ENABLE, AreaStippleMode);
-	  GLINT_WRITE_REG(AreaStippleEnable | SpanOperation | FastFillEnable | 
-						PrimitiveTrapezoid, Render);
+	  span = SpanOperation;
 	}
+	GLINT_WRITE_REG(2<<1|2<<4|patternx<<7|patterny<<12|ASM_InvertPattern |
+					UNIT_ENABLE, AreaStippleMode);
+	GLINT_WRITE_REG(AreaStippleEnable | span | FastFillEnable | 
+						PrimitiveTrapezoid, Render);
     }
 
     if (pGlint->ROP == GXcopy) {

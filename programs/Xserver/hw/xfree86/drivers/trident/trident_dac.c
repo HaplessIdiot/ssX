@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.9 1999/06/13 15:49:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.10 1999/06/20 07:14:35 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -33,6 +33,9 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     /* Enable Chipset specific options */
     switch (pTrident->Chipset) {
+	case CYBERBLADEI7:
+	case CYBERBLADEI7D:
+	case CYBERBLADEI1:
 	case BLADE3D:
 	case CYBER9520:
 	case CYBER9397:

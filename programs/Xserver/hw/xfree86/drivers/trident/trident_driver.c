@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.60 1999/06/20 05:23:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.61 1999/06/20 07:14:36 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -149,6 +149,9 @@ static SymTabRec TRIDENTChipsets[] = {
     { PCI_CHIP_9750,		"3dimage975" },
     { PCI_CHIP_9850,		"3dimage985" },
     { PCI_CHIP_9880,		"blade3d" },
+    { PCI_CHIP_8400,		"cyberbladei7" },
+    { PCI_CHIP_8420,		"cyberbladei7d" },
+    { PCI_CHIP_8500,		"cyberbladei1" },
     { -1,				NULL }
 };
 
@@ -165,6 +168,9 @@ static PciChipsets TRIDENTPciChipsets[] = {
     { PCI_CHIP_9750,	PCI_CHIP_9750,	RES_SHARED_VGA },
     { PCI_CHIP_9850,	PCI_CHIP_9850,	RES_SHARED_VGA },
     { PCI_CHIP_9880,	PCI_CHIP_9880,	RES_SHARED_VGA },
+    { PCI_CHIP_8400,	PCI_CHIP_8400,	RES_SHARED_VGA },
+    { PCI_CHIP_8420,	PCI_CHIP_8420,	RES_SHARED_VGA },
+    { PCI_CHIP_8500,	PCI_CHIP_8500,	RES_SHARED_VGA },
     { -1,		-1,		RES_UNDEFINED }
 };
     
@@ -1171,6 +1177,48 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->frequency = NTSC;
 	    pTrident->Chipset = BLADE3D;
 	    break;
+	case PCI_CHIP_8400:
+    	    pTrident->ddc1Read = Tridentddc1Read;
+    	    if ((MMIO_INB(vgaIOBase + 5) & 0x0C) == 0x08)
+		ramtype = "SDRAM";
+    	    if ((MMIO_INB(vgaIOBase + 5) & 0x0C) == 0x0C) {
+		pTrident->HasSGRAM = TRUE;
+		ramtype = "SGRAM";
+	    }
+	    Support24bpp = TRUE;
+	    chipset = "CyberBlade/i7";
+	    pTrident->NewClockCode = TRUE;
+	    pTrident->frequency = NTSC;
+	    pTrident->Chipset = BLADE3D;
+	    break;
+	case PCI_CHIP_8420:
+    	    pTrident->ddc1Read = Tridentddc1Read;
+    	    if ((MMIO_INB(vgaIOBase + 5) & 0x0C) == 0x08)
+		ramtype = "SDRAM";
+    	    if ((MMIO_INB(vgaIOBase + 5) & 0x0C) == 0x0C) {
+		pTrident->HasSGRAM = TRUE;
+		ramtype = "SGRAM";
+	    }
+	    Support24bpp = TRUE;
+	    chipset = "CyberBlade/DSTN/i7";
+	    pTrident->NewClockCode = TRUE;
+	    pTrident->frequency = NTSC;
+	    pTrident->Chipset = BLADE3D;
+	    break;
+	case PCI_CHIP_8500:
+    	    pTrident->ddc1Read = Tridentddc1Read;
+    	    if ((MMIO_INB(vgaIOBase + 5) & 0x0C) == 0x08)
+		ramtype = "SDRAM";
+    	    if ((MMIO_INB(vgaIOBase + 5) & 0x0C) == 0x0C) {
+		pTrident->HasSGRAM = TRUE;
+		ramtype = "SGRAM";
+	    }
+	    Support24bpp = TRUE;
+	    chipset = "CyberBlade/i1";
+	    pTrident->NewClockCode = TRUE;
+	    pTrident->frequency = NTSC;
+	    pTrident->Chipset = BLADE3D;
+	    break;
     }
 
 
@@ -1201,8 +1249,12 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	case 0x03:
 	    pScrn->videoRam = 1024;
 	    break;
-	case 0x04: /* Blade3D */
-	    pScrn->videoRam = 8192;
+	case 0x04: /* 8MB, but - hw cursor can't store above 4MB */
+		   /* So, we force to 4MB for now */
+	    	   /* pScrn->videoRam = 8192; */
+	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
+					"Found 8MB board, using 4MB\n");
+	    pScrn->videoRam = 4096;
 	    break;
 	case 0x07:
 	    pScrn->videoRam = 2048;
@@ -1591,6 +1643,9 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case IMAGE975:
 	case IMAGE985:
 	case BLADE3D:
+	case CYBERBLADEI7:
+	case CYBERBLADEI7D:
+	case CYBERBLADEI1:
 	case CYBER9520:
 	case CYBER9525:
 	case CYBER9397:
@@ -1848,7 +1903,10 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     if (!pTrident->NoAccel) {
 	if (Is3Dchip) {
-	    if (pTrident->Chipset == BLADE3D)
+	    if ((pTrident->Chipset == CYBERBLADEI7) ||
+	        (pTrident->Chipset == CYBERBLADEI7D) ||
+	        (pTrident->Chipset == CYBERBLADEI1) ||
+	        (pTrident->Chipset == BLADE3D))
 		BladeAccelInit(pScreen);
 	    else
 	    	ImageAccelInit(pScreen);

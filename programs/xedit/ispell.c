@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/ispell.c,v 1.9 1999/06/13 13:47:50 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/ispell.c,v 1.10 1999/06/20 08:41:41 dawes Exp $ */
 
 #include "xedit.h"
 #ifndef X_NOT_STDC_ENV
@@ -342,6 +342,7 @@ IspellSetRepeated(Bool state)
     XtSetSensitive(ispell.replaceAll, !state);
     XtSetSensitive(ispell.ignoreAll, !state);
     XtSetSensitive(ispell.add, !state);
+    XtSetSensitive(ispell.addUncap, !state);
     if (state && XtIsManaged(ispell.mispelled))
 	XtChangeManagedSet(&ispell.mispelled, 1, NULL, NULL, &ispell.repeated, 1);
     else if (!state && XtIsManaged(ispell.repeated))
@@ -562,12 +563,13 @@ IspellReceive(void)
 		XtSetValues(ispell.word, args, 1);
 	    }
 	    ++str;
-	    list = (char **)XtMalloc(sizeof(char*));
+	    list = NULL;
 	    str = strchr(str, ':') + 1;
 	    for (i = 0; ; i++) {
 		end = strchr(str, ',');
 		if (end)	*end = '\0';
-		list = (char**)XtRealloc((char*)list, (i + 1) * sizeof(char*));
+		if ((i % 16) == 0)
+		    list = (char**)XtRealloc((char*)list, (i + 16) * sizeof(char*));
 		tmp = word;
 		for (j = 1; j < sizeof(word) && str[j]; j++) {
 		    if (str[j] == '+')
@@ -1516,6 +1518,11 @@ ReplaceIspell(Widget w, XtPointer client_data, XtPointer call_data)
 	ispell.undo_head->undo_pos = pos;
 	ispell.undo_head->undo_count = 1;
 
+	if (ispell.repeat) {
+	    ispell.undo_head->repeat = 2; /* To recognize later it was replaced */
+	    ispell.undo_head->undo_count = ispell.right;
+	    ispell.undo_head->undo_str = XtNewString(search.ptr);
+	}
 	if (client_data && !ispell.repeat) {
 	    XawTextDisableRedisplay(ispell.ascii);
 	    pos = ispell.right;
@@ -1547,8 +1554,7 @@ ReplaceIspell(Widget w, XtPointer client_data, XtPointer call_data)
 	    }
 	    XawTextEnableRedisplay(ispell.ascii);
 	}
-	else
-	    (void)IspellReplacedWord(search.ptr, replace.ptr);
+	(void)IspellReplacedWord(search.ptr, replace.ptr);
 
 	strncpy(&ispell.sentbuf[1], replace.ptr, sizeof(ispell.sentbuf) - 2);
 	ispell.sentbuf[sizeof(ispell.sentbuf) - 1] = '\0';
@@ -1558,7 +1564,8 @@ ReplaceIspell(Widget w, XtPointer client_data, XtPointer call_data)
 
     if (ispell.repeat)
 	ispell.right = ispell.left = XawTextGetInsertionPoint(ispell.ascii);
-    else if (!ispell.item || strcmp(ispell.item, replace.ptr))
+    else if (!ispell.terse_mode || !ispell.item ||
+	     strcmp(ispell.item, replace.ptr))
 	ispell.right = ispell.left;	/* check it again! */
 
     ispell.lock = ispell.checkit = False;
@@ -1695,7 +1702,14 @@ UndoIspell(Widget w, XtPointer client_data, XtPointer call_data)
 	int old_len;
 	Arg args[2];
 
-	ispell.right = (XawTextPosition)undo->undo_count;
+	if (undo->repeat > 1) {
+	    XawTextDisableRedisplay(ispell.ascii);
+	    if (!_XawTextSrcUndo((TextSrcObject)ispell.source, &ispell.right))
+		Feep();
+	    XawTextEnableRedisplay(ispell.ascii);
+	}
+	else
+	    ispell.right = (XawTextPosition)undo->undo_count;
 	IspellSetRepeated(ispell.repeat = True);
 	XtSetArg(args[0], XtNlabel, undo->undo_str);
 	XtSetValues(ispell.word, args, 1);

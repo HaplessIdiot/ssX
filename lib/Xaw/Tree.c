@@ -44,7 +44,7 @@ in this Software without prior written authorization from The Open Group.
  * additional blank space to make the structure of the graph easier to see
  * as well as to support vertical trees.
  */
-/* $XFree86: xc/lib/Xaw/Tree.c,v 1.6 1999/06/06 08:48:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Tree.c,v 1.7 1999/06/13 13:47:24 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -111,6 +111,11 @@ static XtResource resources[] = {
     { XtNgravity, XtCGravity, XtRGravity, sizeof (XtGravity),
 	XtOffsetOf(TreeRec, tree.gravity), XtRImmediate,
 	(XtPointer) WestGravity },
+#ifndef OLDXAW
+    { XawNdisplayList, XawCDisplayList, XawRDisplayList, sizeof(XawDisplayList*),
+	XtOffsetOf(TreeRec, tree.display_list), XtRImmediate,
+	NULL },
+#endif
 };
 
 

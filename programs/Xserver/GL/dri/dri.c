@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.1 1999/06/14 07:31:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.2 1999/06/27 14:07:38 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Jens Owen <jens@precisioninsight.com>
  *
- * $PI: xc/programs/Xserver/GL/dri/dri.c,v 1.49 1999/06/24 18:37:07 faith Exp $
+ * $PI: xc/programs/Xserver/GL/dri/dri.c,v 1.51 1999/07/02 18:33:49 faith Exp $
  */
 
 #if XFree86LOADER
@@ -1364,8 +1364,11 @@ DRIValidateTree(
     /* Call kernel to release lock */
     DRM_UNLOCK(pDRIPriv->drmSubFD, pDRIPriv->pSAREA, pDRIPriv->myContext);
 
-    /* Grab drawable spin lock */
-    DRISpinLockTimeout(&pDRIPriv->pSAREA->drawable_lock, 1, 1000); /* 1 sec */
+    /* Grab drawable spin lock: a time out between 10 and 30 seconds is
+       appropriate, since this should never time out except in the case of
+       client death while the lock is being held.  The timeout must be
+       greater than any reasonable rendering time. */
+    DRISpinLockTimeout(&pDRIPriv->pSAREA->drawable_lock, 1, 10000); /* 10 secs */
 
     /* Call kernel flush outstanding buffers and relock */
     DRM_LOCK(pDRIPriv->drmSubFD, pDRIPriv->pSAREA, pDRIPriv->myContext,

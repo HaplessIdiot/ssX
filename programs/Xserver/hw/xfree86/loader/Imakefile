@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.15 1999/03/06 13:12:42 dawes Exp $ */
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.16 1999/04/17 09:08:41 dawes Exp $ */
 
 
 
@@ -47,8 +47,8 @@ NormalAsmObjectRule()
 NormalLibraryObjectRule()
 NormalLibraryTarget(loader,$(OBJS))
 
-SpecialObjectRule(loadmod.o,loadmod.c,$(MODULEDEFINES) $(EXT_DEFINES))
-SpecialObjectRule(xf86sym.o,xf86sym.c,$(EXT_DEFINES))
-SpecialObjectRule(dixsym.o,dixsym.c,$(EXT_DEFINES))
+SpecialCObjectRule(loadmod,NullParameter,$(MODULEDEFINES) $(EXT_DEFINES))
+SpecialCObjectRule(xf86sym,NullParameter,$(EXT_DEFINES))
+SpecialCObjectRule(dixsym,NullParameter,$(EXT_DEFINES))
 
 DependTarget()
