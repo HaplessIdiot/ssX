@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.15 2000/09/24 13:51:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.16 2000/10/24 22:45:07 dawes Exp $ */
 
 #ifndef _MGA_MACROS_H_
 #define _MGA_MACROS_H_
@@ -17,7 +17,7 @@
 #define REPLICATE(r) /* */
 #endif
 
-#define RGBEQUAL(c) (!((((c) >> 8) ^ (c)) & 0xffff)) 
+#define RGBEQUAL(c) (!((((c) >> 8) ^ (c)) & 0xffff))
 
 #ifdef XF86DRI
 #define MGA_SYNC_XTAG                 0x275f4200
@@ -49,8 +49,7 @@ while(INREG(MGAREG_DWGSYNC) != MGA_SYNC_XTAG) ; \
 	( MAKEDMAINDEX(one) | \
 	 (MAKEDMAINDEX(two) << 8) | \
 	 (MAKEDMAINDEX(three) << 16) | \
- 	 (MAKEDMAINDEX(four) << 24) ) 
-
+ 	 (MAKEDMAINDEX(four) << 24) )
 
 #if PSZ == 24
 #define SET_PLANEMASK(p) /**/
@@ -62,7 +61,6 @@ while(INREG(MGAREG_DWGSYNC) != MGA_SYNC_XTAG) ; \
 	   OUTREG(MGAREG_PLNWT,(p)); \
 	}
 #endif
-
 
 #define SET_FOREGROUND(c) \
 	if((c) != pMga->FgColor) { \
@@ -93,5 +91,20 @@ while(INREG(MGAREG_DWGSYNC) != MGA_SYNC_XTAG) ; \
 #define CHECK_DMA_QUIESCENT(pMGA, pScrn)
 #endif
 
+#ifdef USEMGAHAL
+#define HAL_CHIPSETS ((pMga->Chipset == PCI_CHIP_MGAG200_PCI) || \
+		  (pMga->Chipset == PCI_CHIP_MGAG200) || \
+		  (pMga->Chipset == PCI_CHIP_MGAG400))
+#define MGA_HAL(x) { \
+	MGAPtr pMga = MGAPTR(pScrn); \
+	if (HAL_CHIPSETS) { x; } \
+}
+#define MGA_NOT_HAL(x) { \
+	MGAPtr pMga = MGAPTR(pScrn); \
+	if (!HAL_CHIPSETS) { x; } \
+}
+#else
+#define MGA_NOT_HAL(x) { x; }
+#endif
 
 #endif /* _MGA_MACROS_H_ */

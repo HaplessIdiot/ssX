@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Display.c,v 3.7 1998/04/05 02:28:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Display.c,v 3.8 1998/10/03 09:06:51 dawes Exp $ */
 
 /*
 
@@ -144,7 +144,14 @@ static void XtDeleteFromAppContext(d, app)
 	    app->count--;
 	}
 	app->rebuild_fdlist = TRUE;
+#ifndef USE_POLL
+	if ((ConnectionNumber(d) + 1) == app->fds.nfds)
+	    app->fds.nfds--;
+	else			/* Unnecessary, just to be fool-proof */
+	    FD_CLR(ConnectionNumber(d), &app->fds.rmask);
+#else
 	app->fds.nfds--;
+#endif
 }
 
 static XtPerDisplay NewPerDisplay(dpy)

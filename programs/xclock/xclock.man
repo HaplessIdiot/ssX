@@ -19,7 +19,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/programs/xclock/xclock.man,v 1.5 2000/02/25 18:28:12 dawes Exp $
 .\"
 .TH XCLOCK 1 "Release 6.4" "X Version 11"
 .SH NAME
@@ -54,6 +54,11 @@ This option indicates that a 24 hour digital clock should be used.
 \fB\-brief\fP
 This option indicates that the digital clock should only display the hours
 and minutes fields.  The default is to show the full time and date information.
+.TP 8
+\fB\-utime\fP or \fB\-d\fP
+This option indicates that a digital clock should display seconds since
+the Epoch (in format '970012340 seconds since Epoch' instead of a standard
+24-hour time.
 .TP 8
 .B \-chime
 This option indicates that the clock should chime 

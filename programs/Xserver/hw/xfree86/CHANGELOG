@@ -1,4 +1,26 @@
-XFree86 4.0.1e (x November 2000)
+XFree86 4.0.1e (3 November 2000)
+ 848. Fix two problems in Imake.rules: have LinkBuildBinary create the
+      used directory if it doesn't exist, and fix a missing ')' in
+      the LinkConfFileLong (#A.187, Ivan Zakharyaschev).
+ 847. Fix a libXt bug that affects multidisplay applications when Xt is
+      built to use select(2) rather than poll(2) (#A.181, Antony Uspensky).
+ 846. Add a -utime option to xclock that allows the digital clock to
+      display the number of seconds since the Epoch (based on A.173,
+      Kelsey Hudson).
+ 845. Add symbols mappings for extra keys on the BTC 9000 keyboard (#A.167,
+      Stefano Cavallari).
+ 844. Fix twm's icon manager so that it is functional before an EnterNotify
+      event is received in twm's event loop (#A.156, Jason Zwolak).
+ 843. Update comments about standards for Estonian support, and add an
+      entry for the Estonian keyboard layout to the xfree86.lst file
+      (#A.155).
+ 842. Fix for G400 crtc2 blank screen color (#4205, Antti Tapaninen).
+ 841. Modify the mga/HALlib support to allow it to be selected at
+      run-time.  This allows a driver built with HALlib to be used with
+      older hardware (like the Millennium, Millennium 2) (#4204,
+      Antii Tapaninen).
+ 840. Add config/imake support for Darwin (#4200, Torrey T. Lyons).
+ 839. Add a driver for the citron touch screen (#4199, Peter Kunzmann).
  838. Fix Html man page install problem (Robin Cutshaw).
  837. Fix transparency problem with blits, add DDC2 for i128-II chipset
       in i128 driver (Robin Cutshaw).
@@ -73,7 +95,7 @@ XFree86 4.0.1d (27 October 2000)
       and make the twm config file reader 8-bit clean (#4165, 4168, 4180,
       Tomohiro Kubota).
  802. Fix a tseng driver problem related to the usable amount of video memory
-      (#4164, Randy McCaskill).
+      (#4164, A.182, Randy McCaskill).
  801. Add support for the new Render extension to the nv driver, and
       turn on fb support by default in the nv driver (#4161, Jarno Paananen).
  800. Fix a typo that prevents DPS from being built statically (#4160,
@@ -90,7 +112,7 @@ XFree86 4.0.1d (27 October 2000)
  794. Add two new XKB group switches (Alt+Shift and Menu key) (#4151,
       Ivan Pascal).
  793. Fix HTML man page links when the man page suffix has more than one
-      character (#4150, Bruno Haible).
+      character (#4150, Bruno Haible, A.149, Serguei Ostrovskii).
  792. Remove the old UTF-1 locale (it's not filesystems safe, deprecated
       for years, withdrawn from ISO standards, and nobody uses it) (#4147,
       4149, Bruno Haible).
@@ -11370,4 +11392,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1365 2000/11/01 22:50:00 anderson Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1366 2000/11/02 02:18:38 robin Exp $

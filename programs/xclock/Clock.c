@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.c,v 3.5 2000/01/21 01:12:25 dawes Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.7 2000/08/09 17:54:12 keithp Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
@@ -110,6 +110,8 @@ static XtResource resources[] = {
         offset(Hdpixel), XtRString, XtDefaultForeground},
     {XtNhighlight, XtCForeground, XtRPixel, sizeof(Pixel),
         offset(Hipixel), XtRString, XtDefaultForeground},
+    {XtNutime, XtCBoolean, XtRBoolean, sizeof(Boolean),
+	offset(utime), XtRImmediate, (XtPointer) FALSE},
     {XtNanalog, XtCBoolean, XtRBoolean, sizeof(Boolean),
         offset(analog), XtRImmediate, (XtPointer) TRUE},
     {XtNbrief, XtCBoolean, XtRBoolean, sizeof(Boolean),
@@ -216,6 +218,14 @@ TimeString (ClockWidget w, struct tm *tm)
       static char brief[5];
       sprintf (brief, "%02d:%02d", tm->tm_hour, tm->tm_min);
       return brief;
+   }
+   else if (w->clock.utime)
+   {
+      static char utime[35];
+      Time_t tsec;
+      tsec = time(NULL);
+      sprintf (utime, "%10lu seconds since Epoch", (unsigned long)tsec);
+      return utime;
    }
    return asctime (tm);
 }

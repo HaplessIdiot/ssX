@@ -11,7 +11,7 @@
 ! suitability of this software for any purpose.  It is provided "as is"
 ! without express or implied warranty.
 !
-! $XFree86: xc/lib/X11/XKeysymDB,v 3.4 2000/02/10 15:48:28 dawes Exp $
+! $XFree86: xc/lib/X11/XKeysymDB,v 3.5 2000/07/07 00:45:00 dawes Exp $
 
 hpmute_acute		:100000A8
 hpmute_grave		:100000A9
@@ -225,7 +225,9 @@ XF86Back		:1008FF26
 XF86Forward		:1008FF27
 XF86Stop		:1008FF28
 XF86Refresh		:1008FF29
-! 1008FF2A - 1008FF2F are yet to be assigned
+XF86PowerOff		:1008FF2A
+XF86WakeUp		:1008FF2B
+! 1008FF2C - 1008FF2F are yet to be assigned
 XF86Favorites		:1008FF30
 XF86AudioPause		:1008FF31
 XF86AudioMedia		:1008FF32

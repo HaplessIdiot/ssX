@@ -1,4 +1,4 @@
-// $XFree86: xc/programs/xkbcomp/symbols/ee,v 1.1 2000/01/25 00:09:02 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/ee,v 1.2 2000/10/27 18:31:08 dawes Exp $
 // Estonian XKB-keymap by Ville Hallik <ville@linux.ee>
 
 partial default alphanumeric_keys 
@@ -6,7 +6,7 @@ xkb_symbols "basic" {
 
     // Describes the differences between a very simple en_US
     // keyboard and a very simple Estonian keyboard
-    // This layout conforms to both EVS8:1993 and EVS8:1999 standards
+    // This layout conforms to both EVS8:1993 and EVS8:2000 standards
 
     name[Group1]= "Estonian";
 

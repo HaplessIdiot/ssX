@@ -1,4 +1,4 @@
-// $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.5 2000/06/17 00:27:35 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.6 2000/07/27 00:10:33 dawes Exp $
 
 partial alphanumeric_keys 
 xkb_symbols "hp" {
@@ -77,4 +77,26 @@ xkb_symbols "microsoftpro" {
     key <I5F>	{	[ XF86Standby		]	};
 };
 
+xkb_symbols "btc9000" {
+    // from <supercava@libero.it>
+    // Describes the extra keys on a BTC model 9000 keyboard
+    // found in many computers sold by Computer Discount 
+    name[Group1]= "btc9000";
+    key <I26>	{	[ XF86Refresh		]	};
+    key <I32>	{	[ XF86Search		]	};
+    key <I20>	{	[ XF86Favorites		]	};
+    key <I30>	{	[ XF86HomePage		]	};
+    key <I2E>	{	[ XF86Mail		]	};
+    key <I12>	{	[ XF86AudioMute		]	};
+    key <I25>	{	[ XF86AudioLowerVolume	]	};
+    key <I1E>	{	[ XF86AudioRaiseVolume	]	};
+    key <I19>	{	[ XF86AudioPlay, XF86AudioPause		]	};
+    key <I10>	{	[ XF86AudioStop		]	};
+    key <I22>	{	[ XF86AudioPrev		]	};
+    key <I24>	{	[ XF86AudioNext		]	};
+    key <I21>	{	[ XF86AudioMedia	]	};
+    key <I5F>	{	[ XF86Standby		]	};
+    key <I5E>   {	[ XF86PowerOff		]	};
+    key <I63>   {	[ XF86WakeUp		]	};
+};
 

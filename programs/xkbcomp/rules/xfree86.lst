@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.12 2000/08/26 15:11:29 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.13 2000/10/24 22:45:17 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -36,6 +36,7 @@
   de		German
   de_CH		Swiss German
   dk		Danish
+  ee		Estonian
   es		Spanish
   fi		Finnish
   fr		French
