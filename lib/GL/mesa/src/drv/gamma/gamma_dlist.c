@@ -21,8 +21,10 @@
 /* 
  * Pinched from Mesa v3.0 to glue into gamma driver
  * then glued up, to match some of the Mesa v3.3 back end.
- * Alan.Hourihane@btinternet.com
+ * Alan Hourihane <alanh@fairlite.demon.co.uk>
  */
+
+/* $XFree86: $*/
 
 #ifdef PC_HEADER
 #include "all.h"

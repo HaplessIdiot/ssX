@@ -1,5 +1,3 @@
-/* $Id$ */
-
 /*
  * Mesa 3-D graphics library
  * Version:  3.0
@@ -19,6 +17,7 @@
  * License along with this library; if not, write to the Free
  * Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+/* $XFree86: $ */
 
 
 #ifndef DLIST_H
