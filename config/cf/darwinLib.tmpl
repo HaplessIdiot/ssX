@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/darwinLib.tmpl,v 1.13 2003/05/29 21:56:57 herrb Exp $
+XCOMM $XFree86: xc/config/cf/darwinLib.tmpl,v 1.14tsi Exp $
 /*
  * Darwin/Mac OS X shared library template
  */
@@ -38,11 +38,11 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define SharedXiReqs        $(LDPRELIB) $(XLIB)
 #define SharedXmuReqs       $(LDPRELIB) $(XTOOLLIB) $(XLIB)
 #define SharedXmuuReqs      $(LDPRELIB) $(XONLYLIB)
-#define SharedXpReqs        $(LDPRELIB) $(EXTENSIONLIB) $(XONLYLIB)
+#define SharedXpReqs        $(LDPRELIB) $(XLIB)
 #define SharedXpmReqs       $(LDPRELIB) $(XLIB)
 #define SharedXrandrReqs    $(LDPRELIB) $(XRENDERLIB) $(XLIB)
-#define SharedXrenderReqs   $(LDPRELIB) $(EXTENSIONLIB) $(XLIB)
-#define SharedXssReqs       $(LDPRELIB) $(XLIB) $(EXTENSIONLIB) $(XTOOLLIB)
+#define SharedXrenderReqs   $(LDPRELIB) $(XLIB)
+#define SharedXssReqs       $(LDPRELIB) $(XLIB) $(XTOOLLIB)
 #define SharedXtReqs        $(LDPRELIB) $(XONLYLIB) $(SMLIB) $(ICELIB) -flat_namespace
 #define SharedXtstReqs      $(LDPRELIB) $(XLIB)
 #define SharedXvReqs        $(LDPRELIB) $(XLIB)

@@ -1,5 +1,5 @@
 XCOMM $Xorg: lnxLib.tmpl,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
-XCOMM $XFree86: xc/config/cf/lnxLib.tmpl,v 3.16 2003/05/27 21:56:40 tsi Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.tmpl,v 3.17tsi Exp $
 
 /*
  * Linux shared library template
@@ -28,7 +28,7 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define SharedXmuReqs	  $(LDPRELIB) $(XTOOLLIB) $(XLIB)
 #define SharedXextReqs	  $(LDPRELIB) $(XONLYLIB)
 #define SharedXiReqs	  $(LDPRELIB) $(XLIB)
-#define SharedXrenderReqs $(LDPRELIB) $(EXTENSIONLIB) $(XLIB)
+#define SharedXrenderReqs $(LDPRELIB) $(XLIB)
 #define SharedXtstReqs	  $(LDPRELIB) $(XLIB)
 #define SharedSMReqs	  $(LDPRELIB) $(ICELIB)
 

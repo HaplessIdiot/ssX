@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.86 2003/06/01 13:46:51 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.87tsi Exp $
 XCOMM
 
 #ifndef OSName
@@ -644,7 +644,7 @@ install:: fonts.alias							@@\
 # define PositionIndependentCFlags
 # define SharedLibraryLoadFlags -x -shared --whole-archive -soname `echo $@ | sed 's/\.[0-9]*$$//'`
 # define SharedXtReqs -L$(BUILDLIBDIR) $(XONLYLIB) $(SMLIB) $(ICELIB)
-# define SharedXmuReqs $(LDPRELIB) $(XTOOLONLYLIB) $(XONLYLIB) $(EXTENSIONLIB)
+# define SharedXmuReqs $(LDPRELIB) $(XTOOLONLYLIB) $(XLIB)
 
 #endif /* MipsArchitecture */
 
