@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.8 1999/01/31 12:21:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.9 1999/05/30 03:03:24 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -127,18 +127,15 @@ static DISPATCH_PROC(SProcShapeSelectInput);
 
 #ifdef PANORAMIX
 #include "panoramiX.h"
+#include "panoramiXsrv.h"
+extern int PanoramiXNumScreens;
+extern Bool noPanoramiXExtension;
 #endif
 
 static unsigned char ShapeReqCode = 0;
 static int ShapeEventBase = 0;
 static RESTYPE ClientType, EventType; /* resource types for event masks */
 
-#ifdef PANORAMIX
-extern int PanoramiXNumScreens;
-extern Bool noPanoramiXExtension;
-extern PanoramiXWindow *PanoramiXWinRoot;
-extern PanoramiXPmap   *PanoramiXPmapRoot;
-#endif
 /*
  * each window has a list of clients requesting
  * ShapeNotify events.  Each client has a resource
@@ -371,14 +368,17 @@ ProcPanoramiXShapeRectangles (client)
     register ClientPtr client;
 {
     REQUEST(xShapeRectanglesReq);
-    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+    PanoramiXRes	*win;
     int        		j, result;
 
     REQUEST_AT_LEAST_SIZE (xShapeRectanglesReq);
-    PANORAMIXFIND_ID(pPanoramiXWin,stuff->dest); 
-    IF_RETURN(!pPanoramiXWin, BadRequest); 
-    FOR_NSCREENS_OR_ONCE(pPanoramiXWin , j) {
-	stuff->dest = pPanoramiXWin->info[j].id;
+
+    if(!(win = (PanoramiXRes *)SecurityLookupIDByType(
+		client, stuff->dest, XRT_WINDOW, SecurityWriteAccess)))
+	return BadRequest;
+
+    FOR_NSCREENS(j) {
+	stuff->dest = win->info[j].id;
 	result = ProcShapeRectangles (client);
 	BREAK_IF(result != Success);
     }
@@ -457,18 +457,22 @@ ProcPanoramiXShapeMask (client)
     register ClientPtr client;
 {
     REQUEST(xShapeMaskReq);
-    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
-    PanoramiXPmap       *pPmap = PanoramiXPmapRoot;
+    PanoramiXRes	*win, *pmap;
     int 		j, result;
 
     REQUEST_SIZE_MATCH (xShapeMaskReq);
-    PANORAMIXFIND_ID(pPanoramiXWin,stuff->dest); 
-    IF_RETURN(!pPanoramiXWin, BadRequest); 
-    PANORAMIXFIND_ID(pPmap, stuff->src);
-    IF_RETURN(!pPmap, BadRequest);
-    FOR_NSCREENS_OR_ONCE(pPanoramiXWin , j) {
-	stuff->dest = pPanoramiXWin->info[j].id;
-	stuff->src =  pPmap->info[j].id;
+
+    if(!(win = (PanoramiXRes *)SecurityLookupIDByType(
+		client, stuff->dest, XRT_WINDOW, SecurityWriteAccess)))
+	return BadRequest;
+
+    if(!(pmap = (PanoramiXRes *)SecurityLookupIDByType(
+		client, stuff->src, XRT_PIXMAP, SecurityReadAccess)))
+	return BadRequest;
+
+    FOR_NSCREENS(j) {
+	stuff->dest = win->info[j].id;
+	stuff->src  = pmap->info[j].id;
 	result = ProcShapeMask (client);
 	BREAK_IF(result != Success);
     }
@@ -564,18 +568,22 @@ ProcPanoramiXShapeCombine (client)
     register ClientPtr client;
 {
     REQUEST(xShapeCombineReq);
-    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
-    PanoramiXWindow     *pPanoramiXWin2 = PanoramiXWinRoot;
+    PanoramiXRes	*win, *win2;
     int 		j, result;
 
     REQUEST_AT_LEAST_SIZE (xShapeCombineReq);
-    PANORAMIXFIND_ID(pPanoramiXWin,stuff->dest); 
-    IF_RETURN(!pPanoramiXWin, BadRequest); 
-    PANORAMIXFIND_ID(pPanoramiXWin2, stuff->src);
-    IF_RETURN(!pPanoramiXWin2, BadRequest);
-    FOR_NSCREENS_OR_ONCE(pPanoramiXWin , j) {
-	stuff->dest = pPanoramiXWin->info[j].id;
-	stuff->src =  pPanoramiXWin2->info[j].id;
+
+    if(!(win = (PanoramiXRes *)SecurityLookupIDByType(
+		client, stuff->dest, XRT_WINDOW, SecurityWriteAccess)))
+	return BadRequest;
+
+    if(!(win2 = (PanoramiXRes *)SecurityLookupIDByType(
+		client, stuff->src, XRT_WINDOW, SecurityReadAccess)))
+	return BadRequest;
+
+    FOR_NSCREENS(j) {
+	stuff->dest = win->info[j].id;
+	stuff->src =  win2->info[j].id;
 	result = ProcShapeCombine (client);
 	BREAK_IF(result != Success);
     }
@@ -629,16 +637,19 @@ ProcPanoramiXShapeOffset (client)
     register ClientPtr client;
 {
     REQUEST(xShapeOffsetReq);
-    PanoramiXWindow *pPanoramiXWin = PanoramiXWinRoot;
+    PanoramiXRes *win;
     int j, result;
 
     REQUEST_AT_LEAST_SIZE (xShapeOffsetReq);
-    PANORAMIXFIND_ID(pPanoramiXWin,stuff->dest); 
-    IF_RETURN(!pPanoramiXWin, BadRequest); 
-    FOR_NSCREENS_OR_ONCE(pPanoramiXWin , j) {
-	stuff->dest = pPanoramiXWin->info[j].id;
+   
+    if(!(win = (PanoramiXRes *)SecurityLookupIDByType(
+		client, stuff->dest, XRT_WINDOW, SecurityWriteAccess)))
+	return BadRequest;
+
+    FOR_NSCREENS(j) {
+	stuff->dest = win->info[j].id;
 	result = ProcShapeOffset (client);
-	BREAK_IF(result != Success);
+	if(result != Success) break;
     }
     return (result);
 }

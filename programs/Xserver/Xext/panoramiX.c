@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.11 1999/09/06 12:52:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.12 1999/09/25 14:36:43 dawes Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -36,15 +36,12 @@
 #include "window.h"
 #include "windowstr.h"
 #include "pixmapstr.h"
-#if 0
-#include <sys/workstation.h>
-#include <X11/Xserver/ws.h> 
-#endif
 #include "panoramiX.h"
 #include "panoramiXproto.h"
 #include "panoramiXsrv.h"
 #include "globals.h"
 #include "servermd.h"
+#include "resource.h"
 
 static unsigned char PanoramiXReqCode = 0;
 /*
@@ -56,18 +53,7 @@ int 		PanoramiXPixHeight = 0;
 int 		PanoramiXNumScreens = 0;
 
 PanoramiXData 	*panoramiXdataPtr = NULL;
-PanoramiXWindow *PanoramiXWinRoot = NULL;
-PanoramiXGC 	*PanoramiXGCRoot = NULL;
-PanoramiXCmap 	*PanoramiXCmapRoot = NULL;
-PanoramiXPmap 	*PanoramiXPmapRoot = NULL;
 
-/*
- * Free list flags added as pre-test before running through list to free ids
- */
-Bool PanoramiXWinRootFreeable = FALSE;
-Bool PanoramiXGCRootFreeable = FALSE;
-Bool PanoramiXCmapRootFreeable = FALSE;
-Bool PanoramiXPmapRootFreeable = FALSE;
 
 RegionRec   	PanoramiXScreenRegion[MAXSCREENS];
 
@@ -77,6 +63,12 @@ int		PanoramiXNumVisuals;
 VisualPtr	PanoramiXVisuals;
 /* We support at most 256 visuals */
 XID		PanoramiXVisualTable[256][MAXSCREENS];
+
+unsigned long XRC_DRAWABLE;
+unsigned long XRT_WINDOW;
+unsigned long XRT_PIXMAP;
+unsigned long XRT_GC;
+unsigned long XRT_COLORMAP;
 
 
 int (* SavedProcVector[256]) ();
@@ -95,11 +87,6 @@ static void PanoramiXResetProc(ExtensionEntry*);
  */
 
 extern int SProcPanoramiXDispatch();
-extern WindowPtr *WindowTable;
-#if 0
-extern ScreenArgsRec screenArgs[MAXSCREENS];
-#endif
-extern int defaultBackingStore;
 extern char *ConnectionInfo;
 extern int connBlockScreenStart;
 extern int (* ProcVector[256]) ();
@@ -119,7 +106,7 @@ int PanoramiXGetGeometry(), 	PanoramiXChangeProperty();
 int PanoramiXDeleteProperty(), 	PanoramiXSendEvent();
 int PanoramiXCreatePixmap(), 	PanoramiXFreePixmap();
 int PanoramiXCreateGC(), 	PanoramiXChangeGC();
-int PanoramiXCopyGC();
+int PanoramiXCopyGC(),		PanoramiXCopyColormapAndFree();
 int PanoramiXSetDashes(), 	PanoramiXSetClipRectangles();
 int PanoramiXFreeGC(), 		PanoramiXClearToBackground();
 int PanoramiXCopyArea(),	PanoramiXCopyPlane();
@@ -133,8 +120,9 @@ int PanoramiXImageText8(),	PanoramiXImageText16();
 int PanoramiXCreateColormap(),	PanoramiXFreeColormap();
 int PanoramiXInstallColormap(),	PanoramiXUninstallColormap();
 int PanoramiXAllocColor(),	PanoramiXAllocNamedColor();
-int PanoramiXAllocColorCells();
+int PanoramiXAllocColorCells(),	PanoramiXStoreNamedColor();
 int PanoramiXFreeColors(), 	PanoramiXStoreColors();
+int PanoramiXAllocColorPlanes();
 
 static int PanoramiXGCIndex = -1;
 static int PanoramiXScreenIndex = -1;
@@ -312,6 +300,7 @@ XineramaCopyGC (
     (*pGCDst->funcs->CopyGC) (pGCSrc, mask, pGCDst);
     Xinerama_GC_FUNC_EPILOGUE (pGCDst);
 }
+
 static void
 XineramaChangeClip (
     GCPtr   pGC,
@@ -340,6 +329,64 @@ XineramaDestroyClip(GCPtr pGC)
     Xinerama_GC_FUNC_EPILOGUE (pGC);
 }
 
+
+
+static int
+XineramaDeleteResource(pointer data, XID id)
+{
+    xfree(data);
+    return 1;
+}
+
+
+static Bool 
+XineramaFindIDOnAnyScreen(pointer resource, XID id, pointer privdata)
+{
+    PanoramiXRes *res = (PanoramiXRes*)resource;
+    int j;
+
+    FOR_NSCREENS(j) 
+	if(res->info[j].id == *((XID*)privdata)) return TRUE;
+    
+    return FALSE;
+}
+
+PanoramiXRes *
+PanoramiXFindIDOnAnyScreen(RESTYPE type, XID id)
+{
+    return LookupClientResourceComplex(clients[CLIENT_ID(id)], type,
+		XineramaFindIDOnAnyScreen, &id);
+}
+
+typedef struct {
+   int screen;
+   int id;
+} PanoramiXSearchData; 
+
+
+static Bool 
+XineramaFindIDByScrnum(pointer resource, XID id, pointer privdata)
+{
+    PanoramiXRes *res = (PanoramiXRes*)resource;
+    PanoramiXSearchData *data = (PanoramiXSearchData*)privdata;
+    
+    return (res->info[data->screen].id == data->id);
+}
+
+PanoramiXRes *
+PanoramiXFindIDByScrnum(RESTYPE type, XID id, int screen)
+{
+    PanoramiXSearchData data;
+
+    if(!screen) 
+	return LookupIDByType(id, type);
+
+    data.screen = screen;
+    data.id = id;
+
+    return LookupClientResourceComplex(clients[CLIENT_ID(id)], type,
+		XineramaFindIDByScrnum, &data);
+}
 
 
 /*
@@ -383,17 +430,12 @@ void PanoramiXExtensionInit(int argc, char *argv[])
 	 *	run in non-PanoramiXeen mode.
 	 */
 
-	panoramiXdataPtr = (PanoramiXData *) Xcalloc(PanoramiXNumScreens * sizeof(PanoramiXData));
-	PanoramiXWinRoot = (PanoramiXWindow *) Xcalloc(sizeof(PanoramiXWindow));
-	PanoramiXGCRoot  =  (PanoramiXGC *) Xcalloc(sizeof(PanoramiXGC));
-	PanoramiXCmapRoot = (PanoramiXCmap *) Xcalloc(sizeof(PanoramiXCmap));
-	PanoramiXPmapRoot = (PanoramiXPmap *) Xcalloc(sizeof(PanoramiXPmap));
-	BREAK_IF(!(panoramiXdataPtr && PanoramiXWinRoot && PanoramiXGCRoot &&
-		   PanoramiXCmapRoot && PanoramiXPmapRoot));
+	panoramiXdataPtr = (PanoramiXData *) 
+		xcalloc(PanoramiXNumScreens, sizeof(PanoramiXData));
 
+        BREAK_IF(!panoramiXdataPtr);
 	BREAK_IF((PanoramiXGCIndex = AllocateGCPrivateIndex()) < 0);
 	BREAK_IF((PanoramiXScreenIndex = AllocateScreenPrivateIndex()) < 0);
-
 	
 	for (i = 0; i < PanoramiXNumScreens; i++) {
 	   pScreen = screenInfo.screens[i];
@@ -417,6 +459,14 @@ void PanoramiXExtensionInit(int argc, char *argv[])
 	   pScreen->CreateGC = XineramaCreateGC;
 	   pScreen->CloseScreen = XineramaCloseScreen;
 	}
+
+	XRC_DRAWABLE = CreateNewResourceClass();
+	XRT_WINDOW = CreateNewResourceType(XineramaDeleteResource) | 
+						XRC_DRAWABLE;
+	XRT_PIXMAP = CreateNewResourceType(XineramaDeleteResource) | 
+						XRC_DRAWABLE;
+	XRT_GC = CreateNewResourceType(XineramaDeleteResource);
+	XRT_COLORMAP = CreateNewResourceType(XineramaDeleteResource);
 
 	panoramiXGeneration = serverGeneration;
 	success = TRUE;
@@ -494,13 +544,16 @@ void PanoramiXExtensionInit(int argc, char *argv[])
     ProcVector[X_ImageText16] = PanoramiXImageText16;
     ProcVector[X_CreateColormap] = PanoramiXCreateColormap;
     ProcVector[X_FreeColormap] = PanoramiXFreeColormap;
+    ProcVector[X_CopyColormapAndFree] = PanoramiXCopyColormapAndFree;
     ProcVector[X_InstallColormap] = PanoramiXInstallColormap;
     ProcVector[X_UninstallColormap] = PanoramiXUninstallColormap;
     ProcVector[X_AllocColor] = PanoramiXAllocColor;
     ProcVector[X_AllocNamedColor] = PanoramiXAllocNamedColor;
     ProcVector[X_AllocColorCells] = PanoramiXAllocColorCells;
+    ProcVector[X_AllocColorPlanes] = PanoramiXAllocColorPlanes;    
     ProcVector[X_FreeColors] = PanoramiXFreeColors;
     ProcVector[X_StoreColors] = PanoramiXStoreColors;    
+    ProcVector[X_StoreNamedColor] = PanoramiXStoreNamedColor;    
 
     return;
 }
@@ -661,18 +714,13 @@ void PanoramiXDestroyScreenRegion(WindowPtr pWin)
         REGION_DESTROY(pScreen, &PanoramiXScreenRegion[i]);
 }
 
-/* 
- *  Assign the Root window and colormap ID's in the PanoramiXScreen Root
- *  linked lists. Note: WindowTable gets setup in dix_main by 
- *  InitRootWindow, and GlobalScrInfo is screenInfo which gets setup
- *  by InitOutput.
- */
 extern
 void PanoramiXConsolidate(void)
 {
     int 	i, j, k, l;
     VisualPtr   pVisual, pVisual2;
     ScreenPtr   pScreen, pScreen2;
+    PanoramiXRes *root, *defmap;
 
     /* initialize the visual table */
     for (i = 0; i < 256; i++) {
@@ -766,10 +814,19 @@ void PanoramiXConsolidate(void)
 	}
     } 
 
+
+    root = (PanoramiXRes *) xalloc(sizeof(PanoramiXRes));
+    root->type = XRT_WINDOW;
+    defmap = (PanoramiXRes *) xalloc(sizeof(PanoramiXRes));
+    defmap->type = XRT_COLORMAP;
+
     for (i =  0; i < PanoramiXNumScreens; i++) {
-	PanoramiXWinRoot->info[i].id = WindowTable[i]->drawable.id;
-	PanoramiXCmapRoot->info[i].id = (screenInfo.screens[i])->defColormap;
+	root->info[i].id = WindowTable[i]->drawable.id;
+	defmap->info[i].id = (screenInfo.screens[i])->defColormap;
     }
+
+    AddResource(root->info[0].id, XRT_WINDOW, root);
+    AddResource(defmap->info[0].id, XRT_COLORMAP, defmap);
 }
 
 
@@ -781,30 +838,12 @@ void PanoramiXConsolidate(void)
 static void PanoramiXResetProc(ExtensionEntry* extEntry)
 {
     int		i;
-    PanoramiXList *pPanoramiXList;
-    PanoramiXList *tempList;
 
-    for (pPanoramiXList = PanoramiXPmapRoot; pPanoramiXList; pPanoramiXList = tempList){
-	tempList = pPanoramiXList->next;
-	Xfree(pPanoramiXList);
-    }
-    for (pPanoramiXList = PanoramiXCmapRoot; pPanoramiXList; pPanoramiXList = tempList){
-	tempList = pPanoramiXList->next;
-	Xfree(pPanoramiXList);
-    }
-    for (pPanoramiXList = PanoramiXGCRoot; pPanoramiXList; pPanoramiXList = tempList) {
-	tempList = pPanoramiXList->next;
-	Xfree(pPanoramiXList);
-    }
-    for (pPanoramiXList = PanoramiXWinRoot; pPanoramiXList; pPanoramiXList = tempList) {
-	tempList = pPanoramiXList->next;
-	Xfree(pPanoramiXList);
-    }
     screenInfo.numScreens = PanoramiXNumScreens;
     for (i = 256; i--; )
 	ProcVector[i] = SavedProcVector[i];
-    Xfree(panoramiXdataPtr);
-    
+
+    Xfree(panoramiXdataPtr);    
 }
 
 
@@ -909,14 +948,7 @@ ProcPanoramiXGetScreenSize(ClientPtr client)
 }
 
 
-void PrintList(PanoramiXList *head)
-{
-    int i = 0;
 
-    for (; head; i++, head = head->next)
-	fprintf(stderr, "%2d  next = 0x%010lx,   id[0] = 0x%08x,   id[1] = 0x%08x\n",
-	    i, head->next, head->info[0].id, head->info[1].id);
-}
 static int
 ProcPanoramiXDispatch (ClientPtr client)
 {   REQUEST(xReq);

@@ -4,26 +4,24 @@
 #define _PANORAMIXSRV_H_
 
 extern int PanoramiXNumScreens;
-extern PanoramiXWindow *PanoramiXWinRoot;
-extern PanoramiXGC *PanoramiXGCRoot;
-extern PanoramiXCmap *PanoramiXCmapRoot;
-extern PanoramiXPmap *PanoramiXPmapRoot;
 extern PanoramiXData *panoramiXdataPtr;
 extern int PanoramiXPixWidth;
 extern int PanoramiXPixHeight;
 extern RegionRec PanoramiXScreenRegion[MAXSCREENS];
+extern XID PanoramiXVisualTable[256][MAXSCREENS];
 
 extern void PanoramiXConsolidate(void);
 extern Bool PanoramiXCreateConnectionBlock(void);
 extern Bool PanoramiXCreateScreenRegion(WindowPtr);
+extern PanoramiXRes * PanoramiXFindIDByScrnum(RESTYPE, XID, int);
+extern PanoramiXRes * PanoramiXFindIDOnAnyScreen(RESTYPE, XID);
+extern RegionRec XineramaScreenRegions[MAXSCREENS];
 
-/*
- * Free list flags added as pre-test before running through list to free ids
- */
-extern Bool PanoramiXWinRootFreeable;
-extern Bool PanoramiXGCRootFreeable;
-extern Bool PanoramiXCmapRootFreeable;
-extern Bool PanoramiXPmapRootFreeable;
+extern unsigned long XRC_DRAWABLE;
+extern unsigned long XRT_WINDOW;
+extern unsigned long XRT_PIXMAP;
+extern unsigned long XRT_GC;
+extern unsigned long XRT_COLORMAP;
 
 extern void XineramaGetImageData(
     DrawablePtr *pDrawables,
