@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.26 2001/04/03 17:00:11 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.27 2001/04/04 02:00:30 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -28,6 +28,8 @@
   microsoftpro	Microsoft Natural Pro
   geniuscomfy	Genius Comfy KB-16M
   rapidaccess	IBM Rapid Access
+  rapidaccess2	IBM Rapid Access II
+  chicony	Chicony Internet Keyboard
 
 ! layout
   us		U.S. English

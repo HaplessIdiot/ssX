@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/XF86keysym.h,v 1.9 2001/04/03 17:00:07 dawes Exp $ */
+/* $XFree86: xc/include/XF86keysym.h,v 1.10 2001/04/04 02:00:27 dawes Exp $ */
 
 /*
  * XFree86 vendor specific keysyms.
@@ -74,10 +74,23 @@
 #define XF86XK_OpenURL		0x1008FF38
 #define XF86XK_AddFavorite	0x1008FF39
 #define XF86XK_HotLinks		0x1008FF3A
-#define XF86XK_Launch1		0x1008FF3B
-#define XF86XK_Launch2		0x1008FF3C
-#define XF86XK_Launch3		0x1008FF3D
-#define XF86XK_Launch4		0x1008FF3E
-#define XF86XK_Launch5		0x1008FF3F
+#define XF86XK_BrightnessAdjust	0x1008FF3B
+/* Allocate 0x1008FF3C-F next */
+#define XF86XK_Launch0		0x1008FF40
+#define XF86XK_Launch1		0x1008FF41
+#define XF86XK_Launch2		0x1008FF42
+#define XF86XK_Launch3		0x1008FF43
+#define XF86XK_Launch4		0x1008FF44
+#define XF86XK_Launch5		0x1008FF45
+#define XF86XK_Launch6		0x1008FF46
+#define XF86XK_Launch7		0x1008FF47
+#define XF86XK_Launch8		0x1008FF48
+#define XF86XK_Launch9		0x1008FF49
+#define XF86XK_LaunchA		0x1008FF4A
+#define XF86XK_LaunchB		0x1008FF4B
+#define XF86XK_LaunchC		0x1008FF4C
+#define XF86XK_LaunchD		0x1008FF4D
+#define XF86XK_LaunchE		0x1008FF4E
+#define XF86XK_LaunchF		0x1008FF4F
 
 

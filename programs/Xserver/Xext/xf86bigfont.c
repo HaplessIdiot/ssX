@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.9 2000/06/22 16:59:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.10 2000/08/10 17:40:30 dawes Exp $ */
 /*
  * BIGFONT extension for sharing font metrics between clients (if possible)
  * and for transmitting font metrics to clients in a compressed form.
@@ -37,7 +37,8 @@
 
 #include <sys/types.h>
 #ifdef HAS_SHM
-#if defined(linux) && !defined(__GNU_LIBRARY__)
+#if defined(linux) && (!defined(__GNU_LIBRARY__) || __GNU_LIBRARY__ < 2)
+/* libc4 does not define __GNU_LIBRARY__, libc5 defines __GNU_LIBRARY__ as 1 */
 /* Linux libc4 and libc5 only (because glibc doesn't include kernel headers):
    Linux 2.0.x and 2.2.x define SHMLBA as PAGE_SIZE, but forget to define
    PAGE_SIZE. It is defined in <asm/page.h>. */

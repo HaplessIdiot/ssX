@@ -1,4 +1,15 @@
 XFree86 4.0.99.2 (?? April 2001)
+ 353. Add XKB descriptions for the extra keys on a Chicony internet
+      keyboard (#A.356, John Gladkih).
+ 354. Add support for the internal input device interface to mice on
+      Solaris 8, and make it the default protocol ("VUID") (#A.340,
+      Marcus Comstedt).
+ 353. Add XKB descriptions for the extra keys on an IBM Rapid Access II
+      keyboard (#A.332, Patrick D'Cruze).
+ 352. Fix a typo in xvidtune (#A.327, Peter Breitenlohner).
+ 351. Fix Linux/libc5 build problem in the bigfont extension code (#A.327,
+      Peter Breitenlohner).
+ 350. Fix typo in Chooser.ad (#A.327, Peter Breitenlohner).
  349. Big endian and PowerPC support for the mga driver (#4540, Ani Joshi).
  348. Big endian support for the tdfx driver (#4539, Ani Joshi,
       Nicolas Dimitrijevic).
@@ -12870,4 +12881,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1667 2001/04/05 20:13:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1668 2001/04/05 21:29:11 dawes Exp $

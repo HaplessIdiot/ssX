@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.25 1999/03/21 07:35:41 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.26 2000/09/26 15:57:27 tsi Exp $ */
 
 /*
 
@@ -534,7 +534,7 @@ ShowCB(Widget w, XtPointer client, XtPointer call)
     if (mode_flags & V_INTERLACE) strcat(modebuf, " interlace");
     if (mode_flags & V_CSYNC)     strcat(modebuf, " composite");
     if (mode_flags & V_PCSYNC)    strcat(modebuf, " +csync");
-    if (mode_flags & V_PCSYNC)    strcat(modebuf, " -csync");
+    if (mode_flags & V_NCSYNC)    strcat(modebuf, " -csync");
     if (mode_flags & V_DBLSCAN)   strcat(modebuf, " doublescan");
     printf("%s\n", modebuf);
     time = XtLastTimestampProcessed(XtDisplay(w));
