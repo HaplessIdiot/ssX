@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wingetsp.c,v 1.2 2001/06/04 13:04:41 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wingetsp.c,v 1.3 2001/07/02 09:37:17 alanh Exp $ */
 
 #include "win.h"
 
@@ -36,35 +36,75 @@ void
 winGetSpansNativeGDI (DrawablePtr	pDrawable, 
 		      int		nMax, 
 		      DDXPointPtr	pPoints, 
-		      int		*pWidths, 
-		      int		nSpans, 
+		      int		*piWidths, 
+		      int		iSpans, 
 		      char		*pDsts)
 {
-#if WIN_NATIVE_GDI_SUPPORT
-  PixmapPtr		pPixmap = (PixmapPtr) pDrawable;
-  winPixmapPriv(pPixmap);
-  int			iIdx;
+  PixmapPtr		pPixmap = NULL;
+  winPrivPixmapPtr	pPixmapPriv = NULL;
+  int			iSpan;
   DDXPointPtr		pPoint = NULL;
-  int			*pWidth = NULL;
+  int			*piWidth = NULL;
   char			*pDst = pDsts;
+  HBITMAP		hbmpOrig = NULL;
+  HDC			hdcMem;
 
-  /* Loop through spans */
-  for (iIdx = 0; iIdx < nSpans; ++iIdx)
+  /* Branch on the drawable type */
+  switch (pDrawable->type)
     {
-      pPoint = pPoints + iIdx;
-      pWidth = pWidths + iIdx;
+    case DRAWABLE_PIXMAP:
+      pPixmap = (PixmapPtr) pDrawable;
+      pPixmapPriv = winGetPixmapPriv (pPixmap);
 
-      memcpy (pDst,
-	      ((char*)pPixmapPriv->pvBits)
-	      + pPixmapPriv->dwScanlineBytes * pPoint->y,
-	      pPixmap->devKind);
+      /* Create a temporary DC */
+      hdcMem = CreateCompatibleDC (NULL);
 
-      ErrorF ("(%dx%dx%d) (%d,%d) w: %d\n",
-	      pDrawable->width, pDrawable->height, pDrawable->depth,
-	      pPoint->x, pPoint->y, *pWidth);
+      /* Select the drawable pixmap into a DC */
+      hbmpOrig = SelectObject (hdcMem, pPixmapPriv->hBitmap);
 
-      /* Calculate offset of next bit destination */
-      pDst += 4 * ((*pWidth + 31) / 32);
+      /* Loop through spans */
+      for (iSpan = 0; iSpan < iSpans; ++iSpan)
+	{
+	  pPoint = pPoints + iSpan;
+	  piWidth = piWidths + iSpan;
+
+	  /* Grab the bits from the DIB */
+	  GetDIBits (hdcMem, 
+		     pPixmapPriv->hBitmap,
+		     pPoint->y, 1, 
+		     pDst, 
+		     pPixmapPriv->pbmih, 
+		     0);
+
+	  ErrorF ("(%dx%dx%d) (%d,%d) w: %d\n",
+		  pDrawable->width, pDrawable->height, pDrawable->depth,
+		  pPoint->x, pPoint->y, *piWidth);
+
+	  /* Calculate offset of next bit destination */
+	  pDst += 4 * ((*piWidth + 31) / 32);
+	}
+      
+      /* Push the drawable pixmap out of the GC HDC */
+      SelectObject (hdcMem, hbmpOrig);
+
+      /* Delete the temporary DC */
+      DeleteDC (hdcMem);
+      break;
+
+    case DRAWABLE_WINDOW:
+      FatalError ("winGetSpansNativeGDI - DRAWABLE_WINDOW\n");
+      break;
+
+    case UNDRAWABLE_WINDOW:
+      FatalError ("winGetSpansNativeGDI - UNDRAWABLE_WINDOW\n");
+      break;
+
+    case DRAWABLE_BUFFER:
+      FatalError ("winGetSpansNativeGDI - DRAWABLE_BUFFER\n");
+      break;
+      
+    default:
+      FatalError ("winGetSpansNativeGDI - Unknown drawable type\n");
+      break;
     }
-#endif
 }

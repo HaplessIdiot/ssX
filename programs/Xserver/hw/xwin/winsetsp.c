@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winsetsp.c,v 1.3 2001/07/02 09:37:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winsetsp.c,v 1.4 2001/07/31 09:46:57 alanh Exp $ */
 
 #include "win.h"
 
@@ -37,178 +37,279 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 		      GCPtr		pGC,
 		      char		*pSrcs,
 		      DDXPointPtr	pPoints,
-		      int		*pWidths,
-		      int		nSpans,
+		      int		*piWidths,
+		      int		iSpans,
 		      int		fSorted)
 {
-#if WIN_NATIVE_GDI_SUPPORT
   winGCPriv(pGC);
-  winPrivPixmapPtr	pPixmapPriv = NULL;
   PixmapPtr		pPixmap = NULL;
-  int			iIdx = 0;
-  static int		iCount = 0;
-  HBITMAP		hBitmap = NULL;
-  char			*pSrc = pSrcs;
-  int			*pWidth = NULL;
+  winPrivPixmapPtr	pPixmapPriv = NULL;
+  int			iSpan;
+  int			*piWidth = NULL;
   DDXPointPtr		pPoint = NULL;
+  char			*pSrc = pSrcs;
   HDC			hdcMem;
-  BITMAPINFOHEADER	bmih, bmihNew;
+  BITMAPINFOHEADER	bmihNew;
+  HBITMAP		hBitmap = NULL;
+  HBITMAP		hOrigObj = NULL;
 
-  /* Setup the bitmap header info */
-  bmih.biSize = sizeof (bmih);
-  bmih.biWidth = pDrawable->width;
-  bmih.biHeight = pDrawable->height;
-  bmih.biPlanes = 1;
-  bmih.biBitCount = pDrawable->depth;
-  bmih.biCompression = BI_RGB;
-  bmih.biSizeImage = 0;
-  bmih.biXPelsPerMeter = 0;
-  bmih.biYPelsPerMeter = 0;
-  bmih.biClrUsed = 0;
-  bmih.biClrImportant = 0;
-
-  ErrorF ("\nwinSetSpans () - pDrawable: %08x\n",
-	  pDrawable);
-
-  /* What kind of raster op have we got here? */
-  switch (pGC->alu)
+  /* Branch on the drawable type */
+  switch (pDrawable->type)
     {
-    case GXclear:
-      ErrorF ("winSetSpans () - GXclear\n");
-      break;
-    case GXand:
-      ErrorF ("winSetSpans () - GXand:\n");
-      break;
-    case GXandReverse:
-      ErrorF ("winSetSpans () - GXandReverse\n");
-      break;
-    case GXcopy:
-      ErrorF ("winSetSpans () - GXcopy\n");
-      
-      /*
-       * FIXME: Assuming that the drawable is a pixmap.
-       */
+    case DRAWABLE_PIXMAP:
       pPixmap = (PixmapPtr) pDrawable;
       pPixmapPriv = winGetPixmapPriv (pPixmap);
+      
+      /* Select the drawable pixmap into a DC */
+      hOrigObj = SelectObject (pGCPriv->hdcMem, pPixmapPriv->hBitmap);
 
-      /* Loop through spans */
-      for (iIdx = 0; iIdx < nSpans; ++iIdx)
+      /* Branch on the raster operation type */
+      switch (pGC->alu)
 	{
-	  pWidth = pWidths + iIdx;
-	  pPoint = pPoints + iIdx;
-	  
-	  /* Blast the bits to the drawable */
-	  SetDIBits (pGCPriv->hdcMem,
-		     pPixmapPriv->hBitmap,
-		     pPoint->y, 1, 
-		     pSrc,
-		     pPixmapPriv->pbmih, 0);
-	  
-	  /* Display some useful information */
-	  ErrorF ("(%dx%dx%d) (%d,%d) w: %d ps: %08x\n",
-		  pDrawable->width, pDrawable->height, pDrawable->depth,
-		  pPoint->x, pPoint->y, *pWidth, pSrc);
+	case GXclear:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXclear\n");
+	  break;
 
-	  /* Calculate offset of next bit source */
-	  pSrc += 4 * ((*pWidth  + 31) / 32);
-	}
-      break;
-    case GXandInverted:
-      ErrorF ("winSetSpans () - GXandInverted\n");
-      break;
-    case GXnoop:
-      ErrorF ("winSetSpans () - GXnoop\n");
-      break;
-    case GXxor:
-      ErrorF ("winSetSpans () - GXxor\n");
-      break;
-    case GXor:
-      ErrorF ("winSetSpans () - GXor\n");
-      break;
-    case GXnor:
-      ErrorF ("winSetSpans () - GXnor\n");
-      break;
-    case GXequiv:
-      ErrorF ("winSetSpans () - GXequiv\n");
-      break;
-    case GXinvert:
-      ErrorF ("winSetSpans () - GXinvert\n");
+	case GXand:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXand\n");
+	  break;
 
-      hdcMem = CreateCompatibleDC (pGCPriv->hdc);
+	case GXandReverse:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXandReverse\n");
+	  break;
+
+	case GXcopy:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXcopy\n");
+
+	  /* Loop through spans */
+	  for (iSpan = 0; iSpan < iSpans; ++iSpan)
+	    {
+	      piWidth = piWidths + iSpan;
+	      pPoint = pPoints + iSpan;
+	  
+	      /* Blast the bits to the drawable */
+	      SetDIBits (pGCPriv->hdcMem,
+			 pPixmapPriv->hBitmap,
+			 pPoint->y, 1, 
+			 pSrc,
+			 pPixmapPriv->pbmih, 0);
+	  
+	      /* Display some useful information */
+	      ErrorF ("(%dx%dx%d) (%d,%d) w: %d ps: %08x\n",
+		      pDrawable->width, pDrawable->height, pDrawable->depth,
+		      pPoint->x, pPoint->y, *piWidth, pSrc);
+
+	      /* Calculate offset of next bit source */
+	      pSrc += 4 * ((*piWidth  + 31) / 32);
+	    }
+	  break;
+
+	case GXandInverted:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXandInverted\n");
+	  break;
+
+	case GXnoop:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXnoop\n");
+	  break;
+
+	case GXxor:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXxor\n");
+	  break;
+
+	case GXor:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXor\n");
+	  break;
+
+	case GXnor:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXnor\n");
+	  break;
+
+	case GXequiv:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXequiv\n");
+	  break;
+
+	case GXinvert:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXinvert\n");
+
+	  /* Create a temporary DC */
+	  hdcMem = CreateCompatibleDC (pGCPriv->hdc);
  
-      /* Loop through spans */
-      for (iIdx = 0; iIdx < nSpans; ++iIdx)
-	{
-	  pWidth = pWidths + iIdx;
-	  pPoint = pPoints + iIdx;
-	  
-	  /* Setup the bitmap header info */
-	  bmihNew.biSize = sizeof (bmihNew);
-	  bmihNew.biWidth = *pWidth;
-	  bmihNew.biHeight = 1;
-	  bmihNew.biPlanes = 1;
-	  bmihNew.biBitCount = pDrawable->depth;
-	  bmihNew.biCompression = BI_RGB;
-	  bmihNew.biSizeImage = 0;
-	  bmihNew.biXPelsPerMeter = 0;
-	  bmihNew.biYPelsPerMeter = 0;
-	  bmihNew.biClrUsed = 0;
-	  bmihNew.biClrImportant = 0;
-
-	  /* Create a DIB from span line */
-	  if (pDrawable->depth == 1)
+	  /* Loop through spans */
+	  for (iSpan = 0; iSpan < iSpans; ++iSpan)
 	    {
-	      hBitmap = CreateDIBitmap (NULL, &bmih, 0, pSrc, NULL, 0);
+	      piWidth = piWidths + iSpan;
+	      pPoint = pPoints + iSpan;
+
+	      /* Setup the bitmap header info */
+	      bmihNew.biSize = sizeof (BITMAPINFOHEADER);
+	      bmihNew.biWidth = *piWidth;
+	      bmihNew.biHeight = 1;
+	      bmihNew.biPlanes = 1;
+	      bmihNew.biBitCount = pDrawable->depth;
+	      bmihNew.biCompression = BI_RGB;
+	      bmihNew.biSizeImage = 0;
+	      bmihNew.biXPelsPerMeter = 0;
+	      bmihNew.biYPelsPerMeter = 0;
+	      bmihNew.biClrUsed = 0;
+	      bmihNew.biClrImportant = 0;
+
+	      /* Create a DIB from span line */
+	      if (pDrawable->depth == 1)
+		{
+		  hBitmap = CreateDIBitmap (NULL, &bmihNew, 0, pSrc, NULL, 0);
+		}
+	      else
+		{
+		  hBitmap = CreateDIBitmap (hdcMem,
+					    &bmihNew, 0, pSrc, NULL, 0);
+		}
+	      
+	      /* Select the span line line bitmap into the temporary DC */
+	      hOrigObj = SelectObject (hdcMem, hBitmap);
+
+	      /* Blit the span line to the drawable */
+	      BitBlt (pGCPriv->hdcMem,
+		      pPoint->x, pPoint->y,
+		      *piWidth / pDrawable->depth, 1,
+		      hdcMem,
+		      0, 0, 
+		      NOTSRCCOPY);
+
+	      /* Display some useful information */
+	      ErrorF ("(%dx%dx%d) (%d,%d) w: %d ps: %08x\n",
+		      pDrawable->width, pDrawable->height, pDrawable->depth,
+		      pPoint->x, pPoint->y, *piWidth, pSrc);
+
+	      /* Calculate offset of next bit source */
+	      pSrc += 4 * ((*piWidth + 31) / 32);
+
+	      /* Pop the span line bitmap out of the memory DC */
+	      SelectObject (hdcMem, hOrigObj);
+
+	      /* Free the temporary bitmap */
+	      DeleteObject (hBitmap);
+	      hBitmap = NULL;
 	    }
-	  else
-	    {
-	      hBitmap = CreateDIBitmap (pGCPriv->hdcMem,
-					&bmih, 0, pSrc, NULL, 0);
-	    }
-	  hBitmap = SelectObject (hdcMem, hBitmap);
 
-	  /* Blit the span line to the drawable */
-	  BitBlt (pGCPriv->hdcMem, pPoint->x, pPoint->y,
-		  *pWidth / pDrawable->depth, 1,
-		  hdcMem, 0, 0, NOTSRCCOPY);
+	  /* Release the scratch DC */
+	  DeleteDC (hdcMem);
+	  break;
 
-	  /* Display some useful information */
-	  ErrorF ("(%dx%dx%d) (%d,%d) w: %d ps: %08x\n",
-		  pDrawable->width, pDrawable->height, pDrawable->depth,
-		  pPoint->x, pPoint->y, *pWidth, pSrc);
+	case GXorReverse:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXorReverse\n");
+	  break;
 
-	  /* Calculate offset of next bit source */
-	  pSrc += 4 * ((*pWidth + 31) / 32);
+	case GXcopyInverted:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXcopyInverted\n");
+	  break;
 
-	  /* Pop the bitmap out of the memory DC */
-	  SelectObject (hdcMem, hBitmap);
+	case GXorInverted:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXorInverted\n");
+	  break;
 
-	  /* Free the temporary bitmap */
-	  DeleteObject (hBitmap);
-	  hBitmap = NULL;
+	case GXnand:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXnand\n");
+	  break;
+
+	case GXset:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXset\n");
+	  break;
+
+	default:
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - Unknown ROP\n");
+	  break;
 	}
 
-      /* Release the scratch DC */
-      DeleteDC (hdcMem);
+      /* Push the drawable pixmap out of the GC HDC */
+      SelectObject (pGCPriv->hdcMem, hOrigObj);
+      break;
 
+    case DRAWABLE_WINDOW:
+      FatalError ("\nwinSetSpansNativeGDI - DRAWABLE_WINDOW\n\n");
+
+      /* Branch on the raster operation type */
+      switch (pGC->alu)
+	{
+	case GXclear:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - GXclear\n");
+	  break;
+
+	case GXand:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - GXand\n");
+	  break;
+
+	case GXandReverse:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - GXandReverse\n");
+	  break;
+
+	case GXcopy:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - GXcopy\n");
+	  break;
+
+	case GXandInverted:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - GXandInverted\n");
+	  break;
+
+	case GXnoop:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - GXnoop\n");
+	  break;
+
+	case GXxor:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - GXxor\n");
+	  break;
+
+	case GXor:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - GXor\n");
+	  break;
+
+	case GXnor:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - GXnor\n");
+	  break;
+
+	case GXequiv:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - GXequiv\n");
+	  break;
+
+	case GXinvert:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - GXinvert\n");
+	  break;
+
+	case GXorReverse:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - GXorReverse\n");
+	  break;
+
+	case GXcopyInverted:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - GXcopyInverted\n");
+	  break;
+
+	case GXorInverted:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - GXorInverted\n");
+	  break;
+
+	case GXnand:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - GXnand\n");
+	  break;
+
+	case GXset:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - GXset\n");
+	  break;
+
+	default:
+	  ErrorF ("winSetSpans () - DRAWABLE_WINDOW - Unknown ROP\n");
+	  break;
+	}
       break;
-    case GXorReverse:
-      ErrorF ("winSetSpans () - GXorReverse\n");
+
+    case UNDRAWABLE_WINDOW:
+      FatalError ("\nwinSetSpansNativeGDI - UNDRAWABLE_WINDOW\n\n");
       break;
-    case GXcopyInverted:
-      ErrorF ("winSetSpans () - GXcopyInverted\n");
+
+    case DRAWABLE_BUFFER:
+      FatalError ("\nwinSetSpansNativeGDI - DRAWABLE_BUFFER\n\n");
       break;
-    case GXorInverted:
-      ErrorF ("winSetSpans () - GXorInverted\n");
-      break;
-    case GXnand:
-      ErrorF ("winSetSpans () - GXnand\n");
-      break;
-    case GXset:
-      ErrorF ("winSetSpans () - GXset\n");
+      
     default:
-      ErrorF ("winSetSpans () - Unknown ROP\n");
+      FatalError ("\nwinSetSpansNativeGDI - Unknown drawable type\n\n");
       break;
     }
-#endif
 }

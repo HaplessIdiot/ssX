@@ -27,10 +27,11 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wingc.c,v 1.4 2001/07/02 09:37:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wingc.c,v 1.5 2001/07/31 09:46:57 alanh Exp $ */
 
 #include "win.h"
 
+#if 0
 /* GC Handling Routines */
 const GCFuncs winGCFuncs = {
   winValidateGCNativeGDI,
@@ -41,6 +42,17 @@ const GCFuncs winGCFuncs = {
   winDestroyClipNativeGDI,
   winCopyClipNativeGDI,
 };
+#else
+const GCFuncs winGCFuncs = {
+  winValidateGCNativeGDI,
+  winChangeGCNativeGDI,
+  winCopyGCNativeGDI,
+  winDestroyGCNativeGDI,
+  miChangeClip,
+  miDestroyClip,
+  miCopyClip,
+};
+#endif
 
 /* Drawing Primitives */
 const GCOps winGCOps = {
@@ -87,7 +99,14 @@ winCreateGCNativeGDI (GCPtr pGC)
   pGC->ops = (GCOps *) &winGCOps;
   pGC->funcs = (GCFuncs *) &winGCFuncs;
 
-  pGC->miTranslate = 0;
+  /* 
+   * Setting miTranslate to 1 causes the coordinates passed to
+   * FillSpans, GetSpans, and SetSpans to be screen relative, rather
+   * than drawable relative.
+   *
+   * miTranslate was set to 0 prior to 2001-08-17.
+   */
+  pGC->miTranslate = 1;
 
   /* Allocate privates for this GC */
   pGCPriv = winGetGCPriv (pGC);
@@ -104,14 +123,6 @@ winCreateGCNativeGDI (GCPtr pGC)
   /* Allocate a memory DC for the GC */
   pGCPriv->hdcMem = CreateCompatibleDC (pGCPriv->hdc);
 
-#if 0
-    winGetRotatedPixmapNativeGDI(pGC) = 0;
-    winGetExposeNativeGDI(pGC) = 1;
-    winGetFreeCompClipNativeGDI(pGC) = 0;
-    winGetCompositeClipNativeGDI(pGC) = 0;
-    winGetGCPrivateNativeGDI(pGC)->bpp = BitsPerPixel (pGC->depth);
-#endif
-
   return TRUE;
 }
 
@@ -127,64 +138,22 @@ winChangeGCNativeGDI (GCPtr pGC, unsigned long ulChanges)
 
 void
 winValidateGCNativeGDI (GCPtr pGC,
-			unsigned long dwChanges,
+			unsigned long ulChanges,
 			DrawablePtr pDrawable)
 {
   winGCPriv(pGC);
-  int			nIndex;
-  DWORD			dwMask = dwChanges;
-  winPrivPixmapPtr	pPixmapPriv = NULL;
+  HBITMAP		hbmpOrig = NULL;
   PixmapPtr		pPixmap = NULL;
+  winPrivPixmapPtr	pPixmapPriv = NULL;
   DEBUG_FN_NAME("winValidateGC");
   DEBUGVARS;
   DEBUGPROC_MSG;
 
-  assert (pGCPriv->hdcMem != NULL);
-  
   /* Branch on drawable type */
   switch (pDrawable->type)
     {
     case DRAWABLE_PIXMAP:
-      /* I can handle drawable pixmaps, no problem */
-      pPixmap = (PixmapPtr) pDrawable;
-      pPixmapPriv = winGetPixmapPriv (pPixmap);
-      assert (pPixmapPriv->hBitmap != NULL);
-      
-      /* Is this bitmap selected into a DC? */
-      if (pPixmapPriv->hdcSelected != NULL
-	  && pPixmapPriv->hdcSelected != pGCPriv->hdcMem)
-	{
-	  ErrorF ("winValidateGC - Pixmap was in another DC\n");
-
-	  /* Pop the bitmap out of the last DC it was selected into */
-	  if (SelectObject (pPixmapPriv->hdcSelected, g_hbmpGarbage) == NULL)
-	    FatalError ("winValidateGC - SelectObject failed - L167\n");
-
-	  /* Select the bitmap into the GC memory device context */
-	  if (SelectObject (pGCPriv->hdcMem, pPixmapPriv->hBitmap) == NULL)
-	    FatalError ("winValidateGC - SelectObject failed - L174\n");
-	}
-      else if (pPixmapPriv->hdcSelected == NULL)
-	{
-	  ErrorF ("winValidateGC - Pixmap was not in a DC\n");
-
-	  /* Select the bitmap into the memory device context */
-	  if (SelectObject (pGCPriv->hdcMem, pPixmapPriv->hBitmap) == NULL)
-	    FatalError ("winValidateGC - SelectObject failed - L182\n");
-	}
-      else if (pPixmapPriv->hdcSelected == pGCPriv->hdcMem)
-	{
-	  ErrorF ("winValidateGC - Pixmap already selected into current DC\n");
-	}
-      else
-	{
-	  FatalError ("winValidateGC - Unhandled case - L186\n");
-	}
-	
-      /* Save a pointer to the last DC the bitmap was selected into */
-      pPixmapPriv->hdcSelected = pGCPriv->hdcMem;
-      
-      /* Sync the DC settings with the GC settings */
+      /* Branch on the fill style */
       switch (pGC->fillStyle)
 	{
 	case FillSolid:
@@ -204,19 +173,21 @@ winValidateGCNativeGDI (GCPtr pGC,
 	  else if (pGC->fgPixel)
 	    {
 	      ErrorF ("winValidateGC - Selecting custom pen\n");
+	      /* FIXME: This leaks a pen */
 	      SelectObject (pGCPriv->hdcMem, 
 			    CreatePen (PS_SOLID, 0, pGC->fgPixel));
 	    }
 	  else
 	    {
-	      SelectObject (pGCPriv->hdcMem, GetStockObject (BLACK_PEN));
 	      ErrorF ("winValidateGC - Selecting BLACK_PEN\n");
+	      SelectObject (pGCPriv->hdcMem, GetStockObject (BLACK_PEN));
+	      
 	    }
 	  break;
-
+	  
 	case FillStippled:
 	  ErrorF ("winValidateGC - DRAWABLE_PIXMAP - FillStippled\n");
-	  
+
 	  /* Set the foreground color for the stipple fill */
 	  if (pGC->fgPixel == 0x1)
 	    {
@@ -232,55 +203,45 @@ winValidateGCNativeGDI (GCPtr pGC,
 	    }
 	  SetBkColor (pGCPriv->hdcMem, RGB(0x00, 0x00, 0x00));
 	  break;
+	  
+	case FillOpaqueStippled:
+	  FatalError ("winValidateGC - DRAWABLE_PIXMAP - "
+		      "FillOpaqueStippled\n");
+	  break;
+
+	case FillTiled:
+	  FatalError ("winValidateGC - DRAWABLE_PIXMAP - FillTiled\n");
+	  break;
 
 	default:
+	  FatalError ("winValidateGC - DRAWABLE_PIXMAP - Unknown fill "
+		      "style\n");
 	  break;
 	}
+
       break;
 
     case DRAWABLE_WINDOW:
+      /* Branch on the fill style */
       switch (pGC->fillStyle)
 	{
 	case FillTiled:
-	  ErrorF ("winValidateGC - DRAWABLE_WINDOW - FillTiled\n");
+	  /* 
+	   * Do nothing here for now.  Select the tile bitmap into the
+	   * appropriate DC in the drawing function.
+	   */
 
-	  /* I can handle drawable pixmaps, no problem */
+	  /*
+	   * BEGIN REMOVE - Visual verification only.
+	   */
+	  /* Get pixmap and privates pointers for the tile */
 	  pPixmap = pGC->tile.pixmap;
 	  pPixmapPriv = winGetPixmapPriv (pPixmap);
-      
-	  /* Is this bitmap selected into a DC? */
-	  if (pPixmapPriv->hdcSelected != NULL
-	      && pPixmapPriv->hdcSelected != pGCPriv->hdcMem)
-	    {
-	      /* Pop the bitmap out of the last DC it was selected into */
-	      if (SelectObject (pPixmapPriv->hdcSelected, g_hbmpGarbage) 
-		  == NULL)
-		FatalError ("winValidateGC - SelectObject failed - L167\n");
 
-	      /* Select the bitmap into the GC memory device context */
-	      if (SelectObject (pGCPriv->hdcMem, pPixmapPriv->hBitmap) == NULL)
-		FatalError ("winValidateGC - SelectObject failed - L174\n");
-	    }
-	  else if (pPixmapPriv->hdcSelected == NULL)
-	    {
-	      /* Select the bitmap into the memory device context */
-	      if (SelectObject (pGCPriv->hdcMem, pPixmapPriv->hBitmap) == NULL)
-		FatalError ("winValidateGC - SelectObject failed - L182\n");
-	    }
-	  else if (pPixmapPriv->hdcSelected == pGCPriv->hdcMem)
-	    {
-	      ErrorF ("winValidateGC - Pixmap already selected into "
-		      "current DC\n");
-	    }
-	  else
-	    {
-	      FatalError ("winValidateGC - Unhandled case - L186\n");
-	    }
-	  
-	  /* Save a pointer to the last DC the bitmap was selected into */
-	  pPixmapPriv->hdcSelected = pGCPriv->hdcMem;
+	  /* Push the tile into the GC's DC */
+	  hbmpOrig = SelectObject (pGCPriv->hdcMem, pPixmapPriv->hBitmap);
 
-	  	  /* Blit the tile to a remote area of the screen */
+	  /* Blit the tile to a remote area of the screen */
 	  BitBlt (pGCPriv->hdc, 
 		  64, 64,
 		  pGC->tile.pixmap->drawable.width,
@@ -288,12 +249,22 @@ winValidateGCNativeGDI (GCPtr pGC,
 		  pGCPriv->hdcMem,
 		  0, 0, 
 		  SRCCOPY);
-	  DEBUG_MSG("Blitted the tile to a remote area of the screen");
-
+	  DEBUG_MSG ("Blitted the tile to a remote area of the screen");
+	  
+	  /* Pop the tile out of the GC's DC */
+	  SelectObject (pGCPriv->hdcMem, hbmpOrig);
+	  /*
+	   * END REMOVE - Visual verification only.
+	   */
 	  break;
 
 	case FillStippled:
 	  FatalError ("winValidateGC - DRAWABLE_WINDOW - FillStippled\n");
+	  break;
+
+	case FillOpaqueStippled:
+	  FatalError ("winValidateGC - DRAWABLE_WINDOW - "
+		      "FillOpaqueStippled\n");
 	  break;
 
 	case FillSolid:
@@ -301,10 +272,13 @@ winValidateGCNativeGDI (GCPtr pGC,
 	  break;
 
 	default:
+	  FatalError ("winValidateGC - DRAWABLE_WINDOW - Unknown fill "
+		      "style\n");
 	  break;
 	}
 
     case UNDRAWABLE_WINDOW:
+      ErrorF ("\nwinValidateGC - UNDRAWABLE_WINDOW\n\n");
       break;
 
     case DRAWABLE_BUFFER:
@@ -312,369 +286,11 @@ winValidateGCNativeGDI (GCPtr pGC,
       break;
 
     default:
+      FatalError ("winValidateGC - Unknown drawable type\n");
       break;
     }
-
-#if 0
-  /* Inspect changes to the GC */
-  while (dwMask)
-    {
-      /* This peels off one change at a time */
-      nIndex = lowbit (dwMask);
-      dwMask &= ~nIndex;
-      
-      switch (nIndex)
-	{
-	case GCFunction:
-	  /* mfb falls through to GCForeground */
-	  ErrorF ("winValidateGC - GCFunction\n");
-	  break;
-	case GCForeground:
-	  ErrorF ("winValidateGC - GCForeground\n");
-	  break;
-	case GCPlaneMask:
-	  ErrorF ("winValidateGC - GCPlaneMask\n");
-	  break;
-	case GCBackground:
-	  ErrorF ("winValidateGC - GCBackground\n");
-	  break;
-	case GCLineStyle:
-	case GCLineWidth:
-	case GCJoinStyle:
-	  ErrorF ("winValidateGC - GCLineStyle, etc.\n");
-	  break;
-	case GCCapStyle:
-	  ErrorF ("winValidateGC - GCCapStyle\n");
-	  break;
-	case GCFillStyle:
-	  ErrorF ("winValidateGC - GCFillStyle\n");
-	  break;
-	case GCFillRule:
-	  ErrorF ("winValidateGC - GCFillRule\n");
-	  break;
-	case GCTile:
-	  ErrorF ("winValidateGC - GCTile\n");
-	  break;
-	case GCStipple:
-	  ErrorF ("winValidateGC - GCStipple\n");
-	  break;
-	case GCTileStipXOrigin:
-	  ErrorF ("winValidateGC - GCTileStipXOrigin\n");
-	  break;
-	case GCTileStipYOrigin:
-	  ErrorF ("winValidateGC - GCTileStipYOrigin\n");
-	  break;
-	case GCFont:
-	  ErrorF ("winValidateGC - GCFont\n");
-	  break;
-	case GCSubwindowMode:
-	  ErrorF ("winValidateGC - GCSubwindowMode\n");
-	  break;
-	case GCGraphicsExposures:
-	  ErrorF ("winValidateGC - GCGraphicsExposures\n");
-	  break;
-	case GCClipXOrigin:
-	  ErrorF ("winValidateGC - GCClipXOrigin\n");
-	  break;
-	case GCClipYOrigin:
-	  ErrorF ("winValidateGC - GCClipYOrigin\n");
-	  break;
-	case GCClipMask:
-	  ErrorF ("winValidateGC - GCClipMask\n");
-	  break;
-	case GCDashOffset:
-	  ErrorF ("winValidateGC - GCDashOffset\n");
-	  break;
-	case GCDashList:
-	  ErrorF ("winValidateGC - GCDashList\n");
-	  break;
-	case GCArcMode:
-	  ErrorF ("winValidateGC - GCArcMode\n");
-	  break;
-	default:
-	  ErrorF ("winValidateGC - default\n");
-	  break;
-	}
-    }
-#endif
 }
 
-#if 0
-/* See Porting Layer Definition - pp. 45-46 */
-/* See mfb/mfbgc.c - mfbValidateGC() */
-/* See Strategies for Porting - pp. 15, 16 */
-void
-winValidateGCNativeGDI (GCPtr pGC,
-			unsigned long dwChanges,
-			DrawablePtr pDrawable)
-{
-#if WIN_NATIVE_GDI_SUPPORT
-  winGCPriv(pGC);
-  winPrivPixmapPtr	pPixmapPriv = NULL;
-  PixmapPtr		pPixmap = NULL;
-  int			nIndex, iResult;
-  unsigned long		dwMask = dwChanges;
-  HPEN			hPen;
-  HBRUSH		hBrush;
-  HBITMAP		hBitmap;
-  HDC			hdc = pGCPriv->hdc;
-  HDC			hdcMem = pGCPriv->hdcMem;
-  HDC			hdcStipple = NULL;
-  DEBUG_FN_NAME("winValidateGC");
-  DEBUGVARS;
-
-  ErrorF ("winValidateGC - pDrawable: %08x, pGC: %08x\n",
-	  pDrawable, pGC);
-
-  /* Branch on drawable type */
-  switch (pDrawable->type)
-    {
-    case DRAWABLE_PIXMAP:
-      /* I can handle drawable pixmaps, no problem */
-      pPixmap = (PixmapPtr) pDrawable;
-      pPixmapPriv = winGetPixmapPriv (pPixmap);
-
-      ErrorF ("winValidateGC - pPixmapPriv->hBitmap: %08x\n",
-	      pPixmapPriv->hBitmap);
-      
-      /* Is this bitmap selected into a DC? */
-      if (pPixmapPriv->hdcSelected != NULL
-	  && pPixmapPriv->hdcSelected != hdcMem)
-	{
-	  /* Pop the bitmap out of the last DC it was selected into */
-	  if (SelectObject (pPixmapPriv->hdcSelected, g_hbmpGarbage) == NULL)
-	    FatalError ("winValidateGC - SelectObject failed - L167\n");
-	    	  
-	  /* Set the last selected DC for the pixmap */
-	  pPixmapPriv->hdcSelected = hdcMem;
-
-	  /* Select the bitmap into the memory device context */
-	  if (SelectObject (hdcMem, pPixmapPriv->hBitmap) == NULL)
-	    FatalError ("winValidateGC - SelectObject failed - L174\n");
-	}
-      else if (pPixmapPriv->hdcSelected == NULL)
-	{
-	  /* Set the last selected DC for the pixmap */
-	  pPixmapPriv->hdcSelected = hdcMem;
-
-	  /* Select the bitmap into the memory device context */
-	  if (SelectObject (hdcMem, pPixmapPriv->hBitmap) == NULL)
-	    FatalError ("winValidateGC - SelectObject failed - L182\n");
-	}
-      else if (pPixmapPriv->hdcSelected == hdcMem)
-	{
-	  ErrorF ("winValidateGC - Pixmap already selected into current DC\n");
-	}
-      else
-	{
-	  FatalError ("winValidateGC - Unhandled case - L186\n");
-	}
-	
-      /* Save a pointer to the last HDC this pixmap was selected into */
-      pPixmapPriv->hdcSelected = hdcMem;
-
-      /* Sync the DC settings with the GC settings */
-      switch (pGC->fillStyle)
-	{
-	case FillSolid:
-	  /* Select a stock pen */
-	  if (pDrawable->depth == 1 && pGC->fgPixel)
-	    {
-	      SelectObject (hdcMem, GetStockObject (WHITE_PEN));
-	    }
-	  else if (pDrawable->depth == 1 && !pGC->fgPixel)
-	    {
-	      SelectObject (hdcMem, GetStockObject (BLACK_PEN));
-	    }
-	  else if (pGC->fgPixel)
-	    {
-	      SelectObject (hdcMem, GetStockObject (WHITE_PEN));
-	    }
-	  else
-	    {
-	      SelectObject (hdcMem, GetStockObject (BLACK_PEN));
-	    }
-	  break;
-
-	case FillStippled:
-
-	  /* Set the foreground color for the stipple fill */
-	  if (pGC->fgPixel == 0x1)
-	    {
-	      SetTextColor (hdcMem, RGB(0xFF, 0xFF, 0xFF));
-	      DEBUG_MSG("Grey fill");
-	    }
-	  else if (pGC->fgPixel == 0xFFFF)
-	    {
-	      SetTextColor (hdcMem, RGB(0xFF, 0xFF, 0xFF));
-	      DEBUG_MSG("White fill");
-	    }
-	  else
-	    {
-	      SetTextColor (hdcMem, RGB(0x00, 0x00, 0x00));
-	      DEBUG_MSG("Black fill");
-	    }
-	  SetBkColor (hdcMem, RGB(0x00, 0x00, 0x00));
-
-
-	  ErrorF ("winValidateGC - Pixmap with pGC->fillStyle "
-		  "FillStippled\n");
-	  break;
-
-	default:
-	  break;
-	}
-      break;
-
-    case DRAWABLE_WINDOW:
-      switch (pGC->fillStyle)
-	{
-	case FillTiled:
-	  pPixmapPriv = winGetPixmapPriv (pGC->tile.pixmap);
-	  
-	  /* Is this bitmap selected into a DC? */
-	  if (pPixmapPriv->hdcSelected != NULL
-	      && pPixmapPriv->hdcSelected != hdcMem)
-	    {
-	      /* Pop the bitmap out of the last DC it was selected into */
-	      if (SelectObject (pPixmapPriv->hdcSelected, g_hbmpGarbage)
-		  == NULL)
-		FatalError ("winValidateGC - SelectObject failed - L233\n");
-	      
-	      /* Set the last selected DC for the pixmap */
-	      pPixmapPriv->hdcSelected = hdcMem;
-	      
-	      /* Select the bitmap into the memory device context */
-	      if (SelectObject (hdcMem, pPixmapPriv->hBitmap) == NULL)
-		FatalError ("winValidateGC - SelectObject failed - L240\n");
-	    }
-	  else if (pPixmapPriv->hdcSelected == NULL)
-	    {
-	      /* Set the last selected DC for the pixmap */
-	      pPixmapPriv->hdcSelected = hdcMem;
-	      
-	      /* Select the bitmap into the memory device context */
-	      if (SelectObject (hdcMem, pPixmapPriv->hBitmap) == NULL)
-		FatalError ("winValidateGC - SelectObject failed - L249\n");
-	    }
-
-	  /* Blit the tile to a remote area of the screen */
-	  BitBlt (hdc,
-		  64, 64,
-		  pGC->tile.pixmap->drawable.width,
-		  pGC->tile.pixmap->drawable.height,
-		  hdcMem,
-		  0, 0,
-		  SRCCOPY);
-	  DEBUG_MSG("Blitted the tile to a remote area of the screen");
-	  break;
-	case FillStippled:
-	  break;
-
-	case FillSolid:
-	  break;
-
-	default:
-	  break;
-	}
-      break;
-    case UNDRAWABLE_WINDOW:
-      break;
-
-    case DRAWABLE_BUFFER:
-      break;
-
-    default:
-      ErrorF ("winValidateGC - Unknown pDrawable->type: %d\n",
-	      pDrawable->type);
-      break;
-    }
-
-#if 0
-  /* Inspect changes to the GC */
-  while (dwMask)
-    {
-      /* This peels off one change at a time */
-      nIndex = lowbit (dwMask);
-      dwMask &= ~nIndex;
-      
-      switch (nIndex)
-	{
-	case GCFunction:
-	  /* mfb falls through to GCForeground */
-	  ErrorF ("winValidateGC - GCFunction\n");
-	  break;
-	case GCForeground:
-	  ErrorF ("winValidateGC - GCForeground\n");
-	  break;
-	case GCPlaneMask:
-	  ErrorF ("winValidateGC - GCPlaneMask\n");
-	  break;
-	case GCBackground:
-	  ErrorF ("winValidateGC - GCBackground\n");
-	  break;
-	case GCLineStyle:
-	case GCLineWidth:
-	case GCJoinStyle:
-	  ErrorF ("winValidateGC - GCLineStyle, etc.\n");
-	  break;
-	case GCCapStyle:
-	  ErrorF ("winValidateGC - GCCapStyle\n");
-	  break;
-	case GCFillStyle:
-	  ErrorF ("winValidateGC - GCFillStyle\n");
-	  break;
-	case GCFillRule:
-	  ErrorF ("winValidateGC - GCFillRule\n");
-	  break;
-	case GCTile:
-	  ErrorF ("winValidateGC - GCTile\n");
-	  break;
-	case GCStipple:
-	  ErrorF ("winValidateGC - GCStipple\n");
-	  break;
-	case GCTileStipXOrigin:
-	  ErrorF ("winValidateGC - GCTileStipXOrigin\n");
-	  break;
-	case GCTileStipYOrigin:
-	  ErrorF ("winValidateGC - GCTileStipYOrigin\n");
-	  break;
-	case GCFont:
-	  ErrorF ("winValidateGC - GCFont\n");
-	  break;
-	case GCSubwindowMode:
-	  ErrorF ("winValidateGC - GCSubwindowMode\n");
-	  break;
-	case GCGraphicsExposures:
-	  ErrorF ("winValidateGC - GCGraphicsExposures\n");
-	  break;
-	case GCClipXOrigin:
-	  ErrorF ("winValidateGC - GCClipXOrigin\n");
-	  break;
-	case GCClipYOrigin:
-	  ErrorF ("winValidateGC - GCClipYOrigin\n");
-	  break;
-	case GCClipMask:
-	  ErrorF ("winValidateGC - GCClipMask\n");
-	  break;
-	case GCDashOffset:
-	  ErrorF ("winValidateGC - GCDashOffset\n");
-	  break;
-	case GCDashList:
-	  ErrorF ("winValidateGC - GCDashList\n");
-	  break;
-	case GCArcMode:
-	  ErrorF ("winValidateGC - GCArcMode\n");
-	  break;
-	default:
-	  ErrorF ("winValidateGC - default\n");
-	  break;
-	}
-    }
-#endif
-#endif
-}
-#endif
 
 /* See Porting Layer Definition - p. 46 */
 void
@@ -682,6 +298,7 @@ winCopyGCNativeGDI (GCPtr pGCsrc, unsigned long ulMask, GCPtr pGCdst)
 {
 
 }
+
 
 /* See Porting Layer Definition - p. 46 */
 void
@@ -703,6 +320,7 @@ winDestroyGCNativeGDI (GCPtr pGC)
   winSetGCPriv (pGC, NULL);
 }
 
+
 /* See Porting Layer Definition - p. 46 */
 void
 winChangeClipNativeGDI (GCPtr pGC, int nType, pointer pValue, int nRects)
@@ -710,12 +328,14 @@ winChangeClipNativeGDI (GCPtr pGC, int nType, pointer pValue, int nRects)
 
 }
 
+
 /* See Porting Layer Definition - p. 47 */
 void
 winDestroyClipNativeGDI (GCPtr pGC)
 {
 
 }
+
 
 /* See Porting Layer Definition - p. 47 */
 void

@@ -27,9 +27,17 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winnativegdi.c,v 1.4 2001/07/31 18:45:25 tsi Exp $ */
 
 #include "win.h"
+
+Bool
+winAllocateFBNativeGDI (ScreenPtr pScreen)
+{
+  FatalError ("winAllocateFBNativeGDI ()\n");
+
+  return TRUE;
+}
 
 /*
  * We wrap whatever CloseScreen procedure was specified by fb;
@@ -40,9 +48,6 @@ winCloseScreenNativeGDI (int nIndex, ScreenPtr pScreen)
 {
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
-#if 0
-  Bool			fReturn;
-#endif
 
   ErrorF ("winCloseScreenNativeGDI () - Freeing screen resources\n");
 
@@ -50,16 +55,10 @@ winCloseScreenNativeGDI (int nIndex, ScreenPtr pScreen)
   pScreenPriv->fClosed = TRUE;
   pScreenPriv->fActive = FALSE;
 
-#if 0
-  /* Call the wrapped CloseScreen procedure */
-  pScreen->CloseScreen = pScreenPriv->CloseScreen;
-  
-  ErrorF ("winCloseScreenNativeGDI () - Calling miCloseScreen ()\n");
-
-  fReturn = (*pScreen->CloseScreen) (nIndex, pScreen);
-
-  ErrorF ("winCloseScreenNativeGDI () - miCloseScreen () returned\n");
-#endif
+  /* 
+   * NOTE: mi doesn't use a CloseScreen procedure, so we do not
+   * need to call a wrapped procedure here.
+   */
 
   /* Delete the window property */
   RemoveProp (pScreenPriv->hwndScreen, WIN_SCR_PROP);
@@ -67,19 +66,14 @@ winCloseScreenNativeGDI (int nIndex, ScreenPtr pScreen)
   /* Redisplay the Windows cursor */
   if (!pScreenPriv->fCursor)
     ShowCursor (TRUE);
-
+  
+  ErrorF ("winCloseScreenNativeGDI () - Destroying window\n");
+  
   /* Kill our window */
   if (pScreenPriv->hwndScreen)
     {
       DestroyWindow (pScreenPriv->hwndScreen);
       pScreenPriv->hwndScreen = NULL;
-    }
-
-  /* Delete our garbage bitmap */
-  if (g_hbmpGarbage != NULL)
-    {
-      DeleteObject (g_hbmpGarbage);
-      g_hbmpGarbage = NULL;
     }
 
   /* Invalidate our screeninfo's pointer to the screen */
@@ -92,6 +86,16 @@ winCloseScreenNativeGDI (int nIndex, ScreenPtr pScreen)
 
   return TRUE;
 }
+
+
+void
+winShadowUpdateNativeGDI (ScreenPtr pScreen, 
+			  shadowBufPtr pBuf)
+{
+  FatalError ("winShadowUpdateNativeGDI ()\n");
+  return;
+}
+
 
 Bool
 winInitVisualsNativeGDI (ScreenPtr pScreen)
@@ -188,6 +192,7 @@ winInitVisualsNativeGDI (ScreenPtr pScreen)
   return TRUE;
 }
 
+
 /* Adjust the video mode */
 Bool
 winAdjustVideoModeNativeGDI (ScreenPtr pScreen)
@@ -195,8 +200,6 @@ winAdjustVideoModeNativeGDI (ScreenPtr pScreen)
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
   HDC			hdc = NULL;
-  HDC			hdcMem = NULL;
-  HBITMAP		hbmp = NULL;
   DWORD			dwDepth;
   
   hdc = GetDC (NULL);
@@ -206,12 +209,6 @@ winAdjustVideoModeNativeGDI (ScreenPtr pScreen)
     {
       ErrorF ("winAdjustVideoModeNativeGDI () - GetDC () failed\n");
       return FALSE;
-    }
-
-  /* Set the garbage bitmap handle */
-  if (g_hbmpGarbage == NULL)
-    {
-      g_hbmpGarbage = CreateCompatibleBitmap (hdc, 0, 0);
     }
 
   /* Query GDI for current display depth */
@@ -242,6 +239,7 @@ winAdjustVideoModeNativeGDI (ScreenPtr pScreen)
 
   return TRUE;
 }
+
 
 Bool
 winActivateAppNativeGDI (ScreenPtr pScreen)
@@ -284,11 +282,13 @@ winActivateAppNativeGDI (ScreenPtr pScreen)
 
 HBITMAP
 winCreateDIBNativeGDI (int iWidth, int iHeight, int iDepth,
-		       void **ppvBits)
+		       void **ppvBits, BITMAPINFO **ppbmi)
 {
   BITMAPINFOHEADER	*pbmih = NULL;
   HDC			hdcMem = NULL;
   HBITMAP		hBitmap = NULL;
+
+  ErrorF ("winCreateDIBNativeGDI () - Hello\n");
 
   /* Don't create an invalid bitmap */
   if (iWidth == 0
@@ -345,8 +345,16 @@ winCreateDIBNativeGDI (int iWidth, int iHeight, int iDepth,
     }
 
   /* Free the bitmap info header memory */
-  xfree (pbmih);
-  pbmih = NULL;
+  if (ppbmi != NULL)
+    {
+      /* Store the address of the BMIH in the ppbmih parameter */
+      *ppbmi = (BITMAPINFO *) pbmih;
+    }
+  else
+    {
+      xfree (pbmih);
+      pbmih = NULL;
+    }
 
 #if CYGDEBUG
   ErrorF ("winCreateDIBNativeGDI () - CreateDIBSection () returned\n");
@@ -356,8 +364,69 @@ winCreateDIBNativeGDI (int iWidth, int iHeight, int iDepth,
   DeleteDC (hdcMem);
   hdcMem = NULL;
   
+  ErrorF ("winCreateDIBNativeGDI () - Returning\n");
+
   return hBitmap;
 }
+
+
+Bool
+winBltExposedRegionsNativeGDI (ScreenPtr pScreen)
+{
+  
+  return TRUE;
+}
+
+
+Bool
+winRedrawScreenNativeGDI (ScreenPtr pScreen)
+{
+  FatalError ("winRedrawScreenNativeGDI ()\n");
+  return TRUE;
+}
+
+
+Bool
+winRealizeInstalledPaletteNativeGDI (ScreenPtr pScreen)
+{
+  FatalError ("winRealizeInstalledPaletteNativeGDI ()\n");
+  return TRUE;
+}
+
+
+Bool
+winInstallColormapNativeGDI (ColormapPtr pColormap)
+{
+  FatalError ("winInstallColormapNativeGDI ()\n");
+  return TRUE;
+}
+
+
+Bool
+winStoreColorsNativeGDI (ColormapPtr pmap, 
+			 int ndef,
+			 xColorItem *pdefs)
+{
+  FatalError ("winStoreColorsNativeGDI ()\n");
+  return TRUE;
+}
+
+
+Bool
+winCreateColormapNativeGDI (ColormapPtr pColormap)
+{
+  FatalError ("winCreateColormapNativeGDI ()\n");
+  return TRUE;
+}
+
+
+Bool
+winDestroyColormapNativeGDI (ColormapPtr pColormap)
+{
+  FatalError ("winDestroyColormapNativeGDI ()\n");
+  return TRUE;
+}
+
 
 /* Set engine specific funtions */
 Bool
@@ -367,10 +436,8 @@ winSetEngineFunctionsNativeGDI (ScreenPtr pScreen)
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
   
   /* Set our pointers */
-  pScreenPriv->pwinAllocateFB
-    = (winAllocateFBProcPtr) (void (*)())NoopDDA;
-  pScreenPriv->pwinShadowUpdate
-    = (winShadowUpdateProcPtr) (void (*)())NoopDDA;
+  pScreenPriv->pwinAllocateFB = winAllocateFBNativeGDI;
+  pScreenPriv->pwinShadowUpdate = winShadowUpdateNativeGDI;
   pScreenPriv->pwinCloseScreen = winCloseScreenNativeGDI;
   pScreenPriv->pwinInitVisuals = winInitVisualsNativeGDI;
   pScreenPriv->pwinAdjustVideoMode = winAdjustVideoModeNativeGDI;
@@ -379,9 +446,24 @@ winSetEngineFunctionsNativeGDI (ScreenPtr pScreen)
   else
     pScreenPriv->pwinCreateBoundingWindow = winCreateBoundingWindowWindowed;
   pScreenPriv->pwinFinishScreenInit = winFinishScreenInitNativeGDI;
-  pScreenPriv->pwinBltExposedRegions
-    = (winBltExposedRegionsProcPtr) (void (*)())NoopDDA;
+  /*
+   * WARNING: Do not set the following procedure pointer to anything
+   * other than NULL until a working painting procedure is in place.
+   * Else, winWindowProc will get stuck in an infinite loop because
+   * Windows expects the BeginPaint and EndPaint functions to be called
+   * before a WM_PAINT message can be removed from the queue.  We are
+   * using NULL here as a signal for winWindowProc that it should
+   * not signal that the WM_PAINT message has been processed.
+   */
+  pScreenPriv->pwinBltExposedRegions = NULL;
   pScreenPriv->pwinActivateApp = winActivateAppNativeGDI;
+  pScreenPriv->pwinRedrawScreen = winRedrawScreenNativeGDI;
+  pScreenPriv->pwinRealizeInstalledPalette = 
+    winRealizeInstalledPaletteNativeGDI;
+  pScreenPriv->pwinInstallColormap = winInstallColormapNativeGDI;
+  pScreenPriv->pwinStoreColors = winStoreColorsNativeGDI;
+  pScreenPriv->pwinCreateColormap = winCreateColormapNativeGDI;
+  pScreenPriv->pwinDestroyColormap = winDestroyColormapNativeGDI;
 
   return TRUE;
 }

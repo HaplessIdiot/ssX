@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.12 2001/08/31 07:58:29 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.13 2001/09/07 08:41:54 alanh Exp $ */
 
 #include "Xatom.h"
 
@@ -168,7 +168,7 @@ winWindowProc (HWND hWnd, UINT message,
       GlobalUnlock (hGlobal);
       CloseClipboard ();
       return 0;
-#endif
+#endif /* 0 */
 
     case WM_PAINT:
 #if CYGDEBUG
@@ -182,6 +182,10 @@ winWindowProc (HWND hWnd, UINT message,
 	  /* We don't want to paint */
 	  break;
 	}
+
+      /* Break out here if we don't have a valid paint routine */
+      if (pScreenPriv->pwinBltExposedRegions == NULL)
+	break;
       
       /* Call the engine dependent repainter */
       (*pScreenPriv->pwinBltExposedRegions) (pScreen);
@@ -194,9 +198,6 @@ winWindowProc (HWND hWnd, UINT message,
 #endif
 	/* Don't process if we don't have privates */
 	if (pScreenPriv == NULL
-#if 0
-	    || pScreenInfo->dwEngine != WIN_SERVER_SHADOW_GDI
-#endif
 	    || pScreenPriv->pcmapInstalled == NULL)
 	  break;
 
@@ -216,6 +217,11 @@ winWindowProc (HWND hWnd, UINT message,
 	return 0;
       }
 
+      /*
+       * FIXME: NativeGDI can't handle mouse movement yet.  It gives
+       * a STATUS_ACCESS_VIOLATION if this section is enabled.
+       */
+#if !WIN_NATIVE_GDI_SUPPORT
     case WM_MOUSEMOVE:
       /* We can't do anything without privates */
       if (pScreenPriv == NULL)
@@ -281,6 +287,7 @@ winWindowProc (HWND hWnd, UINT message,
       /* Store pointer to last window handle */
       hwndLastMouse = hWnd;
       return 0;
+#endif /* WIN_NATIVE_GDI_SUPPORT */
 
     case WM_NCMOUSEMOVE:
       /* Non-client mouse movement, show Windows cursor */
@@ -319,6 +326,7 @@ winWindowProc (HWND hWnd, UINT message,
       hwndLastMouse = hWnd;
       return 0;
 
+#if !WIN_NATIVE_GDI_SUPPORT
     case WM_LBUTTONDBLCLK:
     case WM_LBUTTONDOWN:
       return winMouseButtonsHandle (pScreen, ButtonPress, Button1, wParam);
@@ -678,6 +686,7 @@ winWindowProc (HWND hWnd, UINT message,
       /* Call engine specific screen activation/deactivation function */
       (*pScreenPriv->pwinActivateApp) (pScreen);
       return 0;
+#endif /* WIN_NATIVE_GDI_SUPPORT */
 
     case WM_CLOSE:
       /* Tell X that we are giving up */

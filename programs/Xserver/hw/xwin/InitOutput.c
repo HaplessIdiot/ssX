@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.19 2001/08/31 07:58:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.20 2001/09/07 08:41:54 alanh Exp $ */
 
 #include "win.h"
 
@@ -35,7 +35,6 @@ int		g_iCmapPrivateIndex = -1;
 int		g_iGCPrivateIndex = -1;
 int		g_iPixmapPrivateIndex = -1;
 unsigned long	g_ulServerGeneration = 0;
-HBITMAP		g_hbmpGarbage = NULL;
 Bool		g_fInitializedDefaultScreens = FALSE;
 
 extern void OsVendorVErrorF (const char *pszFormat, va_list va_args);
