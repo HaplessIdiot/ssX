@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.65 2002/11/24 22:41:56 tsi Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.66 2002/11/26 06:46:50 torrey Exp $ */
 
 
 /* 
@@ -323,7 +323,7 @@ in this Software without prior written authorization from The Open Group.
  *     doesn't predefine any unique symbols, choose one and add it to the
  *     end of this table.  Then, do the following:
  * 
- *         a.  Use this symbol in Imake.tmpl when setting MacroFile.
+ *         a.  Use this symbol in Imake.cf when setting MacroFile.
  *         b.  Put this symbol in the definition of BootstrapCFlags in your
  *             <platform>.cf file.
  *         c.  When doing a make World, always add "BOOTSTRAPCFLAGS=-Dsymbol" 
