@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/parse.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/config/makedepend/parse.c,v 1.13tsi Exp $ */
 
 #include "def.h"
 
@@ -382,47 +382,9 @@ define2(char *name, char *args, char *val, struct inclist *file)
        just replace its s_args and s_value if they are changed */
     if (sp != NULL)
     {
-	int change = 0;
-
 	debug(1,("redefining %s from %s to %s in file %s\n",
 		name, (*sp)->s_value, val, file->i_file));
 
-	/* first check if this means an effective change */
-	if (args == NULL)
-	{
-	    if ((*sp)->s_args != NULL)
-		change = 1;
-	}
-	else
-	{
-	    if (((*sp)->s_args == NULL) ||
-		(strcmp(args,(*sp)->s_args) != 0))
-		    change = 1;
-	}
-
-	if (val == NULL)
-	{
-	    if ((*sp)->s_value != NULL)
-		change = 1;
-	}
-	else
-	{
-	    if (((*sp)->s_value == NULL) ||
-		(strcmp(val,(*sp)->s_value) != 0))
-		    change = 1;
-	}
-
-	if (!change) /* silently ignore if nothing has changed */
-	{
-#if 0
-	    fprintf(stderr,"redefining %s - benign define to identical value.\n",name);
-#endif
-	    return;
-	}
-
-#if 1
-	fprintf(stderr,"redefining %s - forcefully changing the macro value!\n",name);
-#endif
 	if ( (*sp)->s_args )
 	    free((*sp)->s_args);
 	if (args)
