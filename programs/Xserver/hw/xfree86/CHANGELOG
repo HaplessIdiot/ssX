@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 746. Add XKB description for the Logitech Access keyboard (#6026,
+      Michael Geddes).
  745. Fix typo in computing xterm's relative font size (Jess Thrysoee).
  744. Fix typo in savage man page (Bugzilla #1065, Nicolas Joly).
  743. Fix for xf86Msg() call with swapped arguments (Bugzilla #1064,
@@ -18515,7 +18517,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3088 2004/01/07 17:20:04 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3089 2004/01/09 00:10:27 dickey Exp $
 
 
 
