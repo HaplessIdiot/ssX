@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.14 1998/03/27 23:23:58 hohndel Exp $ */
+/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.15 1998/10/04 09:41:05 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -38,6 +38,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xproto.h>
 #include <X11/extensions/Xdbe.h>
 #include <X11/extensions/record.h>
+#include <X11/extensions/shape.h>
 #ifdef MITSHM
 #include <X11/extensions/XShm.h>
 #endif
@@ -66,15 +67,15 @@ in this Software without prior written authorization from The Open Group.
 char *ProgramName;
 Bool queryExtensions = False;
 
-static int StrCmp(a, b)
-    char **a, **b;
+static int print_event_mask(char *buf, int lastcol, int indent, long mask);
+
+static int StrCmp(const void *a, const  void *b)
 {
-    return strcmp(*a, *b);
+    return strcmp(*(char **)a, *(char **)b);
 }
 
-void
-print_extension_info (dpy)
-    Display *dpy;
+static void
+print_extension_info(Display *dpy)
 {
     int n = 0;
     char **extlist = XListExtensions (dpy, &n);
@@ -104,9 +105,8 @@ print_extension_info (dpy)
     }
 }
 
-void
-print_display_info (dpy)
-    Display *dpy;
+static void
+print_display_info(Display *dpy)
 {
     char dummybuf[40];
     char *cp;
@@ -125,7 +125,7 @@ print_display_info (dpy)
     req_size = XExtendedMaxRequestSize (dpy);
     if (!req_size) req_size = XMaxRequestSize (dpy);
     printf ("maximum request size:  %ld bytes\n", req_size * 4);
-    printf ("motion buffer size:  %d\n", XDisplayMotionBufferSize (dpy));
+    printf ("motion buffer size:  %ld\n", XDisplayMotionBufferSize (dpy));
 
     switch (BitmapBitOrder (dpy)) {
       case LSBFirst:    cp = "LSBFirst"; break;
@@ -202,9 +202,8 @@ print_display_info (dpy)
     printf ("number of screens:    %d\n", ScreenCount (dpy));
 }
 
-void
-print_visual_info (vip)
-    XVisualInfo *vip;
+static void
+print_visual_info(XVisualInfo *vip)
 {
     char errorbuf[40];			/* for sprintfing into */
     char *class = NULL;			/* for printing */
@@ -239,10 +238,8 @@ print_visual_info (vip)
 	    vip->bits_per_rgb);
 }
 
-void
-print_screen_info (dpy, scr)
-    Display *dpy;
-    int scr;
+static void
+print_screen_info(Display *dpy, int scr)
 {
     Screen *s = ScreenOfDisplay (dpy, scr);  /* opaque structure */
     XVisualInfo viproto;		/* fill in for getting info */
@@ -297,7 +294,7 @@ print_screen_info (dpy, scr)
     printf ("  default colormap:    0x%lx\n", DefaultColormap (dpy, scr));
     printf ("  default number of colormap cells:    %d\n",
 	    DisplayCells (dpy, scr));
-    printf ("  preallocated pixels:    black %d, white %d\n",
+    printf ("  preallocated pixels:    black %ld, white %ld\n",
 	    BlackPixel (dpy, scr), WhitePixel (dpy, scr));
     printf ("  options:    backing-store %s, save-unders %s\n",
 	    (DoesBackingStore (s) == NotUseful) ? no :
@@ -363,11 +360,11 @@ static struct _event_table {
     { "OwnerGrabButtonMask      ", OwnerGrabButtonMask },
     { NULL, 0 }};
 
-int print_event_mask (buf, lastcol, indent, mask)
-    char *buf;				/* string to write into */
-    int lastcol;			/* strlen(buf)+1 */
-    int indent;				/* amount by which to indent */
-    long mask;				/* event mask */
+static int                      
+print_event_mask(char *buf,     /* string to write into */
+                 int lastcol,   /* strlen(buf)+1 */
+                 int indent,    /* amount by which to indent */
+                 long mask)     /* event mask */
 {
     struct _event_table *etp;
     int len;
@@ -399,11 +396,9 @@ int print_event_mask (buf, lastcol, indent, mask)
     return (bitsfound);
 }
 
-void
-print_standard_extension_info(dpy, extname, majorrev, minorrev)
-    Display *dpy;
-    char *extname;
-    int majorrev, minorrev;
+static void
+print_standard_extension_info(Display *dpy, char *extname, 
+			      int majorrev, int minorrev)
 {
     int opcode, event, error;
 
@@ -419,10 +414,8 @@ print_standard_extension_info(dpy, extname, majorrev, minorrev)
 }
 
 #ifdef MULTIBUFFER
-int
-print_multibuf_info(dpy, extname)
-    Display *dpy;
-    char *extname;
+static int
+print_multibuf_info(Display *dpy, char *extname)
 {
     int i, j;			/* temp variable: iterator */
     int nmono, nstereo;		/* count */
@@ -483,10 +476,8 @@ char *group_names[] = { /* 0  */ "Default",
 			    /* 24 */ "WhiteAdjust"
 			    };
 
-int
-print_xie_info(dpy, extname)
-    Display *dpy;
-    char *extname;
+static int
+print_xie_info(Display *dpy, char *extname)
 {
     XieExtensionInfo *xieInfo;
     int i;
@@ -507,7 +498,7 @@ print_xie_info(dpy, extname)
     printf("  uncnst_max_exp: %d\n", xieInfo->uncnst_max_exp);
     printf("  cnst_levels:"); 
     for (i = 0; i < xieInfo->n_cnst_levels; i++)
-	printf(" %d", xieInfo->cnst_levels[i]);
+	printf(" %ld", xieInfo->cnst_levels[i]);
     printf("\n");
 
     if (!XieQueryTechniques(dpy, xieValAll, &ntechs, &techs))
@@ -530,10 +521,8 @@ print_xie_info(dpy, extname)
     return 1;
 } /* end print_xie_info */
 
-int
-print_xtest_info(dpy, extname)
-    Display *dpy;
-    char *extname;
+static int
+print_xtest_info(Display *dpy, char *extname)
 {
     int majorrev, minorrev, foo;
 
@@ -543,10 +532,8 @@ print_xtest_info(dpy, extname)
     return 1;
 }
 
-int
-print_sync_info(dpy, extname)
-    Display *dpy;
-    char *extname;
+static int
+print_sync_info(Display *dpy, char *extname)
 {
     int majorrev, minorrev;
     XSyncSystemCounter *syscounters;
@@ -561,7 +548,7 @@ print_sync_info(dpy, extname)
     for (i = 0; i < ncounters; i++)
     {
 	printf("    %s  id: 0x%08x  resolution_lo: %d  resolution_hi: %d\n",
-	       syscounters[i].name, syscounters[i].counter,
+	       syscounters[i].name, (unsigned int)syscounters[i].counter,
 	       XSyncValueLow32(syscounters[i].resolution),
 	       XSyncValueHigh32(syscounters[i].resolution));
     }
@@ -569,10 +556,8 @@ print_sync_info(dpy, extname)
     return 1;
 }
 
-int
-print_shape_info(dpy, extname)
-    Display *dpy;
-    char *extname;
+static int
+print_shape_info(Display *dpy, char *extname)
 {
     int majorrev, minorrev;
 
@@ -583,9 +568,8 @@ print_shape_info(dpy, extname)
 }
 
 #ifdef XFreeXDGA
-print_dga_info(dpy, extname)
-    Display *dpy;
-    char *extname;
+static int
+print_dga_info(Display *dpy, char *extname)
 {
     int majorrev, minorrev, width, bank, ram, offset;
 
@@ -614,9 +598,8 @@ print_dga_info(dpy, extname)
 #define V_PCSYNC        0x080
 #define V_NCSYNC        0x100
 
-print_XF86VidMode_info(dpy, extname)
-    Display *dpy;
-    char *extname;
+static int
+print_XF86VidMode_info(Display *dpy, char *extname)
 {
     int majorrev, minorrev, modecount, i;
     XF86VidModeMonitor monitor;
@@ -682,9 +665,8 @@ char *msetable[] = { "None", "Microsoft", "MouseSystems", "MMSeries",
 char *flgtable[] = { "None", "ClearDTR", "ClearRTS",
 		     "ClearDTR and ClearRTS" };
 
-print_XF86Misc_info(dpy, extname)
-    Display *dpy;
-    char *extname;
+static int
+print_XF86Misc_info(Display *dpy, char *extname)
 {
     int majorrev, minorrev;
     XF86MiscMouseSettings mouseinfo;
@@ -729,9 +711,8 @@ print_XF86Misc_info(dpy, extname)
 #endif
 
 #ifdef MITSHM
-print_mitshm_info(dpy, extname)
-    Display *dpy;
-    char *extname;
+static int
+print_mitshm_info(Display *dpy, char *extname)
 {
     int majorrev, minorrev;
     Bool sharedPixmaps;
@@ -754,9 +735,8 @@ print_mitshm_info(dpy, extname)
 #endif /* MITSHM */
 
 #ifdef XKB
-print_xkb_info(dpy, extname)
-    Display *dpy;
-    char *extname;
+static int
+print_xkb_info(Display *dpy, char *extname)
 {
     int opcode, eventbase, errorbase, majorrev, minorrev;
 
@@ -777,10 +757,8 @@ print_xkb_info(dpy, extname)
 }
 #endif
 
-int
-print_dbe_info(dpy, extname)
-    Display *dpy;
-    char *extname;
+static int
+print_dbe_info(Display *dpy, char *extname)
 {
     int majorrev, minorrev;
     XdbeScreenVisualInfo *svi;
@@ -807,10 +785,8 @@ print_dbe_info(dpy, extname)
     return 1;
 }
 
-int
-print_record_info(dpy, extname)
-    Display *dpy;
-    char *extname;
+static int
+print_record_info(Display *dpy, char *extname)
 {
     int majorrev, minorrev;
 
@@ -821,15 +797,12 @@ print_record_info(dpy, extname)
 }
 
 #ifdef XINPUT
-int
-print_xinput_info(dpy, extname)
-    Display *dpy;
-    char *extname;
+static int
+print_xinput_info(Display *dpy, char *extname)
 {
   int           loop, num_extensions, num_devices;
   char          **extensions;
   XDeviceInfo   *devices;
-  int		list = 0;
   XExtensionVersion *ext;
 
   ext = XGetExtensionVersion(dpy, extname);
@@ -922,9 +895,8 @@ ExtensionPrintInfo known_extensions[] =
 
 int num_known_extensions = sizeof known_extensions / sizeof known_extensions[0];
 
-void
-print_known_extensions(f)
-    FILE *f;
+static void
+print_known_extensions(FILE *f)
 {
     int i, col;
     for (i = 0, col = 6; i < num_known_extensions; i++)
@@ -938,9 +910,8 @@ print_known_extensions(f)
     }
 }
 
-void
-mark_extension_for_printing(extname)
-    char *extname;
+static void
+mark_extension_for_printing(char *extname)
 {
     int i;
 
@@ -963,9 +934,8 @@ mark_extension_for_printing(extname)
     }
 }
 
-void
-print_marked_extensions(dpy)
-    Display *dpy;
+static void
+print_marked_extensions(Display *dpy)
 {
     int i;
     for (i = 0; i < num_known_extensions; i++)
@@ -983,7 +953,8 @@ print_marked_extensions(dpy)
     }
 }
 
-static void usage ()
+static void 
+usage(void)
 {
     fprintf (stderr, "usage:  %s [options]\n", ProgramName);
     fprintf (stderr, "-display displayname\tserver to query\n");
@@ -995,14 +966,12 @@ static void usage ()
     exit (1);
 }
 
-int main (argc, argv)
-    int argc;
-    char *argv[];
+int 
+main(int argc, char *argv[])
 {
     Display *dpy;			/* X connection */
     char *displayname = NULL;		/* server to contact */
     int i;				/* temp variable:  iterator */
-    int mbuf_event_base, mbuf_error_base;
 
     ProgramName = argv[0];
 

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/server.c,v 3.5 1998/10/10 15:25:38 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/server.c,v 3.6 1999/02/25 06:01:06 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -48,13 +48,13 @@ from The Open Group.
 #include <net/gen/tcp_io.h>
 #endif
 
-static receivedUsr1;
+static int receivedUsr1;
 
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
 
-static serverPause (unsigned t, int serverPid);
+static int serverPause (unsigned t, int serverPid);
 
 static Display	*dpy;
 
@@ -322,7 +322,7 @@ openErrorHandler (Display *dpy)
 int
 WaitForServer (struct display *d)
 {
-    int	    i;
+    static int i;
 
     for (i = 0; i < (d->openRepeat > 0 ? d->openRepeat : 1); i++) {
     	(void) Signal (SIGALRM, abortOpen);
@@ -409,9 +409,9 @@ PingServer (struct display *d, Display *alternateDpy)
     int	    (*oldError)(Display *);
     SIGVAL  (*oldSig)(int);
     int	    oldAlarm;
-
-    if (!alternateDpy)
-	alternateDpy = dpy;
+    static Display *aDpy;
+    
+    aDpy = (alternateDpy != NULL ? alternateDpy : dpy);
     oldError = XSetIOErrorHandler (PingLostIOErr);
     oldAlarm = alarm (0);
     oldSig = Signal (SIGALRM, PingLostSig);
@@ -419,7 +419,7 @@ PingServer (struct display *d, Display *alternateDpy)
     if (!Setjmp (pingTime))
     {
 	Debug ("Ping server\n");
-	XSync (alternateDpy, 0);
+	XSync (aDpy, 0);
     }
     else
     {

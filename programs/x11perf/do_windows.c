@@ -31,9 +31,8 @@ static int parentrows, parentcolumns, parentwindows;
 static int parentwidth, parentheight;
 static Window popup;
 
-void ComputeSizes(xp, p)
-    XParms  xp;
-    Parms   p;
+static void 
+ComputeSizes(XParms xp, Parms p)
 {
     childwindows = p->objects;
     childrows = (childwindows + MAXCOLS - 1) / MAXCOLS;
@@ -43,10 +42,8 @@ void ComputeSizes(xp, p)
     parentheight = (CHILDSIZE+CHILDSPACE) * childrows;
 }
 
-int CreateParents(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+CreateParents(XParms xp, Parms p, int reps)
 {
     int     i;
 
@@ -87,10 +84,18 @@ int CreateParents(xp, p, reps)
 } /* CreateParents */
 
 
-void MapParents(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+MapParents(XParms xp, Parms p, int reps)
+{
+    int i;
+
+    for (i = 0; i != parentwindows; i++) {
+	XMapWindow(xp->d, parents[i]);
+    }
+}
+
+void 
+MapParentsCleanup(XParms xp, Parms p)
 {
     int i;
 
@@ -100,20 +105,16 @@ void MapParents(xp, p, reps)
 }
 
 
-int InitCreate(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitCreate(XParms xp, Parms p, int reps)
 {
     reps = CreateParents(xp, p, reps);
     MapParents(xp, p, reps);
     return reps;
 }
 
-void CreateChildGroup(xp, p, parent)
-    XParms  xp;
-    Parms   p;
-    Window  parent;
+static void 
+CreateChildGroup(XParms xp, Parms p, Window parent)
 {
     int j;
 
@@ -128,10 +129,8 @@ void CreateChildGroup(xp, p, parent)
 	XMapSubwindows (xp->d, parent);
 }
 
-void CreateChildren(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+CreateChildren(XParms xp, Parms p, int reps)
 {
     int     i;
 
@@ -140,10 +139,8 @@ void CreateChildren(xp, p, reps)
     } /* end i */
 }
 
-void DestroyChildren(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DestroyChildren(XParms xp, Parms p)
 {
     int i;
 
@@ -152,9 +149,8 @@ void DestroyChildren(xp, p, reps)
     }
 }
 
-void EndCreate(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndCreate(XParms xp, Parms p)
 {
     XDestroySubwindows(xp->d, xp->w);
     free(parents);
@@ -162,22 +158,16 @@ void EndCreate(xp, p)
 }
 
 
-int InitMap(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitMap(XParms xp, Parms p, int reps)
 {
-    int i;
-
     reps = CreateParents(xp, p, reps);
     CreateChildren(xp, p, reps);
     return reps;
 }
 
-void UnmapParents(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+UnmapParents(XParms xp, Parms p, int reps)
 {
     int i;
 
@@ -186,10 +176,18 @@ void UnmapParents(xp, p, reps)
     }
 }
 
-int InitDestroy(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+UnmapParentsCleanup(XParms xp, Parms p)
+{
+    int i;
+
+    for (i = 0; i != parentwindows; i++) {
+	XUnmapWindow(xp->d, parents[i]);
+    }
+}
+
+int 
+InitDestroy(XParms xp, Parms p, int reps)
 {
     reps = CreateParents(xp, p, reps);
     CreateChildren(xp, p, reps);
@@ -197,10 +195,8 @@ int InitDestroy(xp, p, reps)
     return reps;
 }
 
-void DestroyParents(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DestroyParents(XParms xp, Parms p, int reps)
 {
     int i;
 
@@ -210,9 +206,8 @@ void DestroyParents(xp, p, reps)
 }
 
 
-void RenewParents(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+RenewParents(XParms xp, Parms p)
 {
     int i;
 
@@ -224,12 +219,12 @@ void RenewParents(xp, p)
     MapParents(xp, p, parentwindows);
 }
 
-int InitPopups(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitPopups(XParms xp, Parms p, int reps)
 {
+#ifdef CHILDROOT
     XWindowAttributes    xwa;
+#endif
     XSetWindowAttributes xswa;
     Window isolate;
 
@@ -265,10 +260,8 @@ int InitPopups(xp, p, reps)
     return reps;
 }
 
-void DoPopUps(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoPopUps(XParms xp, Parms p, int reps)
 {
     int i;
     for (i = 0; i != reps; i++) {
@@ -277,9 +270,8 @@ void DoPopUps(xp, p, reps)
     }
 }
 
-void EndPopups(xp, p)
-    XParms  xp;
-    Parms p;
+void 
+EndPopups(XParms xp, Parms p)
 {
     XDestroySubwindows(xp->d, xp->w);
 #ifdef CHILDROOT

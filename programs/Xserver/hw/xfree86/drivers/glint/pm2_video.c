@@ -3,7 +3,7 @@
  *  Copyright (C) 1998-1999 Michael Schimek
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.1 1999/02/07 06:18:40 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1556,7 +1556,7 @@ Permedia2VideoInit(ScreenPtr pScreen)
     AdaptorPrivPtr pAPriv;
     DevUnion Private[2];
     XF86VideoAdaptorRec VAR[2];
-    XF86VideoInfoRec VIR;
+    XF86VideoAdaptorPtr VARPtrs[2];
     int i;
 
     pGlint->VideoIO = FALSE; /* FIXME */
@@ -1650,10 +1650,10 @@ Permedia2VideoInit(ScreenPtr pScreen)
 	VAR[i].QueryBestSize = Permedia2QueryBestSize;
     }
 
-    VIR.NumAdaptors = 2;
-    VIR.Adaptors = &VAR[0];
+    VARPtrs[0] = &VAR[0];
+    VARPtrs[1] = &VAR[1];
 
-    if (!xf86XVScreenInit(pScreen, &VIR)) {
+    if (!xf86XVScreenInit(pScreen, VARPtrs, 2)) {
 	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_ERROR, 1, "Xv init failed at %d\n", __LINE__));
 	pGlint->VideoIO = FALSE;
 	return;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.2 1998/07/25 16:55:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.3 1998/12/05 14:40:06 dawes Exp $ */
 
 /* Option handling things that ModuleSetup procs can use */
 
@@ -49,6 +49,7 @@ void xf86MarkOptionUsedByName(pointer options, const char *name);
 void xf86ShowUnusedOptions(int scrnIndex, pointer options);
 void xf86ProcessOptions(int scrnIndex, pointer options, OptionInfoPtr optinfo);
 OptionInfoPtr xf86TokenToOptinfo(OptionInfoPtr table, int token);
+const char *xf86TokenToOptName(OptionInfoPtr table, int token);
 Bool xf86IsOptionSet(OptionInfoPtr table, int token);
 char *xf86GetOptValString(OptionInfoPtr table, int token);
 Bool xf86GetOptValInteger(OptionInfoPtr table, int token, int *value);

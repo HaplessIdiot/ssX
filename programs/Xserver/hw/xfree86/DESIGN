@@ -1918,32 +1918,23 @@ Section 14: The XFree86 X Video Extension (Xv) Device Dependent Layer
  XFree86 offers the X Video Extension which allows clients to treat 
 video as any another primitive and "Put" video into drawables.  
 By default, the extension reports no video adaptors as being 
-available since the DDX layer has not been initialized.  The driver
-can initialize the DDX layer by filling out the XF86VideoInfoRec
-as described later in this document and passing it to the following
-function:
+available since the DDX layer has not been initialized.  The 
+driver can initialize the DDX layer by filling out one or more 
+XF86VideoAdaptorRecs as described later in this document and passing 
+a list of XF86VideoAdaptorPtr pointers to the following function:
 
-  Bool xf86XVScreenInit(ScreenPtr pScreen,  XF86VideoInfoPtr infoPtr);
+  Bool xf86XVScreenInit(
+	ScreenPtr pScreen,  
+	XF86VideoAdaptorPtr *adaptPtrs,
+	int num);
 
 After doing this, the extension will report video adaptors as being 
-available, providing the data in the XF86VideoInfoRec was valid.
-xf86XVScreenInit *copies* data from the structure passed to it so
-the driver may free it after the initialization.  At the moment,
+available, providing the data in their respective XF86VideoAdaptorRecs 
+was valid.  xf86XVScreenInit *copies* data from the structure passed to 
+it so the driver may free it after the initialization.  At the moment,
 the DDX only supports rendering into Window drawables.  Pixmap
 rendering will be supported after a sufficient survey of suitable
 hardware is completed.  
-
-
-The XF86VideoInfoRec:
-
-     typedef struct {
-	int 			NumAdaptors;
-	XF86VideoAdaptorPtr 	Adaptors;
-     } XF86VideoInfoRec, *XF86VideoInfoPtr;
-
-  The XF86VideoInfoRec is the top level of a hierarchy of structures.
-  "Adaptors" is an array of XF86VideoAdaptorRecs and "NumAdaptors"
-  is the number of elements in that array.
 
 The XF86VideoAdaptorRec:
 
@@ -4640,4 +4631,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.24 1999/02/12 22:51:51 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.25 1999/02/14 03:20:36 dawes Exp $

@@ -24,162 +24,6 @@ SOFTWARE.
 
 #include "x11perf.h"
 
-extern void DoGetAtom();
-extern void DoQueryPointer();
-
-extern void DoNoOp();
-
-extern Bool InitGetProperty();
-extern void DoGetProperty();
-
-extern Bool InitRectangles();
-extern void DoRectangles();
-extern void DoOutlineRectangles();
-extern void EndRectangles();
-
-extern Bool InitGC();
-extern void DoChangeGC();
-extern void EndGC();
-
-extern Bool InitSegments();
-extern Bool InitHorizSegments();
-extern Bool InitVertSegments();
-extern Bool InitWideHorizSegments();
-extern Bool InitWideVertSegments();
-extern Bool InitDashedSegments();
-extern Bool InitDoubleDashedSegments();
-extern void DoSegments();
-extern void EndSegments();
-
-extern Bool InitLines();
-extern Bool InitWideLines();
-extern Bool InitDashedLines();
-extern Bool InitWideDashedLines();
-extern Bool InitDoubleDashedLines();
-extern Bool InitWideDoubleDashedLines();
-extern void DoLines();
-extern void EndLines();
-
-
-extern Bool InitCircles();
-extern Bool InitPartCircles();
-extern Bool InitWideCircles();
-extern Bool InitPartWideCircles();
-extern Bool InitDashedCircles();
-extern Bool InitWideDashedCircles();
-extern Bool InitDoubleDashedCircles();
-extern Bool InitWideDoubleDashedCircles();
-extern Bool InitChordPartCircles();
-extern Bool InitSlicePartCircles();
-
-extern Bool InitEllipses();
-extern Bool InitPartEllipses();
-extern Bool InitWideEllipses();
-extern Bool InitPartWideEllipses();
-extern Bool InitDashedEllipses();
-extern Bool InitWideDashedEllipses();
-extern Bool InitDoubleDashedEllipses();
-extern Bool InitWideDoubleDashedEllipses();
-extern Bool InitChordPartEllipses();
-extern Bool InitSlicePartEllipses();
-extern void DoArcs();
-extern void DoFilledArcs();
-extern void EndArcs();
-
-extern Bool InitDots();
-extern void DoDots();
-extern void EndDots();
-
-extern Bool InitCreate();
-extern void CreateChildren();
-extern void DestroyChildren();
-extern void EndCreate();
-
-extern Bool InitMap();
-extern void MapParents();
-extern void UnmapParents();
-
-extern Bool InitDestroy();
-extern void DestroyParents();
-extern void RenewParents();
-
-extern Bool InitMoveWindows();
-extern void DoMoveWindows();
-extern void EndMoveWindows();
-
-extern void DoResizeWindows();
-
-extern Bool InitCircWindows();
-extern void DoCircWindows();
-extern void EndCircWindows();
-
-extern Bool InitMoveTree();
-extern void DoMoveTree();
-extern void EndMoveTree();
-
-extern Bool InitText();
-extern Bool InitText16();
-extern void DoText();
-extern void DoText16();
-extern void DoImageText();
-extern void DoImageText16();
-extern void DoPolyText();
-extern void DoPolyText16();
-extern void ClearTextWin();
-extern void EndText();
-extern void EndText16();
-
-extern Bool InitCopyPlane();
-extern void DoCopyPlane();
-extern void EndCopyPlane();
-
-extern Bool InitPopups();
-extern void DoPopUps();
-extern void EndPopups();
-
-extern Bool InitScroll();
-extern void DoScroll();
-extern void MidScroll();
-extern void EndScroll();
-
-extern Bool InitCopyWin();
-extern Bool InitCopyPix();
-extern void DoCopyWinWin();
-extern void DoCopyPixWin();
-extern void DoCopyWinPix();
-extern void DoCopyPixPix();
-extern void MidCopyPix();
-extern void EndCopyWin();
-extern void EndCopyPix();
-
-extern Bool InitGetImage();
-extern void DoGetImage();
-extern void EndGetImage();
-
-extern Bool InitPutImage();
-extern void DoPutImage();
-
-#ifdef MITSHM
-extern Bool InitShmPutImage();
-extern void DoShmPutImage();
-extern void EndShmPutImage();
-#endif
-
-extern Bool InitTriangles();
-extern void DoTriangles();
-extern void EndTriangles();
-
-extern Bool InitTrapezoids();
-extern void DoTrapezoids();
-extern void EndTrapezoids();
-
-extern Bool InitComplexPoly();
-extern void DoComplexPoly();
-extern void EndComplexPoly();
-
-extern Bool InitGeneralPoly();
-extern void DoGeneralPoly();
-
 /*
  * some test must be done a certain multiple of times. That multiple is
  * in the second half of the products below. You can edit the multiplier,
@@ -1247,11 +1091,11 @@ Test test[] = {
 		V1_2FEATURE, WINDOW, 0,
 		{0, False}},
   {"-map",      "Map window via parent", NULL,
-		InitMap, MapParents, UnmapParents, EndCreate,
+		InitMap, MapParents, UnmapParentsCleanup, EndCreate,
 		V1_2FEATURE, WINDOW, 0,
 		{0, True}},
   {"-unmap",    "Unmap window via parent", NULL,
-		InitDestroy, UnmapParents, MapParents, EndCreate,
+		InitDestroy, UnmapParents, MapParentsCleanup, EndCreate,
 		V1_2FEATURE, WINDOW, 0,
 		{0, True}},
   {"-destroy",  "Destroy window via parent", NULL,

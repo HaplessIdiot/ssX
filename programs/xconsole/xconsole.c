@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.19 1998/10/04 09:40:51 dawes Exp $ */
+/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.20 1999/01/31 12:22:26 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -30,6 +30,7 @@ in this Software without prior written authorization from The Open Group.
 
 #include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/StdSel.h>
+#include <X11/Xmu/SysUtil.h>
 
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
@@ -39,6 +40,10 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/Paned.h>
 #include <X11/Xaw/Box.h>
+
+extern char *_XawTextGetSTRING(TextWidget ctx, XawTextPosition left, 
+			       XawTextPosition	right);
+
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
@@ -70,7 +75,11 @@ extern char *malloc ();
 extern FILE *fdopen(int, char const *);
 #endif
 
-static long	TextLength ();
+static void inputReady(XtPointer w, int *source, XtInputId *id);
+static long TextLength(Widget w);
+static void TextReplace(Widget w, int start, int end, XawTextBlock *block);
+static void TextAppend(Widget w, char *s, int len);
+static void TextInsert(Widget w, char *s, int len);
 
 static Widget	top, text;
 
@@ -167,11 +176,16 @@ FILE *osm_pipe();
 static int child_pid;
 #endif
 
-static void inputReady ();
+#ifdef USE_PTY
+static int get_pty(int *pty, int *tty, char *ttydev, char *ptydev);
+#endif
+#ifdef USE_OSM
+static FILE *osm_pipe(void);
+#endif
 
 #ifdef Lynx
 static void
-RestoreConsole()
+RestoreConsole(void)
 {
     int fd;
     if ((fd = open("/dev/con", O_RDONLY)) >= 0)
@@ -179,17 +193,18 @@ RestoreConsole()
 }
 #endif
 
-static
-OpenConsole ()
+static void
+OpenConsole(void)
 {
     input = 0;
     if (app_resources.file)
     {
 	if (!strcmp (app_resources.file, "console"))
 	{
-	    struct stat sbuf;
 	    /* must be owner and have read/write permission */
 #if !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(Lynx) && !defined(__EMX__)
+	    struct stat sbuf;
+
 	    if (!stat("/dev/console", &sbuf) &&
 		(sbuf.st_uid == getuid()) &&
 		!access("/dev/console", R_OK|W_OK))
@@ -294,8 +309,8 @@ OpenConsole ()
     }
 }
 
-static
-CloseConsole ()
+static void
+CloseConsole (void)
 {
     if (input) {
 	XtRemoveInput (input_id);
@@ -311,8 +326,7 @@ CloseConsole ()
 
 #ifdef USE_OSM
 static void
-KillChild(sig)
-    int sig;
+KillChild(int sig)
 {
     if (child_pid > 0)
 	kill(child_pid, SIGTERM);
@@ -322,11 +336,7 @@ KillChild(sig)
 
 /*ARGSUSED*/
 static void
-Quit (widget, event, params, num_params)
-    Widget widget;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+Quit(Widget widget, XEvent *event, String *params, Cardinal *num_params)
 {
 #ifdef USE_OSM
     if (child_pid > 0)
@@ -335,12 +345,11 @@ Quit (widget, event, params, num_params)
     exit (0);
 }
 
-static int (*ioerror)();
-
 #ifdef USE_OSM
+static int (*ioerror)(Display *);
+
 static int
-IOError(dpy)
-    Display *dpy;
+IOError(Display *dpy)
 {
     if (child_pid > 0)
 	kill(child_pid, SIGTERM);
@@ -349,7 +358,7 @@ IOError(dpy)
 #endif
 
 static void
-Notify ()
+Notify(void)
 {
     Arg	    arglist[1];
     char    *oldName;
@@ -371,11 +380,7 @@ Notify ()
 
 /*ARGSUSED*/
 static void
-Deiconified (widget, event, params, num_params)
-    Widget widget;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+Deiconified(Widget widget, XEvent *event, String *params, Cardinal *num_params)
 {
     Arg	    arglist[1];
     char    *oldName;
@@ -403,22 +408,14 @@ Deiconified (widget, event, params, num_params)
 
 /*ARGSUSED*/
 static void
-Iconified (widget, event, params, num_params)
-    Widget widget;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+Iconified(Widget widget, XEvent *event, String *params, Cardinal *num_params)
 {
     iconified = True;
 }
 
 /*ARGSUSED*/
 static void
-Clear (widget, event, params, num_params)
-    Widget widget;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+Clear(Widget widget, XEvent *event, String *params, Cardinal *num_params)
 {
     long	    last;
     XawTextBlock    block;
@@ -432,22 +429,21 @@ Clear (widget, event, params, num_params)
 }
 
 static XtActionsRec actions[] = {
-    "Quit",	    Quit,
-    "Iconified",    Iconified,
-    "Deiconified",  Deiconified,
-    "Clear",	    Clear,
+    { "Quit",	    Quit },
+    { "Iconified",    Iconified },
+    { "Deiconified",  Deiconified },
+    { "Clear",	    Clear },
 };
 
 static void
-stripNonprint (b)
-    char    *b;
+stripNonprint(char *b)
 {
     char    *c;
 
     c = b;
     while (*b)
     {
-	if (isprint (*b) || isspace (*b) && *b != '\r')
+	if (isprint (*b) || (isspace (*b) && *b != '\r'))
 	{
 	    if (c != b)
 		*c = *b;
@@ -459,10 +455,7 @@ stripNonprint (b)
 }
 
 static void
-inputReady (w, source, id)
-    XtPointer	w;
-    int		*source;
-    XtInputId	*id;
+inputReady(XtPointer w, int *source, XtInputId *id)
 {
     char    buffer[1025];
     int	    n;
@@ -498,12 +491,8 @@ inputReady (w, source, id)
 }
 
 static Boolean
-ConvertSelection (w, selection, target, type, value, length, format)
-    Widget w;
-    Atom *selection, *target, *type;
-    XtPointer *value;
-    unsigned long *length;
-    int *format;
+ConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type, 
+		 XtPointer *value, unsigned long *length, int *format)
 {
     Display* d = XtDisplay(w);
     XSelectionRequestEvent* req =
@@ -567,7 +556,6 @@ ConvertSelection (w, selection, target, type, value, length, format)
       *target == XA_TEXT(d) ||
       *target == XA_COMPOUND_TEXT(d))
     {
-	extern char *_XawTextGetSTRING();
     	if (*target == XA_COMPOUND_TEXT(d))
 	    *type = *target;
     	else
@@ -595,22 +583,15 @@ ConvertSelection (w, selection, target, type, value, length, format)
 }
 
 static void
-LoseSelection (w, selection)
-    Widget  w;
-    Atom    *selection;
+LoseSelection(Widget w, Atom *selection)
 {
     Quit (w, (XEvent*)NULL, (String*)NULL, (Cardinal*)NULL);
 }
 
 /*ARGSUSED*/
 static void
-InsertSelection (w, client_data, selection, type, value, length, format)
-    Widget	    w;
-    XtPointer	    client_data;
-    Atom	    *selection, *type;
-    XtPointer	    value;
-    unsigned long   *length;
-    int		    *format;
+InsertSelection(Widget w, XtPointer client_data, Atom *selection, Atom *type, 
+		XtPointer value, unsigned long *length, int *format)
 {
     if (*type != XT_CONVERT_FAIL)
 	TextInsert (text, (char *) value, *length);
@@ -619,13 +600,11 @@ InsertSelection (w, client_data, selection, type, value, length, format)
     OpenConsole ();
 }
 
-
-main (argc, argv)
-    char    **argv;
+int
+main(int argc, char *argv[])
 {
     Arg arglist[10];
     Cardinal num_args;
-    char     *hostname;
 
     top = XtInitialize ("xconsole", "XConsole", options, XtNumber (options),
 			&argc, argv);
@@ -674,17 +653,16 @@ main (argc, argv)
     return 0;
 }
 
-static long TextLength (w)
-    Widget  w;
+static long 
+TextLength(Widget w)
 {
     return XawTextSourceScan (XawTextGetSource (w),
 			      (XawTextPosition) 0,
  			      XawstAll, XawsdRight, 1, TRUE);
 }
 
-TextReplace (w, start, end, block)
-    Widget	    w;
-    XawTextBlock    *block;
+static void
+TextReplace(Widget w, int start, int end, XawTextBlock *block)
 {
     Arg		    arg;
     Widget	    source;
@@ -700,9 +678,8 @@ TextReplace (w, start, end, block)
     XtSetValues (source, &arg, ONE);
 }
 
-TextAppend (w, s, len)
-    Widget  w;
-    char    *s;
+static void
+TextAppend(Widget w, char *s, int len)
 {
     long	    last, current;
     XawTextBlock    block;
@@ -718,9 +695,8 @@ TextAppend (w, s, len)
 	XawTextSetInsertionPoint (w, last + block.length);
 }
 
-TextInsert (w, s, len)
-    Widget  w;
-    char    *s;
+static void
+TextInsert(Widget w, char *s, int len)
 {
     XawTextBlock    block;
     long	    current;
@@ -744,10 +720,8 @@ TextInsert (w, s, len)
  */
 
 #include    "../xterm/ptyx.h"
-
-get_pty (pty, tty, ttydev, ptydev)
-    int	    *pty, *tty;
-    char    *ttydev, *ptydev;
+static int
+get_pty(int *pty, int *tty, char *ttydev, char *ptydev)
 {
 #ifdef SVR4
 	if ((*pty = open ("/dev/ptmx", O_RDWR)) < 0) {
@@ -873,8 +847,8 @@ get_pty (pty, tty, ttydev, ptydev)
 #define NO_READAHEAD
 #endif
 
-FILE *
-osm_pipe()
+static FILE *
+osm_pipe(void)
 {
   int tty;
   char ttydev[64];

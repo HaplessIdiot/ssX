@@ -26,7 +26,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.h,v 1.2 1998/11/15 04:30:44 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.h,v 1.3 1998/12/06 06:08:53 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -41,6 +41,9 @@
 #include <X11/Xaw/Paned.h>
 #include <X11/Xaw/Viewport.h>
 #include <X11/Xaw/Cardinals.h>
+#include <X11/Xaw/SimpleMenu.h>
+
+#include <X11/Xmu/SysUtil.h>
 
 typedef struct _xedit_hints {
     char *resource;
@@ -62,6 +65,7 @@ typedef struct _xedit_flist_item {
     int flags;
     FileAccess file_access;
     XawTextPosition display_position, insert_position;
+    int mode;
 } xedit_flist_item;
 
 extern struct _xedit_flist {

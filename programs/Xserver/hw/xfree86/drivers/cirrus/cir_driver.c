@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.30 1999/01/26 05:54:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.31 1999/01/26 10:40:24 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -150,6 +150,11 @@ DriverRec CIRRUS = {
 
 /* Supported chipsets */
 SymTabRec CIRChipsets[] = {
+    { PCI_CHIP_GD5430,		"CLGD5430" },
+    { PCI_CHIP_GD5434_4,	"CLGD5434-4" },
+    { PCI_CHIP_GD5434_8,	"CLGD5434-8" },
+    { PCI_CHIP_GD5436,		"CLGD5436" },
+/*  { PCI_CHIP_GD5440,		"CLGD5440" }, */
     { PCI_CHIP_GD5446,		"CLGD5446" },
     { PCI_CHIP_GD5480,		"CLGD5480" },
     { PCI_CHIP_GD5462,          "CL-GD5462" },
@@ -161,6 +166,11 @@ SymTabRec CIRChipsets[] = {
 
 /* List of PCI chipset names */
 static PciChipsets CIRPciChipsets[] = {
+    { PCI_CHIP_GD5430,	PCI_CHIP_GD5430,	RES_SHARED_VGA },
+    { PCI_CHIP_GD5434_4,PCI_CHIP_GD5434_4,	RES_SHARED_VGA },
+    { PCI_CHIP_GD5434_8,PCI_CHIP_GD5434_8,	RES_SHARED_VGA },
+    { PCI_CHIP_GD5436,	PCI_CHIP_GD5436,	RES_SHARED_VGA },
+/*  { PCI_CHIP_GD5440,	PCI_CHIP_GD5440,	RES_SHARED_VGA }, */
     { PCI_CHIP_GD5446,	PCI_CHIP_GD5446,	RES_SHARED_VGA },
     { PCI_CHIP_GD5480,	PCI_CHIP_GD5480,	RES_SHARED_VGA },
     { PCI_CHIP_GD5462,	PCI_CHIP_GD5462,	RES_SHARED_VGA },
@@ -191,6 +201,84 @@ static OptionInfoRec CIROptions[] = {
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
+/*
+ * List of symbols from other modules that this module references.  This
+ * list is used to tell the loader that it is OK for symbols here to be
+ * unresolved providing that it hasn't been told that they haven't been
+ * told that they are essential via a call to xf86LoaderReqSymbols() or
+ * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
+ * unresolved symbols that are not required.
+ */
+
+static const char *vgahwSymbols[] = {
+    "vgaHWGetHWRec",
+    "vgaHWUnlock",
+    "vgaHWInit",
+    "vgaHWProtect",
+    "vgaHWSetMmioFuncs",
+    "vgaHWGetIOBase",
+    "vgaHWMapMem",
+    "vgaHWLock",
+    "vgaHWFreeHWRec",
+    "vgaHWSaveScreen",
+    "vgaHWddc1SetSpeed",
+    NULL
+};
+
+static const char *cfbSymbols[] = {
+    "cfbScreenInit",
+    "cfb16ScreenInit",
+    "cfb24ScreenInit",
+    "cfb32ScreenInit",
+    "cfb8_32ScreenInit",
+    "cfb24_32ScreenInit",
+    NULL
+};
+
+static const char *xf8_32bppSymbols[] = {
+    "xf86Overlay8Plus32Init",
+    NULL
+};
+
+static const char *xaaSymbols[] = {
+    "XAADestroyInfoRec",
+    "XAACreateInfoRec",
+    "XAAInit",
+    "XAAStippleScanlineFuncLSBFirst",
+    "XAAOverlayFBfuncs",
+    "XAACachePlanarMonoStipple",
+    "XAAScreenIndex",
+    NULL
+};
+
+static const char *ramdacSymbols[] = {
+    "xf86InitCursor",
+    "xf86CreateCursorInfoRec",
+    "xf86DestroyCursorInfoRec",
+    NULL
+};
+
+#define CIRuseI2C 0
+
+static const char *ddcSymbols[] = {
+    "xf86PrintEDID",
+    "xf86DoEDID_DDC1",
+#if CIRuseI2C
+    "xf86DoEDID_DDC2",
+#endif
+    NULL
+};
+
+static const char *i2cSymbols[] = {
+    "xf86CreateI2CBusRec",
+    "xf86I2CBusInit",
+    NULL
+};
+
+static const char *shadowSymbols[] = {
+    "ShadowFBInit",
+    NULL
+};
 
 #ifdef XFree86LOADER
 
@@ -236,6 +324,14 @@ cirSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 */
 
 	/*
+	 * Tell the loader about symbols from other modules that this module
+	 * might refer to.
+	 */
+	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
+			  xf8_32bppSymbols, ramdacSymbols,
+			  ddcSymbols, i2cSymbols, shadowSymbols, NULL);
+
+	/*
 	 * The return value must be non-NULL on success even though there
 	 * is no TearDownProc.
 	 */
@@ -248,7 +344,9 @@ cirSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
 #endif /* XFree86LOADER */
 
-/*                                1/4bpp   8bpp   15/16bpp  24bpp  32bpp */
+/*                                1/4bpp   8bpp   15/16bpp  24bpp  32bpp
+static int unsupp_MaxClocks[] = {      0,      0,      0,      0,      0 }; */
+static int gd5430_MaxClocks[] = {  85500,  85500,  50000,  28500,      0 };
 static int gd5446_MaxClocks[] = { 135100, 135100,  85500,  85500,      0 };
 static int gd5480_MaxClocks[] = { 135100, 200000, 200000, 135100, 135100 };
 
@@ -438,7 +536,7 @@ CIRProbe(DriverPtr drv, int flags)
  *
  * Counts amount of installed RAM 
  *
- * XXX Can use options to configure memory on non-promary cards.
+ * XXX Can use options to configure memory on non-primary cards.
  */
 static int
 CIRCountRam(ScrnInfoPtr pScrn)
@@ -448,14 +546,12 @@ CIRCountRam(ScrnInfoPtr pScrn)
 	MessageType from;
 	int videoram = 0;
 
-	/* If using MMIO we must temporary map the
-	   IO ports in order to read/write memory config
-	   registers. */
+	/* Map the CIR memory and MMIO areas */
+	pCir->FbMapSize = 1024*1024; /* XX temp */
+	if (!CIRMapMem(pScrn))
+		return 0;
+
 	if(pCir->UseMMIO) {
-		/* Map the CIR memory and MMIO areas */
-		pCir->FbMapSize = 1024*1024; /* XX temp */
-		if (!CIRMapMem(pScrn))
-			return 0;
 		vgaHWSetMmioFuncs(hwp, pCir->IOBase, -0x3C0);
 	}
 
@@ -471,6 +567,35 @@ CIRCountRam(ScrnInfoPtr pScrn)
 	       pCir->SR0F);
 
         switch (pCir->Chipset) {
+        case PCI_CHIP_GD5430:
+/*      case PCI_CHIP_GD5440: */
+		switch(pCir->SR0F & 0x18) {
+		case 0x08:
+			videoram =  512;
+			break;
+		case 0x10:
+			videoram = 1024;
+			break;
+		case 0x18:
+			videoram = 2048;
+			break;
+		}
+		break;
+
+	case PCI_CHIP_GD5434_4:
+	case PCI_CHIP_GD5434_8:
+	case PCI_CHIP_GD5436:
+		switch(pCir->SR0F & 0x18) {
+		case 0x10:
+			videoram = 1024;
+			break;
+		case 0x18:
+			videoram = 2048;
+			if(pCir->SR0F & 0x80)
+				videoram = 4096;
+			break;
+		}
+
         case PCI_CHIP_GD5446:
 		videoram = 1024;
 
@@ -510,14 +635,11 @@ CIRCountRam(ScrnInfoPtr pScrn)
 		}
 		break;
 	}
-	/* If using MMIO we must temporary map the
-	   IO ports in order to read/write memory config
-	   registers. */
-	if(pCir->UseMMIO) {
-		/* UNMap the CIR memory and MMIO areas */
-		if (!CIRUnmapMem(pScrn))
-			return 0;
-	}
+
+	/* UNMap the CIR memory and MMIO areas */
+	if (!CIRUnmapMem(pScrn))
+		return 0;
+
 	return videoram;
 }
 
@@ -594,17 +716,17 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
      */
 
 
-#if 1 /* XXX */
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;
+
+    xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     /*
      * Allocate a vgaHWRec
      */
     if (!vgaHWGetHWRec(pScrn))
 	return FALSE;
-#endif
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -884,6 +1006,13 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
 	int speed;
         int *p = NULL;
         switch (pCir->Chipset) {
+	case PCI_CHIP_GD5430:
+	case PCI_CHIP_GD5434_4:
+	case PCI_CHIP_GD5434_8:
+	case PCI_CHIP_GD5436:
+/*	case PCI_CHIP_GD5440: */
+	   p = gd5430_MaxClocks;
+	   break;
 	case PCI_CHIP_GD5446:
 	   p = gd5446_MaxClocks;
 	   break;
@@ -940,6 +1069,14 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
     clockRanges->PrivFlags = 0;
 
     pCir->Rounding = 128 >> pCir->BppShift;
+
+#if 0
+    if(pCir->Chipset != PCI_CHIP_GD5446 &&
+       pCir->Chipset != PCI_CHIP_GD5480) {
+	/* XXX Kludge */
+	pCir->NoAccel = TRUE;
+    }
+#endif
 
     /*
      * xf86ValidateModes will check that the mode HTotal and VTotal values
@@ -1028,28 +1165,34 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* Load XAA if needed */
-    if (!pCir->NoAccel)
+    if (!pCir->NoAccel) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    CIRFreeRec(pScrn);
 	    return FALSE;
 	}
+	xf86LoaderReqSymLists(xaaSymbols, NULL);
+    }
 
     /* Load ramdac if needed */
-    if (pCir->HWCursor)
+    if (pCir->HWCursor) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) {
 	    CIRFreeRec(pScrn);
 	    return FALSE;
 	}
+	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+    }
 
    if (!xf86LoadSubModule(pScrn, "i2c")) {
        CIRFreeRec(pScrn);
        return FALSE;
    }
+   xf86LoaderReqSymLists(i2cSymbols,NULL);
 
    if (!xf86LoadSubModule(pScrn, "ddc")) {
        CIRFreeRec(pScrn);
        return FALSE;
    }
+   xf86LoaderReqSymLists(ddcSymbols, NULL);
 
     return TRUE;
 }
@@ -1731,9 +1874,6 @@ CIRScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
     xf86SetBlackWhitePixels(pScreen);
 
-    /* Initialise cursor functions */
-    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
-
     if(!pCir->NoAccel) { /* Initialize XAA functions */
        if(!(pCir->UseMMIO ? CIRXAAInitMMIO(pScreen) :
 	                    CIRXAAInit(pScreen)))
@@ -1741,15 +1881,20 @@ CIRScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
               "Could not initialize XAA\n");
     }
 
+    /* Initialise cursor functions */
+    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
+
     if (pCir->HWCursor) { /* Initialize HW cursor layer */
         if(!CIRHWCursorInit(pScreen))
             xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                 "Hardware cursor initialization failed\n");
     }
+#if 0
     if(!CIRDGAInit(pScreen)) {
         xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
             "DGA initialization failed\n");
     }
+#endif
 
     if(!CIRI2CInit(pScreen)) {
         xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -1927,9 +2072,11 @@ CIRCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if (pCir->CursorInfoRec)
     	xf86DestroyCursorInfoRec(pCir->CursorInfoRec);
     pCir->CursorInfoRec = NULL;
+#if 0
     if (pCir->DGAInfo)
         DGADestroyInfoRec(pCir->DGAInfo);
     pCir->DGAInfo = NULL;
+#endif
 
     pScrn->vtSema = FALSE;
 

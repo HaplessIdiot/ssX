@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.17 1998/09/26 09:43:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.18 1999/02/19 21:27:05 hohndel Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -35,6 +35,11 @@
 
 #include "compiler.h"
 
+#ifdef HAS_MTRR_SUPPORT
+#include <asm/mtrr.h>
+#endif
+
+
 static Bool ExtendedEnabled = FALSE;
 
 #ifdef __alpha__
@@ -65,11 +70,116 @@ static Bool ExtendedEnabled = FALSE;
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
 
+/*
+ * Get a piece of the ScrnInfoRec.  At the moment, this is only used to hold
+ * the MTRR option information, but it is likely to be expanded if we do
+ * auto unmapping of memory at VT switch.
+ *
+ * XXX This might be better located in an OS-independent front-end to the
+ * VidMap functions.
+ */
+
+static int vidMapIndex = -1;
+typedef struct {
+	Bool mtrrEnabled;
+	MessageType mtrrFrom;
+	Bool mtrrOptChecked;
+} VidMapRec, *VidMapPtr;
+
+#define VIDMAPPTR(p) ((VidMapPtr)((p)->privates[vidMapIndex].ptr))
+
+static VidMapPtr
+getVidMapRec(int scrnIndex)
+{
+	VidMapPtr vp;
+
+	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+	if (vidMapIndex < 0)
+		vidMapIndex = xf86AllocateScrnInfoPrivateIndex();
+
+	if (VIDMAPPTR(pScrn) != NULL)
+		return VIDMAPPTR(pScrn);
+
+	vp = pScrn->privates[vidMapIndex].ptr = xnfcalloc(sizeof(VidMapRec), 1);
+	vp->mtrrEnabled = TRUE;	/* default to enabled */
+	vp->mtrrFrom = X_DEFAULT;
+	vp->mtrrOptChecked = FALSE;
+	return vp;
+}
+
+#ifdef HAS_MTRR_SUPPORT
+/* The file desc for /proc/mtrr. Once opened, left opened, and the mtrr
+   driver will clean up when we exit. */
+#define MTRR_FD_UNOPENED (-1)	/* We have yet to open /proc/mtrr */
+#define MTRR_FD_PROBLEM (-2)	/* We tried to open /proc/mtrr, but had
+				   a problem. */
+static int mtrr_fd = MTRR_FD_UNOPENED;
+
+static void
+mtrr_write_combining_region(ScrnInfoPtr scrn, pointer base, unsigned long size)
+{
+	static const char *mtrr_files[] = {
+		"/dev/cpu/mtrr",	/* Possible future name */
+		"/proc/mtrr",		/* Current name */
+		NULL
+	};
+
+	struct mtrr_sentry sentry;
+	const char **fn;
+	VidMapPtr vp;
+
+	switch (mtrr_fd) {
+	case MTRR_FD_PROBLEM:
+		break;
+		
+	case MTRR_FD_UNOPENED:
+		/* So open it. */
+		for (fn = mtrr_files; mtrr_fd < 0 && *fn; fn++) {
+			mtrr_fd = open(*fn, O_WRONLY, 0);
+			if (mtrr_fd < 0 && errno != ENOENT) {
+				xf86MsgVerb(X_WARNING, 0
+					    "Error opening %s: %s\n"
+					    *fn, strerror(errno));
+				break;
+			}
+		}
+
+		if (mtrr_fd < 0) {
+			if (errno == ENOENT)
+				xf86MsgVerb(X_WARNING, 0,
+				    "System lacks write combining support\n");
+			
+			mtrr_fd = MTRR_FD_PROBLEM;
+			break;
+		}
+		
+		/* FALL THROUGH */
+	default:
+		sentry.base = (unsigned long) base;
+		sentry.size = size;
+		sentry.type = MTRR_TYPE_WRCOMB;
+		
+		if (ioctl(mtrr_fd, MTRRIOC_ADD_ENTRY, &sentry) < 0) {
+			xf86DrvMsgVerb(scrn->scrnIndex, X_WARNING, 0,
+				"Failed to set up write-combining range "
+				"(0x%lx,0x%lx)\n", (long)base, (long)size);
+		} else {
+			vp = VIDMAPPTR(scrn);
+			xf86DrvMsg(scrn->scrnIndex, vp->mtrrFrom,
+				"Write-combining range (0x%lx,0x%lx)\n",
+				(long)base, (long)size);
+		}
+	}
+}
+#endif
+
+
 pointer
 xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 {
 	pointer base;
       	int fd;
+	VidMapPtr vp;
 
 	if ((fd = open("/dev/mem", O_RDWR)) < 0)
 	{
@@ -87,6 +197,48 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 		FatalError("xf86MapVidMem: Could not mmap framebuffer (%s)\n",
 			   strerror(errno));
 	}
+
+	/*
+	 * Check the "mtrr" option even when MTRR isn't supported to avoid
+	 * warnings about unrecognised options.
+	 */
+	/*
+	 * XXX Maybe some functions like this should be divided into
+	 * OS-dependent and OS-independent parts.  The option checking could
+	 * go into the OS-independent part.
+	 */
+	vp = getVidMapRec(ScreenNum);
+	if (!vp->mtrrOptChecked && xf86Screens[ScreenNum]->options != NULL)
+	{
+		enum { OPTION_MTRR };
+		static OptionInfoRec opts[] =
+		{
+			{ OPTION_MTRR, "mtrr", OPTV_TRI, {0}, FALSE },
+			{ -1, NULL, OPTV_NONE, {0}, FALSE }
+		};
+		/*
+		 * We get called once for each screen, so reset
+		 * the OptionInfoRecs.
+		 */
+		opts[0].found = FALSE;
+
+		xf86ProcessOptions(ScreenNum, xf86Screens[ScreenNum]->options,
+				   opts);
+		if (xf86GetOptValBool(opts, OPTION_MTRR, &vp->mtrrEnabled))
+			vp->mtrrFrom = X_CONFIG;
+		vp->mtrrOptChecked = TRUE;
+	}
+
+#ifdef HAS_MTRR_SUPPORT
+	if (vp->mtrrEnabled)
+	{
+		if (Flags & VIDMEM_FRAMEBUFFER)
+			mtrr_write_combining_region(xf86Screens[ScreenNum],
+						    Base, Size);
+		/* XXX add code to make sure WC is off for VIDMEM_MMIO */
+	}
+#endif
+
 	return base;
 }
 

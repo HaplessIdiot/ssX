@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.17 1998/10/10 15:25:38 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.18 1999/02/25 06:01:06 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -245,7 +245,7 @@ ErrorHandler(Display *dpy, XErrorEvent *event)
 void
 ManageSession (struct display *d)
 {
-    int			pid = 0;
+    static int		pid = 0;
     Display		*dpy;
     greet_user_rtn	greet_stat; 
     static GreetUserProc greet_user_proc = NULL;

@@ -1,15 +1,10 @@
 /*
- * $XConsortium: grid.c,v 1.29 94/04/17 20:24:13 rws Exp $
+ * $TOG: grid.c /main/31 1998/02/09 13:57:18 kaleb $
  *
  * 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +12,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
@@ -35,13 +30,34 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xmu/Converters.h>
 #include "gridP.h"
 
+#ifdef XKB
+#include <X11/extensions/XKBbells.h>
+#else
+#define	XkbBI_MinorError		2
+#define	XkbBI_Ignore			11
+#endif
 
-#define Bell(w) XBell(XtDisplay(w), 50)
+#ifdef XKB
+#define Bell(w,n) XkbStdBell(XtDisplay(w), XtWindow(w), 50, n)
+#else
+#define Bell(w,n) XBell(XtDisplay(w), 0)
+#endif
 
-
-static void ClassInitialize(), Initialize(), Realize(), Redisplay(), Notify();
-static void Destroy(), Resize(), paint_grid();
-static Boolean SetValues();
+static GC get_gc(FontGridWidget fgw, Pixel fore);
+static void ClassInitialize(void);
+static void Initialize(Widget request, Widget new, ArgList args, 
+		       Cardinal *num_args);
+static void Realize(Widget gw, Mask *valueMask, 
+		    XSetWindowAttributes *attributes);
+static void Destroy(Widget gw);
+static void Resize(Widget gw);
+static void Redisplay(Widget gw, XEvent *event, Region region);
+static void paint_grid(FontGridWidget fgw, int col, int row, 
+		       int ncols, int nrows);
+static Boolean SetValues(Widget current, Widget request, Widget new, 
+			 ArgList args, Cardinal *num_args);
+static void Notify(Widget gw, XEvent *event, String *params, 
+		   Cardinal *nparams);
 
 #define Offset(field) XtOffsetOf(FontGridRec, fontgrid.field)
 
@@ -130,10 +146,9 @@ WidgetClass fontgridWidgetClass = (WidgetClass) &fontgridClassRec;
  * public routines
  */
 
-void GetFontGridCellDimensions (w, startp, ncolsp, nrowsp)
-    Widget w;
-    Dimension *startp;
-    int *ncolsp, *nrowsp;
+void 
+GetFontGridCellDimensions(Widget w, Dimension *startp, 
+			  int *ncolsp, int *nrowsp)
 {
     FontGridWidget fgw = (FontGridWidget) w;
     *startp = (long)fgw->fontgrid.start_char;
@@ -142,9 +157,8 @@ void GetFontGridCellDimensions (w, startp, ncolsp, nrowsp)
 }
 
 
-void GetPrevNextStates (w, prevvalidp, nextvalidp)
-    Widget w;
-    Bool *prevvalidp, *nextvalidp;
+void 
+GetPrevNextStates(Widget w, Bool *prevvalidp, Bool *nextvalidp)
 {
     FontGridWidget fgw = (FontGridWidget) w;
 
@@ -165,9 +179,8 @@ void GetPrevNextStates (w, prevvalidp, nextvalidp)
  */
 
 
-static GC get_gc (fgw, fore)
-    FontGridWidget fgw;
-    Pixel fore;
+static GC 
+get_gc(FontGridWidget fgw, Pixel fore)
 {
     XtGCMask mask;
     XGCValues gcv;
@@ -188,16 +201,15 @@ static GC get_gc (fgw, fore)
 }
 
 
-static void ClassInitialize ()
+static void 
+ClassInitialize(void)
 {
     XtAddConverter (XtRString, XtRLong, XmuCvtStringToLong, NULL, 0);
 }
 
 
-static void Initialize (request, new, args, num_args)
-    Widget request, new;
-    ArgList args;
-    Cardinal *num_args;
+static void 
+Initialize(Widget request, Widget new, ArgList args, Cardinal *num_args)
 {
     FontGridWidget reqfg = (FontGridWidget) request;
     FontGridWidget newfg = (FontGridWidget) new;
@@ -251,10 +263,8 @@ static void Initialize (request, new, args, num_args)
     }
 }
 
-static void Realize (gw, valueMask, attributes)
-    Widget gw;
-    Mask *valueMask;
-    XSetWindowAttributes *attributes;
+static void 
+Realize(Widget gw, Mask *valueMask, XSetWindowAttributes *attributes)
 {
     FontGridWidget fgw = (FontGridWidget) gw;
     FontGridPart *p = &fgw->fontgrid;
@@ -269,8 +279,8 @@ static void Realize (gw, valueMask, attributes)
 
 
 
-static void Destroy (gw)
-    Widget gw;
+static void 
+Destroy(Widget gw)
 {
     FontGridWidget fgw = (FontGridWidget) gw;
 
@@ -279,8 +289,8 @@ static void Destroy (gw)
 }
 
 
-static void Resize (gw)
-    Widget gw;
+static void 
+Resize(Widget gw)
 {
     FontGridWidget fgw = (FontGridWidget) gw;
 
@@ -300,10 +310,8 @@ static void Resize (gw)
 
 
 /* ARGSUSED */
-static void Redisplay (gw, event, region)
-    Widget gw;
-    XEvent *event;
-    Region region;
+static void 
+Redisplay(Widget gw, XEvent *event, Region region)
 {
     FontGridWidget fgw = (FontGridWidget) gw;
     XRectangle rect;			/* bounding rect for region */
@@ -311,7 +319,7 @@ static void Redisplay (gw, event, region)
     int cw, ch;				/* cell size */
 
     if (!fgw->fontgrid.text_font) {
-	Bell (gw);
+	Bell (gw, XkbBI_BadValue);
 	return;
     }
 
@@ -330,10 +338,10 @@ static void Redisplay (gw, event, region)
 }
 
 
-static void paint_grid (fgw, col, row, ncols, nrows)
-    FontGridWidget fgw;			/* widget in which to draw */
-    int col, row;			/* where to start */
-    int ncols, nrows;			/* number of cells */
+static void 
+paint_grid(FontGridWidget fgw, 		/* widget in which to draw */ 
+	   int col, int row, 		/* where to start */          
+	   int ncols, int nrows)	/* number of cells */         
 {
     FontGridPart *p = &fgw->fontgrid;
     int i, j;
@@ -437,10 +445,9 @@ static void paint_grid (fgw, col, row, ncols, nrows)
 }
 
 /*ARGSUSED*/
-static Boolean SetValues (current, request, new, args, num_args)
-    Widget current, request, new;
-    ArgList args;
-    Cardinal *num_args;
+static Boolean 
+SetValues(Widget current, Widget request, Widget new, 
+	  ArgList args, Cardinal *num_args)
 {
     FontGridWidget curfg = (FontGridWidget) current;
     FontGridWidget newfg = (FontGridWidget) new;
@@ -487,11 +494,8 @@ static Boolean SetValues (current, request, new, args, num_args)
 
 
 /* ARGSUSED */
-static void Notify (gw, event, params, nparams)
-    Widget gw;
-    XEvent *event;
-    String *params;
-    Cardinal *nparams;
+static void 
+Notify(Widget gw, XEvent *event, String *params, Cardinal *nparams)
 {
     FontGridWidget fgw = (FontGridWidget) gw;
     int x, y;				/* where the event happened */
@@ -516,7 +520,7 @@ static void Notify (gw, event, params, nparams)
 	y = event->xmotion.y;
 	break;
       default:
-	Bell (gw);
+	Bell (gw, XkbBI_Ignore);
 	return;
     }
 
@@ -529,7 +533,7 @@ static void Notify (gw, event, params, nparams)
 	unsigned n;
 
 	if (x > (fgw->fontgrid.cell_cols * cw)) {
-	    Bell (gw);
+	    Bell (gw, XkbBI_InvalidLocation);
 	    return;
 	}
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.21 1999/02/16 04:53:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.22 1999/02/19 21:27:00 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -54,6 +54,8 @@
 #define PCI_VENDOR_PICOP	0x1066
 #define PCI_VENDOR_MYLEX	0x1069
 #define PCI_VENDOR_APPLE	0x106B
+/* Yahama is a guess based on chipset */
+#define PCI_VENDOR_YAMAHA	0x1073
 #define PCI_VENDOR_NEXGEN	0x1074
 #define PCI_VENDOR_QLOGIC	0x1077
 #define PCI_VENDOR_CYRIX	0x1078
@@ -105,6 +107,7 @@
 #define PCI_VENDOR_CYCLADES	0x120E
 #define PCI_VENDOR_3DFX		0x121A
 #define PCI_VENDOR_SIGMADESIGNS	0x1236
+#define PCI_VENDOR_ENSONIQ	0x1274
 #define PCI_VENDOR_YOKOGAWA	0x1281
 #define PCI_VENDOR_TRITECH	0x1292
 #define PCI_VENDOR_NVIDIA_SGS	0x12d2
@@ -546,6 +549,7 @@ SymTabRec xf86PCIVendorNameInfoData[] = {
     {PCI_VENDOR_RENDITION, "Rendition"},
     {PCI_VENDOR_3DFX,	"3Dfx Interactive"},
     {PCI_VENDOR_SIGMADESIGNS, "Sigma Designs"},
+    {PCI_VENDOR_ENSONIQ, "Ensoniq"},
     {PCI_VENDOR_YOKOGAWA, "YOKOGAWA"},
     {PCI_VENDOR_TRITECH,	"Tritech Microelectronics"},
     {PCI_VENDOR_NVIDIA_SGS, "NVidia/SGS-Thomson"},
@@ -559,6 +563,7 @@ SymTabRec xf86PCIVendorNameInfoData[] = {
     {PCI_VENDOR_ADAPTEC_2, "Adaptec"},
     {PCI_VENDOR_ATRONICS, "Atronics"},
     {PCI_VENDOR_ARK,	"ARK Logic"},
+    {PCI_VENDOR_YAMAHA, "Yamaha"},
     {0,NULL}
 };
 #endif
@@ -690,6 +695,9 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_GD7543,	"GD7543"},
 				{PCI_CHIP_GD7548,	"GD7548"},
 				{PCI_CHIP_GD7555,	"GD7555"},
+#ifdef VENDOR_INCLUDE_NONVIDEO
+				{0x6001,		"CS4236B/CS4611 Audio" },
+#endif
 				{0x0000,		NULL}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_IBM, {
@@ -931,6 +939,8 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
                                 {0x5952, "3C595 10b-MII" },
                                 {0x9000, "3C900 10bTPO" },
                                 {0x9001, "3C900 10b Combo" },
+				/* Is it OK for 2 devices to have the same name ? */
+                                {0x9005, "3C900 10b Combo" },
                                 {0x9050, "3C905 100bTX" },
 				{0x0000,		NULL}}},
     {PCI_VENDOR_SMC, {
@@ -1082,6 +1092,10 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
     {PCI_VENDOR_SIGMADESIGNS, {
                                 {0x6401, "REALmagic64/GX (SD 6425)" },
 				{0x0000,		NULL}}},
+    {PCI_VENDOR_ENSONIQ, {
+                                {0x5000, "es1370 (AudioPCI)" },
+                                {0x1371, "es1371" },
+				{0x0000,		NULL}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
 #ifdef INCLUDE_EMPTY_LISTS
     {PCI_VENDOR_YOKOGAWA, {
@@ -1209,6 +1223,11 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_2000MT,	"2000MT"},
 				{PCI_CHIP_2000MI,	"2000MI"},
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
+    {PCI_VENDOR_YAMAHA, {
+				{0x000a,	        "YMF740-V Audio"},
+				{0x0000,		NULL}}},
+#endif
     {0x0000, {
 				{0x0000,		NULL}}},
 };
@@ -1235,7 +1254,18 @@ extern pciVendorCardInfo xf86PCICardInfoData[];
 #define NF ((void (*)())NULL)
 
 pciVendorCardInfo xf86PCICardInfoData[] = {
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{ PCI_VENDOR_3COM, {
+                        { 0x9005, "PCI Combo ethernet card" },
+                        { 0x0000, (char *)NULL, NF } } },
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{ PCI_VENDOR_ADAPTEC, {
+                        { 0x7881, "AHA-2940U/UW SCSI", NF },
+                        { 0x0000, (char *)NULL, NF } } },
+#endif
         { PCI_VENDOR_ATI, {
+                        { 0x4750, "XPERT XL", NF },
                         { 0x4755, "Mach64-GT-B+DVD", NF },
                         { 0x0084, "Xpert'98", NF },
                         { 0x4d55, "264GT3 (Rage3D III)", NF },
@@ -1333,6 +1363,14 @@ pciVendorCardInfo xf86PCICardInfoData[] = {
                         { 0x0000, (char *)NULL, NF } } },
 	{ PCI_VENDOR_IBM, {
                         { 0x00ba, "Thinkpad 600 NeoMagic NM2160", NF },
+                        { 0x0000, (char *)NULL, NF } } },
+	{PCI_VENDOR_INTEL, {
+#ifdef VENDOR_INCLUDE_NONVIDEO
+                        { 0x0009, "PCI 10/100Mb/s ethernet card", NF },
+ 	  /* Seattle AL440BX is 0x8080, is anything else ? */
+                        { 0x8080, "motherboard", NF },
+                        { 0x4d55, "Maui (MU) motherboard", NF },
+#endif
                         { 0x0000, (char *)NULL, NF } } },
 	{ PCI_VENDOR_MATROX, {
                         { 0x1100, "Mystique", NF },

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfb24_32.h,v 1.1 1999/01/23 09:56:13 dawes Exp $ */
 
 #ifndef _CFB24_32_H
 #define _CFB24_32_H
@@ -20,25 +20,6 @@ typedef struct {
    PixmapPtr		pix;
    Bool			freePrivate;
 } cfb24_32PixmapRec, *cfb24_32PixmapPtr;
-
-
-void
-cfb24_32SaveAreas(
-    PixmapPtr	  	pPixmap,
-    RegionPtr	  	prgnSave, 
-    int	    	  	xorg,
-    int	    	  	yorg,
-    WindowPtr		pWin
-);
-
-void
-cfb24_32RestoreAreas(
-    PixmapPtr	  	pPixmap, 
-    RegionPtr	  	prgnRestore,
-    int	    	  	xorg,
-    int	    	  	yorg,
-    WindowPtr		pWin
-);
 
 RegionPtr
 cfb24_32CopyArea(
@@ -72,6 +53,23 @@ cfbDoBitblt32To24(
     unsigned long bitPlane
 );
 
+void 
+cfb24_32DoBitblt24To24GXcopy(
+    DrawablePtr pSrc, 
+    DrawablePtr pDst, 
+    int rop,
+    RegionPtr prgnDst, 
+    DDXPointPtr pptSrc,
+    unsigned long pm,
+    unsigned long bitPlane
+);
+
+void 
+cfb24_32CopyWindow(
+    WindowPtr pWin,
+    DDXPointRec ptOldOrg,
+    RegionPtr prgnSrc
+);
 
 void
 cfb24_32ValidateGC24(

@@ -25,7 +25,7 @@
  * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/include/Xarch.h,v 1.3 1998/12/13 12:23:40 dawes Exp $ */
+/* $XFree86: xc/include/Xarch.h,v 1.4 1998/12/20 11:56:44 dawes Exp $ */
 
 
 /*
@@ -51,9 +51,12 @@
 #include <endian.h>
 #endif
 #elif defined(Lynx)
+#if 0
+/* LynxOS 2.4.0 has wrong defines in bsd/ip.h */
 #include <bsd/in.h>
 #include <bsd/in_systm.h>
 #include <bsd/ip.h>
+#endif
 #endif
 
 #ifndef BYTE_ORDER
@@ -62,6 +65,13 @@
 
 #ifdef QNX
 #define BYTE_ORDER LITTLE_ENDIAN
+#endif
+#ifdef Lynx
+#if defined(i386) || defined(__i386__) || defined(__x86__)
+#define BYTE_ORDER LITTLE_ENDIAN
+#else
+#define BYTE_ORDER BIG_ENDIAN
+#endif
 #endif
 #if (defined(sun) && defined(SVR4)) && !defined(Lynx)
 #include <sys/isa_defs.h>

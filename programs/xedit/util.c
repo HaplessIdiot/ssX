@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.6 1999/02/05 04:49:56 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.7 1999/02/25 06:01:08 dawes Exp $ */
 
 #include <stdio.h>
 #ifndef X_NOT_STDC_ENV
@@ -184,6 +184,7 @@ AddTextSource(Widget source, char *name, char *filename, int flags,
     item->flags = flags;
     item->file_access = file_access;
     item->display_position = item->insert_position = 0;
+    item->mode = 0;
 
     flist.itens = (xedit_flist_item**)
 	XtRealloc((char*)flist.itens, sizeof(xedit_flist_item*)
@@ -217,7 +218,7 @@ AddTextSource(Widget source, char *name, char *filename, int flags,
 Bool
 KillTextSource(xedit_flist_item *item)
 {
-    xedit_flist_item *nitem;
+    xedit_flist_item *nitem = NULL;
     unsigned idx, i;
     Arg targs[3];
     Cardinal tnum_args;

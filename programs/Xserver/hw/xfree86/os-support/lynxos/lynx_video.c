@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.7 1998/01/24 16:58:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.8 1998/08/29 05:43:58 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -109,7 +109,8 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 	smems[i].Base = Base;
 	smems[i].Size = Size;
 	
-        xf86Msg(X_INFO, "xf86MapVidMem: Base=0x%x, Size=0x%x\n", Base, Size);
+        xf86MsgVerb(X_INFO, 3, "xf86MapVidMem: Base=0x%x Size=0x%x\n",
+        	Base, Size);
 
 #if defined(__powerpc__)
 	if (((unsigned long)Base & PHYS_IO_MEM_START) != PHYS_IO_MEM_START) {
@@ -135,6 +136,8 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 				Base, Size, strerror(errno));
 		}
 	}
+        xf86MsgVerb(X_INFO, 3, "xf86MapVidMem: Base=0x%x Size=0x%x Ptr=0x%x\n",
+        		 Base, Size, smems[i].ptr);
 	return smems[i].ptr;
 }
 
@@ -143,15 +146,18 @@ xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
 	int	i;
 
+	xf86MsgVerb(X_INFO, 3, "xf86UnMapVidMem: Base/Ptr=0x%x Size=0x%x\n",
+		Base, Size);
 	for (i = 0; i < MAX_SMEMS; i++)
 	{
-		if (*smems[i].name && smems[i].ptr == Base && smems[i].Size == Size)
+		if (*smems[i].name && smems[i].ptr == Base 
+			&& smems[i].Size == Size)
 		{
 			if (--smems[i].RefCnt > 0)
 				return;
 
 			(void)smem_create(NULL, smems[i].ptr, 0, SM_DETACH);
-			xf86Msg(X_INFO,
+			xf86MsgVerb(X_INFO, 3,
                            "xf86UnMapVidMem: smem_create(%s, 0x%08x, ... "
                            "SM_DETACH)\n", smems[i].name, smems[i].ptr);
 			(void)smem_remove(smems[i].name);
@@ -197,6 +203,14 @@ xf86EnableInterrupts()
 volatile unsigned char *ioBase = MAP_FAILED;
 static int IOEnabled;
 
+static void
+removeIOSmem()
+{
+	smem_create(NULL, (char *) ioBase, 0, SM_DETACH);
+	smem_remove("IOBASE");
+	ioBase = MAP_FAILED;	
+}
+
 void
 xf86EnableIO()
 {
@@ -206,7 +220,8 @@ xf86EnableIO()
 	       	if (ioBase == MAP_FAILED) {
        			--IOEnabled;
 			FatalError("xf86EnableIO: Failed to map I/O\n");
-       		}
+       		} else
+			atexit(removeIOSmem);
 	}        
 	return;
 }
@@ -218,12 +233,8 @@ xf86DisableIO()
 		return;
 
         if (--IOEnabled == 0) {
-        	smem_create(NULL, (char *) ioBase, 0, SM_DETACH);
-        	smem_remove("IOBASE");
-        	ioBase = MAP_FAILED;
+        	removeIOSmem();
         }
-	xf86Msg(X_INFO, "xf86DisableIO: leaving with IOEnabled %d ioBase 0x%x\n",
-		IOEnabled, ioBase);
 	return;
 }
 

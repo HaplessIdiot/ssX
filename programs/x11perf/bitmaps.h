@@ -24,8 +24,4 @@ SOFTWARE.
 
 /* Set fill style (if any) to a bitmap or tile */
 
-extern void SetFillStyle(/* xp, p */);
-/*
-    XParms  xp;
-    Parms   p;
-*/
+extern void SetFillStyle(XParms xp, Parms p);

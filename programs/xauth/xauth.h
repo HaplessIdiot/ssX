@@ -1,15 +1,10 @@
 /*
- * $XConsortium: xauth.h,v 1.13 94/04/17 20:37:53 rws Exp $
+ * $TOG: xauth.h /main/15 1998/02/09 13:52:34 kaleb $
  *
  * 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +12,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
@@ -41,9 +36,22 @@ typedef int Bool;
 
 extern char *ProgramName;
 
-extern char *copystring(), *malloc(), *realloc();
-int process_command(), auth_initialize(), auth_finalize();
-extern int print_help();
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern char *malloc(), *realloc();
+#endif
+
+extern char *get_hostname ( Xauth *auth );
+extern char *get_address_info ( int family, char *fulldpyname, int prefix, char *host, int *lenp );
+extern char *copystring ( char *src, int len );
+extern char *get_local_hostname ( char *buf, int maxlen );
+extern Bool parse_displayname ( char *displayname, int *familyp, char **hostp, int *dpynump, int *scrnump, char **restp );
+extern int auth_initialize ( char *authfilename );
+extern int auth_finalize ( void );
+extern int process_command ( char *inputfilename, int lineno, int argc, char **argv );
+extern int dump_numeric ( FILE *fp, Xauth *auth );
+extern int print_help ( FILE *fp, char *cmd, char *prefix );
 extern int verbose;
 extern Bool ignore_locks;
 extern Bool break_locks;

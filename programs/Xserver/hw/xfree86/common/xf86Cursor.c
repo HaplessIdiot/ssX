@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.13.4.12 1998/06/13 14:41:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.15 1998/07/25 16:55:00 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -195,15 +195,6 @@ xf86ZoomViewport (ScreenPtr pScreen, int zoom)
 
   if (pScr->zoomLocked)
     return;
-
-#ifdef XFreeXDGA
-  /*
-   * We should really send the mode change request to the DGA client and let
-   * it decide what to do. For now just bin the request
-   */
-  if (DGAAvailable(pScreen->myNum) && DGAGetDirectMode(pScreen->myNum))
-    return;
-#endif
 
   if (pScr->SwitchMode != NULL &&
       pScr->currentMode != pScr->currentMode->next) {

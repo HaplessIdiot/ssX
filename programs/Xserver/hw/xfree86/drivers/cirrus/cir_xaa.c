@@ -1,6 +1,6 @@
 /* (c) Itai Nahshon */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_xaa.c,v 1.1 1998/10/06 04:39:36 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -231,10 +231,14 @@ CIRXAAInit(ScreenPtr pScreen)
     XAAPtr->SubsequentScreenToScreenCopy = CIRSubsequentScreenToScreenCopy;
     XAAPtr->ScreenToScreenCopyFlags = GXCOPY_ONLY|NO_TRANSPARENCY|NO_PLANEMASK;
 
-    XAAPtr->SetupForSolidFill = CIRSetupForSolidFill;
-    XAAPtr->SubsequentSolidFillRect = CIRSubsequentSolidFillRect;
-    XAAPtr->SubsequentSolidFillTrap = NULL;
-    XAAPtr->SolidFillFlags = GXCOPY_ONLY|NO_TRANSPARENCY|NO_PLANEMASK;
+    if(pCir->Chipset == PCI_CHIP_GD5446 ||
+       pCir->Chipset == PCI_CHIP_GD5480) {
+
+        XAAPtr->SetupForSolidFill = CIRSetupForSolidFill;
+        XAAPtr->SubsequentSolidFillRect = CIRSubsequentSolidFillRect;
+        XAAPtr->SubsequentSolidFillTrap = NULL;
+        XAAPtr->SolidFillFlags = GXCOPY_ONLY|NO_TRANSPARENCY|NO_PLANEMASK;
+    }
 
     XAAPtr->Sync = CIRSync;
 

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.61 1999/01/21 06:55:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.62 1999/02/01 11:56:00 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -603,6 +603,9 @@ struct pci_config_reg {
             unsigned short subsys_vendor;
         } ssys;
     } ssys_id;
+#define _subsys_card_vendor		ssys_id.subsys_card_vendor
+#define _subsys_vendor			ssys_id.ssys.subsys_vendor
+#define _subsys_card			ssys_id.ssys.subsys_card
     unsigned long _baserom;
     unsigned long rsvd3;
     unsigned long rsvd4;

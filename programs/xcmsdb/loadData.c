@@ -81,36 +81,36 @@ typedef struct _DefineEntry {
 static int linenum = 0;
 
 static DefineEntry KeyTbl[] = {
-    SC_BEGIN_KEYWORD,		SC_BEGIN,
-    SC_END_KEYWORD,		SC_END,
-    COMMENT_KEYWORD,		COMMENT,
-    NAME_KEYWORD,		NAME,
-    MODEL_KEYWORD,		MODEL,
-    PART_NUMBER_KEYWORD,	PART_NUMBER,
-    SERIAL_NUMBER_KEYWORD,	SERIAL_NUMBER,
-    REVISION_KEYWORD,		REVISION,
-    SCREEN_CLASS_KEYWORD,	SCREEN_CLASS,
-    COLORIMETRIC_BEGIN_KEYWORD,	COLORIMETRIC_BEGIN,
-    COLORIMETRIC_END_KEYWORD,	COLORIMETRIC_END,
-    XYZTORGBMAT_BEGIN_KEYWORD,	XYZTORGBMAT_BEGIN,
-    XYZTORGBMAT_END_KEYWORD,	XYZTORGBMAT_END,
-    WHITEPT_XYZ_BEGIN_KEYWORD,	WHITEPT_XYZ_BEGIN,
-    WHITEPT_XYZ_END_KEYWORD,	WHITEPT_XYZ_END,
-    RGBTOXYZMAT_BEGIN_KEYWORD,	RGBTOXYZMAT_BEGIN,
-    RGBTOXYZMAT_END_KEYWORD,	RGBTOXYZMAT_END,
-    IPROFILE_BEGIN_KEYWORD,	IPROFILE_BEGIN,
-    IPROFILE_END_KEYWORD,	IPROFILE_END,
-    ITBL_BEGIN_KEYWORD,		ITBL_BEGIN,
-    ITBL_END_KEYWORD,		ITBL_END,
-    "",				-1
+    { SC_BEGIN_KEYWORD,			SC_BEGIN },
+    { SC_END_KEYWORD,			SC_END },
+    { COMMENT_KEYWORD,			COMMENT },
+    { NAME_KEYWORD,			NAME },
+    { MODEL_KEYWORD,			MODEL },
+    { PART_NUMBER_KEYWORD,		PART_NUMBER },
+    { SERIAL_NUMBER_KEYWORD,		SERIAL_NUMBER },
+    { REVISION_KEYWORD,			REVISION },
+    { SCREEN_CLASS_KEYWORD,		SCREEN_CLASS },
+    { COLORIMETRIC_BEGIN_KEYWORD,	COLORIMETRIC_BEGIN },
+    { COLORIMETRIC_END_KEYWORD,		COLORIMETRIC_END },
+    { XYZTORGBMAT_BEGIN_KEYWORD,	XYZTORGBMAT_BEGIN },
+    { XYZTORGBMAT_END_KEYWORD,		XYZTORGBMAT_END },
+    { WHITEPT_XYZ_BEGIN_KEYWORD,	WHITEPT_XYZ_BEGIN },
+    { WHITEPT_XYZ_END_KEYWORD,		WHITEPT_XYZ_END },
+    { RGBTOXYZMAT_BEGIN_KEYWORD,	RGBTOXYZMAT_BEGIN },
+    { RGBTOXYZMAT_END_KEYWORD,		RGBTOXYZMAT_END },
+    { IPROFILE_BEGIN_KEYWORD,		IPROFILE_BEGIN },
+    { IPROFILE_END_KEYWORD,		IPROFILE_END },
+    { ITBL_BEGIN_KEYWORD,		ITBL_BEGIN },
+    { ITBL_END_KEYWORD,			ITBL_END },
+    { "",				-1 }
 };
 
 static DefineEntry ScrnClassTbl[] = {
-    VIDEO_RGB_KEYWORD,		VIDEO_RGB,
+    { VIDEO_RGB_KEYWORD,		VIDEO_RGB },
 #ifdef GRAY
-    VIDEO_GRAY_KEYWORD,		VIDEO_GRAY,
+    { VIDEO_GRAY_KEYWORD,		VIDEO_GRAY },
 #endif /* GRAY */
-    "",				-1
+    { "",				-1 }
 };
 
 #define KEY_VISUALID		1
@@ -123,24 +123,24 @@ static DefineEntry ScrnClassTbl[] = {
 #define KEY_BITS_PER_RGB	8
 
 static DefineEntry VisualOptKeyTbl[] = {
-    "visualid",			KEY_VISUALID,
-    "depth",			KEY_DEPTH,
-    "class",			KEY_CLASS,
-    "red_mask",			KEY_RED_MASK,
-    "green_mask",		KEY_GREEN_MASK,
-    "blue_mask",		KEY_BLUE_MASK,
-    "colormap_size",		KEY_COLORMAP_SIZE,
-    "bits_per_rgb",		KEY_BITS_PER_RGB,
-    "",				-1
+    { "visualid",		KEY_VISUALID },
+    { "depth",			KEY_DEPTH },
+    { "class",			KEY_CLASS },
+    { "red_mask",		KEY_RED_MASK },
+    { "green_mask",		KEY_GREEN_MASK },
+    { "blue_mask",		KEY_BLUE_MASK },
+    { "colormap_size",		KEY_COLORMAP_SIZE },
+    { "bits_per_rgb",		KEY_BITS_PER_RGB },
+    { "",				-1 }
 };
 static DefineEntry VisualClassTbl[] = {
-    "StaticGray",		StaticGray,
-    "GrayScale",		GrayScale,
-    "StaticColor",		StaticColor,
-    "PseudoColor",		PseudoColor,
-    "TrueColor",		TrueColor,
-    "DirectColor",		DirectColor,
-    "",				-1
+    { "StaticGray",		StaticGray },
+    { "GrayScale",		GrayScale },
+    { "StaticColor",		StaticColor },
+    { "PseudoColor",		PseudoColor },
+    { "TrueColor",		TrueColor },
+    { "DirectColor",		DirectColor },
+    { "",				-1 }
 };
 
 
@@ -157,10 +157,9 @@ static DefineEntry VisualClassTbl[] = {
  *	SYNOPSIS
  */
 static int
-StrToDefine(pde,pstring)
-    DefineEntry	pde[];	/* IN: table of X string-define pairs		*/
-			/*     last entry must contain pair "", 0	*/
-    char *pstring;	/* IN: string to be looked up in that table	*/
+StrToDefine(DefineEntry pde[],	/* IN: table of X string-define pairs     */
+				/*     last entry must contain pair "", 0 */
+	    char *pstring)	/* IN: string to be looked up in that table */
 /*
  *	DESCRIPTION
  *		Converts a string to an integer define.
@@ -194,10 +193,9 @@ StrToDefine(pde,pstring)
  *	SYNOPSIS
  */
 static char *
-DefineToStr(pde,id)
-    DefineEntry	pde[];	/* IN: table of X string-define pairs		*/
-			/*     last entry must contain pair "", 0	*/
-    int		id;	/* IN: id to be looked up in that table	*/
+DefineToStr(DefineEntry pde[],	/* IN: table of X string-define pairs */
+				/*     last entry must contain pair "", 0 */
+	    int id)		/* IN: id to be looked up in that table	*/
 /*
  *	DESCRIPTION
  *		Converts a string to an integer define.
@@ -231,8 +229,7 @@ DefineToStr(pde,id)
  *	SYNOPSIS
  */
 static int
-SCKeyOf(string)
-    char *string;
+SCKeyOf(char *string)
 /*
  *	DESCRIPTION
  *		Converts a string to an integer define.
@@ -261,8 +258,7 @@ SCKeyOf(string)
  *	SYNOPSIS
  */
 static int
-SCScrnClassOf(string)
-    char *string;
+SCScrnClassOf(char *string)
 /*
  *	DESCRIPTION
  *		Converts a string to an integer define.
@@ -291,8 +287,7 @@ SCScrnClassOf(string)
  *	SYNOPSIS
  */
 static char *
-SCScrnClassStringOf(id)
-    int id;
+SCScrnClassStringOf(int id)
 /*
  *	DESCRIPTION
  *		Converts a id to astring
@@ -308,9 +303,7 @@ SCScrnClassStringOf(id)
 /* close the stream and return any memory allocated. */
 /*ARGSUSED*/
 static void 
-closeS(stream, pCorrection) 
-    FILE *stream;
-    XDCCC_Correction* pCorrection;
+closeS(FILE *stream, XDCCC_Correction *pCorrection) 
 {
     XDCCC_Correction* pNext;
     if (stream) {
@@ -327,10 +320,7 @@ closeS(stream, pCorrection)
  *  Get a line of text from the stream.
  */
 static char *
-nextline(buf, maxch, stream)
-    char *buf;
-    int	maxch;
-    FILE *stream;
+nextline(char *buf, int maxch, FILE *stream)
 {
     linenum++;
     return (fgets(buf, maxch, stream));
@@ -338,10 +328,7 @@ nextline(buf, maxch, stream)
 
 
 static int
-ProcessColorimetric(stream, pMatrix, VisualFlag)
-    FILE *stream;
-    XDCCC_Matrix* pMatrix;
-    int VisualFlag;
+ProcessColorimetric(FILE *stream, XDCCC_Matrix *pMatrix, int VisualFlag)
 {
     char buf[BUFSIZ];
     char keyword[BUFSIZ];
@@ -355,8 +342,8 @@ ProcessColorimetric(stream, pMatrix, VisualFlag)
 		 /* 1 -- processing data from matrix */
 		 /* 2 -- both matrices processed */
 		 /* Note: the order of the matrices is not important. */
-    int	 count;
-    XcmsFloat *pElement;
+    int	 count = -1;
+    XcmsFloat *pElement = NULL;
 
     while ((nextline(buf, BUFSIZ, stream)) != NULL) {
 	if ((ntok = sscanf(buf, "%s %s", keyword, token)) > 0) {
@@ -536,14 +523,11 @@ ProcessColorimetric(stream, pMatrix, VisualFlag)
 }
 
 static int
-ProcessIProfile(stream, pCorrection)
-    FILE *stream;
-    XDCCC_Correction* pCorrection;
+ProcessIProfile(FILE *stream, XDCCC_Correction *pCorrection)
 {
     char buf[BUFSIZ];
     char *keyword;
     char *tableStr, *sizeStr, *ptoken;
-    int  ntok;
     int  size;
     int	 state = 0;
 	 /************************************************
@@ -745,9 +729,7 @@ ProcessIProfile(stream, pCorrection)
 }
 
 static void
-PutTableType0Card8(pTbl, pCard8)
-    IntensityTbl *pTbl;
-    unsigned char **pCard8;
+PutTableType0Card8(IntensityTbl *pTbl, unsigned char **pCard8)
 {
     unsigned int count;
     IntensityRec *pIRec;
@@ -765,9 +747,7 @@ PutTableType0Card8(pTbl, pCard8)
 }
 
 static void
-PutTableType1Card8(pTbl, pCard8)
-    IntensityTbl *pTbl;
-    unsigned char **pCard8;
+PutTableType1Card8(IntensityTbl *pTbl, unsigned char **pCard8)
 {
     unsigned int count;
     IntensityRec *pIRec;
@@ -783,9 +763,7 @@ PutTableType1Card8(pTbl, pCard8)
 }
 
 static void
-PutTableType0Card16(pTbl, pCard16)
-    IntensityTbl *pTbl;
-    unsigned short **pCard16;
+PutTableType0Card16(IntensityTbl *pTbl, unsigned short **pCard16)
 {
     unsigned int count;
     IntensityRec *pIRec;
@@ -803,9 +781,7 @@ PutTableType0Card16(pTbl, pCard16)
 }
 
 static void
-PutTableType1Card16(pTbl, pCard16)
-    IntensityTbl *pTbl;
-    unsigned short **pCard16;
+PutTableType1Card16(IntensityTbl *pTbl, unsigned short **pCard16)
 {
     unsigned int count;
     IntensityRec *pIRec;
@@ -821,9 +797,7 @@ PutTableType1Card16(pTbl, pCard16)
 }
 
 static void
-PutTableType0Card32(pTbl, pCard32)
-    IntensityTbl *pTbl;
-    unsigned long **pCard32;
+PutTableType0Card32(IntensityTbl *pTbl, unsigned long **pCard32)
 {
     unsigned int count;
     IntensityRec *pIRec;
@@ -841,9 +815,7 @@ PutTableType0Card32(pTbl, pCard32)
 }
 
 static void
-PutTableType1Card32(pTbl, pCard32)
-    IntensityTbl *pTbl;
-    unsigned long **pCard32;
+PutTableType1Card32(IntensityTbl *pTbl, unsigned long **pCard32)
 {
     unsigned int count;
     IntensityRec *pIRec;
@@ -860,10 +832,7 @@ PutTableType1Card32(pTbl, pCard32)
 
 
 static void
-LoadMatrix(pDpy, root, pMatrix)
-    Display *pDpy;
-    Window root;
-    XDCCC_Matrix *pMatrix;
+LoadMatrix(Display *pDpy, Window root, XDCCC_Matrix *pMatrix)
 {
     int  count;
     unsigned long  *pCard32;
@@ -890,11 +859,8 @@ LoadMatrix(pDpy, root, pMatrix)
 
 
 static int
-LoadCorrections(pDpy, root, pCorrection, targetFormat)
-    Display *pDpy;
-    Window root;
-    XDCCC_Correction *pCorrection;
-    int targetFormat;
+LoadCorrections(Display *pDpy, Window root, XDCCC_Correction *pCorrection, 
+		int targetFormat)
 {
     unsigned char  *pCard8;
     unsigned char  *pCard8Array = (unsigned char *)NULL;
@@ -914,7 +880,7 @@ LoadCorrections(pDpy, root, pCorrection, targetFormat)
     for (i = 0; pCorrection; i++, pCorrection = pCorrection->next) {
 	if ((pCorrection->tableType != 0) && (pCorrection->tableType != 1)) {
 	    if (pCorrection->visual_info.visualid) {
-		fprintf(stderr,"RGB Correction for visualid %d: Invalid intensity table type %d.\n",
+		fprintf(stderr,"RGB Correction for visualid %ld: Invalid intensity table type %d.\n",
 			pCorrection->visual_info.visualid,
 			pCorrection->tableType);
 	    } else {
@@ -926,7 +892,7 @@ LoadCorrections(pDpy, root, pCorrection, targetFormat)
 
 	if (pCorrection->nTables != 1 && pCorrection->nTables != 3) {
 	    if (pCorrection->visual_info.visualid) {
-		fprintf(stderr,"RGB Correction for visualid %d: %d invalid number of tables.\n",
+		fprintf(stderr,"RGB Correction for visualid %ld: %d invalid number of tables.\n",
 			pCorrection->visual_info.visualid,
 			pCorrection->nTables);
 	    } else {
@@ -939,7 +905,7 @@ LoadCorrections(pDpy, root, pCorrection, targetFormat)
 	if (pCorrection->nTables == 1) {
 	    if (pCorrection->pRedTbl->nEntries < 2) {
 		if (pCorrection->visual_info.visualid) {
-		    fprintf(stderr,"RGB Correction for visualid %d: Illegal number of entries in table\n",
+		    fprintf(stderr,"RGB Correction for visualid %ld: Illegal number of entries in table\n",
 			    pCorrection->visual_info.visualid);
 		} else {
 		    fprintf(stderr,"Global RGB Correction: Illegal number of entries in table\n");
@@ -1017,7 +983,7 @@ LoadCorrections(pDpy, root, pCorrection, targetFormat)
 		break;
 	      default:
 		if (pCorrection->visual_info.visualid) {
-		    fprintf(stderr,"RGB Correction for visualid %d: Invalid property format\n",
+		    fprintf(stderr,"RGB Correction for visualid %ld: Invalid property format\n",
 			    pCorrection->visual_info.visualid);
 		} else {
 		    fprintf(stderr,"Global RGB Correction: Invalid property format\n");
@@ -1029,7 +995,7 @@ LoadCorrections(pDpy, root, pCorrection, targetFormat)
 		    (pCorrection->pGreenTbl->nEntries < 2) ||
 		    (pCorrection->pBlueTbl->nEntries < 2)) {
 		if (pCorrection->visual_info.visualid) {
-		    fprintf(stderr,"RGB Correction for visualid %d: Illegal number of entries in table\n",
+		    fprintf(stderr,"RGB Correction for visualid %ld: Illegal number of entries in table\n",
 			    pCorrection->visual_info.visualid);
 		} else {
 		    fprintf(stderr,"Global RGB Correction: Illegal number of entries in table\n");
@@ -1127,7 +1093,7 @@ LoadCorrections(pDpy, root, pCorrection, targetFormat)
 		break;
 	      default:
 		if (pCorrection->visual_info.visualid) {
-		    fprintf(stderr,"RGB Correction for visualid %d: Invalid property format\n",
+		    fprintf(stderr,"RGB Correction for visualid %ld: Invalid property format\n",
 			    pCorrection->visual_info.visualid);
 		} else {
 		    fprintf(stderr,"Global RGB Correction: Invalid property format\n");
@@ -1143,11 +1109,8 @@ LoadCorrections(pDpy, root, pCorrection, targetFormat)
 #ifdef GRAY
 
 static int
-LoadDataGray(pDpy, root, tableType, pScreenData, targetFormat)
-    Display *pDpy;
-    Window root;
-    LINEAR_RGB_SCCData *pScreenData;
-    int targetFormat;
+LoadDataGray(Display *pDpy, window root, int tableType, 
+	     LINEAR_RGB_SCCData *pScreenData, int targetFormat)
 {
     unsigned char *ret_prop;
     int  count;
@@ -1269,13 +1232,12 @@ LoadDataGray(pDpy, root, tableType, pScreenData, targetFormat)
 
 
 static void
-PrintVisualOptions(pCorrection)
-    XDCCC_Correction *pCorrection;
+PrintVisualOptions(XDCCC_Correction *pCorrection)
 {
     if (pCorrection->visual_info_mask & VisualIDMask) {
-	fprintf(stderr, "\t%s:0x%x\n",
+	fprintf(stderr, "\t%s:0x%lx\n",
 		DefineToStr(VisualOptKeyTbl, KEY_VISUALID),
-		pCorrection->visual_info.visualid);
+		(unsigned long)pCorrection->visual_info.visualid);
     }
     if (pCorrection->visual_info_mask & VisualDepthMask) {
 	fprintf(stderr, "\t%s:%d\n",
@@ -1288,17 +1250,17 @@ PrintVisualOptions(pCorrection)
 		DefineToStr(VisualClassTbl, pCorrection->visual_info.class));
     }
     if (pCorrection->visual_info_mask & VisualRedMaskMask) {
-	fprintf(stderr, "\t%s:0x%x\n",
+	fprintf(stderr, "\t%s:0x%lx\n",
 		DefineToStr(VisualOptKeyTbl, KEY_RED_MASK),
 		pCorrection->visual_info.red_mask);
     }
     if (pCorrection->visual_info_mask & VisualGreenMaskMask) {
-	fprintf(stderr, "\t%s:0x%x\n",
+	fprintf(stderr, "\t%s:0x%lx\n",
 		DefineToStr(VisualOptKeyTbl, KEY_GREEN_MASK),
 		pCorrection->visual_info.green_mask);
     }
     if (pCorrection->visual_info_mask & VisualBlueMaskMask) {
-	fprintf(stderr, "\t%s:0x%x\n",
+	fprintf(stderr, "\t%s:0x%lx\n",
 		DefineToStr(VisualOptKeyTbl, KEY_BLUE_MASK),
 		pCorrection->visual_info.blue_mask);
     }
@@ -1316,10 +1278,7 @@ PrintVisualOptions(pCorrection)
 
 
 static int
-ParseVisualOptions(pDpy, pCorrection, pbuf)
-    Display *pDpy;
-    XDCCC_Correction *pCorrection;
-    char *pbuf;
+ParseVisualOptions(Display *pDpy, XDCCC_Correction *pCorrection, char *pbuf)
 {
     char *key;
     char *value;
@@ -1445,7 +1404,7 @@ ParseVisualOptions(pDpy, pCorrection, pbuf)
     if (n_matches > 1) {
 	fprintf(stderr, "Line %d: Found more than one visual matching ...\n", linenum);
 	PrintVisualOptions(pCorrection);
-	fprintf(stderr, "    Using VisualId 0x%x\n", vinfo->visualid);
+	fprintf(stderr, "    Using VisualId 0x%lx\n", (unsigned long)vinfo->visualid);
     }
     memcpy((char*)&pCorrection->visual_info, (char*)vinfo,
 	    sizeof(XVisualInfo));
@@ -1466,11 +1425,7 @@ ParseVisualOptions(pDpy, pCorrection, pbuf)
  *	SYNOPSIS
  */
 int
-LoadSCCData(pDpy, screenNumber, filename, targetFormat)
-    Display *pDpy;
-    int screenNumber;
-    char *filename;
-    int targetFormat;
+LoadSCCData(Display *pDpy, int screenNumber, char *filename, int targetFormat)
 
 /*
  *	DESCRIPTION

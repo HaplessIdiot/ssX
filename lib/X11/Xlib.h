@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.12 1998/04/05 00:45:42 robin Exp $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.13 1998/10/03 08:41:28 dawes Exp $ */
 
 
 /*
@@ -4711,6 +4711,15 @@ extern void XRemoveConnectionWatch(
     Display*			/* dpy */,
     XConnectionWatchProc	/* callback */,
     XPointer			/* client_data */
+#endif
+);
+
+extern void XSetAuthorization(
+#if NeedFunctionPrototypes
+    char *			/* name */,
+    int				/* namelen */, 
+    char *			/* data */,
+    int				/* datalen */
 #endif
 );
 

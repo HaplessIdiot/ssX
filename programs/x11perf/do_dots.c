@@ -27,10 +27,8 @@ SOFTWARE.
 static XPoint   *points;
 static GC       pgc;
 
-int InitDots(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitDots(XParms xp, Parms p, int reps)
 {
     int i;
 
@@ -45,10 +43,8 @@ int InitDots(xp, p, reps)
     return reps;
 }
 
-void DoDots(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoDots(XParms xp, Parms p, int reps)
 {
     int     i;
 
@@ -61,9 +57,8 @@ void DoDots(xp, p, reps)
     }
 }
 
-void EndDots(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndDots(XParms xp, Parms p)
 {
     free(points);
 }

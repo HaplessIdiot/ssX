@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.6 1999/01/26 10:40:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.7 1999/01/31 12:21:49 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -191,17 +191,6 @@ typedef struct {
     Bool		Enabled;
     int			Flags;
 } DPMSRec, *DPMSPtr;
-#endif
-
-
-#ifdef XFreeXDGA
-/* Private info for DGA */
-typedef struct {
-    DGAInfoPtr		pDGAInfo;
-    Bool		Active;
-    int			Flags;
-    CloseScreenProcPtr	CloseScreen;
-} DGARec, *DGAPtr;
 #endif
 
 

@@ -2,9 +2,11 @@
 
    XFree86 Xv DDX written by Mark Vojkovich (mvojkovi@ucsd.edu) 
 
+   Copyright (C) 1998, 1999 - The XFree86 Project Inc.
+
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.5 1999/01/14 13:04:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.6 1999/02/07 06:18:34 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -74,7 +76,7 @@ static void xf86XVLeaveVT(int, int);
 
 /* misc */
 
-static Bool xf86XVInitAdaptors(ScreenPtr, XF86VideoInfoPtr);
+static Bool xf86XVInitAdaptors(ScreenPtr, XF86VideoAdaptorPtr*, int);
 
 
 int XF86XVWindowIndex = -1;
@@ -96,7 +98,8 @@ int (*XvScreenInitProc)(ScreenPtr) = XvScreenInit;
 Bool
 xf86XVScreenInit(
    ScreenPtr pScreen, 
-   XF86VideoInfoPtr infoPtr
+   XF86VideoAdaptorPtr *adaptors,
+   int num
 ){
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
   XF86XVScreenPtr ScreenPriv;
@@ -156,7 +159,7 @@ xf86XVScreenInit(
   pScrn->EnterVT = xf86XVEnterVT;
   pScrn->LeaveVT = xf86XVLeaveVT;
 
-  if(!xf86XVInitAdaptors(pScreen, infoPtr))
+  if(!xf86XVInitAdaptors(pScreen, adaptors, num))
 	return FALSE;
 
   return TRUE;
@@ -206,7 +209,8 @@ xf86XVFreeAdaptor(XvAdaptorPtr pAdaptor)
 static Bool
 xf86XVInitAdaptors(
    ScreenPtr pScreen, 
-   XF86VideoInfoPtr infoPtr
+   XF86VideoAdaptorPtr *infoPtr,
+   int number
 ) {
   XvScreenPtr pxvs = (XvScreenPtr)(pScreen->devPrivates[XF86XvScreenIndex].ptr);
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
@@ -230,14 +234,14 @@ xf86XVInitAdaptors(
   pxvs->nAdaptors = 0;
   pxvs->pAdaptors = NULL;
 
-  pAdaptor = xcalloc(infoPtr->NumAdaptors, sizeof(XvAdaptorRec));
+  pAdaptor = xcalloc(number, sizeof(XvAdaptorRec));
   if(!pAdaptor) return FALSE;
 
   for(pa = pAdaptor, na = 0, numAdaptor = 0; 
-      na < infoPtr->NumAdaptors; 
+      na < number; 
       na++) {
 
-      adaptorPtr = &infoPtr->Adaptors[na];
+      adaptorPtr = infoPtr[na];
 
       if(!adaptorPtr->type) continue;
 

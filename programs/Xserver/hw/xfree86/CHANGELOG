@@ -1,4 +1,39 @@
 XFree86 3.9Pc (27 February 1999)
+2287. Remove pixmaps from offscreen memory when they are used to tile
+      drawables that aren't in videomemory (#2497, Mark Vojkovich).
+2286. New DGA DDX layer (not finished yet) (#2495, Mark Vojkovich).
+2285. Backwards compatibility layer translating DGA 1.0 into the new DDX
+      (#2494, Mark Vojkovich).
+2284. Disable old DGA support in the cirrus driver (#2493, Mark Vojkovich).
+2283. Ansification and gcc warning elimnation in xclipboard, xclock, xcmsdb,
+      xconsole, xdm, xdpyinfo, xedit, xfd and xfindproxy (#2491,
+      Matthieu Herrb).
+2282. Fix 8 plane TGA 8x8 pattern fill (#2490, Matt Grossman).
+2281. Fix pitch padding in the xf24_32bpp layer (#2489, 2496, Itai Nahshon).
+2280. Add DPMS support for the Cirrus Laguna chips (#2489, 2496, Itai Nahshon).
+2279. Add loader req/ref symbol lists to the cirrus module (#2489, 2496,
+      Itai Nahshon).
+2278. Fix cirrus display corruption with acceleration and SW cursor
+      (#2489, 2496, Itai Nahshon).
+2277. Add minimal 5430 support to the cirrus driver (#2489, 2496,
+      Itai Nahshon).
+2276. Resync LynxOS support (#2486, Thomas Mueller).
+2275. Remove the driver for the never-released P3D chipset (#2285, Dejan Ilic).
+2274. Change xf86XVScreenInit's arguments so that it's easier to initialize
+      the Xv DDX when adaptors come from multiple sources (#2484,
+      Mark Vojkovich).
+2273. Ansification and gcc warning elimnation in x11perf and xauth
+      (#2483, Matthieu Herrb).
+2272. Add support for setting write-combining for the frame buffer memory
+      via the PPro/PII MTRR facility provided in Linux 2.2 (#2480,
+      David Wragg).
+2271. Xaw and xedit updates/fixes (#2479, Paulo Cesar Pereira de Andrade).
+2270. Add some more PCI data (#2478, Andrew Aitchison, #2489, 2495,
+      Itai Nahshon).
+2269. Fix a bug in the KIO8-U encoding in fontenc.c (#2477,
+      Juliusz Chroboczek).
+2268. Fix most of the warnings that show up when building on Digital Unix 4.0D,
+      with the DEC C compiler.
 2267. Fix for Millennium II hardware cursor-related loss of sync problem
       that shows up with some revs of the 3026 ramdac (Trey Boudreau).
 2266. Update the setting of the option registers in G-type RAMDAC
@@ -7311,4 +7346,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.693 1999/02/24 17:18:20 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.694 1999/02/26 02:35:01 dawes Exp $

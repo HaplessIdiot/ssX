@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbcpyarea.c,v 1.1 1999/01/23 09:56:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbcpyarea.c,v 1.2 1999/02/07 06:18:50 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -18,6 +18,7 @@
 #include "mistruct.h"
 #include "dix.h"
 #include "mibstore.h"
+
 
 
 RegionPtr
@@ -46,6 +47,13 @@ cfb24_32CopyArea(
 	    return cfb32BitBlt (pSrcDraw, pDstDraw,
             		pGC, srcx, srcy, width, height, dstx, dsty, 
 			cfbDoBitblt24To32, 0L);
+	} else if((pDstDraw->type == DRAWABLE_WINDOW) &&
+		(pSrcDraw->type == DRAWABLE_WINDOW) && (pGC->alu == GXcopy) &&
+		((pGC->planemask & 0x00ffffff) == 0x00ffffff)) {
+
+                return cfb24BitBlt (pSrcDraw, pDstDraw,
+                        pGC, srcx, srcy, width, height, dstx, dsty, 
+                        cfb24_32DoBitblt24To24GXcopy, 0L);
 	} else {
 	    return(cfb24CopyArea(pSrcDraw, pDstDraw, pGC, srcx, srcy,
 		    width, height, dstx, dsty));
@@ -599,4 +607,180 @@ cfbDoBitblt32To24(
 	    }
 	}
     }
+}
+
+
+
+
+static void 
+Do24To24Blt(
+   unsigned char *ptr,
+   int pitch,
+   int nbox,
+   DDXPointPtr pptSrc,
+   BoxPtr pbox,
+   int xdir, int ydir
+){
+   int width, height, diff, phase;
+   CARD8 *swap, *lineAddr;
+
+   ydir *= pitch;
+
+   swap = (CARD8*)ALLOCATE_LOCAL((2048 * 3) + 3);
+
+   for(;nbox; pbox++, pptSrc++, nbox--) {
+	lineAddr = ptr + (pptSrc->y * pitch) + (pptSrc->x * 3);
+	diff = ((pbox->y1 - pptSrc->y) * pitch) + ((pbox->x1 - pptSrc->x) * 3);
+	width = (pbox->x2 - pbox->x1) * 3;
+	height = pbox->y2 - pbox->y1;
+
+	if(ydir < 0) 
+	    lineAddr += (height - 1) * pitch;
+
+	phase = (long)lineAddr & 3L;
+
+	while(height--) {
+	    /* copy src onto the stack */
+	    memcpy(swap, (CARD32*)((long)lineAddr & ~3L), 
+				(width + phase + 3) & ~3L);
+
+	    /* copy the stack to the dst */
+	    memcpy(lineAddr + diff, swap + phase, width); 
+	    lineAddr += ydir;
+	}
+    }
+
+    DEALLOCATE_LOCAL(swap);
+}
+
+
+static void
+cfb24_32DoBitBlt(
+    DrawablePtr	    pSrc, 
+    DrawablePtr	    pDst,
+    RegionPtr	    prgnDst,
+    DDXPointPtr	    pptSrc,
+    void	    (*DoBlt)() 
+){
+    int nbox, careful, pitch;
+    BoxPtr pbox, pboxTmp, pboxNext, pboxBase, pboxNew1, pboxNew2;
+    DDXPointPtr pptTmp, pptNew1, pptNew2;
+    int xdir, ydir;
+    unsigned char *ptr;
+
+    /* XXX we have to err on the side of safety when both are windows,
+     * because we don't know if IncludeInferiors is being used.
+     */
+    careful = 1;
+
+    pbox = REGION_RECTS(prgnDst);
+    nbox = REGION_NUM_RECTS(prgnDst);
+
+    pboxNew1 = NULL;
+    pptNew1 = NULL;
+    pboxNew2 = NULL;
+    pptNew2 = NULL;
+    if (careful && (pptSrc->y < pbox->y1)) {
+        /* walk source botttom to top */
+	ydir = -1;
+
+	if (nbox > 1) {
+	    /* keep ordering in each band, reverse order of bands */
+	    pboxNew1 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
+	    if(!pboxNew1)
+		return;
+	    pptNew1 = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
+	    if(!pptNew1) {
+	        DEALLOCATE_LOCAL(pboxNew1);
+	        return;
+	    }
+	    pboxBase = pboxNext = pbox+nbox-1;
+	    while (pboxBase >= pbox) {
+	        while ((pboxNext >= pbox) &&
+		       (pboxBase->y1 == pboxNext->y1))
+		    pboxNext--;
+	        pboxTmp = pboxNext+1;
+	        pptTmp = pptSrc + (pboxTmp - pbox);
+	        while (pboxTmp <= pboxBase) {
+		    *pboxNew1++ = *pboxTmp++;
+		    *pptNew1++ = *pptTmp++;
+	        }
+	        pboxBase = pboxNext;
+	    }
+	    pboxNew1 -= nbox;
+	    pbox = pboxNew1;
+	    pptNew1 -= nbox;
+	    pptSrc = pptNew1;
+        }
+    } else {
+	/* walk source top to bottom */
+	ydir = 1;
+    }
+
+    if (careful && (pptSrc->x < pbox->x1)) {
+	/* walk source right to left */
+        xdir = -1;
+
+	if (nbox > 1) {
+	    /* reverse order of rects in each band */
+	    pboxNew2 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
+	    pptNew2 = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
+	    if(!pboxNew2 || !pptNew2) {
+		if (pptNew2) DEALLOCATE_LOCAL(pptNew2);
+		if (pboxNew2) DEALLOCATE_LOCAL(pboxNew2);
+		if (pboxNew1) {
+		    DEALLOCATE_LOCAL(pptNew1);
+		    DEALLOCATE_LOCAL(pboxNew1);
+		}
+	        return;
+	    }
+	    pboxBase = pboxNext = pbox;
+	    while (pboxBase < pbox+nbox) {
+	        while ((pboxNext < pbox+nbox) &&
+		       (pboxNext->y1 == pboxBase->y1))
+		    pboxNext++;
+	        pboxTmp = pboxNext;
+	        pptTmp = pptSrc + (pboxTmp - pbox);
+	        while (pboxTmp != pboxBase) {
+		    *pboxNew2++ = *--pboxTmp;
+		    *pptNew2++ = *--pptTmp;
+	        }
+	        pboxBase = pboxNext;
+	    }
+	    pboxNew2 -= nbox;
+	    pbox = pboxNew2;
+	    pptNew2 -= nbox;
+	    pptSrc = pptNew2;
+	}
+    } else {
+	/* walk source left to right */
+        xdir = 1;
+    }
+
+    cfbGetByteWidthAndPointer(pDst, pitch, ptr);
+
+    (*DoBlt)(ptr, pitch, nbox, pptSrc, pbox, xdir, ydir);
+ 
+    if (pboxNew2) {
+	DEALLOCATE_LOCAL(pptNew2);
+	DEALLOCATE_LOCAL(pboxNew2);
+    }
+    if (pboxNew1) {
+	DEALLOCATE_LOCAL(pptNew1);
+	DEALLOCATE_LOCAL(pboxNew1);
+    }
+
+}
+
+void 
+cfb24_32DoBitblt24To24GXcopy(
+    DrawablePtr pSrc, 
+    DrawablePtr pDst, 
+    int rop,
+    RegionPtr prgnDst, 
+    DDXPointPtr pptSrc,
+    unsigned long pm,
+    unsigned long bitPlane
+){
+    cfb24_32DoBitBlt(pSrc, pDst, prgnDst, pptSrc, Do24To24Blt);
 }

@@ -28,17 +28,14 @@ SOFTWARE.
 static XRectangle   *rects;
 static GC	    pgc;
 
-int InitRectangles(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitRectangles(XParms xp, Parms p, int reps)
 {
     int i;
     int size = p->special;
     int step;
     int x, y;
     int rows;
-    int	half;
     int	lw = 0;
 
     pgc = xp->fggc;
@@ -87,10 +84,8 @@ int InitRectangles(xp, p, reps)
     return reps;
 }
 
-void DoRectangles(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoRectangles(XParms xp, Parms p, int reps)
 {
     int i;
 
@@ -103,10 +98,8 @@ void DoRectangles(xp, p, reps)
     }
 }
 
-void DoOutlineRectangles (xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int	    reps;
+void 
+DoOutlineRectangles(XParms xp, Parms  p, int reps)
 {
     int	i;
 
@@ -119,9 +112,8 @@ void DoOutlineRectangles (xp, p, reps)
     }
 }
 
-void EndRectangles(xp, p)
-    XParms  xp;
-    Parms p;
+void 
+EndRectangles(XParms xp, Parms p)
 {
     free(rects);
 }

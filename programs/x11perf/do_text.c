@@ -23,6 +23,7 @@ SOFTWARE.
 ******************************************************************************/
 
 #include "x11perf.h"
+#include <stdio.h>
 
 static char **charBuf;
 static XFontStruct *font, *bfont;
@@ -34,10 +35,8 @@ static int charsPerLine, totalLines;
 #define SEGS 3
 
 
-int InitText(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitText(XParms xp, Parms p, int reps)
 {
     int		i, j;
     char	ch;
@@ -120,17 +119,14 @@ int InitText(xp, p, reps)
              | pci->ascent | pci->descent | pci->attributes) == 0);     \
 } /* GetRealChar */
 
-int InitText16(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitText16(XParms xp, Parms p, int reps)
 {
     register int	i, j;
     register char	*pbuf0, *pbuf1, *pbuf2;
     XGCValues   	gcv;
-    int			charsPerSeg;
     int			rows, columns, totalChars, ch;
-    int			brows, bcolumns, btotalChars, bch;
+    int			brows, bcolumns = 0, btotalChars = 0, bch = 0;
 
     font = XLoadQueryFont(xp->d, p->font);
     if (font == NULL) {
@@ -222,10 +218,8 @@ int InitText16(xp, p, reps)
     return reps;
 }
 
-void DoText(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoText(XParms xp, Parms p, int reps)
 {
     int     i, line, startLine;
 
@@ -245,10 +239,8 @@ void DoText(xp, p, reps)
     }
 }
 
-void DoText16(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoText16(XParms xp, Parms p, int reps)
 {
     int     i, line, startLine;
 
@@ -268,10 +260,8 @@ void DoText16(xp, p, reps)
     }
 }
 
-void DoPolyText(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoPolyText(XParms xp, Parms p, int reps)
 {
     int     i, line, startLine;
 
@@ -291,10 +281,8 @@ void DoPolyText(xp, p, reps)
     }
 }
 
-void DoPolyText16(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoPolyText16(XParms xp, Parms p, int reps)
 {
     int     i, line, startLine;
 
@@ -314,10 +302,8 @@ void DoPolyText16(xp, p, reps)
     }
 }
 
-void DoImageText(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoImageText(XParms xp, Parms p, int reps)
 {
     int     i, line, startLine;
 
@@ -337,10 +323,8 @@ void DoImageText(xp, p, reps)
     }
 }
 
-void DoImageText16(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoImageText16(XParms xp, Parms p, int reps)
 {
     int     i, line, startLine;
 
@@ -360,16 +344,14 @@ void DoImageText16(xp, p, reps)
     }
 }
 
-void ClearTextWin(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+ClearTextWin(XParms xp, Parms p)
 {
     XClearWindow(xp->d, xp->w);
 }
 
-void EndText(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndText(XParms xp, Parms p)
 {
     int i;
 
@@ -384,9 +366,8 @@ void EndText(xp, p)
 	XFreeFont(xp->d, bfont);
 }
 
-void EndText16(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndText16(XParms xp, Parms p)
 {
     int i;
 

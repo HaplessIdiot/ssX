@@ -27,10 +27,8 @@ SOFTWARE.
 static XPoint   *points;
 static GC       pgc;
 
-static void GenerateLines(xp, p, ddashed)
-    XParms  xp;
-    Parms   p;
-    Bool    ddashed;
+static void 
+GenerateLines(XParms xp, Parms p, Bool ddashed)
 {
     int size;
     int half;		/* Half of width if wide line		        */
@@ -39,7 +37,7 @@ static void GenerateLines(xp, p, ddashed)
     int x, y;		/* Next point					*/
     int xdir, ydir;	/* Which direction x, y are going		*/
     int bigxdir;	
-    int x1, y1;		/* offsets to compute next point from current	*/
+    int x1 = 0, y1 = 0;	/* offsets to compute next point from current	*/
     int phase;		/* how far into 0..4*(size_1) we are		*/
     float phasef;       /* how far we are in real numbers		*/
     float phaseinc;     /* how much to increment phasef at each segment */
@@ -164,20 +162,15 @@ static void GenerateLines(xp, p, ddashed)
     }
 }
  
-int InitLines(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitLines(XParms xp, Parms p, int reps)
 {
     GenerateLines(xp, p, False);
 	return reps;
 }
 
-static int GenerateWideLines(xp, p, reps, ddashed)
-    XParms  xp;
-    Parms   p;
-    int     reps;
-    Bool    ddashed;
+static int 
+GenerateWideLines(XParms xp, Parms p, int reps, Bool ddashed)
 {
     int size;
 
@@ -200,18 +193,14 @@ static int GenerateWideLines(xp, p, reps, ddashed)
     return reps;
 }
 
-int InitWideLines(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitWideLines(XParms xp, Parms p, int reps)
 {
     return GenerateWideLines(xp, p, reps, False);
 }
  
-int InitDashedLines(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitDashedLines(XParms xp, Parms p, int reps)
 {
     char dashes[2];
 
@@ -226,10 +215,8 @@ int InitDashedLines(xp, p, reps)
     return reps;
 }
 
-int InitWideDashedLines(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitWideDashedLines(XParms xp, Parms p, int reps)
 {
     int		size;
     XGCValues   gcv;
@@ -249,10 +236,8 @@ int InitWideDashedLines(xp, p, reps)
     return reps;
 }
 
-int InitDoubleDashedLines(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitDoubleDashedLines(XParms xp, Parms p, int reps)
 {
     char dashes[2];
 
@@ -267,10 +252,8 @@ int InitDoubleDashedLines(xp, p, reps)
     return reps;
 }
 
-int InitWideDoubleDashedLines(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitWideDoubleDashedLines(XParms xp, Parms p, int reps)
 {
     int		size;
     XGCValues   gcv;
@@ -290,10 +273,8 @@ int InitWideDoubleDashedLines(xp, p, reps)
     return reps;
 }
 
-void DoLines(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoLines(XParms xp, Parms p, int reps)
 {
     int i;
 
@@ -311,9 +292,8 @@ void DoLines(xp, p, reps)
     }
 }
 
-void EndLines(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndLines(XParms xp, Parms p)
 {
     free(points);
 }

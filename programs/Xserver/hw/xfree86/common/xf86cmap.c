@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.7 1998/12/13 05:32:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.8 1999/01/14 13:04:09 dawes Exp $ */
 
 #ifdef _XOPEN_SOURCE
 #include <math.h>
@@ -34,14 +34,8 @@
 #define SCREEN_EPILOGUE(pScreen, field, wrapper)\
     ((pScreen)->field = wrapper)
 
-#ifdef XFreeXDGA
-/* need to fix this up for DGA */
 #define LOAD_PALETTE(pmap, index) ((pmap == miInstalledMaps[index]) && \
  				xf86Screens[index]->vtSema) 
-#else
-#define LOAD_PALETTE(pmap, index) ((pmap == miInstalledMaps[index]) && \
- 				xf86Screens[index]->vtSema) 
-#endif
 
 
 typedef struct _CMapLink {

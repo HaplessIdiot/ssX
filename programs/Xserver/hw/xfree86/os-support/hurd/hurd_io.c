@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_io.c,v 1.1 1998/08/16 10:25:48 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -72,17 +72,6 @@ typedef struct {
 #define MOUSE_MOTION	4		/* mouse motion */
 #define KEYBD_EVENT	5		/* key up/down */
 
-/*
- *	Handle any XF86Config options for "OsMouse", How you treat errors
- *	is up to you, they may or may not be Fatal
- */
-void
-xf86OsMouseOption(
-    int		lt,	/* type returned by gettoken */
-    pointer	lp	/* The lexical return symbol */
-    )
-{
-}
 /*
  * xf86OsMouseProc --
  *      Handle the initialization, etc. of a mouse

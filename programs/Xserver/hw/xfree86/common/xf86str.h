@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.18 1999/01/26 10:40:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.19 1999/02/12 22:51:58 hohndel Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -16,7 +16,6 @@
 #include "input.h"
 #include "scrnintstr.h"
 #include "xf86Module.h"
-
 
 /* Video mode flags */
 
@@ -360,6 +359,41 @@ typedef struct _ScrnAccessRec {
     resType rt;
 } xf86ScrnAccessRec, *xf86ScrnAccessPtr;
 
+/* DGA */
+
+typedef struct {
+   int num;		/* A unique identifier for the mode (num > 0) */
+   DisplayModePtr mode;
+   int flags;		/* DGA_CONCURRENT_ACCESS, etc... */
+   int imageWidth;	/* linear accessible portion (pixels) */
+   int imageHeight;
+   int pixmapWidth;	/* Xlib accessible portion (pixels) */
+   int pixmapHeight;	/* both fields ignored if no concurrent access */
+   int bytesPerScanline; 
+   int byteOrder;	/* MSBFirst, LSBFirst */
+   int depth;		
+   int bitsPerPixel;
+   unsigned long red_mask;
+   unsigned long green_mask;
+   unsigned long blue_mask;
+   int viewportWidth;
+   int viewportHeight;
+   int xViewportStep;	/* viewport position granularity */
+   int yViewportStep;
+   int maxViewportX;	/* max viewport origin */
+   int maxViewportY;
+   int viewportFlags;	/* types of page flipping possible */
+   unsigned char* memBase;
+   int reserved1;
+   int reserved2;
+} DGAModeRec, *DGAModePtr;
+
+typedef struct {
+   DGAModePtr mode;
+   PixmapPtr pPix;
+} DGADeviceRec, *DGADevicePtr;
+
+
 /*
  * ScrnInfoRec
  *
@@ -370,6 +404,7 @@ typedef struct _ScrnAccessRec {
  * fields are to be added in place of the "reserved*" fields.  No fields
  * are to be dependent on compile-time defines.
  */
+
 
 typedef struct _ScrnInfoRec {
     int			driverVersion;
@@ -488,6 +523,8 @@ typedef struct _ScrnInfoRec {
 				     Bool verbose, int flags);
     Bool		(*SaveRestoreImage)(int scrnIndex,
 					    SaveRestoreFlags what);
+    int			(*SetDGAMode)(int scrnIndex, int num, 
+					DGADevicePtr devRet);
     /*
      * This can be used when the minor ABI version is incremented.
      * The NUM_* parameter must be reduced appropriately to keep the
@@ -497,6 +534,31 @@ typedef struct _ScrnInfoRec {
 
 } ScrnInfoRec, *ScrnInfoPtr;
 
+
+typedef struct {
+   Bool (*SetMode)(ScrnInfoPtr, DGAModePtr);
+   void (*SetViewport)(ScrnInfoPtr, int, int, int);
+   int  (*GetViewport)(ScrnInfoPtr, int);
+   void (*Flush)(ScrnInfoPtr);
+   void (*FillRect)(
+	ScrnInfoPtr pScrn, 
+	int x, int y, int w, int h, 
+	unsigned long color
+   );
+   void (*BlitRect)(
+	ScrnInfoPtr pScrn, 
+	int srcx, int srcy, 
+	int w, int h, 
+	int dstx, int dsty
+   );
+   void (*BlitTransRect)(
+	ScrnInfoPtr pScrn, 
+	int srcx, int srcy, 
+	int w, int h, 
+	int dstx, int dsty,
+	unsigned long color
+   );
+} DGAFunctionRec, *DGAFunctionPtr;
 
 typedef struct {
     int			token;		/* id of the token */
@@ -584,21 +646,6 @@ typedef enum {
 
 /* For DPMS */
 typedef void (*DPMSSetProcPtr)(ScrnInfoPtr, int, int);
-
-/* For DGA */
-typedef Bool (*DGAGetParamsProcPtr)(int, unsigned long *, int *, int *);
-typedef Bool (*DGASetDirectProcPtr)(int, Bool);
-typedef Bool (*DGASetBankProcPtr)(int, int, int);
-typedef Bool (*DGASetViewportProcPtr)(int, int, int, int);
-typedef Bool (*DGAViewportChangedProcPtr)(int, int, int);
-typedef struct {
-    DGAGetParamsProcPtr		GetParams;
-    DGASetDirectProcPtr		SetDirectMode;
-    DGASetBankProcPtr		SetBank;
-    DGASetViewportProcPtr	SetViewport;
-    DGAViewportChangedProcPtr	ViewportChanged;
-    /* Future entries must be added at the end */
-} DGAInfoRec, *DGAInfoPtr;
 
 /* These are used by xf86GetClocks */
 #define CLK_REG_SAVE		-1

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.91 1999/02/13 16:44:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.92 1999/02/14 13:17:05 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -92,9 +92,8 @@ Bool xf86DPMSInit(ScreenPtr pScreen, DPMSSetProcPtr set, int flags);
 
 /* xf86DGA.c */
 
-DGAInfoPtr DGACreateInfoRec(void);
-void DGADestroyInfoRec(DGAInfoPtr pDGAInfo);
-Bool DGAInit(ScreenPtr pScreen, DGAInfoPtr pDGAInfo, int flags);
+Bool DGAInit(ScreenPtr pScreen, DGAFunctionPtr funcs, DGAModePtr modes, 
+			int num);
 
 /* xf86Events.c */
 

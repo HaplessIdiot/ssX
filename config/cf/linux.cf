@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.85 1998/12/20 11:56:22 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.86 1999/02/19 21:26:46 hohndel Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -123,6 +123,21 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #else
 #define HasLibCrypt		YES
 #endif
+#endif
+#endif
+
+/* On x86, determine whether to build with MTRR support */
+#ifndef LinuxMTRRSupport
+#ifdef i386Architecture
+/* There is no certain way to know if <asm/mtrr.h> is available,
+   but it made it into kernel 2.2, so... */ 
+#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)
+#define LinuxMTRRSupport	YES
+#else
+#define LinuxMTRRSupport	NO
+#endif
+#else
+#define LinuxMTRRSupport	NO	/* no for non-ix86 */
 #endif
 #endif
 

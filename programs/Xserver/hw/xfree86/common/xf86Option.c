@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.3 1998/12/05 14:40:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.4 1999/01/14 13:04:08 dawes Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -367,6 +367,16 @@ xf86TokenToOptinfo(OptionInfoPtr table, int token)
 	return NULL;
     else
 	return p;
+}
+
+
+const char *
+xf86TokenToOptName(OptionInfoPtr table, int token)
+{
+    OptionInfoPtr p;
+
+    p = xf86TokenToOptinfo(table, token);
+    return p->name;
 }
 
 

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.76 1999/02/19 21:27:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.77 1999/02/24 17:18:24 hohndel Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -872,6 +872,8 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     ClockRangePtr clockRanges;
     char *mod = NULL;
     const char *reqSym = NULL;
+    const char *c;
+    int flags24;
 
     /*
      * Note: This function is only called once at server startup, and
@@ -906,8 +908,16 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * Our default depth is 8, so pass it to the helper function.
      * We support both 24bpp and 32bpp layouts, so indicate that.
      */
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb 
-	 	| SupportConvert32to24 | PreferConvert32to24)) {
+
+    /* Prefer 24bpp fb unless the 8+24 option is set */
+    flags24 = Support24bppFb | Support32bppFb | SupportConvert32to24;
+    c = xf86TokenToOptName(MGAOptions, OPTION_8_PLUS_24);
+    if (!(xf86FindOption(pScrn->options, c) ||
+	  xf86FindOption(pScrn->device->options, c))) {
+	flags24 |= PreferConvert32to24;
+    }
+
+    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, flags24)) {
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */

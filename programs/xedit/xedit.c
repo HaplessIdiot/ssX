@@ -24,10 +24,19 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.c,v 1.2 1998/11/15 04:30:44 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.c,v 1.3 1998/12/06 06:08:53 dawes Exp $ */
 
 #include "xedit.h"
 #include <time.h>
+#include <sys/stat.h>
+
+#ifdef X_NOT_STDC_ENV
+void srand(); 
+int rand(); 
+#else
+#include <stdlib.h> 
+#endif
+
 #define randomize()	srand((unsigned)time((time_t*)NULL))
 
 static XtActionsRec actions[] = {
@@ -91,10 +100,8 @@ static XtResource resources[] = {
 
 #undef Offset
 
-void
-main(argc, argv)
-int argc;
-char **argv;
+int
+main(int argc, char *argv[])
 {
   XtAppContext appcon;
   unsigned num_loaded = 0;
@@ -190,6 +197,12 @@ char **argv;
 	      XtSetValues(source, args, num_args);
 	      item = AddTextSource(source, argv[i], filename,
 				   flags, file_access);
+	      if (exists && file_access == WRITE_OK) {
+		  struct stat st;
+
+		  if (stat(filename, &st) == 0)
+		      item->mode = st.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO);
+	      }
 	      if (!num_loaded)
 		  SwitchTextSource(item);
 	      ++num_loaded;
@@ -205,6 +218,7 @@ char **argv;
       XtSetKeyboardFocus(topwindow, textwindow);
 
   XtAppMainLoop(appcon);
+  exit(0);
 }
 
 static void

@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.2 1999/01/31 13:45:18 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.3 1999/02/07 06:18:27 dawes Exp $ */
 
 /* Backend-independent encoding code */
 
@@ -504,7 +504,7 @@ koi8_u_to_unicode(unsigned koicode, void *client_data)
   case 0xA6: return 0x0456;
   case 0xA7: return 0x0457;
   case 0xAD: return 0x0491;
-  case 0xB4: return 0x0403;
+  case 0xB4: return 0x0404;
   case 0xB6: return 0x0406;
   case 0xB7: return 0x0407;
   case 0xBD: return 0x0490;

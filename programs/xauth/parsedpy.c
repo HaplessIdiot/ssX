@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xauth/parsedpy.c,v 3.1 1998/04/05 00:46:08 robin Exp $ */
+/* $XFree86: xc/programs/xauth/parsedpy.c,v 3.2 1998/10/04 09:40:45 dawes Exp $ */
 
 #include <stdio.h>			/* for NULL */
 #include <ctype.h>			/* for isascii() and isdigit() */
@@ -47,15 +47,14 @@ extern char *malloc();
 #else
 #include <stdlib.h>
 #endif
-
+#include "xauth.h"
 
 /*
  * private utility routines
  */
 
-/*static*/ char *copystring (src, len)
-    char *src;
-    int len;
+char *
+copystring (char *src, int len)
 {
     char *cp;
 
@@ -69,9 +68,8 @@ extern char *malloc();
 }
 
 
-char *get_local_hostname (buf, maxlen)
-    char *buf;
-    int maxlen;
+char *
+get_local_hostname (char *buf, int maxlen)
 {
     buf[0] = '\0';
     (void) XmuGetHostname (buf, maxlen);
@@ -79,7 +77,8 @@ char *get_local_hostname (buf, maxlen)
 }
 
 #ifndef UNIXCONN
-static char *copyhostname ()
+static char *
+copyhostname (void)
 {
     char buf[256];
 
@@ -91,12 +90,13 @@ static char *copyhostname ()
 /*
  * parse_displayname - display a display string up into its component parts
  */
-Bool parse_displayname (displayname, familyp, hostp, dpynump, scrnump, restp)
-    char *displayname;
-    int *familyp;			/* return */
-    char **hostp;			/* return */
-    int *dpynump, *scrnump;		/* return */
-    char **restp;			/* return */
+Bool 
+parse_displayname (char *displayname, 
+		   int *familyp,	/* return */
+		   char **hostp,	/* return */
+		   int *dpynump,	/* return */
+		   int *scrnump,	/* return */
+		   char **restp)	/* return */
 {
     char *ptr;				/* work variables */
     int len;				/* work variable */

@@ -728,5 +728,18 @@ will not allways be displayed correctly.
    after the cursor position.
 
 
+#2479 19 Feb 1999
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.12 1998/12/06 06:08:10 dawes Exp $
+-- Xaw --
+ + Fixed bug in the line numbering code, when removing lines before the
+   top position.
+ + Changed code to form regions to always show the cursor after formatting the
+   text.
+
+-- xedit --
+ + Added code to keep the file mode, after saving. This is useful when editting
+   scripts, so that the executable flag will not be lost after edition.
+
+
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.13 1999/01/11 05:13:11 dawes Exp $

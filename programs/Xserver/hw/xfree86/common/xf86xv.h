@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.1 1998/08/13 14:45:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.2 1998/09/13 05:23:34 dawes Exp $ */
 
 #ifndef _XVDIX_H_
 #define _XVDIX_H_
@@ -75,16 +75,12 @@ typedef struct {
   QueryBestSizeFuncPtr QueryBestSize;
 } XF86VideoAdaptorRec, *XF86VideoAdaptorPtr;
 
-typedef struct {
-   int 			NumAdaptors;
-   XF86VideoAdaptorPtr 	Adaptors;
-} XF86VideoInfoRec, *XF86VideoInfoPtr;
-
 
 Bool
 xf86XVScreenInit(
    ScreenPtr pScreen, 
-   XF86VideoInfoPtr infoPtr
+   XF86VideoAdaptorPtr 	*Adaptors,
+   int num
 );
 
 

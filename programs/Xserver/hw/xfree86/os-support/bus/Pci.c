@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.6 1999/01/14 13:05:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.7 1999/01/15 02:55:27 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -759,6 +759,11 @@ pciCfgMech1Write(PCITAG tag, int offset, CARD32 val)
 #endif
 
   outl(0xCF8, PCI_EN | tag | (offset & 0xfc));
+#if defined(Lynx) && defined(__powerpc__)
+  outb(0x80, 0x00);	/* wo this the next access fails 
+                         * on my Powerstack system when we use
+                         * assembler inlines for outl */
+#endif
   outl(0xCFC, val);
 
 #if defined(__powerpc__)
