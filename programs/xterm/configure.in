@@ -61,6 +61,7 @@ stdlib.h \
 termios.h \
 unistd.h \
 )
+AC_HEADER_TIME
 
 ###	checks for typedefs
 CF_SIZE_T
@@ -69,6 +70,7 @@ AC_CHECK_TYPE(time_t, long)
 ###	checks for library functions
 AC_CHECK_FUNCS( \
 	bcopy \
+	getlogin \
 	memmove \
 	strerror \
 	tcgetattr \

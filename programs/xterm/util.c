@@ -664,7 +664,7 @@ ClearInLine(TScreen *screen, int row, int col, int len)
 	 * so this has the effect of suppressing trailing blanks from a
 	 * selection.
 	 */
-	if (col + len + 1 < screen->max_col) {
+	if (col + len < screen->max_col + 1) {
 		flags |= CHARDRAWN;
 	} else {
 		len = screen->max_col + 1 - col;
