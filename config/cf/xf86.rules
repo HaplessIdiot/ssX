@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xf86.rules /main/9 1996/10/31 14:54:26 kaleb $
-XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.26 1999/08/14 10:48:59 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.27 1999/08/14 11:13:42 dawes Exp $
 
 /*
  * These rules are needed to build the XFree86 X Servers
@@ -243,7 +243,7 @@ InstallDriverSDKDynamicModule(ModuleLibraryTargetName(module),dest,subdir)
 #endif
 #endif
 
-#ifndef ServerDriverSDKTarget(program)
+#ifndef ServerDriverSDKTarget
 #if !DoLoadableServer
 #define ServerDriverSDKTarget(program)					/**/
 #else
