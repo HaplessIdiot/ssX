@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.15 2001/06/11 07:23:11 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.16 2001/09/12 00:58:11 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -102,8 +102,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  *
  * Darwin's alloca() seg faults (rather than returning NULL) on failed
  * allocations, so we can't use it.
+ *
+ * Darwin's setlocale() doesn't work properly, so use X11's instead.
  */
-#define StandardDefines         DarwinMachineDefines -D__DARWIN__ -DNO_ALLOCA
+#define StandardDefines         DarwinMachineDefines -D__DARWIN__ \
+                                -DNO_ALLOCA -DX_LOCALE
 
 /*
  * Set this to NO to just build the client libs, which should work without
