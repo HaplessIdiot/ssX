@@ -1,4 +1,5 @@
 /* $XConsortium: xkbout.c /main/4 1996/01/23 10:10:56 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

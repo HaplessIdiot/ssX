@@ -1,9 +1,13 @@
-  XFree86 3.1.2 P9000 Server Release Notes
+  XFree86 3.2 P9000 Server Release Notes
   Erik Nygren (nygren@mit.edu)
-  1995 May 24
+  1996 March 31
 
   1.  Change Log
 
+
+     1996.03.31:
+
+        o  Added support for the XFree86-DGA extension (Erik Nygren)
 
      1995.05.24:
 
@@ -59,11 +63,11 @@
         o  Users with 1MB cards can now explicitly specify videoRam in
            the XF86Config file when autoprobing fails.  The new vram_128
            option may also be used to force the detection of 128Kx8
+
            SIMM's. (Erik Nygren)
 
         o  Added p9000line.c and p9000seg.c for accelerated line drawing
            code using the p9000 quad/clipping engine.  Blazingly fast
-
            for 1 clipping rectangle, could be made faster for multiple
            clipping regions by using software clipping. There is still a
            bug which causes xtest to report Cap style incorrect for thin
@@ -124,11 +128,11 @@
 
      1994.09.05:
 
+
+
         o  Fixed BIOS probe for Viper PCI (Bob Hollinger)
 
         o  Fixes to Orchid P9000 support (Harry Langenbacher)
-
-
 
         o  Changing of datatypes in clock code (Harry Langenbacher)
 
@@ -190,12 +194,13 @@
   have a Viper VLB.  If this happens, put chipset "vipervlb" into your
   XF86Config file.
 
+
+
   2.2.  Diamond Viper PCI
 
   For Diamond Viper PCI owners, you'll need to use scanpci to find the
   values to fill in for MemBase and IOBase in the Device section of
   XF86Config.  These values will change whenever you move cards around
-
   or add cards.  This should now work, thanks to help from Bob Hollinger
   and Matt Thomas.  You may need to specify the chipset "viperpci" in
   your XF86Config file.  You'll also need to specify an IOBase and a
@@ -255,12 +260,38 @@
 
      o  CopyArea (8bpp)
 
-  6.  High Color and TrueColor
+
+
+  6.  XFree86-DGA Extension Support
+
+  The XFree86-DGA extension is now supported.  Note that
+  XF86DGASetViewPort command is not fully implemented due to hardware
+  limitations of the P9000.  The SetViewPort and SetVidPage commands
+  have been hacked to allow double buffering under certain conditions.
+
+  For cards with 1MB or modes where xres*yres*Bpp > 1024K, no double
+  buffering is supported.  In this case, the bank size returned is equal
+  to the amount of video memory.  Using the XF86DGASetViewPort and
+  XF86DGASetVidPage commands have no results.
+
+  For cards with 2MB and for modes where virtualX*virtualY*Bpp < 1024K,
+  the behaviors of SetViewPort and SetVidPage are modified to allow
+  double buffering.  The bank size returned by XF86DGAGetVideo is equal
+  to xres*yres*Bpp.  In this mode, there are two buffers which can be
+  written to, read from, and displayed.  The XF86DGASetVidPage command
+  can be used to switch between buffers 0 and 1 for I/O.  Whichever
+  buffer is selected will be available through the linear aperature with
+  no offset.  If XF86DGASetViewPort is called with ypos < yres, it will
+  cause buffer 0 to be displayed.  If ypos >= yres, buffer 1 will be
+  displayed.  The result of this behavior is that programs which switch
+  banks as necessary and which use two vertically adjacent banks should
+  work with no P9000-specific changes.
+
+  7.  High Color and TrueColor
 
   Support for 16 and 24 bit truecolor is now supported.  Note that 24
   bit color is really 32 bits per pixel.  Use the -bpp option when
   starting the server.  Examples:
-
 
           startx -- -bpp 32
           startx -- -bpp 16
@@ -291,7 +322,7 @@
         for the selection tool.  I think later versions may have fixed
         this.
 
-  7.  Random Notes
+  8.  Random Notes
 
   Text restoration should now be fixed.  Color restoration should also
   be fixed.  You can now even run the server at the same time as svgalib
@@ -310,24 +341,23 @@
   something slower, call their tech support and they will send you a RMA
   to get the board replaced.
 
-  8.  Operating System Notes
+  9.  Operating System Notes
 
   Any operating system that can memory map linear regions in really high
   memory should work.  This should include Linux, FreeBSD, SVR4, and
   more.
 
-  8.1.  NetBSD
+  9.1.  NetBSD
 
   If you have NetBSD, you will need to install the aperture driver.
   Extract the file apNetBSD.shar (in
   xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar) and read the README
   contained therein.
 
-  9.  XF86Config
+  10.  XF86Config
 
   The modes line in the XF86Config file is now handled differently.  The
   virtual line is now ignored entirely.  Each mode on the mode line is
-
   looked at and the first usable mode is selected (ie the first one
   which works with available memory, etc).  Any other modes which are
   valid and have the same dimensions are also used.  And other modes are
@@ -363,6 +393,7 @@
         Others:
            unused
 
+
      Clocks
         any values between 25 and 135 corresponding to the clocks for
         the mode entries being used.  This line may now be omitted and
@@ -392,7 +423,6 @@
   XF86Config file are:
 
      Depth
-
 
         8: use 8 bits per pixel for 256 colors (default)
 
@@ -430,7 +460,7 @@
 
 
 
-  10.  Known Bugs
+  11.  Known Bugs
 
   There are currently problems with the server when used in conjunction
   with xdm, olvwm, and VT switching under Linux.
@@ -444,7 +474,7 @@
   1024 into the Device section of your XF86Config file.  If this doesn't
   work, try adding Option "vram_128" to the Device section.
 
-  11.  Credits
+  12.  Credits
 
   Major contributors to P9000 code:
 
@@ -459,53 +489,23 @@
   Thanks to Matt Thomas (thomas@lkg.dec.com) and Bob Hollinger
   (bob@interaccess.com) for helping to get the Viper PCI server working.
 
-
   Special thanks to David Moews (dmoews@xraysgi.ims.uconn.edu) whose
   banking patch could unfortunately not be included.
 
-  Thanks to Andy, David, Dave, Michael, Bob, all the XFree86 core team
-  people, and everyone else!
+  Thanks to Andy, David, Dave, Jon, Michael, Bob, all the XFree86 core
+  team people, and everyone else!
 
   During the course of the next few months, people will be working on
   acceleration, etc.  Please send any patches to me (nygren@mit.edu).
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.13 1996/02/04 09:08:19 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.14 1996/04/15 11:30:46 dawes Exp $
 
 
 
 
 
   $XConsortium: P9000.sgml /main/6 1995/11/12 19:59:55 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
