@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.39 2003/11/10 18:21:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.40 2004/01/30 14:31:58 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -118,6 +118,9 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
     int                 i, fd, drmWasAvailable;
     Bool                xineramaInCore = FALSE;
     int                 err = 0;
+    char                *openbusid;
+    drmVersionPtr       drmlibv;
+    int                 drmlibmajor, drmlibminor, drmdimajor, drmdiminor;
 
     if (DRIGeneration != serverGeneration) {
 	if ((DRIScreenPrivIndex = AllocateScreenPrivateIndex()) < 0)
@@ -148,8 +151,31 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
 
     drmWasAvailable = drmAvailable();
 
+    /* Check the DRM lib version.
+     * drmGetLibVersion was not supported in version 1.0, so check for
+     * symbol first to avoid possible crash or hang.
+     */
+    drmlibmajor = 1;
+    drmlibminor = 0;
+    if (xf86LoaderCheckSymbol("drmGetLibVersion")) {
+	drmlibv = drmGetLibVersion(-1);
+	if (drmlibv != NULL) {
+	    drmlibmajor = drmlibv->version_major;
+	    drmlibminor = drmlibv->version_minor;
+	    drmFreeVersion(drmlibv);
+	}
+    }
+
+    /* Check if the libdrm can handle falling back to loading based on name
+     * if a busid string is passed.
+     */
+    if (drmlibmajor == 1 && drmlibminor >= 2)
+	openbusid = pDRIInfo->busIdString;
+    else
+	openbusid = NULL;
+
     /* Note that drmOpen will try to load the kernel module, if needed. */
-    fd = drmOpen(pDRIInfo->drmDriverName, NULL );
+    fd = drmOpen(pDRIInfo->drmDriverName, openbusid);
     if (fd < 0) {
         /* failed to open DRM */
         pScreen->devPrivates[DRIScreenPrivIndex].ptr = NULL;
@@ -184,7 +210,40 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
     pDRIPriv->grabbedDRILock = FALSE;
     pDRIPriv->drmSIGIOHandlerInstalled = FALSE;
 
-    if ((err = drmSetBusid(pDRIPriv->drmFD, pDRIPriv->pDriverInfo->busIdString)) < 0) {
+    if (drmlibmajor == 1 && drmlibminor >= 2) {
+	drmSetVersion sv;
+
+	/* Get the interface version, asking for 1.1. */
+	sv.drm_di_major = 1;
+	sv.drm_di_minor = 1;
+	sv.drm_dd_major = -1;
+	err = drmSetInterfaceVersion(pDRIPriv->drmFD, &sv);
+	if (err == 0) {
+	    drmdimajor = sv.drm_di_major;
+	    drmdiminor = sv.drm_di_minor;
+	} else {
+	    /* failure, so set it to 1.0.0. */
+	    drmdimajor = 1;
+	    drmdiminor = 0;
+	}
+    }
+    else {
+	/* We can't check the DI DRM interface version, so set it to 1.0.0. */
+	drmdimajor = 1;
+	drmdiminor = 0;
+    }
+    DRIDrvMsg(pScreen->myNum, X_INFO,
+              "[drm] DRM interface version %d.%d\n", drmdimajor, drmdiminor);
+
+    /* If the interface minor number is 1.1, then we've opened a DRM device
+     * that already had the busid set through drmOpen.
+     */
+    if (drmdimajor == 1 && drmdiminor >= 1)
+	err = 0;
+    else
+	err = drmSetBusid(pDRIPriv->drmFD, pDRIPriv->pDriverInfo->busIdString);
+
+    if (err < 0) {
 	pDRIPriv->directRenderingSupport = FALSE;
 	pScreen->devPrivates[DRIScreenPrivIndex].ptr = NULL;
 	drmClose(pDRIPriv->drmFD);
@@ -2114,4 +2173,22 @@ DRIMoveBuffersHelper(
      }
    } else *xdir = 1;
 
+}
+
+char *
+DRICreatePCIBusID(pciVideoPtr PciInfo)
+{
+    char *busID;
+    int domain;
+    PCITAG tag;
+
+    busID = xalloc(20);
+    if (busID == NULL)
+	return NULL;
+
+    tag = pciTag(PciInfo->bus, PciInfo->device, PciInfo->func);
+    domain = xf86GetPciDomain(tag);
+    snprintf(busID, 20, "pci:%04x:%02x:%02x.%d", domain, PciInfo->bus,
+	PciInfo->device, PciInfo->func);
+    return busID;
 }

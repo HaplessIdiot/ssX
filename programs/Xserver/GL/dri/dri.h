@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.18 2001/03/21 16:21:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.19 2002/10/30 12:52:03 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -324,6 +324,8 @@ extern void DRIMoveBuffersHelper(ScreenPtr pScreen,
                                  int *xdir, 
                                  int *ydir, 
                                  RegionPtr reg);
+
+extern char *DRICreatePCIBusID(pciVideoPtr PciInfo);
 
 #define _DRI_H_
 
