@@ -1,8 +1,16 @@
-XCOMM $XConsortium: Imakefile,v 1.3 94/02/09 15:50:05 matt Exp $
+XCOMM $XConsortium: Imakefile /main/6 1996/09/28 16:04:42 rws $
+XCOMM $XFree86$
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
-SUBDIRS = cf imake makedepend util
+#undef BootstrapCleanSubdirs
+#define BootstrapCleanSubdirs BOOTSTRAPSUBDIRS="$(BOOTSTRAPSUBDIRS)"
+
+BOOTSTRAPSUBDIRS = imake makedepend
+#if BuildDPSLibrary
+PSWRAPDIR = pswrap
+#endif
+SUBDIRS = cf $(BOOTSTRAPSUBDIRS) util $(PSWRAPDIR)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))

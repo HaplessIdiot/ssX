@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.54 1999/11/19 13:53:21 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.55 2000/01/31 19:33:21 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -282,6 +282,18 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.54 1999/11/19 13:53:21 hohndel Exp $
 #endif
 #ifndef BuildXF86RushLibrary
 #define BuildXF86RushLibrary	BuildXF86RushExt
+#endif
+#ifndef BuildDPSLibraries
+#define BuildDPSLibraries	NO	/* Not ready yet */
+#endif
+#ifndef BuildDPSLibrary
+#define BuildDPSLibrary		BuildDPSLibraries
+#endif
+#ifndef BuildDPSTkLibrary
+#define BuildDPSTkLibrary	BuildDPSLibraries
+#endif
+#ifndef BuildPSResLibrary
+#define BuildPSResLibrary	BuildDPSLibraries
 #endif
 
 #ifndef BuildMiscDocs
@@ -1302,6 +1314,51 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #endif
 #endif
 
+#if BuildDPSLibrary
+#ifndef SharedLibDps
+#define SharedLibDps		HasSharedLibraries
+#endif
+#ifndef NormalLibDps
+#define NormalLibDps		YES
+#endif
+#ifndef DebugLibDps
+#define DebugLibDps		NO
+#endif
+#ifndef ProfileLibDps
+#define ProfileLibDps		NO
+#endif
+#endif
+
+#if BuildDPSTkLibrary
+#ifndef SharedLibDpsTk
+#define SharedLibDpsTk		HasSharedLibraries
+#endif
+#ifndef NormalLibDpsTk
+#define NormalLibDpsTk		YES
+#endif
+#ifndef DebugLibDpsTk
+#define DebugLibDpsTk		NO
+#endif
+#ifndef ProfileLibDpsTk
+#define ProfileLibDpsTk		NO
+#endif
+#endif
+
+#if BuildPSResLibrary
+#ifndef SharedLibPSRes
+#define SharedLibPSRes		HasSharedLibraries
+#endif
+#ifndef NormalLibPSRes
+#define NormalLibPSRes		YES
+#endif
+#ifndef DebugLibPSRes
+#define DebugLibPSRes		NO
+#endif
+#ifndef ProfileLibPSRes
+#define ProfileLibPSRes		NO
+#endif
+#endif
+
 #if BuildXantiLibrary
 #ifndef SharedLibXanti
 #define SharedLibXanti		NO
@@ -1429,6 +1486,42 @@ ProjectUnsharedLibReferences(XXF86RUSH,Xxf86rush,$(XXF86RUSHLIBSRC),XBuildLibDir
 SharedLibReferences(XV,Xv,$(XVLIBSRC),SOXVREV,SharedXvRev)
 #else
 ProjectUnsharedLibReferences(XV,Xv,$(XVLIBSRC),XBuildLibDir)
+#endif
+#endif
+
+#if BuildDPSLibrary
+    DPSLIBSRC = $(LIBSRC)/dps
+#if SharedLibDps
+#ifndef SharedDpsRev
+#define SharedDpsRev 1.0
+#endif
+SharedLibReferences(DPS,dps,$(DPSLIBSRC),SODPSREV,SharedDpsRev)
+#else
+ProjectUnsharedLibReferences(DPS,dps,$(DPSLIBSRC),XBuildLibDir)
+#endif
+#endif
+
+#if BuildDPSTkLibrary
+    DPSTKLIBSRC = $(LIBSRC)/dpstk
+#if SharedLibDpsTk
+#ifndef SharedDpsTkRev
+#define SharedDpsTkRev 1.0
+#endif
+SharedLibReferences(DPSTK,dpstk,$(DPSTKLIBSRC),SODPSTKREV,SharedDpsTkRev)
+#else
+ProjectUnsharedLibReferences(DPSTK,dpstk,$(DPSTKLIBSRC),XBuildLibDir)
+#endif
+#endif
+
+#if BuildPSResLibrary
+    PSRESLIBSRC = $(LIBSRC)/psres
+#if SharedLibPSRes
+#ifndef SharedPSResRev
+#define SharedPSResRev 1.0
+#endif
+SharedLibReferences(PSRES,psres,$(PSRESLIBSRC),SOPSRESREV,SharedPSResRev)
+#else
+ProjectUnsharedLibReferences(PSRES,psres,$(PSRESLIBSRC),XBuildLibDir)
 #endif
 #endif
 

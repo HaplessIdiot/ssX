@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/39 1997/02/26 18:09:44 kaleb $
-XCOMM $XFree86: xc/lib/Imakefile,v 3.30 1999/07/06 11:38:03 dawes Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.31 1999/08/28 09:00:23 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -59,6 +59,18 @@ XANTILIB = Xanti
 GLXLIB = GL
 #endif
 
+#if BuildDPSLibrary
+DPSLIB = dps
+#endif
+
+#if BuildDPSTkLibrary
+DPSTKLIB = dpstk
+#endif
+
+#if BuildPSResLibrary
+PSRESLIB = psres
+#endif
+
 XF86EXTLIBS = $(XF86MISCLIB) $(XF86VMLIB) $(XF86DGALIB) $(XF86RUSHLIB)
 
 #if BuildLBX
@@ -84,7 +96,8 @@ LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIB) X11 oldX ICE SM Xext Xt \
 	     $(SSLIB) $(XF86MISCLIB) $(XF86VMLIB) $(XF86DGALIB) $(XF86RUSHLIB) \
 	     Xmu Xpm Xaw $(XAW6LIBDIR) XIE Xi Xtst FS \
 	     PEX5 $(XKBLIBDIR) $(XKBUILIBDIR) $(LBXUTILDIR) $(XALIBDIR) \
-	     Xp $(XVLIB) $(XANTILIB) $(GLXLIB) $(ZLIBDIR) $(REGEXDIR)
+	     Xp $(XVLIB) $(XANTILIB) $(GLXLIB) $(DPSLIB) $(DPSTKLIB) \
+	     $(PSRESLIB) $(ZLIBDIR) $(REGEXDIR)
 #else
 #if XnestServer || BuildGLXLibrary
 XEXTDIR = Xext

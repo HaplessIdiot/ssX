@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/85 1998/02/26 17:14:44 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/Imakefile,v 3.23 1999/05/04 09:35:24 dawes Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.24 2000/02/12 04:02:01 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -56,6 +56,10 @@ XFINDPROXYSRCDIR = xfindproxy
      MKCFMSRCDIR = mkcfm
 #endif
 
+#if BuildDPSLibraries
+    MAKEPSRESDIR = makepsres
+#endif
+
    XPMCLIENTDIRS = cxpm sxpm
 
 #if BuildServersOnly
@@ -64,7 +68,7 @@ SUBDIRS = $(XSSRCDIR)
 SUBDIRS = \
 	appres bdftopcf bitmap \
 	$(SCREENSAVESRCDIR) editres fsinfo fslsfonts fstobdf iceauth \
-	$(MKCFMSRCDIR) \
+	$(MAKEPSRESDIR) $(MKCFMSRCDIR) \
 	mkfontdir oclock $(PROXYMGRSRCDIR) $(RGBSRCDIR) $(RSTARTSRCDIR) \
 	setxkbmap \
 	$(SMPROXYSRCDIR) $(TWMSRCDIR) x11perf xauth xclipboard xclock \
