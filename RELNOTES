@@ -84,8 +84,8 @@ don't have enough space to cover them all here.
 
    o The nv driver for NVIDIA cards has been updated as follows:
 
-        o Support added to the nv driver for the GeForce FX 5700, which was
-          the only GeForce FX card that didn't work with XFree86 4.3.
+        o Support added to the nv driver for the GeForce FX 5700, which
+          didn't work with XFree86 4.3.
 
         o The driver now does a much better job of autodetecting which con-
           nector of dual output cards the monitor is attached to, which
@@ -631,10 +631,10 @@ ual page for more comprehensive information:
    o A new section called ServerLayout has been added to allow the layout of
      the screens and the selection of input devices to be specified.  The
      ServerLayout sections may also include options that are normally found
-     in the ServerFlags section.  Multiple ServerLayout sections may be pre-
-     sent, and selected from the command line.  The following example shows a
-     ServerLayout section for a dual-headed configuration with two Matrox
-     cards, and two mice:
+     in the ServerFlags section.  Multiple ServerLayout sections may be
+     present, and selected from the command line.  The following example
+     shows a ServerLayout section for a dual-headed configuration with two
+     Matrox cards, and two mice:
 
                Section "ServerLayout"
                    Identifier  "Layout 1"
@@ -1067,7 +1067,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.86 herrb Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.87 dawes Exp $
 
 
 $XFree86: $

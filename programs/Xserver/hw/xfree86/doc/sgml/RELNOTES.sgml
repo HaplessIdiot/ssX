@@ -9,7 +9,7 @@
 <date>23 November 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.85 2003/11/29 01:10:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.86 2003/11/29 18:01:30 herrb Exp $
 </ident>
 
 <abstract>
@@ -131,8 +131,7 @@ don't have enough space to cover them all here.
 
 	<itemize>
 	<item>Support added to the nv driver for the GeForce FX 5700,
-		which was the only GeForce FX card that didn't work with
-		XFree86 4.3.
+		which didn't work with XFree86 4.3.
 
 	<item>The driver now does a much better job of autodetecting
 		which connector of dual output cards the monitor is
