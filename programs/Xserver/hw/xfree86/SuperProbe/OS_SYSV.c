@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: OS_SYSV.c,v 1.5 95/01/16 13:16:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.6 1995/01/28 15:47:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.7 1995/03/08 04:55:30 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -102,8 +102,8 @@ int munmap();
 #endif
 
 #ifndef SI86IOPL
-#define SET_IOPL() sysi86(SI86V6,V86SC_IOPL,PS_IOPL)
-#define RESET_IOPL() sysi86(SI86V6,V86SC_IOPL,0)
+#define SET_IOPL() sysi86(SI86V86,V86SC_IOPL,PS_IOPL)
+#define RESET_IOPL() sysi86(SI86V86,V86SC_IOPL,0)
 #else
 #define SET_IOPL() sysi86(SI86IOPL,3)
 #define RESET_IOPL() sysi86(SI86IOPL,0)
