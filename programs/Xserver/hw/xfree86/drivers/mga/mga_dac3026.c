@@ -1079,7 +1079,8 @@ MGA3026RamdacInit(ScrnInfoPtr pScrn)
 				HARDWARE_CURSOR_SOURCE_MASK_NOT_INTERLEAVED;
 
     MGAdac->LoadPalette 	= MGA3026LoadPalette;
-
+    MGAdac->RestorePalette	= MGA3026RestorePalette;
+    
     MGAdac->ClockFrom = X_PROBED;
     if ( pMga->Chipset == PCI_CHIP_MGA2064 && pMga->Bios2.PinID == 0 )
     {

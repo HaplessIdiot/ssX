@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.17 2003/04/23 21:51:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.18 2003/09/24 02:43:28 dawes Exp $ */
 
 #include "xf86.h"
 #include "tdfx.h"
@@ -258,7 +258,7 @@ TDFXSetupImageVideoTexture(ScreenPtr pScreen)
         return NULL;
 
     adapt->type = XvWindowMask | XvInputMask | XvImageMask;
-    adapt->flags = 0;
+    adapt->flags = VIDEO_OVERLAID_IMAGES;
     adapt->name = "3dfx Video Texture";
     adapt->nPorts = TDFX_MAX_TEXTURE_PORTS;
     adapt->nEncodings = sizeof(TextureEncoding) / sizeof(XF86VideoEncodingRec);
@@ -507,9 +507,6 @@ static void
 TDFXStopVideoTexture(ScrnInfoPtr pScrn, pointer data, Bool cleanup)
 {
   TDFXPtr pTDFX = TDFXPTR(pScrn);
-  TDFXPortPrivPtr pPriv = (TDFXPortPrivPtr)data;
-
-  REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
 
   if (cleanup) {
      if(pTDFX->textureBuffer) {
@@ -537,6 +534,7 @@ TDFXScreenToScreenYUVStretchBlit (ScrnInfoPtr pScrn,
    INT32 src_h = (src_y2 - src_y1) & 0x1FFF;
    INT32 dst_w = (dst_x2 - dst_x1) & 0x1FFF;
    INT32 dst_h = (dst_y2 - dst_y1) & 0x1FFF;
+
    /* Setup for blit src and dest */
    TDFXMakeRoom(pTDFX, 4);
    DECLARE(SSTCP_DSTSIZE|SSTCP_SRCSIZE|SSTCP_DSTXY|SSTCP_COMMAND/*|SSTCP_COMMANDEXTRA*/);
@@ -798,7 +796,8 @@ TDFXDisplayVideoOverlay(
     int dudx, dvdy;
 
     dudx = (src_w << 20) / drw_w;
-    dvdy = (src_h << 20) / drw_h;
+    /* subract 1 to eliminate garbage on last line */
+    dvdy = (( src_h - 1 )<< 20) / drw_h; 
 
     offset += ((left >> 16) & ~1) << 1;
     left = (left & 0x0001ffff) << 3;

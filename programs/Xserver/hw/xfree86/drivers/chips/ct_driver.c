@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.129 2003/09/24 02:43:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.130 2003/10/02 13:29:57 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1769,10 +1769,12 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	case CHIPS_CT69030:
 	    /* The ct69030 has 4Mb of SGRAM integrated */
 	    pScrn->videoRam = 4096;
+	    cPtr->Flags |= Chips64BitMemory;
 	    break;
 	case CHIPS_CT69000:
 	    /* The ct69000 has 2Mb of SGRAM integrated */
 	    pScrn->videoRam = 2048;
+	    cPtr->Flags |= Chips64BitMemory;
 	    break;
 	case CHIPS_CT65550:
 	    /* XR43: DRAM interface   */
@@ -1821,6 +1823,13 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		pScrn->videoRam = 1024;
 		break;
 	    }
+	    /* XR43: DRAM interface        */
+	    /* bit 4-5 mem interface width */
+	    /* 00: 32Bit		   */
+	    /* 01: 64Bit		   */
+	    tmp = cPtr->readXR(cPtr, 0x43);
+	    if ((tmp & 0x10) == 0x10)
+		cPtr->Flags |= Chips64BitMemory;
 	    break;
 	}
     }
@@ -2272,9 +2281,9 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     /* Check if maxClock is limited by the MemClk. Only 70% to allow for */
     /* RAS/CAS. Extra byte per memory clock needed if framebuffer used   */
     /* Extra byte if the overlay plane is activated                      */
-    /* We have a 64bit wide memory bus on the 69030 and 69000, and 32bits */
-    /* on the others. Thus multiply by a suitable factor                 */  
-    if ((cPtr->Chipset == CHIPS_CT69030) || (cPtr->Chipset == CHIPS_CT69000)) {
+    /* If flag Chips64BitMemory is set assume a 64bitmemory interface,   */
+    /* and 32bits on the others. Thus multiply by a suitable factor      */  
+    if (cPtr->Flags & Chips64BitMemory) {
 	if (cPtr->FrameBufferSize && (cPtr->PanelType & ChipsLCD))
 	    if (cPtr->Flags & ChipsOverlay8plus16 )
 		cPtr->MaxClock = min(cPtr->MaxClock, MemClk->Clk * 8 * 0.7 / 4);

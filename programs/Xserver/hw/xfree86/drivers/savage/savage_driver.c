@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.44 2003/09/24 02:43:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.45 2003/09/24 03:16:56 dawes Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -1852,6 +1852,16 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
 	/* set the correct clock for some BIOSes */
 	VGAOUT8(VGA_MISC_OUT_W, 
 		VGAIN8(VGA_MISC_OUT_R) | 0x0C);
+	/* Some BIOSes turn on clock doubling on non-doubled modes */
+	if (pScrn->bitsPerPixel < 24) {
+	    VGAOUT8(vgaCRIndex,0x67);
+	    if (!(VGAIN8(vgaCRReg) & 0x10)) {
+		VGAOUT8(0x3c4, 0x15);
+		VGAOUT8(0x3c5, VGAIN8(0x3C5) & ~0x10);
+		VGAOUT8(0x3c4, 0x18);
+		VGAOUT8(0x3c5, VGAIN8(0x3c5) & ~0x80);
+	    }
+	}
 
 	SavageInitialize2DEngine(pScrn);
 	SavageSetGBD(pScrn);

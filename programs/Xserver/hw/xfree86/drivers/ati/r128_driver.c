@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.80 2003/09/24 02:43:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.81 2003/09/28 20:15:53 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -3354,7 +3354,7 @@ Bool R128SwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 
 /* Used to disallow modes that are not supported by the hardware. */
 int R128ValidMode(int scrnIndex, DisplayModePtr mode,
-		  Bool verbose, int flag)
+		  Bool verbose, int flags)
 {
     ScrnInfoPtr   pScrn = xf86Screens[scrnIndex];
     R128InfoPtr   info  = R128PTR(pScrn);
@@ -3381,38 +3381,39 @@ int R128ValidMode(int scrnIndex, DisplayModePtr mode,
 
 	    if (mode->CrtcHDisplay == R128_BIOS16(j) &&
 		mode->CrtcVDisplay == R128_BIOS16(j+2)) {
-		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-			   "Modifying mode according to VBIOS: %ix%i [pclk %.1f MHz] for FP to: ",
-			   mode->CrtcHDisplay,mode->CrtcVDisplay,
-			   (float)mode->Clock/1000);
+		if ((flags & MODECHECK_FINAL) == MODECHECK_FINAL) {
+		    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			       "Modifying mode according to VBIOS: %ix%i [pclk %.1f MHz] for FP to: ",
+			       mode->CrtcHDisplay,mode->CrtcVDisplay,
+			       (float)mode->Clock/1000);
 		
-		/* Assume we are using expanded mode */
-		if (R128_BIOS16(j+5)) j  = R128_BIOS16(j+5);
-		else                  j += 9;
+		    /* Assume we are using expanded mode */
+		    if (R128_BIOS16(j+5)) j  = R128_BIOS16(j+5);
+		    else                  j += 9;
 
-		mode->Clock = (CARD32)R128_BIOS16(j) * 10;
+		    mode->Clock = (CARD32)R128_BIOS16(j) * 10;
 
-		mode->HDisplay   = mode->CrtcHDisplay   =
-		    ((R128_BIOS16(j+10) & 0x01ff)+1)*8;
-		mode->HSyncStart = mode->CrtcHSyncStart =
-		    ((R128_BIOS16(j+12) & 0x01ff)+1)*8;
-		mode->HSyncEnd   = mode->CrtcHSyncEnd   =
-		    mode->CrtcHSyncStart + (R128_BIOS8(j+14) & 0x1f);
-		mode->HTotal     = mode->CrtcHTotal     =
-		    ((R128_BIOS16(j+8)  & 0x01ff)+1)*8;
+		    mode->HDisplay   = mode->CrtcHDisplay   =
+			((R128_BIOS16(j+10) & 0x01ff)+1)*8;
+		    mode->HSyncStart = mode->CrtcHSyncStart =
+			((R128_BIOS16(j+12) & 0x01ff)+1)*8;
+		    mode->HSyncEnd   = mode->CrtcHSyncEnd   =
+			mode->CrtcHSyncStart + (R128_BIOS8(j+14) & 0x1f);
+		    mode->HTotal     = mode->CrtcHTotal     =
+			((R128_BIOS16(j+8)  & 0x01ff)+1)*8;
 
-		mode->VDisplay   = mode->CrtcVDisplay   =
-		    (R128_BIOS16(j+17) & 0x07ff)+1;
-		mode->VSyncStart = mode->CrtcVSyncStart =
-		    (R128_BIOS16(j+19) & 0x07ff)+1;
-		mode->VSyncEnd   = mode->CrtcVSyncEnd   =
-		    mode->CrtcVSyncStart + ((R128_BIOS16(j+19) >> 11) & 0x1f);
-		mode->VTotal     = mode->CrtcVTotal     =
-		    (R128_BIOS16(j+15) & 0x07ff)+1;
-		xf86ErrorF("%ix%i [pclk %.1f MHz]\n",
-			   mode->CrtcHDisplay,mode->CrtcVDisplay,
-			   (float)mode->Clock/1000);
-		
+		    mode->VDisplay   = mode->CrtcVDisplay   =
+			(R128_BIOS16(j+17) & 0x07ff)+1;
+		    mode->VSyncStart = mode->CrtcVSyncStart =
+			(R128_BIOS16(j+19) & 0x07ff)+1;
+		    mode->VSyncEnd   = mode->CrtcVSyncEnd   =
+			mode->CrtcVSyncStart + ((R128_BIOS16(j+19) >> 11) & 0x1f);
+		    mode->VTotal     = mode->CrtcVTotal     =
+			(R128_BIOS16(j+15) & 0x07ff)+1;
+		    xf86ErrorF("%ix%i [pclk %.1f MHz]\n",
+			       mode->CrtcHDisplay,mode->CrtcVDisplay,
+			       (float)mode->Clock/1000);
+		}
 		return MODE_OK;
 	    }
 	}

@@ -58,6 +58,7 @@ Permedia2InIndReg (ScrnInfoPtr pScrn, CARD32 reg)
   unsigned char ret;
 
   GLINT_SLOW_WRITE_REG (reg, PM2DACIndexReg);
+  GLINTDACDelay(5);
   ret = GLINT_READ_REG (PM2DACIndexData);
 
   return (ret);

@@ -212,6 +212,7 @@ typedef struct {
     MessageType MemClkFrom;
     Bool	SetMemClk;
     void	(*LoadPalette)(ScrnInfoPtr, int, int*, LOCO*, VisualPtr);
+    void	(*RestorePalette)(ScrnInfoPtr, unsigned char *);
     void	(*PreInit)(ScrnInfoPtr);
     void	(*Save)(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
     void	(*Restore)(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);

@@ -1,4 +1,27 @@
 XFree86 4.3.99.14 (xx October 2003)
+ 495. i830/i810 driver:
+      * Added Christian Ziez's code to tweak BIOS image to convince chipset of
+        resized video RAM.
+      * Fixed viewport/video overlay window alingment issues.
+      * Fixed calculation of video overlay memory size.
+      * Fixed video overlay on TV out (BugzillaR #213). (Egbert Eich).
+ 494. Fixed mode setting in trident driver: use mode passed in function 
+      argument, not value in currentMode (BugzillaR #197, Egbert Eich).
+ 493. Added delay when writing to Glint PM2 ramdac to avoid lockups 
+      (Egbert Eich).
+ 492. Fixed bug in Glint Bresenham line fallback code that caused line be drawn
+      beyond framebuffer boundaries (BugzillaR #624, Egbert Eich).
+ 490. Force sane pallette when entering DGA mode in Matrox driver 
+      (Egbert Eich).
+ 489. ATi Rage128: Wait with modifying FP video mode according to BIOS values
+      until final call of ValidMode() to prevent modes from being rejected
+      (BugzillaR #661, Egbert Eich).
+ 488. Some Savage BIOSes turn on clock doubling on non-doubled modes. 
+      Added code that catches and fixes this situation (Egbert Eich).
+ 487. Tdfx driver: Fixed order of initialization/deinitialization in 
+      ScreenInit()/ CloseScreen().
+      Fixed texture video support, removed artefacts in last line of overlay
+      video support (BugzillaR #299). (Egbert Eich).
  486. Add "automatic configuration" support for the XFree86 server, allowing
       it to be started in a useful way without an XF86Config file.
        - Add support to the config file parser for processing internally
@@ -17904,7 +17927,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2873 2003/10/08 11:12:53 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2874 2003/10/08 14:58:23 dawes Exp $
 
 
 
