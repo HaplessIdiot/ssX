@@ -47,7 +47,7 @@
  *  
  * Author:  Adobe Systems Incorporated and MIT X Consortium
  */
-/* $XFree86: xc/lib/dps/csconndi.c,v 1.9 2001/08/01 00:44:42 tsi Exp $ */
+/* $XFree86: xc/lib/dps/csconndi.c,v 1.10 2001/10/28 03:32:42 tsi Exp $ */
 
 #if defined(sun) && !defined(SVR4)
 #define memmove(t,f,c) bcopy(f,t,c)
@@ -333,19 +333,13 @@ DPSCAPConnect(
 	ioctl (fd, FIOSNBIO, &arg);
     }
 #else
-#if defined(sun) && defined(SVR4)
-#if !defined(_POSIX_C_SOURCE)
-    (void) fcntl (fd, F_SETFL, O_NDELAY);
-#else
+#if defined(O_NONBLOCK)
     (void) fcntl (fd, F_SETFL, O_NONBLOCK);
-#endif
-#else /* sun && SVR4 */
-#ifdef FNDELAY
+#elif defined(FNDELAY)
     (void) fcntl (fd, F_SETFL, FNDELAY);
 #else
     (void) fcntl (fd, F_SETFL, O_NDELAY);
-#endif /* FNDELAY */
-#endif /* sun && SVR4 */
+#endif /* O_NONBLOCK/FNDELAY */
 #endif /* FIOSNBIO */
 
     (void) fcntl (fd, F_SETFD, 1);
