@@ -20,7 +20,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/glxinfo/glxinfo.c,v 1.2 2000/09/26 15:57:23 tsi Exp $ */
+/* $XFree86: xc/programs/glxinfo/glxinfo.c,v 1.3 2001/02/13 21:15:21 dawes Exp $ */
 
 /*
  * This program is a work-alike of the IRIX glxinfo program.
@@ -30,22 +30,15 @@
  *  -display DisplayName   specify the X display to interogate
  *
  * Brian Paul  26 January 2000
- * Mark Paton  09 September 2000 - Minor mods for XFree86
  */
 
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <GL/gl.h>
-
-/* This is commented out because at this time the GLU library
- * is not part of XFree86.
- * #include <GL/glu.h>
- * */
-
+#include <GL/glu.h>
 #include <GL/glx.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 
@@ -201,10 +194,8 @@ print_screen_info(Display *dpy, int scrnum)
       const char *glRenderer = (const char *) glGetString(GL_RENDERER);
       const char *glVersion = (const char *) glGetString(GL_VERSION);
       const char *glExtensions = (const char *) glGetString(GL_EXTENSIONS);
-/*MP - Commented out glu stuff as the library is not currently part of XF86
       const char *gluVersion = (const char *) gluGetString(GLU_VERSION);
       const char *gluExtensions = (const char *) gluGetString(GLU_EXTENSIONS);
-*/
       printf("display: %s  screen:%d\n", DisplayString(dpy), scrnum);
       printf("direct rendering: %s\n", glXIsDirect(dpy, ctx) ? "Yes" : "No");
       printf("server glx vendor string: %s\n", serverVendor);
@@ -222,11 +213,9 @@ print_screen_info(Display *dpy, int scrnum)
       printf("OpenGL version string: %s\n", glVersion);
       printf("OpenGL extensions:\n");
       print_extension_list(glExtensions);
-/*
       printf("glu version: %s\n", gluVersion);
       printf("glu extensions:\n");
       print_extension_list(gluExtensions);
-*/
    }
    else {
       fprintf(stderr, "Error: glXMakeCurrent failed\n");
@@ -503,20 +492,12 @@ print_visual_info(Display *dpy, int scrnum, InfoMode mode)
 int
 main(int argc, char *argv[])
 {
-   char *displayName, *envdisplay;
+   char *displayName = NULL;
    Display *dpy;
    int numScreens, scrnum;
    InfoMode mode = Normal;
    int i;
 
-   if ((envdisplay = getenv("DISPLAY")) == NULL) {
-	   displayName = ":0";
-   } else {
-	   displayName = strchr(envdisplay, '=');
-	   if (displayName == NULL || *(++displayName) == '\0') {
-		   displayName = ":0";
-	   } /* else displayName points to the value */
-   }
    for (i = 1; i < argc; i++) {
       if (strcmp(argv[i], "-display") == 0 && i + 1 < argc) {
          displayName = argv[i + 1];
