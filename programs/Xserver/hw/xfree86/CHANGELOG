@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx August 2001)
+ 259. Support Trident Cyber9320 ISA chip (Alan Hourihane).
  258. Fix banked 24bpp displayWidth calculation (Marc La France).
  257. Fix accel initialisation bugs in ATI driver (Marc La France).
  256. Add entry to initialise framebuffer manager by area (allowing for a
@@ -13772,4 +13773,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1925 2001/08/26 16:21:30 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1926 2001/08/28 16:55:06 tsi Exp $
