@@ -1,4 +1,6 @@
 XFree86 4.2.99.903 (xx February 2003)
+ 964. Add an imake option to allow the glibc21-style setjmp() behaviour
+      to be forced when auto-detecting it fails (this is needed for RH 7.0).
  963. Add missing raise/lower volume key descriptions for the "hpxe3gc"
       XKB map (#A.1651, Paul Pacheco).
  962. Fix some typos in the Syriac XKB map (#5654, Emil Soleyman-Zomalan).
@@ -16534,4 +16536,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2585 2003/02/26 09:21:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2586 2003/02/26 19:12:10 dawes Exp $

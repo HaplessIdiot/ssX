@@ -26,14 +26,17 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.12 2003/02/21 03:11:58 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.13 2003/02/22 06:00:39 dawes Exp $
  */
 
 #ifdef USE_MODULES
 #include <setjmp.h>
+
+#ifndef HAS_GLIBC_SIGSETJMP
 #if defined(setjmp) && \
     defined(__GLIBC__) && __GLIBC__ == 2 && __GLIBC_MINOR__ < 2
 #define HAS_GLIBC_SIGSETJMP 1
+#endif
 #endif
 
 #define LOADER_PRIVATE

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.437 2003/02/19 15:28:44 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.438 2003/02/26 09:21:32 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -2001,6 +2001,15 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # else
 #  define Egcs112Bug NO
 # endif
+#endif
+
+/*
+ * Some Linux distributions (like RH 7.0) use glibc 2.1-style setjmp,
+ * but have the glibc version set to 2.2.  This can be set it host.def
+ * to handle these cases.
+ */
+#ifndef HasGlibc21Sigsetjmp
+#define HasGlibc21Sigsetjmp NO
 #endif
 
 #ifdef i386Architecture
