@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.27 1999/07/10 14:42:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.28 1999/07/11 08:49:30 dawes Exp $ */
 
 /*
  *
@@ -1415,10 +1415,10 @@ vgaHWAllocRegs(vgaRegPtr regp)
          regp->numAttribute) == 0)
         return FALSE;
 
-    buf = xnfcalloc(regp->numCRTC +
-    		    regp->numSequencer +
-		    regp->numGraphics +
-		    regp->numAttribute, 1);
+    buf = xcalloc(regp->numCRTC +
+    		  regp->numSequencer +
+		  regp->numGraphics +
+		  regp->numAttribute, 1);
     if (!buf)
     	return FALSE;
 
@@ -1513,6 +1513,23 @@ vgaHWSetRegCounts(ScrnInfoPtr scrp, int numCRTC, int numSequencer,
 }
 
 
+Bool
+vgaHWCopyReg(vgaRegPtr dst, vgaRegPtr src)
+{
+    vgaHWFreeRegs(dst);
+
+    memcpy(dst, src, sizeof(vgaRegRec));
+
+    if (!vgaHWAllocRegs(dst))
+	return FALSE;
+
+    memcpy(dst->CRTC, src->CRTC, src->numCRTC);
+    memcpy(dst->Sequencer, src->Sequencer, src->numSequencer);
+    memcpy(dst->Graphics, src->Graphics, src->numGraphics);
+    memcpy(dst->Attribute, src->Attribute, src->numAttribute);
+
+    return TRUE;
+}
 
 
 Bool
