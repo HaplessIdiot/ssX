@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>23 February 2003
+<date>26 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.77 2003/02/25 19:31:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.78 2003/02/25 21:27:38 dawes Exp $
 </ident>
 
 <abstract>
@@ -171,8 +171,6 @@ don't have enough space to cover them all here.
 	and animated cursors.  Two Xcursor themes are provided (redglass
 	and whiteglass), as well as the default "core" theme (the traditional
 	cursors).
-
-<item> FreeType2 updated to version 2.0.6.
 
 <item> Xterm updated to patch level 173, including the following bugfixes:
 	<itemize>

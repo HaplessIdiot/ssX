@@ -13,10 +13,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>25 February 2003
+<date>26 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.130 2003/02/25 18:31:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.131 2003/02/25 19:31:01 dawes Exp $
 </ident>
 
 <abstract>
@@ -88,10 +88,9 @@ good idea to check there before upgrading if you are currently running
 
 XFree86 is produced by The XFree86 Project, Inc, which is a group of
 mostly volunteer independent developers.  XFree86 is a non-commercial
-organisation, and would not be viable without the development contributions
-of volunteers.  XFree86 has no ties to any commercial organisations,
-and receives no direct funding or support from any commercial
-organisations.  XFree86 values its independence highly.
+organisation, and would not be viable without the invaluable development
+contributions of volunteers.  This release is dedicated to all who have
+supported and contributed to XFree86 over the last eleven years.
 
 <![ %snapshot [
 <sect>Redistribution of Snapshots
