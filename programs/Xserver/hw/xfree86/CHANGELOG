@@ -1,4 +1,5 @@
 XFree86 4.2.99.3 (xx October 2002)
+ 459. Missing fallback to miPolyArc in fbarc.c (#A.1339, Ralf Klingebiel).
  458. Fix the cyrix driver support for the 5510, 5520 and 5530. This driver
       only works with VSA1 based chips (#A.1260, Alan Cox).
  457. When building with gcc >= 2.8, generate Makefiles with `imake -Wundef`
@@ -15460,4 +15461,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2372 2002/11/05 17:46:10 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2373 2002/11/06 11:38:57 alanh Exp $
