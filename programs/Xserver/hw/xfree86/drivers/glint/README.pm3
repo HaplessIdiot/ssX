@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/README.pm3,v 1.9 2001/04/18 09:24:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/README.pm3,v 1.10 2001/05/06 18:07:44 alanh Exp $ */
   
-STATUS as of Fri, 13 Apr 2001 21:43:39 +0200
+STATUS as of Tue,  8 May 2001 19:01:39 +0200
   
 Working :
   * Unaccelerated : Depth 8, 15, 16 and 24 are ok. I tested them upto
@@ -24,18 +24,25 @@ Working :
     - Pixmap Writes using direct FIFO writes with or without FIFO Disconnect.
   * Appian J2000 second head initialization.
   * Dual head : The console fonts will get trashed, but dual head works.
-  * Xv : Hardware video scaler (only depth 24 is uspported right now).
-    Attributes are :
-    - FILTER : None, Partial (X only) or Full filtering.
-    - MIRROR : X and/or Y Axis mirroring.
-    - ALPHA :
-      - 0 -> FB Only
-      - 1 -> 25% Video, 75% FB
-      - 2 -> 75% Video, 25% FB
-      - 3 -> Video Only
+  * Xv : Hardware video scaler :
+    - Needs checking on a big endian machine.
+    - Needs acceleration to work.
+    - Clipping supported trough the alpha channel in depth 15 and 24
+      and with an overlay key color in depth 8 and 16.
+    - Support both dual head and single head, trough gamma or permedia3.
+    - Attributes are :
+      - FILTER : None, Partial (X only) or Full filtering.
+      - MIRROR : X and/or Y Axis mirroring.
+      - ALPHA :
+        - 0 -> FB Only
+        - 1 -> 25% Video, 75% FB
+        - 2 -> 75% Video, 25% FB
+        - 3 -> Video Only
+      - [TODO] VIDEOKEY : Overlay Key Color for clipping in depth 8 and 16.
   * DRI : Work is underway.
 
-Not Working / Known problems :
+Not Working :
+
   * [NOT POSSIBLE] 2D Accel :
     - Solid & Dashed Lines are not possible on glint hardware.
     - 8x8 Color Pattern Fill is almost never used.
@@ -45,28 +52,20 @@ Not Working / Known problems :
     - CPUToScreenTexture.
     - CPUToScreenAlphaTexture.
   * [NEED FIX] Xv has still some minor problems :
-    - Currently it needs accel to work.
-    - depth 8 does not work at all (no window)
-    - depth 15 & 16 will freeze the box, this is most probably due to the fact
-      that i made some 24bpp assumptions over the code, need to find them.
-    - Dual head : crashes when using the gamma chip and displaying to the
-      second head. => now crashes when using the Gamma all the time, don't
-      know what i changed.
-    - I am using hardware copy, this still has some problems, see below, using
-      software copy trough the bypass unit is smoother, but causes server
-      crashes in random ways and not work with the gamma.
-    - Hardware copy issues :
-      - when using 2D accels there is some unstability in the video display. I
-	guess this is because there is then not enough bandwith to do the
-	copying of the data in time.
-      - after a time of the above, the images becomes black. It will come back
-	once stopvideo is called.
-      Maybe using the DMA engine from drm to do the hardware copy may help
-      here ?
+    - depth 8 does not work, but then it may be the app i am using.
+    - when using 2D accels there is some unstability in the video display. I
+      guess this is because there is then not enough bandwith to do the
+      copying of the data in time. After a time of the above, the images
+      becomes black. It will come back once stopvideo is called.
+      [FIX] i will disable VideoOverlay each 25 frames, this causes a flicker,
+      but at least it will bing the image back.
   * [WORK IS UNDERWAY] DRI/OpenGL (only together with a gamma chip) :
     - DRI support should be ok, but accelerated openGL is not yet supported. 
     - The accelerated OpenGL library supposes we are using a gamma together
       with a MX rasterizer, not a Permedia3 one.
+
+Known problems :
+
   * Console gets broken when using dual headed mode. The culprit seems to be
     the vga graphics index & port (GraphicsIndexReg : 0x63ce, GraphicsPort :
     0x3cf). I had to use IO acces for both these two, because if not, console
@@ -81,6 +80,8 @@ Not Working / Known problems :
     Well, this is partly fixed, but still appears under very heavy load.
   * [FIXED] When moving a window around a lot quickly, the video outputs dies.
     Well, this is partly fixed, but still appears under very heavy load.
+ => [NOTE] If this two still happens, try disabling the Hardware cursor, with
+    the "SWCursor" option to your device XF86Config section.
   * Sometimes there are blue transparent garbage in the form of small
     horizontal bands, few pixels high, and more pixels width, maybe 64pixels ?
     This may be a hardware bug.

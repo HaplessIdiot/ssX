@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_regs.h,v 1.5 2001/02/24 14:29:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_regs.h,v 1.6 2001/04/18 09:24:48 alanh Exp $ */
 
 /*
  * glint register file 
@@ -400,8 +400,8 @@
 #define PM3RD_VideoOverlayBlend					0x02c
 	#define PM3RD_VideoOverlayBlend_FACTOR_0_PERCENT	(0<<6)
 	#define PM3RD_VideoOverlayBlend_FACTOR_25_PERCENT	(1<<6)
-	#define PM3RD_VideoOverlayBlend_FACTOR_59_PERCENT	(2<<6)
-	#define PM3RD_VideoOverlayBlend_FACTOR_75_PERCENT	(3<<6)
+	#define PM3RD_VideoOverlayBlend_FACTOR_75_PERCENT	(2<<6)
+	#define PM3RD_VideoOverlayBlend_FACTOR_100_PERCENT	(3<<6)
 
 #define PM3RD_DClkSetup1					0x1f0
 #define PM3RD_DClkSetup2					0x1f1
