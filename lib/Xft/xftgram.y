@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftgram.y,v 1.1 2000/11/29 08:39:23 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftgram.y,v 1.2 2000/11/30 23:30:00 dawes Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -47,7 +47,8 @@
 %token <dval>	DOUBLE
 %token <sval>	STRING NAME
 %token <ival>	ANY ALL
-%token <ival>	DIR INCLUDE INCLUDEIF MATCH EDIT TOK_TRUE TOK_FALSE TOK_NIL
+%token <ival>	DIR CACHE INCLUDE INCLUDEIF MATCH EDIT
+%token <ival>	TOK_TRUE TOK_FALSE TOK_NIL
 %token <ival>	EQUAL SEMI
 
 %type  <eval>	expr
@@ -75,6 +76,8 @@ configs	:   configs config
 	;
 config	:   DIR STRING
 		{ XftConfigAddDir ($2); }
+	|   CACHE STRING
+		{ XftConfigSetCache ($2); }
 	|   INCLUDE STRING
 		{ XftConfigPushInput ($2, True); }
 	|   INCLUDEIF STRING

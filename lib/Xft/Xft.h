@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.14 2000/12/20 00:20:47 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.15 2000/12/20 00:28:43 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -396,6 +396,9 @@ XftFontSetMatch (XftFontSet	**sets,
 /* xftname.c */
 XftPattern *
 XftNameParse (const char *name);
+
+Bool
+XftNameUnparse (XftPattern *pat, char *dest, int len);
 
 /* xftpat.c */
 XftPattern *

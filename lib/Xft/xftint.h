@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.18 2000/12/22 02:25:41 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.19 2000/12/22 05:05:16 tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -91,6 +91,8 @@ extern XftFontSet	*_XftFontSet;
 #define XFT_DBG_REF	16
 #define XFT_DBG_GLYPH	32
 #define XFT_DBG_GLYPHV	64
+#define XFT_DBG_CACHE	128
+#define XFT_DBG_CACHEV	256
 
 typedef enum _XftOp {
     XftOpInteger, XftOpDouble, XftOpString, XftOpBool, XftOpNil,
@@ -199,9 +201,38 @@ _XftPatternVapBuild_return:					    \
 }
 
 
+/* xftcache.c */
+
+char *
+XftFileCacheFind (char *file, int id, int *count);
+
+void
+XftFileCacheDispose (void);
+
+void
+XftFileCacheLoad (char *cache);
+
+Bool
+XftFileCacheUpdate (char *file, int id, char *name);
+
+Bool
+XftFileCacheSave (char *cache);
+
+Bool
+XftFileCacheReadDir (XftFontSet *set, const char *cache_file);
+
+Bool
+XftFileCacheWriteDir (XftFontSet *set, const char *cache_file);
+    
 /* xftcfg.c */
 Bool
 XftConfigAddDir (char *d);
+
+Bool
+XftConfigSetCache (char *c);
+
+char *
+XftConfigGetCache (void);
 
 Bool
 XftConfigAddEdit (XftTest *test, XftEdit *edit);

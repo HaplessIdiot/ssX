@@ -29,38 +29,73 @@
 #include "xftint.h"
 
 Bool
-XftDirScan (XftFontSet *set, const char *dir)
+XftDirScan (XftFontSet *set, const char *dir, Bool force)
 {
     DIR		    *d;
     struct dirent   *e;
     char	    *file;
     char	    *base;
     XftPattern	    *font;
+    char	    *name;
     int		    count;
     Bool	    ret = True;
     int		    id;
 
-    d = opendir (dir);
-    if (!d)
-	return False;
     file = (char *) malloc (strlen (dir) + 1 + 256 + 1);
     if (!file)
-    {
-	closedir (d);
 	return False;
-    }
+
     strcpy (file, dir);
     strcat (file, "/");
     base = file + strlen (file);
+    if (!force)
+    {
+	strcpy (base, "XftCache");
+	
+	if (XftFileCacheReadDir (set, file))
+	{
+	    free (file);
+	    return True;
+	}
+    }
+    
+    d = opendir (dir);
+    if (!d)
+    {
+	free (file);
+	return False;
+    }
     while (ret && (e = readdir (d)))
     {
 	if (e->d_name[0] != '.')
 	{
-	    strcpy (base, e->d_name);
 	    id = 0;
+	    strcpy (base, e->d_name);
 	    do
 	    {
-		font = XftFreeTypeQuery (file, id, &count);
+		if (!force)
+		    name = XftFileCacheFind (file, id, &count);
+		else
+		    name = 0;
+		if (name)
+		{
+		    font = XftNameParse (name);
+		    if (font)
+			XftPatternAddString (font, XFT_FILE, file);
+		}
+		else
+		{
+		    font = XftFreeTypeQuery (file, id, &count);
+		    if (font && !force)
+		    {
+			char	unparse[8192];
+
+			if (XftNameUnparse (font, unparse, sizeof (unparse)))
+			{
+			    (void) XftFileCacheUpdate (file, id, unparse);
+			}
+		    }
+		}
 		if (font)
 		{
 		    if (!XftFontSetAdd (set, font))
@@ -75,4 +110,23 @@ XftDirScan (XftFontSet *set, const char *dir)
     return ret;
 }
 
-	    
+Bool
+XftDirSave (XftFontSet *set, const char *dir)
+{
+    char	    *file;
+    char	    *base;
+    Bool	    ret;
+    
+    file = (char *) malloc (strlen (dir) + 1 + 256 + 1);
+    if (!file)
+	return False;
+
+    strcpy (file, dir);
+    strcat (file, "/");
+    base = file + strlen (file);
+    strcpy (base, "XftCache");
+    ret = XftFileCacheWriteDir (set, file);
+    free (file);
+    return ret;
+}
+

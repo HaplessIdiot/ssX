@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftcfg.c,v 1.6 2000/12/15 17:12:52 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftcfg.c,v 1.7 2000/12/17 09:11:37 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -35,6 +35,9 @@ static char	*XftConfigDefaultDirs[] = {
 char		**XftConfigDirs = XftConfigDefaultDirs;
 static int	XftConfigNdirs;
 
+char		XftConfigDefaultCache[] = "~/.xftcache";
+char		*XftConfigCache = 0;
+
 static XftSubst	*XftSubsts;
 /* #define XFT_DEBUG_EDIT */
 
@@ -51,6 +54,8 @@ XftConfigAddDir (char *d)
 	if (!h)
 	    return False;
 	dir = (char *) malloc (strlen (h) + strlen (d));
+	if (!dir)
+	    return False;
 	strcpy (dir, h);
 	strcat (dir, d+1);
     }
@@ -78,6 +83,41 @@ XftConfigAddDir (char *d)
 	free (XftConfigDirs);
     XftConfigDirs = dirs;
     return True;
+}
+
+Bool
+XftConfigSetCache (char *c)
+{
+    char    *new;
+    char    *h;
+
+    if (*c == '~')
+    {
+	h = getenv ("HOME");
+	if (!h)
+	    return False;
+	new = (char *) malloc (strlen (h) + strlen (c));
+	if (!new)
+	    return False;
+	strcpy (new, h);
+	strcat (new, c+1);
+    }
+    else
+    {
+	new = _XftSaveString (c);
+    }
+    if (XftConfigCache)
+	free (XftConfigCache);
+    XftConfigCache = new;
+    return True;
+}
+
+char *
+XftConfigGetCache (void)
+{
+    if (!XftConfigCache)
+	XftConfigSetCache (XftConfigDefaultCache);
+    return XftConfigCache;
 }
 
 static int XftSubstsMaxObjects;
