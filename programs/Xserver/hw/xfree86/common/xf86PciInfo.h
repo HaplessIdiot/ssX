@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.82 2000/12/04 18:49:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.83 2000/12/07 21:34:20 mvojkovi Exp $ */
 /*
  * PCI Probe
  *
@@ -1591,6 +1591,9 @@ static pciVendorCardInfo xf86PCICardInfoData[] = {
                         { 0x8000, "C&T 69000",0, NF },
 			{ 0x8760, "Fireport 40 Dual",0, NF },
                         { 0x8a10, "Stealth 3D 4000",0, NF },
+                        { 0x0000, (char *)NULL,0, NF } } },
+	{ PCI_VENDOR_3DLABS, {
+                        { 0x0106, "GMX2000",0, NF },
                         { 0x0000, (char *)NULL,0, NF } } },
 	{ PCI_VENDOR_ELSA, {
                         { 0x0914, "Winner 1000",0, NF },
