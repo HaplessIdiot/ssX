@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_dga.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_dga.c,v 1.3tsi Exp $ */
 /*
  * $Workfile: nsc_gx2_dga.c $
  * $Revision$
@@ -156,9 +156,8 @@
 Bool GX2DGAInit(ScreenPtr pScreen);
 static Bool GX2_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **,
 				int *, int *, int *);
-static void GX2_CloseFramebuffer(ScrnInfoPtr pScrn);
 static Bool GX2_SetMode(ScrnInfoPtr, DGAModePtr);
-static int GX2_GetViewport(ScrnInfoPtr);
+static int  GX2_GetViewport(ScrnInfoPtr);
 static void GX2_SetViewport(ScrnInfoPtr, int, int, int);
 static void GX2_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void GX2_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
@@ -169,7 +168,7 @@ extern void GX2AccelSync(ScrnInfoPtr pScreenInfo);
 
 static DGAFunctionRec GX2DGAFuncs = {
    GX2_OpenFramebuffer,
-   GX2_CloseFramebuffer,
+   NULL,
    GX2_SetMode,
    GX2_SetViewport,
    GX2_GetViewport,
@@ -183,7 +182,7 @@ static DGAFunctionRec GX2DGAFuncs = {
  * GX2DGAInit.
  *
  * Description	:This function is used to intiallize the DGA modes and sets the
-			 	 viewport based on the screen mode.
+ *		 viewport based on the screen mode.
  * Parameters.
  *	pScreeen	:Pointer to screen info structure.
  *
@@ -291,7 +290,7 @@ GX2DGAInit(ScreenPtr pScreen)
  * GX2_SetMode.
  *
  * Description	:This function is sets into the DGA mode.
- *.
+ *
  * Parameters.
  *	pScreeen	:Pointer to screen info structure.
  *	pMode		:Points to the DGAmode ptr data
@@ -350,7 +349,7 @@ GX2_SetMode(ScrnInfoPtr pScrn, DGAModePtr pMode)
  * GX2_GetViewPort.
  *
  * Description	:This function is Gets the viewport window memory.
- *.
+ *
  * Parameters.
  *	pScrn		:Pointer to screen info structure.
  *	
@@ -376,8 +375,8 @@ GX2_GetViewport(ScrnInfoPtr pScrn)
  *
  * Parameters.
  *	pScrn		:Pointer to screen info structure.
-		x		:x-cordinate of viewport window
- *		y		:y-codinate of the viewport window.
+ *	x		:x-cordinate of viewport window
+ *	y		:y-codinate of the viewport window.
  *	flags		:indicates the viewport to be flipped or not.
  * Returns		:returns the viewport status  as zero.
  *
@@ -398,12 +397,12 @@ GX2_SetViewport(ScrnInfoPtr pScrn, int x, int y, int flags)
  * GX2_FillRect.
  *
  * Description	:This function is Gets the viewport window memory.
- *.
+ *
  * Parameters.
  *	pScrn		:Pointer to screen info structure.
- *		x		:x-cordinate of viewport window
- *		y		:y-codinate of the viewport window.
- *		w		:width of the rectangle
+ *	x		:x-cordinate of viewport window
+ *	y		:y-codinate of the viewport window.
+ *	w		:width of the rectangle
  *      h		:height of the rectangle.
  *	color		:color to be filled in rectangle.
  *
@@ -430,15 +429,15 @@ GX2_FillRect(ScrnInfoPtr pScrn, int x, int y,
  * GX2_BlitRect.
  *
  * Description	:This function implementing Blit and it moves a
- *			 	 Rectangular block of data from one location to other
- *			 	 Location.
+ *		 Rectangular block of data from one location to other
+ *		 Location.
  *
  * Parameters.
  *	pScrn		:Pointer to screen info structure.
  *	srcx		:x-cordinate of the src rectangle
  *	srcy		:y-codinate of src rectangle.
- *	  w			:width of the rectangle
- *    h			:height of the rectangle.
+ *	w		:width of the rectangle
+ *	h		:height of the rectangle.
  *	dstx		:x-cordinate of the dst rectangle.
  *	dsty		:y -coordinates of the dst rectangle.
  * Returns		:none.
@@ -475,8 +474,8 @@ GX2_BlitRect(ScrnInfoPtr pScrn,
  *	pScrn		:Pointer to screen info structure.
  *	srcx		:x-cordinate of the src rectangle
  *	srcy		:y-codinate of src rectangle.
- *		w		:width of the rectangle
- *    	h		:height of the rectangle.
+ *	w		:width of the rectangle
+ *	h		:height of the rectangle.
  *	dstx		:x-cordinate of the dst rectangle.
  *	dsty		:y -coordinates of the dst rectangle.
  * Returns		:none.
@@ -498,11 +497,6 @@ GX2_OpenFramebuffer(ScrnInfoPtr pScrn,
    *offset = 0;
    *flags = DGA_NEED_ROOT;
    return TRUE;
-}
-
-static void
-GX2_CloseFramebuffer(ScrnInfoPtr pScrn)
-{
 }
 
 /* end of file */

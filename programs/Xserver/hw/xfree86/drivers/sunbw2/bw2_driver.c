@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunbw2/bw2_driver.c,v 1.4 2003/10/30 17:37:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunbw2/bw2_driver.c,v 1.5tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -54,8 +54,6 @@ static void	BW2AdjustFrame(int scrnIndex, int x, int y, int flags);
 static void	BW2FreeScreen(int scrnIndex, int flags);
 static ModeStatus BW2ValidMode(int scrnIndex, DisplayModePtr mode,
 			       Bool verbose, int flags);
-
-void BW2Sync(ScrnInfoPtr pScrn);
 
 #define VERSION 4000
 #define BW2_NAME "SUNBW2"
@@ -106,7 +104,7 @@ static XF86ModuleVersionInfo sunbw2VersRec =
 
 XF86ModuleData sunbw2ModuleData = { &sunbw2VersRec, bw2Setup, NULL };
 
-pointer
+static pointer
 bw2Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
@@ -372,6 +370,7 @@ BW2PreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->display->virtualY = 0;
     }
 
+    /* XXX  Need to deal with adapters not initialised by PROM */
     xf86SbusUseBuiltinMode(pScrn, pBw2->psdp);
     pScrn->currentMode = pScrn->modes;
     pScrn->displayWidth = pScrn->virtualX;
@@ -401,11 +400,10 @@ BW2ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pBw2 = GET_BW2_FROM_SCRN(pScrn);
 
     /* Map the BW2 memory */
-    pBw2->fb =
-	xf86MapSbusMem (pBw2->psdp, BW2_RAM_VOFF,
-			(pBw2->psdp->width * pBw2->psdp->height / 8));
+    pBw2->fb = xf86MapSbusMem(pBw2->psdp, BW2_RAM_VOFF,
+			      pBw2->psdp->width * pBw2->psdp->height / 8);
 
-    if (! pBw2->fb)
+    if (!pBw2->fb)
 	return FALSE;
 
     /* Darken the screen for aesthetic reasons and set the viewport */
@@ -452,7 +450,7 @@ BW2ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     xf86SetBlackWhitePixels(pScreen);
 
     /* Initialise cursor functions */
-    miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
+    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
@@ -534,7 +532,7 @@ BW2CloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     pScrn->vtSema = FALSE;
     xf86UnmapSbusMem(pBw2->psdp, pBw2->fb,
-		     (pBw2->psdp->width * pBw2->psdp->height / 8));
+		     pBw2->psdp->width * pBw2->psdp->height / 8);
 
     pScreen->CloseScreen = pBw2->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
@@ -574,13 +572,4 @@ BW2SaveScreen(ScreenPtr pScreen, int mode)
        used for much though */
 {
     return TRUE;
-}
-
-/*
- * This is the implementation of the Sync() function.
- */
-void
-BW2Sync(ScrnInfoPtr pScrn)
-{
-    return;
 }

@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx_driver.c,v 1.8 2004/06/10 17:28:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx_driver.c,v 1.9tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -55,8 +55,6 @@ static void	TCXAdjustFrame(int scrnIndex, int x, int y, int flags);
 static void	TCXFreeScreen(int scrnIndex, int flags);
 static ModeStatus TCXValidMode(int scrnIndex, DisplayModePtr mode,
 			       Bool verbose, int flags);
-
-void TCXSync(ScrnInfoPtr pScrn);
 
 #define VERSION 4000
 #define TCX_NAME "SUNTCX"
@@ -114,7 +112,7 @@ static XF86ModuleVersionInfo suntcxVersRec =
 
 XF86ModuleData suntcxModuleData = { &suntcxVersRec, tcxSetup, NULL };
 
-pointer
+static pointer
 tcxSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
@@ -472,39 +470,54 @@ TCXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 {
     ScrnInfoPtr pScrn;
     TcxPtr pTcx;
+    sbusDevicePtr psdp;
     VisualPtr visual;
     int ret;
 
-    /*
-     * First get the ScrnInfoRec
-     */
     pScrn = xf86Screens[pScreen->myNum];
-
     pTcx = GET_TCX_FROM_SCRN(pScrn);
+    psdp = pTcx->psdp;
 
     /* Map the TCX memory */
     if (pScrn->depth == 8)
-	pTcx->fb =
-	    xf86MapSbusMem (pTcx->psdp, TCX_RAM8_VOFF,
-			    (pTcx->psdp->width * pTcx->psdp->height));
+	pTcx->fb = xf86MapSbusMem(psdp, TCX_RAM8_VOFF,
+				  psdp->width * psdp->height);
     else {
-	pTcx->fb =
-	    xf86MapSbusMem (pTcx->psdp, TCX_RAM24_VOFF,
-			    (pTcx->psdp->width * pTcx->psdp->height * 4));
-	pTcx->cplane =
-	    xf86MapSbusMem (pTcx->psdp, TCX_CPLANE_VOFF,
-			    (pTcx->psdp->width * pTcx->psdp->height * 4));
-	if (! pTcx->cplane)
-	    return FALSE;
+	pTcx->fb = xf86MapSbusMem(psdp, TCX_RAM24_VOFF,
+				  psdp->width * psdp->height * 4);
+	pTcx->cplane = xf86MapSbusMem(psdp, TCX_CPLANE_VOFF,
+				      psdp->width * psdp->height * 4);
     }
     if (pTcx->HWCursor == TRUE) {
-	pTcx->thc = xf86MapSbusMem (pTcx->psdp, TCX_THC_VOFF, 8192);
-	if (! pTcx->thc)
-	    return FALSE;
+	pTcx->thc = xf86MapSbusMem(psdp, TCX_THC_VOFF, 8192);
     }
 
-    if (! pTcx->fb)
+    if (!pTcx->fb || (!pTcx->cplane && (pScrn->depth != 8)) ||
+	(!pTcx->thc && pTcx->HWCursor)) {
+	if (pTcx->fb) {
+	    if (pScrn->depth == 8) {
+		xf86UnmapSbusMem(psdp, pTcx->fb, psdp->width * psdp->height);
+	    } else {
+		xf86UnmapSbusMem(psdp, pTcx->fb,
+				 psdp->width * psdp->height * 4);
+	    }
+
+	    pTcx->fb = NULL;
+	}
+
+	if (pTcx->cplane) {
+	    xf86UnmapSbusMem(psdp, pTcx->cplane,
+			     psdp->width * psdp->height * 4);
+	    pTcx->cplane = NULL;
+	}
+
+	if (pTcx->thc) {
+	    xf86UnmapSbusMem(psdp, pTcx->thc, 8192);
+	    pTcx->thc = NULL;
+	}
+
 	return FALSE;
+    }
 
     /* Darken the screen for aesthetic reasons and set the viewport */
     TCXSaveScreen(pScreen, SCREEN_SAVER_ON);
@@ -535,7 +548,7 @@ TCXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			  pScrn->rgbBits, pScrn->defaultVisual))
 	return FALSE;
 
-    miSetPixmapDepths ();
+    miSetPixmapDepths();
 
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
@@ -569,33 +582,31 @@ TCXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     /* must be after RGB ordering fixed */
-    fbPictureInit (pScreen, 0, 0);
+    fbPictureInit(pScreen, 0, 0);
 
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
     xf86SetSilkenMouse(pScreen);
 
     /* Initialise cursor functions */
-    miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
+    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
     /* Initialize HW cursor layer.
        Must follow software cursor initialization*/
     if (pTcx->HWCursor) {
-	extern Bool TCXHWCursorInit(ScreenPtr pScreen);
-
 	if(!TCXHWCursorInit(pScreen)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		       "Hardware cursor initialization failed\n");
 	    return(FALSE);
 	}
-	xf86SbusHideOsHwCursor(pTcx->psdp);
+	xf86SbusHideOsHwCursor(psdp);
     }
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
 	return FALSE;
 
-    if(pScrn->depth == 8 && !xf86SbusHandleColormaps(pScreen, pTcx->psdp))
+    if(pScrn->depth == 8 && !xf86SbusHandleColormaps(pScreen, psdp))
 	return FALSE;
 
     pTcx->CloseScreen = pScreen->CloseScreen;
@@ -648,7 +659,7 @@ TCXEnterVT(int scrnIndex, int flags)
     TcxPtr pTcx = GET_TCX_FROM_SCRN(pScrn);
 
     if (pTcx->HWCursor) {
-	xf86SbusHideOsHwCursor (pTcx->psdp);
+	xf86SbusHideOsHwCursor(pTcx->psdp);
 	pTcx->CursorFg = 0;
 	pTcx->CursorBg = 0;
     }
@@ -682,22 +693,20 @@ TCXCloseScreen(int scrnIndex, ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     TcxPtr pTcx = GET_TCX_FROM_SCRN(pScrn);
+    sbusDevicePtr psdp = pTcx->psdp;
 
     pScrn->vtSema = FALSE;
-    if (pScrn->depth == 8)
-	xf86UnmapSbusMem(pTcx->psdp, pTcx->fb,
-			 (pTcx->psdp->width * pTcx->psdp->height));
-    else {
-	xf86UnmapSbusMem(pTcx->psdp, pTcx->fb,
-			 (pTcx->psdp->width * pTcx->psdp->height * 4));
-	xf86UnmapSbusMem(pTcx->psdp, pTcx->cplane,
-			 (pTcx->psdp->width * pTcx->psdp->height * 4));
+    if (pScrn->depth == 8) {
+	xf86UnmapSbusMem(psdp, pTcx->fb, psdp->width * psdp->height);
+    } else {
+	xf86UnmapSbusMem(psdp, pTcx->fb, psdp->width * psdp->height * 4);
+	xf86UnmapSbusMem(psdp, pTcx->cplane, psdp->width * psdp->height * 4);
     }
     if (pTcx->thc)
-	xf86UnmapSbusMem(pTcx->psdp, pTcx->fb, 8192);
+	xf86UnmapSbusMem(psdp, pTcx->fb, 8192);
 
     if (pTcx->HWCursor)
-	xf86SbusHideOsHwCursor (pTcx->psdp);
+	xf86SbusHideOsHwCursor(psdp);
 
     pScreen->CloseScreen = pTcx->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
@@ -740,15 +749,6 @@ TCXSaveScreen(ScreenPtr pScreen, int mode)
 }
 
 /*
- * This is the implementation of the Sync() function.
- */
-void
-TCXSync(ScrnInfoPtr pScrn)
-{
-    return;
-}
-
-/*
  * This initializes CPLANE for 24 bit mode.
  */
 static void
@@ -762,7 +762,7 @@ TCXInitCplane24(ScrnInfoPtr pScrn)
 	return;
 
     size = pScrn->virtualX * pScrn->virtualY;
-    memset (pTcx->fb, 0, size * 4);
+    memset(pTcx->fb, 0, size * 4);
     p = pTcx->cplane;
     for (q = pTcx->cplane + size; p != q; p++)
 	*p = (*p & 0xffffff) | TCX_CPLANE_MODE;

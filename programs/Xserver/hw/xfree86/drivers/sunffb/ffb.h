@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.9 2004/05/04 16:21:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.10tsi Exp $ */
 
 #ifndef FFB_H
 #define FFB_H
@@ -156,7 +156,7 @@ typedef struct {
 	unsigned int fbc_cache;
 	unsigned int wid_cache;
 	enum ffb_chip_type ffb_type;
-	CreatorStipplePtr laststipple;
+	CreatorStipplePtr laststipple, tmpstipple;
 	unsigned *fb;
 	unsigned *sfb32;
 	unsigned *sfb8r;
@@ -166,7 +166,7 @@ typedef struct {
 	unsigned *dfb8x;
 
 	/* Slot offset 0x0200000, used to probe board type. */
-	volatile unsigned int *strapping_bits;
+	volatile unsigned char *strapping_bits;
 
 	/* Needed for some 3DRAM revisions and ffb1 in hires */
 	unsigned char disable_pagefill;
@@ -223,7 +223,10 @@ typedef struct {
 
 /* Acceleration */
 extern Bool FFBAccelInit(ScreenPtr, FFBPtr);
-extern void CreatorVtChange (ScreenPtr pScreen, int enter);
+extern void CreatorVtChange(ScreenPtr pScreen, int enter);
+
+/* DGA */
+extern void FFB_InitDGA(ScreenPtr pScreen);
 
 /* HW cursor support */
 extern Bool FFBHWCursorInit(ScreenPtr);
@@ -260,6 +263,12 @@ extern Bool FFBDRIFinishScreenInit(ScreenPtr);
 extern void FFBDRICloseScreen(ScreenPtr);
 #endif
 
+extern void VISmoveImageLR(unsigned char *, unsigned char *,
+			   long, long, long, long);
+extern void VISmoveImageRL(unsigned char *, unsigned char *,
+			   long, long, long, long);
+
+
 /* The fastfill and pagefill buffer sizes change based upon
  * the resolution.
  */
@@ -277,8 +286,8 @@ extern struct fastfill_parms ffb_fastfill_parms[];
 
 #define FFB_FFPARMS(__fpriv)	(ffb_fastfill_parms[(__fpriv)->ffb_res])
 
-extern int  CreatorGCPrivateIndex;
-extern int  CreatorWindowPrivateIndex;
+extern int CreatorGCPrivateIndex;
+extern int CreatorWindowPrivateIndex;
 
 #define GET_FFB_FROM_SCRN(p)	((FFBPtr)((p)->driverPrivate))
 
@@ -292,6 +301,9 @@ extern int  CreatorWindowPrivateIndex;
 
 #define CreatorSetWindowPrivate(w,p)					\
 ((w)->devPrivates[CreatorWindowPrivateIndex].ptr = (pointer) p)
+
+extern void CreatorGetSpans(DrawablePtr pDrawable, int wMax, DDXPointPtr ppt,
+			    int *pwidth, int nspans, char *pchardstStart);
 
 #undef DEBUG_FFB
 

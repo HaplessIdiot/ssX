@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg3/cg3_driver.c,v 1.6 2004/06/10 17:28:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg3/cg3_driver.c,v 1.7tsi Exp $ */
 
 #define PSZ 8
 #include "xf86.h"
@@ -55,8 +55,6 @@ static void	CG3AdjustFrame(int scrnIndex, int x, int y, int flags);
 static void	CG3FreeScreen(int scrnIndex, int flags);
 static ModeStatus CG3ValidMode(int scrnIndex, DisplayModePtr mode,
 			       Bool verbose, int flags);
-
-void CG3Sync(ScrnInfoPtr pScrn);
 
 #define VERSION 4000
 #define CG3_NAME "SUNCG3"
@@ -107,7 +105,7 @@ static XF86ModuleVersionInfo suncg3VersRec =
 
 XF86ModuleData suncg3ModuleData = { &suncg3VersRec, cg3Setup, NULL };
 
-pointer
+static pointer
 cg3Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
@@ -373,6 +371,7 @@ CG3PreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->display->virtualY = 0;
     }
 
+    /* XXX Need to deal with adapters not initialised by PROM */
     xf86SbusUseBuiltinMode(pScrn, pCg3->psdp);
     pScrn->currentMode = pScrn->modes;
     pScrn->displayWidth = pScrn->virtualX;
@@ -402,11 +401,10 @@ CG3ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pCg3 = GET_CG3_FROM_SCRN(pScrn);
 
     /* Map the CG3 memory */
-    pCg3->fb =
-	xf86MapSbusMem (pCg3->psdp, CG3_RAM_VOFF,
-			(pCg3->psdp->width * pCg3->psdp->height));
+    pCg3->fb = xf86MapSbusMem(pCg3->psdp, CG3_RAM_VOFF,
+			      pCg3->psdp->width * pCg3->psdp->height);
 
-    if (! pCg3->fb)
+    if (!pCg3->fb)
 	return FALSE;
 
     /* Darken the screen for aesthetic reasons and set the viewport */
@@ -435,7 +433,7 @@ CG3ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			  pScrn->rgbBits, pScrn->defaultVisual))
 	return FALSE;
 
-    miSetPixmapDepths ();
+    miSetPixmapDepths();
 
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
@@ -448,7 +446,7 @@ CG3ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!ret)
 	return FALSE;
 
-    fbPictureInit (pScreen, 0, 0);
+    fbPictureInit(pScreen, 0, 0);
 
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
@@ -457,7 +455,7 @@ CG3ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     xf86SetBlackWhitePixels(pScreen);
 
     /* Initialise cursor functions */
-    miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
+    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
@@ -542,7 +540,7 @@ CG3CloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     pScrn->vtSema = FALSE;
     xf86UnmapSbusMem(pCg3->psdp, pCg3->fb,
-		     (pCg3->psdp->width * pCg3->psdp->height));
+		     pCg3->psdp->width * pCg3->psdp->height);
 
     pScreen->CloseScreen = pCg3->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
@@ -582,13 +580,4 @@ CG3SaveScreen(ScreenPtr pScreen, int mode)
        used for much though */
 {
     return TRUE;
-}
-
-/*
- * This is the implementation of the Sync() function.
- */
-void
-CG3Sync(ScrnInfoPtr pScrn)
-{
-    return;
 }

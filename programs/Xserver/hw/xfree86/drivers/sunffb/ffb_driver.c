@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.12 2003/10/30 17:37:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.13tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -61,8 +61,6 @@ static void	FFBFreeScreen(int scrnIndex, int flags);
 static ModeStatus FFBValidMode(int scrnIndex, DisplayModePtr mode,
 			       Bool verbose, int flags);
 static void     FFBDPMSMode(ScrnInfoPtr pScrn, int DPMSMode, int flags);
-/* ffb_dga.c */
-extern void FFB_InitDGA(ScreenPtr pScreen);
 
 void FFBSync(ScrnInfoPtr pScrn);
 
@@ -124,7 +122,7 @@ static XF86ModuleVersionInfo sunffbVersRec =
 
 XF86ModuleData sunffbModuleData = { &sunffbVersRec, ffbSetup, NULL };
 
-pointer
+static pointer
 ffbSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
@@ -487,7 +485,7 @@ FFBProbeBoardType(FFBPtr pFfb)
 	volatile unsigned int *afb_fem;
 	unsigned int val;
 
-	afb_fem = ((volatile unsigned int *) ((char *)ffb + 0x1540));
+	afb_fem = ((volatile unsigned int *)((char *)ffb + 0x1540));
 	val = *afb_fem;
 	val &= 0x7f;
 
@@ -516,8 +514,8 @@ FFBProbeBoardType(FFBPtr pFfb)
 		 * on the first attempt.  The second attempt will get the
 		 * correct value.
 		 */
-		sbits = *((volatile unsigned char *)pFfb->strapping_bits);
-		sbits = *((volatile unsigned char *)pFfb->strapping_bits);
+		sbits = *(pFfb->strapping_bits);
+		sbits = *(pFfb->strapping_bits);
 		switch (sbits & 0x78) {
 		case (0x0 << 5) | (0x0 << 3):
 			pFfb->ffb_type = ffb1_prototype;
@@ -670,6 +668,7 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 {
     ScrnInfoPtr pScrn;
     FFBPtr pFfb;
+    sbusDevicePtr psdp;
     int ret;
     unsigned int afb_fem;
     VisualPtr visual;
@@ -678,77 +677,89 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!FFBDbePreInit(pScreen))
 	return FALSE;
 
-    /*
-     * First get the ScrnInfoRec
-     */
     pScrn = xf86Screens[pScreen->myNum];
-
     pFfb = GET_FFB_FROM_SCRN(pScrn);
+    psdp = pFfb->psdp;
 
     /* Map the FFB framebuffer, for each view. */
 
     /* 24-bit RGB Dumb view */
-    pFfb->fb = pFfb->dfb24 =
-	xf86MapSbusMem (pFfb->psdp, FFB_DFB24_VOFF, 0x1000000);
-
-    if (! pFfb->dfb24)
-	return FALSE;
+    pFfb->fb = pFfb->dfb24 = xf86MapSbusMem(psdp, FFB_DFB24_VOFF, 0x1000000);
 
     /* 8-bit R Dumb view */
-    pFfb->dfb8r =
-	xf86MapSbusMem (pFfb->psdp, FFB_DFB8R_VOFF, 0x400000);
-
-    if (! pFfb->dfb8r)
-	return FALSE;
+    pFfb->dfb8r = xf86MapSbusMem(psdp, FFB_DFB8R_VOFF, 0x400000);
 
     /* 8-bit X Dumb view */
-    pFfb->dfb8x =
-	xf86MapSbusMem (pFfb->psdp, FFB_DFB8X_VOFF, 0x400000);
-
-    if (! pFfb->dfb8x)
-	return FALSE;
+    pFfb->dfb8x = xf86MapSbusMem(psdp, FFB_DFB8X_VOFF, 0x400000);
 
     /* 32-bit RGB Smart view */
-    pFfb->sfb32 =
-	xf86MapSbusMem (pFfb->psdp, FFB_SFB32_VOFF, 0x1000000);
-
-    if (!pFfb->sfb32)
-	return FALSE;
+    pFfb->sfb32 = xf86MapSbusMem(psdp, FFB_SFB32_VOFF, 0x1000000);
 
     /* 8-bit R Smart view */
-    pFfb->sfb8r =
-	xf86MapSbusMem(pFfb->psdp, FFB_SFB8R_VOFF, 0x400000);
-
-    if (!pFfb->sfb8r)
-	return FALSE;
+    pFfb->sfb8r = xf86MapSbusMem(psdp, FFB_SFB8R_VOFF, 0x400000);
 
     /* 8-bit X Smart view */
-    pFfb->sfb8x =
-	xf86MapSbusMem(pFfb->psdp, FFB_SFB8X_VOFF, 0x400000);
-
-    if (!pFfb->sfb8x)
-	return FALSE;
+    pFfb->sfb8x = xf86MapSbusMem(psdp, FFB_SFB8X_VOFF, 0x400000);
 
     /* Map the rendering pipeline */
-    pFfb->regs =
-	xf86MapSbusMem (pFfb->psdp, FFB_FBC_REGS_VOFF, 16384);
-
-    if (! pFfb->regs)
-	return FALSE;
+    pFfb->regs = xf86MapSbusMem(psdp, FFB_FBC_REGS_VOFF, sizeof(*pFfb->regs));
 
     /* Map the ramdac */
-    pFfb->dac =
-	xf86MapSbusMem (pFfb->psdp, FFB_DAC_VOFF, 8192);
-
-    if (! pFfb->dac)
-	return FALSE;
+    pFfb->dac = xf86MapSbusMem(psdp, FFB_DAC_VOFF, 8192);
 
     /* Map the board strapping bits */
-    pFfb->strapping_bits = (volatile unsigned int *)
-	    xf86MapSbusMem(pFfb->psdp, FFB_EXP_VOFF, 8192);
+    pFfb->strapping_bits = xf86MapSbusMem(psdp, FFB_EXP_VOFF, 8192);
 
-    if (! pFfb->strapping_bits)
+    if (!pFfb->dfb24 || !pFfb->dfb8r || !pFfb->dfb8x ||
+	!pFfb->sfb32 || !pFfb->sfb8r || !pFfb->sfb8x ||
+	!pFfb->regs || !pFfb->dac || !pFfb->strapping_bits) {
+	if (pFfb->dfb24) {
+	    xf86UnmapSbusMem(psdp, pFfb->dfb24, 0x1000000);
+	    pFfb->dfb24 = NULL;
+	}
+
+	if (pFfb->dfb8r) {
+	    xf86UnmapSbusMem(psdp, pFfb->dfb8r, 0x400000);
+	    pFfb->dfb8r = NULL;
+	}
+
+	if (pFfb->dfb8x) {
+	    xf86UnmapSbusMem(psdp, pFfb->dfb8x, 0x400000);
+	    pFfb->dfb8x = NULL;
+	}
+
+	if (pFfb->sfb32) {
+	    xf86UnmapSbusMem(psdp, pFfb->sfb32, 0x1000000);
+	    pFfb->sfb32 = NULL;
+	}
+
+	if (pFfb->sfb8r) {
+	    xf86UnmapSbusMem(psdp, pFfb->sfb8r, 0x400000);
+	    pFfb->sfb8r = NULL;
+	}
+
+	if (pFfb->sfb8x) {
+	    xf86UnmapSbusMem(psdp, pFfb->sfb8x, 0x400000);
+	    pFfb->sfb8x = NULL;
+	}
+
+	if (pFfb->regs) {
+	    xf86UnmapSbusMem(psdp, pFfb->regs, sizeof(*pFfb->regs));
+	    pFfb->regs = NULL;
+	}
+
+	if (pFfb->dac) {
+	    xf86UnmapSbusMem(psdp, pFfb->dac, 8192);
+	    pFfb->dac = NULL;
+	}
+
+	if (pFfb->strapping_bits) {
+	    xf86UnmapSbusMem(psdp, (void *)pFfb->strapping_bits, 8192);
+	    pFfb->strapping_bits = NULL;
+	}
+
 	return FALSE;
+    }
 
     /* Probe for the type of FFB/AFB we have. */
     FFBProbeBoardType(pFfb);
@@ -781,17 +792,20 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if ((afb_fem & 0x7f) != 0x3f &&
 	(afb_fem & 0x7f) != 0x07 &&
 	(afb_fem & 0x7f) != 0x01)
-	xf86Msg(X_INFO, "%s: Detected Creator/Creator3D\n", pFfb->psdp->device);
+	xf86Msg(X_INFO, "%s: Detected Creator/Creator3D\n", psdp->device);
     else {
-	xf86Msg(X_INFO, "%s: Detected Elite3D M3/M6, checking firmware...\n", pFfb->psdp->device);
+	xf86Msg(X_INFO, "%s: Detected Elite3D M3/M6, checking firmware...\n",
+		psdp->device);
 	if (afb_fem == 0x1) {
-	    xf86Msg(X_INFO, "%s: ... AFB firmware not loaded\n", pFfb->psdp->device);
+	    xf86Msg(X_INFO, "%s: ... AFB firmware not loaded\n", psdp->device);
 	    if (!pFfb->NoAccel) {
-		xf86Msg(X_WARNING, "%s: Forcing no acceleration on Elite3D M3/M6\n", pFfb->psdp->device);
+		xf86Msg(X_WARNING,
+			"%s: Forcing no acceleration on Elite3D M3/M6\n",
+			psdp->device);
 		pFfb->NoAccel = TRUE;
 	    }
 	} else
-	    xf86Msg(X_INFO, "%s: ... AFB firmware is loaded\n", pFfb->psdp->device);
+	    xf86Msg(X_INFO, "%s: ... AFB firmware is loaded\n", psdp->device);
     }
 
     /* Darken the screen for aesthetic reasons and set the viewport */
@@ -829,11 +843,9 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	pFfb->NoAccel == FALSE) {
 	    pFfb->dri_enabled = FFBDRIScreenInit(pScreen);
 	    if (pFfb->dri_enabled == TRUE)
-		    xf86Msg(X_INFO, "%s: DRM initialized\n",
-			    pFfb->psdp->device);
+		    xf86Msg(X_INFO, "%s: DRM initialized\n", psdp->device);
 	    else
-		    xf86Msg(X_INFO, "%s: DRM setup failed\n",
-			    pFfb->psdp->device);
+		    xf86Msg(X_INFO, "%s: DRM setup failed\n", psdp->device);
     } else {
 	    pFfb->dri_enabled = FALSE;
     }
@@ -885,11 +897,11 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!pFfb->NoAccel) {
 	if (!FFBAccelInit(pScreen, pFfb))
 	    return FALSE;
-	xf86Msg(X_INFO, "%s: Using acceleration\n", pFfb->psdp->device);
+	xf86Msg(X_INFO, "%s: Using acceleration\n", psdp->device);
     }
 
     /* Initialise cursor functions */
-    miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
+    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
     /* Initialize HW cursor layer.
      * Must follow software cursor initialization.
@@ -900,7 +912,7 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		       "Hardware cursor initialization failed\n");
 	    return(FALSE);
 	}
-	xf86SbusHideOsHwCursor(pFfb->psdp);
+	xf86SbusHideOsHwCursor(psdp);
     }
 
     /* Initialise default colourmap. */
@@ -931,10 +943,10 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    pFfb->dri_enabled = FFBDRIFinishScreenInit(pScreen);
 	    if (pFfb->dri_enabled)
 		    xf86Msg(X_INFO, "%s: DRM finish setup complete\n",
-			    pFfb->psdp->device);
+			    psdp->device);
 	    else
 		    xf86Msg(X_INFO, "%s: DRM finish setup failed\n",
-			    pFfb->psdp->device);
+			    psdp->device);
     }
 #endif
 
@@ -991,9 +1003,9 @@ FFBEnterVT(int scrnIndex, int flags)
 
     pFfb->vtSema = FALSE;
     if (!pFfb->NoAccel)
-	CreatorVtChange (pScrn->pScreen, TRUE);
+	CreatorVtChange(pScrn->pScreen, TRUE);
     if (pFfb->HWCursor)
-	xf86SbusHideOsHwCursor (pFfb->psdp);
+	xf86SbusHideOsHwCursor(pFfb->psdp);
 
     FFBDacEnterVT(pFfb);
 
@@ -1015,10 +1027,10 @@ FFBLeaveVT(int scrnIndex, int flags)
     FFBDacLeaveVT(pFfb);
 
     if (!pFfb->NoAccel)
-	CreatorVtChange (pScrn->pScreen, FALSE);
+	CreatorVtChange(pScrn->pScreen, FALSE);
 
     if (pFfb->HWCursor)
-	xf86SbusHideOsHwCursor (pFfb->psdp);
+	xf86SbusHideOsHwCursor(pFfb->psdp);
 
     pFfb->vtSema = TRUE;
     return;
@@ -1036,6 +1048,7 @@ FFBCloseScreen(int scrnIndex, ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     FFBPtr pFfb = GET_FFB_FROM_SCRN(pScrn);
+    sbusDevicePtr psdp = pFfb->psdp;
 
 #ifdef XF86DRI
     if (pFfb->dri_enabled)
@@ -1047,18 +1060,18 @@ FFBCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     pScrn->vtSema = FALSE;
 
-    xf86UnmapSbusMem(pFfb->psdp, pFfb->dfb24, 0x1000000);
-    xf86UnmapSbusMem(pFfb->psdp, pFfb->dfb8r, 0x400000);
-    xf86UnmapSbusMem(pFfb->psdp, pFfb->dfb8x, 0x400000);
-    xf86UnmapSbusMem(pFfb->psdp, pFfb->sfb32, 0x1000000);
-    xf86UnmapSbusMem(pFfb->psdp, pFfb->sfb8r, 0x400000);
-    xf86UnmapSbusMem(pFfb->psdp, pFfb->sfb8x, 0x400000);
-    xf86UnmapSbusMem(pFfb->psdp, pFfb->regs, 16384);
-    xf86UnmapSbusMem(pFfb->psdp, pFfb->dac, 8192);
-    xf86UnmapSbusMem(pFfb->psdp, (void *)pFfb->strapping_bits, 8192);
+    xf86UnmapSbusMem(psdp, pFfb->dfb24, 0x1000000);
+    xf86UnmapSbusMem(psdp, pFfb->dfb8r, 0x400000);
+    xf86UnmapSbusMem(psdp, pFfb->dfb8x, 0x400000);
+    xf86UnmapSbusMem(psdp, pFfb->sfb32, 0x1000000);
+    xf86UnmapSbusMem(psdp, pFfb->sfb8r, 0x400000);
+    xf86UnmapSbusMem(psdp, pFfb->sfb8x, 0x400000);
+    xf86UnmapSbusMem(psdp, pFfb->regs, sizeof(*pFfb->regs));
+    xf86UnmapSbusMem(psdp, pFfb->dac, 8192);
+    xf86UnmapSbusMem(psdp, (void *)pFfb->strapping_bits, 8192);
 
     if (pFfb->HWCursor)
-	xf86SbusHideOsHwCursor (pFfb->psdp);
+	xf86SbusHideOsHwCursor(psdp);
 
     pScreen->CloseScreen = pFfb->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
