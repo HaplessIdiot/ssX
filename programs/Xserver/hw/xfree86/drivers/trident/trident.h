@@ -1,5 +1,5 @@
 /*
- * Copyright 1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
+ * Copyright 1992-2000 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.30 2000/11/30 10:19:48 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.31 2000/11/30 11:53:25 alanh Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -34,6 +34,7 @@
 #include "xf86i2c.h"
 #include "xf86int10.h"
 #include "shadowfb.h"
+#include "xf86xv.h"
 
 typedef struct {
 	unsigned char tridentRegs3x4[0x100];
@@ -69,7 +70,6 @@ typedef struct {
     Bool		HWCursor;
     Bool		UsePCIRetry;
     Bool		UsePCIBurst;
-    Bool		UseGERetry;
     Bool		NewClockCode;
     Bool		Clipping;
     Bool		DstEnable;
@@ -128,12 +128,20 @@ typedef struct {
     xf86Int10InfoPtr	Int10;
     XAAInfoRecPtr	AccelInfoRec;
     CloseScreenProcPtr	CloseScreen;
+    ScreenBlockHandlerProcPtr BlockHandler;
     int                 panelWidth;
     int                 panelHeight;
     unsigned int	(*ddc1Read)(ScrnInfoPtr);
     CARD8*		XAAScanlineColorExpandBuffers[2];
     CARD8*		XAAImageScanlineBuffer[1];
     void                (*InitializeAccelerator)(ScrnInfoPtr);
+#ifdef XvExtension
+    void		(*VideoTimerCallback)(ScrnInfoPtr, Time);
+    XF86VideoAdaptorPtr adaptor;
+    int                 videoKey;
+    int			hsync;
+    int			vsync;
+#endif
 } TRIDENTRec, *TRIDENTPtr;
 
 typedef struct {
@@ -240,7 +248,6 @@ typedef enum {
     CYBER9397DVD,
     CYBER9520,
     CYBER9525DVD,
-    CYBERBLADEE4,
     IMAGE975,
     IMAGE985,
     BLADE3D,
@@ -249,7 +256,8 @@ typedef enum {
     CYBERBLADEI1,
     CYBERBLADEI1D,
     CYBERBLADEAI1,
-    CYBERBLADEAI1D
+    CYBERBLADEAI1D,
+    CYBERBLADEE4
 } TRIDENTType;
 
 #define UseMMIO		(pTrident->NoMMIO == FALSE)

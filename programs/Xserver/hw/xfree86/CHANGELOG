@@ -1,4 +1,10 @@
 XFree86 4.0.1i (xx December 2000)
+1132. Miscellaneous fixups to the trident driver (Alan Hourihane).
+1131. Add Xv support to the trident driver. Works for Blade and Image series 
+      chips, but zooming currently doesn't work on Image series.
+      (Alan Hourihane).
+1130. Don't perform a software reset on the Graphics Engine for Trident
+      Blade3D's and CyberBlade's (Alan Hourihane).
 1129. Fix typo in int10 for IA-64's (Marc La France).
 1128. Make PCI bridge information in the log more accurate (Marc La France).
 1127. Update ATI docs (Marc La France).
@@ -11949,4 +11955,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1453 2000/12/06 22:00:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1454 2000/12/07 15:43:37 tsi Exp $

@@ -1,5 +1,5 @@
 /*
- * Copyright 1997,1998 by Alan Hourihane, Wigan, England.
+ * Copyright 1992-2000 by Alan Hourihane, Wigan, England.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -23,7 +23,7 @@
  * 
  * Trident accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.17 2000/11/16 19:45:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.18 2000/11/16 20:11:30 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -320,8 +320,7 @@ TridentSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
     TGUI_DEST_XY(x2,y2);
     TGUI_DIM_XY(w,h);
     TGUI_COMMAND(GE_BLT);
-    if (!pTrident->UseGERetry)
-    	TridentClearSync(pScrn);
+    TridentClearSync(pScrn);
 }
 
 static void
@@ -360,8 +359,7 @@ TridentSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
     TGUI_DEST_XY(x,y);
     TGUI_DIM_XY(dmin+e,len);
     TGUI_COMMAND(GE_BRESLINE);
-    if (!pTrident->UseGERetry)
-    	TridentSync(pScrn);
+    TridentSync(pScrn);
 }
 
 static void 
@@ -381,8 +379,7 @@ TridentSubsequentSolidHorVertLine(
     	TGUI_DEST_XY(x,y);
     }
     TGUI_COMMAND(GE_BLT);
-    if (!pTrident->UseGERetry)
-    	TridentSync(pScrn);
+    TridentSync(pScrn);
 }
 
 void
@@ -452,8 +449,7 @@ TridentSubsequentDashedBresenhamLine(ScrnInfoPtr pScrn,
     TGUI_DEST_XY(x,y);
     TGUI_DIM_XY(e+dmin,len);
     TGUI_COMMAND(GE_BRESLINE);
-    if (!pTrident->UseGERetry)
-    	TridentSync(pScrn);
+    TridentSync(pScrn);
 }
 
 static void
@@ -485,8 +481,7 @@ TridentSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
     TGUI_DIM_XY(w,h);
     TGUI_DEST_XY(x,y);
     TGUI_COMMAND(GE_BLT);
-    if (!pTrident->UseGERetry)
-    	TridentSync(pScrn);
+    TridentSync(pScrn);
 }
 
 static void MoveDWORDS(
@@ -570,8 +565,7 @@ TridentSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
     TGUI_DEST_XY(x,y);
     TGUI_DIM_XY(w,h);
     TGUI_COMMAND(GE_BLT);
-    if (!pTrident->UseGERetry)
-    	TridentSync(pScrn);
+    TridentSync(pScrn);
 }
 
 static void 
@@ -615,8 +609,7 @@ TridentSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn,
     TGUI_DEST_XY(x,y);
     TGUI_DIM_XY(w,h);
     TGUI_COMMAND(GE_BLT);
-    if (!pTrident->UseGERetry)
-    	TridentClearSync(pScrn);
+    TridentClearSync(pScrn);
 }
 
 static void
@@ -677,8 +670,7 @@ TridentSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 			pTrident->dwords);
 
     pTrident->h--;
-    if (!pTrident->UseGERetry)
-	TridentSync(pScrn);
+    TridentSync(pScrn);
     if (pTrident->h) {
     	TGUI_DEST_XY(pTrident->x,pTrident->y++);
     	TGUI_DIM_XY(pTrident->w,1);

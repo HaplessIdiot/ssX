@@ -1,5 +1,5 @@
 /*
- * Copyright 1992-1998 by Alan Hourihane, Wigan, England.
+ * Copyright 1992-2000 by Alan Hourihane, Wigan, England.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.15 2000/11/28 00:04:39 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.16 2000/12/04 08:46:17 alanh Exp $ */
 
 #define DEBUG 1
 
@@ -84,6 +84,8 @@
 #define CursorBG4 0x4F
 #define CursorControl 0x50
 #define PCIRetry 0x55
+#define DispPreCont 0x56
+#define DispPreFetch 0x57
 #define PCIMaster 0x60
 #define Enhancement0 0x62
 #define NewEDO 0x64

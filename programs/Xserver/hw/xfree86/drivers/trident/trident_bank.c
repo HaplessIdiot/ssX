@@ -1,5 +1,5 @@
 /*
- * Copyright 1998 by Alan Hourihane, Wigan, England.
+ * Copyright 1992-2000 by Alan Hourihane, Wigan, England.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_bank.c,v 1.1 1998/11/15 04:30:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_bank.c,v 1.3 1999/10/13 20:02:30 alanh Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"

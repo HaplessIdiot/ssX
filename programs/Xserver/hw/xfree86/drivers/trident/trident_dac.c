@@ -1,5 +1,5 @@
 /*
- * Copyright 1992-1999 by Alan Hourihane, Wigan, England.
+ * Copyright 1992-2000 by Alan Hourihane, Wigan, England.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.32 2000/11/27 23:07:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.33 2000/11/30 10:19:48 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -320,7 +320,6 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case BLADE3D:
 	    OUTB(vgaIOBase + 4, RAMDACTiming);
 	    pReg->tridentRegs3x4[RAMDACTiming] |= 0x0F;
-	    pReg->tridentRegs3x4[GraphEngReg] |= 0x10;
 	    /* Fall Through */
 	case CYBER9520:
 	case CYBER9525DVD:
@@ -331,21 +330,17 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case IMAGE985:
 	    if (pScrn->bitsPerPixel >= 8)
     	    	pReg->tridentRegs3CE[MiscExtFunc] |= 0x10;
+	    pReg->tridentRegs3x4[DispPreCont] = 0x01;
+	    pReg->tridentRegs3x4[DispPreFetch] = 0xFF;
 	    /* Fall Through */
 	case PROVIDIA9685:
-	    if (pTrident->UsePCIRetry) {
-		pTrident->UseGERetry = TRUE;
-	    	pReg->tridentRegs3x4[Enhancement0] = 0x50;
-	    } else {
-		pTrident->UseGERetry = FALSE;
-	    	pReg->tridentRegs3x4[Enhancement0] = 0x00;
-	    }
+	    pReg->tridentRegs3x4[Enhancement0] = 0x40;
 	    /* Fall Through */
 	case PROVIDIA9682:
 	    if (pTrident->UsePCIRetry) 
 	    	pReg->tridentRegs3x4[PCIRetry] = 0xDF;
 	    else
-	    	pReg->tridentRegs3x4[PCIRetry] = 0x00;
+	    	pReg->tridentRegs3x4[PCIRetry] = 0x1F;
 	    /* Fall Through */
 	case TGUI9660:
 	case TGUI9680:
@@ -536,6 +531,8 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     OUTW_3x4(PixelBusReg);
     OUTW_3x4(PCIReg);
     OUTW_3x4(PCIRetry);
+    OUTW_3x4(DispPreCont);
+    OUTW_3x4(DispPreFetch);
     OUTW_3CE(MiscIntContReg);
     OUTW_3CE(MiscExtFunc);
     OUTW_3x4(Offset);
@@ -639,6 +636,8 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     INB_3x4(GraphEngReg);
     INB_3x4(PCIReg);
     INB_3x4(PCIRetry);
+    INB_3x4(DispPreCont);
+    INB_3x4(DispPreFetch);
     if (pTrident->Chipset >= PROVIDIA9685) INB_3x4(Enhancement0);
     if (pTrident->Chipset >= BLADE3D)      INB_3x4(RAMDACTiming);
     if (pTrident->Chipset == CYBERBLADEE4) INB_3x4(New32);
