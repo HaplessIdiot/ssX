@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128.h,v 1.2 2000/10/23 14:11:39 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128.h,v 1.3 2000/12/06 01:07:34 robin Exp $ */
 /*
  * Number Nine I128 functions
  *
@@ -91,6 +91,10 @@ typedef struct {
     XAAInfoRecPtr	AccelInfoRec;
     xf86CursorInfoPtr	CursorInfoRec;
     I2CBusPtr		I2C;
+    Bool		DGAactive;
+    int			DGAViewportStatus;
+    int			numDGAModes;
+    DGAModePtr		DGAModes;
     Bool		(*ProgramDAC)(ScrnInfoPtr, DisplayModePtr);
     unsigned int	(*ddc1Read)(ScrnInfoPtr);
     Bool		(*i2cInit)(ScrnInfoPtr);
@@ -106,6 +110,7 @@ Bool I128SwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 Bool I128HWCursorInit(ScreenPtr pScreen);
 
 Bool I128AccelInit(ScreenPtr pScreen);
+void I128EngineDone(ScrnInfoPtr pScrn);
 
 Bool I128Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
