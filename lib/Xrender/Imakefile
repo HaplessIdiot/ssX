@@ -1,16 +1,17 @@
-XCOMM $XFree86: xc/lib/Xrender/Imakefile,v 1.6 2002/05/31 06:38:43 keithp Exp $
+XCOMM $XFree86: xc/lib/Xrender/Imakefile,v 1.7tsi Exp $
 
-XCOMM Allow for builds against old installed bits
-XCOMM note that this requires that additional files be
-XCOMM copied into this directory
 #if UseInstalled
 
+XCOMM Allow for builds against old installed bits.  Note that this requires
+XCOMM that additional files be copied (or linked) into this directory.  See
+XCOMM NONSTANDARD_HEADERS below.
+
 #ifndef SharedLibXrender
-#define SharedLibXrender		YES
+#define SharedLibXrender	YES
 #endif
 
 #ifndef NormalLibXrender
-#define NormalLibXrender (!SharedLibXrender | ForceNormalLib)
+#define NormalLibXrender	(!SharedLibXrender | ForceNormalLib)
 #endif
 
 #ifndef DebugLibXrender
@@ -18,16 +19,15 @@ XCOMM copied into this directory
 #endif
 
 #ifndef ProfileLibXrender
-#define ProfileLibXrender		NO
+#define ProfileLibXrender	NO
 #endif
 
-#ifdef SharedXrenderRev
-#undef SharedXrenderRev
-#endif
-
+#undef  SharedXrenderRev
 #define SharedXrenderRev	1.1
+SOXRENDERREV = SharedXrenderRev
 
 #if SharedLibXrender
+#define SharedXft1Rev		1.2
 SharedLibReferences(XFT1,Xft,$(XFT1SRC),SOXFT1REV,SharedXft1Rev)
 #else
 ProjectUnsharedLibReferences(XFT1,Xft,$(XFT1SRC),BuildLibDir)
@@ -46,14 +46,27 @@ ProjectUnsharedLibReferences(XFT1,Xft,$(XFT1SRC),BuildLibDir)
 	  RemoveFile($(BUILDLIBDIR)/lib); \				@@\
 	  cd $(BUILDLIBDIR) && $(LN) $(BUILDLIBTOP)/$(CURRENT_DIR)/lib .); fi
 
-#ifdef LdPreLibs
-# undef LdPreLibs
-#endif
+#undef  LdPreLibs
 #define LdPreLibs -L$(BUILDLIBDIR) LdPreLib XLdPreLibs
 
-LDPRELIBS=LdPreLibs
+LDPRELIBS = LdPreLibs
 
-NONSTANDARD_HEADERS=render.h renderproto.h
+NONSTANDARD_HEADERS = extutil.h region.h render.h renderproto.h
+
+all:: $(NONSTANDARD_HEADERS)
+includes depend:: $(NONSTANDARD_HEADERS)
+
+$(NONSTANDARD_HEADERS):
+	@echo Header file $@ is missing.
+
+#ifdef XBuildIncDir
+RENDERCLEANDIR = $(BUILDINCROOT)
+#else
+RENDERCLEANDIR = $(BUILDINCDIR)
+#endif
+
+clean::
+	$(RM) -r $(RENDERCLEANDIR)
 
 #endif
 
@@ -64,11 +77,13 @@ NONSTANDARD_HEADERS=render.h renderproto.h
 #define LibName Xrender
 #define SoRev SOXRENDERREV
 
-#ifdef XFree86Version
+#ifdef XBuildIncDir
 #define IncSubdir X11
 #define IncSubSubdir extensions
+RENDERINCDIR   = $(BUILDINCDIR)
 #else
 #define IncSubdir extensions
+RENDERINCDIR   = $(BUILDINCROOT)
 #endif
 
 #include <Threads.tmpl>
@@ -83,7 +98,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 
       DEFINES = $(ALLOC_DEFINES)
 #if UseInstalled
-     INCLUDES =-I. -I$(INCROOT)/X11 -I$(INCROOT)/X11/extensions
+     INCLUDES = -I$(RENDERINCDIR) -I$(INCROOT)/X11 -I$(INCROOT)/X11/extensions
 #else
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
 #endif
@@ -117,3 +132,9 @@ HEADERS = Xrender.h $(NONSTANDARD_HEADERS)
 #include <Library.tmpl>
 
 DependTarget()
+
+#ifndef clean
+/* Generate a distclean target */
+distclean:: clean
+	RemoveFile(Makefile)
+#endif
