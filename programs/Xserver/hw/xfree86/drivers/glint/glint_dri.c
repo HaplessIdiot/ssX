@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.28tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.29 2002/10/08 22:14:07 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -29,7 +29,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Jens Owen <jens@precisioninsight.com>
+ *   Jens Owen <jens@tungstengraphics.com>
  *   Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
  */
@@ -406,6 +406,7 @@ static Bool GLINTDRIKernelInit( ScreenPtr pScreen )
 
    memset( &init, 0, sizeof(drmGAMMAInit) );
 
+   init.func = GAMMA_INIT_DMA;
    init.sarea_priv_offset = sizeof(XF86DRISAREARec);
 
    init.mmio0 = pGlintDRI->registers0.handle;
@@ -420,7 +421,8 @@ static Bool GLINTDRIKernelInit( ScreenPtr pScreen )
        init.pcimode = 1;
    }
 
-   ret = drmGAMMAInitDMA( pGlint->drmSubFD, &init );
+   ret = drmCommandWrite( pGlint->drmSubFD, DRM_GAMMA_INIT, 
+                          &init, sizeof(drmGAMMAInit) );
 
    if ( ret < 0 ) {
       xf86DrvMsg( pScrn->scrnIndex, X_ERROR,
@@ -553,9 +555,48 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 	return FALSE;
     }
 
-    /* Check the GLINT DRM version */
+    /* Check the DRM versioning */
     {
-        drmVersionPtr version = drmGetVersion(pGlint->drmSubFD);
+        drmVersionPtr version;
+
+	/* Check the DRM lib version.
+	   drmGetLibVersion was not supported in version 1.0, so check for
+	   symbol first to avoid possible crash or hang.
+	 */
+	if (xf86LoaderCheckSymbol("drmGetLibVersion")) {
+	    version = drmGetLibVersion(pGlint->drmSubFD);
+	}
+	else {
+	    /* drmlib version 1.0.0 didn't have the drmGetLibVersion
+	       entry point.  Fake it by allocating a version record
+	       via drmGetVersion and changing it to version 1.0.0
+	     */
+	    version = drmGetVersion(pGlint->drmSubFD);
+	    version->version_major      = 1;
+	    version->version_minor      = 0;
+	    version->version_patchlevel = 0;
+	}
+
+	if (version) {
+	    if (version->version_major != 1 ||
+		version->version_minor < 1) {
+		/* incompatible drm library version */
+		xf86DrvMsg(pScreen->myNum, X_ERROR,
+		    "[dri] GLINTDRIScreenInit failed because of a version mismatch.\n"
+		    "[dri] libdrm.a module version is %d.%d.%d but version 1.1.x is needed.\n"
+		    "[dri] Disabling DRI.\n",
+		    version->version_major,
+		    version->version_minor,
+		    version->version_patchlevel);
+		drmFreeVersion(version);
+		GLINTDRICloseScreen(pScreen);
+		return FALSE;
+	    }
+	    drmFreeVersion(version);
+	}
+
+        /* Check the GLINT DRM version */
+        version = drmGetVersion(pGlint->drmSubFD);
         if (version) {
             if (version->version_major != 2 ||
                 version->version_minor < 0) {

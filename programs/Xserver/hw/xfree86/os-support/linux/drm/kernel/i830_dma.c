@@ -158,7 +158,7 @@ static struct file_operations i830_buffer_fops = {
 	.ioctl	 = DRM(ioctl),
 	.mmap	 = i830_mmap_buffers,
 	.read	 = DRM(read),
-	.fasync	 = DRM(fasync),
+	.fasync  = DRM(fasync),
       	.poll	 = DRM(poll),
 };
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_texmem.c,v 1.4 2002/09/16 18:05:20 eich Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -37,7 +37,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_context.h"
 #include "radeon_state.h"
 #include "radeon_ioctl.h"
-#include "radeon_vb.h"
+#include "radeon_swtcl.h"
 #include "radeon_tex.h"
 
 #include "context.h"
@@ -57,8 +57,8 @@ void radeonDestroyTexObj( radeonContextPtr rmesa, radeonTexObjPtr t )
    if ( !t )
       return;
 
-   if ( RADEON_DEBUG & DEBUG_VERBOSE_TEXTURE ) {
-      fprintf( stderr, "%s( %p, %p )\n",__FUNCTION__, (void*)t, (void*)t->tObj );
+   if ( RADEON_DEBUG & DEBUG_TEXTURE ) {
+      fprintf( stderr, __FUNCTION__"( %p, %p )\n", t, t->tObj );
    }
 
    if ( t->memBlock ) {
@@ -75,12 +75,14 @@ void radeonDestroyTexObj( radeonContextPtr rmesa, radeonTexObjPtr t )
 
       if ( t == rmesa->state.texture.unit[0].texobj ) {
          rmesa->state.texture.unit[0].texobj = NULL;
-         rmesa->state.hw.dirty &= ~RADEON_UPLOAD_TEX0;
+	 remove_from_list( &rmesa->hw.tex[0] );
+	 make_empty_list( &rmesa->hw.tex[0] );
       }
 
       if ( t == rmesa->state.texture.unit[1].texobj ) {
          rmesa->state.texture.unit[1].texobj = NULL;
-         rmesa->state.hw.dirty &= ~RADEON_UPLOAD_TEX1;
+	 remove_from_list( &rmesa->hw.tex[1] );
+	 make_empty_list( &rmesa->hw.tex[1] );
       }
    }
 
@@ -88,12 +90,13 @@ void radeonDestroyTexObj( radeonContextPtr rmesa, radeonTexObjPtr t )
    FREE( t );
 }
 
+
 /* Keep track of swapped out texture objects.
  */
 void radeonSwapOutTexObj( radeonContextPtr rmesa, radeonTexObjPtr t )
 {
-   if ( RADEON_DEBUG & DEBUG_VERBOSE_TEXTURE ) {
-      fprintf( stderr, "%s( %p, %p )\n",__FUNCTION__, (void*)t, (void*)t->tObj );
+   if ( RADEON_DEBUG & DEBUG_TEXTURE ) {
+      fprintf( stderr, __FUNCTION__"( %p, %p )\n", t, t->tObj );
    }
 
    /* Bump the performace counter */
@@ -124,8 +127,7 @@ void radeonPrintLocalLRU( radeonContextPtr rmesa, int heap )
 		  t->memBlock->ofs,
 		  t->memBlock->size );
       } else {
-	 fprintf( stderr, "Texture (bound %d) at 0x%x sz 0x%x\n",
-		  t->bound,
+	 fprintf( stderr, "Texture at 0x%x sz 0x%x\n",
 		  t->memBlock->ofs,
 		  t->memBlock->size );
       }
@@ -139,7 +141,7 @@ void radeonPrintGlobalLRU( radeonContextPtr rmesa, int heap )
    radeon_tex_region_t *list = rmesa->sarea->texList[heap];
    int i, j;
 
-   fprintf( stderr, "\nGlobal LRU, heap %d list %p:\n", heap, (void*)list );
+   fprintf( stderr, "\nGlobal LRU, heap %d list %p:\n", heap, list );
 
    for ( i = 0, j = RADEON_NR_TEX_REGIONS ; i < RADEON_NR_TEX_REGIONS ; i++ ) {
       fprintf( stderr, "list[%d] age %d next %d prev %d\n",
@@ -329,9 +331,11 @@ static void radeonUploadSubImage( radeonContextPtr rmesa,
    GLuint format, pitch, offset;
    GLint imageWidth, imageHeight;
    GLint ret;
+   drmRadeonTexture tex;
+   drmRadeonTexImage tmp;
 
-   if ( RADEON_DEBUG & DEBUG_VERBOSE_TEXTURE ) {
-      fprintf( stderr, "%s( %p, %p )\n",__FUNCTION__, (void*)t, (void*)t->tObj );
+   if ( RADEON_DEBUG & DEBUG_TEXTURE ) {
+      fprintf( stderr, __FUNCTION__"( %p, %p )\n", t, t->tObj );
    }
 
    /* Ensure we have a valid texture to upload */
@@ -343,13 +347,13 @@ static void radeonUploadSubImage( radeonContextPtr rmesa,
 
    texImage = t->tObj->Image[level];
    if ( !texImage ) {
-      if ( RADEON_DEBUG & DEBUG_VERBOSE_TEXTURE )
-	 fprintf( stderr,  "%s: texImage %d is NULL!\n",__FUNCTION__, level );
+      if ( RADEON_DEBUG & DEBUG_TEXTURE )
+	 fprintf( stderr, __FUNCTION__ ": texImage %d is NULL!\n", level );
       return;
    }
    if ( !texImage->Data ) {
-      if ( RADEON_DEBUG & DEBUG_VERBOSE_TEXTURE )
-	 fprintf( stderr,  "%s: image data is NULL!\n",__FUNCTION__ );
+      if ( RADEON_DEBUG & DEBUG_TEXTURE )
+	 fprintf( stderr, __FUNCTION__ ": image data is NULL!\n" );
       return;
    }
 
@@ -380,7 +384,7 @@ static void radeonUploadSubImage( radeonContextPtr rmesa,
    rmesa->c_textureBytes += (dwords << 2);
 #endif
 
-   if ( RADEON_DEBUG & DEBUG_VERBOSE_MSG ) {
+   if ( RADEON_DEBUG & (DEBUG_TEXTURE|DEBUG_IOCTL) ) {
       GLint imageX = 0;
       GLint imageY = 0;
       GLint blitX = t->image[level].x;
@@ -397,12 +401,24 @@ static void radeonUploadSubImage( radeonContextPtr rmesa,
    }
 
    t->image[level].data = texImage->Data;
-   ret = drmRadeonLoadTexture( rmesa->dri.fd, offset, pitch, format,
-			       imageWidth, imageHeight, &t->image[level] );
+
+   tex.offset = offset;
+   tex.pitch = pitch;
+   tex.format = format;
+   tex.width = imageWidth;
+   tex.height = imageHeight;
+   tex.image = &tmp;
+
+   memcpy( &tmp, &t->image[level], sizeof(drmRadeonTexImage) );
+
+   do {
+      ret = drmCommandWriteRead( rmesa->dri.fd, DRM_RADEON_TEXTURE,
+                                 &tex, sizeof(drmRadeonTexture) );
+   } while ( ret && errno == EAGAIN );
 
    if ( ret ) {
       UNLOCK_HARDWARE( rmesa );
-      fprintf( stderr, "drmRadeonTextureBlit: return = %d\n", ret );
+      fprintf( stderr, "DRM_RADEON_TEXTURE: return = %d\n", ret );
       fprintf( stderr, "   offset=0x%08x pitch=0x%x format=%d\n",
 	       offset, pitch, format );
       fprintf( stderr, "   image width=%d height=%d\n",
@@ -412,8 +428,6 @@ static void radeonUploadSubImage( radeonContextPtr rmesa,
 	       t->image[level].data );
       exit( 1 );
    }
-
-   RADEON_STATECHANGE( rmesa, RADEON_UPLOAD_CONTEXT | RADEON_UPLOAD_MASKS );
 }
 
 /* Upload the texture images associated with texture `t'.  This might
@@ -425,10 +439,12 @@ int radeonUploadTexImages( radeonContextPtr rmesa, radeonTexObjPtr t )
    const int numLevels = t->lastLevel - t->firstLevel + 1;
    int i;
    int heap;
+   radeonTexObjPtr t0 = rmesa->state.texture.unit[0].texobj;
+   radeonTexObjPtr t1 = rmesa->state.texture.unit[1].texobj;
 
-   if ( RADEON_DEBUG & DEBUG_VERBOSE_TEXTURE ) {
-       fprintf( stderr, "%s( %p, %p ) sz=%d lvls=%d-%d\n",__FUNCTION__,
-	       (void*)rmesa->glCtx, (void*)t->tObj, t->totalSize,
+   if ( RADEON_DEBUG & (DEBUG_TEXTURE|DEBUG_IOCTL) ) {
+      fprintf( stderr, __FUNCTION__"( %p, %p ) sz=%d lvls=%d-%d\n",
+	       rmesa->glCtx, t->tObj, t->totalSize,
 	       t->firstLevel, t->lastLevel );
    }
 
@@ -465,7 +481,8 @@ int radeonUploadTexImages( radeonContextPtr rmesa, radeonTexObjPtr t )
 
       /* Kick out textures until the requested texture fits */
       while ( !t->memBlock ) {
-	 if ( rmesa->texture.objects[heap].prev->bound ) {
+	 if ( rmesa->texture.objects[heap].prev == t0 ||
+	      rmesa->texture.objects[heap].prev == t1 ) {
 	    fprintf( stderr,
 		     "radeonUploadTexImages: ran into bound texture\n" );
 	    UNLOCK_HARDWARE( rmesa );
@@ -512,11 +529,9 @@ int radeonUploadTexImages( radeonContextPtr rmesa, radeonTexObjPtr t )
       }
 #endif
 
-      if ( t == rmesa->state.texture.unit[0].texobj )
-	 RADEON_STATECHANGE( rmesa, RADEON_UPLOAD_TEX0 );
-
-      if ( t == rmesa->state.texture.unit[1].texobj )
-	 RADEON_STATECHANGE( rmesa, RADEON_UPLOAD_TEX1 );
+      /* Mark this texobj as dirty on all units:
+       */
+      t->dirty_state = TEX_ALL;
    }
 
    /* Let the world know we've used this memory recently */

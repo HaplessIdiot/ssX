@@ -22,9 +22,9 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.h,v 1.9 2001/04/10 16:07:50 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.h,v 1.10 2002/02/22 21:33:05 dawes Exp $ */
 
 #ifndef _MGA_INIT_H_
 #define _MGA_INIT_H_
@@ -35,6 +35,7 @@
 #include "dri_util.h"
 #include "mtypes.h"
 #include "mgaregs.h"
+#include "mga_common.h"
 
 typedef struct mga_screen_private_s {
 
@@ -59,10 +60,10 @@ typedef struct mga_screen_private_s {
 
    unsigned int dmaOffset;
 
-   unsigned int textureOffset[MGA_NR_TEX_HEAPS];
-   unsigned int textureSize[MGA_NR_TEX_HEAPS];
-   int logTextureGranularity[MGA_NR_TEX_HEAPS];
-   char *texVirtual[MGA_NR_TEX_HEAPS];
+   unsigned int textureOffset[DRM_MGA_NR_TEX_HEAPS];
+   unsigned int textureSize[DRM_MGA_NR_TEX_HEAPS];
+   int logTextureGranularity[DRM_MGA_NR_TEX_HEAPS];
+   char *texVirtual[DRM_MGA_NR_TEX_HEAPS];
 
 
    __DRIscreenPrivate *sPriv;

@@ -22,9 +22,9 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatris.c,v 1.8 2001/04/10 16:07:51 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatris.c,v 1.9 2002/02/22 21:44:56 dawes Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -665,9 +665,9 @@ static void mgaFastRenderClippedPoly( GLcontext *ctx, const GLuint *elts,
    int i,j;
 
    for (i = 2 ; i < n ; i++) {
-      EMIT_VERT( j, vb, vertex_size, (mgaVertexPtr) start );
       EMIT_VERT( j, vb, vertex_size, (mgaVertexPtr) VERT(elts[i-1]) );
       EMIT_VERT( j, vb, vertex_size, (mgaVertexPtr) VERT(elts[i]) );
+      EMIT_VERT( j, vb, vertex_size, (mgaVertexPtr) start );
    }
 }
 

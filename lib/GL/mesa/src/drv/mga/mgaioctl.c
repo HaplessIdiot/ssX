@@ -22,10 +22,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.14 2002/09/18 17:11:40 tsi Exp $ */
 
 #include <stdio.h>
 
@@ -45,21 +45,31 @@
 #include "mgabuffers.h"
 
 
-#include "drm.h"
-#include "xf86drmMga.h"
+#include "xf86drm.h"
+#include "mga_common.h"
 
 static void mga_iload_dma_ioctl(mgaContextPtr mmesa,
 				unsigned long dest,
 				int length)
 {
    drmBufPtr buf = mmesa->iload_buffer;
-   int ret;
+   drmMGAIload iload;
+   int ret, i;
 
    if (MGA_DEBUG&DEBUG_VERBOSE_IOCTL)
       fprintf(stderr, "DRM_IOCTL_MGA_ILOAD idx %d dst %x length %d\n",
 	      buf->idx, (int) dest, length);
 
-   ret = drmMGATextureLoad( mmesa->driFd, buf->idx, dest, length );
+   iload.idx = buf->idx;
+   iload.dstorg = dest;
+   iload.length = length;
+
+   i = 0;
+   do {
+      ret = drmCommandWrite( mmesa->driFd, DRM_MGA_ILOAD, 
+                             &iload, sizeof(drmMGAIload) );
+   } while ( ret == -EBUSY && i++ < DRM_MGA_IDLE_RETRY );
+
    if ( ret < 0 ) {
       printf("send iload retcode = %d\n", ret);
       exit(1);
@@ -155,6 +165,7 @@ mgaDDClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
    int ret;
    int i;
    static int nrclears;
+   drmMGAClearRec clear;
 
    FLUSH_BATCH( mmesa );
 
@@ -242,9 +253,13 @@ mgaDDClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 
 	 mmesa->sarea->nbox = n;
 
-	 ret = drmMGAClear( mmesa->driFd, flags,
-			    clear_color, clear_depth,
-			    color_mask, depth_mask );
+         clear.flags = flags;
+         clear.clear_color = clear_color;
+         clear.clear_depth = clear_depth;
+         clear.color_mask = color_mask;
+         clear.depth_mask = depth_mask;
+         ret = drmCommandWrite( mmesa->driFd, DRM_MGA_CLEAR,
+                                 &clear, sizeof(drmMGAClearRec));
 	 if ( ret ) {
 	    fprintf( stderr, "send clear retcode = %d\n", ret );
 	    exit( 1 );
@@ -254,7 +269,7 @@ mgaDDClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
       }
 
       UNLOCK_HARDWARE( mmesa );
-      mmesa->dirty |= MGA_UPLOAD_CLIPRECTS;
+      mmesa->dirty |= MGA_UPLOAD_CLIPRECTS|MGA_UPLOAD_CONTEXT;
    }
 
    if (mask) 
@@ -340,7 +355,7 @@ void mgaSwapBuffers(Display *dpy, void *drawablePrivate)
       if (0)
 	 fprintf(stderr, "DRM_IOCTL_MGA_SWAP\n");
 
-      ret = drmMGASwapBuffers( mmesa->driFd );
+      ret = drmCommandNone( mmesa->driFd, DRM_MGA_SWAP );
       if ( ret ) {
 	 printf("send swap retcode = %d\n", ret);
 	 exit(1);
@@ -425,6 +440,7 @@ void mgaFlushVerticesLocked( mgaContextPtr mmesa )
    XF86DRIClipRectPtr pbox = mmesa->pClipRects;
    int nbox = mmesa->numClipRects;
    drmBufPtr buffer = mmesa->vertex_dma_buffer;
+   drmMGAVertex vertex;
    int i;
 
    mmesa->vertex_dma_buffer = 0;
@@ -459,7 +475,12 @@ void mgaFlushVerticesLocked( mgaContextPtr mmesa )
       if (MGA_DEBUG&DEBUG_VERBOSE_IOCTL)
 	 fprintf(stderr, "Firing vertex -- case a nbox %d\n", nbox);
 
-      drmMGAFlushVertexBuffer( mmesa->driFd, buffer->idx, buffer->used, 1 );
+      vertex.idx = buffer->idx;
+      vertex.used = buffer->used;
+      vertex.discard = 1;
+      drmCommandWrite( mmesa->driFd, DRM_MGA_VERTEX, 
+                       &vertex, sizeof(drmMGAVertex) );
+
       age_mmesa(mmesa, mmesa->sarea->last_enqueue);
    }
    else
@@ -500,8 +521,13 @@ void mgaFlushVerticesLocked( mgaContextPtr mmesa )
 	    discard = 1;
 
 	 mmesa->sarea->dirty |= MGA_UPLOAD_CLIPRECTS;
-	 drmMGAFlushVertexBuffer( mmesa->driFd, buffer->idx,
-				  buffer->used, discard );
+
+         vertex.idx = buffer->idx;
+         vertex.used = buffer->used;
+         vertex.discard = discard;
+         drmCommandWrite( mmesa->driFd, DRM_MGA_VERTEX, 
+                          &vertex, sizeof(drmMGAVertex) );
+
 	 age_mmesa(mmesa, mmesa->sarea->last_enqueue);
       }
    }
@@ -577,11 +603,53 @@ void mgaDDFlush( GLcontext *ctx )
 
 void mgaReleaseBufLocked( mgaContextPtr mmesa, drmBufPtr buffer )
 {
+   drmMGAVertex vertex;
+
    if (!buffer) return;
 
-   drmMGAFlushVertexBuffer( mmesa->driFd, buffer->idx, 0, 1 );
+   vertex.idx = buffer->idx;
+   vertex.used = 0;
+   vertex.discard = 1;
+   drmCommandWrite( mmesa->driFd, DRM_MGA_VERTEX, 
+                    &vertex, sizeof(drmMGAVertex) );
 }
 
+int mgaFlushDMA( int fd, drmLockFlags flags )
+{
+   drmMGALock lock;
+   int ret, i = 0;
+
+   memset( &lock, 0, sizeof(drmMGALock) );
+
+   if ( flags & DRM_LOCK_QUIESCENT )    lock.flags |= DRM_LOCK_QUIESCENT;
+   if ( flags & DRM_LOCK_FLUSH )        lock.flags |= DRM_LOCK_FLUSH;
+   if ( flags & DRM_LOCK_FLUSH_ALL )    lock.flags |= DRM_LOCK_FLUSH_ALL;
+
+   do {
+      ret = drmCommandWrite( fd, DRM_MGA_FLUSH, &lock, sizeof(drmMGALock) );
+   } while ( ret && errno == EBUSY && i++ < DRM_MGA_IDLE_RETRY );
+
+   if ( ret == 0 )
+      return 0;
+   if ( errno != EBUSY )
+      return -errno;
+
+   if ( lock.flags & DRM_LOCK_QUIESCENT ) {
+      /* Only keep trying if we need quiescence.
+       */
+      lock.flags &= ~(DRM_LOCK_FLUSH | DRM_LOCK_FLUSH_ALL);
+
+      do {
+         ret = drmCommandWrite( fd, DRM_MGA_FLUSH, &lock, sizeof(drmMGALock) );
+      } while ( ret && errno == EBUSY && i++ < DRM_MGA_IDLE_RETRY );
+   }
+
+   if ( ret == 0 ) {
+      return 0;
+   } else {
+      return -errno;
+   }
+}
 
 void mgaDDInitIoctlFuncs( GLcontext *ctx )
 {

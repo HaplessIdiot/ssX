@@ -26,7 +26,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_ioctl.c,v 1.2 2002/09/09 19:18:48 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_ioctl.c,v 1.3 2002/09/11 00:29:25 dawes Exp $ */
 
 /*
  * Author:
@@ -58,70 +58,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "i830_debug.h"
 
 #include "drm.h"
-
-
-/*
- * XXX This is here only while not all of the XFree86 versions of interest
- * don't have the drmCommand interfaces.
- */
-
-#if !defined(HAVE_DRM_COMMAND)
-#include <sys/ioctl.h>
-
-#define DRM_COMMAND_BASE		0x40
-
-#define DRM_I830_INIT			0x00
-#define DRM_I830_VERTEX			0x01
-#define DRM_I830_CLEAR			0x02
-#define DRM_I830_FLUSH			0x03
-#define DRM_I830_GETAGE			0x04
-#define DRM_I830_GETBUF			0x05
-#define DRM_I830_SWAP			0x06
-#define DRM_I830_COPY			0x07
-#define DRM_I830_DOCOPY			0x08
-
-static int
-drmCommandNone(int fd, unsigned long drmCommandIndex)
-{
-    void *data = NULL; /* dummy */
-    unsigned long request;
-
-    request = DRM_IO(DRM_COMMAND_BASE + drmCommandIndex);
-
-    if (ioctl(fd, request, data)) {
-	return -errno;
-    }
-    return 0;
-}
-
-static int
-drmCommandWrite(int fd, unsigned long drmCommandIndex,
-                void *data, unsigned long size )
-{
-    unsigned long request;
-
-    request = DRM_IOW(DRM_COMMAND_BASE + drmCommandIndex, size);
-
-    if (ioctl(fd, request, data)) {
-	return -errno;
-    }
-    return 0;
-}
-
-static int
-drmCommandWriteRead(int fd, unsigned long drmCommandIndex,
-                   void *data, unsigned long size )
-{
-    unsigned long request;
-
-    request = DRM_IOWR(DRM_COMMAND_BASE + drmCommandIndex, size);
-
-    if (ioctl(fd, request, data)) {
-	return -errno;
-    }
-    return 0;
-}
-#endif
 
 static drmBufPtr i830_get_buffer_ioctl( i830ContextPtr imesa )
 {

@@ -32,6 +32,10 @@
 #include "enums.h"
 
 #include "mm.h"
+
+#include "i810screen.h"
+#include "i810_dri.h"
+
 #include "i810context.h"
 #include "i810tex.h"
 #include "i810state.h"
@@ -230,7 +234,7 @@ void i810PrintLocalLRU( i810ContextPtr imesa )
 void i810PrintGlobalLRU( i810ContextPtr imesa )
 {
    int i, j;
-   drm_i810_tex_region_t *list = imesa->sarea->texList;
+   I810TexRegionRec *list = imesa->sarea->texList;
 
    for (i = 0, j = I810_NR_TEX_REGIONS ; i < I810_NR_TEX_REGIONS ; i++) {
       fprintf(stderr, "list[%d] age %d next %d prev %d\n",
@@ -246,7 +250,7 @@ void i810PrintGlobalLRU( i810ContextPtr imesa )
 
 void i810ResetGlobalLRU( i810ContextPtr imesa )
 {
-   drm_i810_tex_region_t *list = imesa->sarea->texList;
+   I810TexRegionRec *list = imesa->sarea->texList;
    int sz = 1 << imesa->i810Screen->logTextureGranularity;
    int i;
 
@@ -278,7 +282,7 @@ void i810UpdateTexLRU( i810ContextPtr imesa, i810TextureObjectPtr t )
    int logsz = imesa->i810Screen->logTextureGranularity;
    int start = t->MemBlock->ofs >> logsz;
    int end = (t->MemBlock->ofs + t->MemBlock->size - 1) >> logsz;
-   drm_i810_tex_region_t *list = imesa->sarea->texList;
+   I810TexRegionRec *list = imesa->sarea->texList;
 
    imesa->texAge = ++imesa->sarea->texAge;
 

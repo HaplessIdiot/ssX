@@ -22,9 +22,9 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatexmem.c,v 1.5 2002/02/14 23:10:06 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatexmem.c,v 1.6 2002/02/26 23:37:35 tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -38,8 +38,6 @@
 
 #include "mem.h"
 #include "simple_list.h"
-
-#include "xf86drmMga.h"
 
 static void
 mgaSwapOutTexObj(mgaContextPtr mmesa, mgaTextureObjectPtr t)

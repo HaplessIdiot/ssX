@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.29 2002/02/22 21:45:03 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.30 2002/02/23 00:45:51 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -54,7 +54,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.29 2002/02/22 21:45:03
          OBJS = $(LOOBJS) $(DRIOBJS) $(DRMOBJS) $(COREMESAOBJS) \
 		$(MESA_ASM_OBJS) $(TDFXOBJS) $(HIOBJS)
 
-REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB)
+REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB) $(XONLYLIB)
 
 #include <Library.tmpl>
 

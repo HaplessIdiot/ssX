@@ -19,11 +19,11 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
+ * Authors:  Alan Hourihane, <alanh@tungstengraphics.com>
  *           Kevin E. Martin <martin@valinux.com>
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_inithw.c,v 1.6 2000/11/27 10:59:37 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_inithw.c,v 1.8 2002/02/22 21:33:02 dawes Exp $ */
 
 #include "gamma_context.h"
 #include "glint_dri.h"
@@ -196,28 +196,6 @@ void gammaInitHW( gammaContextPtr gmesa )
     gmesa->ColorDDAMode = (ColorDDAEnable |
 			   ColorDDAGouraud);
 
-#ifdef CULL_ALL_PRIMS
-    gmesa->GeometryMode = (GM_TextureDisable |
-			   GM_FogDisable |
-			   GM_FogExp |
-			   GM_FrontPolyFill |
-			   GM_BackPolyFill |
-			   GM_FrontFaceCCW |
-			   GM_PolyCullDisable |
-			   GM_PolyCullBoth |
-			   GM_ClipShortLinesDisable |
-			   GM_ClipSmallTrisDisable |
-			   GM_RenderMode |
-			   GM_Feedback2D |
-			   GM_CullFaceNormDisable |
-			   GM_AutoFaceNormDisable |
-			   GM_GouraudShading |
-			   GM_UserClipNone |
-			   GM_PolyOffsetPointDisable |
-			   GM_PolyOffsetLineDisable |
-			   GM_PolyOffsetFillDisable |
-			   GM_InvertFaceNormCullDisable);
-#else
     gmesa->GeometryMode = (GM_TextureDisable |
 			   GM_FogDisable |
 			   GM_FogExp |
@@ -238,7 +216,6 @@ void gammaInitHW( gammaContextPtr gmesa )
 			   GM_PolyOffsetLineDisable |
 			   GM_PolyOffsetFillDisable |
 			   GM_InvertFaceNormCullDisable);
-#endif
 
     gmesa->AlphaTestMode = (AlphaTestModeDisable |
 			    AT_Always);
@@ -293,46 +270,25 @@ void gammaInitHW( gammaContextPtr gmesa )
 				    XM_TexGenModeR_None |
 				    XM_TexGenModeQ_None;
 
-    /* Set MXs to known state */
-    CHECK_DMA_BUFFER(gmesa, 24);
-    WRITE(gmesa->buf, RasterizerMode, 0);
-    WRITE(gmesa->buf, AreaStippleMode, 0);
+    CHECK_DMA_BUFFER(gmesa, 20);
     WRITE(gmesa->buf, LineStippleMode, 0);
-    WRITE(gmesa->buf, ScissorMode, 0);
     WRITE(gmesa->buf, RouterMode, 0);
     WRITE(gmesa->buf, TextureAddressMode, 0);
     WRITE(gmesa->buf, TextureReadMode, 0);
     WRITE(gmesa->buf, TextureFilterMode, 0);
-    WRITE(gmesa->buf, ColorDDAMode, 0);
     WRITE(gmesa->buf, TextureColorMode, 0);
-    WRITE(gmesa->buf, FogMode, 0);
-    WRITE(gmesa->buf, AntialiasMode, 0);
-    WRITE(gmesa->buf, LBReadMode, 0);
-    WRITE(gmesa->buf, GLINTWindow, 0);
     WRITE(gmesa->buf, StencilMode, 0);
-    WRITE(gmesa->buf, DepthMode, 0);
-    WRITE(gmesa->buf, LBWriteMode, 0);
-    WRITE(gmesa->buf, FBReadMode, 0);
     WRITE(gmesa->buf, PatternRamMode, 0);
     WRITE(gmesa->buf, ChromaTestMode, 0);
-    WRITE(gmesa->buf, DitherMode, 0);
-    WRITE(gmesa->buf, LogicalOpMode, 0);
-    WRITE(gmesa->buf, FBWriteMode, 0);
     WRITE(gmesa->buf, StatisticMode, 0);
-
-    /* Set Gamma to known state */
-    CHECK_DMA_BUFFER(gmesa, 9);
+    WRITE(gmesa->buf, AreaStippleMode, gmesa->AreaStippleMode);
+    WRITE(gmesa->buf, ScissorMode, gmesa->ScissorMode);
+    WRITE(gmesa->buf, FogMode, gmesa->FogMode);
+    WRITE(gmesa->buf, AntialiasMode, gmesa->AntialiasMode);
+    WRITE(gmesa->buf, LogicalOpMode, gmesa->LogicalOpMode);
     WRITE(gmesa->buf, TriangleMode, gmesa->TriangleMode);
-    WRITE(gmesa->buf, GeometryMode, 0);
-    WRITE(gmesa->buf, NormalizeMode, 0);
-    WRITE(gmesa->buf, ColorMaterialMode, 0);
-    WRITE(gmesa->buf, MaterialMode, 0);
     WRITE(gmesa->buf, PointMode, gmesa->PointMode);
     WRITE(gmesa->buf, LineMode, gmesa->LineMode);
-    WRITE(gmesa->buf, TransformMode, 0);
-    WRITE(gmesa->buf, DeltaMode, 0);
-
-    CHECK_DMA_BUFFER(gmesa, 2);
     WRITE(gmesa->buf, LBWriteFormat, gmesa->LBWriteFormat);
     WRITE(gmesa->buf, LBReadFormat,  gmesa->LBReadFormat);
 

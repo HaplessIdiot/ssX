@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.23tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.24 2002/10/08 22:14:08 tsi Exp $ */
 
 /*
  * Copyright 2000 VA Linux Systems Inc., Fremont, California.
@@ -24,7 +24,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Keith WHitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
 
@@ -342,13 +342,29 @@ static void MGADestroyContext( ScreenPtr pScreen, drmContext hwContext,
 static void MGAWaitForIdleDMA( ScrnInfoPtr pScrn )
 {
    MGAPtr pMga = MGAPTR(pScrn);
+   drmMGALock lock;
    int ret;
    int i = 0;
 
+   memset( &lock, 0, sizeof(drmMGALock) );
+
    for (;;) {
       do {
-	 ret = drmMGAFlushDMA( pMga->drmFD,
-			       DRM_LOCK_QUIESCENT | DRM_LOCK_FLUSH );
+         /* first ask for quiescent and flush */
+         lock.flags = DRM_MGA_LOCK_QUIESCENT | DRM_MGA_LOCK_FLUSH;
+         do {
+	    ret = drmCommandWrite( pMga->drmFD, DRM_MGA_FLUSH,
+                                   &lock, sizeof( drmMGALock ) );
+         } while ( ret == -EBUSY && i++ < DRM_MGA_IDLE_RETRY );
+
+         /* if it's still busy just try quiescent */
+         if ( ret == -EBUSY ) { 
+            lock.flags = DRM_MGA_LOCK_QUIESCENT;
+            do {
+	       ret = drmCommandWrite( pMga->drmFD, DRM_MGA_FLUSH,
+                                      &lock, sizeof( drmMGALock ) );
+            } while ( ret == -EBUSY && i++ < DRM_MGA_IDLE_RETRY );
+         }
       } while ( ( ret == -EBUSY ) && ( i++ < MGA_TIMEOUT ) );
 
       if ( ret == 0 )
@@ -357,7 +373,7 @@ static void MGAWaitForIdleDMA( ScrnInfoPtr pScrn )
       xf86DrvMsg( pScrn->scrnIndex, X_ERROR,
 		  "[dri] Idle timed out, resetting engine...\n" );
 
-      drmMGAEngineReset( pMga->drmFD );
+      drmCommandNone( pMga->drmFD, DRM_MGA_RESET );
    }
 }
 
@@ -843,6 +859,7 @@ static Bool MGADRIKernelInit( ScreenPtr pScreen )
 
    memset( &init, 0, sizeof(drmMGAInit) );
 
+   init.func = MGA_INIT_DMA;
    init.sarea_priv_offset = sizeof(XF86DRISAREARec);
 
    switch ( pMga->Chipset ) {
@@ -885,7 +902,7 @@ static Bool MGADRIKernelInit( ScreenPtr pScreen )
    init.texture_offset[1] = pMGADRIServer->agpTextures.handle;
    init.texture_size[1] = pMGADRIServer->agpTextures.size;
 
-   ret = drmMGAInitDMA( pMga->drmFD, &init );
+   ret = drmCommandWrite( pMga->drmFD, DRM_MGA_INIT, &init, sizeof(drmMGAInit));
    if ( ret < 0 ) {
       xf86DrvMsg( pScrn->scrnIndex, X_ERROR,
 		  "[drm] Failed to initialize DMA! (%d)\n", ret );
@@ -1096,9 +1113,48 @@ Bool MGADRIScreenInit( ScreenPtr pScreen )
       return FALSE;
    }
 
-   /* Check the MGA DRM version */
+   /* Check the DRM versioning */
    {
-      drmVersionPtr version = drmGetVersion(pMga->drmFD);
+      drmVersionPtr version;
+
+      /* Check the DRM lib version.
+	 drmGetLibVersion was not supported in version 1.0, so check for
+	 symbol first to avoid possible crash or hang.
+       */
+      if (xf86LoaderCheckSymbol("drmGetLibVersion")) {
+         version = drmGetLibVersion(pMga->drmFD);
+      }
+      else {
+	 /* drmlib version 1.0.0 didn't have the drmGetLibVersion
+	    entry point.  Fake it by allocating a version record
+	    via drmGetVersion and changing it to version 1.0.0
+	  */
+	 version = drmGetVersion(pMga->drmFD);
+	 version->version_major      = 1;
+	 version->version_minor      = 0;
+	 version->version_patchlevel = 0;
+      }
+
+      if (version) {
+	 if (version->version_major != 1 ||
+	     version->version_minor < 1) {
+	     /* incompatible drm library version */
+	    xf86DrvMsg(pScreen->myNum, X_ERROR,
+		       "[dri] MGADRIScreenInit failed because of a version mismatch.\n"
+		       "[dri] libdrm.a module version is %d.%d.%d but version 1.1.x is needed.\n"
+		       "[dri] Disabling DRI.\n",
+		       version->version_major,
+		       version->version_minor,
+		       version->version_patchlevel);
+	    drmFreeVersion(version);
+	    MGADRICloseScreen( pScreen );		/* FIXME: ??? */
+	    return FALSE;
+	 }
+	 drmFreeVersion(version);
+      }
+
+      /* Check the MGA DRM version */
+      version = drmGetVersion(pMga->drmFD);
       if ( version ) {
          if ( version->version_major != 3 ||
 	      version->version_minor < 0 ) {
@@ -1250,13 +1306,17 @@ void MGADRICloseScreen( ScreenPtr pScreen )
    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
    MGAPtr pMga = MGAPTR(pScrn);
    MGADRIServerPrivatePtr pMGADRIServer = pMga->DRIServerInfo;
+   drmMGAInit init;
 
    if ( pMGADRIServer->drmBuffers ) {
       drmUnmapBufs( pMGADRIServer->drmBuffers );
       pMGADRIServer->drmBuffers = NULL;
    }
 
-   drmMGACleanupDMA( pMga->drmFD );
+   /* Cleanup DMA */
+   memset( &init, 0, sizeof(drmMGAInit) );
+   init.func = MGA_CLEANUP_DMA;
+   drmCommandWrite( pMga->drmFD, DRM_MGA_INIT, &init, sizeof(drmMGAInit) );
 
    if ( pMGADRIServer->status.map ) {
       drmUnmap( pMGADRIServer->status.map, pMGADRIServer->status.size );

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.19 2002/02/16 21:26:35 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.20 2002/06/04 23:04:50 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -61,7 +61,8 @@
 #include "GL/glxint.h"
 #endif
 
-#define R128_DEBUG    0         /* Turn off debugging output                */
+#define R128_DEBUG          0   /* Turn off debugging output               */
+#define R128_IDLE_RETRY    32   /* Fall out of idle loops after this count */
 #define R128_TIMEOUT  2000000   /* Fall out of wait loops after this count */
 #define R128_MMIOSIZE 0x80000
 
@@ -425,7 +426,7 @@ extern Bool        R128DRIFinishScreenInit(ScreenPtr pScreen);
 
 #define R128CCE_START(pScrn, info)					\
 do {									\
-    int _ret = drmR128StartCCE(info->drmFD);				\
+    int _ret = drmCommandNone(info->drmFD, DRM_R128_CCE_START);		\
     if (_ret) {								\
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
 		   "%s: CCE start %d\n", __FUNCTION__, _ret);		\
@@ -434,7 +435,7 @@ do {									\
 
 #define R128CCE_STOP(pScrn, info)					\
 do {									\
-    int _ret = drmR128StopCCE(info->drmFD);				\
+    int _ret = R128CCEStop(pScrn);					\
     if (_ret) {								\
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
 		   "%s: CCE stop %d\n", __FUNCTION__, _ret);		\
@@ -445,7 +446,7 @@ do {									\
 do {									\
     if (info->directRenderingEnabled					\
 	&& R128CCE_USE_RING_BUFFER(info->CCEMode)) {			\
-	int _ret = drmR128ResetCCE(info->drmFD);			\
+	int _ret = drmCommandNone(info->drmFD, DRM_R128_CCE_RESET);	\
 	if (_ret) {							\
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,			\
 		       "%s: CCE reset %d\n", __FUNCTION__, _ret);	\
@@ -455,12 +456,11 @@ do {									\
 
 #endif
 
-#ifdef XF86DRI
 extern drmBufPtr   R128CCEGetBuffer(ScrnInfoPtr pScrn);
-#endif
 extern void        R128CCEFlushIndirect(ScrnInfoPtr pScrn, int discard);
 extern void        R128CCEReleaseIndirect(ScrnInfoPtr pScrn);
 extern void        R128CCEWaitForIdle(ScrnInfoPtr pScrn);
+extern int         R128CCEStop(ScrnInfoPtr pScrn);
 
 
 #define CCE_PACKET0( reg, n )						\

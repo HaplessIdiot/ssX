@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.13 2001/10/02 19:44:01 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.14 2002/02/14 23:10:11 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -32,7 +32,7 @@
  * Authors:
  *   Rickard E. Faith <faith@valinux.com>
  *   Kevin E. Martin <martin@valinux.com>
- *   Alan Hourihane <ahourihane@valinux.com>
+ *   Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
  * Credits:
  *
@@ -229,13 +229,16 @@ void R128WaitForIdle(ScrnInfoPtr pScrn)
 void R128CCEWaitForIdle(ScrnInfoPtr pScrn)
 {
     R128InfoPtr info = R128PTR(pScrn);
-    int         ret;
+    int         ret, i;
 
     FLUSH_RING();
 
     for (;;) {
-        /* The ioctl already has a timeout */
-        ret = drmR128WaitForIdleCCE(info->drmFD);
+        i = 0;
+        do {
+            ret = drmCommandNone(info->drmFD, DRM_R128_CCE_IDLE);
+        } while ( ret && errno == EBUSY && i++ < R128_IDLE_RETRY );
+
 	if (ret && ret != -EBUSY) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		       "%s: CCE idle %d\n", __FUNCTION__, ret);
@@ -252,6 +255,49 @@ void R128CCEWaitForIdle(ScrnInfoPtr pScrn)
 	R128CCE_START(pScrn, info);
     }
 }
+
+int R128CCEStop(ScrnInfoPtr pScrn)
+{
+    R128InfoPtr    info = R128PTR(pScrn);
+    drmR128CCEStop stop;
+    int            ret, i;
+
+    stop.flush = 1;
+    stop.idle  = 1;
+
+    ret = drmCommandWrite( info->drmFD, DRM_R128_CCE_STOP,
+                           &stop, sizeof(drmR128CCEStop) );
+
+    if ( ret == 0 ) {
+        return 0;
+    } else if ( errno != EBUSY ) {
+        return -errno;
+    }
+
+    stop.flush = 0;
+
+    i = 0;
+    do {
+        ret = drmCommandWrite( info->drmFD, DRM_R128_CCE_STOP,
+                               &stop, sizeof(drmR128CCEStop) );
+    } while ( ret && errno == EBUSY && i++ < R128_IDLE_RETRY );
+
+    if ( ret == 0 ) {
+        return 0;
+    } else if ( errno != EBUSY ) {
+        return -errno;
+    }
+
+    stop.idle = 0;
+
+    if ( drmCommandWrite( info->drmFD, DRM_R128_CCE_STOP,
+                          &stop, sizeof(drmR128CCEStop) )) {
+        return -errno;
+    } else {
+        return 0;
+    }
+}
+
 #endif
 
 /* Setup for XAA SolidFill. */
@@ -1002,11 +1048,15 @@ void R128EngineInit(ScrnInfoPtr pScrn)
 
     R128WaitForFifo(pScrn, 1);
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-    OUTREGP(R128_DP_DATATYPE,
-	    R128_HOST_BIG_ENDIAN_EN, ~R128_HOST_BIG_ENDIAN_EN);
-#else
-    OUTREGP(R128_DP_DATATYPE, 0, ~R128_HOST_BIG_ENDIAN_EN);
+    /* FIXME: this is a kludge for texture uploads in the 3D driver. Look at
+     * how the radeon driver handles HOST_DATA_SWAP if you want to implement
+     * CCE ImageWrite acceleration or anything needing this bit */
+    if (!info->directRenderingEnabled)
+	OUTREGP(R128_DP_DATATYPE,
+		R128_HOST_BIG_ENDIAN_EN, ~R128_HOST_BIG_ENDIAN_EN);
+    else
 #endif
+	OUTREGP(R128_DP_DATATYPE, 0, ~R128_HOST_BIG_ENDIAN_EN);
 
 #ifdef XF86DRI
     info->sc_left         = 0x00000000;
@@ -1502,11 +1552,11 @@ drmBufPtr R128CCEGetBuffer( ScrnInfoPtr pScrn )
     while ( 1 ) {
 	do {
 	    ret = drmDMA( info->drmFD, &dma );
-	    if ( ret && ret != -EBUSY ) {
+	    if ( ret && ret != -EAGAIN ) {
 		xf86DrvMsg( pScrn->scrnIndex, X_ERROR,
 			    "%s: CCE GetBuffer %d\n", __FUNCTION__, ret );
 	    }
-	} while ( ( ret == -EBUSY ) && ( i++ < R128_TIMEOUT ) );
+	} while ( ( ret == -EAGAIN ) && ( i++ < R128_TIMEOUT ) );
 
 	if ( ret == 0 ) {
 	    buf = &info->buffers->list[indx];
@@ -1536,6 +1586,7 @@ void R128CCEFlushIndirect( ScrnInfoPtr pScrn, int discard )
     R128InfoPtr   info = R128PTR(pScrn);
     drmBufPtr buffer = info->indirectBuffer;
     int start = info->indirectStart;
+    drmR128Indirect indirect;
 
     if ( !buffer )
 	return;
@@ -1543,8 +1594,13 @@ void R128CCEFlushIndirect( ScrnInfoPtr pScrn, int discard )
     if ( (start == buffer->used) && !discard )
         return;
 
-    drmR128FlushIndirectBuffer( info->drmFD, buffer->idx,
-				start, buffer->used, discard );
+    indirect.idx = buffer->idx;
+    indirect.start = start;
+    indirect.end = buffer->used;
+    indirect.discard = discard;
+
+    drmCommandWriteRead( info->drmFD, DRM_R128_INDIRECT,
+                         &indirect, sizeof(drmR128Indirect));
 
     if ( discard )
         buffer = info->indirectBuffer = R128CCEGetBuffer( pScrn );
@@ -1563,6 +1619,7 @@ void R128CCEReleaseIndirect( ScrnInfoPtr pScrn )
     R128InfoPtr   info = R128PTR(pScrn);
     drmBufPtr buffer = info->indirectBuffer;
     int start = info->indirectStart;
+    drmR128Indirect indirect;
 
     info->indirectBuffer = NULL;
     info->indirectStart = 0;
@@ -1570,8 +1627,13 @@ void R128CCEReleaseIndirect( ScrnInfoPtr pScrn )
     if ( !buffer )
 	return;
 
-    drmR128FlushIndirectBuffer( info->drmFD, buffer->idx,
-				start, buffer->used, 1 );
+    indirect.idx = buffer->idx;
+    indirect.start = start;
+    indirect.end = buffer->used;
+    indirect.discard = 1;
+
+    drmCommandWriteRead( info->drmFD, DRM_R128_INDIRECT,
+                         &indirect, sizeof(drmR128Indirect));
 }
 
 static void R128CCEAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)

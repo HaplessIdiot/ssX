@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_state.c,v 1.9 2002/02/22 21:44:58 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_state.c,v 1.10 2002/09/10 00:39:39 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -30,7 +30,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Gareth Hughes <gareth@valinux.com>
  *   Kevin E. Martin <martin@valinux.com>
- *   Keith Whitwell <keithw@valinux.com>
+ *   Keith Whitwell <keith@tungstengraphics.com>
  *
  */
 
@@ -689,13 +689,13 @@ static void r128DDSetDrawBuffer( GLcontext *ctx, GLenum mode )
 
       switch ( mode ) {
       case GL_FRONT_LEFT:
-	 rmesa->drawOffset = rmesa->r128Screen->frontOffset;
-	 rmesa->drawPitch  = rmesa->r128Screen->frontPitch;
+	 rmesa->drawOffset = rmesa->readOffset = rmesa->r128Screen->frontOffset;
+	 rmesa->drawPitch  = rmesa->readPitch  = rmesa->r128Screen->frontPitch;
 	 FALLBACK( rmesa, R128_FALLBACK_DRAW_BUFFER, GL_FALSE );
 	 break;
       case GL_BACK_LEFT:
-	 rmesa->drawOffset = rmesa->r128Screen->backOffset;
-	 rmesa->drawPitch  = rmesa->r128Screen->backPitch;
+	 rmesa->drawOffset = rmesa->readOffset = rmesa->r128Screen->backOffset;
+	 rmesa->drawPitch  = rmesa->readPitch  = rmesa->r128Screen->backPitch;
 	 FALLBACK( rmesa, R128_FALLBACK_DRAW_BUFFER, GL_FALSE );
 	 break;
       default:
@@ -718,6 +718,7 @@ static void r128DDPolygonStipple( GLcontext *ctx, const GLubyte *mask )
 {
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
    GLuint stipple[32], i;
+   drmR128Stipple stippleRec;
 
    for (i = 0; i < 32; i++) {
       stipple[31 - i] = ((mask[i*4+0] << 24) |
@@ -728,7 +729,11 @@ static void r128DDPolygonStipple( GLcontext *ctx, const GLubyte *mask )
 
    FLUSH_BATCH( rmesa );
    LOCK_HARDWARE( rmesa );
-   drmR128PolygonStipple( rmesa->driFd, stipple );
+
+   stippleRec.mask = stipple;
+   drmCommandWrite( rmesa->driFd, DRM_R128_STIPPLE, 
+                    &stippleRec, sizeof(drmR128Stipple) );
+
    UNLOCK_HARDWARE( rmesa );
 
    rmesa->new_state |= R128_NEW_CONTEXT;
@@ -1226,7 +1231,6 @@ void r128DDInitStateFuncs( GLcontext *ctx )
    ctx->Driver.CopyPixels = _swrast_CopyPixels;
    ctx->Driver.DrawPixels = _swrast_DrawPixels;
    ctx->Driver.ReadPixels = _swrast_ReadPixels;
-   ctx->Driver.ResizeBuffers = _swrast_alloc_buffers;
 
    /* Swrast hooks for imaging extensions:
     */

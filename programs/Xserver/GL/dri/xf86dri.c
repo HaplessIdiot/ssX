@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.9 2000/09/24 13:51:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.10 2000/12/07 20:26:14 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Authors:
  *   Kevin E. Martin <martin@valinux.com>
- *   Jens Owen <jens@valinux.com>
+ *   Jens Owen <jens@tungstengraphics.com>
  *   Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_texmem.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_texmem.c,v 1.3 2002/09/18 17:11:40 tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -10,6 +10,7 @@
 #include "enums.h"
 
 #include "mm.h"
+#include "glint_dri.h"
 #include "gamma_context.h"
 #include "gamma_lock.h"
 
@@ -75,9 +76,7 @@ static void gammaUploadTexLevel( gammaContextPtr gmesa, gammaTextureObjectPtr t,
    const struct gl_texture_image *image = t->image[level].image;
    int i,j;
    int l2d;
-#if 0
    int offset = 0;
-#endif
    int words, depthLog2;
 
    /* fprintf(stderr, "%s\n", __FUNCTION__);  */
@@ -97,8 +96,7 @@ static void gammaUploadTexLevel( gammaContextPtr gmesa, gammaTextureObjectPtr t,
       t->TextureFormat &= ~(TF_CompnentsMask | TF_OneCompFmt_Mask);
    }
 
-   t->TextureBaseAddr[level] = /* ??? */
-	(unsigned long)(t->image[level].offset + t->BufAddr) << 5;
+   t->TextureBaseAddr[level] = (t->image[level].offset + t->BufAddr) << 5;
 
    CALC_LOG2(depthLog2, 1<<l2d);
    words = (image->Width * image->Height) >> (5-depthLog2);
@@ -321,7 +319,7 @@ void gammaPrintLocalLRU( gammaContextPtr gmesa )
 void gammaPrintGlobalLRU( gammaContextPtr gmesa )
 {
    int i, j;
-   drm_gamma_tex_region_t *list = gmesa->sarea->texList;
+   GAMMATextureRegionPtr list = gmesa->sarea->texList;
 
    for (i = 0, j = GAMMA_NR_TEX_REGIONS ; i < GAMMA_NR_TEX_REGIONS ; i++) {
       fprintf(stderr, "list[%d] age %d next %d prev %d\n",
@@ -337,7 +335,7 @@ void gammaPrintGlobalLRU( gammaContextPtr gmesa )
 
 void gammaResetGlobalLRU( gammaContextPtr gmesa )
 {
-   drm_gamma_tex_region_t *list = gmesa->sarea->texList;
+   GAMMATextureRegionPtr list = gmesa->sarea->texList;
    int sz = 1 << gmesa->gammaScreen->logTextureGranularity;
    int i;
 
@@ -369,7 +367,7 @@ void gammaUpdateTexLRU( gammaContextPtr gmesa, gammaTextureObjectPtr t )
    int logsz = gmesa->gammaScreen->logTextureGranularity;
    int start = t->MemBlock->ofs >> logsz;
    int end = (t->MemBlock->ofs + t->MemBlock->size - 1) >> logsz;
-   drm_gamma_tex_region_t *list = gmesa->sarea->texList;
+   GAMMATextureRegionPtr list = gmesa->sarea->texList;
 
    gmesa->texAge = ++gmesa->sarea->texAge;
 
@@ -502,7 +500,7 @@ void gammaUploadTexImages( gammaContextPtr gmesa, gammaTextureObjectPtr t )
       }
 
       ofs = t->MemBlock->ofs;
-      t->BufAddr = (char *)(long)(gmesa->LBWindowBase + ofs);	/* ??? */
+      t->BufAddr = gmesa->LBWindowBase + ofs;
 
       if (t == gmesa->CurrentTexObj[0])
 	 gmesa->dirty |= GAMMA_UPLOAD_TEX0;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.c,v 1.3 2002/02/22 21:45:00 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.c,v 1.4 2002/09/10 00:39:39 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -31,6 +31,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <martin@valinux.com>
  *   Gareth Hughes <gareth@valinux.com>
+ *   Keith Whitwell <keith@tungstengraphics.com>
  *
  */
 
@@ -41,8 +42,10 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_state.h"
 #include "radeon_span.h"
 #include "radeon_tex.h"
-#include "radeon_tris.h"
-#include "radeon_vb.h"
+#include "radeon_swtcl.h"
+#include "radeon_tcl.h"
+#include "radeon_vtxfmt.h"
+#include "radeon_maos.h"
 
 #include "swrast/swrast.h"
 #include "swrast_setup/swrast_setup.h"
@@ -51,6 +54,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "tnl/tnl.h"
 #include "tnl/t_pipeline.h"
 
+#include "attrib.h"
+#include "api_arrayelt.h"
 #include "context.h"
 #include "simple_list.h"
 #include "mem.h"
@@ -60,27 +65,18 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "X86/common_x86_asm.h"
 #endif
 
-#define RADEON_DATE	"20020221"
+#define RADEON_DATE	"20020611"
 
 #ifndef RADEON_DEBUG
-int RADEON_DEBUG = (0
-/*		    | DEBUG_ALWAYS_SYNC */
-/*		    | DEBUG_VERBOSE_API */
-/*		    | DEBUG_VERBOSE_MSG */
-/*		    | DEBUG_VERBOSE_LRU */
-/*		    | DEBUG_VERBOSE_DRI */
-/*		    | DEBUG_VERBOSE_IOCTL */
-/*		    | DEBUG_VERBOSE_2D */
-/*		    | DEBUG_VERBOSE_TEXTURE */
-   );
+int RADEON_DEBUG = (0);
 #endif
 
 
 
-/* Return the width and height of the current color buffer.
+/* Return the width and height of the given buffer.
  */
 static void radeonGetBufferSize( GLframebuffer *buffer,
-				   GLuint *width, GLuint *height )
+				 GLuint *width, GLuint *height )
 {
    GET_CURRENT_CONTEXT(ctx);
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
@@ -100,10 +96,10 @@ static const GLubyte *radeonGetString( GLcontext *ctx, GLenum name )
 
    switch ( name ) {
    case GL_VENDOR:
-      return (GLubyte *)"VA Linux Systems, Inc.";
+      return (GLubyte *)"Tungsten Graphics, Inc.";
 
    case GL_RENDERER:
-      sprintf( buffer, "Mesa DRI Radeon " RADEON_DATE );
+      sprintf( buffer, "Mesa DRI Radeon " RADEON_DATE);
 
       /* Append any chipset-specific information.  None yet.
        */
@@ -144,6 +140,18 @@ static const GLubyte *radeonGetString( GLcontext *ctx, GLenum name )
       }
 #endif
 #endif
+
+      if ( rmesa->dri.drmMinor < 3 ) {
+	 strncat( buffer, " DRM-COMPAT", 11 );
+      }
+	 
+      if ( !(rmesa->TclFallback & RADEON_TCL_FALLBACK_TCL_DISABLE) ) {
+	 strncat( buffer, " TCL", 4 );
+      }
+      else {
+	 strncat( buffer, " NO-TCL", 7 );
+      }
+
       return (GLubyte *)buffer;
 
    default:
@@ -151,76 +159,80 @@ static const GLubyte *radeonGetString( GLcontext *ctx, GLenum name )
    }
 }
 
-/* Send all commands to the hardware.  If vertex buffers or indirect
- * buffers are in use, then we need to make sure they are sent to the
- * hardware.  All commands that are normally sent to the ring are
- * already considered `flushed'.
+
+/* Extension strings exported by the R100 driver.
  */
-static void radeonFlush( GLcontext *ctx )
+static const char * const radeon_extensions[] =
 {
-   radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
-
-   RADEON_FIREVERTICES( rmesa );
-
-   if ( rmesa->boxes ) {
-      LOCK_HARDWARE( rmesa );
-      radeonPerformanceBoxesLocked( rmesa );
-      UNLOCK_HARDWARE( rmesa );
-   }
-
-   /* Log the performance counters if necessary */
-   radeonPerformanceCounters( rmesa );
-}
-
-/* Make sure all commands have been sent to the hardware and have
- * completed processing.
- */
-static void radeonFinish( GLcontext *ctx )
-{
-   radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
-
-   /* Bump the performance counter */
-   rmesa->c_drawWaits++;
-   radeonFlush( ctx );
-   LOCK_HARDWARE( rmesa );
-   radeonWaitForIdleLocked( rmesa );
-   UNLOCK_HARDWARE( rmesa );
-}
-
+    "GL_ARB_multisample",
+    "GL_ARB_multitexture",
+    "GL_ARB_texture_border_clamp",
+    "GL_ARB_texture_compression",
+    "GL_ARB_texture_env_add",
+    "GL_ARB_texture_env_combine",
+    "GL_ARB_texture_env_dot3",
+    "GL_ARB_texture_mirrored_repeat",
+    "GL_EXT_blend_logic_op",
+    "GL_EXT_blend_subtract",
+/*    "GL_EXT_fog_coord", */
+    "GL_EXT_secondary_color",
+    "GL_EXT_texture_env_add",
+    "GL_EXT_texture_env_combine",
+    "GL_EXT_texture_env_dot3",
+    "GL_EXT_texture_filter_anisotropic",
+    "GL_EXT_texture_lod_bias",
+    "GL_ATI_texture_mirror_once",
+    "GL_IBM_texture_mirrored_repeat",
+    "GL_NV_blend_square",
+    "GL_SGIS_generate_mipmap",
+    "GL_SGIS_texture_border_clamp",
+    NULL
+};
 
 /* Initialize the extensions supported by this driver.
  */
 static void radeonInitExtensions( GLcontext *ctx )
 {
+   unsigned   i;
    _mesa_enable_imaging_extensions( ctx );
 
-   _mesa_enable_extension( ctx, "GL_ARB_multitexture" );
-   _mesa_enable_extension( ctx, "GL_ARB_texture_env_add" );
-
-   _mesa_enable_extension( ctx, "GL_EXT_blend_logic_op" );
-   _mesa_enable_extension( ctx, "GL_EXT_texture_env_add" );
-   _mesa_enable_extension( ctx, "GL_EXT_texture_env_combine" );
-   _mesa_enable_extension( ctx, "GL_EXT_texture_env_dot3" );
-   _mesa_enable_extension( ctx, "GL_EXT_texture_filter_anisotropic" );
-   _mesa_enable_extension( ctx, "GL_EXT_texture_lod_bias" );
-
+   for ( i = 0 ; radeon_extensions[i] != NULL ; i++ ) {
+      _mesa_enable_extension( ctx, radeon_extensions[i] );
+   }
 }
 
 extern const struct gl_pipeline_stage _radeon_render_stage;
-extern const struct gl_pipeline_stage _radeon_tcl_render_stage;
+extern const struct gl_pipeline_stage _radeon_tcl_stage;
 
 static const struct gl_pipeline_stage *radeon_pipeline[] = {
+
+   /* Try and go straight to t&l
+    */
+   &_radeon_tcl_stage,  
+
+   /* Catch any t&l fallbacks
+    */
    &_tnl_vertex_transform_stage,
    &_tnl_normal_transform_stage,
    &_tnl_lighting_stage,
    &_tnl_fog_coordinate_stage,
    &_tnl_texgen_stage,
    &_tnl_texture_transform_stage,
-				/* REMOVE: point attenuation stage */
-#if 1
-   &_radeon_render_stage,	/* ADD: unclipped rastersetup-to-dma */
-#endif
-   &_tnl_render_stage,
+
+   /* Try again to go to tcl? 
+    *     - no good for asymmetric-twoside (do with multipass)
+    *     - no good for asymmetric-unfilled (do with multipass)
+    *     - good for material
+    *     - good for texgen
+    *     - need to manipulate a bit of state
+    *
+    * - worth it/not worth it?
+    */
+			
+   /* Else do them here.
+    */
+   &_radeon_render_stage,
+   &_tnl_render_stage,		/* FALLBACK:  */
    0,
 };
 
@@ -231,9 +243,8 @@ static const struct gl_pipeline_stage *radeon_pipeline[] = {
 static void radeonInitDriverFuncs( GLcontext *ctx )
 {
     ctx->Driver.GetBufferSize		= radeonGetBufferSize;
+    ctx->Driver.ResizeBuffers           = _swrast_alloc_buffers;
     ctx->Driver.GetString		= radeonGetString;
-    ctx->Driver.Finish			= radeonFinish;
-    ctx->Driver.Flush			= radeonFlush;
 
     ctx->Driver.Error			= NULL;
     ctx->Driver.DrawPixels		= NULL;
@@ -286,10 +297,19 @@ radeonCreateContext( Display *dpy, const __GLcontextModes *glVisual,
    rmesa->dri.hwLock = &sPriv->pSAREA->lock;
    rmesa->dri.fd = sPriv->fd;
 
+   /* If we don't have 1.3, fallback to the 1.1 interfaces.
+    */
+   if (getenv("RADEON_COMPAT") || sPriv->drmMinor < 3 ) 
+      rmesa->dri.drmMinor = 1;
+   else
+      rmesa->dri.drmMinor = sPriv->drmMinor;
+
    rmesa->radeonScreen = radeonScreen;
    rmesa->sarea = (RADEONSAREAPrivPtr)((GLubyte *)sPriv->pSAREA +
 				       radeonScreen->sarea_priv_offset);
 
+
+   rmesa->dma.buf0_address = rmesa->radeonScreen->buffers->list[0].address;
 
    for ( i = 0 ; i < radeonScreen->numTexHeaps ; i++ ) {
       make_empty_list( &rmesa->texture.objects[i] );
@@ -299,9 +319,8 @@ radeonCreateContext( Display *dpy, const __GLcontextModes *glVisual,
    rmesa->texture.numHeaps = radeonScreen->numTexHeaps;
    make_empty_list( &rmesa->texture.swapped );
 
-   rmesa->RenderIndex = ~0;
-   rmesa->state.hw.dirty = RADEON_UPLOAD_CONTEXT_ALL;
-   rmesa->upload_cliprects = 1;
+   rmesa->swtcl.RenderIndex = ~0;
+   rmesa->lost_context = 1;
 
    /* KW: Set the maximum texture size small enough that we can
     * guarentee that both texture units can bind a maximal texture
@@ -338,17 +357,20 @@ radeonCreateContext( Display *dpy, const __GLcontextModes *glVisual,
    ctx->Const.MaxLineWidthAA = 10.0;
    ctx->Const.LineWidthGranularity = 0.0625;
 
+   /* Set maxlocksize (and hence vb size) small enough to avoid
+    * fallbacks in radeon_tcl.c.  ie. guarentee that all vertices can
+    * fit in a single dma buffer for indexed rendering of quad strips,
+    * etc.
+    */
+/*     ctx->Const.MaxArrayLockSize =  */
+/*        MIN2( ctx->Const.MaxArrayLockSize, */
+/*  	    RADEON_BUFFER_SIZE / RADEON_MAX_TCL_VERTSIZE ); */
+
    if (getenv("LIBGL_PERFORMANCE_BOXES"))
       rmesa->boxes = 1;
    else
       rmesa->boxes = 0;
 
-   {
-      const char *debug = getenv("LIBGL_DEBUG");
-      if (debug && strstr(debug, "fallbacks")) {
-         rmesa->debugFallbacks = GL_TRUE;
-      }
-   }
 
    /* Initialize the software rasterizer and helper modules.
     */
@@ -356,29 +378,150 @@ radeonCreateContext( Display *dpy, const __GLcontextModes *glVisual,
    _ac_CreateContext( ctx );
    _tnl_CreateContext( ctx );
    _swsetup_CreateContext( ctx );
-
+   _ae_create_context( ctx );
 
    /* Install the customized pipeline:
     */
    _tnl_destroy_pipeline( ctx );
    _tnl_install_pipeline( ctx, radeon_pipeline );
 
+   /* Try and keep materials and vertices separate:
+    */
+   _tnl_isolate_materials( ctx, GL_TRUE );
+
+
+/*     _mesa_allow_light_in_model( ctx, GL_FALSE ); */
+
    /* Configure swrast to match hardware characteristics:
     */
    _swrast_allow_pixel_fog( ctx, GL_FALSE );
    _swrast_allow_vertex_fog( ctx, GL_TRUE );
 
-   radeonInitVB( ctx );
+
+   _math_matrix_ctr( &rmesa->TexGenMatrix[0] );
+   _math_matrix_ctr( &rmesa->TexGenMatrix[1] );
+   _math_matrix_ctr( &rmesa->tmpmat );
+   _math_matrix_set_identity( &rmesa->TexGenMatrix[0] );
+   _math_matrix_set_identity( &rmesa->TexGenMatrix[1] );
+   _math_matrix_set_identity( &rmesa->tmpmat );
+
    radeonInitExtensions( ctx );
    radeonInitDriverFuncs( ctx );
    radeonInitIoctlFuncs( ctx );
    radeonInitStateFuncs( ctx );
    radeonInitSpanFuncs( ctx );
    radeonInitTextureFuncs( ctx );
-   radeonInitTriFuncs( ctx );
-
    radeonInitState( rmesa );
+   radeonInitSwtcl( ctx );
 
+   rmesa->do_irqs = (rmesa->radeonScreen->irq && !getenv("RADEON_NO_IRQS"));
+   rmesa->irqsEmitted = 0;
+   rmesa->iw.irq_seq = -1;
+
+   rmesa->do_usleeps = !getenv("RADEON_NO_USLEEPS");
+   
+#if DO_DEBUG
+   if (getenv("RADEON_DEBUG_FALLBACKS"))
+      RADEON_DEBUG |= DEBUG_FALLBACKS;
+
+   if (getenv("RADEON_DEBUG_TEXTURE"))
+      RADEON_DEBUG |= DEBUG_TEXTURE;
+
+   if (getenv("RADEON_DEBUG_IOCTL"))
+      RADEON_DEBUG |= DEBUG_IOCTL;
+
+   if (getenv("RADEON_DEBUG_PRIMS"))
+      RADEON_DEBUG |= DEBUG_PRIMS;
+
+   if (getenv("RADEON_DEBUG_VERTS"))
+      RADEON_DEBUG |= DEBUG_VERTS;
+
+   if (getenv("RADEON_DEBUG_STATE"))
+      RADEON_DEBUG |= DEBUG_STATE;
+
+   if (getenv("RADEON_DEBUG_CODEGEN"))
+      RADEON_DEBUG |= DEBUG_CODEGEN;
+
+   if (getenv("RADEON_DEBUG_VTXFMT"))
+      RADEON_DEBUG |= DEBUG_VFMT;
+
+   if (getenv("RADEON_DEBUG_VERBOSE"))
+      RADEON_DEBUG |= DEBUG_VERBOSE;
+
+   if (getenv("RADEON_DEBUG_DRI"))
+      RADEON_DEBUG |= DEBUG_DRI;
+
+   if (getenv("RADEON_DEBUG_DMA"))
+      RADEON_DEBUG |= DEBUG_DMA;
+
+   if (getenv("RADEON_DEBUG_SANITY"))
+      RADEON_DEBUG |= DEBUG_SANITY;
+
+   if (getenv("RADEON_DEBUG"))
+   {
+      const char *debug = getenv("RADEON_DEBUG");
+      if (strstr(debug, "fall")) 
+         RADEON_DEBUG |= DEBUG_FALLBACKS;
+
+      if (strstr(debug, "tex")) 
+         RADEON_DEBUG |= DEBUG_TEXTURE;
+
+      if (strstr(debug, "ioctl")) 
+         RADEON_DEBUG |= DEBUG_IOCTL;
+
+      if (strstr(debug, "prim")) 
+         RADEON_DEBUG |= DEBUG_PRIMS;
+
+      if (strstr(debug, "vert")) 
+         RADEON_DEBUG |= DEBUG_VERTS;
+
+      if (strstr(debug, "state")) 
+         RADEON_DEBUG |= DEBUG_STATE;
+
+      if (strstr(debug, "code")) 
+         RADEON_DEBUG |= DEBUG_CODEGEN;
+
+      if (strstr(debug, "vfmt") || strstr(debug, "vtxf")) 
+         RADEON_DEBUG |= DEBUG_VFMT;
+
+      if (strstr(debug, "verb")) 
+         RADEON_DEBUG |= DEBUG_VERBOSE;
+
+      if (strstr(debug, "dri")) 
+         RADEON_DEBUG |= DEBUG_DRI;
+
+      if (strstr(debug, "dma")) 
+         RADEON_DEBUG |= DEBUG_DMA;
+
+      if (strstr(debug, "san")) 
+         RADEON_DEBUG |= DEBUG_SANITY;
+   }
+
+
+#endif
+
+   if (getenv("RADEON_NO_RAST")) {
+      fprintf(stderr, "disabling 3D acceleration\n");
+      FALLBACK(rmesa, RADEON_FALLBACK_DISABLE, 1); 
+   }
+   else if (getenv("RADEON_TCL_FORCE_ENABLE")) {
+      fprintf(stderr, "Enabling TCL support...  this will probably crash\n");
+      fprintf(stderr, "         your card if it isn't capable of TCL!\n");
+      rmesa->radeonScreen->chipset |= RADEON_CHIPSET_TCL;
+   } else if (getenv("RADEON_TCL_FORCE_DISABLE") ||
+	    rmesa->dri.drmMinor < 3 ||
+	    !(rmesa->radeonScreen->chipset & RADEON_CHIPSET_TCL)) {
+      rmesa->radeonScreen->chipset &= ~RADEON_CHIPSET_TCL;
+      fprintf(stderr, "disabling TCL support\n");
+      TCL_FALLBACK(rmesa->glCtx, RADEON_TCL_FALLBACK_TCL_DISABLE, 1); 
+   }
+
+   if (rmesa->radeonScreen->chipset & RADEON_CHIPSET_TCL) {
+      if (!getenv("RADEON_NO_VTXFMT"))
+	 radeonVtxfmtInit( ctx );
+
+      _tnl_need_dlist_norm_lengths( ctx, GL_FALSE );
+   }
    return GL_TRUE;
 }
 
@@ -396,6 +539,7 @@ radeonDestroyContext( __DRIcontextPrivate *driContextPriv )
 
    /* check if we're deleting the currently bound context */
    if (rmesa == current) {
+      RADEON_FIREVERTICES( rmesa );
       _mesa_make_current2(NULL, NULL, NULL);
    }
 
@@ -414,6 +558,7 @@ radeonDestroyContext( __DRIcontextPrivate *driContextPriv )
                radeonDestroyTexObj( rmesa, t );
             }
             mmDestroy( rmesa->texture.heap[i] );
+	    rmesa->texture.heap[i] = NULL;
          }
 
          foreach_s ( t, next_t, &rmesa->texture.swapped ) {
@@ -426,11 +571,24 @@ radeonDestroyContext( __DRIcontextPrivate *driContextPriv )
       _ac_DestroyContext( rmesa->glCtx );
       _swrast_DestroyContext( rmesa->glCtx );
 
-      radeonFreeVB( rmesa->glCtx );
+      radeonDestroySwtcl( rmesa->glCtx );
+
+      radeonReleaseArrays( rmesa->glCtx, ~0 );
+      if (rmesa->dma.current.buf)
+	 radeonReleaseDmaRegion( rmesa, &rmesa->dma.current, __FUNCTION__ );
+
+      if (!rmesa->TclFallback & RADEON_TCL_FALLBACK_TCL_DISABLE)
+	 if (!getenv("RADEON_NO_VTXFMT"))
+	    radeonVtxfmtDestroy( rmesa->glCtx );
 
       /* free the Mesa context */
       rmesa->glCtx->DriverCtx = NULL;
       _mesa_destroy_context( rmesa->glCtx );
+
+      if (rmesa->state.scissor.pClipRects) {
+	 FREE(rmesa->state.scissor.pClipRects);
+	 rmesa->state.scissor.pClipRects = 0;
+      }
 
       FREE( rmesa );
    }
@@ -508,6 +666,7 @@ radeonSwapBuffers(Display *dpy, void *drawablePrivate)
       ctx = rmesa->glCtx;
       if (ctx->Visual.doubleBufferMode) {
          _mesa_swapbuffers( ctx );  /* flush pending rendering comands */
+
          if ( rmesa->doPageFlip ) {
             radeonPageFlip( dPriv );
          }
@@ -532,21 +691,14 @@ radeonMakeCurrent( __DRIcontextPrivate *driContextPriv,
                    __DRIdrawablePrivate *driReadPriv )
 {
    if ( driContextPriv ) {
-      GET_CURRENT_CONTEXT(ctx);
-      radeonContextPtr oldRadeonCtx = ctx ? RADEON_CONTEXT(ctx) : NULL;
-      radeonContextPtr newRadeonCtx = (radeonContextPtr) driContextPriv->driverPrivate;
+      radeonContextPtr newRadeonCtx = 
+	 (radeonContextPtr) driContextPriv->driverPrivate;
 
-      if ( newRadeonCtx != oldRadeonCtx ) {
-	 newRadeonCtx->state.hw.dirty = RADEON_UPLOAD_CONTEXT_ALL;
-	 if ( newRadeonCtx->state.texture.unit[0].texobj )
-	    newRadeonCtx->state.hw.dirty |= RADEON_UPLOAD_TEX0;
-	 if ( newRadeonCtx->state.texture.unit[1].texobj )
-	    newRadeonCtx->state.hw.dirty |= RADEON_UPLOAD_TEX1;
-      }
+      if (RADEON_DEBUG & DEBUG_DRI)
+	 fprintf(stderr, "%s ctx %p\n", __FUNCTION__, newRadeonCtx->glCtx);
 
       if ( newRadeonCtx->dri.drawable != driDrawPriv ) {
 	 newRadeonCtx->dri.drawable = driDrawPriv;
-	 newRadeonCtx->upload_cliprects = 1;
 	 radeonUpdateWindow( newRadeonCtx->glCtx );
 	 radeonUpdateViewportOffset( newRadeonCtx->glCtx );
       }
@@ -559,10 +711,18 @@ radeonMakeCurrent( __DRIcontextPrivate *driContextPriv,
 	 _mesa_set_viewport( newRadeonCtx->glCtx, 0, 0,
 			     driDrawPriv->w, driDrawPriv->h );
       }
+
+      if (newRadeonCtx->vb.enabled)
+	 radeonVtxfmtMakeCurrent( newRadeonCtx->glCtx );
+
    } else {
+      if (RADEON_DEBUG & DEBUG_DRI)
+	 fprintf(stderr, "%s ctx %p\n", __FUNCTION__, NULL);
       _mesa_make_current( 0, 0 );
    }
 
+   if (RADEON_DEBUG & DEBUG_DRI)
+      fprintf(stderr, "End %s\n", __FUNCTION__);
    return GL_TRUE;
 }
 
@@ -571,59 +731,28 @@ radeonMakeCurrent( __DRIcontextPrivate *driContextPriv,
 static GLboolean
 radeonUnbindContext( __DRIcontextPrivate *driContextPriv )
 {
+   radeonContextPtr rmesa = (radeonContextPtr) driContextPriv->driverPrivate;
+
+   if (RADEON_DEBUG & DEBUG_DRI)
+      fprintf(stderr, "%s ctx %p\n", __FUNCTION__, rmesa->glCtx);
+
+   radeonVtxfmtUnbindContext( rmesa->glCtx );
    return GL_TRUE;
 }
 
-/* Initialize the fullscreen mode.
+/* Fullscreen mode isn't used for much -- could be a way to shrink
+ * front/back buffers & get more texture memory if the client has
+ * changed the video resolution.
+ * 
+ * Pageflipping is now done automatically whenever there is a single
+ * 3d client.
  */
 static GLboolean
-radeonOpenFullScreen( __DRIcontextPrivate *driContextPriv )
+radeonOpenCloseFullScreen( __DRIcontextPrivate *driContextPriv )
 {
-#if 0
-   radeonContextPtr rmesa = (radeonContextPtr)driContextPriv->driverPrivate;
-   GLint ret;
-
-   /* FIXME: Do we need to check this?
-    */
-   if ( !rmesa->glCtx->Visual.doubleBufferMode )
-      return GL_TRUE;
-
-   LOCK_HARDWARE( rmesa );
-   radeonWaitForIdleLocked( rmesa );
-
-   /* Ignore errors.  If this fails, we simply don't do page flipping.
-    */
-   ret = drmRadeonFullScreen( rmesa->driFd, GL_TRUE );
-
-   UNLOCK_HARDWARE( rmesa );
-
-   rmesa->doPageFlip = ( ret == 0 );
-#endif
    return GL_TRUE;
 }
 
-/* Shut down the fullscreen mode.
- */
-static GLboolean
-radeonCloseFullScreen( __DRIcontextPrivate *driContextPriv )
-{
-#if 0
-   radeonContextPtr rmesa = (radeonContextPtr)driContextPriv->driverPrivate;
-
-   LOCK_HARDWARE( rmesa );
-   radeonWaitForIdleLocked( rmesa );
-
-   /* Don't care if this fails, we're not page flipping anymore.
-    */
-   drmRadeonFullScreen( rmesa->driFd, GL_FALSE );
-
-   UNLOCK_HARDWARE( rmesa );
-
-   rmesa->doPageFlip = GL_FALSE;
-   rmesa->currentPage = 0;
-#endif
-   return GL_TRUE;
-}
 
 
 /* This function is called by libGL.so as soon as libGL.so is loaded.
@@ -646,8 +775,8 @@ static struct __DriverAPIRec radeonAPI = {
    radeonSwapBuffers,
    radeonMakeCurrent,
    radeonUnbindContext,
-   radeonOpenFullScreen,
-   radeonCloseFullScreen
+   radeonOpenCloseFullScreen,
+   radeonOpenCloseFullScreen
 };
 
 

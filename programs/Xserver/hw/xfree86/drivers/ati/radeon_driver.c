@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.66tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.67 2002/10/16 04:53:15 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -31,7 +31,7 @@
  * Authors:
  *   Kevin E. Martin <martin@xfree86.org>
  *   Rickard E. Faith <faith@valinux.com>
- *   Alan Hourihane <ahourihane@valinux.com>
+ *   Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
  * Credits:
  *
@@ -51,7 +51,8 @@
  *
  * This server does not yet support these XFree86 4.0 features:
  * !!!! FIXME !!!!
- *   shadowfb
+ *   DDC1 & DDC2
+ *   shadowfb (Note: dri uses shadow for another purpose in radeon_dri.c)
  *   overlay planes
  *
  * Modified by Marc Aurele La France (tsi@xfree86.org) for ATI driver merge.
@@ -122,13 +123,15 @@ typedef enum {
 #ifdef XF86DRI
     OPTION_IS_PCI,
     OPTION_CP_PIO,
-    OPTION_NO_SECURITY,
     OPTION_USEC_TIMEOUT,
     OPTION_AGP_MODE,
+    OPTION_AGP_FW,
     OPTION_AGP_SIZE,
     OPTION_RING_SIZE,
     OPTION_BUFFER_SIZE,
     OPTION_DEPTH_MOVE,
+    OPTION_PAGE_FLIP,
+    OPTION_NO_BACKBUFFER,
 #endif
     OPTION_PANEL_OFF,
     OPTION_DDC_MODE,
@@ -150,10 +153,13 @@ const OptionInfoRec RADEONOptions[] = {
     { OPTION_CP_PIO,         "CPPIOMode",        OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_USEC_TIMEOUT,   "CPusecTimeout",    OPTV_INTEGER, {0}, FALSE },
     { OPTION_AGP_MODE,       "AGPMode",          OPTV_INTEGER, {0}, FALSE },
+    { OPTION_AGP_FW,         "AGPFastWrite",     OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_AGP_SIZE,       "AGPSize",          OPTV_INTEGER, {0}, FALSE },
     { OPTION_RING_SIZE,      "RingSize",         OPTV_INTEGER, {0}, FALSE },
     { OPTION_BUFFER_SIZE,    "BufferSize",       OPTV_INTEGER, {0}, FALSE },
     { OPTION_DEPTH_MOVE,     "EnableDepthMoves", OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_PAGE_FLIP,      "EnablePageFlip",   OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_NO_BACKBUFFER,  "NoBackBuffer",     OPTV_BOOLEAN, {0}, FALSE },
 #endif
     { OPTION_PANEL_OFF,      "PanelOff",         OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_DDC_MODE,       "DDCMode",          OPTV_BOOLEAN, {0}, FALSE },
@@ -270,8 +276,13 @@ static const char *drmSymbols[] = {
     "drmAgpRelease",
     "drmAgpUnbind",
     "drmAgpVendorId",
+    "drmCommandNone",
+    "drmCommandRead",
+    "drmCommandWrite",
+    "drmCommandWriteRead",
     "drmDMA",
     "drmFreeVersion",
+    "drmGetLibVersion",
     "drmGetVersion",
     "drmMap",
     "drmMapBufs",
@@ -301,6 +312,11 @@ static const char *driSymbols[] = {
     "DRIScreenInit",
     "DRIUnlock",
     "GlxSetVisualConfigs",
+    NULL
+};
+
+static const char *driShadowSymbols[] = {
+    "shadowInit",
     NULL
 };
 #endif
@@ -903,23 +919,23 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 				     &(CloneDispOption))) {
 		char *s = NULL;
 
+		if (CloneDispOption < 0 || CloneDispOption > 4) {
+		    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			       "Illegal CloneDisplay Option set, "
+			       "using default\n");
+		    CloneDispOption = 1;
+		}
+
 		switch (CloneDispOption) {
 		case 0: s = "Disable"; break;
 		case 1: s = "Auto-detect"; break;
 		case 2: s = "Force On"; break;
 		case 3: s = "Auto-detect -- use 2nd head overlay"; break;
 		case 4: s = "Force On -- use 2nd head overlay"; break;
-		default:
-		    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-			       "Illegal CloneDisplay Option set, "
-			       "using default\n");
-		    CloneDispOption = 1;
-		    break;
 		}
-		if (s)
-		    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-			       "CloneDisplay option: %s (%d)\n",
-			       s, CloneDispOption);
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			   "CloneDisplay option: %s (%d)\n",
+			   s, CloneDispOption);
 	    } else {
 		/* Default to auto-detect */
 		CloneDispOption = 1;
@@ -2798,12 +2814,29 @@ static Bool RADEONPreInitCursor(ScrnInfoPtr pScrn)
 /* This is called by RADEONPreInit to initialize hardware acceleration */
 static Bool RADEONPreInitAccel(ScrnInfoPtr pScrn)
 {
+#ifdef XFree86LOADER
     RADEONInfoPtr  info = RADEONPTR(pScrn);
 
     if (!xf86ReturnOptValBool(info->Options, OPTION_NOACCEL, FALSE)) {
-	if (!xf86LoadSubModule(pScrn, "xaa")) return FALSE;
+	int errmaj = 0, errmin = 0;
+
+	info->xaaReq.majorversion = 1;
+	info->xaaReq.minorversion = 1;
+
+	if (!LoadSubModule(pScrn->module, "xaa", NULL, NULL, NULL,
+			   &info->xaaReq, &errmaj, &errmin)) {
+	    info->xaaReq.minorversion = 0;
+
+	    if (!LoadSubModule(pScrn->module, "xaa", NULL, NULL, NULL,
+			       &info->xaaReq, &errmaj, &errmin)) {
+		LoaderErrorMsg(NULL, "xaa", errmaj, errmin);
+		return FALSE;
+	    }
+	}
 	xf86LoaderReqSymLists(xaaSymbols, NULL);
     }
+#endif
+
     return TRUE;
 }
 
@@ -2838,6 +2871,7 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
     info->ringSize      = RADEON_DEFAULT_RING_SIZE;
     info->bufSize       = RADEON_DEFAULT_BUFFER_SIZE;
     info->agpTexSize    = RADEON_DEFAULT_AGP_TEX_SIZE;
+    info->agpFastWrite  = RADEON_DEFAULT_AGP_FAST_WRITE;
 
     info->CPusecTimeout = RADEON_DEFAULT_CP_TIMEOUT;
 
@@ -2851,6 +2885,16 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 	    }
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "Using AGP %dx mode\n", info->agpMode);
+	}
+
+	if ((info->agpFastWrite = xf86ReturnOptValBool(info->Options,
+						       OPTION_AGP_FW,
+						       FALSE))) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		       "Enabling AGP Fast Write\n");
+	} else {
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+		       "AGP Fast Write disabled by default\n");
 	}
 
 	if (xf86GetOptValInteger(info->Options,
@@ -2922,6 +2966,33 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
     } else {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		   "Depth moves disabled by default\n");
+    }
+
+    /* Two options to try and squeeze as much texture memory as possible
+     * for dedicated 3d rendering boxes
+     */
+    info->noBackBuffer = xf86ReturnOptValBool(info->Options,
+					      OPTION_NO_BACKBUFFER, 
+					      FALSE);
+
+    if (!xf86LoadSubModule(pScrn, "shadow")) {
+	info->allowPageFlip = 0;
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "Couldn't load shadowfb module: disabling page flipping\n");
+    } else if (info->noBackBuffer) {
+	info->allowPageFlip = 0;
+    } else {
+	xf86LoaderReqSymLists(driShadowSymbols, NULL);
+
+	if ((info->allowPageFlip = xf86ReturnOptValBool(info->Options,
+							OPTION_PAGE_FLIP,
+							FALSE))) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		       "Page flipping enabled\n");
+	} else {
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		       "Disabling page flipping\n");
+	}
     }
 
     return TRUE;
@@ -3058,18 +3129,24 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     if (xf86ReturnOptValBool(info->Options, OPTION_FBDEV, FALSE)) {
-	info->FBDev = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using framebuffer device\n");
-    }
+	/* check for Linux framebuffer device */
 
-    if (info->FBDev) {
-	/* Check for linux framebuffer device */
-	if (!xf86LoadSubModule(pScrn, "fbdevhw")) return FALSE;
-	xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
-	if (!fbdevHWInit(pScrn, info->PciInfo, NULL)) return FALSE;
-	pScrn->SwitchMode  = fbdevHWSwitchMode;
-	pScrn->AdjustFrame = fbdevHWAdjustFrame;
-	pScrn->ValidMode   = fbdevHWValidMode;
+	if (xf86LoadSubModule(pScrn, "fbdevhw")) {
+	    xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
+
+	    if (fbdevHWInit(pScrn, info->PciInfo, NULL)) {
+		pScrn->ValidMode     = fbdevHWValidMode;
+		info->FBDev = TRUE;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+			   "Using framebuffer device\n");
+	    } else {
+		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+			   "fbdevHWInit failed, not using framebuffer device\n");
+	    }
+	} else {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		       "Couldn't load fbdevhw module, not using framebuffer device\n");
+	}
     }
 
     if (!info->FBDev)
@@ -3151,67 +3228,30 @@ static void RADEONLoadPalette(ScrnInfoPtr pScrn, int numColors,
     int            idx, j;
     unsigned char  r, g, b;
 
-    /* If the second monitor is connected, we also need to deal with the
-     * secondary palette
-     */
-    if (info->IsSecondary) j = 1;
-    else j = 0;
+#ifdef XF86DRI
+    if (info->CPStarted) DRILock(pScrn->pScreen, 0);
+#endif
 
-    PAL_SELECT(j);
+    if (info->accelOn) info->accel->Sync(pScrn);
 
-    if (info->CurrentLayout.depth == 15) {
-	/* 15bpp mode.  This sends 32 values. */
-	for (i = 0; i < numColors; i++) {
-	    idx = indices[i];
-	    r   = colors[idx].red;
-	    g   = colors[idx].green;
-	    b   = colors[idx].blue;
-	    OUTPAL(idx * 8, r, g, b);
-	}
-    } else if (info->CurrentLayout.depth == 16) {
-	/* 16bpp mode.  This sends 64 values.
-	 *
-	 * There are twice as many green values as there are values for
-	 * red and blue.  So, we take each red and blue pair, and
-	 * combine it with each of the two green values.
-	 */
-	for (i = 0; i < numColors; i++) {
-	    idx = indices[i];
-	    r   = colors[idx / 2].red;
-	    g   = colors[idx].green;
-	    b   = colors[idx / 2].blue;
-	    OUTPAL(idx * 4, r, g, b);
-
-	    /* AH - Added to write extra green data - How come this isn't
-	     * needed on R128 ? We didn't load the extra green data in the
-	     * other routine */
-	    if (idx <= 31) {
-		r   = colors[idx].red;
-		g   = colors[(idx * 2) + 1].green;
-		b   = colors[idx].blue;
-		OUTPAL(idx * 8, r, g, b);
-	    }
-	}
+    if (info->FBDev) {
+	fbdevHWLoadPalette(pScrn, numColors, indices, colors, pVisual);
     } else {
-	/* 8bpp mode.  This sends 256 values. */
-	for (i = 0; i < numColors; i++) {
-	    idx = indices[i];
-	    r   = colors[idx].red;
-	    b   = colors[idx].blue;
-	    g   = colors[idx].green;
-	    OUTPAL(idx, r, g, b);
-	}
-    }
+	/* If the second monitor is connected, we also need to deal with
+	 * the secondary palette
+	 */
+	if (info->IsSecondary) j = 1;
+	else j = 0;
 
-    if (info->Clone) {
-	PAL_SELECT(1);
+	PAL_SELECT(j);
+
 	if (info->CurrentLayout.depth == 15) {
 	    /* 15bpp mode.  This sends 32 values. */
 	    for (i = 0; i < numColors; i++) {
 		idx = indices[i];
-		r = colors[idx].red;
-		g = colors[idx].green;
-		b = colors[idx].blue;
+		r   = colors[idx].red;
+		g   = colors[idx].green;
+		b   = colors[idx].blue;
 		OUTPAL(idx * 8, r, g, b);
 	    }
 	} else if (info->CurrentLayout.depth == 16) {
@@ -3223,18 +3263,21 @@ static void RADEONLoadPalette(ScrnInfoPtr pScrn, int numColors,
 	     */
 	    for (i = 0; i < numColors; i++) {
 		idx = indices[i];
-		r = colors[idx / 2].red;
-		g = colors[idx].green;
-		b = colors[idx / 2].blue;
+		r   = colors[idx / 2].red;
+		g   = colors[idx].green;
+		b   = colors[idx / 2].blue;
+		RADEONWaitForFifo(pScrn, 32); /* delay */
 		OUTPAL(idx * 4, r, g, b);
 
 		/* AH - Added to write extra green data - How come this isn't
-		 * needed on R128 ? We didn't load the extra green data in the
-		 * other routine */
+		 * needed on R128?  We didn't load the extra green data in the
+		 * other routine
+		 */
 		if (idx <= 31) {
-		    r = colors[idx].red;
-		    g = colors[(idx * 2) + 1].green;
-		    b = colors[idx].blue;
+		    r   = colors[idx].red;
+		    g   = colors[(idx * 2) + 1].green;
+		    b   = colors[idx].blue;
+		    RADEONWaitForFifo(pScrn, 32); /* delay */
 		    OUTPAL(idx * 8, r, g, b);
 		}
 	    }
@@ -3242,13 +3285,66 @@ static void RADEONLoadPalette(ScrnInfoPtr pScrn, int numColors,
 	    /* 8bpp mode.  This sends 256 values. */
 	    for (i = 0; i < numColors; i++) {
 		idx = indices[i];
-		r = colors[idx].red;
-		b = colors[idx].blue;
-		g = colors[idx].green;
+		r   = colors[idx].red;
+		b   = colors[idx].blue;
+		g   = colors[idx].green;
+		RADEONWaitForFifo(pScrn, 32); /* delay */
 		OUTPAL(idx, r, g, b);
 	    }
 	}
+
+	if (info->Clone) {
+	    PAL_SELECT(1);
+	    if (info->CurrentLayout.depth == 15) {
+		/* 15bpp mode.  This sends 32 values. */
+		for (i = 0; i < numColors; i++) {
+		    idx = indices[i];
+		    r   = colors[idx].red;
+		    g   = colors[idx].green;
+		    b   = colors[idx].blue;
+		    OUTPAL(idx * 8, r, g, b);
+		}
+	    } else if (info->CurrentLayout.depth == 16) {
+		/* 16bpp mode.  This sends 64 values.
+		 *
+		 * There are twice as many green values as there are values
+		 * for red and blue.  So, we take each red and blue pair,
+		 * and combine it with each of the two green values.
+		 */
+		for (i = 0; i < numColors; i++) {
+		    idx = indices[i];
+		    r   = colors[idx / 2].red;
+		    g   = colors[idx].green;
+		    b   = colors[idx / 2].blue;
+		    OUTPAL(idx * 4, r, g, b);
+		    
+		    /* AH - Added to write extra green data - How come
+		     * this isn't needed on R128?  We didn't load the
+		     * extra green data in the other routine.
+		     */
+		    if (idx <= 31) {
+			r   = colors[idx].red;
+			g   = colors[(idx * 2) + 1].green;
+			b   = colors[idx].blue;
+			OUTPAL(idx * 8, r, g, b);
+		    }
+		}
+	    } else {
+		/* 8bpp mode.  This sends 256 values. */
+		for (i = 0; i < numColors; i++) {
+		    idx = indices[i];
+		    r   = colors[idx].red;
+		    b   = colors[idx].blue;
+		    g   = colors[idx].green;
+		    OUTPAL(idx, r, g, b);
+		}
+	    }
+	}
     }
+
+#ifdef XF86DRI
+    if (info->CPStarted) DRIUnlock(pScrn->pScreen);
+#endif
 }
 
 static void RADEONBlockHandler(int i, pointer blockData,
@@ -3284,11 +3380,12 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef XF86DRI
 				/* Turn off the CP for now. */
-    info->CPInUse = FALSE;
-    info->indirectBuffer = NULL;
+    info->CPInUse      = FALSE;
+    info->CPStarted    = FALSE;
+    info->directRenderingEnabled = FALSE;
 #endif
-
-    pScrn->fbOffset = 0;
+    info->accelOn      = FALSE;
+    pScrn->fbOffset    = 0;
     if (info->IsSecondary) pScrn->fbOffset = pScrn->videoRam * 1024;
     if (!RADEONMapMem(pScrn)) return FALSE;
 
@@ -3318,8 +3415,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    (pScrn->virtualX - info->CurCloneMode->HDisplay) / 2;
 	info->CloneFrameY0 =
 	    (pScrn->virtualY - info->CurCloneMode->VDisplay) / 2;
-	pScrn->AdjustFrame(scrnIndex,
-			   info->CloneFrameX0, info->CloneFrameY0, 1);
+	RADEONDoAdjustFrame(pScrn, info->CloneFrameX0, info->CloneFrameY0, TRUE);
     }
 
 				/* Visual setup */
@@ -3356,11 +3452,12 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		       (pScrn->displayWidth * pScrn->virtualY *
 			info->CurrentLayout.pixel_bytes * 3 + 1023) / 1024);
 	    info->directRenderingEnabled = FALSE;
-	} else if (info->ChipFamily >= CHIP_FAMILY_R200) {
+	} else if (info->ChipFamily >= CHIP_FAMILY_RV250) {
+	    /* Is this correct or do RV250's and M9's work? */
 	    info->directRenderingEnabled = FALSE;
 	    xf86DrvMsg(scrnIndex, X_WARNING,
 		       "Direct rendering not yet supported on "
-		       "Radeon 8500 and newer cards\n");
+		       "Radeon 9000 and newer cards\n");
 	} else {
 	    if (info->IsSecondary)
 		info->directRenderingEnabled = FALSE;
@@ -3501,7 +3598,11 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    info->textureSize = info->FbMapSize - 5 * bufferSize;
 	}
 	if (info->textureSize < (int)info->FbMapSize / 2) {
-	    info->textureSize = info->FbMapSize - 4 * bufferSize;
+ 	    info->textureSize = info->FbMapSize - 4 * bufferSize;
+	}
+	/* If there's still no space for textures, try without pixmap cache */
+	if (info->textureSize < 0) {
+	    info->textureSize = info->FbMapSize - 3 * bufferSize - 64/4*64;
 	}
 
 	/* Check to see if there is more room available after the 8192nd
@@ -3510,6 +3611,11 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    > info->textureSize) {
 	    info->textureSize =
 		info->FbMapSize - 8192*width_bytes - bufferSize*2;
+	}
+
+	/* If backbuffer is disabled, don't allocate memory for it */
+	if (info->noBackBuffer) {
+	   info->textureSize += bufferSize;
 	}
 
 	if (info->textureSize > 0) {
@@ -3548,12 +3654,20 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	info->depthPitch = pScrn->displayWidth;
 
 				/* Reserve space for the shared back buffer */
-	info->backOffset = ((info->depthOffset - bufferSize +
-			     RADEON_BUFFER_ALIGN) &
-			    ~(CARD32)RADEON_BUFFER_ALIGN);
-	info->backPitch = pScrn->displayWidth;
+	if (info->noBackBuffer) {
+	   info->backOffset = info->depthOffset;
+	   info->backPitch = pScrn->displayWidth;
+	} else {
+	   info->backOffset = ((info->depthOffset - bufferSize +
+				RADEON_BUFFER_ALIGN) &
+			       ~(CARD32)RADEON_BUFFER_ALIGN);
+	   info->backPitch = pScrn->displayWidth;
+	}
 
-	scanlines = info->backOffset / width_bytes - 1;
+	info->backY = info->backOffset / width_bytes;
+	info->backX = (info->backOffset - (info->backY * width_bytes)) / cpp;
+
+	scanlines = info->FbMapSize / width_bytes;
 	if (scanlines > 8191) scanlines = 8191;
 
 	MemBox.x1 = 0;
@@ -3589,17 +3703,32 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		xf86DrvMsg(scrnIndex, X_INFO,
 			   "Largest offscreen area available: %d x %d\n",
 			   width, height);
+
+		/* Lines in offscreen area needed for depth buffer and
+		 * textures
+		 */
+		info->depthTexLines = (scanlines
+				       - info->depthOffset / width_bytes);
+		info->backLines	    = (scanlines
+				       - info->backOffset / width_bytes
+				       - info->depthTexLines);
+		info->backArea	    = NULL;
+	    } else {
+		xf86DrvMsg(scrnIndex, X_ERROR,
+			   "Unable to determine largest offscreen area "
+			   "available\n");
+		return FALSE;
 	    }
 	}
 
 	xf86DrvMsg(scrnIndex, X_INFO,
-		   "Reserved back buffer at offset 0x%x\n",
+		   "Will use back buffer at offset 0x%x\n",
 		   info->backOffset);
 	xf86DrvMsg(scrnIndex, X_INFO,
-		   "Reserved depth buffer at offset 0x%x\n",
+		   "Will use depth buffer at offset 0x%x\n",
 		   info->depthOffset);
 	xf86DrvMsg(scrnIndex, X_INFO,
-		   "Reserved %d kb for textures at offset 0x%x\n",
+		   "Will use %d kb for textures at offset 0x%x\n",
 		   info->textureSize/1024, info->textureOffset);
 
 	info->frontPitchOffset = (((info->frontPitch * cpp / 64) << 22) |
@@ -3672,6 +3801,10 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (RADEONAccelInit(pScreen)) {
 	    xf86DrvMsg(scrnIndex, X_INFO, "Acceleration enabled\n");
 	    info->accelOn = TRUE;
+
+	    /* FIXME: Figure out why this was added because it shouldn't be! */
+	    /* This is needed by the DRI and XAA code for shared entities */
+	    pScrn->pScreen = pScreen;
 	} else {
 	    xf86DrvMsg(scrnIndex, X_ERROR,
 		       "Acceleration initialization failed\n");
@@ -3696,7 +3829,8 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		       "Using hardware cursor (scanline %d)\n",
-		       info->cursor_start / pScrn->displayWidth);
+		       info->cursor_start / pScrn->displayWidth
+		       / info->CurrentLayout.pixel_bytes);
 	    if (xf86QueryLargestOffscreenArea(pScreen, &width, &height,
 					      0, 0, 0)) {
 		xf86DrvMsg(scrnIndex, X_INFO,
@@ -3715,8 +3849,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 				/* Colormap setup */
     if (!miCreateDefColormap(pScreen)) return FALSE;
     if (!xf86HandleColormaps(pScreen, 256, info->dac6bits ? 6 : 8,
-			     (info->FBDev ? fbdevHWLoadPalette :
-			     RADEONLoadPalette), NULL,
+			     RADEONLoadPalette, NULL,
 			     CMAP_PALETTED_TRUECOLOR
 #if 0 /* This option messes up text mode! (eich@suse.de) */
 			     | CMAP_LOAD_EVEN_IF_OFFSCREEN
@@ -3725,10 +3858,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 				/* DPMS setup */
 #ifdef DPMSExtension
-    if (info->FBDev)
-	xf86DPMSInit(pScreen, fbdevHWDPMSSet, 0);
-    else
-	xf86DPMSInit(pScreen, RADEONDisplayPowerManagementSet, 0);
+    xf86DPMSInit(pScreen, RADEONDisplayPowerManagementSet, 0);
 #endif
 
     RADEONInitVideo(pScreen);
@@ -4423,6 +4553,12 @@ static void RADEONRestore(ScrnInfoPtr pScrn)
     vgaHWPtr       hwp        = VGAHWPTR(pScrn);
 
     RADEONTRACE(("RADEONRestore\n"));
+
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    RADEONWaitForFifo(pScrn, 1);
+    OUTREG(RADEON_RBBM_GUICNTL, RADEON_HOST_DATA_SWAP_NONE);
+#endif
+
     if (info->FBDev) {
 	fbdevHWRestore(pScrn);
 	return;
@@ -4503,6 +4639,7 @@ static void RADEONInitCommonRegisters(RADEONSavePtr save, RADEONInfoPtr info)
     save->cap0_trig_cntl     = 0;
     save->cap1_trig_cntl     = 0;
     save->bus_cntl           = info->BusCntl;
+    save->gen_int_cntl       = info->gen_int_cntl;
     /*
      * If bursts are enabled, turn on discards
      * Radeon doesn't have write bursts
@@ -4515,6 +4652,8 @@ static void RADEONInitCommonRegisters(RADEONSavePtr save, RADEONInfoPtr info)
 static Bool RADEONInitCrtcRegisters(ScrnInfoPtr pScrn, RADEONSavePtr save,
 				  DisplayModePtr mode, RADEONInfoPtr info)
 {
+    unsigned char *RADEONMMIO = info->MMIO;
+
     int  format;
     int  hsync_start;
     int  hsync_wid;
@@ -4629,7 +4768,7 @@ static Bool RADEONInitCrtcRegisters(ScrnInfoPtr pScrn, RADEONSavePtr save,
 				     : 0));
 
     save->crtc_offset      = 0;
-    save->crtc_offset_cntl = 0;
+    save->crtc_offset_cntl = INREG(RADEON_CRTC_OFFSET_CNTL);
 
     save->crtc_pitch  = (((pScrn->displayWidth * pScrn->bitsPerPixel) +
 			  ((pScrn->bitsPerPixel * 8) -1)) /
@@ -4659,6 +4798,8 @@ static Bool RADEONInitCrtcRegisters(ScrnInfoPtr pScrn, RADEONSavePtr save,
 static Bool RADEONInitCrtc2Registers(ScrnInfoPtr pScrn, RADEONSavePtr save,
 				     DisplayModePtr mode, RADEONInfoPtr info)
 {
+    unsigned char *RADEONMMIO = info->MMIO;
+
     int  format;
     int  hsync_start;
     int  hsync_wid;
@@ -4763,7 +4904,7 @@ static Bool RADEONInitCrtc2Registers(ScrnInfoPtr pScrn, RADEONSavePtr save,
 				      : RADEON_CRTC2_V_SYNC_POL));
 
     save->crtc2_offset      = 0;
-    save->crtc2_offset_cntl = 0;
+    save->crtc2_offset_cntl = INREG(RADEON_CRTC2_OFFSET_CNTL);
 
     save->crtc2_pitch  = (((pScrn->displayWidth * pScrn->bitsPerPixel) +
 			   ((pScrn->bitsPerPixel * 8) -1)) /
@@ -5156,7 +5297,6 @@ static Bool RADEONModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     RADEONInfoPtr  info = RADEONPTR(pScrn);
 
     if (!RADEONInit(pScrn, mode, &info->ModeReg)) return FALSE;
-				/* FIXME?  DRILock/DRIUnlock here? */
 
     pScrn->vtSema = TRUE;
     RADEONBlank(pScrn);
@@ -5184,72 +5324,98 @@ static Bool RADEONSaveScreen(ScreenPtr pScreen, int mode)
 
 Bool RADEONSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
-    ScrnInfoPtr    pScrn = xf86Screens[scrnIndex];
-    RADEONInfoPtr  info  = RADEONPTR(pScrn);
-    Bool           ret   = FALSE;
+    ScrnInfoPtr    pScrn       = xf86Screens[scrnIndex];
+    RADEONInfoPtr  info        = RADEONPTR(pScrn);
+    Bool           ret;
+#ifdef XF86DRI
+    Bool           CPStarted   = info->CPStarted;
 
-    info->IsSwitching = TRUE;
-    if (info->Clone && info->CloneModes) {
-	DisplayModePtr  clone_mode = info->CloneModes;
+    if (CPStarted) {
+	DRILock(pScrn->pScreen, 0);
+	RADEONCP_STOP(pScrn, info);
+    }
+#endif
 
-	/* Try to match a mode on primary head 
-	 * FIXME: This may not be good if both heads don't have
-	 *        exactly the same list of mode.
-	 */
-	while (1) {
-	    if ((clone_mode->HDisplay == mode->HDisplay) &&
-		(clone_mode->VDisplay == mode->VDisplay) &&
-		(!info->PanelOff)) {
-		info->CloneFrameX0 = (info->CurCloneMode->HDisplay +
-				      info->CloneFrameX0 -
-				      clone_mode->HDisplay - 1) / 2;
-		info->CloneFrameY0 =
-		    (info->CurCloneMode->VDisplay + info->CloneFrameY0 -
-		     clone_mode->VDisplay - 1) / 2;
-		info->CurCloneMode = clone_mode;
-		break;
+    if (info->accelOn) info->accel->Sync(pScrn);
+
+    if (info->FBDev) {
+	ret = fbdevHWSwitchMode(scrnIndex, mode, flags);
+    } else {
+	info->IsSwitching = TRUE;
+	if (info->Clone && info->CloneModes) {
+	    DisplayModePtr  clone_mode = info->CloneModes;
+
+	    /* Try to match a mode on primary head 
+	     * FIXME: This may not be good if both heads don't have
+	     *        exactly the same list of mode.
+	     */
+	    while (1) {
+		if ((clone_mode->HDisplay == mode->HDisplay) &&
+		    (clone_mode->VDisplay == mode->VDisplay) &&
+		    (!info->PanelOff)) {
+		    info->CloneFrameX0 = (info->CurCloneMode->HDisplay +
+					  info->CloneFrameX0 -
+					  clone_mode->HDisplay - 1) / 2;
+		    info->CloneFrameY0 =
+			(info->CurCloneMode->VDisplay + info->CloneFrameY0 -
+			 clone_mode->VDisplay - 1) / 2;
+		    info->CurCloneMode = clone_mode;
+		    break;
+		}
+
+		if (!clone_mode->next) {
+		    if (info->CurCloneMode->next)
+			info->CurCloneMode = info->CurCloneMode->next;
+		    else
+			info->CurCloneMode = info->CloneModes;
+
+		    info->CloneFrameX0 = (info->CurCloneMode->HDisplay +
+					  info->CloneFrameX0 -
+					  clone_mode->HDisplay - 1) / 2;
+		    info->CloneFrameY0 =
+			(info->CurCloneMode->VDisplay + info->CloneFrameY0 -
+			 clone_mode->VDisplay - 1) / 2;
+		    break;
+		}
+
+		clone_mode = clone_mode->next;
 	    }
-
-	    if (!clone_mode->next) {
-		if (info->CurCloneMode->next)
-		    info->CurCloneMode = info->CurCloneMode->next;
-		else
-		    info->CurCloneMode = info->CloneModes;
-
-		info->CloneFrameX0 = (info->CurCloneMode->HDisplay +
-				      info->CloneFrameX0 -
-				      clone_mode->HDisplay - 1) / 2;
-		info->CloneFrameY0 =
-		    (info->CurCloneMode->VDisplay + info->CloneFrameY0 -
-		     clone_mode->VDisplay - 1) / 2;
-		break;
-	    }
-
-	    clone_mode = clone_mode->next;
 	}
+	ret = RADEONModeInit(xf86Screens[scrnIndex], mode);
+
+	if (info->CurCloneMode) {
+	    if (info->CloneFrameX0 + info->CurCloneMode->HDisplay >=
+		pScrn->virtualX)
+		info->CloneFrameX0 =
+		    pScrn->virtualX - info->CurCloneMode->HDisplay;
+	    else if (info->CloneFrameX0 < 0)
+		info->CloneFrameX0 = 0;
+
+	    if (info->CloneFrameY0 + info->CurCloneMode->VDisplay >=
+		pScrn->virtualY)
+		info->CloneFrameY0 =
+		    pScrn->virtualY - info->CurCloneMode->VDisplay;
+	    else if (info->CloneFrameY0 < 0)
+		info->CloneFrameY0 = 0;
+
+	    RADEONDoAdjustFrame(pScrn, info->CloneFrameX0, info->CloneFrameY0, TRUE);
+	}
+
+	info->IsSwitching = FALSE;
     }
-    ret = RADEONModeInit(xf86Screens[scrnIndex], mode);
 
-    if (info->CurCloneMode) {
-	if (info->CloneFrameX0 + info->CurCloneMode->HDisplay >=
-	    pScrn->virtualX)
-	    info->CloneFrameX0 =
-		pScrn->virtualX - info->CurCloneMode->HDisplay;
-	else if (info->CloneFrameX0 < 0)
-	    info->CloneFrameX0 = 0;
-
-	if (info->CloneFrameY0 + info->CurCloneMode->VDisplay >=
-	    pScrn->virtualY)
-	    info->CloneFrameY0 =
-		pScrn->virtualY - info->CurCloneMode->VDisplay;
-	else if (info->CloneFrameY0 < 0)
-	    info->CloneFrameY0 = 0;
-
-	pScrn->AdjustFrame(scrnIndex,
-			   info->CloneFrameX0, info->CloneFrameY0, 1);
+    if (info->accelOn) {
+	info->accel->Sync(pScrn);
+	RADEONEngineRestore(pScrn);
     }
 
-    info->IsSwitching = FALSE;
+#ifdef XF86DRI
+    if (CPStarted) {
+	RADEONCP_START(pScrn, info);
+	DRIUnlock(pScrn->pScreen);
+    }
+#endif
+
     return ret;
 }
 
@@ -5267,14 +5433,14 @@ int RADEONValidMode(int scrnIndex, DisplayModePtr mode,
 /* Adjust viewport into virtual desktop such that (0,0) in viewport
  * space is (x,y) in virtual space.
  */
-void RADEONAdjustFrame(int scrnIndex, int x, int y, int flags)
+void RADEONDoAdjustFrame(ScrnInfoPtr pScrn, int x, int y, int clone)
 {
-    ScrnInfoPtr    pScrn      = xf86Screens[scrnIndex];
     RADEONInfoPtr  info       = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO = info->MMIO;
-    int            Base;
-
-    Base = y * info->CurrentLayout.displayWidth + x;
+    int            reg, Base = y * info->CurrentLayout.displayWidth + x;
+#ifdef XF86DRI
+    RADEONSAREAPrivPtr pSAREAPriv = DRIGetSAREAPrivate(pScrn->pScreen);
+#endif
 
     switch (info->CurrentLayout.pixel_code) {
     case 15:
@@ -5285,17 +5451,48 @@ void RADEONAdjustFrame(int scrnIndex, int x, int y, int flags)
 
     Base &= ~7;                 /* 3 lower bits are always 0 */
 
-    if (info->Clone && (flags == 1)) {
+    if (clone || info->IsSecondary) {
 	Base += pScrn->fbOffset;
-	OUTREG(RADEON_CRTC2_OFFSET, Base);
+	reg = RADEON_CRTC2_OFFSET;
     } else {
-	if (info->IsSecondary) {
-	    Base += pScrn->fbOffset;
-	    OUTREG(RADEON_CRTC2_OFFSET, Base);
-	} else {
-	    OUTREG(RADEON_CRTC_OFFSET, Base);
+	reg = RADEON_CRTC_OFFSET;
+    }
+
+#ifdef XF86DRI
+    if (info->directRenderingEnabled) {
+	if (pSAREAPriv->pfCurrentPage == 1) {
+	    Base += info->backOffset;
+	}
+
+	if (clone || info->IsSecondary) {
+	    pSAREAPriv->crtc2_base = Base;
 	}
     }
+#endif
+
+    OUTREG(reg, Base);
+}
+
+void RADEONAdjustFrame(int scrnIndex, int x, int y, int flags)
+{
+    ScrnInfoPtr    pScrn      = xf86Screens[scrnIndex];
+    RADEONInfoPtr  info       = RADEONPTR(pScrn);
+
+#ifdef XF86DRI
+    if (info->CPStarted) DRILock(pScrn->pScreen, 0);
+#endif
+
+    if (info->accelOn) info->accel->Sync(pScrn);
+
+    if (info->FBDev) {
+	fbdevHWAdjustFrame(scrnIndex, x, y, flags);
+    } else {
+	RADEONDoAdjustFrame(pScrn, x, y, FALSE);
+    }
+
+#ifdef XF86DRI
+	if (info->CPStarted) DRIUnlock(pScrn->pScreen);
+#endif
 }
 
 /* Called when VT switching back to the X server.  Reinitialize the
@@ -5321,15 +5518,20 @@ Bool RADEONEnterVT(int scrnIndex, int flags)
 
 #ifdef XF86DRI
     if (info->directRenderingEnabled) {
+	if (info->irq) {
+	    /* Need to make sure interrupts are enabled */
+	    unsigned char *RADEONMMIO = info->MMIO;
+	    OUTREG(RADEON_GEN_INT_CNTL, info->gen_int_cntl);
+	}
+
 	RADEONCP_START(pScrn, info);
 	DRIUnlock(pScrn->pScreen);
     }
 #endif
 
-    RADEONAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
+    pScrn->AdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
     if (info->CurCloneMode) {
-	pScrn->AdjustFrame(scrnIndex,
-			   info->CloneFrameX0, info->CloneFrameY0, 1);
+	RADEONDoAdjustFrame(pScrn, info->CloneFrameX0, info->CloneFrameY0, TRUE);
     }
 
     return TRUE;
@@ -5356,8 +5558,9 @@ void RADEONLeaveVT(int scrnIndex, int flags)
 	RADEONSavePalette(pScrn, save);
 	info->PaletteSavedOnVT = TRUE;
 	fbdevHWLeaveVT(scrnIndex,flags);
-    } else
-	RADEONRestore(pScrn);
+    }
+
+    RADEONRestore(pScrn);
 }
 
 /* Called at the end of each server generation.  Restore the original
@@ -5427,70 +5630,85 @@ static void RADEONDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 {
     RADEONInfoPtr  info       = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO = info->MMIO;
-    int             mask1     = (RADEON_CRTC_DISPLAY_DIS |
-				 RADEON_CRTC_HSYNC_DIS |
-				 RADEON_CRTC_VSYNC_DIS);
-    int             mask2     = (RADEON_CRTC2_DISP_DIS |
-				 RADEON_CRTC2_VSYNC_DIS |
-				 RADEON_CRTC2_HSYNC_DIS);
 
-    /* TODO: additional handling for LCD ? */
+#ifdef XF86DRI
+    if (info->CPStarted) DRILock(pScrn->pScreen, 0);
+#endif
 
-    switch (PowerManagementMode) {
-    case DPMSModeOn:
-	/* Screen: On; HSync: On, VSync: On */
-	if (info->IsSecondary)
-	    OUTREGP(RADEON_CRTC2_GEN_CNTL, 0, ~mask2);
-	else {
-	    if (info->Clone)
+    if (info->accelOn) info->accel->Sync(pScrn);
+
+    if (info->FBDev) {
+	fbdevHWDPMSSet(pScrn, PowerManagementMode, flags);
+    } else {
+	int             mask1     = (RADEON_CRTC_DISPLAY_DIS |
+				     RADEON_CRTC_HSYNC_DIS |
+				     RADEON_CRTC_VSYNC_DIS);
+	int             mask2     = (RADEON_CRTC2_DISP_DIS |
+				     RADEON_CRTC2_VSYNC_DIS |
+				     RADEON_CRTC2_HSYNC_DIS);
+
+	/* TODO: additional handling for LCD ? */
+
+	switch (PowerManagementMode) {
+	case DPMSModeOn:
+	    /* Screen: On; HSync: On, VSync: On */
+	    if (info->IsSecondary)
 		OUTREGP(RADEON_CRTC2_GEN_CNTL, 0, ~mask2);
-	    OUTREGP(RADEON_CRTC_EXT_CNTL, 0, ~mask1);
-	}
-	break;
+	    else {
+		if (info->Clone)
+		    OUTREGP(RADEON_CRTC2_GEN_CNTL, 0, ~mask2);
+		OUTREGP(RADEON_CRTC_EXT_CNTL, 0, ~mask1);
+	    }
+	    break;
 
-    case DPMSModeStandby:
-	/* Screen: Off; HSync: Off, VSync: On */
-	if (info->IsSecondary)
-	    OUTREGP(RADEON_CRTC2_GEN_CNTL,
-		    RADEON_CRTC2_DISP_DIS | RADEON_CRTC2_HSYNC_DIS,
-		    ~mask2);
-	else {
-	    if (info->Clone)
+	case DPMSModeStandby:
+	    /* Screen: Off; HSync: Off, VSync: On */
+	    if (info->IsSecondary)
 		OUTREGP(RADEON_CRTC2_GEN_CNTL,
 			RADEON_CRTC2_DISP_DIS | RADEON_CRTC2_HSYNC_DIS,
 			~mask2);
-	    OUTREGP(RADEON_CRTC_EXT_CNTL,
-		    RADEON_CRTC_DISPLAY_DIS | RADEON_CRTC_HSYNC_DIS,
-		    ~mask1);
-	}
-	break;
+	    else {
+		if (info->Clone)
+		    OUTREGP(RADEON_CRTC2_GEN_CNTL,
+			    RADEON_CRTC2_DISP_DIS | RADEON_CRTC2_HSYNC_DIS,
+			    ~mask2);
+		OUTREGP(RADEON_CRTC_EXT_CNTL,
+			RADEON_CRTC_DISPLAY_DIS | RADEON_CRTC_HSYNC_DIS,
+			~mask1);
+	    }
+	    break;
 
-    case DPMSModeSuspend:
-	/* Screen: Off; HSync: On, VSync: Off */
-	if (info->IsSecondary)
-	    OUTREGP(RADEON_CRTC2_GEN_CNTL,
-		    RADEON_CRTC2_DISP_DIS | RADEON_CRTC2_VSYNC_DIS,
-		    ~mask2);
-	else {
-	    if (info->Clone)
+	case DPMSModeSuspend:
+	    /* Screen: Off; HSync: On, VSync: Off */
+	    if (info->IsSecondary)
 		OUTREGP(RADEON_CRTC2_GEN_CNTL,
 			RADEON_CRTC2_DISP_DIS | RADEON_CRTC2_VSYNC_DIS,
 			~mask2);
-	    OUTREGP(RADEON_CRTC_EXT_CNTL,
-		    RADEON_CRTC_DISPLAY_DIS | RADEON_CRTC_VSYNC_DIS,
-		    ~mask1);
-	}
-	break;
+	    else {
+		if (info->Clone)
+		    OUTREGP(RADEON_CRTC2_GEN_CNTL,
+			    RADEON_CRTC2_DISP_DIS | RADEON_CRTC2_VSYNC_DIS,
+			    ~mask2);
+		OUTREGP(RADEON_CRTC_EXT_CNTL,
+			RADEON_CRTC_DISPLAY_DIS | RADEON_CRTC_VSYNC_DIS,
+			~mask1);
+	    }
+	    break;
 
-    case DPMSModeOff:
-	/* Screen: Off; HSync: Off, VSync: Off */
-	if (info->IsSecondary)
-	    OUTREGP(RADEON_CRTC2_GEN_CNTL, mask2, ~mask2);
-	else {
-	    if (info->Clone)
+	case DPMSModeOff:
+	    /* Screen: Off; HSync: Off, VSync: Off */
+	    if (info->IsSecondary)
 		OUTREGP(RADEON_CRTC2_GEN_CNTL, mask2, ~mask2);
-	    OUTREGP(RADEON_CRTC_EXT_CNTL, mask1, ~mask1);
+	    else {
+		if (info->Clone)
+		    OUTREGP(RADEON_CRTC2_GEN_CNTL, mask2, ~mask2);
+		OUTREGP(RADEON_CRTC_EXT_CNTL, mask1, ~mask1);
+	    }
+	    break;
 	}
-	break;
     }
+
+#ifdef XF86DRI
+    if (info->CPStarted) DRIUnlock(pScrn->pScreen);
+#endif
 }

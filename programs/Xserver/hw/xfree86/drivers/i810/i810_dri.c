@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.28 2002/10/08 20:15:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.29 2002/10/08 22:14:08 tsi Exp $ */
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
  *
@@ -49,10 +49,6 @@ extern void GlxSetVisualConfigs(int nconfigs,
 				__GLXvisualConfig * configs,
 				void **configprivs);
 
-#ifndef HAVE_DRM_COMMAND
-extern drmVersionPtr drmGetLibVersion(int fd);
-#endif
-
 static int i810_pitches[] = {
    512,
    1024,
@@ -69,7 +65,6 @@ static int i810_pitch_flags[] = {
    0
 };
 
-#ifdef HAVE_DRM_COMMAND
 Bool
 I810CleanupDma(ScrnInfoPtr pScrn)
 {
@@ -88,20 +83,7 @@ I810CleanupDma(ScrnInfoPtr pScrn)
 
    return TRUE;
 }
-#else
-Bool
-I810CleanupDma(ScrnInfoPtr pScrn)
-{
-   I810Ptr pI810 = I810PTR(pScrn);
-   if (!drmI810CleanupDma(pI810->drmSubFD)) {
-      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "[dri] I810 Dma Cleanup Failed\n");
-      return FALSE;
-   }
-   return TRUE;
-}
-#endif
 
-#ifdef HAVE_DRM_COMMAND
 Bool
 I810InitDma(ScrnInfoPtr pScrn)
 {
@@ -140,40 +122,6 @@ I810InitDma(ScrnInfoPtr pScrn)
 
    return TRUE;
 }
-#else
-Bool
-I810InitDma(ScrnInfoPtr pScrn)
-{
-   I810Ptr pI810 = I810PTR(pScrn);
-   I810RingBuffer *ring = &(pI810->LpRing);
-   I810DRIPtr pI810DRI = (I810DRIPtr) pI810->pDRIInfo->devPrivate;
-   drmI810Init info;
-
-   info.start = ring->mem.Start;
-   info.end = ring->mem.End;
-   info.size = ring->mem.Size;
-   info.mmio_offset = (unsigned int)pI810DRI->regs;
-   info.buffers_offset = (unsigned int)pI810->buffer_map;
-   info.sarea_off = sizeof(XF86DRISAREARec);
-
-   info.front_offset = 0;
-   info.back_offset = pI810->BackBuffer.Start;
-   info.depth_offset = pI810->DepthBuffer.Start;
-   info.overlay_offset = pI810->OverlayStart;
-   info.overlay_physical = pI810->OverlayPhysical;
-   info.w = pScrn->virtualX;
-   info.h = pScrn->virtualY;
-   info.pitch = pI810->auxPitch;
-   info.pitch_bits = pI810->auxPitchBits;
-
-   if (!drmI810InitDma(pI810->drmSubFD, &info)) {
-      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-                 "[drm] I810 Dma Initialization failed.\n");
-      return FALSE;
-   }
-   return TRUE;
-}
-#endif
 
 static Bool
 I810InitVisualConfigs(ScreenPtr pScreen)
@@ -427,7 +375,7 @@ I810DRIScreenInit(ScreenPtr pScreen)
    {
       drmVersionPtr version;
 
-#if defined(XFree86LOADER) || defined(HAVE_DRM_COMMAND)
+#if defined(XFree86LOADER)
       /* Check the DRM lib version.
        * drmGetLibVersion was not supported in version 1.0, so check for
        * symbol first to avoid possible crash or hang.
@@ -447,23 +395,16 @@ I810DRIScreenInit(ScreenPtr pScreen)
 	 version->version_patchlevel = 0;
       }
 
-#define REQ_MAJ 1
-#ifdef HAVE_DRM_COMMAND
-#define REQ_MIN 1
-#else
-#define REQ_MIN 0
-#endif
       if (version) {
-	 if (version->version_major != REQ_MAJ ||
-	     version->version_minor < REQ_MIN) {
+	 if (version->version_major != 1 ||
+	     version->version_minor < 1) {
 	    /* incompatible drm library version */
 	    xf86DrvMsg(pScreen->myNum, X_ERROR,
 		       "[dri] I810DRIScreenInit failed because of a version mismatch.\n"
-		       "[dri] libdrm.a module version is %d.%d.%d but version %d.%d.x is needed.\n"
+		       "[dri] libdrm.a module version is %d.%d.%d but version 1.1.x is needed.\n"
 		       "[dri] Disabling DRI.\n",
 		       version->version_major,
-		       version->version_minor, version->version_patchlevel,
-		       REQ_MAJ, REQ_MIN);
+		       version->version_minor, version->version_patchlevel);
 	    drmFreeVersion(version);
 	    I810DRICloseScreen(pScreen);
 	    return FALSE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_context.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_context.h,v 1.3 2002/09/18 17:11:40 tsi Exp $ */
 /*
  * Copyright 2001 by Alan Hourihane.
  *
@@ -20,7 +20,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
+ * Authors:  Alan Hourihane, <alanh@tungstengraphics.com>
  *
  */
 
@@ -34,7 +34,7 @@
 #include "gamma_screen.h"
 #include "macros.h"
 #include "mtypes.h"
-#include "drm.h"
+#include "glint_dri.h"
 #include "mm.h"
 
 typedef union {
@@ -144,7 +144,7 @@ struct gamma_texture_object_t {
    int bound;
 
    PMemBlock MemBlock;   
-   char *BufAddr;
+   GLuint BufAddr;
    
    GLuint min_level;
    GLuint max_level;
@@ -175,12 +175,10 @@ struct gamma_texture_object_t {
 
 void gammaUpdateTextureState( GLcontext *ctx );
 
-void gammaDestroyTexObj( gammaContextPtr gmesa, gammaTextureObjectPtr t );
-void gammaSwapOutTexObj( gammaContextPtr gmesa, gammaTextureObjectPtr t );
+void gammaDestroyTexObj( gammaContextPtr gmesa, gammaTextureObjectPtr t);
 void gammaUploadTexImages( gammaContextPtr gmesa, gammaTextureObjectPtr t );
 
 void gammaResetGlobalLRU( gammaContextPtr gmesa );
-void gammaUpdateTexLRU( gammaContextPtr gmesa, gammaTextureObjectPtr t );
 void gammaTexturesGone( gammaContextPtr gmesa, 
 		       GLuint start, GLuint end, 
 		       GLuint in_use ); 
@@ -238,7 +236,7 @@ struct gamma_context {
 	GLuint 			new_state;
 	GLuint 			dirty;
 
-  	drm_gamma_sarea_t	*sarea; 
+  	GLINTSAREADRIPtr        sarea; 
 
         /* Temporaries for translating away float colors:
 	 */

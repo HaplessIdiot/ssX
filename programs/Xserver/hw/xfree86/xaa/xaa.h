@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.37 2002/09/18 18:14:59 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.38 2002/10/21 01:54:04 mvojkovi Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -1332,7 +1332,7 @@ typedef struct _XAAInfoRec {
    /* these were added for 4.3.0 */
    BoxRec SolidLineLimits;
    BoxRec DashedLineLimits;
-    
+
 } XAAInfoRec, *XAAInfoRecPtr;
 
 #define SET_SYNC_FLAG(infoRec)	(infoRec)->NeedToSync = TRUE

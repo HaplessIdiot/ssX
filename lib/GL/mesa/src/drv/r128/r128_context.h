@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.h,v 1.9 2001/10/02 11:44:13 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.h,v 1.10 2002/02/22 21:44:57 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -43,7 +43,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "dri_util.h"
 
 #include "xf86drm.h"
-#include "xf86drmR128.h"
+#include "r128_common.h"
 
 #include "mtypes.h"
 

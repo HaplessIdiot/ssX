@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.c,v 1.4 2001/01/08 01:07:21 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.c,v 1.6 2002/02/22 21:44:58 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -185,6 +185,7 @@ r128OpenFullScreen( __DRIcontextPrivate *driContextPriv )
 {
 #if 0
    r128ContextPtr rmesa = (r128ContextPtr)driContextPriv->driverPrivate;
+   drmR128Fullscreen fullscreen;
    GLint ret;
 
    /* FIXME: Do we need to check this?
@@ -197,7 +198,9 @@ r128OpenFullScreen( __DRIcontextPrivate *driContextPriv )
 
    /* Ignore errors.  If this fails, we simply don't do page flipping.
     */
-   ret = drmR128FullScreen( rmesa->driFd, GL_TRUE );
+   fullscreen.func = DRM_R128_INIT_FULLSCREEN;
+   ret = drmCommandWrite( rmesa->driFd, DRM_R128_FULLSCREEN, 
+                          &fullscreen, sizeof(drmR128Fullscreen) );
 
    UNLOCK_HARDWARE( rmesa );
 
@@ -214,12 +217,15 @@ r128CloseFullScreen( __DRIcontextPrivate *driContextPriv )
 {
 #if 0
    r128ContextPtr rmesa = (r128ContextPtr)driContextPriv->driverPrivate;
+   drmR128Fullscreen fullscreen;
    LOCK_HARDWARE( rmesa );
    r128WaitForIdleLocked( rmesa );
 
    /* Don't care if this fails, we're not page flipping anymore.
     */
-   drmR128FullScreen( rmesa->driFd, GL_FALSE );
+   fullscreen.func = DRM_R128_CLEANUP_FULLSCREEN;
+   drmCommandWrite( rmesa->driFd, DRM_R128_FULLSCREEN, 
+                    &fullscreen, sizeof(drmR128Fullscreen) );
 
    UNLOCK_HARDWARE( rmesa );
 

@@ -26,7 +26,7 @@
  *
  * Author: Rickard E. (Rik) Faith <faith@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.16 2002/09/16 18:06:12 eich Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.17 2002/10/16 01:26:48 dawes Exp $
  *
  */
 
@@ -219,6 +219,29 @@ typedef struct _drmTextureRegion {
     unsigned char padding;	/* Explicitly pad this out                 */
     unsigned int  age;
 } drmTextureRegion, *drmTextureRegionPtr;
+
+
+typedef struct _drmClipRect {
+    unsigned short	x1; /* Upper left: inclusive */
+    unsigned short	y1;
+    unsigned short	x2; /* Lower right: exclusive */
+    unsigned short	y2;
+} drmClipRect, *drmClipRectPtr;
+
+
+typedef enum {
+    DRM_VBLANK_ABSOLUTE = 0x0,	/* Wait for specific vblank sequence number */
+    DRM_VBLANK_RELATIVE = 0x1	/* Wait for given number of vblanks */
+} drmVBlankSeqType;
+
+typedef struct _drmVBlank {
+	drmVBlankSeqType type;
+	unsigned int sequence;
+	long tval_sec;
+	long tval_usec;
+} drmVBlank, *drmVBlankPtr;
+
+
 
 #define __drm_dummy_lock(lock) (*(__volatile__ unsigned int *)lock)
 
@@ -424,6 +447,7 @@ extern int           drmAvailable(void);
 extern int           drmOpen(const char *name, const char *busid);
 extern int           drmClose(int fd);
 extern drmVersionPtr drmGetVersion(int fd);
+extern drmVersionPtr drmGetLibVersion(int fd);
 extern void          drmFreeVersion(drmVersionPtr);
 extern int           drmGetMagic(int fd, drmMagicPtr magic);
 extern char          *drmGetBusid(int fd);
@@ -437,7 +461,13 @@ extern int           drmGetClient(int fd, int idx, int *auth, int *pid,
 				  int *uid, unsigned long *magic,
 				  unsigned long *iocs);
 extern int           drmGetStats(int fd, drmStatsT *stats);
-
+extern int           drmCommandNone(int fd, unsigned long drmCommandIndex);
+extern int           drmCommandRead(int fd, unsigned long drmCommandIndex,
+                                    void *data, unsigned long size);
+extern int           drmCommandWrite(int fd, unsigned long drmCommandIndex,
+                                     void *data, unsigned long size);
+extern int           drmCommandWriteRead(int fd, unsigned long drmCommandIndex,
+                                         void *data, unsigned long size);
 
 /* General user-level programmer's API: X server (root) only  */
 extern void          drmFreeBusid(const char *busid);
@@ -525,6 +555,8 @@ extern unsigned int  drmAgpDeviceId(int fd);
 extern int           drmScatterGatherAlloc(int fd, unsigned long size,
 					   unsigned long *handle);
 extern int           drmScatterGatherFree(int fd, unsigned long handle);
+
+extern int           drmWaitVBlank(int fd, drmVBlankPtr vbl);
 
 /* Support routines */
 extern int           drmError(int err, const char *label);

@@ -26,7 +26,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_ioctl.h,v 1.2 2002/09/09 19:18:48 dawes Exp $ */
 
 /*
  * Author:
@@ -37,8 +37,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Heavily based on the I810 driver, which was written by:
  *   Keith Whitwell <keith@tungstengraphics.com>
  */
-
-/* $XFree86$ */
 
 #ifndef I830_IOCTL_H
 #define I830_IOCTL_H

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tris.c,v 1.4 2001/01/08 01:07:24 martin Exp $ */ /* -*- c-basic-offset: 3 -*- */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tris.c,v 1.7 2002/02/22 21:44:58 dawes Exp $ */ /* -*- c-basic-offset: 3 -*- */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -29,7 +29,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Keith Whitwell <keithw@valinux.com>
+ *   Keith Whitwell <keith@tungstengraphics.com>
  *
  */
 
@@ -88,7 +88,7 @@ do {									\
 #define COPY_DWORDS( j, vb, vertsize, v )				\
 do {									\
    for ( j = 0 ; j < vertsize ; j++ )					\
-      vb[j] = ((GLuint *)v)[j];						\
+      vb[j] = CPU_TO_LE32(((GLuint *)v)[j]);				\
    vb += vertsize;							\
 } while (0)
 #endif
@@ -236,33 +236,31 @@ static struct {
 #define AREA_IS_CCW( a ) (a > 0)
 #define GET_VERTEX(e) (rmesa->verts + (e<<rmesa->vertex_stride_shift))
 
-#define R128_COLOR( dst, src )			\
-do {						\
-   dst[0] = src[2];				\
-   dst[1] = src[1];				\
-   dst[2] = src[0];				\
-   dst[3] = src[3];				\
-} while (0)
-
-#define R128_SPEC( dst, src )			\
-do {						\
-   dst[0] = src[2];				\
-   dst[1] = src[1];				\
-   dst[2] = src[0];				\
-} while (0)
-
-#define VERT_SET_RGBA( v, c )    R128_COLOR( v->ub4[coloroffset], c )
+#define VERT_SET_RGBA( v, c )	do {				\
+					r128_color_t *vc = (r128_color_t *)&(v)->ui[coloroffset];	\
+					vc->blue  = (c)[2];	\
+					vc->green = (c)[1];	\
+					vc->red   = (c)[0];	\
+					vc->alpha = (c)[3];	\
+				} while (0)
 #define VERT_COPY_RGBA( v0, v1 ) v0->ui[coloroffset] = v1->ui[coloroffset]
 #define VERT_SAVE_RGBA( idx )    color[idx] = v[idx]->ui[coloroffset]
 #define VERT_RESTORE_RGBA( idx ) v[idx]->ui[coloroffset] = color[idx]
 
-#define VERT_SET_SPEC( v, c )    if (havespec) R128_SPEC( v->ub4[5], c )
-#define VERT_COPY_SPEC( v0, v1 ) if (havespec) COPY_3V(v0->ub4[5], v1->ub4[5])
+#define VERT_SET_SPEC( v0, c )   if (havespec) {			\
+					(v0)->v.specular.red   = (c)[0];\
+					(v0)->v.specular.green = (c)[1];\
+					(v0)->v.specular.blue  = (c)[2]; }
+#define VERT_COPY_SPEC( v0, v1 ) if (havespec) {					\
+					(v0)->v.specular.red   = v1->v.specular.red;	\
+					(v0)->v.specular.green = v1->v.specular.green;	\
+					(v0)->v.specular.blue  = v1->v.specular.blue; }
+
 #define VERT_SAVE_SPEC( idx )    if (havespec) spec[idx] = v[idx]->ui[5]
 #define VERT_RESTORE_SPEC( idx ) if (havespec) v[idx]->ui[5] = spec[idx]
 
 #define LOCAL_VARS(n)						\
-   r128ContextPtr rmesa = R128_CONTEXT(ctx);		\
+   r128ContextPtr rmesa = R128_CONTEXT(ctx);			\
    GLuint color[n], spec[n];					\
    GLuint coloroffset = (rmesa->vertex_size == 4 ? 3 : 4);	\
    GLboolean havespec = (rmesa->vertex_size == 4 ? 0 : 1);	\
@@ -501,9 +499,9 @@ static void r128FastRenderClippedPoly( GLcontext *ctx, const GLuint *elts,
    rmesa->num_verts += (n-2) * 3;
 
    for (i = 2 ; i < n ; i++) {
-      COPY_DWORDS( j, vb, vertsize, (r128VertexPtr) start );
       COPY_DWORDS( j, vb, vertsize, (r128VertexPtr) VERT(elts[i-1]) );
       COPY_DWORDS( j, vb, vertsize, (r128VertexPtr) VERT(elts[i]) );
+      COPY_DWORDS( j, vb, vertsize, (r128VertexPtr) start );
    }
 }
 

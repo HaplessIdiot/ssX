@@ -1,14 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.h,v 1.2 2001/10/28 03:33:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.h,v 1.3 2002/09/11 00:29:32 dawes Exp $ */
 
 #ifndef _I830_DRI_H
 #define _I830_DRI_H
 
 #include "xf86drm.h"
-#ifdef HAVE_DRM_COMMAND
 #include "i830_common.h"
-#else
-#include "xf86drmI830.h"
-#endif
 
 #define I830_MAX_DRAWABLES 256
 

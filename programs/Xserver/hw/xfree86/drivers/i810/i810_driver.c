@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.70 2002/07/24 01:47:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.71 2002/09/11 00:29:32 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -42,7 +42,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Keith Whitwell <keithw@precisioninsight.com>
+ *   Keith Whitwell <keith@tungstengraphics.com>
  *
  */
 
@@ -256,34 +256,21 @@ static const char *drmSymbols[] = {
    "drmAgpRelease",
    "drmAvailable",
    "drmAuthMagic",
-#ifdef HAVE_DRM_COMMAND
    "drmCommandNone",
    "drmCommandRead",
    "drmCommandWrite",
    "drmCommandWriteRead",
-#endif
    "drmCreateContext",
    "drmCtlInstHandler",
    "drmDestroyContext",
    "drmFreeVersion",
    "drmGetInterruptFromBusID",
-#ifdef HAVE_DRM_COMMAND
    "drmGetLibVersion",
-#endif
    "drmGetVersion",
-#ifndef HAVE_DRM_COMMAND
    "drmI810CleanupDma",
    "drmI810InitDma",
    "drmI830CleanupDma",
    "drmI830InitDma",
-#endif
-   NULL
-};
-
-static const char *drmOptionalSymbols[] = {
-#ifndef HAVE_DRM_COMMAND
-   "drmGetLibVersion",
-#endif
    NULL
 };
 
@@ -369,7 +356,7 @@ i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
       LoaderRefSymLists(I810vgahwSymbols,
 			I810fbSymbols, I810xaaSymbols, I810ramdacSymbols,
 #ifdef XF86DRI
-			drmSymbols, drmOptionalSymbols, driSymbols,
+			drmSymbols, driSymbols,
 #endif
 			I810vbeSymbols, vbeOptionalSymbols,
 			I810ddcSymbols, I810int10Symbols, NULL);

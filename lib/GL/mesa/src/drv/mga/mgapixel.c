@@ -22,10 +22,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgapixel.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgapixel.c,v 1.7 2002/09/18 17:11:41 tsi Exp $ */
 
 #include "enums.h"
 #include "mtypes.h"
@@ -37,8 +37,8 @@
 #include "mgapixel.h"
 #include "mgabuffers.h"
 
-#include "drm.h"
-#include "xf86drmMga.h"
+#include "xf86drm.h"
+#include "mga_common.h"
 
 #include "swrast/swrast.h"
 
@@ -220,9 +220,7 @@ mgaTryReadPixels( GLcontext *ctx,
 		  GLvoid *pixels )
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
-#if 0
-   drm_mga_blit_t blit;
-#endif
+   drmMGABlit blit;
    GLint size, skipPixels, skipRows;
    GLint pitch = pack->RowLength ? pack->RowLength : width;
    GLboolean ok;
@@ -357,7 +355,8 @@ mgaTryReadPixels( GLcontext *ctx,
 
 	 mmesa->sarea->nbox = n;
 
-	 if (n && (retcode = ioctl(mmesa->driFd, DRM_IOCTL_MGA_BLIT, &blit))) {
+	 if (n && (retcode = drmCommandWrite( mmesa->driFd, DRM_MGA_BLIT,
+                                              &blit, sizeof(drmMGABlit)))) {
 	    fprintf(stderr, "blit ioctl failed, retcode = %d\n", retcode);
 	    UNLOCK_HARDWARE( mmesa );
 	    exit(1);
@@ -394,13 +393,11 @@ static void do_draw_pix( GLcontext *ctx,
 			 GLuint dest, GLuint planemask)
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
+   drmMGABlit blit;
    __DRIdrawablePrivate *dPriv = mmesa->driDrawable;
-#if 0
-   drm_mga_blit_t blit;
    XF86DRIClipRectPtr pbox = dPriv->pClipRects;
    int nbox = dPriv->numClipRects;
    int retcode, i;
-#endif
 
    y = dPriv->h - y - height;
    x += mmesa->drawX;
@@ -459,7 +456,8 @@ static void do_draw_pix( GLcontext *ctx,
 
       mmesa->sarea->nbox = n;
 
-      if (n && (retcode = ioctl(mmesa->driFd, DRM_IOCTL_MGA_BLIT, &blit))) {
+      if (n && (retcode = drmCommandWrite( mmesa->driFd, DRM_MGA_BLIT,
+                                              &blit, sizeof(drmMGABlit)))) {
 	 fprintf(stderr, "blit ioctl failed, retcode = %d\n", retcode);
 	 UNLOCK_HARDWARE( mmesa );
 	 exit(1);
@@ -684,7 +682,6 @@ void mgaDDInitPixelFuncs( GLcontext *ctx )
    ctx->Driver.CopyPixels = _swrast_CopyPixels;
    ctx->Driver.DrawPixels = _swrast_DrawPixels;
    ctx->Driver.ReadPixels = _swrast_ReadPixels;
-   ctx->Driver.ResizeBuffers = _swrast_alloc_buffers;
 
    if (getenv("MGA_BLIT_PIXELS")) {
       ctx->Driver.ReadPixels = mgaDDReadPixels; /* requires agp dest */

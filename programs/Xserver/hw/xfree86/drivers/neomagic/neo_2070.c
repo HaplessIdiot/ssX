@@ -22,14 +22,14 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2070.c,v 1.2 1999/06/27 14:08:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2070.c,v 1.4 2002/04/04 14:05:44 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
  * XFree86 v.3.3 has been sponsored by Red Hat.
  *
  * Authors:
- *   Jens Owen (jens@precisioninsight.com)
+ *   Jens Owen (jens@tungstengraphics.com)
  *   Kevin E. Martin (kevin@precisioninsight.com)
  *
  * Port to Xfree86 v.4.0

@@ -24,11 +24,11 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810context.c,v 1.1 2002/02/22 21:33:03 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810context.c,v 1.2 2002/09/10 00:39:37 dawes Exp $ */
 
 /*
  * Authors:
- *   Keith Whitwell <keithw@precisioninsight.com>
+ *   Keith Whitwell <keith@tungstengraphics.com>
  *
  */
 
@@ -73,8 +73,7 @@ static const GLubyte *i810GetString( GLcontext *ctx, GLenum name )
    }
 }
 
-static void i810BufferSize(GLframebuffer *buffer,
-			   GLuint *width, GLuint *height)
+static void i810BufferSize(GLframebuffer *buffer, GLuint *width, GLuint *height)
 {
    GET_CURRENT_CONTEXT(ctx);
    i810ContextPtr imesa = I810_CONTEXT(ctx);
@@ -126,7 +125,7 @@ i810CreateContext( Display *dpy, const __GLcontextModes *mesaVis,
    i810ContextPtr imesa;
    __DRIscreenPrivate *sPriv = driContextPriv->driScreenPriv;
    i810ScreenPrivate *i810Screen = (i810ScreenPrivate *)sPriv->private;
-   drm_i810_sarea_t *saPriv = (drm_i810_sarea_t *)
+   I810SAREAPtr saPriv = (I810SAREAPtr)
       (((GLubyte *)sPriv->pSAREA) + i810Screen->sarea_priv_offset);
 
    /* Allocate i810 context */
@@ -175,6 +174,7 @@ i810CreateContext( Display *dpy, const __GLcontextModes *mesaVis,
    ctx->Const.PointSizeGranularity = 1.0;
 
    ctx->Driver.GetBufferSize = i810BufferSize;
+   ctx->Driver.ResizeBuffers = _swrast_alloc_buffers;
    ctx->Driver.GetString = i810GetString;
 
    /* Who owns who?
@@ -300,13 +300,12 @@ void i810XMesaSetBackClipRects( i810ContextPtr imesa )
 static void i810XMesaWindowMoved( i810ContextPtr imesa )
 {
    switch (imesa->glCtx->Color.DriverDrawBuffer) {
-   case GL_FRONT_LEFT:
-      i810XMesaSetFrontClipRects( imesa );
-      break;
    case GL_BACK_LEFT:
       i810XMesaSetBackClipRects( imesa );
       break;
+   case GL_FRONT_LEFT:
    default:
+      i810XMesaSetFrontClipRects( imesa );
       break;
    }
 
@@ -335,13 +334,13 @@ i810MakeCurrent(__DRIcontextPrivate *driContextPriv,
    if (driContextPriv) {
       i810ContextPtr imesa = (i810ContextPtr) driContextPriv->driverPrivate;
 
-      _mesa_make_current2(imesa->glCtx,
-                          (GLframebuffer *) driDrawPriv->driverPrivate,
-                          (GLframebuffer *) driReadPriv->driverPrivate);
-
       /* Shouldn't the readbuffer be stored also?
        */
       imesa->driDrawable = driDrawPriv;
+
+      _mesa_make_current2(imesa->glCtx,
+                          (GLframebuffer *) driDrawPriv->driverPrivate,
+                          (GLframebuffer *) driReadPriv->driverPrivate);
 
       /* Are these necessary?
        */
@@ -362,7 +361,7 @@ void i810GetLock( i810ContextPtr imesa, GLuint flags )
 {
    __DRIdrawablePrivate *dPriv = imesa->driDrawable;
    __DRIscreenPrivate *sPriv = imesa->driScreen;
-   drm_i810_sarea_t *sarea = imesa->sarea;
+   I810SAREAPtr sarea = imesa->sarea;
    int me = imesa->hHWContext;
 
    drmGetLock(imesa->driFd, imesa->hHWContext, flags);

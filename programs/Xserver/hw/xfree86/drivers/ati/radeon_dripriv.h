@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dripriv.h,v 1.2 2001/03/21 17:02:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dripriv.h,v 1.3 2002/04/24 16:20:40 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -39,7 +39,7 @@
 
 #include "GL/glxint.h"
 #include "xf86drm.h"
-#include "xf86drmRadeon.h"
+#include "radeon_common.h"
 
 #define RADEON_MAX_DRAWABLES 256
 

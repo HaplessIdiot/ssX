@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.13 2001/04/10 16:07:49 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.14 2002/02/22 21:32:53 dawes Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -868,7 +868,7 @@ Bool GLX_PREFIX(glXMakeCurrent)(Display *dpy, GLXDrawable draw, GLXContext gc)
 
     if (!bindReturnValue) {
 	/* The make current failed. */
-	if (!gc->isDirect) {
+	if (gc && !gc->isDirect) {
 	    SyncHandle();
 	}
 

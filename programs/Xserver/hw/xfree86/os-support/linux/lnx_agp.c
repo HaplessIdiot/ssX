@@ -7,7 +7,7 @@
  * Copyright © 2001 The XFree86 Project, Inc.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.7 2001/11/26 16:24:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.8 2001/11/26 19:02:02 dawes Exp $ */
 
 #include "X.h"
 #include "xf86.h"
@@ -262,6 +262,10 @@ xf86BindGARTMemory(int screenNum, int key, unsigned long offset)
 	}
 	pageOffset = offset / AGP_PAGE_SIZE;
 
+	xf86DrvMsgVerb(screenNum, X_INFO, 3,
+		       "xf86BindGARTMemory: bind key %d at 0x%08x "
+		       "(pgoffset %d)\n", key, offset, pageOffset);
+
 	bind.pg_start = pageOffset;
 	bind.key = key;
 
@@ -301,6 +305,9 @@ xf86UnbindGARTMemory(int screenNum, int key)
 			   "failed (%s)\n", key, strerror(errno));
 		return FALSE;
 	}
+
+	xf86DrvMsgVerb(screenNum, X_INFO, 3,
+		       "xf86UnbindGARTMemory: unbind key %d\n", key);
 
 	return TRUE;
 }

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile,v 1.21 2002/02/22 21:33:05 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile,v 1.22 2002/02/23 00:45:50 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -42,8 +42,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile,v 1.21 2002/02/22 21:33:05 
       DRMOBJS = $(GLXLIBSRC)/dri/drm/xf86drm.o \
 		$(GLXLIBSRC)/dri/drm/xf86drmHash.o \
 		$(GLXLIBSRC)/dri/drm/xf86drmRandom.o \
-		$(GLXLIBSRC)/dri/drm/xf86drmSL.o \
-		$(GLXLIBSRC)/dri/drm/xf86drmMga.o
+		$(GLXLIBSRC)/dri/drm/xf86drmSL.o
 
 #ifdef GlxSoProf
        LOSRCS = ../../../../lowpc.c
@@ -57,7 +56,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile,v 1.21 2002/02/22 21:33:05 
          OBJS = $(LOOBJS) $(DRIOBJS) $(DRMOBJS) $(COREMESAOBJS) \
 		$(MESA_ASM_OBJS) $(COMMONOBJS) $(MGAOBJS) $(HIOBJS)
 
-REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB)
+REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB) $(XONLYLIB)
 
 #include <Library.tmpl>
 

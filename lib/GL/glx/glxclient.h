@@ -31,7 +31,7 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 */
-/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.13 2001/04/10 16:07:49 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.14 2002/02/22 21:32:53 dawes Exp $ */
 
 /*
  * Direct rendering support added by Precision Insight, Inc.
@@ -404,7 +404,6 @@ struct __GLXcontextRec {
     ** context is not current to any drawable.
     */
     GLXDrawable currentDrawable;
-    GLXDrawable currentReadable;
 
     /*
     ** Constant strings that describe the server implementation
@@ -547,6 +546,10 @@ extern __GLXdisplayPrivate *__glXInitialize(Display*);
 
 /* Query drivers for dynamically registered extensions */
 extern void __glXRegisterExtensions(void);
+
+/* Functions for extending the GLX API: */
+extern void *__glXRegisterGLXFunction(const char *funcName, void *funcAddr);
+extern void __glXRegisterGLXExtensionString(const char *extName);
 
 
 /************************************************************************/
@@ -696,5 +699,7 @@ extern void _XSend(Display*, const void*, long);
 #define GLX_PREFIX(function)  function
 #endif
 
+
+extern char *__glXstrdup(const char *str);
 
 #endif /* !__GLX_client_h__ */

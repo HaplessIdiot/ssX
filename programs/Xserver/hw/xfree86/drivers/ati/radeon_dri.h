@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.h,v 1.2 2001/03/21 17:02:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.h,v 1.3 2002/04/24 16:20:40 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -38,25 +38,26 @@
 #define _RADEON_DRI_
 
 #include "xf86drm.h"
-#include "xf86drmRadeon.h"
+#include "radeon_common.h"
 
 /* DRI Driver defaults */
-#define RADEON_DEFAULT_CP_PIO_MODE  RADEON_CSQ_PRIPIO_INDPIO
-#define RADEON_DEFAULT_CP_BM_MODE   RADEON_CSQ_PRIBM_INDBM
-#define RADEON_DEFAULT_AGP_MODE     1
-#define RADEON_DEFAULT_AGP_SIZE     8 /* MB (must be a power of 2 and > 4MB) */
-#define RADEON_DEFAULT_RING_SIZE    1 /* MB (must be page aligned) */
-#define RADEON_DEFAULT_BUFFER_SIZE  2 /* MB (must be page aligned) */
-#define RADEON_DEFAULT_AGP_TEX_SIZE 1 /* MB (must be page aligned) */
+#define RADEON_DEFAULT_CP_PIO_MODE    RADEON_CSQ_PRIPIO_INDPIO
+#define RADEON_DEFAULT_CP_BM_MODE     RADEON_CSQ_PRIBM_INDBM
+#define RADEON_DEFAULT_AGP_MODE       1
+#define RADEON_DEFAULT_AGP_FAST_WRITE 0
+#define RADEON_DEFAULT_AGP_SIZE       8 /* MB (must be 2^n and > 4MB) */
+#define RADEON_DEFAULT_RING_SIZE      1 /* MB (must be page aligned) */
+#define RADEON_DEFAULT_BUFFER_SIZE    2 /* MB (must be page aligned) */
+#define RADEON_DEFAULT_AGP_TEX_SIZE   1 /* MB (must be page aligned) */
 
-#define RADEON_DEFAULT_CP_TIMEOUT   10000  /* usecs */
+#define RADEON_DEFAULT_CP_TIMEOUT     10000  /* usecs */
 
-#define RADEON_AGP_MAX_MODE         4
+#define RADEON_AGP_MAX_MODE           4
 
-#define RADEON_CARD_TYPE_RADEON     1
+#define RADEON_CARD_TYPE_RADEON       1
 
 /* Buffer are aligned on 4096 byte boundaries */
-#define RADEON_BUFFER_ALIGN         0x00000fff
+#define RADEON_BUFFER_ALIGN           0x00000fff
 
 #define RADEONCP_USE_RING_BUFFER(m)					\
     (((m) == RADEON_CSQ_PRIBM_INDDIS) ||				\
@@ -99,7 +100,7 @@ typedef struct {
     unsigned int  sarea_priv_offset;
 
 #ifdef PER_CONTEXT_SAREA
-    drmSize	  perctx_sarea_size;
+    drmSize      perctx_sarea_size;
 #endif
 } RADEONDRIRec, *RADEONDRIPtr;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatexcnv.c,v 1.1 2000/09/24 13:51:08 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatexcnv.c,v 1.2 2001/04/10 16:07:51 dawes Exp $ */
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -23,7 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  */
 
 #include <stdlib.h>

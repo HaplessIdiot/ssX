@@ -22,9 +22,9 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgadd.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgadd.c,v 1.13 2002/09/11 19:49:07 tsi Exp $ */
 
 
 #include "mtypes.h"
@@ -137,15 +137,17 @@ void mgaDDExtensionsInit( GLcontext *ctx )
    _mesa_enable_extension( ctx, "GL_EXT_paletted_texture" );
    */
 
-   /* Support multitexture only on the g400.
+   _mesa_enable_extension( ctx, "GL_ARB_texture_compression" );
+   _mesa_enable_extension( ctx, "GL_ARB_multisample" );
+
+   _mesa_enable_extension( ctx, "GL_SGIS_generate_mipmap" );
+
+   /* Turn on multitexture and texenv_add for the G400.
     */
    if (MGA_IS_G400(MGA_CONTEXT(ctx))) {
       _mesa_enable_extension( ctx, "GL_ARB_multitexture" );
-   }
+      _mesa_enable_extension( ctx, "GL_ARB_texture_env_add" );
 
-   /* Turn on texenv_add for the G400.
-    */
-   if (MGA_IS_G400(MGA_CONTEXT(ctx))) {
       _mesa_enable_extension( ctx, "GL_EXT_texture_env_add" );
 
 #if defined (MESA_packed_depth_stencil)
@@ -164,5 +166,6 @@ void mgaDDExtensionsInit( GLcontext *ctx )
 void mgaDDInitDriverFuncs( GLcontext *ctx )
 {
    ctx->Driver.GetBufferSize = mgaBufferSize;
+   ctx->Driver.ResizeBuffers = _swrast_alloc_buffers;
    ctx->Driver.GetString = mgaDDGetString;
 }

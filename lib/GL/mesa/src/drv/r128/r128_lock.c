@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_lock.c,v 1.2 2001/01/08 01:07:21 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_lock.c,v 1.4 2002/02/22 21:44:58 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -86,7 +86,7 @@ void r128GetLock( r128ContextPtr rmesa, GLuint flags )
    }
 
    for ( i = 0 ; i < rmesa->lastTexHeap ; i++ ) {
-      if ( sarea->texAge[i] != rmesa->lastTexAge[i] ) {
+      if ( rmesa->texHeap[i] && sarea->texAge[i] != rmesa->lastTexAge[i] ) {
 	 r128AgeTextures( rmesa, i );
       }
    }

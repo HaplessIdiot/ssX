@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810state.c,v 1.7 2002/02/22 21:33:04 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810state.c,v 1.8 2002/09/10 00:39:37 dawes Exp $ */
 
 #include <stdio.h>
 
@@ -9,6 +9,10 @@
 #include "dd.h"
 
 #include "mm.h"
+
+#include "i810screen.h"
+#include "i810_dri.h"
+
 #include "i810context.h"
 #include "i810state.h"
 #include "i810tex.h"
@@ -969,7 +973,6 @@ void i810InitStateFuncs(GLcontext *ctx)
    ctx->Driver.CopyPixels = _swrast_CopyPixels;
    ctx->Driver.DrawPixels = _swrast_DrawPixels;
    ctx->Driver.ReadPixels = _swrast_ReadPixels;
-   ctx->Driver.ResizeBuffers = _swrast_alloc_buffers;
 
    /* Swrast hooks for imaging extensions:
     */

@@ -22,10 +22,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.h,v 1.9tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.h,v 1.10 2002/09/18 17:11:41 tsi Exp $ */
 
 #ifndef MGA_IOCTL_H
 #define MGA_IOCTL_H
@@ -51,6 +51,7 @@ void mgaWaitAge( mgaContextPtr mmesa, int age );
 void mgaFlushVertices( mgaContextPtr mmesa );
 void mgaFlushVerticesLocked( mgaContextPtr mmesa );
 void mgaReleaseBufLocked( mgaContextPtr mmesa, drmBufPtr buffer );
+int mgaFlushDMA( int fd, drmLockFlags flags );
 
 void mgaDDFlush( GLcontext *ctx );
 void mgaDDFinish( GLcontext *ctx );
@@ -98,9 +99,9 @@ GLuint *mgaAllocDmaLow( mgaContextPtr mmesa, int bytes )
 
 #define UPDATE_LOCK( mmesa, flags )					\
 do {									\
-   GLint ret = drmMGAFlushDMA( mmesa->driFd, flags );			\
+   GLint ret = mgaFlushDMA( mmesa->driFd, flags );			\
    if ( ret < 0 ) {							\
-      drmMGAEngineReset( mmesa->driFd );				\
+      drmCommandNone( mmesa->driFd, DRM_MGA_RESET );			\
       UNLOCK_HARDWARE( mmesa );						\
       fprintf( stderr, "%s: flush ret=%d\n", __FUNCTION__, ret );	\
       /*fprintf( stderr, "drmMGAFlushDMA: return = %d\n", ret );*/	\

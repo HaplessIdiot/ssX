@@ -21,7 +21,7 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810context.h,v 1.6 2001/08/27 21:12:19 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810context.h,v 1.7 2002/02/22 21:33:03 dawes Exp $ */
 
 #ifndef I810CONTEXT_INC
 #define I810CONTEXT_INC
@@ -33,7 +33,6 @@ typedef struct i810_texture_object_t *i810TextureObjectPtr;
 #include <X11/Xlibint.h>
 
 #include "mtypes.h"
-#include "drm.h"
 #include "mm.h"
 
 #include "i810screen.h"
@@ -170,8 +169,8 @@ struct i810_context_t {
    int dirtyAge;
 
    GLboolean scissor;
-   drm_clip_rect_t draw_rect;
-   drm_clip_rect_t scissor_rect;
+   XF86DRIClipRectRec draw_rect;
+   XF86DRIClipRectRec scissor_rect;
 
    drmContext hHWContext;
    drmLock *driHwLock;
@@ -181,7 +180,7 @@ struct i810_context_t {
    __DRIdrawablePrivate *driDrawable;
    __DRIscreenPrivate *driScreen;
    i810ScreenPrivate *i810Screen; 
-   drm_i810_sarea_t *sarea;
+   I810SAREAPtr sarea;
 };
 
 

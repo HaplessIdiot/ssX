@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.410 2002/10/12 16:06:39 herrb Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.411 2002/10/15 01:47:58 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -292,7 +292,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 
 /*
  * Amiga framebuffer module.
- * This is for build testing only.  It isn't actually used on this platform.
+ * This is mostly for build testing, but the vesa driver references it.
  */
 # ifndef XF86AFB
 #  define XF86AFB		YES
@@ -337,7 +337,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 # endif
 
 # ifndef DriDrivers
-#  define DriDrivers		gamma i810 i830 mga r128 radeon \
+#  define DriDrivers		gamma i810 i830 mga r128 radeon r200 \
 				/*sis*/ tdfx DevelDRIDrivers
 # endif
 #endif
@@ -421,7 +421,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 
 # define DevelDRIDrivers	/**/
 
-# define DriDrivers		gamma i810 mga r128 radeon \
+# define DriDrivers		gamma i810 mga r128 radeon r200 \
 				TdfxDriDriver DevelDRIDrivers
 #endif /*x86_64Arcitecture*/
 
@@ -768,7 +768,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 				XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 # ifndef DriDrivers
-#  define DriDrivers		gamma tdfx mga r128 radeon /*sis*/
+#  define DriDrivers		gamma tdfx mga r128 radeon r200 /*sis*/
 # endif
 #endif
 
@@ -856,7 +856,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 				XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 # ifndef DriDrivers
-#  define DriDrivers		gamma tdfx mga r128 radeon
+#  define DriDrivers		gamma tdfx mga r128 radeon r200
 # endif
 #endif
 
@@ -945,7 +945,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 #  define TdfxDriDriver		/**/
 # endif
 # ifndef DriDrivers
-#  define DriDrivers		gamma TdfxDriDriver mga r128 radeon
+#  define DriDrivers		gamma tdfx mga r128 radeon r200
 # endif
 #endif
 
@@ -1159,6 +1159,9 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #  ifndef GlxBuiltInRadeon
 #    define GlxBuiltInRadeon       NO
 #  endif
+#  ifndef GlxBuiltInR200
+#    define GlxBuiltInR200         NO
+#  endif
 #  ifndef GlxBuiltInFfb
 #    define GlxBuiltInFfb          NO
 #  endif
@@ -1172,6 +1175,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
       GlxBuiltInI830 || \
       GlxBuiltInR128 || \
       GlxBuiltInRadeon || \
+      GlxBuiltInR200 || \
       GlxBuildInFfb || \
       GlxBuiltInSIS
 #    define GlxDriverUsesMesa      YES
@@ -1184,6 +1188,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
       GlxBuiltInI830 || \
       GlxBuiltInR128 || \
       GlxBuiltInRadeon || \
+      GlxBuiltInR200 || \
       GlxBuiltInFfb || \
       GlxBuiltInSIS
 #    define GlxUseBuiltInDRIDriver YES
@@ -1215,6 +1220,9 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #    endif
 #    if GlxBuiltInRadeon
 #      define DriDrivers radeon
+#    endif
+#    if GlxBuiltInR200
+#      define DriDrivers r200
 #    endif
 #    if GlxBuiltInSIS
 #      define DriDrivers sis

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.5 2002/10/08 20:15:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.6 2002/10/08 22:14:08 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -95,11 +95,6 @@ extern void GlxSetVisualConfigs(int nconfigs,
 				__GLXvisualConfig * configs,
 				void **configprivs);
 
-#ifndef HAVE_DRM_COMMAND
-extern drmVersionPtr drmGetLibVersion(int fd);
-#endif
-
-#ifdef HAVE_DRM_COMMAND
 Bool
 I830CleanupDma(ScrnInfoPtr pScrn)
 {
@@ -117,21 +112,7 @@ I830CleanupDma(ScrnInfoPtr pScrn)
 
    return TRUE;
 }
-#else
-Bool
-I830CleanupDma(ScrnInfoPtr pScrn)
-{
-   I830Ptr pI830 = I830PTR(pScrn);
 
-   if (!drmI830CleanupDma(pI830->drmSubFD)) {
-      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "I830 Dma Cleanup Failed\n");
-      return FALSE;
-   }
-   return TRUE;
-}
-#endif
-
-#ifdef HAVE_DRM_COMMAND
 Bool
 I830InitDma(ScrnInfoPtr pScrn)
 {
@@ -172,41 +153,6 @@ I830InitDma(ScrnInfoPtr pScrn)
 
    return TRUE;
 }
-#else
-Bool
-I830InitDma(ScrnInfoPtr pScrn)
-{
-   I830Ptr pI830 = I830PTR(pScrn);
-   I830RingBuffer *ring = &(pI830->LpRing);
-   I830DRIPtr pI830DRI = (I830DRIPtr) pI830->pDRIInfo->devPrivate;
-   drmI830Init info;
-
-   info.start = ring->mem.Start + pI830->LinearAddr;
-   info.end = ring->mem.End + pI830->LinearAddr;
-   info.size = ring->mem.Size;
-
-   info.mmio_offset = (unsigned int)pI830DRI->regs;
-   info.buffers_offset = (unsigned int)pI830->buffer_map;
-
-   info.sarea_off = sizeof(XF86DRISAREARec);
-
-   info.front_offset = pI830->FrontBuffer.Start;
-   info.back_offset = pI830->BackBuffer.Start;
-   info.depth_offset = pI830->DepthBuffer.Start;
-   info.w = pScrn->virtualX;
-   info.h = pScrn->virtualY;
-   info.pitch = pI830->auxPitch;
-   info.pitch_bits = pI830->auxPitchBits;
-   info.cpp = pI830->cpp;
-
-   if (!drmI830InitDma(pI830->drmSubFD, &info)) {
-      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		 "I830 Dma Initialization Failed\n");
-      return FALSE;
-   }
-   return TRUE;
-}
-#endif
 
 static Bool
 I830InitVisualConfigs(ScreenPtr pScreen)
@@ -531,7 +477,7 @@ I830DRIScreenInit(ScreenPtr pScreen)
    {
       drmVersionPtr version;
 
-#if defined(XFree86LOADER) || defined(HAVE_DRM_COMMAND)
+#if defined(XFree86LOADER)
       /* Check the DRM lib version.
        * drmGetLibVersion was not supported in version 1.0, so check for
        * symbol first to avoid possible crash or hang.
@@ -551,23 +497,16 @@ I830DRIScreenInit(ScreenPtr pScreen)
 	 version->version_patchlevel = 0;
       }
 
-#define REQ_MAJ 1
-#ifdef HAVE_DRM_COMMAND
-#define REQ_MIN 1
-#else
-#define REQ_MIN 0
-#endif
       if (version) {
-	 if (version->version_major != REQ_MAJ ||
-	     version->version_minor < REQ_MIN) {
+	 if (version->version_major != 1 ||
+	     version->version_minor < 1) {
 	    /* incompatible drm library version */
 	    xf86DrvMsg(pScreen->myNum, X_ERROR,
 		       "[dri] I830DRIScreenInit failed because of a version mismatch.\n"
-		       "[dri] libdrm.a module version is %d.%d.%d but version %d.%d.x is needed.\n"
+		       "[dri] libdrm.a module version is %d.%d.%d but version 1.1.x is needed.\n"
 		       "[dri] Disabling DRI.\n",
 		       version->version_major,
-		       version->version_minor, version->version_patchlevel,
-		       REQ_MAJ, REQ_MIN);
+		       version->version_minor, version->version_patchlevel);
 	    drmFreeVersion(version);
 	    I830DRICloseScreen(pScreen);
 	    return FALSE;

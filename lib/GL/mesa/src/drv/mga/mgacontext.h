@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgacontext.h,v 1.4 2001/04/10 16:07:50 dawes Exp $*/
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgacontext.h,v 1.5 2002/02/22 21:33:06 dawes Exp $*/
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -23,7 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  */
 
 #ifndef MGALIB_INC
@@ -32,7 +32,7 @@
 #include <X11/Xlibint.h>
 #include "dri_util.h"
 #include "mtypes.h"
-#include "drm.h"
+#include "xf86drm.h"
 #include "mm.h"
 #include "mem.h"
 #include "mga_sarea.h"

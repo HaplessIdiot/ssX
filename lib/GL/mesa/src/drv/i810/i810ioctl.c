@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810ioctl.c,v 1.5 2001/03/21 16:14:21 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810ioctl.c,v 1.6 2002/02/22 21:33:03 dawes Exp $ */
 
 #include <stdio.h>
 #include <unistd.h>
@@ -8,29 +8,30 @@
 #include "macros.h"
 #include "dd.h"
 #include "swrast/swrast.h"
-
 #include "mm.h"
+
+#include "i810screen.h"
+#include "i810_dri.h"
+
 #include "i810context.h"
 #include "i810ioctl.h"
 #include "i810state.h"
 
-#include "drm.h"
-#include <sys/ioctl.h>
-
 static drmBufPtr i810_get_buffer_ioctl( i810ContextPtr imesa )
 {
-   drm_i810_dma_t dma;
+   drmI810DMA dma;
    drmBufPtr buf;
    int retcode, i = 0;
    
    while (1) {
-      retcode = ioctl(imesa->driFd, DRM_IOCTL_I810_GETBUF, &dma);
+      retcode = drmCommandWriteRead(imesa->driFd, DRM_I810_GETBUF,
+                                    &dma, sizeof(drmI810DMA));
 
       if (dma.granted == 1 && retcode == 0) 
 	 break;
       
       if (++i > 1000) {
-	 ioctl(imesa->driFd, DRM_IOCTL_I810_FLUSH);
+	 drmCommandNone(imesa->driFd, DRM_I810_FLUSH);
 	 i = 0;
       }
    }
@@ -54,7 +55,7 @@ static void i810Clear( GLcontext *ctx, GLbitfield mask, GLboolean all,
    i810ContextPtr imesa = I810_CONTEXT( ctx );
    __DRIdrawablePrivate *dPriv = imesa->driDrawable;
    const GLuint colorMask = *((GLuint *) &ctx->Color.ColorMask);
-   drm_i810_clear_t clear;
+   drmI810Clear clear;
    int i;
 
    clear.flags = 0;
@@ -90,8 +91,8 @@ static void i810Clear( GLcontext *ctx, GLbitfield mask, GLboolean all,
       for (i = 0 ; i < imesa->numClipRects ; ) 
       { 	 
 	 int nr = MIN2(i + I810_NR_SAREA_CLIPRECTS, imesa->numClipRects);
-	 XF86DRIClipRectRec *box = imesa->pClipRects;	 
-	 drm_clip_rect_t *b = imesa->sarea->boxes;
+	 XF86DRIClipRectPtr box = imesa->pClipRects;	 
+	 XF86DRIClipRectPtr b = imesa->sarea->boxes;
 	 int n = 0;
 
 	 if (!all) {
@@ -117,13 +118,14 @@ static void i810Clear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 	    }
 	 } else {
 	    for ( ; i < nr ; i++) {
-	       *b++ = *(drm_clip_rect_t *)&box[i];
+	       *b++ = *(XF86DRIClipRectPtr)&box[i];
 	       n++;
 	    }
 	 }
 
 	 imesa->sarea->nbox = n;
-	 ioctl(imesa->driFd, DRM_IOCTL_I810_CLEAR, &clear);
+         drmCommandWrite(imesa->driFd, DRM_I810_CLEAR,
+                         &clear, sizeof(drmI810Clear));
       }
 
       UNLOCK_HARDWARE( imesa );
@@ -168,7 +170,7 @@ void i810CopyBuffer( const __DRIdrawablePrivate *dPriv )
       for ( ; i < nr ; i++) 
 	 *b++ = pbox[i];
 
-      ioctl(imesa->driFd, DRM_IOCTL_I810_SWAP);
+      drmCommandNone(imesa->driFd, DRM_I810_SWAP);
    }
 
    tmp = GET_ENQUEUE_AGE(imesa);
@@ -219,14 +221,14 @@ void i810WaitAgeLocked( i810ContextPtr imesa, int age  )
    int i = 0, j;
 
    while (++i < 5000) {
-      ioctl(imesa->driFd, DRM_IOCTL_I810_GETAGE);
+      drmCommandNone(imesa->driFd, DRM_I810_GETAGE);
       if (GET_DISPATCH_AGE(imesa) >= age)
 	 return;
       for (j = 0 ; j < 1000 ; j++)
 	 ;
    }
 
-   ioctl(imesa->driFd, DRM_IOCTL_I810_FLUSH);
+   drmCommandNone(imesa->driFd, DRM_I810_FLUSH);
 }
 
 
@@ -235,7 +237,7 @@ void i810WaitAge( i810ContextPtr imesa, int age  )
    int i = 0, j;
 
    while (++i < 5000) {
-      ioctl(imesa->driFd, DRM_IOCTL_I810_GETAGE);
+      drmCommandNone(imesa->driFd, DRM_I810_GETAGE);
       if (GET_DISPATCH_AGE(imesa) >= age)
 	 return;
       for (j = 0 ; j < 1000 ; j++)
@@ -244,23 +246,23 @@ void i810WaitAge( i810ContextPtr imesa, int age  )
 
    i = 0;
    while (++i < 1000) {
-      ioctl(imesa->driFd, DRM_IOCTL_I810_GETAGE);
+      drmCommandNone(imesa->driFd, DRM_I810_GETAGE);
       if (GET_DISPATCH_AGE(imesa) >= age)
 	 return;
       usleep(1000);
    }
 
    LOCK_HARDWARE(imesa);
-   ioctl(imesa->driFd, DRM_IOCTL_I810_FLUSH);
+   drmCommandNone(imesa->driFd, DRM_I810_FLUSH);
    UNLOCK_HARDWARE(imesa);
 }
 
 
 
 
-static int intersect_rect( drm_clip_rect_t *out,
-			    drm_clip_rect_t *a,
-			    drm_clip_rect_t *b )
+static int intersect_rect( XF86DRIClipRectPtr out,
+                           XF86DRIClipRectPtr a,
+                           XF86DRIClipRectPtr b )
 {
    *out = *a;
    if (b->x1 > out->x1) out->x1 = b->x1;
@@ -277,7 +279,7 @@ static int intersect_rect( drm_clip_rect_t *out,
 static void emit_state( i810ContextPtr imesa )
 {
    GLuint dirty = imesa->dirty;   
-   drm_i810_sarea_t *sarea = imesa->sarea;
+   I810SAREAPtr sarea = imesa->sarea;
 
    if (dirty & I810_UPLOAD_BUFFERS) {
       memcpy( sarea->BufferState, imesa->BufferSetup, 
@@ -326,11 +328,11 @@ static void age_imesa( i810ContextPtr imesa, int age )
 
 void i810FlushPrimsLocked( i810ContextPtr imesa )
 {
-   drm_clip_rect_t *pbox = (drm_clip_rect_t *)imesa->pClipRects;
+   XF86DRIClipRectPtr pbox = (XF86DRIClipRectPtr)imesa->pClipRects;
    int nbox = imesa->numClipRects;
    drmBufPtr buffer = imesa->vertex_buffer;
-   drm_i810_sarea_t *sarea = imesa->sarea;
-   drm_i810_vertex_t vertex;
+   I810SAREAPtr sarea = imesa->sarea;
+   drmI810Vertex vertex;
    int i;
 	  
    if (imesa->dirty)
@@ -356,7 +358,8 @@ void i810FlushPrimsLocked( i810ContextPtr imesa )
 	 sarea->nbox = nbox;
 
       vertex.discard = 1;	
-      ioctl(imesa->driFd, DRM_IOCTL_I810_VERTEX, &vertex);
+      drmCommandWrite(imesa->driFd, DRM_I810_VERTEX,
+                      &vertex, sizeof(drmI810Vertex));
       age_imesa(imesa, sarea->last_enqueue);
    }  
    else 
@@ -364,7 +367,7 @@ void i810FlushPrimsLocked( i810ContextPtr imesa )
       for (i = 0 ; i < nbox ; )
       {
 	 int nr = MIN2(i + I810_NR_SAREA_CLIPRECTS, nbox);
-	 drm_clip_rect_t *b = sarea->boxes;
+	 XF86DRIClipRectPtr b = sarea->boxes;
 
 	 if (imesa->scissor) {
 	    sarea->nbox = 0;
@@ -402,7 +405,8 @@ void i810FlushPrimsLocked( i810ContextPtr imesa )
 	 if (nr == nbox) 
 	    vertex.discard = 1;
 
-	 ioctl(imesa->driFd, DRM_IOCTL_I810_VERTEX, &vertex);
+	 drmCommandWrite(imesa->driFd, DRM_I810_VERTEX,
+                         &vertex, sizeof(drmI810Vertex));
 	 age_imesa(imesa, imesa->sarea->last_enqueue);
       }
    }
@@ -447,7 +451,7 @@ void i810FlushPrims( i810ContextPtr imesa )
 
 int i810_check_copy(int fd)
 {
-   return(ioctl(fd, DRM_IOCTL_I810_DOCOPY));
+   return(drmCommandNone(fd, DRM_I810_DOCOPY));
 }
 
 static void i810Flush( GLcontext *ctx )

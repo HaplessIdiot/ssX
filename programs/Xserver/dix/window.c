@@ -70,7 +70,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.25 2002/02/19 11:09:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.26 2002/10/08 23:55:18 dawes Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -99,6 +99,9 @@ SOFTWARE.
 #define _SECURITY_SERVER
 #include "security.h"
 #endif
+
+extern Bool permitOldBugs;
+extern Bool blackRoot;
 
 #if defined(NEED_SCREEN_REGIONS)
 #define REGION_PTR(pScreen,pWin) \

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/dri/dri_util.c,v 1.1 2002/02/22 21:32:52 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -953,6 +953,7 @@ __driUtilCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
     Xfree(BusID); /* No longer needed */
 
     if (drmGetMagic(psp->fd, &magic)) {
+        fprintf(stderr, "libGL error: drmGetMagic failed\n");
 	(void)drmClose(psp->fd);
 	Xfree(psp);
 	(void)XF86DRICloseConnection(dpy, scrn);
@@ -975,6 +976,7 @@ __driUtilCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
     }
 
     if (!XF86DRIAuthConnection(dpy, scrn, magic)) {
+        fprintf(stderr, "libGL error: XF86DRIAuthConnection failed\n");
 	(void)drmClose(psp->fd);
 	Xfree(psp);
 	(void)XF86DRICloseConnection(dpy, scrn);
@@ -991,6 +993,7 @@ __driUtilCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 				    &psp->ddxMinor,
 				    &psp->ddxPatch,
 				    &driverName)) {
+        fprintf(stderr, "libGL error: XF86DRIGetClientDriverName failed\n");
 	(void)drmClose(psp->fd);
 	Xfree(psp);
 	(void)XF86DRICloseConnection(dpy, scrn);
@@ -1013,6 +1016,7 @@ __driUtilCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 			      &psp->fbStride,
 			      &psp->devPrivSize,
 			      &psp->pDevPriv)) {
+        fprintf(stderr, "libGL error: XF86DRIGetDeviceInfo failed\n");
 	(void)drmClose(psp->fd);
 	Xfree(psp);
 	(void)XF86DRICloseConnection(dpy, scrn);
@@ -1026,6 +1030,7 @@ __driUtilCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
      * Map the framebuffer region.
      */
     if (drmMap(psp->fd, hFB, psp->fbSize, (drmAddressPtr)&psp->pFB)) {
+        fprintf(stderr, "libGL error: drmMap of framebuffer failed\n");
 	Xfree(psp->pDevPriv);
 	(void)drmClose(psp->fd);
 	Xfree(psp);
@@ -1038,6 +1043,7 @@ __driUtilCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
      * each DRI driver's "createScreen" function.
      */
     if (drmMap(psp->fd, hSAREA, SAREA_MAX, (drmAddressPtr)&psp->pSAREA)) {
+        fprintf(stderr, "libGL error: drmMap of sarea failed\n");
 	(void)drmUnmap((drmAddress)psp->pFB, psp->fbSize);
 	Xfree(psp->pDevPriv);
 	(void)drmClose(psp->fd);
@@ -1049,6 +1055,7 @@ __driUtilCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
     /* Initialize the screen specific GLX driver */
     if (psp->DriverAPI.InitDriver) {
 	if (!(*psp->DriverAPI.InitDriver)(psp)) {
+	    fprintf(stderr, "libGL error: InitDriver failed\n");
 	    (void)drmUnmap((drmAddress)psp->pSAREA, SAREA_MAX);
 	    (void)drmUnmap((drmAddress)psp->pFB, psp->fbSize);
 	    Xfree(psp->pDevPriv);

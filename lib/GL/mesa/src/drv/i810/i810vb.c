@@ -22,7 +22,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810vb.c,v 1.10 2002/02/26 23:37:34 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810vb.c,v 1.11 2002/09/10 00:39:37 dawes Exp $ */
 
 #include "glheader.h"
 #include "mtypes.h"
@@ -33,6 +33,9 @@
 
 #include "swrast_setup/swrast_setup.h"
 #include "tnl/t_context.h"
+
+#include "i810screen.h"
+#include "i810_dri.h"
 
 #include "i810context.h"
 #include "i810vb.h"
@@ -103,7 +106,7 @@ static struct {
 #define GET_VIEWPORT_MAT() I810_CONTEXT(ctx)->ViewportMatrix.m
 #define GET_TEXSOURCE(n)  n
 #define GET_VERTEX_FORMAT() I810_CONTEXT(ctx)->Setup[I810_CTXREG_VF]
-#define GET_VERTEX_STORE() (GLubyte *)(I810_CONTEXT(ctx)->verts)
+#define GET_VERTEX_STORE() I810_CONTEXT(ctx)->verts
 #define GET_VERTEX_STRIDE_SHIFT() I810_CONTEXT(ctx)->vertex_stride_shift
 #define GET_UBYTE_COLOR_STORE() &I810_CONTEXT(ctx)->UbyteColor
 #define GET_UBYTE_SPEC_COLOR_STORE() &I810_CONTEXT(ctx)->UbyteSecondaryColor
@@ -420,9 +423,9 @@ void i810ChooseVertexState( GLcontext *ctx )
    if (ctx->Fog.Enabled)
       ind |= I810_FOG_BIT;
 
-   if (ctx->Texture._ReallyEnabled & 0xf0)
+   if (ctx->Texture._ReallyEnabled & TEXTURE1_ANY)
       ind |= I810_TEX1_BIT|I810_TEX0_BIT;
-   else if (ctx->Texture._ReallyEnabled & 0xf)
+   else if (ctx->Texture._ReallyEnabled & TEXTURE0_ANY)
       ind |= I810_TEX0_BIT;
 
    imesa->SetupIndex = ind;

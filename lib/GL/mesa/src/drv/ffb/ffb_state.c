@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/ffb/ffb_state.c,v 1.3 2002/02/22 21:32:59 dawes Exp $
+/* $XFree86: xc/lib/GL/mesa/src/drv/ffb/ffb_state.c,v 1.4 2002/09/10 00:39:37 dawes Exp $
  *
  * GLX Hardware Device Driver for Sun Creator/Creator3D
  * Copyright (C) 2000, 2001 David S. Miller
@@ -477,20 +477,20 @@ static void ffbDDSetDrawBuffer(GLcontext *ctx, GLenum buffer)
 	fprintf(stderr, "ffbDDSetDrawBuffer: mode(%s)\n",
 		_mesa_lookup_enum_by_nr(buffer));
 #endif
-	fbc &= ~(FFB_FBC_WB_AB);
+	fbc &= ~(FFB_FBC_WB_AB | FFB_FBC_RB_MASK);
 	switch (buffer) {
 	case GL_FRONT_LEFT:
 		if (fmesa->back_buffer == 0)
-			fbc |= FFB_FBC_WB_B;
+			fbc |= FFB_FBC_WB_B | FFB_FBC_RB_B;
 		else
-			fbc |= FFB_FBC_WB_A;
+			fbc |= FFB_FBC_WB_A | FFB_FBC_RB_A;
 		break;
 
 	case GL_BACK_LEFT:
 		if (fmesa->back_buffer == 0)
-			fbc |= FFB_FBC_WB_A;
+			fbc |= FFB_FBC_WB_A | FFB_FBC_RB_A;
 		else
-			fbc |= FFB_FBC_WB_B;
+			fbc |= FFB_FBC_WB_B | FFB_FBC_RB_B;
 		break;
 
 	case GL_FRONT_AND_BACK:

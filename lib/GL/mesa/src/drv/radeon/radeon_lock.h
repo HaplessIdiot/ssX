@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_lock.h,v 1.2 2002/02/22 21:45:00 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -85,17 +85,18 @@ extern int prevLockLine;
  * do not do any drawing !!!
  */
 
+
 /* Lock the hardware and validate our state.
  */
-#define LOCK_HARDWARE( rmesa )						\
-   do {									\
-      char __ret = 0;							\
-      DEBUG_CHECK_LOCK();						\
-      DRM_CAS( rmesa->dri.hwLock, rmesa->dri.hwContext,			\
-	       (DRM_LOCK_HELD | rmesa->dri.hwContext), __ret );		\
-      if ( __ret )							\
-	 radeonGetLock( rmesa, 0 );					\
-      DEBUG_LOCK();							\
+#define LOCK_HARDWARE( rmesa )					\
+   do {								\
+      char __ret = 0;						\
+      DEBUG_CHECK_LOCK();					\
+      DRM_CAS( rmesa->dri.hwLock, rmesa->dri.hwContext,		\
+	       (DRM_LOCK_HELD | rmesa->dri.hwContext), __ret );	\
+      if ( __ret )						\
+	 radeonGetLock( rmesa, 0 );				\
+      DEBUG_LOCK();						\
    } while (0)
 
 /* Unlock the hardware.
