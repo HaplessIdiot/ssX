@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.24 2004/02/13 23:58:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.25tsi Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -292,7 +292,7 @@ xf86freeFlagsList (XF86ConfFlagsPtr ptr)
 		TestFree(ptr->flg_comment);
 		prev = ptr;
 		ptr = ptr->list.next;
-		xf86conffree (ptr);
+		xf86conffree (prev);
 	}
 }
 
