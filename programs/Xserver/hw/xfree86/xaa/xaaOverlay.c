@@ -293,6 +293,7 @@ void
 XAASetupOverlay8_32Planar(ScreenPtr pScreen)
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
+    int i;
 
     pScreen->PaintWindowBackground = XAAPaintWindow8_32;
     pScreen->PaintWindowBorder = XAAPaintWindow8_32;
@@ -302,4 +303,6 @@ XAASetupOverlay8_32Planar(ScreenPtr pScreen)
 	miOverlaySetTransFunction(pScreen, XAASetColorKey8_32);
 
     infoRec->FullPlanemask = ~0;
+    for(i = 0; i < 32; i++) /* haven't thought about this much */
+	infoRec->FullPlanemasks[i] = ~0;
 }

@@ -69,7 +69,8 @@ XAACopyArea(
 	       IS_OFFSCREEN_PIXMAP(pSrcDrawable)) {
 	if(infoRec->ReadPixmap && (pGC->alu == GXcopy) &&
 	   (pSrcDrawable->bitsPerPixel == pDstDrawable->bitsPerPixel) &&
-	  ((pGC->planemask & infoRec->FullPlanemask) == infoRec->FullPlanemask))
+	  ((pGC->planemask & infoRec->FullPlanemasks[pSrcDrawable->depth - 1])
+              == infoRec->FullPlanemasks[pSrcDrawable->depth - 1]))
 	{
             return (XAABitBlt( pSrcDrawable, pDstDrawable,
 		pGC, srcx, srcy, width, height, dstx, dsty,

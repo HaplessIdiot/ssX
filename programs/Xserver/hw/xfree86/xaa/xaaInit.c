@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.28 2000/04/22 21:47:08 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.30 2000/09/24 18:28:56 keithp Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -106,6 +106,7 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     XAAScreenPtr pScreenPriv;
+    int i;
 #ifdef RENDER
     PictureScreenPtr    ps = GetPictureScreen(pScreen);
 #endif
@@ -134,10 +135,16 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->Flags &= ~(PIXMAP_CACHE | OFFSCREEN_PIXMAPS);
     if(!(infoRec->Flags & LINEAR_FRAMEBUFFER))
 	infoRec->Flags &= ~OFFSCREEN_PIXMAPS;
-#if 0
-    if(pScreen->backingStoreSupport || pScreen->saveUnderSupport)
-	infoRec->Flags &= ~OFFSCREEN_PIXMAPS;
-#endif
+   
+    if(!infoRec->FullPlanemask) { /* for backwards compatibility */
+	infoRec->FullPlanemask =  (1 << pScrn->depth) - 1;
+	infoRec->FullPlanemasks[pScrn->depth - 1] = infoRec->FullPlanemask;
+    }
+
+    for(i = 0; i < 32; i++) {
+	if(!infoRec->FullPlanemasks[i]) /* keep any set by caller */
+	    infoRec->FullPlanemasks[i] = (1 << (i+1)) - 1;	
+    }
 
     if(!XAAInitAccel(pScreen, infoRec)) return FALSE;
     pScreenPriv->AccelInfoRec = infoRec;
@@ -275,7 +282,8 @@ XAAGetImage (
 	((pDraw->type == DRAWABLE_WINDOW) || IS_OFFSCREEN_PIXMAP(pDraw))) 
     {
 	if(infoRec->ReadPixmap && (format == ZPixmap) && 
-	   ((planemask & infoRec->FullPlanemask) == infoRec->FullPlanemask) &&
+	   ((planemask & infoRec->FullPlanemasks[pDraw->depth - 1]) == 
+                           infoRec->FullPlanemasks[pDraw->depth - 1]) &&
 	   (pDraw->bitsPerPixel == BitsPerPixel(pDraw->depth)))
 	{
 	    (*infoRec->ReadPixmap)(pScrn, 

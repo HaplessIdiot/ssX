@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.29 2000/04/01 22:42:04 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.31 2000/09/20 02:05:41 keithp Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -1208,7 +1208,7 @@ typedef struct _XAAInfoRec {
    CharInfoPtr CharInfo[255];
    NonTEGlyphInfo GlyphInfo[255];
 
-   unsigned int FullPlanemask;
+   unsigned int FullPlanemask; /* deprecated */
 
    PixmapLinkPtr OffscreenPixmaps;
    int maxOffPixWidth;
@@ -1234,6 +1234,8 @@ typedef struct _XAAInfoRec {
 
    unsigned int offscreenDepths;
    Bool offscreenDepthsInitialized;
+
+   CARD32 FullPlanemasks[32];
     
 } XAAInfoRec, *XAAInfoRecPtr;
 

@@ -101,9 +101,9 @@ XAAHelpPatternROP(ScrnInfoPtr pScrn, int *fg, int *bg, int pm, int *rop)
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     int ret = 0;
     
-    pm &= infoRec->FullPlanemask;
+    pm &= infoRec->FullPlanemasks[pScrn->depth - 1];
 
-    if(pm == infoRec->FullPlanemask) {
+    if(pm == infoRec->FullPlanemasks[pScrn->depth - 1]) {
 	if(!NO_SRC_ROP(*rop)) 
 	   ret |= ROP_PAT;
 	*rop = XAAPatternROP[*rop];
@@ -136,9 +136,9 @@ XAAHelpSolidROP(ScrnInfoPtr pScrn, int *fg, int pm, int *rop)
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     int ret = 0;
     
-    pm &= infoRec->FullPlanemask;
+    pm &= infoRec->FullPlanemasks[pScrn->depth - 1];
 
-    if(pm == infoRec->FullPlanemask) {
+    if(pm == infoRec->FullPlanemasks[pScrn->depth - 1]) {
 	if(!NO_SRC_ROP(*rop)) 
 	   ret |= ROP_PAT;
 	*rop = XAAPatternROP[*rop];
