@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/accessx.c,v 1.1 2000/04/04 22:36:56 dawes Exp $
  */
 
 #include "config.h"
@@ -38,6 +38,11 @@
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
 #include "keyboard-cfg.h"
+
+/*
+ * Initialization
+ */
+static Widget shell;
 
 /*
  * Prototypes
@@ -70,7 +75,7 @@ startaccessx(void)
 void
 CreateAccessXDialog()
 {
-    Widget shell, form;
+    Widget form;
 
     shell = XtVaCreatePopupShell("accessx", transientShellWidgetClass, toplevel,
 				 XtNx, toplevel->core.x + toplevel->core.width,
@@ -96,5 +101,13 @@ CreateAccessXDialog()
     XtCreateManagedWidget("del", labelWidgetClass, form, NULL, 0);
 
     XtRealizeWidget(shell);
+    XSetWMProtocols(DPY, XtWindow(shell), &wm_delete_window, 1);
     XtPopup(shell, XtGrabNone);
+}
+
+/*ARGSUSED*/
+void
+CloseAccessXAction(Widget w, XEvent *event, String *params, Cardinal *num_params)
+{
+    XtPopdown(shell);
 }

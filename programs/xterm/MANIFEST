@@ -1,4 +1,4 @@
-MANIFEST for xterm-132, version xterm-132
+MANIFEST for xterm-133, version xterm-133
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 256colres.h                     resource-definitions for 256-color mode
@@ -102,4 +102,4 @@ vttests/resize.sh               script to demonstrate resizing
 vttests/title.sh                test-script to show title of xterm in action
 
 
-$XFree86: xc/programs/xterm/MANIFEST,v 1.4 2000/03/31 20:13:41 dawes Exp $
+$XFree86: xc/programs/xterm/MANIFEST,v 1.5 2000/05/18 00:33:19 dawes Exp $

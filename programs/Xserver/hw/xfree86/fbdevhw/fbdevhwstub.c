@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhwstub.c,v 1.5 1999/06/20 16:35:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhwstub.c,v 1.6 1999/07/18 08:14:33 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86cmap.h"
@@ -20,7 +20,7 @@ fbdevHWFreeRec(ScrnInfoPtr pScrn)
 
 
 Bool
-fbdevHWProbe(pciVideoPtr pPci, char *device)
+fbdevHWProbe(pciVideoPtr pPci, char *device, char **namep)
 {
 	return FALSE;
 }

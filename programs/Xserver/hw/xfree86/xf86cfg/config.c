@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.c,v 1.1 2000/04/04 22:36:58 dawes Exp $
  */
 
 #include "config.h"
@@ -73,7 +73,6 @@ XF86SetupFunction card_functions[] = {
 XF86SetupFunction monitor_functions[] = {
     MonitorLayout,
 };
-
 
 XF86SetupFunction screen_functions[] = {
     ScreenDialog,
@@ -160,6 +159,8 @@ StartConfig(void)
     XtAddCallback(cancel, XtNcallback, CloseCallback, (XtPointer)NULL);
 
     XtRealizeWidget(shell);
+
+    XSetWMProtocols(DPY, XtWindow(shell), &wm_delete_window, 1);
 }
 
 /*ARGSUSED*/
@@ -260,6 +261,7 @@ CloseCallback(Widget w, XtPointer user_data, XtPointer call_data)
     config_status = False;
     /* make sure it is sensitive */
     XtSetSensitive(ok, True);
+    xf86info.lists[xf86info.cur_list].cur_function = 0;
 }
 
 /*ARGSUSED*/
@@ -275,7 +277,15 @@ ApplyCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	XtPopdown(shell);
 	config_popped = False;
 	config_status = True;
+	xf86info.lists[xf86info.cur_list].cur_function = 0;
     }
     else
 	ConfigError();
+}
+
+/*ARGSUSED*/
+void
+ConfigCancelAction(Widget w, XEvent *event, String *params, Cardinal *num_params)
+{
+    CloseCallback(w, NULL, NULL);
 }

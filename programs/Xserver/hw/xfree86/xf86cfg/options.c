@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.c,v 1.1 2000/04/04 22:37:01 dawes Exp $
  */
 
 #include "options.h"
@@ -115,6 +115,7 @@ OptionsPopup(XF86OptionPtr *opts)
 					bottom, NULL, 0);
 	XtAddCallback(popdown, XtNcallback, PopdownCallback, NULL);
 	XtRealizeWidget(shell);
+	XSetWMProtocols(DPY, XtWindow(shell), &wm_delete_window, 1);
     }
 
     UpdateOptionList();
@@ -180,6 +181,14 @@ PopdownCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     XtPopdown(shell);
     popped = False;
+}
+
+/*ARGSUSED*/
+void
+OptionsCancelAction(Widget w, XEvent *event,
+		    String *params, Cardinal *num_params)
+{
+    PopdownCallback(w, NULL, NULL);
 }
 
 /*ARGSUSED*/

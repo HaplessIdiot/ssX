@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/monitor-cfg.h,v 1.1 2000/04/04 22:37:00 dawes Exp $
  */
 
 #include "config.h"
@@ -39,6 +39,6 @@
  */
 XtPointer MonitorConfig(XtPointer);
 void MonitorLayout(XF86SetupInfo*);
+void MonitorVidtune(XF86SetupInfo*);
 
-#endif /* _xf86cfg_mouse_h */
-
+#endif /* _xf86cfg_monitor_h */

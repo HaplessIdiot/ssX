@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.1 2000/04/04 22:37:00 dawes Exp $
  */
 
 #include "xf86config.h"
@@ -411,11 +411,11 @@ MouseDeviceAndProtocol(XF86SetupInfo *info)
 
     if (protocol != NULL) {
 	for (i = 0; i < sizeof(protocols) / sizeof(protocols[0]); i++)
-	    if (strcmp(protocol, protocols[i]) == 0) {
+	    if (strcasecmp(protocol, protocols[i]) == 0) {
+		protocol = protocols[i];
 		XawListHighlight(listP, i);
 		break;
 	    }
-	protocol = protocols[i];
     }
     else {
 	/* "Auto" is the default */

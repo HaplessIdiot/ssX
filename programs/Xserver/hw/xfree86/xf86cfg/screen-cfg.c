@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen-cfg.c,v 1.1 2000/04/04 22:37:01 dawes Exp $
  */
 
 #include "xf86config.h"
@@ -36,6 +36,10 @@
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/List.h>
 #include <X11/Xaw/Toggle.h>
+#include <X11/Xaw/Viewport.h>
+
+#define CW	1
+#define CCW	-1
 
 /*
  * Prototypes
@@ -45,11 +49,12 @@ static void SelectIndexCallback(Widget, XtPointer, XtPointer);
 static void UnselectIndexCallback(Widget, XtPointer, XtPointer);
 static void SelectCallback(Widget, XtPointer, XtPointer);
 static void UnselectCallback(Widget, XtPointer, XtPointer);
+static void RotateCallback(Widget, XtPointer, XtPointer);
 
 /*
  * Initialization
  */
-static char *modes[] = {
+static char *standard_modes[] = {
     "640x400",
     "640x480",
     "800x600",
@@ -64,10 +69,14 @@ static char *modes[] = {
     "512x384",
 };
 
+static char **modes;
+static int nmodes;
 static int default_depth, sel_index, unsel_index;
 static Widget listL, listR;
 static char **defmodes;
-int ndefmodes;
+static int ndefmodes;
+static XF86ConfScreenPtr screen;
+static int rotate;
 
 /*
  * Implementation
@@ -75,11 +84,11 @@ int ndefmodes;
 XtPointer
 ScreenConfig(XtPointer conf)
 {
-    XF86ConfScreenPtr screen = (XF86ConfScreenPtr)conf;
     XF86ConfDisplayPtr disp;
     Arg args[2];
-    int i;
+    int i, oldrotate;
 
+    screen = (XF86ConfScreenPtr)conf;
     if (screen == NULL)
 	return (NULL);
 
@@ -88,6 +97,10 @@ ScreenConfig(XtPointer conf)
     if ((default_depth = screen->scrn_defaultdepth) <= 0)
 	default_depth = 8;
     sel_index = unsel_index = -1;
+    for (i = 0; i < computer.num_screens; i++)
+	if (computer.screens[i]->screen == screen)
+	    rotate = computer.screens[i]->rotate;
+    oldrotate = rotate;
 
     ndefmodes = 0;
     disp = screen->scrn_display_lst;
@@ -110,6 +123,7 @@ ScreenConfig(XtPointer conf)
     if (ndefmodes == 0) {
 	defmodes = (char**)XtMalloc(sizeof(char*));
 	defmodes[0] = XtNewString("640x480");
+	ndefmodes = 1;
     }
 
     if (listL != NULL) {
@@ -127,17 +141,30 @@ ScreenConfig(XtPointer conf)
     if (ConfigLoop(NULL) == True) {
 	XF86ModePtr prev, mod;
 
+	/* user may have changed the default depth, read variables again */
+	disp = screen->scrn_display_lst;
+	while (disp != NULL) {
+	    if (disp->disp_depth == default_depth)
+		break;
+	    disp = (XF86ConfDisplayPtr)(disp->list.next);
+	}
+
 	if (disp == NULL) {
 	    disp = (XF86ConfDisplayPtr)XtCalloc(1, sizeof(XF86ConfDisplayRec));
 	    screen->scrn_display_lst = (XF86ConfDisplayPtr)
 		addListItem((GenericListPtr)(screen->scrn_display_lst),
 			    (GenericListPtr)(disp));
+	    disp->disp_depth = default_depth;
 	}
 
 	if (strcasecmp(screen->scrn_identifier, ident_string))
 	    xf86RenameScreen(XF86Config, screen, ident_string);
 
 	screen->scrn_defaultdepth = default_depth;
+
+	XtSetArg(args[0], XtNlist, NULL);
+	XtSetArg(args[1], XtNnumberStrings, 0);
+	XtSetValues(listL, args, 2);
 
 	XtSetArg(args[0], XtNlist, NULL);
 	XtSetArg(args[1], XtNnumberStrings, 0);
@@ -171,8 +198,31 @@ ScreenConfig(XtPointer conf)
 	defmodes = NULL;
 	ndefmodes = 0;
 
+	for (i = 0; i < computer.num_screens; i++)
+	    if (computer.screens[i]->screen == screen)
+		computer.screens[i]->rotate = rotate;
+
+	if (oldrotate != rotate) {
+	    XF86OptionPtr option;
+	    static char *Rotate = "Rotate";
+
+	    if (screen->scrn_option_lst != NULL)
+		xf86RemoveOption(&screen->scrn_option_lst, Rotate);
+	    if (rotate)
+		screen->scrn_option_lst =
+		    xf86addNewOption(screen->scrn_option_lst,
+				     XtNewString(Rotate),
+				     XtNewString(rotate > 0 ? "CW" : "CCW"));
+	    UpdateScreenUI();
+	    AdjustScreenUI();
+	}
+
 	return ((XtPointer)screen);
     }
+
+    XtSetArg(args[0], XtNlist, NULL);
+    XtSetArg(args[1], XtNnumberStrings, 0);
+    XtSetValues(listL, args, 2);
 
     XtSetArg(args[0], XtNlist, NULL);
     XtSetArg(args[1], XtNnumberStrings, 0);
@@ -191,7 +241,8 @@ ScreenConfig(XtPointer conf)
 static void
 DepthCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
-    default_depth = (int)user_data;
+    if (call_data != NULL)
+	default_depth = (int)user_data;
 }
 
 /*ARGSUSED*/
@@ -218,7 +269,7 @@ SelectCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     Arg args[2];
 
-    if (sel_index < 0 || sel_index >= sizeof(modes) / sizeof(modes[0]))
+    if (sel_index < 0 || sel_index >= nmodes)
 	return;
 
     if (ndefmodes == 1 && *defmodes[0] == '\0') {
@@ -269,14 +320,45 @@ UnselectCallback(Widget w, XtPointer user_data, XtPointer call_data)
     unsel_index = -1;
 }
 
+/*ARGSUSED*/
+void
+RotateCallback(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    if (call_data != NULL)
+	rotate = (int)user_data;
+    else
+	rotate = 0;
+}
+
 void
 ScreenDialog(XF86SetupInfo *info)
 {
-    static Widget dialog, d1, d4, d8, d16, d24;
+    static Widget dialog, d1, d4, d8, d16, d24, cw, ccw;
     Arg args[2];
+    XF86ConfMonitorPtr mon = screen->scrn_monitor;
+    XF86ConfModeLinePtr mline = mon != NULL ? mon->mon_modeline_lst : NULL;
+    int i;
+
+    while (nmodes > 0)
+	XtFree(modes[--nmodes]);
+    XtFree((XtPointer)modes);
+    modes = NULL;
+    while (mline) {
+	if (nmodes % 16 == 0)
+	    modes = (char**)XtRealloc((XtPointer)modes,
+				      sizeof(char*) * (nmodes + 16));
+	modes[nmodes++] = XtNewString(mline->ml_identifier);
+	mline = (XF86ConfModeLinePtr)(mline->list.next);
+    }
+    for (i = 0; i < sizeof(standard_modes) / sizeof(standard_modes[0]); i++) {
+	if (nmodes % 16 == 0)
+	    modes = (char**)XtRealloc((XtPointer)modes,
+				      sizeof(char*) * (nmodes + 16));
+	modes[nmodes++] = XtNewString(standard_modes[i]);
+    }
 
     if (dialog == NULL) {
-	Widget command;
+	Widget command, viewport;
 
 	dialog = XtCreateWidget("screenD", formWidgetClass,
 				configp, NULL, 0);
@@ -286,21 +368,21 @@ ScreenDialog(XF86SetupInfo *info)
 	XtAddCallback(d1, XtNcallback, DepthCallback, (XtPointer)1);
 	d4 = XtVaCreateManagedWidget("4", toggleWidgetClass, dialog,
 				     XtNradioGroup, d1, NULL, 0);
-	XtAddCallback(d1, XtNcallback, DepthCallback, (XtPointer)4);
+	XtAddCallback(d4, XtNcallback, DepthCallback, (XtPointer)4);
 	d8 = XtVaCreateManagedWidget("8", toggleWidgetClass, dialog,
 				      XtNradioGroup, d4, NULL, 0);
-	XtAddCallback(d1, XtNcallback, DepthCallback, (XtPointer)8);
+	XtAddCallback(d8, XtNcallback, DepthCallback, (XtPointer)8);
 	d16 = XtVaCreateManagedWidget("16", toggleWidgetClass, dialog,
 				      XtNradioGroup, d8, NULL, 0);
-	XtAddCallback(d1, XtNcallback, DepthCallback, (XtPointer)16);
+	XtAddCallback(d16, XtNcallback, DepthCallback, (XtPointer)16);
 	d24 = XtVaCreateManagedWidget("24", toggleWidgetClass, dialog,
 				      XtNradioGroup, d16, NULL, 0);
-	XtAddCallback(d1, XtNcallback, DepthCallback, (XtPointer)24);
+	XtAddCallback(d24, XtNcallback, DepthCallback, (XtPointer)24);
 
 	XtCreateManagedWidget("modeL", labelWidgetClass, dialog, NULL, 0);
-	listL = XtVaCreateManagedWidget("listLeft", listWidgetClass, dialog,
-					XtNlist, modes,
-					XtNnumberStrings, XtNumber(modes),
+	viewport = XtCreateManagedWidget("viewL", viewportWidgetClass, dialog,
+					 NULL, 0);
+	listL = XtCreateManagedWidget("listLeft", listWidgetClass, viewport,
 					NULL, 0);
 	XtAddCallback(listL, XtNcallback, SelectIndexCallback, NULL);
 	command = XtCreateManagedWidget("select", commandWidgetClass,
@@ -309,11 +391,38 @@ ScreenDialog(XF86SetupInfo *info)
 	command = XtCreateManagedWidget("unselect", commandWidgetClass,
 					dialog, NULL, 0);
 	XtAddCallback(command, XtNcallback, UnselectCallback, NULL);
-	listR = XtCreateManagedWidget("listRight", listWidgetClass,
-				      dialog, NULL, 0);
+	viewport = XtCreateManagedWidget("viewR", viewportWidgetClass, dialog,
+					 NULL, 0);
+	listR = XtCreateManagedWidget("listRight", listWidgetClass, viewport,
+				      NULL, 0);
 	XtAddCallback(listR, XtNcallback, UnselectIndexCallback, NULL);
+
+	XtCreateManagedWidget("rotate", labelWidgetClass, dialog, NULL, 0);
+	cw = XtCreateManagedWidget("CW", toggleWidgetClass, dialog, NULL, 0);
+	XtAddCallback(cw, XtNcallback, RotateCallback, (XtPointer)CW);
+	ccw = XtVaCreateManagedWidget("CCW", toggleWidgetClass, dialog,
+				      XtNradioGroup, cw, NULL, 0);
+	XtAddCallback(ccw, XtNcallback, RotateCallback, (XtPointer)CCW);
+
 	XtRealizeWidget(dialog);
     }
+
+    if (rotate == CW) {
+	XtVaSetValues(cw, XtNstate, True, NULL, 0);
+	XtVaSetValues(ccw, XtNstate, False, NULL, 0);
+    }
+    else if (rotate == CCW) {
+	XtVaSetValues(cw, XtNstate, False, NULL, 0);
+	XtVaSetValues(ccw, XtNstate, True, NULL, 0);
+    }
+    else {
+	XtVaSetValues(cw, XtNstate, False, NULL, 0);
+	XtVaSetValues(ccw, XtNstate, False, NULL, 0);
+    }
+
+    XtSetArg(args[0], XtNlist, modes);
+    XtSetArg(args[1], XtNnumberStrings, nmodes);
+    XtSetValues(listL, args, 2);
 
     XtSetArg(args[0], XtNlist, defmodes);
     XtSetArg(args[1], XtNnumberStrings, ndefmodes);

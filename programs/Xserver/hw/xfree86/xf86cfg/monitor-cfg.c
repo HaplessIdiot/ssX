@@ -26,11 +26,13 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/monitor-cfg.c,v 1.1 2000/04/04 22:36:59 dawes Exp $
  */
 
 #include "xf86config.h"
 #include "monitor-cfg.h"
+#include "screen.h"
+#include <X11/extensions/xf86vmode.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Simple.h>
 
@@ -44,7 +46,7 @@
 #include <X11/Xaw/SmeBSB.h>
 
 /*
- * Prootypes
+ * Prototypes
  */
 static Bool MonitorConfigCheck(void);
 static void MonitorHsyncCallback(Widget, XtPointer, XtPointer);
@@ -145,6 +147,7 @@ MonitorConfig(XtPointer conf)
 	mon_n_hsync = monitor->mon_n_hsync;
 	memcpy(mon_hsync, monitor->mon_hsync,
 	       sizeof(parser_range) * mon_n_hsync);
+	*str = '\0';
 	parser_range_to_string(str, mon_hsync, mon_n_hsync);
 	XtSetArg(args[0], XtNstring, str);
 	XtSetValues(hsync, args, 1);
@@ -152,6 +155,7 @@ MonitorConfig(XtPointer conf)
 	mon_n_vrefresh = monitor->mon_n_vrefresh;
 	memcpy(mon_vrefresh, monitor->mon_vrefresh,
 	       sizeof(parser_range) * mon_n_vrefresh);
+	*str = '\0';
 	parser_range_to_string(str, mon_vrefresh, mon_n_vrefresh);
 	XtSetArg(args[0], XtNstring, str);
 	XtSetValues(vsync, args, 1);
@@ -204,6 +208,10 @@ MonitorConfig(XtPointer conf)
 	    for (i = 0; i < computer.num_devices; i++)
 		if (computer.devices[i]->widget == config)
 		    break;
+	    if (computer.devices[i]->config == NULL)
+		XF86Config->conf_monitor_lst =
+				xf86AddMonitor(XF86Config->conf_monitor_lst,
+					       monitor);
 	    computer.devices[i]->config = (XtPointer)monitor;
 	    ChangeScreen(monitor, monitor, card, oldcard);
 	    DrawCables();
@@ -224,6 +232,9 @@ MonitorConfigCheck(void)
 
     if (ident_string == NULL || strlen(ident_string) == 0)
 	return (False);
+
+    bzero(mon_hsync, sizeof(parser_range) * CONF_MAX_HSYNC);
+    bzero(mon_vrefresh, sizeof(parser_range) * CONF_MAX_VREFRESH);
 
     XtSetArg(args[0], XtNstring, &str);
     XtGetValues(hsync, args, 1);

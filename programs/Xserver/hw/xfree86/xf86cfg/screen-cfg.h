@@ -26,10 +26,11 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen-cfg.h,v 1.1 2000/04/04 22:37:02 dawes Exp $
  */
 
 #include "config.h"
+#include "screen.h"
 
 #ifndef _xf86cfg_screencfg_h
 #define _xf86cfg_screencfg_h

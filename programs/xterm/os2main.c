@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.33 2000/03/31 20:13:47 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.34 2000/04/05 18:14:09 dawes Exp $ */
 
 /***********************************************************
 
@@ -870,7 +870,7 @@ main (int argc, char **argv, char **envp)
 	*/
 	d_tio.c_iflag = ICRNL|IXON;
 	d_tio.c_oflag = OPOST|ONLCR|TAB3;
-    	d_tio.c_cflag = B9600|CS8|CREAD|PARENB|HUPCL;
+    	d_tio.c_cflag = B38400|CS8|CREAD|PARENB|HUPCL;
     	d_tio.c_lflag = ISIG|ICANON|ECHO|ECHOE|ECHOK;
 	d_tio.c_line = 0;
 	d_tio.c_cc[VINTR] = CONTROL('C');	/* '^C'	*/

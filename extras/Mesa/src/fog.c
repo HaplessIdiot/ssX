@@ -36,6 +36,14 @@
 #endif
 
 
+/*
+ * DAG: This is needed to match the overflow check below. If that check
+ * is extended to other systems than __alpha__, this ifdef must also be
+ * changed!
+ */
+#ifdef __alpha__
+#include <math.h>
+#endif
 
 void
 _mesa_Fogf(GLenum pname, GLfloat param)

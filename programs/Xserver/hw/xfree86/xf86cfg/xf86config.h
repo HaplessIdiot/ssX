@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/xf86config.h,v 1.1 2000/04/04 22:37:03 dawes Exp $
  */
 
 #include "config.h"
@@ -44,6 +44,8 @@
 	(XF86ConfScreenPtr)addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
 #define xf86AddLayout(head, ptr)	\
 	(XF86ConfLayoutPtr)addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86AddModeLine(head, ptr)	\
+	(XF86ConfModeLinePtr)addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
 #define xf86NewOption NewOption
 #define xf86addNewOption addNewOption
 #define xf86FindOption FindOption
@@ -54,6 +56,7 @@ int xf86RemoveOption(XF86OptionPtr*, char*);
 int xf86RemoveInput(XF86ConfigPtr, XF86ConfInputPtr);
 int xf86RemoveInputRef(XF86ConfLayoutPtr, XF86ConfInputPtr);
 int xf86RemoveDevice(XF86ConfigPtr, XF86ConfDevicePtr);
+int xf86RemoveMonitor(XF86ConfigPtr, XF86ConfMonitorPtr);
 int xf86RemoveScreen(XF86ConfigPtr, XF86ConfScreenPtr);
 int xf86RemoveAdjacency(XF86ConfLayoutPtr, XF86ConfAdjacencyPtr);
 int xf86RemoveInactive(XF86ConfLayoutPtr, XF86ConfInactivePtr);
