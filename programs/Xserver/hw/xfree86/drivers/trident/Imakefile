@@ -8,10 +8,10 @@ XCOMM
 
 SRCS = trident_driver.c trident_dac.c tridenthelper.c \
        trident_accel.c trident_i2c.c trident_bank.c \
-       image_accel.c blade_accel.c
+       image_accel.c blade_accel.c tvga_dac.c trident_dga.c
 OBJS = trident_driver.o trident_dac.o tridenthelper.o \
        trident_accel.o trident_i2c.o trident_bank.o \
-       image_accel.o blade_accel.o
+       image_accel.o blade_accel.o tvga_dac.o trident_dga.o
 
 #if defined(XF86DriverSDK)
 INCLUDES = -I. -I../../include
