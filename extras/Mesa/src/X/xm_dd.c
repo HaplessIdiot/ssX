@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X/xm_dd.c,v 1.5 2002/10/29 18:19:42 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X/xm_dd.c,v 1.6 2002/12/16 16:18:31 dawes Exp $ */
 
 #include "glxheader.h"
 #include "context.h"
@@ -62,8 +62,14 @@ get_buffer_size( GLframebuffer *buffer, GLuint *width, GLuint *height )
    unsigned int winwidth, winheight;
 #ifdef XFree86Server
    /* XFree86 GLX renderer */
-   winwidth = xmBuffer->frontbuffer->width;
-   winheight = xmBuffer->frontbuffer->height;
+   if (xmBuffer->frontbuffer->width > MAX_WIDTH ||
+       xmBuffer->frontbuffer->height > MAX_HEIGHT) {
+     winwidth = buffer->Width;
+     winheight = buffer->Height;
+   } else {
+     winwidth = xmBuffer->frontbuffer->width;
+     winheight = xmBuffer->frontbuffer->height;
+   }
 #else
    Window root;
    int winx, winy;
