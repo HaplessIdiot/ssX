@@ -11,7 +11,7 @@
 # everything required for in-kernel source builds.  It is included into
 # this file, so none of that should be duplicated here.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.41 2003/09/28 20:16:06 alanh Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.42 2003/12/02 13:02:42 alanh Exp $
 #
 
 #
@@ -39,6 +39,7 @@ ifndef LINUXDIR
 RUNNING_REL := $(shell uname -r)
 
 LINUXDIR := /lib/modules/$(RUNNING_REL)/build
+MODULEDIR := /lib/modules/$(RUNNING_REL)
 endif
 
 MACHINE := $(shell uname -m)
@@ -161,10 +162,9 @@ modules: includes
 			(set -x; mv -f Makefile Makefile._xx_); fi; \
 		(set -x; ln -s Makefile.linux Makefile); fi
 	make -C $(LINUXDIR) $(GETCONFIG) SUBDIRS=`pwd` DRMSRCDIR=`pwd` modules
-	@if cmp -s Makefile Makefile.linux; then \
-		(set -x; rm -f Makefile); \
-		if [ -e Makefile._xx_ ]; then \
-			(set -x; mv -f Makefile._xx_ Makefile); fi; fi
+	@if cmp -s Makefile Makefile.linux && [ -e Makefile._xx_ ]; then \
+		(set -x; rm -f Makefile; \
+		 mv -f Makefile._xx_ Makefile); fi
 
 ifeq ($(HEADERFROMBOOT),1)
 
@@ -233,6 +233,16 @@ clean cleandir:
 $(MODULE_LIST)::
 	make -f Makefile.linux DRM_MODULES=$@ modules
 
+ifdef MODULEDIR
+install:
+	@(cd $(MODULEDIR)/kernel/drivers/char/drm && \
+	  set -x && rm -f $(MODULE_LIST))
+	cp -p $(MODULE_LIST) $(MODULEDIR)/kernel/drivers/char/drm/.
+else
+install:
+	@echo "Run 'make MODULEDIR=/path/to/moduledir install'"
+endif
+	
 # Build test utilities
 
 PRGCFLAGS = $(CFLAGS) -g -ansi -pedantic -DPOSIX_C_SOURCE=199309L \
