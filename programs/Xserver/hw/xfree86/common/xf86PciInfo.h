@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.149 2003/07/02 17:31:28 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.150tsi Exp $ */
 
 /*
  * Copyright (c) 1995-2003 by The XFree86 Project, Inc.
@@ -83,12 +83,10 @@
 #define PCI_VENDOR_SUN			0x108E
 #define PCI_VENDOR_DIAMOND		0x1092
 #define PCI_VENDOR_BROOKTREE		0x109E
-#define PCI_VENDOR_ALI_2		0x10B9
 #define PCI_VENDOR_NEOMAGIC		0x10C8
 #define PCI_VENDOR_NVIDIA		0x10DE
 #define PCI_VENDOR_IMS			0x10E0
 #define PCI_VENDOR_INTEGRAPHICS 	0x10EA
-#define PCI_VENDOR_VIA			0x1106
 #define PCI_VENDOR_ALLIANCE		0x1142
 #define PCI_VENDOR_RENDITION		0x1163
 #define PCI_VENDOR_3DFX			0x121A
@@ -444,9 +442,6 @@
 #define PCI_CHIP_BT848			0x0350
 #define PCI_CHIP_BT849			0x0351
 
-/* Acer Laboratories Inc (ALI_2) */
-#define PCI_CHIP_M1541			0x1541
-
 /* NVIDIA */
 #define PCI_CHIP_NV1			0x0008
 #define PCI_CHIP_DAC64			0x0009
@@ -496,10 +491,6 @@
 /* IMS */
 #define PCI_CHIP_IMSTT128		0x9128
 #define PCI_CHIP_IMSTT3D		0x9135
-
-/* VIA Technologies */
-#define PCI_CHIP_APOLLOVP1		0x0585
-#define PCI_CHIP_APOLLOPRO133X		0x0691
 
 /* Alliance Semiconductor */
 #define PCI_CHIP_AP6410			0x3210
@@ -593,22 +584,17 @@
 /* Intel */
 #define PCI_CHIP_I815_BRIDGE		0x1130
 #define PCI_CHIP_I815			0x1132
-#define PCI_CHIP_430HX_BRIDGE		0x1250
 #define PCI_CHIP_82801_P2P		0x244E
 #define PCI_CHIP_845_G_BRIDGE		0x2560
 #define PCI_CHIP_845_G			0x2562
 #define PCI_CHIP_I830_M_BRIDGE		0x3575
 #define PCI_CHIP_I830_M			0x3577
-#define PCI_CHIP_430VX_BRIDGE		0x7030
-#define PCI_CHIP_430TX_BRIDGE		0x7100
 #define PCI_CHIP_I810_BRIDGE		0x7120
 #define PCI_CHIP_I810			0x7121
 #define PCI_CHIP_I810_DC100_BRIDGE	0x7122
 #define PCI_CHIP_I810_DC100		0x7123
 #define PCI_CHIP_I810_E_BRIDGE		0x7124
 #define PCI_CHIP_I810_E			0x7125
-#define PCI_CHIP_440EX_BRIDGE		0x7180	/* Also 440LX */
-#define PCI_CHIP_440BX_BRIDGE		0x7190
 #define PCI_CHIP_I740_AGP		0x7800
 #define PCI_CHIP_460GX_PXB		0x84CB
 #define PCI_CHIP_460GX_SAC		0x84E0

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.78 2003/08/23 23:11:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.79tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -569,6 +569,8 @@ pciTag(int busnum, int devnum, int funcnum)
 	return(PCI_MAKE_TAG(busnum,devnum,funcnum));
 }
 
+#if defined(PCI_MFDEV_SUPPORT) || defined(PowerMAX_OS)
+
 Bool
 pciMfDev(int busnum, int devnum)
 {
@@ -602,12 +604,15 @@ pciMfDev(int busnum, int devnum)
 	return FALSE;
 
     if ((id0 != id1) ||
+	/* Note the following test is valid for header types 0, 1 and 2 */
 	(pciReadLong(tag0, PCI_MAP_REG_START) !=
 	 pciReadLong(tag1, PCI_MAP_REG_START)))
 	return TRUE;
 
     return FALSE;
 }
+
+#endif
 
 /*
  * Generic find/read/write functions
@@ -682,6 +687,7 @@ pciGenFindNext(void)
 		 * No more devices for this bus. Next bus please
 		 */
 		if (speculativeProbe) {
+	NextSpeculativeBus:
 		    xfree(pciBusInfo[pciBusNum]);
 		    pciBusInfo[pciBusNum] = NULL;
 		    speculativeProbe = FALSE;
@@ -727,18 +733,36 @@ pciGenFindNext(void)
 	if ((CARD16)(devid + 1U) <= (CARD16)1UL)
 	    continue; /* Nobody home.  Next device please */
 
+	/*
+	 * Some devices mis-decode configuration cycles in such a way as to
+	 * create phantom buses.
+	 */
+	if (speculativeProbe && (pciDevNum == 0) && (pciFuncNum == 0) &&
+	    (PCI_BUS_NO_DOMAIN(pciBusNum) > 0)) {
+	    for (;;) {
+	        if (++pciDevNum >= pciBusInfo[pciBusNum]->numDevices)
+		    goto NextSpeculativeBus;
+		if (devid !=
+		    pciReadLong(PCI_MAKE_TAG(pciBusNum, pciDevNum, 0),
+			        PCI_ID_REG))
+		    break;
+	    }
+
+	    pciDevNum = 0;
+	}
+
 	if (pciNumBuses <= pciBusNum)
 	    pciNumBuses = pciBusNum + 1;
 
 	speculativeProbe = FALSE;
 	previousBus = pciBusNum;
 
+#ifdef PCI_BRIDGE_SUPPORT
 	/*
 	 * Before checking for a specific devid, look for enabled
 	 * PCI to PCI bridge devices.  If one is found, create and
 	 * initialize a bus info record (if one does not already exist).
 	 */
-#ifdef PCI_BRIDGE_SUPPORT
 	tmp = pciReadLong(pciDeviceTag, PCI_CLASS_REG);
 	base_class = PCI_CLASS_EXTRACT(tmp);
 	sub_class = PCI_SUBCLASS_EXTRACT(tmp);
@@ -973,12 +997,6 @@ xf86scanpci(int flags)
 	/* Read config space for this device */
 	for (i = 0; i < 17; i++)  /* PCI hdr plus 1st dev spec dword */
 	    devp->cfgspc.dwords[i] = pciReadLong(tag, i * sizeof(CARD32));
-
-#ifdef ARCH_PCI_HOST_BRIDGE
-	if ((devp->pci_base_class == PCI_CLASS_BRIDGE) &&
-	    (devp->pci_sub_class == PCI_SUBCLASS_BRIDGE_HOST))
-	    ARCH_PCI_HOST_BRIDGE(devp);
-#endif
 
 	/* Some broken devices don't implement this field... */
 	if (devp->pci_header_type == 0xff)

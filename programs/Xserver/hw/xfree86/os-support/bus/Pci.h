@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.39 2003/07/17 15:08:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.40tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -259,7 +259,6 @@
 # define XF86SCANPCI_WRAPPER ia64ScanPCIWrapper
 #elif defined(__i386__)
 # define ARCH_PCI_INIT ix86PciInit
-# define ARCH_PCI_HOST_BRIDGE ix86PciHostBridge
 # define INCLUDE_XF86_MAP_PCI_MEM
 # define INCLUDE_XF86_NO_DOMAIN
 # if defined(linux)
@@ -338,10 +337,6 @@
 extern void ARCH_PCI_INIT(void);
 #if defined(ARCH_PCI_OS_INIT)
 extern void ARCH_PCI_OS_INIT(void);
-#endif
-
-#if defined(ARCH_PCI_HOST_BRIDGE)
-extern void ARCH_PCI_HOST_BRIDGE(pciConfigPtr pPCI);
 #endif
 
 #if defined(ARCH_PCI_PCI_BRIDGE)
