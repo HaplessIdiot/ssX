@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.40 2002/05/27 16:52:58 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.41 2002/06/17 08:04:18 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -13,7 +13,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.40 2002/05/27 16:52:58 ala
 #define OSMinorVersion          3
 #endif
 #ifndef OSTeenyVersion
-#define OSTeenyVersion		10
+#define OSTeenyVersion		12
 #endif
 
 #define ProjectRoot 		/usr/X11R6
@@ -128,7 +128,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.40 2002/05/27 16:52:58 ala
 
 #define LdCombineFlags          -r
 
-/* We don't define -ansi yet as newlib (which is cygwin's library) doesn't
+/* We don't define -ansi yet as newlib (which is Cygwin's library) doesn't
  * define some needed prototypes when -ansi is set, when that's fixed
  * we can remove these lines and use the default XFree86 options. */
 #ifndef DefaultCCOptions
@@ -157,9 +157,29 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.40 2002/05/27 16:52:58 ala
 #  define StandardCppDefines      StandardDefines
 # endif
 #endif
-#define ServerOSDefines         XFree86ServerDefines -DDDXTIME -DFD_SETSIZE=256 -DDDXOSINIT -DDDXOSVERRORF -DDDXOSFATALERROR
+
+/*
+ * Don't use XFree86ServerDefines here because it always defines
+ * XFree86Server.  Defining XFree86Server causes fb to not expose its
+ * fbSetVisualTypesAndMasks.  Instead, we create a local
+ * XWinServerDefines, which has everything that XFree86ServerDefines
+ * has in it, but it allows us to easily remove the XFree86Server
+ * define for experimental development purposes.
+ */
+#define XWinServerDefines	-DAVOID_GLYPHBLT -DPIXPRIV -DSINGLEDEPTH \
+				XFree86DGADefines XFree86XvDefines \
+				XFree86LoaderDefines -DXFree86Server \
+				VidModeExtensionDefines \
+				XFree86XvMCDefines \
+				ServerSnprintfDefines \
+				SmartScheduleDefines \
+				DebugDefines XFree86XResDefines \
+				-DX_BYTE_ORDER=ByteOrder
+#define ServerOSDefines         XWinServerDefines \
+				-DDDXTIME -DFD_SETSIZE=256 -DDDXOSINIT \
+				-DDDXOSVERRORF -DDDXOSFATALERROR
 #define XkbServerDefines        -DXKB_ALWAYS_USES_SOFT_REPEAT
-#define ServerExtraDefines      -DGCCUSESGAS XFree86ServerDefines
+#define ServerExtraDefines      -DGCCUSESGAS XWinServerDefines
 #define ConnectionFlags         -DTCPCONN -DUNIXCONN
 #define ExtraLibraries          
 #define InstUidFlags            -m 4711

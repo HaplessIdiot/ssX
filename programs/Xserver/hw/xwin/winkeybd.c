@@ -37,8 +37,174 @@
 
 #include "winkeybd.h"
 
-
 static Bool winKeyState[NUM_KEYCODES];
+
+
+#if WIN_NEW_KEYBOARD_SUPPORT
+
+const unsigned int MaxKeysPerKey = 4;
+
+void
+winProcessKeyEvent (DWORD dwVirtualKey, DWORD dwKeyData)
+{
+  Bool			fDown = ((dwKeyData & 0x80000000) == 0);
+  winKeyEventsRec	kerEvent;
+  int			i;
+
+  /* Get the key events */
+  kerEvent = winTranslateKey (dwVirtualKey, dwKeyData);
+
+  if (kerEvent.dwReleaseModifiers & WIN_MOD_LCONTROL)
+    winSendKeyEvent (XK_Control_L, FALSE);
+  if (kerEvent.dwReleaseModifiers & WIN_MOD_RCONTROL)
+    winSendKeyEvent (XK_Control_R, FALSE);
+  if (kerEvent.dwReleaseModifiers & WIN_MOD_LALT)
+    winSendKeyEvent (XK_Alt_L, FALSE);
+  if (kerEvent.dwReleaseModifiers & WIN_MOD_RALT)
+    winSendKeyEvent (XK_Alt_R, FALSE);
+  
+  for (i = 0; kerEvent.dwXKeycodes[i] != XK_VoidSymbol; ++i)
+    winSendKeyEvent (kerEvent.dwXKeycodes[i], fDown);
+  
+  if (kerEvent.dwReleaseModifiers & WIN_MOD_LCONTROL)
+    winSendKeyEvent (XK_Control_L, FALSE);
+  if (kerEvent.dwReleaseModifiers & WIN_MOD_RCONTROL)
+    winSendKeyEvent (XK_Control_R, TRUE);
+  if (kerEvent.dwReleaseModifiers & WIN_MOD_LALT)
+    winSendKeyEvent (XK_Alt_L, FALSE);
+  if (kerEvent.dwReleaseModifiers & WIN_MOD_RALT)
+    winSendKeyEvent (XK_Alt_R, TRUE);
+  
+}
+
+
+winKeyEventsRec
+winTranslateKey (DWORD dwVirtualKey, DWORD dwKeyData)
+{
+  winKeyEventsRec	kerEvents;
+  Bool			fExtended = ((HIWORD (dwKeyData) & KF_EXTENDED) != 0);
+  int			i;
+  DWORD			dwNumEvents = 0;
+  BYTE			bKeyboardState[256];
+  int			iReturn;
+  unsigned char		cAscii[4];
+
+  /* Remap extended modifiers to the right version of that key.  */
+  if (fExtended)
+    {
+      switch (dwVirtualKey)
+	{
+	case VK_MENU:
+	  dwVirtualKey = VK_RMENU;
+	  break;
+
+	case VK_CONTROL:
+	  dwVirtualKey = VK_RCONTROL;
+	  break;
+	}
+    }
+
+  /* Initialize the modifiers to release flag */
+  kerEvents.dwReleaseModifiers = 0;
+   
+  /* Look up the current virtual key code in the translation table */
+  for (i = 0; i < g_winKeymapEntries; ++i)
+    {
+      /* Did we find a mapping? */
+      if (winKeymap[i].dwVirtualKey == dwVirtualKey)
+	{
+	  /* Mapping found, we have at least one event now */
+	  kerEvents.dwXKeycodes[dwNumEvents] = winKeymap[i].dwXKey;
+	  break;
+	}
+    }
+
+  
+  /* Break out early, if we found the key in the translation table */
+  if (dwNumEvents != 0)
+    {
+      /* Terminate the last of the key events with a void symbol */
+      kerEvents.dwXKeycodes[dwNumEvents] = XK_VoidSymbol;
+      return kerEvents;
+    }
+  
+  /* Get the state of all keyboard keys */
+  GetKeyboardState (bKeyboardState);
+
+  /* Try to convert the key to ASCII */
+  iReturn = ToAscii (dwVirtualKey, 0, bKeyboardState, (WORD *) cAscii, 0);
+  
+  /*
+   * Left Control and Alt pressed, combined with a valid result
+   * from ToAscii means that we have found the Windows version of AltGr.
+   */
+  if ((bKeyboardState[VK_MENU] & 0x80) && (bKeyboardState[VK_CONTROL] & 0x80)
+      && (iReturn >= 1)
+      && (((cAscii[0] >= 32) && (cAscii[0] <= 126))
+	  || (cAscii[0] >= 160)))
+    {
+      /* These three calls will return 0 on Windows 95/98/Me */
+      if ((GetKeyState (VK_LCONTROL) & KF_UP))
+	kerEvents.dwReleaseModifiers |= WIN_MOD_LCONTROL;
+      if ((GetKeyState (VK_LMENU) & KF_UP))
+	kerEvents.dwReleaseModifiers |= WIN_MOD_LALT;
+      if ((GetKeyState (VK_RMENU) & KF_UP))
+	kerEvents.dwReleaseModifiers |= WIN_MOD_RALT;
+
+      /* Windows 95/98/Me handling - pop all of them */
+      if (kerEvents.dwReleaseModifiers == 0)
+	kerEvents.dwReleaseModifiers
+	  = WIN_MOD_LCONTROL | WIN_MOD_LALT | WIN_MOD_RALT;
+
+      /* Copy the string of character events */
+      for (i = 0; i < iReturn; ++i)
+	kerEvents.dwXKeycodes[dwNumEvents++] = cAscii[i];
+    }
+
+  /* Handle non Ctrl+Alt cases*/
+  if (dwNumEvents == 0)
+    {
+      bKeyboardState[VK_CONTROL] = 0;
+      bKeyboardState[VK_LCONTROL] = 0;
+      bKeyboardState[VK_RCONTROL] = 0;
+      
+      iReturn = ToAscii (dwVirtualKey, 0, bKeyboardState, (WORD *)cAscii, 0);
+      if (iReturn < 0)
+	{
+	  switch (cAscii[0])
+	    {
+	    case '`':
+	      kerEvents.dwXKeycodes[dwNumEvents++] = XK_dead_grave;
+	      break;
+	      
+	    case '\'':
+	      kerEvents.dwXKeycodes[dwNumEvents++] = XK_dead_acute;
+	      break;
+	      
+	    case '~':
+	      kerEvents.dwXKeycodes[dwNumEvents++] = XK_dead_tilde;
+	      break;
+	      
+	    case '^':
+	      kerEvents.dwXKeycodes[dwNumEvents++] = XK_dead_circumflex;
+	      break;
+	    }
+	}
+      
+      /* Send what we've got if its a printable character */
+      if (iReturn >= 1)
+	for (i = 0; i < iReturn; ++i)
+	  kerEvents.dwXKeycodes[dwNumEvents++] = cAscii[i];
+    }
+
+  
+  /* Terminate the last of the key events with a void symbol */
+  kerEvents.dwXKeycodes[dwNumEvents] = XK_VoidSymbol;
+  return kerEvents;
+}
+
+
+#else /* WIN_NEW_KEYBOARD_SUPPORT */
 
 
 /* 
@@ -65,6 +231,8 @@ winTranslateKey (WPARAM wParam, LPARAM lParam, int *piScanCode)
     *piScanCode = LOBYTE (HIWORD (lParam));
 }
 
+#endif /* WIN_NEW_KEYBOARD_SUPPORT */
+
 
 /*
  * We call this function from winKeybdProc when we are
@@ -75,7 +243,8 @@ void
 winGetKeyMappings (KeySymsPtr pKeySyms, CARD8 *pModMap)
 {
   int			i;
-  KeySym		*pKeySym = map;
+  KeySym		*pMap = map;
+  KeySym		*pKeySym;
 
   /*
    * Initialize all key states to up... which may not be true
@@ -88,11 +257,11 @@ winGetKeyMappings (KeySymsPtr pKeySyms, CARD8 *pModMap)
     pModMap[i] = NoSymbol;  /* make sure it is restored */
 
   /* Loop through all valid entries in the key symbol table */
-  for (i = MIN_KEYCODE;
+  for (pKeySym = pMap, i = MIN_KEYCODE;
        i < (MIN_KEYCODE + NUM_KEYCODES);
        i++, pKeySym += GLYPHS_PER_KEY)
     {
-      switch(*pKeySym)
+      switch (*pKeySym)
 	{
 	case XK_Shift_L:
 	case XK_Shift_R:
@@ -113,6 +282,7 @@ winGetKeyMappings (KeySymsPtr pKeySyms, CARD8 *pModMap)
 	  pModMap[i] = AltMask;
 	  break;
 
+#if !WIN_NEW_KEYBOARD_SUPPORT
 	case XK_Num_Lock:
 	  pModMap[i] = NumLockMask;
 	  break;
@@ -126,6 +296,7 @@ winGetKeyMappings (KeySymsPtr pKeySyms, CARD8 *pModMap)
 	case XK_Kana_Shift:
 	  pModMap[i] = KanaMask;
 	  break;
+#endif
 
 	/* alternate toggle for multinational support */
 	case XK_Mode_switch:
@@ -134,7 +305,7 @@ winGetKeyMappings (KeySymsPtr pKeySyms, CARD8 *pModMap)
 	}
     }
 
-  pKeySyms->map        = (KeySym *) map;
+  pKeySyms->map        = (KeySym *) pMap;
   pKeySyms->mapWidth   = GLYPHS_PER_KEY;
   pKeySyms->minKeyCode = MIN_KEYCODE;
   pKeySyms->maxKeyCode = MAX_KEYCODE;
@@ -210,6 +381,7 @@ winKeybdProc (DeviceIntPtr pDeviceInt, int iState)
 void
 winInitializeModeKeyStates (void)
 {
+#if !WIN_NEW_KEYBOARD_SUPPORT
   /* Restore NumLock */
   if (GetKeyState (VK_NUMLOCK) & 0x0001)
     {
@@ -237,6 +409,7 @@ winInitializeModeKeyStates (void)
       winSendKeyEvent (KEY_HKTG, TRUE);
       winSendKeyEvent (KEY_HKTG, FALSE);
     }
+#endif
 }
 
 
@@ -248,6 +421,7 @@ winInitializeModeKeyStates (void)
 void
 winStoreModeKeyStates (ScreenPtr pScreen)
 {
+#if !WIN_NEW_KEYBOARD_SUPPORT
   winScreenPriv(pScreen);
 
   /* Initialize all mode key states to off */
@@ -264,6 +438,7 @@ winStoreModeKeyStates (ScreenPtr pScreen)
 
   pScreenPriv->dwModeKeyStates |=
     (GetKeyState (VK_KANA) & 0x0001) << KanaMapIndex;
+#endif
 }
 
 
@@ -276,6 +451,7 @@ winStoreModeKeyStates (ScreenPtr pScreen)
 void
 winRestoreModeKeyStates (ScreenPtr pScreen)
 {
+#if !WIN_NEW_KEYBOARD_SUPPORT
   winScreenPriv(pScreen);
   DWORD			dwKeyState;
 
@@ -316,9 +492,11 @@ winRestoreModeKeyStates (ScreenPtr pScreen)
       winSendKeyEvent (KEY_HKTG, TRUE);
       winSendKeyEvent (KEY_HKTG, FALSE);
     }
+#endif
 }
 
 
+#if !WIN_NEW_KEYBOARD_SUPPORT
 /*
  * Look for the lovely fake Control_L press/release generated by Windows
  * when AltGr is pressed/released on a non-U.S. keyboard.
@@ -401,6 +579,7 @@ winIsFakeCtrl_L (UINT message, WPARAM wParam, LPARAM lParam)
   /* Not a fake control left press/release */
   return FALSE;
 }
+#endif /* WIN_NEW_KEYBOARD_SUPPORT */
 
 
 /*
@@ -410,6 +589,19 @@ winIsFakeCtrl_L (UINT message, WPARAM wParam, LPARAM lParam)
 void
 winKeybdReleaseKeys ()
 {
+#if !WIN_NEW_KEYBOARD_SUPPORT
+#if 0 /* Old function that just pops modifiers */
+  /* Verify that the mi input system has been initialized */
+  if (g_fdMessageQueue == WIN_FD_INVALID)
+    return;
+
+  winSendKeyEvent (KEY_Alt, FALSE);
+  winSendKeyEvent (KEY_AltLang, FALSE);
+  winSendKeyEvent (KEY_LCtrl, FALSE);
+  winSendKeyEvent (KEY_RCtrl, FALSE);
+  winSendKeyEvent (KEY_ShiftL, FALSE);
+  winSendKeyEvent (KEY_ShiftR, FALSE);
+#else /* New function that pops all keys */
   int				i;
 
   /* Verify that the mi input system has been initialized */
@@ -421,6 +613,8 @@ winKeybdReleaseKeys ()
     {
       if (winKeyState[i]) winSendKeyEvent (i, FALSE);
     }
+#endif
+#endif
 }
 
 
@@ -434,7 +628,7 @@ void
 winSendKeyEvent (DWORD dwKey, Bool fDown)
 {
   xEvent			xCurrentEvent;
-  
+
   /*
    * When alt-tabing between screens we can get phantom key up messages
    * Here we only pass them through it we think we should!
@@ -443,7 +637,7 @@ winSendKeyEvent (DWORD dwKey, Bool fDown)
 
   /* Update the keyState map */
   winKeyState[dwKey] = fDown;
-
+  
   ZeroMemory (&xCurrentEvent, sizeof (xCurrentEvent));
 
   xCurrentEvent.u.u.type = fDown ? KeyPress : KeyRelease;

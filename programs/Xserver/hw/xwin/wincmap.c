@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wincmap.c,v 1.7 2001/07/02 09:37:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wincmap.c,v 1.8 2001/07/31 09:46:57 alanh Exp $ */
 
 #include "win.h"
 
@@ -290,7 +290,7 @@ winExpandDirectColors (ColormapPtr pmap, int ndef,
 
 
 /*
- * Load the palette used by the Shadow DIB
+ * Internal function to load the palette used by the Shadow DIB
  */
 
 static
@@ -385,8 +385,9 @@ winGetPaletteDIB (ScreenPtr pScreen, ColormapPtr pcmap)
 
 
 /*
- * Load the standard system palette being used by GDI
+ * Internal function to load the standard system palette being used by GDI
  */
+
 static
 Bool
 winGetPaletteDD (ScreenPtr pScreen, ColormapPtr pcmap)
@@ -493,6 +494,7 @@ winGetPaletteDD (ScreenPtr pScreen, ColormapPtr pcmap)
  * Install the standard fb colormap, or the GDI colormap,
  * depending on the current screen depth.
  */
+
 Bool
 winCreateDefColormap (ScreenPtr pScreen)
 {
@@ -504,13 +506,13 @@ winCreateDefColormap (ScreenPtr pScreen)
   Pixel			wp, bp;
 
 #if CYGDEBUG
-  ErrorF ("winCreateDefColormap ()\n");
+  ErrorF ("winCreateDefColormap\n");
 #endif
 
   /* Use standard fb colormaps for non palettized color modes */
-  if (pScreenInfo->dwDepth > 8)
+  if (pScreenInfo->dwBPP > 8)
     {
-      ErrorF ("winCreateDefColormap () - Deferring to " \
+      ErrorF ("winCreateDefColormap - Deferring to " \
 	      "fbCreateDefColormap ()\n");
       return fbCreateDefColormap (pScreen);
     }
@@ -526,7 +528,7 @@ winCreateDefColormap (ScreenPtr pScreen)
    */
 
 #if CYGDEBUG
-  ErrorF ("winCreateDefColormap () - defColormap: %d\n",
+  ErrorF ("winCreateDefColormap - defColormap: %d\n",
 	  pScreen->defColormap);
 #endif
 
@@ -538,17 +540,17 @@ winCreateDefColormap (ScreenPtr pScreen)
 		      (pVisual->class & DynamicClass) ? AllocNone : AllocAll,
 		      0) != Success)
     {
-      ErrorF ("winCreateDefColormap () - CreateColormap failed\n");
+      ErrorF ("winCreateDefColormap - CreateColormap failed\n");
       return FALSE;
     }
   if (pcmap == NULL)
     {
-      ErrorF ("winCreateDefColormap () - Colormap could not be created\n");
+      ErrorF ("winCreateDefColormap - Colormap could not be created\n");
       return FALSE;
     }
 
 #if CYGDEBUG
-  ErrorF ("winCreateDefColormap () - Created a colormap\n");
+  ErrorF ("winCreateDefColormap - Created a colormap\n");
 #endif
 
   /* Branch on the visual class */
@@ -560,7 +562,7 @@ winCreateDefColormap (ScreenPtr pScreen)
 	  /* Load the colors being used by the Shadow DIB */
 	  if (!winGetPaletteDIB (pScreen, pcmap))
 	    {
-	      ErrorF ("winCreateDefColormap () - Couldn't get DIB colors\n");
+	      ErrorF ("winCreateDefColormap - Couldn't get DIB colors\n");
 	      return FALSE;
 	    }
 	}
@@ -569,7 +571,7 @@ winCreateDefColormap (ScreenPtr pScreen)
 	  /* Load the colors from the default system palette */
 	  if (!winGetPaletteDD (pScreen, pcmap))
 	    {
-	      ErrorF ("winCreateDefColormap () - Couldn't get colors "
+	      ErrorF ("winCreateDefColormap - Couldn't get colors "
 		      "for DD\n");
 	      return FALSE;
 	    }
@@ -587,7 +589,7 @@ winCreateDefColormap (ScreenPtr pScreen)
 	  (AllocColor (pcmap, &zero, &zero, &zero, &bp, 0) !=
 	   Success))
 	{
-	  ErrorF ("winCreateDefColormap () - Couldn't allocate bp or wp\n");
+	  ErrorF ("winCreateDefColormap - Couldn't allocate bp or wp\n");
 	  return FALSE;
 	}
       
@@ -622,7 +624,7 @@ winCreateDefColormap (ScreenPtr pScreen)
   (*pScreen->InstallColormap)(pcmap);
 
 #if CYGDEBUG
-  ErrorF ("winCreateDefColormap () - Returning\n");
+  ErrorF ("winCreateDefColormap - Returning\n");
 #endif
 
   return TRUE;

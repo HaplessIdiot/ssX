@@ -44,8 +44,8 @@ winLayerCreate (ScreenPtr pScreen)
   PixmapPtr		pPixmap = NULL;
   DWORD			dwLayerKind;
 
-  ErrorF ("winLayerCreate () - dwDepth %d\n",
-	  pScreenInfo->dwDepth);
+  ErrorF ("winLayerCreate - dwDepth: %d dwBPP %d\n",
+	  pScreenInfo->dwDepth, pScreenInfo->dwBPP);
 
   /* We only need a single layer kind: shadow */
   dwLayerKind = LAYER_SHADOW;
@@ -53,13 +53,14 @@ winLayerCreate (ScreenPtr pScreen)
 
   return LayerCreate (pScreen,
 		      dwLayerKind,
-		      pScreenInfo->dwDepth,
+		      pScreenInfo->dwBPP,
 		      pPixmap,
 		      pScreenPriv->pwinShadowUpdate,
 		      NULL, /* No ShadowWindowProc */
 		      0, /* Rotate */
 		      0);
 }
+
 
 /*
  * Used as a function parameter to WalkTree.
@@ -96,7 +97,6 @@ winLayerRemove (WindowPtr pWindow, pointer value)
 
   return WT_WALKCHILDREN;
 }
-
 
 #ifdef RANDR
 /*

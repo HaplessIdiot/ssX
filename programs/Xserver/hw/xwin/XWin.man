@@ -53,6 +53,26 @@ Draw the Cygwin/XFree86 window without a border or title bar.
 .B \-lesspointer
 Hide the Windows mouse pointer when over an inactive XFree86 window
 .TP 8
+.B "\-clipupdates \fInum_boxes\fP"
+Specify an optional threshold, above which the boxes in a shadow
+update operation will be collected into a GDI clipping region.  The
+clipping region is then used to do a single bit block transfer that is
+constrained to the updated area by the clipping region.  There is some
+overhead involved in creating, installing, destroying, and removing
+the clipping region, thus there may not be much benefit for a small
+number of boxes (less than 10).  It is even possible that this
+functionality does not provide a benefit at any number of boxes; we
+can only determine the usefullness of this feature through testing.
+This parameter works in conjunction with engines 1, 2, and 4 (Shadow
+GDI, Shadow DirectDraw, and Shadow DirectDraw Non-Locking,
+respectively).
+.TP 8
+.B \-emulatepseudo
+Create a depth 8 PseudoColor visual when running in depths 15, 16, 24,
+or 32, collectively known as TrueColor depths.  The PseudoColor visual
+does not have correct colors, and it may crash, but it at least allows
+you to run your PseudoColor application in TrueColor modes.
+.TP 8
 .B \-[no]unixkill
 Ctrl+Alt+Backspace exits the X Server
 .TP 8
