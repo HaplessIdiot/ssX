@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.174 2002/10/18 19:38:02 keithp Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.175 2002/10/21 18:36:43 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -517,7 +517,8 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildOSMesaLib		(BuildGlxExt && defined(XFree86Version))
 #endif
 #ifndef BuildGLULibrary
-#define BuildGLULibrary		(BuildGLXLibrary && HasCplusplus)
+#define BuildGLULibrary		(BuildGLXLibrary && HasCplusplus && \
+				!BuildServersOnly)
 #endif
 #ifndef BuildGLwLibrary
 #define BuildGLwLibrary		((BuildGlxExt || BuildGLXLibrary) && \
