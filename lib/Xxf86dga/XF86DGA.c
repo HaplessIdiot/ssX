@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.14 1999/04/05 07:12:48 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.15 1999/04/11 13:10:34 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -60,6 +60,7 @@ Copyright (c) 1995,1996  The XFree86 Project, Inc
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include "Xlibint.h"
+#include "xf86dga.h"
 #include "xf86dgastr.h"
 #include "Xext.h"
 #include "extutil.h"

@@ -120,9 +120,15 @@ void XawTextSinkDisplayText(
  */
 void XawTextSinkInsertCursor(
     Widget		/* w */,
+#if NeedWidePrototypes
     int			/* x */,
     int			/* y */,
+    int			/* state */
+#else
+    Position		/* x */,
+    Position		/* y */,
     XawTextInsertState	/* state */
+#endif
 );
 
 /*	Function Name: XawTextSinkClearToBackground
@@ -160,7 +166,11 @@ void XawTextSinkFindPosition(
     XawTextPosition	/* fromPos */,
     int			/* fromX */,
     int			/* width */,
-    Bool		/* stopAtWordBreak */,
+#if NeedWidePrototypes
+    int			/* stopAtWordBreak */,
+#else
+    Boolean		/* stopAtWordBreak */,
+#endif
     XawTextPosition*	/* pos_return */,
     int*		/* width_return */,
     int*		/* height_return */
@@ -213,7 +223,11 @@ void XawTextSinkResolve(
  */
 int XawTextSinkMaxLines(
     Widget		/* w */,
+#if NeedWidePrototypes
     unsigned int	/* height */
+#else
+    Dimension		/* height */
+#endif
 );
 
 /*	Function Name: XawTextSinkMaxHeight
@@ -254,4 +268,4 @@ void XawTextSinkGetCursorBounds(
 
 _XFUNCPROTOEND
 
-#endif /* _XawTextSrc_h */
+#endif /* _XawTextSink_h */

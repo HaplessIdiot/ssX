@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Paned.c,v 1.6 1998/10/03 08:42:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Paned.c,v 1.7 1998/11/15 04:30:01 dawes Exp $ */
 
 /*
  * Updated and significantly modified from the Athena VPaned Widget.
@@ -2068,7 +2068,13 @@ XawPanedGetMinMax(Widget widget, int *min, int *max)
  *                   the paned widgets relayout routine.
  */
 void 
-XawPanedSetRefigureMode(Widget w, Bool mode)
+XawPanedSetRefigureMode(Widget w,
+#if NeedWidePrototypes
+	int mode
+#else
+	Boolean mode
+#endif
+)
 {
   ((PanedWidget)w)->paned.refiguremode = mode;
   RefigureLocationsAndCommit(w);
@@ -2104,7 +2110,13 @@ XawPanedGetNumSub(Widget w)
  *	widget will allow geometry requests from this child.
  */
 void 
-XawPanedAllowResize(Widget widget, Bool allow_resize)
+XawPanedAllowResize(Widget widget,
+#if NeedWidePrototypes
+	int allow_resize
+#else
+	Boolean allow_resize
+#endif
+)
 {
     PaneInfo(widget)->allow_resize = allow_resize;
 }

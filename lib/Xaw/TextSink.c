@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.6 1998/08/20 13:59:15 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.7 1998/10/03 08:42:26 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -543,7 +543,7 @@ GetCursorBounds(Widget w, XRectangle *rect)
 void
 XawTextSinkDisplayText(Widget w, int x, int y,
 		       XawTextPosition pos1, XawTextPosition pos2,
-		       Bool highlight)
+		       int highlight)
 {
   TextSinkObjectClass cclass = (TextSinkObjectClass)w->core.widget_class;
 
@@ -565,7 +565,11 @@ XawTextSinkDisplayText(Widget w, int x, int y,
  */
 /*ARGSUSED*/
 void
-XawTextSinkInsertCursor(Widget w, int x, int y, XawTextInsertState state)
+#if NeedWidePrototypes
+XawTextSinkInsertCursor(Widget w, int x, int y, int state)
+#else
+XawTextSinkInsertCursor(Widget w, Position x, Position y, XawTextInsertState state)
+#endif
 {
   TextSinkObjectClass cclass = (TextSinkObjectClass)w->core.widget_class;
 
@@ -588,7 +592,8 @@ XawTextSinkInsertCursor(Widget w, int x, int y, XawTextInsertState state)
  */
 /*ARGSUSED*/
 void
-XawTextSinkClearToBackground(Widget w, int x, int y,
+XawTextSinkClearToBackground(Widget w,
+			     int x, int y,
 			     unsigned int width, unsigned int height)
 {
   TextSinkObjectClass cclass = (TextSinkObjectClass)w->core.widget_class;
@@ -615,8 +620,12 @@ XawTextSinkClearToBackground(Widget w, int x, int y,
  */
 /*ARGSUSED*/
 void
-XawTextSinkFindPosition(Widget w, XawTextPosition fromPos, int fromx,
-			int width, Bool stopAtWordBreak,
+XawTextSinkFindPosition(Widget w, XawTextPosition fromPos, int fromx, int width,
+#if NeedWidePrototypes
+			int stopAtWordBreak,
+#else
+			Boolean stopAtWordBreak,
+#endif
 			XawTextPosition *resPos, int *resWidth, int *resHeight)
 {
   TextSinkObjectClass cclass = (TextSinkObjectClass)w->core.widget_class;
@@ -694,7 +703,11 @@ XawTextSinkResolve(Widget w, XawTextPosition pos, int fromx, int width,
  */
 /*ARGSUSED*/
 int
+#if NeedWidePrototypes
 XawTextSinkMaxLines(Widget w, unsigned int height)
+#else
+XawTextSinkMaxLines(Widget w, Dimension height)
+#endif
 {
   TextSinkObjectClass cclass = (TextSinkObjectClass)w->core.widget_class;
 

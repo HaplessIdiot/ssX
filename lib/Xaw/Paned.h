@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Paned.h,v 1.3 1998/08/20 13:59:04 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Paned.h,v 1.4 1998/10/03 08:42:13 dawes Exp $ */
 
 /*
  * Paned.h - Paned Composite Widget's public header file.
@@ -212,7 +212,11 @@ void XawPanedGetMinMax
 void XawPanedSetRefigureMode
 (
  Widget			w,
- Bool			mode
+#if NeedWidePrototypes
+ int			mode
+#else
+ Boolean		mode
+#endif
  );
 
 /*
@@ -244,7 +248,11 @@ int XawPanedGetNumSub
 void XawPanedAllowResize
 (
  Widget			w,
- Bool			allow_resize
+#if NeedWidePrototypes
+ int			allow_resize
+#else
+ Boolean		allow_resize
+#endif
  );
 
 _XFUNCPROTOEND

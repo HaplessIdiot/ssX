@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: mkfontdir.c /main/13 1996/09/28 17:17:17 rws $ */
-/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.6 1998/12/20 11:58:09 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.7 1999/02/19 21:27:12 hohndel Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -111,6 +111,7 @@ SOFTWARE.
 #include <X11/X.h>
 #include <X11/Xproto.h>
 #include "fntfilst.h"
+#include "fontenc.h"
 
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
@@ -121,9 +122,18 @@ extern int errno;
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
 
-char *progName;
+typedef struct EncodingEntry {
+  char *filename;
+  char **names;
+  struct EncodingEntry *next;
+} EncodingEntryRec, *EncodingEntryPtr;
 
-static Bool WriteFontTable ( char *dirName, FontTablePtr table );
+char *progName;
+char *prefix = "";
+Bool relative = FALSE;
+
+static Bool WriteFontTable ( char *dirName, FontTablePtr table,
+                             EncodingEntryPtr encodings, int count);
 static char * NameForAtomOrNone ( Atom a );
 static Bool GetFontName ( char *file_name, char *font_name );
 static char * FontNameExists ( FontTablePtr table, char *font_name );
@@ -133,23 +143,27 @@ static Bool ProcessFile ( char *dirName, char *fileName, FontTablePtr table );
 static void Estrip ( char *ext, char *name );
 char * MakeName ( char *name );
 int Hash ( char *name );
+EncodingEntryPtr LoadEncodings(EncodingEntryPtr target, char *dirName);
 static Bool LoadDirectory ( char *dirName, FontTablePtr table );
 int LoadScalable ( char *dirName, FontTablePtr table );
-static Bool DoDirectory ( char *dirName );
+static Bool DoDirectory(char *dirName, EncodingEntryPtr encodings, int count);
 int GetDefaultPointSize ( void );
-FontResolutionPtr GetClientResolutions ( int *num );
 void RegisterFPEFunctions ( void );
 void ErrorF ( void );
 
 static Bool
 WriteFontTable(
     char	    *dirName,
-    FontTablePtr    table)
+    FontTablePtr    table,
+
+    EncodingEntryPtr encodings,
+    int             count)
 {
     int		    i;
     FILE	    *file;
     char	    full_name[PATH_MAX];
     FontEntryPtr    entry;
+    char            **name;
 
     sprintf (full_name, "%s/%s", dirName, FontDirFile);
 
@@ -173,6 +187,28 @@ WriteFontTable(
 	fprintf (file, "%s %s\n", entry->u.bitmap.fileName, entry->name.name);
     }
     fclose (file);
+
+    /* Write out encodings directory */
+
+    sprintf (full_name, "%s/%s", dirName, "encodings.dir");
+    if (unlink(full_name) < 0 && errno != ENOENT)
+    {
+      fprintf(stderr, "%s: cannot unlink %s\n", progName, full_name);
+      return TRUE;              /* non fatal error */
+    }
+    if(!count) return TRUE;
+    file = fopen (full_name, "w");
+    if (!file)
+    {
+      fprintf (stderr, "%s: can't create directory %s\n", progName, full_name);
+      return TRUE;
+    }
+    fprintf(file, "%d\n", count);
+    for(; encodings; encodings=encodings->next)
+      for(name=encodings->names; *name; name++)
+        fprintf(file, "%s %s%s\n", *name, prefix, encodings->filename);
+    fclose(file);
+
     return TRUE;
 }
 
@@ -443,8 +479,78 @@ LoadScalable (char *dirName, FontTablePtr table)
     return TRUE;
 }
 
+EncodingEntryPtr
+LoadEncodings(EncodingEntryPtr target, char *dirName)
+{
+  EncodingEntryPtr new;
+  char *filename;
+  char **names;
+  char fullname[MAXFONTFILENAMELEN];
+  int len;
+#ifdef WIN32
+  HANDLE		dirh;
+  WIN32_FIND_DATA	file;
+#else
+  DIR			*dirp;
+  struct dirent	        *file;
+#endif
+
+  if (strcmp(dirName, ".") == 0) {
+    len=0;
+  } else {
+    len=strlen(dirName);
+    strcpy(fullname, dirName);
+    if(fullname[len-1]!='/')
+      fullname[len++]='/';
+  }
+    
+
+#ifdef WIN32
+  if ((dirh = FindFirstFile("*.*", &file)) == INVALID_HANDLE_VALUE)
+    return FALSE;
+#else
+  if ((dirp = opendir (dirName)) == NULL)
+    return FALSE;
+#endif
+#ifdef WIN32
+  do {
+#else
+  while ((file = readdir (dirp)) != NULL) {
+#endif
+    if(len+strlen(FileName(file))>=MAXFONTFILENAMELEN) {
+      fprintf(stderr, "%s: filename `%s/%s' too long\n",
+              progName, dirName, FileName(file));
+      continue;
+    }
+    strcpy(fullname+len, FileName(file));
+    names=identifyEncodingFile(fullname);
+    if(names) {
+      if((filename=New(char, strlen(fullname)+1))==NULL) {
+        fprintf(stderr, "%s: out of memory.\n", progName);
+        break;
+      }
+      strcpy(filename, fullname);
+      if((new=New(EncodingEntryRec, 1))==NULL) {
+        free(filename);
+        fprintf(stderr, "%s: out of memory.\n", progName);
+        break;
+      }
+      new->filename=filename;
+      new->names=names;
+      new->next=NULL;
+      
+      target->next=new;
+      target=new;
+    }
+  }
+#ifdef WIN32
+    while (FindNextFile(dirh, &file));
+#endif
+  return target;
+}
+
 static Bool
-DoDirectory(char *dirName)
+DoDirectory(char *dirName, EncodingEntryPtr encodings, int count)
 {
     FontTableRec	table;
     Bool		status;
@@ -463,7 +569,7 @@ DoDirectory(char *dirName)
     }
     status = TRUE;
     if (table.used >= 0)
-	status = WriteFontTable (dirName, &table);
+	status = WriteFontTable (dirName, &table, encodings, count);
     FontFileFreeTable (&table);
     return status;
 }
@@ -494,13 +600,77 @@ ErrorF (void)
 int
 main (int argc, char **argv)
 {
-    int i;
+    int argn, i, count;
+    char *dirname, fulldirname[MAXFONTFILENAMELEN];
+    EncodingEntryRec encodings; /* linked list with first dummy entry */
+    EncodingEntryPtr encoding;
+    char **name;
 
     BitmapRegisterFontFileFunctions ();
     progName = argv[0];
-    if (argc == 1)
+
+    encodings.next=NULL;
+    encoding=&encodings;
+    for(argn=1; argn<argc; argn++) {
+      if(argv[argn][0]=='\0' || argv[argn][0]!='-')
+        break;
+      if(argv[argn][1]=='-') {
+        argn++;
+        break;
+      } else if(argv[argn][1]=='e') {
+        if(argv[argn][2]=='\0') {
+          argn++;
+	  if (argn < argc)
+            dirname=argv[argn];
+	  else {
+	    fprintf(stderr, "%s: -e requires an argument\n", progName);
+	    break;
+	  }
+        } else
+          dirname=argv[argn]+2;
+        if(dirname[0]=='/' || relative)
+          encoding=LoadEncodings(encoding, dirname);
+        else {
+          if(getcwd(fulldirname, MAXFONTFILENAMELEN)==NULL) {
+            fprintf(stderr, "%s: failed to get cwd\n", progName);
+            break;
+          }
+          i=strlen(fulldirname);
+          if(i+1+strlen(dirname)>=MAXFONTFILENAMELEN-1) {
+          fprintf(stderr, "%s: directory name `%s' too long\n", progName,
+		  dirname);
+          break;
+          }
+          fulldirname[i++]='/';
+          strcpy(fulldirname+i, dirname);
+          encoding=LoadEncodings(encoding, fulldirname);
+        }
+      } else if(argv[argn][1]=='p') {
+        if(argv[argn][2]=='\0') {
+          argn++;
+          prefix=argv[argn];
+        } else
+          prefix=argv[argn]+2;
+      } else if(argv[argn][1]=='r') {
+        if(argv[argn][2]=='\0')
+          relative=TRUE;
+        else {
+          fprintf(stderr, "%s: unknown option `%s'\n", progName, argv[argn]);
+          continue;
+        }
+      } else
+        fprintf(stderr, "%s: unknown option `%s'\n", progName, argv[argn]);
+    }
+
+    count=0;
+    for(encoding=encodings.next; encoding; encoding=encoding->next) 
+      if(encoding->names)
+        for(name=encoding->names; *name; name++)
+          count++;
+        
+    if (argn==argc)
     {
-	if (!DoDirectory("."))
+	if (!DoDirectory(".", encodings.next, count))
 	{
 	    fprintf (stderr, "%s: failed to create directory in %s\n",
 		     progName, ".");
@@ -508,11 +678,11 @@ main (int argc, char **argv)
 	}
     }
     else
-	for (i = 1; i < argc; i++) {
-	    if (!DoDirectory(argv[i]))
+	for (; argn < argc; argn++) {
+	    if (!DoDirectory(argv[argn], encodings.next, count))
 	    {
 		fprintf (stderr, "%s: failed to create directory in %s\n",
-			 progName, argv[i]);
+			 progName, argv[argn]);
 		exit (1);
 	    }
  	}

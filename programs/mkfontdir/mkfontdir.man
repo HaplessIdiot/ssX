@@ -20,12 +20,21 @@
 .\" from The Open Group.
 .TH MKFONTDIR 1 "Release 6.4" "X Version 11"
 .SH NAME
-mkfontdir, fonts.dir, fonts.scale, fonts.alias \- create an index of X font files in a directory
+mkfontdir, fonts.dir, fonts.scale, fonts.alias, encodings.dir \- create an index of X font files in a directory
 .SH SYNOPSIS
 .B "mkfontdir"
-[\fIdirectory-name\fP .\|.\|. ]
+.RB [ \-p
+.IR prefix ]
+.RB [ \-e
+.IR encoding-directory-name ]
+\|.\|.\|.
+.RB [ \-\- ]
+.RI [ directory-name
+\|.\|.\|. ]
 .SH DESCRIPTION
-For each directory argument, \fImkfontdir\fP reads all of the font files in the
+For each directory argument, 
+.I mkfontdir
+reads all of the font files in the
 directory searching for properties named "FONT", or (failing that) the name
 of the file stripped of its suffix.  These are converted to lower case and
 used as font names, and,
@@ -33,7 +42,9 @@ along with the name of the font file, are
 written out to the file "fonts.dir" in the directory.
 The X server and font server use "fonts.dir" to find font files.
 .PP
-The kinds of font files read by \fImkfontdir\fP depend on configuration
+The kinds of font files read by 
+.I mkfontdir
+depend on configuration
 parameters, but typically include PCF (suffix ".pcf"), SNF (suffix ".snf")
 and BDF (suffix ".bdf").  If a font exists in multiple formats,
 .I mkfontdir
@@ -47,7 +58,8 @@ the name of the font.
 Because scalable font files do not usually include the X font name, the
 file "fonts.scale" can be used to name the scalable fonts in the
 directory.
-The fonts listed in it are copied to fonts.dir by \fImkfontdir\fP.
+The fonts listed in it are copied to fonts.dir by 
+.IR mkfontdir .
 "fonts.scale" has the same format as the "fonts.dir" file.
 .SH "FONT NAME ALIASES"
 The file "fonts.alias", which can be put in any directory of the font-path, is
@@ -77,6 +89,36 @@ regular-alias			fixed
 If the string "FILE_NAMES_ALIASES" stands alone on a line, each file-name
 in the directory (stripped of its suffix) will be used as an alias for
 that font.
+.SH ENCODING FILES
+The option 
+.B -e
+can be used to specify a directory with encoding files.  Every such
+directory is scanned for encoding files, the list of which is then
+written to an "encodings.dir" file in every font directory.  The
+"encodings.dir" file is used by the server to find encoding
+information.
+.PP
+The "encodings.dir" file has the same format as "fonts.dir".
+It maps encoding names (strings of the form
+.BI CHARSET_REGISTRY \- CHARSET_ENCODING 
+) to encoding file names.
+.SH OPTIONS
+The following options are supported:
+.TP
+.B \-e
+Specify a directory containing encoding files.  The
+.B \-e
+option may be specified multiple times, and all the specified
+directories will be read.
+.TP
+.B \-p
+Specify a prefix that is prepended to the encoding file path names
+when the are written to the "encodings.dir" file.  Note: the prefix is
+prepended as-is.  If a `/' is required between the prefix and the path names,
+it must be supplied explicitly as part of the prefix.
+.TP
+.B \-\-
+End options.
 .SH FILES
 .TP 15
 .B fonts.dir
@@ -92,5 +134,10 @@ fonts.dir by \fImkfontdir\fP.
 List of font name aliases.
 Read by the X server and font server each
 time the font path is set (see xset(1)).
+.TP 15
+.B encodings.dir
+List of known encodings and the files they are stored in.
+Created by \fImkfontdir\fP.  Read by the X server and font server each
+time a font with an unknown charset is opened.
 .SH "SEE ALSO"
 X(1), Xserver(1), xfs(1), xset(1)

@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Text.h,v 1.9 1999/03/21 07:34:29 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.h,v 1.10 1999/04/25 10:01:28 dawes Exp $ */
 
 #ifndef _XawText_h
 #define _XawText_h
@@ -320,14 +320,22 @@ Widget XawTextGetSource
 XawTextPosition XawTextSearch
 (
  Widget			w,
+#if NeedWidePrototypes
+ int			dir,
+#else
  XawTextScanDirection	dir,
+#endif
  XawTextBlock		*text
  );
 
 void XawTextDisplayCaret
 (
  Widget			w,
- Bool			visible
+#if NeedWidePrototypes
+ int			visible
+#else
+ Boolean		visible
+#endif
  );
 
 _XFUNCPROTOEND

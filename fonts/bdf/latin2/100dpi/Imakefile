@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/fonts/bdf/latin2/100dpi/Imakefile,v 1.1 1997/04/17 12:55:45 dawes Exp $
 
 OBJS1 =	FontObj(courB08) FontObj(courB10) FontObj(courB12) FontObj(courB14) \
 	FontObj(courB18) FontObj(courB24) FontObj(courBO08) \
@@ -219,3 +219,4 @@ FontTarget(UTRG__18)
 
 InstallFontObjs($(OBJS1),$(FONTINSTDIR))
 InstallFontObjs($(OBJS2),$(FONTINSTDIR))
+InstallEncodingDir($(ENCODINGSSRC),$(FONTINSTDIR))

@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/include/fontenc.h,v 1.4 1999/04/25 10:01:43 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fontenc.h,v 1.5 1999/04/27 07:08:58 dawes Exp $ */
 
 /* Header for backend-independent encoding code */
 
@@ -91,4 +91,5 @@ char *font_encoding_name(unsigned,
                          struct font_encoding*,
                          struct font_encoding_mapping*);
 
+char **identifyEncodingFile(const char *fileName);
 #endif

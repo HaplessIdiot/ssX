@@ -1,5 +1,22 @@
 XFree86 3.9Pl (3 May 1999)
-2800. Add support for CID fonts (#2728, Ivan Bach, SGI).
+2811. Fix Xinerama bugs in GetImage and PolyRectangle (#2751, Mark Vojkovich).
+2810. Xterm patch #99 (#2750, Thomas Dickey).
+2809. Disable unneccessary C&T message (#2748, Nozomi Ytow).
+2808. Add some DGA event support (not working yet) (#2747, Mark Vojkovich).
+2807. Xaw and xedit updates including some compatibility updates and
+      performance improvements (#2746, Paulo Cesar Pereira de Andrade).
+2806. Modify mkfontdir to create "encodings.dir" files (#2745,
+      Juliusz Chroboczek).
+2805. Update the DESIGN doc for the new DGA driver interface (#2744,
+      Mark Vojkovich).
+2804. Update the LynxOS vidmem code to use the new shared vidmem.c (#2743,
+      Thomas Mueller).
+2803. Change the MGA ImageWrite code to not use the image transfer window
+      for simple cpu->framebuffer copies (#2738, Mark Vojkovich).
+2802. Update TGA docs (#2737, Matt Grossman).
+2801. Fix a zero width problem that shows up in xaaSpans.c when hardware
+      clipping is enabled (#2736, Alan Hourihane).
+2800. Add support for Adobe CID fonts (#2728, Ivan Bach, SGI).
 2799. Quick fix for cirrus driver problem introduced in 3.9Pk.
 2798. Fix a problem with pcitweak that was preventing it from working with
       buses other than bus 0 (David Dawes).
@@ -7916,4 +7933,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.740 1999/05/03 04:35:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.741 1999/05/03 05:58:54 dawes Exp $

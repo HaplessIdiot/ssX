@@ -1,7 +1,7 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
 .\" $XConsortium: ctlseqs.ms,v 1.16 94/12/28 20:45:48 gildea Exp $
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.21 1999/03/28 15:31:32 dawes Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.22 1999/04/11 13:10:27 dawes Exp $
 .\"
 .\"
 .\" Copyright 1999 by Thomas E. Dickey <dickey@clark.net>
@@ -659,8 +659,9 @@ where \*(Pc denotes the terminal type
   \(-> \*1 (``VT220'')
 .br
 and \*(Pv is the firmware version (for \fIxterm\fP, this is the XFree86
-patch number, starting with 95), and \*(Pc indicates the ROM cartridge
-registration number (always zero).
+patch number, starting with 95).
+In a DEC terminal, \*(Pc indicates the ROM cartridge
+registration number and is always zero.
 .
 .IP \\*(Cs\\*(Pm\\*s\\*d
 Line Position Absolute  [row] (default = [1,column]) (VPA)

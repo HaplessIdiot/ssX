@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xaw/Viewport.h,v 1.3 1998/08/20 13:59:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Viewport.h,v 1.4 1998/10/03 08:42:31 dawes Exp $ */
 
 #ifndef _XawViewport_h
 #define _XawViewport_h
@@ -91,7 +91,7 @@ _XFUNCPROTOBEGIN
 void XawViewportSetLocation
 (
  Widget			gw,
-#ifdef notyet
+#if NeedWidePrototypes
  double			xoff,
  double			yoff
 #else
@@ -103,8 +103,13 @@ void XawViewportSetLocation
 void XawViewportSetCoordinates
 (
  Widget			gw,
+#if NeedWidePrototypes
  int			x,
  int			y
+#else
+ Position		x,
+ Position		y
+#endif
  );
 
 _XFUNCPROTOEND

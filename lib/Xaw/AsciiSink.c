@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.13 1998/11/15 04:29:57 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.14 1999/03/14 03:21:09 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -521,31 +521,35 @@ FindDistance(Widget w, XawTextPosition fromPos, int fromx,
 	     XawTextPosition toPos, int *resWidth,
 	     XawTextPosition *resPos, int *resHeight)
 {
-  AsciiSinkObject sink = (AsciiSinkObject)w;
-  XFontStruct *font = sink->ascii_sink.font;
-  Widget source = XawTextGetSource(XtParent(w));
-  XawTextPosition idx, lastPos;
-  unsigned char c;
-  XawTextBlock blk;
+    AsciiSinkObject sink = (AsciiSinkObject)w;
+    TextWidget ctx = (TextWidget)XtParent(w);
+    XFontStruct *font = sink->ascii_sink.font;
+    Widget source = ctx->text.source;
+    XawTextPosition idx, pos;
+    unsigned char c;
+    XawTextBlock blk;
+    int i, rWidth;
 
-  /* we may not need this */
-  lastPos = GETLASTPOS;
-  XawTextSourceRead(source, fromPos, &blk, toPos - fromPos);
-  *resWidth = 0;
-  for (idx = fromPos; idx != toPos && idx < lastPos; idx++)
-    {
-      if (idx - blk.firstPos >= blk.length)
-	XawTextSourceRead(source, idx, &blk, toPos - fromPos);
-      c = blk.ptr[idx - blk.firstPos];
-      *resWidth += CharWidth(sink, font, fromx + *resWidth, c);
-      if (c == XawLF)
-	{
-	  idx++;
-	  break;
+    pos = XawTextSourceRead(source, fromPos, &blk, toPos - fromPos);
+    rWidth = 0;
+    for (i = 0, idx = fromPos; idx < toPos; i++, idx++) {
+	if (i >= blk.length) {
+	    i = 0;
+	    pos = XawTextSourceRead(source, pos, &blk, toPos - pos);
+	    if (blk.length == 0)
+		break;
+	}
+	c = blk.ptr[i];
+	rWidth += CharWidth(sink, font, fromx + rWidth, c);
+	if (c == XawLF) {
+	    idx++;
+	    break;
 	}
     }
-  *resPos = idx;
-  *resHeight = font->ascent + font->descent;
+
+    *resPos = idx;
+    *resWidth = rWidth;
+    *resHeight = font->ascent + font->descent;
 }
 
 static void
@@ -553,57 +557,58 @@ FindPosition(Widget w, XawTextPosition fromPos, int fromx, int width,
 	     Bool stopAtWordBreak, XawTextPosition *resPos,
 	     int *resWidth, int *resHeight)
 {
-  AsciiSinkObject sink = (AsciiSinkObject)w;
-  XFontStruct *font = sink->ascii_sink.font;
-  Widget source = XawTextGetSource(XtParent(w));
-  XawTextPosition lastPos, idx, whiteSpacePosition = 0;
-  int lastWidth, whiteSpaceWidth;
-  Boolean whiteSpaceSeen;
-  unsigned char c;
-  XawTextBlock blk;
+    AsciiSinkObject sink = (AsciiSinkObject)w;
+    TextWidget ctx = (TextWidget)XtParent(w);
+    Widget source = ctx->text.source;
+    XFontStruct *font = sink->ascii_sink.font;
+    XawTextPosition idx, pos, whiteSpacePosition = 0;
+    int i, lastWidth, whiteSpaceWidth, rWidth;
+    Boolean whiteSpaceSeen;
+    unsigned char c;
+    XawTextBlock blk;
 
-  lastPos = GETLASTPOS;
+    pos = XawTextSourceRead(source, fromPos, &blk, BUFSIZ);
+    rWidth = lastWidth = whiteSpaceWidth = 0;
+    whiteSpaceSeen = False;
+    c = 0;
 
-  XawTextSourceRead(source, fromPos, &blk, BUFSIZ);
-  *resWidth = lastWidth = whiteSpaceWidth = 0;
-  whiteSpaceSeen = False;
-  c = 0;
-
-  for (idx = fromPos; *resWidth <= width && idx < lastPos; idx++)
-    {
-      lastWidth = *resWidth;
-      if (idx - blk.firstPos >= blk.length)
-	XawTextSourceRead(source, idx, &blk, BUFSIZ);
-      c = blk.ptr[idx - blk.firstPos];
-      *resWidth += CharWidth(sink, font, fromx + *resWidth, c);
-
-      if (c == XawLF)
-	{
-	  idx++;
-	  break;
+    for (i = 0, idx = fromPos; rWidth <= width; i++, idx++) {
+	if (i >= blk.length) {
+	    i = 0;
+	    pos = XawTextSourceRead(source, pos, &blk, BUFSIZ);
+	    if (blk.length == 0)
+		break;
 	}
-      else if ((c == XawSP || c == XawTAB) && *resWidth <= width)
-	{
-	  whiteSpaceSeen = True;
-	  whiteSpacePosition = idx;
-	  whiteSpaceWidth = *resWidth;
+	c = blk.ptr[i];
+	lastWidth = rWidth;
+	rWidth += CharWidth(sink, font, fromx + rWidth, c);
+
+	if (c == XawLF) {
+	    idx++;
+	    break;
 	}
-    }
-  if (*resWidth > width && idx > fromPos)
-    {
-      idx--;
-      *resWidth = lastWidth;
-      if (stopAtWordBreak && whiteSpaceSeen)
-	{
-	  idx = whiteSpacePosition + 1;
-	  *resWidth = whiteSpaceWidth;
+	else if ((c == XawSP || c == XawTAB) && rWidth <= width) {
+	    whiteSpaceSeen = True;
+	    whiteSpacePosition = idx;
+	    whiteSpaceWidth = rWidth;
 	}
     }
-  if (idx == lastPos && c != XawLF)
-    idx = lastPos + 1;
 
-  *resPos = idx;
-  *resHeight = font->ascent + font->descent;
+    if (rWidth > width && idx > fromPos) {
+	idx--;
+	rWidth = lastWidth;
+	if (stopAtWordBreak && whiteSpaceSeen) {
+	    idx = whiteSpacePosition + 1;
+	    rWidth = whiteSpaceWidth;
+	}
+    }
+
+    if (idx >= ctx->text.lastPos && c != XawLF)
+	idx = ctx->text.lastPos + 1;
+
+    *resPos = idx;
+    *resWidth = rWidth;
+    *resHeight = font->ascent + font->descent;
 }
 
 static void

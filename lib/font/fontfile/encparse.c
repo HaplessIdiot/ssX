@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.6 1999/03/21 07:34:42 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.7 1999/04/25 10:01:42 dawes Exp $ */
 
 /* Parser for encoding files */
 
@@ -406,9 +406,10 @@ setCode(unsigned from, unsigned to, unsigned row_size,
   return 0;
 }
 
-/* Parser. */
+/* Parser.  If headerOnly is true, we're only interested in the
+ * encodings's header. */
 static struct font_encoding*
-parseEncodingFile(FontFilePtr f)
+parseEncodingFile(FontFilePtr f, int headerOnly)
 {
   int line;
 
@@ -462,6 +463,8 @@ no_mapping:
     encoding->row_size=value2;
     goto no_mapping;
   case STARTMAPPING_LINE:
+    if(headerOnly)
+      goto done;
     if(!strcasecmp(keyword_value, "unicode")) {
       if((mapping=
           (struct font_encoding_mapping*)
@@ -764,7 +767,7 @@ loadEncodingFile(const char *charset, const char *fontFileName)
       if((f=FontFileOpen(buf))==NULL) {
         return NULL;
       }
-      encoding=parseEncodingFile(f);
+      encoding=parseEncodingFile(f, 0);
       FontFileClose(f);
       break;
     }
@@ -775,3 +778,46 @@ loadEncodingFile(const char *charset, const char *fontFileName)
   return encoding;
 }
 
+/* Return a NULL-terminated array of encoding names.  Note that this
+ * file has incestuous knowledge of the allocations done by
+ * parseEncodingFile. */
+
+char **
+identifyEncodingFile(const char *fileName)
+{
+  FontFilePtr f;
+  struct font_encoding *encoding;
+  char **names, **name, **alias;
+  int numaliases;
+
+  if((f=FontFileOpen(fileName))==NULL) {
+    return NULL;
+  }
+  encoding=parseEncodingFile(f, 1);
+  FontFileClose(f);
+
+  if(!encoding)
+    return NULL;
+
+  numaliases=0;
+  if(encoding->aliases)
+    for(alias=encoding->aliases; *alias; alias++)
+      numaliases++;
+
+  if((names=(char**)xalloc((numaliases+2)*sizeof(char*)))==NULL)
+    return NULL;
+
+  name=names;
+  *(name++)=encoding->name;
+  if(numaliases>0)
+    for(alias=encoding->aliases; *alias; alias++, name++)
+      *name=*alias;
+
+  *name=0;
+  xfree(encoding->aliases);
+  xfree(encoding);
+
+  return names;
+}
+
+  

@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSrc.h,v 1.5 1998/10/25 07:11:16 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.h,v 1.6 1998/11/15 04:30:05 dawes Exp $ */
 
 #ifndef _XawTextSrc_h
 #define _XawTextSrc_h
@@ -175,10 +175,17 @@ XawTextPosition XawTextSourceScan
 (
  Widget			w,
  XawTextPosition	position,
+#if NeedWidePrototypes
+ int			type,
+ int			dir,
+ int			count,
+ int			include
+#else
  XawTextScanType	type,
  XawTextScanDirection	dir,
  int			count,
- Bool			include
+ Boolean		include
+#endif
  );
 
 /*
@@ -201,7 +208,11 @@ XawTextPosition XawTextSourceSearch
 (
  Widget			w,
  XawTextPosition	position,
+#if NeedWidePrototypes
+ int			dir,
+#else
  XawTextScanDirection	dir,
+#endif
  XawTextBlock		*text
  );
 

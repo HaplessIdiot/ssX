@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Scrollbar.c,v 1.6 1998/08/20 13:59:07 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Scrollbar.c,v 1.7 1998/10/03 08:42:17 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -915,7 +915,7 @@ NotifyThumb(Widget gw, XEvent *event, String *params, Cardinal *num_params)
 /* Set the scroll bar to the given location. */
 void
 XawScrollbarSetThumb(Widget gw,
-#ifdef notyet
+#if NeedWidePrototypes
 		     double top, double shown
 #else
 		     float top, float shown

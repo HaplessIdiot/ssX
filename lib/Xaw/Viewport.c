@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Viewport.c,v 1.4 1998/09/05 06:36:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Viewport.c,v 1.5 1998/10/03 08:42:31 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -1085,7 +1085,7 @@ void
 XawViewportSetLocation
 (
  Widget gw,
-#ifdef notyet
+#if NeedWidePrototypes
  double xoff, double yoff
 #else
  float xoff, float yoff
@@ -1114,7 +1114,13 @@ XawViewportSetLocation
 }
 
 void
-XawViewportSetCoordinates(Widget gw, int x, int y)
+XawViewportSetCoordinates(Widget gw,
+#if NeedWidePrototypes
+	int x, int y
+#else
+	Position x, Position y
+#endif
+)
 {
   ViewportWidget w = (ViewportWidget)gw;
     Widget child = w->viewport.child;

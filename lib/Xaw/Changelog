@@ -900,4 +900,36 @@ xedit.c:
    verticalScroll and horizontalScroll resources of the current edit window.
 
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.17 1999/04/11 13:10:31 dawes Exp $
+#2746 1 May 1999
+-- Xaw --
+ + Reverted most of the #if NeedWidePrototypes definitions, only two
+   functions were kept, to not break some of the new features, but these
+   functions aren't called by any program: XawTextSinkDisplayText and
+   XawTextSinkClearToBackground.
+ + Rewrite of the functions *Sink.c:FindPosition() and FindDistance() to
+   try to get more speed.
+ + Reworked the function Text.c:_BuildLineTable, to correct some strange
+   code, and to avoid unecessary recalculations.
+ + Made negative values of the multiply work for all the actions, not only
+   for negative indentations. This makes the TextWidget behaviour more
+   compatable with emacs.
+ + Optimization of the new code for text justification, to avoid a call to
+   malloc on every char typped, when undo is enabled.
+ + Reorganized the offsets of the fields of the TextWidget, trying to make
+   xxgdb work again with the new Xaw code, but, unfortunately, the SimpleWidget
+   (a subclass of the TextWidget) have growed by 4 bytes (a XawDisplayList*)
+   added at the end of the structure, and xxgdb incorrectly reads the text.sink
+   field. Old xxgdb binaries dont work with the current code.
+ + Removed several XtIsSubclass checks in TextSrc.c. While those checks could
+   be useful for debugging, the functions are called so frequently that it is
+   a big waste of time for running programs.
+
+-- xedit --
+ + Added/Changed some translations to work correctly when CapsLock and/or NumLock
+   are pressed.
+ + Fixed some bugs in the ispell code. The biggest bug was that it was not
+   correctly saving the Add'ed words in the user dictionary when pressing the
+   Close button.
+
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.18 1999/04/25 10:01:22 dawes Exp $

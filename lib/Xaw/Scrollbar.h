@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Scrollbar.h,v 1.3 1998/08/20 13:59:07 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Scrollbar.h,v 1.4 1998/10/03 08:42:17 dawes Exp $ */
 
 #ifndef _Scrollbar_h
 #define _Scrollbar_h
@@ -119,7 +119,7 @@ _XFUNCPROTOBEGIN
 void XawScrollbarSetThumb
 (
  Widget			scrollbar,
-#ifdef notyet
+#if NeedWidePrototypes
  double			top,
  double			shown
 #else
