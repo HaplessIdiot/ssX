@@ -1232,9 +1232,9 @@ Fake_glXMakeContextCurrent( Display *dpy, GLXDrawable draw,
       if (XMesaMakeCurrent2(xmctx, drawBuffer, readBuffer)) {
          ((__GLXcontext *) ctx)->currentDpy = dpy;
          ((__GLXcontext *) ctx)->currentDrawable = draw;
+#ifndef GLX_BUILT_IN_XMESA
          ((__GLXcontext *) ctx)->currentReadable = read;
-#ifdef GLX_BUILT_IN_XMESA
-         printf("Set fake context ctx %p\n", ctx);
+#else
          __glXSetCurrentContext(ctx);
 #endif
          return True;

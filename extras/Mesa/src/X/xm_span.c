@@ -1,5 +1,3 @@
-/* $Id$ */
-
 /*
  * Mesa 3-D graphics library
  * Version:  3.5
@@ -23,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X/xm_span.c,v 1.2 2002/02/26 23:37:32 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X/xm_span.c,v 1.3 2002/02/27 21:07:54 tsi Exp $ */
 
 #include "glxheader.h"
 #include "context.h"

@@ -954,7 +954,7 @@ void _mesa_update_state( GLcontext *ctx )
    ASSERT(ctx->Driver.ReadPixels);
    ASSERT(ctx->Driver.CopyPixels);
    ASSERT(ctx->Driver.Bitmap);
-   ASSERT(ctx->Driver.ResizeBuffersMESA);
+   ASSERT(ctx->Driver.ResizeBuffers);
    ASSERT(ctx->Driver.TexImage1D);
    ASSERT(ctx->Driver.TexImage2D);
    ASSERT(ctx->Driver.TexImage3D);

@@ -1,4 +1,3 @@
-/* $XFree86: xc/extras/Mesa/src/dd.h,v 1.14 2002/02/24 21:50:36 dawes Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.5
@@ -29,6 +28,8 @@
 #define DD_INCLUDED
 
 /* THIS FILE ONLY INCLUDED BY mtypes.h !!!!! */
+
+#include "macros.h"
 
 struct gl_pixelstore_attrib;
 
@@ -96,9 +97,18 @@ struct dd_function_table {
     *    GL_NONE - disable buffer write in device driver.
     */
 
-   void (*GetBufferSize)( GLcontext *ctx, GLuint *width, GLuint *height );
+   void (*GetBufferSize)( GLframebuffer *buffer,
+                          GLuint *width, GLuint *height );
    /*
-    * Returns the width and height of the current color buffer.
+    * Returns the width and height of the named buffer/window.
+    * Mesa uses this to determine when the driver's window size has changed.
+    */
+
+   void (*ResizeBuffers)( GLframebuffer *buffer );
+   /*
+    * Resize the driver's depth/stencil/accum/back buffers to match the
+    * size given in the GLframebuffer struct.  This is typically called
+    * when Mesa detects that a window size has changed.
     */
 
    void (*Finish)( GLcontext *ctx );
@@ -162,9 +172,6 @@ struct dd_function_table {
 		   const GLubyte *bitmap );
    /* This is called by glBitmap.  Works the same as DrawPixels, above.
     */
-
-   void (*ResizeBuffersMESA)( GLcontext *ctx );
-
 
    /***
     *** Texture image functions:
@@ -469,6 +476,8 @@ struct dd_function_table {
    void (*BlendFuncSeparate)(GLcontext *ctx,
                              GLenum sfactorRGB, GLenum dfactorRGB,
                              GLenum sfactorA, GLenum dfactorA);
+   void (*BlendConstColor)(GLcontext *ctx, GLfloat red, GLfloat green,
+                           GLfloat blue, GLfloat alpha);
    void (*ClearColor)(GLcontext *ctx, const GLchan color[4]);
    void (*ClearDepth)(GLcontext *ctx, GLclampd d);
    void (*ClearIndex)(GLcontext *ctx, GLuint index);

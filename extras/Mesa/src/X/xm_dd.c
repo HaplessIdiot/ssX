@@ -1,5 +1,3 @@
-/* $Id$ */
-
 /*
  * Mesa 3-D graphics library
  * Version:  4.0.2
@@ -23,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/X/xm_dd.c,v 1.2 2002/02/26 23:37:31 tsi Exp $ */
 
 #include "glxheader.h"
 #include "context.h"
@@ -48,17 +46,18 @@
 
 
 /*
- * Return the size (width,height of the current color buffer.
- * This function should be called by the glViewport function because
- * glViewport is often called when the window gets resized.  We need to
- * update some X/Mesa stuff when that happens.
+ * Return the size (width, height) of the X window for the given GLframebuffer.
  * Output:  width - width of buffer in pixels.
  *          height - height of buffer in pixels.
  */
 static void
-get_buffer_size( GLcontext *ctx, GLuint *width, GLuint *height )
+get_buffer_size( GLframebuffer *buffer, GLuint *width, GLuint *height )
 {
-   const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+   /* We can do this cast because the first field in the XMesaBuffer
+    * struct is a GLframebuffer struct.  If this weren't true, we'd
+    * need a pointer from the GLframebuffer to the XMesaBuffer.
+    */
+   const XMesaBuffer xmBuffer = (XMesaBuffer) buffer;
    unsigned int winwidth, winheight;
 #ifndef XFree86Server
    Window root;
@@ -66,58 +65,19 @@ get_buffer_size( GLcontext *ctx, GLuint *width, GLuint *height )
    unsigned int bw, d;
 
    _glthread_LOCK_MUTEX(_xmesa_lock);
-   XGetGeometry( xmesa->display, xmesa->xm_buffer->frontbuffer, &root,
+   XGetGeometry( xmBuffer->xm_visual->display, xmBuffer->frontbuffer, &root,
 		 &winx, &winy, &winwidth, &winheight, &bw, &d );
    _glthread_UNLOCK_MUTEX(_xmesa_lock);
 #else
-
-   winwidth = xmesa->xm_buffer->frontbuffer->width;
-   winheight = xmesa->xm_buffer->frontbuffer->height;
+   /* XFree86 GLX renderer */
+   winwidth = xmBuffer->frontbuffer->width;
+   winheight = xmBuffer->frontbuffer->height;
 #endif
 
    (void)kernel8;		/* Muffle compiler */
 
    *width = winwidth;
    *height = winheight;
-
-   if (   winwidth!=xmesa->xm_buffer->width
-       || winheight!=xmesa->xm_buffer->height) {
-      xmesa->xm_buffer->width = winwidth;
-      xmesa->xm_buffer->height = winheight;
-      xmesa_alloc_back_buffer( xmesa->xm_buffer );
-   }
-
-   /* Needed by FLIP macro */
-   xmesa->xm_buffer->bottom = (int) winheight - 1;
-
-   if (xmesa->xm_buffer->backimage) {
-      /* Needed by PIXELADDR1 macro */
-      xmesa->xm_buffer->ximage_width1
-                  = xmesa->xm_buffer->backimage->bytes_per_line;
-      xmesa->xm_buffer->ximage_origin1
-                  = (GLubyte *) xmesa->xm_buffer->backimage->data
-                    + xmesa->xm_buffer->ximage_width1 * (winheight-1);
-
-      /* Needed by PIXELADDR2 macro */
-      xmesa->xm_buffer->ximage_width2
-                  = xmesa->xm_buffer->backimage->bytes_per_line / 2;
-      xmesa->xm_buffer->ximage_origin2
-                  = (GLushort *) xmesa->xm_buffer->backimage->data
-                    + xmesa->xm_buffer->ximage_width2 * (winheight-1);
-
-      /* Needed by PIXELADDR3 macro */
-      xmesa->xm_buffer->ximage_width3
-                  = xmesa->xm_buffer->backimage->bytes_per_line;
-      xmesa->xm_buffer->ximage_origin3
-                  = (GLubyte *) xmesa->xm_buffer->backimage->data
-                    + xmesa->xm_buffer->ximage_width3 * (winheight-1);
-
-      /* Needed by PIXELADDR4 macro */
-      xmesa->xm_buffer->ximage_width4 = xmesa->xm_buffer->backimage->width;
-      xmesa->xm_buffer->ximage_origin4
-                  = (GLuint *) xmesa->xm_buffer->backimage->data
-                    + xmesa->xm_buffer->ximage_width4 * (winheight-1);
-   }
 }
 
 
@@ -269,7 +229,6 @@ index_mask( GLcontext *ctx, GLuint mask )
       else {
          m = (unsigned long) mask;
       }
-      XMesaSetPlaneMask( xmesa->display, xmesa->xm_buffer->gc, m );
       XMesaSetPlaneMask( xmesa->display, xmesa->xm_buffer->cleargc, m );
    }
 }
@@ -295,7 +254,6 @@ color_mask(GLcontext *ctx,
          if (gmask)   m |= GET_GREENMASK(xmesa->xm_visual);
          if (bmask)   m |= GET_BLUEMASK(xmesa->xm_visual);
       }
-      XMesaSetPlaneMask( xmesa->display, xmesa->xm_buffer->gc, m );
       XMesaSetPlaneMask( xmesa->display, xmesa->xm_buffer->cleargc, m );
    }
 }
@@ -780,10 +738,51 @@ clear_buffers( GLcontext *ctx, GLbitfield mask,
 }
 
 
-static void
-resize_buffers( GLcontext *ctx )
+/*
+ * When we detect that the user has resized the window this function will
+ * get called.  Here we'll reallocate the back buffer, depth buffer,
+ * stencil buffer etc. to match the new window size.
+ */
+void
+xmesa_resize_buffers( GLframebuffer *buffer )
 {
-   _swrast_alloc_buffers( ctx );
+   int height = (int) buffer->Height;
+   /* We can do this cast because the first field in the XMesaBuffer
+    * struct is a GLframebuffer struct.  If this weren't true, we'd
+    * need a pointer from the GLframebuffer to the XMesaBuffer.
+    */
+   XMesaBuffer xmBuffer = (XMesaBuffer) buffer;
+
+   xmBuffer->width = buffer->Width;
+   xmBuffer->height = buffer->Height;
+   xmesa_alloc_back_buffer( xmBuffer );
+
+   /* Needed by FLIP macro */
+   xmBuffer->bottom = height - 1;
+
+   if (xmBuffer->backimage) {
+      /* Needed by PIXELADDR1 macro */
+      xmBuffer->ximage_width1 = xmBuffer->backimage->bytes_per_line;
+      xmBuffer->ximage_origin1 = (GLubyte *) xmBuffer->backimage->data
+         + xmBuffer->ximage_width1 * (height-1);
+
+      /* Needed by PIXELADDR2 macro */
+      xmBuffer->ximage_width2 = xmBuffer->backimage->bytes_per_line / 2;
+      xmBuffer->ximage_origin2 = (GLushort *) xmBuffer->backimage->data
+         + xmBuffer->ximage_width2 * (height-1);
+
+      /* Needed by PIXELADDR3 macro */
+      xmBuffer->ximage_width3 = xmBuffer->backimage->bytes_per_line;
+      xmBuffer->ximage_origin3 = (GLubyte *) xmBuffer->backimage->data
+         + xmBuffer->ximage_width3 * (height-1);
+
+      /* Needed by PIXELADDR4 macro */
+      xmBuffer->ximage_width4 = xmBuffer->backimage->width;
+      xmBuffer->ximage_origin4 = (GLuint *) xmBuffer->backimage->data
+         + xmBuffer->ximage_width4 * (height-1);
+   }
+
+   _swrast_alloc_buffers( buffer );
 }
 
 #if 0
@@ -951,7 +950,7 @@ void xmesa_init_pointers( GLcontext *ctx )
    ctx->Driver.Accum = _swrast_Accum;
    ctx->Driver.Bitmap = _swrast_Bitmap;
    ctx->Driver.Clear = clear_buffers;
-   ctx->Driver.ResizeBuffersMESA = resize_buffers;
+   ctx->Driver.ResizeBuffers = xmesa_resize_buffers;
    ctx->Driver.CopyPixels = _swrast_CopyPixels;
    ctx->Driver.DrawPixels = _swrast_DrawPixels;
    ctx->Driver.ReadPixels = _swrast_ReadPixels;

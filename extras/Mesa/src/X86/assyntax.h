@@ -23,7 +23,7 @@
  * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/X86/assyntax.h,v 1.10 2002/03/05 20:27:24 dawes Exp $ */
 
 /*
  * assyntax.h
@@ -254,7 +254,7 @@
 #endif /* ACK_ASSEMBLER */
 
 
-#if defined(__QNX__) || defined(Lynx) || (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER) || defined(__ELF__) || defined(__GNU__) || defined(__GNUC__)
+#if defined(__QNX__) || defined(Lynx) || (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER) || defined(__ELF__) || defined(__GNU__) || defined(__GNUC__) && !defined(DJGPP)
 #define GLNAME(a)	a
 #else
 #define GLNAME(a)	CONCAT(_,a)

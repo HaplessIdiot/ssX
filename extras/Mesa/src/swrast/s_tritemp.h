@@ -1,5 +1,3 @@
-/* $Id$ */
-
 /*
  * Mesa 3-D graphics library
  * Version:  3.5
@@ -23,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/swrast/s_tritemp.h,v 1.2 2002/02/27 21:07:54 tsi Exp $ */
 
 /*
  * Triangle Rasterizer Template

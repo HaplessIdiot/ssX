@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.2
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -93,6 +93,25 @@ extern void _mesa_align_free(void *ptr);
 #define ALIGN_MALLOC_STRUCT(T, N)  (struct T *) _mesa_align_malloc(sizeof(struct T), N)
 #define ALIGN_CALLOC_STRUCT(T, N)  (struct T *) _mesa_align_calloc(sizeof(struct T), N)
 #define ALIGN_FREE(PTR)            _mesa_align_free(PTR)
+
+
+#ifdef MESA_EXTERNAL_BUFFERALLOC
+/*
+ * If you want Mesa's depth/stencil/accum/etc buffers to be allocated
+ * with a specialized allocator you can define MESA_EXTERNAL_BUFFERALLOC
+ * and implement _ext_mesa_alloc/free_pixelbuffer() in your app.
+ * Contributed by Gerk Huisma (gerk@five-d.demon.nl).
+ */
+extern void *_ext_mesa_alloc_pixelbuffer( unsigned int size );
+extern void _ext_mesa_free_pixelbuffer( void *pb );
+
+#define MESA_PBUFFER_ALLOC(BYTES)  (void *) _ext_mesa_alloc_pixelbuffer(BYTES)
+#define MESA_PBUFFER_FREE(PTR)     _ext_mesa_free_pixelbuffer(PTR)
+#else
+/* Default buffer allocation uses the aligned allocation routines: */
+#define MESA_PBUFFER_ALLOC(BYTES)  (void *) _mesa_align_malloc(BYTES, 512)
+#define MESA_PBUFFER_FREE(PTR)     _mesa_align_free(PTR)
+#endif
 
 
 /* Memory copy: */
