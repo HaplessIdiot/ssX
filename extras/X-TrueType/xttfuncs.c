@@ -31,7 +31,7 @@
 
 Notice===
 */
-/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.8 2000/09/26 15:56:41 tsi Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.9 2001/10/28 03:32:08 tsi Exp $ */
 
 #include "xttversion.h"
 
@@ -454,7 +454,8 @@ FreeType_OpenFont(FreeTypeFont *ft,
     ft->instance = instance;
     TT_Get_Instance_Metrics(instance, &ft->imetrics);
 
-    if (fi->prop.num_Faces == 0) {
+    num_faces = fi->prop.num_Faces;
+    if (num_faces == 0) {
         num_faces = 1;
     }
     if ((fi->prop.num_Glyphs / num_faces) > 256) {
