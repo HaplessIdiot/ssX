@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.h,v 1.7 2000/03/30 15:41:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.h,v 1.8 2000/08/04 21:07:14 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -59,10 +59,11 @@ extern void ATIModifyExtReg FunctionPrototype((ATIPtr, const CARD8, int,
         inb((_Register) + 1)      \
     )
 #define PutReg(_Register, _Index, _Value) \
-    (                                     \
-        outb(_Register, _Index),          \
-        outb((_Register) + 1, _Value)     \
-    )
+    do                                    \
+    {                                     \
+        outb(_Register, _Index);          \
+        outb((_Register) + 1, _Value);    \
+    } while(0)
 
 #define ATIGetExtReg(_Index)                    \
     GetReg(pATI->CPIO_VGAWonder, _Index)

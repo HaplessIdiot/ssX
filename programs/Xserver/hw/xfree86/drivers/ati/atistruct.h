@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.19 2000/07/07 20:07:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.20 2000/08/04 21:07:16 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -261,6 +261,7 @@ typedef struct _ATIRec
     int nAvailableFIFOEntries, nFIFOEntries, nHostFIFOEntries;
     CARD8 EngineIsBusy, EngineIsLocked, XModifier;
     CARD32 dst_cntl;    /* For SetupFor/Subsequent communication */
+    CARD32 sc_left_right, sc_top_bottom;
     CARD16 sc_left, sc_right, sc_top, sc_bottom;        /* Current scissors */
     pointer pHOST_DATA; /* Current HOST_DATA_* transfer window address */
     CARD32 *ExpansionBitmapScanlinePtr[2];

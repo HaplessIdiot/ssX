@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.27 2000/07/11 01:46:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.28 2000/08/04 21:07:15 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -345,6 +345,29 @@ ATIMapMach64
 }
 
 /*
+ * ATIPrintNoiseIfRequested --
+ *
+ * This function formats debugging information on the server's stderr when
+ * requested by the user through the server's verbosity setting.
+ */
+static void
+ATIPrintNoiseIfRequested
+(
+    ATIPtr       pATI,
+    CARD8       *BIOS,
+    unsigned int BIOSSize
+)
+{
+    if (xf86GetVerbosity() <= 3)
+        return;
+
+    if (BIOSSize > 0)
+        ATIPrintBIOS(BIOS, BIOSSize);
+    xf86ErrorFVerb(4, "\n On server entry:\n");
+    ATIPrintRegisters(pATI);
+}
+
+/*
  * ATIPreInit --
  *
  * This function is only called once per screen at the start of the first
@@ -373,9 +396,6 @@ ATIPreInit
     resPtr           pResources;
     pciVideoPtr      pVideo;
     DisplayModePtr   pMode;
-    xf86Int10InfoPtr pInt10Info = NULL;
-    vbeInfoPtr       pVBE;
-    pointer          pInt10Module, pDDCModule = NULL, pVBEModule = NULL;
     CARD32           IOValue1, IOValue2 = 0, IOValue3 = 0, IOValue4 = 0;
     int              i, j, AcceleratorVideoRAM = 0;
     int              Numerator, Denominator;
@@ -387,6 +407,9 @@ ATIPreInit
 
 #ifndef AVOID_CPIO
 
+    xf86Int10InfoPtr pInt10Info = NULL;
+    vbeInfoPtr       pVBE;
+    pointer          pInt10Module, pDDCModule = NULL, pVBEModule = NULL;
     int              VGAVideoRAM = 0;
     resRange         Resources[2] = {{0, 0, 0}, _END};
 
@@ -426,6 +449,13 @@ ATIPreInit
     }
 
     ConfiguredMonitor = NULL;
+
+#ifdef AVOID_CPIO
+
+    if (flags & PROBE_DETECT)
+        return TRUE;
+
+#else /* AVOID_CPIO */
 
     /*
      * If there is an ix86-style BIOS, ensure its initialisation entry point
@@ -483,13 +513,16 @@ ATIPreInit
         return TRUE;
     }
 
-    /* Set monitor */
-    pScreenInfo->monitor = pScreenInfo->confScreen->monitor;
     xf86PrintEDID(ConfiguredMonitor);
     xf86SetDDCproperties(pScreenInfo, ConfiguredMonitor);
 
     /* DDC module is no longer needed at this point */
     xf86UnloadSubModule(pDDCModule);
+
+#endif /* AVOID_CPIO */
+
+    /* Set monitor */
+    pScreenInfo->monitor = pScreenInfo->confScreen->monitor;
 
     pATI->Block0Base = 0;       /* Might no longer be valid */
     if ((pVideo = pATI->PCIInfo))
@@ -638,12 +671,18 @@ ATIPreInit
                             pATI->Block0Base += 0x007FFC00U;
                             ATIMapMach64(pScreenInfo->scrnIndex, pATI);
                             if (pATI->pBlock[0])
+                            {
+                                pATI->Block0Base = 0;   /* Might be moved */
                                 break;
+                            }
 
                             pATI->Block0Base -= 0x00400000U;
                             ATIMapMach64(pScreenInfo->scrnIndex, pATI);
                             if (pATI->pBlock[0])
+                            {
+                                pATI->Block0Base = 0;   /* Might be moved */
                                 break;
+                            }
                         }
                     }
 
@@ -666,10 +705,11 @@ ATIPreInit
 #endif /* AVOID_CPIO */
 
             IOValue1 = inr(CRTC_GEN_CNTL);
-            if (!(IOValue1 & CRTC_EN))
+            if (!(IOValue1 & CRTC_EN) && (pATI->Chip >= ATI_CHIP_264CT))
             {
                 xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
                     "Adapter has not been initialised.\n");
+                ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
                 ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
                 return FALSE;
             }
@@ -681,6 +721,7 @@ ATIPreInit
                 xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
                     "Adapters found to be in VGA mode on server entry are not"
                     " supported by the MMIO-only version of this driver.\n");
+                ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
                 ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
                 return FALSE;
             }
@@ -1215,6 +1256,7 @@ ATIPreInit
     if (!xf86SetDepthBpp(pScreenInfo, 8, 8, 8, i))
     {
         ATILock(pATI);
+        ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
         ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
@@ -1236,6 +1278,7 @@ ATIPreInit
                 "Driver does not support depth %d.\n",
                 pScreenInfo->depth);
             ATILock(pATI);
+            ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
             ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
             return FALSE;
     }
@@ -1248,6 +1291,7 @@ ATIPreInit
             "Depth %d is not supported through this adapter.\n",
             pScreenInfo->depth);
         ATILock(pATI);
+        ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
         ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
@@ -1265,6 +1309,7 @@ ATIPreInit
         xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
             "A linear aperture is not available in this configuration.\n");
         ATILock(pATI);
+        ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
         ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
@@ -1283,6 +1328,7 @@ ATIPreInit
     if (!xf86SetWeight(pScreenInfo, defaultWeight, defaultWeight))
     {
         ATILock(pATI);
+        ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
         ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
@@ -1299,6 +1345,7 @@ ATIPreInit
             pScreenInfo->weight.red, pScreenInfo->weight.green,
             pScreenInfo->weight.blue, pScreenInfo->depth);
         ATILock(pATI);
+        ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
         ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
@@ -1310,6 +1357,7 @@ ATIPreInit
     if (!xf86SetDefaultVisual(pScreenInfo, -1))
     {
         ATILock(pATI);
+        ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
         ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
@@ -1324,6 +1372,7 @@ ATIPreInit
             xf86GetVisualName(pScreenInfo->defaultVisual),
             pScreenInfo->depth);
         ATILock(pATI);
+        ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
         ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
@@ -1342,6 +1391,7 @@ ATIPreInit
         if (!xf86SetGamma(pScreenInfo, defaultGamma))
         {
             ATILock(pATI);
+            ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
             ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
             return FALSE;
         }
@@ -1424,6 +1474,7 @@ ATIPreInit
             xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
                 "VGA is not available through this adapter.\n");
             ATILock(pATI);
+            ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
             ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
             return FALSE;
         }
@@ -1458,6 +1509,7 @@ ATIPreInit
                     "Unable to determine dimensions of panel.\n");
 
             ATILock(pATI);
+            ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
             ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
             return FALSE;
         }
@@ -1712,6 +1764,7 @@ ATIPreInit
                             "A linear aperture is not available through this"
                             " adapter.\n");
                         ATILock(pATI);
+                        ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
                         ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
                         return FALSE;
                     }
@@ -2078,6 +2131,7 @@ ATIPreInit
         !ATIDSPPreInit(pScreenInfo->scrnIndex, pATI))
     {
         ATILock(pATI);
+        ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
         ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
@@ -2447,6 +2501,7 @@ ATIPreInit
     if (i <= 0)
     {
         ATILock(pATI);
+        ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
         ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
@@ -2468,6 +2523,7 @@ ATIPreInit
     if (!ATILoadModules(pScreenInfo, pATI))
     {
         ATILock(pATI);
+        ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
         ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
@@ -2503,21 +2559,11 @@ ATIPreInit
     /* Initialise CRTC code */
     ATIAdapterPreInit(pScreenInfo, pATI, &pATI->NewHW);
 
-    /* Relock registers */
-    ATILock(pATI);
-
     if (!pScreenInfo->chipset || !*pScreenInfo->chipset)
         pScreenInfo->chipset = (char *)ATIChipsetNames[0];
 
-    /* Generate noise if requested */
-    if (xf86GetVerbosity() > 3)
-    {
-        if (BIOSSize > 0)
-            ATIPrintBIOS(BIOS, 0, BIOSSize);
-        xf86ErrorFVerb(4, "\n On server entry:\n");
-        ATIPrintRegisters(pATI);
-    }
-
+    ATILock(pATI);
+    ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
     ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
 
     return TRUE;

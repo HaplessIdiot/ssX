@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.22 2000/07/07 20:07:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.23 2000/08/04 21:07:14 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -130,7 +130,7 @@ ATIMach64PreInit
 
 #else /* AVOID_CPIO */
 
-    pATIHW->mem_vga_wp_sel = SetBits(0, MEM_VGA_WPS0) | 
+    pATIHW->mem_vga_wp_sel = SetBits(0, MEM_VGA_WPS0) |
         SetBits(pATIHW->nPlane, MEM_VGA_WPS1);
     pATIHW->mem_vga_rp_sel = SetBits(0, MEM_VGA_RPS0) |
         SetBits(pATIHW->nPlane, MEM_VGA_RPS1);
@@ -198,6 +198,10 @@ ATIMach64PreInit
         if (tmp > ATIMach64MaxY)
             tmp = ATIMach64MaxY;
         pATIHW->sc_bottom = tmp;
+        pATI->sc_left_right = SetWord(pATI->NewHW.sc_right, 1) |
+            SetWord(pATI->NewHW.sc_left, 0);
+        pATI->sc_top_bottom =  SetWord(pATI->NewHW.sc_bottom, 1) |
+            SetWord(pATI->NewHW.sc_top, 0);
 
         /* Initialise data path */
         pATIHW->dp_frgd_clr = (CARD32)(-1);
@@ -258,7 +262,7 @@ ATIMach64PreInit
             SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC);
 
         /* Initialise colour compare */
-        pATIHW->clr_cmp_msk = (CARD32)(-1);
+        pATIHW->clr_cmp_msk = (1 << pATI->depth) - 1;
 
         /* Restore aperture enablement */
         outr(BUS_CNTL, bus_cntl);
@@ -859,24 +863,22 @@ static void
 ATIMach64ValidateClip
 (
     ATIPtr pATI,
-    CARD16 sc_left,
-    CARD16 sc_right,
-    CARD16 sc_top,
-    CARD16 sc_bottom
+    int    sc_left,
+    int    sc_right,
+    int    sc_top,
+    int    sc_bottom
 )
 {
-    if ((sc_left < pATI->sc_left) || (sc_right > pATI->sc_right))
+    if ((sc_left < (int)pATI->sc_left) || (sc_right > (int)pATI->sc_right))
     {
-        outf(SC_LEFT_RIGHT, SetWord(pATI->NewHW.sc_right, 1) |
-            SetWord(pATI->NewHW.sc_left, 0));
+        outf(SC_LEFT_RIGHT, pATI->sc_left_right);
         pATI->sc_left = pATI->NewHW.sc_left;
         pATI->sc_right = pATI->NewHW.sc_right;
     }
 
-    if ((sc_top < pATI->sc_top) || (sc_bottom > pATI->sc_bottom))
+    if ((sc_top < (int)pATI->sc_top) || (sc_bottom > (int)pATI->sc_bottom))
     {
-        outf(SC_TOP_BOTTOM, SetWord(pATI->NewHW.sc_bottom, 1) |
-            SetWord(pATI->NewHW.sc_top, 0));
+        outf(SC_TOP_BOTTOM, pATI->sc_top_bottom);
         pATI->sc_top = pATI->NewHW.sc_top;
         pATI->sc_bottom = pATI->NewHW.sc_bottom;
     }
@@ -1064,6 +1066,15 @@ ATIMach64SetupForScreenToScreenCopy
     outf(DP_WRITE_MASK, planemask);
     outf(DP_SRC, DP_MONO_SRC_ALLONES |
         SetBits(SRC_BLIT, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
+
+    if (TransparencyColour == -1)
+        outf(CLR_CMP_CNTL, CLR_CMP_FN_FALSE);
+    else
+    {
+        ATIMach64WaitForFIFO(pATI, 2);
+        outf(CLR_CMP_CLR, TransparencyColour);
+        outf(CLR_CMP_CNTL, CLR_CMP_FN_EQUAL | CLR_CMP_SRC_2D);
+    }
 }
 
 /*
@@ -1133,12 +1144,14 @@ ATIMach64SetupForSolidFill
     if (pATI->XModifier == 1)
         outf(DST_CNTL, DST_X_DIR | DST_Y_DIR);
 
-    ATIMach64WaitForFIFO(pATI, 4);
+    ATIMach64WaitForFIFO(pATI, 5);
     outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
     outf(DP_WRITE_MASK, planemask);
     outf(DP_SRC, DP_MONO_SRC_ALLONES |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
     outf(DP_FRGD_CLR, colour);
+
+    outf(CLR_CMP_CNTL, CLR_CMP_FN_FALSE);
 }
 
 /*
@@ -1192,12 +1205,14 @@ ATIMach64SetupForSolidLine
 {
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
-    ATIMach64WaitForFIFO(pATI, 4);
+    ATIMach64WaitForFIFO(pATI, 5);
     outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
     outf(DP_WRITE_MASK, planemask);
     outf(DP_SRC, DP_MONO_SRC_ALLONES |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
     outf(DP_FRGD_CLR, colour);
+
+    outf(CLR_CMP_CNTL, CLR_CMP_FN_FALSE);
 
     ATIMach64ValidateClip(pATI, pATI->NewHW.sc_left, pATI->NewHW.sc_right,
         pATI->NewHW.sc_top, pATI->NewHW.sc_bottom);
@@ -1304,7 +1319,7 @@ ATIMach64SetupForMono8x8PatternFill
         outf(DP_BKGD_CLR, bg);
     }
 
-    ATIMach64WaitForFIFO(pATI, 6);
+    ATIMach64WaitForFIFO(pATI, 7);
     outf(DP_WRITE_MASK, planemask);
     outf(DP_SRC, DP_MONO_SRC_PATTERN |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
@@ -1313,6 +1328,8 @@ ATIMach64SetupForMono8x8PatternFill
     outf(PAT_REG0, patx);
     outf(PAT_REG1, paty);
     outf(PAT_CNTL, PAT_MONO_EN);
+
+    outf(CLR_CMP_CNTL, CLR_CMP_FN_FALSE);
 }
 
 /*
@@ -1382,11 +1399,13 @@ ATIMach64SetupForScanlineCPUToScreenColorExpandFill
         outf(DP_BKGD_CLR, bg);
     }
 
-    ATIMach64WaitForFIFO(pATI, 3);
+    ATIMach64WaitForFIFO(pATI, 4);
     outf(DP_WRITE_MASK, planemask);
     outf(DP_SRC, DP_MONO_SRC_HOST |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
     outf(DP_FRGD_CLR, fg);
+
+    outf(CLR_CMP_CNTL, CLR_CMP_FN_FALSE);
 }
 
 /*
@@ -1541,7 +1560,6 @@ ATIMach64AccelInit
     pXAAInfo->Sync = ATIMach64Sync;
 
     /* Screen-to-screen copy */
-    pXAAInfo->ScreenToScreenCopyFlags = NO_TRANSPARENCY;        /* For now */
     pXAAInfo->SetupForScreenToScreenCopy = ATIMach64SetupForScreenToScreenCopy;
     pXAAInfo->SubsequentScreenToScreenCopy =
         ATIMach64SubsequentScreenToScreenCopy;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.c,v 1.8 2000/05/03 00:44:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.c,v 1.9 2000/08/04 21:07:12 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -125,50 +125,47 @@ ATIClaimResources
 
 #endif /* AVOID_CPIO */
 
-    if (Active || !pATI->SharedAccelerator)
-    {
+    if (!Active && pATI->SharedAccelerator)
+        return;
 
 #ifndef AVOID_CPIO
 
-        /* Claim 8514/A resources */
-        if (pATI->ChipHasSUBSYS_CNTL)
-            xf86ClaimFixedResources(
-                pATI->SharedAccelerator ? res8514Shared : res8514Exclusive,
-                pATI->iEntity);
+    /* Claim 8514/A resources */
+    if (pATI->ChipHasSUBSYS_CNTL)
+        xf86ClaimFixedResources(
+            pATI->SharedAccelerator ? res8514Shared : res8514Exclusive,
+            pATI->iEntity);
 
-        /* Claim Mach64 sparse I/O resources */
-        if ((pATI->Adapter == ATI_ADAPTER_MACH64) &&
-            (pATI->CPIODecoding == SPARSE_IO))
-        {
-            if (pATI->SharedAccelerator)
-                Resources[0].type = ResShrIoSparse;
-            else
-                Resources[0].type = ResExcIoSparse;
-            Resources[0].rBase = pATI->CPIOBase;
-            Resources[0].rMask = 0x03FCU;
+    /* Claim Mach64 sparse I/O resources */
+    if ((pATI->Adapter == ATI_ADAPTER_MACH64) &&
+        (pATI->CPIODecoding == SPARSE_IO))
+    {
+        if (pATI->SharedAccelerator)
+            Resources[0].type = ResShrIoSparse;
+        else
+            Resources[0].type = ResExcIoSparse;
+        Resources[0].rBase = pATI->CPIOBase;
+        Resources[0].rMask = 0x03FCU;
 
-            xf86ClaimFixedResources(Resources, pATI->iEntity);
-        }
+        xf86ClaimFixedResources(Resources, pATI->iEntity);
+    }
 
 #endif /* AVOID_CPIO */
 
-        /* Register relocatable resources for inactive adapters */
-        if (!Active)
-        {
-            pResources =
-                xf86RegisterResources(pATI->iEntity, NULL, ResExclusive);
-            pResources =
-                xf86ReallocatePciResources(pATI->iEntity, pResources);
-            if (pResources)
-            {
-                xf86Msg(X_WARNING,
-                    ATI_NAME ":  Unable to register the following resources"
-                    " for inactive adapter:\n");
-                xf86PrintResList(1, pResources);
-                xf86FreeResList(pResources);
-            }
-        }
-    }
+    /* Register relocatable resources for inactive adapters */
+    if (Active)
+        return;
+
+    pResources = xf86RegisterResources(pATI->iEntity, NULL, ResExclusive);
+    pResources = xf86ReallocatePciResources(pATI->iEntity, pResources);
+    if (!pResources)
+        return;
+
+    xf86Msg(X_WARNING,
+        ATI_NAME ":  Unable to register the following resources for inactive"
+        " adapter:\n");
+    xf86PrintResList(1, pResources);
+    xf86FreeResList(pResources);
 }
 
 /*
