@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.71 2000/12/06 20:39:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.72 2001/02/12 01:34:53 tsi Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -859,11 +859,50 @@ xf86ftell(XF86FILE* f)
 	return ftell(fp->filehnd);
 }
 
+#define mapnum(e) case (xf86_##e): err = e; break;
+
 char*
 xf86strerror(int n)
 {
-	return strerror(n);
+	int err;
+
+	switch (n)
+	{
+		case 0: err = 0; break;
+		mapnum (EACCES);
+		mapnum (EAGAIN);
+		mapnum (EBADF);
+		mapnum (EEXIST);
+		mapnum (EFAULT);
+		mapnum (EINTR);
+		mapnum (EINVAL);
+		mapnum (EISDIR);
+		mapnum (ELOOP);		/* not POSIX 1 */
+		mapnum (EMFILE);
+		mapnum (ENAMETOOLONG);
+		mapnum (ENFILE);
+		mapnum (ENOENT);
+		mapnum (ENOMEM);
+		mapnum (ENOSPC);
+		mapnum (ENOTDIR);
+		mapnum (EPIPE);
+		mapnum (EROFS);
+#ifndef __EMX__
+		mapnum (ETXTBSY);	/* not POSIX 1 */
+#endif
+		mapnum (ENOTTY);
+		mapnum (EBUSY);
+		mapnum (ENODEV);
+		mapnum (EIO);
+
+		default:
+			err = 999;
+	}
+	return strerror(err);
 }
+
+#undef mapnum
+
 
 /* required for portable fgetpos/fsetpos,
  * use as
