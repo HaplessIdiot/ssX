@@ -1,4 +1,6 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 396. Fix bug where XDarwin.app would not hide the X display when it was no
+      longer the active application (Torrey Lyons).
  395. Make XDarwin.app ignore .xserverrc file when started from the GUI so
       that it starts correctly (Torrey Lyons).
  394. Cygwin updates (#4557, 4558, 4563, Suhaib Siddiqi).
@@ -12993,4 +12995,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1694 2001/04/18 17:14:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1695 2001/04/18 20:28:50 torrey Exp $
