@@ -23,7 +23,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/xsm.h,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/xsm/xsm.h,v 1.9 2004/04/03 22:38:56 tsi Exp $ */
 
 #ifndef _XSM_H_
 #define _XSM_H_
@@ -173,6 +173,8 @@ extern XtAppContext	appContext;
 extern Widget		topLevel;
 extern Widget		mainWindow;
 
+extern XtSignalId sig_term_id, sig_usr1_id;
+
 extern void fprintfhex(FILE *fp, unsigned int len, char *cp);
 extern Status StartSession(char *name, Bool use_default);
 extern void EndSession(int status);
@@ -198,6 +200,17 @@ extern int System();
 #define system(s) System(s)
 #endif
 
+/* info.c */
+extern Widget clientInfoPopup;
+extern Widget clientPropPopup;
+extern Widget clientInfoButton;
+extern Widget logButton;
+extern Widget checkPointButton;
+extern Widget shutdownButton;
+extern Widget clientListWidget;
+extern Widget savePopup;
+
+
 /* remote.c */
 extern void remote_start(char *restart_protocol, char *restart_machine, 
 			 char *program, char **args, char *cwd, char **env, 
@@ -205,11 +218,10 @@ extern void remote_start(char *restart_protocol, char *restart_machine,
 			 char *non_local_session_env );
 
 /* signals.c */
-extern void sig_child_handler(XtPointer closure, XtSignalId id);
-extern void sig_term_handler(int sig);
-extern void sig_usr1_handler(int sig);
 extern void register_signals(XtAppContext);
 extern int execute_system_command(char *s);
+extern int checkpoint_from_signal;
+
 
 #ifdef XKB
 #include <X11/extensions/XKBbells.h>

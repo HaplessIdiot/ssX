@@ -23,7 +23,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/xsm.c,v 1.9 2001/12/14 20:02:27 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/xsm.c,v 1.10 2003/09/13 21:33:12 dawes Exp $ */
 
 /*
  * X Session Manager.
@@ -87,22 +87,6 @@ static void NewConnectionXtProc(XtPointer client_data, int *source,
 static void MyIoErrorHandler(IceConn ice_conn);
 static void InstallIOErrorHandler(void);
 static void CloseListeners(void);
-
-/*
- * Extern declarations
- */
-
-extern Widget clientInfoPopup;
-extern Widget clientPropPopup;
-extern Widget clientInfoButton;
-extern Widget logButton;
-extern Widget checkPointButton;
-extern Widget shutdownButton;
-extern Widget clientListWidget;
-extern Widget savePopup;
-
-extern int checkpoint_from_signal;
-
 static IceListenObj *listenObjs;
 
 
