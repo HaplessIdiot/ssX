@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.23 2000/11/30 23:29:59 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.24 2001/01/17 19:41:50 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -751,6 +751,7 @@ _XEventsQueued (dpy, mode)
 	 */
 	if (!pend && !dpy->qlen && ++dpy->conn_checker >= XCONN_CHECK_FREQ)
 	{
+	    int	result;
 #ifdef USE_POLL
 	    struct pollfd filedes;
 #else
@@ -762,14 +763,14 @@ _XEventsQueued (dpy, mode)
 #ifdef USE_POLL
 	    filedes.fd = dpy->fd;
 	    filedes.events = POLLIN;
-	    if ((pend = poll(&filedes, 1, 0)))
+	    if ((result = poll(&filedes, 1, 0)))
 #else
 	    FD_ZERO(&r_mask);
 	    FD_SET(dpy->fd, &r_mask);
-	    if ((pend = Select(dpy->fd + 1, &r_mask, NULL, NULL, &zero_time)))
+	    if ((result = Select(dpy->fd + 1, &r_mask, NULL, NULL, &zero_time)))
 #endif
 	    {
-		if (pend > 0)
+		if (result > 0)
 		{
 		    if (_X11TransBytesReadable(dpy->trans_conn, &pend) < 0)
 			_XIOError(dpy);
@@ -777,7 +778,7 @@ _XEventsQueued (dpy, mode)
 		    if (!pend)
 			pend = SIZEOF(xReply);
 		}
-		else if (pend < 0 && !ECHECK(EINTR))
+		else if (result < 0 && !ECHECK(EINTR))
 		    _XIOError(dpy);
 	    }
 	}
