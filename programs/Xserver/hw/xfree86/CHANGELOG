@@ -1,4 +1,9 @@
 XFree86 4.0.1b (11 August 2000)
+ 514. Fix the freetype font renderer's handling of True Type Collections
+      (.ttc files) (based on #A.123, timecop at japan.co.jp).
+ 513. Add PCI IDs for Silicon Motion, Inc (#A.122, Martin Dalecki).
+ 512. Fix a problem with the sequence number not being byte-swapped
+      for the reply to the DPMSCapable request (#A.120, Stephen Tse).
  511. Fix input driver PreInit funtions to behave as expected by InitInput()
       (David Dawes).
  510. Port the spaceorb input driver to 4.x (Guido Heumer).
@@ -10985,4 +10990,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1266 2000/08/11 17:27:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1267 2000/08/11 19:10:38 dawes Exp $
