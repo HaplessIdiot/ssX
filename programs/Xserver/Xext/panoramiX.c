@@ -842,6 +842,7 @@ void PanoramiXConsolidate(void)
 
     for (i =  0; i < PanoramiXNumScreens; i++) {
 	root->info[i].id = WindowTable[i]->drawable.id;
+	root->u.win.class = InputOutput;
 	defmap->info[i].id = (screenInfo.screens[i])->defColormap;
     }
 
