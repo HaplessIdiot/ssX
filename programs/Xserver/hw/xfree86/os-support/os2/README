@@ -2,21 +2,20 @@ Information on files in this directory
 --------------------------------------
 \xc\programs\xserver\hw\xfree86\os-support\os2
 
-1. In the current implementation, XFree86 uses undocumented functions
-   of an undocumented device driver named SMVDD.SYS for mapping video
-   memory.
-   This driver was part of MMOS/2 version 2.1 and 2.11 and formed the
-   base of the DIVE 1.0 implementation. If you have OS/2 2.1 or 2.11,
-   you may well have already installed this driver.
-   In Warp, this driver does no longer exist, and it is unknown, where
-   the essential functionality this driver provides, has gone to. DIVE
-   might provide a replacement, but unfortunately DIVE relies on PM,
-   and is not standalone, as XFree86 should be.
-   Nevertheless, this driver still works under Warp, and you need to
-   install it in CONFIG.SYS with a line DEVICE=path\SMVDD.SYS.
-   In future, this driver will probably be replaced by a special
-   XFREE86.SYS device driver.
+The old implementation of xfree86 used an undocumented device driver, SMVDD.SYS.
+This has been replaced because this driver was not part of the OS/2 3.0 standard
+distribution, and had very limited capabilities. For example, it did not allow mapping 
+of linear frame buffers used by the new accelerated video cards. 
+A device driver was written for this purpose by Holger Veit <Holger.Veit@gmd.de> 
+which allows mapping of any physical address in user space (it also does plenty
+of other usefull stuff.....)
+The driver should be installed in the config.sys with a line:
 
----End-Of-File---
+DEVICE=path\XF86SUP.SYS
 
-$XFree86$
+The driver is used for mapping video memory, as well as for granting access to IO ports,
+and provides additional functionality.
+
+        Sebastien Marineau <marineau@genie.uottawa.ca>
+
+$XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/README,v 3.0 1995/03/11 14:15:19 dawes Exp $

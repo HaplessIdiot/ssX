@@ -135,6 +135,12 @@ source distribution for full details.
 	<ITEM>LynxOS AT 2.2.1, 2.3
 	</itemize>	
 
+    <tag/PC98:/
+	<itemize>
+	<ITEM>FreeBSD(98) 2.0.5, 2.1
+	<ITEM>NetBSD/pc98 (based on NetBSD 1.1)
+	</itemize>
+
     </DESCRIP>
 
 <sect> Supported video-card chip-sets
@@ -433,6 +439,33 @@ XFree86 support was integrated into the base X11R6 distribution by:
 <itemize>
        <item> Orest Zborowski <it>&lt;orestz@eskimo.com&gt;</it>,
        <item> Dirk Hohndel <it>&lt;hohndel@XFree86.org&gt;</it>
+</itemize>
+<tag/PC98 support by:  /
+<itemize>
+	<item> Toyonori Fujiura <it>&lt;toyo@center.nitech.ac.jp&gt;</it>,
+	<item> Hiroyuki Aizu <it>&lt;aizu@center.nitech.ac.jp&gt;</it>,
+	<item> Tetsuya Kakefuda <it>&lt;kakefuda@tag.iijnet.or.jp&gt;</it>,
+	<item> Takefumi Tsukada <it>&lt;tsuka@kawalab.dnj.ynu.ac.jp&gt;</it>,
+	<item> H.Komatsuzaki,
+	<item> Naoki Katsurakawa <it>&lt;katsura@prc.tsukuba.ac.jp&gt;</it>,
+	<item> Shuichiro Urata <it>&lt;s-urata@nmit.tmg.nec.co.jp&gt;</it>,
+	<item> Yasuyuki Kato <it>&lt;yasuyuki@acaets0.anritsu.co.jp&gt;</it>,
+	<item> Michio Jinbo <it>&lt;karl@pms.nagaokaut.ac.jp&gt;</it>,
+	<item> Tatsuya Koike <it>&lt;koiket@focus.rim.or.jp&gt;</it>,
+	<item> Koichiro Suzuki <it>&lt;ksuzuki@cc.tuat.ac.jp&gt;</it>,
+	<item> Tsuyoshi Tamaki <it>&lt;tamaki@sail.t.u-tokyo.ac.jp&gt;</it>,
+	<item> Isao Ohishi <it>&lt;ohishi@hf.rim.or.jp&gt;</it>,
+	<item> Kohji Ohishi <it>&lt;atena@njk.co.jp&gt;</it>,
+	<item> Shin'ichi Yairo <it>&lt;QZR00522@niftyserve.or.jp&gt;</it>,
+	<item> Kazuo Ito <it>&lt;ft4k-itu@asahi-net.or.jp&gt;</it>,
+	<item> Jun Sakuma <it>&lt;i931361@jks.is.tsukuba.ac.jp&gt;</it>,
+	<item> Shuichi Ueno <it>&lt;uenos@ppp.bekkoame.or.jp&gt;</it>,
+	<item> Ishida Kazuo <it>&lt;ishidakz@obp.cl.nec.co.jp&gt;</it>,
+	<item> Takaaki Nomura <it>&lt;tnomura@sfc.keio.ac.jp&gt;</it>,
+	<item> Tadaaki Nagao <it>&lt;nagao@cs.titech.ac.jp&gt;</it>,
+	<item> Minoru Noda <it>&lt;tarda@ce.tokushima-u.ac.jp&gt;</it>,
+	<item> Naofumi Honda <it>&lt;honda@math.hokudai.ac.jp&gt;</it>,
+	<item> Masato Yoshida (Contributor of PW805i support)
 </itemize>
 
 <tag/Original accelerated code by:  /
@@ -933,7 +966,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.41 1996/01/06 05:23:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.42 1996/01/16 15:04:26 dawes Exp $
 </verb>
 
 </article>

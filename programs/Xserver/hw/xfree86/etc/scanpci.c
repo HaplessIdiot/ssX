@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.5 1996/01/12 14:34:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.6 1996/01/13 12:21:48 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -75,11 +75,19 @@
 #endif
 #include <sys/v86.h>
 #endif
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__386BSD__)
+#if defined(__FreeBSD__) || defined(__386BSD__)
 #include <sys/file.h>
 #include <machine/console.h>
 #ifndef GCCUSESGAS
 #define GCCUSESGAS
+#endif
+#endif
+#if defined(__NetBSD__) 
+#include <sys/param.h>
+#include <sys/file.h>
+#include <machine/sysarch.h>
+#ifndef GCCUSEGAS
+#define GCCUSEGAS
 #endif
 #endif
 #if defined(__bsdi__)
@@ -950,17 +958,30 @@ enable_os_io()
 #if defined(linux)
     iopl(3);
 #endif
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__386BSD__) || defined(__bsdi__)
+#if defined(__FreeBSD__)  || defined(__386BSD__) || defined(__bsdi__)
     if ((io_fd = open("/dev/console", O_RDWR, 0)) < 0) {
         perror("/dev/console");
         exit(1);
     }
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__386BSD__)
+#if defined(__FreeBSD__)  || defined(__386BSD__)
     if (ioctl(io_fd, KDENABIO, 0) < 0) {
         perror("ioctl(KDENABIO)");
         exit(1);
     }
 #endif
+#if defined(__NetBSD__)
+#if !defined(NetBSD1_1)
+    if ((io_fd = open("/dev/io", O_RDWR, 0)) < 0) {
+	perror("/dev/io");
+	exit(1);
+    }
+#else
+    if (i386_iopl(1) < 0) {
+	perror("i386_iopl");
+	exit(1);
+    }
+#endif /* NetBSD1_1 */
+#endif /* __NerBSD__ */
 #if defined(__bsdi__)
     if (ioctl(io_fd, PCCONENABIOPL, 0) < 0) {
         perror("ioctl(PCCONENABIOPL)");
@@ -990,7 +1011,7 @@ disable_os_io()
 #if defined(linux)
     iopl(0);
 #endif
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__386BSD__)
+#if defined(__FreeBSD__)  || defined(__386BSD__)
     if (ioctl(io_fd, KDDISABIO, 0) < 0) {
         perror("ioctl(KDDISABIO)");
 	close(io_fd);
@@ -998,6 +1019,16 @@ disable_os_io()
     }
     close(io_fd);
 #endif
+#if defined(__NetBSD__)
+#if !defined(NetBSD1_1)
+    close(io_fd);
+#else
+    if (i386_iopl(0) < 0) {
+	perror("i386_iopl");
+	exit(1);
+    }
+#endif /* NetBSD1_1 */
+#endif /* __NetBSD__ */
 #if defined(__bsdi__)
     if (ioctl(io_fd, PCCONDISABIOPL, 0) < 0) {
         perror("ioctl(PCCONDISABIOPL)");

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.23 1996/01/10 05:39:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.24 1996/01/28 07:30:26 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1193,6 +1193,8 @@ xf86Wakeup(blockData, err, pReadmask)
      int err;
      pointer pReadmask;
 {
+
+#ifndef __EMX__
 #ifdef	__OSF__
   long kbdDevices[mskcnt];
   long mseDevices[mskcnt];
@@ -1229,6 +1231,12 @@ xf86Wakeup(blockData, err, pReadmask)
       }
 #endif	/* __OSF__ */
   }
+#else   /* __EMX__ */
+
+	(xf86Info.kbdEvents)();  /* Under OS/2, always call */
+	(xf86Info.mseEvents)();
+
+#endif  /* __EMX__ */
 
   if (xf86VTSwitchPending()) xf86VTSwitch();
 
@@ -1273,10 +1281,12 @@ xf86VTSwitch()
   if (xf86VTSema) {
     for (j = 0; j < screenInfo.numScreens; j++)
       (XF86SCRNINFO(screenInfo.screens[j])->EnterLeaveVT)(LEAVE, j);
-      
+
+#ifndef __EMX__
     DisableDevice((DeviceIntPtr)xf86Info.pKeyboard);
     DisableDevice((DeviceIntPtr)xf86Info.pPointer);
-      
+#endif
+
     if (!xf86VTSwitchAway()) {
       /*
        * switch failed 
@@ -1285,9 +1295,11 @@ xf86VTSwitch()
       for (j = 0; j < screenInfo.numScreens; j++)
         (XF86SCRNINFO(screenInfo.screens[j])->EnterLeaveVT)(ENTER, j);
       SaveScreens(SCREEN_SAVER_FORCER,ScreenSaverReset);
-                       
+
+#ifndef __EMX__
       EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
       EnableDevice((DeviceIntPtr)xf86Info.pPointer);
+#endif
 
     } else {
       xf86VTSema = FALSE;
@@ -1302,9 +1314,11 @@ xf86VTSwitch()
     /* Turn screen saver off when switching back */
     SaveScreens(SCREEN_SAVER_FORCER,ScreenSaverReset);
 
+#ifndef __EMX__
     EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
     EnableDevice((DeviceIntPtr)xf86Info.pPointer);
-      
+#endif
+
   }
 }
 

@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.26 1996/01/10 05:44:13 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.27 1996/01/11 10:39:01 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -75,8 +75,13 @@ SOFTWARE.
 #include <X11/Xos.h>
 #include <X11/cursorfont.h>
 #include <X11/Xaw/SimpleMenu.h>
+
+#if XtSpecificationRelease >= 6
 #include <X11/Xpoll.h>
+#endif
+
 #include <X11/Xlocale.h>
+
 #include <pwd.h>
 #include <ctype.h>
 #include "data.h"
@@ -127,6 +132,7 @@ SOFTWARE.
 #endif
 
 #ifdef SVR4
+#undef  SYSV			/* predefined on Solaris 2.4 */
 #define SYSV			/* SVR4 is (approx) superset of SVR3 */
 #define ATT
 #define USE_SYSV_UTMP
@@ -453,7 +459,7 @@ extern char *ttyname();
 #endif
 
 #ifdef SYSV
-extern char *ptsname();
+extern char *ptsname PROTO((int));
 #endif
 
 #include "xterm.h"
@@ -1293,11 +1299,11 @@ char **argv;
 
 	    if (setegid(rgid) == -1)
 		(void) fprintf(stderr, "setegid(%d): %s\n",
-			       rgid, strerror(errno));
+			       (int) rgid, strerror(errno));
 
 	    if (seteuid(ruid) == -1)
 		(void) fprintf(stderr, "seteuid(%d): %s\n",
-			       ruid, strerror(errno));
+			       (int) ruid, strerror(errno));
 #endif
 
 	    XtSetErrorHandler(xt_error);
@@ -1317,11 +1323,11 @@ char **argv;
 #ifdef HAS_POSIX_SAVED_IDS
 	    if (seteuid(euid) == -1)
 		(void) fprintf(stderr, "seteuid(%d): %s\n",
-			       euid, strerror(errno));
+			       (int) euid, strerror(errno));
 
 	    if (setegid(egid) == -1)
 		(void) fprintf(stderr, "setegid(%d): %s\n",
-			       egid, strerror(errno));
+			       (int) egid, strerror(errno));
 #endif
 	}
 
@@ -1985,8 +1991,6 @@ spawn ()
 	register TScreen *screen = &term->screen;
 #ifdef USE_HANDSHAKE
 	handshake_t handshake;
-#else
-	int fds[2];
 #endif
 	int tty = -1;
 	int done;
@@ -2458,7 +2462,7 @@ spawn ()
 	{ 
 #include <grp.h>
 		struct group *ttygrp;
-		if (ttygrp = getgrnam("tty")) {
+		if ((ttygrp = getgrnam("tty")) != 0) {
 			/* change ownership of tty to real uid, "tty" gid */
 			chown (ttydev, screen->uid, ttygrp->gr_gid);
 			chmod (ttydev, 0620);

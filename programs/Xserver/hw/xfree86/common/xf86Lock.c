@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Lock.c,v 1.3 95/01/06 21:01:52 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Lock.c,v 3.2 1995/01/28 15:57:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Lock.c,v 3.3 1996/01/24 22:01:40 dawes Exp $ */
 
 /*
  * Explicit support for a server lock file like the ones used for UUCP.
@@ -18,6 +18,10 @@
 
 #ifdef _MINIX
 #include <limits.h>	/* For PATH_MAX */
+#endif
+
+#ifdef __EMX__
+#define link rename
 #endif
 
 #ifndef PATH_MAX
@@ -75,7 +79,18 @@ xf86LockServer()
   i = 0;
   do {
     i++;
-    lfd = open(tmp, O_CREAT | O_RDWR, 0444);
+    lfd = open(tmp, O_CREAT | O_EXCL | O_WRONLY, 0644);
+    if (lfd < 0)
+       sleep(2);
+    else
+       break;
+  } while (i < 3);
+  if (lfd < 0)
+    unlink(tmp);
+  i = 0;
+  do {
+    i++;
+    lfd = open(tmp, O_CREAT | O_EXCL | O_WRONLY, 0644);
     if (lfd < 0)
        sleep(2);
     else
@@ -85,8 +100,8 @@ xf86LockServer()
     FatalError("Could not create lock file in %s\n", tmp);
   (void) sprintf(pid_str, "%10d\n", getpid());
   (void) write(lfd, pid_str, 11);
+  (void) fchmod(lfd, 0444);
   (void) close(lfd);
-  (void) chmod(tmp, 0444);
 
   /*
    * OK.  Now the tmp file exists.  Try three times to move it in place
@@ -96,11 +111,7 @@ xf86LockServer()
   haslock = 0;
   while ((!haslock) && (i++ < 3)) {
 
-#ifndef __EMX__
     haslock = (link(tmp,lock) == 0);
-#else
-    haslock = (rename(tmp,lock)==0);
-#endif
     if (haslock) {
       /*
        * We're done.

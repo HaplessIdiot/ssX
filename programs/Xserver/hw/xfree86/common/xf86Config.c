@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.69 1996/01/24 22:01:34 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.70 1996/01/28 07:30:24 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1022,7 +1022,7 @@ static char* prependRoot(char *pathname)
 	if (isalpha(pathname[0]) && pathname[1] == ':')
 		strcpy(pathbuf,pathname);
 	else
-		sprintf(pathbuf,"%s%s", root, pathname);
+		sprintf(pathbuf,"%s", pathname);  /* Removed %s root prepending */
 	return pathbuf;
 #endif
 }
@@ -1131,6 +1131,9 @@ configKeyboardSection()
 {
   int            token, ntoken;
   int            i, j;
+#ifdef XKB
+  extern Bool noXkbExtension;
+#endif
       
   /* Initialize defaults */
   xf86Info.serverNumLock = FALSE;
@@ -1237,6 +1240,12 @@ configKeyboardSection()
       break;
 
 #ifdef XKB
+    case XKBDISABLE:
+      noXkbExtension = TRUE;
+      if (xf86Verbose)
+        ErrorF("%s XKB: disabled\n", XCONFIG_GIVEN);
+      break;
+
     case XKBKEYMAP:
       if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBKeymap string expected");
       xf86Info.xkbkeymap = val.str;

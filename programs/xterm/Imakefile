@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/63 1996/01/14 16:52:24 kaleb $
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.4 1996/01/16 15:09:34 dawes Exp $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.5 1996/01/24 22:04:57 dawes Exp $
 XCOMM
 XCOMM                         Attention xterm porters
 XCOMM
@@ -8,6 +8,21 @@ XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
 XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
 XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
 XCOMM
+
+/*
+ * Fixes to allow compile with X11R5
+ */
+#ifndef XkbClientDefines
+#define XkbClientDefines /**/
+#endif
+
+#ifndef XkbClientDepLibs
+#define XkbClientDepLibs /**/
+#endif
+
+#ifndef XkbClientLibs
+#define XkbClientLibs /**/
+#endif
 
 /*
  * add -DWTMP and -DLASTLOG if you want them; make sure that bcopy can

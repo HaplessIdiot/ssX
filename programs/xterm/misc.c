@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/105 1996/01/14 16:53:00 kaleb $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.7 1996/01/16 15:09:43 dawes Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.8 1996/01/24 22:05:01 dawes Exp $
  */
 
 /*
@@ -49,6 +49,12 @@
 #include "menu.h"
 
 #include "xterm.h"
+
+#if XtSpecificationRelease < 6
+#ifndef X_GETTIMEOFDAY
+#define X_GETTIMEOFDAY(t) gettimeofday(t,(struct timezone *)0)
+#endif
+#endif
 
 #ifdef AMOEBA
 #include "amoeba.h"

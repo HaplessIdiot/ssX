@@ -1,4 +1,5 @@
-XCOMM $XConsortium: Imakefile /main/1 1995/11/30 19:20:13 kaleb $
+XCOMM $XConsortium: Imakefile /main/2 1996/01/14 16:49:31 kaleb $
+XCOMM $XFree86$
 
      VLED_SRCS = xkbvleds.c LED.c utils.c
      VLED_OBJS = xkbvleds.o LED.o utils.o
@@ -6,10 +7,10 @@ XCOMM $XConsortium: Imakefile /main/1 1995/11/30 19:20:13 kaleb $
     WATCH_OBJS = xkbwatch.o LED.o utils.o
      BELL_SRCS = xkbbell.c
      BELL_OBJS = xkbbell.o
-      PROGRAMS = xkbvleds xkbwatch xkbbell
-       DEPLIBS = XkbClientDepLibs XawClientDepLibs
-       LOCLIBS = XkbClientLibs XawClientLibs
-       DEFINES = XkbClientDefines
+      PROGRAMS = ProgramTargetName(xkbvleds) ProgramTargetName(xkbwatch) ProgramTargetName(xkbbell)
+       DEPLIBS = $(DEPXKBFILELIB) XawClientDepLibs
+       LOCLIBS = $(XKBFILELIB) XawClientLibs
+       DEFINES = -DXKB
 
 EXTRA_INCLUDES = -I$(EXTINCSRC)
 

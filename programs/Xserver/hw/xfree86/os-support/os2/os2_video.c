@@ -1,7 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.0 1995/03/11 14:15:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.1 1996/01/24 22:02:13 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
+ * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -46,6 +47,7 @@
  */
 
 static HFILE mapdev = -1;
+static ULONG stored_virt_addr;
 static char* mappath = "\\DEV\\PMAP$";
 static HFILE open_mmap() 
 {
@@ -117,10 +119,11 @@ unsigned long Size;
 	if (DosDevIOCtl(mapdev, (ULONG)0x76, (ULONG)0x44,
 	      (PVOID)&par, (ULONG)plen, (PULONG)&plen,
 	      (PVOID)&dta, (ULONG)dlen, (PULONG)&dlen) == 0) {
-		ErrorF("xf86MapVidMem: (ScreenNum= %d, Base= %p, Size= 0x%x\n",
+		ErrorF("xf86MapVidMem succeeded: (ScreenNum= %d, Base= %p, Size= 0x%x\n",
 		ScreenNum, Base, Size);
-		if (dlen==sizeof(dta))
+		if (dlen==sizeof(dta)) {
 			return (pointer)dta.addr;
+		}
 		/*else fail*/
 	}
 
@@ -138,7 +141,7 @@ pointer Base;
 unsigned long Size;
 {
 	DIOParPkt	par;
-	ULONG		plen;
+	ULONG		plen,vmaddr;
 
 /* We need here the VIRTADDR for unmapping, not the physical address      */
 /* This should be taken care of either here by keeping track of allocated */
@@ -149,26 +152,28 @@ unsigned long Size;
 /* If the above mapping function is only called once, then we can store   */
 /* the virtual adress and use it here.... 				  */
 	
-	par.addr	= (ULONG)Base;
-	par.size	= Size;
+	par.addr	= Base;
+	par.size	= 0xffffffff; /* This is the virtual addres parameter. Set this to ignore */
 	plen 		= sizeof(par);
 
 	if (mapdev != -1)
-	    DosDevIOCtl(mapdev, (ULONG)0x76, (ULONG)0x45,
+	    DosDevIOCtl(mapdev, (ULONG)0x76, (ULONG)0x46,
 	      (PVOID)&par, (ULONG)plen, (PULONG)&plen,
-	      NULL, 0, NULL);
+	      &vmaddr, sizeof(ULONG), &plen);
+        ErrorF("xf86-OS/2: Unmapping physical memory at base %x, virtual address %x\n",Base,vmaddr);
 
 /* Now if more than one region has been allocated and we close the driver, *
  * the other pointers will immediately become invalid. We avoid closing    *
- * driver for now, but this should be fixed                                */
+ * driver for now, but this should be fixed for server exit                               */
  
-	/*close_mmap();*/
+	/* close_mmap(); */
 }
 
 Bool xf86LinearVidMem()
 {
 	/* setting it to true needs further testing */
-	return(FALSE);
+	/* But what the heck, that's what we are here for! */
+	return(TRUE);
 }
 
 /***************************************************************************/
@@ -177,12 +182,14 @@ Bool xf86LinearVidMem()
 
 Bool xf86DisableInterrupts()
 {
-	/* no interrupt disabling allowed */
-	return(FALSE);
+	/* allow interrupt disabling but check for side-effects. Not a good policy on OS/2...*/
+        asm ("cli");
+	return(TRUE);
 }
 
 void xf86EnableInterrupts()
 {
-	/*nothing*/
+	/*Reenable*/
+        asm ("sti");
 	return;
 }

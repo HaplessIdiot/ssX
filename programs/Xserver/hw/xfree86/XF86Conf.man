@@ -1,4 +1,4 @@
-.\" $XFree86$
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.29 1996/01/28 07:51:46 dawes Exp $
 .TH XF86Config 4/5 "Version 3.1.2C"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86
@@ -169,6 +169,10 @@ real user's id with stdin and stdout set to the VT.  The purpose
 of this option is to allow system dependent VT initialisation
 commands to be run.  One example is a command to disable the 2-key
 VT switching sequence which is the default on some systems.
+.TP 8
+.B XkbDisable
+Turns the XKEYBOARD extension off, equivalent to using the -kb
+command line option.
 .PP
 .nf
 .B XkbKeymap \fI"keymap"\fP
@@ -179,7 +183,7 @@ VT switching sequence which is the default on some systems.
 .B XkbGeometry \fI"geometry"\fP
 .fi
 .RS 8
-Specifies alternative mappings for the various keyboard "components".
+Specifies alternative mappings for the various XKEYBOARD "components".
 The default mappings when none of these options are specified is:
 .sp
 .in 20
@@ -856,4 +860,4 @@ XF86_P9000(1), XF86_AGX(1), XF86_W32(1).
 Refer to the
 .I XFree86(1)
 manual page.
-.\" $XConsortium: XF86Conf.man /main/13 1996/01/27 16:17:26 kaleb $
+.\" $XConsortium: XF86Conf.man /main/14 1996/01/28 07:52:10 kaleb CHECKEDOUT $

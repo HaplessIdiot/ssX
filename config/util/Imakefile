@@ -1,4 +1,5 @@
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.8 1996/01/21 01:47:20 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/13 1996/01/17 13:23:30 kaleb $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.9 1996/01/24 21:56:07 dawes Exp $
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
 #endif
@@ -44,6 +45,9 @@ InstallManPage(makestrs,$(MANDIR))
 InstallManPage(xmkmf,$(MANDIR))
 
 #if defined(OS2Architecture)
+all:: makestrs.exe
+	ImakeHelper 7 makestrs.exe /makestrs.exe
+
 InstallNamedProg(mkdirhier.cmd,mkdirhier.cmd,$(BINDIR))
 InstallNamedProg(indir.cmd,indir.cmd,$(BINDIR))
 InstallNamedProg(os2inst.cmd,os2inst.cmd,$(BINDIR))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xf86dga/dga.c,v 3.6 1996/01/10 05:42:51 dawes Exp $ */
+/* $XFree86: xc/programs/xf86dga/dga.c,v 3.7 1996/01/13 14:11:27 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Intrinsic.h>
@@ -143,9 +143,10 @@ main(int argc, char *argv[])
 			   XF86DGADirectMouse|
 			   XF86DGADirectKeyb);
 
+#ifndef __EMX__
    /* Give up root privs */
    setuid(getuid());
-
+#endif
 
    XF86DGASetViewPort(dis, DefaultScreen(dis), 0, 0);
 

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xdpyinfo.c /main/34 1995/12/08 12:09:32 dpw $
- * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.6 1996/01/24 22:04:39 dawes Exp $
+ * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.7 1996/01/28 07:32:51 dawes Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -58,6 +58,9 @@ in this Software without prior written authorization from the X Consortium.
 #ifdef XF86MISC
 #include <X11/extensions/xf86misc.h>
 #include <X11/extensions/xf86mscstr.h>
+#endif
+#ifdef XINPUT
+#include <X11/extensions/XInput.h>
 #endif
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -811,6 +814,56 @@ print_record_info(dpy, extname)
     return 1;
 }
 
+#ifdef XINPUT
+int
+print_xinput_info(dpy, extname)
+    Display *dpy;
+    char *extname;
+{
+  int           loop, num_extensions, num_devices;
+  char          **extensions;
+  XDeviceInfo   *devices;
+  int		list = 0;
+  XExtensionVersion *ext;
+
+  if (!(ext = XGetExtensionVersion(dpy, extname)))
+      return 0;
+
+  print_standard_extension_info(dpy, extname, ext->major_version,
+				ext->minor_version);
+
+  extensions = XListExtensions(dpy, &num_extensions);
+  for (loop = 0; loop < num_extensions &&
+         (strcmp(extensions[loop], extname) != 0); loop++);
+  XFreeExtensionList(extensions);
+  if (loop != num_extensions) {
+      printf("  Extended devices :\n");
+      devices = XListInputDevices(dpy, &num_devices);
+      for(loop=0; loop<num_devices; loop++) {
+	  printf("	\"%s\"	[", devices[loop].name ? devices[loop].name : "<noname>");
+	  switch(devices[loop].use) {
+	  case IsXPointer:
+	      printf("XPointer]\n");
+	      break;
+	  case IsXKeyboard:
+	      printf("XKeyboard]\n");
+	      break;
+	  case IsXExtensionDevice:
+	      printf("XExtensionDevice]\n");
+	      break;
+	  default:
+	      printf("invalid value]\n");
+	      break;
+	  }
+        }
+      XFreeDeviceList(devices);
+      return 1;
+    }
+  else
+      return 0;
+}
+#endif
+
 /* utilities to manage the list of recognized extensions */
 
 
@@ -849,7 +902,10 @@ ExtensionPrintInfo known_extensions[] =
     {xieExtName, print_xie_info, False},
     {XTestExtensionName, print_xtest_info, False},
     {"DOUBLE-BUFFER", print_dbe_info, False},
-    {"RECORD", print_record_info, False}    
+    {"RECORD", print_record_info, False},
+#ifdef XINPUT
+    {INAME, print_xinput_info, False}
+#endif
     /* add new extensions here */
     /* wish list: PEX */
 };

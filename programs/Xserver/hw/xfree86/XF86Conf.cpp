@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.18 1996/01/17 12:46:42 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.19 1996/01/28 07:29:09 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -25,7 +25,7 @@ XCOMM not be used in advertising or otherwise to promote the sale, use or other
 XCOMM dealings in this Software without prior written authorization from the
 XCOMM XFree86 Project.
 XCOMM
-XCOMM $XConsortium: XF86Conf.cpp /main/12 1996/01/27 16:00:02 kaleb $
+XCOMM $XConsortium: XF86Conf.cpp /main/13 1996/01/28 07:52:02 kaleb CHECKEDOUT $
 
 XCOMM **********************************************************************
 XCOMM Refer to the XF86Config(4/5) man page for details about the format of 
@@ -127,6 +127,10 @@ XCOMM    RightAlt    ModeShift
 XCOMM    RightCtl    Compose
 XCOMM    ScrollLock  ModeLock
 
+XCOMM To disable the XKEYBOARD extension, uncomment XkbDisable.
+
+XCOMM XkbDisable
+
 XCOMM To use the default map in ProjectRoot keymap/xfree86, uncomment 
 XCOMM XkbKeymap. To use one of the alternate maps in keymap/xfree86 
 XCOMM uncomment and modify the XkbKeymap line, e.g.: 
@@ -210,19 +214,6 @@ XCOMM
 XCOMM    SubSection "Joystick"
 XCOMM        Port "/dev/joy0"
 XCOMM        DeviceName "Joystick"
-XCOMM        TimeOut 10
-XCOMM        MinimumXPosition 100
-XCOMM        MaximumXPosition 1300
-XCOMM        MinimumYPosition 100
-XCOMM        MaximumYPosition 1100
-XCOMM        # CenterX 700
-XCOMM        # CenterY 600
-XCOMM        Delta 20
-XCOMM    EndSubSection
-XCOMM   
-XCOMM    SubSection "Joystick2"
-XCOMM        Port "/dev/joy1"
-XCOMM        DeviceName "Joystick2"
 XCOMM        TimeOut 10
 XCOMM        MinimumXPosition 100
 XCOMM        MaximumXPosition 1300

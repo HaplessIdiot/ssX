@@ -1,7 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.0 1995/03/11 14:15:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.1 1996/01/24 22:02:09 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
+ * Modified 1996 Sebastien Marineau <marineau@genie.uottawa.ca>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -37,9 +38,12 @@
 #define I_NEED_OS2_H
 #define INCL_DOSFILEMGR
 #define INCL_KBD
+#define INCL_VIO
 #include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
+
+VIOMODEINFO OriginalVideoMode;
 
 void xf86OpenConsole()
 {
@@ -50,8 +54,10 @@ void xf86OpenConsole()
 	KBDHWID hwid;
 	APIRET rc;
 
-	ErrorF("Opening console!\n");
-
+	ErrorF("xf86-OS/2: Console opened\n");
+	OriginalVideoMode.cb=sizeof(VIOMODEINFO);
+	rc=VioGetMode(&OriginalVideoMode,(HVIO)0);
+	if(rc!=0) ErrorF("xf86-OS/2: Could not get original video mode. RC=%d\n",rc);
 	xf86Info.consoleFd = -1;
 
 	/* grab the keyboard */
@@ -66,7 +72,7 @@ void xf86OpenConsole()
 		FatalError("xf86OpenConsole: cannot open keyboard, rc=%d\n",rc);
 	xf86Info.consoleFd = fd;
 
-	ErrorF("Keyboard opened!\n");
+	ErrorF("xf86-OS/2: Keyboard opened\n");
 
 	/* assign logical keyboard */
 	KbdFreeFocus(0);
@@ -74,6 +80,9 @@ void xf86OpenConsole()
 	if (rc != 0)
 		FatalError("xf86OpenConsole: cannot set local kbd focus, rc=%d\n",rc);
 
+	rc = KbdSetCp(0,0,fd);
+	if(rc != 0)
+		FatalError("xf86OpenCOnsole: cannot set keyboard codepage, rc=%d\n",rc);
 	rc = KbdGetHWID(&hwid, fd);
 	if (rc == 0) {
 		switch (hwid.idKbd) {
@@ -100,6 +109,7 @@ void xf86CloseConsole()
 	if (xf86Info.consoleFd != -1) {
 		KbdClose(xf86Info.consoleFd);
 	}
+	VioSetMode(&OriginalVideoMode,(HVIO)0);
 	return;
 }
 
@@ -116,3 +126,4 @@ void xf86UseMsg()
 {
 	return;
 }
+

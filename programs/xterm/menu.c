@@ -1,5 +1,5 @@
 /* $XConsortium: menu.c /main/64 1996/01/14 16:52:55 kaleb $ */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.2 1996/01/10 05:44:16 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.3 1996/01/16 15:09:42 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -397,15 +397,15 @@ static void do_securekbd (gw, closure, data)
     XtPointer closure, data;
 {
     register TScreen *screen = &term->screen;
-    Time time = CurrentTime;		/* XXX - wrong */
+    Time now = CurrentTime;		/* XXX - wrong */
 
     if (screen->grabbedKbd) {
-	XUngrabKeyboard (screen->display, time);
+	XUngrabKeyboard (screen->display, now);
 	ReverseVideo (term);
 	screen->grabbedKbd = FALSE;
     } else {
 	if (XGrabKeyboard (screen->display, term->core.window,
-			   True, GrabModeAsync, GrabModeAsync, time)
+			   True, GrabModeAsync, GrabModeAsync, now)
 	    != GrabSuccess) {
 	    Bell(XkbBI_MinorError, 100);
 	} else {

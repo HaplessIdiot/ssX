@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Mouse.c,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.5 1995/12/07 07:25:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.6 1996/01/28 07:30:31 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -257,7 +257,7 @@ xf86MouseProtocol(rBuf, nBytes)
   static int           pBufP = 0;
   static unsigned char pBuf[8];
 
-  static unsigned char proto[8][5] = {
+  static unsigned char proto[9][5] = {
     /*  hd_mask hd_id   dp_mask dp_id   nobytes */
     { 	0x40,	0x40,	0x40,	0x00,	3 	},  /* MicroSoft */
     {	0xf8,	0x80,	0x00,	0x00,	5	},  /* MouseSystems */
@@ -327,16 +327,25 @@ xf86MouseProtocol(rBuf, nBytes)
          * to be extended so that it is identified as Button 4. The lower
          * half of the reverse-map may remain unchanged.
 	 */
-	if (((xf86Info.mseType == P_MS || xf86Info.mseType == P_LOGIMAN)
-             && (char)(rBuf[i] & ~0x23) == 0) ||
-	    (xf86Info.mseType == P_GLIDEPOINT && (char)(rBuf[i] & ~0x33) == 0))
-	  {
-	    buttons = ((int)(rBuf[i] & 0x20) >> 4)
-	      | (xf86Info.lastButtons & 0x05);
-	    if (xf86Info.mseType == P_GLIDEPOINT)
-	      buttons |= ((int)(rBuf[i] & 0x10) >> 1);
-	    xf86PostMseEvent(buttons, 0, 0);
-	  }
+
+	/*
+	 * The order of tests in the following expression
+	 * is an attempt to optimize wrt the likeliness of the
+	 * various cases, think twice before simplifying.
+	 */
+
+	if (   (   (char)(rBuf[i] & ~0x23) != 0
+		&& (   (char) (rBuf[i] & ~0x33) != 0
+		    || xf86Info.mseType != P_GLIDEPOINT))
+	    || (   xf86Info.mseType != P_MS
+		&& xf86Info.mseType != P_LOGIMAN
+		&& xf86Info.mseType != P_GLIDEPOINT)) continue;
+
+	buttons =  ((int)(rBuf[i] & 0x20) >> 4)
+		  | (xf86Info.lastButtons & 0x05);
+	if (xf86Info.mseType == P_GLIDEPOINT)
+	    buttons |= ((int)(rBuf[i] & 0x10) >> 1);
+	xf86PostMseEvent(buttons, 0, 0);
 
 	continue;            /* skip package */
       }
@@ -352,7 +361,6 @@ xf86MouseProtocol(rBuf, nBytes)
       
     case P_LOGIMAN:	    /* MouseMan / TrackMan   [CHRIS-211092] */
     case P_MS:              /* Microsoft */
-    case P_GLIDEPOINT:      /* ALPS GlidePoint */
       if (xf86Info.chordMiddle)
 	buttons = (((int) pBuf[0] & 0x30) == 0x30) ? 2 :
 		  ((int)(pBuf[0] & 0x20) >> 3)
@@ -361,13 +369,19 @@ xf86MouseProtocol(rBuf, nBytes)
         buttons = (xf86Info.lastButtons & 2)
 		  | ((int)(pBuf[0] & 0x20) >> 3)
 		  | ((int)(pBuf[0] & 0x10) >> 4);
-        if (xf86Info.mseType == P_GLIDEPOINT)
-	  buttons |= (xf86Info.lastButtons & 8);
       }
       dx = (char)(((pBuf[0] & 0x03) << 6) | (pBuf[1] & 0x3F));
       dy = (char)(((pBuf[0] & 0x0C) << 4) | (pBuf[2] & 0x3F));
       break;
-      
+
+    case P_GLIDEPOINT:      /* ALPS GlidePoint */
+       buttons =  (xf86Info.lastButtons & (8 + 2))
+		| ((int)(pBuf[0] & 0x20) >> 3)
+		| ((int)(pBuf[0] & 0x10) >> 4);
+      dx = (char)(((pBuf[0] & 0x03) << 6) | (pBuf[1] & 0x3F));
+      dy = (char)(((pBuf[0] & 0x0C) << 4) | (pBuf[2] & 0x3F));
+      break;
+
     case P_MSC:             /* Mouse Systems Corp */
       buttons = (~pBuf[0]) & 0x07;
       dx =    (char)(pBuf[1]) + (char)(pBuf[3]);

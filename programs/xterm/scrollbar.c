@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: scrollbar.c /main/45 1996/01/14 16:53:05 kaleb $
- *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.2 1996/01/10 05:44:24 dawes Exp $
+ *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.3 1996/01/16 15:09:45 dawes Exp $
  */
 
 /*
@@ -221,7 +221,7 @@ ScrollBarReverseVideo(scrollWidget)
 	register Widget scrollWidget;
 {
 	Arg args[4];
-	int nargs = XtNumber(args);
+	Cardinal nargs = XtNumber(args);
 	unsigned long bg, fg, bdr;
 	Pixmap bdpix;
 

@@ -1,7 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.0 1995/03/11 14:15:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.1 1996/01/24 22:02:11 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
+ * Modified 1996 Sebastien Marineau <marineau@genie.uottawa.ca>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -83,21 +84,58 @@ extern void  XTestStealMotionData();
 /* end of include */
 
 
+int last_status;
+int lastShiftState;
+extern BOOL SwitchedToWPS;
+
 static void os2PostKbdEvent();
+
+int os2KbdQueueQuery()
+{
+    KBDKEYINFO keybuf;
+    APIRET rc;
+    
+	keybuf.chScan=0;
+	keybuf.fsState=0;
+	keybuf.fbStatus=0;
+	rc = KbdPeek(&keybuf,xf86Info.consoleFd);
+	if(rc!=0){
+	     ErrorF("Kbd returned bad rc=%d\n",rc);
+	     return (-1);        /* We may have lost focus? */
+	}
+	if((keybuf.fbStatus!=0)) return(0); /* We have something in queue */
+	   
+return (1);
+
+}
+
 
 void xf86KbdEvents()
 {
     KBDKEYINFO keybuf;
     APIRET rc;
-    int last,scan,down;
+    int scan,down;
+    static int last;
+    USHORT ModState;
 
-    for(;;) {
+    while(1) {
+		/* Let's init the key struct */
+	keybuf.chScan=0;
+	keybuf.fsState=0;
+	keybuf.fbStatus=0;
+
 	rc = KbdCharIn(&keybuf, 1, xf86Info.consoleFd);
-	if (rc != 0)
-	    return;		
-	if (keybuf.fbStatus == last)
+	if (rc != 0){
+		ErrorF("Keyboard driver rc=%d\n",rc);
 	    return;
-	scan = keybuf.chChar;
+	}
+	if ((keybuf.fbStatus == 0))
+	    return;
+	scan = keybuf.chScan;
+	ModState=(0xFF83 &
+		(lastShiftState ^ keybuf.fsState));
+
+        /* Check to see if we need toreenable the server */
 
 	/* the separate cursor keys return 0xe0/scan */
 	if (keybuf.fbStatus & 0x02) {
@@ -131,9 +169,34 @@ void xf86KbdEvents()
 	    }
 	}
 
-	down = (keybuf.fbStatus & 0x40) ? FALSE : TRUE;
-	os2PostKbdEvent(scan, down);
-	last = keybuf.fbStatus;
+	/* Check to see if the shift key status has changed. If so, then
+	   send the keycodes. The default handling does not send the
+	   scancodes for these.....Damn those smart keyboard drivers     */
+
+
+	if(ModState){
+		down=ModState & keybuf.fsState;
+		switch (ModState){
+		    case 0x01:os2PostKbdEvent(KEY_ShiftR,down);break;
+		    case 0x02:os2PostKbdEvent(KEY_ShiftL,down);break;
+		    case 0x10:os2PostKbdEvent(KEY_ScrollLock,down);break;
+		    case 0x20:os2PostKbdEvent(KEY_NumLock,down);break;
+		    case 0x40:os2PostKbdEvent(KEY_CapsLock,down);break;
+		    case 0x80:os2PostKbdEvent(KEY_Insert,down);break;
+		    case 0x100:os2PostKbdEvent(KEY_LCtrl,down);break;
+		    case 0x200:os2PostKbdEvent(KEY_Alt,down);break;
+		    case 0x400:os2PostKbdEvent(KEY_RCtrl,down);break;
+		    case 0x800:os2PostKbdEvent(KEY_AltLang,down);break;
+		    case 0x1000:os2PostKbdEvent(KEY_ScrollLock,down);break;
+		    case 0x2000:os2PostKbdEvent(KEY_NumLock,down);break;
+		    case 0x4000:os2PostKbdEvent(KEY_CapsLock,down);break;
+		}
+	}
+
+	down = (keybuf.fbStatus & 0x40) ? TRUE : FALSE;
+	if(scan!=0) os2PostKbdEvent(scan, down);
+	last_status = keybuf.fbStatus;
+	lastShiftState = keybuf.fsState;
     }
 }
 
@@ -146,6 +209,10 @@ void xf86KbdEvents()
  *  as some things differ, and I didnït want to scatter this routine with
  *  ifdefs further (hv).
  */
+
+    
+
+    
 
 static void
 os2PostKbdEvent(scanCode, down)
@@ -200,7 +267,8 @@ os2PostKbdEvent(scanCode, down)
      * window list... handled by keyboard driver if you tell it.
      */
     if (ModifierDown(ControlMask) && scanCode==KEY_Escape) {
-	/*notyet*/
+        if(!SwitchedToWPS) xf86Info.vtRequestsPending=TRUE;
+        return;
     } else if (ModifierDown(AltLangMask|AltMask) && scanCode==KEY_Escape) {
 	/*notyet*/
     }
@@ -212,6 +280,8 @@ os2PostKbdEvent(scanCode, down)
   keysym = (keyc->curKeySyms.map +
 	    keyc->curKeySyms.mapWidth * 
 	    (keycode - keyc->curKeySyms.minKeyCode));
+  ErrorF("Keyboard keycode %d, keysym =%di down %d\n",keycode,*keysym,down);
+
   /*
    * Filter autorepeated caps/num/scroll lock keycodes.
    */
@@ -322,6 +392,8 @@ os2PostKbdEvent(scanCode, down)
   }
 
 
+
+
   /*
    * And now send these prefixes ...
    * NOTE: There cannot be multiple Mode_Switch keys !!!!
@@ -345,3 +417,5 @@ os2PostKbdEvent(scanCode, down)
 
   if (updateLeds) xf86KbdLeds();
 }
+
+

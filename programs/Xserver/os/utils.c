@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c /main/122 1996/01/14 16:45:32 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.12 1996/01/16 15:08:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.13 1996/01/24 22:04:24 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -199,6 +199,10 @@ OsSignal(sig, handler)
 #include <limits.h>	/* For PATH_MAX */
 #endif
 
+#ifdef __EMX__
+#define link rename
+#endif
+
 #ifndef PATH_MAX
 #include <sys/param.h>
 #ifndef PATH_MAX
@@ -251,7 +255,18 @@ LockServer()
   i = 0;
   do {
     i++;
-    lfd = creat(tmp, 0444);
+    lfd = open(tmp, O_CREAT | O_EXCL | O_WRONLY, 0644);
+    if (lfd < 0)
+       sleep(2);
+    else
+       break;
+  } while (i < 3);
+  if (lfd < 0)
+    unlink(tmp);
+  i = 0;
+  do {
+    i++;
+    lfd = open(tmp, O_CREAT | O_EXCL | O_WRONLY, 0644);
     if (lfd < 0)
        sleep(2);
     else
@@ -261,8 +276,8 @@ LockServer()
     FatalError("Could not create lock file in %s\n", tmp);
   (void) sprintf(pid_str, "%10d\n", getpid());
   (void) write(lfd, pid_str, 11);
+  (void) fchmod(lfd, 0444);
   (void) close(lfd);
-  (void) chmod(tmp, 0444);
 
   /*
    * OK.  Now the tmp file exists.  Try three times to move it in place
@@ -271,11 +286,7 @@ LockServer()
   i = 0;
   haslock = 0;
   while ((!haslock) && (i++ < 3)) {
-#ifndef __EMX__
     haslock = (link(tmp,lock) == 0);
-#else
-    haslock = (rename(tmp,lock)==0);
-#endif
     if (haslock) {
       /*
        * We're done.

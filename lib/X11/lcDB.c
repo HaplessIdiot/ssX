@@ -1,4 +1,5 @@
-/* $XConsortium: lcDB.c,v 1.7 94/04/01 17:51:18 rws Exp $ */
+/* $XConsortium: lcDB.c /main/9 1995/12/01 11:53:25 kaleb $ */
+/* $XFree86$ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -110,9 +111,10 @@ static TokenTable token_tbl[] = {
     { T_NUMERIC_DEC,	"\\d",	2,	f_numeric },
     { T_NUMERIC_OCT,	"\\o",	2,	f_numeric },
     { T_DEFAULT,	" ",	1,	f_default },	/* any character */
-     0
+    0 
 };
 
+#define	SYM_CR          '\r'
 #define	SYM_NEWLINE	'\n'
 #define	SYM_COMMENT	'#'
 #define	SYM_SEMICOLON	';'
@@ -215,7 +217,7 @@ zap_comment(str, quoted)
     *quoted = 0;
     if(*p == SYM_COMMENT){
 	int len = strlen(str);
-	if(p[len - 1] == SYM_NEWLINE){
+	if(p[len - 1] == SYM_NEWLINE || p[len - 1] == SYM_CR){
 	    *p++ = SYM_NEWLINE;
 	}
 	*p = '\0';
@@ -233,7 +235,7 @@ zap_comment(str, quoted)
 	    if(pos == 0 ||
 	       iswhite(p[-1]) && (pos == 1 || p[-2] != SYM_BACKSLASH)){
 		int len = strlen(p);
-		if(len > 0 && p[len - 1] == SYM_NEWLINE){
+		if(len > 0 && (p[len - 1] == SYM_NEWLINE || p[len-1] == SYM_CR)) {
 		    /* newline is the identifier for finding end of value.
 		       therefore, it should not be removed. */
 		    *p++ = SYM_NEWLINE;
@@ -283,7 +285,7 @@ read_line(fd, line)
 	str[cur] = '\0';
 	if(!quoted){
 	    if(cur > 1 && str[cur - 2] == SYM_BACKSLASH &&
-	       str[cur - 1] == SYM_NEWLINE){
+	       (str[cur - 1] == SYM_NEWLINE || str[cur-1] == SYM_CR)){
 		/* the line is ended backslash followed by newline.
 		   need to concatinate the next line. */
 		cur -= 2;
@@ -310,7 +312,8 @@ get_token(str)
     char *str;
 {
     switch(*str){
-    case SYM_NEWLINE:	return T_NEWLINE;
+    case SYM_NEWLINE:
+    case SYM_CR:	return T_NEWLINE;
     case SYM_COMMENT:	return T_COMMENT;
     case SYM_SEMICOLON:	return T_SEMICOLON;
     case SYM_DOUBLE_QUOTE:	return T_DOUBLE_QUOTE;
@@ -629,7 +632,7 @@ f_comment(str, token, db)
 
     char *p = str;
 
-    while(*p != SYM_NEWLINE && *p != '\0'){
+    while(*p != SYM_NEWLINE && *p != SYM_CR && *p != '\0'){
 	++p;	/* zap to the end of line */
     }
     return p - str;
@@ -952,7 +955,6 @@ CreateDatabase(dbfile)
     Line line;
     char *p;
     Token token;
-    int token_len;
     int len;
     int error = 0;
 
@@ -1136,7 +1138,16 @@ _XlcCreateLocaleDataBase(lcd)
     if(name == NULL){
 	return (XPointer)NULL;
     }
+#ifdef __EMX__
+    {
+	char *root = getenv("X11ROOT");
+	if (!root) root = "";
+	strcpy(pathname, root);
+	strcat(pathname, name);
+    }
+#else
     strcpy(pathname, name);
+#endif
     Xfree(name);
 
     name_q = XrmStringToQuark(pathname);

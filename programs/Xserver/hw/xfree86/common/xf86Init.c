@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.38 1996/01/21 09:02:36 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.39 1996/01/24 22:01:37 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -646,7 +646,7 @@ xf86PrintConfig()
   ErrorF("Release Date: %s\n", XF86_DATE);
   ErrorF("\tIf the server is older than 6-12 months, or if your card is "
 	 "newer\n"
-	 "\tthan the the above date, look for a newer version before "
+	 "\tthan the above date, look for a newer version before "
 	 "reporting\n"
 	 "\tproblems.  (see http://www.XFree86.Org/FAQ)\n");
 #ifdef PC98

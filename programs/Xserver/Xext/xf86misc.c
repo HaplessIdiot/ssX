@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.4 1996/01/24 22:00:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.5 1996/01/28 07:28:58 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -263,12 +263,17 @@ ProcXF86MiscSetMouseSettings(client)
 	return BadValue;
 #endif
 #endif /* OSMOUSE_ONLY */
+    if (stuff->mousetype > MTYPE_OSMOUSE
+            || stuff->mousetype < MTYPE_MICROSOFT)
+	return BadValue;
 
     /* I think all three of these can just be changed on the fly */
     xf86Info.emulate3Buttons = stuff->emulate3buttons!=0;
     xf86Info.emulate3Timeout = stuff->emulate3timeout;
     xf86Info.chordMiddle = stuff->chordmiddle!=0;
 
+    /* Change other settings at your own risk - do not expect the
+       following to work! */
     if (xf86Info.mseType != stuff->mousetype
             || xf86Info.baudRate != stuff->baudrate 
             || xf86Info.sampleRate != stuff->samplerate 
@@ -278,6 +283,8 @@ ProcXF86MiscSetMouseSettings(client)
             (xf86Info.mseProc)(xf86Info.pPointer, DEVICE_CLOSE);
 
         xf86Info.mseType = stuff->mousetype;
+        xf86Info.mseProc = xf86MseProc;
+        xf86Info.mseEvents = xf86MseEvents;
 #ifdef XQUEUE
 	if (xf86Info.mseType == MTYPE_XQUEUE) {
             xf86Info.mseProc = xf86XqueMseProc;
@@ -296,7 +303,7 @@ ProcXF86MiscSetMouseSettings(client)
         xf86Info.mouseFlags = stuff->flags;
 
 	if (xf86Info.pPointer)
-            (xf86Info.mseProc)(xf86Info.pPointer, DEVICE_ON);
+            (xf86Info.mseProc)(xf86Info.pPointer, DEVICE_INIT);
 
     }
 
@@ -315,6 +322,8 @@ ProcXF86MiscSetKbdSettings(client)
 	return BadValue;
     if (stuff->delay < 0)
 	return BadValue;
+    if (stuff->kbdtype < KTYPE_84KEY || stuff->kbdtype > KTYPE_XQUEUE)
+	return BadValue;
 
     if (xf86Info.kbdRate!=stuff->rate || xf86Info.kbdDelay!=stuff->delay) {
 	char rad;
@@ -332,8 +341,10 @@ ProcXF86MiscSetKbdSettings(client)
     
         xf86SetKbdRepeat(rad);
     }
+    /* Change other settings at your own risk - do not expect the
+       following to work! */
     xf86Info.kbdType = stuff->kbdtype;
-    xf86Info.serverNumLock = stuff->servnumlock;
+    xf86Info.serverNumLock = stuff->servnumlock!=0;
 
     return (client->noClientException);
 }

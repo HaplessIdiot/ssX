@@ -1,14 +1,14 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:29:39 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/Imakefile,v 3.0 1995/03/11 14:15:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/Imakefile,v 3.1 1996/01/24 22:02:06 dawes Exp $
 #include <Server.tmpl>
 
 BIOS_MOD = os2_bios
 
 SRCS = os2_init.c os2_video.c os2_io.c $(BIOS_MOD).c mapVT_noop.c \
-       ioperm_noop.c VTsw_noop.c os2_mouse.c os2_KbdEv.c
+       os2_ioperm.c os2_VTsw.c os2_mouse.c os2_KbdEv.c
 
 OBJS = os2_init.o os2_video.o os2_io.o $(BIOS_MOD).o mapVT_noop.o \
-       ioperm_noop.o VTsw_noop.o os2_mouse.o os2_kbdEv.o
+       os2_ioperm.o os2_VTsw.o os2_mouse.o os2_kbdEv.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(INCLUDESRC)

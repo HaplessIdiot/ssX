@@ -1,3 +1,22 @@
+XFree86 3.1.2Bo (30 January 1996)
+297. Updates for XF98Conf.cpp (Takefumi Tsukada).
+296. Add an XF86Config option for disabling XKB (Kaleb Keithley).
+295. Further OS/2 support updates, including a working X server
+     (Sebastien Marineau and Holger Veit).
+294. Documentation update for PC98 (Takefumi Tsukada).
+293. Improved prototyping for Xlib.h (Thomas E. Dickey).
+292. xterm updates, including mods to allow it to be built with X11R5
+     (Thomas E. Dickey).
+291. Some XFree86-Misc extension updates (Joe Moss).
+290. GlidePoint updates (Jean-Christophe Hugly).
+289. Add XInput knowledge to xdpyinfo, and update the output format of
+     xsetpointer (Frederic Lepied).
+288. NetBSD updates for scanpci now that console.h isn't included any more
+     (Matthieu Herrb).
+287. XC fix-trackers to seq-4086 (xsm updates).
+286. xkb symbol addition for European-style keyboards (Kaleb Keithley).
+285. Possible fix for security problem related to the X server's lock files.
+
 XFree86 3.1.2Bn (28 January 1996)
 284. Fix reporting of the ATI68860 Rev C Ramdac with the Mach64 server.
 283. Support for ALPS GlidePoint.  A tap on the pad is treated as a fourth
