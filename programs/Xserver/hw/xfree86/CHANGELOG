@@ -1,4 +1,5 @@
 XFree86 4.2.99.901 (4 February 2003)
+ 844. Fixing a double free in libXRandr (Egbert Eich).
  843. The microsoft-win3.1 encoding file wasn't being installed (#A.1569,
       Mike Harris).
  842. Sync the FIFO in the vmware driver after defining an ARGB cursor
@@ -16256,4 +16257,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2521 2003/02/05 12:43:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2522 2003/02/05 12:49:43 dawes Exp $

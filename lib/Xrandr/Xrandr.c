@@ -166,7 +166,6 @@ XRRCloseDisplay (Display *dpy, XExtCodes *codes)
       XFree (configs);
     }
 
-    if (info->data) XFree (info->data);
     UnlockDisplay(dpy);
     return XextRemoveDisplay (&XRRExtensionInfo, dpy);
 }
