@@ -1,4 +1,8 @@
 XFree86 4.0e (?? June 2000)
+ 330. Rework patch for mapping drmAddMap on Alpha platforms
+      (Bruce Stockwell/Compaq, Alan Hourihane).
+ 329. Don't build Debuggable Library on Linux for the release (Alan Hourihane).
+ 328. Don't build lib/GL/mesa/src/X86 on Alpha systems (Alan Hourihane).
  327. xdm warning fix (Marc La France).
  326. Make x11perf dies gracefully when display cannot be opened
       (Marc La France).
@@ -10643,4 +10647,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1190 2000/06/17 17:44:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1191 2000/06/19 15:00:47 tsi Exp $
