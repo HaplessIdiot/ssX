@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author:  Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/programs/twm/session.c,v 3.7 2001/10/28 03:34:25 tsi Exp $ */
+/* $XFree86: xc/programs/twm/session.c,v 3.8 2001/12/14 20:01:10 dawes Exp $ */
 
 #include <X11/Xos.h>
 
@@ -977,7 +977,7 @@ SmPointer clientData;
 {
     SmcCloseConnection (smcConn, 0, NULL);
     XtRemoveInput (iceInputId);
-    Done(0);
+    Done(NULL, NULL);
 }
 
 
