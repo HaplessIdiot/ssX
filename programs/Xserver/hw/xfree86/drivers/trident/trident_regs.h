@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.22 2002/01/11 13:06:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.23 2002/01/25 21:56:12 tsi Exp $ */
 
 #define DEBUG 1
 
@@ -196,6 +196,7 @@
 
 /* Defines for BLADE Graphics Engine */
 #define BLADE_GE_STATUS		0x2120
+#define BLADE_XP_GER_OPERMODE	0x2125
 
 #define REPLICATE(r)						\
 {								\
@@ -221,6 +222,8 @@
 
 /* Merge XY */
 #define XY_MERGE(x,y) \
+		((((CARD32)(y)&0xFFFF) << 16) | ((CARD32)(x) & 0xffff))
+#define XP_XY_MERGE(y,x) \
 		((((CARD32)(y)&0xFFFF) << 16) | ((CARD32)(x) & 0xffff))
 
 #define TRIDENT_WRITE_REG(v,r)					\
@@ -289,6 +292,8 @@
 	MMIO_OUT8(pTrident->IOBase, OLDGER_STATUS, (c))
 #define TGUI_OPERMODE(c) \
 	MMIO_OUT16(pTrident->IOBase, GER_OPERMODE, (c))
+#define BLADE_XP_OPERMODE(c) \
+	MMIO_OUT8(pTrident->IOBase, BLADE_XP_GER_OPERMODE, (c))
 /* XXX */
 #define OLDTGUI_OPERMODE(c) \
 	{ \
@@ -322,14 +327,20 @@
 	MMIO_OUT8(pTrident->IOBase, OLDGER_BMIX, (c))
 #define TGUI_DIM_XY(w,h) \
 	MMIO_OUT32(pTrident->IOBase, GER_DIM_XY, XY_MERGE((w)-1,(h)-1))
+#define XP_DIM_XY(w,h) \
+	MMIO_OUT32(pTrident->IOBase, GER_DIM_XY, XY_MERGE((h),(w)))
 #define TGUI_STYLE(c) \
 	MMIO_OUT32(pTrident->IOBase, GER_STYLE, (c))
 #define OLDTGUI_DIMXY(w,h) \
 	MMIO_OUT32(pTrident->IOBase, OLDGER_DIMXY, XY_MERGE((w)-1,(h)-1))
 #define TGUI_SRC_XY(x,y) \
 	MMIO_OUT32(pTrident->IOBase, GER_SRC_XY, XY_MERGE(x,y))
+#define XP_SRC_XY(x,y) \
+	MMIO_OUT32(pTrident->IOBase, GER_SRC_XY, XP_XY_MERGE(x,y))
 #define TGUI_DEST_XY(x,y) \
 	MMIO_OUT32(pTrident->IOBase, GER_DEST_XY, XY_MERGE(x,y))
+#define XP_DEST_XY(x,y) \
+	MMIO_OUT32(pTrident->IOBase, GER_DEST_XY, XP_XY_MERGE(x,y))
 #define OLDTGUI_DESTXY(x,y) \
 	MMIO_OUT32(pTrident->IOBase, OLDGER_DESTXY, XY_MERGE(x,y))
 #define OLDTGUI_DESTLINEAR(c) \
