@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.22tsi Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.23 2003/07/18 15:39:53 tsi Exp $ */
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
 #define NEEDSOCKETS
@@ -145,7 +145,7 @@ XFamily(int af)
 #ifdef	AF_INET
         { AF_INET, FamilyInternet },
 #if defined(IPv6) && defined(AF_INET6)
-        { AF_INET6, FamilyInternetV6 },
+        { AF_INET6, FamilyInternet6 },
 #endif
 #endif
 };
@@ -206,7 +206,7 @@ main(int argc, char *argv[])
 		    case FamilyInternet:
 			printf("INET:");
 			break;
-		    case FamilyInternetV6:
+		    case FamilyInternet6:
 			printf("INET6:");
 			break;
 		    case FamilyDECnet:
@@ -342,7 +342,7 @@ change_host(Display *dpy, char *name, Bool add)
     if (!strncmp("inet6:", lname, 6)) {
 #if (defined(TCPCONN) || defined(STREAMSCONN)) && \
     defined(IPv6) && defined(AF_INET6)
-	family = FamilyInternetV6;
+	family = FamilyInternet6;
 	name += 7;
 #else
 	fprintf (stderr, "%s: not compiled for IPv6\n", ProgramName);
@@ -518,9 +518,9 @@ change_host(Display *dpy, char *name, Bool add)
     /*
      * Check to see if inet_pton() can grok it as an IPv6 address
      */
-    else if (((family == FamilyWild) || (family == FamilyInternetV6)) &&
+    else if (((family == FamilyWild) || (family == FamilyInternet6)) &&
 	     (inet_pton(AF_INET6, name, &addr6.s6_addr) == 1)) {
-	ha.family = FamilyInternetV6;
+	ha.family = FamilyInternet6;
 	ha.length = sizeof(addr6.s6_addr);		
 	ha.address = (char *) &addr6.s6_addr; 
 	if (add) {
@@ -546,7 +546,7 @@ change_host(Display *dpy, char *name, Bool add)
 	    return 0;
 
 	for (a = addresses; a != NULL; a = a->ai_next) {
-	    if ( ((a->ai_family == AF_INET) && (family != FamilyInternetV6))
+	    if ( ((a->ai_family == AF_INET) && (family != FamilyInternet6))
 	      || ((a->ai_family == AF_INET6) && (family != FamilyInternet)) ) {
 		char ad[INET6_ADDRSTRLEN];
 		ha.family = XFamily(a->ai_family);
@@ -578,7 +578,7 @@ change_host(Display *dpy, char *name, Bool add)
 	} else {
 	    const char *familyMsg = "";
 
-	    if (family == FamilyInternetV6) {
+	    if (family == FamilyInternet6) {
 		familyMsg = "inet6 ";
 	    } else if (family == FamilyInternet) {
 		familyMsg = "inet ";
@@ -665,7 +665,7 @@ get_hostname(XHostAddress *ha)
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
 #if defined(IPv6) && defined(AF_INET6)
-    if ((ha->family == FamilyInternet) || (ha->family == FamilyInternetV6)) {
+    if ((ha->family == FamilyInternet) || (ha->family == FamilyInternet6)) {
 	struct sockaddr_storage saddr;
 	static char inetname[NI_MAXHOST];
 	int saddrlen;

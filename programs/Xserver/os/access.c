@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.46 2003/07/09 15:27:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.47 2003/07/11 14:16:12 tsi Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -585,7 +585,7 @@ DefineSelf (int fd)
 						   &broad_addr);
 		}
 #if defined(IPv6) && defined(AF_INET6)
-		else if (family == FamilyInternetV6 &&
+		else if (family == FamilyInternet6 &&
 		  !(IN6_IS_ADDR_LOOPBACK((struct in6_addr *)addr)))
 		{
 		    XdmcpRegisterConnection (family, (char *)addr, len);
@@ -766,7 +766,7 @@ DefineSelf (int fd)
 	    ErrorF("Xserver: DefineSelf(): ifname = %s, addr = %d.%d.%d.%d\n",
 		   IFR_IFR_NAME, addr[0], addr[1], addr[2], addr[3]);
 #if defined(IPv6) && defined(AF_INET6)
-	else if (family == FamilyInternetV6) {
+	else if (family == FamilyInternet6) {
 	    char cp[INET6_ADDRSTRLEN] = "";
 	    inet_ntop(AF_INET6, addr, cp, sizeof(cp));
 	    ErrorF("Xserver: DefineSelf(): ifname = %s, addr = %s\n",
@@ -802,7 +802,7 @@ DefineSelf (int fd)
 	     */
 	    if (family != FamilyInternet
 #if defined(IPv6) && defined(AF_INET6)
-	      && family != FamilyInternetV6
+	      && family != FamilyInternet6
 #endif
 		)
 		continue;
@@ -816,7 +816,7 @@ DefineSelf (int fd)
 		addr[2] == 0 && addr[3] == 1)
 		continue;
 #if defined(IPv6) && defined(AF_INET6)
-	    else if (family == FamilyInternetV6 && 
+	    else if (family == FamilyInternet6 && 
 	      IN6_IS_ADDR_LOOPBACK((struct in6_addr *)addr))
 		continue;
 #endif
@@ -825,7 +825,7 @@ DefineSelf (int fd)
 
 #if defined(IPv6) && defined(AF_INET6)
 	    /* IPv6 doesn't support broadcasting, so we drop out here */
-	    if (family == FamilyInternetV6)
+	    if (family == FamilyInternet6)
 		continue;
 #endif
 
@@ -1101,7 +1101,7 @@ ResetHosts (char *display)
 #if defined(IPv6) && defined(AF_INET6)
 	else if (!strncmp("inet6:", lhostname, 6))
 	{
-	    family = FamilyInternetV6;
+	    family = FamilyInternet6;
 	    hostname = ohostname + 7;
 	}
 #endif
@@ -1174,7 +1174,7 @@ ResetHosts (char *display)
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
 	{
 #if defined(IPv6) && defined(AF_INET6)
-	    if ( (family == FamilyInternet) || (family == FamilyInternetV6) ||
+	    if ( (family == FamilyInternet) || (family == FamilyInternet6) ||
 		 (family == FamilyWild) ) 
             {
 		struct addrinfo *addresses;
@@ -1362,7 +1362,7 @@ AddHost (ClientPtr	client,
 #endif
     case FamilyInternet:
 #if defined(IPv6) && defined(AF_INET6)
-    case FamilyInternetV6:
+    case FamilyInternet6:
 #endif
     case FamilyDECnet:
     case FamilyChaos:
@@ -1463,7 +1463,7 @@ RemoveHost (
 #endif
     case FamilyInternet:
 #if defined(IPv6) && defined(AF_INET6)
-    case FamilyInternetV6:
+    case FamilyInternet6:
 #endif
     case FamilyDECnet:
     case FamilyChaos:
@@ -1555,7 +1555,7 @@ CheckAddr (
 	    len = -1;
         break;
 #if defined(IPv6) && defined(AF_INET6)
-      case FamilyInternetV6:
+      case FamilyInternet6:
 	if (length == sizeof (struct in6_addr))
 	    len = length;
 	else
@@ -1661,7 +1661,7 @@ ConvertAddr (
 	} else {
 	    *len = sizeof (struct in6_addr);
 	    *addr = (pointer) &(saddr6->sin6_addr);
-	    return FamilyInternetV6;
+	    return FamilyInternet6;
 	}
     }
 #endif

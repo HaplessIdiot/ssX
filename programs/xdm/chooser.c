@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdm/chooser.c,v 3.24tsi Exp $ */
+/* $XFree86: xc/programs/xdm/chooser.c,v 3.25 2003/07/09 15:27:38 tsi Exp $ */
 
 /*
  * Chooser - display a menu of names and let the user select one
@@ -337,7 +337,7 @@ AddHostname (ARRAY8Ptr hostname, ARRAY8Ptr status, struct sockaddr *addr, int wi
     case AF_INET6:
 	hostAddr.data = (CARD8 *) &((struct sockaddr_in6 *) addr)->sin6_addr;
 	hostAddr.length = 16;
-	connectionType = FamilyInternetV6;
+	connectionType = FamilyInternet6;
 	break;
 #endif
     default:

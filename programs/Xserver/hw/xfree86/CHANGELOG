@@ -1,4 +1,6 @@
 XFree86 4.3.99.9 (xx July 2003)
+ 317. IPv6:  2003.07.11 update to X.Org's response to comment #13;  i.e.
+      s/FamilyInternetV6/FamilyInternet6/g  (Marc La France).
  316. IPv6 build fixes for older Linux systems;  Many of these are derived from
       a suggestion by Alan Coopersmith (Marc La France).
  315. Change DEVID macro to work around glitch in SCO's C compiler
@@ -17328,7 +17330,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2778 2003/07/17 15:08:19 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2779 2003/07/18 15:39:49 tsi Exp $
 
 
 

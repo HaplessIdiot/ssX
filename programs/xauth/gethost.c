@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xauth/gethost.c,v 3.17tsi Exp $ */
+/* $XFree86: xc/programs/xauth/gethost.c,v 3.18 2003/07/09 15:27:37 tsi Exp $ */
 
 /* sorry, streams support does not really work yet */
 #if defined(STREAMSCONN) && defined(SVR4)
@@ -122,12 +122,12 @@ get_hostname (auth)
 #ifdef TCPCONN
     if (auth->family == FamilyInternet
 #if defined(IPv6) && defined(AF_INET6)
-      || auth->family == FamilyInternetV6
+      || auth->family == FamilyInternet6
 #endif 
 	)
     {
 #if defined(IPv6) && defined(AF_INET6)
-	if (auth->family == FamilyInternetV6)
+	if (auth->family == FamilyInternet6)
 	    af = AF_INET6;
 	else
 #endif
@@ -292,7 +292,7 @@ struct addrlist *get_address_info (
       case FamilyInternet:		/* host:0 */
 #ifdef TCPCONN
 #if defined(IPv6) && defined(AF_INET6)
-      case FamilyInternetV6:
+      case FamilyInternet6:
         if (getaddrinfo(host,NULL,NULL,&firstai) !=0) return NULL;
 	for (ai = firstai; ai != NULL; ai = ai->ai_next) {
 	    if (ai->ai_family == AF_INET) {
@@ -304,7 +304,7 @@ struct addrlist *get_address_info (
 		struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)ai->ai_addr;
 		src = &(sin6->sin6_addr);
 		len = sizeof(sin6->sin6_addr);
-		family = FamilyInternetV6;
+		family = FamilyInternet6;
 	    }
 
 	    if (len > 0 && src != NULL) {

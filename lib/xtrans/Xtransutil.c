@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.25tsi Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.26 2003/07/09 15:27:30 tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -72,7 +72,7 @@ from The Open Group.
 #define FamilyInternet		0	/* IPv4 */
 #define FamilyDECnet		1
 #define FamilyChaos		2
-#define FamilyInternetV6	6
+#define FamilyInternet6		6
 #define FamilyAmoeba		33
 #define FamilyLocalHost		252
 #define FamilyKrb5Principal	253
@@ -160,7 +160,7 @@ TRANS(ConvertAddress)(int *familyp, int *addrlenp, Xtransaddr **addrp)
 	}
 	else
 	{
-	    *familyp=FamilyInternetV6;
+	    *familyp=FamilyInternet6;
 	    *addrlenp=sizeof(saddr6.sin6_addr);
 	    memcpy(*addrp,&saddr6.sin6_addr,sizeof(saddr6.sin6_addr));
 	}

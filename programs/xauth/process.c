@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xauth/process.c,v 3.20 2003/07/09 15:27:37 tsi Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.21 2003/07/16 19:35:40 herrb Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -993,7 +993,7 @@ dump_entry(char *inputfilename, int lineno, Xauth *auth, char *data)
 	    break;
 	  case FamilyInternet:
 #if defined(IPv6) && defined(AF_INET6)
-	  case FamilyInternetV6:
+	  case FamilyInternet6:
 #endif
 	  case FamilyDECnet:
 	    dpyname = get_hostname (auth);

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/netaddr.c,v 3.6tsi Exp $ */
+/* $XFree86: xc/programs/xdm/netaddr.c,v 3.7 2003/07/09 15:27:39 tsi Exp $ */
 
 /*
  * xdm - X display manager
@@ -186,7 +186,7 @@ int ConvertAddr (XdmcpNetaddr saddr, int *len, char **addr)
 	if (*len == sizeof(struct in_addr)) 
 	    retval = FamilyInternet;
 	else  
-	    retval = FamilyInternetV6;
+	    retval = FamilyInternet6;
 	break;
 #endif
 #endif
