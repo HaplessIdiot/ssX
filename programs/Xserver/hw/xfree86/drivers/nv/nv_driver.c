@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.80 2001/12/12 00:34:49 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.81 2002/01/04 21:22:33 tsi Exp $ */
 
 #include "nv_include.h"
 
@@ -179,13 +179,11 @@ static const char *vgahwSymbols[] = {
     "vgaHWGetHWRec",
     "vgaHWGetIndex",
     "vgaHWInit",
-    "vgaHWLock",
     "vgaHWMapMem",
     "vgaHWProtect",
     "vgaHWRestore",
     "vgaHWSave",
     "vgaHWSaveScreen",
-    "vgaHWUnlock",
     "vgaHWddc1SetSpeed",
     NULL
 };
@@ -305,7 +303,8 @@ typedef enum {
     OPTION_FBDEV,
     OPTION_ROTATE,
     OPTION_VIDEO_KEY,
-    OPTION_FLAT_PANEL
+    OPTION_FLAT_PANEL,
+    OPTION_CRTC_NUMBER
 } NVOpts;
 
 
@@ -319,6 +318,7 @@ static const OptionInfoRec NVOptions[] = {
     { OPTION_ROTATE,		"Rotate",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_VIDEO_KEY,		"VideoKey",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_FLAT_PANEL,	"FlatPanel",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_CRTC_NUMBER,	"CrtcNumber",	OPTV_INTEGER,	{0}, FALSE },
     { -1,                       NULL,           OPTV_NONE,      {0}, FALSE }
 };
 
@@ -565,13 +565,9 @@ static Bool
 NVEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    NVPtr pNv = NVPTR(pScrn);
-    vgaHWPtr hwp = VGAHWPTR(pScrn);
 
     DEBUG(xf86DrvMsg(scrnIndex, X_INFO, "NVEnterVT\n"));
 
-    vgaHWUnlock(hwp);
-    pNv->riva.LockUnlock(&pNv->riva, 0);
     if (!NVModeInit(pScrn, pScrn->currentMode))
         return FALSE;
     NVAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
@@ -600,13 +596,11 @@ NVLeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     NVPtr pNv = NVPTR(pScrn);
-    vgaHWPtr hwp = VGAHWPTR(pScrn);
 
     DEBUG(xf86DrvMsg(scrnIndex, X_INFO, "NVLeaveVT\n"));
 
     NVRestore(pScrn);
     pNv->riva.LockUnlock(&pNv->riva, 1);
-    vgaHWLock(hwp);
 }
 
 
@@ -645,7 +639,6 @@ static Bool
 NVCloseScreen(int scrnIndex, ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    vgaHWPtr hwp = VGAHWPTR(pScrn);
     NVPtr pNv = NVPTR(pScrn);
 
     DEBUG(xf86DrvMsg(scrnIndex, X_INFO, "NVCloseScreen\n"));
@@ -653,7 +646,6 @@ NVCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if (pScrn->vtSema) {
         NVRestore(pScrn);
         pNv->riva.LockUnlock(&pNv->riva, 1);
-        vgaHWLock(hwp);
     }
 
     NVUnmapMem(pScrn);
@@ -782,12 +774,10 @@ nvDoDDCVBE(ScrnInfoPtr pScrn)
 static xf86MonPtr
 NVdoDDC(ScrnInfoPtr pScrn)
 {
-    vgaHWPtr hwp;
     NVPtr pNv;
     NVRamdacPtr NVdac;
     xf86MonPtr MonInfo = NULL;
 
-    hwp = VGAHWPTR(pScrn);
     pNv = NVPTR(pScrn);
     NVdac = &pNv->Dac;
 
@@ -800,7 +790,6 @@ NVdoDDC(ScrnInfoPtr pScrn)
     /*    if ((MonInfo = nvDoDDCVBE(pScrn))) return MonInfo;      */
 
     /* Enable access to extended registers */
-    vgaHWUnlock(hwp);
     pNv->riva.LockUnlock(&pNv->riva, 0);
     /* Save the current state */
     NVSave(pScrn);
@@ -814,7 +803,6 @@ NVdoDDC(ScrnInfoPtr pScrn)
     /* Restore previous state */
     NVRestore(pScrn);
     pNv->riva.LockUnlock(&pNv->riva, 1);
-    vgaHWLock(hwp);
 
     return MonInfo;
 }
@@ -1141,10 +1129,24 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
         (((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue); 
     }
 
+#if 0
+    /* Doesn't work */
     if (xf86ReturnOptValBool(pNv->Options, OPTION_FLAT_PANEL, FALSE)) {
 	pNv->FlatPanel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "using flat panel\n");
     }
+#endif
+
+    if (xf86GetOptValInteger(pNv->Options, OPTION_CRTC_NUMBER, 
+                                &pNv->forceCRTC)) 
+    {
+	if((pNv->forceCRTC < 0) || (pNv->forceCRTC > 1)) {
+           pNv->forceCRTC = -1;
+           xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+                      "Invalid CRTC number.  Must be 0 or 1\n");
+        }
+    } else pNv->forceCRTC = -1;
+
     
     if (pNv->pEnt->device->MemBase != 0) {
 	/* Require that the config file value matches one of the PCI values. */
@@ -1343,6 +1345,11 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     } else  /* Chips after NV15 (including NV11) do not support interlaced */
        clockRanges->interlaceAllowed = FALSE;
     clockRanges->doubleScanAllowed = TRUE;
+
+    if(pNv->FlatPanel) {
+       clockRanges->interlaceAllowed = FALSE;
+       clockRanges->doubleScanAllowed = FALSE;
+    }
 
     /*
      * xf86ValidateModes will check that the mode HTotal and VTotal values
@@ -1666,7 +1673,6 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    return FALSE;
     } else {
 	/* Save the current state */
-        vgaHWUnlock(hwp);
         pNv->riva.LockUnlock(&pNv->riva, 0);
 	NVSave(pScrn);
 	/* Initialise the first mode */
