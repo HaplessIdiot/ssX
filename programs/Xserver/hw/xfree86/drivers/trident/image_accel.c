@@ -23,7 +23,7 @@
  * 
  * Trident 3DImage' accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.19 2000/12/05 23:57:39 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.20 2000/12/08 17:35:01 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -194,6 +194,11 @@ ImageAccelInit(ScreenPtr pScreen)
     infoPtr->ClippingFlags |= HARDWARE_CLIP_COLOR_8x8_FILL;
 #endif
 
+  if (pTrident->Chipset != CYBER9397DVD) {
+   /* It seems as though the 9397DVD doesn't like the transfer window   */
+   /* But then, I've also tried at the two port addresses too, with     */
+   /* no luck. Disable for this chipset for now. I'd guess there's some */
+   /* extra setup needed for this chipset.                              */
     infoPtr->ScanlineCPUToScreenColorExpandFillFlags = NO_PLANEMASK |
 					LEFT_EDGE_CLIPPING |
 					BIT_ORDER_IN_BYTE_MSBFIRST;
@@ -227,6 +232,7 @@ ImageAccelInit(ScreenPtr pScreen)
 			xnfalloc(pScrn->virtualX * pScrn->bitsPerPixel / 8); 
 
     infoPtr->ImageWriteBase = pTrident->IOBase + 0x10000;
+  }
 
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
