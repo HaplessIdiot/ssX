@@ -4,12 +4,12 @@ XCOMM $XConsortium: Imakefile /main/6 1996/01/14 19:01:58 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.10 1996/03/29 22:17:15 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.11 1996/05/11 11:04:38 dawes Exp $
 
 #include <Server.tmpl>
 
 #if defined(FreeBSDArchitecture) || defined(NetBSDArchitecture)
-#ifdef BuildXInputExt
+#if BuildXInputExt
 # if JoystickSupport
  JOYSTICK_SRC = bsd_jstk.c
 # endif
