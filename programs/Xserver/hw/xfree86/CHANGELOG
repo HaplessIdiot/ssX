@@ -1,4 +1,6 @@
 XFree86 3.9a (17 April 1997)
+ 707. Add Latin2 Type1 fonts (Peter Soos).
+ 706. Add Latin2 bdf fonts (Petr Kolar).
  705. Add SubsequentDashedTwoPointLine to XAA (#296, Mark Vojkovich).
  704. Add a Hungarian XKB symbols file (Peter Soos).
  703. Add support for Microsoft Intellimouse (#304, Thomas Vogler).

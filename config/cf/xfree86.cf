@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.157 1997/04/17 08:16:38 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.158 1997/04/17 10:44:47 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -770,6 +770,9 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #endif
 #ifndef BuildCyrillicFonts
 #define BuildCyrillicFonts	YES
+#endif
+#ifndef BuildLatin2Fonts
+#define BuildLatin2Fonts	YES
 #endif
 #ifndef UseKoi8RForCyrillic
 #define UseKoi8RForCyrillic	YES

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.111 1997/04/10 10:05:27 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.112 1997/04/17 10:44:45 hohndel Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -349,6 +349,12 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.111 1997/04/10 10:05:27 hohndel Ex
  * To not build/install the Cyrillic fonts, uncomment the following
  *
 #define BuildCyrillicFonts	NO
+ */
+
+/*
+ * To not build/install the Latin2 fonts, uncomment the following
+ *
+#define BuildLatin2Fonts	NO
  */
 
 /*
