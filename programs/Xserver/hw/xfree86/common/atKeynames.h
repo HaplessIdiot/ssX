@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.19 2003/06/18 13:35:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.20 2003/08/24 17:36:48 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -225,6 +225,22 @@
 #define KEY_XFER         /* Kanji Transfer        0x79  */  121
 #define KEY_NFER         /* No Kanji Transfer     0x7b  */  123
 #define KEY_Yen          /* Yen                   0x7d  */  125
+
+#define KEY_Power        /* Power Key             0x84  */  132
+#define KEY_Mute         /* Audio Mute            0x85  */  133
+#define KEY_AudioLower   /* Audio Lower           0x86  */  134
+#define KEY_AudioRaise   /* Audio Raise           0x87  */  135
+#define KEY_Help         /* Help                  0x88  */  136
+#define KEY_L1           /* Stop                  0x89  */  137
+#define KEY_L2           /* Again                 0x8a  */  138
+#define KEY_L3           /* Props                 0x8b  */  139
+#define KEY_L4           /* Undo                  0x8c  */  140
+#define KEY_L5           /* Front                 0x8d  */  141
+#define KEY_L6           /* Copy                  0x8e  */  142
+#define KEY_L7           /* Open                  0x8f  */  143
+#define KEY_L8           /* Paste                 0x90  */  144
+#define KEY_L9           /* Find                  0x91  */  145
+#define KEY_L10          /* Cut                   0x92  */  146
 
 /*
  * Fake 'scancodes' in the following ranges are generated for 2-byte

@@ -3,7 +3,7 @@
 
 
 
-// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.24 2003/08/13 20:29:59 paulo Exp $
+// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.25 2003/09/04 13:56:47 pascal Exp $
 
 // "standard" XFree86 codes
 // It seems that the "default" must be the first entry in the file.
@@ -81,9 +81,9 @@ xkb_keycodes "basic" {
     <RCTL> = 109;
     <RALT> = 113;
     // Microsoft keyboard extra keys
-    <LWIN> = 115;
-    <RWIN> = 116;
-    <MENU> = 117;
+    <LMTA> = 115;
+    <RMTA> = 116;
+    <COMP> = 117;
 
     <ESC>  =   9;
     <FK01> =  67;
@@ -319,6 +319,22 @@ xkb_keycodes "basic" {
     <K75> =   220;		// <I5C>
     <K76> =   221;		// <I5D>
    
+
+    alias <POWR> = <I0C>;
+    alias <MUTE> = <I0D>;
+    alias <VOL-> = <I0E>;
+    alias <VOL+> = <I0F>;
+    alias <HELP> = <I10>;
+    alias <STOP> = <I11>;
+    alias <AGAI> = <I12>;
+    alias <PROP> = <I13>;
+    alias <UNDO> = <I14>;
+    alias <FRNT> = <I15>;
+    alias <COPY> = <I16>;
+    alias <OPEN> = <I17>;
+    alias <PAST> = <I18>;
+    alias <FIND> = <I19>;
+    alias <CUT>  = <I1A>;
 
     // Other codes never generated.  The XFree86 ddx never generates
     // these codes.
