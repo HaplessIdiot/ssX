@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.60tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.61 2002/09/18 12:48:59 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -680,6 +680,7 @@ pciGenFindNext(void)
 		if (speculativeProbe) {
 		    xfree(pciBusInfo[pciBusNum]);
 		    pciBusInfo[pciBusNum] = NULL;
+		    speculativeProbe = FALSE;
 		}
 
 		if (++pciBusNum >= pciMaxBusNum) {
