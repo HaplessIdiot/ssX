@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.87 2002/01/07 18:46:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.91 2002/05/22 21:38:25 herrb Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -367,42 +367,42 @@ struct __una_u64 { uint64_t x __attribute__((packed)); };
 struct __una_u32 { uint32_t x __attribute__((packed)); };
 struct __una_u16 { uint16_t x __attribute__((packed)); };
 
-extern __inline__ unsigned long
+static __inline__ unsigned long
 __uldq (const unsigned long * r11)
 {
 	const struct __una_u64 *ptr = (const struct __una_u64 *) r11;
 	return ptr->x;
 }
 
-extern __inline__ unsigned long
+static __inline__ unsigned long
 __uldl (const unsigned int * r11)
 {
 	const struct __una_u32 *ptr = (const struct __una_u32 *) r11;
 	return ptr->x;
 }
 
-extern __inline__ unsigned long
+static __inline__ unsigned long
 __uldw (const unsigned short * r11)
 {
 	const struct __una_u16 *ptr = (const struct __una_u16 *) r11;
 	return ptr->x;
 }
 
-extern __inline__ void
+static __inline__ void
 __ustq (unsigned long r5, unsigned long * r11)
 {
 	struct __una_u64 *ptr = (struct __una_u64 *) r11;
 	ptr->x = r5;
 }
 
-extern __inline__ void
+static __inline__ void
 __ustl (unsigned long r5, unsigned int * r11)
 {
 	struct __una_u32 *ptr = (struct __una_u32 *) r11;
 	ptr->x = r5;
 }
 
-extern __inline__ void
+static __inline__ void
 __ustw (unsigned long r5, unsigned short * r11)
 {
 	struct __una_u16 *ptr = (struct __una_u16 *) r11;
