@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.39 2003/12/17 18:14:40 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.40tsi Exp $ */
 
 #include "fontmisc.h"
 
@@ -2958,7 +2958,6 @@ FreeTypeLoadXFont(char *fileName,
 	if(!face->bitmap) {
 	    int new_width;
 	    double ratio,force_c_ratio;
-	    double b_width_diagonal;
 	    double width_x=0,width_y=0;
 	    double force_c_width_x, force_c_rsb_x, force_c_lsb_x;
 	    double tmp_rsb,tmp_lsb,tmp_asc,tmp_des;
@@ -2979,8 +2978,6 @@ FreeTypeLoadXFont(char *fileName,
 	    compute_new_extents( vals, scale, tmp_lsb, tmp_rsb, tmp_des, tmp_asc,
 				 &minLsb, &maxRsb, &descent, &ascent );
 	    /* */
-	    b_width_diagonal = (tmp_rsb - tmp_lsb) /* face->face->max_advance_width */
-			       * vals->pixel_matrix[0] * scale;
 	    /* Consider vertical layouts */
 	    if( 0 < face->face->max_advance_height )
 		max_advance_height = face->face->max_advance_height;

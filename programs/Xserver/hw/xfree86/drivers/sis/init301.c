@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.59tsi Exp $ */
 /*
  * Mode initializing code (CRT2 section)
  * for SiS 300/305/540/630/730 and
@@ -225,16 +225,8 @@ SiS_AdjustCRT2Rate(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
                    USHORT RefreshRateTableIndex, USHORT *i,
 		   PSIS_HW_INFO HwInfo)
 {
-  USHORT tempax,tempbx,resinfo;
-  USHORT modeflag,infoflag;
-
-  if(ModeNo <= 0x13) {
-     modeflag = SiS_Pr->SiS_SModeIDTable[ModeIdIndex].St_ModeFlag;
-     resinfo = 0;
-  } else {
-     modeflag = SiS_Pr->SiS_EModeIDTable[ModeIdIndex].Ext_ModeFlag;
-     resinfo = SiS_Pr->SiS_EModeIDTable[ModeIdIndex].Ext_RESINFO;
-  }
+  USHORT tempax,tempbx;
+  USHORT infoflag;
 
   tempbx = SiS_Pr->SiS_RefIndex[RefreshRateTableIndex + (*i)].ModeID;
 

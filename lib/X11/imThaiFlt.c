@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.21tsi Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.22tsi Exp $ */
 
 /*
 **++ 
@@ -645,7 +645,7 @@ typedef KeySym (*StateProc)(
     XicThaiPart *thai_part,
     KeySym symbol,
     XKeyEvent *event);
-#endif
+
 
 /*
  * macros to classify XKeyEvent state field
@@ -670,7 +670,7 @@ typedef KeySym (*StateProc)(
 	   !IsShift((event)->state))	\
 	 ? True : False)
 
-#ifdef UNUSED
+
 /*
  *  State handler to implement the Thai hex input method.
  */
@@ -681,7 +681,7 @@ Private StateProc state_handler[] = {
 	HexIMFirstComposeKey,
 	HexIMSecondComposeKey
 };
-#endif
+
 
 /*
  *  Table for 'Thai Compose' character input.
@@ -713,7 +713,7 @@ struct _XKeytrans {
 	int mlen;		/* length of modifier list */
 };
 
-#ifdef UNUSED
+
 /* Convert keysym to 'Thai Compose' keysym */
 /* The current implementation use latin-1 keysyms */
 Private Bool

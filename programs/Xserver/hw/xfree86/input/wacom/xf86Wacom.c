@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.43tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.44tsi Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -1723,7 +1723,7 @@ static int serialParseProtocol5(WacomCommonPtr common,
 			const unsigned char* data)
 {
     int n;
-    int is_stylus=0, have_data=0;
+    int have_data=0;
     int channel;
     WacomDeviceState* ds;
 
@@ -1776,7 +1776,6 @@ static int serialParseProtocol5(WacomCommonPtr common,
     /* General pen packet or eraser packet or airbrush first packet
      * airbrush second packet */
     else if (((data[0] & 0xb8) == 0xa0) || ((data[0] & 0xbe) == 0xb4)) {
-	is_stylus = 1;
 	ds->x = (((data[1] & 0x7f) << 9) | ((data[2] & 0x7f) << 2) |
                                 ((data[3] & 0x60) >> 5));
 	ds->y = (((data[3] & 0x1f) << 11) | ((data[4] & 0x7f) << 4) |
@@ -1801,7 +1800,6 @@ static int serialParseProtocol5(WacomCommonPtr common,
 
     /* 4D mouse 1st packet or Lens cursor packet or 2D mouse packet*/
     else if (((data[0] & 0xbe) == 0xa8) || ((data[0] & 0xbe) == 0xb0)) {
-	is_stylus = 0;
 	ds->x = (((data[1] & 0x7f) << 9) | ((data[2] & 0x7f) << 2) |
                                 ((data[3] & 0x60) >> 5));
 	ds->y = (((data[3] & 0x1f) << 11) | ((data[4] & 0x7f) << 4) |
@@ -1825,7 +1823,6 @@ static int serialParseProtocol5(WacomCommonPtr common,
 	ds->proximity = (data[0] & PROXIMITY_BIT);
     } /* end 4D mouse 1st packet */
     else if ((data[0] & 0xbe) == 0xaa) { /* 4D mouse 2nd packet */
-	is_stylus = 0;
 	ds->x = (((data[1] & 0x7f) << 9) | ((data[2] & 0x7f) << 2) |
                         ((data[3] & 0x60) >> 5));
 	ds->y = (((data[3] & 0x1f) << 11) | ((data[4] & 0x7f) << 4) |
