@@ -1,4 +1,14 @@
 XFree86 4.3.99.904 (xx February 2004)
+ 819. Fix rendition driver system lockup on changes to text mode
+      (Bugzilla #1204, Eric Wittry).
+ 818. Make the "fp=n" TTCap option behave the same with the FreeType backend
+      as with the X-TT backend (Bugzilla #1163, Chisato Yamauchi).
+ 817. Fix the disappearance of the RAW_ASCENT, RAW_DESCENT, RAW_PIXEL_SIZE,
+      and RAW_POINT_SIZE properties for the FreeType backend (Bugzilla #1163,
+      Chisato Yamauchi).
+ 816. Fix a FreeType backend problem with the font ascent/descent being
+      incorrect with some fonts (Bugzilla #1163, Chisato Yamauchi, reported by
+      Michael Lampe).
  815. Fix for detection of hardwired panel for the via driver (Bugzilla #813,
       Luc Verhaegen, reported by Johannes Specht).
  814. Fix missing ';' in via_driver.c hidden by an empty macro (Bugzilla #813,
@@ -18665,7 +18675,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3152 2004/02/20 21:46:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3153 2004/02/20 21:49:59 dawes Exp $
 
 
 
