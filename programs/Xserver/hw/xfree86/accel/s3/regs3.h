@@ -1,5 +1,5 @@
 /* $XConsortium: regs3.h,v 1.1 94/03/28 21:13:30 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.6 1994/08/06 06:07:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.7 1994/08/20 07:33:35 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -54,9 +54,9 @@
  * By locking them hopefully this won't happen.
  */
 
-#define UNLOCK_SYS_REGS	          { \
+#define UNLOCK_SYS_REGS	          do { \
 				   outb(vgaCRIndex, 0x39); \
-				   outb(vgaCRReg, 0xa5); }
+				   outb(vgaCRReg, 0xa5); } while (0)
 
 /*
  * I haven't had time to put the lock and unlocks in all the right places, for
@@ -64,16 +64,16 @@
  */
 #define LOCK_SYS_REGS	        /**/
 #ifdef notyet
-				 { \
+				 do { \
 				   outb(vgaCRIndex, 0x39); \
-				   outb(vgaCRReg, 0x50); }
+				   outb(vgaCRReg, 0x50); } while (0)
 #endif				   
 
 #define S3_911_ONLY(chip)       (chip==0x81)
 #define S3_924_ONLY(chip)       (chip==0x82)
 #define S3_911_SERIES(chip)     ((chip&0xf0)==0x80)
 #define S3_801_SERIES(chip)     ((chip&0xf0)==0xa0)
-#define S3_801_I_SERIES(chip)	(S3_801_SERIES(chip) && ((chip) & 0x08))
+#define S3_805_I_SERIES(chip)   (S3_801_SERIES(chip) && ((chip) & 0x08))
 #define S3_801_REV_C(chip)      (S3_801_SERIES(chip) && ((chip) & 0x07) >= 2)
 #define S3_928_P(chip)          ((chip&0xf0)==0xb0)
 #define S3_928_ONLY(chip)       (((chip&0xf0)==0x90)||S3_928_P(chip))
@@ -322,19 +322,19 @@
 LUTENTRY;
 
 /* Wait until "v" queue entries are free */
-#define	WaitQueue(v)	{ while (inb(GP_STAT) & (0x0100 >> (v))); }
+#define	WaitQueue(v)	do { while (inb(GP_STAT) & (0x0100 >> (v))); } while(0)
 
 /* x64: Wait until "v" queue entries are free, v>8 for 864/964 */
-#define	WaitQueue16(v)	{ while (inb(GP_STAT) & (0x8000 >> (v-9))); }
+#define	WaitQueue16(v)	do { while (inw(GP_STAT) & (0x8000 >> (v-9))); } while(0)
 
 /* Wait until GP is idle and queue is empty */
 /* x64: bits 15-11 are reserved in 928 and should be zero,
         for 864/964 these are FIFO-STATUS bits 9-13 */
 #define	WaitIdleEmpty() \
-   { while (inw(GP_STAT) & (GPBUSY | 1 | 0xF800)); }
+   do { int fx86=(S3_x64_SERIES(s3ChipId)?0xF800:0); while (inw(GP_STAT) & (GPBUSY | 1 | fx86)); } while (0)
 
 /* Wait until GP is idle */
-#define WaitIdle() { while (inw(GP_STAT) & GPBUSY) ; }
+#define WaitIdle() do { while (inw(GP_STAT) & GPBUSY) ; } while (0)
 
 #define	MODE_800	1
 #define	MODE_1024	2

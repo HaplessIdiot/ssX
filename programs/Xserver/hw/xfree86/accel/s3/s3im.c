@@ -1,5 +1,5 @@
 /* $XConsortium: s3im.c,v 1.1 94/03/28 21:15:39 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.5 1994/08/11 06:55:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.6 1994/08/20 07:34:11 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -879,12 +879,12 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu,
 
       modulus (y + j - poy, ph, mod);
       pline = psrc + pwidth * mod;
-      pend = (unsigned short *)&pline[pw-1];
-      wrapped = pline[0] + (*pend << 8);
+      pend = (unsigned short *)&pline[pw*s3Bpp];
+      wrapped = (pline[0] << 8) + (pline[pw-1] << 0); /* only for 8bpp */
 
-      modulus (x + i - pox, pw, mod);
+      modulus (x - pox, pw, mod);
 
-      plines = (unsigned short *) &pline[mod];
+      plines = (unsigned short *) &pline[mod*s3Bpp];
 
       for (i = 0; i < w * s3Bpp;)  {
 
@@ -903,8 +903,8 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu,
 	       i += 2;
 	    }
 	 }
-	if (plines == pend)
-	   plines = (unsigned short *)&pline;
+	 if (plines == pend)
+	    plines = (unsigned short *)pline;
 	 
       }
    }
@@ -1190,14 +1190,8 @@ s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel,
 	       getbuf = (getbuf << 8) | SWPBIT (pix++);
 	       bitlft += 8;
 	    }
-	    if (s3InfoRec.bitsPerPixel == 32) {
-	       bitlft -= 32;
-	       S3_OUTL (PIX_TRANS, (getbuf >> bitlft));
-	    }
-	    else {
-	       bitlft -= 16;
-	       S3_OUTW (PIX_TRANS, (getbuf >> bitlft));
-	    }
+	    bitlft -= 16;
+	    S3_OUTW (PIX_TRANS, (getbuf >> bitlft));
 	 }
 
 	 if ((++ypix) == ph) {

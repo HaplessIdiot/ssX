@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.14 1994/08/12 14:01:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.15 1994/08/20 07:34:14 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -52,6 +52,7 @@ typedef struct {
    unsigned char Bt485[4];	/* Bt485 Command Registers 0-3 */
    unsigned char Ti3020[0x40];	/* Ti3020 Indirect Registers 0x0-0x3F */
    unsigned char STG1700[5];    /* STG1700 index and command registers */
+   unsigned char SDAC[6];       /* S3 SDAC command and PLL registers */
    unsigned char s3reg[10];     /* Video Atribute (CR30-34, CR38-3C) */
    unsigned char s3sysreg[46];  /* Video Atribute (CR40-6D)*/
 }
@@ -95,7 +96,7 @@ short s3ChipId = 0;
  * Registers to save/restore in the 0x50 - 0x5f control range
  */
 
-static short reg50_mask = 0x6733; /* was 0x4023 */
+static short reg50_mask = 0x673b; /* was 0x6733; */ /* was 0x4023 */
 
 extern unsigned char s3Port54;
 extern unsigned char s3Port51;
@@ -163,6 +164,25 @@ s3CleanUp(void)
 
       xf86dactopel();
       xf86setdaccomm(oldS3->STG1700[0]);
+   }
+
+   /* Restore S3 SDAC Command and PLL registers */
+   if (DAC_IS_SDAC)
+   {
+      outb(vgaCRIndex, 0x55);
+      tmp = inb(vgaCRReg);
+      outb(vgaCRReg, tmp | 1);
+
+      outb(0x3c6, oldS3->SDAC[0]);      /* Enhanced command register */
+      outb(0x3c8, 2);                   /* index to f2 reg */
+      outb(0x3c9, oldS3->SDAC[3]);      /* f2 PLL M divider */
+      outb(0x3c9, oldS3->SDAC[4]);      /* f2 PLL N1/N2 divider */
+      outb(0x3c8, 0x0e);                /* index to PLL control */
+      outb(0x3c9, oldS3->SDAC[5]);      /* PLL control */
+      outb(0x3c8, oldS3->SDAC[2]);      /* PLL write index */
+      outb(0x3c7, oldS3->SDAC[1]);      /* PLL read index */
+
+      outb(vgaCRReg, tmp & ~1);
    }
    
    /*
@@ -234,7 +254,8 @@ s3CleanUp(void)
    if (S3_801_928_SERIES(s3ChipId)) {
     /* restore 801 specific registers */
 
-      for (i = 32; i < (S3_x64_SERIES(s3ChipId) ? 46 : 38) ; i++) {
+      for (i = 32; i < (S3_x64_SERIES(s3ChipId) ? 46 : 
+                      S3_805_I_SERIES(s3ChipId) ? 40 : 38) ; i++) {
 	 outb(vgaCRIndex, 0x40 + i);
 	 outb(vgaCRReg, oldS3->s3sysreg[i]);
 
@@ -360,6 +381,25 @@ s3Init(mode)
          xf86dactopel();
       }
 
+      /* Save S3 SDAC Command and PLL registers */
+      if (DAC_IS_SDAC)
+      {
+         outb(vgaCRIndex, 0x55);
+	 tmp = inb(vgaCRReg);
+         outb(vgaCRReg, tmp | 1);
+
+         oldS3->SDAC[0] = inb(0x3c6);      /* Enhanced command register */
+         oldS3->SDAC[2] = inb(0x3c8);      /* PLL write index */
+         oldS3->SDAC[1] = inb(0x3c7);      /* PLL read index */
+         outb(0x3c7, 2);                   /* index to f2 reg */
+         oldS3->SDAC[3] = inb(0x3c9);      /* f2 PLL M divider */
+         oldS3->SDAC[4] = inb(0x3c9);      /* f2 PLL N1/N2 divider */
+         outb(0x3c7, 0x0e);                /* index to PLL control */
+         oldS3->SDAC[5] = inb(0x3c9);      /* PLL control */
+
+         outb(vgaCRReg, tmp & ~1);
+      }
+   
       /*
        * Save Sierra SC15025/6 command registers.
        */
@@ -440,7 +480,8 @@ s3Init(mode)
 	     oldS3->s3sysreg[i + 16] = inb(vgaCRReg);
           }
 
-      for (i = 32; i < (S3_x64_SERIES(s3ChipId) ? 46 : 38); i++) {
+      for (i = 32; i < (S3_x64_SERIES(s3ChipId) ? 46 : 
+                      S3_805_I_SERIES(s3ChipId) ? 40 : 38); i++) {
 	 outb(vgaCRIndex, 0x40 + i);
 	 oldS3->s3sysreg[i] = inb(vgaCRReg);
 #ifdef REG_DEBUG
@@ -468,7 +509,7 @@ s3Init(mode)
       pixMuxShift = 1;
    else if (S3_928_SERIES(s3ChipId) && DAC_IS_SC15025)
       pixMuxShift = -(s3Bpp>>1);  /* for 16/32 bpp */
-   else if (S3_864_SERIES(s3ChipId) /* && DAC_IS_ATT498 */)
+   else if (S3_864_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId))
       pixMuxShift = -(s3Bpp>>1);  /* for 16/32 bpp */
    else if (S3_x64_SERIES(s3ChipId)) /* XXXX Better to test the DAC type? */
       pixMuxShift = 0;
@@ -618,6 +659,8 @@ s3Init(mode)
       }
    }
 
+   /* NO 8bit mode for S3 SDAC */
+
    /*
     * Set Sierra SC 15025/6 command registers to 8-bit mode if desired.
     */
@@ -731,7 +774,7 @@ s3Init(mode)
 	 tmp = inb(vgaCRReg);
 	 outb(vgaCRReg, tmp | 0x08 );
 	 
-	 if (S3_x64_SERIES(s3ChipId)) {
+	 if (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId)) {
 	    outb(vgaCRIndex, 0x67);
 	    if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options))
 	       outb(vgaCRReg, 0x10 );
@@ -752,7 +795,7 @@ s3Init(mode)
 
 	 tmp = xf86getdaccomm() & 0x0f;
 
-	 if (S3_x64_SERIES(s3ChipId)) {
+	 if (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId)) {
 	    int invert_vclk = 0;
 	    int delay_blank = 0;
 	    outb(vgaCRIndex, 0x67);
@@ -824,7 +867,7 @@ s3Init(mode)
 	 tmp = inb(vgaCRReg);
 	 outb(vgaCRReg, tmp | 0x08 );
 	 
-	 if (S3_x64_SERIES(s3ChipId)) {
+	 if (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId)) {
 	    outb(vgaCRIndex, 0x67);
 	    outb(vgaCRReg, 0x11 );     /* set Mode 8: Two 8-bit color,
 					  1 VCLK/2 pixels */
@@ -841,7 +884,7 @@ s3Init(mode)
 	 tmp = inb(vgaCRReg);
 	 outb(vgaCRReg, tmp &  ~0x08 );
 
-	 if (S3_x64_SERIES(s3ChipId)) {
+	 if (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId)) {
 	    int invert_vclk = 0;
 	    int delay_blank = 0;
             int pixmode     = 0;
@@ -875,7 +918,7 @@ s3Init(mode)
 	       case 32: /* set Mode 11: 24/32-bit color, 2 VCLK/pixel */
 	          daccomm |= 0x08;
                   pixmode  = 0x04;
-                  s3mux    = 0x50 | invert_vclk; 
+                  s3mux    = 0x70 | invert_vclk; 
 	          delay_blank = 2;
 	          break;
 
@@ -909,6 +952,63 @@ s3Init(mode)
       outb(0x3C5, tmp2);        /* unblank the screen */
    }
 
+   if (DAC_IS_SDAC)
+   {
+      int pixmux = 0;           /* SDAC command and CR67 */
+      int blank_delay = 0;      /* CR6D */
+      int invert_vclk = 0;      /* CR66 bit 0 */
+      unsigned char tmp3;
+
+      outb(0x3C4, 1);
+      tmp2 = inb(0x3C5);
+      outb(0x3C5, tmp2 | 0x20); /* blank the screen */
+
+      if (pixel_multiplexing)
+      {
+	 /* x64:pixmux */
+	 /* pixmux with 16/32 bpp not possible for 864 ==> only 8bit mode  */
+         pixmux = 0x10;         /* two 8bit pixels per clock */
+         invert_vclk = 1;
+         blank_delay = 2;
+      }
+      else
+      {
+         switch (s3InfoRec.bitsPerPixel) 
+         {
+            case 8:  /* 8-bit color, 1 VCLK/pixel */
+               break;
+
+            case 16: /* 15/16-bit color, 1VCLK/pixel */
+               if (s3Weight = RGB16_555)
+                  pixmux = 0x50;
+               else
+                  pixmux = 0x30;
+               blank_delay = 2;
+               break;
+
+            case 32: /* 32-bit color, 2VCLK/pixel */
+               pixmux = 0x70;
+               blank_delay = 2;
+         }
+      }
+
+      outb(vgaCRIndex, 0x55);
+      tmp3 = inb(vgaCRReg);
+      outb(vgaCRReg, tmp3 | 1);
+
+      outb(vgaCRIndex, 0x67);
+      outb(vgaCRReg, pixmux | invert_vclk);    /* set S3 mux mode */
+      outb(0x3c6, pixmux);                     /* set SDAC mux mode */
+
+      outb(vgaCRIndex, 0x6D);
+      outb(vgaCRReg, blank_delay);             /* set blank delay */
+
+      tmp3 = inb(vgaCRReg);
+      outb(vgaCRReg, tmp3 & ~1); /* XXXX should this be writing CR55? */
+
+      outb(0x3C4, 1);
+      outb(0x3C5, tmp2);        /* unblank the screen */
+   }
 
    if (DAC_IS_BT485_SERIES) {
       outb(0x3C4, 1);
@@ -1241,7 +1341,7 @@ s3Init(mode)
       outb(0x3C0, new->Attribute[i]);
    }
 
-   if (s3DisplayWidth == 2048 || S3_801_SERIES(s3ChipId))
+   if (s3DisplayWidth == 2048)
       s3Port31 = 0x8f;
    else
       s3Port31 = 0x8d;
@@ -1326,11 +1426,11 @@ s3Init(mode)
    /* hi/true cursor color enable */
    switch (s3InfoRec.bitsPerPixel) {
    case 16:
-      if (!S3_x64_SERIES(s3ChipId))
+      if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId))
 	 i = i | 0x04;
       break;
    case 32:
-      if (S3_x64_SERIES(s3ChipId))
+      if (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId))
 	 i = i | 0x04; /* for 16bit RAMDAC, 0x0c for 8bit RAMDAC */
       else
 	 i = i | 0x08;
@@ -1342,15 +1442,15 @@ s3Init(mode)
 
       outb(vgaCRIndex, 0x50);
       i = inb(vgaCRReg);
-      i &= 0xf;
+      i &= ~0xf1;
       switch (s3InfoRec.bitsPerPixel) {
 	case 8:
            break;
 	case 16:
-	   i = i | 0x10;
+	   i |= 0x10;
 	   break;
 	case 32:
-	   i = i | 0x30;
+	   i |= 0x30;
 	   break;
       }
       switch (s3DisplayWidth) { 
@@ -1392,7 +1492,7 @@ s3Init(mode)
        * for pixel multiplexing control.
        */
       if (S3_801_SERIES(s3ChipId)) {
-	 if (S3_801_I_SERIES(s3ChipId))
+	 if (S3_805_I_SERIES(s3ChipId) && s3InfoRec.videoRam == 2048)
 	    tmp |= 0x20;
 	 else
 	    tmp &= ~0x20;
@@ -1410,6 +1510,8 @@ s3Init(mode)
       }
       else if (s3InfoRec.videoRam == 512 || mode->HDisplay > 1200) /* XXXX */
 	 s3Port54 = 0x00;
+      else if (s3InfoRec.videoRam == 1024)
+         s3Port54 = 0x10;
       else
 	 s3Port54 = 0xa0;
       outb(vgaCRReg, s3Port54);
@@ -1669,7 +1771,7 @@ s3InitEnvironment()
    WaitQueue16_32(6,7);
 
    if (s3InfoRec.bitsPerPixel > 8)
-      outw32(FRGD_COLOR, ~0);
+      outw32(FRGD_COLOR, 0);
    else
       outw32(FRGD_COLOR, 1);
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.18 1994/08/12 14:01:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.19 1994/08/20 07:33:37 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -46,6 +46,7 @@
 #include "s3linear.h"
 #include "s3Bt485.h"
 #include "s3Ti3020.h"
+#include "s3ELSA.h"
 
 extern int s3MaxClock;
 extern int s3MaxBt485Clock, s3MaxBt485MuxClock;
@@ -152,6 +153,7 @@ static SymTabRec s3DacTable[] = {
    { ATT20C490_DAC,	"att20c490" },
    { SC15025_DAC,	"sc15025" },
    { STG1700_DAC,	"stg1700" },
+   { S3_SDAC_DAC,	"s3_sdac" },
    { -1,		"" },
 };
 
@@ -248,6 +250,8 @@ s3Probe()
    int tx, ty;
    int maxDisplayWidth, maxDisplayHeight;
    OFlagSet validOptions;
+   char *card, *serno;
+   int card_id, max_pix_clock, max_mem_clock;
 
    /*
     * These characterise a RAMDACs pixel multiplexing capabilities and
@@ -406,6 +410,46 @@ s3Probe()
       }
    }
 
+   card_id = s3DetectELSA(&card, &serno, &max_pix_clock, &max_mem_clock);
+   if (card_id > 0) {
+      ErrorF("%s %s: card: %s, Ser.No. %s\n",
+	     XCONFIG_PROBED, s3InfoRec.name, card, serno);
+      free(card);
+      free(serno);
+
+      do {
+	 switch (card_id) {
+	 case ELSA_WINNER_1000PRO:
+	    OFLG_SET(OPTION_ELSA_W1000PRO,  &s3InfoRec.options);
+	    break;
+	 case ELSA_WINNER_2000PRO:
+	    OFLG_SET(OPTION_ELSA_W2000PRO,  &s3InfoRec.options);
+	    break;
+	 case ELSA_WINNER_1000:
+	 case ELSA_WINNER_1000VL:
+	 case ELSA_WINNER_1000PCI:
+	 case ELSA_WINNER_1000ISA:
+	 case ELSA_WINNER_2000:
+	 case ELSA_WINNER_2000VL:
+	 case ELSA_WINNER_2000PCI:
+	    break;
+	 default: continue; /* unknown card_id, don't set ICD2061A flags */
+	 }
+
+	 /* a known ELSA card_id was returned, set ICD 2061A clock support */
+
+	 if (!OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)) {
+	    OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions);
+	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+	    s3ClockSelectFunc = icd2061ClockSelect;
+	    if (xf86Verbose)
+	       ErrorF("%s %s: Using ICD2061A programmable clock\n",
+		      XCONFIG_PROBED, s3InfoRec.name);
+	    numClocks = 3;
+	 }
+      } while (0);
+   }
+
    if (xf86Verbose) {
       if (S3_x64_SERIES(s3ChipId)) {
 	if (S3_864_SERIES(s3ChipId)) {
@@ -417,14 +461,20 @@ s3Probe()
 	 }
       } else if (S3_801_928_SERIES(s3ChipId)) {
 	 if (S3_801_SERIES(s3ChipId)) {
-	    if (!((config & 0x03) == 3))
+            if (S3_805_I_SERIES(s3ChipId)) {
+               ErrorF("%s %s: chipset:   805i",
+                      XCONFIG_PROBED, s3InfoRec.name);
+               if ((config & 0x03) == 3)
+                  ErrorF(" (ISA)");
+               else
+                  ErrorF(" (VL)");
+            }
+	    else if (!((config & 0x03) == 3))
 	       ErrorF("%s %s: chipset:   805",
                       XCONFIG_PROBED, s3InfoRec.name);
 	    else
 	       ErrorF("%s %s: chipset:   801",
                        XCONFIG_PROBED, s3InfoRec.name);
-	    if (S3_801_I_SERIES(s3ChipId))
-	       ErrorF("i");
 	    ErrorF(", ");
 	    if (S3_801_REV_C(s3ChipId))
 	       ErrorF("rev C or above\n");
@@ -524,8 +574,10 @@ s3Probe()
       s3Weight = RGB16_555;
       xf86weight.red = xf86weight.green = xf86weight.blue = 5;
       s3InfoRec.bitsPerPixel = 16;
-      s3InfoRec.defaultVisual = TrueColor;
-      defaultColorVisualClass = TrueColor;
+      if (s3InfoRec.defaultVisual < 0)
+	 s3InfoRec.defaultVisual = TrueColor;
+      if (defaultColorVisualClass < 0)
+	 defaultColorVisualClass = s3InfoRec.defaultVisual;
       break;
    case 16:
       if (xf86weight.red==5 && xf86weight.green==5 && xf86weight.blue==5) {
@@ -541,8 +593,10 @@ s3Probe()
 	 return(FALSE);
       }
       s3InfoRec.bitsPerPixel = 16;
-      s3InfoRec.defaultVisual = TrueColor;
-      defaultColorVisualClass = TrueColor;
+      if (s3InfoRec.defaultVisual < 0)
+	 s3InfoRec.defaultVisual = TrueColor;
+      if (defaultColorVisualClass < 0)
+	 defaultColorVisualClass = s3InfoRec.defaultVisual;
       break;
    case 24:
    case 32:
@@ -552,8 +606,10 @@ s3Probe()
       s3Weight = RGB32_888;
       /* s3MaxClock = S3_MAX_32BPP_CLOCK; */
       xf86weight.red =  xf86weight.green = xf86weight.blue = 8;
-      s3InfoRec.defaultVisual = TrueColor;
-      defaultColorVisualClass = TrueColor;
+      if (s3InfoRec.defaultVisual < 0)
+	 s3InfoRec.defaultVisual = TrueColor;
+      if (defaultColorVisualClass < 0)
+	 defaultColorVisualClass = s3InfoRec.defaultVisual;
       break;
    default:
       ErrorF("Invalid value for bpp.  Valid values are 8, 15, 16, 24 and 32.\n");
@@ -566,11 +622,12 @@ s3Probe()
    outb(vgaCRReg, 0xA5);
 
    /*
-    * For chipsets other than 928 or 864/964, there is only one RAMDAC
-    * type possible.  Only probe for 928 and 864/964.
+    * For chipsets other than 928, 805i or 864/964, there is only one RAMDAC
+    * type possible.  Only probe for 928, 805i and 864/964.
     */
-   if ((S3_928_SERIES(s3ChipId) || S3_x64_SERIES(s3ChipId)) &&
-       s3RamdacType == UNKNOWN_DAC) {
+   if ((S3_928_SERIES(s3ChipId) || S3_x64_SERIES(s3ChipId)
+       || S3_805_I_SERIES(s3ChipId))
+   && s3RamdacType == UNKNOWN_DAC) {
 
       /*
        * Bt485/AT&T20C505 first
@@ -663,7 +720,7 @@ s3Probe()
       }
 
 
-      /* If it wasn't a Ti3020, probe for the STG1700 */
+      /* If it wasn't a Sierra, probe for the STG1700 */
       if (s3RamdacType == UNKNOWN_DAC) 
       {
          int cid, did;
@@ -677,9 +734,28 @@ s3Probe()
 	 xf86dactopel();
 
          if ((cid == 0x44) && (did == 0x00))
+         {
 	    ErrorF("%s %s: Detected an STG1700 RAMDAC\n",
 	           XCONFIG_PROBED, s3InfoRec.name);
 	    s3RamdacType = STG1700_DAC;
+         }
+      }
+
+      /* If it wan't an SGS/inmos, probe for S3 SDAC */
+      if (s3RamdacType == UNKNOWN_DAC)
+      {
+         xf86dactopel();
+         inb(0x3c6);
+         inb(0x3c6);
+         inb(0x3c6);
+
+         /* the forth read will show the chip ID and revision */
+         if ((inb(0x3c6) & 0xf0) == 0x70)
+         {
+            ErrorF("%s %s: Detected an S3 SDAC 86C716 RAMDAC\n",
+                   XCONFIG_PROBED, s3InfoRec.name);
+            s3RamdacType = S3_SDAC_DAC;
+         }
       }
    }
 
@@ -709,9 +785,9 @@ s3Probe()
 	 break;
       case ATT20C498_DAC:
       case STG1700_DAC:
-	 /* XXXX Some day we should support this with the 805i */
-	 if (!S3_864_SERIES(s3ChipId)) {
-	    chips = "864";
+      case S3_SDAC_DAC:
+	 if (!S3_864_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId)) {
+	    chips = "864 and 805i";
 	 }
 	 break;
       }
@@ -748,6 +824,7 @@ s3Probe()
       case ATT20C505_DAC:
       case ATT20C498_DAC:
       case STG1700_DAC:
+      case S3_SDAC_DAC:
 	 s3InfoRec.dacSpeed = 135000;
 	 break;
       case TI3020_DAC:
@@ -806,7 +883,7 @@ s3Probe()
 	OFLG_ISSET(OPTION_MIRO_CRYSTAL20SV, &s3InfoRec.options)))
       s3Bt485PixMux = TRUE;
 
-   if ((DAC_IS_ATT498 || DAC_IS_STG1700) && 
+   if ((DAC_IS_ATT498 || DAC_IS_STG1700 || DAC_IS_SDAC) && 
        (OFLG_ISSET(OPTION_ELSA_W1000PRO, &s3InfoRec.options) ||
         OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)))
       if (xf86bpp <= 8) s3ATT498PixMux = TRUE;
@@ -822,6 +899,7 @@ s3Probe()
       break;
    case ATT20C498_DAC:
    case STG1700_DAC:
+   case S3_SDAC_DAC:
       if (s3ATT498PixMux)
 	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
       else {
@@ -913,13 +991,6 @@ s3Probe()
          ErrorF("%s %s: Using ICD2061A programmable clock\n",
             XCONFIG_GIVEN, s3InfoRec.name);
       numClocks = 3;
-   } else if (OFLG_ISSET(CLOCK_OPTION_ICD2061ASL, &s3InfoRec.clockOptions)) {
-      s3ClockSelectFunc = icd2061ClockSelect;
-      if (xf86Verbose)
-         ErrorF("%s %s: Using ICD2061A programmable clock\n",
-            XCONFIG_GIVEN, s3InfoRec.name);
-	 ErrorF("\tNote: \"icd2061a_slow\" is deprecated; use \"icd2061a\"\n");
-      numClocks = 3;
    } else if (OFLG_ISSET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions)) {
       s3ClockSelectFunc = icd2061ClockSelect;
       if (xf86Verbose)
@@ -929,7 +1000,7 @@ s3Probe()
    } else if (OFLG_ISSET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions)) {
       s3ClockSelectFunc = s3GendacClockSelect;
       if (xf86Verbose)
-	 ErrorF("%s %s: Using S3 Gendac programmable clock\n",
+	 ErrorF("%s %s: Using S3 Gendac/SDAC programmable clock\n",
 		XCONFIG_GIVEN, s3InfoRec.name);
 	 numClocks = 3;
    } else {
@@ -961,57 +1032,73 @@ s3Probe()
 
    tx = s3InfoRec.virtualX;
    ty = s3InfoRec.virtualY;
-   pMode = pEnd = s3InfoRec.modes;
+   pMode = s3InfoRec.modes;
+   pEnd = NULL;
    do {
+      DisplayModePtr pModeSv;
+
+      pModeSv = pMode->next;
+      /*
+       * xf86LookupMode returns FALSE if it ran into an invalid
+       * parameter 
+       */
       if (!xf86LookupMode(pMode, &s3InfoRec)) {
-	 xf86DisableIOPorts(s3InfoRec.scrnIndex);
-	 return (FALSE);
-      }
-      if ((pMode->HDisplay * (1 + pMode->VDisplay) * s3Bpp) >
-	  s3InfoRec.videoRam * 1024) {
+	 xf86DeleteMode(&s3InfoRec, pMode);
+      } else if ((pMode->HDisplay * (1 + pMode->VDisplay) * s3Bpp) >
+		 s3InfoRec.videoRam * 1024) {
 	 ErrorF("%s: Too little memory for mode %s\n", s3InfoRec.name,
 		pMode->name);
 	 ErrorF("%s: NB. 1 scan line is required for the hardware cursor\n",
 	        s3InfoRec.name);
-         pMode = pMode->next;
-	 continue;
-	 xf86DisableIOPorts(s3InfoRec.scrnIndex);
-	 return (FALSE);
-      }
-      s3InfoRec.virtualX = max(s3InfoRec.virtualX, pMode->HDisplay);
-      s3InfoRec.virtualY = max(s3InfoRec.virtualY, pMode->VDisplay);
+	 xf86DeleteMode(&s3InfoRec, pMode);
+      } else if (((tx > 0) && (pMode->HDisplay > tx)) ||
+		 ((ty > 0) && (pMode->VDisplay > ty))) {
+	 ErrorF("Resolution %dx%d too large for virtual %dx%d\n",
+		pMode->HDisplay, pMode->VDisplay, tx, ty);
+	 xf86DeleteMode(&s3InfoRec, pMode);
+      } else {
+	 /*
+	  * Successfully looked up this mode.  If pEnd isn't
+	  * initialized, set it to this mode.
+	  */
+	 if (pEnd == (DisplayModePtr) NULL)
+	    pEnd = pMode;
 
-      /*
-       * Check what impact each mode has on pixel multiplexing, and mark those
-       * modes for which pixmux must be used.
-       */
-      if (pixMuxPossible) {
-	 if ((s3InfoRec.clock[pMode->Clock] / 1000) >
-	     (nonMuxMaxClock / 1000)) {
-	    pMode->Flags |= V_PIXMUX;
-	    pixMuxNeeded = TRUE;
-	 }
-	 if (s3InfoRec.videoRam > nonMuxMaxMemory)
-	    pMode->Flags |= V_PIXMUX;
+	 s3InfoRec.virtualX = max(s3InfoRec.virtualX, pMode->HDisplay);
+	 s3InfoRec.virtualY = max(s3InfoRec.virtualY, pMode->VDisplay);
 
 	 /*
-	  * Check if pixmux can't be used.  There are two cases:
-	  *
-	  *   1. No switching between mux and non-mux modes.  In this case
-	  *      the presence of any mode which can't be used in pixmux
-	  *      mode is flagged.
-	  *   2. Switching allowed.  In this cases the presence of modes
-	  *      which require mux for one feature, but can't use it because
-	  *      of another is flagged.
+	  * Check what impact each mode has on pixel multiplexing,
+	  * and mark those modes for which pixmux must be used.
 	  */
-         if (!allowPixMuxSwitching || (pMode->Flags & V_PIXMUX)) {
-	    if (pMode->HDisplay < pixMuxMinWidth)
-	       pixMuxWidthOK = FALSE;
-	    if ((pMode->Flags & V_INTERLACE) && !allowPixMuxInterlace)
-	       pixMuxInterlaceOK = FALSE;
+	 if (pixMuxPossible) {
+	    if ((s3InfoRec.clock[pMode->Clock] / 1000) >
+	        (nonMuxMaxClock / 1000)) {
+	       pMode->Flags |= V_PIXMUX;
+	       pixMuxNeeded = TRUE;
+	    }
+	    if (s3InfoRec.videoRam > nonMuxMaxMemory)
+	       pMode->Flags |= V_PIXMUX;
+
+	    /*
+	     * Check if pixmux can't be used.  There are two cases:
+	     *
+	     *   1. No switching between mux and non-mux modes.  In this case
+	     *      the presence of any mode which can't be used in pixmux
+	     *      mode is flagged.
+	     *   2. Switching allowed.  In this cases the presence of modes
+	     *      which require mux for one feature, but can't use it
+	     *      because of another is flagged.
+	     */
+	    if (!allowPixMuxSwitching || (pMode->Flags & V_PIXMUX)) {
+	       if (pMode->HDisplay < pixMuxMinWidth)
+		  pixMuxWidthOK = FALSE;
+	       if ((pMode->Flags & V_INTERLACE) && !allowPixMuxInterlace)
+		  pixMuxInterlaceOK = FALSE;
+	    }
 	 }
       }
-      pMode = pMode->next;
+      pMode = pModeSv;
    } while (pMode != pEnd);
 
    if ((tx != s3InfoRec.virtualX) || (ty != s3InfoRec.virtualY))
@@ -1167,6 +1254,7 @@ s3Probe()
 	 s3DisplayWidth = 1024;
       } else if ((s3InfoRec.virtualX <= 1152) &&
 		 (   S3_801_REV_C(s3ChipId) 
+                  || S3_805_I_SERIES(s3ChipId)
 		  || S3_928_REV_E(s3ChipId)
 		  || S3_x64_SERIES(s3ChipId))) {
 	 s3DisplayWidth = 1152;
@@ -1440,8 +1528,7 @@ icd2061ClockSelect(no)
 	 /* Convert freq to Hz */
 	 freq *= 1000;
 	 /* Use the "Alt" version always since it is more reliable */
-	 if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions) ||
-	     OFLG_ISSET(CLOCK_OPTION_ICD2061ASL, &s3InfoRec.clockOptions)) {
+	 if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)) {
 	    /* setting exactly 120 MHz doesn't work all the time */
 	    if (freq > 119900000) freq = 119900000;
 	    AltICD2061SetClock(freq, 2);
@@ -1464,6 +1551,8 @@ icd2061ClockSelect(no)
 }
 
 
+/* The GENDAC code also works for the SDAC */
+
 static Bool
 s3GendacClockSelect(no)
      int   no;
@@ -1471,7 +1560,6 @@ s3GendacClockSelect(no)
 {
    Bool result = TRUE;
    int freq;
-#define MAX_GENDAC_FREQ 110000   
  
    UNLOCK_SYS_REGS;
    
@@ -1493,10 +1581,10 @@ s3GendacClockSelect(no)
 	 /* Start with freq in kHz */
 	 freq = s3InfoRec.clock[no];
 	 /* Check if clock frequency is within range */
-	 if (freq > MAX_GENDAC_FREQ) {
-	    ErrorF("%s %s: Specified dot clock (%.3f) too high for S3 Gendac",
+	 if (freq > s3InfoRec.dacSpeed) {
+	    ErrorF("%s %s: Specified dot clock (%.3f) too high for S3 Gendac/SDAC",
 		   XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
-	    freq = MAX_GENDAC_FREQ;
+	    freq = s3InfoRec.dacSpeed;
 	 }
 	 (void) S3gendacSetClock(freq, 2); /* can't fail */
 	 outb(vgaCRIndex, 0x42);/* select the clock */

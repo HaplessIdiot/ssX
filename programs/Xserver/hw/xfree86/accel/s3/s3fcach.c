@@ -1,5 +1,5 @@
 /* $XConsortium: s3fcach.c,v 1.1 94/03/28 21:17:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.3 1994/08/11 06:55:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.4 1994/08/20 07:33:55 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -70,20 +70,34 @@ s3FontCache8Init()
    y = s3CursorStartY + s3CursorLines;
    h = s3ScissB + 1 - y;
 
-   /* Currently no pixmap cache when s3DisplayWidth < 1024 */
+   /*
+    * No pixmap expansion if s3DisplayWidth < 1024 and less than 100 scanlines
+    * available for the font cache.
+    */
 
-   if ((h <  PIXMAP_WIDTH) || (s3DisplayWidth < 1024)) { /* no pixmap cache */
+   if ((h < PIXMAP_WIDTH) ||
+       ((s3DisplayWidth < 1024) && (h < PIXMAP_WIDTH + 100))) {
       w = s3DisplayWidth;
       ErrorF("%s %s: No pixmap expanding area available\n",
 	     XCONFIG_PROBED, s3InfoRec.name);
    } else {
-      w = 768;
-      if (h >= PIXMAP_WIDTH) {
+      if (s3DisplayWidth < 1024) {
+	 w = s3DisplayWidth;
 	 if (first) {
-	    s3InitFrect(768, y, PIXMAP_WIDTH);
+	    s3InitFrect(0, y, PIXMAP_WIDTH);
 	 }
-         ErrorF("%s %s: Using a single %dx%d area for expanding pixmaps\n",
-	        XCONFIG_PROBED, s3InfoRec.name, PIXMAP_WIDTH, PIXMAP_WIDTH);
+	 y += PIXMAP_WIDTH;
+      } else {
+	 w = 768;
+	 if (h >= PIXMAP_WIDTH) { /* XXXX This test should now be redundant */
+	    if (first) {
+	       s3InitFrect(768, y, PIXMAP_WIDTH);
+	    }
+	 }
+      }
+      if (first) {
+	 ErrorF("%s %s: Using a single %dx%d area for expanding pixmaps\n",
+		XCONFIG_PROBED, s3InfoRec.name, PIXMAP_WIDTH, PIXMAP_WIDTH);
       }
    }
       
@@ -176,7 +190,7 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
 		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
 		  WaitQueue16_32(5,7);
-		  S3_OUTW32(FRGD_COLOR, (short)pGC->fgPixel);
+		  S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
 		  S3_OUTW(MULTIFUNC_CNTL, 
 			PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
 		  S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);

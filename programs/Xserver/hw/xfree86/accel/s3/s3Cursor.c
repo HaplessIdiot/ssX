@@ -1,6 +1,6 @@
 /*
  * $XConsortium: s3Cursor.c,v 1.2 94/03/28 21:14:00 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.6 1994/08/20 07:33:42 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.7 1994/08/20 08:42:06 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -130,6 +130,9 @@ s3CursorInit(pm, pScr)
          if (!(miPointerInitialize(pScr, &s3TiPointerSpriteFuncs,
 				   &xf86PointerScreenFuncs, FALSE)))
             return FALSE;
+      } else if (s3InfoRec.bitsPerPixel == 32 
+		 && S3_928_SERIES(s3ChipId) && !S3_x64_SERIES(s3ChipId)) {
+	 miDCInitialize (pScr, &xf86PointerScreenFuncs);
       } else {
          if (!(miPointerInitialize(pScr, &s3PointerSpriteFuncs,
 				   &xf86PointerScreenFuncs, FALSE)))
@@ -428,7 +431,7 @@ s3MoveCursor(pScr, x, y)
    x -= s3InfoRec.frameX0;
    y -= s3InfoRec.frameY0;
 
-   if (!S3_x64_SERIES(s3ChipId)) 
+   if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId)) 
       x *= s3Bpp;
    else if (s3Bpp > 2)
       x *= 2;
@@ -436,7 +439,7 @@ s3MoveCursor(pScr, x, y)
    x -= s3hotX;
    y -= s3hotY;
 
-   if (!S3_x64_SERIES(s3ChipId))
+   if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId))
       x -= x % s3Bpp;
    else if (s3Bpp > 2)
       x &= ~1;

@@ -1,5 +1,5 @@
 /* $XConsortium: s3text.c,v 1.1 94/03/28 21:16:59 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.3 1994/08/11 06:55:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.4 1994/08/20 07:34:29 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -116,7 +116,7 @@ s3PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    }
 
 	    BLOCK_CURSOR;
-	    WaitQueue(5)
+	    WaitQueue(5);
 	    S3_OUTW (CUR_X, (short) x + pci->metrics.leftSideBearing);
 	    S3_OUTW (CUR_Y, (short) y - pci->metrics.ascent);
 	    S3_OUTW (MAJ_AXIS_PCNT, (short) (gWidth - 1));
