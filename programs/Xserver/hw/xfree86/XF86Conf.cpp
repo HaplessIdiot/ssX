@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.37 1999/05/04 11:27:13 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.38 1999/05/23 15:01:57 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994-1998 by The XFree86 Project, Inc.
 XCOMM
@@ -199,71 +199,71 @@ XCOMM Input devices
 XCOMM **********************************************************************
 
 XCOMM **********************************************************************
-XCOMM Keyboard section
+XCOMM Core keyboard's InputDevice section
 XCOMM **********************************************************************
 
-Section "Keyboard"
+Section "InputDevice"
 
-XCOMM For most OSs, this is the correct Keyboard Protocol setting
+    Identifier	"Keyboard1"
+    Driver	"keyboard"
 
-    Protocol	"Standard"
-
+XCOMM For most OSs the protocol can be omitted (it defaults to "Standard").
 XCOMM When using XQUEUE (only for SVR3 and SVR4, but not Solaris), comment
 XCOMM out the above line, and uncomment the following line.
 
-XCOMM    Protocol	"Xqueue"
+XCOMM    Option	"Protocol"	"Xqueue"
 
 XCOMM Set the keyboard auto repeat parameters.  Not all platforms implement
 XCOMM this.
 
-    AutoRepeat	500 5
+    Option	"AutoRepeat"	"500 5"
 
 XCOMM Specifiy which keyboard LEDs can be user-controlled (eg, with xset(1)).
 
-XCOMM    Xleds      1 2 3
+XCOMM    Option	"Xleds"	"1 2 3"
 
 XCOMM To disable the XKEYBOARD extension, uncomment XkbDisable.
 
-XCOMM XkbDisable
+XCOMM    Option	"XkbDisable"
 
 XCOMM To customise the XKB settings to suit your keyboard, modify the
 XCOMM lines below (which are the defaults).  For example, for a European
 XCOMM keyboard, you will probably want to use one of:
 XCOMM
-XCOMM    XkbModel	"pc102"
-XCOMM    XkbModel	"pc105"
+XCOMM    Option	"XkbModel"	"pc102"
+XCOMM    Option	"XkbModel"	"pc105"
 XCOMM
 XCOMM If you have a Microsoft Natural keyboard, you can use:
 XCOMM
-XCOMM    XkbModel	"microsoft"
+XCOMM    Option	"XkbModel"	"microsoft"
 XCOMM
 XCOMM If you have a US "windows" keyboard you will want:
 XCOMM
-XCOMM    XkbModel	"pc104"
+XCOMM    Option	"XkbModel	"pc104"
 XCOMM
 XCOMM Then to change the language, change the Layout setting.
 XCOMM For example, a german layout can be obtained with:
 XCOMM
-XCOMM    XkbLayout	"de"
+XCOMM    Option	"XkbLayout	"de"
 XCOMM
 XCOMM or:
 XCOMM
-XCOMM    XkbLayout	"de"
-XCOMM    XkbVariant	"nodeadkeys"
+XCOMM    Option	"XkbLayout	"de"
+XCOMM    Option	"XkbVariant	"nodeadkeys"
 XCOMM
 XCOMM If you'd like to switch the positions of your capslock and
 XCOMM control keys, use:
 XCOMM
-XCOMM    XkbOptions	"ctrl:swapcaps"
+XCOMM    Option	"XkbOptions	"ctrl:swapcaps"
 
 
 XCOMM These are the default XKB settings for XFree86
 XCOMM
-XCOMM    XkbRules	"xfree86"
-XCOMM    XkbModel	"pc101"
-XCOMM    XkbLayout	"us"
-XCOMM    XkbVariant	""
-XCOMM    XkbOptions	""
+XCOMM    Option	"XkbRules	"xfree86"
+XCOMM    Option	"XkbModel	"pc101"
+XCOMM    Option	"XkbLayout	"us"
+XCOMM    Option	"XkbVariant	""
+XCOMM    Option	"XkbOptions	""
 
 EndSection
 
@@ -596,6 +596,7 @@ XCOMM pointer events (i.e., both mice will move the standard pointer).
 
     InputDevice	"Mouse1" "CorePointer"
     InputDevice	"Mouse2" "SendCoreEvents"
+    InputDevice "Keyboard1" "CoreKeyboard"
 
 EndSection
 
@@ -605,6 +606,7 @@ Section "ServerLayout"
     Screen	"Screen 1"
     Screen	"Screen MGA 1"
     InputDevice	"Mouse1" "CorePointer"
+    InputDevice "Keyboard1" "CoreKeyboard"
 EndSection
 
 
@@ -612,5 +614,6 @@ Section "ServerLayout"
     Identifier	"simple layout"
     Screen	"Screen 1"
     InputDevice	"Mouse1" "CorePointer"
+    InputDevice "Keyboard1" "CoreKeyboard"
 EndSection
 

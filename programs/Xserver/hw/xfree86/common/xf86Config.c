@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.181 1999/05/23 14:38:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.182 1999/05/30 07:18:24 dawes Exp $ */
 
 
 /*
@@ -1213,73 +1213,76 @@ configInputKbd(IDevPtr inputp)
   if (noXkbExtension)
     xf86Msg(from, "XKB: disabled\n");
 
+#define NULL_IF_EMPTY(s) (s[0] ? s : NULL)
+
   if (!noXkbExtension && !XkbInitialMap) {
     if ((s = xf86SetStrOption(inputp->commonOptions, "XkbKeymap", NULL))) {
-      xf86Info.xkbkeymap = s;
+      xf86Info.xkbkeymap = NULL_IF_EMPTY(s);
       xf86Msg(X_CONFIG, "XKB: keymap: \"%s\" "
-	        "(overrides other XKB settings)\n", xf86Info.xkbkeymap);
+		"(overrides other XKB settings)\n", xf86Info.xkbkeymap);
     } else {
       if ((s = xf86SetStrOption(inputp->commonOptions, "XkbCompat", NULL))) {
-        xf86Info.xkbcompat = s;
-        xf86Info.xkbcomponents_specified = TRUE;
-        xf86Msg(X_CONFIG, "XKB: compat: \"%s\"\n", xf86Info.xkbcompat);
+	xf86Info.xkbcompat = NULL_IF_EMPTY(s);
+	xf86Info.xkbcomponents_specified = TRUE;
+	xf86Msg(X_CONFIG, "XKB: compat: \"%s\"\n", s);
       }
 
       if ((s = xf86SetStrOption(inputp->commonOptions, "XkbTypes", NULL))) {
-        xf86Info.xkbtypes = s;
-        xf86Info.xkbcomponents_specified = TRUE;
-        xf86Msg(X_CONFIG, "XKB: types: \"%s\"\n", xf86Info.xkbtypes);
+	xf86Info.xkbtypes = NULL_IF_EMPTY(s);
+	xf86Info.xkbcomponents_specified = TRUE;
+	xf86Msg(X_CONFIG, "XKB: types: \"%s\"\n", s);
       }
 
       if ((s = xf86SetStrOption(inputp->commonOptions, "XkbKeycodes", NULL))) {
-        xf86Info.xkbkeycodes = s;
-        xf86Info.xkbcomponents_specified = TRUE;
-        xf86Msg(X_CONFIG, "XKB: keycodes: \"%s\"\n", xf86Info.xkbkeycodes);
+	xf86Info.xkbkeycodes = NULL_IF_EMPTY(s);
+	xf86Info.xkbcomponents_specified = TRUE;
+	xf86Msg(X_CONFIG, "XKB: keycodes: \"%s\"\n", s);
       }
 
       if ((s = xf86SetStrOption(inputp->commonOptions, "XkbGeometry", NULL))) {
-        xf86Info.xkbgeometry = s;
-        xf86Info.xkbcomponents_specified = TRUE;
-        xf86Msg(X_CONFIG, "XKB: geometry: \"%s\"\n", xf86Info.xkbgeometry);
+	xf86Info.xkbgeometry = NULL_IF_EMPTY(s);
+	xf86Info.xkbcomponents_specified = TRUE;
+	xf86Msg(X_CONFIG, "XKB: geometry: \"%s\"\n", s);
       }
 
       if ((s = xf86SetStrOption(inputp->commonOptions, "XkbSymbols", NULL))) {
-        xf86Info.xkbsymbols = s;
-        xf86Info.xkbcomponents_specified = TRUE;
-        xf86Msg(X_CONFIG, "XKB: symbols: \"%s\"\n", xf86Info.xkbsymbols);
+	xf86Info.xkbsymbols = NULL_IF_EMPTY(s);
+	xf86Info.xkbcomponents_specified = TRUE;
+	xf86Msg(X_CONFIG, "XKB: symbols: \"%s\"\n", s);
       }
 
       if ((s = xf86SetStrOption(inputp->commonOptions, "XkbRules", NULL))) {
-        xf86Info.xkbrules = s;
-        xf86Info.xkbcomponents_specified = TRUE;
-        xf86Msg(X_CONFIG, "XKB: rules: \"%s\"\n", xf86Info.xkbrules);
+	xf86Info.xkbrules = NULL_IF_EMPTY(s);
+	xf86Info.xkbcomponents_specified = TRUE;
+	xf86Msg(X_CONFIG, "XKB: rules: \"%s\"\n", s);
       }
 
       if ((s = xf86SetStrOption(inputp->commonOptions, "XkbModel", NULL))) {
-        xf86Info.xkbmodel = s;
-        xf86Info.xkbcomponents_specified = TRUE;
-        xf86Msg(X_CONFIG, "XKB: model: \"%s\"\n", xf86Info.xkbmodel);
+	xf86Info.xkbmodel = NULL_IF_EMPTY(s);
+	xf86Info.xkbcomponents_specified = TRUE;
+	xf86Msg(X_CONFIG, "XKB: model: \"%s\"\n", s);
       }
 
       if ((s = xf86SetStrOption(inputp->commonOptions, "XkbLayout", NULL))) {
-        xf86Info.xkblayout = s;
-        xf86Info.xkbcomponents_specified = TRUE;
-        xf86Msg(X_CONFIG, "XKB: layout: \"%s\"\n", xf86Info.xkblayout);
+	xf86Info.xkblayout = NULL_IF_EMPTY(s);
+	xf86Info.xkbcomponents_specified = TRUE;
+	xf86Msg(X_CONFIG, "XKB: layout: \"%s\"\n", s);
       }
 
       if ((s = xf86SetStrOption(inputp->commonOptions, "XkbVariant", NULL))) {
-        xf86Info.xkbvariant = s;
-        xf86Info.xkbcomponents_specified = TRUE;
-        xf86Msg(X_CONFIG, "XKB: variant: \"%s\"\n", xf86Info.xkbvariant);
+	xf86Info.xkbvariant = NULL_IF_EMPTY(s);
+	xf86Info.xkbcomponents_specified = TRUE;
+	xf86Msg(X_CONFIG, "XKB: variant: \"%s\"\n", s);
       }
 
       if ((s = xf86SetStrOption(inputp->commonOptions, "XkbOptions", NULL))) {
-        xf86Info.xkboptions = s;
-        xf86Info.xkbcomponents_specified = TRUE;
-        xf86Msg(X_CONFIG, "XKB: options: \"%s\"\n", xf86Info.xkboptions);
+	xf86Info.xkboptions = NULL_IF_EMPTY(s);
+	xf86Info.xkbcomponents_specified = TRUE;
+	xf86Msg(X_CONFIG, "XKB: options: \"%s\"\n", s);
       }
     }
   }
+#undef NULL_IF_EMPTY
 #endif
 #if defined(SVR4) && defined(i386) && !defined(PC98)
   if ((xf86Info.panix106 =

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.121 1999/05/23 14:38:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.122 1999/05/30 07:18:25 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -736,7 +736,7 @@ InitInput(argc, argv)
 	for (pDev = xf86ConfigLayout.inputs; pDev && pDev->identifier; pDev++) {
 	    /* XXX The keyboard driver is a special case for now. */
 	    if (!xf86NameCmp(pDev->driver, "keyboard")) {
-		xf86Msg(X_INFO, "Keyboard \"%s\" handled with legacy driver\n",
+		xf86Msg(X_INFO, "Keyboard \"%s\" handled by legacy driver\n",
 			pDev->identifier);
 		continue;
 	    }
