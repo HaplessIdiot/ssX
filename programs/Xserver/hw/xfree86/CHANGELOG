@@ -1,4 +1,7 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 149. Fixes incorrect spelling of "XChangeWindowAttributes" found in
+      XCreateColormap(3X11) and XInstallColormap(3X11)
+      (#4813 Carlos A M dos Santos).
  148. Fix a serious memory leak in XAA (Mark Vojkovich).
  147. Add a DriverPrivate field to I2C devices (Marc La France).
  146. In the ATI driver, initialise the fb manager whether or not XAA is also
@@ -13573,4 +13576,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1878 2001/07/19 14:19:37 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1879 2001/07/19 18:51:27 mvojkovi Exp $
