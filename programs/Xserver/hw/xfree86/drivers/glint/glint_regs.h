@@ -1164,14 +1164,11 @@
 #define GLINT_READ_REG(r)					\
 	GLINT_VERB_READ_REG(pGlint,r,__FILE__,__LINE__)
 #else
-#define GLINT_WRITE_REG(v,r)					\
-do{								\
-	*(volatile CARD32 *)((char *)pGlint->IOBase+(r))=v;	\
-	mem_barrier();						\
-}while(0)
-#define GLINT_READ_REG(r)					\
-	(*(volatile CARD32 *)((char *)pGlint->IOBase+(r)))
-#endif                                        
+
+#define GLINT_WRITE_REG(v,r) MMIO_OUT32(pGlint->IOBase,(unsigned long)r, v)
+#define GLINT_READ_REG(r) MMIO_IN32(pGlint->IOBase,(unsigned long)r)
+
+#endif /* DEBUG */
 
 #define GLINT_WAIT(n)						\
 do{								\
