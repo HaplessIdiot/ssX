@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/modinit.c,v 3.1 1997/05/06 09:45:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/modinit.c,v 3.2.2.5 1998/07/04 13:32:20 dawes Exp $ */
 
 /*
  *
@@ -24,11 +24,15 @@
  */
 
 #ifdef XFree86LOADER
-#include <stdio.h>
 #include "X.h"
-#include "os.h"
+#include "misc.h"
+#include "xf86_ansic.h"
 
-#include "xf86_ldext.h"
+#include "xf86Module.h"
+#include "xf86Opt.h"
+
+MODULEINITPROTO(extmodModuleInit);
+static MODULESETUPPROTO(extmodSetup);
 
 extern Bool noTestExtensions;
 
@@ -104,6 +108,11 @@ extern void XFree86DGAExtensionInit(INITARGS);
 #ifdef DPMSExtension
 extern void DPMSExtensionInit(INITARGS);
 #include "dpmsstr.h"
+#endif
+
+#ifdef XV
+extern void XvExtensionInit(INITARGS);
+#include "Xv.h"
 #endif
 
 /*
@@ -194,6 +203,13 @@ ExtensionModule extensionModules[] = {
 	NULL
     },
 #endif
+#ifdef XV
+    {
+	XvExtensionInit,
+	XvName,
+	NULL
+    },
+#endif
     {				/* DON'T delete this entry ! */
 	NULL,
 	NULL,
@@ -201,25 +217,59 @@ ExtensionModule extensionModules[] = {
     }
 };
 
+static XF86ModuleVersionInfo VersRec =
+{
+        "extmod",
+        MODULEVENDORSTRING,
+        MODINFOSTRING1,
+        MODINFOSTRING2,
+        XF86_VERSION_CURRENT,
+        0x00010001,				/* 1.1 */
+        ABI_CLASS_EXTENSION,
+        ABI_EXTENSION_VERSION,
+        {0,0,0,0}
+};
+
 /* 
  * Entry point for the loader code
  */
 void
-libextmodModuleInit(data, magic)
-    pointer *data;
-    INT32 *magic;
+extmodModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
+		 ModuleTearDownProc *teardown)
 {
-    static int cnt = 0;
+    *vers = &VersRec;
+    *setup = extmodSetup;
+    *teardown = NULL;
+}
 
-    if (extensionModules[cnt].name != NULL) {
-	*magic = MAGIC_LOAD_EXTENSION;
-	*data = (pointer)&extensionModules[cnt];
-	cnt++;
-    } else {
-	*magic = MAGIC_DONE;
+
+static pointer
+extmodSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+{
+    int i;
+
+    /* XXX the option stuff here is largely a sample/test case */
+
+    for (i = 0; extensionModules[i].name != NULL; i++) {
+	if (opts) {
+	    char *s;
+	    s = (char *)xalloc(strlen(extensionModules[i].name) + 5);
+	    if (s) {
+		pointer o;
+		strcpy(s, "omit");
+		strcat(s, extensionModules[i].name);
+		o = xf86FindOption(opts, s);
+		xfree(s);
+		if (o) {
+		    xf86MarkOptionUsed(o);
+		    continue;
+		}
+	    }
+	}
+	LoadExtension(&extensionModules[i]);
     }
+    /* Need a non-NULL return */
+    return (pointer)1;
 }
 
 #endif /* XFree86LOADER */
-
-

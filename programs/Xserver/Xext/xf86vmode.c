@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.38 1997/11/16 06:17:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.39 1998/03/20 21:04:48 hohndel Exp $ */
 
 /*
 
@@ -45,30 +45,18 @@ from Kaleb S. KEITHLEY
 #include "xf86vmstr.h"
 #include "Xfuncproto.h"
 
-#include <X11/Xtrans.h>
-#include "../os/osdep.h"
-#include <X11/Xauth.h>
-#ifndef USL
-#ifndef ESIX
-#ifndef Lynx
-#include <sys/socket.h>
-#else
-#include <socket.h>
-#endif
-#else
-#include <lan/socket.h>
-#endif
-#endif /* USL */
-
 #include "swaprep.h"
 
-#ifdef XFree86LOADER
+#ifdef EXTMODULE
 #include "xf86_ansic.h"
 #endif
 
 #include "../hw/xfree86/common/xf86.h"
+#if 0
 #include "../hw/xfree86/common/xf86Priv.h"
+#endif
 
+/* XXX This needs to be updated for the ND */
 
 extern int xf86ScreenIndex;
 extern Bool xf86VidModeEnabled;
@@ -550,7 +538,9 @@ ProcXF86VidModeGetAllModeLines(client)
 				&& mptr->VTotal    == stuff->vtotal \
 				&& mptr->Flags     == stuff->flags )
 
-#include "xf86_Config.h"
+#if 0
+#include "xf86Config.h"
+#endif
 
 static int
 ProcXF86VidModeAddModeLine(client)

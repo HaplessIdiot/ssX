@@ -1,5 +1,5 @@
 /* $XConsortium: sync.c /main/13 1996/12/16 16:51:55 rws $ */
-/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.3 1997/01/18 06:53:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.4.2.1 1998/05/20 15:51:54 dawes Exp $ */
 /*
 
 Copyright (c) 1991, 1993  X Consortium
@@ -56,7 +56,6 @@ PERFORMANCE OF THIS SOFTWARE.
 
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include <stdio.h>
 #include "X.h"
 #include "Xproto.h"
 #include "Xmd.h"
@@ -70,8 +69,10 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "sync.h"
 #include "syncstr.h"
 
-#ifdef XFree86LOADER
-#include "xf86_libc.h"
+#ifdef EXTMODULE
+#include "xf86_ansic.h"
+#else
+#include <stdio.h>
 #endif
 
 /*

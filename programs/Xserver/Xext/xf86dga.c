@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.9 1997/02/25 14:19:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.9.2.4 1998/06/14 15:40:46 dawes Exp $ */
 
 /*
 
@@ -21,28 +21,11 @@ Copyright (c) 1995, 1996  XFree86 Inc
 #define _XF86DGA_SERVER_
 #include "xf86dgastr.h"
 #include "swaprep.h"
-
-#include <X11/Xtrans.h>
-#include "../os/osdep.h"
-#include <X11/Xauth.h>
-#ifndef USL
-#ifndef ESIX
-#ifndef Lynx
-#include <sys/socket.h>
-#else
-#include <socket.h>
-#endif
-#else
-#include <lan/socket.h>
-#endif
-#endif	/* USL */
-#include "../hw/xfree86/common/xf86.h"
-
-extern int xf86ScreenIndex;
+#include "dgaproc.h"
 
 static int DGAErrorBase;
 
-static DISPATCH_PROC(ProcDGAQueryVersion);
+static DISPATCH_PROC(ProcXF86DGAQueryVersion);
 static DISPATCH_PROC(ProcXF86DGADirectVideo);
 static DISPATCH_PROC(ProcXF86DGADispatch);
 static DISPATCH_PROC(ProcXF86DGAGetVidPage);
@@ -50,9 +33,9 @@ static DISPATCH_PROC(ProcXF86DGAGetVideoLL);
 static DISPATCH_PROC(ProcXF86DGAGetViewPortSize);
 static DISPATCH_PROC(ProcXF86DGASetVidPage);
 static DISPATCH_PROC(ProcXF86DGASetViewPort);
-static DISPATCH_PROC(ProcDGAInstallColormap);
-static DISPATCH_PROC(ProcDGAQueryDirectVideo);
-static DISPATCH_PROC(ProcDGAViewPortChanged);
+static DISPATCH_PROC(ProcXF86DGAInstallColormap);
+static DISPATCH_PROC(ProcXF86DGAQueryDirectVideo);
+static DISPATCH_PROC(ProcXF86DGAViewPortChanged);
 
 /*
  * SProcs should probably be deleted, a local connection can never
@@ -62,11 +45,7 @@ static DISPATCH_PROC(SProcXF86DGADirectVideo);
 static DISPATCH_PROC(SProcXF86DGADispatch);
 static DISPATCH_PROC(SProcXF86DGAQueryVersion);
 
-static void XF86DGAResetProc(
-#if NeedFunctionPrototypes
-    ExtensionEntry* /* extEntry */
-#endif
-);
+static void XF86DGAResetProc(ExtensionEntry* extEntry);
 
 static unsigned char DGAReqCode = 0;
 
@@ -111,7 +90,7 @@ XF86DGAResetProc (extEntry)
 }
 
 static int
-ProcDGAQueryVersion(client)
+ProcXF86DGAQueryVersion(client)
     register ClientPtr client;
 {
     xXF86DGAQueryVersionReply rep;
@@ -137,25 +116,21 @@ ProcXF86DGAGetVideoLL(client)
 {
     REQUEST(xXF86DGAGetVideoLLReq);
     xXF86DGAGetVideoLLReply rep;
-    ScrnInfoPtr vptr;
     register int n;
+    Bool supported;
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
 
-    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
     REQUEST_SIZE_MATCH(xXF86DGAGetVideoLLReq);
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-#if 0
-    xf86GetVidMemData(stuff->screen, &rep.offset, &rep.bank_size);
-#else
-    rep.offset = vptr->physBase;
-    rep.bank_size = vptr->physSize;
-#endif
-    rep.width = vptr->displayWidth;
-    rep.ram_size = vptr->videoRam;
+    supported = DGAAvailable(stuff->screen) &&
+		DGAGetParameters(stuff->screen, &rep.offset, &rep.bank_size,
+				 &rep.ram_size, &rep.width);
+    if (!supported)
+	return (DGAErrorBase + XF86DGANoDirectVideoMode);
 
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
@@ -174,36 +149,28 @@ ProcXF86DGADirectVideo(client)
     register ClientPtr client;
 {
     REQUEST(xXF86DGADirectVideoReq);
-    ScrnInfoPtr vptr;
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
 
-    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
-
     REQUEST_SIZE_MATCH(xXF86DGADirectVideoReq);
-    if (!(vptr->directMode&XF86DGADirectPresent)) {
+
+    if (!DGAAvailable(stuff->screen)) {
        /* chipset doesn't know about directVideoMode */
 	return DGAErrorBase + XF86DGANoDirectVideoMode;
     }
-    
+
     /* Check that the current screen is active. */
-    if (!xf86VTSema && !(vptr->directMode & XF86DGADirectGraphics)) {
+    if (!DGAScreenActive(stuff->screen)) {
 	return DGAErrorBase + XF86DGAScreenNotActive;
     }
 
-    if (stuff->enable&XF86DGADirectGraphics) {
-       vptr->directMode = stuff->enable|XF86DGADirectPresent;
-       if (xf86VTSema == TRUE) {
-	  vptr->EnterLeaveVT(LEAVE, stuff->screen);
-	  xf86VTSema = FALSE;
-       }
+    DGASetFlags(stuff->screen, stuff->enable);
+
+    if (stuff->enable & XF86DGADirectGraphics) {
+	DGAEnableDirectMode(stuff->screen);
     } else {
-       if (xf86VTSema == FALSE) {
-          xf86VTSema = TRUE;
-          vptr->EnterLeaveVT(ENTER, stuff->screen);
-       }
-       vptr->directMode = (0x0f&stuff->enable)|XF86DGADirectPresent;
+	DGADisableDirectMode(stuff->screen);
     }
 
     return (client->noClientException);
@@ -216,19 +183,18 @@ ProcXF86DGAGetViewPortSize(client)
     REQUEST(xXF86DGAGetViewPortSizeReq);
     xXF86DGAGetViewPortSizeReply rep;
     register int n;
-    ScrnInfoPtr vptr;
+    int width, height;
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
-
-    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
 
     REQUEST_SIZE_MATCH(xXF86DGAGetViewPortSizeReq);
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.width = vptr->modes->HDisplay;
-    rep.height = vptr->modes->VDisplay;
+    DGAGetViewPortSize(stuff->screen, &width, &height);
+    rep.width = width;
+    rep.height = height;
 
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
@@ -245,20 +211,20 @@ ProcXF86DGASetViewPort(client)
     register ClientPtr client;
 {
     REQUEST(xXF86DGASetViewPortReq);
-    ScrnInfoPtr vptr;
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
 
-    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
-
     REQUEST_SIZE_MATCH(xXF86DGASetViewPortReq);
 
-    if (vptr->AdjustFrame &&
-	(xf86VTSema == TRUE || vptr->directMode&XF86DGADirectGraphics))
-	vptr->AdjustFrame(stuff->x, stuff->y);
-    else
-	return DGAErrorBase + XF86DGAScreenNotActive;
+    if (!DGAAvailable(stuff->screen))
+	return (DGAErrorBase + XF86DGANoDirectVideoMode);
+
+    if (!DGAGetDirectMode(stuff->screen))
+	return DGAErrorBase + XF86DGADirectNotActivated;
+
+    if (!DGASetViewPort(stuff->screen, stuff->x, stuff->y))
+	return DGAErrorBase + XF86DGAOperationNotSupported;
 
     return (client->noClientException);
 }
@@ -268,15 +234,29 @@ ProcXF86DGAGetVidPage(client)
     register ClientPtr client;
 {
     REQUEST(xXF86DGAGetVidPageReq);
-    ScrnInfoPtr vptr;
+    xXF86DGAGetVidPageReply rep;
+    register int n;
+    int page;
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
 
-    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
-    ErrorF("XF86DGAGetVidPage not yet implemented\n");
-
     REQUEST_SIZE_MATCH(xXF86DGAGetVidPageReq);
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    page = DGAGetVidPage(stuff->screen);
+
+    if (page < 0)
+	return DGAErrorBase + XF86DGAOperationNotSupported;
+
+    rep.vpage = page;
+    if (client->swapped) {
+    	swaps(&rep.sequenceNumber, n);
+    	swapl(&rep.length, n);
+    	swapl(&rep.vpage, n);
+    }
+    WriteToClient(client, SIZEOF(xXF86DGAGetVidPageReply), (char *)&rep);
     return (client->noClientException);
 }
 
@@ -286,55 +266,49 @@ ProcXF86DGASetVidPage(client)
     register ClientPtr client;
 {
     REQUEST(xXF86DGASetVidPageReq);
-    ScrnInfoPtr vptr;
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
 
-    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
-
     REQUEST_SIZE_MATCH(xXF86DGASetVidPageReq);
 
-    if (xf86VTSema == TRUE) {/* only valid when switched away! */
-	return DGAErrorBase + XF86DGADirectNotActivated;
-    }
-    if (!xf86VTSema && !(vptr->directMode & XF86DGADirectGraphics)) {
-	return DGAErrorBase + XF86DGAScreenNotActive;
-    }
+    if (!DGAAvailable(stuff->screen))
+	return (DGAErrorBase + XF86DGANoDirectVideoMode);
 
-    if (vptr->setBank) {
-	vptr->setBank(stuff->vpage);
-    }
+    if (!DGAGetDirectMode(stuff->screen))
+	return DGAErrorBase + XF86DGADirectNotActivated;
+
+    if (!DGASetVidPage(stuff->screen, stuff->vpage))
+	return DGAErrorBase + XF86DGAOperationNotSupported;
+
     return (client->noClientException);
 }
 
 
 static int
-ProcDGAInstallColormap(client)
+ProcXF86DGAInstallColormap(client)
     register ClientPtr client;
 {
     ColormapPtr pcmp;
-    ScrnInfoPtr vptr;
     REQUEST(xXF86DGAInstallColormapReq);
 
     REQUEST_SIZE_MATCH(xXF86DGAInstallColormapReq);
 
-    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
+    if (!DGAAvailable(stuff->screen))
+	return (DGAErrorBase + XF86DGANoDirectVideoMode);
 
-    if (xf86VTSema == TRUE) {/* only valid when switched away! */
+    if (!DGAGetDirectMode(stuff->screen))
 	return DGAErrorBase + XF86DGADirectNotActivated;
-    }
-    if (!xf86VTSema && !(vptr->directMode & XF86DGADirectGraphics)) {
-	return DGAErrorBase + XF86DGAScreenNotActive;
-    }
 
     pcmp = (ColormapPtr  )LookupIDByType(stuff->id, RT_COLORMAP);
     if (pcmp)
     {
-	vptr->directMode |= XF86DGADirectColormap;
-        vptr->directMode |= XF86DGAHasColormap;
+	DGASetFlags(stuff->screen,
+		    DGAGetFlags(stuff->screen) | XF86DGADirectColormap
+					       | XF86DGAHasColormap);
         (*(pcmp->pScreen->InstallColormap)) (pcmp);
-        vptr->directMode &= ~XF86DGAHasColormap;
+	DGASetFlags(stuff->screen,
+		    DGAGetFlags(stuff->screen) & ~XF86DGAHasColormap);
         return (client->noClientException);
     }
     else
@@ -345,24 +319,25 @@ ProcDGAInstallColormap(client)
 }
 
 static int
-ProcXF86DGAQueryDirectVideo(client)
-    register ClientPtr client;
+ProcXF86DGAQueryDirectVideo(register ClientPtr client)
 {
     REQUEST(xXF86DGAQueryDirectVideoReq);
     xXF86DGAQueryDirectVideoReply rep;
     register int n;
-    ScrnInfoPtr vptr;
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
-
-    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
 
     REQUEST_SIZE_MATCH(xXF86DGAQueryDirectVideoReq);
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.flags = vptr->directMode;
+
+    if (DGAAvailable(stuff->screen)) {
+	rep.flags = DGAGetFlags(stuff->screen) | XF86DGADirectPresent;
+    } else {
+	rep.flags = DGAGetFlags(stuff->screen) & ~XF86DGADirectPresent;
+    }
 
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
@@ -374,25 +349,27 @@ ProcXF86DGAQueryDirectVideo(client)
 }
 
 static int
-ProcXF86DGAViewPortChanged(client)
-    register ClientPtr client;
+ProcXF86DGAViewPortChanged(register ClientPtr client)
 {
     REQUEST(xXF86DGAViewPortChangedReq);
     xXF86DGAViewPortChangedReply rep;
     register int n;
-    ScrnInfoPtr vptr;
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
 
-    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
-
     REQUEST_SIZE_MATCH(xXF86DGAViewPortChangedReq);
+
+    if (!DGAAvailable(stuff->screen))
+	return (DGAErrorBase + XF86DGANoDirectVideoMode);
+
+    if (!DGAGetDirectMode(stuff->screen))
+	return DGAErrorBase + XF86DGADirectNotActivated;
+
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    /* For the moment, always return TRUE. */
-    rep.result = TRUE;
+    rep.result = DGAViewPortChanged(stuff->screen, 0);
 
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
@@ -415,7 +392,7 @@ ProcXF86DGADispatch (client)
     switch (stuff->data)
     {
     case X_XF86DGAQueryVersion:
-	return ProcDGAQueryVersion(client);
+	return ProcXF86DGAQueryVersion(client);
     case X_XF86DGAGetVideoLL:
 	return ProcXF86DGAGetVideoLL(client);
     case X_XF86DGADirectVideo:
@@ -429,7 +406,7 @@ ProcXF86DGADispatch (client)
     case X_XF86DGASetVidPage:
 	return ProcXF86DGASetVidPage(client);
     case X_XF86DGAInstallColormap:
-	return ProcDGAInstallColormap(client);
+	return ProcXF86DGAInstallColormap(client);
     case X_XF86DGAQueryDirectVideo:
 	return ProcXF86DGAQueryDirectVideo(client);
     case X_XF86DGAViewPortChanged:
@@ -446,7 +423,7 @@ SProcXF86DGAQueryVersion(client)
     register int n;
     REQUEST(xXF86DGAQueryVersionReq);
     swaps(&stuff->length, n);
-    return ProcDGAQueryVersion(client);
+    return ProcXF86DGAQueryVersion(client);
 }
 
 static int

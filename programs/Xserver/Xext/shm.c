@@ -28,7 +28,7 @@ in this Software without prior written authorization from the X Consortium.
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
 /* $XConsortium: shm.c,v 1.25 95/04/06 16:00:55 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.7 1996/10/16 14:37:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.8.4.1 1998/07/18 17:53:10 dawes Exp $ */
 
 #include <sys/types.h>
 #ifndef Lynx
@@ -873,8 +873,10 @@ fbShmCreatePixmap (pScreen, width, height, depth, addr)
 	return NullPixmap;
 
     if (!(*pScreen->ModifyPixmapHeader)(pPixmap, width, height, depth,
-		  /*XXX*/depth, PixmapBytePad(width, depth), (pointer)addr))
+	    /*XXX*/depth, PixmapBytePad(width, depth), (pointer)addr)) {
+	(*pScreen->DestroyPixmap)(pPixmap);
 	return NullPixmap;
+    }
     return pPixmap;
 }
 
