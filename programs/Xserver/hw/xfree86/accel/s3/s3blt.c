@@ -1,5 +1,5 @@
 /* $XConsortium: s3blt.c,v 1.2 94/04/17 20:31:05 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.1 1994/06/06 07:28:33 dawes Exp $ */
 /*
 
 Copyright (c) 1998  X Consortium
@@ -70,7 +70,10 @@ PERFORMANCE OF THIS SOFTWARE.
 
 extern int s3MAX_SLOTS;
 void  s3FindOrdering();
+extern Bool s3PCIHack;
 extern RegionPtr cfbBitBlt();
+
+#define PCI_HACK()   if (s3PCIHack) WaitIdle()
 
 RegionPtr
 s3CopyArea(pSrcDrawable, pDstDrawable,
@@ -282,7 +285,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	    direction |= INC_Y;
 
 	 BLOCK_CURSOR;
-	 WaitQueue(3);
+	 WaitQueue(3); PCI_HACK();
 	 S3_OUTW(FRGD_MIX, FSS_BITBLT | s3alu[pGC->alu]);
 	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
 	 S3_OUTW(WRT_MASK, pGC->planemask);
@@ -291,7 +294,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
-	       WaitQueue(7);
+	       WaitQueue(7); PCI_HACK();
 	       S3_OUTW(CUR_X, (short)(prect->x1 + dx));
 	       S3_OUTW(CUR_Y, (short)(prect->y1 + dy));
 	       S3_OUTW(DESTX_DIASTP, (short)(prect->x1));
@@ -304,7 +307,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
-	       WaitQueue(7);
+	       WaitQueue(7); PCI_HACK();
 	       S3_OUTW(CUR_X, (short)(prect->x1 + dx));
 	       S3_OUTW(CUR_Y, (short)(prect->y2 + dy - 1));
 	       S3_OUTW(DESTX_DIASTP, (short)(prect->x1));
@@ -317,7 +320,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
-	       WaitQueue(7);
+	       WaitQueue(7); PCI_HACK();
 	       S3_OUTW(CUR_X, (short)(prect->x2 + dx - 1));
 	       S3_OUTW(CUR_Y, (short)(prect->y1 + dy));
 	       S3_OUTW(DESTX_DIASTP, (short)(prect->x2 - 1));
@@ -330,7 +333,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
-	       WaitQueue(7);
+	       WaitQueue(7); PCI_HACK();
 	       S3_OUTW(CUR_X, (short)(prect->x2 + dx - 1));
 	       S3_OUTW(CUR_Y, (short)(prect->y2 + dy - 1));
 	       S3_OUTW(DESTX_DIASTP, (short)(prect->x2 - 1));
@@ -341,7 +344,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	    }
 	 }
 
-	 WaitQueue(3);
+	 WaitQueue(3); PCI_HACK();
 	 S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
 	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
 	 S3_OUTW(WRT_MASK, 0xffff);

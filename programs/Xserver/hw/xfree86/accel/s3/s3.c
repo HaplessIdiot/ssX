@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.5 1994/06/13 14:52:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.6 1994/06/15 15:41:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -147,6 +147,8 @@ Bool  s3LinearAperture = FALSE;
 Bool  s3Mmio928 = FALSE;
 Bool  s3DAC8Bit = FALSE;
 Bool  s3DACSyncOnGreen = FALSE;
+Bool  s3PCIHack = FALSE;
+Bool  s3PowerSaver = FALSE;
 unsigned char s3LinApOpt;
 unsigned char s3SAM256 = 0x00;
 int s3BankSize;
@@ -329,8 +331,8 @@ s3Probe()
    OFLG_ZERO(&validOptions);
    OFLG_SET(OPTION_LEGEND, &validOptions);
    OFLG_SET(OPTION_NOLINEAR_MODE, &validOptions);
-   OFLG_SET(OPTION_NO_MEM_ACCESS, &validOptions);
-   OFLG_SET(OPTION_MEM_ACCESS, &validOptions);
+   if (!S3_x64_SERIES(s3ChipId))
+      OFLG_SET(OPTION_NO_MEM_ACCESS, &validOptions);
    OFLG_SET(OPTION_NORMAL_DAC, &validOptions);
    OFLG_SET(OPTION_BT485, &validOptions);
    OFLG_SET(OPTION_BT485_CURS, &validOptions);
@@ -354,36 +356,32 @@ s3Probe()
    OFLG_SET(OPTION_STB_PEGASUS, &validOptions);
    OFLG_SET(OPTION_ELSA_W1000PRO, &validOptions);
    OFLG_SET(OPTION_ELSA_W2000PRO, &validOptions);
+   if (S3_928_P(s3ChipId))
+      OFLG_SET(OPTION_PCI_HACK, &validOptions);
+   OFLG_SET(OPTION_POWER_SAVER, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
-   if (OFLG_ISSET(OPTION_MEM_ACCESS, &s3InfoRec.options)) {
-      ErrorF("%s: Warning: the \"memaccess\" option is now redundant\n",
-	     s3InfoRec.name);
-      ErrorF("\tIt will be removed in the next release\n");
-   }
 
-   s3Localbus = ((config & 0x03) <= 1);		/* LocalBus or EISA or PCI */
+   /* LocalBus or EISA or PCI */
+   s3Localbus = ((config & 0x03) <= 1) || S3_928_P(s3ChipId);
 
    if (xf86Verbose) {
-      switch (config & 0x03) {
-      case 0:
-	 if (S3_928_P(config)) 
-	    ErrorF("%s %s: card type: PCI\n",
-		   XCONFIG_PROBED, s3InfoRec.name);
-	 else
-	    ErrorF("%s %s: card type: EISA\n",
-		   XCONFIG_PROBED, s3InfoRec.name);
-	 break;
-      case 1:
-         ErrorF("%s %s: card type: 386/486 localbus\n",
-        	XCONFIG_PROBED, s3InfoRec.name);
-	 break;
-      case 3:
-         ErrorF("%s %s: card type: ISA\n",
-		XCONFIG_PROBED, s3InfoRec.name);
-	 break;
-      case 2:
-	 ErrorF("%s %s: card type: PCI\n",
-		XCONFIG_PROBED, s3InfoRec.name);
+      if (S3_928_P(s3ChipId)) {
+	 ErrorF("%s %s: card type: PCI\n", XCONFIG_PROBED, s3InfoRec.name);
+      } else {
+	 switch (config & 0x03) {
+	 case 0:
+	    ErrorF("%s %s: card type: EISA\n", XCONFIG_PROBED, s3InfoRec.name);
+	    break;
+	 case 1:
+            ErrorF("%s %s: card type: 386/486 localbus\n",
+        	   XCONFIG_PROBED, s3InfoRec.name);
+	    break;
+	 case 3:
+            ErrorF("%s %s: card type: ISA\n", XCONFIG_PROBED, s3InfoRec.name);
+	    break;
+	 case 2:
+	    ErrorF("%s %s: card type: PCI\n", XCONFIG_PROBED, s3InfoRec.name);
+	 }
       }
    }
 
@@ -412,15 +410,19 @@ s3Probe()
 	    else
 	       ErrorF("rev A or B\n");
 	 } else if (S3_928_SERIES(s3ChipId)) {
+	    char *pci = S3_928_P(s3ChipId) ? "-P" : "";
+#if 0
 	    if (S3_928_P(s3ChipId))
 		ErrorF("%s %s: chipset:   928-P\n",
                    XCONFIG_PROBED, s3InfoRec.name);
-	    else if (S3_928_REV_E(s3ChipId))
-		ErrorF("%s %s: chipset:   928, rev E or above\n",
-                   XCONFIG_PROBED, s3InfoRec.name);
 	    else
-	        ErrorF("%s %s: chipset:   928, rev D or below\n",
-                   XCONFIG_PROBED, s3InfoRec.name);
+#endif
+	    if (S3_928_REV_E(s3ChipId))
+		ErrorF("%s %s: chipset:   928%s, rev E or above\n",
+                   XCONFIG_PROBED, s3InfoRec.name, pci);
+	    else
+	        ErrorF("%s %s: chipset:   928%s, rev D or below\n",
+                   XCONFIG_PROBED, s3InfoRec.name, pci);
 	 }
       } else if (S3_911_SERIES(s3ChipId)) {
 	 if (S3_911_ONLY(s3ChipId)) {
@@ -1096,6 +1098,11 @@ s3Probe()
              s3InfoRec.name,
 	     s3InfoRec.virtualX, s3InfoRec.virtualY);
    }
+
+   if (OFLG_ISSET(OPTION_PCI_HACK, &s3InfoRec.options))
+      s3PCIHack = TRUE;
+   if (OFLG_ISSET(OPTION_POWER_SAVER, &s3InfoRec.options))
+      s3PowerSaver = TRUE;
 
    return TRUE;
 }

@@ -1,5 +1,5 @@
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.0 1994/05/06 08:51:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.1 1994/06/11 06:11:26 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -64,6 +64,7 @@ extern pointer s3VideoMem;
 extern unsigned char s3Port59;
 extern unsigned char s3Port5A;
 extern unsigned char s3Port31;
+extern Bool s3PowerSaver;
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
 
@@ -455,6 +456,13 @@ s3SaveScreen(pScreen, on)
 	 s3RestoreColor0(pScreen);
 	 s3ShowCursor();
 	 outw(DAC_MASK, 0xff);
+	 if (s3PowerSaver) {
+	    unsigned char tmp;
+	    /* Re-enable sync */ 
+	    outb(vgaCRIndex, 0x17);
+	    tmp = inb(vgaCRReg);
+	    outb(vgaCRReg, tmp | 0x80);
+	 }
       } else {
 	 s3HideCursor();
 	 outb(DAC_W_INDEX, 0);
@@ -463,6 +471,13 @@ s3SaveScreen(pScreen, on)
 	 outb(DAC_DATA, 0);
 
 	 outw(DAC_MASK, 0x00);
+	 if (s3PowerSaver) {
+	    unsigned char tmp;
+	    /* disable sync */ 
+	    outb(vgaCRIndex, 0x17);
+	    tmp = inb(vgaCRReg);
+	    outb(vgaCRReg, tmp & ~0x80);
+	 }
       }
    }
    return (TRUE);
