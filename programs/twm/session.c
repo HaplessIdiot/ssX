@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.18 95/01/04 22:28:37 mor Exp $ */
+/* $XConsortium: session.c,v 1.19 95/04/07 19:22:37 kaleb Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 Author:  Ralph Mor, X Consortium
 ******************************************************************************/
 
-#include <X11/Xosdefs.h>
+#include <X11/Xos.h>
 
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
