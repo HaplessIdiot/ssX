@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.29 2001/07/16 05:04:04 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.30 2001/07/24 08:32:57 alanh Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -103,6 +103,7 @@ typedef unsigned __int64    FbBits;
 # else
 #  if defined(__alpha__) || defined(__alpha) || \
       defined(ia64) || defined(__ia64__) || \
+      defined(__sparc64__) || \
       defined(__s390x__)
 typedef unsigned long	    FbBits;
 #  else
