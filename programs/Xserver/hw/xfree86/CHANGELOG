@@ -26,8 +26,9 @@ XFree86 4.3.99.903 (xx January 2004)
       argument could cause a second server to be started on display :0,
       replacing the local listener nodes for the original server.
       (Bugzilla #1056, David Dawes, reported by Robin Schoonover).
- 739. Fix xfs core dumps in BecomeOrphan(), and rework/simplify the
-      BecomeDaemon() code (Bugzilla #1060, David Dawes, reported by sadgtk7v).
+ 739. Fix xfs and xdm core dumps in BecomeOrphan(), and rework/simplify
+      the BecomeDaemon() code (Bugzilla #1060, #1074, David Dawes, 
+      reported by Martin Birgmeier).
  738. Add a "VBERestore" option for the i830 part of the i810 driver, to
       allow the VBE restore bug workaround to be disabled.  This is needed
       for correct text mode restoration on some 830M-based machines
@@ -18528,7 +18529,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3095 2004/01/09 14:51:16 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3096 2004/01/09 15:04:34 pascal Exp $
 
 
 
