@@ -2,7 +2,7 @@ XCOMM $Xorg: os2Lib.rules,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.20 2003/11/12 00:10:23 dawes Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.21 2004/03/25 03:36:21 dawes Exp $
 
 /*
  * OS2/EMX shared library rules (DLL version)
@@ -95,7 +95,15 @@ clean::									@@\
 #define	NormalLibraryTarget(libname,objlist)				@@\
 AllTarget(LibraryTargetName(libname))					@@\
 									@@\
-LibraryTargetName(libname): objlist					@@\
+LibraryTargetName(libname): objlist $(EXTRALIBRARYDEPS)			@@\
+	RemoveFile($@)							@@\
+	MakeLibrary($@,objlist)						@@\
+	BuildLibSupportLibs2(libname)
+
+#define	NormalDepLibraryTarget(libname,deplist,objlist)			@@\
+AllTarget(LibraryTargetName(libname))					@@\
+									@@\
+LibraryTargetName(libname): deplist $(EXTRALIBRARYDEPS)			@@\
 	RemoveFile($@)							@@\
 	MakeLibrary($@,objlist)						@@\
 	BuildLibSupportLibs2(libname)
@@ -201,10 +209,3 @@ LibraryTargetNameSuffix(libname,_p): objlist $(EXTRALIBRARYDEPS)	@@\
 	(cd profiled; MakeStaticLibrary(../$@))				@@\
 	RanLibrary($@)							@@\
 	_LinkBuildLibrary($@)
-
-#define	LibraryModuleTarget(module,objlist)				@@\
-AllTarget(LibraryTargetName(module))					@@\
-									@@\
-LibraryTargetName(module): objlist					@@\
-	RemoveFile($@)							@@\
-	MakeLibrary($@,objlist)
