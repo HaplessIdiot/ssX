@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: X11.tmpl,v 1.148 2002/03/01 22:07:57 keithp Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.149 2002/03/02 22:54:50 herrb Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -459,6 +459,12 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildXF86DGALibrary
 #define BuildXF86DGALibrary	(BuildXF86DGA && !BuildServersOnly)
+#endif
+#ifndef BuildXResExt
+#define BuildXResExt            NO 
+#endif
+#ifndef BuildXResLibrary
+#define BuildXResLibrary        (BuildXResExt && !BuildServersOnly)
 #endif
 #ifndef BuildXvExt
 #define BuildXvExt		NO
@@ -967,6 +973,14 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 #endif
 
+#ifndef XResExtensionDefines
+#if BuildXResExt
+#define XResExtensionDefines -DRES
+#else
+#define XResExtensionDefines /**/
+#endif
+#endif
+
 #ifndef RECORDDefines
 #if BuildRECORD
 #define RECORDDefines -DXRECORD
@@ -1060,7 +1074,8 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 	PexDefines ShmDefines XieDefines BigReqDefines VidModeExtensionDefines \
 	XF86MiscExtensionDefines DBEDefines DPMSDefines EVIDefines \
 	ScreenSaverExtensionDefines XvExtensionDefines XvMCExtensionDefines \
-	GlxDefines FontCacheExtensionDefines SiteExtensionDefines
+	GlxDefines FontCacheExtensionDefines SiteExtensionDefines \
+        XResExtensionDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif /* ExtensionDefines */
@@ -1745,6 +1760,20 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #endif
 #endif
 
+#if BuildXResLibrary
+#ifndef SharedLibXRes
+#define SharedLibXRes           NO
+#endif
+#ifndef NormalLibXRes
+#define NormalLibXRes           YES
+#endif
+#ifndef DebugLibXRes
+#define DebugLibXRes            NO
+#endif
+#ifndef ProfileLibXRes
+#define ProfileLibXRes          NO
+#endif
+#endif
 
 #if BuildDPSLibrary
 #ifndef SharedLibDps
@@ -1997,6 +2026,17 @@ SharedLibReferences(XINERAMA,Xinerama,$(XINERAMALIBSRC),SOXINERAMAREV,SharedXine
 #else
 ProjectUnsharedLibReferences(XINERAMA,Xinerama,$(XINERAMALIBSRC),XBuildLibDir)
 #endif
+
+    XRESLIBSRC = $(LIBSRC)/XRes
+#if SharedLibXRes
+#ifndef SharedXResRev
+#define SharedXResRev 1.0
+#endif
+SharedLibReferences(XRES,XRes,$(XRESLIBSRC),SOXRESREV,SharedXResRev)
+#else
+ProjectUnsharedLibReferences(XRES,XRes,$(XRESLIBSRC),XBuildLibDir)
+#endif
+
 
     DPSLIBSRC = $(LIBSRC)/dps
 #if SharedLibDps

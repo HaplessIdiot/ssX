@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.392 2002/02/26 23:28:00 alanh Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.393 2002/02/27 00:51:12 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1113,6 +1113,9 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #ifndef BuildGLXLibrary
 # define BuildGLXLibrary	YES
 #endif
+#ifndef BuildXResLibrary
+# define BuildXResLibrary       YES
+#endif
 #endif
 
 /*
@@ -1189,6 +1192,12 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 # define BuildXvMCExt			YES
 #endif
 
+/*
+ * Build the X-Resource Extension 
+ */
+#ifndef BuildXResExt
+# define BuildXResExt                   YES
+#endif
 
 #if Malloc0ReturnsNull
 # ifndef XtMalloc0ReturnsNullDefines
@@ -1334,6 +1343,12 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 # define XFree86XvMCDefines	/**/
 #endif
 
+#if BuildXResExt
+# define XFree86XResDefines     -DXResExtension
+#else
+# define XFree86XResDefines     /**/
+#endif
+
 #ifndef DlopenHack
 # define DlopenHack		-DDLOPEN_HACK
 #endif
@@ -1385,7 +1400,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 				XFree86XvMCDefines \
 				ServerSnprintfDefines \
 				SmartScheduleDefines \
-				DebugDefines \
+				DebugDefines XFree86XResDefines \
 				-DX_BYTE_ORDER=ByteOrder
 #endif
 
