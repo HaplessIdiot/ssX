@@ -9,7 +9,7 @@
 ; be TAB, not a nice looking number of spaces! Don't try to beautify this
 ; file!!!!
 ;
-; $XFree86: xc/config/cf/os2def.db,v 1.1 2002/05/31 16:31:19 dawes Exp $
+; $XFree86: xc/config/cf/os2def.db,v 1.2 2003/03/25 04:18:04 dawes Exp $
 ;
 LIBRARY	PEX5 PEX5
 PEX5	PEXAccumulateState	1
@@ -1621,6 +1621,8 @@ X11	_XLockMutex_fn	1309
 X11	_XUnlockMutex_fn	1310
 X11	_Xglobal_lock	1311
 X11	Xutf8LookupString	1312
+X11	Xutf8DrawString	1313
+X11	Xutf8TextExtents	1314
 LIBRARY XIE XIE
 XIE	XieAbort	1
 XIE	XieAllocatePhotofloGraph	2

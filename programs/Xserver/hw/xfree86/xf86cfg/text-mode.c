@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.21 2003/02/15 05:37:58 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.22 2003/02/16 05:23:45 paulo Exp $
  */
 
 #include <stdio.h>
@@ -46,7 +46,15 @@
 #include "xf86config.h"
 #include "loader.h"
 
-#define XKB_RULES_DIR "/usr/X11R6/lib/X11/xkb/rules"
+#ifndef PROJECT_ROOT
+#define PROJECT_ROOT "/usr/X11R6"
+#endif
+
+#ifndef __UNIXOS2__
+#define XKB_RULES_DIR PROJECT_ROOT "/lib/X11/xkb/rules"
+#else
+#define XKB_RULES_DIR XF86CONFIGDIR "/xkb/rules"
+#endif
 
 #define CONTROL_A	1
 #define CONTROL_D	4
@@ -196,8 +204,13 @@ TextMode(void)
 		   "This program will create the XF86Config file, based on "
 		   "menu selections you make.\n"
 		   "\n"
+#ifndef __UNIXOS2__
 		   "The XF86Config file usually resides in /usr/X11R6/etc/X11 "
 		   "or /etc/X11. A sample XF86Config file is supplied with "
+#else
+		   "The XF86Config file usually resides in /XFree86/lib/X11. "
+		   "A sample XF86Config file is supplied with "
+#endif
 		   "XFree86; it is configured for a standard VGA card and "
 		   "monitor with 640x480 resolution. This program will ask for "
 		   "a pathname when it is ready to write the file.\n"
@@ -285,7 +298,11 @@ WriteXF86Config(void)
     refresh();
     xf86config = DialogInput("Write XF86Config", "Write configuration to file:",
 			     10, 60, XF86Config_path ? XF86Config_path :
+#ifndef __UNIXOS2__
 			     "/etc/X11/XF86Config", "  Ok  ", " Cancel ", 0);
+#else
+			     XF86CONFIGDIR"/XF86Config", "  Ok  ", " Cancel ", 0);
+#endif
 
     if (xf86config == NULL)
 	return (-1);
@@ -330,6 +347,9 @@ WriteXF86Config(void)
 }
 
 static char *protocols[] = {
+#ifdef __UNIXOS2__
+    "OS2Mouse",
+#endif
 #ifdef SCO
     "OsMouse",
 #endif
@@ -521,6 +541,8 @@ MouseConfig(void)
 	str = "/dev/wsmouse";
 #elif defined(__FreeBSD__)
 	str = "/dev/sysmouse";
+#elif defined(__UNIXOS2__)
+	str = "mouse$";
 #else
 	str = "/dev/mouse";
 #endif

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.57 2003/04/27 21:31:08 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.58 2003/06/09 18:49:39 herrb Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -186,6 +186,9 @@ Bool RunFromSmartParent;	/* send SIGUSR1 to parent process */
 Bool PartialNetwork;		/* continue even if unable to bind all addrs */
 char *protNoListen;             /* don't listen on this protocol */
 static Pid_t ParentProcess;
+#ifdef __UNIXOS2__
+Pid_t GetPPID(Pid_t pid);
+#endif
 
 static Bool debug_conns = FALSE;
 
@@ -382,6 +385,15 @@ CreateWellKnownSockets(void)
     if (OsSignal (SIGUSR1, SIG_IGN) == SIG_IGN)
 	RunFromSmartParent = TRUE;
     ParentProcess = getppid ();
+#ifdef __UNIXOS2__
+    /*
+     * fg030505: under OS/2, xinit is not the parent process but
+     * the "grant parent" process of the server because execvpe()
+     * presents us an additional process number;
+     * GetPPID(pid) is part of libemxfix
+     */
+    ParentProcess = GetPPID (ParentProcess);
+#endif /* __UNIXOS2__ */
     if (RunFromSmartParent) {
 	if (ParentProcess > 1) {
 	    kill (ParentProcess, SIGUSR1);

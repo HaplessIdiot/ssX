@@ -1,4 +1,13 @@
 XFree86 4.3.99.7 (xx June 2003)
+ 209. Fixes for the following problems on OS/2:
+       - long startup delay of xinit
+       - recovery from hard-error popups
+       - text-mode version of xf86cfg
+       - xf86cfg unable to find default config file
+       - installation of static libraries
+       - missing exported functions in X11.dll
+       - typo in xf86pathIsAbsolute()
+      (Bugzilla #267, Frank Giessler).
  208. SiS driver update:
       Fixed 1280x960 and 1280x1024 LCD support (SiS 30x)
       Added Chroma-Keying support to Xv part
@@ -17059,7 +17068,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2730 2003/06/10 11:08:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2731 2003/06/10 16:46:33 twini Exp $
 
 
 

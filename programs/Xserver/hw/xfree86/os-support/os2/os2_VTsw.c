@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.11 2002/05/31 18:46:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.12 2003/03/25 04:18:23 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
@@ -269,6 +269,30 @@ void os2RecoverFromPopup()
 		for (j = 0; j < screenInfo.numScreens; j++)
 			(XF86SCRNINFO(screenInfo.screens[j])->EnterLeaveVT)(ENTER, j);
 #endif
+		for (j = 0; j < xf86NumScreens; j++) {
+			if (xf86Screens[j]->EnableDisableFBAccess)
+			  (*xf86Screens[j]->EnableDisableFBAccess)(j, FALSE);
+		}
+		xf86EnterServerState(SETUP);
+		for (j = 0; j < xf86NumScreens; j++)
+			xf86Screens[j]->LeaveVT(j, 0);
+		for (j = 0; j < xf86NumScreens; j++) {
+			xf86Screens[j]->EnterVT(j, 0);
+		}
+		xf86EnterServerState(OPERATING);
+		for (j = 0; j < xf86NumScreens; j++) {
+			if (xf86Screens[j]->EnableDisableFBAccess)
+			  (*xf86Screens[j]->EnableDisableFBAccess)(j, TRUE);
+		}
+
+                /* We reset the state of the control key */
+                os2PostKbdEvent(KEY_LCtrl,1);
+                os2PostKbdEvent(KEY_LCtrl,0);
+                os2PostKbdEvent(KEY_RCtrl,1);
+                os2PostKbdEvent(KEY_RCtrl,0);
+                os2PostKbdEvent(KEY_Alt,1);
+                os2PostKbdEvent(KEY_Alt,0);
+
 		/* Turn screen saver off when switching back */
 		SaveScreens(SCREEN_SAVER_FORCER,ScreenSaverReset);
 		os2PopupErrorPending=FALSE;
