@@ -1,4 +1,4 @@
-/* $XConsortium: hpInit.c,v 1.3 93/10/07 10:21:22 rws Exp $ */
+/* $TOG: hpInit.c /main/6 1997/11/12 14:38:12 kaleb $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.
@@ -43,7 +43,11 @@
 #include "XHPproto.h"
 
 #ifndef LIBDIR
+#if OSMAJORVERSION >= 10
+#define LIBDIR "/etc/X11"
+#else
 #define LIBDIR "/usr/lib/X11"
+#endif
 #endif
 
 extern char    		*display;	/* display number as a string */
@@ -223,9 +227,9 @@ char          **argv;
 
     do 
     {
-	if (-1 == AddScreen(
-	   ddxScreenInitPointer[pScreenInfo->numScreens], argc,argv))
-	      FatalError("Could not add screen.\n");
+	if (-1 == AddScreen(ddxScreenInitPointer[pScreenInfo->numScreens],
+		    argc,argv))
+	    FatalError("Could not add screen.\n");
 
     } while ( pScreenInfo->numScreens != hpNumScreens );
 
@@ -773,3 +777,28 @@ hpPrivPtr phpPriv;
     return;
 
 }
+
+#ifdef DPMSExtension
+/**************************************************************
+ * DPMSSet(), DPMSGet(), DPMSSupported()
+ *
+ * stubs
+ *
+ ***************************************************************/
+
+void DPMSSet (level)
+    int level;
+{
+}
+
+int DPMSGet (level)
+    int* level;
+{
+    return -1;
+}
+
+Bool DPMSSupported ()
+{
+    return FALSE;
+}
+#endif

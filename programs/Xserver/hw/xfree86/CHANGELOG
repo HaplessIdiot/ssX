@@ -1,4 +1,18 @@
 XFree86 3.9x (21 November 1997)
+1465. Updates for SCO (#1211, 1212, J. Kean Johnston).
+1464. Fix netscape plugin core dump when transfer is interrupted (#1209,
+      Kaleb Keithley).
+1463. Registry updates (#1205, Kaleb Keithley).
+1462. Preliminary imake support for different Linux distributions (#1203,
+      Kaleb Keithley).
+1461. Enable JIS, SJIS, EUC, etc. on X_LOCALE machines (#1201, Kaleb Keithley).
+1460. Linux and HP imake cf updated (#1200, Kaleb Keithley).
+1459. Updates to XINERAMA (#1198, Kaleb Keithley).
+1458. Make the DPMS extension a more "standard" item (ie, its library code
+      is now in libXext) (#1197, Kaleb Keithley).
+1457. xload doesn't need libutil and libkvm on NetBSD and OpenBSD (#1189,
+      Scott Reynolds).
+1456. OS/2 updates (don't use WIN32 file handling) (#1149, Holger Veit).
 1455. Clean up XAA calls in glint server (#1210, Alan Hourihane).
 1454. Adapt memory detection in I128 server to T2R (#1208, Robin Cutshaw).
 1453. Add DGA to glint server and get xvidtune to work with it (#1207,
@@ -18,7 +32,7 @@ XFree86 3.9x (21 November 1997)
 1445. Fix DGASetViewPort problem in S3 server (#1157, Harald Koenig).
 1444. Add -U flag to imake (#1156, Chris Demetriou).
 1443. First cut for I128 Revolution support (#1155, Robin Cutshaw).
-1442. Fix packing order for dashed lines (#1154, Alan Hourihane, Mark
+1442. Fix packing order for dashed lines (#1154, 1188, Alan Hourihane, Mark
       Vojkovich).
 1441. Fix joycal.c to work with Linux 2.1.x (#1153, Robin Cutshaw).
 1440. Fix ImageString xtest results. Call miImageGlyphBlt instead of
@@ -5668,4 +5682,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.547 1997/11/16 11:51:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.548 1997/11/22 00:00:04 hohndel Exp $

@@ -1,26 +1,24 @@
-/* $XConsortium: registry,v 1.97 94/04/18 11:15:06 rws Exp $ */
+/* $TOG: registry /main/120 1997/11/02 08:06:38 kaleb $ */
 
 				  X Registry
 
-The X Consortium is maintaining a registry of certain X-related items, to
-aid in avoiding conflicts and to aid in sharing of such items.  Requests to
-register items, or questions about registration, should be addressed to
-	xregistry@x.org
+The Open Group X Project Team is maintaining a registry of certain X-related 
+items, to aid in avoiding conflicts and to aid in sharing of such items.  
+Requests to register items, or questions about registration, should be 
+addressed to
+	xregistry@opengroup.org
 or to
-	Registry
-	X Consortium
-	1 Memorial Dr
-	Cambridge MA 02142-1301
+	X Project Team -- X11 Registry
+	The Open Group
+	11 Cambridge Center
+	Cambridge MA 02142
 	USA
 
 Electronic mail will be acknowledged upon receipt.  Please allow up to 4 weeks
 for a formal response to registration and inquiries.
 
-The registry is published as part of the X software distribution from the
-X Consortium.  It is also usually available by sending a message to
-xstuff@x.org.  The message can have a subject line and no body, or a
-single-line body and no subject, in either case the line looking like:
-	send docs registry
+The registry is published as part of the X software distribution from The
+Open Group X Project Team.
 
 All registered items must have the postal address of someone responsible for
 the item, or a reference to a document describing the item and the postal
@@ -48,6 +46,8 @@ Name						Reference
 "DEC"						[82]
 "DG"						[48]
 "DME"						[7]
+"Dt"						[114]
+"EFW"						[124]
 "ES"						[75]
 "FXD"						[55]
 "FUJITSU"					[87]
@@ -61,6 +61,8 @@ Name						Reference
 "KPC"						[98]
 "LJK"						[56]
 "LTA"						[60]
+"MEGATEK"					[112]
+"Metheus"					[117]
 "MIT"						[8]
 "MOTIF"						[7]
 "NCD"						[66]
@@ -68,6 +70,7 @@ Name						Reference
 "ORL"						[65]
 "OSF"						[7]
 "Panasonic"					[52]
+"PERITEK"					[116]
 "PFU"						[32]
 "RATIONAL"					[88]
 "SGCS"						[83]
@@ -78,21 +81,24 @@ Name						Reference
 "Sun"						[58]
 "Tech-Source"					[106]
 "TEK"						[43]
+"TOG"						[133]
 "visual"					[5]
 "VIT"						[46]
 "WN"						[103]
 "WRI"						[102]
 "WYSE"						[68]
+"X/software"					[115]
 "X3D"						[8]
 "XC"						[104]
 "Xerox"						[91]
+"XFree86"					[113]
 "XUG"						[31]
 
 
 2. KEYSYMS
 
 Only "private" keysyms (with 29th bit set) can be registered by organizations;
-standard keysyms must be approved by the Consortium.  Since keysym numeric
+standard keysyms must be approved by the X Project Team.  Since keysym numeric
 values are explicitly private, we will permit (but not encourage) conflicting
 registration here.
 
@@ -272,6 +278,8 @@ XeroxXK_PointerButton3	0x10070003		[91]
 XeroxXK_PointerButton4	0x10070004		[91]
 XeroxXK_PointerButton5	0x10070005		[91]
 
+XF86XK_ModeLock		0x1008FF01		[113]
+
 Range 0x11000000 to 0x1100FFFF is allocated for keypad keysyms.
 
 
@@ -286,6 +294,7 @@ Name						Reference
 "MIT-KERBEROS-5"				[21]
 "MIT-MAGIC-COOKIE-1"				[8]
 "SUN-DES-1"					[57]
+"XC-QUERY-SECURITY-1"				[8]
 "XDM-AUTHORIZATION-1"				[8], [11]
 
 4. VENDOR STRING FORMATS
@@ -302,6 +311,7 @@ String						Reference
 "Crucible"					[30]
 "Data General Corporation"			[48]
 "Digital Equipment Corporation"			[82]
+"EFW, Inc."					[124]
 "Evans & Sutherland"				[75]
 "FUJITSU LIMITED"				[87]
 "International Business Machines"		[33]
@@ -309,9 +319,12 @@ String						Reference
 "Jupiter Systems Inc."				[93]
 "Kubota Pacific Computer"			[98]
 "Matsushita Electric Industrial Co., Ltd."	[52]
+"Megatek Corporation"				[112]
+"Metheus Corporation"				[117]
 "MIT X Consortium"				[8]
 "Network Computing Devices Inc."		[66]
 "OMRON Corporation"				[45]
+"Peritek Corporation"				[116]
 "PFU LIMITED"					[32]
 "Silicon Graphics Computer Systems"		[6]
 "Snitily Graphics Consulting Services"		[83]
@@ -319,9 +332,11 @@ String						Reference
 "Stellar Computer Inc."				[28]
 "Sun Microsystems, Inc."			[101]
 "Tech-Source Inc."				[106]
+"The XFree86 Project, Inc"			[113]
 "VIT-Visual Information Technologies, Inc (VITec)"	[46]
 "Wolfram Research, Inc."			[102]
 "Wyse Technology Inc."				[68]
+"X/software Germany"				[115]
 "X11/NeWS - Sun Microsystems, Inc."		[58]
 "X Consortium"					[104]
 
@@ -346,6 +361,8 @@ Name						Reference
 "bezier"					[34]
 "BIG-REQUESTS"					[97]
 "DEC-XTRAP"					[51]
+"DOUBLE-BUFFER"					[123]
+"DPMS"						[132]
 "ESMultiScreenExtension"			[75]
 "ESSetBitsExtension"				[75]
 "ESTraverse3DExtension"				[75]
@@ -358,6 +375,9 @@ Name						Reference
 "FUJITSU-VX-DeviceControl"			[87]
 "JUPMISC"					[93]
 "KPC-XPeer"					[98]
+"LBX"						[125]
+"MEX-Metheus-Extension-to-X"			[117]
+"MIT-SCREEN-SAVER"				[96]
 "MIT-SHM"					[8]
 "MIT-SUNDRY-NONSTANDARD"			[8]
 "Multi-Buffering"				[8], [10]
@@ -365,7 +385,8 @@ Name						Reference
 "ORL-SYNC"					[65]
 "PanasonicDosEmulatorExtension"			[52]
 "PFU-GAOpAttr"					[32]
-"SCREEN-SAVER"					[96]
+"RECORD"					[122]
+"SECURITY"					[126]
 "SGI-GLX"					[6]
 "SGI-XGL"					[6]
 "SGI-MISCELLANEOUS"				[6]
@@ -380,22 +401,40 @@ Name						Reference
 "stellar-shmLink"				[28]
 "stellar-xfdi"					[29]
 "stellar-xtest"					[28]
+"SUN_TSOL"					[121]
+"SYNC"						[108]
 "TsiOvlExtension"				[106]
 "TekCms"					[43]
 "TeKDisplayListExtension"			[43]
 "TeKHardCopySupport"				[43]
 "TeKPeerWindows"				[43]
+"TOG-CUP"					[131]
 "VEX"						[14]
 "VIT-Image Display List Extension"		[46]
+"X/software X/bigX"				[115]
+"X/software X/keymapX"				[115]
+"X/software X/metaX"				[115]
+"X/software X/shadowX"				[115]
+"X/software X/translucentX"			[115]
 "X3D-PEX"					[8], [9]
+"XC-APPGROUP"					[127]
+"XC-MISC"					[109]
+"XFree86-VidModeExtension"			[113]
+"XIE"						[110]
+"XInputExtension"				[128]
+"XINERAMA"					[130]
+"XKEYBOARD"					[111]
+"XPRINT"					[129]
 "XTEST"						[8]
 "XTestExtension1"				[35]
+"XVideo"					[118]
 "ZoidExtension"					[34]
 
 6. HOST FAMILIES
 
 See the "family" component of the HOST structure in the protocol.
-Values for private families will be assigned by the X Consortium.
+Values for private families will be assigned by The Open Group's X Project
+Team.
 
 Value	Name					Reference
 -----	----					---------
@@ -583,12 +622,14 @@ Name						Reference
 "Apple"						[22]
 "Bitstream"					[25]
 "Cognition"					[89]
+"Cronyx"					[120]
 "DEC"						[27]
 "eands"						[75]
 "fujitsu"					[87]
 "FujiXerox"					[64]
 "IBM"						[33]
 "IPSYS"						[59]
+"Metheus"					[117]
 "MISC"						[8]
 "NCD"						[66]
 "omron"						[45]
@@ -614,7 +655,7 @@ Name						Reference
 "fujitsu.u90x03.1991-0"				[87]
 "GB2312.1980-0"					[39],[12]
 	China (PRC) Hanzi, GL encoding
-"GB2312.1980-1"					[39],[12]
+"GB2312.1980-1"					[39]
 	(deprecated)
 	China (PRC) Hanzi, GR encoding
 "HP-Arabic8"					[36]
@@ -675,17 +716,18 @@ Name						Reference
 "JISX0208.1990-0"				[71]
 	Japanese Graphic Character Set,
 	GL encoding
-"JISX0208.1983-1"				[40],[12]
+"JISX0208.1983-1"				[40]
 	(deprecated)
 	Japanese Graphic Character Set,
 	GL encoding
 "JISX0212.1990-0"				[72]
 	Supplementary Japanese Graphic Character Set,
 	GL encoding
+"KOI8-R"					[119]
 "KSC5601.1987-0"				[41],[12]
 	Korean Graphic Character Set,
 	GL encoding
-"KSC5601.1987-1"				[41],[12]
+"KSC5601.1987-1"				[41]
 	(deprecated)
 	Korean Graphic Character Set,
 	GL encoding
@@ -824,6 +866,7 @@ Name						Reference
 "Window"					[26]
 "Xai" (prefix)					[59]
 "Xi" (prefix)					[31]
+"XMex" (prefix)					[117]
 
 17. APPLICATION CLASSES
 
@@ -876,14 +919,18 @@ Name						Reference
 ----						---------
 "Acorn"						[49]
 "CRAB"						[84]
+"EFW"						[124]
 "FUJITSU"					[87]
 "HDS"						[70]
 "JCC"						[90]
 "Jupiter"					[93]
 "TD"						[63]
+"Metheus"					[117]
 "MIT"						[8]
 "NCD"						[66]
+"PERITEK"					[116]
 "WYSE"						[68]
+"X/software-X/bigX"				[115]
 
 
 20. NON-STANDARD CHARACTER SET ENCODINGS
@@ -937,6 +984,17 @@ Value	Name					Reference
 16	International Business Machines		[33]
 17	Kubota Pacific Computer			[95]
 18	Hitachi, Ltd.				[100]
+19	Megatek Corporation			[112]
+20	The XFree86 Project, Inc		[113]
+21	Metheus Corp.				[117]
+
+
+22. XIM ENCODINGS
+
+Names of encodings used for text exchanged in the Input Method Protocol.
+See XIM_ENCODING_NEGOTIATION in section 4.6 of the XIM standard.
+
+"COMPOUND_TEXT"					[104]
 
 
 REFERENCES
@@ -966,15 +1024,13 @@ REFERENCES
 	2011 N. Shoreline Blvd.
 	Mountain View, CA 94309-7311
 
-[7]	Ellis Cohen
-	Open Softare Foundation
+[7]	The Open Group X Project Team
 	11 Cambridge Center
 	Cambridge MA 02142
 
-[8]	MIT X Consortium
-	Laboratory for Computer Science
-	545 Technology Square
-	Cambridge, MA 02139
+[8]	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
 
 [9]	PEX Protocol Specification
 	PEX Protocol Encoding
@@ -982,16 +1038,24 @@ REFERENCES
 	Randi Rost, Digital, document editor
 
 [10]	Extending X for Double-Buffering, Multi-Buffering, and Stereo
-	Jeffrey Friedberg, Larry Seiler, Jeff Vroom
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
 
 [11]	X Display Manager Control Protocol
-	Keith Packard, MIT
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
 
 [12]	Compound Text Encoding
-	Robert W. Scheifler, MIT
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
 
 [13]	X11 Nonrectangular Window Shape Extension
-	Keith Packard, MIT
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
 
 [14]	VEX - Video Extension to X
 	Todd Brunhoff, Tektronix
@@ -1000,14 +1064,21 @@ REFERENCES
 	character sets, parts 1 through 9
 
 [16]	Inter-Client Communication Conventions Manual
-	David Rosenthal, Sun
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
 
 [17]	Obsolete
 
 [18]	Xlib Manual
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
 
 [19]	X Logical Font Description Conventions
-	Jim Flowers, Digital
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
 
 [20]	IXI Limited
 
@@ -1016,12 +1087,18 @@ REFERENCES
 [22]	Apple Computer, Inc.
 
 [23]	X Window System Protocol
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
 
 [24]	Adobe Systems, Inc.
 
 [25]	Bitstream, Inc.
 
 [26]	Xt Intrinsics Manual
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
 
 [27]	Digital Equipment Corporation
 
@@ -1040,7 +1117,7 @@ REFERENCES
 
 [31]	Chris D. Peterson
 	Integrated Computer Solutions, Inc.
-	201 Broadway
+	11 Cambridge Center
 	Cambridge, MA  02139
 
 [32]	Kyou Katoh
@@ -1368,31 +1445,30 @@ REFERENCES
 	2550 Garcia Avenue
 	Mountain View, CA  94043-1100
 
-[93]	Bob Schulman
+[93]	Russell Leefer
 	Jupiter Systems
 	Suite 200
 	1351 Harbor Bay Parkway
 	Alameda, CA 94501
 
-[94]	Bob Scheifler
-	MIT X Consortium
-	545 Technology Square
-	Cambridge, MA 02139
+[94]	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
 
 [95]	Greg Stiehl
 	Kubota Pacific Computer
 	2630 Walsh Avenue
 	Santa Clara, CA 95051-0905
 
-[96]	X11 Screen Saver Extension, proposed standard
-	MIT X Consortium
-	545 Technology Square
-	Cambridge, MA 02139
+[96]	MIT Screen Saver Extension
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
 
-[97]	Big Requests Extension, proposed standard
-	MIT X Consortium
-	545 Technology Square
-	Cambridge, MA 02139
+[97]	Big Requests Extension
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
 
 [98]	Randi Rost
 	Kubota Pacific Computer
@@ -1423,19 +1499,150 @@ REFERENCES
 [103]	University of Washington
 	for WM Tamil fonts
 
-[104]	X Consortium
-	1 Memorial Dr
-	Cambridge MA 02142-1301
+[104]	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
 
-[105]	Stephen Gildea
-	X Consortium
-	1 Memorial Dr
-	Cambridge MA 02142-1301
+[105]	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
 
 [106]	Selwyn Henriques
 	Tech-Source, Inc.
 	442 S North Lake Blvd.
 	Altamonte Springs FL 32701
 
-[107]	ISO/IEC 646, Information technology - ISO 7-bit coded
-	character set for information exchange
+[107]	ISO/IEC 646:1991, Information technology -- ISO 7-bit coded
+	character set for information interchange
+
+[108]	X Synchronization Extension
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
+
+[109]	XC-MISC Extension
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
+
+[110]	X Image Extension
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
+
+[111]	X Keyboard Extension
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 01242
+
+[112]	Allan Frankel
+	Megatek Corporation
+	16868 Via Del Campo Court
+	San Diego, CA  92127-1714
+
+[113]	David Wexelblat
+	The XFree86 Project, Inc.
+	c/o AIB Software Corporation
+	46030 Manekin Plaza, Suite 160
+	Dulles, VA  20166
+
+[114]	Stuart W. Marks
+	SunSoft, Inc.
+	2550 Garcia Avenue, Mail Stop UMTV 21-122
+	Mountain View, CA  94043-1100
+
+[115]	Michael Gehret
+	X/software
+	Marktstrasse 8, D-87730
+	Groenenbach, Germany
+
+[116]	Bob Schulman
+	Peritek Corp.
+	5550 Redwood Road
+	Oakland, CA 94619
+
+[117]	Alan Ricker
+	Metheus Coporation
+	1600 NW Compton Dr.
+	Beaverton OR, 97006
+
+[118]	X Video Extension Protocol Description
+	Version 2, 25-JUL-91
+	David Carver
+
+[119]	Network Working Group's RFC1489
+
+[120]   Cronyx Ltd.
+	Research Computer Center
+	Moscow State University
+	Moscow 119899, Russia
+	Phone: +7 (095) 939-2323
+	Fax: +7 (095) 939-0300
+	E-mail: info@cronyx.ru
+
+[121]	Sun Microsystems Federal, Inc.  Trusted Solaris Extension, 
+	Milind Pansare
+	Secure User Interface Group,
+	Sun Microsystems Federal, Inc.
+	Mail Stop MIL06-94
+	2550 Garcia Avenue,
+	Mountain View, CA 94043-1100
+
+[122]	Record Extension
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 02142
+
+[123]	Double Buffer Extension Specification
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 02142
+
+[124]	James A. Moulton
+	EFW, Inc
+	4700 Marine Creek Parkway
+	Ft. Worth, Texas 76136
+
+[125]	Low Bandwidth X Extension Specification
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 02142
+
+[126]	Security Extension Specification
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 02142
+
+[127]	Application Group Extension Specification
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 02142
+
+[128]	X11 Input Extension Protocol Specification
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 02142
+
+[129]	X Print Extension Protocol Specification
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 02142
+
+[130]	XINERAMA
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 02142
+
+[131]	Colormap Utilization Policy Extension Protocol Specification
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 02142
+
+[132]	Display Power Management Signaling Extension Protocol Specification
+	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 02142
+
+[132]	The Open Group X Project Team
+	11 Cambridge Center
+	Cambridge MA 02142

@@ -1,5 +1,4 @@
-/* $XConsortium: sunInit.c /main/78 1996/06/10 11:07:58 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.2 1996/01/05 13:18:45 dawes Exp $ */
+/* $TOG: sunInit.c /main/revisionist/1 1997/11/17 14:52:20 kaleb $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -16,6 +15,7 @@
  *
  *
  */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.3 1996/12/23 06:30:15 dawes Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -919,3 +919,28 @@ sunCfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
 
 #endif  /* SUNMAXDEPTH == 32 */
 #endif  /* SUNMAXDEPTH */
+
+#ifdef DPMSExtension
+/**************************************************************
+ * DPMSSet(), DPMSGet(), DPMSSupported()
+ *
+ * stubs
+ *
+ ***************************************************************/
+
+void DPMSSet (level)
+    int level;
+{
+}
+
+int DPMSGet (level)
+    int* level;
+{
+    return -1;
+}
+
+Bool DPMSSupported ()
+{
+    return FALSE;
+}
+#endif

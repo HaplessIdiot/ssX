@@ -46,13 +46,13 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: globals.c,v 1.53 94/04/17 20:26:37 rws Exp $ */
+/* $TOG: globals.c /main/20 1997/11/12 14:37:40 kaleb $ */
 
 
 
 
 
-/* $XFree86: xc/programs/Xserver/dix/globals.c,v 1.2.2.1 1997/06/01 12:33:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/globals.c,v 1.3 1997/06/11 12:24:31 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

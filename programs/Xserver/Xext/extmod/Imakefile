@@ -1,0 +1,116 @@
+XCOMM $XFree86$
+XCOMM This directory is only entered if DoLoadableServer is set
+
+#define IHaveModules
+#include <Server.tmpl>
+
+#if HasShm
+  SHMSRCS = shm.c
+  SHMOBJS = shm.o
+LinkSourceFile(shm.c,..)
+#endif
+
+#if BuildMultibuffer
+  MULTIBUFSRC = mbuf.c
+  MULTIBUFOBJ = mbuf.o
+LinkSourceFile(mbuf.c,..)
+#endif
+
+#if BuildScreenSaverExt
+  SCRNSAVSRC = saver.c
+  SCRNSAVOBJ = saver.o
+LinkSourceFile(saver.c,..)
+#endif
+
+#if BuildXF86VidModeExt
+ VIDMODESRCS = xf86vmode.c
+ VIDMODEOBJS = xf86vmode.o
+LinkSourceFile(xf86vmode.c,..)
+#endif
+
+#if BuildXF86MiscExt
+XF86MISCSRCS = xf86misc.c
+XF86MISCOBJS = xf86misc.o
+LinkSourceFile(xf86misc.c,..)
+#endif
+
+#if BuildXF86DGA
+ XF86DGASRCS = xf86dga.c
+ XF86DGAOBJS = xf86dga.o
+LinkSourceFile(xf86dga.c,..)
+#endif
+
+#if BuildDPMS
+ DPMSSRCS = dpms.c
+ DPMSOBJS = dpms.o
+LinkSourceFile(dpms.c,..)
+#endif
+
+#if BuildAppgroup
+  APPGROUPSRCS = appgroup.c
+  APPGROUPOBJS = appgroup.o
+LinkSourceFile(appgroup.c,..)
+#endif
+#if BuildXCSecurity
+    SECURITYSRCS = security.c
+    SECURITYOBJS = security.o
+ SERVERCONFIGDIR = ServerConfigDir
+   POLICYFILEDEF = -DDEFAULTPOLICYFILE=\"$(SERVERCONFIGDIR)/SecurityPolicy\"
+LinkSourceFile(security.c,..)
+#endif
+
+#if DoLoadableServer
+     MODINITSRCS = modinit.c 
+     MODINITOBJS = modinit.o
+LinkSourceFile(modinit.c,..)
+#endif
+
+       SRCS = shape.c $(SHMSRCS) $(MULTIBUFSRC) \
+              mitmisc.c xtest.c xtest1di.c xtest1dd.c sleepuntil.c \
+	      bigreq.c sync.c $(SCRNSAVSRC) xcmisc.c $(VIDMODESRCS) \
+	      $(XF86MISCSRCS) $(XF86DGASRCS) $(SECURITYSRCS) \
+	      $(DPMSSRCS) \
+	      $(APPGROUPSRCS) xprint.c $(MODINITSRCS)
+
+      SOBJS = $(SHMOBJS) $(APPGROUPOBJS) $(SECURITYOBJS) xprint.o \
+	      xtest.o xtest1di.o xtest1dd.o sleepuntil.o
+      MOBJS = $(MODINITOBJS) shape.o $(MULTIBUFOBJ) mitmisc.o \
+	      bigreq.o sync.o $(SCRNSAVOBJ) xcmisc.o \
+	      $(VIDMODEOBJS) $(XF86MISCOBJS) $(XF86DGAOBJS) \
+	      $(DPMSOBJS)
+      OBJS = $(SOBJS) $(MOBJS)
+
+XF86INCLUDES = -I../../hw/xfree86/common -I../../hw/xfree86/os-support
+    INCLUDES = -I../../include -I$(XINCLUDESRC) -I$(EXTINCSRC) $(XF86INCLUDES)
+    LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln
+
+LinkSourceFile(shape.c,..)
+LinkSourceFile(mitmisc.c,..)
+LinkSourceFile(xtest.c,..)
+LinkSourceFile(xtest1di.c,..)
+LinkSourceFile(xtest1dd.c,..)
+LinkSourceFile(sleepuntil.c,..)
+LinkSourceFile(bigreq.c,..)
+LinkSourceFile(sync.c,..)
+LinkSourceFile(xcmisc.c,..)
+LinkSourceFile(xprint.c,..)
+
+NormalLibraryObjectRule()
+SpecialObjectRule(modinit.o,../modinit.c $(ICONFIGFILES),$(EXT_DEFINES))
+NormalLibraryTarget(extmod,$(MOBJS))
+NormalLintTarget($(SRCS))
+
+#if BuildXCSecurity
+SpecialCObjectRule(security,$(ICONFIGFILES),$(POLICYFILEDEF))
+#endif
+
+InstallDynamicModule(LibraryTargetName(extmod),$(MODULEDIR))
+InstallLinkKitLibrary(ext,$(LINKKITDIR)/lib)
+
+LinkVarDirectory(xserver,.,xserver,.)
+
+#if BuildXCSecurity && InstallSecurityConfig
+InstallNonExecFile(SecurityPolicy,$(SERVERCONFIGDIR))
+#endif
+
+DependTarget()

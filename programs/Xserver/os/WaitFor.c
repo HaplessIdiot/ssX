@@ -46,8 +46,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c /main/55 1996/12/02 10:22:24 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.12 1997/05/18 12:12:13 dawes Exp $ */
+/* $TOG: WaitFor.c /main/56 1997/11/12 14:38:59 kaleb $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.13 1997/06/11 12:24:48 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:

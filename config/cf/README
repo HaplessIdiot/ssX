@@ -1,9 +1,9 @@
-$TOG: README /main/73 1997/11/11 08:53:28 kaleb $
+$TOG: README /main/74 1997/11/12 14:36:25 kaleb $
 
 
 
 
-$XFree86: xc/config/cf/README,v 1.5 1997/08/12 12:01:51 hohndel Exp $
+$XFree86: xc/config/cf/README,v 1.6 1997/11/16 06:17:23 dawes Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -154,36 +154,37 @@ Imake.tmpl provides defaults for the following variables:
 X11.tmpl provides defaults for the following variables:
 
 	AdmDir			directory containing system log files
-	AllocateLocalDefines	-D's to turn on alloca()
+	AllocateLocalDefines	-D's to turn on alloca() (should be in Imake.tmpl)
 	BDFTOSNFFILT		command to run bdftosnf
 	BaseExtensionDefines	universal extensions to use
 	BinDir			directory in which to install programs
 	BuildAppgroup		build AppGroup extension in server
 	BuildCup		build Colormap Utilization extension in server
+	BuildDBE		build DOUBLE-BUFFER extension
+	BuildDIS		build Document Imaging Subset of XIE
+	BuildDPMS		build Display Power Management Signaling extension
 	BuildFontServer		build font server
 	BuildFonts		build pcf fonts
 	BuildIncRoot		relative path to location of headers in build
 	BuildIncTop		path from build includes directory to top
 	BuildLBX		build LBX (aka X.fast) server extension
-	BuildXinerama		build Xinerama server extension
+	BuildMultibuffer	build Multibuffer extension (obsolete)
+	BuildPlugin		build xrx plug-in for web browsers
+	BuildRECORD		Build RECORD extension
 	BuildPexExt		build PEX server extension and fonts
 	BuildPhigs		build Phigs (obsolete)
 	BuildServer		build X server
 	BuildXAudio		build Audio 
 	BuildXAServer		build Audio server
+	BuildXCSecurity		Build Security Extension
 	BuildXIE		build X Image Extension
-	BuildDIS		build Document Imaging Subset of XIE
-	BuildXCSecurity		Build Security Extension in server
 	BuildXInputExt		build X Input extension (requires ddx support,
-					which exists only in Xhp)
+					which exists only in Xhp and XFree86)
 	BuildXInputLib		build X Input library
 	BuildXKB		build X Keyboard Extension?
 	BuildXKBlib		build X Keyboard Extension into Xlib?
+	BuildXinerama		build Xinerama server extension
 	UseXKBInClients		Use XKB functions in normal clients?
-	BuildDBE		build DOUBLE-BUFFER extension
-	BuildMultibuffer	build Multibuffer extension (obsolete)
-	BuildRECORD		Build RECORD extension
-	BuildPlugin		build xrx plug-in for web browsers
 	ConfigDir		install directory for config files
 	ConnectionFlags		-D's for supported transports
 	ContribDir		location of user-contributed sources

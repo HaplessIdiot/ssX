@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: ws_io.c,v 1.13 94/04/17 20:29:57 dpw Exp $ */
+/* $TOG: ws_io.c /main/20 1997/11/14 13:43:44 kaleb $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -67,12 +67,18 @@ SOFTWARE.
 #include "regionstr.h"
 #include "resource.h"
 #include "dixstruct.h"
+#include "servermd.h"
 #include <sys/workstation.h>
 #include <sys/inputdevice.h>
 #include <sys/wsdevice.h>
 #include "ws.h"
 #include "keynames.h"
-
+#ifdef XKB
+#include "XKBsrv.h"
+#ifdef __alpha
+#include <alpha/hal_sysinfo.h> /* for GSI_KEYBOARD */
+#endif
+#endif
 
 #include "mi.h"
 
@@ -212,7 +218,7 @@ wsChangeKeyboardControl(device, ctrl)
         ChangeLED(i, (ctrl->leds & (1 << (i-1))));
 #endif
     if (ioctl (wsFd, SET_KEYBOARD_CONTROL, &control) == -1)
-      printf ("couldn't set global autorepeat\n");
+      ErrorF ("couldn't set global autorepeat\n");
     return;
 
 }
@@ -306,21 +312,22 @@ wsMouseProc(pDev, onoff, argc, argv)
 	    map[4] = 4;
 	    map[5] = 5;
 	    if(wsNumButtons == -1) {
+#ifndef VSXXX
+		numButtons = wht.buttons; /* believe the Kernel :-) */
+#else
 		if(wht.hardware_type == VSXXX)
 		    numButtons = 3;
 		else 
 		    numButtons = 4;
+#endif
 	    } 
 	    else
 		numButtons = wsNumButtons;
 	    InitPointerDeviceStruct(
 		wsPointer, map, numButtons, wsGetMotionEvents,
 		wsChangePointerControl, MOTION_BUFFER_SIZE);
-#ifdef __alpha
-	    SetInputCheck(&queue->head, &queue->tail);
-#else
-	    SetInputCheck((long *)&queue->head, (long *)&queue->tail);
-#endif
+	    SetInputCheck((HWEventQueuePtr)&queue->head, 
+			  (HWEventQueuePtr)&queue->tail);
 	    break;
 	case DEVICE_ON: 
 	    pDev->on = TRUE;
@@ -346,6 +353,29 @@ LegalModifier(key, pDev)
     return TRUE;
 }
 
+#ifdef XKB
+static char *languages[] = {
+    "danish",		/* 30 Dansk */
+    "german",		/* 32 Deutsch */
+    "swiss_german",	/* 34 Deutsch(Schweiz) */
+    "us",		/* 36 English(American) */
+    "uk",		/* 38 English(British/Irish) */
+    "spanish",		/* 3a Espanol */
+    "french",		/* 3c Francais */
+    "canadian_french",	/* 3e Francais(Canadien) */
+    "swiss_french",	/* 40 Francais(SuisseRomande) */
+    "italian",		/* 42 Italiano */
+    "dutch",		/* 44 Nederlands */
+    "norwegian",	/* 46 Norsk */
+    "portuguese",	/* 48 Portugues */
+    "finnish",		/* 4a Suomi */
+    "swedish",		/* 4c Svenska */
+    "flemish"		/* 4e Vlaams */
+};
+
+#define ENGLISH_AMERICAN 3 /* languages[3] = us, hardcoded fallback */
+#endif /* XKB */
+
 int
 wsKeybdProc(pDev, onoff, argc, argv)
     DevicePtr pDev;
@@ -362,9 +392,91 @@ wsKeybdProc(pDev, onoff, argc, argv)
    to 20 */	
 	    wsKeyboard = pDev;
 	    GetKeyboardMappings( &keySyms, modMap);
+#if defined(XKB) && defined(__alpha)
+	    if (!noXkbExtension)
+	    {
+		XkbComponentNamesRec	names;
+		char keyboard[8];
+		char lang[4];
+		char keymapname[80];
+		unsigned int langindex;
+		char *p;
+		int i;
+
+		/* Set the default keymap based on the console's language 
+		 * environment variable.
+		 */
+		lang[0] = '\0';
+		if (-1 == getsysinfo(GSI_PROM_ENV, lang, sizeof(lang), 0,
+				     "language"))
+		    lang[0] = '\0';
+
+		/* Find the class of keyboard being used.
+		 */
+		keyboard[0] = '\0';
+		if (-1 == getsysinfo(GSI_KEYBOARD, keyboard, sizeof(keyboard),
+				     0, NULL))
+		keyboard[0] = '\0';
+
+		/* Now put together the keymap name: digital/lang(kbtype)
+		 * Eventually, we'll consult a file to find the keymap
+		 * name based on the keyboard class and language, and all
+		 * the code below will be a fallback in case nothing was
+		 * found in the file.  For now, just rely on the fallback
+		 * code.
+		 *
+		 * All of our keymap names start with "digital/", so ...
+		 */
+		keymapname[0] = '\0';
+		strcat(keymapname, "digital/");
+
+		/* Next you tack on the language.  If we don't understand
+		 * what getsysinfo returned, use the fallback.
+		 */
+		langindex = ((unsigned)lang[0] - MIN_LANG_CODE) / 2;
+		if (langindex >= sizeof(languages) / sizeof(char *))
+		    langindex = ENGLISH_AMERICAN;
+		strcat(keymapname, languages[langindex]);
+
+		/* Lastly you append the keyboard type.  Convert it to lower
+		 * case first.  Funky special case: for non-us keyboards,
+		 * change "lk443" to "lk444".  (Why not just name the
+		 * keymap files consistently?)
+		 */
+
+		i = strlen(keymapname);
+		keymapname[i++] = '(';
+		for (p = keyboard; *p; p++) {
+		    keymapname[i++] = tolower(*p);
+		}
+		if (!strcmp("LK443", keyboard) &&
+		    langindex != ENGLISH_AMERICAN) {
+		    keymapname[i-1] = '4';
+		}
+		keymapname[i++] = ')';
+		keymapname[i++] = '\0';
+#ifdef DEBUG
+		ErrorF("keymap name is %s\n", keymapname);
+#endif
+		names.keymap= keymapname;
+
+		/* the chosen keymap file specifies all of these */
+
+		names.keycodes= NULL;
+		names.types=    NULL;
+		names.compat=   NULL;
+		names.symbols=  NULL;
+		names.geometry= NULL;
+		XkbInitKeyboardDeviceStruct((DeviceIntPtr)wsKeyboard,
+					    &names, &keySyms, modMap, wsBell,
+					    wsChangeKeyboardControl);
+	    }
+	    else
+#endif /* XKB */
 	    InitKeyboardDeviceStruct(
 		    wsKeyboard, &keySyms, modMap, wsBell,
 		    wsChangeKeyboardControl);
+
     /* Free the key sym mapping space allocated by GetKeyboardMappings. */
 	    Xfree(keySyms.map);  
 	    break;
@@ -590,6 +702,12 @@ Bool GetKeyboardMappings(pKeySyms, pModMap)
     ws_keysyms_and_modifiers km;
     int min_keycode = 256, max_keycode = 0;
 
+    def.device_number = wsinfo.console_keyboard;
+    if (ioctl (wsFd, GET_KEYBOARD_DEFINITION, &def) == -1) {
+	ErrorF ("error getting keyboard definition\n");
+    }
+    lockLed = def.lock_key_led;
+
     /* If it exists, load special keysym map from file instead of driver.
 	This is for backward compatibility with the i18n stuff from the
 	DEC R3 servers.
@@ -608,11 +726,6 @@ Bool GetKeyboardMappings(pKeySyms, pModMap)
 	return (TRUE);
     }
 
-    def.device_number = wsinfo.console_keyboard;
-    if (ioctl (wsFd, GET_KEYBOARD_DEFINITION, &def) == -1) {
-	ErrorF ("error getting keyboard definition\n");
-    }
-    lockLed = def.lock_key_led;
     km.device_number = wsinfo.console_keyboard;
     km.modifiers = mods;
     *((KeySym **)(&km.keysyms)) = rawsyms; /* XXX bad type in inputdevice.h */
@@ -691,12 +804,28 @@ ProcessInputEvents()
 {
     xEvent x;
     register ws_event *e;
-    register int    i;
+    ws_event etmp;
     int screen;
     DeviceIntPtr dev = (DeviceIntPtr) wsKeyboard;
-    i = queue->head;
-    while (i != queue->tail)  {
-	e = (ws_event *)((int)(queue->events) + queue->event_size * i);
+
+    e = &etmp;
+    while (queue->head != queue->tail)  {
+        /* The events should be popped off the queue before they
+         * are processed.  This bug surfaced because XKB indirectly
+         * turned ProcessInputEvents into a recursive routine.
+         */
+        memmove(&etmp,
+#ifdef __alpha
+                (caddr_t)(queue->events) + queue->event_size * queue->head,
+#else
+                (int)(queue->events) + queue->event_size * queue->head,
+#endif
+                queue->event_size);
+
+        if (queue->head >= queue->size - 1)
+            queue->head = 0;
+        else
+            ++queue->head;
 
 	if (screenIsSaved == SCREEN_SAVER_ON)
 	    SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
@@ -705,8 +834,6 @@ ProcessInputEvents()
 		ScreenPtr	pScreen;
 		int		x, y;
 
-		if (i >= queue->size - 1)   i = queue->head = 0;
-		else			    i = ++queue->head;
 		if (cursorConfined)
 		{
 		    /* OS doesn't work right -- we have to confine here */
@@ -731,7 +858,6 @@ ProcessInputEvents()
 		    y = e->e.key.y;
 		    NewCurrentScreen(pScreen, x, y);
 		}
-		i = queue->head;
 		continue;
     	}
 
@@ -745,28 +871,34 @@ ProcessInputEvents()
 		    switch (e->type) {
 			case BUTTON_DOWN_TYPE: 
 			    x.u.u.type = KeyPress;
-#ifndef XKB
-			    /* if key is a lock modifier then ... */
-			    if (dev->key->modifierMap[e->e.key.key] & LockMask){
-				if (shiftLock) {
-				    x.u.u.type = KeyRelease;
-				    SetLockLED (FALSE);
-				    shiftLock = FALSE;
-				} else {
-				    x.u.u.type = KeyPress;
-				    SetLockLED (TRUE);
-				    shiftLock = TRUE;
+#ifdef XKB
+			    if (noXkbExtension)
+#endif
+			    {
+				/* if key is a lock modifier then ... */
+				if (dev->key->modifierMap[e->e.key.key] & LockMask){
+				    if (shiftLock) {
+					x.u.u.type = KeyRelease;
+					SetLockLED (FALSE);
+					shiftLock = FALSE;
+				    } else {
+					x.u.u.type = KeyPress;
+					SetLockLED (TRUE);
+					shiftLock = TRUE;
+				    }
 				}
 			    }
-#endif
 			    (*wsKeyboard->processInputProc) (&x, dev, 1);
 			    break;
 			case BUTTON_UP_TYPE: 
-#ifndef XKB
-			    /* if key is a lock modifier then ignore */
-			    if (dev->key->modifierMap[e->e.key.key] & LockMask)
-				break;
+#ifdef XKB
+			    if (noXkbExtension)
 #endif
+			    {
+				/* if key is a lock modifier then ignore */
+				if (dev->key->modifierMap[e->e.key.key] & LockMask)
+				    break;
+			    }
 			    x.u.u.type = KeyRelease;
 			    (*wsKeyboard->processInputProc) (&x, dev, 1);
 			    break;
@@ -792,7 +924,7 @@ ProcessInputEvents()
 			    printf("Unknown mouse or tablet event = %d\n",
 				e->type);
 #endif
-			    goto out;
+			    continue;
 		    }
 		    (*wsPointer->processInputProc)
 			(&x, (DeviceIntPtr) wsPointer, 1);
@@ -813,10 +945,6 @@ ProcessInputEvents()
 #endif
 		break;
 	}
-out:
-	if (i >= queue->size - 1)   i = queue->head = 0;
-	else			    i = ++queue->head;
-
     }
 }
 
@@ -911,13 +1039,41 @@ wsDisplayCursor( pScr, pCurs)
 {
     ws_cursor_data cd;
     ws_cursor_color cc;
+#ifdef __alpha
+    unsigned int sourcebits[1024], maskbits[1024];
+    unsigned char *pSrc, *pDst;
+    int i;
+    int widthBytesLineSrc, widthBytesLineDest;
+#endif
     cd.screen = screenDesc[pScr->myNum].screen;
     cd.width = pCurs->bits->width;
     cd.height = pCurs->bits->height;
     cd.x_hot =  pCurs->bits->xhot;
     cd.y_hot =  pCurs->bits->yhot;
+#ifdef __alpha
+    /*
+     * convert from an image padded on 8-byte boundaries to an
+     * image padded on 4-byte boundaries for the hardware
+     */
+    widthBytesLineSrc = BitmapBytePad (pCurs->bits->width);
+    widthBytesLineDest = BitmapBytePadProto (pCurs->bits->width);
+
+    pSrc = (unsigned char*) pCurs->bits->source;
+    pDst = (unsigned char*) sourcebits;
+    for (i = 0; i < pCurs->bits->height; 
+	i++, pSrc += widthBytesLineSrc, pDst += widthBytesLineDest)
+	memmove((void*) pDst, (void*)pSrc, widthBytesLineDest);
+    cd.cursor = sourcebits;
+    pSrc = (unsigned char*) pCurs->bits->mask;
+    pDst = (unsigned char*) maskbits;
+    for (i = 0; i < pCurs->bits->height; 
+	i++, pSrc += widthBytesLineSrc, pDst += widthBytesLineDest)
+	memmove((void*) pDst, (void*)pSrc, widthBytesLineDest);
+    cd.mask = maskbits;
+#else
     cd.cursor = (unsigned int *) pCurs->bits->source;
     cd.mask =   (unsigned int *) pCurs->bits->mask;
+#endif
     if ( ioctl( wsFd, LOAD_CURSOR, &cd) == -1)    {
 	ErrorF( "error loading bits of new cursor\n");
         return FALSE;
@@ -1401,3 +1557,56 @@ int wsScreenInit(index, pScreen, argc, argv)
     wsSaveScreen(pScreen,  SCREEN_SAVER_OFF);
     return index;
 }
+
+#ifdef DPMSExtension
+extern CARD16 DPMSPowerLevel;
+
+void DPMSSet(level)
+    int level;
+{
+    ws_power_mgt pwr;
+    int i;
+
+    for (i = 0; i < screenInfo.numVideoScreens; i++)
+    {
+      pwr.screen = WS_SCREEN(screenInfo.screens[i]);
+      pwr.state = 1;
+      pwr.level = level;
+      ioctl(wsFd, SET_POWER_LEVEL, &pwr);
+    }
+    DPMSPowerLevel = level; 
+}
+
+int DPMSGet(level)
+    int* level;
+{
+    ws_power_mgt pwr;
+    int i;
+
+    for (i = 0; i < screenInfo.numVideoScreens; i++)
+    {
+      if (ioctl(wsFd, GET_POWER_LEVEL, &pwr) != DPMS_NOT_SUPPORTED)
+          return (CARD16)pwr.level;
+    }
+    return (CARD16)-1;
+}
+
+Bool DPMSSupported()
+{
+    ws_power_mgt pwr;
+    int i;
+    int supported = 0;
+
+    /* for the purposes of this extension, we will say that we support
+       DPMS if any of the screens support it, and leave it to the driver
+       to decide on a screen by screen basis. */
+
+    for (i = 0; i < screenInfo.numVideoScreens; i++)
+    {
+      supported = ioctl(wsFd, GET_POWER_LEVEL, &pwr);
+      if (supported != DPMS_NOT_SUPPORTED)
+          return TRUE;
+    }
+    return FALSE;     /* didn't see any that work! */
+}
+#endif

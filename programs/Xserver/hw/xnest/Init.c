@@ -1,5 +1,4 @@
 /* $XConsortium: Init.c /main/7 1996/12/02 10:21:37 lehors $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.11 1997/02/27 16:45:50 hohndel Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -13,6 +12,8 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.12 1997/03/22 09:36:26 hohndel Exp $ */
+
 #include "X.h"
 #include "Xproto.h"
 #include "screenint.h"
@@ -151,4 +152,29 @@ Bool DPMSSupported()
 /* this is just to get the server to link on AIX */
 #ifdef AIXV3
 int SelectWaitTime = 10000; /* usec */
+#endif
+
+#ifdef DPMSExtension
+/**************************************************************
+ * DPMSSet(), DPMSGet(), DPMSSupported()
+ *
+ * stubs
+ *
+ ***************************************************************/
+
+void DPMSSet (level)
+    int level;
+{
+}
+
+int DPMSGet (level)
+    int* level;
+{
+    return -1;
+}
+
+Bool DPMSSupported ()
+{
+    return FALSE;
+}
 #endif

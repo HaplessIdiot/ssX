@@ -45,12 +45,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $TOG: main.c /main/84 1997/10/08 11:43:43 sekhar $ */
+/* $TOG: main.c /main/85 1997/11/12 14:37:45 kaleb $ */
 
 
 
 
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.12 1997/07/10 08:17:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.13 1997/11/16 06:17:54 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: sunAmInit.c,v 1.2 94/04/17 20:32:46 dpw Exp $ */
+/* $TOG: sunAmInit.c /main/3 1997/11/12 14:38:31 kaleb $ */
 /*
  * sunAmInit.c --
  *	Amoeba implementation of initialization functions
@@ -442,3 +442,28 @@ sunCfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
 
 #endif  /* SUNMAXDEPTH == 32 */
 #endif  /* SUNMAXDEPTH */
+
+#ifdef XDPMS
+/**************************************************************
+ * DPMSSet(), DPMSGet(), DPMSSupported()
+ *
+ * stubs
+ *
+ ***************************************************************/
+
+void DPMSSet (level)
+    int level;
+{
+}
+
+int DPMSGet (level)
+    int* level;
+{
+    return -1;
+}
+
+Bool DPMSSupported ()
+{
+    return FALSE;
+}
+#endif

@@ -1,5 +1,4 @@
-/***********************************************************
-
+/************************************************************************
 Copyright (c) 1991  X Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -45,7 +44,23 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: ws.h,v 1.4 94/04/17 20:29:56 keith Exp $ */
+/* $TOG: ws.h /main/5 1997/11/14 14:45:59 kaleb $ */
+
+#ifndef NO_DEC_VALUE_ADDED
+#define SCREENW6        640
+#define SCREENW8        800
+#define SCREENW10       1024
+#define SCREENW12       1280
+
+#define SCREENH6        480
+#define SCREENH8        600
+#define SCREENH10       768
+#define SCREENH12       1024
+
+
+#define DEF_SCREEN_WIDTH  1024;
+#define DEF_SCREEN_HEIGHT  768;
+#endif
 
 #define NOMAPYET        (ColormapPtr) 1
 
@@ -61,6 +76,13 @@ SOFTWARE.
 #define	 ARG_EDGE_B	(1 << 9)
 #define  ARG_MONITOR	(1 << 10)
 #define	 ARG_DEPTH	(1 << 11)
+#ifndef NO_DEC_VALUE_ADDED
+#define  ARG_TXXORFIX	(1 << 12)	/* for TX */
+#define  ARG_TXBANKSW	(1 << 13)	/* for TX */
+#define  ARG_TXRVISUAL	(1 << 14)	/* for TX */
+#define  ARG_SCREEN	(1 << 15)       /* */
+#define  ARG_VSYNC	(1 << 16)	/* */
+#endif
 
 typedef struct  {
 	int flags;
@@ -76,6 +98,15 @@ typedef struct  {
 	int edge_bottom;
 	ws_monitor monitor;
 	int depth;
+#ifndef NO_DEC_VALUE_ADDED
+	int txXorFix;		/* for TX */
+	int txBankSwitch;	/* for TX */
+	int txRootDepth;	/* for TX */
+	int txRootClass;	/* for TX */
+	int screenHeight;	/*   */
+	int screenWidth;	/*  */
+	int screenVsync;
+#endif
 } ScreenArgsRec;
 
 typedef struct {
@@ -85,6 +116,9 @@ typedef struct {
 	ColormapPtr		pInstalledMap;
 	ScreenArgsRec 		*args;
 	Bool			(*CloseScreen)();
+#ifndef NO_DEC_VALUE_ADDED
+	void			(*CursorControl)();
+#endif
 } wsScreenPrivate;
 
 typedef struct {
@@ -99,6 +133,21 @@ extern int wsListInstalledColormaps();
 extern int wsScreenPrivateIndex;
 extern Bool wsSaveScreen();
 extern int dpix, dpiy, dpi;
+#ifndef NO_DEC_VALUE_ADDED
+extern void wsMakeScreenOnly();
+extern void wsInputOutputFinish();
+extern int  wsRemapPhysToLogScreens;
+extern void wsEnableScreen();
+extern void wsDisableScreen();
+extern int  wsPhysScreenNum();
+extern void wsRegisterAbortProc();
+extern void wsRegisterGiveUpProc();
+extern wsScreenPrivate * wsAllocScreenInfo();
+extern int  wsDisabledScreens[];
+extern int  wsOnlyScreen;
+extern int  wsPhysToLogScreens[];
+extern int  screenHeight, screenWidth;
+#endif
 
 extern ScreenArgsRec screenArgs[];
 
@@ -108,4 +157,12 @@ extern int forceDepth;
 extern int fdPM;   /* this is the file descriptor for screen so
 		    can do IOCTL to colormap */
 extern int ws_cpu;
+
+#ifndef NO_DEC_VALUE_ADDED
+#define WSP_PTR(pScr) \
+    ((wsScreenPrivate*)(pScr)->devPrivates[wsScreenPrivateIndex].ptr)
+#define WS_SCREEN(pScr) (WSP_PTR(pScr)->screenDesc->screen)
+#define wspCursorControl(psn, control) \
+    if (psn >= 0) (*WSP_PTR(wsScreens[psn])->CursorControl)(psn, control)
+#endif
 

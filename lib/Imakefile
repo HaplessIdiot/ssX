@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/39 1997/02/26 18:09:44 kaleb $
-XCOMM $XFree86: xc/lib/Imakefile,v 3.20 1997/05/03 09:14:54 dawes Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.21 1997/07/05 15:15:27 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -41,10 +41,6 @@ XF86DGALIB = Xxf86dga
 
 XF86EXTLIBS = $(XF86MISCLIB) $(XF86VMLIB) $(XF86DGALIB)
 
-#if BuildDPMSLibrary
-XDPMSLIBDIR = Xdpms
-#endif
-
 #if BuildLBX
 LBXUTILDIR = lbxutil
 #endif
@@ -64,7 +60,6 @@ LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIB) X11 oldX ICE SM Xext Xt \
 	     $(SSLIB) $(XF86MISCLIB) $(XF86VMLIB) $(XF86DGALIB) \
 	     Xmu Xaw XIE Xi Xtst FS \
 	     PEX5 $(XKBLIBDIR) $(XKBUILIBDIR) $(LBXUTILDIR) $(XALIBDIR) \
-	     $(XDPMSLIBDIR) \
 	     Xp $(ZLIBDIR)
 #else
 #if XnestServer

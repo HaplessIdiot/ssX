@@ -1,5 +1,4 @@
-/* $XConsortium: InitOutput.c /main/17 1996/12/02 10:20:41 lehors $ */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.4 1996/12/23 06:30:20 dawes Exp $ */
+/* $TOG: InitOutput.c /main/19 1997/11/16 16:08:07 kaleb $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -29,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.5 1997/01/12 10:41:03 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -1003,3 +1003,4 @@ Bool DPMSSupported()
 #ifdef AIXV3
 int SelectWaitTime = 10000; /* usec */
 #endif
+

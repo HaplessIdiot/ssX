@@ -1,6 +1,5 @@
 /* 
- * $XConsortium: xset.c /main/71 1996/11/24 17:24:48 rws $ 
- * $XFree86: xc/programs/xset/xset.c,v 3.11 1997/05/11 04:58:53 dawes Exp $ 
+ * $TOG: xset.c /main/72 1997/11/12 14:39:11 kaleb $
  */
 
 /*
@@ -29,6 +28,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+/* $XFree86: xc/programs/xset/xset.c,v 3.12 1997/06/29 07:54:38 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
