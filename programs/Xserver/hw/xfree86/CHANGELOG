@@ -80,7 +80,7 @@ XFree86 4.0.99.1 (19 February 2001)
  154. Fixed acceleration on Alpine (Cirrus) driver. PIO and MMIO versions of 
       the accelerator driver now support the same functionality (Egbert Eich).
  153. Removed unneededed call to xfree() in ddc code (Egbert Eich).
- 152. Fix NV, Glint, ati and mga drivers for Alpha EV56 machines
+ 152. -
  151. Siliconmotion driver updates, including:
         - Color change/flash at 8bpp when switch back to desktop in rotation
           mode.
@@ -12559,4 +12559,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1585 2001/02/18 23:49:53 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1586 2001/02/19 20:20:58 dawes Exp $
