@@ -1,4 +1,6 @@
 XFree86 4.1.99.3 (xx December 2001)
+ 572. Some warning cleanups for Tru64 (#5069, Antti Tapaninen).
+ 571. Fix a typo in the mt_us keymap entry (#5067, Nerijus Baliunas).
  570. Add some missing UNDEFINE lines to the iso8859-11 and tis620-2
       encoding files (#5065, 5066, Theppitak Karoonboonyanan).
  569. Some Luxi font updates:
@@ -14333,4 +14335,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2088 2001/12/14 19:59:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2089 2001/12/17 19:25:32 dawes Exp $

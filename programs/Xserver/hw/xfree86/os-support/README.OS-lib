@@ -72,7 +72,7 @@ void xf86OpenConsole(void)
 {
 	/*
 	 * Open console device, activate VTs, etc, etc.  Fill in requisite
-	 * pieces of x386Info.  Most of this code comes from x386Init.c
+	 * pieces of xf86Info.  Most of this code comes from xf86Init.c
 	 */
 }
 
@@ -289,7 +289,7 @@ void xf86KbdEvents(void)
 {
 	/*
 	 * Read characters from the keyboard device, and post the events
-	 * by calling x386PostKbdEvent().  Read as much as is available
+	 * by calling xf86PostKbdEvent().  Read as much as is available
 	 * without waiting.
 	 */
 }
@@ -346,7 +346,7 @@ void xf86MouseEvents(void)
 {
 	/*
 	 * Read characters from the mouse device, and post the events
-	 * by calling x386PostMseEvent().  Read as much as is available
+	 * by calling xf86PostMseEvent().  Read as much as is available
 	 * without waiting.  If the OS doesn't handle the mouse protocol
 	 * translation, xf86MouseProtocol() may be called to do the
 	 * translation and event posting.  If the OS does handle the protocol
@@ -373,7 +373,7 @@ int xf86OsMouseEvents(void)
 	/*
 	 * When supporting an OS-based mouse driver (as opposed to the
 	 * server's internal mouse driver), read some events from the device
-	 * and post them to the DIX layer through x386PostMseEvent().
+	 * and post them to the DIX layer through xf86PostMseEvent().
 	 *
 	 * This function only needs to be implemented if USE_OSMOUSE is
 	 * defined for the OS.
@@ -497,7 +497,7 @@ xf86cos(double x)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/os-support/README.OS-lib,v 3.8 2001/06/20 00:42:09 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/os-support/README.OS-lib,v 3.9 2001/07/23 13:15:48 dawes Exp $
 
 
 
