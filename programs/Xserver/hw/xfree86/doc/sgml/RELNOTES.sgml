@@ -9,7 +9,7 @@
 <date>26 January 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.123 2005/02/19 02:11:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.124 2005/02/19 02:22:07 dawes Exp $
 </ident>
 
 <abstract>
@@ -1173,6 +1173,7 @@ Peng Hongbo,
 Alan Hourihane,
 Harold L Hunt II,
 Alan Iwi,
+Timur Jamakeev,
 Paul Jarc,
 Kean Johnston,
 Nicolas Joly,
