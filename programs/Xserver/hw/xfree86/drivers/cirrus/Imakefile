@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/Imakefile,v 1.23 1999/12/30 02:18:10 robin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/Imakefile,v 1.25 2000/02/08 13:13:13 eich Exp $
 XCOMM
 XCOMM This is an Imakefile for the Cirrus Logic driver.  
 XCOMM
@@ -14,6 +14,7 @@ LSRCS = lg_driver.c lg_i2c.c lg_xaa.c lg_hwcurs.c
 LOBJS = lg_driver.o lg_i2c.o lg_xaa.o lg_hwcurs.o
 
 SRCS = $(CSRCS) $(ASRCS) $(LSRCS)
+OBJS = $(COBJS) $(AOBJS) $(LOBJS)
 
 #if defined(XF86DriverSDK)
 INCLUDES = -I. -I../../include
@@ -32,9 +33,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
 #endif
 
 #if MakeHasPosixVariableSubstitutions
-SubdirLibraryRule($(COBJS))
-SubdirLibraryRule($(AOBJS))
-SubdirLibraryRule($(LOBJS))
+SubdirLibraryRule($(OBJS))
 #endif
 
 XCOMM

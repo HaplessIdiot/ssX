@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.6 2000/01/21 01:12:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.7 2000/02/15 18:01:00 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -46,7 +46,7 @@ ATISaveScreen
     ATIPtr      pATI;
     Bool	On;
 
-    On = xf86IsBlank(Mode);
+    On = xf86IsUnblank(Mode);
 
     if (On)
         SetTimeSinceLastInputEvent();
