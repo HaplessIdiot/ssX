@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.16 2003/10/31 17:19:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.22 2004/01/05 00:34:17 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -446,6 +446,8 @@ static Bool VIAGetRec(ScrnInfoPtr pScrn)
     pScrn->driverPrivate = xnfcalloc(sizeof(VIARec), 1);
     ((VIARec *)(pScrn->driverPrivate))->pBIOSInfo =
         xnfcalloc(sizeof(VIABIOSInfoRec), 1);
+    ((VIARec *)(pScrn->driverPrivate))->pBIOSInfo->UserSetting =
+        xnfcalloc(sizeof(VIAUserSettingRec), 1);
     ((VIARec *)(pScrn->driverPrivate))->pBIOSInfo->pModeTable =
         xnfcalloc(sizeof(VIAModeTableRec), 1);
 
@@ -467,6 +469,7 @@ static void VIAFreeRec(ScrnInfoPtr pScrn)
         return;
 
     xfree(((VIARec *)(pScrn->driverPrivate))->pBIOSInfo->pModeTable);
+    xfree(((VIARec *)(pScrn->driverPrivate))->pBIOSInfo->UserSetting);
     xfree(((VIARec *)(pScrn->driverPrivate))->pBIOSInfo);
     ViaTunerDestroy(pScrn);
     xfree(pScrn->driverPrivate);
