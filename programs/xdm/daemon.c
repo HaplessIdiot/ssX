@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/daemon.c,v 3.12 2000/11/14 18:20:39 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/daemon.c,v 3.13 2001/01/17 23:45:20 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -36,7 +36,7 @@ from The Open Group.
 #else
 #include <sys/ioctl.h>
 #endif
-#if defined(__osf__) || defined(linux) || defined(MINIX) || defined(__GNU__)
+#if defined(__osf__) || defined(linux) || defined(MINIX) || defined(__GNU__) || defined(__CYGWIN__)
 #define setpgrp setpgid
 #endif
 #ifdef hpux
