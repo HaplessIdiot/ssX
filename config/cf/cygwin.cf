@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.8 2001/04/27 11:47:09 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.9 2001/04/27 12:32:42 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -34,7 +34,13 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.8 2001/04/27 11:47:09 alan
 #define HasLibCrypt             YES
 #define HasPutenv               YES
 #define HasPoll			NO
-#define HasShm                  NO
+#if UseCygIPC
+# define HasShm			YES
+# define HasShmDefines		-DHAS_SHM
+#else
+# define HasShm                 NO
+# define HasShmDefines		/**/
+#endif
 #define HasSnprintf		YES
 #define HasZlib			YES
 
@@ -103,7 +109,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.8 2001/04/27 11:47:09 alan
 
 #define OptimizedCDebugFlags	-O2 -fno-strength-reduce -fpcc-struct-return -m486
 
-#define StandardDefines         -D__i386__ -DWIN32_LEAN_AND_MEAN -DX_LOCALE -D_X86_ -D__STDC__ -DNO_TCP_H -D__CYGWIN__ -D_XOPEN_SOURCE -D_POSIX_C_SOURCE=199309L -D_BSD_SOURCE -D_SVID_SOURCE -D_GNU_SOURCE -DX_SOURCE
+#define StandardDefines         -D__i386__ -DWIN32_LEAN_AND_MEAN -DX_LOCALE -D_X86_ -D__STDC__ -DNO_TCP_H -D__CYGWIN__ -D_XOPEN_SOURCE -D_POSIX_C_SOURCE=199309L -D_BSD_SOURCE -D_SVID_SOURCE -D_GNU_SOURCE -DX_SOURCE HasShmDefines
 
 #define XawI18nDefines          -DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 #define HasWChar32              YES

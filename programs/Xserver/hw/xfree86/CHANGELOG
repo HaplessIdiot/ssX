@@ -1,4 +1,6 @@
 XFree86 4.0.99.x (xx April 2001)
+ 461. Remove an errorneous i++ from os/xdmcp.c with -class (Alexander Gottwald).
+ 460. Allow Cygwin/XFree86 to build with cygipc support (Alan Hourihane).
  459. Small XDarwin fixes:
        - Don't leak IOService objects when searching for desired screen.
        - Eliminate chance of SIGPIPE while shutting down.
@@ -13123,4 +13125,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1731 2001/04/30 14:34:55 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1732 2001/04/30 16:25:58 torrey Exp $
