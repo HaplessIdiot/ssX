@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_pci.c,v 3.3 1996/12/09 11:54:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_pci.c,v 3.4 1996/12/27 07:05:11 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -51,7 +51,7 @@ ctPCIChipset()
 {
   if (!vgaPCIInfo)
     return (-1);
-  if (!vgaPCIInfo->Vendor == PCI_VENDOR_CHIPSTECH)
+  if (vgaPCIInfo->Vendor != PCI_VENDOR_CHIPSTECH)
     return (0);
   return(vgaPCIInfo->ChipType);
 }

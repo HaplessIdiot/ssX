@@ -1175,18 +1175,18 @@ CHIPSProbe()
 	ctAccelSupport = FALSE;
     }
 
-    if(ctisHiQV32)
-      return ctProbeHiQV();
-    else if (ctisWINGINE)
-      return ctProbeWINGINE();
-    else
-      return ctProbe();
 
 #ifdef DPMSExtension
     if (ctDPMSSupport)
 	vga256InfoRec.DPMSSet = CHIPSDisplayPowerManagementSet;
 #endif
 
+    if(ctisHiQV32)
+      return ctProbeHiQV();
+    else if (ctisWINGINE)
+      return ctProbeWINGINE();
+    else
+      return ctProbe();
 
 }
 
@@ -4675,7 +4675,7 @@ int ctSetMonitor()
 static void CHIPSDisplayPowerManagementSet(PowerManagementMode)
 int PowerManagementMode;
 {
-    unsigned char dpmsreg, seqreg, tmp;
+    unsigned char dpmsreg, seqreg, lcdoff, tmp;
     
     if (!xf86VTSema) return;
     switch (PowerManagementMode) {
@@ -4683,21 +4683,25 @@ int PowerManagementMode;
 	/* Screen: On; HSync: On, VSync: On */
 	dpmsreg = 0x00;
 	seqreg = 0x00;
+	lcdoff = 0x0;
 	break;
       case DPMSModeStandby:
 	/* Screen: Off; HSync: Off, VSync: On */
 	dpmsreg = 0x02;
 	seqreg = 0x20;
+	lcdoff = 0x0;
 	break;
       case DPMSModeSuspend:
 	/* Screen: Off; HSync: On, VSync: Off */
 	dpmsreg = 0x08;
 	seqreg = 0x20;
+	lcdoff = 0x1;
 	break;
       case DPMSModeOff:
 	/* Screen: Off; HSync: Off, VSync: Off */
 	dpmsreg = 0x0A;
 	seqreg = 0x20;
+	lcdoff = 0x1;
 	break;
     }
     outb(0x3C4, 0x01);
@@ -4709,5 +4713,24 @@ int PowerManagementMode;
 	outb(0x3D6,0x73);
     tmp = inb(0x3D7);
     outb(0x3D7,((tmp & 0xF0) | dpmsreg));
+    /* Turn off the flat panel by directing the output to the CRT */
+    if (ctLCD) {
+	if (ctisHiQV32) {
+	    outb(0x3D0,0x1);
+	    tmp = inb(0x3D1);
+	    if (lcdoff)
+	        outb(0x3D1, (tmp & 0xFC));
+	    else
+	        outb(0x3D1, ((tmp & 0xFC) | 0x2));
+	} else {
+	    outb(0x3D6,0x51);
+	    tmp = inb(0x3D7);
+	    if (lcdoff)
+	        outb(0x3D7, (tmp & 0xFB));
+	    else
+	        outb(0x3D7, ((tmp & 0xFB) | 0x4));
+	}
+    }
 }
 #endif
+
