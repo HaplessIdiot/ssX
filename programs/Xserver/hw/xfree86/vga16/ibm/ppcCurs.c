@@ -1,4 +1,5 @@
 /* $XConsortium: ppcCurs.c,v 1.1 94/03/28 21:36:22 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
