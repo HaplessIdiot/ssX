@@ -1,6 +1,6 @@
 /* ft_conf.h.  Xserver-specific version. */
 
-/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.1 1998/09/06 04:30:55 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.2 1998/09/06 07:31:57 dawes Exp $ */
 
 #include <X11/Xmd.h>
 #include "fontmisc.h"
@@ -18,6 +18,10 @@
 #include <math.h>
 #undef _XOPEN_SOURCE
 #endif
+/* Define if you have the <stdlib.h> header file.  */
+#ifndef X_NOT_STDC_ENV
+#define HAVE_STDLIB_H 1
+#endif
 
 #else
 
@@ -31,9 +35,6 @@
 /* Define if you have a working `mmap' system call.  */
 /* Defined in Makefile */
 /* #undef HAVE_MMAP */
-
-/* Define if you have the <stdlib.h> header file.  */
-#define HAVE_STDLIB_H 1
 
 /* Define if your processor stores words with the most significant
    byte first (like Motorola and SPARC, unlike Intel and VAX).  */

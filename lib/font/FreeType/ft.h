@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.2 1998/04/28 13:48:42 robin Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.3 1998/06/04 16:43:10 hohndel Exp $ */
 
 #undef DEBUG
 
@@ -9,10 +9,6 @@
 #else
 #define MUMBLE(s)
 #define MUMBLE1(s,x)
-#endif
-
-#ifdef __EMX__
-#define strcasecmp stricmp
 #endif
 
 #undef MAX

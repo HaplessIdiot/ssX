@@ -21,7 +21,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE. */
 
-/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.6 1998/09/06 05:05:30 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.7 1998/09/06 07:31:57 dawes Exp $ */
 
 #include "ttconfig.h"
 #include "freetype.h"
@@ -596,6 +596,30 @@ static struct ttf_encoding_info ttf_encoding_info[]=
   {0,0,0}
 };
 
+static int
+mystrcasecmp(const char *s1, const char *s2)
+{
+  char c1, c2;
+
+  if (*s1 == 0)
+    if (*s2 == 0)
+      return 0;
+    else
+      return 1;
+
+  c1 = (isupper (*s1) ? tolower (*s1) : *s1);
+  c2 = (isupper (*s2) ? tolower (*s2) : *s2);
+  while (c1 == c2) {
+    if (c1 == '\0')
+      return 0;
+    s1++;
+    s2++;
+    c1 = (isupper (*s1) ? tolower (*s1) : *s1);
+    c2 = (isupper (*s2) ? tolower (*s2) : *s2);
+  }
+  return c1 - c2;
+}
+
 int
 ttf_find_cmap_from_charset(char *charset, TT_Face face,
                            struct ttf_encoding *cinfo)
@@ -605,7 +629,7 @@ ttf_find_cmap_from_charset(char *charset, TT_Face face,
   TT_CharMap cmap;
 
   for(info=ttf_encoding_info; info->charset; info++)
-    if(!strcasecmp(info->charset, charset)) {
+    if(!mystrcasecmp(info->charset, charset)) {
       for(alt=info->alternatives; alt->pid>=0; alt++) {
         if(!ttf_find_cmap(alt->pid, alt->eid, face, &cmap)) {
           cinfo->cmap=cmap;
@@ -732,7 +756,7 @@ ttf_pick_cmap(char *name, int length, TT_Face face,
       *q=0;
   }
 
-  if(!p || strcasecmp(charset,"truetype-raw")) {
+  if(!p || mystrcasecmp(charset,"truetype-raw")) {
     /* Search for a suitable cmap */
     if(p && !ttf_find_cmap_from_charset(charset, face, cinfo)) {
       return 0;
