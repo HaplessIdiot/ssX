@@ -43,7 +43,7 @@
 
   Note: the OpenBSD binary distribution only support recent OpenBSD
   snapshots (after August 23) where ttyC0 is used for the console
-  device. Prior OpenBSD snapshots can run the NetBSD binrary
+  device. Prior OpenBSD snapshots can run the NetBSD binary
   distribution.
 
   Other NetBSD versions:
@@ -273,7 +273,7 @@
            tar xzf X312Gdoc.tgz
            tar xzf X312Gbin.tgz
            tar xzf X312Glib.tgz
-           tar xzf X312Gfont.tgz
+           tar xzf X312Gfnts.tgz
            tar xzf X312Gman.tgz
 
            tar xzf X312Gprog.tgz
@@ -833,7 +833,7 @@
         machines in preparing the FreeBSD binary release.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.31 1996/09/03 04:12:37 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.32 1996/09/03 15:12:11 dawes Exp $
 
 
 

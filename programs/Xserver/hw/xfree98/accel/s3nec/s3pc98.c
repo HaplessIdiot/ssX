@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/s3pc98.c,v 3.5 1996/05/06 05:58:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/s3pc98.c,v 3.6 1996/08/14 14:35:05 dawes Exp $ */
 
 
 
@@ -273,6 +273,30 @@ Bool BoardInit()
 	return(TRUE);
 }
 	
+
+Bool s3EnterLeaveMachdep(int dir)
+{
+	Bool error = TRUE;
+
+ 	if (dir == S3PC98SERVER_ENTER)
+	{
+#ifdef PC98_GA968
+		s3ConnectPCI(PCI_S3_VENDOR_ID, PCI_968);
+#endif
+#ifdef PC98_NEC
+		if (mmioBase != NULL && pc98BoardType == NECWAB864_I)
+			error = BoardInit();
+#endif
+	}
+	else
+	{
+#ifdef PC98_GA968
+		   s3DisconnectPCI(PCI_S3_VENDOR_ID, PCI_968);
+#endif
+	}
+
+	return error;
+}
 
 static int PWBoardCheck(unsigned char PW_Switch)
 {
@@ -676,7 +700,8 @@ Bool necboardinit()
 
 	vgaCRIndex = 0x3d4;
 	vgaCRReg   = 0x3d5;
- 	mmioBase = xf86MapVidMem(0, VGA_REGION,(pointer)(0xdf000), 4096);
+	if (mmioBase == NULL)
+		mmioBase = xf86MapVidMem(0, VGA_REGION,(pointer)(0xdf000), 4096);
    	_necportconvert();		
 
  	_outb(PC98_NEC_INDX1, 0);

@@ -1,4 +1,5 @@
 XFree86 3.1.2G (3 September 1996)
+775. Fixes for some NECS3 server problems (Naofumi Honda).
 774. Fix some XF86Setup typos.
 773. OS/2 updates (Holger Veit).
 

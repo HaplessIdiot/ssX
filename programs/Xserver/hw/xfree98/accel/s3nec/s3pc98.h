@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/s3pc98.h,v 3.2 1996/03/29 22:18:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/s3pc98.h,v 3.3 1996/08/14 14:35:06 dawes Exp $ */
 
 
 
@@ -29,3 +29,12 @@
 #define SKB4_WinAdd	0x3e0	/* 0x03E00000 */
 #define NEC_WinAdd	0xf0	/* 0x00F00000 */
 #define PWLB_WinAdd	0xf000	/* 0xF0000000 */
+
+#define S3PC98SERVER_ENTER	1
+#define S3PC98SERVER_LEAVE	0
+
+Bool s3EnterLeaveMachdep(
+#if NeedFunctionPrototypes
+	int
+#endif
+);

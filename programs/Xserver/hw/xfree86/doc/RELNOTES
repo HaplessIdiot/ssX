@@ -1,7 +1,7 @@
   Release Notes for XFree86[TM] 3.1.2G (beta version)
   The XFree86 Project, Inc
 
-  1 September 1996
+  3 September 1996
 
   This document describes the rationale and conditions of this beta
   release, what is new in the XFree86 beta versions 3.1.2G, 3.1.2F,
@@ -1194,7 +1194,6 @@
   312G9GAN.tgz       PC98 GANB-WAP(cirrus) server
   312G9480.tgz       PC98 PEGC-480(generic) server
   312G9NKV.tgz       PC98 NKV-NEC(cirrus) server
-  312G9TGU.tgz       PC98 TGUI server
   312G9WBS.tgz       PC98 WABS(cirrus) server
   312G9WEP.tgz       PC98 WAB-EP(cirrus) server
   312G9WSN.tgz       PC98 WSN-A2F(cirrus) server
@@ -1251,8 +1250,8 @@
 
 
 
-
   The .tgz files are gzipped tar files.  To extract them, go to
+
   /usr/X11R6, and run the following as root for each file you need:
 
 
@@ -1300,7 +1299,8 @@
   line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.40 1996/09/03 06:25:23 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.41 1996/09/03 15:12:13 dawes Exp $
+
 
 
 
