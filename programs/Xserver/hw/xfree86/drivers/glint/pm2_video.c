@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.7 1999/04/29 09:13:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.8 1999/05/15 12:10:23 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1788,6 +1788,7 @@ xvipcOpen(char *name, ScrnInfoPtr pScrn)
 
 	/* FIXME */
 
+#ifndef NEW_INPUT
 	xvipc_local = xcalloc(1, sizeof(LocalDeviceRec));
 	xvipc_local->type_name = "Permedia 2 kernel backbone";
 	xvipc_local->flags = XI86_NO_OPEN_ON_INIT;
@@ -1798,6 +1799,7 @@ xvipcOpen(char *name, ScrnInfoPtr pScrn)
 	AddEnabledDevice(xvipc_fd);
 
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Xv driver connected to %s\n", name);
+#endif
 
 	return TRUE;
     }
