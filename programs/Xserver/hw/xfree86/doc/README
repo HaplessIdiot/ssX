@@ -203,6 +203,12 @@
         o  LynxOS AT 2.2.1, 2.3
 
 
+     PC98:
+
+        o  FreeBSD(98) 2.0.5, 2.1
+
+        o  NetBSD/pc98 (based on NetBSD 1.1)
+
   4.  Supported video-card chip-sets
 
   At this time, XFree86 3.1.2 supports the following accelerated
@@ -254,6 +260,7 @@
 
      Western Digital/Paradise
         PVGA1
+
 
      Western Digital
         WD90C00, WD90C10, WD90C11, WD90C24, WD90C24A, WD90C30,
@@ -320,6 +327,7 @@
   The VGA16 server supports memory banking with the ET4000, Trident,
   ATI, NCR, OAK and Cirrus 6420 chipsets allowing virtual display sizes
   up to about 1600x1200 (with 1MB of video memory).  For other chipsets
+
   the display size is limited to approximately 800x600.
 
   Note: The Diamond SpeedStar 24 (and possibly recent SpeedStar+) boards
@@ -327,7 +335,6 @@
   which uses the ET4000/W32p is also not fully supported.  The Weitek
   9100 and 9130 chipsets are not supported (these are used on the
   Diamond Viper Pro and Viper SE boards).  Most other Diamond boards
-
   will work with this release of XFree86.  Diamond is now actively
   supporting The XFree86 Project, Inc.
 
@@ -386,6 +393,7 @@
   documents and manual pages should be read before contacting the
   XFree86 team for assistance.
 
+
   Documentation on SVGA driver development can be found in the directory
   /usr/X11R6/lib/Server/VGADriverDoc in the binary distribution, and in
   the directory xc/programs/Xserver/hw/xfree86/VGADriverDoc in the
@@ -393,7 +401,6 @@
 
   If you are totally at a loss, you can contact the XFree86 Support Team
   at <XFree86@XFree86.Org>.  Before doing so, please make sure that you
-
   are using the latest release of XFree86.  Check the versions listed on
   ftp.xfree86.org:/pub/XFree86 <ftp://ftp.xfree86.org/pub/XFree86>.
 
@@ -452,13 +459,12 @@
 
      o  Mark Snitily <mark@sgcs.com>
 
+
      o  Randy Terbush <randyt@cse.unl.edu>
 
      o  Jon Tombs <tombs@XFree86.org>
 
      o  Kees Verstoep <versto@cs.vu.nl>
-
-
 
      o  Paul Vixie <paul@vix.com>
 
@@ -519,12 +525,12 @@
 
      Solaris support by:
 
+
         o  Doug Anson <danson@lgc.com>,
 
         o  David Holland <davidh@use.com>
 
      ISC SVR3 support by:
-
 
         o  Michael Rohleder <michael.rohleder@stadt-frankfurt.de>
 
@@ -537,6 +543,58 @@
         o  Orest Zborowski <orestz@eskimo.com>,
 
         o  Dirk Hohndel <hohndel@XFree86.org>
+
+     PC98 support by:
+
+        o  Toyonori Fujiura <toyo@center.nitech.ac.jp>,
+
+        o  Hiroyuki Aizu <aizu@center.nitech.ac.jp>,
+
+        o  Tetsuya Kakefuda <kakefuda@tag.iijnet.or.jp>,
+
+        o  Takefumi Tsukada <tsuka@kawalab.dnj.ynu.ac.jp>,
+
+        o  H.Komatsuzaki,
+
+        o  Naoki Katsurakawa <katsura@prc.tsukuba.ac.jp>,
+
+        o  Shuichiro Urata <s-urata@nmit.tmg.nec.co.jp>,
+
+        o  Yasuyuki Kato <yasuyuki@acaets0.anritsu.co.jp>,
+
+        o  Michio Jinbo <karl@pms.nagaokaut.ac.jp>,
+
+        o  Tatsuya Koike <koiket@focus.rim.or.jp>,
+
+        o  Koichiro Suzuki <ksuzuki@cc.tuat.ac.jp>,
+
+        o  Tsuyoshi Tamaki <tamaki@sail.t.u-tokyo.ac.jp>,
+
+        o  Isao Ohishi <ohishi@hf.rim.or.jp>,
+
+        o  Kohji Ohishi <atena@njk.co.jp>,
+
+        o  Shin'ichi Yairo <QZR00522@niftyserve.or.jp>,
+
+        o  Kazuo Ito <ft4k-itu@asahi-net.or.jp>,
+
+        o  Jun Sakuma <i931361@jks.is.tsukuba.ac.jp>,
+
+        o  Shuichi Ueno <uenos@ppp.bekkoame.or.jp>,
+
+        o  Ishida Kazuo <ishidakz@obp.cl.nec.co.jp>,
+
+        o  Takaaki Nomura <tnomura@sfc.keio.ac.jp>,
+
+        o  Tadaaki Nagao <nagao@cs.titech.ac.jp>,
+
+        o  Minoru Noda <tarda@ce.tokushima-u.ac.jp>,
+
+
+
+        o  Naofumi Honda <honda@math.hokudai.ac.jp>,
+
+        o  Masato Yoshida (Contributor of PW805i support)
 
      Original accelerated code by:
 
@@ -590,8 +648,6 @@
 
         o  Kevin Martin <martin@cs.unc.edu>,
 
-
-
         o  Rik Faith <faith@cs.unc.edu>,
 
         o  Tiago Gons <tiago@comosjn.hobby.nl>,
@@ -599,6 +655,8 @@
         o  Hans Nasten <nasten@everyware.se>,
 
         o  Scott Laird <scott@laird.com>
+
+
 
      Cirrus accelerated code by:
 
@@ -656,7 +714,6 @@
      WD90C24 support by:
 
         o  Brad Bosch <brad@lachman.com>
-
 
      Trident SVGA driver by:
 
@@ -723,7 +780,6 @@
 
      Video7 SVGA driver by:
 
-
         o  Craig Struble <cstruble@acm.vt.edu>
 
      RealTek SVGA driver by:
@@ -731,6 +787,8 @@
         o  Peter Trattler <peter@sbox.tu-graz.ac.at>
 
      Apollo Mono driver by:
+
+
 
         o  Hamish Coleman <hamish@zot.apana.org.au>
 
@@ -796,8 +854,9 @@
   could be given a voice within the X Consortium.  The bylaws of the
   Consortium would not recognize such an organization.  After an initial
   investigation about funding, we decided to form our own corporation to
-  provide the avenue we needed to meet the requirements of the X Consor-
-  tium bylaws.
+  provide the avenue we needed to meet the requirements of the X
+
+  Consortium bylaws.
 
   By doing this, we were able to be involved in the beta-test interval
   for X11R6, and have contributed the majority of XFree86 to the X11R6
@@ -855,7 +914,6 @@
   UUNET Communications Services, Inc, deserves special mention.  This
   organization stepped forward and contributed the entire 1994 X Consor-
   tium membership fee on a moment's notice.  This single act ensured
-
   XFree86's involvement in X11R6.
 
 
@@ -863,6 +921,7 @@
 
   Also deserving of special mention are the organizers and attendees of
   the 1st German Linux Congress in Heidelberg.  Significant funding to
+
   The XFree86 Project has been provided from its proceeds.
 
 
@@ -921,12 +980,13 @@
 
      o  Rich & Amy Murphey
 
-
      o  Brett Neumeier
 
      o  Number Nine, Lexington, MA
 
      o  Kazuyuki Okamoto, Japan
+
+
 
      o  Prime Time Freeware <http://www.ptf.com/>, San Bruno, CA
 
@@ -986,14 +1046,13 @@
            <ftp://ftp.rge.com/pub/X/XFree86/XFree86/3.1.2> (source and
            binaries)
 
-
-
         +  ftp.iastate.edu:/pub/XFree86/XFree86-3.1.2
            <ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.2> (source
            patches and NetBSD binaries)
 
            (Also via AFS:
            /afs/iastate.edu/public/ftp/pub/XFree86/XFree86-3.1.2)
+
 
         +  tsx-11.mit.edu:/pub/linux/packages/X11/XFree86-3.1.2
            <ftp://tsx-11.mit.edu/pub/linux/packages/X11/XFree86-3.1.2>
@@ -1054,6 +1113,7 @@
 
 
 
+
      o  Asia/Australia:
 
         +  x.physics.usyd.edu.au:/pub/XFree86/3.1.2
@@ -1083,7 +1143,13 @@
 
 
   $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.42 1996/01/16 15:04:26 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.43 1996/01/30 15:26:07 dawes Exp $
+
+
+
+
+
+
 
 
 

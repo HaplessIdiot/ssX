@@ -48,9 +48,31 @@
   the current beta version.  It includes a regularly updated list of
   known problems.
 
-  2.  New Features in 3.1.2B
+  2.  New Features in 3.1.2C
 
-  2.1.  General X server changes
+  2.1.  PC98 Support
+
+
+     o  Initial release of the PC98 NKV-NEC(cirrus) server. This server
+        is based on the PC-AT SVGA(cirrus) server.
+
+     o  Initial release of the PC98 WABS server. This server is based on
+        the PC-AT SVGA(cirrus) server.
+
+     o  Initial release of the PC98 GANB-WAP server. This server is
+        based on the PC-AT SVGA(cirrus) server.
+
+
+
+     o  Initial release of the PC98 EGC server. This server is based on
+        the PC-AT VGA16(generic) server.
+
+     o  Initial release of the PC98 PEGC-480 server. This server is
+        based on the PC-AT SVGA(generic) server.
+
+  3.  New Features in 3.1.2B
+
+  3.1.  General X server changes
 
 
      o  A new extension called XFree86-DGA is now provided.  This allows
@@ -62,7 +84,6 @@
 
      o  An implementation of the XInput extension is now included.  It
         has support for the following devices:
-
 
         +  Joystick (Linux and FreeBSD only at the moment)
 
@@ -80,7 +101,7 @@
      o  The RepeatMiddle keyword that was added in 3.1.2A has been
         removed because it didn't work properly.
 
-  2.2.  PC98 support
+  3.2.  PC98 support
 
 
      o  Support has been added for PC98 machines.  These are Intel based
@@ -95,18 +116,19 @@
      o  Initial release of the PC98 PowerWindowLB(S3) server. This
         server is based on the PC-AT S3 server.
 
-  2.3.  Number Nine Imagine 128 server
+  3.3.  Number Nine Imagine 128 server
 
 
      o  A new server for the Number Nine Imagine 128 card is included.
         This server is currently not accelerated.
 
-  2.4.  Trident driver (SVGA server)
+  3.4.  Trident driver (SVGA server)
 
 
      o  TGUI9440 is now fully supported by the SVGA server.
 
      o  Major updates for most of the trident family of chips.
+
 
      o  Preliminary support for the 9660/9680 chipsets - please test!
 
@@ -121,7 +143,7 @@
         +  There is a problem with interlaced modes with the SVGA
            driver.
 
-  2.5.  ARK driver (SVGA server)
+  3.5.  ARK driver (SVGA server)
 
 
      o  The ICS5342 clock support (required for the Diamond Stealth64
@@ -129,8 +151,7 @@
         version.  A problem with it has been found and fixed in 3.1.2B,
         but it hasn't been tested.
 
-
-  2.6.  S3 server
+  3.6.  S3 server
 
 
      o  Workaround for the hardware bug in some new Trio32 chips that
@@ -162,7 +183,7 @@
      o  The AT&T20C409 RAMDAC now supported at clocks up to 135MHz in
         8bpp mode.
 
-  2.7.  Mach64 server
+  3.7.  Mach64 server
 
 
      o  The Mach64 CT (also known as the 264CT, or 215CT22200) chip is
@@ -173,6 +194,7 @@
 
      o  The IBM RGB514 RAMDAC is now supported (as used on the ATI
         Graphics Turbo Pro 1600).
+
 
      o  The "program_clocks" option added in the 3.1.2A version has been
         removed, so if you have been using it in your XF86Config you
@@ -218,7 +240,7 @@
            console and back, it leaves ``droppings'' when entering and
            exiting windows (this bug is also present in 3.1.2).
 
-  2.8.  ET4000/W32 server
+  3.8.  ET4000/W32 server
 
 
      o  Support for the STG1703 RAMDAC/clock has been added.  Clocks up
@@ -237,37 +259,38 @@
         section entries for these are:
 
 
-                  Option "pci_burst_on"
-                  Option "pci_burst_off"
-                  Option "w32_interleave_on"
-                  Option "w32_interleave_off"
+
+
+
+             Option "pci_burst_on"
+             Option "pci_burst_off"
+             Option "w32_interleave_on"
+             Option "w32_interleave_off"
 
 
 
 
 
-  2.9.  SiS 86C201 support
+  3.9.  SiS 86C201 support
 
 
      o  Support is included in 3.1.2B for the SiS 86C201 PCI graphics
         card.  It is currently only supported by the VGA16 and Mono
         servers.  Support for 256 colour operation is being worked on.
 
-  2.10.  Client/Library changes
+  3.10.  Client/Library changes
 
 
      o  The following new clients have been added:
 
         +  dga -- a test program for the XFree86-DGA extension.
 
-
-
         +  xsetmode, xsetpointer -- programs for use with the XInput
            extension.
 
-  3.  New Features in 3.1.2A
+  4.  New Features in 3.1.2A
 
-  3.1.  General X server changes
+  4.1.  General X server changes
 
 
      o  Underscore characters are now ignored in Options and keywords in
@@ -288,12 +311,12 @@
         prevent the fonts from being treated as scalable.  This works
         with the fontserver (xfs) too.
 
-  3.2.  Trident driver (SVGA server)
+  4.2.  Trident driver (SVGA server)
 
 
      o  Preliminary support is included for the TGUI 9440.
 
-  3.3.  Cirrus driver (SVGA server)
+  4.3.  Cirrus driver (SVGA server)
 
 
      o  Support has been added for the CL-GD7543.
@@ -301,7 +324,11 @@
      o  The programmable clock code has been improved to avoid unstable
         settings.
 
-  3.4.  ARK driver (SVGA server)
+
+
+
+
+  4.4.  ARK driver (SVGA server)
 
 
      o  Preliminary support has been added for the ICS5342
@@ -323,14 +350,12 @@
      o  Panning has been fixed for ARK2000PV cards with 2MB of video
         memory.
 
-  3.5.  WD90C24 driver (SVGA server)
-
-
+  4.5.  WD90C24 driver (SVGA server)
 
 
      o  A problem with snow at high clocks has been fixed.
 
-  3.6.  S3 server
+  4.6.  S3 server
 
 
      o  The default InvertVCLK settings have been changed for #9 Motion
@@ -356,22 +381,23 @@
 
 
 
-  3.7.  Mach32 server
+  4.7.  Mach32 server
 
 
      o  Hardware cursor mask problem has been fixed.
 
-  3.8.  Mach64 server
+  4.8.  Mach64 server
 
 
      o  Hardware cursor mask problem has been fixed.
 
      o  Support for the AT&T 20C408 RAMDAC/Clockchip has been added.
 
+
      o  Arbitrary clocks can be used on most boards with supported clock
         chips.  This is enabled with the "program_clocks" option.
 
-  3.9.  ET4000/W32 server
+  4.9.  ET4000/W32 server
 
 
      o  Support has been added for the ICS5341 programmable clock.  To
@@ -389,31 +415,29 @@
      o  Problems that could cause the W32 server to crash at startup or
         get stuck in a loop at exit have been fixed.
 
-  3.10.  AGX server
-
-
+  4.10.  AGX server
 
 
      o  Fix for clock probing with AGX-010 chips.
 
-  3.11.  VGA16 server
+  4.11.  VGA16 server
 
 
      o  A problem preventing the StaticGray visual from working has been
         fixed.
 
-  3.12.  xf86config utility
+  4.12.  xf86config utility
 
 
      o  Incorrect handling of IBM RGB Ramdacs has been fixed.
 
-  3.13.  SuperProbe
+  4.13.  SuperProbe
 
 
      o  Added detection for C&T 65548, Cirrus CL-GD7543/1, AT&T 20C409,
         AT&T20C499, and fixed an incorrect ET4000/W32 probe problem.
 
-  3.14.  Client/Library changes
+  4.14.  Client/Library changes
 
 
      o  The xdm security fix from the X Consortium's fix-13 is included.
@@ -432,7 +456,11 @@
 
      o  libXt bug fix from the X Consortium's fix-13.
 
-  4.  Installing an XFree86 Beta Release
+
+
+
+
+  5.  Installing an XFree86 Beta Release
 
   The XFree86 3.1.2B binary beta release is distributed as a upgrade to
   3.1.2.  It consists of the following files:
@@ -455,7 +483,6 @@
        X312B9LPW.tgz      PC98 PowerWindowLB(S3) server (*)
        X312Bupd.tgz       clients/libraries that have changed since 3.1.2
        postinst.sh        script to run after installing the 3.1.2B binaries
-
 
 
 
@@ -495,7 +522,46 @@
   /usr/XFree86-3.1.2A directory.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.16 1996/01/21 01:49:46 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.17 1996/01/30 15:26:08 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
