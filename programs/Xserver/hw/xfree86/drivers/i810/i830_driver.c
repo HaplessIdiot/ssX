@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.46 2003/10/30 17:37:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.47 2003/11/03 14:47:28 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -201,7 +201,8 @@ typedef enum {
    OPTION_PAGEFLIP,
    OPTION_XVIDEO,
    OPTION_VIDEO_KEY,
-   OPTION_COLOR_KEY
+   OPTION_COLOR_KEY,
+   OPTION_VBE_RESTORE
 } I830Opts;
 
 static OptionInfoRec I830BIOSOptions[] = {
@@ -213,6 +214,7 @@ static OptionInfoRec I830BIOSOptions[] = {
    {OPTION_XVIDEO,	"XVideo",	OPTV_BOOLEAN,	{0},	TRUE},
    {OPTION_COLOR_KEY,	"ColorKey",	OPTV_INTEGER,	{0},	FALSE},
    {OPTION_VIDEO_KEY,	"VideoKey",	OPTV_INTEGER,	{0},	FALSE},
+   {OPTION_VBE_RESTORE,	"VBERestore",	OPTV_BOOLEAN,	{0},	FALSE},
    {-1,			NULL,		OPTV_NONE,	{0},	FALSE}
 };
 /* *INDENT-ON* */
@@ -2124,6 +2126,16 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    VBEFreeVBEInfo(pI830->vbeInfo);
    vbeFree(pVbe);
 
+   /* Use the VBE mode restore workaround by default. */
+   pI830->vbeRestoreWorkaround = TRUE;
+   from = X_DEFAULT;
+   if (xf86ReturnOptValBool(pI830->Options, OPTION_VBE_RESTORE, FALSE)) {
+      pI830->vbeRestoreWorkaround = FALSE;
+      from = X_CONFIG;
+   }
+   xf86DrvMsg(pScrn->scrnIndex, from, "VBE Restore workaround: %s.\n",
+	      pI830->vbeRestoreWorkaround ? "enabled" : "disabled");
+      
 #if defined(XF86DRI)
    /* Load the dri module if requested. */
    if (xf86ReturnOptValBool(pI830->Options, OPTION_DRI, FALSE) &&
@@ -2329,10 +2341,6 @@ SaveHWState(ScrnInfoPtr pScrn)
    vgaHWUnlock(hwp);
    vgaHWSave(pScrn, vgaReg, VGA_SR_FONTS);
 
-#ifndef I845G_VBE_WORKAROUND
-#define I845G_VBE_WORKAROUND 1
-#endif
-
    pVesa = pI830->vesa;
    /*
     * This save/restore method doesn't work for 845G BIOS, or for some
@@ -2344,7 +2352,7 @@ SaveHWState(ScrnInfoPtr pScrn)
     * registers, turning off the irq & breaking the kernel module
     * behaviour.
     */
-   if (!I845G_VBE_WORKAROUND) {
+   if (!pI830->vbeRestoreWorkaround) {
       CARD16 imr = INREG16(IMR);
       CARD16 ier = INREG16(IER);
       CARD16 hwstam = INREG16(HWSTAM);

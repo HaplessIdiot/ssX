@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.10 2003/10/08 15:48:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.11 2003/10/21 04:13:40 dawes Exp $ */
 
 /*
  * Authors:
@@ -302,6 +302,7 @@ typedef struct _I830Rec {
    int yoffset;
 
    int SaveGeneration;
+   Bool vbeRestoreWorkaround;
 } I830Rec;
 
 #define I830PTR(p) ((I830Ptr)((p)->driverPrivate))
