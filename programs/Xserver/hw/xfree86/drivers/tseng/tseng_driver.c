@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.23 1997/11/01 15:04:53 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.24 1997/11/22 00:00:17 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -115,6 +115,8 @@ int Tseng_bus;
 static unsigned long Tseng_MemBase_mask = -1L;
 
 unsigned long ET6Kbase;  /* PCI config space base address for ET6000 */
+
+int tseng_bytesperpixel;
 
 static pciConfigPtr tseng_pcr = NULL;
 
@@ -926,6 +928,8 @@ ET4000Probe()
   if (!vga256InfoRec.videoRam)
      TsengDetectMem();
 
+  tseng_bytesperpixel = vgaBitsPerPixel/8;
+
   /*
    * If more than 1MB of RAM is available on the W32i/p, use the
    * W32-specific banking function that can address 4MB.
@@ -940,8 +944,8 @@ ET4000Probe()
   * Check for RAMDAC type
   */
   Check_Tseng_Ramdac();
-  tseng_init_clockscale(vgaBitsPerPixel/8);
-  tseng_set_dacspeed(vgaBitsPerPixel/8);
+  tseng_init_clockscale(tseng_bytesperpixel);
+  tseng_set_dacspeed(tseng_bytesperpixel);
 
  /*
   * ... and system bus type 
@@ -986,6 +990,7 @@ ET4000Probe()
     case ATT20C492_DAC:
     case ATT20C493_DAC:
     case ICS5301_DAC:
+    case MUSIC4910_DAC:
        TSENG.ChipHas16bpp = TRUE;
        TSENG.ChipHas24bpp = TRUE;
        break;
@@ -1021,6 +1026,7 @@ ET4000Probe()
     /* enable acceleration-related options */
     OFLG_SET(OPTION_NOACCEL, &TSENG.ChipOptionFlags);
     OFLG_SET(OPTION_PCI_RETRY, &TSENG.ChipOptionFlags);
+    OFLG_SET(OPTION_SHOWCACHE, &TSENG.ChipOptionFlags);
 
     tseng_use_ACL = !OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options);
   }
@@ -1258,7 +1264,7 @@ static void
 ET4000FbInit()
 {
   int useSpeedUp;
-  int FBmem = (vga256InfoRec.virtualY * vga256InfoRec.displayWidth * vgaBitsPerPixel / 8)/1024;
+  int FBmem = (vga256InfoRec.virtualY * vga256InfoRec.displayWidth * tseng_bytesperpixel)/1024;
      
   if (vgaBitsPerPixel < 8) return;
   
@@ -1359,7 +1365,7 @@ ET4000FbInit()
       else
       {
         vga256InfoRec.videoRam -= 1;
-        scratchVidBase = vga256InfoRec.videoRam * 1024;
+        tsengScratchVidBase = vga256InfoRec.videoRam * 1024;
         /* initialize the XAA interface software */
         /* TsengAccelInit();
            This relies on variables that are setup later, so it's called there */ 
@@ -1371,7 +1377,7 @@ ET4000FbInit()
        */
       if (tseng_use_ACL)
       {
-        int req_ram = (vga256InfoRec.displayWidth * vgaBitsPerPixel / 8 + 6) * 2;
+        int req_ram = (vga256InfoRec.displayWidth * tseng_bytesperpixel + 6) * 2;
         req_ram = (req_ram + 1023) / 1024; /* in kb */
         if ((vga256InfoRec.videoRam - FBmem) > req_ram)
         {
@@ -1462,6 +1468,12 @@ ET4000Restore(restore)
        outb(0x3c9, restore->gendac.PLL_f2_M);     /* f2 PLL M divider */
        outb(0x3c9, restore->gendac.PLL_f2_N);     /* f2 PLL N1/N2 divider */
 
+       if (vga256InfoRec.MemClk > 0) {
+         outb(0x3c7, 10);                         /* index to Mclk reg */
+         outb(0x3c9, restore->MClkM);             /* MClk PLL M divider */
+         outb(0x3c9, restore->MClkN);             /* MClk PLL N1/N2 divider */
+       }
+
        outb(0x3c8, 0x0e);                         /* index to PLL control */
        outb(0x3c9, restore->gendac.PLL_ctrl);     /* PLL control */
        outb(0x3c8, restore->gendac.PLL_w_idx);    /* PLL write index */
@@ -1527,14 +1539,12 @@ ET4000Restore(restore)
        outb(ET6Kbase+0x69, restore->gendac.PLL_f2_M);
        outb(ET6Kbase+0x69, restore->gendac.PLL_f2_N);
        /* set MClk values if needed, but don't touch them if not needed */
-#ifdef ALLOW_ET6K_FAST_DRAM
-       if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
+       if (vga256InfoRec.MemClk > 0)
        {
          outb(ET6Kbase+0x67, 10);
-         outb(ET6Kbase+0x69, restore->ET6KMclkM);
-         outb(ET6Kbase+0x69, restore->ET6KMclkN);
+         outb(ET6Kbase+0x69, restore->MClkM);
+         outb(ET6Kbase+0x69, restore->MClkN);
        }
-#endif
        /* restore old index register */
        outb(ET6Kbase+0x67, i);
     }
@@ -1671,6 +1681,9 @@ ET4000Save(save)
        outb(0x3c7, 2);                         /* index to f2 reg */
        save->gendac.PLL_f2_M = inb(0x3c9);     /* f2 PLL M divider */
        save->gendac.PLL_f2_N = inb(0x3c9);     /* f2 PLL N1/N2 divider */
+       outb(0x3c7, 10);                        /* index to Mclk reg */
+       save->MClkM = inb(0x3c9);               /* MClk PLL M divider */
+       save->MClkN = inb(0x3c9);               /* MClk PLL N1/N2 divider */
        outb(0x3c7, 0x0e);                      /* index to PLL control */
        save->gendac.PLL_ctrl = inb(0x3c9);     /* PLL control */
       }
@@ -1730,8 +1743,8 @@ ET4000Save(save)
      save->gendac.PLL_f2_N = inb(ET6Kbase+0x69);
      /* save MClk values */
      outb(ET6Kbase+0x67, 10);
-     save->ET6KMclkM = inb(ET6Kbase+0x69);
-     save->ET6KMclkN = inb(ET6Kbase+0x69);
+     save->MClkM = inb(ET6Kbase+0x69);
+     save->MClkN = inb(ET6Kbase+0x69);
      /* restore old index register */
      outb(ET6Kbase+0x67, temp);
   }
@@ -1767,7 +1780,6 @@ ET4000Init(mode)
      DisplayModePtr mode;
 {
   int row_offset;
-  int BytesPerPix = vgaBitsPerPixel>>3;
   int temp1,temp2,temp3;
 
 
@@ -1782,7 +1794,7 @@ ET4000Init(mode)
    * while in ET4000Validate() mode->Clock is the actual pixel clock (in
    * kHZ).
    */
-  tseng_validate_mode(mode, BytesPerPix, TRUE);
+  tseng_validate_mode(mode, TRUE);
 
 
   if (!vgaHWInit(mode,sizeof(vgaET4000Rec)))
@@ -1856,7 +1868,7 @@ ET4000Init(mode)
      new->VSConf1 = initialVSConf1;
      new->VSConf2 = initialVSConf2;
      new->IMAPortCtrl = initialIMAPortCtrl;
-     if ((vga256InfoRec.clock[mode->Clock] * BytesPerPix) > 80000)
+     if ((vga256InfoRec.clock[mode->Clock] * tseng_bytesperpixel) > 80000)
        new->VSConf2 = (new->VSConf2 & 0x7f) | 0x80;
    }
 
@@ -1914,6 +1926,13 @@ ET4000Init(mode)
        new->Compatibility = (new->Compatibility & 0xFD);   
        new->std.MiscOutReg = (new->std.MiscOutReg & 0xF3) | 0x08; 
        new->std.NoClock = 2;
+       
+       /* memory clock */
+       if (Gendac_programmable_clock && (vga256InfoRec.MemClk > 0))
+       {
+         commonCalcClock(vga256InfoRec.MemClk,1,1,31,1,3,100000,vga256InfoRec.dacSpeeds[0]*2+1, 
+        	&(new->MClkM), &(new->MClkN));
+       }
     }
     else
     if (ICD2061a_programmable_clock)
@@ -1958,7 +1977,7 @@ ET4000Init(mode)
 
        /* ErrorF("M=0x%x ; N=0x%x\n",new->gendac.PLL_f2_M, new->gendac.PLL_f2_N);*/
        /* above 130MB/sec, we enable the "LOW FIFO threshold" */
-       if (vga256InfoRec.clock[new->std.NoClock] * BytesPerPix > 130000)
+       if (vga256InfoRec.clock[new->std.NoClock] * tseng_bytesperpixel > 130000)
        {
          new->ET6KPerfContr = initialET6KPerfContr | 0x10;
          if (et4000_type >=TYPE_ET6100)
@@ -1971,33 +1990,20 @@ ET4000Init(mode)
            new->ET6KDispFeat  = initialET6KDispFeat & ~0x04;
        }
 
-#ifdef ALLOW_ET6K_FAST_DRAM
-       if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
+       if (vga256InfoRec.MemClk > 0)
        {
-         /*
-          * FAST_DRAM sets the memory clock to 100 MHz instead of the
-          * standard 90 MHz. The lowest speed-grade of the MDRAMs is 100 MHz
-          * anyway, and the ET6000 core is designed to run at 135 MHz.
-          *
-          * For the tweakers: every step increment of ET6KMclkM with 1
-          * increases the memory clock with about 2.5 MHz: Memory clock =
-          * (ET6KMclkM+2)*14.31818/(2*3).
-          *
-          * 0x28 = 100 MHz ; 0x2C = 110 MHz; 0x30 = 120 MHz.
-          *   120 MHz causes permanent mayhem on my system 
-          *    -- don't try this at home!
-          *
-          * Currently disabled -- causes trouble [KMG].
-          */
-         new->ET6KMclkM = 0x28;
-         new->ET6KMclkN = 0x21;
+         /* according to Tseng Labs, N1 must be <= 4, and N2 should always be 1 for MClk */
+         commonCalcClock(vga256InfoRec.MemClk,1,1,4,1,1,
+                 100000,vga256InfoRec.dacSpeeds[0]*2, 
+       		 &(new->MClkM), &(new->MClkN));
        }
        else
        {
-         new->ET6KMclkM = initialET6KMclkM;
-         new->ET6KMclkN = initialET6KMclkN;
+         /* not used right now (MClk ionly adjusted when explicitly set by "set_mclk" option) */
+         new->MClkM = initialET6KMclkM;
+         new->MClkN = initialET6KMclkN;
        }
-#endif
+
        /* 
 	* Even when we don't allow setting the MClk value as described
 	* above, we can use the FAST/MED/SLOW DRAM options to set up
@@ -2082,8 +2088,8 @@ ET4000Init(mode)
    */
 
    if (vgaBitsPerPixel>=8) {
-     tseng_set_ramdac_bpp(mode, new, BytesPerPix);
-     row_offset *= BytesPerPix;
+     tseng_set_ramdac_bpp(mode, new);
+     row_offset *= tseng_bytesperpixel;
    }
    
   /*
@@ -2133,14 +2139,18 @@ ET4000Adjust(x, y)
      int x, y;
 {
 
-  int Base, BytesPerPix;
+  int Base;
+  
+  if (OFLG_ISSET(OPTION_SHOWCACHE, &vga256InfoRec.options)) {
+        if(y) y += 256;
+  }
+
   if (vgaBitsPerPixel < 8)
     Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
   else {
-    BytesPerPix = vgaBitsPerPixel>>3;
-    Base = ((y * vga256InfoRec.displayWidth + x + 1)*BytesPerPix) >> 2;
-    /* adjust Base address so it is a non-fractional multiple of BytesPerPix */
-    Base -= (Base % BytesPerPix);
+    Base = ((y * vga256InfoRec.displayWidth + x + 1)*tseng_bytesperpixel) >> 2;
+    /* adjust Base address so it is a non-fractional multiple of tseng_bytesperpixel */
+    Base -= (Base % tseng_bytesperpixel);
   }
 
   outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);

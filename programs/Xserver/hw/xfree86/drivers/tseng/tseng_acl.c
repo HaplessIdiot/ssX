@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.11 1997/11/08 16:24:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.12 1997/11/22 00:00:16 hohndel Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -166,10 +166,42 @@ LongP MemW32PatternPing;
 LongP MemW32PatternPong;
 LongP MemW32Mix;    /* ping-ponging the MIX map is done by XAA */ 
 
-LongP CPU2ACLBase;
+LongP tsengCPU2ACLBase;
 
-long scratchVidBase; /* will be initialized in the Probe */
+long tsengScratchVidBase; /* will be initialized in the Probe */
 int tsengImageWriteBase=0;  /* ImageWritebuffer adress -- initialized in the Probe() */
+
+int tseng_powerPerPixel, tseng_neg_x_pixel_offset;
+int tseng_line_width;
+Bool tseng_need_wait_acl = FALSE;
+
+/* scanline buffers for ImageWrite and WriteBitmap (and scanline color expansion in the future) */
+CARD32 *tsengFirstLinePntr, *tsengSecondLinePntr;
+CARD32 tsengFirstLine, tsengSecondLine;
+
+/*
+ * Avoid re-initializing stuff that should not be when the server is
+ * restored after a console switch or a server reset (e.g. XAA interface)\
+ */
+static int tsengAccelGeneration = -1;
+
+/* used for optimisation of direction-register writing */
+int tseng_old_dir=-1;
+int old_x = 0, old_y = 0;
+
+/* These will hold the ping-pong registers.
+ * Note that ping-pong registers might not be needed when using
+ * BACKGROUND_OPERATIONS (because of the WAIT()-ing involved)
+ */
+
+LongP tsengMemFg;
+long tsengFg;
+
+LongP tsengMemBg;
+long tsengBg;
+
+LongP tsengMemPat;
+long tsengPat;
 
 /**********************************************************************/
 
@@ -199,14 +231,14 @@ void tseng_init_acl()
     if (TSENG.ChipUseLinearAddressing)
     {
       MMioBase = (long)vgaLinearBase + 0x3FFF00;
-      scratchMemBase = (long)vgaLinearBase + scratchVidBase;
+      scratchMemBase = (long)vgaLinearBase + tsengScratchVidBase;
       /* 
-       * we won't be using CPU2ACLBase in linear memory mode anyway, since
+       * we won't be using tsengCPU2ACLBase in linear memory mode anyway, since
        * using the MMU apertures restricts the amount of useable video memory
        * to only 2MB, supposing we ONLY redirect MMU aperture 2 to the CPU.
        * (see data book W32p, page 207)
        */
-      CPU2ACLBase = (LongP) ((long)vgaLinearBase + 0x200000); /* MMU aperture 2 */
+      tsengCPU2ACLBase = (LongP) ((long)vgaLinearBase + 0x200000); /* MMU aperture 2 */
     }
     else
     {
@@ -219,12 +251,12 @@ void tseng_init_acl()
        * MMU 1 is used for the Imagewrite buffer.
        */
       scratchMemBase = (long)vgaBase + 0x18000L;
-      *((LongP) (MMioBase + 0x00)) = scratchVidBase;
+      *((LongP) (MMioBase + 0x00)) = tsengScratchVidBase;
       *((LongP) (MMioBase + 0x04)) = tsengImageWriteBase;
       /*
-       * CPU2ACLBase is used for CPUtoSCreen...() operations on < ET6000 devices
+       * tsengCPU2ACLBase is used for CPUtoSCreen...() operations on < ET6000 devices
        */
-      CPU2ACLBase = (LongP)((long)vgaBase + 0x1C000L); /* MMU aperture 2 */
+      tsengCPU2ACLBase = (LongP)((long)vgaBase + 0x1C000L); /* MMU aperture 2 */
     }
 
     /* ErrorF("MMioBase = 0x%x, scratchMemBase = 0x%x\n", MMioBase, scratchMemBase);*/
@@ -301,16 +333,16 @@ void tseng_init_acl()
     ACL_SECONDARY_DELTA_MAJOR	= (WordP) (MMioBase + 0xB6);
 
     /* addresses in video memory (i.e. "0" = first byte in video memory) */
-    W32ForegroundPing = scratchVidBase + 0;
-    W32ForegroundPong = scratchVidBase + 8;
+    W32ForegroundPing = tsengScratchVidBase + 0;
+    W32ForegroundPong = tsengScratchVidBase + 8;
 
-    W32BackgroundPing = scratchVidBase + 16;
-    W32BackgroundPong = scratchVidBase + 24;
+    W32BackgroundPing = tsengScratchVidBase + 16;
+    W32BackgroundPong = tsengScratchVidBase + 24;
 
-    W32PatternPing = scratchVidBase + 32;
-    W32PatternPong = scratchVidBase + 40;
+    W32PatternPing = tsengScratchVidBase + 32;
+    W32PatternPong = tsengScratchVidBase + 40;
 
-    W32Mix = scratchVidBase + 48;
+    W32Mix = tsengScratchVidBase + 48;
 
     /* addresses in the memory map */
     MemW32ForegroundPing = (LongP) (scratchMemBase + 0);
@@ -371,7 +403,7 @@ void tseng_init_acl()
          */
         *ACL_VIRTUAL_BUS_SIZE = 0x00;
     }
-    *ACL_DESTINATION_Y_OFFSET = vga256InfoRec.displayWidth * (vgaBitsPerPixel / 8) - 1;
+    *ACL_DESTINATION_Y_OFFSET = vga256InfoRec.displayWidth * tseng_bytesperpixel - 1;
     *ACL_XY_DIRECTION = 0;
 
     *MMU_CONTROL = 0x74;
@@ -413,8 +445,29 @@ void tseng_init_acl()
      * Initialize the XAA data structures. This should be done in
      * ET4000FbInit(), but that is called _before_ this tseng_init_acl(),
      * and it relies on variables that are only setup here.
+     *
+     * This kludge has one major disadvantage: it would result in
+     * TsengAccelInit() being called upon each and every pass through the
+     * hardware init. This would cause e.g. the xf86AccelInfoRec.Flags to be
+     * reset to their initial value each time, and that in turn would
+     * override any overrides put in place by the XAA init code (which is
+     * only called once). If XAA decided to disable the PIXMAP_CACHE flag,
+     * then a server reset or a console switch would cause TsengAccelInit to
+     * set the flags again, and cause havoc (XAA would start using the
+     * pixmap cache without it being initialized).
+     *
+     * This would not happen if TsengAccelInit were called in the proper
+     * place (ET4000FbInit).
+     *
+     * That's why we need to fiddle with Generations here...
      */
 
-    TsengAccelInit(); 
+     if (tsengAccelGeneration != serverGeneration) {
+       TsengAccelInit(); 
+     }
+     tsengAccelGeneration = serverGeneration;
 }
+
+
+
 

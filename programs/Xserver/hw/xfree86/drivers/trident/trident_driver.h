@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.h,v 1.6 1997/11/08 16:24:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.h,v 1.7 1997/11/22 00:00:15 hohndel Exp $ */
 
 extern int TVGAchipset;
 extern Bool IsCyber;
@@ -54,9 +54,11 @@ extern Bool IsCyber;
 #define TGUI9685	19
 #define CYBER9382	20
 #define CYBER9385	21
-#define CYBER9397	22
-#define IMAGE975	23
-#define IMAGE985	24
+#define CYBER9388	22
+#define CYBER9397	23
+#define CYBER9520	24
+#define IMAGE975	25
+#define IMAGE985	26
 
 /* defines */
 #define IsTGUI9440	(TVGAchipset == TGUI9440AGi)
@@ -66,6 +68,7 @@ extern Bool IsCyber;
 #define IsTGUI9685	((TVGAchipset == TGUI9685))
 #define IsAdvCyber	((TVGAchipset == CYBER9382) || \
 			 (TVGAchipset == CYBER9385) || \
+			 (TVGAchipset == CYBER9388) || \
 			 (TVGAchipset == CYBER9397))
 
 #ifdef INITIALIZE_LIMITS
@@ -94,6 +97,8 @@ int tridentClockLimit[] = {
 	135000,
 	135000,
 	170000,
+	170000,
+	230000,
 	230000,
 	230000,
 };
@@ -122,6 +127,8 @@ int tridentClockLimit16bpp[] = {
 	135000,
 	135000,
 	170000,
+	170000,
+	230000,
 	230000,
 	230000,
 }; 
@@ -150,6 +157,8 @@ int tridentClockLimit24bpp[] = {
 	70000,
 	70000,
 	85000,
+	85000,
+	115000,
 	115000,
 	115000,
 };
@@ -178,6 +187,8 @@ int tridentClockLimit32bpp[] = {
 	70000,
 	70000,
 	85000,
+	85000,
+	115000,
 	115000,
 	115000,
 };

@@ -67,6 +67,14 @@ ET4000:
 * SuperProbe could use an update. It doesn't detect some of the RAMDACs that
 are detected by the driver.
 
+* Several of the color expansion-related accelerations are still only 8bpp.
+It should be easy to use the same trick on those as on the standard color
+expand code (use intermediate buffer, expand data before blitting).
+
+* many of the operations that the W32 family can't support natively (e.g.
+FillRectSolid for 24bpp) can be performed using CPU-to-screen operations,
+feeding the correct (color) information through the ACL aperture.
+
 
 ET6000:
 
@@ -74,6 +82,9 @@ ET6000:
 constructed, and come up with some fancy ways of abusing it. We're still
 only using a small part of it (I'm thinking about the compare map and the
 extensions to the MIX hardware compared to the ET4000).
+
+* Mclk support is still lacking (that would also allow MClk-dependent
+maximum bandwidth).
 
 * Apart from the things mentionned above, I think the ET6000 server is
 pretty complete. Some optimisations could possibly be added. Like for
@@ -242,4 +253,4 @@ the off-screen scanline buffers and calling the Subsequent() function.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/README,v 1.8 1997/09/29 08:40:31 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/README,v 1.9 1997/11/22 00:00:15 hohndel Exp $

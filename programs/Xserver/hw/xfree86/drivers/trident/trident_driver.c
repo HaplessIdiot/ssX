@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.21 1997/11/22 00:00:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.22 1997/12/20 14:20:58 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -573,7 +573,8 @@ TVGA8900Ident(n)
 				   "tgui9440agi", "cyber9320",
 				   "tgui9660", "tgui9680", "tgui9682",
 				   "tgui9685", "cyber9382", "cyber9385",
-				   "cyber9397", "3dimage975", "3dimage985"
+				   "cyber9388", "cyber9397", "cyber9520",
+				   "3dimage975", "3dimage985"
 				  };
 
 	if (n + 1 > sizeof(chipsets) / sizeof(char *))
@@ -773,8 +774,30 @@ TVGA8900Probe()
 		}
 		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(22)))
 		{
+			TVGAchipset = CYBER9388;
+			IsCyber = TRUE;
+			NewClockCode = TRUE;
+		}
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(23)))
+		{
 			TVGAchipset = CYBER9397;
 			IsCyber = TRUE;
+			NewClockCode = TRUE;
+		}
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(24)))
+		{
+			TVGAchipset = CYBER9520;
+			IsCyber = TRUE;
+			NewClockCode = TRUE;
+		}
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(25)))
+		{
+			TVGAchipset = IMAGE975;
+			NewClockCode = TRUE;
+		}
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(26)))
+		{
+			TVGAchipset = IMAGE985;
 			NewClockCode = TRUE;
 		}
 		else
@@ -1031,6 +1054,7 @@ TVGA8900Probe()
 	case CYBER9382:
 	case CYBER9385:
 	case CYBER9397:
+	case CYBER9520:
 		tridentHasAcceleration = TRUE;
 		TRIDENT.ChipHas16bpp = TRUE;
 		TRIDENT.ChipHas32bpp = TRUE;
@@ -1058,7 +1082,14 @@ TVGA8900Probe()
 				OFLG_SET(OPTION_PCI_RETRY, &TRIDENT.ChipOptionFlags);
 				break;
 			case 0x22:
+				REV = "Cyber 9388";
+				TVGAchipset = CYBER9388;
+				NewClockCode = TRUE;
+				IsCyber = TRUE;
+				break;
+			case 0x23:
 				REV = "Cyber 9397";
+				tridentHasAcceleration = FALSE; /* noaccel */
 				TVGAchipset = CYBER9397;
 				NewClockCode = TRUE;
 				IsCyber = TRUE;
@@ -1818,8 +1849,13 @@ TVGA8900Restore(restore)
 		}
 #endif
 		outb(0x3C2, restore->VCLK_O);
-		outb(0x43C8, restore->VCLK_A);
-		outb(0x43C9, restore->VCLK_B);
+		if (TVGAchipset < CYBER9397) {
+			outb(0x43C8, restore->VCLK_A);
+			outb(0x43C9, restore->VCLK_B);
+		} else {
+			outw(vgaIOBase + 4, ((restore->VCLK_A)<<8) | 0x18);
+			outw(vgaIOBase + 4, ((restore->VCLK_B)<<8) | 0x19);
+		}
 	}
 
 	outw(vgaIOBase + 4, ((restore->CRTHiOrd) << 8) | 0x27);
@@ -2020,8 +2056,15 @@ TVGA8900Save(save)
 		if (tridentTGUIProgrammableClocks)
 		{
 			save->VCLK_O = inb(0x3CC);
-			save->VCLK_A = inb(0x43C8);
-			save->VCLK_B = inb(0x43C9);
+			if (TVGAchipset < CYBER9397) {
+				save->VCLK_A = inb(0x43C8);
+				save->VCLK_B = inb(0x43C9);
+			} else {
+				outb(0x3C4, 0x18);
+				save->VCLK_A = inb(vgaIOBase + 5);
+				outb(0x3C4, 0x19);
+				save->VCLK_B = inb(vgaIOBase + 5);
+			}
 #if 0
 			save->MCLK_A = inb(0x43C6);
 			save->MCLK_B = inb(0x43C7);
