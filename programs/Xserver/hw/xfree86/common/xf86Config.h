@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.h,v 1.10 2004/11/07 04:33:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.h,v 1.11 2005/01/07 23:03:13 dawes Exp $ */
 
 /*
- * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -94,13 +94,6 @@
 #ifndef _xf86_config_h
 #define _xf86_config_h
 
-#ifdef HAVE_PARSER_DECLS
-/*
- * global structure that holds the result of parsing the config file
- */
-extern XF86ConfigPtr xf86configptr;
-#endif
-
 typedef enum _ConfigStatus {
     CONFIG_OK = 0,
     CONFIG_PARSE_ERROR,
@@ -110,6 +103,7 @@ typedef enum _ConfigStatus {
 /*
  * prototypes
  */
+void xf86ModulelistFree(const char **moduleList, pointer *optList);
 const char ** xf86ModulelistFromConfig(pointer **);
 const char ** xf86DriverlistFromConfig(void);
 const char ** xf86DriverlistFromCompile(void);
@@ -118,7 +112,7 @@ const char ** xf86InputDriverlistFromCompile(void);
 Bool xf86BuiltinInputDriver(const char *);
 ConfigStatus xf86LoadConfigFile(const char *filename, Bool append);
 ConfigStatus xf86ProcessConfiguration(void);
-Bool xf86CheckForLayoutOrScreen(void);
+Bool xf86CheckForLayoutOrScreen(ConfigHandle handle);
 
 Bool xf86AutoConfig(void);
 

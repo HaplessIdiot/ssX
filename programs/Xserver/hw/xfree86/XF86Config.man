@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.25 2005/01/07 17:19:31 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.26 2005/01/07 23:03:12 dawes Exp $
 .\"
 .\" Copyright (c) 1994-2005 by The XFree86 Project, Inc.
 .\" All rights reserved.
@@ -387,6 +387,11 @@ section is optional, as are all of the entries that may appear in it.
 .PP
 The entries that can appear in this section are:
 .TP 7
+.BI "Identifier \*q" name \*q
+specifies an optional identifying name for the
+.B Files
+section.
+.TP 7
 .BI "FontPath \*q" path \*q
 sets the search path for fonts.  This path is a comma separated list of
 font path elements which the XFree86 server searches for font databases.
@@ -486,6 +491,11 @@ where
 .I <n>
 is the display number for the XFree86 server.
 ..
+.TP 7
+.B Options
+Option flags may be specified in
+.B Files
+sections.
 .SH SERVERFLAGS SECTION
 The config file may have multiple
 .B ServerFlags
@@ -497,7 +507,9 @@ specified in a
 .B ServerFlags
 section cannot be overridden by a later
 .B ServerFlags
-section.  All of the entries in this section are
+section.  Except for the
+.B Identifier
+entry, all of the entries in this section are
 .BR Options ,
 although for compatibility purposes some of the old style entries are
 still recognised.  Those old style entries are not documented here, and
@@ -514,8 +526,13 @@ may be overridden by
 specified in the active
 .B ServerLayout
 section.  Options with command line equivalents are overridden when their
-command line equivalent is used.  The options recognised by this section
+command line equivalent is used.  Entries recognised by this section
 are:
+.TP 7
+.BI "Identifier \*q" name \*q
+specifies an optional identifying name for the
+.B ServerFlags
+section.
 .TP 7
 .BI "Option \*qDefaultServerLayout\*q  \*q" layout-id \*q
 This specifies the default
@@ -734,8 +751,19 @@ other mechanisms.  The
 section is optional, as are all of the entries that may be specified in
 it.
 .PP
-Entries in this section may be in two forms.   The first and most commonly
-used form is an entry that uses the
+.TP 7
+.BI "Identifier \*q" name \*q
+specifies an optional identifying name for the
+.B Module
+section.
+.TP 7
+.B Options
+Option flags may be specified in
+.B Module
+sections.
+.PP
+Entries that identify which modules to pre-load may be in two forms.
+The first and most commonly used form is an entry that uses the
 .B Load
 keyword, as described here:
 .TP 7
@@ -1072,10 +1100,9 @@ the driver-specific documentation recommends it.
 This optional entry specifies the pixel clock frequency that is used
 for the regular text mode.  The frequency is specified in MHz.  This is
 rarely used.
-.ig
 .TP 7
-This optional entry allows an IRQ number to be specified.
-..
+.BI "IRQ " "interrupt-number"
+This optional entry allows an interrupt number to be specified.
 .TP 7
 .B Options
 Option flags may be specified in the
@@ -1087,8 +1114,55 @@ Some of the latter are described below in the section about the
 section, and they may also be included here.
 
 .SH VIDEOADAPTOR SECTION
-Nobody wants to say how this works.  Maybe nobody knows ...
-
+The config file may have multiple
+.B VideoAdaptor
+sections, which may be referenced from
+.B Screen
+sections.
+.PP
+.B VideoAdaptor
+sections have the following format:
+.PP
+.RS 4
+.nf
+.B  "Section \*qVideoAdaptor\*q"
+.BI "    Identifier \*q" name \*q
+.I  "    entries"
+.I  "    ..."
+.BI "    SubSection \*qPort\*q"
+.I  "       entries"
+.I  "       ...
+.B  "    EndSubSection"
+.I  "    ..."
+.B  "EndSection"
+.fi
+.RE
+.PP
+The only mandatory entry in a
+.B VideoAdaptor
+section is the
+.BR Identifier .
+Other entries include:
+.TP 7
+.BI "VendorName  \*q" vendor \*q
+This optional entry specifies the video adaptor's manufacturer.
+.TP 7
+.BI "BoardName  \*q" model \*q
+This optional entry specifies the video adaptor's model name.
+.TP 7
+.B Options
+may be specified in the
+.B VideoAdaptor
+section.
+.PP
+The
+.B Port
+.B SubSections
+provide information about video adaptor ports.  Each of these may contain
+an
+.B Identifier
+entry and
+.BR Options .
 .SH MONITOR SECTION
 The config file may have multiple
 .B Monitor
@@ -1393,7 +1467,8 @@ and
 .B ModeLine
 entries that are described above in the
 .B Monitor
-section.
+section, as well as
+.BR Options .
 .SH SCREEN SECTION
 The config file may have multiple
 .B Screen
@@ -2009,21 +2084,57 @@ section for a dual headed configuration with two mice:
 .RE
 .SH DRI SECTION
 This optional section is used to provide some information for the
-Direct Rendering Infrastructure.  Details about the format of this section
-can be found in the README.DRI document, which is also available on-line
-at
-.IR <http://www.xfree86.org/current/DRI.html> .
+Direct Rendering Infrastructure.
+.TP 7
+.BI "Identifier \*q" name \*q
+specifies an optional identifying name for the
+.B DRI
+section.
+.TP 7
+.BI "Group \*q" group-name \*q
+.TP 7
+.BI "Group " group-id
+specifies the group ownership for the DRI device nodes.  It may be specified
+as a group name or as a numerical group ID.
+.TP 7
+.BI "Mode " mode
+specifies the numerical permissions for the DRI device nodes.
+.TP 7
+.BI "Buffers " "count size"
+specifies buffers.
+.TP 7
+.B Options
+Option flags may be specified in
+.B DRI
+sections.
 .SH VENDOR SECTION
 The optional
 .B Vendor
 section may be used to provide vendor-specific configuration information.
 Multiple
 .B Vendor
-sections may be present, and they may contain an
+sections may be present, and they may contain the following entries:
+.TP 7
+.BI "Identifier \*q" name \*q
+specifies an identifying name for the
+.B Vendor
+section.
+.TP 7
+.BI "VendorName \*q" vendor-name \*q
+specifies the vendor name.
+.TP 7
+.B Options
+may be specified in the
+.B Vendor
+sections.
+.PP
+In addition to these entries, there may be named
+.BR SubSections ,
+each of which may contain an
 .B Identifier
-entry and multiple
+entry and
 .B Option
-flags.  The data therein is not used in this release.
+entries.
 .PP
 .SH FILES
 For an example of an XF86Config file, see the file installed as

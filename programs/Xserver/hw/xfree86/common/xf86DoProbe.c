@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.16 2004/11/07 04:20:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.17 2004/11/07 04:33:42 dawes Exp $ */
 /*
- * Copyright (c) 1999-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1999-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -58,10 +58,12 @@
 #include "os.h"
 #ifdef XFree86LOADER
 #include "loaderProcs.h"
-#include "xf86Config.h"
 #endif /* XFree86LOADER */
 #include "xf86.h"
 #include "xf86Priv.h"
+#ifdef XFree86LOADER
+#include "xf86Config.h"
+#endif /* XFree86LOADER */
 
 void
 DoProbeArgs(int argc, char **argv, int i)

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.67 2004/12/08 22:27:10 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.68 2005/01/07 23:03:12 dawes Exp $
 .\"
 .\" Copyright (c) 1994-2005 by The XFree86 Project, Inc.
 .\" All rights reserved.
@@ -432,6 +432,10 @@ is a comma separated list of directories to search for
 .B XFree86
 server modules.  This option is only available when the server is run
 as root (i.e, with real-uid 0).
+.TP 8
+.B \-noappendauto
+Disable appending the automatic XFree86 server configuration to a partial
+static configuration.
 .TP 8
 .B \-nosilk
 Disable Silken Mouse support.

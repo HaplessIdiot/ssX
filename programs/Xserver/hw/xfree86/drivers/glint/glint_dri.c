@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.38 2003/11/12 17:56:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.39 2004/12/10 16:07:01 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -708,18 +708,18 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 	
 	    for (i = 0; i < xf86ConfigDRI.bufs_count; i++) {
 	    	if ((bufs = drmAddBufs(pGlint->drmSubFD,
-				   xf86ConfigDRI.bufs[i].count,
-				   xf86ConfigDRI.bufs[i].size,
+				   xf86ConfigDRI.bufsList[i]->count,
+				   xf86ConfigDRI.bufsList[i]->size,
 				   0,
 				   0 /* flags */)) <= 0) {
 		    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
 			   "[drm] failure adding %d %d byte DMA buffers\n",
-			   xf86ConfigDRI.bufs[i].count,
-			   xf86ConfigDRI.bufs[i].size);
+			   xf86ConfigDRI.bufsList[i]->count,
+			   xf86ConfigDRI.bufsList[i]->size);
 	    	} else {
 		    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
 			   "[drm] added %d %d byte DMA buffers\n",
-			   bufs, xf86ConfigDRI.bufs[i].size);
+			   bufs, xf86ConfigDRI.bufsList[i]->size);
 		    dmabufs += bufs;
 	    	}
 	    }

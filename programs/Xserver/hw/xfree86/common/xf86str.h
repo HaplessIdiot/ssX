@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.100 2005/01/07 17:19:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.101 2005/01/07 23:03:13 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -107,6 +107,26 @@
 #include "xf86Module.h"
 #include "xf86Opt.h"
 #include "xf86Pci.h"
+
+/*
+ * Handles for referencing opaque configuration objects.  ConfigHandle
+ * references sets of configuration data.  ConfigDataHandle references
+ * specific items of configuration data.
+ * list.
+ */
+typedef const void *ConfigHandle;
+#define DEFAULT_CONFIG NULL
+/*
+ * Special pseudo handles, currently usable only for retreiving some
+ * other portions of configuration information.
+ */
+#define CMDLINE_CONFIG ((ConfigHandle)(-1))
+#define BUILDTIME_CONFIG ((ConfigHandle)(-2))
+#define ACTIVE_CONFIG ((ConfigHandle)(-3))
+
+typedef const void *ConfigDataHandle;
+
+#define CONFIG_RESOLVE_ALL	100
 
 /*
  * memType is of the size of the addressable memory (machine size)
@@ -273,6 +293,10 @@ typedef struct {
     pointer		options;
     pointer		DDC;
     int			monitorNum;
+    int			numModeSetNames;
+    char **		modeSetNames;
+    Bool		defaultMon;
+    ConfigDataHandle	handle;
 } MonRec, *MonPtr;
 
 /* the list of clock ranges */
@@ -411,8 +435,9 @@ typedef struct {
    int				chipID;
    int				chipRev;
    pointer			options;
-   int                          irq;
-   int                          screen;         /* For multi-CRTC cards */
+   int				irq;
+   int				screen;		/* For multi-CRTC cards */
+   ConfigDataHandle		handle;
 } GDevRec, *GDevPtr;
 
 typedef int (*FindIsaDevProc)(GDevPtr dev);
@@ -422,6 +447,8 @@ typedef struct {
    char *			driver;
    pointer		 	commonOptions;
    pointer			extraOptions;
+   MessageType			from;
+   ConfigDataHandle		handle;
 } IDevRec, *IDevPtr;
 
 typedef struct {
@@ -436,16 +463,16 @@ typedef struct {
     int			class;
     int			subclass;
     int			interface;
-    memType  	        memBase[6];
-    memType  	        ioBase[6];
+    memType		memBase[6];
+    memType		ioBase[6];
     int			size[6];
     unsigned char	type[6];
-    memType   	        biosBase;
+    memType		biosBase;
     int			biosSize;
     pointer		thisCard;
-    Bool                validSize;
-    Bool                validate;
-    CARD32              listed_class;
+    Bool		validSize;
+    Bool		validate;
+    CARD32		listed_class;
 } pciVideoRec, *pciVideoPtr;
 
 typedef struct {
@@ -462,18 +489,21 @@ typedef struct {
     char **		modes;
     pointer		options;
     int			monitorNum;
+    ConfigDataHandle	handle;
 } DispRec, *DispPtr;
 
 typedef struct _confxvportrec {
     char *		identifier;
     pointer		options;
+    ConfigDataHandle	handle;
 } confXvPortRec, *confXvPortPtr;
 
 typedef struct _confxvadaptrec {
     char *		identifier;
     int			numports;
-    confXvPortPtr	ports;
+    confXvPortPtr *	xvPorts;
     pointer		options;
+    ConfigDataHandle	handle;
 } confXvAdaptorRec, *confXvAdaptorPtr;
 
 typedef struct _confscreenrec {
@@ -485,12 +515,17 @@ typedef struct _confscreenrec {
     MonPtr		monitor;
     GDevPtr		device;
     int			numdisplays;
-    DispPtr		displays;
-    int			numxvadaptors;
-    confXvAdaptorPtr	xvadaptors;
+    DispPtr *		displayList;
+    int			numXvAdaptors;
+    confXvAdaptorPtr *	xvAdaptorList;
     pointer		options;
     int			numMonitors;
     MonPtr *		monitors;
+    char *		deviceName;
+    char **		monitorNames;
+    int *		monitorNums;
+    char **		xvAdaptorNames;
+    ConfigDataHandle	handle;
 } confScreenRec, *confScreenPtr;
 
 typedef enum {
@@ -506,43 +541,115 @@ typedef enum {
 typedef struct _screenlayoutrec {
     confScreenPtr	screen;
     char *		topname;
-    confScreenPtr	top;
+    const confScreenRec	*top;
     char *		bottomname;
-    confScreenPtr	bottom;
+    const confScreenRec	*bottom;
     char *		leftname;
-    confScreenPtr	left;
+    const confScreenRec	*left;
     char *		rightname;
-    confScreenPtr	right;
+    const confScreenRec	*right;
     PositionType	where;
     int			x;
     int			y;
     char *		refname;
-    confScreenPtr	refscreen;
+    const confScreenRec	*refscreen;
+    char *		screenName;
+    int			screenNum;
 } screenLayoutRec, *screenLayoutPtr;
 
 typedef struct _serverlayoutrec {
     char *		id;
-    screenLayoutPtr	screens;
-    GDevPtr		inactives;
-    IDevPtr		inputs;
+    screenLayoutPtr *	screenLayouts;
+    GDevPtr *		inactiveDevs;
+    IDevPtr *		inputDevs;
     pointer		options;
+    int			numScreens;
+    int			numInactives;
+    int			numInputs;
+    char **		inputNames;
+    pointer *		inputExtraOptions;
+    char **		inactiveNames;
+    MessageType		from;
+    ConfigDataHandle	handle;
 } serverLayoutRec, *serverLayoutPtr;
 
 typedef struct _confdribufferrec {
-    int                 count;
-    int                 size;
+    int			count;
+    int			size;
     enum {
 	XF86DRI_WC_HINT = 0x0001 /* Placeholder: not implemented */
-    }                   flags;
+    }			flags;
 } confDRIBufferRec, *confDRIBufferPtr;
 
 typedef struct _confdrirec {
-    int                 group;
-    int                 mode;
-    int                 bufs_count;
-    confDRIBufferRec    *bufs;
+    int			group;
+    int			mode;
+    int			bufs_count;
+    confDRIBufferPtr *	bufsList;
+    char *		groupName;
+    char *		id;
+    pointer		options;
+    ConfigDataHandle	handle;
 } confDRIRec, *confDRIPtr;
-    
+
+typedef struct _confmodeset {
+    ConfigDataHandle	handle;
+    char *		identifier;
+    DisplayModePtr	modes;
+    pointer		options;
+} confModeSetRec, *confModeSetPtr;
+
+typedef struct _conffilesrec {
+    ConfigDataHandle	handle;
+    char *		identifier;
+    char *		logFile;
+    MessageType		logFileFrom;
+    char *		rgbPath;
+    MessageType		rgbPathFrom;
+    char *		modulePath;
+    MessageType		modulePathFrom;
+    char *		fontPath;
+    MessageType		fontPathFrom;
+    char *		inputDeviceList;
+    MessageType		inputDeviceListFrom;
+    pointer		options;
+} confFilesRec, *confFilesPtr;
+
+typedef struct _confflagsrec {
+    ConfigDataHandle	handle;
+    char *		identifier;
+    pointer		options;
+} confFlagsRec, *confFlagsPtr;
+
+typedef struct _confloadmodulerec {
+    char *		name;
+    pointer		options;
+} confLoadModuleRec, *confLoadModulePtr;
+
+typedef struct _confmodulesrec {
+    ConfigDataHandle	handle;
+    char *		identifier;
+    int			numModules;
+    confLoadModulePtr * modules;
+    pointer		options;
+} confModulesRec, *confModulesPtr;
+
+typedef struct _confvendorsubrec {
+    ConfigDataHandle	handle;
+    char *		identifier;
+    char *		name;
+    pointer		options;
+} confVendorSubRec, *confVendorSubPtr;
+
+typedef struct _confvendorrec {
+    ConfigDataHandle	handle;
+    char *		identifier;
+    char *		vendorName;
+    pointer		options;
+    int			numSubs;
+    confVendorSubPtr *	subs;
+} confVendorRec, *confVendorPtr;
+
 /* These values should be adjusted when new fields are added to ScrnInfoRec */
 #define NUM_RESERVED_INTS		16
 #define NUM_RESERVED_POINTERS		15

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.142tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.143 2005/01/08 21:53:27 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -45,6 +45,51 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * Copyright © 2004, 2005 X-Oz Technologies.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ *  1. Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions, and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ * 
+ *  3. The end-user documentation included with the redistribution,
+ *     if any, must include the following acknowledgment: "This product
+ *     includes software developed by X-Oz Technologies
+ *     (http://www.x-oz.com/)."  Alternately, this acknowledgment may
+ *     appear in the software itself, if and wherever such third-party
+ *     acknowledgments normally appear.
+ *
+ *  4. Except as contained in this notice, the name of X-Oz
+ *     Technologies shall not be used in advertising or otherwise to
+ *     promote the sale, use or other dealings in this Software without
+ *     prior written authorization from X-Oz Technologies.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL X-OZ TECHNOLOGIES OR ITS CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
  */
 
 /*
@@ -1364,23 +1409,25 @@ xf86ErrorF(const char *format, ...)
 void
 xf86LogInit()
 {
-    char *lf;
+    char *lf = NULL;
 
 #define LOGSUFFIX ".log"
 #define LOGOLDSUFFIX ".old"
     
     /* Get the log file name */
-    if (xf86LogFileFrom == X_DEFAULT) {
+    if (xf86FileCmdline.logFile) {
+	lf = xf86FileCmdline.logFile;
+	xf86FileCmdline.logFile = (char *)LogInit(lf, LOGOLDSUFFIX);
+    } else {
 	/* Append the display number and ".log" */
-	lf = malloc(strlen(xf86LogFile) + strlen("%s") +
+	lf = malloc(strlen(xf86FileDefaults.logFile) + strlen("%s") +
 		    strlen(LOGSUFFIX) + 1);
 	if (!lf)
 	    FatalError("Cannot allocate space for the log file name\n");
-	sprintf(lf, "%s%%s" LOGSUFFIX, xf86LogFile);
-	xf86LogFile = lf;
+	sprintf(lf, "%s%%s" LOGSUFFIX, xf86FileDefaults.logFile);
+	xf86FileDefaults.logFile = (char *)LogInit(lf, LOGOLDSUFFIX);
     }
-
-    xf86LogFile = LogInit(xf86LogFile, LOGOLDSUFFIX);
+    free(lf);
     xf86LogFileWasOpened = TRUE;
 
     xf86SetVerbosity(xf86Verbose);
@@ -1520,11 +1567,14 @@ xf86MatchDevice(const char *drivername, GDevPtr **sectlist)
      * first we need to loop over all the Screens sections to get to all
      * 'active' device sections
      */
-    for (j=0; xf86ConfigLayout.screens[j].screen != NULL; j++) {
-        screensecptr = xf86ConfigLayout.screens[j].screen;
-        if ((screensecptr->device->driver != NULL)
-            && (xf86NameCmp( screensecptr->device->driver,drivername) == 0)
-            && (! screensecptr->device->claimed)) {
+    for (j = 0; j < xf86Info.serverLayout->numScreens; j++) {
+	if (!xf86Info.serverLayout->screenLayouts[j])
+	    continue;
+        screensecptr = xf86Info.serverLayout->screenLayouts[j]->screen;
+        if (screensecptr && screensecptr->device &&
+	    screensecptr->device->driver &&
+            xf86NameCmp(screensecptr->device->driver,drivername) == 0 &&
+            !screensecptr->device->claimed) {
             /*
              * we have a matching driver that wasn't claimed, yet
              */
@@ -1534,16 +1584,18 @@ xf86MatchDevice(const char *drivername, GDevPtr **sectlist)
     }
 
     /* Then handle the inactive devices */
-    j = 0;
-    while (xf86ConfigLayout.inactives[j].identifier) {
-	gdp = &xf86ConfigLayout.inactives[j];
-	if (gdp->driver && !gdp->claimed &&
-	    !xf86NameCmp(gdp->driver,drivername)) {
-	    /* we have a matching driver that wasn't claimed yet */
-	    pgdp = xnfrealloc(pgdp, (i + 2) * sizeof(GDevPtr));
-	    pgdp[i++] = gdp;
+    if (xf86Info.serverLayout->numInactives > 0 &&
+	xf86Info.serverLayout->inactiveDevs) {
+	for (j = 0; j < xf86Info.serverLayout->numInactives; j++) {
+	    gdp = xf86Info.serverLayout->inactiveDevs[j];
+	    if (gdp && gdp->driver && !gdp->claimed &&
+		!xf86NameCmp(gdp->driver,drivername)) {
+		/* we have a matching driver that wasn't claimed yet */
+		pgdp = xnfrealloc(pgdp, (i + 2) * sizeof(GDevPtr));
+		pgdp[i++] = gdp;
+	    }
+	    j++;
 	}
-	j++;
     }
     
     /*
@@ -2571,19 +2623,25 @@ xf86FindXvOptions(int scrnIndex, int adaptor_index, char *port_name,
     confXvAdaptorPtr adaptor;
     int i;
 
-    if (adaptor_index >= pScrn->confScreen->numxvadaptors) {
+    if (adaptor_index >= pScrn->confScreen->numXvAdaptors) {
 	if (adaptor_name) *adaptor_name = NULL;
 	if (adaptor_options) *adaptor_options = NULL;
 	return NULL;
     }
 
-    adaptor = &pScrn->confScreen->xvadaptors[adaptor_index];
+    adaptor = pScrn->confScreen->xvAdaptorList[adaptor_index];
+    if (!adaptor) {
+	if (adaptor_name) *adaptor_name = NULL;
+	if (adaptor_options) *adaptor_options = NULL;
+	return NULL;
+    }
     if (adaptor_name) *adaptor_name = adaptor->identifier;
     if (adaptor_options) *adaptor_options = adaptor->options;
 
     for (i = 0; i < adaptor->numports; i++)
-	if (!xf86NameCmp(adaptor->ports[i].identifier, port_name))
-	    return adaptor->ports[i].options;
+	if (adaptor->xvPorts && adaptor->xvPorts[i] &&
+	    !xf86NameCmp(adaptor->xvPorts[i]->identifier, port_name))
+	    return adaptor->xvPorts[i]->options;
 
     return NULL;
 }
@@ -2976,9 +3034,9 @@ xf86GetDisplayByMonitorNum(const ScrnInfoRec *pScrn, int monNum)
     /*
      * Find the Display subsection matching the depth/fbbpp and monitor number.
      */
-    for (i = 0, pDisp = pScrn->confScreen->displays;
-	 i < pScrn->confScreen->numdisplays; i++, pDisp++) {
-	if (pDisp->monitorNum == monNum &&
+    for (i = 0; i < pScrn->confScreen->numdisplays; i++) {
+	pDisp = pScrn->confScreen->displayList[i];
+	if (pDisp && pDisp->monitorNum == monNum &&
 	    ((pDisp->depth == pScrn->depth &&
 	      pDisp->fbbpp == pScrn->bitsPerPixel) ||
 	     (pDisp->depth == pScrn->depth && pDisp->fbbpp <= 0) ||
@@ -2993,9 +3051,9 @@ xf86GetDisplayByMonitorNum(const ScrnInfoRec *pScrn, int monNum)
      * monitor number and no depth or fbbpp specified.
      */
     if (!foundDisplay) {
-	for (i = 0, pDisp = pScrn->confScreen->displays;
-	     i < pScrn->confScreen->numdisplays; i++, pDisp++) {
-	    if (pDisp->monitorNum == monNum &&
+	for (i = 0; i < pScrn->confScreen->numdisplays; i++) {
+	    pDisp = pScrn->confScreen->displayList[i];
+	    if (pDisp && pDisp->monitorNum == monNum &&
 		pDisp->depth <= 0 && pDisp->fbbpp <= 0) {
 		foundDisplay = pDisp;
 		break;
@@ -3008,9 +3066,10 @@ xf86GetDisplayByMonitorNum(const ScrnInfoRec *pScrn, int monNum)
      */
     if (!foundDisplay) {
 	i = pScrn->confScreen->numdisplays++;
-	pScrn->confScreen->displays =
-		xnfrealloc(pScrn->confScreen->displays,
-			   pScrn->confScreen->numdisplays * sizeof(DispRec));
+	pScrn->confScreen->displayList =
+		xnfrealloc(pScrn->confScreen->displayList,
+			   pScrn->confScreen->numdisplays * sizeof(DispPtr));
+	pScrn->confScreen->displayList[i] = xf86ConfAllocDisplay();
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		   "Creating default Display subsection in Screen section\n"
 		   "\t\"%s\" ", pScrn->confScreen->id);
@@ -3021,24 +3080,7 @@ xf86GetDisplayByMonitorNum(const ScrnInfoRec *pScrn, int monNum)
 	    xf86ErrorF("for depth/fbbpp %d/%d\n",
 		       pScrn->depth, pScrn->bitsPerPixel);
 	}
-	memset(&pScrn->confScreen->displays[i], 0, sizeof(DispRec));
-	pScrn->confScreen->displays[i].blackColour.red = -1;
-	pScrn->confScreen->displays[i].blackColour.green = -1;
-	pScrn->confScreen->displays[i].blackColour.blue = -1;
-	pScrn->confScreen->displays[i].whiteColour.red = -1;
-	pScrn->confScreen->displays[i].whiteColour.green = -1;
-	pScrn->confScreen->displays[i].whiteColour.blue = -1;
-	pScrn->confScreen->displays[i].defaultVisual = -1;
-	pScrn->confScreen->displays[i].modes = xnfalloc(sizeof(char *));
-	pScrn->confScreen->displays[i].modes[0] = NULL;
-	pScrn->confScreen->displays[i].depth = pScrn->depth;
-	pScrn->confScreen->displays[i].fbbpp = pScrn->bitsPerPixel;
-	pScrn->confScreen->displays[i].monitorNum = monNum;
-	pScrn->confScreen->displays[i].frameX0 = -1;
-	pScrn->confScreen->displays[i].frameY0 = -1;
-	pScrn->confScreen->displays[i].virtualX = -1;
-	pScrn->confScreen->displays[i].virtualY = -1;
-	foundDisplay = &pScrn->confScreen->displays[i];
+	foundDisplay = pScrn->confScreen->displayList[i];
     }
 
     pDisp = xnfalloc(sizeof(DispRec));

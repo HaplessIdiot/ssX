@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.16 2005/01/10 17:30:42 tsi Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -136,9 +136,11 @@ static xf86ConfigSymTabRec SubModuleTab[] =
 static xf86ConfigSymTabRec ModuleTab[] =
 {
 	{ENDSECTION, "endsection"},
+	{IDENTIFIER, "identifier"},
 	{LOAD, "load"},
 	{LOAD_DRIVER, "loaddriver"},
 	{SUBSECTION, "subsection"},
+	{OPTION, "option"},
 	{-1, ""},
 };
 
@@ -183,6 +185,7 @@ xf86parseModuleSubSection (XF86LoadPtr head, char *name)
 XF86ConfModulePtr
 xf86parseModuleSection (void)
 {
+	int has_ident = FALSE;
 	int token;
 	parsePrologue (XF86ConfModulePtr, XF86ConfModuleRec)
 
@@ -192,6 +195,14 @@ xf86parseModuleSection (void)
 		{
 		case COMMENT:
 			ptr->mod_comment = xf86addComment(ptr->mod_comment, val.str);
+			break;
+		case IDENTIFIER:
+			if (xf86getSubToken (&(ptr->mod_comment)) != STRING)
+				Error (QUOTE_MSG, "Identifier");
+			if (has_ident)
+				Error (MULTIPLE_MSG, "Identifier");
+			ptr->mod_identifier = val.str;
+			has_ident = TRUE;
 			break;
 		case LOAD:
 			if (xf86getSubToken (&(ptr->mod_comment)) != STRING)
@@ -212,6 +223,9 @@ xf86parseModuleSection (void)
 						Error (QUOTE_MSG, "SubSection");
 			ptr->mod_load_lst =
 				xf86parseModuleSubSection (ptr->mod_load_lst, val.str);
+			break;
+		case OPTION:
+			ptr->mod_option_lst = xf86parseOption(ptr->mod_option_lst);
 			break;
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
@@ -242,6 +256,8 @@ xf86printModuleSection (FILE * cf, XF86ConfModulePtr ptr)
 
 		if (ptr->mod_comment)
 			fprintf(cf, "%s", ptr->mod_comment);
+		if (ptr->mod_identifier)
+			fprintf (cf, "\tIdentifier  \"%s\"", ptr->mod_identifier);
 		for (lptr = ptr->mod_load_lst; lptr; lptr = lptr->list.next)
 		{
 			switch (lptr->load_type)
@@ -277,6 +293,7 @@ xf86printModuleSection (FILE * cf, XF86ConfModulePtr ptr)
 #endif
 			}
 		}
+		xf86printOptionList(cf, ptr->mod_option_lst, 1);
 		fprintf(cf, "EndSection\n");
 		ptr = ptr->list.next;
 	}
@@ -320,6 +337,8 @@ xf86freeModulesList (XF86ConfModulePtr ptr)
 			xf86conffree (prev);
 		}
 		TestFree (ptr->mod_comment);
+		TestFree (ptr->mod_identifier);
+		xf86optionListFree (ptr->mod_option_lst);
 		mprev = ptr;
 		ptr = ptr->list.next;
 		xf86conffree (mprev);

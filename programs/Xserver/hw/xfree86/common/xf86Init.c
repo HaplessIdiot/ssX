@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.222 2004/11/18 22:41:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.223 2005/01/07 23:03:13 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -51,8 +51,8 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 /*
- * Automatic configuration and related support is
  * Copyright © 2003, 2004, 2005 David H. Dawes.
  * Copyright © 2003, 2004, 2005 X-Oz Technologies.
  * All rights reserved.
@@ -169,6 +169,7 @@ static void xf86RunVtInit(void);
 
 static Bool autoconfig = FALSE;
 static Bool appendauto = FALSE;
+static Bool noAppendauto = FALSE;
 static Bool noHardware = FALSE;
 static Bool noVT = FALSE;
 
@@ -387,22 +388,38 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     xf86CheckBeta(extraDays, expKey);
 #endif
 
+    /* Set default paths. */
+    xf86FileCmdline.handle = &xf86FileCmdline;
+    xf86FileDefaults.handle = &xf86FileDefaults;
+    xf86FileDefaults.fontPath = xnfstrdup(defaultFontPath);
+    xf86FileDefaults.fontPathFrom = X_DEFAULT;
+    xf86FileDefaults.rgbPath = xnfstrdup(rgbPath);
+    xf86FileDefaults.rgbPathFrom = X_DEFAULT;
+    /* Combine the defaults with the command line data. */
+    xf86FilePaths = xf86ConfCombineFilesData(&xf86FileCmdline, X_CMDLINE,
+					     &xf86FileDefaults, X_DEFAULT);
+    if (!xf86FilePaths)
+	FatalError("File path initialisation failed.\n");
+
+    xf86FilePaths->identifier = xstrdup("<combined pre-config>");
+
     xf86PrintBanner();
     xf86PrintMarkers();
-    if (xf86LogFile)  {
+    if (xf86FilePaths->logFile)  {
 	time_t t;
 	const char *ct;
 	t = time(NULL);
 	ct = ctime(&t);
-	xf86MsgVerb(xf86LogFileFrom, 0, "Log file: \"%s\", Time: %s",
-		    xf86LogFile, ct);
+	xf86MsgVerb(xf86FilePaths->logFileFrom, 0,
+		    "Log file: \"%s\", Time: %s", xf86FilePaths->logFile, ct);
     }
 
     /* Read and parse the config file */
     if (!autoconfig && !xf86DoProbe && !xf86DoConfigure) {
       switch (xf86LoadConfigFile(NULL, FALSE)) {
       case CONFIG_OK:
-	if (!xf86CheckForLayoutOrScreen() && !noHardware) {
+	if (!noAppendauto && !xf86CheckForLayoutOrScreen(DEFAULT_CONFIG) &&
+	    !noHardware) {
 	    xf86MsgVerb(X_INFO, 0,
 		    "No Screen or Layout sections in the config file.\n"
 		    "\tAppending default built-in configuration.\n");
@@ -430,7 +447,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     LoaderInit();
 
     /* Setup probe and base module lists. */
-    LoaderSetPath(xf86ModulePath);
+    LoaderSetPath(xf86FilePaths->modulePath);
     /* Load modules required for hardware probing. */
     if (!noHardware) {
 	numProbeModules = 1;
@@ -482,10 +499,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	return;
     }
 
-    PostConfigInit();
-
 #ifdef XFree86LOADER
-    LoaderSetPath(xf86ModulePath);
+    LoaderSetPath(xf86FilePaths->modulePath);
 
 #ifdef TESTING
     {
@@ -557,6 +572,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	}
     }
 
+    PostConfigInit();
+
 retry:
 
     if (!noHardware) {
@@ -574,8 +591,7 @@ retry:
       /* Load all modules specified explicitly in the config file */
       if ((modulelist = xf86ModulelistFromConfig(&optionlist))) {
         xf86LoadModules(modulelist, optionlist);
-        xfree(modulelist);
-        xfree(optionlist);
+        xf86ModulelistFree(modulelist, optionlist);
       }
 
       /* Load all driver modules specified in the config file */
@@ -727,30 +743,34 @@ retry:
      */
 
     for (i = 0; i < xf86NumScreens; i++) {
-      for (layout = xf86ConfigLayout.screens; layout->screen != NULL;
-	   layout++) {
-	  Bool found = FALSE;
-	  for (j = 0; j < xf86Screens[i]->numEntities; j++) {
+	for (k = 0; k < xf86Info.serverLayout->numScreens; k++) {
+	    layout = xf86Info.serverLayout->screenLayouts[k];
+	    if (!layout || !layout->screen)
+		continue;
+	    found = FALSE;
+	    for (j = 0; j < xf86Screens[i]->numEntities; j++) {
 	
-	      GDevPtr dev =
-		xf86GetDevFromEntity(xf86Screens[i]->entityList[j],
-				     xf86Screens[i]->entityInstanceList[j]);
+		GDevPtr dev =
+		    xf86GetDevFromEntity(xf86Screens[i]->entityList[j],
+					 xf86Screens[i]->entityInstanceList[j]);
 
-	      if (dev == layout->screen->device) {
-		  /* A match has been found */
-		  xf86Screens[i]->confScreen = layout->screen;
-		  found = TRUE;
-		  break;
-	      }
-	  }
-	  if (found) break;
-      }
-      if (layout->screen == NULL) {
-	/* No match found */
-	xf86Msg(X_ERROR,
-	    "Screen %d deleted because of no matching config section.\n", i);
-        xf86DeleteScreen(i--, 0);
-      }
+		if (dev == layout->screen->device) {
+		    /* A match has been found */
+		    xf86Screens[i]->confScreen = layout->screen;
+		    found = TRUE;
+		    break;
+		}
+	    }
+	    if (found)
+		break;
+	}
+	if (k == xf86Info.serverLayout->numScreens) {
+	    /* No match found */
+	    xf86Msg(X_ERROR,
+		"Screen %d deleted because of no matching config section.\n",
+		i);
+	    xf86DeleteScreen(i--, 0);
+	}
     }
 
     /*
@@ -758,9 +778,9 @@ retry:
      */
 
     if (xf86NumScreens == 0) {
-      xf86Msg(X_ERROR,
+	xf86Msg(X_ERROR,
 	      "Device(s) detected, but none match those in the config file.\n");
-      return;
+	return;
     }
 
     if (!noHardware) {
@@ -817,8 +837,10 @@ retry:
 		xf86DeleteDriver(i);
 		autoretry = TRUE;
 		/* Clear claimed config sections. */
-		for (j = 0; xf86ConfigLayout.screens[j].screen != NULL; j++) {
-		    xf86ConfigLayout.screens[j].screen->device->claimed = FALSE;
+		for (j = 0; j < xf86Info.serverLayout->numScreens; j++) {
+		    layout = xf86Info.serverLayout->screenLayouts[j];
+		    if (layout && layout->screen)
+			layout->screen->device->claimed = FALSE;
 		}
 		goto retry;
 	    }
@@ -1208,10 +1230,9 @@ MatchInput(IDevPtr pDev)
  */
 
 void
-InitInput(argc, argv)
-     int     	  argc;
-     char    	  **argv;
+InitInput(int argc, char **argv)
 {
+    int i;
     IDevPtr pDev;
     InputDriverPtr pDrv;
     InputInfoPtr pInfo;
@@ -1225,7 +1246,10 @@ InitInput(argc, argv)
 
     if (serverGeneration == 1) {
 	/* Call the PreInit function for each input device instance. */
-	for (pDev = xf86ConfigLayout.inputs; pDev && pDev->identifier; pDev++) {
+	for (i = 0; i < xf86Info.serverLayout->numInputs; i++) {
+	    pDev = xf86Info.serverLayout->inputDevs[i];
+	    if (!pDev)
+		continue;
 	    /* XXX The keyboard driver is a special case for now. */
 	    if (!xf86NameCmp(pDev->driver, "keyboard")) {
 		xf86Msg(X_INFO, "Keyboard \"%s\" handled by legacy driver\n",
@@ -1307,21 +1331,22 @@ InitInput(argc, argv)
     }
 
     if (coreKeyboard) {
-      xf86Info.pKeyboard = coreKeyboard->dev;
-      xf86Info.kbdEvents = NULL; /* to prevent the internal keybord driver usage*/
+	xf86Info.pKeyboard = coreKeyboard->dev;
+	/* Clear kbdEvents to prevent internal keybord driver usage. */
+	xf86Info.kbdEvents = NULL;
     }
     else {
-      xf86Info.pKeyboard = AddInputDevice(xf86Info.kbdProc, TRUE);
+	xf86Info.pKeyboard = AddInputDevice(xf86Info.kbdProc, TRUE);
     }
     if (corePointer)
 	xf86Info.pMouse = corePointer->dev;
     RegisterKeyboardDevice(xf86Info.pKeyboard); 
 
-  miRegisterPointerDevice(screenInfo.screens[0], xf86Info.pMouse);
+    miRegisterPointerDevice(screenInfo.screens[0], xf86Info.pMouse);
 #ifdef XINPUT
-  xf86eqInit ((DevicePtr)xf86Info.pKeyboard, (DevicePtr)xf86Info.pMouse);
+    xf86eqInit ((DevicePtr)xf86Info.pKeyboard, (DevicePtr)xf86Info.pMouse);
 #else
-  mieqInit ((DevicePtr)xf86Info.pKeyboard, (DevicePtr)xf86Info.pMouse);
+    mieqInit ((DevicePtr)xf86Info.pKeyboard, (DevicePtr)xf86Info.pMouse);
 #endif
 }
 
@@ -1501,8 +1526,9 @@ OsVendorFatalError()
 {
   ErrorF("\nWhen reporting a problem related to a server crash, please send\n"
 	 "the full server output, not just the last messages.\n");
-  if (xf86LogFile && xf86LogFileWasOpened)
-    ErrorF("This can be found in the log file \"%s\".\n", xf86LogFile);
+  if (xf86FilePaths && xf86FilePaths->logFile && xf86LogFileWasOpened)
+    ErrorF("This can be found in the log file \"%s\".\n",
+	   xf86FilePaths->logFile);
   ErrorF("Please report problems to %s.\n", BUILDERADDR);
   ErrorF("\n");
 }
@@ -1549,44 +1575,37 @@ ddxProcessArgument(int argc, char **argv, int i)
   /* First the options that are only allowed for root */
   if (getuid() == 0)
   {
-    if (!strcmp(argv[i], "-modulepath"))
-    {
-      char *mp;
-      if (!argv[i + 1])
+    if (!strcmp(argv[i], "-modulepath")) {
+      if (!argv[++i])
 	return 0;
-      mp = malloc(strlen(argv[i + 1]) + 1);
-      if (!mp)
-	FatalError("Can't allocate memory for ModulePath\n");
-      strcpy(mp, argv[i + 1]);
-      xf86ModulePath = mp;
-      xf86ModPathFrom = X_CMDLINE;
+      xf86FileCmdline.modulePath = strdup(argv[i]);
+      if (!xf86FileCmdline.modulePath)
+	FatalError("Cannot allocate memory for the module path name.\n");
+      xf86FileCmdline.modulePathFrom = X_CMDLINE;
       return 2;
     }
     else if (!strcmp(argv[i], "-logfile"))
     {
-      char *lf;
-      if (!argv[i + 1])
+      if (!argv[++i])
 	return 0;
-      lf = malloc(strlen(argv[i + 1]) + 1);
-      if (!lf)
-	FatalError("Can't allocate memory for LogFile\n");
-      strcpy(lf, argv[i + 1]);
-      xf86LogFile = lf;
-      xf86LogFileFrom = X_CMDLINE;
+      xf86FileCmdline.logFile = strdup(argv[i]);
+      if (!xf86FileCmdline.logFile)
+	FatalError("Cannot allocate memory for the log file name.\n");
+      xf86FileCmdline.logFileFrom = X_CMDLINE;
       return 2;
     }
   }
   if (!strcmp(argv[i], "-xf86config"))
   {
-    if (!argv[i + 1])
+    if (!argv[++i])
       return 0;
-    if (getuid() != 0 && !xf86PathIsSafe(argv[i + 1])) {
+    if (getuid() != 0 && !xf86PathIsSafe(argv[i])) {
       FatalError("\nInvalid argument for -xf86config\n"
 	  "\tFor non-root users, the file specified with -xf86config must be\n"
 	  "\ta relative path and must not contain any \"..\" elements.\n"
 	  "\tUsing default XF86Config search path.\n\n");
     }
-    xf86ConfigFile = argv[i + 1];
+    xf86ConfigFile = argv[i];
     return 2;
   }
   if (!strcmp(argv[i],"-showunresolved"))
@@ -1602,6 +1621,11 @@ ddxProcessArgument(int argc, char **argv, int i)
   if (!strcmp(argv[i],"-appendauto"))
   {
     appendauto = TRUE;
+    return 1;
+  }
+  if (!strcmp(argv[i],"-noappendauto"))
+  {
+    noAppendauto = TRUE;
     return 1;
   }
   if (!strcmp(argv[i],"-probeonly"))
@@ -1705,16 +1729,26 @@ ddxProcessArgument(int argc, char **argv, int i)
     xf86PrintBanner();
     exit(0);
   }
-  /* Notice the -fp flag, but allow it to pass to the dix layer */
+  /* Snoop the -fp flag, still allowing it to pass to the dix layer. */
   if (!strcmp(argv[i], "-fp"))
   {
-    xf86fpFlag = TRUE;
+    if (++i < argc && argv[i]) {
+      xf86FileCmdline.fontPath = strdup(argv[i]);
+      if (!xf86FileCmdline.fontPath)
+	FatalError("Cannot allocate memory for the font path.\n");
+      xf86FileCmdline.fontPathFrom = X_CMDLINE;
+    }
     return 0;
   }
-  /* Notice the -co flag, but allow it to pass to the dix layer */
+  /* Snoop the -co flag, still allowing it to pass to the dix layer. */
   if (!strcmp(argv[i], "-co"))
   {
-    xf86coFlag = TRUE;
+    if (++i < argc && argv[i]) {
+      xf86FileCmdline.rgbPath = strdup(argv[i]);
+      if (!xf86FileCmdline.rgbPath)
+	FatalError("Cannot allocate memory for RGBPath.\n");
+      xf86FileCmdline.rgbPathFrom = X_CMDLINE;
+    }
     return 0;
   }
   /* Notice the -bs flag, but allow it to pass to the dix layer */
@@ -1919,6 +1953,7 @@ ddxUseMsg()
   }
   ErrorF("-autoconfig            automatic configuration, even when a config file exits\n");
   ErrorF("-appendauto            append automatic config to existing config file\n");
+  ErrorF("-noappendauto          do not append automatic config\n");
   ErrorF("-probeonly             probe for devices, then exit\n");
   ErrorF("-scanpci               execute the scanpci module and exit\n");
   ErrorF("-nohw                  disable video hardware and hardware probing\n");

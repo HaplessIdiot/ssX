@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.18 2004/02/13 23:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.19 2005/01/07 23:03:14 dawes Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -134,10 +134,10 @@ void xf86printScreenSection(FILE *cf, XF86ConfScreenPtr ptr);
 int xf86validateScreen(XF86ConfigPtr p);
 /* Vendor.c */
 XF86ConfVendorPtr xf86parseVendorSection(void);
-XF86ConfVendSubPtr xf86parseVendorSubSection (void);
+XF86ConfVendSubPtr xf86parseVendorSubSection (XF86ConfVendSubPtr head, char *name);
 void xf86printVendorSection(FILE * cf, XF86ConfVendorPtr ptr);
 /* Video.c */
-XF86ConfVideoPortPtr xf86parseVideoPortSubSection(void);
+XF86ConfVideoPortPtr xf86parseVideoPortSubSection(char *name);
 XF86ConfVideoAdaptorPtr xf86parseVideoAdaptorSection(void);
 void xf86printVideoAdaptorSection(FILE *cf, XF86ConfVideoAdaptorPtr ptr);
 /* scan.c */

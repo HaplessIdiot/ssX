@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.179tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.180 2005/01/08 21:53:27 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -141,8 +141,11 @@ extern Bool xf86inSuspend;
 	   } \
 	while (0)
 
+/* Some macros for messages. */
 #define BOOLTOSTRING(b) ((b) ? "TRUE" : "FALSE")
 #define PLURAL(n) ((n) == 1 ? "" : "s")
+#define EMPTYIFNULL(s) ((s) ? (s) : "")
+
 
 #define PIX24TOBPP(p) (((p) == Pix24Use24) ? 24 : \
 			(((p) == Pix24Use32) ? 32 : 0))
@@ -249,6 +252,135 @@ void xf86SetPrimInitDone(int entityIndex);
 void xf86ClearPrimInitDone(int entityIndex);
 int xf86AllocateEntityPrivateIndex(void);
 DevUnion *xf86GetEntityPrivate(int entityIndex, int privIndex);
+
+/* xf86Config.c */
+void xf86ConfFreeScreenData(confScreenPtr pConfScreen);
+void xf86ConfFreeGraphicsDeviceData(GDevPtr pGDev);
+void xf86ConfFreeInputDeviceData(IDevPtr pIDev);
+void xf86ConfFreeMonitorData(MonPtr pMonitor);
+void xf86ConfFreeModeData(DisplayModePtr pMode);
+void xf86ConfFreeModeSetData(confModeSetPtr pModeSet);
+void xf86ConfFreeModeList(DisplayModePtr pModes);
+void xf86ConfFreeDisplayData(DispPtr pDisplay);
+void xf86ConfFreeXvAdaptorData(confXvAdaptorPtr pAdaptor);
+void xf86ConfFreeXvPortData(confXvPortPtr pPort);
+void xf86ConfFreeScreenLayoutData(screenLayoutPtr pScreenLayout);
+void xf86ConfFreeServerLayoutData(serverLayoutPtr pServerLayout);
+void xf86ConfFreeFilesData(confFilesPtr pFiles);
+void xf86ConfFreeServerFlagsData(confFlagsPtr pFlags);
+void xf86ConfFreeLoadModuleData(confLoadModulePtr pLoad);
+void xf86ConfFreeModulesData(confModulesPtr pModules);
+void xf86ConfFreeDRIData(confDRIPtr pDri);
+void xf86ConfFreeDRIBufferData(confDRIBufferPtr pDriBuf);
+void xf86ConfFreeVendorData(confVendorPtr pVendor);
+void xf86ConfFreeVendorSubData(confVendorSubPtr pVendorSub);
+confScreenPtr xf86ConfAllocScreen(void);
+GDevPtr xf86ConfAllocGraphicsDevice(void);
+IDevPtr xf86ConfAllocInputDevice(void);
+MonPtr xf86ConfAllocMonitor(void);
+DisplayModePtr xf86ConfAllocMode(void);
+confModeSetPtr xf86ConfAllocModeSet(void);
+DisplayModePtr xf86ConfAllocModeList(int n);
+DispPtr xf86ConfAllocDisplay(void);
+confXvAdaptorPtr xf86ConfAllocXvAdaptor(void);
+confXvPortPtr xf86ConfAllocXvPort(void);
+screenLayoutPtr xf86ConfAllocScreenLayout(void);
+serverLayoutPtr xf86ConfAllocServerLayout(void);
+confFilesPtr xf86ConfAllocFiles(void);
+confFlagsPtr xf86ConfAllocServerFlags(void);
+confLoadModulePtr xf86ConfAllocLoadModule(void);
+confModulesPtr xf86ConfAllocModules(void);
+confDRIPtr xf86ConfAllocDRI(void);
+confDRIBufferPtr xf86ConfAllocDRIBuffer(void);
+confVendorPtr xf86ConfAllocVendor(void);
+confVendorSubPtr xf86ConfAllocVendorSub(void);
+confScreenPtr xf86ConfDupScreen(const confScreenRec *pConfScreen, int depth);
+GDevPtr xf86ConfDupGraphicsDevice(const GDevRec *pGDev);
+IDevPtr xf86ConfDupInputDevice(const IDevRec *pIDev, int depth);
+MonPtr xf86ConfDupMonitor(const MonRec *pMonitor, int depth);
+DisplayModePtr xf86ConfDupMode(const DisplayModeRec *pMode, int depth);
+confModeSetPtr xf86ConfDupModeSet(const confModeSetRec *pModeSet, int depth);
+DisplayModePtr xf86ConfDupModeList(const DisplayModeRec *pModes, int depth);
+DispPtr xf86ConfDupDisplay(const DispRec *pDisplay);
+confXvAdaptorPtr xf86ConfDupXvAdaptor(const confXvAdaptorRec *pAdaptor);
+confXvPortPtr xf86ConfDupXvPort(const confXvPortRec *pPort);
+screenLayoutPtr xf86ConfDupScreenLayout(const screenLayoutRec *pScreenLayout,
+					int depth);
+serverLayoutPtr xf86ConfDupServerLayout(const serverLayoutRec *pServerLayout,
+					int depth);
+confFilesPtr xf86ConfDupFiles(const confFilesRec *pFiles);
+confFlagsPtr xf86ConfDupServerFlags(const confFlagsRec *pFlags);
+confLoadModulePtr xf86ConfDupLoadModule(const confLoadModuleRec *pLoad);
+confModulesPtr xf86ConfDupModules(const confModulesRec *pModules);
+confDRIPtr xf86ConfDupDRI(const confDRIRec *pDri);
+confDRIBufferPtr xf86ConfDupDRIBuffer(const confDRIBufferRec *pDriBuffer);
+confVendorPtr xf86ConfDupVendor(const confVendorRec *pVendor);
+confVendorSubPtr xf86ConfDupVendorSub(const confVendorSubRec *pVendorSub);
+serverLayoutPtr xf86ConfResolveServerLayout(ConfigHandle handle,
+					    serverLayoutPtr pServerLayout,
+					    int depth);
+int xf86ConfCheckResolvedServerLayout(const serverLayoutRec *pServerLayout,
+				      int depth, Bool strict);
+serverLayoutPtr xf86ConfGetServerLayoutByName(ConfigHandle handle,
+					      const char *name, int depth);
+serverLayoutPtr xf86ConfGetNextServerLayout(ConfigHandle handle,
+					    ConfigDataHandle prevLayoutHandle,
+					    int depth);
+confScreenPtr xf86ConfResolveScreen(ConfigHandle handle,
+				    confScreenPtr pConfScreen, int depth);
+int xf86ConfCheckResolvedScreen(const confScreenRec *pConfScreen, int depth,
+				Bool strict);
+confScreenPtr xf86ConfGetScreenByName(ConfigHandle handle, const char *name,
+				      int depth);
+confScreenPtr xf86ConfGetNextScreen(ConfigHandle handle,
+				    ConfigDataHandle prevScreenHandle,
+				    int depth);
+MonPtr xf86ConfResolveMonitor(ConfigHandle handle, MonPtr pMonitor);
+int xf86ConfCheckResolvedMonitor(const MonRec *pMonitor, int depth,
+				 Bool strict);
+MonPtr xf86ConfGetMonitorByName(ConfigHandle handle, const char *name,
+				int depth);
+MonPtr xf86ConfGetNextMonitor(ConfigHandle handle,
+			      ConfigDataHandle prevMonitorHandle, int depth);
+confModeSetPtr xf86ConfGetModeSetByName(ConfigHandle handle, const char *name);
+confModeSetPtr xf86ConfGetNextModeSet(ConfigHandle handle,
+				      ConfigDataHandle prevModeSetHandle);
+GDevPtr xf86ConfGetGraphicsDeviceByName(ConfigHandle handle, const char *name);
+GDevPtr xf86ConfGetNextGraphicsDevice(ConfigHandle handle,
+				      ConfigDataHandle prevDeviceHandle);
+IDevPtr xf86ConfGetInputDeviceByName(ConfigHandle handle, const char *name);
+IDevPtr xf86ConfGetNextInputDevice(ConfigHandle handle,
+				   ConfigDataHandle prevIDevHandle, int depth);
+IDevPtr xf86ConfGetInputDeviceByDriver(ConfigHandle handle, const char *driver);
+IDevPtr xf86ConfGetInputDeviceByOption(ConfigHandle handle, const char *option);
+confXvAdaptorPtr xf86ConfGetXvAdaptorByName(ConfigHandle handle,
+					    const char *name);
+confXvAdaptorPtr xf86ConfGetNextXvAdaptor(ConfigHandle handle,
+					  ConfigDataHandle prevAdaptorHandle);
+confFilesPtr xf86ConfGetFilesByName(ConfigHandle handle, const char *name);
+confFilesPtr xf86ConfGetNextFiles(ConfigHandle handle,
+				  ConfigDataHandle prevFilesHandle);
+confFilesPtr xf86ConfCombineFilesData(const confFilesRec *src1, MessageType m1,
+				      const confFilesRec *src2, MessageType m2);
+confModulesPtr xf86ConfGetModulesByName(ConfigHandle handle, const char *name);
+confModulesPtr xf86ConfGetNextModules(ConfigHandle handle,
+				      ConfigDataHandle prevModulesHandle);
+confModulesPtr xf86ConfCombineModulesData(const confModulesRec *src1,
+					  const confModulesRec *src2);
+confFlagsPtr xf86ConfGetServerFlagsByName(ConfigHandle handle,
+					  const char *name);
+confFlagsPtr xf86ConfGetNextServerFlags(ConfigHandle handle,
+					ConfigDataHandle prevFilesHandle);
+confFlagsPtr xf86ConfCombineServerFlagsData(const confFlagsRec *src1,
+					    const confFlagsRec *src2);
+confDRIPtr xf86ConfGetDRIByName(ConfigHandle handle, const char *name);
+confDRIPtr xf86ConfGetNextDRI(ConfigHandle handle,
+			      ConfigDataHandle prevDRIHandle);
+confVendorPtr xf86ConfGetVendorByName(ConfigHandle handle, const char *name);
+confVendorPtr xf86ConfGetVendorByVendorName(ConfigHandle handle,
+					    const char *vname);
+confVendorPtr xf86ConfGetNextVendor(ConfigHandle handle,
+				    ConfigDataHandle prevVendorHandle);
 
 /* xf86Configure.c */
 GDevPtr xf86AddBusDeviceToConfigure(const char *driver, BusType bus,

@@ -46,7 +46,7 @@
  * Author: David Dawes <dawes@x-oz.com>.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.3 2003/12/12 00:39:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.4 2005/01/07 23:03:12 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86Parser.h"
@@ -61,6 +61,7 @@
 
 #define BUILTIN_MODULE_SECTION \
 	"Section \"Module\"\n" \
+	"\tIdentifier\t\"Builtin Default Modules\"\n" \
 	"\tLoad\t\"extmod\"\n" \
 	"\tLoad\t\"dbe\"\n" \
 	"\tLoad\t\"glx\"\n" \
@@ -189,6 +190,7 @@ xf86AutoConfig(void)
     pciVideoPtr *pciptr, info = NULL;
     char *driver = NULL;
     FILE *gp = NULL;
+    XF86ConfigPtr pConfig;
 
     /* Find the primary device, and get some information about it. */
     if (xf86PciVideoInfo) {
@@ -210,13 +212,14 @@ xf86AutoConfig(void)
 	char *searchPath = NULL;
 
 	/*
-	 * Look for the getconfig program first in the xf86ModulePath
-	 * directories, then in BINDIR.  If it isn't found in any of those
-	 * locations, just use the normal search path.
+	 * Look for the getconfig program first in the
+	 * xf86FilePaths->modulePath directories, then in BINDIR.
+	 * If it isn't found in any of those locations, just use the normal
+	 * search path.
 	 */
 
-	if (xf86ModulePath) {
-	    a = xnfstrdup(xf86ModulePath);
+	if (xf86FilePaths->modulePath) {
+	    a = xnfstrdup(xf86FilePaths->modulePath);
 	    b = strtok(a, ",");
 	    while (b) {
 		path = xnfrealloc(path,
@@ -251,18 +254,19 @@ xf86AutoConfig(void)
 	 *
 	 * /etc/X11
 	 * PROJECTROOT/etc/X11
-	 * xf86ModulePath
+	 * xf86FilePaths->modulePath
 	 * PROJECTROOT/lib/X11/getconfig  (GETCONFIG_DIR)
 	 */
 
 	searchPath = xnfalloc(strlen("/etc/X11") + 1 +
 			      strlen(PROJECTROOT "/etc/X11") + 1 +
-			      (xf86ModulePath ? strlen(xf86ModulePath) : 0)
+			      (xf86FilePaths->modulePath ?
+				    strlen(xf86FilePaths->modulePath) : 0)
 				+ 1 +
 			      strlen(GETCONFIG_DIR) + 1);
 	strcpy(searchPath, "/etc/X11," PROJECTROOT "/etc/X11,");
-	if (xf86ModulePath && *xf86ModulePath) {
-	    strcat(searchPath, xf86ModulePath);
+	if (xf86FilePaths->modulePath && *xf86FilePaths->modulePath) {
+	    strcat(searchPath, xf86FilePaths->modulePath);
 	    strcat(searchPath, ",");
 	}
 	strcat(searchPath, GETCONFIG_DIR);
@@ -355,9 +359,10 @@ xf86AutoConfig(void)
     xf86MsgVerb(X_DEFAULT, 3, "--- End of built-in configuration ---\n");
     
     xf86setBuiltinConfig(builtinConfig);
-    xf86configptr = xf86parseConfigFile(xf86configptr);
+    pConfig = (XF86ConfigPtr)(xf86Info.config);
+    xf86Info.config = xf86parseConfigFile(pConfig);
     FreeConfig();
-    if (!xf86configptr) {
+    if (!xf86Info.config) {
 	xf86Msg(X_ERROR, "Error parsing the built-in default configuration.\n");
 	return FALSE;
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.35 2005/01/07 17:19:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.36 2005/01/07 23:03:14 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -127,8 +127,6 @@
 
 #include "xf86Optrec.h"
 
-#define HAVE_PARSER_DECLS
-
 /*
  * Define these here so that consumers of the parser data can use the same
  * alloc/free mechanism as the parser when manipulating parser data.
@@ -147,6 +145,8 @@ typedef struct
 	char *file_inputdevs;
 	char *file_fontpath;
 	char *file_comment;
+	char *file_identifier;
+	XF86OptionPtr file_option_lst;
 }
 XF86ConfFilesRec, *XF86ConfFilesPtr;
 
@@ -169,6 +169,8 @@ typedef struct
 	GenericListRec list;
 	XF86LoadPtr mod_load_lst;
 	char *mod_comment;
+	char *mod_identifier;
+	XF86OptionPtr mod_option_lst;
 }
 XF86ConfModuleRec, *XF86ConfModulePtr;
 
@@ -255,6 +257,7 @@ typedef struct
 	char *modes_identifier;
 	XF86ConfModeLinePtr mon_modeline_lst;
 	char *modes_comment;
+	XF86OptionPtr modes_option_lst;
 }
 XF86ConfModesRec, *XF86ConfModesPtr;
 
@@ -361,6 +364,7 @@ typedef struct
 	GenericListRec list;
 	XF86OptionPtr flg_option_lst;
 	char *flg_comment;
+	char *flg_identifier;
 }
 XF86ConfFlagsRec, *XF86ConfFlagsPtr;
 
@@ -475,6 +479,7 @@ typedef struct
 {
 	GenericListRec list;
 	char *vnd_identifier;
+	char *vnd_name;
 	XF86OptionPtr vnd_option_lst;
 	XF86ConfVendSubPtr vnd_sub_lst;
 	char *vnd_comment;
@@ -493,11 +498,14 @@ XF86ConfBuffersRec, *XF86ConfBuffersPtr;
 
 typedef struct
 {
+	GenericListRec list;
 	char *dri_group_name;
 	int dri_group;
 	int dri_mode;
 	XF86ConfBuffersPtr dri_buffers_lst;
 	char *dri_comment;
+	char *dri_identifier;
+	XF86OptionPtr dri_option_lst;
 }
 XF86ConfDRIRec, *XF86ConfDRIPtr;
 
@@ -514,7 +522,7 @@ typedef struct
 	XF86ConfInputPtr conf_input_lst;
 	XF86ConfLayoutPtr conf_layout_lst;
 	XF86ConfVendorPtr conf_vendor_lst;
-	XF86ConfDRIPtr conf_dri;
+	XF86ConfDRIPtr conf_dri_lst;
 	char *conf_comment;
 }
 XF86ConfigRec, *XF86ConfigPtr;
@@ -523,6 +531,7 @@ XF86ConfigRec, *XF86ConfigPtr;
 #define conf_flags conf_flags_lst
 #define conf_files conf_files_lst
 #define conf_modules conf_modules_lst
+#define conf_dri conf_dri_lst
 
 typedef struct
 {
@@ -574,7 +583,7 @@ void xf86freeVendorSubList (XF86ConfVendSubPtr ptr);
 void xf86freeVideoAdaptorList(XF86ConfVideoAdaptorPtr ptr);
 void xf86freeVideoPortList(XF86ConfVideoPortPtr ptr);
 void xf86freeBuffersList (XF86ConfBuffersPtr ptr);
-void xf86freeDRI (XF86ConfDRIPtr ptr);
+void xf86freeDRIList (XF86ConfDRIPtr ptr);
 
 GenericListPtr xf86addListItem(GenericListPtr head, GenericListPtr c_new);
 int xf86itemNotSublist(GenericListPtr list_1, GenericListPtr list_2);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.17 2005/01/07 17:19:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.18 2005/01/07 23:03:13 dawes Exp $ */
 
 /*
  * Copyright (c) 1998-2005 by The XFree86 Project, Inc.
@@ -151,6 +151,8 @@ void xf86OptionListFree(pointer opt);
 char *xf86OptionName(pointer opt);
 char *xf86OptionValue(pointer opt);
 void xf86OptionListReport(pointer parm);
+void xf86OptionListPrint(int verb, MessageType from, const char *prefix,
+			 pointer parm);
 pointer xf86FindOption(pointer options, const char *name);
 char *xf86FindOptionValue(pointer options, const char *name);
 void xf86MarkOptionUsed(pointer option);
