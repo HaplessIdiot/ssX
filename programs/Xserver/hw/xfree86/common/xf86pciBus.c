@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.3 2000/01/18 21:23:11 alanh Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -1350,6 +1350,13 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 	if (pcrp->pci_base_class == PCI_CLASS_BRIDGE)
 	    switch (pcrp->pci_sub_class) {
 	    case PCI_SUBCLASS_BRIDGE_PCI:
+		/* something fishy about the header? If so: just ignore! */
+		if ((pcrp->pci_header_type & 0x7f) != 0x01) {
+		    xf86MsgVerb(3,X_WARNING,"PCI-PCI bridge at %x:%x:%x has "
+				"funny header: 0x%x",pcrp->busnum,pcrp->devnum,
+				pcrp->funcnum,pcrp->pci_header_type);
+		    break;
+		}
 		*pnPciBus = PciBus = xnfcalloc(1, sizeof(PciBusRec));
 		pnPciBus = &PciBus->next;
 		PciBus->secondary = pcrp->pci_secondary_bus_number;
