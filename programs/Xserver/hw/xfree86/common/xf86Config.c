@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.263 2002/10/11 01:40:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.264 2002/11/05 05:34:39 keithp Exp $ */
 
 
 /*
@@ -2190,6 +2190,7 @@ xf86HandleConfigFile(void)
     filename = xf86openConfigFile(searchpath, xf86ConfigFile, PROJECTROOT);
     if (filename) {
 	xf86MsgVerb(from, 0, "Using config file: \"%s\"\n", filename);
+	xf86ConfigFile = xnfstrdup(filename);
     } else {
 	xf86Msg(X_ERROR, "Unable to locate/open config file");
 	if (xf86ConfigFile)

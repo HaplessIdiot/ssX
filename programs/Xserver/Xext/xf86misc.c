@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.34 2001/07/25 15:05:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.36 2002/04/04 14:05:37 eich Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -83,6 +83,7 @@ static DISPATCH_PROC(ProcXF86MiscSetKbdSettings);
 static DISPATCH_PROC(ProcXF86MiscSetMouseSettings);
 static DISPATCH_PROC(ProcXF86MiscSetGrabKeysState);
 static DISPATCH_PROC(ProcXF86MiscSetClientVersion);
+static DISPATCH_PROC(ProcXF86MiscGetFilePaths);
 #ifdef _XF86MISC_SAVER_COMPAT_
 static DISPATCH_PROC(ProcXF86MiscGetSaver);
 static DISPATCH_PROC(ProcXF86MiscSetSaver);
@@ -95,6 +96,7 @@ static DISPATCH_PROC(SProcXF86MiscSetKbdSettings);
 static DISPATCH_PROC(SProcXF86MiscSetMouseSettings);
 static DISPATCH_PROC(SProcXF86MiscSetGrabKeysState);
 static DISPATCH_PROC(SProcXF86MiscSetClientVersion);
+static DISPATCH_PROC(SProcXF86MiscGetFilePaths);
 #ifdef _XF86MISC_SAVER_COMPAT_
 static DISPATCH_PROC(SProcXF86MiscGetSaver);
 static DISPATCH_PROC(SProcXF86MiscSetSaver);
@@ -507,6 +509,52 @@ ProcXF86MiscSetClientVersion(ClientPtr client)
 }
 
 static int
+ProcXF86MiscGetFilePaths(client)
+    register ClientPtr client;
+{
+    xXF86MiscGetFilePathsReply rep;
+    const char *configfile;
+    const char *modulepath;
+    const char *logfile;
+    register int n;
+
+    DEBUG_P("XF86MiscGetFilePaths");
+
+    REQUEST_SIZE_MATCH(xXF86MiscGetFilePathsReq);
+    rep.type = X_Reply;
+    rep.sequenceNumber = client->sequence;
+
+    if (!MiscExtGetFilePaths(&configfile, &modulepath, &logfile))
+	return BadValue;
+
+    rep.configlen = (configfile? strlen(configfile): 0);
+    rep.modulelen = (modulepath? strlen(modulepath): 0);
+    rep.loglen = (logfile? strlen(logfile): 0);
+    rep.length = (SIZEOF(xXF86MiscGetFilePathsReply) - SIZEOF(xGenericReply) +
+		  ((rep.configlen + 3) & ~3) +
+		  ((rep.modulelen + 3) & ~3) +
+		  ((rep.loglen + 3) & ~3) ) >> 2;
+    
+    if (client->swapped) {
+    	swaps(&rep.sequenceNumber, n);
+    	swapl(&rep.length, n);
+    	swaps(&rep.configlen, n);
+    	swaps(&rep.modulelen, n);
+    	swaps(&rep.loglen, n);
+    }
+    WriteToClient(client, SIZEOF(xXF86MiscGetFilePathsReply), (char *)&rep);
+    
+    if (rep.configlen)
+        WriteToClient(client, rep.configlen, (char *)configfile);
+    if (rep.modulelen)
+        WriteToClient(client, rep.modulelen, (char *)modulepath);
+    if (rep.loglen)
+        WriteToClient(client, rep.loglen, (char *)logfile);
+
+    return (client->noClientException);
+}
+
+static int
 ProcXF86MiscDispatch (client)
     register ClientPtr	client;
 {
@@ -527,6 +575,8 @@ ProcXF86MiscDispatch (client)
 	return ProcXF86MiscGetKbdSettings(client);
     case X_XF86MiscSetClientVersion:
 		return ProcXF86MiscSetClientVersion(client);
+    case X_XF86MiscGetFilePaths:
+	return ProcXF86MiscGetFilePaths(client);
     default:
 	if (!xf86GetModInDevEnabled())
 	    return miscErrorBase + XF86MiscModInDevDisabled;
@@ -663,6 +713,17 @@ SProcXF86MiscSetClientVersion(ClientPtr client)
 }
 
 static int
+SProcXF86MiscGetFilePaths(client)
+    ClientPtr client;
+{
+    register int n;
+    REQUEST(xXF86MiscGetFilePathsReq);
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xXF86MiscGetFilePathsReq);
+    return ProcXF86MiscGetFilePaths(client);
+}
+
+static int
 SProcXF86MiscDispatch (client)
     register ClientPtr	client;
 {
@@ -683,6 +744,8 @@ SProcXF86MiscDispatch (client)
 	return SProcXF86MiscGetKbdSettings(client);
     case X_XF86MiscSetClientVersion:
 	return SProcXF86MiscSetClientVersion(client);
+    case X_XF86MiscGetFilePaths:
+	return SProcXF86MiscGetFilePaths(client);
     default:
 	if (!xf86GetModInDevEnabled())
 	    return miscErrorBase + XF86MiscModInDevDisabled;

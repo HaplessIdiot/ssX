@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86misc.h,v 3.13 2000/04/17 16:29:48 eich Exp $ */
+/* $XFree86: xc/include/extensions/xf86misc.h,v 3.15 2002/04/04 14:05:35 eich Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -22,6 +22,7 @@
 #define X_XF86MiscSetKbdSettings	6
 #define X_XF86MiscSetGrabKeysState	7
 #define X_XF86MiscSetClientVersion      8
+#define X_XF86MiscGetFilePaths		9
 
 #define XF86MiscNumberEvents		0
 
@@ -103,6 +104,12 @@ typedef struct {
     Bool	servnumlock;
 } XF86MiscKbdSettings;
 
+typedef struct {
+    char*	configfile;
+    char*	modulepath;
+    char*	logfile;
+} XF86MiscFilePaths;
+
 Bool XF86MiscQueryVersion(
     Display*		/* dpy */,
     int*		/* majorVersion */,
@@ -142,6 +149,11 @@ Status XF86MiscSetKbdSettings(
 int XF86MiscSetGrabKeysState(
     Display*			/* dpy */,
     Bool			/* enabled */
+);
+
+Status XF86MiscGetFilePaths(
+    Display*			/* dpy */,
+    XF86MiscFilePaths*		/* file paths/locations */
 );
 
 _XFUNCPROTOEND

@@ -27,7 +27,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.26 2002/05/31 18:46:14 dawes Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.27 2002/11/12 23:53:35 dawes Exp $ */
 /* Modified by Stephen so keyboard rate is set using XKB extensions */
 
 #include <stdio.h>
@@ -1374,6 +1374,23 @@ if (npaths) {
 	}
     } else {
 	printf("  Server does not have the FontCache Extension\n");
+    }
+}
+#endif
+#ifdef XF86MISC
+{
+    int dummy;
+    int maj, min;
+    XF86MiscFilePaths paths;
+
+    if (XF86MiscQueryExtension(dpy, &dummy, &dummy) &&
+	XF86MiscQueryVersion(dpy, &maj, &min) &&
+	((maj > 0) || (maj == 0 && min >= 7)) && 
+	XF86MiscGetFilePaths(dpy, &paths)) {
+	printf("File paths:\n");
+	printf("  Config file:  %s\n", paths.configfile);
+	printf("  Modules path: %s\n", paths.modulepath);
+	printf("  Log file:     %s\n", paths.logfile);
     }
 }
 #endif

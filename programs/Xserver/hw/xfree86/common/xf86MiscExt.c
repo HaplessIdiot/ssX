@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.7 2001/08/15 16:25:21 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.10 2002/09/16 18:05:46 eich Exp $ */
 
 /*
  * This file contains the Pointer/Keyboard functions needed by the 
@@ -593,6 +593,19 @@ MiscExtApply(pointer structure, MiscExtStructType mse_or_kbd)
 #endif
     }
     return MISC_RET_SUCCESS;
+}
+
+Bool
+MiscExtGetFilePaths(const char **configfile, const char **modulepath,
+		    const char **logfile)
+{
+    DEBUG_P("MiscExtGetFilePaths");
+
+    *configfile = xf86ConfigFile;
+    *modulepath = xf86ModulePath;
+    *logfile    = xf86LogFile;
+
+    return TRUE;
 }
 
 #endif /* XF86MISC */
