@@ -1,4 +1,5 @@
 XFree86 4.4.99.13 (xx August 2004)
+ 178. Fix atimisc driver for unusually small page sizes (Marc La France).
  177. Fix ELF loader for >=2.6.8-pre3 Linux kernels (Marc La France).
  176. Add support for the si_LK.UTF-8 locale (Bugzilla #1465,
       Chamath Keppitiyagama on behalf of the Lanka Linux User Group).
@@ -19089,7 +19090,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3310 2004/09/03 02:45:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3311 2004/09/08 14:15:44 tsi Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.76 2004/06/10 17:28:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.77tsi Exp $ */
 /*
  * Copyright 1999 through 2004 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -2515,7 +2515,7 @@ ATIPreInit
 #endif /* AVOID_CPIO */
 
                 {
-                    CARD32 PageSize = getpagesize() >> 10;
+                    CARD32 PageSize = (getpagesize() + 1023) >> 10;
 
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
 
