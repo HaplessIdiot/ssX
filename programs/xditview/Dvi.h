@@ -1,6 +1,7 @@
 /*
 * $XConsortium: Dvi.h,v 1.5 91/07/25 21:33:53 keith Exp $
 */
+/* $XFree86$ */
 
 #ifndef _XtDvi_h
 #define _XtDvi_h

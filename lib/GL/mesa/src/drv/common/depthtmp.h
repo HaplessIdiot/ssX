@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef DBG
 #define DBG 0
 #endif
