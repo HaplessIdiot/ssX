@@ -1,4 +1,6 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 649. Add some missing dead-key compose sequences for Vietnamese (#5981,
+      Le Hong Boi).
  648. Fix a problem with the v4l driver not seeing all the tv-norms
       available under the bttv driver with the Linux 2.6.0-test11 kernel
       (#5976, Marco Antonio Alvarez).
@@ -18333,7 +18335,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3016 2003/12/04 16:59:36 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3017 2003/12/05 03:55:26 dawes Exp $
 
 
 
