@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.19 2003/04/24 18:00:24 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.20 2003/12/22 12:27:07 alanh Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -424,7 +424,7 @@ I810SetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int pattx, int patty,
    pI810->BR[13] = (pScrn->displayWidth * pI810->cpp);
    pI810->BR[13] |= XAAPatternROP[rop] << 16;
    if (bg == -1)
-      pI810->BR[13] |= BR13_MONO_TRANSPCY;
+      pI810->BR[13] |= BR13_MONO_PATN_TRANS;
 }
 
 static void
