@@ -1,4 +1,25 @@
 XFree86 4.3.99.3 (xx April 2003)
+ 121. Resync the Linux drm modules with the DRI trunk.  Includes:
+       - Check for NULL map before calling DRM(ioremapfree) on cleanup
+         (Leif Delgass).
+       - Remove DRM read, poll and write_string (Keith Whitwell).
+       - Add more get_param queries for embedded project (Keith Whitwell).
+       - Move a bunch of gamma-specific code into a gamma-specific file,
+         and restore the kooky DRM(write_string) code for gamma
+         (Keith Whitwell).
+       - Remove unused DMA histogram code (Keith Whitwell).
+       - Remove unused 'DRM_FLAG_NOCTX' option (Keith Whitwell).
+       - Remove unused __HAVE_KERNEL_CTX_SWITCH code (Keith Whitwell).
+       - Fix templates so the i8x0 drivers don't have to define
+         __HAVE_DMA_WAITLIST (Keith Whitwell).
+       - Gamma drm updates (Alan Hourihane).
+       - Only mga, i810, i830 require AGP (Leif Delgass).
+       - Remove PCIGART_ENABLED define for radeon, pcigart support now
+         included for any arch (Leif Delgass).
+       - Get rid of superfluous fields in struct drm_radeon_ring_buffer
+         (Michel Daenzer).
+       - Use correct address for radeon ring read pointer writeback
+         (Michel Daenzer).
  120. Fix a potential bug in ZX1 support (Marc La France).
  119. Fix a buffer overflow in xkbprint (Ivan Pascal).
  118. Fix a bug in Xlib that prevents a vertical text drawing with
@@ -16812,7 +16833,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2649 2003/04/22 14:03:14 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2650 2003/04/22 15:20:13 tsi Exp $
 
 
 
