@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.135 2000/03/12 21:16:07 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.136 2000/03/31 22:55:50 dawes Exp $ */
 
 /*
  *
@@ -386,6 +386,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86IsPc98)
    SYMFUNC(xf86GetClocks)
    SYMFUNC(xf86LoadSubModule)
+   SYMFUNC(xf86UnloadSubModule)
    SYMFUNC(xf86LoaderCheckSymbol)
    SYMFUNC(xf86LoaderReqSymLists)
    SYMFUNC(xf86LoaderReqSymbols)
