@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.38 2000/12/01 17:08:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.39 2000/12/02 15:30:42 tsi Exp $ */
 
 /*
  * Authors:
@@ -1644,6 +1644,9 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
            return FALSE;
    }
    
+   if (!miSetPixmapDepths ())
+       return FALSE;
+
    {
       I810RegPtr i810Reg = &pI810->ModeReg;
       int i;
@@ -1716,6 +1719,10 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
             }
         }
    }
+
+#ifdef RENDER
+   fbPictureInit (pScreen, 0, 0);
+#endif
 
    xf86SetBlackWhitePixels(pScreen);
 
