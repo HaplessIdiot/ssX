@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.21 1999/06/14 07:31:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.22 2000/09/26 15:57:18 tsi Exp $ */
 
 /*
  *
@@ -207,6 +207,8 @@ typedef struct {
 	INT32	fontVersion;
 } ModuleVersions;
 extern ModuleVersions LoaderVersionInfo;
+
+extern unsigned long LoaderOptions;
 
 /* Internal Functions */
 

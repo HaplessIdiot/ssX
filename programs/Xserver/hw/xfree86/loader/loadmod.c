@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.54 2000/10/20 12:57:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.56 2000/11/03 18:46:16 eich Exp $ */
 
 /*
  *
@@ -545,6 +545,7 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data,
 	int vercode[3];
 	char verstr[4];
 	long ver = data->xf86version;
+	int errtype = 0;
 
 	xf86Msg (X_INFO, "Module %s: vendor=\"%s\"\n",
 			data->modname ? data->modname : "UNKNOWN!",
@@ -593,17 +594,27 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data,
 			vermaj = GET_ABI_MAJOR(ver);
 			vermin = GET_ABI_MINOR(ver);
 			if (abimaj != vermaj) {
-				/* XXX This should be an error condition */
-				xf86MsgVerb(X_WARNING, 0,
+				if (LoaderOptions & LDR_OPT_ABI_MISMATCH_NONFATAL)
+					errtype = X_WARNING;
+				else
+					errtype = X_ERROR;
+				xf86MsgVerb(errtype, 0,
 					"module ABI major version (%d) doesn't"
 					" match the server's version (%d)\n",
 					abimaj, vermaj);
+				if (!(LoaderOptions & LDR_OPT_ABI_MISMATCH_NONFATAL))
+					return FALSE;
 			} else if (abimin > vermin) {
-				/* XXX This should be an error condition */
-				xf86MsgVerb(X_WARNING, 0,
+				if (LoaderOptions & LDR_OPT_ABI_MISMATCH_NONFATAL)
+					errtype = X_WARNING;
+				else
+					errtype = X_ERROR;
+				xf86MsgVerb(errtype, 0,
 					"module ABI minor version (%d) is "
 					"newer than the server's version "
 					"(%d)\n", abimin, vermin);
+				if (!(LoaderOptions & LDR_OPT_ABI_MISMATCH_NONFATAL))
+					return FALSE;
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.44 2000/10/02 02:32:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.46 2000/11/03 18:46:16 eich Exp $ */
 
 /*
  *
@@ -1309,3 +1309,24 @@ LoaderDuplicateSymbol(const char *symbol, const int handle)
 void _loader_debug_state()
 {
 }
+
+unsigned long LoaderOptions = 0;
+
+void
+LoaderResetOptions(void)
+{
+	LoaderOptions = 0;
+}
+
+void
+LoaderSetOptions(unsigned long opts)
+{
+	LoaderOptions |= opts;
+}
+
+void
+LoaderClearOptions(unsigned long opts)
+{
+	LoaderOptions &= ~opts;
+}
+
