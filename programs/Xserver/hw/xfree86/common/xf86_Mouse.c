@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Mouse.c,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.4 1995/11/30 13:04:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.5 1995/12/07 07:25:22 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -24,6 +24,10 @@
  * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
+ */
+
+/*
+ * [JCH-96/01/21] Added fourth button support for P_GLIDEPOINT mouse protocol.
  */
 
 #define NEED_EVENTS
@@ -57,6 +61,7 @@ Bool xf86SupportedMouseTypes[] =
 	TRUE,	/* MouseMan */
 	TRUE,	/* PS/2 */
 	TRUE,	/* Hitachi Tablet */
+	TRUE,	/* ALPS GlidePoint */
 };
 
 int xf86NumMouseTypes = sizeof(xf86SupportedMouseTypes) /
@@ -81,6 +86,7 @@ unsigned short xf86MouseCflags[] =
                                                               [CHRIS-211092] */
 	0,						     /* PS/2 */
 	(CS8                   | CREAD | CLOCAL | HUPCL ),   /* mmhitablet */
+	(CS7                   | CREAD | CLOCAL | HUPCL ),   /* GlidePoint */
 };
 #endif /* ! MOUSE_PROTOCOL_IN_KERNEL */
 
@@ -262,6 +268,7 @@ xf86MouseProtocol(rBuf, nBytes)
                                                        [CHRIS-211092] */
     {	0xc0,	0x00,	0x00,	0x00,	3	},  /* PS/2 mouse */
     {	0xe0,	0x80,	0x80,	0x00,	3	},  /* MM_HitTablet */
+    { 	0x40,	0x40,	0x40,	0x00,	3 	},  /* GlidePoint */
   };
   
   for ( i=0; i < nBytes; i++) {
@@ -312,12 +319,22 @@ xf86MouseProtocol(rBuf, nBytes)
 	 * Even worse, different MouseMen and TrackMen differ in the 4th
          * byte: some will send 0x00/0x20, others 0x01/0x21, or even
          * 0x02/0x22, so I have to strip off the lower bits. [CHRIS-211092]
+         *
+         * [JCH-96/01/21]
+         * HACK for ALPS "fourth button". (It's bit 0x10 of the "fourth byte"
+         * and it is activated by tapping the glidepad with the finger! 8^)
+         * We map it to bit bit3, and the reverse map in xf86Events just has
+         * to be extended so that it is identified as Button 4. The lower
+         * half of the reverse-map may remain unchanged.
 	 */
-	if ((xf86Info.mseType == P_MS || xf86Info.mseType == P_LOGIMAN)
-          && (char)(rBuf[i] & ~0x23) == 0)
+	if (((xf86Info.mseType == P_MS || xf86Info.mseType == P_LOGIMAN)
+             && (char)(rBuf[i] & ~0x23) == 0) ||
+	    (xf86Info.mseType == P_GLIDEPOINT && (char)(rBuf[i] & ~0x33) == 0))
 	  {
 	    buttons = ((int)(rBuf[i] & 0x20) >> 4)
 	      | (xf86Info.lastButtons & 0x05);
+	    if (xf86Info.mseType == P_GLIDEPOINT)
+	      buttons |= ((int)(rBuf[i] & 0x10) >> 1);
 	    xf86PostMseEvent(buttons, 0, 0);
 	  }
 
@@ -335,6 +352,7 @@ xf86MouseProtocol(rBuf, nBytes)
       
     case P_LOGIMAN:	    /* MouseMan / TrackMan   [CHRIS-211092] */
     case P_MS:              /* Microsoft */
+    case P_GLIDEPOINT:      /* ALPS GlidePoint */
       if (xf86Info.chordMiddle)
 	buttons = (((int) pBuf[0] & 0x30) == 0x30) ? 2 :
 		  ((int)(pBuf[0] & 0x20) >> 3)
@@ -343,6 +361,8 @@ xf86MouseProtocol(rBuf, nBytes)
         buttons = (xf86Info.lastButtons & 2)
 		  | ((int)(pBuf[0] & 0x20) >> 3)
 		  | ((int)(pBuf[0] & 0x10) >> 4);
+        if (xf86Info.mseType == P_GLIDEPOINT)
+	  buttons |= (xf86Info.lastButtons & 8);
       }
       dx = (char)(((pBuf[0] & 0x03) << 6) | (pBuf[1] & 0x3F));
       dy = (char)(((pBuf[0] & 0x0C) << 4) | (pBuf[2] & 0x3F));

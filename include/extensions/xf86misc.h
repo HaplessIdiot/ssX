@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86misc.h,v 3.1 1996/01/17 12:44:38 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86misc.h,v 3.2 1996/01/24 21:56:49 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -22,6 +22,26 @@
 #define XF86MiscNumberEvents		0
 
 #define XF86MiscNumberErrors		0
+
+#define MTYPE_MICROSOFT		0
+#define MTYPE_MOUSESYS		1
+#define MTYPE_MMSERIES		2
+#define MTYPE_LOGITECH		3
+#define MTYPE_BUSMOUSE		4
+#define MTYPE_LOGIMAN		5
+#define MTYPE_PS_2		6
+#define MTYPE_MMHIT		7
+#define MTYPE_GLIDEPOINT	8
+#define MTYPE_XQUEUE		10
+#define MTYPE_OSMOUSE		11
+
+#define KTYPE_84KEY		1
+#define KTYPE_101KEY		2
+#define KTYPE_OTHER		3
+#define KTYPE_XQUEUE		4
+
+#define MF_CLEAR_DTR		1
+#define MF_CLEAR_CTS		2
 
 #ifndef _XF86MISC_SERVER_
 

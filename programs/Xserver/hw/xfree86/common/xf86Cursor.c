@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Cursor.c,v 1.3 95/01/06 20:57:31 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.6 1995/06/14 09:44:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.7 1995/12/23 09:38:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -33,6 +33,17 @@
 
 #include "xf86.h"
 #include "xf86Procs.h"
+#ifdef XFreeXDGA
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+
+
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
+
 /* #include "atKeynames.h" -hv- dont need that include here */
 
 
@@ -172,6 +183,15 @@ xf86ZoomViewport (pScreen, zoom)
 
   if (xf86ZoomLocked)
     return;
+
+#ifdef XFreeXDGA
+  /*
+   * We should really send the mode change request to the DGA client and let
+   * it decide what to do. For now just bin the request
+   */
+   if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86DGADirectGraphics)
+   return;
+#endif
 
   if (pScr->modes != pScr->modes->next)
   {

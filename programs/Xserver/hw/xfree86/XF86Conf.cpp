@@ -1,5 +1,4 @@
-XCOMM $XConsortium: XF86Conf.cpp,v 1.5 95/01/16 13:16:10 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.17 1996/01/16 15:03:10 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.18 1996/01/17 12:46:42 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -26,6 +25,7 @@ XCOMM not be used in advertising or otherwise to promote the sale, use or other
 XCOMM dealings in this Software without prior written authorization from the
 XCOMM XFree86 Project.
 XCOMM
+XCOMM $XConsortium: XF86Conf.cpp /main/12 1996/01/27 16:00:02 kaleb $
 
 XCOMM **********************************************************************
 XCOMM Refer to the XF86Config(4/5) man page for details about the format of 
@@ -126,6 +126,23 @@ XCOMM    LeftAlt     Meta
 XCOMM    RightAlt    ModeShift
 XCOMM    RightCtl    Compose
 XCOMM    ScrollLock  ModeLock
+
+XCOMM To use the default map in ProjectRoot keymap/xfree86, uncomment 
+XCOMM XkbKeymap. To use one of the alternate maps in keymap/xfree86 
+XCOMM uncomment and modify the XkbKeymap line, e.g.: 
+XCOMM    XkbKeymap  keymap/xfree86(us_microsoft)
+XCOMM To tailor a combination not already in keymap/xfree86 modify
+XCOMM keymap/xfree86 or uncomment and modify the other lines as 
+XCOMM desired. One way to get a german layout on a 101 key keyboard 
+XCOMM is to modify the XkbSymbols line, e.g.:
+XCOMM    XkbSymbols  "symbols/us(pc101)+de"
+
+XCOMM    XkbKeymap   "keymap/xfree86"
+XCOMM    Xkbkeycodes "keycodes/xfree86"
+XCOMM    XkbTypes    "types/default"
+XCOMM    XkbCompat   "compat/default"
+XCOMM    XkbSymbols  "symbols/us(pc101)"
+XCOMM    XkbGeometry "geometry/pc"
 
 EndSection
 

@@ -1,5 +1,5 @@
 /* $XConsortium: mach64curs.c,v 1.2 95/01/12 20:21:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.7 1995/12/07 07:24:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.8 1995/12/16 08:20:00 dawes Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -481,7 +481,7 @@ mach64RecolorCursor(pScr, pCurs, displayed)
 
     WaitIdleEmpty(); 
 
-    if (mach64Ramdac == DAC_ATI68860) {
+    if (mach64Ramdac == DAC_ATI68860_B || mach64Ramdac == DAC_ATI68860_C) {
 	/* Access cursor color registers */
 	outb(ioDAC_CNTL, 1);
 

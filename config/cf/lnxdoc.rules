@@ -1,9 +1,18 @@
-XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.4 1995/08/13 10:05:25 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.5 1995/08/13 10:36:32 dawes Exp $
 XCOMM
 XCOMM Rules for formatting Linuxdoc-SGML documentation
 XCOMM
 
 #include <lnxdoc.tmpl>
+
+#ifdef DontInstallLinuxDoc
+#define LinuxDocInstall(file,dest)	/* do nothing */
+#define LinuxDocInstallMultiple(files,dest)	/* do nothing */
+#else
+#define LinuxDocInstall(file,dest)	InstallNonExecFile(file,dest)
+#define LinuxDocInstallMultiple(files,dest)				@@\
+InstallMultipleDest(install,files,dest)
+#endif
 
 #if BuildLinuxDocPS
 #define LinuxDocSgmlToPs(sgmlfile,base) 				@@\
@@ -18,7 +27,7 @@ base.ps: sgmlfile							@@\
 	    $(MV) base._ps $@						@@\
 	RemoveFile(base.dvi)						@@\
 									@@\
-InstallNonExecFile(base.ps,$(XFREE86PSDOCDIR))				@@\
+LinuxDocInstall(base.ps,$(XFREE86PSDOCDIR))				@@\
 									@@\
 clean::									@@\
 	RemoveFiles(base.dvi base._ps base.ps)
@@ -36,7 +45,7 @@ textfile: sgmlfile							@@\
 	    $(LINUXDOCROFF) | $(XFREE86IDENTFIX) > _$@ && \		@@\
 	    $(MV) _$@ $@						@@\
 									@@\
-InstallNonExecFile(textfile,$(XFREE86DOCDIR))				@@\
+LinuxDocInstall(textfile,$(XFREE86DOCDIR))				@@\
 									@@\
 clean::									@@\
 	RemoveFiles(Concat(_,textfile) textfile)
@@ -71,7 +80,7 @@ base.html: sgmlfile							@@\
 	    $(MV) base._html $@; \					@@\
 	  RemoveFile($${TMP}))						@@\
 									@@\
-InstallMultipleDest(install,base*.html,$(XFREE86HTMLDOCDIR))		@@\
+LinuxDocInstallMultiple(base*.html,$(XFREE86HTMLDOCDIR))		@@\
 									@@\
 clean::									@@\
 	RemoveFiles(base*.html base._html)

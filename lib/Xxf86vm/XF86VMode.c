@@ -1,5 +1,5 @@
 /* $XConsortium: XF86VMode.c /main/2 1995/11/14 18:17:58 kaleb $ */
-/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.14 1996/01/17 12:45:58 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.15 1996/01/20 02:47:05 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -361,7 +361,7 @@ Bool XF86VidModeGetMonitor(dpy, screen, monitor)
     if (rep.vendorLength) {
 	if (!(monitor->vendor = (char *)Xcalloc(rep.vendorLength + 1, 1))) {
 	    _XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
-		      (rep.vendorLength + 3 & 3) + (rep.modelLength + 3 & 3));
+		      (rep.vendorLength + 3 & ~3) + (rep.modelLength + 3 & ~3));
 	    return False;
 	}
     } else {
@@ -370,7 +370,7 @@ Bool XF86VidModeGetMonitor(dpy, screen, monitor)
     if (rep.modelLength) {
 	if (!(monitor->model = Xcalloc(rep.modelLength + 1, 1))) {
 	    _XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
-		      (rep.vendorLength + 3 & 3) + (rep.modelLength + 3 & 3));
+		      (rep.vendorLength + 3 & ~3) + (rep.modelLength + 3 & ~3));
 	    if (monitor->vendor)
 		Xfree(monitor->vendor);
 	    return False;
@@ -380,7 +380,7 @@ Bool XF86VidModeGetMonitor(dpy, screen, monitor)
     }
     if (!(monitor->hsync = Xcalloc(rep.nhsync, sizeof(XF86VidModeSyncRange)))) {
 	_XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
-		  (rep.vendorLength + 3 & 3) + (rep.modelLength + 3 & 3));
+		  (rep.vendorLength + 3 & ~3) + (rep.modelLength + 3 & ~3));
 	
 	if (monitor->vendor)
 	    Xfree(monitor->vendor);
@@ -390,7 +390,7 @@ Bool XF86VidModeGetMonitor(dpy, screen, monitor)
     }
     if (!(monitor->vsync = Xcalloc(rep.nvsync, sizeof(XF86VidModeSyncRange)))) {
 	_XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
-		  (rep.vendorLength + 3 & 3) + (rep.modelLength + 3 & 3));
+		  (rep.vendorLength + 3 & ~3) + (rep.modelLength + 3 & ~3));
 	if (monitor->vendor)
 	    Xfree(monitor->vendor);
 	if (monitor->model)

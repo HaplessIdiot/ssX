@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: NetBSD.cf /main/13 1996/01/22 17:35:44 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.28 1996/01/24 21:51:50 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.29 1996/01/26 08:59:10 dawes Exp $
 
 #ifndef OSName
 #define OSName		NetBSD 1.1
@@ -95,6 +95,9 @@ XCOMM operating system:  OSName
 #  define ServerOSDefines 	-DDDXOSINIT
 # else
 #  define ServerOSDefines 	/**/
+# endif
+# ifndef XFree86ConsoleDefines
+#  define XFree86ConsoleDefines -DPCCONS_SUPPORT -DPCVT_SUPPORT
 # endif
 #endif
 #ifdef i386Architecture

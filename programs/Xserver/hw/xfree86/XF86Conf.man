@@ -1,5 +1,4 @@
 .\" $XConsortium: XF86Conf.man,v 1.5 95/01/16 13:16:10 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.26 1996/01/14 13:34:17 dawes Exp $
 .TH XF86Config 4/5 "Version 3.1.2C"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86
@@ -91,6 +90,14 @@ This disallows the use of the \fBCtrl+Alt+Keypad-Plus\fP and
 \fBCtrl+Alt+Keypad-Minus\fP sequences.  These sequences allows you to
 switch between video modes.
 Setting \fBDontZoom\fP allows these key sequences to be passed to clients.
+.TP 8
+.B AllowNonLocalXvidtune
+This Allow the xvidtune client to connect from another host.  By default
+non-local connections are not allowed.
+.TP 8
+.B DisableVidMode
+This Disable the the parts of the VidMode extension used by the xvidtune client
+that can be used to change the video modes.
 .PP
 The \fBKeyboard\fP section is used to specify the keyboard input
 device, parameters and some default keyboard mapping options.  The
@@ -163,6 +170,29 @@ of this option is to allow system dependent VT initialisation
 commands to be run.  One example is a command to disable the 2-key
 VT switching sequence which is the default on some systems.
 .PP
+.nf
+.B XkbKeymap \fI"keymap"\fP
+.B XkbKeycodes \fI"keycodes"\fP
+.B XkbTypes \fI"types"\fP
+.B XkbCompat \fI"compat"\fP
+.B XkbSymbols \fI"symbols"\fP
+.B XkbGeometry \fI"geometry"\fP
+.fi
+.RS 8
+Specifies alternative mappings for the various keyboard "components".
+The default mappings when none of these options are specified is:
+.sp
+.in 20
+.nf
+XkbKeymap    none
+XkbKeycodes  "keycodes/xfree86"
+XkbTypes     "types/default"
+XkbCompat    "compat/default"
+XkbSymbols   "symbols/us(pc101)"
+XkbGeometry  "geometry/pc"
+.fi
+.RE
+.PP
 The \fBPointer\fP section is used to specify the pointer device
 and parameters.  The entries available for this section are:
 .TP 8
@@ -180,6 +210,7 @@ available are:
 .B MouseSystems
 .B PS/2
 .B MMHitTab
+.B GlidePoint
 .B Xqueue
 .B OSMouse
 .fi
@@ -825,3 +856,4 @@ XF86_P9000(1), XF86_AGX(1), XF86_W32(1).
 Refer to the
 .I XFree86(1)
 manual page.
+.\" $XConsortium: XF86Conf.man /main/13 1996/01/27 16:17:26 kaleb $

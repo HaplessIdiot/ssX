@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.22 1996/01/05 06:28:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.23 1996/01/10 05:39:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -22,6 +22,8 @@
  *
  */
 /* $XConsortium: xf86Events.c /main/22 1995/12/19 18:01:27 kaleb $ */
+
+/* [JCH-96/01/21] Extended std reverse map to four buttons. */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -235,7 +237,19 @@ static char stateTab[48][3] = {
  * Table to allow quick reversal of natural button mapping to correct mapping
  */
 
-static char reverseMap[8] = {0, 4, 2, 6, 1, 5, 3, 7};
+/*
+ * [JCH-96/01/21] The ALPS GlidePoint pad extends the MS protocol
+ * with a fourth button activated by tapping the PAD.
+ * The 2nd line corresponds to 4th button on; the drv sends
+ * the buttons in the following map (MSBit described first) :
+ * 0 | 4th | 1st | 2nd | 3rd
+ * And we remap them (MSBit described first) :
+ * 0 | 4th | 3rd | 2nd | 1st
+ */
+static char reverseMap[16] = {0,  4,  2,  6,  1,  5,  3,  7,
+			      8, 12, 10, 14,  9, 13, 11, 15};
+
+
 static char hitachMap[16] = {  0,  2,  1,  3, 
 			       8, 10,  9, 11,
 			       4,  6,  5,  7,
@@ -1246,6 +1260,16 @@ xf86VTSwitch()
 {
   int j;
 
+#ifdef XFreeXDGA
+  /*
+   * Not ideal, but until someone adds DGA events to the DGA client we
+   * should protect the machine
+   */
+  if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86DGADirectGraphics) {
+   xf86Info.vtRequestsPending = FALSE;
+   return;
+  }
+#endif
   if (xf86VTSema) {
     for (j = 0; j < screenInfo.numScreens; j++)
       (XF86SCRNINFO(screenInfo.screens[j])->EnterLeaveVT)(LEAVE, j);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.10 1995/05/28 11:48:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.11 1996/01/05 06:28:56 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: xf86Io.c /main/9 1995/11/30 19:24:46 kaleb $ */
+/* $XConsortium: xf86Io.c /main/15 1996/01/27 15:24:13 kaleb $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -36,6 +36,9 @@
 #include "xf86_Config.h"
 
 #ifdef XKB
+#include <X11/extensions/XKB.h>
+#include <X11/extensions/XKBstr.h>
+#include <X11/extensions/XKBsrv.h>
 extern Bool noXkbExtension;
 #endif
 
@@ -79,12 +82,6 @@ void
 xf86KbdLeds ()
 {
   int leds = 0;
-#ifdef XKB
-  if (!noXkbExtension) {
-    XkbUpdateIndicators(xf86Info.pKeyboard,~0,NULL);
-    return;
-  }
-#endif
 #ifdef LED_CAP
   if (xf86Info.capsLock && !(xf86Info.xleds & XLED1))
     leds |= LED_CAP;
@@ -285,11 +282,31 @@ xf86KbdProc (pKeyboard, what)
 
     pKeyboard->on = FALSE;
 
+#ifdef XKB
+    if (noXkbExtension) {
+#endif
     InitKeyboardDeviceStruct(xf86Info.pKeyboard,
 			     &keySyms,
 			     modMap,
 			     xf86KbdBell,
 			     (KbdCtrlProcPtr)xf86KbdCtrl);
+#ifdef XKB
+    } else {
+ 	XkbComponentNamesRec names;
+	names.keymap = xf86Info.xkbkeymap;
+	names.keycodes = xf86Info.xkbkeycodes;
+	names.types = xf86Info.xkbtypes;
+	names.compat = xf86Info.xkbcompat;
+	names.symbols = xf86Info.xkbsymbols;
+	names.geometry = xf86Info.xkbgeometry;
+	XkbInitKeyboardDeviceStruct((DeviceIntPtr) pKeyboard, 
+				    &names,
+				    &keySyms, 
+				    modMap, 
+				    xf86KbdBell,
+				    (KbdCtrlProcPtr)xf86KbdCtrl);
+    }
+#endif
     
     xf86InitKBD(TRUE);
     break;
@@ -383,7 +400,11 @@ xf86MseProc(pPointer, what)
       map[3] = 3;
       map[4] = 4;
 
-      if (xf86Info.mseType == P_MMHIT)
+      /*
+       * [JCH-96/01/21] The ALPS GlidePoint pad, extends the MS protocol
+       * with a fourth button activated by tapping the pad.
+       */
+      if (xf86Info.mseType == P_MMHIT || xf86Info.mseType == P_GLIDEPOINT)
         nbuttons = 4;
       else
         nbuttons = 3;

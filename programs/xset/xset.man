@@ -1,5 +1,5 @@
 .\" $XConsortium: xset.man /main/28 1995/12/15 14:05:55 gildea $
-.\" $XFree86: xc/programs/xset/xset.man,v 3.0 1996/01/17 12:51:16 dawes Exp $
+.\" $XFree86: xc/programs/xset/xset.man,v 3.1 1996/01/24 22:04:53 dawes Exp $
 .\" Copyright (c) 1988  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -173,7 +173,7 @@ If a preceding dash or the 'off' flag is used, autorepeat will be disabled.
 If no parameters or the 'on' flag is used, autorepeat will be enabled.
 If a specific keycode is specified as a parameter, autorepeat for that
 keycode is enabled or disabled.
-If the server is supports the XFree86-Misc extension, then a parameter
+If the server supports the XFree86-Misc extension, then a parameter
 of 'rate' is accepted and should be followed by one or two numeric
 values. The first specifies the delay before autorepeat starts and
 the second specifies the repeat rate.

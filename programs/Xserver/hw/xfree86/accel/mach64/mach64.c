@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.35 1996/01/10 05:38:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.36 1996/01/14 13:34:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -280,8 +280,9 @@ SymTabRec mach64RamdacTableNames[] = {
     { DAC_SC15026, "sc15026" },
     { DAC_MU9C1880, "mu9c1880" },
     { DAC_IMSG174, "ims_g174" },
-    { DAC_ATI68860, "ati68860" },
-    { DAC_ATI68880, "ati68880" },
+    { DAC_ATI68860_B, "ati68860" },
+    { DAC_ATI68860_B, "ati68860b" },
+    { DAC_ATI68860_C, "ati68860c" },
     { DAC_TVP3026_B, "tvp3026" },
     { DAC_STG1700, "stg1700" },
     { DAC_ATT498, "att20c498" },
@@ -306,11 +307,11 @@ SymTabRec mach64RamdacTable[] = {
     { DAC_SC15026, "SC15026" },
     { DAC_MU9C1880, "MU9C1880" },
     { DAC_IMSG174, "IMS-G174" },
-    { DAC_ATI68860, "ATI68860" },
-    { DAC_ATI68880, "ATI68880" },
+    { DAC_ATI68860_B, "ATI68860 Rev B" },
+    { DAC_ATI68860_C, "ATI68860 Rev C" },
     { DAC_TVP3026_B, "TVP3026" },
     { DAC_STG1700, "STG1700" },
-    { DAC_ATT498, "AT&T498" },
+    { DAC_ATT498, "AT&T20C498" },
     { DAC_STG1702, "STG1702" },
     { DAC_SC15021, "SC15021" },
     { DAC_ATT21C498, "AT&T21C498" },
@@ -814,8 +815,8 @@ mach64Probe()
     }
 
     switch (info->DAC_SubType) {
-    case DAC_ATI68860:
-    case DAC_ATI68880:
+    case DAC_ATI68860_B:
+    case DAC_ATI68860_C:
     case DAC_ATI68875:
     case DAC_CH8398:
     case DAC_STG1702:
@@ -890,8 +891,8 @@ mach64Probe()
     }
 
     switch(info->DAC_SubType) {
-    case DAC_ATI68860:
-    case DAC_ATI68880:
+    case DAC_ATI68860_B:
+    case DAC_ATI68860_C:
 	mach64InfoRec.maxClock = 135000;
 	break;
     case DAC_ATI68875:

@@ -1,6 +1,5 @@
 /*
- * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.68 1996/01/16 15:03:47 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.69 1996/01/24 22:01:34 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -22,6 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XConsortium: xf86Config.c /main/28 1996/01/27 15:51:59 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -1146,6 +1146,14 @@ configKeyboardSection()
   xf86Info.specialKeyMap[RIGHTALT - LEFTALT] = KM_META;
   xf86Info.specialKeyMap[SCROLLLOCK - LEFTALT] = KM_COMPOSE;
   xf86Info.specialKeyMap[RIGHTCTL - LEFTALT] = KM_CONTROL;
+#ifdef XKB
+  xf86Info.xkbkeymap = NULL;
+  xf86Info.xkbkeycodes = "keycodes/xfree86";
+  xf86Info.xkbtypes = "types/default";
+  xf86Info.xkbcompat = "compat/default";
+  xf86Info.xkbsymbols = "symbols/us(pc101)";
+  xf86Info.xkbgeometry = "pc";
+#endif
 
   while ((token = xf86GetToken(KeyboardTab)) != ENDSECTION) {
     switch (token) {
@@ -1227,6 +1235,50 @@ configKeyboardSection()
       xf86ConfigError("VTSysReq not supported on this OS");
 #endif
       break;
+
+#ifdef XKB
+    case XKBKEYMAP:
+      if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBKeymap string expected");
+      xf86Info.xkbkeymap = val.str;
+      if (xf86Verbose)
+        ErrorF("%s XKB: keymap: \"%s\"\n", XCONFIG_GIVEN, val.str);
+      break;
+
+    case XKBCOMPAT:
+      if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBCompat string expected");
+      xf86Info.xkbcompat = val.str;
+      if (xf86Verbose)
+        ErrorF("%s XKB: compat: \"%s\"\n", XCONFIG_GIVEN, val.str);
+      break;
+
+    case XKBTYPES:
+      if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBTypes string expected");
+      xf86Info.xkbtypes = val.str;
+      if (xf86Verbose)
+        ErrorF("%s XKB: types: \"%s\"\n", XCONFIG_GIVEN, val.str);
+      break;
+
+    case XKBKEYCODES:
+      if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBKeycodes string expected");
+      xf86Info.xkbkeycodes = val.str;
+      if (xf86Verbose)
+        ErrorF("%s XKB: keycodes: \"%s\"\n", XCONFIG_GIVEN, val.str);
+      break;
+
+    case XKBGEOMETRY:
+      if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBGeometry string expected");
+      xf86Info.xkbgeometry = val.str;
+      if (xf86Verbose)
+        ErrorF("%s XKB: geometry: \"%s\"\n", XCONFIG_GIVEN, val.str);
+      break;
+
+    case XKBSYMBOLS:
+      if (xf86GetToken(NULL) != STRING) xf86ConfigError("XKBSymbols string expected");
+      xf86Info.xkbsymbols = val.str;
+      if (xf86Verbose)
+        ErrorF("%s XKB: symbols: \"%s\"\n", XCONFIG_GIVEN, val.str);
+      break;
+#endif
 
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.65 1996/01/14 13:33:20 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.66 1996/01/21 08:39:06 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -143,7 +143,10 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.65 1996/01/14 13:33:20 dawes Exp $
 
 /*
  * BSD Console driver support (for FreeBSD and NetBSD).
- * By default support is included for pccons, syscons and pcvt.
+ *
+ * By default, support is included for pccons and pcvt for NetBSD, and
+ * pccons, syscons and pcvt for FreeBSD.
+ *
  * To change the list of supported drivers, set the following parameter.
  * Possible values are -DPCCONS_SUPPORT, -DSYSCONS_SUPPORT, -DPCVT_SUPPORT,
  * -DCODRV_SUPPORT.  The following example includes support for syscons and

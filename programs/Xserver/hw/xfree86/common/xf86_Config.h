@@ -1,5 +1,4 @@
-/* $XConsortium: xf86_Config.h,v 1.5 95/01/16 13:17:02 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.39 1996/01/16 11:01:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.40 1996/01/16 15:03:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -24,6 +23,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: xf86_Config.h /main/12 1996/01/27 14:20:13 kaleb $ */
 
 #ifndef _xf86_config_h
 #define _xf86_config_h
@@ -168,6 +168,7 @@ static SymTabRec DriverTab[] = {
 #define LOGIMAN		1025
 #define PS_2		1026
 #define MMHITTAB	1027
+#define GLIDEPOINT	1028
 #define XQUE      	1030
 #define OSMOUSE   	1031
 
@@ -181,6 +182,7 @@ static SymTabRec MouseTab[] = {
   { LOGIMAN,	"mouseman" },
   { PS_2,	"ps/2" },
   { MMHITTAB,	"mmhittab" },
+  { GLIDEPOINT,	"glidepoint" },
   { XQUE,	"xqueue" },
   { OSMOUSE,	"osmouse" },
   { -1,		"" },
@@ -409,6 +411,14 @@ static SymTabRec DeviceTab[] = {
 #define RIGHTCTL	37
 #define VTSYSREQ	38
 #define KPROTOCOL	39
+#ifdef XKB
+#define XKBKEYMAP	40
+#define XKBCOMPAT	41
+#define XKBTYPES	42
+#define XKBKEYCODES	43
+#define XKBGEOMETRY	44
+#define XKBSYMBOLS	45
+#endif
 
 #ifdef INIT_CONFIG
 static SymTabRec KeyboardTab[] = {
@@ -424,6 +434,12 @@ static SymTabRec KeyboardTab[] = {
   { SCROLLLOCK,	"scrolllock" },
   { RIGHTCTL,	"rightctl" },
   { VTSYSREQ,	"vtsysreq" },
+  { XKBKEYMAP,	"xkbkeymap"},
+  { XKBCOMPAT,	"xkbcompat"},
+  { XKBTYPES,	"xkbtypes"},
+  { XKBKEYCODES,"xkbkeycodes"},
+  { XKBGEOMETRY,"xkbgeometry"},
+  { XKBSYMBOLS,	"xkbsymbols"},
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */
@@ -437,6 +453,7 @@ static SymTabRec KeyboardTab[] = {
 						   [CHRIS-211092] */
 #define P_PS2		6			/* PS/2 mouse */
 #define P_MMHIT		7			/* MM_HitTab */
+#define P_GLIDEPOINT	8			/* ALPS GlidePoint */
 
 #define EMULATE3	50
 #define BAUDRATE	51

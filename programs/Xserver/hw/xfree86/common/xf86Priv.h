@@ -1,5 +1,4 @@
-/* $XConsortium: xf86Priv.h,v 1.5 95/01/16 13:17:01 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.12 1995/12/23 09:38:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.13 1996/01/17 12:46:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -22,6 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: xf86Priv.h /main/12 1996/01/27 14:54:41 kaleb $ */
 
 #ifndef _XF86PRIV_H
 #define _XF86PRIV_H
@@ -112,6 +112,19 @@ typedef struct {
 #ifdef XINPUT
   /* joystick part */
   DeviceIntPtr  pJstk;          /* device pointer */
+#endif
+
+#ifdef XKB
+/* 
+ * would like to use an XkbComponentNamesRec here but can't without
+ * pulling in a bunch of header files. :-(
+ */
+  char		*xkbkeymap;
+  char		*xkbkeycodes;
+  char		*xkbtypes;
+  char		*xkbcompat;
+  char		*xkbsymbols;
+  char		*xkbgeometry;
 #endif
 
 } xf86InfoRec, *xf86InfoPtr;

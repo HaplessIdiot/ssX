@@ -1,5 +1,5 @@
 /* $XConsortium: mach64init.c,v 1.3 95/01/16 13:16:33 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.10 1995/12/16 08:20:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.11 1995/12/17 05:03:06 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -1088,7 +1088,8 @@ void mach64SetCRTCRegs(crtcRegs)
 
     /* Check to see if we need to program the clock chip */
     if (mach64ClockType != 0 && mach64Ramdac != DAC_IBMRGB514 &&
-	((mach64Ramdac == DAC_ATI68860 && crtcRegs->clock_cntl & 0x30) ||
+	(((mach64Ramdac == DAC_ATI68860_B || mach64Ramdac == DAC_ATI68860_C) &&
+	 crtcRegs->clock_cntl & 0x30) ||
 	 (crtcRegs->clock_cntl == mach64CXClk) ||
 	 (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &mach64InfoRec.clockOptions) &&
 	  !OFLG_ISSET(OPTION_NO_PROGRAM_CLOCKS, &mach64InfoRec.options)))) {
@@ -2028,8 +2029,8 @@ void mach64SetRamdac(colorDepth, AccelMode, dotClock)
     outb(ioCRTC_GEN_CNTL+3, temp | (CRTC_EXT_DISP_EN >> 24));
 
     switch(mach64RamdacSubType) {
-    case DAC_ATI68860:
-    case DAC_ATI68880:
+    case DAC_ATI68860_B:
+    case DAC_ATI68860_C:
 	muxMode = mach64ProgramATI68860(colorDepth, AccelMode);
 	break;
     case DAC_ATI68875:
@@ -2124,8 +2125,8 @@ void mach64InitDisplay(screen_idx)
     old_DAC_MASK = inb(ioDAC_REGS+2);
 
     switch (mach64RamdacSubType) {
-    case DAC_ATI68860:
-    case DAC_ATI68880:
+    case DAC_ATI68860_B:
+    case DAC_ATI68860_C:
 	temp = inb(ioDAC_CNTL);
 	outb(ioDAC_CNTL, (temp & ~DAC_EXT_SEL_RS2) | DAC_EXT_SEL_RS3);
 
@@ -2281,8 +2282,8 @@ void mach64CleanUp()
 
     WaitIdleEmpty();
     switch (mach64RamdacSubType) {
-    case DAC_ATI68860:
-    case DAC_ATI68880:
+    case DAC_ATI68860_B:
+    case DAC_ATI68860_C:
 	temp = inb(ioDAC_CNTL);
 	outb(ioDAC_CNTL, (temp & ~DAC_EXT_SEL_RS2) | DAC_EXT_SEL_RS3);
 

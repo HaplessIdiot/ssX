@@ -1,5 +1,5 @@
 /* $XConsortium: s3linear.h,v 1.2 94/10/12 20:07:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3linear.h,v 3.5 1995/01/28 17:02:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3linear.h,v 3.6 1995/12/28 01:32:17 dawes Exp $ */
 /*
  * s3EnableLinear() and s3DisableLinear() are wrappers to surround
  * any function call that is going to access the video ram through
@@ -59,33 +59,6 @@ extern unsigned char s3Port51;
       }    \
     else \
        outb(vgaCRIndex, 0x35);
-
-#ifdef RAC_IS_BROKEN
-#define s3EnableLinear() \
-   WaitIdle();\
-   if (S3_801_928_SERIES (s3ChipId)) {\
-      int   i;\
-\
-    /* begin 801 sequence for going in to linear mode */\
-    /* x64: CR40 changed a lot for 864/964; wait and see if this still works */\
-      outb (vgaCRIndex, 0x40);\
-      i = (s3Port40 & 0xf6) | 0x0a;/* enable fast write buffer and disable\
-				 * 8514/a mode */\
-      outb (vgaCRReg, (unsigned char) i);\
-      DISABLE_MMIO; \
-      outb (vgaCRIndex, 0x58);\
-      outb (vgaCRReg, s3LinApOpt & ~0x04 | s3SAM256);	/* go on to linear mode */\
-      if (!S3_x64_SERIES(s3ChipId)) {\
-         outb (vgaCRIndex, 0x54);\
-         outb (vgaCRReg, s3Port54);\
-      }\
-    /* end  801 sequence to go into linear mode */\
-      outb(vgaCRIndex, 0x39);\
-      outb(vgaCRReg, 0x50); \
-      }    \
-      else \
-        outb(vgaCRIndex, 0x35); 
-#endif
 
 
 #define s3DisableLinear() \

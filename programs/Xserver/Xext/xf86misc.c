@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.3 1996/01/17 14:03:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.4 1996/01/24 22:00:07 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -141,9 +141,6 @@ ProcXF86MiscGetSaver(client)
     return (client->noClientException);
 }
 
-#define MTYPE_XQUEUE	10
-#define MTYPE_OSMOUSE	11
-
 static int
 ProcXF86MiscGetMouseSettings(client)
     register ClientPtr client;
@@ -194,8 +191,6 @@ ProcXF86MiscGetMouseSettings(client)
     return (client->noClientException);
 }
 
-#define KTYPE_XQUEUE	4
-
 static int
 ProcXF86MiscGetKbdSettings(client)
     register ClientPtr client;
@@ -241,14 +236,69 @@ ProcXF86MiscSetMouseSettings(client)
 	return BadValue;
     if (stuff->emulate3timeout < 0)
 	return BadValue;
+    if (stuff->chordmiddle && stuff->emulate3buttons)
+	return BadValue;
+    if (stuff->chordmiddle
+            && !(stuff->mousetype == MTYPE_MICROSOFT
+                 || stuff->mousetype == MTYPE_LOGIMAN) )
+	return BadValue;
+    if (stuff->flags & (MF_CLEAR_DTR|MF_CLEAR_RTS)
+            && stuff->mousetype != MTYPE_MOUSESYS)
+	return BadValue;
+    if (stuff->mousetype == MTYPE_LOGIMAN
+            && !(stuff->baudrate == 1200 || stuff->baudrate == 9600) )
+	return BadValue;
+    if (stuff->mousetype == MTYPE_LOGIMAN && stuff->samplerate)
+	return BadValue;
+#ifdef OSMOUSE_ONLY
+    if (stuff->mousetype != MTYPE_OSMOUSE)
+	return BadValue;
+#else
+#ifndef XQUEUE
+    if (stuff->mousetype == MTYPE_XQUEUE)
+	return BadValue;
+#endif
+#ifndef USE_OSMOUSE
+    if (stuff->mousetype == MTYPE_OSMOUSE)
+	return BadValue;
+#endif
+#endif /* OSMOUSE_ONLY */
 
-    xf86Info.mseType = stuff->mousetype;
-    xf86Info.baudRate = stuff->baudrate;
-    xf86Info.sampleRate = stuff->samplerate;
-    xf86Info.emulate3Buttons = stuff->emulate3buttons;
+    /* I think all three of these can just be changed on the fly */
+    xf86Info.emulate3Buttons = stuff->emulate3buttons!=0;
     xf86Info.emulate3Timeout = stuff->emulate3timeout;
-    xf86Info.chordMiddle = stuff->chordmiddle;
-    xf86Info.mouseFlags = stuff->flags;
+    xf86Info.chordMiddle = stuff->chordmiddle!=0;
+
+    if (xf86Info.mseType != stuff->mousetype
+            || xf86Info.baudRate != stuff->baudrate 
+            || xf86Info.sampleRate != stuff->samplerate 
+            || xf86Info.mouseFlags != stuff->flags ) {
+	
+	if (xf86Info.pPointer)
+            (xf86Info.mseProc)(xf86Info.pPointer, DEVICE_CLOSE);
+
+        xf86Info.mseType = stuff->mousetype;
+#ifdef XQUEUE
+	if (xf86Info.mseType == MTYPE_XQUEUE) {
+            xf86Info.mseProc = xf86XqueMseProc;
+            xf86Info.mseEvents = xf86XqueEvents;
+            xf86Info.xqueSema = 0;
+	}
+#endif
+#ifdef USE_OSMOUSE
+	if (xf86Info.mseType == MTYPE_OSMOUSE) {
+            xf86Info.mseProc = xf86OsMouseProc;
+            xf86Info.mseEvents = xf86OsMouseEvents;
+	}
+#endif
+        xf86Info.baudRate = stuff->baudrate;
+        xf86Info.sampleRate = stuff->samplerate;
+        xf86Info.mouseFlags = stuff->flags;
+
+	if (xf86Info.pPointer)
+            (xf86Info.mseProc)(xf86Info.pPointer, DEVICE_ON);
+
+    }
 
     return (client->noClientException);
 }
@@ -266,7 +316,6 @@ ProcXF86MiscSetKbdSettings(client)
     if (stuff->delay < 0)
 	return BadValue;
 
-    xf86Info.kbdType = stuff->kbdtype;
     if (xf86Info.kbdRate!=stuff->rate || xf86Info.kbdDelay!=stuff->delay) {
 	char rad;
 
@@ -283,6 +332,7 @@ ProcXF86MiscSetKbdSettings(client)
     
         xf86SetKbdRepeat(rad);
     }
+    xf86Info.kbdType = stuff->kbdtype;
     xf86Info.serverNumLock = stuff->servnumlock;
 
     return (client->noClientException);

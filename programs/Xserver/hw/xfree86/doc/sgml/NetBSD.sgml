@@ -7,7 +7,7 @@ David Dawes,
 Marc  Wandschneider,
 Mark  Weaver,
 Matthieu Herrb
-<Date>Last modified on: 3 Dec 1995
+<Date>Last modified on: 27 Jan 1996
 
 <toc>
 
@@ -360,9 +360,9 @@ line must be in your config file in <tt>/sys/arch/i386/conf</tt>:
  options XSERVER, UCONSOLE
 </tscreen>
 
-The server supports several console drivers: pccons, pcvt, syscons
-and codrv.  They are detected at runtime and no configuration of the
-server itself is required.
+The server supports the two standard NetBSD/i386 console drivers:
+pccons and pcvt. They are detected at runtime and no configuration of
+the server itself is required.
 
 The pccons driver is the most widely tested and is the console driver
 contained in the NetBSD binary distribution's kernels.
@@ -385,18 +385,15 @@ to
 in your kernel config file, and rebuild and install your kernel.
 
 Syscons and codrv are not bundled with NetBSD 1.1. They are
-available by anonymous FTP from a number of sites.
+available by anonymous FTP from a number of sites. They are not
+supported by the XFree86 binary distribution anymore. You can compile
+support for them by adding -DSYSCONS_SUPPORT or -DCODRV_SUPPORT to
+<tt/XFree86ConsoleDefines/ in <tt/xf86site.def/. See the section <ref
+id="console-drivers" name="Console drivers"> for details.
+
 
 If using pccons you get the message:
-
 <tscreen><verb>
-> XFree86 Version 3.1.2 / X Window System
-> (protocol Version 11, revision 0, vendor release 6000)
-> Operating System: NetBSD
-> Configured drivers:
->   Mach8: accelerated server for ATI Mach-8 graphics adaptors
-> (Patchlevel 0)
-> 
 > Fatal server error:
 > xf86OpenConsole: CONSOLE_X_MODE_OFF failed (Inappropriate ioctl for device)
 > Was expecting pccons driver with X support
@@ -447,18 +444,20 @@ There are two ways to allow XFree86 to access linear memory:
        driver if available.
     </enum>
 
-    Warning: if you boot another kernel than <tt>/netbsd</tt>,
+    <bf/Warning:/ if you boot another kernel than <tt>/netbsd</tt>,
     loadable kernel modules can crash your system. Always boot in
     single user mode when you want to run another kernel.
-
-</enum>
 
 <quote>
    <bf/Caveat:/ the NetBSD aperture driver only allows one access at a time
    (so that the system is in the same security state once X is
    launched). This means that if you run multiple servers on multiples
    VT, only the first one will have linear memory access.
+   Use 'option INSECURE' if you need more that one X server at a time.
 </quote>
+
+</enum>
+
 
 <sect1>MIT-SHM
 <p>
@@ -511,7 +510,7 @@ You should configure the distribution by editing
 <tt>xc/config/cf/xf86site.def</tt>  before compiling.  To compile the
 sources, invoke ``<tt/make World/'' in the xc directory.
 
-<sect1>Console drivers
+<sect1>Console drivers<label id="console-drivers">
 
 <p>
 XFree86 3.1.2 has a configuration option to select the console
@@ -535,30 +534,25 @@ drivers to use in <tt/xf86site.def/:
 </verb></tscreen>
 </itemize>
 If you don't define <bf/XFree86ConsoleDefines/ in <tt/xf86site.def/ the
-pccons, pcvt and syscons drivers will be supported.
+pccons and pcvt drivers will be supported.
 
 <sect1>console.h and ioctl_pc.h files:
 
 <p>
-If you want to build a server supporting syscons or codrv and you
-don't already have the corresponding header files <tt/console.h/ and
+If you want to build a server supporting codrv and you
+don't already have the corresponding header file 
 <tt/ioctl_pc.h/ installed in <tt>/usr/include/machine</tt>, then
-install the copies that are supplied in
+install the copy that is supplied in
 <tt>xc/programs/Xserver/hw/xfree86/etc</tt>.  If you run
-NetBSD-current you probably want to install them in
-<tt>/usr/src/sys/arch/i386/include</tt> too, so that they get
+NetBSD-current you probably want to install it in
+<tt>/usr/src/sys/arch/i386/include</tt> too, so that it get
 reinstalled each time you make install in <tt>/usr/src/include</tt>.
 
-Another way to keep these files accessible is to make a symbolic link
-like this in the <tt/xc/ directory (suggested by Andrew Cagney
-<em/cagney@highland.com.au/):
+If you have installed the  codrv console driver, this
+file should be taken from your installed version of the driver.
 
-<tscreen>
- ln -s programs/Xserver/hw/xfree86/etc machine
-</tscreen>
-
-If you have installed the syscons or codrv console drivers, these
-files should be taken from your installed version of the driver.
+The <tt/console.h/ file for syscons isn't distributed with XFree86
+anymore. You should get it from the syscons distribution.
 
 <sect1> Support for shared libs under NetBSD 1.0 and later
 
@@ -657,7 +651,7 @@ and many others.
 
 <verb>
 $XConsortium: NetBSD.sgml,v 1.4 95/01/27 16:14:26 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.16 1995/12/07 07:25:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.17 1995/12/31 12:02:12 dawes Exp $
 </verb>
 
 </article>

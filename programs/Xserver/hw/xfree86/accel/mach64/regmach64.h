@@ -1,5 +1,5 @@
 /* $XConsortium: regmach64.h,v 1.2 95/01/16 13:16:36 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.6 1995/12/07 07:24:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.7 1995/12/16 08:20:05 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -347,8 +347,8 @@ extern unsigned ioCRTC_GEN_CNTL;
 #define DAC_SC15026		0x24
 #define DAC_MU9C1880		0x34
 #define DAC_IMSG174		0x44
-#define DAC_ATI68860		0x05
-#define DAC_ATI68880		0x15
+#define DAC_ATI68860_B		0x05
+#define DAC_ATI68860_C		0x15
 #define DAC_TVP3026_B		0x75
 #define DAC_STG1700		0x06
 #define DAC_ATT498		0x16

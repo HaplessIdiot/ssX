@@ -1,3 +1,13 @@
+XFree86 3.1.2Bn (28 January 1996)
+283. Support for ALPS GlidePoint.  A tap on the pad is treated as a fourth
+     button (Jean-Christophe Hugly).
+282. Improved XKB support for XFree86 servers (Kaleb Keithley).
+281. Prevent mode switching and VT switching when DGA is active (Jon Tombs).
+280. Don't include for syscons with NetBSD by default.
+279. NetBSD doc updates (Matthieu Herrb).
+278. XFree86-Misc extension updates, including more sanity checking (Joe Moss).
+277. Fix some length calculations in libXxf86vm (Joe Moss).
+
 XFree86 3.1.2Bm (26 January 1996)
 276. Remove (for now) the vertical retrace wait in the S3 SetViewPort.
 275. Updates TGUI support for SuperProbe (Alan Hourihane).
