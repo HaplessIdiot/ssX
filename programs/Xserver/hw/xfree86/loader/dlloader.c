@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.4 1998/03/20 19:07:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.5 1998/03/21 11:08:48 dawes Exp $ */
 
 
 
@@ -32,6 +32,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dlfcn.h>
+#include "Xos.h"
+#include "os.h"
 
 #include "loader.h"
 
