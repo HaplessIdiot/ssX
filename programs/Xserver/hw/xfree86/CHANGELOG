@@ -1,4 +1,10 @@
 XFree86 4.1.99.1 (xx June 2001)
+  63. Add a BuildBindist switch which causes a file containing the XFree86
+      version number to be installed in ProjectRoot, include this in
+      the Xbin bindist tarballs, and turn on this switch in the bindist
+      host.def files.  The purpose is to allow the installer script to
+      easily identify which version the bindist tarballs are (David Dawes).
+  62. Resync bindist and Xinstall.sh with changes made for 4.0.3 (David Dawes).
   61. Fix the Shape extension's XShapeCombineMask to handle cases where
       src_mask is None according to the spec.  This reportedly fixes an
       X server crash (#4715, Huver).
@@ -13418,4 +13424,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1817 2001/05/31 16:11:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1818 2001/05/31 16:35:17 dawes Exp $

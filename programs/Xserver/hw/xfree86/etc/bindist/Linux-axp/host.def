@@ -1,10 +1,11 @@
 /*
  * Host.def for building Linux/alpha bindists
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/etc/bindist/Linux-axp/host.def,v 1.5 2000/12/18 14:34:58 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/etc/bindist/Linux-axp/host.def,v 1.6 2001/03/17 18:41:32 dawes Exp $
  */
 
 #define InstallEmptyHostDef
+#define BuildBindist
 
 /* Need to have glide 3 installed, where available */
 
