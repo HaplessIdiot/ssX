@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx June 2002)
+ 193. Radeon patch for Xv on all known Radeon devices (James Ralston and
+      Keith Packard).
  192. New XDarwin application icon (Michael Oland).
  191. Dead strip unneeded code in rootlessValTree.c and other miscellaneous
       XDarwin code cleanup (Greg Parker and Torrey T. Lyons).
