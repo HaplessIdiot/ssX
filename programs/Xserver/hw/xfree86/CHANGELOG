@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (xx June 2002)
+ 198. Remove -DNO_TCP_H from cygwin.cf for Cygwin/XFree86 (#5320, Harold Hunt).
  197. Major updates to Cygwin/XFree86.
        - fix depth 24 issues.
        - fix the handling of the DirectDraw module.
@@ -14924,4 +14925,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2256 2002/07/04 17:04:21 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2257 2002/07/05 09:19:20 alanh Exp $
