@@ -1039,7 +1039,7 @@ SISSense30x(ScrnInfoPtr pScrn)
 	   cvbs_bh = 0x00; cvbs_bl = 0xb3;
 	   biosflag = 2;
 	}
-	if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV)) {
+	if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV|VB_302ELV)) {
 	   vga2_bh = 0x01; vga2_bl = 0x90;
 	   svhs_bh = 0x01; svhs_bl = 0x6b;
 	   cvbs_bh = 0x01; cvbs_bl = 0x74;
@@ -1072,7 +1072,7 @@ SISSense30x(ScrnInfoPtr pScrn)
 	   else if(pSiS->VBFlags & VB_301C)   temp += 18;
 	   else if(pSiS->VBFlags & VB_301LV)  temp += 12;
 	   else if(pSiS->VBFlags & VB_302LV)  temp += 12;
-	   else if(pSiS->VBFlags & VB_301LVX) temp += 18;
+	   else if(pSiS->VBFlags & VB_302ELV) temp += 18;
 	   vga2_bh = pSiS->BIOS[temp+1]; vga2_bl = pSiS->BIOS[temp];
 	   svhs_bh = pSiS->BIOS[temp+3]; svhs_bl = pSiS->BIOS[temp+2];
 	   cvbs_bh = pSiS->BIOS[temp+5]; cvbs_bl = pSiS->BIOS[temp+4];
@@ -1082,7 +1082,7 @@ SISSense30x(ScrnInfoPtr pScrn)
 	      vga2_bh = 0x01; vga2_bl = 0x90;
 	      svhs_bh = 0x01; svhs_bl = 0x6b; /* Are these really correct for LV? */
 	      cvbs_bh = 0x01; cvbs_bl = 0x74;
-	   } else if(pSiS->VBFlags & (VB_301C | VB_301LVX)) {
+	   } else if(pSiS->VBFlags & (VB_301C | VB_302ELV)) {
 	      vga2_bh = 0x01; vga2_bl = 0x90;
 	      svhs_bh = 0x01; svhs_bl = 0x6b;
 	      cvbs_bh = 0x01; cvbs_bl = 0x10;
@@ -1097,7 +1097,7 @@ SISSense30x(ScrnInfoPtr pScrn)
 	svhs_ch = 0x04;	svhs_cl = 0x04;
 	cvbs_ch = 0x08; cvbs_cl = 0x04;
 
-	if(pSiS->VBFlags & (VB_301LV|VB_302LV)) {
+	if(pSiS->VBFlags & (VB_301LV|VB_302LV|VB_302ELV)) {
 	   vga2_bh = 0x00; vga2_bl = 0x00;
 	   vga2_ch = 0x00; vga2_cl = 0x00;
 	   svhs_ch = 0x04; svhs_cl = 0x08;
@@ -1125,7 +1125,7 @@ SISSense30x(ScrnInfoPtr pScrn)
 	   biosflag = 2;
 	}
 	
-	if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV)) {
+	if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV|VB_302ELV)) {
 	   if(pSiS->sishw_ext.UseROM) {
 	      if(pSiS->Chipset == PCI_CHIP_SIS330) {
 	         vga2_bh = pSiS->BIOS[0xec]; vga2_bl = pSiS->BIOS[0xeb];
@@ -1158,7 +1158,7 @@ SISSense30x(ScrnInfoPtr pScrn)
 	   }
 	}
 	
-	if(pSiS->VBFlags & (VB_301LV|VB_302LV)) {
+	if(pSiS->VBFlags & (VB_301LV|VB_302LV|VB_302ELV)) {
 	   /* TW: No VGA2 or SCART on LV bridges */
 	   vga2_bh = 0x00; vga2_bl = 0x00;
 	   vga2_ch = 0x00; vga2_cl = 0x00;
@@ -1217,7 +1217,7 @@ SISSense30x(ScrnInfoPtr pScrn)
     andSISIDXREG(SISCR, 0x32, ~0x03);
     pSiS->postVBCR32 &= ~0x03;
 
-    if(pSiS->VBFlags & (VB_301C | VB_301LVX)) {
+    if(pSiS->VBFlags & (VB_301C | VB_302ELV)) {
        orSISIDXREG(SISPART4,0x0d,0x04);
     }
 
@@ -1400,10 +1400,10 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 		                "Detected SiS302LV video bridge (ID 1; Revision 0x%x)\n",
 				temp1);
 		} else {
-		   pSiS->VBFlags |= VB_301LVX;
-		   pSiS->sishw_ext.ujVBChipID = VB_CHIP_301LVX;
+		   pSiS->VBFlags |= VB_302ELV;
+		   pSiS->sishw_ext.ujVBChipID = VB_CHIP_302ELV;
     		   xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		                "Detected SiS301LVX video bridge (ID 1; Revision 0x%x)\n",
+		                "Detected SiS302ELV video bridge (ID 1; Revision 0x%x)\n",
 				temp1);
 		}
 	} else if(temp1 >= 0xD0) {
@@ -1412,7 +1412,7 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
     		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		                "Detected SiS301LV video bridge (ID 1; Revision 0x%x)\n",
 				temp1);
-	} else if(temp1 >= 0xC0) {   /* guessed */
+	} else if(temp1 >= 0xC0) {   
 	   	pSiS->VBFlags |= VB_301C;
 		pSiS->sishw_ext.ujVBChipID = VB_CHIP_301C;
     		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
@@ -1745,8 +1745,8 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
      */
     if(pSiS->VGAEngine == SIS_315_VGA) {
 
-       if(pSiS->VBFlags & (VB_302B | VB_301LV | VB_302LV)) {
-          if(pSiS->sisfblcda != 0xff) {	  
+       if(pSiS->VBFlags & (VB_301C | VB_302B | VB_301LV | VB_302LV | VB_302ELV)) {
+          if(pSiS->sisfblcda != 0xff) {
 	     if((pSiS->sisfblcda & 0x03) == 0x03) {
 	        pSiS->SiS_Pr->SiS_UseLCDA = TRUE;
 	        pSiS->ChipFlags |= SiSCF_UseLCDA;

@@ -59,12 +59,12 @@
 #define VB_SIS302B        	0x0004
 #define VB_SIS301LV     	0x0008
 #define VB_SIS302LV     	0x0010
-#define VB_SIS301LVX		0x0020
+#define VB_SIS302ELV		0x0020
 #define VB_SIS301C              0x0040
 #define VB_NoLCD        	0x8000
-#define VB_SIS301BLV302BLV      (VB_SIS301B|VB_SIS301C|VB_SIS302B|VB_SIS301LV|VB_SIS302LV|VB_SIS301LVX)
+#define VB_SIS301BLV302BLV      (VB_SIS301B|VB_SIS301C|VB_SIS302B|VB_SIS301LV|VB_SIS302LV|VB_SIS302ELV)
 #define VB_SIS301B302B          (VB_SIS301B|VB_SIS301C|VB_SIS302B)
-#define VB_SIS301LV302LV        (VB_SIS301LV|VB_SIS302LV|VB_SIS301LVX)
+#define VB_SIS301LV302LV        (VB_SIS301LV|VB_SIS302LV|VB_SIS302ELV)
 #define VB_SISVB		(VB_SIS301 | VB_SIS301BLV302BLV)
 
 /* VBInfo */
@@ -76,15 +76,15 @@
 #define SetCRT2ToLCD            0x0020
 #define SetCRT2ToRAMDAC         0x0040
 #define SetCRT2ToHiVisionTV     0x0080
-#define SetCRT2ToTV             0x009C   /* alias */
+#define SetCRT2ToTV             0x009C   		/* alias */
 #define SetNTSCTV               0x0000   /* CR 31 */
-#define SetPALTV                0x0100   /* Deprecated in VBInfo, now in TVMode */
+#define SetPALTV                0x0100   		/* Deprecated here, now in TVMode */
 #define SetInSlaveMode          0x0200
 #define SetNotSimuMode          0x0400
 #define SetNotSimuTVMode        0x0400
 #define SetDispDevSwitch        0x0800
 #define LoadDACFlag             0x1000
-#define SetCHTVOverScan  	0x1000  /* Re-defined (from 0x8000) */
+#define SetCHTVOverScan  	0x1000   		/* Deprecated here, now in TVMode */
 #define DisableCRT2Display      0x2000
 #define CRT2DisplayFlag         0x2000
 #define DriverMode              0x4000
@@ -117,24 +117,21 @@
 #define DoubleScanMode          0x8000
 
 /* Infoflag */
-#define SupportAllCRT2          0x0078
 #define SupportTV               0x0008
-#define SupportHiVisionTV       0x0010
-#define SupportLCD              0x0020
-#define SupportRAMDAC2          0x0040
+#define SupportTV1024           0x0800
 #define SupportCHTV 		0x0800
-#define SupportTV1024           0x0800            
-#define InterlaceMode           0x0080
+#define SupportHiVisionTV       0x0010
 #define SupportHiVisionTV2      0x1000
+#define SupportLCD              0x0020
+#define SupportRAMDAC2          0x0040	/* All           (<= 100Mhz) */
+#define SupportRAMDAC2_135      0x0100  /* All except DH (<= 135Mhz) */
+#define SupportRAMDAC2_162      0x0200  /* B, C          (<= 162Mhz) */
+#define SupportRAMDAC2_202      0x0400  /* C             (<= 202Mhz) */
+#define InterlaceMode           0x0080
 #define SyncPP                  0x0000
 #define SyncPN                  0x4000
 #define SyncNP                  0x8000
 #define SyncNN                  0xc000
-#define ECLKindex0              0x0000
-#define ECLKindex1              0x0100
-#define ECLKindex2              0x0200
-#define ECLKindex3              0x0300
-#define ECLKindex4              0x0400
 
 /* SetFlag */
 #define ProgrammingCRT2         0x0001
@@ -258,7 +255,7 @@
 #define EnablePALN              0x80   /* 1 = Set PALN */
 #define EnableNTSCJ             EnablePALM  /* Not BIOS */
 
-/* CR38 (315 series)
+/* CR38 (661 and later)
   D[7:5]  000 No VB
           001 301 series VB
 	  010 LVDS
@@ -339,34 +336,34 @@
 #define Panel_848x480		0x11
 
 /* Index in ModeResInfo table */
-#define SIS_RI_320x200 0
-#define SIS_RI_320x240 1
-#define SIS_RI_320x400 2
-#define SIS_RI_400x300 3
-#define SIS_RI_512x384 4
-#define SIS_RI_640x400 5
-#define SIS_RI_640x480 6
-#define SIS_RI_800x600 7
-#define SIS_RI_1024x768 8
-#define SIS_RI_1280x1024 9
+#define SIS_RI_320x200    0
+#define SIS_RI_320x240    1
+#define SIS_RI_320x400    2
+#define SIS_RI_400x300    3
+#define SIS_RI_512x384    4
+#define SIS_RI_640x400    5
+#define SIS_RI_640x480    6
+#define SIS_RI_800x600    7
+#define SIS_RI_1024x768   8
+#define SIS_RI_1280x1024  9
 #define SIS_RI_1600x1200 10
 #define SIS_RI_1920x1440 11
 #define SIS_RI_2048x1536 12
-#define SIS_RI_720x480 13
-#define SIS_RI_720x576 14
-#define SIS_RI_1280x960 15
-#define SIS_RI_800x480 16
-#define SIS_RI_1024x576 17
-#define SIS_RI_1280x720 18
-#define SIS_RI_856x480 19
-#define SIS_RI_1280x768 20
+#define SIS_RI_720x480   13
+#define SIS_RI_720x576   14
+#define SIS_RI_1280x960  15
+#define SIS_RI_800x480   16
+#define SIS_RI_1024x576  17
+#define SIS_RI_1280x720  18
+#define SIS_RI_856x480   19
+#define SIS_RI_1280x768  20
 #define SIS_RI_1400x1050 21
-#define SIS_RI_1152x864 22  /* Up to this SiS conforming */
-#define SIS_RI_848x480 23
-#define SIS_RI_1360x768 24
-#define SIS_RI_1024x600 25
-#define SIS_RI_1152x768 26
-#define SIS_RI_768x576 27
+#define SIS_RI_1152x864  22  /* Up to this SiS conforming */
+#define SIS_RI_848x480   23
+#define SIS_RI_1360x768  24
+#define SIS_RI_1024x600  25
+#define SIS_RI_1152x768  26
+#define SIS_RI_768x576   27
 #define SIS_RI_1360x1024 28
 
 /* CR5F */

@@ -178,8 +178,6 @@ void SISCRT1PreInit(ScrnInfoPtr pScrn)
     }
 #endif
 
-    if(pSiS->ForceCRT1Type != CRT1_VGA) return;
-
     inSISIDXREG(SISCR, 0x32, CR32);
 
     if(CR32 & 0x20)  CRT1Detected = 1;
@@ -214,10 +212,7 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
     SISPtr  pSiS = SISPTR(pScrn);
     unsigned char CR32, CR36, CR37;
 
-    if(!(pSiS->VBFlags & VB_VIDEOBRIDGE)) {
-       pSiS->ForceCRT1Type = CRT1_VGA;
-       return;
-    }
+    if(!(pSiS->VBFlags & VB_VIDEOBRIDGE)) return;
 
     inSISIDXREG(SISCR, 0x32, CR32);
    
@@ -351,9 +346,6 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
        }
     }
 
-    if(!(pSiS->VBFlags & CRT2_LCD)) {
-       pSiS->ForceCRT1Type = CRT1_VGA;
-    }
 }
 
 /* Detect CRT2-TV connector type and PAL/NTSC flag */
@@ -398,7 +390,7 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
        pSiS->VBFlags |= TV_AVIDEO;
     else if(CR32 & 0x40)
        pSiS->VBFlags |= (TV_SVIDEO | TV_HIVISION);
-    else if((CR38 & 0x04) && (pSiS->VBFlags & (VB_301LV | VB_302LV)))
+    else if((CR38 & 0x04) && (pSiS->VBFlags & (VB_301C | VB_301LV | VB_302LV | VB_302ELV)))
        pSiS->VBFlags |= TV_HIVISION_LV;
     else if((CR38 & 0x04) && (pSiS->VBFlags & VB_CHRONTEL)) 
        pSiS->VBFlags |= (TV_CHSCART | TV_PAL);
@@ -473,7 +465,7 @@ void SISCRT2PreInit(ScrnInfoPtr pScrn)
        return;
 
     /* CRT2-VGA not supported on LVDS and 30xLV */
-    if(pSiS->VBFlags & (VB_LVDS|VB_301LV|VB_302LV))
+    if(pSiS->VBFlags & (VB_LVDS|VB_301LV|VB_302LV|VB_302ELV))
        return;
 
     inSISIDXREG(SISCR, 0x32, CR32);
@@ -520,8 +512,9 @@ void SISCRT2PreInit(ScrnInfoPtr pScrn)
              }
           }
        }
-
+#ifdef SISDUALHEAD
     }
+#endif    
 }
 
 

@@ -550,7 +550,7 @@ SiS300Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
           (*pSiS->SiSSaveLVDSChrontel)(pScrn, sisReg);
        if(pSiS->VBFlags & VB_301)
           (*pSiS->SiSSave2)(pScrn, sisReg);
-       if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV))
+       if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV|VB_302ELV))
           (*pSiS->SiSSave3)(pScrn, sisReg);
 #ifndef TWDEBUG
     }
@@ -703,7 +703,7 @@ SiS300Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
           (*pSiS->SiSRestoreLVDSChrontel)(pScrn, sisReg);
        if(pSiS->VBFlags & VB_301)
           (*pSiS->SiSRestore2)(pScrn, sisReg);
-       if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV))
+       if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV|VB_302ELV))
           (*pSiS->SiSRestore3)(pScrn, sisReg);
     }
 
@@ -782,7 +782,7 @@ SiS315Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
           (*pSiS->SiSSaveLVDSChrontel)(pScrn, sisReg);
        if(pSiS->VBFlags & VB_301)
           (*pSiS->SiSSave2)(pScrn, sisReg);
-       if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV))
+       if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV|VB_302ELV))
           (*pSiS->SiSSave3)(pScrn, sisReg);
 #ifndef TWDEBUG
     }
@@ -897,7 +897,7 @@ SiS315Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
           (*pSiS->SiSRestoreLVDSChrontel)(pScrn, sisReg);
        if(pSiS->VBFlags & VB_301)
           (*pSiS->SiSRestore2)(pScrn, sisReg);
-       if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV))
+       if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV|VB_302ELV))
           (*pSiS->SiSRestore3)(pScrn, sisReg);
     }
 
@@ -1040,7 +1040,7 @@ SiS301BSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     Part1max = 0x37; /* 0x23, but we also need 2c-2e, 35-37 */
     Part2max = 0x4d;
     Part3max = 0x3e;
-    if(pSiS->VBFlags & (VB_301LV|VB_302LV))
+    if(pSiS->VBFlags & (VB_301LV|VB_302LV|VB_302ELV))
        Part4max = 0x34;
     else
        Part4max = 0x23;
@@ -1061,7 +1061,7 @@ SiS301BRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     Part1max = 0x23;
     Part2max = 0x4d;
     Part3max = 0x3e;
-    if(pSiS->VBFlags & (VB_301LV|VB_302LV))
+    if(pSiS->VBFlags & (VB_301LV|VB_302LV|VB_302ELV))
        Part4max = 0x24;
     else
        Part4max = 0x22;
@@ -1532,8 +1532,10 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
 
 		    maxcrt2 = 135000;
 		    if(pSiS->VBFlags & (VB_301B|VB_302B)) maxcrt2 = 162000;
-		    else if(pSiS->VBFlags & VB_301C)      maxcrt2 = 162000;  /* ? */
-		    if(pSiS->VBFlags & VB_30xBDH)         maxcrt2 = 100000;
+		    else if(pSiS->VBFlags & VB_301C)      maxcrt2 = 203000;
+		    /* if(pSiS->VBFlags & VB_30xBDH)      maxcrt2 = 100000;
+		       Ignore 301B-DH here; seems the current version is like
+		       301B anyway */
 
 		    crt2used = 0.0;
 		    crt2clock = SiSEstimateCRT2Clock(pScrn);
@@ -1596,7 +1598,6 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
 				      crt2used/1000);
 
 			} else {
-
 #ifdef SISDUALHEAD
 			     /* TW: Second head = CRT1 */
 
@@ -1641,9 +1642,8 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
 
 			xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			  "Bandwidth available for CRT1 is %g MHz\n", total/1000);
-#ifdef SISDUALHEAD
+
                     }
-#endif
 
                 }
 		total /= magic;

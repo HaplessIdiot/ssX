@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   11
-#define SISDRIVERVERSIONDAY     11
+#define SISDRIVERVERSIONDAY     19
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -188,7 +188,7 @@
 #define TV_PALM                 0x00001000
 #define TV_PALN                 0x00002000
 #define TV_NTSCJ		0x00001000
-#define VB_301LVX		0x00004000
+#define VB_302ELV		0x00004000
 #define TV_CHSCART              0x00008000
 #define TV_CHHDTV               0x00010000
 #define CRT1_VGA		0x00000000
@@ -205,9 +205,9 @@
 #define VB_301LV                0x04000000
 #define VB_302LV                0x08000000
 #define VB_301C			0x10000000
-#define VB_VIDEOBRIDGE		(VB_301|VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV|VB_301LVX| \
-				 VB_LVDS|VB_CHRONTEL|VB_CONEXANT)
-#define VB_SISBRIDGE            (VB_301|VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV|VB_301LVX)
+#define VB_SISBRIDGE            (VB_301|VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV|VB_302ELV)
+#define VB_SISTVBRIDGE          (VB_301|VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV)
+#define VB_VIDEOBRIDGE		(VB_SISBRIDGE|VB_LVDS|VB_CHRONTEL|VB_CONEXANT)
 #define SINGLE_MODE             0x20000000   	/* CRT1 or CRT2; determined by DISPTYPE_CRTx */
 #define VB_DISPMODE_SINGLE	SINGLE_MODE  	/* alias */
 #define MIRROR_MODE		0x40000000   	/* CRT1 + CRT2 identical (mirror mode) */
@@ -343,6 +343,7 @@ typedef unsigned char UChar;
 #define SiS_SD_SUPPORTSCART    0x00080000   /* CRT2=SCART supported */
 #define SiS_SD_SUPPORTOVERSCAN 0x00100000   /* Overscan flag supported */
 #define SiS_SD_SUPPORTXVGAMMA1 0x00200000   /* Xv Gamma correction for CRT1 supported */
+#define SiS_SD_SUPPORTTV       0x00400000   /* CRT2=TV supported */
 
 #define SIS_DIRECTKEY         0x03145792
 

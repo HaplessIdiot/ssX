@@ -189,7 +189,7 @@ typedef struct _SiS300_Ext2Struct
 } SiS300_Ext2Struct;
 
 static const SiS300_Ext2Struct  SiS300_RefIndex[] =
-{ /* TW: Don't ever insert anything here, table is indexed */
+{ 
 	{0x085f,0x0d,0x03,0x05,0x6a, 800, 600, 0}, /* 00 */
 	{0x0467,0x0e,0x44,0x05,0x6a, 800, 600, 0}, /* 01 */
 	{0x0067,0x0f,0x07,0x48,0x6a, 800, 600, 0}, /* 02 - CRT1CRTC was 0x4f */
@@ -716,6 +716,7 @@ static const SiS300_VCLKDataStruct  SiS300_VCLKData[] =
 	{ 0xa1,0x42,108}, /* 0x42 */  /* 1280x960 LCD */
 	{ 0x37,0x61,100}, /* 0x43 */  /* 1280x960 LCD */
 	{ 0xe3,0x9a,106}, /* 0x44 */  /* 1360x1024 - special for Barco iQ R300 */
+	{ 0xe2,0x46,135}, /* 0x45 */  /* 1280x1024-75, better clock for VGA2 */
 	{ 0xff,0x00,  0}
 };
 
