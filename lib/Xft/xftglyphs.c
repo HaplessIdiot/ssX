@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.18 2002/06/02 20:33:45 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.19 2002/06/02 20:52:07 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -710,6 +710,9 @@ XftCharIndex (Display	    *dpy,
     FcChar32	ent, offset;
     FT_Face	face;
     
+    if (!font->hash_value)
+	return 0;
+
     ent = ucs4 % font->hash_value;
     offset = 0;
     while (font->hash_table[ent].ucs4 != ucs4)

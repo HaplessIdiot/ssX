@@ -35,9 +35,7 @@ _XftCloseDisplay (Display *dpy, XExtCodes *codes)
 {
     XftDisplayInfo  *info, **prev;
 
-    for (prev = &_XftDisplayInfo; (info = *prev); prev = &(*prev)->next)
-	if (info->codes == codes)
-	    break;
+    info = _XftDisplayInfoGet (dpy);
     if (!info)
 	return 0;
     
@@ -47,9 +45,20 @@ _XftCloseDisplay (Display *dpy, XExtCodes *codes)
     info->max_unref_fonts = 0;
     XftFontManageMemory (dpy);
     
-    *prev = info->next;
+    /*
+     * Clean up the default values
+     */
     if (info->defaults)
 	FcPatternDestroy (info->defaults);
+    
+    /*
+     * Unhook from the global list
+     */
+    for (prev = &_XftDisplayInfo; (info = *prev); prev = &(*prev)->next)
+	if (info->display == dpy)
+	    break;
+    *prev = info->next;
+    
     free (info);
     return 0;
 }
