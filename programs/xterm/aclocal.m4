@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.1 1997/05/23 09:19:46 dawes Exp $
+dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.2 1997/05/25 14:41:25 dawes Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl 
@@ -390,7 +390,7 @@ changequote([,])dnl
 			done
 			;;
 		-*)	;; #(vi
-		$CC|main.*|echo)	cf_found=yes
+		$CC|cc|gcc|main.*|echo)	cf_found=yes
 			;;
 		esac
 		if test $cf_found = no ; then

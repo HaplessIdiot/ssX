@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/wd/wd_driver.c,v 1.2 1997/03/11 11:10:59 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/wd/wd_driver.c,v 1.3 1997/05/03 09:18:58 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -929,6 +929,22 @@ PVGA1EnterLeave(enter)
     }
   else
     {
+      /* the brain-dead Speedstar 24X BIOS brings up the board with a
+	 programmable clock used, but to a default value of 28.3 MHz.
+	 If now only the clock select lines were restored the timing has a 
+	 good chance of breaking -- why can't they just use clock 1 ? */
+      if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &vga256InfoRec.clockOptions) &&
+	  vga256InfoRec.clock[2] > 0) {	/* restore only if clock2 probed */
+	unsigned long freq = vga256InfoRec.clock[2];
+#ifdef DEBUG
+	ErrorF("Leave: Restoring F = %d kHz \n", freq);
+#endif
+	if (freq < 25000 || freq > 100000)
+	  freq = 28300;
+	AltICD2061SetClock(50500*1000, 3);	/* restore MCLK default */
+	AltICD2061SetClock(freq*1000, 2);
+	outb(0x3c2, inb(0x3cc)|0xC);
+      }
       xf86DisableIOPorts(vga256InfoRec.scrnIndex);
     }
 }
@@ -1068,6 +1084,10 @@ fprintf(stderr, "pr69 now = 0x%x\n", rdinx(0x3C4, 0x32));
       temp = inb(0x3C5);
       outb(0x3C5, (restore->MemoryInterface & mask) | (temp & ~mask));
     }
+
+  /* XXX ICD2061A should be re-programmed here, but to what freq ?
+     this requires a major rewrite of the whole XFree86 code because
+     that value may be part of a "standard" video state */
 
   /* This must be done AFTER the Memory width (MemoryInterface) is restored */
   vgaHWRestore((vgaHWPtr)restore);
@@ -1273,6 +1293,20 @@ PVGA1Init(mode)
 	      new->VideoSelect |= rdinx(0x3C4, 0x31) & 0x7; /* Fetch Mclk */
 	  }
       } else {
+	  if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &vga256InfoRec.clockOptions)) {
+		unsigned long freq = vga256InfoRec.clock[mode->Clock];
+		if (freq > 16000) 
+		  {
+		    AltICD2061SetClock(62000*1000, 3); /* increase MCLK */
+		    AltICD2061SetClock(freq*1000, 2);
+		    new->std.MiscOutReg = (new->std.MiscOutReg & 0xF3) | 8;
+		    outb(0x3c2, new->std.MiscOutReg);
+		    new->std.NoClock = 2;
+#ifdef DEBUG
+		    ErrorF("Freq = %d kHz selected\n", freq);
+#endif
+		  }
+	  }
 	  new->VideoSelect = ((new->std.NoClock & 0x4) >> 1) ^ save_cs2;
 	  new->MiscCtrl4 = ((new->std.NoClock & 0x8) >> 1) ^ 0x4;
       }

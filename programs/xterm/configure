@@ -2797,7 +2797,7 @@ else
 			done
 			;;
 		-*)	;; #(vi
-		$CC|main.*|echo)	cf_found=yes
+		$CC|cc|gcc|main.*|echo)	cf_found=yes
 			;;
 		esac
 		if test $cf_found = no ; then

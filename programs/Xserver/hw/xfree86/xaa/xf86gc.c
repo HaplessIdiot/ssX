@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.8 1997/04/10 11:34:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.9 1997/05/03 09:19:33 dawes Exp $ */
 
 /***********************************************************
 
@@ -318,6 +318,7 @@ xf86ValidateGC(pGC, changes, pDrawable)
 	    pGC->fgPixel &= PMSK;
 	case GCFunction:
 	    new_rrop = TRUE;
+	    new_text = TRUE;
 	    break;
 	case GCPlaneMask:
 	    new_rrop = TRUE;

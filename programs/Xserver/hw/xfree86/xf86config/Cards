@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.53 1997/05/24 13:46:37 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.54 1997/05/25 14:41:20 dawes Exp $
 
 #Chips & Technologies
 
@@ -918,9 +918,18 @@ LINE     #Clocks 130.2 119.5 79.4 31.2 110.0 65.2 74.9 71.3
 
 # S3 ViRGE and ViRGE/VX
 
-NAME S3 ViRGE (generic)
+NAME S3 ViRGE (S3V server)
 CHIPSET S3 ViRGE
 SERVER S3V
+
+NAME S3 ViRGE (generic)
+CHIPSET S3 ViRGE
+SERVER SVGA
+LINE      #Option "xaa_benchmark"
+LINE      #Option "fifo_moderate"
+LINE      #Option "pci_burst_on"
+LINE      #Option "pci_retry"
+LINE      #Option "hw_cursor"
 
 NAME S3 86C325 (generic)
 SEE S3 ViRGE (generic)
@@ -976,7 +985,13 @@ SEE S3 ViRGE (generic)
 
 NAME S3 ViRGE/VX (generic)
 CHIPSET S3 ViRGE/VX
-SERVER S3V
+SERVER SVGA
+LINE      #Option "xaa_benchmark"
+LINE      #Option "fifo_moderate"
+LINE      #Option "pci_burst_on"
+LINE      #Option "pci_retry"
+LINE      #Option "hw_cursor"
+
 
 NAME S3 86C988 (generic)
 SEE S3 ViRGE/VX (generic)
@@ -1614,15 +1629,31 @@ SEE Cirrus Logic GD5464
 NAME Jaton Video-58P
 SEE ET6000 (generic)
 
-NAME S3 ViRGE/DX
+NAME S3 ViRGE/DX (generic)
 CHIPSET S3 ViRGE/DX
 SERVER SVGA
 NOCLOCKPROBE
+LINE      #Option "xaa_benchmark"
+LINE      #Option "fifo_moderate"
+LINE      #Option "pci_burst_on"
+LINE      #Option "pci_retry"
+LINE      #Option "hw_cursor"
 
-NAME S3 ViRGE/GX
+NAME S3 ViRGE/GX (generic)
 CHIPSET S3 ViRGE/GX
 SERVER SVGA
 NOCLOCKPROBE
+LINE      #Option "xaa_benchmark"
+LINE      #Option "fifo_moderate"
+LINE      #Option "pci_burst_on"
+LINE      #Option "pci_retry"
+LINE      #Option "hw_cursor"
+
+NAME S3 86C375 (generic)
+SEE S3 ViRGE/DX (generic)
+
+NAME S3 86C385 (generic)
+SEE S3 ViRGE/GX (generic)
 
 NAME Diamond Stealth 3D Pro
 CHIPSET S3 ViRGE/DX
