@@ -76,7 +76,7 @@ XftFontMatch (Display *dpy, int screen, XftPattern *pattern, XftResult *result)
 
     if (render)
     {
-	if (XftInitFtLibrary ())
+	if (XftInitFtLibrary())
 	{
 	    sets[nsets] = _XftFontSet;
 	    if (sets[nsets])

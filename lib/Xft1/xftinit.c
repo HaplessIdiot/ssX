@@ -33,16 +33,8 @@ XftInit (char *config)
 {
     if (_XftConfigInitialized)
 	return True;
+    if (!FcInit ())
+	return False;
     _XftConfigInitialized = True;
-    if (!config)
-    {
-	config = getenv ("XFT_CONFIG");
-	if (!config)
-	    config = XFT_DEFAULT_PATH;
-    }
-    if (XftConfigLexFile (config))
-    {
-	XftConfigparse ();
-    }
     return True;
 }

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.2 2002/02/15 06:00:48 keithp Exp $
+XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.3 2002/02/15 07:36:14 keithp Exp $
 
 #define DoNormalLib NO
 #define DoSharedLib SharedLibXft1
@@ -15,65 +15,41 @@ XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.2 2002/02/15 06:00:48 keithp Exp $
 
 YFLAGS = -d
 
-#ifndef Xft1LibDir
-#define Xft1LibDir $(LIBDIR)
-#endif
-#ifndef Xft1Type1Dir
-#define Xft1Type1Dir $(LIBDIR)/fonts/Type1
-#endif
-
-XFT1LIBDIR=Xft1LibDir
-XFT1CONFIG=$(XFT1LIBDIR)/XftConfig
-
-TYPE1DIR=Xft1Type1Dir
-CONFIG_DEFS=-DXFT_TYPE1_DIR=\"$(TYPE1DIR)\"
 INCLUDES=$(FREETYPE2INCLUDES)
-DEFINES=-DXFT_DEFAULT_PATH=\"$(XFT1CONFIG)\" $(FREETYPE2DEFINES) $(RENDERDEFINES)
+DEFINES=$(FREETYPE2DEFINES) $(RENDERDEFINES)
 
 #if UseFreetype2
 FREETYPE2REQLIB = $(FREETYPE2LIB)
 #endif
 
-REQUIREDLIBS=$(LDPRELIBS) $(XRENDERLIB) $(XLIB) $(FREETYPE2REQLIB)
+REQUIREDLIBS=$(LDPRELIBS) $(XRENDERLIB) $(XLIB) $(FONTCONFIGLIB) $(FREETYPE2REQLIB)
 
 #if UseFreetype2
+FT_OLD = xftcache.c
 FT_HEADERS = XftFreetype.h
-   FT_SRCS = xftcache.c xftdir.c xftfreetype.c xftglyphs.c xftrender.c
-   FT_OBJS = xftcache.o xftdir.o xftfreetype.o xftglyphs.o xftrender.o
+   FT_SRCS = xftfreetype.c xftglyphs.c xftrender.c xftdir.o
+   FT_OBJS = xftfreetype.o xftglyphs.o xftrender.o xftdir.o 
 #endif
 
 HEADERS = Xft.h $(FT_HEADERS)
 
+OLD = xftgram.c xftlex.c 
+
    SRCS = xftcfg.c xftcolor.c xftcore.c xftdbg.c xftdpy.c \
-          xftdraw.c xftextent.c xftfont.c xftfs.c xftgram.c \
-          xftinit.c xftlex.c xftlist.c xftmatch.c xftmatrix.c \
+          xftdraw.c xftextent.c xftfont.c xftfs.c\
+          xftinit.c xftlist.c xftmatch.c xftmatrix.c \
           xftname.c xftpat.c xftstr.c xftxlfd.c $(FT_SRCS)
 
    OBJS = xftcfg.o xftcolor.o xftcore.o xftdbg.o xftdpy.o \
-          xftdraw.o  xftextent.o xftfont.o xftfs.o xftgram.o \
-          xftinit.o xftlex.o xftlist.o xftmatch.o xftmatrix.o \
+          xftdraw.o  xftextent.o xftfont.o xftfs.o \
+          xftinit.o xftlist.o xftmatch.o xftmatrix.o \
           xftname.o xftpat.o xftstr.o xftxlfd.o $(FT_OBJS)
 
 #include <Library.tmpl>
 
-LexFilePrefix(xftlex,XftConfig)
-YaccFilePrefix(xftgram,$(YFLAGS),XftConfig)
-
 #if DoSharedLib && SharedDataSeparation
 SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
 #endif
-
-all:: XftConfig
-
-CppFileTarget(XftConfig,XftConfig.cpp,$(CONFIG_DEFS),$(ICONFIGFILES))
-
-#if InstallFSConfig
-InstallNonExecFile(XftConfig,$(XFT1LIBDIR))
-#else
-InstallNonExecFileNoClobber(XftConfig,$(XFT1LIBDIR))
-#endif
-
-LinkConfFileLong(XftConfig,XftConfig,$(XFT1LIBDIR),$(CONFDIR))
 
 MANSUFFIX = $(LIBMANSUFFIX)
 InstallManPage(Xft,$(LIBMANDIR))

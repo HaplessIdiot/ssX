@@ -652,31 +652,12 @@ XftFreeTypeGet (XftFont *font)
 Bool
 XftInitFtLibrary (void)
 {
-    char    **d;
-    char    *cache;
-    
     if (_XftFTlibrary)
 	return True;
     if (FT_Init_FreeType (&_XftFTlibrary))
 	return False;
-    _XftFontSet = XftFontSetCreate ();
+    _XftFontSet = FcConfigGetFonts (0, FcSetSystem);
     if (!_XftFontSet)
 	return False;
-    cache = XftConfigGetCache ();
-    if (cache)
-	XftFileCacheLoad (cache);
-    for (d = XftConfigDirs; d && *d; d++)
-    {
-#ifdef XFT_DEBUG_FONTSET
-	printf ("scan dir %s\n", *d);
-#endif
-	XftDirScan (_XftFontSet, *d, False);
-    }
-#ifdef XFT_DEBUG_FONTSET
-    XftFontSetPrint (_XftFontSet);
-#endif
-    if (cache)
-	XftFileCacheSave (cache);
-    XftFileCacheDispose ();
     return True;
 }
