@@ -28,7 +28,7 @@
  * Authors:	Keith Packard, MIT X Consortium
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winallpriv.c,v 1.8 2001/10/29 21:10:23 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winallpriv.c,v 1.10 2002/07/05 09:19:26 alanh Exp $ */
 
 #include "win.h"
 
@@ -48,7 +48,7 @@ winAllocatePrivates (ScreenPtr pScreen)
   winPrivScreenPtr	pScreenPriv;
 
 #if CYGDEBUG
-  ErrorF ("winAllocateScreenPrivates () - g_ulServerGeneration: %d "
+  ErrorF ("winAllocateScreenPrivates - g_ulServerGeneration: %d "
 	  "serverGeneration: %d\n",
 	  g_ulServerGeneration, serverGeneration);
 #endif
@@ -65,10 +65,10 @@ winAllocatePrivates (ScreenPtr pScreen)
     }
 
   /* Allocate memory for the screen private structure */
-  pScreenPriv = (winPrivScreenPtr) xalloc (sizeof (winPrivScreenRec));
+  pScreenPriv = (winPrivScreenPtr) malloc (sizeof (winPrivScreenRec));
   if (!pScreenPriv)
     {
-      ErrorF ("winAllocateScreenPrivates () - xalloc () failed\n");
+      ErrorF ("winAllocateScreenPrivates - malloc () failed\n");
       return FALSE;
     }
 
@@ -85,7 +85,7 @@ winAllocatePrivates (ScreenPtr pScreen)
   if (!AllocateGCPrivate (pScreen, g_iGCPrivateIndex,
 			  sizeof (winPrivGCRec)))
     {
-      ErrorF ("winAllocatePrivates () - AllocateGCPrivate () failed\n");
+      ErrorF ("winAllocatePrivates - AllocateGCPrivate () failed\n");
       return FALSE;
     }
 
@@ -93,7 +93,7 @@ winAllocatePrivates (ScreenPtr pScreen)
   if (!AllocatePixmapPrivate (pScreen, g_iPixmapPrivateIndex,
 			      sizeof (winPrivPixmapRec)))
     {
-      ErrorF ("winAllocatePrivates () - AllocatePixmapPrivates () failed\n");
+      ErrorF ("winAllocatePrivates - AllocatePixmapPrivates () failed\n");
       return FALSE;
     }
 
@@ -111,7 +111,7 @@ Bool
 winInitCmapPrivates (ColormapPtr pcmap)
 {
 #if CYGDEBUG
-  ErrorF ("winInitCmapPrivates ()\n");
+  ErrorF ("winInitCmapPrivates\n");
 #endif
   
   /*
@@ -137,7 +137,7 @@ winAllocateCmapPrivates (ColormapPtr pCmap)
   static unsigned long		s_ulPrivateGeneration = 0;
 
 #if CYGDEBUG
-  ErrorF ("winAllocateCmapPrivates ()\n");
+  ErrorF ("winAllocateCmapPrivates\n");
 #endif
 
   /* Get a new privates index when the server generation changes */
@@ -151,10 +151,10 @@ winAllocateCmapPrivates (ColormapPtr pCmap)
     }
 
   /* Allocate memory for our private structure */
-  pCmapPriv = (winPrivCmapPtr) xalloc (sizeof (winPrivCmapRec));
+  pCmapPriv = (winPrivCmapPtr) malloc (sizeof (winPrivCmapRec));
   if (!pCmapPriv)
     {
-      ErrorF ("winAllocateCmapPrivates () - xalloc () failed\n");
+      ErrorF ("winAllocateCmapPrivates - malloc () failed\n");
       return FALSE;
     }
 
@@ -165,7 +165,7 @@ winAllocateCmapPrivates (ColormapPtr pCmap)
   winSetCmapPriv (pCmap, pCmapPriv);
 
 #if CYGDEBUG
-  ErrorF ("winAllocateCmapPrivates () - Returning\n");
+  ErrorF ("winAllocateCmapPrivates - Returning\n");
 #endif
 
   return TRUE;

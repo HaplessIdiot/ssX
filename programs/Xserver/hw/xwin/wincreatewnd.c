@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wincreatewnd.c,v 1.1 2001/11/11 23:07:40 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wincreatewnd.c,v 1.3 2002/07/05 09:19:26 alanh Exp $ */
 
 #include "win.h"
 #include "shellapi.h"
@@ -64,8 +64,8 @@ winCreateBoundingWindowFullScreen (ScreenPtr pScreen)
   wc.lpfnWndProc = winWindowProc;
   wc.cbClsExtra = 0;
   wc.cbWndExtra = 0;
-  wc.hInstance = GetModuleHandle (NULL);
-  wc.hIcon = 0;
+  wc.hInstance = g_hInstance;
+  wc.hIcon = LoadIcon (g_hInstance, IDI_XWIN);
   wc.hCursor = 0;
   wc.hbrBackground = 0;
   wc.lpszMenuName = NULL;
@@ -126,12 +126,18 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
   RECT			rcClient, rcWorkArea;
   DWORD			dwWindowStyle;
   
-  /* Initialize window style */
+  ErrorF ("winCreateBoundingWindowWindowed - Initial w: %d h: %d\n",
+	  iWidth, iHeight);
+  
   dwWindowStyle = WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX;
   
   /* Decorated or undecorated window */
-  if (pScreenInfo->fDecoration)
-    dwWindowStyle |= WS_CAPTION;
+  if (pScreenInfo->fDecoration && !pScreenInfo->fRootless)
+    {
+      dwWindowStyle |= WS_CAPTION;
+      if (pScreenInfo->fScrollbars)
+	dwWindowStyle |= WS_THICKFRAME | WS_MAXIMIZEBOX;
+    }
   else
     dwWindowStyle |= WS_POPUP;
 
@@ -140,8 +146,8 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
   wc.lpfnWndProc = winWindowProc;
   wc.cbClsExtra = 0;
   wc.cbWndExtra = 0;
-  wc.hInstance = GetModuleHandle (NULL);
-  wc.hIcon = 0;
+  wc.hInstance = g_hInstance;
+  wc.hIcon = LoadIcon (g_hInstance, IDI_XWIN);
   wc.hCursor = 0;
   wc.hbrBackground = (HBRUSH) GetStockObject (WHITE_BRUSH);
   wc.lpszMenuName = NULL;
@@ -154,10 +160,72 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
   /* Adjust for auto-hide taskbars */
   winAdjustForAutoHide (&rcWorkArea);
 
-  /* Adjust the window width and height for border and title bars */
-  iWidth += 2 * GetSystemMetrics (SM_CXFIXEDFRAME);
-  iHeight += 2 * GetSystemMetrics (SM_CYFIXEDFRAME) 
-    + GetSystemMetrics (SM_CYCAPTION);
+  /* Did the user specify a height and width? */
+  if (pScreenInfo->fUserGaveHeightAndWidth)
+    {
+      /* User gave a desired height and width, try to accomodate */
+#if CYGDEBUG
+      ErrorF ("winCreateBoundingWindowWindowed - User gave height "
+	      "and width\n");
+#endif
+      
+      /* Adjust the window width and height for borders and title bar */
+      if (pScreenInfo->fDecoration && !pScreenInfo->fRootless)
+	{
+#if CYGDEBUG
+	  ErrorF ("winCreateBoundingWindowWindowed - Window has decoration\n");
+#endif
+	  /* Are we using scrollbars? */
+	  if (pScreenInfo->fScrollbars)
+	    {
+#if CYGDEBUG
+	      ErrorF ("winCreateBoundingWindowWindowed - Window has "
+		      "scrollbars\n");
+#endif
+
+	      iWidth += 2 * GetSystemMetrics (SM_CXSIZEFRAME);
+	      iHeight += 2 * GetSystemMetrics (SM_CYSIZEFRAME) 
+		+ GetSystemMetrics (SM_CYCAPTION);
+	    }
+	  else
+	    {
+#if CYGDEBUG
+	      ErrorF ("winCreateBoundingWindowWindowed - Window does not have "
+		      "scrollbars\n");
+#endif
+
+	      iWidth += 2 * GetSystemMetrics (SM_CXFIXEDFRAME);
+	      iHeight += 2 * GetSystemMetrics (SM_CYFIXEDFRAME) 
+		+ GetSystemMetrics (SM_CYCAPTION);
+	    }
+	}
+      else
+	{
+	  /*
+	   * User gave a width and height but also said no decoration.
+	   * In this case we have to ignore the requested width and height
+	   * and instead use the largest possible window that we can.
+	   */
+	  iWidth = GetSystemMetrics (SM_CXSCREEN);
+	  iHeight = GetSystemMetrics (SM_CYSCREEN);
+	}
+    }
+  else
+    {
+      /* By default, we are creating a window that is as large as possible */
+#if CYGDEBUG
+      ErrorF ("winCreateBoundingWindowWindowed - User did not give "
+	      "height and width\n");
+#endif
+    }
+
+  /* Clean up the scrollbars flag, if necessary */
+  if ((!pScreenInfo->fDecoration || pScreenInfo->fRootless)
+      && pScreenInfo->fScrollbars)
+    {
+      /* We cannot have scrollbars if we do not have a window border */
+      pScreenInfo->fScrollbars = FALSE;
+    }
   
   /* Trim window width to fit work area */
   if (iWidth > (rcWorkArea.right - rcWorkArea.left))
@@ -170,7 +238,7 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 #if CYGDEBUG
   ErrorF ("winCreateBoundingWindowWindowed - Adjusted width: %d "\
 	  "height: %d\n",
-	  pScreenInfo->dwWidth, pScreenInfo->dwHeight);
+	  iWidth, iHeight);
 #endif
 
   /* Create the window */
@@ -203,28 +271,75 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 	      "failed\n");
       return FALSE;
     }
+
   ErrorF ("winCreateBoundingWindowWindowed - WindowClient "
 	  "w %ld h %ld r %ld l %ld b %ld t %ld\n",
 	  rcClient.right - rcClient.left,
 	  rcClient.bottom - rcClient.top,
 	  rcClient.right, rcClient.left,
 	  rcClient.bottom, rcClient.top);
+  
+  /* We adjust the visual size if the user did not specify it */
+  if (!(pScreenInfo->fScrollbars && pScreenInfo->fUserGaveHeightAndWidth))
+    {
+      /*
+       * User did not give a height and width with scrollbars enabled,
+       * so we will resize the underlying visual to be as large as
+       * the initial view port (page size).  This way scrollbars will
+       * not appear until the user shrinks the window, if they ever do.
+       *
+       * NOTE: We have to store the viewport size here because
+       * the user may have an autohide taskbar, which would
+       * cause the viewport size to be one less in one dimension
+       * than the viewport size that we calculated by subtracting
+       * the size of the borders and caption.
+       */
+      pScreenInfo->dwWidth = rcClient.right - rcClient.left;
+      pScreenInfo->dwHeight = rcClient.bottom - rcClient.top;
+    }
 
-  /* Store the actual height and width of the client area that we got */
-  pScreenInfo->dwWidth = rcClient.right - rcClient.left;
-  pScreenInfo->dwHeight = rcClient.bottom - rcClient.top;
-
+#if 0
   /*
-   * Transform the client relative coords to screen relative coords.
-   * It is almost impossible to tell if the function has failed, thus
-   * we do not want to check for a return value of 0, as that could
-   * simply indicated that the window was positioned with the upper
-   * left corner at (0,0).
+   * NOTE: For the uninitiated, the page size is the number of pixels
+   * that we can display in the x or y direction at a time and the
+   * range is the total number of pixels in the x or y direction that we
+   * have available to display.  In other words, the page size is the
+   * size of the window area minus the space the caption, borders, and
+   * scrollbars (if any) occupy, and the range is the size of the
+   * underlying X visual.  Notice that, contrary to what some of the
+   * MSDN Library arcticles lead you to believe, the windows
+   * ``client area'' size does not include the scrollbars.  In other words,
+   * the whole client area size that is reported to you is drawable by
+   * you; you do not have to subtract the size of the scrollbars from
+   * the client area size, and if you did it would result in the size
+   * of the scrollbars being double counted.
    */
-  MapWindowPoints (*phwnd,
-		   HWND_DESKTOP,
-		   (LPPOINT)&rcClient,
-		   2);
+
+  /* Setup scrollbar page and range, if scrollbars are enabled */
+  if (pScreenInfo->fScrollbars)
+    {
+      SCROLLINFO		si;
+      
+      /* Initialize the scrollbar info structure */
+      si.cbSize = sizeof (si);
+      si.fMask = SIF_RANGE | SIF_PAGE;
+      si.nMin = 0;
+      
+      /* Setup the width range and page size */
+      si.nMax = pScreenInfo->dwWidth - 1;
+      si.nPage = rcClient.right - rcClient.left;
+      ErrorF ("winCreateBoundingWindowWindowed - HORZ nMax: %d nPage :%d\n",
+	      si.nMax, si.nPage);
+      SetScrollInfo (*phwnd, SB_HORZ, &si, TRUE);
+      
+      /* Setup the height range and page size */
+      si.nMax = pScreenInfo->dwHeight - 1;
+      si.nPage = rcClient.bottom - rcClient.top;
+      ErrorF ("winCreateBoundingWindowWindowed - VERT nMax: %d nPage :%d\n",
+	      si.nMax, si.nPage);
+      SetScrollInfo (*phwnd, SB_VERT, &si, TRUE);
+    }
+#endif
 
   /* Show the window */
   ShowWindow (*phwnd, SW_SHOWNORMAL);

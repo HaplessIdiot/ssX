@@ -30,14 +30,19 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winkeybd.c,v 1.9 2002/04/04 11:30:10 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winkeybd.c,v 1.11 2002/07/05 09:19:26 alanh Exp $ */
 
 
 #include "win.h"
-
 #include "winkeybd.h"
+#include "winconfig.h"
+ 
+#ifdef XKB
+#define XKB_IN_SERVER
+#include "XKBsrv.h"
+#endif
 
-static Bool winKeyState[NUM_KEYCODES];
+static Bool g_winKeyState[NUM_KEYCODES];
 
 
 #if WIN_NEW_KEYBOARD_SUPPORT
@@ -250,7 +255,7 @@ winGetKeyMappings (KeySymsPtr pKeySyms, CARD8 *pModMap)
    * Initialize all key states to up... which may not be true
    * but it is close enough.
    */
-  ZeroMemory (winKeyState, sizeof (winKeyState[0]) * NUM_KEYCODES);
+  ZeroMemory (g_winKeyState, sizeof (g_winKeyState[0]) * NUM_KEYCODES);
 
   /* MAP_LENGTH is defined in Xserver/include/input.h to be 256 */
   for (i = 0; i < MAP_LENGTH; i++)
@@ -346,16 +351,70 @@ winKeybdProc (DeviceIntPtr pDeviceInt, int iState)
   KeySymsRec		keySyms;
   CARD8 		modMap[MAP_LENGTH];
   DevicePtr		pDevice = (DevicePtr) pDeviceInt;
+#ifdef XKB
+  XkbComponentNamesRec names;
+#endif
 
   switch (iState)
     {
-    case DEVICE_INIT: 
+    case DEVICE_INIT:
+      winConfigKeyboard (pDeviceInt);
+
       winGetKeyMappings (&keySyms, modMap);
-      InitKeyboardDeviceStruct (pDevice,
-				&keySyms,
-				modMap,
-			        winKeybdBell,
-			        winKeybdCtrl);
+
+#ifdef XKB
+      /* FIXME: Maybe we should use winGetKbdLeds () here? */
+      defaultKeyboardControl.leds = g_winInfo.keyboard.leds;
+#else
+      defaultKeyboardControl.leds = g_winInfo.keyboard.leds;
+#endif
+
+#ifdef XKB
+      if (g_winInfo.xkb.disable) 
+	{
+#endif
+	  InitKeyboardDeviceStruct (pDevice,
+				    &keySyms,
+				    modMap,
+				    winKeybdBell,
+				    winKeybdCtrl);
+#ifdef XKB
+	} 
+      else 
+	{
+
+	  if (XkbInitialMap) 
+	    {
+	      names.keymap = XkbInitialMap;
+	      names.keycodes = NULL;
+	      names.types = NULL;
+	      names.compat = NULL;
+	      names.symbols = NULL;
+	      names.geometry = NULL;
+	    } 
+	  else 
+	    {
+	      names.keymap = g_winInfo.xkb.keymap;
+	      names.keycodes = g_winInfo.xkb.keycodes;
+	      names.types = g_winInfo.xkb.types;
+	      names.compat = g_winInfo.xkb.compat;
+	      names.symbols = g_winInfo.xkb.symbols;
+	      names.geometry = g_winInfo.xkb.geometry;
+	    }
+
+	  ErrorF("Rules = \"%s\" Model = \"%s\" Layout = \"%s\""
+		 " Variant = \"%s\" Options = \"%s\"\n",
+		 g_winInfo.xkb.rules, g_winInfo.xkb.model,
+		 g_winInfo.xkb.layout, g_winInfo.xkb.variant,
+		 g_winInfo.xkb.options);
+          
+	  XkbSetRulesDflts (g_winInfo.xkb.rules, g_winInfo.xkb.model, 
+			    g_winInfo.xkb.layout, g_winInfo.xkb.variant, 
+			    g_winInfo.xkb.options);
+	  XkbInitKeyboardDeviceStruct (pDeviceInt, &names, &keySyms,
+				       modMap, winKeybdBell, winKeybdCtrl);
+	}
+#endif
       break;
     case DEVICE_ON: 
       pDevice->on = TRUE;
@@ -611,7 +670,7 @@ winKeybdReleaseKeys ()
   /* Pop any pressed keys */
   for (i = 0; i < NUM_KEYCODES; ++i)
     {
-      if (winKeyState[i]) winSendKeyEvent (i, FALSE);
+      if (g_winKeyState[i]) winSendKeyEvent (i, FALSE);
     }
 #endif
 #endif
@@ -633,10 +692,10 @@ winSendKeyEvent (DWORD dwKey, Bool fDown)
    * When alt-tabing between screens we can get phantom key up messages
    * Here we only pass them through it we think we should!
    */
-  if (winKeyState[dwKey] == FALSE && fDown == FALSE) return;
+  if (g_winKeyState[dwKey] == FALSE && fDown == FALSE) return;
 
   /* Update the keyState map */
-  winKeyState[dwKey] = fDown;
+  g_winKeyState[dwKey] = fDown;
   
   ZeroMemory (&xCurrentEvent, sizeof (xCurrentEvent));
 

@@ -29,8 +29,9 @@
  *		Suhaib M Siddiqi
  *		Peter Busch
  *		Harold L Hunt II
+ *		MATSUZAKI Kensuke
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.22 2001/11/11 22:45:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.23 2002/07/05 09:19:26 alanh Exp $ */
 
 #include "win.h"
 
@@ -48,12 +49,18 @@ winScreenInit (int index,
 {
   winScreenInfoPtr      pScreenInfo = &g_ScreenInfo[index];
   winPrivScreenPtr	pScreenPriv;
+  HDC			hdc;
 #if 0
   DEBUG_FN_NAME("winScreenInit");
   DEBUGVARS;
   /*DEBUGPROC_MSG;*/
 
   DEBUG_MSG ("Hello");
+#endif
+
+#if CYGDEBUG
+  ErrorF ("winScreenInit - dwWidth: %d dwHeight: %d\n",
+	  pScreenInfo->dwWidth, pScreenInfo->dwHeight);
 #endif
 
   /* Allocate privates for this screen */
@@ -114,6 +121,14 @@ winScreenInit (int index,
       return FALSE;
     }
 
+  /* Store the initial height, width, and depth of the display */
+  hdc = GetDC (pScreenPriv->hwndScreen);
+  pScreenPriv->dwLastWindowsWidth = GetSystemMetrics (SM_CXSCREEN);
+  pScreenPriv->dwLastWindowsHeight = GetSystemMetrics (SM_CYSCREEN);
+  pScreenPriv->dwLastWindowsBitsPixel
+    = GetDeviceCaps (hdc, BITSPIXEL);
+  ReleaseDC (pScreenPriv->hwndScreen, hdc);
+    
   /* Clear the visuals list */
   miClearVisualTypes ();
   
@@ -355,12 +370,48 @@ winFinishScreenInitFB (int index,
     }
 #endif
 
+
+  /* Handle pseudo-rootless mode */
+  if (pScreenInfo->fRootless)
+    {
+      /* Define the WRAP macro temporarily for local use */
+#define WRAP(a) \
+    if (pScreen->a) { \
+        pScreenPriv->a = pScreen->a; \
+    } else { \
+        ErrorF("null screen fn " #a "\n"); \
+        pScreenPriv->a = NULL; \
+    }
+
+      /* Save a pointer to each lower-level window procedure */
+      WRAP(CreateWindow);
+      WRAP(DestroyWindow);
+      WRAP(RealizeWindow);
+      WRAP(UnrealizeWindow);
+      WRAP(PositionWindow);
+      WRAP(ChangeWindowAttributes);
+
+      /* Assign pseudo-rootless window procedures to be top level procedures */
+      pScreen->CreateWindow = winCreateWindowPRootless;
+      pScreen->DestroyWindow = winDestroyWindowPRootless;
+      pScreen->PositionWindow = winPositionWindowPRootless;
+      pScreen->ChangeWindowAttributes = winChangeWindowAttributesPRootless;
+      pScreen->RealizeWindow = winMapWindowPRootless;
+      pScreen->UnrealizeWindow = winUnmapWindowPRootless;
+
+      /* Undefine the WRAP macro, as it is not needed elsewhere */
+#undef WRAP
+    }
+
   /* Wrap either fb's or shadow's CloseScreen with our CloseScreen */
   pScreenPriv->CloseScreen = pScreen->CloseScreen;
   pScreen->CloseScreen = pScreenPriv->pwinCloseScreen;
 
   /* Tell the server that we are enabled */
   pScreenPriv->fEnabled = TRUE;
+
+  /* Tell the server that we have a valid depth */
+  pScreenPriv->fBadDepth = FALSE;
 
 #if CYGDEBUG
   ErrorF ("winFinishScreenInitFB - returning\n");

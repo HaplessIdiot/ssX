@@ -1,4 +1,10 @@
 XFree86 4.2.99.2 (xx October 2002)
+ 430. Cygwin/XFree86 updates
+      - Add X.ico, an icon for Windows (Harold Hunt, Jehan Bing)
+      - Include a preliminary pseudo-rootless mode (Matsuzaki Kensuke)
+      - XF86Config file support (Alexander Gottwald)
+      - Scrollbars support (Jehan Bing, Harold Hunt)
+      (#5424, Cygwin/XFree86 developers).
  429. Add ko_KR.UTF-8 and ja_JP.UTF-8 XLC_LOCALE files (#5421, Jungshik Shin).
  428. Add TCVN support to luit (#5416, Tomohiro KUBOTA).
  427. Expand luit to support several major non-ISO-2022-compliant
@@ -15404,4 +15410,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2348 2002/10/16 22:12:50 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2349 2002/10/17 01:15:48 dawes Exp $

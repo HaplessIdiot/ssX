@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winnativegdi.c,v 1.11 2001/11/21 08:51:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winnativegdi.c,v 1.12 2002/07/05 09:19:26 alanh Exp $ */
 
 #include "win.h"
 
@@ -76,7 +76,7 @@ winCloseScreenNativeGDI (int nIndex, ScreenPtr pScreen)
   pScreenInfo->pScreen = NULL;
 
   /* Free the screen privates for this screen */
-  xfree (pScreenPriv);
+  free (pScreenPriv);
 
   ErrorF ("winCloseScreenNativeGDI - Returning\n");
 
@@ -294,11 +294,11 @@ winCreateDIBNativeGDI (int iWidth, int iHeight, int iDepth,
     }
 
   /* Allocate bitmap info header */
-  pbmih = (BITMAPINFOHEADER*) xalloc (sizeof (BITMAPINFOHEADER)
+  pbmih = (BITMAPINFOHEADER*) malloc (sizeof (BITMAPINFOHEADER)
 				      + 256 * sizeof (RGBQUAD));
   if (pbmih == NULL)
     {
-      ErrorF ("winCreateDIBNativeGDI - xalloc () failed\n");
+      ErrorF ("winCreateDIBNativeGDI - malloc () failed\n");
       return FALSE;
     }
   ZeroMemory (pbmih, sizeof(BITMAPINFOHEADER) + 256 * sizeof (RGBQUAD));
@@ -346,7 +346,7 @@ winCreateDIBNativeGDI (int iWidth, int iHeight, int iDepth,
     }
   else
     {
-      xfree (pbmih);
+      free (pbmih);
       pbmih = NULL;
     }
 
@@ -448,7 +448,7 @@ winSetEngineFunctionsNativeGDI (ScreenPtr pScreen)
   pScreenPriv->pwinStoreColors = winStoreColorsNativeGDI;
   pScreenPriv->pwinCreateColormap = winCreateColormapNativeGDI;
   pScreenPriv->pwinDestroyColormap = winDestroyColormapNativeGDI;
-  pScreenPriv->pwinHotKeyAltTab = (winHotKeyAltTabPtr) (void (*)())NoopDDA;
+  pScreenPriv->pwinHotKeyAltTab = (winHotKeyAltTabProcPtr) (void (*)())NoopDDA;
 
   return TRUE;
 }

@@ -29,11 +29,16 @@
  *		Suhaib M Siddiqi
  *		Peter Busch
  *		Harold L Hunt II
+ *		MATSUZAKI Kensuke
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.20 2002/04/11 08:25:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.22 2002/07/05 09:19:27 alanh Exp $ */
 
 #include "win.h"
 #include <commctrl.h>
+
+BOOL CALLBACK
+winChangeDepthDlgProc (HWND hDialog, UINT message,
+		       WPARAM wParam, LPARAM lParam);
 
 
 /*
@@ -49,6 +54,7 @@ winWindowProc (HWND hwnd, UINT message,
   static winScreenInfo		*s_pScreenInfo = NULL;
   static ScreenPtr		s_pScreen = NULL;
   static HWND			s_hwndLastPrivates = NULL;
+  static HINSTANCE		s_hInstance;
   static Bool			s_fCursor = TRUE;
   static Bool			s_fTracking = FALSE;
   static unsigned long		s_ulServerGeneration = 0;
@@ -66,7 +72,7 @@ winWindowProc (HWND hwnd, UINT message,
   if ((s_pScreenPriv == NULL || hwnd != s_hwndLastPrivates)
       && (s_pScreenPriv = GetProp (hwnd, WIN_SCR_PROP)) != NULL)
     {
-#if CYGDEGUG
+#if CYGDEBUG
       ErrorF ("winWindowProc - Setting privates handle\n");
 #endif
       s_pScreenInfo = s_pScreenPriv->pScreenInfo;
@@ -99,6 +105,7 @@ winWindowProc (HWND hwnd, UINT message,
        * areas of our display window.
        */
       s_pScreenPriv = ((LPCREATESTRUCT) lParam)->lpCreateParams;
+      s_hInstance = ((LPCREATESTRUCT) lParam)->hInstance;
       s_pScreenInfo = s_pScreenPriv->pScreenInfo;
       s_pScreen = s_pScreenInfo->pScreen;
       s_hwndLastPrivates = hwnd;
@@ -108,6 +115,499 @@ winWindowProc (HWND hwnd, UINT message,
       winStoreModeKeyStates (s_pScreen);
       return 0;
 
+    case WM_DISPLAYCHANGE:
+      /* We cannot handle a display mode change during initialization */
+      if (s_pScreenInfo == NULL)
+	FatalError ("winWindowProc - WM_DISPLAYCHANGE - The display "
+		    "mode changed while we were intializing.  This is "
+		    "very bad and unexpected.  Exiting.\n");
+
+      /*
+       * We do not care about display changes with
+       * fullscreen DirectDraw engines, because those engines set
+       * their own mode when they become active.
+       */
+      if (s_pScreenInfo->fFullScreen
+	  && (s_pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DD
+	      || s_pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DDNL
+	      || s_pScreenInfo->dwEngine == WIN_SERVER_PRIMARY_DD))
+	{
+	  /* 
+	   * Store the new display dimensions and depth.
+	   * We do this here for future compatibility in case we
+	   * ever allow switching from fullscreen to windowed mode.
+	   */
+	  s_pScreenPriv->dwLastWindowsWidth = GetSystemMetrics (SM_CXSCREEN);
+	  s_pScreenPriv->dwLastWindowsHeight = GetSystemMetrics (SM_CYSCREEN);
+	  s_pScreenPriv->dwLastWindowsBitsPixel
+	    = GetDeviceCaps (s_pScreenPriv->hdcScreen, BITSPIXEL);	  
+	  break;
+	}
+      
+      ErrorF ("winWindowProc - WM_DISPLAYCHANGE - orig bpp: %d, last bpp: %d, "
+	      "new bpp: %d\n",
+	      s_pScreenInfo->dwBPP,
+	      s_pScreenPriv->dwLastWindowsBitsPixel,
+	      wParam);
+
+      ErrorF ("winWindowProc - WM_DISPLAYCHANGE - new width: %d "
+	      "new height: %d\n",
+	      LOWORD (lParam), HIWORD (lParam));
+
+      /*
+       * TrueColor --> TrueColor depth changes are disruptive for:
+       *	Windowed:
+       *		Shadow DirectDraw
+       *		Shadow DirectDraw Non-Locking
+       *		Primary DirectDraw
+       *
+       * TrueColor --> TrueColor depth changs are non-optimal for:
+       *	Windowed:
+       *		Shadow GDI
+       *
+       *	FullScreen:
+       *		Shadow GDI
+       *
+       * TrueColor --> PseudoColor or vice versa are disruptive for:
+       *	Windowed:
+       *		Shadow DirectDraw
+       *		Shadow DirectDraw Non-Locking
+       *		Primary DirectDraw
+       *		Shadow GDI
+       */
+
+      /*
+       * Check for a disruptive change in depth.
+       * We can only display a message for a disruptive depth change,
+       * we cannot do anything to correct the situation.
+       */
+      if ((s_pScreenInfo->dwBPP != wParam)
+	  && (s_pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DD
+	      || s_pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DDNL
+	      || s_pScreenInfo->dwEngine == WIN_SERVER_PRIMARY_DD))
+	{
+	  /* Cannot display the visual until the depth is restored */
+	  ErrorF ("winWindowProc - Disruptive change in depth\n");
+
+	  /* Check if the dialog box already exists */
+	  if (g_hDlgDepthChange != NULL)
+	    {
+	      ErrorF ("winWindowProc - Dialog box already exists\n");
+
+	      /* Dialog box already exists, just display it */
+	      ShowWindow (g_hDlgDepthChange, SW_SHOWDEFAULT);
+	    }
+	  else
+	    {
+	      /*
+	       * Display a notification to the user that the visual 
+	       * will not be displayed until the Windows display depth 
+	       * is restored to the original value.
+	       */
+	      g_hDlgDepthChange = CreateDialogParam (s_hInstance,
+						     "DEPTH_CHANGE_BOX",
+						     hwnd,
+						     winChangeDepthDlgProc,
+						     (int) s_pScreenPriv);
+	      
+	      /* Show the dialog box */
+	      ShowWindow (g_hDlgDepthChange, SW_SHOW);
+	      
+	      ErrorF ("winWindowProc - DialogBox returned: %d\n",
+		      g_hDlgDepthChange);
+	      ErrorF ("winWindowProc - GetLastError: %d\n", GetLastError ());
+	      
+	      /* Minimize the display window */
+	      ShowWindow (hwnd, SW_MINIMIZE);
+	      
+	      /* Flag that we have an invalid screen depth */
+	      s_pScreenPriv->fBadDepth = TRUE;
+	      
+	      /*
+	       * TODO: Redisplay the dialog box if it is not
+	       * currently displayed.
+	       */
+	    }
+	}
+      else
+	{
+	  /* Flag that we have a valid screen depth */
+	  s_pScreenPriv->fBadDepth = FALSE;
+	}
+      
+      /*
+       * Check for a change in display dimensions.
+       * We can simply recreate the same-sized primary surface when
+       * the display dimensions change.
+       */
+      if (s_pScreenPriv->dwLastWindowsWidth != LOWORD (lParam)
+	  || s_pScreenPriv->dwLastWindowsHeight != HIWORD (lParam))
+	{
+	  /*
+	   * NOTE: The non-DirectDraw engines set the ReleasePrimarySurface
+	   * and CreatePrimarySurface function pointers to point
+	   * to the no operation function, NoopDDA.  This allows us
+	   * to blindly call these functions, even if they are not
+	   * relevant to the current engine (e.g., Shadow GDI).
+	   */
+
+#if CYGDEBUG
+	  ErrorF ("winWindowProc - WM_DISPLAYCHANGE - Dimensions changed\n");
+#endif
+	  
+	  /* Release the old primary surface */
+	  (*s_pScreenPriv->pwinReleasePrimarySurface) (s_pScreen);
+
+#if CYGDEBUG
+	  ErrorF ("winWindowProc - WM_DISPLAYCHANGE - Released "
+		  "primary surface\n");
+#endif
+
+	  /* Create the new primary surface */
+	  (*s_pScreenPriv->pwinCreatePrimarySurface) (s_pScreen);
+
+#if CYGDEBUG
+	  ErrorF ("winWindowProc - WM_DISPLAYCHANGE - Recreated "
+		  "primary surface\n");
+#endif
+	}
+      else
+	{
+#if CYGDEBUG
+	  ErrorF ("winWindowProc - WM_DISPLAYCHANGE - Dimensions did not "
+		  "change\n");
+#endif
+	}
+
+      /* Store the new display dimensions and depth */
+      s_pScreenPriv->dwLastWindowsWidth = GetSystemMetrics (SM_CXSCREEN);
+      s_pScreenPriv->dwLastWindowsHeight = GetSystemMetrics (SM_CYSCREEN);
+      s_pScreenPriv->dwLastWindowsBitsPixel
+	= GetDeviceCaps (s_pScreenPriv->hdcScreen, BITSPIXEL);
+      break;
+
+    case WM_SIZE:
+      {
+	SCROLLINFO		si;
+	RECT			rcWindow;
+	int			iWidth, iHeight;
+
+#if CYGDEBUG
+	ErrorF ("winWindowProc - WM_SIZE\n");
+#endif
+
+	/* Break if we do not use scrollbars */
+	if (!s_pScreenInfo->fScrollbars
+	    || !s_pScreenInfo->fDecoration
+	    || s_pScreenInfo->fRootless
+	    || s_pScreenInfo->fFullScreen)
+	  break;
+
+	/* No need to resize if we get minimized */
+	if (wParam == SIZE_MINIMIZED)
+	  return 0;
+
+	/*
+	 * Get the size of the whole window, including client area,
+	 * scrollbars, and non-client area decorations (caption, borders).
+	 * We do this because we need to check if the client area
+	 * without scrollbars is large enough to display the whole visual.
+	 * The new client area size passed by lParam already subtracts
+	 * the size of the scrollbars if they are currently displayed.
+	 * So checking is LOWORD(lParam) == visual_width and
+	 * HIWORD(lParam) == visual_height will never tell us to hide
+	 * the scrollbars because the client area would always be too small.
+	 * GetClientRect returns the same sizes given by lParam, so we
+	 * cannot use GetClientRect either.
+	 */
+	GetWindowRect (hwnd, &rcWindow);
+	iWidth = rcWindow.right - rcWindow.left;
+	iHeight = rcWindow.bottom - rcWindow.top;
+
+	ErrorF ("winWindowProc - WM_SIZE - window w: %d h: %d, "
+		"new client area w: %d h: %d\n",
+		iWidth, iHeight, LOWORD (lParam), HIWORD (lParam));
+
+	/* Subtract the frame size from the window size. */
+	iWidth -= 2 * GetSystemMetrics (SM_CXSIZEFRAME);
+	iHeight -= (2 * GetSystemMetrics (SM_CYSIZEFRAME)
+		    + GetSystemMetrics (SM_CYCAPTION));
+
+	/*
+	 * Update scrollbar page sizes.
+	 * NOTE: If page size == range, then the scrollbar is
+	 * automatically hidden.
+	 */
+
+	/* Is the naked client area large enough to show the whole visual? */
+	if (iWidth < s_pScreenInfo->dwWidth
+	    || iHeight < s_pScreenInfo->dwHeight)
+	  {
+	    /* Client area too small to display visual, use scrollbars */
+	    iWidth -= GetSystemMetrics (SM_CXVSCROLL);
+	    iHeight -= GetSystemMetrics (SM_CYHSCROLL);
+	  }
+	
+	/* Set the horizontal scrollbar page size */
+	si.cbSize = sizeof (si);
+	si.fMask = SIF_PAGE | SIF_RANGE;
+	si.nMin = 0;
+	si.nMax = s_pScreenInfo->dwWidth - 1;
+	si.nPage = iWidth;
+	SetScrollInfo (hwnd, SB_HORZ, &si, TRUE);
+	
+	/* Set the vertical scrollbar page size */
+	si.cbSize = sizeof (si);
+	si.fMask = SIF_PAGE | SIF_RANGE;
+	si.nMin = 0;
+	si.nMax = s_pScreenInfo->dwHeight - 1;
+	si.nPage = iHeight;
+	SetScrollInfo (hwnd, SB_VERT, &si, TRUE);
+
+	/*
+	 * NOTE: Scrollbars may have moved if they were at the 
+	 * far right/bottom, so we query their current position.
+	 */
+	
+	/* Get the horizontal scrollbar position and set the offset */
+	si.cbSize = sizeof (si);
+	si.fMask = SIF_POS;
+	GetScrollInfo (hwnd, SB_HORZ, &si);
+	s_pScreenInfo->dwXOffset = -si.nPos;
+	
+	/* Get the vertical scrollbar position and set the offset */
+	si.cbSize = sizeof (si);
+	si.fMask = SIF_POS;
+	GetScrollInfo (hwnd, SB_VERT, &si);
+	s_pScreenInfo->dwYOffset = -si.nPos;
+      }
+      return 0;
+
+    case WM_VSCROLL:
+      {
+	SCROLLINFO		si;
+	int			iVertPos;
+
+#if CYGDEBUG
+	ErrorF ("winWindowProc - WM_VSCROLL\n");
+#endif
+      
+	/* Get vertical scroll bar info */
+	si.cbSize = sizeof (si);
+	si.fMask = SIF_ALL;
+	GetScrollInfo (hwnd, SB_VERT, &si);
+
+	/* Save the vertical position for comparison later */
+	iVertPos = si.nPos;
+
+	/*
+	 * Don't forget:
+	 * moving the scrollbar to the DOWN, scroll the content UP
+	 */
+	switch (LOWORD(wParam))
+	  {
+	  case SB_TOP:
+	    si.nPos = si.nMin;
+	    break;
+	  
+	  case SB_BOTTOM:
+	    si.nPos = si.nMax - si.nPage + 1;
+	    break;
+
+	  case SB_LINEUP:
+	    si.nPos -= 1;
+	    break;
+	  
+	  case SB_LINEDOWN:
+	    si.nPos += 1;
+	    break;
+	  
+	  case SB_PAGEUP:
+	    si.nPos -= si.nPage;
+	    break;
+	  
+	  case SB_PAGEDOWN:
+	    si.nPos += si.nPage;
+	    break;
+
+	  case SB_THUMBTRACK:
+	    si.nPos = si.nTrackPos;
+	    break;
+
+	  default:
+	    break;
+	  }
+
+	/*
+	 * We retrieve the position after setting it,
+	 * because Windows may adjust it.
+	 */
+	si.fMask = SIF_POS;
+	SetScrollInfo (hwnd, SB_VERT, &si, TRUE);
+	GetScrollInfo (hwnd, SB_VERT, &si);
+      
+	/* Scroll the window if the position has changed */
+	if (si.nPos != iVertPos)
+	  {
+	    /* Save the new offset for bit block transfers, etc. */
+	    s_pScreenInfo->dwYOffset = -si.nPos;
+
+	    /* Change displayed region in the window */
+	    ScrollWindowEx (hwnd,
+			    0,
+			    iVertPos - si.nPos,
+			    NULL,
+			    NULL,
+			    NULL,
+			    NULL,
+			    SW_INVALIDATE);
+	  
+	    /* Redraw the window contents */
+	    UpdateWindow (hwnd);
+	  }
+      }
+      return 0;
+
+    case WM_HSCROLL:
+      {
+	SCROLLINFO		si;
+	int			iHorzPos;
+
+#if CYGDEBUG
+	ErrorF ("winWindowProc - WM_HSCROLL\n");
+#endif
+      
+	/* Get horizontal scroll bar info */
+	si.cbSize = sizeof (si);
+	si.fMask = SIF_ALL;
+	GetScrollInfo (hwnd, SB_HORZ, &si);
+
+	/* Save the horizontal position for comparison later */
+	iHorzPos = si.nPos;
+
+	/*
+	 * Don't forget:
+	 * moving the scrollbar to the RIGHT, scroll the content LEFT
+	 */
+	switch (LOWORD(wParam))
+	  {
+	  case SB_LEFT:
+	    si.nPos = si.nMin;
+	    break;
+	  
+	  case SB_RIGHT:
+	    si.nPos = si.nMax - si.nPage + 1;
+	    break;
+
+	  case SB_LINELEFT:
+	    si.nPos -= 1;
+	    break;
+	  
+	  case SB_LINERIGHT:
+	    si.nPos += 1;
+	    break;
+	  
+	  case SB_PAGELEFT:
+	    si.nPos -= si.nPage;
+	    break;
+	  
+	  case SB_PAGERIGHT:
+	    si.nPos += si.nPage;
+	    break;
+
+	  case SB_THUMBTRACK:
+	    si.nPos = si.nTrackPos;
+	    break;
+
+	  default:
+	    break;
+	  }
+
+	/*
+	 * We retrieve the position after setting it,
+	 * because Windows may adjust it.
+	 */
+	si.fMask = SIF_POS;
+	SetScrollInfo (hwnd, SB_HORZ, &si, TRUE);
+	GetScrollInfo (hwnd, SB_HORZ, &si);
+      
+	/* Scroll the window if the position has changed */
+	if (si.nPos != iHorzPos)
+	  {
+	    /* Save the new offset for bit block transfers, etc. */
+	    s_pScreenInfo->dwXOffset = -si.nPos;
+
+	    /* Change displayed region in the window */
+	    ScrollWindowEx (hwnd,
+			    iHorzPos - si.nPos,
+			    0,
+			    NULL,
+			    NULL,
+			    NULL,
+			    NULL,
+			    SW_INVALIDATE);
+	  
+	    /* Redraw the window contents */
+	    UpdateWindow (hwnd);
+	  }
+      }
+      return 0;
+
+    case WM_GETMINMAXINFO:
+      {
+	MINMAXINFO		*pMinMaxInfo = (MINMAXINFO *) lParam;
+	int			iCaptionHeight;
+	int			iBorderHeight, iBorderWidth;
+
+#if CYGDEBUG	
+	ErrorF ("winWindowProc - WM_GETMINMAXINFO - pScreenInfo: %08x\n",
+		s_pScreenInfo);
+#endif
+
+	/* Can't do anything without screen info */
+	if (s_pScreenInfo == NULL
+	    || !s_pScreenInfo->fScrollbars
+	    || s_pScreenInfo->fFullScreen
+	    || !s_pScreenInfo->fDecoration
+	    || s_pScreenInfo->fRootless)
+	  break;
+
+	/*
+	 * Here we can override the maximum tracking size, which
+	 * is the largest size that can be assigned to our window
+	 * via the sizing border.
+	 */
+
+	/*
+	 * FIXME: Do we only need to do this once, since our visual size
+	 * does not change?  Does Windows store this value statically
+	 * once we have set it once?
+	 */
+
+	/* Get the border and caption sizes */
+	iCaptionHeight = GetSystemMetrics (SM_CYCAPTION);
+	iBorderWidth = 2 * GetSystemMetrics (SM_CXSIZEFRAME);
+	iBorderHeight = 2 * GetSystemMetrics (SM_CYSIZEFRAME);
+	
+	/* Allow the full visual to be displayed */
+	pMinMaxInfo->ptMaxTrackSize.x
+	  = s_pScreenInfo->dwWidth + iBorderWidth;
+	pMinMaxInfo->ptMaxTrackSize.y
+	  = s_pScreenInfo->dwHeight + iBorderHeight + iCaptionHeight;
+      }
+      return 0;
+
+    case WM_ERASEBKGND:
+#if CYGDEBUG
+      ErrorF ("winWindowProc - WM_ERASEBKGND\n");
+#endif
+      /*
+       * Pretend that we did erase the background but we don't care,
+       * the application uses the full window estate. This avoids some
+       * flickering when resizing.
+       */
+      return TRUE;
+
     case WM_PAINT:
 #if CYGDEBUG
       ErrorF ("winWindowProc - WM_PAINT\n");
@@ -115,7 +615,8 @@ winWindowProc (HWND hwnd, UINT message,
       /* Only paint if we have privates and the server is enabled */
       if (s_pScreenPriv == NULL
 	  || !s_pScreenPriv->fEnabled
-	  || (s_pScreenInfo->fFullScreen && !s_pScreenPriv->fActive))
+	  || (s_pScreenInfo->fFullScreen && !s_pScreenPriv->fActive)
+	  || s_pScreenPriv->fBadDepth)
 	{
 	  /* We don't want to paint */
 	  break;
@@ -134,8 +635,13 @@ winWindowProc (HWND hwnd, UINT message,
 #if CYGDEBUG
 	ErrorF ("winWindowProc - WM_PALETTECHANGED\n");
 #endif
-	/* Don't process if we don't have privates or a colormap */
-	if (s_pScreenPriv == NULL || s_pScreenPriv->pcmapInstalled == NULL)
+	/*
+	 * Don't process if we don't have privates or a colormap,
+	 * or if we have an invalid depth.
+	 */
+	if (s_pScreenPriv == NULL
+	    || s_pScreenPriv->pcmapInstalled == NULL
+	    || s_pScreenPriv->fBadDepth)
 	  break;
 
 	/* Return if we caused the palette to change */
@@ -162,8 +668,8 @@ winWindowProc (HWND hwnd, UINT message,
       /* Has the mouse pointer crossed screens? */
       if (s_pScreen != miPointerCurrentScreen ())
 	miPointerSetNewScreen (s_pScreenInfo->dwScreen,
-			       GET_X_LPARAM(lParam),
-			       GET_Y_LPARAM(lParam));
+			       GET_X_LPARAM(lParam)-s_pScreenInfo->dwXOffset,
+			       GET_Y_LPARAM(lParam)-s_pScreenInfo->dwYOffset);
 
       /* Are we tracking yet? */
       if (!s_fTracking)
@@ -200,8 +706,8 @@ winWindowProc (HWND hwnd, UINT message,
 	}
       
       /* Deliver absolute cursor position to X Server */
-      miPointerAbsoluteCursor (GET_X_LPARAM(lParam),
-			       GET_Y_LPARAM(lParam),
+      miPointerAbsoluteCursor (GET_X_LPARAM(lParam)-s_pScreenInfo->dwXOffset,
+			       GET_Y_LPARAM(lParam)-s_pScreenInfo->dwYOffset,
 			       g_c32LastInputEventTime = GetTickCount ());
       return 0;
 
@@ -245,33 +751,39 @@ winWindowProc (HWND hwnd, UINT message,
     case WM_LBUTTONDOWN:
       if (s_pScreenPriv == NULL || s_pScreenInfo->fIgnoreInput)
 	break;
+      if (s_pScreenInfo->fRootless) SetCapture (hwnd);
       return winMouseButtonsHandle (s_pScreen, ButtonPress, Button1, wParam);
       
     case WM_LBUTTONUP:
       if (s_pScreenPriv == NULL || s_pScreenInfo->fIgnoreInput)
 	break;
+      if (s_pScreenInfo->fRootless) ReleaseCapture ();
       return winMouseButtonsHandle (s_pScreen, ButtonRelease, Button1, wParam);
 
     case WM_MBUTTONDBLCLK:
     case WM_MBUTTONDOWN:
       if (s_pScreenPriv == NULL || s_pScreenInfo->fIgnoreInput)
 	break;
+      if (s_pScreenInfo->fRootless) SetCapture (hwnd);
       return winMouseButtonsHandle (s_pScreen, ButtonPress, Button2, wParam);
       
     case WM_MBUTTONUP:
       if (s_pScreenPriv == NULL || s_pScreenInfo->fIgnoreInput)
 	break;
+      if (s_pScreenInfo->fRootless) ReleaseCapture ();
       return winMouseButtonsHandle (s_pScreen, ButtonRelease, Button2, wParam);
       
     case WM_RBUTTONDBLCLK:
     case WM_RBUTTONDOWN:
       if (s_pScreenPriv == NULL || s_pScreenInfo->fIgnoreInput)
 	break;
+      if (s_pScreenInfo->fRootless) SetCapture (hwnd);
       return winMouseButtonsHandle (s_pScreen, ButtonPress, Button3, wParam);
       
     case WM_RBUTTONUP:
       if (s_pScreenPriv == NULL || s_pScreenInfo->fIgnoreInput)
 	break;
+      if (s_pScreenInfo->fRootless) ReleaseCapture ();
       return winMouseButtonsHandle (s_pScreen, ButtonRelease, Button3, wParam);
 
     case WM_TIMER:
@@ -295,10 +807,19 @@ winWindowProc (HWND hwnd, UINT message,
 	}
       return 0;
 
+    case WM_CTLCOLORSCROLLBAR:
+      FatalError ("winWindowProc - WM_CTLCOLORSCROLLBAR - We are not "
+		  "supposed to get this message.  Exiting.\n");
+      return 0;
+
     case WM_MOUSEWHEEL:
       if (s_pScreenPriv == NULL || s_pScreenInfo->fIgnoreInput)
 	break;
-      return winMouseWheel (s_pScreen, GET_WHEEL_DELTA_WPARAM(wParam));
+#if CYGDEBUG
+      ErrorF ("winWindowProc - WM_MOUSEWHEEL\n");
+#endif
+      winMouseWheel (s_pScreen, GET_WHEEL_DELTA_WPARAM(wParam));
+      break;
 
     case WM_SETFOCUS:
       if (s_pScreenPriv == NULL || s_pScreenInfo->fIgnoreInput)
@@ -421,12 +942,41 @@ winWindowProc (HWND hwnd, UINT message,
       return 0;
 
     case WM_ACTIVATE:
-      if (s_pScreenPriv == NULL || s_pScreenInfo->fIgnoreInput)
+      if (s_pScreenPriv == NULL
+	  || s_pScreenInfo->fIgnoreInput)
 	break;
+
+      /* TODO: Override display of window when we have a bad depth */
+      if (LOWORD(wParam) != WA_INACTIVE && s_pScreenPriv->fBadDepth)
+	{
+	  ErrorF ("winWindowProc - WM_ACTIVATE - Bad depth, trying "
+		  "to override window activation\n");
+
+	  /* Minimize the window */
+	  ShowWindow (hwnd, SW_MINIMIZE);
+
+	  /* Display dialog box */
+	  if (g_hDlgDepthChange != NULL)
+	    {
+	      /* Make the existing dialog box active */
+	      SetActiveWindow (g_hDlgDepthChange);
+	    }
+	  else
+	    {
+	      /* TODO: Recreate the dialog box and bring to the top */
+	      ShowWindow (g_hDlgDepthChange, SW_SHOWDEFAULT);
+	    }
+
+	  /* Don't do any other processing of this message */
+	  return 0;
+	}
+
+
 
 #if CYGDEBUG
       ErrorF ("winWindowProc - WM_ACTIVATE\n");
 #endif
+
       /*
        * Focus is being changed to another window.
        * The other window may or may not belong to
@@ -447,12 +997,14 @@ winWindowProc (HWND hwnd, UINT message,
       return 0;
 
     case WM_ACTIVATEAPP:
-      if (s_pScreenPriv == NULL || s_pScreenInfo->fIgnoreInput)
+      if (s_pScreenPriv == NULL
+	  || s_pScreenInfo->fIgnoreInput)
 	break;
 
 #if CYGDEBUG
       ErrorF ("winWindowProc - WM_ACTIVATEAPP\n");
 #endif
+
       /* Activate or deactivate */
       s_pScreenPriv->fActive = wParam;
 
@@ -476,4 +1028,102 @@ winWindowProc (HWND hwnd, UINT message,
     }
 
   return DefWindowProc (hwnd, message, wParam, lParam);
+}
+
+
+/*
+ * Process messages for the dialog that is displayed for
+ * disruptive screen depth changes. 
+ */
+
+BOOL CALLBACK
+winChangeDepthDlgProc (HWND hwndDialog, UINT message,
+		       WPARAM wParam, LPARAM lParam)
+{
+  static winPrivScreenPtr	s_pScreenPriv = NULL;
+  static winScreenInfo		*s_pScreenInfo = NULL;
+  static ScreenPtr		s_pScreen = NULL;
+
+#if CYGDEBUG
+  ErrorF ("winChangeDepthDlgProc\n");
+#endif
+
+  /* Branch on message type */
+  switch (message)
+    {
+    case WM_INITDIALOG:
+#if CYGDEBUG
+      ErrorF ("winChangeDepthDlgProc - WM_INITDIALOG\n");
+#endif
+
+      /* Store pointers to private structures for future use */
+      s_pScreenPriv = (winPrivScreenPtr) lParam;
+      s_pScreenInfo = s_pScreenPriv->pScreenInfo;
+      s_pScreen = s_pScreenInfo->pScreen;
+
+#if CYGDEBUG
+      ErrorF ("winChangeDepthDlgProc - WM_INITDIALG - s_pScreenPriv: %08x, "
+	      "s_pScreenInfo: %08x, s_pScreen: %08x\n",
+	      s_pScreenPriv, s_pScreenInfo, s_pScreen);
+#endif
+
+#if CYGDEBUG
+      ErrorF ("winChangeDepthDlgProc - WM_INITDIALOG - orig bpp: %d, "
+	      "last bpp: %d\n",
+	      s_pScreenInfo->dwBPP,
+	      s_pScreenPriv->dwLastWindowsBitsPixel);
+#endif
+      return TRUE;
+
+    case WM_DISPLAYCHANGE:
+#if CYGDEBUG
+      ErrorF ("winChangeDepthDlgProc - WM_DISPLAYCHANGE - orig bpp: %d, "
+	      "last bpp: %d, new bpp: %d\n",
+	      s_pScreenInfo->dwBPP,
+	      s_pScreenPriv->dwLastWindowsBitsPixel,
+	      wParam);
+#endif
+
+      /* Dismiss the dialog if the display returns to the original depth */
+      if (wParam == s_pScreenInfo->dwBPP)
+	{
+	  ErrorF ("winChangeDelthDlgProc - wParam == s_pScreenInfo->dwBPP\n");
+
+	  /* Depth has been restored, dismiss dialog */
+	  DestroyWindow (g_hDlgDepthChange);
+	  g_hDlgDepthChange = NULL;
+
+	  /* Flag that we have a valid screen depth */
+	  s_pScreenPriv->fBadDepth = FALSE;
+	}
+      return TRUE;
+
+    case WM_COMMAND:
+      switch (LOWORD (wParam))
+	{
+	case IDOK:
+	case IDCANCEL:
+	  ErrorF ("winChangeDepthDlgProc - WM_COMMAND - IDOK or IDCANCEL\n");
+
+	  /* 
+	   * User dismissed the dialog, hide it until the
+	   * display mode is restored.
+	   */
+	  ShowWindow (g_hDlgDepthChange, SW_HIDE);
+	  return TRUE;
+	}
+      break;
+
+    case WM_CLOSE:
+      ErrorF ("winChangeDepthDlgProc - WM_CLOSE\n");
+
+      /* 
+       * User dismissed the dialog, hide it until the
+       * display mode is restored.
+       */
+      ShowWindow (g_hDlgDepthChange, SW_HIDE);
+      return TRUE;
+    }
+
+  return FALSE;
 }

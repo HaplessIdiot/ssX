@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.44 2002/07/14 17:08:15 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.45 2002/10/01 14:31:36 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -102,7 +102,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.44 2002/07/14 17:08:15 ala
 #define GccGasOption	        -DGCCUSESGAS
 #define AsmDefines	        -DUSE_GAS -DGCCUSESGAS
 #ifndef LdCmd
-#define LdCmd                   ld -lautomode
+#define LdCmd                   gcc -lautomode
 #endif /* LdCmd */
 #define MkdirHierCmd            mkdir -p
 #ifndef CppCmd
@@ -114,6 +114,20 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.44 2002/07/14 17:08:15 ala
 #define LexCmd                  flex -l
 #define LexLib                  -lfl
 #define HasFlex			YES
+
+/*
+ * Cygwin-specific Windows resource compiler command
+ */
+
+#ifdef CrossCompileDir
+# ifndef WindresCmd
+#  define WindresCmd		Concat3(CrossCompileDir,/,windres)
+# endif
+#else
+# ifndef WindresCmd
+#  define WindresCmd		windres
+# endif
+#endif
 
 #define PreProcessCmd           CcCmd -E
 

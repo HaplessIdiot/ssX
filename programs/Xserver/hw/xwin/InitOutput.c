@@ -26,9 +26,11 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.27 2001/12/14 19:59:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.29 2002/07/05 09:19:25 alanh Exp $ */
 
 #include "win.h"
+#include "winconfig.h"
+
 
 /*
  * General global variables
@@ -46,6 +48,8 @@ unsigned long	g_ulServerGeneration = 0;
 Bool		g_fInitializedDefaultScreens = FALSE;
 FILE		*g_pfLog = NULL;
 DWORD		g_dwEnginesSupported = 0;
+HINSTANCE	g_hInstance = 0;
+HWND		g_hDlgDepthChange = NULL;
 
 
 /*
@@ -124,6 +128,8 @@ winInitializeDefaultScreens (void)
       g_ScreenInfo[i].dwScreen = i;
       g_ScreenInfo[i].dwWidth  = dwWidth;
       g_ScreenInfo[i].dwHeight = dwHeight;
+      g_ScreenInfo[i].fUserGaveHeightAndWidth
+	=  WIN_DEFAULT_USER_GAVE_HEIGHT_AND_WIDTH;
       g_ScreenInfo[i].dwBPP = WIN_DEFAULT_BPP;
       g_ScreenInfo[i].dwClipUpdatesNBoxes = WIN_DEFAULT_CLIP_UPDATES_NBOXES;
       g_ScreenInfo[i].fEmulatePseudo = WIN_DEFAULT_EMULATE_PSEUDO;
@@ -131,7 +137,9 @@ winInitializeDefaultScreens (void)
       g_ScreenInfo[i].pfb = NULL;
       g_ScreenInfo[i].fFullScreen = FALSE;
       g_ScreenInfo[i].fDecoration = TRUE;
+      g_ScreenInfo[i].fRootless = FALSE;
       g_ScreenInfo[i].fLessPointer = FALSE;
+      g_ScreenInfo[i].fScrollbars = FALSE;
       g_ScreenInfo[i].iE3BTimeout = WIN_E3B_OFF;
       g_ScreenInfo[i].dwWidth_mm = (dwWidth / WIN_DEFAULT_DPI)
 	* 25.4;
@@ -140,6 +148,7 @@ winInitializeDefaultScreens (void)
       g_ScreenInfo[i].fUseWinKillKey = WIN_DEFAULT_WIN_KILL;
       g_ScreenInfo[i].fUseUnixKillKey = WIN_DEFAULT_UNIX_KILL;
       g_ScreenInfo[i].fIgnoreInput = FALSE;
+      g_ScreenInfo[i].fExplicitScreen = FALSE;
     }
 
   /* Signal that the default screens have been initialized */
@@ -228,6 +237,8 @@ OsVendorInit (void)
   /* Add a default screen if no screens were specified */
   if (g_iNumScreens == 0)
     {
+      ErrorF ("OsVendorInit - Creating bogus screen 0\n");
+
       /* 
        * We need to initialize default screens if no arguments
        * were processed.  Otherwise, the default screens would
@@ -242,6 +253,9 @@ OsVendorInit (void)
        */
       g_iNumScreens = 1;
       g_iLastScreen = 0;
+
+      /* We have to flag this as an explicit screen, even though it isn't */
+      g_ScreenInfo[0].fExplicitScreen = TRUE;
     }
 }
 
@@ -256,24 +270,25 @@ ddxUseMsg (void)
 
   ErrorF ("-emulate3buttons [timeout]\n"
 	  "\tEmulate 3 button mouse with an optional timeout in\n"
-	  "milliseconds\n");
+	  "\tmilliseconds.\n");
 
   ErrorF ("-engine engine_type_id\n"
 	  "\tOverride the server's automatically selected engine type:\n"
 	  "\t\t1 - Shadow GDI\n"
 	  "\t\t2 - Shadow DirectDraw\n"
-	  "\t\t4 - Shadow DirectDraw4\n"
+	  "\t\t4 - Shadow DirectDraw4 Non-Locking\n"
 	  "\t\t16 - Native GDI - experimental\n");
 
   ErrorF ("-fullscreen\n"
-	  "\tRun the server in fullscreen mode\n");
+	  "\tRun the server in fullscreen mode.\n");
   
   ErrorF ("-refresh rate_in_Hz\n"
 	  "\tSpecify an optional refresh rate to use in fullscreen mode\n"
 	  "\twith a DirectDraw engine.\n");
 
-  ErrorF ("-screen scr_num width height\n"
-	  "\tSet screen scr_num's width and height\n");
+  ErrorF ("-screen scr_num [width height]\n"
+	  "\tEnable screen scr_num and optionally specify a width and\n"
+	  "\theight for that screen.\n");
 
   ErrorF ("-lesspointer\n"
 	  "\tHide the windows mouse pointer when it is over an inactive\n"
@@ -283,6 +298,14 @@ ddxUseMsg (void)
   ErrorF ("-nodecoration\n"
           "\tDo not draw a window border, title bar, etc.  Windowed\n"
 	  "\tmode only.\n");
+
+  ErrorF ("-rootless\n"
+	  "\tEXPERIMENTAL: Run the server in pseudo-rootless mode.\n");
+
+  ErrorF ("-scrollbars\n"
+	  "\tIn windowed mode, allow screens bigger than the Windows desktop.\n"
+	  "\tMoreover, if the window has decorations, one can now resize\n"
+	  "\tit.\n");
 
   ErrorF ("-clipupdates num_boxes\n"
 	  "\tUse a clipping region to constrain shadow update blits to\n"
@@ -297,10 +320,16 @@ ddxUseMsg (void)
 	  "\tapplication in TrueColor modes.\n");
 
   ErrorF ("-[no]unixkill\n"
-          "\tCtrl+Alt+Backspace exits the X Server\n");
+          "\tCtrl+Alt+Backspace exits the X Server.\n");
 
   ErrorF ("-[no]winkill\n"
-          "\tAlt+F4 exits the X Server\n");
+          "\tAlt+F4 exits the X Server.\n");
+
+  ErrorF ("-xf86config\n"
+          "\tSpecify a configuration file.\n");
+
+  ErrorF ("-keyboard\n"
+	  "\tSpecify a keyboard device from the configuration file.\n");
 }
 
 
@@ -322,6 +351,12 @@ ddxUseMsg (void)
  *   you may check if i is greater than or equal to argc, in which case
  *   you should display the UseMsg () and return 0.
  */
+
+/* Check if enough arguments are given for the option */
+#define CHECK_ARGS(count) if (i + count >= argc) { UseMsg (); return 0; }
+
+/* Compare the current option with the string. */ 
+#define IS_OPTION(name) (strcmp (argv[i], name) == 0)
 
 int
 ddxProcessArgument (int argc, char *argv[], int i)
@@ -359,12 +394,13 @@ ddxProcessArgument (int argc, char *argv[], int i)
 #endif
   
   /*
-   * Look for the '-screen scr_num width height' argument
+   * Look for the '-screen scr_num [width height]' argument
    */
   if (strcmp (argv[i], "-screen") == 0)
     {
       int		iArgsProcessed = 1;
       int		nScreenNum;
+      int		iWidth, iHeight;
 
 #if CYGDEBUG
       ErrorF ("ddxProcessArgument - screen - argc: %d i: %d\n",
@@ -372,7 +408,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
 #endif
 
       /* Display the usage message if the argument is malformed */
-      if (i + 2 >= argc)
+      if (i + 1 >= argc)
 	{
 	  return 0;
 	}
@@ -390,37 +426,52 @@ ddxProcessArgument (int argc, char *argv[], int i)
         }
 
       /* Look for 'WxD' or 'W D' */
-      if (2 == sscanf (argv[i + 2], "%dx%d",
-		       (int *) &g_ScreenInfo[nScreenNum].dwWidth,
-		       (int *) &g_ScreenInfo[nScreenNum].dwHeight))
+      if (i + 2 < argc
+	  && 2 == sscanf (argv[i + 2], "%dx%d",
+			  (int *) &iWidth,
+			  (int *) &iHeight))
 	{
+	  ErrorF ("ddxProcessArgument - screen - Found ``WxD'' arg\n");
 	  iArgsProcessed = 3;
+	  g_ScreenInfo[nScreenNum].fUserGaveHeightAndWidth = TRUE;
+	  g_ScreenInfo[nScreenNum].dwWidth = iWidth;
+	  g_ScreenInfo[nScreenNum].dwHeight = iHeight;
 	}
       else if (i + 3 < argc
 	       && 1 == sscanf (argv[i + 2], "%d",
-			       (int *) &g_ScreenInfo[nScreenNum].dwWidth)
+			       (int *) &iWidth)
 	       && 1 == sscanf (argv[i + 3], "%d",
-			       (int *) &g_ScreenInfo[nScreenNum].dwHeight))
+			       (int *) &iHeight))
 	{
+	  ErrorF ("ddxProcessArgument - screen - Found ``W D'' arg\n");
 	  iArgsProcessed = 4;
+	  g_ScreenInfo[nScreenNum].fUserGaveHeightAndWidth = TRUE;
+	  g_ScreenInfo[nScreenNum].dwWidth = iWidth;
+	  g_ScreenInfo[nScreenNum].dwHeight = iHeight;
 	}
       else
 	{
-	  /* I see no height and width here */
-          ErrorF ("ddxProcessArgument - screen - Invalid screen width and "
-		  "height: %s\n",
-		  argv[i + 2]);
-	  return 0;
+	  ErrorF ("ddxProcessArgument - screen - Did not find size arg. "
+		  "dwWidth: %d dwHeight: %d\n",
+		  g_ScreenInfo[nScreenNum].dwWidth,
+		  g_ScreenInfo[nScreenNum].dwHeight);
+	  iArgsProcessed = 2;
+	  g_ScreenInfo[nScreenNum].fUserGaveHeightAndWidth = FALSE;
 	}
 
-
       /* Calculate the screen width and height in millimeters */
-      g_ScreenInfo[nScreenNum].dwWidth_mm
-	= (g_ScreenInfo[nScreenNum].dwWidth
-	   / monitorResolution) * 25.4;
-      g_ScreenInfo[nScreenNum].dwHeight_mm
-	= (g_ScreenInfo[nScreenNum].dwHeight
-	   / monitorResolution) * 25.4;
+      if (g_ScreenInfo[nScreenNum].fUserGaveHeightAndWidth)
+	{
+	  g_ScreenInfo[nScreenNum].dwWidth_mm
+	    = (g_ScreenInfo[nScreenNum].dwWidth
+	       / monitorResolution) * 25.4;
+	  g_ScreenInfo[nScreenNum].dwHeight_mm
+	    = (g_ScreenInfo[nScreenNum].dwHeight
+	       / monitorResolution) * 25.4;
+	}
+
+      /* Flag that this screen was explicity specified by the user */
+      g_ScreenInfo[nScreenNum].fExplicitScreen = TRUE;
 
       /*
        * Keep track of the last screen number seen, as parameters seen
@@ -498,12 +549,24 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	  for (j = 0; j < MAXSCREENS; j++)
 	    {
 	      g_ScreenInfo[j].fFullScreen = TRUE;
+
+	      /*
+	       * No scrollbars in fullscreen mode. Later, we may want to have
+	       * a fullscreen with a bigger virtual screen?
+	       */
+	      g_ScreenInfo[j].fScrollbars = FALSE;
 	    }
 	}
       else
 	{
 	  /* Parameter is for a single screen */
 	  g_ScreenInfo[g_iLastScreen].fFullScreen = TRUE;
+
+	  /*
+	   * No scrollbars in fullscreen mode. Later, we may want to have
+	   * a fullscreen with a bigger virtual screen?
+	   */
+	  g_ScreenInfo[g_iLastScreen].fScrollbars = FALSE;
 	}
 
       /* Indicate that we have processed this argument */
@@ -556,6 +619,64 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	{
 	  /* Parameter is for a single screen */
 	  g_ScreenInfo[g_iLastScreen].fDecoration = FALSE;
+	}
+
+      /* Indicate that we have processed this argument */
+      return 1;
+    }
+
+  /*
+   * Look for the '-rootless' argument
+   */
+  if (strcmp (argv[i], "-rootless") == 0)
+    {
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int			j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].fRootless = TRUE;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_ScreenInfo[g_iLastScreen].fRootless = TRUE;
+	}
+
+      /* Indicate that we have processed this argument */
+      return 1;
+    }
+
+  /*
+   * Look for the '-scrollbars' argument
+   */
+  if (strcmp (argv[i], "-scrollbars") == 0)
+    {
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int			j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      /* No scrollbar in fullscreen mode */
+	      if (!g_ScreenInfo[j].fFullScreen)
+		g_ScreenInfo[j].fScrollbars = TRUE;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  if (!g_ScreenInfo[g_iLastScreen].fFullScreen)
+	    {
+	      /* No scrollbar in fullscreen mode */
+	      g_ScreenInfo[g_iLastScreen].fScrollbars = TRUE;
+	    }
 	}
 
       /* Indicate that we have processed this argument */
@@ -880,6 +1001,46 @@ ddxProcessArgument (int argc, char *argv[], int i)
       return 1;
     }
 
+  /*
+   * Look for the '-fp' argument
+   */
+  if (IS_OPTION ("-fp"))
+    {
+      CHECK_ARGS (1);
+      g_cmdline.fontPath = argv[++i];
+      return 0; /* Let DIX parse this again */
+    }
+
+  /*
+   * Look for the '-co' argument
+   */
+  if (IS_OPTION ("-co"))
+    {
+      CHECK_ARGS (1);
+      g_cmdline.rgbPath = argv[++i];
+      return 0; /* Let DIX parse this again */
+    }
+
+  /*
+   * Look for the '-xf86config' argument
+   */
+  if (IS_OPTION ("-xf86config"))
+    {
+      CHECK_ARGS (1);
+      g_cmdline.configFile = argv[++i];
+      return 2;
+    }
+
+  /*
+   * Look for the '-keyboard' argument
+   */
+  if (IS_OPTION ("-keyboard"))
+    {
+      CHECK_ARGS (1);
+      g_cmdline.keyboard = argv[++i];
+      return 2;
+    }
+
   return 0;
 }
 
@@ -904,10 +1065,15 @@ void
 InitOutput (ScreenInfo *screenInfo, int argc, char *argv[])
 {
   int		i;
+  int		iMaxConsecutiveScreen = 0;
 
 #if CYGDEBUG
   ErrorF ("InitOutput\n");
 #endif
+
+  /* Try to read the XF86Config-style configuration file */
+  if (!winReadConfigfile ())
+    ErrorF ("InitOutput - Error reading config file\n");
 
   /* Setup global screen info parameters */
   screenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
@@ -949,12 +1115,38 @@ InitOutput (ScreenInfo *screenInfo, int argc, char *argv[])
       g_fpTrackMouseEvent = (FARPROC) (void (*)())NoopDDA;
     }
 
+  /*
+   * Check for a malformed set of -screen parameters.
+   * Examples of malformed parameters:
+   *	XWin -screen 1
+   *	XWin -screen 0 -screen 2
+   *	XWin -screen 1 -screen 2
+   */
+  for (i = 0; i < MAXSCREENS; i++)
+    {
+      if (g_ScreenInfo[i].fExplicitScreen)
+	iMaxConsecutiveScreen = i + 1;
+    }
+  ErrorF ("InitOutput - g_iNumScreens: %d iMaxConsecutiveScreen: %d\n",
+	  g_iNumScreens, iMaxConsecutiveScreen);
+  if (g_iNumScreens < iMaxConsecutiveScreen)
+    FatalError ("InitOutput - Malformed set of screen parameter(s).  "
+		"Screens must be specified consecutively starting with "
+		"screen 0.  That is, you cannot have only a screen 1, nor "
+		"could you have screen 0 and screen 2.  You instead must have "
+		"screen 0, or screen 0 and screen 1, respectively.  Of "
+		"you can specify as many screens as you want from 0 up to "
+		"%d.\n", MAXSCREENS - 1);
+
+  /* Store the instance handle */
+  g_hInstance = GetModuleHandle (NULL);
+
   /* Initialize each screen */
   for (i = 0; i < g_iNumScreens; i++)
     {
       if (-1 == AddScreen (winScreenInit, argc, argv))
 	{
-	  FatalError ("Couldn't add screen %d", i);
+	  FatalError ("InitOutput - Couldn't add screen %d", i);
 	}
     }
 }

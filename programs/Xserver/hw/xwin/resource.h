@@ -27,26 +27,15 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winblock.c,v 1.4 2001/11/21 08:51:24 alanh Exp $ */
+/* $XFree86$ */
 
-#include "win.h"
+#include "winms.h"
 
-/* See Porting Layer Definition - p. 6 */
-void
-winBlockHandler (int nScreen,
-		 pointer pBlockData,
-		 pointer pTimeout,
-		 pointer pReadMask)
-{
-  winScreenPriv((ScreenPtr)pBlockData);
-  MSG			msg;
 
-  /* Process all messages on our queue */
-  while (PeekMessage (&msg, NULL, 0, 0, PM_REMOVE))
-    {
-      if (g_hDlgDepthChange == 0 || !IsDialogMessage (g_hDlgDepthChange, &msg))
-	{
-	  DispatchMessage (&msg);
-	}
-    }
-}
+/*
+ * Local defines
+ */
+
+#define IDM_APP_ABOUT		40001
+#define IDC_STATIC		-1
+#define IDI_XWIN		101
