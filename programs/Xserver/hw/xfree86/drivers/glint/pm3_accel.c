@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.6 2000/11/14 17:32:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.7 2000/11/28 16:10:39 dawes Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -47,7 +47,6 @@
 #include "xaalocal.h"		/* For replacements */
 
 #define DEBUG 0
-#define USE_DIRECT_FIFO_WRITES 1
 
 #if DEBUG
 # define TRACE_ENTER(str)       ErrorF("pm3_accel: " str " %d\n",pScrn->scrnIndex)
@@ -407,11 +406,12 @@ Permedia3AccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentMono8x8PatternFillRect = 
 	Permedia3SubsequentMono8x8PatternFillRect;
 
-#if USE_DIRECT_FIFO_WRITES
+    if ((!pGlint->PM3_NoDirectFifoWrite) && (!pGlint->PM3_NoImageWrite))
+      {
     /* Direct Fifo Bitmap Writes */
     infoPtr->WriteBitmapFlags = 0;
     infoPtr->WriteBitmap = Permedia3WriteBitmap;
-#endif
+      }
 
     /* Color Expand Fills */
     infoPtr->CPUToScreenColorExpandFillFlags =
@@ -429,11 +429,14 @@ Permedia3AccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentCPUToScreenColorExpandFill = 
 	    Permedia3SubsequentCPUToScreenColorExpandFill;
 
-#if USE_DIRECT_FIFO_WRITES
+    if ((!pGlint->PM3_NoDirectFifoWrite) && (!pGlint->PM3_NoImageWrite))
+      {
     /* Direct Fifo Images Writes */
     infoPtr->WritePixmapFlags = 0;
     infoPtr->WritePixmap = Permedia3WritePixmap;
-#else
+      }
+    else if (!pGlint->PM3_NoImageWrite)
+      {
     /* Images Writes */
     infoPtr->ImageWriteFlags = 
 	NO_GXCOPY |
@@ -451,7 +454,7 @@ Permedia3AccelInit(ScreenPtr pScreen)
 	    Permedia3SetupForImageWrite;
     infoPtr->SubsequentImageWriteRect =
 	    Permedia3SubsequentImageWriteRect;
-#endif
+      }
 
     /* Available Framebuffer Area for XAA. */
     AvailFBArea.x1 = 0;

@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.102 2000/12/08 10:02:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.103 2000/12/08 13:42:35 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -180,7 +180,9 @@ typedef enum {
     OPTION_SHADOW_FB,
     OPTION_FBDEV,
     OPTION_NOWRITEBITMAP,
-    OPTION_PM3_USE_GAMMA
+    OPTION_PM3_USE_GAMMA,
+    OPTION_PM3_NOIMAGEWRITE,
+    OPTION_PM3_NODIRECTFIFOWRITE
 } GLINTOpts;
 
 static OptionInfoRec GLINTOptions[] = {
@@ -196,6 +198,8 @@ static OptionInfoRec GLINTOptions[] = {
     { OPTION_OVERLAY,		"Overlay",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_FBDEV,		"UseFBDev",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_PM3_NOIMAGEWRITE, "PM3NoImageWrite", OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_PM3_NODIRECTFIFOWRITE, "PM3NoDirectFifoWrite", OPTV_BOOLEAN, {0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1090,6 +1094,17 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 		"Using \"Shadow Framebuffer\" - acceleration disabled\n");
     }
+    pGlint->PM3_NoImageWrite = FALSE;
+    if (xf86ReturnOptValBool(GLINTOptions, OPTION_PM3_NOIMAGEWRITE, FALSE)) {
+	pGlint->PM3_NoImageWrite = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "WritePixmap disabled for Permedia3\n");
+    }
+    pGlint->PM3_NoDirectFifoWrite = FALSE;
+    if (xf86ReturnOptValBool(GLINTOptions, OPTION_PM3_NODIRECTFIFOWRITE, FALSE)) {
+	pGlint->PM3_NoDirectFifoWrite = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "DirectFifoWrite disabled for Permedia3\n");
+    }
+
 
     /* Check whether to use the FBDev stuff and fill in the rest of pScrn */
     if (xf86ReturnOptValBool(GLINTOptions, OPTION_FBDEV, FALSE)) {
@@ -1240,7 +1255,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 		"No free Gamma chip was found.\n");
 	    pGlint->PM3_UseGamma = FALSE;
 	} else {
-	    unsigned int r;
 	    /* Add the Gamma to the screen info structure. */
 	    xf86AddEntityToScreen(pScrn,eIndex);
             pGlint->PM3_GammaPciInfo =
@@ -1344,6 +1358,22 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     }
     }
 
+    {
+	/* We have to boot some multiple head type boards here */
+        GLINTMapMem(pScrn);
+	switch (pGlint->Chipset) {
+            case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+		Permedia3PreInit(pScrn);
+		break;
+            case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+		Permedia2VPreInit(pScrn);
+		break;
+	    default:
+		break;
+	}
+       	GLINTUnmapMem(pScrn);
+    }
+
     /* HW bpp matches reported bpp */
     pGlint->HwBpp = pScrn->bitsPerPixel;
 
@@ -1353,20 +1383,9 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 		pScrn->videoRam = pGlint->pEnt->device->videoRam;
 		from = X_CONFIG;
         } else if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) {
-		/* Need to initialize the memory timings of the second head
-		 * of the Appian Jeronimo 2000 board here.
-		 * Check this routine in pm3_dac.c if you have another board
-		 * than a J2000, as memory timings will surely change.
-		*/
-        	GLINTMapMem(pScrn);
-		Permedia3PreInit(pScrn);
-        	GLINTUnmapMem(pScrn);
-		pScrn->videoRam = Permedia3MemorySizeDetect(pScrn);
-        } else if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) {
-		/* The PM2v has the same problem detecting memory as the PM3 */
 		pScrn->videoRam = Permedia3MemorySizeDetect(pScrn);
     	} else {
-		pGlint->FbMapSize = 0; /* Need to set FbMapSize for MMIO access */
+		pGlint->FbMapSize = 0; /*Need to set FbMapSize for MMIO access*/
 		/* Need to access MMIO to determine videoRam */
         	GLINTMapMem(pScrn);
 		if( (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_500TX) ||
