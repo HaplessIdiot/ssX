@@ -1,0 +1,30 @@
+XCOMM $XFree86$
+XCOMM Id: Imakefile,v 4.0 1994/05/28 01:24:17 nygren Exp
+
+#include <Server.tmpl>
+
+SRCS = 	p9000.c p9000cmap.c p9000init.c p9000viper.c \
+	p9000BtCurs.c p9000Bt485.c p9000vga.c \
+	p9000scrin.c p9000curs.c ICD2061Aset.c ICD2061Acal.c
+
+OBJS = 	p9000.o p9000cmap.o p9000init.o p9000viper.o \
+	p9000BtCurs.o p9000Bt485.o p9000vga.o \
+	p9000scrin.o p9000curs.o ICD2061Aset.o ICD2061Acal.o
+
+INCLUDES = -I../.. -I. -I../../../../mfb -I../../../../mi \
+	   -I../../../../include -I../../../../../../include/fonts \
+           -I../../../../cfb -I$(INCLUDESRC) -I$(FONTSRC)/include \
+           -I../../vga256/vga -I../../common -I../../common_hw \
+           -I$(FONTSRC)/lib/font/include -I../../os-support
+
+DEFINES = -DP9000_SERVER -DPSZ=8
+
+NormalLibraryObjectRule()
+
+NormalAsmObjectRule()
+
+NormalLibraryTarget(p9000,$(OBJS))
+
+InstallLinkKitLibrary(p9000,$(LINKKITDIR)/drivers)
+
+DependTarget()

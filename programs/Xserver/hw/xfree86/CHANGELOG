@@ -1,3 +1,12 @@
+XFree86 3.0Ab (28 May 1994)
+ 65. Add support for gzip'd man pages on FreeBSD.
+ 64. P9000 server (Erik Nygren).
+ 63. Video7 SVGA driver (Craig Struble).
+ 62. CL6420 SVGA driver (Manfred Brands).
+ 61. Set default paths for xdm for *BSD (so {Give,Take}Console can find chown).
+ 60. Add a hw/xfree86/doc directory, and start putting the docs back.
+ 59. Fixes for Amoeba support (Kees Verstoep).
+
 XFree86 3.0Aa (22 May 1994)
  58. Merge in XC public fix-01.
  57. Updates to FreeBSD.cf.

@@ -1,10 +1,10 @@
 .\" $XConsortium: XF86_Acc.man,v 1.3 94/04/11 16:03:08 matt Exp $
-.\" $XFree86$
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.1 1994/05/15 02:59:48 dawes Exp $
 .\" XF86_Acc.man
 .TH XF86_Accel 1 "Version 3.0"  "XFree86"
 .SH NAME
 XF86_Accel - 8 bit accelerated X Window System servers for UNIX on x86
-platforms with an S3, Mach8, Mach32 or 8514/A accelerator board
+platforms with an S3, Mach8, Mach32, P9000 or 8514/A accelerator board
 .SH SYNOPSIS
 .B XF86_S3
 [:displaynumber] [ option ] ...
@@ -13,6 +13,9 @@ platforms with an S3, Mach8, Mach32 or 8514/A accelerator board
 [:displaynumber] [ option ] ...
 .LP
 .B XF86_Mach32
+[:displaynumber] [ option ] ...
+.LP
+.B XF86_P9000
 [:displaynumber] [ option ] ...
 .LP
 .B XF86_8514
@@ -26,6 +29,10 @@ is an 8-bit PseudoColor server for ATI Mach8 graphic accelerator boards.
 .PP
 .I XF86_Mach32
 is an 8-bit PseudoColor server for ATI Mach32 graphic accelerator boards.  
+.PP
+.I XF86_P9000
+is an 8-bit PseudoColor server for Weitek P9000 graphic accelerator boards.
+This server is still experimental and should be considered a beta version.
 .PP
 .I XF86_8514
 is an 8-bit PseudoColor server for 8514/A graphic accelerator boards.  
@@ -49,6 +56,9 @@ ATI Mach8, ATI Mach32
 XF86_Mach32:
 ATI Mach32
 .TP 13
+XF86_P9000:
+Diamond Viper VLB (Weitek P9000)
+.TP 13
 XF86_8514:
 IBM 8514/A and true clones
 .RE
@@ -66,6 +76,8 @@ For the Mach32, the maximum virtual width is 1536, and the maximum virtual
 height is 1280.
 For Mach8, the maximum virtual width is 1024, and 
 for 8514 the maximum resolution is 1024x768.
+For the P9000, the virtual and physical resolutions must be the
+same.  With sufficient memory, resolutions up to 1280x1024 are supported.
 .SH OPTIONS
 In addition to the normal server options described in the \fIXserver(1)\fP
 manual page, these servers accept some more command line switches,
@@ -119,6 +131,14 @@ mach32
 .RE
 .RS 8
 .PP
+XF86_P9000:
+.RE
+.RS 1.5i
+.PP
+p9000
+.RE
+.RS 8
+.PP
 XF86_8514:
 .RE
 .RS 1.5i
@@ -134,15 +154,26 @@ is important.  It must match the order in which they are selected on the
 graphics board.  Multiple \fBclocks\fP lines may be specified.
 For programmable clock chips the name  of the clockchip  is given.
 Possible values include \fB"icd2061a"\fP and \fB"sc11412"\fP.  These
-are currently only supported by the S3 server.
+are currently only supported by the S3 server.  For the P9000
+server, a programmable clock generator is assumed and only frequencies
+from the \fBclocks\fP lines will be used.  In this case, the ordering
+of the clocks is unimportant.  Clocks over 110 MHz are not recommended
+or supported in the P9000 server.
 .TP 8
 .B membase \fImemaddress\fP
 specifies the hard-wired part of the linear framebuffer base address.  This
-option is only used by the S3 and Mach32 servers (and only when using a
+option is only used by the P9000, S3, and Mach32 servers (and only when using a
 linear framebuffer).  For the S3 server, the hard-wired part is the high
 6 bits of the 32-bit address (ie \fImemaddress\fP is masked with
 \fI0xFC000000\fP).  For the Mach32 server, the mask is \fI0xF8000000\fP
 (except for PCI cards, where the membase setting is ignored).
+.sp
+This option must be specified with the P9000 server.  With local bus
+Diamond Vipers the value of \fImemaddress\fP can be either
+\fI0x80000000\fP, \fI0x20000000\fP, or \fI0xA0000000\fP.  The default
+is \fI0x80000000\fP.  Any value should work as long as it does not
+conflict with another device already at that address.  It is not know
+whether the P9000 server will work with PCI-based boards.
 .sp
 Note: The S3 server will normally probe for this address automatically.
 Setting this option overrides that probe.  This is not normally recommended
@@ -201,14 +232,14 @@ are 1024 and 2048.
 .sp
 \fBno_ti3020_curs\fP - (S3) Disables the Ti3020's internal HW cursor.
 .sp
-\fBsw_cursor\fP - (Mach32) Disable the hardware cursor.
+\fBsw_cursor\fP - (Mach32, P9000) Disable the hardware cursor.
 .sp
 \fBdac_8_bit\fP - (S3, Mach32) Enables 8-bit per RGB.  Currently only
 supported with the Ti3020, AT&T 20C490/1, Sierra SC15025/6 (S3 server)
 and ATI68875/TLC34075/Bt885 (Mach32 server) RAMDACs.
 .sp
-\fBsync_on_green\fP - (S3) Enables generation of sync on the green signal
-on cards with Bt485 or Ti3020 RAMDACs.
+\fBsync_on_green\fP - (S3, P9000) Enables generation of sync on the green
+signal on cards with Bt485 or Ti3020 RAMDACs.
 .sp
 \fBintel_gx\fP - (Mach32) Sets the hard-wired offset for the linear
 framebuffer correctly for the Intel GX Pro cards.  This option is equivalent
@@ -326,6 +357,15 @@ Craig Groeschel, \fIcraig@adikia.sccsi.com\fP
 Development and improvement of the Mach32 specific code.
 .RE
 .PP
+.nf
+Erik Nygren, \fInygren@mit.edu\fP
+Harry Langenbacher, \fIharry@brain.jpl.nasa.gov\fP
+Chris Mason, \fImason@mail.csh.rit.edu\fP
+.fi
+.RS 8
+Development and improvement of the P9000 specific code.
+.RE
+.PP
 See also the
 .I XFree86(1)
 manual page.
@@ -333,6 +373,20 @@ manual page.
 .PP
 Some S3 cards with Bt485 ramdacs are currently restricted to
 dot-clocks less than 85MHz.
+.sp
+The P9000 server is still beta.  It will probably not work with cards
+other than ther Diamond Viper VLB (I have not yet been able to get
+programming information from any companies other than Diamond).
+Restoration of text mode does not yet work.  When the P9000 is
+enabled, the W5[12]86 stops refreshing its DRAM so it corrupts.  Using
+\fIrestorefont\fP from \fIsvgalib\fP can be used as a temporary fix
+under those operating systems which support it.  In addition, restoration
+does not work at all after switching modes.  Using physical
+resolutions different from the virtual resolution is not supported and
+is probably not possible.  Use at dot-clocks greater than 110 MHz is
+not recommended and not supported (Diamond claims that 135 MHz is the
+maximum clock speed, but some of their bt485's are not rated that
+high).
 .SH CONTACT INFO
 \fIXFree86\fP source is available from the FTP servers 
 \fIftp.physics.su.oz.au\fP and \fIftp.x.org\fP.  Send email to
