@@ -12,10 +12,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>15 December 2000
+<date>25 May 2001
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.112 2001/03/02 17:40:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.113 2001/03/16 22:13:19 dawes Exp $
 </ident>
 
 <abstract>
@@ -33,8 +33,9 @@ operating systems on Intel and other platforms.
 
 <![ %updaterel [
 XFree86 &relvers; is the &whichupdaterel; update to &fullrelvers;,
-the &whichfullrel; full release in the <![ %earlyrel; [new]]> XFree86
-4 series.
+the &whichfullrel; full release in the
+<![ %earlyrel; [new]]>
+XFree86 4 series.
 
 Update releases are taken from a stable/maintenance branch.  They are
 designed to be installed on top of the full release that they are
@@ -44,8 +45,9 @@ stability.
 ]]>
 
 <![ %fullrel [
-XFree86 &relvers; is the &whichfullrel; full release in the <![ %earlyrel;
-[new]]> XFree86 4 series.
+XFree86 &relvers; is the &whichfullrel; full release in the
+<![ %earlyrel; [new]]>
+XFree86 4 series.
 ]]>
 
 <p>
@@ -238,7 +240,7 @@ The source for version &fullrelvers; is split into three tarballs:
 <tt>X&fullsrcvers;src-1.tgz</tt>, <tt>X&fullsrcvers;src-2.tgz</tt>,
 <tt>X&fullsrcvers;src-3.tgz</tt>.  The first contains everything except the
 fonts and general X11 documentation.  It is sufficient for building
-XFree86 is you already have a set of fonts.  The second contains the
+XFree86 if you already have a set of fonts.  The second contains the
 fonts and the source for the general X11 documentation.  The third
 contains the general X11 documentation in hardcopy format.
 
@@ -345,8 +347,8 @@ gzip -d &lt; &fullrelvers;.tgz | tar vxf -
 ]]>
 ]]>
 
-The contrib part of the distribution has been folded into the main
-source tree, so a separate contrib tarball is no longer required.
+The contrib part of the distribution was folded into the main source
+tree a while ago, so a separate contrib tarball is not required.
 
 To format the XFree86 documentation use the latest version of our doctools
 package available as <tt>doctools-&doctoolsvers;.tgz</tt>.

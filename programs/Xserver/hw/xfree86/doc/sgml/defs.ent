@@ -1,17 +1,17 @@
-<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.15 2000/12/08 19:10:25 dawes Exp $ -->
+<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.16 2001/02/09 04:15:36 dawes Exp $ -->
 
 <!-- shared entity definitions for the XFree86 documentation -->
 
 <!-- XFree86 version string -->
-<!ENTITY relvers CDATA "4.0.2">
-<!ENTITY prevrelvers CDATA "4.0.1">
-<!ENTITY fullrelvers CDATA "4.0.2">
-<!ENTITY prevfullrelvers CDATA "4.0.1">
-<!ENTITY srcvers CDATA "402">
-<!ENTITY prevsrcvers CDATA "401">
-<!ENTITY fullsrcvers CDATA "402">
-<!ENTITY prevfullsrcvers CDATA "401">
-<!ENTITY whichfullrel CDATA "third">
+<!ENTITY relvers CDATA "4.1.0">
+<!ENTITY prevrelvers CDATA "4.0.3">
+<!ENTITY fullrelvers CDATA "4.1.0">
+<!ENTITY prevfullrelvers CDATA "4.0.2">
+<!ENTITY srcvers CDATA "410">
+<!ENTITY prevsrcvers CDATA "403">
+<!ENTITY fullsrcvers CDATA "410">
+<!ENTITY prevfullsrcvers CDATA "402">
+<!ENTITY whichfullrel CDATA "fourth">
 <!ENTITY whichupdaterel CDATA "none">
 
 <!-- Version of the most recent 3.3.x release -->
@@ -30,7 +30,7 @@
 <!ENTITY % snapshot 'IGNORE'>
 <!ENTITY % release 'INCLUDE'>
 <!ENTITY % firstrel 'IGNORE'>
-<!ENTITY % earlyrel 'INCLUDE'>
+<!ENTITY % earlyrel 'IGNORE'>
 <!ENTITY % laterrel 'INCLUDE'>
 <!ENTITY % fullrel 'INCLUDE'>
 <!ENTITY % updaterel 'IGNORE'>
