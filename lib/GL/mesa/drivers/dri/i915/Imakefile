@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i915/Imakefile,v 1.2 2004/10/19 04:27:49 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i915/Imakefile,v 1.3 2004/12/10 16:06:57 alanh Exp $
 
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
@@ -96,9 +96,9 @@ XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i915/Imakefile,v 1.2 2004/10/19 04:27
        HIOBJS = ../../../../highpc.o
 #endif
 
-         SRCS = $(GDGSRCS)
+         SRCS = $(I915SRCS)
          OBJS = $(LOOBJS) $(DRMOBJS) $(COREMESAOBJS) \
-		$(MESA_ASM_OBJS) $(COMMONOBJS) $(GDGOBJS) $(HIOBJS)
+		$(MESA_ASM_OBJS) $(COMMONOBJS) $(I915OBJS) $(HIOBJS)
 
 REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB) $(XONLYLIB) $(EXPATLIB)
 
@@ -106,7 +106,7 @@ REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB) $(XONLYLIB) $(EXPATLIB)
 
 LibraryObjectRule()
 
-SubdirLibraryRule($(GDGOBJS))
+SubdirLibraryRule($(I915OBJS))
 NormalLintTarget($(SRCS))
 
 #if !GlxUseBuiltInDRIDriver

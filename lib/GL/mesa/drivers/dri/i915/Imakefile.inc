@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i915/Imakefile.inc,v 1.1 2004/06/10 18:14:01 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i915/Imakefile.inc,v 1.2 2004/12/10 16:06:57 alanh Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(MESASRCDIR)/src/mesa/drivers/dri
@@ -6,10 +6,10 @@ XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i915/Imakefile.inc,v 1.1 2004/06/10 1
 
 MESADRVSRCDIR = MesaDrvSrcDir
 
-#ifndef MesaDrvGDGBuildDir
-#define MesaDrvGDGBuildDir /**/
+#ifndef MesaDrvI915BuildDir
+#define MesaDrvI915BuildDir /**/
 #endif
-MESADRVGDGBUILDDIR = MesaDrvGDGBuildDir
+MESADRVI915BUILDDIR = MesaDrvI915BuildDir
 
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
@@ -40,67 +40,67 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		-I$(MESADRVSRCDIR)/common
    X_INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC)
 
-     GDGSRCS = 	$(MESADRVGDGBUILDDIR)i830_metaops.c \
-		$(MESADRVGDGBUILDDIR)i830_context.c \
-		$(MESADRVGDGBUILDDIR)i830_state.c \
-		$(MESADRVGDGBUILDDIR)i830_tex.c \
-		$(MESADRVGDGBUILDDIR)i830_texstate.c \
-		$(MESADRVGDGBUILDDIR)i830_texblend.c \
-		$(MESADRVGDGBUILDDIR)i830_vtbl.c \
-		$(MESADRVGDGBUILDDIR)i915_metaops.c \
-		$(MESADRVGDGBUILDDIR)i915_context.c \
-		$(MESADRVGDGBUILDDIR)i915_debug.c \
-		$(MESADRVGDGBUILDDIR)i915_fragprog.c \
-		$(MESADRVGDGBUILDDIR)i915_state.c \
-		$(MESADRVGDGBUILDDIR)i915_tex.c \
-		$(MESADRVGDGBUILDDIR)i915_texprog.c \
-		$(MESADRVGDGBUILDDIR)i915_texstate.c \
-		$(MESADRVGDGBUILDDIR)i915_program.c \
-		$(MESADRVGDGBUILDDIR)i915_vtbl.c \
-		$(MESADRVGDGBUILDDIR)intel_batchbuffer.c \
-		$(MESADRVGDGBUILDDIR)intel_context.c \
-		$(MESADRVGDGBUILDDIR)intel_ioctl.c \
-		$(MESADRVGDGBUILDDIR)intel_pixel.c \
-		$(MESADRVGDGBUILDDIR)intel_render.c \
-		$(MESADRVGDGBUILDDIR)intel_screen.c \
-		$(MESADRVGDGBUILDDIR)intel_span.c \
-		$(MESADRVGDGBUILDDIR)intel_state.c \
-		$(MESADRVGDGBUILDDIR)intel_tex.c \
-		$(MESADRVGDGBUILDDIR)intel_tris.c 
+     I915SRCS = 	$(MESADRVI915BUILDDIR)i830_metaops.c \
+		$(MESADRVI915BUILDDIR)i830_context.c \
+		$(MESADRVI915BUILDDIR)i830_state.c \
+		$(MESADRVI915BUILDDIR)i830_tex.c \
+		$(MESADRVI915BUILDDIR)i830_texstate.c \
+		$(MESADRVI915BUILDDIR)i830_texblend.c \
+		$(MESADRVI915BUILDDIR)i830_vtbl.c \
+		$(MESADRVI915BUILDDIR)i915_metaops.c \
+		$(MESADRVI915BUILDDIR)i915_context.c \
+		$(MESADRVI915BUILDDIR)i915_debug.c \
+		$(MESADRVI915BUILDDIR)i915_fragprog.c \
+		$(MESADRVI915BUILDDIR)i915_state.c \
+		$(MESADRVI915BUILDDIR)i915_tex.c \
+		$(MESADRVI915BUILDDIR)i915_texprog.c \
+		$(MESADRVI915BUILDDIR)i915_texstate.c \
+		$(MESADRVI915BUILDDIR)i915_program.c \
+		$(MESADRVI915BUILDDIR)i915_vtbl.c \
+		$(MESADRVI915BUILDDIR)intel_batchbuffer.c \
+		$(MESADRVI915BUILDDIR)intel_context.c \
+		$(MESADRVI915BUILDDIR)intel_ioctl.c \
+		$(MESADRVI915BUILDDIR)intel_pixel.c \
+		$(MESADRVI915BUILDDIR)intel_render.c \
+		$(MESADRVI915BUILDDIR)intel_screen.c \
+		$(MESADRVI915BUILDDIR)intel_span.c \
+		$(MESADRVI915BUILDDIR)intel_state.c \
+		$(MESADRVI915BUILDDIR)intel_tex.c \
+		$(MESADRVI915BUILDDIR)intel_tris.c 
 
 
 
-     GDGOBJS = 	$(MESADRVGDGBUILDDIR)i830_metaops.o \
-		$(MESADRVGDGBUILDDIR)i830_context.o \
-		$(MESADRVGDGBUILDDIR)i830_state.o \
-		$(MESADRVGDGBUILDDIR)i830_tex.o \
-		$(MESADRVGDGBUILDDIR)i830_texstate.o \
-		$(MESADRVGDGBUILDDIR)i830_texblend.o \
-		$(MESADRVGDGBUILDDIR)i830_vtbl.o \
-		$(MESADRVGDGBUILDDIR)i915_metaops.o \
-		$(MESADRVGDGBUILDDIR)i915_context.o \
-		$(MESADRVGDGBUILDDIR)i915_debug.o \
-		$(MESADRVGDGBUILDDIR)i915_fragprog.o \
-		$(MESADRVGDGBUILDDIR)i915_state.o \
-		$(MESADRVGDGBUILDDIR)i915_tex.o \
-		$(MESADRVGDGBUILDDIR)i915_texprog.o \
-		$(MESADRVGDGBUILDDIR)i915_texstate.o \
-		$(MESADRVGDGBUILDDIR)i915_program.o \
-		$(MESADRVGDGBUILDDIR)i915_vtbl.o \
-		$(MESADRVGDGBUILDDIR)intel_batchbuffer.o \
-		$(MESADRVGDGBUILDDIR)intel_context.o \
-		$(MESADRVGDGBUILDDIR)intel_ioctl.o \
-		$(MESADRVGDGBUILDDIR)intel_pixel.o \
-		$(MESADRVGDGBUILDDIR)intel_render.o \
-		$(MESADRVGDGBUILDDIR)intel_screen.o \
-		$(MESADRVGDGBUILDDIR)intel_span.o \
-		$(MESADRVGDGBUILDDIR)intel_state.o \
-		$(MESADRVGDGBUILDDIR)intel_tex.o \
-		$(MESADRVGDGBUILDDIR)intel_tris.o 
+     I915OBJS = 	$(MESADRVI915BUILDDIR)i830_metaops.o \
+		$(MESADRVI915BUILDDIR)i830_context.o \
+		$(MESADRVI915BUILDDIR)i830_state.o \
+		$(MESADRVI915BUILDDIR)i830_tex.o \
+		$(MESADRVI915BUILDDIR)i830_texstate.o \
+		$(MESADRVI915BUILDDIR)i830_texblend.o \
+		$(MESADRVI915BUILDDIR)i830_vtbl.o \
+		$(MESADRVI915BUILDDIR)i915_metaops.o \
+		$(MESADRVI915BUILDDIR)i915_context.o \
+		$(MESADRVI915BUILDDIR)i915_debug.o \
+		$(MESADRVI915BUILDDIR)i915_fragprog.o \
+		$(MESADRVI915BUILDDIR)i915_state.o \
+		$(MESADRVI915BUILDDIR)i915_tex.o \
+		$(MESADRVI915BUILDDIR)i915_texprog.o \
+		$(MESADRVI915BUILDDIR)i915_texstate.o \
+		$(MESADRVI915BUILDDIR)i915_program.o \
+		$(MESADRVI915BUILDDIR)i915_vtbl.o \
+		$(MESADRVI915BUILDDIR)intel_batchbuffer.o \
+		$(MESADRVI915BUILDDIR)intel_context.o \
+		$(MESADRVI915BUILDDIR)intel_ioctl.o \
+		$(MESADRVI915BUILDDIR)intel_pixel.o \
+		$(MESADRVI915BUILDDIR)intel_render.o \
+		$(MESADRVI915BUILDDIR)intel_screen.o \
+		$(MESADRVI915BUILDDIR)intel_span.o \
+		$(MESADRVI915BUILDDIR)intel_state.o \
+		$(MESADRVI915BUILDDIR)intel_tex.o \
+		$(MESADRVI915BUILDDIR)intel_tris.o 
 
-    GDGUOBJS = 
-    GDGDOBJS = 
-    GDGPOBJS = 
+    I915UOBJS = 
+    I915DOBJS = 
+    I915POBJS = 
 
 #ifdef NeedToLinkMesaSrc
 LinkSourceFile(i830_metaops.c, $(MESADRVSRCDIR)/i915)
