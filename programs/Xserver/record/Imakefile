@@ -1,12 +1,17 @@
-XCOMM $XFree86: xc/programs/Xserver/record/Imakefile,v 1.8 1999/08/14 10:50:20 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/record/Imakefile,v 1.9 2000/04/05 18:14:02 dawes Exp $
 XCOMM
 XCOMM
 XCOMM $XConsortium: Imakefile /main/3 1996/09/28 17:15:43 rws $
 
+#if DoLoadableServer
 #define IHaveSubdirs
+#endif
+
 #include <Server.tmpl>
 
+#if DoLoadableServer
     SUBDIRS = module
+#endif
        SRCS = record.c set.c $(MSRCS)
        OBJS = record.o set.o $(MOBJS)
    INCLUDES = -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC)
@@ -18,7 +23,9 @@ NormalLibraryTarget(record,$(OBJS))
 LintLibraryTarget(record,$(SRCS))
 NormalLintTarget($(SRCS))
 
+#if DoLoadableServer
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
+#endif
 
 DependTarget()
