@@ -4017,19 +4017,19 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
     /* Eventually overrule detected CRT2 type
-     * If no type forced, use the detected devices in the order VGA2->TV->LCD
+     * If no type forced, use the detected devices in the order TV->LCD->VGA2
      * Since the Chrontel 7005 sometimes delivers wrong detection results,
      * we use a different order on such machines (LCD->TV)
      */
     if(pSiS->ForceCRT2Type == CRT2_DEFAULT) {
-       if(pSiS->VBFlags & CRT2_VGA)
-          pSiS->ForceCRT2Type = CRT2_VGA;
-       else if((pSiS->VBFlags & CRT2_TV) && (!((pSiS->VBFlags & VB_CHRONTEL) && (pSiS->VGAEngine == SIS_300_VGA))))
+       if((pSiS->VBFlags & CRT2_TV) && (!((pSiS->VBFlags & VB_CHRONTEL) && (pSiS->VGAEngine == SIS_300_VGA))))
           pSiS->ForceCRT2Type = CRT2_TV;
        else if((pSiS->VBFlags & CRT2_LCD) && (pSiS->ForceCRT1Type == CRT1_VGA))
           pSiS->ForceCRT2Type = CRT2_LCD;
        else if(pSiS->VBFlags & CRT2_TV)
 	  pSiS->ForceCRT2Type = CRT2_TV;
+       else if(pSiS->VBFlags & CRT2_VGA)
+          pSiS->ForceCRT2Type = CRT2_VGA;
     }
 
     switch(pSiS->ForceCRT2Type) {

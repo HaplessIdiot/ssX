@@ -979,8 +979,8 @@ SiS_GetModeID_TV(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay, int D
              if(VDisplay == 300) ModeIndex = ModeIndex_400x300[Depth];
              break;
       	case 512:
-	     if( ((VBFlags & TV_YPBPR) && (VBFlags & (TV_YPBPR525P | TV_YPBPR750P | TV_YPBPR1080I))) ||
-	         (VBFlags & TV_HIVISION) 					    		     ||
+	     if( ((VBFlags & TV_YPBPR) && (VBFlags & (TV_YPBPR750P | TV_YPBPR1080I))) ||
+	         (VBFlags & TV_HIVISION) 					      ||
 	         ((!(VBFlags & (TV_YPBPR | TV_PALM))) && (VBFlags & TV_PAL)) ) {
 	        if(VDisplay == 384) ModeIndex = ModeIndex_512x384[Depth];
 	     }
