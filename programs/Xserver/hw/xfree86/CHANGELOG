@@ -1,4 +1,7 @@
 XFree86 3.9.17b (23 January 2000)
+3578. Fix a problem with the EmulateTimeout line in the file generated
+      by xf86config, and have xf86config create /etc/X11 if it doesn't
+      already exist (David Dawes).
 3577. Put an OS-independent version of the int10 module/library in
       xfree86/int10, but still allow an OS-specific version to override
       it (David Dawes).
@@ -9324,4 +9327,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.948 2000/01/23 04:30:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.949 2000/01/23 04:50:35 dawes Exp $
