@@ -24,16 +24,17 @@
 /* Rewritten with reference from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_cursor.c,v 1.8 2002/10/09 22:24:12 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_cursor.c,v 1.9 2002/10/14 18:22:45 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
 #include "nvreg.h"
 #include "nvvga.h"
+#include "cursorstr.h"
 
 /****************************************************************************\
 *                                                                            *
-*                        XAA HW Cursor Entrypoints                           *
+*                          HW Cursor Entrypoints                             *
 *                                                                            *
 \****************************************************************************/
 
@@ -43,6 +44,12 @@
 (((c & 0xf80000) >> 9 ) | ((c & 0xf800) >> 6 ) | ((c & 0xf8) >> 3 ) | 0x8000)
 
 #define ConvertToRGB888(c) (c | 0xff000000)
+
+#define BYTE_SWAP_32(c)  ((c & 0xff000000) >> 24) |  \
+                         ((c & 0xff0000) >> 8) |     \
+                         ((c & 0xff00) << 8) |       \
+                         ((c & 0xff) << 24)
+
 
 static void 
 ConvertCursor1555(NVPtr pNv, CARD32 *src, CARD16 *dst)
@@ -159,14 +166,8 @@ NVSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
         back = ConvertToRGB888(bg);
 #if X_BYTE_ORDER == X_BIG_ENDIAN
         if((pNv->Chipset & 0x0ff0) == 0x0110) {
-           fore = ((fore & 0xff000000) >> 24) | 
-                  ((fore & 0xff0000) >> 8) |
-                  ((fore & 0xff00) << 8) |
-                  ((fore & 0xff) << 24);
-           back = ((back & 0xff000000) >> 24) | 
-                  ((back & 0xff0000) >> 8) |
-                  ((back & 0xff00) << 8) |
-                  ((back & 0xff) << 24);
+           fore = BYTE_SWAP_32(fore);
+           back = BYTE_SWAP_32(back);
         }
 #endif
     } else {
@@ -211,18 +212,54 @@ NVUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
     return TRUE;
 }
 
+#ifdef ARGB_CURSOR
+static Bool 
+NVUseHWCursorARGB(ScreenPtr pScreen, CursorPtr pCurs)
+{
+    if((pCurs->bits->width <= 32) && (pCurs->bits->height <= 32))
+        return TRUE;
 
-/* A 32x32 8:8:8:8 ARGB cursor is available in the following conditions:
+    return FALSE;
+}
 
-    if(pNv->alphaCursor && 
-       (((pNv->Chipset & 0x0ff0) != 0x0110) ||
-        !(pNv->riva.flatPanel & FP_DITHER)))
+static void
+NVLoadCursorARGB(ScrnInfoPtr pScrn, CursorPtr pCurs)
+{
+    NVPtr pNv = NVPTR(pScrn);
+    CARD32 *image = pCurs->bits->argb;
+    CARD32 *dst = (CARD32*)pNv->riva.CURSOR;
+    int x, y, w, h;
+
+    w = pCurs->bits->width;
+    h = pCurs->bits->height;
+
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    if((pNv->Chipset & 0x0ff0) == 0x0110) {
+       CARD32 tmp;
+
+       for(y = 0; y < h; y++) {
+          for(x = 0; x < w; x++) {
+              tmp = *image++;
+              *dst++ = BYTE_SWAP_32(tmp);
+          }
+          for(; x < 32; x++)
+              *dst++ = 0;
+       }
+    } else 
+#endif
     {
-        ARGB cursor is available.  Just dump the data to: 
-           pNv->riva.CURSOR[32*32]
+       for(y = 0; y < h; y++) {
+          for(x = 0; x < w; x++) 
+              *dst++ = *image++;
+          for(; x < 32; x++)
+              *dst++ = 0;
+       }
     }
 
-*/
+    if(y < 32)
+      memset(dst, 0, 32 * (32 - y) * 4);
+}
+#endif
 
 Bool 
 NVCursorInit(ScreenPtr pScreen)
@@ -248,6 +285,16 @@ NVCursorInit(ScreenPtr pScreen)
     infoPtr->HideCursor = NVHideCursor;
     infoPtr->ShowCursor = NVShowCursor;
     infoPtr->UseHWCursor = NVUseHWCursor;
+
+#ifdef ARGB_CURSOR
+    if(pNv->alphaCursor &&
+       (((pNv->Chipset & 0x0ff0) != 0x0110) ||
+        !(pNv->riva.flatPanel & FP_DITHER)))
+    {
+       infoPtr->UseHWCursorARGB = NVUseHWCursorARGB;
+       infoPtr->LoadCursorARGB = NVLoadCursorARGB;
+    }
+#endif
 
     return(xf86InitCursor(pScreen, infoPtr));
 }
