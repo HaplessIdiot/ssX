@@ -1,5 +1,5 @@
 3980. Change loader search order to look in more specific subdirectories first,
-      thereby avoiding loading 3.3.8 module versions (Marc La France).
+      thereby avoiding loading 3.3.* module versions (Marc La France).
 3979. Fix some problems with layers forgetting that SwitchMode is an
       optional function (Mark Vojkovich).
 3978. Parser bug fix for hexadecimal numbers (Marc La France).
@@ -10047,4 +10047,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1085 2000/03/17 20:50:10 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1086 2000/03/18 19:33:19 tsi Exp $
