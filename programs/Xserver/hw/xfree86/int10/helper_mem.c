@@ -16,12 +16,14 @@
 #define REG pInt
 
 typedef enum {
-    OPT_NOINT10
+    OPT_NOINT10,
+    OPT_INIT_PRIMARY
 } INT10Opts;
 
 static OptionInfoRec INT10Options[] = {
-    {OPT_NOINT10, "NoINT10", OPTV_BOOLEAN, {0}, FALSE},
-    { -1,         NULL,      OPTV_NONE,    {0}, FALSE},
+    {OPT_NOINT10,       "NoINT10",      OPTV_BOOLEAN,   {0},    FALSE },
+    {OPT_INIT_PRIMARY,  "InitPrimary",  OPTV_BOOLEAN,   {0},    FALSE },   
+    { -1,		NULL,		OPTV_NONE,	{0},	FALSE },
 };
 
 #define nINT10Options (sizeof(INT10Options) / sizeof(INT10Options[0]))
@@ -239,4 +241,22 @@ int10_check_bios(int scrnIndex, int codeSeg, unsigned char* vbiosMem)
 	xf86DrvMsg(scrnIndex, X_WARNING, "Bad V_BIOS checksum\n");
 
     return TRUE;
+}
+
+Bool
+initPrimary(ScrnInfoPtr pScrn, int entityIndex)
+{
+    Bool initPrimary = FALSE;
+    EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
+    
+    if (pEnt->device && pEnt->device->options) {
+	OptionInfoRec options[nINT10Options];
+
+	(void)memcpy(options, INT10Options, sizeof(INT10Options));
+	xf86ProcessOptions(pScrn->scrnIndex, pEnt->device->options, options);
+	xf86GetOptValBool(options, OPT_INIT_PRIMARY, &initPrimary);
+    }
+    xfree(pEnt);
+
+    return initPrimary;
 }

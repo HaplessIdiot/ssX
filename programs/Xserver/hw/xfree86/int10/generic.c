@@ -103,8 +103,9 @@ xf86InitInt10(int entityIndex)
 	    xf86DrvMsg(screen, X_WARNING,
 		"Unable to retrieve all of segment 0x%06X.\n", cs);
 
-    if (xf86IsEntityPrimary(entityIndex)) {
-	cs = MEM_RW(pInt, (0x10 << 2) + 2);
+    if (xf86IsEntityPrimary(entityIndex) 
+	&& !(initPrimary(xf86Screens[screen],entityIndex))) {
+	cs = MEM_RW(pInt,((0x10<<2)+2));
 
 	vbiosMem = (unsigned char *)base + (cs << 4);
 	if (!int10_check_bios(screen, cs, vbiosMem)) {
@@ -124,13 +125,30 @@ xf86InitInt10(int entityIndex)
 	set_return_trap(pInt);
 	pInt->BIOSseg = cs;
     } else {
-	reset_int_vect(pInt);
+        EntityInfoPtr pEnt = xf86GetEntityInfo(pInt->entityIndex);
+        reset_int_vect(pInt);
 	set_return_trap(pInt);
 	vbiosMem = (unsigned char *)base + V_BIOS;
-	if (!mapPciRom(pInt, vbiosMem)) {
-	    xf86DrvMsg(screen, X_ERROR, "Cannot read V_BIOS (3)\n");
+	switch (pEnt->location.type) {
+	case BUS_PCI:
+	    if (!mapPciRom(pInt,(unsigned char *)(vbiosMem))) {
+	      xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (3)\n");
+	      goto error1;
+	    }
+	    break;
+	case BUS_ISA:  
+	    (void)memset(vbiosMem, 0, V_BIOS_SIZE);
+	    if (xf86ReadBIOS(V_BIOS, 0, vbiosMem, V_BIOS_SIZE) < V_BIOS_SIZE)
+		xf86DrvMsg(screen, X_WARNING,
+		    "Unable to retrieve all of segment 0x0C0000.\n");
+	    if (!int10_check_bios(screen, V_BIOS >> 4, vbiosMem)) {
+	        xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (4)\n");
+		goto error1;
+	    }
+	default:
 	    goto error1;
 	}
+	xfree(pEnt);
 	pInt->BIOSseg = V_BIOS >> 4;
 	pInt->num = 0xe6;
 	LockLegacyVGA(screen, &vga);
@@ -169,9 +187,10 @@ xf86InitInt10(int entityIndex)
     if (!xf86IsEntityPrimary(entityIndex) ||
 	!int10_check_bios(screen, V_BIOS >> 4, vbiosMem)) {
 	if (!mapPciRom(pInt, vbiosMem)) {
-	    xf86DrvMsg(screen, X_ERROR, "Cannot read V_BIOS (4)\n");
+	    xf86DrvMsg(screen, X_ERROR, "Cannot read V_BIOS (5)\n");
 	    goto error1;
 	}
+	xfree(pEnt);
     }
 
     pInt->BIOSseg = V_BIOS >> 4;
