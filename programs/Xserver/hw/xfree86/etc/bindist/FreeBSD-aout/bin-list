@@ -13,7 +13,7 @@ lib/libXcursor.so.1.0
 lib/libXext.so.6.4
 lib/libXfont.so.1.4
 lib/libXft.so.1.1
-lib/libXft.so.2.0
+lib/libXft.so.2.1
 lib/libXi.so.6.0
 lib/libXmu.so.6.2
 lib/libXmuu.so.1.0

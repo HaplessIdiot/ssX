@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.30 2002/10/11 17:53:02 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.31 2002/12/14 01:59:38 dawes Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -26,8 +26,8 @@
 #define _XFT_H_
 
 #define XFT_MAJOR	2
-#define XFT_MINOR	0
-#define XFT_REVISION	1
+#define XFT_MINOR	1
+#define XFT_REVISION	0
 #define XFT_VERSION	((XFT_MAJOR * 10000) + (XFT_MINOR * 100) + (XFT_REVISION))
 #define XftVersion	XFT_VERSION
 

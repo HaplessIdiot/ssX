@@ -34,7 +34,7 @@ lib/libXfont.1.dylib
 lib/libXfont.dylib
 lib/libXft.1.1.dylib
 lib/libXft.1.dylib
-lib/libXft.2.0.dylib
+lib/libXft.2.1.dylib
 lib/libXft.2.dylib
 lib/libXft.dylib
 lib/libXi.6.0.dylib
