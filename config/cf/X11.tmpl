@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.177tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.178 2002/11/14 21:01:14 tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -209,6 +209,12 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildISO8859_10Fonts
 #define BuildISO8859_10Fonts	YES
+#endif
+#ifndef BuildThaiFonts
+#define BuildThaiFonts		YES
+#endif
+#ifndef BuildISO8859_11Fonts
+#define BuildISO8859_11Fonts	BuildThaiFonts
 #endif
 #ifndef BuildISO8859_13Fonts
 #define BuildISO8859_13Fonts	YES
