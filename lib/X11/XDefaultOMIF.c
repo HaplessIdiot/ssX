@@ -41,7 +41,7 @@ interest in or to any trademark, service mark, logo or trade name of
 Sun Microsystems, Inc. or its licensors is granted.
 
 */
-/* $XFree86: xc/lib/X11/XDefaultOMIF.c,v 1.3 2002/09/18 17:11:42 tsi Exp $ */
+/* $XFree86: xc/lib/X11/XDefaultOMIF.c,v 1.4 2003/04/13 19:22:18 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -238,6 +238,7 @@ load_font(
     return True;
 }
 
+#if 0
 static Bool
 load_font_info(
     XOC oc)
@@ -263,6 +264,7 @@ load_font_info(
     }
     return True;
 }
+#endif
 
 static void
 set_fontset_extents(

@@ -31,7 +31,7 @@ OF THIS SOFTWARE.
                                makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefIm.c,v 1.12 2003/04/13 19:22:20 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDefIm.c,v 1.13 2003/04/17 02:06:32 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #define NEED_EVENTS
@@ -1157,6 +1157,7 @@ _XimProtoCloseIM(
     return status;
 }
 
+#ifdef XIM_CONNECTABLE
 Private Bool
 _XimCheckIMQuarkList(
     XrmQuark		*quark_list,
@@ -1173,7 +1174,6 @@ _XimCheckIMQuarkList(
     return False;
 }
 
-#ifdef XIM_CONNECTABLE
 Private Bool
 _XimSaveIMValues(
     Xim			 im,

@@ -28,7 +28,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imTransR.c,v 3.4 2001/01/17 19:41:52 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imTransR.c,v 3.5 2003/04/13 19:22:21 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -50,7 +50,7 @@ Public TransportSW _XimTransportRec[] = {
 #ifdef STREAMSCONN
     { "streams",    _XimTransConf }, /* use X transport lib */
 #endif /* STREAMSCONN */
-    { (char *)NULL, (Bool (*)())NULL },
+    { (char *)NULL, (Bool (*)(Xim, char *))NULL },
 };
 
 Public Bool
