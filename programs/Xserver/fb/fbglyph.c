@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.10 2001/03/03 22:14:44 tsi Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -264,11 +264,12 @@ fbPolyGlyphBlt (DrawablePtr	pDrawable,
     FbBits	    *dst;
     FbStride	    dstStride;
     int		    dstBpp;
+    int		    dstXoff, dstYoff;
     
     glyph = 0;
     if (pGC->fillStyle == FillSolid && pPriv->and == 0)
     {
-	fbGetDrawable (pDrawable, dst, dstStride, dstBpp);
+	fbGetDrawable (pDrawable, dst, dstStride, dstBpp, dstXoff, dstYoff);
 	switch (dstBpp) {
 	case 8:	    glyph = fbGlyph8; break;
 	case 16:    glyph = fbGlyph16; break;
@@ -296,12 +297,12 @@ fbPolyGlyphBlt (DrawablePtr	pDrawable,
 	    if (glyph && gWidth <= sizeof (FbStip) * 8 &&
 		fbGlyphIn (fbGetCompositeClip(pGC), gx, gy, gWidth, gHeight))
 	    {
-		(*glyph) (dst + gy * dstStride,
+		(*glyph) (dst + (gy + dstYoff) * dstStride,
 			  dstStride,
 			  dstBpp,
 			  (FbStip *) pglyph,
 			  pPriv->xor,
-			  gx,
+			  gx + dstXoff,
 			  gHeight);
 	    }
 	    else
@@ -354,11 +355,12 @@ fbImageGlyphBlt (DrawablePtr	pDrawable,
     FbBits	    *dst;
     FbStride	    dstStride;
     int		    dstBpp;
+    int		    dstXoff, dstYoff;
     
     glyph = 0;
     if (pPriv->and == 0)
     {
-	fbGetDrawable (pDrawable, dst, dstStride, dstBpp);
+	fbGetDrawable (pDrawable, dst, dstStride, dstBpp, dstXoff, dstYoff);
 	switch (dstBpp) {
 	case 8:	    glyph = fbGlyph8; break;
 	case 16:    glyph = fbGlyph16; break;
@@ -426,12 +428,12 @@ fbImageGlyphBlt (DrawablePtr	pDrawable,
 	    if (glyph && gWidth <= sizeof (FbStip) * 8 &&
 		fbGlyphIn (fbGetCompositeClip(pGC), gx, gy, gWidth, gHeight))
 	    {
-		(*glyph) (dst + gy * dstStride,
+		(*glyph) (dst + (gy + dstYoff) * dstStride,
 			  dstStride,
 			  dstBpp,
 			  (FbStip *) pglyph,
 			  pPriv->fg,
-			  gx,
+			  gx + dstXoff,
 			  gHeight);
 	    }
 	    else

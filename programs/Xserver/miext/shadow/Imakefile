@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/miext/shadow/Imakefile,v 1.3 2000/09/12 19:40:13 keithp Exp $
+XCOMM $XFree86: xc/programs/Xserver/miext/shadow/Imakefile,v 1.4 2001/01/21 21:19:39 tsi Exp $
 XCOMM 
 XCOMM 
 
@@ -18,9 +18,15 @@ SRCS =  $(XFMODSRC) \
 	shplanar.c \
 	shplanar8.c \
 	shpacked.c \
-	shrot8pack.c \
-	shrot16pack.c \
-	shrot32pack.c
+	shrot8pack_90.c \
+	shrot8pack_180.c \
+	shrot8pack_270.c \
+	shrot16pack_90.c \
+	shrot16pack_180.c \
+	shrot16pack_270.c \
+	shrot32pack_90.c \
+	shrot32pack_180.c \
+	shrot32pack_270.c
 
 OBJS =  $(XFMODOBJ) \
 	shadow.o \
@@ -28,9 +34,15 @@ OBJS =  $(XFMODOBJ) \
 	shplanar.o \
 	shplanar8.o \
 	shpacked.o \
-	shrot8pack.o \
-	shrot16pack.o \
-	shrot32pack.o
+	shrot8pack_90.o \
+	shrot8pack_180.o \
+	shrot8pack_270.o \
+	shrot16pack_90.o \
+	shrot16pack_180.o \
+	shrot16pack_270.o \
+	shrot32pack_90.o \
+	shrot32pack_180.o \
+	shrot32pack_270.o
 
    INCLUDES = -I. -I../../mi -I../../fb -I../../include -I$(XINCLUDESRC) \
 	      -I$(FONTINCSRC) -I$(XF86SRC)/common $(EXTRAINCLUDES) \

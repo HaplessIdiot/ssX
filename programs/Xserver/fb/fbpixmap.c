@@ -340,12 +340,13 @@ fbValidateDrawable (DrawablePtr pDrawable)
 {
     FbStip	*bits, *first, *last;
     int		stride, bpp;
+    int		xoff, yoff;
     int		height;
     Bool	failed;
     
     if (pDrawable->type != DRAWABLE_PIXMAP)
 	pDrawable = (DrawablePtr) fbGetWindowPixmap(pDrawable);
-    fbGetStipDrawable(pDrawable, bits, stride, bpp);
+    fbGetStipDrawable(pDrawable, bits, stride, bpp, xoff, yoff);
     first = bits - stride;
     last = bits + stride * pDrawable->height;
     if (!fbValidateBits (first, stride, FB_HEAD_BITS) ||
@@ -365,8 +366,9 @@ fbInitializeDrawable (DrawablePtr pDrawable)
 {
     FbStip  *bits, *first, *last;
     int	    stride, bpp;
+    int	    xoff, yoff;
     
-    fbGetStipDrawable(pDrawable, bits, stride, bpp);
+    fbGetStipDrawable(pDrawable, bits, stride, bpp, xoff, yoff);
     first = bits - stride;
     last = bits + stride * pDrawable->height;
     fbSetBits (first, stride, FB_HEAD_BITS);

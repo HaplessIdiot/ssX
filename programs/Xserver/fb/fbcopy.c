@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.6 2000/04/06 15:27:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.7 2000/05/06 21:09:32 keithp Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -45,22 +45,24 @@ fbCopyNtoN (DrawablePtr	pSrcDrawable,
     FbBits	*src;
     FbStride	srcStride;
     int		srcBpp;
+    int		srcXoff, srcYoff;
     FbBits	*dst;
     FbStride	dstStride;
     int		dstBpp;
+    int		dstXoff, dstYoff;
     
-    fbGetDrawable (pSrcDrawable, src, srcStride, srcBpp);
-    fbGetDrawable (pDstDrawable, dst, dstStride, dstBpp);
+    fbGetDrawable (pSrcDrawable, src, srcStride, srcBpp, srcXoff, srcYoff);
+    fbGetDrawable (pDstDrawable, dst, dstStride, dstBpp, dstXoff, dstYoff);
     
     while (nbox--)
     {
-	fbBlt (src + (pbox->y1 + dy) * srcStride,
+	fbBlt (src + (pbox->y1 + dy + srcYoff) * srcStride,
 	       srcStride,
-	       (pbox->x1 + dx) * srcBpp,
+	       (pbox->x1 + dx + srcXoff) * srcBpp,
     
-	       dst + (pbox->y1) * dstStride,
+	       dst + (pbox->y1 + dstYoff) * dstStride,
 	       dstStride,
-	       (pbox->x1) * dstBpp,
+	       (pbox->x1 + dstXoff) * dstBpp,
     
 	       (pbox->x2 - pbox->x1) * dstBpp,
 	       (pbox->y2 - pbox->y1),
@@ -92,24 +94,26 @@ fbCopy1toN (DrawablePtr	pSrcDrawable,
     FbBits	*src;
     FbStride	srcStride;
     int		srcBpp;
+    int		srcXoff, srcYoff;
     FbBits	*dst;
     FbStride	dstStride;
     int		dstBpp;
+    int		dstXoff, dstYoff;
 
-    fbGetDrawable (pSrcDrawable, src, srcStride, srcBpp);
-    fbGetDrawable (pDstDrawable, dst, dstStride, dstBpp);
+    fbGetDrawable (pSrcDrawable, src, srcStride, srcBpp, srcXoff, srcYoff);
+    fbGetDrawable (pDstDrawable, dst, dstStride, dstBpp, dstXoff, dstYoff);
 
     while (nbox--)
     {
 	if (dstBpp == 1)
 	{
-	    fbBlt (src + (pbox->y1 + dy) * srcStride,
+	    fbBlt (src + (pbox->y1 + dy + srcYoff) * srcStride,
 		   srcStride,
-		   (pbox->x1 + dx) * srcBpp,
+		   (pbox->x1 + dx + srcXoff) * srcBpp,
     
-		   dst + (pbox->y1) * dstStride,
+		   dst + (pbox->y1 + dstYoff) * dstStride,
 		   dstStride,
-		   (pbox->x1) * dstBpp,
+		   (pbox->x1 + dstXoff) * dstBpp,
     
 		   (pbox->x2 - pbox->x1) * dstBpp,
 		   (pbox->y2 - pbox->y1),
@@ -124,13 +128,13 @@ fbCopy1toN (DrawablePtr	pSrcDrawable,
 	}
 	else
 	{
-	    fbBltOne ((FbStip *) (src + (pbox->y1 + dy) * srcStride),
+	    fbBltOne ((FbStip *) (src + (pbox->y1 + dy + srcYoff) * srcStride),
 		      srcStride*(FB_UNIT/FB_STIP_UNIT),
-		      (pbox->x1 + dx),
+		      (pbox->x1 + dx + srcXoff),
     
-		      dst + (pbox->y1) * dstStride,
+		      dst + (pbox->y1 + dstYoff) * dstStride,
 		      dstStride,
-		      (pbox->x1) * dstBpp,
+		      (pbox->x1 + dstXoff) * dstBpp,
 		      dstBpp,
     
 		      (pbox->x2 - pbox->x1) * dstBpp,
@@ -162,24 +166,26 @@ fbCopyNto1 (DrawablePtr	pSrcDrawable,
     {
 	if (pDstDrawable->bitsPerPixel == 1)
 	{
-	    FbBits	    *src;
+	    FbBits	*src;
 	    FbStride    srcStride;
-	    int	    srcBpp;
+	    int		srcBpp;
+	    int		srcXoff, srcYoff;
     
-	    FbStip	    *dst;
+	    FbStip	*dst;
 	    FbStride    dstStride;
-	    int	    dstBpp;
+	    int		dstBpp;
+	    int		dstXoff, dstYoff;
 	    
-	    fbGetDrawable (pSrcDrawable, src, srcStride, srcBpp);
-	    fbGetStipDrawable (pDstDrawable, dst, dstStride, dstBpp);
-	    fbBltPlane (src + (pbox->y1+ dy) * srcStride,
+	    fbGetDrawable (pSrcDrawable, src, srcStride, srcBpp, srcXoff, srcYoff);
+	    fbGetStipDrawable (pDstDrawable, dst, dstStride, dstBpp, dstXoff, dstYoff);
+	    fbBltPlane (src + (pbox->y1+ dy + srcYoff) * srcStride,
 			srcStride,
-			(pbox->x1 + dx) * srcBpp,
+			(pbox->x1 + dx + srcXoff) * srcBpp,
 			srcBpp,
     
-			dst + (pbox->y1) * dstStride,
+			dst + (pbox->y1 + dstYoff) * dstStride,
 			dstStride,
-			(pbox->x1) * dstBpp,
+			(pbox->x1 + dstXoff) * dstBpp,
     
 			(pbox->x2 - pbox->x1) * srcBpp,
 			(pbox->y2 - pbox->y1),
@@ -190,17 +196,19 @@ fbCopyNto1 (DrawablePtr	pSrcDrawable,
 	}
 	else
 	{
-	    FbBits	    *src;
+	    FbBits	*src;
 	    FbStride    srcStride;
-	    int	    srcBpp;
-    
-	    FbBits	    *dst;
+	    int		srcBpp;
+	    int         srcXoff, srcYoff;
+
+	    FbBits	*dst;
 	    FbStride    dstStride;
-	    int	    dstBpp;
+	    int		dstBpp;
+	    int		dstXoff, dstYoff;
     
-	    FbStip	    *tmp;
+	    FbStip	*tmp;
 	    FbStride    tmpStride;
-	    int	    width, height;
+	    int		width, height;
 	    
 	    width = pbox->x2 - pbox->x1;
 	    height = pbox->y2 - pbox->y1;
@@ -210,12 +218,12 @@ fbCopyNto1 (DrawablePtr	pSrcDrawable,
 	    if (!tmp)
 		return;
 	    
-	    fbGetDrawable (pSrcDrawable, src, srcStride, srcBpp);
-	    fbGetDrawable (pDstDrawable, dst, dstStride, dstBpp);
+	    fbGetDrawable (pSrcDrawable, src, srcStride, srcBpp, srcXoff, srcYoff);
+	    fbGetDrawable (pDstDrawable, dst, dstStride, dstBpp, dstXoff, dstYoff);
 	    
-	    fbBltPlane (src + (pbox->y1+ dy) * srcStride,
+	    fbBltPlane (src + (pbox->y1+ dy + srcYoff) * srcStride,
 			srcStride,
-			(pbox->x1 + dx) * srcBpp,
+			(pbox->x1 + dx + srcXoff) * srcBpp,
 			srcBpp,
     
 			tmp,
@@ -234,9 +242,9 @@ fbCopyNto1 (DrawablePtr	pSrcDrawable,
 		      tmpStride,
 		      0,
     
-		      dst + (pbox->y1) * dstStride,
+		      dst + (pbox->y1 + dstYoff) * dstStride,
 		      dstStride,
-		      (pbox->x1) * dstBpp,
+		      (pbox->x1 + dstXoff) * dstBpp,
 		      dstBpp,
     
 		      width * dstBpp,

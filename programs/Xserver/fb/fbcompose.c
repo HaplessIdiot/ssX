@@ -1502,14 +1502,15 @@ fbBuildCompositeOperand (PicturePtr	    pPict,
 	    op->fetch = fbAccessMap[i].fetch;
 	    op->fetcha = fbAccessMap[i].fetcha;
 	    op->store = fbAccessMap[i].store;
-	    fbGetDrawable (pPict->pDrawable, op->line, op->stride, op->bpp);
+	    fbGetDrawable (pPict->pDrawable, op->line, op->stride, op->bpp,
+			   op->xoff, op->yoff);
 	    if (pPict->repeat && pPict->pDrawable->width == 1 && 
 		pPict->pDrawable->height == 1)
 	    {
 		op->bpp = 0;
 		op->stride = 0;
 	    }
-	    op->line = op->line + y * op->stride;
+	    op->line = op->line + (y + op->yoff) * op->stride;
 	    op->offset = 0;
 	    return TRUE;
 	}
@@ -1552,10 +1553,10 @@ fbCompositeGeneral (CARD8	op,
     while (height--)
     {
 	w = width;
-	src.offset = xSrc * src.bpp;
-	dst.offset = xDst * dst.bpp;
+	src.offset = (xSrc + src.xoff) * src.bpp;
+	dst.offset = (xDst + dst.xoff) * dst.bpp;
 	if (pmsk)
-	    msk.offset = xMask * msk.bpp;
+	    msk.offset = (xMask + msk.xoff) * msk.bpp;
 	while (w--)
 	{
 	    (*f) (&src, pmsk, &dst);
