@@ -258,9 +258,6 @@ README for XFree86[tm] 3.2A
 	    NV1, STG2000
 
 
-All of the above are supported in both 256 color, and some are supported in
-mono and 16 color modes.
-
 
 
 
@@ -271,6 +268,9 @@ mono and 16 color modes.
 README for XFree86[tm] 3.2A
 
 
+
+All of the above are supported in both 256 color, and some are supported in
+mono and 16 color modes.
 
 Refer to the chipset-specific README files (currently for Cirrus, Tseng, West-
 ern Digital, ATI, ARK, Trident, Oak, Matrox, NVidia, and Video 7) for more
@@ -323,9 +323,6 @@ cussions about XFree86 and related topics. Many questions can be answered
 there.
 
 
-5.  Credits
-
-XFree86 was originally put together by:
 
 
 
@@ -337,6 +334,10 @@ XFree86 was originally put together by:
 README for XFree86[tm] 3.2A
 
 
+
+5.  Credits
+
+XFree86 was originally put together by:
 
    o David Dawes <dawes@XFree86.org>
 
@@ -388,10 +389,6 @@ XFree86 support was integrated into the base X11R6 distribution by:
 
    o Jon Tombs <tombs@XFree86.org>
 
-   o Kees Verstoep <versto@cs.vu.nl>
-
-   o Paul Vixie <paul@vix.com>
-
 
 
 
@@ -403,6 +400,10 @@ XFree86 support was integrated into the base X11R6 distribution by:
 README for XFree86[tm] 3.2A
 
 
+
+   o Kees Verstoep <versto@cs.vu.nl>
+
+   o Paul Vixie <paul@vix.com>
 
    o Mark Weaver <Mark_Weaver@brown.edu>
 
@@ -454,10 +455,6 @@ README for XFree86[tm] 3.2A
 
       BSD/OS support by:
 
-	       o Hans Nasten <nasten@everyware.se>,
-
-	       o Paul Vixie <paul@vix.com>
-
 
 
 
@@ -469,6 +466,10 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+	       o Hans Nasten <nasten@everyware.se>,
+
+	       o Paul Vixie <paul@vix.com>
 
       Solaris support by:
 
@@ -520,10 +521,6 @@ README for XFree86[tm] 3.2A
 
 	       o Koichiro Suzuki <ksuzuki@cc.tuat.ac.jp>,
 
-	       o Tsuyoshi Tamaki <tamaki@sail.t.u-tokyo.ac.jp>,
-
-	       o Isao Ohishi <ohishi@hf.rim.or.jp>,
-
 
 
 
@@ -535,6 +532,10 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+	       o Tsuyoshi Tamaki <tamaki@sail.t.u-tokyo.ac.jp>,
+
+	       o Isao Ohishi <ohishi@hf.rim.or.jp>,
 
 	       o Kohji Ohishi <atena@njk.co.jp>,
 
@@ -586,10 +587,6 @@ README for XFree86[tm] 3.2A
 
 	       o Harald Koenig <koenig@tat.physik.uni-tuebingen.de>,
 
-	       o David Wexelblat <dwex@XFree86.org>,
-
-	       o David Dawes <dawes@XFree86.org>,
-
 
 
 
@@ -601,6 +598,10 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+	       o David Wexelblat <dwex@XFree86.org>,
+
+	       o David Dawes <dawes@XFree86.org>,
 
 	       o Robin Cutshaw <robin@XFree86.org>,
 
@@ -652,10 +653,6 @@ README for XFree86[tm] 3.2A
 
 	       o Scott Laird <scott@laird.com>
 
-      Cirrus accelerated code by:
-
-	       o Simon Cooper <scooper@vizlab.rutgers.edu>,
-
 
 
 
@@ -667,6 +664,10 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+      Cirrus accelerated code by:
+
+	       o Simon Cooper <scooper@vizlab.rutgers.edu>,
 
 	       o Harm Hanemaayer <H.Hanemaayer@inter.nl.net>,
 
@@ -718,10 +719,6 @@ README for XFree86[tm] 3.2A
 
 	       o Pascal Haible <haible@izfm.uni-stuttgart.de>
 
-      ATI SVGA driver by:
-
-	       o Per Lindqvist <pgd@compuram.bbt.se> and Doug Evans
-		 <dje@cygnus.com>.
 
 
 
@@ -733,6 +730,11 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+      ATI SVGA driver by:
+
+	       o Per Lindqvist <pgd@compuram.bbt.se> and Doug Evans
+		 <dje@cygnus.com>.
 
 	       o Ported to X11R5 by Rik Faith <faith@cs.unc.edu>.
 
@@ -783,15 +785,6 @@ README for XFree86[tm] 3.2A
 
 	       o Jeff Kirk <jeff@bambam.dsd.ES.COM>
 
-      Compaq SVGA driver by:
-
-	       o Hans Oey <hans@mo.hobby.nl>
-
-	       o Ming Yu <yum@itp.ac.cn>
-
-	       o Gerry Toll <gtoll@tc.cornell.edu>
-
-
 
 
 
@@ -803,6 +796,14 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+      Compaq SVGA driver by:
+
+	       o Hans Oey <hans@mo.hobby.nl>
+
+	       o Ming Yu <yum@itp.ac.cn>
+
+	       o Gerry Toll <gtoll@tc.cornell.edu>
 
       Oak SVGA driver by:
 
@@ -850,14 +851,6 @@ README for XFree86[tm] 3.2A
 
       RealTek SVGA driver by:
 
-	       o Peter Trattler <peter@sbox.tu-graz.ac.at>
-
-      Apollo Mono driver by:
-
-	       o Hamish Coleman <hamish@zot.apana.org.au>
-
-      Matrox SVGA driver by:
-
 
 
 
@@ -869,6 +862,14 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+	       o Peter Trattler <peter@sbox.tu-graz.ac.at>
+
+      Apollo Mono driver by:
+
+	       o Hamish Coleman <hamish@zot.apana.org.au>
+
+      Matrox SVGA driver by:
 
 	       o Radoslaw Kapitan <kapitan@student.uci.agh.edu.pl>
 
@@ -916,14 +917,6 @@ README for XFree86[tm] 3.2A
 
 	       o Frederic Lepied <lepied@XFree86.Org> (XInput integration,
 		 Wacom tablet, Joystick and extended mouse devices, xsetpointer
-		 and xsetmode clients)
-
-	       o Patrick Lecoanet <lecoanet@cena.dgac.fr> (Elographics touch-
-		 screen device)
-
-	       o Steven Lang <tiger@ecis.com> (Summagraphics tablet device)
-
-
 
 
 
@@ -935,6 +928,13 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+		 and xsetmode clients)
+
+	       o Patrick Lecoanet <lecoanet@cena.dgac.fr> (Elographics touch-
+		 screen device)
+
+	       o Steven Lang <tiger@ecis.com> (Summagraphics tablet device)
 
       Other contributors:
 
@@ -983,13 +983,6 @@ The XFree86 Project, Inc, was founded to accomplish two major goals:
 
   2.  To provide some basic funding for acquisition of facilities for ongoing
       XFree86 development, largely to consist of new video hardware and basic
-      computing facilities.
-
-The first of these was the primary motivation.	We have held discussions with
-the X Consortium on and off for many months, attempting to find an avenue by
-which our loosely-organized free software project could be given a voice within
-the X Consortium.  The bylaws of the Consortium would not recognize such an
-organization.  After an initial investigation about funding, we decided to form
 
 
 
@@ -1002,6 +995,13 @@ README for XFree86[tm] 3.2A
 
 
 
+      computing facilities.
+
+The first of these was the primary motivation.	We have held discussions with
+the X Consortium on and off for many months, attempting to find an avenue by
+which our loosely-organized free software project could be given a voice within
+the X Consortium.  The bylaws of the Consortium would not recognize such an
+organization.  After an initial investigation about funding, we decided to form
 our own corporation to provide the avenue we needed to meet the requirements of
 the X Consortium bylaws.
 
@@ -1050,13 +1050,6 @@ acknowledges these contributions, and hopes that we can do justice to them by
 continuing to release high-quality free software for the betterment of the
 Internet community as a whole.
 
-   o UUNET Communications Services, Inc. <URL:http://www.uu.net/>
-
-UUNET Communications Services, Inc, deserves special mention.  This organiza-
-tion stepped forward and contributed the entire 1994 X Consortium membership
-fee on a moment's notice.  This single act ensured XFree86's involvement in
-X11R6.
-
 
 
 
@@ -1067,6 +1060,13 @@ X11R6.
 README for XFree86[tm] 3.2A
 
 
+
+   o UUNET Communications Services, Inc. <URL:http://www.uu.net/>
+
+UUNET Communications Services, Inc, deserves special mention.  This organiza-
+tion stepped forward and contributed the entire 1994 X Consortium membership
+fee on a moment's notice.  This single act ensured XFree86's involvement in
+X11R6.
 
    o GUUG -- 1st German Linux Congress
 
@@ -1114,13 +1114,6 @@ ject has been provided from its proceeds.
 
    o InfoMagic <URL:http://www.infomagic.com/>, Flagstaff, AZ
 
-   o Daniel Kraemer
-
-   o Frank & Paige McCormick
-
-   o Linux International
-
-   o Linux Support Team, Erlangen, Germany
 
 
 
@@ -1133,6 +1126,14 @@ ject has been provided from its proceeds.
 README for XFree86[tm] 3.2A
 
 
+
+   o Daniel Kraemer
+
+   o Frank & Paige McCormick
+
+   o Linux International
+
+   o Linux Support Team, Erlangen, Germany
 
    o LunetIX Softfair <URL:http://www.lunetix.de>, Berlin, Germany
 
@@ -1180,14 +1181,6 @@ README for XFree86[tm] 3.2A
 
 The XFree86 Project, Inc, welcomes the additional contribution of funding
 and/or equipment.  Such contributions should be tax-deductible; we will know
-for certain when the lawyers get finished with the papers.  For more informa-
-tion, contact The XFree86 Project, Inc, at <BOD@XFree86.org>
-
-
-8.  Archive sites
-
-Binaries for many OSs are available via anonymous FTP from:
-
 
 
 
@@ -1199,6 +1192,14 @@ Binaries for many OSs are available via anonymous FTP from:
 README for XFree86[tm] 3.2A
 
 
+
+for certain when the lawyers get finished with the papers.  For more informa-
+tion, contact The XFree86 Project, Inc, at <BOD@XFree86.org>
+
+
+8.  Archive sites
+
+Binaries for many OSs are available via anonymous FTP from:
 
    o ftp://ftp.XFree86.org/pub/XFree86
 
@@ -1245,14 +1246,6 @@ and the following mirror sites:
 
 	o ftp://ftp.hk.super.net/mirror/XFree86 (source and binaries)
 
-	o ftp://ftp.nectec.or.th/pub/mirrors/XFree86 (source patches and bina-
-	  ries)
-
-
-Ensure that you are getting XFree86 3.2A - some of these sites may archive
-older releases as well.  Check the RELNOTES to find which files you need to
-take from the archive.
-
 
 
 
@@ -1266,21 +1259,21 @@ README for XFree86[tm] 3.2A
 
 
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.75 1997/01/27 20:34:33 dawes Exp $
+	o ftp://ftp.nectec.or.th/pub/mirrors/XFree86 (source patches and bina-
+	  ries)
+
+
+Ensure that you are getting XFree86 3.2A - some of these sites may archive
+older releases as well.  Check the RELNOTES to find which files you need to
+take from the archive.
+
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.76 1997/03/03 10:19:18 hohndel Exp $
 
 
 
 
 
      $XConsortium: README.sgml /main/31 1996/10/28 05:43:24 kaleb $
-
-
-
-
-
-
-
-
 
 
 
@@ -1410,13 +1403,13 @@ README for XFree86[tm] 3.2A
 
 4. Where to get more information ............................................ 5
 
-5. Credits .................................................................. 5
+5. Credits .................................................................. 6
 
 6. Contact information ..................................................... 15
 
 7. The XFree86 Project, Inc. ............................................... 15
 
-8. Archive sites ........................................................... 18
+8. Archive sites ........................................................... 19
 
 
 
@@ -1458,4 +1451,4 @@ README for XFree86[tm] 3.2A
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.76 1997/01/27 22:12:33 dawes Exp $
+$XFree86$
