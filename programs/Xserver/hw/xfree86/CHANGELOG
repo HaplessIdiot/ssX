@@ -1,4 +1,12 @@
 XFree86 3.2A (28 January 1997)
+ 386. Updates to the OS/2 pipe xtrans code (Sebastien Marineau).
+ 385. Update the max clock for the TGUI ProVidia 968x (Alan Hourihane).
+ 384. Disable memory interleaving before restoring the text font info
+      for the MGA driver.  This fixes font corruption that shows up
+      in Alpha platforms (Jay Estabrook).
+ 383. Fix some document formatting problems.
+ 382. Enable MMIO by default for TGUI chips when acceleration is enabled.
+      It can be disabled with the "no_mmio" option.
  381. Fix problems with the Trident driver in 16-colour mode (Alan Hourihane).
  380. Back out change 370 because it is obsoleted by change 373.
  379. Fix 369 was missing, and is now included.
