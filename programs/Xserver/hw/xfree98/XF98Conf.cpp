@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.7 1996/02/22 05:13:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.8 1996/05/11 11:05:35 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -56,7 +56,30 @@ USE_SPFONTS	SPFONTPATH
 USE_75FONTS	DPI75FONTPATH
 USE_100FONTS	DPI100FONTPATH
 
+XCOMM For OSs that support Dynamically loaded modules, ModulePath can be
+XCOMM used to set a search path for the modules.  This is currently supported
+XCOMM for Linux ELF, FreeBSD 2.x and NetBSD 1.x.  The default path is shown
+XCOMM here.
+
+XCOMM    ModulePath	MODULEPATH
+
 EndSection
+
+XCOMM **********************************************************************
+XCOMM Module section -- this is an optional section which is used to specify
+XCOMM which dynamically loadable modules to load.  Dynamically loadable
+XCOMM modules are currently supported only for Linux ELF, FreeBSD 2.x
+XCOMM and NetBSD 1.x.  Currently, dynamically loadable modules are used
+XCOMM only for some extended input (XInput) device drivers.
+XCOMM **********************************************************************
+XCOMM
+XCOMM Section "Module"
+XCOMM
+XCOMM This loads the module for the Joystick driver
+XCOMM
+XCOMM Load "xf86Jstk.so"
+XCOMM
+XCOMM EndSection
 
 XCOMM **********************************************************************
 XCOMM Server flags section.
@@ -236,6 +259,16 @@ XCOMM        MaximumYPosition 1100
 XCOMM        # CenterX 700
 XCOMM        # CenterY 600
 XCOMM        Delta 20
+XCOMM    EndSubSection
+XCOMM
+XCOMM The Mouse Subsection contains the same type of entries as the
+XCOMM standard Pointer Section (see above), with the addition of the
+XCOMM DeviceName entry.
+XCOMM
+XCOMM    SubSection "Mouse"
+XCOMM        Port "/dev/mouse2"
+XCOMM        DeviceName "Second Mouse"
+XCOMM        Protocol "Logitech"
 XCOMM    EndSubSection
 XCOMM EndSection
 
