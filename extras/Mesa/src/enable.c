@@ -195,9 +195,12 @@ void _mesa_set_enable( GLcontext *ctx, GLenum cap, GLboolean state )
             return;
          FLUSH_VERTICES(ctx, _NEW_COLOR);
          ctx->Color.BlendEnabled = state;
-         /* The following needed to accomodate 1.0 RGB logic op blending */
-         ctx->Color.ColorLogicOpEnabled =
-            (ctx->Color.BlendEquation == GL_LOGIC_OP && state);
+         /* This is needed to support 1.1's RGB logic ops AND
+          * 1.0's blending logicops.
+          */
+         ctx->Color._LogicOpEnabled =
+            (ctx->Color.ColorLogicOpEnabled ||
+             (state && ctx->Color.BlendEquation == GL_LOGIC_OP));
          break;
       case GL_CLIP_PLANE0:
       case GL_CLIP_PLANE1:
@@ -345,6 +348,12 @@ void _mesa_set_enable( GLcontext *ctx, GLenum cap, GLboolean state )
             return;
          FLUSH_VERTICES(ctx, _NEW_COLOR);
          ctx->Color.ColorLogicOpEnabled = state;
+         /* This is needed to support 1.1's RGB logic ops AND
+          * 1.0's blending logicops.
+          */
+         ctx->Color._LogicOpEnabled =
+            (state || (ctx->Color.BlendEnabled &&
+                       ctx->Color.BlendEquation == GL_LOGIC_OP));
          break;
       case GL_MAP1_COLOR_4:
          if (ctx->Eval.Map1Color4 == state)
