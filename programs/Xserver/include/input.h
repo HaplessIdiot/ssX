@@ -1,4 +1,4 @@
-/* $XConsortium: input.h,v 1.17 94/04/17 20:25:46 dpw Exp $ */
+/* $XConsortium: input.h /main/21 1996/01/14 16:45:24 kaleb $ */
 /************************************************************
 
 Copyright (c) 1987  X Consortium
@@ -152,7 +152,11 @@ typedef struct {
 extern KeybdCtrl	defaultKeyboardControl;
 extern PtrCtrl		defaultPointerControl;
 
+#ifdef DEVINTPTR
+extern DeviceIntPtr AddInputDevice(
+#else
 extern DevicePtr AddInputDevice(
+#endif
 #if NeedFunctionPrototypes
     DeviceProc /*deviceProc*/,
     Bool /*autoStart*/
@@ -191,13 +195,21 @@ extern int NumMotionEvents(
 
 extern void RegisterPointerDevice(
 #if NeedFunctionPrototypes
+#ifdef DEVINTPTR
+    DeviceIntPtr /*device*/
+#else
     DevicePtr /*device*/
+#endif
 #endif
 );
 
 extern void RegisterKeyboardDevice(
 #if NeedFunctionPrototypes
+#ifdef DEVINTPTR
+    DeviceIntPtr /*device*/
+#else
     DevicePtr /*device*/
+#endif
 #endif
 );
 
@@ -210,6 +222,12 @@ extern DevicePtr LookupKeyboardDevice(
 extern DevicePtr LookupPointerDevice(
 #if NeedFunctionPrototypes
     void
+#endif
+);
+
+extern DevicePtr LookupDevice(
+#if NeedFunctionPrototypes
+    int /* id */
 #endif
 );
 
@@ -393,7 +411,8 @@ extern void SendMappingNotify(
 #if NeedFunctionPrototypes
     unsigned int /*request*/,
     unsigned int /*firstKeyCode*/,
-    unsigned int /*count*/
+    unsigned int /*count*/,
+    ClientPtr	/* client */
 #endif
 );
 
@@ -447,6 +466,24 @@ extern void ProcessKeyboardEvent(
     int /*count*/
 #endif
 );
+
+#ifdef XKB
+extern void CoreProcessPointerEvent(
+#if NeedFunctionPrototypes
+    xEventPtr /*xE*/,
+    DeviceIntPtr /*mouse*/,
+    int /*count*/
+#endif
+);
+
+extern void CoreProcessKeyboardEvent(
+#if NeedFunctionPrototypes
+    xEventPtr /*xE*/,
+    DeviceIntPtr /*keybd*/,
+    int /*count*/
+#endif
+);
+#endif
 
 extern Bool LegalModifier(
 #if NeedFunctionPrototypes

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.5 1996/02/09 08:20:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.6 1996/02/12 11:12:43 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -83,8 +83,8 @@
 #include "compiler.h"
 #include "xf86.h"
 #include "xf86Procs.h"
-#include "xf86Xinput.h"
 #include "xf86_Config.h"
+#include "xf86Xinput.h"
 #include "xf86Version.h"
 #endif
 
@@ -247,11 +247,11 @@ typedef struct _EloPrivateRec {
  */
 static Bool
 xf86EloConfig(LocalDevicePtr    *array,
-              int               index,
+              int               inx,
               int               max,
 	      LexPtr            val)
 {
-  LocalDevicePtr        local = array[index];
+  LocalDevicePtr        local = array[inx];
   EloPrivatePtr         priv = (EloPrivatePtr)(local->private);
   int                   token;
 

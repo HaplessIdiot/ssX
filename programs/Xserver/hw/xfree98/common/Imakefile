@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/01/26 10:50:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.9 1996/02/09 08:21:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.10 1996/02/12 11:14:08 dawes Exp $
 #include <Server.tmpl>
 
 #ifdef i386MachArchitecture
@@ -22,8 +22,8 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.9 1996/02/09
 #endif
 
 #if BuildXKB
-    XKBDDXSRC = xf86XKB.c
-    XKBDDXOBJ = xf86XKB.o
+     XKBDDXSRC = xf86XKB.c
+     XKBDDXOBJ = xf86XKB.o
 #endif
 
   XCONFIGSRC = xf86Config
@@ -47,7 +47,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.9 1996/02/09
    ELOGRAPHICS_OBJ = xf86Elo.o
 #  endif
 # else
- SHARED_CFLAGS = PositionIndependentCFlags -DDYNAMIC_MODULE
+ SHARED_CFLAGS = PositionIndependentCFlags $(MODULEDEFINES)
 #  if JoystickSupport
 #   ifdef LinuxArchitecture
    ARCH_JSTK = ../os-support/linux/lnx_jstk.o
@@ -60,9 +60,9 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.9 1996/02/09
 #endif
 
 #if BuildDynamicLoading
- XF86DL_SRC = xf86Dl.c
- XF86DL_OBJ = xf86Dl.o
-MODULEDEFINES = -DDYNAMIC_MODULES
+   XF86DL_SRC = xf86Dl.c
+   XF86DL_OBJ = xf86Dl.o
+MODULEDEFINES = -DDYNAMIC_MODULE -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 #endif
 
 SERVERSRCS = \
@@ -75,7 +75,6 @@ SERVERSRCS = \
 	XF86_Mach32.c \
 	XF86_Mach64.c \
 	XF86_P9000.c \
-	$(XKBDDXSRC) \
 	XF86_AGX.c \
 	XF86_W32.c \
 	XF86_I128.c
@@ -86,7 +85,6 @@ SRCS =	\
 	xf86IniExt.c \
 	xf86MIniExt.c \
 	xf86Cursor.c \
-	$(XKBDDXSRC) \
 	xf86Events.c \
 	xf86Init.c \
 	xf86Init_m.c \
@@ -99,13 +97,13 @@ SRCS =	\
 	$(JOYSTICK_SRC) \
 	$(WACOM_SRC) \
 	$(ELOGRAPHICS_SRC) \
+	$(XKBDDXSRC) \
 	$(SERVERSRCS)
 
 OBJS = \
 	$(XF86DL_OBJ) \
 	$(XCONFIGSRC).o \
 	xf86Cursor.o \
-	$(XKBDDXOBJ) \
 	xf86Events.o \
 	xf86Io.o \
 	xf86Lock.o \
@@ -114,6 +112,7 @@ OBJS = \
 	$(JOYSTICK_OBJ) \
 	$(WACOM_OBJ) \
 	$(ELOGRAPHICS_OBJ) \
+	$(XKBDDXOBJ) \
 	$(KBD).o
 
 OFILES = \
@@ -146,29 +145,27 @@ XF86SCREENFLAGS = $(VGA16BUILD) $(VGA16MONOBUILD)
 all:: $(OFILES)
 
 #ifdef BuildXInputExt
-# if !BuildDynamicLoading
-SpecialObjectRule(xf86Xinput.o,xf86Xinput.c $(ICONFIGFILES),$(XINPUT_DEVICES))
-# else
-SpecialObjectRule(xf86Xinput.o,xf86Xinput.c $(ICONFIGFILES),$(XINPUT_DEVICES) -DDYNAMIC_MODULE)
+SpecialObjectRule(xf86Xinput.o,xf86Xinput.c $(ICONFIGFILES),$(XINPUT_DEVICES) $(MODULEDEFINES))
+# if BuildDynamicLoading
 #  if JoystickSupport
 SpecialObjectRule(xf86Jstk.o,xf86Jstk.c,$(SHARED_CFLAGS))
 DynamicModuleTarget(xf86Jstk.so,xf86Jstk.o $(ARCH_JSTK))
 #   ifndef DontInstallPC98Version
-InstallProgram(xf86Jstk.so,$(BINDIR))
+InstallDynamicModule(xf86Jstk.so,$(MODULEDIR))
 #   endif
 #  endif
 #  if WacomSupport
 SpecialObjectRule(xf86Wacom.o,xf86Wacom.c,$(SHARED_CFLAGS))
 DynamicModuleTarget(xf86Wacom.so,xf86Wacom.o)
 #   ifndef DontInstallPC98Version
-InstallProgram(xf86Wacom.so,$(BINDIR))
+InstallDynamicModule(xf86Wacom.so,$(MODULEDIR))
 #   endif
 #  endif
 #  if ElographicsSupport
 SpecialObjectRule(xf86Elo.o,xf86Elo.c,$(SHARED_CFLAGS))
 DynamicModuleTarget(xf86Elo.so,xf86Elo.o)
 #   ifndef DontInstallPC98Version
-InstallProgram(xf86Elo.so,$(BINDIR))
+InstallDynamicModule(xf86Elo.so,$(MODULEDIR))
 #   endif
 #  endif
 # endif
@@ -217,6 +214,7 @@ LinkSourceFile(compiler.h,$(XF86SRC)/common)
 LinkSourceFile(xf86.h,$(XF86SRC)/common)
 LinkSourceFile(xf86Config.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Cursor.c,$(XF86SRC)/common)
+LinkSourceFile(xf86Dl.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Elo.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Events.c,$(XF86SRC)/common)
 LinkSourceFile(xf86ExtInit.h,$(XF86SRC)/common)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.14 1996/01/28 07:30:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.15 1996/02/04 09:06:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -34,9 +34,13 @@
 typedef struct {
 
   /* keyboard part */
-  DevicePtr     pKeyboard;
-  int           (* kbdProc)();        /* procedure for initializing */
-  void          (* kbdEvents)();      /* proc for processing events */
+  DeviceIntPtr  pKeyboard;
+  DeviceProc    kbdProc;              /* procedure for initializing */
+  void          (* kbdEvents)(        /* proc for processing events */
+#if NeedNestedPrototypes && !defined(__OSF__)
+                void
+#endif
+                );
 #ifndef MINIX
   int           consoleFd;
 #else
@@ -66,9 +70,13 @@ typedef struct {
   Bool          vtSysreq;
 
   /* pointer part */
-  DevicePtr     pPointer;
-  int           (* mseProc)();        /* procedure for initializing */
-  void          (* mseEvents)();      /* proc for processing events */
+  DeviceIntPtr  pPointer;
+  DeviceProc    mseProc;              /* procedure for initializing */
+  void          (* mseEvents)(        /* proc for processing events */
+#if NeedNestedPrototypes && !defined(__OSF__)
+                void
+#endif
+                );
   int           mseFd;
   char          *mseDevice;
   int           mseType;

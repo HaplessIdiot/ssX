@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.7 1996/02/04 09:15:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.8 1996/02/09 08:21:34 dawes Exp $ */
 
 /*
  *  Functions to manipulate card database.
@@ -112,14 +112,9 @@ int parse_database() {
 #ifndef __EMX__
 	strcpy(filename, CARD_DATABASE_FILE);
 #else
-	char *root = getenv("X11ROOT");
-	if (!root) {
-		printf("No X11ROOT environment variable set\n");
-		return -1;
-	}
-	sprintf(filename,"%s%s",root,CARD_DATABASE_FILE);
+	strcpy(filename, (char*)__XOS2RedirRoot(CARD_DATABASE_FILE));
 #endif
-	f = fopen(CARD_DATABASE_FILE, "r");
+	f = fopen(filename, "r");
 	if (f == NULL)
 		return -1;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.49 1996/02/04 09:13:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.50 1996/02/09 08:21:21 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -1953,7 +1953,8 @@ cirrusSave(save)
   unsigned char             temp1, temp2;
 
   
-#if defined(PC98_WAB)||defined(PC98_WABEP)||defined(PC98_GANB_WAP)
+#if defined(PC98_WAB)||defined(PC98_WABEP)||defined(PC98_GANB_WAP)|| \
+    defined(PC98_WSNA)
   vgaIOBase = 0x3D0;
 #else
   vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.41 1996/02/04 09:06:12 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.42 1996/02/09 08:20:27 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -40,9 +40,11 @@
 
 #include "compiler.h"
 
+#include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
 #include "xf86Version.h"
+#include "mipointer.h"
 
 #ifdef XTESTEXT1
 #include "atKeynames.h"
@@ -121,7 +123,7 @@ InitOutput(pScreenInfo, argc, argv)
 
   if (serverGeneration == 1) {
 
-    if (xf86ServerName = strrchr(argv[0], '/'))
+    if ((xf86ServerName = strrchr(argv[0], '/')) != 0)
       xf86ServerName++;
     else
       xf86ServerName = argv[0];
@@ -221,7 +223,6 @@ InitOutput(pScreenInfo, argc, argv)
          "\n *** A configured device found, but display modes could not be resolved.***\n\n");
     if (xf86ProbeOnly)
     {
-      extern void AbortDDX();
       xf86VTSema = FALSE;
       OsCleanup();
       AbortDDX();

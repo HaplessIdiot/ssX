@@ -1,4 +1,5 @@
-/* $XConsortium: chgkbd.c,v 1.20 94/04/17 20:33:04 dpw Exp $ */
+/* $XConsortium: chgkbd.c /main/20 1996/01/14 16:44:41 kaleb $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -170,7 +171,11 @@ ProcXChangeKeyboardDevice (client)
 	for (i=0; i<df->traceSize; i++)
 	    df->trace[i] = xf->trace[i];
 	RegisterOtherDevice (xkbd);
+#ifdef DEVINTPTR
+	RegisterKeyboardDevice (dev);
+#else
 	RegisterKeyboardDevice ((DevicePtr)dev);
+#endif
 
 	ev.type = ChangeDeviceNotify;
 	ev.deviceid = stuff->deviceid;
@@ -179,7 +184,7 @@ ProcXChangeKeyboardDevice (client)
 
 	SendEventToAllWindows (dev, ChangeDeviceNotifyMask, &ev, 1);
 	SendMappingNotify (MappingKeyboard, k->curKeySyms.minKeyCode, 
-	    k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode + 1);
+	    k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode + 1,client);
 
 	rep.status = 0;
 	}

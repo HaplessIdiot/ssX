@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.25 1996/01/30 15:25:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.26 1996/02/04 09:06:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -57,6 +57,8 @@
 #include "XIproto.h"
 #include "xf86Xinput.h"
 #endif
+
+#include "mipointer.h"
 
 #ifdef XKB
 extern Bool noXkbExtension;

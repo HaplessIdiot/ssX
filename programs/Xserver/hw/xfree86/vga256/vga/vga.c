@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.45 1996/02/04 09:14:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.46 1996/02/09 08:21:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -30,6 +30,7 @@
 #include "input.h"
 #include "pixmapstr.h"
 #include "regionstr.h"
+#include "cursor.h"
 #include "mipointer.h"
 #include "cursorstr.h"
 #include "gcstruct.h"
@@ -327,8 +328,8 @@ vgaPrintIdent()
   ErrorF("  %s: server for 8-bit colour SVGA (Patchlevel %s):\n      ",
          vga256InfoRec.name, vga256InfoRec.patchLevel);
 #if defined(PC98_WAB)||defined(PC98_WABEP)||defined(PC98_GANB_WAP) \
-	||defined(PC98_NKVNEC)||defined(PC98_NEC480)
-  ErrorF("\tmodified for PC98 WAB/WAP GA-98NB EPSON-NKV \n\tNEC-CIRRUS PEGC(Patchlevel %s):\n      ",PC98_SVGA_PL);
+	||defined(PC98_NKVNEC)||defined(PC98_NEC480)||defined(PX98_WSNA)
+  ErrorF("\tmodified for PC98 WAB/WAP/WSN GA-98NB EPSON-NKV \n\tNEC-CIRRUS PEGC(Patchlevel %s):\n      ",PC98_SVGA_PL);
 #endif
 #ifdef PC98_WAB
   ErrorF("\tThis server was compiled for PC98 WAB.\n      ");
@@ -338,6 +339,9 @@ vgaPrintIdent()
 #endif
 #ifdef PC98_GANB_WAP
   ErrorF("\tThis server was compiled for PC98 GA-98NB and WAP.\n      ");
+#endif
+#ifdef PC98_WSNA
+  ErrorF("\tThis server was compiled for PC98 WSN-A2F.\n      ");
 #endif
 #ifdef PC98_NKVNEC
   ErrorF("\tThis server was compiled for PC98 EPSON-NKV/NKV2/NEC_CIRRUS.\n      ");
@@ -373,7 +377,7 @@ vgaPrintIdent()
   ErrorF("\n");
 
 #if defined(PC98_WAB)||defined(PC98_WABEP)||defined(PC98_GANB_WAP) \
-	||defined(PC98_NKVNEC)||defined(PC98_NEC480)
+	||defined(PC98_NKVNEC)||defined(PC98_NEC480)||defined(PC98_WSNA)
   ErrorF("Supported video boards:\n \t%s \n    ",PC98_SVGA_BOARDS);
 #endif
 #ifdef	PC98_EGC
@@ -952,7 +956,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xE0000,
 			    vgaMapSize);
 #else
-#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC)
+#if defined(PC98_GANB_WAP) || defined(PC98_WSNA) || defined(PC98_NKVNEC)
     vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xF00000,
 			    vgaMapSize);
 #else
@@ -963,7 +967,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xA0000,
 			    vgaMapSize);
 #endif /* PC98_EGC || PC98_NE480 */
-#endif /* PC98_GANB_WAP || PC98_NKVNEC */
+#endif /* PC98_GANB_WAP || PC98_WSNA || PC98_NKVNEC */
 #endif /* PC98_WAB || PC98_WABEP */
     if (vgaUseLinearAddressing)
         vgaLinearBase = xf86MapVidMem(scr_index, LINEAR_REGION,

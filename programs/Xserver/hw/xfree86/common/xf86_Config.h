@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.43 1996/02/04 09:06:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.44 1996/02/09 08:20:33 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -121,12 +121,10 @@ typedef struct {
 #define VENDOR		10007
 #define DASH		10008
 #define COMMA		10009
-#define MODULE		10010
 
 #ifdef INIT_CONFIG
 static SymTabRec TopLevelTab[] = {
     { SECTION,   "section" },
-    { MODULE,	 "module" },
     { -1,         "" },
 };
 #endif /* INIT_CONFIG */
@@ -193,12 +191,14 @@ static SymTabRec MouseTab[] = {
 
 #define FONTPATH	1040
 #define RGBPATH		1041
+#define MODULEPATH	1042
 
 #ifdef INIT_CONFIG
 static SymTabRec FilesTab[] = {
   { ENDSECTION,	"endsection"},
   { FONTPATH,	"fontpath" },
   { RGBPATH,	"rgbpath" },
+  { MODULEPATH,	"modulepath" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */
@@ -319,6 +319,16 @@ SymTabRec TimingTab[] = {
 extern SymTabRec TimingTab[];
 
 #endif /* !defined(INIT_CONFIG) */
+
+#define LOAD		2000
+
+#ifdef INIT_CONFIG
+SymTabRec ModuleTab[] = {
+  { ENDSECTION,	"endsection"},
+  { LOAD,	"load"},
+  { -1,		"" },
+};
+#endif  /* defined(INIT_CONFIG) */
 
 /* Indexes for the specialKeyMap array */
 #define K_INDEX_LEFTALT		0
@@ -572,6 +582,7 @@ static SymTabRec VisualTab[] = {
 #define XCONFIG_COPBASE         18      /* XF86Config or default */
 #define XCONFIG_POSBASE         19      /* XF86Config or default */
 #define XCONFIG_VGABASE         20      /* XF86Config or default */
+#define XCONFIG_MODULEPATH      21      /* XF86Config or default */
 
 #define XCONFIG_GIVEN		"(**)"
 #define XCONFIG_PROBED		"(--)"

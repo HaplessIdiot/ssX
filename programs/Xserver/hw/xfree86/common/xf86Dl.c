@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.0 1996/02/09 08:20:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.1 1996/02/12 11:12:42 dawes Exp $ */
 
 /*    
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>
@@ -23,45 +23,109 @@
  *
  */
 
+#include <os.h>			/* for Error() */
 #include <dlfcn.h>
+
+#define NO_OSLIB_PROTOTYPES
+#include "xf86_OSlib.h"
+
 #include "xf86Version.h"
+#include "xf86.h"
+#include "xf86_Config.h"
 
 #ifdef CSRG_BASED
 #define PREPEND_UNDERSCORE
 #endif
 
-void*
-xf86LoadModule(const char * path)
-{
-    void	*module;
-    
 #ifdef RTLD_NOW
-    module = dlopen(path, RTLD_NOW);
+#define DLOPEN_FLAGS RTLD_NOW	/* Linux */
 #else
-    module = dlopen(path, 1);	/* FreeBSD at least */
+#ifdef DL_LAZY
+#define DLOPEN_FLAGS DL_LAZY	/* NetBSD */
+#else
+#define DLOPEN_FLAGS 1	/* FreeBSD */
 #endif
+#endif
+
+typedef int (*InitModule)(
+#if NeedFunctionPrototypes
+	unsigned long	/* server_version */
+#endif
+);
+
+void*
+xf86LoadModule(const char *	file,
+	       const char *	path)
+{
+    void	*module = NULL;
+    char	*dir_elem, *path_elem, *keep;
+    
+    /* absolute path */
+    if (file[0] == '/') {
+	module = dlopen(path, DLOPEN_FLAGS);
+    } else { /* look for file in path */
+	struct stat	stat_buf;
+	char		*(*xf86GetPathElem)(char**);
+
+	keep = dir_elem = (char *) xcalloc(1, strlen(path) + 1);
+	strcpy(dir_elem, path);
+
+	dir_elem = strtok(dir_elem, ",");
+	while (!module && (dir_elem != NULL)) {
+	    /* only allow fully specified path */
+	    if (*dir_elem == '/') {
+		if (dir_elem[strlen(dir_elem) - 1] == '/') {
+		    path_elem = (char*) xcalloc(1, strlen(file) +
+					        strlen(dir_elem) + 1);
+		    strcpy(path_elem, dir_elem);
+		} else {
+		    path_elem = (char*) xcalloc(1, strlen(file) +
+						strlen(dir_elem) + 2);
+		    strcpy(path_elem, dir_elem);
+		    path_elem[strlen(dir_elem)] = '/';
+		    path_elem[strlen(dir_elem)+1] = '\0';
+		}
+		strcat(path_elem, file);
+		if ((stat(path_elem, &stat_buf) == 0) &&
+		    ((S_IFMT & stat_buf.st_mode) == S_IFREG)) {
+		    module = dlopen(path_elem, DLOPEN_FLAGS);
+		}
+		xfree(path_elem);
+	    }
+	    if (!module) {
+		dir_elem = strtok(NULL, ",");
+	    }
+	}
+    }
     
     if (!module) {
-	Error(path);
+	Error((char *)file);
     } else {
 #ifdef PREPEND_UNDERSCORE
-	int	(*init_module)() =
-			(int (*)(unsigned long)) dlsym(module, "_init_module");
+	InitModule init_module = (InitModule)dlsym(module, "_init_module");
 #else
-	int	(*init_module)() =
-			(int (*)(unsigned long)) dlsym(module, "init_module");
+	InitModule init_module = (InitModule)dlsym(module, "init_module");
 #endif
 	
 	if (init_module) {
 	   if (!(*init_module)(XF86_VERSION_CURRENT)) {
 		ErrorF("Warning: the module %s doesn't match server "
-		       "version%s\n", path, XF86_VERSION);
+		       "version%s\n", file, XF86_VERSION);
 	    }
+	   else {
+	       extern int	xf86Verbose;
+	       
+	       if (xf86Verbose)
+		   ErrorF("%s module %s successfully loaded from %s\n",
+			  XCONFIG_GIVEN, file, dir_elem);
+	   }
 	} else {
-	    Error("unable to find init hook in module");
+	    ErrorF("Unable to find init hook in module %s", path);
 	}
     }
     
+    xfree(keep);
+
     return module;
 }
 

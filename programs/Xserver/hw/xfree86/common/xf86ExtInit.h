@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86ExtInit.h,v 3.3 1995/03/04 06:15:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86ExtInit.h,v 3.4 1996/02/04 09:06:11 dawes Exp $ */
 
 
 
@@ -8,5 +8,10 @@
 
 /* Hack to avoid multiple versions of dixfonts in vga{2,16}misc.o */
 #ifndef LBX
+extern void LbxFreeFontTag(
+#if NeedFunctionPrototypes
+	void
+#endif
+	);
 void LbxFreeFontTag() {}
 #endif

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/r61_main/5 1996/02/02 18:44:52 gildea $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.48 1996/02/09 08:19:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.49 1996/02/10 10:39:18 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -439,6 +439,9 @@ XF98WABS = XF98_WABS
 #if XF98WABEPServer
 XF98WABEP = XF98_WABEP
 #endif
+#if XF98WSNAServer
+XF98WSNA = XF98_WSNA
+#endif
 #if XF98EGCServer
 XF98EGC = XF98_EGC
 #endif
@@ -457,8 +460,8 @@ XNEST = Xnest
 #if XVirtualFramebufferServer
 XVFB = Xvfb
 #endif
-#if defined(XF86SVGAServer) || defined(XF98GANBWAPServer) || defined(XF98NEC480Server) || defined(XF98NKVNECServer) || defined(XF98WABSServer) || defined(XF86VGA16Server) || defined(XF98EGCServer) || defined(XF86W32Server) || defined(XF86MonoServer) || defined(XF86S3Server) || defined(XF98NECS3Server) || defined(XF98PWSKBServer) || defined(XF98PWLBServer) || defined(XF86I8514Server) || defined(XF86Mach8Server) || defined(XF86Mach32Server) || defined(XF86Mach64Server) || defined(XF86P9000Server) || defined(XF86AGXServer) || defined(XF86I128Server) || defined(XnestServer) || defined(XVirtualFramebufferServer)
-MakeMutex($(XF86SVGA) $(XF98GANBWAP) $(XF98NEC480) $(XF98NKVNEC) $(XF98WABS) $(XF86VGA16) $(XF98EGC) $(XF86W32) $(XF86MONO) $(XF86S3) $(XF98NECS3) $(XF98PWSKB) $(XF98PWLB) $(XF868514) $(XF86MACH8) $(XF86MACH32) $(XF86MACH64) $(XF86P9000) $(XF86AGX) $(XF86I128) $(XNEST) $(XVFB))
+#if defined(XF86SVGAServer) || defined(XF98GANBWAPServer) || defined(XF98NEC480Server) || defined(XF98NKVNECServer) || defined(XF98WABSServer) || defined(XF98WABEPServer) || defined(XF98WSNAServer) || defined(XF86VGA16Server) || defined(XF98EGCServer) || defined(XF86W32Server) || defined(XF86MonoServer) || defined(XF86S3Server) || defined(XF98NECS3Server) || defined(XF98PWSKBServer) || defined(XF98PWLBServer) || defined(XF86I8514Server) || defined(XF86Mach8Server) || defined(XF86Mach32Server) || defined(XF86Mach64Server) || defined(XF86P9000Server) || defined(XF86AGXServer) || defined(XF86I128Server) || defined(XnestServer) || defined(XVirtualFramebufferServer)
+MakeMutex($(XF86SVGA) $(XF98GANBWAP) $(XF98NEC480) $(XF98NKVNEC) $(XF98WABS) $(XF98WABEP) $(XF98WSNA) $(XF86VGA16) $(XF98EGC) $(XF86W32) $(XF86MONO) $(XF86S3) $(XF98NECS3) $(XF98PWSKB) $(XF98PWLB) $(XF868514) $(XF86MACH8) $(XF86MACH32) $(XF86MACH64) $(XF86P9000) $(XF86AGX) $(XF86I128) $(XNEST) $(XVFB))
 #endif
 MakeMutex($(STDDIRS) mfb cfb cfb16 cfb32)
 #endif
@@ -910,6 +913,33 @@ SetUIDServerTarget(XF98_WABEP,$(XF98WABEPSUBDIRS),$(XF98WABEPOBJS),$(XF98WABEPLI
 LinkFile(XF98_WABEP.def,SVGA.def)
 #endif
 #endif	/* XF98WABEPServer */
+
+#if XF98WSNAServer
+XCOMM
+XCOMM XFree98 WSN-A2F Server
+XCOMM
+MFBDIR  = mfb
+CFB8DIR = cfb
+CFB16DIR = cfb16
+CFB32DIR = cfb32
+DDXDIR2 = hw/xfree98
+XF98WSNASUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98WSNAOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/vga256Conf.o
+XF98WSNALIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverwsna) \
+	       $(XF98SRC)/vga256/LibraryTargetName(wsna) $(XF98LIBS) CFBLibs \
+	       $(XF98OSLIB)
+XF98WSNASYSLIBS = $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XF98WSNASUBDIRS) $(XF98WSNAOBJS) $(XF98WSNALIBS) $(XF98WSNASYSLIBS))
+#endif
+SetUIDServerTarget(XF98_WSNA,$(XF98WSNASUBDIRS),$(XF98WSNAOBJS),$(XF98WSNALIBS),$(XF98WSNASYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF98_WSNA
+#endif
+#ifdef OS2Architecture
+LinkFile(XF98_WSNA.def,SVGA.def)
+#endif
+#endif	/* XF98WSNAServer */
 
 #if XF98EGCServer
 XCOMM

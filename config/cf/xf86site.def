@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.69 1996/02/05 11:18:27 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.70 1996/02/09 08:17:48 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -83,6 +83,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.69 1996/02/05 11:18:27 dawes Exp $
 #define XF98NKVNECServer	YES
 #define XF98WABSServer		YES
 #define XF98WABEPServer		YES
+#define XF98WSNAServer		YES
 #define XF98NECS3Server		YES
 #define XF98PWSKBServer		YES
 #define XF98PWLBServer		YES
@@ -119,15 +120,15 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.69 1996/02/05 11:18:27 dawes Exp $
 /*
  * VGA16 server:
  *
-#define XF86Vga16Drivers	et4000 ncr77c22 ati tvga8900 oak cl64xx \
-				sis generic 
+#define XF86Vga16Drivers	et4000 ncr77c22 ati tvga8900 sis oak cl64xx \
+				generic 
  */
 
 /*
  * VGA2 driver in Mono server:
  *
 #define XF86Vga2Drivers		et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
-				ncr77c22 oak cl64xx sis generic
+				ncr77c22 sis oak cl64xx generic
  */
 
 /*

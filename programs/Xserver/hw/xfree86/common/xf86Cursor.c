@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.8 1996/01/28 07:30:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.9 1996/02/04 09:06:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -26,6 +26,7 @@
 #include "X.h"
 #include "Xmd.h"
 #include "input.h"
+#include "cursor.h"
 #include "mipointer.h"
 #include "scrnintstr.h"
 

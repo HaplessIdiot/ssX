@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c,v 1.31 91/06/20 18:34:47 gildea Exp $
- *	$XFree86: xc/programs/xterm/util.c,v 3.1 1995/09/23 07:09:30 dawes Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.2 1996/01/10 05:44:27 dawes Exp $
  */
 
 /*
@@ -726,9 +726,11 @@ register TScreen *screen;
 	if((top = -screen->topline) <= screen->max_row) {
 		if(screen->scroll_amt)
 			FlushScroll(screen);
+#if 1	/* FIXME */
 		if(top == 0)
 			XClearWindow(screen->display, TextWindow(screen));
 		else
+#endif
 			XClearArea(screen->display, TextWindow(screen),
 			 screen->border + screen->scrollbar, 
 			 top * FontHeight(screen) + screen->border,	
@@ -1121,4 +1123,79 @@ recolor_cursor (cursor, fg, bg)
 		  colordefs, 2);
     XRecolorCursor (dpy, cursor, colordefs, colordefs+1);
     return;
+}
+
+/*
+ * Returns a GC, selected according to the font (reverse/bold/normal) that is
+ * required for the current position (implied).  The GC is updated with the
+ * current screen foreground and background colors.
+ */
+GC
+updatedXtermGC(screen, flags, fg, bg, hilite)
+	register TScreen *screen;
+	int flags;
+	int fg;
+	int bg;
+	Bool hilite;
+{
+	Pixel fg_pix = GET_FG(flags,fg);
+	Pixel bg_pix = GET_BG(flags,bg);
+	GC gc;
+
+	if ( (!hilite && (flags & INVERSE) != 0)
+	  ||  (hilite && (flags & INVERSE) == 0) ) {
+		if (flags & BOLD)
+			gc = screen->reverseboldGC;
+		else
+			gc = screen->reverseGC;
+
+		XSetForeground(screen->display, gc, bg_pix);
+		XSetBackground(screen->display, gc, fg_pix);
+
+	} else {
+		if (flags & BOLD)
+			gc = screen->normalboldGC;
+		else
+			gc = screen->normalGC;
+
+		XSetForeground(screen->display, gc, fg_pix);
+		XSetBackground(screen->display, gc, bg_pix);
+	}
+	return gc;
+}
+
+/*
+ * Resets the foreground/background of the GC returned by 'updatedXtermGC()'
+ * to the values that would be set in SGR_Foreground and SGR_Background. This
+ * duplicates some logic, but only modifies 1/4 as many GC's.
+ */
+void
+resetXtermGC(screen, flags, hilite)
+	register TScreen *screen;
+	int flags;
+	Bool hilite;
+{
+	Pixel fg_pix = GET_FG(flags,term->cur_foreground);
+	Pixel bg_pix = GET_BG(flags,term->cur_background);
+	GC gc;
+
+	if ( (!hilite && (flags & INVERSE) != 0)
+	  ||  (hilite && (flags & INVERSE) == 0) ) {
+		if (flags & BOLD)
+			gc = screen->reverseboldGC;
+		else
+			gc = screen->reverseGC;
+
+		XSetForeground(screen->display, gc, bg_pix);
+		XSetBackground(screen->display, gc, fg_pix);
+
+	} else {
+		if (flags & BOLD)
+			gc = screen->normalboldGC;
+		else
+			gc = screen->normalGC;
+
+		XSetForeground(screen->display, gc, fg_pix);
+		XSetBackground(screen->display, gc, bg_pix);
+	}
 }

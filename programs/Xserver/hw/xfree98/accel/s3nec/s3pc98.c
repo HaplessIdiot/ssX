@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/s3pc98.c,v 3.1 1995/12/23 09:40:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/s3pc98.c,v 3.2 1996/02/04 09:15:55 dawes Exp $ */
 
 
 
@@ -766,14 +766,14 @@ Bool necboardinit()
 	wrinx(vgaCRIndex, 0x39, 0xa0);
 	wrinx(vgaCRIndex, 0x40, 0xa5);
 
-	GetRegisters();
+/*	GetRegisters(); */
 	if (OFLG_ISSET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions)){
 		if(!OFLG_ISSET(OPTION_NOINIT, &s3InfoRec.options)){
-			GetMasterClock(); 
+/*			GetMasterClock(); */
 			SetMasterClock();
- 			GetMasterClock();
+/* 			GetMasterClock(); */
 			SetRegisters();
-			GetRegisters();
+/*			GetRegisters(); */
 		} 
 	}
 	return (TRUE);	

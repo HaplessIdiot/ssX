@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.2 1995/01/28 17:03:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.3 1996/02/04 09:06:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -35,7 +35,11 @@ _XFUNCPROTOBEGIN
 
 /* xf86Config.c */
 
-extern void xf86Config();
+extern void xf86Config(
+#if NeedFunctionPrototypes
+    int vtopen
+#endif
+);
 
 extern Bool xf86LookupMode(
 #if NeedFunctionPrototypes
@@ -58,6 +62,12 @@ extern void xf86DeleteMode(
 #endif
 );
 
+extern int xf86GetToken(
+#if NeedFunctionPrototypes
+	SymTabPtr		/* table */
+#endif
+);
+
 extern char *xf86TokenToString(
 #if NeedFunctionPrototypes
 	SymTabPtr,		/* table */
@@ -69,6 +79,12 @@ extern int xf86StringToToken(
 #if NeedFunctionPrototypes
 	SymTabPtr,		/* table */
 	char *			/* string */
+#endif
+);
+
+extern void xf86ConfigError(
+#if NeedFunctionPrototypes
+	char *			/* msg */
 #endif
 );
 
@@ -98,7 +114,11 @@ extern void xf86ZoomViewport(
 
 /* xf86Events.c */
 
-extern void ProcessInputEvents();
+extern void ProcessInputEvents(
+#if NeedFunctionPrototypes
+	void
+#endif
+);
 
 extern void xf86PostKbdEvent(
 #if NeedFunctionPrototypes
@@ -144,7 +164,11 @@ extern void xf86SigHandler(
 
 /* xf86Io.c */
 
-extern void xf86KbdLeds();
+extern void xf86KbdLeds(
+#if NeedFunctionPrototypes
+	void
+#endif
+);
 
 extern void xf86InitKBD(
 #if NeedFunctionPrototypes
@@ -172,12 +196,16 @@ extern void xf86KbdCtrl(
 
 extern int  xf86KbdProc(
 #if NeedFunctionPrototypes
-	DevicePtr,		/* pKeyboard */
+	DeviceIntPtr,		/* pKeyboard */
 	int			/* what */
 #endif
 );
 
-extern void xf86KbdEvents();
+extern void xf86KbdEvents(
+#if NeedFunctionPrototypes
+	void
+#endif
+);
 
 extern void xf86MseCtrl(
 #if NeedFunctionPrototypes
@@ -188,12 +216,16 @@ extern void xf86MseCtrl(
 
 extern int  xf86MseProc(
 #if NeedFunctionPrototypes
-	DevicePtr,		/* pPointer */
+	DeviceIntPtr,		/* pPointer */
 	int			/* what */
 #endif
 );
 
-extern void xf86MseEvents();
+extern void xf86MseEvents(
+#if NeedFunctionPrototypes
+	void
+#endif
+);
 
 /* xf86_Mouse.c */
 
@@ -223,6 +255,13 @@ extern void xf86KbdGetMapping(
 #if NeedFunctionPrototypes
 	KeySymsRec *,		/* pKeySyms */
 	CARD8 *			/* pModMap */
+#endif
+);
+
+/* xf86XKB.c */
+extern void xf86InitXkb(
+#if NeedFunctionPrototypes
+	void
 #endif
 );
 

@@ -1,5 +1,5 @@
 /* $XConsortium: XF86VMode.c /main/2 1995/11/14 18:17:58 kaleb $ */
-/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.15 1996/01/20 02:47:05 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.16 1996/01/28 07:28:46 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -207,47 +207,34 @@ Bool XF86VidModeGetAllModeLines(dpy, screen, modecount, modelinesPtr)
         return False;
     }
     *modecount = rep.modecount;
+
     if (!(modelines = (XF86VidModeModeInfo **) Xcalloc(rep.modecount,
-                                          sizeof(XF86VidModeModeInfo *)))) {
+                                          sizeof(XF86VidModeModeInfo *)
+                                          +sizeof(XF86VidModeModeInfo)))) {
         _XEatData(dpy, (rep.modecount) * sizeof(xXF86VidModeModeInfo));
         Xfree(modelines);
         return False;
     }
-    if (!(mdinfptr = (XF86VidModeModeInfo *) Xcalloc(rep.modecount,
-                                          sizeof(XF86VidModeModeInfo)))) {
-        _XEatData(dpy, (rep.modecount) * sizeof(xXF86VidModeModeInfo));
-        Xfree(modelines);
-        Xfree(mdinfptr);
-        return False;
-    }
+    mdinfptr = (XF86VidModeModeInfo *) (
+			    (char *) modelines
+			    + rep.modecount*sizeof(XF86VidModeModeInfo *)
+		    );
+
     for (i = 0; i < rep.modecount; i++) {
-        modelines[i] = mdinfptr;
+        modelines[i] = mdinfptr++;
         _XRead32(dpy, &xmdline, sizeof(xXF86VidModeModeInfo));
-        mdinfptr->dotclock   = xmdline.dotclock;
-        mdinfptr->hdisplay   = xmdline.hdisplay;
-        mdinfptr->hsyncstart = xmdline.hsyncstart;
-        mdinfptr->hsyncend   = xmdline.hsyncend;
-        mdinfptr->htotal     = xmdline.htotal;
-        mdinfptr->vdisplay   = xmdline.vdisplay;
-        mdinfptr->vsyncstart = xmdline.vsyncstart;
-        mdinfptr->vsyncend   = xmdline.vsyncend;
-        mdinfptr->vtotal     = xmdline.vtotal;
-        mdinfptr->flags      = xmdline.flags;
-        mdinfptr->privsize   = xmdline.privsize;
-        mdinfptr->private    = NULL;
-#if 0
-        if (rep.privsize > 0) {
-            if (!(modeline->private = Xcalloc(rep.privsize, sizeof(INT32)))) {
-                _XEatData(dpy, (rep.privsize) * sizeof(INT32));
-                Xfree(modeline->private);
-                return False;
-            }
-            _XRead32(dpy, modeline->private, rep.privsize * sizeof(INT32));
-        } else {
-            modeline->private = NULL;
-        }
-#endif
-        mdinfptr++;
+        modelines[i]->dotclock   = xmdline.dotclock;
+        modelines[i]->hdisplay   = xmdline.hdisplay;
+        modelines[i]->hsyncstart = xmdline.hsyncstart;
+        modelines[i]->hsyncend   = xmdline.hsyncend;
+        modelines[i]->htotal     = xmdline.htotal;
+        modelines[i]->vdisplay   = xmdline.vdisplay;
+        modelines[i]->vsyncstart = xmdline.vsyncstart;
+        modelines[i]->vsyncend   = xmdline.vsyncend;
+        modelines[i]->vtotal     = xmdline.vtotal;
+        modelines[i]->flags      = xmdline.flags;
+        modelines[i]->privsize   = xmdline.privsize;
+        modelines[i]->private    = NULL;
     }
     *modelinesPtr = modelines;
     UnlockDisplay(dpy);

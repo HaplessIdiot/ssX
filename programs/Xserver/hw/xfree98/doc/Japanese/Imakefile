@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/4 1996/01/21 14:34:06 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/Japanese/Imakefile,v 3.3 1996/01/20 02:48:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/Japanese/Imakefile,v 3.4 1996/02/04 09:16:31 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -17,12 +17,14 @@ MAINDOCS = COPYRIGHT README README.Config INSTALL AccelCards \
 	   README.cirrus LinkKit
 
 FILES = $(MAINDOCS) $(OSREADME)
+EXTRAFILES = README98.1st README98
 
 all::
 
 #ifndef DontInstallPC98Version
 InstallMultipleDest(install,$(FILES),$(XFREE86JAPANESEDOCDIR))
 #endif
+InstallMultipleDest(install,$(EXTRAFILES),$(XFREE86JAPANESEDOCDIR))
 
 LinkSourceFile(AccelCards,$(XF86SRC)/doc/Japanese)
 LinkSourceFile(COPYRIGHT,$(XF86SRC)/doc/Japanese)

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.85 1996/02/09 11:56:29 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.86 1996/02/12 11:10:23 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -139,6 +139,10 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 # define XF98WABEPServer	NO	
 #endif
 
+#ifndef XF98WSNAServer
+# define XF98WSNAServer		NO	
+#endif
+
 #ifndef XF98EGCServer
 # define XF98EGCServer		NO
 #endif
@@ -198,8 +202,8 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
  */
 #ifndef XF86SvgaDrivers
 # define XF86SvgaDrivers	et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
-				ncr77c22 /*compaq*/ oak mx al2101 ali cl64xx \
-				video7 chips ark realtek /*sis*/ generic
+				ncr77c22 /*compaq*/ /*sis*/ oak mx al2101 \
+				ali cl64xx video7 chips ark realtek generic
 #endif
 
 #ifndef XF98SvgaDrivers
@@ -207,8 +211,8 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 #endif
 
 #ifndef XF86Vga16Drivers
-# define XF86Vga16Drivers	et4000 ncr77c22 ati tvga8900 oak cl64xx \
-				sis generic
+# define XF86Vga16Drivers	et4000 ncr77c22 ati tvga8900 sis oak cl64xx \
+				generic
 #endif
 
 #ifndef XF98Vga16Drivers
@@ -217,7 +221,7 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 
 #ifndef XF86Vga2Drivers
 # define XF86Vga2Drivers	et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
-				ncr77c22 /*compaq*/ oak cl64xx sis generic
+				ncr77c22 /*compaq*/ sis oak cl64xx generic
 #endif
 
 #ifndef XF86Vga2Banked
@@ -245,14 +249,14 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
  * PEX doesn't work for 1-bit and 4-bit servers
  */
 #ifndef BuildPexExt
-#define BuildPexExt		XF86AccelServer || XF86SVGAServer || XF98AccelServer || XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || XF98WABSServer || XF98WABEPServer
+#define BuildPexExt		XF86AccelServer || XF86SVGAServer || XF98AccelServer || XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || XF98WABSServer || XF98WABEPServer || XF98WSNAServer
 #endif
 
 /*
  * XIE doesn't work for our 1-bit and 4-bit servers
  */
 #ifndef BuildXIE
-#define BuildXIE		XF86AccelServer || XF86SVGAServer || XF98AccelServer || XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || XF98WABSServer || XF98WABEPServer
+#define BuildXIE		XF86AccelServer || XF86SVGAServer || XF98AccelServer || XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || XF98WABSServer || XF98WABEPServer || XF98WSNAServer
 #endif
 
 /*
@@ -362,7 +366,7 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 
 /* Server defines required for all OSs */
 #ifndef XFree86ServerDefines
-#define XFree86ServerDefines	-DSTATIC_COLOR -DAVOID_GLYPHBLT -DPIXPRIV LinkKitDefines XFree86DGADefines
+#define XFree86ServerDefines	-DSTATIC_COLOR -DAVOID_GLYPHBLT -DPIXPRIV LinkKitDefines XFree86DGADefines -DDEVINTPTR
 #endif
 
 #ifndef XFree86ServerOSDefines

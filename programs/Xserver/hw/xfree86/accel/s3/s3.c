@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.117 1996/02/04 09:04:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.118 1996/02/05 11:21:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -2277,7 +2277,7 @@ s3Probe()
 	       s3InfoRec.s3RefClk = (int)(f*2+0.5)*500;
 	 }
       }
-      else {
+      else if (!s3InfoRec.s3RefClk) {
 	 s3InfoRec.s3RefClk = 16000; /* default */
       }
       

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/cir_pc98.c,v 3.0 1996/01/13 12:22:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/cir_pc98.c,v 3.1 1996/02/09 08:22:03 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -36,6 +36,11 @@ static void enter_ganbwap( void );
 #ifdef PC98_WAB
 static void enter_wabs( void );
 #endif
+#endif
+
+#ifdef PC98_WSNA
+static void init_wsna( void );
+static void enter_wsna( void );
 #endif
 
 #ifdef PC98_WABEP
@@ -191,6 +196,167 @@ enter_wabs(void)
 }
 #endif /*PC98_WAB */
 #endif /* PC98_GANB_WAP || PC98_WAB */
+
+#ifdef PC98_WSNA
+static void
+init_wsna(void)
+{
+    static union {
+	struct { short x; } w;
+	struct { char l, h; } b;
+    } data;
+
+    unsigned short initdt1[] = {
+	0x0707,        /* Extended Sequencer Mode */
+	0x0008, /* EEPROM Control */
+	0x0009, /* Scratch Pad 0 */
+	0x000a, /* Scratch Pad 1 */
+	0x660b, /* VCLK0 Numerator */
+	0x510c, /* VCLK1 Numerator */
+	0x660d, /* VCLK2 Numerator */
+	0x550e, /* VCLK3 Numerator */
+	0xb40f, /* DRAM Control */
+	0xf016, /* Performance Tuning */
+	0x0218, /* Signature Generator Control */
+	0x0119, /* Signature Generator Result Low-Byte */
+	0x3b1b, /* VCLK Denominator and Post-Scalar */
+	0x3a1c, /* VCLK Denominator and Post-Scalar */
+	0x261d, /* VCLK Denominator and Post-Scalar */
+	0x361e, /* VCLK Denominator and Post-Scalar */
+	0x201f, /* MCLK Select */
+	0xffff
+    };
+
+    unsigned short initdt2[] = {
+	0x0101, 0x0f02, 0x0003, 0x0e04, 0xffff
+    };
+
+    unsigned char initdt3[] = {
+	0xa1, 0x7f, 0x80, 0x85, 0x85, 0x96, 0x24, 0xfd,
+	0x00, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x08, 0x88, 0xff, 0x00, 0x00, 0x00, 0x23, 0xe3,
+	0xff, 0x32, 0xe0, 0x32
+    };
+
+    unsigned char initdt4[] = {
+	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+	0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+	0x41, 0x00, 0x0f, 0x00, 0x00
+    };
+
+    unsigned char initdt5[] = {
+	0x00, 0xff, 0x0f, 0x00, 0x00, 0x40, 0x05, 0x0f,
+	0xff, 0x02, 0x00, 0x20, 0x00
+    };
+
+    unsigned int tmp;
+
+    if(_inb(0x51e3) == 0xc2){
+	_outb(0x57e3, _inb(0x57e3) & 0x7f);
+    } else {
+	_outb(0x46e8, 0x18); outb(0x3c2, 0x01);
+	_outb(0x46e8, 0x08);
+    }
+
+    outb(0x3c2, 0xe3); outb(0x3da, 0x00);
+    outb(0x3c2, 0x18);
+    inb(0x3c6); inb(0x3c6);
+    inb(0x3c6); inb(0x3c6);
+    outb(0x3c6, 0x20); outw(0x3d4, 0x1206);
+    outw(0x3c4, 0x0200); outw(0x3c4, 0x0300);
+
+    for(tmp = 0; initdt1[tmp] != 0xffff; tmp++){
+	outw(0x3c4, initdt1[tmp]);
+    }
+
+    inb(0x3cc); inb(0x3da);
+    outb(0x3c0, 0x00);
+
+    for(tmp = 0; initdt2[tmp] != 0xffff; tmp++){
+	outw(0x3c4, initdt2[tmp]);
+    }
+
+    outb(0x3c2, 0xeb); inb(0x3cc);
+    data.b.l = 0x11; outb(0x3d4, data.b.l);
+    data.b.h = inb(0x3d5) & 0x7f;
+    outw(0x3d4, data.w.x);
+    outw(0x3d4, 0x001c);
+
+    for(data.b.l = 0; data.b.l < 0x1c; data.b.l++){
+	data.b.h = initdt3[data.b.l];
+	outw(0x3d4, data.w.x);
+    }
+
+    outb(0x3d4, 0x24); data.b.l = _inb(0x3d5);
+
+    if((unsigned char)data.b.l != 0x80){
+	outb(0x3c0, inb(0x3c1));
+    }
+
+    for(data.b.l = 0; data.b.l < 0x15; data.b.l++){
+	outb(0x3c0, data.b.l);
+	outb(0x3c0, initdt4[data.b.l]);
+    }
+
+    for(data.b.l = 0; data.b.l < 0x0d; data.b.l++){
+	data.b.h = initdt5[data.b.l];
+	outw(0x3ce, data.w.x);
+    }
+    return;
+}
+
+static void
+enter_wsna(void)
+{
+    static int wsn_initialized;
+    unsigned char temp;
+
+    /* allow VRAM mapping above 0xf00000 on EPSON machines */
+    if(OFLG_ISSET(OPTION_EPSON_MEM_WIN, &vga256InfoRec.options)){
+	_outb(0x43b, _inb(0x43b) & 0xfd);
+    }
+
+    /* Initialize WSN-A2F/A4F. X_MODE_ON -> 8colors mode. */
+    _outb(0x6A,0x00); /* Do 8 colors mode */
+    _outb(0x7C,0x00); /* GRCG OFF */
+    outb(0x3c4,0x06);
+    outb(0x3c5,0x12); /* unlock cirrus special */
+
+    if(wsn_initialized == 0){
+	outb(0x3c2, 0x18);
+	_outb(0x6a, 0x00);
+	vgaIOBase = 0x3D0;
+                                
+	outb(0x3d4, 0x24);
+	temp = inb(0x3d5);
+	if(temp == 0x80){
+	    outb(0x3c0, inb(0x3c1));
+	}
+
+	outb(0x3c0, 0x00);
+	_outb(0x40e3, 0x7a);  /* switch display. WSN-A2F --> normal */
+	temp = inb(0x3cc) | 0x02;
+	outb(0x3c2, temp);
+	_outb(0x40e3, 0x7b);  /* switch display. normal --> WSN-A2F */
+
+	outb(0x3c0, 0x20);
+
+	temp = _inb(0x5BE3) & 0x08;
+	if (!temp){
+	    temp = 0xfd; /* VRAM 4M BYTES for WSN-A4F */
+	} else {
+	    temp = 0x7d; /* VRAM 2M BYTES for WSN-A2F */
+	}
+	outb(0x3c4,0x0f);
+	outb(0x3c5,temp);
+
+	outb(0x3c4,0x06);
+	outb(0x3c5,0x12);        /* unlock cirrus special */
+	wsn_initialized = 1;
+    }
+    return;
+}
+#endif
 
 #ifdef PC98_WABEP
 static void
@@ -409,6 +575,9 @@ short swtch;
 #if defined(PC98_GANB_WAP) || defined(PC98_WAB)
 		init_wabs_ganbwap();
 #endif
+#ifdef PC98_WSNA
+		init_wsna();
+#endif
 #ifdef PC98_WABEP
 		init_wabep();
 #endif
@@ -424,6 +593,9 @@ short swtch;
 	/* switch normal -> X */
 #ifdef PC98_GANB_WAP
 	enter_ganbwap();
+#endif
+#ifdef PC98_WSNA
+	enter_wsna();
 #endif
 #ifdef PC98_NKVNEC
 	enter_nkvnec();
@@ -446,6 +618,9 @@ short swtch;
 	if(OFLG_ISSET(OPTION_WAP, &vga256InfoRec.options)){
 	    _outb(0x40E1,0xFA); /* WAP-2000/4000 -> normal */
 	}
+#endif
+#ifdef PC98_WSNA
+	_outb(0x40E3,0xFA); /* WSN-A2F -> normal */
 #endif
 #ifdef PC98_NKVNEC
 	leave_nkvnec();

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000curs.c,v 3.1 1995/01/28 15:54:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000curs.c,v 3.2 1996/02/04 09:04:12 dawes Exp $ */
 /*
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -68,7 +68,7 @@ static Bool p9000UnrealizeCursor(
 
 static void p9000SetCursor(
 #if NeedFunctionPrototypes
-   ScreenPtr, CursorPtr, int, int, Bool  
+   ScreenPtr, CursorPtr, int, int
 #endif
 );
 
@@ -180,12 +180,10 @@ p9000UnrealizeCursor(pScr, pCurs)
 }
 
 static void
-p9000SetCursor(pScr, pCurs, x, y, generateEvent)
+p9000SetCursor(pScr, pCurs, x, y)
      ScreenPtr pScr;
      CursorPtr pCurs;
      int   x, y;
-     Bool  generateEvent;
-
 {
    int index = pScr->myNum;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.7 1996/02/04 09:06:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.8 1996/02/09 08:20:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -87,33 +87,56 @@ extern int testinx();
 #ifndef PC98
 
 static __inline__ void
+#if NeedFunctionPrototypes
+outb(
+unsigned short int port,
+unsigned char val)
+#else
 outb(port, val)
 unsigned short int port;
 unsigned char val;
+#endif /* NeedFunctionPrototypes */
 {
    __asm__ __volatile__("outb %0,%1" : :"a" (val), "d" (port));
 }
 
 
 static __inline__ void
+#if NeedFunctionPrototypes
+outw(
+unsigned short int port,
+unsigned short int val)
+#else
 outw(port, val)
 unsigned short int port;
 unsigned short int val;
+#endif /* NeedFunctionPrototypes */
 {
    __asm__ __volatile__("outw %0,%1" : :"a" (val), "d" (port));
 }
 
 static __inline__ void
+#if NeedFunctionPrototypes
+outl(
+unsigned short int port,
+unsigned int val)
+#else
 outl(port, val)
 unsigned short int port;
 unsigned int val;
+#endif /* NeedFunctionPrototypes */
 {
    __asm__ __volatile__("outl %0,%1" : :"a" (val), "d" (port));
 }
 
 static __inline__ unsigned int
+#if NeedFunctionPrototypes
+inb(
+unsigned short int port)
+#else
 inb(port)
 unsigned short int port;
+#endif /* NeedFunctionPrototypes */
 {
    unsigned char ret;
    __asm__ __volatile__("inb %1,%0" :
@@ -123,8 +146,13 @@ unsigned short int port;
 }
 
 static __inline__ unsigned int
+#if NeedFunctionPrototypes
+inw(
+unsigned short int port)
+#else
 inw(port)
 unsigned short int port;
+#endif /* NeedFunctionPrototypes */
 {
    unsigned short int ret;
    __asm__ __volatile__("inw %1,%0" :
@@ -134,8 +162,13 @@ unsigned short int port;
 }
 
 static __inline__ unsigned int
+#if NeedFunctionPrototypes
+inl(
+unsigned short int port)
+#else
 inl(port)
 unsigned short int port;
+#endif /* NeedFunctionPrototypes */
 {
    unsigned int ret;
    __asm__ __volatile__("inl %1,%0" :
@@ -147,25 +180,56 @@ unsigned short int port;
 #else /* PC98 */
 
 static __inline__ void
+#if NeedFunctionPrototypes
+_outb(
+unsigned short int port,
+unsigned char val)
+#else
 _outb(port, val)
 unsigned short int port;
 unsigned char val;
+#endif /* NeedFunctionPrototypes */
 {
      __asm__ __volatile__("outb %0,%1" ::"a" (val), "d" (port));
 }
 
 static __inline__ void
+#if NeedFunctionPrototypes
+_outw(
+unsigned short int port,
+unsigned short int val)
+#else
 _outw(port, val)
 unsigned short int port;
 unsigned short int val;
+#endif /* NeedFunctionPrototypes */
 {
      __asm__ __volatile__("outw %0,%1" ::"a" (val), "d" (port));
 }
  
+static __inline__ void
+#if NeedFunctionPrototypes
+_outl(
+unsigned short int port,
+unsigned int val)
+#else
+_outl(port, val)
+unsigned short int port;
+unsigned int val;
+#endif /* NeedFunctionPrototypes */
+{
+   __asm__ __volatile__("outl %0,%1" : :"a" (val), "d" (port));
+}
+
 
 static __inline__ unsigned int
+#if NeedFunctionPrototypes
+_inb(
+unsigned short int port)
+#else
 _inb(port)
 unsigned short int port;
+#endif /* NeedFunctionPrototypes */
 {
      unsigned char ret;
      __asm__ __volatile__("inb %1,%0" :
@@ -175,14 +239,35 @@ unsigned short int port;
 }
 
 static __inline__ unsigned int
+#if NeedFunctionPrototypes
+_inw(
+unsigned short int port)
+#else
 _inw(port)
 unsigned short int port;
+#endif /* NeedFunctionPrototypes */
 {
      unsigned char ret;
      __asm__ __volatile__("inw %1,%0" :
                           "=a" (ret) :
                           "d" (port));
      return ret;
+}
+
+static __inline__ unsigned int
+#if NeedFunctionPrototypes
+_inl(
+unsigned short int port)
+#else
+_inl(port)
+unsigned short int port;
+#endif /* NeedFunctionPrototypes */
+{
+   unsigned int ret;
+   __asm__ __volatile__("inl %1,%0" :
+       "=a" (ret) :
+       "d" (port));
+   return ret;
 }
 
 #if defined(PC98_WAB) ||  defined(PC98_GANB_WAP)
@@ -205,6 +290,17 @@ port_convert(unsigned short port)
      return port;
 }
 #endif /* PC98_WABEP */
+
+#ifdef PC98_WSNA
+static __inline__ unsigned short
+port_convert(unsigned short port)
+{
+     port <<= 8;
+     port &= 0x7f00; /* Mask 0111 1111 0000 0000 */
+     port |= 0xE2;
+     return port;
+}
+#endif /* PC98_WSNA */
 
 #ifdef PC98_NKVNEC
 #ifdef	PC98_NEC_CIRRUS2
@@ -237,13 +333,19 @@ extern unsigned short _port_tbl[];
 #endif 
 
 static __inline__ void
+#if NeedFunctionPrototypes
+outb(
+unsigned short port,
+unsigned char val)
+#else
 outb(port, val)
 unsigned short port;
 unsigned char val;
+#endif /* NeedFunctionPrototypes */
 {
 #if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WAB) || \
-    defined(PC98_WABEP) || defined(PC98_PW) || defined(PC98_XKB) || \
-    defined(PC98_NEC)
+    defined(PC98_WABEP) || defined(PC98_WSNA) || defined(PC98_PW) || \
+    defined(PC98_XKB) || defined(PC98_NEC)
    unsigned short tmp;
    tmp=port_convert(port);
    port=tmp;
@@ -257,13 +359,19 @@ unsigned char val;
 }
 
 static __inline__ void
+#if NeedFunctionPrototypes
+outw(
+unsigned short port,
+unsigned short val)
+#else
 outw(port, val)
 unsigned short port;
 unsigned short val;
+#endif /* NeedFunctionPrototypes */
 {
 #if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WAB) || \
-    defined(PC98_WABEP) || defined(PC98_PW) || defined(PC98_XKB) || \
-    defined(PC98_NEC)
+    defined(PC98_WABEP) || defined(PC98_WSNA) || defined(PC98_PW) || \
+    defined(PC98_XKB) || defined(PC98_NEC)
    unsigned short tmp;
    tmp=port_convert(port);
    port=tmp;
@@ -277,13 +385,19 @@ unsigned short val;
 }
 
 static __inline__ void
+#if NeedFunctionPrototypes
+outl(
+unsigned short port,
+unsigned int val)
+#else
 outl(port, val)
 unsigned short port;
 unsigned int val;
+#endif /* NeedFunctionPrototypes */
 {
 #if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WAB) || \
-    defined(PC98_WABEP) || defined(PC98_PW) || defined(PC98_XKB) || \
-    defined(PC98_NEC)
+    defined(PC98_WABEP) || defined(PC98_WSNA) || defined(PC98_PW) || \
+    defined(PC98_XKB) || defined(PC98_NEC)
    unsigned short tmp;
    tmp=port_convert(port);
    port=tmp;
@@ -297,14 +411,19 @@ unsigned int val;
 }
 
 static __inline__ unsigned int
+#if NeedFunctionPrototypes
+inb(
+unsigned short port)
+#else
 inb(port)
 unsigned short port;
+#endif /* NeedFunctionPrototypes */
 {
    unsigned char ret;
 
 #if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WAB) || \
-    defined(PC98_WABEP) || defined(PC98_PW) || defined(PC98_XKB) || \
-    defined(PC98_NEC)
+    defined(PC98_WABEP) || defined(PC98_WSNA) || defined(PC98_PW) || \
+    defined(PC98_XKB) || defined(PC98_NEC)
    unsigned short tmp;
    tmp=port_convert(port);
    port=tmp;
@@ -321,14 +440,19 @@ unsigned short port;
 }
 
 static __inline__ unsigned int
+#if NeedFunctionPrototypes
+inw(
+unsigned short port)
+#else
 inw(port)
 unsigned short port;
+#endif /* NeedFunctionPrototypes */
 {
    unsigned short ret;
 
 #if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WAB) || \
-    defined(PC98_WABEP) || defined(PC98_PW) || defined(PC98_XKB) || \
-    defined(PC98_NEC)
+    defined(PC98_WABEP) || defined(PC98_WSNA) || defined(PC98_PW) || \
+    defined(PC98_XKB) || defined(PC98_NEC)
    unsigned short tmp;
    tmp=port_convert(port);
    port=tmp;
@@ -345,14 +469,19 @@ unsigned short port;
 }
 
 static __inline__ unsigned int
+#if NeedFunctionPrototypes
+inl(
+unsigned short port)
+#else
 inl(port)
 unsigned short port;
+#endif /* NeedFunctionPrototypes */
 {
    unsigned int ret;
 
 #if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WAB) || \
-    defined(PC98_WABEP) || defined(PC98_PW) || defined(PC98_XKB) || \
-    defined(PC98_NEC)
+    defined(PC98_WABEP) || defined(PC98_WSNA) || defined(PC98_PW) || \
+    defined(PC98_XKB) || defined(PC98_NEC)
    unsigned short tmp;
    tmp=port_convert(port);
    port=tmp;
@@ -373,32 +502,55 @@ unsigned short port;
 #else	/* GCCUSESGAS */
 
 static __inline__ void
+#if NeedFunctionPrototypes
+outb(
+unsigned short int port,
+unsigned char val)
+#else
 outb(port, val)
 unsigned short int port;
 unsigned char val;
+#endif /* NeedFunctionPrototypes */
 {
   __asm__ __volatile__("out%B0 (%1)" : :"a" (val), "d" (port));
 }
 
 static __inline__ void
+#if NeedFunctionPrototypes
+outw(
+unsigned short int port,
+unsigned short int val)
+#else
 outw(port, val)
 unsigned short int port;
 unsigned short int val;
+#endif /* NeedFunctionPrototypes */
 {
   __asm__ __volatile__("out%W0 (%1)" : :"a" (val), "d" (port));
 }
 
 static __inline__ void
+#if NeedFunctionPrototypes
+outl(
+unsigned short int port,
+unsigned int val)
+#else
 outl(port, val)
 unsigned short int port;
 unsigned int val;
+#endif /* NeedFunctionPrototypes */
 {
   __asm__ __volatile__("out%L0 (%1)" : :"a" (val), "d" (port));
 }
 
 static __inline__ unsigned int
+#if NeedFunctionPrototypes
+inb(
+unsigned short int port)
+#else
 inb(port)
 unsigned short int port;
+#endif /* NeedFunctionPrototypes */
 {
   unsigned char ret;
   __asm__ __volatile__("in%B0 (%1)" :
@@ -408,8 +560,13 @@ unsigned short int port;
 }
 
 static __inline__ unsigned int
+#if NeedFunctionPrototypes
+inw(
+unsigned short int port)
+#else
 inw(port)
 unsigned short int port;
+#endif /* NeedFunctionPrototypes */
 {
   unsigned short int ret;
   __asm__ __volatile__("in%W0 (%1)" :
@@ -419,8 +576,13 @@ unsigned short int port;
 }
 
 static __inline__ unsigned int
+#if NeedFunctionPrototypes
+inl(
+unsigned short int port)
+#else
 inl(port)
 unsigned short int port;
+#endif /* NeedFunctionPrototypes */
 {
   unsigned int ret;
   __asm__ __volatile__("in%L0 (%1)" :
@@ -434,43 +596,76 @@ unsigned short int port;
 #else /* FAKEIT */
 
 static __inline__ void
+#if NeedFunctionPrototypes
+outb(
+unsigned short int port,
+unsigned char val)
+#else
 outb(port, val)
 unsigned short int port;
 unsigned char val;
+#endif /* NeedFunctionPrototypes */
 {
 }
 
 static __inline__ void
+#if NeedFunctionPrototypes
+outw(
+unsigned short int port,
+unsigned short int val)
+#else
 outw(port, val)
 unsigned short int port;
 unsigned short int val;
+#endif /* NeedFunctionPrototypes */
 {
 }
 
 static __inline__ void
+#if NeedFunctionPrototypes
+outl(
+unsigned short int port,
+unsigned int val)
+#else
 outl(port, val)
 unsigned short int port;
 unsigned int val;
+#endif /* NeedFunctionPrototypes */
 {
 }
 
 static __inline__ unsigned int
+#if NeedFunctionPrototypes
+inb(
+unsigned short int port)
+#else
 inb(port)
 unsigned short int port;
+#endif /* NeedFunctionPrototypes */
 {
   return 0;
 }
 
 static __inline__ unsigned int
+#if NeedFunctionPrototypes
+inw(
+unsigned short int port)
+#else
 inw(port)
 unsigned short int port;
+#endif /* NeedFunctionPrototypes */
 {
   return 0;
 }
 
 static __inline__ unsigned int
+#if NeedFunctionPrototypes
+inl(
+unsigned short int port)
+#else
 inl(port)
 unsigned short int port;
+#endif /* NeedFunctionPrototypes */
 {
   return 0;
 }

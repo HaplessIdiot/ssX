@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.28 1996/02/09 08:21:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.29 1996/02/12 11:13:37 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -853,10 +853,8 @@ TVGA8900Probe()
 		OFLG_SET(OPTION_MMIO, &TVGA8900.ChipOptionFlags);
 #endif
 		if (tridentBusType == PCI)
-		{
-		OFLG_SET(OPTION_PCI_BURST_ON, &TVGA8900.ChipOptionFlags);
-		OFLG_SET(OPTION_PCI_BURST_OFF, &TVGA8900.ChipOptionFlags);
-		}
+			OFLG_SET(OPTION_PCI_BURST_ON, 
+				&TVGA8900.ChipOptionFlags);
 	}
 
 	if ( (OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options)) &&
@@ -978,9 +976,6 @@ TVGA8900FbInit()
 
 	TVGA8900.ChipLinearSize = vga256InfoRec.videoRam * 1024;
 
-	if (tridentBusType == -1)
-		tridentBusType = ISA;	/* Assume ISA for undefined cards */
-
 	if (tridentBusType == PCI) /* PCI */
 	{
 		if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
@@ -998,24 +993,19 @@ TVGA8900FbInit()
 	} 
 	else /* VLBus, ISA, EISA */
 	{
-		outb(vgaIOBase + 4, 0x21);
-		temp = inb(vgaIOBase + 5);
-
-		/* Align Linear Buffer */
-		temp &= (0xF0 | (0x10 - (TVGA8900.ChipLinearSize/1048576)));
-		outb(vgaIOBase + 5, temp);
-
 		/* We disable Linear for boards that aren't PCI */
 		/* Unless specifically requested 		*/
-		if (tridentIsTGUI)
-		{
-		  TVGA8900.ChipLinearBase = (( (temp & 0x0F) | 
-					((temp & 0xC0)>>2) )<<20);
+		if ( (TVGAchipset == TVGA8900CL) ||
+		     (TVGAchipset == TVGA8900D) )
+ 		{
+		  /* This is for the 8900CL/D Linear Buffer */
+		  TVGA8900.ChipLinearBase = (16 * 1024 * 1024) -
+					(vga256InfoRec.videoRam * 1024);
 		}
 		else
 		{
-		  /* This is for the 8900CL/D Linear Buffer */
-		  TVGA8900.ChipLinearBase = (temp & 0x0F) << 20;
+		  TVGA8900.ChipLinearBase = (64 * 1024 * 1024) -
+					(vga256InfoRec.videoRam * 1024);
 		}
 	}
 
@@ -1070,12 +1060,12 @@ TVGA8900FbInit()
 			vgaHWCursor.Warp = TridentWarpCursor;
 			vgaHWCursor.QueryBestSize = TridentQueryBestSize;
 			ErrorF("%s %s: Using hardware cursor\n",
-				XCONFIG_PROBED, vga256InfoRec.name);
+				XCONFIG_GIVEN, vga256InfoRec.name);
 		}
 	  }
 	  else
 	  {
-		ErrorF("%s %s: Using software cursor\n", XCONFIG_GIVEN,
+		ErrorF("%s %s: Using software cursor\n", XCONFIG_PROBED,
 							vga256InfoRec.name);
 	  }
 	}
@@ -1557,7 +1547,8 @@ TVGA8900Init(mode)
  				(((mode->CrtcVDisplay - 1) & 0x400) >> 6) |
  				0x08;
 #ifndef MONOVGA
-		new->MiscExtFunc = 0x97;	/* Enable Dual Banks & Chain 4*/
+		outb(0x3CE, 0x0F);
+		new->MiscExtFunc = inb(0x3CF) | 0x07;
 		new->CommandReg = 0x00;		/* DAC Standard colourmap */
 #endif
 	}
@@ -1607,8 +1598,7 @@ TVGA8900Init(mode)
 			if (OFLG_ISSET(OPTION_PCI_BURST_ON, 
 						&vga256InfoRec.options))
 				new->PCIReg = inb(vgaIOBase + 5) | 0x06;
-			if (OFLG_ISSET(OPTION_PCI_BURST_OFF, 
-						&vga256InfoRec.options))
+			else
 				new->PCIReg = inb(vgaIOBase + 5) & 0xF9;
 		}
 		outb(vgaIOBase + 4, 0x2A);

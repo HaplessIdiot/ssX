@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: os.h /main/55 1995/12/08 13:34:38 dpw $ */
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.10 1995/07/08 10:31:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.11 1996/01/05 13:19:40 dawes Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -481,7 +481,13 @@ extern int AddHost(
 extern Bool ForEachHostInFamily (
 #if NeedFunctionPrototypes
     int	    /*family*/,
-    Bool    (* /*func*/ )(),
+    Bool    (* /*func*/ )(
+#if NeedNestedPrototypes
+            unsigned char * /* addr */,
+            short           /* len */,
+            pointer         /* closure */
+#endif
+            ),
     pointer /*closure*/
 #endif
 );

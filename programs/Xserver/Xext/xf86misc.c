@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.7 1996/01/31 11:46:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.8 1996/02/09 08:19:53 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -332,7 +332,7 @@ ProcXF86MiscSetMouseSettings(client)
         xf86Info.sampleRate = stuff->samplerate;
         xf86Info.mouseFlags = stuff->flags;
 
-	xf86Info.pPointer->on = FALSE;
+	xf86Info.pPointer->public.on = FALSE;
 #ifdef XQUEUE
 	if (xf86Info.mseType != MTYPE_XQUEUE)
 #endif

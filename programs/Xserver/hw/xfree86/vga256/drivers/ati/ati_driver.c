@@ -1,5 +1,5 @@
 /* $XConsortium: ati_driver.c /main/9 1996/01/12 12:16:31 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.24 1996/02/04 09:12:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.25 1996/02/09 08:21:10 dawes Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -663,7 +663,7 @@ static const char *AdapterNames[] =
                                         GetBits(BIOS_INIT_DAC_SUBTYPE,        \
                                                 BIOS_INIT_DAC_SUBTYPE)))
 static unsigned short int ATIDac = ATI_DAC_GENERIC;
-typedef const struct
+typedef /*const*/ struct
 {
         int DACType;
         char *DACName;

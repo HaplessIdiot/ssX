@@ -1,3 +1,37 @@
+XFree86 3.1.2Ce (18 February 1996)
+358. PC98 documentation (X98 core team).
+357. Fix a bug in the handling of the Wacom eraser as a third button
+     (Frederic Lepied).
+356. Enable the Joystick driver for NetBSD (using a port of the FreeBSD
+     joystick driver to NetBSD) (Matthieu Herrb).
+355. Allow XInput dynamic loading for NetBSD (Matthieu Herrb).
+354. Use the FreeBSD way of making dependencies in .depend files for NetBSD
+     (Matthieu Herrb).
+353. Change the XInput Dynamic module loading to allow a ModulePath to
+     be specified in the Files section of the XF86Config, and move the
+     list of loadable modules into a Modules section in XF86Config
+     (Frederic Lepied).
+352. Fix some glitches in xterm's colour behaviour (Thomas E. Dickey).
+351. Modify the xf86config utility to allow XKB information to be entered
+     (Holger Veit).
+350. Fix Xserver prototyping problems (Thomas E. Dickey).
+349. Modify PCI code for PC98 (X98 core team).
+348. Add PC98 server for WSN-A2F (X98 core team).
+347. XKB description files for a Japanese 106 key keyboard (Takefumi Tsukada).
+346. Probe the VGA sis driver before the the cl64xx to avoid mis-probing
+     (Alan Hourihane).
+345. Modify XF86VidModeGetAllModeLines() to allocate memory in one chunk
+     so it can be freed later by the client (Joe Moss).
+344. Fix incorrect handling of S3RefClock when specified in the XF86Config
+     (Harald Koenig).
+343. Clean up linear mode setup in the Trident Driver (Alan Hourihane).
+342. Disable PCI burst mode by default for the Trident driver
+     (Alan Hourihane).
+341. Fix a problem restoring 16bpp modes with the Mach32 server on OS/2
+     (Sebastien Marineau).
+340. Fix a problem that was preventing the tgui driver from working on
+     some TGUI9440 cards (Alan Hourihane).
+
 XFree86 3.1.2Cd (12 February 1996)
 339. Fix library ordering for Linux a.out for xset, xdpyinfo and xvidtune
      (Harald Koenig).

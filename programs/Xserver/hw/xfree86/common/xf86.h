@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.28 1995/12/17 05:03:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.29 1996/02/04 09:06:04 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -108,9 +108,24 @@ typedef struct {
   Bool           configured;
   int            tmpIndex;
   int            scrnIndex;
-  Bool           (* Probe)();
-  Bool           (* Init)();
-  Bool           (* ValidMode)();
+  Bool           (* Probe)(
+#if NeedNestedPrototypes
+    void
+#endif
+);
+  Bool           (* Init)(
+#if NeedNestedPrototypes
+    int          scr_index,
+    ScreenPtr    pScreen,
+    int          argc,
+    char         **argv
+#endif
+);
+  Bool           (* ValidMode)(
+#if NeedNestedPrototypes
+    DisplayModePtr target
+#endif
+);
   void           (* EnterLeaveVT)(
 #if NeedNestedPrototypes
     int,
@@ -127,9 +142,22 @@ typedef struct {
     int
 #endif
 );
-  void           (* AdjustFrame)();
-  Bool           (* SwitchMode)();
-  void           (* PrintIdent)();
+  void           (* AdjustFrame)(
+#if NeedNestedPrototypes
+    int x,
+    int y
+#endif
+);
+  Bool           (* SwitchMode)(
+#if NeedNestedPrototypes
+    DisplayModePtr modes
+#endif
+);
+  void           (* PrintIdent)(
+#if NeedNestedPrototypes
+    void
+#endif
+);
   int            depth;
   xrgb		 weight;
   int            bitsPerPixel;
@@ -456,7 +484,7 @@ void xf86InitKBD(
 
 int xf86KbdProc(
 #if NeedFunctionPrototypes
-    DevicePtr pKeyboard,
+    DeviceIntPtr pKeyboard,
     int what
 #endif
 );
@@ -480,7 +508,7 @@ int GetMotionEvents(
 
 int xf86MseProc(
 #if NeedFunctionPrototypes
-    DevicePtr pPointer,
+    DeviceIntPtr pPointer,
     int what
 #endif
 );

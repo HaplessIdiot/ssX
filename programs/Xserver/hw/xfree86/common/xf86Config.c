@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.75 1996/02/10 10:39:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.76 1996/02/12 11:12:41 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -47,6 +47,7 @@ static int    configLineNo = 0;           /* linenumber */
 static char   *configBuf,*configRBuf;     /* buffer for lines */
 static char   *configPath;                /* path to config file */
 static char   *fontPath = NULL;           /* font path */
+static char   *modulePath = NULL;	  /* module path */
 static int    pushToken = LOCK_TOKEN;
 static LexRec val;                        /* global return value */
 
@@ -117,6 +118,11 @@ static void configMonitorSection(
     void
 #endif
 );
+static void configDynamicModuleSection(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 static DisplayModePtr xf86PruneModes(
 #if NeedFunctionPrototypes
     MonPtr monp,
@@ -146,7 +152,7 @@ extern void configExtendedInputSection(
  *	updated to point to the start of the next element, or set to
  *	NULL if there are no more.
  */
-static char *
+char *
 xf86GetPathElem(pnt)
      char **pnt;
 {
@@ -859,7 +865,6 @@ xf86Config (vtopen)
   xf86Info.notrapSignals = FALSE;
   xf86Info.caughtSignal = FALSE;
 
-  
   while ((token = xf86GetToken(TopLevelTab)) != EOF) {
       switch(token) {
       case SECTION:
@@ -884,24 +889,11 @@ xf86Config (vtopen)
 	  } else if ( StrCaseCmp(val.str, "xinput") == 0 ) {
 	      configExtendedInputSection(&val);
 #endif
+	  } else if ( StrCaseCmp(val.str, "module") == 0 ) {
+	      configDynamicModuleSection();
 	  } else {
 	      xf86ConfigError("not a recognized section name");
 	  }
-	  break;
-	  
-      case MODULE:
-#ifdef DYNAMIC_MODULE
-	  {
-	      void	*(*xf86LoadModule(const char*));
-	      
-	      if (xf86GetToken(NULL) != STRING)
-		  xf86ConfigError("module file name expected");
-	      
-	      xf86LoadModule(val.str);
-	  }
-#else
-	  ErrorF("Dynamic modules not supported\n");
-#endif
 	  break;
       }
   }
@@ -916,7 +908,9 @@ xf86Config (vtopen)
     xfree(monitor_list);
   if (device_list)
     xfree(device_list);
-
+  if (modulePath)
+      xfree(modulePath);
+  
 #if defined(SYSV) || defined(linux)
   if (getuid() != 0) {
     /* Wait for the child */
@@ -1051,6 +1045,7 @@ configFilesSection()
 {
   int            token;
   int            i, j;
+  int            k, l;
   char           *str;
 
   while ((token = xf86GetToken(FilesTab)) != ENDSECTION) {
@@ -1093,6 +1088,38 @@ configFilesSection()
       if (!xf86coFlag)
         rgbPath = prependRoot(val.str);
       break;
+
+    case MODULEPATH:
+      OFLG_SET(XCONFIG_MODULEPATH, &GenericXF86ConfigFlag);
+      if (xf86GetToken(NULL) != STRING)
+	xf86ConfigError("Module path expected");
+      l = FALSE;
+      str = prependRoot(val.str);
+      if (modulePath == NULL) {
+	modulePath = (char *)xalloc(1);
+	  modulePath[0] = '\0';
+	  k = strlen(str) + 1;
+	}
+      else
+	{
+          k = strlen(modulePath) + strlen(str) + 1;
+          if (modulePath[strlen(modulePath)-1] != ',') 
+	    {
+	      k++;
+	      l = TRUE;
+	    }
+	}
+      modulePath = (char *)xrealloc(modulePath, k);
+      if (l)
+        strcat(modulePath, ",");
+
+      strcat(modulePath, str);
+#ifdef __EMX__
+      xfree(str);
+#endif
+      xfree(val.str);
+      break;
+
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
       break; /* :-) */
@@ -2135,6 +2162,51 @@ configMonitorSection()
     }
   }
 }
+
+static void
+configDynamicModuleSection()
+{
+    int		token;
+    void	*(*xf86LoadModule(const char*, const char*));
+	      
+    while ((token = xf86GetToken(ModuleTab)) != ENDSECTION) {
+	switch (token) {
+	case LOAD:
+	    if (xf86GetToken(NULL) != STRING)
+		xf86ConfigError("Dynamic module expected");
+	    else {
+		if (!modulePath) {
+		    static Bool firstTime = TRUE;
+
+		    modulePath = (char*)xcalloc(1, strlen(DEFAULT_MODULE_PATH)+1);
+		    strcpy(modulePath, DEFAULT_MODULE_PATH);
+		
+		    if (xf86Verbose && firstTime) {
+			ErrorF("%s no ModulePath specified using default: %s\n",
+			       XCONFIG_PROBED, DEFAULT_MODULE_PATH);
+			firstTime = FALSE;
+		    }
+		}
+#ifdef DYNAMIC_MODULE
+		xf86LoadModule(val.str, modulePath);
+#else
+		ErrorF("Dynamic modules not supported. \"%s\" not loaded\n",
+		       modulePath);
+#endif
+	    }
+	    break;
+
+	case EOF:
+	    FatalError("Unexpected EOF. Missing EndSection?");
+	    break; /* :-) */
+	    
+	default:
+	    xf86ConfigError("Module section keyword expected");
+	    break;
+	}    
+    }
+}
+#endif
 
 static void
 readVerboseMode(monp)

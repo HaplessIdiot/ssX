@@ -1,5 +1,5 @@
 /* $XConsortium: bank.s,v 1.5 95/06/19 18:59:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/bank.s,v 3.3 1996/02/04 09:12:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/bank.s,v 3.4 1996/02/09 08:21:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -269,7 +269,7 @@ GLNAME(ATIMach64SetRead):
 		AND_B	(CONST(0x3F),AL)
 		SHL_W	(CONST(2),AX)
 #	endif
-	MOV_W	(CONST((MEM_VGA_RP_SEL)),DX)	/* For now */
+	MOV_W	(CONST(0x5aec),DX)	/* For now */
 	OUT_B
 	INC_W	(DX)
 	INC_W	(DX)
@@ -287,7 +287,7 @@ GLNAME(ATIMach64SetWrite):
 		AND_B	(CONST(0x3F),AL)
 		SHL_W	(CONST(2),AX)
 #	endif
-	MOV_W	(CONST((MEM_VGA_WP_SEL)),DX)	/* For now */
+	MOV_W	(CONST(0x56ec),DX)	/* For now */
 	OUT_B
 	INC_W	(DX)
 	INC_W	(DX)
@@ -305,14 +305,14 @@ GLNAME(ATIMach64SetReadWrite):
 		AND_B	(CONST(0x3F),AL)
 		SHL_W	(CONST(2),AX)
 #	endif
-	MOV_W	(CONST((MEM_VGA_RP_SEL)),DX)	/* For now */
+	MOV_W	(CONST(0x5aec),DX)	/* For now */
 	OUT_B
 	INC_W	(DX)
 	INC_W	(DX)
 	XCHG_B	(AH,AL)
 	OUT_B
 	XCHG_B	(AH,AL)
-	MOV_W	(CONST((MEM_VGA_WP_SEL)),DX)	/* For now */
+	MOV_W	(CONST(0x56ec),DX)	/* For now */
 	OUT_B
 	INC_W	(DX)
 	INC_W	(DX)

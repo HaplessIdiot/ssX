@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.4 1996/01/08 08:55:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.5 1996/02/04 09:06:59 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -30,6 +30,13 @@
 #include "os.h"
 #include "compiler.h"
 #include "xf86_PCI.h"
+
+#ifdef PC98
+#define outb(port,data) _outb(port,data)
+#define outl(port,data) _outl(port,data)
+#define inb(port) _inb(port)
+#define inl(port) _inl(port)
+#endif
 
 extern void xf86ClearIOPortList(int);
 extern void xf86AddIOPorts(int, int, unsigned *);

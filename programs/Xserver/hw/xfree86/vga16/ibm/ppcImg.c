@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcImg.c,v 3.3 1995/01/28 17:06:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcImg.c,v 3.4 1996/02/04 09:11:19 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -77,8 +77,8 @@ ppcGetImage( pDraw, sx, sy, w, h, format, planeMask, pdstLine )
     DrawablePtr pDraw ;
     int	sx, sy, w, h ;
     unsigned int format ;
-    unsigned long int planeMask ;
-    pointer	     pdstLine ;
+    unsigned long planeMask ;
+    char *	     pdstLine ;
 {
     int	    depth, i, linelength, width ;
     DDXPointRec	pt ;
@@ -86,7 +86,7 @@ ppcGetImage( pDraw, sx, sy, w, h, format, planeMask, pdstLine )
     unsigned long int	gcv[2] ;
     PixmapPtr	pPixmap = (PixmapPtr) NULL ;
     GCPtr	pGC ;
-    char *pDst = (char *) pdstLine ;
+    char *pDst = pdstLine ;
 
 #if 0
 	miGetImage( pDraw, sx, sy, w, h, format, planeMask, pdstLine ) ;

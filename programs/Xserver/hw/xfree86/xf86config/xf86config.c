@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.21 1996/01/24 22:03:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.22 1996/02/04 09:15:41 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -109,6 +109,14 @@
 #define PREFER_XF86CONFIG_IN_ETC
 
 /*
+ * Define this to force the user to go through XKB configuration section
+ * This is default for OS/2, because OS/2 has broken standard keyboard
+ * support.
+ *
+#define FORCE_XKB_DIALOG
+ */
+
+/*
  * Configuration variables.
  */
 
@@ -120,6 +128,9 @@
 #ifdef __EMX__
 #define DUMBCONFIG2 "/dconfig.2"
 #define DUMBCONFIG3 "/dconfig.3"
+#ifndef FORCE_XKB_DIALOG
+#define FORCE_XKB_DIALOG
+#endif
 #else
 #define DUMBCONFIG2 "/tmp/dumbconfig.2"
 #define DUMBCONFIG3 "/tmp/dumbconfig.3"
@@ -166,6 +177,16 @@ int config_virtualx32bpp, config_virtualy32bpp;
 char *config_ramdac;
 char *config_dacspeed;
 char *config_clockchip;
+int config_xkbdisable;
+char *config_xkbkeymap;
+char *config_xkbkeycodes;
+char *config_xkbtypes;
+char *config_xkbcompat;
+char *config_xkbsymbols;
+char *config_xkbgeometry;
+
+
+
 
 /*
  * These are from the selected card definition. Parameters from the
@@ -463,6 +484,7 @@ static char *keyboardalt_text =
 
 void keyboard_configuration() {
 	char s[80];
+
 	printf("%s", keyboardalt_text);
 
 	printf("Please answer the following question with either 'y' or 'n'.\n");
@@ -474,6 +496,280 @@ void keyboard_configuration() {
 	printf("\n");
 }
 
+/*
+ * Configuration of XKB 
+ */
+
+static char* xkbcompose1 =
+"You did not select one of the preconfigured keymaps. We will now try to\n"
+"compose a suitable XKB setting. This setting is untested.\n"
+"Please select one of the following standard keyboards. Use DEFAULT if\n"
+"nothing really fits (101-key, tune manually)\n\n";
+
+static char* xkbcompose2 =
+"Please choose one of the following countries. Use DEFAULT if nothing\n"
+"really fits (US encoding, tune manually)\n";
+
+static char* noncompatible_text = 
+"You have chosen the combination:\n"
+"         keyboard %s\n"
+"         country %s\n"
+"This configuration might be incompatible and not supported yet. The\n"
+"requested entry will be made, but the server might fail to map the\n"
+"keyboard properly.\n";
+
+/* 
+ * Add here combinations of symbols and geometry for keyboards
+ * This will be annotated with "en_US" and "+..." later
+ */
+
+static struct symlist1 {
+	int usonly;	/* 0=us or us_EN, 1=us */
+	char *symname;
+	char *geoname;
+	char *desc;
+} sympart1[] = {
+{0,	"pc101",		"pc",	"Standard 101-key keyboard"},
+{0,	"pc102",		"pc",	"Standard 102-key keyboard"},
+{1,	"pc101euro",		"pc",	"101-key with ALT_R = Multi_key"},
+{1,	"pc102euro",		"pc",	"101-key with ALT_R = Multi_key"},
+{1,	"microsoft",		"microsoft",   "Microsoft Natural keyboard"},
+{1,	"pc101",		"keytronic(FlexPro)", "KeyTronic FlexPro keyboard"},
+{0,	"pc101",		"pc",	"DEFAULT"}
+};
+
+static int nsym1 = sizeof(sympart1)/sizeof(struct symlist1);
+
+static struct symlist2 {
+	char *prefix;	/* us or us_en */
+	char *extend;	/* +de, +fr, ... */
+	char *desc;	/* description */
+} sympart2[] = {
+{	"en_US",	"+be",	"Belgium"},
+{	"en_US",	"+bg",	"Bulgaria"},
+{	"en_US",	"+ca",	"Canada"},
+{	"en_US",	"+cs",	"Czechoslovakia"},
+{	"en_US",	"+dk",	"Denmark"},
+{	"en_US",	"+fi",	"Finland"},
+{	"en_US",	"+fr",	"France"},
+{	"en_US",	"+de",	"Germany"},
+{	"en_US",	"+it",	"Italy"},
+{	"en_US",	"+no",	"Norway"},
+{	"en_US",	"+pl",	"Poland"},
+{	"en_US",	"+pt",	"Portugal"},
+{	"en_US",	"+ru",	"Russia"},
+{	"en_US",	"+es",	"Spain"},
+{	"en_US",	"+se",	"Sweden"},
+{	"en_US",	"+th",	"Thailand"},
+{	"en_US",	"+fr_CH",	"Switzerland/French layout"},
+{	"en_US",	"+de_CH",	"Switzerland/German layout"},
+{	"en_US",	"+gb",	"United Kingdom"},
+{	"us",		"",	"USA"},
+{	"en_US",	"",	"DEFAULT"}
+};
+
+static int nsym2 = sizeof(sympart2)/sizeof(struct symlist2);
+
+void xkb_composekeymaps()
+{
+	int i;
+	char s[80];
+	int xkbsym1,xkbsym2;
+
+	/* this is entered when the user did not find a preconfigured 
+	 * XkbKeymap 
+	 */
+	emptylines();
+	printf(xkbcompose1);
+	for (i=0; i<nsym1; i++) {
+		printf("%3d  %-50s\n",i+1,sympart1[i].desc);
+	}
+
+	printf("\nEnter a number to choose the keyboard.\n\n");
+	getstring(s);
+	if (strlen(s) == 0)
+		xkbsym1 = 0;
+	else {
+		i = atoi(s)-1;
+		xkbsym1 = (i < 0 || i > nsym1) ? 0 : i;
+	}
+	emptylines();
+	printf(xkbcompose2);
+	keypress();
+
+	xkbsym2 = -1;
+	for (i=0;;) {
+		int j;
+		emptylines();
+		for (j = i; j < i + 18 && j < nsym2; j++)
+			printf("%3d  %-50s\n", j+1,
+				sympart2[j].desc);
+		printf("\n");
+		printf("Enter a number to choose the country.\n");
+		if (nsym2 >= 18)
+			printf("Press enter for the next page\n");
+		printf("\n");
+		getstring(s);
+		if (strlen(s) == 0) {
+			i += 18;
+			if (i > nsym2)
+				i = 0;
+			continue;
+		}
+		xkbsym2 = atoi(s) - 1;
+		if (xkbsym2 >= 0 && xkbsym2 < nsym2)
+			break;
+	}
+
+	/* XXX check consistency: currently en_US supports only pc101 and 102,
+	 * which is IMHO wrong, because I have seen German MS-Keyboards at
+	 * least (hv)
+	 */
+	if (sympart1[xkbsym1].usonly &&
+	    strcmp(sympart2[xkbsym2].prefix,"us") != 0) {
+		emptylines();
+		printf(noncompatible_text,
+			sympart1[xkbsym1].desc,
+			sympart2[xkbsym2].desc);
+		keypress();
+	}		
+
+	/* compose the lines */
+	config_xkbdisable = 0;
+	config_xkbkeymap = 0;
+#ifdef XFREE98_XKB
+	config_xkbkeycodes = "keycodes/xfree98";	/* static */
+#else
+	config_xkbkeycodes = "keycodes/xfree86";	/* static */
+#endif
+	config_xkbtypes = "types/default";		/* static */
+	config_xkbcompat = "compat/default";		/* static */
+
+	i = 8 + strlen(sympart2[xkbsym2].prefix)
+	      + strlen(sympart1[xkbsym1].symname)
+	      + strlen(sympart2[xkbsym2].extend)
+	      + 1;
+	config_xkbsymbols = malloc(i);
+	sprintf(config_xkbsymbols,"symbols/%s(%s)%s",
+		sympart2[xkbsym2].prefix,
+		sympart1[xkbsym1].symname,
+		sympart2[xkbsym2].extend);
+
+	config_xkbgeometry = malloc(9+strlen(sympart1[xkbsym1].geoname)+1);
+	sprintf(config_xkbgeometry,"geometry/%s",sympart1[xkbsym1].geoname);
+
+	return;
+}
+
+#ifndef FORCE_XKB_DIALOG
+static char *xkb_intro1 =
+"Beginning with XFree86 3.1.2D, you can use the new X11R6.1 XKEYBOARD\n"
+"extension to manage the keyboard layout. If you answer 'n' to the following\n"
+"question, the server will use the old method, and you have to adjust\n"
+"your keyboard layout with xmodmap.\n\n";
+#endif
+
+static char *xkb_intro2 =
+#ifdef FORCE_XKB_DIALOG
+"Beginning with XFree86 3.1.2D, the X server uses the new X11R6.1 XKEYBOARD\n"
+"extension to manage the keyboard layout. This requires you to answer a\n"
+"number of questions to add certain entries to the " CONFIGNAME " file.\n\n"
+#endif
+"The following dialogue will allow you to select from a list of already\n"
+"preconfigured keymaps. If you don't find a suitable keymap in the list,\n"
+"the program will try to combine a keymap from additional information you\n"
+"are asked then. Such a keymap is by default untested and may require\n"
+"manual tuning. Please report success or required changes for such a\n"
+"keymap to BETA@XFREE86.ORG for addition to the list of preconfigured\n"
+"keymaps in the future.\n\n";
+
+/*
+ *  Add new standard keymaps here
+ */
+static struct kmlist {
+	char *name;	/* the string to be added to XkbKeymap */
+	char *desc;	/* the string that is shown to the user */
+} keymaps[] = {
+{"xfree86(us)",		"Standard 101-key, US encoding"},
+{"xfree86(us_microsoft)",	"Microsoft Natural, US encoding"},
+{"xfree86(us_flexpro)",	"KeyTronic FlexPro, US encoding"},
+{"xfree86(en_US)",	"Standard 101-key, US encoding with ISO9995-3 extensions"},
+{"xfree86(de)",		"Standard 101-key, German encoding"},
+{"xfree86(fr)",		"Standard 101-key, French encoding"},
+{"xfree86(th)",		"Standard 101-key, Thai encoding"},
+{"xfree86(de_CH)",	"Standard 101-key, Swiss/German encoding"},
+{"xfree86(fr_CH)",	"Standard 101-key, Swiss/French encoding"},
+#ifdef XFREE98_XKB
+{"xfree98(jp)",		"NEC PC98, Japanese encoding"},
+#endif
+{0,			"None of the above"},	/* must be last one */
+};
+
+static int nkeymaps = sizeof(keymaps)/sizeof(struct kmlist);
+
+static char *keymap_default = "xfree86(us)";
+
+void xkb_keyboard_configuration()
+{
+	char s[80];
+	int i;
+	int map_selected;
+
+	/* preset the config variables */
+	config_xkbdisable = 0;
+	config_xkbkeymap = keymap_default;
+
+#ifndef FORCE_XKB_DIALOG
+	printf("%s", xkb_intro1);
+
+	printf("Please answer the following question with either 'y' or 'n'.\n");
+	printf("Do you want to use XKB? ");
+	getstring(s);
+	printf("\n");
+	config_xkbdisable = 0;
+	if (!answerisyes(s)) {
+		config_xkbdisable = 1;
+		return;
+	}
+#endif
+
+	emptylines();
+	printf("%s", xkb_intro2);
+	keypress();
+
+	i = 0;
+	map_selected = -1;
+	for (;;) {
+		int j;
+		emptylines();
+		printf("List of preconfigured keymaps:\n\n");
+		for (j = i; j < i + 18 && j < nkeymaps; j++)
+			printf("%3d  %-50s\n", j+1,
+				keymaps[j].desc);
+		printf("\n");
+		printf("Enter a number to choose the keymap.\n");
+		if (nkeymaps >= 18)
+			printf("Press enter for the next page\n");
+		printf("\n");
+		getstring(s);
+		if (strlen(s) == 0) {
+			i += 18;
+			if (i > nkeymaps)
+				i = 0;
+			continue;
+		}
+		map_selected = atoi(s);
+		if (map_selected >= 0 && map_selected <= nkeymaps)
+			break;
+	}
+
+	if (map_selected==nkeymaps) {	/* none of the above */
+		xkb_composekeymaps();
+	} else {
+		config_xkbkeymap = keymaps[map_selected-1].name;
+	}
+	return;
+}
 
 /*
  * Monitor configuration.
@@ -1022,10 +1318,30 @@ static char *modestring[NU_MODESTRINGS] = {
 #endif
 };
 
+#ifdef __EMX__
+/* yet another instance of this code, sigh! */
+char *__XOS2RedirRoot(char *path)
+{
+	static char pn[300];
+	char *root;
+	if ((isalpha(path[0]) && path[1]==':') || path[0] != '/')
+		return path;
+
+	root = getenv("X11ROOT");
+	if (!root) root = "";
+	sprintf(pn,"%s%s",root,path);
+	return pn;
+}
+#endif
+
 /* (hv) to avoid the UNIXISM to try to open a dir to check for existance */
 static int exists_dir(char *name) {
 	struct stat sbuf;
 
+#ifdef __EMX__
+
+
+#endif
 	/* is it there ? */
 	if (stat(name,&sbuf) == -1)
 		return 0;
@@ -1623,9 +1939,33 @@ static char *XF86Config_firstchunk_text =
 "# RightCtl key to Compose, and ScrollLock key to ModeLock:\n"
 "\n";
 
-static char *keyboardlastchunk_text =
+static char *keyboardchunk2_text =
 "#    RightCtl    Compose\n"
 "#    ScrollLock  ModeLock\n"
+"\n"
+"# To disable the XKEYBOARD extension, uncomment XkbDisable.\n"
+"\n";
+
+static char *keyboardchunk3_text =
+"# To use the default map in ProjectRoot keymap/xfree86, uncomment\n"
+"# XkbKeymap. To use one of the alternate maps in keymap/xfree86\n"
+"# uncomment and modify the XkbKeymap line, e.g.:\n"
+"#    XkbKeymap   \"keymap/xfree86(us_microsoft)\"\n"
+"# To tailor a combination not already in keymap/xfree86 modify\n"
+"# keymap/xfree86 or uncomment and modify the other lines as\n"
+"# desired. One way to get a german layout on a 101 key keyboard\n"
+"# is to modify the XkbSymbols line, e.g.:\n"
+"#    XkbSymbols  \"symbols/us(pc101)+de\"\n"
+"\n";
+
+static char *keyboardchunk4_text =
+"#    Xkbkeycodes \"keycodes/xfree86\"\n"
+"#    XkbTypes    \"types/default\"\n"
+"#    XkbCompat   \"compat/default\"\n"
+"#    XkbSymbols  \"symbols/us(pc101)\"\n"
+"#    XkbGeometry \"geometry/pc\"\n";
+
+static char *keyboardlastchunk_text =
 "\n"
 "EndSection\n"
 "\n"
@@ -1855,7 +2195,26 @@ void write_XF86Config(filename)
 		fprintf(f, "#    LeftAlt     Meta\n");
 		fprintf(f, "#    RightAlt    ModeShift\n");
 	}
-	fprintf(f, "%s", keyboardlastchunk_text);
+	fprintf(f, "%s", keyboardchunk2_text);
+
+	if (config_xkbdisable) {
+		fprintf(f, "    XkbDisable\n\n");
+	} else {
+		fprintf(f, "#    XkbDisable\n\n");
+	}
+	fprintf(f, "%s", keyboardchunk3_text);
+	if (config_xkbkeymap) {
+		fprintf(f, "    XkbKeymap   \"keymap/%s\"\n",config_xkbkeymap);
+		fprintf(f, "%s", keyboardchunk4_text);
+	} else {
+		fprintf(f, "#    XkbKeymap   \"keymap/xfree86\"\n");
+		fprintf(f, "    Xkbkeycodes \"%s\"\n",config_xkbkeycodes);
+		fprintf(f, "    XkbTypes    \"%s\"\n",config_xkbtypes);
+		fprintf(f, "    XkbCompat   \"%s\"\n",config_xkbcompat);
+		fprintf(f, "    XkbSymbols  \"%s\"\n",config_xkbsymbols);
+		fprintf(f, "    XkbGeometry \"%s\"\n",config_xkbgeometry);
+	}
+	fprintf(f, "%s",keyboardlastchunk_text);
 
 	/*
 	 * Write pointer section.
@@ -1863,7 +2222,9 @@ void write_XF86Config(filename)
 	fprintf(f, "%s", pointersection_text1);
 	fprintf(f, "    Protocol    \"%s\"\n",
 		mousetype_identifier[config_mousetype]);
+#ifndef __EMX__
 	fprintf(f, "    Device      \"%s\"\n", config_pointerdevice);
+#endif
 	fprintf(f, "%s", pointersection_text2);
 	if (!config_emulate3buttons)
 		fprintf(f, "#");
@@ -2165,11 +2526,7 @@ char *ask_XF86Config_location() {
 		getstring(s);
 		printf("\n");
 		if (answerisyes(s)) {
-			static char pn[80];
-			char *root = getenv("X11ROOT");
-			if (!root) root = "";
-			sprintf(pn,"%s/XFree86/lib/X11/XConfig",root);
-			return pn;
+			return __XOS2RedirRoot("/XFree86/lib/X11/XConfig");
 		}
 #endif /* __EMX__ */
 	}
@@ -2277,9 +2634,19 @@ void main() {
 
 	emptylines();
 
-	keyboard_configuration();
+	xkb_keyboard_configuration();
 
 	emptylines();
+
+	/* XXX hv: if you have XKB, you might not need to make these
+	 * settings; they are left in the config file though
+	 */
+	if (!config_xkbdisable) {
+		config_altmeta = 0;
+	} else {
+		keyboard_configuration();
+		emptylines();
+	}
 
 	monitor_configuration();
 

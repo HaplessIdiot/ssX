@@ -3,11 +3,11 @@
 
 <title> Information for Trident Chipset Users
 <author> The XFree86 Project, Inc.
-<date> 14 January 1996
+<date> 16 February 1996
 <toc>
 
 <sect> Supported chipsets <p>
-The Trident driver has undergone major work XFree86 3.1.2B.
+The Trident driver has undergone major work for XFree86 3.1.2B.
 Because of this work, all of the Trident SVGA chipsets, except
 the very first one, are supported by both the color and monochrome servers.
 <quote><bf>
@@ -43,19 +43,21 @@ although only the 9440 and 9660 have been tested with the hardware cursor.
 	require 16bpp support.  Note: ISA cards can only access up to
 	16MB of memory, so be sure you have less than this or it could
 	cause a system hang.
+<tag>MemBase &dquot;0x???????&dquot;</tag>
+	This option may be used to specify the start address of the linear
+	frame buffer. By default for VLBus/EISA cards it is at 62MB for
+	2MB cards and 63MB for 1MB cards. For the 8900CL/D, it is at 
+	14MB for 2MB cards and 15MB for 1MB cards.
 <tag>Option &dquot;fast_dram&dquot;</tag>
 	45ns DRAM
 <tag>Option &dquot;med_dram&dquot;</tag>
 	70ns DRAM
 <tag>Option &dquot;slow_dram&dquot;</tag>
 	80ns DRAM.  This is the default for TGUIs.
-<tag>Option &dquot;sw_cursor&dquot;</tag>
-	Turn off hardware cursor
+<tag>Option &dquot;hw_cursor&dquot;</tag>
+	Turn on hardware cursor (NOTE: it is off by default)
 <tag>Option &dquot;pci_burst_on&dquot;</tag>
-	Turn on PCI burst mode
-<tag>Option &dquot;pci_burst_off&dquot;</tag>
-	Turn off PCI burst mode.  If you appear to be suffering screen
-	corruption use this setting.
+	Turn on PCI burst mode (NOTE: it is off by default)
 <tag>ClockChip &dquot;tgui&dquot;</tag>
 	Turn on programmable clocks.  This is the default for TGUIs.
 </descrip>
@@ -125,7 +127,7 @@ in the <tt>XF86Config</tt> file, these lockups are overcome. But it may
 be worth checking wait states etc. on the card and in the BIOS setup.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.7 1996/01/16 15:04:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.8 1996/02/04 09:08:38 dawes Exp $
 
 
 

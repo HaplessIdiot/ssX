@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 /* $XConsortium: devices.c /main/52 1996/01/14 16:44:49 kaleb $ */
-/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.3 1996/01/07 03:46:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.4 1996/01/16 15:02:24 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -78,7 +78,11 @@ extern void ActivateKeyboardGrab(), DeactivateKeyboardGrab();
 extern Mask EventMaskForClient();
 extern void EnqueueEvent();
 
+#ifdef DEVINTPTR
+DeviceIntPtr
+#else
 DevicePtr
+#endif
 AddInputDevice(deviceProc, autoStart)
     DeviceProc deviceProc;
     Bool autoStart;
@@ -86,10 +90,18 @@ AddInputDevice(deviceProc, autoStart)
     register DeviceIntPtr dev;
 
     if (inputInfo.numDevices >= MAX_DEVICES)
+#ifdef DEVINTPTR
+	return (DeviceIntPtr)NULL;
+#else
 	return (DevicePtr)NULL;
+#endif
     dev = (DeviceIntPtr) xalloc(sizeof(DeviceIntRec));
     if (!dev)
+#ifdef DEVINTPTR
+	return (DeviceIntPtr)NULL;
+#else
 	return (DevicePtr)NULL;
+#endif
     dev->name = (char *)NULL;
     dev->type = 0;
     dev->id = inputInfo.numDevices;
@@ -124,7 +136,11 @@ AddInputDevice(deviceProc, autoStart)
     dev->xkb_interest= NULL;
 #endif
     inputInfo.off_devices = dev;
+#ifdef DEVINTPTR
+    return dev;
+#else
     return &dev->public;
+#endif
 }
 
 Bool
@@ -340,10 +356,27 @@ NumMotionEvents()
 
 void
 RegisterPointerDevice(device)
+#ifdef DEVINTPTR
+    DeviceIntPtr device;
+#else
     DevicePtr device;
+#endif
 {
+#ifdef DEVINTPTR
+    inputInfo.pointer = device;
+#else
     inputInfo.pointer = (DeviceIntPtr)device;
+#endif
 #ifdef XKB
+#ifdef DEVINTPTR
+    if (noXkbExtension) {
+	device->public.processInputProc = CoreProcessPointerEvent;
+	device->public.realInputProc = CoreProcessPointerEvent;
+    } else {
+	device->public.processInputProc = ProcessPointerEvent;
+	device->public.realInputProc = ProcessPointerEvent;
+    }
+#else
     if (noXkbExtension) {
 	device->processInputProc = CoreProcessPointerEvent;
 	device->realInputProc = CoreProcessPointerEvent;
@@ -351,20 +384,48 @@ RegisterPointerDevice(device)
 	device->processInputProc = ProcessPointerEvent;
 	device->realInputProc = ProcessPointerEvent;
     }
+#endif
+#else
+#ifdef DEVINTPTR
+    device->public.processInputProc = ProcessPointerEvent;
+    device->public.realInputProc = ProcessPointerEvent;
 #else
     device->processInputProc = ProcessPointerEvent;
     device->realInputProc = ProcessPointerEvent;
 #endif
+#endif
+#ifdef DEVINTPTR
+    device->ActivateGrab = ActivatePointerGrab;
+    device->DeactivateGrab = DeactivatePointerGrab;
+#else
     ((DeviceIntPtr)device)->ActivateGrab = ActivatePointerGrab;
     ((DeviceIntPtr)device)->DeactivateGrab = DeactivatePointerGrab;
+#endif
 }
 
 void
 RegisterKeyboardDevice(device)
+#ifdef DEVINTPTR
+    DeviceIntPtr device;
+#else
     DevicePtr device;
+#endif
 {
+#ifdef DEVINTPTR
+    inputInfo.keyboard = device;
+#else
     inputInfo.keyboard = (DeviceIntPtr)device;
+#endif
 #ifdef XKB
+#ifdef DEVINTPTR
+    if (noXkbExtension) {
+	device->public.processInputProc = CoreProcessKeyboardEvent;
+	device->public.realInputProc = CoreProcessKeyboardEvent;
+    } else {
+	device->public.processInputProc = ProcessKeyboardEvent;
+	device->public.realInputProc = ProcessKeyboardEvent;
+    }
+#else
     if (noXkbExtension) {
 	device->processInputProc = CoreProcessKeyboardEvent;
 	device->realInputProc = CoreProcessKeyboardEvent;
@@ -372,12 +433,23 @@ RegisterKeyboardDevice(device)
 	device->processInputProc = ProcessKeyboardEvent;
 	device->realInputProc = ProcessKeyboardEvent;
     }
+#endif
+#else
+#ifdef DEVINTPTR
+    device->public.processInputProc = ProcessKeyboardEvent;
+    device->public.realInputProc = ProcessKeyboardEvent;
 #else
     device->processInputProc = ProcessKeyboardEvent;
     device->realInputProc = ProcessKeyboardEvent;
 #endif
+#endif
+#ifdef DEVINTPTR
+    device->ActivateGrab = ActivateKeyboardGrab;
+    device->DeactivateGrab = DeactivateKeyboardGrab;
+#else
     ((DeviceIntPtr)device)->ActivateGrab = ActivateKeyboardGrab;
     ((DeviceIntPtr)device)->DeactivateGrab = DeactivateKeyboardGrab;
+#endif
 }
 
 DevicePtr

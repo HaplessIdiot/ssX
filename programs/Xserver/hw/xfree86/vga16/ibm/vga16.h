@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vga16.h,v 3.5 1995/05/27 03:13:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vga16.h,v 3.6 1996/02/04 09:11:32 dawes Exp $ */
 
 
 
@@ -293,8 +293,8 @@ void ppcGetImage(
     int,
     int,
     unsigned int,
-    unsigned long int,
-    pointer 
+    unsigned long,
+    char * 
 #endif
 );
 /* ppcLine.c */

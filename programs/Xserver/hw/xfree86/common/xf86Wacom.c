@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.7 1996/02/09 08:20:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.8 1996/02/12 11:12:47 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -53,9 +53,9 @@
 
 #include "xf86.h"
 #include "xf86Procs.h"
-#include "xf86Xinput.h"
 #include "xf86_OSlib.h"
 #include "xf86_Config.h"
+#include "xf86Xinput.h"
 #include "atKeynames.h"
 #include "xf86Version.h"
 #endif
@@ -224,11 +224,11 @@ extern void miPointerDeltaCursor(
  */
 static Bool
 xf86WcmConfig(LocalDevicePtr    *array,
-              int               index,
+              int               inx,
               int               max,
 	      LexPtr            val)
 {
-  LocalDevicePtr        dev = array[index];
+  LocalDevicePtr        dev = array[inx];
   WacomDevicePtr	priv = (WacomDevicePtr)(dev->private);
   int			token;
   int			mtoken;
@@ -256,7 +256,7 @@ xf86WcmConfig(LocalDevicePtr    *array,
        
         /* try to find another wacom device which share the same port */
         for(loop=0; loop<max; loop++) {
-          if (loop == index)
+          if (loop == inx)
             continue;
           if ((array[loop]->device_config == xf86WcmConfig) &&
               (strcmp(((WacomDevicePtr)array[loop]->private)->wcmDevice, val->str) == 0)) {
@@ -590,8 +590,8 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	  DBG(4, ErrorF("xf86WcmReadInput FIRST_TOUCH_FLAG set\n"));
 	}      
 
-	DBG(4, ErrorF("xf86WcmReadInput %s x=%d y=%d z=%d buttons=%d\n",
-		      is_stylus ? "stylus" : "cursor", x, y, z, buttons));
+	DBG(4, ErrorF("xf86WcmReadInput %s x=%d y=%d z=%d *pbuttons=%d\n",
+		      is_stylus ? "stylus" : "cursor", x, y, z, *pbuttons));
     
 	if ((*px != x) ||
 	    (*py != y) ||
@@ -618,20 +618,23 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	     */
 	    if (is_stylus && (!priv->wcmEraser) && (buttons > 3)) {
 		delta = (buttons == 5) ? 1 : 0;
-		buttons = button = 3;
+		button = 3;
+		buttons = (buttons == 5) ? 3 : 0;
 	    } else {
 		delta = buttons - *pbuttons;
 		button = (delta > 0) ? delta : ((delta == 0) ? *pbuttons : -delta);
 	    }
 
-	    DBG(6, ErrorF("xf86WcmReadInput button=%d delta=%d\n", button,
-			  delta));
+	    if (*pbuttons != buttons) {
+		DBG(6, ErrorF("xf86WcmReadInput button=%d delta=%d\n", button,
+			      delta));
 	    
-	    if (is_stylus && (delta == 3)) {
-		PostButtonEvent(device, 1, (delta > 0), 0, 3, x, y, z);
-		PostButtonEvent(device, 2, (delta > 0), 0, 3, x, y, z);
-	    } else {
-		PostButtonEvent(device, button, (delta > 0), 0, 3, x, y, z); 
+		if (is_stylus && (delta == 3)) {
+		    PostButtonEvent(device, 1, (delta > 0), 0, 3, x, y, z);
+		    PostButtonEvent(device, 2, (delta > 0), 0, 3, x, y, z);
+		} else {
+		    PostButtonEvent(device, button, (delta > 0), 0, 3, x, y, z); 
+		}
 	    }
 	}
 	*pbuttons = buttons;
@@ -1171,8 +1174,7 @@ xf86WcmAllocate(char *  name,
  ***************************************************************************
  */
 static LocalDevicePtr
-xf86WcmAllocateStylus(char *  name,
-                      int     flag)
+xf86WcmAllocateStylus()
 {
   LocalDevicePtr        local = xf86WcmAllocate(XI_STYLUS, STYLUS_ID);
 
@@ -1188,8 +1190,7 @@ xf86WcmAllocateStylus(char *  name,
  ***************************************************************************
  */
 static LocalDevicePtr
-xf86WcmAllocateCursor(char *  name,
-                      int     flag)
+xf86WcmAllocateCursor()
 {
   LocalDevicePtr        local = xf86WcmAllocate(XI_CURSOR, CURSOR_ID);
 
@@ -1205,8 +1206,7 @@ xf86WcmAllocateCursor(char *  name,
  ***************************************************************************
  */
 static LocalDevicePtr
-xf86WcmAllocateEraser(char *  name,
-                      int     flag)
+xf86WcmAllocateEraser()
 {
   LocalDevicePtr        local = xf86WcmAllocate(XI_ERASER, ABSOLUTE_FLAG|ERASER_ID);
 

@@ -22,15 +22,17 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.4 1996/02/09 08:20:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.5 1996/02/12 11:12:48 dawes Exp $ */
 
 #include "XI.h"
 #include "XIproto.h"
 #include "xf86.h"
 #include "osdep.h"
 #include "xf86Priv.h"
-#include "xf86Xinput.h"
 #include "xf86_Config.h"
+#include "xf86Xinput.h"
+#include "xf86Procs.h"
+#include "mipointer.h"
 
 #include <stdarg.h>
 
@@ -351,9 +353,17 @@ ChangeKeyboardDevice (old_dev, new_dev)
  */
 
 int
+#ifdef NeedFunctionPrototypes
+ChangePointerDevice (
+     DeviceIntPtr	old_dev,
+     DeviceIntPtr	new_dev,
+     unsigned char	x,
+     unsigned char	y)
+#else
 ChangePointerDevice (old_dev, new_dev, x, y)
      DeviceIntPtr	old_dev, new_dev;
      unsigned char	x, y;
+#endif /* NeedFunctionPrototypes */
 {
   /************************************************************************
     InitFocusClassDeviceStruct(old_dev);	* allow focusing old ptr*
@@ -634,7 +644,7 @@ xf86eqEnqueue (e)
 /*
  * Call this from ProcessInputEvents()
  */
-
+void
 xf86eqProcessInputEvents ()
 {
     EventRec	*e;
@@ -773,9 +783,6 @@ PostMotionEvent(DeviceIntPtr	device,
   va_end(var);
 
   if (!IsCorePointer(device)) {
-    extern int              DeviceMotionNotify;
-    extern int              DeviceValuator;
-            
     xev->type = DeviceMotionNotify;
     xev->detail = 0;
     xf86Info.lastEventTime = xev->time = GetTimeInMillis();
@@ -816,9 +823,6 @@ PostProximityEvent(DeviceIntPtr	device,
   xEvent			xE[2];
   deviceKeyButtonPointer	*xev = (deviceKeyButtonPointer*) xE;
   deviceValuator		*xv = (deviceValuator*) xev+1;
-  extern int			ProximityIn;
-  extern int			ProximityOut;
-  extern int			DeviceValuator;
 
   if (num_valuators > 6) {
     num_valuators = 6;
@@ -912,10 +916,6 @@ PostButtonEvent(DeviceIntPtr	device,
   va_end(var);
 
   if (!IsCorePointer(device)) {
-    extern int              DeviceButtonPress;
-    extern int              DeviceButtonRelease;
-    extern int              DeviceValuator;
-	    
     xev->type = is_down ? DeviceButtonPress : DeviceButtonRelease;
     xev->detail = button;
     

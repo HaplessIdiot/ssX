@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: dix.h /main/39 1995/12/08 13:32:23 dpw $ */
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.1 1995/01/14 10:49:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.2 1996/01/05 13:19:37 dawes Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -455,7 +455,19 @@ extern void ProcessWorkQueue(
 
 extern Bool QueueWorkProc(
 #if NeedFunctionPrototypes
-    Bool (* /*function*/)(),
+    Bool (* /*function*/)(
+#if NeedNestedPrototypes
+        ClientPtr /*clientUnused*/,
+        pointer /*closure*/
+#endif
+        ),
+    ClientPtr /*client*/,
+    pointer /*closure*/
+#endif
+);
+
+typedef Bool (* ClientSleepProcPtr)(
+#if NeedFunctionPrototypes
     ClientPtr /*client*/,
     pointer /*closure*/
 #endif
@@ -464,7 +476,7 @@ extern Bool QueueWorkProc(
 extern Bool ClientSleep(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/,
-    Bool (* /*function*/)(),
+    ClientSleepProcPtr /* function */,
     pointer /*closure*/
 #endif
 );

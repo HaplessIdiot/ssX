@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.3 1996/02/04 09:06:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.4 1996/02/12 11:12:49 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -44,36 +44,37 @@ typedef struct _LocalDeviceRec {
   char		*name;
   int           flags;
   Bool		(*device_config)(
-#if NeedNestedFunctionPrototypes
-    LocalDevicePtr* /*array*/,
+#if NeedNestedPrototypes
+    struct _LocalDeviceRec** /*array*/,
     int /*index*/,
     int /*max*/,
-    void * /*LexPtr val*/
+    LexPtr /*val*/
 #endif
     );
   Bool		(*device_control)(
-#if NeedNestedFunctionPrototypes
+#if NeedNestedPrototypes
     DeviceIntPtr /*device*/,
     int /*what*/
 #endif
     );
   void		(*read_input)(
-#if NeedNestedFunctionPrototypes
+#if NeedNestedPrototypes
     struct _LocalDeviceRec* /*local*/
 #endif
     );
   int           (*control_proc)(
-#if NeedNestedFunctionPrototypes
-    struct _LocalDeviceRec* /*local*/
+#if NeedNestedPrototypes
+    struct _LocalDeviceRec* /*local*/,
+    xDeviceCtl* /* control */
 #endif
     );
   void          (*close_proc)(
-#if NeedNestedFunctionPrototypes
+#if NeedNestedPrototypes
     struct _LocalDeviceRec* /*local*/
 #endif
     );
   int           (*switch_mode)(
-#if NeedNestedFunctionPrototypes
+#if NeedNestedPrototypes
     ClientPtr /*client*/,
     DeviceIntPtr /*dev*/,
     int /*mode*/
@@ -90,8 +91,13 @@ typedef struct _DeviceAssocRec
 {
   char                  *config_section_name;
   LocalDevicePtr        (*device_allocate)(
-#if NeedNestedFunctionPrototypes
+#if NeedNestedPrototypes
+#if FIXME
+    char *  /* name */,
+    int     /* flag */
+#else
     void
+#endif
 #endif
 );
 } DeviceAssocRec, *DeviceAssocPtr;
@@ -100,6 +106,8 @@ extern	int		DeviceButtonPress;
 extern	int		DeviceButtonRelease;
 extern	int		DeviceMotionNotify;
 extern	int		DeviceValuator;
+extern	int		ProximityIn;
+extern	int		ProximityOut;
 
 extern int
 IsCorePointer(
@@ -112,6 +120,120 @@ extern int
 IsCoreKeyboard(
 #if NeedFunctionPrototypes
 	       DeviceIntPtr /*dev*/
+#endif
+);
+
+void
+configExtendedInputSection(
+#ifdef NeedFunctionPrototypes
+		LexPtr          /* val */
+#endif
+);
+
+void
+AddDeviceAssoc(
+#ifdef NeedFunctionPrototypes
+		DeviceAssocPtr	/* assoc */
+#endif
+);
+
+void
+InitExtInput(
+#ifdef NeedFunctionPrototypes
+		void
+#endif
+);
+
+void
+OpenInputDevice (
+#ifdef NeedFunctionPrototypes
+		DeviceIntPtr    /* dev */,
+		ClientPtr       /* client */,
+		int *           /* status */
+#endif
+);
+
+int
+ChangeKeyboardDevice (
+#ifdef NeedFunctionPrototypes
+		DeviceIntPtr	/* old_dev */,
+		DeviceIntPtr	/* new_dev */
+#endif
+);
+
+int
+ChangePointerDevice (
+#ifdef NeedFunctionPrototypes
+		DeviceIntPtr	/* old_dev */,
+		DeviceIntPtr	/* new_dev */,
+		unsigned char	/* x */,
+		unsigned char	/* y */
+#endif
+);
+
+void
+CloseInputDevice (
+#ifdef NeedFunctionPrototypes
+		DeviceIntPtr    /* d */,
+		ClientPtr       /* client */
+#endif
+);
+
+void
+AddOtherInputDevices (
+#ifdef NeedFunctionPrototypes
+		void
+#endif
+);
+
+int
+SetDeviceMode (
+#ifdef NeedFunctionPrototypes
+		ClientPtr       /* client */,
+		DeviceIntPtr    /* dev */,
+		int             /* mode */
+#endif
+);
+
+int
+SetDeviceValuators (
+#ifdef NeedFunctionPrototypes
+		ClientPtr       /* client */,
+		DeviceIntPtr    /* dev */,
+		int *           /* valuators */,
+		int             /* first_valuator */,
+		int             /* num_valuators */
+#endif
+);
+
+int
+ChangeDeviceControl (
+#ifdef NeedFunctionPrototypes
+		ClientPtr       /* client */,
+		DeviceIntPtr    /* dev */,
+		xDeviceCtl *    /* control */
+#endif
+);
+
+Bool
+xf86eqInit (
+#ifdef NeedFunctionPrototypes
+		DevicePtr       /* pKbd */,
+		DevicePtr       /* pPtr */
+#endif
+);
+
+void
+xf86eqEnqueue (
+#ifdef NeedFunctionPrototypes
+		struct _xEvent * /*event */
+#endif
+);
+
+void
+xf86eqProcessInputEvents (
+#ifdef NeedFunctionPrototypes
+		void
 #endif
 );
 

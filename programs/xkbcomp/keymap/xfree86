@@ -1,4 +1,5 @@
 // $XConsortium: xfree86 /main/8 1996/02/02 16:46:12 kaleb $
+// $XFree86$
 default xkb_keymap "us" {
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
@@ -61,4 +62,11 @@ xkb_keymap "fr_CH"	{
     xkb_compatibility	{ include "default"		};
     xkb_symbols		{ include "en_US(pc101)+fr_CH"	};
     xkb_geometry 	{ include "pc"			};
+};
+xkb_keymap "jp106" {
+    xkb_keycodes	{ include "xfree86(jp106)"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "jp(jp106)"		};
+    xkb_geometry	{ include "pc(jp106)"			};
 };

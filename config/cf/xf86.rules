@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xf86.rules,v 1.7 95/01/25 16:34:39 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.11 1996/02/09 08:17:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.12 1996/02/12 11:10:21 dawes Exp $
 
 /*
  * These rules are needed to build the Xfree86 X Servers
@@ -156,3 +156,14 @@ module: modlist								@@\
 clean::									@@\
 	RemoveFile(module)
 #endif /* DynamicModuleTarget */
+
+/*
+ * InstallDynamicModule - install a dynamic module
+ */
+#ifndef InstallDynamicModule
+#define InstallDynamicModule(module,dest)				@@\
+install:: module							@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	$(INSTALL) -c module $(DESTDIR)dest
+#endif
+

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.14 1996/02/04 09:06:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.15 1996/02/12 11:12:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -146,8 +146,8 @@ Bool init;
   char            leds = 0, rad;
   unsigned int    i;
   xEvent          kevent;
-  DevicePtr       pKeyboard = xf86Info.pKeyboard;
-  KeyClassRec     *keyc = ((DeviceIntPtr)xf86Info.pKeyboard)->key;
+  DeviceIntPtr    pKeyboard = xf86Info.pKeyboard;
+  KeyClassRec     *keyc = xf86Info.pKeyboard->key;
   KeySym          *map = keyc->curKeySyms.map;
 
 #ifndef MACH386
@@ -181,7 +181,7 @@ Bool init;
         default:
 	  kevent.u.u.detail = i;
 	  kevent.u.u.type = KeyRelease;
-	  (* pKeyboard->processInputProc)(&kevent, (DeviceIntPtr)pKeyboard, 1);
+	  (* pKeyboard->public.processInputProc)(&kevent, pKeyboard, 1);
         }
       }
 #endif /* MACH386 */
@@ -263,7 +263,7 @@ Bool init;
 
 int
 xf86KbdProc (pKeyboard, what)
-     DevicePtr pKeyboard;	/* Keyboard to manipulate */
+     DeviceIntPtr pKeyboard;	/* Keyboard to manipulate */
      int       what;	    	/* What to do to it */
 {
   KeySymsRec           keySyms;
@@ -294,12 +294,12 @@ xf86KbdProc (pKeyboard, what)
      * itself which couldn't be filled in before.
      */
 
-    pKeyboard->on = FALSE;
+    pKeyboard->public.on = FALSE;
 
 #ifdef XKB
     if (noXkbExtension) {
 #endif
-    InitKeyboardDeviceStruct(xf86Info.pKeyboard,
+    InitKeyboardDeviceStruct((DevicePtr)xf86Info.pKeyboard,
 			     &keySyms,
 			     modMap,
 			     xf86KbdBell,
@@ -313,7 +313,7 @@ xf86KbdProc (pKeyboard, what)
 	names.compat = xf86Info.xkbcompat;
 	names.symbols = xf86Info.xkbsymbols;
 	names.geometry = xf86Info.xkbgeometry;
-	XkbInitKeyboardDeviceStruct((DeviceIntPtr) pKeyboard, 
+	XkbInitKeyboardDeviceStruct(pKeyboard, 
 				    &names,
 				    &keySyms, 
 				    modMap, 
@@ -338,7 +338,7 @@ xf86KbdProc (pKeyboard, what)
       AddEnabledDevice(kbdFd);
 #endif  /* __EMX__ */
 
-    pKeyboard->on = TRUE;
+    pKeyboard->public.on = TRUE;
     xf86InitKBD(FALSE);
     break;
     
@@ -353,7 +353,7 @@ xf86KbdProc (pKeyboard, what)
     if (kbdFd != -1)
       RemoveEnabledDevice(kbdFd);
 
-    pKeyboard->on = FALSE;
+    pKeyboard->public.on = FALSE;
     break;
 
   }
@@ -399,7 +399,7 @@ GetMotionEvents (pPtr, coords, start, stop, pScreen)
 
 int
 xf86MseProc(pPointer, what)
-     DevicePtr	pPointer;
+     DeviceIntPtr pPointer;
      int        what;
 {
   unsigned char                map[5];
@@ -409,7 +409,7 @@ xf86MseProc(pPointer, what)
   switch (what)
     {
     case DEVICE_INIT: 
-      pPointer->on = FALSE;
+      pPointer->public.on = FALSE;
  
       map[1] = 1;
       map[2] = 2;
@@ -425,7 +425,7 @@ xf86MseProc(pPointer, what)
       else
         nbuttons = 3;
 
-      InitPointerDeviceStruct(pPointer, 
+      InitPointerDeviceStruct((DevicePtr)pPointer, 
 			      map, 
 			      nbuttons, 
 			      GetMotionEvents, 
@@ -450,7 +450,7 @@ xf86MseProc(pPointer, what)
 
       xf86Info.lastButtons = 0;
       xf86Info.emulateState = 0;
-      pPointer->on = TRUE;
+      pPointer->public.on = TRUE;
 
       break;
       
@@ -462,7 +462,7 @@ xf86MseProc(pPointer, what)
       if (mousefd != -1)
         RemoveEnabledDevice(mousefd);
 
-      pPointer->on = FALSE;
+      pPointer->public.on = FALSE;
       usleep(300000);
       break;
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.24 1995/12/17 05:02:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.25 1996/02/04 09:00:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -30,6 +30,7 @@
 #include "input.h"
 #include "pixmapstr.h"
 #include "regionstr.h"
+#include "cursor.h"
 #include "mipointer.h"
 #include "cursorstr.h"
 #include "gcstruct.h"
