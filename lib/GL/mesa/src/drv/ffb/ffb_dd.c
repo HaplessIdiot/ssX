@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/ffb/ffb_dd.c,v 1.2 2001/04/10 16:07:50 dawes Exp $
+/* $XFree86: xc/lib/GL/mesa/src/drv/ffb/ffb_dd.c,v 1.3tsi Exp $
  *
  * GLX Hardware Device Driver for Sun Creator/Creator3D
  * Copyright (C) 2000, 2001 David S. Miller
@@ -78,8 +78,9 @@ static const GLubyte *ffbDDGetString(GLcontext *ctx, GLenum name)
 }
 
 
-static void ffbBufferSize(GLcontext *ctx, GLuint *width, GLuint *height)
+static void ffbBufferSize(GLframebuffer *buffer, GLuint *width, GLuint *height)
 {
+	GET_CURRENT_CONTEXT(ctx);
 	ffbContextPtr fmesa = FFB_CONTEXT(ctx);
 
 	LOCK_HARDWARE(fmesa);
