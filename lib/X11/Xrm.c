@@ -49,7 +49,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.21 2003/04/13 19:22:20 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.22 2003/07/16 01:38:26 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -115,14 +115,12 @@ Bob Scheifler
 static XrmQuark XrmQString, XrmQANY;
 
 typedef	Bool (*DBEnumProc)(
-#if NeedNestedPrototypes    /* this is Nested on purpose, to match Xlib.h */
     XrmDatabase*	/* db */,
     XrmBindingList	/* bindings */,
     XrmQuarkList	/* quarks */,
     XrmRepresentation*	/* type */,
     XrmValue*		/* value */,
     XPointer		/* closure */
-#endif
 );
 
 typedef struct _VEntry {
@@ -355,15 +353,10 @@ void XrmSetDatabase(
 }
 #endif /* !_XP_PRINT_SERVER_ */
 
-#if NeedFunctionPrototypes
-void XrmStringToQuarkList(
+void
+XrmStringToQuarkList(
     register _Xconst char  *name,
     register XrmQuarkList quarks)   /* RETURN */
-#else
-void XrmStringToQuarkList(name, quarks)
-    register char 	 *name;
-    register XrmQuarkList quarks;   /* RETURN */
-#endif
 {
     register XrmBits		bits;
     register Signature  	sig = 0;
@@ -393,17 +386,11 @@ void XrmStringToQuarkList(name, quarks)
     *quarks = NULLQUARK;
 }
 
-#if NeedFunctionPrototypes
-void XrmStringToBindingQuarkList(
+void
+XrmStringToBindingQuarkList(
     register _Xconst char   *name,
     register XrmBindingList bindings,   /* RETURN */
     register XrmQuarkList   quarks)     /* RETURN */
-#else
-void XrmStringToBindingQuarkList(name, bindings, quarks)
-    register char	    *name;
-    register XrmBindingList bindings;   /* RETURN */
-    register XrmQuarkList   quarks;     /* RETURN */
-#endif
 {
     register XrmBits		bits;
     register Signature  	sig = 0;
@@ -1032,19 +1019,12 @@ void XrmQPutResource(
     _XUnlockMutex(&(*pdb)->linfo);
 }
 
-#if NeedFunctionPrototypes
-void XrmPutResource(
+void
+XrmPutResource(
     XrmDatabase     *pdb,
     _Xconst char    *specifier,
     _Xconst char    *type,
     XrmValuePtr	    value)
-#else
-void XrmPutResource(pdb, specifier, type, value)
-    XrmDatabase     *pdb;
-    char	    *specifier;
-    char	    *type;
-    XrmValuePtr	    value;
-#endif
 {
     XrmBinding	    bindings[MAXDBDEPTH+1];
     XrmQuark	    quarks[MAXDBDEPTH+1];
@@ -1056,19 +1036,12 @@ void XrmPutResource(pdb, specifier, type, value)
     _XUnlockMutex(&(*pdb)->linfo);
 }
 
-#if NeedFunctionPrototypes
-void XrmQPutStringResource(
+void
+XrmQPutStringResource(
     XrmDatabase     *pdb,
     XrmBindingList  bindings,
     XrmQuarkList    quarks,
     _Xconst char    *str)
-#else
-void XrmQPutStringResource(pdb, bindings, quarks, str)
-    XrmDatabase     *pdb;
-    XrmBindingList  bindings;
-    XrmQuarkList    quarks;
-    char	    *str;
-#endif
 {
     XrmValue	value;
 
@@ -1543,17 +1516,11 @@ static void GetDatabase(
     (*db->methods->mbfinish)(db->mbstate);
 }
 
-#if NeedFunctionPrototypes
-void XrmPutStringResource(
+void
+XrmPutStringResource(
     XrmDatabase *pdb,
     _Xconst char*specifier,
     _Xconst char*str)
-#else
-void XrmPutStringResource(pdb, specifier, str)
-    XrmDatabase *pdb;
-    char	*specifier;
-    char	*str;
-#endif
 {
     XrmValue	value;
     XrmBinding	bindings[MAXDBDEPTH+1];
@@ -1569,15 +1536,10 @@ void XrmPutStringResource(pdb, specifier, str)
 }
 
 
-#if NeedFunctionPrototypes
-void XrmPutLineResource(
+void
+XrmPutLineResource(
     XrmDatabase *pdb,
     _Xconst char*line)
-#else
-void XrmPutLineResource(pdb, line)
-    XrmDatabase *pdb;
-    char	*line;
-#endif
 {
     if (!*pdb) *pdb = NewDatabase();
     _XLockMutex(&(*pdb)->linfo);
@@ -1585,13 +1547,9 @@ void XrmPutLineResource(pdb, line)
     _XUnlockMutex(&(*pdb)->linfo);
 }
 
-#if NeedFunctionPrototypes
-XrmDatabase XrmGetStringDatabase(
+XrmDatabase
+XrmGetStringDatabase(
     _Xconst char    *data)
-#else
-XrmDatabase XrmGetStringDatabase(data)
-    char	    *data;
-#endif
 {
     XrmDatabase     db;
 
@@ -1693,13 +1651,9 @@ GetIncludeFile(
     Xfree(str);
 }
 
-#if NeedFunctionPrototypes
-XrmDatabase XrmGetFileDatabase(
+XrmDatabase
+XrmGetFileDatabase(
     _Xconst char    *filename)
-#else
-XrmDatabase XrmGetFileDatabase(filename)
-    char 	    *filename;
-#endif
 {
     XrmDatabase db;
     char *str;
@@ -1715,17 +1669,11 @@ XrmDatabase XrmGetFileDatabase(filename)
     return db;
 }
 
-#if NeedFunctionPrototypes
-Status XrmCombineFileDatabase(
+Status
+XrmCombineFileDatabase(
     _Xconst char    *filename,
     XrmDatabase     *target,
     Bool             override)
-#else
-Status XrmCombineFileDatabase(filename, target, override)
-    char        *filename;
-    XrmDatabase *target;
-    Bool         override;
-#endif
 {
     XrmDatabase db;
     char *str;
@@ -2121,15 +2069,10 @@ void PrintTable(
 
 #endif /* DEBUG */
 
-#if NeedFunctionPrototypes
-void XrmPutFileDatabase(
+void
+XrmPutFileDatabase(
     XrmDatabase db,
     _Xconst char *fileName)
-#else
-void XrmPutFileDatabase(db, fileName)
-    XrmDatabase db;
-    char 	*fileName;
-#endif
 {
     FILE	*file;
     XrmQuark empty = NULLQUARK;
@@ -2620,21 +2563,13 @@ Bool XrmQGetResource(
     return False;
 }
 
-#if NeedFunctionPrototypes
-Bool XrmGetResource(db, name_str, class_str, pType_str, pValue)
+Bool
+XrmGetResource(db, name_str, class_str, pType_str, pValue)
     XrmDatabase         db;
     _Xconst char	*name_str;
     _Xconst char	*class_str;
     XrmString		*pType_str;  /* RETURN */
     XrmValuePtr		pValue;      /* RETURN */
-#else
-Bool XrmGetResource(db, name_str, class_str, pType_str, pValue)
-    XrmDatabase         db;
-    XrmString		name_str;
-    XrmString		class_str;
-    XrmString		*pType_str;  /* RETURN */
-    XrmValuePtr		pValue;      /* RETURN */
-#endif
 {
     XrmName		names[MAXDBDEPTH+1];
     XrmClass		classes[MAXDBDEPTH+1];

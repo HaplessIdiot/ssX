@@ -29,7 +29,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.28 2002/09/26 02:56:51 keithp Exp $ */
+/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.29 2003/04/14 20:38:10 herrb Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -1008,9 +1008,7 @@ print_xinerama_info(Display *dpy, char *extname)
 
 
 typedef int (*ExtensionPrintFunc)(
-#if NeedFunctionPrototypes
     Display *, char *
-#endif
 );
 
 typedef struct {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/XShm.h,v 1.10 2002/11/08 00:46:27 alanh Exp $ */
+/* $XFree86: xc/include/extensions/XShm.h,v 1.11 2003/04/03 15:11:07 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -72,48 +72,35 @@ typedef struct {
 _XFUNCPROTOBEGIN
 
 Bool XShmQueryExtension(
-#if NeedFunctionPrototypes
     Display*		/* dpy */
-#endif
 );
 
 int XShmGetEventBase(
-#if NeedFunctionPrototypes
     Display* 		/* dpy */
-#endif
 );
 
 Bool XShmQueryVersion(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int*		/* majorVersion */,
     int*		/* minorVersion */,
     Bool*		/* sharedPixmaps */
-#endif
 );
 
 int XShmPixmapFormat(
-#if NeedFunctionPrototypes
     Display*		/* dpy */
-#endif
 );
 
 Status XShmAttach(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     XShmSegmentInfo*	/* shminfo */
-#endif
 );
 
 Status XShmDetach(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     XShmSegmentInfo*	/* shminfo */
-#endif
 );
 
 Status XShmPutImage(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     Drawable		/* d */,
     GC			/* gc */,
@@ -125,22 +112,18 @@ Status XShmPutImage(
     unsigned int	/* src_width */,
     unsigned int	/* src_height */,
     Bool		/* send_event */
-#endif
 );
 
 Status XShmGetImage(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     Drawable		/* d */,
     XImage*		/* image */,
     int			/* x */,
     int			/* y */,
     unsigned long	/* plane_mask */
-#endif
 );
 
 XImage *XShmCreateImage(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     Visual*		/* visual */,
     unsigned int	/* depth */,
@@ -149,11 +132,9 @@ XImage *XShmCreateImage(
     XShmSegmentInfo*	/* shminfo */,
     unsigned int	/* width */,
     unsigned int	/* height */
-#endif
 );
 
 Pixmap XShmCreatePixmap(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     Drawable		/* d */,
     char*		/* data */,
@@ -161,7 +142,6 @@ Pixmap XShmCreatePixmap(
     unsigned int	/* width */,
     unsigned int	/* height */,
     unsigned int	/* depth */
-#endif
 );
 
 _XFUNCPROTOEND
@@ -173,9 +153,7 @@ _XFUNCPROTOEND
 #include "gc.h"
 
 extern void ShmRegisterFbFuncs(
-#if NeedFunctionPrototypes
     ScreenPtr /* pScreen */
-#endif
 );
 
 #endif

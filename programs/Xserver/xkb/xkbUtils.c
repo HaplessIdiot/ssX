@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.16 2003/11/03 05:12:02 tsi Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -61,13 +61,7 @@ int	XkbDisableLockActions = 0;
 /***====================================================================***/
 
 DeviceIntPtr
-#if NeedFunctionPrototypes
 _XkbLookupAnyDevice(int id,int *why_rtrn)
-#else
-_XkbLookupAnyDevice(id,why_rtrn)
-    int id;
-    int *why_rtrn;
-#endif
 {
 DeviceIntPtr dev = NULL;
 
@@ -91,13 +85,7 @@ DeviceIntPtr dev = NULL;
 }
 
 DeviceIntPtr
-#if NeedFunctionPrototypes
 _XkbLookupKeyboard(int id,int *why_rtrn)
-#else
-_XkbLookupKeyboard(id,why_rtrn)
-    int id;
-    int *why_rtrn;
-#endif
 {
 DeviceIntPtr dev = NULL;
 
@@ -112,13 +100,7 @@ DeviceIntPtr dev = NULL;
 }
 
 DeviceIntPtr
-#if NeedFunctionPrototypes
 _XkbLookupBellDevice(int id,int *why_rtrn)
-#else
-_XkbLookupBellDevice(id,why_rtrn)
-    int id;
-    int *why_rtrn;
-#endif
 {
 DeviceIntPtr dev = NULL;
 
@@ -133,13 +115,7 @@ DeviceIntPtr dev = NULL;
 }
 
 DeviceIntPtr
-#if NeedFunctionPrototypes
 _XkbLookupLedDevice(int id,int *why_rtrn)
-#else
-_XkbLookupLedDevice(id,why_rtrn)
-    int id;
-    int *why_rtrn;
-#endif
 {
 DeviceIntPtr dev = NULL;
 
@@ -154,13 +130,7 @@ DeviceIntPtr dev = NULL;
 }
 
 DeviceIntPtr
-#if NeedFunctionPrototypes
 _XkbLookupButtonDevice(int id,int *why_rtrn)
-#else
-_XkbLookupButtonDevice(id,why_rtrn)
-    int id;
-    int *why_rtrn;
-#endif
 {
 DeviceIntPtr dev = NULL;
 
@@ -175,14 +145,7 @@ DeviceIntPtr dev = NULL;
 }
 
 void
-#if NeedFunctionPrototypes
 XkbSetActionKeyMods(XkbDescPtr xkb,XkbAction *act,unsigned mods)
-#else
-XkbSetActionKeyMods(xkb,act,mods)
-    XkbDescPtr	xkb;
-    XkbAction *	act;
-    unsigned	mods;
-#endif
 {
 register unsigned	tmp;
 
@@ -204,13 +167,7 @@ register unsigned	tmp;
 }
 
 unsigned
-#if NeedFunctionPrototypes
 XkbMaskForVMask(XkbDescPtr xkb,unsigned vmask)
-#else
-XkbMaskForVMask(xkb,vmask)
-    XkbDescPtr	xkb;
-    unsigned	vmask;
-#endif
 {
 register int i,bit;
 register unsigned mask;
@@ -224,20 +181,11 @@ register unsigned mask;
 
 
 Bool
-#if NeedFunctionPrototypes
 XkbApplyVModChanges(	XkbSrvInfoPtr		xkbi,
 			unsigned		changed,
 			XkbChangesPtr		changes,
 			unsigned *		needChecksRtrn,
 			XkbEventCausePtr	cause)
-#else
-XkbApplyVModChanges(xkbi,changed,changes,needChecksRtrn,cause)
-    XkbSrvInfoPtr	xkbi;
-    unsigned		changed;
-    XkbChangesPtr	changes;
-    unsigned *		needChecksRtrn;
-    XkbEventCausePtr	cause;
-#endif
 {
 XkbDescPtr		xkb;
 Bool			check;
@@ -271,20 +219,11 @@ register unsigned i,bit;
 
 /***====================================================================***/
 
-#if NeedFunctionPrototypes
 void
 XkbUpdateKeyTypesFromCore(	DeviceIntPtr	pXDev,
 				KeyCode	 	first,
 				CARD8	 	num,
 				XkbChangesPtr	changes)
-#else
-void
-XkbUpdateKeyTypesFromCore(pXDev,first,num,changes)
-    DeviceIntPtr pXDev;
-    KeyCode first;
-    CARD8 num;
-    XkbChangesPtr changes;
-#endif
 {
 XkbDescPtr		xkb;
 unsigned		key,nG,explicit;
@@ -345,18 +284,10 @@ generate a NewKeyboard notify here?
 }
 
 void
-#if NeedFunctionPrototypes
 XkbUpdateDescActions(	XkbDescPtr		xkb,
 			KeyCode		 	first,
 			CARD8		 	num,
 			XkbChangesPtr	 	changes)
-#else
-XkbUpdateDescActions(xkb,first,num,changes)
-    XkbDescPtr		xkb;
-    KeyCode 		first;
-    CARD8 		num;
-    XkbChangesPtr 	changes;
-#endif
 {
 register unsigned	key;
 
@@ -411,7 +342,6 @@ register unsigned	key;
     return;
 }
 
-#if NeedFunctionPrototypes
 void
 XkbUpdateActions(	DeviceIntPtr	 	pXDev,
 			KeyCode		 	first,
@@ -419,16 +349,6 @@ XkbUpdateActions(	DeviceIntPtr	 	pXDev,
 			XkbChangesPtr	 	changes,
 			unsigned *	 	needChecksRtrn,
 			XkbEventCausePtr	cause)
-#else
-void
-XkbUpdateActions(pXDev,first,num,changes,needChecksRtrn,cause)
-    DeviceIntPtr 	pXDev;
-    KeyCode 		first;
-    CARD8 		num;
-    XkbChangesPtr 	changes;
-    unsigned *		needChecksRtrn;
-    XkbEventCausePtr	cause;
-#endif
 {
 XkbSrvInfoPtr		xkbi;
 XkbDescPtr		xkb;
@@ -454,13 +374,7 @@ CARD8 *			repeat;
 }
 
 void
-#if NeedFunctionPrototypes
 XkbUpdateCoreDescription(DeviceIntPtr keybd,Bool resize)
-#else
-XkbUpdateCoreDescription(keybd,resize)
-    DeviceIntPtr keybd;
-    Bool	resize;
-#endif
 {
 register int		key,tmp;
 int			maxSymsPerKey,maxKeysPerMod;
@@ -653,14 +567,7 @@ CARD8			keysPerMod[XkbNumModifiers];
 }
 
 void
-#if NeedFunctionPrototypes
 XkbSetRepeatKeys(DeviceIntPtr pXDev,int key,int onoff)
-#else
-XkbSetRepeatKeys(pXDev,key,onoff)
-    DeviceIntPtr pXDev;
-    int		 key;
-    int		 onoff;
-#endif
 {
     if (pXDev && pXDev->key && pXDev->key->xkbInfo) {
 	xkbControlsNotify	cn;
@@ -683,22 +590,12 @@ XkbSetRepeatKeys(pXDev,key,onoff)
     return;
 }
 
-#if NeedFunctionPrototypes
 void
 XkbApplyMappingChange(	DeviceIntPtr	kbd,
 			CARD8		 request,
 			KeyCode		 firstKey,
 			CARD8		 num,
 			ClientPtr	 client)
-#else
-void
-XkbApplyMappingChange(kbd,request,firstKey,num,client)
-    DeviceIntPtr kbd;
-    CARD8 	request;
-    KeyCode 	firstKey;
-    CARD8 	num;
-    ClientPtr	client;
-#endif
 {
 XkbEventCauseRec	cause;
 XkbChangesRec	 	changes;
@@ -736,13 +633,7 @@ unsigned	 	check;
 }
 
 void
-#if NeedFunctionPrototypes
 XkbDisableComputedAutoRepeats(DeviceIntPtr dev,unsigned key)
-#else
-XkbDisableComputedAutoRepeats(dev,key)
-    DeviceIntPtr	dev;
-    unsigned		key;
-#endif
 {
 XkbSrvInfoPtr	xkbi = dev->key->xkbInfo;
 xkbMapNotify	mn;
@@ -757,13 +648,7 @@ xkbMapNotify	mn;
 }
 
 unsigned
-#if NeedFunctionPrototypes
 XkbStateChangedFlags(XkbStatePtr old,XkbStatePtr new)
-#else
-XkbStateChangedFlags(old,new)
-    XkbStatePtr	old;
-    XkbStatePtr	new;
-#endif
 {
 int		changed;
 
@@ -787,12 +672,7 @@ int		changed;
 }
 
 void
-#if NeedFunctionPrototypes
 XkbComputeCompatState(XkbSrvInfoPtr xkbi)
-#else
-XkbComputeCompatState(xkbi)
-    XkbSrvInfoPtr	xkbi;
-#endif
 {
 CARD16 		grp_mask;
 XkbStatePtr	state= &xkbi->state;
@@ -810,13 +690,7 @@ XkbCompatMapPtr	map;
 }
 
 unsigned
-#if NeedFunctionPrototypes
 XkbAdjustGroup(int group,XkbControlsPtr ctrls)
-#else
-XkbAdjustGroup(group,ctrls)
-    int 		group;
-    XkbControlsPtr	ctrls;
-#endif
 {
 unsigned	act;
 
@@ -857,12 +731,7 @@ unsigned	act;
 }
 
 void
-#if NeedFunctionPrototypes
 XkbComputeDerivedState(XkbSrvInfoPtr xkbi)
-#else
-XkbComputeDerivedState(xkbi)
-    XkbSrvInfoPtr	xkbi;
-#endif
 {
 XkbStatePtr	state= &xkbi->state;
 XkbControlsPtr	ctrls= xkbi->desc->ctrls;
@@ -891,18 +760,10 @@ unsigned char	grp;
 /***====================================================================***/
 
 void
-#if NeedFunctionPrototypes
 XkbCheckSecondaryEffects(	XkbSrvInfoPtr		xkbi,
 				unsigned		which,
 				XkbChangesPtr 		changes,
 				XkbEventCausePtr	cause)
-#else
-XkbCheckSecondaryEffects(xkbi,which,changes,cause)
-    XkbSrvInfoPtr	xkbi;
-    unsigned		which;
-    XkbChangesPtr	changes;
-    XkbEventCausePtr	cause;
-#endif
 {
     if (which&XkbStateNotifyMask) {
 	XkbStateRec old;
@@ -919,13 +780,7 @@ XkbCheckSecondaryEffects(xkbi,which,changes,cause)
 /***====================================================================***/
 
 void
-#if NeedFunctionPrototypes
 XkbSetPhysicalLockingKey(DeviceIntPtr dev,unsigned key)
-#else
-XkbSetPhysicalLockingKey(dev,key)
-   DeviceIntPtr	dev;
-   unsigned	key;
-#endif
 {
 XkbDescPtr	xkb;
 
@@ -940,20 +795,11 @@ XkbDescPtr	xkb;
 /***====================================================================***/
 
 Bool
-#if NeedFunctionPrototypes
 XkbEnableDisableControls(	XkbSrvInfoPtr		xkbi,
 				unsigned long		change,
 				unsigned long		newValues,
 				XkbChangesPtr		changes,
 				XkbEventCausePtr	cause)
-#else
-XkbEnableDisableControls(xkbi,change,newValues,changes,cause)
-    XkbSrvInfoPtr	xkbi;
-    unsigned long	change;
-    unsigned long	newValues;
-    XkbChangesPtr	changes;
-    XkbEventCausePtr	cause;
-#endif
 {
 XkbControlsPtr		ctrls;
 unsigned 		old;
@@ -998,14 +844,7 @@ XkbSrvLedInfoPtr	sli;
 #define	MAX_TOC	16
 
 XkbGeometryPtr 
-#if NeedFunctionPrototypes
 XkbLookupNamedGeometry(DeviceIntPtr dev,Atom name,Bool *shouldFree)
-#else
-XkbLookupNamedGeometry(dev,name,shouldFree)
-    DeviceIntPtr	dev;
-    Atom		name;
-    Bool *		shouldFree;
-#endif
 {
 XkbSrvInfoPtr	xkbi=	dev->key->xkbInfo;
 XkbDescPtr	xkb=	xkbi->desc;
@@ -1043,14 +882,7 @@ XkbDescPtr	xkb=	xkbi->desc;
 }
 
 void
-#if NeedFunctionPrototypes
 XkbConvertCase(register KeySym sym, KeySym *lower, KeySym *upper)
-#else
-XkbConvertCase(sym, lower, upper)
-    register KeySym sym;
-    KeySym *lower;
-    KeySym *upper;
-#endif
 {
     *lower = sym;
     *upper = sym;

@@ -1,4 +1,4 @@
-/* $XConsortium $ */
+/* $Xorg: XKBBell.c,v 1.3 2000/08/17 19:45:00 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 #include <stdio.h>
 #define NEED_REPLIES
@@ -34,14 +35,13 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
 Bool
-XkbDeviceBell(dpy,window,deviceID,bellClass,bellID,percent,name)
-    Display *dpy;
-    Window window;
-    int deviceID;
-    int bellClass;
-    int bellID;
-    int percent;
-    Atom name;
+XkbDeviceBell(	Display *	dpy,
+		Window 		window,
+		int 		deviceID,
+		int 		bellClass,
+		int 		bellID, 
+		int 		percent,
+		Atom 		name)
 {
     register xkbBellReq *req;
     XkbInfoPtr xkbi;
@@ -71,12 +71,11 @@ XkbDeviceBell(dpy,window,deviceID,bellClass,bellID,percent,name)
 }
 
 Bool
-XkbForceDeviceBell(dpy,deviceID,bellClass,bellID,percent)
-    Display *dpy;
-    int	deviceID;
-    int	bellClass;
-    int	bellID;
-    int	percent;
+XkbForceDeviceBell(	Display *	dpy,
+			int 		deviceID,
+			int 		bellClass,
+			int 		bellID,
+			int 		percent)
 {
     register xkbBellReq *req;
     XkbInfoPtr xkbi;
@@ -106,14 +105,13 @@ XkbForceDeviceBell(dpy,deviceID,bellClass,bellID,percent)
 }
 
 Bool
-XkbDeviceBellEvent(dpy,window,deviceID,bellClass,bellID,percent,name)
-    Display *dpy;
-    Window window;
-    int	deviceID;
-    int	bellClass;
-    int	bellID;
-    int	percent;
-    Atom name;
+XkbDeviceBellEvent(	Display *	dpy,
+			Window 		window,
+			int		deviceID,
+			int		bellClass,
+			int		bellID,
+			int		percent,
+			Atom 		name)
 {
     register xkbBellReq *req;
     XkbInfoPtr xkbi;
@@ -143,11 +141,7 @@ XkbDeviceBellEvent(dpy,window,deviceID,bellClass,bellID,percent,name)
 }
 
 Bool
-XkbBell(dpy,window,percent,name)
-    Display *dpy;
-    Window   window;
-    int percent;
-    Atom name;
+XkbBell(Display *dpy,Window window,int percent,Atom name)
 {
     if ((dpy->flags & XlibDisplayNoXkb) ||
 	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL))) {
@@ -159,9 +153,7 @@ XkbBell(dpy,window,percent,name)
 }
 
 Bool
-XkbForceBell(dpy,percent)
-    Display *	dpy;
-    int      	percent;
+XkbForceBell(Display *dpy,int percent)
 {
     if ((dpy->flags & XlibDisplayNoXkb) ||
 	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL))) {
@@ -173,11 +165,7 @@ XkbForceBell(dpy,percent)
 }
 
 Bool
-XkbBellEvent(dpy,window,percent,name)
-    Display *dpy;
-    Window   window;
-    int percent;
-    Atom name;
+XkbBellEvent(Display *dpy,Window window,int percent,Atom name)
 {
     if ((dpy->flags & XlibDisplayNoXkb) ||
 	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL))) {

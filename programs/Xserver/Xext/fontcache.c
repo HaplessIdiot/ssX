@@ -27,7 +27,7 @@
  *
  *	Id: fontcache.c,v 1.12 1999/01/31 13:47:45 akiyama Exp $
  */
-/* $XFree86: xc/programs/Xserver/Xext/fontcache.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/fontcache.c,v 1.7 2003/10/28 23:08:43 tsi Exp $ */
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
@@ -52,9 +52,7 @@
 static int miscErrorBase;
 
 static void FontCacheResetProc(
-#if NeedFunctionPrototypes
     ExtensionEntry* /* extEntry */
-#endif
 );
 
 static DISPATCH_PROC(ProcFontCacheDispatch);

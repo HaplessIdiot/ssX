@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xcmisc.c,v 3.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xcmisc.c,v 3.7 2003/10/28 23:08:43 tsi Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -45,9 +45,7 @@ static unsigned char XCMiscCode;
 #endif
 
 static void XCMiscResetProc(
-#if NeedFunctionPrototypes
     ExtensionEntry * /* extEntry */
-#endif
 );
 
 static DISPATCH_PROC(ProcXCMiscDispatch);

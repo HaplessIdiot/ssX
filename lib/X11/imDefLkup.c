@@ -26,7 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefLkup.c,v 3.9 2001/08/13 21:46:46 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDefLkup.c,v 3.11 2003/06/23 17:35:43 eich Exp $ */
 
 #include <X11/Xatom.h>
 #define  NEED_EVENTS
@@ -35,15 +35,9 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "Ximint.h"
 
 Public Xic
-#if NeedFunctionPrototypes
 _XimICOfXICID(
     Xim		  im,
     XICID	  icid)
-#else
-_XimICOfXICID(im, icid)
-    Xim		  im;
-    XICID	  icid;
-#endif /* NeedFunctionPrototypes */
 {
     Xic		  pic;
 
@@ -80,19 +74,11 @@ _XimProcICSetEventMask(
 }
 
 Public Bool
-#if NeedFunctionPrototypes
 _XimSetEventMaskCallback(
     Xim		 xim,
     INT16	 len,
     XPointer	 data,
     XPointer	 call_data)
-#else
-_XimSetEventMaskCallback(xim, len, data, call_data)
-    Xim		 xim;
-    INT16	 len;
-    XPointer	 data;
-    XPointer	 call_data;
-#endif /* NeedFunctionPrototypes */
 {
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     XIMID        imid = buf_s[0];
@@ -113,19 +99,11 @@ _XimSetEventMaskCallback(xim, len, data, call_data)
 }
 
 Private Bool
-#if NeedFunctionPrototypes
 _XimSyncCheck(
     Xim          im,
     INT16        len,
     XPointer	 data,
     XPointer     arg)
-#else
-_XimSyncCheck(im, len, data, arg)
-    Xim          im;
-    INT16        len;
-    XPointer	 data;
-    XPointer     arg;
-#endif
 {
     Xic		 ic  = (Xic)arg;
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
@@ -241,19 +219,11 @@ _XimRespSyncReply(
 }
 
 Public Bool
-#if NeedFunctionPrototypes
 _XimSyncCallback(
     Xim		 xim,
     INT16	 len,
     XPointer	 data,
     XPointer	 call_data)
-#else
-_XimSyncCallback(xim, len, data, call_data)
-    Xim		 xim;
-    INT16	 len;
-    XPointer	 data;
-    XPointer	 call_data;
-#endif /* NeedFunctionPrototypes */
 {
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     XIMID        imid = buf_s[0];
@@ -405,19 +375,11 @@ _XimForwardEventRecv(
 }
 
 Public Bool
-#if NeedFunctionPrototypes
 _XimForwardEventCallback(
     Xim		 xim,
     INT16	 len,
     XPointer	 data,
     XPointer	 call_data)
-#else
-_XimForwardEventCallback(xim, len, data, call_data)
-    Xim		 xim;
-    INT16	 len;
-    XPointer	 data;
-    XPointer	 call_data;
-#endif /* NeedFunctionPrototypes */
 {
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     XIMID        imid = buf_s[0];
@@ -481,19 +443,11 @@ _XimRegisterTriggerkey(
 }
 
 Public Bool
-#if NeedFunctionPrototypes
 _XimRegisterTriggerKeysCallback(
     Xim		 xim,
     INT16	 len,
     XPointer	 data,
     XPointer	 call_data)
-#else
-_XimRegisterTriggerKeysCallback(xim, len, data, call_data)
-    Xim		 xim;
-    INT16	 len;
-    XPointer	 data;
-    XPointer	 call_data;
-#endif /* NeedFunctionPrototypes */
 {
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     Xim		 im = (Xim)call_data;
@@ -516,19 +470,11 @@ _XimGetWindowEventmask(
 
 
 Private Bool
-#if NeedFunctionPrototypes
 _XimTriggerNotifyCheck(
     Xim          im,
     INT16        len,
     XPointer	 data,
     XPointer     arg)
-#else
-_XimTriggerNotifyCheck(im, len, data, arg)
-    Xim          im;
-    INT16        len;
-    XPointer	 data;
-    XPointer     arg;
-#endif
 {
     Xic		 ic  = (Xic)arg;
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
@@ -770,19 +716,11 @@ _XimCommitRecv(
 }
 
 Public Bool
-#if NeedFunctionPrototypes
 _XimCommitCallback(
     Xim		 xim,
     INT16	 len,
     XPointer	 data,
     XPointer	 call_data)
-#else
-_XimCommitCallback(xim, len, data, call_data)
-    Xim		 xim;
-    INT16	 len;
-    XPointer	 data;
-    XPointer	 call_data;
-#endif /* NeedFunctionPrototypes */
 {
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     XIMID        imid = buf_s[0];
@@ -808,19 +746,11 @@ _XimProcError(
 }
 
 Public Bool
-#if NeedFunctionPrototypes
 _XimErrorCallback(
     Xim		 xim,
     INT16	 len,
     XPointer	 data,
     XPointer	 call_data)
-#else
-_XimErrorCallback(xim, len, data, call_data)
-    Xim		 xim;
-    INT16	 len;
-    XPointer	 data;
-    XPointer	 call_data;
-#endif /* NeedFunctionPrototypes */
 {
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     BITMASK16	 flag = buf_s[2];
@@ -845,7 +775,6 @@ _XimErrorCallback(xim, len, data, call_data)
 }
 
 Public Bool
-#if NeedFunctionPrototypes
 _XimError(
     Xim		 im,
     Xic		 ic,
@@ -853,15 +782,6 @@ _XimError(
     INT16	 detail_length,
     CARD16	 type,
     char	*detail)
-#else
-_XimError(im, ic, error_code, detail_length, type, detail)
-    Xim		 im;
-    Xic		 ic;
-    CARD16	 error_code;
-    INT16	 detail_length;
-    CARD16	 type;
-    char	*detail;
-#endif /* NeedFunctionPrototypes */
 {
     CARD32	 buf32[BUFSIZE/4];
     CARD8	*buf = (CARD8 *)buf32;

@@ -52,7 +52,7 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest1dd.c,v 3.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest1dd.c,v 3.6 2003/10/28 23:08:44 tsi Exp $ */
 
 /***************************************************************
  * include files
@@ -275,60 +275,38 @@ KeyCode			xtest_command_key = 0;
  ***************************************************************/
 
 static void	parse_key_fake(
-#if NeedFunctionPrototypes
 			XTestKeyInfo	* /* fkey */
-#endif
 			);
 static void	parse_motion_fake(
-#if NeedFunctionPrototypes
 			XTestMotionInfo	* /* fmotion */
-#endif
 			);
 static void	parse_jump_fake(
-#if NeedFunctionPrototypes
 			XTestJumpInfo	* /* fjump */
-#endif
 			);
 static void	parse_delay_fake(
-#if NeedFunctionPrototypes
 			XTestDelayInfo	* /* tevent */
-#endif
 			);
 static void	send_ack(
-#if NeedFunctionPrototypes
 			ClientPtr	 /* client */
-#endif
 			);
 static void	start_play_clock(
-#if NeedFunctionPrototypes
 			void
-#endif
 			);
 static void	compute_action_time(
-#if NeedFunctionPrototypes
 			struct timeval	* /* rtime */
-#endif
 			);
 static int	find_residual_time(
-#if NeedFunctionPrototypes
 			struct timeval	* /* rtime */
-#endif
 			);
 
 static CARD16	check_time_event(
-#if NeedFunctionPrototypes
 			void
-#endif
 			);
 static CARD32	current_ms(
-#if NeedFunctionPrototypes
 			struct timeval	* /* otime */
-#endif
 			);
 static int	there_is_room(
-#if NeedFunctionPrototypes
 			int	/* actsize */
-#endif
 			);
 
 /******************************************************************************

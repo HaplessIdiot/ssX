@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.34 2003/09/09 03:20:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.35 2003/10/02 13:30:12 eich Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -94,18 +94,10 @@ OutputDirectory(
 }
 
 Bool
-#if NeedFunctionPrototypes
 XkbDDXCompileNamedKeymap(	XkbDescPtr		xkb,
 				XkbComponentNamesPtr	names,
 				char *			nameRtrn,
 				int			nameRtrnLen)
-#else
-XkbDDXCompileNamedKeymap(xkb,names,nameRtrn,nameRtrnLen)
-    XkbDescPtr			xkb;
-    XkbComponentNamesPtr	names;
-    char *			nameRtrn;
-    int				nameRtrnLen;
-#endif
 {
 char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
 
@@ -203,22 +195,12 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
 }
         	
 Bool    	
-#if NeedFunctionPrototypes
 XkbDDXCompileKeymapByNames(	XkbDescPtr		xkb,
 				XkbComponentNamesPtr	names,
 				unsigned		want,
 				unsigned		need,
 				char *			nameRtrn,
 				int			nameRtrnLen)
-#else
-XkbDDXCompileKeymapByNames(xkb,names,want,need,nameRtrn,nameRtrnLen)
-    XkbDescPtr			xkb;
-    XkbComponentNamesPtr	names;
-    unsigned			want;
-    unsigned			need;
-    char *			nameRtrn;
-    int				nameRtrnLen;
-#endif
 {
 FILE *	out;
 char	buf[PATH_MAX],keymap[PATH_MAX],xkm_output_dir[PATH_MAX];
@@ -388,14 +370,7 @@ int i;
 }
 
 FILE *
-#if NeedFunctionPrototypes
 XkbDDXOpenConfigFile(char *mapName,char *fileNameRtrn,int fileNameRtrnLen)
-#else
-XkbDDXOpenConfigFile(mapName,fileNameRtrn,fileNameRtrnLen)
-    char *	mapName;
-    char *	fileNameRtrn;
-    int		fileNameRtrnLen;
-#endif
 {
 char	buf[PATH_MAX],xkm_output_dir[PATH_MAX];
 FILE *	file;
@@ -426,7 +401,6 @@ FILE *	file;
 }
 
 unsigned
-#if NeedFunctionPrototypes
 XkbDDXLoadKeymapByNames(	DeviceIntPtr		keybd,
 				XkbComponentNamesPtr	names,
 				unsigned		want,
@@ -434,16 +408,6 @@ XkbDDXLoadKeymapByNames(	DeviceIntPtr		keybd,
 				XkbFileInfo *		finfoRtrn,
 				char *			nameRtrn,
 				int 			nameRtrnLen)
-#else
-XkbDDXLoadKeymapByNames(keybd,names,want,need,finfoRtrn,nameRtrn,nameRtrnLen)
-    DeviceIntPtr		keybd;
-    XkbComponentNamesPtr	names;
-    unsigned			want;
-    unsigned			need;
-    XkbFileInfo *		finfoRtrn;
-    char *			nameRtrn;
-    int 			nameRtrnLen;
-#endif
 {
 XkbDescPtr	xkb;
 FILE	*	file;
@@ -504,18 +468,10 @@ unsigned	missing;
 }
 
 Bool
-#if NeedFunctionPrototypes
 XkbDDXNamesFromRules(	DeviceIntPtr		keybd,
 			char *			rules_name,
 			XkbRF_VarDefsPtr	defs,
 			XkbComponentNamesPtr	names)
-#else
-XkbDDXNamesFromRules(keybd,rules_name,defs,names)
-    DeviceIntPtr		keybd;
-    char *			rules_name;
-    XkbRF_VarDefsPtr		defs;
-    XkbComponentNamesPtr	names;
-#endif
 {
 char 		buf[PATH_MAX];
 FILE *		file;

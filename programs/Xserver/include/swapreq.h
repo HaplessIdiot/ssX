@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/swapreq.h,v 1.2 2001/04/05 17:42:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/swapreq.h,v 1.3 2003/04/27 21:31:05 herrb Exp $ */
 /************************************************************
 
 Copyright 1996 by Thomas E. Dickey <dickey@clark.net>
@@ -46,11 +46,7 @@ extern void SwapConnClientPrefix(
 
 #undef SWAPREQ_PROC
 
-#if NeedFunctionPrototypes
 #define SWAPREQ_PROC(func) int func(ClientPtr /* client */)
-#else
-#define SWAPREQ_PROC(func) int func(/* ClientPtr client */)
-#endif
 
 SWAPREQ_PROC(SProcAllocColor);
 SWAPREQ_PROC(SProcAllocColorCells);

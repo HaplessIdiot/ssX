@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/OpenDis.c,v 3.14tsi Exp $ */
+/* $XFree86: xc/lib/X11/OpenDis.c,v 3.16 2003/07/04 16:24:23 eich Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -81,13 +81,9 @@ static Bool _XBigReqHandler(Display *dpy, xReply *rep, char *buf, int len,
  * Connects to a server, creates a Display object and returns a pointer to
  * the newly created Display back to the caller.
  */
-#if NeedFunctionPrototypes
-Display *XOpenDisplay (
+Display *
+XOpenDisplay (
 	register _Xconst char *display)
-#else
-Display *XOpenDisplay (display)
-	register char *display;
-#endif
 {
 	register Display *dpy;		/* New Display object being created. */
 	register int i;

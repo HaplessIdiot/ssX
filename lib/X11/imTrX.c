@@ -28,7 +28,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imTrX.c,v 1.2 2002/11/26 01:21:25 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imTrX.c,v 1.3 2003/04/13 19:22:21 dawes Exp $ */
 
 #include <string.h>
 #include <X11/Xatom.h>
@@ -43,9 +43,7 @@ Private Bool
 _XimXRegisterDispatcher(
     Xim			 im,
     Bool		 (*callback)(
-#if NeedNestedPrototypes
 				     Xim, INT16, XPointer, XPointer
-#endif
 				     ),
     XPointer		 call_data)
 {
@@ -78,14 +76,7 @@ _XimXFreeIntrCallback(
 }
 
 Private Bool
-#if NeedFunctionPrototypes
 _XimXCallDispatcher(Xim im, INT16 len, XPointer data)
-#else
-_XimXCallDispatcher(im, len, data)
-    Xim			 	 im;
-    INT16			 len;
-    XPointer			 data;
-#endif
 {
     register XIntrCallbackRec	*rec;
     XSpecRec		*spec = (XSpecRec *)im->private.proto.spec;
@@ -142,12 +133,7 @@ _CheckConnect(
 }
 
 Private Bool
-#if NeedFunctionPrototypes
 _XimXConnect(Xim im)
-#else
-_XimXConnect(im)
-    Xim im;
-#endif
 {
     XEvent	 event;
     XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
@@ -216,12 +202,7 @@ _XimXConnect(im)
 }
 
 Private Bool
-#if NeedFunctionPrototypes
 _XimXShutdown(Xim im)
-#else
-_XimXShutdown(im)
-    Xim		 im;
-#endif
 {
     XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
 
@@ -252,14 +233,7 @@ _NewAtom(
 }
 
 Private Bool
-#if NeedFunctionPrototypes
 _XimXWrite(Xim im, INT16 len, XPointer data)    
-#else
-_XimXWrite(im, len, data)    
-    Xim		 im;
-    INT16	 len;
-    XPointer	 data;
-#endif
 {
     Atom	 atom;
     char	 atomName[16];
@@ -455,15 +429,7 @@ _CheckCMEvent(
 }
 
 Private Bool
-#if NeedFunctionPrototypes
 _XimXRead(Xim im, XPointer recv_buf, int buf_len, int *ret_len)
-#else
-_XimXRead(im, recv_buf, buf_len, ret_len)
-    Xim		 im;
-    XPointer	 recv_buf;
-    int		 buf_len;
-    int		*ret_len;
-#endif
 {
     XEvent	*ev;
     XEvent	 event;
@@ -486,12 +452,7 @@ _XimXRead(im, recv_buf, buf_len, ret_len)
 }
 
 Private void
-#if NeedFunctionPrototypes
 _XimXFlush(Xim im)
-#else
-_XimXFlush(im)
-    Xim		 im;
-#endif
 {
     XFlush(im->core.display);
     return;

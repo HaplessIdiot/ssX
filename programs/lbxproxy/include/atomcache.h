@@ -46,6 +46,8 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
+/* $XFree86$ */
+
 #ifndef _ATOMCACHE_H_
 #define _ATOMCACHE_H_
 
@@ -72,33 +74,25 @@ typedef struct _AtomList {
 extern int min_keep_prop_size;
 
 extern Atom LbxMakeAtom(
-#if NeedFunctionPrototypes
     XServerPtr /*server*/,
     char * /*string*/,
     unsigned /*len*/,
     Atom /*atom*/,
     int /*makeit*/
-#endif
 );
 
 extern char *NameForAtom(
-#if NeedFunctionPrototypes
     XServerPtr /*server*/,
     Atom /*atom*/
-#endif
 );
 
 extern unsigned FlagsForAtom(
-#if NeedFunctionPrototypes
     XServerPtr /*server*/,
     Atom /*atom*/
-#endif
 );
 
 extern void FreeAtoms(
-#if NeedFunctionPrototypes
     void
-#endif
 );
 
 #endif				/* _ATOMCACHE_H_ */

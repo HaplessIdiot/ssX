@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xi/XGetVers.c,v 3.5 2003/07/07 15:34:22 eich Exp $ */
+/* $XFree86: xc/lib/Xi/XGetVers.c,v 3.6 2003/07/08 15:39:47 tsi Exp $ */
 
 /***********************************************************************
  *
@@ -60,16 +60,10 @@ SOFTWARE.
 #include <X11/extensions/extutil.h>
 #include "XIint.h"
 
-XExtensionVersion
-#if NeedFunctionPrototypes
-*XGetExtensionVersion (
+XExtensionVersion *
+XGetExtensionVersion (
     register Display 	*dpy,
     _Xconst char	*name)
-#else
-*XGetExtensionVersion (dpy, name)
-    register Display 	*dpy;
-    char		*name;
-#endif
     {       
     XExtensionVersion		*ext;
 
@@ -82,16 +76,10 @@ XExtensionVersion
     return (ext);
     }
 
-XExtensionVersion
-#if NeedFunctionPrototypes
-*_XiGetExtensionVersion (
+XExtensionVersion *
+_XiGetExtensionVersion (
     register Display 	*dpy,
     _Xconst char	*name)
-#else
-*_XiGetExtensionVersion (dpy, name)
-    register Display 	*dpy;
-    char		*name;
-#endif
     {       
     xGetExtensionVersionReq 	*req;
     xGetExtensionVersionReply 	rep;

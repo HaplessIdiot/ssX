@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbimggblt.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbimggblt.c,v 1.8 2003/11/03 05:11:56 tsi Exp $ */
 
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
@@ -101,7 +101,6 @@ xoff, pdst, pglyph, and tmpSrc seem like the right things, though.
 
 /* Forward declarations -- GJA */
 static void doImageGlyphBlt(
-#if NeedFunctionPrototypes
     DrawablePtr,
     GC *,
     int,
@@ -110,7 +109,6 @@ static void doImageGlyphBlt(
     CharInfoPtr *,
     unsigned char *,
     ExtentInfoRec *
-#endif
 );
 
 void

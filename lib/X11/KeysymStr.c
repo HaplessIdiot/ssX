@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/KeysymStr.c,v 3.8 2001/12/14 19:54:02 dawes Exp $ */
+/* $XFree86: xc/lib/X11/KeysymStr.c,v 3.9 2003/04/13 19:22:16 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xresource.h>
@@ -46,9 +46,9 @@ typedef struct _GRNData {
     XrmValuePtr value;
 } GRNData;
 
-#if NeedFunctionPrototypes
 /*ARGSUSED*/
-static Bool SameValue(
+static Bool
+SameValue(
     XrmDatabase*	db,
     XrmBindingList      bindings,
     XrmQuarkList	quarks,
@@ -56,15 +56,6 @@ static Bool SameValue(
     XrmValuePtr		value,
     XPointer		data
 )
-#else
-static Bool SameValue(db, bindings, quarks, type, value, data)
-    XrmDatabase		*db;
-    XrmBindingList      bindings;
-    XrmQuarkList	quarks;
-    XrmRepresentation   *type;
-    XrmValuePtr		value;
-    XPointer		data;
-#endif
 {
     GRNData *gd = (GRNData *)data;
 

@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/omText.c,v 1.8 2003/04/17 02:11:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omText.c,v 1.9 2003/04/22 13:57:45 pascal Exp $ */
 /*
  * Copyright 1995 by FUJITSU LIMITED
  * This is source code modified by FUJITSU LIMITED under the Joint
@@ -345,57 +345,24 @@ _XomGenericDrawString(
 }
 
 int
-#if NeedFunctionPrototypes
 _XmbGenericDrawString(Display *dpy, Drawable d, XOC oc, GC gc, int x, int y,
 		      _Xconst char *text, int length)
-#else
-_XmbGenericDrawString(dpy, d, oc, gc, x, y, text, length)
-    Display *dpy;
-    Drawable d;
-    XOC oc;
-    GC gc;
-    int x, y;
-    _Xconst char *text;
-    int length;
-#endif
 {
     return _XomGenericDrawString(dpy, d, oc, gc, x, y, XOMMultiByte,
 				 (XPointer) text, length);
 }
 
 int
-#if NeedFunctionPrototypes
 _XwcGenericDrawString(Display *dpy, Drawable d, XOC oc, GC gc, int x, int y,
 		      _Xconst wchar_t *text, int length)
-#else
-_XwcGenericDrawString(dpy, d, oc, gc, x, y, text, length)
-    Display *dpy;
-    Drawable d;
-    XOC oc;
-    GC gc;
-    int x, y;
-    _Xconst wchar_t *text;
-    int length;
-#endif
 {
     return _XomGenericDrawString(dpy, d, oc, gc, x, y, XOMWideChar,
 				 (XPointer) text, length);
 }
 
 int
-#if NeedFunctionPrototypes
 _Xutf8GenericDrawString(Display *dpy, Drawable d, XOC oc, GC gc, int x, int y,
 			_Xconst char *text, int length)
-#else
-_Xutf8GenericDrawString(dpy, d, oc, gc, x, y, text, length)
-    Display *dpy;
-    Drawable d;
-    XOC oc;
-    GC gc;
-    int x, y;
-    _Xconst char *text;
-    int length;
-#endif
 {
     return _XomGenericDrawString(dpy, d, oc, gc, x, y, XOMUtf8String,
 				 (XPointer) text, length);

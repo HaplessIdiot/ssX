@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.21 2003/11/06 18:38:16 tsi Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -157,12 +157,7 @@ RESTYPE	RT_XKBCLIENT;
 /***====================================================================***/
 
 int
-#if NeedFunctionPrototypes
 ProcXkbUseExtension(ClientPtr client)
-#else
-ProcXkbUseExtension(client)
-    ClientPtr client;
-#endif
 {
     REQUEST(xkbUseExtensionReq);
     xkbUseExtensionReply	rep;
@@ -212,12 +207,7 @@ ProcXkbUseExtension(client)
 /***====================================================================***/
 
 int
-#if NeedFunctionPrototypes
 ProcXkbSelectEvents(ClientPtr client)
-#else
-ProcXkbSelectEvents(client)
-    ClientPtr client;
-#endif
 {
     unsigned		legal;
     DeviceIntPtr 	dev;
@@ -368,12 +358,7 @@ ProcXkbSelectEvents(client)
 /***====================================================================***/
 
 int
-#if NeedFunctionPrototypes
 ProcXkbBell(ClientPtr client)
-#else
-ProcXkbBell(client)
-    ClientPtr client;
-#endif
 {
     REQUEST(xkbBellReq);
     DeviceIntPtr dev;
@@ -514,12 +499,7 @@ ProcXkbBell(client)
 /***====================================================================***/
 
 int
-#if NeedFunctionPrototypes
 ProcXkbGetState(ClientPtr client)
-#else
-ProcXkbGetState(client)
-    ClientPtr client;
-#endif
 {
     REQUEST(xkbGetStateReq);
     DeviceIntPtr	dev;
@@ -561,12 +541,7 @@ ProcXkbGetState(client)
 /***====================================================================***/
 
 int
-#if NeedFunctionPrototypes
 ProcXkbLatchLockState(ClientPtr client)
-#else
-ProcXkbLatchLockState(client)
-    ClientPtr client;
-#endif
 {
     int status;
     DeviceIntPtr dev;
@@ -625,12 +600,7 @@ ProcXkbLatchLockState(client)
 /***====================================================================***/
 
 int
-#if NeedFunctionPrototypes
 ProcXkbGetControls(ClientPtr client)
-#else
-ProcXkbGetControls(client)
-    ClientPtr client;
-#endif
 {
     xkbGetControlsReply rep;
     XkbControlsPtr	xkb;
@@ -704,12 +674,7 @@ ProcXkbGetControls(client)
 }
 
 int
-#if NeedFunctionPrototypes
 ProcXkbSetControls(ClientPtr client)
-#else
-ProcXkbSetControls(client)
-    ClientPtr client;
-#endif
 {
     DeviceIntPtr 	dev;
     XkbSrvInfoPtr	xkbi;
@@ -878,16 +843,7 @@ ProcXkbSetControls(client)
 }
 
 int
-#if NeedFunctionPrototypes
 XkbSetRepeatRate(DeviceIntPtr dev,int timeout,int interval,int major,int minor)
-#else
-XkbSetRepeatRate(dev,timeout,interval,major,minor)
-    DeviceIntPtr	dev;
-    int			timeout;
-    int			interval;
-    int			major;
-    int			minor;
-#endif
 {
 int	changed= 0;
 XkbControlsRec old,*xkb;
@@ -919,14 +875,7 @@ XkbControlsRec old,*xkb;
 }
 
 int
-#if NeedFunctionPrototypes
 XkbGetRepeatRate(DeviceIntPtr dev,int *timeout,int *interval)
-#else
-XkbGetRepeatRate(dev,timeout,interval)
-    DeviceIntPtr	dev;
-    int	*		timeout;
-    int	*		interval;
-#endif
 {
 XkbControlsPtr	xkb;
 
@@ -941,13 +890,7 @@ XkbControlsPtr	xkb;
 /***====================================================================***/
 
 static int
-#if NeedFunctionPrototypes
 XkbSizeKeyTypes(XkbDescPtr xkb,xkbGetMapReply *rep)
-#else
-XkbSizeKeyTypes(xkb,rep)
-    XkbDescPtr 		xkb;
-    xkbGetMapReply *	rep;
-#endif
 {
     XkbKeyTypeRec 	*type;
     unsigned		i,len;
@@ -972,18 +915,10 @@ XkbSizeKeyTypes(xkb,rep)
 }
 
 static char *
-#if NeedFunctionPrototypes
 XkbWriteKeyTypes(	XkbDescPtr		xkb,
 			xkbGetMapReply *	rep,
 			char *			buf,
 			ClientPtr 		client)
-#else
-XkbWriteKeyTypes(xkb,rep,buf,client)
-    XkbDescPtr		xkb;
-    xkbGetMapReply *	rep;
-    char *		buf;
-    ClientPtr 		client;
-#endif
 {
     XkbKeyTypePtr	type;
     unsigned		i;
@@ -1044,13 +979,7 @@ XkbWriteKeyTypes(xkb,rep,buf,client)
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSizeKeySyms(XkbDescPtr xkb,xkbGetMapReply *rep)
-#else
-XkbSizeKeySyms(xkb,rep)
-    XkbDescPtr		xkb;
-    xkbGetMapReply *	rep;
-#endif
 {
     XkbSymMapPtr	symMap;
     unsigned		i,len;
@@ -1077,13 +1006,7 @@ XkbSizeKeySyms(xkb,rep)
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSizeVirtualMods(XkbDescPtr xkb,xkbGetMapReply *rep)
-#else
-XkbSizeVirtualMods(xkb,rep)
-    XkbDescPtr		xkb;
-    xkbGetMapReply *	rep;
-#endif
 {
 register unsigned i,nMods,bit;
 
@@ -1101,15 +1024,7 @@ register unsigned i,nMods,bit;
 }
 
 static char *
-#if NeedFunctionPrototypes
 XkbWriteKeySyms(XkbDescPtr xkb,xkbGetMapReply *rep,char *buf,ClientPtr client)
-#else
-XkbWriteKeySyms(xkb,rep,buf,client)
-    XkbDescPtr		xkb;
-    xkbGetMapReply *	rep;
-    char *		buf;
-    ClientPtr 		client;
-#endif
 {
 register KeySym *	pSym;
 XkbSymMapPtr		symMap;
@@ -1146,13 +1061,7 @@ register unsigned	i;
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSizeKeyActions(XkbDescPtr xkb,xkbGetMapReply *rep)
-#else
-XkbSizeKeyActions(xkb,rep)
-    XkbDescPtr		xkb;
-    xkbGetMapReply *	rep;
-#endif
 {
     unsigned		i,len,nActs;
     register KeyCode	firstKey;
@@ -1175,16 +1084,8 @@ XkbSizeKeyActions(xkb,rep)
 }
 
 static char *
-#if NeedFunctionPrototypes
 XkbWriteKeyActions(XkbDescPtr xkb,xkbGetMapReply *rep,char *buf,
 							ClientPtr client)
-#else
-XkbWriteKeyActions(xkb,rep,buf,client)
-    XkbDescPtr		xkb;
-    xkbGetMapReply *	rep;
-    char *		buf;
-    ClientPtr		client;
-#endif
 {
     unsigned		i;
     CARD8 *		numDesc;
@@ -1214,13 +1115,7 @@ XkbWriteKeyActions(xkb,rep,buf,client)
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSizeKeyBehaviors(XkbDescPtr xkb,xkbGetMapReply *rep)
-#else
-XkbSizeKeyBehaviors(xkb,rep)
-    XkbDescPtr		xkb;
-    xkbGetMapReply *	rep;
-#endif
 {
     unsigned		i,len,nBhvr;
     XkbBehavior *	bhv;
@@ -1243,16 +1138,8 @@ XkbSizeKeyBehaviors(xkb,rep)
 }
 
 static char *
-#if NeedFunctionPrototypes
 XkbWriteKeyBehaviors(XkbDescPtr xkb,xkbGetMapReply *rep,char *buf,
 							ClientPtr client)
-#else
-XkbWriteKeyBehaviors(xkb,rep,buf,client)
-    XkbDescRec		*xkb;
-    xkbGetMapReply	*rep;
-    char		*buf;
-    ClientPtr		client;
-#endif
 {
     unsigned		i;
     xkbBehaviorWireDesc	*wire;
@@ -1273,13 +1160,7 @@ XkbWriteKeyBehaviors(xkb,rep,buf,client)
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSizeExplicit(XkbDescPtr xkb,xkbGetMapReply *rep)
-#else
-XkbSizeExplicit(xkb,rep)
-    XkbDescPtr		xkb;
-    xkbGetMapReply *	rep;
-#endif
 {
     unsigned	i,len,nRtrn;
 
@@ -1300,15 +1181,7 @@ XkbSizeExplicit(xkb,rep)
 }
 
 static char *
-#if NeedFunctionPrototypes
 XkbWriteExplicit(XkbDescPtr xkb,xkbGetMapReply *rep,char *buf,ClientPtr client)
-#else
-XkbWriteExplicit(xkb,rep,buf,client)
-    XkbDescPtr		 xkb;
-    xkbGetMapReply	*rep;
-    char		*buf;
-    ClientPtr		client;
-#endif
 {
 unsigned	i;
 char *		start;
@@ -1327,13 +1200,7 @@ unsigned char *	pExp;
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSizeModifierMap(XkbDescPtr xkb,xkbGetMapReply *rep)
-#else
-XkbSizeModifierMap(xkb,rep)
-    XkbDescPtr		xkb;
-    xkbGetMapReply *	rep;
-#endif
 {
     unsigned	i,len,nRtrn;
 
@@ -1354,16 +1221,8 @@ XkbSizeModifierMap(xkb,rep)
 }
 
 static char *
-#if NeedFunctionPrototypes
 XkbWriteModifierMap(XkbDescPtr xkb,xkbGetMapReply *rep,char *buf,
 							ClientPtr client)
-#else
-XkbWriteModifierMap(xkb,rep,buf,client)
-    XkbDescPtr		 xkb;
-    xkbGetMapReply	*rep;
-    char		*buf;
-    ClientPtr		client;
-#endif
 {
 unsigned	i;
 char *		start;
@@ -1382,13 +1241,7 @@ unsigned char *	pMap;
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSizeVirtualModMap(XkbDescPtr xkb,xkbGetMapReply *rep)
-#else
-XkbSizeVirtualModMap(xkb,rep)
-    XkbDescPtr		xkb;
-    xkbGetMapReply *	rep;
-#endif
 {
     unsigned	i,len,nRtrn;
 
@@ -1409,16 +1262,8 @@ XkbSizeVirtualModMap(xkb,rep)
 }
 
 static char *
-#if NeedFunctionPrototypes
 XkbWriteVirtualModMap(XkbDescPtr xkb,xkbGetMapReply *rep,char *buf,
 							ClientPtr client)
-#else
-XkbWriteVirtualModMap(xkb,rep,buf,client)
-    XkbDescPtr		 xkb;
-    xkbGetMapReply	*rep;
-    char		*buf;
-    ClientPtr		client;
-#endif
 {
 unsigned		i;
 xkbVModMapWireDesc *	wire;
@@ -1437,13 +1282,7 @@ unsigned short *	pMap;
 }
 
 static Status
-#if NeedFunctionPrototypes
 XkbComputeGetMapReplySize(XkbDescPtr xkb,xkbGetMapReply *rep)
-#else
-XkbComputeGetMapReplySize(xkb,rep)
-    XkbDescPtr		xkb;
-    xkbGetMapReply *	rep;
-#endif
 {
 int	len;
 
@@ -1462,14 +1301,7 @@ int	len;
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSendMap(ClientPtr client,XkbDescPtr xkb,xkbGetMapReply *rep)
-#else
-XkbSendMap(client,xkb,rep)
-    ClientPtr		client;
-    XkbDescPtr		xkb;
-    xkbGetMapReply *	rep;
-#endif
 {
 unsigned	i,len;
 char		*desc,*start;
@@ -1520,12 +1352,7 @@ char		*desc,*start;
 }
 
 int
-#if NeedFunctionPrototypes
 ProcXkbGetMap(ClientPtr client)
-#else
-ProcXkbGetMap(client)
-    ClientPtr client;
-#endif
 {
     DeviceIntPtr	 dev;
     xkbGetMapReply	 rep;
@@ -1654,22 +1481,12 @@ ProcXkbGetMap(client)
 /***====================================================================***/
 
 static int
-#if NeedFunctionPrototypes
 CheckKeyTypes(	ClientPtr	client,
 		XkbDescPtr	xkb,
 		xkbSetMapReq *	req,
 		xkbKeyTypeWireDesc **wireRtrn,
 		int	 *	nMapsRtrn,
 		CARD8 *		mapWidthRtrn)
-#else
-CheckKeyTypes(client,xkb,req,wireRtrn,nMapsRtrn,mapWidthRtrn)
-    ClientPtr		 client;
-    XkbDescPtr	 	 xkb;
-    xkbSetMapReq  *	 req;
-    xkbKeyTypeWireDesc **wireRtrn;
-    int	 *		 nMapsRtrn;
-    CARD8 *		 mapWidthRtrn;
-#endif
 {
 unsigned		nMaps;
 register unsigned	i,n;
@@ -1785,7 +1602,6 @@ register xkbKeyTypeWireDesc	*wire = *wireRtrn;
 }
 
 static int
-#if NeedFunctionPrototypes
 CheckKeySyms(	ClientPtr		client,
 		XkbDescPtr		xkb,
 		xkbSetMapReq *		req,
@@ -1794,17 +1610,6 @@ CheckKeySyms(	ClientPtr		client,
 		CARD16 *	 	symsPerKey,
 		xkbSymMapWireDesc **	wireRtrn,
 		int *			errorRtrn)
-#else
-CheckKeySyms(client,xkb,req,nTypes,mapWidths,symsPerKey,wireRtrn,errorRtrn)
-    ClientPtr		client;
-    XkbDescPtr		xkb;
-    xkbSetMapReq *	req;
-    int			nTypes;
-    CARD8 *	 	mapWidths;
-    CARD16 *	 	symsPerKey;
-    xkbSymMapWireDesc **wireRtrn;
-    int *		errorRtrn;
-#endif
 {
 register unsigned	i;
 XkbSymMapPtr		map;
@@ -1887,7 +1692,6 @@ xkbSymMapWireDesc*	wire = *wireRtrn;
 }
 
 static int
-#if NeedFunctionPrototypes
 CheckKeyActions(	XkbDescPtr	xkb,
 			xkbSetMapReq *	req,
 			int		nTypes,
@@ -1895,16 +1699,6 @@ CheckKeyActions(	XkbDescPtr	xkb,
 			CARD16 *	symsPerKey,
 			CARD8 **	wireRtrn,
 			int *		nActsRtrn)
-#else
-CheckKeyActions(xkb,req,nTypes,mapWidths,symsPerKey,wireRtrn,nActsRtrn)
-    XkbDescRec		 *xkb;
-    xkbSetMapReq	 *req;
-    int			  nTypes;
-    CARD8		 *mapWidths;
-    CARD16		 *symsPerKey;
-    CARD8		**wireRtrn;
-    int			 *nActsRtrn;
-#endif
 {
 int			 nActs;
 CARD8 *			 wire = *wireRtrn;
@@ -1932,18 +1726,10 @@ register unsigned	 i;
 }
 
 static int
-#if NeedFunctionPrototypes
 CheckKeyBehaviors(	XkbDescPtr 		xkb,
 			xkbSetMapReq *		req,
 			xkbBehaviorWireDesc **	wireRtrn,
 			int *			errorRtrn)
-#else
-CheckKeyBehaviors(xkb,req,wireRtrn,errorRtrn)
-    XkbDescRec	 	 *xkb;
-    xkbSetMapReq	 *req;
-    xkbBehaviorWireDesc	**wireRtrn;
-    int			 *errorRtrn;
-#endif
 {
 register xkbBehaviorWireDesc *	wire = *wireRtrn;
 register XkbServerMapPtr	server = xkb->server;
@@ -1992,18 +1778,10 @@ unsigned			first,last;
 }
 
 static int
-#if NeedFunctionPrototypes
 CheckVirtualMods(	XkbDescRec *	xkb,
 			xkbSetMapReq *	req,
 			CARD8 **	wireRtrn,
 			int *		errorRtrn)
-#else
-CheckVirtualMods(xkb,req,wireRtrn,errorRtrn)
-    XkbDescPtr		xkb;
-    xkbSetMapReq *	req;
-    CARD8 **		wireRtrn;
-    int *		errorRtrn;
-#endif
 {
 register CARD8		*wire = *wireRtrn;
 register unsigned 	 i,nMods,bit;
@@ -2019,18 +1797,10 @@ register unsigned 	 i,nMods,bit;
 }
 
 static int
-#if NeedFunctionPrototypes
 CheckKeyExplicit(	XkbDescPtr	xkb,
 			xkbSetMapReq *	req,
 			CARD8 **	wireRtrn,
 			int	*	errorRtrn)
-#else
-CheckKeyExplicit(xkb,req,wireRtrn,errorRtrn)
-    XkbDescPtr		xkb;
-    xkbSetMapReq *	req;
-    CARD8 **		wireRtrn;
-    int	*		errorRtrn;
-#endif
 {
 register CARD8 *	wire = *wireRtrn;
 CARD8	*		start;
@@ -2069,15 +1839,7 @@ int			first,last;
 }
 
 static int
-#if NeedFunctionPrototypes
 CheckModifierMap(XkbDescPtr xkb,xkbSetMapReq *req,CARD8 **wireRtrn,int *errRtrn)
-#else
-CheckModifierMap(xkb,req,wireRtrn,errRtrn)
-    XkbDescPtr		xkb;
-    xkbSetMapReq *	req;
-    CARD8 **		wireRtrn;
-    int	*		errRtrn;
-#endif
 {
 register CARD8 *	wire = *wireRtrn;
 CARD8	*		start;
@@ -2112,18 +1874,10 @@ int			first,last;
 }
 
 static int
-#if NeedFunctionPrototypes
 CheckVirtualModMap(	XkbDescPtr xkb,
 			xkbSetMapReq *req,
 			xkbVModMapWireDesc **wireRtrn,
 			int *errRtrn)
-#else
-CheckVirtualModMap(xkb,req,wireRtrn,errRtrn)
-    XkbDescPtr			xkb;
-    xkbSetMapReq *		req;
-    xkbVModMapWireDesc **	wireRtrn;
-    int	*			errRtrn;
-#endif
 {
 register xkbVModMapWireDesc *	wire = *wireRtrn;
 register unsigned 		i;
@@ -2155,18 +1909,10 @@ int				first,last;
 }
 
 static char *
-#if NeedFunctionPrototypes
 SetKeyTypes(	XkbDescPtr		xkb,
 		xkbSetMapReq *		req,
 		xkbKeyTypeWireDesc *	wire,
 		XkbChangesPtr		changes)
-#else
-SetKeyTypes(xkb,req,wire,changes)
-    XkbDescPtr		xkb;
-    xkbSetMapReq *	req;
-    xkbKeyTypeWireDesc *wire;
-    XkbChangesPtr	changes;
-#endif
 {
 register unsigned	i;
 unsigned		first,last;
@@ -2248,22 +1994,12 @@ CARD8			*map;
 }
 
 static char *
-#if NeedFunctionPrototypes
 SetKeySyms(	ClientPtr		client,
 		XkbDescPtr		xkb,
 		xkbSetMapReq *		req,
 		xkbSymMapWireDesc *	wire,
 		XkbChangesPtr 		changes,
 		DeviceIntPtr		dev)
-#else
-SetKeySyms(client,xkb,req,wire,changes,dev)
-    ClientPtr		client;
-    XkbDescPtr		xkb;
-    xkbSetMapReq *	req;
-    xkbSymMapWireDesc *	wire;
-    XkbChangesPtr 	changes;
-    DeviceIntPtr	dev;
-#endif
 {
 register unsigned 	i,s;
 XkbSymMapPtr		oldMap;
@@ -2328,18 +2064,10 @@ unsigned		first,last;
 }
 
 static char *
-#if NeedFunctionPrototypes
 SetKeyActions(	XkbDescPtr	xkb,
 		xkbSetMapReq *	req,
 		CARD8 *		wire,
 		XkbChangesPtr	changes)
-#else
-SetKeyActions(xkb,req,wire,changes)
-    XkbDescPtr		xkb;
-    xkbSetMapReq *	req;
-    CARD8 *		wire;
-    XkbChangesPtr	changes;
-#endif
 {
 register unsigned	i,first,last;
 CARD8 *			nActs = wire;
@@ -2373,18 +2101,10 @@ XkbAction *		newActs;
 }
 
 static char *
-#if NeedFunctionPrototypes
 SetKeyBehaviors(	XkbSrvInfoPtr	 xkbi,
     			xkbSetMapReq	*req,
     			xkbBehaviorWireDesc	*wire,
     			XkbChangesPtr	 changes)
-#else
-SetKeyBehaviors(xkbi,req,wire,changes)
-    XkbSrvInfoPtr	xkbi;
-    xkbSetMapReq *	req;
-    xkbBehaviorWireDesc*wire;
-    XkbChangesPtr	changes;
-#endif
 {
 register unsigned i;
 int maxRG = -1;
@@ -2435,16 +2155,8 @@ unsigned	 first,last;
 }
 
 static char *
-#if NeedFunctionPrototypes
 SetVirtualMods(XkbSrvInfoPtr xkbi,xkbSetMapReq *req,CARD8 *wire,
 						XkbChangesPtr changes)
-#else
-SetVirtualMods(xkbi,req,wire,changes)
-    XkbSrvInfoPtr	xkbi;
-    xkbSetMapReq *	req;
-    CARD8 *		wire;
-    XkbChangesPtr 	changes;
-#endif
 {
 register int 		i,bit,nMods;
 XkbServerMapPtr		srv = xkbi->desc->server;
@@ -2465,16 +2177,8 @@ XkbServerMapPtr		srv = xkbi->desc->server;
 }
 
 static char *
-#if NeedFunctionPrototypes
 SetKeyExplicit(XkbSrvInfoPtr xkbi,xkbSetMapReq *req,CARD8 *wire,
 							XkbChangesPtr changes)
-#else
-SetKeyExplicit(xkbi,req,wire,changes)
-    XkbSrvInfoPtr	xkbi;
-    xkbSetMapReq *	req;
-    CARD8 *		wire;
-    XkbChangesPtr 	changes;
-#endif
 {
 register unsigned	i,first,last;
 XkbServerMapPtr		xkb = xkbi->desc->server;
@@ -2505,18 +2209,10 @@ CARD8 *			start;
 }
 
 static char *
-#if NeedFunctionPrototypes
 SetModifierMap(	XkbSrvInfoPtr	xkbi,
 		xkbSetMapReq *	req,
 		CARD8 *		wire,
 		XkbChangesPtr	changes)
-#else
-SetModifierMap(xkbi,req,wire,changes)
-    XkbSrvInfoPtr	xkbi;
-    xkbSetMapReq *	req;
-    CARD8 *		wire;
-    XkbChangesPtr	changes;
-#endif
 {
 register unsigned	i,first,last;
 XkbClientMapPtr		xkb = xkbi->desc->map;
@@ -2547,18 +2243,10 @@ CARD8 *			start;
 }
 
 static char *
-#if NeedFunctionPrototypes
 SetVirtualModMap(	XkbSrvInfoPtr		xkbi,
 			xkbSetMapReq *		req,
 			xkbVModMapWireDesc *	wire,
 			XkbChangesPtr 		changes)
-#else
-SetVirtualModMap(xkbi,req,wire,changes)
-    XkbSrvInfoPtr	xkbi;
-    xkbSetMapReq *	req;
-    xkbVModMapWireDesc *wire;
-    XkbChangesPtr 	changes;
-#endif
 {
 register unsigned	i,first,last;
 XkbServerMapPtr		srv = xkbi->desc->server;
@@ -2586,12 +2274,7 @@ XkbServerMapPtr		srv = xkbi->desc->server;
 }
 
 int
-#if NeedFunctionPrototypes
 ProcXkbSetMap(ClientPtr client)
-#else
-ProcXkbSetMap(client)
-    ClientPtr client;
-#endif
 {
     DeviceIntPtr	dev;
     XkbSrvInfoPtr	xkbi;
@@ -2782,14 +2465,8 @@ allocFailure:
 /***====================================================================***/
 
 static Status
-#if NeedFunctionPrototypes
 XkbComputeGetCompatMapReplySize(	XkbCompatMapPtr 	compat,
 					xkbGetCompatMapReply *	rep)
-#else
-XkbComputeGetCompatMapReplySize(compat,rep)
-    XkbCompatMapPtr		compat;
-    xkbGetCompatMapReply *	rep;
-#endif
 {
 unsigned	 size,nGroups;
 
@@ -2808,16 +2485,9 @@ unsigned	 size,nGroups;
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSendCompatMap(	ClientPtr 		client,
 			XkbCompatMapPtr 	compat,
 			xkbGetCompatMapReply *	rep)
-#else
-XkbSendCompatMap(client,compat,rep)
-    ClientPtr			client;
-    XkbCompatMapPtr		compat;
-    xkbGetCompatMapReply *	rep;
-#endif
 {
 char	*	data;
 int		size;
@@ -2881,12 +2551,7 @@ int		size;
 }
 
 int
-#if NeedFunctionPrototypes
 ProcXkbGetCompatMap(ClientPtr client)
-#else
-ProcXkbGetCompatMap(client)
-    ClientPtr client;
-#endif
 {
     xkbGetCompatMapReply 	rep;
     DeviceIntPtr 		dev;
@@ -2926,12 +2591,7 @@ ProcXkbGetCompatMap(client)
 }
 
 int
-#if NeedFunctionPrototypes
 ProcXkbSetCompatMap(ClientPtr client)
-#else
-ProcXkbSetCompatMap(client)
-    ClientPtr client;
-#endif
 {
     DeviceIntPtr 	dev;
     XkbSrvInfoPtr 	xkbi;
@@ -3069,12 +2729,7 @@ ProcXkbSetCompatMap(client)
 /***====================================================================***/
 
 int
-#if NeedFunctionPrototypes
 ProcXkbGetIndicatorState(ClientPtr client)
-#else
-ProcXkbGetIndicatorState(client)
-    ClientPtr client;
-#endif
 {
     xkbGetIndicatorStateReply 	rep;
     XkbSrvLedInfoPtr		sli;
@@ -3111,15 +2766,9 @@ ProcXkbGetIndicatorState(client)
 /***====================================================================***/
 
 Status
-#if NeedFunctionPrototypes
 XkbComputeGetIndicatorMapReplySize(
     XkbIndicatorPtr		indicators,
     xkbGetIndicatorMapReply	*rep)
-#else
-XkbComputeGetIndicatorMapReplySize(indicators,rep)
-    XkbIndicatorPtr		indicators;
-    xkbGetIndicatorMapReply	*rep;
-#endif
 {
 register int 	i,bit;
 int		nIndicators;
@@ -3134,16 +2783,9 @@ int		nIndicators;
 }
 
 int
-#if NeedFunctionPrototypes
 XkbSendIndicatorMap(	ClientPtr			client,
 			XkbIndicatorPtr			indicators,
 			xkbGetIndicatorMapReply *	rep)
-#else
-XkbSendIndicatorMap(client,indicators,rep)
-    ClientPtr			client;
-    XkbIndicatorPtr		indicators;
-    xkbGetIndicatorMapReply *	rep;
-#endif
 {
 int 			length;
 CARD8 *			map;
@@ -3198,12 +2840,7 @@ register unsigned	bit;
 }
 
 int
-#if NeedFunctionPrototypes
 ProcXkbGetIndicatorMap(ClientPtr client)
-#else
-ProcXkbGetIndicatorMap(client)
-    ClientPtr client;
-#endif
 {
 xkbGetIndicatorMapReply rep;
 DeviceIntPtr		dev;
@@ -3231,12 +2868,7 @@ XkbIndicatorPtr		leds;
 }
 
 int
-#if NeedFunctionPrototypes
 ProcXkbSetIndicatorMap(ClientPtr client)
-#else
-ProcXkbSetIndicatorMap(client)
-    ClientPtr client;
-#endif
 {
     register int 	i,bit;
     int			nIndicators,why;
@@ -3318,12 +2950,7 @@ ProcXkbSetIndicatorMap(client)
 /***====================================================================***/
 
 int
-#if NeedFunctionPrototypes
 ProcXkbGetNamedIndicator(ClientPtr client)
-#else
-ProcXkbGetNamedIndicator(client)
-    ClientPtr client;
-#endif
 {
     DeviceIntPtr 		dev;
     xkbGetNamedIndicatorReply 	rep;
@@ -3430,12 +3057,7 @@ ProcXkbGetNamedIndicator(client)
 }
 
 int
-#if NeedFunctionPrototypes
 ProcXkbSetNamedIndicator(ClientPtr client)
-#else
-ProcXkbSetNamedIndicator(client)
-    ClientPtr client;
-#endif
 {
     DeviceIntPtr 		dev,kbd;
     XkbIndicatorMapPtr		map;
@@ -3546,14 +3168,7 @@ ProcXkbSetNamedIndicator(client)
 /***====================================================================***/
 
 static CARD32
-#if NeedFunctionPrototypes
 _XkbCountAtoms(Atom *atoms,int maxAtoms,int *count)
-#else
-_XkbCountAtoms(atoms,maxAtoms,count)
-    Atom *atoms;
-    int   maxAtoms;
-    int  *count;
-#endif
 {
 register unsigned int i,bit,nAtoms;
 register CARD32 atomsPresent;
@@ -3570,15 +3185,7 @@ register CARD32 atomsPresent;
 }
 
 static char *
-#if NeedFunctionPrototypes
 _XkbWriteAtoms(char *wire,Atom *atoms,int maxAtoms,int swap)
-#else
-_XkbWriteAtoms(wire,atoms,maxAtoms,swap)
-    char *wire;
-    Atom *atoms;
-    int   maxAtoms;
-    int   swap;
-#endif
 {
 register unsigned int i;
 Atom *atm;
@@ -3598,13 +3205,7 @@ Atom *atm;
 }
 
 static Status
-#if NeedFunctionPrototypes
 XkbComputeGetNamesReplySize(XkbDescPtr xkb,xkbGetNamesReply *rep)
-#else
-XkbComputeGetNamesReplySize(xkb,rep)
-    XkbDescPtr		xkb;
-    xkbGetNamesReply *	rep;
-#endif
 {
 register unsigned	which,length;
 register int		i;
@@ -3709,14 +3310,7 @@ register int		i;
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSendNames(ClientPtr client,XkbDescPtr xkb,xkbGetNamesReply *rep)
-#else
-XkbSendNames(client,xkb,rep)
-    ClientPtr		client;
-    XkbDescPtr		xkb;
-    xkbGetNamesReply *	rep;
-#endif
 {
 register unsigned 	i,length,which;
 char *			start;
@@ -3868,12 +3462,7 @@ char *			desc;
 }
 
 int
-#if NeedFunctionPrototypes
 ProcXkbGetNames(ClientPtr client)
-#else
-ProcXkbGetNames(client)
-    ClientPtr client;
-#endif
 {
     DeviceIntPtr	dev;
     XkbDescPtr		xkb;
@@ -3911,15 +3500,7 @@ ProcXkbGetNames(client)
 /***====================================================================***/
 
 static CARD32 *
-#if NeedFunctionPrototypes
 _XkbCheckAtoms(CARD32 *wire,int nAtoms,int swapped,Atom *pError)
-#else
-_XkbCheckAtoms(wire,nAtoms,swapped,pError)
-    CARD32 *wire;
-    int   nAtoms;
-    int   swapped;
-    Atom *pError;
-#endif
 {
 register int i;
 
@@ -3937,17 +3518,8 @@ register int i;
 }
 
 static CARD32 *
-#if NeedFunctionPrototypes
 _XkbCheckMaskedAtoms(CARD32 *wire,int nAtoms,CARD32 present,int swapped,
 								Atom *pError)
-#else
-_XkbCheckMaskedAtoms(wire,nAtoms,present,swapped,pError)
-    CARD32	*wire;
-    int   	 nAtoms;
-    CARD32	 present;
-    int		 swapped;
-    Atom	*pError;
-#endif
 {
 register unsigned i,bit;
 
@@ -3968,18 +3540,10 @@ register unsigned i,bit;
 }
 
 static Atom *
-#if NeedFunctionPrototypes
 _XkbCopyMaskedAtoms(	Atom	*wire,
     			Atom	*dest,
 			int   	 nAtoms,
 			CARD32	 present)
-#else
-_XkbCopyMaskedAtoms(wire,dest,nAtoms,present)
-    Atom	*wire;
-    Atom	*dest;
-    int   	 nAtoms;
-    CARD32	 present;
-#endif
 {
 register int i,bit;
 
@@ -3992,13 +3556,7 @@ register int i,bit;
 }
 
 static Bool
-#if NeedFunctionPrototypes
 _XkbCheckTypeName(Atom name,int typeNdx)
-#else
-_XkbCheckTypeName(name,typeNdx)
-    Atom	name;
-    int		typeNdx;
-#endif
 {
 char *	str;
 
@@ -4010,12 +3568,7 @@ char *	str;
 }
 
 int
-#if NeedFunctionPrototypes
 ProcXkbSetNames(ClientPtr client)
-#else
-ProcXkbSetNames(client)
-    ClientPtr client;
-#endif
 {
     DeviceIntPtr	 dev;
     XkbDescRec		*xkb;
@@ -4360,14 +3913,7 @@ ProcXkbSetNames(client)
 #define	XkbSizeCountedString(s)  ((s)?((((2+strlen(s))+3)/4)*4):4)
 
 static char *
-#if NeedFunctionPrototypes
 XkbWriteCountedString(char *wire,char *str,Bool swap)
-#else
-XkbWriteCountedString(wire,str,swap)
-    char *	wire;
-    char *	str;
-    Bool	swap;
-#endif
 {
 CARD16	len,*pLen;
 
@@ -4384,12 +3930,7 @@ CARD16	len,*pLen;
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSizeGeomProperties(XkbGeometryPtr geom)
-#else
-XkbSizeGeomProperties(geom)
-    XkbGeometryPtr	geom;
-#endif
 {
 register int 	i,size;
 XkbPropertyPtr	prop;
@@ -4402,14 +3943,7 @@ XkbPropertyPtr	prop;
 }
 
 static char *
-#if NeedFunctionPrototypes
 XkbWriteGeomProperties(char *wire,XkbGeometryPtr geom,Bool swap)
-#else
-XkbWriteGeomProperties(wire,geom,swap)
-    char *		wire;
-    XkbGeometryPtr	geom;
-    Bool		swap;
-#endif
 {
 register int 	i;
 register XkbPropertyPtr	prop;
@@ -4422,25 +3956,13 @@ register XkbPropertyPtr	prop;
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSizeGeomKeyAliases(XkbGeometryPtr geom)
-#else
-XkbSizeGeomKeyAliases(geom)
-    XkbGeometryPtr	geom;
-#endif
 {
     return geom->num_key_aliases*(2*XkbKeyNameLength);
 }
 
 static char *
-#if NeedFunctionPrototypes
 XkbWriteGeomKeyAliases(char *wire,XkbGeometryPtr geom,Bool swap)
-#else
-XkbWriteGeomKeyAliases(wire,geom,swap)
-    char *		wire;
-    XkbGeometryPtr	geom;
-    Bool		swap;
-#endif
 {
 register int sz;
     
@@ -4453,12 +3975,7 @@ register int sz;
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSizeGeomColors(XkbGeometryPtr geom)
-#else
-XkbSizeGeomColors(geom)
-    XkbGeometryPtr	geom;
-#endif
 {
 register int 		i,size;
 register XkbColorPtr	color;
@@ -4470,14 +3987,7 @@ register XkbColorPtr	color;
 }
 
 static char *
-#if NeedFunctionPrototypes
 XkbWriteGeomColors(char *wire,XkbGeometryPtr geom,Bool swap)
-#else
-XkbWriteGeomColors(wire,geom,swap)
-    char *		wire;
-    XkbGeometryPtr	geom;
-    Bool		swap;
-#endif
 {
 register int		i;
 register XkbColorPtr	color;
@@ -4489,12 +3999,7 @@ register XkbColorPtr	color;
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSizeGeomShapes(XkbGeometryPtr geom)
-#else
-XkbSizeGeomShapes(geom)
-    XkbGeometryPtr	geom;
-#endif
 {
 register int		i,size;
 register XkbShapePtr	shape;
@@ -4512,14 +4017,7 @@ register XkbShapePtr	shape;
 }
 
 static char *
-#if NeedFunctionPrototypes
 XkbWriteGeomShapes(char *wire,XkbGeometryPtr geom,Bool swap)
-#else
-XkbWriteGeomShapes(wire,geom,swap)
-    char *		wire;
-    XkbGeometryPtr	geom;
-    Bool		swap;
-#endif
 {
 int			i;
 XkbShapePtr		shape;
@@ -4568,13 +4066,7 @@ xkbShapeWireDesc *	shapeWire;
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSizeGeomDoodads(int num_doodads,XkbDoodadPtr doodad)
-#else
-XkbSizeGeomDoodads(num_doodads,doodad)
-    int			num_doodads;
-    XkbDoodadPtr	doodad;
-#endif
 {
 register int	i,size;
 
@@ -4592,15 +4084,7 @@ register int	i,size;
 }
 
 static char *
-#if NeedFunctionPrototypes
 XkbWriteGeomDoodads(char *wire,int num_doodads,XkbDoodadPtr doodad,Bool swap)
-#else
-XkbWriteGeomDoodads(wire,num_doodads,doodad,swap)
-    char *		wire;
-    int			num_doodads;
-    XkbDoodadPtr	doodad;
-    Bool		swap;
-#endif
 {
 register int		i;
 xkbDoodadWireDesc *	doodadWire;
@@ -4668,14 +4152,7 @@ xkbDoodadWireDesc *	doodadWire;
 }
 
 static char *
-#if NeedFunctionPrototypes
 XkbWriteGeomOverlay(char *wire,XkbOverlayPtr ol,Bool swap)
-#else
-XkbWriteGeomOverlay(wire,ol,swap)
-    char *		wire;
-    XkbOverlayPtr	ol;
-    Bool		swap;
-#endif
 {
 register int		r;
 XkbOverlayRowPtr	row;
@@ -4709,12 +4186,7 @@ xkbOverlayWireDesc *	olWire;
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSizeGeomSections(XkbGeometryPtr geom)
-#else
-XkbSizeGeomSections(geom)
-    XkbGeometryPtr	geom;
-#endif
 {
 register int 	i,size;
 XkbSectionPtr	section;
@@ -4749,14 +4221,7 @@ XkbSectionPtr	section;
 }
 
 static char *
-#if NeedFunctionPrototypes
 XkbWriteGeomSections(char *wire,XkbGeometryPtr geom,Bool swap)
-#else
-XkbWriteGeomSections(wire,geom,swap)
-    char *		wire;
-    XkbGeometryPtr	geom;
-    Bool		swap;
-#endif
 {
 register int		i;
 XkbSectionPtr		section;
@@ -4837,16 +4302,9 @@ xkbSectionWireDesc *	sectionWire;
 }
 
 static Status
-#if NeedFunctionPrototypes
 XkbComputeGetGeometryReplySize(	XkbGeometryPtr		geom,
 				xkbGetGeometryReply *	rep,
 				Atom			name)
-#else
-XkbComputeGetGeometryReplySize(geom,rep,name)
-    XkbGeometryPtr		geom;
-    xkbGetGeometryReply *	rep;
-    Atom			name;
-#endif
 {
 int	len;
 
@@ -4886,18 +4344,10 @@ int	len;
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbSendGeometry(	ClientPtr		client,
 			XkbGeometryPtr		geom,
 			xkbGetGeometryReply *	rep,
 			Bool			freeGeom)
-#else
-XkbSendGeometry(client,geom,rep,freeGeom)
-    ClientPtr		client;
-    XkbGeometryPtr	geom;
-    xkbGetGeometryReply	*rep;
-    Bool		freeGeom;
-#endif
 {
     char	*desc,*start;
     int		 len;
@@ -4955,12 +4405,7 @@ XkbSendGeometry(client,geom,rep,freeGeom)
 }
 
 int
-#if NeedFunctionPrototypes
 ProcXkbGetGeometry(ClientPtr client)
-#else
-ProcXkbGetGeometry(client)
-    ClientPtr client;
-#endif
 {
     DeviceIntPtr 	dev;
     xkbGetGeometryReply rep;
@@ -4991,13 +4436,7 @@ ProcXkbGetGeometry(client)
 /***====================================================================***/
 
 static char *
-#if NeedFunctionPrototypes
 _GetCountedString(char **wire_inout,Bool swap)
-#else
-_GetCountedString(wire_inout,swap)
-    char **	wire_inout;
-    Bool	swap;
-#endif
 {
 char *	wire,*str;
 CARD16	len,*plen;
@@ -5020,18 +4459,10 @@ CARD16	len,*plen;
 }
 
 static Status
-#if NeedFunctionPrototypes
 _CheckSetDoodad(	char **		wire_inout,
 			XkbGeometryPtr	geom,
 			XkbSectionPtr	section,
 			ClientPtr	client)
-#else
-_CheckSetDoodad(wire_inout,geom,section,client)
-    char **		wire_inout;
-    XkbGeometryPtr	geom;
-    XkbSectionPtr	section;
-    ClientPtr		client;
-#endif
 {
 char *			wire;
 xkbDoodadWireDesc *	dWire;
@@ -5132,18 +4563,10 @@ XkbDoodadPtr		doodad;
 }
 
 static Status
-#if NeedFunctionPrototypes
 _CheckSetOverlay(	char **		wire_inout,
 			XkbGeometryPtr	geom,
 			XkbSectionPtr	section,
 			ClientPtr	client)
-#else
-_CheckSetOverlay(wire_inout,geom,section,client)
-    char **		wire_inout;
-    XkbGeometryPtr	geom;
-    XkbSectionPtr	section;
-    ClientPtr		client;
-#endif
 {
 register int		r;
 char *			wire;
@@ -5188,18 +4611,10 @@ xkbOverlayRowWireDesc *	rWire;
 }
 
 static Status
-#if NeedFunctionPrototypes
 _CheckSetSections( 	XkbGeometryPtr		geom,
 			xkbSetGeometryReq *	req,
 			char **			wire_inout,
 			ClientPtr		client)
-#else
-_CheckSetSections(geom,req,wire_inout,client)
-    XkbGeometryPtr	geom;
-    xkbSetGeometryReq *	req;
-    char **		wire_inout;
-    ClientPtr		client;
-#endif
 {
 Status			status;
 register int		s;
@@ -5298,18 +4713,10 @@ XkbSectionPtr		section;
 }
 
 static Status
-#if NeedFunctionPrototypes
 _CheckSetShapes( 	XkbGeometryPtr		geom,
 			xkbSetGeometryReq *	req,
 			char **			wire_inout,
 			ClientPtr		client)
-#else
-_CheckSetShapes(geom,req,wire_inout,client)
-    XkbGeometryPtr	geom;
-    xkbSetGeometryReq *	req;
-    char **		wire_inout;
-    ClientPtr		client;
-#endif
 {
 register int	i;
 char *		wire;
@@ -5371,16 +4778,9 @@ char *		wire;
 }
 
 static Status
-#if NeedFunctionPrototypes
 _CheckSetGeom(	XkbGeometryPtr		geom,
 		xkbSetGeometryReq *	req,
 		ClientPtr 		client)
-#else
-_CheckSetGeom(geom,req,client)
-    XkbGeometryPtr	geom;
-    xkbSetGeometryReq *	req;
-    ClientPtr		client;
-#endif
 {
 register int	i;
 Status		status;
@@ -5449,12 +4849,7 @@ char *		wire;
 }
 
 int
-#if NeedFunctionPrototypes
 ProcXkbSetGeometry(ClientPtr client)
-#else
-ProcXkbSetGeometry(client)
-    ClientPtr client;
-#endif
 {
     DeviceIntPtr 	dev;
     XkbGeometryPtr	geom,old;
@@ -5520,12 +4915,7 @@ ProcXkbSetGeometry(client)
 /***====================================================================***/
 
 int
-#if NeedFunctionPrototypes
 ProcXkbPerClientFlags(ClientPtr client)
-#else
-ProcXkbPerClientFlags(client)
-    ClientPtr client;
-#endif
 {
     DeviceIntPtr 		dev;
     xkbPerClientFlagsReply 	rep;
@@ -5617,14 +5007,7 @@ static unsigned char componentExprLegal[] = {
 };
 
 static char *
-#if NeedFunctionPrototypes
 GetComponentSpec(unsigned char **pWire,Bool allowExpr,int *errRtrn)
-#else
-GetComponentSpec(pWire,allowExpr,errRtrn)
-   unsigned char **	pWire;
-   Bool			allowExpr;
-   int *		errRtrn;
-#endif
 {
 int		len;
 register int	i;
@@ -5665,12 +5048,7 @@ unsigned char	*wire,*str,*tmp,*legal;
 /***====================================================================***/
 
 int
-#if NeedFunctionPrototypes
 ProcXkbListComponents(ClientPtr client)
-#else
-ProcXkbListComponents(client)
-    ClientPtr client;
-#endif
 {
     DeviceIntPtr 		dev;
     xkbListComponentsReply 	rep;
@@ -5747,12 +5125,7 @@ ProcXkbListComponents(client)
 /***====================================================================***/
 
 int
-#if NeedFunctionPrototypes
 ProcXkbGetKbdByName(ClientPtr client)
-#else
-ProcXkbGetKbdByName(client)
-    ClientPtr client;
-#endif
 {
     DeviceIntPtr 		dev;
     XkbFileInfo			finfo;
@@ -6081,16 +5454,9 @@ ProcXkbGetKbdByName(client)
 /***====================================================================***/
 
 static int
-#if NeedFunctionPrototypes
 ComputeDeviceLedInfoSize(	DeviceIntPtr		dev,
 				unsigned int		what,
 				XkbSrvLedInfoPtr	sli)
-#else
-ComputeDeviceLedInfoSize(dev,what,sli)
-    DeviceIntPtr		dev;
-    unsigned int		what;
-    XkbSrvLedInfoPtr		sli;
-#endif
 {
 int			nNames,nMaps;
 register unsigned 	n,bit;
@@ -6117,20 +5483,11 @@ register unsigned 	n,bit;
 }
 
 static int 
-#if NeedFunctionPrototypes
 CheckDeviceLedFBs(	DeviceIntPtr			dev,
 			int				class,
 			int				id,
 			xkbGetDeviceInfoReply *		rep,
 			ClientPtr			client)
-#else
-CheckDeviceLedFBs(dev,class,id,rep,client)
-    DeviceIntPtr		dev;
-    int				class;
-    int				id;
-    xkbGetDeviceInfoReply *	rep;
-    ClientPtr			client;
-#endif
 {
 int			nFBs= 0;
 int			length= 0;
@@ -6188,14 +5545,8 @@ Bool			classOk;
 }
 
 static int
-#if NeedFunctionPrototypes
 SendDeviceLedInfo(	XkbSrvLedInfoPtr	sli,
 			ClientPtr		client)
-#else
-SendDeviceLedInfo(sli,client)
-    XkbSrvLedInfoPtr	sli;
-    ClientPtr		client;
-#endif
 {
 xkbDeviceLedsWireDesc	wire;
 int			length;
@@ -6262,20 +5613,11 @@ int			length;
 }
 
 static int
-#if NeedFunctionPrototypes
 SendDeviceLedFBs(	DeviceIntPtr	dev,
 			int		class,
 			int		id,
 			unsigned	wantLength,
 			ClientPtr	client)
-#else
-SendDeviceLedFBs(dev,class,id,wantLength,client)
-    DeviceIntPtr	dev;
-    int			class;
-    int			id;
-    unsigned		wantLength;
-    ClientPtr		client;
-#endif
 {
 int			length= 0;
 
@@ -6311,12 +5653,7 @@ int			length= 0;
 }
 
 int
-#if NeedFunctionPrototypes
 ProcXkbGetDeviceInfo(ClientPtr client)
-#else
-ProcXkbGetDeviceInfo(client)
-    ClientPtr client;
-#endif
 {
 DeviceIntPtr		dev;
 xkbGetDeviceInfoReply	rep;
@@ -6474,20 +5811,11 @@ char *			str;
 }
 
 static char *
-#if NeedFunctionPrototypes
 CheckSetDeviceIndicators(	char *		wire,
 				DeviceIntPtr	dev,
 				int		num,
 				int *		status_rtrn,
 				ClientPtr	client)
-#else
-CheckSetDeviceIndicators(wire,dev,num,status_rtrn,client)
-    char *		wire;
-    DeviceIntPtr	dev;
-    int			num;
-    int *		status_rtrn;
-    ClientPtr		client;
-#endif
 {
 xkbDeviceLedsWireDesc *	ledWire;
 int			i;
@@ -6561,7 +5889,6 @@ XkbSrvLedInfoPtr 	sli;
 }
 
 static char *
-#if NeedFunctionPrototypes
 SetDeviceIndicators(	char *			wire,
 			DeviceIntPtr		dev,
 			unsigned		changed,
@@ -6569,16 +5896,6 @@ SetDeviceIndicators(	char *			wire,
 			int *			status_rtrn,
 			ClientPtr		client,
 			xkbExtensionDeviceNotify *ev)
-#else
-SetDeviceIndicators(wire,dev,changed,num,status_rtrn,client,ev)
-    char *		wire;
-    DeviceIntPtr	dev;
-    unsigned		changed;
-    int			num;
-    ClientPtr		client;
-    int *		status_rtrn;
-    xkbExtensionDeviceNotify *ev;
-#endif
 {
 xkbDeviceLedsWireDesc *		ledWire;
 int				i;
@@ -6668,12 +5985,7 @@ DeviceIntPtr			kbd;
 }
 
 int
-#if NeedFunctionPrototypes
 ProcXkbSetDeviceInfo(ClientPtr client)
-#else
-ProcXkbSetDeviceInfo(client)
-    ClientPtr client;
-#endif
 {
 DeviceIntPtr		dev;
 unsigned		change;
@@ -6760,12 +6072,7 @@ xkbExtensionDeviceNotify ed;
 /***====================================================================***/
 
 int
-#if NeedFunctionPrototypes
 ProcXkbSetDebuggingFlags(ClientPtr client)
-#else
-ProcXkbSetDebuggingFlags(client)
-    ClientPtr client;
-#endif
 {
 CARD32 				newFlags,newCtrls,extraLength;
 xkbSetDebuggingFlagsReply 	rep;
@@ -6825,12 +6132,7 @@ xkbSetDebuggingFlagsReply 	rep;
 /***====================================================================***/
 
 static int
-#if NeedFunctionPrototypes
 ProcXkbDispatch (ClientPtr client)
-#else
-ProcXkbDispatch (client)
-    ClientPtr client;
-#endif
 {
     REQUEST(xReq);
     switch (stuff->data)
@@ -6893,13 +6195,7 @@ ProcXkbDispatch (client)
 }
 
 static int
-#if NeedFunctionPrototypes
 XkbClientGone(pointer data,XID id)
-#else
-XkbClientGone(data,id)
-    pointer data;
-    XID id;
-#endif
 {
     DevicePtr	pXDev = (DevicePtr)data;
 
@@ -6911,21 +6207,12 @@ XkbClientGone(data,id)
 
 /*ARGSUSED*/
 static void
-#if NeedFunctionPrototypes
 XkbResetProc(ExtensionEntry *extEntry)
-#else
-XkbResetProc(extEntry)
-    ExtensionEntry *extEntry;
-#endif
 {
 }
 
 void
-#if NeedFunctionPrototypes
 XkbExtensionInit(INITARGS)
-#else
-XkbExtensionInit()
-#endif
 {
     ExtensionEntry *extEntry;
 

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/bigreq.c,v 3.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/bigreq.c,v 3.8 2003/10/28 23:08:43 tsi Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -44,9 +44,7 @@ static unsigned char XBigReqCode;
 #endif
 
 static void BigReqResetProc(
-#if NeedFunctionPrototypes
     ExtensionEntry * /* extEntry */
-#endif
 );
 
 static DISPATCH_PROC(ProcBigReqDispatch);

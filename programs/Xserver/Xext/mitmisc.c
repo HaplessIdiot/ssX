@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mitmisc.c,v 3.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mitmisc.c,v 3.6 2003/10/28 23:08:43 tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -47,9 +47,7 @@ static unsigned char MITReqCode;
 #endif
 
 static void MITResetProc(
-#if NeedFunctionPrototypes
     ExtensionEntry * /* extEntry */
-#endif
 );
 
 static DISPATCH_PROC(ProcMITDispatch);

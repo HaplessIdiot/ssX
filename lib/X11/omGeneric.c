@@ -32,7 +32,7 @@
  * Modifier:  Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.26tsi Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.27 2003/05/27 22:26:27 tsi Exp $ */
 
 /*
  * Fixed the algorithms in parse_fontname() and parse_fontdata()
@@ -2153,17 +2153,8 @@ init_om(
 }
 
 XOM
-#if NeedFunctionPrototypes
 _XomGenericOpenOM(XLCd lcd, Display *dpy, XrmDatabase rdb,
 		  _Xconst char *res_name, _Xconst char *res_class)
-#else
-_XomGenericOpenOM(lcd, dpy, rdb, res_name, res_class)
-    XLCd lcd;
-    Display *dpy;
-    XrmDatabase rdb;
-    char *res_name;
-    char *res_class;
-#endif
 {
     XOM om;
 

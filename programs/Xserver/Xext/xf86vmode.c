@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.57tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.58 2003/11/06 18:37:57 tsi Exp $ */
 
 /*
 
@@ -64,9 +64,7 @@ typedef struct {
 #define VMPRIV(c) ((c)->devPrivates[VidModeClientPrivateIndex].ptr)
 
 static void XF86VidModeResetProc(
-#if NeedFunctionPrototypes
     ExtensionEntry* /* extEntry */
-#endif
 );
 
 static DISPATCH_PROC(ProcXF86VidModeDispatch);

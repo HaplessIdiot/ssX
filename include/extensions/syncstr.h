@@ -48,7 +48,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/syncstr.h,v 1.3 2003/07/16 01:38:24 dawes Exp $ */
 
 #ifndef _SYNCSTR_H_
 #define _SYNCSTR_H_
@@ -396,17 +396,13 @@ typedef struct _SysCounterInfo {
     CARD64	bracket_less;
     SyncCounterType counterType;  /* how can this counter change */
     void        (*QueryValue)(
-#if NeedNestedPrototypes
 			      pointer /*pCounter*/,
 			      CARD64 * /*freshvalue*/
-#endif
 );
     void	(*BracketValues)(
-#if NeedNestedPrototypes
 				 pointer /*pCounter*/,
 				 CARD64 * /*lessthan*/,
 				 CARD64 * /*greaterthan*/
-#endif
 );
 } SysCounterInfo;
 
@@ -419,20 +415,14 @@ typedef struct _SyncTrigger {
     unsigned int test_type;	/* transition or Comparision type */
     CARD64	test_value;	/* trigger event threshold value */
     Bool	(*CheckTrigger)(
-#if NeedNestedPrototypes
 				struct _SyncTrigger * /*pTrigger*/,
 				CARD64 /*newval*/
-#endif
 				);
     void	(*TriggerFired)(
-#if NeedNestedPrototypes
 				struct _SyncTrigger * /*pTrigger*/
-#endif
 				);
     void	(*CounterDestroyed)(
-#if NeedNestedPrototypes
 				struct _SyncTrigger * /*pTrigger*/
-#endif
 				    );
 } SyncTrigger;
 
@@ -476,7 +466,6 @@ typedef union {
 
 
 extern pointer SyncCreateSystemCounter(
-#if NeedFunctionPrototypes
     char *	/* name */,
     CARD64  	/* inital_value */,
     CARD64  	/* resolution */,
@@ -488,20 +477,15 @@ extern pointer SyncCreateSystemCounter(
         pointer /* pCounter */, 
         CARD64 * /* pbracket_less */,
         CARD64 * /* pbracket_greater */)
-#endif
 );
 
 extern void SyncChangeCounter(
-#if NeedFunctionPrototypes
     SyncCounter *	/* pCounter*/,
     CARD64  		/* new_value */
-#endif
 );
 
 extern void SyncDestroySystemCounter(
-#if NeedFunctionPrototypes
     pointer pCounter
-#endif
 );
 extern void InitServertime(void);
 

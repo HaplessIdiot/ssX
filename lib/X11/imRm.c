@@ -30,7 +30,7 @@ PERFORMANCE OF THIS SOFTWARE.
 			       makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imRm.c,v 3.11 2001/01/22 21:32:32 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imRm.c,v 3.12 2003/04/13 19:22:21 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xlib.h>
@@ -44,19 +44,13 @@ typedef struct _XimValueOffsetInfo {
     XrmQuark		 quark;
     unsigned int	 offset;
     Bool		 (*defaults)(
-#if NeedNestedPrototypes
 	struct _XimValueOffsetInfo *, XPointer, XPointer, unsigned long
-#endif
 			 );
     Bool		 (*encode)(
-#if NeedNestedPrototypes
 	struct _XimValueOffsetInfo *, XPointer, XPointer
-#endif
 			 );
     Bool		 (*decode)(
-#if NeedNestedPrototypes
 	struct _XimValueOffsetInfo *, XPointer, XPointer
-#endif
 			 );
 } XimValueOffsetInfoRec, *XimValueOffsetInfo;
 

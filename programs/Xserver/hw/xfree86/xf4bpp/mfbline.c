@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbline.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbline.c,v 1.5 2003/11/03 05:11:56 tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -92,9 +92,7 @@ actual clipping.
 */
 #ifdef POLYSEGMENT
 static void DoV16SegmentSS(
-#if NeedFunctionPrototypes
     DrawablePtr, GCPtr, int, xSegment*
-#endif
 );
 
 void
@@ -113,9 +111,7 @@ xf4bppSegmentSS (pDrawable, pGC, nseg, pSeg)
 
 #else
 static void DoV16LineSS(
-#if NeedFunctionPrototypes
     DrawablePtr, GCPtr, int, int, DDXPointPtr
-#endif
 );
 
 void
@@ -500,9 +496,7 @@ DoV16LineSS (pDrawable, pGC, mode, npt, pptInit)
 
 #ifdef POLYSEGMENT
 static void DoV16SegmentSD(
-#if NeedFunctionPrototypes
     DrawablePtr, GCPtr, int, xSegment*
-#endif
 );
 
 void
@@ -521,9 +515,7 @@ xf4bppSegmentSD (pDrawable, pGC, nseg, pSeg)
 
 #else
 static void DoV16LineSD(
-#if NeedFunctionPrototypes
     DrawablePtr, GCPtr, int, int, DDXPointPtr
-#endif
 );
 
 void

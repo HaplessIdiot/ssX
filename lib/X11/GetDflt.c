@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/GetDflt.c,v 3.21 2002/05/31 18:45:41 dawes Exp $ */
+/* $XFree86: xc/lib/X11/GetDflt.c,v 3.22 2003/04/13 19:22:16 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xos.h>
@@ -89,7 +89,8 @@ SOFTWARE.
 
 
 /*ARGSUSED*/
-static char *GetHomeDir(
+static char *
+GetHomeDir(
     char *dest,
     int len)
 {
@@ -140,7 +141,8 @@ static char *GetHomeDir(
 }
 
 
-static XrmDatabase InitDefaults(
+static XrmDatabase
+InitDefaults(
     Display *dpy)			/* display for defaults.... */
 {
     XrmDatabase userdb;
@@ -190,17 +192,11 @@ static XrmDatabase InitDefaults(
 #endif
 }
 
-#if NeedFunctionPrototypes
-char *XGetDefault(
+char *
+XGetDefault(
 	Display *dpy,			/* display for defaults.... */
 	char _Xconst *prog,		/* name of program for option	*/
 	register _Xconst char *name)	/* name of option program wants */
-#else
-char *XGetDefault(dpy, prog, name)
-	Display *dpy;			/* display for defaults.... */
-	char *prog;			/* name of program for option	*/
-	register char *name;		/* name of option program wants */
-#endif
 {					/* to get, for example, "font"  */
 	XrmName names[3];
 	XrmClass classes[3];

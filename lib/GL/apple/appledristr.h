@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/xf86dristr.h,v 1.9 2001/03/21 16:01:08 dawes Exp $ */
+/* $XFree86: xc/lib/GL/apple/appledristr.h,v 1.1 2003/06/30 01:45:10 torrey Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -164,12 +164,10 @@ typedef struct _AppleDRINotify {
 #ifdef _APPLEDRI_SERVER_
 
 void AppleDRISendEvent (
-#if NeedFunctionPrototypes
     int			/* type */,
     unsigned int	/* mask */,
     int			/* which */,
     int			/* arg */
-#endif
 );
 
 #endif /* _APPLEDRI_SERVER_ */

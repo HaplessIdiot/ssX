@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/locking.c,v 1.4 2001/12/14 19:54:10 dawes Exp $ */
+/* $XFree86: xc/lib/X11/locking.c,v 1.5 2003/04/13 19:22:22 dawes Exp $ */
 
 /*
  * Author: Stephen Gildea, MIT X Consortium
@@ -506,13 +506,8 @@ static void _XInternalLockDisplay(
 	_XDisplayLockWait(dpy);
 }
 
-#if NeedFunctionPrototypes
 static void _XUserLockDisplay(
     register Display* dpy)
-#else
-static void _XUserLockDisplay(dpy)
-    register Display* dpy;
-#endif
 {
     if (++dpy->lock->locking_level == 1) {
 	dpy->lock->lock_wait = _XDisplayLockWait;
@@ -521,13 +516,8 @@ static void _XUserLockDisplay(dpy)
 }
 
 static
-#if NeedFunctionPrototypes
 void _XUserUnlockDisplay(
     register Display* dpy)
-#else
-void _XUserUnlockDisplay(dpy)
-    register Display* dpy;
-#endif
 {
     if (dpy->lock->locking_level > 0 && --dpy->lock->locking_level == 0) {
 	/* signal other threads that might be waiting in XLockDisplay */

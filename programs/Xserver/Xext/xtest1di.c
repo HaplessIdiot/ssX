@@ -52,7 +52,7 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest1di.c,v 3.4 2003/07/16 01:38:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest1di.c,v 3.5 2003/09/13 21:33:03 dawes Exp $ */
 
 /*****************************************************************************
  * include files
@@ -134,29 +134,21 @@ static DISPATCH_PROC(ProcTestQueryInputSize);
 static DISPATCH_PROC(SProcTestQueryInputSize);
 
 static void	XTestResetProc(
-#if NeedFunctionPrototypes
 	ExtensionEntry *	/* unused */
-#endif
 	);
 static void	SReplyXTestDispatch(
-#if NeedFunctionPrototypes
 	ClientPtr		/* client_ptr */,
 	int			/* size */,
 	char *			/* reply_ptr */
-#endif
 	);
 static void	SEventXTestDispatch(
-#if NeedFunctionPrototypes
 	xEvent *		/* from */,
 	xEvent *		/* to */
-#endif
 	);
 
 static int	XTestCurrentClientGone(
-#if NeedFunctionPrototypes
 	pointer			/* value */,
 	XID			/* id */
-#endif
 	);
 
 /*****************************************************************************

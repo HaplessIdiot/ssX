@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.37tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.38 2003/11/06 18:38:12 tsi Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -444,11 +444,9 @@ static Bool xf86WcmUSBOpen(LocalDevicePtr);
 static void xf86WcmReadISDV4Input(LocalDevicePtr);
 static Bool xf86WcmISDV4Open(LocalDevicePtr);
 
-#if NeedFunctionPrototypes
 static LocalDevicePtr xf86WcmAllocateStylus(void);
 static LocalDevicePtr xf86WcmAllocateCursor(void);
 static LocalDevicePtr xf86WcmAllocateEraser(void);
-#endif
 
 /*
  ***************************************************************************

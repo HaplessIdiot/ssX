@@ -55,7 +55,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/SetLocale.c,v 3.18tsi Exp $ */
+/* $XFree86: xc/lib/X11/SetLocale.c,v 3.19 2003/11/13 04:01:05 tsi Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -69,18 +69,11 @@ from The Open Group.
 
 /* alternative setlocale() for when the OS does not provide one */
 
-#if NeedFunctionPrototypes
 char *
 _Xsetlocale(
     int		  category,
     _Xconst char  *name
 )
-#else
-char *
-_Xsetlocale(category, name)
-    int		category;
-    char       *name;
-#endif
 {
     static char *xsl_name;
     char *old_name;

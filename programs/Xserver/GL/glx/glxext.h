@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxext.h,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/glxext.h,v 1.6 2003/10/28 22:50:18 tsi Exp $ */
 #ifndef _glxext_h_
 #define _glxext_h_
 
@@ -81,7 +81,6 @@ extern void GlxExtensionInit(void);
 extern Bool __glXCoreType(void);
 
 extern int GlxInitVisuals(
-#if NeedFunctionPrototypes
     VisualPtr *       visualp,
     DepthPtr *        depthp,
     int *             nvisualp,
@@ -91,7 +90,6 @@ extern int GlxInitVisuals(
     unsigned long     sizes,
     int               bitsPerRGB,
     int               preferredVis
-#endif
 );
 
 #endif /* _glxext_h_ */

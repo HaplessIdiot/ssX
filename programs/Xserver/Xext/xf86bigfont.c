@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.17 2003/10/28 23:08:43 tsi Exp $ */
 /*
  * BIGFONT extension for sharing font metrics between clients (if possible)
  * and for transmitting font metrics to clients in a compressed form.
@@ -73,9 +73,7 @@
 #include "xf86bigfstr.h"
 
 static void XF86BigfontResetProc(
-#if NeedFunctionPrototypes
     ExtensionEntry *	/* extEntry */
-#endif
     );
 
 static DISPATCH_PROC(ProcXF86BigfontDispatch);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.93tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.94 2003/11/03 05:11:51 tsi Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -728,9 +728,7 @@ extern int sys_nerr;
 #if defined(ISC) || defined(Lynx)
 #define rint(x) RInt(x)
 double RInt(
-#if NeedFunctionPrototypes
 	double x
-#endif
 );
 #endif
 

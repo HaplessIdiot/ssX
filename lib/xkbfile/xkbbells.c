@@ -1,6 +1,6 @@
-/* $XConsortium: xkbbells.c /main/1 1995/11/30 19:01:15 kaleb $ */
+/* $Xorg: xkbbells.c,v 1.3 2000/08/17 19:46:43 cpqbld Exp $ */
 /************************************************************
- Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
+ Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
  Permission to use, copy, modify, and distribute this
  software and its documentation for any purpose and without
@@ -24,6 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86$ */
 
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
@@ -34,6 +35,8 @@ static char *_xkbStdBellNames[XkbBI_NumBells] = {
 	"Warning",
 	"MinorError",
 	"MajorError",
+	"BadValue",
+	"InvalidLocation",
 	"Question",
 	"Start",
 	"End",
@@ -57,6 +60,7 @@ static char *_xkbStdBellNames[XkbBI_NumBells] = {
 	"ClockChimeHalf",
 	"ClockChimeQuarter",
 	"RepeatingLastBell",
+	"ComposeFail",
 	"AX_FeatureOn",
 	"AX_FeatureOff",
 	"AX_FeatureChange",
@@ -77,11 +81,7 @@ static char *_xkbStdBellNames[XkbBI_NumBells] = {
 static Atom _xkbStdBellAtoms[XkbBI_NumBells];
 
 Bool
-XkbStdBell(dpy,win,percent,bellDef)
-    Display *	dpy;
-    Window	win;
-    int		percent;
-    int		bellDef;
+XkbStdBell(Display *dpy,Window win,int percent,int bellDef)
 {
     if ((bellDef<0)||(bellDef>=XkbBI_NumBells))
 	bellDef= XkbBI_Info;
@@ -91,11 +91,7 @@ XkbStdBell(dpy,win,percent,bellDef)
 }
 
 Bool
-XkbStdBellEvent(dpy,win,percent,bellDef)
-    Display *	dpy;
-    Window	win;
-    int		percent;
-    int		bellDef;
+XkbStdBellEvent(Display *dpy,Window win,int percent,int bellDef)
 {
     if ((bellDef<0)||(bellDef>=XkbBI_NumBells))
 	bellDef= XkbBI_Info;

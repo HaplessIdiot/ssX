@@ -26,7 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imExten.c,v 1.3 2003/02/20 03:30:36 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imExten.c,v 1.4 2003/04/13 19:22:21 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #define NEED_EVENTS
@@ -114,19 +114,11 @@ _XimProcExtSetEventMask(
 }
 
 Private Bool
-#if NeedFunctionPrototypes
 _XimExtSetEventMaskCallback(
     Xim		 xim,
     INT16	 len,
     XPointer	 data,
     XPointer	 call_data)
-#else
-_XimExtSetEventMaskCallback(xim, len, data, call_data)
-    Xim		 xim;
-    INT16	 len;
-    XPointer	 data;
-    XPointer	 call_data;
-#endif /* NeedFunctionPrototypes */
 {
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     XIMID	 imid = buf_s[0];
@@ -173,19 +165,11 @@ _XimProcExtForwardKeyEvent(
 }
 
 Private Bool
-#if NeedFunctionPrototypes
 _XimExtForwardKeyEventCallback(
     Xim		 xim,
     INT16	 len,
     XPointer	 data,
     XPointer	 call_data)
-#else
-_XimExtForwardKeyEventCallback(xim, len, data, call_data)
-    Xim		 xim;
-    INT16	 len;
-    XPointer	 data;
-    XPointer	 call_data;
-#endif /* NeedFunctionPrototypes */
 {
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     XIMID	 imid = buf_s[0];
@@ -202,19 +186,11 @@ _XimExtForwardKeyEventCallback(xim, len, data, call_data)
 }
 
 Private Bool
-#if NeedFunctionPrototypes
 _XimExtForwardKeyEventCheck(
     Xim          im,
     INT16        len,
     XPointer	 data,
     XPointer     arg)
-#else
-_XimExtForwardKeyEventCheck(im, len, data, arg)
-    Xim          im;
-    INT16        len;
-    XPointer	 data;
-    XPointer     arg;
-#endif
 {
     Xic		 ic  = (Xic)arg;
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
@@ -413,19 +389,11 @@ _XimParseExtensionList(
 }
 
 Private Bool
-#if NeedFunctionPrototypes
 _XimQueryExtensionCheck(
     Xim          im,
     INT16        len,
     XPointer	 data,
     XPointer     arg)
-#else
-_XimQueryExtensionCheck(im, len, data, arg)
-    Xim          im;
-    INT16        len;
-    XPointer	 data;
-    XPointer     arg;
-#endif
 {
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     CARD8	 major_opcode = *((CARD8 *)data);
@@ -594,21 +562,12 @@ _XimExtenArgCheck(
 }
 
 Public Bool
-#if NeedFunctionPrototypes
 _XimExtenMove(
     Xim		 im,
     Xic		 ic,
     CARD32	 flag,
     CARD16	*buf,
     INT16	 length)
-#else
-_XimExtenMove(im, ic, flag, buf, length)
-    Xim		 im;
-    Xic		 ic;
-    CARD32	 flag;
-    CARD16	*buf;
-    INT16	 length;
-#endif /* NeedFunctionPrototypes */
 {
     if ((IS_EXT_XNSPOTLOCATION(flag)) && (length == XIM_Xpoint_length))
 	return _XimExtMove(im, ic, buf[4], buf[5]);

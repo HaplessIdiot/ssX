@@ -1,4 +1,4 @@
-/* $XConsortium $ */
+/* $Xorg: XKBGetByName.c,v 1.3 2000/08/17 19:45:02 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -35,13 +36,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /***====================================================================***/
 
 XkbDescPtr
-XkbGetKeyboardByName(dpy,deviceSpec,names,want,need,load)
-    Display *			dpy;
-    unsigned			deviceSpec;
-    XkbComponentNamesPtr	names;
-    unsigned			want;
-    unsigned			need;
-    Bool			load;
+XkbGetKeyboardByName(	Display *		dpy,
+			unsigned		deviceSpec,
+			XkbComponentNamesPtr	names,
+			unsigned		want,
+			unsigned		need,
+			Bool			load)
 {
     register xkbGetKbdByNameReq	*	req;
     xkbGetKbdByNameReply 		rep;
@@ -209,10 +209,7 @@ BAILOUT:
 }
 
 XkbDescPtr
-XkbGetKeyboard(dpy,which,deviceSpec)
-    Display *		dpy;
-    unsigned		which;
-    unsigned		deviceSpec;
+XkbGetKeyboard(Display *dpy,unsigned which,unsigned deviceSpec)
 {
     return XkbGetKeyboardByName(dpy,deviceSpec,NULL,which,which,False);
 }

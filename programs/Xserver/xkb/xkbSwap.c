@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbSwap.c,v 3.3 2003/07/16 01:39:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbSwap.c,v 3.4 2003/09/13 16:39:01 dawes Exp $ */
 
 #include "stdio.h"
 #include "X.h"
@@ -42,12 +42,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	 * REQUEST SWAPPING
 	 */
 static int
-#if NeedFunctionPrototypes
 SProcXkbUseExtension(ClientPtr client)
-#else
-SProcXkbUseExtension(client)
-    ClientPtr client;
-#endif
 {
 register int n;
 
@@ -61,12 +56,7 @@ register int n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbSelectEvents(ClientPtr client)
-#else
-SProcXkbSelectEvents(client)
-    ClientPtr client;
-#endif
 {
 register int n;
 
@@ -145,12 +135,7 @@ register int n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbBell(ClientPtr client)
-#else
-SProcXkbBell(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -169,12 +154,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbGetState(ClientPtr client)
-#else
-SProcXkbGetState(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -187,12 +167,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbLatchLockState(ClientPtr client)
-#else
-SProcXkbLatchLockState(client)
-    ClientPtr client;
-#endif
 {
 register int 	n;
 
@@ -206,12 +181,7 @@ register int 	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbGetControls(ClientPtr client)
-#else
-SProcXkbGetControls(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -224,12 +194,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbSetControls(ClientPtr client)
-#else
-SProcXkbSetControls(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -264,12 +229,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbGetMap(ClientPtr client)
-#else
-SProcXkbGetMap(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -285,12 +245,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbSetMap(ClientPtr client)
-#else
-SProcXkbSetMap(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -309,12 +264,7 @@ register int	n;
 
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbGetCompatMap(ClientPtr client)
-#else
-SProcXkbGetCompatMap(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -329,12 +279,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbSetCompatMap(ClientPtr client)
-#else
-SProcXkbSetCompatMap(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -349,12 +294,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbGetIndicatorState(ClientPtr client)
-#else
-SProcXkbGetIndicatorState(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -367,12 +307,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbGetIndicatorMap(ClientPtr client)
-#else
-SProcXkbGetIndicatorMap(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -386,12 +321,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbSetIndicatorMap(ClientPtr client)
-#else
-SProcXkbSetIndicatorMap(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -405,12 +335,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbGetNamedIndicator(ClientPtr client)
-#else
-SProcXkbGetNamedIndicator(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -426,12 +351,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbSetNamedIndicator(ClientPtr client)
-#else
-SProcXkbSetNamedIndicator(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -450,12 +370,7 @@ register int	n;
 
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbGetNames(ClientPtr client)
-#else
-SProcXkbGetNames(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -469,12 +384,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbSetNames(ClientPtr client)
-#else
-SProcXkbSetNames(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -491,12 +401,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbGetGeometry(ClientPtr client)
-#else
-SProcXkbGetGeometry(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -510,12 +415,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbSetGeometry(ClientPtr client)
-#else
-SProcXkbSetGeometry(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -535,12 +435,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbPerClientFlags(ClientPtr client)
-#else
-SProcXkbPerClientFlags(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -558,12 +453,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbListComponents(ClientPtr client)
-#else
-SProcXkbListComponents(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -577,12 +467,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbGetKbdByName(ClientPtr client)
-#else
-SProcXkbGetKbdByName(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -597,12 +482,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbGetDeviceInfo(ClientPtr client)
-#else
-SProcXkbGetDeviceInfo(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -618,12 +498,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbSetDeviceInfo(ClientPtr client)
-#else
-SProcXkbSetDeviceInfo(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -638,12 +513,7 @@ register int	n;
 }
 
 static int
-#if NeedFunctionPrototypes
 SProcXkbSetDebuggingFlags(ClientPtr client)
-#else
-SProcXkbSetDebuggingFlags(client)
-    ClientPtr client;
-#endif
 {
 register int	n;
 
@@ -660,12 +530,7 @@ register int	n;
 }
 
 int
-#if NeedFunctionPrototypes
 SProcXkbDispatch (ClientPtr client)
-#else
-SProcXkbDispatch (client)
-    ClientPtr client;
-#endif
 {
     REQUEST(xReq);
     switch (stuff->data)

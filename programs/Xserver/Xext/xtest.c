@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest.c,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest.c,v 3.10 2003/10/28 23:08:44 tsi Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -69,15 +69,11 @@ extern int DeviceValuator;
 #endif
 
 static void XTestResetProc(
-#if NeedFunctionPrototypes
     ExtensionEntry * /* extEntry */
-#endif
 );
 static int XTestSwapFakeInput(
-#if NeedFunctionPrototypes
     ClientPtr /* client */,
     xReq * /* req */
-#endif
 );
 
 static DISPATCH_PROC(ProcXTestCompareCursor);

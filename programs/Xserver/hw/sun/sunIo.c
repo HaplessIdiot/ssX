@@ -15,7 +15,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunIo.c,v 3.8 2001/10/28 03:33:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunIo.c,v 3.9 2001/12/19 21:28:45 dawes Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -80,9 +80,7 @@ ProcessInputEvents ()
  */
 
 void sunEnqueueEvents (
-#if NeedFunctionPrototypes
     void
-#endif
 )
 {
     Firm_event	*ptrEvents,    	/* Current pointer event */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXh.h,v 1.1 2003/07/16 01:38:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXh.h,v 1.2 2003/09/13 21:33:03 dawes Exp $ */
 
 /*
  *	Server dispatcher function replacements
@@ -56,11 +56,7 @@ extern int PanoramiXFreeColors(ClientPtr client);
 extern int PanoramiXStoreColors(ClientPtr client);
 extern int PanoramiXAllocColorPlanes(ClientPtr client);
 
-#if NeedFunctionPrototypes
 #define PROC_EXTERN(pfunc)      extern int pfunc(ClientPtr)
-#else
-#define PROC_EXTERN(pfunc)      extern int pfunc()
-#endif
 
 PROC_EXTERN(ProcPanoramiXQueryVersion); 
 PROC_EXTERN(ProcPanoramiXGetState); 

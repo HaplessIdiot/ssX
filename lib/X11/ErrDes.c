@@ -48,7 +48,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/ErrDes.c,v 3.9 2001/07/25 15:04:43 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ErrDes.c,v 3.11 2003/08/06 14:03:59 eich Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xos.h>
@@ -122,7 +122,6 @@ XGetErrorText(dpy, code, buffer, nbytes)
 }
 
 int
-#if NeedFunctionPrototypes
 /*ARGSUSED*/
 XGetErrorDatabaseText(
     Display *dpy,
@@ -131,15 +130,6 @@ XGetErrorDatabaseText(
     _Xconst char *defaultp,
     char *buffer,
     int nbytes)
-#else
-/*ARGSUSED*/
-XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
-    Display *dpy;
-    register char *name, *type;
-    char *defaultp;
-    char *buffer;
-    int nbytes;
-#endif
 {
 
     static XrmDatabase db = NULL;

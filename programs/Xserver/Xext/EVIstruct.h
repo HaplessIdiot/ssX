@@ -21,7 +21,7 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/EVIstruct.h,v 3.5 2003/07/16 01:38:28 dawes Exp $ */
 
 #ifndef EVI_STRUCT_H
 #define EVI_STRUCT_H
@@ -33,21 +33,17 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 typedef int (*GetVisualInfoProc)(
-#if NeedNestedPrototypes
 	VisualID32*,
 	int,
 	xExtendedVisualInfo**,
 	int*,
 	VisualID32**,
 	int*
-#endif
 );
 
 typedef void (*FreeVisualInfoProc)(
-#if NeedNestedPrototypes
     xExtendedVisualInfo*,
     VisualID32*
-#endif
 );
 typedef struct _EviPrivRec {
     GetVisualInfoProc getVisualInfo;

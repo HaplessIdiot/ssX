@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/XlcPubI.h,v 3.12 2003/04/17 02:06:31 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlcPubI.h,v 3.13 2003/04/18 18:21:45 torrey Exp $ */
 
 #ifndef _XLCPUBLICI_H_
 #define _XLCPUBLICI_H_
@@ -165,43 +165,35 @@ extern int _Xutf8TextPropertyToTextList(
 );
 
 extern int _XmbTextListToTextProperty(
-#if NeedFunctionPrototypes
     XLCd		/* lcd */,
     Display*		/* dpy */,
     char**		/* list */,
     int			/* count */,
     XICCEncodingStyle	/* style */,
     XTextProperty*	/* text_prop */
-#endif
 );
 
 extern int _XwcTextListToTextProperty(
-#if NeedFunctionPrototypes
     XLCd		/* lcd */,
     Display*		/* dpy */,
     wchar_t**		/* list */,
     int			/* count */,
     XICCEncodingStyle	/* style */,
     XTextProperty*	/* text_prop */
-#endif
 );
 
 extern int _Xutf8TextListToTextProperty(
-#if NeedFunctionPrototypes
     XLCd		/* lcd */,
     Display*		/* dpy */,
     char**		/* list */,
     int			/* count */,
     XICCEncodingStyle	/* style */,
     XTextProperty*	/* text_prop */
-#endif
 );
 
 extern void _XwcFreeStringList(
-#if NeedFunctionPrototypes
     XLCd		/* lcd */,
     wchar_t**		/* list */
-#endif
 );
 
 extern int _XlcResolveLocaleName(
@@ -215,11 +207,9 @@ extern int _XlcResolveI18NPath(
 );
 
 extern char *_XlcLocaleDirName(
-#if NeedFunctionPrototypes
      char*             /* dir_name */,
      size_t,	       /* dir_len */
      char*             /* lc_name */
-#endif
 );
 
 extern XPointer _XlcCreateLocaleDataBase(

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.37 2003/03/23 04:56:02 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.39 2003/10/08 11:12:50 eich Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -82,21 +82,15 @@ static void miShmPutImage(XSHM_PUT_IMAGE_ARGS);
 static void fbShmPutImage(XSHM_PUT_IMAGE_ARGS);
 static PixmapPtr fbShmCreatePixmap(XSHM_CREATE_PIXMAP_ARGS);
 static int ShmDetachSegment(
-#if NeedFunctionPrototypes
     pointer		/* value */,
     XID			/* shmseg */
-#endif
     );
 static void ShmResetProc(
-#if NeedFunctionPrototypes
     ExtensionEntry *	/* extEntry */
-#endif
     );
 static void SShmCompletionEvent(
-#if NeedFunctionPrototypes
     xShmCompletionEvent * /* from */,
     xShmCompletionEvent * /* to */
-#endif
     );
 
 static Bool ShmDestroyPixmap (PixmapPtr pPixmap);

@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.15 2003/11/10 18:21:43 tsi Exp $ */
 
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -75,14 +75,10 @@ static RESTYPE RTEventClient;
  * the extension can't be listed or queried.
  */
 int (*UntrustedProcVector[256])(
-#if NeedNestedPrototypes
     ClientPtr /*client*/
-#endif
 );
 int (*SwappedUntrustedProcVector[256])(
-#if NeedNestedPrototypes
     ClientPtr /*client*/
-#endif
 );
 
 /* SecurityAudit

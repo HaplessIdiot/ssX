@@ -21,6 +21,8 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
+/* $XFree86$ */
+
 #ifndef _XEVI_H_
 #define _XEVI_H_
 #include <X11/Xfuncproto.h>
@@ -43,25 +45,19 @@ typedef struct {
 } ExtendedVisualInfo;
 _XFUNCPROTOBEGIN
 Bool XeviQueryExtension(
-#if NeedFunctionPrototypes
     Display*            /* dpy */
-#endif
 );
 Status XeviQueryVersion(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int*		/* majorVersion */,
     int*		/* minorVersion */
-#endif
 );
 Status XeviGetVisualInfo(
-#if NeedFunctionPrototypes
     Display*		 	/* dpy */,
     VisualID*			/* visual_query */,
     int				/* nVisual_query */,
     ExtendedVisualInfo**	/* extendedVisualInfo_return */,
     int*			/* nInfo_return */
-#endif
 );
 _XFUNCPROTOEND
 #endif

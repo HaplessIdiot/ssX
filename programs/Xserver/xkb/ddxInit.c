@@ -1,4 +1,4 @@
-/* $XConsortium: ddxInit.c /main/1 1995/11/30 19:22:09 kaleb $ */
+/* $Xorg: ddxInit.c,v 1.3 2000/08/17 19:53:45 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 #include <stdio.h>
 #define	NEED_EVENTS 1
@@ -36,11 +37,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBsrv.h"
 #include "XI.h"
 
-extern	CARD16	xkbDebugFlags;
-
 int
-XkbDDXInitDevice(dev)
-    DeviceIntPtr    dev;
+XkbDDXInitDevice(DeviceIntPtr dev)
 {
     return 1;
 }

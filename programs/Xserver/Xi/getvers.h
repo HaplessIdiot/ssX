@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xi/getvers.h,v 3.0 1996/03/29 22:13:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/getvers.h,v 3.1 1996/04/15 11:18:50 dawes Exp $ */
 /************************************************************
 
 Copyright 1996 by Thomas E. Dickey <dickey@clark.net>
@@ -29,25 +29,19 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 int
 SProcXGetExtensionVersion(
-#if NeedFunctionPrototypes
 	ClientPtr              /* client */
-#endif
 	);
 
 int
 ProcXGetExtensionVersion (
-#if NeedFunctionPrototypes
 	ClientPtr              /* client */
-#endif
 	);
 
 void
 SRepXGetExtensionVersion (
-#if NeedFunctionPrototypes
 	ClientPtr              /* client */,
 	int                    /* size */,
 	xGetExtensionVersionReply * /* rep */
-#endif
 	);
 
 #endif /* GETVERS_H */

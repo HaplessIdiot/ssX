@@ -23,22 +23,14 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/OMWrap.c,v 1.3 2001/01/17 19:41:40 dawes Exp $ */
+/* $XFree86: xc/lib/X11/OMWrap.c,v 1.4 2001/07/25 15:04:44 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
 
 XOM
-#if NeedFunctionPrototypes
 XOpenOM(Display *dpy, XrmDatabase rdb, _Xconst char *res_name,
 	_Xconst char *res_class)
-#else
-XOpenOM(dpy, rdb, res_name, res_class)
-    Display *dpy;
-    XrmDatabase rdb;
-    char *res_name;
-    char *res_class;
-#endif
 {
     XLCd lcd = _XOpenLC((char *) NULL);
 

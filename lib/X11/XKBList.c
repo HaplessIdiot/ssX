@@ -1,4 +1,4 @@
-/* $XConsortium: XKBList.c /main/2 1996/01/14 16:43:33 kaleb $ */
+/* $Xorg: XKBList.c,v 1.3 2000/08/17 19:45:02 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -35,13 +36,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /***====================================================================***/
 
 static void
-#if NeedFunctionPrototypes
 _FreeComponentNames(int num,XkbComponentNamePtr names)
-#else
-_FreeComponentNames(num,names)
-    int			num;
-    XkbComponentNamePtr	names;
-#endif
 {
 int			i;
 XkbComponentNamePtr	tmp;
@@ -61,14 +56,7 @@ XkbComponentNamePtr	tmp;
 /***====================================================================***/
 
 static XkbComponentNamePtr
-#if NeedFunctionPrototypes
 _ReadListing(XkbReadBufferPtr buf,int count,Status *status_rtrn)
-#else
-_ReadListing(buf,count,status_rtrn)
-    XkbReadBufferPtr	buf;
-    int			count;
-    Status *		status_rtrn;
-#endif
 {
 XkbComponentNamePtr	first,this;
 register int		i;
@@ -87,11 +75,11 @@ char *			str;
 	    goto BAILOUT;
 	this->flags= 	flags[0];
 	slen=		flags[1];
-	wlen= 		((slen+4+1)/2)*2; /* pad to 2 byte boundary */
+	wlen= 		((slen+1)/2)*2; /* pad to 2 byte boundary */
 	this->name=	_XkbTypedCalloc(slen+1,char);
 	if (!this->name)
 	    goto BAILOUT;
-	str= (char *)_XkbGetReadBufferPtr(buf,wlen-2);
+	str= (char *)_XkbGetReadBufferPtr(buf,wlen);
 	memcpy(this->name,str,slen);
     }
     return first;
@@ -104,18 +92,10 @@ BAILOUT:
 /***====================================================================***/
 
 XkbComponentListPtr
-#if NeedFunctionPrototypes
 XkbListComponents(	Display *		dpy,
 			unsigned		deviceSpec,
 			XkbComponentNamesPtr	ptrns,
 			int *			max_inout)
-#else
-XkbListComponents(dpy,deviceSpec,ptrns,max_inout)
-    Display *			dpy;
-    unsigned			deviceSpec;
-    XkbComponentNamesPtr	ptrns;
-    int *			max_inout;
-#endif
 {
 register xkbListComponentsReq*	req;
 xkbListComponentsReply 		rep;
@@ -246,12 +226,7 @@ BAILOUT:
 }
 
 void
-#if NeedFunctionPrototypes
 XkbFreeComponentList(XkbComponentListPtr list)
-#else
-XkbFreeComponentList(list)
-    XkbComponentListPtr	list;
-#endif
 {
     if (list) {
 	if (list->keymaps)

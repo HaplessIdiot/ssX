@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/Xext/saver.c,v 3.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/saver.c,v 3.7 2003/10/28 23:08:43 tsi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -79,52 +79,38 @@ static DISPATCH_PROC(SProcScreenSaverSetAttributes);
 static DISPATCH_PROC(SProcScreenSaverUnsetAttributes);
 
 static Bool ScreenSaverHandle (
-#if NeedFunctionPrototypes
 	ScreenPtr /* pScreen */,
 	int /* xstate */,
 	Bool /* force */
-#endif
 	);
 
 static Bool
 CreateSaverWindow (
-#if NeedFunctionPrototypes
 	ScreenPtr /* pScreen */
-#endif
 	);
 
 static Bool
 DestroySaverWindow (
-#if NeedFunctionPrototypes
 	ScreenPtr /* pScreen */
-#endif
 	);
 
 static void
 UninstallSaverColormap (
-#if NeedFunctionPrototypes
 	ScreenPtr /* pScreen */
-#endif
 	);
 
 static void
 CheckScreenPrivate (
-#if NeedFunctionPrototypes
 	ScreenPtr /* pScreen */
-#endif
 	);
 
 static void SScreenSaverNotifyEvent (
-#if NeedFunctionPrototypes
 	xScreenSaverNotifyEvent * /* from */,
 	xScreenSaverNotifyEvent * /* to */
-#endif
 	);
 
 static void ScreenSaverResetProc (
-#if NeedFunctionPrototypes
 	ExtensionEntry * /* extEntry */
-#endif
 	);
 
 /*
@@ -148,25 +134,19 @@ typedef struct _ScreenSaverEvent {
 } ScreenSaverEventRec;
 
 static int ScreenSaverFreeEvents(
-#if NeedFunctionPrototypes
     pointer /* value */,
     XID /* id */
-#endif
 );
 
 static Bool setEventMask (
-#if NeedFunctionPrototypes
     ScreenPtr /* pScreen */,
     ClientPtr /* client */,
     unsigned long /* mask */
-#endif
 );
 
 static unsigned long getEventMask (
-#if NeedFunctionPrototypes
     ScreenPtr /* pScreen */,
     ClientPtr /* client */
-#endif
 );
 
 /*
@@ -194,31 +174,23 @@ typedef struct _ScreenSaverAttr {
 } ScreenSaverAttrRec, *ScreenSaverAttrPtr;
 
 static int ScreenSaverFreeAttr (
-#if NeedFunctionPrototypes
     pointer /* value */,
     XID /* id */
-#endif
 );
 
 static void FreeAttrs (
-#if NeedFunctionPrototypes
     ScreenSaverAttrPtr	/* pAttr */
-#endif
 );
 
 static void FreeScreenAttr (
-#if NeedFunctionPrototypes
     ScreenSaverAttrPtr	/* pAttr */
-#endif
 );
 
 static void
 SendScreenSaverNotify (
-#if NeedFunctionPrototypes
     ScreenPtr /* pScreen */,
     int /* state */,
     Bool /* forced */
-#endif
 );
 
 typedef struct _ScreenSaverScreenPrivate {
@@ -230,9 +202,7 @@ typedef struct _ScreenSaverScreenPrivate {
 
 static ScreenSaverScreenPrivatePtr
 MakeScreenPrivate (
-#if NeedFunctionPrototypes
 	ScreenPtr /* pScreen */
-#endif
 	);
 
 static int ScreenPrivateIndex;

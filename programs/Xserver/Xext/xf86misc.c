@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.39tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.40 2003/10/28 23:08:43 tsi Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -54,9 +54,7 @@ typedef struct {
 #define MPRIV(c) ((c)->devPrivates[MiscClientPrivateIndex].ptr)
 
 static void XF86MiscResetProc(
-#if NeedFunctionPrototypes
     ExtensionEntry* /* extEntry */
-#endif
 );
 
 static void

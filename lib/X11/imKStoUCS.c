@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/X11/imKStoUCS.c,v 1.3 2003/04/13 19:22:21 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imKStoUCS.c,v 1.4 2003/04/29 11:29:18 pascal Exp $ */
 
 #include "Xlibint.h"
 #include "Ximint.h"
@@ -267,12 +267,7 @@ static unsigned short const keysym_to_unicode_20a0_20ac[] = {
 };
 
 unsigned int
-#if NeedFunctionPrototypes
 KeySymToUcs4(KeySym keysym)
-#else
-KeySymToUcs4(keysym)
-    KeySym keysym;
-#endif
 {
     /* 'Unicode keysym' */
     if ((keysym & 0xff000000) == 0x01000000)

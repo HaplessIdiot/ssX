@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ParseCol.c,v 1.5 2002/12/04 23:18:32 paulo Exp $ */
+/* $XFree86: xc/lib/X11/ParseCol.c,v 1.6 2003/04/13 19:22:17 dawes Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -32,19 +32,12 @@ in this Software without prior written authorization from The Open Group.
 #include "Xcmsint.h"
 
 
-#if NeedFunctionPrototypes
-Status XParseColor (
+Status
+XParseColor (
 	register Display *dpy,
         Colormap cmap,
 	_Xconst char *spec,
 	XColor *def)
-#else
-Status XParseColor (dpy, cmap, spec, def)
-	register Display *dpy;
-        Colormap cmap;
-	char *spec;
-	XColor *def;
-#endif
 {
 	register int n, i;
 	int r, g, b;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.15 2003/10/28 23:08:43 tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -70,43 +70,31 @@ int			MultibufferScreenIndex = -1;
 int			MultibufferWindowIndex = -1;
 
 static void		PerformDisplayRequest (
-#if NeedFunctionPrototypes
 				MultibuffersPtr * /* ppMultibuffers */,
 				MultibufferPtr * /* pMultibuffer */,
 				int /* nbuf */
-#endif
 				);
 static Bool		QueueDisplayRequest (
-#if NeedFunctionPrototypes
 				ClientPtr /* client */,
 				TimeStamp /* activateTime */
-#endif
 				);
 
 static void		BumpTimeStamp (
-#if NeedFunctionPrototypes
 				TimeStamp * /* ts */,
 				CARD32 /* inc */
-#endif
 				);
 
 static void		AliasMultibuffer (
-#if NeedFunctionPrototypes
 				MultibuffersPtr /* pMultibuffers */,
 				int /* i */
-#endif
 				);
 static void		RecalculateMultibufferOtherEvents (
-#if NeedFunctionPrototypes
 				MultibufferPtr /* pMultibuffer */
-#endif
 				);
 static int		EventSelectForMultibuffer(
-#if NeedFunctionPrototypes
 				MultibufferPtr /* pMultibuffer */,
 				ClientPtr /* client */,
 				Mask /* mask */
-#endif
 				);
 
 /*
@@ -115,10 +103,8 @@ static int		EventSelectForMultibuffer(
  */
 RESTYPE			MultibufferDrawableResType;
 static int		MultibufferDrawableDelete (
-#if NeedFunctionPrototypes
 				pointer /* value */,
 				XID /* id */
-#endif
 				);
 /*
  * The per-buffer data can be found as a resource with this type.
@@ -127,10 +113,8 @@ static int		MultibufferDrawableDelete (
  */
 static RESTYPE		MultibufferResType;
 static int		MultibufferDelete (
-#if NeedFunctionPrototypes
 				pointer /* value */,
 				XID /* id */
-#endif
 				);
 
 /*
@@ -139,10 +123,8 @@ static int		MultibufferDelete (
  */
 static RESTYPE		MultibuffersResType;
 static int		MultibuffersDelete (
-#if NeedFunctionPrototypes
 				pointer /* value */,
 				XID /* id */
-#endif
 				);
 
 /*
@@ -151,10 +133,8 @@ static int		MultibuffersDelete (
  */
 static RESTYPE		OtherClientResType;
 static int		OtherClientDelete (
-#if NeedFunctionPrototypes
 				pointer /* value */,
 				XID /* id */
-#endif
 				);
 
 /****************
@@ -189,44 +169,32 @@ static DISPATCH_PROC(SProcSetBufferAttributes);
 static DISPATCH_PROC(SProcSetMBufferAttributes);
 
 static void		MultibufferResetProc(
-#if NeedFunctionPrototypes
 				ExtensionEntry * /* extEntry */
-#endif
 				);
 static void		SClobberNotifyEvent(
-#if NeedFunctionPrototypes
 				xMbufClobberNotifyEvent * /* from */,
 				xMbufClobberNotifyEvent	* /* to */
-# endif
 				);
 static void		SUpdateNotifyEvent(
-#if NeedFunctionPrototypes
 				xMbufUpdateNotifyEvent * /* from */,
 				xMbufUpdateNotifyEvent * /* to */
-#endif
 				);
 static Bool		MultibufferPositionWindow(
-#if NeedFunctionPrototypes
 				WindowPtr /* pWin */,
 				int /* x */,
 				int /* y */
-#endif
 				);
 
 static void		SetupBackgroundPainter (
-#if NeedFunctionPrototypes
 				WindowPtr /* pWin */,
 				GCPtr /* pGC */
-#endif
 				);
 
 static int		DeliverEventsToMultibuffer (
-#if NeedFunctionPrototypes
 				MultibufferPtr /* pMultibuffer */,
 				xEvent * /* pEvents */,
 				int /* count */,
 				Mask /* filter */
-#endif
 				);
 
 void

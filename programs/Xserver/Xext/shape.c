@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.18 2003/10/28 23:08:43 tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -49,43 +49,30 @@ in this Software without prior written authorization from The Open Group.
 #include "modinit.h"
 
 typedef	RegionPtr (*CreateDftPtr)(
-#if NeedNestedPrototypes
 	WindowPtr /* pWin */
-#endif
 	);
 
 static int ShapeFreeClient(
-#if NeedFunctionPrototypes
 	pointer /* data */,
 	XID /* id */
-#endif
 	);
 static int ShapeFreeEvents(
-#if NeedFunctionPrototypes
 	pointer /* data */,
 	XID /* id */
-#endif
 	);
 static void SendShapeNotify(
-#if NeedFunctionPrototypes
 	WindowPtr /* pWin */,
 	int /* which */
-#endif
 	);
 static void ShapeResetProc(
-#if NeedFunctionPrototypes
 	ExtensionEntry * /* extEntry */
-#endif
 	);
 static void SShapeNotifyEvent(
-#if NeedFunctionPrototypes
 	xShapeNotifyEvent * /* from */,
 	xShapeNotifyEvent * /* to */
-#endif
 	);
 static int
 RegionOperate (
-#if NeedFunctionPrototypes
 	ClientPtr /* client */,
 	WindowPtr /* pWin */,
 	int /* kind */,
@@ -95,14 +82,9 @@ RegionOperate (
 	int /* xoff */,
 	int /* yoff */,
 	CreateDftPtr /* create */
-#endif
 	);
 
-#if NeedFunctionPrototypes
 #define CREATE_PROC(func) RegionPtr func(WindowPtr /* pWin */)
-#else
-#define CREATE_PROC(func) RegionPtr func(/* WindowPtr pWin */)
-#endif
 
 static CREATE_PROC(CreateBoundingShape);
 static CREATE_PROC(CreateClipShape);
