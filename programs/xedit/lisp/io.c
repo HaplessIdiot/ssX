@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.14 2002/12/04 05:27:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.15 2002/12/06 03:25:27 paulo Exp $ */
 
 #include "io.h"
 #include <errno.h>
@@ -207,7 +207,7 @@ LispFdopen(int descriptor, int mode)
 
 	file->buffered = (mode & BUFFERED_BIT) != 0;
 	if ((mode & UNBUFFERED_BIT) == 0)
-	    file->buffered = file->regular || isatty(descriptor);
+	    file->buffered = file->regular;
 
 	if (file->buffered) {
 	    file->buffer = malloc(pagesize);

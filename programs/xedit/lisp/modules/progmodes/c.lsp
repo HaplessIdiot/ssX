@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.20 2002/11/23 08:26:53 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.21 2002/11/25 02:35:31 paulo Exp $
 ;;
 
 (require "syntax")
@@ -1025,7 +1025,7 @@
 
 
     ;; Rules for comments.
-    (syntable :comment *prop-comment* nil
+    (syntable :comment *prop-comment* #'default-indent
 	;; Match nested comments as an error.
 	(syntoken "/*" :nospec t :property *prop-error*)
 
@@ -1036,7 +1036,7 @@
     )
 
     ;; Rules for strings.
-    (syntable :string *prop-string* nil
+    (syntable :string *prop-string* #'default-indent
 	;; Ignore escaped characters, this includes \".
 	(syntoken "\\\\.")
 
@@ -1070,7 +1070,7 @@
     )
 
     ;;  Rules for preprocessor.
-    (syntable :preprocessor *prop-preprocessor* nil
+    (syntable :preprocessor *prop-preprocessor* #'default-indent
 	;;  Preprocessor includes comments.
 	(syntoken "/*" :nospec t :begin :comment :contained t)
 

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/xedit.lsp,v 1.6 2002/10/06 17:11:47 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/xedit.lsp,v 1.7 2002/11/10 23:22:01 paulo Exp $
 ;;
 
 (provide "xedit")
@@ -115,7 +115,7 @@
 	;; point to the syntax file specification
 	(setq syntax (car syntax))
 
-	;; to load the syntax definition file
+	;; try to load the syntax definition file
 	(if (stringp syntax)
 	    (load
 		(string-concat

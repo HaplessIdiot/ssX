@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/indent.lsp,v 1.2 2002/11/10 16:29:11 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/indent.lsp,v 1.3 2002/11/15 07:01:32 paulo Exp $
 ;;
 
 (provide "indent")
@@ -171,6 +171,63 @@
     )
 )
 (compile 'offset-indentation)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  A default/fallback indentation function, just copy indentation
+;; of previous line.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun default-indent (syntax syntable)
+    (let
+	(
+	(offset (scan (point) :eol :left))
+	start
+	left
+	right
+	)
+
+	syntable	;; XXX hack to not generate warning about unused
+			;; variable, should be temporary (until unused
+			;; variables can be declared as such)
+
+	(if
+	    (or
+		;; if indentation is disabled
+		(and
+		    (hash-table-p (syntax-options syntax))
+		    (gethash :disable-indent (syntax-options syntax))
+		)
+		;; or if not at the start of a new line
+		(> (scan offset :eol :right) offset)
+	    )
+	    (return-from default-indent)
+	)
+
+	(setq left offset)
+	(loop
+	    (setq
+		start left
+		left (scan start :eol :left :count 2)
+		right (scan left :eol :right)
+	    )
+	    ;; if start of file reached
+	    (and (>= left start) (return))
+	    (when
+		(setq
+		    start
+		    (position-if-not
+			#'(lambda (char) (member char indent-spaces))
+			(read-text left (- right left))
+		    )
+		)
+
+		;; indent the current one
+		(indent-text (offset-indentation (+ left start) :align t) offset)
+		(return)
+	    )
+	)
+    )
+)
+(compile 'default-indent)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper function

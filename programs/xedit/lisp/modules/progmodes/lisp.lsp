@@ -27,10 +27,11 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/lisp.lsp,v 1.4 2002/11/15 07:01:32 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/lisp.lsp,v 1.5 2002/11/17 07:51:29 paulo Exp $
 ;;
 
 (require "syntax")
+(require "indent")
 (in-package "XEDIT")
 
 (defsynprop *prop-special*
@@ -192,9 +193,9 @@
 
 	;; This version isn't also optimal, but it's performance is
 	;; acceptable.
-(defsyntax *lisp-mode* :main nil nil nil
+(defsyntax *lisp-mode* :main nil #'default-indent nil
     ;; highlight car and parenthesis
-    (syntoken "\\(+\\s*[][{}A-Za-z0-9!$%&/<=>?^~*:+-]*\\)*"
+    (syntoken "\\(+\\s*[][{}A-Za-z_0-9!$%&/<=>?^~*:+-]*\\)*"
 	:property *prop-keyword*)
     (syntoken "\\)+" :property *prop-keyword*)
 
@@ -204,7 +205,7 @@
     (syntoken "|" :nospec t :begin :unreadable :contained t)
 
     ;; keywords
-    (syntoken ":[][{}A-Za-z0-9!$%&/<=>^~+-]+" :property *prop-constant*)
+    (syntoken ":[][{}A-Za-z_0-9!$%&/<=>^~+-]+" :property *prop-constant*)
 
     ;; special symbol.
     (syntoken "\\*[][{}A-Za-z_0-9!$%&7=?^~+-]+\\*"
@@ -245,6 +246,8 @@
 
     (syntoken "\\c" :property *prop-control*)
 
+    ;; symbols, do nothing, just resolve conflicting matches
+    (syntoken "[][{}A-Za-z_0-9!$%&/<=>^~:*+-]+")
 
     (syntable :simple-comment *prop-comment* nil
 	(syntoken "$" :switch -1)
@@ -273,7 +276,7 @@
 
     (syntable :preprocessor *prop-preprocessor* nil
 	;; a symbol
-	(syntoken "[][{}A-Za-z0-9!$%&/<=>^~:*+-]+" :switch -1)
+	(syntoken "[][{}A-Za-z_0-9!$%&/<=>^~:*+-]+" :switch -1)
 
 	;; conditional expression
 	(syntoken "(" :nospec t :begin :preprocessor-expression :contained t)
