@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.19 2003/01/20 21:37:18 tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.20 2003/09/28 20:15:02 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -158,6 +158,7 @@ const char __glXGLClientExtensions[] =
 static const char __glXGLXClientVendorName[] = "SGI";
 static const char __glXGLXClientVersion[] = "1.2";
 
+#ifdef GLX_DIRECT_RENDERING
 static void * DriverCreateContextWrapper( __GLXscreenConfigs *psc,
     Display *dpy, XVisualInfo *vis, void *shared, __DRIcontext *ctx,
     __GLcontextModes *fbconfig );
@@ -221,6 +222,7 @@ static void * DriverCreateContextWrapper( __GLXscreenConfigs *psc,
     
     return ctx_priv;
 }
+#endif
 
 
 /****************************************************************************/
@@ -233,10 +235,10 @@ static void * DriverCreateContextWrapper( __GLXscreenConfigs *psc,
  *           the drawable is not associated with a direct-rendering context.
  */
 
+#ifdef GLX_DIRECT_RENDERING
 static __DRIdrawable *
 GetDRIDrawable( Display *dpy, GLXDrawable drawable, int * const scrn_num )
 {
-#ifdef GLX_DIRECT_RENDERING
     __GLXdisplayPrivate * const priv = __glXInitialize(dpy);
 
     if ( (priv != NULL) && (priv->driDisplay.private != NULL) ) {
@@ -256,12 +258,10 @@ GetDRIDrawable( Display *dpy, GLXDrawable drawable, int * const scrn_num )
 	    }
 	}
     }
-#else
-    (void) dpy;
-#endif
 
     return NULL;
 }
+#endif
 
 
 /**
@@ -2916,6 +2916,7 @@ static const struct name_address_pair GLX_functions[] = {
    GLX_FUNCTION( glXGetMscRateOML ),
    GLX_FUNCTION( glXGetSyncValuesOML ),
 
+#ifdef GLX_DIRECT_RENDERING
    /***
     *** Internal functions useful to DRI drivers
     *** With this, the DRI drivers shouldn't need dlopen()/dlsym() to
@@ -2925,6 +2926,7 @@ static const struct name_address_pair GLX_functions[] = {
    GLX_FUNCTION( __glXFindDRIScreen ),
    GLX_FUNCTION( __glXGetInternalVersion ),
    GLX_FUNCTION( __glXWindowExists ),
+#endif
 
    GLX_FUNCTION( __glXScrEnableExtension ),
 
