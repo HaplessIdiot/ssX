@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.3 1995/03/19 12:17:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.4 1995/06/08 06:21:57 dawes Exp $ */
 
 /*
 
@@ -55,7 +55,7 @@ static void VGAHelpResetProc();
 static unsigned char VGAHelpReqCode;
 
 void
-XFree86VidModExtensionInit()
+XFree86VidModeExtensionInit()
 {
     ExtensionEntry* extEntry;
 
